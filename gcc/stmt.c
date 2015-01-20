@@ -45,9 +45,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "flags.h"
 #include "except.h"
-#include "input.h"
 #include "function.h"
 #include "insn-config.h"
+#include "hashtab.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "stmt.h"
 #include "expr.h"
 #include "libfuncs.h"
 #include "recog.h"
@@ -298,6 +307,7 @@ parse_output_constraint (const char **constraint_p, int operand_num,
 	break;
 
       case '?':  case '!':  case '*':  case '&':  case '#':
+      case '$':  case '^':
       case 'E':  case 'F':  case 'G':  case 'H':
       case 's':  case 'i':  case 'n':
       case 'I':  case 'J':  case 'K':  case 'L':  case 'M':
@@ -388,6 +398,7 @@ parse_input_constraint (const char **constraint_p, int input_num,
 
       case '<':  case '>':
       case '?':  case '!':  case '*':  case '#':
+      case '$':  case '^':
       case 'E':  case 'F':  case 'G':  case 'H':
       case 's':  case 'i':  case 'n':
       case 'I':  case 'J':  case 'K':  case 'L':  case 'M':

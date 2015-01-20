@@ -126,7 +126,6 @@ aix			David Edelsohn		<dje.gcc@gmail.com>
 Android sub-port	Maxim Kuvyrkov		<maxim.kuvyrkov@linaro.org>
 darwin port		Mike Stump		<mikestump@comcast.net>
 darwin port		Eric Christopher	<echristo@gmail.com>
-darwin port		Stan Shebs		<stanshebs@earthlink.net>
 DJGPP			DJ Delorie		<dj@delorie.com>
 freebsd			Loren J. Rittle		<ljrittle@acm.org>
 GNU/Hurd		Thomas Schwinge		<thomas@schwinge.name>
@@ -161,7 +160,7 @@ java			Per Bothner		<per@bothner.com>
 java			Andrew Haley		<aph@redhat.com>
 java			Tom Tromey		<tromey@redhat.com>
 objective-c/c++		Mike Stump		<mikestump@comcast.net>
-objective-c/c++		Stan Shebs		<stanshebs@earthlink.net>
+objective-c/c++		Iain Sandoe		<iain@codesourcery.com>
 
 			Various Maintainers
 
@@ -272,6 +271,7 @@ check in changes outside of the parts of the compiler they maintain.
 
 			Reviewers
 
+C front end		Marek Polacek		<polacek@redhat.com>
 dataflow		Paolo Bonzini		<bonzini@gnu.org>
 dataflow		Seongbae Park		<seongbae.park@gmail.com>
 dataflow		Kenneth Zadeck		<zadeck@naturalbridge.com>
@@ -573,8 +573,10 @@ Kresten Krab Thorup				<krab@gcc.gnu.org>
 Caroline Tice					<cmtice@google.com>
 Kyrylo Tkachov					<kyrylo.tkachov@arm.com>
 Ilya Tocar					<tocarip@gmail.com>
+Philipp Tomsich					<philipp.tomsich@theobroma-systems.com>
 Konrad Trifunovic				<konrad.trifunovic@inria.fr>
 Markus Trippelsdorf				<markus@trippelsdorf.de>
+Martin Uecker					<uecker@eecs.berkeley.edu>
 David Ung					<davidu@mips.com>
 Neil Vachharajani				<nvachhar@gmail.com>
 Kris Van Hees					<kris.van.hees@oracle.com>

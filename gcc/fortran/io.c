@@ -3998,6 +3998,14 @@ gfc_match_inquire (void)
       goto cleanup;
     }
 
+  if (inquire->unit != NULL && inquire->unit->expr_type == EXPR_CONSTANT
+      && inquire->unit->ts.type == BT_INTEGER
+      && mpz_get_si (inquire->unit->value.integer) == -1)
+    {
+      gfc_error ("UNIT number in INQUIRE statement at %L can not be -1", &loc);
+      goto cleanup;
+    }
+
   if (gfc_pure (NULL))
     {
       gfc_error ("INQUIRE statement not allowed in PURE procedure at %C");

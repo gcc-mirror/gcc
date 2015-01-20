@@ -6,5 +6,5 @@ foo (int i)
   int a[i] = { }; // { dg-error "forbids variable length" }
 }
 
-constexpr int j = foo (1); // { dg-error "is not a constant expression" }
+constexpr int j = foo (1); // { dg-error "flows off the end" }
 

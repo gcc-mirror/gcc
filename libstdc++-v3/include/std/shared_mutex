@@ -57,6 +57,188 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// shared_timed_mutex
   class shared_timed_mutex
   {
+#if defined(__GTHREADS_CXX0X)
+    typedef chrono::system_clock	__clock_t;
+
+    pthread_rwlock_t			_M_rwlock;
+
+  public:
+    shared_timed_mutex()
+    {
+      int __ret = pthread_rwlock_init(&_M_rwlock, NULL);
+      if (__ret == ENOMEM)
+	throw bad_alloc();
+      else if (__ret == EAGAIN)
+	__throw_system_error(int(errc::resource_unavailable_try_again));
+      else if (__ret == EPERM)
+	__throw_system_error(int(errc::operation_not_permitted));
+      // Errors not handled: EBUSY, EINVAL
+      _GLIBCXX_DEBUG_ASSERT(__ret == 0);
+    }
+
+    ~shared_timed_mutex()
+    {
+      int __ret __attribute((unused)) = pthread_rwlock_destroy(&_M_rwlock);
+      // Errors not handled: EBUSY, EINVAL
+      _GLIBCXX_DEBUG_ASSERT(__ret == 0);
+    }
+
+    shared_timed_mutex(const shared_timed_mutex&) = delete;
+    shared_timed_mutex& operator=(const shared_timed_mutex&) = delete;
+
+    // Exclusive ownership
+
+    void
+    lock()
+    {
+      int __ret = pthread_rwlock_wrlock(&_M_rwlock);
+      if (__ret == EDEADLK)
+	__throw_system_error(int(errc::resource_deadlock_would_occur));
+      // Errors not handled: EINVAL
+      _GLIBCXX_DEBUG_ASSERT(__ret == 0);
+    }
+
+    bool
+    try_lock()
+    {
+      int __ret = pthread_rwlock_trywrlock(&_M_rwlock);
+      if (__ret == EBUSY) return false;
+      // Errors not handled: EINVAL
+      _GLIBCXX_DEBUG_ASSERT(__ret == 0);
+      return true;
+    }
+
+    template<typename _Rep, typename _Period>
+      bool
+      try_lock_for(const chrono::duration<_Rep, _Period>& __rel_time)
+      {
+	return try_lock_until(__clock_t::now() + __rel_time);
+      }
+
+    template<typename _Duration>
+      bool
+      try_lock_until(const chrono::time_point<__clock_t, _Duration>& __atime)
+      {
+	auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
+	auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
+
+	__gthread_time_t __ts =
+	  {
+	    static_cast<std::time_t>(__s.time_since_epoch().count()),
+	    static_cast<long>(__ns.count())
+	  };
+
+	int __ret = pthread_rwlock_timedwrlock(&_M_rwlock, &__ts);
+	// On self-deadlock, we just fail to acquire the lock.  Technically,
+	// the program violated the precondition.
+	if (__ret == ETIMEDOUT || __ret == EDEADLK)
+	  return false;
+	// Errors not handled: EINVAL
+	_GLIBCXX_DEBUG_ASSERT(__ret == 0);
+	return true;
+      }
+
+    template<typename _Clock, typename _Duration>
+      bool
+      try_lock_until(const chrono::time_point<_Clock, _Duration>& __abs_time)
+      {
+	// DR 887 - Sync unknown clock to known clock.
+	const typename _Clock::time_point __c_entry = _Clock::now();
+	const __clock_t::time_point __s_entry = __clock_t::now();
+	const auto __delta = __abs_time - __c_entry;
+	const auto __s_atime = __s_entry + __delta;
+	return try_lock_until(__s_atime);
+      }
+
+    void
+    unlock()
+    {
+      int __ret __attribute((unused)) = pthread_rwlock_unlock(&_M_rwlock);
+      // Errors not handled: EPERM, EBUSY, EINVAL
+      _GLIBCXX_DEBUG_ASSERT(__ret == 0);
+    }
+
+    // Shared ownership
+
+    void
+    lock_shared()
+    {
+      int __ret = pthread_rwlock_rdlock(&_M_rwlock);
+      if (__ret == EDEADLK)
+	__throw_system_error(int(errc::resource_deadlock_would_occur));
+      if (__ret == EAGAIN)
+	// Maximum number of read locks has been exceeded.
+	__throw_system_error(int(errc::device_or_resource_busy));
+      // Errors not handled: EINVAL
+      _GLIBCXX_DEBUG_ASSERT(__ret == 0);
+    }
+
+    bool
+    try_lock_shared()
+    {
+      int __ret = pthread_rwlock_tryrdlock(&_M_rwlock);
+      // If the maximum number of read locks has been exceeded, we just fail
+      // to acquire the lock.  Unlike for lock(), we are not allowed to throw
+      // an exception.
+      if (__ret == EBUSY || __ret == EAGAIN) return false;
+      // Errors not handled: EINVAL
+      _GLIBCXX_DEBUG_ASSERT(__ret == 0);
+      return true;
+    }
+
+    template<typename _Rep, typename _Period>
+      bool
+      try_lock_shared_for(const chrono::duration<_Rep, _Period>& __rel_time)
+      {
+	return try_lock_shared_until(__clock_t::now() + __rel_time);
+      }
+
+    template<typename _Duration>
+      bool
+      try_lock_shared_until(const chrono::time_point<__clock_t,
+			    _Duration>& __atime)
+      {
+	auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
+	auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
+
+	__gthread_time_t __ts =
+	  {
+	    static_cast<std::time_t>(__s.time_since_epoch().count()),
+	    static_cast<long>(__ns.count())
+	  };
+
+	int __ret = pthread_rwlock_timedrdlock(&_M_rwlock, &__ts);
+	// If the maximum number of read locks has been exceeded, or we would
+	// deadlock, we just fail to acquire the lock.  Unlike for lock(),
+	// we are not allowed to throw an exception.
+	if (__ret == ETIMEDOUT || __ret == EAGAIN || __ret == EDEADLK)
+	  return false;
+	// Errors not handled: EINVAL
+	_GLIBCXX_DEBUG_ASSERT(__ret == 0);
+	return true;
+      }
+
+    template<typename _Clock, typename _Duration>
+      bool
+      try_lock_shared_until(const chrono::time_point<_Clock,
+			    _Duration>& __abs_time)
+      {
+	// DR 887 - Sync unknown clock to known clock.
+	const typename _Clock::time_point __c_entry = _Clock::now();
+	const __clock_t::time_point __s_entry = __clock_t::now();
+	const auto __delta = __abs_time - __c_entry;
+	const auto __s_atime = __s_entry + __delta;
+	return try_lock_shared_until(__s_atime);
+      }
+
+    void
+    unlock_shared()
+    {
+      unlock();
+    }
+
+#else // defined(__GTHREADS_CXX0X)
+
 #if _GTHREAD_USE_MUTEX_TIMEDLOCK
     struct _Mutex : mutex, __timed_mutex_impl<_Mutex>
     {
@@ -252,6 +434,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_gate1.notify_one();
 	}
     }
+#endif // !defined(__GTHREADS_CXX0X)
   };
 #endif // _GLIBCXX_HAS_GTHREADS
 

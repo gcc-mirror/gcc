@@ -5,9 +5,9 @@ foo (int x)
 {
   bad1:
   #pragma omp target teams
-    goto bad1;			/* { dg-error "invalid branch" } */
+    goto bad1; // { dg-error "invalid branch to/from OpenMP structured block" }
 
-  goto bad2;			/* { dg-error "invalid entry" } */
+  goto bad2; // { dg-error "invalid entry to OpenMP structured block" }
   #pragma omp target teams
     {
       bad2: ;
@@ -21,7 +21,7 @@ foo (int x)
 	{ ok1: break; }
     }
 
-  switch (x)			/* { dg-error "invalid entry" } */
+  switch (x) // { dg-error "invalid entry to OpenMP structured block" }
   {
   #pragma omp target teams
     { case 0:; }
@@ -34,9 +34,9 @@ bar (int x)
   bad1:
   #pragma omp target
   #pragma omp teams
-    goto bad1;			/* { dg-error "invalid branch" } */
+    goto bad1; // { dg-error "invalid branch to/from OpenMP structured block" }
 
-  goto bad2;			/* { dg-error "invalid entry" } */
+  goto bad2; // { dg-error "invalid entry to OpenMP structured block" }
   #pragma omp target
   #pragma omp teams
     {
@@ -52,7 +52,7 @@ bar (int x)
 	{ ok1: break; }
     }
 
-  switch (x)			/* { dg-error "invalid entry" } */
+  switch (x) // { dg-error "invalid entry to OpenMP structured block" }
   {
   #pragma omp target
   #pragma omp teams

@@ -733,7 +733,7 @@ extern unsigned char rs6000_recip_bits[];
 
 #define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)	\
   if (GET_MODE_CLASS (MODE) == MODE_INT		\
-      && GET_MODE_SIZE (MODE) < UNITS_PER_WORD) \
+      && GET_MODE_SIZE (MODE) < (TARGET_32BIT ? 4 : 8)) \
     (MODE) = TARGET_32BIT ? SImode : DImode;
 
 /* Define this if most significant bit is lowest numbered

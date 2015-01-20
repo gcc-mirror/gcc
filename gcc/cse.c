@@ -42,6 +42,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "recog.h"
 #include "symtab.h"
+#include "statistics.h"
+#include "double-int.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "alias.h"
+#include "wide-int.h"
+#include "inchash.h"
+#include "tree.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
 #include "expr.h"
 #include "diagnostic-core.h"
 #include "toplev.h"
@@ -3093,8 +3108,10 @@ fold_rtx (rtx x, rtx_insn *insn)
   int changed = 0;
 
   /* Operands of X.  */
-  rtx folded_arg0;
-  rtx folded_arg1;
+  /* Workaround -Wmaybe-uninitialized false positive during
+     profiledbootstrap by initializing them.  */
+  rtx folded_arg0 = NULL_RTX;
+  rtx folded_arg1 = NULL_RTX;
 
   /* Constant equivalents of first three operands of X;
      0 when no such equivalent is known.  */

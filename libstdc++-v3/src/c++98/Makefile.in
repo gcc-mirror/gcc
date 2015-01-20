@@ -764,6 +764,16 @@ vpath % $(top_srcdir)/src/c++98
 @ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
 @ENABLE_DUAL_ABI_TRUE@numeric_members_cow.o: numeric_members_cow.cc
 @ENABLE_DUAL_ABI_TRUE@	$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
+
+# XXX TODO move locale_init.cc and localename.cc to src/c++11
+locale_init.lo: locale_init.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+locale_init.o: locale_init.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+localename.lo: localename.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+localename.o: localename.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
 strstream.lo: strstream.cc
 	$(LTCXXCOMPILE) -I$(GLIBCXX_INCLUDE_DIR)/backward -Wno-deprecated -c $<
 strstream.o: strstream.cc

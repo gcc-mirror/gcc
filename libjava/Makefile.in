@@ -12455,7 +12455,7 @@ install-exec-hook: install-binPROGRAMS install-toolexeclibLTLIBRARIES \
 @BUILD_ECJ1_TRUE@	mv $(DESTDIR)$(libexecsubdir)/`echo ecjx | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` $(DESTDIR)$(libexecsubdir)/ecj1$(host_exeext)
 install-data-local:
 	$(PRE_INSTALL)
-	@pc_version=`echo $(GCJVERSION) | sed -e 's/[.][^.]*$$//'`; \
+	@pc_version=`echo $(GCJVERSION) | sed -e 's/[.][^.]*[.][^.]*$$//'`; \
 	file="libgcj-$${pc_version}.pc"; \
 	$(mkinstalldirs) $(DESTDIR)$(pkgconfigdir); \
 	echo "  $(INSTALL_DATA) libgcj.pc $(DESTDIR)$(pkgconfigdir)/$$file"; \

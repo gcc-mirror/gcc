@@ -181,7 +181,8 @@ struct set_of_reg
    'prev_nonnote_insn_bb'.  When the insn is found, try to extract the rtx
    of the reg set.  */
 template <typename F> inline set_of_reg
-sh_find_set_of_reg (rtx reg, rtx_insn* insn, F stepfunc)
+sh_find_set_of_reg (rtx reg, rtx_insn* insn, F stepfunc,
+		    bool ignore_reg_reg_copies = false)
 {
   set_of_reg result;
   result.insn = insn;
@@ -206,6 +207,19 @@ sh_find_set_of_reg (rtx reg, rtx_insn* insn, F stepfunc)
 	    return result;
 
 	  result.set_src = XEXP (result.set_rtx, 1);
+
+	  if (ignore_reg_reg_copies && REG_P (result.set_src))
+	    {
+	      reg = result.set_src;
+	      continue;
+	    }
+	  if (ignore_reg_reg_copies && SUBREG_P (result.set_src)
+	      && REG_P (SUBREG_REG (result.set_src)))
+	    {
+	      reg = SUBREG_REG (result.set_src);
+	      continue;
+	    }
+
 	  return result;
 	}
     }
@@ -213,10 +227,50 @@ sh_find_set_of_reg (rtx reg, rtx_insn* insn, F stepfunc)
   return result;
 }
 
+/* Result value of sh_find_extending_set_of_reg.  */
+struct sh_extending_set_of_reg : public set_of_reg
+{
+  /* The mode the set is extending from (QImode or HImode), or VOIDmode if
+     this is not a zero/sign extending set.  */
+  machine_mode from_mode;
+
+  /* ZERO_EXTEND, SIGN_EXTEND or UNKNOWN.  */
+  rtx_code ext_code;
+
+  sh_extending_set_of_reg (rtx_insn* i)
+  {
+    insn = i;
+    set_rtx = NULL;
+    set_src = NULL;
+    from_mode = VOIDmode;
+    ext_code = UNKNOWN;
+  }
+
+  sh_extending_set_of_reg (const set_of_reg& rhs)
+  {
+    *((set_of_reg*)this) = rhs;
+    from_mode = VOIDmode;
+    ext_code = UNKNOWN;
+  }
+
+  /* Returns the reg rtx of the sign or zero extending result, that can be
+     safely used at the specified insn in SImode.  If the set source is an
+     implicitly sign extending mem load, the mem load is converted into an
+     explicitly sign extending mem load.  */
+  rtx use_as_extended_reg (rtx_insn* use_at_insn) const;
+};
+
+extern sh_extending_set_of_reg sh_find_extending_set_of_reg (rtx reg,
+							     rtx_insn* insn);
+
 extern bool sh_is_logical_t_store_expr (rtx op, rtx_insn* insn);
 extern rtx sh_try_omit_signzero_extend (rtx extended_op, rtx_insn* insn);
 extern bool sh_split_movrt_negc_to_movt_xor (rtx_insn* curr_insn,
 					     rtx operands[]);
+extern void sh_split_tst_subregs (rtx_insn* curr_insn,
+				  machine_mode subreg_mode, int subreg_offset,
+				  rtx operands[]);
+extern void sh_remove_reg_dead_or_unused_notes (rtx_insn* i, int regno);
 #endif /* RTX_CODE */
 
 extern void sh_cpu_cpp_builtins (cpp_reader* pfile);

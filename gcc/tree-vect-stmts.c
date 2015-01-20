@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "predict.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "dominance.h"
 #include "cfg.h"
@@ -64,13 +63,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-ssa-loop.h"
 #include "tree-scalar-evolution.h"
+#include "hashtab.h"
+#include "rtl.h"
+#include "flags.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
 #include "expr.h"
 #include "recog.h"		/* FIXME: for insn_data */
 #include "insn-codes.h"
 #include "optabs.h"
 #include "diagnostic-core.h"
 #include "tree-vectorizer.h"
-#include "dumpfile.h"
 #include "hash-map.h"
 #include "plugin-api.h"
 #include "ipa-ref.h"
@@ -5789,6 +5801,20 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "cannot perform implicit CSE when performing "
 			     "group loads with negative dependence distance\n");
+	  return false;
+	}
+
+      /* Similarly when the stmt is a load that is both part of a SLP
+         instance and a loop vectorized stmt via the same-dr mechanism
+	 we have to give up.  */
+      if (STMT_VINFO_GROUP_SAME_DR_STMT (stmt_info)
+	  && (STMT_SLP_TYPE (stmt_info)
+	      != STMT_SLP_TYPE (vinfo_for_stmt
+				 (STMT_VINFO_GROUP_SAME_DR_STMT (stmt_info)))))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "conflicting SLP types for CSEd load\n");
 	  return false;
 	}
     }

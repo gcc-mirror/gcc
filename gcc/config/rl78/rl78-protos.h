@@ -45,3 +45,11 @@ bool		rl78_virt_insns_ok (void);
 
 bool		rl78_es_addr (rtx);
 rtx		rl78_es_base (rtx);
+
+bool		rl78_flags_already_set (rtx, rtx);
+void		rl78_output_symbol_ref (FILE *, rtx);
+void		rl78_output_labelref (FILE *, const char *);
+int		rl78_saddr_p (rtx x);
+int		rl78_sfr_p (rtx x);
+void		rl78_output_aligned_common (FILE *, tree, const char *,
+					    int, int, int);

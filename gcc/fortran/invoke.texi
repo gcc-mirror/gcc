@@ -120,7 +120,7 @@ by type.  Explanations are in the following sections.
 -ffixed-line-length-none -ffree-form -ffree-line-length-@var{n} @gol
 -ffree-line-length-none -fimplicit-none -finteger-4-integer-8 @gol
 -fmax-identifier-length -fmodule-private -fno-fixed-form -fno-range-check @gol
--fopenmp -freal-4-real-10 -freal-4-real-16 -freal-4-real-8 @gol
+-fopenacc -fopenmp -freal-4-real-10 -freal-4-real-16 -freal-4-real-8 @gol
 -freal-8-real-10 -freal-8-real-16 -freal-8-real-4 -std=@var{std}
 }
 
@@ -301,6 +301,20 @@ Specify that no implicit typing is allowed, unless overridden by explicit
 @opindex @code{fcray-pointer}
 Enable the Cray pointer extension, which provides C-like pointer
 functionality.
+
+@item -fopenacc
+@opindex @code{fopenacc}
+@cindex OpenACC
+Enable the OpenACC extensions.  This includes OpenACC @code{!$acc}
+directives in free form and @code{c$acc}, @code{*$acc} and
+@code{!$acc} directives in fixed form, @code{!$} conditional
+compilation sentinels in free form and @code{c$}, @code{*$} and
+@code{!$} sentinels in fixed form, and when linking arranges for the
+OpenACC runtime library to be linked in.
+
+Note that this is an experimental feature, incomplete, and subject to
+change in future versions of GCC.  See
+@w{@uref{https://gcc.gnu.org/wiki/OpenACC}} for more information.
 
 @item -fopenmp
 @opindex @code{fopenmp}

@@ -198,7 +198,7 @@ DEFPARAM(PARAM_IPCP_UNIT_GROWTH,
 DEFPARAM(PARAM_EARLY_INLINING_INSNS,
 	 "early-inlining-insns",
 	 "Maximal estimated growth of function body caused by early inlining of single call",
-	 11, 0, 0)
+	 14, 0, 0)
 DEFPARAM(PARAM_LARGE_STACK_FRAME,
 	 "large-stack-frame",
 	 "The size of stack frame to be considered large",
@@ -667,6 +667,11 @@ DEFPARAM (PARAM_SCHED_MEM_TRUE_DEP_COST,
 	  "sched-mem-true-dep-cost",
 	  "Minimal distance between possibly conflicting store and load",
 	  1, 0, 0)
+
+DEFPARAM (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH,
+	  "sched-autopref-queue-depth",
+	  "Hardware autoprefetcher scheduler model control flag.  Number of lookahead cycles the model looks into; at '0' only enable instruction sorting heuristic.  Disabled by default.",
+	  -1, 0, 0)
 
 DEFPARAM(PARAM_MAX_LAST_VALUE_RTL,
 	 "max-last-value-rtl",

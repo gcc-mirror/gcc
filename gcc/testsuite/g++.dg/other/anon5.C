@@ -3,6 +3,8 @@
 // { dg-options "-g" }
 // Ignore additional message on powerpc-ibm-aix
 // { dg-prune-output "obtain more information" } */
+// Ignore additional messages on Linux/x86 with PIE
+// { dg-prune-output "Bad value" } */
 
 namespace {
   struct c

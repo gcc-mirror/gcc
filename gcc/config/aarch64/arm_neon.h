@@ -27,6 +27,10 @@
 #ifndef _AARCH64_NEON_H_
 #define _AARCH64_NEON_H_
 
+#ifndef __ARM_NEON
+#error You must enable AdvancedSIMD instructions to use arm_neon.h
+#else
+
 #include <stdint.h>
 
 #define __AARCH64_UINT64_C(__C) ((uint64_t) __C)
@@ -25207,5 +25211,7 @@ __INTERLEAVE_LIST (zip)
 #undef __aarch64_vdupq_laneq_u16
 #undef __aarch64_vdupq_laneq_u32
 #undef __aarch64_vdupq_laneq_u64
+
+#endif
 
 #endif

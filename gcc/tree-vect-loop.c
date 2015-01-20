@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "predict.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "dominance.h"
 #include "cfg.h"
@@ -63,6 +62,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop-niter.h"
 #include "tree-pass.h"
 #include "cfgloop.h"
+#include "hashtab.h"
+#include "rtl.h"
+#include "flags.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
 #include "expr.h"
 #include "recog.h"
 #include "insn-codes.h"
@@ -4580,7 +4593,10 @@ vect_finalize_reduction:
                            && !STMT_VINFO_LIVE_P (exit_phi_vinfo))
                           || double_reduc);
 
-              STMT_VINFO_VEC_STMT (exit_phi_vinfo) = epilog_stmt;
+	      if (double_reduc)
+		STMT_VINFO_VEC_STMT (exit_phi_vinfo) = inner_phi;
+	      else
+		STMT_VINFO_VEC_STMT (exit_phi_vinfo) = epilog_stmt;
               if (!double_reduc
                   || STMT_VINFO_DEF_TYPE (exit_phi_vinfo)
                       != vect_double_reduction_def)

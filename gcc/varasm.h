@@ -68,4 +68,8 @@ extern bool constructor_static_from_elts_p (const_tree);
 
 extern void init_varasm_status (void);
 
+extern rtx assemble_static_space (unsigned HOST_WIDE_INT);
+
+extern rtx assemble_trampoline_template (void);
+
 #endif  // GCC_VARASM_H

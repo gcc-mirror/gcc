@@ -146,10 +146,20 @@ along with GCC; see the file COPYING3.  If not see
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, BT_LAST, BT_LAST, false, false, \
 	       false, ATTR_LAST, false, false)
 
-/* Builtin used by the implementation of GNU OpenMP.  None of these are
-   actually implemented in the compiler; they're all in libgomp.  */
+/* Builtin used by the implementation of OpenACC and OpenMP.  Few of these are
+   actually implemented in the compiler; most are in libgomp.  */
 /* These builtins also need to be enabled in offloading compilers invoked from
    mkoffload; for that purpose, we're checking the -foffload-abi flag here.  */
+#undef DEF_GOACC_BUILTIN
+#define DEF_GOACC_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
+  DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
+	       false, true, true, ATTRS, false, \
+	       (flag_openacc \
+		|| flag_offload_abi != OFFLOAD_ABI_UNSET))
+#undef DEF_GOACC_BUILTIN_COMPILER
+#define DEF_GOACC_BUILTIN_COMPILER(ENUM, NAME, TYPE, ATTRS) \
+  DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
+	       flag_openacc, true, true, ATTRS, false, true)
 #undef DEF_GOMP_BUILTIN
 #define DEF_GOMP_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
   DEF_BUILTIN (ENUM, "__builtin_" NAME, BUILT_IN_NORMAL, TYPE, TYPE,    \
@@ -897,7 +907,7 @@ DEF_GCC_BUILTIN (BUILT_IN_LINE, "LINE", BT_FN_INT, ATTR_NOTHROW_LEAF_LIST)
 /* Synchronization Primitives.  */
 #include "sync-builtins.def"
 
-/* OpenMP builtins.  */
+/* Offloading and Multi Processing builtins.  */
 #include "omp-builtins.def"
 
 /* Cilk keywords builtins.  */

@@ -841,6 +841,7 @@ add_delay_dependencies (rtx_insn *insn)
 /* Forward declarations.  */
 
 static int priority (rtx_insn *);
+static int autopref_rank_for_schedule (const rtx_insn *, const rtx_insn *);
 static int rank_for_schedule (const void *, const void *);
 static void swap_sort (rtx_insn **, int);
 static void queue_insn (rtx_insn *, int, const char *);
@@ -1184,6 +1185,12 @@ update_insn_after_change (rtx_insn *insn)
   INSN_COST (insn) = -1;
   /* Invalidate INSN_TICK, so it'll be recalculated.  */
   INSN_TICK (insn) = INVALID_TICK;
+
+  /* Invalidate autoprefetch data entry.  */
+  INSN_AUTOPREF_MULTIPASS_DATA (insn)[0].status
+    = AUTOPREF_MULTIPASS_DATA_UNINITIALIZED;
+  INSN_AUTOPREF_MULTIPASS_DATA (insn)[1].status
+    = AUTOPREF_MULTIPASS_DATA_UNINITIALIZED;
 }
 
 
@@ -2723,6 +2730,13 @@ rank_for_schedule (const void *x, const void *y)
 
   if (flag_sched_critical_path_heuristic && priority_val)
     return rfs_result (RFS_PRIORITY, priority_val, tmp, tmp2);
+
+  if (PARAM_VALUE (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH) >= 0)
+    {
+      int autopref = autopref_rank_for_schedule (tmp, tmp2);
+      if (autopref != 0)
+	return autopref;
+    }
 
   /* Prefer speculative insn with greater dependencies weakness.  */
   if (flag_sched_spec_insn_heuristic && spec_info)
@@ -5498,6 +5512,241 @@ insn_finishes_cycle_p (rtx_insn *insn)
     return true;
 
   return false;
+}
+
+/* Functions to model cache auto-prefetcher.
+
+   Some of the CPUs have cache auto-prefetcher, which /seems/ to initiate
+   memory prefetches if it sees instructions with consequitive memory accesses
+   in the instruction stream.  Details of such hardware units are not published,
+   so we can only guess what exactly is going on there.
+   In the scheduler, we model abstract auto-prefetcher.  If there are memory
+   insns in the ready list (or the queue) that have same memory base, but
+   different offsets, then we delay the insns with larger offsets until insns
+   with smaller offsets get scheduled.  If PARAM_SCHED_AUTOPREF_QUEUE_DEPTH
+   is "1", then we look at the ready list; if it is N>1, then we also look
+   through N-1 queue entries.
+   If the param is N>=0, then rank_for_schedule will consider auto-prefetching
+   among its heuristics.
+   Param value of "-1" disables modelling of the auto-prefetcher.  */
+
+/* Initialize autoprefetcher model data for INSN.  */
+static void
+autopref_multipass_init (const rtx_insn *insn, int write)
+{
+  autopref_multipass_data_t data = &INSN_AUTOPREF_MULTIPASS_DATA (insn)[write];
+
+  gcc_assert (data->status == AUTOPREF_MULTIPASS_DATA_UNINITIALIZED);
+  data->base = NULL_RTX;
+  data->offset = 0;
+  /* Set insn entry initialized, but not relevant for auto-prefetcher.  */
+  data->status = AUTOPREF_MULTIPASS_DATA_IRRELEVANT;
+
+  rtx set = single_set (insn);
+  if (set == NULL_RTX)
+    return;
+
+  rtx mem = write ? SET_DEST (set) : SET_SRC (set);
+  if (!MEM_P (mem))
+    return;
+
+  struct address_info info;
+  decompose_mem_address (&info, mem);
+
+  /* TODO: Currently only (base+const) addressing is supported.  */
+  if (info.base == NULL || !REG_P (*info.base)
+      || (info.disp != NULL && !CONST_INT_P (*info.disp)))
+    return;
+
+  /* This insn is relevant for auto-prefetcher.  */
+  data->base = *info.base;
+  data->offset = info.disp ? INTVAL (*info.disp) : 0;
+  data->status = AUTOPREF_MULTIPASS_DATA_NORMAL;
+}
+
+/* Helper function for rank_for_schedule sorting.  */
+static int
+autopref_rank_for_schedule (const rtx_insn *insn1, const rtx_insn *insn2)
+{
+  for (int write = 0; write < 2; ++write)
+    {
+      autopref_multipass_data_t data1
+	= &INSN_AUTOPREF_MULTIPASS_DATA (insn1)[write];
+      autopref_multipass_data_t data2
+	= &INSN_AUTOPREF_MULTIPASS_DATA (insn2)[write];
+
+      if (data1->status == AUTOPREF_MULTIPASS_DATA_UNINITIALIZED)
+	autopref_multipass_init (insn1, write);
+      if (data1->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT)
+	continue;
+
+      if (data2->status == AUTOPREF_MULTIPASS_DATA_UNINITIALIZED)
+	autopref_multipass_init (insn2, write);
+      if (data2->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT)
+	continue;
+
+      if (!rtx_equal_p (data1->base, data2->base))
+	continue;
+
+      return data1->offset - data2->offset;
+    }
+
+  return 0;
+}
+
+/* True if header of debug dump was printed.  */
+static bool autopref_multipass_dfa_lookahead_guard_started_dump_p;
+
+/* Helper for autopref_multipass_dfa_lookahead_guard.
+   Return "1" if INSN1 should be delayed in favor of INSN2.  */
+static int
+autopref_multipass_dfa_lookahead_guard_1 (const rtx_insn *insn1,
+					  const rtx_insn *insn2, int write)
+{
+  autopref_multipass_data_t data1
+    = &INSN_AUTOPREF_MULTIPASS_DATA (insn1)[write];
+  autopref_multipass_data_t data2
+    = &INSN_AUTOPREF_MULTIPASS_DATA (insn2)[write];
+
+  if (data2->status == AUTOPREF_MULTIPASS_DATA_UNINITIALIZED)
+    autopref_multipass_init (insn2, write);
+  if (data2->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT)
+    return 0;
+
+  if (rtx_equal_p (data1->base, data2->base)
+      && data1->offset > data2->offset)
+    {
+      if (sched_verbose >= 2)
+	{
+          if (!autopref_multipass_dfa_lookahead_guard_started_dump_p)
+	    {
+	      fprintf (sched_dump,
+		       ";;\t\tnot trying in max_issue due to autoprefetch "
+		       "model: ");
+	      autopref_multipass_dfa_lookahead_guard_started_dump_p = true;
+	    }
+
+	  fprintf (sched_dump, " %d(%d)", INSN_UID (insn1), INSN_UID (insn2));
+	}
+
+      return 1;
+    }
+
+  return 0;
+}
+
+/* General note:
+
+   We could have also hooked autoprefetcher model into
+   first_cycle_multipass_backtrack / first_cycle_multipass_issue hooks
+   to enable intelligent selection of "[r1+0]=r2; [r1+4]=r3" on the same cycle
+   (e.g., once "[r1+0]=r2" is issued in max_issue(), "[r1+4]=r3" gets
+   unblocked).  We don't bother about this yet because target of interest
+   (ARM Cortex-A15) can issue only 1 memory operation per cycle.  */
+
+/* Implementation of first_cycle_multipass_dfa_lookahead_guard hook.
+   Return "1" if INSN1 should not be considered in max_issue due to
+   auto-prefetcher considerations.  */
+int
+autopref_multipass_dfa_lookahead_guard (rtx_insn *insn1, int ready_index)
+{
+  int r = 0;
+
+  if (PARAM_VALUE (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH) <= 0)
+    return 0;
+
+  if (sched_verbose >= 2 && ready_index == 0)
+    autopref_multipass_dfa_lookahead_guard_started_dump_p = false;
+
+  for (int write = 0; write < 2; ++write)
+    {
+      autopref_multipass_data_t data1
+	= &INSN_AUTOPREF_MULTIPASS_DATA (insn1)[write];
+
+      if (data1->status == AUTOPREF_MULTIPASS_DATA_UNINITIALIZED)
+	autopref_multipass_init (insn1, write);
+      if (data1->status == AUTOPREF_MULTIPASS_DATA_IRRELEVANT)
+	continue;
+
+      if (ready_index == 0
+	  && data1->status == AUTOPREF_MULTIPASS_DATA_DONT_DELAY)
+	/* We allow only a single delay on priviledged instructions.
+	   Doing otherwise would cause infinite loop.  */
+	{
+	  if (sched_verbose >= 2)
+	    {
+	      if (!autopref_multipass_dfa_lookahead_guard_started_dump_p)
+		{
+		  fprintf (sched_dump,
+			   ";;\t\tnot trying in max_issue due to autoprefetch "
+			   "model: ");
+		  autopref_multipass_dfa_lookahead_guard_started_dump_p = true;
+		}
+
+	      fprintf (sched_dump, " *%d*", INSN_UID (insn1));
+	    }
+	  continue;
+	}
+
+      for (int i2 = 0; i2 < ready.n_ready; ++i2)
+	{
+	  rtx_insn *insn2 = get_ready_element (i2);
+	  if (insn1 == insn2)
+	    continue;
+	  r = autopref_multipass_dfa_lookahead_guard_1 (insn1, insn2, write);
+	  if (r)
+	    {
+	      if (ready_index == 0)
+		{
+		  r = -1;
+		  data1->status = AUTOPREF_MULTIPASS_DATA_DONT_DELAY;
+		}
+	      goto finish;
+	    }
+	}
+
+      if (PARAM_VALUE (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH) == 1)
+	continue;
+
+      /* Everything from the current queue slot should have been moved to
+	 the ready list.  */
+      gcc_assert (insn_queue[NEXT_Q_AFTER (q_ptr, 0)] == NULL_RTX);
+
+      int n_stalls = PARAM_VALUE (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH) - 1;
+      if (n_stalls > max_insn_queue_index)
+	n_stalls = max_insn_queue_index;
+
+      for (int stalls = 1; stalls <= n_stalls; ++stalls)
+	{
+	  for (rtx_insn_list *link = insn_queue[NEXT_Q_AFTER (q_ptr, stalls)];
+	       link != NULL_RTX;
+	       link = link->next ())
+	    {
+	      rtx_insn *insn2 = link->insn ();
+	      r = autopref_multipass_dfa_lookahead_guard_1 (insn1, insn2,
+							    write);
+	      if (r)
+		{
+		  /* Queue INSN1 until INSN2 can issue.  */
+		  r = -stalls;
+		  if (ready_index == 0)
+		    data1->status = AUTOPREF_MULTIPASS_DATA_DONT_DELAY;
+		  goto finish;
+		}
+	    }
+	}
+    }
+
+    finish:
+  if (sched_verbose >= 2
+      && autopref_multipass_dfa_lookahead_guard_started_dump_p
+      && (ready_index == ready.n_ready - 1 || r < 0))
+    /* This does not /always/ trigger.  We don't output EOL if the last
+       insn is not recognized (INSN_CODE < 0) and lookahead_guard is not
+       called.  We can live with this.  */
+    fprintf (sched_dump, "\n");
+
+  return r;
 }
 
 /* Define type for target data used in multipass scheduling.  */
@@ -8710,6 +8959,10 @@ init_h_i_d (rtx_insn *insn)
       INSN_EXACT_TICK (insn) = INVALID_TICK;
       INTER_TICK (insn) = INVALID_TICK;
       TODO_SPEC (insn) = HARD_DEP;
+      INSN_AUTOPREF_MULTIPASS_DATA (insn)[0].status
+	= AUTOPREF_MULTIPASS_DATA_UNINITIALIZED;
+      INSN_AUTOPREF_MULTIPASS_DATA (insn)[1].status
+	= AUTOPREF_MULTIPASS_DATA_UNINITIALIZED;
     }
 }
 

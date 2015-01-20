@@ -1,7 +1,4 @@
 // { dg-options "-std=gnu++14" }
-// XFAIL pending resolution of PR libstdc++/58777
-// { dg-do compile { xfail *-*-* } }
-// { dg-excess-errors "" }
 
 // Copyright (C) 2013-2015 Free Software Foundation, Inc.
 //

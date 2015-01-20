@@ -2425,8 +2425,8 @@ build_class_member_access_expr (tree object, tree member,
 	  member_type = cp_build_qualified_type (member_type, type_quals);
 	}
 
-      result = build3 (COMPONENT_REF, member_type, object, member,
-		       NULL_TREE);
+      result = build3_loc (input_location, COMPONENT_REF, member_type,
+			   object, member, NULL_TREE);
       result = fold_if_not_in_template (result);
 
       /* Mark the expression const or volatile, as appropriate.  Even
@@ -6474,11 +6474,21 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
       base = lookup_base (TREE_TYPE (type), intype,
 			  c_cast_p ? ba_unique : ba_check,
 			  NULL, complain);
+      expr = build_address (expr);
+
+      if (flag_sanitize & SANITIZE_VPTR)
+	{
+	  tree ubsan_check
+	    = cp_ubsan_maybe_instrument_downcast (input_location, type, expr);
+	  if (ubsan_check)
+	    expr = ubsan_check;
+	}
 
       /* Convert from "B*" to "D*".  This function will check that "B"
 	 is not a virtual base of "D".  */
-      expr = build_base_path (MINUS_EXPR, build_address (expr),
-			      base, /*nonnull=*/false, complain);
+      expr = build_base_path (MINUS_EXPR, expr, base, /*nonnull=*/false,
+			      complain);
+
       /* Convert the pointer to a reference -- but then remember that
 	 there are no expressions with reference type in C++.
 
@@ -6606,7 +6616,16 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 			  NULL, complain);
       expr = build_base_path (MINUS_EXPR, expr, base, /*nonnull=*/false,
 			      complain);
-      return cp_fold_convert(type, expr);
+
+      if (flag_sanitize & SANITIZE_VPTR)
+	{
+	  tree ubsan_check
+	    = cp_ubsan_maybe_instrument_downcast (input_location, type, expr);
+	  if (ubsan_check)
+	    expr = ubsan_check;
+	}
+
+      return cp_fold_convert (type, expr);
     }
 
   if ((TYPE_PTRDATAMEM_P (type) && TYPE_PTRDATAMEM_P (intype))

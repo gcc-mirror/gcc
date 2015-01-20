@@ -79,9 +79,6 @@
 /* Define to 1 if the target supports thread-local storage. */
 #undef HAVE_TLS
 
-/* Define to 1 if the target use emutls for thread-local storage. */
-#undef USE_EMUTLS
-
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
@@ -116,6 +113,9 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
+/* Define to 1 if the NVIDIA plugin is built, 0 if not. */
+#undef PLUGIN_NVPTX
+
 /* Define if all infrastructure, needed for plugins, is supported. */
 #undef PLUGIN_SUPPORT
 
@@ -142,6 +142,9 @@
 
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
+
+/* Define to 1 if the target use emutls for thread-local storage. */
+#undef USE_EMUTLS
 
 /* Version number of package */
 #undef VERSION

@@ -139,7 +139,7 @@ can_remove_node_now_p (struct cgraph_node *node, struct cgraph_edge *e)
 
   /* When we see same comdat group, we need to be sure that all
      items can be removed.  */
-  if (!node->same_comdat_group)
+  if (!node->same_comdat_group || !node->externally_visible)
     return true;
   for (next = dyn_cast<cgraph_node *> (node->same_comdat_group);
        next != node; next = dyn_cast<cgraph_node *> (next->same_comdat_group))
@@ -310,7 +310,8 @@ inline_call (struct cgraph_edge *e, bool update_original,
       while (alias && alias != callee)
 	{
 	  if (!alias->callers
-	      && can_remove_node_now_p (alias, e))
+	      && can_remove_node_now_p (alias,
+					!e->next_caller && !e->prev_caller ? e : NULL))
 	    {
 	      next_alias = alias->get_alias_target ();
 	      alias->remove ();

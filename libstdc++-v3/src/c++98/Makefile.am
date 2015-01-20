@@ -176,6 +176,16 @@ numeric_members_cow.o: numeric_members_cow.cc
 	$(CXXCOMPILE) $(GLIBCXX_ABI_FLAGS) -fimplicit-templates -c $<
 endif
 
+# XXX TODO move locale_init.cc and localename.cc to src/c++11
+locale_init.lo: locale_init.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+locale_init.o: locale_init.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+localename.lo: localename.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+localename.o: localename.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+
 # Use special rules for the deprecated source files so that they find
 # deprecated include files.
 GLIBCXX_INCLUDE_DIR=$(glibcxx_builddir)/include

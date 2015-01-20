@@ -119,4 +119,87 @@ get_max_uid (void)
 
 extern void set_decl_incoming_rtl (tree, rtx, bool);
 
+/* Return a memory reference like MEMREF, but with its mode changed
+   to MODE and its address changed to ADDR.
+   (VOIDmode means don't change the mode.
+   NULL for ADDR means don't change the address.)  */
+extern rtx change_address (rtx, machine_mode, rtx);
+
+/* Return a memory reference like MEMREF, but with its mode changed
+   to MODE and its address offset by OFFSET bytes.  */
+#define adjust_address(MEMREF, MODE, OFFSET) \
+  adjust_address_1 (MEMREF, MODE, OFFSET, 1, 1, 0, 0)
+
+/* Likewise, but the reference is not required to be valid.  */
+#define adjust_address_nv(MEMREF, MODE, OFFSET) \
+  adjust_address_1 (MEMREF, MODE, OFFSET, 0, 1, 0, 0)
+
+/* Return a memory reference like MEMREF, but with its mode changed
+   to MODE and its address offset by OFFSET bytes.  Assume that it's
+   for a bitfield and conservatively drop the underlying object if we
+   cannot be sure to stay within its bounds.  */
+#define adjust_bitfield_address(MEMREF, MODE, OFFSET) \
+  adjust_address_1 (MEMREF, MODE, OFFSET, 1, 1, 1, 0)
+
+/* As for adjust_bitfield_address, but specify that the width of
+   BLKmode accesses is SIZE bytes.  */
+#define adjust_bitfield_address_size(MEMREF, MODE, OFFSET, SIZE) \
+  adjust_address_1 (MEMREF, MODE, OFFSET, 1, 1, 1, SIZE)
+
+/* Likewise, but the reference is not required to be valid.  */
+#define adjust_bitfield_address_nv(MEMREF, MODE, OFFSET) \
+  adjust_address_1 (MEMREF, MODE, OFFSET, 0, 1, 1, 0)
+
+/* Return a memory reference like MEMREF, but with its mode changed
+   to MODE and its address changed to ADDR, which is assumed to be
+   increased by OFFSET bytes from MEMREF.  */
+#define adjust_automodify_address(MEMREF, MODE, ADDR, OFFSET) \
+  adjust_automodify_address_1 (MEMREF, MODE, ADDR, OFFSET, 1)
+
+/* Likewise, but the reference is not required to be valid.  */
+#define adjust_automodify_address_nv(MEMREF, MODE, ADDR, OFFSET) \
+  adjust_automodify_address_1 (MEMREF, MODE, ADDR, OFFSET, 0)
+
+extern rtx adjust_address_1 (rtx, machine_mode, HOST_WIDE_INT, int, int,
+			     int, HOST_WIDE_INT);
+extern rtx adjust_automodify_address_1 (rtx, machine_mode, rtx,
+					HOST_WIDE_INT, int);
+
+/* Return a memory reference like MEMREF, but whose address is changed by
+   adding OFFSET, an RTX, to it.  POW2 is the highest power of two factor
+   known to be in OFFSET (possibly 1).  */
+extern rtx offset_address (rtx, rtx, unsigned HOST_WIDE_INT);
+
+/* Given REF, a MEM, and T, either the type of X or the expression
+   corresponding to REF, set the memory attributes.  OBJECTP is nonzero
+   if we are making a new object of this type.  */
+extern void set_mem_attributes (rtx, tree, int);
+
+/* Similar, except that BITPOS has not yet been applied to REF, so if
+   we alter MEM_OFFSET according to T then we should subtract BITPOS
+   expecting that it'll be added back in later.  */
+extern void set_mem_attributes_minus_bitpos (rtx, tree, int, HOST_WIDE_INT);
+
+/* Return OFFSET if XEXP (MEM, 0) - OFFSET is known to be ALIGN
+   bits aligned for 0 <= OFFSET < ALIGN / BITS_PER_UNIT, or
+   -1 if not known.  */
+extern int get_mem_align_offset (rtx, unsigned int);
+
+/* Return a memory reference like MEMREF, but with its mode widened to
+   MODE and adjusted by OFFSET.  */
+extern rtx widen_memory_access (rtx, machine_mode, HOST_WIDE_INT);
+
+extern void store_bit_field (rtx, unsigned HOST_WIDE_INT,
+			     unsigned HOST_WIDE_INT,
+			     unsigned HOST_WIDE_INT,
+			     unsigned HOST_WIDE_INT,
+			     machine_mode, rtx);
+extern rtx extract_bit_field (rtx, unsigned HOST_WIDE_INT,
+			      unsigned HOST_WIDE_INT, int, rtx,
+			      machine_mode, machine_mode);
+extern rtx extract_low_bits (machine_mode, machine_mode, rtx);
+extern rtx expand_mult (machine_mode, rtx, rtx, rtx, int);
+extern rtx expand_mult_highpart_adjust (machine_mode, rtx, rtx, rtx, rtx, int);
+
+
 #endif /* GCC_EMIT_RTL_H */

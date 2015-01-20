@@ -1,3 +1,151 @@
+2015-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64646
+	* include/bits/stl_algo.h (__is_permutation): Also test for reaching
+	end of the second range.
+	* testsuite/25_algorithms/is_permutation/64646.cc: New.
+
+2015-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Remove note about offsetof.
+	* doc/html/manual/status.html: Regenerate.
+
+2015-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_futex.h: Use mutex and condition_variable when
+	atomic int is not lock-free. Make member variables private.
+	* src/c++11/futex.cc: Likewise.
+
+	* src/c++11/futex.cc: Fix order of includes and preprocessor condition.
+
+2015-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64638
+	* include/bits/atomic_futex.h: Use appropriate config macros for
+	availability of std::mutex, std::condition and std::chrono.
+
+2015-01-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update C++11 status.
+	* doc/html/*: Regenerate.
+
+2015-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	DR 488
+	PR libstdc++/58357
+	* include/bits/algorithmfwd.h (rotate): Return an iterator.
+	* include/bits/stl_algo.h (rotate, __rotate): Likewise.
+	* testsuite/25_algorithms/rotate/dr488.cc: New.
+	* testsuite/25_algorithms/rotate/check_type.cc: Adjust function type.
+	* testsuite/25_algorithms/rotate/requirements/explicit_instantiation/
+	2.cc: Likewise.
+	* testsuite/25_algorithms/rotate/requirements/explicit_instantiation/
+	pod.cc: Likewise.
+
+2015-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60940
+	* include/bits/atomic_base.h: Remove atomic integral typedefs as
+	synonyms for __atomic_base<int> etc.
+	* include/std/atomic: Make atomic_int a synonym for atomic<int> and
+	likewise for all atomic integral types.
+	* testsuite/29_atomics/atomic_integral/cons/copy_list.cc: New.
+	* testsuite/29_atomics/atomic/60695.cc: Adjust dg-error line number.
+
+2015-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/56785
+	* include/std/tuple (_Tuple_impl): Remove zero-element specialization
+	and define one-element specialization.
+	* testsuite/20_util/tuple/56785.cc: New.
+
+2015-01-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/22_locale/codecvt/codecvt_utf8/requirements/1.cc:
+	Remove unused header.
+	* testsuite/22_locale/codecvt/codecvt_utf16/requirements/1.cc:
+	Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf8_utf16/requirements/1.cc:
+	Likewise.
+
+2015-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (wstring_convert, wbuffer_convert): New.
+	* include/std/locale: Include new header.
+	* include/Makefile.am: Add it.
+	* include/Makefile.in: Regenerate.
+	* testsuite/22_locale/conversions/buffer/requirements/typedefs.cc: New.
+	* testsuite/22_locale/conversions/string/1.cc: New.
+	* testsuite/22_locale/conversions/string/2.cc: New.
+	* testsuite/22_locale/conversions/string/requirements/typedefs.cc: New.
+	* testsuite/22_locale/conversions/string/requirements/typedefs-2.cc:
+	New.
+
+2015-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Export new symbols.
+	* include/Makefile.am: Add codecvt.
+	* include/Makefile.in: Regenerate.
+	* include/std/codecvt: New header.
+	* src/c++11/codecvt.cc (__codecvt_utf8_base, __codecvt_utf16_base,
+	__codecvt_utf8_utf16_base): Define specializations.
+	* testsuite/22_locale/codecvt/codecvt_utf8/requirements/1.cc: New.
+	* testsuite/22_locale/codecvt/codecvt_utf16/requirements/1.cc: New.
+	* testsuite/22_locale/codecvt/codecvt_utf8_utf16/requirements/1.cc:
+	New.
+
+2015-01-16  Torvald Riegel  <triegel@redhat.com>
+
+	* src/c++11/futex.cc: New file.
+	* include/bits/atomic_futex.h: New file.
+	* include/std/future (__future_base::_State_baseV2): Use
+	atomic_futex_unsigned instead of mutex+condvar.
+	* src/c++11/futex.cc: Likewise.
+	* include/Makefile.am: Add atomic_futex.h.
+	* include/Makefile.in: Likewise.
+	* src/c++11/Makefile.am: Add futex.cc.
+	* src/c++11/Makefile.in: Likewise.
+
+2015-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4: Fix typo in comment.
+	* configure: Regenerate.
+	* include/bits/codecvt.h (codecvt<char16_t, char, mbstate_t>,
+	codecvt<char16_t, char, mbstate_t>): Declare specializations.
+	* include/bits/locale_facets.h: Reserve space for new specializations.
+	* src/c++11/Makefile.am: Add codecvt.cc.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/codecvt.cc: New.
+	* src/c++98/Makefile.am: Compile locale_init.cc and localename.cc
+	with -std=gnu++11.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/c++98/locale_init.cc: Initialize new codecvt specializations.
+	* src/c++98/localename.cc: Likewise.
+	* config/abi/pre/gnu.ver: Exports for new codecvt specializations.
+	* testsuite/22_locale/codecvt/utf8.cc: New.
+	* testsuite/22_locale/locale/cons/unicode.cc: Check that new
+	specializations are installed in locale objects.
+
+2015-01-16  Torvald Riegel  <triegel@redhat.com>
+
+	* include/std/shared_mutex (shared_timed_mutex): Add POSIX-based
+	implementation.
+
+2015-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64571
+	* config/abi/pre/gnu.ver: Export fstream functions using new string.
+
+2015-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64560
+	* src/c++11/cxx11-shim_facets.cc (locale::facet::_M_sso_shim): Check
+	for RTTI support.
+
+	PR libstdc++/64553
+	* src/c++11/cxx11-shim_facets.cc: Check for wchar_t support.
+
 2015-01-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* doc/xml/manual/parallel_mode.xml: Update for libgomp being

@@ -51,6 +51,20 @@ if [info exists ADDITIONAL_TORTURE_OPTIONS] {
 	[concat $C_TORTURE_OPTIONS $ADDITIONAL_TORTURE_OPTIONS]
 }
 
+global GCC_UNDER_TEST
+if ![info exists GCC_UNDER_TEST] {
+    set GCC_UNDER_TEST "[find_gcc]"
+}
+
+global orig_environment_saved
+
+# This file may be sourced, so don't override environment settings
+# that have been previously setup.
+if { $orig_environment_saved == 0 } {
+    append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
+    set_ld_library_path_env_vars
+}
+
 set LTO_TORTURE_OPTIONS ""
 if [check_effective_target_lto] {
     # When having plugin test both slim and fat LTO and plugin/nonplugin
@@ -66,20 +80,6 @@ if [check_effective_target_lto] {
 	  { -O2 -flto }
       ]
     }
-}
-
-global GCC_UNDER_TEST
-if ![info exists GCC_UNDER_TEST] {
-    set GCC_UNDER_TEST "[find_gcc]"
-}
-
-global orig_environment_saved
-
-# This file may be sourced, so don't override environment settings
-# that have been previously setup.
-if { $orig_environment_saved == 0 } {
-    append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
-    set_ld_library_path_env_vars
 }
 
 #

@@ -1,8 +1,8 @@
 /* { dg-do run } */
-/* { dg-options "-O0 -fipa-icf -fdump-ipa-icf-details" } */
+/* { dg-options "-O1 -fipa-icf -fdump-ipa-icf-details" } */
 
 int
-__attribute__((optimize("O0"), noinline, noclone))
+__attribute__((optimize("Os"), noinline, noclone))
 foo(int a)
 {
   return a * a;

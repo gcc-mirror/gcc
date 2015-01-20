@@ -40,6 +40,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "flags.h"
 #include "insn-config.h"
+#include "hashtab.h"
+#include "hard-reg-set.h"
+#include "function.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
 #include "expr.h"
 #include "insn-codes.h"
 #include "optabs.h"
@@ -49,7 +62,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "df.h"
 #include "target.h"
-#include "expmed.h"
 
 struct target_expmed default_target_expmed;
 #if SWITCHABLE_TARGET
@@ -543,6 +555,21 @@ store_bit_field_using_insv (const extraction_insn *insv, rtx op0,
       emit_move_insn (tem, xop0);
       xop0 = tem;
       copy_back = true;
+    }
+
+  /* There are similar overflow check at the start of store_bit_field_1,
+     but that only check the situation where the field lies completely
+     outside the register, while there do have situation where the field
+     lies partialy in the register, we need to adjust bitsize for this
+     partial overflow situation.  Without this fix, pr48335-2.c on big-endian
+     will broken on those arch support bit insert instruction, like arm, aarch64
+     etc.  */
+  if (bitsize + bitnum > unit && bitnum < unit)
+    {
+      warning (OPT_Wextra, "write of %wu-bit data outside the bound of "
+	       "destination object, data truncated into %wu-bit",
+	       bitsize, unit - bitnum);
+      bitsize = unit - bitnum;
     }
 
   /* If BITS_BIG_ENDIAN is zero on a BYTES_BIG_ENDIAN machine, we count

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fno-sanitize=address -fsanitize=kernel-address" } */
+/* { dg-options "-fno-sanitize=address -fsanitize=kernel-address -ffat-lto-objects" } */
 
 void
 foo (int *p)

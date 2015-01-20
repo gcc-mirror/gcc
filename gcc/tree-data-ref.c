@@ -88,13 +88,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "inchash.h"
 #include "tree.h"
 #include "fold-const.h"
+#include "hashtab.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "function.h"
+#include "rtl.h"
+#include "flags.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
 #include "expr.h"
 #include "gimple-pretty-print.h"
 #include "predict.h"
-#include "tm.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
 #include "dominance.h"
 #include "cfg.h"
 #include "basic-block.h"
@@ -992,6 +1005,22 @@ dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
 				fold_convert (ssizetype, memoff));
 	      memoff = build_int_cst (TREE_TYPE (memoff), 0);
 	    }
+	  /* Adjust the offset so it is a multiple of the access type
+	     size and thus we separate bases that can possibly be used
+	     to produce partial overlaps (which the access_fn machinery
+	     cannot handle).  */
+	  wide_int rem;
+	  if (TYPE_SIZE_UNIT (TREE_TYPE (ref))
+	      && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (ref))) == INTEGER_CST
+	      && !integer_zerop (TYPE_SIZE_UNIT (TREE_TYPE (ref))))
+	    rem = wi::mod_trunc (off, TYPE_SIZE_UNIT (TREE_TYPE (ref)), SIGNED);
+	  else
+	    /* If we can't compute the remainder simply force the initial
+	       condition to zero.  */
+	    rem = off;
+	  off = wide_int_to_tree (ssizetype, wi::sub (off, rem));
+	  memoff = wide_int_to_tree (TREE_TYPE (memoff), rem);
+	  /* And finally replace the initial condition.  */
 	  access_fn = chrec_replace_initial_condition
 	      (access_fn, fold_convert (orig_type, off));
 	  /* ???  This is still not a suitable base object for

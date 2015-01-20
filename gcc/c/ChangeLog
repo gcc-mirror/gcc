@@ -1,3 +1,54 @@
+2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
+	    Bernd Schmidt  <bernds@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+	    Ilmir Usmanov  <i.usmanov@samsung.com>
+
+	* c-parser.c: Include "gomp-constants.h".
+	(c_parser_omp_clause_map): Use enum gomp_map_kind instead of enum
+	omp_clause_map_kind.  Use GOMP_MAP_* instead of OMP_CLAUSE_MAP_*.
+	Use OMP_CLAUSE_SET_MAP_KIND.
+	(c_parser_pragma): Handle PRAGMA_OACC_ENTER_DATA,
+	PRAGMA_OACC_EXIT_DATA, PRAGMA_OACC_UPDATE.
+	(c_parser_omp_construct): Handle PRAGMA_OACC_CACHE,
+	PRAGMA_OACC_DATA, PRAGMA_OACC_KERNELS, PRAGMA_OACC_LOOP,
+	PRAGMA_OACC_PARALLEL, PRAGMA_OACC_WAIT.
+	(c_parser_omp_clause_name): Handle "auto", "async", "copy",
+	"copyout", "create", "delete", "deviceptr", "gang", "host",
+	"num_gangs", "num_workers", "present", "present_or_copy", "pcopy",
+	"present_or_copyin", "pcopyin", "present_or_copyout", "pcopyout",
+	"present_or_create", "pcreate", "seq", "self", "vector",
+	"vector_length", "wait", "worker".
+	(OACC_DATA_CLAUSE_MASK, OACC_KERNELS_CLAUSE_MASK)
+	(OACC_ENTER_DATA_CLAUSE_MASK, OACC_EXIT_DATA_CLAUSE_MASK)
+	(OACC_LOOP_CLAUSE_MASK, OACC_PARALLEL_CLAUSE_MASK)
+	(OACC_UPDATE_CLAUSE_MASK, OACC_WAIT_CLAUSE_MASK): New macros.
+	(c_parser_omp_variable_list): Handle OMP_CLAUSE__CACHE_.
+	(c_parser_oacc_wait_list, c_parser_oacc_data_clause)
+	(c_parser_oacc_data_clause_deviceptr)
+	(c_parser_omp_clause_num_gangs, c_parser_omp_clause_num_workers)
+	(c_parser_oacc_clause_async, c_parser_oacc_clause_wait)
+	(c_parser_omp_clause_vector_length, c_parser_oacc_all_clauses)
+	(c_parser_oacc_cache, c_parser_oacc_data, c_parser_oacc_kernels)
+	(c_parser_oacc_enter_exit_data, c_parser_oacc_loop)
+	(c_parser_oacc_parallel, c_parser_oacc_update)
+	(c_parser_oacc_wait): New functions.
+	* c-tree.h (c_finish_oacc_parallel, c_finish_oacc_kernels)
+	(c_finish_oacc_data): New prototypes.
+	* c-typeck.c: Include "gomp-constants.h".
+	(handle_omp_array_sections): Handle GOMP_MAP_FORCE_DEVICEPTR.  Use
+	GOMP_MAP_* instead of OMP_CLAUSE_MAP_*.  Use
+	OMP_CLAUSE_SET_MAP_KIND.
+	(c_finish_oacc_parallel, c_finish_oacc_kernels)
+	(c_finish_oacc_data): New functions.
+	(c_finish_omp_clauses): Handle OMP_CLAUSE__CACHE_,
+	OMP_CLAUSE_NUM_GANGS, OMP_CLAUSE_NUM_WORKERS,
+	OMP_CLAUSE_VECTOR_LENGTH, OMP_CLAUSE_ASYNC, OMP_CLAUSE_WAIT,
+	OMP_CLAUSE_AUTO, OMP_CLAUSE_SEQ, OMP_CLAUSE_GANG,
+	OMP_CLAUSE_WORKER, OMP_CLAUSE_VECTOR, and OMP_CLAUSE_MAP's
+	GOMP_MAP_FORCE_DEVICEPTR.
+
 2015-01-09  Michael Collison  <michael.collison@linaro.org>
 
 	* c-array-notation.c: Include hash-set.h, machmode.h,

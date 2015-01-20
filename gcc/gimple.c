@@ -872,8 +872,7 @@ gimple_build_omp_critical (gimple_seq body, tree name)
 
    BODY is sequence of statements inside the for loop.
    KIND is the `for' variant.
-   CLAUSES, are any of the OMP loop construct's clauses: private, firstprivate,
-   lastprivate, reductions, ordered, schedule, and nowait.
+   CLAUSES, are any of the construct's clauses.
    COLLAPSE is the collapse count.
    PRE_BODY is the sequence of statements that are loop invariant.  */
 
@@ -1088,7 +1087,8 @@ gimple_build_omp_single (gimple_seq body, tree clauses)
 /* Build a GIMPLE_OMP_TARGET statement.
 
    BODY is the sequence of statements that will be executed.
-   CLAUSES are any of the OMP target construct's clauses.  */
+   KIND is the kind of the region.
+   CLAUSES are any of the construct's clauses.  */
 
 gomp_target *
 gimple_build_omp_target (gimple_seq body, int kind, tree clauses)

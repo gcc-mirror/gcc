@@ -158,30 +158,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<std::size_t _Idx, typename... _Elements>
     struct _Tuple_impl; 
 
-  /**
-   * Zero-element tuple implementation. This is the basis case for the 
-   * inheritance recursion.
-   */
-  template<std::size_t _Idx>
-    struct _Tuple_impl<_Idx>
-    {
-      template<std::size_t, typename...> friend class _Tuple_impl;
-
-      _Tuple_impl() = default;
-
-      template<typename _Alloc>
-        _Tuple_impl(allocator_arg_t, const _Alloc&) { }
-
-      template<typename _Alloc>
-        _Tuple_impl(allocator_arg_t, const _Alloc&, const _Tuple_impl&) { }
-
-      template<typename _Alloc>
-        _Tuple_impl(allocator_arg_t, const _Alloc&, _Tuple_impl&&) { }
-
-    protected:
-      void _M_swap(_Tuple_impl&) noexcept { /* no-op */ }
-    };
-
   template<typename _Tp>
     struct __is_empty_non_tuple : is_empty<_Tp> { };
 
@@ -355,6 +331,130 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	using std::swap;
 	swap(_M_head(*this), _M_head(__in));
 	_Inherited::_M_swap(_M_tail(__in));
+      }
+    };
+
+  // Basis case of inheritance recursion.
+  template<std::size_t _Idx, typename _Head>
+    struct _Tuple_impl<_Idx, _Head>
+    : private _Head_base<_Idx, _Head, __empty_not_final<_Head>::value>
+    {
+      template<std::size_t, typename...> friend class _Tuple_impl;
+
+      typedef _Head_base<_Idx, _Head, __empty_not_final<_Head>::value> _Base;
+
+      static constexpr _Head&
+      _M_head(_Tuple_impl& __t) noexcept { return _Base::_M_head(__t); }
+
+      static constexpr const _Head&
+      _M_head(const _Tuple_impl& __t) noexcept { return _Base::_M_head(__t); }
+
+      constexpr _Tuple_impl()
+      : _Base() { }
+
+      explicit
+      constexpr _Tuple_impl(const _Head& __head)
+      : _Base(__head) { }
+
+      template<typename _UHead>
+        explicit
+        constexpr _Tuple_impl(_UHead&& __head)
+	: _Base(std::forward<_UHead>(__head)) { }
+
+      constexpr _Tuple_impl(const _Tuple_impl&) = default;
+
+      constexpr
+      _Tuple_impl(_Tuple_impl&& __in)
+      noexcept(is_nothrow_move_constructible<_Head>::value)
+      : _Base(std::forward<_Head>(_M_head(__in))) { }
+
+      template<typename _UHead>
+        constexpr _Tuple_impl(const _Tuple_impl<_Idx, _UHead>& __in)
+	: _Base(_Tuple_impl<_Idx, _UHead>::_M_head(__in)) { }
+
+      template<typename _UHead>
+        constexpr _Tuple_impl(_Tuple_impl<_Idx, _UHead>&& __in)
+	: _Base(std::forward<_UHead>(_Tuple_impl<_Idx, _UHead>::_M_head(__in)))
+	{ }
+
+      template<typename _Alloc>
+	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a)
+	: _Base(__tag, __use_alloc<_Head>(__a)) { }
+
+      template<typename _Alloc>
+	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+		    const _Head& __head)
+	: _Base(__use_alloc<_Head, _Alloc, _Head>(__a), __head) { }
+
+      template<typename _Alloc, typename _UHead>
+	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	            _UHead&& __head)
+	: _Base(__use_alloc<_Head, _Alloc, _UHead>(__a),
+	        std::forward<_UHead>(__head)) { }
+
+      template<typename _Alloc>
+        _Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	            const _Tuple_impl& __in)
+	: _Base(__use_alloc<_Head, _Alloc, _Head>(__a), _M_head(__in)) { }
+
+      template<typename _Alloc>
+	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	            _Tuple_impl&& __in)
+	: _Base(__use_alloc<_Head, _Alloc, _Head>(__a),
+	        std::forward<_Head>(_M_head(__in))) { }
+
+      template<typename _Alloc, typename _UHead>
+	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	            const _Tuple_impl<_Idx, _UHead>& __in)
+	: _Base(__use_alloc<_Head, _Alloc, _Head>(__a),
+		_Tuple_impl<_Idx, _UHead>::_M_head(__in)) { }
+
+      template<typename _Alloc, typename _UHead>
+	_Tuple_impl(allocator_arg_t __tag, const _Alloc& __a,
+	            _Tuple_impl<_Idx, _UHead>&& __in)
+	: _Base(__use_alloc<_Head, _Alloc, _UHead>(__a),
+                std::forward<_UHead>(_Tuple_impl<_Idx, _UHead>::_M_head(__in)))
+	{ }
+
+      _Tuple_impl&
+      operator=(const _Tuple_impl& __in)
+      {
+	_M_head(*this) = _M_head(__in);
+	return *this;
+      }
+
+      _Tuple_impl&
+      operator=(_Tuple_impl&& __in)
+      noexcept(is_nothrow_move_assignable<_Head>::value)
+      {
+	_M_head(*this) = std::forward<_Head>(_M_head(__in));
+	return *this;
+      }
+
+      template<typename _UHead>
+        _Tuple_impl&
+        operator=(const _Tuple_impl<_Idx, _UHead>& __in)
+        {
+	  _M_head(*this) = _Tuple_impl<_Idx, _UHead>::_M_head(__in);
+	  return *this;
+	}
+
+      template<typename _UHead>
+        _Tuple_impl&
+        operator=(_Tuple_impl<_Idx, _UHead>&& __in)
+        {
+	  _M_head(*this)
+	    = std::forward<_UHead>(_Tuple_impl<_Idx, _UHead>::_M_head(__in));
+	  return *this;
+	}
+
+    protected:
+      void
+      _M_swap(_Tuple_impl& __in)
+      noexcept(noexcept(swap(std::declval<_Head&>(), std::declval<_Head&>())))
+      {
+	using std::swap;
+	swap(_M_head(*this), _M_head(__in));
       }
     };
 

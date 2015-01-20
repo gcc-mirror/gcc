@@ -1197,9 +1197,11 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	*stmt_p = size_one_node;
       return NULL;
     }    
-  else if (flag_sanitize & (SANITIZE_NULL | SANITIZE_ALIGNMENT))
+  else if (flag_sanitize
+	   & (SANITIZE_NULL | SANITIZE_ALIGNMENT | SANITIZE_VPTR))
     {
-      if (TREE_CODE (stmt) == NOP_EXPR
+      if ((flag_sanitize & (SANITIZE_NULL | SANITIZE_ALIGNMENT))
+	  && TREE_CODE (stmt) == NOP_EXPR
 	  && TREE_CODE (TREE_TYPE (stmt)) == REFERENCE_TYPE)
 	ubsan_maybe_instrument_reference (stmt);
       else if (TREE_CODE (stmt) == CALL_EXPR)
@@ -1214,7 +1216,10 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 		= TREE_CODE (fn) == ADDR_EXPR
 		  && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
 		  && DECL_CONSTRUCTOR_P (TREE_OPERAND (fn, 0));
-	      ubsan_maybe_instrument_member_call (stmt, is_ctor);
+	      if (flag_sanitize & (SANITIZE_NULL | SANITIZE_ALIGNMENT))
+		ubsan_maybe_instrument_member_call (stmt, is_ctor);
+	      if ((flag_sanitize & SANITIZE_VPTR) && !is_ctor)
+		cp_ubsan_maybe_instrument_member_call (stmt);
 	    }
 	}
     }
@@ -1237,6 +1242,8 @@ cp_genericize_tree (tree* t_p)
   cp_walk_tree (t_p, cp_genericize_r, &wtd, NULL);
   delete wtd.p_set;
   wtd.bind_expr_stack.release ();
+  if (flag_sanitize & SANITIZE_VPTR)
+    cp_ubsan_instrument_member_accesses (t_p);
 }
 
 /* If a function that should end with a return in non-void

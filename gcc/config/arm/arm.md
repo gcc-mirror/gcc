@@ -22,25 +22,6 @@
 
 ;;- See file "rtl.def" for documentation on define_insn, match_*, et. al.
 
-;; Beware of splitting Thumb1 patterns that output multiple
-;; assembly instructions, in particular instruction such as SBC and
-;; ADC which consume flags.  For example, in the pattern thumb_subdi3
-;; below, the output SUB implicitly sets the flags (assembled to SUBS)
-;; and then the Carry flag is used by SBC to compute the correct
-;; result.  If we split thumb_subdi3 pattern into two separate RTL
-;; insns (using define_insn_and_split), the scheduler might place
-;; other RTL insns between SUB and SBC, possibly modifying the Carry
-;; flag used by SBC.  This might happen because most Thumb1 patterns
-;; for flag-setting instructions do not have explicit RTL for setting
-;; or clobbering the flags.  Instead, they have the attribute "conds"
-;; with value "set" or "clob".  However, this attribute is not used to
-;; identify dependencies and therefore the scheduler might reorder
-;; these instruction.  Currenly, this problem cannot happen because
-;; there are no separate Thumb1 patterns for individual instruction
-;; that consume flags (except conditional execution, which is treated
-;; differently).  In particular there is no Thumb1 armv6-m pattern for
-;; sbc or adc.
-
 
 ;;---------------------------------------------------------------------------
 ;; Constants
@@ -108,6 +89,11 @@
 ;; Operand number of an input operand that is shifted.  Zero if the
 ;; given instruction does not shift one of its input operands.
 (define_attr "shift" "" (const_int 0))
+
+;; [For compatibility with AArch64 in pipeline models]
+;; Attribute that specifies whether or not the instruction touches fp
+;; registers.
+(define_attr "fp" "no,yes" (const_string "no"))
 
 ; Floating Point Unit.  If we only have floating point emulation, then there
 ; is no point in scheduling the floating point insns.  (Well, for best
@@ -386,7 +372,8 @@
                                 arm926ejs,arm1020e,arm1026ejs,arm1136js,\
                                 arm1136jfs,cortexa5,cortexa7,cortexa8,\
                                 cortexa9,cortexa12,cortexa15,cortexa17,\
-                                cortexa53,cortexm4,cortexm7,marvell_pj4")
+                                cortexa53,cortexm4,cortexm7,marvell_pj4,\
+				xgene1")
 	       (eq_attr "tune_cortexr4" "yes"))
           (const_string "no")
           (const_string "yes"))))
@@ -396,7 +383,7 @@
 	  (and (eq_attr "fpu" "vfp")
 	       (eq_attr "tune" "!arm1020e,arm1022e,cortexa5,cortexa7,\
                                 cortexa8,cortexa9,cortexa53,cortexm4,\
-                                cortexm7,marvell_pj4")
+                                cortexm7,marvell_pj4,xgene1")
 	       (eq_attr "tune_cortexr4" "no"))
 	  (const_string "yes")
 	  (const_string "no"))))
@@ -426,6 +413,7 @@
 (include "cortex-m4-fpu.md")
 (include "vfp11.md")
 (include "marvell-pj4.md")
+(include "xgene1.md")
 
 
 ;;---------------------------------------------------------------------------
@@ -8262,7 +8250,7 @@
   "<arith_shift_insn>%?\\t%0, %1, %2, lsl %b3"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "shift" "4")
+   (set_attr "shift" "2")
    (set_attr "arch" "a,t2")
    (set_attr "type" "alu_shift_imm")])
 
@@ -8277,7 +8265,7 @@
   "<arith_shift_insn>%?\\t%0, %1, %3%S2"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "shift" "4")
+   (set_attr "shift" "3")
    (set_attr "arch" "a,t2,a")
    (set_attr "type" "alu_shift_imm,alu_shift_imm,alu_shift_reg")])
 

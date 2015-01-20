@@ -1,3 +1,11 @@
+2015-01-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/61933
+	* io/inquire.c (inquire_via_unit): Set existing to true if a
+	gfc_unit stucture was found for the given unit number.
+	* runtime/error.c (translate_error): Add case for
+	LIBERROR_INQUIRE_INTERNAL_UNIT.
+
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

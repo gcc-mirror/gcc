@@ -132,13 +132,14 @@ print "/* Structure to save/restore optimization and target specific options.  *
 print "struct GTY(()) cl_optimization";
 print "{";
 
-n_opt_char = 2;
+n_opt_char = 3;
 n_opt_short = 0;
 n_opt_int = 0;
 n_opt_enum = 1;
 n_opt_other = 0;
 var_opt_char[0] = "unsigned char x_optimize";
 var_opt_char[1] = "unsigned char x_optimize_size";
+var_opt_char[2] = "unsigned char x_optimize_debug";
 var_opt_enum[0] = "enum fp_contract_mode x_flag_fp_contract_mode";
 
 for (i = 0; i < n_opts; i++) {
@@ -284,6 +285,9 @@ print "";
 print "/* Print optimization variables from a structure.  */";
 print "extern void cl_optimization_print (FILE *, int, struct cl_optimization *);";
 print "";
+print "/* Print different optimization variables from structures provided as arguments.  */";
+print "extern void cl_optimization_print_diff (FILE *, int, cl_optimization *ptr1, cl_optimization *ptr2);";
+print "";
 print "/* Save selected option variables into a structure.  */"
 print "extern void cl_target_option_save (struct cl_target_option *, struct gcc_options *);";
 print "";
@@ -292,6 +296,9 @@ print "extern void cl_target_option_restore (struct gcc_options *, struct cl_tar
 print "";
 print "/* Print target option variables from a structure.  */";
 print "extern void cl_target_option_print (FILE *, int, struct cl_target_option *);";
+print "";
+print "/* Print different target option variables from structures provided as arguments.  */";
+print "extern void cl_target_option_print_diff (FILE *, int, cl_target_option *ptr1, cl_target_option *ptr2);";
 print "";
 print "/* Compare two target option variables from a structure.  */";
 print "extern bool cl_target_option_eq (const struct cl_target_option *, const struct cl_target_option *);";

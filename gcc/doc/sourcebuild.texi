@@ -1836,6 +1836,9 @@ Target supports Graphite optimizations.
 @item fixed_point
 Target supports fixed-point extension to C.
 
+@item fopenacc
+Target supports OpenACC via @option{-fopenacc}.
+
 @item fopenmp
 Target supports OpenMP via @option{-fopenmp}.
 

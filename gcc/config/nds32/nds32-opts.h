@@ -32,4 +32,12 @@ enum nds32_arch_type
   ARCH_V3M
 };
 
+/* The code model defines the address generation strategy.  */
+enum nds32_cmodel_type
+{
+  CMODEL_SMALL,
+  CMODEL_MEDIUM,
+  CMODEL_LARGE
+};
+
 #endif

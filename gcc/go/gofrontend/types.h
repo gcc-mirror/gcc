@@ -81,6 +81,8 @@ static const int RUNTIME_TYPE_KIND_STRING = 24;
 static const int RUNTIME_TYPE_KIND_STRUCT = 25;
 static const int RUNTIME_TYPE_KIND_UNSAFE_POINTER = 26;
 
+static const int RUNTIME_TYPE_KIND_DIRECT_IFACE = (1 << 5);
+static const int RUNTIME_TYPE_KIND_GC_PROG = (1 << 6);
 static const int RUNTIME_TYPE_KIND_NO_POINTERS = (1 << 7);
 
 // GC instruction opcodes.  These must match the values in libgo/runtime/mgc0.h.

@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "dominance.h"
 #include "basic-block.h"
@@ -56,12 +55,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "stringpool.h"
 #include "tree-ssanames.h"
+#include "hashtab.h"
+#include "rtl.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
 #include "expr.h"
 #include "tree-dfa.h"
 #include "tree-inline.h"
 #include "params.h"
 #include "alloc-pool.h"
-#include "tree-ssa-alias.h"
 #include "bitmap.h"
 #include "hash-map.h"
 #include "plugin-api.h"
@@ -1918,6 +1929,22 @@ call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref)
   if (gimple_call_flags (call)
       & (ECF_PURE|ECF_CONST|ECF_LOOPING_CONST_OR_PURE|ECF_NOVOPS))
     return false;
+  if (gimple_call_internal_p (call))
+    switch (gimple_call_internal_fn (call))
+      {
+	/* Treat these internal calls like ECF_PURE for aliasing,
+	   they don't write to any memory the program should care about.
+	   They have important other side-effects, and read memory,
+	   so can't be ECF_NOVOPS.  */
+      case IFN_UBSAN_NULL:
+      case IFN_UBSAN_BOUNDS:
+      case IFN_UBSAN_VPTR:
+      case IFN_UBSAN_OBJECT_SIZE:
+      case IFN_ASAN_CHECK:
+	return false;
+      default:
+	break;
+      }
 
   base = ao_ref_base (ref);
   if (!base)

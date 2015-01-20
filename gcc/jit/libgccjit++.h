@@ -106,6 +106,8 @@ namespace gccjit
 		      int flags,
 		      int verbosity);
 
+    void dump_reproducer_to_file (const char *path);
+
     void set_str_option (enum gcc_jit_str_option opt,
 			 const char *value);
 
@@ -155,7 +157,8 @@ namespace gccjit
 
     function get_builtin_function (const std::string &name);
 
-    lvalue new_global (type type_,
+    lvalue new_global (enum gcc_jit_global_kind kind,
+		       type type_,
 		       const std::string &name,
 		       location loc = location ());
 
@@ -558,6 +561,13 @@ context::set_logfile (FILE *logfile,
 }
 
 inline void
+context::dump_reproducer_to_file (const char *path)
+{
+  gcc_jit_context_dump_reproducer_to_file (m_inner_ctxt,
+					   path);
+}
+
+inline void
 context::set_str_option (enum gcc_jit_str_option opt,
 			 const char *value)
 {
@@ -707,12 +717,14 @@ context::get_builtin_function (const std::string &name)
 }
 
 inline lvalue
-context::new_global (type type_,
+context::new_global (enum gcc_jit_global_kind kind,
+		     type type_,
 		     const std::string &name,
 		     location loc)
 {
   return lvalue (gcc_jit_context_new_global (m_inner_ctxt,
 					     loc.get_inner_location (),
+					     kind,
 					     type_.get_inner_type (),
 					     name.c_str ()));
 }

@@ -1,3 +1,8 @@
+2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc-interface/utils.c (DEF_FUNCTION_TYPE_VAR_8)
+	(DEF_FUNCTION_TYPE_VAR_12): New macros.
+
 2015-01-09  Michael Collison  <michael.collison@linaro.org>
 
 	* gcc-interface/cuintp.c: Include hash-set.h, machmode.h,

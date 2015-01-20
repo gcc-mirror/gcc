@@ -666,30 +666,40 @@
   [(set_attr "type" "mt_group")])
 
 ;; This pattern might be risky because it also tests the upper bits and not
-;; only the subreg.  However, it seems that combine will get to this only
-;; when testing sign/zero extended values.  In this case the extended upper
-;; bits do not matter.
-(define_insn "*tst<mode>_t_zero"
+;; only the subreg.  We have to check whether the operands have been sign
+;; or zero extended.  In the worst case, a zero extension has to be inserted
+;; to mask out the unwanted bits.
+(define_insn_and_split "*tst<mode>_t_subregs"
   [(set (reg:SI T_REG)
 	(eq:SI
 	  (subreg:QIHI
-	    (and:SI (match_operand:SI 0 "arith_reg_operand" "%r")
-		    (match_operand:SI 1 "arith_reg_operand" "r")) <lowpart_le>)
+	    (and:SI (match_operand:SI 0 "arith_reg_operand")
+		    (match_operand:SI 1 "arith_reg_operand")) <lowpart_le>)
 	  (const_int 0)))]
-  "TARGET_SH1 && TARGET_LITTLE_ENDIAN"
-  "tst	%0,%1"
-  [(set_attr "type" "mt_group")])
+  "TARGET_SH1 && TARGET_LITTLE_ENDIAN && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  sh_split_tst_subregs (curr_insn, <MODE>mode, <lowpart_le>, operands);
+  DONE;
+})
 
-(define_insn "*tst<mode>_t_zero"
+(define_insn_and_split "*tst<mode>_t_subregs"
   [(set (reg:SI T_REG)
 	(eq:SI
 	  (subreg:QIHI
-	    (and:SI (match_operand:SI 0 "arith_reg_operand" "%r")
-		    (match_operand:SI 1 "arith_reg_operand" "r")) <lowpart_be>)
+	    (and:SI (match_operand:SI 0 "arith_reg_operand")
+		    (match_operand:SI 1 "arith_reg_operand")) <lowpart_be>)
 	  (const_int 0)))]
-  "TARGET_SH1 && TARGET_BIG_ENDIAN"
-  "tst	%0,%1"
-  [(set_attr "type" "mt_group")])
+  "TARGET_SH1 && TARGET_BIG_ENDIAN && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  sh_split_tst_subregs (curr_insn, <MODE>mode, <lowpart_be>, operands);
+  DONE;
+})
 
 ;; Extract LSB, negate and store in T bit.
 (define_insn "tstsi_t_and_not"
@@ -2392,8 +2402,8 @@
    (clobber (reg:SI R4_REG))
    (clobber (reg:SI R5_REG))
    (clobber (reg:SI FPSCR_STAT_REG))
-   (use (reg:SI FPSCR_MODES_REG))
-   (use (match_operand:SI 1 "arith_reg_operand" "r"))]
+   (use (match_operand:SI 1 "arith_reg_operand" "r"))
+   (use (reg:SI FPSCR_MODES_REG))]
   "TARGET_FPU_DOUBLE && ! TARGET_FPU_SINGLE"
   "jsr	@%1%#"
   [(set_attr "type" "sfunc")
@@ -2664,8 +2674,8 @@
    (clobber (reg:DF DR0_REG))
    (clobber (reg:DF DR2_REG))
    (clobber (reg:SI FPSCR_STAT_REG))
-   (use (reg:SI FPSCR_MODES_REG))
-   (use (match_operand:SI 1 "arith_reg_operand" "r"))]
+   (use (match_operand:SI 1 "arith_reg_operand" "r"))
+   (use (reg:SI FPSCR_MODES_REG))]
   "TARGET_FPU_DOUBLE && ! TARGET_FPU_SINGLE"
   "jsr	@%1%#"
   [(set_attr "type" "sfunc")

@@ -1,4 +1,4 @@
-.. Copyright (C) 2014 Free Software Foundation, Inc.
+.. Copyright (C) 2014-2015 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it
@@ -144,6 +144,16 @@ Debugging
    :c:macro:`GCCJIT::BOOL_OPTION_DEBUGINFO` to allow stepping through the
    code in a debugger.
 
+.. function:: void\
+              gccjit::context::dump_reproducer_to_file (gcc_jit_context *ctxt,\
+                                                        const char *path)
+
+   This is a thin wrapper around the C API
+   :c:func:`gcc_jit_context_dump_reproducer_to_file`, and hence works the
+   same way.
+
+   Note that the generated source is C code, not C++; this might be of use
+   for seeing what the C++ bindings are doing at the C level.
 
 Options
 -------

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "--param asan-instrumentation-with-call-threshold=0" } */
+/* { dg-options "--param asan-instrumentation-with-call-threshold=0 -ffat-lto-objects" } */
 
 struct A {
   char x[7];

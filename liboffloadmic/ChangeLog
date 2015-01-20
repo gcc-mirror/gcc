@@ -1,3 +1,8 @@
+2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_get_name)
+	(GOMP_OFFLOAD_get_caps, GOMP_OFFLOAD_fini_device): New functions.
+
 2014-11-13  Ilya Verbin  <ilya.verbin@intel.com>
 	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
 

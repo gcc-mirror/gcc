@@ -34,7 +34,7 @@
 #include <string.h>
 #include <utility>
 #include <vector>
-#include <libgomp_target.h>
+#include "libgomp-plugin.h"
 #include "compiler_if_host.h"
 #include "main_target_image.h"
 
@@ -135,6 +135,22 @@ set_mic_lib_path (void)
     }
 }
 
+extern "C" const char *
+GOMP_OFFLOAD_get_name (void)
+{
+  const char *res = "intelmic";
+  TRACE ("(): return %s", res);
+  return res;
+}
+
+extern "C" unsigned int
+GOMP_OFFLOAD_get_caps (void)
+{
+  unsigned int res = GOMP_OFFLOAD_CAP_OPENMP_400;
+  TRACE ("(): return %x", res);
+  return res;
+}
+
 extern "C" enum offload_target_type
 GOMP_OFFLOAD_get_type (void)
 {
@@ -188,6 +204,14 @@ GOMP_OFFLOAD_init_device (int device)
   pthread_once (&main_image_is_registered, register_main_image);
   offload (__FILE__, __LINE__, device, "__offload_target_init_proc", 0,
 	   NULL, NULL);
+}
+
+extern "C" void
+GOMP_OFFLOAD_fini_device (int device)
+{
+  TRACE ("");
+  /* Unreachable for GOMP_OFFLOAD_CAP_OPENMP_400.  */
+  abort ();
 }
 
 static void

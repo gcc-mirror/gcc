@@ -1902,7 +1902,8 @@ create_template:
 (define_expand "call"
   [(parallel [(call (match_operand 0 "memory_operand" "")
 		    (match_operand 1))
-	      (clobber (reg:SI LP_REGNUM))])]
+	      (clobber (reg:SI LP_REGNUM))
+	      (clobber (reg:SI TA_REGNUM))])]
   ""
   ""
 )
@@ -1910,7 +1911,8 @@ create_template:
 (define_insn "*call_register"
   [(parallel [(call (mem (match_operand:SI 0 "register_operand" "r, r"))
 		    (match_operand 1))
-	      (clobber (reg:SI LP_REGNUM))])]
+	      (clobber (reg:SI LP_REGNUM))
+	      (clobber (reg:SI TA_REGNUM))])]
   ""
   "@
   jral5\t%0
@@ -1921,11 +1923,20 @@ create_template:
 (define_insn "*call_immediate"
   [(parallel [(call (mem (match_operand:SI 0 "immediate_operand" "i"))
 		    (match_operand 1))
-	      (clobber (reg:SI LP_REGNUM))])]
+	      (clobber (reg:SI LP_REGNUM))
+	      (clobber (reg:SI TA_REGNUM))])]
   ""
-  "jal\t%0"
+{
+  if (TARGET_CMODEL_LARGE)
+    return "bal\t%0";
+  else
+    return "jal\t%0";
+}
   [(set_attr "type"   "branch")
-   (set_attr "length"      "4")])
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_CMODEL_LARGE")
+		      (const_int 12)
+		      (const_int 4)))])
 
 
 ;; Subroutine call instruction returning a value.
@@ -1938,7 +1949,8 @@ create_template:
   [(parallel [(set (match_operand 0)
 		   (call (match_operand 1 "memory_operand" "")
 		         (match_operand 2)))
-	      (clobber (reg:SI LP_REGNUM))])]
+	      (clobber (reg:SI LP_REGNUM))
+	      (clobber (reg:SI TA_REGNUM))])]
   ""
   ""
 )
@@ -1947,7 +1959,8 @@ create_template:
   [(parallel [(set (match_operand 0)
 		   (call (mem (match_operand:SI 1 "register_operand" "r, r"))
 		         (match_operand 2)))
-	      (clobber (reg:SI LP_REGNUM))])]
+	      (clobber (reg:SI LP_REGNUM))
+	      (clobber (reg:SI TA_REGNUM))])]
   ""
   "@
   jral5\t%1
@@ -1959,12 +1972,117 @@ create_template:
   [(parallel [(set (match_operand 0)
 		   (call (mem (match_operand:SI 1 "immediate_operand" "i"))
 			 (match_operand 2)))
-	      (clobber (reg:SI LP_REGNUM))])]
+	      (clobber (reg:SI LP_REGNUM))
+	      (clobber (reg:SI TA_REGNUM))])]
   ""
-  "jal\t%1"
+{
+  if (TARGET_CMODEL_LARGE)
+    return "bal\t%1";
+  else
+    return "jal\t%1";
+}
   [(set_attr "type"   "branch")
-   (set_attr "length"      "4")])
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_CMODEL_LARGE")
+		      (const_int 12)
+		      (const_int 4)))])
 
+
+;; ----------------------------------------------------------------------------
+
+;; The sibcall patterns.
+
+;; sibcall
+;; sibcall_register
+;; sibcall_immediate
+
+(define_expand "sibcall"
+  [(parallel [(call (match_operand 0 "memory_operand" "")
+		    (const_int 0))
+	      (clobber (reg:SI TA_REGNUM))
+	      (return)])]
+  ""
+  ""
+)
+
+(define_insn "*sibcall_register"
+  [(parallel [(call (mem (match_operand:SI 0 "register_operand" "r, r"))
+		    (match_operand 1))
+	      (clobber (reg:SI TA_REGNUM))
+	      (return)])]
+  ""
+  "@
+   jr5\t%0
+   jr\t%0"
+  [(set_attr "type"   "branch,branch")
+   (set_attr "length" "     2,     4")])
+
+(define_insn "*sibcall_immediate"
+  [(parallel [(call (mem (match_operand:SI 0 "immediate_operand" "i"))
+		    (match_operand 1))
+	      (clobber (reg:SI TA_REGNUM))
+	      (return)])]
+  ""
+{
+  if (TARGET_CMODEL_LARGE)
+    return "b\t%0";
+  else
+    return "j\t%0";
+}
+  [(set_attr "type"   "branch")
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_CMODEL_LARGE")
+		      (const_int 12)
+		      (const_int 4)))])
+
+;; sibcall_value
+;; sibcall_value_register
+;; sibcall_value_immediate
+
+(define_expand "sibcall_value"
+  [(parallel [(set (match_operand 0)
+		   (call (match_operand 1 "memory_operand" "")
+			 (const_int 0)))
+	      (clobber (reg:SI TA_REGNUM))
+	      (return)])]
+  ""
+  ""
+)
+
+(define_insn "*sibcall_value_register"
+  [(parallel [(set (match_operand 0)
+		   (call (mem (match_operand:SI 1 "register_operand" "r, r"))
+			 (match_operand 2)))
+	      (clobber (reg:SI TA_REGNUM))
+	      (return)])]
+  ""
+  "@
+   jr5\t%1
+   jr\t%1"
+  [(set_attr "type"   "branch,branch")
+   (set_attr "length" "     2,     4")])
+
+(define_insn "*sibcall_value_immediate"
+  [(parallel [(set (match_operand 0)
+		   (call (mem (match_operand:SI 1 "immediate_operand" "i"))
+			 (match_operand 2)))
+	      (clobber (reg:SI TA_REGNUM))
+	      (return)])]
+  ""
+{
+  if (TARGET_CMODEL_LARGE)
+    return "b\t%1";
+  else
+    return "j\t%1";
+}
+  [(set_attr "type"   "branch")
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_CMODEL_LARGE")
+		      (const_int 12)
+		      (const_int 4)))])
+
+
+;; ----------------------------------------------------------------------------
 
 ;; prologue and epilogue.
 
@@ -1992,9 +2110,23 @@ create_template:
   if (TARGET_V3PUSH
       && !nds32_isr_function_p (current_function_decl)
       && (cfun->machine->va_args_size == 0))
-    nds32_expand_epilogue_v3pop ();
+    nds32_expand_epilogue_v3pop (false);
   else
-    nds32_expand_epilogue ();
+    nds32_expand_epilogue (false);
+  DONE;
+})
+
+(define_expand "sibcall_epilogue" [(const_int 0)]
+  ""
+{
+  /* Pass true to indicate that this is sibcall epilogue and
+     exit from a function without the final branch back to the
+     calling function.  */
+  if (TARGET_V3PUSH && !nds32_isr_function_p (current_function_decl))
+    nds32_expand_epilogue_v3pop (true);
+  else
+    nds32_expand_epilogue (true);
+
   DONE;
 })
 
@@ -2068,17 +2200,27 @@ create_template:
 
 
 ;; ----------------------------------------------------------------------------
-;; unspec operation patterns
+;; Return operation patterns
 ;; ----------------------------------------------------------------------------
 
-;; In nds32 target, the 'ret5' instuction is actually 'jr5 $lp'.
-;; This pattern is designed to distinguish function return
-;; from general indirect_jump pattern so that we can directly
-;; generate 'ret5' for readability.
+;; Use this pattern to expand a return instruction
+;; with simple_return rtx if no epilogue is required.
+(define_expand "return"
+  [(simple_return)]
+  "nds32_can_use_return_insn ()"
+  ""
+)
 
-(define_insn "unspec_volatile_func_return"
-  [(set (pc)
-	(unspec_volatile:SI [(reg:SI LP_REGNUM)] UNSPEC_VOLATILE_FUNC_RETURN))]
+;; This pattern is expanded only by the shrink-wrapping optimization
+;; on paths where the function prologue has not been executed.
+(define_expand "simple_return"
+  [(simple_return)]
+  ""
+  ""
+)
+
+(define_insn "return_internal"
+  [(simple_return)]
   ""
 {
   if (TARGET_16_BIT)
@@ -2086,7 +2228,7 @@ create_template:
   else
     return "ret";
 }
-  [(set_attr "type" "misc")
+  [(set_attr "type" "branch")
    (set_attr "enabled" "1")
    (set (attr "length")
 	(if_then_else (match_test "TARGET_16_BIT")
@@ -2229,5 +2371,17 @@ create_template:
   "btst\t%0, %1, %2"
   [(set_attr "type" "alu")
    (set_attr "length" "4")])
+
+;; ----------------------------------------------------------------------------
+
+;; Pseudo NOPs
+
+(define_insn "pop25return"
+  [(return)
+   (unspec_volatile:SI [(reg:SI LP_REGNUM)] UNSPEC_VOLATILE_POP25_RETURN)]
+  ""
+  "! return for pop 25"
+  [(set_attr "length" "0")]
+)
 
 ;; ----------------------------------------------------------------------------

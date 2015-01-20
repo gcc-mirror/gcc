@@ -1,3 +1,25 @@
+2015-01-15  Martin Uecker  <uecker@eecs.berkeley.edu>
+
+	* MAINTAINERS: (Write After Approval): Add myself.
+
+2015-01-15  Philipp Tomsich  <ptomsich@theobroma-systems.com>
+
+	* MAINTAINERS: (Write After Approval): Add myself.
+
+2015-01-13  Iain Sandoe  <iain@codesourcery.com>
+
+	* MAINTAINERS (Language Front Ends Maintainers): Add myself as an
+	objective-c/c++ front end maintainer.
+
+2015-01-13  Marek Polacek  <polacek@redhat.com>
+
+	* MAINTAINERS (Reviewers): Add self as C front end reviewer.
+
+2015-01-12  Jeff Law  <law@redhat.com>
+
+	* MAINTAINERS: Remove Stan Shebs as he has been inactive for
+	a very long time.
+
 2015-01-09  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac (host_tools): Add gotools.

@@ -531,7 +531,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     reverse_copy(_BIter, _BIter, _OIter);
 
   template<typename _FIter>
-    void 
+    _FIter
     rotate(_FIter, _FIter, _FIter);
 
   template<typename _FIter, typename _OIter>

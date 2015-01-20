@@ -299,6 +299,13 @@ extern void *
 gcc_jit_result_get_code (gcc_jit_result *result,
 			 const char *funcname);
 
+/* Locate a given global within the built machine code.
+   It must have been created using GCC_JIT_GLOBAL_EXPORTED.
+   This is a ptr to the global, so e.g. for an int this is an int *.  */
+extern void *
+gcc_jit_result_get_global (gcc_jit_result *result,
+			   const char *name);
+
 /* Once we're done with the code, this unloads the built .so file.
    This cleans up the result; after calling this, it's no longer
    valid to use the result.  */
@@ -606,10 +613,26 @@ gcc_jit_block_get_function (gcc_jit_block *block);
 /**********************************************************************
  lvalues, rvalues and expressions.
  **********************************************************************/
+enum gcc_jit_global_kind
+{
+  /* Global is defined by the client code and visible
+     by name outside of this JIT context via gcc_jit_result_get_global.  */
+  GCC_JIT_GLOBAL_EXPORTED,
+
+  /* Global is defined by the client code, but is invisible
+     outside of this JIT context.  Analogous to a "static" global.  */
+  GCC_JIT_GLOBAL_INTERNAL,
+
+  /* Global is not defined by the client code; we're merely
+     referring to it.  Analogous to using an "extern" global from a
+     header file.  */
+  GCC_JIT_GLOBAL_IMPORTED
+};
 
 extern gcc_jit_lvalue *
 gcc_jit_context_new_global (gcc_jit_context *ctxt,
 			    gcc_jit_location *loc,
+			    enum gcc_jit_global_kind kind,
 			    gcc_jit_type *type,
 			    const char *name);
 
@@ -1027,6 +1050,24 @@ gcc_jit_context_new_child_context (gcc_jit_context *parent_ctxt);
 /**********************************************************************
  Implementation support.
  **********************************************************************/
+
+/* Write C source code into "path" that can be compiled into a
+   self-contained executable (i.e. with libgccjit as the only dependency).
+   The generated code will attempt to replay the API calls that have been
+   made into the given context.
+
+   This may be useful when debugging the library or client code, for
+   reducing a complicated recipe for reproducing a bug into a simpler
+   form.
+
+   Typically you need to supply the option "-Wno-unused-variable" when
+   compiling the generated file (since the result of each API call is
+   assigned to a unique variable within the generated C source, and not
+   all are necessarily then used).  */
+
+extern void
+gcc_jit_context_dump_reproducer_to_file (gcc_jit_context *ctxt,
+					 const char *path);
 
 /* Enable the dumping of a specific set of internal state from the
    compilation, capturing the result in-memory as a buffer.

@@ -5,9 +5,9 @@ foo (int x)
 {
   bad1:
   #pragma omp taskgroup
-    goto bad1;			/* { dg-error "invalid branch" } */
+    goto bad1; // { dg-error "invalid branch to/from OpenMP structured block" }
 
-  goto bad2;			/* { dg-error "invalid entry" } */
+  goto bad2; // { dg-error "invalid entry to OpenMP structured block" }
   #pragma omp taskgroup
     {
       bad2: ;
@@ -21,7 +21,7 @@ foo (int x)
 	{ ok1: break; }
     }
 
-  switch (x)			/* { dg-error "invalid entry" } */
+  switch (x) // { dg-error "invalid entry to OpenMP structured block" }
   {
   #pragma omp taskgroup
     { case 0:; }

@@ -1030,8 +1030,33 @@ DEFTREECODE (TARGET_MEM_REF, "target_mem_ref", tcc_reference, 5)
    chain of component references offsetting p by c.  */
 DEFTREECODE (MEM_REF, "mem_ref", tcc_reference, 2)
 
-/* The ordering of the codes between OMP_PARALLEL and OMP_CRITICAL is
-   exposed to TREE_RANGE_CHECK.  */
+/* OpenACC and OpenMP.  As it is exposed in TREE_RANGE_CHECK invocations, do
+   not change the ordering of these codes.  */
+
+/* OpenACC - #pragma acc parallel [clause1 ... clauseN]
+   Operand 0: OACC_PARALLEL_BODY: Code to be executed in parallel.
+   Operand 1: OACC_PARALLEL_CLAUSES: List of clauses.  */
+
+DEFTREECODE (OACC_PARALLEL, "oacc_parallel", tcc_statement, 2)
+
+/* OpenACC - #pragma acc kernels [clause1 ... clauseN]
+   Operand 0: OACC_KERNELS_BODY: Sequence of kernels.
+   Operand 1: OACC_KERNELS_CLAUSES: List of clauses.  */
+
+DEFTREECODE (OACC_KERNELS, "oacc_kernels", tcc_statement, 2)
+
+/* OpenACC - #pragma acc data [clause1 ... clauseN]
+   Operand 0: OACC_DATA_BODY: Data construct body.
+   Operand 1: OACC_DATA_CLAUSES: List of clauses.  */
+
+DEFTREECODE (OACC_DATA, "oacc_data", tcc_statement, 2)
+
+/* OpenACC - #pragma acc host_data [clause1 ... clauseN]
+   Operand 0: OACC_HOST_DATA_BODY: Host_data construct body.
+   Operand 1: OACC_HOST_DATA_CLAUSES: List of clauses.  */
+
+DEFTREECODE (OACC_HOST_DATA, "oacc_host_data", tcc_statement, 2)
+
 /* OpenMP - #pragma omp parallel [clause1 ... clauseN]
    Operand 0: OMP_PARALLEL_BODY: Code to be executed by all threads.
    Operand 1: OMP_PARALLEL_CLAUSES: List of clauses.  */
@@ -1062,7 +1087,7 @@ DEFTREECODE (OMP_TASK, "omp_task", tcc_statement, 2)
    private.  N1, N2 and INCR are required to be loop invariant integer
    expressions that are evaluated without any synchronization.
    The evaluation order, frequency of evaluation and side-effects are
-   unspecified by the standard.  */
+   unspecified by the standards.  */
 DEFTREECODE (OMP_FOR, "omp_for", tcc_statement, 6)
 
 /* OpenMP - #pragma omp simd [clause1 ... clauseN]
@@ -1080,6 +1105,10 @@ DEFTREECODE (CILK_FOR, "cilk_for", tcc_statement, 6)
 /* OpenMP - #pragma omp distribute [clause1 ... clauseN]
    Operands like for OMP_FOR.  */
 DEFTREECODE (OMP_DISTRIBUTE, "omp_distribute", tcc_statement, 6)
+
+/* OpenMP - #pragma acc loop [clause1 ... clauseN]
+   Operands like for OMP_FOR.  */
+DEFTREECODE (OACC_LOOP, "oacc_loop", tcc_statement, 6)
 
 /* OpenMP - #pragma omp teams [clause1 ... clauseN]
    Operand 0: OMP_TEAMS_BODY: Teams body.
@@ -1126,6 +1155,27 @@ DEFTREECODE (OMP_ORDERED, "omp_ordered", tcc_statement, 1)
    Operand 0: OMP_CRITICAL_BODY: Critical section body.
    Operand 1: OMP_CRITICAL_NAME: Identifier for critical section.  */
 DEFTREECODE (OMP_CRITICAL, "omp_critical", tcc_statement, 2)
+
+/* OpenACC - #pragma acc cache (variable1 ... variableN)
+   Operand 0: OACC_CACHE_CLAUSES: List of variables (transformed into
+	OMP_CLAUSE__CACHE_ clauses).  */
+DEFTREECODE (OACC_CACHE, "oacc_cache", tcc_statement, 1)
+
+/* OpenACC - #pragma acc declare [clause1 ... clauseN]
+   Operand 0: OACC_DECLARE_CLAUSES: List of clauses.  */
+DEFTREECODE (OACC_DECLARE, "oacc_declare", tcc_statement, 1)
+
+/* OpenACC - #pragma acc enter data [clause1 ... clauseN]
+   Operand 0: OACC_ENTER_DATA_CLAUSES: List of clauses.  */
+DEFTREECODE (OACC_ENTER_DATA, "oacc_enter_data", tcc_statement, 1)
+
+/* OpenACC - #pragma acc exit data [clause1 ... clauseN]
+   Operand 0: OACC_EXIT_DATA_CLAUSES: List of clauses.  */
+DEFTREECODE (OACC_EXIT_DATA, "oacc_exit_data", tcc_statement, 1)
+
+/* OpenACC - #pragma acc update [clause1 ... clauseN]
+   Operand 0: OACC_UPDATE_CLAUSES: List of clauses.  */
+DEFTREECODE (OACC_UPDATE, "oacc_update", tcc_statement, 1)
 
 /* OpenMP - #pragma omp target update [clause1 ... clauseN]
    Operand 0: OMP_TARGET_UPDATE_CLAUSES: List of clauses.  */

@@ -41,10 +41,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "except.h"
-#include "input.h"
 #include "function.h"
 #include "insn-config.h"
 #include "insn-attr.h"
+#include "hashtab.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "stmt.h"
 /* Include expr.h after insn-config.h so we get HAVE_conditional_move.  */
 #include "expr.h"
 #include "insn-codes.h"
@@ -173,6 +182,7 @@ static void emit_single_push_insn (machine_mode, rtx, tree);
 #endif
 static void do_tablejump (rtx, machine_mode, rtx, rtx, rtx, int);
 static rtx const_vector_from_tree (tree);
+static HOST_WIDE_INT int_expr_size (tree);
 
 
 /* This is run to set up which modes can be used
@@ -10137,7 +10147,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	tree tem = get_inner_reference (exp, &bitsize, &bitpos, &offset,
 					&mode1, &unsignedp, &volatilep, true);
 	rtx orig_op0, memloc;
-	bool mem_attrs_from_type = false;
+	bool clear_mem_expr = false;
 
 	/* If we got back the original object, something is wrong.  Perhaps
 	   we are evaluating an expression too early.  In any event, don't
@@ -10233,7 +10243,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    memloc = assign_temp (TREE_TYPE (tem), 1, 1);
 	    emit_move_insn (memloc, op0);
 	    op0 = memloc;
-	    mem_attrs_from_type = true;
+	    clear_mem_expr = true;
 	  }
 
 	if (offset)
@@ -10417,16 +10427,16 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	if (op0 == orig_op0)
 	  op0 = copy_rtx (op0);
 
-	/* If op0 is a temporary because of forcing to memory, pass only the
-	   type to set_mem_attributes so that the original expression is never
-	   marked as ADDRESSABLE through MEM_EXPR of the temporary.  */
-	if (mem_attrs_from_type)
-	  set_mem_attributes (op0, type, 0);
-	else
-	  set_mem_attributes (op0, exp, 0);
+	set_mem_attributes (op0, exp, 0);
 
 	if (REG_P (XEXP (op0, 0)))
 	  mark_reg_pointer (XEXP (op0, 0), MEM_ALIGN (op0));
+
+	/* If op0 is a temporary because the original expressions was forced
+	   to memory, clear MEM_EXPR so that the original expression cannot
+	   be marked as addressable through MEM_EXPR of the temporary.  */
+	if (clear_mem_expr)
+	  set_mem_expr (op0, NULL_TREE);
 
 	MEM_VOLATILE_P (op0) |= volatilep;
 	if (mode == mode1 || mode1 == BLKmode || mode1 == tmode
@@ -11436,6 +11446,47 @@ get_personality_function (tree decl)
     gcc_assert (personality != NULL_TREE);
 
   return XEXP (DECL_RTL (personality), 0);
+}
+
+/* Return an rtx for the size in bytes of the value of EXP.  */
+
+rtx
+expr_size (tree exp)
+{
+  tree size;
+
+  if (TREE_CODE (exp) == WITH_SIZE_EXPR)
+    size = TREE_OPERAND (exp, 1);
+  else
+    {
+      size = tree_expr_size (exp);
+      gcc_assert (size);
+      gcc_assert (size == SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, exp));
+    }
+
+  return expand_expr (size, NULL_RTX, TYPE_MODE (sizetype), EXPAND_NORMAL);
+}
+
+/* Return a wide integer for the size in bytes of the value of EXP, or -1
+   if the size can vary or is larger than an integer.  */
+
+static HOST_WIDE_INT
+int_expr_size (tree exp)
+{
+  tree size;
+
+  if (TREE_CODE (exp) == WITH_SIZE_EXPR)
+    size = TREE_OPERAND (exp, 1);
+  else
+    {
+      size = tree_expr_size (exp);
+      gcc_assert (size);
+    }
+
+  if (size == 0 || !tree_fits_shwi_p (size))
+    return -1;
+
+  return tree_to_shwi (size);
 }
 
 #include "gt-expr.h"

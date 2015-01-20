@@ -62,7 +62,8 @@ create_code (gcc_jit_context *ctxt, void *user_data)
 				  0);
 
   gcc_jit_lvalue *buffer =
-    gcc_jit_context_new_global (ctxt, NULL, buf_type, "test_buffer");
+    gcc_jit_context_new_global (ctxt, NULL, GCC_JIT_GLOBAL_IMPORTED,
+				buf_type, "test_buffer");
 
   gcc_jit_block *block = gcc_jit_function_new_block(test_fn, "entry");
 

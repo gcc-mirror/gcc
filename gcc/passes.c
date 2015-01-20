@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "machmode.h"
 #include "vec.h"
 #include "double-int.h"
-#include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "wide-int.h"
@@ -52,6 +51,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "function.h"
 #include "toplev.h"
+#include "hashtab.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "stmt.h"
 #include "expr.h"
 #include "predict.h"
 #include "basic-block.h"
@@ -2464,7 +2473,7 @@ ipa_write_summaries_1 (lto_symtab_encoder_t encoder)
 /* Write out summaries for all the nodes in the callgraph.  */
 
 void
-ipa_write_summaries (bool offload_lto_mode)
+ipa_write_summaries (void)
 {
   lto_symtab_encoder_t encoder;
   int i, order_pos;
@@ -2475,7 +2484,7 @@ ipa_write_summaries (bool offload_lto_mode)
   if ((!flag_generate_lto && !flag_generate_offload) || seen_error ())
     return;
 
-  select_what_to_stream (offload_lto_mode);
+  select_what_to_stream ();
 
   encoder = lto_symtab_encoder_new (false);
 

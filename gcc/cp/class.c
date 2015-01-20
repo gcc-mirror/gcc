@@ -447,10 +447,20 @@ build_base_path (enum tree_code code,
 	  v_offset = cp_build_indirect_ref (v_offset, RO_NULL, complain);
 	}
       else
-	v_offset = build_vfield_ref (cp_build_indirect_ref (expr, RO_NULL,
-                                                            complain),
-				     TREE_TYPE (TREE_TYPE (expr)));
-      
+	{
+	  tree t = expr;
+	  if ((flag_sanitize & SANITIZE_VPTR) && fixed_type_p == 0)
+	    {
+	      t = cp_ubsan_maybe_instrument_cast_to_vbase (input_location,
+							   probe, expr);
+	      if (t == NULL_TREE)
+		t = expr;
+	    }
+	  v_offset = build_vfield_ref (cp_build_indirect_ref (t, RO_NULL,
+							      complain),
+	  TREE_TYPE (TREE_TYPE (expr)));
+	}
+
       if (v_offset == error_mark_node)
 	return error_mark_node;
 

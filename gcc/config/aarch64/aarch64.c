@@ -53,6 +53,18 @@
 #include "df.h"
 #include "hard-reg-set.h"
 #include "output.h"
+#include "hashtab.h"
+#include "function.h"
+#include "flags.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "emit-rtl.h"
+#include "stmt.h"
 #include "expr.h"
 #include "reload.h"
 #include "toplev.h"
@@ -60,8 +72,6 @@
 #include "target-def.h"
 #include "targhooks.h"
 #include "ggc.h"
-#include "input.h"
-#include "function.h"
 #include "tm_p.h"
 #include "recog.h"
 #include "langhooks.h"
@@ -84,6 +94,7 @@
 #include "builtins.h"
 #include "rtl-iter.h"
 #include "tm-constrs.h"
+#include "sched-int.h"
 
 /* Defined for convenience.  */
 #define POINTER_BYTES (POINTER_SIZE / BITS_PER_UNIT)
@@ -146,7 +157,6 @@ enum aarch64_code_model aarch64_cmodel;
 #define TARGET_HAVE_TLS 1
 #endif
 
-static bool aarch64_lra_p (void);
 static bool aarch64_composite_type_p (const_tree, machine_mode);
 static bool aarch64_vfp_is_call_or_return_candidate (machine_mode,
 						     const_tree,
@@ -233,6 +243,27 @@ static const struct cpu_addrcost_table cortexa57_addrcost_table =
 #if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
 __extension__
 #endif
+static const struct cpu_addrcost_table xgene1_addrcost_table =
+{
+#if HAVE_DESIGNATED_INITIALIZERS
+  .addr_scale_costs =
+#endif
+    {
+      NAMED_PARAM (hi, 1),
+      NAMED_PARAM (si, 0),
+      NAMED_PARAM (di, 0),
+      NAMED_PARAM (ti, 1),
+    },
+  NAMED_PARAM (pre_modify, 1),
+  NAMED_PARAM (post_modify, 0),
+  NAMED_PARAM (register_offset, 0),
+  NAMED_PARAM (register_extend, 1),
+  NAMED_PARAM (imm_offset, 0),
+};
+
+#if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
+__extension__
+#endif
 static const struct cpu_regmove_cost generic_regmove_cost =
 {
   NAMED_PARAM (GP2GP, 1),
@@ -269,6 +300,16 @@ static const struct cpu_regmove_cost thunderx_regmove_cost =
   NAMED_PARAM (GP2FP, 2),
   NAMED_PARAM (FP2GP, 6),
   NAMED_PARAM (FP2FP, 4)
+};
+
+static const struct cpu_regmove_cost xgene1_regmove_cost =
+{
+  NAMED_PARAM (GP2GP, 1),
+  /* Avoid the use of slow int<->fp moves for spilling by setting
+     their cost higher than memmov_cost.  */
+  NAMED_PARAM (GP2FP, 8),
+  NAMED_PARAM (FP2GP, 8),
+  NAMED_PARAM (FP2FP, 2)
 };
 
 /* Generic costs for vector insn classes.  */
@@ -308,6 +349,26 @@ static const struct cpu_vector_cost cortexa57_vector_cost =
   NAMED_PARAM (vec_unalign_store_cost, 1),
   NAMED_PARAM (vec_store_cost, 1),
   NAMED_PARAM (cond_taken_branch_cost, 1),
+  NAMED_PARAM (cond_not_taken_branch_cost, 1)
+};
+
+/* Generic costs for vector insn classes.  */
+#if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
+__extension__
+#endif
+static const struct cpu_vector_cost xgene1_vector_cost =
+{
+  NAMED_PARAM (scalar_stmt_cost, 1),
+  NAMED_PARAM (scalar_load_cost, 5),
+  NAMED_PARAM (scalar_store_cost, 1),
+  NAMED_PARAM (vec_stmt_cost, 2),
+  NAMED_PARAM (vec_to_scalar_cost, 4),
+  NAMED_PARAM (scalar_to_vec_cost, 4),
+  NAMED_PARAM (vec_align_load_cost, 10),
+  NAMED_PARAM (vec_unalign_load_cost, 10),
+  NAMED_PARAM (vec_unalign_store_cost, 2),
+  NAMED_PARAM (vec_store_cost, 2),
+  NAMED_PARAM (cond_taken_branch_cost, 2),
   NAMED_PARAM (cond_not_taken_branch_cost, 1)
 };
 
@@ -385,6 +446,23 @@ static const struct tune_params thunderx_tunings =
   8,	/* function_align.  */
   8,	/* jump_align.  */
   8,	/* loop_align.  */
+  2,	/* int_reassoc_width.  */
+  4,	/* fp_reassoc_width.  */
+  1	/* vec_reassoc_width.  */
+};
+
+static const struct tune_params xgene1_tunings =
+{
+  &xgene1_extra_costs,
+  &xgene1_addrcost_table,
+  &xgene1_regmove_cost,
+  &xgene1_vector_cost,
+  NAMED_PARAM (memmov_cost, 6),
+  NAMED_PARAM (issue_rate, 4),
+  NAMED_PARAM (fuseable_ops, AARCH64_FUSE_NOTHING),
+  16,	/* function_align.  */
+  8,	/* jump_align.  */
+  16,	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1	/* vec_reassoc_width.  */
@@ -6422,6 +6500,14 @@ aarch64_sched_issue_rate (void)
   return aarch64_tune_params->issue_rate;
 }
 
+static int
+aarch64_sched_first_cycle_multipass_dfa_lookahead (void)
+{
+  int issue_rate = aarch64_sched_issue_rate ();
+
+  return issue_rate > 1 && !sched_fusion ? issue_rate : 0;
+}
+
 /* Vectorizer cost model target hooks.  */
 
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
@@ -7730,13 +7816,6 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep)
     }
 
   return -1;
-}
-
-/* Return true if we use LRA instead of reload pass.  */
-static bool
-aarch64_lra_p (void)
-{
-  return aarch64_lra_flag;
 }
 
 /* Return TRUE if the type, as described by TYPE and MODE, is a composite
@@ -10303,6 +10382,198 @@ aarch64_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
   return default_use_by_pieces_infrastructure_p (size, align, op, speed_p);
 }
 
+static enum machine_mode
+aarch64_code_to_ccmode (enum rtx_code code)
+{
+  switch (code)
+    {
+    case NE:
+      return CC_DNEmode;
+
+    case EQ:
+      return CC_DEQmode;
+
+    case LE:
+      return CC_DLEmode;
+
+    case LT:
+      return CC_DLTmode;
+
+    case GE:
+      return CC_DGEmode;
+
+    case GT:
+      return CC_DGTmode;
+
+    case LEU:
+      return CC_DLEUmode;
+
+    case LTU:
+      return CC_DLTUmode;
+
+    case GEU:
+      return CC_DGEUmode;
+
+    case GTU:
+      return CC_DGTUmode;
+
+    default:
+      return CCmode;
+    }
+}
+
+static rtx
+aarch64_gen_ccmp_first (rtx *prep_seq, rtx *gen_seq,
+			int code, tree treeop0, tree treeop1)
+{
+  enum machine_mode op_mode, cmp_mode, cc_mode;
+  rtx op0, op1, cmp, target;
+  int unsignedp = TYPE_UNSIGNED (TREE_TYPE (treeop0));
+  enum insn_code icode;
+  struct expand_operand ops[4];
+
+  cc_mode = aarch64_code_to_ccmode ((enum rtx_code) code);
+  if (cc_mode == CCmode)
+    return NULL_RTX;
+
+  start_sequence ();
+  expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
+
+  op_mode = GET_MODE (op0);
+  if (op_mode == VOIDmode)
+    op_mode = GET_MODE (op1);
+
+  switch (op_mode)
+    {
+    case QImode:
+    case HImode:
+    case SImode:
+      cmp_mode = SImode;
+      icode = CODE_FOR_cmpsi;
+      break;
+
+    case DImode:
+      cmp_mode = DImode;
+      icode = CODE_FOR_cmpdi;
+      break;
+
+    default:
+      end_sequence ();
+      return NULL_RTX;
+    }
+
+  op0 = prepare_operand (icode, op0, 2, op_mode, cmp_mode, unsignedp);
+  op1 = prepare_operand (icode, op1, 3, op_mode, cmp_mode, unsignedp);
+  if (!op0 || !op1)
+    {
+      end_sequence ();
+      return NULL_RTX;
+    }
+  *prep_seq = get_insns ();
+  end_sequence ();
+
+  cmp = gen_rtx_fmt_ee ((enum rtx_code) code, cmp_mode, op0, op1);
+  target = gen_rtx_REG (CCmode, CC_REGNUM);
+
+  create_output_operand (&ops[0], target, CCmode);
+  create_fixed_operand (&ops[1], cmp);
+  create_fixed_operand (&ops[2], op0);
+  create_fixed_operand (&ops[3], op1);
+
+  start_sequence ();
+  if (!maybe_expand_insn (icode, 4, ops))
+    {
+      end_sequence ();
+      return NULL_RTX;
+    }
+  *gen_seq = get_insns ();
+  end_sequence ();
+
+  return gen_rtx_REG (cc_mode, CC_REGNUM);
+}
+
+static rtx
+aarch64_gen_ccmp_next (rtx *prep_seq, rtx *gen_seq, rtx prev, int cmp_code,
+		       tree treeop0, tree treeop1, int bit_code)
+{
+  rtx op0, op1, cmp0, cmp1, target;
+  enum machine_mode op_mode, cmp_mode, cc_mode;
+  int unsignedp = TYPE_UNSIGNED (TREE_TYPE (treeop0));
+  enum insn_code icode = CODE_FOR_ccmp_andsi;
+  struct expand_operand ops[6];
+
+  cc_mode = aarch64_code_to_ccmode ((enum rtx_code) cmp_code);
+  if (cc_mode == CCmode)
+    return NULL_RTX;
+
+  push_to_sequence ((rtx_insn*) *prep_seq);
+  expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
+
+  op_mode = GET_MODE (op0);
+  if (op_mode == VOIDmode)
+    op_mode = GET_MODE (op1);
+
+  switch (op_mode)
+    {
+    case QImode:
+    case HImode:
+    case SImode:
+      cmp_mode = SImode;
+      icode = (enum rtx_code) bit_code == AND ? CODE_FOR_ccmp_andsi
+						: CODE_FOR_ccmp_iorsi;
+      break;
+
+    case DImode:
+      cmp_mode = DImode;
+      icode = (enum rtx_code) bit_code == AND ? CODE_FOR_ccmp_anddi
+						: CODE_FOR_ccmp_iordi;
+      break;
+
+    default:
+      end_sequence ();
+      return NULL_RTX;
+    }
+
+  op0 = prepare_operand (icode, op0, 2, op_mode, cmp_mode, unsignedp);
+  op1 = prepare_operand (icode, op1, 3, op_mode, cmp_mode, unsignedp);
+  if (!op0 || !op1)
+    {
+      end_sequence ();
+      return NULL_RTX;
+    }
+  *prep_seq = get_insns ();
+  end_sequence ();
+
+  target = gen_rtx_REG (cc_mode, CC_REGNUM);
+  cmp1 = gen_rtx_fmt_ee ((enum rtx_code) cmp_code, cmp_mode, op0, op1);
+  cmp0 = gen_rtx_fmt_ee (NE, cmp_mode, prev, const0_rtx);
+
+  create_fixed_operand (&ops[0], prev);
+  create_fixed_operand (&ops[1], target);
+  create_fixed_operand (&ops[2], op0);
+  create_fixed_operand (&ops[3], op1);
+  create_fixed_operand (&ops[4], cmp0);
+  create_fixed_operand (&ops[5], cmp1);
+
+  push_to_sequence ((rtx_insn*) *gen_seq);
+  if (!maybe_expand_insn (icode, 6, ops))
+    {
+      end_sequence ();
+      return NULL_RTX;
+    }
+
+  *gen_seq = get_insns ();
+  end_sequence ();
+
+  return target;
+}
+
+#undef TARGET_GEN_CCMP_FIRST
+#define TARGET_GEN_CCMP_FIRST aarch64_gen_ccmp_first
+
+#undef TARGET_GEN_CCMP_NEXT
+#define TARGET_GEN_CCMP_NEXT aarch64_gen_ccmp_next
+
 /* Implement TARGET_SCHED_MACRO_FUSION_P.  Return true if target supports
    instruction fusion of some sort.  */
 
@@ -10520,8 +10791,8 @@ fusion_load_store (rtx_insn *insn, rtx *base, rtx *offset)
   src = SET_SRC (x);
   dest = SET_DEST (x);
 
-  if (GET_MODE (src) != SImode && GET_MODE (src) != DImode
-      && GET_MODE (src) != SFmode && GET_MODE (src) != DFmode)
+  if (GET_MODE (dest) != SImode && GET_MODE (dest) != DImode
+      && GET_MODE (dest) != SFmode && GET_MODE (dest) != DFmode)
     return SCHED_FUSION_NONE;
 
   if (GET_CODE (src) == SIGN_EXTEND)
@@ -10630,6 +10901,10 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
       reg_2 = operands[3];
     }
 
+  /* The mems cannot be volatile.  */
+  if (MEM_VOLATILE_P (mem_1) || MEM_VOLATILE_P (mem_2))
+    return false;
+
   /* Check if the addresses are in the form of [base+offset].  */
   extract_base_offset_in_addr (mem_1, &base_1, &offset_1);
   if (base_1 == NULL_RTX || offset_1 == NULL_RTX)
@@ -10735,6 +11010,11 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
     }
   /* Skip if memory operand is by itslef valid for ldp/stp.  */
   if (!MEM_P (mem_1) || aarch64_mem_pair_operand (mem_1, mode))
+    return false;
+
+  /* The mems cannot be volatile.  */
+  if (MEM_VOLATILE_P (mem_1) || MEM_VOLATILE_P (mem_2)
+      || MEM_VOLATILE_P (mem_3) ||MEM_VOLATILE_P (mem_4))
     return false;
 
   /* Check if the addresses are in the form of [base+offset].  */
@@ -11053,7 +11333,7 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
 #define TARGET_LIBGCC_CMP_RETURN_MODE aarch64_libgcc_cmp_return_mode
 
 #undef TARGET_LRA_P
-#define TARGET_LRA_P aarch64_lra_p
+#define TARGET_LRA_P hook_bool_void_true
 
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE aarch64_mangle_type
@@ -11115,6 +11395,10 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
 
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE aarch64_sched_issue_rate
+
+#undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
+#define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \
+  aarch64_sched_first_cycle_multipass_dfa_lookahead
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT aarch64_trampoline_init

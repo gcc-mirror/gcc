@@ -55,6 +55,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-streamer.h"
 #include "data-streamer.h"
 #include "streamer-hooks.h"
+#include "gomp-constants.h"
+
 
 /* Output the STRING constant to the string
    table in OB.  Then put the index onto the INDEX_STREAM.  */
@@ -395,7 +397,7 @@ pack_ts_omp_clause_value_fields (struct output_block *ob,
 		    OMP_CLAUSE_DEPEND_KIND (expr));
       break;
     case OMP_CLAUSE_MAP:
-      bp_pack_enum (bp, omp_clause_map_kind, OMP_CLAUSE_MAP_LAST,
+      bp_pack_enum (bp, gomp_map_kind, GOMP_MAP_LAST,
 		    OMP_CLAUSE_MAP_KIND (expr));
       break;
     case OMP_CLAUSE_PROC_BIND:

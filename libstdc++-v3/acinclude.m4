@@ -1777,7 +1777,7 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 	      <tr1/cinttypes> in namespace std::tr1.])
   fi
 
-  # Check for the existence of whcar_t <inttypes.h> functions (NB: doesn't
+  # Check for the existence of wchar_t <inttypes.h> functions (NB: doesn't
   # make sense if the glibcxx_cv_c99_stdint_tr1 check fails, per C99, 7.8/1).
   ac_c99_inttypes_wchar_t_tr1=no;
   if test x"$glibcxx_cv_c99_stdint_tr1" = x"yes"; then

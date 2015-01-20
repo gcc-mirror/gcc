@@ -37,13 +37,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "stringpool.h"
-#include "expr.h"
-#include "flags.h"
-#include "params.h"
-#include "input.h"
-#include "predict.h"
+#include "hashtab.h"
 #include "hard-reg-set.h"
 #include "function.h"
+#include "rtl.h"
+#include "flags.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
+#include "expr.h"
+#include "params.h"
+#include "predict.h"
 #include "dominance.h"
 #include "cfg.h"
 #include "basic-block.h"
@@ -70,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "streamer-hooks.h"
 #include "cfgloop.h"
 #include "builtins.h"
+#include "gomp-constants.h"
 
 
 static void lto_write_tree (struct output_block*, tree, bool);
@@ -154,7 +167,8 @@ tree_is_indexable (tree t)
   /* Parameters and return values of functions of variably modified types
      must go to global stream, because they may be used in the type
      definition.  */
-  if (TREE_CODE (t) == PARM_DECL || TREE_CODE (t) == RESULT_DECL)
+  if ((TREE_CODE (t) == PARM_DECL || TREE_CODE (t) == RESULT_DECL)
+      && DECL_CONTEXT (t))
     return variably_modified_type_p (TREE_TYPE (DECL_CONTEXT (t)), NULL_TREE);
   /* IMPORTED_DECL is put into BLOCK and thus it never can be shared.  */
   else if (TREE_CODE (t) == IMPORTED_DECL)

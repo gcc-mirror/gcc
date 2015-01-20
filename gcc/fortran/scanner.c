@@ -55,9 +55,12 @@ gfc_directorylist *include_dirs, *intrinsic_modules_dirs;
 
 static gfc_file *file_head, *current_file;
 
-static int continue_flag, end_flag, openmp_flag, gcc_attribute_flag;
+static int continue_flag, end_flag, gcc_attribute_flag;
+/* If !$omp/!$acc occurred in current comment line.  */
+static int openmp_flag, openacc_flag;
 static int continue_count, continue_line;
 static locus openmp_locus;
+static locus openacc_locus;
 static locus gcc_attribute_locus;
 
 gfc_source_form gfc_current_form;
@@ -707,11 +710,89 @@ skip_gcc_attribute (locus start)
   return r;
 }
 
+/* Return true if CC was matched.  */
+static bool
+skip_oacc_attribute (locus start, locus old_loc, bool continue_flag)
+{
+  bool r = false;
+  char c;
 
+  if ((c = next_char ()) == 'c' || c == 'C')
+    if ((c = next_char ()) == 'c' || c == 'C')
+      r = true;
+
+  if (r)
+   {
+      if ((c = next_char ()) == ' ' || c == '\t'
+	  || continue_flag)
+	{
+	  while (gfc_is_whitespace (c))
+	    c = next_char ();
+	  if (c != '\n' && c != '!')
+	    {
+	      openacc_flag = 1;
+	      openacc_locus = old_loc;
+	      gfc_current_locus = start;
+	    }
+	  else 
+	    r = false;
+	}
+      else
+	{
+	  gfc_warning_now ("!$ACC at %C starts a commented "
+			   "line as it neither is followed "
+			   "by a space nor is a "
+			   "continuation line");
+	  r = false;
+	}
+   }
+
+  return r;
+}
+
+/* Return true if MP was matched.  */
+static bool
+skip_omp_attribute (locus start, locus old_loc, bool continue_flag)
+{
+  bool r = false;
+  char c;
+
+  if ((c = next_char ()) == 'm' || c == 'M')
+    if ((c = next_char ()) == 'p' || c == 'P')
+      r = true;
+
+  if (r)
+   {
+      if ((c = next_char ()) == ' ' || c == '\t'
+	  || continue_flag)
+	{
+	  while (gfc_is_whitespace (c))
+	    c = next_char ();
+	  if (c != '\n' && c != '!')
+	    {
+	      openmp_flag = 1;
+	      openmp_locus = old_loc;
+	      gfc_current_locus = start;
+	    }
+	  else 
+	    r = false;
+	}
+      else
+	{
+	  gfc_warning_now ("!$OMP at %C starts a commented "
+			   "line as it neither is followed "
+			   "by a space nor is a "
+			   "continuation line");
+	  r = false;
+	}
+   }
+
+  return r;
+}
 
 /* Comment lines are null lines, lines containing only blanks or lines
    on which the first nonblank line is a '!'.
-   Return true if !$ openmp conditional compilation sentinel was
+   Return true if !$ openmp or openacc conditional compilation sentinel was
    seen.  */
 
 static bool
@@ -744,55 +825,98 @@ skip_free_comments (void)
 	  if (at_bol && skip_gcc_attribute (start))
 	    return false;
 
-	  /* If -fopenmp, we need to handle here 2 things:
-	     1) don't treat !$omp as comments, but directives
-	     2) handle OpenMP conditional compilation, where
+	  /* If -fopenmp/-fopenacc, we need to handle here 2 things:
+	     1) don't treat !$omp/!$acc as comments, but directives
+	     2) handle OpenMP/OpenACC conditional compilation, where
 		!$ should be treated as 2 spaces (for initial lines
 		only if followed by space).  */
-	  if ((flag_openmp || flag_openmp_simd) && at_bol)
-	    {
-	      locus old_loc = gfc_current_locus;
-	      if (next_char () == '$')
-		{
-		  c = next_char ();
-		  if (c == 'o' || c == 'O')
-		    {
-		      if (((c = next_char ()) == 'm' || c == 'M')
-			  && ((c = next_char ()) == 'p' || c == 'P'))
+	  if (at_bol)
+	  {
+	    if ((flag_openmp || flag_openmp_simd)
+		&& flag_openacc)
+	      {
+		locus old_loc = gfc_current_locus;
+		if (next_char () == '$')
+		  {
+		    c = next_char ();
+		    if (c == 'o' || c == 'O')
+		      {
+			if (skip_omp_attribute (start, old_loc, continue_flag))
+			  return false;
+			gfc_current_locus = old_loc;
+			next_char ();
+			c = next_char ();
+		      }
+		    else if (c == 'a' || c == 'A')
+		      {
+			if (skip_oacc_attribute (start, old_loc, continue_flag))
+			  return false;
+			gfc_current_locus = old_loc;
+			next_char ();
+			c = next_char ();
+		      }
+		    if (continue_flag || c == ' ' || c == '\t')
+		      {
+			gfc_current_locus = old_loc;
+			next_char ();
+			openmp_flag = openacc_flag = 0;
+			return true;
+		      }
+		  }
+		gfc_current_locus = old_loc;
+	      }
+	    else if ((flag_openmp || flag_openmp_simd)
+		     && !flag_openacc)
+	      {
+		locus old_loc = gfc_current_locus;
+		if (next_char () == '$')
+		  {
+		    c = next_char ();
+		    if (c == 'o' || c == 'O')
+		      {
+			if (skip_omp_attribute (start, old_loc, continue_flag))
+			  return false;
+			gfc_current_locus = old_loc;
+			next_char ();
+			c = next_char ();
+		      }
+		    if (continue_flag || c == ' ' || c == '\t')
+		      {
+			gfc_current_locus = old_loc;
+			next_char ();
+			openmp_flag = 0;
+			return true;
+		      }
+		  }
+		gfc_current_locus = old_loc;
+	      }
+	    else if (flag_openacc
+		     && !(flag_openmp || flag_openmp_simd))
+	      {
+		locus old_loc = gfc_current_locus;
+		if (next_char () == '$')
+		  {
+		    c = next_char ();
+		      if (c == 'a' || c == 'A')
 			{
-			  if ((c = next_char ()) == ' ' || c == '\t'
-			      || continue_flag)
-			    {
-			      while (gfc_is_whitespace (c))
-				c = next_char ();
-			      if (c != '\n' && c != '!')
-				{
-				  openmp_flag = 1;
-				  openmp_locus = old_loc;
-				  gfc_current_locus = start;
-				  return false;
-				}
-			    }
-			  else
-			    gfc_warning_now ("!$OMP at %C starts a commented "
-					     "line as it neither is followed "
-					     "by a space nor is a "
-					     "continuation line");
+			  if (skip_oacc_attribute (start, old_loc, 
+						   continue_flag))
+			    return false;
+			  gfc_current_locus = old_loc;
+			  next_char();
+			  c = next_char();
 			}
-		      gfc_current_locus = old_loc;
-		      next_char ();
-		      c = next_char ();
-		    }
-		  if (continue_flag || c == ' ' || c == '\t')
-		    {
-		      gfc_current_locus = old_loc;
-		      next_char ();
-		      openmp_flag = 0;
-		      return true;
-		    }
-		}
-	      gfc_current_locus = old_loc;
-	    }
+		      if (continue_flag || c == ' ' || c == '\t')
+			{
+			  gfc_current_locus = old_loc;
+			  next_char();
+			  openacc_flag = 0;
+			  return true;
+			}
+		  }
+		gfc_current_locus = old_loc;
+	      }
+	  }
 	  skip_comment_line ();
 	  continue;
 	}
@@ -802,6 +926,9 @@ skip_free_comments (void)
 
   if (openmp_flag && at_bol)
     openmp_flag = 0;
+
+  if (openacc_flag && at_bol)
+    openacc_flag = 0;
 
   gcc_attribute_flag = 0;
   gfc_current_locus = start;
@@ -865,9 +992,10 @@ skip_fixed_comments (void)
 	      return;
 	    }
 
-	  /* If -fopenmp, we need to handle here 2 things:
-	     1) don't treat !$omp|c$omp|*$omp as comments, but directives
-	     2) handle OpenMP conditional compilation, where
+	  /* If -fopenmp/-fopenacc, we need to handle here 2 things:
+	     1) don't treat !$omp/!$acc|c$omp/c$acc|*$omp / *$acc as comments, 
+		but directives
+	     2) handle OpenMP/OpenACC conditional compilation, where
 		!$|c$|*$ should be treated as 2 spaces if the characters
 		in columns 3 to 6 are valid fixed form label columns
 		characters.  */
@@ -934,6 +1062,67 @@ skip_fixed_comments (void)
 		}
 	      gfc_current_locus = start;
 	    }
+
+	  if (flag_openacc)
+	    {
+	      if (next_char () == '$')
+		{
+		  c = next_char ();
+		  if (c == 'a' || c == 'A')
+		    {
+		      if (((c = next_char ()) == 'c' || c == 'C')
+			  && ((c = next_char ()) == 'c' || c == 'C'))
+			{
+			  c = next_char ();
+			  if (c != '\n'
+			      && ((openacc_flag && continue_flag)
+				  || c == ' ' || c == '\t' || c == '0'))
+			    {
+			      do
+				c = next_char ();
+			      while (gfc_is_whitespace (c));
+			      if (c != '\n' && c != '!')
+				{
+				  /* Canonicalize to *$acc. */
+				  *start.nextc = '*';
+				  openacc_flag = 1;
+				  gfc_current_locus = start;
+				  return;
+				}
+			    }
+			}
+		    }
+		  else
+		    {
+		      int digit_seen = 0;
+
+		      for (col = 3; col < 6; col++, c = next_char ())
+			if (c == ' ')
+			  continue;
+			else if (c == '\t')
+			  {
+			    col = 6;
+			    break;
+			  }
+			else if (c < '0' || c > '9')
+			  break;
+			else
+			  digit_seen = 1;
+
+		      if (col == 6 && c != '\n'
+			  && ((continue_flag && !digit_seen)
+			      || c == ' ' || c == '\t' || c == '0'))
+			{
+			  gfc_current_locus = start;
+			  start.nextc[0] = ' ';
+			  start.nextc[1] = ' ';
+			  continue;
+			}
+		    }
+		}
+	      gfc_current_locus = start;
+	    }
+
 	  skip_comment_line ();
 	  continue;
 	}
@@ -976,6 +1165,7 @@ skip_fixed_comments (void)
     }
 
   openmp_flag = 0;
+  openacc_flag = 0;
   gcc_attribute_flag = 0;
   gfc_current_locus = start;
 }
@@ -1004,10 +1194,11 @@ gfc_char_t
 gfc_next_char_literal (gfc_instring in_string)
 {
   locus old_loc;
-  int i, prev_openmp_flag;
+  int i, prev_openmp_flag, prev_openacc_flag;
   gfc_char_t c;
 
   continue_flag = 0;
+  prev_openacc_flag = prev_openmp_flag = 0;
 
 restart:
   c = next_char ();
@@ -1031,6 +1222,11 @@ restart:
 	  if (openmp_flag
 	      && memcmp (&gfc_current_locus, &openmp_locus,
 		 sizeof (gfc_current_locus)) == 0)
+	    goto done;
+
+	  if (openacc_flag
+	      && memcmp (&gfc_current_locus, &openacc_locus,
+	         sizeof (gfc_current_locus)) == 0)
 	    goto done;
 
 	  /* This line can't be continued */
@@ -1088,7 +1284,11 @@ restart:
 	  goto done;
 	}
 
-      prev_openmp_flag = openmp_flag;
+      if (flag_openmp)
+	prev_openmp_flag = openmp_flag;
+      if (flag_openacc)
+	prev_openacc_flag = openacc_flag;
+
       continue_flag = 1;
       if (c == '!')
 	skip_comment_line ();
@@ -1118,13 +1318,23 @@ restart:
 	  && continue_line < gfc_linebuf_linenum (gfc_current_locus.lb))
 	continue_line = gfc_linebuf_linenum (gfc_current_locus.lb);
 
-      if (prev_openmp_flag != openmp_flag)
-	{
-	  gfc_current_locus = old_loc;
-	  openmp_flag = prev_openmp_flag;
-	  c = '&';
-	  goto done;
-	}
+      if (flag_openmp)
+	if (prev_openmp_flag != openmp_flag)
+	  {
+	    gfc_current_locus = old_loc;
+	    openmp_flag = prev_openmp_flag;
+	    c = '&';
+	    goto done;
+	  }
+
+      if (flag_openacc)
+	if (prev_openacc_flag != openacc_flag)
+	  {
+	    gfc_current_locus = old_loc;
+	    openacc_flag = prev_openacc_flag;
+	    c = '&';
+	    goto done;
+	  }
 
       /* Now that we have a non-comment line, probe ahead for the
 	 first non-whitespace character.  If it is another '&', then
@@ -1148,6 +1358,17 @@ restart:
 	  while (gfc_is_whitespace (c))
 	    c = next_char ();
 	}
+      if (openacc_flag)
+	{
+	  for (i = 0; i < 5; i++, c = next_char ())
+	    {
+	      gcc_assert (gfc_wide_tolower (c) == (unsigned char) "!$acc"[i]);
+	      if (i == 4)
+		old_loc = gfc_current_locus;
+	    }
+	  while (gfc_is_whitespace (c))
+	    c = next_char ();
+	}
 
       if (c != '&')
 	{
@@ -1161,7 +1382,7 @@ restart:
 	    }
 	  /* Both !$omp and !$ -fopenmp continuation lines have & on the
 	     continuation line only optionally.  */
-	  else if (openmp_flag || openmp_cond_flag)
+	  else if (openmp_flag || openacc_flag || openmp_cond_flag)
 	    gfc_current_locus.nextc--;
 	  else
 	    {
@@ -1199,7 +1420,11 @@ restart:
 			   "Line truncated at %L", &gfc_current_locus);
 	}
 
-      prev_openmp_flag = openmp_flag;
+      if (flag_openmp)
+	prev_openmp_flag = openmp_flag;
+      if (flag_openacc)
+	prev_openacc_flag = openacc_flag;
+
       continue_flag = 1;
       old_loc = gfc_current_locus;
 
@@ -1207,24 +1432,36 @@ restart:
       skip_fixed_comments ();
 
       /* See if this line is a continuation line.  */
-      if (openmp_flag != prev_openmp_flag)
+      if (flag_openmp && openmp_flag != prev_openmp_flag)
 	{
 	  openmp_flag = prev_openmp_flag;
 	  goto not_continuation;
 	}
+      if (flag_openacc && openacc_flag != prev_openacc_flag)
+	{
+	  openacc_flag = prev_openacc_flag;
+	  goto not_continuation;
+	}
 
-      if (!openmp_flag)
+      if (!openmp_flag && !openacc_flag)
 	for (i = 0; i < 5; i++)
 	  {
 	    c = next_char ();
 	    if (c != ' ')
 	      goto not_continuation;
 	  }
-      else
+      else if (openmp_flag)
 	for (i = 0; i < 5; i++)
 	  {
 	    c = next_char ();
 	    if (gfc_wide_tolower (c) != (unsigned char) "*$omp"[i])
+	      goto not_continuation;
+	  }
+      else if (openacc_flag)
+	for (i = 0; i < 5; i++)
+	  {
+	    c = next_char ();
+	    if (gfc_wide_tolower (c) != (unsigned char) "*$acc"[i])
 	      goto not_continuation;
 	  }
 

@@ -12,7 +12,16 @@ _RUNTEST = $(shell if test -f $(top_srcdir)/../dejagnu/runtest; then \
 	     echo $(top_srcdir)/../dejagnu/runtest; else echo runtest; fi)
 RUNTEST = "$(_RUNTEST) $(AM_RUNTESTFLAGS)"
 
-# Used for support non-fallback offloading.
-export OFFLOAD_TARGETS = $(offload_targets)
-export OFFLOAD_ADDITIONAL_OPTIONS = $(offload_additional_options)
-export OFFLOAD_ADDITIONAL_LIB_PATHS = $(offload_additional_lib_paths)
+
+# Instead of directly in ../testsuite/libgomp-test-support.exp.in, the
+# following variables have to be "routed through" this Makefile, for expansion
+# of the several (Makefile) variables used therein.
+libgomp-test-support.exp: libgomp-test-support.pt.exp Makefile
+	cp $< $@.tmp
+	echo >> $@.tmp \
+	  'set offload_additional_options "$(offload_additional_options)"'
+	echo >> $@.tmp \
+	  'set offload_additional_lib_paths "$(offload_additional_lib_paths)"'
+	mv $@.tmp $@
+
+all-local: libgomp-test-support.exp

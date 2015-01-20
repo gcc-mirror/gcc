@@ -1,3 +1,127 @@
+2015-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58614
+	* pt.c (unify): When BRACE_ENCLOSED_INITIALIZER_P (arg), handle
+	TREE_TYPE (elt) == error_mark_node.
+
+2015-01-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/62053
+	* tree.c (build_cplus_array_type): Layout type after variants are set.
+
+2015-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.c (cp_genericize_r): Call
+	cp_ubsan_maybe_instrument_member_call for member calls.
+	(cp_ubsan_check_member_access_r): New function.
+	(cp_genericize_tree): Call cp_ubsan_instrument_member_accesses.
+	* cp-tree.h (cp_ubsan_maybe_instrument_member_call,
+	cp_ubsan_instrument_member_accesses,
+	cp_ubsan_maybe_instrument_downcast,
+	cp_ubsan_maybe_instrument_cast_to_vbase): New prototypes.
+	* cp-ubsan.c: New file.
+	* Make-lang.in (CXX_AND_OBJCXX_OBJS): Add cp/cp-ubsan.o.
+	* constexpr.c (cxx_eval_call_expression): Return void_node
+	for IFN_UBSAN_VPTR.
+	(potential_constant_expression_1): Return true for
+	UBSAN_NULL, UBSAN_BOUNDS and UBSAN_VPTR internal calls.
+	* typeck.c (build_class_member_access_expr): Provide locus
+	for COMPONENT_REFs.
+	(build_static_cast_1): Instrument downcasts.
+	* class.c (build_base_path): For -fsanitize=vptr and !fixed_type_p
+	add ubsan instrumentation for virtual_access.
+	* call.c: Include internal-fn.h.
+	(set_flags_from_callee): Handle internal calls.
+
+2015-01-15  Momchil Velikov  <momchil.velikov@gmail.com>
+
+	PR c++/59366
+	* name-lookup.c (pushdecl_maybe_friend_1): Hide friend functions
+	and function templates, declared only in the class.
+	* decl.c (duplicate_decls): Reveal hidden friend functions or
+	function templates, if they are redeclared outside the class.
+
+2015-01-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64356
+	* constexpr.c (cxx_eval_binary_expression): Fix pasto.
+
+	PR c++/63283
+	* constexpr.c (potential_constant_expression_1): Handle reference
+	args in templates.
+
+2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+	    Ilmir Usmanov  <i.usmanov@samsung.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c: Include "gomp-constants.h".
+	(cp_parser_omp_clause_map): Use enum gomp_map_kind instead of enum
+	omp_clause_map_kind.  Use GOMP_MAP_* instead of OMP_CLAUSE_MAP_*.
+	Use OMP_CLAUSE_SET_MAP_KIND.
+	(cp_parser_omp_construct, cp_parser_pragma): Handle
+	PRAGMA_OACC_CACHE, PRAGMA_OACC_DATA, PRAGMA_OACC_ENTER_DATA,
+	PRAGMA_OACC_EXIT_DATA, PRAGMA_OACC_KERNELS, PRAGMA_OACC_PARALLEL,
+	PRAGMA_OACC_LOOP, PRAGMA_OACC_UPDATE, PRAGMA_OACC_WAIT.
+	(cp_parser_omp_clause_name): Handle "async", "copy", "copyout",
+	"create", "delete", "deviceptr", "host", "num_gangs",
+	"num_workers", "present", "present_or_copy", "pcopy",
+	"present_or_copyin", "pcopyin", "present_or_copyout", "pcopyout",
+	"present_or_create", "pcreate", "vector_length", "wait".
+	(OACC_DATA_CLAUSE_MASK, OACC_ENTER_DATA_CLAUSE_MASK)
+	(OACC_EXIT_DATA_CLAUSE_MASK, OACC_KERNELS_CLAUSE_MASK)
+	(OACC_LOOP_CLAUSE_MASK, OACC_PARALLEL_CLAUSE_MASK)
+	(OACC_UPDATE_CLAUSE_MASK, OACC_WAIT_CLAUSE_MASK): New macros.
+	(cp_parser_omp_var_list_no_open): Handle OMP_CLAUSE__CACHE_.
+	(cp_parser_oacc_data_clause, cp_parser_oacc_data_clause_deviceptr)
+	(cp_parser_oacc_clause_vector_length, cp_parser_oacc_wait_list)
+	(cp_parser_oacc_clause_wait, cp_parser_omp_clause_num_gangs)
+	(cp_parser_omp_clause_num_workers, cp_parser_oacc_clause_async)
+	(cp_parser_oacc_all_clauses, cp_parser_oacc_cache)
+	(cp_parser_oacc_data, cp_parser_oacc_enter_exit_data)
+	(cp_parser_oacc_kernels, cp_parser_oacc_loop)
+	(cp_parser_oacc_parallel, cp_parser_oacc_update)
+	(cp_parser_oacc_wait): New functions.
+	* cp-tree.h (finish_oacc_data, finish_oacc_kernels)
+	(finish_oacc_parallel): New prototypes.
+	* semantics.c: Include "gomp-constants.h".
+	(handle_omp_array_sections): Handle GOMP_MAP_FORCE_DEVICEPTR.  Use
+	GOMP_MAP_* instead of OMP_CLAUSE_MAP_*.  Use
+	OMP_CLAUSE_SET_MAP_KIND.
+	(finish_omp_clauses): Handle OMP_CLAUSE_ASYNC,
+	OMP_CLAUSE_VECTOR_LENGTH, OMP_CLAUSE_WAIT, OMP_CLAUSE__CACHE_.
+	Use GOMP_MAP_* instead of OMP_CLAUSE_MAP_*.
+	(finish_oacc_data, finish_oacc_kernels, finish_oacc_parallel): New
+	functions.
+
+2015-01-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58671
+	* decl2.c (var_defined_without_dynamic_init): Handle gracefully
+	self-initialization.
+
+2015-01-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64356
+	PR libstdc++/58777
+	* constexpr.c (cxx_eval_binary_expression): Don't VERIFY_CONSTANT
+	pointer expressions.
+	(cxx_eval_increment_expression): Likewise.
+
+	PR c++/64514
+	* pt.c (coerce_template_parameter_pack): Return NULL for a
+	zero-length fixed parameter pack with a pack expansion arg.
+
+	PR c++/64520
+	* pt.c (unify): Don't try to deduce to std::initializer_list<T...>.
+
+2015-01-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64547
+	* constexpr.c (cxx_eval_call_expression): A call to a void
+	function doesn't need to return a value.
+
 2015-01-09  Michael Collison  <michael.collison@linaro.org>
 
 	* call.c: Include hash-set.h, machmode.h, vec.h, double-int.h,

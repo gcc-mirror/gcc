@@ -1,3 +1,20 @@
+2014-12-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (compare_tree_sccs_1): Add comparsion of
+	DECL_FUNCTION_SPECIFIC_TARGET
+
+2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
+	    James Norris  <jnorris@codesourcery.com>
+
+	* lto-lang.c (DEF_FUNCTION_TYPE_VAR_8, DEF_FUNCTION_TYPE_VAR_12):
+	New macros.
+	* lto.c: Include "gomp-constants.h".
+
+2015-01-14  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* lto-partition.c (lto_promote_cross_file_statics): Remove argument
+	from select_what_to_stream.
+
 2015-01-09  Bernd Schmidt  <bernds@codesourcery.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

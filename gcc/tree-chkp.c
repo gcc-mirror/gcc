@@ -65,6 +65,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "gimplify-me.h"
 #include "print-tree.h"
+#include "hashtab.h"
+#include "tm.h"
+#include "hard-reg-set.h"
+#include "function.h"
+#include "rtl.h"
+#include "flags.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "stmt.h"
 #include "expr.h"
 #include "tree-ssa-propagate.h"
 #include "gimple-fold.h"
@@ -75,8 +91,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "lto-streamer.h"
 #include "cgraph.h"
-#include "ipa-chkp.h"
-#include "params.h"
 #include "ipa-chkp.h"
 #include "params.h"
 
@@ -1672,9 +1686,8 @@ chkp_add_bounds_to_call_stmt (gimple_stmt_iterator *gsi)
       && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_OBJECT_SIZE)
     return;
 
-  /* Do nothing for calls to legacy functions.  */
-  if (fndecl
-      && lookup_attribute ("bnd_legacy", DECL_ATTRIBUTES (fndecl)))
+  /* Do nothing for calls to not instrumentable functions.  */
+  if (fndecl && !chkp_instrumentable_p (fndecl))
     return;
 
   /* Ignore CHKP_INIT_PTR_BOUNDS, CHKP_NULL_PTR_BOUNDS

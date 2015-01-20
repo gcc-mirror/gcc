@@ -41,6 +41,7 @@
 #include <condition_variable>
 #include <system_error>
 #include <atomic>
+#include <bits/atomic_futex.h>
 #include <bits/functexcept.h>
 #include <bits/unique_ptr.h>
 #include <bits/shared_ptr.h>
@@ -294,15 +295,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef _Ptr<_Result_base> _Ptr_type;
 
+      enum _Status : unsigned {
+	__not_ready,
+	__ready
+      };
+
       _Ptr_type			_M_result;
-      mutex               	_M_mutex;
-      condition_variable  	_M_cond;
-      atomic_flag		_M_retrieved = ATOMIC_FLAG_INIT;
-      bool			_M_ready = false;
+      __atomic_futex_unsigned<>	_M_status;
+      atomic_flag         	_M_retrieved = ATOMIC_FLAG_INIT;
       once_flag			_M_once;
 
     public:
-      _State_baseV2() noexcept = default;
+      _State_baseV2() noexcept : _M_result(), _M_status(_Status::__not_ready)
+	{ }
       _State_baseV2(const _State_baseV2&) = delete;
       _State_baseV2& operator=(const _State_baseV2&) = delete;
       virtual ~_State_baseV2() = default;
@@ -312,9 +317,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	// Run any deferred function or join any asynchronous thread:
 	_M_complete_async();
-
-	unique_lock<mutex> __lock(_M_mutex);
-	_M_cond.wait(__lock, [&] { return _M_ready; });
+	// Acquire MO makes sure this synchronizes with the thread that made
+	// the future ready.
+	_M_status._M_load_when_equal(_Status::__ready, memory_order_acquire);
 	return *_M_result;
       }
 
@@ -322,12 +327,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         future_status
         wait_for(const chrono::duration<_Rep, _Period>& __rel)
         {
-	  unique_lock<mutex> __lock(_M_mutex);
-	  if (_M_ready)
+	  // First, check if the future has been made ready.  Use acquire MO
+	  // to synchronize with the thread that made it ready.
+	  if (_M_status._M_load(memory_order_acquire) == _Status::__ready)
 	    return future_status::ready;
-	  if (_M_has_deferred())
+	  if (_M_is_deferred_future())
 	    return future_status::deferred;
-	  if (_M_cond.wait_for(__lock, __rel, [&] { return _M_ready; }))
+	  if (_M_status._M_load_when_equal_for(_Status::__ready,
+	      memory_order_acquire, __rel))
 	    {
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 2100.  timed waiting functions must also join
@@ -349,12 +356,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         future_status
         wait_until(const chrono::time_point<_Clock, _Duration>& __abs)
         {
-	  unique_lock<mutex> __lock(_M_mutex);
-	  if (_M_ready)
+	  // First, check if the future has been made ready.  Use acquire MO
+	  // to synchronize with the thread that made it ready.
+	  if (_M_status._M_load(memory_order_acquire) == _Status::__ready)
 	    return future_status::ready;
-	  if (_M_has_deferred())
+	  if (_M_is_deferred_future())
 	    return future_status::deferred;
-	  if (_M_cond.wait_until(__lock, __abs, [&] { return _M_ready; }))
+	  if (_M_status._M_load_when_equal_until(_Status::__ready,
+	      memory_order_acquire, __abs))
 	    {
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 2100.  timed waiting functions must also join
@@ -367,45 +376,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       // Provide a result to the shared state and make it ready.
-      // Atomically performs:
-      //   if (!_M_ready) {
-      //     _M_result = __res();
-      //     _M_ready = true;
-      //   }
+      // Calls at most once: _M_result = __res();
       void
       _M_set_result(function<_Ptr_type()> __res, bool __ignore_failure = false)
       {
-	unique_lock<mutex> __lock(_M_mutex, defer_lock);
+	bool __did_set = false;
         // all calls to this function are serialized,
         // side-effects of invoking __res only happen once
 	call_once(_M_once, &_State_baseV2::_M_do_set, this,
-		  std::__addressof(__res), std::__addressof(__lock));
-	if (__lock.owns_lock())
-	  {
-	    _M_ready = true;
-	    _M_cond.notify_all();
-	  }
+		  std::__addressof(__res), std::__addressof(__did_set));
+	if (__did_set)
+	  // Use release MO to synchronize with observers of the ready state.
+	  _M_status._M_store_notify_all(_Status::__ready,
+					memory_order_release);
 	else if (!__ignore_failure)
           __throw_future_error(int(future_errc::promise_already_satisfied));
       }
 
       // Provide a result to the shared state but delay making it ready
       // until the calling thread exits.
-      // Atomically performs:
-      //   if (!_M_ready) {
-      //     _M_result = __res();
-      //   }
+      // Calls at most once: _M_result = __res();
       void
       _M_set_delayed_result(function<_Ptr_type()> __res,
 			    weak_ptr<_State_baseV2> __self)
       {
+	bool __did_set = false;
 	unique_ptr<_Make_ready> __mr{new _Make_ready};
-	unique_lock<mutex> __lock(_M_mutex, defer_lock);
         // all calls to this function are serialized,
         // side-effects of invoking __res only happen once
 	call_once(_M_once, &_State_baseV2::_M_do_set, this,
-		  std::__addressof(__res), std::__addressof(__lock));
-	if (!__lock.owns_lock())
+		  std::__addressof(__res), std::__addressof(__did_set));
+	if (!__did_set)
           __throw_future_error(int(future_errc::promise_already_satisfied));
 	__mr->_M_shared_state = std::move(__self);
 	__mr->_M_set();
@@ -424,12 +425,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    // provider is abandoning this shared state, so noone can be
 	    // trying to make the shared state ready at the same time, and
 	    // we can access _M_result directly instead of through call_once.
-	    {
-	      lock_guard<mutex> __lock(_M_mutex);
-	      _M_result.swap(__res);
-	      _M_ready = true;
-	    }
-	    _M_cond.notify_all();
+	    _M_result.swap(__res);
+	    // Use release MO to synchronize with observers of the ready state.
+	    _M_status._M_store_notify_all(_Status::__ready,
+					  memory_order_release);
 	  }
       }
 
@@ -523,18 +522,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       // The function invoked with std::call_once(_M_once, ...).
       void
-      _M_do_set(function<_Ptr_type()>* __f, unique_lock<mutex>* __lock)
+      _M_do_set(function<_Ptr_type()>* __f, bool* __did_set)
       {
-        _Ptr_type __res = (*__f)(); // do not hold lock while running setter
-	__lock->lock();
-        _M_result.swap(__res);
+        _Ptr_type __res = (*__f)();
+        // Notify the caller that we did try to set; if we do not throw an
+        // exception, the caller will be aware that it did set (e.g., see
+        // _M_set_result).
+	*__did_set = true;
+        _M_result.swap(__res); // nothrow
       }
 
       // Wait for completion of async function.
       virtual void _M_complete_async() { }
 
       // Return true if state corresponds to a deferred function.
-      virtual bool _M_has_deferred() const { return false; }
+      virtual bool _M_is_deferred_future() const { return false; }
 
       struct _Make_ready final : __at_thread_exit_elt
       {
@@ -1606,7 +1608,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Caller should check whether the state is ready first, because this
       // function will return true even after the deferred function has run.
-      virtual bool _M_has_deferred() const { return true; }
+      virtual bool _M_is_deferred_future() const { return true; }
     };
 
   // Common functionality hoisted out of the _Async_state_impl template.

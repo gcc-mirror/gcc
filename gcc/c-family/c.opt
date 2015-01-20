@@ -279,6 +279,10 @@ Warray-bounds
 LangEnabledBy(C ObjC C++ ObjC++,Wall)
 ; in common.opt
 
+Warray-bounds=
+LangEnabledBy(C ObjC C++ ObjC++,Wall,1,0)
+; in common.opt
+
 Wassign-intercept
 ObjC ObjC++ Var(warn_assign_intercept) Warning
 Warn whenever an Objective-C assignment is being intercepted by the garbage collector
@@ -1282,6 +1286,10 @@ Enable Objective-C setjmp exception handling runtime
 fobjc-std=objc1
 ObjC ObjC++ Var(flag_objc1_only)
 Conform to the Objective-C 1.0 language as implemented in GCC 4.0
+
+fopenacc
+C ObjC C++ ObjC++ Var(flag_openacc)
+Enable OpenACC
 
 fopenmp
 C ObjC C++ ObjC++ Var(flag_openmp)

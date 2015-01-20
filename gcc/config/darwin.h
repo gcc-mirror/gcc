@@ -178,7 +178,7 @@ extern GTY(()) int darwin_ms_struct;
     %{!nostdlib:%{!nostartfiles:%S}} \
     %{!nostdlib:%{!nostartfiles:%{fupc:%:include(upc-crtbegin.spec)%(upc_crtbegin)}}}\
     %{L*} %(link_libgcc) %o %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} \
-    %{fopenmp|ftree-parallelize-loops=*: \
+    %{fopenacc|fopenmp|ftree-parallelize-loops=*: \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libgomp.a%s; : -lgomp } } \
     %{fgnu-tm: \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libitm.a%s; : -litm } } \

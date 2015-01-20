@@ -171,7 +171,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
   }
 
-const int num_facets = _GLIBCXX_NUM_FACETS
+const int num_facets = _GLIBCXX_NUM_FACETS + _GLIBCXX_NUM_UNICODE_FACETS
   + (_GLIBCXX_USE_DUAL_ABI ? _GLIBCXX_NUM_CXX11_FACETS : 0);
 
   // Construct named _Impl.
@@ -267,7 +267,12 @@ const int num_facets = _GLIBCXX_NUM_FACETS
 	_M_init_facet(new time_get<wchar_t>);
 	_M_init_facet(new time_put<wchar_t>);
 	_M_init_facet(new std::messages<wchar_t>(__cloc, __s));
-#endif	  
+#endif
+
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+        _M_init_facet(new codecvt<char16_t, char, mbstate_t>);
+        _M_init_facet(new codecvt<char32_t, char, mbstate_t>);
+#endif
 
 #if _GLIBCXX_USE_DUAL_ABI
         _M_init_extra(&__cloc, &__clocm, __s, __smon);

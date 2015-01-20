@@ -1507,6 +1507,18 @@ in it.
 Disparage severely the alternative that the @samp{!} appears in.
 This alternative can still be used if it fits without reloading,
 but if reloading is needed, some other alternative will be used.
+
+@cindex @samp{^} in constraint
+@cindex caret
+@item ^
+This constraint is analogous to @samp{?} but it disparages slightly
+the alternative only if the operand with the @samp{?} needs a reload.
+
+@cindex @samp{$} in constraint
+@cindex dollar sign
+@item $
+This constraint is analogous to @samp{!} but it disparages severely
+the alternative only if the operand with the @samp{$} needs a reload.
 @end table
 
 @ifset INTERNALS
@@ -2991,11 +3003,9 @@ Floating-point zero.
 An address that can be used in a non-macro load or store.
 
 @item ZC
-When compiling microMIPS code, this constraint matches a memory operand
-whose address is formed from a base register and a 12-bit offset.  These
-operands can be used for microMIPS instructions such as @code{ll} and
-@code{sc}.  When not compiling for microMIPS code, @code{ZC} is
-equivalent to @code{R}.
+A memory operand whose address is formed by a base register and offset
+that is suitable for use in instructions with the same addressing mode
+as @code{ll} and @code{sc}.
 
 @item ZD
 An address suitable for a @code{prefetch} instruction, or for any other

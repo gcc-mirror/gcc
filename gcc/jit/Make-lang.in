@@ -247,6 +247,11 @@ jit.man:
 jit.srcman:
 
 lang_checks += check-jit
+lang_checks_parallelized += check-jit
+# This number is somewhat arbitrary.  Two tests are much slower
+# than all the others (test-combination.c and test-threads.c) so
+# we want them to be placed in different "buckets".
+check_jit_parallelize = 10
 
 #
 # Install hooks:

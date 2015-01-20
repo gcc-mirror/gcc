@@ -34,6 +34,21 @@
 #include "tree.h"
 #include "fold-const.h"
 #include "stor-layout.h"
+#include "hashtab.h"
+#include "hard-reg-set.h"
+#include "function.h"
+#include "flags.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
 #include "expr.h"
 #include "tm_p.h"
 #include "recog.h"
@@ -2049,7 +2064,10 @@ arm_expand_neon_args (rtx target, machine_mode map_mode, int fcode,
             case NEON_ARG_MEMORY:
 	      /* Check if expand failed.  */
 	      if (op[argc] == const0_rtx)
+	      {
+		va_end (ap);
 		return 0;
+	      }
 	      gcc_assert (MEM_P (op[argc]));
 	      PUT_MODE (op[argc], mode[argc]);
 	      /* ??? arm_neon.h uses the same built-in functions for signed

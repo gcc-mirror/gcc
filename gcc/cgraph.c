@@ -44,7 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "langhooks.h"
 #include "hashtab.h"
-#include "hash-set.h"
 #include "toplev.h"
 #include "flags.h"
 #include "debug.h"
@@ -56,10 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-map.h"
 #include "is-a.h"
 #include "plugin-api.h"
-#include "vec.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
 #include "ipa-ref.h"
 #include "cgraph.h"
@@ -87,6 +83,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-inline.h"
 #include "cfgloop.h"
 #include "gimple-pretty-print.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "emit-rtl.h"
+#include "stmt.h"
 #include "expr.h"
 #include "tree-dfa.h"
 #include "profile.h"
@@ -507,7 +512,7 @@ cgraph_node::create (tree decl)
 
   node->decl = decl;
 
-  if (flag_openmp
+  if ((flag_openacc || flag_openmp)
       && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl)))
     {
       node->offloadable = 1;
@@ -1981,6 +1986,18 @@ cgraph_node::dump (FILE *f)
     fprintf (f," static_constructor (priority:%i)", get_init_priority ());
   if (DECL_STATIC_DESTRUCTOR (decl))
     fprintf (f," static_destructor (priority:%i)", get_fini_priority ());
+  if (frequency == NODE_FREQUENCY_HOT)
+    fprintf (f, " hot");
+  if (frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
+    fprintf (f, " unlikely_executed");
+  if (frequency == NODE_FREQUENCY_EXECUTED_ONCE)
+    fprintf (f, " executed_once");
+  if (only_called_at_startup)
+    fprintf (f, " only_called_at_startup");
+  if (only_called_at_exit)
+    fprintf (f, " only_called_at_exit");
+  if (opt_for_fn (decl, optimize_size))
+    fprintf (f, " optimize_size");
 
   fprintf (f, "\n");
 

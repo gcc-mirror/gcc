@@ -611,7 +611,9 @@ create_user_defined_type (const char *type_name, struct fileloc *pos)
 	 comma-separated list of strings, implicitly assumed to
 	 be type names, potentially with "*" characters.  */
       char *arg = open_bracket + 1;
-      char *next;
+      /* Workaround -Wmaybe-uninitialized false positive during
+	 profiledbootstrap by initializing it.  */
+      char *next = NULL;
       char *type_id = strtoken (arg, ",>", &next);
       pair_p fields = 0;
       while (type_id)
@@ -1714,8 +1716,11 @@ open_base_files (void)
       "wide-int.h", "inchash.h",
       "tree.h", "fold-const.h", "rtl.h",
       "machmode.h", "tm.h", "hard-reg-set.h", "input.h", "predict.h",
-      "function.h", "insn-config.h", "expr.h", "alloc-pool.h",
-      "hard-reg-set.h", "basic-block.h", "cselib.h", "insn-addr.h",
+      "function.h", "insn-config.h", "flags.h", "statistics.h",
+      "real.h", "fixed-value.h", "tree.h", "expmed.h", "dojump.h",
+      "explow.h", "calls.h", "emit-rtl.h", "varasm.h", "stmt.h",
+      "expr.h", "alloc-pool.h",
+      "basic-block.h", "cselib.h", "insn-addr.h",
       "optabs.h", "libfuncs.h", "debug.h", "ggc.h", 
       "ggc.h", "dominance.h", "cfg.h", "basic-block.h",
       "tree-ssa-alias.h", "internal-fn.h", "gimple-fold.h", "tree-eh.h",

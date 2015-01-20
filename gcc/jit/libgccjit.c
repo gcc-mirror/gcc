@@ -172,6 +172,16 @@ struct gcc_jit_param : public gcc::jit::recording::param
       }								\
   JIT_END_STMT
 
+#define RETURN_VAL_IF_FAIL_PRINTF5(TEST_EXPR, RETURN_EXPR, CTXT, LOC, ERR_FMT, A0, A1, A2, A3, A4) \
+  JIT_BEGIN_STMT							\
+    if (!(TEST_EXPR))							\
+      {								\
+	jit_error ((CTXT), (LOC), "%s: " ERR_FMT,				\
+		   __func__, (A0), (A1), (A2), (A3), (A4));	\
+	return (RETURN_EXPR);						\
+      }								\
+  JIT_END_STMT
+
 #define RETURN_VAL_IF_FAIL_PRINTF6(TEST_EXPR, RETURN_EXPR, CTXT, LOC, ERR_FMT, A0, A1, A2, A3, A4, A5) \
   JIT_BEGIN_STMT							\
     if (!(TEST_EXPR))							\
@@ -196,6 +206,9 @@ struct gcc_jit_param : public gcc::jit::recording::param
 
 #define RETURN_NULL_IF_FAIL_PRINTF4(TEST_EXPR, CTXT, LOC, ERR_FMT, A0, A1, A2, A3) \
   RETURN_VAL_IF_FAIL_PRINTF4 (TEST_EXPR, NULL, CTXT, LOC, ERR_FMT, A0, A1, A2, A3)
+
+#define RETURN_NULL_IF_FAIL_PRINTF5(TEST_EXPR, CTXT, LOC, ERR_FMT, A0, A1, A2, A3, A4) \
+  RETURN_VAL_IF_FAIL_PRINTF5 (TEST_EXPR, NULL, CTXT, LOC, ERR_FMT, A0, A1, A2, A3, A4)
 
 #define RETURN_NULL_IF_FAIL_PRINTF6(TEST_EXPR, CTXT, LOC, ERR_FMT, A0, A1, A2, A3, A4, A5) \
   RETURN_VAL_IF_FAIL_PRINTF6 (TEST_EXPR, NULL, CTXT, LOC, ERR_FMT, A0, A1, A2, A3, A4, A5)
@@ -373,7 +386,7 @@ gcc_jit_context_new_location (gcc_jit_context *ctxt,
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
   JIT_LOG_FUNC (ctxt->get_logger ());
-  return (gcc_jit_location *)ctxt->new_location (filename, line, column);
+  return (gcc_jit_location *)ctxt->new_location (filename, line, column, true);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -844,10 +857,23 @@ gcc_jit_context_new_function (gcc_jit_context *ctxt,
     ctxt, loc,
     "NULL params creating function %s", name);
   for (int i = 0; i < num_params; i++)
-    RETURN_NULL_IF_FAIL_PRINTF2 (
-      params[i],
-      ctxt, loc,
-      "NULL parameter %i creating function %s", i, name);
+    {
+      RETURN_NULL_IF_FAIL_PRINTF2 (
+	params[i],
+	ctxt, loc,
+	"NULL parameter %i creating function %s", i, name);
+      RETURN_NULL_IF_FAIL_PRINTF5 (
+	(NULL == params[i]->get_scope ()),
+	ctxt, loc,
+	"parameter %i \"%s\""
+	" (type: %s)"
+	" for function %s"
+	" was already used for function %s",
+	i, params[i]->get_debug_string (),
+	params[i]->get_type ()->get_debug_string (),
+	name,
+	params[i]->get_scope ()->get_debug_string ());
+    }
 
   return (gcc_jit_function*)
     ctxt->new_function (loc, kind, return_type, name,
@@ -987,16 +1013,23 @@ gcc_jit_block_get_function (gcc_jit_block *block)
 gcc_jit_lvalue *
 gcc_jit_context_new_global (gcc_jit_context *ctxt,
 			    gcc_jit_location *loc,
+			    enum gcc_jit_global_kind kind,
 			    gcc_jit_type *type,
 			    const char *name)
 {
   RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
   JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
+  RETURN_NULL_IF_FAIL_PRINTF1 (
+    ((kind >= GCC_JIT_GLOBAL_EXPORTED)
+     && (kind <= GCC_JIT_GLOBAL_IMPORTED)),
+    ctxt, loc,
+    "unrecognized value for enum gcc_jit_global_kind: %i",
+    kind);
   RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
   RETURN_NULL_IF_FAIL (name, ctxt, loc, "NULL name");
 
-  return (gcc_jit_lvalue *)ctxt->new_global (loc, type, name);
+  return (gcc_jit_lvalue *)ctxt->new_global (loc, kind, type, name);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -1793,7 +1826,14 @@ gcc_jit_block_add_eval (gcc_jit_block *block,
   /* LOC can be NULL.  */
   RETURN_IF_FAIL (rvalue, ctxt, loc, "NULL rvalue");
 
-  return block->add_eval (loc, rvalue);
+  gcc::jit::recording::statement *stmt = block->add_eval (loc, rvalue);
+
+  /* "stmt" should be good enough to be usable in error-messages,
+     but might still not be compilable; perform some more
+     error-checking here.  We do this here so that the error messages
+     can contain a stringified version of "stmt", whilst appearing
+     as close as possible to the point of failure.  */
+  rvalue->verify_valid_within_stmt (__func__, stmt);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -1825,7 +1865,15 @@ gcc_jit_block_add_assignment (gcc_jit_block *block,
     rvalue->get_debug_string (),
     rvalue->get_type ()->get_debug_string ());
 
-  return block->add_assignment (loc, lvalue, rvalue);
+  gcc::jit::recording::statement *stmt = block->add_assignment (loc, lvalue, rvalue);
+
+  /* "stmt" should be good enough to be usable in error-messages,
+     but might still not be compilable; perform some more
+     error-checking here.  We do this here so that the error messages
+     can contain a stringified version of "stmt", whilst appearing
+     as close as possible to the point of failure.  */
+  lvalue->verify_valid_within_stmt (__func__, stmt);
+  rvalue->verify_valid_within_stmt (__func__, stmt);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -1852,8 +1900,26 @@ gcc_jit_block_add_assignment_op (gcc_jit_block *block,
     "unrecognized value for enum gcc_jit_binary_op: %i",
     op);
   RETURN_IF_FAIL (rvalue, ctxt, loc, "NULL rvalue");
+  RETURN_IF_FAIL_PRINTF4 (
+    compatible_types (lvalue->get_type (),
+		      rvalue->get_type ()),
+    ctxt, loc,
+    "mismatching types:"
+    " assignment to %s (type: %s) involving %s (type: %s)",
+    lvalue->get_debug_string (),
+    lvalue->get_type ()->get_debug_string (),
+    rvalue->get_debug_string (),
+    rvalue->get_type ()->get_debug_string ());
 
-  return block->add_assignment_op (loc, lvalue, op, rvalue);
+  gcc::jit::recording::statement *stmt = block->add_assignment_op (loc, lvalue, op, rvalue);
+
+  /* "stmt" should be good enough to be usable in error-messages,
+     but might still not be compilable; perform some more
+     error-checking here.  We do this here so that the error messages
+     can contain a stringified version of "stmt", whilst appearing
+     as close as possible to the point of failure.  */
+  lvalue->verify_valid_within_stmt (__func__, stmt);
+  rvalue->verify_valid_within_stmt (__func__, stmt);
 }
 
 /* Internal helper function for determining if rvalue BOOLVAL is of
@@ -1914,7 +1980,14 @@ gcc_jit_block_end_with_conditional (gcc_jit_block *block,
     on_false->get_debug_string (),
     on_false->get_function ()->get_debug_string ());
 
-  return block->end_with_conditional (loc, boolval, on_true, on_false);
+  gcc::jit::recording::statement *stmt = block->end_with_conditional (loc, boolval, on_true, on_false);
+
+  /* "stmt" should be good enough to be usable in error-messages,
+     but might still not be compilable; perform some more
+     error-checking here.  We do this here so that the error messages
+     can contain a stringified version of "stmt", whilst appearing
+     as close as possible to the point of failure.  */
+  boolval->verify_valid_within_stmt (__func__, stmt);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -1996,7 +2069,14 @@ gcc_jit_block_end_with_return (gcc_jit_block *block,
     func->get_debug_string (),
     func->get_return_type ()->get_debug_string ());
 
-  return block->end_with_return (loc, rvalue);
+  gcc::jit::recording::statement *stmt = block->end_with_return (loc, rvalue);
+
+  /* "stmt" should be good enough to be usable in error-messages,
+     but might still not be compilable; perform some more
+     error-checking here.  We do this here so that the error messages
+     can contain a stringified version of "stmt", whilst appearing
+     as close as possible to the point of failure.  */
+  rvalue->verify_valid_within_stmt (__func__, stmt);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.
@@ -2022,7 +2102,7 @@ gcc_jit_block_end_with_void_return (gcc_jit_block *block,
     func->get_debug_string (),
     func->get_return_type ()->get_debug_string ());
 
-  return block->end_with_return (loc, NULL);
+  block->end_with_return (loc, NULL);
 }
 
 /**********************************************************************
@@ -2167,6 +2247,22 @@ gcc_jit_context_set_logfile (gcc_jit_context *ctxt,
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
+   gcc::jit::recording::context::dump_reproducer_to_file method in
+   jit-recording.c.  */
+
+void
+gcc_jit_context_dump_reproducer_to_file (gcc_jit_context *ctxt,
+					 const char *path)
+{
+  RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  RETURN_IF_FAIL (path, ctxt, NULL, "NULL path");
+  ctxt->dump_reproducer_to_file (path);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
    gcc::jit::recording::context::get_first_error method in
    jit-recording.c.  */
 
@@ -2211,6 +2307,25 @@ gcc_jit_result_get_code (gcc_jit_result *result,
   result->log ("%s: returning (void *)%p", __func__, code);
 
   return code;
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::result::get_global method in jit-result.c.  */
+
+void *
+gcc_jit_result_get_global (gcc_jit_result *result,
+			   const char *name)
+{
+  RETURN_NULL_IF_FAIL (result, NULL, NULL, "NULL result");
+  JIT_LOG_FUNC (result->get_logger ());
+  RETURN_NULL_IF_FAIL (name, NULL, NULL, "NULL name");
+
+  void *global = result->get_global (name);
+  result->log ("%s: returning (void *)%p", __func__, global);
+
+  return global;
 }
 
 /* Public entrypoint.  See description in libgccjit.h.

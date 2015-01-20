@@ -1857,7 +1857,10 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
      Thus if we have one and parentheses follow, we have to assume that it
      actually is one for now.  The final decision will be made at
      resolution time, of course.  */
-  if (sym->assoc && gfc_peek_ascii_char () == '(')
+  if (sym->assoc && gfc_peek_ascii_char () == '('
+      && !(sym->assoc->dangling && sym->assoc->st
+	   && sym->assoc->st->n.sym
+	   && sym->assoc->st->n.sym->attr.dimension == 0))
     sym->attr.dimension = 1;
 
   if ((equiv_flag && gfc_peek_ascii_char () == '(')
@@ -2367,14 +2370,16 @@ build_actual_constructor (gfc_structure_ctor_component **comp_head,
 		return false;
 	      value = gfc_copy_expr (comp->initializer);
 	    }
-	  else if (comp->attr.allocatable)
+	  else if (comp->attr.allocatable
+		   || (comp->ts.type == BT_CLASS
+		       && CLASS_DATA (comp)->attr.allocatable))
 	    {
 	      if (!gfc_notify_std (GFC_STD_F2008, "No initializer for "
-		  "allocatable component '%s' given in the structure "
-		  "constructor at %C", comp->name))
+				   "allocatable component '%qs' given in the "
+				   "structure constructor at %C", comp->name))
 		return false;
 	    }
-	  else if (!comp->attr.deferred_parameter)
+	  else if (!comp->attr.artificial)
 	    {
 	      gfc_error ("No initializer for component %qs given in the"
 			 " structure constructor at %C!", comp->name);
@@ -2456,7 +2461,7 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	{
 	  /* Components without name are not allowed after the first named
 	     component initializer!  */
-	  if (!comp || comp->attr.deferred_parameter)
+	  if (!comp || comp->attr.artificial)
 	    {
 	      if (last_name)
 		gfc_error ("Component initializer without name after component"

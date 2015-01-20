@@ -41,11 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-tree.h"
 #include "tm_p.h"
 #include "predict.h"
-#include "vec.h"
 #include "hashtab.h"
-#include "hash-set.h"
-#include "machmode.h"
-#include "input.h"
 #include "function.h"
 #include "dominance.h"
 #include "cfg.h"
@@ -56,6 +52,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "insn-codes.h"
 #include "optabs.h"
+#include "flags.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
 #include "expr.h"
 #include "langhooks.h"
 #include "bitmap.h"
@@ -80,7 +86,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "tree-pass.h"
 #include "except.h"
-#include "flags.h"
 #include "diagnostic.h"
 #include "gimple-pretty-print.h"
 #include "toplev.h"
@@ -1411,7 +1416,8 @@ clear_tree_used (tree block)
 enum {
   SPCT_FLAG_DEFAULT = 1,
   SPCT_FLAG_ALL = 2,
-  SPCT_FLAG_STRONG = 3
+  SPCT_FLAG_STRONG = 3,
+  SPCT_FLAG_EXPLICIT = 4
 };
 
 /* Examine TYPE and determine a bit mask of the following features.  */
@@ -1484,7 +1490,10 @@ stack_protect_decl_phase (tree decl)
     has_short_buffer = true;
 
   if (flag_stack_protect == SPCT_FLAG_ALL
-      || flag_stack_protect == SPCT_FLAG_STRONG)
+      || flag_stack_protect == SPCT_FLAG_STRONG
+      || (flag_stack_protect == SPCT_FLAG_EXPLICIT
+	  && lookup_attribute ("stack_protect",
+			       DECL_ATTRIBUTES (current_function_decl))))
     {
       if ((bits & (SPCT_HAS_SMALL_CHAR_ARRAY | SPCT_HAS_LARGE_CHAR_ARRAY))
 	  && !(bits & SPCT_HAS_AGGREGATE))
@@ -1859,7 +1868,11 @@ expand_used_vars (void)
 
       /* If stack protection is enabled, we don't share space between
 	 vulnerable data and non-vulnerable data.  */
-      if (flag_stack_protect)
+      if (flag_stack_protect != 0
+	  && (flag_stack_protect != SPCT_FLAG_EXPLICIT
+	      || (flag_stack_protect == SPCT_FLAG_EXPLICIT
+		  && lookup_attribute ("stack_protect",
+				       DECL_ATTRIBUTES (current_function_decl)))))
 	add_stack_protection_conflicts ();
 
       /* Now that we have collected all stack variables, and have computed a
@@ -1877,15 +1890,24 @@ expand_used_vars (void)
 
     case SPCT_FLAG_STRONG:
       if (gen_stack_protect_signal
-	  || cfun->calls_alloca || has_protected_decls)
+	  || cfun->calls_alloca || has_protected_decls
+	  || lookup_attribute ("stack_protect",
+			       DECL_ATTRIBUTES (current_function_decl)))
 	create_stack_guard ();
       break;
 
     case SPCT_FLAG_DEFAULT:
-      if (cfun->calls_alloca || has_protected_decls)
+      if (cfun->calls_alloca || has_protected_decls
+	  || lookup_attribute ("stack_protect",
+			       DECL_ATTRIBUTES (current_function_decl)))
 	create_stack_guard ();
       break;
 
+    case SPCT_FLAG_EXPLICIT:
+      if (lookup_attribute ("stack_protect",
+			    DECL_ATTRIBUTES (current_function_decl)))
+	create_stack_guard ();
+      break;
     default:
       ;
     }
@@ -1911,7 +1933,11 @@ expand_used_vars (void)
 	  expand_stack_vars (stack_protect_decl_phase_1, &data);
 
 	  /* Phase 2 contains other kinds of arrays.  */
-	  if (flag_stack_protect == 2)
+	  if (flag_stack_protect == SPCT_FLAG_ALL
+	      || flag_stack_protect == SPCT_FLAG_STRONG
+	      || (flag_stack_protect == SPCT_FLAG_EXPLICIT
+		  && lookup_attribute ("stack_protect",
+				       DECL_ATTRIBUTES (current_function_decl))))
 	    expand_stack_vars (stack_protect_decl_phase_2, &data);
 	}
 
@@ -3059,8 +3085,6 @@ static void
 expand_computed_goto (tree exp)
 {
   rtx x = expand_normal (exp);
-
-  x = convert_memory_address (Pmode, x);
 
   do_pending_stack_adjust ();
   emit_indirect_jump (x);
@@ -4964,6 +4988,84 @@ expand_debug_locations (void)
   flag_strict_aliasing = save_strict_alias;
 }
 
+/* Performs swapping operands of commutative operations to expand
+   the expensive one first.  */
+
+static void
+reorder_operands (basic_block bb)
+{
+  unsigned int *lattice;  /* Hold cost of each statement.  */
+  unsigned int i = 0, n = 0;
+  gimple_stmt_iterator gsi;
+  gimple_seq stmts;
+  gimple stmt;
+  bool swap;
+  tree op0, op1;
+  ssa_op_iter iter;
+  use_operand_p use_p;
+  gimple def0, def1;
+
+  /* Compute cost of each statement using estimate_num_insns.  */
+  stmts = bb_seq (bb);
+  for (gsi = gsi_start (stmts); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      stmt = gsi_stmt (gsi);
+      gimple_set_uid (stmt, n++);
+    }
+  lattice = XNEWVEC (unsigned int, n);
+  for (gsi = gsi_start (stmts); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      unsigned cost;
+      stmt = gsi_stmt (gsi);
+      cost = estimate_num_insns (stmt, &eni_size_weights);
+      lattice[i] = cost;
+      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
+	{
+	  tree use = USE_FROM_PTR (use_p);
+	  gimple def_stmt;
+	  if (TREE_CODE (use) != SSA_NAME)
+	    continue;
+	  def_stmt = get_gimple_for_ssa_name (use);
+	  if (!def_stmt)
+	    continue;
+	  lattice[i] += lattice[gimple_uid (def_stmt)];
+	}
+      i++;
+      if (!is_gimple_assign (stmt)
+	  || !commutative_tree_code (gimple_assign_rhs_code (stmt)))
+	continue;
+      op0 = gimple_op (stmt, 1);
+      op1 = gimple_op (stmt, 2);
+      if (TREE_CODE (op0) != SSA_NAME
+	  || TREE_CODE (op1) != SSA_NAME)
+	continue;
+      /* Swap operands if the second one is more expensive.  */
+      def0 = get_gimple_for_ssa_name (op0);
+      if (!def0)
+	continue;
+      def1 = get_gimple_for_ssa_name (op1);
+      if (!def1)
+	continue;
+      swap = false;
+      if (lattice[gimple_uid (def1)] > lattice[gimple_uid (def0)])
+	swap = true;
+      if (swap)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Swap operands in stmt:\n");
+	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	      fprintf (dump_file, "Cost left opnd=%d, right opnd=%d\n",
+		       lattice[gimple_uid (def0)],
+		       lattice[gimple_uid (def1)]);
+	    }
+	  swap_ssa_operands (stmt, gimple_assign_rhs1_ptr (stmt),
+			     gimple_assign_rhs2_ptr (stmt));
+	}
+    }
+  XDELETE (lattice);
+}
+
 /* Expand basic block BB from GIMPLE trees to RTL.  */
 
 static basic_block
@@ -4985,6 +5087,8 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
      cannot use the gsi_*_bb() routines because they expect the basic
      block to be in GIMPLE, instead of RTL.  Therefore, we need to
      access the BB sequence directly.  */
+  if (optimize)
+    reorder_operands (bb);
   stmts = bb_seq (bb);
   bb->il.gimple.seq = NULL;
   bb->il.gimple.phi_nodes = NULL;

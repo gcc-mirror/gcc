@@ -44,13 +44,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "calls.h"
 #include "varasm.h"
 #include "flags.h"
+#include "hashtab.h"
+#include "hard-reg-set.h"
+#include "function.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "emit-rtl.h"
+#include "stmt.h"
 #include "expr.h"
 #include "insn-codes.h"
 #include "optabs.h"
 #include "reload.h"
-#include "hard-reg-set.h"
-#include "input.h"
-#include "function.h"
 #include "regs.h"
 #include "output.h"
 #include "insn-attr.h"
@@ -318,6 +326,7 @@ static void sh_setup_incoming_varargs (cumulative_args_t, machine_mode,
 				       tree, int *, int);
 static bool sh_strict_argument_naming (cumulative_args_t);
 static bool sh_pretend_outgoing_varargs_named (cumulative_args_t);
+static void sh_atomic_assign_expand_fenv (tree *, tree *, tree *);
 static tree sh_build_builtin_va_list (void);
 static void sh_va_start (tree, rtx);
 static tree sh_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
@@ -576,6 +585,9 @@ static const struct attribute_spec sh_attribute_table[] =
 #define TARGET_FUNCTION_ARG sh_function_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE sh_function_arg_advance
+
+#undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
+#define TARGET_ATOMIC_ASSIGN_EXPAND_FENV sh_atomic_assign_expand_fenv
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST sh_build_builtin_va_list
@@ -10052,7 +10064,6 @@ reg_unused_after (rtx reg, rtx_insn *insn)
   return true;
 }
 
-#include "ggc.h"
 
 static GTY(()) rtx t_reg_rtx;
 rtx
@@ -11897,6 +11908,9 @@ static struct builtin_description bdesc[] =
     CODE_FOR_set_fpscr, "__builtin_sh_set_fpscr", SH_BLTIN_VU, 0 },
 };
 
+static tree sh_builtin_get_fpscr;
+static tree sh_builtin_set_fpscr;
+
 static void
 sh_init_builtins (void)
 {
@@ -11955,7 +11969,82 @@ sh_init_builtins (void)
       d->fndecl =
 	add_builtin_function (d->name, type, d - bdesc, BUILT_IN_MD,
 			      NULL, NULL_TREE);
+      /* Recode {sts,set}_fpscr decls for sh_atomic_assign_expand_fenv.  */
+      if (d->icode == CODE_FOR_sts_fpscr)
+	sh_builtin_get_fpscr = d->fndecl;
+      else if (d->icode == CODE_FOR_set_fpscr)
+	sh_builtin_set_fpscr = d->fndecl;
     }
+}
+
+/* Implement TARGET_ATOMIC_ASSIGN_EXPAND_FENV.  */
+
+static void
+sh_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
+{
+  const unsigned SH_FE_INVALID = 64;
+  const unsigned SH_FE_DIVBYZERO = 32;
+  const unsigned SH_FE_OVERFLOW = 16;
+  const unsigned SH_FE_UNDERFLOW = 8;
+  const unsigned SH_FE_INEXACT = 4;
+  const unsigned HOST_WIDE_INT SH_FE_ALL_EXCEPT = (SH_FE_INVALID
+						   | SH_FE_DIVBYZERO
+						   | SH_FE_OVERFLOW
+						   | SH_FE_UNDERFLOW
+						   | SH_FE_INEXACT);
+  const unsigned HOST_WIDE_INT SH_FE_EXCEPT_SHIFT = 5;
+  tree fenv_var, mask, ld_fenv, masked_fenv;
+  tree new_fenv_var, reload_fenv, restore_fnenv;
+  tree update_call, atomic_feraiseexcept, hold_fnclex;
+
+  if (! TARGET_FPU_ANY)
+    return;
+
+  /* Generate the equivalent of :
+       unsigned int fenv_var;
+       fenv_var = __builtin_sh_get_fpscr ();
+
+       unsigned int masked_fenv;
+       masked_fenv = fenv_var & mask;
+
+       __builtin_sh_set_fpscr (masked_fenv);  */
+
+  fenv_var = create_tmp_var (unsigned_type_node);
+  mask = build_int_cst (unsigned_type_node,
+			~((SH_FE_ALL_EXCEPT << SH_FE_EXCEPT_SHIFT)
+			  | SH_FE_ALL_EXCEPT));
+  ld_fenv = build2 (MODIFY_EXPR, unsigned_type_node,
+		    fenv_var, build_call_expr (sh_builtin_get_fpscr, 0));
+  masked_fenv = build2 (BIT_AND_EXPR, unsigned_type_node, fenv_var, mask);
+  hold_fnclex = build_call_expr (sh_builtin_set_fpscr, 1, masked_fenv);
+  *hold = build2 (COMPOUND_EXPR, void_type_node,
+		  build2 (COMPOUND_EXPR, void_type_node, masked_fenv, ld_fenv),
+		  hold_fnclex);
+
+  /* Store the value of masked_fenv to clear the exceptions:
+     __builtin_sh_set_fpscr (masked_fenv);  */
+
+  *clear = build_call_expr (sh_builtin_set_fpscr, 1, masked_fenv);
+
+  /* Generate the equivalent of :
+       unsigned int new_fenv_var;
+       new_fenv_var = __builtin_sh_get_fpscr ();
+
+       __builtin_sh_set_fpscr (fenv_var);
+
+       __atomic_feraiseexcept (new_fenv_var);  */
+
+  new_fenv_var = create_tmp_var (unsigned_type_node);
+  reload_fenv = build2 (MODIFY_EXPR, unsigned_type_node, new_fenv_var,
+			build_call_expr (sh_builtin_get_fpscr, 0));
+  restore_fnenv = build_call_expr (sh_builtin_set_fpscr, 1, fenv_var);
+  atomic_feraiseexcept = builtin_decl_implicit (BUILT_IN_ATOMIC_FERAISEEXCEPT);
+  update_call = build_call_expr (atomic_feraiseexcept, 1,
+				 fold_convert (integer_type_node,
+					       new_fenv_var));
+  *update = build2 (COMPOUND_EXPR, void_type_node,
+		    build2 (COMPOUND_EXPR, void_type_node,
+			    reload_fenv, restore_fnenv), update_call);
 }
 
 /* Implements target hook vector_mode_supported_p.  */
@@ -13687,6 +13776,17 @@ sh_insn_operands_modified_between_p (rtx_insn* operands_insn,
   return false;
 }
 
+/* Given an insn and a reg number, remove reg dead or reg unused notes to
+   mark it as being used after the insn.  */
+void
+sh_remove_reg_dead_or_unused_notes (rtx_insn* i, int regno)
+{
+  if (rtx n = find_regno_note (i, REG_DEAD, regno))
+    remove_note (i, n);
+  if (rtx n = find_regno_note (i, REG_UNUSED, regno))
+    remove_note (i, n);
+}
+
 /* Given an op rtx and an insn, try to find out whether the result of the
    specified op consists only of logical operations on T bit stores.  */
 bool
@@ -13799,6 +13899,175 @@ sh_split_movrt_negc_to_movt_xor (rtx_insn* curr_insn, rtx operands[])
     return false;
 }
 
+/* Given a reg and the current insn, see if the value of the reg originated
+   from a sign or zero extension and return the discovered information.  */
+sh_extending_set_of_reg
+sh_find_extending_set_of_reg (rtx reg, rtx_insn* curr_insn)
+{
+  if (reg == NULL)
+    return sh_extending_set_of_reg (curr_insn);
+
+  if (SUBREG_P (reg))
+    reg = SUBREG_REG (reg);
+
+  if (!REG_P (reg))
+    return sh_extending_set_of_reg (curr_insn);
+
+  /* FIXME: Also search the predecessor basic blocks.  It seems that checking
+     only the adjacent predecessor blocks would cover most of the cases.
+     Also try to look through the first extension that we hit.  There are some
+     cases, where a zero_extend is followed an (implicit) sign_extend, and it
+     fails to see the sign_extend.  */
+  sh_extending_set_of_reg result =
+	sh_find_set_of_reg (reg, curr_insn, prev_nonnote_insn_bb, true);
+
+  if (result.set_src != NULL)
+    {
+      if (GET_CODE (result.set_src) == SIGN_EXTEND
+	  || GET_CODE (result.set_src) == ZERO_EXTEND)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "sh_find_szexnteded_reg: reg %d is "
+				"explicitly sign/zero extended in insn %d\n",
+				REGNO (reg), INSN_UID (result.insn));
+	  result.from_mode = GET_MODE (XEXP (result.set_src, 0));
+	  result.ext_code = GET_CODE (result.set_src);
+	}
+      else if (MEM_P (result.set_src)
+	       && (GET_MODE (result.set_src) == QImode
+		   || GET_MODE (result.set_src) == HImode))
+	{
+	  /* On SH QIHImode memory loads always sign extend.  However, in
+	     some cases where it seems that the higher bits are not
+	     interesting, the loads will not be expanded as sign extending
+	     insns, but as QIHImode loads into QIHImode regs.  We report that
+	     the reg has been sign extended by the mem load.  When it is used
+	     as such, we must convert the mem load into a sign extending insn,
+	     see also sh_extending_set_of_reg::use_as_extended_reg.  */
+	  if (dump_file)
+	    fprintf (dump_file, "sh_find_extending_set_of_reg: reg %d is "
+				"implicitly sign extended in insn %d\n",
+				REGNO (reg), INSN_UID (result.insn));
+	  result.from_mode = GET_MODE (result.set_src);
+	  result.ext_code = SIGN_EXTEND;
+	}
+    }
+
+  return result;
+}
+
+/* Given a reg that is known to be sign or zero extended at some insn,
+   take the appropriate measures so that the extended value can be used as
+   a reg at the specified insn and return the resulting reg rtx.  */
+rtx
+sh_extending_set_of_reg::use_as_extended_reg (rtx_insn* use_at_insn) const
+{
+  gcc_assert (insn != NULL && set_src != NULL && set_rtx != NULL);
+  gcc_assert (ext_code == SIGN_EXTEND || ext_code == ZERO_EXTEND);
+  gcc_assert (from_mode == QImode || from_mode == HImode);
+
+  if (MEM_P (set_src) && ext_code == SIGN_EXTEND)
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "use_as_extended_reg: converting non-extending mem load in "
+		 "insn %d into sign-extending load\n", INSN_UID (insn));
+
+	rtx r = gen_reg_rtx (SImode);
+	rtx_insn* i0;
+	if (from_mode == QImode)
+	  i0 = emit_insn_after (gen_extendqisi2 (r, set_src), insn);
+	else if (from_mode == HImode)
+	  i0 = emit_insn_after (gen_extendhisi2 (r, set_src), insn);
+	else
+	  gcc_unreachable ();
+
+	emit_insn_after (
+		gen_move_insn (XEXP (set_rtx, 0),
+			       gen_lowpart (GET_MODE (set_src), r)), i0);
+	set_insn_deleted (insn);
+	return r;
+    }
+  else
+    {
+      rtx extension_dst = XEXP (set_rtx, 0);
+      if (modified_between_p (extension_dst, insn, use_at_insn))
+	{
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "use_as_extended_reg: dest reg %d of extending insn %d is "
+		     "modified, inserting a reg-reg copy\n",
+		     REGNO (extension_dst), INSN_UID (insn));
+
+	  rtx r = gen_reg_rtx (SImode);
+	  emit_insn_after (gen_move_insn (r, extension_dst), insn);
+	  return r;
+	}
+      else
+	{
+	  sh_remove_reg_dead_or_unused_notes (insn, REGNO (extension_dst));
+	  return extension_dst;
+	}
+    }
+}
+
+/* Given the current insn, which is assumed to be the *tst<mode>_t_subregs insn,
+   perform the necessary checks on the operands and split it accordingly.  */
+void
+sh_split_tst_subregs (rtx_insn* curr_insn, machine_mode subreg_mode,
+		      int subreg_offset, rtx operands[])
+{
+  gcc_assert (subreg_mode == QImode || subreg_mode == HImode);
+
+  sh_extending_set_of_reg eop0 = sh_find_extending_set_of_reg (operands[0],
+							       curr_insn);
+  sh_extending_set_of_reg eop1 = sh_find_extending_set_of_reg (operands[1],
+							       curr_insn);
+
+  /* If one of the operands is known to be zero extended, that's already
+     sufficient to mask out the unwanted high bits.  */
+  if (eop0.ext_code == ZERO_EXTEND && eop0.from_mode == subreg_mode)
+    {
+      emit_insn (gen_tstsi_t (eop0.use_as_extended_reg (curr_insn),
+			      operands[1]));
+      return;
+    }
+  if (eop1.ext_code == ZERO_EXTEND && eop1.from_mode == subreg_mode)
+    {
+      emit_insn (gen_tstsi_t (operands[0],
+			      eop1.use_as_extended_reg (curr_insn)));
+      return;
+    }
+
+  /* None of the operands seem to be zero extended.
+     If both are sign extended it's OK, too.  */
+  if (eop0.ext_code == SIGN_EXTEND && eop1.ext_code == SIGN_EXTEND
+      && eop0.from_mode == subreg_mode && eop1.from_mode == subreg_mode)
+    {
+      emit_insn (gen_tstsi_t (eop0.use_as_extended_reg (curr_insn),
+			      eop1.use_as_extended_reg (curr_insn)));
+      return;
+    }
+
+  /* Otherwise we have to insert a zero extension on one of the operands to
+     mask out the unwanted high bits.
+     Prefer the operand that has no known extension.  */
+  if (eop0.ext_code != UNKNOWN && eop1.ext_code == UNKNOWN)
+    std::swap (operands[0], operands[1]);
+
+  rtx tmp0 = gen_reg_rtx (SImode);
+  rtx tmp1 = simplify_gen_subreg (subreg_mode, operands[0],
+				  GET_MODE (operands[0]), subreg_offset);
+  emit_insn (subreg_mode == QImode
+	     ? gen_zero_extendqisi2 (tmp0, tmp1)
+	     : gen_zero_extendhisi2 (tmp0, tmp1));
+  emit_insn (gen_tstsi_t (tmp0, operands[1]));
+}
+
+/*------------------------------------------------------------------------------
+  Mode switching support code.
+*/
+
 static void
 sh_emit_mode_set (int entity ATTRIBUTE_UNUSED, int mode,
 		  int prev_mode, HARD_REG_SET regs_live ATTRIBUTE_UNUSED)
@@ -13866,6 +14135,10 @@ sh_mode_priority (int entity ATTRIBUTE_UNUSED, int n)
 {
   return ((TARGET_FPU_SINGLE != 0) ^ (n) ? FP_MODE_SINGLE : FP_MODE_DOUBLE);
 }
+
+/*------------------------------------------------------------------------------
+  Misc
+*/
 
 /* Return true if we use LRA instead of reload pass.  */
 static bool

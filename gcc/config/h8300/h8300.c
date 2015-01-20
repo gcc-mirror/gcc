@@ -46,9 +46,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "flags.h"
 #include "recog.h"
-#include "expr.h"
-#include "input.h"
+#include "hashtab.h"
 #include "function.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "emit-rtl.h"
+#include "stmt.h"
+#include "expr.h"
 #include "insn-codes.h"
 #include "optabs.h"
 #include "diagnostic-core.h"
@@ -527,7 +535,7 @@ Fpa (rtx par)
   int i;
 
   for (i = 0; i < len; i++)
-    F (as_a <rtx_insn *> (XVECEXP (par, 0, i)), true);
+    RTX_FRAME_RELATED_P (XVECEXP (par, 0, i)) = 1;
 
   return par;
 }

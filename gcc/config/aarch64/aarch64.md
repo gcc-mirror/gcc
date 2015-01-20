@@ -188,8 +188,9 @@
 
 ;; Scheduling
 (include "../arm/cortex-a53.md")
-(include "../arm/cortex-a15.md")
+(include "../arm/cortex-a57.md")
 (include "thunderx.md")
+(include "../arm/xgene1.md")
 
 ;; -------------------------------------------------------------------
 ;; Jumps and other miscellaneous insns
@@ -247,7 +248,7 @@
   ""
   "")
 
-(define_insn "*ccmp_and"
+(define_insn "ccmp_and<mode>"
   [(set (match_operand 1 "ccmp_cc_register" "")
 	(compare
 	 (and:SI
@@ -266,7 +267,7 @@
   [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
 )
 
-(define_insn "*ccmp_ior"
+(define_insn "ccmp_ior<mode>"
   [(set (match_operand 1 "ccmp_cc_register" "")
 	(compare
 	 (ior:SI
@@ -283,6 +284,20 @@
    ccmp\\t%<w>2, %<w>3, %K5, %M4
    ccmn\\t%<w>2, #%n3, %K5, %M4"
   [(set_attr "type" "alus_sreg,alus_imm,alus_imm")]
+)
+
+(define_expand "cmp<mode>"
+  [(set (match_operand 0 "cc_register" "")
+        (match_operator:CC 1 "aarch64_comparison_operator"
+         [(match_operand:GPI 2 "register_operand" "")
+          (match_operand:GPI 3 "aarch64_plus_operand" "")]))]
+  ""
+  {
+    operands[1] = gen_rtx_fmt_ee (COMPARE,
+				  SELECT_CC_MODE (GET_CODE (operands[1]),
+						  operands[2], operands[3]),
+				  operands[2], operands[3]);
+  }
 )
 
 (define_insn "*condjump"
@@ -844,7 +859,8 @@
    fmov\\t%s0, %w1
    fmov\\t%w0, %s1
    fmov\\t%s0, %s1"
-   "CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), SImode)"
+   "CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), SImode)
+    && GP_REGNUM_P (REGNO (operands[0]))"
    [(const_int 0)]
    "{
        aarch64_expand_mov_immediate (operands[0], operands[1]);
@@ -876,7 +892,8 @@
    fmov\\t%x0, %d1
    fmov\\t%d0, %d1
    movi\\t%d0, %1"
-   "(CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), DImode))"
+   "(CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), DImode))
+    && GP_REGNUM_P (REGNO (operands[0]))"
    [(const_int 0)]
    "{
        aarch64_expand_mov_immediate (operands[0], operands[1]);
@@ -1889,8 +1906,8 @@
 
 (define_insn "subsi3"
   [(set (match_operand:SI 0 "register_operand" "=rk")
-	(minus:SI (match_operand:SI 1 "register_operand" "r")
-		   (match_operand:SI 2 "register_operand" "r")))]
+	(minus:SI (match_operand:SI 1 "register_operand" "rk")
+		  (match_operand:SI 2 "register_operand" "r")))]
   ""
   "sub\\t%w0, %w1, %w2"
   [(set_attr "type" "alu_sreg")]
@@ -1900,7 +1917,7 @@
 (define_insn "*subsi3_uxtw"
   [(set (match_operand:DI 0 "register_operand" "=rk")
 	(zero_extend:DI
-         (minus:SI (match_operand:SI 1 "register_operand" "r")
+         (minus:SI (match_operand:SI 1 "register_operand" "rk")
 		   (match_operand:SI 2 "register_operand" "r"))))]
   ""
   "sub\\t%w0, %w1, %w2"
@@ -1909,8 +1926,8 @@
 
 (define_insn "subdi3"
   [(set (match_operand:DI 0 "register_operand" "=rk,w")
-	(minus:DI (match_operand:DI 1 "register_operand" "r,w")
-		   (match_operand:DI 2 "register_operand" "r,w")))]
+	(minus:DI (match_operand:DI 1 "register_operand" "rk,w")
+		  (match_operand:DI 2 "register_operand" "r,w")))]
   ""
   "@
    sub\\t%x0, %x1, %x2
@@ -2013,7 +2030,7 @@
 
 (define_insn "*sub_<optab><ALLX:mode>_<GPI:mode>"
   [(set (match_operand:GPI 0 "register_operand" "=rk")
-	(minus:GPI (match_operand:GPI 1 "register_operand" "r")
+	(minus:GPI (match_operand:GPI 1 "register_operand" "rk")
 		   (ANY_EXTEND:GPI
 		    (match_operand:ALLX 2 "register_operand" "r"))))]
   ""
@@ -2025,7 +2042,7 @@
 (define_insn "*sub_<optab><SHORT:mode>_si_uxtw"
   [(set (match_operand:DI 0 "register_operand" "=rk")
 	(zero_extend:DI
-         (minus:SI (match_operand:SI 1 "register_operand" "r")
+         (minus:SI (match_operand:SI 1 "register_operand" "rk")
 		   (ANY_EXTEND:SI
 		    (match_operand:SHORT 2 "register_operand" "r")))))]
   ""
@@ -2035,7 +2052,7 @@
 
 (define_insn "*sub_<optab><ALLX:mode>_shft_<GPI:mode>"
   [(set (match_operand:GPI 0 "register_operand" "=rk")
-	(minus:GPI (match_operand:GPI 1 "register_operand" "r")
+	(minus:GPI (match_operand:GPI 1 "register_operand" "rk")
 		   (ashift:GPI (ANY_EXTEND:GPI
 				(match_operand:ALLX 2 "register_operand" "r"))
 			       (match_operand 3 "aarch64_imm3" "Ui3"))))]
@@ -2048,7 +2065,7 @@
 (define_insn "*sub_<optab><SHORT:mode>_shft_si_uxtw"
   [(set (match_operand:DI 0 "register_operand" "=rk")
 	(zero_extend:DI
-         (minus:SI (match_operand:SI 1 "register_operand" "r")
+         (minus:SI (match_operand:SI 1 "register_operand" "rk")
 		   (ashift:SI (ANY_EXTEND:SI
 			       (match_operand:SHORT 2 "register_operand" "r"))
 			      (match_operand 3 "aarch64_imm3" "Ui3")))))]
@@ -2059,7 +2076,7 @@
 
 (define_insn "*sub_<optab><mode>_multp2"
   [(set (match_operand:GPI 0 "register_operand" "=rk")
-	(minus:GPI (match_operand:GPI 4 "register_operand" "r")
+	(minus:GPI (match_operand:GPI 4 "register_operand" "rk")
 		   (ANY_EXTRACT:GPI
 		    (mult:GPI (match_operand:GPI 1 "register_operand" "r")
 			      (match_operand 2 "aarch64_pwr_imm3" "Up3"))
@@ -2074,7 +2091,7 @@
 (define_insn "*sub_<optab>si_multp2_uxtw"
   [(set (match_operand:DI 0 "register_operand" "=rk")
 	(zero_extend:DI
-         (minus:SI (match_operand:SI 4 "register_operand" "r")
+         (minus:SI (match_operand:SI 4 "register_operand" "rk")
 		   (ANY_EXTRACT:SI
 		    (mult:SI (match_operand:SI 1 "register_operand" "r")
 			     (match_operand 2 "aarch64_pwr_imm3" "Up3"))
@@ -2113,7 +2130,7 @@
 
 (define_insn "*sub_uxt<mode>_multp2"
   [(set (match_operand:GPI 0 "register_operand" "=rk")
-	(minus:GPI (match_operand:GPI 4 "register_operand" "r")
+	(minus:GPI (match_operand:GPI 4 "register_operand" "rk")
 		   (and:GPI
 		    (mult:GPI (match_operand:GPI 1 "register_operand" "r")
 			      (match_operand 2 "aarch64_pwr_imm3" "Up3"))
@@ -2130,7 +2147,7 @@
 (define_insn "*sub_uxtsi_multp2_uxtw"
   [(set (match_operand:DI 0 "register_operand" "=rk")
 	(zero_extend:DI
-         (minus:SI (match_operand:SI 4 "register_operand" "r")
+         (minus:SI (match_operand:SI 4 "register_operand" "rk")
 		   (and:SI
 		    (mult:SI (match_operand:SI 1 "register_operand" "r")
 			     (match_operand 2 "aarch64_pwr_imm3" "Up3"))

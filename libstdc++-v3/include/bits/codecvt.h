@@ -393,7 +393,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  /// class codecvt<wchar_t, char, mbstate_t> specialization.
+  /** @brief  Class codecvt<wchar_t, char, mbstate_t> specialization.
+   *
+   *  Converts between narrow and wide characters in the native character set
+   */
   template<>
     class codecvt<wchar_t, char, mbstate_t>
     : public __codecvt_abstract_base<wchar_t, char, mbstate_t>
@@ -454,6 +457,125 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       do_max_length() const throw();
     };
 #endif //_GLIBCXX_USE_WCHAR_T
+
+#if __cplusplus >= 201103L
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+  /** @brief  Class codecvt<char16_t, char, mbstate_t> specialization.
+   *
+   *  Converts between UTF-16 and UTF-8.
+   */
+  template<>
+    class codecvt<char16_t, char, mbstate_t>
+    : public __codecvt_abstract_base<char16_t, char, mbstate_t>
+    {
+    public:
+      // Types:
+      typedef char16_t			intern_type;
+      typedef char			extern_type;
+      typedef mbstate_t			state_type;
+
+    public:
+      static locale::id			id;
+
+      explicit
+      codecvt(size_t __refs = 0)
+      : __codecvt_abstract_base<char16_t, char, mbstate_t>(__refs) { }
+
+    protected:
+      virtual
+      ~codecvt();
+
+      virtual result
+      do_out(state_type& __state, const intern_type* __from,
+	     const intern_type* __from_end, const intern_type*& __from_next,
+	     extern_type* __to, extern_type* __to_end,
+	     extern_type*& __to_next) const;
+
+      virtual result
+      do_unshift(state_type& __state,
+		 extern_type* __to, extern_type* __to_end,
+		 extern_type*& __to_next) const;
+
+      virtual result
+      do_in(state_type& __state,
+	     const extern_type* __from, const extern_type* __from_end,
+	     const extern_type*& __from_next,
+	     intern_type* __to, intern_type* __to_end,
+	     intern_type*& __to_next) const;
+
+      virtual
+      int do_encoding() const throw();
+
+      virtual
+      bool do_always_noconv() const throw();
+
+      virtual
+      int do_length(state_type&, const extern_type* __from,
+		    const extern_type* __end, size_t __max) const;
+
+      virtual int
+      do_max_length() const throw();
+    };
+
+  /** @brief  Class codecvt<char32_t, char, mbstate_t> specialization.
+   *
+   *  Converts between UTF-32 and UTF-8.
+   */
+  template<>
+    class codecvt<char32_t, char, mbstate_t>
+    : public __codecvt_abstract_base<char32_t, char, mbstate_t>
+    {
+    public:
+      // Types:
+      typedef char32_t			intern_type;
+      typedef char			extern_type;
+      typedef mbstate_t			state_type;
+
+    public:
+      static locale::id			id;
+
+      explicit
+      codecvt(size_t __refs = 0)
+      : __codecvt_abstract_base<char32_t, char, mbstate_t>(__refs) { }
+
+    protected:
+      virtual
+      ~codecvt();
+
+      virtual result
+      do_out(state_type& __state, const intern_type* __from,
+	     const intern_type* __from_end, const intern_type*& __from_next,
+	     extern_type* __to, extern_type* __to_end,
+	     extern_type*& __to_next) const;
+
+      virtual result
+      do_unshift(state_type& __state,
+		 extern_type* __to, extern_type* __to_end,
+		 extern_type*& __to_next) const;
+
+      virtual result
+      do_in(state_type& __state,
+	     const extern_type* __from, const extern_type* __from_end,
+	     const extern_type*& __from_next,
+	     intern_type* __to, intern_type* __to_end,
+	     intern_type*& __to_next) const;
+
+      virtual
+      int do_encoding() const throw();
+
+      virtual
+      bool do_always_noconv() const throw();
+
+      virtual
+      int do_length(state_type&, const extern_type* __from,
+		    const extern_type* __end, size_t __max) const;
+
+      virtual int
+      do_max_length() const throw();
+    };
+
+#endif // _GLIBCXX_USE_C99_STDINT_TR1
+#endif // C++11
 
   /// class codecvt_byname [22.2.1.6].
   template<typename _InternT, typename _ExternT, typename _StateT>

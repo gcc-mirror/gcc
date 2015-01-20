@@ -1151,17 +1151,20 @@ dump_gimple_omp_for (pretty_printer *buffer, gomp_for *gs, int spc, int flags)
 	case GF_OMP_FOR_KIND_FOR:
 	  kind = "";
 	  break;
-	case GF_OMP_FOR_KIND_SIMD:
-	  kind = " simd";
-	  break;
-	case GF_OMP_FOR_KIND_CILKSIMD:
-	  kind = " cilksimd";
-	  break;
 	case GF_OMP_FOR_KIND_DISTRIBUTE:
 	  kind = " distribute";
 	  break;
 	case GF_OMP_FOR_KIND_CILKFOR:
 	  kind = " _Cilk_for";
+	  break;
+	case GF_OMP_FOR_KIND_OACC_LOOP:
+	  kind = " oacc_loop";
+	  break;
+	case GF_OMP_FOR_KIND_SIMD:
+	  kind = " simd";
+	  break;
+	case GF_OMP_FOR_KIND_CILKSIMD:
+	  kind = " cilksimd";
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -1188,16 +1191,19 @@ dump_gimple_omp_for (pretty_printer *buffer, gomp_for *gs, int spc, int flags)
 	case GF_OMP_FOR_KIND_FOR:
 	  pp_string (buffer, "#pragma omp for");
 	  break;
+	case GF_OMP_FOR_KIND_DISTRIBUTE:
+	  pp_string (buffer, "#pragma omp distribute");
+	  break;
+	case GF_OMP_FOR_KIND_CILKFOR:
+	  break;
+	case GF_OMP_FOR_KIND_OACC_LOOP:
+	  pp_string (buffer, "#pragma acc loop");
+	  break;
 	case GF_OMP_FOR_KIND_SIMD:
 	  pp_string (buffer, "#pragma omp simd");
 	  break;
 	case GF_OMP_FOR_KIND_CILKSIMD:
 	  pp_string (buffer, "#pragma simd");
-	  break;
-	case GF_OMP_FOR_KIND_DISTRIBUTE:
-	  pp_string (buffer, "#pragma omp distribute");
-	  break;
-	case GF_OMP_FOR_KIND_CILKFOR:
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -1344,6 +1350,21 @@ dump_gimple_omp_target (pretty_printer *buffer, gomp_target *gs,
     case GF_OMP_TARGET_KIND_UPDATE:
       kind = " update";
       break;
+    case GF_OMP_TARGET_KIND_OACC_KERNELS:
+      kind = " oacc_kernels";
+      break;
+    case GF_OMP_TARGET_KIND_OACC_PARALLEL:
+      kind = " oacc_parallel";
+      break;
+    case GF_OMP_TARGET_KIND_OACC_DATA:
+      kind = " oacc_data";
+      break;
+    case GF_OMP_TARGET_KIND_OACC_UPDATE:
+      kind = " oacc_update";
+      break;
+    case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
+      kind = " oacc_enter_exit_data";
+      break;
     default:
       gcc_unreachable ();
     }
@@ -1352,7 +1373,9 @@ dump_gimple_omp_target (pretty_printer *buffer, gomp_target *gs,
       dump_gimple_fmt (buffer, spc, flags, "%G%s <%+BODY <%S>%nCLAUSES <", gs,
 		       kind, gimple_omp_body (gs));
       dump_omp_clauses (buffer, gimple_omp_target_clauses (gs), spc, flags);
-      dump_gimple_fmt (buffer, spc, flags, " >");
+      dump_gimple_fmt (buffer, spc, flags, " >, %T, %T%n>",
+		       gimple_omp_target_child_fn (gs),
+		       gimple_omp_target_data_arg (gs));
     }
   else
     {
@@ -1364,16 +1387,28 @@ dump_gimple_omp_target (pretty_printer *buffer, gomp_target *gs,
 	  pp_string (buffer, " [child fn: ");
 	  dump_generic_node (buffer, gimple_omp_target_child_fn (gs),
 			     spc, flags, false);
-	  pp_right_bracket (buffer);
+	  pp_string (buffer, " (");
+	  if (gimple_omp_target_data_arg (gs))
+	    dump_generic_node (buffer, gimple_omp_target_data_arg (gs),
+			       spc, flags, false);
+	  else
+	    pp_string (buffer, "???");
+	  pp_string (buffer, ")]");
 	}
-      if (!gimple_seq_empty_p (gimple_omp_body (gs)))
+      gimple_seq body = gimple_omp_body (gs);
+      if (body && gimple_code (gimple_seq_first_stmt (body)) != GIMPLE_BIND)
 	{
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '{');
+	  pp_left_brace (buffer);
 	  pp_newline (buffer);
-	  dump_gimple_seq (buffer, gimple_omp_body (gs), spc + 4, flags);
+	  dump_gimple_seq (buffer, body, spc + 4, flags);
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '}');
+	  pp_right_brace (buffer);
+	}
+      else if (body)
+	{
+	  pp_newline (buffer);
+	  dump_gimple_seq (buffer, body, spc + 2, flags);
 	}
     }
 }

@@ -168,8 +168,8 @@ in the following sections.
 @gccoptlist{-ansi  -std=@var{standard}  -fgnu89-inline @gol
 -aux-info @var{filename} -fallow-parameterless-variadic-functions @gol
 -fno-asm  -fno-builtin  -fno-builtin-@var{function} @gol
--fhosted  -ffreestanding -fopenmp -fopenmp-simd -fms-extensions @gol
--fplan9-extensions -trigraphs  -traditional  -traditional-cpp @gol
+-fhosted  -ffreestanding -fopenacc -fopenmp -fopenmp-simd @gol
+-fms-extensions -fplan9-extensions -trigraphs -traditional -traditional-cpp @gol
 -fallow-single-precision  -fcond-mismatch -flax-vector-conversions @gol
 -fsigned-bitfields  -fsigned-char @gol
 -funsigned-bitfields  -funsigned-char}
@@ -240,7 +240,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic @gol
 -pedantic-errors @gol
 -w  -Wextra  -Wall  -Waddress  -Waggregate-return  @gol
--Waggressive-loop-optimizations -Warray-bounds @gol
+-Waggressive-loop-optimizations -Warray-bounds -Warray-bounds=@var{n} @gol
 -Wbool-compare @gol
 -Wno-attributes -Wno-builtin-macro-redefined @gol
 -Wc90-c99-compat -Wc99-c11-compat @gol
@@ -428,8 +428,9 @@ Objective-C and Objective-C++ Dialects}.
 -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops @gol
 -fsemantic-interposition @gol
 -fshrink-wrap -fsignaling-nans -fsingle-precision-constant @gol
--fsplit-ivs-in-unroller -fsplit-wide-types -fssa-phiopt -fstack-protector @gol
--fstack-protector-all -fstack-protector-strong -fstrict-aliasing @gol
+-fsplit-ivs-in-unroller -fsplit-wide-types -fssa-phiopt @gol
+-fstack-protector -fstack-protector-all -fstack-protector-strong @gol
+-fstack-protector-explicit -fstrict-aliasing @gol
 -fstrict-overflow -fthread-jumps -ftracer -ftree-bit-ccp @gol
 -ftree-builtin-call-dce -ftree-ccp -ftree-ch @gol
 -ftree-coalesce-inline-vars -ftree-coalesce-vars -ftree-copy-prop @gol
@@ -446,7 +447,7 @@ Objective-C and Objective-C++ Dialects}.
 -funit-at-a-time -funroll-all-loops -funroll-loops @gol
 -funsafe-loop-optimizations -funsafe-math-optimizations -funswitch-loops @gol
 -fipa-ra -fvariable-expansion-in-unroller -fvect-cost-model -fvpt @gol
--fweb -fwhole-program -fwpa -fuse-ld=@var{linker} -fuse-linker-plugin @gol
+-fweb -fwhole-program -fwpa -fuse-linker-plugin @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os -Ofast -Og}
 
@@ -472,7 +473,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @item Linker Options
 @xref{Link Options,,Options for Linking}.
-@gccoptlist{@var{object-file-name}  -l@var{library} @gol
+@gccoptlist{@var{object-file-name}  -fuse-ld=@var{linker} -l@var{library} @gol
 -nostartfiles  -nodefaultlibs  -nostdlib -pie -rdynamic @gol
 -s  -static -static-libgcc -static-libstdc++ @gol
 -static-libasan -static-libtsan -static-liblsan -static-libubsan @gol
@@ -860,15 +861,15 @@ Objective-C and Objective-C++ Dialects}.
 -mperf-ext -mno-perf-ext @gol
 -mv3push -mno-v3push @gol
 -m16bit -mno-16bit @gol
--mgp-direct -mno-gp-direct @gol
 -misr-vector-size=@var{num} @gol
 -mcache-block-size=@var{num} @gol
 -march=@var{arch} @gol
--mforce-fp-as-gp -mforbid-fp-as-gp @gol
--mex9 -mctor-dtor -mrelax}
+-mcmodel=@var{code-model} @gol
+-mctor-dtor -mrelax}
 
 @emph{Nios II Options}
-@gccoptlist{-G @var{num} -mgpopt -mno-gpopt -mel -meb @gol
+@gccoptlist{-G @var{num} -mgpopt=@var{option} -mgpopt -mno-gpopt @gol
+-mel -meb @gol
 -mno-bypass-cache -mbypass-cache @gol
 -mno-cache-volatile -mcache-volatile @gol
 -mno-fast-sw-div -mfast-sw-div @gol
@@ -1883,6 +1884,20 @@ This is equivalent to @option{-fno-hosted}.
 
 @xref{Standards,,Language Standards Supported by GCC}, for details of
 freestanding and hosted environments.
+
+@item -fopenacc
+@opindex fopenacc
+@cindex OpenACC accelerator programming
+Enable handling of OpenACC directives @code{#pragma acc} in C/C++ and
+@code{!$acc} in Fortran.  When @option{-fopenacc} is specified, the
+compiler generates accelerated code according to the OpenACC Application
+Programming Interface v2.0 @w{@uref{http://www.openacc.org/}}.  This option
+implies @option{-pthread}, and thus is only supported on targets that
+have support for @option{-pthread}.
+
+Note that this is an experimental feature, incomplete, and subject to
+change in future versions of GCC.  See
+@w{@uref{https://gcc.gnu.org/wiki/OpenACC}} for more information.
 
 @item -fopenmp
 @opindex fopenmp
@@ -3389,7 +3404,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 @option{-Wall} turns on the following warning flags:
 
 @gccoptlist{-Waddress   @gol
--Warray-bounds @r{(only with} @option{-O2}@r{)}  @gol
+-Warray-bounds=1 @r{(only with} @option{-O2}@r{)}  @gol
 -Wc++11-compat  -Wc++14-compat@gol
 -Wchar-subscripts  @gol
 -Wenum-compare @r{(in C/ObjC; this is on by default in C++)} @gol
@@ -4242,7 +4257,7 @@ Warn about functions that might be candidates for attributes
 functions visible in other compilation units or (in the case of @code{pure} and
 @code{const}) if it cannot prove that the function returns normally. A function
 returns normally if it doesn't contain an infinite loop or return abnormally
-by throwing, calling @code{abort()} or trapping.  This analysis requires option
+by throwing, calling @code{abort} or trapping.  This analysis requires option
 @option{-fipa-pure-const}, which is enabled by default at @option{-O} and
 higher.  Higher optimization levels improve the accuracy of the analysis.
 
@@ -4303,11 +4318,25 @@ Warn about overriding virtual functions that are not marked with the override
 keyword.
 
 @item -Warray-bounds
+@itemx -Warray-bounds=@var{n}
 @opindex Wno-array-bounds
 @opindex Warray-bounds
 This option is only active when @option{-ftree-vrp} is active
 (default for @option{-O2} and above). It warns about subscripts to arrays
 that are always out of bounds. This warning is enabled by @option{-Wall}.
+
+@table @gcctabopt
+@item -Warray-bounds=1
+This is the warning level of @option{-Warray-bounds} and is enabled
+by @option{-Wall}; higher levels are not, and must be explicitly requested.
+
+@item -Warray-bounds=2
+This warning level also warns about out of bounds access for
+arrays at the end of a struct and for arrays accessed through
+pointers. This warning level may give a larger number of
+false positives and is deactivated by default.
+@end table
+
 
 @item -Wbool-compare
 @opindex Wno-bool-compare
@@ -4625,8 +4654,9 @@ example, warn if an unsigned variable is compared against zero with
 @item -Wbad-function-cast @r{(C and Objective-C only)}
 @opindex Wbad-function-cast
 @opindex Wno-bad-function-cast
-Warn whenever a function call is cast to a non-matching type.
-For example, warn if @code{int malloc()} is cast to @code{anything *}.
+Warn when a function call is cast to a non-matching type.
+For example, warn if a call to a function returning an integer type 
+is cast to a pointer type.
 
 @item -Wc90-c99-compat @r{(C and Objective-C only)}
 @opindex Wc90-c99-compat
@@ -5784,7 +5814,7 @@ Similarly @option{-fno-sanitize-recover} is equivalent to
 @item -fsanitize-undefined-trap-on-error
 @opindex fsanitize-undefined-trap-on-error
 The @option{-fsanitize-undefined-trap-on-error} instructs the compiler to
-report undefined behavior using @code{__builtin_trap ()} rather than
+report undefined behavior using @code{__builtin_trap} rather than
 a @code{libubsan} library routine.  The advantage of this is that the
 @code{libubsan} library is not needed and is not linked in, so this
 is usable even in freestanding environments.
@@ -6108,7 +6138,7 @@ Set the internal debug counter upper bound.  @var{counter-value-list}
 is a comma-separated list of @var{name}:@var{value} pairs
 which sets the upper bound of each debug counter @var{name} to @var{value}.
 All debug counters have the initial upper bound of @code{UINT_MAX};
-thus @code{dbg_cnt()} returns true always unless the upper bound
+thus @code{dbg_cnt} returns true always unless the upper bound
 is set by this option.
 For example, with @option{-fdbg-cnt=dce:10,tail_call:0},
 @code{dbg_cnt(dce)} returns true only for first 10 invocations.
@@ -8697,26 +8727,6 @@ enabled by default at @option{-O2} and higher.  Null pointer check
 elimination is only done if @option{-fdelete-null-pointer-checks} is
 enabled.
 
-@item -ftracer
-@opindex ftracer
-Perform tail duplication to enlarge superblock size.  This transformation
-simplifies the control flow of the function allowing other optimizations to do
-a better job.
-
-@item -funroll-loops
-@opindex funroll-loops
-Unroll loops whose number of iterations can be determined at compile
-time or upon entry to the loop.  @option{-funroll-loops} implies
-@option{-frerun-cse-after-loop}.  This option makes code larger,
-and may or may not make it run faster.
-
-@item -funroll-all-loops
-@opindex funroll-all-loops
-Unroll all loops, even if their number of iterations is uncertain when
-the loop is entered.  This usually makes programs run more slowly.
-@option{-funroll-all-loops} implies the same options as
-@option{-funroll-loops},
-
 @item -fsplit-ivs-in-unroller
 @opindex fsplit-ivs-in-unroller
 Enables expression of values of induction variables in later iterations
@@ -9323,14 +9333,6 @@ the comparison operation before register allocation is complete.
 
 Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
-@item -fuse-ld=bfd
-@opindex fuse-ld=bfd
-Use the @command{bfd} linker instead of the default linker.
-
-@item -fuse-ld=gold
-@opindex fuse-ld=gold
-Use the @command{gold} linker instead of the default linker.
-
 @item -fcprop-registers
 @opindex fcprop-registers
 After register allocation and post-register allocation instruction splitting,
@@ -9831,6 +9833,11 @@ Like @option{-fstack-protector} but includes additional functions to
 be protected --- those that have local array definitions, or have
 references to local frame addresses.
 
+@item -fstack-protector-explicit
+@opindex fstack-protector-explicit
+Like @option{-fstack-protector} but only protects those functions which
+have the @code{stack_protect} attribute
+
 @item -fsection-anchors
 @opindex fsection-anchors
 Try to reduce the number of symbolic address calculations by using
@@ -10050,7 +10057,7 @@ The default value is 10.
 @item early-inlining-insns
 Specify growth that the early inliner can make.  In effect it increases
 the amount of inlining for code having a large abstraction penalty.
-The default value is 10.
+The default value is 14.
 
 @item max-early-inliner-iterations
 Limit of iterations of the early inliner.  This basically bounds
@@ -10873,6 +10880,14 @@ to the linker.
 If any of these options is used, then the linker is not run, and
 object file names should not be used as arguments.  @xref{Overall
 Options}.
+
+@item -fuse-ld=bfd
+@opindex fuse-ld=bfd
+Use the @command{bfd} linker instead of the default linker.
+
+@item -fuse-ld=gold
+@opindex fuse-ld=gold
+Use the @command{gold} linker instead of the default linker.
 
 @cindex Libraries
 @item -l@var{library}
@@ -12080,7 +12095,8 @@ architecture.
 @opindex mtune
 Specify the name of the target processor for which GCC should tune the
 performance of the code.  Permissible values for this option are:
-@samp{generic}, @samp{cortex-a53}, @samp{cortex-a57}, @samp{thunderx}.
+@samp{generic}, @samp{cortex-a53}, @samp{cortex-a57}, @samp{thunderx},
+@samp{xgene1}.
 
 Additionally, this option can specify that GCC should tune the performance
 of the code for a big.LITTLE system.  The only permissible value is
@@ -12813,10 +12829,11 @@ Standard for all functions, even if this is not strictly necessary for
 correct execution of the code.  Specifying @option{-fomit-frame-pointer}
 with this option causes the stack frames not to be generated for
 leaf functions.  The default is @option{-mno-apcs-frame}.
+This option is deprecated.
 
 @item -mapcs
 @opindex mapcs
-This is a synonym for @option{-mapcs-frame}.
+This is a synonym for @option{-mapcs-frame} and is deprecated.
 
 @ignore
 @c not currently implemented
@@ -12956,7 +12973,8 @@ Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{marvell-pj4},
 @samp{xscale}, @samp{iwmmxt}, @samp{iwmmxt2}, @samp{ep9312},
 @samp{fa526}, @samp{fa626},
-@samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te}.
+@samp{fa606te}, @samp{fa626te}, @samp{fmp626}, @samp{fa726te},
+@samp{xgene1}.
 
 Additionally, this option can specify that GCC should tune the performance
 of the code for a big.LITTLE system.  Permissible names are:
@@ -18453,7 +18471,7 @@ Divide-by-zero checks can be completely disabled using
 @itemx -mno-memcpy
 @opindex mmemcpy
 @opindex mno-memcpy
-Force (do not force) the use of @code{memcpy()} for non-trivial block
+Force (do not force) the use of @code{memcpy} for non-trivial block
 moves.  The default is @option{-mno-memcpy}, which allows GCC to inline
 most constant-sized copies.
 
@@ -18666,7 +18684,7 @@ Disable the insertion of cache barriers.  This is the default setting.
 @opindex mflush-func
 Specifies the function to call to flush the I and D caches, or to not
 call any such function.  If called, the function must take the same
-arguments as the common @code{_flush_func()}, that is, the address of the
+arguments as the common @code{_flush_func}, that is, the address of the
 memory range for which the cache is being flushed, the size of the
 memory range, and the number 3 (to flush both caches).  The default
 depends on the target GCC was configured for, but commonly is either
@@ -18720,7 +18738,7 @@ It is enabled by default at optimization level @option{-O3}.
 @opindex msynci
 Enable (disable) generation of @code{synci} instructions on
 architectures that support it.  The @code{synci} instructions (if
-enabled) are generated when @code{__builtin___clear_cache()} is
+enabled) are generated when @code{__builtin___clear_cache} is
 compiled.
 
 This option defaults to @option{-mno-synci}, but the default can be
@@ -19114,14 +19132,6 @@ Generate 16-bit instructions.
 @opindex mno-16-bit
 Do not generate 16-bit instructions.
 
-@item -mgp-direct
-@opindex mgp-direct
-Generate GP base instructions directly.
-
-@item -mno-gp-direct
-@opindex mno-gp-direct
-Do no generate GP base instructions directly.
-
 @item -misr-vector-size=@var{num}
 @opindex misr-vector-size
 Specify the size of each interrupt vector, which must be 4 or 16.
@@ -19135,20 +19145,20 @@ which must be a power of 2 between 4 and 512.
 @opindex march
 Specify the name of the target architecture.
 
-@item -mforce-fp-as-gp
-@opindex mforce-fp-as-gp
-Prevent $fp being allocated during register allocation so that compiler
-is able to force performing fp-as-gp optimization.
-
-@item -mforbid-fp-as-gp
-@opindex mforbid-fp-as-gp
-Forbid using $fp to access static and global variables.
-This option strictly forbids fp-as-gp optimization
-regardless of @option{-mforce-fp-as-gp}.
-
-@item -mex9
-@opindex mex9
-Use special directives to guide linker doing ex9 optimization.
+@item -mcmodel=@var{code-model}
+@opindex mcmodel
+Set the code model to one of
+@table @asis
+@item @samp{small}
+All the data and read-only data segments must be within 512KB addressing space.
+The text segment must be within 16MB addressing space.
+@item @samp{medium}
+The data segment must be within 512KB while the read-only data segment can be
+within 4GB addressing space.  The text segment should be still within 16MB
+addressing space.
+@item @samp{large}
+All the text and data segments can be within 4GB addressing space.
+@end table
 
 @item -mctor-dtor
 @opindex mctor-dtor
@@ -19176,15 +19186,54 @@ Put global and static objects less than or equal to @var{num} bytes
 into the small data or BSS sections instead of the normal data or BSS
 sections.  The default value of @var{num} is 8.
 
+@item -mgpopt=@var{option}
 @item -mgpopt
 @itemx -mno-gpopt
 @opindex mgpopt
 @opindex mno-gpopt
-Generate (do not generate) GP-relative accesses for objects in the
-small data or BSS sections.  The default is @option{-mgpopt} except
-when @option{-fpic} or @option{-fPIC} is specified to generate
-position-independent code.  Note that the Nios II ABI does not permit
-GP-relative accesses from shared libraries.
+Generate (do not generate) GP-relative accesses.  The following 
+@var{option} names are recognized:
+
+@table @samp
+
+@item none
+Do not generate GP-relative accesses.
+
+@item local
+Generate GP-relative accesses for small data objects that are not 
+external or weak.  Also use GP-relative addressing for objects that
+have been explicitly placed in a small data section via a @code{section}
+attribute.
+
+@item global
+As for @samp{local}, but also generate GP-relative accesses for
+small data objects that are external or weak.  If you use this option,
+you must ensure that all parts of your program (including libraries) are
+compiled with the same @option{-G} setting.
+
+@item data
+Generate GP-relative accesses for all data objects in the program.  If you
+use this option, the entire data and BSS segments
+of your program must fit in 64K of memory and you must use an appropriate
+linker script to allocate them within the addressible range of the
+global pointer.
+
+@item all
+Generate GP-relative addresses for function pointers as well as data
+pointers.  If you use this option, the entire text, data, and BSS segments
+of your program must fit in 64K of memory and you must use an appropriate
+linker script to allocate them within the addressible range of the
+global pointer.
+
+@end table
+
+@option{-mgpopt} is equivalent to @option{-mgpopt=local}, and
+@option{-mno-gpopt} is equivalent to @option{-mgpopt=none}.
+
+The default is @option{-mgpopt} except when @option{-fpic} or
+@option{-fPIC} is specified to generate position-independent code.
+Note that the Nios II ABI does not permit GP-relative accesses from
+shared libraries.
 
 You may need to specify @option{-mno-gpopt} explicitly when building
 programs that include large amounts of small data, including large

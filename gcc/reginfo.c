@@ -41,18 +41,28 @@ along with GCC; see the file COPYING3.  If not see
 #include "inchash.h"
 #include "tree.h"
 #include "rtl.h"
+#include "hashtab.h"
+#include "function.h"
+#include "flags.h"
+#include "statistics.h"
+#include "real.h"
+#include "fixed-value.h"
+#include "insn-config.h"
+#include "expmed.h"
+#include "dojump.h"
+#include "explow.h"
+#include "calls.h"
+#include "emit-rtl.h"
+#include "varasm.h"
+#include "stmt.h"
 #include "expr.h"
 #include "tm_p.h"
-#include "flags.h"
 #include "predict.h"
-#include "input.h"
-#include "function.h"
 #include "dominance.h"
 #include "cfg.h"
 #include "basic-block.h"
 #include "regs.h"
 #include "addresses.h"
-#include "insn-config.h"
 #include "recog.h"
 #include "reload.h"
 #include "diagnostic-core.h"
@@ -1122,7 +1132,7 @@ reg_scan_mark_refs (rtx x, rtx_insn *insn)
       /* Count a set of the destination if it is a register.  */
       for (dest = SET_DEST (x);
 	   GET_CODE (dest) == SUBREG || GET_CODE (dest) == STRICT_LOW_PART
-	   || GET_CODE (dest) == ZERO_EXTEND;
+	   || GET_CODE (dest) == ZERO_EXTRACT;
 	   dest = XEXP (dest, 0))
 	;
 

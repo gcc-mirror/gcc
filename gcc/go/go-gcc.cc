@@ -322,7 +322,7 @@ class Gcc_backend : public Backend
 
   Bexpression*
   call_expression(Bexpression* fn, const std::vector<Bexpression*>& args,
-                  Location);
+                  Bexpression* static_chain, Location);
 
   // Statements.
 
@@ -401,6 +401,9 @@ class Gcc_backend : public Backend
   Bvariable*
   parameter_variable(Bfunction*, const std::string&, Btype*, bool,
 		     Location);
+
+  Bvariable*
+  static_chain_variable(Bfunction*, const std::string&, Btype*, Location);
 
   Bvariable*
   temporary_variable(Bfunction*, Bblock*, Btype*, Bexpression*, bool,
@@ -1808,7 +1811,7 @@ Gcc_backend::array_index_expression(Bexpression* array, Bexpression* index,
 Bexpression*
 Gcc_backend::call_expression(Bexpression* fn_expr,
                              const std::vector<Bexpression*>& fn_args,
-                             Location location)
+                             Bexpression* chain_expr, Location location)
 {
   tree fn = fn_expr->get_tree();
   if (fn == error_mark_node || TREE_TYPE(fn) == error_mark_node)
@@ -1867,6 +1870,9 @@ Gcc_backend::call_expression(Bexpression* fn_expr,
       build_call_array_loc(location.gcc_location(),
                            excess_type != NULL_TREE ? excess_type : rettype,
                            fn, nargs, args);
+
+  if (chain_expr)
+    CALL_EXPR_STATIC_CHAIN (ret) = chain_expr->get_tree();
 
   if (excess_type != NULL_TREE)
     {
@@ -2485,6 +2491,40 @@ Gcc_backend::parameter_variable(Bfunction* function, const std::string& name,
   TREE_USED(decl) = 1;
   if (is_address_taken)
     TREE_ADDRESSABLE(decl) = 1;
+  go_preserve_from_gc(decl);
+  return new Bvariable(decl);
+}
+
+// Make a static chain variable.
+
+Bvariable*
+Gcc_backend::static_chain_variable(Bfunction* function, const std::string& name,
+				   Btype* btype, Location location)
+{
+  tree type_tree = btype->get_tree();
+  if (type_tree == error_mark_node)
+    return this->error_variable();
+  tree decl = build_decl(location.gcc_location(), PARM_DECL,
+			 get_identifier_from_string(name), type_tree);
+  tree fndecl = function->get_tree();
+  DECL_CONTEXT(decl) = fndecl;
+  DECL_ARG_TYPE(decl) = type_tree;
+  TREE_USED(decl) = 1;
+  DECL_ARTIFICIAL(decl) = 1;
+  DECL_IGNORED_P(decl) = 1;
+  TREE_READONLY(decl) = 1;
+
+  struct function *f = DECL_STRUCT_FUNCTION(fndecl);
+  if (f == NULL)
+    {
+      push_struct_function(fndecl);
+      pop_cfun();
+      f = DECL_STRUCT_FUNCTION(fndecl);
+    }
+  gcc_assert(f->static_chain_decl == NULL);
+  f->static_chain_decl = decl;
+  DECL_STATIC_CHAIN(fndecl) = 1;
+
   go_preserve_from_gc(decl);
   return new Bvariable(decl);
 }

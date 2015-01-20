@@ -1,3 +1,8 @@
+2015-01-16  Richard Henderson  <rth@redhat.com>
+
+	* go-gcc.cc (Gcc_backend::call_expression): Add chain_expr argument.
+	(Gcc_backend::static_chain_variable): New method.
+
 2015-01-09  Ian Lance Taylor  <iant@google.com>
 
 	* config-lang.in (lang_dirs): Define.
