@@ -1,5 +1,11 @@
 2015-01-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2011.xml: Remove stray dbhtml tags.
+	* doc/xml/manual/status_cxx2014.xml: Update status.
+	* doc/html/manual/status.html: Regenerate.
+
+2015-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/64650
 	* include/experimental/optional (bad_optional_access): Add default
 	constructor.

@@ -212,14 +212,13 @@ not in any particular release.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8C8B0" ?>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/JTC1/sc22/WG21/docs/papers/2013/n3657.htm">
 	  N3657
 	</link>
       </entry>
       <entry>Adding heterogeneous comparison lookup to associative containers</entry>
-      <entry>WIP</entry>
+      <entry>Y</entry>
       <entry/>
     </row>
 
@@ -242,8 +241,8 @@ not in any particular release.
 	</link>
       </entry>
       <entry>Null Forward Iterators</entry>
-      <entry>N</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Only affects Debug Mode</entry>
     </row>
 
   </tbody>
