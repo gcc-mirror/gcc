@@ -1,3 +1,8 @@
+2015-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/64663
+	* gcc.dg/pr64663.c: New test.
+
 2015-01-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/64383
