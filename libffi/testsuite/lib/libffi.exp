@@ -219,10 +219,6 @@ proc libffi_target_compile { source dest type options } {
 	lappend options "libs= -lpthread"
     }
 
-    if { [string match "*.cc" $source] } {
-	lappend options "c++"
-    }
-
     verbose "options: $options"
     return [target_compile $source $dest $type $options]
 }
