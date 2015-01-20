@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #include <utility> // for std::pair
 
+#include "timevar.h"
+
 #include "jit-recording.h"
 
 namespace gcc {
@@ -34,6 +36,12 @@ namespace jit {
  **********************************************************************/
 
 namespace playback {
+
+/* playback::context is an abstract base class.
+
+   The two concrete subclasses are:
+   - playback::compile_to_memory
+   - playback::compile_to_file.  */
 
 class context : public log_user
 {
@@ -174,7 +182,7 @@ public:
     return m_recording_ctxt->get_builtins_manager ();
   }
 
-  result *
+  void
   compile ();
 
   void
@@ -252,8 +260,21 @@ private:
   char *
   read_dump_file (const char *path);
 
+  virtual void postprocess (const char *ctxt_progname) = 0;
+
+protected:
+  tempdir *get_tempdir () { return m_tempdir; }
+
   void
   convert_to_dso (const char *ctxt_progname);
+
+  void
+  invoke_driver (const char *ctxt_progname,
+		 const char *input_file,
+		 const char *output_file,
+		 timevar_id_t tv_id,
+		 bool shared,
+		 bool run_linker);
 
   result *
   dlopen_built_dso ();
@@ -273,6 +294,37 @@ private:
 
   auto_vec<std::pair<tree, location *> > m_cached_locations;
 };
+
+class compile_to_memory : public context
+{
+ public:
+  compile_to_memory (recording::context *ctxt);
+  void postprocess (const char *ctxt_progname);
+
+  result *get_result_obj () const { return m_result; }
+
+ private:
+  result *m_result;
+};
+
+class compile_to_file : public context
+{
+ public:
+  compile_to_file (recording::context *ctxt,
+		   enum gcc_jit_output_kind output_kind,
+		   const char *output_path);
+  void postprocess (const char *ctxt_progname);
+
+ private:
+  void
+  copy_file (const char *src_path,
+	     const char *dst_path);
+
+ private:
+  enum gcc_jit_output_kind m_output_kind;
+  const char *m_output_path;
+};
+
 
 /* A temporary wrapper object.
    These objects are (mostly) only valid during replay.

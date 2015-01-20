@@ -17,14 +17,19 @@
 
 .. default-domain:: c
 
-Compilation results
+Compiling a context
 ===================
 
-.. type:: gcc_jit_result
+Once populated, a :c:type:`gcc_jit_context *` can be compiled to
+machine code, either in-memory via :c:func:`gcc_jit_context_compile` or
+to disk via :c:func:`gcc_jit_context_compile_to_file`.
 
-  A `gcc_jit_result` encapsulates the result of compiling a context,
-  and the lifetimes of any machine code functions or globals that are
-  within it.
+You can compile a context multiple times (using either form of
+compilation), although any errors that occur on the context will
+prevent any future compilation of that context.
+
+In-memory compilation
+*********************
 
 .. function:: gcc_jit_result *\
               gcc_jit_context_compile (gcc_jit_context *ctxt)
@@ -35,6 +40,12 @@ Compilation results
    If this is non-NULL, the caller becomes responsible for
    calling :func:`gcc_jit_result_release` on it once they're done
    with it.
+
+.. type:: gcc_jit_result
+
+  A `gcc_jit_result` encapsulates the result of compiling a context
+  in-memory, and the lifetimes of any machine code functions or globals
+  that are within the resuilt.
 
 .. function:: void *\
               gcc_jit_result_get_code (gcc_jit_result *result,\
@@ -125,3 +136,64 @@ Compilation results
    valid to use the result, or any code or globals that were obtained
    by calling :func:`gcc_jit_result_get_code` or
    :func:`gcc_jit_result_get_global` on it.
+
+
+Ahead-of-time compilation
+*************************
+
+Although libgccjit is primarily aimed at just-in-time compilation, it
+can also be used for implementing more traditional ahead-of-time
+compilers, via the :c:func:`gcc_jit_context_compile_to_file`
+API entrypoint.
+
+.. function:: void \
+              gcc_jit_context_compile_to_file (gcc_jit_context *ctxt, \
+                                               enum gcc_jit_output_kind output_kind,\
+                                               const char *output_path)
+
+   Compile the :c:type:`gcc_jit_context *` to a file of the given
+   kind.
+
+:c:func:`gcc_jit_context_compile_to_file` ignores the suffix of
+``output_path``, and insteads uses the given
+:c:type:`enum gcc_jit_output_kind` to decide what to do.
+
+.. note::
+
+   This is different from the ``gcc`` program, which does make use of the
+   suffix of the output file when determining what to do.
+
+.. type:: enum gcc_jit_output_kind
+
+The available kinds of output are:
+
+==============================================  ==============
+Output kind                                     Typical suffix
+==============================================  ==============
+:c:macro:`GCC_JIT_OUTPUT_KIND_ASSEMBLER`        .s
+:c:macro:`GCC_JIT_OUTPUT_KIND_OBJECT_FILE`      .o
+:c:macro:`GCC_JIT_OUTPUT_KIND_DYNAMIC_LIBRARY`  .so or .dll
+:c:macro:`GCC_JIT_OUTPUT_KIND_EXECUTABLE`       None, or .exe
+==============================================  ==============
+
+.. c:macro:: GCC_JIT_OUTPUT_KIND_ASSEMBLER
+
+   Compile the context to an assembler file.
+
+.. c:macro:: GCC_JIT_OUTPUT_KIND_OBJECT_FILE
+
+   Compile the context to an object file.
+
+.. c:macro:: GCC_JIT_OUTPUT_KIND_DYNAMIC_LIBRARY
+
+   Compile the context to a dynamic library.
+
+   There is currently no support for specifying other libraries to link
+   against.
+
+.. c:macro:: GCC_JIT_OUTPUT_KIND_EXECUTABLE
+
+   Compile the context to an executable.
+
+   There is currently no support for specifying libraries to link
+   against.

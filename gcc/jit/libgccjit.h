@@ -36,17 +36,20 @@ extern "C" {
    the API below.
 
    Invoking gcc_jit_context_compile on it gives you a gcc_jit_result *
-   (or NULL).
+   (or NULL), representing in-memory machine code.
 
    You can call gcc_jit_context_compile repeatedly on one context, giving
    multiple independent results.
 
+   Similarly, you can call gcc_jit_context_compile_to_file on a context
+   to compile to disk.
+
    Eventually you can call gcc_jit_context_release to clean up the
-   context; any results created from it are still usable, and should be
-   cleaned up via gcc_jit_result_release.  */
+   context; any in-memory results created from it are still usable, and
+   should be cleaned up via gcc_jit_result_release.  */
 typedef struct gcc_jit_context gcc_jit_context;
 
-/* A gcc_jit_result encapsulates the result of a compilation.  */
+/* A gcc_jit_result encapsulates the result of an in-memory compilation.  */
 typedef struct gcc_jit_result gcc_jit_result;
 
 /* An object created within a context.  Such objects are automatically
@@ -240,11 +243,41 @@ gcc_jit_context_set_bool_option (gcc_jit_context *ctxt,
 				 enum gcc_jit_bool_option opt,
 				 int value);
 
-/* This actually calls into GCC and runs the build, all
-   in a mutex for now.  The result is a wrapper around a .so file.
-   It can only be called once on a given context.  */
+/* Compile the context to in-memory machine code.
+
+   This can be called more that once on a given context,
+   although any errors that occur will block further compilation.  */
+
 extern gcc_jit_result *
 gcc_jit_context_compile (gcc_jit_context *ctxt);
+
+/* Kinds of ahead-of-time compilation, for use with
+   gcc_jit_context_compile_to_file.  */
+
+enum gcc_jit_output_kind
+{
+  /* Compile the context to an assembler file.  */
+  GCC_JIT_OUTPUT_KIND_ASSEMBLER,
+
+  /* Compile the context to an object file.  */
+  GCC_JIT_OUTPUT_KIND_OBJECT_FILE,
+
+  /* Compile the context to a dynamic library.  */
+  GCC_JIT_OUTPUT_KIND_DYNAMIC_LIBRARY,
+
+  /* Compile the context to an executable.  */
+  GCC_JIT_OUTPUT_KIND_EXECUTABLE
+};
+
+/* Compile the context to a file of the given kind.
+
+   This can be called more that once on a given context,
+   although any errors that occur will block further compilation.  */
+
+extern void
+gcc_jit_context_compile_to_file (gcc_jit_context *ctxt,
+				 enum gcc_jit_output_kind output_kind,
+				 const char *output_path);
 
 /* To help with debugging: dump a C-like representation to the given path,
    describing what's been set up on the context.
@@ -1079,14 +1112,15 @@ gcc_jit_context_dump_reproducer_to_file (gcc_jit_context *ctxt,
    The context directly stores the dumpname as a (const char *), so the
    passed string must outlive the context.
 
-   gcc_jit_context_compile will capture the dump as a
-   dynamically-allocated buffer, writing it to ``*out_ptr``.
+   gcc_jit_context_compile and gcc_jit_context_to_file
+   will capture the dump as a dynamically-allocated buffer, writing
+   it to ``*out_ptr``.
 
    The caller becomes responsible for calling
       free (*out_ptr)
-   each time that gcc_jit_context_compile is called.  *out_ptr will be
-   written to, either with the address of a buffer, or with NULL if an
-   error occurred.
+   each time that gcc_jit_context_compile or gcc_jit_context_to_file
+   are called.  *out_ptr will be written to, either with the address of a
+   buffer, or with NULL if an error occurred.
 
    This API entrypoint is likely to be less stable than the others.
    In particular, both the precise dumpnames, and the format and content

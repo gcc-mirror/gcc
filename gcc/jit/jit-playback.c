@@ -1668,26 +1668,37 @@ auto_argvec::~auto_argvec ()
 
    - Use the context's options to cconstruct command-line options, and
      call into the rest of GCC (toplev::main).
-   - Assuming it succeeds, we have a .s file; we want a .so file.
-     Invoke another gcc to convert the .s file to a .so file.
-   - dlopen the .so file
-   - Wrap the result up as a playback::result and return it.  */
+   - Assuming it succeeds, we have a .s file.
+   - We then run the "postprocess" vfunc:
 
-result *
+     (A) In-memory compile ("gcc_jit_context_compile")
+
+       For an in-memory compile we have the playback::compile_to_memory
+       subclass; "postprocess" will convert the .s file to a .so DSO,
+       and load it in memory (via dlopen), wrapping the result up as
+       a jit::result and returning it.
+
+     (B) Compile to file ("gcc_jit_context_compile_to_file")
+
+       When compiling to a file, we have the playback::compile_to_file
+       subclass; "postprocess" will either copy the .s file to the
+       destination (for GCC_JIT_OUTPUT_KIND_ASSEMBLER), or invoke
+       the driver to convert it as necessary, copying the result.  */
+
+void
 playback::context::
 compile ()
 {
   JIT_LOG_SCOPE (get_logger ());
 
   const char *ctxt_progname;
-  result *result_obj = NULL;
 
   int keep_intermediates =
     get_bool_option (GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES);
 
   m_tempdir = new tempdir (get_logger (), keep_intermediates);
   if (!m_tempdir->create ())
-    return NULL;
+    return;
 
   /* Call into the rest of gcc.
      For now, we have to assemble command-line options to pass into
@@ -1706,7 +1717,7 @@ compile ()
   auto_argvec fake_args;
   make_fake_args (&fake_args, ctxt_progname, &requested_dumps);
   if (errors_occurred ())
-    return NULL;
+    return;
 
   /* Acquire the JIT mutex and set "this" as the active playback ctxt.  */
   acquire_mutex ();
@@ -1737,24 +1748,258 @@ compile ()
   if (errors_occurred ())
     {
       release_mutex ();
-      return NULL;
+      return;
     }
 
   if (get_bool_option (GCC_JIT_BOOL_OPTION_DUMP_GENERATED_CODE))
     dump_generated_code ();
 
-  convert_to_dso (ctxt_progname);
-  if (errors_occurred ())
-    {
-      release_mutex ();
-      return NULL;
-    }
+  /* We now have a .s file.
 
-  result_obj = dlopen_built_dso ();
+     Run any postprocessing steps.  This will either convert the .s file to
+     a .so DSO, and load it in memory (playback::compile_to_memory), or
+     convert the .s file to the requested output format, and copy it to a
+     given file (playback::compile_to_file).  */
+  postprocess (ctxt_progname);
 
   release_mutex ();
+}
 
-  return result_obj;
+/* Implementation of class gcc::jit::playback::compile_to_memory,
+   a subclass of gcc::jit::playback::context.  */
+
+/*  playback::compile_to_memory's trivial constructor. */
+
+playback::compile_to_memory::compile_to_memory (recording::context *ctxt) :
+  playback::context (ctxt),
+  m_result (NULL)
+{
+  JIT_LOG_SCOPE (get_logger ());
+}
+
+/*  Implementation of the playback::context::process vfunc for compiling
+    to memory.
+
+    Convert the .s file to a .so DSO, and load it in memory (via dlopen),
+    wrapping the result up as a jit::result and returning it.  */
+
+void
+playback::compile_to_memory::postprocess (const char *ctxt_progname)
+{
+  JIT_LOG_SCOPE (get_logger ());
+  convert_to_dso (ctxt_progname);
+  if (errors_occurred ())
+    return;
+  m_result = dlopen_built_dso ();
+}
+
+/* Implementation of class gcc::jit::playback::compile_to_file,
+   a subclass of gcc::jit::playback::context.  */
+
+/*  playback::compile_to_file's trivial constructor. */
+
+playback::compile_to_file::compile_to_file (recording::context *ctxt,
+					    enum gcc_jit_output_kind output_kind,
+					    const char *output_path) :
+  playback::context (ctxt),
+  m_output_kind (output_kind),
+  m_output_path (output_path)
+{
+  JIT_LOG_SCOPE (get_logger ());
+}
+
+/*  Implementation of the playback::context::process vfunc for compiling
+    to a file.
+
+    Either copy the .s file to the given destination (for
+    GCC_JIT_OUTPUT_KIND_ASSEMBLER), or invoke the driver to convert it
+    as necessary, copying the result.  */
+
+void
+playback::compile_to_file::postprocess (const char *ctxt_progname)
+{
+  JIT_LOG_SCOPE (get_logger ());
+
+  /* The driver takes different actions based on the filename, so
+     we provide a filename with an appropriate suffix for the
+     output kind, and then copy it up to the user-provided path,
+     rather than directly compiling it to the requested output path.  */
+
+  switch (m_output_kind)
+    {
+    default:
+      gcc_unreachable ();
+
+    case GCC_JIT_OUTPUT_KIND_ASSEMBLER:
+      copy_file (get_tempdir ()->get_path_s_file (),
+		 m_output_path);
+      break;
+
+    case GCC_JIT_OUTPUT_KIND_OBJECT_FILE:
+      {
+	char *tmp_o_path = ::concat (get_tempdir ()->get_path (),
+				     "/fake.o",
+				     NULL);
+	invoke_driver (ctxt_progname,
+		       get_tempdir ()->get_path_s_file (),
+		       tmp_o_path,
+		       TV_ASSEMBLE,
+		       false, /* bool shared, */
+		       false);/* bool run_linker */
+	if (!errors_occurred ())
+	  copy_file (tmp_o_path,
+		     m_output_path);
+	free (tmp_o_path);
+      }
+      break;
+
+    case GCC_JIT_OUTPUT_KIND_DYNAMIC_LIBRARY:
+      invoke_driver (ctxt_progname,
+		     get_tempdir ()->get_path_s_file (),
+		     get_tempdir ()->get_path_so_file (),
+		     TV_ASSEMBLE,
+		     true, /* bool shared, */
+		     true);/* bool run_linker */
+      if (!errors_occurred ())
+	copy_file (get_tempdir ()->get_path_so_file (),
+		   m_output_path);
+      break;
+
+    case GCC_JIT_OUTPUT_KIND_EXECUTABLE:
+      {
+	char *tmp_exe_path = ::concat (get_tempdir ()->get_path (),
+				     "/fake.exe",
+				     NULL);
+	invoke_driver (ctxt_progname,
+		       get_tempdir ()->get_path_s_file (),
+		       tmp_exe_path,
+		       TV_ASSEMBLE,
+		       false, /* bool shared, */
+		       true);/* bool run_linker */
+	if (!errors_occurred ())
+	  copy_file (tmp_exe_path,
+		     m_output_path);
+	free (tmp_exe_path);
+      }
+      break;
+
+    }
+
+}
+
+/* Copy SRC_PATH to DST_PATH, preserving permission bits (in particular,
+   the "executable" bits).
+
+   Any errors that occur are reported on the context and hence count as
+   a failure of the compile.
+
+   We can't in general hardlink or use "rename" from the tempdir since
+   it might be on a different filesystem to the destination.  For example,
+   I get EXDEV: "Invalid cross-device link".  */
+
+void
+playback::compile_to_file::copy_file (const char *src_path,
+				      const char *dst_path)
+{
+  JIT_LOG_SCOPE (get_logger ());
+  if (get_logger ())
+    {
+      get_logger ()->log ("src_path: %s", src_path);
+      get_logger ()->log ("dst_path: %s", dst_path);
+    }
+
+  FILE *f_in = NULL;
+  FILE *f_out = NULL;
+  size_t total_sz_in = 0;
+  size_t total_sz_out = 0;
+  char buf[4096];
+  size_t sz_in;
+  struct stat stat_buf;
+
+  f_in = fopen (src_path, "rb");
+  if (!f_in)
+    {
+      add_error (NULL,
+		 "unable to open %s for reading: %s",
+		 src_path,
+		 xstrerror (errno));
+      return;
+    }
+
+  /* Use stat on the filedescriptor to get the mode,
+     so that we can copy it over (in particular, the
+     "executable" bits).  */
+  if (-1 == fstat (fileno (f_in), &stat_buf))
+    {
+      add_error (NULL,
+		 "unable to fstat %s: %s",
+		 src_path,
+		 xstrerror (errno));
+      fclose (f_in);
+      return;
+    }
+
+  f_out = fopen (dst_path, "wb");
+  if (!f_out)
+    {
+      add_error (NULL,
+		 "unable to open %s for writing: %s",
+		 dst_path,
+		 xstrerror (errno));
+      fclose (f_in);
+      return;
+    }
+
+  while ( (sz_in = fread (buf, 1, sizeof (buf), f_in)) )
+    {
+      total_sz_in += sz_in;
+      size_t sz_out_remaining = sz_in;
+      size_t sz_out_so_far = 0;
+      while (sz_out_remaining)
+	{
+	  size_t sz_out = fwrite (buf + sz_out_so_far,
+				  1,
+				  sz_out_remaining,
+				  f_out);
+	  gcc_assert (sz_out <= sz_out_remaining);
+	  if (!sz_out)
+	    {
+	      add_error (NULL,
+			 "error writing to %s: %s",
+			 dst_path,
+			 xstrerror (errno));
+	      fclose (f_in);
+	      fclose (f_out);
+	      return;
+	    }
+	  total_sz_out += sz_out;
+	  sz_out_so_far += sz_out;
+	  sz_out_remaining -= sz_out;
+	}
+      gcc_assert (sz_out_so_far == sz_in);
+    }
+
+  if (!feof (f_in))
+    add_error (NULL,
+	       "error reading from %s: %s",
+	       src_path,
+	       xstrerror (errno));
+
+  fclose (f_in);
+
+  gcc_assert (total_sz_in == total_sz_out);
+  if (get_logger ())
+    get_logger ()->log ("total bytes copied: %ld", total_sz_out);
+
+  /* Set the permissions of the copy to those of the original file,
+     in particular the "executable" bits.  */
+  if (-1 == fchmod (fileno (f_out), stat_buf.st_mode))
+    add_error (NULL,
+	       "error setting mode of %s: %s",
+	       dst_path,
+	       xstrerror (errno));
+
+  fclose (f_out);
 }
 
 /* Helper functions for gcc::jit::playback::context::compile.  */
@@ -1975,9 +2220,28 @@ playback::context::
 convert_to_dso (const char *ctxt_progname)
 {
   JIT_LOG_SCOPE (get_logger ());
+
+  invoke_driver (ctxt_progname,
+		 m_tempdir->get_path_s_file (),
+		 m_tempdir->get_path_so_file (),
+		 TV_ASSEMBLE,
+		 true, /* bool shared, */
+		 true);/* bool run_linker */
+}
+
+void
+playback::context::
+invoke_driver (const char *ctxt_progname,
+	       const char *input_file,
+	       const char *output_file,
+	       timevar_id_t tv_id,
+	       bool shared,
+	       bool run_linker)
+{
+  JIT_LOG_SCOPE (get_logger ());
   /* Currently this lumps together both assembling and linking into
      TV_ASSEMBLE.  */
-  auto_timevar assemble_timevar (TV_ASSEMBLE);
+  auto_timevar assemble_timevar (tv_id);
   const char *errmsg;
   auto_vec <const char *> argvec;
 #define ADD_ARG(arg) argvec.safe_push (arg)
@@ -1986,12 +2250,16 @@ convert_to_dso (const char *ctxt_progname)
   const char *gcc_driver_name = GCC_DRIVER_NAME;
 
   ADD_ARG (gcc_driver_name);
-  ADD_ARG ("-shared");
-  /* The input: assembler.  */
-  ADD_ARG (m_tempdir->get_path_s_file ());
-  /* The output: shared library.  */
+
+  if (shared)
+    ADD_ARG ("-shared");
+
+  if (!run_linker)
+    ADD_ARG ("-c");
+
+  ADD_ARG (input_file);
   ADD_ARG ("-o");
-  ADD_ARG (m_tempdir->get_path_so_file ());
+  ADD_ARG (output_file);
 
   /* Don't use the linker plugin.
      If running with just a "make" and not a "make install", then we'd
