@@ -1,3 +1,9 @@
+2015-01-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59937
+	* g++.dg/cpp0x/constexpr-59937-1.C: New.
+	* g++.dg/cpp0x/constexpr-59937-2.C: Likewise.
+
 2015-01-20  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/64684
