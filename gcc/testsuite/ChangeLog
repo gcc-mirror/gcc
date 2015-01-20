@@ -1,5 +1,7 @@
 2015-01-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/guality/pr49888.c (v): Add __attribute__((used)).
+
 	PR sanitizer/64632
 	* g++.dg/ubsan/pr64632.C: New test.
 
