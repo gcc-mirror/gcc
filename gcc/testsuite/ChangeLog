@@ -1,5 +1,11 @@
 2015-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vmlX.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vmla.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vmls.c: New file.
+
+2015-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vldX_dup.c: New file.
 
 2015-01-20  Jakub Jelinek  <jakub@redhat.com>
