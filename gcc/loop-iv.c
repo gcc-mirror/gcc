@@ -332,71 +332,33 @@ iv_analysis_loop_init (struct loop *loop)
   check_iv_ref_table_size ();
 }
 
-/* Return true if D_REF is defined in an immediate predecessor of the
-   current loop's latch block.  Otherwise return false.  */
-
-static bool
-def_pred_latch_p (df_ref d_ref)
-{
-  basic_block bb = DF_REF_BB (d_ref);
-  edge_iterator ei;
-  edge e;
-
-  FOR_EACH_EDGE (e, ei, current_loop->latch->preds)
-    {
-      if (e->src == bb)
-	return true;
-    }
-  return false;
-}
-
 /* Finds the definition of REG that dominates loop latch and stores
    it to DEF.  Returns false if there is not a single definition
-   dominating the latch or all defs are same and they are on different
-   predecessors of loop latch.  If REG has no definition in loop, DEF
+   dominating the latch.  If REG has no definition in loop, DEF
    is set to NULL and true is returned.  */
 
 static bool
 latch_dominating_def (rtx reg, df_ref *def)
 {
   df_ref single_rd = NULL, adef;
-  unsigned regno = REGNO (reg), def_num = 0;
+  unsigned regno = REGNO (reg);
   struct df_rd_bb_info *bb_info = DF_RD_BB_INFO (current_loop->latch);
 
   for (adef = DF_REG_DEF_CHAIN (regno); adef; adef = DF_REF_NEXT_REG (adef))
     {
-      /* Initialize this to true for the very first iteration when
-	 SINGLE_RD is NULL.  */
-      bool def_pred_latch = true;
-
       if (!bitmap_bit_p (df->blocks_to_analyze, DF_REF_BBNO (adef))
 	  || !bitmap_bit_p (&bb_info->out, DF_REF_ID (adef)))
 	continue;
 
-      /* More than one reaching definition is ok in case definitions are
-	 in predecessors of latch block and those definitions are the same.
-	 Probably this could be relaxed and check for sub-dominance instead
-	 predecessor.  */
-      def_num++;
+      /* More than one reaching definition.  */
       if (single_rd)
-	{
-	  if (!(def_pred_latch = def_pred_latch_p (adef))
-	      || !rtx_equal_p (PATTERN (DF_REF_INSN (single_rd)),
-			       PATTERN (DF_REF_INSN (adef))))
-	    return false;
-	}
+	return false;
+
+      if (!just_once_each_iteration_p (current_loop, DF_REF_BB (adef)))
+	return false;
 
       single_rd = adef;
     }
-
-  /* If we have single definition it has to be executed on each iteration.  */
-  if ((def_num == 1) && single_rd
-      && !just_once_each_iteration_p (current_loop, DF_REF_BB (single_rd)))
-    return false;
-
-  /* Make sure all preds contain definitions.  */
-  if (def_num != EDGE_COUNT (current_loop->latch->preds))
-    return false;
 
   *def = single_rd;
   return true;
@@ -407,10 +369,10 @@ latch_dominating_def (rtx reg, df_ref *def)
 static enum iv_grd_result
 iv_get_reaching_def (rtx_insn *insn, rtx reg, df_ref *def)
 {
-  df_ref use, adef = NULL;
+  df_ref use, adef;
   basic_block def_bb, use_bb;
   rtx_insn *def_insn;
-  bool dom_p, dom_latch_p = false;
+  bool dom_p;
 
   *def = NULL;
   if (!simple_reg_p (reg))
@@ -425,26 +387,11 @@ iv_get_reaching_def (rtx_insn *insn, rtx reg, df_ref *def)
   if (!DF_REF_CHAIN (use))
     return GRD_INVARIANT;
 
-  adef = DF_REF_CHAIN (use)->ref;
-  /* Having more than one reaching def is ok once all defs are in blocks which
-     are latch's predecessors.  */
+  /* More than one reaching def.  */
   if (DF_REF_CHAIN (use)->next)
-    {
-      df_link* defs;
-      unsigned int def_num = 0;
+    return GRD_INVALID;
 
-      for (defs = DF_REF_CHAIN (use); defs; defs = defs->next)
-	{
-	  if (!def_pred_latch_p (defs->ref))
-	    return GRD_INVALID;
-	  def_num++;
-	}
-      /* Make sure all preds contain definitions.  */
-      if (def_num != EDGE_COUNT (current_loop->latch->preds))
-	return GRD_INVALID;
-
-      dom_latch_p = true;
-    }
+  adef = DF_REF_CHAIN (use)->ref;
 
   /* We do not handle setting only part of the register.  */
   if (DF_REF_FLAGS (adef) & DF_REF_READ_WRITE)
@@ -467,8 +414,8 @@ iv_get_reaching_def (rtx_insn *insn, rtx reg, df_ref *def)
 
   /* The definition does not dominate the use.  This is still OK if
      this may be a use of a biv, i.e. if the def_bb dominates loop
-     latch or all defs are in latch's predecessors.  */
-  if (dom_latch_p || just_once_each_iteration_p (current_loop, def_bb))
+     latch.  */
+  if (just_once_each_iteration_p (current_loop, def_bb))
     return GRD_MAYBE_BIV;
 
   return GRD_INVALID;
@@ -2981,49 +2928,6 @@ fail:
   return;
 }
 
-/* Return true if LOOP has a complex exit, but is still good for further
-   analysis.  Return false otherwise.  BB is LOOP's exit block.  */
-
-static bool
-check_complex_exit_p (struct loop* loop, basic_block bb)
-{
-  edge e;
-  basic_block pred, exit;
-
-  if (EDGE_COUNT (bb->preds) > 1)
-    return false;
-
-  e = EDGE_PRED (bb, 0);
-
-  pred = e->src;
-  if (EDGE_COUNT (pred->succs) != 2)
-    return false;
-
-  /* Predecessor must be tested (at least) once during any iteration.  */
-  if (!dominated_by_p (CDI_DOMINATORS, loop->latch, pred))
-    return false;
-
-  if (EDGE_SUCC (pred, 0)->dest == bb)
-    exit = EDGE_SUCC (pred, 1)->dest;
-  else
-    exit = EDGE_SUCC (pred, 0)->dest;
-
-  /* Check that EXIT is really loop exit.  */
-  if (flow_bb_inside_loop_p (loop, exit))
-    {
-      edge_iterator eei;
-      edge ee;
-
-      FOR_EACH_EDGE (ee, eei, exit->succs)
-	{
-	  if (!flow_bb_inside_loop_p (loop, ee->dest))
-	    return true;
-	}
-    }
-  return false;
-
-}
-
 /* Checks whether E is a simple exit from LOOP and stores its description
    into DESC.  */
 
@@ -3043,8 +2947,7 @@ check_simple_exit (struct loop *loop, edge e, struct niter_desc *desc)
     return;
 
   /* It must be tested (at least) once during any iteration.  */
-  if (!dominated_by_p (CDI_DOMINATORS, loop->latch, exit_bb)
-      && !check_complex_exit_p (loop, exit_bb))
+  if (!dominated_by_p (CDI_DOMINATORS, loop->latch, exit_bb))
     return;
 
   /* It must end in a simple conditional jump.  */
