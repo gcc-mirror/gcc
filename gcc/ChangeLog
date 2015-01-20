@@ -1,3 +1,11 @@
+2015-01-20  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	Backport from mainline
+	* config/nios2/nios2.c (nios2_asm_file_end): Implement
+	TARGET_ASM_FILE_END hook for adding .note.GNU-stack section when
+	needed.
+	(TARGET_ASM_FILE_END): Define.
+
 2015-01-15  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline

@@ -2135,6 +2135,18 @@ nios2_output_dwarf_dtprel (FILE *file, int size, rtx x)
   fprintf (file, ")");
 }
 
+/* Implemet TARGET_ASM_FILE_END.  */
+
+static void
+nios2_asm_file_end (void)
+{
+  /* The Nios II Linux stack is mapped non-executable by default, so add a
+     .note.GNU-stack section for switching to executable stacks only when
+     trampolines are generated.  */
+  if (TARGET_LINUX_ABI && trampolines_created)
+    file_end_indicate_exec_stack ();
+}
+
 /* Implement TARGET_ASM_FUNCTION_PROLOGUE.  */
 static void
 nios2_asm_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
@@ -3312,6 +3324,9 @@ nios2_merge_decl_attributes (tree olddecl, tree newdecl)
 
 #undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
 #define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA nios2_output_addr_const_extra
+
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END nios2_asm_file_end
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE nios2_option_override

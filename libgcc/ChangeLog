@@ -1,3 +1,10 @@
+2015-01-20  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	Backport from mainline
+	* config/nios2/linux-unwind.h (nios2_fallback_frame_state):
+	Update rt_sigframe format and address for current Nios II
+	Linux conventions.
+
 2014-12-09  John David Anglin  <danglin@gcc.gnu.org>
 
 	Backport from mainline
