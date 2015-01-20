@@ -1,5 +1,11 @@
 2015-01-19  Richard Henderson  <rth@redhat.com>
 
+	PR libffi/64581
+	* testsuite/lib/libffi.exp (libffi_target_compile): Don't switch
+	to C++ mode when compiling C++ source code.
+
+2015-01-19  Richard Henderson  <rth@redhat.com>
+
 	* Merge to upstream commit 3ac1610aa33c887ea9b14935208943925714a33e.
 
 2015-01-19  Richard Henderson  <rth@redhat.com>
