@@ -1,3 +1,8 @@
+2015-01-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62241
+	* g++.dg/cpp1y/lambda-init12.C: New.
+
 2015-01-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64410
