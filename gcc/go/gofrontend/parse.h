@@ -218,7 +218,7 @@ class Parse
   Typed_identifier* receiver();
   Expression* operand(bool may_be_sink, bool *is_parenthesized);
   Expression* enclosing_var_reference(Named_object*, Named_object*,
-				      Location);
+				      bool may_be_sink, Location);
   Expression* composite_lit(Type*, int depth, Location);
   Expression* function_lit();
   Expression* create_closure(Named_object* function, Enclosing_vars*,
