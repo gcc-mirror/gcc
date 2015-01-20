@@ -1,3 +1,7 @@
+2015-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vldX_dup.c: New file.
+
 2015-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/guality/pr49888.c (v): Add __attribute__((used)).
