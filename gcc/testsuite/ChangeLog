@@ -1,5 +1,10 @@
 2015-01-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/64383
+	* g++.dg/warn/Wunused-var-23.C: New.
+
+2015-01-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/59937
 	* g++.dg/cpp0x/constexpr-59937-1.C: New.
 	* g++.dg/cpp0x/constexpr-59937-2.C: Likewise.
