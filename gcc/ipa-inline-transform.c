@@ -87,7 +87,6 @@ can_remove_node_now_p_1 (struct cgraph_node *node)
      the callgraph so references can point to it.  */
   return (!node->address_taken
 	  && !ipa_ref_has_aliases_p (&node->ref_list)
-	  && !node->used_as_abstract_origin
 	  && cgraph_can_remove_if_no_direct_calls_p (node)
 	  /* Inlining might enable more devirtualizing, so we want to remove
 	     those only after all devirtualizable virtual calls are processed.
@@ -185,6 +184,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	  n = cgraph_clone_node (e->callee, e->callee->decl,
 				 e->count, freq_scale, update_original,
 				 vNULL, true, inlining_into, NULL);
+	  n->used_as_abstract_origin = e->callee->used_as_abstract_origin;
 	  cgraph_redirect_edge_callee (e, n);
 	}
     }

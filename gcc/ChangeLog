@@ -1,3 +1,15 @@
+2015-01-21  Wei Mi  <wmi@google.com>
+
+	Backported from trunk.
+	2014-11-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/63970
+	* ipa.c (symbol_table::remove_unreachable_nodes): Mark all inline clones
+	as having abstract origin used.
+	* ipa-inline-transform.c (can_remove_node_now_p_1): Drop abstract origin check.
+	(clone_inlined_nodes): Copy abstract originflag.
+	* lto-cgraph.c (compute_ltrans_boundary): Use get_create to get abstract origin node.
+
 2015-01-20  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	Backport from mainline

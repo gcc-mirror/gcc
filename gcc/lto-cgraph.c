@@ -793,7 +793,8 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
       if (DECL_ABSTRACT_ORIGIN (node->decl))
 	{
 	  struct cgraph_node *origin_node
-	  = cgraph_get_node (DECL_ABSTRACT_ORIGIN (node->decl));
+	  = cgraph_get_create_node (DECL_ABSTRACT_ORIGIN (node->decl));
+	  origin_node->used_as_abstract_origin = true;
 	  add_node_to (encoder, origin_node, true);
 	}
     }
