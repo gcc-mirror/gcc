@@ -1,5 +1,11 @@
 2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlXl_lane.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlal_lane.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlsl_lane.c: New file.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vqdmlXl.inc: New file.
 	* gcc.target/aarch64/advsimd-intrinsics/vqdmlal.c: New file.
 	* gcc.target/aarch64/advsimd-intrinsics/vqdmlsl.c: New file.
