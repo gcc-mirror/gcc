@@ -1,3 +1,11 @@
+2015-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/62078
+	* dse.c: Include cfgcleanup.h.
+	(rest_of_handle_dse): For -fnon-call-exceptions, if DSE removed
+	anything call purge_all_dead_edges and cleanup_cfg at the end
+	of the pass.
+
 2015-01-21  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-utils.c (ipa_merge_profiles): Avoid ICE on mismatch in indirect
