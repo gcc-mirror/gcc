@@ -1,3 +1,9 @@
+2015-01-21  Richard Henderson  <rth@redhat.com>
+
+	PR target/64669
+	* ccmp.c (used_in_cond_stmt_p): Remove.
+	(expand_ccmp_expr): Don't use it.
+
 2015-01-21  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78.c (rl78_calculate_death_notes): Look inside
