@@ -1443,6 +1443,13 @@ check_format_arg (void *ctx, tree format_tree,
   tree array_init;
   alloc_pool fwt_pool;
 
+  if (TREE_CODE (format_tree) == VAR_DECL)
+    {
+      /* Pull out a constant value if the front end didn't.  */
+      format_tree = decl_constant_value (format_tree);
+      STRIP_NOPS (format_tree);
+    }
+
   if (integer_zerop (format_tree))
     {
       /* Skip to first argument to check, so we can see if this format

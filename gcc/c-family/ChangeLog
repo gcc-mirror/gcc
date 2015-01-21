@@ -1,3 +1,8 @@
+2015-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64629
+	* c-format.c (check_format_arg): Call decl_constant_value.
+
 2015-01-19  Martin Liska  <mliska@suse.cz>
 
 	* c-common.c (handle_noicf_attribute): New function.
