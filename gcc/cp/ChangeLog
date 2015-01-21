@@ -1,3 +1,9 @@
+2015-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64313
+	* decl.c (duplicate_decls): Call set_builtin_decl_declared_p
+	for builtins the user declared correctly.
+
 2015-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58614

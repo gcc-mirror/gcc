@@ -2309,6 +2309,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		    set_builtin_decl_implicit_p (fncode, true);
 		  break;
 		default:
+		  if (builtin_decl_explicit_p (fncode))
+		    set_builtin_decl_declared_p (fncode, true);
 		  break;
 		}
 	    }

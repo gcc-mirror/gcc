@@ -105,9 +105,9 @@ const char * built_in_names[(int) END_BUILTINS] =
 };
 #undef DEF_BUILTIN
 
-/* Setup an array of _DECL trees, make sure each element is
+/* Setup an array of builtin_info_type, make sure each element decl is
    initialized to NULL_TREE.  */
-builtin_info_type builtin_info;
+builtin_info_type builtin_info[(int)END_BUILTINS];
 
 /* Non-zero if __builtin_constant_p should be folded right away.  */
 bool force_folding_builtin_constant_p;
