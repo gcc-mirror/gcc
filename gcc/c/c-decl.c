@@ -2582,6 +2582,8 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 			set_builtin_decl_implicit_p (fncode, true);
 		      break;
 		    default:
+		      if (builtin_decl_explicit_p (fncode))
+			set_builtin_decl_declared_p (fncode, true);
 		      break;
 		    }
 		}

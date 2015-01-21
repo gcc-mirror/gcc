@@ -1,3 +1,18 @@
+2015-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64313
+	* tree-core.h (builtin_info, builtin_info_type): Turn from
+	an object with two arrays into an array of an object with
+	decl and two flags, implicit_p and declared_p.
+	* tree.h (builtin_decl_explicit, builtin_decl_implicit,
+	set_builtin_decl, set_builtin_decl_implicit_p,
+	builtin_decl_explicit_p, builtin_decl_implicit_p): Adjust.
+	(set_builtin_decl_declared_p, builtin_decl_declared_p): New functions.
+	* builtins.c (builtin_info): Adjust.
+	* gimplify.c (gimplify_addr_expr): References to builtins
+	that have been declared by the user makes them eligible for
+	use by the compiler.  Call set_builtin_decl_implicit_p on them.
+
 2015-01-20  Jeff Law  <law@redhat.com>
 
 	PR target/59946
