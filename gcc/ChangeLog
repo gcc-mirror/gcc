@@ -1,3 +1,8 @@
+2015-01-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gimplify.c (gimplify_function_tree): Check the no_sanitize_thread
+	decl attribute.
+
 2015-01-21  David Sherwood  <david.sherwood@arm.com>
 	    Tejas Belagod <Tejas.Belagod@arm.com>
 
