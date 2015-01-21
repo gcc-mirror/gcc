@@ -9258,7 +9258,8 @@ gimplify_function_tree (tree fndecl)
       bind = new_bind;
     }
 
-  if (flag_sanitize & SANITIZE_THREAD)
+  if ((flag_sanitize & SANITIZE_THREAD) != 0
+      && !lookup_attribute ("no_sanitize_thread", DECL_ATTRIBUTES (fndecl)))
     {
       gcall *call = gimple_build_call_internal (IFN_TSAN_FUNC_EXIT, 0);
       gimple tf = gimple_build_try (seq, call, GIMPLE_TRY_FINALLY);
