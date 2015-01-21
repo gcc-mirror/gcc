@@ -1907,7 +1907,7 @@ const struct tune_params arm_cortex_a53_tune =
   &arm_default_vec_cost,			/* Vectorizer costs.  */
   false,					/* Prefer Neon for 64-bits bitops.  */
   false, false,                                 /* Prefer 32-bit encodings.  */
-  false,					/* Prefer Neon for stringops.  */
+  true,						/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_MOVW_MOVT,				/* Fuseable pairs of instructions.  */
   ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
@@ -1928,7 +1928,7 @@ const struct tune_params arm_cortex_a57_tune =
   &arm_default_vec_cost,                       /* Vectorizer costs.  */
   false,                                       /* Prefer Neon for 64-bits bitops.  */
   true, true,                                  /* Prefer 32-bit encodings.  */
-  false,					/* Prefer Neon for stringops.  */
+  true,						/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_MOVW_MOVT,				/* Fuseable pairs of instructions.  */
   ARM_SCHED_AUTOPREF_FULL			/* Sched L2 autopref.  */

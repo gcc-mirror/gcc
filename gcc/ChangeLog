@@ -1,3 +1,8 @@
+2015-01-21  Bin Cheng  <bin.cheng@arm.com>
+
+	* config/arm/arm.c (arm_cortex_a53_tune, arm_cortex_a57_tune): Prefer
+	neon on aarch32 processors for stringops.
+
 2015-01-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/63576
