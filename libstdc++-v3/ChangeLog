@@ -1,3 +1,7 @@
+2015-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/29_atomics/atomic/64658.cc: Test stored value.
+
 2015-01-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2011.xml: Remove stray dbhtml tags.

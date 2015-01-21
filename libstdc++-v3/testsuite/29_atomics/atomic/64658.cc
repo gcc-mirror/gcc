@@ -17,13 +17,14 @@
 
 // { dg-require-atomic-builtins "" }
 // { dg-options "-std=gnu++11" }
-// { dg-do link }
 
 #include <atomic>
+#include <testsuite_hooks.h>
 
 int
 main()
 {
   std::atomic<int> i;
-  atomic_init(&i, 0);
+  atomic_init(&i, 5);
+  VERIFY( i == 5 );
 }
