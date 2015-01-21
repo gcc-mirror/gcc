@@ -1,5 +1,9 @@
 2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmull_lane.c: New file.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vqdmull.c: New file.
 
 2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
