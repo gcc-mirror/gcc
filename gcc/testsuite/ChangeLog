@@ -1,3 +1,10 @@
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vXXXl.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vsubl.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vaddl.c: Use code from
+	vXXXl.inc.
+
 2015-01-21  Renlin Li  <renlin.li@arm.com>
 
 	* g++.dg/tls/thread_local5.C: Skip when dejagnu wrapper is used.
