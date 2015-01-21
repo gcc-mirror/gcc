@@ -102,15 +102,21 @@ ensure_literal_type_for_constexpr_object (tree decl)
       else if (!literal_type_p (type))
 	{
 	  if (DECL_DECLARED_CONSTEXPR_P (decl))
-	    error ("the type %qT of constexpr variable %qD is not literal",
-		   type, decl);
+	    {
+	      error ("the type %qT of constexpr variable %qD is not literal",
+		     type, decl);
+	      explain_non_literal_class (type);
+	    }
 	  else
 	    {
-	      error ("variable %qD of non-literal type %qT in %<constexpr%> "
-		     "function", decl, type);
+	      if (!DECL_TEMPLATE_INSTANTIATION (current_function_decl))
+		{
+		  error ("variable %qD of non-literal type %qT in %<constexpr%> "
+			 "function", decl, type);
+		  explain_non_literal_class (type);
+		}
 	      cp_function_chain->invalid_constexpr = true;
 	    }
-	  explain_non_literal_class (type);
 	  return NULL;
 	}
     }

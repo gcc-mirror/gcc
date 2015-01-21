@@ -1,3 +1,9 @@
+2015-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64647
+	* constexpr.c (ensure_literal_type_for_constexpr_object): Don't
+	give a hard error in a template instantiation.
+
 2015-01-21  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64313
