@@ -1,3 +1,8 @@
+2015-01-20  Jeff Law  <law@redhat.com>
+
+	PR target/59946
+	* gcc.target/m68k/pr59946.c: New test.
+
 2015-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vmlXl_n.inc: New file.

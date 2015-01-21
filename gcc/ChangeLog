@@ -1,3 +1,9 @@
+2015-01-20  Jeff Law  <law@redhat.com>
+
+	PR target/59946
+	* config/m68k/m68k.md (Comparison expanders and patterns): Do not
+	allow pc-relative addresses in operand predicates or constraints.
+
 2015-01-21  Bin Cheng  <bin.cheng@arm.com>
 
 	* config/arm/arm.c (arm_cortex_a53_tune, arm_cortex_a57_tune): Prefer
