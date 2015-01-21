@@ -1,5 +1,9 @@
 2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vmovn.c: New file.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vXXXw.inc: New file.
 	* gcc.target/aarch64/advsimd-intrinsics/vsubw.c: New file.
 	* gcc.target/aarch64/advsimd-intrinsics/vaddw.c: Use code from
