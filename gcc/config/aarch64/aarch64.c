@@ -10175,54 +10175,6 @@ aarch64_vectorize_vec_perm_const_ok (machine_mode vmode,
   return ret;
 }
 
-/* Implement target hook CANNOT_CHANGE_MODE_CLASS.  */
-bool
-aarch64_cannot_change_mode_class (machine_mode from,
-				  machine_mode to,
-				  enum reg_class rclass)
-{
-  /* Full-reg subregs are allowed on general regs or any class if they are
-     the same size.  */
-  if (GET_MODE_SIZE (from) == GET_MODE_SIZE (to)
-      || !reg_classes_intersect_p (FP_REGS, rclass))
-    return false;
-
-  /* Limited combinations of subregs are safe on FPREGs.  Particularly,
-     1. Vector Mode to Scalar mode where 1 unit of the vector is accessed.
-     2. Scalar to Scalar for integer modes or same size float modes.
-     3. Vector to Vector modes.
-     4. On little-endian only, Vector-Structure to Vector modes.  */
-  if (GET_MODE_SIZE (from) > GET_MODE_SIZE (to))
-    {
-      if (aarch64_vector_mode_supported_p (from)
-	  && GET_MODE_SIZE (GET_MODE_INNER (from)) == GET_MODE_SIZE (to))
-	return false;
-
-      if (GET_MODE_NUNITS (from) == 1
-	  && GET_MODE_NUNITS (to) == 1
-	  && (GET_MODE_CLASS (from) == MODE_INT
-	      || from == to))
-	return false;
-
-      if (aarch64_vector_mode_supported_p (from)
-	  && aarch64_vector_mode_supported_p (to))
-	return false;
-
-      /* Within an vector structure straddling multiple vector registers
-	 we are in a mixed-endian representation.  As such, we can't
-	 easily change modes for BYTES_BIG_ENDIAN.  Otherwise, we can
-	 switch between vectors and vector structures cheaply.  */
-      if (!BYTES_BIG_ENDIAN)
-	if ((aarch64_vector_mode_supported_p (from)
-	      && aarch64_vect_struct_mode_p (to))
-	    || (aarch64_vector_mode_supported_p (to)
-	      && aarch64_vect_struct_mode_p (from)))
-	  return false;
-    }
-
-  return true;
-}
-
 rtx
 aarch64_reverse_mask (enum machine_mode mode)
 {

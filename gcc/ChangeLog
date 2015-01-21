@@ -1,6 +1,14 @@
 2015-01-21  David Sherwood  <david.sherwood@arm.com>
 	    Tejas Belagod <Tejas.Belagod@arm.com>
 
+	* config/aarch64/aarch64.h (CANNOT_CHANGE_MODE_CLASS): Removed.
+	* config/aarch64/aarch64.c (aarch64_cannot_change_mode_class): Removed.
+	* config/aarch64/aarch64-protos.h (aarch64_cannot_change_mode_class):
+	Removed.
+
+2015-01-21  David Sherwood  <david.sherwood@arm.com>
+	    Tejas Belagod <Tejas.Belagod@arm.com>
+
 	* config/aarch64/aarch64-protos.h (aarch64_simd_attr_length_rglist)
 	(aarch64_reverse_mask): New decls.
 	* config/aarch64/iterators.md (UNSPEC_REV_REGLIST): New enum.
