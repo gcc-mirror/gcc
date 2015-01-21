@@ -1,3 +1,11 @@
+2015-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/64435
+	* sanitizer_common/sanitizer_platform_limits_posix.h: Cherry pick
+	upstream r226637.
+	* sanitizer_common/sanitizer_platform_limits_posix.cc: Likewise.
+	* sanitizer_common/sanitizer_posix.cc: Cherry pick upstream r226639.
+
 2015-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/64632
