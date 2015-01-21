@@ -81,6 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "gimple-ssa.h"
 #include "rtl-iter.h"
+#include "cfgcleanup.h"
 
 /* This file contains three techniques for performing Dead Store
    Elimination (dse).
@@ -3746,6 +3747,14 @@ rest_of_handle_dse (void)
   if (dump_file)
     fprintf (dump_file, "dse: local deletions = %d, global deletions = %d, spill deletions = %d\n",
 	     locally_deleted, globally_deleted, spill_deleted);
+
+  /* DSE can eliminate potentially-trapping MEMs.
+     Remove any EH edges associated with them.  */
+  if ((locally_deleted || globally_deleted)
+      && cfun->can_throw_non_call_exceptions
+      && purge_all_dead_edges ())
+    cleanup_cfg (0);
+
   return 0;
 }
 

@@ -1,5 +1,8 @@
 2015-01-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/62078
+	* g++.dg/opt/pr62078.C: New test.
+
 	PR c/63307
 	* c-c++-common/cilk-plus/CK/pr63307.c: New test.
 
