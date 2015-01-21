@@ -187,7 +187,7 @@ GLIBCXX_3.4 {
       std::__num_base::_S_atoms_out;
       std::__moneypunct_cache*;
       std::__numpunct_cache*;
-      std::__timepunct_cache*
+      std::__timepunct_cache*;
 #     __gnu_debug::_Error_formatter*
     };
 
@@ -1150,7 +1150,7 @@ GLIBCXX_3.4.10 {
     _ZNKSt4hashISsEclESs;
     _ZNKSt4hashIeEclEe;
 
-    _ZSt17__verify_groupingPKc[mj]RKSs;
+    _ZSt17__verify_groupingPKc[jmy]RKSs;
 
     _ZNSt8__detail12__prime_listE;
     _ZNSt3tr18__detail12__prime_listE;
@@ -1729,7 +1729,7 @@ GLIBCXX_3.4.21 {
     _ZSt9use_facetINSt7__cxx118numpunct*;
     _ZSt9use_facetINSt7__cxx118time_get*;
 
-    _ZSt17__verify_groupingPKc[mj]RKNSt7__cxx1112basic_string*;
+    _ZSt17__verify_groupingPKc[jmy]RKNSt7__cxx1112basic_string*;
 
     _ZNSt3_V214error_category*;
     _ZNKSt3_V214error_category*;
@@ -1793,23 +1793,23 @@ GLIBCXX_3.4.21 {
     _ZT[ISV]St25__codecvt_utf8_utf16_base*;
 
     # new string ctors for _byname facets
-    _ZNSt12ctype_bynameI[cw]EC[1-5]ERKSsm;
-    _ZNSt14codecvt_bynameI[cw]c11__mbstate_tEC[1-5]ERKSsm;
-    _ZNSt15messages_bynameI[cw]EC[1-5]ERKSsm;
-    _ZNSt15numpunct_bynameI[cw]EC[1-5]ERKSsm;
-    _ZNSt15time_get_bynameI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEEC[1-5]ERKSsm;
-    _ZNSt15time_put_bynameI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEEC[1-5]ERKSsm;
-    _ZNSt17moneypunct_bynameI[cw]Lb0EEC[1-5]ERKSsm;
-    _ZNSt17moneypunct_bynameI[cw]Lb1EEC[1-5]ERKSsm;
+    _ZNSt12ctype_bynameI[cw]EC[1-5]ERKSs[jmy];
+    _ZNSt14codecvt_bynameI[cw]c11__mbstate_tEC[1-5]ERKSs[jmy];
+    _ZNSt15messages_bynameI[cw]EC[1-5]ERKSs[jmy];
+    _ZNSt15numpunct_bynameI[cw]EC[1-5]ERKSs[jmy];
+    _ZNSt15time_get_bynameI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEEC[1-5]ERKSs[jmy];
+    _ZNSt15time_put_bynameI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEEC[1-5]ERKSs[jmy];
+    _ZNSt17moneypunct_bynameI[cw]Lb0EEC[1-5]ERKSs[jmy];
+    _ZNSt17moneypunct_bynameI[cw]Lb1EEC[1-5]ERKSs[jmy];
 
-    _ZNSt12ctype_bynameI[cw]EC[1-5]ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEm;
-    _ZNSt14codecvt_bynameI[cw]c11__mbstate_tEC[1-5]ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEm;
-    _ZNSt15time_put_bynameI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEEC[1-5]ERKNSt7__cxx1112basic_stringIcS2_SaIcEEEm;
-    _ZNSt7__cxx1115messages_bynameI[cw]EC[1-5]ERKNS_12basic_stringIcSt11char_traitsIcESaIcEEEm;
-    _ZNSt7__cxx1115numpunct_bynameI[cw]EC[1-5]ERKNS_12basic_stringIcSt11char_traitsIcESaIcEEEm;
-    _ZNSt7__cxx1115time_get_bynameI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEEC[1-5]ERKNS_12basic_stringIcS3_SaIcEEEm;
-    _ZNSt7__cxx1117moneypunct_bynameI[cw]Lb0EEC[1-5]ERKNS_12basic_stringIcSt11char_traitsIcESaIcEEEm;
-    _ZNSt7__cxx1117moneypunct_bynameI[cw]Lb1EEC[1-5]ERKNS_12basic_stringIcSt11char_traitsIcESaIcEEEm;
+    _ZNSt12ctype_bynameI[cw]EC[1-5]ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE[jmy];
+    _ZNSt14codecvt_bynameI[cw]c11__mbstate_tEC[1-5]ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE[jmy];
+    _ZNSt15time_put_bynameI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEEC[1-5]ERKNSt7__cxx1112basic_stringIcS2_SaIcEEE[jmy];
+    _ZNSt7__cxx1115messages_bynameI[cw]EC[1-5]ERKNS_12basic_stringIcSt11char_traitsIcESaIcEEE[jmy];
+    _ZNSt7__cxx1115numpunct_bynameI[cw]EC[1-5]ERKNS_12basic_stringIcSt11char_traitsIcESaIcEEE[jmy];
+    _ZNSt7__cxx1115time_get_bynameI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEEC[1-5]ERKNS_12basic_stringIcS3_SaIcEEE[jmy];
+    _ZNSt7__cxx1117moneypunct_bynameI[cw]Lb0EEC[1-5]ERKNS_12basic_stringIcSt11char_traitsIcESaIcEEE[jmy];
+    _ZNSt7__cxx1117moneypunct_bynameI[cw]Lb1EEC[1-5]ERKNS_12basic_stringIcSt11char_traitsIcESaIcEEE[jmy];
 
 } GLIBCXX_3.4.20;
 
