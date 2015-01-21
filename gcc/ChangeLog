@@ -1,5 +1,10 @@
 2015-01-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/64511
+	* simplify-rtx.c (simplify_relational_operation_1): Don't try to
+	optimize (eq/ne (and (side_effects) (const_int 0)) (const_int 0))
+	into (eq/ne (and (not (side_effects)) (const_int 0)) (const_int 0)).
+
 	PR sanitizer/64706
 	* doc/invoke.texi (-fsanitize=vptr): Document.
 

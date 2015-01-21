@@ -4589,7 +4589,8 @@ simplify_relational_operation_1 (enum rtx_code code, machine_mode mode,
   if ((code == EQ || code == NE)
       && op0code == AND
       && rtx_equal_p (XEXP (op0, 0), op1)
-      && !side_effects_p (op1))
+      && !side_effects_p (op1)
+      && op1 != CONST0_RTX (cmp_mode))
     {
       rtx not_y = simplify_gen_unary (NOT, cmp_mode, XEXP (op0, 1), cmp_mode);
       rtx lhs = simplify_gen_binary (AND, cmp_mode, not_y, XEXP (op0, 0));
@@ -4602,7 +4603,8 @@ simplify_relational_operation_1 (enum rtx_code code, machine_mode mode,
   if ((code == EQ || code == NE)
       && op0code == AND
       && rtx_equal_p (XEXP (op0, 1), op1)
-      && !side_effects_p (op1))
+      && !side_effects_p (op1)
+      && op1 != CONST0_RTX (cmp_mode))
     {
       rtx not_x = simplify_gen_unary (NOT, cmp_mode, XEXP (op0, 0), cmp_mode);
       rtx lhs = simplify_gen_binary (AND, cmp_mode, not_x, XEXP (op0, 1));
