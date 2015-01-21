@@ -1,3 +1,9 @@
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlXl.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlal.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlsl.c: New file.
+
 2015-01-20  Jeff Law  <law@redhat.com>
 
 	PR target/59946
