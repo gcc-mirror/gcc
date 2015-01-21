@@ -1,3 +1,8 @@
+2015-01-21  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c (rl78_calculate_death_notes): Look inside
+	PARALLELs.
+
 2015-01-21  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64313
