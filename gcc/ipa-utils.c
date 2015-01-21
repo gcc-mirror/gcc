@@ -634,7 +634,7 @@ ipa_merge_profiles (struct cgraph_node *dst,
 		   speculations when merging.  */
 		gcc_unreachable ();
 	    }
-	  else if (e2->speculative)
+	  else if (e2 && e2->speculative)
 	    {
 	      cgraph_edge *direct, *indirect;
 	      ipa_ref *ref;
