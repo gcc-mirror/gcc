@@ -276,6 +276,7 @@
     UNSPEC_SHA256SU1    ; Used in aarch64-simd.md.
     UNSPEC_PMULL        ; Used in aarch64-simd.md.
     UNSPEC_PMULL2       ; Used in aarch64-simd.md.
+    UNSPEC_REV_REGLIST  ; Used in aarch64-simd.md.
 ])
 
 ;; -------------------------------------------------------------------
@@ -651,6 +652,8 @@
 
 (define_mode_attr vsi2qi [(V2SI "v8qi") (V4SI "v16qi")])
 (define_mode_attr VSI2QI [(V2SI "V8QI") (V4SI "V16QI")])
+
+(define_mode_attr insn_count [(OI "8") (CI "12") (XI "16")])
 
 ;; -------------------------------------------------------------------
 ;; Code Iterators

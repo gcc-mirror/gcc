@@ -203,6 +203,8 @@ bool aarch64_modes_tieable_p (machine_mode mode1,
 bool aarch64_move_imm (HOST_WIDE_INT, machine_mode);
 bool aarch64_mov_operand_p (rtx, enum aarch64_symbol_context,
 			    machine_mode);
+int aarch64_simd_attr_length_rglist (enum machine_mode);
+rtx aarch64_reverse_mask (enum machine_mode);
 bool aarch64_offset_7bit_signed_scaled_p (machine_mode, HOST_WIDE_INT);
 char *aarch64_output_scalar_simd_mov_immediate (rtx, machine_mode);
 char *aarch64_output_simd_mov_immediate (rtx, machine_mode, unsigned);

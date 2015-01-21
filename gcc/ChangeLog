@@ -1,3 +1,19 @@
+2015-01-21  David Sherwood  <david.sherwood@arm.com>
+	    Tejas Belagod <Tejas.Belagod@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_simd_attr_length_rglist)
+	(aarch64_reverse_mask): New decls.
+	* config/aarch64/iterators.md (UNSPEC_REV_REGLIST): New enum.
+	(insn_count): New mode_attr.
+	* config/aarch64/aarch64-simd.md (vec_store_lanesoi, vec_store_lanesci)
+	(vec_store_lanesxi, vec_load_lanesoi, vec_load_lanesci)
+	(vec_load_lanesxi): Made ABI compliant for Big Endian targets.
+	(aarch64_rev_reglist, aarch64_simd_ld2, aarch64_simd_ld3)
+	(aarch64_simd_ld4, aarch64_simd_st2, aarch64_simd_st3)
+	(aarch64_simd_st4): New patterns.
+	* config/aarch64/aarch64.c (aarch64_simd_attr_length_rglist)
+	(aarch64_reverse_mask): New functions.
+
 2015-01-21  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_simd_disambiguate_copy):
