@@ -2943,9 +2943,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	*overflow_p = true;
       return t;
     }
-  if (TREE_CODE (t) != NOP_EXPR
-      && reduced_constant_expression_p (t))
-    return fold (t);
 
   switch (TREE_CODE (t))
     {
@@ -3315,6 +3312,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case CONSTRUCTOR:
+      if (TREE_CONSTANT (t))
+	/* Don't re-process a constant CONSTRUCTOR, but do fold it to
+	   VECTOR_CST if applicable.  */
+	return fold (t);
       r = cxx_eval_bare_aggregate (ctx, t, lval,
 				   non_constant_p, overflow_p);
       break;

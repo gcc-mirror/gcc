@@ -1,5 +1,9 @@
 2015-01-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64603
+	* constexpr.c (cxx_eval_constant_expression): Only shortcut
+	constant CONSTRUCTORs.
+
 	PR c++/64647
 	* constexpr.c (ensure_literal_type_for_constexpr_object): Don't
 	give a hard error in a template instantiation.
