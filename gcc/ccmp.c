@@ -90,9 +90,8 @@ along with GCC; see the file COPYING3.  If not see
 	 - gen_ccmp_first expands the first compare in CCMP.
 	 - gen_ccmp_next expands the following compares.
 
-     * If the final result is not used in a COND_EXPR (checked by function
-       used_in_cond_stmt_p), it calls cstorecc4 pattern to store the CC to a
-       general register.
+     * We use cstorecc4 pattern to convert the CCmode intermediate to
+       the integer mode result that expand_normal is expecting.
 
    Since the operands of the later compares might clobber CC reg, we do not
    emit the insns during expand.  We keep the insn sequences in two seq
@@ -154,31 +153,6 @@ ccmp_candidate_p (gimple g)
   /* We skip ccmp_candidate_p (gs1) && ccmp_candidate_p (gs0) since
      there is no way to set the CC flag.  */
   return false;
-}
-
-/* Check whether EXP is used in a GIMPLE_COND statement or not.  */
-static bool
-used_in_cond_stmt_p (tree exp)
-{
-  bool expand_cond = false;
-  imm_use_iterator ui;
-  gimple use_stmt;
-  FOR_EACH_IMM_USE_STMT (use_stmt, ui, exp)
-    if (gimple_code (use_stmt) == GIMPLE_COND)
-      {
-	tree op1 = gimple_cond_rhs (use_stmt);
-	if (integer_zerop (op1))
-	  expand_cond = true;
-	BREAK_FROM_IMM_USE_STMT (ui);
-      }
-    else if (gimple_code (use_stmt) == GIMPLE_ASSIGN
-	     && gimple_expr_code (use_stmt) == COND_EXPR)
-      {
-	if (gimple_assign_rhs1 (use_stmt) == exp)
-	  expand_cond = true;
-      }
-
-  return expand_cond;
 }
 
 /* PREV is the CC flag from precvious compares.  The function expands the
@@ -301,20 +275,9 @@ expand_ccmp_expr (gimple g)
       enum machine_mode cc_mode = CCmode;
       tree lhs = gimple_assign_lhs (g);
 
-      /* TMP should be CC.  If it is used in a GIMPLE_COND, just return it.
-	 Note: Target needs to define "cbranchcc4".  */
-      if (used_in_cond_stmt_p (lhs))
-	{
-	  emit_insn (prep_seq);
-	  emit_insn (gen_seq);
-	  return tmp;
-	}
-
 #ifdef SELECT_CC_MODE
       cc_mode = SELECT_CC_MODE (NE, tmp, const0_rtx);
 #endif
-      /* If TMP is not used in a GIMPLE_COND, store it with a csctorecc4_optab.
-	 Note: Target needs to define "cstorecc4".  */
       icode = optab_handler (cstore_optab, cc_mode);
       if (icode != CODE_FOR_nothing)
 	{
