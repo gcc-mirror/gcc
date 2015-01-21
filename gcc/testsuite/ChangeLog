@@ -1,5 +1,8 @@
 2015-01-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/64511
+	* gcc.dg/pr64511.c: New test.
+
 	PR rtl-optimization/62078
 	* g++.dg/opt/pr62078.C: New test.
 
