@@ -158,19 +158,10 @@
   "TARGET_SIMD && reload_completed
    && GP_REGNUM_P (REGNO (operands[0]))
    && GP_REGNUM_P (REGNO (operands[1]))"
-  [(set (match_dup 0) (match_dup 1))
-   (set (match_dup 2) (match_dup 3))]
+  [(const_int 0)]
 {
-  int rdest = REGNO (operands[0]);
-  int rsrc = REGNO (operands[1]);
-  rtx dest[2], src[2];
-
-  dest[0] = gen_rtx_REG (DImode, rdest);
-  src[0] = gen_rtx_REG (DImode, rsrc);
-  dest[1] = gen_rtx_REG (DImode, rdest + 1);
-  src[1] = gen_rtx_REG (DImode, rsrc + 1);
-
-  aarch64_simd_disambiguate_copy (operands, dest, src, 2);
+  aarch64_simd_emit_reg_reg_move (operands, DImode, 2);
+  DONE;
 })
 
 (define_split
@@ -4051,8 +4042,8 @@
 ;; Reload patterns for AdvSIMD register list operands.
 
 (define_expand "mov<mode>"
-  [(set (match_operand:VSTRUCT 0 "aarch64_simd_nonimmediate_operand" "")
-	(match_operand:VSTRUCT 1 "aarch64_simd_general_operand" ""))]
+  [(set (match_operand:VSTRUCT 0 "nonimmediate_operand" "")
+	(match_operand:VSTRUCT 1 "general_operand" ""))]
   "TARGET_SIMD"
 {
   if (can_create_pseudo_p ())
@@ -4064,22 +4055,16 @@
 
 (define_insn "*aarch64_mov<mode>"
   [(set (match_operand:VSTRUCT 0 "aarch64_simd_nonimmediate_operand" "=w,Utv,w")
-	(match_operand:VSTRUCT 1 "aarch64_simd_general_operand"	" w,w,Utv"))]
-  "TARGET_SIMD
+	(match_operand:VSTRUCT 1 "aarch64_simd_general_operand" " w,w,Utv"))]
+  "TARGET_SIMD && !BYTES_BIG_ENDIAN
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
-
-{
-  switch (which_alternative)
-    {
-    case 0: return "#";
-    case 1: return "st1\\t{%S1.16b - %<Vendreg>1.16b}, %0";
-    case 2: return "ld1\\t{%S0.16b - %<Vendreg>0.16b}, %1";
-    default: gcc_unreachable ();
-    }
-}
-  [(set_attr "type" "neon_move,neon_store<nregs>_<nregs>reg_q,\
-                     neon_load<nregs>_<nregs>reg_q")
+  "@
+   #
+   st1\\t{%S1.16b - %<Vendreg>1.16b}, %0
+   ld1\\t{%S0.16b - %<Vendreg>0.16b}, %1"
+  [(set_attr "type" "multiple,neon_store<nregs>_<nregs>reg_q,\
+		     neon_load<nregs>_<nregs>reg_q")
    (set (attr "length") (symbol_ref "aarch64_simd_attr_length_move (insn)"))]
 )
 
@@ -4101,70 +4086,102 @@
   [(set_attr "type" "neon_store1_1reg<q>")]
 )
 
+(define_insn "*aarch64_be_movoi"
+  [(set (match_operand:OI 0 "nonimmediate_operand" "=w,m,w")
+	(match_operand:OI 1 "general_operand"      " w,w,m"))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN
+   && (register_operand (operands[0], OImode)
+       || register_operand (operands[1], OImode))"
+  "@
+   #
+   stp\\t%q1, %R1, %0
+   ldp\\t%q0, %R0, %1"
+  [(set_attr "type" "multiple,neon_store2_2reg_q,neon_load2_2reg_q")
+   (set (attr "length") (symbol_ref "aarch64_simd_attr_length_move (insn)"))]
+)
+
+(define_insn "*aarch64_be_movci"
+  [(set (match_operand:CI 0 "nonimmediate_operand" "=w,o,w")
+	(match_operand:CI 1 "general_operand"      " w,w,o"))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN
+   && (register_operand (operands[0], CImode)
+       || register_operand (operands[1], CImode))"
+  "#"
+  [(set_attr "type" "multiple")
+   (set (attr "length") (symbol_ref "aarch64_simd_attr_length_move (insn)"))]
+)
+
+(define_insn "*aarch64_be_movxi"
+  [(set (match_operand:XI 0 "nonimmediate_operand" "=w,o,w")
+	(match_operand:XI 1 "general_operand"      " w,w,o"))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN
+   && (register_operand (operands[0], XImode)
+       || register_operand (operands[1], XImode))"
+  "#"
+  [(set_attr "type" "multiple")
+   (set (attr "length") (symbol_ref "aarch64_simd_attr_length_move (insn)"))]
+)
+
 (define_split
-  [(set (match_operand:OI 0 "register_operand" "")
-	(match_operand:OI 1 "register_operand" ""))]
+  [(set (match_operand:OI 0 "register_operand")
+	(match_operand:OI 1 "register_operand"))]
   "TARGET_SIMD && reload_completed"
-  [(set (match_dup 0) (match_dup 1))
-   (set (match_dup 2) (match_dup 3))]
+  [(const_int 0)]
 {
-  int rdest = REGNO (operands[0]);
-  int rsrc = REGNO (operands[1]);
-  rtx dest[2], src[2];
-
-  dest[0] = gen_rtx_REG (TFmode, rdest);
-  src[0] = gen_rtx_REG (TFmode, rsrc);
-  dest[1] = gen_rtx_REG (TFmode, rdest + 1);
-  src[1] = gen_rtx_REG (TFmode, rsrc + 1);
-
-  aarch64_simd_disambiguate_copy (operands, dest, src, 2);
+  aarch64_simd_emit_reg_reg_move (operands, TImode, 2);
+  DONE;
 })
 
 (define_split
-  [(set (match_operand:CI 0 "register_operand" "")
-	(match_operand:CI 1 "register_operand" ""))]
+  [(set (match_operand:CI 0 "nonimmediate_operand")
+	(match_operand:CI 1 "general_operand"))]
   "TARGET_SIMD && reload_completed"
-  [(set (match_dup 0) (match_dup 1))
-   (set (match_dup 2) (match_dup 3))
-   (set (match_dup 4) (match_dup 5))]
+  [(const_int 0)]
 {
-  int rdest = REGNO (operands[0]);
-  int rsrc = REGNO (operands[1]);
-  rtx dest[3], src[3];
-
-  dest[0] = gen_rtx_REG (TFmode, rdest);
-  src[0] = gen_rtx_REG (TFmode, rsrc);
-  dest[1] = gen_rtx_REG (TFmode, rdest + 1);
-  src[1] = gen_rtx_REG (TFmode, rsrc + 1);
-  dest[2] = gen_rtx_REG (TFmode, rdest + 2);
-  src[2] = gen_rtx_REG (TFmode, rsrc + 2);
-
-  aarch64_simd_disambiguate_copy (operands, dest, src, 3);
+  if (register_operand (operands[0], CImode)
+      && register_operand (operands[1], CImode))
+    {
+      aarch64_simd_emit_reg_reg_move (operands, TImode, 3);
+      DONE;
+    }
+  else if (BYTES_BIG_ENDIAN)
+    {
+      emit_move_insn (simplify_gen_subreg (OImode, operands[0], CImode, 0),
+		      simplify_gen_subreg (OImode, operands[1], CImode, 0));
+      emit_move_insn (gen_lowpart (V16QImode,
+				   simplify_gen_subreg (TImode, operands[0],
+							CImode, 32)),
+		      gen_lowpart (V16QImode,
+				   simplify_gen_subreg (TImode, operands[1],
+							CImode, 32)));
+      DONE;
+    }
+  else
+    FAIL;
 })
 
 (define_split
-  [(set (match_operand:XI 0 "register_operand" "")
-	(match_operand:XI 1 "register_operand" ""))]
+  [(set (match_operand:XI 0 "nonimmediate_operand")
+	(match_operand:XI 1 "general_operand"))]
   "TARGET_SIMD && reload_completed"
-  [(set (match_dup 0) (match_dup 1))
-   (set (match_dup 2) (match_dup 3))
-   (set (match_dup 4) (match_dup 5))
-   (set (match_dup 6) (match_dup 7))]
+  [(const_int 0)]
 {
-  int rdest = REGNO (operands[0]);
-  int rsrc = REGNO (operands[1]);
-  rtx dest[4], src[4];
-
-  dest[0] = gen_rtx_REG (TFmode, rdest);
-  src[0] = gen_rtx_REG (TFmode, rsrc);
-  dest[1] = gen_rtx_REG (TFmode, rdest + 1);
-  src[1] = gen_rtx_REG (TFmode, rsrc + 1);
-  dest[2] = gen_rtx_REG (TFmode, rdest + 2);
-  src[2] = gen_rtx_REG (TFmode, rsrc + 2);
-  dest[3] = gen_rtx_REG (TFmode, rdest + 3);
-  src[3] = gen_rtx_REG (TFmode, rsrc + 3);
-
-  aarch64_simd_disambiguate_copy (operands, dest, src, 4);
+  if (register_operand (operands[0], XImode)
+      && register_operand (operands[1], XImode))
+    {
+      aarch64_simd_emit_reg_reg_move (operands, TImode, 4);
+      DONE;
+    }
+  else if (BYTES_BIG_ENDIAN)
+    {
+      emit_move_insn (simplify_gen_subreg (OImode, operands[0], XImode, 0),
+		      simplify_gen_subreg (OImode, operands[1], XImode, 0));
+      emit_move_insn (simplify_gen_subreg (OImode, operands[0], XImode, 32),
+		      simplify_gen_subreg (OImode, operands[1], XImode, 32));
+      DONE;
+    }
+  else
+    FAIL;
 })
 
 (define_expand "aarch64_ld2r<mode>"

@@ -3424,12 +3424,20 @@ aarch64_classify_address (struct aarch64_address_info *info,
 {
   enum rtx_code code = GET_CODE (x);
   rtx op0, op1;
+
+  /* On BE, we use load/store pair for all large int mode load/stores.  */
+  bool load_store_pair_p = (outer_code == PARALLEL
+			    || (BYTES_BIG_ENDIAN
+				&& aarch64_vect_struct_mode_p (mode)));
+
   bool allow_reg_index_p =
-    outer_code != PARALLEL && (GET_MODE_SIZE (mode) != 16
-			       || aarch64_vector_mode_supported_p (mode));
-  /* Don't support anything other than POST_INC or REG addressing for
-     AdvSIMD.  */
-  if (aarch64_vect_struct_mode_p (mode)
+    !load_store_pair_p
+    && (GET_MODE_SIZE (mode) != 16 || aarch64_vector_mode_supported_p (mode))
+    && !aarch64_vect_struct_mode_p (mode);
+
+  /* On LE, for AdvSIMD, don't support anything other than POST_INC or
+     REG addressing.  */
+  if (aarch64_vect_struct_mode_p (mode) && !BYTES_BIG_ENDIAN
       && (code != POST_INC && code != REG))
     return false;
 
@@ -3481,7 +3489,29 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	    return (aarch64_offset_7bit_signed_scaled_p (mode, offset)
 		    && offset_9bit_signed_unscaled_p (mode, offset));
 
-	  if (outer_code == PARALLEL)
+	  /* A 7bit offset check because OImode will emit a ldp/stp
+	     instruction (only big endian will get here).
+	     For ldp/stp instructions, the offset is scaled for the size of a
+	     single element of the pair.  */
+	  if (mode == OImode)
+	    return aarch64_offset_7bit_signed_scaled_p (TImode, offset);
+
+	  /* Three 9/12 bit offsets checks because CImode will emit three
+	     ldr/str instructions (only big endian will get here).  */
+	  if (mode == CImode)
+	    return (aarch64_offset_7bit_signed_scaled_p (TImode, offset)
+		    && (offset_9bit_signed_unscaled_p (V16QImode, offset + 32)
+			|| offset_12bit_unsigned_scaled_p (V16QImode,
+							   offset + 32)));
+
+	  /* Two 7bit offsets checks because XImode will emit two ldp/stp
+	     instructions (only big endian will get here).  */
+	  if (mode == XImode)
+	    return (aarch64_offset_7bit_signed_scaled_p (TImode, offset)
+		    && aarch64_offset_7bit_signed_scaled_p (TImode,
+							    offset + 32));
+
+	  if (load_store_pair_p)
 	    return ((GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8)
 		    && aarch64_offset_7bit_signed_scaled_p (mode, offset));
 	  else
@@ -3541,7 +3571,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	    return (aarch64_offset_7bit_signed_scaled_p (mode, offset)
 		    && offset_9bit_signed_unscaled_p (mode, offset));
 
-	  if (outer_code == PARALLEL)
+	  if (load_store_pair_p)
 	    return ((GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8)
 		    && aarch64_offset_7bit_signed_scaled_p (mode, offset));
 	  else
@@ -3555,7 +3585,8 @@ aarch64_classify_address (struct aarch64_address_info *info,
       /* load literal: pc-relative constant pool entry.  Only supported
          for SI mode or larger.  */
       info->type = ADDRESS_SYMBOLIC;
-      if (outer_code != PARALLEL && GET_MODE_SIZE (mode) >= 4)
+
+      if (!load_store_pair_p && GET_MODE_SIZE (mode) >= 4)
 	{
 	  rtx sym, addend;
 
@@ -4206,6 +4237,16 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  return;
 	}
       asm_fprintf (f, "v%d", REGNO (x) - V0_REGNUM + (code - 'S'));
+      break;
+
+    case 'R':
+      /* Print a scalar FP/SIMD register name + 1.  */
+      if (!REG_P (x) || !FP_REGNUM_P (REGNO (x)))
+	{
+	  output_operand_lossage ("incompatible floating point / vector register operand for '%%%c'", code);
+	  return;
+	}
+      asm_fprintf (f, "q%d", REGNO (x) - V0_REGNUM + 1);
       break;
 
     case 'X':
@@ -8595,35 +8636,28 @@ aarch64_simd_mem_operand_p (rtx op)
 			|| REG_P (XEXP (op, 0)));
 }
 
-/* Set up OPERANDS for a register copy from SRC to DEST, taking care
-   not to early-clobber SRC registers in the process.
+/* Emit a register copy from operand to operand, taking care not to
+   early-clobber source registers in the process.
 
-   We assume that the operands described by SRC and DEST represent a
-   decomposed copy of OPERANDS[1] into OPERANDS[0].  COUNT is the
-   number of components into which the copy has been decomposed.  */
+   COUNT is the number of components into which the copy needs to be
+   decomposed.  */
 void
-aarch64_simd_disambiguate_copy (rtx *operands, rtx *dest,
-				rtx *src, unsigned int count)
+aarch64_simd_emit_reg_reg_move (rtx *operands, enum machine_mode mode,
+				unsigned int count)
 {
   unsigned int i;
+  int rdest = REGNO (operands[0]);
+  int rsrc = REGNO (operands[1]);
 
   if (!reg_overlap_mentioned_p (operands[0], operands[1])
-      || REGNO (operands[0]) < REGNO (operands[1]))
-    {
-      for (i = 0; i < count; i++)
-	{
-	  operands[2 * i] = dest[i];
-	  operands[2 * i + 1] = src[i];
-	}
-    }
+      || rdest < rsrc)
+    for (i = 0; i < count; i++)
+      emit_move_insn (gen_rtx_REG (mode, rdest + i),
+		      gen_rtx_REG (mode, rsrc + i));
   else
-    {
-      for (i = 0; i < count; i++)
-	{
-	  operands[2 * i] = dest[count - i - 1];
-	  operands[2 * i + 1] = src[count - i - 1];
-	}
-    }
+    for (i = 0; i < count; i++)
+      emit_move_insn (gen_rtx_REG (mode, rdest + count - i - 1),
+		      gen_rtx_REG (mode, rsrc + count - i - 1));
 }
 
 /* Compute and return the length of aarch64_simd_mov<mode>, where <mode> is

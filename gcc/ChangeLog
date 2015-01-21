@@ -1,3 +1,18 @@
+2015-01-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_simd_disambiguate_copy):
+	Declare.
+	* config/aarch64/aarch64.c (aarch64_classify_address): Allow extra
+	addressing modes for BE.
+	(aarch64_print_operand): Add 'R' specifier.
+	(aarch64_simd_disambiguate_copy): Delete.
+	(aarch64_simd_emit_reg_reg_move): New function.
+	* config/aarch64/aarch64-simd.md: Use aarch64_simd_emit_reg_reg_move
+	in define_splits for structural moves.
+	(mov<mode>): Use less restrictive predicates.
+	(*aarch64_mov<mode>): Simplify and only allow for LE.
+	(*aarch64_be_movoi, *aarch64_be_movci, *aarch64_be_movxi): New.
+
 2015-01-21  Alan Hayward  <alan.hayward@arm.com>
 
 	* rtlanal.c (subreg_get_info): Exit early for simple and common
