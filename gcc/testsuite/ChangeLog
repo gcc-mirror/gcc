@@ -1,3 +1,9 @@
+2015-01-21  Renlin Li  <renlin.li@arm.com>
+
+	* g++.dg/tls/thread_local5.C: Skip when dejagnu wrapper is used.
+	* g++.dg/tls/thread_local5g.C: Likewise.
+	* g++.dg/tls/thread_local6g.C: Likewise.
+
 2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vsXi_n.inc: New file.
