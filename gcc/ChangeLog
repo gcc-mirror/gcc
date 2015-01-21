@@ -1,5 +1,8 @@
 2015-01-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/64706
+	* doc/invoke.texi (-fsanitize=vptr): Document.
+
 	PR rtl-optimization/62078
 	* dse.c: Include cfgcleanup.h.
 	(rest_of_handle_dse): For -fnon-call-exceptions, if DSE removed
