@@ -8687,6 +8687,14 @@ aarch64_simd_attr_length_move (rtx_insn *insn)
   return 4;
 }
 
+/* Compute and return the length of aarch64_simd_reglist<mode>, where <mode> is
+   one of VSTRUCT modes: OI, CI, EI, or XI.  */
+int
+aarch64_simd_attr_length_rglist (enum machine_mode mode)
+{
+  return (GET_MODE_SIZE (mode) / UNITS_PER_VREG) * 4;
+}
+
 /* Implement target hook TARGET_VECTOR_ALIGNMENT.  The AAPCS64 sets the maximum
    alignment of a vector to 128 bits.  */
 static HOST_WIDE_INT
@@ -10213,6 +10221,27 @@ aarch64_cannot_change_mode_class (machine_mode from,
     }
 
   return true;
+}
+
+rtx
+aarch64_reverse_mask (enum machine_mode mode)
+{
+  /* We have to reverse each vector because we dont have
+     a permuted load that can reverse-load according to ABI rules.  */
+  rtx mask;
+  rtvec v = rtvec_alloc (16);
+  int i, j;
+  int nunits = GET_MODE_NUNITS (mode);
+  int usize = GET_MODE_UNIT_SIZE (mode);
+
+  gcc_assert (BYTES_BIG_ENDIAN);
+  gcc_assert (AARCH64_VALID_SIMD_QREG_MODE (mode));
+
+  for (i = 0; i < nunits; i++)
+    for (j = 0; j < usize; j++)
+      RTVEC_ELT (v, i * usize + j) = GEN_INT ((i + 1) * usize - 1 - j);
+  mask = gen_rtx_CONST_VECTOR (V16QImode, v);
+  return force_reg (V16QImode, mask);
 }
 
 /* Implement MODES_TIEABLE_P.  */
