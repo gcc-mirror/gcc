@@ -1,3 +1,9 @@
+2015-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64728
+	* tree-ssa-coalesce.c (coalesce_partitions): Do not perform
+	abnormal coalescing on undefined SSA names.
+
 2015-22-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/64688
