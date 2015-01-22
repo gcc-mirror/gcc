@@ -442,7 +442,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       explicit
       basic_regex(const _Ch_type* __p, flag_type __f = ECMAScript)
-      : basic_regex(__p, __p + _Rx_traits::length(__p), __f)
+      : basic_regex(__p, __p + char_traits<_Ch_type>::length(__p), __f)
       { }
 
       /**
@@ -553,7 +553,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       basic_regex&
       operator=(const _Ch_type* __p)
-      { return this->assign(__p, flags()); }
+      { return this->assign(__p); }
+
+      /**
+       * @brief Replaces a regular expression with a new one constructed from
+       * an initializer list.
+       *
+       * @param __l  The initializer list.
+       *
+       * @throws regex_error if @p __l is not a valid regular expression.
+       */
+      basic_regex&
+      operator=(initializer_list<_Ch_type> __l)
+      { return this->assign(__l.begin(), __l.end()); }
 
       /**
        * @brief Replaces a regular expression with a new one constructed from
@@ -564,7 +576,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<typename _Ch_traits, typename _Alloc>
 	basic_regex&
 	operator=(const basic_string<_Ch_type, _Ch_traits, _Alloc>& __s)
-	{ return this->assign(__s, flags()); }
+	{ return this->assign(__s); }
 
       // [7.8.3] assign
       /**
@@ -644,7 +656,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	       flag_type __flags = ECMAScript)
 	{
 	  return this->assign(basic_regex(__s.data(), __s.data() + __s.size(),
-					  _M_loc, _M_flags));
+					  _M_loc, __flags));
 	}
 
       /**
@@ -712,7 +724,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       imbue(locale_type __loc)
       {
 	std::swap(__loc, _M_loc);
-	_M_automaton = nullptr;
+	_M_automaton.reset();
 	return __loc;
       }
 
