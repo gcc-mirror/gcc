@@ -1562,9 +1562,13 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
     default:;
     }
 
+  if (TREE_CODE_CLASS (code) != tcc_binary)
+    return NULL_TREE;
+
   /* Make sure type and arg0 have the same saturating flag.  */
   gcc_checking_assert (TYPE_SATURATING (type)
 		       == TYPE_SATURATING (TREE_TYPE (arg1)));
+
   return const_binop (code, arg1, arg2);
 }
 
