@@ -34,6 +34,7 @@
 #include <exception>
 #include "unwind-cxx.h"
 #include <ext/concurrence.h>
+#include <new>
 
 #if _GLIBCXX_HOSTED
 using std::free;
@@ -72,28 +73,174 @@ using namespace __cxxabiv1;
 # define EMERGENCY_OBJ_COUNT	4
 #endif
 
-#if INT_MAX == 32767 || EMERGENCY_OBJ_COUNT <= 32
-typedef unsigned int bitmask_type;
-#else
-#if defined (_GLIBCXX_LLP64)
-typedef unsigned long long bitmask_type;
-#else
-typedef unsigned long bitmask_type;
-#endif
-#endif
-
-
-typedef char one_buffer[EMERGENCY_OBJ_SIZE] __attribute__((aligned));
-static one_buffer emergency_buffer[EMERGENCY_OBJ_COUNT];
-static bitmask_type emergency_used;
-
-static __cxa_dependent_exception dependents_buffer[EMERGENCY_OBJ_COUNT];
-static bitmask_type dependents_used;
 
 namespace
 {
-  // A single mutex controlling emergency allocations.
-  __gnu_cxx::__mutex emergency_mutex;
+  // A fixed-size heap, variable size object allocator
+  class pool
+    {
+    public:
+      pool();
+
+      void *allocate (std::size_t);
+      void free (void *);
+
+      bool in_pool (void *);
+
+    private:
+      struct free_entry {
+	std::size_t size;
+	free_entry *next;
+      };
+      struct allocated_entry {
+	std::size_t size;
+	char data[];
+      };
+
+      // A single mutex controlling emergency allocations.
+      __gnu_cxx::__mutex emergency_mutex;
+
+      // The free-list
+      free_entry *first_free_entry;
+      // The arena itself - we need to keep track of these only
+      // to implement in_pool.
+      char *arena;
+      std::size_t arena_size;
+    };
+
+  pool::pool()
+    {
+      // Allocate the arena - we could add a GLIBCXX_EH_ARENA_SIZE environment
+      // to make this tunable.
+      arena_size = (EMERGENCY_OBJ_SIZE * EMERGENCY_OBJ_COUNT
+		    + EMERGENCY_OBJ_COUNT * sizeof (__cxa_dependent_exception));
+      arena = (char *)malloc (arena_size);
+      if (!arena)
+	{
+	  // If the allocation failed go without an emergency pool.
+	  arena_size = 0;
+	  first_free_entry = NULL;
+	  return;
+	}
+
+      // Populate the free-list with a single entry covering the whole arena
+      first_free_entry = reinterpret_cast <free_entry *> (arena);
+      new (first_free_entry) free_entry;
+      first_free_entry->size = arena_size;
+      first_free_entry->next = NULL;
+    }
+
+  void *pool::allocate (std::size_t size)
+    {
+      __gnu_cxx::__scoped_lock sentry(emergency_mutex);
+      // We need an additional size_t member.
+      size += sizeof (std::size_t);
+      // And we need to at least hand out objects of the size of
+      // a freelist entry.
+      if (size < sizeof (free_entry))
+	size = sizeof (free_entry);
+      // And we need to align objects we hand out to the required
+      // alignment of a freelist entry (this really aligns the
+      // tail which will become a new freelist entry).
+      size = ((size + __alignof__(free_entry) - 1)
+	      & ~(__alignof__(free_entry) - 1));
+      // Search for an entry of proper size on the freelist.
+      free_entry **e;
+      for (e = &first_free_entry;
+	   *e && (*e)->size < size;
+	   e = &(*e)->next)
+	;
+      if (!*e)
+	return NULL;
+      allocated_entry *x;
+      if ((*e)->size - size >= sizeof (free_entry))
+	{
+	  // Slit block if it is too large.
+	  free_entry *f = reinterpret_cast <free_entry *>
+	      (reinterpret_cast <char *> (*e) + size);
+	  std::size_t sz = (*e)->size;
+	  free_entry *next = (*e)->next;
+	  new (f) free_entry;
+	  f->next = next;
+	  f->size = sz - size;
+	  x = reinterpret_cast <allocated_entry *> (*e);
+	  new (x) allocated_entry;
+	  x->size = size;
+	  *e = f;
+	}
+      else
+	{
+	  // Exact size match or too small overhead for a free entry.
+	  std::size_t sz = (*e)->size;
+	  free_entry *next = (*e)->next;
+	  x = reinterpret_cast <allocated_entry *> (*e);
+	  new (x) allocated_entry;
+	  x->size = sz;
+	  *e = next;
+	}
+      return &x->data;
+    }
+
+  void pool::free (void *data)
+    {
+      __gnu_cxx::__scoped_lock sentry(emergency_mutex);
+      allocated_entry *e = reinterpret_cast <allocated_entry *>
+	(reinterpret_cast <char *> (data) - sizeof (std::size_t));
+      std::size_t sz = e->size;
+      if (!first_free_entry)
+	{
+	  // If the free list is empty just put the entry there.
+	  free_entry *f = reinterpret_cast <free_entry *> (e);
+	  new (f) free_entry;
+	  f->size = sz;
+	  f->next = NULL;
+	  first_free_entry = f;
+	}
+      else if (reinterpret_cast <char *> (e) + sz
+	       == reinterpret_cast <char *> (first_free_entry))
+	{
+	  // Check if we can merge with the first free entry being right
+	  // after us.
+	  free_entry *f = reinterpret_cast <free_entry *> (e);
+	  new (f) free_entry;
+	  f->size = sz + first_free_entry->size;
+	  f->next = first_free_entry->next;
+	  first_free_entry = f;
+	}
+      else
+	{
+	  // Else search for a free item we can merge with at its end.
+	  free_entry **fe;
+	  for (fe = &first_free_entry;
+	       (*fe)->next
+	       && (reinterpret_cast <char *> ((*fe)->next)
+		   > reinterpret_cast <char *> (e) + sz);
+	       fe = &(*fe)->next)
+	    ;
+	  if (reinterpret_cast <char *> (*fe) + (*fe)->size
+	      == reinterpret_cast <char *> (e))
+	    /* Merge with the freelist entry.  */
+	    (*fe)->size += sz;
+	  else
+	    {
+	      // Else put it after it which keeps the freelist sorted.
+	      free_entry *f = reinterpret_cast <free_entry *> (e);
+	      new (f) free_entry;
+	      f->size = sz;
+	      f->next = (*fe)->next;
+	      (*fe)->next = f;
+	    }
+	}
+    }
+
+  bool pool::in_pool (void *ptr)
+    {
+      char *p = reinterpret_cast <char *> (ptr);
+      return (p > arena
+	      && p < arena + arena_size);
+    }
+
+  pool emergency_pool;
 }
 
 extern "C" void *
@@ -104,30 +251,11 @@ __cxxabiv1::__cxa_allocate_exception(std::size_t thrown_size) _GLIBCXX_NOTHROW
   thrown_size += sizeof (__cxa_refcounted_exception);
   ret = malloc (thrown_size);
 
-  if (! ret)
-    {
-      __gnu_cxx::__scoped_lock sentry(emergency_mutex);
+  if (!ret)
+    ret = emergency_pool.allocate (thrown_size);
 
-      bitmask_type used = emergency_used;
-      unsigned int which = 0;
-
-      if (thrown_size > EMERGENCY_OBJ_SIZE)
-	goto failed;
-      while (used & 1)
-	{
-	  used >>= 1;
-	  if (++which >= EMERGENCY_OBJ_COUNT)
-	    goto failed;
-	}
-
-      emergency_used |= (bitmask_type)1 << which;
-      ret = &emergency_buffer[which][0];
-
-    failed:;
-
-      if (!ret)
-	std::terminate ();
-    }
+  if (!ret)
+    std::terminate ();
 
   memset (ret, 0, sizeof (__cxa_refcounted_exception));
 
@@ -138,19 +266,11 @@ __cxxabiv1::__cxa_allocate_exception(std::size_t thrown_size) _GLIBCXX_NOTHROW
 extern "C" void
 __cxxabiv1::__cxa_free_exception(void *vptr) _GLIBCXX_NOTHROW
 {
-  char *base = (char *) emergency_buffer;
-  char *ptr = (char *) vptr;
-  if (ptr >= base
-      && ptr < base + sizeof (emergency_buffer))
-    {
-      const unsigned int which
-	= (unsigned) (ptr - base) / EMERGENCY_OBJ_SIZE;
-
-      __gnu_cxx::__scoped_lock sentry(emergency_mutex);
-      emergency_used &= ~((bitmask_type)1 << which);
-    }
+  char *ptr = (char *) vptr - sizeof (__cxa_refcounted_exception);
+  if (emergency_pool.in_pool (ptr))
+    emergency_pool.free (ptr);
   else
-    free (ptr - sizeof (__cxa_refcounted_exception));
+    free (ptr);
 }
 
 
@@ -163,27 +283,11 @@ __cxxabiv1::__cxa_allocate_dependent_exception() _GLIBCXX_NOTHROW
     (malloc (sizeof (__cxa_dependent_exception)));
 
   if (!ret)
-    {
-      __gnu_cxx::__scoped_lock sentry(emergency_mutex);
+    ret = static_cast <__cxa_dependent_exception*>
+      (emergency_pool.allocate (sizeof (__cxa_dependent_exception)));
 
-      bitmask_type used = dependents_used;
-      unsigned int which = 0;
-
-      while (used & 1)
-	{
-	  used >>= 1;
-	  if (++which >= EMERGENCY_OBJ_COUNT)
-	    goto failed;
-	}
-
-      dependents_used |= (bitmask_type)1 << which;
-      ret = &dependents_buffer[which];
-
-    failed:;
-
-      if (!ret)
-	std::terminate ();
-    }
+  if (!ret)
+    std::terminate ();
 
   memset (ret, 0, sizeof (__cxa_dependent_exception));
 
@@ -195,17 +299,8 @@ extern "C" void
 __cxxabiv1::__cxa_free_dependent_exception
   (__cxa_dependent_exception *vptr) _GLIBCXX_NOTHROW
 {
-  char *base = (char *) dependents_buffer;
-  char *ptr = (char *) vptr;
-  if (ptr >= base
-      && ptr < base + sizeof (dependents_buffer))
-    {
-      const unsigned int which
-	= (unsigned) (ptr - base) / sizeof (__cxa_dependent_exception);
-
-      __gnu_cxx::__scoped_lock sentry(emergency_mutex);
-      dependents_used &= ~((bitmask_type)1 << which);
-    }
+  if (emergency_pool.in_pool (vptr))
+    emergency_pool.free (vptr);
   else
     free (vptr);
 }
