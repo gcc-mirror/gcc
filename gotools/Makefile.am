@@ -105,7 +105,7 @@ if NATIVE
 # and install them as regular programs.
 
 bin_PROGRAMS = go$(EXEEXT) gofmt$(EXEEXT)
-libexecsub_PROGRAMS = cgo$(EXEEXT)
+noinst_PROGRAMS = cgo$(EXEEXT)
 
 go$(EXEEXT): $(go_cmd_go_files) zdefaultcc.go $(LIBGODEP)
 	$(GOLINK) $(go_cmd_go_files) zdefaultcc.go $(LIBS) $(NET_LIBS)
@@ -113,6 +113,14 @@ gofmt$(EXEEXT): $(go_cmd_gofmt_files) $(LIBGODEP)
 	$(GOLINK) $(go_cmd_gofmt_files) $(LIBS) $(NET_LIBS)
 cgo$(EXEEXT): $(go_cmd_cgo_files) zdefaultcc.go $(LIBGODEP)
 	$(GOLINK) $(go_cmd_cgo_files) zdefaultcc.go $(LIBS) $(NET_LIBS)
+
+install-exec-local: cgo$(EXEEXT)
+	$(MKDIR_P) $(DESTDIR)$(libexecsubdir)
+	rm -f $(DESTDIR)$(libexecsubdir)/cgo$(exeext)
+	$(INSTALL_PROGRAM) cgo$(exeext) $(DESTDIR)$(libexecsubdir)/cgo$(exeext)
+
+uninstall-local:
+	rm -f $(DESTDIR)$(libexecsubdir)/cgo$(exeext)
 
 else
 
