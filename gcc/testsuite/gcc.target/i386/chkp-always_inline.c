@@ -2,7 +2,7 @@
 /* { dg-require-effective-target mpx } */
 /* { dg-options "-fcheck-pointer-bounds -mmpx -O2 -Wno-attributes" } */
 
-__attribute__((always_inline)) int f1 (int *p)
+static __attribute__((always_inline)) int f1 (int *p)
 {
   return *p;
 }
