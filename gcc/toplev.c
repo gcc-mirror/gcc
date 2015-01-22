@@ -295,7 +295,9 @@ init_local_tick (void)
       int fd = open ("/dev/urandom", O_RDONLY);
       if (fd >= 0)
         {
-          read (fd, &random_seed, sizeof (random_seed));
+          if (read (fd, &random_seed, sizeof (random_seed))
+              != sizeof (random_seed))
+            random_seed = 0;
           close (fd);
         }
 

@@ -1,5 +1,8 @@
 2015-01-23  Chen Gang  <gang.chen.5i5j@gmail.com>
 
+	* toplev.c (init_local_tick): Process the failure when read
+	fails for random_seed.
+
 	* ubsan.c (ubsan_type_descriptor): Use 'pretty_print' for
 	'pretty_name' to avoid memory overflow.
 
