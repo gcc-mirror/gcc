@@ -1,3 +1,12 @@
+2015-01-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c (LINK_SSP_SPEC): Handle -fstack-protector-explicit
+	for !TARGET_LIBC_PROVIDES_SSP version and
+	-fstack-protector-{all,strong,explicit} otherwise.
+	* config/freebsd.h (LINK_SSP_SPEC): Handle
+	-fstack-protector-{strong,explicit}.
+
 2015-01-22  Jan Hubicka  <hubicka@ucw.cz>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
