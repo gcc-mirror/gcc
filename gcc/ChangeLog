@@ -1,3 +1,9 @@
+2015-01-22  Wei Mi  <wmi@google.com>
+
+	PR rtl-optimization/64557
+	* dse.c (record_store): Call get_addr for mem_addr.
+	(check_mem_read_rtx): Likewise.
+
 2015-01-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (const_binop): Add early return for non-tcc_binary.
