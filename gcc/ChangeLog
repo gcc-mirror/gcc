@@ -1,3 +1,10 @@
+2015-01-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/64682
+	* combine.c (distribute_notes): When moving a death note for
+	a register that is set in the new I2, make sure to put it
+	before that new I2.
+
 2015-01-21  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_file_start): Use rs6000_isa_flags
