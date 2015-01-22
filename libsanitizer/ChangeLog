@@ -1,3 +1,7 @@
+2015-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* tsan/tsan_rtl.h: Cherry pick upstream r226829.
+
 2015-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/64435
