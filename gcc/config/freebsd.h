@@ -49,7 +49,9 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #ifdef TARGET_LIBC_PROVIDES_SSP
-#define LINK_SSP_SPEC "%{fstack-protector|fstack-protector-all:-lssp_nonshared}"
+#define LINK_SSP_SPEC "%{fstack-protector|fstack-protector-all" \
+		       "|fstack-protector-strong|fstack-protector-explicit" \
+		       ":-lssp_nonshared}"
 #endif
 
 #undef TARGET_LIBC_HAS_FUNCTION
