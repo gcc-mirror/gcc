@@ -16711,7 +16711,7 @@
   [V32QI V16QI V16HI V8HI V8SI V4SI])
 
 (define_insn "*vec_dup<mode>"
-  [(set (match_operand:AVX2_VEC_DUP_MODE 0 "register_operand" "=x,x,x")
+  [(set (match_operand:AVX2_VEC_DUP_MODE 0 "register_operand" "=x,x,Yi")
 	(vec_duplicate:AVX2_VEC_DUP_MODE
 	  (match_operand:<ssescalarmode> 1 "nonimmediate_operand" "m,x,$r")))]
   "TARGET_AVX2"

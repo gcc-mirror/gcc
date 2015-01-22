@@ -35,6 +35,7 @@
 	PR target/64477
 	* config/i386/sse.md (vec_set<mode>_0): Use (Yi/r/C) constraints
 	for alternative 3.
+	(*vec_dup<mode>): Use (Yi/$r) constraints for alternative 1.
 
 2015-01-22  Trevor Saunders  <tsaunders@mozilla.com>
 
