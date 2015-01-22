@@ -1,3 +1,8 @@
+2015-01-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_file_start): Use rs6000_isa_flags
+	not TARGET_DEFAULT.
+
 2015-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/64511
