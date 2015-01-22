@@ -1,3 +1,8 @@
+2015-01-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/64682
+	* gcc.c-torture/execute/pr64682.c: New file.
+
 2015-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/64511
