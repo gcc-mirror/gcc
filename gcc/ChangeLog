@@ -1,3 +1,10 @@
+2015-22-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/64688
+	PR target/64477
+	* config/i386/sse.md (vec_set<mode>_0): Use (Yi/r/C) constraints
+	for alternative 3.
+
 2015-01-22  Trevor Saunders  <tsaunders@mozilla.com>
 
 	PR middle-end/63325
