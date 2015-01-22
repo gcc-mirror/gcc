@@ -1,3 +1,9 @@
+2015-01-22  Richard Biener  <rguenther@suse.de>
+
+	* ipa-inline.c (can_inline_edge_p): Disable inlining of edges
+	with IL incompatible options.  Properly honor user optimize
+	attributes.
+
 2015-01-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/64682
