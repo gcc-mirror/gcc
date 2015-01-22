@@ -1,3 +1,8 @@
+2015-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64728
+	* gcc.dg/torture/pr64728.c: New testcase.
+
 2015-22-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/64688
