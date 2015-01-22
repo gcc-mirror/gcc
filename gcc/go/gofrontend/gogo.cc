@@ -1089,6 +1089,7 @@ sort_var_inits(Gogo* gogo, Var_inits* var_inits)
   // variable initializations that depend on it.
   typedef std::map<Var_init, std::set<Var_init*> > Init_deps;
   Init_deps init_deps;
+  bool init_loop = false;
   for (Var_inits::iterator p1 = var_inits->begin();
        p1 != var_inits->end();
        ++p1)
@@ -1137,14 +1138,15 @@ sort_var_inits(Gogo* gogo, Var_inits* var_inits)
 			   p2var->message_name().c_str());
 		  inform(p2->var()->location(), "%qs defined here",
 			 p2var->message_name().c_str());
-		  p2 = var_inits->end();
+		  init_loop = true;
+		  break;
 		}
 	    }
 	}
     }
 
   // If there are no dependencies then the declaration order is sorted.
-  if (!init_deps.empty())
+  if (!init_deps.empty() && !init_loop)
     {
       // Otherwise, sort variable initializations by emitting all variables with
       // no dependencies in declaration order. VAR_INITS is already in
