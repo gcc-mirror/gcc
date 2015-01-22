@@ -1,3 +1,10 @@
+2015-01-22  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR driver/64690
+	* gcc.c (insert_comments): New function.
+	(try_generate_repro): Call it.
+	(append_text): Removed.
+
 2015-01-22  Richard Biener  <rguenther@suse.de>
 
 	* ipa-inline.c (can_inline_edge_p): Disable inlining of edges
