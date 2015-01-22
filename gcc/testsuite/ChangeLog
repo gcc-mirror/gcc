@@ -1,3 +1,8 @@
+2015-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR libstdc++/64535
+	* g++.old-deja/g++.eh/badalloc1.C: Adjust.
+
 2015-01-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/64682
