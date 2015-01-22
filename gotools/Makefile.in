@@ -69,8 +69,8 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecsubdir)"
-PROGRAMS = $(bin_PROGRAMS) $(libexecsub_PROGRAMS)
+am__installdirs = "$(DESTDIR)$(bindir)"
+PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 cgo_SOURCES = cgo.c
 cgo_OBJECTS = cgo.$(OBJEXT)
 cgo_LDADD = $(LDADD)
@@ -258,7 +258,7 @@ MOSTLYCLEANFILES = zdefaultcc.go s-zdefaultcc
 # For a native build we build the programs using the newly built libgo
 # and install them as regular programs.
 @NATIVE_TRUE@bin_PROGRAMS = go$(EXEEXT) gofmt$(EXEEXT)
-@NATIVE_TRUE@libexecsub_PROGRAMS = cgo$(EXEEXT)
+@NATIVE_TRUE@noinst_PROGRAMS = cgo$(EXEEXT)
 all: all-am
 
 .SUFFIXES:
@@ -334,43 +334,9 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-install-libexecsubPROGRAMS: $(libexecsub_PROGRAMS)
-	@$(NORMAL_INSTALL)
-	test -z "$(libexecsubdir)" || $(MKDIR_P) "$(DESTDIR)$(libexecsubdir)"
-	@list='$(libexecsub_PROGRAMS)'; test -n "$(libexecsubdir)" || list=; \
-	for p in $$list; do echo "$$p $$p"; done | \
-	sed 's/$(EXEEXT)$$//' | \
-	while read p p1; do if test -f $$p; \
-	  then echo "$$p"; echo "$$p"; else :; fi; \
-	done | \
-	sed -e 'p;s,.*/,,;n;h' -e 's|.*|.|' \
-	    -e 'p;x;s,.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/' | \
-	sed 'N;N;N;s,\n, ,g' | \
-	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1 } \
-	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
-	    if ($$2 == $$4) files[d] = files[d] " " $$1; \
-	    else { print "f", $$3 "/" $$4, $$1; } } \
-	  END { for (d in files) print "f", d, files[d] }' | \
-	while read type dir files; do \
-	    if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
-	    test -z "$$files" || { \
-	      echo " $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(libexecsubdir)$$dir'"; \
-	      $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(libexecsubdir)$$dir" || exit $$?; \
-	    } \
-	; done
 
-uninstall-libexecsubPROGRAMS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(libexecsub_PROGRAMS)'; test -n "$(libexecsubdir)" || list=; \
-	files=`for p in $$list; do echo "$$p"; done | \
-	  sed -e 'h;s,^.*/,,;s/$(EXEEXT)$$//;$(transform)' \
-	      -e 's/$$/$(EXEEXT)/' `; \
-	test -n "$$list" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(libexecsubdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(libexecsubdir)" && rm -f $$files
-
-clean-libexecsubPROGRAMS:
-	-test -z "$(libexecsub_PROGRAMS)" || rm -f $(libexecsub_PROGRAMS)
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
 @NATIVE_FALSE@cgo$(EXEEXT): $(cgo_OBJECTS) $(cgo_DEPENDENCIES) 
 @NATIVE_FALSE@	@rm -f cgo$(EXEEXT)
 @NATIVE_FALSE@	$(LINK) $(cgo_OBJECTS) $(cgo_LDADD) $(LIBS)
@@ -460,7 +426,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(PROGRAMS)
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecsubdir)"; do \
+	for dir in "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -489,9 +455,11 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+@NATIVE_FALSE@install-exec-local:
+@NATIVE_FALSE@uninstall-local:
 clean: clean-am
 
-clean-am: clean-binPROGRAMS clean-generic clean-libexecsubPROGRAMS \
+clean-am: clean-binPROGRAMS clean-generic clean-noinstPROGRAMS \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -519,7 +487,7 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-binPROGRAMS install-libexecsubPROGRAMS
+install-exec-am: install-binPROGRAMS install-exec-local
 
 install-html: install-html-am
 
@@ -560,24 +528,23 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-libexecsubPROGRAMS
+uninstall-am: uninstall-binPROGRAMS uninstall-local
 
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am am--refresh check check-am clean \
-	clean-binPROGRAMS clean-generic clean-libexecsubPROGRAMS ctags \
+	clean-binPROGRAMS clean-generic clean-noinstPROGRAMS ctags \
 	distclean distclean-compile distclean-generic distclean-tags \
 	dvi dvi-am html html-am info info-am install install-am \
 	install-binPROGRAMS install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am \
-	install-libexecsubPROGRAMS install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-binPROGRAMS \
-	uninstall-libexecsubPROGRAMS
+	install-dvi-am install-exec install-exec-am install-exec-local \
+	install-html install-html-am install-info install-info-am \
+	install-man install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic pdf pdf-am \
+	ps ps-am tags uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-local
 
 
 zdefaultcc.go: s-zdefaultcc; @true
@@ -595,6 +562,14 @@ s-zdefaultcc: Makefile
 @NATIVE_TRUE@	$(GOLINK) $(go_cmd_gofmt_files) $(LIBS) $(NET_LIBS)
 @NATIVE_TRUE@cgo$(EXEEXT): $(go_cmd_cgo_files) zdefaultcc.go $(LIBGODEP)
 @NATIVE_TRUE@	$(GOLINK) $(go_cmd_cgo_files) zdefaultcc.go $(LIBS) $(NET_LIBS)
+
+@NATIVE_TRUE@install-exec-local: cgo$(EXEEXT)
+@NATIVE_TRUE@	$(MKDIR_P) $(DESTDIR)$(libexecsubdir)
+@NATIVE_TRUE@	rm -f $(DESTDIR)$(libexecsubdir)/cgo$(exeext)
+@NATIVE_TRUE@	$(INSTALL_PROGRAM) cgo$(exeext) $(DESTDIR)$(libexecsubdir)/cgo$(exeext)
+
+@NATIVE_TRUE@uninstall-local:
+@NATIVE_TRUE@	rm -f $(DESTDIR)$(libexecsubdir)/cgo$(exeext)
 
 # For a non-native build we have to build the programs using a
 # previously built host (or build -> host) Go compiler.  We should

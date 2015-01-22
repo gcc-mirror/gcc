@@ -1,3 +1,10 @@
+2015-01-21  Ian Lance Taylor  <iant@google.com>
+
+	* Makefile.am (noinst_PROGRAMS): New variable.
+	(libexecsub_PROGRAMS): Remove variable.
+	(install-exec-local, uninstall-local): New targets.
+	* Makefile.in: Rebuild.
+
 2015-01-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac: Check if sched_yield and/or nanosleep need -lrt.
