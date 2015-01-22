@@ -1,3 +1,8 @@
+2015-01-22  Chen Gang  <gang.chen.5i5j@gmail.com>
+
+	* unwind-dw2-fde.h (last_fde): Use "(const fde *)" instead of
+	"(char *)" to avoid qualifier warning by 'xgcc' compiling.
+
 2015-01-20  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config/nios2/linux-unwind.h (nios2_fallback_frame_state):
