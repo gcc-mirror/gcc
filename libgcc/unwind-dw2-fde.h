@@ -169,7 +169,7 @@ static inline int
 last_fde (struct object *obj __attribute__ ((__unused__)), const fde *f)
 {
 #ifdef DWARF2_OBJECT_END_PTR_EXTENSION
-  return (char *)f == obj->fde_end || f->length == 0;
+  return f == (const fde *) obj->fde_end || f->length == 0;
 #else
   return f->length == 0;
 #endif
