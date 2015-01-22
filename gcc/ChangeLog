@@ -1,3 +1,13 @@
+2015-01-22  Jeff Law  <law@redhat.com>
+
+	PR target/52076
+	* config/m68k/m68k.md (xorsi3_internal): Twiddle constraints to
+	improve code density for small immediate to memory case.
+	(insv): Better handle bitfield assignments when the field is
+	being set to all ones.
+	* config/m68k/predicates.md (reg_or_pow2_m1_operand): New
+	operand predicate.
+
 2015-01-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 	    Jakub Jelinek  <jakub@redhat.com>
 

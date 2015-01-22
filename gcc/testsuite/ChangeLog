@@ -1,3 +1,9 @@
+2015-01-22  Jeff Law  <law@redhat.com>
+
+	PR target/52076
+	* gcc.target/m68k/pr52076-1.c: New test.
+	* gcc.target/m68k/pr52076-2.c: New test.
+
 2015-01-22  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64728
