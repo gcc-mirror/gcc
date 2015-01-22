@@ -1,3 +1,9 @@
+2015-01-22  Trevor Saunders  <tsaunders@mozilla.com>
+
+	PR middle-end/63325
+	* fold-const.c (fold_checksum_tree): Don't include value of
+	expr->decl_with_vis.symtab_node in the checksum.
+
 2015-01-22  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md (atomic code attribute): Fix typo "ior" ->
