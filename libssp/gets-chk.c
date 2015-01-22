@@ -51,6 +51,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # include <string.h>
 #endif
 
+#if !(!defined __USE_ISOC11				\
+      || (defined __cplusplus && __cplusplus <= 201103L))
+extern char *gets (char *);
+#endif
+
 extern void __chk_fail (void) __attribute__((__noreturn__));
 
 char *

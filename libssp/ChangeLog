@@ -1,3 +1,7 @@
+2015-01-22  Matthias Klose  <doko@ubuntu.com>
+
+	* gets-chk.c: Declare prototype for gets in C11 mode.
+
 2014-11-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/63784
