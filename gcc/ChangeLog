@@ -1,4 +1,8 @@
-2015-01-23  Chen Gang  <gang.chen.5i5j@gmail.com>
+2015-01-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (const_binop): Add early return for non-tcc_binary.
+
+2015-01-22  Chen Gang  <gang.chen.5i5j@gmail.com>
 
 	* toplev.c (init_local_tick): Process the failure when read
 	fails for random_seed.
