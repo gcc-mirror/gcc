@@ -14073,11 +14073,12 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
   *slot = expr;
   code = TREE_CODE (expr);
   if (TREE_CODE_CLASS (code) == tcc_declaration
-      && DECL_ASSEMBLER_NAME_SET_P (expr))
+      && HAS_DECL_ASSEMBLER_NAME_P (expr))
     {
-      /* Allow DECL_ASSEMBLER_NAME to be modified.  */
+      /* Allow DECL_ASSEMBLER_NAME and symtab_node to be modified.  */
       memcpy ((char *) &buf, expr, tree_size (expr));
       SET_DECL_ASSEMBLER_NAME ((tree)&buf, NULL);
+      buf.decl_with_vis.symtab_node = NULL;
       expr = (tree) &buf;
     }
   else if (TREE_CODE_CLASS (code) == tcc_type
