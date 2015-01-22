@@ -1,3 +1,10 @@
+2015-01-22  Jan Hubicka  <hubicka@ucw.cz>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR ipa/64694
+	* ipa-inline.c (inline_small_functions): Fix thinko in maintenance of
+	heap.
+
 2015-01-22  Wei Mi  <wmi@google.com>
 
 	PR rtl-optimization/64557
