@@ -1794,7 +1794,7 @@ inline_small_functions (void)
 #endif
       if (current_badness != badness)
 	{
-	  if (edge_heap.min () && badness > edge_heap.min_key ())
+	  if (edge_heap.min () && current_badness > edge_heap.min_key ())
 	    {
 	      edge->aux = edge_heap.insert (current_badness, edge);
 	      continue;
