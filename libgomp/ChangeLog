@@ -1,5 +1,10 @@
 2015-01-23  Tom de Vries  <tom@codesourcery.com>
 
+	PR libgomp/64672
+	* testsuite/libgomp.oacc-c-c++-common/abort-5.c: New test.
+
+2015-01-23  Tom de Vries  <tom@codesourcery.com>
+
 	PR libgomp/64707
 	* testsuite/libgomp.c/target-9.c: Add -ftree-parallelize-loops=0 to
 	dg-options.

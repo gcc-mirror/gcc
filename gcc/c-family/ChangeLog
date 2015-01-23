@@ -1,5 +1,10 @@
 2015-01-23  Tom de Vries  <tom@codesourcery.com>
 
+	PR libgomp/64672
+	* c.opt (fopenacc): Mark as LTO option.
+
+2015-01-23  Tom de Vries  <tom@codesourcery.com>
+
 	PR libgomp/64707
 	* c.opt (fopenmp): Mark as LTO option.
 
