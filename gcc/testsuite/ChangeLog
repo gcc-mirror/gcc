@@ -1,3 +1,8 @@
+2015-01-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/64726
+	* gfortran.dg/goacc/combined_loop.f90: New.
+
 2015-01-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/61933

@@ -1,3 +1,9 @@
+2015-01-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/64726
+	* trans-openmp.c (gfc_trans_oacc_combined_directive): Fix
+	loop generation.
+
 2015-01-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/61933
