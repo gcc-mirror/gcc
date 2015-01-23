@@ -1,3 +1,10 @@
+2015-01-22  Ian Lance Taylor  <iant@google.com>
+
+	PR go/64595
+	* go.1, gofmt.1: New files.
+	* Makefile.am (man_MANS): New variable.
+	* Makefile.in: Rebuild.
+
 2015-01-21  Ian Lance Taylor  <iant@google.com>
 
 	* Makefile.am (noinst_PROGRAMS): New variable.
