@@ -171,6 +171,12 @@ go_langhook_init_options_struct (struct gcc_options *opts)
   /* Exceptions are used to handle recovering from panics.  */
   opts->x_flag_exceptions = 1;
   opts->x_flag_non_call_exceptions = 1;
+
+  /* Go programs expect runtime.Callers to work, and that uses
+     libbacktrace that uses debug info.  Set the debug info level to 1
+     by default.  In post_options we will set the debug type if the
+     debug info level was not set back to 0 on the command line.  */
+  opts->x_debug_info_level = DINFO_LEVEL_TERSE;
 }
 
 /* Infrastructure for a vector of char * pointers.  */
@@ -288,6 +294,12 @@ go_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   /* Tail call optimizations can confuse uses of runtime.Callers.  */
   if (!global_options_set.x_flag_optimize_sibling_calls)
     global_options.x_flag_optimize_sibling_calls = 0;
+
+  /* If the debug info level is still 1, as set in init_options, make
+     sure that some debugging type is selected.  */
+  if (global_options.x_debug_info_level == DINFO_LEVEL_TERSE
+      && global_options.x_write_symbols == NO_DEBUG)
+    global_options.x_write_symbols = PREFERRED_DEBUGGING_TYPE;
 
   /* Returning false means that the backend should be used.  */
   return false;

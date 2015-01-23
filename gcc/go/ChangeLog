@@ -1,3 +1,12 @@
+2015-01-23  Ian Lance Taylor  <iant@google.com>
+
+	PR go/64595
+	* go-lang.c (go_langhook_init_options_struct): Set default
+	debug_info_level.
+	(go_langhook_post_options): If debug_info_level is still the
+	default, make sure write_symbols is set.
+	* gccgo.texi (Invoking gccgo): Document that -g1 is the default.
+
 2015-01-16  Richard Henderson  <rth@redhat.com>
 
 	* go-gcc.cc (Gcc_backend::call_expression): Add chain_expr argument.

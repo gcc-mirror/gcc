@@ -223,6 +223,18 @@ may be used.  Or the checks may be removed via
 @option{-fno-go-check-divide-overflow}.  This option is currently on
 by default, but in the future may be off by default on systems that do
 not require it.
+
+@item -g
+@cindex @option{-g for gccgo}
+This is the standard @command{gcc} option (@pxref{Debugging Options, ,
+Debugging Options, gcc, Using the GNU Compiler Collection (GCC)}).  It
+is mentioned here because by default @command{gccgo} turns on
+debugging information generation with the equivalent of the standard
+option @option{-g1}.  This is because Go programs require debugging
+information to be available in order to get backtrace information.  An
+explicit @option{-g0} may be used to disable the generation of
+debugging information, in which case certain standard library
+functions, such as @code{runtime.Callers}, will not operate correctly.
 @end table
 
 @c man end
