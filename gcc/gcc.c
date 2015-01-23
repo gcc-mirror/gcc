@@ -6331,10 +6331,10 @@ print_configuration (FILE *file)
 
   if (! strncmp (version_string, compiler_version, n)
       && compiler_version[n] == 0)
-    fnotice (file, "gcc version %s %s\n\n", version_string,
+    fnotice (file, "gcc version %s %s\n", version_string,
 	     pkgversion_string);
   else
-    fnotice (file, "gcc driver version %s %sexecuting gcc version %s\n\n",
+    fnotice (file, "gcc driver version %s %sexecuting gcc version %s\n",
 	     version_string, pkgversion_string, compiler_version);
 
 }
@@ -6438,6 +6438,7 @@ run_attempt (const char **new_argv, const char *out_temp,
     {
       FILE *file_out = fopen (err_temp, "a");
       print_configuration (file_out);
+      fputs ("\n", file_out);
       fclose (file_out);
     }
 
