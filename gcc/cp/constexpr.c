@@ -2955,10 +2955,11 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       return (*ctx->values->get (t));
 
     case VAR_DECL:
+    case CONST_DECL:
+      /* We used to not check lval for CONST_DECL, but darwin.c uses
+	 CONST_DECL for aggregate constants.  */
       if (lval)
 	return t;
-      /* else fall through. */
-    case CONST_DECL:
       if (ctx->strict)
 	r = decl_really_constant_value (t);
       else
