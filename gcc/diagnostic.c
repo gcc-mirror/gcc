@@ -518,9 +518,11 @@ diagnostic_action_after_output (diagnostic_context *context,
       break;
 
     case DK_ICE:
+    case DK_ICE_NOBT:
       {
-	struct backtrace_state *state =
-	  backtrace_create_state (NULL, 0, bt_err_callback, NULL);
+	struct backtrace_state *state = NULL;
+	if (diag_kind == DK_ICE)
+	  state = backtrace_create_state (NULL, 0, bt_err_callback, NULL);
 	int count = 0;
 	if (state != NULL)
 	  backtrace_full (state, 2, bt_callback, bt_err_callback,
@@ -739,7 +741,8 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       /* If we're reporting an ICE in the middle of some other error,
 	 try to flush out the previous error, then let this one
 	 through.  Don't do this more than once.  */
-      if (diagnostic->kind == DK_ICE && context->lock == 1)
+      if ((diagnostic->kind == DK_ICE || diagnostic->kind == DK_ICE_NOBT)
+	  && context->lock == 1)
 	pp_newline_and_flush (context->printer);
       else
 	error_recursion (context);
@@ -812,7 +815,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 
   context->lock++;
 
-  if (diagnostic->kind == DK_ICE)
+  if (diagnostic->kind == DK_ICE || diagnostic->kind == DK_ICE_NOBT)
     {
 #ifndef ENABLE_CHECKING
       /* When not checking, ICEs are converted to fatal errors when an
@@ -1234,6 +1237,23 @@ internal_error (const char *gmsgid, ...)
 
   va_start (ap, gmsgid);
   diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location, DK_ICE);
+  report_diagnostic (&diagnostic);
+  va_end (ap);
+
+  gcc_unreachable ();
+}
+
+/* Like internal_error, but no backtrace will be printed.  Used when
+   the internal error does not happen at the current location, but happened
+   somewhere else.  */
+void
+internal_error_no_backtrace (const char *gmsgid, ...)
+{
+  diagnostic_info diagnostic;
+  va_list ap;
+
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location, DK_ICE_NOBT);
   report_diagnostic (&diagnostic);
   va_end (ap);
 

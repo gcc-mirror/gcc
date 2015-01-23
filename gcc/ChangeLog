@@ -1,3 +1,14 @@
+2015-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* diagnostic-core.h (internal_error_no_backtrace): New prototype.
+	* diagnostic.def (DK_ICE_NOBT): New kind.
+	* diagnostic.c (diagnostic_action_after_output): Handle DK_ICE_NOBT
+	like DK_ICE, but never print backtrace.
+	(diagnostic_report_diagnostic): Handle DK_ICE_NOBT like DK_ICE.
+	(internal_error_no_backtrace): New function.
+	* gcc.c (execute): Use internal_error_no_backtrace instead of
+	internal_error.
+
 2015-01-22  Jeff Law  <law@redhat.com>
 
 	PR target/52076
