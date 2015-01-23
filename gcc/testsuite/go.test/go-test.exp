@@ -414,7 +414,8 @@ proc go-gc-tests { } {
 
 	if { ( [file tail $test] == "select2.go" \
 		   || [file tail $test] == "stack.go" \
-		   || [file tail $test] == "peano.go" ) \
+		   || [file tail $test] == "peano.go" \
+		   || [file tail $test] == "nilptr2.go" ) \
 		 && ! [check_effective_target_split_stack] } {
 	    # These tests fails on targets without split stack.
 	    untested $name
