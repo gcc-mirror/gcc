@@ -106,6 +106,7 @@ if NATIVE
 
 bin_PROGRAMS = go$(EXEEXT) gofmt$(EXEEXT)
 noinst_PROGRAMS = cgo$(EXEEXT)
+man_MANS = go.1 gofmt.1
 
 go$(EXEEXT): $(go_cmd_go_files) zdefaultcc.go $(LIBGODEP)
 	$(GOLINK) $(go_cmd_go_files) zdefaultcc.go $(LIBS) $(NET_LIBS)
