@@ -1,3 +1,8 @@
+2015-23-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/gnu-user.h (CRT_GET_RFIB_DATA): Move definition to
+	libgcc/config/i386/elf-lib.h.
+
 2015-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR driver/64737
