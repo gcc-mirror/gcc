@@ -1,3 +1,16 @@
+2015-01-23  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/50928
+	* config/m32c/m32c.c (encode_pattern_1): Removed gcc_unreachable here.
+	(DEBUG_RELOAD): Removed define.
+	(m32c_limit_reload_class): Enable traces with if DEBUG0.
+	(m32c_function_arg): Added a type cast.
+	(m32c_legitimize_reload_address): Push A_REGS reload with PSImode.
+	* config/m32c/addsub.md (addsi3_1): Specify the mode of all arguments.
+	* config/m32c/bitops.md (andqi3_16): Likewise.
+	* config/m32c/mov.md (m32c_immd_dbl_mov): Likewise.
+	(push_a01_l): Likewise.
+
 2015-01-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/64721
