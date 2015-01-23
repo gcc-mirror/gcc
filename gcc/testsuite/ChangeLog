@@ -1,3 +1,9 @@
+2015-01-23  Ian Lance Taylor  <iant@google.com>
+
+	PR go/64510
+	* go.test/go-test.exp (go-gc-tests): Skip nilptr2.go test on
+	targets without split stack support.
+
 2015-01-23  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/64317
