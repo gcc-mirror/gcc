@@ -1,4 +1,9 @@
-2015-23-01  Uros Bizjak  <ubizjak@gmail.com>
+2015-01-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (sse2_loadld): Set attribute isa to sse2 for
+	alternative 1.
+
+2015-01-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/gnu-user.h (CRT_GET_RFIB_DATA): Move definition to
 	libgcc/config/i386/elf-lib.h.
