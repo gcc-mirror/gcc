@@ -1,3 +1,9 @@
+2015-01-23  Ian Lance Taylor  <iant@google.com>
+
+	PR go/64738
+	* Makefile.am (AM_LDFLAGS): Remove -static-libgo.
+	* Makefile.in: Rebuild.
+
 2015-01-22  Ian Lance Taylor  <iant@google.com>
 
 	PR go/64595

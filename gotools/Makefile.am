@@ -38,7 +38,7 @@ endif
 GOCFLAGS = $(CFLAGS_FOR_TARGET)
 GOCOMPILE = $(GOCOMPILER) $(GOCFLAGS)
 
-AM_LDFLAGS = -L $(libgodir) -L $(libgodir)/.libs -static-libgo
+AM_LDFLAGS = -L $(libgodir) -L $(libgodir)/.libs
 GOLINK = $(GOCOMPILER) $(AM_GOCFLAGS) $(LDFLAGS) $(AM_LDFLAGS) -o $@
 
 cmdsrcdir = $(srcdir)/../libgo/go/cmd
