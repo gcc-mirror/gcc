@@ -1,3 +1,9 @@
+2015-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/60570
+	* gcc.dg/cpp/pr36320.c: Turn dg-error into dg-bogus.
+	* gcc.dg/cpp/pr60570.c: New test.
+
 2015-01-23  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/63439
