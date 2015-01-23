@@ -1284,7 +1284,7 @@ ObjC ObjC++ Var(flag_objc1_only)
 Conform to the Objective-C 1.0 language as implemented in GCC 4.0
 
 fopenacc
-C ObjC C++ ObjC++ Var(flag_openacc)
+C ObjC C++ ObjC++ LTO Var(flag_openacc)
 Enable OpenACC
 
 fopenmp

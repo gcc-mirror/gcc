@@ -567,7 +567,7 @@ Fortran Var(flag_module_private)
 Set default accessibility of module entities to PRIVATE.
 
 fopenacc
-Fortran
+Fortran LTO
 ; Documented in C
 
 fopenmp
