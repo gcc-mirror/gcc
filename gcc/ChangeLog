@@ -1,3 +1,12 @@
+2015-01-23  Wei Mi  <wmi@google.com>
+
+	Backported from trunk.
+	2015-01-22  Wei Mi  <wmi@google.com>
+
+	PR rtl-optimization/64557
+	* dse.c (record_store): Call get_addr for mem_addr.
+	(check_mem_read_rtx): Likewise.
+
 2015-01-22  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md (atomic code attribute): Fix typo "ior" ->
