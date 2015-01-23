@@ -33,7 +33,8 @@ int main (int argc, char **argv);
 int
 main (int argc, char **argv)
 {
-  toplev toplev (true);
+  toplev toplev (true, /* use_TV_TOTAL */
+		 true /* init_signals */);
 
   return toplev.main (argc, argv);
 }

@@ -1,3 +1,9 @@
+2015-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64721
+	* jit-playback.c (gcc::jit::playback::context::compile): Construct
+	toplev instances with init_signals=false.
+
 2015-01-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/cp/topics/results.rst: Rename to...

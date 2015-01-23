@@ -1,5 +1,17 @@
 2015-01-23  David Malcolm  <dmalcolm@redhat.com>
 
+	PR jit/64721
+	* main.c (main): Construct toplev instances with init_signals=true.
+	* toplev.c (general_init): Add param "init_signals", and use it to
+	conditionalize the calls to signal and host_hooks.extra_signals.
+	(toplev::toplev): Add param "init_signals".
+	(toplev::main): When invoking general_init, pass m_init_signals
+	to control whether signal-handlers are installed.
+	* toplev.h (toplev::toplev): Add param "init_signals".
+	(toplev::m_init_signals): New field.
+
+2015-01-23  David Malcolm  <dmalcolm@redhat.com>
+
 	PR jit/64722
 	* emit-rtl.c (init_emit_regs): Set pic_offset_table_rtx to
 	NULL_RTX before testing PIC_OFFSET_TABLE_REGNUM, since the
