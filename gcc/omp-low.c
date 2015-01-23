@@ -1633,7 +1633,8 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 		 #pragma omp target data, there is nothing to map for
 		 those.  */
 	      if (gimple_omp_target_kind (ctx->stmt) == GF_OMP_TARGET_KIND_DATA
-		  && !POINTER_TYPE_P (TREE_TYPE (decl)))
+		  && !POINTER_TYPE_P (TREE_TYPE (decl))
+		  && !OMP_CLAUSE_MAP_ZERO_BIAS_ARRAY_SECTION (c))
 		break;
 	    }
 	  if (DECL_P (decl))
