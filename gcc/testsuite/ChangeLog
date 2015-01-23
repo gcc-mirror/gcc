@@ -1,3 +1,9 @@
+2015-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/63439
+	* gcc.dg/vect/bb-slp-11.c: Require vect_pack_trunc.
+	* gcc.dg/vect/bb-slp-26.c: Require vect_hw_misalign.
+
 2015-01-23  Marek Polacek  <polacek@redhat.com>
 
 	PR preprocessor/60570
