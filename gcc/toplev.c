@@ -137,7 +137,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include <new>
 
-static void general_init (const char *);
+static void general_init (const char *, bool);
 static void do_compile ();
 static void process_options (void);
 static void backend_init (void);
@@ -1151,7 +1151,7 @@ open_auxiliary_file (const char *ext)
    options are parsed.  Signal handlers, internationalization etc.
    ARGV0 is main's argv[0].  */
 static void
-general_init (const char *argv0)
+general_init (const char *argv0, bool init_signals)
 {
   const char *p;
 
@@ -1190,28 +1190,31 @@ general_init (const char *argv0)
   global_dc->option_state = &global_options;
   global_dc->option_name = option_name;
 
-  /* Trap fatal signals, e.g. SIGSEGV, and convert them to ICE messages.  */
+  if (init_signals)
+    {
+      /* Trap fatal signals, e.g. SIGSEGV, and convert them to ICE messages.  */
 #ifdef SIGSEGV
-  signal (SIGSEGV, crash_signal);
+      signal (SIGSEGV, crash_signal);
 #endif
 #ifdef SIGILL
-  signal (SIGILL, crash_signal);
+      signal (SIGILL, crash_signal);
 #endif
 #ifdef SIGBUS
-  signal (SIGBUS, crash_signal);
+      signal (SIGBUS, crash_signal);
 #endif
 #ifdef SIGABRT
-  signal (SIGABRT, crash_signal);
+      signal (SIGABRT, crash_signal);
 #endif
 #if defined SIGIOT && (!defined SIGABRT || SIGABRT != SIGIOT)
-  signal (SIGIOT, crash_signal);
+      signal (SIGIOT, crash_signal);
 #endif
 #ifdef SIGFPE
-  signal (SIGFPE, crash_signal);
+      signal (SIGFPE, crash_signal);
 #endif
 
-  /* Other host-specific signal setup.  */
-  (*host_hooks.extra_signals)();
+      /* Other host-specific signal setup.  */
+      (*host_hooks.extra_signals)();
+  }
 
   /* Initialize the garbage-collector, string pools and tree type hash
      table.  */
@@ -2059,8 +2062,9 @@ do_compile ()
     }
 }
 
-toplev::toplev (bool use_TV_TOTAL)
-  : m_use_TV_TOTAL (use_TV_TOTAL)
+toplev::toplev (bool use_TV_TOTAL, bool init_signals)
+  : m_use_TV_TOTAL (use_TV_TOTAL),
+    m_init_signals (init_signals)
 {
   if (!m_use_TV_TOTAL)
     start_timevars ();
@@ -2097,7 +2101,7 @@ toplev::main (int argc, char **argv)
   expandargv (&argc, &argv);
 
   /* Initialization of GCC's environment, and diagnostics.  */
-  general_init (argv[0]);
+  general_init (argv[0], m_init_signals);
 
   /* One-off initialization of options that does not need to be
      repeated when options are added for particular functions.  */

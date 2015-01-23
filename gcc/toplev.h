@@ -28,7 +28,8 @@ extern unsigned int save_decoded_options_count;
 class toplev
 {
 public:
-  toplev (bool use_TV_TOTAL);
+  toplev (bool use_TV_TOTAL,
+	  bool init_signals);
   ~toplev ();
 
   int main (int argc, char **argv);
@@ -40,6 +41,7 @@ private:
   void start_timevars ();
 
   bool m_use_TV_TOTAL;
+  bool m_init_signals;
 };
 
 extern void rest_of_decl_compilation (tree, int, int);

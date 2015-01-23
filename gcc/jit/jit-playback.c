@@ -1723,7 +1723,8 @@ compile ()
   acquire_mutex ();
 
   /* This runs the compiler.  */
-  toplev toplev (false);
+  toplev toplev (false, /* use_TV_TOTAL */
+		 false); /* init_signals */
   enter_scope ("toplev::main");
   if (get_logger ())
     for (unsigned i = 0; i < fake_args.length (); i++)
