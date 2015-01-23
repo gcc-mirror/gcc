@@ -1834,7 +1834,8 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	      /* Ignore GOMP_MAP_POINTER kind for arrays in regions that are
 		 not offloaded; there is nothing to map for those.  */
 	      if (!is_gimple_omp_offloaded (ctx->stmt)
-		  && !POINTER_TYPE_P (TREE_TYPE (decl)))
+		  && !POINTER_TYPE_P (TREE_TYPE (decl))
+		  && !OMP_CLAUSE_MAP_ZERO_BIAS_ARRAY_SECTION (c))
 		break;
 	    }
 	  if (DECL_P (decl))
