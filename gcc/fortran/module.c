@@ -1536,7 +1536,10 @@ static void
 write_atom (atom_type atom, const void *v)
 {
   char buffer[20];
-  int i, len;
+
+  /* Workaround -Wmaybe-uninitialized false positive during
+     profiledbootstrap by initializing them.  */
+  int i = 0, len;
   const char *p;
 
   switch (atom)
@@ -4908,7 +4911,9 @@ read_module (void)
   const char *p;
   char name[GFC_MAX_SYMBOL_LEN + 1];
   int i;
-  int ambiguous, j, nuse, symbol;
+  /* Workaround -Wmaybe-uninitialized false positive during
+     profiledbootstrap by initializing them.  */
+  int ambiguous = 0, j, nuse, symbol = 0;
   pointer_info *info, *q;
   gfc_use_rename *u = NULL;
   gfc_symtree *st;

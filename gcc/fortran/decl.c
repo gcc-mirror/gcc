@@ -6391,7 +6391,10 @@ attr_decl1 (void)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_array_spec *as;
-  gfc_symbol *sym;
+
+  /* Workaround -Wmaybe-uninitialized false positive during
+     profiledbootstrap by initializing them.  */
+  gfc_symbol *sym = NULL;
   locus var_locus;
   match m;
 

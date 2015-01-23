@@ -3050,6 +3050,13 @@ tree_int_cst_elt_check (tree __t, int __i,
   return &CONST_CAST_TREE (__t)->int_cst.val[__i];
 }
 
+/* Workaround -Wstrict-overflow false positive during profiledbootstrap.  */
+
+# if GCC_VERSION >= 4004
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-overflow"
+#endif
+
 inline tree *
 tree_vec_elt_check (tree __t, int __i,
                     const char *__f, int __l, const char *__g)
@@ -3060,6 +3067,10 @@ tree_vec_elt_check (tree __t, int __i,
     tree_vec_elt_check_failed (__i, __t->base.u.length, __f, __l, __g);
   return &CONST_CAST_TREE (__t)->vec.a[__i];
 }
+
+# if GCC_VERSION >= 4004
+#pragma GCC diagnostic pop
+#endif
 
 inline tree *
 omp_clause_elt_check (tree __t, int __i,
