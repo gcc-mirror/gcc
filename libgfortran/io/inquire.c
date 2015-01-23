@@ -41,11 +41,11 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
   const char *p;
   GFC_INTEGER_4 cf = iqp->common.flags;
 
-  if (iqp->common.unit == -1)
+  if (iqp->common.unit == GFC_INTERNAL_UNIT)
     generate_error (&iqp->common, LIBERROR_INQUIRE_INTERNAL_UNIT, NULL);
 
   if ((cf & IOPARM_INQUIRE_HAS_EXIST) != 0)
-    *iqp->exist = (u != NULL);
+    *iqp->exist = (u != NULL) || (iqp->common.unit >= 0);
 
   if ((cf & IOPARM_INQUIRE_HAS_OPENED) != 0)
     *iqp->opened = (u != NULL);

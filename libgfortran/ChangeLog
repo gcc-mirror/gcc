@@ -1,3 +1,13 @@
+2015-01-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/61933
+	* io/inquire.c (inquire_via_unit): Set existing to true for
+	any negative unit that is currently connected and any positive
+	units within range of KIND=4 value.  The unit value for any out
+	of range case that may occur if the user is using a KIND=8 will
+	have been set to -2 which is reserved and can never be opened,
+	and therefore the unit does not exist.
+
 2015-01-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/61933
