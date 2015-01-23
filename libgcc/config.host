@@ -585,20 +585,24 @@ x86_64-*-openbsd*)
 i[34567]86-*-linux*)
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm i386/t-crtstuff t-dfprules"
+	tm_file="${tm_file} i386/elf-lib.h"
 	md_unwind_header=i386/linux-unwind.h
 	;;
 i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i[34567]86-*-gnu* | i[34567]86-*-kopensolaris*-gnu)
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm i386/t-crtstuff t-dfprules"
+	tm_file="${tm_file} i386/elf-lib.h"
 	;;
 x86_64-*-linux*)
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm i386/t-crtstuff t-dfprules"
+	tm_file="${tm_file} i386/elf-lib.h"
 	md_unwind_header=i386/linux-unwind.h
 	;;
 x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm i386/t-crtstuff t-dfprules"
+	tm_file="${tm_file} i386/elf-lib.h"
 	;;
 i[34567]86-pc-msdosdjgpp*)
 	;;
