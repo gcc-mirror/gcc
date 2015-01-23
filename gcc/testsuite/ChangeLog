@@ -1,3 +1,8 @@
+2015-01-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/64317
+	* gcc.target/i386/pr64317.c: New test.
+
 2015-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/63637

@@ -1,3 +1,11 @@
+2015-01-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/64317
+	* lra-lives.c (make_hard_regno_born): Add parameter.  Don't make
+	REAL_PIC_OFFSET_TABLE_REGNUM conflicting with pic offset pseudo.
+	(mark_regno_live, process_bb_lives): Pass new paramater value to
+	make_hard_regno_born.
+
 2015-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/63637
