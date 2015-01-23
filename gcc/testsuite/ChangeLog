@@ -1,6 +1,11 @@
 2015-01-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/61933
+	* gfortran.dg/make_unit.f90: New test.
+
+2015-01-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/61933
 	* gfortran.dg/negative_unit_int8.f: Update.
 
 2015-01-22  Jeff Law  <law@redhat.com>
