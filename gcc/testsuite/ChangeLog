@@ -1,3 +1,9 @@
+2015-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/63439
+	* gcc.dg/vect/vect-33.c: Adjust target selectors for v16qi
+	vectorization on vect64 targets.
+
 2015-01-23  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/60922
