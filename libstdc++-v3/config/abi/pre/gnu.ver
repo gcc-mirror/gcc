@@ -64,10 +64,12 @@ GLIBCXX_3.4 {
 #     std::char_traits;
 #     std::c[i-z]*;
       std::c[i-n]*;
+#     std::codecvt;
+#     std::codecvt_byname;
 #     std::collate;
 #     std::collate_byname;
 #     std::condition_variable;
-      std::co[^ln]*;
+      std::co[^dln]*;
       std::c[p-s]*;
       std::cu[^r]*;
 #     std::current_exception
@@ -133,13 +135,18 @@ GLIBCXX_3.4 {
 #     std::[A-Zm-r]*;
 #     std::[A-Zm]*;
       std::[A-Z]*;
-      std::messages*;
-      std::money*;
+      std::messages[^_]*;
+#     std::messages_byname*;
+      std::money_*;
+      std::moneypunct[^_]*;
+#     std::moneypunct_byname*;
 #     std::n[^u]*;
       std::n[^aueo]*;
       std::nothrow;
       std::nu[^m]*;
-      std::num[^e]*;
+      std::num[^ep]*;
+      std::numpunct[^_]*;
+#     std::numpunct_byname*;
       std::ostrstream*;
 #     std::out_of_range::o*;
 #     std::out_of_range::~o*;
@@ -529,12 +536,20 @@ GLIBCXX_3.4 {
     # std::use_facet
     _ZSt9use_facetIS*;
 
+    # std::codecvt
+    _ZNSt7codecvtI[cw]*;
+    _ZNKSt7codecvtI[cw]*;
+
+    # std::codecvt_byname
+    _ZNSt14codecvt_bynameI[cw]c11__mbstate_tEC[12]EPKc[jmy];
+    _ZNSt14codecvt_bynameI[cw]c11__mbstate_tED*;
+
     # std::collate
     _ZNSt7collateI[cw]*;
     _ZNKSt7collateI[cw]*;
 
     # std::collate_byname
-    _ZNSt14collate_bynameI[cw]EC[12]EPKc?*;
+    _ZNSt14collate_bynameI[cw]EC[12]EPKc[jmy];
     _ZNSt14collate_bynameI[cw]ED*;
 
     # std::ctype
@@ -561,6 +576,10 @@ GLIBCXX_3.4 {
     _ZNKSt7num_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE1[234]*;
     _ZNKSt7num_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE15_M_insert_floatI*;
 
+    # std::numpunct_byname
+    _ZNSt15numpunct_bynameI[cw]EC[12]EPKc[jmy];
+    _ZNSt15numpunct_bynameI[cw]ED*;
+
     # std::money_get
     _ZNKSt9money_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE[2-9]*;
     _ZNKSt9money_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE10_M_extractILb[01]EEES3_S3_S3_RSt8ios_baseRSt12_Ios_IostateRSs;
@@ -570,6 +589,11 @@ GLIBCXX_3.4 {
     _ZNKSt9money_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE9_M_insertILb[01]EEES3_S3_RSt8ios_basecRKSs;
     _ZNKSt9money_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE9_M_insertILb[01]EEES3_S3_RSt8ios_basewRKSbIwS2_SaIwEE;
 
+    # std::moneypunct_byname
+    _ZNSt17moneypunct_bynameI[cw]Lb[01]EEC[12]EPKc[jmy];
+    _ZNSt17moneypunct_bynameI[cw]Lb[01]EED*;
+    _ZNSt17moneypunct_bynameI[cw]Lb[01]EE4intlE;
+
     # std::time_get
     _ZNSt8time_get*;
     _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE1*;
@@ -577,7 +601,8 @@ GLIBCXX_3.4 {
     _ZNKSt8time_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE21*;
 
     # std::time_get_byname
-    _ZNSt15time_get_byname*;
+    _ZNSt15time_get_bynameI[cw]*EEEC[12]EPKc[jmy];
+    _ZNSt15time_get_bynameI[cw]*EEED[012]Ev;
 
     # std::time_put
     _ZNSt8time_put*;
@@ -601,6 +626,10 @@ GLIBCXX_3.4 {
     _ZNSt14numeric_limitsI[p-z]E1[0-7]mi*;
     _ZNSt14numeric_limitsI[a-m]E1[0-7]max_e*;
     _ZNSt14numeric_limitsI[p-z]E1[0-7]max_e*;
+
+    # std::messages_byname
+    _ZNSt15messages_bynameI[cw]EC[12]EPKc[jmy];
+    _ZNSt15messages_bynameI[cw]ED*;
 
     # std::_Rb_tree
     _ZSt18_Rb_tree_decrementPKSt18_Rb_tree_node_base;
@@ -703,7 +732,12 @@ GLIBCXX_3.4 {
     _ZTVNSt8ios_base7failureE;
     _ZTVNSt6locale5facetE;
     _ZTVS[a-z];
-    _ZTVSt[0-9][A-Za-z]*;
+    _ZTVSt[0-6][A-Za-z]*;
+    _ZTVSt7[A-Zab]*;
+    _ZTVSt7codecvtI[cw]c*;
+    _ZTVSt7collateI[cw]E;
+    _ZTVSt7[d-z]*;
+    _ZTVSt[89][A-Za-z]*;
 #   _ZTVSt[0-9][0-9][A-Za-z]*;
     _ZTVSt[0-9][0-9][A-Z]*;
 #   _ZTVSt[0-9][0-9][a-d]*;
@@ -752,7 +786,12 @@ GLIBCXX_3.4 {
 
     # typeinfo structure
     _ZTIS[a-z];
-    _ZTISt[0-9][A-Za-z]*;
+    _ZTISt[0-6][A-Za-z]*;
+    _ZTISt7[A-Zab]*;
+    _ZTISt7codecvtI[cw]c*;
+    _ZTISt7collateI[cw]E;
+    _ZTISt7[d-z]*;
+    _ZTISt[89][A-Za-z]*;
 #   _ZTISt[0-9][0-9][A-Za-z]*;
     _ZTISt[0-9][0-9][A-Z]*;
 #   _ZTISt[0-9][0-9][a-d]*;
@@ -795,7 +834,12 @@ GLIBCXX_3.4 {
     _ZTSNSt8ios_base7failureE;
     _ZTSNSt6locale5facetE;
     _ZTSS[a-z];
-    _ZTSSt[0-9][A-Za-z]*;
+    _ZTSSt[0-6][A-Za-z]*;
+    _ZTSSt7[A-Zab]*;
+    _ZTSSt7codecvtI[cw]c*;
+    _ZTSSt7collateI[cw]E;
+    _ZTSSt7[d-z]*;
+    _ZTSSt[89][A-Za-z]*;
 #   _ZTSSt[0-9][0-9][A-Za-z]*;
     _ZTSSt[0-9][0-9][A-Z]*;
 #   _ZTSSt[0-9][0-9][a-d]*;

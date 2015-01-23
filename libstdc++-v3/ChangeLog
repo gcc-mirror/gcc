@@ -1,3 +1,8 @@
+2015-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Tighten GLIBCXX_3.4 patterns to not match
+	new std::string constructors for byname facets.
+
 2015-01-22  Richard Biener  <rguenther@suse.de>
 
 	PR libstdc++/64535
