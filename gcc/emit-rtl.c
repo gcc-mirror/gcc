@@ -5872,10 +5872,9 @@ init_emit_regs (void)
     = gen_raw_REG (Pmode, RETURN_ADDRESS_POINTER_REGNUM);
 #endif
 
+  pic_offset_table_rtx = NULL_RTX;
   if ((unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)
     pic_offset_table_rtx = gen_raw_REG (Pmode, PIC_OFFSET_TABLE_REGNUM);
-  else
-    pic_offset_table_rtx = NULL_RTX;
 
   for (i = 0; i < (int) MAX_MACHINE_MODE; i++)
     {

@@ -1,3 +1,10 @@
+2015-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64722
+	* emit-rtl.c (init_emit_regs): Set pic_offset_table_rtx to
+	NULL_RTX before testing PIC_OFFSET_TABLE_REGNUM, since the
+	latter may be affected by the former (e.g. on i686).
+
 2015-01-23  Martin Liska  <mliska@suse.cz>
 
 	* tree.h (tree_vec_elt_check): Workaround -Wstrict-overflow
