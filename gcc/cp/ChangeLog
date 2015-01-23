@@ -1,5 +1,8 @@
 2015-01-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64701
+	* constexpr.c (maybe_constant_value): Just hand back STATEMENT_LIST.
+
 	PR c++/64727
 	* constexpr.c (cxx_eval_constant_expression): Allow for lvalue use
 	of CONST_DECL.
