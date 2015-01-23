@@ -1,3 +1,16 @@
+2015-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/63637
+	PR rtl-optimization/60663
+	* cse.c (merge_equiv_classes): Set new_elt->cost to MAX_COST
+	if elt->cost is MAX_COST for ASM_OPERANDS.
+	(find_sets_in_insn): Fix up comment typo.
+	(cse_insn): Don't set src_volatile for all non-volatile
+	ASM_OPERANDS in PARALLELs, but just those with multiple outputs
+	or with "memory" clobber.  Set elt->cost to MAX_COST
+	for ASM_OPERANDS in PARALLEL.  Set src_elt->cost to MAX_COST
+	if new_src is ASM_OPERANDS and elt->cost is MAX_COST.
+
 2015-01-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (sse2_loadld): Set attribute isa to sse2 for
