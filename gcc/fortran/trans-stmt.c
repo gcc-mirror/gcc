@@ -5150,7 +5150,7 @@ gfc_trans_allocate (gfc_code * code)
 	      if (unlimited_char)
 		tmp = TREE_TYPE (gfc_typenode_for_spec (&code->expr3->ts));
 	      else
-	      tmp = TREE_TYPE (gfc_typenode_for_spec (&al->expr->ts));
+		tmp = TREE_TYPE (gfc_typenode_for_spec (&al->expr->ts));
 	      tmp = TYPE_SIZE_UNIT (tmp);
 	      memsz = fold_build2_loc (input_location, MULT_EXPR,
 				       TREE_TYPE (tmp), tmp,
