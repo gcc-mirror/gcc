@@ -1,3 +1,18 @@
+2015-01-25  Venkataramanan Kumar  <venkataramanan.kumar@linaro.org>
+
+	* configure.ac (TSAN_TARGET_DEPENDENT_OBJECTS): Define.
+	* configure: Regenerate.
+	* tsan/Makefile.am (EXTRA_libtsan_la_SOURCES): Define.
+	(libtsan_la_DEPENDENCIES): Likewise.
+	* Makefile.in: Regenerate.
+	* asan/Makefile.in: Regenerate.
+	* interception/Makefile.in: Regenerate.
+	* libbacktrace/Makefile.in: Regenerate.
+	* lsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* tsan/Makefile.in: Regenerate.
+	* ubsan/Makefile.in: Regenerate.
+
 2015-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* tsan/tsan_rtl.h: Cherry pick upstream r226829.

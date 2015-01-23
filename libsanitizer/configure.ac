@@ -346,4 +346,10 @@ _EOF
 ])
 fi
 
+case "${target}" in
+ x86_64-*-linux-*) TSAN_TARGET_DEPENDENT_OBJECTS='tsan_rtl_amd64.lo' ;;
+ *) TSAN_TARGET_DEPENDENT_OBJECTS='' ;;
+esac
+AC_SUBST([TSAN_TARGET_DEPENDENT_OBJECTS])
+
 AC_OUTPUT

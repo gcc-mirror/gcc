@@ -36,6 +36,7 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 @LIBBACKTRACE_SUPPORTED_TRUE@am__append_1 = $(top_builddir)/libbacktrace/libsanitizer_libbacktrace.la
+@LIBBACKTRACE_SUPPORTED_TRUE@am__append_2 = $(top_builddir)/libbacktrace/libsanitizer_libbacktrace.la
 subdir = tsan
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -80,10 +81,6 @@ am__base_list = \
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-libtsan_la_DEPENDENCIES =  \
-	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
-	$(top_builddir)/interception/libinterception.la \
-	$(am__append_1) $(am__DEPENDENCIES_1)
 am__objects_1 = tsan_clock.lo tsan_fd.lo tsan_flags.lo \
 	tsan_ignoreset.lo tsan_interceptors.lo tsan_interface_ann.lo \
 	tsan_interface_atomic.lo tsan_interface.lo \
@@ -92,7 +89,7 @@ am__objects_1 = tsan_clock.lo tsan_fd.lo tsan_flags.lo \
 	tsan_platform_windows.lo tsan_report.lo tsan_rtl.lo \
 	tsan_rtl_mutex.lo tsan_rtl_report.lo tsan_rtl_thread.lo \
 	tsan_stack_trace.lo tsan_stat.lo tsan_suppressions.lo \
-	tsan_symbolize.lo tsan_sync.lo tsan_rtl_amd64.lo
+	tsan_symbolize.lo tsan_sync.lo
 am_libtsan_la_OBJECTS = $(am__objects_1)
 libtsan_la_OBJECTS = $(am_libtsan_la_OBJECTS)
 libtsan_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
@@ -125,7 +122,7 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(libtsan_la_SOURCES)
+SOURCES = $(libtsan_la_SOURCES) $(EXTRA_libtsan_la_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 ACLOCAL = @ACLOCAL@
@@ -201,6 +198,7 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+TSAN_TARGET_DEPENDENT_OBJECTS = @TSAN_TARGET_DEPENDENT_OBJECTS@
 VERSION = @VERSION@
 VIEW_FILE = @VIEW_FILE@
 abs_builddir = @abs_builddir@
@@ -306,14 +304,19 @@ tsan_files = \
 	tsan_stat.cc \
 	tsan_suppressions.cc \
 	tsan_symbolize.cc \
-	tsan_sync.cc \
-	tsan_rtl_amd64.S
+	tsan_sync.cc 
 
-libtsan_la_SOURCES = $(tsan_files) 
+libtsan_la_SOURCES = $(tsan_files)
+EXTRA_libtsan_la_SOURCES = tsan_rtl_amd64.S
 libtsan_la_LIBADD =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
 	$(top_builddir)/interception/libinterception.la \
-	$(am__append_1) $(LIBSTDCXX_RAW_CXX_LDFLAGS)
+	$(TSAN_TARGET_DEPENDENT_OBJECTS) $(am__append_1) \
+	$(LIBSTDCXX_RAW_CXX_LDFLAGS)
+libtsan_la_DEPENDENCIES =  \
+	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
+	$(top_builddir)/interception/libinterception.la \
+	$(TSAN_TARGET_DEPENDENT_OBJECTS) $(am__append_2)
 libtsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_libtsan)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS

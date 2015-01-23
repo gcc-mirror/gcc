@@ -604,6 +604,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+TSAN_TARGET_DEPENDENT_OBJECTS
 LIBBACKTRACE_SUPPORTED_FALSE
 LIBBACKTRACE_SUPPORTED_TRUE
 BACKTRACE_SUPPORTS_THREADS
@@ -12019,7 +12020,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12022 "configure"
+#line 12023 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12125,7 +12126,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12128 "configure"
+#line 12129 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16361,6 +16362,12 @@ if test "x$TSAN_SUPPORTED" = "xyes"; then
   ac_config_files="$ac_config_files tsan/Makefile"
 
 fi
+
+case "${target}" in
+ x86_64-*-linux-*) TSAN_TARGET_DEPENDENT_OBJECTS='tsan_rtl_amd64.lo' ;;
+ *) TSAN_TARGET_DEPENDENT_OBJECTS='' ;;
+esac
+
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
