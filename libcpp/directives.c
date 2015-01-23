@@ -2036,23 +2036,16 @@ do_elif (cpp_reader *pfile)
 	}
       ifs->type = T_ELIF;
 
-      if (! ifs->was_skipping)
+      /* See DR#412: "Only the first group whose control condition
+	 evaluates to true (nonzero) is processed; any following groups
+	 are skipped and their controlling directives are processed as
+	 if they were in a group that is skipped."  */
+      if (ifs->skip_elses)
+	pfile->state.skipping = 1;
+      else
 	{
-	  bool value;
-	  /* The standard mandates that the expression be parsed even
-	     if we are skipping elses at this point -- the lexical
-	     restrictions on #elif only apply to skipped groups, but
-	     this group is not being skipped.  Temporarily set
-	     skipping to false to get lexer warnings.  */
-	  pfile->state.skipping = 0;
-	  value = _cpp_parse_expr (pfile, false);
-	  if (ifs->skip_elses)
-	    pfile->state.skipping = 1;
-	  else
-	    {
-	      pfile->state.skipping = ! value;
-	      ifs->skip_elses = value;
-	    }
+	  pfile->state.skipping = ! _cpp_parse_expr (pfile, false);
+	  ifs->skip_elses = ! pfile->state.skipping;
 	}
 
       /* Invalidate any controlling macro.  */
