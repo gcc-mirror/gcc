@@ -166,6 +166,10 @@ lto_write_options (void)
     append_to_collect_gcc_options (&temporary_obstack, &first_p,
 			       "-fno-strict-overflow");
 
+  if (!global_options_set.x_flag_openmp
+      && !global_options.x_flag_openmp)
+    append_to_collect_gcc_options (&temporary_obstack, &first_p, "-fno-openmp");
+
   /* Append options from target hook and store them to offload_lto section.  */
   if (lto_stream_offload_p)
     {

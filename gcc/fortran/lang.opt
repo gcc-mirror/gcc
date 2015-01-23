@@ -571,7 +571,7 @@ Fortran
 ; Documented in C
 
 fopenmp
-Fortran
+Fortran LTO
 ; Documented in C
 
 fopenmp-simd
