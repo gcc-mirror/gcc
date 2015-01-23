@@ -1,3 +1,25 @@
+2015-01-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/61933
+	* libgfortran.h:
+	* trans-io.c (set_parameter_value): Delete use of has_iostat.
+	Redefine to not generate any runtime error check calls.
+	(set_parameter_value_chk): Rename of the former
+	set_parameter_value with the runtime error checks and fix
+	whitespace. (set_parameter_value_inquire): New function that
+	builds a runtime conditional block to set the INQUIRE
+	common parameter block unit number to -2 when unit numbers
+	exceed positive KIND=4 limits. (gfc_trans_open): Whitespace.
+	For unit, use the renamed set_parameter_value_chk.
+	(gfc_trans_close): Likewise use renamed function.
+	(build_filepos): Whitespace and use renamed function.
+	(gfc_trans_inquire): Whitespace and for unit use
+	set_parameter_value and set_parameter_value_inquire.
+	(gfc_trans_wait): Remove p->iostat from call to
+	set_parameter_value. Use new set_parameter_value_chk for unit.
+	(build_dt): Use the new set_parameter_value without p->iostat
+	and fix whitespace. Use set_parameter_value_chk for unit.
+
 2015-01-21  Thomas Koenig  <tkoenig@netcologne.de>
 
 	PR fortran/57023
@@ -95,6 +117,7 @@
 	* decl.c (match_pointer_init): Error out if resolution of init expr
 	failed.
 
+>>>>>>> .r219925
 2015-01-15  Tobias Burnus  <burnus@net-b.de>
 
 	* openmp.c (check_symbol_not_pointer, resolve_oacc_data_clauses,
