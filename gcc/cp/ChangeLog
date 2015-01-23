@@ -6,7 +6,8 @@
 	that has been completely split out.
 
 	PR c++/64701
-	* constexpr.c (maybe_constant_value): Just hand back STATEMENT_LIST.
+	* constexpr.c (cxx_eval_constant_expression): Don't crash on C++
+	statement codes.
 
 	PR c++/64727
 	* constexpr.c (cxx_eval_constant_expression): Allow for lvalue use
