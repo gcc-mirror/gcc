@@ -1,5 +1,9 @@
 2015-01-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/64511
+	* dwarf2out.c (struct dw_loc_descr_node): Add chain_next
+	GTY markup.
+
 	* diagnostic-core.h (internal_error_no_backtrace): New prototype.
 	* diagnostic.def (DK_ICE_NOBT): New kind.
 	* diagnostic.c (diagnostic_action_after_output): Handle DK_ICE_NOBT
