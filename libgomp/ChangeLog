@@ -1,3 +1,9 @@
+2015-01-23  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/64707
+	* testsuite/libgomp.c/target-9.c: Add -ftree-parallelize-loops=0 to
+	dg-options.
+
 2015-01-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR libgomp/64625

@@ -1288,7 +1288,7 @@ C ObjC C++ ObjC++ Var(flag_openacc)
 Enable OpenACC
 
 fopenmp
-C ObjC C++ ObjC++ Var(flag_openmp)
+C ObjC C++ ObjC++ LTO Var(flag_openmp)
 Enable OpenMP (implies -frecursive in Fortran)
 
 fopenmp-simd

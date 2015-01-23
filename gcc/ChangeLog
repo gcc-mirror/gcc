@@ -1,3 +1,11 @@
+2015-01-23  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/64707
+	* lto-opts.c (lto_write_options): Output non-explicit conservative
+	-fno-openmp.
+	* lto-wrapper.c (merge_and_complain): Handle merging -fopenmp.
+	(append_compiler_options): Pass -fopenmp through.
+
 2015-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/64511
