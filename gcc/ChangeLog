@@ -1,3 +1,8 @@
+2015-01-23  Martin Liska  <mliska@suse.cz>
+
+	* tree.h (tree_vec_elt_check): Workaround -Wstrict-overflow
+	false positive during profiledbootstrap.
+
 2015-01-23  Tom de Vries  <tom@codesourcery.com>
 
 	PR libgomp/64672

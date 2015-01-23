@@ -258,7 +258,9 @@ match_add_op (void)
 static match
 match_mult_operand (gfc_expr **result)
 {
-  gfc_expr *e, *exp, *r;
+  /* Workaround -Wmaybe-uninitialized false positive during
+     profiledbootstrap by initializing them.  */
+  gfc_expr *e = NULL, *exp, *r;
   locus where;
   match m;
 
