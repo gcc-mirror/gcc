@@ -1,3 +1,8 @@
+2015-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue):
+	Support the JIT by using 0 as the language type.
+
 2015-01-23  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/64317
