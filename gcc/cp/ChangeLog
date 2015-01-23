@@ -1,5 +1,10 @@
 2015-01-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64314
+	PR c++/57510
+	* typeck2.c (split_nonconstant_init_1): Remove a sub-CONSTRUCTOR
+	that has been completely split out.
+
 	PR c++/64701
 	* constexpr.c (maybe_constant_value): Just hand back STATEMENT_LIST.
 
