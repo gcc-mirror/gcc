@@ -60,6 +60,10 @@ const char *x_ix86_tune_string
 TargetSave
 unsigned char schedule
 
+;; True if processor has SSE prefetch instruction.
+TargetSave
+unsigned char prefetch_sse
+
 ;; branch cost
 TargetSave
 unsigned char branch_cost

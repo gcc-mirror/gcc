@@ -1,3 +1,10 @@
+2015-01-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* i386.opt (prefetch_sse): New targetsave.
+	* i386.c (ix86_function_specific_save): Save prefetch_sse.
+	(ix86_function_specific_restore): Restore prefetch_sse and initialize
+	ix86_cost/ix86_tune_cost.
+
 2015-01-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_output_function_epilogue):
