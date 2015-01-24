@@ -34,6 +34,10 @@ AC_INIT(package-unused, version-unused,, libbacktrace)
 AC_CONFIG_SRCDIR(backtrace.h)
 AC_CONFIG_HEADER(config.h)
 
+if test -n "${with_target_subdir}"; then
+  AM_ENABLE_MULTILIB(, ..)
+fi
+
 AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$host_alias}
 
@@ -83,7 +87,6 @@ backtrace_supported=yes
 if test -n "${with_target_subdir}"; then
   # We are compiling a GCC library.  We can assume that the unwind
   # library exists.
-  AM_ENABLE_MULTILIB(, ..)
   BACKTRACE_FILE="backtrace.lo simple.lo"
 else
   AC_CHECK_HEADER([unwind.h],
