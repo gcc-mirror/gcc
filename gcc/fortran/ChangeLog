@@ -1,3 +1,10 @@
+2015-01-24  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from mainline
+	PR fortran/60922
+	* class.c (finalize_component): Apply the check for 'fini_coarray' only
+	to coarray components.
+
 2015-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

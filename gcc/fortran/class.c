@@ -875,7 +875,7 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
       /* Add IF (fini_coarray).  */
       if (comp->attr.codimension
 	  || (comp->ts.type == BT_CLASS && CLASS_DATA (comp)
-	      && CLASS_DATA (comp)->attr.allocatable))
+	      && CLASS_DATA (comp)->attr.codimension))
 	{
 	  block = gfc_get_code (EXEC_IF);
 	  if (*code)

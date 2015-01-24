@@ -1,3 +1,9 @@
+2015-01-24  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from mainline
+	PR fortran/60922
+	* gfortran.dg/class_allocate_17.f90: New.
+
 2015-01-20  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
