@@ -364,6 +364,8 @@ static bool sequence_insn_p (rtx_insn *);
 static void sh_canonicalize_comparison (int *, rtx *, rtx *, bool);
 static void sh_canonicalize_comparison (enum rtx_code&, rtx&, rtx&,
 					machine_mode, bool);
+static bool sh_legitimate_combined_insn (rtx_insn* insn);
+
 static bool sh_fixed_condition_code_regs (unsigned int* p1, unsigned int* p2);
 
 static void sh_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
@@ -671,6 +673,9 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef TARGET_CANONICALIZE_COMPARISON
 #define TARGET_CANONICALIZE_COMPARISON	sh_canonicalize_comparison
+
+#undef TARGET_LEGITIMATE_COMBINED_INSN
+#define TARGET_LEGITIMATE_COMBINED_INSN sh_legitimate_combined_insn
 
 #undef TARGET_FIXED_CONDITION_CODE_REGS
 #define TARGET_FIXED_CONDITION_CODE_REGS sh_fixed_condition_code_regs
@@ -2044,6 +2049,26 @@ sh_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
   *code = (int)tmp_code;
 }
 
+/* This function implements the legitimate_combined_insn target hook,
+   which the combine pass uses to early reject combined insns, before
+   it tries to recog the insn and determine its cost.  */
+static bool
+sh_legitimate_combined_insn (rtx_insn* insn)
+{
+  /* Reject combinations of memory loads and zero extensions, as these
+     interfere with other combine patterns such as zero extracts and bit
+     tests.  The SH2A movu.{b|w} insns are formed later in the
+     'sh_optimize_extu_exts' pass after combine/split1.  */
+  rtx p = PATTERN (insn);
+  if (GET_CODE (p) == SET
+      && REG_P (XEXP (p, 0)) && GET_MODE (XEXP (p, 0)) == SImode
+      && GET_CODE (XEXP (p, 1)) == ZERO_EXTEND
+      && MEM_P (XEXP (XEXP (p, 1), 0)))
+      return false;
+
+  return true;
+}
+
 bool
 sh_fixed_condition_code_regs (unsigned int* p1, unsigned int* p2)
 {
@@ -3330,6 +3355,12 @@ addsubcosts (rtx x)
 	      && CONST_INT_P (XEXP (op1, 1)) && INTVAL (XEXP (op1, 1)) == 31)
 	    return 1;
 	}
+      /* Let's assume that adding the result of an insns that stores into
+	 the T bit is cheap.  */
+      if (treg_set_expr (op1, SImode))
+	return 1;
+      if (treg_set_expr (op0, SImode))
+	return 1;
     }
 
   /* On SH1-4 we have only max. SImode operations.
@@ -3445,10 +3476,36 @@ sh_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 				true);
       return true;
 
+    case IF_THEN_ELSE:
+      /* This case is required for the if_then_else negc pattern.  */
+      if (treg_set_expr (XEXP (x, 0), SImode))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      else
+	return false;
+
+    /* Zero extracts of single bits are usually combine patterns for the
+       tst insns.  */
+    case ZERO_EXTRACT:
+      if (GET_CODE (XEXP (x, 0)) == XOR
+	  && arith_reg_operand (XEXP (XEXP (x, 0), 0), VOIDmode)
+	  && XEXP (x, 1) == const1_rtx
+	  && CONST_INT_P (XEXP (x, 2))
+	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
+	  /* Check that the xor constaint overlaps with the extracted bit.  */
+	  && (INTVAL (XEXP (XEXP (x, 0), 1)) & (1LL << INTVAL (XEXP (x, 2)))))
+	{
+	  *total = 1; //COSTS_N_INSNS (1);
+	  return true;
+	}
+      return false;
+
     /* The cost of a sign or zero extend depends on whether the source is a
        reg or a mem.  In case of a mem take the address into acount.  */
     case SIGN_EXTEND:
-      if (REG_P (XEXP (x, 0)))
+      if (arith_reg_operand (XEXP (x, 0), GET_MODE (XEXP (x, 0))))
 	{
 	  *total = COSTS_N_INSNS (1);
 	  return true;
@@ -3463,7 +3520,7 @@ sh_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       return false;
 
     case ZERO_EXTEND:
-      if (REG_P (XEXP (x, 0)))
+      if (arith_reg_operand (XEXP (x, 0), GET_MODE (XEXP (x, 0))))
 	{
 	  *total = COSTS_N_INSNS (1);
 	  return true;
@@ -3555,8 +3612,21 @@ sh_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	 most likely going to be a TST #imm, R0 instruction.
 	 Notice that this does not catch the zero_extract variants from
 	 the md file.  */
-      if (GET_CODE (XEXP (x, 0)) == AND
-	  && CONST_INT_P (XEXP (x, 1)) && INTVAL (XEXP (x, 1)) == 0)
+      if (XEXP (x, 1) == const0_rtx
+          && (GET_CODE (XEXP (x, 0)) == AND
+              || (SUBREG_P (XEXP (x, 0))
+		  && GET_CODE (SUBREG_REG (XEXP (x, 0))) == AND)))
+	{
+	  *total = 1;
+	  return true;
+	}
+
+      else if (XEXP (x, 1) == const0_rtx
+	       && GET_CODE (XEXP (x, 0)) == AND
+	       && CONST_INT_P (XEXP (XEXP (x, 0), 1))
+	       && GET_CODE (XEXP (XEXP (x, 0), 0)) == ASHIFT
+	       && arith_reg_operand (XEXP (XEXP (XEXP (x, 0), 0), 0), SImode)
+	       && CONST_INT_P (XEXP (XEXP (XEXP (x, 0), 0), 1)))
 	{
 	  *total = 1;
 	  return true;
@@ -3622,6 +3692,14 @@ sh_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       return true;
 
     case AND:
+      /* Check for (and (not (reg)) (const_int 1)) which is a tst insn.  */
+      if (GET_CODE (XEXP (x, 0)) == NOT && XEXP (x, 1) == const1_rtx)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      /* Fall through.  */
+
     case XOR:
     case IOR:
       *total = COSTS_N_INSNS (and_xor_ior_costs (x, code));
@@ -13751,7 +13829,7 @@ sh_unspec_insn_p (rtx x)
 
 /* Return true if the register operands of the specified insn are modified
    between the specified from and to insns (exclusive of those two).  */
-static bool
+bool
 sh_insn_operands_modified_between_p (rtx_insn* operands_insn,
 				     const rtx_insn* from,
 				     const rtx_insn* to)
@@ -13768,6 +13846,57 @@ sh_insn_operands_modified_between_p (rtx_insn* operands_insn,
       return true;
 
   return false;
+}
+
+/* Given an insn, determine whether it's a 'nott' insn, i.e. an insn that
+   negates the T bit and stores the result in the T bit.  */
+bool
+sh_is_nott_insn (const rtx_insn* i)
+{
+  return i != NULL && GET_CODE (PATTERN (i)) == SET
+	 && t_reg_operand (XEXP (PATTERN (i), 0), VOIDmode)
+	 && negt_reg_operand (XEXP (PATTERN (i), 1), VOIDmode);
+}
+
+rtx
+sh_movt_set_dest (const rtx_insn* i)
+{
+  if (i == NULL)
+    return NULL;
+
+  const_rtx p = PATTERN (i);
+  return GET_CODE (p) == SET
+	 && arith_reg_dest (XEXP (p, 0), SImode)
+	 && t_reg_operand (XEXP (p, 1), VOIDmode) ? XEXP (p, 0) : NULL;
+}
+
+/* Given an insn, check whether it's a 'movrt' kind of insn, i.e. an insn
+   that stores the negated T bit in a register, and return the destination
+   register rtx, or null.  */
+rtx
+sh_movrt_set_dest (const rtx_insn* i)
+{
+  if (i == NULL)
+    return NULL;
+
+  const_rtx p = PATTERN (i);
+
+  /* The negc movrt replacement is inside a parallel.  */
+  if (GET_CODE (p) == PARALLEL)
+    p = XVECEXP (p, 0, 0);
+
+  return GET_CODE (p) == SET
+	 && arith_reg_dest (XEXP (p, 0), SImode)
+	 && negt_reg_operand (XEXP (p, 1), VOIDmode) ? XEXP (p, 0) : NULL;
+}
+
+/* Given an insn and a reg number, tell whether the reg dies or is unused
+   after the insn.  */
+bool
+sh_reg_dead_or_unused_after_insn (const rtx_insn* i, int regno)
+{
+  return find_regno_note (i, REG_DEAD, regno) != NULL
+	 || find_regno_note (i, REG_UNUSED, regno) != NULL;
 }
 
 /* Given an insn and a reg number, remove reg dead or reg unused notes to
@@ -14006,6 +14135,40 @@ sh_extending_set_of_reg::use_as_extended_reg (rtx_insn* use_at_insn) const
     }
 }
 
+bool
+sh_extending_set_of_reg::can_use_as_unextended_reg (void) const
+{
+  if ((ext_code == SIGN_EXTEND || ext_code == ZERO_EXTEND)
+      && (from_mode == QImode || from_mode == HImode)
+      && set_src != NULL)
+    return arith_reg_operand (XEXP (set_src, 0), from_mode);
+  else
+    return false;
+}
+
+rtx
+sh_extending_set_of_reg::use_as_unextended_reg (rtx_insn* use_at_insn) const
+{
+  gcc_assert (can_use_as_unextended_reg ());
+
+  rtx r = XEXP (set_src, 0);
+  rtx r0 = simplify_gen_subreg (SImode, r, from_mode, 0);
+
+  if (modified_between_p (r, insn, use_at_insn))
+    {
+      rtx r1 = gen_reg_rtx (SImode);
+      emit_insn_after (gen_move_insn (r1, r0), insn);
+      return r1;
+    }
+  else
+    {
+      sh_remove_reg_dead_or_unused_notes (insn, SUBREG_P (r)
+						? REGNO (SUBREG_REG (r))
+						: REGNO (r));
+      return r0;
+    }
+}
+
 /* Given the current insn, which is assumed to be the *tst<mode>_t_subregs insn,
    perform the necessary checks on the operands and split it accordingly.  */
 void
@@ -14057,6 +14220,276 @@ sh_split_tst_subregs (rtx_insn* curr_insn, machine_mode subreg_mode,
 	     ? gen_zero_extendqisi2 (tmp0, tmp1)
 	     : gen_zero_extendhisi2 (tmp0, tmp1));
   emit_insn (gen_tstsi_t (tmp0, operands[1]));
+}
+
+/* A helper class to increment/decrement a counter variable each time a
+   function is entered/left.  */
+class scope_counter
+{
+public:
+  scope_counter (int& counter) : m_counter (counter) { ++m_counter; }
+
+  ~scope_counter (void)
+  {
+    --m_counter;
+    gcc_assert (m_counter >= 0);
+  }
+
+  int count (void) const { return m_counter; }
+
+private:
+  int& m_counter;
+};
+
+/* Given an rtx x, determine whether the expression can be used to create
+   an insn that calulates x and stores the result in the T bit.
+   This is used by the 'treg_set_expr' predicate to construct insns sequences
+   where T bit results are fed into other insns, such as addc, subc, negc
+   insns.
+
+   FIXME: The patterns that expand 'treg_set_expr' operands tend to
+   distinguish between 'positive' and 'negative' forms.  For now this has to
+   be done in the preparation code.  We could also introduce
+   'pos_treg_set_expr' and 'neg_treg_set_expr' predicates for that and write
+   two different patterns for the 'postive' and 'negative' forms.  However,
+   the total amount of lines of code seems to be about the same and the
+   '{pos|neg}_treg_set_expr' predicates would be more expensive, because the
+   recog function would need to look inside the expression by temporarily
+   splitting it.  */
+static int sh_recog_treg_set_expr_reent_count = 0;
+
+bool
+sh_recog_treg_set_expr (rtx op, machine_mode mode)
+{
+  scope_counter recursion (sh_recog_treg_set_expr_reent_count);
+
+  /* Limit the recursion count to avoid nested expressions which we can't
+     resolve to a single treg set insn.  */
+  if (recursion.count () > 1)
+    return false;
+
+  /* Early accept known possible operands before doing recog.  */
+  if (op == const0_rtx || op == const1_rtx || t_reg_operand (op, mode))
+    return true;
+
+  /* Early reject impossible operands before doing recog.
+     There are some (set ((t) (subreg ...))) patterns, but we must be careful
+     not to allow any invalid reg-reg or mem-reg moves, or else other passes
+     such as lower-subreg will bail out.  Some insns such as SH4A movua are
+     done with UNSPEC, so must reject those, too, or else it would result
+     in an invalid reg -> treg move.  */
+  if (register_operand (op, mode) || memory_operand (op, mode)
+      || sh_unspec_insn_p (op))
+    return false;
+
+  if (!can_create_pseudo_p ())
+    return false;
+
+  /* We are going to invoke recog in a re-entrant way and thus
+     have to capture its current state and restore it afterwards.  */
+  recog_data_d prev_recog_data = recog_data;
+
+  rtx_insn* i = make_insn_raw (gen_rtx_SET (VOIDmode, get_t_reg_rtx (), op));
+  SET_PREV_INSN (i) = NULL;
+  SET_NEXT_INSN (i) = NULL;
+
+  int result = recog (PATTERN (i), i, 0);
+
+  /* It seems there is no insn like that.  Create a simple negated
+     version and try again.  If we hit a negated form, we'll allow that
+     and append a nott sequence when splitting out the insns.  Insns that
+     do the split can then remove the trailing nott if they know how to
+     deal with it.  */
+  if (result < 0 && GET_CODE (op) == EQ)
+    {
+      PUT_CODE (op, NE);
+      result = recog (PATTERN (i), i, 0);
+      PUT_CODE (op, EQ);
+    }
+  if (result < 0 && GET_CODE (op) == NE)
+    {
+      PUT_CODE (op, EQ);
+      result = recog (PATTERN (i), i, 0);
+      PUT_CODE (op, NE);
+    }
+
+  recog_data = prev_recog_data;
+  return result >= 0;
+}
+
+/* Returns true when recog of a 'treg_set_expr' is currently in progress.
+   This can be used as a condition for insn/split patterns to allow certain
+   T bit setting patters only to be matched as sub expressions of other
+   patterns.  */
+bool
+sh_in_recog_treg_set_expr (void)
+{
+  return sh_recog_treg_set_expr_reent_count > 0;
+}
+
+/* Given an rtx x, which is assumed to be some expression that has been
+   matched by the 'treg_set_expr' predicate before, split and emit the
+   insns that are necessary to calculate the expression and store the result
+   in the T bit.
+   The splitting is done recursively similar to 'try_split' in emit-rt.c.
+   Unfortunately we can't use 'try_split' here directly, as it tries to invoke
+   'delete_insn' which then causes the DF parts to bail out, because we
+   currently are inside another gen_split* function and would invoke
+   'try_split' in a reentrant way.  */
+static std::pair<rtx_insn*, rtx_insn*>
+sh_try_split_insn_simple (rtx_insn* i, rtx_insn* curr_insn, int n = 0)
+{
+  if (dump_file)
+    {
+      fprintf (dump_file, "sh_try_split_insn_simple n = %d i = \n", n);
+      print_rtl_single (dump_file, i);
+      fprintf (dump_file, "\n");
+    }
+
+  rtx_insn* seq = safe_as_a<rtx_insn*> (split_insns (PATTERN (i), curr_insn));
+
+  if (seq == NULL)
+    return std::make_pair (i, i);
+
+  /* Avoid infinite splitter loops if any insn of the result matches
+     the original pattern.  */
+  for (rtx_insn* s = seq; s != NULL; s = NEXT_INSN (s))
+    if (INSN_P (s) && rtx_equal_p (PATTERN (s), PATTERN (i)))
+      return std::make_pair (i, i);
+
+  unshare_all_rtl_in_chain (seq);
+
+  /* 'seq' is now a replacement for 'i'.  Assuming that 'i' is an insn in
+     a linked list, replace the single insn with the new insns.  */
+  rtx_insn* seqlast = seq;
+  while (NEXT_INSN (seqlast) != NULL)
+    seqlast = NEXT_INSN (seqlast);
+
+  if (rtx_insn* iprev = PREV_INSN (i))
+    SET_NEXT_INSN (iprev) = seq;
+  if (rtx_insn* inext = NEXT_INSN (i))
+    SET_PREV_INSN (inext) = seqlast;
+
+  SET_PREV_INSN (seq) = PREV_INSN (i);
+  SET_NEXT_INSN (seqlast) = NEXT_INSN (i);
+
+  SET_PREV_INSN (i) = NULL;
+  SET_NEXT_INSN (i) = NULL;
+
+  /* Recursively split all insns.  */
+  for (i = seq; ; i = NEXT_INSN (i))
+    {
+      std::pair<rtx_insn*, rtx_insn*> ii =
+	  sh_try_split_insn_simple (i, curr_insn, n + 1);
+      if (i == seq)
+	seq = ii.first;
+      if (i == seqlast)
+	{
+	  seqlast = ii.second;
+	  break;
+	}
+      i = ii.first;
+    }
+
+  return std::make_pair (seq, seqlast);
+}
+
+sh_treg_insns
+sh_split_treg_set_expr (rtx x, rtx_insn* curr_insn)
+{
+  if (t_reg_operand (x, VOIDmode))
+    return sh_treg_insns ();
+
+  scope_counter in_treg_set_expr (sh_recog_treg_set_expr_reent_count);
+
+  rtx_insn* i = make_insn_raw (gen_rtx_SET (VOIDmode, get_t_reg_rtx (), x));
+  SET_PREV_INSN (i) = NULL;
+  SET_NEXT_INSN (i) = NULL;
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "split_treg_set_expr insn:\n");
+      print_rtl (dump_file, i);
+      fprintf (dump_file, "\n");
+    }
+
+  /* We are going to invoke recog/split_insns in a re-entrant way and thus
+     have to capture its current state and restore it afterwards.  */
+  recog_data_d prev_recog_data = recog_data;
+
+  int insn_code = recog (PATTERN (i), i, 0);
+
+  /* If the insn was not found, see if we matched the negated form before
+     and append a nott.  */
+  bool append_nott = false;
+
+  if (insn_code < 0 && GET_CODE (x) == EQ)
+    {
+      PUT_CODE (x, NE);
+      insn_code = recog (PATTERN (i), i, 0);
+      if (insn_code >= 0)
+	append_nott = true;
+      else
+	PUT_CODE (x, EQ);
+    }
+  if (insn_code < 0 && GET_CODE (x) == NE)
+    {
+      PUT_CODE (x, EQ);
+      insn_code = recog (PATTERN (i), i, 0);
+      if (insn_code >= 0)
+	append_nott = true;
+      else
+	PUT_CODE (x, NE);
+    }
+
+  gcc_assert (insn_code >= 0);
+
+  /* Try to recursively split the insn.  Some insns might refuse to split
+     any further while we are in the treg_set_expr splitting phase.  They
+     will be emitted as part of the outer insn and then split again.  */
+  std::pair<rtx_insn*, rtx_insn*> insnlist =
+	sh_try_split_insn_simple (i, curr_insn);
+
+  /* Restore recog state.  */
+  recog_data = prev_recog_data;
+
+  rtx_insn* nott_insn = sh_is_nott_insn (insnlist.second)
+			? insnlist.second
+			: NULL;
+  if (dump_file)
+    {
+      fprintf (dump_file, "split_treg_set_expr insnlist:\n");
+      print_rtl (dump_file, insnlist.first);
+      fprintf (dump_file, "\n");
+
+      if (nott_insn != NULL)
+	fprintf (dump_file, "trailing nott insn %d\n", INSN_UID (nott_insn));
+    }
+
+  if (nott_insn != NULL && append_nott)
+    {
+      if (dump_file)
+	fprintf (dump_file, "removing trailing nott\n");
+      remove_insn (nott_insn);
+      nott_insn = NULL;
+      append_nott = false;
+    }
+
+  emit_insn (insnlist.first);
+
+  if (append_nott)
+    nott_insn = emit_insn (gen_nott (get_t_reg_rtx ()));
+
+  rtx_insn* first_insn = get_insns ();
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "resulting insns:\n");
+      print_rtl (dump_file, first_insn);
+      fprintf (dump_file, "\n");
+    }
+
+  return sh_treg_insns (first_insn, nott_insn);
 }
 
 /*------------------------------------------------------------------------------

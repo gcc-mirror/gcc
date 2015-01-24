@@ -7,8 +7,12 @@
 /* { dg-final { scan-assembler-times "addc" 4 } } */
 /* { dg-final { scan-assembler-times "subc" 3 } } */
 /* { dg-final { scan-assembler-times "sett" 5 } } */
-/* { dg-final { scan-assembler-times "negc" 1 } } */
-/* { dg-final { scan-assembler-not "movt" } } */
+
+/* { dg-final { scan-assembler-times "negc" 2 { target { ! sh2a } } } }  */
+/* { dg-final { scan-assembler-not "movt" { target { ! sh2a } } } }  */
+
+/* { dg-final { scan-assembler-times "bld" 1 { target { sh2a } } } }  */
+/* { dg-final { scan-assembler-times "movt" 1 { target { sh2a } } } }  */
 
 int
 test_00 (int a, int b, int c, int d)
@@ -64,7 +68,8 @@ test_07 (int *vec)
 {
   /* Must not see a 'sett' or 'addc' here.
      This is a case where combine tries to produce
-     'a + (0 - b) + 1' out of 'a - b + 1'.  */
+     'a + (0 - b) + 1' out of 'a - b + 1'.
+     On non-SH2A there is a 'tst + negc', on SH2A a 'bld + movt'.  */
   int z = vec[0];
   int vi = vec[1];
   int zi = vec[2];

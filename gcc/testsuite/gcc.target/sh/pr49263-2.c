@@ -3,13 +3,12 @@
 /* { dg-do compile }  */
 /* { dg-options "-O2" }  */
 /* { dg-final { scan-assembler-not "and" } }  */
-/* { dg-final { scan-assembler-not "exts" { xfail *-*-* } } }  */
-
+/* { dg-final { scan-assembler-not "exts" } }  */
 /* { dg-final { scan-assembler-times "tst\t#127,r0" 2 } }  */
-/* { dg-final { scan-assembler-times "tst\t#255,r0" 1 { xfail *-*-* } } }  */
-/* { dg-final { scan-assembler-times "65407" 1 { xfail *-*-* } } }  */
-/* { dg-final { scan-assembler-times "-129" 2 { xfail *-*-* } } }  */
-/* { dg-final { scan-assembler-times "extu" 1 { xfail *-*-* } } }  */
+/* { dg-final { scan-assembler-times "tst\t#255,r0" 1 } }  */
+/* { dg-final { scan-assembler-times "65407" 1 } }  */
+/* { dg-final { scan-assembler-times "-129" 2 } }  */
+/* { dg-final { scan-assembler-times "extu" 1 } }  */
 
 int
 test_00 (unsigned char x)

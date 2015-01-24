@@ -1,3 +1,34 @@
+2015-01-24  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/49263
+	PR target/53987
+	PR target/64345
+	PR target/59533
+	PR target/52933
+	PR target/54236
+	PR target/51244
+	* gcc.target/sh/pr64345-1.c: New.
+	* gcc.target/sh/pr64345-2.c: New.
+	* gcc.target/sh/pr59533-1.c: New.
+	* gcc.target/sh/pr49263.c: Adjust matching of expected insns.
+	* gcc.target/sh/pr52933-2.c: Likewise.
+	* gcc.target/sh/pr54089-1.c: Likewise.
+	* gcc.target/sh/pr54236-1.c: Likewise.
+	* gcc.target/sh/pr51244-20-sh2a.c: Likewise.
+	* gcc.target/sh/pr49263-1.c: Remove xfails.
+	* gcc.target/sh/pr49263-2.c: Likewise.
+	* gcc.target/sh/pr49263-3.c: Likewise.
+	* gcc.target/sh/pr53987-1.c: Likewise.
+	* gcc.target/sh/pr52933-1.c: Adjust matching of expected insns.
+	(test_24, test_25, test_26, test_27, test_28, test_29, test_30): New.
+	* gcc.target/sh/pr51244-12.c: Adjust matching of expected insns.
+	(test05, test06, test07, test08, test09, test10, test11, test12): New.
+	* gcc.target/sh/pr54236-3.c: Adjust matching of expected insns.
+	(test_002, test_003, test_004, test_005, test_006, test_007, test_008,
+	test_009): New.
+	* gcc.target/sh/pr51244-4.c: Adjust matching of expected insns.
+	(test_02): New.
+
 2015-01-24  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.target/i386/funcspec-5.c: Replace avx512 with avx512f.

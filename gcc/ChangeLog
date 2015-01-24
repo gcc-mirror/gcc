@@ -1,3 +1,96 @@
+2015-01-24  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/49263
+	PR target/53987
+	PR target/64345
+	PR target/59533
+	PR target/52933
+	PR target/54236
+	PR target/51244
+	* config/sh/sh-protos.h
+	(sh_extending_set_of_reg::can_use_as_unextended_reg,
+	sh_extending_set_of_reg::use_as_unextended_reg,
+	sh_is_nott_insn, sh_movt_set_dest, sh_movrt_set_dest, sh_is_movt_insn,
+	sh_is_movrt_insn, sh_insn_operands_modified_between_p,
+	sh_reg_dead_or_unused_after_insn, sh_in_recog_treg_set_expr,
+	sh_recog_treg_set_expr, sh_split_treg_set_expr): New functions.
+	(sh_treg_insns): New class.
+	* config/sh/sh.c (TARGET_LEGITIMATE_COMBINED_INSN): Define target hook.
+	(scope_counter): New class.
+	(sh_legitimate_combined_insn, sh_is_nott_insn, sh_movt_set_dest,
+	sh_movrt_set_dest, sh_reg_dead_or_unused_after_insn,
+	sh_extending_set_of_reg::can_use_as_unextended_reg,
+	sh_extending_set_of_reg::use_as_unextended_reg, sh_recog_treg_set_expr,
+	sh_in_recog_treg_set_expr, sh_try_split_insn_simple,
+	sh_split_treg_set_expr): New functions.
+	(addsubcosts): Handle treg_set_expr.
+	(sh_rtx_costs): Handle IF_THEN_ELSE and ZERO_EXTRACT.
+	(sh_rtx_costs): Use arith_reg_operand in SIGN_EXTEND and ZERO_EXTEND.
+	(sh_rtx_costs): Handle additional bit test patterns in EQ and AND cases.
+	(sh_insn_operands_modified_between_p): Make non-static.
+	* config/sh/predicates.md (zero_extend_movu_operand): Allow
+	simple_mem_operand in addition to displacement_mem_operand.
+	(zero_extend_operand): Don't allow zero_extend_movu_operand.
+	(treg_set_expr, treg_set_expr_not_const01,
+	arith_reg_or_treg_set_expr): New predicates.
+	* config/sh/sh.md (tstsi_t): Use arith_reg_operand and
+	arith_or_int_operand instead of logical_operand.  Convert to
+	insn_and_split.  Try to optimize constant operand in splitter.
+	(tsthi_t, tstqi_t): Fold into *tst<mode>_t.  Convert to insn_and_split.
+	(*tstqi_t_zero): Delete.
+	(*tst<mode>_t_subregs): Add !sh_in_recog_treg_set_expr split condition.
+	(tstsi_t_and_not): Delete.
+	(tst<mode>_t_zero_extract_eq): Rename to *tst<mode>_t_zero_extract.
+	Convert to insn_and_split.
+	(unnamed split, tstsi_t_zero_extract_xor,
+	tstsi_t_zero_extract_subreg_xor_little,
+	tstsi_t_zero_extract_subreg_xor_big): Delete.
+	(*tstsi_t_shift_mask): New insn_and_split.
+	(cmpeqsi_t, cmpgesi_t): Add new split for const_int 0 operands and try
+	to recombine with surrounding insns when splitting.
+	(*negtstsi): Add !sh_in_recog_treg_set_expr condition.
+	(cmp_div0s_0, cmp_div0s_1, *cmp_div0s_0, *cmp_div0s_1): Rewrite as ...
+	(cmp_div0s, *cmp_div0s_1, *cmp_div0s_2, *cmp_div0s_3, *cmp_div0s_4,
+	*cmp_div0s_5, *cmp_div0s_6): ... these new insn_and_split patterns.
+	(*cbranch_div0s: Delete.
+	(*addc): Convert to insn_and_split.  Use treg_set_expr as 3rd operand.
+	Try to recombine with surrounding insns when splitting.  Add operand
+	order variants.
+	(*addc_t_r, *addc_r_t): Use treg_set_expr_not_const01.
+	(*addc_r_r_1, *addc_r_lsb, *addc_r_r_lsb, *addc_r_lsb_r, *addc_r_msb,
+	*addc_r_r_msb, *addc_2r_msb): Delete.
+	(*addc_2r_lsb): Rename to *addc_2r_t.  Use treg_set_expr.  Add operand
+	order variant.
+	(*addc_negreg_t): New insn_and_split.
+	(*subc): Convert to insn_and_split.  Use treg_set_expr as 3rd operand.
+	Try to recombine with surrounding insns when splitting.
+	Add operand order variants.  
+	(*subc_negt_reg, *subc_negreg_t, *reg_lsb_t, *reg_msb_t): New
+	insn_and_split patterns.
+	(*rotcr): Use arith_reg_or_treg_set_expr.  Try to recombine with
+	surrounding insns when splitting.
+	(unnamed rotcr split): Use arith_reg_or_treg_set_expr.
+	(*rotcl): Likewise.  Add zero_extract variant.
+	(*ashrsi2_31): New insn_and_split.
+	(*negc): Convert to insn_and_split.  Use treg_set_expr.
+	(*zero_extend<mode>si2_disp_mem): Update comment.
+	(movrt_negc, *movrt_negc, nott): Add !sh_in_recog_treg_set_expr split
+	condition.
+	(*mov_t_msb_neg, mov_neg_si_t): Use treg_set_expr.  Try to recombine
+	with surrounding insns when splitting.
+	(any_treg_expr_to_reg): New insn_and_split.
+	(*neg_zero_extract_0, *neg_zero_extract_1, *neg_zero_extract_2,
+	*neg_zero_extract_3, *neg_zero_extract_4, *neg_zero_extract_5,
+	*neg_zero_extract_6, *zero_extract_0, *zero_extract_1,
+	*zero_extract_2): New single bit zero extract patterns.
+	(bld_reg, *bld_regqi): Fold into bld<mode>_reg.
+	(*get_thread_pointersi, store_gbr, *mov<mode>_gbr_load,
+	*mov<mode>_gbr_load, *mov<mode>_gbr_load, *mov<mode>_gbr_load,
+	*movdi_gbr_load): Use arith_reg_dest instead of register_operand for
+	set destination.
+	(set_thread_pointersi, load_gbr): Use arith_reg_operand instead of
+	register_operand for set source.
+
 2015-01-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* i386.opt (prefetch_sse): New targetsave.
