@@ -5544,7 +5544,7 @@ duplicate_main:
   /* If we see a duplicate main program, shut down.  If the second
      instance is an implied main program, i.e. data decls or executable
      statements, we're in for lots of errors.  */
-  gfc_error ("Two main PROGRAMs at %L and %C", &prog_locus);
+  gfc_error_1 ("Two main PROGRAMs at %L and %C", &prog_locus);
   reject_statement ();
   gfc_done_2 ();
   return true;
