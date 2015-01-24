@@ -6,7 +6,7 @@
 /* { dg-final { scan-assembler-not "exts.b" } }  */
 /* { dg-final { scan-assembler-not "exts.w" } }  */
 /* { dg-final { scan-assembler-not "movu" } }  */
-/* { dg-final { scan-assembler-not "tst\t#255" { xfail *-*-*} } }  */
+/* { dg-final { scan-assembler-not "tst\t#255" } }  */
 
 int
 test_00 (unsigned char* x, char* xx, int y, int z)
