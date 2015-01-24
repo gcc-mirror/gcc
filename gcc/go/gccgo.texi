@@ -142,6 +142,10 @@ the import data directly from the compiled package.  When this package
 is later linked, the compiled form of the package must be included in
 the link command.
 
+Go programs must generally be compiled with debugging information, and
+@option{-g1} is the default as described below.  Stripping a Go
+program will generally cause it to misbehave or fail.
+
 @c man end
 
 @c man begin OPTIONS gccgo
@@ -287,6 +291,11 @@ This is different from the behaviour of other Go compilers.
 
 When using @command{gccgo} there is limited interoperability with C,
 or with C++ code compiled using @code{extern "C"}.
+
+This information is provided largely for documentation purposes.  For
+ordinary use it is best to build programs with the go tool and then
+use @code{import "C"}, as described at
+@url{http://golang.org/cmd/cgo}.
 
 @menu
 * C Type Interoperability::     How C and Go types match up.
