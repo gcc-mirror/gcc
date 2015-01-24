@@ -16363,10 +16363,6 @@ if test "x$TSAN_SUPPORTED" = "xyes"; then
 
 fi
 
-case "${target}" in
- x86_64-*-linux-*) TSAN_TARGET_DEPENDENT_OBJECTS='tsan_rtl_amd64.lo' ;;
- *) TSAN_TARGET_DEPENDENT_OBJECTS='' ;;
-esac
 
 
 cat >confcache <<\_ACEOF
