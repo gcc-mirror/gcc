@@ -1,3 +1,7 @@
+2015-01-24  Tobias Burnus  <burnus@net-b.de>
+
+	* parse.c (gfc_parse_file): Fix two-location gfc_error call.
+
 2015-01-23  Martin Liska  <mliska@suse.cz>
 
 	* decl.c (attr_decl1): Workaround -Wmaybe-uninitialized
