@@ -829,7 +829,7 @@ filename_from_unit (int n)
     }
 
   /* Get the filename.  */
-  if (u != NULL)
+  if (u != NULL && u->filename != NULL)
     return strdup (u->filename);
   else
     return (char *) NULL;
