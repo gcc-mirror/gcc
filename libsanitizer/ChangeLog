@@ -1,5 +1,11 @@
 2015-01-25  Venkataramanan Kumar  <venkataramanan.kumar@linaro.org>
 
+	* configure.ac (TSAN_TARGET_DEPENDENT_OBJECTS): Undefine. 
+	* configure: Regenerate.
+	* configure.tgt (TSAN_TARGET_DEPENDENT_OBJECTS): Define.  
+
+2015-01-25  Venkataramanan Kumar  <venkataramanan.kumar@linaro.org>
+
 	* configure.ac (TSAN_TARGET_DEPENDENT_OBJECTS): Define.
 	* configure: Regenerate.
 	* tsan/Makefile.am (EXTRA_libtsan_la_SOURCES): Define.
