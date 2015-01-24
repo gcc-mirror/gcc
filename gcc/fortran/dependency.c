@@ -1604,11 +1604,40 @@ gfc_check_element_vs_element (gfc_ref *lref, gfc_ref *rref, int n)
   return GFC_DEP_EQUAL;
 }
 
+/* Callback function for checking if an expression depends on a
+   dummy variable which is any other than INTENT(IN).  */
+
+static int
+callback_dummy_intent_not_in (gfc_expr **ep,
+			      int *walk_subtrees ATTRIBUTE_UNUSED,
+			      void *data ATTRIBUTE_UNUSED)
+{
+  gfc_expr *e = *ep;
+
+  if (e->expr_type == EXPR_VARIABLE && e->symtree
+      && e->symtree->n.sym->attr.dummy)
+    return e->symtree->n.sym->attr.intent != INTENT_IN;
+  else
+    return 0;
+}
+
+/* Auxiliary function to check if subexpressions have dummy variables which
+   are not intent(in).
+*/
+
+static bool
+dummy_intent_not_in (gfc_expr **ep)
+{
+  return gfc_expr_walker (ep, callback_dummy_intent_not_in, NULL);
+}
 
 /* Determine if an array ref, usually an array section specifies the
    entire array.  In addition, if the second, pointer argument is
    provided, the function will return true if the reference is
-   contiguous; eg. (:, 1) gives true but (1,:) gives false.  */
+   contiguous; eg. (:, 1) gives true but (1,:) gives false. 
+   If one of the bounds depends on a dummy variable which is
+   not INTENT(IN), also return false, because the user may
+   have changed the variable.  */
 
 bool
 gfc_full_array_ref_p (gfc_ref *ref, bool *contiguous)
@@ -1672,14 +1701,16 @@ gfc_full_array_ref_p (gfc_ref *ref, bool *contiguous)
 	  && (!ref->u.ar.as
 	      || !ref->u.ar.as->lower[i]
 	      || gfc_dep_compare_expr (ref->u.ar.start[i],
-				       ref->u.ar.as->lower[i])))
+				       ref->u.ar.as->lower[i])
+	      || dummy_intent_not_in (&ref->u.ar.start[i])))
 	lbound_OK = false;
       /* Check the upper bound.  */
       if (ref->u.ar.end[i]
 	  && (!ref->u.ar.as
 	      || !ref->u.ar.as->upper[i]
 	      || gfc_dep_compare_expr (ref->u.ar.end[i],
-				       ref->u.ar.as->upper[i])))
+				       ref->u.ar.as->upper[i])
+	      || dummy_intent_not_in (&ref->u.ar.end[i])))
 	ubound_OK = false;
       /* Check the stride.  */
       if (ref->u.ar.stride[i]
