@@ -1,5 +1,14 @@
 2015-01-23  Ian Lance Taylor  <iant@google.com>
 
+	PR go/63565
+	* gccgo.texi (Invoking gccgo): Mention that Go programs should not
+	be stripped.
+
+	* gccgo.texi (C Interoperability): Mention that people should use
+	cgo.
+
+2015-01-23  Ian Lance Taylor  <iant@google.com>
+
 	PR go/64595
 	* go-lang.c (go_langhook_init_options_struct): Set default
 	debug_info_level.
