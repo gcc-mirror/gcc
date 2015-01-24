@@ -1,3 +1,8 @@
+2015-01-24  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Move AM_ENABLE_MULTILIB before AC_PROG_CC.
+	* configure: Regenerate.
+
 2015-01-23  Braden Obrzut  <admin@maniacsvault.net>
 
 	* MAINTAINERS (Write After Approval): Add myself.
