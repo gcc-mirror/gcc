@@ -1,3 +1,7 @@
+2015-01-24  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/i386/funcspec-5.c: Replace avx512 with avx512f.
+
 2015-01-23  Ian Lance Taylor  <iant@google.com>
 
 	PR go/64510
