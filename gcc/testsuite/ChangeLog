@@ -1,3 +1,8 @@
+2015-01-25  Allan Sandfeld Jensen  <sandfeld@kde.org>
+
+	* gcc.target/i386/funcspec-5.c: Test new multiversion targets.
+	* g++.dg/ext/mv17.C: Test BMI/BMI2 multiversion dispatcher.
+
 2015-01-25  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54236
