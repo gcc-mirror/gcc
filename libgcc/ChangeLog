@@ -1,3 +1,10 @@
+2015-01-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/cpuinfo.c (processor_subtypes): Add
+	INTEL_COREI7_BROADWELL.
+	(get_intel_cpu): Support new Silvermont, Haswell and Broadwell
+	model numbers.
+
 2015-01-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/elf-lib.h: New file.
