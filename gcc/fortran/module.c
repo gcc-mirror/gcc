@@ -92,7 +92,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Don't put any single quote (') in MOD_VERSION, if you want it to be
    recognized.  */
-#define MOD_VERSION "13"
+#define MOD_VERSION "14"
 
 
 /* Structure that describes a position within a module file.  */
@@ -4542,71 +4542,6 @@ load_equiv (void)
 }
 
 
-/* This function loads the sym_root of f2k_derived with the extensions to
-   the derived type.  */
-static void
-load_derived_extensions (void)
-{
-  int symbol, j;
-  gfc_symbol *derived;
-  gfc_symbol *dt;
-  gfc_symtree *st;
-  pointer_info *info;
-  char name[GFC_MAX_SYMBOL_LEN + 1];
-  char module[GFC_MAX_SYMBOL_LEN + 1];
-  const char *p;
-
-  mio_lparen ();
-  while (peek_atom () != ATOM_RPAREN)
-    {
-      mio_lparen ();
-      mio_integer (&symbol);
-      info = get_integer (symbol);
-      derived = info->u.rsym.sym;
-
-      /* This one is not being loaded.  */
-      if (!info || !derived)
-	{
-	  while (peek_atom () != ATOM_RPAREN)
-	    skip_list ();
-	  continue;
-	}
-
-      gcc_assert (derived->attr.flavor == FL_DERIVED);
-      if (derived->f2k_derived == NULL)
-	derived->f2k_derived = gfc_get_namespace (NULL, 0);
-
-      while (peek_atom () != ATOM_RPAREN)
-	{
-	  mio_lparen ();
-	  mio_internal_string (name);
-	  mio_internal_string (module);
-
-          /* Only use one use name to find the symbol.  */
-	  j = 1;
-	  p = find_use_name_n (name, &j, false);
-	  if (p)
-	    {
-	      st = gfc_find_symtree (gfc_current_ns->sym_root, p);
-	      dt = st->n.sym;
-	      st = gfc_find_symtree (derived->f2k_derived->sym_root, name);
-	      if (st == NULL)
-		{
-		  /* Only use the real name in f2k_derived to ensure a single
-		    symtree.  */
-		  st = gfc_new_symtree (&derived->f2k_derived->sym_root, name);
-		  st->n.sym = dt;
-		  st->n.sym->refs++;
-		}
-	    }
-	  mio_rparen ();
-	}
-      mio_rparen ();
-    }
-  mio_rparen ();
-}
-
-
 /* This function loads OpenMP user defined reductions.  */
 static void
 load_omp_udrs (void)
@@ -4907,7 +4842,7 @@ check_for_ambiguous (gfc_symbol *st_sym, pointer_info *info)
 static void
 read_module (void)
 {
-  module_locus operator_interfaces, user_operators, extensions, omp_udrs;
+  module_locus operator_interfaces, user_operators, omp_udrs;
   const char *p;
   char name[GFC_MAX_SYMBOL_LEN + 1];
   int i;
@@ -4926,11 +4861,8 @@ read_module (void)
   skip_list ();
   skip_list ();
 
-  /* Skip commons, equivalences and derived type extensions for now.  */
+  /* Skip commons and equivalences for now.  */
   skip_list ();
-  skip_list ();
-
-  get_module_locus (&extensions);
   skip_list ();
 
   /* Skip OpenMP UDRs.  */
@@ -5238,11 +5170,6 @@ read_module (void)
 		 module_name);
     }
 
-  /* Now we should be in a position to fill f2k_derived with derived type
-     extensions, since everything has been loaded.  */
-  set_module_locus (&extensions);
-  load_derived_extensions ();
-
   /* Clean up symbol nodes that were never loaded, create references
      to hidden symbols.  */
 
@@ -5457,49 +5384,6 @@ write_equiv (void)
       num++;
       mio_rparen ();
     }
-}
-
-
-/* Write derived type extensions to the module.  */
-
-static void
-write_dt_extensions (gfc_symtree *st)
-{
-  if (!gfc_check_symbol_access (st->n.sym))
-    return;
-  if (!(st->n.sym->ns && st->n.sym->ns->proc_name
-	&& st->n.sym->ns->proc_name->attr.flavor == FL_MODULE))
-    return;
-
-  mio_lparen ();
-  mio_pool_string (&st->name);
-  if (st->n.sym->module != NULL)
-    mio_pool_string (&st->n.sym->module);
-  else
-    {
-      char name[GFC_MAX_SYMBOL_LEN + 1];
-      if (iomode == IO_OUTPUT)
-	strcpy (name, module_name);
-      mio_internal_string (name);
-      if (iomode == IO_INPUT)
-	module_name = gfc_get_string (name);
-    }
-  mio_rparen ();
-}
-
-static void
-write_derived_extensions (gfc_symtree *st)
-{
-  if (!((st->n.sym->attr.flavor == FL_DERIVED)
-	  && (st->n.sym->f2k_derived != NULL)
-	  && (st->n.sym->f2k_derived->sym_root != NULL)))
-    return;
-
-  mio_lparen ();
-  mio_symbol_ref (&(st->n.sym));
-  gfc_traverse_symtree (st->n.sym->f2k_derived->sym_root,
-			write_dt_extensions);
-  mio_rparen ();
 }
 
 
@@ -5895,13 +5779,6 @@ write_module (void)
 
   mio_lparen ();
   write_equiv ();
-  mio_rparen ();
-  write_char ('\n');
-  write_char ('\n');
-
-  mio_lparen ();
-  gfc_traverse_symtree (gfc_current_ns->sym_root,
-			write_derived_extensions);
   mio_rparen ();
   write_char ('\n');
   write_char ('\n');

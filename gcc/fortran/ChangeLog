@@ -1,3 +1,14 @@
+2015-01-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/62044
+	* decl.c (gfc_match_derived_decl): Don't insert a new symtree element.
+	* module.c (MOD_VERSION): Bump.
+	(write_module): Don't write list of extensions.
+	(read_module): Don't jump over list of extensions;
+	don't load list of extensions.
+	(load_derived_extensions, write_dt_extensions,
+	 write_derived_extensions): Remove.
+
 2015-01-24  Tobias Burnus  <burnus@net-b.de>
 
 	* parse.c (gfc_parse_file): Fix two-location gfc_error call.
@@ -160,7 +171,6 @@
 	* decl.c (match_pointer_init): Error out if resolution of init expr
 	failed.
 
->>>>>>> .r219925
 2015-01-15  Tobias Burnus  <burnus@net-b.de>
 
 	* openmp.c (check_symbol_not_pointer, resolve_oacc_data_clauses,

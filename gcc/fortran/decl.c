@@ -7790,7 +7790,6 @@ gfc_match_derived_decl (void)
   if (extended && !sym->components)
     {
       gfc_component *p;
-      gfc_symtree *st;
 
       /* Add the extended derived type as the first component.  */
       gfc_add_component (sym, parent, &p);
@@ -7815,8 +7814,6 @@ gfc_match_derived_decl (void)
       /* Provide the links between the extended type and its extension.  */
       if (!extended->f2k_derived)
 	extended->f2k_derived = gfc_get_namespace (NULL, 0);
-      st = gfc_new_symtree (&extended->f2k_derived->sym_root, sym->name);
-      st->n.sym = sym;
     }
 
   if (!sym->hash_value)
