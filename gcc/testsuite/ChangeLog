@@ -1,3 +1,9 @@
+2015-01-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/builtin_target.c (check_intel_cpu_model): Add
+	Silvermont, Ivy Bridge, Haswell and Broadwell tests.  Update Sandy
+	Bridge test.
+
 2015-01-24  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/64770
