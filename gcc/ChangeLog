@@ -1,3 +1,9 @@
+2015-01-25  Allan Sandfeld Jensen  <sandfeld@kde.org>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (get_builtin_code_for_version): Add
+	support for BMI and BMI2 multiversion functions.
+
 2015-01-25  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* emit-rtl.h (store_bit_field): Move prototype to expmed.h.

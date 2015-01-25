@@ -1,3 +1,9 @@
+2015-01-25  Allan Sandfeld Jensen  <sandfeld@kde.org>
+
+	* config/i386/cpuinfo.c (enum processor_features): Add FEATURE_BMI and
+	FEATURE_BMI2.
+	(get_available_features): Detect FEATURE_BMI and FEATURE_BMI2.
+
 2015-01-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/cpuinfo.c (processor_subtypes): Add

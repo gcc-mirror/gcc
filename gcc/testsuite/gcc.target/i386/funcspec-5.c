@@ -25,6 +25,8 @@ extern void test_tbm (void)			__attribute__((__target__("tbm")));
 extern void test_avx (void)			__attribute__((__target__("avx")));
 extern void test_avx2 (void)			__attribute__((__target__("avx2")));
 extern void test_avx512f (void)			__attribute__((__target__("avx512f")));
+extern void test_bmi (void)			__attribute__((__target__("bmi")));
+extern void test_bmi2 (void)			__attribute__((__target__("bmi2")));
 
 extern void test_no_abm (void)			__attribute__((__target__("no-abm")));
 extern void test_no_aes (void)			__attribute__((__target__("no-aes")));
@@ -48,6 +50,8 @@ extern void test_no_tbm (void)			__attribute__((__target__("no-tbm")));
 extern void test_no_avx (void)			__attribute__((__target__("no-avx")));
 extern void test_no_avx2 (void)   		__attribute__((__target__("no-avx2")));
 extern void test_no_avx512f (void)   		__attribute__((__target__("no-avx512f")));
+extern void test_no_bmi (void)			__attribute__((__target__("no-bmi")));
+extern void test_no_bmi2 (void)			__attribute__((__target__("no-bmi2")));
 
 extern void test_arch_i386 (void)		__attribute__((__target__("arch=i386")));
 extern void test_arch_i486 (void)		__attribute__((__target__("arch=i486")));

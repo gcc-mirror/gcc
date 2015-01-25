@@ -34289,15 +34289,18 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
     P_PROC_SSE4_A,
     P_SSE4_1,
     P_SSE4_2,
-    P_PROC_SSE4_2,
     P_POPCNT,
+    P_PROC_SSE4_2,
     P_AVX,
     P_PROC_AVX,
+    P_BMI,
+    P_PROC_BMI,
     P_FMA4,
     P_XOP,
     P_PROC_XOP,
     P_FMA,    
     P_PROC_FMA,
+    P_BMI2,
     P_AVX2,
     P_PROC_AVX2,
     P_AVX512F,
@@ -34323,12 +34326,14 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
       {"sse4a", P_SSE4_A},
       {"ssse3", P_SSSE3},
       {"sse4.1", P_SSE4_1},
-      {"sse4.2", P_SSE4_2},
       {"popcnt", P_POPCNT},
+      {"sse4.2", P_SSE4_2},
       {"avx", P_AVX},
+      {"bmi", P_BMI},
       {"fma4", P_FMA4},
       {"xop", P_XOP},
       {"fma", P_FMA},
+      {"bmi2", P_BMI2},
       {"avx2", P_AVX2},
       {"avx512f", P_AVX512F}
     };
@@ -34423,7 +34428,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      break;
 	    case PROCESSOR_BTVER2:
 	      arg_str = "btver2";
-	      priority = P_PROC_AVX;
+	      priority = P_PROC_BMI;
 	      break;
 	    case PROCESSOR_BDVER1:
 	      arg_str = "bdver1";
@@ -35310,6 +35315,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
     F_XOP,
     F_FMA,
     F_AVX512F,
+    F_BMI,
+    F_BMI2,
     F_MAX
   };
 
@@ -35403,7 +35410,9 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"xop",    F_XOP},
       {"fma",    F_FMA},
       {"avx2",   F_AVX2},
-      {"avx512f",F_AVX512F}
+      {"avx512f",F_AVX512F},
+      {"bmi",    F_BMI},
+      {"bmi2",   F_BMI2}
     };
 
   tree __processor_model_type = build_processor_model_struct ();
