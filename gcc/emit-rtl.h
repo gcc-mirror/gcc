@@ -189,17 +189,4 @@ extern int get_mem_align_offset (rtx, unsigned int);
    MODE and adjusted by OFFSET.  */
 extern rtx widen_memory_access (rtx, machine_mode, HOST_WIDE_INT);
 
-extern void store_bit_field (rtx, unsigned HOST_WIDE_INT,
-			     unsigned HOST_WIDE_INT,
-			     unsigned HOST_WIDE_INT,
-			     unsigned HOST_WIDE_INT,
-			     machine_mode, rtx);
-extern rtx extract_bit_field (rtx, unsigned HOST_WIDE_INT,
-			      unsigned HOST_WIDE_INT, int, rtx,
-			      machine_mode, machine_mode);
-extern rtx extract_low_bits (machine_mode, machine_mode, rtx);
-extern rtx expand_mult (machine_mode, rtx, rtx, rtx, int);
-extern rtx expand_mult_highpart_adjust (machine_mode, rtx, rtx, rtx, rtx, int);
-
-
 #endif /* GCC_EMIT_RTL_H */
