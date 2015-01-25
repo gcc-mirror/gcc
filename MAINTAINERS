@@ -338,7 +338,7 @@ Peter Bergner					<bergner@vnet.ibm.com>
 Jan Beulich					<jbeulich@novell.com>
 David Billinghurst				<David.Billinghurst@riotinto.com>
 Tomas Bily					<tbily@suse.cz>
-Laurynas Biveinis                               <laurynas.biveinis@gmail.com>
+Laurynas Biveinis				<laurynas.biveinis@gmail.com>
 Eric Blake					<ericb@gcc.gnu.org>
 Phil Blundell					<pb@futuretv.com>
 Hans Boehm					<hboehm@gcc.gnu.org>
@@ -431,7 +431,7 @@ Andy Hutchinson					<hutchinsonandy@aim.com>
 Naveen H.S					<Naveen.Hurugalawadi@caviumnetworks.com>
 Meador Inge					<meadori@codesourcery.com>
 Bernardo Innocenti				<bernie@develer.com>
-Balaji V. Iyer                                  <bviyer@gmail.com>
+Balaji V. Iyer					<bviyer@gmail.com>
 Daniel Jacobowitz				<drow@false.org>
 Andreas Jaeger					<aj@suse.de>
 Harsha Jagasia					<harsha.jagasia@amd.com>
@@ -617,7 +617,7 @@ Jon Ziegler					<jonz@apple.com>
 Roman Zippel					<zippel@linux-m68k.org>
 Josef Zlomek					<josef.zlomek@email.cz>
 
-Bug database only accounts
+			Bug database only accounts
 
 James Dennett					<jdennett@acm.org>
 Christian Ehrhardt				<ehrhardt@mathematik.uni-ulm.de>
