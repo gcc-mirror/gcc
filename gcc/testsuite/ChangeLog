@@ -1,3 +1,8 @@
+2015-01-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54236
+	* gcc.target/sh/pr54236-4.c: New.
+
 2015-01-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/builtin_target.c (check_intel_cpu_model): Add
