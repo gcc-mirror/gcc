@@ -4,6 +4,7 @@
 with Ada.Unchecked_Conversion;
 
 procedure Unchecked_Convert1 is
+
   type Byte is mod 2**8;
 
   type Stream is array (Natural range <>) of Byte;
@@ -24,9 +25,10 @@ procedure Unchecked_Convert1 is
     return Do_Sum (To_Chunk (S(S'First ..  S'First + Rec'Size / 8 - 1)));
   end;
 
-  A : Stream (1..9);
+  A : Stream (1..9) := (others => 0);
   I : Integer;
 
 begin
+  A (9) := 1;
   I := Sum (A(1..8));
 end;
