@@ -1,3 +1,8 @@
+2015-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/set/operations/2.cc: Add test for
+	non-transparent comparison function.
+
 2015-01-25  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/29366
