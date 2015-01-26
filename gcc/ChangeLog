@@ -1,3 +1,9 @@
+2015-01-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/64806
+	* config/i386/i386 (feature_priority): Revert the last P_POPCNT
+	order change.
+
 2015-01-26  Uros Bizjak  <ubizjak@gmail.com>
 
         PR target/64795
