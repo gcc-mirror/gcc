@@ -6995,9 +6995,12 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
     {
       /* Default initialization via MOLD (non-polymorphic).  */
       gfc_expr *rhs = gfc_default_initializer (&code->expr3->ts);
-      gfc_resolve_expr (rhs);
-      gfc_free_expr (code->expr3);
-      code->expr3 = rhs;
+      if (rhs != NULL)
+	{
+	  gfc_resolve_expr (rhs);
+	  gfc_free_expr (code->expr3);
+	  code->expr3 = rhs;
+	}
     }
 
   if (e->ts.type == BT_CLASS && !unlimited && !UNLIMITED_POLY (code->expr3))
