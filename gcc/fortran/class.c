@@ -828,7 +828,8 @@ comp_is_finalizable (gfc_component *comp)
 
 static void
 finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
-		    gfc_symbol *stat, gfc_symbol *fini_coarray, gfc_code **code)
+		    gfc_symbol *stat, gfc_symbol *fini_coarray, gfc_code **code,
+		    gfc_namespace *sub_ns)
 {
   gfc_expr *e;
   gfc_ref *ref;
@@ -897,15 +898,32 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
       dealloc->ext.alloc.list->expr = e;
       dealloc->expr1 = gfc_lval_expr_from_sym (stat);
 
+      gfc_code *cond = gfc_get_code (EXEC_IF);
+      cond->block = gfc_get_code (EXEC_IF);
+      cond->block->expr1 = gfc_get_expr ();
+      cond->block->expr1->expr_type = EXPR_FUNCTION;
+      gfc_get_sym_tree ("associated", sub_ns, &cond->block->expr1->symtree, false);
+      cond->block->expr1->symtree->n.sym->attr.flavor = FL_PROCEDURE;
+      cond->block->expr1->symtree->n.sym->attr.intrinsic = 1;
+      cond->block->expr1->symtree->n.sym->result = cond->block->expr1->symtree->n.sym;
+      gfc_commit_symbol (cond->block->expr1->symtree->n.sym);
+      cond->block->expr1->ts.type = BT_LOGICAL;
+      cond->block->expr1->ts.kind = gfc_default_logical_kind;
+      cond->block->expr1->value.function.isym = gfc_intrinsic_function_by_id (GFC_ISYM_ASSOCIATED);
+      cond->block->expr1->value.function.actual = gfc_get_actual_arglist ();
+      cond->block->expr1->value.function.actual->expr = gfc_copy_expr (expr);
+      cond->block->expr1->value.function.actual->next = gfc_get_actual_arglist ();
+      cond->block->next = dealloc;
+
       if (block)
-	block->next = dealloc;
+	block->next = cond;
       else if (*code)
 	{
-	  (*code)->next = dealloc;
+	  (*code)->next = cond;
 	  (*code) = (*code)->next;
 	}
       else
-	(*code) = dealloc;
+	(*code) = cond;
     }
   else if (comp->ts.type == BT_DERIVED
 	    && comp->ts.u.derived->f2k_derived
@@ -941,7 +959,8 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
       gfc_component *c;
 
       for (c = comp->ts.u.derived->components; c; c = c->next)
-	finalize_component (e, comp->ts.u.derived, c, stat, fini_coarray, code);
+	finalize_component (e, comp->ts.u.derived, c, stat, fini_coarray, code,
+			    sub_ns);
       gfc_free_expr (e);
     }
 }
@@ -1874,7 +1893,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
     {
       gfc_finalizer *fini, *fini_elem = NULL;
 
-      gfc_get_symbol ("ptr", sub_ns, &ptr);
+      gfc_get_symbol ("ptr1", sub_ns, &ptr);
       ptr->ts.type = BT_DERIVED;
       ptr->ts.u.derived = derived;
       ptr->attr.flavor = FL_VARIABLE;
@@ -1998,7 +2017,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 
       if (!ptr)
 	{
-	  gfc_get_symbol ("ptr", sub_ns, &ptr);
+	  gfc_get_symbol ("ptr2", sub_ns, &ptr);
 	  ptr->ts.type = BT_DERIVED;
 	  ptr->ts.u.derived = derived;
 	  ptr->attr.flavor = FL_VARIABLE;
@@ -2047,7 +2066,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 	    continue;
 
 	  finalize_component (gfc_lval_expr_from_sym (ptr), derived, comp,
-			      stat, fini_coarray, &block);
+			      stat, fini_coarray, &block, sub_ns);
 	  if (!last_code->block->next)
 	    last_code->block->next = block;
 	}
