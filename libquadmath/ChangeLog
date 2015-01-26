@@ -1,3 +1,8 @@
+2015-01-26  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Move AM_ENABLE_MULTILIB before AC_PROG_CC.
+	* configure: Regenerate.
+
 2015-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* libquadmath.texi: Bump @copying's copyright year.
