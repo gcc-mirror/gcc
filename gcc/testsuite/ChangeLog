@@ -1,3 +1,8 @@
+2015-01-26  Tony Liu  <tony.liu@arm.com>
+
+	* gcc.target/arm/scd42-1.c: Improve the check for UAL and
+	non-UAL cases.
+
 2015-01-26  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/64770
