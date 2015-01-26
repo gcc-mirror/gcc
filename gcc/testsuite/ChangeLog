@@ -1,3 +1,8 @@
+2015-01-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR testsuite/64712
+	* gnat.dg/unchecked_convert1.adb (Unchecked_Convert1): Initialize A.
+
 2015-01-24  Thomas Koenig  <tkoenig@netcologne.de>
 
 	Backport from trunk
