@@ -25695,8 +25695,9 @@ arm_file_start (void)
 	  fpu_name = arm_fpu_desc->name;
 	  if (arm_fpu_desc->model == ARM_FP_MODEL_VFP)
 	    {
-	      if (TARGET_HARD_FLOAT)
-		arm_emit_eabi_attribute ("Tag_ABI_HardFP_use", 27, 3);
+	      if (TARGET_HARD_FLOAT && TARGET_VFP_SINGLE)
+		arm_emit_eabi_attribute ("Tag_ABI_HardFP_use", 27, 1);
+
 	      if (TARGET_HARD_FLOAT_ABI)
 		arm_emit_eabi_attribute ("Tag_ABI_VFP_args", 28, 1);
 	    }
