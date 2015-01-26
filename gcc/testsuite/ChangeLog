@@ -1,5 +1,12 @@
 2015-01-26  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vpXXX.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vpadd.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vpmax.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vpmin.c: New file.
+
+2015-01-26  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vmlX_n.inc: New file.
 	* gcc.target/aarch64/advsimd-intrinsics/vmla_n.c: New file.
 	* gcc.target/aarch64/advsimd-intrinsics/vmls_n.c: New file.
