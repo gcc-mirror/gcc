@@ -1,5 +1,9 @@
 2015-01-26  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vpadal.c: New file.
+
+2015-01-26  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vmvn.c: New file.
 
 2015-01-26  Christophe Lyon  <christophe.lyon@linaro.org>
