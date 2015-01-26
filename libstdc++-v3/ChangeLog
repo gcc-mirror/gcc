@@ -1,5 +1,15 @@
 2015-01-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/64368
+	* config/locale/gnu/numeric_members.cc (numpunct<char>::~numpunct(),
+	numpunct<wchar_t>::~numpunct()): Do not set _M_data->_M_grouping.
+	* src/c++11/cxx11-shim_facets.cc (numpunct_shim): Remove _M_grouping
+	and use cache's _M_grouping field.
+	(__numpunct_fill_cache): Likewise.
+	(__moneypunct_fill_cache): Improve comments.
+
+2015-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
 	* testsuite/23_containers/set/operations/2.cc: Add test for
 	non-transparent comparison function.
 

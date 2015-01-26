@@ -170,8 +170,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename C>
     void
-    __numpunct_fill_cache(other_abi, const facet*, __numpunct_cache<C>*,
-			  const char*&, size_t&);
+    __numpunct_fill_cache(other_abi, const facet*, __numpunct_cache<C>*);
 
   template<typename C>
     int
@@ -235,24 +234,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	numpunct_shim(const facet* f, __cache_type* c = new __cache_type)
 	: std::numpunct<_CharT>(c), __shim(f), _M_cache(c)
 	{
-	  __numpunct_fill_cache(other_abi{}, f, c, _M_grouping,
-				_M_grouping_size);
+	  __numpunct_fill_cache(other_abi{}, f, c);
 	}
 
-	~numpunct_shim() { delete[] _M_grouping; }
+	~numpunct_shim()
+	{
+	  // Stop GNU locale's ~numpunct() from freeing the cached string.
+	  _M_cache->_M_grouping_size = 0;
+	}
 
-	virtual string
-	do_grouping() const
-	{ return string(_M_grouping, _M_grouping_size); }
-
-	// No need to override other virtual functions, the base definitions
+	// No need to override any virtual functions, the base definitions
 	// will return the cached data.
 
 	__cache_type* _M_cache;
-	// numpunct uses __numpunct_cache<C>::_M_grouping for its own purposes
-	// so we can't store that in the cache
-	const char* _M_grouping;
-	size_t _M_grouping_size;
       };
 
     template<typename _CharT>
@@ -348,7 +342,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	~moneypunct_shim()
 	{
-	  // stop GNU locale's ~moneypunct() from freeing these strings
+	  // Stop GNU locale's ~moneypunct() from freeing the cached strings.
 	  _M_cache->_M_grouping_size = 0;
 	  _M_cache->_M_curr_symbol_size = 0;
 	  _M_cache->_M_positive_sign_size = 0;
@@ -497,37 +491,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Now define and instantiate the functions that will be called by the
   // shim facets defined when this file is recompiled for the other ABI.
 
+  // Cache the values returned by the numpunct facet f.
+  // Sets c->_M_allocated so that the __numpunct_cache destructor will
+  // delete[] the strings allocated by this function.
   template<typename C>
     void
-    __numpunct_fill_cache(current_abi, const facet* f, __numpunct_cache<C>* c,
-			  const char*& grouping, size_t& grouping_size)
+    __numpunct_fill_cache(current_abi, const facet* f, __numpunct_cache<C>* c)
     {
       auto* m = static_cast<const numpunct<C>*>(f);
 
       c->_M_decimal_point = m->decimal_point();
       c->_M_thousands_sep = m->thousands_sep();
 
+      c->_M_grouping = nullptr;
       c->_M_truename = nullptr;
       c->_M_falsename = nullptr;
       // set _M_allocated so that if any allocation fails the previously
-      // allocated strings will be deleted in ~__numpunct_c()
+      // allocated strings will be deleted in ~__numpunct_cache()
       c->_M_allocated = true;
 
+      c->_M_grouping_size = __copy(c->_M_grouping, m->grouping());
       c->_M_truename_size = __copy(c->_M_truename, m->truename());
       c->_M_falsename_size = __copy(c->_M_falsename, m->falsename());
-      // Set grouping last as it is only deleted by ~numpunct_shim() which
-      // won't run if this function throws an exception.
-      grouping_size = __copy(grouping, m->grouping());
     }
 
   template void
-  __numpunct_fill_cache(current_abi, const facet*, __numpunct_cache<char>*,
-			const char*&, size_t&);
+  __numpunct_fill_cache(current_abi, const facet*, __numpunct_cache<char>*);
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   template void
-  __numpunct_fill_cache(current_abi, const facet*, __numpunct_cache<wchar_t>*,
-			const char*&, size_t&);
+  __numpunct_fill_cache(current_abi, const facet*, __numpunct_cache<wchar_t>*);
 #endif
 
   template<typename C>
@@ -567,6 +560,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      const wchar_t*, const wchar_t*);
 #endif
 
+  // Cache the values returned by the moneypunct facet, f.
+  // Sets c->_M_allocated so that the __moneypunct_cache destructor will
+  // delete[] the strings allocated by this function.
   template<typename C, bool Intl>
     void
     __moneypunct_fill_cache(current_abi, const facet* f,
@@ -582,8 +578,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       c->_M_curr_symbol = nullptr;
       c->_M_positive_sign = nullptr;
       c->_M_negative_sign = nullptr;
-      // set _M_allocated so that if any allocation fails the previously
-      // allocated strings will be deleted in ~__moneypunct_c()
+      // Set _M_allocated so that if any allocation fails the previously
+      // allocated strings will be deleted in ~__moneypunct_cache().
       c->_M_allocated = true;
 
       c->_M_grouping_size = __copy(c->_M_grouping, m->grouping());
