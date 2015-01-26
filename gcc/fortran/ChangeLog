@@ -1,3 +1,7 @@
+2015-01-26  Tobias Burnus  <burnus@net-b.de>
+
+	* io.c (gfc_match_inquire): Replace "-1" by a defined constant.
+
 2015-01-26  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/64230
