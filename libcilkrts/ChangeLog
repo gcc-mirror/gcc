@@ -1,3 +1,8 @@
+2015-01-26  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Move AM_ENABLE_MULTILIB before AC_PROG_CC.
+	* configure: Regenerate.
+
 2014-11-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/63784
