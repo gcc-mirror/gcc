@@ -4566,7 +4566,8 @@ proc check_effective_target_vect64 { } {
         set et_vect64_saved 0
         if { ([istarget arm*-*-*]
 	      && [check_effective_target_arm_neon_ok]
-	      && [check_effective_target_arm_little_endian]) } {
+	      && [check_effective_target_arm_little_endian])
+             || [istarget sparc*-*-*] } {
            set et_vect64_saved 1
         }
     }
