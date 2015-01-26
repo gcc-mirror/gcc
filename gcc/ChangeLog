@@ -1,3 +1,11 @@
+2015-01-26  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/49263
+	* config/sh/sh.c (sh_split_treg_set_expr): Invoke emit_insn before
+	remove_insn.
+	* config/sh/sh.md (tstsi_t): Don't try to optimize constant with right
+	shifts if it already fits into K08.
+
 2015-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/64730

@@ -14466,6 +14466,8 @@ sh_split_treg_set_expr (rtx x, rtx_insn* curr_insn)
 	fprintf (dump_file, "trailing nott insn %d\n", INSN_UID (nott_insn));
     }
 
+  emit_insn (insnlist.first);
+
   if (nott_insn != NULL && append_nott)
     {
       if (dump_file)
@@ -14474,8 +14476,6 @@ sh_split_treg_set_expr (rtx x, rtx_insn* curr_insn)
       nott_insn = NULL;
       append_nott = false;
     }
-
-  emit_insn (insnlist.first);
 
   if (append_nott)
     nott_insn = emit_insn (gen_nott (get_t_reg_rtx ()));
