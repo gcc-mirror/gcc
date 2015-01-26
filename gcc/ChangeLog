@@ -1,3 +1,8 @@
+2015-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000-cpus.def (POWERPC_MASKS): Add
+	OPTION_MASK_QUAD_MEMORY_ATOMIC.
+
 2015-01-26  Renlin Li  <renlin.li@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately): Correct
