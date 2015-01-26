@@ -409,6 +409,7 @@ new_var_info (tree t, const char *name)
   ret->may_have_pointers = true;
   ret->only_restrict_pointers = false;
   ret->is_restrict_var = false;
+  ret->ruid = 0;
   ret->is_global_var = (t == NULL_TREE);
   ret->is_fn_info = false;
   if (t && DECL_P (t))
