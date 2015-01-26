@@ -818,8 +818,8 @@ tls_symbolic_operand_type (rtx addr)
 
    Local Exec:
    mrs  tp, tpidr_el0
-   add  t0, tp, #:tprel_hi12:imm
-   add  t0, #:tprel_lo12_nc:imm
+   add  t0, tp, #:tprel_hi12:imm, lsl #12
+   add  t0, t0, #:tprel_lo12_nc:imm
 */
 
 static void

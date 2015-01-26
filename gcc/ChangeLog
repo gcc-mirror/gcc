@@ -1,3 +1,10 @@
+2015-01-26  Renlin Li  <renlin.li@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately): Correct
+	the comment.
+	* config/aarch64/aarch64.md (tlsle_small_<mode>): Add left shift 12-bit
+	for higher part.
+
 2015-01-26  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64764
