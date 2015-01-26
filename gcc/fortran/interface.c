@@ -63,6 +63,8 @@ along with GCC; see the file COPYING3.  If not see
    formal argument list points to symbols within the same namespace as
    the program unit name.  */
 
+#include <algorithm>  /* For std::max.  */
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1205,8 +1207,15 @@ check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 	  return false;
 	}
 
+      if (s1->as->corank != s2->as->corank)
+	{
+	  snprintf (errmsg, err_len, "Corank mismatch in argument '%s' (%i/%i)",
+		    s1->name, s1->as->corank, s2->as->corank);
+	  return false;
+	}
+
       if (s1->as->type == AS_EXPLICIT)
-	for (i = 0; i < s1->as->rank + s1->as->corank; i++)
+	for (i = 0; i < s1->as->rank + std::max(0, s1->as->corank-1); i++)
 	  {
 	    shape1 = gfc_subtract (gfc_copy_expr (s1->as->upper[i]),
 				  gfc_copy_expr (s1->as->lower[i]));
@@ -1220,8 +1229,12 @@ check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 	      case -1:
 	      case  1:
 	      case -3:
-		snprintf (errmsg, err_len, "Shape mismatch in dimension %i of "
-			  "argument '%s'", i + 1, s1->name);
+		if (i < s1->as->rank)
+		  snprintf (errmsg, err_len, "Shape mismatch in dimension %i of"
+			    " argument '%s'", i + 1, s1->name);
+		else
+		  snprintf (errmsg, err_len, "Shape mismatch in codimension %i "
+			    "of argument '%s'", i - s1->as->rank + 1, s1->name);
 		return false;
 
 	      case -2:
