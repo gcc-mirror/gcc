@@ -256,6 +256,8 @@ void free_growth_caches (void);
 void compute_inline_parameters (struct cgraph_node *, bool);
 bool speculation_useful_p (struct cgraph_edge *e, bool anticipate_inlining);
 unsigned int early_inliner (function *fun);
+bool inline_account_function_p (struct cgraph_node *node);
+
 
 /* In ipa-inline-transform.c  */
 bool inline_call (struct cgraph_edge *, bool, vec<cgraph_edge *> *, int *, bool,

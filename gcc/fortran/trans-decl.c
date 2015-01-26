@@ -558,17 +558,18 @@ static void
 gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 {
   tree new_type;
-  /* TREE_ADDRESSABLE means the address of this variable is actually needed.
-     This is the equivalent of the TARGET variables.
-     We also need to set this if the variable is passed by reference in a
-     CALL statement.  */
 
   /* Set DECL_VALUE_EXPR for Cray Pointees.  */
   if (sym->attr.cray_pointee)
     gfc_finish_cray_pointee (decl, sym);
 
+  /* TREE_ADDRESSABLE means the address of this variable is actually needed.
+     This is the equivalent of the TARGET variables.
+     We also need to set this if the variable is passed by reference in a
+     CALL statement.  */
   if (sym->attr.target)
     TREE_ADDRESSABLE (decl) = 1;
+
   /* If it wasn't used we wouldn't be getting it.  */
   TREE_USED (decl) = 1;
 

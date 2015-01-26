@@ -144,6 +144,7 @@ static bool m32c_get_pragma_address (const char *varname, unsigned *addr);
 #define DEBUG1 1
 
 #if DEBUG0
+#include "print-tree.h"
 /* This is needed by some of the commented-out debug statements
    below.  */
 static char const *class_names[LIM_REG_CLASSES] = REG_CLASS_NAMES;
@@ -290,7 +291,6 @@ encode_pattern_1 (rtx x)
       fprintf (stderr, "can't encode pattern %s\n",
 	       GET_RTX_NAME (GET_CODE (x)));
       debug_rtx (x);
-      gcc_unreachable ();
 #endif
       break;
     }
@@ -682,8 +682,6 @@ m32c_regno_ok_for_base_p (int regno)
   return 0;
 }
 
-#define DEBUG_RELOAD 0
-
 /* Implements TARGET_PREFERRED_RELOAD_CLASS.  In general, prefer general
    registers of the appropriate size.  */
 
@@ -695,7 +693,7 @@ m32c_preferred_reload_class (rtx x, reg_class_t rclass)
 {
   reg_class_t newclass = rclass;
 
-#if DEBUG_RELOAD
+#if DEBUG0
   fprintf (stderr, "\npreferred_reload_class for %s is ",
 	   class_names[rclass]);
 #endif
@@ -726,7 +724,7 @@ m32c_preferred_reload_class (rtx x, reg_class_t rclass)
   if (GET_MODE (x) == QImode)
     rclass = reduce_class (rclass, HL_REGS, rclass);
 
-#if DEBUG_RELOAD
+#if DEBUG0
   fprintf (stderr, "%s\n", class_names[rclass]);
   debug_rtx (x);
 
@@ -755,7 +753,7 @@ m32c_preferred_output_reload_class (rtx x, reg_class_t rclass)
 int
 m32c_limit_reload_class (machine_mode mode, int rclass)
 {
-#if DEBUG_RELOAD
+#if DEBUG0
   fprintf (stderr, "limit_reload_class for %s: %s ->",
 	   mode_name[mode], class_names[rclass]);
 #endif
@@ -770,7 +768,7 @@ m32c_limit_reload_class (machine_mode mode, int rclass)
   if (rclass != A_REGS)
     rclass = reduce_class (rclass, DI_REGS, rclass);
 
-#if DEBUG_RELOAD
+#if DEBUG0
   fprintf (stderr, " %s\n", class_names[rclass]);
 #endif
   return rclass;
@@ -1368,7 +1366,7 @@ m32c_function_arg (cumulative_args_t ca_v,
 #if DEBUG0
   fprintf (stderr, "func_arg %d (%s, %d)\n",
 	   ca->parm_num, mode_name[mode], named);
-  debug_tree (type);
+  debug_tree ((tree)type);
 #endif
 
   if (mode == VOIDmode)
@@ -1950,6 +1948,14 @@ m32c_legitimize_reload_address (rtx * x,
 	type = RELOAD_FOR_OTHER_ADDRESS;
       push_reload (XEXP (*x, 0), NULL_RTX, &XEXP (*x, 0), NULL,
 		   A_REGS, Pmode, VOIDmode, 0, 0, opnum,
+		   (enum reload_type) type);
+      return 1;
+    }
+
+  if (TARGET_A24 && GET_MODE (*x) == PSImode)
+    {
+      push_reload (*x, NULL_RTX, x, NULL,
+		   A_REGS, PSImode, VOIDmode, 0, 0, opnum,
 		   (enum reload_type) type);
       return 1;
     }

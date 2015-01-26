@@ -3440,6 +3440,22 @@ subreg_get_info (unsigned int xregno, machine_mode xmode,
 	  info->offset = offset / regsize_xmode;
 	  return;
 	}
+      /* Quick exit for the simple and common case of extracting whole
+	 subregisters from a multiregister value.  */
+      /* ??? It would be better to integrate this into the code below,
+	 if we can generalize the concept enough and figure out how
+	 odd-sized modes can coexist with the other weird cases we support.  */
+      if (!rknown
+	  && WORDS_BIG_ENDIAN == REG_WORDS_BIG_ENDIAN
+	  && regsize_xmode == regsize_ymode
+	  && (offset % regsize_ymode) == 0)
+	{
+	  info->representable_p = true;
+	  info->nregs = nregs_ymode;
+	  info->offset = offset / regsize_ymode;
+	  gcc_assert (info->offset + info->nregs <= nregs_xmode);
+	  return;
+	}
     }
 
   /* Lowpart subregs are otherwise valid.  */

@@ -56,6 +56,8 @@ extern const char *trim_filename (const char *);
 #endif
 extern void internal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
      ATTRIBUTE_NORETURN;
+extern void internal_error_no_backtrace (const char *, ...)
+     ATTRIBUTE_GCC_DIAG(1,2) ATTRIBUTE_NORETURN;
 /* Pass one of the OPT_W* from options.h as the first parameter.  */
 extern bool warning (int, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern bool warning_n (location_t, int, int, const char *, const char *, ...)

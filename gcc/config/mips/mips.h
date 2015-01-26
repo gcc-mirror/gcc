@@ -1243,6 +1243,22 @@ struct mips_cpu_info {
 %{gcoff*:-mdebug} %{!gcoff*:-no-mdebug}"
 #endif
 
+/* FP_ASM_SPEC represents the floating-point options that must be passed
+   to the assembler when FPXX support exists.  Prior to that point the
+   assembler could accept the options but were not required for
+   correctness.  We only add the options when absolutely necessary
+   because passing -msoft-float to the assembler will cause it to reject
+   all hard-float instructions which may require some user code to be
+   updated.  */
+
+#ifdef HAVE_AS_DOT_MODULE
+#define FP_ASM_SPEC "\
+%{mhard-float} %{msoft-float} \
+%{msingle-float} %{mdouble-float}"
+#else
+#define FP_ASM_SPEC
+#endif
+
 /* SUBTARGET_ASM_SPEC is always passed to the assembler.  It may be
    overridden by subtargets.  */
 
@@ -1277,9 +1293,8 @@ struct mips_cpu_info {
 %{modd-spreg} %{mno-odd-spreg} \
 %{mshared} %{mno-shared} \
 %{msym32} %{mno-sym32} \
-%{mtune=*} \
-%{mhard-float} %{msoft-float} \
-%{msingle-float} %{mdouble-float} \
+%{mtune=*}" \
+FP_ASM_SPEC "\
 %(subtarget_asm_spec)"
 
 /* Extra switches sometimes passed to the linker.  */

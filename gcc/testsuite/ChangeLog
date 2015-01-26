@@ -1,3 +1,481 @@
+2015-01-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR testsuite/64712
+	* gnat.dg/unchecked_convert1.adb (Unchecked_Convert1): Initialize A.
+
+2015-01-26  Tony Liu  <tony.liu@arm.com>
+
+	* gcc.target/arm/scd42-1.c: Improve the check for UAL and
+	non-UAL cases.
+
+2015-01-26  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/64770
+	* gfortran.dg/open_new_segv.f90: Add dg- stuff to make test work
+	correctly, clean up afterwards.
+
+2015-01-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/62044
+	* gfortran.dg/use_rename_7.f90: New.
+
+2015-01-25  Allan Sandfeld Jensen  <sandfeld@kde.org>
+
+	* gcc.target/i386/funcspec-5.c: Test new multiversion targets.
+	* g++.dg/ext/mv17.C: Test BMI/BMI2 multiversion dispatcher.
+
+2015-01-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54236
+	* gcc.target/sh/pr54236-4.c: New.
+
+2015-01-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/builtin_target.c (check_intel_cpu_model): Add
+	Silvermont, Ivy Bridge, Haswell and Broadwell tests.  Update Sandy
+	Bridge test.
+
+2015-01-24  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/64770
+	* gfortran.dg/open_new_segv.f90: New test.
+
+2015-01-24  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/49263
+	PR target/53987
+	PR target/64345
+	PR target/59533
+	PR target/52933
+	PR target/54236
+	PR target/51244
+	* gcc.target/sh/pr64345-1.c: New.
+	* gcc.target/sh/pr64345-2.c: New.
+	* gcc.target/sh/pr59533-1.c: New.
+	* gcc.target/sh/pr49263.c: Adjust matching of expected insns.
+	* gcc.target/sh/pr52933-2.c: Likewise.
+	* gcc.target/sh/pr54089-1.c: Likewise.
+	* gcc.target/sh/pr54236-1.c: Likewise.
+	* gcc.target/sh/pr51244-20-sh2a.c: Likewise.
+	* gcc.target/sh/pr49263-1.c: Remove xfails.
+	* gcc.target/sh/pr49263-2.c: Likewise.
+	* gcc.target/sh/pr49263-3.c: Likewise.
+	* gcc.target/sh/pr53987-1.c: Likewise.
+	* gcc.target/sh/pr52933-1.c: Adjust matching of expected insns.
+	(test_24, test_25, test_26, test_27, test_28, test_29, test_30): New.
+	* gcc.target/sh/pr51244-12.c: Adjust matching of expected insns.
+	(test05, test06, test07, test08, test09, test10, test11, test12): New.
+	* gcc.target/sh/pr54236-3.c: Adjust matching of expected insns.
+	(test_002, test_003, test_004, test_005, test_006, test_007, test_008,
+	test_009): New.
+	* gcc.target/sh/pr51244-4.c: Adjust matching of expected insns.
+	(test_02): New.
+
+2015-01-24  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/i386/funcspec-5.c: Replace avx512 with avx512f.
+
+2015-01-23  Ian Lance Taylor  <iant@google.com>
+
+	PR go/64510
+	* go.test/go-test.exp (go-gc-tests): Skip nilptr2.go test on
+	targets without split stack support.
+
+2015-01-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/64317
+	* gcc.target/i386/pr64317.c: New test.
+
+2015-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/63637
+	PR rtl-optimization/60663
+	* gcc.dg/pr63637-1.c: New test.
+	* gcc.dg/pr63637-2.c: New test.
+	* gcc.dg/pr63637-3.c: New test.
+	* gcc.dg/pr63637-4.c: New test.
+	* gcc.dg/pr63637-5.c: New test.
+	* gcc.dg/pr63637-6.c: New test.
+	* gcc.target/i386/pr63637-1.c: New test.
+	* gcc.target/i386/pr63637-2.c: New test.
+	* gcc.target/i386/pr63637-3.c: New test.
+	* gcc.target/i386/pr63637-4.c: New test.
+	* gcc.target/i386/pr63637-5.c: New test.
+	* gcc.target/i386/pr63637-6.c: New test.
+
+2015-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/63439
+	* gcc.dg/vect/bb-slp-11.c: Require vect_pack_trunc.
+	* gcc.dg/vect/bb-slp-26.c: Require vect_hw_misalign.
+
+2015-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR preprocessor/60570
+	* gcc.dg/cpp/pr36320.c: Turn dg-error into dg-bogus.
+	* gcc.dg/cpp/pr60570.c: New test.
+
+2015-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/63439
+	* gcc.dg/vect/vect-33.c: Adjust target selectors for v16qi
+	vectorization on vect64 targets.
+
+2015-01-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60922
+	* gfortran.dg/class_allocate_17.f90: New.
+
+2015-01-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/64726
+	* gfortran.dg/goacc/combined_loop.f90: New.
+
+2015-01-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/61933
+	* gfortran.dg/make_unit.f90: New test.
+
+2015-01-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/61933
+	* gfortran.dg/negative_unit_int8.f: Update.
+
+2015-01-22  Jeff Law  <law@redhat.com>
+
+	PR target/52076
+	* gcc.target/m68k/pr52076-1.c: New test.
+	* gcc.target/m68k/pr52076-2.c: New test.
+
+2015-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64728
+	* gcc.dg/torture/pr64728.c: New testcase.
+
+2015-22-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/64688
+	* g++.dg/pr64688.C: New test.
+
+2015-01-22  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.target/i386/chkp-always_inline.c (f1): Make static
+	to avoid errors with -fpic.
+
+2015-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR libstdc++/64535
+	* g++.old-deja/g++.eh/badalloc1.C: Adjust.
+
+2015-01-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/64682
+	* gcc.c-torture/execute/pr64682.c: New file.
+
+2015-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/64511
+	* gcc.dg/pr64511.c: New test.
+
+	PR rtl-optimization/62078
+	* g++.dg/opt/pr62078.C: New test.
+
+	PR c/63307
+	* c-c++-common/cilk-plus/CK/pr63307.c: New test.
+
+2015-01-21  Thomas Koenig  <tkoenig@netcologne.de>
+
+	PR fortran/57023
+	* gfortran.dg/internal_pack_15.f90:  New test.
+
+2015-01-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc/testsuite/c-c++-common/tsan/step.c: New testcase.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmull_n.c: New file.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmull_lane.c: New file.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmull.c: New file.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmulh_n.c: New file.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmulh_lane.c: New file.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmulh.c: New file.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vmull_n.c: New file.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vmull_lane.c: New file.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vmull.c: New file.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vmul_n.c: New file.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vmul_lane.c: New file.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vmovn.c: New file.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vXXXw.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vsubw.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vaddw.c: Use code from
+	vXXXw.inc.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vXXXl.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vsubl.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vaddl.c: Use code from
+	vXXXl.inc.
+
+2015-01-21  Renlin Li  <renlin.li@arm.com>
+
+	* g++.dg/tls/thread_local5.C: Skip when dejagnu wrapper is used.
+	* g++.dg/tls/thread_local5g.C: Likewise.
+	* g++.dg/tls/thread_local6g.C: Likewise.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vsXi_n.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vsli_n.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vsri_n.c: New file.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlXl_n.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlal_n.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlsl_n.c: New file.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlXl_lane.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlal_lane.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlsl_lane.c: New file.
+
+2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlXl.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlal.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vqdmlsl.c: New file.
+
+2015-01-20  Jeff Law  <law@redhat.com>
+
+	PR target/59946
+	* gcc.target/m68k/pr59946.c: New test.
+
+2015-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vmlXl_n.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlal_n.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlsl_n.c: New file.
+
+2015-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vmlXl_lane.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlal_lane.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlsl_lane.c: New file.
+
+2015-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vmlXl.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlal.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vmlsl.c: New file.
+
+2015-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vshuffle.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vtrn.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vuzp.c: Use code from
+	vshuffle.inc.
+	* gcc.target/aarch64/advsimd-intrinsics/vzip.c: Use code from
+	vshuffle.inc.
+
+2015-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vmlX_lane.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vmla_lane.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vmls_lane.c: New file.
+
+2015-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vmlX.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vmla.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vmls.c: New file.
+
+2015-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vldX_dup.c: New file.
+
+2015-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/guality/pr49888.c (v): Add __attribute__((used)).
+
+	PR sanitizer/64632
+	* g++.dg/ubsan/pr64632.C: New test.
+
+	PR debug/64663
+	* gcc.dg/pr64663.c: New test.
+
+2015-01-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64383
+	* g++.dg/warn/Wunused-var-23.C: New.
+
+2015-01-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59937
+	* g++.dg/cpp0x/constexpr-59937-1.C: New.
+	* g++.dg/cpp0x/constexpr-59937-2.C: Likewise.
+
+2015-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/64684
+	* gcc.dg/lto/pr64684_0.c: New testcase.
+	* gcc.dg/lto/pr64684_1.c: Likewise.
+	* gcc.dg/lto/pr64684_2.c: Likewise.
+	* gcc.dg/lto/pr64685_0.c: Likewise.
+	* gcc.dg/lto/pr64685_1.c: Likewise.
+
+2015-01-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/62241
+	* g++.dg/cpp1y/lambda-init12.C: New.
+
+2015-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64410
+	* g++.dg/vect/pr64410.cc: Require vect_double.
+
+2015-01-20  Matthew Wahab  <matthew.wahab@arm.com>
+
+	PR target/64149
+	* gcc.target/arm/thumb1-far-farjump-3.c: Remove.
+
+2015-01-20  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR bootstrap/64676
+	Revert:
+	2014-01-19  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR rtl-optimization/64081
+	* gcc.dg/pr64081.c: New test.
+
+2015-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/harness.h: Include <unistd.h>.
+	(CHECK_NO_ERRORS): New.
+	(verify_code): Wrap prototype in #ifndef TEST_COMPILING_TO_FILE.
+	(test_jit): Support new macro TEST_COMPILING_TO_FILE for exercising
+	gcc_jit_context_compile_to_file.
+	* jit.dg/jit.exp (fixed_host_execute): Fix the code for passing on
+	args to the spawned executable.
+	(jit-expand-vars): New function.
+	(jit-exe-params): New variable.
+	(dg-jit-set-exe-params): New function.
+	(jit-dg-test): Detect testcases that use
+	jit-verify-compile-to-file and call jit-setup-compile-to-file.
+	Set arguments of spawned process to jit-exe-params.
+	(jit-get-output-filename): New function.
+	(jit-setup-compile-to-file): New function.
+	(jit-verify-compile-to-file): New function.
+	(jit-run-executable): New function.
+	(jit-verify-executable): New function.
+	* jit.dg/test-compile-to-assembler.c: New testcase.
+	* jit.dg/test-compile-to-dynamic-library.c: New testcase.
+	* jit.dg/test-compile-to-executable.c: New testcase.
+	* jit.dg/test-compile-to-object.c: New testcase.
+
+2015-01-19  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/64652
+	* gcc.target/sh/torture/pr64652.c (test): Rename to test_0.
+	(test_1): New.
+
+2015-01-19  Martin Liska  <mliska@suse.cz>
+
+	* objc/compile/pr64668.m: New test.
+
+2015-01-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-arith-overflow.c: Include stdbool.h.
+	(create_overflow_fn): Update comment to clarify that
+	the third param of the created function is a bool *, not
+	an int *.
+	(verify_int_overflow_fn): Convert param "expected_ovf" from
+	int to bool.  Update third param of "overflow_fn_type" from int *
+	to bool *.  Update local "actual_ovf" from int to bool.
+	(verify_uint_overflow_fn): Likewise.
+
+2015-01-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/ipa/ipa-icf-33.c: New test.
+
+2015-01-19  Felix Yang  <felix.yang@huawei.com>
+	    Haijian Zhang  <z.zhanghaijian@huawei.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/compute-ref-data.h
+	(buffer_float64x2, buffer_pad_float64x2): New helper variables.
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h (hfloat64_t,
+	result_float64x2, expected_hfloat64x2): New helper type, variable and
+	declaration.
+	(buffer_float64x2, buffer_pad_float64x2): New helper variables.
+	* gcc.target/aarch64/advsimd-intrinsics/vfma.c: Don't run on target
+	without the FMA feature and exclude test for vfmaq_f64 on arm*-*-*.
+	* gcc.target/aarch64/advsimd-intrinsics/vfms.c: Don't run on target
+	without the FMA feature and exclude test for vfmsq_f64 on arm*-*-*.
+	* gcc.target/aarch64/advsimd-intrinsics/vfma_n.c: Don't run on arm*-*-*
+	and target without the FMA feature.
+
+2015-01-19  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/pr64304.c: New testcase.
+
+2015-01-19  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR rtl-optimization/64081
+	* gcc.dg/pr64081.c: New test.
+
+2015-01-19  Tejas Belagod  <tejas.belagod@arm.com>
+
+	PR target/63971
+	* gcc.target/aarch64/test_frame_1.c: Expect only two loads of x30 (in
+	the epilogue).
+	* gcc.target/aarch64/test_frame_6.c: Likewise.
+	* gcc.target/aarch64/test_frame_2.c: Expect only one pair load of x30
+	and x19 (in the epilogue).
+	* gcc.target/aarch64/test_frame_4.c: Likewise.
+	* gcc.target/aarch64/test_frame_7.c: Likewise.
+
+2015-01-19  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.target/i386/chkp-always_inline.c: New.
+
 2015-01-15  Andrew Pinski  <apinski@cavium.com>
 	    Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 

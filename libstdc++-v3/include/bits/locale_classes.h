@@ -150,6 +150,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     */
     locale(const locale& __base, const char* __s, category __cat);
 
+#if __cplusplus >= 201103L
+    /**
+     *  @brief  Named locale constructor.
+     *
+     *  Constructs a copy of the named C library locale.
+     *
+     *  @param  __s  Name of the locale to construct.
+     *  @throw  std::runtime_error if __s is an undefined locale.
+    */
+    explicit
+    locale(const std::string& __s) : locale(__s.c_str()) { }
+
+    /**
+     *  @brief  Construct locale with facets from another locale.
+     *
+     *  Constructs a copy of the locale @a base.  The facets specified by @a
+     *  cat are replaced with those from the locale named by @a s.  If base is
+     *  named, this locale instance will also be named.
+     *
+     *  @param  __base  The locale to copy.
+     *  @param  __s  Name of the locale to use facets from.
+     *  @param  __cat  Set of categories defining the facets to use from __s.
+     *  @throw  std::runtime_error if __s is an undefined locale.
+    */
+    locale(const locale& __base, const std::string& __s, category __cat)
+    : locale(__base, __s.c_str(), __cat) { }
+#endif
+
     /**
      *  @brief  Construct locale with facets from another locale.
      *
@@ -796,6 +824,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    this->_S_create_c_locale(this->_M_c_locale_collate, __s);
 	  }
       }
+
+#if __cplusplus >= 201103L
+      explicit
+      collate_byname(const string& __s, size_t __refs = 0)
+      : collate_byname(__s.c_str(), __refs) { }
+#endif
 
     protected:
       virtual

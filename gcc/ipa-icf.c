@@ -1652,40 +1652,31 @@ sem_item_optimizer::filter_removed_items (void)
     {
       sem_item *item = m_items[i];
 
-      if (item->type == FUNC
-	  && !opt_for_fn (item->decl, flag_ipa_icf_functions))
-	{
+      if (m_removed_items_set.contains (item->node))
+        {
 	  remove_item (item);
 	  continue;
-	}
-
-      if (!flag_ipa_icf_variables && item->type == VAR)
-	{
-	  remove_item (item);
-	  continue;
-	}
-
-      bool no_body_function = false;
+        }
 
       if (item->type == FUNC)
-	{
+        {
 	  cgraph_node *cnode = static_cast <sem_function *>(item)->get_node ();
 
-	  no_body_function = in_lto_p && (cnode->alias || cnode->body_removed);
-	}
-
-      if(!m_removed_items_set.contains (m_items[i]->node)
-	  && !no_body_function)
-	{
-	  if (item->type == VAR || (!DECL_CXX_CONSTRUCTOR_P (item->decl)
-				    && !DECL_CXX_DESTRUCTOR_P (item->decl)))
-	    {
-	      filtered.safe_push (m_items[i]);
-	      continue;
-	    }
-	}
-
-      remove_item (item);
+	  bool no_body_function = in_lto_p && (cnode->alias || cnode->body_removed);
+	  if (no_body_function || !opt_for_fn (item->decl, flag_ipa_icf_functions)
+	      || DECL_CXX_CONSTRUCTOR_P (item->decl)
+	      || DECL_CXX_DESTRUCTOR_P (item->decl))
+	    remove_item (item);
+	  else
+	    filtered.safe_push (item);
+        }
+      else /* VAR.  */
+        {
+	  if (!flag_ipa_icf_variables)
+	    remove_item (item);
+	  else
+	    filtered.safe_push (item);
+        }
     }
 
   /* Clean-up of released semantic items.  */
@@ -2371,6 +2362,16 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 			 source->name (), alias->name ());
 		fprintf (dump_file, "Assembler symbol names:%s->%s\n",
 			 source->asm_name (), alias->asm_name ());
+	      }
+
+	    if (lookup_attribute ("no_icf", DECL_ATTRIBUTES (alias->decl)))
+	      {
+	        if (dump_file)
+		  fprintf (dump_file,
+			   "Merge operation is skipped due to no_icf "
+			   "attribute.\n\n");
+
+		continue;
 	      }
 
 	    if (dump_file && (dump_flags & TDF_DETAILS))

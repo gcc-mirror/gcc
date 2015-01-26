@@ -236,21 +236,6 @@ ipa_reference_get_not_written_global (struct cgraph_node *fn)
 }
 
 
-
-/* Add VAR to all_module_statics and the two
-   reference_vars_to_consider* sets.  */
-
-static inline void
-add_static_var (tree var)
-{
-  int uid = DECL_UID (var);
-  gcc_assert (TREE_CODE (var) == VAR_DECL);
-  if (dump_file)
-    splay_tree_insert (reference_vars_to_consider,
-		       uid, (splay_tree_value)var);
-  bitmap_set_bit (all_module_statics, uid);
-}
-
 /* Return true if the variable T is the right kind of static variable to
    perform compilation unit scope escape analysis.  */
 
@@ -284,12 +269,6 @@ is_proper_for_analysis (tree t)
   /* TODO: Check aliases.  */
   if (bitmap_bit_p (ignore_module_statics, DECL_UID (t)))
     return false;
-
-  /* This is a variable we care about.  Check if we have seen it
-     before, and if not add it the set of variables we care about.  */
-  if (all_module_statics
-      && !bitmap_bit_p (all_module_statics, DECL_UID (t)))
-    add_static_var (t);
 
   return true;
 }
@@ -497,6 +476,15 @@ analyze_function (struct cgraph_node *fn)
       var = ref->referred->decl;
       if (!is_proper_for_analysis (var))
 	continue;
+      /* This is a variable we care about.  Check if we have seen it
+	 before, and if not add it the set of variables we care about.  */
+      if (all_module_statics
+	  && bitmap_set_bit (all_module_statics, DECL_UID (var)))
+	{
+	  if (dump_file)
+	    splay_tree_insert (reference_vars_to_consider,
+			       DECL_UID (var), (splay_tree_value)var);
+	}
       switch (ref->use)
 	{
 	case IPA_REF_LOAD:

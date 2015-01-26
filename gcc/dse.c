@@ -81,6 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "gimple-ssa.h"
 #include "rtl-iter.h"
+#include "cfgcleanup.h"
 
 /* This file contains three techniques for performing Dead Store
    Elimination (dse).
@@ -1574,6 +1575,10 @@ record_store (rtx body, bb_info_t bb_info)
 	    = rtx_group_vec[group_id];
 	  mem_addr = group->canon_base_addr;
 	}
+      /* get_addr can only handle VALUE but cannot handle expr like:
+	 VALUE + OFFSET, so call get_addr to get original addr for
+	 mem_addr before plus_constant.  */
+      mem_addr = get_addr (mem_addr);
       if (offset)
 	mem_addr = plus_constant (get_address_mode (mem), mem_addr, offset);
     }
@@ -2187,6 +2192,10 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
 	    = rtx_group_vec[group_id];
 	  mem_addr = group->canon_base_addr;
 	}
+      /* get_addr can only handle VALUE but cannot handle expr like:
+	 VALUE + OFFSET, so call get_addr to get original addr for
+	 mem_addr before plus_constant.  */
+      mem_addr = get_addr (mem_addr);
       if (offset)
 	mem_addr = plus_constant (get_address_mode (mem), mem_addr, offset);
     }
@@ -3746,6 +3755,14 @@ rest_of_handle_dse (void)
   if (dump_file)
     fprintf (dump_file, "dse: local deletions = %d, global deletions = %d, spill deletions = %d\n",
 	     locally_deleted, globally_deleted, spill_deleted);
+
+  /* DSE can eliminate potentially-trapping MEMs.
+     Remove any EH edges associated with them.  */
+  if ((locally_deleted || globally_deleted)
+      && cfun->can_throw_non_call_exceptions
+      && purge_all_dead_edges ())
+    cleanup_cfg (0);
+
   return 0;
 }
 

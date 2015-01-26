@@ -388,7 +388,7 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
   tree dtype = ubsan_get_type_descriptor_type ();
   tree type2 = type;
   const char *tname = NULL;
-  char *pretty_name;
+  pretty_printer pretty_name;
   unsigned char deref_depth = 0;
   unsigned short tkind, tinfo;
 
@@ -427,54 +427,58 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
     /* We weren't able to determine the type name.  */
     tname = "<unknown>";
 
-  /* Decorate the type name with '', '*', "struct", or "union".  */
-  pretty_name = (char *) alloca (strlen (tname) + 16 + deref_depth);
   if (pstyle == UBSAN_PRINT_POINTER)
     {
-      int pos = sprintf (pretty_name, "'%s%s%s%s%s%s%s",
-			 TYPE_VOLATILE (type2) ? "volatile " : "",
-			 TYPE_READONLY (type2) ? "const " : "",
-			 TYPE_RESTRICT (type2) ? "restrict " : "",
-			 TYPE_ATOMIC (type2) ? "_Atomic " : "",
-			 TREE_CODE (type2) == RECORD_TYPE
-			 ? "struct "
-			 : TREE_CODE (type2) == UNION_TYPE
-			   ? "union " : "", tname,
-			 deref_depth == 0 ? "" : " ");
+      pp_printf (&pretty_name, "'%s%s%s%s%s%s%s",
+		 TYPE_VOLATILE (type2) ? "volatile " : "",
+		 TYPE_READONLY (type2) ? "const " : "",
+		 TYPE_RESTRICT (type2) ? "restrict " : "",
+		 TYPE_ATOMIC (type2) ? "_Atomic " : "",
+		 TREE_CODE (type2) == RECORD_TYPE
+		 ? "struct "
+		 : TREE_CODE (type2) == UNION_TYPE
+		   ? "union " : "", tname,
+		 deref_depth == 0 ? "" : " ");
       while (deref_depth-- > 0)
-        pretty_name[pos++] = '*';
-      pretty_name[pos++] = '\'';
-      pretty_name[pos] = '\0';
+	pp_star (&pretty_name);
+      pp_quote (&pretty_name);
     }
   else if (pstyle == UBSAN_PRINT_ARRAY)
     {
       /* Pretty print the array dimensions.  */
       gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
       tree t = type;
-      int pos = sprintf (pretty_name, "'%s ", tname);
+      pp_printf (&pretty_name, "'%s ", tname);
       while (deref_depth-- > 0)
-        pretty_name[pos++] = '*';
+	pp_star (&pretty_name);
       while (TREE_CODE (t) == ARRAY_TYPE)
 	{
-	  pretty_name[pos++] = '[';
+	  pp_left_bracket (&pretty_name);
 	  tree dom = TYPE_DOMAIN (t);
 	  if (dom && TREE_CODE (TYPE_MAX_VALUE (dom)) == INTEGER_CST)
-	    pos += sprintf (&pretty_name[pos], HOST_WIDE_INT_PRINT_DEC,
+	    {
+	      if (tree_fits_uhwi_p (TYPE_MAX_VALUE (dom))
+		  && tree_to_uhwi (TYPE_MAX_VALUE (dom)) + 1 != 0)
+		pp_printf (&pretty_name, HOST_WIDE_INT_PRINT_DEC,
 			    tree_to_uhwi (TYPE_MAX_VALUE (dom)) + 1);
+	      else
+		pp_wide_int (&pretty_name,
+			     wi::add (wi::to_widest (TYPE_MAX_VALUE (dom)), 1),
+			     TYPE_SIGN (TREE_TYPE (dom)));
+	    }
 	  else
 	    /* ??? We can't determine the variable name; print VLA unspec.  */
-	    pretty_name[pos++] = '*';
-	  pretty_name[pos++] = ']';
+	    pp_star (&pretty_name);
+	  pp_right_bracket (&pretty_name);
 	  t = TREE_TYPE (t);
 	}
-      pretty_name[pos++] = '\'';
-      pretty_name[pos] = '\0';
+      pp_quote (&pretty_name);
 
-     /* Save the tree with stripped types.  */
-     type = t;
+      /* Save the tree with stripped types.  */
+      type = t;
     }
   else
-    sprintf (pretty_name, "'%s'", tname);
+    pp_printf (&pretty_name, "'%s'", tname);
 
   switch (TREE_CODE (type))
     {
@@ -511,8 +515,9 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
   DECL_IGNORED_P (decl) = 1;
   DECL_EXTERNAL (decl) = 0;
 
-  size_t len = strlen (pretty_name);
-  tree str = build_string (len + 1, pretty_name);
+  const char *tmp = pp_formatted_text (&pretty_name);
+  size_t len = strlen (tmp);
+  tree str = build_string (len + 1, tmp);
   TREE_TYPE (str) = build_array_type (char_type_node,
 				      build_index_type (size_int (len)));
   TREE_READONLY (str) = 1;

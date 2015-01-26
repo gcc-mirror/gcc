@@ -1,3 +1,86 @@
+2015-01-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/62044
+	* decl.c (gfc_match_derived_decl): Don't insert a new symtree element.
+	* module.c (MOD_VERSION): Bump.
+	(write_module): Don't write list of extensions.
+	(read_module): Don't jump over list of extensions;
+	don't load list of extensions.
+	(load_derived_extensions, write_dt_extensions,
+	 write_derived_extensions): Remove.
+
+2015-01-24  Tobias Burnus  <burnus@net-b.de>
+
+	* parse.c (gfc_parse_file): Fix two-location gfc_error call.
+
+2015-01-23  Martin Liska  <mliska@suse.cz>
+
+	* decl.c (attr_decl1): Workaround -Wmaybe-uninitialized
+	false positive during profiledbootstrap by initializing them.
+	* matchexp.c (match_mult_operand): Likewise.
+	* module.c (write_atom): Likewise.
+	(read_module): Likewise.
+
+2015-01-23  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/64672
+	* lang.opt (fopenacc): Mark as LTO option.
+
+2015-01-23  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/64707
+	* lang.opt (fopenmp): Mark as LTO option.
+
+2015-01-23  Andre Vehreschild  <vehre@gmx.de>
+
+	* trans-decl.c (gfc_finish_var_decl): Fixed moved comment.
+	* trans-stmt.c (gfc_trans_allocate): Fixed indentation.
+
+2015-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfc-diagnostic.def (DK_ICE_NOBT): New kind.
+
+2015-01-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60922
+	* class.c (finalize_component): Apply the check for 'fini_coarray' only
+	to coarray components.
+
+2015-01-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/64726
+	* trans-openmp.c (gfc_trans_oacc_combined_directive): Fix
+	loop generation.
+
+2015-01-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/61933
+	* libgfortran.h:
+	* trans-io.c (set_parameter_value): Delete use of has_iostat.
+	Redefine to not generate any runtime error check calls.
+	(set_parameter_value_chk): Rename of the former
+	set_parameter_value with the runtime error checks and fix
+	whitespace. (set_parameter_value_inquire): New function that
+	builds a runtime conditional block to set the INQUIRE
+	common parameter block unit number to -2 when unit numbers
+	exceed positive KIND=4 limits. (gfc_trans_open): Whitespace.
+	For unit, use the renamed set_parameter_value_chk.
+	(gfc_trans_close): Likewise use renamed function.
+	(build_filepos): Whitespace and use renamed function.
+	(gfc_trans_inquire): Whitespace and for unit use
+	set_parameter_value and set_parameter_value_inquire.
+	(gfc_trans_wait): Remove p->iostat from call to
+	set_parameter_value. Use new set_parameter_value_chk for unit.
+	(build_dt): Use the new set_parameter_value without p->iostat
+	and fix whitespace. Use set_parameter_value_chk for unit.
+
+2015-01-21  Thomas Koenig  <tkoenig@netcologne.de>
+
+	PR fortran/57023
+	* dependency.c (callback_dummy_intent_not_int):  New function.
+	(dummy_intent_not_in):  New function.
+	(gfc_full_array_ref_p):  Use dummy_intent_not_in.
+
 2015-01-18  Andre Vehreschild  <vehre@gmx.de>
 	    Janus Weil <janus@gcc.gnu.org>
 

@@ -25,3 +25,4 @@ Tutorial
    tutorial02.rst
    tutorial03.rst
    tutorial04.rst
+   tutorial05.rst

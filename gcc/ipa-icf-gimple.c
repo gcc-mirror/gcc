@@ -456,7 +456,7 @@ func_checker::compare_operand (tree t1, tree t2)
 	z2 = TREE_OPERAND (t2, 2);
 
 	ret = compare_ssa_name (x1, x2)
-	      && compare_ssa_name (y1, y2)
+	      && compare_operand (y1, y2)
 	      && compare_cst_or_decl (z1, z2);
 
 	return return_with_debug (ret);

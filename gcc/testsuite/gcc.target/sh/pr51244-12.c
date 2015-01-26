@@ -4,8 +4,9 @@
 /* { dg-do compile }  */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
-/* { dg-final { scan-assembler-times "negc" 10 } } */
-/* { dg-final { scan-assembler-not "movrt|#-1|add|sub" } } */
+/* { dg-final { scan-assembler-times "negc" 15 } } */
+/* { dg-final { scan-assembler-times "addc" 3 } } */
+/* { dg-final { scan-assembler-not "movrt|#-1|add\t|sub\t|movt" } } */
 
 int
 test00 (int a, int b, int* x)
@@ -65,4 +66,57 @@ int
 test04_inv (int a)
 {
   return ((a & 0x55) != 0) ? 0x80000000 : 0x7FFFFFFF;
+}
+
+int
+test05 (int a, int b)
+{
+  /* 1x addc  */
+  return a != b ? 0x7FFFFFFF : 0x80000000;
+}
+
+int
+test06 (char a)
+{
+  return ((a & 0x03) == 0) ? 0x7FFFFFFF : 0x80000000;
+}
+
+int
+test07 (char a)
+{
+  return ((a & 0x80) == 0) ? 0x7FFFFFFF : 0x80000000;
+}
+
+int
+test08 (char a)
+{
+  return ((a & 1) == 0) ? 0x7FFFFFFF : 0x80000000;
+}
+
+int
+test09 (int a)
+{
+  /* 1x cmp/pz, 1x addc  */
+  return a < 0 ? 0x7FFFFFFF : 0x80000000;
+}
+
+int
+test10 (int a)
+{
+  /* 1x cmp/pz, 1x negc  */
+  return a >= 0 ? 0x7FFFFFFF : 0x80000000;
+}
+
+int
+test11 (int a)
+{
+  /* 1x cmp/pl, 1x negc  */
+  return a > 0 ? 0x7FFFFFFF : 0x80000000;
+}
+
+int
+test12 (int a)
+{
+  /* 1x cmp/pl, 1x addc  */
+  return a <= 0 ? 0x7FFFFFFF : 0x80000000;
 }

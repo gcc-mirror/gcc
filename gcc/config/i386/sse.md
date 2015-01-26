@@ -5434,7 +5434,7 @@
 {
   rtx tmp0, tmp1;
 
-  if (TARGET_AVX && !TARGET_PREFER_AVX128)
+  if (TARGET_AVX && !TARGET_PREFER_AVX128 && optimize_insn_for_speed_p ())
     {
       tmp0 = gen_reg_rtx (V4DFmode);
       tmp1 = force_reg (V2DFmode, operands[1]);
@@ -5496,7 +5496,7 @@
 {
   rtx tmp0, tmp1, tmp2;
 
-  if (TARGET_AVX && !TARGET_PREFER_AVX128)
+  if (TARGET_AVX && !TARGET_PREFER_AVX128 && optimize_insn_for_speed_p ())
     {
       tmp0 = gen_reg_rtx (V4DFmode);
       tmp1 = force_reg (V2DFmode, operands[1]);
@@ -5593,7 +5593,7 @@
 {
   rtx tmp0, tmp1, tmp2;
 
-  if (TARGET_AVX && !TARGET_PREFER_AVX128)
+  if (TARGET_AVX && !TARGET_PREFER_AVX128 && optimize_insn_for_speed_p ())
     {
       tmp0 = gen_reg_rtx (V4DFmode);
       tmp1 = force_reg (V2DFmode, operands[1]);
@@ -6391,11 +6391,11 @@
 ;; see comment above inline_secondary_memory_needed function in i386.c
 (define_insn "vec_set<mode>_0"
   [(set (match_operand:VI4F_128 0 "nonimmediate_operand"
-	  "=Yr,*v,v,v ,x,x,v,Yr ,*x ,x  ,m ,m   ,m")
+	  "=Yr,*v,v,Yi,x,x,v,Yr ,*x ,x  ,m ,m   ,m")
 	(vec_merge:VI4F_128
 	  (vec_duplicate:VI4F_128
 	    (match_operand:<ssescalarmode> 2 "general_operand"
-	  " Yr,*v,m,*r,m,x,v,*rm,*rm,*rm,!x,!*re,!*fF"))
+	  " Yr,*v,m,r ,m,x,v,*rm,*rm,*rm,!x,!*re,!*fF"))
 	  (match_operand:VI4F_128 1 "vector_move_operand"
 	  " C , C,C,C ,C,0,v,0  ,0  ,x  ,0 ,0   ,0")
 	  (const_int 1)))]
@@ -12578,7 +12578,7 @@
    movss\t{%2, %0|%0, %2}
    movss\t{%2, %0|%0, %2}
    vmovss\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "sse2,*,noavx,noavx,avx")
+  [(set_attr "isa" "sse2,sse2,noavx,noavx,avx")
    (set_attr "type" "ssemov")
    (set_attr "prefix" "maybe_vex,maybe_vex,orig,orig,vex")
    (set_attr "mode" "TI,TI,V4SF,SF,SF")])
@@ -14472,7 +14472,7 @@
   rtx tmp0, tmp1;
 
   if (<MODE>mode == V2DFmode
-      && TARGET_AVX && !TARGET_PREFER_AVX128)
+      && TARGET_AVX && !TARGET_PREFER_AVX128 && optimize_insn_for_speed_p ())
     {
       rtx tmp2 = gen_reg_rtx (V4DFmode);
 
@@ -14579,7 +14579,7 @@
   rtx tmp0, tmp1;
 
   if (<MODE>mode == V2DFmode
-      && TARGET_AVX && !TARGET_PREFER_AVX128)
+      && TARGET_AVX && !TARGET_PREFER_AVX128 && optimize_insn_for_speed_p ())
     {
       rtx tmp2 = gen_reg_rtx (V4DFmode);
 
@@ -16711,7 +16711,7 @@
   [V32QI V16QI V16HI V8HI V8SI V4SI])
 
 (define_insn "*vec_dup<mode>"
-  [(set (match_operand:AVX2_VEC_DUP_MODE 0 "register_operand" "=x,x,x")
+  [(set (match_operand:AVX2_VEC_DUP_MODE 0 "register_operand" "=x,x,Yi")
 	(vec_duplicate:AVX2_VEC_DUP_MODE
 	  (match_operand:<ssescalarmode> 1 "nonimmediate_operand" "m,x,$r")))]
   "TARGET_AVX2"

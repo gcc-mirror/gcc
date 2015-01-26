@@ -3438,7 +3438,7 @@ gfc_trans_oacc_combined_directive (gfc_code *code)
     pblock = &block;
   else
     pushlevel ();
-  stmt = gfc_trans_omp_do (code, code->op, pblock, &loop_clauses, NULL);
+  stmt = gfc_trans_omp_do (code, EXEC_OACC_LOOP, pblock, &loop_clauses, NULL);
   if (TREE_CODE (stmt) != BIND_EXPR)
     stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
   else

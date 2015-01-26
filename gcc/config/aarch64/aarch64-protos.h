@@ -182,9 +182,6 @@ struct tune_params
 HOST_WIDE_INT aarch64_initial_elimination_offset (unsigned, unsigned);
 int aarch64_get_condition_code (rtx);
 bool aarch64_bitmask_imm (HOST_WIDE_INT val, machine_mode);
-bool aarch64_cannot_change_mode_class (machine_mode,
-				       machine_mode,
-				       enum reg_class);
 enum aarch64_symbol_type
 aarch64_classify_symbolic_expression (rtx, enum aarch64_symbol_context);
 bool aarch64_const_vec_all_same_int_p (rtx, HOST_WIDE_INT);
@@ -203,6 +200,8 @@ bool aarch64_modes_tieable_p (machine_mode mode1,
 bool aarch64_move_imm (HOST_WIDE_INT, machine_mode);
 bool aarch64_mov_operand_p (rtx, enum aarch64_symbol_context,
 			    machine_mode);
+int aarch64_simd_attr_length_rglist (enum machine_mode);
+rtx aarch64_reverse_mask (enum machine_mode);
 bool aarch64_offset_7bit_signed_scaled_p (machine_mode, HOST_WIDE_INT);
 char *aarch64_output_scalar_simd_mov_immediate (rtx, machine_mode);
 char *aarch64_output_simd_mov_immediate (rtx, machine_mode, unsigned);
@@ -263,7 +262,7 @@ void aarch64_emit_call_insn (rtx);
 /* Initialize builtins for SIMD intrinsics.  */
 void init_aarch64_simd_builtins (void);
 
-void aarch64_simd_disambiguate_copy (rtx *, rtx *, rtx *, unsigned int);
+void aarch64_simd_emit_reg_reg_move (rtx *, enum machine_mode, unsigned int);
 
 /* Emit code to place a AdvSIMD pair result in memory locations (with equal
    registers).  */

@@ -192,11 +192,13 @@ sh_find_set_of_reg (rtx reg, rtx_insn* insn, F stepfunc,
   if (!REG_P (reg) || insn == NULL_RTX)
     return result;
 
+  rtx_insn* previnsn = insn;
+
   for (result.insn = stepfunc (insn); result.insn != NULL_RTX;
-       result.insn = stepfunc (result.insn))
+       previnsn = result.insn, result.insn = stepfunc (result.insn))
     {
       if (BARRIER_P (result.insn))
-	return result;
+	break;
       if (!NONJUMP_INSN_P (result.insn))
 	continue;
       if (reg_set_p (reg, result.insn))
@@ -204,7 +206,7 @@ sh_find_set_of_reg (rtx reg, rtx_insn* insn, F stepfunc,
 	  result.set_rtx = set_of (reg, result.insn);
 
 	  if (result.set_rtx == NULL_RTX || GET_CODE (result.set_rtx) != SET)
-	    return result;
+	    break;
 
 	  result.set_src = XEXP (result.set_rtx, 1);
 
@@ -220,9 +222,18 @@ sh_find_set_of_reg (rtx reg, rtx_insn* insn, F stepfunc,
 	      continue;
 	    }
 
-	  return result;
+	  break;
 	}
     }
+
+  /* If the loop above stopped at the first insn in the list,
+     result.insn will be null.  Use the insn from the previous iteration
+     in this case.  */
+  if (result.insn == NULL)
+    result.insn = previnsn;
+
+  if (result.set_src != NULL)
+    gcc_assert (result.insn != NULL && result.set_rtx != NULL);
 
   return result;
 }
@@ -253,6 +264,14 @@ struct sh_extending_set_of_reg : public set_of_reg
     ext_code = UNKNOWN;
   }
 
+  /* Returns true if it's possible to use the source reg of the sign
+     or zero extending set directly, bypassing the extension.  */
+  bool can_use_as_unextended_reg (void) const;
+
+  /* Returns the reg rtx of the sign or zero extending set source, that can
+     be safely used at the specified insn in SImode.  */
+  rtx use_as_unextended_reg (rtx_insn* use_at_insn) const;
+
   /* Returns the reg rtx of the sign or zero extending result, that can be
      safely used at the specified insn in SImode.  If the set source is an
      implicitly sign extending mem load, the mem load is converted into an
@@ -270,7 +289,66 @@ extern bool sh_split_movrt_negc_to_movt_xor (rtx_insn* curr_insn,
 extern void sh_split_tst_subregs (rtx_insn* curr_insn,
 				  machine_mode subreg_mode, int subreg_offset,
 				  rtx operands[]);
+
+extern bool sh_is_nott_insn (const rtx_insn* i);
+extern rtx sh_movt_set_dest (const rtx_insn* i);
+extern rtx sh_movrt_set_dest (const rtx_insn* i);
+
+inline bool sh_is_movt_insn (const rtx_insn* i)
+{
+  return sh_movt_set_dest (i) != NULL;
+}
+
+inline bool sh_is_movrt_insn (const rtx_insn* i)
+{
+  return sh_movrt_set_dest (i) != NULL;
+}
+
+extern bool sh_insn_operands_modified_between_p (rtx_insn* operands_insn,
+						 const rtx_insn* from,
+						 const rtx_insn* to);
+
+extern bool sh_reg_dead_or_unused_after_insn (const rtx_insn* i, int regno);
 extern void sh_remove_reg_dead_or_unused_notes (rtx_insn* i, int regno);
+
+extern bool sh_in_recog_treg_set_expr (void);
+extern bool sh_recog_treg_set_expr (rtx op, machine_mode mode);
+
+/* Result value of sh_split_treg_set_expr.  Contains the first insn emitted
+   and the optional trailing nott insn.  */
+class sh_treg_insns
+{
+public:
+  sh_treg_insns (void) : m_first_insn (NULL), m_trailing_nott_insn (NULL) { }
+  sh_treg_insns (rtx_insn* first_insn, rtx_insn* nott_insn)
+  : m_first_insn (first_insn),
+    m_trailing_nott_insn (nott_insn)
+  { }
+
+  bool was_treg_operand (void) const { return m_first_insn == NULL; }
+  bool has_trailing_nott (void) const { return m_trailing_nott_insn != NULL; }
+  rtx_insn* trailing_nott (void) const { return m_trailing_nott_insn; }
+  rtx_insn* first_insn (void) const { return m_first_insn; }
+
+  /* If there is a trailing nott, remove it from the emitted insns and
+     return true.  Return false otherwise.  */
+  bool
+  remove_trailing_nott (void)
+  {
+    if (!has_trailing_nott ())
+      return false;
+
+    remove_insn (trailing_nott ());
+    return true;
+  }
+
+private:
+  rtx_insn* m_first_insn;
+  rtx_insn* m_trailing_nott_insn;
+};
+
+extern sh_treg_insns sh_split_treg_set_expr (rtx x, rtx_insn* curr_insn);
+
 #endif /* RTX_CODE */
 
 extern void sh_cpu_cpp_builtins (cpp_reader* pfile);

@@ -1,3 +1,10 @@
+2015-01-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR ada/64640
+	* adaint.c: Handle __CYGWIN__ like __MINGW32__ here.
+	* mingw32.h: Don't include <tchar.h> under cygwin.
+	(_O_U8TEXT, _O_U16TEXT, _O_WTEXT): Set to _O_TEXT if not yet defined.
+
 2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gcc-interface/utils.c (DEF_FUNCTION_TYPE_VAR_8)

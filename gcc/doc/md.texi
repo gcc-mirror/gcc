@@ -1800,8 +1800,30 @@ Any const_double value.
 
 @item ARM family---@file{config/arm/constraints.md}
 @table @code
+
+@item h
+In Thumb state, the core registers @code{r8}-@code{r15}.
+
+@item k
+The stack pointer register.
+
+@item l
+In Thumb State the core registers @code{r0}-@code{r7}.  In ARM state this
+is an alias for the @code{r} constraint.
+
+@item t
+VFP floating-point registers @code{s0}-@code{s31}.  Used for 32 bit values.
+
 @item w
-VFP floating-point register
+VFP floating-point registers @code{d0}-@code{d31} and the appropriate
+subset @code{d0}-@code{d15} based on command line options.
+Used for 64 bit values only.  Not valid for Thumb1.
+
+@item y
+The iWMMX co-processor registers.
+
+@item z
+The iWMMX GR registers.
 
 @item G
 The floating-point constant 0.0

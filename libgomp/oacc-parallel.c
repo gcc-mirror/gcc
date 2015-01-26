@@ -75,7 +75,7 @@ select_acc_device (int device_type)
 static void goacc_wait (int async, int num_waits, va_list ap);
 
 void
-GOACC_parallel (int device, void (*fn) (void *), const void *offload_table,
+GOACC_parallel (int device, void (*fn) (void *),
 		size_t mapnum, void **hostaddrs, size_t *sizes,
 		unsigned short *kinds,
 		int num_gangs, int num_workers, int vector_length,
@@ -172,7 +172,7 @@ GOACC_parallel (int device, void (*fn) (void *), const void *offload_table,
 }
 
 void
-GOACC_data_start (int device, const void *offload_table, size_t mapnum,
+GOACC_data_start (int device, size_t mapnum,
 		  void **hostaddrs, size_t *sizes, unsigned short *kinds)
 {
   bool host_fallback = device == GOMP_DEVICE_HOST_FALLBACK;
@@ -218,7 +218,7 @@ GOACC_data_end (void)
 }
 
 void
-GOACC_enter_exit_data (int device, const void *offload_table, size_t mapnum,
+GOACC_enter_exit_data (int device, size_t mapnum,
 		       void **hostaddrs, size_t *sizes, unsigned short *kinds,
 		       int async, int num_waits, ...)
 {
@@ -408,7 +408,7 @@ goacc_wait (int async, int num_waits, va_list ap)
 }
 
 void
-GOACC_update (int device, const void *offload_table, size_t mapnum,
+GOACC_update (int device, size_t mapnum,
 	      void **hostaddrs, size_t *sizes, unsigned short *kinds,
 	      int async, int num_waits, ...)
 {

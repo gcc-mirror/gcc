@@ -1,3 +1,31 @@
+2015-01-23  Ian Lance Taylor  <iant@google.com>
+
+	PR go/64738
+	* Makefile.am (AM_LDFLAGS): Remove -static-libgo.
+	* Makefile.in: Rebuild.
+
+2015-01-22  Ian Lance Taylor  <iant@google.com>
+
+	PR go/64595
+	* go.1, gofmt.1: New files.
+	* Makefile.am (man_MANS): New variable.
+	* Makefile.in: Rebuild.
+
+2015-01-21  Ian Lance Taylor  <iant@google.com>
+
+	* Makefile.am (noinst_PROGRAMS): New variable.
+	(libexecsub_PROGRAMS): Remove variable.
+	(install-exec-local, uninstall-local): New targets.
+	* Makefile.in: Rebuild.
+
+2015-01-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Check if sched_yield and/or nanosleep need -lrt.
+	* configure: Regenerate.
+	* Makefile.am (go$(EXEEXT), gofmt$(EXEEXT), cgo$(EXEEXT)): Link
+	with $(LIBS).
+	* Makefile.in: Regenerate.
+
 2015-01-15  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac: Check for networking libraries; see NET_LIBS.

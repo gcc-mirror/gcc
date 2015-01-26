@@ -1,3 +1,28 @@
+2015-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/64734
+	* libgomp.c/pr64734.c: New test.
+
+2015-01-23  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/64672
+	* testsuite/libgomp.oacc-c-c++-common/abort-5.c: New test.
+
+2015-01-23  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/64707
+	* testsuite/libgomp.c/target-9.c: Add -ftree-parallelize-loops=0 to
+	dg-options.
+
+2015-01-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/64625
+	* libgomp_g.h (GOACC_data_start, GOACC_enter_exit_data)
+	(GOACC_parallel, GOACC_update): Remove const_void *offload_table
+	formal parameter.  Update all users.
+	* target.c (GOMP_target, GOMP_target_data, GOMP_target_update):
+	Document unused formal parameter.
+
 2015-01-16  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* oacc-parallel.c: Don't include <alloca.h>.

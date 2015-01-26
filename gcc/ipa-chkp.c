@@ -643,7 +643,7 @@ chkp_versioning (void)
    function.  */
 
 static unsigned int
-chkp_produce_thunks (void)
+chkp_produce_thunks (bool early)
 {
   struct cgraph_node *node;
 
@@ -652,7 +652,9 @@ chkp_produce_thunks (void)
       if (!node->instrumentation_clone
 	  && node->instrumented_version
 	  && gimple_has_body_p (node->decl)
-	  && gimple_has_body_p (node->instrumented_version->decl))
+	  && gimple_has_body_p (node->instrumented_version->decl)
+	  && (!lookup_attribute ("always_inline", DECL_ATTRIBUTES (node->decl))
+	      || !early))
 	{
 	  node->release_body ();
 	  node->remove_callees ();
@@ -670,12 +672,15 @@ chkp_produce_thunks (void)
   /* Mark instrumentation clones created for aliases and thunks
      as insttrumented so they could be removed as unreachable
      now.  */
-  FOR_EACH_DEFINED_FUNCTION (node)
+  if (!early)
     {
-      if (node->instrumentation_clone
-	  && (node->alias || node->thunk.thunk_p)
-	  && !chkp_function_instrumented_p (node->decl))
-	chkp_function_mark_instrumented (node->decl);
+      FOR_EACH_DEFINED_FUNCTION (node)
+      {
+	if (node->instrumentation_clone
+	    && (node->alias || node->thunk.thunk_p)
+	    && !chkp_function_instrumented_p (node->decl))
+	  chkp_function_mark_instrumented (node->decl);
+      }
     }
 
   return TODO_remove_functions;
@@ -685,6 +690,19 @@ const pass_data pass_data_ipa_chkp_versioning =
 {
   SIMPLE_IPA_PASS, /* type */
   "chkp_versioning", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0 /* todo_flags_finish */
+};
+
+const pass_data pass_data_ipa_chkp_early_produce_thunks =
+{
+  SIMPLE_IPA_PASS, /* type */
+  "chkp_ecleanup", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
   TV_NONE, /* tv_id */
   0, /* properties_required */
@@ -732,6 +750,31 @@ public:
 
 }; // class pass_ipa_chkp_versioning
 
+class pass_ipa_chkp_early_produce_thunks : public simple_ipa_opt_pass
+{
+public:
+  pass_ipa_chkp_early_produce_thunks (gcc::context *ctxt)
+    : simple_ipa_opt_pass (pass_data_ipa_chkp_early_produce_thunks, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual opt_pass * clone ()
+    {
+      return new pass_ipa_chkp_early_produce_thunks (m_ctxt);
+    }
+
+  virtual bool gate (function *)
+    {
+      return flag_check_pointer_bounds;
+    }
+
+  virtual unsigned int execute (function *)
+    {
+      return chkp_produce_thunks (true);
+    }
+
+}; // class pass_chkp_produce_thunks
+
 class pass_ipa_chkp_produce_thunks : public simple_ipa_opt_pass
 {
 public:
@@ -752,7 +795,7 @@ public:
 
   virtual unsigned int execute (function *)
     {
-      return chkp_produce_thunks ();
+      return chkp_produce_thunks (false);
     }
 
 }; // class pass_chkp_produce_thunks
@@ -761,6 +804,12 @@ simple_ipa_opt_pass *
 make_pass_ipa_chkp_versioning (gcc::context *ctxt)
 {
   return new pass_ipa_chkp_versioning (ctxt);
+}
+
+simple_ipa_opt_pass *
+make_pass_ipa_chkp_early_produce_thunks (gcc::context *ctxt)
+{
+  return new pass_ipa_chkp_early_produce_thunks (ctxt);
 }
 
 simple_ipa_opt_pass *

@@ -152,6 +152,7 @@ proc libffi-init { args } {
     if { $libffi_dir != "" } {
 	set libffi_dir [file dirname ${libffi_dir}]
 	set libffi_link_flags "-L${libffi_dir}/.libs"
+	lappend libffi_link_flags "-L${blddircxx}/src/.libs"
     }
 
     set_ld_library_path_env_vars
@@ -216,10 +217,6 @@ proc libffi_target_compile { source dest type options } {
 
     if { [string match "aarch64*-*-linux*" $target_triplet] } {
 	lappend options "libs= -lpthread"
-    }
-
-    if { [string match "*.cc" $source] } {
-	lappend options "c++"
     }
 
     verbose "options: $options"

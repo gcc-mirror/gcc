@@ -327,6 +327,12 @@ detect_processor_aix (void)
     case 0x4000:
       return "power6";
 
+    case 0x8000:
+      return "power7";
+
+    case 0x10000:
+      return "power8";
+
     default:
       return "powerpc";
     }

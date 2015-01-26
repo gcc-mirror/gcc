@@ -1299,7 +1299,7 @@ has finished
 
 ; This option is not documented yet as its semantics will change.
 fgraphite
-Common Report Var(flag_graphite) Opitmization
+Common Report Var(flag_graphite) Optimization
 Enable in and out of Graphite representation
 
 fgraphite-identity

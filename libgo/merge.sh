@@ -136,6 +136,16 @@ merge_c() {
   fi
 }
 
+if test -f VERSION; then
+  if ! cmp -s ${NEWDIR}/VERSION VERSION; then
+    cp ${NEWDIR}/VERSION .
+  fi
+else
+  if test -f ${NEWDIR}/VERSION; then
+    cp ${NEWDIR}/VERSION .
+  fi
+fi
+
 (cd ${NEWDIR}/src && find . -name '*.go' -print) | while read f; do
   oldfile=${OLDDIR}/src/$f
   newfile=${NEWDIR}/src/$f

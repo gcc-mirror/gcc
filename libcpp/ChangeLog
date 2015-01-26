@@ -1,3 +1,10 @@
+2015-01-23  Marek Polacek  <polacek@redhat.com>
+
+	DR#412
+	PR preprocessor/60570
+	* directives.c (do_elif): Don't evaluate #elif conditionals
+	when they don't need to be.
+
 2015-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (cpp_classify_number): Add N_() around ?: string

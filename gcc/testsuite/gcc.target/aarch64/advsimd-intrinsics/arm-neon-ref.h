@@ -8,6 +8,7 @@
 
 /* helper type, to help write floating point results in integer form.  */
 typedef uint32_t hfloat32_t;
+typedef uint64_t hfloat64_t;
 
 extern void abort(void);
 extern void *memset(void *, int, size_t);
@@ -143,6 +144,9 @@ static ARRAY(result, uint, 64, 2);
 static ARRAY(result, poly, 8, 16);
 static ARRAY(result, poly, 16, 8);
 static ARRAY(result, float, 32, 4);
+#ifdef __aarch64__
+static ARRAY(result, float, 64, 2);
+#endif
 
 /* Declare expected results, one of each size. They are defined and
    initialized in each test file.  */
@@ -168,6 +172,7 @@ extern ARRAY(expected, uint, 64, 2);
 extern ARRAY(expected, poly, 8, 16);
 extern ARRAY(expected, poly, 16, 8);
 extern ARRAY(expected, hfloat, 32, 4);
+extern ARRAY(expected, hfloat, 64, 2);
 
 /* Check results. Operates on all possible vector types.  */
 #define CHECK_RESULTS(test_name,comment)				\

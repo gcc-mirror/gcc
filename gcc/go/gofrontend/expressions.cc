@@ -8580,6 +8580,17 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 	{
 	  Call_expression* call = this->args_->front()->call_expression();
 	  call->set_is_multi_value_arg();
+	  if (this->is_varargs_)
+	    {
+	      // It is not clear which result of a multiple result call
+	      // the ellipsis operator should be applied to.  If we unpack the
+	      // the call into its individual results here, the ellipsis will be
+	      // applied to the last result.
+	      error_at(call->location(),
+		       _("multiple-value argument in single-value context"));
+	      return Expression::make_error(call->location());
+	    }
+
 	  Expression_list* args = new Expression_list;
 	  for (size_t i = 0; i < rc; ++i)
 	    args->push_back(Expression::make_call_result(call, i));

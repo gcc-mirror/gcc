@@ -728,9 +728,12 @@ proper position among the other output files.  */
 
 #ifndef LINK_SSP_SPEC
 #ifdef TARGET_LIBC_PROVIDES_SSP
-#define LINK_SSP_SPEC "%{fstack-protector:}"
+#define LINK_SSP_SPEC "%{fstack-protector|fstack-protector-all" \
+		       "|fstack-protector-strong|fstack-protector-explicit:}"
 #else
-#define LINK_SSP_SPEC "%{fstack-protector|fstack-protector-strong|fstack-protector-all:-lssp_nonshared -lssp}"
+#define LINK_SSP_SPEC "%{fstack-protector|fstack-protector-all" \
+		       "|fstack-protector-strong|fstack-protector-explicit" \
+		       ":-lssp_nonshared -lssp}"
 #endif
 #endif
 
@@ -2937,8 +2940,9 @@ execute (void)
 	      }
 	    else
 #endif
-	      internal_error ("%s (program %s)",
-			      strsignal (WTERMSIG (status)), commands[i].prog);
+	      internal_error_no_backtrace ("%s (program %s)",
+					   strsignal (WTERMSIG (status)),
+					   commands[i].prog);
 	  }
 	else if (WIFEXITED (status)
 		 && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
@@ -6355,10 +6359,10 @@ print_configuration (FILE *file)
 
   if (! strncmp (version_string, compiler_version, n)
       && compiler_version[n] == 0)
-    fnotice (file, "gcc version %s %s\n\n", version_string,
+    fnotice (file, "gcc version %s %s\n", version_string,
 	     pkgversion_string);
   else
-    fnotice (file, "gcc driver version %s %sexecuting gcc version %s\n\n",
+    fnotice (file, "gcc driver version %s %sexecuting gcc version %s\n",
 	     version_string, pkgversion_string, compiler_version);
 
 }
@@ -6462,6 +6466,7 @@ run_attempt (const char **new_argv, const char *out_temp,
     {
       FILE *file_out = fopen (err_temp, "a");
       print_configuration (file_out);
+      fputs ("\n", file_out);
       fclose (file_out);
     }
 
@@ -6515,6 +6520,29 @@ out:
   return status;
 }
 
+/* This routine reads lines from IN file, adds C++ style comments
+   at the begining of each line and writes result into OUT.  */
+
+static void
+insert_comments (const char *file_in, const char *file_out)
+{
+  FILE *in = fopen (file_in, "rb");
+  FILE *out = fopen (file_out, "wb");
+  char line[256];
+
+  bool add_comment = true;
+  while (fgets (line, sizeof (line), in))
+    {
+      if (add_comment)
+	fputs ("// ", out);
+      fputs (line, out);
+      add_comment = strchr (line, '\n') != NULL;
+    }
+
+  fclose (in);
+  fclose (out);
+}
+
 /* This routine adds preprocessed source code into the given ERR_FILE.
    To do this, it adds "-E" to NEW_ARGV and execute RUN_ATTEMPT routine to
    add information in report file.  RUN_ATTEMPT should return
@@ -6549,19 +6577,6 @@ do_report_bug (const char **new_argv, const int nargs,
       free (*out_file);
       *out_file = NULL;
     }
-}
-
-/* Append string STR to file FILE.  */
-
-static void
-append_text (char *file, const char *str)
-{
-  int fd = open (file, O_RDWR | O_APPEND);
-  if (fd < 0)
-    return;
-
-  write (fd, str, strlen (str));
-  close (fd);
 }
 
 /* Try to reproduce ICE.  If bug is reproducible, generate report .err file
@@ -6626,15 +6641,9 @@ try_generate_repro (const char **argv)
 	  emit_system_info = 1;
 	}
 
-      if (emit_system_info)
-	append_text (temp_stderr_files[attempt], "/*\n");
-
       status = run_attempt (new_argv, temp_stdout_files[attempt],
 			    temp_stderr_files[attempt], emit_system_info,
 			    append);
-
-      if (emit_system_info)
-	append_text (temp_stderr_files[attempt], "*/\n");
 
       if (status != ATTEMPT_STATUS_ICE)
 	{
@@ -6647,11 +6656,17 @@ try_generate_repro (const char **argv)
   if (!check_repro (temp_stdout_files, temp_stderr_files))
     goto out;
 
-  /* In final attempt we append compiler options and preprocesssed code to last
-     generated .err file with configuration and backtrace.  */
-  do_report_bug (new_argv, nargs,
-		 &temp_stderr_files[RETRY_ICE_ATTEMPTS - 1],
-		 &temp_stdout_files[RETRY_ICE_ATTEMPTS - 1]);
+  {
+    /* Insert commented out backtrace into report file.  */
+    char **stderr_commented = &temp_stdout_files[RETRY_ICE_ATTEMPTS - 1];
+    insert_comments (temp_stderr_files[RETRY_ICE_ATTEMPTS - 1],
+		     *stderr_commented);
+
+    /* In final attempt we append compiler options and preprocesssed code to last
+       generated .out file with configuration and backtrace.  */
+    char **output = &temp_stdout_files[RETRY_ICE_ATTEMPTS - 1];
+    do_report_bug (new_argv, nargs, stderr_commented, output);
+  }
 
 out:
   for (i = 0; i < RETRY_ICE_ATTEMPTS * 2; i++)

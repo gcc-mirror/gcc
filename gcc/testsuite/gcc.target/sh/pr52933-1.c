@@ -5,8 +5,13 @@
 /* { dg-do compile }  */
 /* { dg-options "-O2" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*" } { "" } } */
-/* { dg-final { scan-assembler-times "div0s" 25 } } */
+/* { dg-final { scan-assembler-times "div0s" 32 } } */
 /* { dg-final { scan-assembler-not "tst" } } */
+/* { dg-final { scan-assembler-not "not\t" } }  */
+/* { dg-final { scan-assembler-not "nott" } }  */
+
+/* { dg-final { scan-assembler-times "negc" 9 { target { ! sh2a } } } }  */
+/* { dg-final { scan-assembler-times "movrt" 9 { target { sh2a } } } }  */
 
 typedef unsigned char bool;
 
@@ -165,4 +170,46 @@ test_23 (int a, int b, int c, int d)
 {
   /* Should emit 2x div0s.  */
   return ((a < 0) == (b < 0)) | ((c < 0) == (d < 0));
+}
+
+bool
+test_24 (int a, int b)
+{
+  return a >= 0 != b >= 0;
+}
+
+bool
+test_25 (int a, int b)
+{
+  return !(a < 0 != b < 0);
+}
+
+int
+test_26 (int a, int b, int c, int d)
+{
+  return a >= 0 != b >= 0 ? c : d;
+}
+
+int
+test_27 (int a, int b)
+{
+  return a >= 0 == b >= 0;
+}
+
+int
+test_28 (int a, int b, int c, int d)
+{
+  return a >= 0 == b >= 0 ? c : d;
+}
+
+int
+test_29 (int a, int b)
+{
+  return ((a >> 31) ^ (b >= 0)) & 1;
+}
+
+int
+test_30 (int a, int b)
+{
+  return ((a >> 31) ^ (b >> 31)) & 1;
 }

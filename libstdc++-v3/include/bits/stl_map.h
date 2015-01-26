@@ -824,6 +824,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return value_compare(_M_t.key_comp()); }
 
       // [23.3.1.3] map operations
+
+      //@{
       /**
        *  @brief Tries to locate an element in a %map.
        *  @param  __x  Key of (key, value) %pair to be located.
@@ -835,10 +837,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  pointing to the sought after %pair.  If unsuccessful it returns the
        *  past-the-end ( @c end() ) iterator.
        */
+
       iterator
       find(const key_type& __x)
       { return _M_t.find(__x); }
 
+#if __cplusplus > 201103L
+      template<typename _Kt>
+	auto
+	find(const _Kt& __x) -> decltype(_M_t._M_find_tr(__x))
+	{ return _M_t._M_find_tr(__x); }
+#endif
+      //@}
+
+      //@{
       /**
        *  @brief Tries to locate an element in a %map.
        *  @param  __x  Key of (key, value) %pair to be located.
@@ -850,10 +862,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  iterator pointing to the sought after %pair. If unsuccessful it
        *  returns the past-the-end ( @c end() ) iterator.
        */
+
       const_iterator
       find(const key_type& __x) const
       { return _M_t.find(__x); }
 
+#if __cplusplus > 201103L
+      template<typename _Kt>
+	auto
+	find(const _Kt& __x) const -> decltype(_M_t._M_find_tr(__x))
+	{ return _M_t._M_find_tr(__x); }
+#endif
+      //@}
+
+      //@{
       /**
        *  @brief  Finds the number of elements with given key.
        *  @param  __x  Key of (key, value) pairs to be located.
@@ -866,6 +888,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       count(const key_type& __x) const
       { return _M_t.find(__x) == _M_t.end() ? 0 : 1; }
 
+#if __cplusplus > 201103L
+      template<typename _Kt>
+	auto
+	count(const _Kt& __x) const -> decltype(_M_t._M_count_tr(__x))
+	{ return _M_t._M_find_tr(__x) == _M_t.end() ? 0 : 1; }
+#endif
+      //@}
+
+      //@{
       /**
        *  @brief Finds the beginning of a subsequence matching given key.
        *  @param  __x  Key of (key, value) pair to be located.
@@ -881,6 +912,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       lower_bound(const key_type& __x)
       { return _M_t.lower_bound(__x); }
 
+#if __cplusplus > 201103L
+      template<typename _Kt>
+	auto
+	lower_bound(const _Kt& __x)
+	-> decltype(_M_t._M_lower_bound_tr(__x))
+	{ return _M_t._M_lower_bound_tr(__x); }
+#endif
+      //@}
+
+      //@{
       /**
        *  @brief Finds the beginning of a subsequence matching given key.
        *  @param  __x  Key of (key, value) pair to be located.
@@ -896,6 +937,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       lower_bound(const key_type& __x) const
       { return _M_t.lower_bound(__x); }
 
+#if __cplusplus > 201103L
+      template<typename _Kt>
+	auto
+	lower_bound(const _Kt& __x) const
+	-> decltype(_M_t._M_lower_bound_tr(__x))
+	{ return _M_t._M_lower_bound_tr(__x); }
+#endif
+      //@}
+
+      //@{
       /**
        *  @brief Finds the end of a subsequence matching given key.
        *  @param  __x  Key of (key, value) pair to be located.
@@ -906,6 +957,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       upper_bound(const key_type& __x)
       { return _M_t.upper_bound(__x); }
 
+#if __cplusplus > 201103L
+      template<typename _Kt>
+	auto
+	upper_bound(const _Kt& __x)
+	-> decltype(_M_t._M_upper_bound_tr(__x))
+	{ return _M_t._M_upper_bound_tr(__x); }
+#endif
+      //@}
+
+      //@{
       /**
        *  @brief Finds the end of a subsequence matching given key.
        *  @param  __x  Key of (key, value) pair to be located.
@@ -916,6 +977,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       upper_bound(const key_type& __x) const
       { return _M_t.upper_bound(__x); }
 
+#if __cplusplus > 201103L
+      template<typename _Kt>
+	auto
+	upper_bound(const _Kt& __x) const
+	-> decltype(_M_t._M_upper_bound_tr(__x))
+	{ return _M_t._M_upper_bound_tr(__x); }
+#endif
+      //@}
+
+      //@{
       /**
        *  @brief Finds a subsequence matching given key.
        *  @param  __x  Key of (key, value) pairs to be located.
@@ -935,6 +1006,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       equal_range(const key_type& __x)
       { return _M_t.equal_range(__x); }
 
+#if __cplusplus > 201103L
+      template<typename _Kt>
+	auto
+	equal_range(const _Kt& __x)
+	-> decltype(_M_t._M_equal_range_tr(__x))
+	{ return _M_t._M_equal_range_tr(__x); }
+#endif
+      //@}
+
+      //@{
       /**
        *  @brief Finds a subsequence matching given key.
        *  @param  __x  Key of (key, value) pairs to be located.
@@ -953,6 +1034,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       std::pair<const_iterator, const_iterator>
       equal_range(const key_type& __x) const
       { return _M_t.equal_range(__x); }
+
+#if __cplusplus > 201103L
+      template<typename _Kt>
+	auto
+	equal_range(const _Kt& __x) const
+	-> decltype(_M_t._M_equal_range_tr(__x))
+	{ return _M_t._M_equal_range_tr(__x); }
+#endif
+      //@}
 
       template<typename _K1, typename _T1, typename _C1, typename _A1>
         friend bool

@@ -1,3 +1,9 @@
+2015-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64313
+	* c-decl.c (merge_decls): Call set_builtin_decl_declared_p
+	for builtins the user declared correctly.
+
 2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
 	    Bernd Schmidt  <bernds@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>

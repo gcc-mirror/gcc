@@ -30,6 +30,6 @@
 ! This one is nasty
       inquire (unit=i, exist=l, iostat=i)
       if (l) call abort
-      if (i.ne.ERROR_BAD_UNIT) call abort
+      if (i.ne.0) call abort
 
       end

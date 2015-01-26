@@ -2196,7 +2196,7 @@ gcc_jit_context_compile (gcc_jit_context *ctxt)
 
   JIT_LOG_FUNC (ctxt->get_logger ());
 
-  ctxt->log ("compiling ctxt: %p", (void *)ctxt);
+  ctxt->log ("in-memory compile of ctxt: %p", (void *)ctxt);
 
   gcc_jit_result *result = (gcc_jit_result *)ctxt->compile ();
 
@@ -2205,6 +2205,35 @@ gcc_jit_context_compile (gcc_jit_context *ctxt)
 
   return result;
 }
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::context::compile_to_file method in
+   jit-recording.c.  */
+
+void
+gcc_jit_context_compile_to_file (gcc_jit_context *ctxt,
+				 enum gcc_jit_output_kind output_kind,
+				 const char *output_path)
+{
+  RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  RETURN_IF_FAIL_PRINTF1 (
+    ((output_kind >= GCC_JIT_OUTPUT_KIND_ASSEMBLER)
+     && (output_kind <= GCC_JIT_OUTPUT_KIND_EXECUTABLE)),
+    ctxt, NULL,
+    "unrecognized output_kind: %i",
+    output_kind);
+  RETURN_IF_FAIL (output_path, ctxt, NULL, "NULL output_path");
+
+  ctxt->log ("compile_to_file of ctxt: %p", (void *)ctxt);
+  ctxt->log ("output_kind: %i", output_kind);
+  ctxt->log ("output_path: %s", output_path);
+
+  ctxt->compile_to_file (output_kind, output_path);
+}
+
 
 /* Public entrypoint.  See description in libgccjit.h.
 

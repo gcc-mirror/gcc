@@ -1402,6 +1402,8 @@ __codecvt_utf8_utf16_base<wchar_t>::do_max_length() const throw()
 
 inline template class __codecvt_abstract_base<char16_t, char, mbstate_t>;
 inline template class __codecvt_abstract_base<char32_t, char, mbstate_t>;
+template class codecvt_byname<char16_t, char, mbstate_t>;
+template class codecvt_byname<char32_t, char, mbstate_t>;
 
 _GLIBCXX_END_NAMESPACE_VERSION
 }

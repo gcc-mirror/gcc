@@ -1,3 +1,44 @@
+2015-01-23  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/64672
+	* c.opt (fopenacc): Mark as LTO option.
+
+2015-01-23  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/64707
+	* c.opt (fopenmp): Mark as LTO option.
+
+2015-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/63307
+	* cilk.c (fill_decls_vec): Only put decls into vector v.                                                                                   
+	(compare_decls): Fix up formatting.
+
+2015-01-21  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	PR c/63307
+	* cilk.c: Include vec.h.
+	(struct cilk_decls): New structure.
+	(wrapper_parm_cb): Split this function to...
+	(fill_decls_vec): ...this...
+	(create_parm_list): ...and this.
+	(compare_decls): New function.
+	(for_local_cb): Remove.
+	(wrapper_local_cb): Ditto.
+	(build_wrapper_type): For now first traverse and fill vector of
+	declarations then sort it and then deal with sorted vector.
+	(cilk_outline): Ditto.
+	(declare_one_free_variable): Ditto.
+
+2015-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64629
+	* c-format.c (check_format_arg): Call decl_constant_value.
+
+2015-01-19  Martin Liska  <mliska@suse.cz>
+
+	* c-common.c (handle_noicf_attribute): New function.
+
 2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
 	    Bernd Schmidt  <bernds@codesourcery.com>
 	    James Norris  <jnorris@codesourcery.com>

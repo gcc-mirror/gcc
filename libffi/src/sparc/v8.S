@@ -48,7 +48,7 @@
 #ifndef __GNUC__
         .align 8
 	.globl	C(ffi_flush_icache)
-	.type	C(ffi_flush_icache),@function
+	.type	C(ffi_flush_icache),#function
 	FFI_HIDDEN(C(ffi_flush_icache))
 
 C(ffi_flush_icache):
@@ -66,14 +66,15 @@ C(ffi_flush_icache):
 	.size	C(ffi_flush_icache), . - C(ffi_flush_icache)
 #endif
 
-.macro E index
-	.align	16
-	.org	2b + \index * 16
-.endm
+#if defined(__sun__) && defined(__svr4__)
+# define E(INDEX)	.align 16
+#else
+# define E(INDEX)	.align 16; .org 2b + INDEX * 16
+#endif
 
         .align 8
 	.globl	C(ffi_call_v8)
-	.type	C(ffi_call_v8),@function
+	.type	C(ffi_call_v8),#function
 	FFI_HIDDEN(C(ffi_call_v8))
 
 C(ffi_call_v8):
@@ -82,6 +83,7 @@ C(ffi_call_v8):
 	save	%sp, %o4, %sp
 	cfi_def_cfa_register(%fp)
 	cfi_window_save
+	cfi_register(%o7, %i7)
 
 	mov	%i0, %o0		! copy cif
 	add	%sp, 64+32, %o1		! load args area
@@ -114,71 +116,71 @@ C(ffi_call_v8):
 	! Note that each entry is 4 insns, enforced by the E macro.
 	.align	16
 2:
-E SPARC_RET_VOID
+E(SPARC_RET_VOID)
 	ret
 	 restore
-E SPARC_RET_STRUCT
+E(SPARC_RET_STRUCT)
 	unimp
-E SPARC_RET_UINT8
+E(SPARC_RET_UINT8)
 	and	%o0, 0xff, %o0
 	st	%o0, [%i2]
 	ret
 	 restore
-E SPARC_RET_SINT8
+E(SPARC_RET_SINT8)
 	sll	%o0, 24, %o0
 	b	7f
 	 sra	%o0, 24, %o0
-E SPARC_RET_UINT16
+E(SPARC_RET_UINT16)
 	sll	%o0, 16, %o0
 	b	7f
 	 srl	%o0, 16, %o0
-E SPARC_RET_SINT16
+E(SPARC_RET_SINT16)
 	sll	%o0, 16, %o0
 	b	7f
 	 sra	%o0, 16, %o0
-E SPARC_RET_UINT32
+E(SPARC_RET_UINT32)
 7:	st	%o0, [%i2]
 	ret
 	 restore
-E SP_V8_RET_CPLX16
+E(SP_V8_RET_CPLX16)
 	sth	%o0, [%i2+2]
 	b	9f
 	 srl	%o0, 16, %o0
-E SPARC_RET_INT64
+E(SPARC_RET_INT64)
 	st	%o0, [%i2]
 	st	%o1, [%i2+4]
 	ret
 	 restore
-E SPARC_RET_INT128
+E(SPARC_RET_INT128)
 	std	%o0, [%i2]
 	std	%o2, [%i2+8]
 	ret
 	 restore
-E SPARC_RET_F_8
+E(SPARC_RET_F_8)
 	st	%f7, [%i2+7*4]
 	nop
 	st	%f6, [%i2+6*4]
 	nop
-E SPARC_RET_F_6
+E(SPARC_RET_F_6)
 	st	%f5, [%i2+5*4]
 	nop
 	st	%f4, [%i2+4*4]
 	nop
-E SPARC_RET_F_4
+E(SPARC_RET_F_4)
 	st	%f3, [%i2+3*4]
 	nop
 	st	%f2, [%i2+2*4]
 	nop
-E SPARC_RET_F_2
+E(SPARC_RET_F_2)
 	st	%f1, [%i2+4]
 	st	%f0, [%i2]
 	ret
 	 restore
-E SP_V8_RET_CPLX8
+E(SP_V8_RET_CPLX8)
 	stb	%o0, [%i2+1]
-	b	10f
+	b	0f
 	 srl	%o0, 8, %o0
-E SPARC_RET_F_1
+E(SPARC_RET_F_1)
 	st	%f0, [%i2]
 	ret
 	 restore
@@ -188,7 +190,7 @@ E SPARC_RET_F_1
 	ret
 	 restore
 	.align	8
-10:	stb	%o0, [%i2]
+0:	stb	%o0, [%i2]
 	ret
 	 restore
 
@@ -201,17 +203,35 @@ E SPARC_RET_F_1
 	 sll	%l1, 2, %l0			! size * 4
 1:	sll	%l1, 4, %l1			! size * 16
 	add	%l0, %l1, %l0			! size * 20
-	add	%o7, %l0, %o7			! o7 = 0b + size*20
+	add	%o7, %l0, %o7			! o7 = 8b + size*20
 	jmp	%o7+(2f-8b)
 	 mov	%i5, %g2			! load static chain
 2:
-.rept	0x1000
-	call	%i1
-	 nop
-	unimp	(. - 2b) / 20
-	ret
+
+/* The Sun assembler doesn't understand .rept 0x1000.  */
+#define rept1			\
+	call	%i1;		\
+	 nop;			\
+	unimp	(. - 2b) / 20;	\
+	ret;			\
 	 restore
-.endr
+
+#define rept16				\
+	rept1; rept1; rept1; rept1;	\
+	rept1; rept1; rept1; rept1;	\
+	rept1; rept1; rept1; rept1;	\
+	rept1; rept1; rept1; rept1
+
+#define rept256				\
+	rept16; rept16; rept16; rept16;	\
+	rept16; rept16; rept16; rept16;	\
+	rept16; rept16; rept16; rept16;	\
+	rept16; rept16; rept16; rept16
+
+	rept256; rept256; rept256; rept256
+	rept256; rept256; rept256; rept256
+	rept256; rept256; rept256; rept256
+	rept256; rept256; rept256; rept256
 
 	cfi_endproc
 	.size	C(ffi_call_v8),. - C(ffi_call_v8)
@@ -231,7 +251,7 @@ E SPARC_RET_F_1
 
 	.align 8
 	.globl	C(ffi_go_closure_v8)
-	.type	C(ffi_go_closure_v8),@function
+	.type	C(ffi_go_closure_v8),#function
 	FFI_HIDDEN(C(ffi_go_closure_v8))
 
 C(ffi_go_closure_v8):
@@ -239,6 +259,7 @@ C(ffi_go_closure_v8):
 	save	%sp, -STACKFRAME, %sp
 	cfi_def_cfa_register(%fp)
 	cfi_window_save
+	cfi_register(%o7, %i7)
 
 	ld	[%g2+4], %o0			! load cif
 	ld	[%g2+8], %o1			! load fun
@@ -249,7 +270,7 @@ C(ffi_go_closure_v8):
 
 	.align 8
 	.globl	C(ffi_closure_v8)
-	.type	C(ffi_closure_v8),@function
+	.type	C(ffi_closure_v8),#function
 	FFI_HIDDEN(C(ffi_closure_v8))
 
 C(ffi_closure_v8):
@@ -257,6 +278,7 @@ C(ffi_closure_v8):
 	save	%sp, -STACKFRAME, %sp
 	cfi_def_cfa_register(%fp)
 	cfi_window_save
+	cfi_register(%o7, %i7)
 
 	ld	[%g2+FFI_TRAMPOLINE_SIZE], %o0		! load cif
 	ld	[%g2+FFI_TRAMPOLINE_SIZE+4], %o1	! load fun
@@ -285,70 +307,70 @@ C(ffi_closure_v8):
 	! Note that each entry is 4 insns, enforced by the E macro.
 	.align	16
 2:
-E SPARC_RET_VOID
+E(SPARC_RET_VOID)
 	ret
 	 restore
-E SPARC_RET_STRUCT
+E(SPARC_RET_STRUCT)
 	ld	[%i2], %i0
 	jmp	%i7+12
 	 restore
-E SPARC_RET_UINT8
+E(SPARC_RET_UINT8)
 	ldub	[%i2+3], %i0
 	ret
 	 restore
-E SPARC_RET_SINT8
+E(SPARC_RET_SINT8)
 	ldsb	[%i2+3], %i0
 	ret
 	 restore
-E SPARC_RET_UINT16
+E(SPARC_RET_UINT16)
 	lduh	[%i2+2], %i0
 	ret
 	 restore
-E SPARC_RET_SINT16
+E(SPARC_RET_SINT16)
 	ldsh	[%i2+2], %i0
 	ret
 	 restore
-E SPARC_RET_UINT32
+E(SPARC_RET_UINT32)
 	ld	[%i2], %i0
 	ret
 	 restore
-E SP_V8_RET_CPLX16
+E(SP_V8_RET_CPLX16)
 	ld	[%i2], %i0
 	ret
 	 restore
-E SPARC_RET_INT64
+E(SPARC_RET_INT64)
 	ldd	[%i2], %i0
 	ret
 	 restore
-E SPARC_RET_INT128
+E(SPARC_RET_INT128)
 	ldd	[%i2], %i0
 	ldd	[%i2+8], %i2
 	ret
 	 restore
-E SPARC_RET_F_8
+E(SPARC_RET_F_8)
 	ld	[%i2+7*4], %f7
 	nop
 	ld	[%i2+6*4], %f6
 	nop
-E SPARC_RET_F_6
+E(SPARC_RET_F_6)
 	ld	[%i2+5*4], %f5
 	nop
 	ld	[%i2+4*4], %f4
 	nop
-E SPARC_RET_F_4
+E(SPARC_RET_F_4)
 	ld	[%i2+3*4], %f3
 	nop
 	ld	[%i2+2*4], %f2
 	nop
-E SPARC_RET_F_2
+E(SPARC_RET_F_2)
 	ldd	[%i2], %f0
 	ret
 	 restore
-E SP_V8_RET_CPLX8
+E(SP_V8_RET_CPLX8)
 	lduh	[%i2], %i0
 	ret
 	 restore
-E SPARC_RET_F_1
+E(SPARC_RET_F_1)
 	ld	[%i2], %f0
 	ret
 	 restore

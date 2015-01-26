@@ -26,6 +26,7 @@
 // 28.7(9) Class template regex_traits [re.traits]
 
 #include <regex>
+#include <forward_list>
 #include <testsuite_hooks.h>
 
 void
@@ -47,8 +48,29 @@ test01()
 	VERIFY( c2 == c3 );
 }
 
+// Test forward iterator
+void
+test02()
+{
+  const char strlit[] = "upper";
+  std::forward_list<char> s(strlit, strlit + strlen(strlit));
+  std::regex_traits<char> traits;
+  VERIFY(traits.isctype('C', traits.lookup_classname(s.begin(), s.end(), false)));
+}
+
+// icase
+void
+test03()
+{
+  std::string s("lower");
+  std::regex_traits<char> traits;
+  VERIFY(traits.isctype('C', traits.lookup_classname(s.begin(), s.end(), true)));
+}
+
 int main()
 {
 	test01();
+	test02();
+	test03();
 	return 0;
 }

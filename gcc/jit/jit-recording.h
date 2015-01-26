@@ -221,6 +221,10 @@ public:
   compile ();
 
   void
+  compile_to_file (enum gcc_jit_output_kind output_kind,
+		   const char *output_path);
+
+  void
   add_error (location *loc, const char *fmt, ...)
       GNU_PRINTF(3, 4);
 

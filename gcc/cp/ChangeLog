@@ -1,3 +1,34 @@
+2015-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64314
+	PR c++/57510
+	* typeck2.c (split_nonconstant_init_1): Remove a sub-CONSTRUCTOR
+	that has been completely split out.
+
+	PR c++/64701
+	* constexpr.c (cxx_eval_constant_expression): Don't crash on C++
+	statement codes.
+
+	PR c++/64727
+	* constexpr.c (cxx_eval_constant_expression): Allow for lvalue use
+	of CONST_DECL.
+
+2015-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64603
+	* constexpr.c (cxx_eval_constant_expression): Only shortcut
+	constant CONSTRUCTORs.
+
+	PR c++/64647
+	* constexpr.c (ensure_literal_type_for_constexpr_object): Don't
+	give a hard error in a template instantiation.
+
+2015-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64313
+	* decl.c (duplicate_decls): Call set_builtin_decl_declared_p
+	for builtins the user declared correctly.
+
 2015-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58614

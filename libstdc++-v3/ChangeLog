@@ -1,3 +1,153 @@
+2015-01-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/29366
+	* config/cpu/sh/atomicity.h (__exchange_and_add, __atomic_add): 
+	Remove SH4A inline asm and lock based implementations and use the
+	defaults from ext/atomicity.h.
+
+2015-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Tighten GLIBCXX_3.4 patterns to not match
+	new std::string constructors for byname facets.
+
+2015-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR libstdc++/64535
+	* libsupc++/eh_alloc.cc: Include new.
+	(bitmask_type): Remove.
+	(one_buffer): Likewise.
+	(emergency_buffer): Likewise.
+	(emergency_used): Likewise.
+	(dependents_buffer): Likewise.
+	(dependents_used): Likewise.
+	(class pool): New custom fixed-size arena, variable size object
+	allocator.
+	(emergency_pool): New global.
+	(__cxxabiv1::__cxa_allocate_exception): Use new emergency_pool.
+	(__cxxabiv1::__cxa_free_exception): Likewise.
+	(__cxxabiv1::__cxa_allocate_dependent_exception): Likewise.
+	(__cxxabiv1::__cxa_free_dependent_exception): Likewise.
+
+2015-01-22  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/64680
+	* include/bits/regex.h (basic_regex<>::basic_regex,
+	basic_regex<>::operator=, basic_regex<>::imbue): Conform to the
+	standard interface.
+	* testsuite/28_regex/basic_regex/assign/char/cstring.cc: New testcase.
+
+2015-01-22  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/64649
+	* include/bits/regex.tcc (regex_traits<>::lookup_collatename,
+	regex_traits<>::lookup_classname): Correctly narrow input chars.
+	* testsuite/28_regex/traits/wchar_t/user_defined.cc: New testcase.
+
+2015-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Use [jmy] for size_t parameters.
+
+2015-01-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/29_atomics/atomic/64658.cc: Test stored value.
+
+2015-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Remove stray dbhtml tags.
+	* doc/xml/manual/status_cxx2014.xml: Update status.
+	* doc/html/manual/status.html: Regenerate.
+
+2015-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64650
+	* include/experimental/optional (bad_optional_access): Add default
+	constructor.
+	* testsuite/experimental/optional/requirements.cc: Test for default
+	constructor.
+
+2015-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_map.h (map::find<>, map::count<>,
+	map::lower_bound<>, map::upper_bound<>, map::equal_range<>): New
+	member function templates to perform heterogeneous lookup.
+	* include/bits/stl_multimap.h (multimap::find<>, multimap::count<>,
+	multimap::lower_bound<>, multimap::upper_bound<>,
+	multimap::equal_range<>): Likewise.
+	* include/bits/stl_multiset.h (multiset::find<>, multiset::count<>,
+	multiset::lower_bound<>, multiset::upper_bound<>,
+	multiset::equal_range<>): Likewise.
+	* include/bits/stl_set.h (set::find<>, set::count<>,
+	set::lower_bound<>, set::upper_bound<>, set::equal_range<>): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree::_S_lower_bound_tr,
+	_Rb_tree::_S_upper_bound_tr, _Rb_tree::_M_find_tr,
+	_Rb_tree::_M_count_tr, _Rb_tree::_M_lower_bound_tr,
+	_Rb_tree::_M_upper_bound_tr, _Rb_tree::_M_equal_range_tr): Likewise.
+	* testsuite/23_containers/map/operations/2.cc: New.
+	* testsuite/23_containers/multimap/operations/2.cc: New.
+	* testsuite/23_containers/multiset/operations/2.cc: New.
+	* testsuite/23_containers/set/operations/2.cc: New.
+
+2015-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Export new constructors.
+	* include/bits/codecvt.h (codecvt_byname): Add string constructor.
+	(codecvt_byname<char16_t>, codecvt_byname<char32_t>): Define explicit
+	specializations and declare explicit instantiations.
+	* include/bits/locale_classes.h (locale, collate_byname): Add string
+	constructors.
+	* include/bits/locale_facets.h (ctype_byname, numpunct_byname):
+	Likewise.
+	* include/bits/locale_facets_nonio.h (time_get_byname,
+	time_put_byname, moneypunct_byname, messages_byname): Likewise.
+	* src/c++11/codecvt.cc (codecvt_byname<char16_t>,
+	codecvt_byname<char32_t>): Define explicit instantiations.
+	* src/c++11/locale-inst.cc (time_put_byname, codecvt_byname):
+	Instantiate string constructors.
+	(ctype_byname): Define string constructor.
+	* testsuite/22_locale/codecvt_byname/1.cc: New.
+	* testsuite/22_locale/collate_byname/1.cc: New.
+	* testsuite/22_locale/ctype_byname/2.cc: New.
+	* testsuite/22_locale/messages_byname/1.cc: New.
+	* testsuite/22_locale/moneypunct_byname/1.cc: New.
+	* testsuite/22_locale/numpunct_byname/1.cc: New.
+
+2015-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64658
+	* include/std/atomic (atomic_init): Define.
+	* testsuite/29_atomics/atomic/64658.cc: New.
+
+2015-01-19  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/64649
+	* include/bits/regex.tcc (regex_traits<>::lookup_collatename,
+	regex_traits<>::lookup_classname): Support forward iterators.
+	* testsuite/28_regex/traits/char/lookup_classname.cc: New testcases.
+	* testsuite/28_regex/traits/char/lookup_collatename.cc: New testcase.
+
+2015-01-19  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/64584
+	PR libstdc++/64585
+	* include/bits/regex.h (basic_regex<>::basic_regex,
+	basic_regex<>::assign, basic_regex<>::imbue,
+	basic_regex<>::swap, basic_regex<>::mark_count): Drop NFA after
+	imbuing basic_regex; Make assign() transactional against exception.
+	* include/bits/regex_compiler.h (__compile_nfa<>): Add back
+	__compile_nfa SFINAE.
+	* include/std/regex: Adjust include order to avoid __compile_nfa
+	forward declaration.
+	* testsuite/28_regex/basic_regex/assign/char/string.cc: New testcase.
+	* testsuite/28_regex/basic_regex/imbue/string.cc: New testcase.
+
+2015-01-19  Ville Voutilainen  <ville.voutilainen@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (begin, end): Use _GLIBCXX14_CONSTEXPR
+	on overloads for arrays.
+	(cbegin, cend, rbegin, rend, crbegin, crend): New.
+	* testsuite/24_iterators/range_access_cpp14.cc: New.
+
 2015-01-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64646

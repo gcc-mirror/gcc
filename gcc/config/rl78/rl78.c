@@ -3583,6 +3583,8 @@ rl78_calculate_death_notes (void)
 	{
 	case INSN:
 	  p = PATTERN (insn);
+	  if (GET_CODE (p) == PARALLEL)
+	    p = XVECEXP (p, 0, 0);
 	  switch (GET_CODE (p))
 	    {
 	    case SET:

@@ -13684,6 +13684,11 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 		       || rtx_equal_p (XEXP (note, 0), elim_i0))
 		break;
 	      tem_insn = i3;
+	      /* If the new I2 sets the same register that is marked dead
+		 in the note, the note now should not be put on I2, as the
+		 note refers to a previous incarnation of the reg.  */
+	      if (i2 != 0 && reg_set_p (XEXP (note, 0), PATTERN (i2)))
+		tem_insn = i2;
 	    }
 
 	  if (place == 0)

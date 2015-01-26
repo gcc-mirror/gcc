@@ -257,6 +257,13 @@ struct cpu_vec_costs {
 
 struct cpu_cost_table;
 
+enum arm_sched_autopref
+  {
+    ARM_SCHED_AUTOPREF_OFF,
+    ARM_SCHED_AUTOPREF_RANK,
+    ARM_SCHED_AUTOPREF_FULL
+  };
+
 struct tune_params
 {
   bool (*rtx_costs) (rtx, RTX_CODE, RTX_CODE, int *, bool);
@@ -292,7 +299,7 @@ struct tune_params
   /* Bitfield encoding the fuseable pairs of instructions.  */
   unsigned int fuseable_ops;
   /* Depth of scheduling queue to check for L2 autoprefetcher.  */
-  int sched_autopref_queue_depth;
+  enum arm_sched_autopref sched_autopref;
 };
 
 extern const struct tune_params *current_tune;

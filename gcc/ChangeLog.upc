@@ -1,3 +1,7 @@
+2015-01-26  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 220104 into gupc branch.
+
 2015-01-19  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 219833 into gupc branch.

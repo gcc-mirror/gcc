@@ -1,3 +1,8 @@
+2015-01-19  Eli Zaretskii  <eliz@gnu.org>
+
+	* strerror.c <sys_nerr, sys_errlist>: Declare only if they aren't
+	macros.
+
 2014-12-24  Uros Bizjak  <ubizjak@gmail.com>
 	    Ben Elliston  <bje@au.ibm.com>
 	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
