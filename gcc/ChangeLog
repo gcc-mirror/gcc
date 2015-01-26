@@ -1,3 +1,11 @@
+2014-01-25  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/arm-cores.def (cortex-a57): Use the new Cortex-A57
+	pipeline model.
+	config/arm/arm.md: Include the new Cortex-A57 model.
+	(generic_sched): Don't use generic_sched when tuning for
+	Cortex-A57.
+
 2015-01-25  Allan Sandfeld Jensen  <sandfeld@kde.org>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
