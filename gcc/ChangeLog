@@ -1,5 +1,10 @@
 2015-01-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/64730
+	* ipa-inline.c (inline_small_functions): Print "unknown" even
+	if edge->call_stmt is non-NULL, but has builtins or unknown
+	location.
+
 	PR middle-end/64421
 	* omp-low.c (simd_clone_mangle): If DECL_ASSEMBLER_NAME starts
 	with asterisk, skip the first character.
