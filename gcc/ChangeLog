@@ -1,3 +1,19 @@
+2015-01-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2015-01-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/64795
+	* config/i386/i386.md (*movdi_internal): Also check operand 0
+	to determine TYPE_LEA operand.
+	(*movsi_internal): Ditto.
+
+	Backport from mainline
+	2015-01-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (sse2_loadld): Set attribute isa to sse2 for
+	alternative 1.
+
 2015-01-15  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
@@ -444,7 +460,7 @@
 	* config/pa/pa.md (trap): New insn.  Add "trap" to attribute type.
 	Don't allow trap insn in in_branch_delay, in_nullified_branch_delay
 	or in_call_delay.
-	
+
 2014-11-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-elf-raw.h (CA53_ERR_835769_SPEC): Define.
