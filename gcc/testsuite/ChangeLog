@@ -1,3 +1,8 @@
+2015-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64764
+	* gcc.dg/uninit-19.c: New testcase.
+
 2015-01-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/target-supports.exp (check_effective_target_vect64): Add

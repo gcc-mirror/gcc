@@ -1,8 +1,14 @@
+2015-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64764
+	* tree-ssa-uninit.c (is_pred_expr_subset_of): Handle
+	combining two BIT_AND_EXPR predicates.
+
 2015-01-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/64754
 	* tree-ssa-structalias.c (new_var_info): Initialize ruid.
----
+
 2015-01-26  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/arm.c (arm_file_start): Update the assignment of
