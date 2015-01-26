@@ -1,3 +1,12 @@
+2015-01-26  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vXXXhn.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vraddhn.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vrsubhn.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vsubhn.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vaddhn.c: Use code from
+	vXXXhn.inc.
+
 2015-01-26  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64764
