@@ -1172,6 +1172,10 @@ gfc_conv_array_bound (gfc_expr * expr)
   return NULL_TREE;
 }
 
+/* Return the type of an element of the array.  Note that scalar coarrays
+   are special.  In particular, for GFC_ARRAY_TYPE_P, the original argument
+   (with POINTER_TYPE stripped) is returned.  */
+
 tree
 gfc_get_element_type (tree type)
 {

@@ -189,7 +189,7 @@ gfc_has_alloc_comps (tree type, tree decl)
 	return false;
     }
 
-  while (GFC_DESCRIPTOR_TYPE_P (type) || GFC_ARRAY_TYPE_P (type))
+  if (GFC_DESCRIPTOR_TYPE_P (type) || GFC_ARRAY_TYPE_P (type))
     type = gfc_get_element_type (type);
 
   if (TREE_CODE (type) != RECORD_TYPE)
@@ -1989,7 +1989,10 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		      OMP_CLAUSE_DECL (node3)
 			= gfc_conv_descriptor_data_get (decl);
 		      OMP_CLAUSE_SIZE (node3) = size_int (0);
-		      if (n->sym->attr.pointer)
+
+		      /* We have to check for n->sym->attr.dimension because
+			 of scalar coarrays.  */
+		      if (n->sym->attr.pointer && n->sym->attr.dimension)
 			{
 			  stmtblock_t cond_block;
 			  tree size
@@ -2019,16 +2022,19 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 							     else_b));
 			  OMP_CLAUSE_SIZE (node) = size;
 			}
-		      else
+		      else if (n->sym->attr.dimension)
 			OMP_CLAUSE_SIZE (node)
 			  = gfc_full_array_size (block, decl,
 						 GFC_TYPE_ARRAY_RANK (type));
-		      tree elemsz
-			= TYPE_SIZE_UNIT (gfc_get_element_type (type));
-		      elemsz = fold_convert (gfc_array_index_type, elemsz);
-		      OMP_CLAUSE_SIZE (node)
-			= fold_build2 (MULT_EXPR, gfc_array_index_type,
-				       OMP_CLAUSE_SIZE (node), elemsz);
+		      if (n->sym->attr.dimension)
+			{
+			  tree elemsz
+			    = TYPE_SIZE_UNIT (gfc_get_element_type (type));
+			  elemsz = fold_convert (gfc_array_index_type, elemsz);
+			  OMP_CLAUSE_SIZE (node)
+			    = fold_build2 (MULT_EXPR, gfc_array_index_type,
+					   OMP_CLAUSE_SIZE (node), elemsz);
+			}
 		    }
 		  else
 		    OMP_CLAUSE_DECL (node) = decl;

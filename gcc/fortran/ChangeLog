@@ -1,3 +1,10 @@
+2015-01-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/63861
+	* trans-openmp.c (gfc_has_alloc_comps, gfc_trans_omp_clauses):
+	Fix handling for scalar coarrays.
+	* trans-types.c (gfc_get_element_type): Add comment.
+
 2015-01-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR fortran/64771
