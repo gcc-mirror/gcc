@@ -1,5 +1,4 @@
 ! { dg-do run }
-! { dg-options "-fsanitize=undefined" }
 !
 ! PR 64230: [4.9/5 Regression] Invalid memory reference in a compiler-generated finalizer for allocatable component
 !

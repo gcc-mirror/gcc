@@ -1,3 +1,10 @@
+2015-01-27  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from mainline
+	PR fortran/64230
+	* gfortran.dg/class_allocate_18.f90: Remove -fsanitize option to
+	prevent linking errors.
+
 2015-01-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/64771
