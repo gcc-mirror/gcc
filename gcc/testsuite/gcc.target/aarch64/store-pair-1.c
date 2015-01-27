@@ -9,4 +9,4 @@ int f(int *a, int b)
 }
 
 /* We should be able to produce store pair for the store of 28/29 store. */
-/* { dg-final { scan-assembler "stp\tw\[0-9\]+, w\[0-9\]+" } } */
+/* { dg-final { scan-assembler "stp\tw(\[0-9\]+)\|(zr), w\[0-9\]+" } } */

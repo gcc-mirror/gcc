@@ -1,3 +1,8 @@
+2015-01-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/store-pair-1.c: Update scan-assembler to check
+	for wzr reg.
+
 2015-01-27  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc/testsuite/gcc.target/s390/hotpatch-13.c: New testcase.
