@@ -847,6 +847,23 @@ update_value_range (const_tree var, value_range_t *new_vr)
   value_range_t *old_vr;
   bool is_new;
 
+  /* If there is a value-range on the SSA name from earlier analysis
+     factor that in.  */
+  if (INTEGRAL_TYPE_P (TREE_TYPE (var)))
+    {
+      wide_int min, max;
+      value_range_type rtype = get_range_info (var, &min, &max);
+      if (rtype == VR_RANGE || rtype == VR_ANTI_RANGE)
+	{
+	  value_range_d nr;
+	  nr.type = rtype;
+	  nr.min = wide_int_to_tree (TREE_TYPE (var), min);
+	  nr.max = wide_int_to_tree (TREE_TYPE (var), max);
+	  nr.equiv = NULL;
+	  vrp_intersect_ranges (new_vr, &nr);
+	}
+    }
+
   /* Update the value range, if necessary.  */
   old_vr = get_value_range (var);
   is_new = old_vr->type != new_vr->type
