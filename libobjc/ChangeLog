@@ -1,3 +1,7 @@
+2015-01-27  Matthias Klose  <doko@ubuntu.com>
+
+	* sendmsg.c: Add prototypes for __objc_get_forward_imp and get_imp.
+
 2015-01-09  Dimitris Papavasiliou  <dpapavas@gmail.com>
 
 	PR libobjc/51891

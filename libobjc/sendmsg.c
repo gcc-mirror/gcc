@@ -104,6 +104,10 @@ static struct objc_method * search_for_method_in_hierarchy (Class class, SEL sel
 struct objc_method * search_for_method_in_list (struct objc_method_list * list, SEL op);
 id nil_method (id, SEL);
 
+/* Make sure this inline function is exported regardless of GNU89 or C99
+   inlining semantics as it is part of the libobjc ABI.  */
+extern IMP __objc_get_forward_imp (id, SEL);
+
 /* Given a selector, return the proper forwarding implementation.  */
 inline
 IMP
@@ -319,6 +323,10 @@ get_implementation (id receiver, Class class, SEL sel)
     }
   return res;
 }
+
+/* Make sure this inline function is exported regardless of GNU89 or C99
+   inlining semantics as it is part of the libobjc ABI.  */
+extern IMP get_imp (Class, SEL);
 
 inline
 IMP
