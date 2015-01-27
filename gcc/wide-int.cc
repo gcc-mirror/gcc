@@ -1819,6 +1819,7 @@ wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
 	     divisor_blocks_needed, divisor_prec, sgn);
 
   m = dividend_blocks_needed;
+  b_dividend[m] = 0;
   while (m > 1 && b_dividend[m - 1] == 0)
     m--;
 
