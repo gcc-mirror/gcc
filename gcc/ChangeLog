@@ -1,3 +1,9 @@
+2015-01-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/64282
+	* gimple-fold.c (gimple_get_virt_method_for_vtable): Remove assert
+	on vtable being vtable.
+
 2015-01-27  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
         * doc/extend.texi: s/390: Update documentation of hotpatch attribute.
