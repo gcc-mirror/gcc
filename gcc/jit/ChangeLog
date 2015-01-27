@@ -1,3 +1,15 @@
+2015-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/internals/test-hello-world.exe.log.txt: Add example version
+	lines.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-common.h (gcc::jit::dump::get_file): New accessor.
+	* jit-logging.c: Include toplev.h.
+	(gcc::jit::logger::logger): Log the GCC version.
+	* jit-recording.c: Include toplev.h.
+	(gcc:jit::recording::context::dump_reproducer_to_file): Log the
+	GCC version.
+
 2015-01-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/topics/compilation.rst (gcc_jit_result_get_code): Fix typo.

@@ -1,3 +1,5 @@
+JIT: libgccjit (GCC) version 5.0.0 20150123 (experimental) (x86_64-unknown-linux-gnu)
+JIT:	compiled by GNU C version 4.8.3 20140911 (Red Hat 4.8.3-7), GMP version 5.1.2, MPFR version 3.1.2, MPC version 1.0.1
 JIT: entering: gcc_jit_context_set_str_option
 JIT: exiting: gcc_jit_context_set_str_option
 JIT: entering: gcc_jit_context_set_int_option
