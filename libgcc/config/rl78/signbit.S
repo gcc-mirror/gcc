@@ -37,11 +37,9 @@
 
 	.text
 
-	.global	_signbit
-_signbit:
-	.global	_signbitf
-_signbitf:
-	;; X is at [sp+4]
+START_FUNC		_signbit
+START_ANOTHER_FUNC	_signbitf
+	;; X is at [sp+4]..[SP+7]
 	;; result is in R8..R9
 
 	movw	r8, #0
@@ -50,12 +48,12 @@ _signbitf:
 	sknc
 	movw	r8, #1
 	ret
-	.size	_signbit, . - _signbit
-	.size	_signbitf, . - _signbitf
+END_ANOTHER_FUNC	_signbitf
+END_FUNC		_signbit
 
-	.global	_signbitl
-_signbitl:
-	;; X is at [sp+4]
+
+START_FUNC	_signbitl
+	;; X is at [sp+4]..[SP+7]
 	;; result is in R8..R9
 
 	movw	r8, #0
@@ -64,4 +62,4 @@ _signbitl:
 	sknc
 	movw	r8, #1
 	ret
-	.size	_signbitl, . - _signbitl
+END_FUNC 	_signbitl

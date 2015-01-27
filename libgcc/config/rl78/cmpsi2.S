@@ -31,9 +31,8 @@
 	;; If A is less than B it returns 0.  If A is greater
 	;; than B it returns 2.  If they are equal it returns 1.
 
-	.global	___cmpsi2
-        .type   ___cmpsi2, @function
-___cmpsi2:
+START_FUNC ___cmpsi2
+
 	;; A is at [sp+4]
 	;; B is at [sp+8]
 	;; Result put in R8
@@ -88,18 +87,18 @@ ___cmpsi2:
 	movw	r8, ax
 	ret
 
-	.size	___cmpsi2, . - ___cmpsi2
-	
-	
+END_FUNC ___cmpsi2
+
+;; ------------------------------------------------------
+
 	;;   int __ucmpsi2 (unsigned long A, unsigned long B)
 	;;
 	;; Performs an unsigned comparison of A and B.
 	;; If A is less than B it returns 0.  If A is greater
 	;; than B it returns 2.  If they are equal it returns 1.
 
-	.global	___ucmpsi2
-        .type   ___ucmpsi2, @function
-___ucmpsi2:
+START_FUNC ___ucmpsi2
+
 	;; A is at [sp+4]
 	;; B is at [sp+8]
 	;; Result put in R8..R9
@@ -117,5 +116,57 @@ ___ucmpsi2:
 	br	!!.Lless_than_or_greater_than
 	br	!!.Lcompare_bottom_words
 
-	.size	___ucmpsi2, . - ___ucmpsi2
+END_FUNC ___ucmpsi2
+
+;; ------------------------------------------------------
 	
+	;;   signed int __gcc_bcmp (const unsigned char *s1, const unsigned char *s2, size_t size)
+	;;   Result is negative if S1 is less than S2,
+	;;   positive if S1 is greater, 0 if S1 and S2 are equal.
+
+START_FUNC __gcc_bcmp
+
+	;; S1 is at [sp+4]
+	;; S2 is at [sp+6]
+	;; SIZE is at [sp+8]
+	;; Result in r8/r9
+	
+        movw	r10, #0
+1:
+	;; Compare R10 against the SIZE parameter
+        movw	ax, [sp+8]
+        subw	ax, r10
+        sknz
+        br	!!1f
+
+	;; Load S2[r10] into R8
+        movw	ax, [sp+6]
+        addw	ax, r10
+        movw	hl, ax
+        mov	a, [hl]
+        mov	r8, a
+
+	;; Load S1[r10] into A
+        movw	ax, [sp+4]
+        addw	ax, r10
+        movw	hl, ax
+        mov	a, [hl]
+
+	;; Increment offset
+        incw	r10
+
+	;; Compare loaded bytes
+        cmp	a, r8
+        sknz
+        br	!!1b
+
+	;; They differ.  Subtract *S2 from *S1 and return as the result.
+	mov	x, a
+	mov	a, #0
+	mov	r9, #0
+	subw	ax, r8
+1:
+	movw	r8, ax
+        ret
+
+END_FUNC __gcc_bcmp

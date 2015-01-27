@@ -80,14 +80,10 @@ trampoline_array_end:
    pointer in R10, allocate a trampoline and return its address in
    R8. */
 
-	.text
-	.global ___trampoline_init
-        .type   ___trampoline_init, @function
-___trampoline_init:
-
+START_FUNC ___trampoline_init
 	movw	hl, #trampoline_array
-1:
-	movw	ax, [hl + TO_ADDR]
+
+1:	movw	ax, [hl + TO_ADDR]
 	cmpw	ax, #0
 	bz	$2f
 
@@ -107,30 +103,27 @@ ___trampoline_init:
 
 	movw	ax, [hl + TO_STUB]
 	movw	r8, ax
-
 	ret
-	.size	___trampoline_init, . - ___trampoline_init
+END_FUNC ___trampoline_init
 
-	.global	___trampoline_uninit
-        .type   ___trampoline_uninit, @function
-___trampoline_uninit:
+
+START_FUNC ___trampoline_uninit
 	movw	hl, #trampoline_array
 	movw	ax, sp
 	movw	bc, ax
-1:
-	movw	ax, [hl + TO_FRAME]
+
+1:	movw	ax, [hl + TO_FRAME]
 	cmpw	ax, bc
 	bc	$2f
 
 	clrw	ax
 	movw	[hl + TO_ADDR], ax
 
-2:
-	movw	ax, hl
+2:	movw	ax, hl
 	addw	ax, #TO_SIZE
 	movw	hl, ax
 	cmpw	ax, #trampoline_array_end
 	bnz	$1b
 
 	ret
-	.size	___trampoline_uninit, . - ___trampoline_uninit
+END_FUNC ___trampoline_uninit
