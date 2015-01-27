@@ -1,3 +1,7 @@
+2015-01-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/sysv4.h (CRT_GET_RFIB_DATA): Remove.
+
 2015-01-27  Jakub Jelinek  <jakub@redhat.com>
 	    Yury Gribov  <y.gribov@samsung.com>
 

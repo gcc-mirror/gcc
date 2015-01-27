@@ -619,6 +619,7 @@ i[34567]86-*-rtems*)
 i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
 	tmake_file="$tmake_file i386/t-crtpc i386/t-crtfm"
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
+	tm_file="${tm_file} i386/elf-lib.h"
 	md_unwind_header=i386/sol2-unwind.h
 	;;
 i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
