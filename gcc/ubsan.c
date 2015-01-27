@@ -328,10 +328,9 @@ ubsan_source_location (location_t loc)
   else
     {
       /* Fill in the values from LOC.  */
-      size_t len = strlen (xloc.file);
-      str = build_string (len + 1, xloc.file);
-      TREE_TYPE (str) = build_array_type (char_type_node,
-					  build_index_type (size_int (len)));
+      size_t len = strlen (xloc.file) + 1;
+      str = build_string (len, xloc.file);
+      TREE_TYPE (str) = build_array_type_nelts (char_type_node, len);
       TREE_READONLY (str) = 1;
       TREE_STATIC (str) = 1;
       str = build_fold_addr_expr (str);
@@ -504,6 +503,13 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
   tinfo = get_ubsan_type_info_for_type (type);
 
   /* Create a new VAR_DECL of type descriptor.  */
+  const char *tmp = pp_formatted_text (&pretty_name);
+  size_t len = strlen (tmp) + 1;
+  tree str = build_string (len, tmp);
+  TREE_TYPE (str) = build_array_type_nelts (char_type_node, len);
+  TREE_READONLY (str) = 1;
+  TREE_STATIC (str) = 1;
+
   char tmp_name[32];
   static unsigned int type_var_id_num;
   ASM_GENERATE_INTERNAL_LABEL (tmp_name, "Lubsan_type", type_var_id_num++);
@@ -514,14 +520,12 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   DECL_EXTERNAL (decl) = 0;
+  DECL_SIZE (decl)
+    = size_binop (PLUS_EXPR, DECL_SIZE (decl), TYPE_SIZE (TREE_TYPE (str)));
+  DECL_SIZE_UNIT (decl)
+    = size_binop (PLUS_EXPR, DECL_SIZE_UNIT (decl),
+		  TYPE_SIZE_UNIT (TREE_TYPE (str)));
 
-  const char *tmp = pp_formatted_text (&pretty_name);
-  size_t len = strlen (tmp);
-  tree str = build_string (len + 1, tmp);
-  TREE_TYPE (str) = build_array_type (char_type_node,
-				      build_index_type (size_int (len)));
-  TREE_READONLY (str) = 1;
-  TREE_STATIC (str) = 1;
   tree ctor = build_constructor_va (dtype, 3, NULL_TREE,
 				    build_int_cst (short_unsigned_type_node,
 						   tkind), NULL_TREE,

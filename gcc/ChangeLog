@@ -1,3 +1,10 @@
+2015-01-27  Jakub Jelinek  <jakub@redhat.com>
+	    Yury Gribov  <y.gribov@samsung.com>
+
+	PR ubsan/64741
+	* ubsan.c (ubsan_source_location): Refactor code.
+	(ubsan_type_descriptor): Update type size. Refactor code.
+
 2015-01-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56273
