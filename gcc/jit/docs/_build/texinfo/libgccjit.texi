@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-libgccjit 5.0.0 (experimental 20150120), January 19, 2015
+libgccjit 5.0.0 (experimental 20150126), January 26, 2015
 
 David Malcolm
 
@@ -5049,10 +5049,10 @@ occurred on the context, so that you can embed this in an exception:
 
 Returns the last error message that occurred on the context.
 
-The returned string is valid for the rest of the lifetime of the
-context.
-
 If no errors occurred, this will be NULL.
+
+If non-NULL, the returned string is only guaranteed to be valid until
+the next call to libgccjit relating to this context.
 @end deffn
 
 @node Debugging,Options<2>,Error-handling<2>,Compilation contexts
@@ -7509,7 +7509,7 @@ with it.
 
 A @cite{gcc_jit_result} encapsulates the result of compiling a context
 in-memory, and the lifetimes of any machine code functions or globals
-that are within the resuilt.
+that are within the result.
 @end deffn
 
 @geindex gcc_jit_result_get_code (C function)

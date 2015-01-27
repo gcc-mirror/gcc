@@ -146,10 +146,10 @@ occurred on the context, so that you can embed this in an exception:
 
    Returns the last error message that occurred on the context.
 
-   The returned string is valid for the rest of the lifetime of the
-   context.
-
    If no errors occurred, this will be NULL.
+
+   If non-NULL, the returned string is only guaranteed to be valid until
+   the next call to libgccjit relating to this context.
 
 Debugging
 ---------

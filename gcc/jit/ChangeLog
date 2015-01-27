@@ -1,5 +1,16 @@
 2015-01-26  David Malcolm  <dmalcolm@redhat.com>
 
+	* docs/topics/compilation.rst (gcc_jit_result_get_code): Fix typo.
+	* docs/topics/contexts.rst (gcc_jit_context_get_last_error): The
+	error buffer is only valid until the next call to the context.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* libgccjit.h (gcc_jit_context_get_first_error): Reword the
+	comment to omit mention of compiling.
+	(gcc_jit_context_get_last_error): The error buffer is only valid
+	until the next call to the context.
+
+2015-01-26  David Malcolm  <dmalcolm@redhat.com>
+
 	PR jit/64708
 	* config-lang.in (compilers): Drop "libgccjit.so".
 
