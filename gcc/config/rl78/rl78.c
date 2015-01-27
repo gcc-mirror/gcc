@@ -222,7 +222,12 @@ move_elim_pass (void)
 	 can eliminate the second SET.  */
       if (prev
 	  && rtx_equal_p (SET_DEST (prev), SET_SRC (set))
-	  && rtx_equal_p (SET_DEST (set), SET_SRC (prev)))
+	  && rtx_equal_p (SET_DEST (set), SET_SRC (prev))
+	  /* ... and none of the operands are volatile.  */
+	  && ! volatile_refs_p (SET_SRC (prev))
+	  && ! volatile_refs_p (SET_DEST (prev))
+	  && ! volatile_refs_p (SET_SRC (set))
+	  && ! volatile_refs_p (SET_DEST (set)))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, " Delete insn %d because it is redundant\n",

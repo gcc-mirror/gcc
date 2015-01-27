@@ -1,3 +1,8 @@
+2015-01-26  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78.c (move_elim_pass): Don't optimize away
+	volatile memory references.
+
 2015-01-26  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/49263
