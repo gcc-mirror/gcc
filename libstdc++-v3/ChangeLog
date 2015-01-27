@@ -1,3 +1,12 @@
+2015-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64368
+	* include/std/shared_mutex (shared_timed_mutex::try_lock_for,
+	shared_timed_mutex::try_lock_until): Only define when POSIX thread
+	timeouts option is supported.
+	(shared_timed_mutex::try_shared_lock_for,
+	shared_timed_mutex::try_shared_lock_until): Likewise.
+
 2015-01-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64368

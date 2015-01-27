@@ -108,6 +108,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return true;
     }
 
+#if _GTHREAD_USE_MUTEX_TIMEDLOCK
     template<typename _Rep, typename _Period>
       bool
       try_lock_for(const chrono::duration<_Rep, _Period>& __rel_time)
@@ -149,6 +150,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const auto __s_atime = __s_entry + __delta;
 	return try_lock_until(__s_atime);
       }
+#endif
 
     void
     unlock()
@@ -186,6 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return true;
     }
 
+#if _GTHREAD_USE_MUTEX_TIMEDLOCK
     template<typename _Rep, typename _Period>
       bool
       try_lock_shared_for(const chrono::duration<_Rep, _Period>& __rel_time)
@@ -230,6 +233,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const auto __s_atime = __s_entry + __delta;
 	return try_lock_shared_until(__s_atime);
       }
+#endif
 
     void
     unlock_shared()
