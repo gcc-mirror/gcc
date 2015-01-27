@@ -1,3 +1,13 @@
+2015-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* toplev.c (print_version): Add param "show_global_state", and
+	only print GGC and plugin information if it is true.
+	(init_asm_output): Pass in "true" for the new param when calling
+	print_version.
+	(process_options): Likewise.
+	(toplev::main): Likewise.
+	* toplev.h (print_version): Add new param to decl.
+
 2015-01-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/60871

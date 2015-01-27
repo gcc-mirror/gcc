@@ -178,6 +178,8 @@ public:
   recording::location *
   make_location () const;
 
+  FILE *get_file () const { return m_file; }
+
 private:
   recording::context &m_ctxt;
   const char *m_filename;

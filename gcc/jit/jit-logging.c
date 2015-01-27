@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "toplev.h" /* for print_version */
 
 #include "jit-logging.h"
 
@@ -41,6 +42,8 @@ logger::logger (FILE *f_out,
   m_indent_level (0),
   m_log_refcount_changes (false)
 {
+  /* Begin the log by writing the GCC version.  */
+  print_version (f_out, "JIT:", false);
 }
 
 /* The destructor for gcc::jit::logger, invoked via
