@@ -11990,6 +11990,23 @@ type_in_anonymous_namespace_p (const_tree t)
   return (TYPE_STUB_DECL (t) && !TREE_PUBLIC (TYPE_STUB_DECL (t)));
 }
 
+/* Lookup sub-BINFO of BINFO of TYPE at offset POS.  */
+
+tree
+lookup_binfo_at_offset (tree binfo, tree type, HOST_WIDE_INT pos)
+{
+  unsigned int i;
+  tree base_binfo, b;
+
+  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+    if (pos == tree_to_shwi (BINFO_OFFSET (base_binfo))
+	&& types_same_for_odr (TREE_TYPE (base_binfo), type))
+      return base_binfo;
+    else if ((b = lookup_binfo_at_offset (base_binfo, type, pos)) != NULL)
+      return b;
+  return NULL;
+}
+
 /* Try to find a base info of BINFO that would have its field decl at offset
    OFFSET within the BINFO type and which is of EXPECTED_TYPE.  If it can be
    found, return, otherwise return NULL_TREE.  */
@@ -12027,42 +12044,22 @@ get_binfo_at_offset (tree binfo, HOST_WIDE_INT offset, tree expected_type)
 	 represented in the binfo for the derived class.  */
       else if (offset != 0)
 	{
-	  tree base_binfo, binfo2 = binfo;
+	  tree found_binfo = NULL, base_binfo;
+	  int offset = (tree_to_shwi (BINFO_OFFSET (binfo)) + pos
+			/ BITS_PER_UNIT);
 
-	  /* Find BINFO corresponding to FLD.  This is bit harder
-	     by a fact that in virtual inheritance we may need to walk down
-	     the non-virtual inheritance chain.  */
-	  while (true)
-	    {
-	      tree containing_binfo = NULL, found_binfo = NULL;
-	      for (i = 0; BINFO_BASE_ITERATE (binfo2, i, base_binfo); i++)
-		if (types_same_for_odr (TREE_TYPE (base_binfo), TREE_TYPE (fld)))
-		  {
-		    found_binfo = base_binfo;
-		    break;
-		  }
-		else
-		  if ((tree_to_shwi (BINFO_OFFSET (base_binfo)) 
-		       - tree_to_shwi (BINFO_OFFSET (binfo)))
-		      * BITS_PER_UNIT < pos
-		      /* Rule out types with no virtual methods or we can get confused
-			 here by zero sized bases.  */
-		      && TYPE_BINFO (BINFO_TYPE (base_binfo))
-		      && BINFO_VTABLE (TYPE_BINFO (BINFO_TYPE (base_binfo)))
-		      && (!containing_binfo
-			  || (tree_to_shwi (BINFO_OFFSET (containing_binfo))
-			      < tree_to_shwi (BINFO_OFFSET (base_binfo)))))
-		    containing_binfo = base_binfo;
-	      if (found_binfo)
-		{
-		  binfo = found_binfo;
-		  break;
-		}
-	      if (!containing_binfo)
-		return NULL_TREE;
-	      binfo2 = containing_binfo;
-	    }
-	}
+	  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+	    if (tree_to_shwi (BINFO_OFFSET (base_binfo)) == offset
+		&& types_same_for_odr (TREE_TYPE (base_binfo), TREE_TYPE (fld)))
+	      {
+		found_binfo = base_binfo;
+		break;
+	      }
+	  if (found_binfo)
+	    binfo = found_binfo;
+	  else
+	    binfo = lookup_binfo_at_offset (binfo, TREE_TYPE (fld), offset);
+	 }
 
       type = TREE_TYPE (fld);
       offset -= pos;
