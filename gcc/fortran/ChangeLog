@@ -1,3 +1,8 @@
+2015-01-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/64771
+	* interface.c (check_dummy_characteristics): Fix coarray handling.
+
 2015-01-26  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from mainline
