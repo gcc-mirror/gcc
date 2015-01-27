@@ -1,3 +1,11 @@
+2015-01-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (i[34567]86-*-solaris2*, x86_64-*-solaris2.1[0-9]*):
+	Add i386/elf-lib.h to tm_file.
+	* config/i386/elf-lib.h: Fix comment.
+	* unwind-dw2-fde-dip.c (_Unwind_IteratePhdrCallback) [__x86_64__
+	&& __sun__ && __svr4__]: Remove workaround.
+
 2015-01-25  Allan Sandfeld Jensen  <sandfeld@kde.org>
 
 	* config/i386/cpuinfo.c (enum processor_features): Add FEATURE_BMI and
