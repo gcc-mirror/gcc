@@ -1,3 +1,8 @@
+2015-01-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_register_move_cost): Increase costs for
+	FPR->GPR moves.
+
 2015-01-27  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.c (update_value_range): Intersect the range with
