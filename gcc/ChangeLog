@@ -1,3 +1,8 @@
+2015-01-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_register_move_cost): Increase costs for
+	FPR->GPR moves.
+
 2015-01-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

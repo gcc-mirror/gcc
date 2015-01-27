@@ -2384,16 +2384,29 @@ s390_float_const_zero_p (rtx value)
 /* Implement TARGET_REGISTER_MOVE_COST.  */
 
 static int
-s390_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+s390_register_move_cost (enum machine_mode mode,
                          reg_class_t from, reg_class_t to)
 {
-  /* On s390, copy between fprs and gprs is expensive as long as no
-     ldgr/lgdr can be used.  */
-  if ((!TARGET_Z10 || GET_MODE_SIZE (mode) != 8)
-      && ((reg_classes_intersect_p (from, GENERAL_REGS)
-	   && reg_classes_intersect_p (to, FP_REGS))
-	  || (reg_classes_intersect_p (from, FP_REGS)
-	      && reg_classes_intersect_p (to, GENERAL_REGS))))
+  /* On s390, copy between fprs and gprs is expensive.  */
+
+  /* It becomes somewhat faster having ldgr/lgdr.  */
+  if (TARGET_Z10 && GET_MODE_SIZE (mode) == 8)
+    {
+      /* ldgr is single cycle. */
+      if (reg_classes_intersect_p (from, GENERAL_REGS)
+	  && reg_classes_intersect_p (to, FP_REGS))
+	return 1;
+      /* lgdr needs 3 cycles. */
+      if (reg_classes_intersect_p (to, GENERAL_REGS)
+	  && reg_classes_intersect_p (from, FP_REGS))
+	return 3;
+    }
+
+  /* Otherwise copying is done via memory.  */
+  if ((reg_classes_intersect_p (from, GENERAL_REGS)
+       && reg_classes_intersect_p (to, FP_REGS))
+      || (reg_classes_intersect_p (from, FP_REGS)
+	  && reg_classes_intersect_p (to, GENERAL_REGS)))
     return 10;
 
   return 1;
