@@ -1,3 +1,8 @@
+2015-01-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (update_value_range): Intersect the range with
+	old recorded SSA name range information.
+
 2015-01-27  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78.c (rl78_expand_prologue): In G10 mode push the
