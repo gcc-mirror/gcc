@@ -1,3 +1,9 @@
+2015-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from mainline
+	PR fortran/62044
+	* gfortran.dg/allocate_with_mold_1.f90: New test
+
 2015-01-27  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from mainline
@@ -60,7 +66,7 @@
 	* g++.dg/tsan/atomic_free.C: Likewise.
 	* g++.dg/tsan/atomic_free2.C: Likewise.
 	* g++.dg/tsan/cond_race.C: Likewise.
-	* g++.dg/tsan/tsan_barrier.h: Copied from c-c++-common/tsan. 
+	* g++.dg/tsan/tsan_barrier.h: Copied from c-c++-common/tsan.
 
 2015-01-15  Eric Botcazou  <ebotcazou@adacore.com>
 

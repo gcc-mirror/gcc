@@ -1,3 +1,11 @@
+2015-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from mainline
+	PR fortran/62044
+	* resolve.c (resolve_allocate_expr): If the default initializer
+	is NULL, keep the original MOLD expression so that the correct
+	typespec is available.
+
 2015-01-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/64771
