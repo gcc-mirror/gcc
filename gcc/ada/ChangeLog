@@ -1,3 +1,9 @@
+2015-01-27  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Fix build under cygwin/64.
+	* adaint.h: Add check for __CYGWIN__.
+	* mingw32.h: Prevent windows.h from including x86intrin.h in GCC.
+
 2015-01-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR ada/64640
