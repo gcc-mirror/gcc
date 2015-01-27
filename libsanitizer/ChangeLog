@@ -1,8 +1,13 @@
+2015-01-26  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Move AM_ENABLE_MULTILIB before AC_PROG_CC.
+	* configure: Regenerate.
+
 2015-01-25  Venkataramanan Kumar  <venkataramanan.kumar@linaro.org>
 
-	* configure.ac (TSAN_TARGET_DEPENDENT_OBJECTS): Undefine. 
+	* configure.ac (TSAN_TARGET_DEPENDENT_OBJECTS): Undefine.
 	* configure: Regenerate.
-	* configure.tgt (TSAN_TARGET_DEPENDENT_OBJECTS): Define.  
+	* configure.tgt (TSAN_TARGET_DEPENDENT_OBJECTS): Define.
 
 2015-01-25  Venkataramanan Kumar  <venkataramanan.kumar@linaro.org>
 
