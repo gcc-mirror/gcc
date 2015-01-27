@@ -1,3 +1,8 @@
+2015-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/61058
+	* gcc.dg/pr61058.c: New test.
+
 2015-01-27  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* gcc.target/i386/chkp-narrow-bounds.c: New.
