@@ -1,5 +1,9 @@
 2015-01-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/58597
+	* lambda.c (maybe_add_lambda_conv_op): Check cfun rather than
+	current_function_decl.
+
 	PR c++/63889
 	* pt.c (finish_template_variable): Move from semantics.c.
 	Handle multiple template arg levels.  Handle coercion here.
