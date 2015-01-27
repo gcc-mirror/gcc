@@ -5,6 +5,8 @@ AC_PREREQ([2.64])
 AC_INIT(package-unused, version-unused, libsanitizer)
 AC_CONFIG_SRCDIR([include/sanitizer/common_interface_defs.h])
 
+AM_ENABLE_MULTILIB(, ..)
+
 AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
 AC_ARG_ENABLE(version-specific-runtime-libs,
 [  --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory ],
@@ -24,7 +26,6 @@ AC_SUBST(target_alias)
 GCC_LIBSTDCXX_RAW_CXX_FLAGS
 
 AM_INIT_AUTOMAKE(foreign no-dist)
-AM_ENABLE_MULTILIB(, ..)
 AM_MAINTAINER_MODE
 
 # Calculate toolexeclibdir

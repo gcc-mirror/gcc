@@ -1,3 +1,8 @@
+2015-01-27  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Move AM_ENABLE_MULTILIB before AC_PROG_CC.
+	* configure: Regenerate.
+
 2014-12-19  Release Manager
 
 	* GCC 4.8.4 released.
