@@ -1,3 +1,9 @@
+2015-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/61058
+	* jump.c (cleanup_barriers): Update basic block boundaries
+	if BLOCK_FOR_INSN is non-NULL on PREV.
+
 2015-01-27  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* tree-chkp.c (chkp_call_returns_bounds_p): Fix handling of
