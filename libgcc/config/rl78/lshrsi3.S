@@ -22,11 +22,7 @@
 
 #include "vregs.h"
 	
-	.text
-	.global	___lshrsi3
-	.type	___lshrsi3, @function
-___lshrsi3:
-
+START_FUNC ___lshrsi3
 	;; input:
 	;; 
 	;; [zero]
@@ -46,7 +42,6 @@ ___lshrsi3:
 	;; B  - count
 
 	mov	a, [sp+8]	; A now contains the count
-
 	cmp	a, #0x20
 	bc	$.Lcount_is_normal
 
@@ -113,4 +108,4 @@ ___lshrsi3:
 
 	br	$.Lloop_top
 
-	.size	___lshrsi3, .-___lshrsi3
+END_FUNC ___lshrsi3

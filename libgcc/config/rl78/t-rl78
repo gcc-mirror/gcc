@@ -20,8 +20,6 @@
 
 LIB2ADD = \
 	$(srcdir)/config/rl78/trampoline.S \
-	$(srcdir)/config/rl78/lib2div.c \
-	$(srcdir)/config/rl78/lib2mul.c \
 	$(srcdir)/config/rl78/lib2shift.c \
 	$(srcdir)/config/rl78/lshrsi3.S \
 	$(srcdir)/config/rl78/mulsi3.S \
@@ -29,6 +27,22 @@ LIB2ADD = \
 	$(srcdir)/config/rl78/divmodhi.S \
 	$(srcdir)/config/rl78/divmodqi.S \
 	$(srcdir)/config/rl78/signbit.S \
+	$(srcdir)/config/rl78/bit-count.S \
+	$(srcdir)/config/rl78/fpbit-sf.S \
+	$(srcdir)/config/rl78/fpmath-sf.S \
 	$(srcdir)/config/rl78/cmpsi2.S
 
+LIB2FUNCS_EXCLUDE = _clzhi2 _clzsi2 _ctzhi2 _ctzsi2 \
+  _popcounthi2 _popcountsi2 \
+  _parityhi2 _paritysi2 _ffssi2 _ffshi2 \
+  _negate_sf _compare_sf _eq_sf _ne_sf _gt_sf _ge_sf \
+  _lt_sf _le_sf _unord_sf \
+  _si_to_sf _usi_to_sf \
+  _sf_to_si   _sf_to_usi \
+  _fixunssfsi _fixsfsi \
+  _addsub_sf _mul_sf _div_sf
+
+# Remove __gcc_bcmp from LIB2FUNCS_ST
+LIB2FUNCS_ST = _eprintf
+	
 HOST_LIBGCC2_CFLAGS += -Os -ffunction-sections -fdata-sections
