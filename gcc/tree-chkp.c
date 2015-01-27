@@ -2113,13 +2113,19 @@ chkp_call_returns_bounds_p (gcall *call)
   if (gimple_call_internal_p (call))
     return false;
 
+  if (gimple_call_builtin_p (call, BUILT_IN_CHKP_NARROW_PTR_BOUNDS)
+      || chkp_gimple_call_builtin_p (call, BUILT_IN_CHKP_NARROW))
+    return true;
+
+  if (gimple_call_with_bounds_p (call))
+    return true;
+
   tree fndecl = gimple_call_fndecl (call);
 
   if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
     return false;
 
-  if (fndecl
-      && lookup_attribute ("bnd_legacy", DECL_ATTRIBUTES (fndecl)))
+  if (fndecl && !chkp_instrumentable_p (fndecl))
     return false;
 
   if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)

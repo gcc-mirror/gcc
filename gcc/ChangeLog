@@ -1,3 +1,9 @@
+2015-01-27  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* tree-chkp.c (chkp_call_returns_bounds_p): Fix handling of
+	bounds narrowing, already instrumented calls and calls to
+	not instrumentable functions.
+
 2015-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/64807
