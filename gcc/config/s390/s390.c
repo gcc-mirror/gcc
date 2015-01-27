@@ -2419,7 +2419,7 @@ s390_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 		       reg_class_t rclass ATTRIBUTE_UNUSED,
 		       bool in ATTRIBUTE_UNUSED)
 {
-  return 1;
+  return 2;
 }
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
