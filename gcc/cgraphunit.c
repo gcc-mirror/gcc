@@ -1610,14 +1610,18 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       for (arg = a; arg; arg = DECL_CHAIN (arg))
         nargs++;
       auto_vec<tree> vargs (nargs);
+      i = 0;
+      arg = a;
       if (this_adjusting)
-        vargs.quick_push (thunk_adjust (&bsi, a, 1, fixed_offset,
-					virtual_offset));
-      else if (nargs)
-        vargs.quick_push (a);
+	{
+	  vargs.quick_push (thunk_adjust (&bsi, a, 1, fixed_offset,
+					  virtual_offset));
+	  arg = DECL_CHAIN (a);
+	  i = 1;
+	}
 
       if (nargs)
-        for (i = 1, arg = DECL_CHAIN (a); i < nargs; i++, arg = DECL_CHAIN (arg))
+	for (; i < nargs; i++, arg = DECL_CHAIN (arg))
 	  {
 	    tree tmp = arg;
 	    if (!is_gimple_val (arg))

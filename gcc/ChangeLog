@@ -1,5 +1,9 @@
 2015-01-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/64776
+	* cgraphunit.c (cgraph_node::expand_thunk): If not this_adjusting,
+	handle the first argument in the same loop as all the other arguments.
+
 	PR rtl-optimization/61058
 	* jump.c (cleanup_barriers): Update basic block boundaries
 	if BLOCK_FOR_INSN is non-NULL on PREV.
