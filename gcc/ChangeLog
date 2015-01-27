@@ -1,3 +1,9 @@
+2015-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/64807
+	* wide-int.cc (wi::divmod_internal): Clear
+	b_dividend[dividend_blocks_needed].
+
 2015-01-26  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78.c (move_elim_pass): Don't optimize away
