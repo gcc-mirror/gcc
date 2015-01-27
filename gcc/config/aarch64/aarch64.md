@@ -499,13 +499,17 @@
 		   (const_int 0))
 	     (label_ref (match_operand 2 "" ""))
 	     (pc)))
-   (clobber (match_scratch:DI 3 "=r"))]
+   (clobber (reg:CC CC_REGNUM))]
   ""
-  "*
-  if (get_attr_length (insn) == 8)
-    return \"ubfx\\t%<w>3, %<w>0, %1, #1\;<cbz>\\t%<w>3, %l2\";
-  return \"<tbz>\\t%<w>0, %1, %l2\";
-  "
+  {
+    if (get_attr_length (insn) == 8)
+      {
+	operands[1] = GEN_INT (HOST_WIDE_INT_1U << UINTVAL (operands[1]));
+	return "tst\t%<w>0, %1\;<bcond>\t%l2";
+      }
+    else
+      return "<tbz>\t%<w>0, %1, %l2";
+  }
   [(set_attr "type" "branch")
    (set (attr "length")
 	(if_then_else (and (ge (minus (match_dup 2) (pc)) (const_int -32768))
@@ -519,13 +523,21 @@
 				 (const_int 0))
 			   (label_ref (match_operand 1 "" ""))
 			   (pc)))
-   (clobber (match_scratch:DI 2 "=r"))]
+   (clobber (reg:CC CC_REGNUM))]
   ""
-  "*
-  if (get_attr_length (insn) == 8)
-    return \"ubfx\\t%<w>2, %<w>0, <sizem1>, #1\;<cbz>\\t%<w>2, %l1\";
-  return \"<tbz>\\t%<w>0, <sizem1>, %l1\";
-  "
+  {
+    if (get_attr_length (insn) == 8)
+      {
+	char buf[64];
+	uint64_t val = ((uint64_t ) 1)
+			<< (GET_MODE_SIZE (<MODE>mode) * BITS_PER_UNIT - 1);
+	sprintf (buf, "tst\t%%<w>0, %"PRId64, val);
+	output_asm_insn (buf, operands);
+	return "<bcond>\t%l1";
+      }
+    else
+      return "<tbz>\t%<w>0, <sizem1>, %l1";
+  }
   [(set_attr "type" "branch")
    (set (attr "length")
 	(if_then_else (and (ge (minus (match_dup 1) (pc)) (const_int -32768))

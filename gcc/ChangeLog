@@ -1,3 +1,11 @@
+2015-01-27  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Jiong Wang  <jiong.wang@arm.com>
+
+	* config/aarch64/aarch64.md (tb<optab><mode>1): Clobber CC reg instead
+	of scratch reg.
+	(cb<optab><mode>1): Likewise.
+	* config/aarch64/iterators.md (bcond): New define_code_attr.
+
 2015-01-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_memory_move_cost): Increase costs for

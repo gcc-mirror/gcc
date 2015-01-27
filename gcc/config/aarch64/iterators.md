@@ -814,6 +814,9 @@
 		      (smax "s") (umax "u")
 		      (smin "s") (umin "u")])
 
+;; Emit conditional branch instructions.
+(define_code_attr bcond [(eq "beq") (ne "bne") (lt "bne") (ge "beq")])
+
 ;; Emit cbz/cbnz depending on comparison type.
 (define_code_attr cbz [(eq "cbz") (ne "cbnz") (lt "cbnz") (ge "cbz")])
 

@@ -1,3 +1,7 @@
+2015-01-27  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.dg/long_branch.c: New testcase.
+
 2015-01-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56273
