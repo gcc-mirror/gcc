@@ -36,7 +36,7 @@ extern "C" {
 #include <sys/stat.h>
 #include <stdio.h>
 
-#ifdef _WIN32
+#if defined (_WIN32) || defined (__CYGWIN__)
 #include "mingw32.h"
 #endif
 
