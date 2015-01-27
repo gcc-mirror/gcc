@@ -3,7 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -mzarch" } */
 
-__attribute__((hotpatch(-1,0)))
+__attribute__((hotpatch(0,a)))
 int main (void)
 {
   return 0;
