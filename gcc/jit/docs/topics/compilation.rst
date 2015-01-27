@@ -45,7 +45,7 @@ In-memory compilation
 
   A `gcc_jit_result` encapsulates the result of compiling a context
   in-memory, and the lifetimes of any machine code functions or globals
-  that are within the resuilt.
+  that are within the result.
 
 .. function:: void *\
               gcc_jit_result_get_code (gcc_jit_result *result,\
