@@ -8091,13 +8091,28 @@ tree
 lookup_template_variable (tree templ, tree arglist)
 {
   tree type = unknown_type_node;
-  tsubst_flags_t complain = tf_warning_or_error;
-  tree parms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (templ));
-  arglist = coerce_template_parms (parms, arglist, templ, complain,
-				   /*req_all*/true, /*use_default*/true);
   return build2 (TEMPLATE_ID_EXPR, type, templ, arglist);
 }
 
+/* Instantiate a variable declaration from a TEMPLATE_ID_EXPR for use. */
+
+tree
+finish_template_variable (tree var)
+{
+  tree templ = TREE_OPERAND (var, 0);
+
+  tree arglist = TREE_OPERAND (var, 1);
+  tree tmpl_args = DECL_TI_ARGS (DECL_TEMPLATE_RESULT (templ));
+  arglist = add_outermost_template_args (tmpl_args, arglist);
+
+  tree parms = DECL_TEMPLATE_PARMS (templ);
+  tsubst_flags_t complain = tf_warning_or_error;
+  arglist = coerce_innermost_template_parms (parms, arglist, templ, complain,
+					     /*req_all*/true,
+					     /*use_default*/true);
+
+  return instantiate_template (templ, arglist, complain);
+}
 
 struct pair_fn_data
 {
