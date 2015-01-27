@@ -1,3 +1,12 @@
+2015-01-27  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c (rl78_expand_prologue): In G10 mode push the
+	BC, DE and HL registers directly, not via AX.
+	When decrementing the stack pointer by a large amount, transfer SP
+	into AX and perform the subtraction there.
+	(rl78_expand_epilogue): Perform the inverse of the above
+	enhancements.
+
 2015-01-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/sysv4.h (CRT_GET_RFIB_DATA): Remove.
