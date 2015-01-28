@@ -1,3 +1,12 @@
+2015-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR libstdc++/64798
+	* libsupc++/eh_alloc.cc (struct allocated_entry): Align
+	data member.
+	(pool::allocate): Adjust allocation size and alignment to
+	that change.
+	(pool::free): Adjust pointer offsetting.
+
 2015-01-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64368

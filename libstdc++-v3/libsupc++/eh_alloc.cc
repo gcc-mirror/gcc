@@ -94,7 +94,7 @@ namespace
       };
       struct allocated_entry {
 	std::size_t size;
-	char data[];
+	char data[] __attribute__((aligned));
       };
 
       // A single mutex controlling emergency allocations.
@@ -133,17 +133,18 @@ namespace
   void *pool::allocate (std::size_t size)
     {
       __gnu_cxx::__scoped_lock sentry(emergency_mutex);
-      // We need an additional size_t member.
-      size += sizeof (std::size_t);
+      // We need an additional size_t member plus the padding to
+      // ensure proper alignment of data.
+      size += offsetof (allocated_entry, data);
       // And we need to at least hand out objects of the size of
       // a freelist entry.
       if (size < sizeof (free_entry))
 	size = sizeof (free_entry);
-      // And we need to align objects we hand out to the required
-      // alignment of a freelist entry (this really aligns the
+      // And we need to align objects we hand out to the maximum
+      // alignment required on the target (this really aligns the
       // tail which will become a new freelist entry).
-      size = ((size + __alignof__(free_entry) - 1)
-	      & ~(__alignof__(free_entry) - 1));
+      size = ((size + __alignof__ (allocated_entry::data) - 1)
+	      & ~(__alignof__ (allocated_entry::data) - 1));
       // Search for an entry of proper size on the freelist.
       free_entry **e;
       for (e = &first_free_entry;
@@ -185,7 +186,7 @@ namespace
     {
       __gnu_cxx::__scoped_lock sentry(emergency_mutex);
       allocated_entry *e = reinterpret_cast <allocated_entry *>
-	(reinterpret_cast <char *> (data) - sizeof (std::size_t));
+	(reinterpret_cast <char *> (data) - offsetof (allocated_entry, data));
       std::size_t sz = e->size;
       if (!first_free_entry)
 	{
