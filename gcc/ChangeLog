@@ -1,3 +1,8 @@
+2015-01-28  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* config/mips/mips.c (mips_hard_regno_mode_ok_p): Prohibit accumulators
+	for all vector modes.
+
 2015-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/64612
