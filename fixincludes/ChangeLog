@@ -1,3 +1,18 @@
+2015-01-24  Bruce Korb  <bkorb@gnu.org>
+
+	* README: add some clarification on use of test_text
+
+2014-12-21  Bruce Korb  <bkorb@gnu.org>
+
+	* fixincludes/fixincl.tpl: add handling for "sum" selection
+	criteria and clean up layout
+	* fixincludes/fixlib.h: enumerate TT_CKSUM test type
+	* fixincludes/fixincl.c (fix_applies): add code to handle
+	the new test type
+	(cksum_test): function to handle it
+	* fixincludes/README: doc it and remove explanations from
+	more than a decade ago.
+
 2014-12-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* server.c (server_setup): Check return value of
