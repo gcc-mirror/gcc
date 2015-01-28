@@ -1,3 +1,12 @@
+2015-01-28  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/64718
+	* tree-ssa-math-opts.c (pass_optimize_bswap::execute): Make bswap_type
+	be a 16bit unsigned integer when n->range is 16.
+	(bswap_replace): Convert src to that type if necessary for all bswap
+	sizes.  Fix rotation right notation in nearby comment.  Use bswap_type
+	set in pass_optimize_bswap::execute ().
+
 2015-01-28  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_abs<mode>): New.

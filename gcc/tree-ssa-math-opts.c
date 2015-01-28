@@ -2355,30 +2355,28 @@ bswap_replace (gimple cur_stmt, gimple src_stmt, tree fndecl, tree bswap_type,
 
   tmp = src;
 
+  /* Convert the src expression if necessary.  */
+  if (!useless_type_conversion_p (TREE_TYPE (tmp), bswap_type))
+    {
+      gimple convert_stmt;
+
+      tmp = make_temp_ssa_name (bswap_type, NULL, "bswapsrc");
+      convert_stmt = gimple_build_assign (tmp, NOP_EXPR, src);
+      gsi_insert_before (&gsi, convert_stmt, GSI_SAME_STMT);
+    }
+
   /* Canonical form for 16 bit bswap is a rotate expression.  Only 16bit values
      are considered as rotation of 2N bit values by N bits is generally not
-     equivalent to a bswap.  Consider for instance 0x01020304 >> 16 which gives
-     0x03040102 while a bswap for that value is 0x04030201.  */
+     equivalent to a bswap.  Consider for instance 0x01020304 r>> 16 which
+     gives 0x03040102 while a bswap for that value is 0x04030201.  */
   if (bswap && n->range == 16)
     {
       tree count = build_int_cst (NULL, BITS_PER_UNIT);
-      bswap_type = TREE_TYPE (src);
-      src = fold_build2 (LROTATE_EXPR, bswap_type, src, count);
+      src = fold_build2 (LROTATE_EXPR, bswap_type, tmp, count);
       bswap_stmt = gimple_build_assign (NULL, src);
     }
   else
-    {
-      /* Convert the src expression if necessary.  */
-      if (!useless_type_conversion_p (TREE_TYPE (tmp), bswap_type))
-	{
-	  gimple convert_stmt;
-	  tmp = make_temp_ssa_name (bswap_type, NULL, "bswapsrc");
-	  convert_stmt = gimple_build_assign (tmp, NOP_EXPR, src);
-	  gsi_insert_before (&gsi, convert_stmt, GSI_SAME_STMT);
-	}
-
-      bswap_stmt = gimple_build_call (fndecl, 1, tmp);
-    }
+    bswap_stmt = gimple_build_call (fndecl, 1, tmp);
 
   tmp = tgt;
 
@@ -2386,6 +2384,7 @@ bswap_replace (gimple cur_stmt, gimple src_stmt, tree fndecl, tree bswap_type,
   if (!useless_type_conversion_p (TREE_TYPE (tgt), bswap_type))
     {
       gimple convert_stmt;
+
       tmp = make_temp_ssa_name (bswap_type, NULL, "bswapdst");
       convert_stmt = gimple_build_assign (tgt, NOP_EXPR, tmp);
       gsi_insert_after (&gsi, convert_stmt, GSI_SAME_STMT);
@@ -2498,7 +2497,7 @@ pass_optimize_bswap::execute (function *fun)
 	      /* Already in canonical form, nothing to do.  */
 	      if (code == LROTATE_EXPR || code == RROTATE_EXPR)
 		continue;
-	      load_type = uint16_type_node;
+	      load_type = bswap_type = uint16_type_node;
 	      break;
 	    case 32:
 	      load_type = uint32_type_node;
