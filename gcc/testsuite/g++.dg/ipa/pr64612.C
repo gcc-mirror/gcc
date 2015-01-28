@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -std=c++11" } */
-/* { dg-final { scan-assembler "_ZN5QListI7QStringED1Ev" } } */
+/* { dg-final { scan-assembler "_ZN5QListI7QStringED1Ev" { target comdat_group } } } */
 
 class A
 {

@@ -1,3 +1,8 @@
+2015-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/64612
+	* doc/sourcebuild.texi (comdat_group): Document.
+
 2015-01-28  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/thumb1.md (*thumb1_movpc_insn): New insn pattern.
