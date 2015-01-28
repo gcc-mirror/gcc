@@ -1,3 +1,15 @@
+2015-01-28  Thomas Schwinge  <thomas@codesourcery.com>
+	    Bernd Schmidt  <bernds@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/nvptx/mkoffload.c: New file.
+	* config/nvptx/t-nvptx: Add build rules for it.
+	* config.gcc <nvptx-*> [$enable_as_accelerator = yes]
+	(extra_programs): Add mkoffload.
+	* config/nvptx/nvptx.c (nvptx_record_offload_symbol): New
+	function.
+	(TARGET_RECORD_OFFLOAD_SYMBOL): Define macro to use it.
+
 2015-01-28  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR middle-end/64809
