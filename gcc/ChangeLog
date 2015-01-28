@@ -1,3 +1,12 @@
+2015-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/63504
+	* dwarf2out.c (add_AT_wide, mem_loc_descriptor, loc_descriptor):
+	Use ggc_alloc<wide_int> instead of ggc_cleared_alloc<wide_int>.
+	(attr_checksum, attr_checksum_ordered, hash_loc_operands): Checksum
+	only get_full_len HOST_WIDE_INTs from get_val () array rather than
+	all bits in *val_wide.
+
 2015-01-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* varpool.c (tls_model_names): Fix names.
