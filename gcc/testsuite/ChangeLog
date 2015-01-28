@@ -1,3 +1,17 @@
+2015-01-28  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/64659
+	* gcc.target/sh/sh.exp
+	(check_effective_target_atomic_model_soft_gusa_available,
+	check_effective_target_atomic_model_soft_tcb_available,
+	check_effective_target_atomic_model_soft_imask_available,
+	check_effective_target_atomic_model_hard_llcs_available): New.
+	* gcc.target/sh/pr64659-0.h: New.
+	* gcc.target/sh/pr64659-1.c: New.
+	* gcc.target/sh/pr64659-2.c: New.
+	* gcc.target/sh/pr64659-3.c: New.
+	* gcc.target/sh/pr64659-4.c: New.
+
 2015-01-28  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* gcc.target/arm/atomic-op-consume.c (scan-assember-times): Adjust

@@ -1,3 +1,78 @@
+2015-01-28  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/64659
+	* config/sh/predicates.md (atomic_arith_operand,
+	atomic_logical_operand): Remove.
+	* config/sh/sync.md (fetchop_predicate, fetchop_constraint): Remove.
+	(atomic_arith_operand_0): New predicate.
+	(atomic_compare_and_swap<mode>): Use arith_reg_dest for output values.
+	Use atomic_arith_operand_0 for input values.
+	(atomic_compare_and_swapsi_hard, atomic_compare_and_swap<mode>_hard,
+	atomic_compare_and_swap<mode>_soft_gusa,
+	atomic_compare_and_swap<mode>_soft_tcb,
+	atomic_compare_and_swap<mode>_soft_imask): Use arith_reg_dest and
+	arith_reg_operand instead of register_operand.
+	(atomic_exchange<mode>): Use arith_reg_dest for output value.  Use
+	atomic_arith_operand_0 for newval input.
+	(atomic_exchangesi_hard, atomic_exchange<mode>_hard,
+	atomic_exchange<mode>_soft_gusa, atomic_exchange<mode>_soft_tcb,
+	atomic_exchange<mode>_soft_imask): Use arith_reg_dest and
+	arith_reg_operand instead of register_operand.
+	(atomic_arith_operand_1, atomic_logical_operand_1): New predicates.
+	fetchop_predicate_1, fetchop_constraint_1_llcs,
+	fetchop_constraint_1_gusa, fetchop_constraint_1_tcb,
+	fetchop_constraint_1_imask): New code iterator attributes.
+	(atomic_fetch_<fetchop_name><mode>): Use arith_reg_dest instead of
+	register_operand.  Use fetchop_predicate_1.
+	(atomic_fetch_<fetchop_name>si_hard,
+	atomic_fetch_<fetchop_name><mode>_hard): Use arith_reg_dest instead of
+	register_operand.  Use fetchop_predicate_1, fetchop_constraint_1_llcs.
+	(atomic_fetch_<fetchop_name><mode>_soft_gusa): Use arith_reg_dest
+	and arith_reg_operand instead of register_operand.  Use
+	fetchop_predicate_1, fetchop_constraint_1_gusa.
+	(atomic_fetch_<fetchop_name><mode>_soft_tcb): Use arith_reg_dest
+	and arith_reg_operand instead of register_operand.  Use
+	fetchop_predicate_1, fetchop_constraint_1_tcb.  Adjust asm sequence
+	to allow R0 usage.
+	(atomic_fetch_<fetchop_name><mode>_soft_imask): Use arith_reg_dest
+	and arith_reg_operand instead of register_operand.  Use
+	fetchop_predicate_1, fetchop_constraint_1_imask.  Adjust asm sequence
+	to allow R0 usage.
+	(atomic_fetch_nand<mode>): Use arith_reg_dest instead of
+	register_operand.  Use atomic_logical_operand_1.
+	(atomic_fetch_nandsi_hard, atomic_fetch_nand<mode>_hard,
+	atomic_fetch_nand<mode>_soft_gusa): Use arith_reg_dest and
+	arith_reg_operand instead of register_operand.
+	(atomic_fetch_nand<mode>_soft_tcb, atomic_fetch_nand<mode>_soft_imask):
+	Use arith_reg_dest and arith_reg_operand instead of register_operand.
+	Use logical_operand and rK08.  Adjust asm sequence to allow R0 usage.
+	(atomic_<fetchop_name>_fetch<mode>): Use arith_reg_dest instead of
+	register_operand.  Use fetchop_predicate_1.
+	(atomic_<fetchop_name>_fetchsi_hard,
+	atomic_<fetchop_name>_fetch<mode>_hard): Use arith_reg_dest and
+	arith_reg_operand instead of register_operand.  Use fetchop_predicate_1,
+	fetchop_constraint_1_llcs.
+	(atomic_<fetchop_name>_fetch<mode>_soft_gusa): Use arith_reg_dest and
+	arith_reg_operand instead of register_operand.  Use fetchop_predicate_1,
+	fetchop_constraint_1_gusa.
+	(atomic_<fetchop_name>_fetch<mode>_soft_tcb): Use arith_reg_dest and
+	arith_reg_operand instead of register_operand.  Use fetchop_predicate_1,
+	fetchop_constraint_1_tcb.  Adjust asm sequence to allow R0 usage.
+	(atomic_<fetchop_name>_fetch<mode>_soft_imask): Use arith_reg_dest and
+	arith_reg_operand instead of register_operand.  Use fetchop_predicate_1,
+	fetchop_constraint_1_imask.  Adjust asm sequence to allow R0 usage.
+	(atomic_nand_fetch<mode>): Use arith_reg_dest instead of
+	register_operand.  Use atomic_logical_operand_1.
+	(atomic_nand_fetchsi_hard, atomic_nand_fetch<mode>_hard,
+	atomic_nand_fetch<mode>_soft_gusa): Use arith_reg_dest and
+	arith_reg_operand instead of register_operand.
+	(atomic_nand_fetch<mode>_soft_tcb): Use arith_reg_dest and
+	arith_reg_operand instead of register_operand.  Use logical_operand
+	and K08.  Adjust asm sequence to allow R0 usage.
+	(atomic_nand_fetch<mode>_soft_imask): Use arith_reg_dest and
+	arith_reg_operand instead of register_operand.  Use logical_operand
+	and K08.
+
 2015-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/63504
