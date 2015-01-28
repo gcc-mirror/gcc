@@ -1,5 +1,7 @@
 2015-01-28  Richard Henderson  <rth@redhat.com>
 
+	PR libffi/64779
+	PR libffi/64799
 	* Merge to upstream commit db1b34b7e1f5e473d17557e454a29933dfecd1af.
 
 2015-01-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
