@@ -182,6 +182,10 @@ del_ops.lo: del_ops.cc
 	$(LTCXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
 del_ops.o: del_ops.cc
 	$(CXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
+del_opvs.lo: del_opvs.cc
+	$(LTCXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
+del_opvs.o: del_opvs.cc
+	$(CXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually

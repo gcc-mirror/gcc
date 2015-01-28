@@ -875,6 +875,10 @@ del_ops.lo: del_ops.cc
 	$(LTCXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
 del_ops.o: del_ops.cc
 	$(CXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
+del_opvs.lo: del_opvs.cc
+	$(LTCXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
+del_opvs.o: del_opvs.cc
+	$(CXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
 
 install-stdHEADERS: $(std_HEADERS)
 	@$(NORMAL_INSTALL)
