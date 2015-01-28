@@ -1,3 +1,7 @@
+2015-01-28  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/abs_2.c: New.
+
 2015-01-28  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* lib/target-supports.exp (check_effective_target_mips_nanlegacy): New.
