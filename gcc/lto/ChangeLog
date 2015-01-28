@@ -1,5 +1,9 @@
 2014-12-11  Jan Hubicka  <hubicka@ucw.cz>
 
+	* lto-symtab.c (lto_varpool_replace_node): Merge TLS models.
+
+2014-12-11  Jan Hubicka  <hubicka@ucw.cz>
+
 	* lto.c (compare_tree_sccs_1): Add comparsion of
 	DECL_FUNCTION_SPECIFIC_TARGET
 
