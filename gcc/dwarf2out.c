@@ -3886,7 +3886,7 @@ add_AT_wide (dw_die_ref die, enum dwarf_attribute attr_kind,
 
   attr.dw_attr = attr_kind;
   attr.dw_attr_val.val_class = dw_val_class_wide_int;
-  attr.dw_attr_val.v.val_wide = ggc_cleared_alloc<wide_int> ();
+  attr.dw_attr_val.v.val_wide = ggc_alloc<wide_int> ();
   *attr.dw_attr_val.v.val_wide = w;
   add_dwarf_attr (die, &attr);
 }
@@ -5726,7 +5726,9 @@ attr_checksum (dw_attr_ref at, struct md5_ctx *ctx, int *mark)
       CHECKSUM (at->dw_attr_val.v.val_double);
       break;
     case dw_val_class_wide_int:
-      CHECKSUM (*at->dw_attr_val.v.val_wide);
+      CHECKSUM_BLOCK (at->dw_attr_val.v.val_wide->get_val (),
+		      get_full_len (*at->dw_attr_val.v.val_wide)
+		      * HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR);
       break;
     case dw_val_class_vec:
       CHECKSUM_BLOCK (at->dw_attr_val.v.val_vec.array,
@@ -6009,8 +6011,11 @@ attr_checksum_ordered (enum dwarf_tag tag, dw_attr_ref at,
 
     case dw_val_class_wide_int:
       CHECKSUM_ULEB128 (DW_FORM_block);
-      CHECKSUM_ULEB128 (sizeof (*at->dw_attr_val.v.val_wide));
-      CHECKSUM (*at->dw_attr_val.v.val_wide);
+      CHECKSUM_ULEB128 (get_full_len (*at->dw_attr_val.v.val_wide)
+			* HOST_BITS_PER_WIDE_INT / BITS_PER_UNIT);
+      CHECKSUM_BLOCK (at->dw_attr_val.v.val_wide->get_val (),
+		      get_full_len (*at->dw_attr_val.v.val_wide)
+		      * HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR);
       break;
 
     case dw_val_class_vec:
@@ -13160,7 +13165,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  mem_loc_result->dw_loc_oprnd1.v.val_die_ref.external = 0;
 	  mem_loc_result->dw_loc_oprnd2.val_class
 	    = dw_val_class_wide_int;
-	  mem_loc_result->dw_loc_oprnd2.v.val_wide = ggc_cleared_alloc<wide_int> ();
+	  mem_loc_result->dw_loc_oprnd2.v.val_wide = ggc_alloc<wide_int> ();
 	  *mem_loc_result->dw_loc_oprnd2.v.val_wide = std::make_pair (rtl, mode);
 	}
       break;
@@ -13663,7 +13668,7 @@ loc_descriptor (rtx rtl, machine_mode mode,
 	  loc_result = new_loc_descr (DW_OP_implicit_value,
 				      GET_MODE_SIZE (mode), 0);
 	  loc_result->dw_loc_oprnd2.val_class = dw_val_class_wide_int;
-	  loc_result->dw_loc_oprnd2.v.val_wide = ggc_cleared_alloc<wide_int> ();
+	  loc_result->dw_loc_oprnd2.v.val_wide = ggc_alloc<wide_int> ();
 	  *loc_result->dw_loc_oprnd2.v.val_wide = std::make_pair (rtl, mode);
 	}
       break;
@@ -24022,7 +24027,9 @@ hash_loc_operands (dw_loc_descr_ref loc, inchash::hash &hstate)
 	  hstate.add_object (val2->v.val_double.high);
 	  break;
 	case dw_val_class_wide_int:
-	  hstate.add_object (*val2->v.val_wide);
+	  hstate.add (val2->v.val_wide->get_val (),
+		      get_full_len (*val2->v.val_wide)
+		      * HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR);
 	  break;
 	case dw_val_class_addr:	
 	  inchash::add_rtx (val2->v.val_addr, hstate);
@@ -24113,7 +24120,9 @@ hash_loc_operands (dw_loc_descr_ref loc, inchash::hash &hstate)
 	    hstate.add_object (val2->v.val_double.high);
 	    break;
 	  case dw_val_class_wide_int:
-	    hstate.add_object (*val2->v.val_wide);
+	    hstate.add (val2->v.val_wide->get_val (),
+			get_full_len (*val2->v.val_wide)
+			* HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR);
 	    break;
 	  default:
 	    gcc_unreachable ();
