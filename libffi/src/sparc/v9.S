@@ -27,7 +27,6 @@
 #define LIBFFI_ASM	
 #include <fficonfig.h>
 #include <ffi.h>
-#include <ffi_cfi.h>
 #include "internal.h"
 
 #ifdef SPARC64
@@ -57,12 +56,9 @@
 	FFI_HIDDEN(C(ffi_call_v9))
 
 C(ffi_call_v9):
-	cfi_startproc
+.LUW0:
 	save	%sp, %o4, %sp
-	cfi_def_cfa_register(%fp)
-	cfi_window_save
-	cfi_register(%o7, %i7)
-	
+.LUW1:
 	mov	%i0, %o0			! copy cif
 	add	%sp, STACK_BIAS+128+48, %o1	! load args area
 	mov	%i2, %o2			! copy rvalue
@@ -199,7 +195,7 @@ E(SPARC_RET_F_1)
 	return	%i7+8
 	 nop
 
-	cfi_endproc
+.LUW2:
 	.size	C(ffi_call_v9), . - C(ffi_call_v9)
 
 
@@ -219,18 +215,15 @@ E(SPARC_RET_F_1)
 	FFI_HIDDEN(C(ffi_go_closure_v9))
 
 C(ffi_go_closure_v9):
-	cfi_startproc
+.LUW3:
 	save	%sp, -STACKFRAME, %sp
-	cfi_def_cfa_register(%fp)
-	cfi_window_save
-	cfi_register(%o7, %i7)
-
+.LUW4:
 	ldx	[%g5+8], %o0
 	ldx	[%g5+16], %o1
 	b	0f
 	 mov	%g5, %o2
 
-	cfi_endproc
+.LUW5:
 	.size	C(ffi_go_closure_v9), . - C(ffi_go_closure_v9)
 
 	.align 8
@@ -239,12 +232,9 @@ C(ffi_go_closure_v9):
 	FFI_HIDDEN(C(ffi_closure_v9))
 
 C(ffi_closure_v9):
-	cfi_startproc
+.LUW6:
 	save	%sp, -STACKFRAME, %sp
-	cfi_def_cfa_register(%fp)
-	cfi_window_save
-	cfi_register(%o7, %i7)
-
+.LUW7:
 	ldx	[%g1+FFI_TRAMPOLINE_SIZE], %o0
 	ldx	[%g1+FFI_TRAMPOLINE_SIZE+8], %o1
 	ldx	[%g1+FFI_TRAMPOLINE_SIZE+16], %o2
@@ -373,8 +363,77 @@ E(SPARC_RET_F_1)
 	return	%i7+8
 	 nop
 
-	cfi_endproc
+.LUW8:
 	.size	C(ffi_closure_v9), . - C(ffi_closure_v9)
+
+#ifdef HAVE_RO_EH_FRAME
+        .section        ".eh_frame",#alloc
+#else
+        .section        ".eh_frame",#alloc,#write
+#endif
+
+#ifdef HAVE_AS_SPARC_UA_PCREL
+# define FDE_RANGE(B, E)  .long %r_disp32(B), E - B
+#else
+# define FDE_RANGE(B, E)  .align 8; .xword B, E - B
+#endif
+
+	.align 8
+.LCIE:
+	.long	.LECIE - .LSCIE		! CIE Length
+.LSCIE:
+	.long	0			! CIE Identifier Tag
+	.byte	1			! CIE Version
+	.ascii	"zR\0"			! CIE Augmentation
+	.byte	4			! CIE Code Alignment Factor
+	.byte	0x78			! CIE Data Alignment Factor
+	.byte	15			! CIE RA Column
+	.byte	1			! Augmentation size
+#ifdef HAVE_AS_SPARC_UA_PCREL
+	.byte	0x1b			! FDE Encoding (pcrel sdata4)
+#else
+	.byte	0x50			! FDE Encoding (aligned absolute)
+#endif
+	.byte	0xc, 14, 0xff, 0xf	! DW_CFA_def_cfa, %o6, offset 0x7ff
+	.align	8
+.LECIE:
+
+	.long	.LEFDE1 - .LSFDE1	! FDE Length
+.LSFDE1:
+	.long	.LSFDE1 - .LCIE		! FDE CIE offset
+	FDE_RANGE(.LUW0, .LUW2)
+	.byte	0			! Augmentation size
+	.byte	0x40+1			! DW_CFA_advance_loc 4
+	.byte	0xd, 30			! DW_CFA_def_cfa_register, %i6
+	.byte	0x2d			! DW_CFA_GNU_window_save
+	.byte	0x9, 15, 31		! DW_CFA_register, %o7, %i7
+	.align	8
+.LEFDE1:
+
+	.long	.LEFDE2 - .LSFDE2	! FDE Length
+.LSFDE2:
+	.long	.LSFDE2 - .LCIE		! FDE CIE offset
+	FDE_RANGE(.LUW3, .LUW5)
+	.byte	0			! Augmentation size
+	.byte	0x40+1			! DW_CFA_advance_loc 4
+	.byte	0xd, 30			! DW_CFA_def_cfa_register, %i6
+	.byte	0x2d			! DW_CFA_GNU_window_save
+	.byte	0x9, 15, 31		! DW_CFA_register, %o7, %i7
+	.align	8
+.LEFDE2:
+
+	.long	.LEFDE3 - .LSFDE3	! FDE Length
+.LSFDE3:
+	.long	.LSFDE3 - .LCIE		! FDE CIE offset
+	FDE_RANGE(.LUW6, .LUW8)
+	.byte	0			! Augmentation size
+	.byte	0x40+1			! DW_CFA_advance_loc 4
+	.byte	0xd, 30			! DW_CFA_def_cfa_register, %i6
+	.byte	0x2d			! DW_CFA_GNU_window_save
+	.byte	0x9, 15, 31		! DW_CFA_register, %o7, %i7
+	.align	8
+.LEFDE3:
+
 #endif /* SPARC64 */
 #ifdef __linux__
 	.section	.note.GNU-stack,"",@progbits

@@ -42,7 +42,13 @@ typedef enum ffi_abi
 /* ---- Definitions for closures ----------------------------------------- */
 
 #define FFI_CLOSURES 1
+#if defined (__APPLE__)
+#define FFI_TRAMPOLINE_SIZE 20
+#define FFI_TRAMPOLINE_CLOSURE_OFFSET 16
+#else
 #define FFI_TRAMPOLINE_SIZE 24
+#define FFI_TRAMPOLINE_CLOSURE_OFFSET FFI_TRAMPOLINE_SIZE
+#endif
 #define FFI_NATIVE_RAW_API 0
 
 /* ---- Internal ---- */
