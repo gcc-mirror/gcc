@@ -1,3 +1,8 @@
+2015-01-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* varpool.c (tls_model_names): Fix names.
+	(varpool_node::dump): Dump tls- prefix for tls models.
+
 2015-01-28  Thomas Schwinge  <thomas@codesourcery.com>
 	    Bernd Schmidt  <bernds@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
