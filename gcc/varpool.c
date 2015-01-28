@@ -58,9 +58,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "omp-low.h"
 
-const char * const tls_model_names[]={"none", "tls-emulated", "tls-real",
-				      "tls-global-dynamic", "tls-local-dynamic",
-				      "tls-initial-exec", "tls-local-exec"};
+const char * const tls_model_names[]={"none", "emulated",
+				      "global-dynamic", "local-dynamic",
+				      "initial-exec", "local-exec"};
 
 /* List of hooks triggered on varpool_node events.  */
 struct varpool_node_hook_list {
@@ -251,7 +251,7 @@ varpool_node::dump (FILE *f)
   if (writeonly)
     fprintf (f, " write-only");
   if (tls_model)
-    fprintf (f, " %s", tls_model_names [tls_model]);
+    fprintf (f, " tls-%s", tls_model_names [tls_model]);
   fprintf (f, "\n");
 }
 
