@@ -38,6 +38,7 @@
 
 #ifdef PLUGIN_SUPPORT
 #include <dlfcn.h>
+#include "plugin-suffix.h"
 #endif
 
 static void gomp_target_init (void);
@@ -1054,7 +1055,7 @@ static void
 gomp_target_init (void)
 {
   const char *prefix ="libgomp-plugin-";
-  const char *suffix = ".so.1";
+  const char *suffix = SONAME_SUFFIX (1);
   const char *cur, *next;
   char *plugin_name;
   int i, new_num_devices;

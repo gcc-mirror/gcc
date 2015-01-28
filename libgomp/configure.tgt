@@ -113,6 +113,7 @@ fi
 case "${target}" in
 
   *-*-hpux*)
+	config_path="hpux posix"
 	case "${target}" in
 	  *-*-hpux11*)
 	     # HPUX v11.x requires -lrt to resolve sem_init in libgomp.la
@@ -132,12 +133,16 @@ case "${target}" in
 	;;
 
   *-*-darwin*)
-	config_path="bsd posix"
+	config_path="bsd darwin posix"
 	;;
 
   *-*-freebsd*)
 	# Need to link with -lpthread so libgomp.so is self-contained.
 	XLDFLAGS="${XLDFLAGS} -lpthread"
+	;;
+
+  *-*-aix*)
+	config_path="aix posix"
 	;;
 
   *)
