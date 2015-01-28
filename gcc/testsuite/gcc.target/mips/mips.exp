@@ -1300,6 +1300,7 @@ proc mips-dg-options { args } {
 	    mips_make_test_option options "-mno-dsp"
 	    mips_make_test_option options "-mno-synci"
 	    mips_make_test_option options "-mno-micromips"
+	    mips_make_test_option options "-mnan=legacy"
 	}
         if { $isa_rev > 5 } {
 	    mips_make_test_option options "-mno-dsp"

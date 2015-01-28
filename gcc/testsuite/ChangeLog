@@ -1,3 +1,10 @@
+2015-01-28  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* lib/target-supports.exp (check_effective_target_mips_nanlegacy): New.
+	* gcc.target/mips/loongson-simd.c: Require legacy NaN support.
+	* gcc.target/mips/mips.exp (mips-dg-options): Imply -mnan=legacy for
+	ISA rev < 2.
+
 2015-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/64612
