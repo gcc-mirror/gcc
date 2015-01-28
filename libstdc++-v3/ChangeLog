@@ -1,3 +1,9 @@
+2015-01-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* testsuite/lib/libstdc++.exp (v3_target_compile): Remove
+	check for unsupported.
+	(v3_target_compile_as_c): Likewise.
+
 2015-01-28  Richard Biener  <rguenther@suse.de>
 
 	PR libstdc++/64798

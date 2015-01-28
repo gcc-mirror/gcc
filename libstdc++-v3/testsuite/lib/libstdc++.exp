@@ -486,12 +486,7 @@ proc v3_target_compile { source dest type options } {
     lappend options "timeout=[timeout_value]"
 
     set comp_output [target_compile $source $dest $type $options]
-    set unsupported_message [${tool}_check_unsupported_p $comp_output]
 
-    if { $unsupported_message != "" } {
-      unsupported "$dest: $unsupported_message"
-      return ""
-    }
     return $comp_output
 }
 
@@ -562,12 +557,7 @@ proc v3_target_compile_as_c { source dest type options } {
     lappend options "timeout=[timeout_value]"
 
     set comp_output [target_compile $source $dest $type $options]
-    set unsupported_message [${tool}_check_unsupported_p $comp_output]
 
-    if { $unsupported_message != "" } {
-      unsupported "$dest: $unsupported_message"
-      return ""
-    }
     return $comp_output
 }
 
