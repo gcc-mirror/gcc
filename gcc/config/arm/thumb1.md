@@ -1774,6 +1774,16 @@
   "
 )
 
+(define_insn "*thumb1_movpc_insn"
+  [(set (match_operand:SI 0 "s_register_operand" "=l")
+	(reg:SI PC_REGNUM))]
+  "TARGET_THUMB1"
+  "mov\\t%0, pc"
+  [(set_attr "length" "2")
+   (set_attr "conds"  "nocond")
+   (set_attr "type"   "mov_reg")]
+)
+
 ;; NB never uses BX.
 (define_insn "*thumb1_tablejump"
   [(set (pc) (match_operand:SI 0 "register_operand" "l*r"))

@@ -1,3 +1,7 @@
+2015-01-28  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/thumb1.md (*thumb1_movpc_insn): New insn pattern.
+
 2015-01-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* toplev.c (print_version): Add param "show_global_state", and
