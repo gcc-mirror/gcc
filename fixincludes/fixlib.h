@@ -161,7 +161,7 @@ ENV_TABLE
     */
 typedef enum
 {
-  TT_TEST, TT_EGREP, TT_NEGREP, TT_FUNCTION
+  TT_TEST, TT_EGREP, TT_NEGREP, TT_FUNCTION, TT_CKSUM
 } te_test_type;
 
 typedef struct test_desc tTestDesc;
