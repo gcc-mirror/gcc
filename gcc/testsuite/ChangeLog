@@ -1,3 +1,8 @@
+2015-01-28  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/64718
+	* gcc.c-torture/execute/pr64718.c: New test.
+
 2015-01-28  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/abs_2.c: New.
