@@ -33,6 +33,34 @@ proc check_effective_target_sh2a { } {
     } ""]
 }
 
+# Return 1 if target supports atomic-model=soft-gusa
+proc check_effective_target_atomic_model_soft_gusa_available { } {
+    return [check_no_compiler_messages atomic_model_soft_gusa_available object {
+	     int x = 0;
+    } "-matomic-model=soft-gusa"]
+}
+
+# Return 1 if target supports atomic-model=soft-tcb
+proc check_effective_target_atomic_model_soft_tcb_available { } {
+    return [check_no_compiler_messages atomic_model_soft_tcb_available object {
+	     int x = 0;
+    } "-matomic-model=soft-tcb,gbr-offset=0"]
+}
+
+# Return 1 if target supports atomic-model=soft-imask
+proc check_effective_target_atomic_model_soft_imask_available { } {
+    return [check_no_compiler_messages atomic_model_soft_imask_available object {
+	     int x = 0;
+    } "-matomic-model=soft-imask -mno-usermode"]
+}
+
+# Return 1 if target supports atomic-model=hard-llcs
+proc check_effective_target_atomic_model_hard_llcs_available { } {
+    return [check_no_compiler_messages atomic_model_hard_llcs_available object {
+	     int x = 0;
+    } "-matomic-model=hard-llcs"]
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {
