@@ -1,3 +1,10 @@
+2015-01-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64828
+	* libsupc++/Makefile.am: Compile del_opvs.cc as C++14.
+	* libsupc++/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+
 2015-01-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* testsuite/lib/libstdc++.exp (v3_target_compile): Remove
