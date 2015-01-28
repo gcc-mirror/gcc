@@ -5010,13 +5010,16 @@ reorder_operands (basic_block bb)
   for (gsi = gsi_start (stmts); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       stmt = gsi_stmt (gsi);
-      gimple_set_uid (stmt, n++);
+      if (!is_gimple_debug (stmt))
+        gimple_set_uid (stmt, n++);
     }
   lattice = XNEWVEC (unsigned int, n);
   for (gsi = gsi_start (stmts); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       unsigned cost;
       stmt = gsi_stmt (gsi);
+      if (is_gimple_debug (stmt))
+	continue;
       cost = estimate_num_insns (stmt, &eni_size_weights);
       lattice[i] = cost;
       FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
