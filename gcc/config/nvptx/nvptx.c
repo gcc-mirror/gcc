@@ -2030,6 +2030,16 @@ nvptx_vector_alignment (const_tree type)
   return MIN (align, BIGGEST_ALIGNMENT);
 }
 
+/* Record a symbol for mkoffload to enter into the mapping table.  */
+
+static void
+nvptx_record_offload_symbol (tree decl)
+{
+  fprintf (asm_out_file, "//:%s_MAP %s\n",
+	   TREE_CODE (decl) == VAR_DECL ? "VAR" : "FUNC",
+	   IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+}
+
 /* Implement TARGET_ASM_FILE_START.  Write the kinds of things ptxas expects
    at the start of a file.  */
 
@@ -2132,6 +2142,9 @@ nvptx_file_end (void)
 #define TARGET_MACHINE_DEPENDENT_REORG nvptx_reorg
 #undef TARGET_NO_REGISTER_ALLOCATION
 #define TARGET_NO_REGISTER_ALLOCATION true
+
+#undef TARGET_RECORD_OFFLOAD_SYMBOL
+#define TARGET_RECORD_OFFLOAD_SYMBOL nvptx_record_offload_symbol
 
 #undef TARGET_VECTOR_ALIGNMENT
 #define TARGET_VECTOR_ALIGNMENT nvptx_vector_alignment
