@@ -1007,7 +1007,8 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
   if (obj.objfile)
     simple_object_release_read (obj.objfile);
 
-  release_input_file (file);
+  if (release_input_file)
+    release_input_file (file);
 
   return LDPS_OK;
 }

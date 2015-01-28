@@ -1,5 +1,10 @@
 2015-01-28  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* lto-plugin.c (claim_file_handler): Call release_input_file only
+	if it is not NULL.
+
+2015-01-28  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR lto/64837
 	* lto-plugin.c (release_input_file): New.
 	(claim_file_handler): Call release_input_file.
