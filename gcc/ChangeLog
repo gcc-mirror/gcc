@@ -1,3 +1,10 @@
+2015-01-28  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_abs<mode>): New.
+	* config/aarch64/aarch64-simd-builtins.def (abs): Split by
+	integer and floating point variants.
+	* config/aarch64/iterators.md (unspec): Add UNSPEC_ABS.
+
 2015-01-28  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* config/mips/mips.c (mips_hard_regno_mode_ok_p): Prohibit accumulators
