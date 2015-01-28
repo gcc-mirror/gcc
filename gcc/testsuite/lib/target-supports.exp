@@ -6199,3 +6199,13 @@ proc check_effective_target_pie_copyreloc { } {
 
     return $pie_copyreloc_available_saved
 }
+
+# Return 1 if the target uses comdat groups.
+
+proc check_effective_target_comdat_group {} {
+    return [check_no_messages_and_pattern comdat_group "\.section\[^\n\r]*,comdat" assembly {
+	// C++
+	inline int foo () { return 1; }
+	int (*fn) () = foo;
+    }]
+}
