@@ -12131,7 +12131,9 @@ mips_hard_regno_mode_ok_p (unsigned int regno, machine_mode mode)
 	return size >= MIN_UNITS_PER_WORD && size <= UNITS_PER_FPREG;
     }
 
+  /* Don't allow vector modes in accumulators.  */
   if (ACC_REG_P (regno)
+      && !VECTOR_MODE_P (mode)
       && (INTEGRAL_MODE_P (mode) || ALL_FIXED_POINT_MODE_P (mode)))
     {
       if (MD_REG_P (regno))
