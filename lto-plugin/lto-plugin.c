@@ -145,6 +145,7 @@ static ld_plugin_register_all_symbols_read register_all_symbols_read;
 static ld_plugin_get_symbols get_symbols, get_symbols_v2;
 static ld_plugin_register_cleanup register_cleanup;
 static ld_plugin_add_input_file add_input_file;
+static ld_plugin_release_input_file release_input_file;
 static ld_plugin_add_input_library add_input_library;
 static ld_plugin_message message;
 static ld_plugin_add_symbols add_symbols;
@@ -1006,6 +1007,8 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
   if (obj.objfile)
     simple_object_release_read (obj.objfile);
 
+  release_input_file (file);
+
   return LDPS_OK;
 }
 
@@ -1090,6 +1093,9 @@ onload (struct ld_plugin_tv *tv)
 	  break;
 	case LDPT_ADD_INPUT_FILE:
 	  add_input_file = p->tv_u.tv_add_input_file;
+	  break;
+	case LDPT_RELEASE_INPUT_FILE:
+	  release_input_file = p->tv_u.tv_release_input_file;
 	  break;
 	case LDPT_ADD_INPUT_LIBRARY:
 	  add_input_library = p->tv_u.tv_add_input_library;
