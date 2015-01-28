@@ -3036,6 +3036,15 @@ proc check_effective_target_mips_loongson { } {
     }]
 }
 
+# Return 1 if this is a MIPS target that supports the legacy NAN.
+
+proc check_effective_target_mips_nanlegacy { } {
+    return [check_no_compiler_messages nanlegacy assembly {
+	#include <stdlib.h>
+	int main () { return 0; }
+    } "-mnan=legacy"]
+}
+
 # Return 1 if this is an ARM target that adheres to the ABI for the ARM
 # Architecture.
 

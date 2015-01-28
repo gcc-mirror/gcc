@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 /* loongson.h does not handle or check for MIPS16ness or
    microMIPSness.  There doesn't seem any good reason for it to, given
    that the Loongson processors do not support either.  */
+/* { dg-require-effective-target mips_nanlegacy } */
 /* { dg-options "isa=loongson -mhard-float -mno-micromips -mno-mips16 -flax-vector-conversions" } */
 
 #include "loongson.h"
