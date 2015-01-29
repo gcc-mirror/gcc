@@ -7092,15 +7092,15 @@ vrp_valueize_1 (tree name)
 {
   if (TREE_CODE (name) == SSA_NAME)
     {
-      value_range_t *vr = get_value_range (name);
-      if (range_int_cst_singleton_p (vr))
-	return vr->min;
       /* If the definition may be simulated again we cannot follow
          this SSA edge as the SSA propagator does not necessarily
 	 re-visit the use.  */
       gimple def_stmt = SSA_NAME_DEF_STMT (name);
       if (prop_simulate_again_p (def_stmt))
 	return NULL_TREE;
+      value_range_t *vr = get_value_range (name);
+      if (range_int_cst_singleton_p (vr))
+	return vr->min;
     }
   return name;
 }
