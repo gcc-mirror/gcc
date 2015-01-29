@@ -1,3 +1,10 @@
+2015-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64709
+	* c-typeck.c (pop_init_level): If constructor_elements has
+	exactly one element with integer_zerop value, set constructor_zeroinit
+	to 1.  Remove braces around warning_init call.
+
 2015-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/64766

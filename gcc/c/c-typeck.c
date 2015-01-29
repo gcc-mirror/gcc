@@ -7557,20 +7557,28 @@ pop_init_level (location_t loc, int implicit,
 	}
     }
 
-  /* Initialization with { } counts as zeroinit.  */
-  if (vec_safe_length (constructor_elements) == 0)
-    constructor_zeroinit = 1;
-  /* If the constructor has more than one element, it can't be { 0 }.  */
-  else if (vec_safe_length (constructor_elements) != 1)
-    constructor_zeroinit = 0;
+  switch (vec_safe_length (constructor_elements))
+    {
+    case 0:
+      /* Initialization with { } counts as zeroinit.  */
+      constructor_zeroinit = 1;
+      break;
+    case 1:
+      /* This might be zeroinit as well.  */
+      if (integer_zerop ((*constructor_elements)[0].value))
+	constructor_zeroinit = 1;
+      break;
+    default:
+      /* If the constructor has more than one element, it can't be { 0 }.  */
+      constructor_zeroinit = 0;
+      break;
+    }
 
   /* Warn when some structs are initialized with direct aggregation.  */
   if (!implicit && found_missing_braces && warn_missing_braces
       && !constructor_zeroinit)
-    {
-      warning_init (loc, OPT_Wmissing_braces,
-		    "missing braces around initializer");
-    }
+    warning_init (loc, OPT_Wmissing_braces,
+		  "missing braces around initializer");
 
   /* Warn when some struct elements are implicitly initialized to zero.  */
   if (warn_missing_field_initializers
