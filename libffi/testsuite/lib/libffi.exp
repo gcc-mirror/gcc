@@ -310,7 +310,7 @@ proc run-many-tests { testcases extra_flags } {
     set targetabis { "" }
     if [string match $compiler_vendor "gnu"] {
         if { ([istarget "i?86-*-*"] || [istarget "x86_64-*-*"])
-	     && [is-effective-target ia32] } {
+	     && [is-effective-target ia32] && ![istarget "*-*-darwin*"] } {
             set targetabis {
                 ""
                 "-DABI_NUM=FFI_STDCALL -DABI_ATTR=__STDCALL__"

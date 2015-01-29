@@ -1,3 +1,8 @@
+2015-01-29  Jack Howarth  <howarth.at.gcc@gmail.com>
+
+	PR libffi/64855
+	* testsuite/lib/libffi.exp: Don't set targetabis on darwin.
+
 2015-01-28  Richard Henderson  <rth@redhat.com>
 
 	PR libffi/64779
