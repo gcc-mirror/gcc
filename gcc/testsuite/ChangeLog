@@ -1,3 +1,8 @@
+2015-01-29  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR middle-end/64805
+	* gcc.target/i386/pr64805.c: New.
+
 2015-01-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/guality/guality.h (main): Add argv[0] to
