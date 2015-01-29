@@ -1325,9 +1325,10 @@ mark_functions_to_output (void)
    return basic block in the function body.  */
 
 basic_block
-init_lowered_empty_function (tree decl, bool in_ssa)
+init_lowered_empty_function (tree decl, bool in_ssa, gcov_type count)
 {
   basic_block bb;
+  edge e;
 
   current_function_decl = decl;
   allocate_struct_function (decl, false);
@@ -1353,9 +1354,19 @@ init_lowered_empty_function (tree decl, bool in_ssa)
   loops_for_fn (cfun)->state |= LOOPS_MAY_HAVE_MULTIPLE_LATCHES;
 
   /* Create BB for body of the function and connect it properly.  */
+  ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = count;
+  ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency = REG_BR_PROB_BASE;
+  EXIT_BLOCK_PTR_FOR_FN (cfun)->count = count;
+  EXIT_BLOCK_PTR_FOR_FN (cfun)->frequency = REG_BR_PROB_BASE;
   bb = create_basic_block (NULL, (void *) 0, ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), bb, EDGE_FALLTHRU);
-  make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
+  bb->count = count;
+  bb->frequency = BB_FREQ_MAX;
+  e = make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), bb, EDGE_FALLTHRU);
+  e->count = count;
+  e->probability = REG_BR_PROB_BASE;
+  e = make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
+  e->count = count;
+  e->probability = REG_BR_PROB_BASE;
   add_bb_to_loop (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun)->loop_father);
 
   return bb;
@@ -1578,7 +1589,8 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       else
 	resdecl = DECL_RESULT (thunk_fndecl);
 
-      bb = then_bb = else_bb = return_bb = init_lowered_empty_function (thunk_fndecl, true);
+      bb = then_bb = else_bb = return_bb
+	= init_lowered_empty_function (thunk_fndecl, true, count);
 
       bsi = gsi_start_bb (bb);
 
@@ -1654,13 +1666,20 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	      if (TREE_CODE (TREE_TYPE (restmp)) == POINTER_TYPE)
 		{
 		  gimple stmt;
+		  edge e;
 		  /* If the return type is a pointer, we need to
 		     protect against NULL.  We know there will be an
 		     adjustment, because that's why we're emitting a
 		     thunk.  */
 		  then_bb = create_basic_block (NULL, (void *) 0, bb);
+		  then_bb->count = count - count / 16;
+		  then_bb->frequency = BB_FREQ_MAX - BB_FREQ_MAX / 16;
 		  return_bb = create_basic_block (NULL, (void *) 0, then_bb);
+		  return_bb->count = count;
+		  return_bb->frequency = BB_FREQ_MAX;
 		  else_bb = create_basic_block (NULL, (void *) 0, else_bb);
+		  then_bb->count = count / 16;
+		  then_bb->frequency = BB_FREQ_MAX / 16;
 		  add_bb_to_loop (then_bb, bb->loop_father);
 		  add_bb_to_loop (return_bb, bb->loop_father);
 		  add_bb_to_loop (else_bb, bb->loop_father);
@@ -1670,11 +1689,21 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 					    build_zero_cst (TREE_TYPE (restmp)),
 					    NULL_TREE, NULL_TREE);
 		  gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
-		  make_edge (bb, then_bb, EDGE_TRUE_VALUE);
-		  make_edge (bb, else_bb, EDGE_FALSE_VALUE);
-		  make_edge (return_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
-		  make_edge (then_bb, return_bb, EDGE_FALLTHRU);
-		  make_edge (else_bb, return_bb, EDGE_FALLTHRU);
+		  e = make_edge (bb, then_bb, EDGE_TRUE_VALUE);
+		  e->probability = REG_BR_PROB_BASE - REG_BR_PROB_BASE / 16;
+		  e->count = count - count / 16;
+		  e = make_edge (bb, else_bb, EDGE_FALSE_VALUE);
+		  e->probability = REG_BR_PROB_BASE / 16;
+		  e->count = count / 16;
+		  e = make_edge (return_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
+		  e->probability = REG_BR_PROB_BASE;
+		  e->count = count;
+		  e = make_edge (then_bb, return_bb, EDGE_FALLTHRU);
+		  e->probability = REG_BR_PROB_BASE;
+		  e->count = count - count / 16;
+		  e = make_edge (else_bb, return_bb, EDGE_FALLTHRU);
+		  e->probability = REG_BR_PROB_BASE;
+		  e->count = count / 16;
 		  bsi = gsi_last_bb (then_bb);
 		}
 
@@ -1708,6 +1737,8 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	}
 
       cfun->gimple_df->in_ssa_p = true;
+      profile_status_for_fn (cfun)
+        = count ? PROFILE_READ : PROFILE_GUESSED;
       /* FIXME: C++ FE should stop setting TREE_ASM_WRITTEN on thunks.  */
       TREE_ASM_WRITTEN (thunk_fndecl) = false;
       delete_unreachable_blocks ();
@@ -2415,8 +2446,7 @@ cgraph_node::create_wrapper (cgraph_node *target)
   definition = true;
   thunk.thunk_p = true;
   thunk.this_adjusting = false;
-
-  cgraph_edge *e = create_edge (target, NULL, 0, CGRAPH_FREQ_BASE);
+  create_edge (target, NULL, count, CGRAPH_FREQ_BASE);
 
   tree arguments = DECL_ARGUMENTS (decl);
 
@@ -2427,7 +2457,6 @@ cgraph_node::create_wrapper (cgraph_node *target)
     }
 
   expand_thunk (false, true);
-  e->call_stmt_cannot_inline_p = true;
 
   /* Inline summary set-up.  */
   analyze ();

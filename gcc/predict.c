@@ -3050,6 +3050,9 @@ pass_profile::execute (function *fun)
 {
   unsigned nb_loops;
 
+  if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
+    return 0;
+
   loop_optimizer_init (LOOPS_NORMAL);
   if (dump_file && (dump_flags & TDF_DETAILS))
     flow_loops_dump (dump_file, NULL, 0);

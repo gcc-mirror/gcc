@@ -1,5 +1,17 @@
 2015-01-29  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/64801
+	* cgraphunit.c (init_lowered_empty_function): Add CoUNT parameter;
+	make sane BB profile.
+	(cgraph_node::expand_thunk): Make sane BB profile.
+	(cgraph_node::create_wrapper): Do not set call_stmt_cannot_inline_p.
+	* cgraph.h (init_lowered_empty_function): Update prototype.
+	* config/i386/i386.c (make_resolver_func): Update call.
+	* predict.c (gate): Disable branch prediction pass if
+	profile is already there.
+
+2015-01-29  Jan Hubicka  <hubicka@ucw.cz>
+
 	* optc-save-gen.awk: flag_fp_contract_mode is no longer speical.
 	* opth-gen.awk: Likewise.
 	* common.opt: Mark flag_fp_contract_mode as Optimization.
