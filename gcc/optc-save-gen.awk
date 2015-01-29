@@ -87,7 +87,7 @@ print "{";
 n_opt_char = 3;
 n_opt_short = 0;
 n_opt_int = 0;
-n_opt_enum = 1;
+n_opt_enum = 0;
 n_opt_other = 0;
 var_opt_char[0] = "optimize";
 var_opt_char[1] = "optimize_size";
@@ -95,7 +95,6 @@ var_opt_char[2] = "optimize_debug";
 var_opt_range["optimize"] = "0, 255";
 var_opt_range["optimize_size"] = "0, 1";
 var_opt_range["optimize_debug"] = "0, 1";
-var_opt_enum[0] = "flag_fp_contract_mode";
 
 # Sort by size to mimic how the structure is laid out to be friendlier to the
 # cache.
