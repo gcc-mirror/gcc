@@ -1,3 +1,14 @@
+2015-01-29  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR tree-optimization/64746
+	* tree-if-conv.c (mask_exists): New function.
+	(predicate_mem_writes): Save created mask with given size for further
+	use.
+	(stmt_is_root_of_bool_pattern): Remove argument VAR and store to it.
+	(ifcvt_repair_bool_pattern): Collect all statements that are root
+	of bool pattern and use iterative algorithm to remove multiple uses
+	of predicates, display number of required iterations.
+
 2015-01-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64853
