@@ -1,5 +1,9 @@
 2015-01-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/49508
+	* semantics.c (finish_return_stmt): Suppress -Wreturn-type on
+	erroneous return statement.
+
 	PR c++/64521
 	* repo.c (repo_emit_p): It's OK for a clone to be extern at this
 	point.
