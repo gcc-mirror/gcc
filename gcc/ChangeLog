@@ -1,4 +1,14 @@
 2015-01-29  Ilya Enkovich  <ilya.enkovich@intel.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-protos.h (ix86_use_pseudo_pic_reg): New.
+	* config/i386/i386.h (PIC_OFFSET_TABLE_REGNUM): Simplify by
+	using x86_use_pseudo_pic_reg.
+	* config/i386/i386.c (ix86_conditional_register_usage): Remove
+	support for fixed PIC register.
+	(ix86_use_pseudo_pic_reg): Not static any more.
+
+2015-01-29  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR middle-end/64805
 	* ipa-inline.c (early_inliner): Rebuild IPA_REF_CHKP reference
