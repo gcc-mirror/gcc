@@ -1,3 +1,11 @@
+2015-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64844
+	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Always
+	dump cost model analysis.
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Do not register adjusted load/store costs here.
+
 2015-01-29  Ilya Enkovich  <ilya.enkovich@intel.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 

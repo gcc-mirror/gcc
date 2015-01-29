@@ -1763,9 +1763,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
       if (do_peeling)
         {
-	  stmt_info_for_cost *si;
-	  void *data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
-
           /* (1.2) Update the DR_MISALIGNMENT of each data reference DR_i.
              If the misalignment of DR_i is identical to that of dr0 then set
              DR_MISALIGNMENT (DR_i) to zero.  If the misalignment of DR_i and
@@ -1791,20 +1788,10 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
               dump_printf_loc (MSG_NOTE, vect_location,
                                "Peeling for alignment will be applied.\n");
             }
-	  /* We've delayed passing the inside-loop peeling costs to the
-	     target cost model until we were sure peeling would happen.
-	     Do so now.  */
-	  if (body_cost_vec.exists ())
-	    {
-	      FOR_EACH_VEC_ELT (body_cost_vec, i, si)
-		{
-		  struct _stmt_vec_info *stmt_info
-		    = si->stmt ? vinfo_for_stmt (si->stmt) : NULL;
-		  (void) add_stmt_cost (data, si->count, si->kind, stmt_info,
-					si->misalign, vect_body);
-		}
-	      body_cost_vec.release ();
-	    }
+	  /* The inside-loop cost will be accounted for in vectorizable_load
+	     and vectorizable_store correctly with adjusted alignments.
+	     Drop the body_cst_vec on the floor here.  */
+	  body_cost_vec.release ();
 
 	  stat = vect_verify_datarefs_alignment (loop_vinfo, NULL);
 	  gcc_assert (stat);
