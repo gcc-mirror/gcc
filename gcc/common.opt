@@ -1248,7 +1248,7 @@ Common Report Var(flag_forward_propagate) Optimization
 Perform a forward propagation pass on RTL
 
 ffp-contract=
-Common Joined RejectNegative Enum(fp_contract_mode) Var(flag_fp_contract_mode) Init(FP_CONTRACT_FAST)
+Common Joined RejectNegative Enum(fp_contract_mode) Var(flag_fp_contract_mode) Init(FP_CONTRACT_FAST) Optimization
 -ffp-contract=[off|on|fast] Perform floating-point expression contraction.
 
 Enum

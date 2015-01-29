@@ -1,3 +1,9 @@
+2015-01-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* optc-save-gen.awk: flag_fp_contract_mode is no longer speical.
+	* opth-gen.awk: Likewise.
+	* common.opt: Mark flag_fp_contract_mode as Optimization.
+
 2015-01-29  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* config/i386/cygwin.h (LIBGCJ_SONAME): Set libgcj version to -16.
