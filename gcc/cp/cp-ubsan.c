@@ -107,7 +107,6 @@ cp_ubsan_instrument_vptr (location_t loc, tree op, tree type, bool is_addr,
 			fold_build2 (NE_EXPR, boolean_type_node, op,
 				     build_zero_cst (TREE_TYPE (op))),
 			vptr, build_int_cst (uint64_type_node, 0));
-  vptr = build1_loc (loc, SAVE_EXPR, uint64_type_node, vptr);
   tree ti_decl = get_tinfo_decl (type);
   mark_used (ti_decl);
   tree ptype = build_pointer_type (type);

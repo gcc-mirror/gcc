@@ -1,4 +1,10 @@
-2015-22-01  Uros Bizjak  <ubizjak@gmail.com>
+2015-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/64717
+	* g++.dg/ubsan/pr64717-1.C: New test.
+	* g++.dg/ubsan/pr64717-2.C: New test.
+
+2015-01-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tree-ssa/pr64801.c: Fix scan-tree-dump-not directive.
 
