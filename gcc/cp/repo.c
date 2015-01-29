@@ -293,7 +293,11 @@ repo_emit_p (tree decl)
   int ret = 0;
   gcc_assert (TREE_PUBLIC (decl));
   gcc_assert (VAR_OR_FUNCTION_DECL_P (decl));
-  gcc_assert (!DECL_REALLY_EXTERN (decl));
+  gcc_assert (!DECL_REALLY_EXTERN (decl)
+	      /* A clone might not have its linkage flags updated yet
+		 because we call import_export_decl before
+		 maybe_clone_body.  */
+	      || DECL_ABSTRACT_ORIGIN (decl));
 
   /* When not using the repository, emit everything.  */
   if (!flag_use_repository)

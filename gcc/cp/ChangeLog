@@ -1,3 +1,9 @@
+2015-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64521
+	* repo.c (repo_emit_p): It's OK for a clone to be extern at this
+	point.
+
 2015-01-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/64514
