@@ -4384,12 +4384,6 @@ static void
 ix86_conditional_register_usage (void)
 {
   int i, c_mask;
-  unsigned int j;
-
-  /* The PIC register, if it exists, is fixed.  */
-  j = PIC_OFFSET_TABLE_REGNUM;
-  if (j != INVALID_REGNUM)
-    fixed_regs[j] = call_used_regs[j] = 1;
 
   /* For 32-bit targets, squash the REX registers.  */
   if (! TARGET_64BIT)
@@ -6265,7 +6259,7 @@ ix86_maybe_switch_abi (void)
 
 /* Return 1 if pseudo register should be created and used to hold
    GOT address for PIC code.  */
-static bool
+bool
 ix86_use_pseudo_pic_reg (void)
 {
   if ((TARGET_64BIT
