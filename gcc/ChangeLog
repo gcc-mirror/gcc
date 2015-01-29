@@ -1,3 +1,9 @@
+2015-01-29  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/avx2intrin.h (_mm256_bslli_epi128,
+	_mm256_bsrli_epi128): New.
+	* config/i386/emmintrin.h (_mm_bsrli_si128, _mm_bslli_si128): Ditto.
+
 2015-01-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_memory_move_cost): Increase costs for
