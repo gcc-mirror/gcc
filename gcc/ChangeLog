@@ -1,3 +1,11 @@
+2015-01-29  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/64761
+	* reorg.c (switch_text_sections_between_p): New function.
+	(relax_delay_slots): Call it when testing if the jump insn
+	is removable.  Use targetm.can_follow_jump when testing if
+	the conditional branch can follow an unconditional jump.
+
 2015-01-27  Caroline Tice  <cmtice@google.com>
 
 	Committing VTV Cywin/Ming patch for Patrick Wollgast
