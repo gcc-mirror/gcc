@@ -2320,6 +2320,8 @@ AC_DEFUN([GLIBCXX_ENABLE_VTABLE_VERIFY], [
   AC_MSG_CHECKING([for vtable verify support])
   AC_MSG_RESULT([$enable_vtable_verify])
 
+  AM_CONDITIONAL(VTV_CYGMIN, test $vtv_cygmin = yes)
+
   if test $enable_vtable_verify = yes; then
     case ${target_os} in
       cygwin*|mingw32*)
@@ -2331,7 +2333,6 @@ AC_DEFUN([GLIBCXX_ENABLE_VTABLE_VERIFY], [
         vtv_cygmin="no"
         ;;
     esac
-    AM_CONDITIONAL(VTV_CYGMIN, test $vtv_cygmin = yes)
     VTV_PCH_CXXFLAGS="-fvtable-verify=std"
     VTV_CXXLINKFLAGS="-L${toplevel_builddir}/libvtv/.libs -Wl,--rpath -Wl,${toplevel_builddir}/libvtv/.libs"		
   else
