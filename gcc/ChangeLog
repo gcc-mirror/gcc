@@ -1,3 +1,10 @@
+2015-01-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_emit_multi_reg_pop): Simplify definition of
+	return_in_pc.  Remove redundant assignments.
+	(thumb2_emit_ldrd_pop): Simplify definition of return_in_pc.
+	(arm_expand_epilogue): Don't compare boolean with true in if condition.
+
 2015-01-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_mode_after): Make static.
