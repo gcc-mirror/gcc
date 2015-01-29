@@ -1,3 +1,9 @@
+2015-01-29  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR middle-end/64805
+	* ipa-inline.c (early_inliner): Rebuild IPA_REF_CHKP reference
+	to avoid error in cgraph node verification.
+
 2015-01-29  Marek Polacek  <polacek@redhat.com>
 
 	* doc/standards.texi: Reflect that the default for C is gnu11.
