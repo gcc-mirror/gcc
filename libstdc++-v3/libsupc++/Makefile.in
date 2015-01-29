@@ -106,7 +106,8 @@ am__objects_1 = array_type_info.lo atexit_arm.lo atexit_thread.lo \
 	pure.lo si_class_type_info.lo tinfo.lo tinfo2.lo vec.lo \
 	vmi_class_type_info.lo vterminate.lo
 @GLIBCXX_HOSTED_TRUE@am__objects_2 = cp-demangle.lo
-@ENABLE_VTABLE_VERIFY_TRUE@am__objects_3 = vtv_stubs.lo
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_FALSE@am__objects_3 =  \
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_FALSE@	vtv_stubs.lo
 am_libsupc___la_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	$(am__objects_3)
 libsupc___la_OBJECTS = $(am_libsupc___la_OBJECTS)
@@ -427,8 +428,8 @@ sources = \
 	vmi_class_type_info.cc \
 	vterminate.cc
 
-@ENABLE_VTABLE_VERIFY_TRUE@vtv_sources = \
-@ENABLE_VTABLE_VERIFY_TRUE@	vtv_stubs.cc
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_FALSE@vtv_sources = \
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_FALSE@	vtv_stubs.cc
 
 libsupc___la_SOURCES = $(sources) $(c_sources) $(vtv_sources)
 libsupc__convenience_la_SOURCES = $(sources) $(c_sources) $(vtv_sources)

@@ -674,6 +674,8 @@ ENABLE_VTABLE_VERIFY_TRUE
 VTV_CXXLINKFLAGS
 VTV_PCH_CXXFLAGS
 VTV_CXXFLAGS
+VTV_CYGMIN_FALSE
+VTV_CYGMIN_TRUE
 ENABLE_WERROR_FALSE
 ENABLE_WERROR_TRUE
 ENABLE_PYTHONDIR_FALSE
@@ -11537,7 +11539,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11540 "configure"
+#line 11542 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11643,7 +11645,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11646 "configure"
+#line 11648 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15063,7 +15065,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 15066 "configure"
+#line 15068 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15415,7 +15417,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15418 "configure"
+#line 15420 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15450,7 +15452,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15453 "configure"
+#line 15455 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15485,7 +15487,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15488 "configure"
+#line 15490 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15521,7 +15523,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15524 "configure"
+#line 15526 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15600,7 +15602,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15603 "configure"
+#line 15605 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15642,7 +15644,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15645 "configure"
+#line 15647 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15676,7 +15678,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15679 "configure"
+#line 15681 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -17458,7 +17460,24 @@ $as_echo_n "checking for vtable verify support... " >&6; }
 $as_echo "$enable_vtable_verify" >&6; }
 
   if test $enable_vtable_verify = yes; then
-    VTV_CXXFLAGS="-fvtable-verify=std -Wl,-u_vtable_map_vars_start,-u_vtable_map_vars_end"
+    case ${target_os} in
+      cygwin*|mingw32*)
+        VTV_CXXFLAGS="-fvtable-verify=std -Wl,-lvtv,-u_vtable_map_vars_start,-u_vtable_map_vars_end"
+        vtv_cygmin="yes"
+        ;;
+      *)
+        VTV_CXXFLAGS="-fvtable-verify=std -Wl,-u_vtable_map_vars_start,-u_vtable_map_vars_end"
+        vtv_cygmin="no"
+        ;;
+    esac
+     if test $vtv_cygmin = yes; then
+  VTV_CYGMIN_TRUE=
+  VTV_CYGMIN_FALSE='#'
+else
+  VTV_CYGMIN_TRUE='#'
+  VTV_CYGMIN_FALSE=
+fi
+
     VTV_PCH_CXXFLAGS="-fvtable-verify=std"
     VTV_CXXLINKFLAGS="-L${toplevel_builddir}/libvtv/.libs -Wl,--rpath -Wl,${toplevel_builddir}/libvtv/.libs"
   else
@@ -79779,6 +79798,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_WERROR_TRUE}" && test -z "${ENABLE_WERROR_FALSE}"; then
   as_fn_error "conditional \"ENABLE_WERROR\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${VTV_CYGMIN_TRUE}" && test -z "${VTV_CYGMIN_FALSE}"; then
+  as_fn_error "conditional \"VTV_CYGMIN\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_VTABLE_VERIFY_TRUE}" && test -z "${ENABLE_VTABLE_VERIFY_FALSE}"; then

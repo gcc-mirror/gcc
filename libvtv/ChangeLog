@@ -1,13 +1,17 @@
-2015-01-27  Caroline Tice  <cmtice@google.com>
+2015-01-29  Caroline Tice  <cmtice@google.com>
+
+	Committing VTV Cywin/Ming patch for Patrick Wollgast
+	* libvtv/Makefile.in : Regenerate.
+	* libvtv/configure : Regenerate.
+
+2015-01-28  Caroline Tice  <cmtice@google.com>
 
 	Committing VTV Cywin/Ming patch for Patrick Wollgast
 	* libvtv/Makefile.am : Add libvtv.la to toolexeclib_LTLIBRARIES, if
 	VTV_CYGMIN is set. Define libvtv_la_LIBADD, libvtv_la_LDFLAGS,
 	libvtv_stubs_la_LDFLAGS and libvtv_stubs_la_SOURCES if VTV_CYGMIN is
 	set. Add obstac.c to libvtv_la_SOURCES if VTV_CYGMIN is set.
-	* libvtv/Makefile.in : Regenerate.
 	* libvtv/aclocal.m4 : Regenerate.
-	* libvtv/configure : Regenerate.
 	* libvtv/configure.ac : Add ACX_LT_HOST_FLAGS. Define VTV_CYGMIN.
 	* libvtv/configure.tgt : (x86_64-*-cygwin*, i?86-*-cygwin*,
 	x86_64-*-mingw*)

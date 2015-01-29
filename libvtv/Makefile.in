@@ -83,11 +83,29 @@ am__base_list = \
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(libvtv_includedir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
-libvtv_la_LIBADD =
+libvtv_la_DEPENDENCIES =
 am__objects_1 = vtv_start.lo vtv_malloc.lo vtv_rts.lo vtv_utils.lo \
 	vtv_end.lo
-@ENABLE_VTABLE_VERIFY_TRUE@am_libvtv_la_OBJECTS = $(am__objects_1)
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_FALSE@am_libvtv_la_OBJECTS =  \
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_FALSE@	$(am__objects_1)
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@am_libvtv_la_OBJECTS =  \
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@	$(am__objects_1) \
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@	obstack.lo
 libvtv_la_OBJECTS = $(am_libvtv_la_OBJECTS)
+libvtv_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(libvtv_la_LDFLAGS) $(LDFLAGS) -o $@
+@VTV_CYGMIN_FALSE@am_libvtv_la_rpath = -rpath $(toolexeclibdir)
+@VTV_CYGMIN_TRUE@am_libvtv_la_rpath = -rpath $(toolexeclibdir)
+libvtv_stubs_la_LIBADD =
+am__objects_2 = vtv_start.lo vtv_stubs.lo vtv_end.lo
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@am_libvtv_stubs_la_OBJECTS =  \
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@	$(am__objects_2)
+libvtv_stubs_la_OBJECTS = $(am_libvtv_stubs_la_OBJECTS)
+libvtv_stubs_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
+	$(CXXFLAGS) $(libvtv_stubs_la_LDFLAGS) $(LDFLAGS) -o $@
+@VTV_CYGMIN_TRUE@am_libvtv_stubs_la_rpath = -rpath $(toolexeclibdir)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
@@ -103,8 +121,7 @@ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	$(LDFLAGS) -o $@
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-CXXLD = $(CXX)
-SOURCES = $(libvtv_la_SOURCES)
+SOURCES = $(libvtv_la_SOURCES) $(libvtv_stubs_la_SOURCES)
 MULTISRCTOP = 
 MULTIBUILDTOP = 
 MULTIDIRS = 
@@ -276,7 +293,8 @@ AM_CFLAGS = $(XCFLAGS)
 AM_CCASFLAGS = $(XCFLAGS)
 AM_CXXFLAGS = $(XCFLAGS) $(LIBSTDCXX_RAW_CXX_CXXFLAGS) \
 	-Wl,-u_vtable_map_vars_start,-u_vtable_map_vars_end
-toolexeclib_LTLIBRARIES = libvtv.la
+@VTV_CYGMIN_FALSE@toolexeclib_LTLIBRARIES = libvtv.la
+@VTV_CYGMIN_TRUE@toolexeclib_LTLIBRARIES = libvtv.la libvtv_stubs.la
 vtv_headers = \
 	vtv_map.h \
 	vtv_malloc.h \
@@ -292,18 +310,29 @@ vtv_sources = \
         vtv_utils.cc \
 	vtv_end.c
 
+vtv_stubs_sources = \
+	vtv_start.c \
+	vtv_stubs.cc \
+	vtv_end.c
+
 libvtv_includedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
 # Link in vtv_start and vtv_end. 
 BUILT_SOURCES = vtv_start.c vtv_end.c
+@VTV_CYGMIN_TRUE@libvtv_la_LIBADD = -lpsapi
+@VTV_CYGMIN_TRUE@libvtv_la_LDFLAGS = $(lt_host_flags)
+@VTV_CYGMIN_TRUE@libvtv_stubs_la_LDFLAGS = $(lt_host_flags)
 @ENABLE_VTABLE_VERIFY_FALSE@libvtv_la_SOURCES = 
-@ENABLE_VTABLE_VERIFY_TRUE@libvtv_la_SOURCES = $(vtv_sources)
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_FALSE@libvtv_la_SOURCES = $(vtv_sources)
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@libvtv_la_SOURCES = $(vtv_sources) obstack.c
+@ENABLE_VTABLE_VERIFY_TRUE@@VTV_CYGMIN_TRUE@libvtv_stubs_la_SOURCES = $(vtv_stubs_sources)
 @ENABLE_VTABLE_VERIFY_FALSE@libvtv_include_HEADERS = 
 @ENABLE_VTABLE_VERIFY_TRUE@libvtv_include_HEADERS = $(vtv_headers)
 
 # Least ordering for dependencies mean linking w/o libstdc++ for as
 # long as the development of libvtv does not absolutely require it.
 CXXVTV = $(CC_FOR_TARGET)
+CXXLD = $(CC_FOR_TARGET)
 LTCXXCOMPILE = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(CXXVTV) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -383,7 +412,9 @@ clean-toolexeclibLTLIBRARIES:
 	  rm -f "$${dir}/so_locations"; \
 	done
 libvtv.la: $(libvtv_la_OBJECTS) $(libvtv_la_DEPENDENCIES) 
-	$(CXXLINK) -rpath $(toolexeclibdir) $(libvtv_la_OBJECTS) $(libvtv_la_LIBADD) $(LIBS)
+	$(libvtv_la_LINK) $(am_libvtv_la_rpath) $(libvtv_la_OBJECTS) $(libvtv_la_LIBADD) $(LIBS)
+libvtv_stubs.la: $(libvtv_stubs_la_OBJECTS) $(libvtv_stubs_la_DEPENDENCIES) 
+	$(libvtv_stubs_la_LINK) $(am_libvtv_stubs_la_rpath) $(libvtv_stubs_la_OBJECTS) $(libvtv_stubs_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -391,10 +422,12 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/obstack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtv_end.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtv_malloc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtv_rts.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtv_start.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtv_stubs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vtv_utils.Plo@am__quote@
 
 .c.o:
@@ -761,6 +794,14 @@ vtv_start.c:
 vtv_end.c:
 	rm -f $@
 	$(LN_S) $(toplevel_srcdir)/libgcc/vtv_end.c $@
+
+@VTV_CYGMIN_TRUE@  obstack.c:
+@VTV_CYGMIN_TRUE@	  rm -f $@
+@VTV_CYGMIN_TRUE@	  $(LN_S) $(toplevel_srcdir)/libiberty/obstack.c $@
+
+@VTV_CYGMIN_TRUE@  vtv_stubs.cc:
+@VTV_CYGMIN_TRUE@	  rm -f $@
+@VTV_CYGMIN_TRUE@	  $(LN_S) $(toplevel_srcdir)/libstdc++-v3/libsupc++/vtv_stubs.cc $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
