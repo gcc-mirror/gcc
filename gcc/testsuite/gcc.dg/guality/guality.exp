@@ -5,7 +5,7 @@ load_lib gcc-gdb-test.exp
 
 # Disable on darwin until radr://7264615 is resolved.
 if { [istarget *-*-darwin*] } {
-  return
+    return
 }
 
 if { [istarget "powerpc-ibm-aix*"] } {

@@ -1,3 +1,8 @@
+2015-01-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/guality/guality.h (main): Add argv[0] to
+	guality_gdb_command.
+
 2015-01-29  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/64801
