@@ -1,3 +1,9 @@
+2015-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* acinclude.m4 (VTV_CYGMIN): Use x$vtv_cygmin = xyes instead of
+	$vtv_cygmin = yes.  Initialize vtv_cygmin=no unconditionally first.
+	* configure: Regenerated.
+
 2015-01-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_VTABLE_VERIFY): Define VTV_CYGMIN

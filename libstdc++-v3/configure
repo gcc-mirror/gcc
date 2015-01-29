@@ -671,11 +671,11 @@ SECTION_LDFLAGS
 GLIBCXX_LIBS
 ENABLE_VTABLE_VERIFY_FALSE
 ENABLE_VTABLE_VERIFY_TRUE
+VTV_CYGMIN_FALSE
+VTV_CYGMIN_TRUE
 VTV_CXXLINKFLAGS
 VTV_PCH_CXXFLAGS
 VTV_CXXFLAGS
-VTV_CYGMIN_FALSE
-VTV_CYGMIN_TRUE
 ENABLE_WERROR_FALSE
 ENABLE_WERROR_TRUE
 ENABLE_PYTHONDIR_FALSE
@@ -17459,15 +17459,15 @@ $as_echo_n "checking for vtable verify support... " >&6; }
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_vtable_verify" >&5
 $as_echo "$enable_vtable_verify" >&6; }
 
+  vtv_cygmin=no
   if test $enable_vtable_verify = yes; then
     case ${target_os} in
       cygwin*|mingw32*)
         VTV_CXXFLAGS="-fvtable-verify=std -Wl,-lvtv,-u_vtable_map_vars_start,-u_vtable_map_vars_end"
-        vtv_cygmin="yes"
+        vtv_cygmin=yes
         ;;
       *)
         VTV_CXXFLAGS="-fvtable-verify=std -Wl,-u_vtable_map_vars_start,-u_vtable_map_vars_end"
-        vtv_cygmin="no"
         ;;
     esac
     VTV_PCH_CXXFLAGS="-fvtable-verify=std"
@@ -17478,17 +17478,16 @@ $as_echo "$enable_vtable_verify" >&6; }
     VTV_CXXLINKFLAGS=
   fi
 
-   if test $vtv_cygmin = yes; then
+
+
+
+   if test x$vtv_cygmin = xyes; then
   VTV_CYGMIN_TRUE=
   VTV_CYGMIN_FALSE='#'
 else
   VTV_CYGMIN_TRUE='#'
   VTV_CYGMIN_FALSE=
 fi
-
-
-
-
 
 
 
