@@ -33,7 +33,11 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+#include <windows.h>
+#else
 #include <sys/mman.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -61,6 +65,18 @@ static struct obstack vtv_obstack VTV_PROTECTED_VAR;
 static void *current_chunk VTV_PROTECTED_VAR = 0;
 static size_t current_chunk_size VTV_PROTECTED_VAR = 0;
 static int malloc_initialized VTV_PROTECTED_VAR = 0;
+
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+//sysconf(_SC_PAGE_SIZE) port
+long sysconf_SC_PAGE_SIZE()
+{
+  SYSTEM_INFO si;
+  GetSystemInfo(&si);
+  long pageSize = (long)si.dwPageSize;
+  return pageSize;
+  //return 4096; // standard usermode 32bit pagesize in bytes // FIXME
+}
+#endif
 
 /* The function goes through and counts all the pages we have allocated
    so far.  It returns the page count.  */
@@ -162,8 +178,13 @@ obstack_chunk_alloc (size_t size)
   VTV_DEBUG_ASSERT ((size & (VTV_PAGE_SIZE - 1)) == 0);
   void *allocated;
 
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+  if ((allocated = VirtualAlloc(NULL, size,  MEM_RESERVE|MEM_COMMIT,
+                         PAGE_READWRITE)) == 0)
+#else
   if ((allocated = mmap (NULL, size, PROT_READ | PROT_WRITE,
                          MAP_PRIVATE | MAP_ANONYMOUS,  -1, 0)) == 0)
+#endif
     VTV_error ();
 
   VTV_DEBUG_ASSERT (((unsigned long) allocated & (VTV_PAGE_SIZE - 1)) == 0);
@@ -190,7 +211,11 @@ __vtv_malloc_init (void)
   if (malloc_initialized)
     return;
 
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+  if (VTV_PAGE_SIZE != sysconf_SC_PAGE_SIZE())
+#else
   if (VTV_PAGE_SIZE != sysconf (_SC_PAGE_SIZE))
+#endif
     VTV_error ();
 
   obstack_chunk_size (&vtv_obstack) = VTV_PAGE_SIZE;

@@ -1,3 +1,9 @@
+2015-01-27  Caroline Tice  <cmtice@google.com>
+
+	Committing VTV Cywin/Ming patch for Patrick Wollgast
+	* vtable-class-hierarchy.cc (vtv_generate_init_routine): Add
+	check for not TARGET_PECOFF at the VTV_PREINIT_PRIORITY checks.
+
 2015-01-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58597

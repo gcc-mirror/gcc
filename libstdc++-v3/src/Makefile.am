@@ -25,7 +25,30 @@ include $(top_srcdir)/fragment.am
 SUBDIRS = c++98 c++11
 
 # Cross compiler support.
+if VTV_CYGMIN
+toolexeclib_LTLIBRARIES = libvtv.la libstdc++.la
+else
 toolexeclib_LTLIBRARIES = libstdc++.la
+endif
+
+if VTV_CYGMIN
+vtv_stubs.cc:
+	rm -f $@
+	$(LN_S) $(toplevel_srcdir)/libstdc++-v3/libsupc++/vtv_stubs.cc $@
+
+libvtv_la_SOURCES = vtv_stubs.cc
+libvtv_la_LDFLAGS = $(lt_host_flags)
+
+libvtv_la_AM_CXXFLAGS = \
+	$(glibcxx_compiler_pic_flag) \
+	$(XTEMPLATE_FLAGS) \
+	-Wl,-u_vtable_map_vars_start,-u_vtable_map_vars_end \
+	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS)
+
+libvtv_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(libvtv_la_AM_CXXFLAGS) \
+	$(CXXFLAGS) $(libvtv_la_LDFLAGS) $(LDFLAGS) -o $@
+endif
 
 vpath % $(top_srcdir)/src/c++98
 vpath % $(top_srcdir)/src/c++11

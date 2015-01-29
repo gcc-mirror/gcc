@@ -38,7 +38,11 @@ AM_CXXFLAGS = $(XCFLAGS)
 AM_CXXFLAGS += $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
 AM_CXXFLAGS += -Wl,-u_vtable_map_vars_start,-u_vtable_map_vars_end
 
-toolexeclib_LTLIBRARIES = libvtv.la
+if VTV_CYGMIN
+  toolexeclib_LTLIBRARIES = libvtv.la libvtv_stubs.la
+else
+  toolexeclib_LTLIBRARIES = libvtv.la
+endif
 
 vtv_headers = \
 	vtv_map.h \
@@ -55,6 +59,11 @@ vtv_sources = \
         vtv_utils.cc \
 	vtv_end.c
 
+vtv_stubs_sources = \
+	vtv_start.c \
+	vtv_stubs.cc \
+	vtv_end.c
+
 libvtv_includedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
 # Link in vtv_start and vtv_end. 
@@ -67,8 +76,29 @@ vtv_end.c:
 	rm -f $@
 	$(LN_S) $(toplevel_srcdir)/libgcc/vtv_end.c $@
 
+if VTV_CYGMIN
+  obstack.c:
+	  rm -f $@
+	  $(LN_S) $(toplevel_srcdir)/libiberty/obstack.c $@
+  
+  vtv_stubs.cc:
+	  rm -f $@
+	  $(LN_S) $(toplevel_srcdir)/libstdc++-v3/libsupc++/vtv_stubs.cc $@
+endif
+
+if VTV_CYGMIN
+  libvtv_la_LIBADD = -lpsapi
+  libvtv_la_LDFLAGS = $(lt_host_flags)
+  libvtv_stubs_la_LDFLAGS = $(lt_host_flags)
+endif
+
 if ENABLE_VTABLE_VERIFY
+if VTV_CYGMIN
+  libvtv_la_SOURCES = $(vtv_sources) obstack.c
+  libvtv_stubs_la_SOURCES = $(vtv_stubs_sources)
+else
   libvtv_la_SOURCES = $(vtv_sources)
+endif
   libvtv_include_HEADERS = $(vtv_headers)
 else
   libvtv_la_SOURCES =
@@ -78,6 +108,8 @@ endif
 # Least ordering for dependencies mean linking w/o libstdc++ for as
 # long as the development of libvtv does not absolutely require it.
 CXXVTV=$(CC_FOR_TARGET)
+CXXLD=$(CC_FOR_TARGET)
+
 LTCXXCOMPILE = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(CXXVTV) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)

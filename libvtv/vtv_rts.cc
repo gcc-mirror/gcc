@@ -121,12 +121,20 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+#include <windows.h>
+#include <winternl.h>
+#include <psapi.h>
+#else
 #include <execinfo.h>
+#endif
 
 #include <unistd.h>
+#if !defined (__CYGWIN__) && !defined (__MINGW32__)
 #include <sys/mman.h>
-#include <errno.h>
 #include <link.h>
+#endif
+#include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
 
@@ -143,6 +151,13 @@
 
 #include "vtv-change-permission.h"
 
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+// porting: fix link error to libc
+void __fortify_fail (const char * msg){
+    OutputDebugString(msg);
+    abort();
+}
+#else
 extern "C" {
 
   /* __fortify_fail is a function in glibc that calls __libc_message,
@@ -159,6 +174,7 @@ extern "C" {
   extern void __fortify_fail (const char *) __attribute__((noreturn));
 
 } /* extern "C" */
+#endif
 
 /* The following variables are used only for debugging and performance
    tuning purposes. Therefore they do not need to be "protected".
@@ -313,10 +329,17 @@ typedef vtv_set_handle * vtv_set_handle_handle;
 
 struct sect_hdr_data
 {
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+  uintptr_t dlpi_addr;    /* The header address in the INFO record,
+                            passed in from dl_iterate_phdr.  */
+  uintptr_t mp_low;       /* Start address of the .vtable_map_vars
+                            section in memory.  */
+#else
   ElfW (Addr) dlpi_addr; /* The header address in the INFO record,
                             passed in from dl_iterate_phdr.  */
   ElfW (Addr) mp_low;    /* Start address of the .vtable_map_vars
                             section in memory.  */
+#endif
   size_t mp_size;        /* Size of the .vtable_map_vars section in
                             memory.  */
 };
@@ -336,8 +359,13 @@ unsigned int num_cache_entries VTV_PROTECTED_VAR = 0;
    it returns the record for that entry; otherwise it returns
    NULL.  */
 
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+struct sect_hdr_data *
+search_cached_file_data (uintptr_t load_addr)
+#else
 struct sect_hdr_data *
 search_cached_file_data (ElfW (Addr) load_addr)
+#endif
 {
   unsigned int i;
   for (i = 0; i < num_cache_entries; ++i)
@@ -401,6 +429,130 @@ log_memory_protection_data (char *message)
   __vtv_add_to_log (log_fd, "%s", message);
 }
 
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+static void
+read_section_offset_and_length (char *name,
+                                uintptr_t addr,
+                                const char *sect_name,
+                                int mprotect_flags,
+                                off_t *sect_offset,
+                                WORD *sect_len)
+{
+  bool found = false;
+  struct sect_hdr_data *cached_data = NULL;
+
+  /* Check to see if we already have the data for this file.  */
+  cached_data = search_cached_file_data (addr);
+
+  if (cached_data)
+    {
+      *sect_offset = cached_data->mp_low;
+      *sect_len = cached_data->mp_size;
+      return;
+    }
+
+  // check for DOS Header magic bytes
+  if (*(WORD *)addr == 0x5A4D)
+    {
+      int name_len = strlen (sect_name);
+      int fd = -1;
+
+      /* Attempt to open the binary file on disk.  */
+      if (strlen (name) == 0)
+        {
+          return;
+        }
+      else
+        fd = open (name, O_RDONLY | O_BINARY);
+
+      if (fd != -1)
+        {
+          /* Find the section header information in memory.  */
+          PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)addr;
+          PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)((char *)addr
+                                          + pDosHeader->e_lfanew);
+          PIMAGE_FILE_HEADER pFileHeader = &pNtHeaders->FileHeader;
+
+          DWORD PointerToStringTable = pFileHeader->PointerToSymbolTable
+                                        + (pFileHeader->NumberOfSymbols*0x12);
+
+          PIMAGE_SECTION_HEADER sect_hdr = 
+            (PIMAGE_SECTION_HEADER)((char *)&pNtHeaders->OptionalHeader
+                                       + pFileHeader->SizeOfOptionalHeader);
+
+          /* Loop through all the section headers, looking for one whose
+             name is ".vtable_map_vars".  */
+
+          for (int i = 0; i < pFileHeader->NumberOfSections && !found; ++i)
+            {
+              char header_name[64];
+
+              /* Check if we have to get the section name from the COFF string
+                 table. */
+              if (sect_hdr[i].Name[0] == '/')
+                {
+                  if (atoi((const char*)sect_hdr[i].Name+1) == 0)
+                    {
+                      continue;
+                    }
+
+                  off_t name_offset = PointerToStringTable
+                                       + atoi((const char*)sect_hdr[i].Name+1);
+
+                  size_t bytes_read = ReadFromOffset (fd, &header_name, 64,
+                                                      name_offset);
+
+                  VTV_ASSERT (bytes_read > 0);
+                }
+              else
+                {
+                  memcpy (&header_name, sect_hdr[i].Name,
+                          sizeof (sect_hdr[i].Name));
+                }
+
+              if (memcmp (header_name, sect_name, name_len) == 0)
+                {
+                  /* We found the section; get its load offset and
+                     size.  */
+                  *sect_offset = sect_hdr[i].VirtualAddress;
+      if (sect_hdr[i].Misc.VirtualSize % VTV_PAGE_SIZE != 0)
+        *sect_len = sect_hdr[i].Misc.VirtualSize + VTV_PAGE_SIZE
+                     - (sect_hdr[i].Misc.VirtualSize % VTV_PAGE_SIZE);
+      else
+        *sect_len = sect_hdr[i].Misc.VirtualSize;
+                  found = true;
+                }
+            }
+          close (fd);
+        }
+    }
+
+  if (*sect_offset != 0 && *sect_len != 0)
+    {
+      /* Calculate the page location in memory, making sure the
+         address is page-aligned.  */
+      uintptr_t start_addr = addr + *sect_offset;
+      *sect_offset = start_addr & ~(VTV_PAGE_SIZE - 1);
+      *sect_len = *sect_len - 1;
+
+      /* Since we got this far, we must not have found these pages in
+         the cache, so add them to it.  NOTE: We could get here either
+         while making everything read-only or while making everything
+         read-write.  We will only update the cache if we get here on
+         a read-write (to make absolutely sure the cache is writable
+         -- also the read-write pass should come before the read-only
+         pass).  */
+      if ((mprotect_flags & PROT_WRITE)
+          && num_cache_entries < MAX_ENTRIES)
+        {
+          vtv_sect_info_cache[num_cache_entries].dlpi_addr = addr;
+          vtv_sect_info_cache[num_cache_entries].mp_low = *sect_offset;
+          vtv_sect_info_cache[num_cache_entries].mp_size = *sect_len;
+          num_cache_entries++;
+        }
+    }
+}
+#else
 static void
 read_section_offset_and_length (struct dl_phdr_info *info,
                                 const char *sect_name,
@@ -547,7 +699,125 @@ read_section_offset_and_length (struct dl_phdr_info *info,
         }
     }
 }
+#endif
 
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+/* This function is used to iterate over all loaded modules and searches
+   for a section called ".vtable_map_vars". The only interaction with 
+   the binary file on disk of the module is to read section names in the
+   COFF string table. If the module contains a ".vtable_map_vars" section,
+   read section offset and size from the section header of the loaded module.
+   Call 'mprotect' on those pages, setting the protection either to
+   read-only or read-write, depending on what's in data.
+   The calls to change the protection occur in vtv_unprotect_vtable_vars 
+   and vtv_protect_vtable_vars.  */
+
+static int
+iterate_modules (void *data)
+{
+  int * mprotect_flags = (int *) data;
+  off_t map_sect_offset = 0;
+  WORD map_sect_len = 0;
+  char buffer[1024];
+  const char *map_sect_name = VTV_PROTECTED_VARS_SECTION;
+  HMODULE hMods[1024];
+  HANDLE hProcess;
+  DWORD cbNeeded;
+
+  hProcess = GetCurrentProcess ();
+
+  if (NULL == hProcess)
+    return 0;
+
+  if (EnumProcessModules (hProcess, hMods, sizeof (hMods), &cbNeeded))
+    {
+      /* Iterate over all loaded modules. */
+      for (unsigned int i = 0; i < (cbNeeded / sizeof (HMODULE)); i++)
+        {
+          char szModName[MAX_PATH];
+
+          if (GetModuleFileNameExA (hProcess, hMods[i], szModName,
+                        sizeof (szModName)))
+            {
+              map_sect_offset = 0;
+              map_sect_len = 0;
+              read_section_offset_and_length (szModName,
+                                              (uintptr_t) hMods[i],
+                                              map_sect_name, 
+                                              *mprotect_flags,
+                                              &map_sect_offset,
+                                              &map_sect_len);
+
+              if (debug_functions)
+                {
+                  snprintf (buffer, sizeof(buffer),
+                "  Looking at load module %s to change permissions to %s\n",
+                szModName,
+                (*mprotect_flags & PROT_WRITE) ? "READ/WRITE" : "READ-ONLY");
+                  log_memory_protection_data (buffer);
+                }
+
+              /* See if we actually found the section.  */
+              if (map_sect_offset && map_sect_len)
+                {
+                  unsigned long long start;
+                  int result;
+
+                  if (debug_functions)
+                    {
+                      snprintf (buffer, sizeof (buffer),
+                                "  (%s): Protecting %p to %p\n",
+                                szModName,
+                                (void *) map_sect_offset,
+                                (void *) (map_sect_offset + map_sect_len));
+                      log_memory_protection_data (buffer);
+                    }
+
+                  /* Change the protections on the pages for the section.  */
+
+                  start = get_cycle_count ();
+                  result = mprotect ((void *) map_sect_offset, map_sect_len,
+                                     *mprotect_flags);
+                  accumulate_cycle_count (&mprotect_cycles, start);
+                  if (result == -1)
+                    {
+                      if (debug_functions)
+                        {
+                          snprintf (buffer, sizeof (buffer),
+                                    "Failed called to mprotect for %s error: ",
+                                    (*mprotect_flags & PROT_WRITE) ?
+                                    "READ/WRITE" : "READ-ONLY");
+                          log_memory_protection_data (buffer);
+                          perror(NULL);
+                        }
+                      VTV_error();
+                    }
+                  else
+                    {
+                      if (debug_functions)
+                       {
+                          snprintf (buffer, sizeof (buffer),
+                                    "mprotect'ed range [%p, %p]\n",
+                                    (void *) map_sect_offset,
+                                    (char *) map_sect_offset + map_sect_len);
+                          log_memory_protection_data (buffer);
+                        }
+                    }
+                  increment_num_calls (&num_calls_to_mprotect);
+                  /* num_pages_protected += (map_sect_len + VTV_PAGE_SIZE - 1) 
+                                            / VTV_PAGE_SIZE; */
+                  num_pages_protected += (map_sect_len + 4096 - 1) / 4096;
+                  continue;
+                }
+            }
+        }
+    }
+
+    CloseHandle(hProcess);
+
+  return 0;
+}
+#else
 /* This is the callback function used by dl_iterate_phdr (which is
    called from vtv_unprotect_vtable_vars and vtv_protect_vtable_vars).
    It attempts to find the binary file on disk for the INFO record
@@ -652,6 +922,7 @@ dl_iterate_phdr_callback (struct dl_phdr_info *info, size_t, void *data)
 
   return 0;
 }
+#endif
 
 /* This function explicitly changes the protection (read-only or read-write)
    on the vtv_sect_info_cache, which is used for speeding up look ups in the
@@ -678,7 +949,7 @@ change_protections_on_phdr_cache (int protection_flag)
   char * low_address = (char *) &(vtv_sect_info_cache);
   size_t cache_size = MAX_ENTRIES * sizeof (struct sect_hdr_data);
 
-  low_address = (char *) ((unsigned long) low_address & ~(VTV_PAGE_SIZE - 1));
+  low_address = (char *) ((uintptr_t) low_address & ~(VTV_PAGE_SIZE - 1));
   
   if (mprotect ((void *) low_address, cache_size, protection_flag) == -1)
     VTV_error ();
@@ -695,7 +966,11 @@ vtv_unprotect_vtable_vars (void)
 
   mprotect_flags = PROT_READ | PROT_WRITE;
   change_protections_on_phdr_cache (mprotect_flags);
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+  iterate_modules ((void *) &mprotect_flags);
+#else
   dl_iterate_phdr (dl_iterate_phdr_callback, (void *) &mprotect_flags);
+#endif
 }
 
 /* Protect all the vtable map vars and other side data that is used
@@ -708,7 +983,11 @@ vtv_protect_vtable_vars (void)
   int mprotect_flags;
 
   mprotect_flags = PROT_READ;
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+  iterate_modules ((void *) &mprotect_flags);
+#else
   dl_iterate_phdr (dl_iterate_phdr_callback, (void *) &mprotect_flags);
+#endif
   change_protections_on_phdr_cache (mprotect_flags);
 }
 
@@ -868,7 +1147,7 @@ const unsigned long SET_HANDLE_HANDLE_BIT = 0x2;
 static inline bool
 is_set_handle_handle (void * ptr)
 {
-  return ((unsigned long) ptr & SET_HANDLE_HANDLE_BIT)
+  return ((uintptr_t) ptr & SET_HANDLE_HANDLE_BIT)
                                                       == SET_HANDLE_HANDLE_BIT;
 }
 
@@ -878,7 +1157,7 @@ is_set_handle_handle (void * ptr)
 static inline vtv_set_handle * 
 ptr_from_set_handle_handle (void * ptr)
 {
-  return (vtv_set_handle *) ((unsigned long) ptr & ~SET_HANDLE_HANDLE_BIT);
+  return (vtv_set_handle *) ((uintptr_t) ptr & ~SET_HANDLE_HANDLE_BIT);
 }
 
 /* Given a vtable map variable, PTR, this function sets the bit that
@@ -888,7 +1167,7 @@ ptr_from_set_handle_handle (void * ptr)
 static inline vtv_set_handle_handle
 set_handle_handle (vtv_set_handle * ptr)
 {
-  return (vtv_set_handle_handle) ((unsigned long) ptr | SET_HANDLE_HANDLE_BIT);
+  return (vtv_set_handle_handle) ((uintptr_t) ptr | SET_HANDLE_HANDLE_BIT);
 }
 
 static inline void
@@ -1362,6 +1641,7 @@ __VLTVerifyVtablePointer (void ** set_handle_ptr, const void * vtable_ptr)
 
 static int page_count_2 = 0;
 
+#if !defined (__CYGWIN__) && !defined (__MINGW32__)
 static int
 dl_iterate_phdr_count_pages (struct dl_phdr_info *info,
                              size_t unused __attribute__ ((__unused__)),
@@ -1392,6 +1672,7 @@ dl_iterate_phdr_count_pages (struct dl_phdr_info *info,
 
   return 0;
 }
+#endif
 
 static void
 count_all_pages (void)
@@ -1401,7 +1682,11 @@ count_all_pages (void)
   mprotect_flags = PROT_READ;
   page_count_2 = 0;
 
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+  iterate_modules ((void *) &mprotect_flags);
+#else
   dl_iterate_phdr (dl_iterate_phdr_count_pages, (void *) &mprotect_flags);
+#endif
   page_count_2 += __vtv_count_mmapped_pages ();
 }
 

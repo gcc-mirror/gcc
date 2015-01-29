@@ -122,6 +122,7 @@ AC_CHECK_TOOL(RANLIB, ranlib, :)
 # Configure libtool
 AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
+ACX_LT_HOST_FLAGS
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 
@@ -154,5 +155,16 @@ _EOF
     AS_UNSET([ml_norecursion])
 ])
 fi
+
+case "$target_os" in
+  cygwin*|mingw32*)
+    vtv_cygmin="yes"
+    ;;
+  *)
+    vtv_cygmin="no"
+    ;;
+esac
+
+AM_CONDITIONAL(VTV_CYGMIN, test $vtv_cygmin = yes)
 
 AC_OUTPUT

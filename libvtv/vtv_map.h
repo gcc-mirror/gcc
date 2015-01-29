@@ -26,7 +26,13 @@
 #define _VTV_MAP_H 1
 
 #include <string.h>
+
+#ifdef __MINGW32__
+#include <stdint.h>
+#include "vtv_utils.h"
+#else
 #include <vtv_utils.h>
+#endif
 
 inline uint64_t
 load8bytes (const void *p)

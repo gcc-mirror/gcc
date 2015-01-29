@@ -2252,6 +2252,33 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 				         | SECTION_LINKONCE,
 			    	         DECL_NAME (decl));
           in_section = sect;
+#elif defined (TARGET_PECOFF)
+          /* Neither OBJECT_FORMAT_PE, nor OBJECT_FORMAT_COFF is set here.
+             Therefore the following check is used.
+             In case a the target is PE or COFF a comdat group section
+             is created, e.g. .vtable_map_vars$foo. The linker places
+             everything in .vtable_map_vars at the end.
+
+             A fix could be made in
+             gcc/config/i386/winnt.c: i386_pe_unique_section. */
+          if (TARGET_PECOFF)
+          {
+            char *name;
+            
+            if (TREE_CODE (DECL_NAME (decl)) == IDENTIFIER_NODE)
+              name = ACONCAT ((sect->named.name, "$",
+                               IDENTIFIER_POINTER (DECL_NAME (decl)), NULL));
+            else
+              name = ACONCAT ((sect->named.name, "$",
+                    IDENTIFIER_POINTER (DECL_COMDAT_GROUP (DECL_NAME (decl))),
+                    NULL));
+
+            targetm.asm_out.named_section (name,
+                                           sect->named.common.flags
+                                           | SECTION_LINKONCE,
+                                           DECL_NAME (decl));
+            in_section = sect;
+        }
 #else
           switch_to_section (sect);
 #endif

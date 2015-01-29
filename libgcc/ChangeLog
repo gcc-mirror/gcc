@@ -1,3 +1,13 @@
+2015-01-27  Caroline Tice  <cmtice@google.com>
+
+	Committing VTV Cywin/Ming patch for Patrick Wollgast
+	* Makefile.in: Move rules to build vtv_*.o out of the check
+	for CUSTOM_CRTSTUFF.
+	* config.host (i[34567]86-*-cygwin*, x86_64-*-cygwin*,
+	i[34567]86-*-mingw*)
+	 (x86_64-*-mingw*): Only add vtv_*.o to extra_parts if
+	enable_vtable_verify.
+
 2015-01-27  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/cmpsi2.S: Use function start and end macros.

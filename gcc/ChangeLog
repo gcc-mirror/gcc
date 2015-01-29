@@ -1,3 +1,21 @@
+2015-01-27  Caroline Tice  <cmtice@google.com>
+
+	Committing VTV Cywin/Ming patch for Patrick Wollgast
+	* config/i386/cygwin.h (STARTFILE_SPEC): Add vtv_start.o,
+	if -fvtable-verify=preinit/std is used.
+	* config/i386/mingw-w64.h (STARTFILE_SPEC): Likewise.
+	* config/i386/mingw32.h (STARTFILE_SPEC): Likewise.
+	* config/i386/cygwin.h (ENDFILE_SPEC): Add vtv_end.o,
+	if -fvtable-verify=preinit/std is used.
+	* config/i386/mingw32.h (ENDFILE_SPEC): Likewise.
+	* config/i386/cygwin.h (LIB_SPEC): Pass -lvtv and -lpsapi,
+	if -fvtable-verify=preinit/std is used.
+	* config/i386/mingw-w64.h (LIB_SPEC): Likewise.
+	* config/i386/mingw32.h (LIB_SPEC): Likewise.
+	* varasm.c (assemble_variable): Add code to properly set the comdat
+	section and name for the .vtable_map_vars section in case the
+	target is PE or COFF.
+
 2015-01-29  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/64801
