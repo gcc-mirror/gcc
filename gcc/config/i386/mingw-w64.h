@@ -32,7 +32,10 @@ along with GCC; see the file COPYING3.  If not see
   %{!shared:%{!mdll:%{!municode:crt2%O%s}}} \
   %{!shared:%{!mdll:%{municode:crt2u%O%s}}} \
   %{pg:gcrt2%O%s} \
-  crtbegin.o%s"
+  crtbegin.o%s \
+  %{fvtable-verify=none:%s; \
+    fvtable-verify=preinit:vtv_start.o%s; \
+    fvtable-verify=std:vtv_start.o%s}"
 
 /* Enable multilib.  */
 
@@ -43,6 +46,8 @@ along with GCC; see the file COPYING3.  If not see
 #define LIB_SPEC "%{pg:-lgmon} %{" SPEC_PTHREAD1 ":-lpthread} " \
 		 "%{" SPEC_PTHREAD2 ": } " \
 		 "%{mwindows:-lgdi32 -lcomdlg32} " \
+     "%{fvtable-verify=preinit:-lvtv -lpsapi; \
+        fvtable-verify=std:-lvtv -lpsapi} " \
 		 "-ladvapi32 -lshell32 -luser32 -lkernel32"
 
 #undef SPEC_32

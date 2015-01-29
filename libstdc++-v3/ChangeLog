@@ -1,3 +1,18 @@
+2015-01-27  Caroline Tice  <cmtice@google.com>
+
+	Committing VTV Cywin/Ming patch for Patrick Wollgast
+	* acinclude.m4: Define VTV_CYGMIN.
+	* configure: Regenerate.
+	* libsupc++/Makefile.am: Add vtv_sources only to libsupc___la_SOURCES
+	and libsupc__convenience_la_SOURCES if VTV_CYGMIN is not set.
+	* libsupc++/Makefile.in: Regenerated.
+	* libsupc++/vtv_stubs.cc: Add none weak declaration of every function
+	for Cygwin and MinGW.
+	* src/Makefile.am: Add libvtv.la to toolexeclib_LTLIBRARIES, if
+	VTV_CYGMIN is set. Define libvtv_la_SOURCES, libvtv_la_LDFLAGS,
+	libvtv_la_AM_CXXFLAGS and libvtv_la_LINK if VTV_CYGMIN is set.
+	* libstdc++-v3/src/Makefile.in: Regenerate.
+
 2015-01-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64828

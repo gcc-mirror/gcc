@@ -1,3 +1,50 @@
+2015-01-27  Caroline Tice  <cmtice@google.com>
+
+	Committing VTV Cywin/Ming patch for Patrick Wollgast
+	* libvtv/Makefile.am : Add libvtv.la to toolexeclib_LTLIBRARIES, if
+	VTV_CYGMIN is set. Define libvtv_la_LIBADD, libvtv_la_LDFLAGS,
+	libvtv_stubs_la_LDFLAGS and libvtv_stubs_la_SOURCES if VTV_CYGMIN is
+	set. Add obstac.c to libvtv_la_SOURCES if VTV_CYGMIN is set.
+	* libvtv/Makefile.in : Regenerate.
+	* libvtv/aclocal.m4 : Regenerate.
+	* libvtv/configure : Regenerate.
+	* libvtv/configure.ac : Add ACX_LT_HOST_FLAGS. Define VTV_CYGMIN.
+	* libvtv/configure.tgt : (x86_64-*-cygwin*, i?86-*-cygwin*,
+	x86_64-*-mingw*)
+        (i?86-*-mingw*): Add to supported targets.
+	* libvtv/vtv_fail.cc : Skip inclusion of execinfo.h on Cygwin and MinGW.
+	(log_error_message): Skip calls to backtrace and backtrace_symbols_fd
+	on Cygwin and MinGW.
+	* libvtv/vtv_malloc.cc : Include windows.h and skip sys/mman.h
+	inclusion on Cygwin and MinGW. Add sysconf port on Cygwin and MinGW.
+	(obstack_chunk_alloc): Exchange call to mmap with call to VirtualAlloc
+	on Cygwin and MinGW.
+	(__vtv_malloc_init): Exchange call to sysconf with call to port of
+	sysconf on Cygwin and MinGW.
+	* libvtv/vtv_malloc.h : Declare mprotect and define PROT_READ and
+	PROT_WRITE on Cygwin and MinGW.
+	* libvtv/map.h : Include stdint.h on MinGW.
+	* libvtv/rts.cc : Include windows.h, winternl.h and psapi.h, skip
+	include of execinfo.h, sys/mman.h and link.h on Cygwin and MinGW.  Add
+	port of __fortify_fail on Cygwin and MinGW.  Change ElfW (Addr) to
+	uintptr_t on Cygwin and MinGW.
+	(read_section_offset_and_length): Add port for Cygwin and MinGW
+	(iterate_modules): New function.
+	(vtv_unprotect_vtable_vars): Use iterate_modules instead of
+	dl_iterate_phdr on Cygwin and MinGW.
+	(vtv_protect_vtable_vars): Likewise.
+	(count_all_pages): Likewise.
+	(dl_iterate_phdr_count_pages): Don't build on Cygwin and MinGW.
+	* libvtv/utils.cc : Include windows.h and skip execinfo.h inclusion on
+	 Cygwin and MinGW.
+	(__vtv_open_log): Exchange call to getuid and getpid with
+	GetCurrentProcessId and adjust call to snprintf accordingly on Cygwin
+	and MinGW.  Adjust calls to mkdir on MinGW.  Adjust call to open on
+	Cygwin and MinGW.
+	(__vtv_add_to_log): Adjust call to snprintf on Cygwin and MinGW.
+	(__vtv_log_verification_failure): Don't generate a backtrace on Cygwin
+	and MinGW.
+
 2014-12-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* testsuite/lib/libvtv.exp: Load target-utils.exp

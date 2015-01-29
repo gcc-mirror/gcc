@@ -100,8 +100,10 @@ sources = \
 	vterminate.cc
 
 if ENABLE_VTABLE_VERIFY
+if !VTV_CYGMIN
   vtv_sources = \
 	vtv_stubs.cc
+endif
 endif
 
 libsupc___la_SOURCES = $(sources) $(c_sources) $(vtv_sources)
