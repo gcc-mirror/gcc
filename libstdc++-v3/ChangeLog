@@ -1,3 +1,9 @@
+2015-01-29  Matthias Klose  <doko@ubuntu.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_VTABLE_VERIFY): Define VTV_CYGMIN
+	unconditionally.
+	* configure: Regenerate.
+
 2015-01-29  Caroline Tice  <cmtice@google.com>
 
 	Committing VTV Cywin/Ming patch for Patrick Wollgast
