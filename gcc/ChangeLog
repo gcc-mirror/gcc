@@ -1,3 +1,7 @@
+2015-01-29  Marek Polacek  <polacek@redhat.com>
+
+	* doc/standards.texi: Reflect that the default for C is gnu11.
+
 2015-01-29  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/64761
