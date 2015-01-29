@@ -1,3 +1,8 @@
+2015-01-29  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR middle-end/64809
+	* gcc.dg/pr64809.c: Delete.
+
 2015-01-29  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR middle-end/64805
