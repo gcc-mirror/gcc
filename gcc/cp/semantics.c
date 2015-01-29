@@ -888,7 +888,13 @@ finish_return_stmt (tree expr)
 
   if (error_operand_p (expr)
       || (flag_openmp && !check_omp_return ()))
-    return error_mark_node;
+    {
+      /* Suppress -Wreturn-type for this function.  */
+      if (warn_return_type)
+	TREE_NO_WARNING (current_function_decl) = true;
+      return error_mark_node;
+    }
+
   if (!processing_template_decl)
     {
       if (warn_sequence_point)
