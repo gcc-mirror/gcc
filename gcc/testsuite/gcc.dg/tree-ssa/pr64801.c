@@ -17,5 +17,5 @@ psmouse_extensions (void)
   int (*b)() = fsp_detect;
   a = b ();
 }
-/* { dg-final { scan-tree-dump-not "fsp_detect"} } */
+/* { dg-final { scan-tree-dump-not "fsp_detect" "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

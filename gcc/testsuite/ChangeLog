@@ -1,3 +1,7 @@
+2015-22-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/tree-ssa/pr64801.c: Fix scan-tree-dump-not directive.
+
 2015-01-29  Jeff Law  <law@redhat.com>
 
 	PR target/15184
@@ -419,7 +423,7 @@
 	PR middle-end/64728
 	* gcc.dg/torture/pr64728.c: New testcase.
 
-2015-22-01  Uros Bizjak  <ubizjak@gmail.com>
+2015-01-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/64688
 	* g++.dg/pr64688.C: New test.
