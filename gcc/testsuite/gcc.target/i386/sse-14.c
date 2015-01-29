@@ -150,6 +150,8 @@ test_2 (_mm_alignr_pi8, __m64, __m64, __m64, 1)
 
 /* emmintrin.h */
 test_2 (_mm_shuffle_pd, __m128d, __m128d, __m128d, 1)
+test_1 (_mm_bsrli_si128, __m128i, __m128i, 1)
+test_1 (_mm_bslli_si128, __m128i, __m128i, 1)
 test_1 (_mm_srli_si128, __m128i, __m128i, 1)
 test_1 (_mm_slli_si128, __m128i, __m128i, 1)
 test_1 (_mm_extract_epi16, int, __m128i, 1)

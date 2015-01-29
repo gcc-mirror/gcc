@@ -1143,6 +1143,18 @@ _mm_srai_epi32 (__m128i __A, int __B)
 
 #ifdef __OPTIMIZE__
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_bsrli_si128 (__m128i __A, const int __N)
+{
+  return (__m128i)__builtin_ia32_psrldqi128 (__A, __N * 8);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_bslli_si128 (__m128i __A, const int __N)
+{
+  return (__m128i)__builtin_ia32_pslldqi128 (__A, __N * 8);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_srli_si128 (__m128i __A, const int __N)
 {
   return (__m128i)__builtin_ia32_psrldqi128 (__A, __N * 8);
@@ -1154,6 +1166,10 @@ _mm_slli_si128 (__m128i __A, const int __N)
   return (__m128i)__builtin_ia32_pslldqi128 (__A, __N * 8);
 }
 #else
+#define _mm_bsrli_si128(A, N) \
+  ((__m128i)__builtin_ia32_psrldqi128 ((__m128i)(A), (int)(N) * 8))
+#define _mm_bslli_si128(A, N) \
+  ((__m128i)__builtin_ia32_pslldqi128 ((__m128i)(A), (int)(N) * 8))
 #define _mm_srli_si128(A, N) \
   ((__m128i)__builtin_ia32_psrldqi128 ((__m128i)(A), (int)(N) * 8))
 #define _mm_slli_si128(A, N) \

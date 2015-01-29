@@ -1,3 +1,8 @@
+2015-01-29  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* gcc.target/i386/sse-14.c: Test new intrinsic.
+	* gcc.target/i386/sse-22.c: Ditto.
+
 2015-01-27  Mikael Pettersson  <mikpelinux@gmail.com>
 
 	Backport from mainline

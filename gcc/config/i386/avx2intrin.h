@@ -639,11 +639,20 @@ _mm256_sign_epi32 (__m256i __X, __m256i __Y)
 #ifdef __OPTIMIZE__
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_bslli_epi128 (__m256i __A, const int __N)
+{
+  return (__m256i)__builtin_ia32_pslldqi256 (__A, __N * 8);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_slli_si256 (__m256i __A, const int __N)
 {
   return (__m256i)__builtin_ia32_pslldqi256 (__A, __N * 8);
 }
 #else
+#define _mm256_bslli_epi128(A, N) \
+  ((__m256i)__builtin_ia32_pslldqi256 ((__m256i)(A), (int)(N) * 8))
 #define _mm256_slli_si256(A, N) \
   ((__m256i)__builtin_ia32_pslldqi256 ((__m256i)(A), (int)(N) * 8))
 #endif
@@ -721,11 +730,20 @@ _mm256_sra_epi32 (__m256i __A, __m128i __B)
 #ifdef __OPTIMIZE__
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_bsrli_epi128 (__m256i __A, const int __N)
+{
+  return (__m256i)__builtin_ia32_psrldqi256 (__A, __N * 8);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_srli_si256 (__m256i __A, const int __N)
 {
   return (__m256i)__builtin_ia32_psrldqi256 (__A, __N * 8);
 }
 #else
+#define _mm256_bsrli_epi128(A, N) \
+  ((__m256i)__builtin_ia32_psrldqi256 ((__m256i)(A), (int)(N) * 8))
 #define _mm256_srli_si256(A, N) \
   ((__m256i)__builtin_ia32_psrldqi256 ((__m256i)(A), (int)(N) * 8))
 #endif
