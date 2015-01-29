@@ -1,3 +1,11 @@
+2015-01-29  Jeff Law  <law@redhat.com>
+
+	PR target/15184 
+	* combine.c (try_combine): If I0 is a memory load and I3 a store
+	to a related address, increase the "goodness" of doing a 4-insn
+	combination with I0-I3.
+	(make_field_assignment): Handle SUBREGs in the ior+and case.
+
 2015-01-29  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/64746
