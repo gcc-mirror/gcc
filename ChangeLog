@@ -1,3 +1,10 @@
+2015-01-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64780
+	* configure.ac: Require the user to explicitly specify
+	--enable-host-shared if the jit is enabled.
+	* configure: Regenerate.
+
 2015-01-27  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
