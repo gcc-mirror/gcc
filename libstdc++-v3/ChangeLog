@@ -1,3 +1,9 @@
+2015-01-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_VTABLE_VERIFY): Define VTV_CYGMIN
+	after vtv_cygmin is set.
+	* configure: Regenerated.
+
 2015-01-29  Matthias Klose  <doko@ubuntu.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_VTABLE_VERIFY): Define VTV_CYGMIN

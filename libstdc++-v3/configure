@@ -17459,15 +17459,6 @@ $as_echo_n "checking for vtable verify support... " >&6; }
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_vtable_verify" >&5
 $as_echo "$enable_vtable_verify" >&6; }
 
-   if test $vtv_cygmin = yes; then
-  VTV_CYGMIN_TRUE=
-  VTV_CYGMIN_FALSE='#'
-else
-  VTV_CYGMIN_TRUE='#'
-  VTV_CYGMIN_FALSE=
-fi
-
-
   if test $enable_vtable_verify = yes; then
     case ${target_os} in
       cygwin*|mingw32*)
@@ -17486,6 +17477,15 @@ fi
     VTV_PCH_CXXFLAGS=
     VTV_CXXLINKFLAGS=
   fi
+
+   if test $vtv_cygmin = yes; then
+  VTV_CYGMIN_TRUE=
+  VTV_CYGMIN_FALSE='#'
+else
+  VTV_CYGMIN_TRUE='#'
+  VTV_CYGMIN_FALSE=
+fi
+
 
 
 
