@@ -1,3 +1,8 @@
+2015-01-29  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* config/i386/cygwin.h (LIBGCJ_SONAME): Set libgcj version to -16.
+	* config/i386/mingw32.h (LIBGCJ_SONAME): Set libgcj version to -16.
+
 2015-01-28  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/64659

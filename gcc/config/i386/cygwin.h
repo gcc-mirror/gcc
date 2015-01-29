@@ -146,5 +146,5 @@ along with GCC; see the file COPYING3.  If not see
 #define LIBGCC_SONAME "cyggcc_s" LIBGCC_EH_EXTN "-1.dll"
 
 /* We should find a way to not have to update this manually.  */
-#define LIBGCJ_SONAME "cyggcj" /*LIBGCC_EH_EXTN*/ "-15.dll"
+#define LIBGCJ_SONAME "cyggcj" /*LIBGCC_EH_EXTN*/ "-16.dll"
 
