@@ -37,7 +37,7 @@
 #include <bits/atomic_lockfree_defines.h>
 
 #ifndef _GLIBCXX_ALWAYS_INLINE
-#define _GLIBCXX_ALWAYS_INLINE inline __attribute__((always_inline))
+#define _GLIBCXX_ALWAYS_INLINE inline __attribute__((__always_inline__))
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)

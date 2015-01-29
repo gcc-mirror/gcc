@@ -78,7 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     ~shared_timed_mutex()
     {
-      int __ret __attribute((unused)) = pthread_rwlock_destroy(&_M_rwlock);
+      int __ret __attribute((__unused__)) = pthread_rwlock_destroy(&_M_rwlock);
       // Errors not handled: EBUSY, EINVAL
       _GLIBCXX_DEBUG_ASSERT(__ret == 0);
     }
@@ -155,7 +155,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     unlock()
     {
-      int __ret __attribute((unused)) = pthread_rwlock_unlock(&_M_rwlock);
+      int __ret __attribute((__unused__)) = pthread_rwlock_unlock(&_M_rwlock);
       // Errors not handled: EPERM, EBUSY, EINVAL
       _GLIBCXX_DEBUG_ASSERT(__ret == 0);
     }

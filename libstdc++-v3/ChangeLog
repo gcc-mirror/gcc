@@ -1,3 +1,16 @@
+2015-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h: Use __always_inline__ instead of
+	always_inline.
+	* include/bits/atomic_futex.h: Likewise.
+	* include/bits/c++config: Use __abi_tag__ instead of abi_tag.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/gp_ht_map_.hpp: Use
+	__packed__ instead of packed.
+	* include/std/shared_mutex: Use __unused__ instead of unused.
+	* testsuite/17_intro/headers/c++1998/all_attributes.cc: New.
+	* testsuite/17_intro/headers/c++200x/all_attributes.cc: New.
+	* testsuite/17_intro/headers/c++2014/all_attributes.cc: New.
+
 2015-01-27  Caroline Tice  <cmtice@google.com>
 
 	Committing VTV Cywin/Ming patch for Patrick Wollgast
