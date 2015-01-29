@@ -1,3 +1,9 @@
+2015-01-29  Jeff Law  <law@redhat.com>
+
+	PR target/15184
+	* gcc.target/i386/pr15184-1.c: New test.
+	* gcc.target/i386/pr15184-2.c: New test.
+
 2015-01-29  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR tree-optimization/64746
