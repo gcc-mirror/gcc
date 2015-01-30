@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2035,29 +2035,22 @@ package body Sem_Ch4 is
          begin
             Set_Etype (N, Any_Type);
 
-            --  Shouldn't the following statement be down in the ELSE of the
-            --  following loop? ???
+            --  Loop through intepretations of Then_Expr
 
             Get_First_Interp (Then_Expr, I, It);
+            while Present (It.Nam) loop
 
-            --  if no Else_Expression the conditional must be boolean
+               --  Add possible intepretation of Then_Expr if no Else_Expr,
+               --  or Else_Expr is present and has a compatible type.
 
-            if No (Else_Expr) then
-               Set_Etype (N, Standard_Boolean);
+               if No (Else_Expr)
+                 or else Has_Compatible_Type (Else_Expr, It.Typ)
+               then
+                  Add_One_Interp (N, It.Typ, It.Typ);
+               end if;
 
-            --  Else_Expression Present. For each possible intepretation of
-            --  the Then_Expression, add it only if the Else_Expression has
-            --  a compatible type.
-
-            else
-               while Present (It.Nam) loop
-                  if Has_Compatible_Type (Else_Expr, It.Typ) then
-                     Add_One_Interp (N, It.Typ, It.Typ);
-                  end if;
-
-                  Get_Next_Interp (I, It);
-               end loop;
-            end if;
+               Get_Next_Interp (I, It);
+            end loop;
          end;
       end if;
    end Analyze_If_Expression;

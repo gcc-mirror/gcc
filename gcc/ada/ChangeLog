@@ -1,3 +1,15 @@
+2015-01-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Function_Return): In an extended return
+	statement, apply accessibility check to result object when there
+	is no initializing expression (Ada 2012 RM 6.5 (5.4/3))
+
+2015-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch4.adb (Analyze_If_Expression): Allow for non-standard
+	Boolean for case where ELSE is omitted.
+	* sem_res.adb: Minor reformatting.
+
 2015-01-27  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	Fix build under cygwin/64.
