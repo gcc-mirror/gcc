@@ -3052,7 +3052,7 @@ tree_int_cst_elt_check (tree __t, int __i,
 
 /* Workaround -Wstrict-overflow false positive during profiledbootstrap.  */
 
-# if GCC_VERSION >= 4004
+# if GCC_VERSION >= 4006
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-overflow"
 #endif
@@ -3068,7 +3068,7 @@ tree_vec_elt_check (tree __t, int __i,
   return &CONST_CAST_TREE (__t)->vec.a[__i];
 }
 
-# if GCC_VERSION >= 4004
+# if GCC_VERSION >= 4006
 #pragma GCC diagnostic pop
 #endif
 

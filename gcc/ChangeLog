@@ -1,3 +1,8 @@
+2015-01-30  Martin Liska  <mliska@suse.cz>
+
+	* tree.h: Change GCC_VERSION >= 4004 to GCC_VERSION >= 4006
+	in #pragma GCC diagnostic guards.
+
 2015-01-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64829
