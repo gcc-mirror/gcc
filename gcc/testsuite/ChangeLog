@@ -1,3 +1,8 @@
+2015-01-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/64617
+	* gcc.target/i386/pr64617.c: New test.
+
 2015-01-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/15184
