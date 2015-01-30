@@ -32,7 +32,6 @@
 package body Ada.Assertions with
   SPARK_Mode
 is
-
    ------------
    -- Assert --
    ------------

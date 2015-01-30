@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -11281,9 +11281,12 @@ package body Sem_Ch13 is
       --    expression and then xxPredicate (typ (Inns))
 
       --  Where the call is to a Predicate function for an inherited predicate.
-      --  We simply ignore such a call (which could be to either a dynamic or
-      --  a static predicate, but remember that we can have a Static_Predicate
-      --  for a non-static subtype).
+      --  We simply ignore such a call, which could be to either a dynamic or
+      --  a static predicate. Note that if the parent predicate is dynamic then
+      --  eventually this type will be marked as dynamic, but you are allowed
+      --  to specify a static predicate for a subtype which is inheriting a
+      --  dynamic predicate, so the static predicate validation here ignores
+      --  the inherited predicate even if it is dynamic.
 
       elsif Nkind (Expr) = N_Function_Call
         and then Is_Predicate_Function (Entity (Name (Expr)))

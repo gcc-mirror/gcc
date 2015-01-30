@@ -1,3 +1,12 @@
+2015-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* a-assert.adb: Minor reformatting.
+	* sem_ch13.adb: Minor comment clarification.
+	* types.ads: Minor comment update.
+	* sem_eval.adb (Real_Or_String_Static_Predicate_Matches): Avoid blow up
+	when we have a predicate that is nothing but an inherited dynamic
+	predicate.
+
 2015-01-30  Jerome Guitton  <guitton@adacore.com>
 
 	* gcc-interface/Makefile.in (x86-vxworks): Update GCC_SPEC_FILES to
