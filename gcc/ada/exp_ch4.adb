@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1277,30 +1277,6 @@ package body Exp_Ch4 is
                         Make_Explicit_Dereference (Loc,
                           Prefix => New_Occurrence_Of (Temp, Loc))),
                     Typ     => T));
-            end if;
-
-            --  Generate:
-            --    Set_Finalize_Address (<PtrT>FM, <T>FD'Unrestricted_Access);
-
-            --  Do not generate this call in the following cases:
-
-            --    * .NET/JVM - these targets do not support address arithmetic
-            --    and unchecked conversion, key elements of Finalize_Address.
-
-            --    * CodePeer mode - TSS primitive Finalize_Address is not
-            --    created in this mode.
-
-            if VM_Target = No_VM
-              and then not CodePeer_Mode
-              and then Present (Finalization_Master (PtrT))
-              and then Present (Temp_Decl)
-              and then Nkind (Expression (Temp_Decl)) = N_Allocator
-            then
-               Insert_Action (N,
-                 Make_Set_Finalize_Address_Call
-                   (Loc     => Loc,
-                    Typ     => T,
-                    Ptr_Typ => PtrT));
             end if;
          end if;
 
@@ -4868,40 +4844,22 @@ package body Exp_Ch4 is
                       (Obj_Ref => New_Copy_Tree (Init_Arg1),
                        Typ     => T));
 
-                  if Present (Finalization_Master (PtrT)) then
+                  --  Special processing for .NET/JVM, the allocated object is
+                  --  attached to the finalization master. Generate:
 
-                     --  Special processing for .NET/JVM, the allocated object
-                     --  is attached to the finalization master. Generate:
+                  --    Attach (<PtrT>FM, Root_Controlled_Ptr (Init_Arg1));
 
-                     --    Attach (<PtrT>FM, Root_Controlled_Ptr (Init_Arg1));
+                  --  Types derived from [Limited_]Controlled are the only ones
+                  --  considered since they have fields Prev and Next.
 
-                     --  Types derived from [Limited_]Controlled are the only
-                     --  ones considered since they have fields Prev and Next.
-
-                     if VM_Target /= No_VM then
-                        if Is_Controlled (T) then
-                           Insert_Action (N,
-                             Make_Attach_Call
-                               (Obj_Ref => New_Copy_Tree (Init_Arg1),
-                                Ptr_Typ => PtrT));
-                        end if;
-
-                     --  Default case, generate:
-
-                     --    Set_Finalize_Address
-                     --      (<PtrT>FM, <T>FD'Unrestricted_Access);
-
-                     --  Do not generate this call in CodePeer mode, as TSS
-                     --  primitive Finalize_Address is not created in this
-                     --  mode.
-
-                     elsif not CodePeer_Mode then
-                        Insert_Action (N,
-                          Make_Set_Finalize_Address_Call
-                            (Loc     => Loc,
-                             Typ     => T,
-                             Ptr_Typ => PtrT));
-                     end if;
+                  if VM_Target /= No_VM
+                    and then Is_Controlled (T)
+                    and then Present (Finalization_Master (PtrT))
+                  then
+                     Insert_Action (N,
+                       Make_Attach_Call
+                         (Obj_Ref => New_Copy_Tree (Init_Arg1),
+                          Ptr_Typ => PtrT));
                   end if;
                end if;
 

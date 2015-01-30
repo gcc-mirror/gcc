@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -412,9 +412,6 @@ package body Exp_Util is
       Proc_To_Call : Node_Id := Empty;
       Ptr_Typ      : Entity_Id;
 
-      function Find_Finalize_Address (Typ : Entity_Id) return Entity_Id;
-      --  Locate TSS primitive Finalize_Address in type Typ
-
       function Find_Object (E : Node_Id) return Node_Id;
       --  Given an arbitrary expression of an allocator, try to find an object
       --  reference in it, otherwise return the original expression.
@@ -422,82 +419,6 @@ package body Exp_Util is
       function Is_Allocate_Deallocate_Proc (Subp : Entity_Id) return Boolean;
       --  Determine whether subprogram Subp denotes a custom allocate or
       --  deallocate.
-
-      ---------------------------
-      -- Find_Finalize_Address --
-      ---------------------------
-
-      function Find_Finalize_Address (Typ : Entity_Id) return Entity_Id is
-         Utyp : Entity_Id := Typ;
-
-      begin
-         --  Handle protected class-wide or task class-wide types
-
-         if Is_Class_Wide_Type (Utyp) then
-            if Is_Concurrent_Type (Root_Type (Utyp)) then
-               Utyp := Root_Type (Utyp);
-
-            elsif Is_Private_Type (Root_Type (Utyp))
-              and then Present (Full_View (Root_Type (Utyp)))
-              and then Is_Concurrent_Type (Full_View (Root_Type (Utyp)))
-            then
-               Utyp := Full_View (Root_Type (Utyp));
-            end if;
-         end if;
-
-         --  Handle private types
-
-         if Is_Private_Type (Utyp) and then Present (Full_View (Utyp)) then
-            Utyp := Full_View (Utyp);
-         end if;
-
-         --  Handle protected and task types
-
-         if Is_Concurrent_Type (Utyp)
-           and then Present (Corresponding_Record_Type (Utyp))
-         then
-            Utyp := Corresponding_Record_Type (Utyp);
-         end if;
-
-         Utyp := Underlying_Type (Base_Type (Utyp));
-
-         --  Deal with untagged derivation of private views. If the parent is
-         --  now known to be protected, the finalization routine is the one
-         --  defined on the corresponding record of the ancestor (corresponding
-         --  records do not automatically inherit operations, but maybe they
-         --  should???)
-
-         if Is_Untagged_Derivation (Typ) then
-            if Is_Protected_Type (Typ) then
-               Utyp := Corresponding_Record_Type (Root_Type (Base_Type (Typ)));
-            else
-               Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
-
-               if Is_Protected_Type (Utyp) then
-                  Utyp := Corresponding_Record_Type (Utyp);
-               end if;
-            end if;
-         end if;
-
-         --  If the underlying_type is a subtype, we are dealing with the
-         --  completion of a private type. We need to access the base type and
-         --  generate a conversion to it.
-
-         if Utyp /= Base_Type (Utyp) then
-            pragma Assert (Is_Private_Type (Typ));
-
-            Utyp := Base_Type (Utyp);
-         end if;
-
-         --  When dealing with an internally built full view for a type with
-         --  unknown discriminants, use the original record type.
-
-         if Is_Underlying_Record_View (Utyp) then
-            Utyp := Etype (Utyp);
-         end if;
-
-         return TSS (Utyp, TSS_Finalize_Address);
-      end Find_Finalize_Address;
 
       -----------------
       -- Find_Object --
@@ -764,7 +685,7 @@ package body Exp_Util is
             --  since it contains an Unchecked_Conversion.
 
             if Needs_Finalization (Desig_Typ) and then not CodePeer_Mode then
-               Fin_Addr_Id := Find_Finalize_Address (Desig_Typ);
+               Fin_Addr_Id := Finalize_Address (Desig_Typ);
                pragma Assert (Present (Fin_Addr_Id));
 
                Append_To (Actuals,
@@ -2442,6 +2363,82 @@ package body Exp_Util is
            Make_Subtype_From_Expr (Exp, Unc_Type));
       end if;
    end Expand_Subtype_From_Expr;
+
+   ----------------------
+   -- Finalize_Address --
+   ----------------------
+
+   function Finalize_Address (Typ : Entity_Id) return Entity_Id is
+      Utyp : Entity_Id := Typ;
+
+   begin
+      --  Handle protected class-wide or task class-wide types
+
+      if Is_Class_Wide_Type (Utyp) then
+         if Is_Concurrent_Type (Root_Type (Utyp)) then
+            Utyp := Root_Type (Utyp);
+
+         elsif Is_Private_Type (Root_Type (Utyp))
+           and then Present (Full_View (Root_Type (Utyp)))
+           and then Is_Concurrent_Type (Full_View (Root_Type (Utyp)))
+         then
+            Utyp := Full_View (Root_Type (Utyp));
+         end if;
+      end if;
+
+      --  Handle private types
+
+      if Is_Private_Type (Utyp) and then Present (Full_View (Utyp)) then
+         Utyp := Full_View (Utyp);
+      end if;
+
+      --  Handle protected and task types
+
+      if Is_Concurrent_Type (Utyp)
+        and then Present (Corresponding_Record_Type (Utyp))
+      then
+         Utyp := Corresponding_Record_Type (Utyp);
+      end if;
+
+      Utyp := Underlying_Type (Base_Type (Utyp));
+
+      --  Deal with untagged derivation of private views. If the parent is
+      --  now known to be protected, the finalization routine is the one
+      --  defined on the corresponding record of the ancestor (corresponding
+      --  records do not automatically inherit operations, but maybe they
+      --  should???)
+
+      if Is_Untagged_Derivation (Typ) then
+         if Is_Protected_Type (Typ) then
+            Utyp := Corresponding_Record_Type (Root_Type (Base_Type (Typ)));
+         else
+            Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
+
+            if Is_Protected_Type (Utyp) then
+               Utyp := Corresponding_Record_Type (Utyp);
+            end if;
+         end if;
+      end if;
+
+      --  If the underlying_type is a subtype, we are dealing with the
+      --  completion of a private type. We need to access the base type and
+      --  generate a conversion to it.
+
+      if Utyp /= Base_Type (Utyp) then
+         pragma Assert (Is_Private_Type (Typ));
+
+         Utyp := Base_Type (Utyp);
+      end if;
+
+      --  When dealing with an internally built full view for a type with
+      --  unknown discriminants, use the original record type.
+
+      if Is_Underlying_Record_View (Utyp) then
+         Utyp := Etype (Utyp);
+      end if;
+
+      return TSS (Utyp, TSS_Finalize_Address);
+   end Finalize_Address;
 
    ------------------------
    -- Find_Interface_ADT --

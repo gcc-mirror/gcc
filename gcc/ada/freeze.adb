@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1796,25 +1796,6 @@ package body Freeze is
                   Next_Entity (Ent);
                end loop;
             end;
-
-         --  We add finalization masters to access types whose designated types
-         --  require finalization. This is normally done when freezing the
-         --  type, but this misses recursive type definitions where the later
-         --  members of the recursion introduce controlled components (such as
-         --  can happen when incomplete types are involved), as well cases
-         --  where a component type is private and the controlled full type
-         --  occurs after the access type is frozen. Cases that don't need a
-         --  finalization master are generic formal types (the actual type will
-         --  have it) and types derived from them,  and types with Java and CIL
-         --  conventions, since those are used for API bindings.
-         --  (Are there any other cases that should be excluded here???)
-
-         elsif Is_Access_Type (E)
-           and then Comes_From_Source (E)
-           and then not Is_Generic_Type (Root_Type (E))
-           and then Needs_Finalization (Designated_Type (E))
-         then
-            Build_Finalization_Master (E);
          end if;
 
          Next_Entity (E);
