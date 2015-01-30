@@ -1,5 +1,29 @@
 2015-01-30  Gary Dismukes  <dismukes@adacore.com>
 
+	* freeze.adb: Minor reformatting.
+
+2015-01-30  Javier Miranda  <miranda@adacore.com>
+
+	* errout.ads (Error_Msg_PT): Replace Node_Id by Entity_Id and
+	improve its documentation.
+	* errout.adb (Error_Msg_PT): Improve the error message.
+	* sem_ch6.adb (Check_Conformance): Update call to Error_Msg_PT.
+	(Check_Synchronized_Overriding): Update call to Error_Msg_PT.
+	* sem_ch3.adb (Check_Abstract_Overriding): Code cleanup.
+
+2015-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb (Warn_On_Known_Condition): Do special casing of
+	message for False case.
+
+2015-01-30  Doug Rupp  <rupp@adacore.com>
+
+	* s-vxwext-kernel.ads (Task_Cont): Remove imported subprogram body.
+	* s-vxwext-kernel.adb (Task_Cont): New subpprogram body specialized for
+	kernel.
+
+2015-01-30  Gary Dismukes  <dismukes@adacore.com>
+
 	* sem_attr.adb (Declared_Within_Generic_Unit):
 	New function to test whether an entity is declared within the
 	declarative region of a given generic unit.

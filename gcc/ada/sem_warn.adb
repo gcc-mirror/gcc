@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3390,18 +3390,22 @@ package body Sem_Warn is
                Cond        : Node_Id := C;
 
             begin
-               if Present (Parent (C)) and then Nkind (Parent (C)) = N_Op_Not
+               if Present (Parent (C))
+                 and then Nkind (Parent (C)) = N_Op_Not
                then
                   True_Branch := not True_Branch;
-                  Cond        := Parent (C);
+                  Cond := Parent (C);
                end if;
+
+               --  Condition always True
 
                if True_Branch then
                   if Is_Entity_Name (Original_Node (C))
                     and then Nkind (Cond) /= N_Op_Not
                   then
                      Error_Msg_NE
-                       ("object & is always True?c?", Cond, Original_Node (C));
+                       ("object & is always True?c?",
+                        Cond, Original_Node (C));
                      Track (Original_Node (C), Cond);
 
                   else
@@ -3409,9 +3413,21 @@ package body Sem_Warn is
                      Track (Cond, Cond);
                   end if;
 
+               --  Condition always False
+
                else
-                  Error_Msg_N ("condition is always False?c?", Cond);
-                  Track (Cond, Cond);
+                  if Is_Entity_Name (Original_Node (C))
+                    and then Nkind (Cond) /= N_Op_Not
+                  then
+                     Error_Msg_NE
+                       ("object & is always False?c?",
+                        Cond, Original_Node (C));
+                     Track (Original_Node (C), Cond);
+
+                  else
+                     Error_Msg_N ("condition is always False?c?", Cond);
+                     Track (Cond, Cond);
+                  end if;
                end if;
             end;
          end if;

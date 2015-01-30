@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -680,14 +680,14 @@ package body Errout is
    -- Error_Msg_PT --
    ------------------
 
-   procedure Error_Msg_PT (Typ : Node_Id; Subp : Node_Id) is
+   procedure Error_Msg_PT (E : Entity_Id; Iface_Prim : Entity_Id) is
    begin
-      Error_Msg_NE
-        ("first formal of & must be of mode `OUT`, `IN OUT` or " &
-         "access-to-variable", Typ, Subp);
       Error_Msg_N
-        ("\in order to be overridden by protected procedure or entry " &
-         "(RM 9.4(11.9/2))", Typ);
+        ("illegal overriding of subprogram inherited from interface", E);
+
+      Error_Msg_Sloc := Sloc (Iface_Prim);
+      Error_Msg_N
+        ("\first formal of & declared # has wrong mode (RM 9.4(11.9))", E);
    end Error_Msg_PT;
 
    -----------------

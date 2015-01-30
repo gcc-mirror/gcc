@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5117,7 +5117,7 @@ package body Sem_Ch6 is
                   begin
                      if Is_Protected_Type (Corresponding_Concurrent_Type (T))
                      then
-                        Error_Msg_PT (T, New_Id);
+                        Error_Msg_PT (New_Id, Ultimate_Alias (Old_Id));
                      else
                         Conformance_Error
                           ("\mode of & does not match!", New_Formal);
@@ -9364,7 +9364,7 @@ package body Sem_Ch6 is
                      or else Is_Synchronized_Interface (Iface_Typ)
                      or else Is_Task_Interface (Iface_Typ))
                then
-                  Error_Msg_PT (Parent (Typ), Candidate);
+                  Error_Msg_PT (Def_Id, Candidate);
                end if;
             end if;
 
