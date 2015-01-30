@@ -1,3 +1,8 @@
+2015-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_disp.adb: Minor reformatting.
+	* sem_disp.ads: Documentation update.
+
 2015-01-30  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_disp.adb (Is_Dynamically_Tagged): when applied to an entity
