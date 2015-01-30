@@ -851,7 +851,7 @@ package Errout is
    procedure Error_Msg_PT (E : Entity_Id; Iface_Prim : Entity_Id);
    --  Posts an error on protected type entry or subprogram E (referencing its
    --  overridden interface primitive Iface_Prim) indicating wrong mode of the
-   --  first formal (RM 9.4(11.9/3))
+   --  first formal (RM 9.4(11.9/3)).
 
    procedure Error_Msg_Ada_2012_Feature (Feature : String; Loc : Source_Ptr);
    --  If not operating in Ada 2012 mode, posts errors complaining that Feature
