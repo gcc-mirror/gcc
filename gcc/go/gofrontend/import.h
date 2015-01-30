@@ -220,6 +220,10 @@ class Import
   find_archive_export_data(const std::string& filename, int fd,
 			   Location);
 
+  // Read a package line.
+  void
+  read_one_package();
+
   // Read an import line.
   void
   read_one_import();
