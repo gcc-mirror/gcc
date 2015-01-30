@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2248,11 +2248,11 @@ package body Inline is
                --  analyzed with the full view).
 
                if Is_Entity_Name (A) then
-                  Rewrite (N, New_Occurrence_Of (Entity (A), Loc));
+                  Rewrite (N, New_Occurrence_Of (Entity (A), Sloc (N)));
                   Check_Private_View (N);
 
                elsif Nkind (A) = N_Defining_Identifier then
-                  Rewrite (N, New_Occurrence_Of (A, Loc));
+                  Rewrite (N, New_Occurrence_Of (A, Sloc (N)));
                   Check_Private_View (N);
 
                --  Numeric literal

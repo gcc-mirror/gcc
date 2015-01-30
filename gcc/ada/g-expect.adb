@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2014, AdaCore                     --
+--                     Copyright (C) 2000-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -927,7 +927,7 @@ package body GNAT.Expect is
          --  This loop runs until the call to Expect raises Process_Died
 
          loop
-            Expect (Process, Result, ".+");
+            Expect (Process, Result, ".+", Timeout => -1);
 
             declare
                NOutput : String_Access;

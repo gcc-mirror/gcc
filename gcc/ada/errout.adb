@@ -687,7 +687,8 @@ package body Errout is
 
       Error_Msg_Sloc := Sloc (Iface_Prim);
       Error_Msg_N
-        ("\first formal of & declared # has wrong mode (RM 9.4(11.9))", E);
+        ("\first formal of & declared # must be of mode `OUT`, `IN OUT` " &
+         "or access-to-variable", E);
    end Error_Msg_PT;
 
    -----------------

@@ -3404,7 +3404,7 @@ package body Sem_Warn is
                     and then Nkind (Cond) /= N_Op_Not
                   then
                      Error_Msg_NE
-                       ("object & is always True?c?",
+                       ("object & is always True at this point?c?",
                         Cond, Original_Node (C));
                      Track (Original_Node (C), Cond);
 
@@ -3420,7 +3420,7 @@ package body Sem_Warn is
                     and then Nkind (Cond) /= N_Op_Not
                   then
                      Error_Msg_NE
-                       ("object & is always False?c?",
+                       ("object & is always False at this point?c?",
                         Cond, Original_Node (C));
                      Track (Original_Node (C), Cond);
 

@@ -1,3 +1,39 @@
+2015-01-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* errout.ads: Minor reformatting.
+
+2015-01-30  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Process_Formals): Use the sloc of
+	the inlined node instead of the sloc of the actual parameter,
+	when replacing formal parameters by the actual one.
+
+2015-01-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* g-expect.adb (Get_Command_Output): Use infinite timeout when
+	calling Expect.
+
+2015-01-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Associations): If an in-parameter is
+	defaulted in an instantiation, add an entry in the list of actuals
+	to indicate the default value of the formal (as is already done
+	for defaulted subprograms).
+
+2015-01-30  Javier Miranda  <miranda@adacore.com>
+
+	* errout.adb (Error_Msg_PT): Minor error phrasing update.
+
+2015-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb (Warn_On_Known_Condition): Improve error message
+	for object case.
+
+2015-01-30  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* exp_dbug.adb (Get_Encoded_Name): When
+	-fgnat-encodings=minimal, do not generate names for biased types.
+
 2015-01-30  Tristan Gingold  <gingold@adacore.com>
 
 	PR ada/64349
