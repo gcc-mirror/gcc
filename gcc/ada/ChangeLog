@@ -1,5 +1,26 @@
 2015-01-30  Robert Dewar  <dewar@adacore.com>
 
+	* einfo.ads: Minor comment fix.
+	* freeze.adb (Freeze_Profile): Add test for suspicious import
+	in pure unit.
+	* sem_prag.adb (Process_Import_Or_Interface): Test for suspicious
+	use in Pure unit is now moved to Freeze (to properly catch
+	Pure_Function exemption).
+
+2015-01-30  Bob Duff  <duff@adacore.com>
+
+	* sem_res.ads: Minor comment fix.
+	* sem_type.adb: sem_type.adb (Remove_Conversions): Need to
+	check both operands of an operator.
+
+2015-01-30  Yannick Moy  <moy@adacore.com>
+
+	* a-assert.ads, a-assert.adb: Mark package spec in SPARK. Set assertion
+	policy for Pre to Ignore.
+	(Assert): Add precondition.
+
+2015-01-30  Robert Dewar  <dewar@adacore.com>
+
 	* sem_prag.adb (Process_Import_Or_Interface): Warn if used in
 	Pure unit.
 	* s-valllu.ads (Scan_Raw_Long_Long_Unsigned): Clarify

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1539,6 +1539,8 @@ package body Sem_Type is
 
                if Nkind (Act1) in N_Op
                  and then Is_Overloaded (Act1)
+                 and then Nkind_In (Left_Opnd (Act1), N_Integer_Literal,
+                                                      N_Real_Literal)
                  and then Nkind_In (Right_Opnd (Act1), N_Integer_Literal,
                                                        N_Real_Literal)
                  and then Has_Compatible_Type (Act1, Standard_Boolean)

@@ -3081,6 +3081,44 @@ package body Freeze is
             end if;
          end if;
 
+         --  Check suspicious use of Import in pure unit
+
+         if Is_Imported (E) and then Is_Pure (Cunit_Entity (Current_Sem_Unit))
+
+           --  Ignore internally generated entity. This happens in some cases
+           --  of subprograms in specs, where we generate an implied body.
+
+           and then Comes_From_Source (Import_Pragma (E))
+
+           --  Assume run-time knows what it is doing
+
+           and then not GNAT_Mode
+
+           --  Assume explicit Pure_Function means import is pure
+
+           and then not Has_Pragma_Pure_Function (E)
+
+           --  Don't need warning in relaxed semantics mode
+
+           and then not Relaxed_RM_Semantics
+
+           --  Assume convention Intrinsic is OK, since this is specialized.
+           --  This deals with the DEC unit current_exception.ads
+
+           and then Convention (E) /= Convention_Intrinsic
+
+            --  Assume that ASM interface knows what it is doing. This deals
+            --  with unsigned.ads in the AAMP back end.
+
+           and then Convention (E) /= Convention_Assembler
+         then
+            Error_Msg_N
+              ("pragma Import in Pure unit??", Import_Pragma (E));
+            Error_Msg_NE
+              ("\calls to & may be omitted (RM 10.2.1(18/3))??",
+               Import_Pragma (E), E);
+         end if;
+
          return True;
       end Freeze_Profile;
 
