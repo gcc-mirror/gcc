@@ -1,11 +1,10 @@
 /* PR 15184 first two tests, plus two addition ones.  */
-/* { dg-do compile } */
-/* { dg-options "-O2 -m32 -march=pentiumpro" } */
+/* { dg-do compile { target ia32 } } */
+/* { dg-options "-O2 -march=pentiumpro" } */
 
-#define regparm __attribute__((__regparm__(3)))
+#define regparm __attribute__((__regparm__(1)))
 
 extern unsigned int x;
-extern unsigned short y;
 
 void regparm f0(unsigned char c)
 {
@@ -29,5 +28,5 @@ void regparm f3(unsigned char c)
 
 /* Each function should compile down to a byte move from
    the input register into x, possibly at an offset within x.  */
-/* { dg-final { scan-assembler-times "\tmovb\t%al, x" 4 } } */
+/* { dg-final { scan-assembler-times "movb\[ \\t\]+%al" 4 } } */
 
