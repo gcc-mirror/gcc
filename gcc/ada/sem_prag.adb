@@ -3169,7 +3169,7 @@ package body Sem_Prag is
       --  Common processing for Share_Generic and Inline_Generic
 
       procedure Process_Import_Or_Interface;
-      --  Common processing for Import of Interface
+      --  Common processing for Import or Interface
 
       procedure Process_Import_Predefined_Type;
       --  Processing for completing a type with pragma Import. This is used
@@ -7741,6 +7741,8 @@ package body Sem_Prag is
             Kill_Size_Check_Code (Def_Id);
             Note_Possible_Modification (Get_Pragma_Arg (Arg2), Sure => False);
          end if;
+
+         --  Various error checks
 
          if Ekind_In (Def_Id, E_Variable, E_Constant) then
 
