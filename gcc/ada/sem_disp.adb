@@ -563,8 +563,8 @@ package body Sem_Disp is
                null;
 
             elsif Ekind (Current_Scope) = E_Function
-              and then Nkind (Unit_Declaration_Node (Current_Scope))
-                 = N_Generic_Subprogram_Declaration
+              and then Nkind (Unit_Declaration_Node (Current_Scope)) =
+                                          N_Generic_Subprogram_Declaration
             then
                null;
 
@@ -2172,7 +2172,7 @@ package body Sem_Disp is
       elsif Present (Find_Controlling_Arg (N)) then
          return True;
 
-      --  Special cases : entities, and calls that dispatch on result.
+      --  Special cases: entities, and calls that dispatch on result
 
       elsif Is_Entity_Name (N) then
          return Is_Class_Wide_Type (Etype (N));
@@ -2182,7 +2182,7 @@ package body Sem_Disp is
       then
          return True;
 
-      --  Otherwise check whether call has controlling argument.
+      --  Otherwise check whether call has controlling argument
 
       else
          return False;
