@@ -1,3 +1,11 @@
+2015-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Process_Import_Or_Interface): Warn if used in
+	Pure unit.
+	* s-valllu.ads (Scan_Raw_Long_Long_Unsigned): Clarify
+	documentation for some special cases of invalid attempts at
+	based integers.
+
 2015-01-30  Gary Dismukes  <dismukes@adacore.com>
 
 	* errout.ads: Minor reformatting.
