@@ -1,3 +1,8 @@
+2015-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64829
+	* gcc.dg/vect/pr64829.c: New testcase.
+
 2015-01-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64709
