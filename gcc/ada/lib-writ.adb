@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -497,6 +497,10 @@ package body Lib.Writ is
 
          if Is_Remote_Types (Uent) then
             Write_Info_Str (" RT");
+         end if;
+
+         if Serious_Errors_Detected /= 0 then
+            Write_Info_Str (" SE");
          end if;
 
          if Is_Shared_Passive (Uent) then

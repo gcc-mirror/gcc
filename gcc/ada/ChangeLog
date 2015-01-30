@@ -1,3 +1,75 @@
+2015-01-30  Yannick Moy  <moy@adacore.com>
+
+	* sem_attr.adb: Code clean up.
+
+2015-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* ali.adb (Scan_ALI): Set Serious_Errors flag in Unit record.
+	* ali.ads (Unit_Record): Add new field Serious_Errors.
+	* lib-writ.adb (Write_Unit_Information): Set SE (serious errors)
+	attribute in U line.
+	* lib-writ.ads: New attribute SE (serious erors) in unit line.
+
+2015-01-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb Update the usage of attributes Entry_Bodies_Array,
+	Lit_Indexes, Scale_Value, Storage_Size_Variable,
+	String_Literal_Low_Bound along associated routines and
+	Write_FieldX_Name.
+	(Pending_Access_Types): New routine.
+	(Set_Pending_Access_Types): New routine.
+	(Write_Field15_Name): Add an entry for Pending_Access_Types.
+	* einfo.ads Add new attribute Pending_Access_Types along
+	with usage in nodes.  Update the usage of attributes
+	Entry_Bodies_Array, Lit_Indexes, Scale_Value,
+	Storage_Size_Variable, String_Literal_Low_Bound.
+	(Pending_Access_Types): New routine along with pragma Inline.
+	(Set_Pending_Access_Types): New routine along with pragma Inline.
+	* exp_ch3.adb (Expand_Freeze_Array_Type): Add new local variable
+	Ins_Node. Determine the insertion node for anonynous access type
+	that acts as a component type of an array. Update the call to
+	Build_Finalization_Master.
+	(Expand_Freeze_Record_Type): Update
+	the calls to Build_Finalization_Master.
+	(Freeze_Type): Remove
+	local variable RACW_Seen. Factor out the code that deals with
+	remote access-to-class-wide types. Create a finalization master
+	when the designated type contains a private component. Fully
+	initialize all pending access types.
+	(Process_RACW_Types): New routine.
+	(Process_Pending_Access_Types): New routine.
+	* exp_ch4.adb (Expand_Allocator_Expression): Allocation no longer
+	needs to set primitive Finalize_Address.
+	(Expand_N_Allocator): Allocation no longer sets primitive
+	Finalize_Address.
+	* exp_ch6.adb (Add_Finalization_Master_Actual_To_Build_In_Place_Call):
+	Update the call to Build_Finalization_Master.
+	(Make_Build_In_Place_Call_In_Allocator): Allocation no longer
+	needs to set primitive Finalize_Address.
+	* exp_ch7.adb (Add_Pending_Access_Type): New routine.
+	(Build_Finalization_Master): New parameter profile. Associate
+	primitive Finalize_Address with the finalization master if the
+	designated type has been frozen, otherwise treat the access
+	type as pending. Simplify the insertion of the master and
+	related initialization code.
+	(Make_Finalize_Address_Body): Allow Finalize_Address for class-wide
+	abstract types.
+	(Make_Set_Finalize_Address_Call): Remove forlam parameter Typ.
+	Simplify the implementation.
+	* exp_ch7.ads (Build_Finalization_Master): New parameter profile
+	along with comment on usage.
+	(Make_Set_Finalize_Address_Call): Remove formal parameter Typ. Update
+	the comment on usage.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Use routine
+	Finalize_Address to retrieve the primitive.
+	(Finalize_Address): New routine.
+	(Find_Finalize_Address): Removed.
+	* exp_util.ads (Finalize_Address): New routine.
+	* freeze.adb (Freeze_All): Remove the generation of finalization
+	masters.
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): Propagate any
+	pending access types from the partial to the full view.
+
 2015-01-30  Robert Dewar  <dewar@adacore.com>
 
 	* sem_disp.adb: Minor reformatting.

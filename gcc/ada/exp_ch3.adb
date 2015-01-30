@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2395,16 +2395,14 @@ package body Exp_Ch3 is
                      declare
                         Parent_IP : constant Name_Id :=
                                       Make_Init_Proc_Name (Etype (Rec_Ent));
-                        Stmt      : Node_Id;
-                        IP_Call   : Node_Id;
+                        Stmt      : Node_Id := First (Stmts);
+                        IP_Call   : Node_Id := Empty;
                         IP_Stmts  : List_Id;
 
                      begin
                         --  Look for a call to the parent IP at the beginning
                         --  of Stmts associated with the record extension
 
-                        Stmt := First (Stmts);
-                        IP_Call := Empty;
                         while Present (Stmt) loop
                            if Nkind (Stmt) = N_Procedure_Call_Statement
                              and then Chars (Name (Stmt)) = Parent_IP
@@ -6318,8 +6316,9 @@ package body Exp_Ch3 is
 
    procedure Expand_Freeze_Array_Type (N : Node_Id) is
       Typ      : constant Entity_Id := Entity (N);
-      Comp_Typ : constant Entity_Id := Component_Type (Typ);
       Base     : constant Entity_Id := Base_Type (Typ);
+      Comp_Typ : constant Entity_Id := Component_Type (Typ);
+      Ins_Node : Node_Id;
 
    begin
       if not Is_Bit_Packed_Array (Typ) then
@@ -6386,10 +6385,22 @@ package body Exp_Ch3 is
             if Ekind (Comp_Typ) = E_Anonymous_Access_Type
               and then Needs_Finalization (Designated_Type (Comp_Typ))
             then
+               --  The finalization master is inserted before the declaration
+               --  of the array type. The only exception to this is when the
+               --  array type is an itype, in which case the master appears
+               --  before the related context.
+
+               if Is_Itype (Typ) then
+                  Ins_Node := Associated_Node_For_Itype (Typ);
+               else
+                  Ins_Node := Parent (Typ);
+               end if;
+
                Build_Finalization_Master
-                 (Typ        => Comp_Typ,
-                  Ins_Node   => Parent (Typ),
-                  Encl_Scope => Scope (Typ));
+                 (Typ            => Comp_Typ,
+                  For_Anonymous  => True,
+                  Context_Scope  => Scope (Typ),
+                  Insertion_Node => Ins_Node);
             end if;
          end if;
 
@@ -7342,9 +7353,10 @@ package body Exp_Ch3 is
                           (Root_Type (Comp_Typ), RTE (RE_Global_Pool_Object));
 
                         Build_Finalization_Master
-                          (Typ        => Root_Type (Comp_Typ),
-                           Ins_Node   => Ins_Node,
-                           Encl_Scope => Encl_Scope);
+                          (Typ            => Root_Type (Comp_Typ),
+                           For_Anonymous  => True,
+                           Context_Scope  => Encl_Scope,
+                           Insertion_Node => Ins_Node);
 
                         Fin_Mas_Id := Finalization_Master (Comp_Typ);
 
@@ -7387,9 +7399,10 @@ package body Exp_Ch3 is
 
                   else
                      Build_Finalization_Master
-                       (Typ        => Comp_Typ,
-                        Ins_Node   => Ins_Node,
-                        Encl_Scope => Encl_Scope);
+                       (Typ            => Comp_Typ,
+                        For_Anonymous  => True,
+                        Context_Scope  => Encl_Scope,
+                        Insertion_Node => Ins_Node);
                   end if;
                end if;
 
@@ -7466,8 +7479,96 @@ package body Exp_Ch3 is
       --  Save the current Ghost mode in effect in case the type being frozen
       --  sets a different mode.
 
+      procedure Process_RACW_Types (Typ : Entity_Id);
+      --  Validate and generate stubs for all RACW types associated with type
+      --  Typ.
+
+      procedure Process_Pending_Access_Types (Typ : Entity_Id);
+      --  Associate type Typ's Finalize_Address primitive with the finalization
+      --  masters of pending access-to-Typ types.
+
       procedure Restore_Globals;
       --  Restore the values of all saved global variables
+
+      ------------------------
+      -- Process_RACW_Types --
+      ------------------------
+
+      procedure Process_RACW_Types (Typ : Entity_Id) is
+         List : constant Elist_Id := Access_Types_To_Process (N);
+         E    : Elmt_Id;
+         Seen : Boolean := False;
+
+      begin
+         if Present (List) then
+            E := First_Elmt (List);
+            while Present (E) loop
+               if Is_Remote_Access_To_Class_Wide_Type (Node (E)) then
+                  Validate_RACW_Primitives (Node (E));
+                  Seen := True;
+               end if;
+
+               Next_Elmt (E);
+            end loop;
+         end if;
+
+         --  If there are RACWs designating this type, make stubs now
+
+         if Seen then
+            Remote_Types_Tagged_Full_View_Encountered (Typ);
+         end if;
+      end Process_RACW_Types;
+
+      ----------------------------------
+      -- Process_Pending_Access_Types --
+      ----------------------------------
+
+      procedure Process_Pending_Access_Types (Typ : Entity_Id) is
+         E : Elmt_Id;
+
+      begin
+         --  Finalize_Address is not generated in CodePeer mode because the
+         --  body contains address arithmetic. This processing is disabled.
+
+         if CodePeer_Mode then
+            null;
+
+         --  Certain itypes are generated for contexts that cannot allocate
+         --  objects and should not set primitive Finalize_Address.
+
+         elsif Is_Itype (Typ)
+           and then Nkind (Associated_Node_For_Itype (Typ)) =
+                      N_Explicit_Dereference
+         then
+            null;
+
+         --  When an access type is declared after the incomplete view of a
+         --  Taft-amendment type, the access type is considered pending in
+         --  case the full view of the Taft-amendment type is controlled. If
+         --  this is indeed the case, associate the Finalize_Address routine
+         --  of the full view with the finalization masters of all pending
+         --  access types. This scenario applies to anonymous access types as
+         --  well.
+
+         elsif Needs_Finalization (Typ)
+           and then Present (Pending_Access_Types (Typ))
+         then
+            E := First_Elmt (Pending_Access_Types (Typ));
+            while Present (E) loop
+
+               --  Generate:
+               --    Set_Finalize_Address
+               --      (Ptr_Typ, <Typ>FD'Unrestricted_Access);
+
+               Append_Freeze_Action (Typ,
+                 Make_Set_Finalize_Address_Call
+                   (Loc     => Sloc (N),
+                    Ptr_Typ => Node (E)));
+
+               Next_Elmt (E);
+            end loop;
+         end if;
+      end Process_Pending_Access_Types;
 
       ---------------------
       -- Restore_Globals --
@@ -7480,9 +7581,8 @@ package body Exp_Ch3 is
 
       --  Local variables
 
-      Def_Id    : constant Entity_Id := Entity (N);
-      RACW_Seen : Boolean := False;
-      Result    : Boolean := False;
+      Def_Id : constant Entity_Id := Entity (N);
+      Result : Boolean := False;
 
    --  Start of processing for Freeze_Type
 
@@ -7493,29 +7593,10 @@ package body Exp_Ch3 is
 
       Set_Ghost_Mode_For_Freeze (Def_Id, N);
 
-      --  Process associated access types needing special processing
+      --  Process any remote access-to-class-wide types designating the type
+      --  being frozen.
 
-      if Present (Access_Types_To_Process (N)) then
-         declare
-            E : Elmt_Id := First_Elmt (Access_Types_To_Process (N));
-
-         begin
-            while Present (E) loop
-               if Is_Remote_Access_To_Class_Wide_Type (Node (E)) then
-                  Validate_RACW_Primitives (Node (E));
-                  RACW_Seen := True;
-               end if;
-
-               E := Next_Elmt (E);
-            end loop;
-         end;
-
-         --  If there are RACWs designating this type, make stubs now
-
-         if RACW_Seen then
-            Remote_Types_Tagged_Full_View_Encountered (Def_Id);
-         end if;
-      end if;
+      Process_RACW_Types (Def_Id);
 
       --  Freeze processing for record types
 
@@ -7760,18 +7841,26 @@ package body Exp_Ch3 is
             then
                null;
 
-            --  Assume that incomplete and private types are always completed
-            --  by a controlled full view.
+            --  Create a finalization master for an access-to-controlled type
+            --  or an access-to-incomplete type. It is assumed that the full
+            --  view will be controlled.
 
             elsif Needs_Finalization (Desig_Type)
-              or else
-                (Is_Incomplete_Or_Private_Type (Desig_Type)
-                  and then No (Full_View (Desig_Type)))
-              or else
-                (Is_Array_Type (Desig_Type)
-                  and then Needs_Finalization (Component_Type (Desig_Type)))
+              or else (Is_Incomplete_Type (Desig_Type)
+                         and then No (Full_View (Desig_Type)))
             then
                Build_Finalization_Master (Def_Id);
+
+            --  Create a finalization master when the designated type contains
+            --  a private component. It is assumed that the full view will be
+            --  controlled.
+
+            elsif Has_Private_Component (Desig_Type) then
+               Build_Finalization_Master
+                 (Typ            => Def_Id,
+                  For_Private    => True,
+                  Context_Scope  => Scope (Def_Id),
+                  Insertion_Node => Declaration_Node (Desig_Type));
             end if;
          end;
 
@@ -7810,6 +7899,11 @@ package body Exp_Ch3 is
 
       end if;
 
+      --  Complete the initialization of all pending access types' finalization
+      --  masters now that the designated type has been is frozen and primitive
+      --  Finalize_Address generated.
+
+      Process_Pending_Access_Types (Def_Id);
       Freeze_Stream_Operations (N, Def_Id);
 
       Restore_Globals;
