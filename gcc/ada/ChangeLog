@@ -1,3 +1,13 @@
+2015-01-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Ensure that
+	the check concerning Refined_Post takes precedence over the
+	other cases.
+
+2015-01-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_prag.adb: Minor typo fixes and reformatting.
+
 2015-01-30  Yannick Moy  <moy@adacore.com>
 
 	* sem_attr.adb: Code clean up.

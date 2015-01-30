@@ -4572,6 +4572,32 @@ package body Sem_Attr is
             CS := Scope (CS);
          end loop;
 
+         --  Check the legality of attribute 'Old when it appears inside pragma
+         --  Refined_Post. These specialized checks are required only when code
+         --  generation is disabled. In the general case pragma Refined_Post is
+         --  transformed into pragma Check by Process_PPCs which in turn is
+         --  relocated to procedure _Postconditions. From then on the legality
+         --  of 'Old is determined as usual.
+
+         if not Expander_Active and then In_Refined_Post then
+            Preanalyze_And_Resolve (P);
+            Check_References_In_Prefix (CS);
+            P_Type := Etype (P);
+            Set_Etype (N, P_Type);
+
+            if Is_Limited_Type (P_Type) then
+               Error_Attr ("attribute % cannot apply to limited objects", P);
+            end if;
+
+            if Is_Entity_Name (P)
+              and then Is_Constant_Object (Entity (P))
+            then
+               Error_Msg_N
+                 ("??attribute Old applied to constant has no effect", P);
+            end if;
+
+            return;
+
          --  A Contract_Cases, Postcondition or Test_Case pragma is in the
          --  process of being preanalyzed. Perform the semantic checks now
          --  before the pragma is relocated and/or expanded.
@@ -4579,7 +4605,7 @@ package body Sem_Attr is
          --  For a generic subprogram, postconditions are preanalyzed as well
          --  for name capture, and still appear within an aspect spec.
 
-         if In_Spec_Expression or Inside_A_Generic then
+         elsif In_Spec_Expression or Inside_A_Generic then
             Prag := N;
             while Present (Prag)
                and then not Nkind_In (Prag, N_Aspect_Specification,
@@ -4624,32 +4650,6 @@ package body Sem_Attr is
                        ("% attribute can only appear in postcondition", P);
                end case;
             end if;
-
-         --  Check the legality of attribute 'Old when it appears inside pragma
-         --  Refined_Post. These specialized checks are required only when code
-         --  generation is disabled. In the general case pragma Refined_Post is
-         --  transformed into pragma Check by Process_PPCs which in turn is
-         --  relocated to procedure _Postconditions. From then on the legality
-         --  of 'Old is determined as usual.
-
-         elsif not Expander_Active and then In_Refined_Post then
-            Preanalyze_And_Resolve (P);
-            Check_References_In_Prefix (CS);
-            P_Type := Etype (P);
-            Set_Etype (N, P_Type);
-
-            if Is_Limited_Type (P_Type) then
-               Error_Attr ("attribute % cannot apply to limited objects", P);
-            end if;
-
-            if Is_Entity_Name (P)
-              and then Is_Constant_Object (Entity (P))
-            then
-               Error_Msg_N
-                 ("??attribute Old applied to constant has no effect", P);
-            end if;
-
-            return;
 
          --  Body case, where we must be inside a generated _Postconditions
          --  procedure, or else the attribute use is definitely misplaced. The
