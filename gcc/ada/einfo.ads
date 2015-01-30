@@ -2040,10 +2040,10 @@ package Einfo is
 
 --    Import_Pragma (Node35)
 --       Defined in subprogram entities. Set if a valid pragma Import or pragma
---       Import_Function or pragma Import_Procedure aplies to the subprogram,
+--       Import_Function or pragma Import_Procedure applies to the subprogram,
 --       in which case this field points to the pragma (we can't use the normal
 --       Rep_Item chain mechanism, because a single pragma Import can apply
---       to multiple subprogram entities.
+--       to multiple subprogram entities).
 
 --    In_Package_Body (Flag48)
 --       Defined in package entities. Set on the entity that denotes the
