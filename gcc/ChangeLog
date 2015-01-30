@@ -1,3 +1,21 @@
+2015-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64829
+	* tree-vect-patterns.c (vect_handle_widen_op_by_const): Do
+	not add a widening conversion pattern but hand off extra
+	widenings to callers.
+	(vect_recog_widen_mult_pattern): Handle extra widening produced
+	by vect_handle_widen_op_by_const.
+	(vect_recog_widen_shift_pattern): Likewise.
+	(vect_pattern_recog_1): Remove excess vertical space in dumping.
+	* tree-vect-stmts.c (vect_mark_stmts_to_be_vectorized): Likewise.
+	(vect_init_vector_1): Likewise.
+	(vect_get_vec_def_for_operand): Likewise.
+	(vect_finish_stmt_generation): Likewise.
+	(vectorizable_load): Likewise.
+	(vect_analyze_stmt): Likewise.
+	(vect_is_simple_use): Likewise.
+
 2015-01-29  Jeff Law  <law@redhat.com>
 
 	* combine.c (try_combine): Fix typo in comment.
