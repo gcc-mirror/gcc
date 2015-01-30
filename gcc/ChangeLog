@@ -1,3 +1,7 @@
+2015-01-29  Jeff Law  <law@redhat.com>
+
+	* combine.c (try_combine): Fix typo in comment.
+
 2015-01-29  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/64580
