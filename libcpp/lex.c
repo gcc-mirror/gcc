@@ -731,7 +731,7 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
   }
 }
 
-#elif defined (__ARM_NEON__)
+#elif defined (__ARM_NEON)
 #include "arm_neon.h"
 
 static const uchar *
