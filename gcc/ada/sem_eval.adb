@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5432,18 +5432,29 @@ package body Sem_Eval is
 
          Copy := Copy_Separate_Tree (Left_Opnd (Expr));
 
-      --  Case where call to predicate function appears on its own
+      --  Case where call to predicate function appears on its own (this means
+      --  that the predicate at this level is just inherited from the parent).
 
       elsif Nkind (Expr) =  N_Function_Call then
+         declare
+            Typ : constant Entity_Id :=
+                    Etype (First_Formal (Entity (Name (Expr))));
 
-         --  Here the result is just the result of calling the inner predicate
+         begin
+            --  If the inherited predicate is dynamic, just ignore it. We can't
+            --  go trying to evaluate a dynamic predicate as a static one!
 
-         return
-           Real_Or_String_Static_Predicate_Matches
-             (Val => Val,
-              Typ => Etype (First_Formal (Entity (Name (Expr)))));
+            if Has_Dynamic_Predicate_Aspect (Typ) then
+               return True;
 
-      --  If no inherited predicate, copy whole expression
+            --  Otherwise inherited predicate is static, check for match
+
+            else
+               return Real_Or_String_Static_Predicate_Matches (Val, Typ);
+            end if;
+         end;
+
+      --  If not just an inherited predicate, copy whole expression
 
       else
          Copy := Copy_Separate_Tree (Expr);
