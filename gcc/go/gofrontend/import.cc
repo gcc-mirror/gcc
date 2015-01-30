@@ -301,23 +301,27 @@ Import::import(Gogo* gogo, const std::string& local_name,
       this->require_c_string(";\n");
 
       std::string pkgpath;
+      std::string pkgpath_symbol;
       if (this->match_c_string("prefix "))
 	{
 	  this->advance(7);
 	  std::string unique_prefix = this->read_identifier();
 	  this->require_c_string(";\n");
 	  pkgpath = unique_prefix + '.' + package_name;
+	  pkgpath_symbol = (Gogo::pkgpath_for_symbol(unique_prefix) + '.'
+			    + Gogo::pkgpath_for_symbol(package_name));
 	}
       else
 	{
 	  this->require_c_string("pkgpath ");
 	  pkgpath = this->read_identifier();
 	  this->require_c_string(";\n");
+	  pkgpath_symbol = Gogo::pkgpath_for_symbol(pkgpath);
 	}
 
       this->package_ = gogo->add_imported_package(package_name, local_name,
 						  is_local_name_exported,
-						  pkgpath,
+						  pkgpath, pkgpath_symbol,
 						  this->location_,
 						  &this->add_to_globals_);
       if (this->package_ == NULL)
@@ -392,7 +396,7 @@ Import::read_one_import()
     stream->advance(1);
   this->require_c_string("\";\n");
 
-  Package* p = this->gogo_->register_package(pkgpath,
+  Package* p = this->gogo_->register_package(pkgpath, "",
 					     Linemap::unknown_location());
   p->set_package_name(package_name, this->location());
 }
@@ -649,7 +653,7 @@ Import::read_type()
     package = this->package_;
   else
     {
-      package = this->gogo_->register_package(pkgpath,
+      package = this->gogo_->register_package(pkgpath, "",
 					      Linemap::unknown_location());
       if (!package_name.empty())
 	package->set_package_name(package_name, this->location());
