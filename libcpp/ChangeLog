@@ -1,3 +1,7 @@
+2015-01-30  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* lex.c (search_line_fast): Change __ARM_NEON__ to __ARM_NEON.
+
 2015-01-23  Marek Polacek  <polacek@redhat.com>
 
 	DR#412
