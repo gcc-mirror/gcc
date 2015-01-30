@@ -4364,6 +4364,7 @@ Gogo::do_exports()
 		     prefix,
 		     pkgpath,
 		     this->package_priority(),
+		     this->packages_,
 		     this->imports_,
 		     (this->need_init_fn_ && !this->is_main_package()
 		      ? this->get_init_fn_name()
@@ -7537,12 +7538,7 @@ std::string
 Package::pkgpath_symbol() const
 {
   if (this->pkgpath_symbol_.empty())
-    {
-      // In the general case, this is wrong, because the package might
-      // have been compiled with -fprefix.  However, it is what we
-      // used to do, so it is no more wrong than we were before.
-      return Gogo::pkgpath_for_symbol(this->pkgpath_);
-    }
+    return Gogo::pkgpath_for_symbol(this->pkgpath_);
   return this->pkgpath_symbol_;
 }
 

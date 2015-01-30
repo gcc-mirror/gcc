@@ -338,6 +338,9 @@ Import::import(Gogo* gogo, const std::string& local_name,
       this->package_->set_priority(prio);
       this->require_c_string(";\n");
 
+      while (stream->match_c_string("package"))
+	this->read_one_package();
+
       while (stream->match_c_string("import"))
 	this->read_one_import();
 
@@ -379,6 +382,25 @@ Import::import(Gogo* gogo, const std::string& local_name,
     }
 
   return this->package_;
+}
+
+// Read a package line.  This let us reliably determine the pkgpath
+// symbol, even if the package was compiled with a -fgo-prefix option.
+
+void
+Import::read_one_package()
+{
+  this->require_c_string("package ");
+  std::string package_name = this->read_identifier();
+  this->require_c_string(" ");
+  std::string pkgpath = this->read_identifier();
+  this->require_c_string(" ");
+  std::string pkgpath_symbol = this->read_identifier();
+  this->require_c_string(";\n");
+
+  Package* p = this->gogo_->register_package(pkgpath, pkgpath_symbol,
+					     Linemap::unknown_location());
+  p->set_package_name(package_name, this->location());
 }
 
 // Read an import line.  We don't actually care about these.

@@ -94,6 +94,7 @@ Export::export_globals(const std::string& package_name,
 		       const std::string& prefix,
 		       const std::string& pkgpath,
 		       int package_priority,
+		       const std::map<std::string, Package*>& packages,
 		       const std::map<std::string, Package*>& imports,
 		       const std::string& import_init_fn,
 		       const std::set<Import_init>& imported_init_fns,
@@ -160,6 +161,8 @@ Export::export_globals(const std::string& package_name,
   snprintf(buf, sizeof buf, "priority %d;\n", package_priority);
   this->write_c_string(buf);
 
+  this->write_packages(packages);
+
   this->write_imports(imports);
 
   this->write_imported_init_fns(package_name, package_priority, import_init_fn,
@@ -188,6 +191,48 @@ Export::export_globals(const std::string& package_name,
     }
   s += ";\n";
   this->stream_->write_checksum(s);
+}
+
+// Sort packages.
+
+static bool
+packages_compare(const Package* a, const Package* b)
+{
+  return a->package_name() < b->package_name();
+}
+
+// Write out all the known packages whose pkgpath symbol is not a
+// simple transformation of the pkgpath, so that the importing code
+// can reliably know it.
+
+void
+Export::write_packages(const std::map<std::string, Package*>& packages)
+{
+  // Sort for consistent output.
+  std::vector<Package*> out;
+  for (std::map<std::string, Package*>::const_iterator p = packages.begin();
+       p != packages.end();
+       ++p)
+    {
+      if (p->second->pkgpath_symbol()
+	  != Gogo::pkgpath_for_symbol(p->second->pkgpath()))
+	out.push_back(p->second);
+    }
+
+  std::sort(out.begin(), out.end(), packages_compare);
+
+  for (std::vector<Package*>::const_iterator p = out.begin();
+       p != out.end();
+       ++p)
+    {
+      this->write_c_string("package ");
+      this->write_string((*p)->package_name());
+      this->write_c_string(" ");
+      this->write_string((*p)->pkgpath());
+      this->write_c_string(" ");
+      this->write_string((*p)->pkgpath_symbol());
+      this->write_c_string(";\n");
+    }
 }
 
 // Sort imported packages.
