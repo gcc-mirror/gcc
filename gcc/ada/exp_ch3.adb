@@ -1138,13 +1138,12 @@ package body Exp_Ch3 is
               or else Frontend_Layout_On_Target
             then
                Func_Id := Build_Dcheck_Function (Discr_Name, Variant);
+
                Decl :=
                  First_Non_Pragma (Component_Items (Component_List_Node));
-
                while Present (Decl) loop
                   Set_Discriminant_Checking_Func
                     (Defining_Identifier (Decl), Func_Id);
-
                   Next_Non_Pragma (Decl);
                end loop;
 
@@ -1492,11 +1491,10 @@ package body Exp_Ch3 is
          return Empty_List;
       end if;
 
-      Full_Type := Typ;
-
       --  Use the [underlying] full view when dealing with a private type. This
       --  may require several steps depending on derivations.
 
+      Full_Type := Typ;
       loop
          if Is_Private_Type (Full_Type) then
             if Present (Full_View (Full_Type)) then
@@ -1594,7 +1592,6 @@ package body Exp_Ch3 is
 
       if Has_Discriminants (Full_Init_Type) then
          Discr := First_Discriminant (Full_Init_Type);
-
          while Present (Discr) loop
 
             --  If this is a discriminated concurrent type, the init_proc
@@ -2395,14 +2392,16 @@ package body Exp_Ch3 is
                      declare
                         Parent_IP : constant Name_Id :=
                                       Make_Init_Proc_Name (Etype (Rec_Ent));
-                        Stmt      : Node_Id := First (Stmts);
-                        IP_Call   : Node_Id := Empty;
+                        Stmt      : Node_Id;
+                        IP_Call   : Node_Id;
                         IP_Stmts  : List_Id;
 
                      begin
                         --  Look for a call to the parent IP at the beginning
                         --  of Stmts associated with the record extension
 
+                        Stmt := First (Stmts);
+                        IP_Call := Empty;
                         while Present (Stmt) loop
                            if Nkind (Stmt) = N_Procedure_Call_Statement
                              and then Chars (Name (Stmt)) = Parent_IP
@@ -3297,7 +3296,6 @@ package body Exp_Ch3 is
             end if;
 
             S := First (Constraints (C));
-
             while Present (S) loop
                Number_Of_Constraints := Number_Of_Constraints + 1;
                Next (S);
@@ -3666,10 +3664,9 @@ package body Exp_Ch3 is
                   Set_Itype (Ref, Etype (First_Index (Typ)));
                   Append_Freeze_Action (Rec_Type, Ref);
 
-                  Sub_Aggr := First (Expressions (Comp));
-
                   --  Recurse on nested arrays
 
+                  Sub_Aggr := First (Expressions (Comp));
                   while Present (Sub_Aggr) loop
                      Collect_Itypes (Sub_Aggr);
                      Next (Sub_Aggr);
@@ -3810,7 +3807,7 @@ package body Exp_Ch3 is
          Decl := First_Non_Pragma (Component_Items (Comp_List));
          while Present (Decl) loop
             if Nkind (Decl) = N_Component_Declaration then
-               Id  := Defining_Identifier (Decl);
+               Id := Defining_Identifier (Decl);
 
                if Has_Invariants (Etype (Id))
                  and then In_Open_Scopes (Scope (R_Type))
@@ -6450,9 +6447,10 @@ package body Exp_Ch3 is
       ---------------------
 
       function Is_C_Derivation (Typ : Entity_Id) return Boolean is
-         T : Entity_Id := Typ;
+         T : Entity_Id;
 
       begin
+         T := Typ;
          loop
             if Is_CPP_Class (T)
               or else Convention (T) = Convention_C
@@ -7847,7 +7845,7 @@ package body Exp_Ch3 is
 
             elsif Needs_Finalization (Desig_Type)
               or else (Is_Incomplete_Type (Desig_Type)
-                         and then No (Full_View (Desig_Type)))
+                        and then No (Full_View (Desig_Type)))
             then
                Build_Finalization_Master (Def_Id);
 
@@ -8850,7 +8848,6 @@ package body Exp_Ch3 is
       Body_List := New_List;
 
       Prim_Elmt := First_Elmt (Primitive_Operations (Tag_Typ));
-
       while Present (Prim_Elmt) loop
          Subp := Node (Prim_Elmt);
 

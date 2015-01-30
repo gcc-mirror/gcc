@@ -451,7 +451,8 @@ package Exp_Util is
    --  class-wide).
 
    function Finalize_Address (Typ : Entity_Id) return Entity_Id;
-   --  Locate TSS primitive Finalize_Address in type Typ
+   --  Locate TSS primitive Finalize_Address in type Typ. Return Empty if the
+   --  subprogram is not available.
 
    function Find_Interface_ADT
      (T     : Entity_Id;

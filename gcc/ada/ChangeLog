@@ -1,3 +1,19 @@
+2015-01-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_attr.adb (Declared_Within_Generic_Unit):
+	New function to test whether an entity is declared within the
+	declarative region of a given generic unit.
+	(Resolve_Attribute): For checking legality of subprogram'Access within
+	a generic unit, call new Boolean function Declared_Within_Generic_Unit
+	instead of simply comparing the results of Enclosing_Generic_Unit on
+	the prefix and access type.  Correct minor comment typos.
+
+2015-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb, exp_util.ads: Update comment.
+	* exp_util.adb, exp_ch3.adb: Minor code reorganization and reformatting.
+	* sem_util.adb: Minor: fix typo.
+
 2015-01-30  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute): Ensure that

@@ -1798,6 +1798,12 @@ package body Freeze is
             end;
          end if;
 
+         --  Historical note: We used to create a finalization master for an
+         --  access type whose designated type is not controlled, but contains
+         --  private controlled compoments. This form of post processing is no
+         --  longer needed because the finalization master is now created when
+         --  the access type is frozen (see Exp_Ch3.Freeze_Type).
+
          Next_Entity (E);
       end loop;
    end Freeze_All;
