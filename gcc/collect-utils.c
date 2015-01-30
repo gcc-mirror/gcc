@@ -65,7 +65,7 @@ collect_wait (const char *prog, struct pex_obj *pex)
   int status;
 
   if (!pex_get_status (pex, 1, &status))
-    fatal_error ("can't get program status: %m");
+    fatal_error (input_location, "can't get program status: %m");
   pex_free (pex);
 
   if (status)
@@ -73,7 +73,7 @@ collect_wait (const char *prog, struct pex_obj *pex)
       if (WIFSIGNALED (status))
 	{
 	  int sig = WTERMSIG (status);
-	  fatal_error ("%s terminated with signal %d [%s]%s",
+	  fatal_error (input_location, "%s terminated with signal %d [%s]%s",
 		       prog, sig, strsignal (sig),
 		       WCOREDUMP (status) ? ", core dumped" : "");
 	}
@@ -89,7 +89,7 @@ do_wait (const char *prog, struct pex_obj *pex)
 {
   int ret = collect_wait (prog, pex);
   if (ret != 0)
-    fatal_error ("%s returned %d exit status", prog, ret);
+    fatal_error (input_location, "%s returned %d exit status", prog, ret);
 
   if (response_file && !save_temps)
     {
@@ -130,17 +130,20 @@ collect_execute (const char *prog, char **argv, const char *outname,
       f = fopen (response_file, "w");
 
       if (f == NULL)
-        fatal_error ("could not open response file %s", response_file);
+        fatal_error (input_location, "could not open response file %s",
+		     response_file);
 
       status = writeargv (current_argv, f);
 
       if (status)
-        fatal_error ("could not write to response file %s", response_file);
+        fatal_error (input_location, "could not write to response file %s",
+		     response_file);
 
       status = fclose (f);
 
       if (EOF == status)
-        fatal_error ("could not close response file %s", response_file);
+        fatal_error (input_location, "could not close response file %s",
+		     response_file);
 
       response_arg = concat ("@", response_file, NULL);
       response_argv[0] = argv0;
@@ -173,11 +176,11 @@ collect_execute (const char *prog, char **argv, const char *outname,
      since we might not end up needing something that we could not find.  */
 
   if (argv[0] == 0)
-    fatal_error ("cannot find '%s'", prog);
+    fatal_error (input_location, "cannot find '%s'", prog);
 
   pex = pex_init (0, "collect2", NULL);
   if (pex == NULL)
-    fatal_error ("pex_init failed: %m");
+    fatal_error (input_location, "pex_init failed: %m");
 
   errmsg = pex_run (pex, flags, argv[0], argv, outname,
 		    errname, &err);
@@ -186,10 +189,10 @@ collect_execute (const char *prog, char **argv, const char *outname,
       if (err != 0)
 	{
 	  errno = err;
-	  fatal_error ("%s: %m", _(errmsg));
+	  fatal_error (input_location, "%s: %m", _(errmsg));
 	}
       else
-	fatal_error (errmsg);
+	fatal_error (input_location, errmsg);
     }
 
   free (response_arg);

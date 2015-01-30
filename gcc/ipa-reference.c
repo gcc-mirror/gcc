@@ -1172,7 +1172,8 @@ ipa_reference_read_optimization_summary (void)
 	/* Fatal error here.  We do not want to support compiling ltrans units with
 	   different version of compiler or different flags than the WPA unit, so
 	   this should never happen.  */
-	fatal_error ("ipa reference summary is missing in ltrans unit");
+	fatal_error (input_location,
+		     "ipa reference summary is missing in ltrans unit");
     }
 }
 

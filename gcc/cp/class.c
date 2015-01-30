@@ -6792,7 +6792,8 @@ finish_struct (tree t, tree attributes)
 	    }
 	}
       if (!ok)
-	fatal_error ("definition of std::initializer_list does not match "
+	fatal_error (input_location,
+		     "definition of std::initializer_list does not match "
 		     "#include <initializer_list>");
     }
 

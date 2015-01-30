@@ -1,3 +1,8 @@
+2015-01-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* lto-object.c, lto-symtab.c, lto.c: All callers of fatal_error
+	changed to pass input_location as first argument.
+
 2014-12-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-symtab.c (lto_varpool_replace_node): Merge TLS models.

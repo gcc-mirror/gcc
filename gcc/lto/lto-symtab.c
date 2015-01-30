@@ -382,7 +382,7 @@ lto_symtab_resolve_symbols (symtab_node *first)
 	    && (e->resolution == LDPR_PREVAILING_DEF_IRONLY
 		|| e->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP
 		|| e->resolution == LDPR_PREVAILING_DEF))
-	  fatal_error ("multiple prevailing defs for %qE",
+	  fatal_error (input_location, "multiple prevailing defs for %qE",
 		       DECL_NAME (prevailing->decl));
       return prevailing;
     }

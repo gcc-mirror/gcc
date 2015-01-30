@@ -485,7 +485,7 @@ objc_write_global_declarations (void)
 	  char * const dumpname = concat (dump_base_name, ".decl", NULL);
 	  gen_declaration_file = fopen (dumpname, "w");
 	  if (gen_declaration_file == 0)
-	    fatal_error ("can%'t open %s: %m", dumpname);
+	    fatal_error (input_location, "can%'t open %s: %m", dumpname);
 	  free (dumpname);
 	}
 
@@ -2038,7 +2038,8 @@ objc_add_method_declaration (bool is_class_method, tree decl, tree attributes)
 	 impossible to get here.  But it's good to have the check in
 	 case the parser changes.
       */
-      fatal_error ("method declaration not in @interface context");
+      fatal_error (input_location,
+		   "method declaration not in @interface context");
     }
 
   if (flag_objc1_only && attributes)
@@ -2863,7 +2864,7 @@ check_protocol_recursively (tree proto, tree list)
 			      /* definition_required */ false);
 
       if (pp == proto)
-	fatal_error ("protocol %qE has circular dependency",
+	fatal_error (input_location, "protocol %qE has circular dependency",
 		     PROTOCOL_NAME (pp));
       if (pp)
 	check_protocol_recursively (proto, PROTOCOL_LIST (pp));

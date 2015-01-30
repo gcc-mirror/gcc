@@ -136,7 +136,7 @@ maybe_unlink (const char *file)
     {
       if (unlink_if_ordinary (file)
 	  && errno != ENOENT)
-	fatal_error ("deleting file %s: %m", file);
+	fatal_error (input_location, "deleting file %s: %m", file);
     }
   else
     fprintf (stderr, "[Leaving %s]\n", file);
@@ -163,7 +163,7 @@ record_id (const char *p1, id_map ***where)
 {
   const char *end = strchr (p1, '\n');
   if (!end)
-    fatal_error ("malformed ptx file");
+    fatal_error (input_location, "malformed ptx file");
 
   id_map *v = XNEW (id_map);
   size_t len = end - p1;
@@ -803,7 +803,8 @@ compile_native (const char *infile, const char *outfile, const char *compiler)
 {
   const char *collect_gcc_options = getenv ("COLLECT_GCC_OPTIONS");
   if (!collect_gcc_options)
-    fatal_error ("environment variable COLLECT_GCC_OPTIONS must be set");
+    fatal_error (input_location,
+		 "environment variable COLLECT_GCC_OPTIONS must be set");
 
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);
@@ -828,7 +829,7 @@ main (int argc, char **argv)
 
   char *collect_gcc = getenv ("COLLECT_GCC");
   if (collect_gcc == NULL)
-    fatal_error ("COLLECT_GCC must be set.");
+    fatal_error (input_location, "COLLECT_GCC must be set.");
   const char *gcc_path = dirname (ASTRDUP (collect_gcc));
   const char *gcc_exec = basename (ASTRDUP (collect_gcc));
 
@@ -888,13 +889,13 @@ main (int argc, char **argv)
 
   in = fopen (ptx_name, "r");
   if (!in)
-    fatal_error ("cannot open intermediate ptx file");
+    fatal_error (input_location, "cannot open intermediate ptx file");
 
   ptx_cfile_name = make_temp_file (".c");
 
   out = fopen (ptx_cfile_name, "w");
   if (!out)
-    fatal_error ("cannot open '%s'", ptx_cfile_name);
+    fatal_error (input_location, "cannot open '%s'", ptx_cfile_name);
 
   process (in, out);
   fclose (out);

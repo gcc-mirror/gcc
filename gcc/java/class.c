@@ -850,7 +850,7 @@ add_method (tree this_class, int access_flags, tree name, tree method_sig)
     = (const unsigned char *) IDENTIFIER_POINTER (method_sig);
 
   if (sig[0] != '(')
-    fatal_error ("bad method signature");
+    fatal_error (input_location, "bad method signature");
 
   function_type = get_type_from_signature (method_sig);
   fndecl = add_method_1 (this_class, access_flags, name, function_type);

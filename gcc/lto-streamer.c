@@ -406,7 +406,8 @@ void
 lto_check_version (int major, int minor)
 {
   if (major != LTO_major_version || minor != LTO_minor_version)
-    fatal_error ("bytecode stream generated with LTO version %d.%d instead "
+    fatal_error (input_location,
+		 "bytecode stream generated with LTO version %d.%d instead "
 	         "of the expected %d.%d",
 		 major, minor,
 		 LTO_major_version, LTO_minor_version);

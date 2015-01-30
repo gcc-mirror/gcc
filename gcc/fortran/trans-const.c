@@ -368,7 +368,8 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
 				     expr->representation.string);
 
     default:
-      fatal_error ("gfc_conv_constant_to_tree(): invalid type: %s",
+      fatal_error (input_location,
+		   "gfc_conv_constant_to_tree(): invalid type: %s",
 		   gfc_typename (&expr->ts));
     }
 }

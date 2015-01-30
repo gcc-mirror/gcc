@@ -7810,7 +7810,8 @@ s390_frame_info (void)
 
   cfun_frame_layout.frame_size = get_frame_size ();
   if (!TARGET_64BIT && cfun_frame_layout.frame_size > 0x7fff0000)
-    fatal_error ("total size of local variables exceeds architecture limit");
+    fatal_error (input_location,
+		 "total size of local variables exceeds architecture limit");
 
   if (!TARGET_PACKED_STACK)
     {

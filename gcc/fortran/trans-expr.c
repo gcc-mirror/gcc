@@ -2859,7 +2859,7 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
       gcc_unreachable ();
 
     default:
-      fatal_error ("Unknown intrinsic op");
+      fatal_error (input_location, "Unknown intrinsic op");
       return;
     }
 

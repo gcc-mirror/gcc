@@ -11570,7 +11570,8 @@ def_builtin (const char *name, tree type, enum rs6000_builtins code)
   gcc_assert (IN_RANGE ((int)code, 0, (int)RS6000_BUILTIN_COUNT));
 
   if (rs6000_builtin_decls[(int)code])
-    fatal_error ("internal error: builtin function %s already processed", name);
+    fatal_error (input_location,
+		 "internal error: builtin function %s already processed", name);
 
   rs6000_builtin_decls[(int)code] = t =
     add_builtin_function (name, type, (int)code, BUILT_IN_MD, NULL, NULL_TREE);
@@ -15468,14 +15469,16 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     num_args--;
 
   if (num_args == 0)
-    fatal_error ("internal error: builtin function %s had no type", name);
+    fatal_error (input_location,
+		 "internal error: builtin function %s had no type", name);
 
   ret_type = builtin_mode_to_type[h.mode[0]][h.uns_p[0]];
   if (!ret_type && h.uns_p[0])
     ret_type = builtin_mode_to_type[h.mode[0]][0];
 
   if (!ret_type)
-    fatal_error ("internal error: builtin function %s had an unexpected "
+    fatal_error (input_location,
+		 "internal error: builtin function %s had an unexpected "
 		 "return type %s", name, GET_MODE_NAME (h.mode[0]));
 
   for (i = 0; i < (int) ARRAY_SIZE (arg_type); i++)
@@ -15491,7 +15494,8 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
 	arg_type[i] = builtin_mode_to_type[m][0];
 
       if (!arg_type[i])
-	fatal_error ("internal error: builtin function %s, argument %d "
+	fatal_error (input_location,
+		     "internal error: builtin function %s, argument %d "
 		     "had unexpected argument type %s", name, i,
 		     GET_MODE_NAME (m));
     }

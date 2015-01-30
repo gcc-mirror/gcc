@@ -122,7 +122,8 @@ pch_init (void)
 
   f = fopen (pch_file, "w+b");
   if (f == NULL)
-    fatal_error ("can%'t create precompiled header %s: %m", pch_file);
+    fatal_error (input_location, "can%'t create precompiled header %s: %m",
+		 pch_file);
   pch_outfile = f;
 
   gcc_assert (memcmp (executable_checksum, no_checksum, 16) != 0);
@@ -144,7 +145,7 @@ pch_init (void)
       || fwrite (executable_checksum, 16, 1, f) != 1
       || fwrite (&v, sizeof (v), 1, f) != 1
       || fwrite (target_validity, v.target_data_length, 1, f) != 1)
-    fatal_error ("can%'t write to %s: %m", pch_file);
+    fatal_error (input_location, "can%'t write to %s: %m", pch_file);
 
   /* Let the debugging format deal with the PCHness.  */
   (*debug_hooks->handle_pch) (0);
@@ -202,7 +203,7 @@ c_common_write_pch (void)
 
   if (fseek (pch_outfile, 0, SEEK_SET) != 0
       || fwrite (get_ident (), IDENT_LENGTH, 1, pch_outfile) != 1)
-    fatal_error ("can%'t write %s: %m", pch_file);
+    fatal_error (input_location, "can%'t write %s: %m", pch_file);
 
   fclose (pch_outfile);
 
@@ -230,7 +231,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 
   sizeread = read (fd, ident, IDENT_LENGTH + 16);
   if (sizeread == -1)
-    fatal_error ("can%'t read %s: %m", name);
+    fatal_error (input_location, "can%'t read %s: %m", name);
   else if (sizeread != IDENT_LENGTH + 16)
     {
       if (cpp_get_options (pfile)->warn_invalid_pch)
@@ -271,7 +272,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
      executable, so it ought to be long enough that we can read a
      c_pch_validity structure.  */
   if (read (fd, &v, sizeof (v)) != sizeof (v))
-    fatal_error ("can%'t read %s: %m", name);
+    fatal_error (input_location, "can%'t read %s: %m", name);
 
   /* The allowable debug info combinations are that either the PCH file
      was built with the same as is being used now, or the PCH file was
@@ -322,7 +323,7 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 
     if ((size_t) read (fd, this_file_data, v.target_data_length)
 	!= v.target_data_length)
-      fatal_error ("can%'t read %s: %m", name);
+      fatal_error (input_location, "can%'t read %s: %m", name);
     msg = targetm.pch_valid_p (this_file_data, v.target_data_length);
     free (this_file_data);
     if (msg != NULL)
@@ -435,13 +436,13 @@ c_common_pch_pragma (cpp_reader *pfile, const char *name)
 
   fd = open (name, O_RDONLY | O_BINARY, 0666);
   if (fd == -1)
-    fatal_error ("%s: couldn%'t open PCH file: %m", name);
+    fatal_error (input_location, "%s: couldn%'t open PCH file: %m", name);
 
   if (c_common_valid_pch (pfile, name, fd) != 1)
     {
       if (!cpp_get_options (pfile)->warn_invalid_pch)
 	inform (input_location, "use -Winvalid-pch for more information");
-      fatal_error ("%s: PCH file was invalid", name);
+      fatal_error (input_location, "%s: PCH file was invalid", name);
     }
 
   c_common_read_pch (pfile, name, fd, name);

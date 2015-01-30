@@ -1,3 +1,8 @@
+2015-01-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* class.c, except.c, parser.c, pt.c: All callers of fatal_error
+	changed to pass input_location as first argument.
+
 2015-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/64717

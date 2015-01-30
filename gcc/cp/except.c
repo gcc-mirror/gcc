@@ -304,7 +304,8 @@ decl_is_java_type (tree decl, int err)
 
 	  if (jthrow_node == NULL_TREE)
 	    fatal_error
-	      ("call to Java %<catch%> or %<throw%> with %<jthrowable%> undefined");
+	      (input_location,
+	       "call to Java %<catch%> or %<throw%> with %<jthrowable%> undefined");
 
 	  jthrow_node = TREE_TYPE (TREE_TYPE (jthrow_node));
 

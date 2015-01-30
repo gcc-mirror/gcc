@@ -5492,7 +5492,8 @@ check_if_valid_sleep_operand (rtx *operands, int opno)
 	if( UNSIGNED_INT6 (INTVAL (operands[opno])))
 	    return true;
     default:
-	fatal_error("operand for sleep instruction must be an unsigned 6 bit compile-time constant");
+	fatal_error (input_location,
+		     "operand for sleep instruction must be an unsigned 6 bit compile-time constant");
 	break;
     }
   return false;
@@ -6044,7 +6045,7 @@ arc_reorg (void)
       cfun->machine->ccfsm_current_insn = NULL_RTX;
 
       if (!INSN_ADDRESSES_SET_P())
-	  fatal_error ("Insn addresses not set after shorten_branches");
+	  fatal_error (input_location, "Insn addresses not set after shorten_branches");
 
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	{
@@ -6248,7 +6249,7 @@ arc_reorg (void)
     } while (changed);
 
   if (INSN_ADDRESSES_SET_P())
-    fatal_error ("insn addresses not freed");
+    fatal_error (input_location, "insn addresses not freed");
 
   arc_reorg_in_progress = 0;
 }
