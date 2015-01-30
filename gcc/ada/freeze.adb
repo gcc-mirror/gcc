@@ -1800,7 +1800,7 @@ package body Freeze is
 
          --  Historical note: We used to create a finalization master for an
          --  access type whose designated type is not controlled, but contains
-         --  private controlled compoments. This form of post processing is no
+         --  private controlled compoments. This form of postprocessing is no
          --  longer needed because the finalization master is now created when
          --  the access type is frozen (see Exp_Ch3.Freeze_Type).
 

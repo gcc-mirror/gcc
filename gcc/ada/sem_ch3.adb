@@ -10050,46 +10050,34 @@ package body Sem_Ch3 is
                elsif Is_Concurrent_Record_Type (T)
                  and then Present (Interfaces (T))
                then
-                  --  If an inherited subprogram is implemented by a protected
-                  --  procedure or an entry, then the first parameter of the
-                  --  inherited subprogram shall be of mode OUT or IN OUT, or
-                  --  an access-to-variable parameter (RM 9.4(11.9/3))
+                  --  There is no need to check here RM 9.4(11.9/3) since we
+                  --  are processing the corresponding record type and the
+                  --  mode of the overriding subprograms was verified by
+                  --  Check_Conformance when the corresponding concurrent
+                  --  type declaration was analyzed.
 
-                  if Is_Protected_Type (Corresponding_Concurrent_Type (T))
-                    and then Ekind (First_Formal (Subp)) = E_In_Parameter
-                    and then Ekind (Subp) /= E_Function
-                    and then not Is_Predefined_Dispatching_Operation (Subp)
-                  then
-                     Error_Msg_PT (T, Subp);
+                  Error_Msg_NE
+                    ("interface subprogram & must be overridden", T, Subp);
 
-                  --  Some other kind of overriding failure
+                  --  Examine primitive operations of synchronized type to find
+                  --  homonyms that have the wrong profile.
 
-                  else
-                     Error_Msg_NE
-                       ("interface subprogram & must be overridden",
-                        T, Subp);
+                  declare
+                     Prim : Entity_Id;
 
-                     --  Examine primitive operations of synchronized type,
-                     --  to find homonyms that have the wrong profile.
+                  begin
+                     Prim := First_Entity (Corresponding_Concurrent_Type (T));
+                     while Present (Prim) loop
+                        if Chars (Prim) = Chars (Subp) then
+                           Error_Msg_NE
+                             ("profile is not type conformant with prefixed "
+                              & "view profile of inherited operation&",
+                              Prim, Subp);
+                        end if;
 
-                     declare
-                        Prim : Entity_Id;
-
-                     begin
-                        Prim :=
-                          First_Entity (Corresponding_Concurrent_Type (T));
-                        while Present (Prim) loop
-                           if Chars (Prim) = Chars (Subp) then
-                              Error_Msg_NE
-                                ("profile is not type conformant with "
-                                   & "prefixed view profile of "
-                                   & "inherited operation&", Prim, Subp);
-                           end if;
-
-                           Next_Entity (Prim);
-                        end loop;
-                     end;
-                  end if;
+                        Next_Entity (Prim);
+                     end loop;
+                  end;
                end if;
 
             else
