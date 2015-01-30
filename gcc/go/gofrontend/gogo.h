@@ -276,6 +276,7 @@ class Gogo
   add_imported_package(const std::string& real_name, const std::string& alias,
 		       bool is_alias_exported,
 		       const std::string& pkgpath,
+		       const std::string& pkgpath_symbol,
 		       Location location,
 		       bool* padd_to_globals);
 
@@ -283,7 +284,8 @@ class Gogo
   // This returns the Package structure for the package, creating if
   // it necessary.
   Package*
-  register_package(const std::string& pkgpath, Location);
+  register_package(const std::string& pkgpath,
+		   const std::string& pkgpath_symbol, Location);
 
   // Start compiling a function.  ADD_METHOD_TO_TYPE is true if a
   // method function should be added to the type of its receiver.
@@ -2622,7 +2624,8 @@ class Unnamed_label
 class Package
 {
  public:
-  Package(const std::string& pkgpath, Location location);
+  Package(const std::string& pkgpath, const std::string& pkgpath_symbol,
+	  Location location);
 
   // Get the package path used for all symbols exported from this
   // package.
@@ -2631,9 +2634,12 @@ class Package
   { return this->pkgpath_; }
 
   // Return the package path to use for a symbol name.
-  const std::string&
-  pkgpath_symbol() const
-  { return this->pkgpath_symbol_; }
+  std::string
+  pkgpath_symbol() const;
+
+  // Set the package path symbol.
+  void
+  set_pkgpath_symbol(const std::string&);
 
   // Return the location of the import statement.
   Location
