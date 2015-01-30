@@ -986,8 +986,8 @@ init_asm_output (const char *name)
 	       || !strcmp (asm_file_name, HOST_BIT_BUCKET))
 	asm_out_file = fopen (asm_file_name, "w");
       else
-	/* Use fatal_error (UNKOWN_LOCATION) instead of just fatal_error to
-	   prevent gcc from printing the first line in the current file. */
+	/* Use UNKOWN_LOCATION to prevent gcc from printing the first
+	   line in the current file. */
 	fatal_error (UNKNOWN_LOCATION,
 		     "input file %qs is the same as output file",
 		     asm_file_name);
@@ -1155,7 +1155,7 @@ open_auxiliary_file (const char *ext)
   filename = concat (aux_base_name, ".", ext, NULL);
   file = fopen (filename, "w");
   if (!file)
-    fatal_error ("can%'t open %s for writing: %m", filename);
+    fatal_error (input_location, "can%'t open %s for writing: %m", filename);
   free (filename);
   return file;
 }
@@ -1576,7 +1576,7 @@ process_options (void)
     {
       aux_info_file = fopen (aux_info_file_name, "w");
       if (aux_info_file == 0)
-	fatal_error ("can%'t open %s: %m", aux_info_file_name);
+	fatal_error (input_location, "can%'t open %s: %m", aux_info_file_name);
     }
 
   if (!targetm_common.have_named_sections)
@@ -1970,9 +1970,9 @@ finalize (bool no_backend)
   if (asm_out_file)
     {
       if (ferror (asm_out_file) != 0)
-	fatal_error ("error writing to %s: %m", asm_file_name);
+	fatal_error (input_location, "error writing to %s: %m", asm_file_name);
       if (fclose (asm_out_file) != 0)
-	fatal_error ("error closing %s: %m", asm_file_name);
+	fatal_error (input_location, "error closing %s: %m", asm_file_name);
     }
 
   if (stack_usage_file)

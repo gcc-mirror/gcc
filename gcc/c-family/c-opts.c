@@ -928,7 +928,7 @@ c_common_post_options (const char **pfilename)
 
       if (out_stream == NULL)
 	{
-	  fatal_error ("opening output file %s: %m", out_fname);
+	  fatal_error (input_location, "opening output file %s: %m", out_fname);
 	  return false;
 	}
 
@@ -1111,7 +1111,8 @@ c_common_finish (void)
 	{
 	  deps_stream = fopen (deps_file, deps_append ? "a": "w");
 	  if (!deps_stream)
-	    fatal_error ("opening dependency file %s: %m", deps_file);
+	    fatal_error (input_location, "opening dependency file %s: %m",
+			 deps_file);
 	}
     }
 
@@ -1121,10 +1122,10 @@ c_common_finish (void)
 
   if (deps_stream && deps_stream != out_stream
       && (ferror (deps_stream) || fclose (deps_stream)))
-    fatal_error ("closing dependency file %s: %m", deps_file);
+    fatal_error (input_location, "closing dependency file %s: %m", deps_file);
 
   if (out_stream && (ferror (out_stream) || fclose (out_stream)))
-    fatal_error ("when writing output to %s: %m", out_fname);
+    fatal_error (input_location, "when writing output to %s: %m", out_fname);
 }
 
 /* Either of two environment variables can specify output of

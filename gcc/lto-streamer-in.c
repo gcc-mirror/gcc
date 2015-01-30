@@ -815,27 +815,31 @@ fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple *stmts,
   for (cedge = node->callees; cedge; cedge = cedge->next_callee)
     {
       if (gimple_stmt_max_uid (fn) < cedge->lto_stmt_uid)
-        fatal_error ("Cgraph edge statement index out of range");
+        fatal_error (input_location,
+		     "Cgraph edge statement index out of range");
       cedge->call_stmt = as_a <gcall *> (stmts[cedge->lto_stmt_uid - 1]);
       if (!cedge->call_stmt)
-        fatal_error ("Cgraph edge statement index not found");
+        fatal_error (input_location,
+		     "Cgraph edge statement index not found");
     }
   for (cedge = node->indirect_calls; cedge; cedge = cedge->next_callee)
     {
       if (gimple_stmt_max_uid (fn) < cedge->lto_stmt_uid)
-        fatal_error ("Cgraph edge statement index out of range");
+        fatal_error (input_location,
+		     "Cgraph edge statement index out of range");
       cedge->call_stmt = as_a <gcall *> (stmts[cedge->lto_stmt_uid - 1]);
       if (!cedge->call_stmt)
-        fatal_error ("Cgraph edge statement index not found");
+        fatal_error (input_location, "Cgraph edge statement index not found");
     }
   for (i = 0; node->iterate_reference (i, ref); i++)
     if (ref->lto_stmt_uid)
       {
 	if (gimple_stmt_max_uid (fn) < ref->lto_stmt_uid)
-	  fatal_error ("Reference statement index out of range");
+	  fatal_error (input_location,
+		       "Reference statement index out of range");
 	ref->stmt = stmts[ref->lto_stmt_uid - 1];
 	if (!ref->stmt)
-	  fatal_error ("Reference statement index not found");
+	  fatal_error (input_location, "Reference statement index not found");
       }
 }
 

@@ -836,13 +836,15 @@ plugin_init (struct plugin_name_args *plugin_info,
 	  errno = 0;
 	  fd = strtol (plugin_info->argv[i].value, &tail, 0);
 	  if (*tail != '\0' || errno != 0)
-	    fatal_error ("%s: invalid file descriptor argument to plugin",
+	    fatal_error (input_location,
+			 "%s: invalid file descriptor argument to plugin",
 			 plugin_info->base_name);
 	  break;
 	}
     }
   if (fd == -1)
-    fatal_error ("%s: required plugin argument %<fd%> is missing",
+    fatal_error (input_location,
+		 "%s: required plugin argument %<fd%> is missing",
 		 plugin_info->base_name);
 
   current_context = new plugin_context (fd);
@@ -851,9 +853,11 @@ plugin_init (struct plugin_name_args *plugin_info,
   cc1_plugin::protocol_int version;
   if (!current_context->require ('H')
       || ! ::cc1_plugin::unmarshall (current_context, &version))
-    fatal_error ("%s: handshake failed", plugin_info->base_name);
+    fatal_error (input_location,
+		 "%s: handshake failed", plugin_info->base_name);
   if (version != GCC_C_FE_VERSION_0)
-    fatal_error ("%s: unknown version in handshake", plugin_info->base_name);
+    fatal_error (input_location,
+		 "%s: unknown version in handshake", plugin_info->base_name);
 
   register_callback (plugin_info->base_name, PLUGIN_PRAGMAS,
 		     plugin_init_extra_pragmas, NULL);

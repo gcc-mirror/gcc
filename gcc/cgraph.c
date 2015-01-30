@@ -3188,7 +3188,7 @@ cgraph_node::get_untransformed_body (void)
   data = lto_get_section_data (file_data, LTO_section_function_body,
 			       name, &len);
   if (!data)
-    fatal_error ("%s: section %s is missing",
+    fatal_error (input_location, "%s: section %s is missing",
 		 file_data->file_name,
 		 name);
 

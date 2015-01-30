@@ -381,7 +381,7 @@ avr_option_override (void)
   for (avr_current_device = avr_mcu_types; ; avr_current_device++)
     {
       if (!avr_current_device->name)
-        fatal_error ("mcu not found");
+        fatal_error (input_location, "mcu not found");
       if (!avr_current_device->macro
           && avr_current_device->arch == avr_arch_index)
         break;

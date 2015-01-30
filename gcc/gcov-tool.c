@@ -65,7 +65,7 @@ unlink_gcda_file (const char *name,
     ret = remove (name);
 
   if (ret)
-    fatal_error ("error in removing %s\n", name);
+    fatal_error (input_location, "error in removing %s\n", name);
 
   return ret;
 }
@@ -95,7 +95,7 @@ gcov_output_files (const char *out, struct gcov_info *profile)
 #else
       if (mkdir (out) == -1 && errno != EEXIST)
 #endif
-        fatal_error ("Cannot make directory %s", out);
+        fatal_error (input_location, "Cannot make directory %s", out);
     } else
       unlink_profile_dir (out);
 
@@ -103,17 +103,17 @@ gcov_output_files (const char *out, struct gcov_info *profile)
   pwd = getcwd (NULL, 0);
 
   if (pwd == NULL)
-    fatal_error ("Cannot get current directory name");
+    fatal_error (input_location, "Cannot get current directory name");
 
   ret = chdir (out);
   if (ret)
-    fatal_error ("Cannot change directory to %s", out);
+    fatal_error (input_location, "Cannot change directory to %s", out);
 
   gcov_do_dump (profile, 0);
 
   ret = chdir (pwd);
   if (ret)
-    fatal_error ("Cannot change directory to %s", pwd);
+    fatal_error (input_location, "Cannot change directory to %s", pwd);
 
   free (pwd);
 }
@@ -207,7 +207,7 @@ do_merge (int argc, char **argv)
         case 'w':
           sscanf (optarg, "%d,%d", &w1, &w2);
           if (w1 < 0 || w2 < 0)
-            fatal_error ("weights need to be non-negative\n");
+            fatal_error (input_location, "weights need to be non-negative\n");
           break;
         default:
           merge_usage ();
@@ -350,7 +350,7 @@ do_rewrite (int argc, char **argv)
             }
 
           if (scale < 0.0)
-            fatal_error ("scale needs to be non-negative\n");
+            fatal_error (input_location, "scale needs to be non-negative\n");
 
           if (normalize_val != 0)
             {

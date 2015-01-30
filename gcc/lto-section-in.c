@@ -457,7 +457,7 @@ lto_free_function_in_decl_state_for_node (symtab_node *node)
 void
 lto_section_overrun (struct lto_input_block *ib)
 {
-  fatal_error ("bytecode stream: trying to read %d bytes "
+  fatal_error (input_location, "bytecode stream: trying to read %d bytes "
 	       "after the end of the input buffer", ib->p - ib->len);
 }
 
@@ -467,6 +467,7 @@ void
 lto_value_range_error (const char *purpose, HOST_WIDE_INT val,
 		       HOST_WIDE_INT min, HOST_WIDE_INT max)
 {
-  fatal_error ("%s out of range: Range is %i to %i, value is %i",
+  fatal_error (input_location,
+	       "%s out of range: Range is %i to %i, value is %i",
 	       purpose, (int)min, (int)max, (int)val);
 }

@@ -2264,10 +2264,11 @@ setup_core_dumping (diagnostic_context *dc)
   {
     struct rlimit rlim;
     if (getrlimit (RLIMIT_CORE, &rlim) != 0)
-      fatal_error ("getting core file size maximum limit: %m");
+      fatal_error (input_location, "getting core file size maximum limit: %m");
     rlim.rlim_cur = rlim.rlim_max;
     if (setrlimit (RLIMIT_CORE, &rlim) != 0)
-      fatal_error ("setting core file size limit to maximum: %m");
+      fatal_error (input_location,
+		   "setting core file size limit to maximum: %m");
   }
 #endif
   diagnostic_abort_on_error (dc);

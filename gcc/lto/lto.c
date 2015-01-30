@@ -2328,7 +2328,7 @@ lto_read_section_data (struct lto_file_decl_data *file_data,
       fd = open (file_data->file_name, O_RDONLY|O_BINARY);
       if (fd == -1)
         {
-	  fatal_error ("Cannot open %s", file_data->file_name);
+	  fatal_error (input_location, "Cannot open %s", file_data->file_name);
 	  return NULL;
         }
       fd_name = xstrdup (file_data->file_name);
@@ -2349,7 +2349,7 @@ lto_read_section_data (struct lto_file_decl_data *file_data,
 			  fd, computed_offset);
   if (result == MAP_FAILED)
     {
-      fatal_error ("Cannot map %s", file_data->file_name);
+      fatal_error (input_location, "Cannot map %s", file_data->file_name);
       return NULL;
     }
 
@@ -2360,7 +2360,7 @@ lto_read_section_data (struct lto_file_decl_data *file_data,
       || read (fd, result, len) != (ssize_t) len)
     {
       free (result);
-      fatal_error ("Cannot read %s", file_data->file_name);
+      fatal_error (input_location, "Cannot read %s", file_data->file_name);
       result = NULL;
     }
 #ifdef __MINGW32__
@@ -2474,7 +2474,7 @@ do_stream_out (char *temp_filename, lto_symtab_encoder_t encoder)
 {
   lto_file *file = lto_obj_file_open (temp_filename, true);
   if (!file)
-    fatal_error ("lto_obj_file_open() failed");
+    fatal_error (input_location, "lto_obj_file_open() failed");
   lto_set_current_out_file (file);
 
   ipa_write_optimization_summaries (encoder);
@@ -2497,12 +2497,13 @@ wait_for_child ()
 #endif
       int w = waitpid (0, &status, WUNTRACED | WCONTINUED);
       if (w == -1)
-	fatal_error ("waitpid failed");
+	fatal_error (input_location, "waitpid failed");
 
       if (WIFEXITED (status) && WEXITSTATUS (status))
-	fatal_error ("streaming subprocess failed");
+	fatal_error (input_location, "streaming subprocess failed");
       else if (WIFSIGNALED (status))
-	fatal_error ("streaming subprocess was killed by signal");
+	fatal_error (input_location,
+		     "streaming subprocess was killed by signal");
     }
   while (!WIFEXITED (status) && !WIFSIGNALED (status));
 }
@@ -2578,7 +2579,7 @@ lto_wpa_write_files (void)
 
   /* Open the LTRANS output list.  */
   if (!ltrans_output_list)
-    fatal_error ("no LTRANS output list filename provided");
+    fatal_error (input_location, "no LTRANS output list filename provided");
 
   timevar_push (TV_WHOPR_WPA);
 
@@ -2665,13 +2666,14 @@ lto_wpa_write_files (void)
     }
   ltrans_output_list_stream = fopen (ltrans_output_list, "w");
   if (ltrans_output_list_stream == NULL)
-    fatal_error ("opening LTRANS output list %s: %m", ltrans_output_list);
+    fatal_error (input_location,
+		 "opening LTRANS output list %s: %m", ltrans_output_list);
   for (i = 0; i < n_sets; i++)
     {
       unsigned int len = strlen (temp_filenames[i]);
       if (fwrite (temp_filenames[i], 1, len, ltrans_output_list_stream) < len
 	  || fwrite ("\n", 1, 1, ltrans_output_list_stream) < 1)
-	fatal_error ("writing to LTRANS output list %s: %m",
+	fatal_error (input_location, "writing to LTRANS output list %s: %m",
 		     ltrans_output_list);
      free (temp_filenames[i]);
     }
@@ -2681,7 +2683,8 @@ lto_wpa_write_files (void)
 
   /* Close the LTRANS output list.  */
   if (fclose (ltrans_output_list_stream))
-    fatal_error ("closing LTRANS output list %s: %m", ltrans_output_list);
+    fatal_error (input_location,
+		 "closing LTRANS output list %s: %m", ltrans_output_list);
 
   free_ltrans_partitions();
   free (temp_filename);
@@ -2927,7 +2930,8 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 
       resolution = fopen (resolution_file_name, "r");
       if (resolution == NULL)
-	fatal_error ("could not open symbol resolution file: %m");
+	fatal_error (input_location,
+		     "could not open symbol resolution file: %m");
 
       t = fscanf (resolution, "%u", &num_objects);
       gcc_assert (t == 1);
@@ -3067,7 +3071,8 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
       /* If there were errors during symbol merging bail out, we have no
 	 good way to recover here.  */
       if (seen_error ())
-	fatal_error ("errors during merging of translation units");
+	fatal_error (input_location,
+		     "errors during merging of translation units");
 
       /* Fixup all decls.  */
       lto_fixup_decls (all_file_decl_data);

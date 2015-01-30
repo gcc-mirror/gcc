@@ -227,7 +227,7 @@ generate_target_descr_file (const char *target_compiler)
   FILE *src_file = fopen (src_filename, "w");
 
   if (!src_file)
-    fatal_error ("cannot open '%s'", src_filename);
+    fatal_error (input_location, "cannot open '%s'", src_filename);
 
   fprintf (src_file,
 	   "extern void *__offload_funcs_end[];\n"
@@ -287,7 +287,7 @@ generate_target_offloadend_file (const char *target_compiler)
   FILE *src_file = fopen (src_filename, "w");
 
   if (!src_file)
-    fatal_error ("cannot open '%s'", src_filename);
+    fatal_error (input_location, "cannot open '%s'", src_filename);
 
   fprintf (src_file,
 	   "void *__offload_funcs_end[0]\n"
@@ -324,7 +324,7 @@ generate_host_descr_file (const char *host_compiler)
   FILE *src_file = fopen (src_filename, "w");
 
   if (!src_file)
-    fatal_error ("cannot open '%s'", src_filename);
+    fatal_error (input_location, "cannot open '%s'", src_filename);
 
   fprintf (src_file,
 	   "extern void *__OFFLOAD_TABLE__;\n"
@@ -401,7 +401,7 @@ prepare_target_image (const char *target_compiler, int argc, char **argv)
 	obstack_ptr_grow (&argv_obstack, argv[i]);
     }
   if (!out_obj_filename)
-    fatal_error ("output file not specified");
+    fatal_error (input_location, "output file not specified");
   obstack_ptr_grow (&argv_obstack, opt2);
   obstack_ptr_grow (&argv_obstack, "-o");
   obstack_ptr_grow (&argv_obstack, target_so_filename);
@@ -477,17 +477,18 @@ main (int argc, char **argv)
   diagnostic_initialize (global_dc, 0);
 
   if (atexit (mkoffload_atexit) != 0)
-    fatal_error ("atexit failed");
+    fatal_error (input_location, "atexit failed");
 
   const char *host_compiler = getenv ("COLLECT_GCC");
   if (!host_compiler)
-    fatal_error ("COLLECT_GCC must be set");
+    fatal_error (input_location, "COLLECT_GCC must be set");
 
   const char *target_driver_name
     = DEFAULT_REAL_TARGET_MACHINE "-accel-" DEFAULT_TARGET_MACHINE "-gcc";
   char *target_compiler = find_target_compiler (target_driver_name);
   if (target_compiler == NULL)
-    fatal_error ("offload compiler %s not found", target_driver_name);
+    fatal_error (input_location, "offload compiler %s not found",
+		 target_driver_name);
 
   /* We may be called with all the arguments stored in some file and
      passed with @file.  Expand them into argv before processing.  */
@@ -500,7 +501,8 @@ main (int argc, char **argv)
 	if (strstr (argv[i], "ilp32"))
 	  target_ilp32 = true;
 	else if (!strstr (argv[i], "lp64"))
-	  fatal_error ("unrecognizable argument of option -foffload-abi");
+	  fatal_error (input_location,
+		       "unrecognizable argument of option -foffload-abi");
 	break;
       }
 

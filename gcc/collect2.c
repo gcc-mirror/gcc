@@ -699,7 +699,7 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
       size_t num_files;
 
       if (!lto_wrapper)
-	fatal_error ("COLLECT_LTO_WRAPPER must be set");
+	fatal_error (input_location, "COLLECT_LTO_WRAPPER must be set");
 
       num_lto_c_args++;
 
@@ -963,7 +963,7 @@ main (int argc, char **argv)
   diagnostic_initialize (global_dc, 0);
 
   if (atexit (collect_atexit) != 0)
-    fatal_error ("atexit failed");
+    fatal_error (input_location, "atexit failed");
 
   /* Do not invoke xcalloc before this point, since locale needs to be
      set first, in case a diagnostic is issued.  */
@@ -1061,7 +1061,7 @@ main (int argc, char **argv)
   c_ptr = CONST_CAST2 (const char **, char **, c_argv);
 
   if (argc < 2)
-    fatal_error ("no arguments");
+    fatal_error (input_location, "no arguments");
 
 #ifdef SIGQUIT
   if (signal (SIGQUIT, SIG_IGN) != SIG_IGN)
@@ -1341,7 +1341,8 @@ main (int argc, char **argv)
 
 		  stream = fopen (list_filename, "r");
 		  if (stream == NULL)
-		    fatal_error ("can't open %s: %m", list_filename);
+		    fatal_error (input_location, "can't open %s: %m",
+				 list_filename);
 
 		  while (fgets (buf, sizeof buf, stream) != NULL)
 		    {
@@ -1542,10 +1543,10 @@ main (int argc, char **argv)
 
       exportf = fopen (export_file, "w");
       if (exportf == (FILE *) 0)
-	fatal_error ("fopen %s: %m", export_file);
+	fatal_error (input_location, "fopen %s: %m", export_file);
       write_aix_file (exportf, exports.first);
       if (fclose (exportf))
-	fatal_error ("fclose %s: %m", export_file);
+	fatal_error (input_location, "fclose %s: %m", export_file);
     }
 #endif
 
@@ -1725,12 +1726,12 @@ main (int argc, char **argv)
   maybe_unlink (output_file);
   outf = fopen (c_file, "w");
   if (outf == (FILE *) 0)
-    fatal_error ("fopen %s: %m", c_file);
+    fatal_error (input_location, "fopen %s: %m", c_file);
 
   write_c_file (outf, c_file);
 
   if (fclose (outf))
-    fatal_error ("fclose %s: %m", c_file);
+    fatal_error (input_location, "fclose %s: %m", c_file);
 
   /* Tell the linker that we have initializer and finalizer functions.  */
 #ifdef LD_INIT_SWITCH
@@ -1765,10 +1766,10 @@ main (int argc, char **argv)
 #endif
       exportf = fopen (export_file, "w");
       if (exportf == (FILE *) 0)
-	fatal_error ("fopen %s: %m", export_file);
+	fatal_error (input_location, "fopen %s: %m", export_file);
       write_aix_file (exportf, exports.first);
       if (fclose (exportf))
-	fatal_error ("fclose %s: %m", export_file);
+	fatal_error (input_location, "fclose %s: %m", export_file);
     }
 #endif
 
@@ -2320,7 +2321,7 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 
   /* If we do not have an `nm', complain.  */
   if (nm_file_name == 0)
-    fatal_error ("cannot find 'nm'");
+    fatal_error (input_location, "cannot find 'nm'");
 
   nm_argv[argc++] = nm_file_name;
   if (NM_FLAGS[0] != '\0')
@@ -2346,7 +2347,7 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 
   pex = pex_init (PEX_USE_PIPES, "collect2", NULL);
   if (pex == NULL)
-    fatal_error ("pex_init failed: %m");
+    fatal_error (input_location, "pex_init failed: %m");
 
   errmsg = pex_run (pex, 0, nm_file_name, real_nm_argv, NULL, HOST_BIT_BUCKET,
 		    &err);
@@ -2355,10 +2356,10 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
       if (err != 0)
 	{
 	  errno = err;
-	  fatal_error ("%s: %m", _(errmsg));
+	  fatal_error (input_location, "%s: %m", _(errmsg));
 	}
       else
-	fatal_error (errmsg);
+	fatal_error (input_location, errmsg);
     }
 
   int_handler  = (void (*) (int)) signal (SIGINT,  SIG_IGN);
@@ -2368,7 +2369,7 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 
   inf = pex_read_output (pex, 0);
   if (inf == NULL)
-    fatal_error ("can't open nm output: %m");
+    fatal_error (input_location, "can't open nm output: %m");
 
   if (debug)
     {
@@ -2452,7 +2453,8 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 	  if (! (filter & SCAN_INIT))
 	    break;
 	  if (which_pass != PASS_LIB)
-	    fatal_error ("init function found in object %s", prog_name);
+	    fatal_error (input_location, "init function found in object %s",
+			 prog_name);
 #ifndef LD_INIT_SWITCH
 	  add_to_list (&constructors, name);
 #endif
@@ -2462,7 +2464,8 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 	  if (! (filter & SCAN_FINI))
 	    break;
 	  if (which_pass != PASS_LIB)
-	    fatal_error ("fini function found in object %s", prog_name);
+	    fatal_error (input_location, "fini function found in object %s",
+			 prog_name);
 #ifndef LD_FINI_SWITCH
 	  add_to_list (&destructors, name);
 #endif
@@ -2543,7 +2546,7 @@ scan_libraries (const char *prog_name)
 
   pex = pex_init (PEX_USE_PIPES, "collect2", NULL);
   if (pex == NULL)
-    fatal_error ("pex_init failed: %m");
+    fatal_error (input_location, "pex_init failed: %m");
 
   errmsg = pex_run (pex, 0, ldd_file_name, real_ldd_argv, NULL, NULL, &err);
   if (errmsg != NULL)
@@ -2551,10 +2554,10 @@ scan_libraries (const char *prog_name)
       if (err != 0)
 	{
 	  errno = err;
-	  fatal_error ("%s: %m", _(errmsg));
+	  fatal_error (input_location, "%s: %m", _(errmsg));
 	}
       else
-	fatal_error (errmsg);
+	fatal_error (input_location, errmsg);
     }
 
   int_handler  = (void (*) (int)) signal (SIGINT,  SIG_IGN);
@@ -2564,7 +2567,7 @@ scan_libraries (const char *prog_name)
 
   inf = pex_read_output (pex, 0);
   if (inf == NULL)
-    fatal_error ("can't open ldd output: %m");
+    fatal_error (input_location, "can't open ldd output: %m");
 
   if (debug)
     notice ("\nldd output with constructors/destructors.\n");
@@ -2582,7 +2585,7 @@ scan_libraries (const char *prog_name)
 
       name = p;
       if (strncmp (name, "not found", sizeof ("not found") - 1) == 0)
-	fatal_error ("dynamic dependency %s not found", buf);
+	fatal_error (input_location, "dynamic dependency %s not found", buf);
 
       /* Find the end of the symbol name.  */
       for (end = p;
@@ -2594,7 +2597,8 @@ scan_libraries (const char *prog_name)
       if (access (name, R_OK) == 0)
 	add_to_list (&libraries, name);
       else
-	fatal_error ("unable to open dynamic dependency '%s'", buf);
+	fatal_error (input_location, "unable to open dynamic dependency '%s'",
+		     buf);
 
       if (debug)
 	fprintf (stderr, "\t%s\n", buf);
@@ -2757,7 +2761,7 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
       if ((ldptr = ldopen (CONST_CAST (char *, prog_name), ldptr)) != NULL)
 	{
 	  if (! MY_ISCOFF (HEADER (ldptr).f_magic))
-	    fatal_error ("%s: not a COFF file", prog_name);
+	    fatal_error (input_location, "%s: not a COFF file", prog_name);
 
 	  if (GCC_CHECK_HDR (ldptr))
 	    {
@@ -2906,7 +2910,8 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 	}
       else
 	{
-	  fatal_error ("%s: cannot open as COFF file", prog_name);
+	  fatal_error (input_location, "%s: cannot open as COFF file",
+		       prog_name);
 	}
 #ifdef COLLECT_EXPORT_LIST
       /* On AIX loop continues while there are more members in archive.  */
@@ -2964,7 +2969,7 @@ resolve_lib_name (const char *name)
   if (debug)
     fprintf (stderr, "not found\n");
   else
-    fatal_error ("library lib%s not found", name);
+    fatal_error (input_location, "library lib%s not found", name);
   return (NULL);
 }
 #endif /* COLLECT_EXPORT_LIST */

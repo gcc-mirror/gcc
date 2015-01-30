@@ -4292,7 +4292,8 @@
 
   /* Keep this message in sync with the one in arc.c:arc_expand_builtin,
      because *.md files do not get scanned by exgettext.  */
-  fatal_error (\"operand to trap_s should be an unsigned 6-bit value\");
+  fatal_error (input_location,
+	       \"operand to trap_s should be an unsigned 6-bit value\");
 }
   [(set_attr "length" "2")
   (set_attr "type" "misc")])

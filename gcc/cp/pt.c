@@ -8482,7 +8482,8 @@ push_tinst_level_loc (tree d, location_t loc)
 
   if (tinst_depth >= max_tinst_depth)
     {
-      fatal_error ("template instantiation depth exceeds maximum of %d"
+      fatal_error (input_location,
+		   "template instantiation depth exceeds maximum of %d"
                    " (use -ftemplate-depth= to increase the maximum)",
                    max_tinst_depth);
       return false;
@@ -20455,7 +20456,8 @@ instantiate_pending_templates (int retries)
     {
       tree decl = pending_templates->tinst->decl;
 
-      fatal_error ("template instantiation depth exceeds maximum of %d"
+      fatal_error (input_location,
+		   "template instantiation depth exceeds maximum of %d"
                    " instantiating %q+D, possibly from virtual table generation"
                    " (use -ftemplate-depth= to increase the maximum)",
                    max_tinst_depth, decl);

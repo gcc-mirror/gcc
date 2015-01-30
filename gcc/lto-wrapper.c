@@ -109,7 +109,7 @@ maybe_unlink (const char *file)
     {
       if (unlink_if_ordinary (file)
 	  && errno != ENOENT)
-	fatal_error ("deleting LTRANS file %s: %m", file);
+	fatal_error (input_location, "deleting LTRANS file %s: %m", file);
     }
   else if (verbose)
     fprintf (stderr, "[Leaving LTRANS %s]\n", file);
@@ -146,7 +146,7 @@ get_options_from_collect_gcc_options (const char *collect_gcc,
 	  do
 	    {
 	      if (argv_storage[j] == '\0')
-		fatal_error ("malformed COLLECT_GCC_OPTIONS");
+		fatal_error (input_location, "malformed COLLECT_GCC_OPTIONS");
 	      else if (strncmp (&argv_storage[j], "'\\''", 4) == 0)
 		{
 		  argv_storage[k++] = '\'';
@@ -294,7 +294,8 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    if ((*decoded_options)[j].opt_index == foption->opt_index)
 	      break;
 	  if (j == *decoded_options_count)
-	    fatal_error ("Option %s not used consistently in all LTO input"
+	    fatal_error (input_location,
+			 "Option %s not used consistently in all LTO input"
 			 " files", foption->orig_option_with_args_text);
 	  break;
 
@@ -305,7 +306,8 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    if (j == *decoded_options_count)
 	      append_option (decoded_options, decoded_options_count, foption);
 	    else if (foption->value != (*decoded_options)[j].value)
-	      fatal_error ("Option %s not used consistently in all LTO input"
+	      fatal_error (input_location,
+			   "Option %s not used consistently in all LTO input"
 			   " files", foption->orig_option_with_args_text);
 	    break;
 
@@ -730,7 +732,8 @@ compile_images_for_offload_targets (unsigned in_argc, char *in_argv[],
 				 compiler_opts, compiler_opt_count,
 				 linker_opts, linker_opt_count);
       if (!offload_names[i])
-	fatal_error ("problem with building target image for %s\n", names[i]);
+	fatal_error (input_location,
+		     "problem with building target image for %s\n", names[i]);
     }
 
  out:
@@ -749,12 +752,12 @@ copy_file (const char *dest, const char *src)
     {
       size_t len = fread (buffer, 1, 512, s);
       if (ferror (s) != 0)
-	fatal_error ("reading input file");
+	fatal_error (input_location, "reading input file");
       if (len > 0)
 	{
 	  fwrite (buffer, 1, len, d);
 	  if (ferror (d) != 0)
-	    fatal_error ("writing output file");
+	    fatal_error (input_location, "writing output file");
 	}
     }
 }
@@ -779,7 +782,8 @@ find_offloadbeginend (void)
 	char *tmp = xstrdup (paths[i]);
 	strcpy (paths[i] + len - strlen ("begin.o"), "end.o");
 	if (access_check (paths[i], R_OK) != 0)
-	  fatal_error ("installation error, can't find crtoffloadend.o");
+	  fatal_error (input_location,
+		       "installation error, can't find crtoffloadend.o");
 	/* The linker will delete the filenames we give it, so make
 	   copies.  */
 	offloadbegin = make_temp_file (".o");
@@ -790,7 +794,8 @@ find_offloadbeginend (void)
 	break;
       }
   if (i == n_paths)
-    fatal_error ("installation error, can't find crtoffloadbegin.o");
+    fatal_error (input_location,
+		 "installation error, can't find crtoffloadbegin.o");
 
   free_array_of_ptrs ((void **) paths, n_paths);
 }
@@ -893,10 +898,12 @@ run_gcc (unsigned argc, char *argv[])
   /* Get the driver and options.  */
   collect_gcc = getenv ("COLLECT_GCC");
   if (!collect_gcc)
-    fatal_error ("environment variable COLLECT_GCC must be set");
+    fatal_error (input_location,
+		 "environment variable COLLECT_GCC must be set");
   collect_gcc_options = getenv ("COLLECT_GCC_OPTIONS");
   if (!collect_gcc_options)
-    fatal_error ("environment variable COLLECT_GCC_OPTIONS must be set");
+    fatal_error (input_location,
+		 "environment variable COLLECT_GCC_OPTIONS must be set");
   get_options_from_collect_gcc_options (collect_gcc, collect_gcc_options,
 					CL_LANG_ALL,
 					&decoded_options,
@@ -1162,7 +1169,7 @@ run_gcc (unsigned argc, char *argv[])
       struct obstack env_obstack;
 
       if (!stream)
-	fatal_error ("fopen: %s: %m", ltrans_output_file);
+	fatal_error (input_location, "fopen: %s: %m", ltrans_output_file);
 
       /* Parse the list of LTRANS inputs from the WPA stage.  */
       obstack_init (&env_obstack);
@@ -1344,7 +1351,7 @@ main (int argc, char *argv[])
   diagnostic_initialize (global_dc, 0);
 
   if (atexit (lto_wrapper_cleanup) != 0)
-    fatal_error ("atexit failed");
+    fatal_error (input_location, "atexit failed");
 
   if (signal (SIGINT, SIG_IGN) != SIG_IGN)
     signal (SIGINT, fatal_signal);

@@ -265,7 +265,7 @@ gfc_init (void)
   gfc_init_1 ();
 
   if (!gfc_new_file ())
-    fatal_error ("can't open input file: %s", gfc_source_file);
+    fatal_error (input_location, "can't open input file: %s", gfc_source_file);
 
   if (flag_preprocess_only)
     return false;

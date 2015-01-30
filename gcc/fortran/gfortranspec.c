@@ -142,7 +142,7 @@ append_arg (const struct cl_decoded_option *arg)
     }
 
   if (g77_newargc == newargsize)
-    fatal_error ("overflowed output arg list for %qs",
+    fatal_error (input_location, "overflowed output arg list for %qs",
 		 arg->orig_option_with_args_text);
 
   g77_new_decoded_options[g77_newargc++] = *arg;
@@ -296,7 +296,8 @@ For more information about these matters, see the file named COPYING\n\n"));
     }
 
   if ((n_outfiles != 0) && (n_infiles == 0))
-    fatal_error ("no input files; unwilling to write output files");
+    fatal_error (input_location,
+		 "no input files; unwilling to write output files");
 
   /* If there are no input files, no need for the library.  */
   if (n_infiles == 0)
