@@ -1,5 +1,13 @@
 2015-01-30  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_disp.adb (Is_Dynamically_Tagged): when applied to an entity
+	or a function call, return True if type is class-wide.
+	* sem_res.adb (Resolve_Case_Expression, Resolve_If_Expression);
+	Apply RM 4.5.7 (17/3): all or none of the dependent expression
+	of a conditional expression must be dynamically tagged.
+
+2015-01-30  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch6.adb (Analyze_Function_Return): In an extended return
 	statement, apply accessibility check to result object when there
 	is no initializing expression (Ada 2012 RM 6.5 (5.4/3))
