@@ -1,3 +1,12 @@
+2015-01-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/64617
+	* lra-constraints.c (prohibited_class_reg_set_mode_p): New
+	function.
+	(process_alt_operands): Use it.
+	(curr_insn_transform): Check the optional reload pseudo class is
+	ok for the mode.
+
 2015-01-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* diagnostic.c (fatal_error (const char *, ...)): Remove function.

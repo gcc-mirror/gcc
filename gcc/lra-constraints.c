@@ -1637,6 +1637,22 @@ reg_in_class_p (rtx reg, enum reg_class cl)
   return in_class_p (reg, cl, NULL);
 }
 
+/* Return true if SET of RCLASS contains no hard regs which can be
+   used in MODE.  */
+static bool
+prohibited_class_reg_set_mode_p (enum reg_class rclass,
+				 HARD_REG_SET &set,
+				 enum machine_mode mode)
+{
+  HARD_REG_SET temp;
+  
+  lra_assert (hard_reg_set_subset_p (set, reg_class_contents[rclass]));
+  COPY_HARD_REG_SET (temp, set);
+  AND_COMPL_HARD_REG_SET (temp, lra_no_alloc_regs);
+  return (hard_reg_set_subset_p
+	  (temp, ira_prohibited_class_mode_regs[rclass][mode]));
+}
+
 /* Major function to choose the current insn alternative and what
    operands should be reloaded and how.	 If ONLY_ALTERNATIVE is not
    negative we should consider only this alternative.  Return false if
@@ -2311,28 +2327,20 @@ process_alt_operands (int only_alternative)
 		     not hold the mode value.  */
 		  && ! HARD_REGNO_MODE_OK (ira_class_hard_regs
 					   [this_alternative][0],
-					   GET_MODE (*curr_id->operand_loc[nop])))
-		{
-		  HARD_REG_SET temp;
-		  
-		  COPY_HARD_REG_SET (temp, this_alternative_set);
-		  AND_COMPL_HARD_REG_SET (temp, lra_no_alloc_regs);
+					   GET_MODE (*curr_id->operand_loc[nop]))
 		  /* The above condition is not enough as the first
 		     reg in ira_class_hard_regs can be not aligned for
 		     multi-words mode values.  */
-		  if (hard_reg_set_subset_p (temp,
-					     ira_prohibited_class_mode_regs
-					     [this_alternative]
-					     [GET_MODE (*curr_id->operand_loc[nop])]))
-		    {
-		      if (lra_dump_file != NULL)
-			fprintf
-			  (lra_dump_file,
-			   "            alt=%d: reload pseudo for op %d "
-			   " can not hold the mode value -- refuse\n",
-			   nalt, nop);
-		      goto fail;
-		    }
+		  && (prohibited_class_reg_set_mode_p
+		      (this_alternative, this_alternative_set,
+		       GET_MODE (*curr_id->operand_loc[nop]))))
+		{
+		  if (lra_dump_file != NULL)
+		    fprintf (lra_dump_file,
+			     "            alt=%d: reload pseudo for op %d "
+			     " can not hold the mode value -- refuse\n",
+			     nalt, nop);
+		  goto fail;
 		}
 
 	      /* Check strong discouragement of reload of non-constant
@@ -3732,6 +3740,11 @@ curr_insn_transform (bool check_only_p)
 	      && regno < new_regno_start
 	      && ! lra_former_scratch_p (regno)
 	      && reg_renumber[regno] < 0
+	      /* Check that the optional reload pseudo will be able to
+		 hold given mode value.  */
+	      && ! (prohibited_class_reg_set_mode_p
+		    (goal_alt[i], reg_class_contents[goal_alt[i]],
+		     PSEUDO_REGNO_MODE (regno)))
 	      && (curr_insn_set == NULL_RTX
 		  || !((REG_P (SET_SRC (curr_insn_set))
 			|| MEM_P (SET_SRC (curr_insn_set))
