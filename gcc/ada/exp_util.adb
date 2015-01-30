@@ -2411,6 +2411,7 @@ package body Exp_Util is
       if Is_Untagged_Derivation (Typ) then
          if Is_Protected_Type (Typ) then
             Utyp := Corresponding_Record_Type (Root_Type (Base_Type (Typ)));
+
          else
             Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
 

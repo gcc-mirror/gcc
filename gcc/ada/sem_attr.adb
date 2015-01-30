@@ -9762,6 +9762,12 @@ package body Sem_Attr is
       --  Error, or warning within an instance, if the static accessibility
       --  rules of 3.10.2 are violated.
 
+      function Declared_Within_Generic_Unit
+        (Entity       : Entity_Id;
+         Generic_Unit : Node_Id) return Boolean;
+      --  Returns True if Declared_Entity is declared within the declarative
+      --  region of Generic_Unit; otherwise returns False.
+
       ---------------------------
       -- Accessibility_Message --
       ---------------------------
@@ -9810,6 +9816,33 @@ package body Sem_Attr is
             end if;
          end if;
       end Accessibility_Message;
+
+      ----------------------------------
+      -- Declared_Within_Generic_Unit --
+      ----------------------------------
+
+      function Declared_Within_Generic_Unit
+        (Entity       : Entity_Id;
+         Generic_Unit : Node_Id) return Boolean
+      is
+         Generic_Encloser : Node_Id := Enclosing_Generic_Unit (Entity);
+
+      begin
+         while Present (Generic_Encloser) loop
+            if Generic_Encloser = Generic_Unit then
+               return True;
+            end if;
+
+            --  We have to step to the scope of the generic's entity, because
+            --  otherwise we'll just get back the same generic.
+
+            Generic_Encloser :=
+              Enclosing_Generic_Unit
+                (Scope (Defining_Entity (Generic_Encloser)));
+         end loop;
+
+         return False;
+      end Declared_Within_Generic_Unit;
 
    --  Start of processing for Resolve_Attribute
 
@@ -10058,11 +10091,11 @@ package body Sem_Attr is
                   --  level of the actual type is not known). This restriction
                   --  does not apply when the attribute type is an anonymous
                   --  access-to-subprogram type. Note that this check was
-                  --  revised by AI-229, because the originally Ada 95 rule
+                  --  revised by AI-229, because the original Ada 95 rule
                   --  was too lax. The original rule only applied when the
                   --  subprogram was declared within the body of the generic,
                   --  which allowed the possibility of dangling references).
-                  --  The rule was also too strict in some case, in that it
+                  --  The rule was also too strict in some cases, in that it
                   --  didn't permit the access to be declared in the generic
                   --  spec, whereas the revised rule does (as long as it's not
                   --  a formal type).
@@ -10106,13 +10139,15 @@ package body Sem_Attr is
                   then
                      --  The attribute type's ultimate ancestor must be
                      --  declared within the same generic unit as the
-                     --  subprogram is declared. The error message is
+                     --  subprogram is declared (including within another
+                     --  nested generic unit). The error message is
                      --  specialized to say "ancestor" for the case where the
                      --  access type is not its own ancestor, since saying
                      --  simply "access type" would be very confusing.
 
-                     if Enclosing_Generic_Unit (Entity (P)) /=
-                          Enclosing_Generic_Unit (Root_Type (Btyp))
+                     if not Declared_Within_Generic_Unit
+                              (Root_Type (Btyp),
+                               Enclosing_Generic_Unit (Entity (P)))
                      then
                         Error_Msg_N
                           ("''Access attribute not allowed in generic body",
