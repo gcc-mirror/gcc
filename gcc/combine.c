@@ -2645,7 +2645,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	    nshift++;
 	}
 
-      /* If I0 loads a memory and I3 sets the same memory, then I2 and I3
+      /* If I0 loads a memory and I3 sets the same memory, then I1 and I2
 	 are likely manipulating its value.  Ideally we'll be able to combine
 	 all four insns into a bitfield insertion of some kind. 
 
