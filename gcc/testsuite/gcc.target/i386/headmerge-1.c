@@ -1,4 +1,5 @@
 /* { dg-do compile }  */
+/* { dg-require-effective-target nonpic } */
 /* { dg-options "-O2" }  */
 /* { dg-final { scan-assembler-times "\\\$120|, 120" 1 } } */
 
