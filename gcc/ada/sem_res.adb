@@ -6416,7 +6416,8 @@ package body Sem_Res is
    -----------------------------
 
    procedure Resolve_Case_Expression (N : Node_Id; Typ : Entity_Id) is
-      Alt : Node_Id;
+      Alt    : Node_Id;
+      Is_Dyn : Boolean;
 
    begin
       Alt := First (Alternatives (N));
@@ -6424,6 +6425,23 @@ package body Sem_Res is
          Resolve (Expression (Alt), Typ);
          Next (Alt);
       end loop;
+
+      --  Apply RM 4.5.7 (17/3): whether the expression is statically or
+      --  dynamically tagged must be known statically.
+
+      if Is_Tagged_Type (Typ) and then not Is_Class_Wide_Type (Typ) then
+         Alt := First (Alternatives (N));
+         Is_Dyn := Is_Dynamically_Tagged (Expression (Alt));
+
+         while Present (Alt) loop
+            if Is_Dynamically_Tagged (Expression (Alt)) /= Is_Dyn then
+               Error_Msg_N ("all or none of the dependent expressions "
+                            & "can be dynamically tagged", N);
+            end if;
+
+            Next (Alt);
+         end loop;
+      end if;
 
       Set_Etype (N, Typ);
       Eval_Case_Expression (N);
@@ -8061,11 +8079,20 @@ package body Sem_Res is
          Resolve (Else_Expr, Typ);
          Else_Typ := Etype (Else_Expr);
 
-         if Is_Scalar_Type (Else_Typ)
-           and then Else_Typ /= Typ
-         then
+         if Is_Scalar_Type (Else_Typ) and then Else_Typ /= Typ then
             Rewrite (Else_Expr, Convert_To (Typ, Else_Expr));
             Analyze_And_Resolve (Else_Expr, Typ);
+
+         --  Apply RM 4.5.7 (17/3): whether the expression is statically or
+         --  dynamically tagged must be known statically.
+
+         elsif Is_Tagged_Type (Typ) and then not Is_Class_Wide_Type (Typ) then
+            if Is_Dynamically_Tagged (Then_Expr) /=
+               Is_Dynamically_Tagged (Else_Expr)
+            then
+               Error_Msg_N ("all or none of the dependent expressions "
+                            & "can be dynamically tagged", N);
+            end if;
          end if;
 
       --  If no ELSE expression is present, root type must be Standard.Boolean
@@ -8232,10 +8259,10 @@ package body Sem_Res is
                                             (Entity (Prefix (N)))))
         and then not Is_Atomic (Component_Type (Array_Type))
       then
-         Error_Msg_N ("??access to non-atomic component of atomic array",
-                      Prefix (N));
-         Error_Msg_N ("??\may cause unexpected accesses to atomic object",
-                      Prefix (N));
+         Error_Msg_N
+           ("??access to non-atomic component of atomic array", Prefix (N));
+         Error_Msg_N
+           ("??\may cause unexpected accesses to atomic object", Prefix (N));
       end if;
    end Resolve_Indexed_Component;
 
@@ -8263,9 +8290,14 @@ package body Sem_Res is
       --  If the operand is a literal, it cannot be the expression in a
       --  conversion. Use a qualified expression instead.
 
+      ---------------------
+      -- Convert_Operand --
+      ---------------------
+
       function Convert_Operand (Opnd : Node_Id) return Node_Id is
          Loc : constant Source_Ptr := Sloc (Opnd);
          Res : Node_Id;
+
       begin
          if Nkind_In (Opnd, N_Integer_Literal, N_Real_Literal) then
             Res :=
@@ -8309,8 +8341,6 @@ package body Sem_Res is
         or else Is_Private_Type (Etype (Right_Opnd (N)))
       then
          Arg1 := Convert_Operand (Left_Opnd (N));
-         --  Unchecked_Convert_To (Btyp, Left_Opnd  (N));
-         --  What on earth is this commented out fragment of code???
 
          if Nkind (N) = N_Op_Expon then
             Arg2 := Unchecked_Convert_To (Standard_Integer, Right_Opnd (N));
