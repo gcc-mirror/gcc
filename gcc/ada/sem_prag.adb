@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -17846,8 +17846,8 @@ package body Sem_Prag is
               or else (Is_Generic_Type (Ent) and then Is_Derived_Type (Ent))
 
               --  AI05-0028: The pragma applies to all composite types. Note
-              --  that we apply this binding intepretation to previous verions
-              --  of Ada so there is no Ada 2012 guard. Seems a reasonable
+              --  that we apply this binding interpretation to earlier versions
+              --  of Ada, so there is no Ada 2012 guard. Seems a reasonable
               --  choice since there are other compilers that do the same.
 
               or else Is_Composite_Type (Ent)
