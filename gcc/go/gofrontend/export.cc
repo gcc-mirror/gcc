@@ -91,6 +91,7 @@ should_export(Named_object* no)
 
 void
 Export::export_globals(const std::string& package_name,
+		       const std::string& prefix,
 		       const std::string& pkgpath,
 		       int package_priority,
 		       const std::map<std::string, Package*>& imports,
@@ -140,9 +141,18 @@ Export::export_globals(const std::string& package_name,
   this->write_string(package_name);
   this->write_c_string(";\n");
 
-  // The package path, used for all global symbols.
-  this->write_c_string("pkgpath ");
-  this->write_string(pkgpath);
+  // The prefix or package path, used for all global symbols.
+  if (prefix.empty())
+    {
+      go_assert(!pkgpath.empty());
+      this->write_c_string("pkgpath ");
+      this->write_string(pkgpath);
+    }
+  else
+    {
+      this->write_c_string("prefix ");
+      this->write_string(prefix);
+    }
   this->write_c_string(";\n");
 
   // The package priority.
