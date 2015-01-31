@@ -1155,7 +1155,7 @@ fix_applies (tFixDesc* p_fixd)
 
         case TT_CKSUM:
 	  if (one_sum_passed)
-	    break; // no need to check any more.
+	    break; /*  No need to check any more  */
 
           saw_sum_test = BOOL_TRUE;
           if (cksum_test (pz_curr_data, p_test, pz_curr_file) != APPLY_FIX) {
