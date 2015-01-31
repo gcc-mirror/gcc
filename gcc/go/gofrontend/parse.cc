@@ -4011,6 +4011,16 @@ Parse::tuple_assignment(Expression_list* lhs, bool may_be_composite_lit,
 
   token = this->advance_token();
 
+  if (lhs == NULL)
+    return;
+
+  // Map expressions act differently when they are lvalues.
+  for (Expression_list::iterator plv = lhs->begin();
+       plv != lhs->end();
+       ++plv)
+    if ((*plv)->index_expression() != NULL)
+      (*plv)->index_expression()->set_is_lvalue();
+
   if (p_range_clause != NULL && token->is_keyword(KEYWORD_RANGE))
     {
       if (op != OPERATOR_EQ)
@@ -4023,7 +4033,7 @@ Parse::tuple_assignment(Expression_list* lhs, bool may_be_composite_lit,
 						may_be_composite_lit);
 
   // We've parsed everything; check for errors.
-  if (lhs == NULL || vals == NULL)
+  if (vals == NULL)
     return;
   for (Expression_list::const_iterator pe = lhs->begin();
        pe != lhs->end();
@@ -4041,13 +4051,6 @@ Parse::tuple_assignment(Expression_list* lhs, bool may_be_composite_lit,
       if ((*pe)->is_error_expression())
 	return;
     }
-
-  // Map expressions act differently when they are lvalues.
-  for (Expression_list::iterator plv = lhs->begin();
-       plv != lhs->end();
-       ++plv)
-    if ((*plv)->index_expression() != NULL)
-      (*plv)->index_expression()->set_is_lvalue();
 
   Call_expression* call;
   Index_expression* map_index;
