@@ -2,6 +2,7 @@
 /* { dg-require-effective-target mpx } */
 /* { dg-options "-fcheck-pointer-bounds -mmpx -O2 -fdump-tree-chkpopt-details" } */
 /* { dg-final { scan-tree-dump "Moving creation of \[^ \]+ down to its use" "chkpopt" } } */
+/* { dg-final { cleanup-tree-dump "chkpopt" } } */
 
 extern int arr[];
 

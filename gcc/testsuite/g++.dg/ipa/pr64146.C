@@ -36,3 +36,4 @@ int main (int argc, char **argv)
 
 /* { dg-final { scan-ipa-dump-times "Declaration does not bind to currect definition." 2 "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 2" "icf"  } } */
+/* { dg-final { cleanup-ipa-dump "icf" } } */
