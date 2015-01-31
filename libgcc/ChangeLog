@@ -1,3 +1,16 @@
+2015-01-31  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c (__kernel_cmpxchg2): Change declaration of
+	oldval and newval to const void *.  Fix typo.
+	(FETCH_AND_OP_2): Use __atomic_load_n to load value.
+	(FETCH_AND_OP_WORD): Likewise.
+	(OP_AND_FETCH_WORD): Likewise.
+	(COMPARE_AND_SWAP_2): Likewise.
+	(__sync_val_compare_and_swap_4): Likewise.
+	(__sync_lock_test_and_set_4): Likewise.
+	(SYNC_LOCK_RELEASE_2): Likewise.
+	Remove support for long long atomic operations.
+
 2015-01-20  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	Backport from mainline
