@@ -971,7 +971,7 @@ typedef _Complex float __attribute__((mode(XC))) _Complex80;
 @end smallexample
 
 Not all targets support additional floating-point types.  @code{__float80}
-and @code{__float128} types are supported on i386, x86_64 and IA-64 targets.
+and @code{__float128} types are supported on x86 and IA-64 targets.
 The @code{__float128} type is supported on hppa HP-UX targets.
 
 @node Half-Precision
@@ -2178,10 +2178,10 @@ the enclosing block.
 @cindex @code{const} applied to function
 @cindex functions with @code{printf}, @code{scanf}, @code{strftime} or @code{strfmon} style arguments
 @cindex functions with non-null pointer arguments
-@cindex functions that are passed arguments in registers on the 386
-@cindex functions that pop the argument stack on the 386
-@cindex functions that do not pop the argument stack on the 386
-@cindex functions that have different compilation options on the 386
+@cindex functions that are passed arguments in registers on x86-32
+@cindex functions that pop the argument stack on x86-32
+@cindex functions that do not pop the argument stack on x86-32
+@cindex functions that have different compilation options on x86-32
 @cindex functions that have different optimization options
 @cindex functions that are dynamically resolved
 
@@ -2426,9 +2426,9 @@ is diagnosed earlier and with exact location of the call even in presence
 of inline functions or when not emitting debugging information.
 
 @item cdecl
-@cindex functions that do pop the argument stack on the 386
+@cindex functions that do pop the argument stack on x86-32
 @opindex mrtd
-On the Intel 386, the @code{cdecl} attribute causes the compiler to
+On the x86-32 targets, the @code{cdecl} attribute causes the compiler to
 assume that the calling function pops off the stack space used to
 pass arguments.  This is
 useful to override the effects of the @option{-mrtd} switch.
@@ -2677,8 +2677,8 @@ function is a fast interrupt handler.  This is just like the
 instead of @code{reit}.
 
 @item fastcall
-@cindex functions that pop the argument stack on the 386
-On the Intel 386, the @code{fastcall} attribute causes the compiler to
+@cindex functions that pop the argument stack on x86-32
+On x86-32 targets, the @code{fastcall} attribute causes the compiler to
 pass the first argument (if of integral type) in the register ECX and
 the second argument (if of integral type) in the register EDX@.  Subsequent
 and other typed arguments are passed on the stack.  The called function
@@ -2686,8 +2686,8 @@ pops the arguments off the stack.  If the number of arguments is variable all
 arguments are pushed on the stack.
 
 @item thiscall
-@cindex functions that pop the argument stack on the 386
-On the Intel 386, the @code{thiscall} attribute causes the compiler to
+@cindex functions that pop the argument stack on x86-32
+On x86-32 targets, the @code{thiscall} attribute causes the compiler to
 pass the first argument (if of integral type) in the register ECX.
 Subsequent and other typed arguments are passed on the stack. The called
 function pops the arguments off the stack.
@@ -3344,7 +3344,7 @@ defined by shared libraries.
 @cindex @code{ms_abi} attribute
 @cindex @code{sysv_abi} attribute
 
-On 32-bit and 64-bit (i?86|x86_64)-*-* targets, you can use an ABI attribute
+On 32-bit and 64-bit x86 targets, you can use an ABI attribute
 to indicate which calling convention should be used for a function.  The
 @code{ms_abi} attribute tells the compiler to use the Microsoft ABI,
 while the @code{sysv_abi} attribute tells the compiler to use the ABI
@@ -3357,21 +3357,21 @@ requires the @option{-maccumulate-outgoing-args} option.
 @item callee_pop_aggregate_return (@var{number})
 @cindex @code{callee_pop_aggregate_return} attribute
 
-On 32-bit i?86-*-* targets, you can use this attribute to control how
+On x86-32 targets, you can use this attribute to control how
 aggregates are returned in memory.  If the caller is responsible for
 popping the hidden pointer together with the rest of the arguments, specify
 @var{number} equal to zero.  If callee is responsible for popping the
 hidden pointer, specify @var{number} equal to one.  
 
-The default i386 ABI assumes that the callee pops the
-stack for hidden pointer.  However, on 32-bit i386 Microsoft Windows targets,
+The default x86-32 ABI assumes that the callee pops the
+stack for hidden pointer.  However, on x86-32 Microsoft Windows targets,
 the compiler assumes that the
 caller pops the stack for hidden pointer.
 
 @item ms_hook_prologue
 @cindex @code{ms_hook_prologue} attribute
 
-On 32-bit i[34567]86-*-* targets and 64-bit x86_64-*-* targets, you can use
+On 32-bit and 64-bit x86 targets, you can use
 this function attribute to make GCC generate the ``hot-patching'' function
 prologue used in Win32 API functions in Microsoft Windows XP Service Pack 2
 and newer.
@@ -3763,8 +3763,8 @@ with @option{-fchkp-instrument-marked-only} option.
 
 @item regparm (@var{number})
 @cindex @code{regparm} attribute
-@cindex functions that are passed arguments in registers on the 386
-On the Intel 386, the @code{regparm} attribute causes the compiler to
+@cindex functions that are passed arguments in registers on x86-32
+On x86-32 targets, the @code{regparm} attribute causes the compiler to
 pass arguments number one to @var{number} if they are of integral type
 in registers EAX, EDX, and ECX instead of on the stack.  Functions that
 take a variable number of arguments continue to be passed all of their
@@ -3798,7 +3798,7 @@ Provide a user-defined function to handle warm reset exception.
 
 @item sseregparm
 @cindex @code{sseregparm} attribute
-On the Intel 386 with SSE support, the @code{sseregparm} attribute
+On x86-32 targets with SSE support, the @code{sseregparm} attribute
 causes the compiler to pass up to 3 floating-point arguments in
 SSE registers instead of on the stack.  Functions that take a
 variable number of arguments continue to pass all of their
@@ -3806,7 +3806,7 @@ floating-point arguments on the stack.
 
 @item force_align_arg_pointer
 @cindex @code{force_align_arg_pointer} attribute
-On the Intel x86, the @code{force_align_arg_pointer} attribute may be
+On x86 targets, the @code{force_align_arg_pointer} attribute may be
 applied to individual function definitions, generating an alternate
 prologue and epilogue that realigns the run-time stack if necessary.
 This supports mixing legacy codes that run with a 4-byte aligned stack
@@ -3952,8 +3952,8 @@ void f () __attribute__ ((interrupt_handler,
 @end smallexample
 
 @item stdcall
-@cindex functions that pop the argument stack on the 386
-On the Intel 386, the @code{stdcall} attribute causes the compiler to
+@cindex functions that pop the argument stack on x86-32
+On x86-32 targets, the @code{stdcall} attribute causes the compiler to
 assume that the called function pops off the stack space used to
 pass arguments, unless it takes a variable number of arguments.
 
@@ -3976,7 +3976,7 @@ more than one function to be compiled with specific target options.
 @xref{Function Specific Option Pragmas}, for details about the
 @samp{#pragma GCC target} pragma.
 
-For instance on a 386, you could compile one function with
+For instance on an x86, you could compile one function with
 @code{target("sse4.1,arch=core2")} and another with
 @code{target("sse4a,arch=amdfam10")}.  This is equivalent to
 compiling the first function with @option{-msse4.1} and
@@ -3984,7 +3984,7 @@ compiling the first function with @option{-msse4.1} and
 @option{-msse4a} and @option{-march=amdfam10} options.  It is up to the
 user to make sure that a function is only invoked on a machine that
 supports the particular ISA it is compiled for (for example by using
-@code{cpuid} on 386 to determine what feature bits and architecture
+@code{cpuid} on x86 to determine what feature bits and architecture
 family are used).
 
 @smallexample
@@ -3997,10 +3997,10 @@ strings to specify multiple options, or separate the options
 with a comma (@samp{,}).
 
 The @code{target} attribute is presently implemented for
-i386/x86_64, PowerPC, and Nios II targets only.
+x86, PowerPC, and Nios II targets only.
 The options supported are specific to each target.
 
-On the 386, the following options are allowed:
+On the x86, the following options are allowed:
 
 @table @samp
 @item abm
@@ -4345,7 +4345,7 @@ named @var{name}.
 @xref{Nios II Options}, for more information.
 @end table
 
-On the 386/x86_64 and PowerPC back ends, the inliner does not inline a
+On the x86 and PowerPC back ends, the inliner does not inline a
 function that has different target options than the caller, unless the
 callee has a subset of the target options of the caller.  For example
 a function declared with @code{target("sse3")} can inline a function
@@ -5521,11 +5521,11 @@ int cpu_clock __attribute__((cb(0x123)));
 
 @end table
 
-@anchor{i386 Variable Attributes}
-@subsection i386 Variable Attributes
+@anchor{x86 Variable Attributes}
+@subsection x86 Variable Attributes
 
-Two attributes are currently defined for i386 configurations:
-@code{ms_struct} and @code{gcc_struct}
+Two attributes are currently defined for x86 configurations:
+@code{ms_struct} and @code{gcc_struct}.
 
 @table @code
 @item ms_struct
@@ -5540,7 +5540,7 @@ data between functions compiled with GCC and the native Microsoft compiler
 (either via function call or as data in a file), it may be necessary to access
 either format.
 
-Currently @option{-m[no-]ms-bitfields} is provided for the Microsoft Windows X86
+Currently @option{-m[no-]ms-bitfields} is provided for the Microsoft Windows x86
 compilers to match the native Microsoft compiler.
 
 The Microsoft structure layout algorithm is fairly simple with the exception
@@ -5665,7 +5665,7 @@ Three attributes currently are defined for PowerPC configurations:
 @code{altivec}, @code{ms_struct} and @code{gcc_struct}.
 
 For full documentation of the struct attributes please see the
-documentation in @ref{i386 Variable Attributes}.
+documentation in @ref{x86 Variable Attributes}.
 
 For documentation of @code{altivec} attribute please see the
 documentation in @ref{PowerPC Type Attributes}.
@@ -6078,10 +6078,10 @@ Specifically, the @code{based}, @code{tiny}, @code{near}, and
 @code{far} attributes may be applied to either.  The @code{io} and
 @code{cb} attributes may not be applied to types.
 
-@anchor{i386 Type Attributes}
-@subsection i386 Type Attributes
+@anchor{x86 Type Attributes}
+@subsection x86 Type Attributes
 
-Two attributes are currently defined for i386 configurations:
+Two attributes are currently defined for x86 configurations:
 @code{ms_struct} and @code{gcc_struct}.
 
 @table @code
@@ -6098,7 +6098,7 @@ data between functions compiled with GCC and the native Microsoft compiler
 (either via function call or as data in a file), it may be necessary to access
 either format.
 
-Currently @option{-m[no-]ms-bitfields} is provided for the Microsoft Windows X86
+Currently @option{-m[no-]ms-bitfields} is provided for the Microsoft Windows x86
 compilers to match the native Microsoft compiler.
 @end table
 
@@ -6109,7 +6109,7 @@ Three attributes currently are defined for PowerPC configurations:
 @code{altivec}, @code{ms_struct} and @code{gcc_struct}.
 
 For full documentation of the @code{ms_struct} and @code{gcc_struct}
-attributes please see the documentation in @ref{i386 Type Attributes}.
+attributes please see the documentation in @ref{x86 Type Attributes}.
 
 The @code{altivec} attribute allows one to declare AltiVec vector data
 types supported by the AltiVec Programming Interface Manual.  The
@@ -6662,7 +6662,7 @@ void do_print(uint32_t dwSomeValue)
 @end example
 
 The following example demonstrates a case where you need to use the 
-@code{volatile} qualifier. It uses the i386 RDTSC instruction, which reads 
+@code{volatile} qualifier. It uses the x86 RDTSC instruction, which reads 
 the computer's time-stamp counter. Without the @code{volatile} qualifier, 
 the optimizers might assume that the @code{asm} block will always return the 
 same value and therefore optimize away the second call.
@@ -6755,7 +6755,7 @@ Since GCC does not parse the AssemblerTemplate, it has no visibility of any
 symbols it references. This may result in GCC discarding those symbols as 
 unreferenced unless they are also listed as input, output, or goto operands.
 
-GCC can support multiple assembler dialects (for example, GCC for i386 
+GCC can support multiple assembler dialects (for example, GCC for x86 
 supports "att" and "intel" dialects) for inline assembler. In builds that 
 support this capability, the @option{-masm} option controls which dialect 
 GCC uses as its default. The hardware-specific documentation for the 
@@ -6779,7 +6779,7 @@ This construct outputs 'dialect0' when using dialect #0 to compile the code,
 braces than the number of dialects the compiler supports, the construct 
 outputs nothing.
 
-For example, if an i386 compiler supports two dialects (att, intel), an 
+For example, if an x86 compiler supports two dialects (att, intel), an 
 assembler template such as this:
 
 @example
@@ -6927,8 +6927,8 @@ will be undefined if @var{a} is modified before using @var{b}.
 
 @code{asm} supports operand modifiers on operands (for example @code{%k2} 
 instead of simply @code{%2}). Typically these qualifiers are hardware 
-dependent. The list of supported modifiers for i386 is found at 
-@ref{i386Operandmodifiers,i386 Operand modifiers}.
+dependent. The list of supported modifiers for x86 is found at 
+@ref{x86Operandmodifiers,x86 Operand modifiers}.
 
 If the C code that follows the @code{asm} makes no use of any of the output 
 operands, use @code{volatile} for the @code{asm} statement to prevent the 
@@ -7069,8 +7069,8 @@ The total number of input + output + goto operands has a limit of 30.
 
 @code{asm} supports operand modifiers on operands (for example @code{%k2} 
 instead of simply @code{%2}). Typically these qualifiers are hardware 
-dependent. The list of supported modifiers for i386 is found at 
-@ref{i386Operandmodifiers,i386 Operand modifiers}.
+dependent. The list of supported modifiers for x86 is found at 
+@ref{x86Operandmodifiers,x86 Operand modifiers}.
 
 Examples:
 
@@ -7229,12 +7229,12 @@ error:
 @}
 @end example
 
-@anchor{i386Operandmodifiers}
-@subsubsection i386 Operand modifiers
+@anchor{x86Operandmodifiers}
+@subsubsection x86 Operand modifiers
 
 Input, output, and goto operands for extended @code{asm} statements can use 
 modifiers to affect the code output to the assembler. For example, the 
-following code uses the "h" and "b" modifiers for i386:
+following code uses the "h" and "b" modifiers for x86:
 
 @example
 uint16_t  num;
@@ -7326,10 +7326,10 @@ The table below shows the list of supported modifiers and their effects.
 @tab @code{2}
 @end multitable
 
-@anchor{i386floatingpointasmoperands}
-@subsubsection i386 floating-point asm operands
+@anchor{x86floatingpointasmoperands}
+@subsubsection x86 floating-point asm operands
 
-On i386 targets, there are several rules on the usage of stack-like registers
+On x86 targets, there are several rules on the usage of stack-like registers
 in the operands of an @code{asm}.  These rules apply only to the operands
 that are stack-like registers:
 
@@ -7922,7 +7922,7 @@ purposes.
 
 On some targets, the instruction set contains SIMD vector instructions which
 operate on multiple values contained in one large register at the same time.
-For example, on the i386 the MMX, 3DNow!@: and SSE extensions can be used
+For example, on the x86 the MMX, 3DNow!@: and SSE extensions can be used
 this way.
 
 The first step in using these extensions is to provide the necessary data
@@ -8594,7 +8594,7 @@ functions above, except they perform multiplication, instead of addition.
 @node x86 specific memory model extensions for transactional memory
 @section x86 specific memory model extensions for transactional memory
 
-The i386 architecture supports additional memory ordering flags
+The x86 architecture supports additional memory ordering flags
 to mark lock critical sections for hardware lock elision. 
 These must be specified in addition to an existing memory model to 
 atomic intrinsics.
@@ -10113,8 +10113,8 @@ instructions, but allow the compiler to schedule those calls.
 * AVR Built-in Functions::
 * Blackfin Built-in Functions::
 * FR-V Built-in Functions::
-* X86 Built-in Functions::
-* X86 transactional memory intrinsics::
+* x86 Built-in Functions::
+* x86 transactional memory intrinsics::
 * MIPS DSP Built-in Functions::
 * MIPS Paired-Single Support::
 * MIPS Loongson Built-in Functions::
@@ -11484,10 +11484,10 @@ Use the @code{nldub} instruction to load the contents of address @var{x}
 into the data cache.  The instruction is issued in slot I1@.
 @end table
 
-@node X86 Built-in Functions
-@subsection X86 Built-in Functions
+@node x86 Built-in Functions
+@subsection x86 Built-in Functions
 
-These built-in functions are available for the i386 and x86-64 family
+These built-in functions are available for the x86-32 and x86-64 family
 of computers, depending on the command-line switches used.
 
 If you specify command-line switches such as @option{-msse},
@@ -12879,7 +12879,7 @@ v2si __builtin_ia32_pswapdsi (v2si)
 The following built-in functions are available when @option{-mrtm} is used
 They are used for restricted transactional memory. These are the internal
 low level functions. Normally the functions in 
-@ref{X86 transactional memory intrinsics} should be used instead.
+@ref{x86 transactional memory intrinsics} should be used instead.
 
 @smallexample
 int __builtin_ia32_xbegin ()
@@ -12888,10 +12888,10 @@ void __builtin_ia32_xabort (status)
 int __builtin_ia32_xtest ()
 @end smallexample
 
-@node X86 transactional memory intrinsics
-@subsection X86 transaction memory intrinsics
+@node x86 transactional memory intrinsics
+@subsection x86 transaction memory intrinsics
 
-Hardware transactional memory intrinsics for i386. These allow to use
+Hardware transactional memory intrinsics for x86. These allow to use
 memory transactions with RTM (Restricted Transactional Memory).
 For using HLE (Hardware Lock Elision) see @ref{x86 specific memory model extensions for transactional memory} instead.
 This support is enabled with the @option{-mrtm} option.
@@ -17603,7 +17603,7 @@ multiple @code{#pragma pack(@var{n})} instances and finalized by a single
 @code{#pragma pack(pop)}.
 @end enumerate
 
-Some targets, e.g.@: i386 and PowerPC, support the @code{ms_struct}
+Some targets, e.g.@: x86 and PowerPC, support the @code{ms_struct}
 @code{#pragma} which lays out a structure as the documented
 @code{__attribute__ ((ms_struct))}.
 @enumerate
@@ -17796,7 +17796,7 @@ function.  The parenthesis around the options is optional.
 @code{target} attribute and the attribute syntax.
 
 The @code{#pragma GCC target} pragma is presently implemented for
-i386/x86_64, PowerPC, and Nios II targets only.
+x86, PowerPC, and Nios II targets only.
 @end table
 
 @table @code
@@ -18827,7 +18827,7 @@ See also @ref{Namespace Association}.
 @section Function Multiversioning
 @cindex function versions
 
-With the GNU C++ front end, for target i386, you may specify multiple
+With the GNU C++ front end, for x86 targets, you may specify multiple
 versions of a function, where each function is specialized for a
 specific target feature.  At runtime, the appropriate version of the
 function is automatically executed depending on the characteristics of

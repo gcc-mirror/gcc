@@ -2306,7 +2306,7 @@ Vector constant that is all zeros.
 
 @end table
 
-@item Intel 386---@file{config/i386/constraints.md}
+@item x86 family---@file{config/i386/constraints.md}
 @table @code
 @item R
 Legacy register---the eight integer registers available on all
@@ -2360,7 +2360,7 @@ unsigned long long rdtsc (void)
 @}
 @end smallexample
 
-This is not correct on x86_64 as it would allocate tick in either @code{ax}
+This is not correct on x86-64 as it would allocate tick in either @code{ax}
 or @code{dx}.  You have to use the following variant instead:
 
 @smallexample
