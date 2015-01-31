@@ -17,8 +17,8 @@ foo ()
 /* After late unrolling the above loop completely DOM should be
    able to optimize this to return 28.  */
 
-/* See PR63679, if the target forces the initializer to memory then
+/* See PR63679 and PR64159, if the target forces the initializer to memory then
    DOM is not able to perform this optimization.  */
 
-/* { dg-final { scan-tree-dump "return 28;" "optimized" { xfail hppa*-*-* } } } */
+/* { dg-final { scan-tree-dump "return 28;" "optimized" { xfail hppa*-*-* powerpc*-*-* sparc*-*-*} } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
