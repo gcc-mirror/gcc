@@ -676,7 +676,7 @@ Objective-C and Objective-C++ Dialects}.
 -mschedule=@var{cpu-type}  -mspace-regs  -msio  -mwsio @gol
 -munix=@var{unix-std}  -nolibdld  -static  -threads}
 
-@emph{i386 and x86-64 Options}
+@emph{x86 Options}
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type} @gol
 -mtune-ctrl=@var{feature-list} -mdump-tune-features -mno-default @gol
 -mfpmath=@var{unit} @gol
@@ -709,7 +709,7 @@ Objective-C and Objective-C++ Dialects}.
 -mavx256-split-unaligned-load -mavx256-split-unaligned-store @gol
 -malign-data=@var{type} -mstack-protector-guard=@var{guard}}
 
-@emph{i386 and x86-64 Windows Options}
+@emph{x86 Windows Options}
 @gccoptlist{-mconsole -mcygwin -mno-cygwin -mdll @gol
 -mnop-fun-dllimport -mthread @gol
 -municode -mwin32 -mwindows -fno-set-stack-executable}
@@ -1080,9 +1080,6 @@ See RS/6000 and PowerPC Options.
 @emph{VxWorks Options}
 @gccoptlist{-mrtp  -non-static  -Bstatic  -Bdynamic @gol
 -Xbind-lazy  -Xbind-now}
-
-@emph{x86-64 Options}
-See i386 and x86-64 Options.
 
 @emph{Xstormy16 Options}
 @gccoptlist{-msim}
@@ -1964,7 +1961,7 @@ Some cases of unnamed fields in structures and unions are only
 accepted with this option.  @xref{Unnamed Fields,,Unnamed struct/union
 fields within structs/unions}, for details.
 
-Note that this option is off for all targets but i?86 and x86_64
+Note that this option is off for all targets but x86 
 targets using ms-abi.
 
 @item -fplan9-extensions
@@ -11955,8 +11952,8 @@ platform.
 * GNU/Linux Options::
 * H8/300 Options::
 * HPPA Options::
-* i386 and x86-64 Options::
-* i386 and x86-64 Windows Options::
+* x86 Options::
+* x86 Windows Options::
 * IA-64 Options::
 * LM32 Options::
 * M32C Options::
@@ -11992,7 +11989,6 @@ platform.
 * Visium Options::
 * VMS Options::
 * VxWorks Options::
-* x86-64 Options::
 * Xstormy16 Options::
 * Xtensa Options::
 * zSeries Options::
@@ -15365,15 +15361,11 @@ under HP-UX@.  This option sets flags for both the preprocessor and
 linker.
 @end table
 
-@node i386 and x86-64 Options
-@subsection Intel 386 and AMD x86-64 Options
-@cindex i386 Options
-@cindex x86-64 Options
-@cindex Intel 386 Options
-@cindex AMD x86-64 Options
+@node x86 Options
+@subsection x86 Options
+@cindex x86 Options
 
-These @samp{-m} options are defined for the i386 and x86-64 family of
-computers:
+These @samp{-m} options are defined for the x86 family of computers.
 
 @table @gcctabopt
 
@@ -15644,7 +15636,7 @@ The temporary results are computed in 80-bit precision instead of the precision
 specified by the type, resulting in slightly different results compared to most
 of other chips.  See @option{-ffloat-store} for more detailed description.
 
-This is the default choice for i386 compiler.
+This is the default choice for x86-32 targets.
 
 @item sse
 Use scalar floating-point instructions present in the SSE instruction set.
@@ -15656,7 +15648,7 @@ extended-precision arithmetic are still done using 387.  A later version, presen
 only in Pentium 4 and AMD x86-64 chips, supports double-precision
 arithmetic too.
 
-For the i386 compiler, you must use @option{-march=@var{cpu-type}}, @option{-msse}
+For the x86-32 compiler, you must use @option{-march=@var{cpu-type}}, @option{-msse}
 or @option{-msse2} switches to enable SSE extensions and make this option
 effective.  For the x86-64 compiler, these extensions are enabled by default.
 
@@ -15741,7 +15733,7 @@ On x86-64, @option{-malign-double} is enabled by default.
 
 @strong{Warning:} if you use the @option{-malign-double} switch,
 structures containing the above types are aligned differently than
-the published application binary interface specifications for the 386
+the published application binary interface specifications for the x86-32
 and are not binary compatible with structures in code compiled
 without that switch.
 
@@ -15749,7 +15741,7 @@ without that switch.
 @itemx -m128bit-long-double
 @opindex m96bit-long-double
 @opindex m128bit-long-double
-These switches control the size of @code{long double} type.  The i386
+These switches control the size of @code{long double} type.  The x86-32
 application binary interface specifies the size to be 96 bits,
 so @option{-m96bit-long-double} is the default in 32-bit mode.
 
@@ -15892,7 +15884,7 @@ when this option is used to set the precision to less than extended precision.
 
 @item -mstackrealign
 @opindex mstackrealign
-Realign the stack at entry.  On the Intel x86, the @option{-mstackrealign}
+Realign the stack at entry.  On the x86, the @option{-mstackrealign}
 option generates an alternate prologue and epilogue that realigns the
 run-time stack if necessary.  This supports mixing legacy codes that keep
 4-byte stack alignment with modern codes that keep 16-byte stack alignment for
@@ -16064,7 +16056,7 @@ extended instruction sets.  Each has a corresponding @option{-mno-} option
 to disable use of these instructions.
 
 These extensions are also available as built-in functions: see
-@ref{X86 Built-in Functions}, for details of the functions enabled and
+@ref{x86 Built-in Functions}, for details of the functions enabled and
 disabled by these switches.
 
 To generate SSE/SSE2 instructions automatically from floating-point
@@ -16505,9 +16497,10 @@ and x32 environments.  It is the default address mode for 32-bit and
 x32 environments.
 @end table
 
-@node i386 and x86-64 Windows Options
-@subsection i386 and x86-64 Windows Options
-@cindex i386 and x86-64 Windows Options
+@node x86 Windows Options
+@subsection x86 Windows Options
+@cindex x86 Windows Options
+@cindex Windows Options for x86
 
 These additional options are available for Microsoft Windows targets:
 
@@ -16583,7 +16576,7 @@ GCC detects that the target assembler found during configuration
 supports the feature.
 @end table
 
-See also under @ref{i386 and x86-64 Options} for standard options.
+See also under @ref{x86 Options} for standard options.
 
 @node IA-64 Options
 @subsection IA-64 Options
@@ -22857,12 +22850,6 @@ Disable lazy binding of function calls.  This option is the default and
 is defined for compatibility with Diab.
 @end table
 
-@node x86-64 Options
-@subsection x86-64 Options
-@cindex x86-64 options
-
-These are listed under @xref{i386 and x86-64 Options}.
-
 @node Xstormy16 Options
 @subsection Xstormy16 Options
 @cindex Xstormy16 Options
@@ -23287,10 +23274,10 @@ the GOT size for the linked executable exceeds a machine-specific
 maximum size, you get an error message from the linker indicating that
 @option{-fpic} does not work; in that case, recompile with @option{-fPIC}
 instead.  (These maximums are 8k on the SPARC and 32k
-on the m68k and RS/6000.  The 386 has no such limit.)
+on the m68k and RS/6000.  The x86 has no such limit.)
 
 Position-independent code requires special support, and therefore works
-only on certain machines.  For the 386, GCC supports PIC for System V
+only on certain machines.  For the x86, GCC supports PIC for System V
 but not for the Sun 386i.  Code generated for the IBM RS/6000 is always
 position-independent.
 
@@ -23528,7 +23515,7 @@ The resulting program has a discontiguous stack which can only
 overflow if the program is unable to allocate any more memory.  This
 is most useful when running threaded programs, as it is no longer
 necessary to calculate a good stack size to use for each thread.  This
-is currently only implemented for the i386 and x86_64 back ends running
+is currently only implemented for the x86 targets running
 GNU/Linux.
 
 When code compiled with @option{-fsplit-stack} calls code compiled
