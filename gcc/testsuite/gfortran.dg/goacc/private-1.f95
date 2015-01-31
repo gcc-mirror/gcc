@@ -35,3 +35,4 @@ end program test
 ! { dg-final { scan-tree-dump-times "private\\(i\\)" 3 "omplower" } }
 ! { dg-final { scan-tree-dump-times "private\\(j\\)" 2 "omplower" } }
 ! { dg-final { scan-tree-dump-times "private\\(k\\)" 1 "omplower" } }
+! { dg-final { cleanup-tree-dump "omplower" } }

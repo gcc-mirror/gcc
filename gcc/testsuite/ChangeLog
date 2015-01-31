@@ -1,3 +1,19 @@
+2015-01-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/ipa/pr64146.C (dg-final): Cleanup icf ipa dump.
+	* gcc.target/i386/chkp-builtins-1.c (dg-final): Cleanup chkp tree dump.
+	* gcc.target/i386/chkp-builtins-2.c (dg-final): Ditto.
+	* gcc.target/i386/chkp-builtins-3.c (dg-final): Ditto.
+	* gcc.target/i386/chkp-builtins-4.c (dg-final): Ditto.
+	* gcc.target/i386/chkp-const-check-1.c (dg-final): Cleanup chkopt
+	tree dump.
+	* gcc.target/i386/chkp-lifetime-1.c (dg-final): Ditto.
+	* gcc.target/i386/chkp-remove-bndint-1.c (dg-final): Cleanup optimized
+	tree dump.
+	* gcc.target/i386/chkp-remove-bndint-2.c (dg-final): Ditto.
+	* gfortran.dg/goacc/private-1.f95 (dg-final): Cleanup omplower
+	tree dump.
+
 2015-01-30  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/64688
