@@ -1,6 +1,11 @@
 2015-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2015-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000-cpus.def (POWERPC_MASKS): Add
+	OPTION_MASK_QUAD_MEMORY_ATOMIC.
+
 	2015-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/63637
