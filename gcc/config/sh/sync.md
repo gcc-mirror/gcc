@@ -673,6 +673,25 @@
 }
   [(set_attr "length" "10")])
 
+;; Combine pattern for xor (val, -1) / nand (val, -1).
+(define_insn "atomic_fetch_notsi_hard"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=&r")
+	(mem:SI (match_operand:SI 1 "arith_reg_operand" "r")))
+   (set (mem:SI (match_dup 1))
+	(unspec:SI [(not:SI (mem:SI (match_dup 1)))] UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
+   (clobber (reg:SI R0_REG))]
+  "TARGET_ATOMIC_HARD_LLCS
+   || (TARGET_SH4A && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
+{
+  return "\r0:	movli.l	@%1,r0"		"\n"
+	 "	mov	r0,%0"		"\n"
+	 "	not	r0,r0"		"\n"
+	 "	movco.l	r0,@%1"		"\n"
+	 "	bf	0b";
+}
+  [(set_attr "length" "10")])
+
 (define_insn "atomic_fetch_<fetchop_name><mode>_hard"
   [(set (match_operand:QIHI 0 "arith_reg_dest" "=&r")
 	(mem:QIHI (match_operand:SI 1 "arith_reg_operand" "r")))
@@ -705,6 +724,34 @@
 }
   [(set_attr "length" "28")])
 
+;; Combine pattern for xor (val, -1) / nand (val, -1).
+(define_insn "atomic_fetch_not<mode>_hard"
+  [(set (match_operand:QIHI 0 "arith_reg_dest" "=&r")
+	(mem:QIHI (match_operand:SI 1 "arith_reg_operand" "r")))
+   (set (mem:QIHI (match_dup 1))
+	(unspec:QIHI [(not:QIHI (mem:QIHI (match_dup 1)))] UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
+   (clobber (reg:SI R0_REG))
+   (clobber (match_scratch:SI 2 "=&r"))
+   (clobber (match_scratch:SI 3 "=1"))]
+  "TARGET_ATOMIC_HARD_LLCS"
+{
+  return "\r	mov	#-4,%2"			"\n"
+	 "	and	%1,%2"			"\n"
+	 "	xor	%2,%1"			"\n"
+	 "	add	r15,%1"			"\n"
+	 "	add	#-4,%1"			"\n"
+	 "0:	movli.l	@%2,r0"			"\n"
+	 "	mov.l	r0,@-r15"		"\n"
+	 "	mov.<bw>	@%1,%0"		"\n"
+	 "	not	%0,r0"			"\n"
+	 "	mov.<bw>	r0,@%1"		"\n"
+	 "	mov.l	@r15+,r0"		"\n"
+	 "	movco.l	r0,@%2"			"\n"
+	 "	bf	0b";
+}
+  [(set_attr "length" "26")])
+
 (define_insn "atomic_fetch_<fetchop_name><mode>_soft_gusa"
   [(set (match_operand:QIHISI 0 "arith_reg_dest" "=&u")
 	(mem:QIHISI (match_operand:SI 1 "arith_reg_operand" "u")))
@@ -731,6 +778,28 @@
 	 "1:	mov	r1,r15";
 }
   [(set_attr "length" "18")])
+
+;; Combine pattern for xor (val, -1) / nand (val, -1).
+(define_insn "atomic_fetch_not<mode>_soft_gusa"
+  [(set (match_operand:QIHISI 0 "arith_reg_dest" "=&u")
+	(mem:QIHISI (match_operand:SI 1 "arith_reg_operand" "u")))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI [(not:QIHISI (mem:QIHISI (match_dup 1)))] UNSPEC_ATOMIC))
+   (clobber (match_scratch:QIHISI 2 "=&u"))
+   (clobber (reg:SI R0_REG))
+   (clobber (reg:SI R1_REG))]
+  "TARGET_ATOMIC_SOFT_GUSA"
+{
+  return "\r	mova	1f,r0"			"\n"
+	 "	mov	r15,r1"			"\n"
+	 "	.align 2"			"\n"
+	 "	mov	#(0f-1f),r15"		"\n"
+	 "0:	mov.<bwl>	@%1,%0"		"\n"
+	 "	not	%0,%2"			"\n"
+	 "	mov.<bwl>	%2,@%1"		"\n"
+	 "1:	mov	r1,r15";
+}
+  [(set_attr "length" "16")])
 
 (define_insn "atomic_fetch_<fetchop_name><mode>_soft_tcb"
   [(set (match_operand:QIHISI 0 "arith_reg_dest" "=&r")
@@ -760,6 +829,30 @@
 }
   [(set_attr "length" "20")])
 
+;; Combine pattern for xor (val, -1) / nand (val, -1).
+(define_insn "atomic_fetch_not<mode>_soft_tcb"
+  [(set (match_operand:QIHISI 0 "arith_reg_dest" "=&r")
+	(mem:QIHISI (match_operand:SI 1 "arith_reg_operand" "r")))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI [(not:QIHISI (mem:QIHISI (match_dup 1)))] UNSPEC_ATOMIC))
+   (use (match_operand:SI 2 "gbr_displacement"))
+   (clobber (reg:SI R0_REG))
+   (clobber (reg:SI R1_REG))]
+  "TARGET_ATOMIC_SOFT_TCB"
+{
+  return "\r	mova	1f,r0"			"\n"
+	 "	.align 2"			"\n"
+	 "	mov	#(0f-1f),r1"		"\n"
+	 "	mov.l	r0,@(%O2,gbr)"		"\n"
+	 "0:	mov.<bwl>	@%1,r0"		"\n"
+	 "	mov	r0,%0"			"\n"
+	 "	not	r0,r0"			"\n"
+	 "	mov.<bwl>	r0,@%1"		"\n"
+	 "1:	mov	#0,r0"			"\n"
+	 "	mov.l	r0,@(%O2,gbr)";
+}
+  [(set_attr "length" "20")])
+
 (define_insn "atomic_fetch_<fetchop_name><mode>_soft_imask"
   [(set (match_operand:QIHISI 0 "arith_reg_dest" "=&r")
 	(mem:QIHISI (match_operand:SI 1 "arith_reg_operand" "r")))
@@ -783,6 +876,28 @@
 	 "	<fetchop_name>	%2,r0"		"\n"
 	 "	mov.<bwl>	r0,@%1"		"\n"
 	 "	ldc	%3,sr";
+}
+  [(set_attr "length" "18")])
+
+;; Combine pattern for xor (val, -1) / nand (val, -1).
+(define_insn "atomic_fetch_not<mode>_soft_imask"
+  [(set (match_operand:QIHISI 0 "arith_reg_dest" "=&r")
+	(mem:QIHISI (match_operand:SI 1 "arith_reg_operand" "r")))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI [(not:QIHISI (mem:QIHISI (match_dup 1)))] UNSPEC_ATOMIC))
+   (clobber (reg:SI R0_REG))
+   (clobber (match_scratch:QIHISI 2 "=&r"))]
+  "TARGET_ATOMIC_SOFT_IMASK"
+{
+  return "\r	stc	sr,r0"			"\n"
+	 "	mov	r0,%2"			"\n"
+	 "	or	#0xF0,r0"		"\n"
+	 "	ldc	r0,sr"			"\n"
+	 "	mov.<bwl>	@%1,r0"		"\n"
+	 "	mov	r0,%0"			"\n"
+	 "	not	r0,r0"			"\n"
+	 "	mov.<bwl>	r0,@%1"		"\n"
+	 "	ldc	%2,sr";
 }
   [(set_attr "length" "18")])
 
@@ -1028,6 +1143,23 @@
 }
   [(set_attr "length" "8")])
 
+;; Combine pattern for xor (val, -1) / nand (val, -1).
+(define_insn "atomic_not_fetchsi_hard"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=&z")
+	(not:SI (mem:SI (match_operand:SI 1 "arith_reg_operand" "r"))))
+   (set (mem:SI (match_dup 1))
+	(unspec:SI [(not:SI (mem:SI (match_dup 1)))] UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))]
+  "TARGET_ATOMIC_HARD_LLCS
+   || (TARGET_SH4A && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
+{
+  return "\r0:	movli.l	@%1,%0"		"\n"
+	 "	not	%0,%0"		"\n"
+	 "	movco.l	%0,@%1"		"\n"
+	 "	bf	0b";
+}
+  [(set_attr "length" "8")])
+
 (define_insn "atomic_<fetchop_name>_fetch<mode>_hard"
   [(set (match_operand:QIHI 0 "arith_reg_dest" "=&r")
 	(FETCHOP:QIHI
@@ -1061,6 +1193,35 @@
 }
   [(set_attr "length" "28")])
 
+;; Combine pattern for xor (val, -1) / nand (val, -1).
+(define_insn "atomic_not_fetch<mode>_hard"
+  [(set (match_operand:QIHI 0 "arith_reg_dest" "=&r")
+	(not:QIHI (mem:QIHI (match_operand:SI 1 "arith_reg_operand" "r"))))
+   (set (mem:QIHI (match_dup 1))
+	(unspec:QIHI [(not:QIHI (mem:QIHI (match_dup 1)))] UNSPEC_ATOMIC))
+   (set (reg:SI T_REG) (const_int 1))
+   (clobber (reg:SI R0_REG))
+   (clobber (match_scratch:SI 2 "=&r"))
+   (clobber (match_scratch:SI 3 "=1"))]
+  "TARGET_ATOMIC_HARD_LLCS"
+{
+  return "\r	mov	#-4,%2"			"\n"
+	 "	and	%1,%2"			"\n"
+	 "	xor	%2,%1"			"\n"
+	 "	add	r15,%1"			"\n"
+	 "	add	#-4,%1"			"\n"
+	 "0:	movli.l	@%2,r0"			"\n"
+	 "	mov.l	r0,@-r15"		"\n"
+	 "	mov.<bw>	@%1,r0"		"\n"
+	 "	not	r0,r0"			"\n"
+	 "	mov.<bw>	r0,@%1"		"\n"
+	 "	mov	r0,%0"			"\n"
+	 "	mov.l	@r15+,r0"		"\n"
+	 "	movco.l	r0,@%2"			"\n"
+	 "	bf	0b";
+}
+  [(set_attr "length" "28")])
+
 (define_insn "atomic_<fetchop_name>_fetch<mode>_soft_gusa"
   [(set (match_operand:QIHISI 0 "arith_reg_dest" "=&u")
 	(FETCHOP:QIHISI
@@ -1081,6 +1242,27 @@
 	 "	mov	#(0f-1f),r15"		"\n"
 	 "0:	mov.<bwl>	@%1,%0"		"\n"
 	 "	<fetchop_name>	%2,%0"		"\n"
+	 "	mov.<bwl>	%0,@%1"		"\n"
+	 "1:	mov	r1,r15";
+}
+  [(set_attr "length" "16")])
+
+;; Combine pattern for xor (val, -1) / nand (val, -1).
+(define_insn "atomic_not_fetch<mode>_soft_gusa"
+  [(set (match_operand:QIHISI 0 "arith_reg_dest" "=&u")
+	(not:QIHISI (mem:QIHISI (match_operand:SI 1 "arith_reg_operand" "u"))))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI [(not:QIHISI (mem:QIHISI (match_dup 1)))] UNSPEC_ATOMIC))
+   (clobber (reg:SI R0_REG))
+   (clobber (reg:SI R1_REG))]
+  "TARGET_ATOMIC_SOFT_GUSA"
+{
+  return "\r	mova	1f,r0"			"\n"
+	 "	mov	r15,r1"			"\n"
+	 "	.align 2"			"\n"
+	 "	mov	#(0f-1f),r15"		"\n"
+	 "0:	mov.<bwl>	@%1,%0"		"\n"
+	 "	not	%0,%0"		"\n"
 	 "	mov.<bwl>	%0,@%1"		"\n"
 	 "1:	mov	r1,r15";
 }
@@ -1114,6 +1296,30 @@
 }
   [(set_attr "length" "20")])
 
+;; Combine pattern for xor (val, -1) / nand (val, -1).
+(define_insn "atomic_not_fetch<mode>_soft_tcb"
+  [(set (match_operand:QIHISI 0 "arith_reg_dest" "=&r")
+	(not:QIHISI (mem:QIHISI (match_operand:SI 1 "arith_reg_operand" "r"))))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI [(not:QIHISI (mem:QIHISI (match_dup 1)))] UNSPEC_ATOMIC))
+   (clobber (reg:SI R0_REG))
+   (clobber (reg:SI R1_REG))
+   (use (match_operand:SI 2 "gbr_displacement"))]
+  "TARGET_ATOMIC_SOFT_TCB"
+{
+  return "\r	mova	1f,r0"			"\n"
+	 "	mov	#(0f-1f),r1"		"\n"
+	 "	.align 2"			"\n"
+	 "	mov.l	r0,@(%O2,gbr)"		"\n"
+	 "0:	mov.<bwl>	@%1,r0"		"\n"
+	 "	not	r0,r0"		"\n"
+	 "	mov.<bwl>	r0,@%1"		"\n"
+	 "1:	mov	r0,%0"			"\n"
+	 "	mov	#0,r0"			"\n"
+	 "	mov.l	r0,@(%O2,gbr)";
+}
+  [(set_attr "length" "20")])
+
 (define_insn "atomic_<fetchop_name>_fetch<mode>_soft_imask"
   [(set (match_operand:QIHISI 0 "arith_reg_dest" "=&z")
 	(FETCHOP:QIHISI
@@ -1135,6 +1341,26 @@
 	 "	<fetchop_name>	%2,%0"		"\n"
 	 "	mov.<bwl>	%0,@%1"		"\n"
 	 "	ldc	%3,sr";
+}
+  [(set_attr "length" "16")])
+
+;; Combine pattern for xor (val, -1) / nand (val, -1).
+(define_insn "atomic_not_fetch<mode>_soft_imask"
+  [(set (match_operand:QIHISI 0 "arith_reg_dest" "=&z")
+	(not:QIHISI (mem:QIHISI (match_operand:SI 1 "arith_reg_operand" "r"))))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI [(not:QIHISI (mem:QIHISI (match_dup 1)))] UNSPEC_ATOMIC))
+   (clobber (match_scratch:SI 2 "=&r"))]
+  "TARGET_ATOMIC_SOFT_IMASK"
+{
+  return "\r	stc	sr,%0"			"\n"
+	 "	mov	%0,%2"			"\n"
+	 "	or	#0xF0,%0"		"\n"
+	 "	ldc	%0,sr"			"\n"
+	 "	mov.<bwl>	@%1,%0"		"\n"
+	 "	not	%0,%0"		"\n"
+	 "	mov.<bwl>	%0,@%1"		"\n"
+	 "	ldc	%2,sr";
 }
   [(set_attr "length" "16")])
 
