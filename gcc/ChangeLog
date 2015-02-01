@@ -3,6 +3,10 @@
 	Backported from mainline
 	2015-01-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/64421
+	* omp-low.c (simd_clone_mangle): If DECL_ASSEMBLER_NAME starts
+	with asterisk, skip the first character.
+
 	* config/rs6000/rs6000-cpus.def (POWERPC_MASKS): Add
 	OPTION_MASK_QUAD_MEMORY_ATOMIC.
 
