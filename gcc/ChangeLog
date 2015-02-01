@@ -1,3 +1,19 @@
+2015-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/64817
+	* cfgexpand.c (deep_ter_debug_map): New variable.
+	(avoid_deep_ter_for_debug): New function.
+	(expand_debug_expr): If TERed SSA_NAME is in
+	deep_ter_debug_map, use the corresponding DEBUG_EXPR_DECL
+	instead of trying to expand SSA_NAME's def stmt.
+	(expand_debug_locations): When expanding debug bind
+	of a DEBUG_EXPR_DECL to corresponding SSA_NAME,
+	temporarily remove the DEBUG_EXPR_DECL from deep_ter_debug_map's
+	value.
+	(pass_expand::execute): Call avoid_deep_ter_for_debug on
+	all debug bind stmts.  Delete deep_ter_debug_map after
+	expand_debug_location if non-NULL and clear it.
+
 2015-02-01  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/64851
