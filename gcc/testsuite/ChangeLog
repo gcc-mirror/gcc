@@ -1,3 +1,11 @@
+2015-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/64513
+	* gcc.target/i386/pr64513.c: New test.
+
 2015-01-29  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* gcc.target/i386/sse-14.c: Test new intrinsic.
