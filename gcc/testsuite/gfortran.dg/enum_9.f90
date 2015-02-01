@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fshort-enums" }
-! { dg-options "-fshort-enums -Wl,--no-enum-size-warning" { target arm*-*-linux* } }
+! { dg-options "-fshort-enums -Wl,--no-enum-size-warning" { target arm_eabi } }
 ! Program to test enumerations when option -fshort-enums is given
 
 program main
