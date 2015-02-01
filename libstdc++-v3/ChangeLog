@@ -1,5 +1,9 @@
 2015-02-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/c++11/futex.cc: Do not define for gthr-single.h targets.
+
+2015-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/64883
 	* include/c_global/cstdio (gets): Use __deprecated__ attribute instead
 	of deprecated.
