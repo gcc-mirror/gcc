@@ -6811,7 +6811,7 @@ vrp_evaluate_conditional (enum tree_code code, tree op0, tree op1, gimple stmt)
       tree type = TREE_TYPE (op0);
       value_range_t *vr0 = get_value_range (op0);
 
-      if (vr0->type != VR_VARYING
+      if (vr0->type == VR_RANGE
 	  && INTEGRAL_TYPE_P (type)
 	  && vrp_val_is_min (vr0->min)
 	  && vrp_val_is_max (vr0->max)

@@ -3,6 +3,9 @@
 	Backported from mainline
 	2015-01-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/64563
+	* gcc.dg/pr64563.c: New test.
+
 	PR target/64513
 	* gcc.target/i386/pr64513.c: New test.
 

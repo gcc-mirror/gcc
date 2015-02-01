@@ -3,6 +3,10 @@
 	Backported from mainline
 	2015-01-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/64563
+	* tree-vrp.c (vrp_evaluate_conditional): Check for VR_RANGE
+	instead of != VR_VARYING.
+
 	PR target/64513
 	* config/i386/i386.c (ix86_expand_prologue): Add
 	REG_FRAME_RELATED_EXPR to %rax and %r10 pushes.
