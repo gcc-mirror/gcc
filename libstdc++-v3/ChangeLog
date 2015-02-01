@@ -1,3 +1,12 @@
+2015-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64883
+	* include/c_global/cstdio (gets): Use __deprecated__ attribute instead
+	of deprecated.
+	* include/c_std/cstdio (gets): Likewise.
+	* testsuite/17_intro/headers/c++1998/all_attributes.cc: Avoid clashing
+	with attributes used in darwin headers.
+
 2015-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* acinclude.m4 (VTV_CYGMIN): Use x$vtv_cygmin = xyes instead of
