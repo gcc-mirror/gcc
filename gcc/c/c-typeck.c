@@ -3085,7 +3085,7 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 	  else
 	    error_at (loc, "too many arguments to function %qE", function);
 	  inform_declaration (fundecl);
-	  return parmnum;
+	  return error_args ? -1 : (int) parmnum;
 	}
 
       if (selector && argnum > 2)

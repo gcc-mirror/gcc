@@ -1,3 +1,12 @@
+2015-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/64778
+	* c-typeck.c (convert_arguments): Return -1 if there are
+	error_args, even if we've diagnosed too many arguments.
+
 2014-10-30  Release Manager
 
 	* GCC 4.9.2 released.

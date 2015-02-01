@@ -3,6 +3,9 @@
 	Backported from mainline
 	2015-01-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/64778
+	* gcc.dg/pr64778.c: New test.
+
 	PR middle-end/64421
 	* gcc.dg/vect/pr64421.c: New test.
 
