@@ -165,7 +165,7 @@ next_char (gfc_instring in_string)
 	gfc_current_locus = old_locus;
 
       if (!(gfc_option.allow_std & GFC_STD_GNU) && !inhibit_warnings)
-	gfc_warning ("Extension: backslash character at %C");
+	gfc_warning (0, "Extension: backslash character at %C");
     }
 
   if (mode == MODE_COPY)
@@ -201,7 +201,7 @@ next_char_not_space (bool *error)
       if (c == '\t')
 	{
 	  if (gfc_option.allow_std & GFC_STD_GNU)
-	    gfc_warning ("Extension: Tab character in format at %C");
+	    gfc_warning (0, "Extension: Tab character in format at %C");
 	  else
 	    {
 	      gfc_error ("Extension: Tab character in format at %C");
@@ -681,7 +681,7 @@ format_item_1:
 	return false;
       if (t != FMT_RPAREN || level > 0)
 	{
-	  gfc_warning ("$ should be the last specifier in format at %L",
+	  gfc_warning (0, "$ should be the last specifier in format at %L",
 		       &format_locus);
 	  goto optional_comma_1;
 	}
@@ -779,7 +779,7 @@ data_desc:
 	  case WARNING:
 	    if (mode != MODE_FORMAT)
 	      format_locus.nextc += format_string_pos;
-	    gfc_warning ("Extension: Missing positive width after L "
+	    gfc_warning (0, "Extension: Missing positive width after L "
 			 "descriptor at %L", &format_locus);
 	    saved_token = t;
 	    break;
@@ -874,7 +874,7 @@ data_desc:
               goto fail;
 	    }
 	  else
-	    gfc_warning ("Period required in format "
+	    gfc_warning (0, "Period required in format "
 			 "specifier %s at %L", token_to_string (t),
 			  &format_locus);
 	  /* If we go to finished, we need to unwind this
@@ -946,7 +946,7 @@ data_desc:
 	    }
 	  if (mode != MODE_FORMAT)
 	    format_locus.nextc += format_string_pos;
-	  gfc_warning ("Period required in format specifier at %L",
+	  gfc_warning (0, "Period required in format specifier at %L",
 		       &format_locus);
 	  saved_token = t;
 	  break;
@@ -968,7 +968,7 @@ data_desc:
 	{
 	  if (mode != MODE_FORMAT)
 	    format_locus.nextc += format_string_pos;
-	  gfc_warning ("The H format specifier at %L is"
+	  gfc_warning (0, "The H format specifier at %L is"
 		       " a Fortran 95 deleted feature", &format_locus);
 	}
       if (mode == MODE_STRING)
@@ -1173,7 +1173,8 @@ check_format_string (gfc_expr *e, bool is_input)
       if (e->value.character.string[i] != ' ')
         {
           format_locus.nextc += format_length + 1; 
-          gfc_warning ("Extraneous characters in format at %L", &format_locus); 
+          gfc_warning (0,
+		       "Extraneous characters in format at %L", &format_locus); 
           break;
         }
   return rv;
@@ -1720,7 +1721,7 @@ compare_to_allowed_values (const char *specifier, const char *allowed[],
 
 	if (n == WARNING || (warn && n == ERROR))
 	  {
-	    gfc_warning ("Fortran 2003: %s specifier in %s statement at %C "
+	    gfc_warning (0, "Fortran 2003: %s specifier in %s statement at %C "
 			 "has value %qs", specifier, statement,
 			 allowed_f2003[i]);
 	    return 1;
@@ -1747,7 +1748,7 @@ compare_to_allowed_values (const char *specifier, const char *allowed[],
 
 	if (n == WARNING || (warn && n == ERROR))
 	  {
-	    gfc_warning ("Extension: %s specifier in %s statement at %C "
+	    gfc_warning (0, "Extension: %s specifier in %s statement at %C "
 			 "has value %qs", specifier, statement,
 			 allowed_gnu[i]);
 	    return 1;
@@ -1768,7 +1769,8 @@ compare_to_allowed_values (const char *specifier, const char *allowed[],
   if (warn)
     {
       char *s = gfc_widechar_to_char (value, -1);
-      gfc_warning ("%s specifier in %s statement at %C has invalid value %qs",
+      gfc_warning (0,
+		   "%s specifier in %s statement at %C has invalid value %qs",
 		   specifier, statement, s);
       free (s);
       return 1;
@@ -2047,7 +2049,7 @@ gfc_match_open (void)
 #define warn_or_error(...) \
 { \
   if (warn) \
-    gfc_warning (__VA_ARGS__); \
+    gfc_warning (0, __VA_ARGS__); \
   else \
     { \
       gfc_error (__VA_ARGS__); \

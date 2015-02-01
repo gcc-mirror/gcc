@@ -164,7 +164,7 @@ create_character_initializer (gfc_expr *init, gfc_typespec *ts,
 
   if (len > end - start)
     {
-      gfc_warning_now ("Initialization string starting at %L was "
+      gfc_warning_now (0, "Initialization string starting at %L was "
 		       "truncated to fit the variable (%d/%d)",
 		       &rvalue->where, end - start, len);
       len = end - start;

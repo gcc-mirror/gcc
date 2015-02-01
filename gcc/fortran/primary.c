@@ -865,7 +865,7 @@ next_string_char (gfc_char_t delimiter, int *ret)
 	gfc_current_locus = old_locus;
 
       if (!(gfc_option.allow_std & GFC_STD_GNU) && !inhibit_warnings)
-	gfc_warning ("Extension: backslash character at %C");
+	gfc_warning (0, "Extension: backslash character at %C");
     }
 
   if (c != delimiter)
