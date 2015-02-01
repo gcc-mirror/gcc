@@ -1,3 +1,13 @@
+2015-02-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/64851
+	* config/sh/sync.md (atomic_fetch_notsi_hard,
+	atomic_fetch_not<mode>_hard, atomic_fetch_not<mode>_soft_gusa,
+	atomic_fetch_not<mode>_soft_tcb, atomic_fetch_not<mode>_soft_imask,
+	atomic_not_fetchsi_hard, atomic_not_fetch<mode>_hard,
+	atomic_not_fetch<mode>_soft_gusa, atomic_not_fetch<mode>_soft_tcb,
+	atomic_not_fetch<mode>_soft_imask): New insns.
+
 2015-02-01  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
 	* haifa-sched.c (INSN_RFS_DEBUG_ORIG_ORDER): New access macro.
@@ -32,7 +42,7 @@
 
 2015-01-31  Uros Bizjak  <ubizjak@gmail.com>
 
-        PR target/64882
+	PR target/64882
 	* config/i386/predicates.md (address_no_seg_operand): Reject
 	non-CONST_INT_P operands in invalid mode.
 
