@@ -1,3 +1,8 @@
+2015-02-01  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* gfortran.dg/enum_9.f90: Use arm_eabi instead of arm*-*-linux*.
+	* gfortran.dg/enum_10.f90: Likewise. Reorder dg-additional-sources.
+
 2015-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/64817

@@ -1,7 +1,7 @@
 ! { dg-do run }
-! { dg-additional-sources enum_10.c }
 ! { dg-options "-fshort-enums -w" }
-! { dg-options "-fshort-enums -w -Wl,--no-enum-size-warning" { target arm*-*-linux* } }
+! { dg-options "-fshort-enums -w -Wl,--no-enum-size-warning" { target arm_eabi } }
+! { dg-additional-sources enum_10.c }
 ! Make sure short enums are indeed interoperable with the
 ! corresponding C type.
 
