@@ -3,6 +3,9 @@
 	Backported from mainline
 	2015-01-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/61058
+	* gcc.dg/pr61058.c: New test.
+
 	PR c/64766
 	* gcc.dg/pr64766.c: New test.
 

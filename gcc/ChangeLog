@@ -1,6 +1,18 @@
 2015-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2015-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/61058
+	* jump.c (cleanup_barriers): Update basic block boundaries
+	if BLOCK_FOR_INSN is non-NULL on PREV.
+
+	2013-04-16  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/43631
+	* jump.c (cleanup_barriers): Use reorder_insns_nobb to avoid making
+	the moved barrier the tail of the basic block it follows.
+
 	2015-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000-cpus.def (POWERPC_MASKS): Add
