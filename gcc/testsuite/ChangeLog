@@ -1,3 +1,11 @@
+2015-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/64663
+	* gcc.dg/pr64663.c: New test.
+
 2015-01-29  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* gcc.target/i386/sse-14.c: Test new intrinsic.

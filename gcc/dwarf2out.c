@@ -4930,7 +4930,7 @@ equate_decl_number_to_die (tree decl, dw_die_ref decl_die)
 
 /* Return how many bits covers PIECE EXPR_LIST.  */
 
-static int
+static HOST_WIDE_INT
 decl_piece_bitsize (rtx piece)
 {
   int ret = (int) GET_MODE (piece);
@@ -4958,7 +4958,7 @@ decl_piece_varloc_ptr (rtx piece)
 static rtx
 decl_piece_node (rtx loc_note, HOST_WIDE_INT bitsize, rtx next)
 {
-  if (bitsize <= (int) MAX_MACHINE_MODE)
+  if (bitsize > 0 && bitsize <= (int) MAX_MACHINE_MODE)
     return alloc_EXPR_LIST (bitsize, loc_note, next);
   else
     return alloc_EXPR_LIST (0, gen_rtx_CONCAT (VOIDmode,
@@ -4997,7 +4997,7 @@ adjust_piece_list (rtx *dest, rtx *src, rtx *inner,
 		   HOST_WIDE_INT bitpos, HOST_WIDE_INT piece_bitpos,
 		   HOST_WIDE_INT bitsize, rtx loc_note)
 {
-  int diff;
+  HOST_WIDE_INT diff;
   bool copy = inner != NULL;
 
   if (copy)
@@ -5137,7 +5137,7 @@ add_var_loc_to_decl (tree decl, rtx loc_note, const char *label)
     {
       struct var_loc_node *last = temp->last, *unused = NULL;
       rtx *piece_loc = NULL, last_loc_note;
-      int piece_bitpos = 0;
+      HOST_WIDE_INT piece_bitpos = 0;
       if (last->next)
 	{
 	  last = last->next;
@@ -5148,7 +5148,7 @@ add_var_loc_to_decl (tree decl, rtx loc_note, const char *label)
 	  piece_loc = &last->loc;
 	  do
 	    {
-	      int cur_bitsize = decl_piece_bitsize (*piece_loc);
+	      HOST_WIDE_INT cur_bitsize = decl_piece_bitsize (*piece_loc);
 	      if (piece_bitpos + cur_bitsize > bitpos)
 		break;
 	      piece_bitpos += cur_bitsize;
@@ -13573,7 +13573,7 @@ static dw_loc_descr_ref
 dw_sra_loc_expr (tree decl, rtx loc)
 {
   rtx p;
-  unsigned int padsize = 0;
+  unsigned HOST_WIDE_INT padsize = 0;
   dw_loc_descr_ref descr, *descr_tail;
   unsigned HOST_WIDE_INT decl_size;
   rtx varloc;
@@ -13589,11 +13589,11 @@ dw_sra_loc_expr (tree decl, rtx loc)
 
   for (p = loc; p; p = XEXP (p, 1))
     {
-      unsigned int bitsize = decl_piece_bitsize (p);
+      unsigned HOST_WIDE_INT bitsize = decl_piece_bitsize (p);
       rtx loc_note = *decl_piece_varloc_ptr (p);
       dw_loc_descr_ref cur_descr;
       dw_loc_descr_ref *tail, last = NULL;
-      unsigned int opsize = 0;
+      unsigned HOST_WIDE_INT opsize = 0;
 
       if (loc_note == NULL_RTX
 	  || NOTE_VAR_LOCATION_LOC (loc_note) == NULL_RTX)

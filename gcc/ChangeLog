@@ -1,3 +1,15 @@
+2015-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/64663
+	* dwarf2out.c (decl_piece_node): Don't put bitsize into
+	mode if bitsize <= 0.
+	(decl_piece_bitsize, adjust_piece_list, add_var_loc_to_decl,
+	dw_sra_loc_expr): Use HOST_WIDE_INT instead of int for bit
+	sizes and positions.
+
 2015-01-29  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* config/i386/avx2intrin.h (_mm256_bslli_epi128,
