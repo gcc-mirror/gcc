@@ -1,5 +1,21 @@
 2015-01-31  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* doc/md.texi (Machine Constraints): Alphabetize table by target.
+	* doc/extend.texi (x86 Variable Attributes): Move section to
+	correct alphabetization	after renaming.
+	(x86 Type Attributes): Likewise.
+	(Target Builtins): Re-alphabetize menu.
+	(x86 Built-in Functions): Move section to correct alphabetization
+	after renaming.
+	(x86 transactional memory intrinsics): Likewise.
+	* doc/invoke.texi (Option Summary): Re-alphabetize x86 Options
+	and x86 Windows Options in table and menu.
+	(x86 Options): Move section to correct alphabetization after
+	renaming.
+	(x86 Windows Options): Likewise.
+
+2015-01-31  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* doc/extend.texi: Use "x86", "x86-32", and "x86-64" as the
 	preferred names of the architecture and its 32- and 64-bit
 	variants.
