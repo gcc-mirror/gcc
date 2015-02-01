@@ -1,3 +1,10 @@
+2015-01-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/64872
+	* ipa-utils.c (ipa_merge_profiles): Add release argument.
+	* ipa-icf.c (sem_function::merge): Do not release body when merging.
+	* ipa-utils.h (ipa_merge_profiles): Update prototype.
+
 2015-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/64817
