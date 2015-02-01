@@ -1695,6 +1695,7 @@ constraints that aren't.  The compiler source file mentioned in the
 table heading for each architecture is the definitive reference for
 the meanings of that architecture's constraints.
 
+@c Please keep this table alphabetized by target!
 @table @emph
 @item AArch64 family---@file{config/aarch64/constraints.md}
 @table @code
@@ -1931,676 +1932,6 @@ A floating point constant 0.0
 A memory address based on Y or Z pointer with displacement.
 @end table
 
-@item Epiphany---@file{config/epiphany/constraints.md}
-@table @code
-@item U16
-An unsigned 16-bit constant.
-
-@item K
-An unsigned 5-bit constant.
-
-@item L
-A signed 11-bit constant.
-
-@item Cm1
-A signed 11-bit constant added to @minus{}1.
-Can only match when the @option{-m1reg-@var{reg}} option is active.
-
-@item Cl1
-Left-shift of @minus{}1, i.e., a bit mask with a block of leading ones, the rest
-being a block of trailing zeroes.
-Can only match when the @option{-m1reg-@var{reg}} option is active.
-
-@item Cr1
-Right-shift of @minus{}1, i.e., a bit mask with a trailing block of ones, the
-rest being zeroes.  Or to put it another way, one less than a power of two.
-Can only match when the @option{-m1reg-@var{reg}} option is active.
-
-@item Cal
-Constant for arithmetic/logical operations.
-This is like @code{i}, except that for position independent code,
-no symbols / expressions needing relocations are allowed.
-
-@item Csy
-Symbolic constant for call/jump instruction.
-
-@item Rcs
-The register class usable in short insns.  This is a register class
-constraint, and can thus drive register allocation.
-This constraint won't match unless @option{-mprefer-short-insn-regs} is
-in effect.
-
-@item Rsc
-The the register class of registers that can be used to hold a
-sibcall call address.  I.e., a caller-saved register.
-
-@item Rct
-Core control register class.
-
-@item Rgs
-The register group usable in short insns.
-This constraint does not use a register class, so that it only
-passively matches suitable registers, and doesn't drive register allocation.
-
-@ifset INTERNALS
-@item Car
-Constant suitable for the addsi3_r pattern.  This is a valid offset
-For byte, halfword, or word addressing.
-@end ifset
-
-@item Rra
-Matches the return address if it can be replaced with the link register.
-
-@item Rcc
-Matches the integer condition code register.
-
-@item Sra
-Matches the return address if it is in a stack slot.
-
-@item Cfm
-Matches control register values to switch fp mode, which are encapsulated in
-@code{UNSPEC_FP_MODE}.
-@end table
-
-@item CR16 Architecture---@file{config/cr16/cr16.h}
-@table @code
-
-@item b
-Registers from r0 to r14 (registers without stack pointer)
-
-@item t
-Register from r0 to r11 (all 16-bit registers)
-
-@item p
-Register from r12 to r15 (all 32-bit registers)
-
-@item I
-Signed constant that fits in 4 bits
-
-@item J
-Signed constant that fits in 5 bits
-
-@item K
-Signed constant that fits in 6 bits
-
-@item L
-Unsigned constant that fits in 4 bits
-
-@item M
-Signed constant that fits in 32 bits
-
-@item N
-Check for 64 bits wide constants for add/sub instructions
-
-@item G
-Floating point constant that is legal for store immediate
-@end table
-
-@item Hewlett-Packard PA-RISC---@file{config/pa/pa.h}
-@table @code
-@item a
-General register 1
-
-@item f
-Floating point register
-
-@item q
-Shift amount register
-
-@item x
-Floating point register (deprecated)
-
-@item y
-Upper floating point register (32-bit), floating point register (64-bit)
-
-@item Z
-Any register
-
-@item I
-Signed 11-bit integer constant
-
-@item J
-Signed 14-bit integer constant
-
-@item K
-Integer constant that can be deposited with a @code{zdepi} instruction
-
-@item L
-Signed 5-bit integer constant
-
-@item M
-Integer constant 0
-
-@item N
-Integer constant that can be loaded with a @code{ldil} instruction
-
-@item O
-Integer constant whose value plus one is a power of 2
-
-@item P
-Integer constant that can be used for @code{and} operations in @code{depi}
-and @code{extru} instructions
-
-@item S
-Integer constant 31
-
-@item U
-Integer constant 63
-
-@item G
-Floating-point constant 0.0
-
-@item A
-A @code{lo_sum} data-linkage-table memory operand
-
-@item Q
-A memory operand that can be used as the destination operand of an
-integer store instruction
-
-@item R
-A scaled or unscaled indexed memory operand
-
-@item T
-A memory operand for floating-point loads and stores
-
-@item W
-A register indirect memory operand
-@end table
-
-@item PowerPC and IBM RS6000---@file{config/rs6000/constraints.md}
-@table @code
-@item b
-Address base register
-
-@item d
-Floating point register (containing 64-bit value)
-
-@item f
-Floating point register (containing 32-bit value)
-
-@item v
-Altivec vector register
-
-@item wa
-Any VSX register if the -mvsx option was used or NO_REGS.
-
-@item wd
-VSX vector register to hold vector double data or NO_REGS.
-
-@item wf
-VSX vector register to hold vector float data or NO_REGS.
-
-@item wg
-If @option{-mmfpgpr} was used, a floating point register or NO_REGS.
-
-@item wh
-Floating point register if direct moves are available, or NO_REGS.
-
-@item wi
-FP or VSX register to hold 64-bit integers for VSX insns or NO_REGS.
-
-@item wj
-FP or VSX register to hold 64-bit integers for direct moves or NO_REGS.
-
-@item wk
-FP or VSX register to hold 64-bit doubles for direct moves or NO_REGS.
-
-@item wl
-Floating point register if the LFIWAX instruction is enabled or NO_REGS.
-
-@item wm
-VSX register if direct move instructions are enabled, or NO_REGS.
-
-@item wn
-No register (NO_REGS).
-
-@item wr
-General purpose register if 64-bit instructions are enabled or NO_REGS.
-
-@item ws
-VSX vector register to hold scalar double values or NO_REGS.
-
-@item wt
-VSX vector register to hold 128 bit integer or NO_REGS.
-
-@item wu
-Altivec register to use for float/32-bit int loads/stores  or NO_REGS.
-
-@item wv
-Altivec register to use for double loads/stores  or NO_REGS.
-
-@item ww
-FP or VSX register to perform float operations under @option{-mvsx} or NO_REGS.
-
-@item wx
-Floating point register if the STFIWX instruction is enabled or NO_REGS.
-
-@item wy
-FP or VSX register to perform ISA 2.07 float ops or NO_REGS.
-
-@item wz
-Floating point register if the LFIWZX instruction is enabled or NO_REGS.
-
-@item wD
-Int constant that is the element number of the 64-bit scalar in a vector.
-
-@item wQ
-A memory address that will work with the @code{lq} and @code{stq}
-instructions.
-
-@item h
-@samp{MQ}, @samp{CTR}, or @samp{LINK} register
-
-@item q
-@samp{MQ} register
-
-@item c
-@samp{CTR} register
-
-@item l
-@samp{LINK} register
-
-@item x
-@samp{CR} register (condition register) number 0
-
-@item y
-@samp{CR} register (condition register)
-
-@item z
-@samp{XER[CA]} carry bit (part of the XER register)
-
-@item I
-Signed 16-bit constant
-
-@item J
-Unsigned 16-bit constant shifted left 16 bits (use @samp{L} instead for
-@code{SImode} constants)
-
-@item K
-Unsigned 16-bit constant
-
-@item L
-Signed 16-bit constant shifted left 16 bits
-
-@item M
-Constant larger than 31
-
-@item N
-Exact power of 2
-
-@item O
-Zero
-
-@item P
-Constant whose negation is a signed 16-bit constant
-
-@item G
-Floating point constant that can be loaded into a register with one
-instruction per word
-
-@item H
-Integer/Floating point constant that can be loaded into a register using
-three instructions
-
-@item m
-Memory operand.
-Normally, @code{m} does not allow addresses that update the base register.
-If @samp{<} or @samp{>} constraint is also used, they are allowed and
-therefore on PowerPC targets in that case it is only safe
-to use @samp{m<>} in an @code{asm} statement if that @code{asm} statement
-accesses the operand exactly once.  The @code{asm} statement must also
-use @samp{%U@var{<opno>}} as a placeholder for the ``update'' flag in the
-corresponding load or store instruction.  For example:
-
-@smallexample
-asm ("st%U0 %1,%0" : "=m<>" (mem) : "r" (val));
-@end smallexample
-
-is correct but:
-
-@smallexample
-asm ("st %1,%0" : "=m<>" (mem) : "r" (val));
-@end smallexample
-
-is not.
-
-@item es
-A ``stable'' memory operand; that is, one which does not include any
-automodification of the base register.  This used to be useful when
-@samp{m} allowed automodification of the base register, but as those are now only
-allowed when @samp{<} or @samp{>} is used, @samp{es} is basically the same
-as @samp{m} without @samp{<} and @samp{>}.
-
-@item Q
-Memory operand that is an offset from a register (it is usually better
-to use @samp{m} or @samp{es} in @code{asm} statements)
-
-@item Z
-Memory operand that is an indexed or indirect from a register (it is
-usually better to use @samp{m} or @samp{es} in @code{asm} statements)
-
-@item R
-AIX TOC entry
-
-@item a
-Address operand that is an indexed or indirect from a register (@samp{p} is
-preferable for @code{asm} statements)
-
-@item S
-Constant suitable as a 64-bit mask operand
-
-@item T
-Constant suitable as a 32-bit mask operand
-
-@item U
-System V Release 4 small data area reference
-
-@item t
-AND masks that can be performed by two rldic@{l, r@} instructions
-
-@item W
-Vector constant that does not require memory
-
-@item j
-Vector constant that is all zeros.
-
-@end table
-
-@item x86 family---@file{config/i386/constraints.md}
-@table @code
-@item R
-Legacy register---the eight integer registers available on all
-i386 processors (@code{a}, @code{b}, @code{c}, @code{d},
-@code{si}, @code{di}, @code{bp}, @code{sp}).
-
-@item q
-Any register accessible as @code{@var{r}l}.  In 32-bit mode, @code{a},
-@code{b}, @code{c}, and @code{d}; in 64-bit mode, any integer register.
-
-@item Q
-Any register accessible as @code{@var{r}h}: @code{a}, @code{b},
-@code{c}, and @code{d}.
-
-@ifset INTERNALS
-@item l
-Any register that can be used as the index in a base+index memory
-access: that is, any general register except the stack pointer.
-@end ifset
-
-@item a
-The @code{a} register.
-
-@item b
-The @code{b} register.
-
-@item c
-The @code{c} register.
-
-@item d
-The @code{d} register.
-
-@item S
-The @code{si} register.
-
-@item D
-The @code{di} register.
-
-@item A
-The @code{a} and @code{d} registers.  This class is used for instructions
-that return double word results in the @code{ax:dx} register pair.  Single
-word values will be allocated either in @code{ax} or @code{dx}.
-For example on i386 the following implements @code{rdtsc}:
-
-@smallexample
-unsigned long long rdtsc (void)
-@{
-  unsigned long long tick;
-  __asm__ __volatile__("rdtsc":"=A"(tick));
-  return tick;
-@}
-@end smallexample
-
-This is not correct on x86-64 as it would allocate tick in either @code{ax}
-or @code{dx}.  You have to use the following variant instead:
-
-@smallexample
-unsigned long long rdtsc (void)
-@{
-  unsigned int tickl, tickh;
-  __asm__ __volatile__("rdtsc":"=a"(tickl),"=d"(tickh));
-  return ((unsigned long long)tickh << 32)|tickl;
-@}
-@end smallexample
-
-
-@item f
-Any 80387 floating-point (stack) register.
-
-@item t
-Top of 80387 floating-point stack (@code{%st(0)}).
-
-@item u
-Second from top of 80387 floating-point stack (@code{%st(1)}).
-
-@item y
-Any MMX register.
-
-@item x
-Any SSE register.
-
-@item Yz
-First SSE register (@code{%xmm0}).
-
-@ifset INTERNALS
-@item Y2
-Any SSE register, when SSE2 is enabled.
-
-@item Yi
-Any SSE register, when SSE2 and inter-unit moves are enabled.
-
-@item Ym
-Any MMX register, when inter-unit moves are enabled.
-@end ifset
-
-@item I
-Integer constant in the range 0 @dots{} 31, for 32-bit shifts.
-
-@item J
-Integer constant in the range 0 @dots{} 63, for 64-bit shifts.
-
-@item K
-Signed 8-bit integer constant.
-
-@item L
-@code{0xFF} or @code{0xFFFF}, for andsi as a zero-extending move.
-
-@item M
-0, 1, 2, or 3 (shifts for the @code{lea} instruction).
-
-@item N
-Unsigned 8-bit integer constant (for @code{in} and @code{out}
-instructions).
-
-@ifset INTERNALS
-@item O
-Integer constant in the range 0 @dots{} 127, for 128-bit shifts.
-@end ifset
-
-@item G
-Standard 80387 floating point constant.
-
-@item C
-Standard SSE floating point constant.
-
-@item e
-32-bit signed integer constant, or a symbolic reference known
-to fit that range (for immediate operands in sign-extending x86-64
-instructions).
-
-@item Z
-32-bit unsigned integer constant, or a symbolic reference known
-to fit that range (for immediate operands in zero-extending x86-64
-instructions).
-
-@end table
-
-@item Intel IA-64---@file{config/ia64/ia64.h}
-@table @code
-@item a
-General register @code{r0} to @code{r3} for @code{addl} instruction
-
-@item b
-Branch register
-
-@item c
-Predicate register (@samp{c} as in ``conditional'')
-
-@item d
-Application register residing in M-unit
-
-@item e
-Application register residing in I-unit
-
-@item f
-Floating-point register
-
-@item m
-Memory operand.  If used together with @samp{<} or @samp{>},
-the operand can have postincrement and postdecrement which
-require printing with @samp{%Pn} on IA-64.
-
-@item G
-Floating-point constant 0.0 or 1.0
-
-@item I
-14-bit signed integer constant
-
-@item J
-22-bit signed integer constant
-
-@item K
-8-bit signed integer constant for logical instructions
-
-@item L
-8-bit adjusted signed integer constant for compare pseudo-ops
-
-@item M
-6-bit unsigned integer constant for shift counts
-
-@item N
-9-bit signed integer constant for load and store postincrements
-
-@item O
-The constant zero
-
-@item P
-0 or @minus{}1 for @code{dep} instruction
-
-@item Q
-Non-volatile memory for floating-point loads and stores
-
-@item R
-Integer constant in the range 1 to 4 for @code{shladd} instruction
-
-@item S
-Memory operand except postincrement and postdecrement.  This is
-now roughly the same as @samp{m} when not used together with @samp{<}
-or @samp{>}.
-@end table
-
-@item FRV---@file{config/frv/frv.h}
-@table @code
-@item a
-Register in the class @code{ACC_REGS} (@code{acc0} to @code{acc7}).
-
-@item b
-Register in the class @code{EVEN_ACC_REGS} (@code{acc0} to @code{acc7}).
-
-@item c
-Register in the class @code{CC_REGS} (@code{fcc0} to @code{fcc3} and
-@code{icc0} to @code{icc3}).
-
-@item d
-Register in the class @code{GPR_REGS} (@code{gr0} to @code{gr63}).
-
-@item e
-Register in the class @code{EVEN_REGS} (@code{gr0} to @code{gr63}).
-Odd registers are excluded not in the class but through the use of a machine
-mode larger than 4 bytes.
-
-@item f
-Register in the class @code{FPR_REGS} (@code{fr0} to @code{fr63}).
-
-@item h
-Register in the class @code{FEVEN_REGS} (@code{fr0} to @code{fr63}).
-Odd registers are excluded not in the class but through the use of a machine
-mode larger than 4 bytes.
-
-@item l
-Register in the class @code{LR_REG} (the @code{lr} register).
-
-@item q
-Register in the class @code{QUAD_REGS} (@code{gr2} to @code{gr63}).
-Register numbers not divisible by 4 are excluded not in the class but through
-the use of a machine mode larger than 8 bytes.
-
-@item t
-Register in the class @code{ICC_REGS} (@code{icc0} to @code{icc3}).
-
-@item u
-Register in the class @code{FCC_REGS} (@code{fcc0} to @code{fcc3}).
-
-@item v
-Register in the class @code{ICR_REGS} (@code{cc4} to @code{cc7}).
-
-@item w
-Register in the class @code{FCR_REGS} (@code{cc0} to @code{cc3}).
-
-@item x
-Register in the class @code{QUAD_FPR_REGS} (@code{fr0} to @code{fr63}).
-Register numbers not divisible by 4 are excluded not in the class but through
-the use of a machine mode larger than 8 bytes.
-
-@item z
-Register in the class @code{SPR_REGS} (@code{lcr} and @code{lr}).
-
-@item A
-Register in the class @code{QUAD_ACC_REGS} (@code{acc0} to @code{acc7}).
-
-@item B
-Register in the class @code{ACCG_REGS} (@code{accg0} to @code{accg7}).
-
-@item C
-Register in the class @code{CR_REGS} (@code{cc0} to @code{cc7}).
-
-@item G
-Floating point constant zero
-
-@item I
-6-bit signed integer constant
-
-@item J
-10-bit signed integer constant
-
-@item L
-16-bit signed integer constant
-
-@item M
-16-bit unsigned integer constant
-
-@item N
-12-bit signed integer constant that is negative---i.e.@: in the
-range of @minus{}2048 to @minus{}1
-
-@item O
-Constant zero
-
-@item P
-12-bit signed integer constant that is greater than zero---i.e.@: in the
-range of 1 to 2047.
-
-@end table
-
 @item Blackfin family---@file{config/bfin/constraints.md}
 @table @code
 @item a
@@ -2716,6 +2047,339 @@ An integer constant with all bits set except exactly one.
 
 @item Q
 Any SYMBOL_REF.
+@end table
+
+@item CR16 Architecture---@file{config/cr16/cr16.h}
+@table @code
+
+@item b
+Registers from r0 to r14 (registers without stack pointer)
+
+@item t
+Register from r0 to r11 (all 16-bit registers)
+
+@item p
+Register from r12 to r15 (all 32-bit registers)
+
+@item I
+Signed constant that fits in 4 bits
+
+@item J
+Signed constant that fits in 5 bits
+
+@item K
+Signed constant that fits in 6 bits
+
+@item L
+Unsigned constant that fits in 4 bits
+
+@item M
+Signed constant that fits in 32 bits
+
+@item N
+Check for 64 bits wide constants for add/sub instructions
+
+@item G
+Floating point constant that is legal for store immediate
+@end table
+
+@item Epiphany---@file{config/epiphany/constraints.md}
+@table @code
+@item U16
+An unsigned 16-bit constant.
+
+@item K
+An unsigned 5-bit constant.
+
+@item L
+A signed 11-bit constant.
+
+@item Cm1
+A signed 11-bit constant added to @minus{}1.
+Can only match when the @option{-m1reg-@var{reg}} option is active.
+
+@item Cl1
+Left-shift of @minus{}1, i.e., a bit mask with a block of leading ones, the rest
+being a block of trailing zeroes.
+Can only match when the @option{-m1reg-@var{reg}} option is active.
+
+@item Cr1
+Right-shift of @minus{}1, i.e., a bit mask with a trailing block of ones, the
+rest being zeroes.  Or to put it another way, one less than a power of two.
+Can only match when the @option{-m1reg-@var{reg}} option is active.
+
+@item Cal
+Constant for arithmetic/logical operations.
+This is like @code{i}, except that for position independent code,
+no symbols / expressions needing relocations are allowed.
+
+@item Csy
+Symbolic constant for call/jump instruction.
+
+@item Rcs
+The register class usable in short insns.  This is a register class
+constraint, and can thus drive register allocation.
+This constraint won't match unless @option{-mprefer-short-insn-regs} is
+in effect.
+
+@item Rsc
+The the register class of registers that can be used to hold a
+sibcall call address.  I.e., a caller-saved register.
+
+@item Rct
+Core control register class.
+
+@item Rgs
+The register group usable in short insns.
+This constraint does not use a register class, so that it only
+passively matches suitable registers, and doesn't drive register allocation.
+
+@ifset INTERNALS
+@item Car
+Constant suitable for the addsi3_r pattern.  This is a valid offset
+For byte, halfword, or word addressing.
+@end ifset
+
+@item Rra
+Matches the return address if it can be replaced with the link register.
+
+@item Rcc
+Matches the integer condition code register.
+
+@item Sra
+Matches the return address if it is in a stack slot.
+
+@item Cfm
+Matches control register values to switch fp mode, which are encapsulated in
+@code{UNSPEC_FP_MODE}.
+@end table
+
+@item FRV---@file{config/frv/frv.h}
+@table @code
+@item a
+Register in the class @code{ACC_REGS} (@code{acc0} to @code{acc7}).
+
+@item b
+Register in the class @code{EVEN_ACC_REGS} (@code{acc0} to @code{acc7}).
+
+@item c
+Register in the class @code{CC_REGS} (@code{fcc0} to @code{fcc3} and
+@code{icc0} to @code{icc3}).
+
+@item d
+Register in the class @code{GPR_REGS} (@code{gr0} to @code{gr63}).
+
+@item e
+Register in the class @code{EVEN_REGS} (@code{gr0} to @code{gr63}).
+Odd registers are excluded not in the class but through the use of a machine
+mode larger than 4 bytes.
+
+@item f
+Register in the class @code{FPR_REGS} (@code{fr0} to @code{fr63}).
+
+@item h
+Register in the class @code{FEVEN_REGS} (@code{fr0} to @code{fr63}).
+Odd registers are excluded not in the class but through the use of a machine
+mode larger than 4 bytes.
+
+@item l
+Register in the class @code{LR_REG} (the @code{lr} register).
+
+@item q
+Register in the class @code{QUAD_REGS} (@code{gr2} to @code{gr63}).
+Register numbers not divisible by 4 are excluded not in the class but through
+the use of a machine mode larger than 8 bytes.
+
+@item t
+Register in the class @code{ICC_REGS} (@code{icc0} to @code{icc3}).
+
+@item u
+Register in the class @code{FCC_REGS} (@code{fcc0} to @code{fcc3}).
+
+@item v
+Register in the class @code{ICR_REGS} (@code{cc4} to @code{cc7}).
+
+@item w
+Register in the class @code{FCR_REGS} (@code{cc0} to @code{cc3}).
+
+@item x
+Register in the class @code{QUAD_FPR_REGS} (@code{fr0} to @code{fr63}).
+Register numbers not divisible by 4 are excluded not in the class but through
+the use of a machine mode larger than 8 bytes.
+
+@item z
+Register in the class @code{SPR_REGS} (@code{lcr} and @code{lr}).
+
+@item A
+Register in the class @code{QUAD_ACC_REGS} (@code{acc0} to @code{acc7}).
+
+@item B
+Register in the class @code{ACCG_REGS} (@code{accg0} to @code{accg7}).
+
+@item C
+Register in the class @code{CR_REGS} (@code{cc0} to @code{cc7}).
+
+@item G
+Floating point constant zero
+
+@item I
+6-bit signed integer constant
+
+@item J
+10-bit signed integer constant
+
+@item L
+16-bit signed integer constant
+
+@item M
+16-bit unsigned integer constant
+
+@item N
+12-bit signed integer constant that is negative---i.e.@: in the
+range of @minus{}2048 to @minus{}1
+
+@item O
+Constant zero
+
+@item P
+12-bit signed integer constant that is greater than zero---i.e.@: in the
+range of 1 to 2047.
+
+@end table
+
+@item Hewlett-Packard PA-RISC---@file{config/pa/pa.h}
+@table @code
+@item a
+General register 1
+
+@item f
+Floating point register
+
+@item q
+Shift amount register
+
+@item x
+Floating point register (deprecated)
+
+@item y
+Upper floating point register (32-bit), floating point register (64-bit)
+
+@item Z
+Any register
+
+@item I
+Signed 11-bit integer constant
+
+@item J
+Signed 14-bit integer constant
+
+@item K
+Integer constant that can be deposited with a @code{zdepi} instruction
+
+@item L
+Signed 5-bit integer constant
+
+@item M
+Integer constant 0
+
+@item N
+Integer constant that can be loaded with a @code{ldil} instruction
+
+@item O
+Integer constant whose value plus one is a power of 2
+
+@item P
+Integer constant that can be used for @code{and} operations in @code{depi}
+and @code{extru} instructions
+
+@item S
+Integer constant 31
+
+@item U
+Integer constant 63
+
+@item G
+Floating-point constant 0.0
+
+@item A
+A @code{lo_sum} data-linkage-table memory operand
+
+@item Q
+A memory operand that can be used as the destination operand of an
+integer store instruction
+
+@item R
+A scaled or unscaled indexed memory operand
+
+@item T
+A memory operand for floating-point loads and stores
+
+@item W
+A register indirect memory operand
+@end table
+
+@item Intel IA-64---@file{config/ia64/ia64.h}
+@table @code
+@item a
+General register @code{r0} to @code{r3} for @code{addl} instruction
+
+@item b
+Branch register
+
+@item c
+Predicate register (@samp{c} as in ``conditional'')
+
+@item d
+Application register residing in M-unit
+
+@item e
+Application register residing in I-unit
+
+@item f
+Floating-point register
+
+@item m
+Memory operand.  If used together with @samp{<} or @samp{>},
+the operand can have postincrement and postdecrement which
+require printing with @samp{%Pn} on IA-64.
+
+@item G
+Floating-point constant 0.0 or 1.0
+
+@item I
+14-bit signed integer constant
+
+@item J
+22-bit signed integer constant
+
+@item K
+8-bit signed integer constant for logical instructions
+
+@item L
+8-bit adjusted signed integer constant for compare pseudo-ops
+
+@item M
+6-bit unsigned integer constant for shift counts
+
+@item N
+9-bit signed integer constant for load and store postincrements
+
+@item O
+The constant zero
+
+@item P
+0 or @minus{}1 for @code{dep} instruction
+
+@item Q
+Non-volatile memory for floating-point loads and stores
+
+@item R
+Integer constant in the range 1 to 4 for @code{shladd} instruction
+
+@item S
+Memory operand except postincrement and postdecrement.  This is
+now roughly the same as @samp{m} when not used together with @samp{<}
+or @samp{>}.
 @end table
 
 @item M32C---@file{config/m32c/m32c.c}
@@ -3346,6 +3010,205 @@ A memory reference that is encoded within the opcode.
 
 @end table
 
+@item PowerPC and IBM RS6000---@file{config/rs6000/constraints.md}
+@table @code
+@item b
+Address base register
+
+@item d
+Floating point register (containing 64-bit value)
+
+@item f
+Floating point register (containing 32-bit value)
+
+@item v
+Altivec vector register
+
+@item wa
+Any VSX register if the -mvsx option was used or NO_REGS.
+
+@item wd
+VSX vector register to hold vector double data or NO_REGS.
+
+@item wf
+VSX vector register to hold vector float data or NO_REGS.
+
+@item wg
+If @option{-mmfpgpr} was used, a floating point register or NO_REGS.
+
+@item wh
+Floating point register if direct moves are available, or NO_REGS.
+
+@item wi
+FP or VSX register to hold 64-bit integers for VSX insns or NO_REGS.
+
+@item wj
+FP or VSX register to hold 64-bit integers for direct moves or NO_REGS.
+
+@item wk
+FP or VSX register to hold 64-bit doubles for direct moves or NO_REGS.
+
+@item wl
+Floating point register if the LFIWAX instruction is enabled or NO_REGS.
+
+@item wm
+VSX register if direct move instructions are enabled, or NO_REGS.
+
+@item wn
+No register (NO_REGS).
+
+@item wr
+General purpose register if 64-bit instructions are enabled or NO_REGS.
+
+@item ws
+VSX vector register to hold scalar double values or NO_REGS.
+
+@item wt
+VSX vector register to hold 128 bit integer or NO_REGS.
+
+@item wu
+Altivec register to use for float/32-bit int loads/stores  or NO_REGS.
+
+@item wv
+Altivec register to use for double loads/stores  or NO_REGS.
+
+@item ww
+FP or VSX register to perform float operations under @option{-mvsx} or NO_REGS.
+
+@item wx
+Floating point register if the STFIWX instruction is enabled or NO_REGS.
+
+@item wy
+FP or VSX register to perform ISA 2.07 float ops or NO_REGS.
+
+@item wz
+Floating point register if the LFIWZX instruction is enabled or NO_REGS.
+
+@item wD
+Int constant that is the element number of the 64-bit scalar in a vector.
+
+@item wQ
+A memory address that will work with the @code{lq} and @code{stq}
+instructions.
+
+@item h
+@samp{MQ}, @samp{CTR}, or @samp{LINK} register
+
+@item q
+@samp{MQ} register
+
+@item c
+@samp{CTR} register
+
+@item l
+@samp{LINK} register
+
+@item x
+@samp{CR} register (condition register) number 0
+
+@item y
+@samp{CR} register (condition register)
+
+@item z
+@samp{XER[CA]} carry bit (part of the XER register)
+
+@item I
+Signed 16-bit constant
+
+@item J
+Unsigned 16-bit constant shifted left 16 bits (use @samp{L} instead for
+@code{SImode} constants)
+
+@item K
+Unsigned 16-bit constant
+
+@item L
+Signed 16-bit constant shifted left 16 bits
+
+@item M
+Constant larger than 31
+
+@item N
+Exact power of 2
+
+@item O
+Zero
+
+@item P
+Constant whose negation is a signed 16-bit constant
+
+@item G
+Floating point constant that can be loaded into a register with one
+instruction per word
+
+@item H
+Integer/Floating point constant that can be loaded into a register using
+three instructions
+
+@item m
+Memory operand.
+Normally, @code{m} does not allow addresses that update the base register.
+If @samp{<} or @samp{>} constraint is also used, they are allowed and
+therefore on PowerPC targets in that case it is only safe
+to use @samp{m<>} in an @code{asm} statement if that @code{asm} statement
+accesses the operand exactly once.  The @code{asm} statement must also
+use @samp{%U@var{<opno>}} as a placeholder for the ``update'' flag in the
+corresponding load or store instruction.  For example:
+
+@smallexample
+asm ("st%U0 %1,%0" : "=m<>" (mem) : "r" (val));
+@end smallexample
+
+is correct but:
+
+@smallexample
+asm ("st %1,%0" : "=m<>" (mem) : "r" (val));
+@end smallexample
+
+is not.
+
+@item es
+A ``stable'' memory operand; that is, one which does not include any
+automodification of the base register.  This used to be useful when
+@samp{m} allowed automodification of the base register, but as those are now only
+allowed when @samp{<} or @samp{>} is used, @samp{es} is basically the same
+as @samp{m} without @samp{<} and @samp{>}.
+
+@item Q
+Memory operand that is an offset from a register (it is usually better
+to use @samp{m} or @samp{es} in @code{asm} statements)
+
+@item Z
+Memory operand that is an indexed or indirect from a register (it is
+usually better to use @samp{m} or @samp{es} in @code{asm} statements)
+
+@item R
+AIX TOC entry
+
+@item a
+Address operand that is an indexed or indirect from a register (@samp{p} is
+preferable for @code{asm} statements)
+
+@item S
+Constant suitable as a 64-bit mask operand
+
+@item T
+Constant suitable as a 32-bit mask operand
+
+@item U
+System V Release 4 small data area reference
+
+@item t
+AND masks that can be performed by two rldic@{l, r@} instructions
+
+@item W
+Vector constant that does not require memory
+
+@item j
+Vector constant that is all zeros.
+
+@end table
+
 @item RL78---@file{config/rl78/constraints.md}
 @table @code
 
@@ -3459,6 +3322,79 @@ A constant in the range @minus{}8388608 to 8388607, inclusive.
 
 @item Uint04
 A constant in the range 0 to 15, inclusive.
+
+@end table
+
+@item S/390 and zSeries---@file{config/s390/s390.h}
+@table @code
+@item a
+Address register (general purpose register except r0)
+
+@item c
+Condition code register
+
+@item d
+Data register (arbitrary general purpose register)
+
+@item f
+Floating-point register
+
+@item I
+Unsigned 8-bit constant (0--255)
+
+@item J
+Unsigned 12-bit constant (0--4095)
+
+@item K
+Signed 16-bit constant (@minus{}32768--32767)
+
+@item L
+Value appropriate as displacement.
+@table @code
+@item (0..4095)
+for short displacement
+@item (@minus{}524288..524287)
+for long displacement
+@end table
+
+@item M
+Constant integer with a value of 0x7fffffff.
+
+@item N
+Multiple letter constraint followed by 4 parameter letters.
+@table @code
+@item 0..9:
+number of the part counting from most to least significant
+@item H,Q:
+mode of the part
+@item D,S,H:
+mode of the containing operand
+@item 0,F:
+value of the other parts (F---all bits set)
+@end table
+The constraint matches if the specified part of a constant
+has a value different from its other parts.
+
+@item Q
+Memory reference without index register and with short displacement.
+
+@item R
+Memory reference with index register and short displacement.
+
+@item S
+Memory reference without index register but with long displacement.
+
+@item T
+Memory reference with index register and long displacement.
+
+@item U
+Pointer with short displacement.
+
+@item W
+Pointer with long displacement.
+
+@item Y
+Shift count operand.
 
 @end table
 
@@ -3631,149 +3567,6 @@ An immediate for and/xor/or instructions.  const_int is sign extended as a 128 b
 
 @item Z
 An immediate for the @code{iohl} instruction.  const_int is sign extended to 128 bit.
-
-@end table
-
-@item S/390 and zSeries---@file{config/s390/s390.h}
-@table @code
-@item a
-Address register (general purpose register except r0)
-
-@item c
-Condition code register
-
-@item d
-Data register (arbitrary general purpose register)
-
-@item f
-Floating-point register
-
-@item I
-Unsigned 8-bit constant (0--255)
-
-@item J
-Unsigned 12-bit constant (0--4095)
-
-@item K
-Signed 16-bit constant (@minus{}32768--32767)
-
-@item L
-Value appropriate as displacement.
-@table @code
-@item (0..4095)
-for short displacement
-@item (@minus{}524288..524287)
-for long displacement
-@end table
-
-@item M
-Constant integer with a value of 0x7fffffff.
-
-@item N
-Multiple letter constraint followed by 4 parameter letters.
-@table @code
-@item 0..9:
-number of the part counting from most to least significant
-@item H,Q:
-mode of the part
-@item D,S,H:
-mode of the containing operand
-@item 0,F:
-value of the other parts (F---all bits set)
-@end table
-The constraint matches if the specified part of a constant
-has a value different from its other parts.
-
-@item Q
-Memory reference without index register and with short displacement.
-
-@item R
-Memory reference with index register and short displacement.
-
-@item S
-Memory reference without index register but with long displacement.
-
-@item T
-Memory reference with index register and long displacement.
-
-@item U
-Pointer with short displacement.
-
-@item W
-Pointer with long displacement.
-
-@item Y
-Shift count operand.
-
-@end table
-
-@item Xstormy16---@file{config/stormy16/stormy16.h}
-@table @code
-@item a
-Register r0.
-
-@item b
-Register r1.
-
-@item c
-Register r2.
-
-@item d
-Register r8.
-
-@item e
-Registers r0 through r7.
-
-@item t
-Registers r0 and r1.
-
-@item y
-The carry register.
-
-@item z
-Registers r8 and r9.
-
-@item I
-A constant between 0 and 3 inclusive.
-
-@item J
-A constant that has exactly one bit set.
-
-@item K
-A constant that has exactly one bit clear.
-
-@item L
-A constant between 0 and 255 inclusive.
-
-@item M
-A constant between @minus{}255 and 0 inclusive.
-
-@item N
-A constant between @minus{}3 and 0 inclusive.
-
-@item O
-A constant between 1 and 4 inclusive.
-
-@item P
-A constant between @minus{}4 and @minus{}1 inclusive.
-
-@item Q
-A memory reference that is a stack push.
-
-@item R
-A memory reference that is a stack pop.
-
-@item S
-A memory reference that refers to a constant address of known value.
-
-@item T
-The register indicated by Rx (not implemented yet).
-
-@item U
-A constant that is not between 2 and 15 inclusive.
-
-@item Z
-The constant 0.
 
 @end table
 
@@ -4056,6 +3849,214 @@ Integer constant 0
 
 @item P
 Integer constant 32
+@end table
+
+@item x86 family---@file{config/i386/constraints.md}
+@table @code
+@item R
+Legacy register---the eight integer registers available on all
+i386 processors (@code{a}, @code{b}, @code{c}, @code{d},
+@code{si}, @code{di}, @code{bp}, @code{sp}).
+
+@item q
+Any register accessible as @code{@var{r}l}.  In 32-bit mode, @code{a},
+@code{b}, @code{c}, and @code{d}; in 64-bit mode, any integer register.
+
+@item Q
+Any register accessible as @code{@var{r}h}: @code{a}, @code{b},
+@code{c}, and @code{d}.
+
+@ifset INTERNALS
+@item l
+Any register that can be used as the index in a base+index memory
+access: that is, any general register except the stack pointer.
+@end ifset
+
+@item a
+The @code{a} register.
+
+@item b
+The @code{b} register.
+
+@item c
+The @code{c} register.
+
+@item d
+The @code{d} register.
+
+@item S
+The @code{si} register.
+
+@item D
+The @code{di} register.
+
+@item A
+The @code{a} and @code{d} registers.  This class is used for instructions
+that return double word results in the @code{ax:dx} register pair.  Single
+word values will be allocated either in @code{ax} or @code{dx}.
+For example on i386 the following implements @code{rdtsc}:
+
+@smallexample
+unsigned long long rdtsc (void)
+@{
+  unsigned long long tick;
+  __asm__ __volatile__("rdtsc":"=A"(tick));
+  return tick;
+@}
+@end smallexample
+
+This is not correct on x86-64 as it would allocate tick in either @code{ax}
+or @code{dx}.  You have to use the following variant instead:
+
+@smallexample
+unsigned long long rdtsc (void)
+@{
+  unsigned int tickl, tickh;
+  __asm__ __volatile__("rdtsc":"=a"(tickl),"=d"(tickh));
+  return ((unsigned long long)tickh << 32)|tickl;
+@}
+@end smallexample
+
+
+@item f
+Any 80387 floating-point (stack) register.
+
+@item t
+Top of 80387 floating-point stack (@code{%st(0)}).
+
+@item u
+Second from top of 80387 floating-point stack (@code{%st(1)}).
+
+@item y
+Any MMX register.
+
+@item x
+Any SSE register.
+
+@item Yz
+First SSE register (@code{%xmm0}).
+
+@ifset INTERNALS
+@item Y2
+Any SSE register, when SSE2 is enabled.
+
+@item Yi
+Any SSE register, when SSE2 and inter-unit moves are enabled.
+
+@item Ym
+Any MMX register, when inter-unit moves are enabled.
+@end ifset
+
+@item I
+Integer constant in the range 0 @dots{} 31, for 32-bit shifts.
+
+@item J
+Integer constant in the range 0 @dots{} 63, for 64-bit shifts.
+
+@item K
+Signed 8-bit integer constant.
+
+@item L
+@code{0xFF} or @code{0xFFFF}, for andsi as a zero-extending move.
+
+@item M
+0, 1, 2, or 3 (shifts for the @code{lea} instruction).
+
+@item N
+Unsigned 8-bit integer constant (for @code{in} and @code{out}
+instructions).
+
+@ifset INTERNALS
+@item O
+Integer constant in the range 0 @dots{} 127, for 128-bit shifts.
+@end ifset
+
+@item G
+Standard 80387 floating point constant.
+
+@item C
+Standard SSE floating point constant.
+
+@item e
+32-bit signed integer constant, or a symbolic reference known
+to fit that range (for immediate operands in sign-extending x86-64
+instructions).
+
+@item Z
+32-bit unsigned integer constant, or a symbolic reference known
+to fit that range (for immediate operands in zero-extending x86-64
+instructions).
+
+@end table
+
+@item Xstormy16---@file{config/stormy16/stormy16.h}
+@table @code
+@item a
+Register r0.
+
+@item b
+Register r1.
+
+@item c
+Register r2.
+
+@item d
+Register r8.
+
+@item e
+Registers r0 through r7.
+
+@item t
+Registers r0 and r1.
+
+@item y
+The carry register.
+
+@item z
+Registers r8 and r9.
+
+@item I
+A constant between 0 and 3 inclusive.
+
+@item J
+A constant that has exactly one bit set.
+
+@item K
+A constant that has exactly one bit clear.
+
+@item L
+A constant between 0 and 255 inclusive.
+
+@item M
+A constant between @minus{}255 and 0 inclusive.
+
+@item N
+A constant between @minus{}3 and 0 inclusive.
+
+@item O
+A constant between 1 and 4 inclusive.
+
+@item P
+A constant between @minus{}4 and @minus{}1 inclusive.
+
+@item Q
+A memory reference that is a stack push.
+
+@item R
+A memory reference that is a stack pop.
+
+@item S
+A memory reference that refers to a constant address of known value.
+
+@item T
+The register indicated by Rx (not implemented yet).
+
+@item U
+A constant that is not between 2 and 15 inclusive.
+
+@item Z
+The constant 0.
+
 @end table
 
 @item Xtensa---@file{config/xtensa/constraints.md}
