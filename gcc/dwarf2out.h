@@ -201,7 +201,7 @@ struct GTY(()) dw_val_node {
 /* Locations in memory are described using a sequence of stack machine
    operations.  */
 
-struct GTY(()) dw_loc_descr_node {
+struct GTY((chain_next ("%h.dw_loc_next"))) dw_loc_descr_node {
   dw_loc_descr_ref dw_loc_next;
   ENUM_BITFIELD (dwarf_location_atom) dw_loc_opc : 8;
   /* Used to distinguish DW_OP_addr with a direct symbol relocation

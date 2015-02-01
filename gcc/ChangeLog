@@ -1,6 +1,12 @@
 2015-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2015-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/64511
+	* dwarf2out.c (struct dw_loc_descr_node): Add chain_next
+	GTY markup.
+
 	2015-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/64663
