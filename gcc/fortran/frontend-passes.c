@@ -678,10 +678,10 @@ do_warn_function_elimination (gfc_expr *e)
   if (e->expr_type != EXPR_FUNCTION)
     return;
   if (e->value.function.esym)
-    gfc_warning ("Removing call to function %qs at %L",
+    gfc_warning (0, "Removing call to function %qs at %L",
 		 e->value.function.esym->name, &(e->where));
   else if (e->value.function.isym)
-    gfc_warning ("Removing call to function %qs at %L",
+    gfc_warning (0, "Removing call to function %qs at %L",
 		 e->value.function.isym->name, &(e->where));
 }
 /* Callback function for the code walker for doing common function

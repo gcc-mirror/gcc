@@ -1178,7 +1178,7 @@ check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 
 	case -2:
 	  /* FIXME: Implement a warning for this case.
-	  gfc_warning ("Possible character length mismatch in argument %qs",
+	  gfc_warning (0, "Possible character length mismatch in argument %qs",
 		       s1->name);*/
 	  break;
 
@@ -1237,7 +1237,7 @@ check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 
 	      case -2:
 		/* FIXME: Implement a warning for this case.
-		gfc_warning ("Possible shape mismatch in argument %qs",
+		gfc_warning (0, "Possible shape mismatch in argument %qs",
 			    s1->name);*/
 		break;
 
@@ -1398,7 +1398,7 @@ check_result_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 
 	      case -2:
 		/* FIXME: Implement a warning for this case.
-		gfc_warning ("Possible shape mismatch in return value");*/
+		gfc_warning (0, "Possible shape mismatch in return value");*/
 		break;
 
 	      case 0:
@@ -1660,11 +1660,11 @@ check_interface1 (gfc_interface *p, gfc_interface *q0,
 			 p->sym->name, q->sym->name, interface_name,
 			 &p->where);
 	    else if (!p->sym->attr.use_assoc && q->sym->attr.use_assoc)
-	      gfc_warning ("Ambiguous interfaces %qs and %qs in %s at %L",
+	      gfc_warning (0, "Ambiguous interfaces %qs and %qs in %s at %L",
 			   p->sym->name, q->sym->name, interface_name,
 			   &p->where);
 	    else
-	      gfc_warning ("Although not referenced, %qs has ambiguous "
+	      gfc_warning (0, "Although not referenced, %qs has ambiguous "
 			   "interfaces at %L", interface_name, &p->where);
 	    return 1;
 	  }
@@ -2705,14 +2705,16 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 			f->sym->ts.u.cl->length->value.integer) != 0))
 	 {
 	   if (where && (f->sym->attr.pointer || f->sym->attr.allocatable))
-	     gfc_warning ("Character length mismatch (%ld/%ld) between actual "
+	     gfc_warning (0,
+			  "Character length mismatch (%ld/%ld) between actual "
 			  "argument and pointer or allocatable dummy argument "
 			  "%qs at %L",
 			  mpz_get_si (a->expr->ts.u.cl->length->value.integer),
 			  mpz_get_si (f->sym->ts.u.cl->length->value.integer),
 			  f->sym->name, &a->expr->where);
 	   else if (where)
-	     gfc_warning ("Character length mismatch (%ld/%ld) between actual "
+	     gfc_warning (0,
+			  "Character length mismatch (%ld/%ld) between actual "
 			  "argument and assumed-shape dummy argument %qs "
 			  "at %L",
 			  mpz_get_si (a->expr->ts.u.cl->length->value.integer),
@@ -2743,12 +2745,12 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  && f->sym->attr.flavor != FL_PROCEDURE)
 	{
 	  if (a->expr->ts.type == BT_CHARACTER && !f->sym->as && where)
-	    gfc_warning ("Character length of actual argument shorter "
+	    gfc_warning (0, "Character length of actual argument shorter "
 			 "than of dummy argument %qs (%lu/%lu) at %L",
 			 f->sym->name, actual_size, formal_size,
 			 &a->expr->where);
           else if (where)
-	    gfc_warning ("Actual argument contains too few "
+	    gfc_warning (0, "Actual argument contains too few "
 			 "elements for dummy argument %qs (%lu/%lu) at %L",
 			 f->sym->name, actual_size, formal_size,
 			 &a->expr->where);
@@ -3184,7 +3186,7 @@ check_some_aliasing (gfc_formal_arglist *f, gfc_actual_arglist *a)
 	      || (f1_intent == INTENT_OUT && f2_intent == INTENT_IN)
 	      || (f1_intent == INTENT_OUT && f2_intent == INTENT_OUT))
 	    {
-	      gfc_warning ("Same actual argument associated with INTENT(%s) "
+	      gfc_warning (0, "Same actual argument associated with INTENT(%s) "
 			   "argument %qs and INTENT(%s) argument %qs at %L",
 			   gfc_intent_string (f1_intent), p[i].f->sym->name,
 			   gfc_intent_string (f2_intent), p[j].f->sym->name,

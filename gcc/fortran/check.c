@@ -5089,7 +5089,7 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
     return true;
 
   if (source_size < result_size)
-    gfc_warning ("Intrinsic TRANSFER at %L has partly undefined result: "
+    gfc_warning (0, "Intrinsic TRANSFER at %L has partly undefined result: "
 		 "source size %ld < result size %ld", &source->where,
 		 (long) source_size, (long) result_size);
 

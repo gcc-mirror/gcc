@@ -4316,7 +4316,7 @@ gfc_check_intrinsic_standard (const gfc_intrinsic_sym* isym,
     {
       /* Do only print a warning if not a GNU extension.  */
       if (!silent && isym->standard != GFC_STD_GNU)
-	gfc_warning ("Intrinsic %qs (is %s) is used at %L",
+	gfc_warning (0, "Intrinsic %qs (is %s) is used at %L",
 		     isym->name, _(symstd_msg), &where);
 
       return true;
@@ -4617,7 +4617,7 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
   /* At this point, a conversion is necessary. A warning may be needed.  */
   if ((gfc_option.warn_std & sym->standard) != 0)
     {
-      gfc_warning_now ("Extension: Conversion from %s to %s at %L",
+      gfc_warning_now (0, "Extension: Conversion from %s to %s at %L",
 		       gfc_typename (&from_ts), gfc_typename (ts),
 		       &expr->where);
     }

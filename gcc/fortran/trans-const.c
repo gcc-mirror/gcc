@@ -332,7 +332,7 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
 			gfc_build_string_const (expr->representation.length,
 						expr->representation.string));
 	  if (!integer_zerop (tmp) && !integer_onep (tmp))
-	    gfc_warning ("Assigning value other than 0 or 1 to LOGICAL"
+	    gfc_warning (0, "Assigning value other than 0 or 1 to LOGICAL"
 			 " has undefined result at %L", &expr->where);
 	  return fold_convert (gfc_get_logical_type (expr->ts.kind), tmp);
 	}

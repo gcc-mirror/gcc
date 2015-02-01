@@ -1,3 +1,16 @@
+2015-02-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* error.c (gfc_warning (const char *, ...), gfc_warning_now (const
+	char *, ...)): Remove functions.
+	* gfortran.h (gfc_warning (const char *, ...), gfc_warning_now
+	(const char *, ...)): Remove declarations.
+	* arith.c, check.c, data.c, decl.c, frontend-passes.c,
+	interface.c, intrinsic.c, io.c, matchexp.c, module.c, openmp.c,
+	options.c, parse.c, primary.c, resolve.c, scanner.c, symbol.c,
+	trans-common.c, trans-const.c, trans-stmt.c: All callers of
+	gfc_warning and gfc_warning_now changed to pass 0 or option number
+	as first argument.
+
 2015-01-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* f95-lang.c, gfortranspec.c, trans-const.c, trans-expr.c: All

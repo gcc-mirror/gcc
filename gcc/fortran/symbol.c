@@ -3874,7 +3874,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
   */
   if (curr_comp == NULL)
     {
-      gfc_warning ("Derived type %qs with BIND(C) attribute at %L is empty, "
+      gfc_warning (0, "Derived type %qs with BIND(C) attribute at %L is empty, "
 		   "and may be inaccessible by the C companion processor",
 		   derived_sym->name, &(derived_sym->declared_at));
       derived_sym->ts.is_c_interop = 1;
