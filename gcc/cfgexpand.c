@@ -3767,6 +3767,48 @@ convert_debug_memory_address (machine_mode mode, rtx x,
   return x;
 }
 
+/* Map from SSA_NAMEs to corresponding DEBUG_EXPR_DECLs created
+   by avoid_deep_ter_for_debug.  */
+
+static hash_map<tree, tree> *deep_ter_debug_map;
+
+/* Split too deep TER chains for debug stmts using debug temporaries.  */
+
+static void
+avoid_deep_ter_for_debug (gimple stmt, int depth)
+{
+  use_operand_p use_p;
+  ssa_op_iter iter;
+  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
+    {
+      tree use = USE_FROM_PTR (use_p);
+      if (TREE_CODE (use) != SSA_NAME || SSA_NAME_IS_DEFAULT_DEF (use))
+	continue;
+      gimple g = get_gimple_for_ssa_name (use);
+      if (g == NULL)
+	continue;
+      if (depth > 6 && !stmt_ends_bb_p (g))
+	{
+	  if (deep_ter_debug_map == NULL)
+	    deep_ter_debug_map = new hash_map<tree, tree>;
+
+	  tree &vexpr = deep_ter_debug_map->get_or_insert (use);
+	  if (vexpr != NULL)
+	    continue;
+	  vexpr = make_node (DEBUG_EXPR_DECL);
+	  gimple def_temp = gimple_build_debug_bind (vexpr, use, g);
+	  DECL_ARTIFICIAL (vexpr) = 1;
+	  TREE_TYPE (vexpr) = TREE_TYPE (use);
+	  DECL_MODE (vexpr) = TYPE_MODE (TREE_TYPE (use));
+	  gimple_stmt_iterator gsi = gsi_for_stmt (g);
+	  gsi_insert_after (&gsi, def_temp, GSI_NEW_STMT);
+	  avoid_deep_ter_for_debug (def_temp, 0);
+	}
+      else
+	avoid_deep_ter_for_debug (g, depth + 1);
+    }
+}
+
 /* Return an RTX equivalent to the value of the parameter DECL.  */
 
 static rtx
@@ -4654,7 +4696,16 @@ expand_debug_expr (tree exp)
 	gimple g = get_gimple_for_ssa_name (exp);
 	if (g)
 	  {
-	    op0 = expand_debug_expr (gimple_assign_rhs_to_tree (g));
+	    tree t = NULL_TREE;
+	    if (deep_ter_debug_map)
+	      {
+		tree *slot = deep_ter_debug_map->get (exp);
+		if (slot)
+		  t = *slot;
+	      }
+	    if (t == NULL_TREE)
+	      t = gimple_assign_rhs_to_tree (g);
+	    op0 = expand_debug_expr (t);
 	    if (!op0)
 	      return NULL;
 	  }
@@ -4961,6 +5012,25 @@ expand_debug_locations (void)
 	    if (INSN_VAR_LOCATION_STATUS (insn)
 		== VAR_INIT_STATUS_UNINITIALIZED)
 	      val = expand_debug_source_expr (value);
+	    /* The avoid_deep_ter_for_debug function inserts
+	       debug bind stmts after SSA_NAME definition, with the
+	       SSA_NAME as the whole bind location.  Disable temporarily
+	       expansion of that SSA_NAME into the DEBUG_EXPR_DECL
+	       being defined in this DEBUG_INSN.  */
+	    else if (deep_ter_debug_map && TREE_CODE (value) == SSA_NAME)
+	      {
+		tree *slot = deep_ter_debug_map->get (value);
+		if (slot)
+		  {
+		    if (*slot == INSN_VAR_LOCATION_DECL (insn))
+		      *slot = NULL_TREE;
+		    else
+		      slot = NULL;
+		  }
+		val = expand_debug_expr (value);
+		if (slot)
+		  *slot = INSN_VAR_LOCATION_DECL (insn);
+	      }
 	    else
 	      val = expand_debug_expr (value);
 	    gcc_assert (last == get_last_insn ());
@@ -5821,6 +5891,15 @@ pass_expand::execute (function *fun)
   timevar_pop (TV_OUT_OF_SSA);
   SA.partition_to_pseudo = XCNEWVEC (rtx, SA.map->num_partitions);
 
+  if (MAY_HAVE_DEBUG_STMTS && flag_tree_ter)
+    {
+      gimple_stmt_iterator gsi;
+      FOR_EACH_BB_FN (bb, cfun)
+	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	  if (gimple_debug_bind_p (gsi_stmt (gsi)))
+	    avoid_deep_ter_for_debug (gsi_stmt (gsi), 0);
+    }
+
   /* Make sure all values used by the optimization passes have sane
      defaults.  */
   reg_renumber = 0;
@@ -6007,6 +6086,12 @@ pass_expand::execute (function *fun)
 
   if (MAY_HAVE_DEBUG_INSNS)
     expand_debug_locations ();
+
+  if (deep_ter_debug_map)
+    {
+      delete deep_ter_debug_map;
+      deep_ter_debug_map = NULL;
+    }
 
   /* Free stuff we no longer need after GIMPLE optimizations.  */
   free_dominance_info (CDI_DOMINATORS);
