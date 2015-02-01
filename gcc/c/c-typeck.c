@@ -5788,7 +5788,8 @@ store_init_value (location_t init_loc, tree decl, tree init, tree origtype)
     warning (OPT_Wtraditional, "traditional C rejects automatic "
 	     "aggregate initialization");
 
-  DECL_INITIAL (decl) = value;
+  if (value != error_mark_node || TREE_CODE (decl) != FUNCTION_DECL)
+    DECL_INITIAL (decl) = value;
 
   /* ANSI wants warnings about out-of-range constant initializers.  */
   STRIP_TYPE_NOPS (value);

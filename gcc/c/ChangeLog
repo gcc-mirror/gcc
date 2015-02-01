@@ -1,3 +1,12 @@
+2015-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/64766
+	* c-typeck.c (store_init_value): Don't overwrite DECL_INITIAL
+	of FUNCTION_DECLs with error_mark_node.
+
 2014-12-19  Release Manager
 
 	* GCC 4.8.4 released.
