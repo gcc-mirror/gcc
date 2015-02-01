@@ -917,6 +917,9 @@ struct _haifa_insn_data
   int reg_pressure_excess_cost_change;
   int model_index;
 
+  /* Original order of insns in the ready list.  */
+  int rfs_debug_orig_order;
+
   /* The deciding reason for INSN's place in the ready list.  */
   int last_rfs_win;
 
