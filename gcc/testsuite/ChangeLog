@@ -1,6 +1,11 @@
 2015-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2015-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/64528
+	* gfortran.dg/pr64528.f90: New test.
+
 	2015-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/64563
