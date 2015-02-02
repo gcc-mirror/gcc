@@ -1,3 +1,9 @@
+2015-02-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64810
+	* dummy-frontend.c (jit_langhook_type_for_mode): Support
+	TYPE_MODE (long_long_integer_type_node).
+
 2015-01-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/internals/test-hello-world.exe.log.txt: Add example version
