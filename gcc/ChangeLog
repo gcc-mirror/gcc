@@ -1,3 +1,11 @@
+2015-02-02  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_call_aix): Use unspec rather
+	than mem for toc_restore.
+	* config/rs6000/rs6000.md (UNSPEC_TOCSLOT): Define.
+	(call_indirect_aix, call_value_indirect_aix): Adjust to suit.
+	(call_indirect_elfv2, call_value_indirect_elfv2): Likewise.
+
 2015-02-01  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/64047
