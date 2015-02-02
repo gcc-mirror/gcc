@@ -1,3 +1,8 @@
+2015-02-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-ccp.c (valueize_op_1): Always allow valueizing default-defs.
+	* tree-vrp.c (vrp_valueize_1): Likewise.
+
 2015-02-02  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_call_aix): Use unspec rather
