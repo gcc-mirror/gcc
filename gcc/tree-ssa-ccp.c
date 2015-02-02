@@ -1145,7 +1145,8 @@ valueize_op_1 (tree op)
          this SSA edge as the SSA propagator does not necessarily
 	 re-visit the use.  */
       gimple def_stmt = SSA_NAME_DEF_STMT (op);
-      if (prop_simulate_again_p (def_stmt))
+      if (!gimple_nop_p (def_stmt)
+	  && prop_simulate_again_p (def_stmt))
 	return NULL_TREE;
       tree tem = get_constant_value (op);
       if (tem)
