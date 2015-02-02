@@ -1,4 +1,4 @@
-/* { dg-options "-fpermissive -O2 -fno-indirect-inlining -fno-devirtualize-speculatively -fdump-tree-fre2-details"  } */
+/* { dg-options "-fpermissive -O2 -fno-indirect-inlining -fno-devirtualize-speculatively -fdump-tree-fre2-details -fno-early-inlining"  } */
 #include <stdlib.h>
 struct A {virtual void test() {abort ();}};
 struct B:A

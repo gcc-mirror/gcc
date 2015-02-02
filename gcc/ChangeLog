@@ -1,3 +1,9 @@
+2015-02-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (early_inliner): Skip inlining only in always_inlined;
+	if some always_inline was inlined, apply changes before inlining
+	heuristically.
+
 2015-02-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/64810
