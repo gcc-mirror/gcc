@@ -260,7 +260,6 @@ loop infrastructure	Zdenek Dvorak		<ook@ucw.cz>
 OpenMP			Jakub Jelinek		<jakub@redhat.com>
 testsuite		Rainer Orth		<ro@CeBiTec.Uni-Bielefeld.DE>
 testsuite		Mike Stump		<mikestump@comcast.net>
-testsuite		Janis Johnson		<janisjo@codesourcery.com>
 register allocation	Vladimir Makarov	<vmakarov@redhat.com>
 gdbhooks.py		David Malcolm		<dmalcolm@redhat.com>
 SLSR			Bill Schmidt		<wschmidt@linux.vnet.ibm.com>
@@ -438,7 +437,7 @@ Harsha Jagasia					<harsha.jagasia@amd.com>
 Fariborz Jahanian				<fjahanian@apple.com>
 Martin Jambor					<mjambor@suse.cz>
 Andrew Jenner					<andrew@codesourcery.com>
-Janis Johnson					<janisjo@codesourcery.com>
+Janis Johnson					<janis.marie.johnson@gmail.com>
 Teresa Johnson					<tejohnson@google.com>
 Kean Johnston					<jkj@sco.com>
 Phillip Jordan					<phillip.m.jordan@gmail.com>
