@@ -1,3 +1,8 @@
+2015-02-02  Janis Johnson  <janis.marie.johnson@gmail.com>
+
+	* MAINTAINERS (Various Maintainers: testsuite): Remove myself.
+	(Write After Approval): Update address.
+
 2015-01-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/64780
