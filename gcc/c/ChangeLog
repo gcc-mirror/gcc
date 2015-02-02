@@ -1,3 +1,8 @@
+2015-02-02  Bruno Loff <bruno.loff@gmail.com>
+
+	* c-parser.c (c_parser_declspecs): Call invoke_plugin_callbacks after
+	processing enum declaration.
+
 2015-01-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64709
