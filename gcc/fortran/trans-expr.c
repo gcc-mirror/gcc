@@ -660,26 +660,26 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
 	 expression can be evaluated to a constant one.  */
       else
         {
-          /* Try to simplify the expression.  */
-          gfc_simplify_expr (e, 0);
-          if (e->expr_type == EXPR_CONSTANT && !e->ts.u.cl->resolved)
-            {
-              /* Amazingly all data is present to compute the length of a
-                 constant string, but the expression is not yet there.  */
-              e->ts.u.cl->length = gfc_get_constant_expr (BT_INTEGER, 1,
-                                                          &e->where);
-              mpz_set_ui (e->ts.u.cl->length->value.integer,
-                          e->value.character.length);
-              gfc_conv_const_charlen (e->ts.u.cl);
-              e->ts.u.cl->resolved = 1;
-              gfc_add_modify (&parmse->pre, ctree, e->ts.u.cl->backend_decl);
-            }
-          else
-            {
-              gfc_error ("Can't compute the length of the char array at %L.",
-                         &e->where);
-            }
-        }
+	  /* Try to simplify the expression.  */
+	  gfc_simplify_expr (e, 0);
+	  if (e->expr_type == EXPR_CONSTANT && !e->ts.u.cl->resolved)
+	    {
+	      /* Amazingly all data is present to compute the length of a
+		 constant string, but the expression is not yet there.  */
+	      e->ts.u.cl->length = gfc_get_constant_expr (BT_INTEGER, 4,
+							  &e->where);
+	      mpz_set_ui (e->ts.u.cl->length->value.integer,
+			  e->value.character.length);
+	      gfc_conv_const_charlen (e->ts.u.cl);
+	      e->ts.u.cl->resolved = 1;
+	      gfc_add_modify (&parmse->pre, ctree, e->ts.u.cl->backend_decl);
+	    }
+	  else
+	    {
+	      gfc_error ("Can't compute the length of the char array at %L.",
+			 &e->where);
+	    }
+	}
     }
   /* Pass the address of the class object.  */
   parmse->expr = gfc_build_addr_expr (NULL_TREE, var);

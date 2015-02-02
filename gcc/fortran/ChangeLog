@@ -1,3 +1,10 @@
+
+2015-01-30  Andre Vehreschild  <vehre@gmx.de>
+
+	* trans-decl.c (gfc_get_symbol_decl): Removed duplicate code.
+	* trans-expr.c (gfc_conv_intrinsic_to_class): Fixed indentation.
+	Fixed datatype of charlen to be a 32-bit int.
+
 2015-02-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* error.c (gfc_warning (const char *, ...), gfc_warning_now (const
