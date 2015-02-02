@@ -1,3 +1,10 @@
+2015-02-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR libgomp/64635
+	* configure.tgt (*-*-aix*): Use standard posix plugin-suffix.h.
+	Link with -lpthread.
+	* config/aix/plugin-suffix.h: Delete.
+
 2015-01-28  Jack Howarth  <howarth.at.gcc@gmail.com>
 
 	PR libgomp/64635
