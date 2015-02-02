@@ -7083,8 +7083,8 @@ aarch64_classify_symbol (rtx x, rtx offset,
 	  /* Same reasoning as the tiny code model, but the offset cap here is
 	     4G.  */
 	  if (SYMBOL_REF_WEAK (x)
-	      || INTVAL (offset) < (HOST_WIDE_INT) -4294967263
-	      || INTVAL (offset) > (HOST_WIDE_INT) 4294967264)
+	      || !IN_RANGE (INTVAL (offset), HOST_WIDE_INT_C (-4294967263),
+			    HOST_WIDE_INT_C (4294967264)))
 	    return SYMBOL_FORCE_TO_MEM;
 	  return SYMBOL_SMALL_ABSOLUTE;
 

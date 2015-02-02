@@ -1,3 +1,11 @@
+2015-02-02  Tejas Belagod  <tejas.belagod@arm.com>
+	    Andrew Pinski  <pinskia@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@gcc.gnu.org>
+
+	PR target/64231
+	* config/aarch64/aarch64.c (aarch64_classify_symbol): Fix large
+	integer typing for small model. Use IN_RANGE.
+
 2015-02-02  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-ccp.c (valueize_op_1): Always allow valueizing default-defs.
