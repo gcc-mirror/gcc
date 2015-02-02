@@ -670,7 +670,10 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  cpu = "bonnell";
 	  break;
 	case 0x37:
+	case 0x4a:
 	case 0x4d:
+	case 0x5a:
+	case 0x5d:
 	  /* Silvermont.  */
 	  cpu = "silvermont";
 	  break;
@@ -705,10 +708,21 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  cpu = "ivybridge";
 	  break;
 	case 0x3c:
+	case 0x3f:
 	case 0x45:
 	case 0x46:
 	  /* Haswell.  */
 	  cpu = "haswell";
+	  break;
+	case 0x3d:
+	case 0x4f:
+	case 0x56:
+	  /* Broadwell.  */
+	  cpu = "broadwell";
+	  break;
+	case 0x57:
+	  /* Knights Landing.  */
+	  cpu = "knl";
 	  break;
 	default:
 	  if (arch)

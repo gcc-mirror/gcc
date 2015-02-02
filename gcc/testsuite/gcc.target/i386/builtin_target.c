@@ -30,6 +30,14 @@ check_intel_cpu_model (unsigned int family, unsigned int model,
 	      /* Atom.  */
 	      assert (__builtin_cpu_is ("atom"));
 	      break;
+	    case 0x37:
+	    case 0x4a:
+	    case 0x4d:
+	    case 0x5a:
+	    case 0x5d:
+	      /* Silvermont.  */
+	      assert (__builtin_cpu_is ("silvermont"));
+	      break;
 	    case 0x1a:
 	    case 0x1e:
 	    case 0x1f:
@@ -46,9 +54,31 @@ check_intel_cpu_model (unsigned int family, unsigned int model,
 	      assert (__builtin_cpu_is ("westmere"));
 	      break;
 	    case 0x2a:
+	    case 0x2d:
 	      /* Sandy Bridge.  */
 	      assert (__builtin_cpu_is ("corei7"));
 	      assert (__builtin_cpu_is ("sandybridge"));
+	      break;
+	    case 0x3a:
+	    case 0x3e:
+	      /* Ivy Bridge.  */
+	      assert (__builtin_cpu_is ("corei7"));
+	      assert (__builtin_cpu_is ("ivybridge"));
+	      break;
+	    case 0x3c:
+	    case 0x3f:
+	    case 0x45:
+	    case 0x46:
+	      /* Haswell.  */
+	      assert (__builtin_cpu_is ("corei7"));
+	      assert (__builtin_cpu_is ("haswell"));
+	      break;
+	    case 0x3d:
+	    case 0x4f:
+	    case 0x56:
+	      /* Broadwell.  */
+	      assert (__builtin_cpu_is ("corei7"));
+	      assert (__builtin_cpu_is ("broadwell"));
 	      break;
 	    case 0x17:
 	    case 0x1d:
