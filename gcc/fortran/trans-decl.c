@@ -1443,8 +1443,6 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       if (sym->ts.type == BT_CLASS && sym->backend_decl)
 	GFC_DECL_CLASS(sym->backend_decl) = 1;
 
-      if (sym->ts.type == BT_CLASS && sym->backend_decl)
-	GFC_DECL_CLASS(sym->backend_decl) = 1;
      return sym->backend_decl;
     }
 
