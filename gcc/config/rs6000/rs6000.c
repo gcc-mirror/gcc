@@ -32951,7 +32951,10 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
       rtx stack_toc_mem = gen_frame_mem (Pmode,
 					 gen_rtx_PLUS (Pmode, stack_ptr,
 						       stack_toc_offset));
-      toc_restore = gen_rtx_SET (VOIDmode, toc_reg, stack_toc_mem);
+      rtx stack_toc_unspec = gen_rtx_UNSPEC (Pmode,
+					     gen_rtvec (1, stack_toc_offset),
+					     UNSPEC_TOCSLOT);
+      toc_restore = gen_rtx_SET (VOIDmode, toc_reg, stack_toc_unspec);
 
       /* Can we optimize saving the TOC in the prologue or
 	 do we need to do it at every call?  */
