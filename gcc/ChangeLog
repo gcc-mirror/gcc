@@ -1,3 +1,9 @@
+2015-02-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64810
+	* config/arm/arm.c (arm_option_override): Set
+	arm_selected_arch/cpu/tune to NULL on entry.
+
 2015-02-02  Tejas Belagod  <tejas.belagod@arm.com>
 	    Andrew Pinski  <pinskia@gcc.gnu.org>
 	    Jakub Jelinek  <jakub@gcc.gnu.org>
