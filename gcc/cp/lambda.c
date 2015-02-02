@@ -854,7 +854,7 @@ prepare_op_call (tree fn, int nargs)
 void
 maybe_add_lambda_conv_op (tree type)
 {
-  bool nested = (current_function_decl != NULL_TREE);
+  bool nested = (cfun != NULL);
   bool nested_def = decl_function_context (TYPE_MAIN_DECL (type));
   tree callop = lambda_function (type);
 

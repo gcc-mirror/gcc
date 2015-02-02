@@ -904,17 +904,6 @@ gfc_warning (int opt, const char *gmsgid, ...)
   return ret;
 }
 
-bool
-gfc_warning (const char *gmsgid, ...)
-{
-  va_list argp;
-
-  va_start (argp, gmsgid);
-  bool ret = gfc_warning (0, gmsgid, argp);
-  va_end (argp);
-  return ret;
-}
-
 
 /* Whether, for a feature included in a given standard set (GFC_STD_*),
    we should issue an error or a warning, or be quiet.  */
@@ -1252,26 +1241,6 @@ gfc_warning_now (int opt, const char *gmsgid, ...)
   diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION,
 		       DK_WARNING);
   diagnostic.option_index = opt;
-  ret = report_diagnostic (&diagnostic);
-  va_end (argp);
-  return ret;
-}
-
-/* Immediate warning (i.e. do not buffer the warning).  */
-/* This function uses the common diagnostics, but does not support
-   two locations; when being used in scanner.c, ensure that the location
-   is properly setup. Otherwise, use gfc_warning_now_1.   */
-
-bool
-gfc_warning_now (const char *gmsgid, ...)
-{
-  va_list argp;
-  diagnostic_info diagnostic;
-  bool ret;
-
-  va_start (argp, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &argp, UNKNOWN_LOCATION,
-		       DK_WARNING);
   ret = report_diagnostic (&diagnostic);
   va_end (argp);
   return ret;

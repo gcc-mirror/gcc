@@ -551,7 +551,7 @@ check_result (arith rc, gfc_expr *x, gfc_expr *r, gfc_expr **rp)
 
   if (val == ARITH_ASYMMETRIC)
     {
-      gfc_warning (gfc_arith_error (val), &x->where);
+      gfc_warning (0, gfc_arith_error (val), &x->where);
       val = ARITH_OK;
     }
 
@@ -1966,7 +1966,7 @@ gfc_int2int (gfc_expr *src, int kind)
     {
       if (rc == ARITH_ASYMMETRIC)
 	{
-	  gfc_warning (gfc_arith_error (rc), &src->where);
+	  gfc_warning (0, gfc_arith_error (rc), &src->where);
 	}
       else
 	{
@@ -2280,7 +2280,8 @@ hollerith2representation (gfc_expr *result, gfc_expr *src)
 
   if (src_len > result_len)
     {
-      gfc_warning ("The Hollerith constant at %L is too long to convert to %qs",
+      gfc_warning (0,
+		   "The Hollerith constant at %L is too long to convert to %qs",
 		   &src->where, gfc_typename(&result->ts));
     }
 

@@ -1930,6 +1930,9 @@ Target supports @code{wchar_t} that is compatible with @code{char16_t}.
 
 @item wchar_t_char32_t_compatible
 Target supports @code{wchar_t} that is compatible with @code{char32_t}.
+
+@item comdat_group
+Target uses comdat groups.
 @end table
 
 @subsubsection Local to tests in @code{gcc.target/i386}

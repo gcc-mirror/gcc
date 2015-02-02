@@ -11586,7 +11586,8 @@ def_builtin (const char *name, tree type, enum rs6000_builtins code)
   gcc_assert (IN_RANGE ((int)code, 0, (int)RS6000_BUILTIN_COUNT));
 
   if (rs6000_builtin_decls[(int)code])
-    fatal_error ("internal error: builtin function %s already processed", name);
+    fatal_error (input_location,
+		 "internal error: builtin function %s already processed", name);
 
   rs6000_builtin_decls[(int)code] = t =
     add_builtin_function (name, type, (int)code, BUILT_IN_MD, NULL, NULL_TREE);
@@ -15484,14 +15485,16 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
     num_args--;
 
   if (num_args == 0)
-    fatal_error ("internal error: builtin function %s had no type", name);
+    fatal_error (input_location,
+		 "internal error: builtin function %s had no type", name);
 
   ret_type = builtin_mode_to_type[h.mode[0]][h.uns_p[0]];
   if (!ret_type && h.uns_p[0])
     ret_type = builtin_mode_to_type[h.mode[0]][0];
 
   if (!ret_type)
-    fatal_error ("internal error: builtin function %s had an unexpected "
+    fatal_error (input_location,
+		 "internal error: builtin function %s had an unexpected "
 		 "return type %s", name, GET_MODE_NAME (h.mode[0]));
 
   for (i = 0; i < (int) ARRAY_SIZE (arg_type); i++)
@@ -15507,7 +15510,8 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
 	arg_type[i] = builtin_mode_to_type[m][0];
 
       if (!arg_type[i])
-	fatal_error ("internal error: builtin function %s, argument %d "
+	fatal_error (input_location,
+		     "internal error: builtin function %s, argument %d "
 		     "had unexpected argument type %s", name, i,
 		     GET_MODE_NAME (m));
     }
@@ -21161,7 +21165,7 @@ compute_vrsave_mask (void)
      them in again.  More importantly, the mask we compute here is
      used to generate CLOBBERs in the set_vrsave insn, and we do not
      wish the argument registers to die.  */
-  for (i = crtl->args.info.vregno - 1; i >= ALTIVEC_ARG_MIN_REG; --i)
+  for (i = ALTIVEC_ARG_MIN_REG; i < (unsigned) crtl->args.info.vregno; i++)
     mask &= ~ALTIVEC_REG_BIT (i);
 
   /* Similarly, remove the return value from the set.  */
@@ -21570,6 +21574,9 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 static rs6000_stack_t *
 rs6000_stack_info (void)
 {
+  /* We should never be called for thunks, we are not set up for that.  */
+  gcc_assert (!cfun->is_thunk);
+
   rs6000_stack_t *info_ptr = &stack_info;
   int reg_size = TARGET_32BIT ? 4 : 8;
   int ehrd_size;
@@ -24291,11 +24298,10 @@ rs6000_emit_prologue (void)
     }
 }
 
-/* Write function prologue.  */
+/* Output .extern statements for the save/restore routines we use.  */
 
 static void
-rs6000_output_function_prologue (FILE *file,
-				 HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+rs6000_output_savres_externs (FILE *file)
 {
   rs6000_stack_t *info = rs6000_stack_info ();
 
@@ -24327,6 +24333,16 @@ rs6000_output_function_prologue (FILE *file,
 	  fprintf (file, "\t.extern %s\n", name);
 	}
     }
+}
+
+/* Write function prologue.  */
+
+static void
+rs6000_output_function_prologue (FILE *file,
+				 HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+{
+  if (!cfun->is_thunk)
+    rs6000_output_savres_externs (file);
 
   /* ELFv2 ABI r2 setup code and local entry point.  This must follow
      immediately after the global entry point label.  */
@@ -32625,7 +32641,7 @@ rs6000_set_current_function (tree fndecl)
       if (old_tree == new_tree)
 	;
 
-      else if (new_tree)
+      else if (new_tree && new_tree != target_option_default_node)
 	{
 	  cl_target_option_restore (&global_options,
 				    TREE_TARGET_OPTION (new_tree));
@@ -32636,7 +32652,7 @@ rs6000_set_current_function (tree fndecl)
 	      = save_target_globals_default_opts ();
 	}
 
-      else if (old_tree)
+      else if (old_tree && old_tree != target_option_default_node)
 	{
 	  new_tree = target_option_current_node;
 	  cl_target_option_restore (&global_options,
@@ -32951,7 +32967,10 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
       rtx stack_toc_mem = gen_frame_mem (Pmode,
 					 gen_rtx_PLUS (Pmode, stack_ptr,
 						       stack_toc_offset));
-      toc_restore = gen_rtx_SET (VOIDmode, toc_reg, stack_toc_mem);
+      rtx stack_toc_unspec = gen_rtx_UNSPEC (Pmode,
+					     gen_rtvec (1, stack_toc_offset),
+					     UNSPEC_TOCSLOT);
+      toc_restore = gen_rtx_SET (VOIDmode, toc_reg, stack_toc_unspec);
 
       /* Can we optimize saving the TOC in the prologue or
 	 do we need to do it at every call?  */

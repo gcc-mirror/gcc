@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target nonpic } */
 /* { dg-options "-O2 -fipa-ra -fomit-frame-pointer" } */
 /* { dg-additional-options "-mregparm=1" { target ia32 } } */
 

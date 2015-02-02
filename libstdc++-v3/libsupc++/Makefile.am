@@ -100,8 +100,10 @@ sources = \
 	vterminate.cc
 
 if ENABLE_VTABLE_VERIFY
+if !VTV_CYGMIN
   vtv_sources = \
 	vtv_stubs.cc
+endif
 endif
 
 libsupc___la_SOURCES = $(sources) $(c_sources) $(vtv_sources)
@@ -181,6 +183,10 @@ new_opnt.o: new_opnt.cc
 del_ops.lo: del_ops.cc
 	$(LTCXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
 del_ops.o: del_ops.cc
+	$(CXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
+del_opvs.lo: del_opvs.cc
+	$(LTCXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
+del_opvs.o: del_opvs.cc
 	$(CXXCOMPILE) -std=gnu++14 -Wno-sized-deallocation -c $<
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be

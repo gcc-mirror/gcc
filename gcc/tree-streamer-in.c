@@ -347,12 +347,14 @@ unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
 	                                                                    12);
       if (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_NORMAL
 	  && DECL_FUNCTION_CODE (expr) >= END_BUILTINS)
-	fatal_error ("machine independent builtin code out of range");
+	fatal_error (input_location,
+		     "machine independent builtin code out of range");
       else if (DECL_BUILT_IN_CLASS (expr) == BUILT_IN_MD)
 	{
           tree result = targetm.builtin_decl (DECL_FUNCTION_CODE (expr), true);
 	  if (!result || result == error_mark_node)
-	    fatal_error ("target specific builtin not available");
+	    fatal_error (input_location,
+			 "target specific builtin not available");
 	}
     }
 }
@@ -1138,7 +1140,8 @@ streamer_get_builtin_tree (struct lto_input_block *ib, struct data_in *data_in)
   if (fclass == BUILT_IN_NORMAL)
     {
       if (fcode >= END_BUILTINS)
-	fatal_error ("machine independent builtin code out of range");
+	fatal_error (input_location,
+		     "machine independent builtin code out of range");
       result = builtin_decl_explicit (fcode);
       if (!result
 	  && fcode > BEGIN_CHKP_BUILTINS
@@ -1154,7 +1157,7 @@ streamer_get_builtin_tree (struct lto_input_block *ib, struct data_in *data_in)
     {
       result = targetm.builtin_decl (fcode, true);
       if (!result || result == error_mark_node)
-	fatal_error ("target specific builtin not available");
+	fatal_error (input_location, "target specific builtin not available");
     }
   else
     gcc_unreachable ();

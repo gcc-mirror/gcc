@@ -44,7 +44,7 @@ bool ipa_edge_within_scc (struct cgraph_edge *);
 int ipa_reverse_postorder (struct cgraph_node **);
 tree get_base_var (tree);
 void ipa_merge_profiles (struct cgraph_node *dst,
-			 struct cgraph_node *src);
+			 struct cgraph_node *src, bool preserve_body = false);
 bool recursive_call_p (tree, tree);
 
 /* In ipa-profile.c  */

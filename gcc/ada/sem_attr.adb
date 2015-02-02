@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4572,6 +4572,32 @@ package body Sem_Attr is
             CS := Scope (CS);
          end loop;
 
+         --  Check the legality of attribute 'Old when it appears inside pragma
+         --  Refined_Post. These specialized checks are required only when code
+         --  generation is disabled. In the general case pragma Refined_Post is
+         --  transformed into pragma Check by Process_PPCs which in turn is
+         --  relocated to procedure _Postconditions. From then on the legality
+         --  of 'Old is determined as usual.
+
+         if not Expander_Active and then In_Refined_Post then
+            Preanalyze_And_Resolve (P);
+            Check_References_In_Prefix (CS);
+            P_Type := Etype (P);
+            Set_Etype (N, P_Type);
+
+            if Is_Limited_Type (P_Type) then
+               Error_Attr ("attribute % cannot apply to limited objects", P);
+            end if;
+
+            if Is_Entity_Name (P)
+              and then Is_Constant_Object (Entity (P))
+            then
+               Error_Msg_N
+                 ("??attribute Old applied to constant has no effect", P);
+            end if;
+
+            return;
+
          --  A Contract_Cases, Postcondition or Test_Case pragma is in the
          --  process of being preanalyzed. Perform the semantic checks now
          --  before the pragma is relocated and/or expanded.
@@ -4579,7 +4605,7 @@ package body Sem_Attr is
          --  For a generic subprogram, postconditions are preanalyzed as well
          --  for name capture, and still appear within an aspect spec.
 
-         if In_Spec_Expression or Inside_A_Generic then
+         elsif In_Spec_Expression or Inside_A_Generic then
             Prag := N;
             while Present (Prag)
                and then not Nkind_In (Prag, N_Aspect_Specification,
@@ -4595,7 +4621,8 @@ package body Sem_Attr is
             --  corresponding pragma. Don't issue errors when analyzing aspect.
 
             if Nkind (Prag) = N_Aspect_Specification
-              and then Chars (Identifier (Prag)) = Name_Post
+              and then Nam_In (Chars (Identifier (Prag)), Name_Post,
+                                                          Name_Refined_Post)
             then
                null;
 
@@ -4623,32 +4650,6 @@ package body Sem_Attr is
                        ("% attribute can only appear in postcondition", P);
                end case;
             end if;
-
-         --  Check the legality of attribute 'Old when it appears inside pragma
-         --  Refined_Post. These specialized checks are required only when code
-         --  generation is disabled. In the general case pragma Refined_Post is
-         --  transformed into pragma Check by Process_PPCs which in turn is
-         --  relocated to procedure _Postconditions. From then on the legality
-         --  of 'Old is determined as usual.
-
-         elsif not Expander_Active and then In_Refined_Post then
-            Preanalyze_And_Resolve (P);
-            Check_References_In_Prefix (CS);
-            P_Type := Etype (P);
-            Set_Etype (N, P_Type);
-
-            if Is_Limited_Type (P_Type) then
-               Error_Attr ("attribute % cannot apply to limited objects", P);
-            end if;
-
-            if Is_Entity_Name (P)
-              and then Is_Constant_Object (Entity (P))
-            then
-               Error_Msg_N
-                 ("??attribute Old applied to constant has no effect", P);
-            end if;
-
-            return;
 
          --  Body case, where we must be inside a generated _Postconditions
          --  procedure, or else the attribute use is definitely misplaced. The
@@ -9761,6 +9762,12 @@ package body Sem_Attr is
       --  Error, or warning within an instance, if the static accessibility
       --  rules of 3.10.2 are violated.
 
+      function Declared_Within_Generic_Unit
+        (Entity       : Entity_Id;
+         Generic_Unit : Node_Id) return Boolean;
+      --  Returns True if Declared_Entity is declared within the declarative
+      --  region of Generic_Unit; otherwise returns False.
+
       ---------------------------
       -- Accessibility_Message --
       ---------------------------
@@ -9809,6 +9816,33 @@ package body Sem_Attr is
             end if;
          end if;
       end Accessibility_Message;
+
+      ----------------------------------
+      -- Declared_Within_Generic_Unit --
+      ----------------------------------
+
+      function Declared_Within_Generic_Unit
+        (Entity       : Entity_Id;
+         Generic_Unit : Node_Id) return Boolean
+      is
+         Generic_Encloser : Node_Id := Enclosing_Generic_Unit (Entity);
+
+      begin
+         while Present (Generic_Encloser) loop
+            if Generic_Encloser = Generic_Unit then
+               return True;
+            end if;
+
+            --  We have to step to the scope of the generic's entity, because
+            --  otherwise we'll just get back the same generic.
+
+            Generic_Encloser :=
+              Enclosing_Generic_Unit
+                (Scope (Defining_Entity (Generic_Encloser)));
+         end loop;
+
+         return False;
+      end Declared_Within_Generic_Unit;
 
    --  Start of processing for Resolve_Attribute
 
@@ -10057,11 +10091,11 @@ package body Sem_Attr is
                   --  level of the actual type is not known). This restriction
                   --  does not apply when the attribute type is an anonymous
                   --  access-to-subprogram type. Note that this check was
-                  --  revised by AI-229, because the originally Ada 95 rule
+                  --  revised by AI-229, because the original Ada 95 rule
                   --  was too lax. The original rule only applied when the
                   --  subprogram was declared within the body of the generic,
                   --  which allowed the possibility of dangling references).
-                  --  The rule was also too strict in some case, in that it
+                  --  The rule was also too strict in some cases, in that it
                   --  didn't permit the access to be declared in the generic
                   --  spec, whereas the revised rule does (as long as it's not
                   --  a formal type).
@@ -10105,13 +10139,15 @@ package body Sem_Attr is
                   then
                      --  The attribute type's ultimate ancestor must be
                      --  declared within the same generic unit as the
-                     --  subprogram is declared. The error message is
+                     --  subprogram is declared (including within another
+                     --  nested generic unit). The error message is
                      --  specialized to say "ancestor" for the case where the
                      --  access type is not its own ancestor, since saying
                      --  simply "access type" would be very confusing.
 
-                     if Enclosing_Generic_Unit (Entity (P)) /=
-                          Enclosing_Generic_Unit (Root_Type (Btyp))
+                     if not Declared_Within_Generic_Unit
+                              (Root_Type (Btyp),
+                               Enclosing_Generic_Unit (Entity (P)))
                      then
                         Error_Msg_N
                           ("''Access attribute not allowed in generic body",

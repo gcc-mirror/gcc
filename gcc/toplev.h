@@ -80,7 +80,7 @@ extern bool user_defined_section_attribute;
 /* See toplev.c.  */
 extern int flag_rerun_cse_after_global_opts;
 
-extern void print_version (FILE *, const char *);
+extern void print_version (FILE *, const char *, bool);
 
 /* The hashtable, so that the C front ends can pass it to cpplib.  */
 extern struct ht *ident_hash;

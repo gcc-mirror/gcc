@@ -250,6 +250,10 @@ struct common_sched_info_def *common_sched_info;
 /* The minimal value of the INSN_TICK of an instruction.  */
 #define MIN_TICK (-max_insn_queue_index)
 
+/* Original order of insns in the ready list.
+   Used to keep order of normal insns while separating DEBUG_INSNs.  */
+#define INSN_RFS_DEBUG_ORIG_ORDER(INSN) (HID (INSN)->rfs_debug_orig_order)
+
 /* The deciding reason for INSN's place in the ready list.  */
 #define INSN_LAST_RFS_WIN(INSN) (HID (INSN)->last_rfs_win)
 
@@ -2597,6 +2601,27 @@ rfs_result (enum rfs_decision decision, int result, rtx tmp, rtx tmp2)
   return result;
 }
 
+/* Sorting predicate to move DEBUG_INSNs to the top of ready list, while
+   keeping normal insns in original order.  */
+
+static int
+rank_for_schedule_debug (const void *x, const void *y)
+{
+  rtx_insn *tmp = *(rtx_insn * const *) y;
+  rtx_insn *tmp2 = *(rtx_insn * const *) x;
+
+  /* Schedule debug insns as early as possible.  */
+  if (DEBUG_INSN_P (tmp) && !DEBUG_INSN_P (tmp2))
+    return rfs_result (RFS_DEBUG, -1, tmp, tmp2);
+  else if (!DEBUG_INSN_P (tmp) && DEBUG_INSN_P (tmp2))
+    return rfs_result (RFS_DEBUG, 1, tmp, tmp2);
+  else if (DEBUG_INSN_P (tmp) && DEBUG_INSN_P (tmp2))
+    return rfs_result (RFS_DEBUG, INSN_LUID (tmp) - INSN_LUID (tmp2),
+		       tmp, tmp2);
+  else
+    return INSN_RFS_DEBUG_ORIG_ORDER (tmp2) - INSN_RFS_DEBUG_ORIG_ORDER (tmp);
+}
+
 /* Returns a positive value if x is preferred; returns a negative value if
    y is preferred.  Should never return 0, since that will make the sort
    unstable.  */
@@ -2608,18 +2633,6 @@ rank_for_schedule (const void *x, const void *y)
   rtx_insn *tmp2 = *(rtx_insn * const *) x;
   int tmp_class, tmp2_class;
   int val, priority_val, info_val, diff;
-
-  if (MAY_HAVE_DEBUG_INSNS)
-    {
-      /* Schedule debug insns as early as possible.  */
-      if (DEBUG_INSN_P (tmp) && !DEBUG_INSN_P (tmp2))
-	return rfs_result (RFS_DEBUG, -1, tmp, tmp2);
-      else if (!DEBUG_INSN_P (tmp) && DEBUG_INSN_P (tmp2))
-	return rfs_result (RFS_DEBUG, 1, tmp, tmp2);
-      else if (DEBUG_INSN_P (tmp) && DEBUG_INSN_P (tmp2))
-	return rfs_result (RFS_DEBUG, INSN_LUID (tmp) - INSN_LUID (tmp2),
-			   tmp, tmp2);
-    }
 
   if (live_range_shrinkage_p)
     {
@@ -3075,13 +3088,21 @@ ready_sort (struct ready_list *ready)
 {
   int i;
   rtx_insn **first = ready_lastpos (ready);
+  int n_ready_non_debug = ready->n_ready;
 
-  if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
+  for (i = 0; i < ready->n_ready; ++i)
     {
-      for (i = 0; i < ready->n_ready; i++)
-	if (!DEBUG_INSN_P (first[i]))
-	  setup_insn_reg_pressure_info (first[i]);
+      if (DEBUG_INSN_P (first[i]))
+	--n_ready_non_debug;
+      else
+	{
+	  INSN_RFS_DEBUG_ORIG_ORDER (first[i]) = i;
+
+	  if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
+	    setup_insn_reg_pressure_info (first[i]);
+	}
     }
+
   if (sched_pressure == SCHED_PRESSURE_MODEL
       && model_curr_point < model_num_insns)
     model_set_excess_costs (first, ready->n_ready);
@@ -3090,10 +3111,17 @@ ready_sort (struct ready_list *ready)
   if (sched_verbose >= 4)
     stats1 = rank_for_schedule_stats;
 
-  if (ready->n_ready == 2)
-    swap_sort (first, ready->n_ready);
-  else if (ready->n_ready > 2)
-    qsort (first, ready->n_ready, sizeof (rtx), rank_for_schedule);
+  if (n_ready_non_debug < ready->n_ready)
+    /* Separate DEBUG_INSNS from normal insns.  DEBUG_INSNs go to the end
+       of array.  */
+    qsort (first, ready->n_ready, sizeof (rtx), rank_for_schedule_debug);
+  else
+    {
+      if (n_ready_non_debug == 2)
+	swap_sort (first, n_ready_non_debug);
+      else if (n_ready_non_debug > 2)
+	qsort (first, n_ready_non_debug, sizeof (rtx), rank_for_schedule);
+    }
 
   if (sched_verbose >= 4)
     {

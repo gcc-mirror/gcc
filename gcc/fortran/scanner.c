@@ -327,7 +327,7 @@ add_path_to_list (gfc_directorylist **list, const char *path,
   if (stat (q, &st))
     {
       if (errno != ENOENT)
-	gfc_warning_now ("Include directory %qs: %s", path,
+	gfc_warning_now (0, "Include directory %qs: %s", path,
 			 xstrerror(errno));
       else if (warn)
 	gfc_warning_now (OPT_Wmissing_include_dirs,
@@ -336,7 +336,7 @@ add_path_to_list (gfc_directorylist **list, const char *path,
     }
   else if (!S_ISDIR (st.st_mode))
     {
-      gfc_warning_now ("%qs is not a directory", path);
+      gfc_warning_now (0, "%qs is not a directory", path);
       return;
     }
 
@@ -739,7 +739,7 @@ skip_oacc_attribute (locus start, locus old_loc, bool continue_flag)
 	}
       else
 	{
-	  gfc_warning_now ("!$ACC at %C starts a commented "
+	  gfc_warning_now (0, "!$ACC at %C starts a commented "
 			   "line as it neither is followed "
 			   "by a space nor is a "
 			   "continuation line");
@@ -779,7 +779,7 @@ skip_omp_attribute (locus start, locus old_loc, bool continue_flag)
 	}
       else
 	{
-	  gfc_warning_now ("!$OMP at %C starts a commented "
+	  gfc_warning_now (0, "!$OMP at %C starts a commented "
 			   "line as it neither is followed "
 			   "by a space nor is a "
 			   "continuation line");
@@ -1306,7 +1306,7 @@ restart:
 	  if (++continue_count == gfc_option.max_continue_free)
 	    {
 	      if (gfc_notification_std (GFC_STD_GNU) || pedantic)
-		gfc_warning ("Limit of %d continuations exceeded in "
+		gfc_warning (0, "Limit of %d continuations exceeded in "
 			     "statement at %C", gfc_option.max_continue_free);
 	    }
 	}
@@ -1477,7 +1477,7 @@ restart:
 	  if (++continue_count == gfc_option.max_continue_fixed)
 	    {
 	      if (gfc_notification_std (GFC_STD_GNU) || pedantic)
-		gfc_warning ("Limit of %d continuations exceeded in "
+		gfc_warning (0, "Limit of %d continuations exceeded in "
 			     "statement at %C",
 			     gfc_option.max_continue_fixed);
 	    }
@@ -1718,7 +1718,7 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 		gfc_error_now ("%<&%> not allowed by itself in line %d",
 			       current_line);
 	      else
-		gfc_warning_now ("%<&%> not allowed by itself in line %d",
+		gfc_warning_now (0, "%<&%> not allowed by itself in line %d",
 				 current_line);
 	    }
 	  break;

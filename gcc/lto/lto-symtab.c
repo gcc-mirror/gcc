@@ -158,11 +158,44 @@ lto_varpool_replace_node (varpool_node *vnode,
 
   if (vnode->tls_model != prevailing_node->tls_model)
     {
-      error_at (DECL_SOURCE_LOCATION (vnode->decl),
-		"%qD is defined as %s", vnode->decl, tls_model_names [vnode->tls_model]);
-      inform (DECL_SOURCE_LOCATION (prevailing_node->decl),
-	      "previously defined here as %s",
-	      tls_model_names [prevailing_node->tls_model]);
+      bool error = false;
+
+      /* Non-TLS and TLS never mix together.  Also emulated model is not
+	 compatible with anything else.  */
+      if (prevailing_node->tls_model == TLS_MODEL_NONE
+	  || prevailing_node->tls_model == TLS_MODEL_EMULATED
+	  || vnode->tls_model == TLS_MODEL_NONE
+	  || vnode->tls_model == TLS_MODEL_EMULATED)
+	error = true;
+      /* Linked is silently supporting transitions
+	 GD -> IE, GD -> LE, LD -> LE, IE -> LE, LD -> IE.
+	 Do the same transitions and error out on others.  */
+      else if ((prevailing_node->tls_model == TLS_MODEL_REAL
+		|| prevailing_node->tls_model == TLS_MODEL_LOCAL_DYNAMIC)
+	       && (vnode->tls_model == TLS_MODEL_INITIAL_EXEC
+		   || vnode->tls_model == TLS_MODEL_LOCAL_EXEC))
+	prevailing_node->tls_model = vnode->tls_model;
+      else if ((vnode->tls_model == TLS_MODEL_REAL
+		|| vnode->tls_model == TLS_MODEL_LOCAL_DYNAMIC)
+	       && (prevailing_node->tls_model == TLS_MODEL_INITIAL_EXEC
+		   || prevailing_node->tls_model == TLS_MODEL_LOCAL_EXEC))
+	;
+      else if (prevailing_node->tls_model == TLS_MODEL_INITIAL_EXEC
+	       && vnode->tls_model == TLS_MODEL_LOCAL_EXEC)
+	prevailing_node->tls_model = vnode->tls_model;
+      else if (vnode->tls_model == TLS_MODEL_INITIAL_EXEC
+	       && prevailing_node->tls_model == TLS_MODEL_LOCAL_EXEC)
+	;
+      else
+	error = true;
+      if (error)
+	{
+	  error_at (DECL_SOURCE_LOCATION (vnode->decl),
+		    "%qD is defined with tls model %s", vnode->decl, tls_model_names [vnode->tls_model]);
+	  inform (DECL_SOURCE_LOCATION (prevailing_node->decl),
+		  "previously defined here as %s",
+		  tls_model_names [prevailing_node->tls_model]);
+	}
     }
   /* Finally remove the replaced node.  */
   vnode->remove ();
@@ -349,7 +382,7 @@ lto_symtab_resolve_symbols (symtab_node *first)
 	    && (e->resolution == LDPR_PREVAILING_DEF_IRONLY
 		|| e->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP
 		|| e->resolution == LDPR_PREVAILING_DEF))
-	  fatal_error ("multiple prevailing defs for %qE",
+	  fatal_error (input_location, "multiple prevailing defs for %qE",
 		       DECL_NAME (prevailing->decl));
       return prevailing;
     }

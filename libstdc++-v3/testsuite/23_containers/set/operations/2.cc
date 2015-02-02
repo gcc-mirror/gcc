@@ -128,6 +128,22 @@ test05()
   VERIFY( Cmp::count == 0);
 }
 
+void
+test06()
+{
+  // https://gcc.gnu.org/ml/libstdc++/2015-01/msg00176.html
+  // Verify the new function template overloads do not cause problems
+  // when the comparison function is not transparent.
+  struct I
+  {
+    int i;
+    operator int() const { return i; }
+  };
+
+  std::set<int> s;
+  I i = { };
+  s.find(i);
+}
 
 int
 main()
@@ -137,4 +153,5 @@ main()
   test03();
   test04();
   test05();
+  test06();
 }

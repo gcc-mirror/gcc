@@ -343,9 +343,6 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
     }
 # elif defined __FRV_FDPIC__ && defined __linux__
   data->dbase = load_base.got_value;
-# elif defined __x86_64__ && defined __sun__ && defined __svr4__
-  /* While CRT_GET_RFIB_DATA is also defined for 64-bit Solaris 10+/x86, it
-     doesn't apply since it uses DW_EH_PE_pcrel encoding.  */
 # else
 #  error What is DW_EH_PE_datarel base on this platform?
 # endif

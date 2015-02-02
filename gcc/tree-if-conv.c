@@ -1974,6 +1974,20 @@ insert_gimplified_predicates (loop_p loop, bool any_mask_load_store)
     }
 }
 
+/* Helper function for predicate_mem_writes. Returns index of existent
+   mask if it was created for given SIZE and -1 otherwise.  */
+
+static int
+mask_exists (int size, vec<int> vec)
+{
+  unsigned int ix;
+  int v;
+  FOR_EACH_VEC_ELT (vec, ix, v)
+    if (v == size)
+      return (int) ix;
+  return -1;
+}
+
 /* Predicate each write to memory in LOOP.
 
    This function transforms control flow constructs containing memory
@@ -2085,6 +2099,8 @@ static void
 predicate_mem_writes (loop_p loop)
 {
   unsigned int i, orig_loop_num_nodes = loop->num_nodes;
+  auto_vec<int, 1> vect_sizes;
+  auto_vec<tree, 1> vect_masks;
 
   for (i = 1; i < orig_loop_num_nodes; i++)
     {
@@ -2093,6 +2109,7 @@ predicate_mem_writes (loop_p loop)
       tree cond = bb_predicate (bb);
       bool swap;
       gimple stmt;
+      int index;
 
       if (is_true_predicate (cond))
 	continue;
@@ -2104,6 +2121,9 @@ predicate_mem_writes (loop_p loop)
 	  cond = TREE_OPERAND (cond, 0);
 	}
 
+      vect_sizes.truncate (0);
+      vect_masks.truncate (0);
+
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	if (!gimple_assign_single_p (stmt = gsi_stmt (gsi)))
 	  continue;
@@ -2114,21 +2134,31 @@ predicate_mem_writes (loop_p loop)
 	    tree ref, addr, ptr, masktype, mask_op0, mask_op1, mask;
 	    gimple new_stmt;
 	    int bitsize = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (lhs)));
-
-	    masktype = build_nonstandard_integer_type (bitsize, 1);
-	    mask_op0 = build_int_cst (masktype, swap ? 0 : -1);
-	    mask_op1 = build_int_cst (masktype, swap ? -1 : 0);
 	    ref = TREE_CODE (lhs) == SSA_NAME ? rhs : lhs;
 	    mark_addressable (ref);
 	    addr = force_gimple_operand_gsi (&gsi, build_fold_addr_expr (ref),
 					     true, NULL_TREE, true,
 					     GSI_SAME_STMT);
-	    cond = force_gimple_operand_gsi_1 (&gsi, unshare_expr (cond),
-					       is_gimple_condexpr, NULL_TREE,
-					       true, GSI_SAME_STMT);
-	    mask = fold_build_cond_expr (masktype, unshare_expr (cond),
-					 mask_op0, mask_op1);
-	    mask = ifc_temp_var (masktype, mask, &gsi);
+	    if (!vect_sizes.is_empty ()
+		&& (index = mask_exists (bitsize, vect_sizes)) != -1)
+	      /* Use created mask.  */
+	      mask = vect_masks[index];
+	    else
+	      {
+		masktype = build_nonstandard_integer_type (bitsize, 1);
+		mask_op0 = build_int_cst (masktype, swap ? 0 : -1);
+		mask_op1 = build_int_cst (masktype, swap ? -1 : 0);
+		cond = force_gimple_operand_gsi_1 (&gsi, unshare_expr (cond),
+						   is_gimple_condexpr,
+						   NULL_TREE,
+						   true, GSI_SAME_STMT);
+		mask = fold_build_cond_expr (masktype, unshare_expr (cond),
+					     mask_op0, mask_op1);
+		mask = ifc_temp_var (masktype, mask, &gsi);
+		/* Save mask and its size for further use.  */
+	        vect_sizes.safe_push (bitsize);
+		vect_masks.safe_push (mask);
+	      }
 	    ptr = build_int_cst (reference_alias_ptr_type (ref), 0);
 	    /* Copy points-to info if possible.  */
 	    if (TREE_CODE (addr) == SSA_NAME && !SSA_NAME_PTR_INFO (addr))
@@ -2494,10 +2524,10 @@ ifcvt_walk_pattern_tree (tree var, vec<gimple> *defuse_list,
 }
 
 /* Returns true if STMT can be a root of bool pattern apllied
-   by vectorizer.  VAR contains SSA_NAME which starts pattern.  */
+   by vectorizer.  */
 
 static bool
-stmt_is_root_of_bool_pattern (gimple stmt, tree *var)
+stmt_is_root_of_bool_pattern (gimple stmt)
 {
   enum tree_code code;
   tree lhs, rhs;
@@ -2511,7 +2541,6 @@ stmt_is_root_of_bool_pattern (gimple stmt, tree *var)
 	return false;
       if (TREE_CODE (TREE_TYPE (lhs)) == BOOLEAN_TYPE)
 	return false;
-      *var = rhs;
       return true;
     }
   else if (code == COND_EXPR)
@@ -2519,7 +2548,6 @@ stmt_is_root_of_bool_pattern (gimple stmt, tree *var)
       rhs = gimple_assign_rhs1 (stmt);
       if (TREE_CODE (rhs) != SSA_NAME)
 	return false;
-      *var = rhs;
       return true;
     }
   return false;
@@ -2538,23 +2566,49 @@ ifcvt_repair_bool_pattern (basic_block bb)
   gimple stmt;
   gimple_stmt_iterator gsi;
   vec<gimple> defuse_list = vNULL;
+  vec<gimple> pattern_roots = vNULL;
+  bool repeat = true;
+  int niter = 0;
+  unsigned int ix;
 
+  /* Collect all root pattern statements.  */
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       stmt = gsi_stmt (gsi);
       if (gimple_code (stmt) != GIMPLE_ASSIGN)
 	continue;
-      if (!stmt_is_root_of_bool_pattern (stmt, &rhs))
+      if (!stmt_is_root_of_bool_pattern (stmt))
 	continue;
-      ifcvt_walk_pattern_tree (rhs, &defuse_list, stmt);
-      while (defuse_list.length () > 0)
+      pattern_roots.safe_push (stmt);
+    }
+
+  if (pattern_roots.is_empty ())
+    return;
+
+  /* Split all statements with multiple uses iteratively since splitting
+     may create new multiple uses.  */
+  while (repeat)
+    {
+      repeat = false;
+      niter++;
+      FOR_EACH_VEC_ELT (pattern_roots, ix, stmt)
 	{
-	  gimple def_stmt, use_stmt;
-	  use_stmt = defuse_list.pop ();
-	  def_stmt = defuse_list.pop ();
-	  ifcvt_split_def_stmt (def_stmt, use_stmt);
+	  rhs = gimple_assign_rhs1 (stmt);
+	  ifcvt_walk_pattern_tree (rhs, &defuse_list, stmt);
+	  while (defuse_list.length () > 0)
+	    {
+	      repeat = true;
+	      gimple def_stmt, use_stmt;
+	      use_stmt = defuse_list.pop ();
+	      def_stmt = defuse_list.pop ();
+	      ifcvt_split_def_stmt (def_stmt, use_stmt);
+	    }
+
 	}
     }
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Repair bool pattern takes %d iterations. \n",
+	     niter);
 }
 
 /* Delete redundant statements produced by predication which prevents

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -98,17 +98,20 @@ package Exp_Ch7 is
    --  exception will be saved to a global location.
 
    procedure Build_Finalization_Master
-     (Typ        : Entity_Id;
-      Ins_Node   : Node_Id := Empty;
-      Encl_Scope : Entity_Id := Empty);
+     (Typ            : Entity_Id;
+      For_Anonymous  : Boolean   := False;
+      For_Private    : Boolean   := False;
+      Context_Scope  : Entity_Id := Empty;
+      Insertion_Node : Node_Id   := Empty);
    --  Build a finalization master for an access type. The designated type may
-   --  not necessarely be controlled or need finalization actions. The routine
-   --  creates a wrapper around a user-defined storage pool or the general
-   --  storage pool for access types. Ins_Nod and Encl_Scope are used in
-   --  conjunction with anonymous access types. Ins_Node designates the
-   --  insertion point before which the collection should be added. Encl_Scope
-   --  is the scope of the context, either the enclosing record or the scope
-   --  of the related function.
+   --  not necessarely be controlled or need finalization actions depending on
+   --  the context. Flag For_Anonymous must be set when creating a master for
+   --  an anonymous access type. Flag For_Private must be set when the
+   --  designated type contains a private component. Parameters Context_Scope
+   --  and Insertion_Node must be used in conjunction with flags For_Anonymous
+   --  and For_Private. Context_Scope is the scope of the context where the
+   --  finalization master must be analyzed. Insertion_Node is the insertion
+   --  point before which the master is inserted.
 
    procedure Build_Late_Proc (Typ : Entity_Id; Nam : Name_Id);
    --  Build one controlling procedure when a late body overrides one of
@@ -222,15 +225,13 @@ package Exp_Ch7 is
 
    function Make_Set_Finalize_Address_Call
      (Loc     : Source_Ptr;
-      Typ     : Entity_Id;
       Ptr_Typ : Entity_Id) return Node_Id;
+   --  Associate the Finalize_Address primitive of the designated type with the
+   --  finalization master of access type Ptr_Typ. The returned call is:
    --  Generate the following call:
    --
-   --    Set_Finalize_Address (<Ptr_Typ>FM, <Typ>FD'Unrestricted_Access);
-   --
-   --  where Finalize_Address is the corresponding TSS primitive of type Typ
-   --  and Ptr_Typ is the access type of the related allocation. Loc is the
-   --  source location of the related allocator.
+   --    Set_Finalize_Address
+   --      (<Ptr_Typ>FM, <Desig_Typ>FD'Unrestricted_Access);
 
    --------------------------------------------
    -- Task and Protected Object finalization --

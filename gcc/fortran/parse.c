@@ -973,7 +973,7 @@ next_free (void)
 
 	  if (gfc_match_eos () == MATCH_YES)
 	    {
-	      gfc_warning_now ("Ignoring statement label in empty statement "
+	      gfc_warning_now (0, "Ignoring statement label in empty statement "
 			       "at %L", &label_locus);
 	      gfc_free_st_label (gfc_statement_label);
 	      gfc_statement_label = NULL;
@@ -1178,7 +1178,7 @@ next_fixed (void)
   if (digit_flag)
     {
       if (label == 0)
-	gfc_warning_now ("Zero is not a valid statement label at %C");
+	gfc_warning_now (0, "Zero is not a valid statement label at %C");
       else
 	{
 	  /* We've found a valid statement label.  */
@@ -1234,7 +1234,7 @@ next_fixed (void)
 
 blank_line:
   if (digit_flag)
-    gfc_warning_now ("Ignoring statement label in empty statement at %L",
+    gfc_warning_now (0, "Ignoring statement label in empty statement at %L",
 		     &label_locus);
     
   gfc_current_locus.lb->truncated = 0;
@@ -2683,7 +2683,7 @@ endType:
 	    }
 
 	  if (gfc_current_block ()->attr.sequence)
-	    gfc_warning ("SEQUENCE attribute at %C already specified in "
+	    gfc_warning (0, "SEQUENCE attribute at %C already specified in "
 			 "TYPE statement");
 
 	  if (seen_sequence)
@@ -4345,7 +4345,7 @@ parse_oacc_loop (gfc_statement acc_st)
 
   st = next_statement ();
   if (st == ST_OACC_END_LOOP)
-    gfc_warning ("Redundant !$ACC END LOOP at %C");
+    gfc_warning (0, "Redundant !$ACC END LOOP at %C");
   if ((acc_st == ST_OACC_PARALLEL_LOOP && st == ST_OACC_END_PARALLEL_LOOP) ||
       (acc_st == ST_OACC_KERNELS_LOOP && st == ST_OACC_END_KERNELS_LOOP) ||
       (acc_st == ST_OACC_LOOP && st == ST_OACC_END_LOOP))

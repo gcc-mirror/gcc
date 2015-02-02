@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -921,7 +921,7 @@ package body Sem_Ch12 is
    is
       Actuals_To_Freeze : constant Elist_Id  := New_Elmt_List;
       Assoc             : constant List_Id   := New_List;
-      Default_Actuals   : constant Elist_Id  := New_Elmt_List;
+      Default_Actuals   : constant List_Id   := New_List;
       Gen_Unit          : constant Entity_Id :=
                             Defining_Entity (Parent (F_Copy));
 
@@ -1385,16 +1385,34 @@ package body Sem_Ch12 is
             case Nkind (Formal) is
                when N_Formal_Object_Declaration =>
                   Match :=
-                    Matching_Actual (
-                      Defining_Identifier (Formal),
-                      Defining_Identifier (Analyzed_Formal));
+                    Matching_Actual
+                      (Defining_Identifier (Formal),
+                       Defining_Identifier (Analyzed_Formal));
 
                   if No (Match) and then Partial_Parameterization then
                      Process_Default (Formal);
+
                   else
                      Append_List
                        (Instantiate_Object (Formal, Match, Analyzed_Formal),
                         Assoc);
+
+                     --  For a defaulted in_parameter, create an entry in the
+                     --  the list of defaulted actuals, for GNATProve use. Do
+                     --  not included these defaults for an instance nested
+                     --  within a generic, because the defaults are also used
+                     --  in the analysis of the enclosing generic, and only
+                     --  defaulted subprograms are relevant there.
+
+                     if No (Match) and then not Inside_A_Generic then
+                        Append_To (Default_Actuals,
+                          Make_Generic_Association (Sloc (I_Node),
+                            Selector_Name                     =>
+                              New_Occurrence_Of
+                                (Defining_Identifier (Formal), Sloc (I_Node)),
+                            Explicit_Generic_Actual_Parameter =>
+                              New_Copy_Tree (Default_Expression (Formal))));
+                     end if;
                   end if;
 
                   --  If the object is a call to an expression function, this
@@ -1404,16 +1422,16 @@ package body Sem_Ch12 is
                     and then Present (Entity (Match))
                     and then Nkind
                       (Original_Node (Unit_Declaration_Node (Entity (Match))))
-                        = N_Expression_Function
+                                                     = N_Expression_Function
                   then
                      Append_Elmt (Entity (Match), Actuals_To_Freeze);
                   end if;
 
                when N_Formal_Type_Declaration =>
                   Match :=
-                    Matching_Actual (
-                      Defining_Identifier (Formal),
-                      Defining_Identifier (Analyzed_Formal));
+                    Matching_Actual
+                      (Defining_Identifier (Formal),
+                       Defining_Identifier (Analyzed_Formal));
 
                   if No (Match) then
                      if Partial_Parameterization then
@@ -1474,10 +1492,10 @@ package body Sem_Ch12 is
                   then
                      declare
                         Formal_Ent : constant Entity_Id :=
-                                        Defining_Identifier (Analyzed_Formal);
+                                       Defining_Identifier (Analyzed_Formal);
                      begin
                         if Is_Remote_Access_To_Class_Wide_Type (Entity (Match))
-                             = Is_Remote_Types (Formal_Ent)
+                                                = Is_Remote_Types (Formal_Ent)
                         then
                            --  Remoteness of formal and actual match
 
@@ -1567,12 +1585,22 @@ package body Sem_Ch12 is
                   end if;
 
                   --  If this is a nested generic, preserve default for later
-                  --  instantiations.
+                  --  instantiations. We do this as well for GNATProve use,
+                  --  so that the list of generic associations is complete.
 
                   if No (Match) and then Box_Present (Formal) then
-                     Append_Elmt
-                       (Defining_Unit_Name (Specification (Last (Assoc))),
-                        Default_Actuals);
+                     declare
+                        Subp : constant Entity_Id :=
+                          Defining_Unit_Name (Specification (Last (Assoc)));
+
+                     begin
+                        Append_To (Default_Actuals,
+                          Make_Generic_Association (Sloc (I_Node),
+                            Selector_Name                     =>
+                              New_Occurrence_Of (Subp, Sloc (I_Node)),
+                            Explicit_Generic_Actual_Parameter =>
+                              New_Occurrence_Of (Subp, Sloc (I_Node))));
+                     end;
                   end if;
 
                when N_Formal_Package_Declaration =>
@@ -1667,31 +1695,24 @@ package body Sem_Ch12 is
       --  explicit associations for them. This is required if the instance
       --  appears within a generic.
 
-      declare
-         Elmt  : Elmt_Id;
-         Subp  : Entity_Id;
-         New_D : Node_Id;
+      if not Is_Empty_List (Default_Actuals) then
+         declare
+            Default : Node_Id;
 
-      begin
-         Elmt := First_Elmt (Default_Actuals);
-         while Present (Elmt) loop
+         begin
+            Default := First (Default_Actuals);
+            while Present (Default) loop
+               Mark_Rewrite_Insertion (Default);
+               Next (Default);
+            end loop;
+
             if No (Actuals) then
-               Actuals := New_List;
-               Set_Generic_Associations (I_Node, Actuals);
+               Set_Generic_Associations (I_Node, Default_Actuals);
+            else
+               Append_List_To (Actuals, Default_Actuals);
             end if;
-
-            Subp := Node (Elmt);
-            New_D :=
-              Make_Generic_Association (Sloc (Subp),
-                Selector_Name                     =>
-                  New_Occurrence_Of (Subp, Sloc (Subp)),
-                Explicit_Generic_Actual_Parameter =>
-                  New_Occurrence_Of (Subp, Sloc (Subp)));
-            Mark_Rewrite_Insertion (New_D);
-            Append_To (Actuals, New_D);
-            Next_Elmt (Elmt);
-         end loop;
-      end;
+         end;
+      end if;
 
       --  If this is a formal package, normalize the parameter list by adding
       --  explicit box associations for the formals that are covered by an
@@ -9455,8 +9476,7 @@ package body Sem_Ch12 is
 
                   if Present (Formal_Ent) then
                      Find_Matching_Actual (Formal_Node, Actual_Ent);
-                     Match_Formal_Entity
-                       (Formal_Node, Formal_Ent, Actual_Ent);
+                     Match_Formal_Entity (Formal_Node, Formal_Ent, Actual_Ent);
 
                      --  We iterate at the same time over the actuals of the
                      --  local package created for the formal, to determine

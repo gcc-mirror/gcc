@@ -1,4 +1,4 @@
-/* Definitions for Intel 386 systems using GNU userspace.
+/* Definitions for Intel 386 ELF systems.
    Copyright (C) 2015 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify it under

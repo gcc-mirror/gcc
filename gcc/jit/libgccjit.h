@@ -305,7 +305,7 @@ gcc_jit_context_set_logfile (gcc_jit_context *ctxt,
 			     int flags,
 			     int verbosity);
 
-/* To be called after a compile, this gives the first error message
+/* To be called after any API call, this gives the first error message
    that occurred on the context.
 
    The returned string is valid for the rest of the lifetime of the
@@ -315,13 +315,13 @@ gcc_jit_context_set_logfile (gcc_jit_context *ctxt,
 extern const char *
 gcc_jit_context_get_first_error (gcc_jit_context *ctxt);
 
-/* To be called after a compile, this gives the last error message
+/* To be called after any API call, this gives the last error message
    that occurred on the context.
 
-   The returned string is valid for the rest of the lifetime of the
-   context.
+   If no errors occurred, this will be NULL.
 
-   If no errors occurred, this will be NULL.  */
+   If non-NULL, the returned string is only guaranteed to be valid until
+   the next call to libgccjit relating to this context. */
 extern const char *
 gcc_jit_context_get_last_error (gcc_jit_context *ctxt);
 

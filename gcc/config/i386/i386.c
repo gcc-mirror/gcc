@@ -4384,12 +4384,6 @@ static void
 ix86_conditional_register_usage (void)
 {
   int i, c_mask;
-  unsigned int j;
-
-  /* The PIC register, if it exists, is fixed.  */
-  j = PIC_OFFSET_TABLE_REGNUM;
-  if (j != INVALID_REGNUM)
-    fixed_regs[j] = call_used_regs[j] = 1;
 
   /* For 32-bit targets, squash the REX registers.  */
   if (! TARGET_64BIT)
@@ -6265,7 +6259,7 @@ ix86_maybe_switch_abi (void)
 
 /* Return 1 if pseudo register should be created and used to hold
    GOT address for PIC code.  */
-static bool
+bool
 ix86_use_pseudo_pic_reg (void)
 {
   if ((TARGET_64BIT
@@ -16740,7 +16734,7 @@ ix86_avx_u128_mode_after (int mode, rtx_insn *insn)
 
 /* Return the mode that an insn results in.  */
 
-int
+static int
 ix86_mode_after (int entity, int mode, rtx_insn *insn)
 {
   switch (entity)
@@ -34304,8 +34298,8 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
     P_PROC_SSE4_A,
     P_SSE4_1,
     P_SSE4_2,
-    P_POPCNT,
     P_PROC_SSE4_2,
+    P_POPCNT,
     P_AVX,
     P_PROC_AVX,
     P_BMI,
@@ -35160,7 +35154,7 @@ make_resolver_func (const tree default_decl,
 
   gimplify_function_tree (decl);
   push_cfun (DECL_STRUCT_FUNCTION (decl));
-  *empty_bb = init_lowered_empty_function (decl, false);
+  *empty_bb = init_lowered_empty_function (decl, false, 0);
 
   cgraph_node::add_new_function (decl, true);
   symtab->call_cgraph_insertion_hooks (cgraph_node::get_create (decl));

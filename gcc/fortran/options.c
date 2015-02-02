@@ -300,7 +300,7 @@ gfc_post_options (const char **pfilename)
       if (gfc_current_form == FORM_UNKNOWN)
 	{
 	  gfc_current_form = FORM_FREE;
-	  gfc_warning_now ("Reading file %qs as free form", 
+	  gfc_warning_now (0, "Reading file %qs as free form", 
 			   (filename[0] == '\0') ? "<stdin>" : filename);
 	}
     }
@@ -310,10 +310,10 @@ gfc_post_options (const char **pfilename)
   if (gfc_current_form == FORM_FREE)
     {
       if (gfc_option.flag_d_lines == 0)
-	gfc_warning_now ("%<-fd-lines-as-comments%> has no effect "
+	gfc_warning_now (0, "%<-fd-lines-as-comments%> has no effect "
 			   "in free form");
       else if (gfc_option.flag_d_lines == 1)
-	gfc_warning_now ("%<-fd-lines-as-code%> has no effect in free form");
+	gfc_warning_now (0, "%<-fd-lines-as-code%> has no effect in free form");
 
       if (warn_line_truncation == -1)
 	  warn_line_truncation = 1;
@@ -344,18 +344,18 @@ gfc_post_options (const char **pfilename)
 
   if (!flag_automatic && flag_max_stack_var_size != -2
       && flag_max_stack_var_size != 0)
-    gfc_warning_now ("Flag %<-fno-automatic%> overwrites %<-fmax-stack-var-size=%d%>",
+    gfc_warning_now (0, "Flag %<-fno-automatic%> overwrites %<-fmax-stack-var-size=%d%>",
 		     flag_max_stack_var_size);
   else if (!flag_automatic && flag_recursive)
-    gfc_warning_now ("Flag %<-fno-automatic%> overwrites %<-frecursive%>");
+    gfc_warning_now (0, "Flag %<-fno-automatic%> overwrites %<-frecursive%>");
   else if (!flag_automatic && flag_openmp)
-    gfc_warning_now ("Flag %<-fno-automatic%> overwrites %<-frecursive%> implied by "
+    gfc_warning_now (0, "Flag %<-fno-automatic%> overwrites %<-frecursive%> implied by "
 		     "%<-fopenmp%>");
   else if (flag_max_stack_var_size != -2 && flag_recursive)
-    gfc_warning_now ("Flag %<-frecursive%> overwrites %<-fmax-stack-var-size=%d%>",
+    gfc_warning_now (0, "Flag %<-frecursive%> overwrites %<-fmax-stack-var-size=%d%>",
 		     flag_max_stack_var_size);
   else if (flag_max_stack_var_size != -2 && flag_openmp)
-    gfc_warning_now ("Flag %<-fmax-stack-var-size=%d%> overwrites %<-frecursive%> "
+    gfc_warning_now (0, "Flag %<-fmax-stack-var-size=%d%> overwrites %<-frecursive%> "
 		     "implied by %<-fopenmp%>", flag_max_stack_var_size);
 
   /* Implement -frecursive as -fmax-stack-var-size=-1.  */

@@ -728,10 +728,19 @@ compile_file (void)
 
 /* Print version information to FILE.
    Each line begins with INDENT (for the case where FILE is the
-   assembler output file).  */
+   assembler output file).
+
+   If SHOW_GLOBAL_STATE is true (for cc1 etc), we are within the compiler
+   proper and can print pertinent state (e.g. params and plugins).
+
+   If SHOW_GLOBAL_STATE is false (for use by libgccjit), we are outside the
+   compiler, and we don't hold the mutex on the compiler's global state:
+   we can't print params and plugins, since they might not be initialized,
+   or might be being manipulated by a compile running in another
+   thread.  */
 
 void
-print_version (FILE *file, const char *indent)
+print_version (FILE *file, const char *indent, bool show_global_state)
 {
   static const char fmt1[] =
 #ifdef __GNUC__
@@ -791,12 +800,16 @@ print_version (FILE *file, const char *indent)
 	     file == stderr ? _(fmt3) : fmt3,
 	     indent, *indent != 0 ? " " : "",
 	     "MPC", MPC_VERSION_STRING, mpc_get_version ());
-  fprintf (file,
-	   file == stderr ? _(fmt4) : fmt4,
-	   indent, *indent != 0 ? " " : "",
-	   PARAM_VALUE (GGC_MIN_EXPAND), PARAM_VALUE (GGC_MIN_HEAPSIZE));
 
-  print_plugins_versions (file, indent);
+  if (show_global_state)
+    {
+      fprintf (file,
+	       file == stderr ? _(fmt4) : fmt4,
+	       indent, *indent != 0 ? " " : "",
+	       PARAM_VALUE (GGC_MIN_EXPAND), PARAM_VALUE (GGC_MIN_HEAPSIZE));
+
+      print_plugins_versions (file, indent);
+    }
 }
 
 static int
@@ -973,8 +986,8 @@ init_asm_output (const char *name)
 	       || !strcmp (asm_file_name, HOST_BIT_BUCKET))
 	asm_out_file = fopen (asm_file_name, "w");
       else
-	/* Use fatal_error (UNKOWN_LOCATION) instead of just fatal_error to
-	   prevent gcc from printing the first line in the current file. */
+	/* Use UNKOWN_LOCATION to prevent gcc from printing the first
+	   line in the current file. */
 	fatal_error (UNKNOWN_LOCATION,
 		     "input file %qs is the same as output file",
 		     asm_file_name);
@@ -1008,7 +1021,7 @@ init_asm_output (const char *name)
 	{
 	  /* Print the list of switches in effect
 	     into the assembler file as comments.  */
-	  print_version (asm_out_file, ASM_COMMENT_START);
+	  print_version (asm_out_file, ASM_COMMENT_START, true);
 	  print_switch_values (print_to_asm_out_file);
 	  putc ('\n', asm_out_file);
 	}
@@ -1142,7 +1155,7 @@ open_auxiliary_file (const char *ext)
   filename = concat (aux_base_name, ".", ext, NULL);
   file = fopen (filename, "w");
   if (!file)
-    fatal_error ("can%'t open %s for writing: %m", filename);
+    fatal_error (input_location, "can%'t open %s for writing: %m", filename);
   free (filename);
   return file;
 }
@@ -1426,7 +1439,7 @@ process_options (void)
      option flags in use.  */
   if (version_flag)
     {
-      print_version (stderr, "");
+      print_version (stderr, "", true);
       if (! quiet_flag)
 	print_switch_values (print_to_stderr);
     }
@@ -1563,7 +1576,7 @@ process_options (void)
     {
       aux_info_file = fopen (aux_info_file_name, "w");
       if (aux_info_file == 0)
-	fatal_error ("can%'t open %s: %m", aux_info_file_name);
+	fatal_error (input_location, "can%'t open %s: %m", aux_info_file_name);
     }
 
   if (!targetm_common.have_named_sections)
@@ -1957,9 +1970,9 @@ finalize (bool no_backend)
   if (asm_out_file)
     {
       if (ferror (asm_out_file) != 0)
-	fatal_error ("error writing to %s: %m", asm_file_name);
+	fatal_error (input_location, "error writing to %s: %m", asm_file_name);
       if (fclose (asm_out_file) != 0)
-	fatal_error ("error closing %s: %m", asm_file_name);
+	fatal_error (input_location, "error closing %s: %m", asm_file_name);
     }
 
   if (stack_usage_file)
@@ -2135,7 +2148,7 @@ toplev::main (int argc, char **argv)
   initialize_plugins ();
 
   if (version_flag)
-    print_version (stderr, "");
+    print_version (stderr, "", true);
 
   if (help_flag)
     print_plugins_help (stderr, "");

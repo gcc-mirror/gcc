@@ -885,7 +885,8 @@ nios2_custom_check_insns (void)
 		 "-fno-math-errno is specified", N2FPU_NAME (i));
 
   if (errors || custom_code_conflict)
-    fatal_error ("conflicting use of -mcustom switches, target attributes, "
+    fatal_error (input_location,
+		 "conflicting use of -mcustom switches, target attributes, "
 		 "and/or __builtin_custom_ functions");
 }
 
@@ -2562,7 +2563,8 @@ nios2_expand_fpu_builtin (tree exp, unsigned int code, rtx target)
   bool has_target_p = (dst_mode != VOIDmode);
 
   if (N2FPU_N (code) < 0)
-    fatal_error ("Cannot call %<__builtin_custom_%s%> without specifying switch"
+    fatal_error (input_location,
+		 "Cannot call %<__builtin_custom_%s%> without specifying switch"
 		 " %<-mcustom-%s%>", N2FPU_NAME (code), N2FPU_NAME (code));
   if (has_target_p)
     create_output_operand (&ops[opno++], target, dst_mode);

@@ -972,6 +972,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworks vxworks7,$(target_cpu) $(target_vendo
 
   ifneq ($(strip $(filter-out vxworks7%, $(target_os))),)
     GCC_SPEC_FILES+=vxworks-x86-link.spec
+    GCC_SPEC_FILES+=vxworks-cert-x86-link.spec
     GCC_SPEC_FILES+=vxworks-smp-x86-link.spec
   endif
 endif

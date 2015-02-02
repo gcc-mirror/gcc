@@ -3321,7 +3321,7 @@ Collective subroutine
 @item @var{A}            @tab INTENT(INOUT) argument; shall have the same
 dynamic type and type paramters on all images of the current team. If it
 is an array, it shall have the same shape on all images.
-@item @var{SOURCE_IMAGE} @tab (optional) a scalar integer expression.
+@item @var{SOURCE_IMAGE} @tab a scalar integer expression.
 It shall have the same the same value on all images and refer to an
 image of the current team.
 @item @var{STAT}         @tab (optional) a scalar integer variable

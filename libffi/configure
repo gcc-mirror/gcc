@@ -15643,7 +15643,8 @@ $as_echo "#define HAVE_AS_CFI_PSEUDO_OP 1" >>confdefs.h
  fi
 
 
-if test x$TARGET = xSPARC; then
+case "$TARGET" in
+  SPARC)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler and linker support unaligned pc related relocs" >&5
 $as_echo_n "checking assembler and linker support unaligned pc related relocs... " >&6; }
 if test "${libffi_cv_as_sparc_ua_pcrel+set}" = set; then :
@@ -15717,9 +15718,9 @@ $as_echo "$libffi_cv_as_register_pseudo_op" >&6; }
 $as_echo "#define HAVE_AS_REGISTER_PSEUDO_OP 1" >>confdefs.h
 
     fi
-fi
+    ;;
 
-if test x$TARGET = xX86 || test x$TARGET = xX86_WIN32 || test x$TARGET = xX86_64; then
+  X86*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler supports pc related relocs" >&5
 $as_echo_n "checking assembler supports pc related relocs... " >&6; }
 if test "${libffi_cv_as_x86_pcrel+set}" = set; then :
@@ -15740,79 +15741,9 @@ $as_echo "$libffi_cv_as_x86_pcrel" >&6; }
 $as_echo "#define HAVE_AS_X86_PCREL 1" >>confdefs.h
 
     fi
+    ;;
 
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler .ascii pseudo-op support" >&5
-$as_echo_n "checking assembler .ascii pseudo-op support... " >&6; }
-if test "${libffi_cv_as_ascii_pseudo_op+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-
-       libffi_cv_as_ascii_pseudo_op=unknown
-       # Check if we have .ascii
-       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-asm (".ascii \\"string\\"");
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  libffi_cv_as_ascii_pseudo_op=yes
-else
-  libffi_cv_as_ascii_pseudo_op=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libffi_cv_as_ascii_pseudo_op" >&5
-$as_echo "$libffi_cv_as_ascii_pseudo_op" >&6; }
-    if test "x$libffi_cv_as_ascii_pseudo_op" = xyes; then
-
-$as_echo "#define HAVE_AS_ASCII_PSEUDO_OP 1" >>confdefs.h
-
-    fi
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler .string pseudo-op support" >&5
-$as_echo_n "checking assembler .string pseudo-op support... " >&6; }
-if test "${libffi_cv_as_string_pseudo_op+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-
-       libffi_cv_as_string_pseudo_op=unknown
-       # Check if we have .string
-       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-asm (".string \\"string\\"");
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  libffi_cv_as_string_pseudo_op=yes
-else
-  libffi_cv_as_string_pseudo_op=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libffi_cv_as_string_pseudo_op" >&5
-$as_echo "$libffi_cv_as_string_pseudo_op" >&6; }
-    if test "x$libffi_cv_as_string_pseudo_op" = xyes; then
-
-$as_echo "#define HAVE_AS_STRING_PSEUDO_OP 1" >>confdefs.h
-
-    fi
-fi
-
-if test x$TARGET = xS390; then
+  S390)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking compiler uses zarch features" >&5
 $as_echo_n "checking compiler uses zarch features... " >&6; }
 if test "${libffi_cv_as_s390_zarch+set}" = set; then :
@@ -15835,7 +15766,8 @@ $as_echo "$libffi_cv_as_s390_zarch" >&6; }
 $as_echo "#define HAVE_AS_S390_ZARCH 1" >>confdefs.h
 
     fi
-fi
+    ;;
+esac
 
 # On PaX enable kernels that have MPROTECT enable we can't use PROT_EXEC.
 # Check whether --enable-pax_emutramp was given.
@@ -15850,7 +15782,7 @@ fi
 
 FFI_EXEC_TRAMPOLINE_TABLE=0
 case "$target" in
-     *arm*-apple-darwin*)
+     *arm*-apple-darwin* | aarch64-apple-darwin*)
        FFI_EXEC_TRAMPOLINE_TABLE=1
 
 $as_echo "#define FFI_EXEC_TRAMPOLINE_TABLE 1" >>confdefs.h

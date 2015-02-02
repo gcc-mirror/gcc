@@ -3203,7 +3203,7 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 	  else
 	    error_at (loc, "too many arguments to function %qE", function);
 	  inform_declaration (fundecl);
-	  return parmnum;
+	  return error_args ? -1 : (int) parmnum;
 	}
 
       if (selector && argnum > 2)
@@ -6676,7 +6676,8 @@ store_init_value (location_t init_loc, tree decl, tree init, tree origtype)
     warning (OPT_Wtraditional, "traditional C rejects automatic "
 	     "aggregate initialization");
 
-  DECL_INITIAL (decl) = value;
+  if (value != error_mark_node || TREE_CODE (decl) != FUNCTION_DECL)
+    DECL_INITIAL (decl) = value;
 
   /* ANSI wants warnings about out-of-range constant initializers.  */
   STRIP_TYPE_NOPS (value);
@@ -7813,20 +7814,28 @@ pop_init_level (location_t loc, int implicit,
 	}
     }
 
-  /* Initialization with { } counts as zeroinit.  */
-  if (vec_safe_length (constructor_elements) == 0)
-    constructor_zeroinit = 1;
-  /* If the constructor has more than one element, it can't be { 0 }.  */
-  else if (vec_safe_length (constructor_elements) != 1)
-    constructor_zeroinit = 0;
+  switch (vec_safe_length (constructor_elements))
+    {
+    case 0:
+      /* Initialization with { } counts as zeroinit.  */
+      constructor_zeroinit = 1;
+      break;
+    case 1:
+      /* This might be zeroinit as well.  */
+      if (integer_zerop ((*constructor_elements)[0].value))
+	constructor_zeroinit = 1;
+      break;
+    default:
+      /* If the constructor has more than one element, it can't be { 0 }.  */
+      constructor_zeroinit = 0;
+      break;
+    }
 
   /* Warn when some structs are initialized with direct aggregation.  */
   if (!implicit && found_missing_braces && warn_missing_braces
       && !constructor_zeroinit)
-    {
-      warning_init (loc, OPT_Wmissing_braces,
-		    "missing braces around initializer");
-    }
+    warning_init (loc, OPT_Wmissing_braces,
+		  "missing braces around initializer");
 
   /* Warn when some struct elements are implicitly initialized to zero.  */
   if (warn_missing_field_initializers

@@ -1,24 +1,4 @@
 
-FIXINCLUDES OPERATION
-=====================
-
-See also:  http://autogen.SourceForge.net/fixinc.html
-
-The set of fixes required was distilled down to just the data required
-to specify what needed to happen for each fix.  Those data were edited
-into a file named fixincludes/inclhack.def.  A program called AutoGen
-(http://autogen.SourceForge.net) uses these definitions to instantiate
-several different templates that then produces code for a fixinclude
-program (fixincl.x) and a shell script to test its functioning.  On
-certain platforms (viz. those that do not have functional bidirectional
-pipes), the fixincl program is split into two.  This should only concern
-you on DOS and BeOS.
-
-Regards,
-	Bruce <bkorb@gnu.org>
-
-
-
 GCC MAINTAINER INFORMATION
 ==========================
 
@@ -47,6 +27,15 @@ To make your fix, you will need to do several things:
     Do *NOT* specify test text for "wrap" or "replacement" fixes.
     There is no real possibility that these fixes will fail.
     If they do, you will surely know straight away.
+
+    NOTE:  "test_text" is interpreted by the shell as it gets
+    copied into the test header.  THEREFORE you must quote
+    dollar sign characters and back quotes -- unless you mean
+    for them to be interpreted by the shell.
+
+    e.g. the math_huge_val_from_dbl_max test_text needs to
+    put text into both float.h and math.h, so it includes a
+    back-quoted script to add text to float.h.
 
 5.  Go into the fixincludes build directory and type, "make check".
     You are guaranteed to have issues printed out as a result.
@@ -82,7 +71,7 @@ MAKING CHANGES TO INCLHACK.DEF
 3.  It is relatively expensive to fire off a process to fix a source
     file, therefore write apply tests to avoid unnecessary fix
     processes.  The preferred apply tests are "select", "bypass", "mach"
-    and "c-test" because they are performed internally:
+    "sum", and "c-test" because they are performed internally:
 
     * select - Run a regex on the contents of the file being considered.
                All such regex-es must match.  Matching is done with
@@ -90,6 +79,19 @@ MAKING CHANGES TO INCLHACK.DEF
 
     * bypass - Run a regex on the contents of the file being considered.
                No such regex may match.
+
+    * sum    - Select a specific version of a file that has a matching
+               check sum.  The BSD version of checksum ["sum(1BSD)"]
+               is used.  Each "sum" entry should contain exactly three
+               space separated tokens:  the sum, some number and the
+               basename of the file.  The "some number" is ignored.
+               If there are multiple "sum" entries, only one needs to
+               match in order to pass.  For example:
+
+                   sum = '1234 3 foobar.h';
+
+               specifies that the "foobar.h" header in any directory
+               will match if it has the checksum 1234.
 
     * c_test - call a function in fixtests.c.  See that file.
 

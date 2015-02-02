@@ -222,7 +222,12 @@ move_elim_pass (void)
 	 can eliminate the second SET.  */
       if (prev
 	  && rtx_equal_p (SET_DEST (prev), SET_SRC (set))
-	  && rtx_equal_p (SET_DEST (set), SET_SRC (prev)))
+	  && rtx_equal_p (SET_DEST (set), SET_SRC (prev))
+	  /* ... and none of the operands are volatile.  */
+	  && ! volatile_refs_p (SET_SRC (prev))
+	  && ! volatile_refs_p (SET_DEST (prev))
+	  && ! volatile_refs_p (SET_SRC (set))
+	  && ! volatile_refs_p (SET_DEST (set)))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, " Delete insn %d because it is redundant\n",
@@ -1230,6 +1235,7 @@ rl78_expand_prologue (void)
 {
   int i, fs;
   rtx sp = gen_rtx_REG (HImode, STACK_POINTER_REGNUM);
+  rtx ax = gen_rtx_REG (HImode, AX_REG);
   int rb = 0;
 
   if (rl78_is_naked_func ())
@@ -1253,24 +1259,28 @@ rl78_expand_prologue (void)
   for (i = 0; i < 16; i++)
     if (cfun->machine->need_to_push [i])
       {
+	int reg = i * 2;
+
 	if (TARGET_G10)
 	  {
-	    if (i != 0)
-	      emit_move_insn (gen_rtx_REG (HImode, AX_REG), gen_rtx_REG (HImode, i * 2));
-	    F (emit_insn (gen_push (gen_rtx_REG (HImode, AX_REG))));
+	    if (reg >= 8)
+	      {
+		emit_move_insn (ax, gen_rtx_REG (HImode, reg));
+		reg = AX_REG;
+	      }
 	  }
 	else
 	  {
-	    int need_bank = i / 4;
+	    int need_bank = i/4;
 
 	    if (need_bank != rb)
 	      {
 		emit_insn (gen_sel_rb (GEN_INT (need_bank)));
 		rb = need_bank;
 	      }
-	    F (emit_insn (gen_push (gen_rtx_REG (HImode, i * 2))));
-
 	  }
+
+	F (emit_insn (gen_push (gen_rtx_REG (HImode, reg))));
       }
 
   if (rb != 0)
@@ -1280,23 +1290,41 @@ rl78_expand_prologue (void)
   if (is_interrupt_func (cfun->decl) && cfun->machine->uses_es)
     {
       emit_insn (gen_movqi_from_es (gen_rtx_REG (QImode, A_REG)));
-      F (emit_insn (gen_push (gen_rtx_REG (HImode, AX_REG))));
+      F (emit_insn (gen_push (ax)));
     }
 
   if (frame_pointer_needed)
     {
-      F (emit_move_insn (gen_rtx_REG (HImode, AX_REG),
-			 gen_rtx_REG (HImode, STACK_POINTER_REGNUM)));
-      F (emit_move_insn (gen_rtx_REG (HImode, FRAME_POINTER_REGNUM),
-			 gen_rtx_REG (HImode, AX_REG)));
+      F (emit_move_insn (ax, sp));
+      F (emit_move_insn (gen_rtx_REG (HImode, FRAME_POINTER_REGNUM), ax));
     }
 
   fs = cfun->machine->framesize_locals + cfun->machine->framesize_outgoing;
-  while (fs > 0)
+  if (fs > 0)
     {
-      int fs_byte = (fs > 254) ? 254 : fs;
-      F (emit_insn (gen_subhi3 (sp, sp, GEN_INT (fs_byte))));
-      fs -= fs_byte;
+      /* If we need to subtract more than 254*3 then it is faster and
+	 smaller to move SP into AX and perform the subtraction there.  */
+      if (fs > 254 * 3)
+	{
+	  rtx insn;
+
+	  emit_move_insn (ax, sp);
+	  emit_insn (gen_subhi3 (ax, ax, GEN_INT (fs)));
+	  insn = emit_move_insn (sp, ax);
+	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+			gen_rtx_SET (SImode, sp,
+				     gen_rtx_PLUS (HImode, sp, GEN_INT (-fs))));
+	}
+      else
+	{
+	  while (fs > 0)
+	    {
+	      int fs_byte = (fs > 254) ? 254 : fs;
+
+	      F (emit_insn (gen_subhi3 (sp, sp, GEN_INT (fs_byte))));
+	      fs -= fs_byte;
+	    }
+	}
     }
 }
 
@@ -1306,6 +1334,7 @@ rl78_expand_epilogue (void)
 {
   int i, fs;
   rtx sp = gen_rtx_REG (HImode, STACK_POINTER_REGNUM);
+  rtx ax = gen_rtx_REG (HImode, AX_REG);
   int rb = 0;
 
   if (rl78_is_naked_func ())
@@ -1313,20 +1342,27 @@ rl78_expand_epilogue (void)
 
   if (frame_pointer_needed)
     {
-      emit_move_insn (gen_rtx_REG (HImode, AX_REG),
-		      gen_rtx_REG (HImode, FRAME_POINTER_REGNUM));
-      emit_move_insn (gen_rtx_REG (HImode, STACK_POINTER_REGNUM),
-		      gen_rtx_REG (HImode, AX_REG));
+      emit_move_insn (ax, gen_rtx_REG (HImode, FRAME_POINTER_REGNUM));
+      emit_move_insn (sp, ax);
     }
   else
     {
       fs = cfun->machine->framesize_locals + cfun->machine->framesize_outgoing;
-      while (fs > 0)
+      if (fs > 254 * 3)
 	{
-	  int fs_byte = (fs > 254) ? 254 : fs;
+	  emit_move_insn (ax, sp);
+	  emit_insn (gen_addhi3 (ax, ax, GEN_INT (fs)));
+	  emit_move_insn (sp, ax);
+	}
+      else
+	{
+	  while (fs > 0)
+	    {
+	      int fs_byte = (fs > 254) ? 254 : fs;
 
-	  emit_insn (gen_addhi3 (sp, sp, GEN_INT (fs_byte)));
-	  fs -= fs_byte;
+	      emit_insn (gen_addhi3 (sp, sp, GEN_INT (fs_byte)));
+	      fs -= fs_byte;
+	    }
 	}
     }
 
@@ -1343,11 +1379,11 @@ rl78_expand_epilogue (void)
 
 	if (TARGET_G10)
 	  {
-	    rtx ax = gen_rtx_REG (HImode, AX_REG);
-
-	    emit_insn (gen_pop (ax));
-	    if (i != 0)
+	    if (i < 8)
+	      emit_insn (gen_pop (dest));
+	    else
 	      {
+		emit_insn (gen_pop (ax));
 		emit_move_insn (dest, ax);
 		/* Generate a USE of the pop'd register so that DCE will not eliminate the move.  */
 		emit_insn (gen_use (dest));

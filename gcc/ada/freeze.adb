@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1796,26 +1796,13 @@ package body Freeze is
                   Next_Entity (Ent);
                end loop;
             end;
-
-         --  We add finalization masters to access types whose designated types
-         --  require finalization. This is normally done when freezing the
-         --  type, but this misses recursive type definitions where the later
-         --  members of the recursion introduce controlled components (such as
-         --  can happen when incomplete types are involved), as well cases
-         --  where a component type is private and the controlled full type
-         --  occurs after the access type is frozen. Cases that don't need a
-         --  finalization master are generic formal types (the actual type will
-         --  have it) and types derived from them,  and types with Java and CIL
-         --  conventions, since those are used for API bindings.
-         --  (Are there any other cases that should be excluded here???)
-
-         elsif Is_Access_Type (E)
-           and then Comes_From_Source (E)
-           and then not Is_Generic_Type (Root_Type (E))
-           and then Needs_Finalization (Designated_Type (E))
-         then
-            Build_Finalization_Master (E);
          end if;
+
+         --  Historical note: We used to create a finalization master for an
+         --  access type whose designated type is not controlled, but contains
+         --  private controlled compoments. This form of postprocessing is no
+         --  longer needed because the finalization master is now created when
+         --  the access type is frozen (see Exp_Ch3.Freeze_Type).
 
          Next_Entity (E);
       end loop;
@@ -3092,6 +3079,44 @@ package body Freeze is
                Error_Msg_N ("?x?foreign convention function& should not " &
                  "return unconstrained array!", E);
             end if;
+         end if;
+
+         --  Check suspicious use of Import in pure unit
+
+         if Is_Imported (E) and then Is_Pure (Cunit_Entity (Current_Sem_Unit))
+
+           --  Ignore internally generated entity. This happens in some cases
+           --  of subprograms in specs, where we generate an implied body.
+
+           and then Comes_From_Source (Import_Pragma (E))
+
+           --  Assume run-time knows what it is doing
+
+           and then not GNAT_Mode
+
+           --  Assume explicit Pure_Function means import is pure
+
+           and then not Has_Pragma_Pure_Function (E)
+
+           --  Don't need warning in relaxed semantics mode
+
+           and then not Relaxed_RM_Semantics
+
+           --  Assume convention Intrinsic is OK, since this is specialized.
+           --  This deals with the DEC unit current_exception.ads
+
+           and then Convention (E) /= Convention_Intrinsic
+
+            --  Assume that ASM interface knows what it is doing. This deals
+            --  with unsigned.ads in the AAMP back end.
+
+           and then Convention (E) /= Convention_Assembler
+         then
+            Error_Msg_N
+              ("pragma Import in Pure unit??", Import_Pragma (E));
+            Error_Msg_NE
+              ("\calls to & may be omitted (RM 10.2.1(18/3))??",
+               Import_Pragma (E), E);
          end if;
 
          return True;

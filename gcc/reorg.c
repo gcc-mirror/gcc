@@ -3213,6 +3213,19 @@ label_before_next_insn (rtx x, rtx scan_limit)
   return insn;
 }
 
+/* Return TRUE if there is a NOTE_INSN_SWITCH_TEXT_SECTIONS note in between
+   BEG and END.  */
+
+static bool
+switch_text_sections_between_p (const rtx_insn *beg, const rtx_insn *end)
+{
+  const rtx_insn *p;
+  for (p = beg; p != end; p = NEXT_INSN (p))
+    if (NOTE_P (p) && NOTE_KIND (p) == NOTE_INSN_SWITCH_TEXT_SECTIONS)
+      return true;
+  return false;
+}
+
 
 /* Once we have tried two ways to fill a delay slot, make a pass over the
    code to try to improve the results and to do such things as more jump
@@ -3249,7 +3262,8 @@ relax_delay_slots (rtx_insn *first)
 	    target_label = find_end_label (target_label);
 
 	  if (target_label && next_active_insn (target_label) == next
-	      && ! condjump_in_parallel_p (insn))
+	      && ! condjump_in_parallel_p (insn)
+	      && ! (next && switch_text_sections_between_p (insn, next)))
 	    {
 	      delete_jump (insn);
 	      continue;
@@ -3264,12 +3278,13 @@ relax_delay_slots (rtx_insn *first)
 
 	  /* See if this jump conditionally branches around an unconditional
 	     jump.  If so, invert this jump and point it to the target of the
-	     second jump.  */
+	     second jump.  Check if it's possible on the target.  */
 	  if (next && simplejump_or_return_p (next)
 	      && any_condjump_p (insn)
 	      && target_label
 	      && next_active_insn (target_label) == next_active_insn (next)
-	      && no_labels_between_p (insn, next))
+	      && no_labels_between_p (insn, next)
+	      && targetm.can_follow_jump (insn, next))
 	    {
 	      rtx label = JUMP_LABEL (next);
 

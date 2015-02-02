@@ -1822,6 +1822,9 @@ inline_small_functions (void)
 		   " Estimated badness is %f, frequency %.2f.\n",
 		   edge->caller->name (), edge->caller->order,
 		   edge->call_stmt
+		   && (LOCATION_LOCUS (gimple_location ((const_gimple)
+							edge->call_stmt))
+		       > BUILTINS_LOCATION)
 		   ? gimple_filename ((const_gimple) edge->call_stmt)
 		   : "unknown",
 		   edge->call_stmt
@@ -2502,6 +2505,13 @@ early_inliner (function *fun)
   node->verify ();
 #endif
   node->remove_all_references ();
+
+  /* Rebuild this reference because it dosn't depend on
+     function's body and it's required to pass cgraph_node
+     verification.  */
+  if (node->instrumented_version
+      && !node->instrumentation_clone)
+    node->create_reference (node->instrumented_version, IPA_REF_CHKP, NULL);
 
   /* Even when not optimizing or not inlining inline always-inline
      functions.  */

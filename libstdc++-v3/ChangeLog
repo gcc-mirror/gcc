@@ -1,3 +1,112 @@
+2015-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/futex.cc: Do not define for gthr-single.h targets.
+
+2015-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64883
+	* include/c_global/cstdio (gets): Use __deprecated__ attribute instead
+	of deprecated.
+	* include/c_std/cstdio (gets): Likewise.
+	* testsuite/17_intro/headers/c++1998/all_attributes.cc: Avoid clashing
+	with attributes used in darwin headers.
+
+2015-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* acinclude.m4 (VTV_CYGMIN): Use x$vtv_cygmin = xyes instead of
+	$vtv_cygmin = yes.  Initialize vtv_cygmin=no unconditionally first.
+	* configure: Regenerated.
+
+2015-01-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_VTABLE_VERIFY): Define VTV_CYGMIN
+	after vtv_cygmin is set.
+	* configure: Regenerated.
+
+2015-01-29  Matthias Klose  <doko@ubuntu.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_VTABLE_VERIFY): Define VTV_CYGMIN
+	unconditionally.
+	* configure: Regenerate.
+
+2015-01-29  Caroline Tice  <cmtice@google.com>
+
+	Committing VTV Cywin/Ming patch for Patrick Wollgast
+	* configure: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+
+2015-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h: Use __always_inline__ instead of
+	always_inline.
+	* include/bits/atomic_futex.h: Likewise.
+	* include/bits/c++config: Use __abi_tag__ instead of abi_tag.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/gp_ht_map_.hpp: Use
+	__packed__ instead of packed.
+	* include/std/shared_mutex: Use __unused__ instead of unused.
+	* testsuite/17_intro/headers/c++1998/all_attributes.cc: New.
+	* testsuite/17_intro/headers/c++200x/all_attributes.cc: New.
+	* testsuite/17_intro/headers/c++2014/all_attributes.cc: New.
+
+2015-01-28  Caroline Tice  <cmtice@google.com>
+
+	Committing VTV Cywin/Ming patch for Patrick Wollgast
+	* acinclude.m4: Define VTV_CYGMIN.
+	* libsupc++/Makefile.am: Add vtv_sources only to libsupc___la_SOURCES
+	and libsupc__convenience_la_SOURCES if VTV_CYGMIN is not set.
+	* libsupc++/vtv_stubs.cc: Add none weak declaration of every function
+	for Cygwin and MinGW.
+	* src/Makefile.am: Add libvtv.la to toolexeclib_LTLIBRARIES, if
+	VTV_CYGMIN is set. Define libvtv_la_SOURCES, libvtv_la_LDFLAGS,
+	libvtv_la_AM_CXXFLAGS and libvtv_la_LINK if VTV_CYGMIN is set.
+
+2015-01-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64828
+	* libsupc++/Makefile.am: Compile del_opvs.cc as C++14.
+	* libsupc++/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+
+2015-01-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* testsuite/lib/libstdc++.exp (v3_target_compile): Remove
+	check for unsupported.
+	(v3_target_compile_as_c): Likewise.
+
+2015-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR libstdc++/64798
+	* libsupc++/eh_alloc.cc (struct allocated_entry): Align
+	data member.
+	(pool::allocate): Adjust allocation size and alignment to
+	that change.
+	(pool::free): Adjust pointer offsetting.
+
+2015-01-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64368
+	* include/std/shared_mutex (shared_timed_mutex::try_lock_for,
+	shared_timed_mutex::try_lock_until): Only define when POSIX thread
+	timeouts option is supported.
+	(shared_timed_mutex::try_shared_lock_for,
+	shared_timed_mutex::try_shared_lock_until): Likewise.
+
+2015-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64368
+	* config/locale/gnu/numeric_members.cc (numpunct<char>::~numpunct(),
+	numpunct<wchar_t>::~numpunct()): Do not set _M_data->_M_grouping.
+	* src/c++11/cxx11-shim_facets.cc (numpunct_shim): Remove _M_grouping
+	and use cache's _M_grouping field.
+	(__numpunct_fill_cache): Likewise.
+	(__moneypunct_fill_cache): Improve comments.
+
+2015-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/set/operations/2.cc: Add test for
+	non-transparent comparison function.
+
 2015-01-25  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/29366

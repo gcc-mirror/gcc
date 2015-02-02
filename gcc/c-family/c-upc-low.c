@@ -596,7 +596,8 @@ upc_build_shared_var_addr (location_t loc, tree var)
       shared_vaddr_base =
 	identifier_global_value (get_identifier ("UPCRL_shared_begin"));
     if (!shared_vaddr_base)
-      fatal_error ("UPC shared section start address not found; "
+      fatal_error (input_location,
+                   "UPC shared section start address not found; "
 		   "cannot find a definition for either "
 		   "__upc_shared_start or UPCRL_shared_begin");
     assemble_external (shared_vaddr_base);

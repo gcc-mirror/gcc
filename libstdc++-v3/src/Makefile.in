@@ -97,13 +97,19 @@ am__objects_3 = compatibility-c++0x.lo compatibility-atomic-c++0x.lo \
 	compatibility-condvar.lo
 am_libstdc___la_OBJECTS = $(am__objects_2) $(am__objects_3)
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
+@VTV_CYGMIN_FALSE@am_libstdc___la_rpath = -rpath $(toolexeclibdir)
+@VTV_CYGMIN_TRUE@am_libstdc___la_rpath = -rpath $(toolexeclibdir)
+libvtv_la_LIBADD =
+@VTV_CYGMIN_TRUE@am_libvtv_la_OBJECTS = vtv_stubs.lo
+libvtv_la_OBJECTS = $(am_libvtv_la_OBJECTS)
+@VTV_CYGMIN_TRUE@am_libvtv_la_rpath = -rpath $(toolexeclibdir)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp =
 am__depfiles_maybe =
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
-SOURCES = $(libstdc___la_SOURCES)
+SOURCES = $(libstdc___la_SOURCES) $(libvtv_la_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -341,9 +347,22 @@ WARN_CXXFLAGS = \
 # -I/-D flags to pass when compiling.
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 SUBDIRS = c++98 c++11
+@VTV_CYGMIN_FALSE@toolexeclib_LTLIBRARIES = libstdc++.la
 
 # Cross compiler support.
-toolexeclib_LTLIBRARIES = libstdc++.la
+@VTV_CYGMIN_TRUE@toolexeclib_LTLIBRARIES = libvtv.la libstdc++.la
+@VTV_CYGMIN_TRUE@libvtv_la_SOURCES = vtv_stubs.cc
+@VTV_CYGMIN_TRUE@libvtv_la_LDFLAGS = $(lt_host_flags)
+@VTV_CYGMIN_TRUE@libvtv_la_AM_CXXFLAGS = \
+@VTV_CYGMIN_TRUE@	$(glibcxx_compiler_pic_flag) \
+@VTV_CYGMIN_TRUE@	$(XTEMPLATE_FLAGS) \
+@VTV_CYGMIN_TRUE@	-Wl,-u_vtable_map_vars_start,-u_vtable_map_vars_end \
+@VTV_CYGMIN_TRUE@	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS)
+
+@VTV_CYGMIN_TRUE@libvtv_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
+@VTV_CYGMIN_TRUE@	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(libvtv_la_AM_CXXFLAGS) \
+@VTV_CYGMIN_TRUE@	$(CXXFLAGS) $(libvtv_la_LDFLAGS) $(LDFLAGS) -o $@
+
 @GLIBCXX_LDBL_COMPAT_FALSE@ldbl_compat_sources = 
 @GLIBCXX_LDBL_COMPAT_TRUE@ldbl_compat_sources = compatibility-ldbl.cc
 parallel_compat_sources = \
@@ -551,7 +570,9 @@ clean-toolexeclibLTLIBRARIES:
 	  rm -f "$${dir}/so_locations"; \
 	done
 libstdc++.la: $(libstdc___la_OBJECTS) $(libstdc___la_DEPENDENCIES) 
-	$(libstdc___la_LINK) -rpath $(toolexeclibdir) $(libstdc___la_OBJECTS) $(libstdc___la_LIBADD) $(LIBS)
+	$(libstdc___la_LINK) $(am_libstdc___la_rpath) $(libstdc___la_OBJECTS) $(libstdc___la_LIBADD) $(LIBS)
+libvtv.la: $(libvtv_la_OBJECTS) $(libvtv_la_DEPENDENCIES) 
+	$(libvtv_la_LINK) $(am_libvtv_la_rpath) $(libvtv_la_OBJECTS) $(libvtv_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -831,6 +852,10 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 	tags tags-recursive uninstall uninstall-am \
 	uninstall-toolexeclibLTLIBRARIES
 
+
+@VTV_CYGMIN_TRUE@vtv_stubs.cc:
+@VTV_CYGMIN_TRUE@	rm -f $@
+@VTV_CYGMIN_TRUE@	$(LN_S) $(toplevel_srcdir)/libstdc++-v3/libsupc++/vtv_stubs.cc $@
 
 vpath % $(top_srcdir)/src/c++98
 vpath % $(top_srcdir)/src/c++11

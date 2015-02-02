@@ -215,7 +215,7 @@ namespace std
 #if _GLIBCXX_USE_CXX11_ABI
 namespace std
 {
-  inline namespace __cxx11 __attribute__((abi_tag)) { }
+  inline namespace __cxx11 __attribute__((__abi_tag__)) { }
 }
 # define _GLIBCXX_NAMESPACE_CXX11 __cxx11::
 # define _GLIBCXX_BEGIN_NAMESPACE_CXX11 namespace __cxx11 {
@@ -290,7 +290,7 @@ namespace std
 # endif
 
 # if _GLIBCXX_USE_CXX11_ABI
-  inline namespace __cxx11 __attribute__((abi_tag)) { }
+  inline namespace __cxx11 __attribute__((__abi_tag__)) { }
 # endif
   }
 

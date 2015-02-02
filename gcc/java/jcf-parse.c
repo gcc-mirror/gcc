@@ -1114,7 +1114,7 @@ get_constant (JCF *jcf, int index)
 	  {
 	    int char_len = UT8_CHAR_LENGTH (*utf8);
 	    if (char_len < 0 || char_len > 3 || char_len > i)
- 	      fatal_error ("bad string constant");
+ 	      fatal_error (input_location, "bad string constant");
 
 	    utf8 += char_len;
 	    i -= char_len;
@@ -1132,7 +1132,7 @@ get_constant (JCF *jcf, int index)
   jcf->cpool.data[index].t = value;
   return value;
  bad:
-  fatal_error ("bad value constant type %d, index %d", 
+  fatal_error (input_location, "bad value constant type %d, index %d", 
 	       JPOOL_TAG (jcf, index), index);
 }
 
@@ -1443,13 +1443,13 @@ jcf_parse (JCF* jcf)
   bitmap_clear (field_offsets);
 
   if (jcf_parse_preamble (jcf) != 0)
-    fatal_error ("not a valid Java .class file");
+    fatal_error (input_location, "not a valid Java .class file");
   code = jcf_parse_constant_pool (jcf);
   if (code != 0)
-    fatal_error ("error while parsing constant pool");
+    fatal_error (input_location, "error while parsing constant pool");
   code = verify_constant_pool (jcf);
   if (code > 0)
-    fatal_error ("error in constant pool entry #%d\n", code);
+    fatal_error (input_location, "error in constant pool entry #%d\n", code);
 
   jcf_parse_class (jcf);
   if (main_class == NULL_TREE)
@@ -1461,7 +1461,8 @@ jcf_parse (JCF* jcf)
   if (CLASS_PARSED_P (current_class))
     {
       /* FIXME - where was first time */
-      fatal_error ("reading class %s for the second time from %s",
+      fatal_error (input_location,
+		   "reading class %s for the second time from %s",
 		   IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class))),
 		   jcf->filename);
     }
@@ -1479,13 +1480,13 @@ jcf_parse (JCF* jcf)
   
   code = jcf_parse_fields (jcf);
   if (code != 0)
-    fatal_error ("error while parsing fields");
+    fatal_error (input_location, "error while parsing fields");
   code = jcf_parse_methods (jcf);
   if (code != 0)
-    fatal_error ("error while parsing methods");
+    fatal_error (input_location, "error while parsing methods");
   code = jcf_parse_final_attributes (jcf);
   if (code != 0)
-    fatal_error ("error while parsing final attributes");
+    fatal_error (input_location, "error while parsing final attributes");
 
   if (TYPE_REFLECTION_DATA (current_class))
     annotation_write_byte (JV_DONE_ATTR);
@@ -1769,7 +1770,8 @@ java_parse_file (void)
       int avail = 2000;
       finput = fopen (main_input_filename, "r");
       if (finput == NULL)
-	fatal_error ("can%'t open %s: %m", LOCATION_FILE (input_location));
+	fatal_error (input_location,
+		     "can%'t open %s: %m", LOCATION_FILE (input_location));
       list = XNEWVEC (char, avail);
       next = list;
       for (;;)
@@ -1788,7 +1790,7 @@ java_parse_file (void)
 	  if (count == 0)
 	    {
 	      if (! feof (finput))
-		fatal_error ("error closing %s: %m",
+		fatal_error (input_location, "error closing %s: %m",
 			     LOCATION_FILE (input_location));
 	      *next = '\0';
 	      break;
@@ -1903,11 +1905,12 @@ java_parse_file (void)
 
       /* Close previous descriptor, if any */
       if (finput && fclose (finput))
-	fatal_error ("can%'t close input file %s: %m", main_input_filename);
+	fatal_error (input_location,
+		     "can%'t close input file %s: %m", main_input_filename);
       
       finput = fopen (filename, "rb");
       if (finput == NULL)
-	fatal_error ("can%'t open %s: %m", filename);
+	fatal_error (input_location, "can%'t open %s: %m", filename);
 
 #ifdef IO_BUFFER_SIZE
       setvbuf (finput, xmalloc (IO_BUFFER_SIZE),
@@ -1946,7 +1949,7 @@ java_parse_file (void)
 	  linemap_add (line_table, LC_ENTER, false, filename, 0);
 	  input_location = linemap_line_start (line_table, 0, 1);
 	  if (open_in_zip (main_jcf, filename, NULL, 0) <  0)
-	    fatal_error ("bad zip/jar file %s", filename);
+	    fatal_error (input_location, "bad zip/jar file %s", filename);
 	  localToFile = SeenZipFiles;
 	  /* Register all the classes defined there.  */
 	  process_zip_dir ((FILE *) main_jcf->read_state);
@@ -2148,7 +2151,8 @@ parse_zip_file_entries (void)
 	    jcf->zipd        = zdir;
 
 	    if (read_zip_member (jcf, zdir, localToFile) < 0)
-	      fatal_error ("error while reading %s from zip file", file_name);
+	      fatal_error (input_location,
+			   "error while reading %s from zip file", file_name);
 
 	    buffer = XNEWVEC (char, zdir->filename_length + 1 +
 			    (jcf->buffer_end - jcf->buffer));

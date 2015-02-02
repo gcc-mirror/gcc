@@ -26,6 +26,12 @@ case "${target}" in
   x86_64-*-linux* | i?86-*-linux*)
 	VTV_SUPPORTED=yes
 	;;
+  x86_64-*-cygwin* | i?86-*-cygwin*)
+	VTV_SUPPORTED=yes
+	;;
+  x86_64-*-mingw* | i?86-*-mingw*)
+	VTV_SUPPORTED=yes
+	;;
   powerpc*-*-linux*)
 	;;
   sparc*-*-linux*)

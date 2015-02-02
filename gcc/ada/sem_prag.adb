@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3169,7 +3169,7 @@ package body Sem_Prag is
       --  Common processing for Share_Generic and Inline_Generic
 
       procedure Process_Import_Or_Interface;
-      --  Common processing for Import of Interface
+      --  Common processing for Import or Interface
 
       procedure Process_Import_Predefined_Type;
       --  Processing for completing a type with pragma Import. This is used
@@ -7741,6 +7741,8 @@ package body Sem_Prag is
             Kill_Size_Check_Code (Def_Id);
             Note_Possible_Modification (Get_Pragma_Arg (Arg2), Sure => False);
          end if;
+
+         --  Various error checks
 
          if Ekind_In (Def_Id, E_Variable, E_Constant) then
 
@@ -17846,8 +17848,8 @@ package body Sem_Prag is
               or else (Is_Generic_Type (Ent) and then Is_Derived_Type (Ent))
 
               --  AI05-0028: The pragma applies to all composite types. Note
-              --  that we apply this binding intepretation to previous verions
-              --  of Ada so there is no Ada 2012 guard. Seems a reasonable
+              --  that we apply this binding interpretation to earlier versions
+              --  of Ada, so there is no Ada 2012 guard. Seems a reasonable
               --  choice since there are other compilers that do the same.
 
               or else Is_Composite_Type (Ent)

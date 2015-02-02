@@ -1805,7 +1805,7 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
                       node->lto_file_data->profile_info.runs);
 	node->count_materialization_scale = scale;
 	if (scale < 0)
-	  fatal_error ("Profile information in %s corrupted",
+	  fatal_error (input_location, "Profile information in %s corrupted",
 		       file_data->file_name);
 
 	if (scale == REG_BR_PROB_BASE)
@@ -1837,7 +1837,8 @@ input_symtab (void)
       ib = lto_create_simple_input_block (file_data, LTO_section_symtab_nodes,
 					  &data, &len);
       if (!ib) 
-	fatal_error ("cannot find LTO cgraph in %s", file_data->file_name);
+	fatal_error (input_location,
+		     "cannot find LTO cgraph in %s", file_data->file_name);
       input_profile_summary (ib, file_data);
       file_data->symtab_node_encoder = lto_symtab_encoder_new (true);
       nodes = input_cgraph_1 (file_data, ib);
@@ -1847,7 +1848,7 @@ input_symtab (void)
       ib = lto_create_simple_input_block (file_data, LTO_section_refs,
 					  &data, &len);
       if (!ib)
-	fatal_error ("cannot find LTO section refs in %s",
+	fatal_error (input_location, "cannot find LTO section refs in %s",
 		     file_data->file_name);
       input_refs (ib, nodes);
       lto_destroy_simple_input_block (file_data, LTO_section_refs,
@@ -1914,7 +1915,8 @@ input_offload_tables (void)
 	      vec_safe_push (offload_vars, var_decl);
 	    }
 	  else
-	    fatal_error ("invalid offload table in %s", file_data->file_name);
+	    fatal_error (input_location,
+			 "invalid offload table in %s", file_data->file_name);
 
 	  tag = streamer_read_enum (ib, LTO_symtab_tags, LTO_symtab_last_tag);
 	}

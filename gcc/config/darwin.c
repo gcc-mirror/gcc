@@ -1949,7 +1949,8 @@ darwin_asm_lto_start (void)
     lto_asm_out_name = make_temp_file (".lto.s");
   lto_asm_out_file = fopen (lto_asm_out_name, "a");
   if (lto_asm_out_file == NULL)
-    fatal_error ("failed to open temporary file %s for LTO output",
+    fatal_error (input_location,
+		 "failed to open temporary file %s for LTO output",
 		 lto_asm_out_name);
   asm_out_file = lto_asm_out_file;
 }
@@ -2942,7 +2943,8 @@ darwin_file_end (void)
 
       lto_asm_out_file = fopen (lto_asm_out_name, "r");
       if (lto_asm_out_file == NULL)
-	fatal_error ("failed to open temporary file %s with LTO output",
+	fatal_error (input_location,
+		     "failed to open temporary file %s with LTO output",
 		     lto_asm_out_name);
       fseek (lto_asm_out_file, 0, SEEK_END);
       n = ftell (lto_asm_out_file);

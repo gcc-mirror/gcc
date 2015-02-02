@@ -1195,23 +1195,6 @@ seen_error (void)
    continue.  Do not use this for internal consistency checks; that's
    internal_error.  Use of this function should be rare.  */
 void
-fatal_error (const char *gmsgid, ...)
-{
-  diagnostic_info diagnostic;
-  va_list ap;
-
-  va_start (ap, gmsgid);
-  diagnostic_set_info (&diagnostic, gmsgid, &ap, input_location, DK_FATAL);
-  report_diagnostic (&diagnostic);
-  va_end (ap);
-
-  gcc_unreachable ();
-}
-
-/* An error which is severe enough that we make no attempt to
-   continue.  Do not use this for internal consistency checks; that's
-   internal_error.  Use of this function should be rare.  */
-void
 fatal_error (location_t loc, const char *gmsgid, ...)
 {
   diagnostic_info diagnostic;

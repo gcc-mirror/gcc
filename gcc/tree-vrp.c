@@ -847,6 +847,23 @@ update_value_range (const_tree var, value_range_t *new_vr)
   value_range_t *old_vr;
   bool is_new;
 
+  /* If there is a value-range on the SSA name from earlier analysis
+     factor that in.  */
+  if (INTEGRAL_TYPE_P (TREE_TYPE (var)))
+    {
+      wide_int min, max;
+      value_range_type rtype = get_range_info (var, &min, &max);
+      if (rtype == VR_RANGE || rtype == VR_ANTI_RANGE)
+	{
+	  value_range_d nr;
+	  nr.type = rtype;
+	  nr.min = wide_int_to_tree (TREE_TYPE (var), min);
+	  nr.max = wide_int_to_tree (TREE_TYPE (var), max);
+	  nr.equiv = NULL;
+	  vrp_intersect_ranges (new_vr, &nr);
+	}
+    }
+
   /* Update the value range, if necessary.  */
   old_vr = get_value_range (var);
   is_new = old_vr->type != new_vr->type
@@ -7075,15 +7092,15 @@ vrp_valueize_1 (tree name)
 {
   if (TREE_CODE (name) == SSA_NAME)
     {
-      value_range_t *vr = get_value_range (name);
-      if (range_int_cst_singleton_p (vr))
-	return vr->min;
       /* If the definition may be simulated again we cannot follow
          this SSA edge as the SSA propagator does not necessarily
 	 re-visit the use.  */
       gimple def_stmt = SSA_NAME_DEF_STMT (name);
       if (prop_simulate_again_p (def_stmt))
 	return NULL_TREE;
+      value_range_t *vr = get_value_range (name);
+      if (range_int_cst_singleton_p (vr))
+	return vr->min;
     }
   return name;
 }
@@ -10229,7 +10246,7 @@ vrp_finalize (void)
   substitute_and_fold (op_with_constant_singleton_value_range,
 		       vrp_fold_stmt, false);
 
-  if (warn_array_bounds)
+  if (warn_array_bounds && first_pass_instance)
     check_all_array_refs ();
 
   /* We must identify jump threading opportunities before we release

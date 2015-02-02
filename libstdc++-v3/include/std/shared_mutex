@@ -78,7 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     ~shared_timed_mutex()
     {
-      int __ret __attribute((unused)) = pthread_rwlock_destroy(&_M_rwlock);
+      int __ret __attribute((__unused__)) = pthread_rwlock_destroy(&_M_rwlock);
       // Errors not handled: EBUSY, EINVAL
       _GLIBCXX_DEBUG_ASSERT(__ret == 0);
     }
@@ -108,6 +108,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return true;
     }
 
+#if _GTHREAD_USE_MUTEX_TIMEDLOCK
     template<typename _Rep, typename _Period>
       bool
       try_lock_for(const chrono::duration<_Rep, _Period>& __rel_time)
@@ -149,11 +150,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const auto __s_atime = __s_entry + __delta;
 	return try_lock_until(__s_atime);
       }
+#endif
 
     void
     unlock()
     {
-      int __ret __attribute((unused)) = pthread_rwlock_unlock(&_M_rwlock);
+      int __ret __attribute((__unused__)) = pthread_rwlock_unlock(&_M_rwlock);
       // Errors not handled: EPERM, EBUSY, EINVAL
       _GLIBCXX_DEBUG_ASSERT(__ret == 0);
     }
@@ -186,6 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return true;
     }
 
+#if _GTHREAD_USE_MUTEX_TIMEDLOCK
     template<typename _Rep, typename _Period>
       bool
       try_lock_shared_for(const chrono::duration<_Rep, _Period>& __rel_time)
@@ -230,6 +233,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const auto __s_atime = __s_entry + __delta;
 	return try_lock_shared_until(__s_atime);
       }
+#endif
 
     void
     unlock_shared()

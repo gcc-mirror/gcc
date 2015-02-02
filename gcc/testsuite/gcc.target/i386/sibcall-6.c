@@ -1,4 +1,5 @@
 /* { dg-do compile { target ia32 } } */
+/* { dg-require-effective-target nonpic } */
 /* { dg-options "-O2" } */
 
 typedef void *ira_loop_tree_node_t;

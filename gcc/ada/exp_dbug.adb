@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -634,15 +634,12 @@ package body Exp_Dbug is
             Add_Real_To_Buffer (Small_Value (E));
          end if;
 
-      --  Discrete case where bounds do not match size. Match only biased
-      --  types when asked to output as little encodings as possible.
+      --  Discrete case where bounds do not match size. Not necessary if we can
+      --  emit standard DWARF.
 
-      elsif ((GNAT_Encodings /= DWARF_GNAT_Encodings_Minimal
-               and then Is_Discrete_Type (E))
-             or else
-             (GNAT_Encodings = DWARF_GNAT_Encodings_Minimal
-               and then Has_Biased_Representation (E)))
-            and then not Bounds_Match_Size (E)
+      elsif GNAT_Encodings /= DWARF_GNAT_Encodings_Minimal
+        and then Is_Discrete_Type (E)
+        and then not Bounds_Match_Size (E)
       then
          declare
             Lo : constant Node_Id := Type_Low_Bound (E);

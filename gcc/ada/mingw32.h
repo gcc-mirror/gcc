@@ -52,6 +52,11 @@
 #ifndef __CYGWIN__
 #include <tchar.h>
 #endif
+#if defined (__CYGWIN__) && !defined (__CYGWIN32__) && !defined (IN_RTS)
+/* Note: windows.h on cygwin-64 includes x86intrin.h which uses malloc.
+   That fails to compile, if malloc is poisoned, i.e. if !IN_RTS.  */
+#define _X86INTRIN_H_INCLUDED
+#endif
 #include <windows.h>
 
 #ifndef _O_U8TEXT

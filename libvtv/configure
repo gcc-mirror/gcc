@@ -602,6 +602,8 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+VTV_CYGMIN_FALSE
+VTV_CYGMIN_TRUE
 XCFLAGS
 libtool_VERSION
 enable_static
@@ -12127,7 +12129,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12130 "configure"
+#line 12132 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12233,7 +12235,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12236 "configure"
+#line 12238 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15486,6 +15488,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 # Only expand once:
 
 
+ACX_LT_HOST_FLAGS
 
 
 
@@ -15509,6 +15512,24 @@ if test "x$VTV_SUPPORTED" = "xyes"; then
   ac_config_files="$ac_config_files testsuite/Makefile"
 
 fi
+
+case "$target_os" in
+  cygwin*|mingw32*)
+    vtv_cygmin="yes"
+    ;;
+  *)
+    vtv_cygmin="no"
+    ;;
+esac
+
+ if test $vtv_cygmin = yes; then
+  VTV_CYGMIN_TRUE=
+  VTV_CYGMIN_FALSE='#'
+else
+  VTV_CYGMIN_TRUE='#'
+  VTV_CYGMIN_FALSE=
+fi
+
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -15673,6 +15694,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCXX_TRUE}" && test -z "${am__fastdepCXX_FALSE}"; then
   as_fn_error "conditional \"am__fastdepCXX\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${VTV_CYGMIN_TRUE}" && test -z "${VTV_CYGMIN_FALSE}"; then
+  as_fn_error "conditional \"VTV_CYGMIN\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

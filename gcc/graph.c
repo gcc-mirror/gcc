@@ -63,7 +63,7 @@ open_graph_file (const char *base, const char *mode)
 
   fp = fopen (buf, mode);
   if (fp == NULL)
-    fatal_error ("can%'t open %s: %m", buf);
+    fatal_error (input_location, "can%'t open %s: %m", buf);
 
   return fp;
 }

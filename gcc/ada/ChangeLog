@@ -1,3 +1,240 @@
+2015-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* a-assert.adb: Minor reformatting.
+	* sem_ch13.adb: Minor comment clarification.
+	* types.ads: Minor comment update.
+	* sem_eval.adb (Real_Or_String_Static_Predicate_Matches): Avoid blow up
+	when we have a predicate that is nothing but an inherited dynamic
+	predicate.
+
+2015-01-30  Jerome Guitton  <guitton@adacore.com>
+
+	* gcc-interface/Makefile.in (x86-vxworks): Update GCC_SPEC_FILES to
+	include cert link spec.
+
+2015-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads: Minor comment fix.
+	* freeze.adb (Freeze_Profile): Add test for suspicious import
+	in pure unit.
+	* sem_prag.adb (Process_Import_Or_Interface): Test for suspicious
+	use in Pure unit is now moved to Freeze (to properly catch
+	Pure_Function exemption).
+
+2015-01-30  Bob Duff  <duff@adacore.com>
+
+	* sem_res.ads: Minor comment fix.
+	* sem_type.adb: sem_type.adb (Remove_Conversions): Need to
+	check both operands of an operator.
+
+2015-01-30  Yannick Moy  <moy@adacore.com>
+
+	* a-assert.ads, a-assert.adb: Mark package spec in SPARK. Set assertion
+	policy for Pre to Ignore.
+	(Assert): Add precondition.
+
+2015-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Process_Import_Or_Interface): Warn if used in
+	Pure unit.
+	* s-valllu.ads (Scan_Raw_Long_Long_Unsigned): Clarify
+	documentation for some special cases of invalid attempts at
+	based integers.
+
+2015-01-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* errout.ads: Minor reformatting.
+
+2015-01-30  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Process_Formals): Use the sloc of
+	the inlined node instead of the sloc of the actual parameter,
+	when replacing formal parameters by the actual one.
+
+2015-01-30  Arnaud Charlet  <charlet@adacore.com>
+
+	* g-expect.adb (Get_Command_Output): Use infinite timeout when
+	calling Expect.
+
+2015-01-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Associations): If an in-parameter is
+	defaulted in an instantiation, add an entry in the list of actuals
+	to indicate the default value of the formal (as is already done
+	for defaulted subprograms).
+
+2015-01-30  Javier Miranda  <miranda@adacore.com>
+
+	* errout.adb (Error_Msg_PT): Minor error phrasing update.
+
+2015-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb (Warn_On_Known_Condition): Improve error message
+	for object case.
+
+2015-01-30  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* exp_dbug.adb (Get_Encoded_Name): When
+	-fgnat-encodings=minimal, do not generate names for biased types.
+
+2015-01-30  Tristan Gingold  <gingold@adacore.com>
+
+	PR ada/64349
+	* env.c: Move vxworks and darwin includes out of #ifdef IN_RTS.
+
+2015-01-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* freeze.adb: Minor reformatting.
+
+2015-01-30  Javier Miranda  <miranda@adacore.com>
+
+	* errout.ads (Error_Msg_PT): Replace Node_Id by Entity_Id and
+	improve its documentation.
+	* errout.adb (Error_Msg_PT): Improve the error message.
+	* sem_ch6.adb (Check_Conformance): Update call to Error_Msg_PT.
+	(Check_Synchronized_Overriding): Update call to Error_Msg_PT.
+	* sem_ch3.adb (Check_Abstract_Overriding): Code cleanup.
+
+2015-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb (Warn_On_Known_Condition): Do special casing of
+	message for False case.
+
+2015-01-30  Doug Rupp  <rupp@adacore.com>
+
+	* s-vxwext-kernel.ads (Task_Cont): Remove imported subprogram body.
+	* s-vxwext-kernel.adb (Task_Cont): New subpprogram body specialized for
+	kernel.
+
+2015-01-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_attr.adb (Declared_Within_Generic_Unit):
+	New function to test whether an entity is declared within the
+	declarative region of a given generic unit.
+	(Resolve_Attribute): For checking legality of subprogram'Access within
+	a generic unit, call new Boolean function Declared_Within_Generic_Unit
+	instead of simply comparing the results of Enclosing_Generic_Unit on
+	the prefix and access type.  Correct minor comment typos.
+
+2015-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb, exp_util.ads: Update comment.
+	* exp_util.adb, exp_ch3.adb: Minor code reorganization and reformatting.
+	* sem_util.adb: Minor: fix typo.
+
+2015-01-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Ensure that
+	the check concerning Refined_Post takes precedence over the
+	other cases.
+
+2015-01-30  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_prag.adb: Minor typo fixes and reformatting.
+
+2015-01-30  Yannick Moy  <moy@adacore.com>
+
+	* sem_attr.adb: Code clean up.
+
+2015-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* ali.adb (Scan_ALI): Set Serious_Errors flag in Unit record.
+	* ali.ads (Unit_Record): Add new field Serious_Errors.
+	* lib-writ.adb (Write_Unit_Information): Set SE (serious errors)
+	attribute in U line.
+	* lib-writ.ads: New attribute SE (serious erors) in unit line.
+
+2015-01-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb Update the usage of attributes Entry_Bodies_Array,
+	Lit_Indexes, Scale_Value, Storage_Size_Variable,
+	String_Literal_Low_Bound along associated routines and
+	Write_FieldX_Name.
+	(Pending_Access_Types): New routine.
+	(Set_Pending_Access_Types): New routine.
+	(Write_Field15_Name): Add an entry for Pending_Access_Types.
+	* einfo.ads Add new attribute Pending_Access_Types along
+	with usage in nodes.  Update the usage of attributes
+	Entry_Bodies_Array, Lit_Indexes, Scale_Value,
+	Storage_Size_Variable, String_Literal_Low_Bound.
+	(Pending_Access_Types): New routine along with pragma Inline.
+	(Set_Pending_Access_Types): New routine along with pragma Inline.
+	* exp_ch3.adb (Expand_Freeze_Array_Type): Add new local variable
+	Ins_Node. Determine the insertion node for anonynous access type
+	that acts as a component type of an array. Update the call to
+	Build_Finalization_Master.
+	(Expand_Freeze_Record_Type): Update
+	the calls to Build_Finalization_Master.
+	(Freeze_Type): Remove
+	local variable RACW_Seen. Factor out the code that deals with
+	remote access-to-class-wide types. Create a finalization master
+	when the designated type contains a private component. Fully
+	initialize all pending access types.
+	(Process_RACW_Types): New routine.
+	(Process_Pending_Access_Types): New routine.
+	* exp_ch4.adb (Expand_Allocator_Expression): Allocation no longer
+	needs to set primitive Finalize_Address.
+	(Expand_N_Allocator): Allocation no longer sets primitive
+	Finalize_Address.
+	* exp_ch6.adb (Add_Finalization_Master_Actual_To_Build_In_Place_Call):
+	Update the call to Build_Finalization_Master.
+	(Make_Build_In_Place_Call_In_Allocator): Allocation no longer
+	needs to set primitive Finalize_Address.
+	* exp_ch7.adb (Add_Pending_Access_Type): New routine.
+	(Build_Finalization_Master): New parameter profile. Associate
+	primitive Finalize_Address with the finalization master if the
+	designated type has been frozen, otherwise treat the access
+	type as pending. Simplify the insertion of the master and
+	related initialization code.
+	(Make_Finalize_Address_Body): Allow Finalize_Address for class-wide
+	abstract types.
+	(Make_Set_Finalize_Address_Call): Remove forlam parameter Typ.
+	Simplify the implementation.
+	* exp_ch7.ads (Build_Finalization_Master): New parameter profile
+	along with comment on usage.
+	(Make_Set_Finalize_Address_Call): Remove formal parameter Typ. Update
+	the comment on usage.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Use routine
+	Finalize_Address to retrieve the primitive.
+	(Finalize_Address): New routine.
+	(Find_Finalize_Address): Removed.
+	* exp_util.ads (Finalize_Address): New routine.
+	* freeze.adb (Freeze_All): Remove the generation of finalization
+	masters.
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): Propagate any
+	pending access types from the partial to the full view.
+
+2015-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_disp.adb: Minor reformatting.
+	* sem_disp.ads: Documentation update.
+
+2015-01-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_disp.adb (Is_Dynamically_Tagged): when applied to an entity
+	or a function call, return True if type is class-wide.
+	* sem_res.adb (Resolve_Case_Expression, Resolve_If_Expression);
+	Apply RM 4.5.7 (17/3): all or none of the dependent expression
+	of a conditional expression must be dynamically tagged.
+
+2015-01-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Function_Return): In an extended return
+	statement, apply accessibility check to result object when there
+	is no initializing expression (Ada 2012 RM 6.5 (5.4/3))
+
+2015-01-30  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch4.adb (Analyze_If_Expression): Allow for non-standard
+	Boolean for case where ELSE is omitted.
+	* sem_res.adb: Minor reformatting.
+
+2015-01-27  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	Fix build under cygwin/64.
+	* adaint.h: Add check for __CYGWIN__.
+	* mingw32.h: Prevent windows.h from including x86intrin.h in GCC.
+
 2015-01-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR ada/64640

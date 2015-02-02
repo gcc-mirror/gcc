@@ -184,6 +184,7 @@
  [
     UNSPEC_ASHIFT_SIGNED	; Used in aarch-simd.md.
     UNSPEC_ASHIFT_UNSIGNED	; Used in aarch64-simd.md.
+    UNSPEC_ABS		; Used in aarch64-simd.md.
     UNSPEC_FMAX		; Used in aarch64-simd.md.
     UNSPEC_FMAXNMV	; Used in aarch64-simd.md.
     UNSPEC_FMAXV	; Used in aarch64-simd.md.
@@ -813,6 +814,9 @@
 		      (div "s") (udiv "u")
 		      (smax "s") (umax "u")
 		      (smin "s") (umin "u")])
+
+;; Emit conditional branch instructions.
+(define_code_attr bcond [(eq "beq") (ne "bne") (lt "bne") (ge "beq")])
 
 ;; Emit cbz/cbnz depending on comparison type.
 (define_code_attr cbz [(eq "cbz") (ne "cbnz") (lt "cbnz") (ge "cbz")])

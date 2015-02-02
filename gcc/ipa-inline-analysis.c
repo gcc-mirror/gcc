@@ -4251,7 +4251,8 @@ inline_read_summary (void)
 	/* Fatal error here.  We do not want to support compiling ltrans units
 	   with different version of compiler or different flags than the WPA
 	   unit, so this should never happen.  */
-	fatal_error ("ipa inline summary is missing in input file");
+	fatal_error (input_location,
+		     "ipa inline summary is missing in input file");
     }
   if (optimize)
     {

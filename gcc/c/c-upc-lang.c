@@ -348,7 +348,8 @@ upc_lang_init (void)
   gcc_assert (flag_upc);
   if (!targetm_common.have_named_sections)
     {
-      fatal_error ("UPC is not implemented on this target; "
+      fatal_error (input_location,
+                   "UPC is not implemented on this target; "
 		   "the target linker does not support separately "
 		   "linked sections");
     }

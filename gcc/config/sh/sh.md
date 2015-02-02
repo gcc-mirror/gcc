@@ -742,8 +742,12 @@
      variant instead and load the constant into a reg.  For that we'd need
      to do some analysis.  */
 
-  if ((op1val & 0xFFFF) == 0
-      && CONST_OK_FOR_K08 (op1val >> 16) && optimize_size)
+  if (CONST_OK_FOR_K08 (op1val))
+    {
+      /* Do nothing.  */
+    }
+  else if ((op1val & 0xFFFF) == 0
+	   && CONST_OK_FOR_K08 (op1val >> 16) && optimize_size)
     {
       /* Use a swap.w insn to do a shift + reg copy (to R0) in one insn.  */
       op1val = op1val >> 16;

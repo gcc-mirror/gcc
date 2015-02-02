@@ -170,6 +170,10 @@ static basic_block curr_bb;
 static lra_insn_recog_data_t curr_id;
 static struct lra_static_insn_data *curr_static_id;
 static machine_mode curr_operand_mode[MAX_RECOG_OPERANDS];
+/* Mode of the register substituted by its equivalence with VOIDmode
+   (e.g. constant) and whose subreg is given operand of the current
+   insn.  VOIDmode in all other cases.  */
+static machine_mode original_subreg_reg_mode[MAX_RECOG_OPERANDS];
 
 
 
@@ -1382,13 +1386,13 @@ static int valid_address_p (machine_mode mode, rtx addr, addr_space_t as);
 
 /* Make reloads for subreg in operand NOP with internal subreg mode
    REG_MODE, add new reloads for further processing.  Return true if
-   any reload was generated.  */
+   any change was done.  */
 static bool
 simplify_operand_subreg (int nop, machine_mode reg_mode)
 {
   int hard_regno;
   rtx_insn *before, *after;
-  machine_mode mode;
+  machine_mode mode, innermode;
   rtx reg, new_reg;
   rtx operand = *curr_id->operand_loc[nop];
   enum reg_class regclass;
@@ -1401,6 +1405,7 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 
   mode = GET_MODE (operand);
   reg = SUBREG_REG (operand);
+  innermode = GET_MODE (reg);
   type = curr_static_id->operand[nop].type;
   /* If we change address for paradoxical subreg of memory, the
      address might violate the necessary alignment or the access might
@@ -1419,7 +1424,7 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
       alter_subreg (curr_id->operand_loc[nop], false);
       subst = *curr_id->operand_loc[nop];
       lra_assert (MEM_P (subst));
-      if (! valid_address_p (GET_MODE (reg), XEXP (reg, 0),
+      if (! valid_address_p (innermode, XEXP (reg, 0),
 			     MEM_ADDR_SPACE (reg))
 	  || valid_address_p (GET_MODE (subst), XEXP (subst, 0),
 			      MEM_ADDR_SPACE (subst)))
@@ -1433,6 +1438,20 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
     {
       alter_subreg (curr_id->operand_loc[nop], false);
       return true;
+    }
+  else if (CONSTANT_P (reg))
+    {
+      /* Try to simplify subreg of constant.  It is usually result of
+	 equivalence substitution.  */
+      if (innermode == VOIDmode
+	  && (innermode = original_subreg_reg_mode[nop]) == VOIDmode)
+	innermode = curr_static_id->operand[nop].mode;
+      if ((new_reg = simplify_subreg (mode, reg, innermode,
+				      SUBREG_BYTE (operand))) != NULL_RTX)
+	{
+	  *curr_id->operand_loc[nop] = new_reg;
+	  return true;
+	}
     }
   /* Put constant into memory when we have mixed modes.  It generates
      a better code in most cases as it does not need a secondary
@@ -1453,9 +1472,9 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
        && (hard_regno = lra_get_regno_hard_regno (REGNO (reg))) >= 0
        /* Don't reload paradoxical subregs because we could be looping
 	  having repeatedly final regno out of hard regs range.  */
-       && (hard_regno_nregs[hard_regno][GET_MODE (reg)]
+       && (hard_regno_nregs[hard_regno][innermode]
 	   >= hard_regno_nregs[hard_regno][mode])
-       && simplify_subreg_regno (hard_regno, GET_MODE (reg),
+       && simplify_subreg_regno (hard_regno, innermode,
 				 SUBREG_BYTE (operand), mode) < 0
        /* Don't reload subreg for matching reload.  It is actually
 	  valid subreg in LRA.  */
@@ -1481,7 +1500,7 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	  bitmap_set_bit (&lra_subreg_reload_pseudos, REGNO (new_reg));
 
 	  insert_before = (type != OP_OUT
-			   || GET_MODE_SIZE (GET_MODE (reg)) > GET_MODE_SIZE (mode));
+			   || GET_MODE_SIZE (innermode) > GET_MODE_SIZE (mode));
 	  insert_after = (type != OP_IN);
 	  insert_move_for_subreg (insert_before ? &before : NULL,
 				  insert_after ? &after : NULL,
@@ -1524,7 +1543,7 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
   else if (REG_P (reg)
 	   && REGNO (reg) >= FIRST_PSEUDO_REGISTER
 	   && (hard_regno = lra_get_regno_hard_regno (REGNO (reg))) >= 0
-	   && (hard_regno_nregs[hard_regno][GET_MODE (reg)]
+	   && (hard_regno_nregs[hard_regno][innermode]
 	       < hard_regno_nregs[hard_regno][mode])
 	   && (regclass = lra_get_allocno_class (REGNO (reg)))
 	   && (type != OP_IN
@@ -1542,7 +1561,7 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	  bool insert_before, insert_after;
 
 	  PUT_MODE (new_reg, mode);
-          subreg = simplify_gen_subreg (GET_MODE (reg), new_reg, mode, 0);
+          subreg = simplify_gen_subreg (innermode, new_reg, mode, 0);
 	  bitmap_set_bit (&lra_subreg_reload_pseudos, REGNO (new_reg));
 
 	  insert_before = (type != OP_OUT);
@@ -1635,6 +1654,22 @@ reg_in_class_p (rtx reg, enum reg_class cl)
   if (cl == NO_REGS)
     return get_reg_class (REGNO (reg)) == NO_REGS;
   return in_class_p (reg, cl, NULL);
+}
+
+/* Return true if SET of RCLASS contains no hard regs which can be
+   used in MODE.  */
+static bool
+prohibited_class_reg_set_mode_p (enum reg_class rclass,
+				 HARD_REG_SET &set,
+				 enum machine_mode mode)
+{
+  HARD_REG_SET temp;
+  
+  lra_assert (hard_reg_set_subset_p (set, reg_class_contents[rclass]));
+  COPY_HARD_REG_SET (temp, set);
+  AND_COMPL_HARD_REG_SET (temp, lra_no_alloc_regs);
+  return (hard_reg_set_subset_p
+	  (temp, ira_prohibited_class_mode_regs[rclass][mode]));
 }
 
 /* Major function to choose the current insn alternative and what
@@ -2311,28 +2346,20 @@ process_alt_operands (int only_alternative)
 		     not hold the mode value.  */
 		  && ! HARD_REGNO_MODE_OK (ira_class_hard_regs
 					   [this_alternative][0],
-					   GET_MODE (*curr_id->operand_loc[nop])))
-		{
-		  HARD_REG_SET temp;
-		  
-		  COPY_HARD_REG_SET (temp, this_alternative_set);
-		  AND_COMPL_HARD_REG_SET (temp, lra_no_alloc_regs);
+					   GET_MODE (*curr_id->operand_loc[nop]))
 		  /* The above condition is not enough as the first
 		     reg in ira_class_hard_regs can be not aligned for
 		     multi-words mode values.  */
-		  if (hard_reg_set_subset_p (temp,
-					     ira_prohibited_class_mode_regs
-					     [this_alternative]
-					     [GET_MODE (*curr_id->operand_loc[nop])]))
-		    {
-		      if (lra_dump_file != NULL)
-			fprintf
-			  (lra_dump_file,
-			   "            alt=%d: reload pseudo for op %d "
-			   " can not hold the mode value -- refuse\n",
-			   nalt, nop);
-		      goto fail;
-		    }
+		  && (prohibited_class_reg_set_mode_p
+		      (this_alternative, this_alternative_set,
+		       GET_MODE (*curr_id->operand_loc[nop]))))
+		{
+		  if (lra_dump_file != NULL)
+		    fprintf (lra_dump_file,
+			     "            alt=%d: reload pseudo for op %d "
+			     " can not hold the mode value -- refuse\n",
+			     nalt, nop);
+		  goto fail;
 		}
 
 	      /* Check strong discouragement of reload of non-constant
@@ -3278,6 +3305,9 @@ swap_operands (int nop)
   machine_mode mode = curr_operand_mode[nop];
   curr_operand_mode[nop] = curr_operand_mode[nop + 1];
   curr_operand_mode[nop + 1] = mode;
+  mode = original_subreg_reg_mode[nop];
+  original_subreg_reg_mode[nop] = original_subreg_reg_mode[nop + 1];
+  original_subreg_reg_mode[nop + 1] = mode;
   rtx x = *curr_id->operand_loc[nop];
   *curr_id->operand_loc[nop] = *curr_id->operand_loc[nop + 1];
   *curr_id->operand_loc[nop + 1] = x;
@@ -3381,21 +3411,26 @@ curr_insn_transform (bool check_only_p)
 	if (GET_CODE (old) == SUBREG)
 	  old = SUBREG_REG (old);
 	subst = get_equiv_with_elimination (old, curr_insn);
+	original_subreg_reg_mode[i] = VOIDmode;
 	if (subst != old)
 	  {
 	    subst = copy_rtx (subst);
 	    lra_assert (REG_P (old));
-	    if (GET_CODE (op) == SUBREG)
-	      SUBREG_REG (op) = subst;
-	    else
+	    if (GET_CODE (op) != SUBREG)
 	      *curr_id->operand_loc[i] = subst;
+	    else
+	      {
+		SUBREG_REG (op) = subst;
+		if (GET_MODE (subst) == VOIDmode)
+		  original_subreg_reg_mode[i] = GET_MODE (old);
+	      }
 	    if (lra_dump_file != NULL)
 	      {
 		fprintf (lra_dump_file,
 			 "Changing pseudo %d in operand %i of insn %u on equiv ",
 			 REGNO (old), i, INSN_UID (curr_insn));
 		dump_value_slim (lra_dump_file, subst, 1);
-	      fprintf (lra_dump_file, "\n");
+		fprintf (lra_dump_file, "\n");
 	      }
 	    op_change_p = change_p = true;
 	  }
@@ -3732,6 +3767,11 @@ curr_insn_transform (bool check_only_p)
 	      && regno < new_regno_start
 	      && ! lra_former_scratch_p (regno)
 	      && reg_renumber[regno] < 0
+	      /* Check that the optional reload pseudo will be able to
+		 hold given mode value.  */
+	      && ! (prohibited_class_reg_set_mode_p
+		    (goal_alt[i], reg_class_contents[goal_alt[i]],
+		     PSEUDO_REGNO_MODE (regno)))
 	      && (curr_insn_set == NULL_RTX
 		  || !((REG_P (SET_SRC (curr_insn_set))
 			|| MEM_P (SET_SRC (curr_insn_set))

@@ -208,9 +208,9 @@ lto_obj_file_close (lto_file *file)
       if (errmsg != NULL)
 	{
 	  if (err == 0)
-	    fatal_error ("%s", errmsg);
+	    fatal_error (input_location, "%s", errmsg);
 	  else
-	    fatal_error ("%s: %s", errmsg, xstrerror (err));
+	    fatal_error (input_location, "%s: %s", errmsg, xstrerror (err));
 	}
 
       simple_object_release_write (lo->sobj_w);
@@ -219,7 +219,7 @@ lto_obj_file_close (lto_file *file)
   if (lo->fd != -1)
     {
       if (close (lo->fd) < 0)
-	fatal_error ("close: %s", xstrerror (errno));
+	fatal_error (input_location, "close: %s", xstrerror (errno));
     }
 }
 
@@ -362,9 +362,9 @@ lto_obj_begin_section (const char *name)
   if (lo->section == NULL)
     {
       if (err == 0)
-	fatal_error ("%s", errmsg);
+	fatal_error (input_location, "%s", errmsg);
       else
-	fatal_error ("%s: %s", errmsg, xstrerror (errno));
+	fatal_error (input_location, "%s: %s", errmsg, xstrerror (errno));
     }
 }
 
@@ -386,9 +386,9 @@ lto_obj_append_data (const void *data, size_t len, void *)
   if (errmsg != NULL)
     {
       if (err == 0)
-	fatal_error ("%s", errmsg);
+	fatal_error (input_location, "%s", errmsg);
       else
-	fatal_error ("%s: %s", errmsg, xstrerror (errno));
+	fatal_error (input_location, "%s: %s", errmsg, xstrerror (errno));
     }
 }
 

@@ -23,6 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <bits/atomic_futex.h>
+#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
 #if defined(_GLIBCXX_HAVE_LINUX_FUTEX) && ATOMIC_INT_LOCK_FREE > 1
 #include <chrono>
 #include <climits>
@@ -93,4 +94,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
 }
+#endif
 #endif
