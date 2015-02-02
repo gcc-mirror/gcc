@@ -32625,7 +32625,7 @@ rs6000_set_current_function (tree fndecl)
       if (old_tree == new_tree)
 	;
 
-      else if (new_tree)
+      else if (new_tree && new_tree != target_option_default_node)
 	{
 	  cl_target_option_restore (&global_options,
 				    TREE_TARGET_OPTION (new_tree));
@@ -32636,7 +32636,7 @@ rs6000_set_current_function (tree fndecl)
 	      = save_target_globals_default_opts ();
 	}
 
-      else if (old_tree)
+      else if (old_tree && old_tree != target_option_default_node)
 	{
 	  new_tree = target_option_current_node;
 	  cl_target_option_restore (&global_options,

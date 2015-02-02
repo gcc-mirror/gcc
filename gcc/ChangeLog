@@ -1,4 +1,10 @@
-2015-01-29  Jan Hubicka  <hubicka@ucw.cz>
+2015-02-01  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/64047
+	* config/rs6000/rs6000.c (rs6000_set_current_function): Handle
+	explicit default options.
+
+2015-02-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/64872
 	* ipa-utils.c (ipa_merge_profiles): Add release argument.
