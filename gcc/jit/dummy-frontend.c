@@ -167,6 +167,9 @@ jit_langhook_type_for_mode (enum machine_mode mode, int unsignedp)
   if (mode == TYPE_MODE (long_integer_type_node))
     return unsignedp ? long_unsigned_type_node : long_integer_type_node;
 
+  if (mode == TYPE_MODE (long_long_integer_type_node))
+    return unsignedp ? long_long_unsigned_type_node : long_long_integer_type_node;
+
   if (COMPLEX_MODE_P (mode))
     {
       if (mode == TYPE_MODE (complex_float_type_node))
