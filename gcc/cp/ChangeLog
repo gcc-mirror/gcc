@@ -1,3 +1,7 @@
+2015-02-02  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (handle_abi_tag_attribute): Diagnose invalid arguments.
+
 2015-01-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* class.c, except.c, parser.c, pt.c: All callers of fatal_error
