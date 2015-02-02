@@ -1,3 +1,15 @@
+2015-02-02  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/arm-neon-ref.h
+	(_ARM_FPSRC): Add DN and AHP fields.
+	(clean_results): Force DN=1 on AArch64.
+	* gcc.target/aarch64/advsimd-intrinsics/binary_op_no64.inc: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vhadd.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vhsub.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vmax.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vmin.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vrhadd.c: New file.
+
 2015-02-02  Alan Modra  <amodra@gmail.com>
 
 	* gcc.target/powerpc/cprophard.c: New.
