@@ -1,5 +1,16 @@
 2015-02-03  Tim Shen  <timshen@google.com>
 
+	PR libstdc++/64680
+	Backported from mainline
+	2015-01-22  Tim Shen  <timshen@google.com>
+
+	* include/bits/regex.h (basic_regex<>::basic_regex,
+	basic_regex<>::operator=, basic_regex<>::imbue): Conform to the
+	standard interface.
+	* testsuite/28_regex/basic_regex/assign/char/cstring.cc: New testcase.
+
+2015-02-03  Tim Shen  <timshen@google.com>
+
 	PR libstdc++/64649
 	Backported from mainline
 	2015-01-22  Tim Shen  <timshen@google.com>

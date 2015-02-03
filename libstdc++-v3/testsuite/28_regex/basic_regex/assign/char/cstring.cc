@@ -1,5 +1,4 @@
-// { dg-do compile }
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++11" }
 
 // 2009-06-05  Stephen M. Webb  <stephen.webb@bregmasoft.ca>
 //
@@ -36,9 +35,19 @@ void test01()
   re.assign(cs);
 }
 
+// basic_regex::operator=() resets flags. libstdc++/64680
+void test02()
+{
+  bool test __attribute__((unused)) = true;
+
+  std::regex re("[[:alnum:]]", std::regex_constants::basic);
+  re = "\\w+";
+}
+
 int
 main()
 { 
   test01();
+  test02();
   return 0;
 }
