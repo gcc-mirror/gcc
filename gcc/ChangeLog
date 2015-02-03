@@ -1,3 +1,57 @@
+2015-02-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/64660
+	* config/sh/sync.md (atomic_<fetchop_name><mode>_hard,
+	atomic_not<mode>_hard, atomic_<fetchop_name><mode>_soft_tcb,
+	atomic_not<mode>_soft_tcb, atomic_nand<mode>_hard,
+	atomic_nand<mode>_soft_tcb): New insns.
+	(atomic_fetch_<fetchop_name>si_hard): Convert to insn_and_split.
+	Split into atomic_<fetchop_name>_fetchsi_hard if operands[0] is unused.
+	(define_insn "atomic_fetch_notsi_hard): Convert to insn_and_split.
+	Split into atomic_not_fetchsi_hard if operands[0] is unused.
+	(atomic_fetch_<fetchop_name><mode>_hard): Convert to insn_and_split.
+	Split into atomic_<fetchop_name><mode>_hard if operands[0] is unused.
+	(atomic_fetch_not<mode>_hard): Convert to insn_and_split.  Split into
+	atomic_not<mode>_hard if operands[0] is unused.
+	(atomic_fetch_<fetchop_name><mode>_soft_gusa): Convert to
+	insn_and_split.  Split into atomic_<fetchop_name>_fetch<mode>_soft_gusa
+	if operands[0] is unused.
+	(atomic_fetch_not<mode>_soft_gusa): Convert to insn_and_split.  Split
+	into atomic_not_fetch<mode>_soft_gusa if operands[0] is unused.
+	(atomic_fetch_<fetchop_name><mode>_soft_tcb): Convert to insn_and_split.
+	Split into atomic_<fetchop_name><mode>_soft_tcb if operands[0] is
+	unused.
+	(atomic_fetch_not<mode>_soft_tcb): Convert to insn_and_split.  Split
+	into atomic_not<mode>_soft_tcb if operands[0] is unused.
+	(atomic_fetch_<fetchop_name><mode>_soft_imask): Convert to
+	insn_and_split.  Split into atomic_<fetchop_name>_fetch<mode>_soft_imask
+	if operands[0] is unused.
+	(atomic_fetch_not<mode>_soft_imask): Convert to insn_and_split.  Split
+	into atomic_not_fetch<mode>_soft_imask is operands[0] is unused.
+	(atomic_fetch_nandsi_hard): Convert to insn_and_split.  Split into
+	atomic_nand_fetchsi_hard if operands[0] is unused.
+	(atomic_fetch_nand<mode>_hard): Convert to insn_and_split.  Split into
+	atomic_nand<mode>_hard if operands[0] is unused.
+	(atomic_fetch_nand<mode>_soft_gusa): Convert to insn_and_split.  Split
+	into atomic_nand_fetch<mode>_soft_gusa if operands[0] is unused.
+	(atomic_fetch_nand<mode>_soft_tcb): Convert to insn_and_split.  Split
+	into atomic_nand<mode>_soft_tcb if operands[0] is unused.
+	(atomic_fetch_nand<mode>_soft_imask): Convert to insn_and_split.  Split
+	into atomic_nand_fetch<mode>_soft_imask if operands[0] is unused.
+	(atomic_<fetchop_name>_fetch<mode>_hard): Convert to insn_and_split.
+	Split into atomic_<fetchop_name><mode>_hard if operands[0] is unused.
+	(atomic_not_fetch<mode>_hard): Convert to insn_and_split.  Split into
+	atomic_not<mode>_hard if operands[0] is unused.
+	(atomic_<fetchop_name>_fetch<mode>_soft_tcb): Convert to insn_and_split.
+	Split into atomic_<fetchop_name><mode>_soft_tcb if operands[0] is
+	unused.
+	(atomic_not_fetch<mode>_soft_tcb): Convert to insn_and_split.  Split
+	into atomic_not<mode>_soft_tcb if operands[0] is unused.
+	(atomic_nand_fetch<mode>_hard): Convert to insn_and_split.  Split into
+	atomic_nand<mode>_hard if operands[0] is unused.
+	(atomic_nand_fetch<mode>_soft_tcb): Convert to insn_and_split.  Split
+	into atomic_nand<mode>_soft_tcb if operands[0] is unused.
+
 2015-02-03  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/64810
