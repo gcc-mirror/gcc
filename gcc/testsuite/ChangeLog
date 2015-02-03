@@ -1,9 +1,14 @@
+2015-02-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64877
+	* g++.dg/warn/Waddress-2.C: New.
+
 2015-02-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR middle-end/61225
-	gcc.target/i386/pr49095.c: XFAIL for ia32.
+	* gcc.target/i386/pr49095.c: XFAIL for ia32.
 
-2015-02-03    <dodji@redhat.com>
+2015-02-03  Dodji Seketeli  <dodji@redhat.com>
 
 	PR preprocessor/64803
 	* gcc.dg/cpp/builtin-macro-1.c: New test case.

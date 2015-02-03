@@ -1,3 +1,9 @@
+2015-02-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64877
+	* typeck.c (cp_build_binary_op): Avoid spurious -Waddress warnings
+	for generated expressions.
+
 2015-02-02  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/64901
