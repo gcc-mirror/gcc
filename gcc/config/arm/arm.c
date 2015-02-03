@@ -17297,7 +17297,7 @@ thumb2_reorg (void)
 	      rtx src = XEXP (pat, 1);
 	      rtx op0 = NULL_RTX, op1 = NULL_RTX;
 
-	      if (!OBJECT_P (src))
+	      if (UNARY_P (src) || BINARY_P (src))
 		  op0 = XEXP (src, 0);
 
 	      if (BINARY_P (src))
