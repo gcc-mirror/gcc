@@ -256,6 +256,11 @@ public:
   get_all_requested_dumps (vec <recording::requested_dump> *out);
 
 private:
+  void log_all_options () const;
+  void log_str_option (enum gcc_jit_str_option opt) const;
+  void log_int_option (enum gcc_jit_int_option opt) const;
+  void log_bool_option (enum gcc_jit_bool_option opt) const;
+
   void validate ();
 
 private:
