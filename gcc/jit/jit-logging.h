@@ -127,7 +127,7 @@ class log_user
   logger * get_logger () const { return m_logger; }
   void set_logger (logger * logger);
 
-  void log (const char *fmt, ...)
+  void log (const char *fmt, ...) const
     GNU_PRINTF(2, 3);
 
   void enter_scope (const char *scope_name);
@@ -141,7 +141,7 @@ class log_user
    case where the underlying logger is NULL via a no-op.  */
 
 inline void
-log_user::log (const char *fmt, ...)
+log_user::log (const char *fmt, ...) const
 {
   if (m_logger)
     {

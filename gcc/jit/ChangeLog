@@ -1,5 +1,28 @@
 2015-02-03  David Malcolm  <dmalcolm@redhat.com>
 
+	* jit-logging.h (gcc::jit::log_user::log): Make const.
+	* jit-recording.c (gcc::jit::recording::context::set_str_option):
+	Log the new value of the option.
+	(gcc::jit::recording::context::set_int_option): Likewise.
+	(gcc::jit::recording::context::set_bool_option): Likewise.
+	(gcc::jit::recording::context::compile): Log the value of all
+	options.
+	(gcc::jit::recording::context::compile_to_file): Likewise.
+	(gcc::jit::recording::context::log_all_options): New function.
+	(gcc::jit::recording::context::log_str_option): New function.
+	(gcc::jit::recording::context::log_int_option): New function.
+	(gcc::jit::recording::context::log_bool_option): New function.
+	* jit-recording.h (gcc::jit::recording::context::log_all_options):
+	New function.
+	(gcc::jit::recording::context::log_str_option): New function.
+	(gcc::jit::recording::context::log_int_option): New function.
+	(gcc::jit::recording::context::log_bool_option): New function.
+	* docs/internals/test-hello-world.exe.log.txt: Update for above
+	changes.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2015-02-03  David Malcolm  <dmalcolm@redhat.com>
+
 	PR jit/64810
 	* Make-lang.in (jit_OBJS): Add jit/jit-spec.o and gcc.o.
 	(LIBGCCJIT_FILENAME): Add EXTRA_GCC_OBJS.

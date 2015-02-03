@@ -1093,6 +1093,7 @@ recording::context::set_str_option (enum gcc_jit_str_option opt,
     }
   free (m_str_options[opt]);
   m_str_options[opt] = value ? xstrdup (value) : NULL;
+  log_str_option (opt);
 }
 
 /* Set the given integer option for this context, or add an error if
@@ -1112,6 +1113,7 @@ recording::context::set_int_option (enum gcc_jit_int_option opt,
       return;
     }
   m_int_options[opt] = value;
+  log_int_option (opt);
 }
 
 /* Set the given boolean option for this context, or add an error if
@@ -1131,6 +1133,7 @@ recording::context::set_bool_option (enum gcc_jit_bool_option opt,
       return;
     }
   m_bool_options[opt] = value ? true : false;
+  log_bool_option (opt);
 }
 
 /* Add the given dumpname/out_ptr pair to this context's list of requested
@@ -1164,6 +1167,8 @@ recording::context::compile ()
 {
   JIT_LOG_SCOPE (get_logger ());
 
+  log_all_options ();
+
   validate ();
 
   if (errors_occurred ())
@@ -1191,6 +1196,8 @@ recording::context::compile_to_file (enum gcc_jit_output_kind output_kind,
 				     const char *output_path)
 {
   JIT_LOG_SCOPE (get_logger ());
+
+  log_all_options ();
 
   validate ();
 
@@ -1377,6 +1384,72 @@ static const char * const
   "GCC_JIT_BOOL_OPTION_SELFCHECK_GC",
   "GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES"
 };
+
+
+/* Write the current value of all options to the log file (if any).  */
+
+void
+recording::context::log_all_options () const
+{
+  int opt_idx;
+
+  if (!get_logger ())
+    return;
+
+  for (opt_idx = 0; opt_idx < GCC_JIT_NUM_STR_OPTIONS; opt_idx++)
+    log_str_option ((enum gcc_jit_str_option)opt_idx);
+
+  for (opt_idx = 0; opt_idx < GCC_JIT_NUM_INT_OPTIONS; opt_idx++)
+    log_int_option ((enum gcc_jit_int_option)opt_idx);
+
+  for (opt_idx = 0; opt_idx < GCC_JIT_NUM_BOOL_OPTIONS; opt_idx++)
+    log_bool_option ((enum gcc_jit_bool_option)opt_idx);
+}
+
+/* Write the current value of the given string option to the
+   log file (if any).  */
+
+void
+recording::context::log_str_option (enum gcc_jit_str_option opt) const
+{
+  gcc_assert (opt < GCC_JIT_NUM_STR_OPTIONS);
+  if (get_logger ())
+    {
+      if (m_str_options[opt])
+	log ("%s: \"%s\"",
+	     str_option_reproducer_strings[opt],
+	     m_str_options[opt]);
+      else
+	log ("%s: NULL",
+	     str_option_reproducer_strings[opt]);
+    }
+}
+
+/* Write the current value of the given int option to the
+   log file (if any).  */
+
+void
+recording::context::log_int_option (enum gcc_jit_int_option opt) const
+{
+  gcc_assert (opt < GCC_JIT_NUM_INT_OPTIONS);
+  if (get_logger ())
+    log ("%s: %i",
+	 int_option_reproducer_strings[opt],
+	 m_int_options[opt]);
+}
+
+/* Write the current value of the given bool option to the
+   log file (if any).  */
+
+void
+recording::context::log_bool_option (enum gcc_jit_bool_option opt) const
+{
+  gcc_assert (opt < GCC_JIT_NUM_BOOL_OPTIONS);
+  if (get_logger ())
+    log ("%s: %s",
+	 bool_option_reproducer_strings[opt],
+	 m_bool_options[opt] ? "true" : "false");
+}
 
 /* Write C source code to PATH that attempts to replay the API
    calls made to this context (and its parents), for use in
