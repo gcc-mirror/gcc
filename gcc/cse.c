@@ -1984,6 +1984,22 @@ invalidate (rtx x, machine_mode full_mode)
       gcc_unreachable ();
     }
 }
+
+/* Invalidate DEST.  Used when DEST is not going to be added
+   into the hash table for some reason, e.g. do_not_record
+   flagged on it.  */
+
+static void
+invalidate_dest (rtx dest)
+{
+  if (REG_P (dest)
+      || GET_CODE (dest) == SUBREG
+      || MEM_P (dest))
+    invalidate (dest, VOIDmode);
+  else if (GET_CODE (dest) == STRICT_LOW_PART
+	   || GET_CODE (dest) == ZERO_EXTRACT)
+    invalidate (XEXP (dest, 0), GET_MODE (dest));
+}
 
 /* Remove all expressions that refer to register REGNO,
    since they are already invalid, and we are about to
@@ -5510,18 +5526,20 @@ cse_insn (rtx_insn *insn)
 
       else if (do_not_record)
 	{
-	  if (REG_P (dest) || GET_CODE (dest) == SUBREG)
-	    invalidate (dest, VOIDmode);
-	  else if (MEM_P (dest))
-	    invalidate (dest, VOIDmode);
-	  else if (GET_CODE (dest) == STRICT_LOW_PART
-		   || GET_CODE (dest) == ZERO_EXTRACT)
-	    invalidate (XEXP (dest, 0), GET_MODE (dest));
+	  invalidate_dest (dest);
 	  sets[i].rtl = 0;
 	}
 
       if (sets[i].rtl != 0 && dest != SET_DEST (sets[i].rtl))
-	sets[i].dest_hash = HASH (SET_DEST (sets[i].rtl), mode);
+	{
+	  do_not_record = 0;
+	  sets[i].dest_hash = HASH (SET_DEST (sets[i].rtl), mode);
+	  if (do_not_record)
+	    {
+	      invalidate_dest (SET_DEST (sets[i].rtl));
+	      sets[i].rtl = 0;
+	    }
+	}
 
 #ifdef HAVE_cc0
       /* If setting CC0, record what it was set to, or a constant, if it

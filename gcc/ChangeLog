@@ -1,3 +1,11 @@
+2015-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/64756
+	* cse.c (invalidate_dest): New function.
+	(cse_insn): Use it.  If dest != SET_DEST (sets[i].rtl) and
+	HASH (SET_DEST (sets[i].rtl), mode) computation sets do_not_record,
+	invalidate and do not record it.
+
 2015-02-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/64660
