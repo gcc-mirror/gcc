@@ -223,16 +223,16 @@ class Gcc_backend : public Backend
   bool
   is_circular_pointer_type(Btype*);
 
-  size_t
+  int64_t
   type_size(Btype*);
 
-  size_t
+  int64_t
   type_alignment(Btype*);
 
-  size_t
+  int64_t
   type_field_alignment(Btype*);
 
-  size_t
+  int64_t
   type_field_offset(Btype*, size_t index);
 
   // Expressions.
@@ -411,7 +411,7 @@ class Gcc_backend : public Backend
 
   Bvariable*
   implicit_variable(const std::string&, Btype*, bool, bool, bool,
-		    size_t);
+		    int64_t);
 
   void
   implicit_variable_set_init(Bvariable*, const std::string&, Btype*,
@@ -1097,7 +1097,7 @@ Gcc_backend::is_circular_pointer_type(Btype* btype)
 
 // Return the size of a type.
 
-size_t
+int64_t
 Gcc_backend::type_size(Btype* btype)
 {
   tree t = btype->get_tree();
@@ -1106,14 +1106,14 @@ Gcc_backend::type_size(Btype* btype)
   t = TYPE_SIZE_UNIT(t);
   gcc_assert(tree_fits_uhwi_p (t));
   unsigned HOST_WIDE_INT val_wide = TREE_INT_CST_LOW(t);
-  size_t ret = static_cast<size_t>(val_wide);
-  gcc_assert(ret == val_wide);
+  int64_t ret = static_cast<int64_t>(val_wide);
+  gcc_assert(ret >= 0 && static_cast<unsigned HOST_WIDE_INT>(ret) == val_wide);
   return ret;
 }
 
 // Return the alignment of a type.
 
-size_t
+int64_t
 Gcc_backend::type_alignment(Btype* btype)
 {
   tree t = btype->get_tree();
@@ -1124,7 +1124,7 @@ Gcc_backend::type_alignment(Btype* btype)
 
 // Return the alignment of a struct field of type BTYPE.
 
-size_t
+int64_t
 Gcc_backend::type_field_alignment(Btype* btype)
 {
   tree t = btype->get_tree();
@@ -1135,7 +1135,7 @@ Gcc_backend::type_field_alignment(Btype* btype)
 
 // Return the offset of a field in a struct.
 
-size_t
+int64_t
 Gcc_backend::type_field_offset(Btype* btype, size_t index)
 {
   tree struct_tree = btype->get_tree();
@@ -1149,9 +1149,8 @@ Gcc_backend::type_field_offset(Btype* btype, size_t index)
       gcc_assert(field != NULL_TREE);
     }
   HOST_WIDE_INT offset_wide = int_byte_position(field);
-  gcc_assert(offset_wide >= 0);
-  size_t ret = static_cast<size_t>(offset_wide);
-  gcc_assert(ret == static_cast<unsigned HOST_WIDE_INT>(offset_wide));
+  int64_t ret = static_cast<int64_t>(offset_wide);
+  gcc_assert(ret == offset_wide);
   return ret;
 }
 
@@ -2609,7 +2608,7 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
 Bvariable*
 Gcc_backend::implicit_variable(const std::string& name, Btype* type,
 			       bool is_hidden, bool is_constant,
-			       bool is_common, size_t alignment)
+			       bool is_common, int64_t alignment)
 {
   tree type_tree = type->get_tree();
   if (type_tree == error_mark_node)

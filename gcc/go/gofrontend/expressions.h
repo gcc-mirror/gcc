@@ -233,6 +233,11 @@ class Expression
   static Expression*
   make_integer_sl(long, Type*, Location);
 
+  // Make a constant integer expression from an int64_t.  TYPE should
+  // be NULL for an abstract type.
+  static Expression*
+  make_integer_int64(int64_t, Type*, Location);
+
   // Make a constant float expression.  TYPE should be NULL for an
   // abstract type.
   static Expression*

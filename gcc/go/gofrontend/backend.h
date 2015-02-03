@@ -216,22 +216,22 @@ class Backend
   is_circular_pointer_type(Btype*) = 0;
 
   // Return the size of a type.
-  virtual size_t
+  virtual int64_t
   type_size(Btype*) = 0;
 
   // Return the alignment of a type.
-  virtual size_t
+  virtual int64_t
   type_alignment(Btype*) = 0;
 
   // Return the alignment of a struct field of this type.  This is
   // normally the same as type_alignment, but not always.
-  virtual size_t
+  virtual int64_t
   type_field_alignment(Btype*) = 0;
 
   // Return the offset of field INDEX in a struct type.  INDEX is the
   // entry in the FIELDS std::vector parameter of struct_type or
   // set_placeholder_struct_type.
-  virtual size_t
+  virtual int64_t
   type_field_offset(Btype*, size_t index) = 0;
 
   // Expressions.
@@ -575,7 +575,7 @@ class Backend
   // If ALIGNMENT is not zero, it is the desired alignment of the variable.
   virtual Bvariable*
   implicit_variable(const std::string& name, Btype* type, bool is_hidden,
-		    bool is_constant, bool is_common, size_t alignment) = 0;
+		    bool is_constant, bool is_common, int64_t alignment) = 0;
 
 
   // Set the initial value of a variable created by implicit_variable.

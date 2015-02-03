@@ -602,7 +602,7 @@ Gogo::zero_value(Type *type)
     }
 
   // The zero value will be the maximum required size.
-  unsigned long size;
+  int64_t size;
   bool ok = type->backend_type_size(this, &size);
   if (!ok) {
     go_assert(saw_errors());
@@ -611,7 +611,7 @@ Gogo::zero_value(Type *type)
   if (size > this->zero_value_size_)
     this->zero_value_size_ = size;
 
-  unsigned long align;
+  int64_t align;
   ok = type->backend_type_align(this, &align);
   if (!ok) {
     go_assert(saw_errors());
@@ -644,13 +644,12 @@ Gogo::backend_zero_value()
   Btype* bbtype_type = byte_type->get_backend(this);
 
   Type* int_type = this->lookup_global("int")->type_value();
-  Btype* bint_type = int_type->get_backend(this);
 
-  mpz_t val;
-  mpz_init_set_ui(val, this->zero_value_size_);
-  Bexpression* blength =
-    this->backend()->integer_constant_expression(bint_type, val);
-  mpz_clear(val);
+  Expression* e = Expression::make_integer_int64(this->zero_value_size_,
+						 int_type,
+						 Linemap::unknown_location());
+  Translate_context context(this, NULL, NULL, NULL);
+  Bexpression* blength = e->get_backend(&context);
 
   Btype* barray_type = this->backend()->array_type(bbtype_type, blength);
 
