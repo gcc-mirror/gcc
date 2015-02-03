@@ -1296,6 +1296,8 @@ public:
      other operation that could make previously non-trapping memory
      accesses trapping.  */
   unsigned nonfreeing_fn : 1;
+  /* True if there was multiple COMDAT bodies merged by lto-symtab.  */
+  unsigned merged : 1;
 };
 
 /* A cgraph node set is a collection of cgraph nodes.  A cgraph node
