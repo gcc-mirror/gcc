@@ -426,22 +426,20 @@ extern enum cmodel sparc_cmodel;
 #define WCHAR_TYPE_SIZE 16
 
 /* Mask of all CPU selection flags.  */
-#define MASK_ISA \
-(MASK_V8 + MASK_SPARCLITE + MASK_SPARCLET + MASK_V9 + MASK_DEPRECATED_V8_INSNS)
+#define MASK_ISA					\
+  (MASK_SPARCLITE + MASK_SPARCLET			\
+   + MASK_V8 + MASK_V9 + MASK_DEPRECATED_V8_INSNS)
 
-/* TARGET_HARD_MUL: Use hardware multiply instructions but not %y.
-   TARGET_HARD_MUL32: Use hardware multiply instructions with rd %y
-   to get high 32 bits.  False in V8+ or V9 because multiply stores
+/* TARGET_HARD_MUL: Use 32-bit hardware multiply instructions but not %y.  */
+#define TARGET_HARD_MUL				\
+  (TARGET_SPARCLITE || TARGET_SPARCLET		\
+   || TARGET_V8 || TARGET_DEPRECATED_V8_INSNS)
+
+/* TARGET_HARD_MUL32: Use 32-bit hardware multiply instructions with %y
+   to get high 32 bits.  False in 64-bit or V8+ because multiply stores
    a 64-bit result in a register.  */
-
-#define TARGET_HARD_MUL32				\
-  ((TARGET_V8 || TARGET_SPARCLITE			\
-    || TARGET_SPARCLET || TARGET_DEPRECATED_V8_INSNS)	\
-   && ! TARGET_V8PLUS && TARGET_ARCH32)
-
-#define TARGET_HARD_MUL					\
-  (TARGET_V8 || TARGET_SPARCLITE || TARGET_SPARCLET	\
-   || TARGET_DEPRECATED_V8_INSNS || TARGET_V8PLUS)
+#define TARGET_HARD_MUL32 \
+  (TARGET_HARD_MUL && TARGET_ARCH32 && !TARGET_V8PLUS)
 
 /* MASK_APP_REGS must always be the default because that's what
    FIXED_REGISTERS is set to and -ffixed- is processed before

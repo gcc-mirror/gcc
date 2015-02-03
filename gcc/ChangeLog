@@ -1,3 +1,11 @@
+2015-02-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/62631
+	* config/sparc/sparc.h (TARGET_HARD_MUL): Remove TARGET_V8PLUS.
+	(TARGET_HARD_MUL32): Rewrite based on TARGET_HARD_MUL.
+	* config/sparc/sparc.c (sparc_rtx_costs) <MULT>: Return costs based on
+	int_mulX for integers in 64-bit mode if TARGET_HARD_MUL is not set.
+
 2015-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/63504
