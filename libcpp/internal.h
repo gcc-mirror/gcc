@@ -421,6 +421,11 @@ struct cpp_reader
      macro invocation.  */
   source_location invocation_location;
 
+  /* This is the node representing the macro being expanded at
+     top-level.  The value of this data member is valid iff
+     in_macro_expansion_p() returns TRUE.  */
+  cpp_hashnode *top_most_macro_node;
+
   /* Nonzero if we are about to expand a macro.  Note that if we are
      really expanding a macro, the function macro_of_context returns
      the macro being expanded and this flag is set to false.  Client

@@ -1228,7 +1228,24 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 
   pfile->about_to_expand_macro_p = false;
   /* Handle built-in macros and the _Pragma operator.  */
-  return builtin_macro (pfile, node, location);
+  {
+    source_location loc;
+    if (/* The top-level macro invocation that triggered the expansion
+	   we are looking at is with a standard macro ...*/
+	!(pfile->top_most_macro_node->flags & NODE_BUILTIN)
+	/* ... and it's a function-like macro invocation.  */
+	&& pfile->top_most_macro_node->value.macro->fun_like)
+      /* Then the location of the end of the macro invocation is the
+	 location of the closing parenthesis.  */
+      loc = pfile->cur_token[-1].src_loc;
+    else
+      /* Otherwise, the location of the end of the macro invocation is
+	 the location of the expansion point of that top-level macro
+	 invocation.  */
+      loc = location;
+
+    return builtin_macro (pfile, node, loc);
+  }
 }
 
 /* De-allocate the memory used by BUFF which is an array of instances
@@ -2296,6 +2313,10 @@ _cpp_pop_context (cpp_reader *pfile)
 	     macro expansion.  */
 	  && macro_of_context (context->prev) != macro)
 	macro->flags &= ~NODE_DISABLED;
+
+      if (macro == pfile->top_most_macro_node && context->prev == NULL)
+	/* We are popping the context of the top-most macro node.  */
+	pfile->top_most_macro_node = NULL;
     }
 
   if (context->buff)
@@ -2460,9 +2481,13 @@ cpp_get_token_1 (cpp_reader *pfile, source_location *location)
 	{
 	  int ret = 0;
 	  /* If not in a macro context, and we're going to start an
-	     expansion, record the location.  */
+	     expansion, record the location and the top level macro
+	     about to be expanded.  */
 	  if (!in_macro_expansion_p (pfile))
-	    pfile->invocation_location = result->src_loc;
+	    {
+	      pfile->invocation_location = result->src_loc;
+	      pfile->top_most_macro_node = node;
+	    }
 	  if (pfile->state.prevent_expansion)
 	    break;
 
