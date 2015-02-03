@@ -277,7 +277,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  "DEL",
 	};
 
-      string __s(__first, __last);
+      string __s;
+      for (; __first != __last; ++__first)
+	__s += __fctyp.narrow(*__first, 0);
+
       for (const auto& __it : __collatenames)
 	if (__s == __it)
 	  return string_type(1, __fctyp.widen(
@@ -319,8 +322,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 
       string __s;
-      for (auto __cur = __first; __cur != __last; ++__cur)
-	__s += __fctyp.narrow(__fctyp.tolower(*__cur), '?');
+      for (; __first != __last; ++__first)
+	__s += __fctyp.narrow(__fctyp.tolower(*__first), 0);
 
       for (const auto& __it : __classnames)
 	if (__s == __it.first)
