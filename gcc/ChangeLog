@@ -1,3 +1,13 @@
+2015-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/63504
+	* combine.c (reg_n_sets_max): New variable.
+	(can_change_dest_mode, reg_nonzero_bits_for_combine,
+	reg_num_sign_bit_copies_for_combine, get_last_value_validate,
+	get_last_value): Use REG_N_SETS only on pseudos < reg_n_sets_max.
+	(try_combine): Use INC_REG_N_SETS only on pseudos < reg_n_sets_max.
+	(rest_of_handle_combine): Initialize reg_n_sets_max.
+
 2015-02-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline.c (early_inliner): Skip inlining only in always_inlined;
