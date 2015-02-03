@@ -1,3 +1,17 @@
+2015-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64810
+	* Makefile.in (GCC_OBJS): Add gcc-main.o.
+	* gcc-main.c: New file, containing "main" taken from gcc.c.
+	* gcc.c (do_self_spec): Free decoded_options.
+	(class driver): Move declaration to gcc.h.
+	(main): Move declaration and implementation to new file
+	gcc-main.c.
+	(driver_get_configure_time_options): New function.
+	* gcc.h (class driver): Move this declaration here, from
+	gcc.c.
+	(driver_get_configure_time_options): New declaration.
+
 2015-02-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline-analysis.c (simple_edge_hints): Fix check for

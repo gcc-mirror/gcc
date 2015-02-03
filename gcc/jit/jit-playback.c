@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "fold-const.h"
 #include "debug.h"
+#include "gcc.h"
 
 #include "jit-common.h"
 #include "jit-logging.h"
@@ -1714,13 +1715,16 @@ compile ()
   auto_vec <recording::requested_dump> requested_dumps;
   m_recording_ctxt->get_all_requested_dumps (&requested_dumps);
 
+  /* Acquire the JIT mutex and set "this" as the active playback ctxt.  */
+  acquire_mutex ();
+
   auto_argvec fake_args;
   make_fake_args (&fake_args, ctxt_progname, &requested_dumps);
   if (errors_occurred ())
-    return;
-
-  /* Acquire the JIT mutex and set "this" as the active playback ctxt.  */
-  acquire_mutex ();
+    {
+      release_mutex ();
+      return;
+    }
 
   /* This runs the compiler.  */
   toplev toplev (false, /* use_TV_TOTAL */
@@ -2034,6 +2038,19 @@ playback::context::release_mutex ()
   pthread_mutex_unlock (&jit_mutex);
 }
 
+/* Callback used by gcc::jit::playback::context::make_fake_args when
+   invoking driver_get_configure_time_options.
+   Populate a vec <char * > with the configure-time options.  */
+
+static void
+append_arg_from_driver (const char *option, void *user_data)
+{
+  gcc_assert (option);
+  gcc_assert (user_data);
+  vec <char *> *argvec = static_cast <vec <char *> *> (user_data);
+  argvec->safe_push (concat ("-", option, NULL));
+}
+
 /* Build a fake argv for toplev::main from the options set
    by the user on the context .  */
 
@@ -2115,6 +2132,57 @@ make_fake_args (vec <char *> *argvec,
       {
 	char *arg = concat ("-fdump-", d->m_dumpname, NULL);
 	ADD_ARG_TAKE_OWNERSHIP (arg);
+      }
+  }
+
+  /* PR jit/64810: Add any target-specific default options
+     from OPTION_DEFAULT_SPECS, normally provided by the driver
+     in the non-jit case.
+
+     The target-specific code can define OPTION_DEFAULT_SPECS:
+     default command options in the form of spec macros for the
+     driver to expand ().
+
+     For cc1 etc, the driver processes OPTION_DEFAULT_SPECS and,
+     if not overriden, injects the defaults as extra arguments to
+     cc1 etc.
+     For the jit case, we need to add these arguments here.  The
+     input format (using the specs language) means that we have to run
+     part of the driver code here (driver_get_configure_time_options).
+
+     To avoid running the spec-expansion code every time, we just do
+     it the first time (via a function-static flag), saving the result
+     into a function-static vec.
+     This flag and vec are global state (i.e. per-process).
+     They are guarded by the jit mutex.  */
+  {
+    static bool have_configure_time_options = false;
+    static vec <char *> configure_time_options;
+
+    if (have_configure_time_options)
+      log ("reusing cached configure-time options");
+    else
+      {
+	have_configure_time_options = true;
+	log ("getting configure-time options from driver");
+	driver_get_configure_time_options (append_arg_from_driver,
+					   &configure_time_options);
+      }
+
+    int i;
+    char *opt;
+
+    if (get_logger ())
+      FOR_EACH_VEC_ELT (configure_time_options, i, opt)
+	log ("configure_time_options[%i]: %s", i, opt);
+
+    /* configure_time_options should now contain the expanded options
+       from OPTION_DEFAULT_SPECS (if any).  */
+    FOR_EACH_VEC_ELT (configure_time_options, i, opt)
+      {
+	gcc_assert (opt);
+	gcc_assert (opt[0] == '-');
+	ADD_ARG (opt);
       }
   }
 

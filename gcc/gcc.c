@@ -4696,6 +4696,8 @@ do_self_spec (const char *spec)
 	    }
 	}
 
+      free (decoded_options);
+
       alloc_switch ();
       switches[n_switches].part1 = 0;
     }
@@ -6878,52 +6880,6 @@ compare_files (char *cmpfile[])
     }
 
   return ret;
-}
-
-/* The top-level "main" within the driver would be ~1000 lines long.
-   This class breaks it up into smaller functions and contains some
-   state shared by them.  */
-
-class driver
-{
- public:
-  int main (int argc, char **argv);
-
- private:
-  void set_progname (const char *argv0) const;
-  void expand_at_files (int *argc, char ***argv) const;
-  void decode_argv (int argc, const char **argv);
-  void global_initializations ();
-  void build_multilib_strings () const;
-  void set_up_specs () const;
-  void putenv_COLLECT_GCC (const char *argv0) const;
-  void maybe_putenv_COLLECT_LTO_WRAPPER () const;
-  void maybe_putenv_OFFLOAD_TARGETS () const;
-  void handle_unrecognized_options () const;
-  int maybe_print_and_exit () const;
-  bool prepare_infiles ();
-  void do_spec_on_infiles () const;
-  void maybe_run_linker (const char *argv0) const;
-  void final_actions () const;
-  int get_exit_code () const;
-
- private:
-  char *explicit_link_files;
-  struct cl_decoded_option *decoded_options;
-  unsigned int decoded_options_count;
-};
-
-/* Implement the top-level "main" within the driver in terms of
-   driver::main.  */
-
-extern int main (int, char **);
-
-int
-main (int argc, char **argv)
-{
-  driver d;
-
-  return d.main (argc, argv);
 }
 
 /* driver::main is implemented as a series of driver:: method calls.  */
@@ -9462,4 +9418,40 @@ convert_white_space (char *orig)
   }
   else
     return orig;
+}
+
+/* PR jit/64810.
+   Targets can provide configure-time default options in
+   OPTION_DEFAULT_SPECS.  The jit needs to access these, but
+   they are expressed in the spec language.
+
+   Run just enough of the driver to be able to expand these
+   specs, and then call the callback CB on each
+   such option.  The options strings are *without* a leading
+   '-' character e.g. ("march=x86-64").  Finally, clean up.  */
+
+void
+driver_get_configure_time_options (void (*cb) (const char *option,
+					       void *user_data),
+				   void *user_data)
+{
+  size_t i;
+
+  obstack_init (&obstack);
+  gcc_obstack_init (&opts_obstack);
+  n_switches = 0;
+
+  for (i = 0; i < ARRAY_SIZE (option_default_specs); i++)
+    do_option_spec (option_default_specs[i].name,
+		    option_default_specs[i].spec);
+
+  for (i = 0; (int) i < n_switches; i++)
+    {
+      gcc_assert (switches[i].part1);
+      (*cb) (switches[i].part1, user_data);
+    }
+
+  obstack_free (&opts_obstack, NULL);
+  obstack_free (&obstack, NULL);
+  n_switches = 0;
 }
