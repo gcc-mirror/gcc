@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-libgccjit 5.0.0 (experimental 20150127), January 27, 2015
+libgccjit 5.0.0 (experimental 20150203), February 03, 2015
 
 David Malcolm
 
@@ -13815,10 +13815,13 @@ JIT:    entering: bool gcc::jit::tempdir::create()
 JIT:     m_path_template: /tmp/libgccjit-XXXXXX
 JIT:     m_path_tempdir: /tmp/libgccjit-CKq1M9
 JIT:    exiting: bool gcc::jit::tempdir::create()
-JIT:    entering: void gcc::jit::playback::context::make_fake_args(vec<char*>*, const char*, vec<gcc::jit::recording::requested_dump>*)
-JIT:    exiting: void gcc::jit::playback::context::make_fake_args(vec<char*>*, const char*, vec<gcc::jit::recording::requested_dump>*)
 JIT:    entering: void gcc::jit::playback::context::acquire_mutex()
 JIT:    exiting: void gcc::jit::playback::context::acquire_mutex()
+JIT:    entering: void gcc::jit::playback::context::make_fake_args(vec<char*>*, const char*, vec<gcc::jit::recording::requested_dump>*)
+JIT:     reusing cached configure-time options
+JIT:     configure_time_options[0]: -mtune=generic
+JIT:     configure_time_options[1]: -march=x86-64
+JIT:    exiting: void gcc::jit::playback::context::make_fake_args(vec<char*>*, const char*, vec<gcc::jit::recording::requested_dump>*)
 JIT:    entering: toplev::main
 JIT:     argv[0]: ./test-hello-world.c.exe
 JIT:     argv[1]: /tmp/libgccjit-CKq1M9/fake.c
@@ -13830,6 +13833,8 @@ JIT:     argv[6]: --param
 JIT:     argv[7]: ggc-min-expand=0
 JIT:     argv[8]: --param
 JIT:     argv[9]: ggc-min-heapsize=0
+JIT:     argv[10]: -mtune=generic
+JIT:     argv[11]: -march=x86-64
 JIT:     entering: bool jit_langhook_init()
 JIT:     exiting: bool jit_langhook_init()
 JIT:     entering: void gcc::jit::playback::context::replay()

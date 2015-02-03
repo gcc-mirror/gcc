@@ -1,3 +1,21 @@
+2015-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64810
+	* Make-lang.in (jit_OBJS): Add jit/jit-spec.o and gcc.o.
+	(LIBGCCJIT_FILENAME): Add EXTRA_GCC_OBJS.
+	* jit-playback.c: Include gcc.h.
+	(gcc::jit::playback::context::compile): Move mutex acquisition
+	to before the call to make_fake_args.
+	(append_arg_from_driver): New function.
+	(gcc::jit::playback::context::make_fake_args): On the first call,
+	call into driver_get_configure_time_options to get configure-time
+	default options and cache them.  Add them to the args for
+	toplev::main.
+	* jit-spec.c: New source file.
+	* docs/internals/test-hello-world.exe.log.txt: Update to reflect
+	above changes.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
 2015-02-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/64810
