@@ -11075,7 +11075,7 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
     case MULT:
       if (float_mode_p)
 	*total = sparc_costs->float_mul;
-      else if (! TARGET_HARD_MUL)
+      else if (TARGET_ARCH32 && !TARGET_HARD_MUL)
 	*total = COSTS_N_INSNS (25);
       else
 	{
@@ -11113,7 +11113,7 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	      bit_cost = COSTS_N_INSNS (bit_cost);
 	    }
 
-	  if (mode == DImode)
+	  if (mode == DImode || !TARGET_HARD_MUL)
 	    *total = sparc_costs->int_mulX + bit_cost;
 	  else
 	    *total = sparc_costs->int_mul + bit_cost;
