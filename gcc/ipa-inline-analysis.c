@@ -3702,13 +3702,16 @@ simple_edge_hints (struct cgraph_edge *edge)
   int hints = 0;
   struct cgraph_node *to = (edge->caller->global.inlined_to
 			    ? edge->caller->global.inlined_to : edge->caller);
+  struct cgraph_node *callee = edge->callee->ultimate_alias_target ();
   if (inline_summaries->get (to)->scc_no
-      && inline_summaries->get (to)->scc_no == inline_summaries->get (edge->callee)->scc_no
+      && inline_summaries->get (to)->scc_no
+	 == inline_summaries->get (callee)->scc_no
       && !edge->recursive_p ())
     hints |= INLINE_HINT_same_scc;
 
-  if (to->lto_file_data && edge->callee->lto_file_data
-      && to->lto_file_data != edge->callee->lto_file_data)
+  if (callee->lto_file_data && edge->caller->lto_file_data
+      && edge->caller->lto_file_data != callee->lto_file_data
+      && !callee->merged)
     hints |= INLINE_HINT_cross_module;
 
   return hints;

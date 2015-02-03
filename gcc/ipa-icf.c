@@ -711,6 +711,10 @@ sem_function::merge (sem_item *alias_item)
 	}
 
       alias->icf_merged = true;
+      if (local_original->lto_file_data
+	  && alias->lto_file_data
+	  && local_original->lto_file_data != alias->lto_file_data)
+      local_original->merged = true;
 
       /* The alias function is removed if symbol address
          does not matter.  */
@@ -725,6 +729,10 @@ sem_function::merge (sem_item *alias_item)
   else if (create_alias)
     {
       alias->icf_merged = true;
+      if (local_original->lto_file_data
+	  && alias->lto_file_data
+	  && local_original->lto_file_data != alias->lto_file_data)
+      local_original->merged = true;
 
       /* Remove the function's body.  */
       ipa_merge_profiles (original, alias);
@@ -762,6 +770,10 @@ sem_function::merge (sem_item *alias_item)
         }
 
       alias->icf_merged = true;
+      if (local_original->lto_file_data
+	  && alias->lto_file_data
+	  && local_original->lto_file_data != alias->lto_file_data)
+      local_original->merged = true;
       ipa_merge_profiles (local_original, alias, true);
       alias->create_wrapper (local_original);
 
