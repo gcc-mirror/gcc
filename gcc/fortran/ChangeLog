@@ -1,3 +1,7 @@
+2015-02-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* intrinsic.texi (CO_ASSOCIATED): c_prt_1 should be c_ptr_1.
+
 2015-01-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from mainline
