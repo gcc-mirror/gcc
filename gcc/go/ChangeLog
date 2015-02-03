@@ -1,3 +1,15 @@
+2015-02-02  Ian Lance Taylor  <iant@google.com>
+
+	PR go/64836
+	PR go/64838
+	* go-gcc.cc (Gcc_backend::type_size): Change return type to
+	int64_t.
+	(Gcc_backend::type_alignment): Likewise.
+	(Gcc_backend::type_field_alignment): Likewise.
+	(Gcc_backend::type_field_offset): Likewise.
+	(Gcc_backend::implicit_variable): Change alignment parameter type
+	to int64_t.
+
 2015-01-23  Ian Lance Taylor  <iant@google.com>
 
 	PR go/63565
