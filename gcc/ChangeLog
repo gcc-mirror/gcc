@@ -1,3 +1,17 @@
+2015-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (is_fortran): Also return true for DW_LANG_Fortran03
+	or DW_LANG_Fortran08.
+	(lower_bound_default): Return 1 for DW_LANG_Fortran03 or
+	DW_LANG_Fortran08.
+	(gen_compile_unit_die): Handle "GNU Fortran2003" and
+	"GNU Fortran2008" language strings.
+	* dbxout.c (get_lang_number): Use lang_GNU_Fortran.
+	* langhooks.h (lang_GNU_Fortran): New prototype.
+	* langhooks.c (lang_GNU_Fortran): New function.
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Use
+	lang_GNU_Fortran.
+
 2015-02-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (RTX_OK_FOR_OFFSET_P): Fix off-by-one error.

@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpp.h"
 #include "diagnostic.h"	/* For global_dc.  */
 #include "tm.h"
+#include "langhooks.h"
 
 gfc_option_t gfc_option;
 
@@ -397,6 +398,11 @@ gfc_post_options (const char **pfilename)
 		     MAX_SUBRECORD_LENGTH);
 
   gfc_cpp_post_options ();
+
+  if (gfc_option.allow_std & GFC_STD_F2008)
+    lang_hooks.name = "GNU Fortran2008";
+  else if (gfc_option.allow_std & GFC_STD_F2003)
+    lang_hooks.name = "GNU Fortran2003";
 
   return gfc_cpp_preprocess_only ();
 }
