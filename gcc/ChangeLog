@@ -1,6 +1,10 @@
 2015-02-04  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/64817
+	* simplify-rtx.c (simplify_binary_operation_1): Simplify one
+	of two XORs that have an intervening AND or IOR.
+
+	PR debug/64817
 	* simplify-rtx.c (simplify_binary_operation_1): Rewrite
 	simplification of XOR of AND to not allocate new rtx before
 	committing to a simplification.

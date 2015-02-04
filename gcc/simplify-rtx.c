@@ -2708,6 +2708,39 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 							XEXP (op0, 1), mode),
 				    op1);
 
+      /* Given (xor (ior (xor A B) C) D), where B, C and D are
+	 constants, simplify to (xor (ior A C) (B&~C)^D), canceling
+	 out bits inverted twice and not set by C.  Similarly, given
+	 (xor (and (xor A B) C) D), simplify without inverting C in
+	 the xor operand: (xor (and A C) (B&C)^D).
+      */
+      else if ((GET_CODE (op0) == IOR || GET_CODE (op0) == AND)
+	       && GET_CODE (XEXP (op0, 0)) == XOR
+	       && CONST_INT_P (op1)
+	       && CONST_INT_P (XEXP (op0, 1))
+	       && CONST_INT_P (XEXP (XEXP (op0, 0), 1)))
+	{
+	  enum rtx_code op = GET_CODE (op0);
+	  rtx a = XEXP (XEXP (op0, 0), 0);
+	  rtx b = XEXP (XEXP (op0, 0), 1);
+	  rtx c = XEXP (op0, 1);
+	  rtx d = op1;
+	  HOST_WIDE_INT bval = INTVAL (b);
+	  HOST_WIDE_INT cval = INTVAL (c);
+	  HOST_WIDE_INT dval = INTVAL (d);
+	  HOST_WIDE_INT xcval;
+
+	  if (op == IOR)
+	    xcval = cval;
+	  else
+	    xcval = ~cval;
+
+	  return simplify_gen_binary (XOR, mode,
+				      simplify_gen_binary (op, mode, a, c),
+				      gen_int_mode ((bval & xcval) ^ dval,
+						    mode));
+	}
+
       /* Given (xor (and A B) C), using P^Q == (~P&Q) | (~Q&P),
 	 we can transform like this:
             (A&B)^C == ~(A&B)&C | ~C&(A&B)
