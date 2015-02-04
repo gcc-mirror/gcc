@@ -1,3 +1,19 @@
+2015-02-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2015-01-31  Uros Bizjak  <ubizjak@gmail.com>
+
+        PR target/64882
+	* config/i386/predicates.md (address_no_seg_operand): Reject
+	non-CONST_INT_P operands in invalid mode.
+
+	Backport from mainline
+	2015-01-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (lea_address_operand): Call
+	address_operand with VOIDmode.
+	(vsib_address_operand): Ditto.
+
 2015-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

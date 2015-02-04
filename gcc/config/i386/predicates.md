@@ -806,10 +806,15 @@
 ;; a segment override.  Defined as a special predicate to allow
 ;; mode-less const_int operands pass to address_operand.
 (define_special_predicate "lea_address_operand"
-  (match_operand 0 "address_operand")
+  (match_test "address_operand (op, VOIDmode)")
 {
   struct ix86_address parts;
   int ok;
+
+  if (!CONST_INT_P (op)
+      && mode != VOIDmode
+      && GET_MODE (op) != mode)
+    return false;
 
   ok = ix86_decompose_address (op, &parts);
   gcc_assert (ok);
@@ -823,7 +828,7 @@
 ;; Return true if op if a valid base register, displacement or
 ;; sum of base register and displacement for VSIB addressing.
 (define_predicate "vsib_address_operand"
-  (match_operand 0 "address_operand")
+  (match_test "address_operand (op, VOIDmode)")
 {
   struct ix86_address parts;
   int ok;
