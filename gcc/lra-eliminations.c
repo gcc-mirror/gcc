@@ -182,6 +182,8 @@ setup_can_eliminate (struct lra_elim_table *ep, bool value)
   if (! value
       && ep->from == FRAME_POINTER_REGNUM && ep->to == STACK_POINTER_REGNUM)
     frame_pointer_needed = 1;
+  if (!frame_pointer_needed)
+    REGNO_POINTER_ALIGN (HARD_FRAME_POINTER_REGNUM) = 0;
 }
 
 /* Map: eliminable "from" register -> its current elimination,
