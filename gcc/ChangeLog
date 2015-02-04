@@ -1,5 +1,10 @@
 2015-02-04  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* config/sparc/sparc.c (RTX_OK_FOR_OFFSET_P): Fix off-by-one error.
+	(RTX_OK_FOR_OLO10_P): Likewise.
+
+2015-02-04  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* tree-ssa-loop-ivopts.c (get_address_cost): Use right mode for offset.
 
 2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
