@@ -1,3 +1,8 @@
+2015-02-04  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/64817
+	* gcc.dg/pr64817-3.c: New.
+
 2015-02-04  Jakub Jelinek  <jakub@redhat.com>
 	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 

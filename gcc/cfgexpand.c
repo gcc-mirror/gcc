@@ -3911,7 +3911,6 @@ expand_debug_expr (tree exp)
 
     binary:
     case tcc_binary:
-    case tcc_comparison:
       op1 = expand_debug_expr (TREE_OPERAND (exp, 1));
       if (!op1)
 	return NULL_RTX;
@@ -3924,6 +3923,10 @@ expand_debug_expr (tree exp)
       if (!op0)
 	return NULL_RTX;
       break;
+
+    case tcc_comparison:
+      unsignedp = TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0)));
+      goto binary;
 
     case tcc_type:
     case tcc_statement:
@@ -4006,7 +4009,7 @@ expand_debug_expr (tree exp)
 	op0 = copy_rtx (op0);
 
       if (GET_MODE (op0) == BLKmode
-	  /* If op0 is not BLKmode, but BLKmode is, adjust_mode
+	  /* If op0 is not BLKmode, but mode is, adjust_mode
 	     below would ICE.  While it is likely a FE bug,
 	     try to be robust here.  See PR43166.  */
 	  || mode == BLKmode
@@ -5285,7 +5288,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 
 		if (have_debug_uses)
 		  {
-		    /* OP is a TERed SSA name, with DEF it's defining
+		    /* OP is a TERed SSA name, with DEF its defining
 		       statement, and where OP is used in further debug
 		       instructions.  Generate a debug temporary, and
 		       replace all uses of OP in debug insns with that
