@@ -1,4 +1,6 @@
-/* { dg-do compile {target arm*-*-* i?86-*-* x86_64-*-* powerpc-*-* sparc-*-*} } */
+/* Target architectures where RTL has been found to produce the expected
+   (neg:SI (ge:SI ...)) when compiling for ILP32.  */
+/* { dg-do compile { target aarch64*-*-* arm*-*-* i?86-*-* microblaze-*-* mips*-*-* powerpc*-*-* sparc*-*-* x86_64-*-* } } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O2 -fdump-rtl-combine-all" } */
 

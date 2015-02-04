@@ -1,3 +1,10 @@
+2015-02-04  Alan Lawrence  <alan.lawrence@arm.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/combine_ashiftrt_1.c: Sort, complete and explain target
+	list, allow for multilibed targets.
+	* gcc.dg/combine_ashiftrt_2.c: Likewise.
+
 2015-02-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.dg/builtins-58.c: Check for pow at the end of words only.
