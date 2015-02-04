@@ -1,3 +1,12 @@
+2015-02-04  Jakub Jelinek  <jakub@redhat.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* gcc.dg/guality/pr36728-1.c (main): Adjust for targets that
+	pass parameters in registers.
+	* gcc.dg/guality/pr36728-2.c (main): Likewise.
+	* gcc.dg/guality/pr36728-3.c (main): Likewise.
+	* gcc.dg/guality/pr36728-4.c (main): Likewise.
+
 2015-02-04  Alan Lawrence  <alan.lawrence@arm.com>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
