@@ -11,6 +11,11 @@
 
 2015-02-04  Nick Clifton  <nickc@redhat.com>
 
+	PR target/64408
+	* config/fr30/predicates.md (di_operand): Add SUBREG to the list
+	of accepted codes.
+	(nonimmediate_di_operand): Likewise.
+
 	* config/msp430/msp430.c (msp430_use_f5_series_hwmult): Add more
 	prefixes of known F5 using MSP430 MCUs.
 
