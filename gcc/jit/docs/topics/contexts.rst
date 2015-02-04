@@ -39,7 +39,7 @@ cleanup of such objects is done for you when the context is released.
 
 .. function:: gcc_jit_context *gcc_jit_context_acquire (void)
 
-  This function acquires a new :c:type:`gcc_jit_object *` instance,
+  This function acquires a new :c:type:`gcc_jit_context *` instance,
   which is independent of any others that may be present within this
   process.
 

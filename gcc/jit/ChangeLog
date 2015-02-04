@@ -1,3 +1,9 @@
+2015-02-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/topics/contexts.rst (gcc_jit_context_acquire): Fix
+	typo.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
 2015-02-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit-logging.h (gcc::jit::log_user::log): Make const.

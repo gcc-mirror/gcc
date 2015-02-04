@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-libgccjit 5.0.0 (experimental 20150203), February 03, 2015
+libgccjit 5.0.0 (experimental 20150204), February 04, 2015
 
 David Malcolm
 
@@ -4925,7 +4925,7 @@ cleanup of such objects is done for you when the context is released.
 @anchor{topics/contexts gcc_jit_context_acquire}@anchor{9}
 @deffn {C Function} gcc_jit_context *gcc_jit_context_acquire (void)
 
-This function acquires a new @pxref{e,,gcc_jit_object *} instance,
+This function acquires a new @pxref{8,,gcc_jit_context *} instance,
 which is independent of any others that may be present within this
 process.
 @end deffn
