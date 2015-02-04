@@ -1,3 +1,13 @@
+2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/64922
+	* gimple.c: Include gimple-ssa.h.
+	(maybe_remove_unused_call_args): New function.
+	* gimple.h (maybe_remove_unused_call_args): Declare.
+	* cgraph.c (cgraph_edge::redirect_call_stmt_to_callee): Use it.
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children): Likewise.
+	* gimple-fold.c (gimple_fold_call): Likewise.
+
 2015-02-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/64905
