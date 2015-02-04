@@ -1,3 +1,20 @@
+2015-02-04  James Greenhalgh <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.c (NAMED_PARAM): Delete it.
+	(generic_addrcost_table): Remove NAMED_PARAM.
+	(cortexa57_addrcost_table): Likewise.
+	(xgene1_addrcost_table): Likewise.
+	(generic_regmove_table): Likewise.
+	(cortexa53_regmove_table): Likewise.
+	(xgene1_regmove_table): Likewise.
+	(generic_vector_table): Likewise.
+	(cortexa57_vector_table): Likewise.
+	(xgene1_vector_table): Likewise.
+	(generic_tunings): Likewise.
+	(cortexa53_tunings): Likewise.
+	(cortexa57_tunings): Likewise.
+	(xgene1_tunings): Likewise.
+
 2015-02-04  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/arm/arm-cores.def: Add cortex-a72 and
