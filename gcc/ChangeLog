@@ -1,3 +1,7 @@
+2015-02-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-loop-ivopts.c (get_address_cost): Use right mode for offset.
+
 2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/64922
