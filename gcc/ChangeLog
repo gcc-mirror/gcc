@@ -1,3 +1,8 @@
+2015-02-04  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.c (msp430_use_f5_series_hwmult): Add more
+	prefixes of known F5 using MSP430 MCUs.
+
 2015-02-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def (sqrt): Use BUILTIN_VDQF_DF.
