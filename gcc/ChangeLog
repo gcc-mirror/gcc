@@ -1,3 +1,9 @@
+2015-02-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/64905
+	* lra-eliminations.c (setup_can_eliminate): Clear hard frame
+	pointer alignment if it isn't needed.
+
 2015-02-04  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/aarch64/aarch64-cores.def: Add cortex-a72 and
