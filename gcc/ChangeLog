@@ -1,3 +1,10 @@
+2015-02-04  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* varasm.c (do_assemble_alias): Follow transparent alias
+	chain for target.
+	(default_assemble_visibility): Follow transparent alias
+	chain for decl name.
+
 2015-02-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR middle-end/62103

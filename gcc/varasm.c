@@ -5601,6 +5601,7 @@ do_assemble_alias (tree decl, tree target)
 
   id = DECL_ASSEMBLER_NAME (decl);
   ultimate_transparent_alias_target (&id);
+  ultimate_transparent_alias_target (&target);
 
   /* We must force creation of DECL_RTL for debug info generation, even though
      we don't use it here.  */
@@ -5612,8 +5613,6 @@ do_assemble_alias (tree decl, tree target)
 
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
     {
-      ultimate_transparent_alias_target (&target);
-
       if (!TREE_SYMBOL_REFERENCED (target))
 	weakref_targets = tree_cons (decl, target, weakref_targets);
 
@@ -5944,8 +5943,12 @@ default_assemble_visibility (tree decl ATTRIBUTE_UNUSED,
   };
 
   const char *name, *type;
+  tree id;
 
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  id = DECL_ASSEMBLER_NAME (decl);
+  ultimate_transparent_alias_target (&id);
+  name = IDENTIFIER_POINTER (id);
+
   type = visibility_types[vis];
 
   fprintf (asm_out_file, "\t.%s\t", type);
