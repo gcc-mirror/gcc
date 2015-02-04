@@ -1,3 +1,9 @@
+2015-02-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_evpc_ext): Use std::swap instead
+	of manual swapping implementation.
+	(aarch64_expand_vec_perm_const_1): Likewise.
+
 2015-02-04  James Greenhalgh <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.c (NAMED_PARAM): Delete it.
