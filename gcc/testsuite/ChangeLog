@@ -1,3 +1,10 @@
+2015-02-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR testsuite/64796
+	* lib/target-supports.exp (check_effective_target_bswap64): Do not
+	cache result in a global variable.  Include all 32-bit targets for
+	bswap64 tests.
+
 2015-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/64756

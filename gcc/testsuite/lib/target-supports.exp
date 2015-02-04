@@ -5049,18 +5049,11 @@ proc check_effective_target_bswap32 { } {
 proc check_effective_target_bswap64 { } {
     global et_bswap64_saved
 
-    if [info exists et_bswap64_saved] {
-        verbose "check_effective_target_bswap64: using cached result" 2
-    } else {
-	set et_bswap64_saved 0
-	if { [is-effective-target bswap]
-	     && [is-effective-target lp64] } {
-	   set et_bswap64_saved 1
-	}
+    # expand_unop can expand 64-bit byte swap on 32-bit targets
+    if { [is-effective-target bswap] && [is-effective-target int32plus] } {
+	return 1
     }
-
-    verbose "check_effective_target_bswap64: returning $et_bswap64_saved" 2
-    return $et_bswap64_saved
+    return 0
 }
 
 # Return 1 if the target supports atomic operations on "int" and "long".
