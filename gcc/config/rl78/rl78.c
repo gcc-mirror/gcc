@@ -1003,7 +1003,6 @@ rl78_valid_pointer_mode (machine_mode m)
   return (m == HImode || m == SImode);
 }
 
-
 #undef  TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P		rl78_is_legitimate_constant
 
@@ -2723,7 +2722,7 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
 
   if (REGNO (base) == SP_REG)
     {
-      if (addend >= 0 && addend  <= limit)
+      if (addend >= 0 && addend <= limit)
 	return m;
     }
 
@@ -2933,8 +2932,8 @@ rl78_alloc_physical_registers_op1 (rtx_insn * insn)
 	 It is tempting to perform this optimization when OP(0) does
 	 not hold a MEM, but this leads to bigger code in general.
 	 The problem is that if OP(1) holds a MEM then swapping it
-	 into BC means a BC-relative load is used and these 3 bytes
-	 long vs 1 byte for an HL load.  */
+	 into BC means a BC-relative load is used and these are 3
+	 bytes long vs 1 byte for an HL load.  */
       if (MEM_P (OP (0))
 	  && already_contains (HL, XEXP (OP (0), 0)))
 	{
@@ -3379,6 +3378,12 @@ rl78_alloc_address_registers_macax (rtx_insn * insn)
   MUST_BE_OK (insn);
 }
 
+static void
+rl78_alloc_address_registers_div (rtx_insn * insn)
+{
+  MUST_BE_OK (insn);
+}
+
 /* Scan all insns and devirtualize them.  */
 static void
 rl78_alloc_physical_registers (void)
@@ -3457,6 +3462,18 @@ rl78_alloc_physical_registers (void)
 	  record_content (BC, NULL_RTX);
 	  record_content (DE, NULL_RTX);
 	}
+      else if (valloc_method == VALLOC_DIVHI)
+	{
+	  record_content (AX, NULL_RTX);
+	  record_content (BC, NULL_RTX);
+	}
+      else if (valloc_method == VALLOC_DIVSI)
+	{
+	  record_content (AX, NULL_RTX);
+	  record_content (BC, NULL_RTX);
+	  record_content (DE, NULL_RTX);
+	  record_content (HL, NULL_RTX);
+	}
 
       if (insn_ok_now (insn))
 	continue;
@@ -3492,6 +3509,20 @@ rl78_alloc_physical_registers (void)
 	  record_content (BC, NULL_RTX);
 	  record_content (DE, NULL_RTX);
 	  break;
+	case VALLOC_DIVSI:
+	  rl78_alloc_address_registers_div (insn);
+	  record_content (AX, NULL_RTX);
+	  record_content (BC, NULL_RTX);
+	  record_content (DE, NULL_RTX);
+	  record_content (HL, NULL_RTX);
+	  break;
+	case VALLOC_DIVHI:
+	  rl78_alloc_address_registers_div (insn);
+	  record_content (AX, NULL_RTX);
+	  record_content (BC, NULL_RTX);
+	  break;
+	default:
+	  gcc_unreachable ();
 	}
 
       if (JUMP_P (insn) || CALL_P (insn) || GET_CODE (pattern) == CALL)
@@ -3577,6 +3608,9 @@ rl78_note_reg_set (char *dead, rtx d, rtx insn)
 {
   int r, i;
 
+  if (GET_CODE (d) == MEM)
+    rl78_note_reg_uses (dead, XEXP (d, 0), insn);
+
   if (GET_CODE (d) != REG)
     return;
 
@@ -3620,7 +3654,21 @@ rl78_calculate_death_notes (void)
 	case INSN:
 	  p = PATTERN (insn);
 	  if (GET_CODE (p) == PARALLEL)
-	    p = XVECEXP (p, 0, 0);
+	    {
+	      rtx q = XVECEXP (p, 0 ,1);
+
+	      /* This happens with the DIV patterns.  */
+	      if (GET_CODE (q) == SET)
+		{
+		  s = SET_SRC (q);
+		  d = SET_DEST (q);
+		  rl78_note_reg_set (dead, d, insn);
+		  rl78_note_reg_uses (dead, s, insn);
+
+		}
+	      p = XVECEXP (p, 0, 0);
+	    }
+
 	  switch (GET_CODE (p))
 	    {
 	    case SET:
@@ -3671,6 +3719,175 @@ reset_origins (int *rp, int *age)
     {
       rp[i] = i;
       age[i] = 0;
+    }
+}
+
+static void
+set_origin (rtx pat, rtx_insn * insn, int * origins, int * age)
+{
+  rtx src = SET_SRC (pat);
+  rtx dest = SET_DEST (pat);
+  int mb = GET_MODE_SIZE (GET_MODE (dest));
+  int i;
+
+  if (GET_CODE (dest) == REG)
+    {
+      int dr = REGNO (dest);
+
+      if (GET_CODE (src) == REG)
+	{
+	  int sr = REGNO (src);
+	  bool same = true;
+	  int best_age, best_reg;
+
+	  /* See if the copy is not needed.  */
+	  for (i = 0; i < mb; i ++)
+	    if (origins[dr + i] != origins[sr + i])
+	      same = false;
+
+	  if (same)
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "deleting because dest already has correct value\n");
+	      delete_insn (insn);
+	      return;
+	    }
+
+	  if (dr < 8 || sr >= 8)
+	    {
+	      int ar;
+
+	      best_age = -1;
+	      best_reg = -1;
+
+	      /* See if the copy can be made from another
+		 bank 0 register instead, instead of the
+		 virtual src register.  */
+	      for (ar = 0; ar < 8; ar += mb)
+		{
+		  same = true;
+
+		  for (i = 0; i < mb; i ++)
+		    if (origins[ar + i] != origins[sr + i])
+		      same = false;
+
+		  /* The chip has some reg-reg move limitations.  */
+		  if (mb == 1 && dr > 3)
+		    same = false;
+
+		  if (same)
+		    {
+		      if (best_age == -1 || best_age > age[sr + i])
+			{
+			  best_age = age[sr + i];
+			  best_reg = sr;
+			}
+		    }
+		}
+
+	      if (best_reg != -1)
+		{
+		  /* FIXME: copy debug info too.  */
+		  SET_SRC (pat) = gen_rtx_REG (GET_MODE (src), best_reg);
+		  sr = best_reg;
+		}
+	    }
+
+	  for (i = 0; i < mb; i++)
+	    {
+	      origins[dr + i] = origins[sr + i];
+	      age[dr + i] = age[sr + i] + 1;
+	    }
+	}
+      else
+	{
+	  /* The destination is computed, its origin is itself.  */
+	  if (dump_file)
+	    fprintf (dump_file, "resetting origin of r%d for %d byte%s\n",
+		     dr, mb, mb == 1 ? "" : "s");
+
+	  for (i = 0; i < mb; i ++)
+	    {
+	      origins[dr + i] = dr + i;
+	      age[dr + i] = 0;
+	    }
+	}
+
+      /* Any registers marked with that reg as an origin are reset.  */
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (origins[i] >= dr && origins[i] < dr + mb)
+	  {
+	    origins[i] = i;
+	    age[i] = 0;
+	  }
+    }
+
+  /* Special case - our MUL patterns uses AX and sometimes BC.  */
+  if (get_attr_valloc (insn) == VALLOC_MACAX)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Resetting origin of AX/BC for MUL pattern.\n");
+
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (i <= 3 || origins[i] <= 3)
+	  {
+	    origins[i] = i;
+	    age[i] = 0;
+	  }
+    }
+  else if (get_attr_valloc (insn) == VALLOC_DIVHI)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Resetting origin of AX/DE for DIVHI pattern.\n");
+
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (i == A_REG
+	    || i == X_REG
+	    || i == D_REG
+	    || i == E_REG
+	    || origins[i] == A_REG
+	    || origins[i] == X_REG
+	    || origins[i] == D_REG
+	    || origins[i] == E_REG)
+	  {
+	    origins[i] = i;
+	    age[i] = 0;
+	  }
+    }
+  else if (get_attr_valloc (insn) == VALLOC_DIVSI)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Resetting origin of AX/BC/DE/HL for DIVSI pattern.\n");
+
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (i <= 7 || origins[i] <= 7)
+	  {
+	    origins[i] = i;
+	    age[i] = 0;
+	  }
+    }
+
+  if (GET_CODE (src) == ASHIFT
+      || GET_CODE (src) == ASHIFTRT
+      || GET_CODE (src) == LSHIFTRT)
+    {
+      rtx count = XEXP (src, 1);
+
+      if (GET_CODE (count) == REG)
+	{
+	  /* Special case - our pattern clobbers the count register.  */
+	  int r = REGNO (count);
+
+	  if (dump_file)
+	    fprintf (dump_file, "Resetting origin of r%d for shift.\n", r);
+
+	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	    if (i == r || origins[i] == r)
+	      {
+		origins[i] = i;
+		age[i] = 0;
+	      }
+	}
     }
 }
 
@@ -3740,136 +3957,18 @@ rl78_propogate_register_origins (void)
 		      age[cr + i] = 0;
 		    }
 		}
+	      /* This happens with the DIV patterns.  */
+	      else if (GET_CODE (clobber) == SET)
+		{
+		  set_origin (clobber, insn, origins, age);
+		}
 	      else
 		break;
 	    }
 
 	  if (GET_CODE (pat) == SET)
 	    {
-	      rtx src = SET_SRC (pat);
-	      rtx dest = SET_DEST (pat);
-	      int mb = GET_MODE_SIZE (GET_MODE (dest));
-
-	      if (GET_CODE (dest) == REG)
-		{
-		  int dr = REGNO (dest);
-
-		  if (GET_CODE (src) == REG)
-		    {
-		      int sr = REGNO (src);
-		      int same = 1;
-		      int best_age, best_reg;
-
-		      /* See if the copy is not needed.  */
-		      for (i = 0; i < mb; i ++)
-			if (origins[dr + i] != origins[sr + i])
-			  same = 0;
-		      if (same)
-			{
-			  if (dump_file)
-			    fprintf (dump_file, "deleting because dest already has correct value\n");
-			  delete_insn (insn);
-			  break;
-			}
-
-		      if (dr < 8 || sr >= 8)
-			{
-			  int ar;
-
-			  best_age = -1;
-			  best_reg = -1;
-			  /* See if the copy can be made from another
-			     bank 0 register instead, instead of the
-			     virtual src register.  */
-			  for (ar = 0; ar < 8; ar += mb)
-			    {
-			      same = 1;
-			      for (i = 0; i < mb; i ++)
-				if (origins[ar + i] != origins[sr + i])
-				  same = 0;
-
-			      /* The chip has some reg-reg move limitations.  */
-			      if (mb == 1 && dr > 3)
-				same = 0;
-
-			      if (same)
-				{
-				  if (best_age == -1 || best_age > age[sr + i])
-				    {
-				      best_age = age[sr + i];
-				      best_reg = sr;
-				    }
-				}
-			    }
-
-			  if (best_reg != -1)
-			    {
-			      /* FIXME: copy debug info too.  */
-			      SET_SRC (pat) = gen_rtx_REG (GET_MODE (src), best_reg);
-			      sr = best_reg;
-			    }
-			}
-
-		      for (i = 0; i < mb; i++)
-			{
-			  origins[dr + i] = origins[sr + i];
-			  age[dr + i] = age[sr + i] + 1;
-			}
-		    }
-		  else
-		    {
-		      /* The destination is computed, its origin is itself.  */
-		      if (dump_file)
-			fprintf (dump_file, "resetting origin of r%d for %d byte%s\n",
-				 dr, mb, mb == 1 ? "" : "s");
-		      for (i = 0; i < mb; i ++)
-			{
-			  origins[dr + i] = dr + i;
-			  age[dr + i] = 0;
-			}
-		    }
-
-		  /* Any registers marked with that reg as an origin are reset.  */
-		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-		    if (origins[i] >= dr && origins[i] < dr + mb)
-		      {
-			origins[i] = i;
-			age[i] = 0;
-		      }
-		}
-
-	      /* Special case - our ADDSI3 macro uses AX and sometimes BC.  */
-	      if (get_attr_valloc (insn) == VALLOC_MACAX)
-		{
-		  if (dump_file)
-		    fprintf (dump_file, "Resetting origin of AX/BC for macro.\n");
-		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-		    if (i <= 3 || origins[i] <= 3)
-		      {
-			origins[i] = i;
-			age[i] = 0;
-		      }
-		}
-
-	      if (GET_CODE (src) == ASHIFT
-		  || GET_CODE (src) == ASHIFTRT
-		  || GET_CODE (src) == LSHIFTRT)
-		{
-		  rtx count = XEXP (src, 1);
-		  if (GET_CODE (count) == REG)
-		    {
-		      /* Special case - our pattern clobbers the count register.  */
-		      int r = REGNO (count);
-		      if (dump_file)
-			fprintf (dump_file, "Resetting origin of r%d for shift.\n", r);
-		      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-			if (i == r || origins[i] == r)
-			  {
-			    origins[i] = i;
-			    age[i] = 0;
-			  }
-		    }
-		}
+	      set_origin (pat, insn, origins, age);
 	    }
 	  else if (GET_CODE (pat) == CLOBBER
 		   && GET_CODE (XEXP (pat, 0)) == REG)
@@ -3907,7 +4006,11 @@ rl78_remove_unused_sets (void)
 	continue;
 
       if (find_regno_note (insn, REG_UNUSED, REGNO (dest)))
-	delete_insn (insn);
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "deleting because the set register is never used.\n");
+	  delete_insn (insn);
+	}
     }
 }
 
@@ -4021,8 +4124,6 @@ static bool rl78_rtx_costs (rtx   x,
     }
   return false;
 }
-
-
 
 
 static GTY(()) section * saddr_section;
@@ -4326,7 +4427,6 @@ rl78_asm_out_integer (rtx x, unsigned int size, int aligned_p)
 
   return false;
 }
- 
 
 #undef  TARGET_UNWIND_WORD_MODE
 #define TARGET_UNWIND_WORD_MODE rl78_unwind_word_mode
@@ -4441,7 +4541,7 @@ rl78_flags_already_set (rtx op, rtx operand)
 
   return res;
 }
- 
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-rl78.h"

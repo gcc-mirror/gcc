@@ -1,3 +1,8 @@
+2015-02-04  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c (rl78_note_reg_set): Note the use of REGs
+	inside a MEM.
+
 2015-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.def (DEF_BUILTIN_CHKP): Define if not defined.
