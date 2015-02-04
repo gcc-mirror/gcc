@@ -1,3 +1,9 @@
+2015-02-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (sqrt): Use BUILTIN_VDQF_DF.
+	* config/aarch64/arm_neon.h (vsqrt_f64): Use __builtin_aarch64_sqrtdf
+	instead of __builtin_sqrt.
+
 2015-02-04  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* varasm.c (do_assemble_alias): Follow transparent alias
