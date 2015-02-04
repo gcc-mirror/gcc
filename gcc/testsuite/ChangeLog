@@ -1,3 +1,8 @@
+2015-02-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/64905
+	* gcc.target/i386/pr64905.c: New file.
+
 2015-02-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.dg/guality/pr41447-1.c: Remove xfail.
