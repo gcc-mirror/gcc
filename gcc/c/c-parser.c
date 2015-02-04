@@ -12611,6 +12611,7 @@ restart:
 	    {
 	    case MULT_EXPR:
 	    case TRUNC_DIV_EXPR:
+	    case RDIV_EXPR:
 	    case PLUS_EXPR:
 	    case MINUS_EXPR:
 	    case LSHIFT_EXPR:
