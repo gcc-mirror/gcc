@@ -53,7 +53,13 @@ test01()
   VERIFY(!t.isctype('_', t.lookup_classname(range(digit))));
   VERIFY( t.isctype(' ', t.lookup_classname(range(blank))));
   VERIFY( t.isctype('\t', t.lookup_classname(range(blank))));
+#if defined (__NEWLIB__)
+  /* newlib includes '\n' in class 'blank'.
+     See https://gcc.gnu.org/ml/gcc-patches/2015-02/msg00059.html.  */
+  VERIFY( t.isctype('\n', t.lookup_classname(range(blank))));
+#else
   VERIFY(!t.isctype('\n', t.lookup_classname(range(blank))));
+#endif
   VERIFY( t.isctype('t', t.lookup_classname(range(upper), true)));
   VERIFY( t.isctype('T', t.lookup_classname(range(lower), true)));
 #undef range
