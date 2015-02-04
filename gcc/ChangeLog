@@ -1,3 +1,20 @@
+2015-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.def (DEF_BUILTIN_CHKP): Define if not defined.
+	(DEF_LIB_BUILTIN_CHKP, DEF_EXT_LIB_BUILTIN_CHKP): Redefine.
+	(DEF_CHKP_BUILTIN): Define using DEF_BUILTIN_CHKP instead
+	of DEF_BUILTIN.
+	(BUILT_IN_MEMCPY, BUILT_IN_MEMMOVE, BUILT_IN_MEMSET, BUILT_IN_STRCAT,
+	BUILT_IN_STRCHR, BUILT_IN_STRCPY, BUILT_IN_STRLEN): Use
+	DEF_LIB_BUILTIN_CHKP macro instead of DEF_LIB_BUILTIN.
+	(BUILT_IN_MEMCPY_CHK, BUILT_IN_MEMMOVE_CHK, BUILT_IN_MEMPCPY_CHK,
+	BUILT_IN_MEMPCPY, BUILT_IN_MEMSET_CHK, BUILT_IN_STPCPY_CHK,
+	BUILT_IN_STPCPY, BUILT_IN_STRCAT_CHK, BUILT_IN_STRCPY_CHK): Use
+	DEF_EXT_LIB_BUILTIN_CHKP macro instead of DEF_EXT_LIB_BUILTIN.
+	* tree-core.h (enum built_in_function): In between
+	BEGIN_CHKP_BUILTINS and END_CHKP_BUILTINS only define enum values
+	for builtins that use DEF_BUILTIN_CHKP macro.
+
 2015-02-04  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/64817
