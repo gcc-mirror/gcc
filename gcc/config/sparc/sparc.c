@@ -3925,12 +3925,12 @@ legitimate_pic_operand_p (rtx x)
 #define RTX_OK_FOR_OFFSET_P(X, MODE)			\
   (CONST_INT_P (X)					\
    && INTVAL (X) >= -0x1000				\
-   && INTVAL (X) < (0x1000 - GET_MODE_SIZE (MODE)))
+   && INTVAL (X) <= (0x1000 - GET_MODE_SIZE (MODE)))
 
 #define RTX_OK_FOR_OLO10_P(X, MODE)			\
   (CONST_INT_P (X)					\
    && INTVAL (X) >= -0x1000				\
-   && INTVAL (X) < (0xc00 - GET_MODE_SIZE (MODE)))
+   && INTVAL (X) <= (0xc00 - GET_MODE_SIZE (MODE)))
 
 /* Handle the TARGET_LEGITIMATE_ADDRESS_P target hook.
 
