@@ -3118,7 +3118,8 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	  new_direct_edge->indirect_inlining_edge = 1;
 	  top = IPA_EDGE_REF (cs);
 	  res = true;
-	  continue;
+	  if (!new_direct_edge->speculative)
+	    continue;
 	}
       else if (new_direct_edge)
 	{
