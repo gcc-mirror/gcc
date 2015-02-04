@@ -1,3 +1,9 @@
+2015-02-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64257
+	* update_web_docs_svn: Update build of jit docs to use EPEL6
+	variant install of sphinx 1.0.8, rather than 0.6.6.
+
 2015-01-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/64257

@@ -166,11 +166,21 @@ for file in $MANUALS; do
 done
 
 # The jit is a special-case, using sphinx rather than texinfo.
-# The jit Makefile uses "sphinx-build".  This is packaged in
-# Fedora and EPEL 6 within "python-sphinx", and in openSUSE
-# within "python-Sphinx".
+# Specifically, the jit docs need sphinx 1.0 or later.
+#
+# The jit/docs Makefile uses the executable $(SPHINXBUILD),
+# defaulting to "sphinx-build".
+#
+# sphinx is packaged in Fedora and EPEL 6 within "python-sphinx",
+# and in openSUSE within "python-Sphinx".
+#
+# For EPEL6, python-sphinx is sphinx 0.6.6, which is missing various
+# directives (e.g. ":c:macro:"), so we need the variant
+# python-sphinx10 package.  The latter installs its executable as
+#   /usr/bin/sphinx-1.0-build
+# so we need to override SPHINXBUILD with this when invoking "make".
 pushd gcc/gcc/jit/docs
-make html
+make SPHINXBUILD=/usr/bin/sphinx-1.0-build html
 popd
 cp -a gcc/gcc/jit/docs/_build/html jit
 mkdir -p $DOCSDIR/jit

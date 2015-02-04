@@ -1,5 +1,11 @@
 2015-02-04  David Malcolm  <dmalcolm@redhat.com>
 
+	PR jit/64257
+	* docs/conf.py (html_theme): Change from 'pyramid'
+	to 'sphinxdoc'.
+
+2015-02-04  David Malcolm  <dmalcolm@redhat.com>
+
 	* docs/topics/contexts.rst (gcc_jit_context_acquire): Fix
 	typo.
 	* docs/_build/texinfo/libgccjit.texi: Regenerate.
