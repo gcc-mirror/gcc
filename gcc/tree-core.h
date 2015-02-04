@@ -158,10 +158,14 @@ enum built_in_function {
   BEGIN_CHKP_BUILTINS,
 
 #undef DEF_BUILTIN
-#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) ENUM##_CHKP,
+#define DEF_BUILTIN(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND)
+#undef DEF_BUILTIN_CHKP
+#define DEF_BUILTIN_CHKP(ENUM, N, C, T, LT, B, F, NA, AT, IM, COND) \
+  ENUM##_CHKP = ENUM + BEGIN_CHKP_BUILTINS + 1,
 #include "builtins.def"
+#undef DEF_BUILTIN_CHKP
 
-  END_CHKP_BUILTINS,
+  END_CHKP_BUILTINS = BEGIN_CHKP_BUILTINS * 2 + 1,
 
   /* Complex division routines in libgcc.  These are done via builtins
      because emit_library_call_value can't handle complex values.  */
