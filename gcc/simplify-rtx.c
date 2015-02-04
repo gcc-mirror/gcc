@@ -2724,12 +2724,31 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  HOST_WIDE_INT bval = INTVAL (b);
 	  HOST_WIDE_INT cval = INTVAL (c);
 
-	  rtx na_c
-	    = simplify_binary_operation (AND, mode,
-					 simplify_gen_unary (NOT, mode, a, mode),
-					 c);
+	  /* Instead of computing ~A&C, we compute its negated value,
+	     ~(A|~C).  If it yields -1, ~A&C is zero, so we can
+	     optimize for sure.  If it does not simplify, we still try
+	     to compute ~A&C below, but since that always allocates
+	     RTL, we don't try that before committing to returning a
+	     simplified expression.  */
+	  rtx n_na_c = simplify_binary_operation (IOR, mode, a,
+						  GEN_INT (~cval));
+
 	  if ((~cval & bval) == 0)
 	    {
+	      rtx na_c = NULL_RTX;
+	      if (n_na_c)
+		na_c = simplify_gen_unary (NOT, mode, n_na_c, mode);
+	      else
+		{
+		  /* If ~A does not simplify, don't bother: we don't
+		     want to simplify 2 operations into 3, and if na_c
+		     were to simplify with na, n_na_c would have
+		     simplified as well.  */
+		  rtx na = simplify_unary_operation (NOT, mode, a, mode);
+		  if (na)
+		    na_c = simplify_gen_binary (AND, mode, na, c);
+		}
+
 	      /* Try to simplify ~A&C | ~B&C.  */
 	      if (na_c != NULL_RTX)
 		return simplify_gen_binary (IOR, mode, na_c,
@@ -2738,7 +2757,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  else
 	    {
 	      /* If ~A&C is zero, simplify A&(~C&B) | ~B&C.  */
-	      if (na_c == const0_rtx)
+	      if (n_na_c == CONSTM1_RTX (mode))
 		{
 		  rtx a_nc_b = simplify_gen_binary (AND, mode, a,
 						    gen_int_mode (~cval & bval,

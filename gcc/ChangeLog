@@ -1,3 +1,10 @@
+2015-02-04  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/64817
+	* simplify-rtx.c (simplify_binary_operation_1): Rewrite
+	simplification of XOR of AND to not allocate new rtx before
+	committing to a simplification.
+
 2015-02-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-ldpstp.md: Use std::swap instead of
