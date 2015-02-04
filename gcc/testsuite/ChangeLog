@@ -1,3 +1,8 @@
+2015-02-04  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* gcc.target/mips/loongson-simd.c: Update comment to clarify the need
+	for mips_nanlegacy target.
+
 2015-02-04  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* gcc.target/i386/chkp-hidden-def.c: New.
