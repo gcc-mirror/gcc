@@ -1,5 +1,11 @@
 2015-02-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	PR middle-end/62103
+	* gcc.c-torture/execute/bitfld-7.c: New test adapted from bitfld-6.c
+	to use 24 bits for bitfield b.
+
+2015-02-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	PR testsuite/64796
 	* lib/target-supports.exp (check_effective_target_bswap64): Do not
 	cache result in a global variable.  Include all 32-bit targets for

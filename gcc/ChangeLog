@@ -1,3 +1,9 @@
+2015-02-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR middle-end/62103
+	* tree-ssa-sccvn.c (fully_constant_vn_reference_p): Use TYPE_PRECISION
+	to compute size of referenced value in the constant case.
+
 2015-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/64756
