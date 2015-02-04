@@ -1,5 +1,10 @@
 2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-prop.c (update_indirect_edges_after_inlining): By more careful
+	about not letting any speculative edges unupdated.
+
+2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR gcov/64123
 	* gcov-io.c (gcov_var): Export.
 
