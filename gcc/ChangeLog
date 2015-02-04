@@ -1,5 +1,10 @@
 2015-02-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64-ldpstp.md: Use std::swap instead of
+	manual swaps in all peepholes.
+
+2015-02-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_evpc_ext): Use std::swap instead
 	of manual swapping implementation.
 	(aarch64_expand_vec_perm_const_1): Likewise.
