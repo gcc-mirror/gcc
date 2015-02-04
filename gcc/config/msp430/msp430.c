@@ -2201,6 +2201,10 @@ msp430_use_f5_series_hwmult (void)
 
   if (strncasecmp (target_mcu, "msp430f5", 8) == 0)
     return cached_result = true;
+  if (strncasecmp (target_mcu, "msp430fr5", 9) == 0)
+    return cached_result = true;
+  if (strncasecmp (target_mcu, "msp430f6", 8) == 0)
+    return cached_result = true;
 
   static const char * known_f5_mult_mcus [] =
     {
@@ -2209,7 +2213,8 @@ msp430_use_f5_series_hwmult (void)
       "cc430f5145",	"cc430f5147",	"cc430f6125",
       "cc430f6126",	"cc430f6127",	"cc430f6135",
       "cc430f6137",	"cc430f6143",	"cc430f6145",
-      "cc430f6147",	"msp430bt5190",	"msp430sl5438a"
+      "cc430f6147",	"msp430bt5190",	"msp430sl5438a",
+      "msp430xgeneric"
     };
   int i;
 
