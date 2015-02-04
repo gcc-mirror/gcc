@@ -49,9 +49,6 @@ START_FUNC	__int_isinf
 
 END_FUNC	__int_isinf
 
-START_FUNC	_int_unpack_sf
-	;; convert 32-bit SFmode [DE] to 6-byte struct [HL] ("A")
-
 #define A_SIGN		[hl+0]	/* byte */
 #define A_EXP		[hl+2]	/* word */
 #define A_FRAC_L	[hl+4]	/* word */
@@ -65,6 +62,9 @@ START_FUNC	_int_unpack_sf
 #define B_FRAC_LH	[hl+13]
 #define B_FRAC_H	[hl+14]
 #define B_FRAC_HH	[hl+15]
+
+START_FUNC	_int_unpack_sf
+	;; convert 32-bit SFmode [DE] to 6-byte struct [HL] ("A")
 
 	mov	a, [de+3]
 	sar	a, 7
@@ -517,8 +517,14 @@ START_FUNC	__rl78_int_pack_a_r8
 	movw	ax, A_FRAC_L
 	addw	ax, #1
 	movw	A_FRAC_L, ax
-	sknc
+	bnc	$1f
 	incw	A_FRAC_H
+
+	;; If the rounding set the bit beyond the end of the fraction, increment the exponent.
+	mov	a, A_FRAC_HH
+	bf	a.1, $1f
+	incw	A_EXP
+	
 1:	
 	movw	ax, A_FRAC_H
 	shrw	ax, 1
