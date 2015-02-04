@@ -1,3 +1,11 @@
+2015-02-04  Matthias Klose  <doko@ubuntu.com>
+
+	Backport from mainline
+	2015-01-15  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ipa/pr64068.C: New test.
+	* gcc.dg/ipa/PR64559.c: New test.
+
 2015-02-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

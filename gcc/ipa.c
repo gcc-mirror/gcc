@@ -374,7 +374,6 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		       n = n->next_sibling_clone)
 		    if (n->decl == DECL_ABSTRACT_ORIGIN (node->decl))
 		      n->used_as_abstract_origin = true;
-	          enqueue_node (origin_node, &first, reachable);
 		}
 	    }
 	  /* If any symbol in a comdat group is reachable, force
