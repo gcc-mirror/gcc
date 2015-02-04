@@ -1,3 +1,9 @@
+2015-02-04  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/64901
+	* decl.c (duplicate_decls): Also duplicate DECL_FINAL_P and
+	DECL_OVERRIDE_P.
+
 2015-01-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/64521
