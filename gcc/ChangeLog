@@ -1,3 +1,14 @@
+2015-02-04  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/arm/arm-cores.def: Add cortex-a72 and
+	cortex-a72.cortex-a53.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Likewise.
+	* config/arm/t-aprofile (MULTILIB_MATCHES): Likewise.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/arm-tables.opt: Add entries for "cortex-a72" and
+	"cortex-a72.cortex-a53".
+	* doc/invoke.texi (ARM Options/-mtune): Likewise.
+
 2015-02-04  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430.c (msp430_use_f5_series_hwmult): Add more
