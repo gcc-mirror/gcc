@@ -4736,7 +4736,9 @@ is_fortran (void)
 
   return (lang == DW_LANG_Fortran77
 	  || lang == DW_LANG_Fortran90
-	  || lang == DW_LANG_Fortran95);
+	  || lang == DW_LANG_Fortran95
+	  || lang == DW_LANG_Fortran03
+	  || lang == DW_LANG_Fortran08);
 }
 
 /* Return TRUE if the language is Ada.  */
@@ -16725,6 +16727,8 @@ lower_bound_default (void)
     case DW_LANG_Fortran77:
     case DW_LANG_Fortran90:
     case DW_LANG_Fortran95:
+    case DW_LANG_Fortran03:
+    case DW_LANG_Fortran08:
       return 1;
     case DW_LANG_UPC:
     case DW_LANG_D:
@@ -19786,8 +19790,17 @@ gen_compile_unit_die (const char *filename)
     {
       if (strcmp (language_string, "GNU Ada") == 0)
 	language = DW_LANG_Ada95;
-      else if (strcmp (language_string, "GNU Fortran") == 0)
-	language = DW_LANG_Fortran95;
+      else if (strncmp (language_string, "GNU Fortran", 11) == 0)
+	{
+	  language = DW_LANG_Fortran95;
+	  if (dwarf_version >= 5 /* || !dwarf_strict */)
+	    {
+	      if (strcmp (language_string, "GNU Fortran2003") == 0)
+		language = DW_LANG_Fortran03;
+	      else if (strcmp (language_string, "GNU Fortran2008") == 0)
+		language = DW_LANG_Fortran08;
+	    }
+	}
       else if (strcmp (language_string, "GNU Java") == 0)
 	language = DW_LANG_Java;
       else if (strcmp (language_string, "GNU Objective-C") == 0)
@@ -19801,7 +19814,7 @@ gen_compile_unit_die (const char *filename)
 	}
     }
   /* Use a degraded Fortran setting in strict DWARF2 so is_fortran works.  */
-  else if (strcmp (language_string, "GNU Fortran") == 0)
+  else if (strncmp (language_string, "GNU Fortran", 11) == 0)
     language = DW_LANG_Fortran90;
 
   add_AT_unsigned (die, DW_AT_language, language);
@@ -19811,6 +19824,8 @@ gen_compile_unit_die (const char *filename)
     case DW_LANG_Fortran77:
     case DW_LANG_Fortran90:
     case DW_LANG_Fortran95:
+    case DW_LANG_Fortran03:
+    case DW_LANG_Fortran08:
       /* Fortran has case insensitive identifiers and the front-end
 	 lowercases everything.  */
       add_AT_unsigned (die, DW_AT_identifier_case, DW_ID_down_case);

@@ -25537,7 +25537,7 @@ rs6000_output_function_epilogue (FILE *file,
 	  || ! strcmp (language_string, "libgccjit"))
 	i = 0;
       else if (! strcmp (language_string, "GNU F77")
-	       || ! strcmp (language_string, "GNU Fortran"))
+	       || lang_GNU_Fortran ())
 	i = 1;
       else if (! strcmp (language_string, "GNU Pascal"))
 	i = 2;
