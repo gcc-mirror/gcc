@@ -1,3 +1,8 @@
+2015-02-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.dg/guality/pr41447-1.c: Remove xfail.
+	* gcc.dg/guality/pr41616-1.c: Ditto.
+
 2015-02-04  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/64817
