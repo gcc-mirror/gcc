@@ -188,188 +188,148 @@ unsigned long aarch64_tune_flags = 0;
 
 /* Tuning parameters.  */
 
-#if HAVE_DESIGNATED_INITIALIZERS
-#define NAMED_PARAM(NAME, VAL) .NAME = (VAL)
-#else
-#define NAMED_PARAM(NAME, VAL) (VAL)
-#endif
-
-#if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
-__extension__
-#endif
-
-#if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
-__extension__
-#endif
 static const struct cpu_addrcost_table generic_addrcost_table =
 {
-#if HAVE_DESIGNATED_INITIALIZERS
-  .addr_scale_costs =
-#endif
     {
-      NAMED_PARAM (hi, 0),
-      NAMED_PARAM (si, 0),
-      NAMED_PARAM (di, 0),
-      NAMED_PARAM (ti, 0),
+      0, /* hi  */
+      0, /* si  */
+      0, /* di  */
+      0, /* ti  */
     },
-  NAMED_PARAM (pre_modify, 0),
-  NAMED_PARAM (post_modify, 0),
-  NAMED_PARAM (register_offset, 0),
-  NAMED_PARAM (register_extend, 0),
-  NAMED_PARAM (imm_offset, 0)
+  0, /* pre_modify  */
+  0, /* post_modify  */
+  0, /* register_offset  */
+  0, /* register_extend  */
+  0 /* imm_offset  */
 };
 
-#if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
-__extension__
-#endif
 static const struct cpu_addrcost_table cortexa57_addrcost_table =
 {
-#if HAVE_DESIGNATED_INITIALIZERS
-  .addr_scale_costs =
-#endif
     {
-      NAMED_PARAM (hi, 1),
-      NAMED_PARAM (si, 0),
-      NAMED_PARAM (di, 0),
-      NAMED_PARAM (ti, 1),
+      1, /* hi  */
+      0, /* si  */
+      0, /* di  */
+      1, /* ti  */
     },
-  NAMED_PARAM (pre_modify, 0),
-  NAMED_PARAM (post_modify, 0),
-  NAMED_PARAM (register_offset, 0),
-  NAMED_PARAM (register_extend, 0),
-  NAMED_PARAM (imm_offset, 0),
+  0, /* pre_modify  */
+  0, /* post_modify  */
+  0, /* register_offset  */
+  0, /* register_extend  */
+  0, /* imm_offset  */
 };
 
-#if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
-__extension__
-#endif
 static const struct cpu_addrcost_table xgene1_addrcost_table =
 {
-#if HAVE_DESIGNATED_INITIALIZERS
-  .addr_scale_costs =
-#endif
     {
-      NAMED_PARAM (hi, 1),
-      NAMED_PARAM (si, 0),
-      NAMED_PARAM (di, 0),
-      NAMED_PARAM (ti, 1),
+      1, /* hi  */
+      0, /* si  */
+      0, /* di  */
+      1, /* ti  */
     },
-  NAMED_PARAM (pre_modify, 1),
-  NAMED_PARAM (post_modify, 0),
-  NAMED_PARAM (register_offset, 0),
-  NAMED_PARAM (register_extend, 1),
-  NAMED_PARAM (imm_offset, 0),
+  1, /* pre_modify  */
+  0, /* post_modify  */
+  0, /* register_offset  */
+  1, /* register_extend  */
+  0, /* imm_offset  */
 };
 
-#if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
-__extension__
-#endif
 static const struct cpu_regmove_cost generic_regmove_cost =
 {
-  NAMED_PARAM (GP2GP, 1),
+  1, /* GP2GP  */
   /* Avoid the use of slow int<->fp moves for spilling by setting
      their cost higher than memmov_cost.  */
-  NAMED_PARAM (GP2FP, 5),
-  NAMED_PARAM (FP2GP, 5),
-  NAMED_PARAM (FP2FP, 2)
+  5, /* GP2FP  */
+  5, /* FP2GP  */
+  2 /* FP2FP  */
 };
 
 static const struct cpu_regmove_cost cortexa57_regmove_cost =
 {
-  NAMED_PARAM (GP2GP, 1),
+  1, /* GP2GP  */
   /* Avoid the use of slow int<->fp moves for spilling by setting
      their cost higher than memmov_cost.  */
-  NAMED_PARAM (GP2FP, 5),
-  NAMED_PARAM (FP2GP, 5),
-  NAMED_PARAM (FP2FP, 2)
+  5, /* GP2FP  */
+  5, /* FP2GP  */
+  2 /* FP2FP  */
 };
 
 static const struct cpu_regmove_cost cortexa53_regmove_cost =
 {
-  NAMED_PARAM (GP2GP, 1),
+  1, /* GP2GP  */
   /* Avoid the use of slow int<->fp moves for spilling by setting
      their cost higher than memmov_cost.  */
-  NAMED_PARAM (GP2FP, 5),
-  NAMED_PARAM (FP2GP, 5),
-  NAMED_PARAM (FP2FP, 2)
+  5, /* GP2FP  */
+  5, /* FP2GP  */
+  2 /* FP2FP  */
 };
 
 static const struct cpu_regmove_cost thunderx_regmove_cost =
 {
-  NAMED_PARAM (GP2GP, 2),
-  NAMED_PARAM (GP2FP, 2),
-  NAMED_PARAM (FP2GP, 6),
-  NAMED_PARAM (FP2FP, 4)
+  2, /* GP2GP  */
+  2, /* GP2FP  */
+  6, /* FP2GP  */
+  4 /* FP2FP  */
 };
 
 static const struct cpu_regmove_cost xgene1_regmove_cost =
 {
-  NAMED_PARAM (GP2GP, 1),
+  1, /* GP2GP  */
   /* Avoid the use of slow int<->fp moves for spilling by setting
      their cost higher than memmov_cost.  */
-  NAMED_PARAM (GP2FP, 8),
-  NAMED_PARAM (FP2GP, 8),
-  NAMED_PARAM (FP2FP, 2)
+  8, /* GP2FP  */
+  8, /* FP2GP  */
+  2 /* FP2FP  */
 };
 
 /* Generic costs for vector insn classes.  */
-#if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
-__extension__
-#endif
 static const struct cpu_vector_cost generic_vector_cost =
 {
-  NAMED_PARAM (scalar_stmt_cost, 1),
-  NAMED_PARAM (scalar_load_cost, 1),
-  NAMED_PARAM (scalar_store_cost, 1),
-  NAMED_PARAM (vec_stmt_cost, 1),
-  NAMED_PARAM (vec_to_scalar_cost, 1),
-  NAMED_PARAM (scalar_to_vec_cost, 1),
-  NAMED_PARAM (vec_align_load_cost, 1),
-  NAMED_PARAM (vec_unalign_load_cost, 1),
-  NAMED_PARAM (vec_unalign_store_cost, 1),
-  NAMED_PARAM (vec_store_cost, 1),
-  NAMED_PARAM (cond_taken_branch_cost, 3),
-  NAMED_PARAM (cond_not_taken_branch_cost, 1)
+  1, /* scalar_stmt_cost  */
+  1, /* scalar_load_cost  */
+  1, /* scalar_store_cost  */
+  1, /* vec_stmt_cost  */
+  1, /* vec_to_scalar_cost  */
+  1, /* scalar_to_vec_cost  */
+  1, /* vec_align_load_cost  */
+  1, /* vec_unalign_load_cost  */
+  1, /* vec_unalign_store_cost  */
+  1, /* vec_store_cost  */
+  3, /* cond_taken_branch_cost  */
+  1 /* cond_not_taken_branch_cost  */
 };
 
 /* Generic costs for vector insn classes.  */
-#if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
-__extension__
-#endif
 static const struct cpu_vector_cost cortexa57_vector_cost =
 {
-  NAMED_PARAM (scalar_stmt_cost, 1),
-  NAMED_PARAM (scalar_load_cost, 4),
-  NAMED_PARAM (scalar_store_cost, 1),
-  NAMED_PARAM (vec_stmt_cost, 3),
-  NAMED_PARAM (vec_to_scalar_cost, 8),
-  NAMED_PARAM (scalar_to_vec_cost, 8),
-  NAMED_PARAM (vec_align_load_cost, 5),
-  NAMED_PARAM (vec_unalign_load_cost, 5),
-  NAMED_PARAM (vec_unalign_store_cost, 1),
-  NAMED_PARAM (vec_store_cost, 1),
-  NAMED_PARAM (cond_taken_branch_cost, 1),
-  NAMED_PARAM (cond_not_taken_branch_cost, 1)
+  1, /* scalar_stmt_cost  */
+  4, /* scalar_load_cost  */
+  1, /* scalar_store_cost  */
+  3, /* vec_stmt_cost  */
+  8, /* vec_to_scalar_cost  */
+  8, /* scalar_to_vec_cost  */
+  5, /* vec_align_load_cost  */
+  5, /* vec_unalign_load_cost  */
+  1, /* vec_unalign_store_cost  */
+  1, /* vec_store_cost  */
+  1, /* cond_taken_branch_cost  */
+  1 /* cond_not_taken_branch_cost  */
 };
 
 /* Generic costs for vector insn classes.  */
-#if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
-__extension__
-#endif
 static const struct cpu_vector_cost xgene1_vector_cost =
 {
-  NAMED_PARAM (scalar_stmt_cost, 1),
-  NAMED_PARAM (scalar_load_cost, 5),
-  NAMED_PARAM (scalar_store_cost, 1),
-  NAMED_PARAM (vec_stmt_cost, 2),
-  NAMED_PARAM (vec_to_scalar_cost, 4),
-  NAMED_PARAM (scalar_to_vec_cost, 4),
-  NAMED_PARAM (vec_align_load_cost, 10),
-  NAMED_PARAM (vec_unalign_load_cost, 10),
-  NAMED_PARAM (vec_unalign_store_cost, 2),
-  NAMED_PARAM (vec_store_cost, 2),
-  NAMED_PARAM (cond_taken_branch_cost, 2),
-  NAMED_PARAM (cond_not_taken_branch_cost, 1)
+  1, /* scalar_stmt_cost  */
+  5, /* scalar_load_cost  */
+  1, /* scalar_store_cost  */
+  2, /* vec_stmt_cost  */
+  4, /* vec_to_scalar_cost  */
+  4, /* scalar_to_vec_cost  */
+  10, /* vec_align_load_cost  */
+  10, /* vec_unalign_load_cost  */
+  2, /* vec_unalign_store_cost  */
+  2, /* vec_store_cost  */
+  2, /* cond_taken_branch_cost  */
+  1 /* cond_not_taken_branch_cost  */
 };
 
 #define AARCH64_FUSE_NOTHING	(0)
@@ -379,18 +339,15 @@ static const struct cpu_vector_cost xgene1_vector_cost =
 #define AARCH64_FUSE_ADRP_LDR	(1 << 3)
 #define AARCH64_FUSE_CMP_BRANCH	(1 << 4)
 
-#if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
-__extension__
-#endif
 static const struct tune_params generic_tunings =
 {
   &cortexa57_extra_costs,
   &generic_addrcost_table,
   &generic_regmove_cost,
   &generic_vector_cost,
-  NAMED_PARAM (memmov_cost, 4),
-  NAMED_PARAM (issue_rate, 2),
-  NAMED_PARAM (fuseable_ops, AARCH64_FUSE_NOTHING),
+  4, /* memmov_cost  */
+  2, /* issue_rate  */
+  AARCH64_FUSE_NOTHING, /* fuseable_ops  */
   8,	/* function_align.  */
   8,	/* jump_align.  */
   4,	/* loop_align.  */
@@ -405,10 +362,10 @@ static const struct tune_params cortexa53_tunings =
   &generic_addrcost_table,
   &cortexa53_regmove_cost,
   &generic_vector_cost,
-  NAMED_PARAM (memmov_cost, 4),
-  NAMED_PARAM (issue_rate, 2),
-  NAMED_PARAM (fuseable_ops, (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
-                             | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR)),
+  4, /* memmov_cost  */
+  2, /* issue_rate  */
+  (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
+   | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR), /* fuseable_ops  */
   8,	/* function_align.  */
   8,	/* jump_align.  */
   4,	/* loop_align.  */
@@ -423,9 +380,10 @@ static const struct tune_params cortexa57_tunings =
   &cortexa57_addrcost_table,
   &cortexa57_regmove_cost,
   &cortexa57_vector_cost,
-  NAMED_PARAM (memmov_cost, 4),
-  NAMED_PARAM (issue_rate, 3),
-  NAMED_PARAM (fuseable_ops, (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD | AARCH64_FUSE_MOVK_MOVK)),
+  4, /* memmov_cost  */
+  3, /* issue_rate  */
+  (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
+   | AARCH64_FUSE_MOVK_MOVK), /* fuseable_ops  */
   16,	/* function_align.  */
   8,	/* jump_align.  */
   4,	/* loop_align.  */
@@ -440,9 +398,9 @@ static const struct tune_params thunderx_tunings =
   &generic_addrcost_table,
   &thunderx_regmove_cost,
   &generic_vector_cost,
-  NAMED_PARAM (memmov_cost, 6),
-  NAMED_PARAM (issue_rate, 2),
-  NAMED_PARAM (fuseable_ops, AARCH64_FUSE_CMP_BRANCH),
+  6, /* memmov_cost  */
+  2, /* issue_rate  */
+  AARCH64_FUSE_CMP_BRANCH, /* fuseable_ops  */
   8,	/* function_align.  */
   8,	/* jump_align.  */
   8,	/* loop_align.  */
@@ -457,9 +415,9 @@ static const struct tune_params xgene1_tunings =
   &xgene1_addrcost_table,
   &xgene1_regmove_cost,
   &xgene1_vector_cost,
-  NAMED_PARAM (memmov_cost, 6),
-  NAMED_PARAM (issue_rate, 4),
-  NAMED_PARAM (fuseable_ops, AARCH64_FUSE_NOTHING),
+  6, /* memmov_cost  */
+  4, /* issue_rate  */
+  AARCH64_FUSE_NOTHING, /* fuseable_ops  */
   16,	/* function_align.  */
   8,	/* jump_align.  */
   16,	/* loop_align.  */
