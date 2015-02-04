@@ -18,4 +18,4 @@ main (int argc, char *argv[])
 }
 
 
-/* { dg-final { scan-assembler-not "pow" } } */
+/* { dg-final { scan-assembler-not {pow\M} } } */
