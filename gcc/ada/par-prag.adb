@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1047,10 +1047,13 @@ begin
       -- Warnings (GNAT) --
       ---------------------
 
-      --  pragma Warnings (On | Off [,REASON]);
-      --  pragma Warnings (On | Off, LOCAL_NAME [,REASON]);
-      --  pragma Warnings (static_string_EXPRESSION [,REASON]);
-      --  pragma Warnings (On | Off, static_string_EXPRESSION [,REASON]);
+      --  pragma Warnings ([TOOL_NAME,] On | Off [,REASON]);
+      --  pragma Warnings ([TOOL_NAME,] On | Off, LOCAL_NAME [,REASON]);
+      --  pragma Warnings ([TOOL_NAME,] static_string_EXPRESSION [,REASON]);
+      --  pragma Warnings ([TOOL_NAME,] On | Off,
+      --                                static_string_EXPRESSION [,REASON]);
+
+      --  REASON ::= Reason => STRING_LITERAL {& STRING_LITERAL}
 
       --  The one argument ON/OFF case is processed by the parser, since it may
       --  control parser warnings as well as semantic warnings, and in any case
@@ -1058,50 +1061,132 @@ begin
       --  set well before any semantic analysis is performed. Note that we
       --  ignore this pragma if debug flag -gnatd.i is set.
 
-      --  Also note that the "one argument" case may have two arguments if the
-      --  second one is a reason argument.
+      --  Also note that the "one argument" case may have two or three
+      --  arguments if the first one is a tool name, and/or the last one is a
+      --  reason argument.
 
-      when Pragma_Warnings =>
+      --  Need documentation and syntax for TOOL_NAME ???
+
+      when Pragma_Warnings => Warnings : declare
+         function First_Arg_Is_Matching_Tool_Name return Boolean;
+         --  Returns True if the first argument is a tool name matching the
+         --  current tool being run.
+
+         function Last_Arg return Node_Id;
+         --  Returns the last argument
+
+         function Last_Arg_Is_Reason return Boolean;
+         --  Returns True if the last argument is a reason argument
+
+         function Get_Reason return String_Id;
+         --  Analyzes Reason argument and returns corresponding String_Id
+         --  value, or null if there is no Reason argument, or if the
+         --  argument is not of the required form.
+
+         -------------------------------------
+         -- First_Arg_Is_Matching_Tool_Name --
+         -------------------------------------
+
+         --  Comments needed for these complex conditionals ???
+
+         function First_Arg_Is_Matching_Tool_Name return Boolean is
+         begin
+            return Nkind (Arg1) = N_Identifier
+              and then ((Chars (Arg1) = Name_Gnat
+                          and then not
+                            (CodePeer_Mode or GNATprove_Mode or ASIS_Mode))
+                        or else
+                        (Chars (Arg1) = Name_Gnatprove
+                          and then GNATprove_Mode));
+         end First_Arg_Is_Matching_Tool_Name;
+
+         ----------------
+         -- Get_Reason --
+         ----------------
+
+         function Get_Reason return String_Id is
+            Arg : constant Node_Id := Last_Arg;
+         begin
+            if Last_Arg_Is_Reason then
+               Start_String;
+               Get_Reason_String (Expression (Arg));
+               return End_String;
+            else
+               return Null_String_Id;
+            end if;
+         end Get_Reason;
+
+         --------------
+         -- Last_Arg --
+         --------------
+
+         function Last_Arg return Node_Id is
+               Last_Arg : Node_Id;
+
+         begin
+            if Arg_Count = 1 then
+               Last_Arg := Arg1;
+            elsif Arg_Count = 2 then
+               Last_Arg := Arg2;
+            elsif Arg_Count = 3 then
+               Last_Arg := Arg3;
+            elsif Arg_Count = 4 then
+               Last_Arg := Next (Arg3);
+
+            --  Illegal case, error issued in semantic analysis
+
+            else
+               Last_Arg := Empty;
+            end if;
+
+            return Last_Arg;
+         end Last_Arg;
+
+         ------------------------
+         -- Last_Arg_Is_Reason --
+         ------------------------
+
+         function Last_Arg_Is_Reason return Boolean is
+            Arg : constant Node_Id := Last_Arg;
+         begin
+            return Nkind (Arg) in N_Has_Chars
+              and then Chars (Arg) = Name_Reason;
+         end Last_Arg_Is_Reason;
+
+         The_Arg : Node_Id;  --  On/Off argument
+         Argx    : Node_Id;
+
+      --  Start of processing for Warnings
+
+      begin
          if not Debug_Flag_Dot_I
            and then (Arg_Count = 1
-                      or else (Arg_Count = 2
-                                and then Chars (Arg2) = Name_Reason))
+                       or else (Arg_Count = 2
+                                  and then (First_Arg_Is_Matching_Tool_Name
+                                              or else
+                                            Last_Arg_Is_Reason))
+                       or else (Arg_Count = 3
+                                  and then First_Arg_Is_Matching_Tool_Name
+                                  and then Last_Arg_Is_Reason))
          then
-            Check_No_Identifier (Arg1);
+            if First_Arg_Is_Matching_Tool_Name then
+               The_Arg := Arg2;
+            else
+               The_Arg := Arg1;
+            end if;
 
-            declare
-               Argx : constant Node_Id := Expression (Arg1);
+            Check_No_Identifier (The_Arg);
+            Argx := Expression (The_Arg);
 
-               function Get_Reason return String_Id;
-               --  Analyzes Reason argument and returns corresponding String_Id
-               --  value, or null if there is no Reason argument, or if the
-               --  argument is not of the required form.
-
-               ----------------
-               -- Get_Reason --
-               ----------------
-
-               function Get_Reason return String_Id is
-               begin
-                  if Arg_Count = 1 then
-                     return Null_String_Id;
-                  else
-                     Start_String;
-                     Get_Reason_String (Expression (Arg2));
-                     return End_String;
-                  end if;
-               end Get_Reason;
-
-            begin
-               if Nkind (Argx) = N_Identifier then
-                  if Chars (Argx) = Name_On then
-                     Set_Warnings_Mode_On (Pragma_Sloc);
-                  elsif Chars (Argx) = Name_Off then
-                     Set_Warnings_Mode_Off (Pragma_Sloc, Get_Reason);
-                  end if;
+            if Nkind (Argx) = N_Identifier then
+               if Chars (Argx) = Name_On then
+                  Set_Warnings_Mode_On (Pragma_Sloc);
+               elsif Chars (Argx) = Name_Off then
+                  Set_Warnings_Mode_Off (Pragma_Sloc, Get_Reason);
                end if;
-            end;
+            end if;
          end if;
+      end Warnings;
 
       -----------------------------
       -- Wide_Character_Encoding --

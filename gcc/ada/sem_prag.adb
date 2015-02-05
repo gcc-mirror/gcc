@@ -21323,12 +21323,18 @@ package body Sem_Prag is
          -- Warnings --
          --------------
 
-         --  pragma Warnings (On | Off [,REASON]);
-         --  pragma Warnings (On | Off, LOCAL_NAME [,REASON]);
-         --  pragma Warnings (static_string_EXPRESSION [,REASON]);
-         --  pragma Warnings (On | Off, STRING_LITERAL [,REASON]);
+         --  pragma Warnings ([TOOL_NAME,] On | Off [,REASON]);
+         --  pragma Warnings ([TOOL_NAME,] On | Off, LOCAL_NAME [,REASON]);
+         --  pragma Warnings ([TOOL_NAME,] static_string_EXPRESSION [,REASON]);
+         --  pragma Warnings ([TOOL_NAME,] On | Off,
+         --                                static_string_EXPRESSION [,REASON]);
 
-         --  REASON ::= Reason => Static_String_Expression
+         --  REASON ::= Reason => STRING_LITERAL {& STRING_LITERAL}
+
+         --  If present, TOOL_NAME refers to a tool, currently either GNAT
+         --  or GNATprove. If an identifier is a static string expression,
+         --  the form of pragma Warnings that starts with a static string
+         --  expression is used.
 
          when Pragma_Warnings => Warnings : declare
             Reason : String_Id;
@@ -21338,9 +21344,10 @@ package body Sem_Prag is
             Check_At_Least_N_Arguments (1);
 
             --  See if last argument is labeled Reason. If so, make sure we
-            --  have a static string expression, and acquire the REASON string.
-            --  Then remove the REASON argument by decreasing Num_Args by one;
-            --  Remaining processing looks only at first Num_Args arguments).
+            --  have a string literal or a concatenation of string literals,
+            --  and acquire the REASON string. Then remove the REASON argument
+            --  by decreasing Num_Args by one; Remaining processing looks only
+            --  at first Num_Args arguments).
 
             declare
                Last_Arg : constant Node_Id :=
@@ -21380,8 +21387,64 @@ package body Sem_Prag is
 
             declare
                Argx : constant Node_Id := Get_Pragma_Arg (Arg1);
+               Shifted_Args : List_Id;
 
             begin
+               --  See if first argument is a tool name, currently either
+               --  GNAT or GNATprove. If so, either ignore the pragma if the
+               --  tool used does not match, or continue as if no tool name
+               --  was given otherwise, by shifting the arguments.
+
+               if Nkind (Argx) = N_Identifier
+                 and then not Nam_In (Chars (Argx), Name_On, Name_Off)
+                 and then not Is_Static_String_Expression (Arg1)
+                 --  How can this possibly work e.g. for GNATprove???
+               then
+                  if Chars (Argx) = Name_Gnat then
+                     if CodePeer_Mode or GNATprove_Mode or ASIS_Mode then
+                        Rewrite (N, Make_Null_Statement (Loc));
+                        Analyze (N);
+                        raise Pragma_Exit;
+                     end if;
+
+                  elsif Chars (Argx) = Name_Gnatprove then
+                     if not GNATprove_Mode then
+                        Rewrite (N, Make_Null_Statement (Loc));
+                        Analyze (N);
+                        raise Pragma_Exit;
+                     end if;
+
+                  else
+                     Error_Pragma_Arg
+                       ("argument of pragma% must be On/Off or tool name "
+                        & "or static string expression", Arg1);
+                  end if;
+
+                  --  At this point, the pragma Warnings applies to the tool,
+                  --  so continue with shifted arguments.
+
+                  Arg_Count := Arg_Count - 1;
+
+                  if Arg_Count = 1 then
+                     Shifted_Args := New_List (New_Copy (Arg2));
+                  elsif Arg_Count = 2 then
+                     Shifted_Args := New_List (New_Copy (Arg2),
+                                               New_Copy (Arg3));
+                  elsif Arg_Count = 3 then
+                     Shifted_Args := New_List (New_Copy (Arg2),
+                                               New_Copy (Arg3),
+                                               New_Copy (Arg4));
+                  else
+                     raise Program_Error;
+                  end if;
+
+                  Rewrite (N, Make_Pragma (Loc,
+                                Chars => Name_Warnings,
+                                Pragma_Argument_Associations => Shifted_Args));
+                  Analyze (N);
+                  raise Pragma_Exit;
+               end if;
+
                --  One argument case
 
                if Arg_Count = 1 then
