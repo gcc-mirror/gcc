@@ -1,3 +1,13 @@
+2015-02-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/64580
+	Backport from mainline
+	* config.rs6000/rs6000.c (compute_vrsave_mask): Reverse loop order.
+	(rs6000_stack_info): Add assert.
+	(rs6000_output_savres_externs): New function, split off from...
+	(rs6000_output_function_prologue): ... here.  Do not call it for
+	thunks.
+
 2015-02-04  Matthias Klose  <doko@ubuntu.com>
 
 	PR target/64938
