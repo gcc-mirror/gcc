@@ -1,3 +1,8 @@
+2015-02-05  Jan Hubicka <hubicka@ucw.cz>
+
+	* ipa-cp.c (ipa_value_from_jfunc, ipa_context_from_jfunc): Add bounds
+	check.
+
 2015-02-05  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/h8300/constraints.md ("U" constraint): Use strict
