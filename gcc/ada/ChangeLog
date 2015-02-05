@@ -1,3 +1,14 @@
+2015-02-05  Yannick Moy  <moy@adacore.com>
+
+	* opt.ads (Warn_On_Suspicious_Contract): Update comment
+	describing use.
+	* sem_attr.adb (Analyze_Attribute/Attribute_Update): Warn on
+	suspicious uses of 'Update.
+	* sem_warn.adb, sem_warn.ads (Warn_On_Suspicious_Update): New
+	function issues warning on suspicious uses of 'Update.
+	* g-rannum.adb, g-rannum.ads, s-rannum.adb, s-rannum.ads: Mark
+	package spec and body as SPARK_Mode Off.
+
 2015-02-05  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb (Set_Elab_Unit_Name): New name for Set_Unit_Name
