@@ -1047,13 +1047,20 @@ begin
       -- Warnings (GNAT) --
       ---------------------
 
-      --  pragma Warnings ([TOOL_NAME,] On | Off [,REASON]);
-      --  pragma Warnings ([TOOL_NAME,] On | Off, LOCAL_NAME [,REASON]);
-      --  pragma Warnings ([TOOL_NAME,] static_string_EXPRESSION [,REASON]);
-      --  pragma Warnings ([TOOL_NAME,] On | Off,
-      --                                static_string_EXPRESSION [,REASON]);
+      --  pragma Warnings ([TOOL_NAME,] DETAILS [, REASON]);
+
+      --  DETAILS ::= On | Off
+      --  DETAILS ::= On | Off, local_NAME
+      --  DETAILS ::= static_string_EXPRESSION
+      --  DETAILS ::= On | Off, static_string_EXPRESSION
+
+      --  TOOL_NAME ::= GNAT | GNATProve
 
       --  REASON ::= Reason => STRING_LITERAL {& STRING_LITERAL}
+
+      --  Note: If the first argument matches an allowed tool name, it is
+      --  always considered to be a tool name, even if there is a string
+      --  variable of that name.
 
       --  The one argument ON/OFF case is processed by the parser, since it may
       --  control parser warnings as well as semantic warnings, and in any case
@@ -1064,8 +1071,6 @@ begin
       --  Also note that the "one argument" case may have two or three
       --  arguments if the first one is a tool name, and/or the last one is a
       --  reason argument.
-
-      --  Need documentation and syntax for TOOL_NAME ???
 
       when Pragma_Warnings => Warnings : declare
          function First_Arg_Is_Matching_Tool_Name return Boolean;
@@ -1087,14 +1092,20 @@ begin
          -- First_Arg_Is_Matching_Tool_Name --
          -------------------------------------
 
-         --  Comments needed for these complex conditionals ???
-
          function First_Arg_Is_Matching_Tool_Name return Boolean is
          begin
             return Nkind (Arg1) = N_Identifier
+
+              --  Return True if the tool name is GNAT, and we're not in
+              --  GNATprove or CodePeer or ASIS mode...
+
               and then ((Chars (Arg1) = Name_Gnat
                           and then not
                             (CodePeer_Mode or GNATprove_Mode or ASIS_Mode))
+
+              --  or if the tool name is GNATprove, and we're in GNATprove
+              --  mode.
+
                         or else
                         (Chars (Arg1) = Name_Gnatprove
                           and then GNATprove_Mode));
