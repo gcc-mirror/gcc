@@ -19615,42 +19615,72 @@ package body Sem_Prag is
                Entity_Pragma  : Node_Id;
                Entity         : Entity_Id)
             is
+               Arg : Node_Id := Arg1;
+
             begin
+               --  The current pragma may appear without an argument. If this
+               --  is the case, associate all error messages with the pragma
+               --  itself.
+
+               if No (Arg) then
+                  Arg := N;
+               end if;
+
+               --  The mode of the current pragma is compared against that of
+               --  an enclosing context.
+
                if Present (Context_Pragma) then
                   pragma Assert (Nkind (Context_Pragma) = N_Pragma);
 
-                  --  New mode less restrictive than the established mode
+                  --  Issue an error if the new mode is less restrictive than
+                  --  that of the context.
 
                   if Get_SPARK_Mode_From_Pragma (Context_Pragma) = Off
                     and then Get_SPARK_Mode_From_Pragma (N) = On
                   then
                      Error_Msg_N
-                       ("cannot change SPARK_Mode from Off to On", Arg1);
+                       ("cannot change SPARK_Mode from Off to On", Arg);
                      Error_Msg_Sloc := Sloc (SPARK_Mode_Pragma);
-                     Error_Msg_N ("\SPARK_Mode was set to Off#", Arg1);
+                     Error_Msg_N ("\SPARK_Mode was set to Off#", Arg);
                      raise Pragma_Exit;
                   end if;
                end if;
 
+               --  The mode of the current pragma is compared against that of
+               --  an initial package/subprogram declaration.
+
                if Present (Entity) then
+
+                  --  Both the initial declaration and the completion carry
+                  --  SPARK_Mode pragmas.
+
                   if Present (Entity_Pragma) then
+                     pragma Assert (Nkind (Entity_Pragma) = N_Pragma);
+
+                     --  Issue an error if the new mode is less restrictive
+                     --  than that of the initial declaration.
+
                      if Get_SPARK_Mode_From_Pragma (Entity_Pragma) = Off
                        and then Get_SPARK_Mode_From_Pragma (N) = On
                      then
-                        Error_Msg_N ("incorrect use of SPARK_Mode", Arg1);
+                        Error_Msg_N ("incorrect use of SPARK_Mode", Arg);
                         Error_Msg_Sloc := Sloc (Entity_Pragma);
                         Error_Msg_NE
                           ("\value Off was set for SPARK_Mode on&#",
-                           Arg1, Entity);
+                           Arg, Entity);
                         raise Pragma_Exit;
                      end if;
 
+                  --  Otherwise the initial declaration lacks a SPARK_Mode
+                  --  pragma in which case the current pragma is illegal as
+                  --  it cannot "complete".
+
                   else
-                     Error_Msg_N ("incorrect use of SPARK_Mode", Arg1);
+                     Error_Msg_N ("incorrect use of SPARK_Mode", Arg);
                      Error_Msg_Sloc := Sloc (Entity);
                      Error_Msg_NE
                        ("\no value was set for SPARK_Mode on&#",
-                        Arg1, Entity);
+                        Arg, Entity);
                      raise Pragma_Exit;
                   end if;
                end if;

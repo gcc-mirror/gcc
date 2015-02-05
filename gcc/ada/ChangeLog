@@ -1,3 +1,14 @@
+2015-02-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Pragma_Conformance): Add
+	local variable Arg. Ensure that all errors are associated with
+	the pragma if it appears without an argument. Add comments on
+	various cases.
+
+2015-02-05  Robert Dewar  <dewar@adacore.com>
+
+	* lib-xref.adb: Minor reformatting.
+
 2015-02-05  Tristan Gingold  <gingold@adacore.com>
 
 	PR ada/64349da/64349
