@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -582,7 +582,7 @@ package body Prj.Dect is
                   The_Project := Imported_Or_Extended_Project_Of
                                    (Current_Project, In_Tree, Token_Name);
 
-                  if No (The_Project) then
+                  if No (The_Project) and then not In_Tree.Incomplete_With then
                      Error_Msg (Flags, "unknown project", Location);
                      Scan (In_Tree); --  past the project name
 
@@ -617,33 +617,37 @@ package body Prj.Dect is
                                  Get_Name_String
                                    (Name_Of (Current_Package, In_Tree)),
                                  Token_Ptr);
+                              Scan (In_Tree); --  past the package name
 
                            else
-                              The_Package :=
-                                First_Package_Of (The_Project, In_Tree);
-
-                              --  Look for the package node
-
-                              while Present (The_Package)
-                                and then
-                                Name_Of (The_Package, In_Tree) /= Token_Name
-                              loop
+                              if Present (The_Project) then
                                  The_Package :=
-                                   Next_Package_In_Project
-                                     (The_Package, In_Tree);
-                              end loop;
+                                   First_Package_Of (The_Project, In_Tree);
 
-                              --  If the package cannot be found in the
-                              --  project, issue an error.
+                                 --  Look for the package node
 
-                              if No (The_Package) then
-                                 The_Project := Empty_Node;
-                                 Error_Msg_Name_2 := Project_Name;
-                                 Error_Msg_Name_1 := Token_Name;
-                                 Error_Msg
-                                   (Flags,
-                                    "package % not declared in project %",
-                                    Token_Ptr);
+                                 while Present (The_Package)
+                                   and then
+                                     Name_Of (The_Package, In_Tree) /=
+                                     Token_Name
+                                 loop
+                                    The_Package :=
+                                      Next_Package_In_Project
+                                        (The_Package, In_Tree);
+                                 end loop;
+
+                                 --  If the package cannot be found in the
+                                 --  project, issue an error.
+
+                                 if No (The_Package) then
+                                    The_Project := Empty_Node;
+                                    Error_Msg_Name_2 := Project_Name;
+                                    Error_Msg_Name_1 := Token_Name;
+                                    Error_Msg
+                                      (Flags,
+                                       "package % not declared in project %",
+                                       Token_Ptr);
+                                 end if;
                               end if;
 
                               Scan (In_Tree); --  past the package name
@@ -653,7 +657,7 @@ package body Prj.Dect is
                   end if;
                end if;
 
-               if Present (The_Project) then
+               if Present (The_Project) or else In_Tree.Incomplete_With then
 
                   --  Looking for '<same attribute name>
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -206,6 +206,20 @@ package body Prj.Strt is
             --  Scan past the attribute name
 
             Scan (In_Tree);
+
+            --  Skip a possible index for an associative array
+
+            if Token = Tok_Left_Paren then
+               Scan (In_Tree);
+
+               if Token = Tok_String_Literal then
+                  Scan (In_Tree);
+
+                  if Token = Tok_Right_Paren then
+                     Scan (In_Tree);
+                  end if;
+               end if;
+            end if;
 
          else
             --  Give its characteristics to this attribute reference

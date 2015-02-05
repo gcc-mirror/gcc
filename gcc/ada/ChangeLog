@@ -1,3 +1,27 @@
+2015-02-05  Javier Miranda  <miranda@adacore.com>
+
+	* errout.adb (Error_Msg_PT): Add missing error.
+	* sem_ch6.adb (Check_Synchronized_Overriding): Check the missing
+	RM rule.  Code cleanup.
+	* exp_ch9.adb (Build_Wrapper_Spec): Propagate "constant" in
+	anonymous access types.  Found working on the tests. Code cleanup.
+
+2015-02-05  Vincent Celier  <celier@adacore.com>
+
+	* prj-dect.adb (Parse_Attribute_Declaration): Continue scanning
+	when there are incomplete withs.
+	* prj-nmsc.adb (Process_Naming): Do not try to get the value
+	of an element when it is nil.
+	(Check_Naming): Do not check a nil suffix for illegality
+	* prj-proc.adb (Expression): Do not process an empty term.
+	* prj-strt.adb (Attribute_Reference): If attribute cannot be
+	found, parse a possible index to avoid cascading errors.
+
+2015-02-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aux.adb (Is_Derived_Type): A subprogram_type generated
+	for an access_to_subprogram declaration is not a derived type.
+
 2015-02-05  Robert Dewar  <dewar@adacore.com>
 
 	* errout.adb (Error_Msg_Internal): For non-serious error set
