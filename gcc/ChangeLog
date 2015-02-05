@@ -1,4 +1,10 @@
 2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
+	    Trevor Saunders  <tsaunders@mozilla.com>
+
+	PR ipa/61548
+	* tree-emultls.c (new_emutls_decl): Resolve alias after creating it.
+
+2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61548
 	* ipa.c (symbol_table::remove_unreachable_nodes): Fix ordering issue
