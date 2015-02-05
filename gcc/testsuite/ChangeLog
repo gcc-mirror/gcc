@@ -1,3 +1,8 @@
+2015-02-05  Jeff Law  <law@redhat.com>
+
+	PR target/58400
+	gcc.target/h8300/pr58400.c: New test.
+
 2015-02-05  Mantas Mikaitis  <mantas.mikaitis@arm.com>
 
 	* gcc.target/arm/macro_defs0.c: New test.

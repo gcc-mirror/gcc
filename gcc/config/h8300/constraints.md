@@ -171,10 +171,14 @@
 (define_constraint "U"
   "An operand valid for a bset destination."
   (ior (and (match_code "reg")
-	    (match_test "REG_OK_FOR_BASE_P (op)"))
+	    (match_test "(reload_in_progress || reload_completed)
+			 ? REG_OK_FOR_BASE_STRICT_P (op)
+			 : REG_OK_FOR_BASE_P (op)"))
        (and (match_code "mem")
 	    (match_code "reg" "0")
-	    (match_test "REG_OK_FOR_BASE_P (XEXP (op, 0))"))
+	    (match_test "(reload_in_progress || reload_completed)
+			 ? REG_OK_FOR_BASE_STRICT_P (XEXP (op, 0))
+			 : REG_OK_FOR_BASE_P (XEXP (op, 0))"))
        (and (match_code "mem")
 	    (match_code "symbol_ref" "0")
 	    (match_test "TARGET_H8300S"))
