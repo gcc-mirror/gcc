@@ -19420,15 +19420,27 @@ package body Sem_Ch3 is
 
       begin
          if Nkind (Parent (Priv_T)) = N_Private_Extension_Declaration
-           and then not Limited_Present (Parent (Priv_T))
-           and then not Synchronized_Present (Parent (Priv_T))
            and then Nkind (Orig_Decl) = N_Full_Type_Declaration
            and then Nkind
              (Type_Definition (Orig_Decl)) = N_Derived_Type_Definition
-           and then Limited_Present (Type_Definition (Orig_Decl))
          then
-            Error_Msg_N
-              ("full view of non-limited extension cannot be limited", N);
+            if not Limited_Present (Parent (Priv_T))
+              and then not Synchronized_Present (Parent (Priv_T))
+              and then Limited_Present (Type_Definition (Orig_Decl))
+            then
+               Error_Msg_N
+                ("full view of non-limited extension cannot be limited", N);
+
+            --  Conversely, if the partial view carries the limited keyword,
+            --  the full view must as well, even if it may be redundant.
+
+            elsif Limited_Present (Parent (Priv_T))
+              and then not Limited_Present (Type_Definition (Orig_Decl))
+            then
+               Error_Msg_N
+                ("full view of limited extension must be explicitly limited",
+                 N);
+            end if;
          end if;
       end;
 

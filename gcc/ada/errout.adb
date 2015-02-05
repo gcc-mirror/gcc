@@ -753,12 +753,23 @@ package body Errout is
          end if;
 
          --  Set the fatal error flag in the unit table unless we are in
-         --  Try_Semantics mode. This stops the semantics from being performed
+         --  Try_Semantics mode (in which case we set ignored mode if not
+         --  currently set. This stops the semantics from being performed
          --  if we find a serious error. This is skipped if we are currently
          --  dealing with the configuration pragma file.
 
-         if not Try_Semantics and then Current_Source_Unit /= No_Unit then
-            Set_Fatal_Error (Get_Source_Unit (Sptr));
+         if Current_Source_Unit /= No_Unit then
+            declare
+               U : constant Unit_Number_Type := Get_Source_Unit (Sptr);
+            begin
+               if Try_Semantics then
+                  if Fatal_Error (U) = None then
+                     Set_Fatal_Error (U, Error_Ignored);
+                  end if;
+               else
+                  Set_Fatal_Error (U, Error_Detected);
+               end if;
+            end;
          end if;
       end Handle_Serious_Error;
 
