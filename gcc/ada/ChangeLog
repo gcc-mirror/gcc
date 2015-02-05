@@ -1,3 +1,14 @@
+2015-02-05  Yannick Moy  <moy@adacore.com>
+
+	* par-prag.adb (Pragma_Warnings): Update for extended form
+	of pragma Warnings. The "one" argument case may now have 2 or
+	3 arguments.
+	* sem_prag.adb (Analyze_Pragma/Pragma_Warnings): Update for
+	extended form of pragma Warnings. Pragma with tool name is either
+	rewritten as null or as an equivalent form without tool name,
+	before reanalysis.
+	* snames.ads-tmpl (Name_Gnatprove): New name.
+
 2015-02-05  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch13.adb (Add_Invariants): Don't assume invariant is
