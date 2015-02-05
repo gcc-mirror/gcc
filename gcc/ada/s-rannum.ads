@@ -60,7 +60,6 @@ with Interfaces;
 package System.Random_Numbers with
   SPARK_Mode => Off
 is
-
    type Generator is limited private;
    --  Generator encodes the current state of a random number stream, it is
    --  provided as input to produce the next random number, and updated so

@@ -217,7 +217,7 @@ package Sem_Warn is
    procedure Warn_On_Suspicious_Update (N : Node_Id);
    --  N is a semantically analyzed attribute reference Prefix'Update. Issue
    --  a warning if Warn_On_Suspicious_Contract is set, and N is the left-hand
-   --  side or right-hand side of an equality or disequality of the form:
+   --  side or right-hand side of an equality or inequality of the form:
    --    Prefix = Prefix'Update(...)
    --  or
    --    Prefix'Update(...) = Prefix

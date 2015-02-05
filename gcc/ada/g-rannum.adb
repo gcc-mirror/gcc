@@ -38,7 +38,6 @@ with System.Random_Numbers; use System.Random_Numbers;
 package body GNAT.Random_Numbers with
   SPARK_Mode => Off
 is
-
    Sys_Max_Image_Width : constant := System.Random_Numbers.Max_Image_Width;
 
    subtype Image_String is String (1 .. Max_Image_Width);
