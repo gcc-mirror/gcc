@@ -1,3 +1,11 @@
+2015-02-05  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Set_Elab_Unit_Name): New name for Set_Unit_Name
+	(Analyze_Pragma): Change Set_Unit_Name to Set_Elab_Unit_Name
+	(Set_Elab_Unit_Name): Generate reference for Elaborate[_All]
+	* sem_warn.adb (Warn_On_Unreferenced_Entity): Suppress warning
+	for exported entity.
+
 2015-02-05  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Check_Pragma_Conformance): Add

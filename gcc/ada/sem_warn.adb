@@ -4009,6 +4009,7 @@ package body Sem_Warn is
         and then not Has_Pragma_Unreferenced_Check_Spec (E)
         and then not Warnings_Off_Check_Spec (E)
         and then not Has_Junk_Name (Spec_E)
+        and then not Is_Exported (Spec_E)
       then
          case Ekind (E) is
             when E_Variable =>

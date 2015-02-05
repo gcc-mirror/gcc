@@ -279,7 +279,7 @@ package body Sem_Prag is
    --  name _Pre, _Post, _Invariant, or _Type_Invariant. Used by pragmas
    --  Check, Check_Policy.
 
-   procedure Set_Unit_Name (N : Node_Id; With_Item : Node_Id);
+   procedure Set_Elab_Unit_Name (N : Node_Id; With_Item : Node_Id);
    --  Place semantic information on the argument of an Elaborate/Elaborate_All
    --  pragma. Entity name for unit and its parents is taken from item in
    --  previous with_clause that mentions the unit.
@@ -13221,8 +13221,7 @@ package body Sem_Prag is
                     and then Same_Name (Name (Citem), Get_Pragma_Arg (Arg))
                   then
                      Set_Elaborate_Present (Citem, True);
-                     Set_Unit_Name (Get_Pragma_Arg (Arg), Name (Citem));
-                     Generate_Reference (Entity (Name (Citem)), Citem);
+                     Set_Elab_Unit_Name (Get_Pragma_Arg (Arg), Name (Citem));
 
                      --  With the pragma present, elaboration calls on
                      --  subprograms from the named unit need no further
@@ -13319,7 +13318,7 @@ package body Sem_Prag is
                     and then Same_Name (Name (Citem), Get_Pragma_Arg (Arg))
                   then
                      Set_Elaborate_All_Present (Citem, True);
-                     Set_Unit_Name (Get_Pragma_Arg (Arg), Name (Citem));
+                     Set_Elab_Unit_Name (Get_Pragma_Arg (Arg), Name (Citem));
 
                      --  Suppress warnings and elaboration checks on the named
                      --  unit if the pragma is in the current compilation, as
@@ -21061,7 +21060,7 @@ package body Sem_Prag is
                           (Cunit_Entity
                              (Get_Source_Unit
                                 (Library_Unit (Citem))));
-                        Set_Unit_Name
+                        Set_Elab_Unit_Name
                           (Get_Pragma_Arg (Arg_Node), Name (Citem));
                         exit;
                      end if;
@@ -26582,11 +26581,11 @@ package body Sem_Prag is
       end if;
    end Set_Encoded_Interface_Name;
 
-   -------------------
-   -- Set_Unit_Name --
-   -------------------
+   ------------------------
+   -- Set_Elab_Unit_Name --
+   ------------------------
 
-   procedure Set_Unit_Name (N : Node_Id; With_Item : Node_Id) is
+   procedure Set_Elab_Unit_Name (N : Node_Id; With_Item : Node_Id) is
       Pref : Node_Id;
       Scop : Entity_Id;
 
@@ -26613,6 +26612,8 @@ package body Sem_Prag is
 
          Set_Entity (Pref, Scop);
       end if;
-   end Set_Unit_Name;
+
+      Generate_Reference (Entity (With_Item), N, Set_Ref => False);
+   end Set_Elab_Unit_Name;
 
 end Sem_Prag;
