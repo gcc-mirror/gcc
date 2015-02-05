@@ -1,3 +1,8 @@
+2015-02-05  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/h8300/constraints.md ("U" constraint): Use strict
+	variant of REG_OK_FOR_BASE_P after reload has started.
+
 2015-02-04  Mantas Mikaitis  <mantas.mikaitis@arm.com>
 
 	* config/arm/arm.h (TARGET_NEON_FP): Removed conditional definition,
