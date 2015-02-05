@@ -1,3 +1,10 @@
+2015-02-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/64905
+	* gcc.target/i386/pr64905.c: Require nonpic target.
+	(dg-options): Add -fomit-frame-pointer.
+	(main): Remove.
+
 2014-02-05  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.dg/tree-ssa/foldconst-6.c: Change expected pattern for
