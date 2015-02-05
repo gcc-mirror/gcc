@@ -214,11 +214,11 @@ __gnat_environ (void)
 #elif defined (sun)
   extern char **_environ;
   return _environ;
+#elif defined (__APPLE__) && !defined (__arm__)
+  return *_NSGetEnviron ();
 #elif ! (defined (__vxworks))
   extern char **environ;
   return environ;
-#elif defined (__APPLE__) && !defined (__arm__)
-  return *_NSGetEnviron ();
 #else
   return environ;
 #endif
