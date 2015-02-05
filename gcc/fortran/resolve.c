@@ -1155,6 +1155,9 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	}
 
       rank = comp->as ? comp->as->rank : 0;
+      if (comp->ts.type == BT_CLASS && CLASS_DATA (comp)->as)
+ 	rank = CLASS_DATA (comp)->as->rank;
+
       if (cons->expr->expr_type != EXPR_NULL && rank != cons->expr->rank
 	  && (comp->attr.allocatable || cons->expr->rank))
 	{

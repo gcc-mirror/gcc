@@ -1,3 +1,17 @@
+2015-02-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/640757
+	* resolve.c (resolve_structure_cons): Obtain the rank of class
+	components.
+	* trans-expr.c (gfc_trans_alloc_subarray_assign): Do the
+	assignment to allocatable class array components.
+	(alloc_scalar_allocatable_for_subcomponent_assignment): If comp
+	is a class component, allocate to the _data field.
+	(gfc_trans_subcomponent_assign): If a class component with a
+	derived type expression set the _vptr field and for array
+	components, call gfc_trans_alloc_subarray_assign. For scalars,
+	the assignment is performed here.
+
 2015-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* options.c: Include langhooks.h.
