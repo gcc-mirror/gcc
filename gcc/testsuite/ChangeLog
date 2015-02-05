@@ -1,6 +1,6 @@
 2015-02-05  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/640757
+	PR fortran/64757
 	* gfortran.dg/type_to_class_2.f90: New test
 	* gfortran.dg/type_to_class_3.f90: New test
 

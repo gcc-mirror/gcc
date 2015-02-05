@@ -1,6 +1,6 @@
 2015-02-05  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/640757
+	PR fortran/64757
 	* resolve.c (resolve_structure_cons): Obtain the rank of class
 	components.
 	* trans-expr.c (gfc_trans_alloc_subarray_assign): Do the
