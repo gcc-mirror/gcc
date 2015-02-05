@@ -8364,7 +8364,8 @@ resolve_transfer (gfc_code *code)
     }
 
   if (exp == NULL || (exp->expr_type != EXPR_VARIABLE
-		      && exp->expr_type != EXPR_FUNCTION))
+		      && exp->expr_type != EXPR_FUNCTION
+		      && exp->expr_type != EXPR_STRUCTURE))
     return;
 
   /* If we are reading, the variable will be changed.  Note that
@@ -8375,8 +8376,7 @@ resolve_transfer (gfc_code *code)
 				    _("item in READ")))
     return;
 
-  sym = exp->symtree->n.sym;
-  ts = &sym->ts;
+  ts = exp->expr_type == EXPR_STRUCTURE ? &exp->ts : &exp->symtree->n.sym->ts;
 
   /* Go to actual component transferred.  */
   for (ref = exp->ref; ref; ref = ref->next)
@@ -8436,6 +8436,11 @@ resolve_transfer (gfc_code *code)
 	  return;
 	}
     }
+   
+  if (exp->expr_type == EXPR_STRUCTURE)
+    return;
+
+  sym = exp->symtree->n.sym;
 
   if (sym->as != NULL && sym->as->type == AS_ASSUMED_SIZE && exp->ref
       && exp->ref->type == REF_ARRAY && exp->ref->u.ar.type == AR_FULL)
