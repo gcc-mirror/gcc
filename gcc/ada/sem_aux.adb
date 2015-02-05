@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -981,6 +981,7 @@ package body Sem_Aux is
       if Is_Type (Ent)
         and then Base_Type (Ent) /= Root_Type (Ent)
         and then not Is_Class_Wide_Type (Ent)
+        and then Ekind (Ent) /= E_Subprogram_Type
       then
          if not Is_Numeric_Type (Root_Type (Ent)) then
             return True;

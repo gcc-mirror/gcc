@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1803,7 +1803,10 @@ package body Prj.Nmsc is
                   Lang_Index := Get_Language_From_Name
                     (Project, Get_Name_String (Element.Index));
 
-                  if Lang_Index /= No_Language_Index then
+                  if Lang_Index /= No_Language_Index and then
+                     Element.Value.Kind = Single and then
+                     Element.Value.Value /= No_Name
+                  then
                      case Current_Array.Name is
                         when Name_Spec_Suffix | Name_Specification_Suffix =>
 
@@ -4287,7 +4290,9 @@ package body Prj.Nmsc is
                   Shared                  => Shared);
             end if;
 
-            if Suffix /= Nil_Variable_Value then
+            if Suffix /= Nil_Variable_Value and then
+               Suffix.Value /= No_Name
+            then
                Lang_Id.Config.Naming_Data.Spec_Suffix :=
                    File_Name_Type (Suffix.Value);
 
@@ -4320,7 +4325,9 @@ package body Prj.Nmsc is
                     Shared                  => Shared);
             end if;
 
-            if Suffix /= Nil_Variable_Value then
+            if Suffix /= Nil_Variable_Value and then
+               Suffix.Value /= No_Name
+            then
                Lang_Id.Config.Naming_Data.Body_Suffix :=
                  File_Name_Type (Suffix.Value);
 

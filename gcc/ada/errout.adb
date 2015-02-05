@@ -686,9 +686,16 @@ package body Errout is
         ("illegal overriding of subprogram inherited from interface", E);
 
       Error_Msg_Sloc := Sloc (Iface_Prim);
-      Error_Msg_N
-        ("\first formal of & declared # must be of mode `OUT`, `IN OUT` " &
-         "or access-to-variable", E);
+
+      if Ekind (E) = E_Function then
+         Error_Msg_N
+           ("\first formal of & declared # must be of mode `IN` " &
+            "or access-to-constant", E);
+      else
+         Error_Msg_N
+           ("\first formal of & declared # must be of mode `OUT`, `IN OUT` " &
+            "or access-to-variable", E);
+      end if;
    end Error_Msg_PT;
 
    -----------------
