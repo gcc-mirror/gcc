@@ -1,5 +1,10 @@
 2015-02-05  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* lto-plugin.c (claim_file_handler): Pass handle to
+	release_input_file.
+
+2015-02-05  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* lto-plugin.c (claim_file_handler): Call release_input_file only
 	if file is claimed.
 
