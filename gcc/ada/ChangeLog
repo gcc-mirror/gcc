@@ -1,5 +1,9 @@
 2015-02-05  Yannick Moy  <moy@adacore.com>
 
+	* sem_prag.adb, par-prag.adb: Minor code clean up.
+
+2015-02-05  Yannick Moy  <moy@adacore.com>
+
 	* par-prag.adb (Pragma_Warnings): Update for extended form
 	of pragma Warnings. The "one" argument case may now have 2 or
 	3 arguments.

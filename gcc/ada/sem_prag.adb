@@ -3109,7 +3109,9 @@ package body Sem_Prag is
       --  Analyzes the argument, and determines if it is a static string
       --  expression, returns True if so, False if non-static or not String.
       --  A special case is that a string literal returns True in Ada 83 mode
-      --  (which has no such thing as static string expressions).
+      --  (which has no such thing as static string expressions). Note that
+      --  the call analyzes its argument, so this cannot be used for the case
+      --  where an identifier might not be declared.
 
       procedure Pragma_Misplaced;
       pragma No_Return (Pragma_Misplaced);
@@ -21323,18 +21325,20 @@ package body Sem_Prag is
          -- Warnings --
          --------------
 
-         --  pragma Warnings ([TOOL_NAME,] On | Off [,REASON]);
-         --  pragma Warnings ([TOOL_NAME,] On | Off, LOCAL_NAME [,REASON]);
-         --  pragma Warnings ([TOOL_NAME,] static_string_EXPRESSION [,REASON]);
-         --  pragma Warnings ([TOOL_NAME,] On | Off,
-         --                                static_string_EXPRESSION [,REASON]);
+         --  pragma Warnings ([TOOL_NAME,] DETAILS [, REASON]);
+
+         --  DETAILS ::= On | Off
+         --  DETAILS ::= On | Off, local_NAME
+         --  DETAILS ::= static_string_EXPRESSION
+         --  DETAILS ::= On | Off, static_string_EXPRESSION
+
+         --  TOOL_NAME ::= GNAT | GNATProve
 
          --  REASON ::= Reason => STRING_LITERAL {& STRING_LITERAL}
 
-         --  If present, TOOL_NAME refers to a tool, currently either GNAT
-         --  or GNATprove. If an identifier is a static string expression,
-         --  the form of pragma Warnings that starts with a static string
-         --  expression is used.
+         --  Note: If the first argument matches an allowed tool name, it is
+         --  always considered to be a tool name, even if there is a string
+         --  variable of that name.
 
          when Pragma_Warnings => Warnings : declare
             Reason : String_Id;
@@ -21396,9 +21400,7 @@ package body Sem_Prag is
                --  was given otherwise, by shifting the arguments.
 
                if Nkind (Argx) = N_Identifier
-                 and then not Nam_In (Chars (Argx), Name_On, Name_Off)
-                 and then not Is_Static_String_Expression (Arg1)
-                 --  How can this possibly work e.g. for GNATprove???
+                 and then Nam_In (Chars (Argx), Name_Gnat, Name_Gnatprove)
                then
                   if Chars (Argx) = Name_Gnat then
                      if CodePeer_Mode or GNATprove_Mode or ASIS_Mode then
@@ -21415,9 +21417,7 @@ package body Sem_Prag is
                      end if;
 
                   else
-                     Error_Pragma_Arg
-                       ("argument of pragma% must be On/Off or tool name "
-                        & "or static string expression", Arg1);
+                     raise Program_Error;
                   end if;
 
                   --  At this point, the pragma Warnings applies to the tool,
