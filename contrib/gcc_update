@@ -167,6 +167,12 @@ libvtv/configure: libvtv/configure.ac libvtv/aclocal.m4
 libcilkrts/aclocal.m4: libcilkrts/configure.ac
 libcilkrts/Makefile.in: libcilkrts/Makefile.am
 libcilkrts/configure: libcilkrts/configure.ac
+liboffloadmic/aclocal.m4: liboffloadmic/configure.ac
+liboffloadmic/Makefile.in: liboffloadmic/Makefile.am
+liboffloadmic/configure: liboffloadmic/configure.ac
+liboffloadmic/plugin/aclocal.m4: liboffloadmic/plugin/configure.ac
+liboffloadmic/plugin/Makefile.in: liboffloadmic/plugin/Makefile.am
+liboffloadmic/plugin/configure: liboffloadmic/plugin/configure.ac
 # Top level
 Makefile.in: Makefile.tpl Makefile.def
 configure: configure.ac config/acx.m4
