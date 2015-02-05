@@ -942,7 +942,8 @@ ipa_value_from_jfunc (struct ipa_node_params *info, struct ipa_jump_func *jfunc)
 	{
 	  ipcp_lattice<tree> *lat;
 
-	  if (!info->lattices)
+	  if (!info->lattices
+	      || idx >= ipa_get_param_count (info))
 	    return NULL_TREE;
 	  lat = ipa_get_scalar_lat (info, idx);
 	  if (!lat->is_single_const ())
@@ -1004,7 +1005,8 @@ ipa_context_from_jfunc (ipa_node_params *info, cgraph_edge *cs, int csidx,
 	}
       else
 	{
-	  if (!info->lattices)
+	  if (!info->lattices
+	      || srcidx >= ipa_get_param_count (info))
 	    return ctx;
 	  ipcp_lattice<ipa_polymorphic_call_context> *lat;
 	  lat = ipa_get_poly_ctx_lat (info, srcidx);
