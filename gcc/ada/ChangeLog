@@ -1,3 +1,13 @@
+2015-02-05  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Error_Msg_Internal): For non-serious error set
+	Fatal_Error to Ignored.
+	* lib-load.adb (Load_Unit): Minor comment updates.
+	* sem_ch10.adb (Analyze_With_Clause): Propagate Fatal_Error
+	setting from with'ed unit to with'ing unit.
+	* sem_prag.adb (Analyze_Pragma, case Warnings): Document handling
+	of ambiguity.
+
 2015-02-05  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb, par-prag.adb: Minor code clean up.
