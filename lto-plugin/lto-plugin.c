@@ -998,6 +998,9 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
 
   *claimed = 1;
 
+  if (release_input_file)
+    release_input_file (file);
+
   goto cleanup;
 
  err:
@@ -1006,9 +1009,6 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
  cleanup:
   if (obj.objfile)
     simple_object_release_read (obj.objfile);
-
-  if (release_input_file)
-    release_input_file (file);
 
   return LDPS_OK;
 }
