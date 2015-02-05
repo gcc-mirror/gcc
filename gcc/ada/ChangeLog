@@ -1,3 +1,22 @@
+2015-02-05  Robert Dewar  <dewar@adacore.com>
+
+	* prj-proc.adb, sem_aux.adb, exp_ch9.adb, errout.adb, prj-dect.adb,
+	prj-nmsc.adb: Minor reformatting.
+
+2015-02-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb (Covers): In ASIS_Mode the Corresponding_Record
+	of a protected type may not be available, so to check conformance
+	with an interface type, examine the interface list in the type
+	declaration directly.
+	(Write_Overloads): Improve information for indirect calls,
+	for debugger use.
+
+2015-02-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Make_Tag_Assignment): Do not perform this
+	expansion activity in ASIS mode.
+
 2015-02-05  Javier Miranda  <miranda@adacore.com>
 
 	* errout.adb (Error_Msg_PT): Add missing error.

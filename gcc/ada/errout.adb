@@ -689,12 +689,12 @@ package body Errout is
 
       if Ekind (E) = E_Function then
          Error_Msg_N
-           ("\first formal of & declared # must be of mode `IN` " &
-            "or access-to-constant", E);
+           ("\first formal of & declared # must be of mode `IN` "
+            & "or access-to-constant", E);
       else
          Error_Msg_N
-           ("\first formal of & declared # must be of mode `OUT`, `IN OUT` " &
-            "or access-to-variable", E);
+           ("\first formal of & declared # must be of mode `OUT`, `IN OUT` "
+            & "or access-to-variable", E);
       end if;
    end Error_Msg_PT;
 

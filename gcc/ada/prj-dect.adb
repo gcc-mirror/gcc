@@ -627,9 +627,8 @@ package body Prj.Dect is
                                  --  Look for the package node
 
                                  while Present (The_Package)
-                                   and then
-                                     Name_Of (The_Package, In_Tree) /=
-                                     Token_Name
+                                   and then Name_Of (The_Package, In_Tree) /=
+                                                                    Token_Name
                                  loop
                                     The_Package :=
                                       Next_Package_In_Project
