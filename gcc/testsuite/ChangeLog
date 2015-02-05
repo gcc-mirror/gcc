@@ -1,3 +1,8 @@
+2015-02-05  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/64943
+	* gfortran.dg/structure_constructor_12.f90: New.
+
 2015-02-05  Jeff Law  <law@redhat.com>
 
 	PR target/58400
