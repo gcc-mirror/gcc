@@ -547,9 +547,7 @@ package body Prj.Proc is
             case Current_Term_Kind is
 
             when N_Literal_String =>
-
                case Kind is
-
                   when Undefined =>
 
                      --  Should never happen
@@ -602,7 +600,6 @@ package body Prj.Proc is
                end case;
 
             when N_Literal_String_List =>
-
                declare
                   String_Node : Project_Node_Id :=
                                   First_Expression_In_List
@@ -697,7 +694,6 @@ package body Prj.Proc is
                end;
 
             when N_Variable_Reference | N_Attribute_Reference =>
-
                declare
                   The_Project     : Project_Id  := Project;
                   The_Package     : Package_Id  := Pkg;

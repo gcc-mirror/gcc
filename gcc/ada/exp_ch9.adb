@@ -2639,11 +2639,11 @@ package body Exp_Ch9 is
             if Nkind (Parameter_Type (First_Param)) = N_Access_Definition then
                Obj_Param_Typ :=
                  Make_Access_Definition (Loc,
-                   Subtype_Mark =>
+                   Subtype_Mark           =>
                      New_Occurrence_Of (Obj_Typ, Loc),
                    Null_Exclusion_Present =>
                      Null_Exclusion_Present (Parameter_Type (First_Param)),
-                   Constant_Present =>
+                   Constant_Present       =>
                      Constant_Present (Parameter_Type (First_Param)));
             else
                Obj_Param_Typ := New_Occurrence_Of (Obj_Typ, Loc);
