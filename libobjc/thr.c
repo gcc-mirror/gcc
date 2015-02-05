@@ -25,11 +25,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/common.h"
 #include "objc-private/error.h"
 #define _LIBOBJC
-/* The line below is needed for declarations of functions such as
-   pthread_mutexattr_settype, without which gthr-posix.h may fail to
-   compile within libobjc.  While we only need XPG5 for this, Solaris
-   requires XPG6 for C99 and later.  */
-#define _XOPEN_SOURCE 600
 #include "config.h"
 #include "tconfig.h"
 #include "coretypes.h"

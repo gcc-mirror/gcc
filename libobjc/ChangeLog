@@ -1,3 +1,8 @@
+2015-02-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libobjc/63765
+	* thr.c (_XOPEN_SOURCE): Remove.
+
 2015-01-27  Matthias Klose  <doko@ubuntu.com>
 
 	* sendmsg.c: Add prototypes for __objc_get_forward_imp and get_imp.
