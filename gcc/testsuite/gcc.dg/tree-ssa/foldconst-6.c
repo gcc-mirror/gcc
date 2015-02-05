@@ -10,5 +10,5 @@ void f (vec *r)
   *r = a < b;
 }
 
-/* { dg-final { scan-tree-dump-not "666" "ccp1"} } */
+/* { dg-final { scan-tree-dump-not "2, 666" "ccp1" } } */
 /* { dg-final { cleanup-tree-dump "ccp1" } } */

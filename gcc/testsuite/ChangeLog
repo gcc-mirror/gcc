@@ -1,3 +1,8 @@
+2014-02-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.dg/tree-ssa/foldconst-6.c: Change expected pattern for
+	tree dump scanning.
+
 2015-02-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/64757
