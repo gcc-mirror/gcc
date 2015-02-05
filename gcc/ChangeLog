@@ -1,6 +1,12 @@
 2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/61548
+	* ipa.c (symbol_table::remove_unreachable_nodes): Fix ordering issue
+	when removing varpool nodes.
+
+2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61548
 	* varpool.c (varpool_node::remove): Fix order of variables.
 
 2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
