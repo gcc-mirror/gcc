@@ -15704,6 +15704,13 @@ package body Sem_Prag is
                  ("pragma% only allowed for private type", Arg1);
             end if;
 
+            --  Not allowed for abstract type
+
+            if Is_Abstract_Type (Typ) then
+               Error_Pragma_Arg
+                 ("pragma% not allowed for abstract type", Arg1);
+            end if;
+
             --  Note that the type has at least one invariant, and also that
             --  it has inheritable invariants if we have Invariant'Class
             --  or Type_Invariant'Class. Build the corresponding invariant

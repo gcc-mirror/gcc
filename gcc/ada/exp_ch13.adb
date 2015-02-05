@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -400,7 +400,14 @@ package body Exp_Ch13 is
                   --  Skip this for aspects (e.g. Current_Value) for which
                   --  there is no corresponding pragma or attribute.
 
-                  if Present (Aitem) then
+                  if Present (Aitem)
+
+                    --  Also skip if we have a null statement rather than a
+                    --  delayed aspect (this happens when we are ignoring rep
+                    --  items from use of the -gnatI switch).
+
+                    and then Nkind (Aitem) /= N_Null_Statement
+                  then
                      pragma Assert (Is_Delayed_Aspect (Aitem));
                      Insert_Before (N, Aitem);
                   end if;

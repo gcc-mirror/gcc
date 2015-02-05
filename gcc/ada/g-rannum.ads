@@ -57,7 +57,6 @@ with Interfaces; use Interfaces;
 package GNAT.Random_Numbers with
   SPARK_Mode => Off
 is
-
    type Generator is limited private;
    subtype Initialization_Vector is
      System.Random_Numbers.Initialization_Vector;

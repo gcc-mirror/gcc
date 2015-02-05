@@ -97,8 +97,8 @@ use Ada;
 package body System.Random_Numbers with
   SPARK_Mode => Off
 is
-
    Image_Numeral_Length : constant := Max_Image_Width / N;
+
    subtype Image_String is String (1 .. Max_Image_Width);
 
    ----------------------------

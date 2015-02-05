@@ -1,3 +1,12 @@
+2015-02-05  Robert Dewar  <dewar@adacore.com>
+
+	* g-rannum.adb, g-rannum.ads, s-rannum.adb, s-rannum.ads,
+	sem_warn.ads: Minor reformatting.
+	* exp_ch13.adb (Expand_N_Freeze_Entity): Add guard for aspect
+	deleted by -gnatI.
+	* sem_prag.adb (Analyze_Pragma, case Type_Invariant): Give
+	error for abstract type.
+
 2015-02-05  Yannick Moy  <moy@adacore.com>
 
 	* opt.ads (Warn_On_Suspicious_Contract): Update comment
