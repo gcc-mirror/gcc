@@ -1,3 +1,9 @@
+2015-02-06  Alan Modra  <amodra@gmail.com>
+
+	PR target/64876
+	* config/rs6000/rs6000.c (chain_already_loaded): New function.
+	(rs6000_call_aix): Use it.
+
 2015-02-05  Jan Hubicka <hubicka@ucw.cz>
 
 	* ipa-cp.c (ipa_value_from_jfunc, ipa_context_from_jfunc): Add bounds
