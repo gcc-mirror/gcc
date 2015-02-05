@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1759,7 +1759,9 @@ package Opt is
    Warn_On_Suspicious_Contract : Boolean := True;
    --  GNAT
    --  Set to True to generate warnings for suspicious contracts expressed as
-   --  pragmas or aspects precondition and postcondition. The default is that
+   --  pragmas or aspects precondition and postcondition, as well as other
+   --  suspicious cases of expressions typically found in contracts like
+   --  quantified expressions and uses of Update attribute. The default is that
    --  this warning is enabled. Modified by use of -gnatw.t/.T.
 
    Warn_On_Suspicious_Modulus_Value : Boolean := True;

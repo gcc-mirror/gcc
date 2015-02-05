@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2007-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,7 +94,9 @@ with Interfaces; use Interfaces;
 
 use Ada;
 
-package body System.Random_Numbers is
+package body System.Random_Numbers with
+  SPARK_Mode => Off
+is
 
    Image_Numeral_Length : constant := Max_Image_Width / N;
    subtype Image_String is String (1 .. Max_Image_Width);
