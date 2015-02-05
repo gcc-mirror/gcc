@@ -740,15 +740,23 @@ package body Lib.Load is
                goto Done;
             end if;
 
-            --  If loaded unit had a fatal error, then caller inherits it
+            --  If loaded unit had a fatal error, then caller inherits setting
 
             if Present (Error_Node) then
                case Units.Table (Unum).Fatal_Error is
+
+                  --  Nothing to do if with'ed unit had no error
+
                   when None =>
                      null;
 
+                  --  If with'ed unit had a detected fatal error, propagate it
+
                   when Error_Detected =>
                      Units.Table (Calling_Unit).Fatal_Error := Error_Detected;
+
+                  --  If with'ed unit had an ignored error, then propagate it
+                  --  but do not overide an existring setting.
 
                   when Error_Ignored =>
                      if Units.Table (Calling_Unit).Fatal_Error = None then

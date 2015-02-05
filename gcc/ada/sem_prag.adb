@@ -21340,6 +21340,11 @@ package body Sem_Prag is
          --  always considered to be a tool name, even if there is a string
          --  variable of that name.
 
+         --  Note if the second argument of DETAILS is a local_NAME then the
+         --  second form is always understood. If the intention is to use
+         --  the fourth form, then you can write NAME & "" to force the
+         --  intepretation as a static_string_EXPRESSION.
+
          when Pragma_Warnings => Warnings : declare
             Reason : String_Id;
 

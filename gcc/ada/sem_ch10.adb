@@ -2821,6 +2821,29 @@ package body Sem_Ch10 is
       if Private_Present (N) then
          Set_Is_Immediately_Visible (E_Name, False);
       end if;
+
+      --  Propagate Fatal_Error setting from with'ed unit to current unit
+
+      case Fatal_Error (Get_Source_Unit (Library_Unit (N))) is
+
+         --  Nothing to do if with'ed unit had no error
+
+         when None =>
+            null;
+
+            --  If with'ed unit had a detected fatal error, propagate it
+
+         when Error_Detected =>
+            Set_Fatal_Error (Current_Sem_Unit, Error_Detected);
+
+            --  If with'ed unit had an ignored error, then propagate it
+            --  but do not overide an existring setting.
+
+         when Error_Ignored =>
+            if Fatal_Error (Current_Sem_Unit) = None then
+               Set_Fatal_Error (Current_Sem_Unit, Error_Ignored);
+            end if;
+      end case;
    end Analyze_With_Clause;
 
    ------------------------------

@@ -1164,6 +1164,17 @@ package body Errout is
          if Errors.Table (Cur_Msg).Serious then
             Serious_Errors_Detected := Serious_Errors_Detected + 1;
             Handle_Serious_Error;
+
+         --  If not serious error, set Fatal_Error to indicate ignored error
+
+         else
+            declare
+               U : constant Unit_Number_Type := Get_Source_Unit (Sptr);
+            begin
+               if Fatal_Error (U) = None then
+                  Set_Fatal_Error (U, Error_Ignored);
+               end if;
+            end;
          end if;
       end if;
 
