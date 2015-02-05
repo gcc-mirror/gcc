@@ -7770,7 +7770,7 @@ package body Sem_Ch13 is
                --  at the end of the private part and has the wrong visibility.
 
                Set_Parent (Exp, N);
-               Preanalyze_Assert_Expression (Exp, Standard_Boolean);
+               Preanalyze_Assert_Expression (Exp, Any_Boolean);
 
                --  A class-wide invariant may be inherited in a separate unit,
                --  where the corresponding expression cannot be resolved by

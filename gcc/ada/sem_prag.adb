@@ -11783,7 +11783,7 @@ package body Sem_Prag is
                  Make_If_Statement (Eloc,
                    Condition =>
                      Make_And_Then (Eloc,
-                       Left_Opnd  => New_Occurrence_Of (Standard_False, Eloc),
+                       Left_Opnd  => Make_Identifier (Eloc, Name_False),
                        Right_Opnd => Expr),
                    Then_Statements => New_List (
                      Make_Null_Statement (Eloc))));
