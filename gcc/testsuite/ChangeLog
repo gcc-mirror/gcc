@@ -1,3 +1,8 @@
+2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/64686
+	* g++.dg/torture/pr64686.C: New testcase.
+
 2015-02-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/64905

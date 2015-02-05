@@ -1702,6 +1702,7 @@ inline_small_functions (void)
     {
       bool update = false;
       struct cgraph_edge *next;
+      bool has_speculative = false;
 
       if (dump_file)
 	fprintf (dump_file, "Enqueueing calls in %s/%i.\n",
@@ -1719,12 +1720,17 @@ inline_small_functions (void)
 	      gcc_assert (!edge->aux);
 	      update_edge_key (&edge_heap, edge);
 	    }
-	  if (edge->speculative && !speculation_useful_p (edge, edge->aux != NULL))
+	  if (edge->speculative)
+	    has_speculative = true;
+	}
+      if (has_speculative)
+	for (edge = node->callees; edge; edge = next)
+	  if (edge->speculative && !speculation_useful_p (edge,
+							  edge->aux != NULL))
 	    {
 	      edge->resolve_speculation ();
 	      update = true;
 	    }
-	}
       if (update)
 	{
 	  struct cgraph_node *where = node->global.inlined_to
