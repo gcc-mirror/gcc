@@ -1,5 +1,11 @@
 2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/64686
+	* ipa-inline.c (inline_small_functions): Fix ordering issue between
+	speculation resolution and key updates.
+
+2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-prop.c (update_indirect_edges_after_inlining): By more careful
 	about not letting any speculative edges unupdated.
 
