@@ -1,3 +1,9 @@
+2015-02-05  Mantas Mikaitis  <mantas.mikaitis@arm.com>
+
+	* gcc.target/arm/macro_defs0.c: New test.
+	* gcc.target/arm/macro_defs1.c: New test.
+	* gcc.target/arm/macro_defs2.c: New test.
+
 2015-02-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/64905

@@ -1,3 +1,10 @@
+2015-02-04  Mantas Mikaitis  <mantas.mikaitis@arm.com>
+
+	* config/arm/arm.h (TARGET_NEON_FP): Removed conditional definition,
+	define to zero if !TARGET_NEON.
+	(TARGET_CPU_CPP_BUILTINS): Added second condition before defining
+	__ARM_FP macro.
+
 2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
 	    Trevor Saunders  <tsaunders@mozilla.com>
 
