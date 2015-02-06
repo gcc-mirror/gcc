@@ -1,3 +1,12 @@
+2015-02-06  Jeff Law  <law@redhat.com>
+
+	PR target/64889
+	* config/h8300/h8300.c (push): New argument "in_prologue".
+	Pass "in_prologue" along to "F".
+	(h8300_push_pop): Corresponding changes.
+	(h8300_expand_prologue): Likewise.
+	(h8300_swap_into_er6): Likewise.  Do not set RTX_FRAME_RELATED_P.
+		
 2015-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/64957
@@ -10,6 +19,7 @@
 	PR target/62631
 	* tree-ssa-loop-ivopts.c (get_shiftadd_cost): Use the mininum of costs
 	of shift-add and (add + shift) operations.  Rename local variable.
+
 
 2015-02-05  Jeff Law  <law@redhat.com>
 
