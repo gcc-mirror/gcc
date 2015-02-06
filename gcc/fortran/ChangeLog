@@ -1,16 +1,47 @@
+2015-02-06  Paul Thomas  <pault@gcc.gnu.org>
 
-2015-01-29  Andre Vehreschild  <vehre@gmx.de>, Janus Weil  <janus@gcc.gnu.org>
+	PR fortran/63205
+	* gfortran.h: Add 'must finalize' field to gfc_expr and
+	prototypes for gfc_is_alloc_class_scalar_function and for
+	gfc_is_alloc_class_array_function.
+	* expr.c (gfc_is_alloc_class_scalar_function,
+	gfc_is_alloc_class_array_function): New functions.
+	* trans-array.c (gfc_add_loop_ss_code): Do not move the
+	expression for allocatable class scalar functions outside the
+	loop.
+	(conv_array_index_offset): Cope with deltas being NULL_TREE.
+	(build_class_array_ref): Do not return with allocatable class
+	array functions. Add code to pick out the returned class array.
+	Dereference if necessary and return if not a class object.
+	(gfc_conv_scalarized_array_ref): Cope with offsets being NULL.
+	(gfc_walk_function_expr): Return an array ss for the result of
+	an allocatable class array function.
+	* trans-expr.c (gfc_conv_subref_array_arg): Remove the assert
+	that the argument should be a variable. If an allocatable class
+	array function, set the offset to zero and skip the write-out
+	loop in this case.
+	(gfc_conv_procedure_call): Add allocatable class array function
+	to the assert. Call gfc_conv_subref_array_arg for allocatable
+	class array function arguments with derived type formal arg..
+	Add the code for handling allocatable class functions, including
+	finalization calls to prevent memory leaks.
+	(arrayfunc_assign_needs_temporary): Return if an allocatable
+	class array function.
+	(gfc_trans_assignment_1): Set must_finalize to rhs expression
+	for allocatable class functions. Set scalar_to_array as needed
+	for scalar class allocatable functions assigned to an array.
+	Nullify the allocatable components corresponding the the lhs
+	derived type so that the finalization does not free them.
+
+2015-01-29  Andre Vehreschild  <vehre@gmx.de>
+	    Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/60289
 	Initial patch by Janus Weil
-	* resolve.c (resolve_allocate_expr): Add check for comp. only when 
-	target is not unlimited polymorphic.
-	* trans-stmt.c (gfc_trans_allocate): Assign correct value to _len
-	component of unlimited polymorphic entities.
-
-2015-01-29  Andre Vehreschild  <vehre@gmx.de>
-
-	* gfortran.dg/unlimited_polymorphic_22.f90: New test.
+	* resolve.c (resolve_allocate_expr): Add check for comp. only
+	when target is not unlimited polymorphic.
+	* trans-stmt.c (gfc_trans_allocate): Assign correct value to
+	_len component of unlimited polymorphic entities.
 
 2015-02-05  Tobias Burnus  <burnus@net-b.de>
 

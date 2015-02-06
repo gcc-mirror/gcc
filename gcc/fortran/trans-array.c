@@ -2474,7 +2474,8 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	  gfc_conv_expr (&se, expr);
 	  gfc_add_block_to_block (&outer_loop->pre, &se.pre);
 
-	  if (expr->ts.type != BT_CHARACTER)
+	  if (expr->ts.type != BT_CHARACTER
+	      && !gfc_is_alloc_class_scalar_function (expr))
 	    {
 	      /* Move the evaluation of scalar expressions outside the
 		 scalarization loop, except for WHERE assignments.  */
@@ -2955,7 +2956,7 @@ conv_array_index_offset (gfc_se * se, gfc_ss * ss, int dim, int i,
 	stride = gfc_conv_descriptor_stride_get (info->descriptor,
 						 gfc_rank_cst[dim]);
 
-      if (!integer_zerop (info->delta[dim]))
+      if (info->delta[dim] && !integer_zerop (info->delta[dim]))
 	index = fold_build2_loc (input_location, PLUS_EXPR,
 				 gfc_array_index_type, index, info->delta[dim]);
     }
@@ -2984,7 +2985,9 @@ build_class_array_ref (gfc_se *se, tree base, tree index)
   gfc_ref *class_ref;
   gfc_typespec *ts;
 
-  if (expr == NULL || expr->ts.type != BT_CLASS)
+  if (expr == NULL
+      || (expr->ts.type != BT_CLASS
+	  && !gfc_is_alloc_class_array_function (expr)))
     return false;
 
   if (expr->symtree && expr->symtree->n.sym->ts.type == BT_CLASS)
@@ -3018,6 +3021,30 @@ build_class_array_ref (gfc_se *se, tree base, tree index)
       gcc_assert (expr->symtree->n.sym->backend_decl == current_function_decl);
       decl = gfc_get_fake_result_decl (expr->symtree->n.sym, 0);
     }
+  else if (gfc_is_alloc_class_array_function (expr))
+    {
+      size = NULL_TREE;
+      decl = NULL_TREE;
+      for (tmp = base; tmp; tmp = TREE_OPERAND (tmp, 0))
+	{
+	  tree type;
+	  type = TREE_TYPE (tmp);
+	  while (type)
+	    {
+	      if (GFC_CLASS_TYPE_P (type))
+		decl = tmp;
+	      if (type != TYPE_CANONICAL (type))
+		type = TYPE_CANONICAL (type);
+	      else
+		type = NULL_TREE;
+	    }
+	  if (TREE_CODE (tmp) == VAR_DECL)
+	    break;
+	}
+
+      if (decl == NULL_TREE)
+	return false;
+    }
   else if (class_ref == NULL)
     decl = expr->symtree->n.sym->backend_decl;
   else
@@ -3032,6 +3059,12 @@ build_class_array_ref (gfc_se *se, tree base, tree index)
       decl = tmpse.expr;
       class_ref->next = ref;
     }
+
+  if (POINTER_TYPE_P (TREE_TYPE (decl)))
+    decl = build_fold_indirect_ref_loc (input_location, decl);
+
+  if (!GFC_CLASS_TYPE_P (TREE_TYPE (decl)))
+    return false;
 
   size = gfc_vtable_size_get (decl);
 
@@ -3075,7 +3108,7 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
   index = conv_array_index_offset (se, ss, ss->dim[n], n, ar, info->stride0);
   /* Add the offset for this dimension to the stored offset for all other
      dimensions.  */
-  if (!integer_zerop (info->offset))
+  if (info->offset && !integer_zerop (info->offset))
     index = fold_build2_loc (input_location, PLUS_EXPR, gfc_array_index_type,
 			     index, info->offset);
 
@@ -9048,6 +9081,11 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
   sym = expr->value.function.esym;
   if (!sym)
     sym = expr->symtree->n.sym;
+
+  if (gfc_is_alloc_class_array_function (expr))
+    return gfc_get_array_ss (ss, expr,
+			     CLASS_DATA (expr->value.function.esym->result)->as->rank,
+			     GFC_SS_FUNCTION);
 
   /* A function that returns arrays.  */
   comp = gfc_get_proc_ptr_comp (expr);

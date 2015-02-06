@@ -4304,6 +4304,40 @@ gfc_is_proc_ptr_comp (gfc_expr *expr)
 }
 
 
+/* Determine if an expression is a function with an allocatable class scalar
+   result.  */
+bool
+gfc_is_alloc_class_scalar_function (gfc_expr *expr)
+{
+  if (expr->expr_type == EXPR_FUNCTION
+      && expr->value.function.esym
+      && expr->value.function.esym->result
+      && expr->value.function.esym->result->ts.type == BT_CLASS
+      && !CLASS_DATA (expr->value.function.esym->result)->attr.dimension
+      && CLASS_DATA (expr->value.function.esym->result)->attr.allocatable)
+    return true;
+
+  return false;
+}
+
+
+/* Determine if an expression is a function with an allocatable class array
+   result.  */
+bool
+gfc_is_alloc_class_array_function (gfc_expr *expr)
+{
+  if (expr->expr_type == EXPR_FUNCTION
+      && expr->value.function.esym
+      && expr->value.function.esym->result
+      && expr->value.function.esym->result->ts.type == BT_CLASS
+      && CLASS_DATA (expr->value.function.esym->result)->attr.dimension
+      && CLASS_DATA (expr->value.function.esym->result)->attr.allocatable)
+    return true;
+
+  return false;
+}
+
+
 /* Walk an expression tree and check each variable encountered for being typed.
    If strict is not set, a top-level variable is tolerated untyped in -std=gnu
    mode as is a basic arithmetic expression using those; this is for things in
