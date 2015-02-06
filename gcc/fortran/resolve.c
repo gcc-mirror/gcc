@@ -6933,7 +6933,9 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
       goto failure;
     }
 
-  if (code->ext.alloc.ts.type == BT_CHARACTER && !e->ts.deferred)
+  /* Check F08:C632.  */
+  if (code->ext.alloc.ts.type == BT_CHARACTER && !e->ts.deferred
+      && !UNLIMITED_POLY (e))
     {
       int cmp = gfc_dep_compare_expr (e->ts.u.cl->length,
 				      code->ext.alloc.ts.u.cl->length);
