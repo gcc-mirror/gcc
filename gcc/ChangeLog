@@ -1,3 +1,11 @@
+2015-02-06  Sebastian Pop  <s.pop@samsung.com>
+	    Brian Rzycki  <b.rzycki@samsung.com>
+
+	PR tree-optimization/64878
+	* tree-ssa-threadedge.c: Include tree-ssa-loop.h.
+	(fsm_find_control_statement_thread_paths): Add parameter seen_loop_phi.
+	Stop recursion at loop phi nodes after having visited a loop phi node.
+
 2015-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* toplev.c (process_options): Change flag_ipa_ra before creating
