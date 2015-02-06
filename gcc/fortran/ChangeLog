@@ -1,3 +1,17 @@
+
+2015-01-29  Andre Vehreschild  <vehre@gmx.de>, Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/60289
+	Initial patch by Janus Weil
+	* resolve.c (resolve_allocate_expr): Add check for comp. only when 
+	target is not unlimited polymorphic.
+	* trans-stmt.c (gfc_trans_allocate): Assign correct value to _len
+	component of unlimited polymorphic entities.
+
+2015-01-29  Andre Vehreschild  <vehre@gmx.de>
+
+	* gfortran.dg/unlimited_polymorphic_22.f90: New test.
+
 2015-02-05  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/64943
