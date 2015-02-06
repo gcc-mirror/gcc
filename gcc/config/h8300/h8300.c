@@ -4384,7 +4384,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      info->cc_inline = CC_SET_ZNV;
 	      goto end;
 	    case SHIFT_ASHIFTRT:
-	      info->special = "mov.b\t%z0,%w0\n\tbld\t#7,%w0\n\tsubx\t%x0,%x0\n\tsubx\t%x0,%x0\n\tsubx\t%x0,%x0";
+	      info->special = "mov.b\t%z0,%w0\n\tbld\t#7,%w0\n\tsubx\t%x0,%x0\n\tsubx\t%y0,%y0\n\tsubx\t%z0,%z0";
 	      info->shift1  = "shar.b\t%w0";
 	      info->cc_inline = CC_SET_ZNV;
 	      goto end;
