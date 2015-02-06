@@ -188,7 +188,7 @@
 	    (match_code "symbol_ref" "000")
 	    (match_code "const_int" "001")
 	    (ior (match_test "TARGET_H8300S")
-		 (match_test "SYMBOL_REF_FLAG (XEXP (XEXP (XEXP (op, 0), 0), 0))")))
+		 (match_test "(SYMBOL_REF_FLAGS (XEXP (XEXP (XEXP (op, 0), 0), 0)) & SYMBOL_FLAG_EIGHTBIT_DATA) != 0")))
        (and (match_code "mem")
 	    (match_test "h8300_eightbit_constant_address_p (XEXP (op, 0))"))
        (and (match_code "mem")
