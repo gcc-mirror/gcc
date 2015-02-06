@@ -1,3 +1,8 @@
+2015-02-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr64317.c: Compile for 32bit *-*-linux* targets.
+	(dg-options): Use -fpie instead of -fPIE -pie.
+
 2015-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/64937
