@@ -1609,11 +1609,16 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	    }
 	  else if (!is_gimple_reg_type (restype))
 	    {
-	      restmp = resdecl;
+	      if (aggregate_value_p (resdecl, TREE_TYPE (thunk_fndecl)))
+		{
+		  restmp = resdecl;
 
-	      if (TREE_CODE (restmp) == VAR_DECL)
-		add_local_decl (cfun, restmp);
-	      BLOCK_VARS (DECL_INITIAL (current_function_decl)) = restmp;
+		  if (TREE_CODE (restmp) == VAR_DECL)
+		    add_local_decl (cfun, restmp);
+		  BLOCK_VARS (DECL_INITIAL (current_function_decl)) = restmp;
+		}
+	      else
+		restmp = create_tmp_var (restype, "retval");
 	    }
 	  else
 	    restmp = create_tmp_reg (restype, "retval");
