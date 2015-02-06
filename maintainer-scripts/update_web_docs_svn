@@ -233,10 +233,12 @@ done
 
 # Again, the jit is a special case, with nested subdirectories
 # below "jit", and with some non-HTML files (.png images from us,
-# plus .css and .js supplied by sphinx).
+# plus .css and .js supplied by sphinx, and source files, renamed
+# from .rst to .txt).
 find jit \
     -name "*.html" -o -name "*.png" \
-    -o -name "*.css" -o -name "*.js" |
+    -o -name "*.css" -o -name "*.js" \
+    -o -name "*.txt" |
   while read file ; do
     # Note that $file here will contain path fragments beginning
     # with "jit/", e.g. "jit/cp/topics/functions.html"
