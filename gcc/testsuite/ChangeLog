@@ -1,3 +1,9 @@
+2015-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/64957
+	PR debug/64817
+	* gcc.c-torture/execute/pr64957.c: New test.
+
 2015-02-05  Jeff Law  <law@redhat.com>
 
 	PR target/17306

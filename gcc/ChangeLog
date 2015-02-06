@@ -1,3 +1,10 @@
+2015-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/64957
+	PR debug/64817
+	* simplify-rtx.c (simplify_binary_operation_1): Use ~cval for
+	IOR rather than for AND.
+
 2015-02-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/62631
