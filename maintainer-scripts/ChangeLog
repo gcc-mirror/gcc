@@ -1,3 +1,9 @@
+2015-02-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64257
+	* update_web_docs_svn: When copying up files for the built jit
+	documentation, also copy up .txt files.
+
 2015-02-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/64257
