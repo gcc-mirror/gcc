@@ -1,3 +1,9 @@
+2015-02-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* lto-plugin.c (release_input_file): Removed.
+	(claim_file_handler): Don't call release_input_file.
+	(onload): Don't set release_input_file.
+
 2015-02-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* lto-plugin.c (claim_file_handler): Pass handle to
