@@ -1662,6 +1662,11 @@ process_options (void)
       flag_sanitize &= ~SANITIZE_ADDRESS;
     }
 
+ /* Do not use IPA optimizations for register allocation if profiler is active
+    or port does not emit prologue and epilogue as RTL.  */
+  if (profile_flag || !HAVE_prologue || !HAVE_epilogue)
+    flag_ipa_ra = 0;
+
   /* Enable -Werror=coverage-mismatch when -Werror and -Wno-error
      have not been set.  */
   if (!global_options_set.x_warnings_are_errors
@@ -1675,10 +1680,8 @@ process_options (void)
   optimization_default_node = build_optimization_node (&global_options);
   optimization_current_node = optimization_default_node;
 
- /* Disable use caller save optimization if profiler is active or port
-    does not emit prologue and epilogue as RTL.  */
-  if (profile_flag || !HAVE_prologue || !HAVE_epilogue)
-    flag_ipa_ra = 0;
+  /* Please don't change global_options after this point, those changes won't
+     be reflected in optimization_{default,current}_node.  */
 }
 
 /* This function can be called multiple times to reinitialize the compiler

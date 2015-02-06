@@ -1,5 +1,8 @@
 2015-02-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* toplev.c (process_options): Change flag_ipa_ra before creating
+	optimization_{default,current}_node.
+
 	PR ipa/64896
 	* cgraphunit.c (cgraph_node::expand_thunk): If
 	restype is not is_gimple_reg_type nor the thunk_fndecl
