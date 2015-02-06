@@ -1,3 +1,9 @@
+2015-02-05  Jeff Law  <law@redhat.com>
+
+	PR target/17306
+	* gcc.target/h8300/pr17306-1.c: New test.
+	* gcc.target/h8300/pr17306-2.c: New test.
+
 2015-02-05  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/64943

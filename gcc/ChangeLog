@@ -1,5 +1,14 @@
 2015-02-05  Jeff Law  <law@redhat.com>
 
+	PR target/17306
+	* config/h8300/constraints.md (U): Correctly dectect
+	"eightbit_data" memory addresses.
+	* config/h8300/h8300.c (eightbit_constant_address_p): Also
+	handle (const (plus (symbol_ref (x)))) where x is declared
+	as an 8-bit data memory address.
+	* config/h8300/h8300.md (call, call_value): Correctly detect
+	"funcvec" functions.
+
 	PR target/43264
 	* config/h8300/h8300.c (get_shift_alg): Fix ASHIFTRT by
 	24 to 28 bits for the H8/300.
