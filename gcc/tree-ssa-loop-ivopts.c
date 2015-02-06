@@ -3597,22 +3597,26 @@ get_shiftadd_cost (tree expr, machine_mode mode, comp_cost cost0,
   tree multop = TREE_OPERAND (mult, 0);
   int m = exact_log2 (int_cst_value (cst));
   int maxm = MIN (BITS_PER_WORD, GET_MODE_BITSIZE (mode));
-  int sa_cost;
-  bool equal_p = false;
+  int as_cost, sa_cost;
+  bool mult_in_op1;
 
   if (!(m >= 0 && m < maxm))
     return false;
 
-  if (operand_equal_p (op1, mult, 0))
-    equal_p = true;
+  mult_in_op1 = operand_equal_p (op1, mult, 0);
 
+  as_cost = add_cost (speed, mode) + shift_cost (speed, mode, m);
+
+  /* If the target has a cheap shift-and-add or shift-and-sub instruction,
+     use that in preference to a shift insn followed by an add insn.  */
   sa_cost = (TREE_CODE (expr) != MINUS_EXPR
              ? shiftadd_cost (speed, mode, m)
-             : (equal_p
+             : (mult_in_op1
                 ? shiftsub1_cost (speed, mode, m)
                 : shiftsub0_cost (speed, mode, m)));
-  res = new_cost (sa_cost, 0);
-  res = add_costs (res, equal_p ? cost0 : cost1);
+
+  res = new_cost (MIN (as_cost, sa_cost), 0);
+  res = add_costs (res, mult_in_op1 ? cost0 : cost1);
 
   STRIP_NOPS (multop);
   if (!is_gimple_val (multop))
