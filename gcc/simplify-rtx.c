@@ -2731,9 +2731,9 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  HOST_WIDE_INT xcval;
 
 	  if (op == IOR)
-	    xcval = cval;
-	  else
 	    xcval = ~cval;
+	  else
+	    xcval = cval;
 
 	  return simplify_gen_binary (XOR, mode,
 				      simplify_gen_binary (op, mode, a, c),
