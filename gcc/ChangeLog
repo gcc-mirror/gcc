@@ -1,3 +1,14 @@
+2015-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/64937
+	* dwarf2out.c (set_block_abstract_flags, set_decl_abstract_flags):
+	Replace setting argument with abstract_vec, always set BLOCK_ABSTRACT
+	or DECL_ABSTRACT_P flags to 1 rather than to setting, and if it wasn't
+	1 before, push it to abstract_vec.
+	(dwarf2out_abstract_function): Adjust caller.  Don't call
+	set_decl_abstract_flags second time, instead clear BLOCK_ABSTRACT or
+	DECL_ABSTRACT_P flags for all abstract_vec elts.
+
 2015-02-06  Renlin Li  <renlin.li@arm.com>
 
 	* tree-ssa-forwprop.c (execute): Keep location info while rewrite

@@ -1,3 +1,8 @@
+2015-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/64937
+	* g++.dg/asan/pr64937.C: New test.
+
 2015-02-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/63205
