@@ -1,3 +1,8 @@
+2015-02-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/64205
+	* gcc.target/powerpc/pr64205.c: New file.
+
 2015-02-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr64317.c: Compile for 32bit *-*-linux* targets.

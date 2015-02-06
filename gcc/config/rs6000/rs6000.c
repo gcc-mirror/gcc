@@ -2849,8 +2849,14 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	  reg_addr[DDmode].reload_load     = CODE_FOR_reload_dd_di_load;
 	  reg_addr[SFmode].reload_store    = CODE_FOR_reload_sf_di_store;
 	  reg_addr[SFmode].reload_load     = CODE_FOR_reload_sf_di_load;
-	  reg_addr[SDmode].reload_store    = CODE_FOR_reload_sd_di_store;
-	  reg_addr[SDmode].reload_load     = CODE_FOR_reload_sd_di_load;
+
+	  /* Only provide a reload handler for SDmode if lfiwzx/stfiwx are
+	     available.  */
+	  if (TARGET_NO_SDMODE_STACK)
+	    {
+	      reg_addr[SDmode].reload_store = CODE_FOR_reload_sd_di_store;
+	      reg_addr[SDmode].reload_load  = CODE_FOR_reload_sd_di_load;
+	    }
 
 	  if (TARGET_VSX_TIMODE)
 	    {
@@ -2903,8 +2909,14 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	  reg_addr[DDmode].reload_load     = CODE_FOR_reload_dd_si_load;
 	  reg_addr[SFmode].reload_store    = CODE_FOR_reload_sf_si_store;
 	  reg_addr[SFmode].reload_load     = CODE_FOR_reload_sf_si_load;
-	  reg_addr[SDmode].reload_store    = CODE_FOR_reload_sd_si_store;
-	  reg_addr[SDmode].reload_load     = CODE_FOR_reload_sd_si_load;
+
+	  /* Only provide a reload handler for SDmode if lfiwzx/stfiwx are
+	     available.  */
+	  if (TARGET_NO_SDMODE_STACK)
+	    {
+	      reg_addr[SDmode].reload_store = CODE_FOR_reload_sd_si_store;
+	      reg_addr[SDmode].reload_load  = CODE_FOR_reload_sd_si_load;
+	    }
 
 	  if (TARGET_VSX_TIMODE)
 	    {

@@ -1,3 +1,10 @@
+2015-02-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/64205
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Do not
+	add a general secondary reload handler for SDmode, unless we have
+	both read/write support for SDmode.
+
 2015-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/64937
@@ -23,7 +30,7 @@
 	(h8300_push_pop): Corresponding changes.
 	(h8300_expand_prologue): Likewise.
 	(h8300_swap_into_er6): Likewise.  Do not set RTX_FRAME_RELATED_P.
-		
+
 2015-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/64957
