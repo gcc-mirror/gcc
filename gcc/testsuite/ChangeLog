@@ -1,3 +1,51 @@
+2015-02-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64752
+	* jit.dg/create-code-for-hello-world-executable.h: New file, taken
+	from jit.dg/test-compile-to-executable.c's create_code, with a
+	clarification of the output message.
+	* jit.dg/harness.h (CHECK_NO_ERRORS): Add test and __func__ to the
+	pass/fail message.
+	(test_jit): Use CHECK_NO_ERRORS when calling
+	gcc_jit_context_compile_to_file.
+	* jit.dg/jit.exp (jit-dg-test): Update grep for rename of
+	jit-verify-compile-to-file to jit-verify-output-file-was-created.
+	(jit-setup-compile-to-file): Likewise.  Add a verbose comment
+	about deletions that are attempted.
+	(jit-verify-compile-to-file): Rename to...
+	(jit-verify-output-file-was-created): ...this, and drop the
+	attempt to run "file" and verify the output.
+	(jit-verify-assembler): New function.
+	(jit-verify-object): New function.
+	(jit-verify-dynamic-library): New function.
+	* jit.dg/test-compile-to-assembler.c (create_code): Eliminate in
+	favor of an implementation from new file
+	create-code-for-hello-world-executable.h, which also adds a
+	"main".
+	(dg-final): Replace jit-verify-compile-to-file with
+	jit-verify-output-file-was-created, and invoke new function
+	jit-verify-assembler.
+	* jit.dg/test-compile-to-dynamic-library.c (create_code): Clarify
+	the output message.
+	(dg-final): Replace jit-verify-compile-to-file with
+	jit-verify-output-file-was-created, and invoke new function
+	jit-verify-dynamic-library.
+	* jit.dg/test-compile-to-executable.c (create_code): Eliminate in
+	favor of an implementation from new file
+	create-code-for-hello-world-executable.h, which also adds a
+	"main".
+	(dg-final): Replace jit-verify-compile-to-file with
+	jit-verify-output-file-was-created.  Strengthen the expected stdout
+	from the built executable.
+	* jit.dg/test-compile-to-object.c (create_code): Eliminate in
+	favor of an implementation from new file
+	create-code-for-hello-world-executable.h, which also adds a
+	"main".
+	(dg-final): Replace jit-verify-compile-to-file with
+	jit-verify-output-file-was-created, and invoke new function
+	jit-verify-object.
+	* jit.dg/verify-dynamic-library.c: New source file.
+
 2015-02-06  Sebastian Pop  <s.pop@samsung.com>
 	    Brian Rzycki  <b.rzycki@samsung.com>
 

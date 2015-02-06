@@ -16,7 +16,7 @@ create_code (gcc_jit_context *ctxt, void *user_data)
      hello_world (const char *name)
      {
        // a test comment
-       printf ("hello %s\n", name);
+       printf ("hello from %s\n", name);
      }
   */
   gcc_jit_type *void_type =
@@ -44,7 +44,7 @@ create_code (gcc_jit_context *ctxt, void *user_data)
 				  1, &param_format,
 				  1);
   gcc_jit_rvalue *args[2];
-  args[0] = gcc_jit_context_new_string_literal (ctxt, "hello %s\n");
+  args[0] = gcc_jit_context_new_string_literal (ctxt, "hello from %s\n");
   args[1] = gcc_jit_param_as_rvalue (param_name);
 
   gcc_jit_block *block = gcc_jit_function_new_block (func, NULL);
@@ -62,4 +62,5 @@ create_code (gcc_jit_context *ctxt, void *user_data)
   gcc_jit_block_end_with_void_return (block, NULL);
 }
 
-/* { dg-final { jit-verify-compile-to-file "shared object.+dynamically linked" } } */
+/* { dg-final { jit-verify-output-file-was-created "" } } */
+/* { dg-final { jit-verify-dynamic-library "hello from ./verify-dynamic-library.c.exe" } } */
