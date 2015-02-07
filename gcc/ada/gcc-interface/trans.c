@@ -678,6 +678,11 @@ gigi (Node_Id gnat_root,
   if (No_Strict_Aliasing_CP)
     flag_strict_aliasing = 0;
 
+  /* Save the current optimization options again after the above possible
+     global_options changes.  */
+  optimization_default_node = build_optimization_node (&global_options);
+  optimization_current_node = optimization_default_node;
+
   /* Now translate the compilation unit proper.  */
   Compilation_Unit_to_gnu (gnat_root);
 

@@ -1,3 +1,9 @@
+2015-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/64340
+	* gcc-interface/trans.c (gigi): Recreate optimization_default_node
+	and optimization_current_node after tweaking global_options.
+
 2015-02-05  Robert Dewar  <dewar@adacore.com>
 
 	* prj-proc.adb, sem_aux.adb, exp_ch9.adb, errout.adb, prj-dect.adb,
