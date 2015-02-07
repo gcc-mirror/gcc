@@ -25,6 +25,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "io.h"
+#include "fbuf.h"
 #include "format.h"
 #include "unix.h"
 #include <assert.h>
@@ -1585,6 +1586,7 @@ list_formatted_write_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
       internal_error (&dtp->common, "list_formatted_write(): Bad type");
     }
 
+  fbuf_flush_list (dtp->u.p.current_unit, LIST_WRITING);
   dtp->u.p.char_flag = (type == BT_CHARACTER);
 }
 
