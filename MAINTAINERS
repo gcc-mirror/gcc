@@ -31,7 +31,6 @@ Michael Meissner				<gnu@the-meissners.org>
 Jason Merrill					<jason@redhat.com>
 David S. Miller					<davem@redhat.com>
 Joseph Myers					<joseph@codesourcery.com>
-Diego Novillo					<dnovillo@google.com>
 Bernd Schmidt					<bernds@codesourcery.com>
 Ian Lance Taylor				<ian@airs.com>
 Jim Wilson					<wilson@tuliptree.org>
@@ -226,7 +225,6 @@ build machinery (*.in)	Alexandre Oliva		<aoliva@redhat.com>
 build machinery (*.in)	Ralf Wildenhues		<Ralf.Wildenhues@gmx.de>
 docs co-maintainer	Gerald Pfeifer		<gerald@pfeifer.com>
 docs co-maintainer	Joseph Myers		<joseph@codesourcery.com>
-docstring relicensing	Diego Novillo		<dnovillo@google.com>
 docstring relicensing	Gerald Pfeifer		<gerald@pfeifer.com>
 docstring relicensing	Joseph Myers		<joseph@codesourcery.com>
 predict.def		Jan Hubicka		<hubicka@ucw.cz>
@@ -238,9 +236,7 @@ option handling		Joseph Myers		<joseph@codesourcery.com>
 middle-end		Jeff Law		<law@redhat.com>
 middle-end		Roger Sayle		<roger@eyesopen.com>
 middle-end		Ian Lance Taylor	<ian@airs.com>
-middle-end		Diego Novillo		<dnovillo@google.com>
 middle-end		Richard Biener		<rguenther@suse.de>
-tree-ssa		Diego Novillo		<dnovillo@google.com>
 tree-ssa		Andrew MacLeod		<amacleod@redhat.com>
 PRE			Daniel Berlin		<dberlin@dberlin.org>
 code sinking		Daniel Berlin		<dberlin@dberlin.org>
@@ -299,10 +295,8 @@ libsanitizer, asan.c	Kostya Serebryany	<kcc@google.com>
 libsanitizer, asan.c	Dmitry Vyukov		<dvyukov@google.com>
 loop optimizer		Zdenek Dvorak		<ook@ucw.cz>
 loop optimizer		Daniel Berlin		<dberlin@dberlin.org>
-LTO			Diego Novillo		<dnovillo@google.com>
 LTO			Richard Biener		<rguenther@suse.de>
 LTO plugin		Cary Coutant		<ccoutant@google.com>
-Plugin			Diego Novillo		<dnovillo@google.com>
 Plugin			Le-Chun Wu		<lcwu@google.com>
 register allocation	Peter Bergner		<bergner@vnet.ibm.com>
 register allocation	Kenneth Zadeck		<zadeck@naturalbridge.com>
@@ -503,6 +497,7 @@ Adam Nemet					<adambnemet@gmail.com>
 Thomas Neumann					<tneumann@users.sourceforge.net>
 Dan Nicolaescu					<dann@ics.uci.edu>
 James Norris					<jnorris@codesourcery.com>
+Diego Novillo					<dnovillo@google.com>
 Dorit Nuzman					<dorit@il.ibm.com>
 David O'Brien					<obrien@FreeBSD.org>
 Braden Obrzut					<admin@maniacsvault.net>
