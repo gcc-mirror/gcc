@@ -1154,7 +1154,7 @@ tSCC zAix_PthreadList[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zAix_PthreadSelect0[] =
-       "(#define [A-Za-z_0-9]+)(\\\\\n\
+       "(#define[\t ][A-Za-z_0-9]+)(\\\\\n\
 [^A-Za-z_0-9 \t\n\
 (])";
 
