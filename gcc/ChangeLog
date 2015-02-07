@@ -1,3 +1,10 @@
+2015-02-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR debug/2714
+	PR bootstrap/64256
+	* xcoffout.h (DBX_CONTIN_LENGTH): Define as 16384.
+	(DBX_CONTIN_CHAR): Define.
+
 2015-02-06  Sebastian Pop  <s.pop@samsung.com>
 	    Brian Rzycki  <b.rzycki@samsung.com>
 
