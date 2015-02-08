@@ -1736,6 +1736,7 @@ execute_split_functions (void)
        /* Local functions called once will be completely inlined most of time.  */
        || (!node->callers->next_caller && node->local.local))
       && !node->address_taken
+      && !node->has_aliases_p ()
       && (!flag_lto || !node->externally_visible))
     {
       if (dump_file)

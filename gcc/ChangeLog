@@ -1,6 +1,11 @@
 2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/63566 
+	* ipa-split.c (execute_split_functions): Split if function has aliases.
+
+2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/63566 
 	* cgraphunit.c (cgraph_node::analyze): Be sure target of thunk is
 	aliases before trying to expand it.
 	(cgraph_node::expand_thunk): Fix formating.
