@@ -580,8 +580,19 @@ cgraph_node::analyze (void)
 
   if (thunk.thunk_p)
     {
-      create_edge (cgraph_node::get (thunk.alias),
-		   NULL, 0, CGRAPH_FREQ_BASE);
+      cgraph_node *t = cgraph_node::get (thunk.alias);
+
+      create_edge (t, NULL, 0, CGRAPH_FREQ_BASE);
+      /* Target code in expand_thunk may need the thunk's target
+	 to be analyzed, so recurse here.  */
+      if (!t->analyzed)
+	t->analyze ();
+      if (t->alias)
+	{
+	  t = t->get_alias_target ();
+	  if (!t->analyzed)
+	    t->analyze ();
+	}
       if (!expand_thunk (false, false))
 	{
 	  thunk.alias = NULL;
@@ -1515,7 +1526,8 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       current_function_decl = thunk_fndecl;
 
       /* Ensure thunks are emitted in their correct sections.  */
-      resolve_unique_section (thunk_fndecl, 0, flag_function_sections);
+      resolve_unique_section (thunk_fndecl, 0,
+			      flag_function_sections);
 
       DECL_RESULT (thunk_fndecl)
 	= build_decl (DECL_SOURCE_LOCATION (thunk_fndecl),
@@ -1568,7 +1580,8 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       current_function_decl = thunk_fndecl;
 
       /* Ensure thunks are emitted in their correct sections.  */
-      resolve_unique_section (thunk_fndecl, 0, flag_function_sections);
+      resolve_unique_section (thunk_fndecl, 0,
+			      flag_function_sections);
 
       DECL_IGNORED_P (thunk_fndecl) = 1;
       bitmap_obstack_initialize (NULL);
