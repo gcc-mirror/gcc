@@ -1,3 +1,7 @@
+2015-02-08  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.c (gty_dummy): Delete.
+
 2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/63566 
