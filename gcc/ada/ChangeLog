@@ -1,5 +1,11 @@
 2015-02-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_param): Do not strip the padding
+	if the parameter either is passed by reference or if the alignment
+	would be lowered.
+
+2015-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (is_cplusplus_method): Use Is_Primitive flag to
 	detect primitive operations of tagged and untagged types.
 
