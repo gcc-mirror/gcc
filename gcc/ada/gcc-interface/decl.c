@@ -5510,16 +5510,17 @@ is_cplusplus_method (Entity_Id gnat_entity)
   if (Convention (gnat_entity) != Convention_CPP)
     return false;
 
-  /* This is the main case: C++ method imported as a primitive operation.  */
-  if (Is_Dispatching_Operation (gnat_entity))
+  /* This is the main case: C++ method imported as a primitive operation.
+     Note that a C++ class with no virtual functions can be imported as a
+     limited record type so the operation is not necessarily dispatching.  */
+  if (Is_Primitive (gnat_entity))
     return true;
 
   /* A thunk needs to be handled like its associated primitive operation.  */
   if (Is_Subprogram (gnat_entity) && Is_Thunk (gnat_entity))
     return true;
 
-  /* C++ classes with no virtual functions can be imported as limited
-     record types, but we need to return true for the constructors.  */
+  /* A constructor is a method on the C++ side.  */
   if (Is_Constructor (gnat_entity))
     return true;
 
