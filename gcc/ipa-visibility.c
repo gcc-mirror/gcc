@@ -104,14 +104,15 @@ along with GCC; see the file COPYING3.  If not see
 bool
 cgraph_node::non_local_p (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
-   /* FIXME: Aliases can be local, but i386 gets thunks wrong then.  */
-   return !(node->only_called_directly_or_aliased_p ()
-	    && !node->has_aliases_p ()
-	    && node->definition
-	    && !DECL_EXTERNAL (node->decl)
-	    && !node->externally_visible
-	    && !node->used_from_other_partition
-	    && !node->in_other_partition);
+  return !(node->only_called_directly_or_aliased_p ()
+	   /* i386 would need update to output thunk with locak calling
+	      ocnvetions.  */
+	   && !node->thunk.thunk_p
+	   && node->definition
+	   && !DECL_EXTERNAL (node->decl)
+	   && !node->externally_visible
+	   && !node->used_from_other_partition
+	   && !node->in_other_partition);
 }
 
 /* Return true when function can be marked local.  */
@@ -121,12 +122,10 @@ cgraph_node::local_p (void)
 {
    cgraph_node *n = ultimate_alias_target ();
 
-   /* FIXME: thunks can be considered local, but we need prevent i386
-      from attempting to change calling convention of them.  */
    if (n->thunk.thunk_p)
-     return false;
+     return n->callees->callee->local_p ();
    return !n->call_for_symbol_thunks_and_aliases (cgraph_node::non_local_p,
-						NULL, true);
+						  NULL, true);
 					
 }
 
