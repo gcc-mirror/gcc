@@ -20,5 +20,5 @@ foo ()
 /* See PR63679 and PR64159, if the target forces the initializer to memory then
    DOM is not able to perform this optimization.  */
 
-/* { dg-final { scan-tree-dump "return 28;" "optimized" { xfail hppa*-*-* powerpc*-*-* sparc*-*-*} } } */
+/* { dg-final { scan-tree-dump "return 28;" "optimized" { xfail hppa*-*-* powerpc*-*-* sparc*-*-* aarch64*-*-* } } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

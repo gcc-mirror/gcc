@@ -1,3 +1,7 @@
+2015-02-08  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: xfail for AARCH64 also.
+
 2015-02-08  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/63744
