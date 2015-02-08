@@ -1,6 +1,16 @@
 2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/63566 
+	* i386.c (ix86_function_regparm): Look through aliases to see if callee
+	is local and optimized.
+	(ix86_function_sseregparm): Likewise; also use target's SSE math
+	settings; error out instead of silently generating wrong code
+	on mismatches.
+	(init_cumulative_args): Look through aliases.
+
+2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/63566 
 	* ipa-split.c (execute_split_functions): Split if function has aliases.
 
 2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
