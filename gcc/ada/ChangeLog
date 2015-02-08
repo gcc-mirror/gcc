@@ -1,3 +1,8 @@
+2015-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (begin_subprog_body): Assert that the body is
+	present in the same context as the declaration.
+
 2015-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/64340
