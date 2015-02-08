@@ -1,5 +1,10 @@
 2015-02-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (is_cplusplus_method): Use Is_Primitive flag to
+	detect primitive operations of tagged and untagged types.
+
+2015-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not bother about alias
 	sets in presence of derivation for subprogram types.
 
