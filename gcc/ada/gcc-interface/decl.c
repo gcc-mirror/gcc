@@ -5138,7 +5138,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 to conflict with Comp2 and an alias set copy is required.
 
 	 The language rules ensure the parent type is already frozen here.  */
-      if (Is_Derived_Type (gnat_entity) && !type_annotate_only)
+      if (kind != E_Subprogram_Type
+	  && Is_Derived_Type (gnat_entity)
+	  && !type_annotate_only)
 	{
 	  Entity_Id gnat_parent_type = Underlying_Type (Etype (gnat_entity));
 	  /* For constrained packed array subtypes, the implementation type is
