@@ -8785,8 +8785,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
       /* If value is a compound literal and we'll be just using its
 	 content, don't put it into a SAVE_EXPR.  */
       if (TREE_CODE (value.value) != COMPOUND_LITERAL_EXPR
-	  || !require_constant_value
-	  || flag_isoc99)
+	  || !require_constant_value)
 	{
 	  tree semantic_type = NULL_TREE;
 	  if (TREE_CODE (value.value) == EXCESS_PRECISION_EXPR)
