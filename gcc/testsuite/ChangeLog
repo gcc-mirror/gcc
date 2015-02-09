@@ -1,3 +1,7 @@
+2015-02-09  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/graphite/scop-19.c: Fix scan-tree-dump for fpic.
+
 2015-02-09  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/ipa/pr64858.C: New test.
