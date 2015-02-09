@@ -1,5 +1,21 @@
 2015-02-09  Richard Biener  <rguenther@suse.de>
 
+	* tree-streamer.h (streamer_pack_tree_bitfields): Remove.
+	(streamer_write_tree_bitfields): Declare.
+	* tree-streamer-in.c (unpack_ts_base_value_fields): Inline,
+	properly unpack padding.
+	(unpack_value_fields): Inline ...
+	(streamer_read_tree_bitfields): ... here.
+	* tree-streamer-out.c (pack_ts_base_value_fields): Inline
+	and properly add padding bits.
+	(streamer_pack_tree_bitfields): Fold into ...
+	(streamer_write_tree_bitfields): ... this new function,
+	exposing the bitpack object.
+	* lto-streamer-out.c (lto_write_tree_1): Call
+	streamer_write_tree_bitfields.
+
+2015-02-09  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/54000
 	* tree-ssa-looo-ivopts.c: Include tree-vectorizer.h.
 	(struct ivopts_data): Add loop_loc member.
