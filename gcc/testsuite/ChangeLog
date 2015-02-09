@@ -1,3 +1,8 @@
+2015-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/64981
+	* gcc.dg/asan/pr64981.c: New test.
+
 2015-02-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64856
