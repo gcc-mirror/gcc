@@ -1222,7 +1222,7 @@ add_type_duplicate (odr_type val, tree type)
     {
       bool merge = true;
       bool base_mismatch = false;
-      unsigned int i,j;
+      unsigned int i;
       bool warned = false;
       hash_set<type_pair,pair_traits> visited;
 
@@ -1321,10 +1321,12 @@ add_type_duplicate (odr_type val, tree type)
 		    break;
 		  }
 	      }
+#ifdef ENABLE_CHECKING
 	  /* Sanity check that all bases will be build same way again.  */
 	  if (!base_mismatch && val->bases.length ())
 	    {
 	      unsigned int num_poly_bases = 0;
+	      unsigned int j;
 
 	      for (i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (type)); i++)
 		if (polymorphic_type_binfo_p (BINFO_BASE_BINFO
@@ -1345,6 +1347,7 @@ add_type_duplicate (odr_type val, tree type)
 		    j++;
 		  }
 	    }
+#endif
 	  if (base_mismatch)
 	    {
 	      merge = false;
