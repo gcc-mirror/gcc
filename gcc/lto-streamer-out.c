@@ -385,9 +385,7 @@ lto_write_tree_1 (struct output_block *ob, tree expr, bool ref_p)
 {
   /* Pack all the non-pointer fields in EXPR into a bitpack and write
      the resulting bitpack.  */
-  bitpack_d bp = bitpack_create (ob->main_stream);
-  streamer_pack_tree_bitfields (ob, &bp, expr);
-  streamer_write_bitpack (&bp);
+  streamer_write_tree_bitfields (ob, expr);
 
   /* Write all the pointer fields in EXPR.  */
   streamer_write_tree_body (ob, expr, ref_p);

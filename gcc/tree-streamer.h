@@ -85,8 +85,7 @@ void streamer_write_string_cst (struct output_block *,
 				struct lto_output_stream *, tree);
 void streamer_write_chain (struct output_block *, tree, bool);
 void streamer_write_tree_header (struct output_block *, tree);
-void streamer_pack_tree_bitfields (struct output_block *, struct bitpack_d *,
-				   tree);
+void streamer_write_tree_bitfields (struct output_block *, tree);
 void streamer_write_tree_body (struct output_block *, tree, bool);
 void streamer_write_integer_cst (struct output_block *, tree, bool);
 void streamer_write_builtin (struct output_block *, tree);
