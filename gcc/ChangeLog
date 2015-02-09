@@ -1,3 +1,9 @@
+2015-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/64979
+	* tree-stdarg.c (pass_stdarg::execute): Scan phi node args for
+	va_list escapes.
+
 2015-02-09  Richard Biener  <rguenther@suse.de>
 
 	* genmatch.c (replace_id): Copy expr_type.

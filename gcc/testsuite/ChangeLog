@@ -1,4 +1,10 @@
-2015-02-29  Alan Lawrence  <alan.lawrence@arm.com>
+2015-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/64979
+	* gcc.dg/tree-ssa/stdarg-7.c: New test.
+	* gcc.c-torture/execute/pr64979.c: New test.
+
+2015-02-09  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/arm/macro_defs0.c: Remove extraneous "target"
 
