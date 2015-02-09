@@ -2245,9 +2245,6 @@ extern int current_function_interrupt;
 #define EPILOGUE_USES(REGNO) ((TARGET_SH2E || TARGET_SH4) \
 			      && (REGNO) == FPSCR_REG)
 
-#define MD_CAN_REDIRECT_BRANCH(INSN, SEQ) \
-  sh_can_redirect_branch ((INSN), (SEQ))
-
 #define DWARF_FRAME_RETURN_COLUMN \
   (TARGET_SH5 ? DWARF_FRAME_REGNUM (PR_MEDIA_REG) : DWARF_FRAME_REGNUM (PR_REG))
 

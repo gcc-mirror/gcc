@@ -148,7 +148,6 @@ extern enum tls_model tls_symbolic_operand (rtx, machine_mode);
 extern bool system_reg_operand (rtx, machine_mode);
 extern bool reg_unused_after (rtx, rtx_insn *);
 extern int sh_insn_length_adjustment (rtx_insn *);
-extern bool sh_can_redirect_branch (rtx_insn *, rtx_insn *);
 extern void sh_expand_unop_v2sf (enum rtx_code, rtx, rtx);
 extern void sh_expand_binop_v2sf (enum rtx_code, rtx, rtx, rtx);
 extern bool sh_expand_t_scc (rtx *);

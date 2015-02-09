@@ -1156,13 +1156,11 @@ steal_delay_list_from_target (rtx_insn *insn, rtx condition, rtx_sequence *seq,
       || ! single_set (seq->insn (0)))
     return delay_list;
 
-#ifdef MD_CAN_REDIRECT_BRANCH
   /* On some targets, branches with delay slots can have a limited
      displacement.  Give the back end a chance to tell us we can't do
      this.  */
-  if (! MD_CAN_REDIRECT_BRANCH (insn, seq->insn (0)))
+  if (! targetm.can_follow_jump (insn, seq->insn (0)))
     return delay_list;
-#endif
 
   redundant = XALLOCAVEC (bool, XVECLEN (seq, 0));
   for (i = 1; i < seq->len (); i++)

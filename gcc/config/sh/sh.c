@@ -277,6 +277,7 @@ static int sh_variable_issue (FILE *, int, rtx_insn *, int);
 static bool sh_function_ok_for_sibcall (tree, tree);
 
 static bool sh_cannot_modify_jumps_p (void);
+static bool sh_can_follow_jump (const rtx_insn *, const rtx_insn *);
 static reg_class_t sh_target_reg_class (void);
 static bool sh_optimize_target_register_callee_saved (bool);
 static bool sh_ms_bitfield_layout_p (const_tree);
@@ -512,6 +513,8 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef TARGET_CANNOT_MODIFY_JUMPS_P
 #define TARGET_CANNOT_MODIFY_JUMPS_P sh_cannot_modify_jumps_p
+#undef TARGET_CAN_FOLLOW_JUMP
+#define TARGET_CAN_FOLLOW_JUMP sh_can_follow_jump
 #undef TARGET_BRANCH_TARGET_REGISTER_CLASS
 #define TARGET_BRANCH_TARGET_REGISTER_CLASS sh_target_reg_class
 #undef TARGET_BRANCH_TARGET_REGISTER_CALLEE_SAVED
@@ -10822,8 +10825,8 @@ mark_constant_pool_use (rtx x)
 /* Return true if it's possible to redirect BRANCH1 to the destination
    of an unconditional jump BRANCH2.  We only want to do this if the
    resulting branch will have a short displacement.  */
-bool
-sh_can_redirect_branch (rtx_insn *branch1, rtx_insn *branch2)
+static bool
+sh_can_follow_jump (const rtx_insn *branch1, const rtx_insn *branch2)
 {
   if (flag_expensive_optimizations && simplejump_p (branch2))
     {

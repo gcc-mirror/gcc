@@ -1,3 +1,16 @@
+2015-02-09  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/64761
+	* config/sh/sh-protos.h (sh_can_redirect_branch): Don't declare.
+	* config/sh/sh.c (TARGET_CAN_FOLLOW_JUMP): Redefine.
+	(sh_can_redirect_branch): Rename to ...
+	(sh_can_follow_jump): ... this.  Constify argument types.
+	* config/sh/sh.h (MD_CAN_REDIRECT_BRANCH): Don't define.
+	* doc/tm.texi.in (MD_CAN_REDIRECT_BRANCH): Remove documentation.
+	* reorg.c (steal_delay_list_from_target): Use targetm.can_follow_jump.
+	* doc/tm.texi: Regenerate.
+
 2015-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/64981
