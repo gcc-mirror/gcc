@@ -138,6 +138,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-address.h"
 #include "builtins.h"
+#include "tree-vectorizer.h"
 
 /* FIXME: Expressions are expanded to RTL in this pass to determine the
    cost of different addressing modes.  This should be moved to a TBD
@@ -318,6 +319,7 @@ struct ivopts_data
 {
   /* The currently optimized loop.  */
   struct loop *current_loop;
+  source_location loop_loc;
 
   /* Numbers of iterations for all exits of the current loop.  */
   hash_map<edge, tree_niter_desc *> *niters;
@@ -6340,7 +6342,12 @@ create_new_ivs (struct ivopts_data *data, struct iv_ca *set)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "\nSelected IV set: \n");
+      fprintf (dump_file, "Selected IV set for loop %d",
+	       data->current_loop->num);
+      if (data->loop_loc != UNKNOWN_LOCATION)
+	fprintf (dump_file, " at %s:%d", LOCATION_FILE (data->loop_loc),
+		 LOCATION_LINE (data->loop_loc));
+      fprintf (dump_file, ", %lu IVs:\n", bitmap_count_bits (set->cands));
       EXECUTE_IF_SET_IN_BITMAP (set->cands, 0, i, bi)
         {
           cand = iv_cand (data, i);
@@ -6943,11 +6950,16 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
 
   gcc_assert (!data->niters);
   data->current_loop = loop;
+  data->loop_loc = find_loop_location (loop);
   data->speed = optimize_loop_for_speed_p (loop);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "Processing loop %d\n", loop->num);
+      fprintf (dump_file, "Processing loop %d", loop->num);
+      if (data->loop_loc != UNKNOWN_LOCATION)
+	fprintf (dump_file, " at %s:%d", LOCATION_FILE (data->loop_loc),
+		 LOCATION_LINE (data->loop_loc));
+      fprintf (dump_file, "\n");
 
       if (exit)
 	{
