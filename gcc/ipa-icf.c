@@ -584,6 +584,16 @@ sem_function::equals_private (sem_item *item,
   return result;
 }
 
+/* Set LOCAL_P of NODE to true if DATA is non-NULL.
+   Helper for call_for_symbol_thunks_and_aliases.  */
+
+static bool
+set_local (cgraph_node *node, void *data)
+{
+  node->local.local = data != NULL;
+  return false;
+}
+
 /* Merges instance with an ALIAS_ITEM, where alias, thunk or redirection can
    be applied.  */
 bool
@@ -743,10 +753,8 @@ sem_function::merge (sem_item *alias_item)
       cgraph_node::create_alias (alias_func->decl, decl);
       alias->resolve_alias (original);
 
-      /* Workaround for PR63566 that forces equal calling convention
-       to be used.  */
-      alias->local.local = false;
-      original->local.local = false;
+      original->call_for_symbol_thunks_and_aliases
+	 (set_local, (void *)(size_t) original->local_p (), true);
 
       if (dump_file)
 	fprintf (dump_file, "Callgraph alias has been created.\n\n");

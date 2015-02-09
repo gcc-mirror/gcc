@@ -1,5 +1,11 @@
 2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/63566 
+	* ipa-icf.c (set_local): New function.
+	(sem_function::merge): Use it.
+
+2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-devirt.c (odr_types_equivalent_p): Fix formating.
 	(add_type_duplicate): Fix comparison of BINFOs.
 
