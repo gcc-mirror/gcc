@@ -1,5 +1,9 @@
 2015-02-09  Richard Biener  <rguenther@suse.de>
 
+	* genmatch.c (replace_id): Copy expr_type.
+
+2015-02-09  Richard Biener  <rguenther@suse.de>
+
 	* tree-streamer.h (streamer_pack_tree_bitfields): Remove.
 	(streamer_write_tree_bitfields): Declare.
 	* tree-streamer-in.c (unpack_ts_base_value_fields): Inline,
