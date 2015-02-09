@@ -1,3 +1,8 @@
+2015-02-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/58757
+	* gcc.dg/c11-true_min-1.c: Xfail execution for alpha*-*-*.
+
 2015-02-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/54000
@@ -22,7 +27,7 @@
 2015-02-08  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/63744
-	gfortran.dg/use_rename_8.f90: New.
+	* gfortran.dg/use_rename_8.f90: New.
 
 2015-02-08  Eric Botcazou  <ebotcazou@adacore.com>
 
