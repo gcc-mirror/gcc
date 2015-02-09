@@ -11107,17 +11107,6 @@ loops containing function calls or branch on table instructions.
 Take an instruction in @var{insn} and return @code{false} if the instruction is not appropriate as a combination of two or more instructions.  The default is to accept all instructions.
 @end deftypefn
 
-@defmac MD_CAN_REDIRECT_BRANCH (@var{branch1}, @var{branch2})
-
-Take a branch insn in @var{branch1} and another in @var{branch2}.
-Return true if redirecting @var{branch1} to the destination of
-@var{branch2} is possible.
-
-On some targets, branches may have a limited range.  Optimizing the
-filling of delay slots can result in branches being redirected, and this
-may in turn cause a branch offset to overflow.
-@end defmac
-
 @deftypefn {Target Hook} bool TARGET_CAN_FOLLOW_JUMP (const rtx_insn *@var{follower}, const rtx_insn *@var{followee})
 FOLLOWER and FOLLOWEE are JUMP_INSN instructions;  return true if FOLLOWER may be modified to follow FOLLOWEE;  false, if it can't.  For example, on some targets, certain kinds of branches can't be made to  follow through a hot/cold partitioning.
 @end deftypefn
