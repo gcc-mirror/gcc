@@ -1,3 +1,7 @@
+2015-02-29  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/arm/macro_defs0.c: Remove extraneous "target"
+
 2015-02-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: Xfail scan-tree-dump for alpha*-*-*.
