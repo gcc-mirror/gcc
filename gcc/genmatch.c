@@ -982,6 +982,7 @@ replace_id (operand *o, user_id *id, id_base *with)
     {
       expr *ne = new expr (e->operation == id ? with : e->operation,
 			   e->is_commutative);
+      ne->expr_type = e->expr_type;
       for (unsigned i = 0; i < e->ops.length (); ++i)
 	ne->append_op (replace_id (e->ops[i], id, with));
       return ne;
