@@ -1,16 +1,23 @@
 /* Functional tests for the function hotpatching feature.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O3 -mzarch -mhotpatch=0,2 --save-temps" } */
+/* { dg-options "-O3 -mzarch -mhotpatch=1,2 --save-temps" } */
 
 #include <stdio.h>
 
-void hp1(void)
+/* { dg-prune-output "always_inline function might not be inlinable" } */
+__attribute__ ((always_inline))
+static void hp2(void)
 {
   printf("hello, world!\n");
 }
 
+void hp1(void)
+{
+  hp2();
+}
+
 /* Check number of occurences of certain instructions.  */
-/* { dg-final { scan-assembler-not "nopr\t%r7" } } */
+/* { dg-final { scan-assembler-times "nopr\t%r7" 1 } } */
 /* { dg-final { scan-assembler-times "nop\t0" 1 } } */
 /* { dg-final { scan-assembler-not "brcl\t\t0,0" } } */

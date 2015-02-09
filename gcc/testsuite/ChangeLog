@@ -1,3 +1,44 @@
+2015-02-09  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc/testsuite/gcc.target/s390/hotpatch-13.c: New testcase.
+	* gcc/testsuite/gcc.target/s390/hotpatch-14.c: New testcase.
+	* gcc/testsuite/gcc.target/s390/hotpatch-15.c: New testcase.
+	* gcc/testsuite/gcc.target/s390/hotpatch-16.c: New testcase.
+	* gcc/testsuite/gcc.target/s390/hotpatch-17.c: New testcase.
+	* gcc/testsuite/gcc.target/s390/hotpatch-18.c: New testcase.
+	* gcc/testsuite/gcc.target/s390/hotpatch-19.c: New testcase.
+	* gcc/testsuite/gcc.target/s390/hotpatch-20.c: New testcase.
+	* gcc/testsuite/gcc.target/s390/hotpatch-compile-10.c: New testcase.
+	* gcc/testsuite/gcc.target/s390/hotpatch-compile-11.c: New testcase.
+	* gcc/testsuite/gcc.target/s390/hotpatch-compile-12.c: New testcase.
+	* gcc/testsuite/gcc.target/s390/hotpatch-compile-13.c: New testcase.
+	* gcc/testsuite/gcc.target/s390/hotpatch-compile-14.c: New testcase.
+	* gcc/testsuite/gcc.target/s390/hotpatch-compile-15.c: New testcase.
+	* gcc/testsuite/gcc.target/s390/hotpatch-compile-16.c: New testcase.
+	* gcc/testsuite/gcc.target/s390/hotpatch-compile-9.c: New
+	testcase.
+	* gcc/testsuite/gcc.target/s390/hotpatch-1.c: Testcase adjusted to
+	new -mhotpatch.
+	* gcc/testsuite/gcc.target/s390/hotpatch-10.c: Likewise.
+	* gcc/testsuite/gcc.target/s390/hotpatch-11.c: Likewise.
+	* gcc/testsuite/gcc.target/s390/hotpatch-12.c: Likewise.
+	* gcc/testsuite/gcc.target/s390/hotpatch-2.c: Likewise.
+	* gcc/testsuite/gcc.target/s390/hotpatch-3.c: Likewise.
+	* gcc/testsuite/gcc.target/s390/hotpatch-4.c: Likewise.
+	* gcc/testsuite/gcc.target/s390/hotpatch-5.c: Likewise.
+	* gcc/testsuite/gcc.target/s390/hotpatch-6.c: Likewise.
+	* gcc/testsuite/gcc.target/s390/hotpatch-7.c: Likewise.
+	* gcc/testsuite/gcc.target/s390/hotpatch-8.c: Likewise.
+	* gcc/testsuite/gcc.target/s390/hotpatch-9.c: Likewise.
+	* gcc/testsuite/gcc.target/s390/hotpatch-compile-1.c: Likewise.
+	* gcc/testsuite/gcc.target/s390/hotpatch-compile-2.c: Likewise.
+	* gcc/testsuite/gcc.target/s390/hotpatch-compile-3.c: Likewise.
+	* gcc/testsuite/gcc.target/s390/hotpatch-compile-4.c: Likewise.
+	* gcc/testsuite/gcc.target/s390/hotpatch-compile-5.c: Likewise.
+	* gcc/testsuite/gcc.target/s390/hotpatch-compile-6.c: Likewise.
+	* gcc/testsuite/gcc.target/s390/hotpatch-compile-7.c: Likewise.
+	* gcc/testsuite/gcc.target/s390/hotpatch-compile-8.c: Likewise.
+
 2015-02-04  Matthias Klose  <doko@ubuntu.com>
 
 	Backport from mainline
