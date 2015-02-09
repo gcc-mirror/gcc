@@ -1,3 +1,9 @@
+2015-02-09  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.c (sem_item_optimizer::register_hooks): Register hooks
+	just if not yet registered.
+	(ipa_icf_generate_summary): Register callgraph hooks.
+
 2015-02-08  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64.c (gty_dummy): Delete.

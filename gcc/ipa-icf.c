@@ -1562,11 +1562,13 @@ sem_item_optimizer::read_summary (void)
 void
 sem_item_optimizer::register_hooks (void)
 {
-  m_cgraph_node_hooks = symtab->add_cgraph_removal_hook
-			(&sem_item_optimizer::cgraph_removal_hook, this);
+  if (!m_cgraph_node_hooks)
+    m_cgraph_node_hooks = symtab->add_cgraph_removal_hook
+			  (&sem_item_optimizer::cgraph_removal_hook, this);
 
-  m_varpool_node_hooks = symtab->add_varpool_removal_hook
-			 (&sem_item_optimizer::varpool_removal_hook, this);
+  if (!m_varpool_node_hooks)
+    m_varpool_node_hooks = symtab->add_varpool_removal_hook
+			   (&sem_item_optimizer::varpool_removal_hook, this);
 }
 
 /* Unregister callgraph and varpool hooks.  */
@@ -2438,6 +2440,7 @@ ipa_icf_generate_summary (void)
   if (!optimizer)
     optimizer = new sem_item_optimizer ();
 
+  optimizer->register_hooks ();
   optimizer->parse_funcs_and_vars ();
 }
 
