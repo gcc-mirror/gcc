@@ -1,3 +1,7 @@
+2015-02-09  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ipa/pr64858.C: New test.
+
 2015-02-09  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/uninit-19.c: Fix warning line for fpic.
