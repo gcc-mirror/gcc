@@ -1,3 +1,11 @@
+2015-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/54000
+	* tree-ssa-looo-ivopts.c: Include tree-vectorizer.h.
+	(struct ivopts_data): Add loop_loc member.
+	(tree_ssa_iv_optimize_loop): Dump loop location.
+	(create_new_ivs): Likewise, also dump number of IVs generated.
+
 2015-02-09  Martin Liska  <mliska@suse.cz>
 
 	* ipa-icf.c (sem_item_optimizer::register_hooks): Register hooks
