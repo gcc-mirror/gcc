@@ -3539,7 +3539,9 @@ build_vec_init (tree base, tree maxindex, tree init,
   /* Should we try to create a constant initializer?  */
   bool try_const = (TREE_CODE (atype) == ARRAY_TYPE
 		    && TREE_CONSTANT (maxindex)
-		    && init && TREE_CODE (init) == CONSTRUCTOR
+		    && (init ? TREE_CODE (init) == CONSTRUCTOR
+			: (type_has_constexpr_default_constructor
+			   (inner_elt_type)))
 		    && (literal_type_p (inner_elt_type)
 			|| TYPE_HAS_CONSTEXPR_CTOR (inner_elt_type)));
   vec<constructor_elt, va_gc> *const_vec = NULL;
@@ -3677,6 +3679,12 @@ build_vec_init (tree base, tree maxindex, tree init,
 
      We do need to keep going if we're copying an array.  */
 
+  if (try_const && !init)
+    /* With a constexpr default constructor, which we checked for when
+       setting try_const above, default-initialization is equivalent to
+       value-initialization, and build_value_init gives us something more
+       friendly to maybe_constant_init.  */
+    explicit_value_init_p = true;
   if (from_array
       || ((type_build_ctor_call (type) || init || explicit_value_init_p)
 	  && ! (tree_fits_shwi_p (maxindex)
@@ -3781,6 +3789,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 
       if (try_const)
 	{
+	  /* FIXME refs to earlier elts */
 	  tree e = maybe_constant_init (elt_init);
 	  if (reduced_constant_expression_p (e))
 	    {
@@ -3795,6 +3804,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 	      saw_non_const = true;
 	      if (do_static_init)
 		e = build_zero_init (TREE_TYPE (e), NULL_TREE, true);
+	      else
+		e = NULL_TREE;
 	    }
 
 	  if (e)
