@@ -807,7 +807,8 @@ warn_types_mismatch (tree t1, tree t2)
    gimple_canonical_types_compatible_p.  */
 
 static bool
-odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned, hash_set<type_pair,pair_traits> *visited)
+odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
+			hash_set<type_pair,pair_traits> *visited)
 {
   /* Check first for the obvious case of pointer identity.  */
   if (t1 == t2)
@@ -1206,8 +1207,8 @@ add_type_duplicate (odr_type val, tree type)
     val->types_set = new hash_set<tree>;
 
   /* Always prefer complete type to be the leader.  */
-  if (!COMPLETE_TYPE_P (val->type)
-      && COMPLETE_TYPE_P (type))
+  if ((!COMPLETE_TYPE_P (val->type) || !TYPE_BINFO (val->type))
+      && (COMPLETE_TYPE_P (type) && TYPE_BINFO (val->type)))
     {
       tree tmp = type;
 
@@ -1229,7 +1230,8 @@ add_type_duplicate (odr_type val, tree type)
       vec_safe_push (val->types, type);
 
       /* First we compare memory layout.  */
-      if (!odr_types_equivalent_p (val->type, type, !flag_ltrans && !val->odr_violated,
+      if (!odr_types_equivalent_p (val->type, type,
+				   !flag_ltrans && !val->odr_violated,
 				   &warned, &visited))
 	{
 	  merge = false;
@@ -1253,31 +1255,105 @@ add_type_duplicate (odr_type val, tree type)
 	  && TREE_CODE (type) == RECORD_TYPE
 	  && TYPE_BINFO (val->type) && TYPE_BINFO (type))
 	{
-	  for (j = 0, i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (type)); i++)
-	    if (polymorphic_type_binfo_p (BINFO_BASE_BINFO (TYPE_BINFO (type), i)))
+	  if (BINFO_N_BASE_BINFOS (TYPE_BINFO (type))
+	      != BINFO_N_BASE_BINFOS (TYPE_BINFO (val->type)))
+	    {
+	      if (!warned && !val->odr_violated)
+		{
+		  tree extra_base;
+		  warn_odr (type, val->type, NULL, NULL, !warned, &warned,
+			    "a type with the same name but different "
+			    "number of polymorphic bases is "
+			    "defined in another translation unit");
+		  if (BINFO_N_BASE_BINFOS (TYPE_BINFO (type))
+		      > BINFO_N_BASE_BINFOS (TYPE_BINFO (val->type)))
+		    extra_base = BINFO_BASE_BINFO
+				 (TYPE_BINFO (type),
+				  BINFO_N_BASE_BINFOS (TYPE_BINFO (val->type)));
+		  else
+		    extra_base = BINFO_BASE_BINFO
+				 (TYPE_BINFO (val->type),
+				  BINFO_N_BASE_BINFOS (TYPE_BINFO (type)));
+		  inform (DECL_SOURCE_LOCATION 
+			    (TYPE_NAME (DECL_CONTEXT (extra_base))),
+			  "the extra base is defined here ");
+		}
+	      base_mismatch = true;
+	    }
+	  else
+	    for (i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (type)); i++)
 	      {
-		odr_type base = get_odr_type
-				   (BINFO_TYPE
-				      (BINFO_BASE_BINFO (TYPE_BINFO (type),
-							 i)),
-				    true);
-		if (val->bases.length () <= j || val->bases[j] != base)
-		  base_mismatch = true;
-		j++;
+		tree base1 = BINFO_BASE_BINFO (TYPE_BINFO (type), i);
+		tree base2 = BINFO_BASE_BINFO (TYPE_BINFO (val->type), i);
+		tree type1 = BINFO_TYPE (base1);
+		tree type2 = BINFO_TYPE (base2);
+
+		if (types_odr_comparable (type1, type2))
+		  {
+		    if (!types_same_for_odr (type1, type2))
+		      base_mismatch = true;
+		  }
+		else
+		  {
+		    hash_set<type_pair,pair_traits> visited;
+		    if (!odr_types_equivalent_p (type1, type2, false, NULL,
+						 &visited))
+		      base_mismatch = true;
+		  }
+		if (base_mismatch)
+		  {
+		    if (!warned && !val->odr_violated)
+		      warn_odr (type, val->type, NULL, NULL,
+				!warned, &warned,
+				"a type with the same name but different base "
+				"type is defined in another translation unit");
+		    warn_types_mismatch (type1, type2);
+		    break;
+		  }
+		if (BINFO_OFFSET (base1) != BINFO_OFFSET (base2))
+		  {
+		    base_mismatch = true;
+		    if (!warned && !val->odr_violated)
+		      warn_odr (type, val->type, NULL, NULL,
+				!warned, &warned,
+				"a type with the same name but different base "
+				"layout is defined in another translation unit");
+		    break;
+		  }
 	      }
+	  /* Sanity check that all bases will be build same way again.  */
+	  if (!base_mismatch && val->bases.length ())
+	    {
+	      unsigned int num_poly_bases = 0;
+
+	      for (i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (type)); i++)
+		if (polymorphic_type_binfo_p (BINFO_BASE_BINFO
+						 (TYPE_BINFO (type), i)))
+		  num_poly_bases++;
+	      gcc_assert (num_poly_bases == val->bases.length ());
+	      for (j = 0, i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (type));
+		   i++)
+		if (polymorphic_type_binfo_p (BINFO_BASE_BINFO 
+					       (TYPE_BINFO (type), i)))
+		  {
+		    odr_type base = get_odr_type
+				       (BINFO_TYPE
+					  (BINFO_BASE_BINFO (TYPE_BINFO (type),
+							     i)),
+					true);
+		    gcc_assert (val->bases[j] == base);
+		    j++;
+		  }
+	    }
 	  if (base_mismatch)
 	    {
 	      merge = false;
 	      odr_violation_reported = true;
-
-	      if (!warned && !val->odr_violated)
-		warn_odr (type, val->type, NULL, NULL, !warned, &warned,
-			  "a type with the same name but different bases is "
-			  "defined in another translation unit");
 	      val->odr_violated = true;
+
 	      if (symtab->dump_file)
 		{
-		  fprintf (symtab->dump_file, "ODR bse violation or merging bug?\n");
+		  fprintf (symtab->dump_file, "ODR base violation\n");
 		
 		  print_node (symtab->dump_file, "", val->type, 0);
 		  putc ('\n',symtab->dump_file);
