@@ -1,5 +1,10 @@
 2015-02-09  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: Xfail for alpha*-*-*.
+	* gcc.dg/tree-ssa/pr42585.c: Xfail scan-tree-dump-times for alpha*-*-*.
+
+2015-02-09  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/58757
 	* gcc.dg/c11-true_min-1.c: Xfail execution for alpha*-*-*.
 
