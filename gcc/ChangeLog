@@ -1,5 +1,10 @@
 2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-devirt.c (odr_types_equivalent_p): Fix formating.
+	(add_type_duplicate): Fix comparison of BINFOs.
+
+2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-polymorphic-call.c (ipa_polymorphic_call_context): Avoid ICE
 	on getting VOID pointer.
 
