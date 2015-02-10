@@ -1,3 +1,8 @@
+2015-02-10  Trevor Saunders  <tsaunders@mozilla.com>
+
+	PR tree-optimization/64326
+	* cfghooks.c (make_forwarder_block): Cap frequency of created block.
+
 2015-02-10  Rainer Emrich  <rainer@emrich-ebersheim.de>
 
 	PR gcov-profile/61889
