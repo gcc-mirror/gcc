@@ -1348,8 +1348,12 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	      if (DECL_SAVED_TREE (fun) == NULL_TREE
 		  && (DECL_CONSTRUCTOR_P (fun) || DECL_DESTRUCTOR_P (fun)))
 		/* The maybe-in-charge 'tor had its DECL_SAVED_TREE
-		   cleared, try the first clone.  */
-		fun = DECL_CHAIN (fun);
+		   cleared, try a clone.  */
+		for (fun = DECL_CHAIN (fun);
+		     fun && DECL_CLONED_FUNCTION_P (fun);
+		     fun = DECL_CHAIN (fun))
+		  if (DECL_SAVED_TREE (fun))
+		    break;
 	      gcc_assert (DECL_SAVED_TREE (fun));
 	      tree parms, res;
 

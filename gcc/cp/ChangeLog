@@ -1,3 +1,8 @@
+2015-02-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64994
+	* constexpr.c (cxx_eval_call_expression): Walk the clone list.
+
 2015-02-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/64982
