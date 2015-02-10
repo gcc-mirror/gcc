@@ -1,3 +1,9 @@
+2015-02-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/64982
+	* cgraphunit.c (cgraph_node::expand_thunk): Look for stdarg
+	thunks.
+
 2015-02-10  Trevor Saunders  <tsaunders@mozilla.com>
 
 	PR tree-optimization/64326

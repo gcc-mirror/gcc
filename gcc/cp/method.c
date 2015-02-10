@@ -418,20 +418,6 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   if (DECL_ONE_ONLY (function))
     thunk_node->add_to_same_comdat_group (funcn);
 
-  if (!this_adjusting
-      || !targetm.asm_out.can_output_mi_thunk (thunk_fndecl, fixed_offset,
-					       virtual_value, alias))
-    {
-      /* If this is a covariant thunk, or we don't have the necessary
-	 code for efficient thunks, generate a thunk function that
-	 just makes a call to the real function.  Unfortunately, this
-	 doesn't work for varargs.  */
-
-      if (varargs_function_p (function))
-	error ("generic thunk code fails for method %q#D which uses %<...%>",
-	       function);
-    }
-
   pop_from_top_level ();
 }
 
