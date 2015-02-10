@@ -77,8 +77,8 @@ tree streamer_alloc_tree (struct lto_input_block *, struct data_in *,
 void streamer_read_tree_body (struct lto_input_block *, struct data_in *, tree);
 tree streamer_get_pickled_tree (struct lto_input_block *, struct data_in *);
 tree streamer_get_builtin_tree (struct lto_input_block *, struct data_in *);
-struct bitpack_d streamer_read_tree_bitfields (struct lto_input_block *,
-					       struct data_in *, tree);
+void streamer_read_tree_bitfields (struct lto_input_block *,
+				   struct data_in *, tree);
 
 /* In tree-streamer-out.c.  */
 void streamer_write_string_cst (struct output_block *,

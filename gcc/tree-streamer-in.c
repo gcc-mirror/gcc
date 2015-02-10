@@ -466,7 +466,7 @@ unpack_ts_omp_clause_value_fields (struct data_in *data_in,
    Return the partially unpacked bitpack so the caller can unpack any other
    bitfield values that the writer may have written.  */
 
-struct bitpack_d
+void
 streamer_read_tree_bitfields (struct lto_input_block *ib,
 			      struct data_in *data_in, tree expr)
 {
@@ -557,8 +557,6 @@ streamer_read_tree_bitfields (struct lto_input_block *ib,
 
   if (code == OMP_CLAUSE)
     unpack_ts_omp_clause_value_fields (data_in, &bp, expr);
-
-  return bp;
 }
 
 
