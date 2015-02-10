@@ -1559,6 +1559,14 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       thunk.thunk_p = false;
       analyzed = false;
     }
+  else if (stdarg_p (TREE_TYPE (thunk_fndecl)))
+    {
+      error ("generic thunk code fails for method %qD which uses %<...%>",
+	     thunk_fndecl);
+      TREE_ASM_WRITTEN (thunk_fndecl) = 1;
+      analyzed = true;
+      return false;
+    }
   else
     {
       tree restype;
