@@ -1,3 +1,8 @@
+2015-02-09  Zhouyi Zhou   <yizhouzhou@ict.ac.cn>
+
+	* ira-color.c (setup_left_conflict_sizes_p): Simplify
+	initialization/assignment of conflict_size.
+
 2015-02-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/64978
