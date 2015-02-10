@@ -1,3 +1,8 @@
+2015-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/65004
+	* g++.dg/asan/pr65004.C: New test.
+
 2015-02-10  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/64661
