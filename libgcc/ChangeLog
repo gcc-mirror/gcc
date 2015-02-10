@@ -1,7 +1,7 @@
 2015-02-10  Rainer Emrich  <rainer@emrich-ebersheim.de>
 
 	PR gcov-profile/61889
-	* libgcc/libgcov-driver-system.c: undefine clashing macro for mkdir.
+	* libgcov-driver-system.c: undefine clashing macro for mkdir.
 
 2015-02-02  Nick Clifton  <nickc@redhat.com>
 
