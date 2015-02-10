@@ -99,11 +99,7 @@ gcov_output_files (const char *out, struct gcov_info *profile)
   /* Try to make directory if it doesn't already exist.  */
   if (access (out, F_OK) == -1)
     {
-#if !defined(_WIN32)
       if (mkdir (out, S_IRWXU | S_IRWXG | S_IRWXO) == -1 && errno != EEXIST)
-#else
-      if (mkdir (out) == -1 && errno != EEXIST)
-#endif
         fatal_error (input_location, "Cannot make directory %s", out);
     } else
       unlink_profile_dir (out);

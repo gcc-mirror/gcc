@@ -1,3 +1,8 @@
+2015-02-10  Rainer Emrich  <rainer@emrich-ebersheim.de>
+
+	PR gcov-profile/61889
+	* gcov-tool.c: Remove wrong #if !defined(_WIN32)
+
 2015-02-10  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64995
