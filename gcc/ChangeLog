@@ -1,5 +1,9 @@
 2015-02-10  Jan Hubicka  <hubicka@ucw.cz>
 
+	* common.opt (fstack-reuse): Mark as optimization.
+
+2015-02-10  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/64982
 	* cgraphunit.c (cgraph_node::expand_thunk): Look for stdarg
 	thunks.
