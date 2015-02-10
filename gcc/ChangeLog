@@ -1,3 +1,9 @@
+2015-02-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-streamer.h (streamer_read_tree_bitfields): Adjust.
+	* tree-streamer-in.c (streamer_read_tree_bitfields): Do not
+	return the bitpack.
+
 2015-02-09  Trevor Saunders  <tsaunders@mozilla.com>
 
 	PR gcov-profile/61889
