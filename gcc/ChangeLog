@@ -1,5 +1,13 @@
 2015-02-09  Trevor Saunders  <tsaunders@mozilla.com>
 
+	PR gcov-profile/61889
+	* config.in: regenerate.
+	* configure.in: Likewise.
+	* configure.ac: Check for ftw.h.
+	* gcov-tool.c: Check for ftw.h before using nftw.
+
+2015-02-09  Trevor Saunders  <tsaunders@mozilla.com>
+
 	PR lto/64076
 	* ipa-visibility.c (update_visibility_by_resolution_info): Only
 	assert when not in lto mode.
