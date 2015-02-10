@@ -1,3 +1,8 @@
+2015-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/65004
+	* ubsan.c (ubsan_expand_vptr_ifn): Always return true.
+
 2015-02-10  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/64661
