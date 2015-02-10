@@ -1,3 +1,8 @@
+2015-02-10  Alexander Monakov  <amonakov@ispras.ru>
+
+	* doc/invoke.texi (-fvar-tracking-assignments): Clarify that VTA is
+	enabled by default together with var-tracking.
+
 2015-02-10  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78.c: Remove DIV attribute code accidentally
