@@ -1,3 +1,10 @@
+2015-02-09  Georg Koppen  <gk@torproject.org>
+
+	* ssp.c: Conditionally include <windows.h>
+	(__guard_setup): For Windows, use approved methods to get
+	a suitable random number for the stack check guard rather
+	than reading /dev/random.
+
 2015-01-22  Matthias Klose  <doko@ubuntu.com>
 
 	* gets-chk.c: Declare prototype for gets in C11 mode.
