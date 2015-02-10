@@ -1,3 +1,8 @@
+2015-02-10  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/43378
+	* gcc.dg/tree-ssa/pr43378.c: New test.
+
 2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/64978
