@@ -424,11 +424,19 @@ update_visibility_by_resolution_info (symtab_node * node)
   if (node->same_comdat_group)
     for (symtab_node *next = node->same_comdat_group;
 	 next != node; next = next->same_comdat_group)
-      gcc_assert (!next->externally_visible
-		  || define == (next->resolution == LDPR_PREVAILING_DEF_IRONLY
-			        || next->resolution == LDPR_PREVAILING_DEF
-			        || next->resolution == LDPR_UNDEF
-			        || next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP));
+      {
+	if (!next->externally_visible)
+	  continue;
+
+	bool same_def
+	  = define == (next->resolution == LDPR_PREVAILING_DEF_IRONLY
+		       || next->resolution == LDPR_PREVAILING_DEF
+		       || next->resolution == LDPR_UNDEF
+		       || next->resolution == LDPR_PREVAILING_DEF_IRONLY_EXP);
+	gcc_assert (in_lto_p || same_def);
+	if (!same_def)
+	  return;
+      }
 
   if (node->same_comdat_group)
     for (symtab_node *next = node->same_comdat_group;
