@@ -9358,6 +9358,19 @@ label:
   [(set_attr "type" "jump")
    (set_attr "needs_delay_slot" "yes")])
 
+(define_insn "*jump_compact_crossing"
+  [(set (pc)
+	(label_ref (match_operand 0 "" "")))]
+  "TARGET_SH1
+   && flag_reorder_blocks_and_partition
+   && CROSSING_JUMP_P (insn)"
+{
+  /* The length is 16 if the delay slot is unfilled.  */
+  return output_far_jump(insn, operands[0]);
+}
+  [(set_attr "type" "jump")
+   (set_attr "length" "16")])
+
 ;; ??? It would be much saner to explicitly use the scratch register
 ;; in the jump insn, and have indirect_jump_scratch only set it,
 ;; but fill_simple_delay_slots would refuse to do delay slot filling

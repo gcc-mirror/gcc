@@ -1,3 +1,13 @@
+2015-02-09  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/64761
+	* config/sh/sh.c (sh_option_override): Don't change
+	-freorder-blocks-and-partition to -freorder-blocks even when
+	unwinding is enabled.
+	(sh_can_follow_jump): Return false if the followee jump is
+	a crossing jump when -freorder-blocks-and-partition is specified.
+	* config/sh/sh.md (*jump_compact_crossing): New insn.
+
 2015-02-09  Joern Rennecke  <joern.rennecke@embecosm.com>
 	    Kaz Kojima  <kkojima@gcc.gnu.org>
 

@@ -1065,29 +1065,6 @@ sh_option_override (void)
       TARGET_ACCUMULATE_OUTGOING_ARGS = 1;
     }
 
-  /* Unwinding with -freorder-blocks-and-partition does not work on this
-     architecture, because it requires far jumps to label crossing between
-     hot/cold sections which are rejected on this architecture.  */
-  if (flag_reorder_blocks_and_partition)
-    {
-      if (flag_exceptions)
-	{
-	  inform (input_location, 
-		  "-freorder-blocks-and-partition does not work with "
-		  "exceptions on this architecture");
-	  flag_reorder_blocks_and_partition = 0;
-	  flag_reorder_blocks = 1;
-	}
-      else if (flag_unwind_tables)
-	{
-	  inform (input_location,
-		  "-freorder-blocks-and-partition does not support unwind "
-		  "info on this architecture");
-	  flag_reorder_blocks_and_partition = 0;
-	  flag_reorder_blocks = 1;
-	}
-    }
-
   /*  Adjust loop, jump and function alignment values (in bytes), if those
       were not specified by the user using -falign-loops, -falign-jumps
       and -falign-functions options.
@@ -10828,6 +10805,14 @@ mark_constant_pool_use (rtx x)
 static bool
 sh_can_follow_jump (const rtx_insn *branch1, const rtx_insn *branch2)
 {
+  /* Don't follow if BRANCH2 is possible to be a jump crossing between
+     hot and cold partitions.  */
+  if (TARGET_SH1
+      && flag_reorder_blocks_and_partition
+      && simplejump_p (branch2)
+      && CROSSING_JUMP_P (branch2))
+    return false;
+
   if (flag_expensive_optimizations && simplejump_p (branch2))
     {
       rtx dest = XEXP (SET_SRC (single_set (branch2)), 0);
