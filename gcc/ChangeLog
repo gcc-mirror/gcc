@@ -1,3 +1,9 @@
+2015-02-09  Trevor Saunders  <tsaunders@mozilla.com>
+
+	PR lto/64076
+	* ipa-visibility.c (update_visibility_by_resolution_info): Only
+	assert when not in lto mode.
+
 2015-02-09  Zhouyi Zhou   <yizhouzhou@ict.ac.cn>
 
 	* ira-color.c (setup_left_conflict_sizes_p): Simplify
