@@ -1,3 +1,72 @@
+2015-02-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/64661
+	* config/sh/sh-protos.h (TARGET_ATOMIC_ANY, TARGET_ATOMIC_STRICT,
+	TARGET_ATOMIC_SOFT_GUSA, TARGET_ATOMIC_HARD_LLCS,
+	TARGET_ATOMIC_SOFT_TCB, TARGET_ATOMIC_SOFT_IMASK): Add parentheses.
+	* config/sh/constraints.md (Ara, Add): New constraints.
+	* config/sh/sync.md (atomic_mem_operand_0, atomic_mem_operand_1): New
+	predicates.
+	(atomic_compare_and_swap<mode>, atomic_exchange<mode>): Use
+	atomic_mem_operand_0.  Don't use force_reg on the memory address.
+	(atomic_compare_and_swapsi_hard): Use atomic_mem_operand_0 predicate and
+	Sra constraint.  Convert to insn_and_split.  Add workaround for
+	PR 64974.
+	(atomic_compare_and_swap<mode>_hard): Copy to
+	atomic_compare_and_swap<mode>_hard_1.  Convert to insn_and_split.
+	Use atomic_mem_operand_0 predicate.
+	(atomic_compare_and_swap<mode>_soft_gusa,
+	atomic_exchange<mode>_soft_gusa): Use atomic_mem_operand_0 predicate and
+	AraAdd constraints.
+	(atomic_compare_and_swap<mode>_soft_tcb,
+	atomic_compare_and_swap<mode>_soft_imask,
+	atomic_exchange<mode>_soft_tcb, atomic_exchange<mode>_soft_imask): Use
+	atomic_mem_operand_0 predicate and SraSdd constraints.
+	(atomic_exchangesi_hard) Use atomic_mem_operand_0 predicate and Sra
+	constraint.
+	(atomic_exchange<mode>_hard): Copy to atomic_exchange<mode>_hard_1.
+	Convert to insn_and_split.  Use atomic_mem_operand_0 predicate.
+	(atomic_fetch_<fetchop_name><mode>, atomic_fetch_nand<mode>,
+	atomic_<fetchop_name>_fetch<mode>): Use atomic_mem_operand_1.  Don't use
+	force_reg on the memory address.
+	(atomic_fetch_<fetchop_name>si_hard, atomic_fetch_notsi_hard,
+	atomic_fetch_nandsi_hard, atomic_<fetchop_name>_fetchsi_hard,
+	atomic_not_fetchsi_hard, atomic_nand_fetchsi_hard): Use
+	atomic_mem_operand_1 predicate and Sra constraint.
+	(atomic_fetch_<fetchop_name><mode>_hard): Copy to
+	atomic_fetch_<fetchop_name><mode>_hard_1.  Convert to insn_and_split.
+	Use atomic_mem_operand_1 predicate.
+	(atomic_<fetchop_name><mode>_hard): Copy to
+	atomic_<fetchop_name><mode>_hard_1.  Convert to insn_and_split.
+	Use atomic_mem_operand_1 predicate.
+	(atomic_fetch_nand<mode>_hard): Copy to atomic_fetch_nand<mode>_hard_1.
+	Convert to insn_and_split.  Use atomic_mem_operand_1 predicate.
+	(atomic_nand<mode>_hard): Copy to atomic_nand<mode>_hard_1.  Convert to
+	insn_and_split.  Use atomic_mem_operand_1 predicate.
+	(atomic_<fetchop_name>_fetch<mode>_hard): Copy to
+	atomic_<fetchop_name>_fetch<mode>_hard_1.  Convert to insn_and_split.
+	Use atomic_mem_operand_1 predicate.
+	(atomic_nand_fetch<mode>_hard): Copy to atomic_nand_fetch<mode>_hard_1.
+	Convert to insn_and_split.  Use atomic_mem_operand_1 predicate.
+	(atomic_fetch_not<mode>_hard, atomic_not_fetch<mode>_hard): Replace mems
+	in generated insn with original mem operand before emitting the insn.
+	(atomic_fetch_<fetchop_name><mode>_soft_gusa,
+	atomic_fetch_not<mode>_soft_gusa, atomic_fetch_nand<mode>_soft_gusa,
+	atomic_<fetchop_name>_fetch<mode>_soft_gusa,
+	atomic_not_fetch<mode>_soft_gusa, atomic_nand_fetch<mode>_soft_gusa):
+	Use atomic_mem_operand_1 predicate and AraAdd constraints.
+	(atomic_fetch_<fetchop_name><mode>_soft_tcb,
+	atomic_<fetchop_name><mode>_soft_tcb, atomic_fetch_not<mode>_soft_tcb,
+	atomic_not<mode>_soft_tcb, atomic_fetch_<fetchop_name><mode>_soft_imask,
+	atomic_fetch_not<mode>_soft_imask, atomic_fetch_nand<mode>_soft_tcb,
+	atomic_nand<mode>_soft_tcb, atomic_fetch_nand<mode>_soft_imask,
+	atomic_<fetchop_name>_fetch<mode>_soft_tcb,
+	atomic_not_fetch<mode>_soft_tcb,
+	atomic_<fetchop_name>_fetch<mode>_soft_imask,
+	atomic_not_fetch<mode>_soft_imask, atomic_nand_fetch<mode>,
+	atomic_nand_fetch<mode>_soft_tcb, atomic_nand_fetch<mode>_soft_imask):
+	Use atomic_mem_operand_1 predicate and SraSdd constraints.
+
 2015-02-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md (reload_out<mode>_aligned): Make operands 2
