@@ -858,7 +858,6 @@ setup_left_conflict_sizes_p (ira_allocno_t a)
   HARD_REG_SET node_set;
 
   nobj = ALLOCNO_NUM_OBJECTS (a);
-  conflict_size = 0;
   data = ALLOCNO_COLOR_DATA (a);
   subnodes = allocno_hard_regs_subnodes + data->hard_regs_subnodes_start;
   COPY_HARD_REG_SET (profitable_hard_regs, data->profitable_hard_regs);
@@ -959,9 +958,9 @@ setup_left_conflict_sizes_p (ira_allocno_t a)
     }
   left_conflict_subnodes_size = subnodes[0].left_conflict_subnodes_size;
   conflict_size
-    += (left_conflict_subnodes_size
-	+ MIN (subnodes[0].max_node_impact - left_conflict_subnodes_size,
-	       subnodes[0].left_conflict_size));
+    = (left_conflict_subnodes_size
+       + MIN (subnodes[0].max_node_impact - left_conflict_subnodes_size,
+	      subnodes[0].left_conflict_size));
   conflict_size += ira_reg_class_max_nregs[ALLOCNO_CLASS (a)][ALLOCNO_MODE (a)];
   data->colorable_p = conflict_size <= data->available_regs_num;
   return data->colorable_p;
