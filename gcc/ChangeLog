@@ -1,3 +1,8 @@
+2015-02-10  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c: Remove DIV attribute code accidentally
+	included in previous rl78 commit.
+
 2015-02-10  Richard Biener  <rguenther@suse.de>
 
 	* tree-streamer.h (streamer_read_tree_bitfields): Adjust.
@@ -65,7 +70,7 @@
 
 2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
 
-	PR ipa/63566 
+	PR ipa/63566
 	* ipa-icf.c (set_local): New function.
 	(sem_function::merge): Use it.
 
@@ -125,13 +130,13 @@
 
 2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
 
-	PR ipa/63566 
+	PR ipa/63566
 	* ipa-visibility.c (cgraph_node::non_local_p): Accept aliases.
 	(cgraph_node::local_p): Remove thunk related FIXME.
 
 2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
 
-	PR ipa/63566 
+	PR ipa/63566
 	* i386.c (ix86_function_regparm): Look through aliases to see if callee
 	is local and optimized.
 	(ix86_function_sseregparm): Likewise; also use target's SSE math
@@ -141,12 +146,12 @@
 
 2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
 
-	PR ipa/63566 
+	PR ipa/63566
 	* ipa-split.c (execute_split_functions): Split if function has aliases.
 
 2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
 
-	PR ipa/63566 
+	PR ipa/63566
 	* cgraphunit.c (cgraph_node::analyze): Be sure target of thunk is
 	aliases before trying to expand it.
 	(cgraph_node::expand_thunk): Fix formating.
