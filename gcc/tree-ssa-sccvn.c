@@ -1606,7 +1606,7 @@ vn_reference_lookup_or_insert_for_pieces (tree vuse,
 					        va_heap> operands,
 					  tree value)
 {
-  struct vn_reference_s vr1;
+  vn_reference_s vr1;
   vn_reference_t result;
   unsigned value_id;
   vr1.vuse = vuse;
@@ -2816,7 +2816,8 @@ set_ssa_val_to (tree from, tree to)
     }
 
   gcc_assert (to != NULL_TREE
-	      && (TREE_CODE (to) == SSA_NAME
+	      && ((TREE_CODE (to) == SSA_NAME
+		   && (to == from || SSA_VAL (to) == to))
 		  || is_gimple_min_invariant (to)));
 
   if (from != to)
@@ -3122,6 +3123,9 @@ visit_reference_op_store (tree lhs, tree op, gimple stmt)
   tree vuse = gimple_vuse (stmt);
   tree vdef = gimple_vdef (stmt);
 
+  if (TREE_CODE (op) == SSA_NAME)
+    op = SSA_VAL (op);
+
   /* First we want to lookup using the *vuses* from the store and see
      if there the last store to this location with the same address
      had the same value.
@@ -3144,8 +3148,6 @@ visit_reference_op_store (tree lhs, tree op, gimple stmt)
     {
       if (TREE_CODE (result) == SSA_NAME)
 	result = SSA_VAL (result);
-      if (TREE_CODE (op) == SSA_NAME)
-	op = SSA_VAL (op);
       resultsame = expressions_equal_p (result, op);
     }
 
@@ -3722,7 +3724,7 @@ visit_use (tree use)
 		  changed = set_ssa_val_to (lhs, simplified);
 		  if (gimple_vdef (stmt))
 		    changed |= set_ssa_val_to (gimple_vdef (stmt),
-					       gimple_vuse (stmt));
+					       SSA_VAL (gimple_vuse (stmt)));
 		  goto done;
 		}
 	      else if (simplified
@@ -3731,7 +3733,7 @@ visit_use (tree use)
 		  changed = visit_copy (lhs, simplified);
 		  if (gimple_vdef (stmt))
 		    changed |= set_ssa_val_to (gimple_vdef (stmt),
-					       gimple_vuse (stmt));
+					       SSA_VAL (gimple_vuse (stmt)));
 		  goto done;
 		}
 	      else
