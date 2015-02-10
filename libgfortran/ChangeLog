@@ -1,3 +1,9 @@
+2015-02-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/57822
+	* io/write_float.def (output_float): If doing g0 editing and
+	exponent is zero, do not emit exponent.
+
 2015-02-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/60956
