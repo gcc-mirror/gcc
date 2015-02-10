@@ -1184,10 +1184,13 @@ vect_peeling_hash_get_lowest_cost (_vect_peel_info **slot,
     }
 
   single_iter_cost = vect_get_single_scalar_iteration_cost (loop_vinfo);
-  outside_cost += vect_get_known_peeling_cost (loop_vinfo, elem->npeel,
-					       &dummy, single_iter_cost,
-					       &prologue_cost_vec,
-					       &epilogue_cost_vec);
+  outside_cost += vect_get_known_peeling_cost
+    (loop_vinfo, elem->npeel, &dummy,
+     /* ???  We use this cost as number of stmts with scalar_stmt cost,
+	thus divide by that.  This introduces rounding errors, thus better 
+	introduce a new cost kind (raw_cost?  scalar_iter_cost?). */
+     single_iter_cost / vect_get_stmt_cost (scalar_stmt),
+     &prologue_cost_vec, &epilogue_cost_vec);
 
   /* Prologue and epilogue costs are added to the target model later.
      These costs depend only on the scalar iteration cost, the
