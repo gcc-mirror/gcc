@@ -560,10 +560,7 @@ gather_caller_stats (struct cgraph_node *node, void *data)
   struct cgraph_edge *cs;
 
   for (cs = node->callers; cs; cs = cs->next_caller)
-    if (cs->caller->thunk.thunk_p)
-      cs->caller->call_for_symbol_thunks_and_aliases (gather_caller_stats,
-						    stats, false);
-    else
+    if (!cs->caller->thunk.thunk_p)
       {
 	stats->count_sum += cs->count;
 	stats->freq_sum += cs->frequency;
@@ -2643,7 +2640,7 @@ propagate_constants_topo (struct ipa_topo_info *topo)
 	  for (cs = v->callees; cs; cs = cs->next_callee)
 	    if (ipa_edge_within_scc (cs)
 		&& propagate_constants_accross_call (cs))
-	      push_node_to_stack (topo, cs->callee);
+	      push_node_to_stack (topo, cs->callee->function_symbol ());
 	  v = pop_node_from_stack (topo);
 	}
 

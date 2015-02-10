@@ -1,3 +1,9 @@
+2015-02-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/64978
+	* ipa-cp.c (gather_caller_stats): Skip thunks.
+	(propagate_constants_topo): Skip aliases.
+
 2015-02-09  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/64761
