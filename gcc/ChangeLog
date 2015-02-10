@@ -1,5 +1,13 @@
 2015-02-10  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/64995
+	* tree-ssa-sccvn.c (set_ssa_val_to): Assert that the
+	value we use is final.
+	(visit_reference_op_store): Always valueize op.
+	(visit_use): Properly valueize vuses.
+
+2015-02-10  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/64909
 	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Properly
 	pass a scalar-stmt count estimate to the cost model.
