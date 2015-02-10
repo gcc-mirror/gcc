@@ -68,25 +68,25 @@ extern const sh_atomic_model& selected_atomic_model (void);
 
 /* Shortcuts to check the currently selected atomic model.  */
 #define TARGET_ATOMIC_ANY \
-  selected_atomic_model ().type != sh_atomic_model::none
+  (selected_atomic_model ().type != sh_atomic_model::none)
 
 #define TARGET_ATOMIC_STRICT \
-  selected_atomic_model ().strict
+  (selected_atomic_model ().strict)
 
 #define TARGET_ATOMIC_SOFT_GUSA \
-  selected_atomic_model ().type == sh_atomic_model::soft_gusa
+  (selected_atomic_model ().type == sh_atomic_model::soft_gusa)
 
 #define TARGET_ATOMIC_HARD_LLCS \
-  selected_atomic_model ().type == sh_atomic_model::hard_llcs
+  (selected_atomic_model ().type == sh_atomic_model::hard_llcs)
 
 #define TARGET_ATOMIC_SOFT_TCB \
-  selected_atomic_model ().type == sh_atomic_model::soft_tcb
+  (selected_atomic_model ().type == sh_atomic_model::soft_tcb)
 
 #define TARGET_ATOMIC_SOFT_TCB_GBR_OFFSET_RTX \
   GEN_INT (selected_atomic_model ().tcb_gbr_offset)
 
 #define TARGET_ATOMIC_SOFT_IMASK \
-  selected_atomic_model ().type == sh_atomic_model::soft_imask
+  (selected_atomic_model ().type == sh_atomic_model::soft_imask)
 
 #ifdef RTX_CODE
 extern rtx sh_fsca_sf2int (void);

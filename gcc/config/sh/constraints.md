@@ -18,6 +18,9 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;; Overview of uppercase letter constraints:
+;; Axx: atomic memory operand constraints
+;;  Ara: Same as Sra but disallows r15
+;;  Add: Same as Sdd but disallows r15
 ;; Bxx: miscellaneous constraints
 ;;  Bsc: SCRATCH - for the scratch register in movsi_ie in the
 ;;       fldi0 / fldi0 cases
@@ -322,3 +325,19 @@
   (and (match_test "MEM_P (op)")
        (match_test "REG_P (XEXP (op, 0))")))
 
+(define_memory_constraint "Ara"
+  "A memory reference that uses simple register addressing suitable for
+   gusa atomic operations."
+  (and (match_code "mem")
+       (match_code "reg" "0")
+       (match_test "REGNO (XEXP (op, 0)) != SP_REG")))
+
+(define_memory_constraint "Add"
+  "A memory reference that uses displacement addressing suitable for
+   gusa atomic operations."
+  (and (match_code "mem")
+       (match_test "GET_MODE (op) == SImode")
+       (match_code "plus" "0")
+       (match_code "reg" "00")
+       (match_code "const_int" "01")
+       (match_test "REGNO (XEXP (XEXP (op, 0), 0)) != SP_REG")))
