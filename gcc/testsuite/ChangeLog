@@ -1,3 +1,8 @@
+2015-02-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/57822
+	* gfortran/fmt_g0_7.f08: New test.
+
 2015-02-10  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/43378
