@@ -7090,6 +7090,8 @@ optimizing.  Use of @option{-gdwarf-4} is recommended along with it.
 
 It can be enabled even if var-tracking is disabled, in which case
 annotations are created and maintained, but discarded at the end.
+By default, this flag is enabled together with @option{-fvar-tracking},
+except when selective scheduling is enabled.
 
 @item -fvar-tracking-assignments-toggle
 @opindex fvar-tracking-assignments-toggle
