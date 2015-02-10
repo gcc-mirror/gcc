@@ -1561,6 +1561,8 @@ execute_update_addresses_taken (void)
 					TREE_TYPE (other),
 					TREE_OPERAND (lhs, 0));
 		    gimple load = gimple_build_assign (other, lrhs);
+		    location_t loc = gimple_location (stmt);
+		    gimple_set_location (load, loc);
 		    gimple_set_vuse (load, gimple_vuse (stmt));
 		    gsi_insert_before (&gsi, load, GSI_SAME_STMT);
 		    gimple_assign_set_lhs (stmt, TREE_OPERAND (lhs, 0));

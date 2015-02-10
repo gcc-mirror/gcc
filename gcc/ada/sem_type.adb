@@ -954,16 +954,43 @@ package body Sem_Type is
             --  Note: test for presence of E is defense against previous error.
 
             if No (E) then
-               Check_Error_Detected;
+
+               --  If expansion is disabled the Corresponding_Record_Type may
+               --  not be available yet, so use the interface list in the
+               --  declaration directly.
+
+               if ASIS_Mode
+                 and then Nkind (Parent (BT2)) = N_Protected_Type_Declaration
+                 and then Present (Interface_List (Parent (BT2)))
+               then
+                  declare
+                     Intf : Node_Id := First (Interface_List (Parent (BT2)));
+                  begin
+                     while Present (Intf) loop
+                        if Is_Ancestor (Etype (T1), Entity (Intf)) then
+                           return True;
+                        else
+                           Next (Intf);
+                        end if;
+                     end loop;
+                  end;
+
+                  return False;
+
+               else
+                  Check_Error_Detected;
+               end if;
+
+            --  Here we have a corresponding record type
 
             elsif Present (Interfaces (E)) then
                Elmt := First_Elmt (Interfaces (E));
                while Present (Elmt) loop
                   if Is_Ancestor (Etype (T1), Node (Elmt)) then
                      return True;
+                  else
+                     Next_Elmt (Elmt);
                   end if;
-
-                  Next_Elmt (Elmt);
                end loop;
             end if;
 
@@ -3499,23 +3526,25 @@ package body Sem_Type is
       Write_Str ("Overloads: ");
       Print_Node_Briefly (N);
 
-      if Nkind (N) not in N_Has_Entity then
-         return;
-      end if;
-
       if not Is_Overloaded (N) then
-         Write_Str ("Non-overloaded entity ");
-         Write_Eol;
+         Write_Line ("Non-overloaded entity ");
          Write_Entity_Info (Entity (N), " ");
+
+      elsif Nkind (N) not in N_Has_Entity then
+         Get_First_Interp (N, I, It);
+         while Present (It.Nam) loop
+            Write_Int (Int (It.Typ));
+            Write_Str ("   ");
+            Write_Name (Chars (It.Typ));
+            Write_Eol;
+            Get_Next_Interp (I, It);
+         end loop;
 
       else
          Get_First_Interp (N, I, It);
-         Write_Str ("Overloaded entity ");
-         Write_Eol;
-         Write_Str ("      Name           Type           Abstract Op");
-         Write_Eol;
-         Write_Str ("===============================================");
-         Write_Eol;
+         Write_Line ("Overloaded entity ");
+         Write_Line ("      Name           Type           Abstract Op");
+         Write_Line ("===============================================");
          Nam := It.Nam;
 
          while Present (Nam) loop

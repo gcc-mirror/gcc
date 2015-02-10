@@ -686,9 +686,16 @@ package body Errout is
         ("illegal overriding of subprogram inherited from interface", E);
 
       Error_Msg_Sloc := Sloc (Iface_Prim);
-      Error_Msg_N
-        ("\first formal of & declared # must be of mode `OUT`, `IN OUT` " &
-         "or access-to-variable", E);
+
+      if Ekind (E) = E_Function then
+         Error_Msg_N
+           ("\first formal of & declared # must be of mode `IN` "
+            & "or access-to-constant", E);
+      else
+         Error_Msg_N
+           ("\first formal of & declared # must be of mode `OUT`, `IN OUT` "
+            & "or access-to-variable", E);
+      end if;
    end Error_Msg_PT;
 
    -----------------
@@ -753,12 +760,23 @@ package body Errout is
          end if;
 
          --  Set the fatal error flag in the unit table unless we are in
-         --  Try_Semantics mode. This stops the semantics from being performed
+         --  Try_Semantics mode (in which case we set ignored mode if not
+         --  currently set. This stops the semantics from being performed
          --  if we find a serious error. This is skipped if we are currently
          --  dealing with the configuration pragma file.
 
-         if not Try_Semantics and then Current_Source_Unit /= No_Unit then
-            Set_Fatal_Error (Get_Source_Unit (Sptr));
+         if Current_Source_Unit /= No_Unit then
+            declare
+               U : constant Unit_Number_Type := Get_Source_Unit (Sptr);
+            begin
+               if Try_Semantics then
+                  if Fatal_Error (U) = None then
+                     Set_Fatal_Error (U, Error_Ignored);
+                  end if;
+               else
+                  Set_Fatal_Error (U, Error_Detected);
+               end if;
+            end;
          end if;
       end Handle_Serious_Error;
 
@@ -1153,6 +1171,17 @@ package body Errout is
          if Errors.Table (Cur_Msg).Serious then
             Serious_Errors_Detected := Serious_Errors_Detected + 1;
             Handle_Serious_Error;
+
+         --  If not serious error, set Fatal_Error to indicate ignored error
+
+         else
+            declare
+               U : constant Unit_Number_Type := Get_Source_Unit (Sptr);
+            begin
+               if Fatal_Error (U) = None then
+                  Set_Fatal_Error (U, Error_Ignored);
+               end if;
+            end;
          end if;
       end if;
 

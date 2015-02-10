@@ -7096,7 +7096,8 @@ vrp_valueize_1 (tree name)
          this SSA edge as the SSA propagator does not necessarily
 	 re-visit the use.  */
       gimple def_stmt = SSA_NAME_DEF_STMT (name);
-      if (prop_simulate_again_p (def_stmt))
+      if (!gimple_nop_p (def_stmt)
+	  && prop_simulate_again_p (def_stmt))
 	return NULL_TREE;
       value_range_t *vr = get_value_range (name);
       if (range_int_cst_singleton_p (vr))

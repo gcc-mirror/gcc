@@ -30,4 +30,4 @@ double test4 (double x)
 }
 #endif
 
-/* { dg-final { scan-assembler-not "pow" } } */
+/* { dg-final { scan-assembler-not {pow\M} } } */

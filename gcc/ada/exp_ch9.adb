@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2639,11 +2639,12 @@ package body Exp_Ch9 is
             if Nkind (Parameter_Type (First_Param)) = N_Access_Definition then
                Obj_Param_Typ :=
                  Make_Access_Definition (Loc,
-                   Subtype_Mark =>
-                     New_Occurrence_Of (Obj_Typ, Loc));
-               Set_Null_Exclusion_Present (Obj_Param_Typ,
-                 Null_Exclusion_Present (Parameter_Type (First_Param)));
-
+                   Subtype_Mark           =>
+                     New_Occurrence_Of (Obj_Typ, Loc),
+                   Null_Exclusion_Present =>
+                     Null_Exclusion_Present (Parameter_Type (First_Param)),
+                   Constant_Present       =>
+                     Constant_Present (Parameter_Type (First_Param)));
             else
                Obj_Param_Typ := New_Occurrence_Of (Obj_Typ, Loc);
             end if;

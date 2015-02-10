@@ -1,3 +1,199 @@
+2015-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_param): Do not strip the padding
+	if the parameter either is passed by reference or if the alignment
+	would be lowered.
+
+2015-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (is_cplusplus_method): Use Is_Primitive flag to
+	detect primitive operations of tagged and untagged types.
+
+2015-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not bother about alias
+	sets in presence of derivation for subprogram types.
+
+2015-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (begin_subprog_body): Assert that the body is
+	present in the same context as the declaration.
+
+2015-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/64340
+	* gcc-interface/trans.c (gigi): Recreate optimization_default_node
+	and optimization_current_node after tweaking global_options.
+
+2015-02-05  Robert Dewar  <dewar@adacore.com>
+
+	* prj-proc.adb, sem_aux.adb, exp_ch9.adb, errout.adb, prj-dect.adb,
+	prj-nmsc.adb: Minor reformatting.
+
+2015-02-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb (Covers): In ASIS_Mode the Corresponding_Record
+	of a protected type may not be available, so to check conformance
+	with an interface type, examine the interface list in the type
+	declaration directly.
+	(Write_Overloads): Improve information for indirect calls,
+	for debugger use.
+
+2015-02-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Make_Tag_Assignment): Do not perform this
+	expansion activity in ASIS mode.
+
+2015-02-05  Javier Miranda  <miranda@adacore.com>
+
+	* errout.adb (Error_Msg_PT): Add missing error.
+	* sem_ch6.adb (Check_Synchronized_Overriding): Check the missing
+	RM rule.  Code cleanup.
+	* exp_ch9.adb (Build_Wrapper_Spec): Propagate "constant" in
+	anonymous access types.  Found working on the tests. Code cleanup.
+
+2015-02-05  Vincent Celier  <celier@adacore.com>
+
+	* prj-dect.adb (Parse_Attribute_Declaration): Continue scanning
+	when there are incomplete withs.
+	* prj-nmsc.adb (Process_Naming): Do not try to get the value
+	of an element when it is nil.
+	(Check_Naming): Do not check a nil suffix for illegality
+	* prj-proc.adb (Expression): Do not process an empty term.
+	* prj-strt.adb (Attribute_Reference): If attribute cannot be
+	found, parse a possible index to avoid cascading errors.
+
+2015-02-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aux.adb (Is_Derived_Type): A subprogram_type generated
+	for an access_to_subprogram declaration is not a derived type.
+
+2015-02-05  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Error_Msg_Internal): For non-serious error set
+	Fatal_Error to Ignored.
+	* lib-load.adb (Load_Unit): Minor comment updates.
+	* sem_ch10.adb (Analyze_With_Clause): Propagate Fatal_Error
+	setting from with'ed unit to with'ing unit.
+	* sem_prag.adb (Analyze_Pragma, case Warnings): Document handling
+	of ambiguity.
+
+2015-02-05  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb, par-prag.adb: Minor code clean up.
+
+2015-02-05  Yannick Moy  <moy@adacore.com>
+
+	* par-prag.adb (Pragma_Warnings): Update for extended form
+	of pragma Warnings. The "one" argument case may now have 2 or
+	3 arguments.
+	* sem_prag.adb (Analyze_Pragma/Pragma_Warnings): Update for
+	extended form of pragma Warnings. Pragma with tool name is either
+	rewritten as null or as an equivalent form without tool name,
+	before reanalysis.
+	* snames.ads-tmpl (Name_Gnatprove): New name.
+
+2015-02-05  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Add_Invariants): Don't assume invariant is
+	standard Boolean.
+	* sem_prag.adb (Analyze_Pragma, case Check): Don't assume
+	condition is standard Boolean, it can be non-standard derived
+	Boolean.
+
+2015-02-05  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Enable_Range_Check): Disconnect attempted
+	optimization for the case of range check for subscript of
+	unconstrained array.
+
+2015-02-05  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch13.adb (With_Present): New function
+	(Aspect_Specifications_Present): Handle WHEN in place of WITH
+	(Get_Aspect_Specifications): Comment update.
+	* par.adb: Comment updates.
+
+2015-02-05  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Handle_Serious_Error): New setting of Fatal_Error.
+	* frontend.adb (Frontend): New setting of Fatal_Error.
+	* lib-load.adb (Create_Dummy_Package_Unit): New setting of
+	Fatal_Error.
+	(Load_Main_Source): New setting of Fatal_Error
+	(Load_Unit): New setting of Fatal_Error.
+	* lib-writ.adb (Add_Preprocessing_Dependency): New setting of
+	Fatal_Error.
+	(Ensure_System_Dependency): New setting of Fatal_Error.
+	* lib.adb (Fatal_Error): New setting of Fatal_Error
+	(Set_Fatal_Error): New setting of Fatal_Error.
+	* lib.ads: New definition of Fatal_Error and associated routines.
+	* par-ch10.adb (P_Compilation_Unit): New setting of Fatal_Error.
+	* par-load.adb (Load): New setting of Fatal_Error.
+	* rtsfind.adb (Load_RTU): New setting of Fatal_Error.
+	* sem_ch10.adb (Analyze_Compilation_Unit): New setting of
+	Fatal_Error.
+	(Optional_Subunit): New setting of Fatal_Error.
+	(Analyze_Proper_Body): New setting of Fatal_Error.
+	(Load_Needed_Body): New setting of Fatal_Error.
+
+2015-02-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Call): If the function being called has
+	out parameters do not check for language version if the function
+	comes from a predefined unit, as those are always compiled in
+	Ada 2012 mode.
+
+2015-02-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Process_Full_View): Verify that the full view
+	of a type extension must carry an explicit limited keyword if
+	the partial view does (RM 7.3 (10.1)).
+
+2015-02-05  Robert Dewar  <dewar@adacore.com>
+
+	* g-rannum.adb, g-rannum.ads, s-rannum.adb, s-rannum.ads,
+	sem_warn.ads: Minor reformatting.
+	* exp_ch13.adb (Expand_N_Freeze_Entity): Add guard for aspect
+	deleted by -gnatI.
+	* sem_prag.adb (Analyze_Pragma, case Type_Invariant): Give
+	error for abstract type.
+
+2015-02-05  Yannick Moy  <moy@adacore.com>
+
+	* opt.ads (Warn_On_Suspicious_Contract): Update comment
+	describing use.
+	* sem_attr.adb (Analyze_Attribute/Attribute_Update): Warn on
+	suspicious uses of 'Update.
+	* sem_warn.adb, sem_warn.ads (Warn_On_Suspicious_Update): New
+	function issues warning on suspicious uses of 'Update.
+	* g-rannum.adb, g-rannum.ads, s-rannum.adb, s-rannum.ads: Mark
+	package spec and body as SPARK_Mode Off.
+
+2015-02-05  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Set_Elab_Unit_Name): New name for Set_Unit_Name
+	(Analyze_Pragma): Change Set_Unit_Name to Set_Elab_Unit_Name
+	(Set_Elab_Unit_Name): Generate reference for Elaborate[_All]
+	* sem_warn.adb (Warn_On_Unreferenced_Entity): Suppress warning
+	for exported entity.
+
+2015-02-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Pragma_Conformance): Add
+	local variable Arg. Ensure that all errors are associated with
+	the pragma if it appears without an argument. Add comments on
+	various cases.
+
+2015-02-05  Robert Dewar  <dewar@adacore.com>
+
+	* lib-xref.adb: Minor reformatting.
+
+2015-02-05  Tristan Gingold  <gingold@adacore.com>
+
+	PR ada/64349da/64349
+	* env.c: Fix thinko: handle Darwin case before default one.
+
 2015-01-30  Robert Dewar  <dewar@adacore.com>
 
 	* a-assert.adb: Minor reformatting.

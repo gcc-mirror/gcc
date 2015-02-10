@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2007-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,10 +51,15 @@
 --  standard random-number packages Ada.Numerics.Float_Random and
 --  Ada.Numerics.Discrete_Random.
 
+--  Note: this package is marked SPARK_Mode Off, because functions Random work
+--  by side-effect to change the value of the generator, hence they should not
+--  be called from SPARK code.
+
 with Interfaces;
 
-package System.Random_Numbers is
-
+package System.Random_Numbers with
+  SPARK_Mode => Off
+is
    type Generator is limited private;
    --  Generator encodes the current state of a random number stream, it is
    --  provided as input to produce the next random number, and updated so

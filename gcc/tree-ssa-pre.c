@@ -4406,6 +4406,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 				       cgraph_node::get (fn)->name ());
 		    }
 		  gimple_call_set_fndecl (call_stmt, fn);
+		  maybe_remove_unused_call_args (cfun, call_stmt);
 		  gimple_set_modified (stmt, true);
 		}
 	    }

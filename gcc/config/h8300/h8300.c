@@ -619,7 +619,7 @@ compute_saved_regs (void)
 /* Emit an insn to push register RN.  */
 
 static rtx
-push (int rn)
+push (int rn, bool in_prologue)
 {
   rtx reg = gen_rtx_REG (word_mode, rn);
   rtx x;
@@ -630,7 +630,7 @@ push (int rn)
     x = gen_push_h8300hs_advanced (reg);
   else
     x = gen_push_h8300hs_normal (reg);
-  x = F (emit_insn (x), true);
+  x = F (emit_insn (x), in_prologue);
   add_reg_note (x, REG_INC, stack_pointer_rtx);
   return x;
 }
@@ -683,7 +683,7 @@ h8300_push_pop (int regno, int nregs, bool pop_p, bool return_p)
       if (pop_p)
 	pop (regno);
       else
-	push (regno);
+	push (regno, false);
       return;
     }
 
@@ -868,7 +868,7 @@ h8300_expand_prologue (void)
   if (frame_pointer_needed)
     {
       /* Push fp.  */
-      push (HARD_FRAME_POINTER_REGNUM);
+      push (HARD_FRAME_POINTER_REGNUM, true);
       F (emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx), true);
     }
 
@@ -2757,7 +2757,7 @@ h8sx_emit_movmd (rtx dest, rtx src, rtx length,
 void
 h8300_swap_into_er6 (rtx addr)
 {
-  rtx insn = push (HARD_FRAME_POINTER_REGNUM);
+  rtx insn = push (HARD_FRAME_POINTER_REGNUM, false);
   if (frame_pointer_needed)
     add_reg_note (insn, REG_CFA_DEF_CFA,
 		  plus_constant (Pmode, gen_rtx_MEM (Pmode, stack_pointer_rtx),
@@ -2786,7 +2786,6 @@ h8300_swap_out_of_er6 (rtx addr)
     emit_move_insn (addr, hard_frame_pointer_rtx);
 
   insn = pop (HARD_FRAME_POINTER_REGNUM);
-  RTX_FRAME_RELATED_P (insn) = 1;
   if (frame_pointer_needed)
     add_reg_note (insn, REG_CFA_DEF_CFA,
 		  plus_constant (Pmode, hard_frame_pointer_rtx,
@@ -4384,7 +4383,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      info->cc_inline = CC_SET_ZNV;
 	      goto end;
 	    case SHIFT_ASHIFTRT:
-	      info->special = "mov.b\t%z0,%w0\n\tbld\t#7,%w0\n\tsubx\t%x0,%x0\n\tsubx\t%x0,%x0\n\tsubx\t%x0,%x0";
+	      info->special = "mov.b\t%z0,%w0\n\tbld\t#7,%w0\n\tsubx\t%x0,%x0\n\tsubx\t%y0,%y0\n\tsubx\t%z0,%z0";
 	      info->shift1  = "shar.b\t%w0";
 	      info->cc_inline = CC_SET_ZNV;
 	      goto end;
@@ -5636,6 +5635,12 @@ h8300_eightbit_constant_address_p (rtx x)
   /* We accept symbols declared with eightbit_data.  */
   if (GET_CODE (x) == SYMBOL_REF)
     return (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_EIGHTBIT_DATA) != 0;
+
+  if (GET_CODE (x) == CONST
+      && GET_CODE (XEXP (x, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
+      && (SYMBOL_REF_FLAGS (XEXP (XEXP (x, 0), 0)) & SYMBOL_FLAG_EIGHTBIT_DATA) != 0)
+    return 1;
 
   if (GET_CODE (x) != CONST_INT)
     return 0;

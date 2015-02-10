@@ -746,9 +746,9 @@ class Gogo
   // The special zero value variable.
   Named_object* zero_value_;
   // The size of the zero value variable.
-  unsigned long zero_value_size_;
+  int64_t zero_value_size_;
   // The alignment of the zero value variable, in bytes.
-  unsigned long zero_value_align_;
+  int64_t zero_value_align_;
   // Whether pkgpath_ has been set.
   bool pkgpath_set_;
   // Whether an explicit package path was set by -fgo-pkgpath.

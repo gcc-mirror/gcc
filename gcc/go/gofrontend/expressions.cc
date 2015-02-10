@@ -181,8 +181,10 @@ Expression::convert_for_assignment(Gogo* gogo, Type* lhs_type,
       // represented as non-zero-sized.
       // TODO(cmang): This check is for a GCC-specific issue, and should be
       // removed from the frontend.  FIXME.
-      size_t lhs_size = gogo->backend()->type_size(lhs_type->get_backend(gogo));
-      size_t rhs_size = gogo->backend()->type_size(rhs_type->get_backend(gogo));
+      int64_t lhs_size =
+	gogo->backend()->type_size(lhs_type->get_backend(gogo));
+      int64_t rhs_size =
+	gogo->backend()->type_size(rhs_type->get_backend(gogo));
       if (rhs_size == 0 || lhs_size == 0)
 	return rhs;
 
@@ -2112,6 +2114,48 @@ Expression::make_integer_sl(long val, Type *type, Location location)
   return ret;
 }
 
+// Store an int64_t in an uninitialized mpz_t.
+
+static void
+set_mpz_from_int64(mpz_t* zval, int64_t val)
+{
+  if (val >= 0)
+    {
+      unsigned long ul = static_cast<unsigned long>(val);
+      if (static_cast<int64_t>(ul) == val)
+	{
+	  mpz_init_set_ui(*zval, ul);
+	  return;
+	}
+    }
+  uint64_t uv;
+  if (val >= 0)
+    uv = static_cast<uint64_t>(val);
+  else
+    uv = static_cast<uint64_t>(- val);
+  unsigned long ul = uv & 0xffffffffUL;
+  mpz_init_set_ui(*zval, ul);
+  mpz_t hval;
+  mpz_init_set_ui(hval, static_cast<unsigned long>(uv >> 32));
+  mpz_mul_2exp(hval, hval, 32);
+  mpz_add(*zval, *zval, hval);
+  mpz_clear(hval);
+  if (val < 0)
+    mpz_neg(*zval, *zval);
+}
+
+// Build a new integer value from an int64_t.
+
+Expression*
+Expression::make_integer_int64(int64_t val, Type* type, Location location)
+{
+  mpz_t zval;
+  set_mpz_from_int64(&zval, val);
+  Expression* ret = Expression::make_integer_z(&zval, type, location);
+  mpz_clear(zval);
+  return ret;
+}
+
 // Build a new character constant value.
 
 Expression*
@@ -3694,7 +3738,7 @@ Unary_expression::do_flatten(Gogo* gogo, Named_object*,
       if (!ptype->is_void_type())
         {
           Btype* pbtype = ptype->get_backend(gogo);
-          size_t s = gogo->backend()->type_size(pbtype);
+          int64_t s = gogo->backend()->type_size(pbtype);
           if (s >= 4096 || this->issue_nil_check_)
             {
               Temporary_statement* temp =
@@ -4182,7 +4226,7 @@ Unary_expression::do_get_backend(Translate_context* context)
         Btype* pbtype = ptype->get_backend(gogo);
         if (!ptype->is_void_type())
 	  {
-            size_t s = gogo->backend()->type_size(pbtype);
+            int64_t s = gogo->backend()->type_size(pbtype);
 	    if (s >= 4096 || this->issue_nil_check_)
 	      {
                 go_assert(this->expr_->is_variable());
@@ -7361,7 +7405,7 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
       if (this->seen_)
         return false;
 
-      unsigned long ret;
+      int64_t ret;
       if (this->code_ == BUILTIN_SIZEOF)
 	{
           this->seen_ = true;
@@ -7389,7 +7433,10 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
       else
 	go_unreachable();
 
-      nc->set_unsigned_long(Type::lookup_integer_type("uintptr"), ret);
+      mpz_t zval;
+      set_mpz_from_int64(&zval, ret);
+      nc->set_int(Type::lookup_integer_type("uintptr"), zval);
+      mpz_clear(zval);
       return true;
     }
   else if (this->code_ == BUILTIN_OFFSETOF)
@@ -7403,7 +7450,7 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
       if (this->seen_)
         return false;
 
-      unsigned int total_offset = 0;
+      int64_t total_offset = 0;
       while (true)
         {
           Expression* struct_expr = farg->expr();
@@ -7412,7 +7459,7 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
             return false;
           if (st->named_type() != NULL)
             st->named_type()->convert(this->gogo_);
-          unsigned int offset;
+          int64_t offset;
           this->seen_ = true;
           bool ok = st->struct_type()->backend_field_offset(this->gogo_,
 							    farg->field_index(),
@@ -7429,8 +7476,10 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
             }
           break;
         }
-      nc->set_unsigned_long(Type::lookup_integer_type("uintptr"),
-			    static_cast<unsigned long>(total_offset));
+      mpz_t zval;
+      set_mpz_from_int64(&zval, total_offset);
+      nc->set_int(Type::lookup_integer_type("uintptr"), zval);
+      mpz_clear(zval);
       return true;
     }
   else if (this->code_ == BUILTIN_REAL || this->code_ == BUILTIN_IMAG)
@@ -8329,10 +8378,10 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
 
 	Type* element_type = at->element_type();
 	Btype* element_btype = element_type->get_backend(gogo);
-	size_t element_size = gogo->backend()->type_size(element_btype);
-	Expression* size_expr = Expression::make_integer_ul(element_size,
-							    length->type(),
-							    location);
+	int64_t element_size = gogo->backend()->type_size(element_btype);
+	Expression* size_expr = Expression::make_integer_int64(element_size,
+							       length->type(),
+							       location);
         Expression* bytecount =
             Expression::make_binary(OPERATOR_MULT, size_expr, length, location);
         Expression* copy = Runtime::make_call(Runtime::COPY, location, 3,
@@ -8355,7 +8404,7 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
         go_assert(arg2->is_variable());
 	Expression* arg2_val;
 	Expression* arg2_len;
-	unsigned long size;
+	int64_t size;
 	if (arg2->type()->is_string_type()
 	    && element_type->integer_type() != NULL
 	    && element_type->integer_type()->is_byte())
@@ -8374,7 +8423,7 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
 	    size = gogo->backend()->type_size(element_btype);
 	  }
         Expression* element_size =
-	  Expression::make_integer_ul(size, NULL, location);
+	  Expression::make_integer_int64(size, NULL, location);
 
         Expression* append = Runtime::make_call(Runtime::APPEND, location, 4,
                                                 arg1, arg2_val, arg2_len,
@@ -14028,7 +14077,7 @@ Type_info_expression::do_get_backend(Translate_context* context)
 {
   Btype* btype = this->type_->get_backend(context->gogo());
   Gogo* gogo = context->gogo();
-  size_t val;
+  int64_t val;
   switch (this->type_info_)
     {
     case TYPE_INFO_SIZE:
@@ -14043,13 +14092,9 @@ Type_info_expression::do_get_backend(Translate_context* context)
     default:
       go_unreachable();
     }
-  mpz_t cst;
-  mpz_init_set_ui(cst, val);
-  Btype* int_btype = this->type()->get_backend(gogo);
-  Bexpression* ret =
-    gogo->backend()->integer_constant_expression(int_btype, cst);
-  mpz_clear(cst);
-  return ret;
+  Expression* e = Expression::make_integer_int64(val, this->type(),
+						 this->location());
+  return e->get_backend(context);
 }
 
 // Dump ast representation for a type info expression.
@@ -14780,11 +14825,11 @@ Struct_field_offset_expression::do_get_backend(Translate_context* context)
   Gogo* gogo = context->gogo();
   Btype* btype = this->type_->get_backend(gogo);
 
-  size_t offset = gogo->backend()->type_field_offset(btype, i);
+  int64_t offset = gogo->backend()->type_field_offset(btype, i);
   Type* uptr_type = Type::lookup_integer_type("uintptr");
   Expression* ret =
-    Expression::make_integer_ul(offset, uptr_type,
-				Linemap::predeclared_location());
+    Expression::make_integer_int64(offset, uptr_type,
+				   Linemap::predeclared_location());
   return ret->get_backend(context);
 }
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -936,7 +936,7 @@ package body Sem_Ch10 is
         and then (Distribution_Stub_Mode = Generate_Receiver_Stub_Body
                     or else
                   Distribution_Stub_Mode = Generate_Caller_Stub_Body)
-        and then not Fatal_Error (Main_Unit)
+        and then Fatal_Error (Main_Unit) /= Error_Detected
       then
          if Is_RCI_Pkg_Spec_Or_Body (N) then
 
@@ -1096,7 +1096,7 @@ package body Sem_Ch10 is
 
                      elsif not Analyzed (Cunit (Un))
                        and then Un /= Main_Unit
-                       and then not Fatal_Error (Un)
+                       and then Fatal_Error (Un) /= Error_Detected
                      then
                         Style_Check := False;
                         Semantics (Cunit (Un));
@@ -1623,7 +1623,8 @@ package body Sem_Ch10 is
          --  All done if we successfully loaded the subunit
 
          if Unum /= No_Unit
-           and then (not Fatal_Error (Unum) or else Try_Semantics)
+           and then (Fatal_Error (Unum) /= Error_Detected
+                      or else Try_Semantics)
          then
             Comp_Unit := Cunit (Unum);
 
@@ -1860,7 +1861,9 @@ package body Sem_Ch10 is
 
                   --  Analyze the unit if semantics active
 
-                  if not Fatal_Error (Unum) or else Try_Semantics then
+                  if Fatal_Error (Unum) /= Error_Detected
+                    or else Try_Semantics
+                  then
                      Analyze_Subunit (Comp_Unit);
                   end if;
                end if;
@@ -2818,6 +2821,29 @@ package body Sem_Ch10 is
       if Private_Present (N) then
          Set_Is_Immediately_Visible (E_Name, False);
       end if;
+
+      --  Propagate Fatal_Error setting from with'ed unit to current unit
+
+      case Fatal_Error (Get_Source_Unit (Library_Unit (N))) is
+
+         --  Nothing to do if with'ed unit had no error
+
+         when None =>
+            null;
+
+            --  If with'ed unit had a detected fatal error, propagate it
+
+         when Error_Detected =>
+            Set_Fatal_Error (Current_Sem_Unit, Error_Detected);
+
+            --  If with'ed unit had an ignored error, then propagate it
+            --  but do not overide an existring setting.
+
+         when Error_Ignored =>
+            if Fatal_Error (Current_Sem_Unit) = None then
+               Set_Fatal_Error (Current_Sem_Unit, Error_Ignored);
+            end if;
+      end case;
    end Analyze_With_Clause;
 
    ------------------------------
@@ -5442,7 +5468,7 @@ package body Sem_Ch10 is
       else
          Compiler_State := Analyzing; -- reset after load
 
-         if not Fatal_Error (Unum) or else Try_Semantics then
+         if Fatal_Error (Unum) /= Error_Detected or else Try_Semantics then
             if Debug_Flag_L then
                Write_Str ("*** Loaded generic body");
                Write_Eol;

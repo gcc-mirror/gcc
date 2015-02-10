@@ -1155,6 +1155,9 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	}
 
       rank = comp->as ? comp->as->rank : 0;
+      if (comp->ts.type == BT_CLASS && CLASS_DATA (comp)->as)
+ 	rank = CLASS_DATA (comp)->as->rank;
+
       if (cons->expr->expr_type != EXPR_NULL && rank != cons->expr->rank
 	  && (comp->attr.allocatable || cons->expr->rank))
 	{
@@ -6930,7 +6933,9 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
       goto failure;
     }
 
-  if (code->ext.alloc.ts.type == BT_CHARACTER && !e->ts.deferred)
+  /* Check F08:C632.  */
+  if (code->ext.alloc.ts.type == BT_CHARACTER && !e->ts.deferred
+      && !UNLIMITED_POLY (e))
     {
       int cmp = gfc_dep_compare_expr (e->ts.u.cl->length,
 				      code->ext.alloc.ts.u.cl->length);
@@ -8361,7 +8366,8 @@ resolve_transfer (gfc_code *code)
     }
 
   if (exp == NULL || (exp->expr_type != EXPR_VARIABLE
-		      && exp->expr_type != EXPR_FUNCTION))
+		      && exp->expr_type != EXPR_FUNCTION
+		      && exp->expr_type != EXPR_STRUCTURE))
     return;
 
   /* If we are reading, the variable will be changed.  Note that
@@ -8372,8 +8378,7 @@ resolve_transfer (gfc_code *code)
 				    _("item in READ")))
     return;
 
-  sym = exp->symtree->n.sym;
-  ts = &sym->ts;
+  ts = exp->expr_type == EXPR_STRUCTURE ? &exp->ts : &exp->symtree->n.sym->ts;
 
   /* Go to actual component transferred.  */
   for (ref = exp->ref; ref; ref = ref->next)
@@ -8433,6 +8438,11 @@ resolve_transfer (gfc_code *code)
 	  return;
 	}
     }
+   
+  if (exp->expr_type == EXPR_STRUCTURE)
+    return;
+
+  sym = exp->symtree->n.sym;
 
   if (sym->as != NULL && sym->as->type == AS_ASSUMED_SIZE && exp->ref
       && exp->ref->type == REF_ARRAY && exp->ref->u.ar.type == AR_FULL)

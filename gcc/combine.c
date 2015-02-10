@@ -284,6 +284,16 @@ typedef struct reg_stat_struct {
 
 static vec<reg_stat_type> reg_stat;
 
+/* One plus the highest pseudo for which we track REG_N_SETS.
+   regstat_init_n_sets_and_refs allocates the array for REG_N_SETS just once,
+   but during combine_split_insns new pseudos can be created.  As we don't have
+   updated DF information in that case, it is hard to initialize the array
+   after growing.  The combiner only cares about REG_N_SETS (regno) == 1,
+   so instead of growing the arrays, just assume all newly created pseudos
+   during combine might be set multiple times.  */
+
+static unsigned int reg_n_sets_max;
+
 /* Record the luid of the last insn that invalidated memory
    (anything that writes memory, and subroutine calls, but not pushes).  */
 
@@ -2420,7 +2430,9 @@ can_change_dest_mode (rtx x, int added_sets, machine_mode mode)
 		>= hard_regno_nregs[regno][mode]));
 
   /* Or a pseudo that is only used once.  */
-  return (REG_N_SETS (regno) == 1 && !added_sets
+  return (regno < reg_n_sets_max
+	  && REG_N_SETS (regno) == 1
+	  && !added_sets
 	  && !REG_USERVAR_P (x));
 }
 
@@ -3630,7 +3642,8 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
 	      if (REG_P (new_i3_dest)
 		  && REG_P (new_i2_dest)
-		  && REGNO (new_i3_dest) == REGNO (new_i2_dest))
+		  && REGNO (new_i3_dest) == REGNO (new_i2_dest)
+		  && REGNO (new_i2_dest) < reg_n_sets_max)
 		INC_REG_N_SETS (REGNO (new_i2_dest), 1);
 	    }
 	}
@@ -4480,7 +4493,8 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	   zero its use count so it won't make `reload' do any work.  */
 	if (! added_sets_2
 	    && (newi2pat == 0 || ! reg_mentioned_p (i2dest, newi2pat))
-	    && ! i2dest_in_i2src)
+	    && ! i2dest_in_i2src
+	    && REGNO (i2dest) < reg_n_sets_max)
 	  INC_REG_N_SETS (REGNO (i2dest), -1);
       }
 
@@ -4497,7 +4511,9 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
 	record_value_for_reg (i1dest, i1_insn, i1_val);
 
-	if (! added_sets_1 && ! i1dest_in_i1src)
+	if (! added_sets_1
+	    && ! i1dest_in_i1src
+	    && REGNO (i1dest) < reg_n_sets_max)
 	  INC_REG_N_SETS (REGNO (i1dest), -1);
       }
 
@@ -4514,7 +4530,9 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
 	record_value_for_reg (i0dest, i0_insn, i0_val);
 
-	if (! added_sets_0 && ! i0dest_in_i0src)
+	if (! added_sets_0
+	    && ! i0dest_in_i0src
+	    && REGNO (i0dest) < reg_n_sets_max)
 	  INC_REG_N_SETS (REGNO (i0dest), -1);
       }
 
@@ -9750,6 +9768,7 @@ reg_nonzero_bits_for_combine (const_rtx x, machine_mode mode,
 	  || (rsp->last_set_label == label_tick
               && DF_INSN_LUID (rsp->last_set) < subst_low_luid)
 	  || (REGNO (x) >= FIRST_PSEUDO_REGISTER
+	      && REGNO (x) < reg_n_sets_max
 	      && REG_N_SETS (REGNO (x)) == 1
 	      && !REGNO_REG_SET_P
 		  (DF_LR_IN (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb),
@@ -9825,6 +9844,7 @@ reg_num_sign_bit_copies_for_combine (const_rtx x, machine_mode mode,
 	  || (rsp->last_set_label == label_tick
               && DF_INSN_LUID (rsp->last_set) < subst_low_luid)
 	  || (REGNO (x) >= FIRST_PSEUDO_REGISTER
+	      && REGNO (x) < reg_n_sets_max
 	      && REG_N_SETS (REGNO (x)) == 1
 	      && !REGNO_REG_SET_P
 		  (DF_LR_IN (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb),
@@ -12863,6 +12883,7 @@ get_last_value_validate (rtx *loc, rtx_insn *insn, int tick, int replace)
 	      /* If this is a pseudo-register that was only set once and not
 		 live at the beginning of the function, it is always valid.  */
 	      || (! (regno >= FIRST_PSEUDO_REGISTER
+		     && regno < reg_n_sets_max
 		     && REG_N_SETS (regno) == 1
 		     && (!REGNO_REG_SET_P
 			 (DF_LR_IN (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb),
@@ -12979,6 +13000,7 @@ get_last_value (const_rtx x)
   if (value == 0
       || (rsp->last_set_label < label_tick_ebb_start
 	  && (regno < FIRST_PSEUDO_REGISTER
+	      || regno >= reg_n_sets_max
 	      || REG_N_SETS (regno) != 1
 	      || REGNO_REG_SET_P
 		 (DF_LR_IN (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb), regno))))
@@ -14166,6 +14188,7 @@ rest_of_handle_combine (void)
   df_analyze ();
 
   regstat_init_n_sets_and_refs ();
+  reg_n_sets_max = max_reg_num ();
 
   rebuild_jump_labels_after_combine
     = combine_instructions (get_insns (), max_reg_num ());

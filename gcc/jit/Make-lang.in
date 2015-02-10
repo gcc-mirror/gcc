@@ -67,7 +67,9 @@ jit_OBJS = attribs.o \
 	jit/jit-playback.o \
 	jit/jit-result.o \
 	jit/jit-tempdir.o \
-	jit/jit-builtins.o
+	jit/jit-builtins.o \
+	jit/jit-spec.o \
+	gcc.o
 
 # Use strict warnings for this front end.
 jit-warn = $(STRICT_WARN)
@@ -77,10 +79,12 @@ jit-warn = $(STRICT_WARN)
 $(LIBGCCJIT_FILENAME): $(jit_OBJS) \
 	libbackend.a libcommon-target.a libcommon.a \
 	$(CPPLIB) $(LIBDECNUMBER) \
-	$(LIBDEPS) $(srcdir)/jit/libgccjit.map
+	$(LIBDEPS) $(srcdir)/jit/libgccjit.map \
+	$(EXTRA_GCC_OBJS)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ -shared \
 	     $(jit_OBJS) libbackend.a libcommon-target.a libcommon.a \
 	     $(CPPLIB) $(LIBDECNUMBER) $(LIBS) $(BACKENDLIBS) \
+	     $(EXTRA_GCC_OBJS) \
 	     -Wl,--version-script=$(srcdir)/jit/libgccjit.map \
 	     -Wl,-soname,$(LIBGCCJIT_SONAME)
 

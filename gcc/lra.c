@@ -475,7 +475,7 @@ lra_emit_add (rtx x, rtx y, rtx z)
 		  rtx insn = emit_add2_insn (x, disp);
 		  if (insn != NULL_RTX)
 		    {
-		      insn = emit_add2_insn (x, disp);
+		      insn = emit_add2_insn (x, base);
 		      if (insn != NULL_RTX)
 			ok_p = true;
 		    }

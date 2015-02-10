@@ -5138,7 +5138,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 to conflict with Comp2 and an alias set copy is required.
 
 	 The language rules ensure the parent type is already frozen here.  */
-      if (Is_Derived_Type (gnat_entity) && !type_annotate_only)
+      if (kind != E_Subprogram_Type
+	  && Is_Derived_Type (gnat_entity)
+	  && !type_annotate_only)
 	{
 	  Entity_Id gnat_parent_type = Underlying_Type (Etype (gnat_entity));
 	  /* For constrained packed array subtypes, the implementation type is
@@ -5446,16 +5448,17 @@ is_cplusplus_method (Entity_Id gnat_entity)
   if (Convention (gnat_entity) != Convention_CPP)
     return false;
 
-  /* This is the main case: C++ method imported as a primitive operation.  */
-  if (Is_Dispatching_Operation (gnat_entity))
+  /* This is the main case: C++ method imported as a primitive operation.
+     Note that a C++ class with no virtual functions can be imported as a
+     limited record type so the operation is not necessarily dispatching.  */
+  if (Is_Primitive (gnat_entity))
     return true;
 
   /* A thunk needs to be handled like its associated primitive operation.  */
   if (Is_Subprogram (gnat_entity) && Is_Thunk (gnat_entity))
     return true;
 
-  /* C++ classes with no virtual functions can be imported as limited
-     record types, but we need to return true for the constructors.  */
+  /* A constructor is a method on the C++ side.  */
   if (Is_Constructor (gnat_entity))
     return true;
 
@@ -5656,15 +5659,17 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
     }
 
   /* If this is either a foreign function or if the underlying type won't
-     be passed by reference, strip off possible padding type.  */
+     be passed by reference and is as aligned as the original type, strip
+     off possible padding type.  */
   if (TYPE_IS_PADDING_P (gnu_param_type))
     {
       tree unpadded_type = TREE_TYPE (TYPE_FIELDS (gnu_param_type));
 
-      if (mech == By_Reference
-	  || foreign
+      if (foreign
 	  || (!must_pass_by_ref (unpadded_type)
-	      && (mech == By_Copy || !default_pass_by_ref (unpadded_type))))
+	      && mech != By_Reference
+	      && (mech == By_Copy || !default_pass_by_ref (unpadded_type))
+	      && TYPE_ALIGN (unpadded_type) >= TYPE_ALIGN (gnu_param_type)))
 	gnu_param_type = unpadded_type;
     }
 

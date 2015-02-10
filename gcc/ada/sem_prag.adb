@@ -279,7 +279,7 @@ package body Sem_Prag is
    --  name _Pre, _Post, _Invariant, or _Type_Invariant. Used by pragmas
    --  Check, Check_Policy.
 
-   procedure Set_Unit_Name (N : Node_Id; With_Item : Node_Id);
+   procedure Set_Elab_Unit_Name (N : Node_Id; With_Item : Node_Id);
    --  Place semantic information on the argument of an Elaborate/Elaborate_All
    --  pragma. Entity name for unit and its parents is taken from item in
    --  previous with_clause that mentions the unit.
@@ -3109,7 +3109,9 @@ package body Sem_Prag is
       --  Analyzes the argument, and determines if it is a static string
       --  expression, returns True if so, False if non-static or not String.
       --  A special case is that a string literal returns True in Ada 83 mode
-      --  (which has no such thing as static string expressions).
+      --  (which has no such thing as static string expressions). Note that
+      --  the call analyzes its argument, so this cannot be used for the case
+      --  where an identifier might not be declared.
 
       procedure Pragma_Misplaced;
       pragma No_Return (Pragma_Misplaced);
@@ -11783,7 +11785,7 @@ package body Sem_Prag is
                  Make_If_Statement (Eloc,
                    Condition =>
                      Make_And_Then (Eloc,
-                       Left_Opnd  => New_Occurrence_Of (Standard_False, Eloc),
+                       Left_Opnd  => Make_Identifier (Eloc, Name_False),
                        Right_Opnd => Expr),
                    Then_Statements => New_List (
                      Make_Null_Statement (Eloc))));
@@ -13221,8 +13223,7 @@ package body Sem_Prag is
                     and then Same_Name (Name (Citem), Get_Pragma_Arg (Arg))
                   then
                      Set_Elaborate_Present (Citem, True);
-                     Set_Unit_Name (Get_Pragma_Arg (Arg), Name (Citem));
-                     Generate_Reference (Entity (Name (Citem)), Citem);
+                     Set_Elab_Unit_Name (Get_Pragma_Arg (Arg), Name (Citem));
 
                      --  With the pragma present, elaboration calls on
                      --  subprograms from the named unit need no further
@@ -13319,7 +13320,7 @@ package body Sem_Prag is
                     and then Same_Name (Name (Citem), Get_Pragma_Arg (Arg))
                   then
                      Set_Elaborate_All_Present (Citem, True);
-                     Set_Unit_Name (Get_Pragma_Arg (Arg), Name (Citem));
+                     Set_Elab_Unit_Name (Get_Pragma_Arg (Arg), Name (Citem));
 
                      --  Suppress warnings and elaboration checks on the named
                      --  unit if the pragma is in the current compilation, as
@@ -15703,6 +15704,13 @@ package body Sem_Prag is
             else
                Error_Pragma_Arg
                  ("pragma% only allowed for private type", Arg1);
+            end if;
+
+            --  Not allowed for abstract type
+
+            if Is_Abstract_Type (Typ) then
+               Error_Pragma_Arg
+                 ("pragma% not allowed for abstract type", Arg1);
             end if;
 
             --  Note that the type has at least one invariant, and also that
@@ -19615,42 +19623,72 @@ package body Sem_Prag is
                Entity_Pragma  : Node_Id;
                Entity         : Entity_Id)
             is
+               Arg : Node_Id := Arg1;
+
             begin
+               --  The current pragma may appear without an argument. If this
+               --  is the case, associate all error messages with the pragma
+               --  itself.
+
+               if No (Arg) then
+                  Arg := N;
+               end if;
+
+               --  The mode of the current pragma is compared against that of
+               --  an enclosing context.
+
                if Present (Context_Pragma) then
                   pragma Assert (Nkind (Context_Pragma) = N_Pragma);
 
-                  --  New mode less restrictive than the established mode
+                  --  Issue an error if the new mode is less restrictive than
+                  --  that of the context.
 
                   if Get_SPARK_Mode_From_Pragma (Context_Pragma) = Off
                     and then Get_SPARK_Mode_From_Pragma (N) = On
                   then
                      Error_Msg_N
-                       ("cannot change SPARK_Mode from Off to On", Arg1);
+                       ("cannot change SPARK_Mode from Off to On", Arg);
                      Error_Msg_Sloc := Sloc (SPARK_Mode_Pragma);
-                     Error_Msg_N ("\SPARK_Mode was set to Off#", Arg1);
+                     Error_Msg_N ("\SPARK_Mode was set to Off#", Arg);
                      raise Pragma_Exit;
                   end if;
                end if;
 
+               --  The mode of the current pragma is compared against that of
+               --  an initial package/subprogram declaration.
+
                if Present (Entity) then
+
+                  --  Both the initial declaration and the completion carry
+                  --  SPARK_Mode pragmas.
+
                   if Present (Entity_Pragma) then
+                     pragma Assert (Nkind (Entity_Pragma) = N_Pragma);
+
+                     --  Issue an error if the new mode is less restrictive
+                     --  than that of the initial declaration.
+
                      if Get_SPARK_Mode_From_Pragma (Entity_Pragma) = Off
                        and then Get_SPARK_Mode_From_Pragma (N) = On
                      then
-                        Error_Msg_N ("incorrect use of SPARK_Mode", Arg1);
+                        Error_Msg_N ("incorrect use of SPARK_Mode", Arg);
                         Error_Msg_Sloc := Sloc (Entity_Pragma);
                         Error_Msg_NE
                           ("\value Off was set for SPARK_Mode on&#",
-                           Arg1, Entity);
+                           Arg, Entity);
                         raise Pragma_Exit;
                      end if;
 
+                  --  Otherwise the initial declaration lacks a SPARK_Mode
+                  --  pragma in which case the current pragma is illegal as
+                  --  it cannot "complete".
+
                   else
-                     Error_Msg_N ("incorrect use of SPARK_Mode", Arg1);
+                     Error_Msg_N ("incorrect use of SPARK_Mode", Arg);
                      Error_Msg_Sloc := Sloc (Entity);
                      Error_Msg_NE
                        ("\no value was set for SPARK_Mode on&#",
-                        Arg1, Entity);
+                        Arg, Entity);
                      raise Pragma_Exit;
                   end if;
                end if;
@@ -21031,7 +21069,7 @@ package body Sem_Prag is
                           (Cunit_Entity
                              (Get_Source_Unit
                                 (Library_Unit (Citem))));
-                        Set_Unit_Name
+                        Set_Elab_Unit_Name
                           (Get_Pragma_Arg (Arg_Node), Name (Citem));
                         exit;
                      end if;
@@ -21287,12 +21325,25 @@ package body Sem_Prag is
          -- Warnings --
          --------------
 
-         --  pragma Warnings (On | Off [,REASON]);
-         --  pragma Warnings (On | Off, LOCAL_NAME [,REASON]);
-         --  pragma Warnings (static_string_EXPRESSION [,REASON]);
-         --  pragma Warnings (On | Off, STRING_LITERAL [,REASON]);
+         --  pragma Warnings ([TOOL_NAME,] DETAILS [, REASON]);
 
-         --  REASON ::= Reason => Static_String_Expression
+         --  DETAILS ::= On | Off
+         --  DETAILS ::= On | Off, local_NAME
+         --  DETAILS ::= static_string_EXPRESSION
+         --  DETAILS ::= On | Off, static_string_EXPRESSION
+
+         --  TOOL_NAME ::= GNAT | GNATProve
+
+         --  REASON ::= Reason => STRING_LITERAL {& STRING_LITERAL}
+
+         --  Note: If the first argument matches an allowed tool name, it is
+         --  always considered to be a tool name, even if there is a string
+         --  variable of that name.
+
+         --  Note if the second argument of DETAILS is a local_NAME then the
+         --  second form is always understood. If the intention is to use
+         --  the fourth form, then you can write NAME & "" to force the
+         --  intepretation as a static_string_EXPRESSION.
 
          when Pragma_Warnings => Warnings : declare
             Reason : String_Id;
@@ -21302,9 +21353,10 @@ package body Sem_Prag is
             Check_At_Least_N_Arguments (1);
 
             --  See if last argument is labeled Reason. If so, make sure we
-            --  have a static string expression, and acquire the REASON string.
-            --  Then remove the REASON argument by decreasing Num_Args by one;
-            --  Remaining processing looks only at first Num_Args arguments).
+            --  have a string literal or a concatenation of string literals,
+            --  and acquire the REASON string. Then remove the REASON argument
+            --  by decreasing Num_Args by one; Remaining processing looks only
+            --  at first Num_Args arguments).
 
             declare
                Last_Arg : constant Node_Id :=
@@ -21344,8 +21396,60 @@ package body Sem_Prag is
 
             declare
                Argx : constant Node_Id := Get_Pragma_Arg (Arg1);
+               Shifted_Args : List_Id;
 
             begin
+               --  See if first argument is a tool name, currently either
+               --  GNAT or GNATprove. If so, either ignore the pragma if the
+               --  tool used does not match, or continue as if no tool name
+               --  was given otherwise, by shifting the arguments.
+
+               if Nkind (Argx) = N_Identifier
+                 and then Nam_In (Chars (Argx), Name_Gnat, Name_Gnatprove)
+               then
+                  if Chars (Argx) = Name_Gnat then
+                     if CodePeer_Mode or GNATprove_Mode or ASIS_Mode then
+                        Rewrite (N, Make_Null_Statement (Loc));
+                        Analyze (N);
+                        raise Pragma_Exit;
+                     end if;
+
+                  elsif Chars (Argx) = Name_Gnatprove then
+                     if not GNATprove_Mode then
+                        Rewrite (N, Make_Null_Statement (Loc));
+                        Analyze (N);
+                        raise Pragma_Exit;
+                     end if;
+
+                  else
+                     raise Program_Error;
+                  end if;
+
+                  --  At this point, the pragma Warnings applies to the tool,
+                  --  so continue with shifted arguments.
+
+                  Arg_Count := Arg_Count - 1;
+
+                  if Arg_Count = 1 then
+                     Shifted_Args := New_List (New_Copy (Arg2));
+                  elsif Arg_Count = 2 then
+                     Shifted_Args := New_List (New_Copy (Arg2),
+                                               New_Copy (Arg3));
+                  elsif Arg_Count = 3 then
+                     Shifted_Args := New_List (New_Copy (Arg2),
+                                               New_Copy (Arg3),
+                                               New_Copy (Arg4));
+                  else
+                     raise Program_Error;
+                  end if;
+
+                  Rewrite (N, Make_Pragma (Loc,
+                                Chars => Name_Warnings,
+                                Pragma_Argument_Associations => Shifted_Args));
+                  Analyze (N);
+                  raise Pragma_Exit;
+               end if;
+
                --  One argument case
 
                if Arg_Count = 1 then
@@ -26552,11 +26656,11 @@ package body Sem_Prag is
       end if;
    end Set_Encoded_Interface_Name;
 
-   -------------------
-   -- Set_Unit_Name --
-   -------------------
+   ------------------------
+   -- Set_Elab_Unit_Name --
+   ------------------------
 
-   procedure Set_Unit_Name (N : Node_Id; With_Item : Node_Id) is
+   procedure Set_Elab_Unit_Name (N : Node_Id; With_Item : Node_Id) is
       Pref : Node_Id;
       Scop : Entity_Id;
 
@@ -26583,6 +26687,8 @@ package body Sem_Prag is
 
          Set_Entity (Pref, Scop);
       end if;
-   end Set_Unit_Name;
+
+      Generate_Reference (Entity (With_Item), N, Set_Ref => False);
+   end Set_Elab_Unit_Name;
 
 end Sem_Prag;

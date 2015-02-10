@@ -2533,15 +2533,12 @@ Type::is_backend_type_size_known(Gogo* gogo)
 // the backend.
 
 bool
-Type::backend_type_size(Gogo* gogo, unsigned long *psize)
+Type::backend_type_size(Gogo* gogo, int64_t *psize)
 {
   if (!this->is_backend_type_size_known(gogo))
     return false;
   Btype* bt = this->get_backend_placeholder(gogo);
-  size_t size = gogo->backend()->type_size(bt);
-  *psize = static_cast<unsigned long>(size);
-  if (*psize != size)
-    return false;
+  *psize = gogo->backend()->type_size(bt);
   return true;
 }
 
@@ -2549,15 +2546,12 @@ Type::backend_type_size(Gogo* gogo, unsigned long *psize)
 // the alignment in bytes and return true.  Otherwise, return false.
 
 bool
-Type::backend_type_align(Gogo* gogo, unsigned long *palign)
+Type::backend_type_align(Gogo* gogo, int64_t *palign)
 {
   if (!this->is_backend_type_size_known(gogo))
     return false;
   Btype* bt = this->get_backend_placeholder(gogo);
-  size_t align = gogo->backend()->type_alignment(bt);
-  *palign = static_cast<unsigned long>(align);
-  if (*palign != align)
-    return false;
+  *palign = gogo->backend()->type_alignment(bt);
   return true;
 }
 
@@ -2565,15 +2559,12 @@ Type::backend_type_align(Gogo* gogo, unsigned long *palign)
 // field.
 
 bool
-Type::backend_type_field_align(Gogo* gogo, unsigned long *palign)
+Type::backend_type_field_align(Gogo* gogo, int64_t *palign)
 {
   if (!this->is_backend_type_size_known(gogo))
     return false;
   Btype* bt = this->get_backend_placeholder(gogo);
-  size_t a = gogo->backend()->type_field_alignment(bt);
-  *palign = static_cast<unsigned long>(a);
-  if (*palign != a)
-    return false;
+  *palign = gogo->backend()->type_field_alignment(bt);
   return true;
 }
 
@@ -4780,7 +4771,7 @@ Struct_type::do_compare_is_identity(Gogo* gogo)
   const Struct_field_list* fields = this->fields_;
   if (fields == NULL)
     return true;
-  unsigned long offset = 0;
+  int64_t offset = 0;
   for (Struct_field_list::const_iterator pf = fields->begin();
        pf != fields->end();
        ++pf)
@@ -4791,7 +4782,7 @@ Struct_type::do_compare_is_identity(Gogo* gogo)
       if (!pf->type()->compare_is_identity(gogo))
 	return false;
 
-      unsigned long field_align;
+      int64_t field_align;
       if (!pf->type()->backend_type_align(gogo, &field_align))
 	return false;
       if ((offset & (field_align - 1)) != 0)
@@ -4802,13 +4793,13 @@ Struct_type::do_compare_is_identity(Gogo* gogo)
 	  return false;
 	}
 
-      unsigned long field_size;
+      int64_t field_size;
       if (!pf->type()->backend_type_size(gogo, &field_size))
 	return false;
       offset += field_size;
     }
 
-  unsigned long struct_size;
+  int64_t struct_size;
   if (!this->backend_type_size(gogo, &struct_size))
     return false;
   if (offset != struct_size)
@@ -5571,15 +5562,12 @@ Struct_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 
 bool
 Struct_type::backend_field_offset(Gogo* gogo, unsigned int index,
-				  unsigned int* poffset)
+				  int64_t* poffset)
 {
   if (!this->is_backend_type_size_known(gogo))
     return false;
   Btype* bt = this->get_backend_placeholder(gogo);
-  size_t offset = gogo->backend()->type_field_offset(bt, index);
-  *poffset = static_cast<unsigned int>(offset);
-  if (*poffset != offset)
-    return false;
+  *poffset = gogo->backend()->type_field_offset(bt, index);
   return true;
 }
 
@@ -5764,10 +5752,17 @@ Array_type::verify_length()
       return false;
     }
 
+  Type* int_type = Type::lookup_integer_type("int");
+  unsigned int tbits = int_type->integer_type()->bits();
   unsigned long val;
   switch (nc.to_unsigned_long(&val))
     {
     case Numeric_constant::NC_UL_VALID:
+      if (sizeof(val) >= tbits / 8 && val >> (tbits - 1) != 0)
+	{
+	  error_at(this->length_->location(), "array bound overflows");
+	  return false;
+	}
       break;
     case Numeric_constant::NC_UL_NOTINT:
       error_at(this->length_->location(), "array bound truncated to integer");
@@ -5776,19 +5771,21 @@ Array_type::verify_length()
       error_at(this->length_->location(), "negative array bound");
       return false;
     case Numeric_constant::NC_UL_BIG:
-      error_at(this->length_->location(), "array bound overflows");
-      return false;
+      {
+	mpz_t val;
+	if (!nc.to_int(&val))
+	  go_unreachable();
+	unsigned int bits = mpz_sizeinbase(val, 2);
+	mpz_clear(val);
+	if (bits >= tbits)
+	  {
+	    error_at(this->length_->location(), "array bound overflows");
+	    return false;
+	  }
+      }
+      break;
     default:
       go_unreachable();
-    }
-
-  Type* int_type = Type::lookup_integer_type("int");
-  unsigned int tbits = int_type->integer_type()->bits();
-  if (sizeof(val) <= tbits * 8
-      && val >> (tbits - 1) != 0)
-    {
-      error_at(this->length_->location(), "array bound overflows");
-      return false;
     }
 
   return true;
@@ -5820,8 +5817,8 @@ Array_type::do_compare_is_identity(Gogo* gogo)
     return false;
 
   // If there is any padding, then we can't use memcmp.
-  unsigned long size;
-  unsigned long align;
+  int64_t size;
+  int64_t align;
   if (!this->element_type_->backend_type_size(gogo, &size)
       || !this->element_type_->backend_type_align(gogo, &align))
     return false;
@@ -6417,7 +6414,7 @@ Array_type::slice_gc_symbol(Gogo* gogo, Expression_list** vals,
   // Differentiate between slices with zero-length and non-zero-length values.
   Type* element_type = this->element_type();
   Btype* ebtype = element_type->get_backend(gogo);
-  size_t element_size = gogo->backend()->type_size(ebtype);
+  int64_t element_size = gogo->backend()->type_size(ebtype);
 
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
   unsigned long opval = element_size == 0 ? GC_APTR : GC_SLICE;
@@ -6444,8 +6441,8 @@ Array_type::array_gc_symbol(Gogo* gogo, Expression_list** vals,
     go_assert(saw_errors());
 
   Btype* pbtype = gogo->backend()->pointer_type(gogo->backend()->void_type());
-  size_t pwidth = gogo->backend()->type_size(pbtype);
-  size_t iwidth = gogo->backend()->type_size(this->get_backend(gogo));
+  int64_t pwidth = gogo->backend()->type_size(pbtype);
+  int64_t iwidth = gogo->backend()->type_size(this->get_backend(gogo));
 
   Type* element_type = this->element_type();
   if (bound < 1 || !element_type->has_pointer())

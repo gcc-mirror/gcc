@@ -1,3 +1,9 @@
+2015-02-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR bootstrap/53348
+	* inclhack.def (aix_pthread): Accept tab after define.
+	* fixincl.x: Regenerate.
+
 2015-01-24  Bruce Korb  <bkorb@gnu.org>
 
 	* README: add some clarification on use of test_text

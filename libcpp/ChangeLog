@@ -1,3 +1,15 @@
+2015-02-03    <dodji@redhat.com>
+
+	PR preprocessor/64803
+	* internal.h (cpp_reader::top_most_macro_node): New data member.
+	* macro.c (enter_macro_context): Pass the location of the end of
+	the top-most invocation of the function-like macro, or the
+	location of the expansion point of the top-most object-like macro.
+	(cpp_get_token_1): Store the top-most macro node in the new
+	pfile->top_most_macro_node data member.
+	(_cpp_pop_context): Clear the new cpp_reader::top_most_macro_node
+	data member.
+
 2015-01-30  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* lex.c (search_line_fast): Change __ARM_NEON__ to __ARM_NEON.

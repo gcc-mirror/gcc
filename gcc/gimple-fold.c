@@ -3120,6 +3120,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 			}
 		      gimple_call_set_lhs (stmt, NULL_TREE);
 		    }
+		  maybe_remove_unused_call_args (cfun, stmt);
 		}
 	      else
 		{

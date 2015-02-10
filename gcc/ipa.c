@@ -597,8 +597,20 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	     or not.  */
 	  && (!flag_ltrans || !DECL_EXTERNAL (vnode->decl)))
 	{
+	  struct ipa_ref *ref = NULL;
+
+	  /* First remove the aliases, so varpool::remove can possibly lookup
+	     the constructor and save it for future use.  */
+	  while (vnode->iterate_direct_aliases (0, ref))
+	    {
+	      if (file)
+		fprintf (file, " %s/%i", ref->referred->name (),
+			 ref->referred->order);
+	      ref->referring->remove ();
+	    }
 	  if (file)
 	    fprintf (file, " %s/%i", vnode->name (), vnode->order);
+          vnext = next_variable (vnode);
 	  vnode->remove ();
 	  changed = true;
 	}

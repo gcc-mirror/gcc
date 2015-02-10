@@ -49,5 +49,6 @@ main ()
   int l = 0;
   asm ("" : "=r" (l) : "0" (l));
   a = foo (l + 1, l + 2, l + 3, l + 4, l + 5, l + 6, l + 30);
+  asm volatile ("" :: "r" (l));
   return 0;
 }

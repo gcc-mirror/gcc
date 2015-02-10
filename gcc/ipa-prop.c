@@ -3075,6 +3075,7 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
       struct cgraph_indirect_call_info *ici = ie->indirect_info;
       struct ipa_jump_func *jfunc;
       int param_index;
+      cgraph_node *spec_target = NULL;
 
       next_ie = ie->next_callee;
 
@@ -3091,6 +3092,14 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
       param_index = ici->param_index;
       jfunc = ipa_get_ith_jump_func (top, param_index);
 
+      if (ie->speculative)
+	{
+	  struct cgraph_edge *de;
+          struct ipa_ref *ref;
+	  ie->speculative_call_info (de, ie, ref);
+	  spec_target = de->callee;
+	}
+
       if (!opt_for_fn (node->decl, flag_indirect_inlining))
 	new_direct_edge = NULL;
       else if (ici->polymorphic)
@@ -3103,11 +3112,14 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	new_direct_edge = try_make_edge_direct_simple_call (ie, jfunc,
 							    new_root_info);
       /* If speculation was removed, then we need to do nothing.  */
-      if (new_direct_edge && new_direct_edge != ie)
+      if (new_direct_edge && new_direct_edge != ie
+	  && new_direct_edge->callee == spec_target)
 	{
 	  new_direct_edge->indirect_inlining_edge = 1;
 	  top = IPA_EDGE_REF (cs);
 	  res = true;
+	  if (!new_direct_edge->speculative)
+	    continue;
 	}
       else if (new_direct_edge)
 	{
@@ -3123,9 +3135,13 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	      res = true;
 	    }
 	  top = IPA_EDGE_REF (cs);
+	  /* If speculative edge was introduced we still need to update
+	     call info of the indirect edge.  */
+	  if (!new_direct_edge->speculative)
+	    continue;
 	}
-      else if (jfunc->type == IPA_JF_PASS_THROUGH
-	       && ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
+      if (jfunc->type == IPA_JF_PASS_THROUGH
+          && ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
 	{
 	  if ((ici->agg_contents
 	       && !ipa_get_jf_pass_through_agg_preserved (jfunc))

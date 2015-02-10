@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -979,7 +979,7 @@ package body Rtsfind is
 
       if U.Unum = No_Unit then
          Load_Fail ("not found", U_Id, Id);
-      elsif Fatal_Error (U.Unum) then
+      elsif Fatal_Error (U.Unum) = Error_Detected then
          Load_Fail ("had parser errors", U_Id, Id);
       end if;
 
@@ -1025,7 +1025,7 @@ package body Rtsfind is
                Semantics (Cunit (U.Unum));
                Restore_Private_Visibility;
 
-               if Fatal_Error (U.Unum) then
+               if Fatal_Error (U.Unum) = Error_Detected then
                   Load_Fail ("had semantic errors", U_Id, Id);
                end if;
             end if;

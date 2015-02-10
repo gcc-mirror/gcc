@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -415,6 +415,7 @@ package body Lib.Xref is
 
       function Get_Through_Renamings (E : Entity_Id) return Entity_Id is
          Result : Entity_Id := E;
+
       begin
          while Present (Result)
            and then Is_Object (Result)
@@ -422,6 +423,7 @@ package body Lib.Xref is
          loop
             Result := Get_Enclosing_Object (Renamed_Object (Result));
          end loop;
+
          return Result;
       end Get_Through_Renamings;
 
@@ -646,11 +648,11 @@ package body Lib.Xref is
       --  initialized type.
 
       if not In_Extended_Main_Source_Unit (N) then
-         if Typ = 'e'
-           or else Typ = 'I'
-           or else Typ = 'p'
-           or else Typ = 'i'
-           or else Typ = 'k'
+         if Typ = 'e' or else
+            Typ = 'I' or else
+            Typ = 'p' or else
+            Typ = 'i' or else
+            Typ = 'k'
            or else (Typ = 'b' and then Is_Generic_Instance (E))
 
             --  Allow the generation of references to reads, writes and calls

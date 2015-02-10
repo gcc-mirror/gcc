@@ -3925,12 +3925,12 @@ legitimate_pic_operand_p (rtx x)
 #define RTX_OK_FOR_OFFSET_P(X, MODE)			\
   (CONST_INT_P (X)					\
    && INTVAL (X) >= -0x1000				\
-   && INTVAL (X) < (0x1000 - GET_MODE_SIZE (MODE)))
+   && INTVAL (X) <= (0x1000 - GET_MODE_SIZE (MODE)))
 
 #define RTX_OK_FOR_OLO10_P(X, MODE)			\
   (CONST_INT_P (X)					\
    && INTVAL (X) >= -0x1000				\
-   && INTVAL (X) < (0xc00 - GET_MODE_SIZE (MODE)))
+   && INTVAL (X) <= (0xc00 - GET_MODE_SIZE (MODE)))
 
 /* Handle the TARGET_LEGITIMATE_ADDRESS_P target hook.
 
@@ -11075,7 +11075,7 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
     case MULT:
       if (float_mode_p)
 	*total = sparc_costs->float_mul;
-      else if (! TARGET_HARD_MUL)
+      else if (TARGET_ARCH32 && !TARGET_HARD_MUL)
 	*total = COSTS_N_INSNS (25);
       else
 	{
@@ -11113,7 +11113,7 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	      bit_cost = COSTS_N_INSNS (bit_cost);
 	    }
 
-	  if (mode == DImode)
+	  if (mode == DImode || !TARGET_HARD_MUL)
 	    *total = sparc_costs->int_mulX + bit_cost;
 	  else
 	    *total = sparc_costs->int_mul + bit_cost;

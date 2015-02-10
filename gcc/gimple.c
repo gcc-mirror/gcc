@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "lto-streamer.h"
 #include "cgraph.h"
+#include "gimple-ssa.h"
 
 
 /* All the tuples have their operand vector (if present) at the very bottom
@@ -2948,5 +2949,22 @@ gimple_seq_discard (gimple_seq seq)
       gsi_remove (&gsi, true);
       release_defs (stmt);
       ggc_free (stmt);
+    }
+}
+
+/* See if STMT now calls function that takes no parameters and if so, drop
+   call arguments.  This is used when devirtualization machinery redirects
+   to __builtiln_unreacahble or __cxa_pure_virutal.  */
+
+void
+maybe_remove_unused_call_args (struct function *fn, gimple stmt)
+{
+  tree decl = gimple_call_fndecl (stmt);
+  if (TYPE_ARG_TYPES (TREE_TYPE (decl))
+      && TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (decl))) == void_type_node
+      && gimple_call_num_args (stmt))
+    {
+      gimple_set_num_ops (stmt, 3);
+      update_stmt_fn (fn, stmt);
     }
 }

@@ -942,18 +942,18 @@ class Type
   // in bytes and return true.  Otherwise, return false.  This queries
   // the backend.
   bool
-  backend_type_size(Gogo*, unsigned long* psize);
+  backend_type_size(Gogo*, int64_t* psize);
 
   // If the alignment of the type can be determined, set *PALIGN to
   // the alignment in bytes and return true.  Otherwise, return false.
   bool
-  backend_type_align(Gogo*, unsigned long* palign);
+  backend_type_align(Gogo*, int64_t* palign);
 
   // If the alignment of a struct field of this type can be
   // determined, set *PALIGN to the alignment in bytes and return
   // true.  Otherwise, return false.
   bool
-  backend_type_field_align(Gogo*, unsigned long* palign);
+  backend_type_field_align(Gogo*, int64_t* palign);
 
   // Whether the backend size is known.
   bool
@@ -2263,7 +2263,7 @@ class Struct_type : public Type
   // determined, set *POFFSET to the offset in bytes and return true.
   // Otherwise, return false.
   bool
-  backend_field_offset(Gogo*, unsigned int index, unsigned int* poffset);
+  backend_field_offset(Gogo*, unsigned int index, int64_t* poffset);
 
   // Finish the backend representation of all the fields.
   void

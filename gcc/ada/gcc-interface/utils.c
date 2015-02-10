@@ -3105,6 +3105,11 @@ begin_subprog_body (tree subprog_decl)
   /* This function is being defined.  */
   TREE_STATIC (subprog_decl) = 1;
 
+  /* The failure of this assertion will likely come from a wrong context for
+     the subprogram body, e.g. another procedure for a procedure declared at
+     library level.  */
+  gcc_assert (current_function_decl == decl_function_context (subprog_decl));
+
   current_function_decl = subprog_decl;
 
   /* Enter a new binding level and show that all the parameters belong to

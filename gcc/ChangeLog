@@ -1,3 +1,481 @@
+2015-02-08  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64.c (gty_dummy): Delete.
+
+2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/63566 
+	* ipa-visibility.c (cgraph_node::non_local_p): Accept aliases.
+	(cgraph_node::local_p): Remove thunk related FIXME.
+
+2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/63566 
+	* i386.c (ix86_function_regparm): Look through aliases to see if callee
+	is local and optimized.
+	(ix86_function_sseregparm): Likewise; also use target's SSE math
+	settings; error out instead of silently generating wrong code
+	on mismatches.
+	(init_cumulative_args): Look through aliases.
+
+2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/63566 
+	* ipa-split.c (execute_split_functions): Split if function has aliases.
+
+2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/63566 
+	* cgraphunit.c (cgraph_node::analyze): Be sure target of thunk is
+	aliases before trying to expand it.
+	(cgraph_node::expand_thunk): Fix formating.
+
+2015-02-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (Function Attributes [naked]): Copy-edit.
+	(Using Assembly Language with C): Expand introduction.
+	(Basic Asm): Copy-edit.  Add more information about uses of
+	basic asm.
+	(Extended Asm): Copy-edit.  Document new escape syntax and
+	%l[label] syntax.
+	(Global Reg Vars): Copy-edit.
+	(Local Reg Vars): Likewise.
+
+2015-02-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR debug/2714
+	PR bootstrap/64256
+	* xcoffout.h (DBX_CONTIN_LENGTH): Define as 16384.
+	(DBX_CONTIN_CHAR): Define.
+
+2015-02-06  Sebastian Pop  <s.pop@samsung.com>
+	    Brian Rzycki  <b.rzycki@samsung.com>
+
+	PR tree-optimization/64878
+	* tree-ssa-threadedge.c: Include tree-ssa-loop.h.
+	(fsm_find_control_statement_thread_paths): Add parameter seen_loop_phi.
+	Stop recursion at loop phi nodes after having visited a loop phi node.
+
+2015-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* toplev.c (process_options): Change flag_ipa_ra before creating
+	optimization_{default,current}_node.
+
+	PR ipa/64896
+	* cgraphunit.c (cgraph_node::expand_thunk): If
+	restype is not is_gimple_reg_type nor the thunk_fndecl
+	returns aggregate_value_p, set restmp to a temporary variable
+	instead of resdecl.
+
+2015-02-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra.c (lra_emit_add): Fix a typo in using disp instead of base.
+
+2015-02-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/64205
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Do not
+	add a general secondary reload handler for SDmode, unless we have
+	both read/write support for SDmode.
+
+2015-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/64937
+	* dwarf2out.c (set_block_abstract_flags, set_decl_abstract_flags):
+	Replace setting argument with abstract_vec, always set BLOCK_ABSTRACT
+	or DECL_ABSTRACT_P flags to 1 rather than to setting, and if it wasn't
+	1 before, push it to abstract_vec.
+	(dwarf2out_abstract_function): Adjust caller.  Don't call
+	set_decl_abstract_flags second time, instead clear BLOCK_ABSTRACT or
+	DECL_ABSTRACT_P flags for all abstract_vec elts.
+
+2015-02-06  Renlin Li  <renlin.li@arm.com>
+
+	* tree-ssa-forwprop.c (execute): Keep location info while rewrite
+	complex gimple.
+	* tree-ssa.c (execute_update_addresses_taken): Likewise.
+
+2015-02-06  Jeff Law  <law@redhat.com>
+
+	PR target/64889
+	* config/h8300/h8300.c (push): New argument "in_prologue".
+	Pass "in_prologue" along to "F".
+	(h8300_push_pop): Corresponding changes.
+	(h8300_expand_prologue): Likewise.
+	(h8300_swap_into_er6): Likewise.  Do not set RTX_FRAME_RELATED_P.
+
+2015-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/64957
+	PR debug/64817
+	* simplify-rtx.c (simplify_binary_operation_1): Use ~cval for
+	IOR rather than for AND.
+
+2015-02-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/62631
+	* tree-ssa-loop-ivopts.c (get_shiftadd_cost): Use the mininum of costs
+	of shift-add and (add + shift) operations.  Rename local variable.
+
+2015-02-05  Jeff Law  <law@redhat.com>
+
+	PR target/17306
+	* config/h8300/constraints.md (U): Correctly dectect
+	"eightbit_data" memory addresses.
+	* config/h8300/h8300.c (eightbit_constant_address_p): Also
+	handle (const (plus (symbol_ref (x)))) where x is declared
+	as an 8-bit data memory address.
+	* config/h8300/h8300.md (call, call_value): Correctly detect
+	"funcvec" functions.
+
+	PR target/43264
+	* config/h8300/h8300.c (get_shift_alg): Fix ASHIFTRT by
+	24 to 28 bits for the H8/300.
+
+2015-02-06  Alan Modra  <amodra@gmail.com>
+
+	PR target/64876
+	* config/rs6000/rs6000.c (chain_already_loaded): New function.
+	(rs6000_call_aix): Use it.
+
+2015-02-05  Jan Hubicka <hubicka@ucw.cz>
+
+	* ipa-cp.c (ipa_value_from_jfunc, ipa_context_from_jfunc): Add bounds
+	check.
+
+2015-02-05  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/h8300/constraints.md ("U" constraint): Use strict
+	variant of REG_OK_FOR_BASE_P after reload has started.
+
+2015-02-04  Mantas Mikaitis  <mantas.mikaitis@arm.com>
+
+	* config/arm/arm.h (TARGET_NEON_FP): Removed conditional definition,
+	define to zero if !TARGET_NEON.
+	(TARGET_CPU_CPP_BUILTINS): Added second condition before defining
+	__ARM_FP macro.
+
+2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
+	    Trevor Saunders  <tsaunders@mozilla.com>
+
+	PR ipa/61548
+	* tree-emultls.c (new_emutls_decl): Resolve alias after creating it.
+
+2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61548
+	* ipa.c (symbol_table::remove_unreachable_nodes): Fix ordering issue
+	when removing varpool nodes.
+
+2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/61548
+	* varpool.c (varpool_node::remove): Fix order of variables.
+
+2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/64686
+	* ipa-inline.c (inline_small_functions): Fix ordering issue between
+	speculation resolution and key updates.
+
+2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.c (update_indirect_edges_after_inlining): By more careful
+	about not letting any speculative edges unupdated.
+
+2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR gcov/64123
+	* gcov-io.c (gcov_var): Export.
+
+2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/64922
+	* ipa-prop.c (update_indirect_edges_after_inlining): Correctly update
+	edges that become speculative.
+
+2015-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (is_fortran): Also return true for DW_LANG_Fortran03
+	or DW_LANG_Fortran08.
+	(lower_bound_default): Return 1 for DW_LANG_Fortran03 or
+	DW_LANG_Fortran08.
+	(gen_compile_unit_die): Handle "GNU Fortran2003" and
+	"GNU Fortran2008" language strings.
+	* dbxout.c (get_lang_number): Use lang_GNU_Fortran.
+	* langhooks.h (lang_GNU_Fortran): New prototype.
+	* langhooks.c (lang_GNU_Fortran): New function.
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Use
+	lang_GNU_Fortran.
+
+2015-02-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (RTX_OK_FOR_OFFSET_P): Fix off-by-one error.
+	(RTX_OK_FOR_OLO10_P): Likewise.
+
+2015-02-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-loop-ivopts.c (get_address_cost): Use right mode for offset.
+
+2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/64922
+	* gimple.c: Include gimple-ssa.h.
+	(maybe_remove_unused_call_args): New function.
+	* gimple.h (maybe_remove_unused_call_args): Declare.
+	* cgraph.c (cgraph_edge::redirect_call_stmt_to_callee): Use it.
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children): Likewise.
+	* gimple-fold.c (gimple_fold_call): Likewise.
+
+2015-02-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/64905
+	* lra-eliminations.c (setup_can_eliminate): Clear hard frame
+	pointer alignment if it isn't needed.
+
+2015-02-04  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/aarch64/aarch64-cores.def: Add cortex-a72 and
+	cortex-a72.cortex-a53.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (AArch64 Options/-mtune): Add "cortex-a72".
+
+2015-02-04  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c (rl78_note_reg_set): Note the use of REGs
+	inside a MEM.
+
+2015-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.def (DEF_BUILTIN_CHKP): Define if not defined.
+	(DEF_LIB_BUILTIN_CHKP, DEF_EXT_LIB_BUILTIN_CHKP): Redefine.
+	(DEF_CHKP_BUILTIN): Define using DEF_BUILTIN_CHKP instead
+	of DEF_BUILTIN.
+	(BUILT_IN_MEMCPY, BUILT_IN_MEMMOVE, BUILT_IN_MEMSET, BUILT_IN_STRCAT,
+	BUILT_IN_STRCHR, BUILT_IN_STRCPY, BUILT_IN_STRLEN): Use
+	DEF_LIB_BUILTIN_CHKP macro instead of DEF_LIB_BUILTIN.
+	(BUILT_IN_MEMCPY_CHK, BUILT_IN_MEMMOVE_CHK, BUILT_IN_MEMPCPY_CHK,
+	BUILT_IN_MEMPCPY, BUILT_IN_MEMSET_CHK, BUILT_IN_STPCPY_CHK,
+	BUILT_IN_STPCPY, BUILT_IN_STRCAT_CHK, BUILT_IN_STRCPY_CHK): Use
+	DEF_EXT_LIB_BUILTIN_CHKP macro instead of DEF_EXT_LIB_BUILTIN.
+	* tree-core.h (enum built_in_function): In between
+	BEGIN_CHKP_BUILTINS and END_CHKP_BUILTINS only define enum values
+	for builtins that use DEF_BUILTIN_CHKP macro.
+
+2015-02-04  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/64817
+	* cfgexpand.c (expand_debug_expr): Compute unsignedp from
+	operands for tcc_comparison exprs.  Fix typos.
+
+	PR debug/64817
+	* simplify-rtx.c (simplify_binary_operation_1): Simplify one
+	of two XORs that have an intervening AND or IOR.
+
+	PR debug/64817
+	* simplify-rtx.c (simplify_binary_operation_1): Rewrite
+	simplification of XOR of AND to not allocate new rtx before
+	committing to a simplification.
+
+2015-02-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-ldpstp.md: Use std::swap instead of
+	manual swaps in all peepholes.
+
+2015-02-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_evpc_ext): Use std::swap instead
+	of manual swapping implementation.
+	(aarch64_expand_vec_perm_const_1): Likewise.
+
+2015-02-04  James Greenhalgh <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.c (NAMED_PARAM): Delete it.
+	(generic_addrcost_table): Remove NAMED_PARAM.
+	(cortexa57_addrcost_table): Likewise.
+	(xgene1_addrcost_table): Likewise.
+	(generic_regmove_table): Likewise.
+	(cortexa53_regmove_table): Likewise.
+	(xgene1_regmove_table): Likewise.
+	(generic_vector_table): Likewise.
+	(cortexa57_vector_table): Likewise.
+	(xgene1_vector_table): Likewise.
+	(generic_tunings): Likewise.
+	(cortexa53_tunings): Likewise.
+	(cortexa57_tunings): Likewise.
+	(xgene1_tunings): Likewise.
+
+2015-02-04  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/arm/arm-cores.def: Add cortex-a72 and
+	cortex-a72.cortex-a53.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Likewise.
+	* config/arm/t-aprofile (MULTILIB_MATCHES): Likewise.
+	* config/arm/arm-tune.md: Regenerate.
+	* config/arm/arm-tables.opt: Add entries for "cortex-a72" and
+	"cortex-a72.cortex-a53".
+	* doc/invoke.texi (ARM Options/-mtune): Likewise.
+
+2015-02-04  Nick Clifton  <nickc@redhat.com>
+
+	PR target/64408
+	* config/fr30/predicates.md (di_operand): Add SUBREG to the list
+	of accepted codes.
+	(nonimmediate_di_operand): Likewise.
+
+	* config/msp430/msp430.c (msp430_use_f5_series_hwmult): Add more
+	prefixes of known F5 using MSP430 MCUs.
+
+2015-02-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (sqrt): Use BUILTIN_VDQF_DF.
+	* config/aarch64/arm_neon.h (vsqrt_f64): Use __builtin_aarch64_sqrtdf
+	instead of __builtin_sqrt.
+
+2015-02-04  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* varasm.c (do_assemble_alias): Follow transparent alias
+	chain for target.
+	(default_assemble_visibility): Follow transparent alias
+	chain for decl name.
+
+2015-02-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR middle-end/62103
+	* tree-ssa-sccvn.c (fully_constant_vn_reference_p): Use TYPE_PRECISION
+	to compute size of referenced value in the constant case.
+
+2015-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/64756
+	* cse.c (invalidate_dest): New function.
+	(cse_insn): Use it.  If dest != SET_DEST (sets[i].rtl) and
+	HASH (SET_DEST (sets[i].rtl), mode) computation sets do_not_record,
+	invalidate and do not record it.
+
+2015-02-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/64660
+	* config/sh/sync.md (atomic_<fetchop_name><mode>_hard,
+	atomic_not<mode>_hard, atomic_<fetchop_name><mode>_soft_tcb,
+	atomic_not<mode>_soft_tcb, atomic_nand<mode>_hard,
+	atomic_nand<mode>_soft_tcb): New insns.
+	(atomic_fetch_<fetchop_name>si_hard): Convert to insn_and_split.
+	Split into atomic_<fetchop_name>_fetchsi_hard if operands[0] is unused.
+	(define_insn "atomic_fetch_notsi_hard): Convert to insn_and_split.
+	Split into atomic_not_fetchsi_hard if operands[0] is unused.
+	(atomic_fetch_<fetchop_name><mode>_hard): Convert to insn_and_split.
+	Split into atomic_<fetchop_name><mode>_hard if operands[0] is unused.
+	(atomic_fetch_not<mode>_hard): Convert to insn_and_split.  Split into
+	atomic_not<mode>_hard if operands[0] is unused.
+	(atomic_fetch_<fetchop_name><mode>_soft_gusa): Convert to
+	insn_and_split.  Split into atomic_<fetchop_name>_fetch<mode>_soft_gusa
+	if operands[0] is unused.
+	(atomic_fetch_not<mode>_soft_gusa): Convert to insn_and_split.  Split
+	into atomic_not_fetch<mode>_soft_gusa if operands[0] is unused.
+	(atomic_fetch_<fetchop_name><mode>_soft_tcb): Convert to insn_and_split.
+	Split into atomic_<fetchop_name><mode>_soft_tcb if operands[0] is
+	unused.
+	(atomic_fetch_not<mode>_soft_tcb): Convert to insn_and_split.  Split
+	into atomic_not<mode>_soft_tcb if operands[0] is unused.
+	(atomic_fetch_<fetchop_name><mode>_soft_imask): Convert to
+	insn_and_split.  Split into atomic_<fetchop_name>_fetch<mode>_soft_imask
+	if operands[0] is unused.
+	(atomic_fetch_not<mode>_soft_imask): Convert to insn_and_split.  Split
+	into atomic_not_fetch<mode>_soft_imask is operands[0] is unused.
+	(atomic_fetch_nandsi_hard): Convert to insn_and_split.  Split into
+	atomic_nand_fetchsi_hard if operands[0] is unused.
+	(atomic_fetch_nand<mode>_hard): Convert to insn_and_split.  Split into
+	atomic_nand<mode>_hard if operands[0] is unused.
+	(atomic_fetch_nand<mode>_soft_gusa): Convert to insn_and_split.  Split
+	into atomic_nand_fetch<mode>_soft_gusa if operands[0] is unused.
+	(atomic_fetch_nand<mode>_soft_tcb): Convert to insn_and_split.  Split
+	into atomic_nand<mode>_soft_tcb if operands[0] is unused.
+	(atomic_fetch_nand<mode>_soft_imask): Convert to insn_and_split.  Split
+	into atomic_nand_fetch<mode>_soft_imask if operands[0] is unused.
+	(atomic_<fetchop_name>_fetch<mode>_hard): Convert to insn_and_split.
+	Split into atomic_<fetchop_name><mode>_hard if operands[0] is unused.
+	(atomic_not_fetch<mode>_hard): Convert to insn_and_split.  Split into
+	atomic_not<mode>_hard if operands[0] is unused.
+	(atomic_<fetchop_name>_fetch<mode>_soft_tcb): Convert to insn_and_split.
+	Split into atomic_<fetchop_name><mode>_soft_tcb if operands[0] is
+	unused.
+	(atomic_not_fetch<mode>_soft_tcb): Convert to insn_and_split.  Split
+	into atomic_not<mode>_soft_tcb if operands[0] is unused.
+	(atomic_nand_fetch<mode>_hard): Convert to insn_and_split.  Split into
+	atomic_nand<mode>_hard if operands[0] is unused.
+	(atomic_nand_fetch<mode>_soft_tcb): Convert to insn_and_split.  Split
+	into atomic_nand<mode>_soft_tcb if operands[0] is unused.
+
+2015-02-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64810
+	* Makefile.in (GCC_OBJS): Add gcc-main.o.
+	* gcc-main.c: New file, containing "main" taken from gcc.c.
+	* gcc.c (do_self_spec): Free decoded_options.
+	(class driver): Move declaration to gcc.h.
+	(main): Move declaration and implementation to new file
+	gcc-main.c.
+	(driver_get_configure_time_options): New function.
+	* gcc.h (class driver): Move this declaration here, from
+	gcc.c.
+	(driver_get_configure_time_options): New declaration.
+
+2015-02-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-analysis.c (simple_edge_hints): Fix check for
+	cross-module inlining.
+	* cgraph.h (cgraph_node): Add flag merged.
+	* ipa-icf.c (sem_function::merge): Maintain it.
+
+2015-02-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arm/arm.c (thumb2_reorg): Test UNARY_P and BINARY_P
+	instead of OBJECT_P.
+
+2015-02-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/62631
+	* config/sparc/sparc.h (TARGET_HARD_MUL): Remove TARGET_V8PLUS.
+	(TARGET_HARD_MUL32): Rewrite based on TARGET_HARD_MUL.
+	* config/sparc/sparc.c (sparc_rtx_costs) <MULT>: Return costs based on
+	int_mulX for integers in 64-bit mode if TARGET_HARD_MUL is not set.
+
+2015-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/63504
+	* combine.c (reg_n_sets_max): New variable.
+	(can_change_dest_mode, reg_nonzero_bits_for_combine,
+	reg_num_sign_bit_copies_for_combine, get_last_value_validate,
+	get_last_value): Use REG_N_SETS only on pseudos < reg_n_sets_max.
+	(try_combine): Use INC_REG_N_SETS only on pseudos < reg_n_sets_max.
+	(rest_of_handle_combine): Initialize reg_n_sets_max.
+
+2015-02-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (early_inliner): Skip inlining only in always_inlined;
+	if some always_inline was inlined, apply changes before inlining
+	heuristically.
+
+2015-02-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/64810
+	* config/arm/arm.c (arm_option_override): Set
+	arm_selected_arch/cpu/tune to NULL on entry.
+
+2015-02-02  Tejas Belagod  <tejas.belagod@arm.com>
+	    Andrew Pinski  <pinskia@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@gcc.gnu.org>
+
+	PR target/64231
+	* config/aarch64/aarch64.c (aarch64_classify_symbol): Fix large
+	integer typing for small model. Use IN_RANGE.
+
+2015-02-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-ccp.c (valueize_op_1): Always allow valueizing default-defs.
+	* tree-vrp.c (vrp_valueize_1): Likewise.
+
 2015-02-02  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_call_aix): Use unspec rather
@@ -925,8 +1403,7 @@
 
 2015-01-22  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
-	* config/s390/s390.md (atomic code attribute): Fix typo "ior" ->
-	"or".
+	* config/s390/s390.md (atomic code attribute): Fix typo "ior" -> "or".
 
 2015-01-22  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 

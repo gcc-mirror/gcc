@@ -62,6 +62,7 @@ with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
+with Sem_Warn;
 with Stand;    use Stand;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
@@ -6441,6 +6442,8 @@ package body Sem_Attr is
          --  The type of attribute 'Update is that of the prefix
 
          Set_Etype (N, P_Type);
+
+         Sem_Warn.Warn_On_Suspicious_Update (N);
       end Update;
 
       ---------

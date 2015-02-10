@@ -366,9 +366,14 @@ new_emutls_decl (tree decl, tree alias_of)
   else if (!alias_of)
     varpool_node::add (to);
   else 
-    varpool_node::create_alias (to,
-				varpool_node::get_for_asmname
-				  (DECL_ASSEMBLER_NAME (DECL_VALUE_EXPR (alias_of)))->decl);
+    {
+      varpool_node *n;
+      varpool_node *t = varpool_node::get_for_asmname
+	 (DECL_ASSEMBLER_NAME (DECL_VALUE_EXPR (alias_of)));
+
+      n = varpool_node::create_alias (to, t->decl);
+      n->resolve_alias (t);
+    }
   return to;
 }
 

@@ -6310,11 +6310,14 @@ package body Sem_Res is
 
       --  Check for calling a function with OUT or IN OUT parameter when the
       --  calling context (us right now) is not Ada 2012, so does not allow
-      --  OUT or IN OUT parameters in function calls.
+      --  OUT or IN OUT parameters in function calls. Functions declared in
+      --  a predefined unit are OK, as they may be called indirectly from a
+      --  user-declared instantiation.
 
       if Ada_Version < Ada_2012
         and then Ekind (Nam) = E_Function
         and then Has_Out_Or_In_Out_Parameter (Nam)
+        and then not In_Predefined_Unit (Nam)
       then
          Error_Msg_NE ("& has at least one OUT or `IN OUT` parameter", N, Nam);
          Error_Msg_N ("\call to this function only allowed in Ada 2012", N);

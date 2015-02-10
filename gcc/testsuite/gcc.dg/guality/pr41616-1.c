@@ -1,4 +1,4 @@
-/* { dg-do run { xfail *-*-* } } */
+/* { dg-do run } */
 /* { dg-options "-g -fgnu89-inline" } */
 
 #include "guality.h"

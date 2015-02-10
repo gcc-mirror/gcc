@@ -1,18 +1,25 @@
 JIT: libgccjit (GCC) version 5.0.0 20150123 (experimental) (x86_64-unknown-linux-gnu)
 JIT:	compiled by GNU C version 4.8.3 20140911 (Red Hat 4.8.3-7), GMP version 5.1.2, MPFR version 3.1.2, MPC version 1.0.1
 JIT: entering: gcc_jit_context_set_str_option
+JIT:  GCC_JIT_STR_OPTION_PROGNAME: "./test-hello-world.c.exe"
 JIT: exiting: gcc_jit_context_set_str_option
 JIT: entering: gcc_jit_context_set_int_option
+JIT:  GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL: 3
 JIT: exiting: gcc_jit_context_set_int_option
 JIT: entering: gcc_jit_context_set_bool_option
+JIT:  GCC_JIT_BOOL_OPTION_DEBUGINFO: true
 JIT: exiting: gcc_jit_context_set_bool_option
 JIT: entering: gcc_jit_context_set_bool_option
+JIT:  GCC_JIT_BOOL_OPTION_DUMP_INITIAL_TREE: false
 JIT: exiting: gcc_jit_context_set_bool_option
 JIT: entering: gcc_jit_context_set_bool_option
+JIT:  GCC_JIT_BOOL_OPTION_DUMP_INITIAL_GIMPLE: false
 JIT: exiting: gcc_jit_context_set_bool_option
 JIT: entering: gcc_jit_context_set_bool_option
+JIT:  GCC_JIT_BOOL_OPTION_SELFCHECK_GC: true
 JIT: exiting: gcc_jit_context_set_bool_option
 JIT: entering: gcc_jit_context_set_bool_option
+JIT:  GCC_JIT_BOOL_OPTION_DUMP_SUMMARY: false
 JIT: exiting: gcc_jit_context_set_bool_option
 JIT: entering: gcc_jit_context_get_type
 JIT: exiting: gcc_jit_context_get_type
@@ -47,6 +54,16 @@ JIT: exiting: gcc_jit_context_dump_reproducer_to_file
 JIT: entering: gcc_jit_context_compile
 JIT:  in-memory compile of ctxt: 0x1283e20
 JIT:  entering: gcc::jit::result* gcc::jit::recording::context::compile()
+JIT:   GCC_JIT_STR_OPTION_PROGNAME: "./test-hello-world.c.exe"
+JIT:   GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL: 3
+JIT:   GCC_JIT_BOOL_OPTION_DEBUGINFO: true
+JIT:   GCC_JIT_BOOL_OPTION_DUMP_INITIAL_TREE: false
+JIT:   GCC_JIT_BOOL_OPTION_DUMP_INITIAL_GIMPLE: false
+JIT:   GCC_JIT_BOOL_OPTION_DUMP_GENERATED_CODE: false
+JIT:   GCC_JIT_BOOL_OPTION_DUMP_SUMMARY: false
+JIT:   GCC_JIT_BOOL_OPTION_DUMP_EVERYTHING: false
+JIT:   GCC_JIT_BOOL_OPTION_SELFCHECK_GC: true
+JIT:   GCC_JIT_BOOL_OPTION_KEEP_INTERMEDIATES: false
 JIT:   entering: void gcc::jit::recording::context::validate()
 JIT:   exiting: void gcc::jit::recording::context::validate()
 JIT:   entering: gcc::jit::playback::context::context(gcc::jit::recording::context*)
@@ -60,10 +77,13 @@ JIT:    entering: bool gcc::jit::tempdir::create()
 JIT:     m_path_template: /tmp/libgccjit-XXXXXX
 JIT:     m_path_tempdir: /tmp/libgccjit-CKq1M9
 JIT:    exiting: bool gcc::jit::tempdir::create()
-JIT:    entering: void gcc::jit::playback::context::make_fake_args(vec<char*>*, const char*, vec<gcc::jit::recording::requested_dump>*)
-JIT:    exiting: void gcc::jit::playback::context::make_fake_args(vec<char*>*, const char*, vec<gcc::jit::recording::requested_dump>*)
 JIT:    entering: void gcc::jit::playback::context::acquire_mutex()
 JIT:    exiting: void gcc::jit::playback::context::acquire_mutex()
+JIT:    entering: void gcc::jit::playback::context::make_fake_args(vec<char*>*, const char*, vec<gcc::jit::recording::requested_dump>*)
+JIT:     reusing cached configure-time options
+JIT:     configure_time_options[0]: -mtune=generic
+JIT:     configure_time_options[1]: -march=x86-64
+JIT:    exiting: void gcc::jit::playback::context::make_fake_args(vec<char*>*, const char*, vec<gcc::jit::recording::requested_dump>*)
 JIT:    entering: toplev::main
 JIT:     argv[0]: ./test-hello-world.c.exe
 JIT:     argv[1]: /tmp/libgccjit-CKq1M9/fake.c
@@ -75,6 +95,8 @@ JIT:     argv[6]: --param
 JIT:     argv[7]: ggc-min-expand=0
 JIT:     argv[8]: --param
 JIT:     argv[9]: ggc-min-heapsize=0
+JIT:     argv[10]: -mtune=generic
+JIT:     argv[11]: -march=x86-64
 JIT:     entering: bool jit_langhook_init()
 JIT:     exiting: bool jit_langhook_init()
 JIT:     entering: void gcc::jit::playback::context::replay()

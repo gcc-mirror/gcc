@@ -9259,7 +9259,6 @@ package body Sem_Ch6 is
          declare
             Candidate : Entity_Id := Empty;
             Hom       : Entity_Id := Empty;
-            Iface_Typ : Entity_Id;
             Subp      : Entity_Id := Empty;
 
          begin
@@ -9334,8 +9333,23 @@ package body Sem_Ch6 is
                  and then Etype (Result_Definition (Parent (Def_Id))) =
                           Etype (Result_Definition (Parent (Subp)))
                then
-                  Overridden_Subp := Subp;
-                  return;
+                  Candidate := Subp;
+
+                  --  If an inherited subprogram is implemented by a protected
+                  --  function, then the first parameter of the inherited
+                  --  subprogram shall be of mode in, but not an
+                  --  access-to-variable parameter (RM 9.4(11/9)
+
+                  if Present (First_Formal (Subp))
+                    and then Ekind (First_Formal (Subp)) = E_In_Parameter
+                    and then
+                      (not Is_Access_Type (Etype (First_Formal (Subp)))
+                         or else
+                       Is_Access_Constant (Etype (First_Formal (Subp))))
+                  then
+                     Overridden_Subp := Subp;
+                     return;
+                  end if;
                end if;
 
                Hom := Homonym (Hom);
@@ -9343,29 +9357,9 @@ package body Sem_Ch6 is
 
             --  After examining all candidates for overriding, we are left with
             --  the best match which is a mode incompatible interface routine.
-            --  Do not emit an error if the Expander is active since this error
-            --  will be detected later on after all concurrent types are
-            --  expanded and all wrappers are built. This check is meant for
-            --  spec-only compilations.
 
-            if Present (Candidate) and then not Expander_Active then
-               Iface_Typ :=
-                 Find_Parameter_Type (Parent (First_Formal (Candidate)));
-
-               --  Def_Id is primitive of a protected type, declared inside the
-               --  type, and the candidate is primitive of a limited or
-               --  synchronized interface.
-
-               if In_Scope
-                 and then Is_Protected_Type (Typ)
-                 and then
-                   (Is_Limited_Interface (Iface_Typ)
-                     or else Is_Protected_Interface (Iface_Typ)
-                     or else Is_Synchronized_Interface (Iface_Typ)
-                     or else Is_Task_Interface (Iface_Typ))
-               then
-                  Error_Msg_PT (Def_Id, Candidate);
-               end if;
+            if In_Scope and then Present (Candidate) then
+               Error_Msg_PT (Def_Id, Candidate);
             end if;
 
             Overridden_Subp := Candidate;
