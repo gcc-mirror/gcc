@@ -1,3 +1,15 @@
+2015-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/64824
+	PR c/64868
+	* testsuite/libgomp.c/pr64824.c: New test.
+	* testsuite/libgomp.c/pr64868.c: New test.
+	* testsuite/libgomp.c++/pr64824.C: New test.
+	* testsuite/libgomp.c++/pr64868.C: New test.
+
 2015-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/64734

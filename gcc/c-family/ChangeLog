@@ -1,3 +1,14 @@
+2015-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/64824
+	PR c/64868
+	* c-omp.c (c_finish_omp_atomic): Use TRUNC_DIV_EXPR
+	instead of RDIV_EXPR.  Use build_binary_op instead of
+	build2_loc.
+
 2015-02-11  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

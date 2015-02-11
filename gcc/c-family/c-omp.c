@@ -156,6 +156,9 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
       return error_mark_node;
     }
 
+  if (opcode == RDIV_EXPR)
+    opcode = TRUNC_DIV_EXPR;
+
   /* ??? Validate that rhs does not overlap lhs.  */
 
   /* Take and save the address of the lhs.  From then on we'll reference it
@@ -190,7 +193,7 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
      to do this, and then take it apart again.  */
   if (swapped)
     {
-      rhs = build2_loc (loc, opcode, TREE_TYPE (lhs), rhs, lhs);
+      rhs = build_binary_op (loc, opcode, rhs, lhs, 1);
       opcode = NOP_EXPR;
     }
   bool save = in_late_binary_op;
