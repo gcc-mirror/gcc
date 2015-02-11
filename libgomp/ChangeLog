@@ -1,5 +1,9 @@
 2015-02-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/64824
+	* testsuite/libgomp.c/atomic-18.c: New test.
+	* testsuite/libgomp.c++/atomic-16.C: New test.
+
 	Backported from mainline
 	2015-02-04  Jakub Jelinek  <jakub@redhat.com>
 

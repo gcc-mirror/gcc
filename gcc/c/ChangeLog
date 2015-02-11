@@ -1,5 +1,9 @@
 2015-02-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/64824
+	* c-parser.c (c_parser_binary_expression): Fix OpenMP stack[sp].prec
+	check in the POP macro.
+
 	Backported from mainline
 	2015-02-04  Jakub Jelinek  <jakub@redhat.com>
 
