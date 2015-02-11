@@ -1,3 +1,9 @@
+2015-02-11  Richard Henderson  <rth@redhat.com>
+
+	PR sanitize/65000
+	* tree-eh.c (mark_reachable_handlers): Mark source and destination
+	regions of __builtin_eh_copy_values.
+
 2015-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/65003
