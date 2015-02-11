@@ -7180,6 +7180,10 @@ place_block_symbol (rtx symbol)
 	{
 	  rtx target = DECL_RTL (snode->ultimate_alias_target ()->decl);
 
+	  gcc_assert (MEM_P (target)
+		      && GET_CODE (XEXP (target, 0)) == SYMBOL_REF
+		      && SYMBOL_REF_HAS_BLOCK_INFO_P (XEXP (target, 0)));
+	  target = XEXP (target, 0);
 	  place_block_symbol (target);
 	  SYMBOL_REF_BLOCK_OFFSET (symbol) = SYMBOL_REF_BLOCK_OFFSET (target);
 	  return;

@@ -1,3 +1,8 @@
+2015-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/65003
+	* g++.dg/opt/pr65003.C: New test.
+
 2015-02-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* lib/target-supports.exp (check_effective_target_pie): Renamed
