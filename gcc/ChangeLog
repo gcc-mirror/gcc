@@ -1,3 +1,8 @@
+2015-02-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (reload_out<mode>_aligned): Make operands 2
+	and 3 earlyclobber operands.
+
 2015-02-09  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
         * doc/extend.texi: s/390: Update documentation of hotpatch attribute.
