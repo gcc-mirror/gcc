@@ -1,3 +1,26 @@
+2015-02-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65005
+	* ipa-visibility.c (cgraph_node::non_local_p): Turn into static
+	function.
+	* symtab.c (symtab_node::verify_base): Remove check that non-definitions
+	have no comdat group.
+	* lto-cgraph.c (lto_output_node): Always output thunk and alias info.
+	(lto_output_varpool_node): Always output alias info.
+	(output_refs): Output refs of boundary aliases, too.
+	(compute_ltrans_boundary): Add alias and thunk target into boundaries.
+	(output_symtab): Output call eges in thunks in boundary.
+	(get_alias_symbol): Remove.
+	(input_node, input_varpool_node): Do not special case weakrefs.
+	* ipa.c (symbol_table::remove_unreachable_nodes): Do not remove
+	alias and thunks targets in the boundary; do not take removed symbols
+	from their comdat groups.
+	* cgraph.c (cgraph_node::local_info): Look through aliases and thunks.
+	(cgraph_node::global_info): Remove.
+	(cgraph_node::rtl_info): Look through aliases and thunks.
+	* cgrpah.h (global_info): Remove.
+	(non_local_p): Remove.
+
 2015-02-10  David Wohlferd  <dw@LimeGreenSocks.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
