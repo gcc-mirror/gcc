@@ -6291,7 +6291,15 @@ prune_ready_list (state_t temp_state, bool first_cycle_insn_p,
 	      if (SCHED_GROUP_P (insn) && cost > min_cost_group)
 		min_cost_group = cost;
 	      ready_remove (&ready, i);
-	      queue_insn (insn, cost, reason);
+	      /* Normally we'd want to queue INSN for COST cycles.  However,
+		 if SCHED_GROUP_P is set, then we must ensure that nothing
+		 else comes between INSN and its predecessor.  If there is
+		 some other insn ready to fire on the next cycle, then that
+		 invariant would be broken.
+
+		 So when SCHED_GROUP_P is set, just queue this insn for a
+		 single cycle.  */
+	      queue_insn (insn, SCHED_GROUP_P (insn) ? 1 : cost, reason);
 	      if (i + 1 < n)
 		break;
 	    }

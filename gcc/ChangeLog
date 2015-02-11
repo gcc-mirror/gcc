@@ -1,3 +1,9 @@
+2015-02-11  Jeff Law  <law@redhat.com>
+
+	PR target/63347
+	* haifa-sched.c (prune_ready_list): If we have a SCHED_GROUP_P insn
+	that needs to be queued, just queue it for a single cycle.
+
 2015-02-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa.c (symbol_table::remove_unreachable_nodes): Avoid releasing
