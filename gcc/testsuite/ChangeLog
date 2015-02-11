@@ -1,3 +1,14 @@
+2015-02-11  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-07-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/57653
+	* c-c++-common/pr57653.c: New test.
+	* c-c++-common/pr57653.h: New file.
+	* c-c++-common/pr57653-2.c: New test.
+	* c-c++-common/pr57653-2.h: New file.
+
 2015-02-09  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc/testsuite/gcc.target/s390/hotpatch-13.c: New testcase.
