@@ -1779,6 +1779,8 @@ symtab_node::get_partitioning_class (void)
 
   if (varpool_node *vnode = dyn_cast <varpool_node *> (this))
     {
+      if (alias && definition && !ultimate_alias_target ()->definition)
+	return SYMBOL_EXTERNAL;
       /* Constant pool references use local symbol names that can not
          be promoted global.  We should never put into a constant pool
          objects that can not be duplicated across partitions.  */
@@ -1790,7 +1792,7 @@ symtab_node::get_partitioning_class (void)
      Handle them as external; compute_ltrans_boundary take care to make
      proper things to happen (i.e. to make them appear in the boundary but
      with body streamed, so clone can me materialized).  */
-  else if (!dyn_cast <cgraph_node *> (this)->definition)
+  else if (!dyn_cast <cgraph_node *> (this)->function_symbol ()->definition)
     return SYMBOL_EXTERNAL;
 
   /* Linker discardable symbols are duplicated to every use unless they are

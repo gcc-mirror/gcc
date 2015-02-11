@@ -1,3 +1,10 @@
+2015-02-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa.c (symbol_table::remove_unreachable_nodes): Avoid releasing
+	bodies of thunks; comment on why.
+	* symtab.c (symtab_node::get_partitioning_class): Aliases of extern
+	symbols are extern.
+
 2015-02-11  Richard Henderson  <rth@redhat.com>
 
 	PR sanitize/65000
