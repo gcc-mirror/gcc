@@ -1,3 +1,9 @@
+2015-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR lto/65015
+	* dwarf2out.c (gen_producer_string): Drop -fltrans-output-list
+	and -fresolution.
+
 2015-02-11  Andrew Pinski  <apinski@cavium.com>
 
 	PR target/64893
