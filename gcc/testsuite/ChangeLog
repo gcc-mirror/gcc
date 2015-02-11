@@ -1,3 +1,9 @@
+2015-02-11  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/ubsan/shift-1.C: New test.
+	* gcc.dg/ubsan/c-shift-2.c: New test.
+	* c-c++-common/ubsan/shift-5.c: Remove file.
+
 2015-02-11  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* gcc.target/aarch64/atomic-op-consume.c (scan-assember-times):
