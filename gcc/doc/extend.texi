@@ -7063,7 +7063,7 @@ within the same @code{asm} statement can use the same symbolic name.
 When not using an @var{asmSymbolicName}, use the (zero-based) position
 of the operand 
 in the list of operands in the assembler template. For example if there are
-two output opeerands and three inputs,
+two output operands and three inputs,
 use @samp{%2} in the template to refer to the first input operand,
 @samp{%3} for the second, and @samp{%4} for the third. 
 
@@ -7099,7 +7099,7 @@ consecutive colons where the output operands would go:
 @example
 __asm__ ("some instructions"
    : /* No outputs. */
-   : "r" (Offset / 8);
+   : "r" (Offset / 8));
 @end example
 
 @strong{Warning:} Do @emph{not} modify the contents of input-only operands 
