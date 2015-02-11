@@ -17912,8 +17912,8 @@ versions earlier than 4.4.
 @end table
 
 With this pragma, the programmer asserts that there are no loop-carried
-dependencies which would prevent that consecutive iterations of
-the following loop can be executed concurrently with SIMD
+dependencies which would prevent consecutive iterations of
+the following loop from executing concurrently with SIMD
 (single instruction multiple data) instructions.
 
 For example, the compiler can only unconditionally vectorize the following
