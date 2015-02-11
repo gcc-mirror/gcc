@@ -1,3 +1,9 @@
+2015-02-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/mkoffload.c: Include "gomp-constants.h".
+	(process): Use its GOMP_DEVICE_NVIDIA_PTX instead of (wrongly)
+	hard-coding PTX_ID.
+
 2015-02-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/sourcebuild.texi (pie_enabled): Document.
