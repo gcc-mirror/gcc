@@ -1,3 +1,9 @@
+2015-02-11  Andrew Pinski  <apinski@cavium.com>
+
+	PR target/64893
+	* c-c++-common/torture/aarch64-vect-lane-1.c: New testcase.
+	* c-c++-common/torture/aarch64-vect-lane-2.c: New testcase.
+
 2015-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/61925
