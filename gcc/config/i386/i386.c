@@ -5070,35 +5070,20 @@ ix86_can_inline_p (tree caller, tree callee)
 /* Remember the last target of ix86_set_current_function.  */
 static GTY(()) tree ix86_previous_fndecl;
 
-/* Set target globals to default.  */
+/* Set targets globals to the default (or current #pragma GCC target
+   if active).  Invalidate ix86_previous_fndecl cache.  */
 
-static void
-ix86_reset_to_default_globals (void)
-{
-  tree old_tree = (ix86_previous_fndecl
-		   ? DECL_FUNCTION_SPECIFIC_TARGET (ix86_previous_fndecl)
-		   : NULL_TREE);
-
-  if (old_tree)
-    {
-      tree new_tree = target_option_current_node;
-      cl_target_option_restore (&global_options,
-				TREE_TARGET_OPTION (new_tree));
-      if (TREE_TARGET_GLOBALS (new_tree))
-	restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
-      else if (new_tree == target_option_default_node)
-	restore_target_globals (&default_target_globals);
-      else
-	TREE_TARGET_GLOBALS (new_tree)
-	  = save_target_globals_default_opts ();
-    }
-}
-
-/* Invalidate ix86_previous_fndecl cache.  */
 void
 ix86_reset_previous_fndecl (void)
 {
-  ix86_reset_to_default_globals ();
+  tree new_tree = target_option_current_node;
+  cl_target_option_restore (&global_options, TREE_TARGET_OPTION (new_tree));
+  if (TREE_TARGET_GLOBALS (new_tree))
+    restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
+  else if (new_tree == target_option_default_node)
+    restore_target_globals (&default_target_globals);
+  else
+    TREE_TARGET_GLOBALS (new_tree) = save_target_globals_default_opts ();
   ix86_previous_fndecl = NULL_TREE;
 }
 
@@ -5111,34 +5096,39 @@ ix86_set_current_function (tree fndecl)
   /* Only change the context if the function changes.  This hook is called
      several times in the course of compiling a function, and we don't want to
      slow things down too much or call target_reinit when it isn't safe.  */
-  if (fndecl && fndecl != ix86_previous_fndecl)
+  if (fndecl == ix86_previous_fndecl)
+    return;
+
+  tree old_tree;
+  if (ix86_previous_fndecl == NULL_TREE)
+    old_tree = target_option_current_node;
+  else if (DECL_FUNCTION_SPECIFIC_TARGET (ix86_previous_fndecl))
+    old_tree = DECL_FUNCTION_SPECIFIC_TARGET (ix86_previous_fndecl);
+  else
+    old_tree = target_option_default_node;
+
+  if (fndecl == NULL_TREE)
     {
-      tree old_tree = (ix86_previous_fndecl
-		       ? DECL_FUNCTION_SPECIFIC_TARGET (ix86_previous_fndecl)
-		       : NULL_TREE);
-
-      tree new_tree = (fndecl
-		       ? DECL_FUNCTION_SPECIFIC_TARGET (fndecl)
-		       : NULL_TREE);
-
-      if (old_tree == new_tree)
-	;
-
-      else if (new_tree && new_tree != target_option_default_node)
-	{
-	  cl_target_option_restore (&global_options,
-				    TREE_TARGET_OPTION (new_tree));
-	  if (TREE_TARGET_GLOBALS (new_tree))
-	    restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
-	  else
-	    TREE_TARGET_GLOBALS (new_tree)
-	      = save_target_globals_default_opts ();
-	}
-
-      else if (old_tree && old_tree != target_option_default_node)
-	ix86_reset_to_default_globals ();
-      ix86_previous_fndecl = fndecl;
+      if (old_tree != target_option_current_node)
+	ix86_reset_previous_fndecl ();
+      return;
     }
+
+  tree new_tree = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
+  if (new_tree == NULL_TREE)
+    new_tree = target_option_default_node;
+
+  if (old_tree != new_tree)
+    {
+      cl_target_option_restore (&global_options, TREE_TARGET_OPTION (new_tree));
+      if (TREE_TARGET_GLOBALS (new_tree))
+	restore_target_globals (TREE_TARGET_GLOBALS (new_tree));
+      else if (new_tree == target_option_default_node)
+	restore_target_globals (&default_target_globals);
+      else
+	TREE_TARGET_GLOBALS (new_tree) = save_target_globals_default_opts ();
+    }
+  ix86_previous_fndecl = fndecl;
 }
 
 
@@ -30607,6 +30597,8 @@ static void
 ix86_add_new_builtins (HOST_WIDE_INT isa)
 {
   int i;
+  tree saved_current_target_pragma = current_target_pragma;
+  current_target_pragma = NULL_TREE;
 
   for (i = 0; i < (int)IX86_BUILTIN_MAX; i++)
     {
@@ -30633,6 +30625,8 @@ ix86_add_new_builtins (HOST_WIDE_INT isa)
 	    TREE_NOTHROW (decl) = 1;
 	}
     }
+
+  current_target_pragma = saved_current_target_pragma;
 }
 
 /* Bits for builtin_description.flag.  */

@@ -1,3 +1,10 @@
+2015-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/61925
+	* gcc.target/i386/pr61925-1.c: New test.
+	* gcc.target/i386/pr61925-2.c: New test.
+	* gcc.target/i386/pr61925-3.c: New test.
+
 2015-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/65004

@@ -1,3 +1,12 @@
+2015-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/61925
+	* config/i386/i386.c (ix86_reset_to_default_globals): Removed.
+	(ix86_reset_previous_fndecl): Restore it here, unconditionally.
+	(ix86_set_current_function): Rewritten.
+	(ix86_add_new_builtins): Temporarily clear current_target_pragma
+	when creating builtin fndecls.
+
 2015-02-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65005
