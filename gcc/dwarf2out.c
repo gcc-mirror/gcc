@@ -19651,6 +19651,8 @@ gen_producer_string (void)
       case OPT_nostdinc:
       case OPT_nostdinc__:
       case OPT_fpreprocessed:
+      case OPT_fltrans_output_list_:
+      case OPT_fresolution_:
 	/* Ignore these.  */
 	continue;
       default:
