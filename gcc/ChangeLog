@@ -1,4 +1,9 @@
 2015-02-10  David Wohlferd  <dw@LimeGreenSocks.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (Loop-Specific Pragmas): Fix grammar error.
+
+2015-02-10  David Wohlferd  <dw@LimeGreenSocks.com>
 
 	* doc/extend.texi (Symbol-Renaming Pragmas): Restore (slightly
         modified) reference to Solaris.
