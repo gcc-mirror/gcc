@@ -537,7 +537,13 @@ symbol_table::remove_unreachable_nodes (FILE *file)
       /* If node is unreachable, remove its body.  */
       else if (!reachable.contains (node))
         {
-	  if (!body_needed_for_clonning.contains (node->decl))
+	  /* We keep definitions of thunks and aliases in the boundary so
+	     we can walk to the ultimate alias targets and function symbols
+	     reliably.  */
+	  if (node->alias || node->thunk.thunk_p)
+	    ;
+	  else if (!body_needed_for_clonning.contains (node->decl)
+	      && !node->alias && !node->thunk.thunk_p)
 	    node->release_body ();
 	  else if (!node->clone_of)
 	    gcc_assert (in_lto_p || DECL_RESULT (node->decl));
