@@ -1884,6 +1884,9 @@ Target uses natural alignment (aligned to type size) for types of
 @item nonpic
 Target does not generate PIC by default.
 
+@item pie_enabled
+Target generates PIE by default.
+
 @item pcc_bitfield_type_matters
 Target defines @code{PCC_BITFIELD_TYPE_MATTERS}.
 
