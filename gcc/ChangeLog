@@ -1,3 +1,7 @@
+2015-02-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/sourcebuild.texi (pie_enabled): Document.
+
 2015-02-11  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/64813
