@@ -1,3 +1,7 @@
+2015-02-10  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (Extended Asm): Fix typos.
+
 2015-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/65004
