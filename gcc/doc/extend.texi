@@ -17604,8 +17604,10 @@ adding a call to the @code{.init} section.
 @subsection Symbol-Renaming Pragmas
 
 GCC supports a @code{#pragma} directive that changes the name used in
-assembly for a given declaration. This effect can also be achieved
-using the asm labels extension (@pxref{Asm Labels}).
+assembly for a given declaration. While this pragma is supported on all
+platforms, it is intended primarily to provide compatibility with the
+Solaris system headers. This effect can also be achieved using the asm
+labels extension (@pxref{Asm Labels}).
 
 @table @code
 @item redefine_extname @var{oldname} @var{newname}

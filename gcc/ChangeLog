@@ -1,3 +1,8 @@
+2015-02-10  David Wohlferd  <dw@LimeGreenSocks.com>
+
+	* doc/extend.texi (Symbol-Renaming Pragmas): Restore (slightly
+        modified) reference to Solaris.
+
 2015-02-10  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/extend.texi (Extended Asm): Fix typos.
