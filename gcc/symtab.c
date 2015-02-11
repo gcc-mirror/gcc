@@ -1070,11 +1070,6 @@ symtab_node::verify_base (void)
 	  error ("same_comdat_group list across different groups");
 	  error_found = true;
 	}
-      if (!n->definition)
-	{
-	  error ("Node has same_comdat_group but it is not a definition");
-	  error_found = true;
-	}
       if (n->type != type)
 	{
 	  error ("mixing different types of symbol in same comdat groups is not supported");
