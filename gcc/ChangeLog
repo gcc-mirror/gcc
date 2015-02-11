@@ -1,6 +1,12 @@
 2015-02-10  David Wohlferd  <dw@LimeGreenSocks.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
+	* doc/invoke.texi (x86 Options [-masm=dialect]): Add cross-references
+	to inline asm.  List dialects in proper order.
+
+2015-02-10  David Wohlferd  <dw@LimeGreenSocks.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
 	* doc/extend.texi (Loop-Specific Pragmas): Fix grammar error.
 
 2015-02-10  David Wohlferd  <dw@LimeGreenSocks.com>

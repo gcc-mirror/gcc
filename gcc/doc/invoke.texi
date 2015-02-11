@@ -21946,8 +21946,10 @@ functional units well, resulting in unstable performance.
 
 @item -masm=@var{dialect}
 @opindex masm=@var{dialect}
-Output assembly instructions using selected @var{dialect}.  Supported
-choices are @samp{intel} or @samp{att} (the default).  Darwin does
+Output assembly instructions using selected @var{dialect}.  Also affects
+which dialect is used for basic @code{asm} (@pxref{Basic Asm}) and
+extended @code{asm} (@pxref{Extended Asm}). Supported choices (in dialect
+order) are @samp{att} or @samp{intel}. The default is @samp{att}. Darwin does
 not support @samp{intel}.
 
 @item -mieee-fp
