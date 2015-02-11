@@ -1,3 +1,16 @@
+2015-02-11  Andrew Pinski  <apinski@cavium.com>
+
+	PR target/64893
+	* config/aarch64/aarch64-builtins.c (aarch64_init_simd_builtins):
+	Change the first argument type to size_type_node and add another
+	size_type_node.
+	(aarch64_simd_expand_builtin): Handle the new argument to
+	AARCH64_SIMD_BUILTIN_LANE_CHECK and don't ICE but rather
+	print an out when the first two arguments are not
+	nonzero integer constants.
+	* config/aarch64/arm_neon.h (__AARCH64_LANE_CHECK):
+	Pass the sizeof directly to __builtin_aarch64_im_lane_boundsi.
+
 2015-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/61925
