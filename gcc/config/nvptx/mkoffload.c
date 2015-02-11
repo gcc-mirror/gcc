@@ -791,9 +791,9 @@ process (FILE *in, FILE *out)
 
   fprintf (out, "extern void GOMP_offload_register (const void *, int, void *);\n");
 
-  fprintf (out, "extern void *__OPENMP_TARGET__[];\n\n");
+  fprintf (out, "extern void *__OFFLOAD_TABLE__[];\n\n");
   fprintf (out, "static __attribute__((constructor)) void init (void)\n{\n");
-  fprintf (out, "  GOMP_offload_register (__OPENMP_TARGET__, %d,\n",
+  fprintf (out, "  GOMP_offload_register (__OFFLOAD_TABLE__, %d,\n",
 	   GOMP_DEVICE_NVIDIA_PTX);
   fprintf (out, "                         &target_data);\n");
   fprintf (out, "};\n");
