@@ -1,3 +1,9 @@
+2015-02-11  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/64813
+	* cgraphunit.c (cgraph_node::expand_thunk): Do not create
+	a return value for call to a function that is noreturn.
+
 2015-02-11  Richard Biener  <rguenther@suse.de>
 
 	PR lto/65015
