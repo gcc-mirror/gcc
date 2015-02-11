@@ -1,3 +1,8 @@
+2015-02-11  Jeff Law  <law@redhat.com>
+
+	PR target/63347
+	* gcc.target/m68k/pr63347.c: New test.
+
 2015-02-11  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/ubsan/shift-1.C: New test.
