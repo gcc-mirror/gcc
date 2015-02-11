@@ -3859,6 +3859,17 @@ mark_reachable_handlers (sbitmap *r_reachablep, sbitmap *lp_reachablep)
 			      gimple_eh_dispatch_region (
                                 as_a <geh_dispatch *> (stmt)));
 	      break;
+	    case GIMPLE_CALL:
+	      if (gimple_call_builtin_p (stmt, BUILT_IN_EH_COPY_VALUES))
+		for (int i = 0; i < 2; ++i)
+		  {
+		    tree rt = gimple_call_arg (stmt, i);
+		    HOST_WIDE_INT ri = tree_to_shwi (rt);
+
+		    gcc_assert (ri = (int)ri);
+		    bitmap_set_bit (r_reachable, ri);
+		  }
+	      break;
 	    default:
 	      break;
 	    }
