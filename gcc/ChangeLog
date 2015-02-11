@@ -1,5 +1,9 @@
 2015-02-11  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* config/nvptx/mkoffload.c: Include "diagnostic.h" instead of
+	"diagnostic-core.h".
+	(main): Initialize progname, and call diagnostic_initialize.
+
 	* config/nvptx/mkoffload.c (process): Refer to __OFFLOAD_TABLE__
 	instead of __OPENMP_TARGET__.
 

@@ -33,7 +33,7 @@
 #include "intl.h"
 #include <libgen.h>
 #include "obstack.h"
-#include "diagnostic-core.h"
+#include "diagnostic.h"
 #include "collect-utils.h"
 #include "gomp-constants.h"
 
@@ -827,6 +827,9 @@ main (int argc, char **argv)
   FILE *in = stdin;
   FILE *out = stdout;
   const char *outname = 0;
+
+  progname = "mkoffload";
+  diagnostic_initialize (global_dc, 0);
 
   char *collect_gcc = getenv ("COLLECT_GCC");
   if (collect_gcc == NULL)
