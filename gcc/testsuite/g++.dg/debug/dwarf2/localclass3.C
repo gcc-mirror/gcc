@@ -4,8 +4,11 @@
 
 void f()
 {
-  struct A { int i; } *ap;
-  ap->i = 42;
+  int j = 5;
+  {
+    struct A { int i; } *ap;
+    ap->i = 42;
+  }
 }
 
 // { dg-final { scan-assembler "DW_TAG_pointer_type.\[^)\]*. DW_TAG_structure_type" } }

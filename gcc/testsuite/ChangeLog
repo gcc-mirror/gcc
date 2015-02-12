@@ -1,5 +1,11 @@
 2015-02-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/55541
+	* g++.dg/debug/dwarf2/localclass3.C: Adjust for the extraneous
+	DW_TAG_lexical_block removal.
+	* g++.dg/debug/dwarf2/redeclaration-1.C: Likewise.
+	* g++.dg/guality/pr55541.C: New test.
+
 	PR sanitizer/64984
 	* g++.dg/ubsan/pr64984.C: New test.
 
