@@ -55,7 +55,8 @@ test01()
   /* On some targets, '\n' is in class 'blank'.
      See https://gcc.gnu.org/ml/gcc-patches/2015-02/msg00059.html.  */
   VERIFY( t.isctype(L'\n', t.lookup_classname(range(blank))));
-#else  VERIFY(!t.isctype(L'\n', t.lookup_classname(range(blank))));
+#else
+  VERIFY(!t.isctype(L'\n', t.lookup_classname(range(blank))));
 #endif
   VERIFY( t.isctype(L't', t.lookup_classname(range(upper), true)));
   VERIFY( t.isctype(L'T', t.lookup_classname(range(lower), true)));
