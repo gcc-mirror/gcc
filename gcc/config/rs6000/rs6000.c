@@ -24977,7 +24977,12 @@ rs6000_emit_epilogue (int sibcall)
 		  rtx offset = GEN_INT (end_save + ptr_off);
 
 		  frame_off = -end_save;
-		  emit_insn (gen_add3_insn (frame_reg_rtx, ptr_reg, offset));
+		  if (TARGET_32BIT)
+		    emit_insn (gen_addsi3_carry (frame_reg_rtx,
+						 ptr_reg, offset));
+		  else
+		    emit_insn (gen_adddi3_carry (frame_reg_rtx,
+						 ptr_reg, offset));
 		}
 	      else
 		{
