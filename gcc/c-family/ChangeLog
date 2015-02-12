@@ -1,3 +1,11 @@
+2015-02-11  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-07-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/57653
+	* c-opts.c (c_finish_options): If -imacros is in effect, return.
+
 2015-01-20  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
