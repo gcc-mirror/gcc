@@ -1,5 +1,9 @@
 2015-02-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/64898
+	* mangle.c (write_mangled_name): Fix test for variable template
+	instantiation.
+
 	* decl.c (begin_destructor_body): Condition clobber on
 	-flifetime-dse.
 
