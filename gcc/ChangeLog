@@ -1,5 +1,8 @@
 2015-02-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (output_die): Use "%s", name instead of name to
+	avoid -Wformat-security warning.
+
 	* dwarf2asm.c (dw2_asm_output_vms_delta): Only define
 	if ASM_OUTPUT_DWARF_VMS_DELTA is defined.
 	* dwarf2out.c (output_die): Use dw2_asm_output_vms_delta
