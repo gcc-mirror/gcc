@@ -1,5 +1,8 @@
 2015-02-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/65019
+	* ubsan.c (ubsan_expand_objsize_ifn): Always return true.
+
 	PR tree-optimization/65014
 	* fold-const.c (fold_binary_loc): When creating {L,R}ROTATE_EXPR,
 	use original second operand of arg0 or arg1 instead of
