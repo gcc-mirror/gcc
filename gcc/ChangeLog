@@ -1,3 +1,8 @@
+2015-02-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/visium/visium.opt (msv-mode): Add RejectNegative and Report.
+	(muser-mode): Likewise.
+
 2015-02-13  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_epilogue): Use addsi3_carry
