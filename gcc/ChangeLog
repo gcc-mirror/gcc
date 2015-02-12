@@ -1,3 +1,8 @@
+2015-02-13  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_epilogue): Use addsi3_carry
+	or adddi3_carry when restoring frame_reg_rtx from r0 after restvr.
+
 2015-02-12  David Howells  <dhowells@redhat.com>
 
 	* tree-sra.c (dump_dereferences_table): Avoid -Wformat-security
