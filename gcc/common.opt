@@ -1189,7 +1189,7 @@ Perform interprocedural reduction of aggregates
 
 feliminate-unused-debug-symbols
 Common Report Var(flag_debug_only_used_symbols)
-Perform unused type elimination in debug info
+Perform unused symbol elimination in debug info
 
 feliminate-unused-debug-types
 Common Report Var(flag_eliminate_unused_debug_types) Init(1)
