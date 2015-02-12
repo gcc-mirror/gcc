@@ -14,7 +14,9 @@
 /* { dg-final { scan-assembler-times "stdcx" 7 } } */
 /* { dg-final { scan-assembler-times "stqcx" 7 } } */
 /* { dg-final { scan-assembler-not "bl __atomic" } } */
-/* { dg-final { scan-assembler-times "isync" 20 } } */
+/* As since PR59448 GCC promotes consume to acquire, the expected isync count
+   is 25 rather than 20.  */
+/* { dg-final { scan-assembler-times "isync" 25 } } */
 /* { dg-final { scan-assembler-times "lwsync" 10 } } */
 /* { dg-final { scan-assembler-not "mtvsrd" } } */
 /* { dg-final { scan-assembler-not "mtvsrwa" } } */
