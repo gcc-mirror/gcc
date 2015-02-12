@@ -9002,9 +9002,15 @@ output_die (dw_die_ref die)
 	  break;
 
 	case dw_val_class_vms_delta:
+#ifdef ASM_OUTPUT_DWARF_VMS_DELTA
 	  dw2_asm_output_vms_delta (DWARF_OFFSET_SIZE,
 				    AT_vms_delta2 (a), AT_vms_delta1 (a),
 				    "%s", name);
+#else
+	  dw2_asm_output_delta (DWARF_OFFSET_SIZE,
+				AT_vms_delta2 (a), AT_vms_delta1 (a),
+				"%s", name);
+#endif
 	  break;
 
 	case dw_val_class_lbl_id:
