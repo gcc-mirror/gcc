@@ -1,28 +1,31 @@
 ! { dg-do run }
+! { dg-options "-std=gnu" }
 ! PR58722
 program testit
+use ISO_FORTRAN_ENV
+  implicit none
+  integer, parameter :: j(size(real_kinds))=REAL_KINDS
   character(50) :: astring
-  
-  write(astring, '(g0)') 0.1_4
-  if (test(astring)) call abort
-  write(astring, '(g0)') 0.1_8
-  if (test(astring)) call abort
-  write(astring, '(g0)') 0.1_10
-  if (test(astring)) call abort
-  write(astring, '(g0)') 0.1_16
-  if (test(astring)) call abort
+  integer :: i, l, n
 
-contains
-
-function test (string1) result(res)
-  character(len=*) :: string1
-  logical :: res
-
-  res = .true.
-  do i = 1, len(string1)
-    if (string1(i:i) == 'E') return
+  n = 0
+  do i=1,size(real_kinds)
+    if (i == 1) then
+      write(astring, '(ru,g0)') 1.0/real(10.0, kind=j(1))
+    else if (i == 2) then
+      write(astring, '(ru,g0)') 1.0/real(10.0, kind=j(2))
+    else if (i == 3) then
+      write(astring, '(ru,g0)') 1.0/real(10.0, kind=j(3))
+    else if (i == 4) then
+      write(astring, '(ru,g0)') 1.0/real(10.0, kind=j(4))
+    end if
+    if (astring(2:2) /= '9') then
+      l = index(astring, 'E')
+      if (l /= 0) then
+	!print *, i, l, trim(astring)
+	n = n + l
+      end if
+    end if
   end do
-  res = .false.
-end function
-
+  if (n /= 0) call abort
 end program

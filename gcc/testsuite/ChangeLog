@@ -1,3 +1,8 @@
+2015-02-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/57822
+	* gfortran/fmt_g0_7.f08: Revise test.
+
 2015-02-11  Jeff Law  <law@redhat.com>
 
 	PR target/63347
