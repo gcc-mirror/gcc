@@ -8897,14 +8897,14 @@ output_die (dw_die_ref die)
 	      for (i = len - 1; i >= 0; --i)
 		{
 		  dw2_asm_output_data (l, a->dw_attr_val.v.val_wide->elt (i),
-				       name);
+				       "%s", name);
 		  name = NULL;
 		}
 	    else
 	      for (i = 0; i < len; ++i)
 		{
 		  dw2_asm_output_data (l, a->dw_attr_val.v.val_wide->elt (i),
-				       name);
+				       "%s", name);
 		  name = NULL;
 		}
 	  }
