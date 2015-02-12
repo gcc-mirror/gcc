@@ -1,3 +1,12 @@
+2015-02-12 Andrea Azzarone <azzaronea@gmail.com>
+
+	PR c++/64959
+	* parser.c (lookup_literal_operator): Return all candidates.
+	(cp_parser_userdef_char_literal): Simplify error handling.
+	(cp_parser_userdef_numeric_literal):  Pass tf_warning_or_error.
+	(cp_parser_userdef_string_literal): Pass tf_warning_or_error.
+	Also give higher priority to standard string UDL operator.
+
 2015-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/55541
