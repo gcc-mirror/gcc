@@ -1,3 +1,10 @@
+2015-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65014
+	* fold-const.c (fold_binary_loc): When creating {L,R}ROTATE_EXPR,
+	use original second operand of arg0 or arg1 instead of
+	that adjusted by STRIP_NOPS.
+
 2015-02-11  Jeff Law  <law@redhat.com>
 
 	PR target/63347
