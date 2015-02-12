@@ -1,5 +1,12 @@
 2015-02-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/55541
+	* cp-tree.h (BLOCK_OUTER_CURLY_BRACE_P): Define.
+	* decl.c (poplevel): If functionbody, try not to create an extra
+	BLOCK for function body and use subblocks as that, if it is non-NULL
+	and doesn't have siblings.  Set BLOCK_OUTER_CURLY_BRACE_P flag.
+	(outer_curly_brace_block): Use BLOCK_OUTER_CURLY_BRACE_P flag.
+
 	PR sanitizer/64984
 	* except.c (check_noexcept_r): Return NULL for internal
 	calls.
