@@ -3828,7 +3828,7 @@ lookup_literal_operator (tree name, vec<tree, va_gc> *args)
 		 work in presence of default arguments on the literal
 		 operator parameters.  */
 	      && parmtypes == void_list_node)
-	    return fn;
+	    return decl;
 	}
     }
 
@@ -3862,12 +3862,7 @@ cp_parser_userdef_char_literal (cp_parser *parser)
     }
   result = finish_call_expr (decl, &args, false, true, tf_warning_or_error);
   release_tree_vector (args);
-  if (result != error_mark_node)
-    return result;
-
-  error ("unable to find character literal operator %qD with %qT argument",
-	 name, TREE_TYPE (value));
-  return error_mark_node;
+  return result;
 }
 
 /* A subroutine of cp_parser_userdef_numeric_literal to
@@ -3955,26 +3950,28 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
   decl = lookup_literal_operator (name, args);
   if (decl && decl != error_mark_node)
     {
-      result = finish_call_expr (decl, &args, false, true, tf_none);
-      if (result != error_mark_node)
+      result = finish_call_expr (decl, &args, false, true,
+				 tf_warning_or_error);
+
+      if (TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE && overflow > 0)
 	{
-	  if (TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE && overflow > 0)
-	    warning_at (token->location, OPT_Woverflow,
-		        "integer literal exceeds range of %qT type",
-		        long_long_unsigned_type_node);
-	  else
-	    {
-	      if (overflow > 0)
-		warning_at (token->location, OPT_Woverflow,
-			    "floating literal exceeds range of %qT type",
-			    long_double_type_node);
-	      else if (overflow < 0)
-		warning_at (token->location, OPT_Woverflow,
-			    "floating literal truncated to zero");
-	    }
-	  release_tree_vector (args);
-	  return result;
+	  warning_at (token->location, OPT_Woverflow,
+		      "integer literal exceeds range of %qT type",
+		      long_long_unsigned_type_node);
 	}
+      else
+	{
+	  if (overflow > 0)
+	    warning_at (token->location, OPT_Woverflow,
+			"floating literal exceeds range of %qT type",
+			long_double_type_node);
+	  else if (overflow < 0)
+	    warning_at (token->location, OPT_Woverflow,
+			"floating literal truncated to zero");
+	}
+
+      release_tree_vector (args);
+      return result;
     }
   release_tree_vector (args);
 
@@ -3986,12 +3983,10 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
   decl = lookup_literal_operator (name, args);
   if (decl && decl != error_mark_node)
     {
-      result = finish_call_expr (decl, &args, false, true, tf_none);
-      if (result != error_mark_node)
-	{
-	  release_tree_vector (args);
-	  return result;
-	}
+      result = finish_call_expr (decl, &args, false, true,
+				 tf_warning_or_error);
+      release_tree_vector (args);
+      return result;
     }
   release_tree_vector (args);
 
@@ -4004,13 +3999,12 @@ cp_parser_userdef_numeric_literal (cp_parser *parser)
     {
       tree tmpl_args = make_char_string_pack (num_string);
       decl = lookup_template_function (decl, tmpl_args);
-      result = finish_call_expr (decl, &args, false, true, tf_none);
-      if (result != error_mark_node)
-	{
-	  release_tree_vector (args);
-	  return result;
-	}
+      result = finish_call_expr (decl, &args, false, true,
+				 tf_warning_or_error);
+      release_tree_vector (args);
+      return result;
     }
+
   release_tree_vector (args);
 
   error ("unable to find numeric literal operator %qD", name);
@@ -4035,6 +4029,22 @@ cp_parser_userdef_string_literal (tree literal)
   tree decl, result;
   vec<tree, va_gc> *args;
 
+  /* Build up a call to the user-defined operator.  */
+  /* Lookup the name we got back from the id-expression.  */
+  args = make_tree_vector ();
+  vec_safe_push (args, value);
+  vec_safe_push (args, build_int_cst (size_type_node, len));
+  decl = lookup_literal_operator (name, args);
+
+  if (decl && decl != error_mark_node)
+    {
+      result = finish_call_expr (decl, &args, false, true,
+				 tf_warning_or_error);
+      release_tree_vector (args);
+      return result;
+    }
+  release_tree_vector (args);
+
   /* Look for a template function with typename parameter CharT
      and parameter pack CharT...  Call the function with
      template parameter characters representing the string.  */
@@ -4044,31 +4054,12 @@ cp_parser_userdef_string_literal (tree literal)
     {
       tree tmpl_args = make_string_pack (value);
       decl = lookup_template_function (decl, tmpl_args);
-      result = finish_call_expr (decl, &args, false, true, tf_none);
-      if (result != error_mark_node)
-	{
-	  release_tree_vector (args);
-	  return result;
-	}
-    }
-  release_tree_vector (args);
-
-  /* Build up a call to the user-defined operator  */
-  /* Lookup the name we got back from the id-expression.  */
-  args = make_tree_vector ();
-  vec_safe_push (args, value);
-  vec_safe_push (args, build_int_cst (size_type_node, len));
-  decl = lookup_name (name);
-  if (!decl || decl == error_mark_node)
-    {
-      error ("unable to find string literal operator %qD", name);
+      result = finish_call_expr (decl, &args, false, true,
+				 tf_warning_or_error);
       release_tree_vector (args);
-      return error_mark_node;
+      return result;
     }
-  result = finish_call_expr (decl, &args, false, true, tf_none);
   release_tree_vector (args);
-  if (result != error_mark_node)
-    return result;
 
   error ("unable to find string literal operator %qD with %qT, %qT arguments",
 	 name, TREE_TYPE (value), size_type_node);

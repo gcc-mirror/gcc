@@ -17,15 +17,10 @@ int operator"" _foo(const char32_t*, std::size_t) { return 10; }
 template<char...> int operator"" _foo2()          { return 20; }
 int operator"" _foo2(unsigned long long int)      { return 21; }
 
-namespace bar {
-int operator"" _foo(unsigned long long int)       { return 101; }
-}
-using namespace bar;
-
 int
 main()
 {
-  assert(123_foo == 101);
+  assert(123_foo == 1);
   assert(0.123_foo == 2);
   assert('c'_foo == 3);
   assert(L'c'_foo == 4);
