@@ -1,5 +1,8 @@
 2015-02-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/64884
+	* g++.dg/tm/pr47573.C: Only run on comdat_group effective targets.
+
 	PR sanitizer/65000
 	* g++.dg/ubsan/pr65000.C: New test.
 
