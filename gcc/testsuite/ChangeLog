@@ -1,5 +1,10 @@
 2015-02-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR testsuite/64930
+	* gcc.target/powerpc/atomic-p7.c: Adjust expected count of isync
+	instructions for 2015-01-14 get_memmodel changes.
+	* gcc.target/powerpc/atomic-p8.c: Likewise.
+
 	PR sanitizer/65019
 	* g++.dg/ubsan/pr65019.C: New test.
 
