@@ -1148,7 +1148,7 @@ check_noexcept_r (tree *tp, int * /*walk_subtrees*/, void * /*data*/)
 {
   tree t = *tp;
   enum tree_code code = TREE_CODE (t);
-  if (code == CALL_EXPR
+  if ((code == CALL_EXPR && CALL_EXPR_FN (t))
       || code == AGGR_INIT_EXPR)
     {
       /* We can only use the exception specification of the called function
