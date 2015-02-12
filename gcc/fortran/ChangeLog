@@ -1,3 +1,14 @@
+2015-02-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from mainline
+	2015-02-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/64932
+	* trans-stmt.c (gfc_trans_deallocate): If a component array
+	expression is not a descriptor type and it is a derived type
+	that has allocatable components and is not finalizable, then
+	deallocate the allocatable components.
+
 2015-02-03  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* intrinsic.texi (CO_ASSOCIATED): c_prt_1 should be c_ptr_1.

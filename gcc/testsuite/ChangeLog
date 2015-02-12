@@ -1,3 +1,11 @@
+2015-02-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from mainline
+	2015-02-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/64932
+	* gfortran.dg/finalize_28.f90: New test
+
 2015-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
