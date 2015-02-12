@@ -1,3 +1,11 @@
+2015-02-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/64932
+	* trans-stmt.c (gfc_trans_deallocate): If a component array
+	expression is not a descriptor type and it is a derived type
+	that has allocatable components and is not finalizable, then
+	deallocate the allocatable components.
+
 2015-02-08  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/63744
