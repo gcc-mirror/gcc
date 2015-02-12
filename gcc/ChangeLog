@@ -1,3 +1,10 @@
+2015-02-12  David Howells  <dhowells@redhat.com>
+
+	* tree-sra.c (dump_dereferences_table): Avoid -Wformat-security
+	warning.
+	* tree-ssa-uninit.c (dump_predicates): Likewise.
+	* opts.c (print_filtered_help): Likewise.
+
 2015-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (output_die): Use "%s", name instead of name to
