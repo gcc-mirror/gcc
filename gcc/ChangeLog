@@ -1,3 +1,11 @@
+2015-02-13  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/constraints.md: Change "Q" and "T" constraints to memory
+	constraints.
+	* config/pa/pa.c (pa_cannot_force_const_mem): Don't allow constant
+	symbolic references to data to be forced to constant memory on the
+	SOM target.
+
 2015-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

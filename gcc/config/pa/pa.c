@@ -1565,6 +1565,14 @@ pa_tls_referenced_p (rtx x)
 static bool
 pa_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
+  /* Reload sometimes tries to put const data symbolic operands in
+     readonly memory.  The HP SOM linker doesn't allow symbolic data
+     in readonly memory.  */
+  if (TARGET_SOM
+      && !function_label_operand (x, VOIDmode)
+      && symbolic_operand (x, VOIDmode))
+    return true;
+
   return pa_tls_referenced_p (x);
 }
 
