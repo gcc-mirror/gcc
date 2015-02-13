@@ -33060,6 +33060,12 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context)
 
     case PRAGMA_IVDEP:
       {
+	if (context == pragma_external)
+	  {
+	    error_at (pragma_tok->location,
+		      "%<#pragma GCC ivdep%> must be inside a function");
+	    break;
+	  }
 	cp_parser_skip_to_pragma_eol (parser, pragma_tok);
 	cp_token *tok;
 	tok = cp_lexer_peek_token (the_parser->lexer);
