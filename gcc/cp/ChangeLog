@@ -1,3 +1,8 @@
+2015-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60894
+	* decl.c (lookup_and_check_tag): Use strip_using_decl.
+
 2015-02-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65054
