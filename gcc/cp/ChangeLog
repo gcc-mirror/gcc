@@ -1,3 +1,9 @@
+2015-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65051
+	* call.c (reference_binding): Don't look for bad conversion
+	if TO is incomplete.
+
 2015-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/64970
