@@ -1,3 +1,8 @@
+2015-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64970
+	* g++.dg/cpp0x/sfinae55.C: New.
+
 2015-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/65034
