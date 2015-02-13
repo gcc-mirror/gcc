@@ -1,3 +1,8 @@
+2015-02-13  Jeff Law  <law@redhat.com>
+
+	PR bootstrap/65060
+	Revert my change for tree-optimization/64823.
+
 2015-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65053
