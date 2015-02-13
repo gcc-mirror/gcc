@@ -1,3 +1,8 @@
+2015-02-13  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* testsuite/28_regex/traits/char/isctype.cc (test01): Fix
+	mixed line-endings introduced in last change.
+
 2015-02-12  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* testsuite/28_regex/traits/char/isctype.cc (test01): Replace test
