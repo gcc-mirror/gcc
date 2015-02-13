@@ -10181,15 +10181,8 @@ identify_jump_threads (void)
       /* We're basically looking for a switch or any kind of conditional with
 	 integral or pointer type arguments.  Note the type of the second
 	 argument will be the same as the first argument, so no need to
-	 check it explicitly. 
-
-	 We also handle the case where there are no statements in the
-	 block.  This come up with forwarder blocks that are not
-	 optimized away because they lead to a loop header.  But we do
-	 want to thread through them as we can sometimes thread to the
-	 loop exit which is obviously profitable.  */
-      if (!last
-	  || gimple_code (last) == GIMPLE_SWITCH
+	 check it explicitly.  */
+      if (gimple_code (last) == GIMPLE_SWITCH
 	  || (gimple_code (last) == GIMPLE_COND
       	      && TREE_CODE (gimple_cond_lhs (last)) == SSA_NAME
 	      && (INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_lhs (last)))
