@@ -1,3 +1,9 @@
+2015-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/65034
+	* decl.c (start_preparsed_function): Use void_type_node instead
+	of NULL_TREE as LABEL_DECL type.
+
 2015-02-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/64898

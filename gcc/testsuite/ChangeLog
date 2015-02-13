@@ -1,3 +1,8 @@
+2015-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/65034
+	* g++.dg/ipa/pr65034.C: New test.
+
 2015-02-13  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR tree-optimization/65002

@@ -1,3 +1,9 @@
+2015-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/65034
+	* stmt.c (emit_case_nodes): Use void_type_node instead of
+	NULL_TREE as LABEL_DECL type.
+
 2015-02-13  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/constraints.md: Change "Q" and "T" constraints to memory

@@ -1722,7 +1722,7 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 
 	      tree test_label
 		= build_decl (curr_insn_location (),
-			      LABEL_DECL, NULL_TREE, NULL_TREE);
+			      LABEL_DECL, NULL_TREE, void_type_node);
 
               /* The default label could be reached either through the right
                  subtree or the left subtree. Divide the probability
@@ -1881,7 +1881,7 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 		 Branch to a label where we will handle it later.  */
 
 	      test_label = build_decl (curr_insn_location (),
-				       LABEL_DECL, NULL_TREE, NULL_TREE);
+				       LABEL_DECL, NULL_TREE, void_type_node);
               probability = conditional_probability (
                   node->right->subtree_prob + default_prob/2,
                   subtree_prob + default_prob);
