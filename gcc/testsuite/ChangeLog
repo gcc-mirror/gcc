@@ -1,3 +1,9 @@
+2015-02-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/57822
+	* gfortran/fmt_g0_7.f08: Adjust for archtectures with less than
+	four different KINDs.
+
 2015-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/64884
