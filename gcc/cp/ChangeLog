@@ -1,3 +1,9 @@
+2015-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60211
+	* parser.c (cp_parser_pragma): Diagnose PRAGMA_IVDEP at
+	pragma_external context.
+
 2015-02-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65051

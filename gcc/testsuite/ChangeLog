@@ -1,3 +1,9 @@
+2015-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60211
+	* g++.dg/parse/ivdep-2.C: New.
+	* g++.dg/parse/ivdep-3.C: Likewise.
+
 2015-02-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/64506
