@@ -261,6 +261,22 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
     }
 }
 
+/* Mark all call graph edges coming out of NODE and all nodes that have been
+   inlined to it as in_polymorphic_cdtor.  */
+
+static void
+mark_all_inlined_calls_cdtor (cgraph_node *node)
+{
+  for (cgraph_edge *cs = node->callees; cs; cs = cs->next_callee)
+    {
+      cs->in_polymorphic_cdtor = true;
+      if (!cs->inline_failed)
+    mark_all_inlined_calls_cdtor (cs->callee);
+    }
+  for (cgraph_edge *cs = node->indirect_calls; cs; cs = cs->next_callee)
+    cs->in_polymorphic_cdtor = true;
+}
+
 
 /* Mark edge E as inlined and update callgraph accordingly.  UPDATE_ORIGINAL
    specify whether profile of original function should be updated.  If any new
@@ -332,6 +348,8 @@ inline_call (struct cgraph_edge *e, bool update_original,
 
   old_size = inline_summaries->get (to)->size;
   inline_merge_summary (e);
+  if (e->in_polymorphic_cdtor)
+    mark_all_inlined_calls_cdtor (e->callee);
   if (opt_for_fn (e->caller->decl, optimize))
     new_edges_found = ipa_propagate_indirect_call_infos (curr, new_edges);
   if (update_overall_summary)

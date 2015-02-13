@@ -1,3 +1,9 @@
+2015-02-13  Maritn Jambor  <mjambor@suse.cz>
+
+	PR ipa/65028
+	* ipa-inline-transform.c (mark_all_inlined_calls_cdtor): New function.
+	(inline_call): Use it.
+	
 2015-02-13  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/nvptx/offload.h (ACCEL_COMPILER_acc_device): Define to
