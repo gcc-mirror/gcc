@@ -1,4 +1,13 @@
-2015-02-12  H.J. Lu  <hongjiu.lu@intel.com>
+2015-02-13  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/64705
+	* tree-ssa-loop-niter.h (expand_simple_operations): New parameter.
+	* tree-ssa-loop-niter.c (expand_simple_operations): New parameter.
+	* tree-ssa-loop-ivopts.c (extract_single_var_from_expr): New.
+	(find_bivs, find_givs_in_stmt_scev): Pass new argument to
+	expand_simple_operations.
+
+2015-02-13  H.J. Lu  <hongjiu.lu@intel.com>
 	    Richard Henderson  <rth@redhat.com>
 
 	PR rtl/32219
@@ -21,7 +30,7 @@
 	* config/rs6000/rs6000.c (rs6000_emit_epilogue): Fix typo in
 	code setting up r11 for out-of-line fp restore.
 
-2015-02-12  Eric Botcazou  <ebotcazou@adacore.com>
+2015-02-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/visium/visium.opt (msv-mode): Add RejectNegative and Report.
 	(muser-mode): Likewise.
