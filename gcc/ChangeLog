@@ -1,3 +1,9 @@
+2015-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65053
+	* tree-ssa-phiopt.c (value_replacement): When moving assign before
+	cond, either reset VR on lhs or set it to phi result VR.
+
 2015-02-13  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/64823
