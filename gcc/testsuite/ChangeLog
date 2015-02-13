@@ -1,3 +1,8 @@
+2015-02-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/63744
+	gfortran.dg/use_rename_8.f90: New.
+
 2015-02-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from mainline
