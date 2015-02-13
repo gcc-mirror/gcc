@@ -1,3 +1,9 @@
+2015-02-13  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/47477
+	* match.pd (convert (plus/minus (convert @0) (convert @1): New
+	simplifier to narrow arithmetic.
+
 2015-02-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65028
