@@ -1,3 +1,11 @@
+2015-02-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/64506
+	* scanner.c (gfc_next_char_literal): For free form source,
+	check for '!' and if found, clear the comment and go back
+	and get the next character. For fixed form source, skip the
+	rest of the line.
+
 2015-02-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/64932
