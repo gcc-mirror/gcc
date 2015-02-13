@@ -1,3 +1,8 @@
+2015-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65040
+	* c-c++-common/pr65040.c: New test.
+
 2015-02-13  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/64705
