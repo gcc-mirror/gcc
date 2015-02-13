@@ -1,3 +1,10 @@
+2015-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64956
+	* c-opts.c (c_common_post_options): Change flag_abi_version from 0
+	to the current highest version.
+	* c-cppbuiltin.c (c_cpp_builtins): Assert that it isn't 0.
+
 2015-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/64824

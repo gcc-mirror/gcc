@@ -806,7 +806,8 @@ Driver Undocumented
 ;
 ; 1: The version of the ABI first used in G++ 3.2.  No longer selectable.
 ;
-; 2: The version of the ABI first used in G++ 3.4 (and current default).
+; 2: The version of the ABI first used in G++ 3.4, and the default
+;    until GCC 4.9.
 ;
 ; 3: The version of the ABI that fixes the missing underscore
 ;    in template non-type arguments of pointer type.
@@ -831,7 +832,8 @@ Driver Undocumented
 ;
 ; 8: The version of the ABI that corrects the substitution behavior of
 ;    function types with function-cv-qualifiers.
-;    First selectable in G++ 4.9.
+;    First selectable in G++ 4.9 and default in G++ 5
+;    (set in c_common_post_options).
 ;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
