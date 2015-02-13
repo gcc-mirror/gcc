@@ -1,3 +1,8 @@
+2015-02-13  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR tree-optimization/65002
+	* gcc.dg/pr65002.C: New.
+
 2015-02-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c/65040

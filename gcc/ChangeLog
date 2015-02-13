@@ -1,3 +1,12 @@
+2015-02-13  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR tree-optimization/65002
+	* tree-cfg.c (pass_data_fixup_cfg): Don't update
+	SSA on start.
+	* tree-sra.c (some_callers_have_no_vuse_p): New.
+	(ipa_early_sra): Reject functions whose callers
+	assume function is read only.
+
 2015-02-13  Richard Biener  <rguenther@suse.de>
 
 	PR lto/65015

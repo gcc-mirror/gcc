@@ -8754,7 +8754,7 @@ const pass_data pass_data_fixup_cfg =
   PROP_cfg, /* properties_required */
   0, /* properties_provided */
   0, /* properties_destroyed */
-  TODO_update_ssa_only_virtuals, /* todo_flags_start */
+  0, /* todo_flags_start */
   0, /* todo_flags_finish */
 };
 
