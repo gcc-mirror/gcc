@@ -1,5 +1,12 @@
 2015-02-13  Jeff Law  <law@redhat.com>
 
+	PR tree-optimization/64823
+	* tree-vrp.c (identify_jump_threads): Handle blocks with no statements.
+	* tree-ssa-threadedge.c (potentially_threadable_block): Allow
+	threading through blocks with PHIs, but no statements.
+	(thread_through_normal_block): Distinguish between blocks where
+	we did not process all the statements and blocks with no statements.
+
 	PR rtl-optimization/47477
 	* match.pd (convert (plus/minus (convert @0) (convert @1): New
 	simplifier to narrow arithmetic.
