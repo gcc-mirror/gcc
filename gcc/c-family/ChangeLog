@@ -1,3 +1,9 @@
+2015-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65040
+	* c-format.c (check_format_types): Don't warn about different
+	signedness if the original value is in the range of WANTED_TYPE.
+
 2015-02-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/64956

@@ -2456,8 +2456,7 @@ check_format_types (location_t loc, format_wanted_type *types)
       cur_type = TYPE_MAIN_VARIANT (cur_type);
 
       /* Check whether the argument type is a character type.  This leniency
-	 only applies to certain formats, flagged with 'c'.
-      */
+	 only applies to certain formats, flagged with 'c'.  */
       if (types->char_lenient_flag)
 	char_type_flag = (cur_type == char_type_node
 			  || cur_type == signed_char_type_node
@@ -2486,6 +2485,20 @@ check_format_types (location_t loc, format_wanted_type *types)
 	      ? wanted_type == c_common_unsigned_type (cur_type)
 	      : wanted_type == c_common_signed_type (cur_type)))
 	continue;
+      /* Don't warn about differences merely in signedness if we know
+	 that the current type is integer-promoted and its original type
+	 was unsigned such as that it is in the range of WANTED_TYPE.  */
+      if (TREE_CODE (wanted_type) == INTEGER_TYPE
+	  && TREE_CODE (cur_type) == INTEGER_TYPE
+	  && warn_format_signedness
+	  && TYPE_UNSIGNED (wanted_type)
+	  && TREE_CODE (cur_param) == NOP_EXPR)
+	{
+	  tree t = TREE_TYPE (TREE_OPERAND (cur_param, 0));
+	  if (TYPE_UNSIGNED (t)
+	      && cur_type == lang_hooks.types.type_promotes_to (t))
+	    continue;
+	}
       /* Likewise, "signed char", "unsigned char" and "char" are
 	 equivalent but the above test won't consider them equivalent.  */
       if (wanted_type == char_type_node
