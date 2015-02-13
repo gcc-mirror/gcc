@@ -1,5 +1,8 @@
 2015-02-13  Jeff Law  <law@redhat.com>
 
+	PR tree-optimization/64823
+	gcc.dg/uninit-20.c: New test.
+
 	PR rtl-optimization/47477
 	* gcc.dg/tree-ssa/pr47477.c: New test.
 
