@@ -1,3 +1,8 @@
+2015-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60894
+	* g++.dg/lookup/using54.C: New.
+
 2015-02-13  Jeff Law  <law@redhat.com>
 
 	PR bootstrap/65060
@@ -17,7 +22,7 @@
 2015-02-13  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/64823
-	gcc.dg/uninit-20.c: New test.
+	* gcc.dg/uninit-20.c: New test.
 
 	PR rtl-optimization/47477
 	* gcc.dg/tree-ssa/pr47477.c: New test.
