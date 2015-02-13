@@ -1,3 +1,8 @@
+2015-02-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/offload.h (ACCEL_COMPILER_acc_device): Define to
+	GOMP_DEVICE_NVIDIA_PTX.
+
 2015-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/65034
