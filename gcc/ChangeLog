@@ -1,3 +1,9 @@
+2015-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR lto/65015
+	* dwarf2out.c (dwarf2out_finish): Use <artificial> as DW_AT_name
+	for LTO produced CUs.
+
 2015-02-13  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/64705
