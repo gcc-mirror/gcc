@@ -1,3 +1,8 @@
+2015-02-13  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/64705
+	* gcc.dg/tree-ssa/pr64705.c: New test.
+
 2015-02-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl/32219
