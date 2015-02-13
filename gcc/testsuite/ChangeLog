@@ -1,3 +1,8 @@
+2015-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65050
+	* gcc.dg/pr65050.c: New test.
+
 2015-02-13  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/64823
