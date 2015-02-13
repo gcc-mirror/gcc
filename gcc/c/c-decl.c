@@ -5962,7 +5962,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	    /* Complain about arrays of incomplete types.  */
 	    if (!COMPLETE_TYPE_P (type))
 	      {
-		error_at (loc, "array type has incomplete element type");
+		error_at (loc, "array type has incomplete element type %qT",
+			  type);
 		type = error_mark_node;
 	      }
 	    else
