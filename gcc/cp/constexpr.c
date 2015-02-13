@@ -3638,7 +3638,6 @@ maybe_constant_value (tree t, tree decl)
 
   r = cxx_eval_outermost_constant_expr (t, true, true, decl);
 #ifdef ENABLE_CHECKING
-  /* cp_tree_equal looks through NOPs, so allow them.  */
   gcc_assert (r == t
 	      || CONVERT_EXPR_P (t)
 	      || TREE_CODE (t) == VIEW_CONVERT_EXPR

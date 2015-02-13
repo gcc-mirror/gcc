@@ -1,3 +1,9 @@
+2015-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65054
+	* pt.c (template_args_equal): Look through conversions here.
+	* tree.c (cp_tree_equal): Not here.
+
 2015-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60211
