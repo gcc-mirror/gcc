@@ -1,3 +1,9 @@
+2015-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64970
+	* decl.c (make_typename_type): Pass tsubst_flags_t argument
+	to lookup_template_class.
+
 2015-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/65034
