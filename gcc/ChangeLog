@@ -1,3 +1,21 @@
+2015-02-12  H.J. Lu  <hongjiu.lu@intel.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	PR rtl/32219
+	* cgraphunit.c (cgraph_node::finalize_function): Set definition
+	before notice_global_symbol.
+	(varpool_node::finalize_decl): Likewise.
+	* varasm.c (default_binds_local_p_2): Rename from
+	default_binds_local_p_1, add weak_dominate argument.  Use direct
+	returns instead of assigning to local variable.  Unify varpool and
+	cgraph paths via symtab_node.  Reject undef weak variables before
+	testing visibility.  Reorder tests for simplicity.
+	(default_binds_local_p): Use default_binds_local_p_2.
+	(default_binds_local_p_1): Likewise.
+	(decl_binds_to_current_def_p): Unify varpool and cgraph paths
+	via symtab_node.
+	(default_elf_asm_output_external): Emit visibility when specified.
+
 2015-02-13  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_epilogue): Fix typo in

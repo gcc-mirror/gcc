@@ -442,8 +442,10 @@ cgraph_node::finalize_function (tree decl, bool no_collect)
       node->local.redefined_extern_inline = true;
     }
 
-  notice_global_symbol (decl);
+  /* Set definition first before calling notice_global_symbol so that
+     it is available to notice_global_symbol.  */
   node->definition = true;
+  notice_global_symbol (decl);
   node->lowered = DECL_STRUCT_FUNCTION (decl)->cfg != NULL;
 
   /* With -fkeep-inline-functions we are keeping all inline functions except
@@ -803,8 +805,10 @@ varpool_node::finalize_decl (tree decl)
 
   if (node->definition)
     return;
-  notice_global_symbol (decl);
+  /* Set definition first before calling notice_global_symbol so that
+     it is available to notice_global_symbol.  */
   node->definition = true;
+  notice_global_symbol (decl);
   if (TREE_THIS_VOLATILE (decl) || DECL_PRESERVE_P (decl)
       /* Traditionally we do not eliminate static variables when not
 	 optimizing and when not doing toplevel reoder.  */
