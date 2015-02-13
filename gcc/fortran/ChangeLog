@@ -1,3 +1,11 @@
+2015-02-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/63744
+	* module.c (check_for_ambiguous): Change argument type
+	from gfc_symbol to gfc_symtree.  Check local (symtree) name
+	instead of original (symbol) name.
+	(read_module): Update caller.
+
 2015-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

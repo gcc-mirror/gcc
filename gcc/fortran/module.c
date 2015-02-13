@@ -4401,19 +4401,21 @@ read_cleanup (pointer_info *p)
 /* It is not quite enough to check for ambiguity in the symbols by
    the loaded symbol and the new symbol not being identical.  */
 static bool
-check_for_ambiguous (gfc_symbol *st_sym, pointer_info *info)
+check_for_ambiguous (gfc_symtree *st, pointer_info *info)
 {
   gfc_symbol *rsym;
   module_locus locus;
   symbol_attribute attr;
+  gfc_symbol *st_sym;
 
-  if (gfc_current_ns->proc_name && st_sym->name == gfc_current_ns->proc_name->name)
+  if (gfc_current_ns->proc_name && st->name == gfc_current_ns->proc_name->name)
     {
       gfc_error ("'%s' of module '%s', imported at %C, is also the name of the "
-		 "current program unit", st_sym->name, module_name);
+		 "current program unit", st->name, module_name);
       return true;
     }
 
+  st_sym = st->n.sym;
   rsym = info->u.rsym.sym;
   if (st_sym == rsym)
     return false;
@@ -4648,7 +4650,7 @@ read_module (void)
 	  if (st != NULL)
 	    {
 	      /* Check for ambiguous symbols.  */
-	      if (check_for_ambiguous (st->n.sym, info))
+	      if (check_for_ambiguous (st, info))
 		st->ambiguous = 1;
 	      else
 		info->u.rsym.symtree = st;
