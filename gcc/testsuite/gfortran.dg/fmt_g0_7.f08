@@ -4,7 +4,7 @@
 program testit
 use ISO_FORTRAN_ENV
   implicit none
-  integer, parameter :: j(size(real_kinds))=REAL_KINDS
+  integer, parameter :: j(size(real_kinds)+4)=[REAL_KINDS, [4, 4, 4, 4]]
   character(50) :: astring
   integer :: i, l, n
 
