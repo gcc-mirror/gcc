@@ -1,3 +1,9 @@
+2015-02-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65028
+	* ipa-prop.c (update_indirect_edges_after_inlining): Do not drop
+	polymorphic call info when type is not known to be preserved.
+
 2015-02-13  Maritn Jambor  <mjambor@suse.cz>
 
 	PR ipa/65028
