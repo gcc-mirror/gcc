@@ -1,3 +1,9 @@
+2015-02-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64768
+	* c-decl.c (grokdeclarator): Set the range of a flexible array member
+	declared through a typedef name.
+
 2015-02-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c/65050
