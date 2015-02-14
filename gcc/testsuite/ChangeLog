@@ -1,3 +1,14 @@
+2015--02-14  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR testsuite/64850
+	* gcc.dg/goacc/acc_on_device-1.c: Use a space instead of \\\" in
+	the expression to find calls.
+	* c-c++-common/goacc/acc_on_device-2.c: Likewise.
+	* c-c++-common/goacc/acc_on_device-2-off.c: Likewise.
+	* gfortran.dg/goacc/acc_on_device-1.f95: Likewise.
+	* gfortran.dg/goacc/acc_on_device-2.f95: Likewise.
+	* gfortran.dg/goacc/acc_on_device-2-off.f95: Likewise.
+
 2015-02-14  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64768
