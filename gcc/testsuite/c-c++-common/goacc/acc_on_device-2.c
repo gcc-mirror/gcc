@@ -24,6 +24,6 @@ f (void)
    perturbs expansion as a builtin, which expects an int parameter.  It's fine
    when changing acc_device_t to plain int, but that's not what we're doing in
    <openacc.h>.
-   { dg-final { scan-rtl-dump-times "\\\(call \[^\\n\]*\\\"acc_on_device" 0 "expand" { xfail c++ } } } */
+   { dg-final { scan-rtl-dump-times "\\\(call \[^\\n\]* acc_on_device" 0 "expand" { xfail c++ } } } */
 
 /* { dg-final { cleanup-rtl-dump "expand" } } */
