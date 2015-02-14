@@ -808,8 +808,8 @@ ipa_discover_readonly_nonaddressable_vars (void)
 	  {
 	    if (TREE_ADDRESSABLE (vnode->decl) && dump_file)
 	      fprintf (dump_file, " %s (non-addressable)", vnode->name ());
-	    vnode->call_for_node_and_aliases (clear_addressable_bit, NULL,
-					      true);
+	    vnode->call_for_symbol_and_aliases (clear_addressable_bit, NULL,
+					        true);
 	  }
 	if (!address_taken && !written
 	    /* Making variable in explicit section readonly can cause section
@@ -819,14 +819,14 @@ ipa_discover_readonly_nonaddressable_vars (void)
 	  {
 	    if (!TREE_READONLY (vnode->decl) && dump_file)
 	      fprintf (dump_file, " %s (read-only)", vnode->name ());
-	    vnode->call_for_node_and_aliases (set_readonly_bit, NULL, true);
+	    vnode->call_for_symbol_and_aliases (set_readonly_bit, NULL, true);
 	  }
 	if (!vnode->writeonly && !read && !address_taken && written)
 	  {
 	    if (dump_file)
 	      fprintf (dump_file, " %s (write-only)", vnode->name ());
-	    vnode->call_for_node_and_aliases (set_writeonly_bit, &remove_p, 
-					     true);
+	    vnode->call_for_symbol_and_aliases (set_writeonly_bit, &remove_p, 
+					        true);
 	  }
       }
   if (dump_file)
@@ -1343,9 +1343,8 @@ ipa_single_use (void)
 	  single_user_map.put (var, user);
 
 	  /* Enqueue all aliases for re-processing.  */
-	  for (i = 0; var->iterate_referring (i, ref); i++)
-	    if (ref->use == IPA_REF_ALIAS
-		&& !ref->referring->aux)
+	  for (i = 0; var->iterate_direct_aliases (i, ref); i++)
+	    if (!ref->referring->aux)
 	      {
 		ref->referring->aux = first;
 		first = dyn_cast <varpool_node *> (ref->referring);

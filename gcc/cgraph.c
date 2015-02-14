@@ -2215,33 +2215,6 @@ cgraph_node::call_for_symbol_thunks_and_aliases (bool (*callback)
   return false;
 }
 
-/* Call callback on function and aliases associated to the function.
-   When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
-   skipped.  */
-
-bool
-cgraph_node::call_for_symbol_and_aliases (bool (*callback) (cgraph_node *,
-							    void *),
-					  void *data,
-					  bool include_overwritable)
-{
-  ipa_ref *ref;
-
-  if (callback (this, data))
-    return true;
-
-  FOR_EACH_ALIAS (this, ref)
-    {
-      cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
-      if (include_overwritable
-	  || alias->get_availability () > AVAIL_INTERPOSABLE)
-	if (alias->call_for_symbol_and_aliases (callback, data,
-						include_overwritable))
-	  return true;
-    }
-  return false;
-}
-
 /* Worker to bring NODE local.  */
 
 bool
@@ -2427,37 +2400,6 @@ cgraph_edge::maybe_hot_p (void)
 			   / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION)))
         return false;
     }
-  return true;
-}
-
-/* Return true when function can be removed from callgraph
-   if all direct calls are eliminated.  */
-
-bool
-cgraph_node::can_remove_if_no_direct_calls_and_refs_p (void)
-{
-  gcc_assert (!global.inlined_to);
-  /* Instrumentation clones should not be removed before
-     instrumentation happens.  New callers may appear after
-     instrumentation.  */
-  if (instrumentation_clone
-      && !chkp_function_instrumented_p (decl))
-    return false;
-  /* Extern inlines can always go, we will use the external definition.  */
-  if (DECL_EXTERNAL (decl))
-    return true;
-  /* When function is needed, we can not remove it.  */
-  if (force_output || used_from_other_partition)
-    return false;
-  if (DECL_STATIC_CONSTRUCTOR (decl)
-      || DECL_STATIC_DESTRUCTOR (decl))
-    return false;
-  /* Only COMDAT functions can be removed if externally visible.  */
-  if (externally_visible
-      && (!DECL_COMDAT (decl)
-	  || forced_by_abi
-	  || used_from_object_file_p ()))
-    return false;
   return true;
 }
 
@@ -3363,4 +3305,24 @@ cgraph_c_finalize (void)
   version_info_node = NULL;
 }
 
+/* A wroker for call_for_symbol_and_aliases.  */
+
+bool
+cgraph_node::call_for_symbol_and_aliases_1 (bool (*callback) (cgraph_node *,
+							      void *),
+					    void *data,
+					    bool include_overwritable)
+{
+  ipa_ref *ref;
+  FOR_EACH_ALIAS (this, ref)
+    {
+      cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
+      if (include_overwritable
+	  || alias->get_availability () > AVAIL_INTERPOSABLE)
+	if (alias->call_for_symbol_and_aliases (callback, data,
+						include_overwritable))
+	  return true;
+    }
+  return false;
+}
 #include "gt-cgraph.h"

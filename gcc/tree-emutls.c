@@ -787,7 +787,7 @@ ipa_lower_emutls (void)
       if (var->alias && !var->analyzed)
 	any_aliases = true;
       else if (!var->alias)
-	var->call_for_node_and_aliases (create_emultls_var, &ctor_body, true);
+	var->call_for_symbol_and_aliases (create_emultls_var, &ctor_body, true);
     }
 
   /* If there were any aliases, then frob the alias_pairs vector.  */
