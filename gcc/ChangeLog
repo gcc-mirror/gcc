@@ -1,3 +1,10 @@
+2015-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/62209
+	* tree-ssa-reassoc.c (update_range_test): If stmt is a PHI and
+	op == range->exp, insert seq and gimplified code after labels
+	instead of after the phi.
+
 2015-02-13  Jeff Law  <law@redhat.com>
 
 	PR bootstrap/65060
