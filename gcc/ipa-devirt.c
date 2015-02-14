@@ -1710,7 +1710,6 @@ referenced_from_vtable_p (struct cgraph_node *node)
     return true;
 
   for (i = 0; node->iterate_referring (i, ref); i++)
-	
     if ((ref->use == IPA_REF_ALIAS
 	 && referenced_from_vtable_p (dyn_cast<cgraph_node *> (ref->referring)))
 	|| (ref->use == IPA_REF_ADDR

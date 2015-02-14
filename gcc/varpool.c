@@ -817,28 +817,23 @@ varpool_node::create_extra_name_alias (tree alias, tree decl)
   return alias_node;
 }
 
-/* Call calback on varpool symbol and aliases associated to varpool symbol.
-   When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
-   skipped. */
+/* Worker for call_for_symbol_and_aliases.  */
 
 bool
-varpool_node::call_for_node_and_aliases (bool (*callback) (varpool_node *,
-							   void *),
-					 void *data,
-					 bool include_overwritable)
+varpool_node::call_for_symbol_and_aliases_1 (bool (*callback) (varpool_node *,
+							       void *),
+					     void *data,
+					     bool include_overwritable)
 {
   ipa_ref *ref;
-
-  if (callback (this, data))
-    return true;
 
   FOR_EACH_ALIAS (this, ref)
     {
       varpool_node *alias = dyn_cast <varpool_node *> (ref->referring);
       if (include_overwritable
 	  || alias->get_availability () > AVAIL_INTERPOSABLE)
-	if (alias->call_for_node_and_aliases (callback, data,
-					      include_overwritable))
+	if (alias->call_for_symbol_and_aliases (callback, data,
+					        include_overwritable))
 	  return true;
     }
   return false;

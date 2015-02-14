@@ -313,18 +313,6 @@ symbol_table::change_decl_assembler_name (tree decl, tree name)
     }
 }
 
-/* Return true when RESOLUTION indicate that linker will use
-   the symbol from non-LTO object files.  */
-
-bool
-resolution_used_from_other_file_p (enum ld_plugin_symbol_resolution resolution)
-{
-  return (resolution == LDPR_PREVAILING_DEF
-	  || resolution == LDPR_PREEMPTED_REG
-	  || resolution == LDPR_RESOLVED_EXEC
-	  || resolution == LDPR_RESOLVED_DYN);
-}
-
 /* Hash sections by their names.  */
 
 hashval_t
@@ -527,18 +515,18 @@ symtab_node::create_reference (symtab_node *referred_node,
 
   /* IPA_REF_ALIAS is always inserted at the beginning of the list.   */
   if(use_type == IPA_REF_ALIAS)
-  {
-    list2->referring.safe_insert (0, ref);
-    ref->referred_index = 0;
+    {
+      list2->referring.safe_insert (0, ref);
+      ref->referred_index = 0;
 
-    for (unsigned int i = 1; i < list2->referring.length (); i++)
-      list2->referring[i]->referred_index = i;
-  }
+      for (unsigned int i = 1; i < list2->referring.length (); i++)
+	list2->referring[i]->referred_index = i;
+    }
   else
-  {
-    list2->referring.safe_push (ref);
-    ref->referred_index = list2->referring.length () - 1;
-  }
+    {
+      list2->referring.safe_push (ref);
+      ref->referred_index = list2->referring.length () - 1;
+    }
 
   ref->referring = this;
   ref->referred = referred_node;
@@ -741,52 +729,6 @@ symtab_node::dump_referring (FILE *file)
 	fprintf (file, " (speculative)");
     }
   fprintf (file, "\n");
-}
-
-/* Return true if list contains an alias.  */
-bool
-symtab_node::has_aliases_p (void)
-{
-  ipa_ref *ref = NULL;
-  int i;
-
-  for (i = 0; iterate_referring (i, ref); i++)
-    if (ref->use == IPA_REF_ALIAS)
-      return true;
-  return false;
-}
-
-/* Iterates I-th reference in the list, REF is also set.  */
-
-ipa_ref *
-symtab_node::iterate_reference (unsigned i, ipa_ref *&ref)
-{
-  vec_safe_iterate (ref_list.references, i, &ref);
-
-  return ref;
-}
-
-/* Iterates I-th referring item in the list, REF is also set.  */
-
-ipa_ref *
-symtab_node::iterate_referring (unsigned i, ipa_ref *&ref)
-{
-  ref_list.referring.iterate (i, &ref);
-
-  return ref;
-}
-
-/* Iterates I-th referring alias item in the list, REF is also set.  */
-
-ipa_ref *
-symtab_node::iterate_direct_aliases (unsigned i, ipa_ref *&ref)
-{
-  ref_list.referring.iterate (i, &ref);
-
-  if (ref && ref->use != IPA_REF_ALIAS)
-    return NULL;
-
-  return ref;
 }
 
 static const char * const symtab_type_names[] = {"symbol", "function", "variable"};
@@ -1196,29 +1138,6 @@ symtab_node::verify_symtab_nodes (void)
     }
 }
 
-/* Return true when NODE is known to be used from other (non-LTO)
-   object file. Known only when doing LTO via linker plugin.  */
-
-bool
-symtab_node::used_from_object_file_p_worker (symtab_node *node)
-{
-  if (!TREE_PUBLIC (node->decl) || DECL_EXTERNAL (node->decl))
-    return false;
-  if (resolution_used_from_other_file_p (node->resolution))
-    return true;
-  return false;
-}
-
-
-/* Return true when symtab_node is known to be used from other (non-LTO)
-   object file. Known only when doing LTO via linker plugin.  */
-
-bool
-symtab_node::used_from_object_file_p (void)
-{
-  return symtab_node::used_from_object_file_p_worker (this);
-}
-
 /* Make DECL local.  FIXME: We shouldn't need to mess with rtl this early,
    but other code such as notice_global_symbol generates rtl.  */
 
@@ -1260,19 +1179,12 @@ symtab_node::make_decl_local (void)
 
 /* Walk the alias chain to return the symbol NODE is alias of.
    If NODE is not an alias, return NODE.
-   When AVAILABILITY is non-NULL, get minimal availability in the chain.  */
+   Assumes NODE is known to be alias.  */
 
 symtab_node *
-symtab_node::ultimate_alias_target (enum availability *availability)
+symtab_node::ultimate_alias_target_1 (enum availability *availability)
 {
   bool weakref_p = false;
-
-  if (!alias)
-    {
-      if (availability)
-	*availability = get_availability ();
-      return this;
-    }
 
   /* To determine visibility of the target, we follow ELF semantic of aliases.
      Here alias is an alternative assembler name of a given definition. Its
@@ -1453,16 +1365,6 @@ symtab_node::get_init_priority ()
   return h ? h->init : DEFAULT_INIT_PRIORITY;
 }
 
-/* Return availability of NODE.  */
-enum availability symtab_node::get_availability (void)
-{
-  if (is_a <cgraph_node *> (this))
-    return dyn_cast <cgraph_node *> (this)->get_availability ();
-  else
-    return dyn_cast <varpool_node *> (this)->get_availability ();;
-}
-
-
 /* Return the finalization priority.  */
 
 priority_type
@@ -1606,33 +1508,6 @@ symtab_node::resolve_alias (symtab_node *target)
   if (address_taken)
     target->ultimate_alias_target ()->address_taken = true;
   return true;
-}
-
-/* Call calback on symtab node and aliases associated to this node.
-   When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
-   skipped. */
-
-bool
-symtab_node::call_for_symbol_and_aliases (bool (*callback) (symtab_node *,
-							  void *),
-					void *data, bool include_overwritable)
-{
-  int i;
-  ipa_ref *ref;
-
-  if (callback (this, data))
-    return true;
-  for (i = 0; iterate_referring (i, ref); i++)
-    if (ref->use == IPA_REF_ALIAS)
-      {
-	symtab_node *alias = ref->referring;
-	if (include_overwritable
-	    || alias->get_availability () > AVAIL_INTERPOSABLE)
-	  if (alias->call_for_symbol_and_aliases (callback, data,
-						include_overwritable))
-	    return true;
-      }
-  return false;
 }
 
 /* Worker searching noninterposable alias.  */
@@ -1960,4 +1835,25 @@ symtab_node::equal_address_to (symtab_node *s2)
      alias oracle to use this predicate.  */
 
   return 2;
+}
+
+/* Worker for call_for_symbol_and_aliases.  */
+
+bool
+symtab_node::call_for_symbol_and_aliases_1 (bool (*callback) (symtab_node *,
+							      void *),
+					    void *data,
+					    bool include_overwritable)
+{
+  ipa_ref *ref;
+  FOR_EACH_ALIAS (this, ref)
+    {
+      symtab_node *alias = ref->referring;
+      if (include_overwritable
+	  || alias->get_availability () > AVAIL_INTERPOSABLE)
+	if (alias->call_for_symbol_and_aliases (callback, data,
+					      include_overwritable))
+	  return true;
+    }
+  return false;
 }

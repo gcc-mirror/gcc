@@ -1,3 +1,43 @@
+2015-02-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-chkp.c: Use iterate_direct_aliases.
+	* symtab.c (resolution_used_from_other_file_p): Move inline.
+	(symtab_node::create_reference): Fix formating.
+	(symtab_node::has_aliases_p): Move inline; use iterate_direct_aliases.
+	(symtab_node::iterate_reference): Move inline.
+	(symtab_node::iterate_referring): Move inline.
+	(symtab_node::iterate_direct_aliases): Move inline.
+	(symtab_node::used_from_object_file_p_worker): Inline into ...
+	(symtab_node::used_from_object_file_p): ... this one; move inline.
+	(symtab_node::call_for_symbol_and_aliases): Move inline;
+	use iterate_direct_aliases.
+	(symtab_node::call_for_symbol_and_aliases_1): New method.
+	(cgraph_node::call_for_symbol_and_aliases): Move inline;
+	use iterate_direct_aliases.
+	(cgraph_node::call_for_symbol_and_aliases_1): New method.
+	(varpool_node::call_for_node_and_aliases): Rename to ...
+	(varpool_node::call_for_symbol_and_aliases): ... this one; Move inline;
+	use iterate_direct_aliases.
+	(varpool_node::call_for_symbol_and_aliases_1): New method.
+	* ipa.c (ipa_single_use): Use iterate_direct_aliases.
+	(ipa_discover_readonly_nonaddressable_var): Update.
+	* ipa-devirt.c: Fix formating.
+	* cgraph.c (cgraph_node::can_remove_if_no_direct_calls_and_refs_p):
+	Move inline.
+	(cgraph_node::call_for_symbol_and_aliases): Move inline.
+	(cgraph_node::call_for_symbol_and_aliases_1): New function..
+	* cgraph.h (used_from_object_file_p_worker): Remove.
+	(resolution_used_from_other_file_p): Move inline.
+	(symtab_node::has_aliases_p): Move inline; use iterate_direct_aliases.
+	(symtab_node::iterate_reference): Move inline.
+	(symtab_node::iterate_referring): Move inline.
+	(symtab_node::iterate_direct_aliases): Move inline.
+	(symtab_node::used_from_object_file_p_worker): Inline into ...
+	(symtab_node::used_from_object_file_p): Move inline.
+	* tree-emutls.c (ipa_lower_emutls): Update.
+	* varpool.c (varpool_node::call_for_symbol_and_aliases_1): New method.
+	(varpool_node::call_for_node_and_aliases): Remove.
+
 2015-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/62209
