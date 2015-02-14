@@ -1,5 +1,13 @@
 2015-02-14  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline-analysis.c (growth_data): Add uninlinable field.
+	(do_estimate_growth_1): Record if any uninlinable edge was seen.
+	(estimate_growth): Handle uninlinable edges correctly.
+	(check_callers): New.
+	(growth_likely_positive): Handle aliases correctly.
+
+2015-02-14  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-chkp.c: Use iterate_direct_aliases.
 	* symtab.c (resolution_used_from_other_file_p): Move inline.
 	(symtab_node::create_reference): Fix formating.
