@@ -1,3 +1,17 @@
+2015-02-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64768
+	* gcc.dg/array-11.c: New test.
+	* gcc.dg/array-12.c: New test.
+	* gcc.dg/array-13.c: New test.
+	* gcc.dg/array-14.c: New test.
+	* gcc.dg/c99-flex-array-typedef-1.c: New test.
+	* gcc.dg/c99-flex-array-typedef-2.c: New test.
+	* gcc.dg/c99-flex-array-typedef-3.c: New test.
+	* gcc.dg/c99-flex-array-typedef-5.c: New test.
+	* gcc.dg/c99-flex-array-typedef-7.c: New test.
+	* gcc.dg/c99-flex-array-typedef-8.c: New test.
+
 2015-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60894

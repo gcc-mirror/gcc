@@ -6515,6 +6515,19 @@ grokdeclarator (const struct c_declarator *declarator,
 	      error_at (loc, "unnamed field has incomplete type");
 	    type = error_mark_node;
 	  }
+	else if (TREE_CODE (type) == ARRAY_TYPE
+		 && TYPE_DOMAIN (type) == NULL_TREE)
+	  {
+	    /* We have a flexible array member through a typedef.
+	       Set suitable range.  Whether this is a correct position
+	       for a flexible array member will be determined elsewhere.  */
+	    if (!in_system_header_at (input_location))
+	      pedwarn_c90 (loc, OPT_Wpedantic, "ISO C90 does not "
+			   "support flexible array members");
+	    type = build_distinct_type_copy (TYPE_MAIN_VARIANT (type));
+	    TYPE_DOMAIN (type) = build_range_type (sizetype, size_zero_node,
+						   NULL_TREE);
+	  }
 	type = c_build_qualified_type (type, type_quals);
 	decl = build_decl (declarator->id_loc,
 			   FIELD_DECL, declarator->u.id, type);
