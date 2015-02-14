@@ -3901,6 +3901,7 @@ struct growth_data
 {
   struct cgraph_node *node;
   bool self_recursive;
+  bool uninlinable;
   int growth;
 };
 
@@ -3917,6 +3918,12 @@ do_estimate_growth_1 (struct cgraph_node *node, void *data)
     {
       gcc_checking_assert (e->inline_failed);
 
+      if (cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
+	{
+	  d->uninlinable = true;
+          continue;
+	}
+
       if (e->caller == d->node
 	  || (e->caller->global.inlined_to
 	      && e->caller->global.inlined_to == d->node))
@@ -3932,10 +3939,10 @@ do_estimate_growth_1 (struct cgraph_node *node, void *data)
 int
 estimate_growth (struct cgraph_node *node)
 {
-  struct growth_data d = { node, 0, false };
+  struct growth_data d = { node, false, false, 0 };
   struct inline_summary *info = inline_summaries->get (node);
 
-  node->call_for_symbol_thunks_and_aliases (do_estimate_growth_1, &d, true);
+  node->call_for_symbol_and_aliases (do_estimate_growth_1, &d, true);
 
   /* For self recursive functions the growth estimation really should be
      infinity.  We don't want to return very large values because the growth
@@ -3943,7 +3950,7 @@ estimate_growth (struct cgraph_node *node)
      return zero or negative growths. */
   if (d.self_recursive)
     d.growth = d.growth < info->size ? info->size : d.growth;
-  else if (DECL_EXTERNAL (node->decl))
+  else if (DECL_EXTERNAL (node->decl) || d.uninlinable)
     ;
   else
     {
@@ -3962,6 +3969,28 @@ estimate_growth (struct cgraph_node *node)
   return d.growth;
 }
 
+/* Verify if there are fewer than MAX_CALLERS.  */
+
+static bool
+check_callers (cgraph_node *node, int *max_callers)
+{
+  ipa_ref *ref;
+
+  for (cgraph_edge *e = node->callers; e; e = e->next_caller)
+    {
+      (*max_callers)--;
+      if (!*max_callers
+	  || cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
+	return true;
+    }
+
+  FOR_EACH_ALIAS (node, ref)
+    if (check_callers (dyn_cast <cgraph_node *> (ref->referring), max_callers))
+      return true;
+
+  return false;
+}
+
 
 /* Make cheap estimation if growth of NODE is likely positive knowing
    EDGE_GROWTH of one particular edge. 
@@ -3969,7 +3998,8 @@ estimate_growth (struct cgraph_node *node)
    and skip computation if there are too many callers.  */
 
 bool
-growth_likely_positive (struct cgraph_node *node, int edge_growth ATTRIBUTE_UNUSED)
+growth_likely_positive (struct cgraph_node *node,
+		        int edge_growth)
 {
   int max_callers;
   struct cgraph_edge *e;
@@ -4000,9 +4030,16 @@ growth_likely_positive (struct cgraph_node *node, int edge_growth ATTRIBUTE_UNUS
   for (e = node->callers; e; e = e->next_caller)
     {
       max_callers--;
-      if (!max_callers)
+      if (!max_callers
+	  || cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
 	return true;
     }
+
+  ipa_ref *ref;
+  FOR_EACH_ALIAS (node, ref)
+    if (check_callers (dyn_cast <cgraph_node *> (ref->referring), &max_callers))
+      return true;
+
   return estimate_growth (node) > 0;
 }
 
