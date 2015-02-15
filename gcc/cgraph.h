@@ -2338,12 +2338,8 @@ inline bool
 symtab_node::has_aliases_p (void)
 {
   ipa_ref *ref = NULL;
-  int i;
 
-  for (i = 0; iterate_direct_aliases (i, ref); i++)
-    if (ref->use == IPA_REF_ALIAS)
-      return true;
-  return false;
+  return (iterate_direct_aliases (0, ref) != NULL);
 }
 
 /* Return true when RESOLUTION indicate that linker will use
@@ -2984,11 +2980,9 @@ symtab_node::call_for_symbol_and_aliases (bool (*callback) (symtab_node *,
 					  void *data,
 					  bool include_overwritable)
 {
-  ipa_ref *ref;
-
   if (callback (this, data))
     return true;
-  if (iterate_direct_aliases (0, ref))
+  if (has_aliases_p ())
     return call_for_symbol_and_aliases_1 (callback, data, include_overwritable);
   return false;
 }
@@ -3003,13 +2997,10 @@ cgraph_node::call_for_symbol_and_aliases (bool (*callback) (cgraph_node *,
 					  void *data,
 					  bool include_overwritable)
 {
-  ipa_ref *ref;
-
   if (callback (this, data))
     return true;
-  if (iterate_direct_aliases (0, ref))
+  if (has_aliases_p ())
     return call_for_symbol_and_aliases_1 (callback, data, include_overwritable);
-
   return false;
 }
 
@@ -3023,13 +3014,10 @@ varpool_node::call_for_symbol_and_aliases (bool (*callback) (varpool_node *,
 					   void *data,
 					   bool include_overwritable)
 {
-  ipa_ref *ref;
-
   if (callback (this, data))
     return true;
-  if (iterate_direct_aliases (0, ref))
+  if (has_aliases_p ())
     return call_for_symbol_and_aliases_1 (callback, data, include_overwritable);
-
   return false;
 }
 
