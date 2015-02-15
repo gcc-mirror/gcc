@@ -3,6 +3,8 @@
 /* { dg-options "-multiply_defined suppress" { target powerpc-*-darwin* } } */
 /* { dg-do link } */
 /* { dg-require-weak "" } */
+/* { dg-prune-output "recognized" } */
+/* { dg-prune-output "ld: 0711-768 WARNING" } */
 
 extern void abort (void);
 extern void exit (int);
