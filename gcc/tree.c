@@ -11992,7 +11992,7 @@ type_in_anonymous_namespace_p (const_tree t)
 
 /* Lookup sub-BINFO of BINFO of TYPE at offset POS.  */
 
-tree
+static tree
 lookup_binfo_at_offset (tree binfo, tree type, HOST_WIDE_INT pos)
 {
   unsigned int i;
@@ -12045,11 +12045,13 @@ get_binfo_at_offset (tree binfo, HOST_WIDE_INT offset, tree expected_type)
       else if (offset != 0)
 	{
 	  tree found_binfo = NULL, base_binfo;
-	  int offset = (tree_to_shwi (BINFO_OFFSET (binfo)) + pos
-			/ BITS_PER_UNIT);
+	  /* Offsets in BINFO are in bytes relative to the whole structure
+	     while POS is in bits relative to the containing field.  */
+	  int binfo_offset = (tree_to_shwi (BINFO_OFFSET (binfo)) + pos
+			     / BITS_PER_UNIT);
 
 	  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
-	    if (tree_to_shwi (BINFO_OFFSET (base_binfo)) == offset
+	    if (tree_to_shwi (BINFO_OFFSET (base_binfo)) == binfo_offset
 		&& types_same_for_odr (TREE_TYPE (base_binfo), TREE_TYPE (fld)))
 	      {
 		found_binfo = base_binfo;
@@ -12058,7 +12060,8 @@ get_binfo_at_offset (tree binfo, HOST_WIDE_INT offset, tree expected_type)
 	  if (found_binfo)
 	    binfo = found_binfo;
 	  else
-	    binfo = lookup_binfo_at_offset (binfo, TREE_TYPE (fld), offset);
+	    binfo = lookup_binfo_at_offset (binfo, TREE_TYPE (fld),
+					    binfo_offset);
 	 }
 
       type = TREE_TYPE (fld);
