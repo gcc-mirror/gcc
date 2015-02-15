@@ -6021,18 +6021,15 @@ pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 	{
 	  x = XEXP (x, 0);
 
-	  /* We don't need an intermediate for indexed and LO_SUM DLT
-	     memory addresses.  When INT14_OK_STRICT is true, it might
-	     appear that we could directly allow register indirect
-	     memory addresses.  However, this doesn't work because we
-	     don't support SUBREGs in floating-point register copies
-	     and reload doesn't tell us when it's going to use a SUBREG.  */
-	  if (IS_INDEX_ADDR_P (x)
-	      || IS_LO_SUM_DLT_ADDR_P (x))
-	    return NO_REGS;
+	  /* We don't need a secondary reload for indexed memory addresses.
 
-	  /* Request intermediate general register.  */
-	  return GENERAL_REGS;
+	     When INT14_OK_STRICT is true, it might appear that we could
+	     directly allow register indirect memory addresses.  However,
+	     this doesn't work because we don't support SUBREGs in
+	     floating-point register copies and reload doesn't tell us
+	     when it's going to use a SUBREG.  */
+	  if (IS_INDEX_ADDR_P (x))
+	    return NO_REGS;
 	}
 
       /* Request a secondary reload with a general scratch register

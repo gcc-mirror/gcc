@@ -1,3 +1,11 @@
+2015-02-15  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_secondary_reload): Request a secondary reload
+	for all floading point loads and stores except those using a register
+	index address.
+	* config/pa/pa.md: Add new patterns to load a lo_sum DLT operand
+	to a register.
+
 2015-02-13  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/constraints.md: Change "Q" and "T" constraints to memory

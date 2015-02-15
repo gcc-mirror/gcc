@@ -2680,6 +2680,29 @@
   [(set_attr "type" "binary")
    (set_attr "length" "4")])
 
+(define_insn ""
+ [(set (match_operand:SI 0 "register_operand" "=r")
+       (lo_sum:SI (match_operand:SI 1 "register_operand" "r")
+		  (unspec:SI [(match_operand 2 "" "")] UNSPEC_DLTIND14R)))]
+  "symbolic_operand (operands[2], Pmode)
+   && ! function_label_operand (operands[2], Pmode)
+   && flag_pic"
+  "ldo RT'%G2(%1),%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "4")])
+
+(define_insn ""
+ [(set (match_operand:DI 0 "register_operand" "=r")
+       (lo_sum:DI (match_operand:DI 1 "register_operand" "r")
+		  (unspec:DI [(match_operand 2 "" "")] UNSPEC_DLTIND14R)))]
+  "symbolic_operand (operands[2], Pmode)
+   && ! function_label_operand (operands[2], Pmode)
+   && TARGET_64BIT
+   && flag_pic"
+  "ldo RT'%G2(%1),%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "4")])
+
 ;; Always use addil rather than ldil;add sequences.  This allows the
 ;; HP linker to eliminate the dp relocation if the symbolic operand
 ;; lives in the TEXT space.
