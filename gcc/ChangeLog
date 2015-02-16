@@ -1,3 +1,16 @@
+2015-02-15  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/bugreport.texi: Adjust section titles throughout the file
+	to use "Title Case".
+	* doc/extend.texi: Likewise.
+	* doc/gcov.texi: Likewise.
+	* doc/implement-c.texi: Likewise.
+	* doc/implement-cxx.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/objc.texi: Likewise.
+	* doc/standards.texi: Likewise.
+	* doc/trouble.texi: Likewise.
+
 2015-02-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.h (symtab_node::has_aliases_p): Simplify.
