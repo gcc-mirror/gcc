@@ -1,3 +1,8 @@
+2015-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63593
+	* gcc.dg/pr63593.c: New testcase.
+
 2015-02-16  Marek Polacek  <polacek@redhat.com>
 
 	PR c/65066
