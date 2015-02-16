@@ -1,3 +1,10 @@
+2015-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65077
+	* tree-ssa-structalias.c (get_constraint_for_1): Handle
+	IMAGPART_EXPR, REALPART_EXPR and BIT_FIELD_REF.
+	(find_func_aliases): Allow float values to carry pointers again.
+
 2015-02-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* doc/install.texi (Specific): Reorder targets list to put
