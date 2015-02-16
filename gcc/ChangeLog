@@ -1,3 +1,13 @@
+2015-02-16  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/64823
+	* tree-vrp.c (identify_jump_threads): Handle blocks with no real
+	statements.
+	* tree-ssa-threadedge.c (potentially_threadable_block): Allow
+	threading through blocks with PHIs, but no statements.
+	(thread_through_normal_block): Distinguish between blocks where
+	we did not process all the statements and blocks with no statements.
+
 2015-02-16  Jakub Jelinek  <jakub@redhat.com>
 	    James Greenhalgh  <james.greenhalgh@arm.com>
 

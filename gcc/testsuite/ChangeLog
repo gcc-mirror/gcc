@@ -1,3 +1,8 @@
+2015-02-16  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/64823
+	* gcc.dg/uninit-20.c: New test.
+
 2015-02-16  Jakub Jelinek  <jakub@redhat.com>
 	    James Greenhalgh  <james.greenhalgh@arm.com>
 

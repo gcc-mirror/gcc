@@ -110,6 +110,15 @@ potentially_threadable_block (basic_block bb)
 {
   gimple_stmt_iterator gsi;
 
+  /* Special case.  We can get blocks that are forwarders, but are
+     not optimized away because they forward from outside a loop
+     to the loop header.   We want to thread through them as we can
+     sometimes thread to the loop exit, which is obviously profitable. 
+     the interesting case here is when the block has PHIs.  */
+  if (gsi_end_p (gsi_start_nondebug_bb (bb))
+      && !gsi_end_p (gsi_start_phis (bb)))
+    return true;
+  
   /* If BB has a single successor or a single predecessor, then
      there is no threading opportunity.  */
   if (single_succ_p (bb) || single_pred_p (bb))
@@ -1281,16 +1290,32 @@ thread_through_normal_block (edge e,
     = record_temporary_equivalences_from_stmts_at_dest (e, stack, simplify,
 							*backedge_seen_p);
 
-  /* If we didn't look at all the statements, the most likely reason is
-     there were too many and thus duplicating this block is not profitable.
+  /* There's two reasons STMT might be null, and distinguishing
+     between them is important.
 
-     Also note if we do not look at all the statements, then we may not
-     have invalidated equivalences that are no longer valid if we threaded
-     around a loop.  Thus we must signal to our caller that this block
-     is not suitable for use as a joiner in a threading path.  */
+     First the block may not have had any statements.  For example, it
+     might have some PHIs and unconditionally transfer control elsewhere.
+     Such blocks are suitable for jump threading, particularly as a
+     joiner block.
+
+     The second reason would be if we did not process all the statements
+     in the block (because there were too many to make duplicating the
+     block profitable.   If we did not look at all the statements, then
+     we may not have invalidated everything needing invalidation.  Thus
+     we must signal to our caller that this block is not suitable for
+     use as a joiner in a threading path.  */
   if (!stmt)
-    return -1;
+    {
+      /* First case.  The statement simply doesn't have any instructions, but
+	 does have PHIs.  */
+      if (gsi_end_p (gsi_start_nondebug_bb (e->dest))
+	  && !gsi_end_p (gsi_start_phis (e->dest)))
+	return 0;
 
+      /* Second case.  */
+      return -1;
+    }
+  
   /* If we stopped at a COND_EXPR or SWITCH_EXPR, see if we know which arm
      will be taken.  */
   if (gimple_code (stmt) == GIMPLE_COND
