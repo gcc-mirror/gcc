@@ -1,3 +1,18 @@
+2015-02-16  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
+	    David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/65058
+	* config/rs6000/rs6000.c (rs6000_output_symbol_ref): Append storage
+	mapping class to external variable or function reference.
+	* config/rs6000/xcoff.h (ASM_OUTPUT_EXTERNAL): Do not append storage
+	mapping class.
+
+2015-02-16  David Eelsohn  <dje.gcc@gmail.com>
+
+	PR target/53348
+	* config/rs6000/rs6000.c (rs6000_declare_alias): Only use
+	ASM_WEAKEN_DECL if defined.
+
 2015-02-16  Richard Biener  <rguenther@suse.de>
 
 	PR lto/65015

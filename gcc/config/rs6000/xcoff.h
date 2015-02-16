@@ -170,15 +170,6 @@
       putc ('\n', FILE);						\
       fprintf(FILE, "\t.rename .%s,\".%s\"\n", buffer, NAME);		\
     }									\
-  if ((TREE_CODE (DECL) == VAR_DECL					\
-       || TREE_CODE (DECL) == FUNCTION_DECL)				\
-      && (NAME)[strlen (NAME) - 1] != ']')				\
-    {									\
-      XSTR (_symref, 0) = concat (XSTR (_symref, 0),			\
-				  (TREE_CODE (DECL) == FUNCTION_DECL	\
-				   ? "[DS]" : "[RW]"),			\
-				  NULL);				\
-    }									\
 }
 
 /* This is how to output a reference to a user-level label named NAME.

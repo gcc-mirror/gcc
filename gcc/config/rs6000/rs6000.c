@@ -26030,6 +26030,20 @@ rs6000_output_symbol_ref (FILE *file, rtx x)
      section.  */
   const char *name = XSTR (x, 0);
 
+  tree decl = SYMBOL_REF_DECL (x);
+  if (decl /* sync condition with assemble_external () */
+      && DECL_P (decl) && DECL_EXTERNAL (decl) && TREE_PUBLIC (decl)
+      && (TREE_CODE (decl) == VAR_DECL
+	  || TREE_CODE (decl) == FUNCTION_DECL)
+      && name[strlen (name) - 1] != ']')
+    {
+      name = concat (name,
+		     (TREE_CODE (decl) == FUNCTION_DECL
+		      ? "[DS]" : "[UA]"),
+		     NULL);
+      XSTR (x, 0) = name;
+    }
+
   if (VTABLE_NAME_P (name))
     {
       RS6000_OUTPUT_BASENAME (file, name);
@@ -30081,8 +30095,10 @@ rs6000_declare_alias (struct symtab_node *n, void *d)
 	  RS6000_OUTPUT_BASENAME (data->file, buffer);
 	  putc ('\n', data->file);
 	}
+#ifdef ASM_WEAKEN_DECL
       else if (DECL_WEAK (n->decl) && !data->function_descriptor)
 	ASM_WEAKEN_DECL (data->file, n->decl, name, NULL);
+#endif
     }
   else
     {
