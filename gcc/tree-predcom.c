@@ -1745,9 +1745,8 @@ execute_pred_commoning_chain (struct loop *loop, chain_p chain,
   if (chain->combined)
     {
       /* For combined chains, just remove the statements that are used to
-	 compute the values of the expression (except for the root one).  */
-      for (i = 1; chain->refs.iterate (i, &a); i++)
-	remove_stmt (a->stmt);
+	 compute the values of the expression (except for the root one).
+	 We delay this until after all chains are processed.  */
     }
   else
     {
@@ -1809,6 +1808,21 @@ execute_pred_commoning (struct loop *loop, vec<chain_p> chains,
 	execute_load_motion (loop, chain, tmp_vars);
       else
 	execute_pred_commoning_chain (loop, chain, tmp_vars);
+    }
+
+  FOR_EACH_VEC_ELT (chains, i, chain)
+    {
+      if (chain->type == CT_INVARIANT)
+	;
+      else if (chain->combined)
+	{
+	  /* For combined chains, just remove the statements that are used to
+	     compute the values of the expression (except for the root one).  */
+	  dref a;
+	  unsigned j;
+	  for (j = 1; chain->refs.iterate (j, &a); j++)
+	    remove_stmt (a->stmt);
+	}
     }
 
   update_ssa (TODO_update_ssa_only_virtuals);

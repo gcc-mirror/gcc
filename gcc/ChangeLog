@@ -1,3 +1,10 @@
+2015-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63593
+	* tree-predcom.c (execute_pred_commoning_chain): Delay removing
+	stmts and releasing SSA names until...
+	(execute_pred_commoning): ... after processing all chains.
+
 2015-02-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65059
