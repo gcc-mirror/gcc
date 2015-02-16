@@ -2492,6 +2492,7 @@ check_format_types (location_t loc, format_wanted_type *types)
 	  && TREE_CODE (cur_type) == INTEGER_TYPE
 	  && warn_format_signedness
 	  && TYPE_UNSIGNED (wanted_type)
+	  && cur_param != NULL_TREE
 	  && TREE_CODE (cur_param) == NOP_EXPR)
 	{
 	  tree t = TREE_TYPE (TREE_OPERAND (cur_param, 0));
