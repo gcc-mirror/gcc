@@ -1,3 +1,9 @@
+2015-02-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65059
+	* ipa-comdats.c (ipa_comdats): Do not categorize thunks to
+	external functions.
+
 2015-02-15  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/bugreport.texi: Adjust section titles throughout the file

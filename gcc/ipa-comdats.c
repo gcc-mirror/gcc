@@ -328,9 +328,14 @@ ipa_comdats (void)
 
   FOR_EACH_DEFINED_SYMBOL (symbol)
     {
+      struct cgraph_node *fun;
       symbol->aux = NULL; 
       if (!symbol->get_comdat_group ()
 	  && !symbol->alias
+	  /* Thunks to external functions do not need to be categorized.  */
+	  && (!(fun = dyn_cast <cgraph_node *> (symbol))
+	      || !fun->thunk.thunk_p
+	      || fun->function_symbol ()->definition)
 	  && symbol->real_symbol_p ())
 	{
 	  tree *val = map.get (symbol);
