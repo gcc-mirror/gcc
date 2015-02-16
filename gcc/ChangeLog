@@ -1,3 +1,12 @@
+2015-02-16  Jakub Jelinek  <jakub@redhat.com>
+	    James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR ipa/64963
+	* cgraphclones.c (cgraph_node::create_virtual_clone): Copy
+	section if not linkonce.  Fix up formatting.
+	(cgraph_node::create_version_clone_with_body): Copy section.
+	* trans-mem.c (ipa_tm_create_version): Likewise.
+
 2015-02-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65077

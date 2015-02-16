@@ -1,3 +1,9 @@
+2015-02-16  Jakub Jelinek  <jakub@redhat.com>
+	    James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR ipa/64963
+	* gcc.dg/ipa/ipa-clone-1.c: New test.
+
 2015-02-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65077
