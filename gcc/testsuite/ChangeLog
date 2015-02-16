@@ -1,3 +1,8 @@
+2015-02-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65066
+	* gcc.dg/pr65066.c: New test.
+
 2015-02-16  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* gcc.dg/pr65002.C: Move ...
