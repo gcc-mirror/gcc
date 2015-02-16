@@ -1,3 +1,8 @@
+2015-02-16  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.dg/pr65002.C: Move ...
+	* g++.dg/ipa/pr65002.C: ... here.
+
 2015-02-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.target/powerpc/pr64205.c: Skip on AIX.
