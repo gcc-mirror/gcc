@@ -1,5 +1,11 @@
 2015-02-16  Richard Biener  <rguenther@suse.de>
 
+	PR lto/65015
+	* varasm.c (default_file_start): For LTO produced units
+	emit <artificial> as file directive.
+
+2015-02-16  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/63593
 	* tree-predcom.c (execute_pred_commoning_chain): Delay removing
 	stmts and releasing SSA names until...
