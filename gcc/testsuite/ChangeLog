@@ -1,3 +1,10 @@
+2015-02-16  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc.target/aarch64/atomic-op-consume.c (scan-assember-times):
+	Directive adjusted to scan for ldaxr.
+	* gcc.target/arm/atomic-op-consume.c (scan-assember-times): Directive
+	adjusted to scan for ldaex.
+
 2015-02-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65080
