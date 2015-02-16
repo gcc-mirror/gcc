@@ -11334,7 +11334,7 @@ independent.
 @c man end
 
 @node Spec Files
-@section Specifying subprocesses and the switches to pass to them
+@section Specifying Subprocesses and the Switches to Pass to Them
 @cindex Spec Files
 
 @command{gcc} is a driver program.  It performs its job by invoking a
@@ -12145,7 +12145,7 @@ with @option{-march} or @option{-mtune}, those options take precedence
 over the appropriate part of this option.
 @end table
 
-@subsubsection @option{-march} and @option{-mcpu} feature modifiers
+@subsubsection @option{-march} and @option{-mcpu} Feature Modifiers
 @cindex @option{-march} feature modifiers
 @cindex @option{-mcpu} feature modifiers
 Feature modifiers used with @option{-march} and @option{-mcpu} can be one
@@ -13386,7 +13386,7 @@ Warn about conversions between address spaces in the case where the
 resulting address space is not contained in the incoming address space.
 @end table
 
-@subsubsection @code{EIND} and Devices with more than 128 Ki Bytes of Flash
+@subsubsection @code{EIND} and Devices with More Than 128 Ki Bytes of Flash
 @cindex @code{EIND}
 Pointers in the implementation are 16@tie{}bits wide.
 The address of a function or label is represented as word address so

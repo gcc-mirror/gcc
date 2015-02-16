@@ -5,7 +5,7 @@
 @node Objective-C
 @comment  node-name,  next,  previous,  up
 
-@chapter GNU Objective-C features
+@chapter GNU Objective-C Features
 
 This document is meant to describe some of the GNU Objective-C
 features.  It is not intended to teach you Objective-C.  There are
@@ -26,7 +26,7 @@ several resources on the Internet that present the language.
 
 @c =========================================================================
 @node GNU Objective-C runtime API
-@section GNU Objective-C runtime API
+@section GNU Objective-C Runtime API
 
 This section is specific for the GNU Objective-C runtime.  If you are
 using a different runtime, you can skip it.
@@ -50,7 +50,7 @@ to the GNU Objective-C runtime API to define new classes or methods.
 
 @c =========================================================================
 @node Modern GNU Objective-C runtime API
-@subsection Modern GNU Objective-C runtime API
+@subsection Modern GNU Objective-C Runtime API
 
 The GNU Objective-C runtime provides an API which is similar to the
 one provided by the ``Objective-C 2.0'' Apple/NeXT Objective-C
@@ -109,7 +109,7 @@ the GNU Objective-C runtime API.
 
 @c =========================================================================
 @node Traditional GNU Objective-C runtime API
-@subsection Traditional GNU Objective-C runtime API
+@subsection Traditional GNU Objective-C Runtime API
 
 The GNU Objective-C runtime used to provide a different API, which we
 call the ``traditional'' GNU Objective-C runtime API.  Functions
@@ -124,7 +124,7 @@ available.
 
 @c =========================================================================
 @node Executing code before main
-@section @code{+load}: Executing code before main
+@section @code{+load}: Executing Code before @code{main}
 
 This section is specific for the GNU Objective-C runtime.  If you are
 using a different runtime, you can skip it.
@@ -208,7 +208,7 @@ instead of @code{+initialize}.
 
 
 @node What you can and what you cannot do in +load
-@subsection What you can and what you cannot do in @code{+load}
+@subsection What You Can and Cannot Do in @code{+load}
 
 @code{+load} is to be used only as a last resort.  Because it is
 executed very early, most of the Objective-C runtime machinery will
@@ -279,7 +279,7 @@ above apply to classes defined in bundle.
 
 
 @node Type encoding
-@section Type encoding
+@section Type Encoding
 
 This is an advanced section.  Type encodings are used extensively by
 the compiler and by the runtime, but you generally do not need to know
@@ -487,7 +487,7 @@ as @code{*}, and the @code{const} is lost.
 @end menu
 
 @node Legacy type encoding
-@subsection Legacy type encoding
+@subsection Legacy Type Encoding
 
 Unfortunately, historically GCC used to have a number of bugs in its
 encoding code.  The NeXT runtime expects GCC to emit type encodings in
@@ -518,7 +518,7 @@ bitfields.  It encodes them as @code{b} followed by the size, without
 a bit offset or the underlying field type.
 
 @node @@encode
-@subsection @@encode
+@subsection @code{@@encode}
 
 GNU Objective-C supports the @code{@@encode} syntax that allows you to
 create a type encoding from a C/Objective-C type.  For example,
@@ -530,7 +530,7 @@ is compiled into @code{"r*"}, while @code{@@encode(bycopy char *)} is
 invalid and will cause a compilation error.
 
 @node Method signatures
-@subsection Method signatures
+@subsection Method Signatures
 
 This section documents the encoding of method types, which is rarely
 needed to use Objective-C.  You should skip it at a first reading; the
@@ -660,7 +660,7 @@ as argument.
 
 @c =========================================================================
 @node Constant string objects
-@section Constant string objects
+@section Constant String Objects
 
 GNU Objective-C provides constant string objects that are generated
 directly by the compiler.  You declare a constant string object by
@@ -721,7 +721,7 @@ restrictions in doing this.
 
 @c =========================================================================
 @node compatibility_alias
-@section compatibility_alias
+@section @code{compatibility_alias}
 
 The keyword @code{@@compatibility_alias} allows you to define a class name
 as equivalent to another class name.  For example:
@@ -858,7 +858,7 @@ exceptions enabled, that is with the command line option
 
 @c =========================================================================
 @node Fast enumeration
-@section Fast enumeration
+@section Fast Enumeration
 
 @menu
 * Using fast enumeration::
@@ -869,7 +869,7 @@ exceptions enabled, that is with the command line option
 
 @c ================================
 @node Using fast enumeration
-@subsection Using fast enumeration
+@subsection Using Fast Enumeration
 
 GNU Objective-C provides support for the fast enumeration syntax:
 
@@ -909,7 +909,7 @@ provides the implementation of @code{NSArray}, @code{NSString} and
 
 @c ================================
 @node c99-like fast enumeration syntax
-@subsection c99-like fast enumeration syntax
+@subsection C99-Like Fast Enumeration Syntax
 
 A c99-like declaration syntax is also allowed:
 
@@ -943,7 +943,7 @@ syntax in Objective-C.
 
 @c ================================
 @node Fast enumeration details
-@subsection Fast enumeration details
+@subsection Fast Enumeration Details
 
 Here is a more technical description with the gory details.  Consider the code
 
@@ -1006,7 +1006,7 @@ something different, such as raising an exception.
 
 @c ================================
 @node Fast enumeration protocol
-@subsection Fast enumeration protocol
+@subsection Fast Enumeration Protocol
 
 If you want your own collection object to be usable with fast
 enumeration, you need to have it implement the method
@@ -1076,7 +1076,7 @@ to be of type @code{unsigned int} and everything would still work.
 
 @c =========================================================================
 @node Messaging with the GNU Objective-C runtime
-@section Messaging with the GNU Objective-C runtime
+@section Messaging with the GNU Objective-C Runtime
 
 This section is specific for the GNU Objective-C runtime.  If you are
 using a different runtime, you can skip it.
@@ -1107,7 +1107,7 @@ then it calls it.
 
 @c =========================================================================
 @node Dynamically registering methods
-@subsection Dynamically registering methods
+@subsection Dynamically Registering Methods
 
 If @code{objc_msg_lookup()} does not find a suitable method
 implementation, because the receiver does not implement the required
@@ -1153,7 +1153,7 @@ GCC version 4.6.
 
 @c =========================================================================
 @node Forwarding hook
-@subsection Forwarding hook
+@subsection Forwarding Hook
 
 The GNU Objective-C runtime provides a hook, called
 @code{__objc_msg_forward2}, which is called by

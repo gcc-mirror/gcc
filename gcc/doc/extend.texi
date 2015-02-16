@@ -845,7 +845,7 @@ the middle operand uses the value already computed without the undesirable
 effects of recomputing it.
 
 @node __int128
-@section 128-bit integers
+@section 128-bit Integers
 @cindex @code{__int128} data types
 
 As an extension the integer scalar type @code{__int128} is supported for
@@ -1548,7 +1548,7 @@ struct foo d[1] = @{ @{ 1, @{ 2, 3, 4 @} @} @};  // @r{Invalid.}
 @end smallexample
 
 @node Empty Structures
-@section Structures With No Members
+@section Structures with No Members
 @cindex empty structures
 @cindex zero-size structures
 
@@ -1786,7 +1786,7 @@ The option @option{-Wpointer-arith} requests a warning if these extensions
 are used.
 
 @node Pointers to Arrays
-@section Pointers to arrays with qualifiers work as expected
+@section Pointers to Arrays with Qualifiers Work as Expected
 @cindex pointers to arrays
 @cindex const qualifier
 
@@ -8154,7 +8154,7 @@ You cannot operate between vectors of different lengths or different
 signedness without a cast.
 
 @node Offsetof
-@section Offsetof
+@section Support for @code{offsetof}
 @findex __builtin_offsetof
 
 GCC implements for both C and C++ a syntactic extension to implement
@@ -8182,7 +8182,7 @@ may be dependent.  In either case, @var{member} may consist of a single
 identifier, or a sequence of member accesses and array references.
 
 @node __sync Builtins
-@section Legacy __sync Built-in Functions for Atomic Memory Access
+@section Legacy @code{__sync} Built-in Functions for Atomic Memory Access
 
 The following built-in functions
 are intended to be compatible with those described
@@ -8322,7 +8322,7 @@ are not prevented from being speculated to before the barrier.
 @end table
 
 @node __atomic Builtins
-@section Built-in functions for memory model aware atomic operations
+@section Built-in Functions for Memory Model Aware Atomic Operations
 
 The following built-in functions approximately match the requirements for
 C++11 memory model. Many are similar to the @samp{__sync} prefixed built-in
@@ -8591,7 +8591,7 @@ compiler may also ignore this parameter.
 @end deftypefn
 
 @node Integer Overflow Builtins
-@section Built-in functions to perform arithmetics and arithmetic overflow checking.
+@section Built-in Functions to Perform Arithmetic with Overflow Checking
 
 The following built-in functions allow performing simple arithmetic operations
 together with checking whether the operations overflowed.
@@ -8650,7 +8650,7 @@ functions above, except they perform multiplication, instead of addition.
 @end deftypefn
 
 @node x86 specific memory model extensions for transactional memory
-@section x86 specific memory model extensions for transactional memory
+@section x86-Specific Memory Model Extensions for Transactional Memory
 
 The x86 architecture supports additional memory ordering flags
 to mark lock critical sections for hardware lock elision. 
@@ -8986,7 +8986,7 @@ returns -1.
 @end deftypefn
 
 @node Cilk Plus Builtins
-@section Cilk Plus C/C++ language extension Built-in Functions.
+@section Cilk Plus C/C++ Language Extension Built-in Functions
 
 GCC provides support for the following built-in reduction funtions if Cilk Plus
 is enabled. Cilk Plus can be enabled using the @option{-fcilkplus} flag.
@@ -11178,7 +11178,7 @@ number of an IACC register.  See @pxref{Other Built-in Functions}
 for more details.
 
 @node Directly-mapped Integer Functions
-@subsubsection Directly-mapped Integer Functions
+@subsubsection Directly-Mapped Integer Functions
 
 The functions listed below map directly to FR-V I-type instructions.
 
@@ -11217,7 +11217,7 @@ The functions listed below map directly to FR-V I-type instructions.
 @end multitable
 
 @node Directly-mapped Media Functions
-@subsubsection Directly-mapped Media Functions
+@subsubsection Directly-Mapped Media Functions
 
 The functions listed below map directly to FR-V M-type instructions.
 
@@ -11490,7 +11490,7 @@ The functions listed below map directly to FR-V M-type instructions.
 @end multitable
 
 @node Raw read/write Functions
-@subsubsection Raw read/write Functions
+@subsubsection Raw Read/Write Functions
 
 This sections describes built-in functions related to read and write
 instructions to access memory.  These functions generate
@@ -17255,7 +17255,7 @@ int __builtin_ia32_xtest ()
 @end smallexample
 
 @node x86 transactional memory intrinsics
-@subsection x86 transaction memory intrinsics
+@subsection x86 Transactional Memory Intrinsics
 
 Hardware transactional memory intrinsics for x86. These allow to use
 memory transactions with RTM (Restricted Transactional Memory).
@@ -17946,7 +17946,7 @@ void ignore_vec_dep (int *a, int k, int c, int m)
 
 
 @node Unnamed Fields
-@section Unnamed struct/union fields within structs/unions
+@section Unnamed Structure and Union Fields
 @cindex @code{struct}
 @cindex @code{union}
 
@@ -18287,7 +18287,7 @@ Non-@code{static} members shall not be @code{__thread}.
 @end itemize
 
 @node Binary constants
-@section Binary constants using the @samp{0b} prefix
+@section Binary Constants using the @samp{0b} Prefix
 @cindex Binary constants using the @samp{0b} prefix
 
 Integer constants can be written as binary constants, consisting of a
@@ -18522,7 +18522,7 @@ almost certainly breaks things.
 another way to control placement of these constructs.
 
 @node C++ Interface
-@section #pragma interface and implementation
+@section C++ Interface and Implementation Pragmas
 
 @cindex interface and implementation headers, C++
 @cindex C++ interface and implementation headers
@@ -18757,7 +18757,7 @@ duplication.
 @end enumerate
 
 @node Bound member functions
-@section Extracting the function pointer from a bound pointer to member function
+@section Extracting the Function Pointer from a Bound Pointer to Member Function
 @cindex pmf
 @cindex pointer to member function
 @cindex bound pointer to member function

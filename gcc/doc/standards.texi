@@ -9,7 +9,7 @@ For each language compiled by GCC for which there is a standard, GCC
 attempts to follow one or more versions of that standard, possibly
 with some exceptions, and possibly with some extensions.
 
-@section C language
+@section C Language
 @cindex C standard
 @cindex C standards
 @cindex ANSI C standard
@@ -169,7 +169,7 @@ For references to Technical Corrigenda, Rationale documents and
 information concerning the history of C that is available online, see
 @uref{http://gcc.gnu.org/readings.html}
 
-@section C++ language
+@section C++ Language
 
 GCC supports the original ISO C++ standard (1998) and contains
 experimental support for the second ISO C++ standard (2011).
@@ -208,7 +208,7 @@ may also select an extended version of the C++ language explicitly with
 @option{-std=gnu++11} (for C++11 with GNU extensions).  The default, if
 no C++ language dialect options are given, is @option{-std=gnu++98}.
 
-@section Objective-C and Objective-C++ languages
+@section Objective-C and Objective-C++ Languages
 @cindex Objective-C
 @cindex Objective-C++
 
@@ -275,12 +275,12 @@ The authoritative manual on Objective-C 2.0 is available from Apple:
 For more information concerning the history of Objective-C that is
 available online, see @uref{http://gcc.gnu.org/readings.html}
 
-@section Go language
+@section Go Language
 
 As of the GCC 4.7.1 release, GCC supports the Go 1 language standard,
 described at @uref{http://golang.org/doc/go1.html}.
 
-@section References for other languages
+@section References for Other Languages
 
 @xref{Top, GNAT Reference Manual, About This Guide, gnat_rm,
 GNAT Reference Manual}, for information on standard
