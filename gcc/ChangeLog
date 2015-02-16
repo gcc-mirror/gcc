@@ -1,3 +1,9 @@
+2015-02-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* doc/install.texi (Specific): Reorder targets list to put
+	aarch64 in alphabetical order.  Add a link to aarch64*-*-*
+	from the top menu.
+
 2015-02-16  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 	    David Edelsohn  <dje.gcc@gmail.com>
 
