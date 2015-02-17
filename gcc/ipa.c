@@ -661,7 +661,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
     if (node->address_taken
 	&& !node->used_from_other_partition)
       {
-	if (!node->call_for_symbol_thunks_and_aliases
+	if (!node->call_for_symbol_and_aliases
 	    (has_addr_references_p, NULL, true)
 	    && (!node->instrumentation_clone
 		|| !node->instrumented_version
