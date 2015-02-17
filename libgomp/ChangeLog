@@ -1,4 +1,8 @@
 2015-02-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp-plugin.c (GOMP_PLUGIN_debug): Fix typo.
+
+2015-02-17  Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
 	* oacc-ptx.h (GOACC_INTERNAL_PTX): Add GOACC_tid, GOACC_ntid,
