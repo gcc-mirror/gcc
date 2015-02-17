@@ -416,7 +416,8 @@ check_constexpr_bind_expr_vars (tree t)
 
   for (tree var = BIND_EXPR_VARS (t); var; var = DECL_CHAIN (var))
     if (TREE_CODE (var) == TYPE_DECL
-	&& DECL_IMPLICIT_TYPEDEF_P (var))
+	&& DECL_IMPLICIT_TYPEDEF_P (var)
+	&& !LAMBDA_TYPE_P (TREE_TYPE (var)))
       return false;
   return true;
 }
