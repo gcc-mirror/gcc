@@ -101,9 +101,233 @@
   ".version 3.1\n" \
   ".target sm_30\n" \
   ".address_size 64\n" \
+  ".visible .func (.param .u32 %out_retval) GOACC_tid (.param .u32 %in_ar1);\n" \
+  ".visible .func (.param .u32 %out_retval) GOACC_ntid (.param .u32 %in_ar1);\n" \
+  ".visible .func (.param .u32 %out_retval) GOACC_ctaid (.param .u32 %in_ar1);\n" \
+  ".visible .func (.param .u32 %out_retval) GOACC_nctaid (.param .u32 %in_ar1);\n" \
   ".visible .func (.param .u32 %out_retval) GOACC_get_num_threads;\n" \
   ".visible .func (.param .u32 %out_retval) GOACC_get_thread_num;\n" \
   ".extern .func abort;\n" \
+  ".visible .func (.param .u32 %out_retval) GOACC_tid (.param .u32 %in_ar1)\n" \
+  "{\n" \
+  ".reg .u32 %ar1;\n" \
+  ".reg .u32 %retval;\n" \
+  ".reg .u64 %hr10;\n" \
+  ".reg .u32 %r22;\n" \
+  ".reg .u32 %r23;\n" \
+  ".reg .u32 %r24;\n" \
+  ".reg .u32 %r25;\n" \
+  ".reg .u32 %r26;\n" \
+  ".reg .u32 %r27;\n" \
+  ".reg .u32 %r28;\n" \
+  ".reg .u32 %r29;\n" \
+  ".reg .pred %r30;\n" \
+  ".reg .u32 %r31;\n" \
+  ".reg .pred %r32;\n" \
+  ".reg .u32 %r33;\n" \
+  ".reg .pred %r34;\n" \
+  ".local .align 8 .b8 %frame[4];\n" \
+  "ld.param.u32 %ar1,[%in_ar1];\n" \
+  "mov.u32 %r27,%ar1;\n" \
+  "st.local.u32 [%frame],%r27;\n" \
+  "ld.local.u32 %r28,[%frame];\n" \
+  "mov.u32 %r29,1;\n"							\
+  "setp.eq.u32 %r30,%r28,%r29;\n"					\
+  "@%r30 bra $L4;\n"							\
+  "mov.u32 %r31,2;\n"							\
+  "setp.eq.u32 %r32,%r28,%r31;\n"					\
+  "@%r32 bra $L5;\n"							\
+  "mov.u32 %r33,0;\n"							\
+  "setp.eq.u32 %r34,%r28,%r33;\n"					\
+  "@!%r34 bra $L8;\n"							\
+  "mov.u32 %r23,%tid.x;\n"						\
+  "mov.u32 %r22,%r23;\n"						\
+  "bra $L7;\n"								\
+  "$L4:\n"								\
+  "mov.u32 %r24,%tid.y;\n"						\
+  "mov.u32 %r22,%r24;\n"						\
+  "bra $L7;\n"								\
+  "$L5:\n"								\
+  "mov.u32 %r25,%tid.z;\n"						\
+  "mov.u32 %r22,%r25;\n"						\
+  "bra $L7;\n"								\
+  "$L8:\n"								\
+  "{\n"									\
+  "{\n"									\
+  "call abort;\n"							\
+  "}\n"									\
+  "}\n"									\
+  "$L7:\n"								\
+  "mov.u32 %r26,%r22;\n"						\
+  "mov.u32 %retval,%r26;\n"						\
+  "st.param.u32 [%out_retval],%retval;\n"				\
+  "ret;\n"								\
+  "}\n"									\
+  ".visible .func (.param .u32 %out_retval) GOACC_ntid (.param .u32 %in_ar1)\n" \
+  "{\n"									\
+  ".reg .u32 %ar1;\n"							\
+  ".reg .u32 %retval;\n"						\
+  ".reg .u64 %hr10;\n"							\
+  ".reg .u32 %r22;\n"							\
+  ".reg .u32 %r23;\n"							\
+  ".reg .u32 %r24;\n"							\
+  ".reg .u32 %r25;\n"							\
+  ".reg .u32 %r26;\n"							\
+  ".reg .u32 %r27;\n"							\
+  ".reg .u32 %r28;\n"							\
+  ".reg .u32 %r29;\n"							\
+  ".reg .pred %r30;\n"							\
+  ".reg .u32 %r31;\n"							\
+  ".reg .pred %r32;\n"							\
+  ".reg .u32 %r33;\n"							\
+  ".reg .pred %r34;\n"							\
+  ".local .align 8 .b8 %frame[4];\n"					\
+  "ld.param.u32 %ar1,[%in_ar1];\n"					\
+  "mov.u32 %r27,%ar1;\n"						\
+  "st.local.u32 [%frame],%r27;\n"					\
+  "ld.local.u32 %r28,[%frame];\n"					\
+  "mov.u32 %r29,1;\n"							\
+  "setp.eq.u32 %r30,%r28,%r29;\n"					\
+  "@%r30 bra $L11;\n"							\
+  "mov.u32 %r31,2;\n"							\
+  "setp.eq.u32 %r32,%r28,%r31;\n"					\
+  "@%r32 bra $L12;\n"							\
+  "mov.u32 %r33,0;\n"							\
+  "setp.eq.u32 %r34,%r28,%r33;\n"					\
+  "@!%r34 bra $L15;\n"							\
+  "mov.u32 %r23,%ntid.x;\n"						\
+  "mov.u32 %r22,%r23;\n"						\
+  "bra $L14;\n"								\
+  "$L11:\n"								\
+  "mov.u32 %r24,%ntid.y;\n"						\
+  "mov.u32 %r22,%r24;\n"						\
+  "bra $L14;\n"								\
+  "$L12:\n"								\
+  "mov.u32 %r25,%ntid.z;\n"						\
+  "mov.u32 %r22,%r25;\n"						\
+  "bra $L14;\n"								\
+  "$L15:\n"								\
+  "{\n"									\
+  "{\n"									\
+  "call abort;\n"							\
+  "}\n"									\
+  "}\n"									\
+  "$L14:\n"								\
+  "mov.u32 %r26,%r22;\n"						\
+  "mov.u32 %retval,%r26;\n"						\
+  "st.param.u32 [%out_retval],%retval;\n"				\
+  "ret;\n"								\
+  "}\n"									\
+  ".visible .func (.param .u32 %out_retval) GOACC_ctaid (.param .u32 %in_ar1)\n" \
+  "{\n"									\
+  ".reg .u32 %ar1;\n"							\
+  ".reg .u32 %retval;\n"						\
+  ".reg .u64 %hr10;\n"							\
+  ".reg .u32 %r22;\n"							\
+  ".reg .u32 %r23;\n"							\
+  ".reg .u32 %r24;\n"							\
+  ".reg .u32 %r25;\n"							\
+  ".reg .u32 %r26;\n"							\
+  ".reg .u32 %r27;\n"							\
+  ".reg .u32 %r28;\n"							\
+  ".reg .u32 %r29;\n"							\
+  ".reg .pred %r30;\n"							\
+  ".reg .u32 %r31;\n"							\
+  ".reg .pred %r32;\n"							\
+  ".reg .u32 %r33;\n"							\
+  ".reg .pred %r34;\n"							\
+  ".local .align 8 .b8 %frame[4];\n"					\
+  "ld.param.u32 %ar1,[%in_ar1];\n"					\
+  "mov.u32 %r27,%ar1;\n"						\
+  "st.local.u32 [%frame],%r27;\n"					\
+  "ld.local.u32 %r28,[%frame];\n"					\
+  "mov.u32 %r29,1;\n"							\
+  "setp.eq.u32 %r30,%r28,%r29;\n"					\
+  "@%r30 bra $L18;\n"							\
+  "mov.u32 %r31,2;\n"							\
+  "setp.eq.u32 %r32,%r28,%r31;\n"					\
+  "@%r32 bra $L19;\n"							\
+  "mov.u32 %r33,0;\n"							\
+  "setp.eq.u32 %r34,%r28,%r33;\n"					\
+  "@!%r34 bra $L22;\n"							\
+  "mov.u32 %r23,%ctaid.x;\n"						\
+  "mov.u32 %r22,%r23;\n"						\
+  "bra $L21;\n"								\
+  "$L18:\n"								\
+  "mov.u32 %r24,%ctaid.y;\n"						\
+  "mov.u32 %r22,%r24;\n"						\
+  "bra $L21;\n"								\
+  "$L19:\n"								\
+  "mov.u32 %r25,%ctaid.z;\n"						\
+  "mov.u32 %r22,%r25;\n"						\
+  "bra $L21;\n"								\
+  "$L22:\n"								\
+  "{\n"									\
+  "{\n"									\
+  "call abort;\n"							\
+  "}\n"									\
+  "}\n"									\
+  "$L21:\n"								\
+  "mov.u32 %r26,%r22;\n"						\
+  "mov.u32 %retval,%r26;\n"						\
+  "st.param.u32 [%out_retval],%retval;\n"				\
+  "ret;\n"								\
+  "}\n"									\
+  ".visible .func (.param .u32 %out_retval) GOACC_nctaid (.param .u32 %in_ar1)\n" \
+  "{\n"									\
+  ".reg .u32 %ar1;\n"							\
+  ".reg .u32 %retval;\n"						\
+  ".reg .u64 %hr10;\n"							\
+  ".reg .u32 %r22;\n"							\
+  ".reg .u32 %r23;\n"							\
+  ".reg .u32 %r24;\n"							\
+  ".reg .u32 %r25;\n"							\
+  ".reg .u32 %r26;\n"							\
+  ".reg .u32 %r27;\n"							\
+  ".reg .u32 %r28;\n"							\
+  ".reg .u32 %r29;\n"							\
+  ".reg .pred %r30;\n"							\
+  ".reg .u32 %r31;\n"							\
+  ".reg .pred %r32;\n"							\
+  ".reg .u32 %r33;\n"							\
+  ".reg .pred %r34;\n"							\
+  ".local .align 8 .b8 %frame[4];\n"					\
+  "ld.param.u32 %ar1,[%in_ar1];\n"					\
+  "mov.u32 %r27,%ar1;\n"						\
+  "st.local.u32 [%frame],%r27;\n"					\
+  "ld.local.u32 %r28,[%frame];\n"					\
+  "mov.u32 %r29,1;\n"							\
+  "setp.eq.u32 %r30,%r28,%r29;\n"					\
+  "@%r30 bra $L25;\n"							\
+  "mov.u32 %r31,2;\n"							\
+  "setp.eq.u32 %r32,%r28,%r31;\n"					\
+  "@%r32 bra $L26;\n"							\
+  "mov.u32 %r33,0;\n"							\
+  "setp.eq.u32 %r34,%r28,%r33;\n"					\
+  "@!%r34 bra $L29;\n"							\
+  "mov.u32 %r23,%nctaid.x;\n"						\
+  "mov.u32 %r22,%r23;\n"						\
+  "bra $L28;\n"								\
+  "$L25:\n"								\
+  "mov.u32 %r24,%nctaid.y;\n"						\
+  "mov.u32 %r22,%r24;\n"						\
+  "bra $L28;\n"								\
+  "$L26:\n"								\
+  "mov.u32 %r25,%nctaid.z;\n"						\
+  "mov.u32 %r22,%r25;\n"						\
+  "bra $L28;\n"								\
+  "$L29:\n"								\
+  "{\n"									\
+  "{\n"									\
+  "call abort;\n"							\
+  "}\n"									\
+  "}\n"									\
+  "$L28:\n"								\
+  "mov.u32 %r26,%r22;\n"						\
+  "mov.u32 %retval,%r26;\n"						\
+  "st.param.u32 [%out_retval],%retval;\n"				\
+  "ret;\n"								\
+  "}\n"									\
   ".visible .func (.param .u32 %out_retval) GOACC_get_num_threads\n"	\
   "{\n"									\
   ".reg .u32 %retval;\n"						\

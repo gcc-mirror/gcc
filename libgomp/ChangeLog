@@ -1,3 +1,9 @@
+2015-02-17  Thomas Schwinge  <thomas@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* oacc-ptx.h (GOACC_INTERNAL_PTX): Add GOACC_tid, GOACC_ntid,
+	GOACC_ctaid, and GOACC_nctaid routines.
+
 2015-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/64824
