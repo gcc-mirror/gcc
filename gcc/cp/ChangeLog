@@ -1,3 +1,10 @@
+2015-02-17  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/65075
+	* constexpr.c (check_constexpr_bind_expr_vars): Allow
+	implicit typedefs for lambda types.
+
 2015-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/60894
