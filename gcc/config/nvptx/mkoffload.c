@@ -755,8 +755,9 @@ parse_file (Token *tok)
       if (comment)
 	append_stmt (&fns, comment);
 
-      while (tok->kind && !tok->end)
+      do
 	tok++;
+      while (tok->kind && !tok->end);
     }
   return tok;
 }

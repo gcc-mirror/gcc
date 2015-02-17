@@ -1,3 +1,8 @@
+2015-02-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/mkoffload.c (parse_file): Fix logic error in
+	skipping of "strange" tokens.
+
 2015-02-17  Jeff Law  <law@redhat.com>
 
 	* tree-vrp.c (identify_jump_threads): Use last_stmt.  Remove
