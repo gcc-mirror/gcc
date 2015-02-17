@@ -4323,6 +4323,15 @@ ipcp_store_alignment_results (void)
     bool dumped_sth = false;
     bool found_useful_result = false;
 
+    if (!opt_for_fn (node->decl, flag_ipa_cp_alignment))
+      {
+	if (dump_file)
+	  fprintf (dump_file, "Not considering %s for alignment discovery "
+		   "and propagate; -fipa-cp-alignment: disabled.\n",
+		   node->name ());
+	continue;
+      }
+
    if (info->ipcp_orig_node)
       info = IPA_NODE_REF (info->ipcp_orig_node);
 
