@@ -1233,6 +1233,11 @@ recompute_todo_spec (rtx_insn *next, bool for_backtrack)
   if (!sd_lists_empty_p (next, SD_LIST_HARD_BACK))
     return HARD_DEP;
 
+  /* If NEXT is intended to sit adjacent to this instruction, we don't
+     want to try to break any dependencies.  Treat it as a HARD_DEP.  */
+  if (SCHED_GROUP_P (next))
+    return HARD_DEP;
+
   /* Now we've got NEXT with speculative deps only.
      1. Look at the deps to see what we have to do.
      2. Check if we can do 'todo'.  */

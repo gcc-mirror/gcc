@@ -1,3 +1,9 @@
+2015-02-17  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* haifa-sched.c (recompute_todo_spec): Treat SCHED_GROUP_P
+	as forcing a HARD_DEP between instructions, thereby
+	disallowing rewriting to break dependencies.
+
 2015-02-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* symtab.c (symtab_node::verify_base): Verify body_removed->!definiton
