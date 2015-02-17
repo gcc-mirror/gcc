@@ -21,8 +21,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include <stdlib.h>
-#include <string.h>
+#include <stddef.h>
 #include "nvptx-malloc.h"
 
 void *
@@ -44,7 +43,7 @@ __nvptx_realloc (void *ptr, size_t newsz)
       oldsz = *sp;
     }
   if (oldsz != 0)
-    memcpy (newptr, ptr, oldsz > newsz ? newsz : oldsz);
+    __builtin_memcpy (newptr, ptr, oldsz > newsz ? newsz : oldsz);
 
   __nvptx_free (ptr);
   return newptr;
