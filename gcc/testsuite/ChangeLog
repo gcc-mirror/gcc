@@ -1,3 +1,9 @@
+2015-02-17  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/64793
+	* gcc.target/sh/pr64793.c: New.
+	* gcc.target/sh/pr51244-20-sh2a.c: Adjust expected cmp/gt insn count.
+
 2015-02-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.target/arm/divzero.c: New test case.
