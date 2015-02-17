@@ -4,7 +4,7 @@
 	PR bootstrap/53348
 	* inclhack.def (aix_strtof_const): New fix.
 	* fixincl.x: Regenerate.
-	* tests/base/inttypes.h: New test.
+	* tests/base/stdlib.h: New test.
 
 2015-02-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
