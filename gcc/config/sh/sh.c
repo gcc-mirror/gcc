@@ -10245,11 +10245,10 @@ sh_insn_length_adjustment (rtx_insn *insn)
       && get_attr_needs_delay_slot (insn) == NEEDS_DELAY_SLOT_YES)
     return 2;
 
-  /* SH2e has a bug that prevents the use of annulled branches, so if
-     the delay slot is not filled, we'll have to put a NOP in it.  */
-  if (sh_cpu_attr == CPU_SH2E
-      && JUMP_P (insn)
-      && get_attr_type (insn) == TYPE_CBRANCH
+  /* Increase the insn length of a cbranch without a delay slot insn to
+     force a delay slot which will be stuffed with a nop.  */
+  if (TARGET_CBRANCH_FORCE_DELAY_SLOT && TARGET_SH2
+      && JUMP_P (insn) && get_attr_type (insn) == TYPE_CBRANCH
       && ! sequence_insn_p (insn))
     return 2;
 

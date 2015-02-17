@@ -965,6 +965,7 @@ See RS/6000 and PowerPC Options.
 -maccumulate-outgoing-args -minvalid-symbols @gol
 -matomic-model=@var{atomic-model} @gol
 -mbranch-cost=@var{num} -mzdcbranch -mno-zdcbranch @gol
+-mcbranch-force-delay-slot @gol
 -mfused-madd -mno-fused-madd -mfsca -mno-fsca -mfsrra -mno-fsrra @gol
 -mpretend-cmove -mtas}
 
@@ -20592,6 +20593,13 @@ Assume (do not assume) that zero displacement conditional branch instructions
 compiler prefers zero displacement branch code sequences.  This is
 enabled by default when generating code for SH4 and SH4A.  It can be explicitly
 disabled by specifying @option{-mno-zdcbranch}.
+
+@item -mcbranch-force-delay-slot
+@opindex mcbranch-force-delay-slot
+Force the usage of delay slots for conditional branches, which stuffs the delay
+slot with a @code{nop} if a suitable instruction can't be found.  By default
+this option is disabled.  It can be enabled to work around hardware bugs as
+found in the original SH7055.
 
 @item -mfused-madd
 @itemx -mno-fused-madd

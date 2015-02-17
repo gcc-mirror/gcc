@@ -1,3 +1,8 @@
+2015-02-17  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* gcc.target/sh/sh.exp (check_effective_target_sh1): New.
+	* gcc.target/sh/force-cbranch-delay-slot.c: New.
+
 2015-02-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/ipa/propalign-3.c: New test.
