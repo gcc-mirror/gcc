@@ -2191,6 +2191,16 @@ cgraph_node::call_for_symbol_thunks_and_aliases (bool (*callback)
 
   if (callback (this, data))
     return true;
+  FOR_EACH_ALIAS (this, ref)
+    {
+      cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
+      if (include_overwritable
+	  || alias->get_availability () > AVAIL_INTERPOSABLE)
+	if (alias->call_for_symbol_thunks_and_aliases (callback, data,
+						     include_overwritable,
+						     exclude_virtual_thunks))
+	  return true;
+    }
   for (e = callers; e; e = e->next_caller)
     if (e->caller->thunk.thunk_p
 	&& (include_overwritable
@@ -2202,16 +2212,6 @@ cgraph_node::call_for_symbol_thunks_and_aliases (bool (*callback)
 						       exclude_virtual_thunks))
 	return true;
 
-  FOR_EACH_ALIAS (this, ref)
-    {
-      cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
-      if (include_overwritable
-	  || alias->get_availability () > AVAIL_INTERPOSABLE)
-	if (alias->call_for_symbol_thunks_and_aliases (callback, data,
-						     include_overwritable,
-						     exclude_virtual_thunks))
-	  return true;
-    }
   return false;
 }
 

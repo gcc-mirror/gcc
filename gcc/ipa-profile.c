@@ -322,6 +322,7 @@ ipa_profile_read_summary (void)
 
 struct ipa_propagate_frequency_data
 {
+  cgraph_node *function_symbol;
   bool maybe_unlikely_executed;
   bool maybe_executed_once;
   bool only_called_at_startup;
@@ -342,7 +343,7 @@ ipa_propagate_frequency_1 (struct cgraph_node *node, void *data)
 	        || d->only_called_at_startup || d->only_called_at_exit);
        edge = edge->next_caller)
     {
-      if (edge->caller != node)
+      if (edge->caller != d->function_symbol)
 	{
           d->only_called_at_startup &= edge->caller->only_called_at_startup;
 	  /* It makes sense to put main() together with the static constructors.
@@ -358,7 +359,11 @@ ipa_propagate_frequency_1 (struct cgraph_node *node, void *data)
 	 errors can make us to push function into unlikely section even when
 	 it is executed by the train run.  Transfer the function only if all
 	 callers are unlikely executed.  */
-      if (profile_info && flag_branch_probabilities
+      if (profile_info
+	  && opt_for_fn (d->function_symbol->decl, flag_branch_probabilities)
+	  /* Thunks are not profiled.  This is more or less implementation
+	     bug.  */
+	  && !d->function_symbol->thunk.thunk_p
 	  && (edge->caller->frequency != NODE_FREQUENCY_UNLIKELY_EXECUTED
 	      || (edge->caller->global.inlined_to
 		  && edge->caller->global.inlined_to->frequency
@@ -418,7 +423,7 @@ contains_hot_call_p (struct cgraph_node *node)
 bool
 ipa_propagate_frequency (struct cgraph_node *node)
 {
-  struct ipa_propagate_frequency_data d = {true, true, true, true};
+  struct ipa_propagate_frequency_data d = {node, true, true, true, true};
   bool changed = false;
 
   /* We can not propagate anything useful about externally visible functions
@@ -432,8 +437,8 @@ ipa_propagate_frequency (struct cgraph_node *node)
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Processing frequency %s\n", node->name ());
 
-  node->call_for_symbol_thunks_and_aliases (ipa_propagate_frequency_1, &d,
-					    true);
+  node->call_for_symbol_and_aliases (ipa_propagate_frequency_1, &d,
+				     true);
 
   if ((d.only_called_at_startup && !d.only_called_at_exit)
       && !node->only_called_at_startup)
@@ -597,6 +602,9 @@ ipa_profile (void)
     {
       bool update = false;
 
+      if (!opt_for_fn (n->decl, flag_ipa_profile))
+	continue;
+
       for (e = n->indirect_calls; e; e = e->next_callee)
 	{
 	  if (n->count)
@@ -697,7 +705,9 @@ ipa_profile (void)
   order_pos = ipa_reverse_postorder (order);
   for (i = order_pos - 1; i >= 0; i--)
     {
-      if (order[i]->local.local && ipa_propagate_frequency (order[i]))
+      if (order[i]->local.local
+	  && opt_for_fn (order[i]->decl, flag_ipa_profile)
+	  && ipa_propagate_frequency (order[i]))
 	{
 	  for (e = order[i]->callees; e; e = e->next_callee)
 	    if (e->callee->local.local && !e->callee->aux)
@@ -714,7 +724,9 @@ ipa_profile (void)
       something_changed = false;
       for (i = order_pos - 1; i >= 0; i--)
 	{
-	  if (order[i]->aux && ipa_propagate_frequency (order[i]))
+	  if (order[i]->aux
+	      && opt_for_fn (order[i]->decl, flag_ipa_profile)
+	      && ipa_propagate_frequency (order[i]))
 	    {
 	      for (e = order[i]->callees; e; e = e->next_callee)
 		if (e->callee->local.local && !e->callee->aux)
