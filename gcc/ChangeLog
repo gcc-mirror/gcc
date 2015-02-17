@@ -1,3 +1,9 @@
+2015-02-17  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/64793
+	* config/sh/sh.md (cbranch define_delay): Set annulled true branch insn
+	to nil.  Adjust comments.
+
 2015-02-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-visibility.c (function_and_variable_visibility): Only

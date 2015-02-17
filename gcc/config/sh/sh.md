@@ -593,20 +593,10 @@
   [(and (eq_attr "in_delay_slot" "yes")
 	(eq_attr "type" "!pstore,prget")) (nil) (nil)])
 
-;; Say that we have annulled true branches, since this gives smaller and
-;; faster code when branches are predicted as not taken.
-
-;; ??? The non-annulled condition should really be "in_delay_slot",
-;; but insns that can be filled in non-annulled get priority over insns
-;; that can only be filled in anulled.
-
+;; Conditional branches with delay slots are available starting with SH2.
 (define_delay
-  (and (eq_attr "type" "cbranch")
-       (match_test "TARGET_SH2"))
-  ;; SH2e has a hardware bug that pretty much prohibits the use of
-  ;; annulled delay slots.
-  [(eq_attr "cond_delay_slot" "yes") (and (eq_attr "cond_delay_slot" "yes")
-					  (not (eq_attr "cpu" "sh2e"))) (nil)])
+  (and (eq_attr "type" "cbranch") (match_test "TARGET_SH2"))
+  [(eq_attr "cond_delay_slot" "yes") (nil) (nil)])
 
 ;; -------------------------------------------------------------------------
 ;; SImode signed integer comparisons
