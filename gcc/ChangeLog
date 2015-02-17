@@ -1,3 +1,10 @@
+2015-02-17  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.opt (mcbranch-force-delay-slot): New option.
+	* doc/invoke.texi (SH options): Document it.
+	* config/sh/sh.c (sh_insn_length_adjustment): Check
+	TARGET_CBRANCH_FORCE_DELAY_SLOT instead of sh_cpu_attr == CPU_SH2E.
+
 2015-02-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* common.opt (fipa-cp-alignment): New.
