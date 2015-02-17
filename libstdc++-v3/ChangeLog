@@ -1,3 +1,10 @@
+2015-02-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65085
+	* include/bits/basic_string.h (basic_string(basic_string&&)): Ensure
+	empty string gets null-terminated.
+	* testsuite/21_strings/basic_string/cons/char/65085.cc: New.
+
 2015-02-13  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* testsuite/28_regex/traits/char/isctype.cc (test01): Fix
