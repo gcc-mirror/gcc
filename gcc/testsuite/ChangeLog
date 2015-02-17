@@ -1,3 +1,10 @@
+2015-02-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backported from mainline
+	2015-02-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/arm/divzero.c: New test case.
+
 2015-02-17  Ilya Tocar  <ilya.tocar@intel.com>
 
 	Backport from mainline

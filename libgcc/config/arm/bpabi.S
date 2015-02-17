@@ -78,26 +78,29 @@ ARM_FUNC_START aeabi_ulcmp
 /* Tail-call to divide-by-zero handlers which may be overridden by the user,
    so unwinding works properly.  */
 #if defined(__thumb2__)
-	cbnz	yyh, 1f
-	cbnz	yyl, 1f
+	cbnz	yyh, 2f
+	cbnz	yyl, 2f
 	cmp	xxh, #0
+	.ifc \signed, unsigned
 	do_it	eq
 	cmpeq	xxl, #0
-	.ifc \signed, unsigned
-	beq	2f
-	mov	xxh, #0xffffffff
-	mov	xxl, xxh
-2:
+	do_it	ne, t
+	movne	xxh, #0xffffffff
+	movne	xxl, #0xffffffff
 	.else
-	do_it	lt, t
+	do_it	lt, tt
 	movlt	xxl, #0
 	movlt	xxh, #0x80000000
-	do_it	gt, t
-	movgt	xxh, #0x7fffffff
-	movgt	xxl, #0xffffffff
+	blt	1f
+	do_it	eq
+	cmpeq	xxl, #0
+	do_it	ne, t
+	movne	xxh, #0x7fffffff
+	movne	xxl, #0xffffffff
 	.endif
+1:	
 	b	SYM (__aeabi_ldiv0) __PLT__
-1:
+2:
 #else
 	/* Note: Thumb-1 code calls via an ARM shim on processors which
 	   support ARM mode.  */
@@ -105,16 +108,19 @@ ARM_FUNC_START aeabi_ulcmp
 	cmpeq	yyl, #0
 	bne	2f
 	cmp	xxh, #0
-	cmpeq	xxl, #0
 	.ifc \signed, unsigned
+	cmpeq	xxl, #0
 	movne	xxh, #0xffffffff
 	movne	xxl, #0xffffffff
 	.else
 	movlt	xxh, #0x80000000
 	movlt	xxl, #0
-	movgt	xxh, #0x7fffffff
-	movgt	xxl, #0xffffffff
+	blt	1f
+	cmpeq	xxl, #0
+	movne	xxh, #0x7fffffff
+	movne	xxl, #0xffffffff
 	.endif
+1:
 	b	SYM (__aeabi_ldiv0) __PLT__
 2:
 #endif
