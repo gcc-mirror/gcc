@@ -1,3 +1,9 @@
+2015-02-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/nvptx/realloc.c: Include <stddef.h> instead of <stdlib.h>
+	and <string.h>.
+	(__nvptx_realloc): Call __builtin_memcpy instead of memcpy.
+
 2015-02-10  Rainer Emrich  <rainer@emrich-ebersheim.de>
 
 	PR gcov-profile/61889
