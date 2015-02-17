@@ -6831,7 +6831,8 @@ default_binds_local_p_2 (const_tree exp, bool shlib, bool weak_dominate)
   bool defined_locally = false;
   if (symtab_node *node = symtab_node::get (exp))
     {
-      if (node->definition || node->in_other_partition)
+      if ((node->definition && !DECL_EXTERNAL (node->decl))
+	  || node->in_other_partition)
 	{
 	  defined_locally = true;
 	  resolved_locally = (weak_dominate && !shlib);
