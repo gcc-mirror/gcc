@@ -825,8 +825,7 @@
 
 	* config/arm/arm.h (TARGET_NEON_FP): Removed conditional definition,
 	define to zero if !TARGET_NEON.
-	(TARGET_CPU_CPP_BUILTINS): Added second condition before defining
-	__ARM_FP macro.
+	(TARGET_ARM_FP): Added !TARGET_SOFT_FLOAT into conditional definition.
 
 2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
 	    Trevor Saunders  <tsaunders@mozilla.com>
