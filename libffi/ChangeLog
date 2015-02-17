@@ -1,3 +1,14 @@
+2015-02-10  Andrew Pinski  <apinski@cavium.com>
+
+	* src/aarch64/ffitarget.h (ffi_arg): Use unsigned long long for ILP32.
+	(FFI_SIZEOF_ARG): Define to 64 for ILP32.
+	(ffi_sarg): Use signed long long for ILP32.
+
+	* src/aarch64/sysv.S (PTR_REG): New macro.
+	(PTR_SIZE): New macro.
+	(ffi_closure_SYSV): Load cif, fn and user_data using PTR_REG.
+	(ffi_go_closure_SYSV): Load cif and fn using PTR_REG.
+
 2015-01-29  Jack Howarth  <howarth.at.gcc@gmail.com>
 
 	PR libffi/64855

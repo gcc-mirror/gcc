@@ -30,6 +30,6 @@
 
 #include "gomp-constants.h"
 
-#define ACCEL_COMPILER_acc_device GOMP_TARGET_NVIDIA_PTX
+#define ACCEL_COMPILER_acc_device GOMP_DEVICE_NVIDIA_PTX
 
 #endif

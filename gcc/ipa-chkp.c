@@ -534,14 +534,13 @@ chkp_maybe_create_clone (tree fndecl)
 	symtab->call_cgraph_insertion_hooks (clone);
 
       /* Clone all aliases.  */
-      for (i = 0; node->iterate_referring (i, ref); i++)
-	if (ref->use == IPA_REF_ALIAS)
-	  {
-	    struct cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
-	    struct cgraph_node *chkp_alias
-	      = chkp_maybe_create_clone (alias->decl);
-	    chkp_alias->create_reference (clone, IPA_REF_ALIAS, NULL);
-	  }
+      for (i = 0; node->iterate_direct_aliases (i, ref); i++)
+	{
+	  struct cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
+	  struct cgraph_node *chkp_alias
+	    = chkp_maybe_create_clone (alias->decl);
+	  chkp_alias->create_reference (clone, IPA_REF_ALIAS, NULL);
+	}
 
       /* Clone all thunks.  */
       for (e = node->callers; e; e = e->next_caller)

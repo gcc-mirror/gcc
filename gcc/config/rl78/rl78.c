@@ -3462,18 +3462,6 @@ rl78_alloc_physical_registers (void)
 	  record_content (BC, NULL_RTX);
 	  record_content (DE, NULL_RTX);
 	}
-      else if (valloc_method == VALLOC_DIVHI)
-	{
-	  record_content (AX, NULL_RTX);
-	  record_content (BC, NULL_RTX);
-	}
-      else if (valloc_method == VALLOC_DIVSI)
-	{
-	  record_content (AX, NULL_RTX);
-	  record_content (BC, NULL_RTX);
-	  record_content (DE, NULL_RTX);
-	  record_content (HL, NULL_RTX);
-	}
 
       if (insn_ok_now (insn))
 	continue;
@@ -3508,18 +3496,6 @@ rl78_alloc_physical_registers (void)
 	  record_content (AX, NULL_RTX);
 	  record_content (BC, NULL_RTX);
 	  record_content (DE, NULL_RTX);
-	  break;
-	case VALLOC_DIVSI:
-	  rl78_alloc_address_registers_div (insn);
-	  record_content (AX, NULL_RTX);
-	  record_content (BC, NULL_RTX);
-	  record_content (DE, NULL_RTX);
-	  record_content (HL, NULL_RTX);
-	  break;
-	case VALLOC_DIVHI:
-	  rl78_alloc_address_registers_div (insn);
-	  record_content (AX, NULL_RTX);
-	  record_content (BC, NULL_RTX);
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -3830,37 +3806,6 @@ set_origin (rtx pat, rtx_insn * insn, int * origins, int * age)
 
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (i <= 3 || origins[i] <= 3)
-	  {
-	    origins[i] = i;
-	    age[i] = 0;
-	  }
-    }
-  else if (get_attr_valloc (insn) == VALLOC_DIVHI)
-    {
-      if (dump_file)
-	fprintf (dump_file, "Resetting origin of AX/DE for DIVHI pattern.\n");
-
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (i == A_REG
-	    || i == X_REG
-	    || i == D_REG
-	    || i == E_REG
-	    || origins[i] == A_REG
-	    || origins[i] == X_REG
-	    || origins[i] == D_REG
-	    || origins[i] == E_REG)
-	  {
-	    origins[i] = i;
-	    age[i] = 0;
-	  }
-    }
-  else if (get_attr_valloc (insn) == VALLOC_DIVSI)
-    {
-      if (dump_file)
-	fprintf (dump_file, "Resetting origin of AX/BC/DE/HL for DIVSI pattern.\n");
-
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (i <= 7 || origins[i] <= 7)
 	  {
 	    origins[i] = i;
 	    age[i] = 0;

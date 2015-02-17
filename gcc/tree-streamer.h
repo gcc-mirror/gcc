@@ -77,16 +77,15 @@ tree streamer_alloc_tree (struct lto_input_block *, struct data_in *,
 void streamer_read_tree_body (struct lto_input_block *, struct data_in *, tree);
 tree streamer_get_pickled_tree (struct lto_input_block *, struct data_in *);
 tree streamer_get_builtin_tree (struct lto_input_block *, struct data_in *);
-struct bitpack_d streamer_read_tree_bitfields (struct lto_input_block *,
-					       struct data_in *, tree);
+void streamer_read_tree_bitfields (struct lto_input_block *,
+				   struct data_in *, tree);
 
 /* In tree-streamer-out.c.  */
 void streamer_write_string_cst (struct output_block *,
 				struct lto_output_stream *, tree);
 void streamer_write_chain (struct output_block *, tree, bool);
 void streamer_write_tree_header (struct output_block *, tree);
-void streamer_pack_tree_bitfields (struct output_block *, struct bitpack_d *,
-				   tree);
+void streamer_write_tree_bitfields (struct output_block *, tree);
 void streamer_write_tree_body (struct output_block *, tree, bool);
 void streamer_write_integer_cst (struct output_block *, tree, bool);
 void streamer_write_builtin (struct output_block *, tree);

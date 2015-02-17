@@ -806,7 +806,8 @@ Driver Undocumented
 ;
 ; 1: The version of the ABI first used in G++ 3.2.  No longer selectable.
 ;
-; 2: The version of the ABI first used in G++ 3.4 (and current default).
+; 2: The version of the ABI first used in G++ 3.4, and the default
+;    until GCC 4.9.
 ;
 ; 3: The version of the ABI that fixes the missing underscore
 ;    in template non-type arguments of pointer type.
@@ -831,7 +832,8 @@ Driver Undocumented
 ;
 ; 8: The version of the ABI that corrects the substitution behavior of
 ;    function types with function-cv-qualifiers.
-;    First selectable in G++ 4.9.
+;    First selectable in G++ 4.9 and default in G++ 5
+;    (set in c_common_post_options).
 ;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
@@ -1189,7 +1191,7 @@ Perform interprocedural reduction of aggregates
 
 feliminate-unused-debug-symbols
 Common Report Var(flag_debug_only_used_symbols)
-Perform unused type elimination in debug info
+Perform unused symbol elimination in debug info
 
 feliminate-unused-debug-types
 Common Report Var(flag_eliminate_unused_debug_types) Init(1)
@@ -1372,7 +1374,7 @@ Common Report Var(flag_if_conversion2) Optimization
 Perform conversion of conditional jumps to conditional execution
 
 fstack-reuse=
-Common Joined RejectNegative Enum(stack_reuse_level) Var(flag_stack_reuse) Init(SR_ALL)
+Common Joined RejectNegative Enum(stack_reuse_level) Var(flag_stack_reuse) Init(SR_ALL) Optimization
 -fstack-reuse=[all|named_vars|none] Set stack reuse level for local variables.
 
 Enum
@@ -1855,6 +1857,11 @@ Return small aggregates in registers
 fregmove
 Common Ignore
 Does nothing. Preserved for backward compatibility.
+
+flifetime-dse
+Common Report Var(flag_lifetime_dse) Init(1) Optimization
+Tell DSE that the storage for a C++ object is dead when the constructor
+starts and when the destructor finishes.
 
 flive-range-shrinkage
 Common Report Var(flag_live_range_shrinkage) Init(0) Optimization

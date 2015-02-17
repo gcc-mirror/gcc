@@ -432,14 +432,13 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   struct cgraph_node *clone_of, *ultimate_clone_of;
   ipa_opt_pass_d *pass;
   int i;
-  bool alias_p;
   const char *comdat;
   const char *section;
   tree group;
 
   boundary_p = !lto_symtab_encoder_in_partition_p (encoder, node);
 
-  if (node->analyzed && !boundary_p)
+  if (node->analyzed && (!boundary_p || node->alias || node->thunk.thunk_p))
     tag = LTO_symtab_analyzed_node;
   else
     tag = LTO_symtab_unavail_node;
@@ -565,14 +564,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 		     || referenced_from_other_partition_p (node, encoder)), 1);
   bp_pack_value (&bp, node->lowered, 1);
   bp_pack_value (&bp, in_other_partition, 1);
-  /* Real aliases in a boundary become non-aliases. However we still stream
-     alias info on weakrefs. 
-     TODO: We lose a bit of information here - when we know that variable is
-     defined in other unit, we may use the info on aliases to resolve 
-     symbol1 != symbol2 type tests that we can do only for locally defined objects
-     otherwise.  */
-  alias_p = node->alias && (!boundary_p || node->weakref);
-  bp_pack_value (&bp, alias_p, 1);
+  bp_pack_value (&bp, node->alias, 1);
   bp_pack_value (&bp, node->weakref, 1);
   bp_pack_value (&bp, node->frequency, 2);
   bp_pack_value (&bp, node->only_called_at_startup, 1);
@@ -581,14 +573,14 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->calls_comdat_local, 1);
   bp_pack_value (&bp, node->icf_merged, 1);
   bp_pack_value (&bp, node->nonfreeing_fn, 1);
-  bp_pack_value (&bp, node->thunk.thunk_p && !boundary_p, 1);
+  bp_pack_value (&bp, node->thunk.thunk_p, 1);
   bp_pack_enum (&bp, ld_plugin_symbol_resolution,
 	        LDPR_NUM_KNOWN, node->resolution);
   bp_pack_value (&bp, node->instrumentation_clone, 1);
   streamer_write_bitpack (&bp);
   streamer_write_data_stream (ob->main_stream, section, strlen (section) + 1);
 
-  if (node->thunk.thunk_p && !boundary_p)
+  if (node->thunk.thunk_p)
     {
       streamer_write_uhwi_stream
 	 (ob->main_stream,
@@ -618,7 +610,6 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
   bool boundary_p = !lto_symtab_encoder_in_partition_p (encoder, node);
   struct bitpack_d bp;
   int ref;
-  bool alias_p;
   const char *comdat;
   const char *section;
   tree group;
@@ -638,8 +629,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
   bp_pack_value (&bp, node->implicit_section, 1);
   bp_pack_value (&bp, node->writeonly, 1);
   bp_pack_value (&bp, node->definition, 1);
-  alias_p = node->alias && (!boundary_p || node->weakref);
-  bp_pack_value (&bp, alias_p, 1);
+  bp_pack_value (&bp, node->alias, 1);
   bp_pack_value (&bp, node->weakref, 1);
   bp_pack_value (&bp, node->analyzed && !boundary_p, 1);
   gcc_assert (node->definition || !node->analyzed);
@@ -794,18 +784,18 @@ output_outgoing_cgraph_edges (struct cgraph_edge *edge,
 static void
 output_refs (lto_symtab_encoder_t encoder)
 {
-  lto_symtab_encoder_iterator lsei;
   struct lto_simple_output_block *ob;
   int count;
   struct ipa_ref *ref;
-  int i;
 
   ob = lto_create_simple_output_block (LTO_section_refs);
 
-  for (lsei = lsei_start_in_partition (encoder); !lsei_end_p (lsei);
-       lsei_next_in_partition (&lsei))
+  for (int i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      symtab_node *node = lsei_node (lsei);
+      symtab_node *node = lto_symtab_encoder_deref (encoder, i);
+
+      if (!node->alias && !lto_symtab_encoder_in_partition_p (encoder, node))
+	continue;
 
       count = node->ref_list.nreferences ();
       if (count)
@@ -813,7 +803,7 @@ output_refs (lto_symtab_encoder_t encoder)
 	  streamer_write_gcov_count_stream (ob->main_stream, count);
 	  streamer_write_uhwi_stream (ob->main_stream,
 				     lto_symtab_encoder_lookup (encoder, node));
-	  for (i = 0; node->iterate_reference (i, ref); i++)
+	  for (int i = 0; node->iterate_reference (i, ref); i++)
 	    lto_output_ref (ob, ref, encoder);
 	}
     }
@@ -987,6 +977,19 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 		}
 	    }
     }
+  /* Be sure to also insert alias targert and thunk callees.  These needs
+     to stay to aid local calling conventions.  */
+  for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
+    {
+      symtab_node *node = lto_symtab_encoder_deref (encoder, i);
+      cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
+
+      if (node->alias && node->analyzed)
+	create_references (encoder, node);
+      if (cnode
+	  && cnode->thunk.thunk_p)
+	add_node_to (encoder, cnode->callees->callee, false);
+    }
   lto_symtab_encoder_delete (in_encoder);
   return encoder;
 }
@@ -998,7 +1001,6 @@ output_symtab (void)
 {
   struct cgraph_node *node;
   struct lto_simple_output_block *ob;
-  lto_symtab_encoder_iterator lsei;
   int i, n_nodes;
   lto_symtab_encoder_t encoder;
 
@@ -1028,12 +1030,16 @@ output_symtab (void)
     }
 
   /* Go over the nodes in SET again to write edges.  */
-  for (lsei = lsei_start_function_in_partition (encoder); !lsei_end_p (lsei);
-       lsei_next_function_in_partition (&lsei))
+  for (int i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      node = lsei_cgraph_node (lsei);
-      output_outgoing_cgraph_edges (node->callees, ob, encoder);
-      output_outgoing_cgraph_edges (node->indirect_calls, ob, encoder);
+      node = dyn_cast <cgraph_node *> (lto_symtab_encoder_deref (encoder, i));
+      if (node
+	  && (node->thunk.thunk_p
+	      || lto_symtab_encoder_in_partition_p (encoder, node)))
+	{
+	  output_outgoing_cgraph_edges (node->callees, ob, encoder);
+	  output_outgoing_cgraph_edges (node->indirect_calls, ob, encoder);
+	}
     }
 
   streamer_write_uhwi_stream (ob->main_stream, 0);

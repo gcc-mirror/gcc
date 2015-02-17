@@ -987,7 +987,7 @@ ubsan_expand_objsize_ifn (gimple_stmt_iterator *gsi)
   /* Get rid of the UBSAN_OBJECT_SIZE call from the IR.  */
   unlink_stmt_vdef (stmt);
   gsi_remove (&gsi_orig, true);
-  return gsi_end_p (*gsi);
+  return true;
 }
 
 /* Cached __ubsan_vptr_type_cache decl.  */
@@ -1148,7 +1148,7 @@ ubsan_expand_vptr_ifn (gimple_stmt_iterator *gsip)
   /* Get rid of the UBSAN_VPTR call from the IR.  */
   unlink_stmt_vdef (stmt);
   gsi_remove (&gsi, true);
-  return gsi_end_p (*gsip);
+  return true;
 }
 
 /* Instrument a memory reference.  BASE is the base of MEM, IS_LHS says

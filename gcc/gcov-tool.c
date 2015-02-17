@@ -35,7 +35,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdio.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#if HAVE_FTW_H
 #include <ftw.h>
+#endif
 #include <getopt.h>
 
 extern int gcov_profile_merge (struct gcov_info*, struct gcov_info*, int, int);
@@ -48,6 +50,8 @@ extern void gcov_set_verbose (void);
 
 /* Set to verbose output mode.  */
 static bool verbose;
+
+#if HAVE_FTW_H
 
 /* Remove file NAME if it has a gcda suffix. */
 
@@ -69,13 +73,18 @@ unlink_gcda_file (const char *name,
 
   return ret;
 }
+#endif
 
 /* Remove the gcda files in PATH recursively.  */
 
 static int
-unlink_profile_dir (const char *path)
+unlink_profile_dir (const char *path ATTRIBUTE_UNUSED)
 {
+#if HAVE_FTW_H
     return nftw(path, unlink_gcda_file, 64, FTW_DEPTH | FTW_PHYS);
+#else
+    return -1;
+#endif
 }
 
 /* Output GCOV_INFO lists PROFILE to directory OUT. Note that
@@ -90,11 +99,7 @@ gcov_output_files (const char *out, struct gcov_info *profile)
   /* Try to make directory if it doesn't already exist.  */
   if (access (out, F_OK) == -1)
     {
-#if !defined(_WIN32)
       if (mkdir (out, S_IRWXU | S_IRWXG | S_IRWXO) == -1 && errno != EEXIST)
-#else
-      if (mkdir (out) == -1 && errno != EEXIST)
-#endif
         fatal_error (input_location, "Cannot make directory %s", out);
     } else
       unlink_profile_dir (out);

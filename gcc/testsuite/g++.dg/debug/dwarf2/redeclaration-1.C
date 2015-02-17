@@ -9,10 +9,12 @@ namespace S
   int
   f()
   {
-    int i = 42;
     {
-      extern int i;
-      return i;
+      int i = 42;
+      {
+	extern int i;
+	return i;
+      }
     }
   }
 }

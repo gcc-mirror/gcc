@@ -10272,7 +10272,9 @@ fold_binary_loc (location_t loc,
 		tem = build2_loc (loc, LROTATE_EXPR,
 				  TREE_TYPE (TREE_OPERAND (arg0, 0)),
 				  TREE_OPERAND (arg0, 0),
-				  code0 == LSHIFT_EXPR ? tree01 : tree11);
+				  code0 == LSHIFT_EXPR
+				  ? TREE_OPERAND (arg0, 1)
+				  : TREE_OPERAND (arg1, 1));
 		return fold_convert_loc (loc, type, tem);
 	      }
 	    else if (code11 == MINUS_EXPR)
@@ -10294,7 +10296,8 @@ fold_binary_loc (location_t loc,
 					       ? LROTATE_EXPR
 					       : RROTATE_EXPR),
 					      TREE_TYPE (TREE_OPERAND (arg0, 0)),
-					      TREE_OPERAND (arg0, 0), tree01));
+					      TREE_OPERAND (arg0, 0),
+					      TREE_OPERAND (arg0, 1)));
 	      }
 	    else if (code01 == MINUS_EXPR)
 	      {
@@ -10315,7 +10318,7 @@ fold_binary_loc (location_t loc,
 				? LROTATE_EXPR
 				: RROTATE_EXPR),
 			       TREE_TYPE (TREE_OPERAND (arg0, 0)),
-			       TREE_OPERAND (arg0, 0), tree11));
+			       TREE_OPERAND (arg0, 0), TREE_OPERAND (arg1, 1)));
 	      }
 	  }
       }

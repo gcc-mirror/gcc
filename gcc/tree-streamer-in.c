@@ -123,7 +123,7 @@ streamer_read_chain (struct lto_input_block *ib, struct data_in *data_in)
 /* Unpack all the non-pointer fields of the TS_BASE structure of
    expression EXPR from bitpack BP.  */
 
-static void
+static inline void
 unpack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
 {
   /* Note that the code for EXPR has already been unpacked to create EXPR in
@@ -158,6 +158,8 @@ unpack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
   TREE_STATIC (expr) = (unsigned) bp_unpack_value (bp, 1);
   if (TREE_CODE (expr) != TREE_BINFO)
     TREE_PRIVATE (expr) = (unsigned) bp_unpack_value (bp, 1);
+  else
+    bp_unpack_value (bp, 1);
   TREE_PROTECTED (expr) = (unsigned) bp_unpack_value (bp, 1);
   TREE_DEPRECATED (expr) = (unsigned) bp_unpack_value (bp, 1);
   if (TYPE_P (expr))
@@ -166,9 +168,12 @@ unpack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
       TYPE_ADDR_SPACE (expr) = (unsigned) bp_unpack_value (bp, 8);
     }
   else if (TREE_CODE (expr) == SSA_NAME)
-    SSA_NAME_IS_DEFAULT_DEF (expr) = (unsigned) bp_unpack_value (bp, 1);
+    {
+      SSA_NAME_IS_DEFAULT_DEF (expr) = (unsigned) bp_unpack_value (bp, 1);
+      bp_unpack_value (bp, 8);
+    }
   else
-    bp_unpack_value (bp, 1);
+    bp_unpack_value (bp, 9);
 }
 
 
@@ -456,98 +461,12 @@ unpack_ts_omp_clause_value_fields (struct data_in *data_in,
     }
 }
 
-/* Unpack all the non-pointer fields in EXPR into a bit pack.  */
-
-static void
-unpack_value_fields (struct data_in *data_in, struct bitpack_d *bp, tree expr)
-{
-  enum tree_code code;
-
-  code = TREE_CODE (expr);
-
-  /* Note that all these functions are highly sensitive to changes in
-     the types and sizes of each of the fields being packed.  */
-  unpack_ts_base_value_fields (bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
-    unpack_ts_int_cst_value_fields (bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
-    unpack_ts_real_cst_value_fields (bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
-    unpack_ts_fixed_cst_value_fields (bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
-    DECL_SOURCE_LOCATION (expr) = stream_input_location (bp, data_in);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
-    unpack_ts_decl_common_value_fields (bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL))
-    unpack_ts_decl_wrtl_value_fields (bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
-    unpack_ts_decl_with_vis_value_fields (bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
-    unpack_ts_function_decl_value_fields (bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
-    unpack_ts_type_common_value_fields (bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_EXP))
-    {
-      SET_EXPR_LOCATION (expr, stream_input_location (bp, data_in));
-      if (code == MEM_REF
-	  || code == TARGET_MEM_REF)
-	{
-	  MR_DEPENDENCE_CLIQUE (expr)
-	    = (unsigned)bp_unpack_value (bp, sizeof (short) * 8);
-	  if (MR_DEPENDENCE_CLIQUE (expr) != 0)
-	    MR_DEPENDENCE_BASE (expr)
-	      = (unsigned)bp_unpack_value (bp, sizeof (short) * 8);
-	}
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
-    unpack_ts_block_value_fields (data_in, bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
-    unpack_ts_translation_unit_decl_value_fields (data_in, bp, expr);
-
-  if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
-    cl_optimization_stream_in (bp, TREE_OPTIMIZATION (expr));
-
-  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
-    {
-      unsigned HOST_WIDE_INT length = bp_unpack_var_len_unsigned (bp);
-      if (length > 0)
-	vec_safe_grow (BINFO_BASE_ACCESSES (expr), length);
-    }
-
-  if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
-    {
-      unsigned HOST_WIDE_INT length = bp_unpack_var_len_unsigned (bp);
-      if (length > 0)
-	vec_safe_grow (CONSTRUCTOR_ELTS (expr), length);
-    }
-
-#ifndef ACCEL_COMPILER
-  if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
-    cl_target_option_stream_in (data_in, bp, TREE_TARGET_OPTION (expr));
-#endif
-
-  if (code == OMP_CLAUSE)
-    unpack_ts_omp_clause_value_fields (data_in, bp, expr);
-}
-
 
 /* Read all the language-independent bitfield values for EXPR from IB.
    Return the partially unpacked bitpack so the caller can unpack any other
    bitfield values that the writer may have written.  */
 
-struct bitpack_d
+void
 streamer_read_tree_bitfields (struct lto_input_block *ib,
 			      struct data_in *data_in, tree expr)
 {
@@ -563,10 +482,81 @@ streamer_read_tree_bitfields (struct lto_input_block *ib,
   lto_tag_check (lto_tree_code_to_tag (code),
 		 lto_tree_code_to_tag (TREE_CODE (expr)));
 
-  /* Unpack all the value fields from BP.  */
-  unpack_value_fields (data_in, &bp, expr);
+  /* Note that all these functions are highly sensitive to changes in
+     the types and sizes of each of the fields being packed.  */
+  unpack_ts_base_value_fields (&bp, expr);
 
-  return bp;
+  if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
+    unpack_ts_int_cst_value_fields (&bp, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
+    unpack_ts_real_cst_value_fields (&bp, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
+    unpack_ts_fixed_cst_value_fields (&bp, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
+    DECL_SOURCE_LOCATION (expr) = stream_input_location (&bp, data_in);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
+    unpack_ts_decl_common_value_fields (&bp, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL))
+    unpack_ts_decl_wrtl_value_fields (&bp, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
+    unpack_ts_decl_with_vis_value_fields (&bp, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
+    unpack_ts_function_decl_value_fields (&bp, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
+    unpack_ts_type_common_value_fields (&bp, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_EXP))
+    {
+      SET_EXPR_LOCATION (expr, stream_input_location (&bp, data_in));
+      if (code == MEM_REF
+	  || code == TARGET_MEM_REF)
+	{
+	  MR_DEPENDENCE_CLIQUE (expr)
+	    = (unsigned)bp_unpack_value (&bp, sizeof (short) * 8);
+	  if (MR_DEPENDENCE_CLIQUE (expr) != 0)
+	    MR_DEPENDENCE_BASE (expr)
+	      = (unsigned)bp_unpack_value (&bp, sizeof (short) * 8);
+	}
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
+    unpack_ts_block_value_fields (data_in, &bp, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
+    unpack_ts_translation_unit_decl_value_fields (data_in, &bp, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
+    cl_optimization_stream_in (&bp, TREE_OPTIMIZATION (expr));
+
+  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
+    {
+      unsigned HOST_WIDE_INT length = bp_unpack_var_len_unsigned (&bp);
+      if (length > 0)
+	vec_safe_grow (BINFO_BASE_ACCESSES (expr), length);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
+    {
+      unsigned HOST_WIDE_INT length = bp_unpack_var_len_unsigned (&bp);
+      if (length > 0)
+	vec_safe_grow (CONSTRUCTOR_ELTS (expr), length);
+    }
+
+#ifndef ACCEL_COMPILER
+  if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
+    cl_target_option_stream_in (data_in, &bp, TREE_TARGET_OPTION (expr));
+#endif
+
+  if (code == OMP_CLAUSE)
+    unpack_ts_omp_clause_value_fields (data_in, &bp, expr);
 }
 
 

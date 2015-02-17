@@ -753,17 +753,19 @@ ipa_lower_emutls (void)
   cgraph_node *func;
   bool any_aliases = false;
   tree ctor_body = NULL;
-
+  hash_set <varpool_node *> visited;
   auto_vec <varpool_node *> tls_vars;
 
   /* Examine all global variables for TLS variables.  */
   FOR_EACH_VARIABLE (var)
-    if (DECL_THREAD_LOCAL_P (var->decl))
+    if (DECL_THREAD_LOCAL_P (var->decl)
+	&& !visited.add (var))
       {
 	gcc_checking_assert (TREE_STATIC (var->decl)
 			     || DECL_EXTERNAL (var->decl));
 	tls_vars.safe_push (var);
-	if (var->alias && var->definition)
+	if (var->alias && var->definition
+	    && !visited.add (var->ultimate_alias_target ()))
 	  tls_vars.safe_push (var->ultimate_alias_target ());
       }
 
@@ -785,7 +787,7 @@ ipa_lower_emutls (void)
       if (var->alias && !var->analyzed)
 	any_aliases = true;
       else if (!var->alias)
-	var->call_for_node_and_aliases (create_emultls_var, &ctor_body, true);
+	var->call_for_symbol_and_aliases (create_emultls_var, &ctor_body, true);
     }
 
   /* If there were any aliases, then frob the alias_pairs vector.  */

@@ -10,5 +10,7 @@ program main
   b = y
   call sub(a, b)
 end program main
-! { dg-final { scan-tree-dump-times "memset" 0 "forwprop2" { xfail { { hppa*-*-* && { ! lp64 } } || { mips*-*-* && { ! nomips16 } } } } } }
+! This test will fail on targets which prefer memcpy/memset over
+! move_by_pieces/store_by_pieces.
+! { dg-final { scan-tree-dump-times "memset" 0 "forwprop2" { xfail { { hppa*-*-* && { ! lp64 } } || { { mips*-*-* && { ! nomips16 } } || { aarch64*-*-* } } } } } }
 ! { dg-final { cleanup-tree-dump "forwprop2" } }

@@ -682,7 +682,8 @@ write_mangled_name (const tree decl, bool top_level)
     }
   else if (VAR_P (decl)
 	   /* Variable template instantiations are mangled.  */
-	   && !(DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl))
+	   && !(DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)
+		&& variable_template_p (DECL_TI_TEMPLATE (decl)))
 	   /* The names of non-static global variables aren't mangled.  */
 	   && DECL_EXTERNAL_LINKAGE_P (decl)
 	   && (CP_DECL_CONTEXT (decl) == global_namespace

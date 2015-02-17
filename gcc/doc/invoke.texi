@@ -7090,6 +7090,8 @@ optimizing.  Use of @option{-gdwarf-4} is recommended along with it.
 
 It can be enabled even if var-tracking is disabled, in which case
 annotations are created and maintained, but discarded at the end.
+By default, this flag is enabled together with @option{-fvar-tracking},
+except when selective scheduling is enabled.
 
 @item -fvar-tracking-assignments-toggle
 @opindex fvar-tracking-assignments-toggle
@@ -7885,6 +7887,16 @@ registers after writing to their lower 32-bit half.
 
 Enabled for Alpha, AArch64 and x86 at levels @option{-O2},
 @option{-O3}, @option{-Os}.
+
+@item -fno-lifetime-dse
+@opindex fno-lifetime-dse
+In C++ the value of an object is only affected by changes within its
+lifetime: when the constructor begins, the object has an indeterminate
+value, and any changes during the lifetime of the object are dead when
+the object is destroyed.  Normally dead store elimination will take
+advantage of this; if your code relies on the value of the object
+storage persisting beyond the lifetime of the object, you can use this
+flag to disable this optimization.
 
 @item -flive-range-shrinkage
 @opindex flive-range-shrinkage
@@ -11322,7 +11334,7 @@ independent.
 @c man end
 
 @node Spec Files
-@section Specifying subprocesses and the switches to pass to them
+@section Specifying Subprocesses and the Switches to Pass to Them
 @cindex Spec Files
 
 @command{gcc} is a driver program.  It performs its job by invoking a
@@ -12133,7 +12145,7 @@ with @option{-march} or @option{-mtune}, those options take precedence
 over the appropriate part of this option.
 @end table
 
-@subsubsection @option{-march} and @option{-mcpu} feature modifiers
+@subsubsection @option{-march} and @option{-mcpu} Feature Modifiers
 @cindex @option{-march} feature modifiers
 @cindex @option{-mcpu} feature modifiers
 Feature modifiers used with @option{-march} and @option{-mcpu} can be one
@@ -13374,7 +13386,7 @@ Warn about conversions between address spaces in the case where the
 resulting address space is not contained in the incoming address space.
 @end table
 
-@subsubsection @code{EIND} and Devices with more than 128 Ki Bytes of Flash
+@subsubsection @code{EIND} and Devices with More Than 128 Ki Bytes of Flash
 @cindex @code{EIND}
 Pointers in the implementation are 16@tie{}bits wide.
 The address of a function or label is represented as word address so
@@ -21944,8 +21956,10 @@ functional units well, resulting in unstable performance.
 
 @item -masm=@var{dialect}
 @opindex masm=@var{dialect}
-Output assembly instructions using selected @var{dialect}.  Supported
-choices are @samp{intel} or @samp{att} (the default).  Darwin does
+Output assembly instructions using selected @var{dialect}.  Also affects
+which dialect is used for basic @code{asm} (@pxref{Basic Asm}) and
+extended @code{asm} (@pxref{Extended Asm}). Supported choices (in dialect
+order) are @samp{att} or @samp{intel}. The default is @samp{att}. Darwin does
 not support @samp{intel}.
 
 @item -mieee-fp

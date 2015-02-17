@@ -45,6 +45,18 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define BE(X)	0
 #endif
 
+#ifdef __ILP32__
+#define PTR_REG(n)      w##n
+#else
+#define PTR_REG(n)      x##n
+#endif
+
+#ifdef __ILP32__
+#define PTR_SIZE	4
+#else
+#define PTR_SIZE	8
+#endif
+
 	.text
 	.align 4
 
@@ -248,8 +260,8 @@ CNAME(ffi_closure_SYSV):
 	stp     x6, x7, [sp, #16 + 16*N_V_ARG_REG + 48]
 
 	/* Load ffi_closure_inner arguments.  */
-	ldp	x0, x1, [x17, #FFI_TRAMPOLINE_CLOSURE_OFFSET]	/* load cif, fn */
-	ldr	x2, [x17, #FFI_TRAMPOLINE_CLOSURE_OFFSET+16]	/* load user_data */
+	ldp	PTR_REG(0), PTR_REG(1), [x17, #FFI_TRAMPOLINE_CLOSURE_OFFSET]	/* load cif, fn */
+	ldr	PTR_REG(2), [x17, #FFI_TRAMPOLINE_CLOSURE_OFFSET+PTR_SIZE*2]	/* load user_data */
 .Ldo_closure:
 	add	x3, sp, #16				/* load context */
 	add	x4, sp, #ffi_closure_SYSV_FS		/* load stack */
@@ -403,7 +415,7 @@ CNAME(ffi_go_closure_SYSV):
 	stp     x6, x7, [sp, #16 + 16*N_V_ARG_REG + 48]
 
 	/* Load ffi_closure_inner arguments.  */
-	ldp	x0, x1, [x18, #8]			/* load cif, fn */
+	ldp	PTR_REG(0), PTR_REG(1), [x18, #PTR_SIZE]/* load cif, fn */
 	mov	x2, x18					/* load user_data */
 	b	.Ldo_closure
 	cfi_endproc

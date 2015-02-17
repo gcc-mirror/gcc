@@ -33,8 +33,9 @@
 #include "intl.h"
 #include <libgen.h>
 #include "obstack.h"
-#include "diagnostic-core.h"
+#include "diagnostic.h"
 #include "collect-utils.h"
+#include "gomp-constants.h"
 
 const char tool_name[] = "nvptx mkoffload";
 
@@ -790,10 +791,10 @@ process (FILE *in, FILE *out)
 
   fprintf (out, "extern void GOMP_offload_register (const void *, int, void *);\n");
 
-  fprintf (out, "extern void *__OPENMP_TARGET__[];\n\n");
-  fprintf (out, "#define PTX_ID 1\n");
+  fprintf (out, "extern void *__OFFLOAD_TABLE__[];\n\n");
   fprintf (out, "static __attribute__((constructor)) void init (void)\n{\n");
-  fprintf (out, "  GOMP_offload_register (__OPENMP_TARGET__, PTX_ID,\n");
+  fprintf (out, "  GOMP_offload_register (__OFFLOAD_TABLE__, %d,\n",
+	   GOMP_DEVICE_NVIDIA_PTX);
   fprintf (out, "                         &target_data);\n");
   fprintf (out, "};\n");
 }
@@ -826,6 +827,9 @@ main (int argc, char **argv)
   FILE *in = stdin;
   FILE *out = stdout;
   const char *outname = 0;
+
+  progname = "mkoffload";
+  diagnostic_initialize (global_dc, 0);
 
   char *collect_gcc = getenv ("COLLECT_GCC");
   if (collect_gcc == NULL)

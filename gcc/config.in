@@ -1098,6 +1098,12 @@
 #endif
 
 
+/* Define to 1 if you have the <ftw.h> header file. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_FTW_H
+#endif
+
+
 /* Define to 1 if you have the `fwrite_unlocked' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_FWRITE_UNLOCKED

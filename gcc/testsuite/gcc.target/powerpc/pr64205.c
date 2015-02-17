@@ -1,4 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* && ilp32 } } } */
+/* { dg-skip-if "" { powerpc*-*-aix* } { "*" } { "" } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=G5" } } */
 /* { dg-options "-O2 -mcpu=G5 -maltivec -m32" } */
 

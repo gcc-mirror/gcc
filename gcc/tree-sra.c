@@ -3988,7 +3988,7 @@ dump_dereferences_table (FILE *f, const char *str, HOST_WIDE_INT *table)
 {
   basic_block bb;
 
-  fprintf (dump_file, str);
+  fprintf (dump_file, "%s", str);
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
 		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
     {
@@ -4891,6 +4891,20 @@ some_callers_have_mismatched_arguments_p (struct cgraph_node *node,
   return false;
 }
 
+/* Return false if all callers have vuse attached to a call statement.  */
+
+static bool
+some_callers_have_no_vuse_p (struct cgraph_node *node,
+			     void *data ATTRIBUTE_UNUSED)
+{
+  struct cgraph_edge *cs;
+  for (cs = node->callers; cs; cs = cs->next_caller)
+    if (!cs->call_stmt || !gimple_vuse (cs->call_stmt))
+      return true;
+
+  return false;
+}
+
 /* Convert all callers of NODE.  */
 
 static bool
@@ -5114,6 +5128,15 @@ ipa_early_sra (void)
       if (dump_file)
 	fprintf (dump_file, "There are callers with insufficient number of "
 		 "arguments or arguments with type mismatches.\n");
+      goto simple_out;
+    }
+
+  if (node->call_for_symbol_thunks_and_aliases
+       (some_callers_have_no_vuse_p, NULL, true))
+    {
+      if (dump_file)
+	fprintf (dump_file, "There are callers with no VUSE attached "
+		 "to a call stmt.\n");
       goto simple_out;
     }
 

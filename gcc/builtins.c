@@ -5960,6 +5960,9 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
   machine_mode target_mode = TYPE_MODE (TREE_TYPE (exp));
   int flags;
 
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
+    return targetm.expand_builtin (exp, target, subtarget, mode, ignore);
+
   /* When ASan is enabled, we don't want to expand some memory/string
      builtins and rely on libsanitizer's hooks.  This allows us to avoid
      redundant checks and be sure, that possible overflow will be detected
@@ -5967,9 +5970,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 
   if ((flag_sanitize & SANITIZE_ADDRESS) && asan_intercepted_p (fcode))
     return expand_call (exp, target, ignore);
-
-  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
-    return targetm.expand_builtin (exp, target, subtarget, mode, ignore);
 
   /* When not optimizing, generate calls to library functions for a certain
      set of builtins.  */

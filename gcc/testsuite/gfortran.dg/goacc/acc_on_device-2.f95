@@ -35,6 +35,6 @@ end function f
 
 ! With -fopenacc, we're expecting the builtin to be expanded, so no calls.
 ! TODO: not working.
-! { dg-final { scan-rtl-dump-times "\\\(call \[^\\n\]*\\\"acc_on_device" 0 "expand" { xfail *-*-* } } }
+! { dg-final { scan-rtl-dump-times "\\\(call \[^\\n\]* acc_on_device" 0 "expand" { xfail *-*-* } } }
 
 ! { dg-final { cleanup-rtl-dump "expand" } }

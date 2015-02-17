@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-options "-std=gnu++11" }
+// { dg-additional-options "-DNEWLINE_IN_CLASS_BLANK" { target newlib } }
 
 //
 // 2010-06-23  Stephen M. Webb <stephen.webb@bregmasoft.ca>
@@ -53,8 +54,8 @@ test01()
   VERIFY(!t.isctype('_', t.lookup_classname(range(digit))));
   VERIFY( t.isctype(' ', t.lookup_classname(range(blank))));
   VERIFY( t.isctype('\t', t.lookup_classname(range(blank))));
-#if defined (__NEWLIB__)
-  /* newlib includes '\n' in class 'blank'.
+#if defined (NEWLINE_IN_CLASS_BLANK)
+  /* On some targets, '\n' is in class 'blank'.
      See https://gcc.gnu.org/ml/gcc-patches/2015-02/msg00059.html.  */
   VERIFY( t.isctype('\n', t.lookup_classname(range(blank))));
 #else

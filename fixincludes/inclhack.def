@@ -3549,6 +3549,58 @@ fix = {
 };
 
 /*
+ * Newer Solaris 10/11 GCC signbit implementations cause strict-aliasing
+ * warnings.
+ */
+fix = {
+    hackname = solaris_math_11;
+    select = '@\(#\)math_c99\.h' "[ \t]+1\\.[0-9]+[ \t]+[0-9/]+ ";
+    files = iso/math_c99.h;
+    c_fix = format;
+    c_fix_arg = << _EOArg_
+#undef	signbit
+#define	signbit(x)	(sizeof(x) == sizeof(float) \
+			   ? __builtin_signbitf(x) \
+			   : sizeof(x) == sizeof(long double) \
+			     ? __builtin_signbitl(x) \
+			     : __builtin_signbit(x))
+_EOArg_;
+    c_fix_arg = << _EOArg_
+^#undef[ 	]+signbit
+#if defined\(__sparc\)
+#define[ 	]+signbit\(x\)[ 	]+__extension__\( \\
+[ 	]+\{[ 	]*__typeof\(x\)[ 	]*__x_s[ 	]*=[ 	]*\(x\);[ 	]*\\
+[ 	]+\(int\)[ 	]*\(\*\(unsigned[ 	]*\*\)[ 	]*\&__x_s[ 	]*>>[ 	]*31\);[ 	]*\}\)
+#elif defined\(__i386\) \|\| defined\(__amd64\)
+#define[ 	]+signbit\(x\)[ 	]+__extension__\( \\
+[ 	]+\{ __typeof\(x\) __x_s = \(x\); \\
+[ 	]+\(sizeof \(__x_s\) == sizeof \(float\) \? \\
+[ 	]+\(int\) \(\*\(unsigned \*\) \&__x_s >> 31\) : \\
+[ 	]+sizeof \(__x_s\) == sizeof \(double\) \? \\
+[ 	]+\(int\) \(\(\(unsigned \*\) \&__x_s\)\[1\] >> 31\) : \\
+[ 	]+\(int\) \(\(\(unsigned short \*\) \&__x_s\)\[4\] >> 15\)\); \}\)
+#endif
+_EOArg_;
+    test_text = << _EOText_
+/* @(#)math_c99.h	1.14	13/03/27 */
+#undef	signbit
+#if defined(__sparc)
+#define	signbit(x)	__extension__( \\
+				{ __typeof(x) __x_s = (x); \\
+				(int) (*(unsigned *) &__x_s >> 31); })
+#elif defined(__i386) || defined(__amd64)
+#define	signbit(x)	__extension__( \\
+			{ __typeof(x) __x_s = (x); \\
+			(sizeof (__x_s) == sizeof (float) ? \\
+			(int) (*(unsigned *) &__x_s >> 31) : \\
+			sizeof (__x_s) == sizeof (double) ? \\
+			(int) (((unsigned *) &__x_s)[1] >> 31) : \\
+			(int) (((unsigned short *) &__x_s)[4] >> 15)); })
+#endif
+_EOText_;
+};
+
+/*
  * Sun Solaris defines PTHREAD_ONCE_INIT as an array containing a
  * structure.  As such, it need two levels of brackets, but only
  * contains one.  Wrap the macro definition in an extra layer.

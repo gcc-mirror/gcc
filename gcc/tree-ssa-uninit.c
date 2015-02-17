@@ -820,7 +820,7 @@ dump_predicates (gimple usestmt, pred_chain_union preds,
 {
   size_t i, j;
   pred_chain one_pred_chain = vNULL;
-  fprintf (dump_file, msg);
+  fprintf (dump_file, "%s", msg);
   print_gimple_stmt (dump_file, usestmt, 0, 0);
   fprintf (dump_file, "is guarded by :\n\n");
   size_t num_preds = preds.length ();

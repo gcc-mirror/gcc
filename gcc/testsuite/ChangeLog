@@ -1,3 +1,302 @@
+2015-02-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr64205.c: Skip on AIX.
+	* gcc.target/powerpc/pr64505.c: Skip on AIX.
+	* gcc.dg/torture/builtin-noret-1.c: Ignore AIX linker warnings.
+	* gcc.dg/torture/builtin-noret-2.c: Ignore AIX linker warnings.
+
+2015-02-14  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR testsuite/64850
+	* gcc.dg/goacc/acc_on_device-1.c: Use a space instead of \\\" in
+	the expression to find calls.
+	* c-c++-common/goacc/acc_on_device-2.c: Likewise.
+	* c-c++-common/goacc/acc_on_device-2-off.c: Likewise.
+	* gfortran.dg/goacc/acc_on_device-1.f95: Likewise.
+	* gfortran.dg/goacc/acc_on_device-2.f95: Likewise.
+	* gfortran.dg/goacc/acc_on_device-2-off.f95: Likewise.
+
+2015-02-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64768
+	* gcc.dg/array-11.c: New test.
+	* gcc.dg/array-12.c: New test.
+	* gcc.dg/array-13.c: New test.
+	* gcc.dg/array-14.c: New test.
+	* gcc.dg/c99-flex-array-typedef-1.c: New test.
+	* gcc.dg/c99-flex-array-typedef-2.c: New test.
+	* gcc.dg/c99-flex-array-typedef-3.c: New test.
+	* gcc.dg/c99-flex-array-typedef-5.c: New test.
+	* gcc.dg/c99-flex-array-typedef-7.c: New test.
+	* gcc.dg/c99-flex-array-typedef-8.c: New test.
+
+2015-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60894
+	* g++.dg/lookup/using54.C: New.
+
+2015-02-13  Jeff Law  <law@redhat.com>
+
+	PR bootstrap/65060
+	Revert my change for tree-optimization/64823.
+
+2015-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65053
+	* gcc.c-torture/execute/pr65053-1.c: New test.
+	* gcc.c-torture/execute/pr65053-2.c: New test.
+
+2015-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65050
+	* gcc.dg/pr65050.c: New test.
+
+2015-02-13  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/64823
+	* gcc.dg/uninit-20.c: New test.
+
+	PR rtl-optimization/47477
+	* gcc.dg/tree-ssa/pr47477.c: New test.
+
+2015-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60211
+	* g++.dg/parse/ivdep-2.C: New.
+	* g++.dg/parse/ivdep-3.C: Likewise.
+
+2015-02-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/64506
+	* gfortran.dg/continuation_13.f90: New test.
+	* gfortran.dg/continuation_14.f: New test.
+
+2015-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64970
+	* g++.dg/cpp0x/sfinae55.C: New.
+
+2015-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/65034
+	* g++.dg/ipa/pr65034.C: New test.
+
+2015-02-13  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR tree-optimization/65002
+	* gcc.dg/pr65002.C: New.
+
+2015-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65040
+	* c-c++-common/pr65040.c: New test.
+
+2015-02-13  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/64705
+	* gcc.dg/tree-ssa/pr64705.c: New test.
+
+2015-02-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl/32219
+	* gcc.dg/visibility-22.c: New test.
+	* gcc.dg/visibility-23.c: New test.
+	* gcc.target/i386/pr32219-1.c: New test.
+	* gcc.target/i386/pr32219-2.c: New test.
+	* gcc.target/i386/pr32219-3.c: New test.
+	* gcc.target/i386/pr32219-4.c: New test.
+	* gcc.target/i386/pr32219-5.c: New test.
+	* gcc.target/i386/pr32219-6.c: New test.
+	* gcc.target/i386/pr32219-7.c: New test.
+	* gcc.target/i386/pr32219-8.c: New test.
+	* gcc.target/i386/pr64317.c: Expect GOTOFF, not GOT.
+
+2015-02-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/57822
+	* gfortran/fmt_g0_7.f08: Adjust for archtectures with less than
+	four different KINDs.
+
+2015-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/64884
+	* g++.dg/tm/pr47573.C: Only run on comdat_group effective targets.
+
+	PR sanitizer/65000
+	* g++.dg/ubsan/pr65000.C: New test.
+
+2015-02-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/64932
+	* gfortran.dg/finalize_28.f90: New test
+
+2015-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/55541
+	* g++.dg/debug/dwarf2/localclass3.C: Adjust for the extraneous
+	DW_TAG_lexical_block removal.
+	* g++.dg/debug/dwarf2/redeclaration-1.C: Likewise.
+	* g++.dg/guality/pr55541.C: New test.
+
+	PR sanitizer/64984
+	* g++.dg/ubsan/pr64984.C: New test.
+
+2015-02-12  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gfortran.dg/pr45636.f90: XFAIL for aarch64* targets.
+
+2015-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/64930
+	* gcc.target/powerpc/atomic-p7.c: Adjust expected count of isync
+	instructions for 2015-01-14 get_memmodel changes.
+	* gcc.target/powerpc/atomic-p8.c: Likewise.
+
+	PR sanitizer/65019
+	* g++.dg/ubsan/pr65019.C: New test.
+
+	PR tree-optimization/65014
+	* gcc.c-torture/compile/pr65014.c: New test.
+
+2015-02-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/57822
+	* gfortran/fmt_g0_7.f08: Revise test.
+
+2015-02-11  Jeff Law  <law@redhat.com>
+
+	PR target/63347
+	* gcc.target/m68k/pr63347.c: New test.
+
+2015-02-11  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/ubsan/shift-1.C: New test.
+	* gcc.dg/ubsan/c-shift-2.c: New test.
+	* c-c++-common/ubsan/shift-5.c: Remove file.
+
+2015-02-11  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc.target/aarch64/atomic-op-consume.c (scan-assember-times):
+	Directive adjusted to XFAIL.
+	* gcc.target/arm/atomic-op-consume.c (scan-assember-times): Directive
+	adjusted to XFAIL.
+
+2015-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/65003
+	* g++.dg/opt/pr65003.C: New test.
+
+2015-02-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* lib/target-supports.exp (check_effective_target_pie): Renamed
+	to ...
+	(check_effective_target_pie_enabled): This.
+	* gcc.dg/tree-ssa/ssa-store-ccp-3.c: Replace pie with pie_enabled.
+	* gcc.target/i386/pie.c: Likewise.
+
+2015-02-11  Andrew Pinski  <apinski@cavium.com>
+
+	PR target/64893
+	* c-c++-common/torture/aarch64-vect-lane-1.c: New testcase.
+	* c-c++-common/torture/aarch64-vect-lane-2.c: New testcase.
+
+2015-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/61925
+	* gcc.target/i386/pr61925-1.c: New test.
+	* gcc.target/i386/pr61925-2.c: New test.
+	* gcc.target/i386/pr61925-3.c: New test.
+
+2015-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/65004
+	* g++.dg/asan/pr65004.C: New test.
+
+2015-02-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/64661
+	* gcc.taget/sh/pr64661-0.h: New.
+	* gcc.taget/sh/pr64661-1.c: New.
+	* gcc.taget/sh/pr64661-2.c: New.
+	* gcc.taget/sh/pr64661-3.c: New.
+	* gcc.taget/sh/pr64661-4.c: New.
+
+2015-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64995
+	* g++.dg/torture/pr64995.C: New testcase.
+
+2015-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64909
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr64909.c: New testcase.
+
+2015-02-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/signbit-sa.c: New test.
+
+2015-02-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/57822
+	* gfortran/fmt_g0_7.f08: New test.
+
+2015-02-10  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/43378
+	* gcc.dg/tree-ssa/pr43378.c: New test.
+
+2015-02-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/64978
+	* g++.dg/torture/pr64978.C: New testcase.
+
+2015-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/64981
+	* gcc.dg/asan/pr64981.c: New test.
+
+2015-02-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64856
+	* gcc.dg/pr64856.c: New test.
+
+2015-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/64979
+	* gcc.dg/tree-ssa/stdarg-7.c: New test.
+	* gcc.c-torture/execute/pr64979.c: New test.
+
+2015-02-09  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/arm/macro_defs0.c: Remove extraneous "target"
+
+2015-02-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: Xfail scan-tree-dump for alpha*-*-*.
+	* gcc.dg/tree-ssa/pr42585.c: Xfail scan-tree-dump-times for alpha*-*-*.
+
+2015-02-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/58757
+	* gcc.dg/c11-true_min-1.c: Xfail execution for alpha*-*-*.
+
+2015-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/54000
+	* g++.dg/tree-ssa/ivopts-3.C: New testcase.
+
+2015-02-09  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/graphite/scop-19.c: Fix scan-tree-dump for fpic.
+
+2015-02-09  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ipa/pr64858.C: New test.
+
+2015-02-09  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/uninit-19.c: Fix warning line for fpic.
+
 2015-02-08  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: xfail for AARCH64 also.
@@ -5,7 +304,7 @@
 2015-02-08  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/63744
-	gfortran.dg/use_rename_8.f90: New.
+	* gfortran.dg/use_rename_8.f90: New.
 
 2015-02-08  Eric Botcazou  <ebotcazou@adacore.com>
 

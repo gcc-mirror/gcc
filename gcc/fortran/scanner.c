@@ -1268,13 +1268,25 @@ restart:
 	c = next_char ();
 
       /* Character constants to be continued cannot have commentary
-	 after the '&'.  */
+	 after the '&'. However, there are cases where we may think we
+	 are still in a string and we are looking for a possible
+	 doubled quote and we end up here. See PR64506.  */
 
-      if (in_string && c != '\n')
+      if (in_string)
 	{
 	  gfc_current_locus = old_loc;
-	  c = '&';
-	  goto done;
+
+	  if (c == '!')
+	    {
+	      skip_comment_line ();
+	      goto restart;
+	    }
+
+	  if (c != '\n')
+	    {
+	      c = '&';
+	      goto done;
+	    }
 	}
 
       if (c != '!' && c != '\n')
@@ -1395,7 +1407,7 @@ restart:
   else /* Fixed form.  */
     {
       /* Fixed form continuation.  */
-      if (!in_string && c == '!')
+      if (in_string != INSTRING_WARN && c == '!')
 	{
 	  /* Skip comment at end of line.  */
 	  do

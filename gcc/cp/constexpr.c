@@ -1348,8 +1348,12 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	      if (DECL_SAVED_TREE (fun) == NULL_TREE
 		  && (DECL_CONSTRUCTOR_P (fun) || DECL_DESTRUCTOR_P (fun)))
 		/* The maybe-in-charge 'tor had its DECL_SAVED_TREE
-		   cleared, try the first clone.  */
-		fun = DECL_CHAIN (fun);
+		   cleared, try a clone.  */
+		for (fun = DECL_CHAIN (fun);
+		     fun && DECL_CLONED_FUNCTION_P (fun);
+		     fun = DECL_CHAIN (fun))
+		  if (DECL_SAVED_TREE (fun))
+		    break;
 	      gcc_assert (DECL_SAVED_TREE (fun));
 	      tree parms, res;
 
@@ -3634,7 +3638,6 @@ maybe_constant_value (tree t, tree decl)
 
   r = cxx_eval_outermost_constant_expr (t, true, true, decl);
 #ifdef ENABLE_CHECKING
-  /* cp_tree_equal looks through NOPs, so allow them.  */
   gcc_assert (r == t
 	      || CONVERT_EXPR_P (t)
 	      || TREE_CODE (t) == VIEW_CONVERT_EXPR

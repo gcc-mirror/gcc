@@ -1,10 +1,35 @@
+2015-02-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64768
+	* c-decl.c (grokdeclarator): Set the range of a flexible array member
+	declared through a typedef name.
+
+2015-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65050
+	* c-decl.c (grokdeclarator): Print also the type when giving
+	the error message about array's incomplete element type.
+
+2015-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/64824
+	* c-parser.c (c_parser_binary_expression): Fix OpenMP stack[sp].prec
+	check in the POP macro.
+
+2015-02-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64856
+	* c-typeck.c (process_init_element): Don't always wrap
+	COMPOUND_LITERAL_EXPR in a SAVE_EXPR in C99 mode when
+	initializing a range of elements.
+
 2015-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/64824
 	PR c/64868
 	* c-parser.c (c_parser_omp_atomic): Handle RDIV_EXPR.
 
-2015-02-02  Bruno Loff <bruno.loff@gmail.com>
+2015-02-02  Bruno Loff  <bruno.loff@gmail.com>
 
 	* c-parser.c (c_parser_declspecs): Call invoke_plugin_callbacks after
 	processing enum declaration.
