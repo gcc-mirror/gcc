@@ -1,3 +1,7 @@
+2015-02-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/ipa/propalign-3.c: New test.
+
 2015-02-17  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/64793

@@ -1458,6 +1458,10 @@ fipa-cp-clone
 Common Report Var(flag_ipa_cp_clone) Optimization
 Perform cloning to make Interprocedural constant propagation stronger
 
+fipa-cp-alignment
+Common Report Var(flag_ipa_cp_alignment) Optimization
+Perform alignment discovery and propagation to make Interprocedural constant propagation stronger
+
 fipa-profile
 Common Report Var(flag_ipa_profile) Init(0) Optimization
 Perform interprocedural profile propagation

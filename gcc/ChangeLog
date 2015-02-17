@@ -1,3 +1,13 @@
+2015-02-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* common.opt (fipa-cp-alignment): New.
+	* ipa-cp.c (ipcp_store_alignment_results): Check
+	flag_ipa_cp_alignment.
+	* opts.c (default_options_table): Enable -fipa-cp-alignment for
+	-O2.
+	(enable_fdo_optimizations): Set x_flag_ipa_cp_alignment.
+	* doc/invoke.texi: Document -fipa-cp-alignment.
+
 2015-02-17  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/64793
