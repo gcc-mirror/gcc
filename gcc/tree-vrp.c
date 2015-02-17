@@ -10173,10 +10173,7 @@ identify_jump_threads (void)
       if (! potentially_threadable_block (bb))
 	continue;
 
-      /* We only care about blocks ending in a COND_EXPR.  While there
-	 may be some value in handling SWITCH_EXPR here, I doubt it's
-	 terribly important.  */
-      last = gsi_stmt (gsi_last_nondebug_bb (bb));
+      last = last_stmt (bb);
 
       /* We're basically looking for a switch or any kind of conditional with
 	 integral or pointer type arguments.  Note the type of the second

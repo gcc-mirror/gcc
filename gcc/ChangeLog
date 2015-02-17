@@ -1,3 +1,8 @@
+2015-02-17  Jeff Law  <law@redhat.com>
+
+	* tree-vrp.c (identify_jump_threads): Use last_stmt.  Remove
+	obsolete comment.
+
 2015-02-17  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* haifa-sched.c (recompute_todo_spec): Treat SCHED_GROUP_P
