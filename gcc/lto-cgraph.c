@@ -608,11 +608,17 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
 			 lto_symtab_encoder_t encoder)
 {
   bool boundary_p = !lto_symtab_encoder_in_partition_p (encoder, node);
+  bool encode_initializer_p
+	 = (node->definition
+	    && lto_symtab_encoder_encode_initializer_p (encoder, node));
   struct bitpack_d bp;
   int ref;
   const char *comdat;
   const char *section;
   tree group;
+
+  gcc_assert (!encode_initializer_p || node->definition);
+  gcc_assert (boundary_p || encode_initializer_p);
 
   streamer_write_enum (ob->main_stream, LTO_symtab_tags, LTO_symtab_last_tag,
 		       LTO_symtab_variable);
@@ -624,11 +630,14 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
   bp_pack_value (&bp, node->force_output, 1);
   bp_pack_value (&bp, node->forced_by_abi, 1);
   bp_pack_value (&bp, node->unique_name, 1);
-  bp_pack_value (&bp, node->body_removed
-		 || !lto_symtab_encoder_encode_initializer_p (encoder, node), 1);
+  bp_pack_value (&bp,
+		 node->body_removed
+		 || (!encode_initializer_p && !node->alias && node->definition),
+		 1);
   bp_pack_value (&bp, node->implicit_section, 1);
   bp_pack_value (&bp, node->writeonly, 1);
-  bp_pack_value (&bp, node->definition, 1);
+  bp_pack_value (&bp, node->definition && (encode_initializer_p || node->alias),
+		 1);
   bp_pack_value (&bp, node->alias, 1);
   bp_pack_value (&bp, node->weakref, 1);
   bp_pack_value (&bp, node->analyzed && !boundary_p, 1);

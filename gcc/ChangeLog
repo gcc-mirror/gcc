@@ -1,3 +1,12 @@
+2015-02-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* symtab.c (symtab_node::verify_base): Verify body_removed->!definiton
+	* lto-cgraph.c (lto_output_varpool_node): Do not keep definition of
+	variables in boundary that have no inlitalizer encoded and are
+	not aliases.
+	* varasm.c (default_binds_local_p_2): External definitions do not
+	count as definitions here.
+
 2015-02-16  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/64823

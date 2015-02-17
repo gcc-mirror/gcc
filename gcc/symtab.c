@@ -978,6 +978,11 @@ symtab_node::verify_base (void)
       error ("double linked list of assembler names corrupted");
       error_found = true;
     }
+  if (body_removed && definition)
+    {
+      error ("node has body_removed but is definition");
+      error_found = true;
+    }
   if (analyzed && !definition)
     {
       error ("node is analyzed byt it is not a definition");
