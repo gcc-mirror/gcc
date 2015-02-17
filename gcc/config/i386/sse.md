@@ -4385,7 +4385,7 @@
 (define_expand "vec_unpacks_hi_v8sf"
   [(set (match_dup 2)
 	(vec_select:V4SF
-	  (match_operand:V8SF 1 "nonimmediate_operand")
+	  (match_operand:V8SF 1 "register_operand")
 	  (parallel [(const_int 4) (const_int 5)
 		     (const_int 6) (const_int 7)])))
    (set (match_operand:V4DF 0 "register_operand")
@@ -4397,7 +4397,7 @@
 (define_expand "vec_unpacks_hi_v16sf"
   [(set (match_dup 2)
 	(vec_select:V8SF
-	  (match_operand:V16SF 1 "nonimmediate_operand")
+	  (match_operand:V16SF 1 "register_operand")
 	  (parallel [(const_int 8) (const_int 9)
 		     (const_int 10) (const_int 11)
 		     (const_int 12) (const_int 13)

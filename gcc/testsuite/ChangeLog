@@ -1,3 +1,11 @@
+2015-02-17  Ilya Tocar  <ilya.tocar@intel.com>
+
+	Backport from mainline
+	2015-01-14  Ilya Tocar  <ilya.tocar@intel.com>
+
+	PR target/64387
+	* gcc.target/i386/pr64387.c: New test.
+
 2015-02-13  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/63744

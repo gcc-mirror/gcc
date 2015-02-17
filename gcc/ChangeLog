@@ -1,3 +1,12 @@
+2015-02-17  Ilya Tocar  <ilya.tocar@intel.com>
+
+	Backported from mainline
+	2015-01-14  Ilya Tocar  <ilya.tocar@intel.com>
+
+	PR target/64387
+	* config/i386/sse.md (vec_unpacks_hi_v8sf): Fix predicate.
+	(vec_unpacks_hi_v16sf): Ditto.
+
 2015-02-15  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_secondary_reload): Request a secondary reload
