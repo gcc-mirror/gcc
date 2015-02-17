@@ -595,7 +595,8 @@ function_and_variable_visibility (bool whole_program)
     }
   FOR_EACH_DEFINED_FUNCTION (node)
     {
-      node->local.local |= node->local_p ();
+      if (!node->local.local)
+        node->local.local |= node->local_p ();
 
       /* If we know that function can not be overwritten by a different semantics
 	 and moreover its section can not be discarded, replace all direct calls
