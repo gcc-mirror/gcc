@@ -1,3 +1,8 @@
+2015-02-17  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/22_locale/codecvt/char32_t.cc: New.
+
 2015-02-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/65085
