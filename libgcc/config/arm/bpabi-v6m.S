@@ -85,19 +85,21 @@ FUNC_START aeabi_ulcmp
 	cmp	yyl, #0
 	bne	7f
 	cmp	xxh, #0
+	.ifc	\signed, unsigned
 	bne	2f
 	cmp	xxl, #0
 2:
-	.ifc	\signed, unsigned
 	beq	3f
 	mov	xxh, #0
 	mvn	xxh, xxh		@ 0xffffffff
 	mov	xxl, xxh
 3:
 	.else
-	beq	5f
 	blt	6f
-	mov	xxl, #0
+	bgt	4f
+	cmp	xxl, #0
+	beq	5f
+4:	mov	xxl, #0
 	mvn	xxl, xxl		@ 0xffffffff
 	lsr	xxh, xxl, #1		@ 0x7fffffff
 	b	5f
