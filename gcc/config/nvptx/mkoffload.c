@@ -762,6 +762,78 @@ parse_file (Token *tok)
   return tok;
 }
 
+/* Parse STR, saving found tokens into PVALUES and return their number.
+   Tokens are assumed to be delimited by ':'.  */
+static unsigned
+parse_env_var (const char *str, char ***pvalues)
+{
+  const char *curval, *nextval;
+  char **values;
+  unsigned num = 1, i;
+
+  curval = strchr (str, ':');
+  while (curval)
+    {
+      num++;
+      curval = strchr (curval + 1, ':');
+    }
+
+  values = (char **) xmalloc (num * sizeof (char *));
+  curval = str;
+  nextval = strchr (curval, ':');
+  if (nextval == NULL)
+    nextval = strchr (curval, '\0');
+
+  for (i = 0; i < num; i++)
+    {
+      int l = nextval - curval;
+      values[i] = (char *) xmalloc (l + 1);
+      memcpy (values[i], curval, l);
+      values[i][l] = 0;
+      curval = nextval + 1;
+      nextval = strchr (curval, ':');
+      if (nextval == NULL)
+	nextval = strchr (curval, '\0');
+    }
+  *pvalues = values;
+  return num;
+}
+
+/* Auxiliary function that frees elements of PTR and PTR itself.
+   N is number of elements to be freed.  If PTR is NULL, nothing is freed.
+   If an element is NULL, subsequent elements are not freed.  */
+static void
+free_array_of_ptrs (void **ptr, unsigned n)
+{
+  unsigned i;
+  if (!ptr)
+    return;
+  for (i = 0; i < n; i++)
+    {
+      if (!ptr[i])
+	break;
+      free (ptr[i]);
+    }
+  free (ptr);
+  return;
+}
+
+/* Check whether NAME can be accessed in MODE.  This is like access,
+   except that it never considers directories to be executable.  */
+static int
+access_check (const char *name, int mode)
+{
+  if (mode == X_OK)
+    {
+      struct stat st;
+
+      if (stat (name, &st) < 0 || S_ISDIR (st.st_mode))
+	return -1;
+    }
+
+  return access (name, mode);
+}
+
 static void
 process (FILE *in, FILE *out)
 {
@@ -852,6 +924,37 @@ main (int argc, char **argv)
   if (gcc_path != NULL)
     driver_used = sprintf (driver, "%s/", gcc_path);
   sprintf (driver + driver_used, "%s", GCC_INSTALL_NAME);
+
+  bool found = false;
+  if (gcc_path == NULL)
+    found = true;
+  else if (access_check (driver, X_OK) == 0)
+    found = true;
+  else
+    {
+      /* Don't use alloca pointer with XRESIZEVEC.  */
+      driver = NULL;
+      /* Look in all COMPILER_PATHs for GCC_INSTALL_NAME.  */
+      char **paths = NULL;
+      unsigned n_paths;
+      n_paths = parse_env_var (getenv ("COMPILER_PATH"), &paths);
+      for (unsigned i = 0; i < n_paths; i++)
+	{
+	  len = strlen (paths[i]) + 1 + strlen (GCC_INSTALL_NAME) + 1;
+	  driver = XRESIZEVEC (char, driver, len);
+	  sprintf (driver, "%s/%s", paths[i], GCC_INSTALL_NAME);
+	  if (access_check (driver, X_OK) == 0)
+	    {
+	      found = true;
+	      break;
+	    }
+	}
+      free_array_of_ptrs ((void **) paths, n_paths);
+    }
+
+  if (!found)
+    fatal_error (input_location,
+		 "offload compiler %s not found", GCC_INSTALL_NAME);
 
   /* We may be called with all the arguments stored in some file and
      passed with @file.  Expand them into argv before processing.  */

@@ -1,5 +1,11 @@
 2015-02-18  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* config/nvptx/mkoffload.c (parse_env_var, free_array_of_ptrs)
+	(access_check): New functions, copied from
+	config/i386/intelmic-mkoffload.c.
+	(main): For non-installed testing, look in all COMPILER_PATHs for
+	GCC_INSTALL_NAME.
+
 	* config/nvptx/nvptx.h (GOMP_SELF_SPECS): Define macro.
 
 2015-02-18  Andrew Pinski  <apinski@cavium.com>
