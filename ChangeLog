@@ -1,3 +1,7 @@
+2015-02-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* configure: Regenerate.
+
 2015-02-06  Diego Novillo  <dnovillo@google.com>
 
 	* MAINTAINERS (Global Reviewers, Plugin, LTO, tree-ssa,
