@@ -1,3 +1,13 @@
+2015-02-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/codecvt.cc (write_utf16_code_point): Fix code to output
+	surrogate pairs.
+	(utf16_in): Pass mode argument to write_utf16_code_point.
+	(codecvt<char16_t, char, mbstate_t>::do_in): Set mode according to
+	native byte order.
+	* testsuite/22_locale/codecvt/char16_t.cc: New.
+	* testsuite/22_locale/codecvt/in/wchar_t/1.cc: Fix typo.
+
 2015-02-17  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
 	    Jonathan Wakely  <jwakely@redhat.com>
 

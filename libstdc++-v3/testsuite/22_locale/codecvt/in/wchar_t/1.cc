@@ -25,7 +25,7 @@
 
 // Need to explicitly set the state(mbstate_t) to zero.
 // How to do this is not specified by the ISO C99 standard, so we
-// might need to add some operators to make the intuiative case
+// might need to add some operators to make the intuitive case
 // work:
 //   w_codecvt::state_type state00;
 //   state00 = 0;  
