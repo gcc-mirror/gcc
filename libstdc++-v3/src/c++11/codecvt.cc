@@ -295,13 +295,10 @@ namespace
       {
 	// Algorithm from http://www.unicode.org/faq/utf_bom.html#utf16-4
 	const char32_t LEAD_OFFSET = 0xD800 - (0x10000 >> 10);
-	const char32_t SURROGATE_OFFSET = 0x10000 - (0xD800 << 10) - 0xDC00;
 	char16_t lead = LEAD_OFFSET + (codepoint >> 10);
 	char16_t trail = 0xDC00 + (codepoint & 0x3FF);
-	char32_t utf16bytes = (lead << 10) + trail + SURROGATE_OFFSET;
-
-	to.next[0] = adjust_byte_order(utf16bytes >> 16, mode);
-	to.next[1] = adjust_byte_order(utf16bytes & 0xFFFF, mode);
+	to.next[0] = adjust_byte_order(lead, mode);
+	to.next[1] = adjust_byte_order(trail, mode);
 	to.next += 2;
 	return true;
       }
@@ -400,7 +397,7 @@ namespace
 	  return codecvt_base::partial;
 	if (codepoint > maxcode)
 	  return codecvt_base::error;
-	if (!write_utf16_code_point(to, codepoint, {}))
+	if (!write_utf16_code_point(to, codepoint, mode))
 	  {
 	    from.next = first;
 	    return codecvt_base::partial;
@@ -618,7 +615,12 @@ do_in(state_type&, const extern_type* __from, const extern_type* __from_end,
 {
   range<const char> from{ __from, __from_end };
   range<char16_t> to{ __to, __to_end };
-  auto res = utf16_in(from, to);
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  codecvt_mode mode = {};
+#else
+  codecvt_mode mode = little_endian;
+#endif
+  auto res = utf16_in(from, to, max_code_point, mode);
   __from_next = from.next;
   __to_next = to.next;
   return res;
