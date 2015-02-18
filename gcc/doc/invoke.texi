@@ -840,6 +840,9 @@ Objective-C and Objective-C++ Dialects}.
 -mcustom-fpu-cfg=@var{name} @gol
 -mhal -msmallc -msys-crt0=@var{name} -msys-lib=@var{name}}
 
+@emph{Nvidia PTX Options}
+@gccoptlist{-m32 -m64 -mmainkernel}
+
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
 -mbcopy  -mbcopy-builtin  -mint32  -mno-int16 @gol
@@ -11989,6 +11992,7 @@ platform.
 * MSP430 Options::
 * NDS32 Options::
 * Nios II Options::
+* Nvidia PTX Options::
 * PDP-11 Options::
 * picoChip Options::
 * PowerPC Options::
@@ -18298,6 +18302,28 @@ when linking.  This option is only useful in conjunction with @option{-mhal}.
 low-level system calls required by the C library,
 e.g. @code{read} and @code{write}.
 This option is typically used to link with a library provided by a HAL BSP.
+
+@end table
+
+@node Nvidia PTX Options
+@subsection Nvidia PTX Options
+@cindex Nvidia PTX options
+@cindex nvptx options
+
+These options are defined for Nvidia PTX:
+
+@table @gcctabopt
+
+@item -m32
+@itemx -m64
+@opindex m32
+@opindex m64
+Generate code for 32-bit or 64-bit ABI.
+
+@item -mmainkernel
+@opindex mmainkernel
+Link in code for a __main kernel.  This is for stand-alone instead of
+offloading execution.
 
 @end table
 

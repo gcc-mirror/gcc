@@ -3304,6 +3304,8 @@ information have to.
 @item
 @uref{#nds32be-x-elf,,nds32be-*-elf}
 @item
+@uref{#nvptx-x-none,,nvptx-*-none}
+@item
 @uref{#powerpc-x-x,,powerpc*-*-*}
 @item
 @uref{#powerpc-x-darwin,,powerpc-*-darwin*}
@@ -4267,6 +4269,27 @@ Andes NDS32 target in little endian mode.
 @anchor{nds32be-x-elf}
 @heading nds32be-*-elf
 Andes NDS32 target in big endian mode.
+
+@html
+<hr />
+@end html
+@anchor{nvptx-x-none}
+@heading nvptx-*-none
+Nvidia PTX target.
+
+Instead of GNU binutils, you will need to install
+@uref{https://github.com/MentorEmbedded/nvptx-tools/,,nvptx-tools}.
+Tell GCC where to find it:
+@option{--with-build-time-tools=[install-nvptx-tools]/nvptx-none/bin}.
+
+A nvptx port of newlib is available at
+@uref{https://github.com/MentorEmbedded/nvptx-newlib/,,nvptx-newlib}.
+It can be automatically built together with GCC@.  For this, add a
+symbolic link to nvptx-newlib's @file{newlib} directory to the
+directory containing the GCC sources.
+
+Use the @option{--disable-sjlj-exceptions} and
+@option{--enable-newlib-io-long-long} options when configuring.
 
 @html
 <hr />
