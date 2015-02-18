@@ -1,5 +1,9 @@
 2015-02-18  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* doc/install.texi (nvptx-*-none): New section.
+	* doc/invoke.texi (Nvidia PTX Options): Likewise.
+	* config/nvptx/nvptx.opt: Update.
+
 	* config/nvptx/mkoffload.c (parse_env_var, free_array_of_ptrs)
 	(access_check): New functions, copied from
 	config/i386/intelmic-mkoffload.c.
