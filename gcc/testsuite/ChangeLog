@@ -1,5 +1,9 @@
 2015-02-18  Tom de Vries  <tom@codesourcery.com>
 
+	* gfortran.dg/coarray_35a.f90: Add missing cleanup-modules.
+
+2015-02-18  Tom de Vries  <tom@codesourcery.com>
+
 	* gfortran.dg/pr37287-1.f90: Add missing cleanup-modules.
 
 2015-02-18  Tom de Vries  <tom@codesourcery.com>
