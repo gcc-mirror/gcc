@@ -920,6 +920,8 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
   return false;
 }
 
+#define OBJSZ_MAX_OFFSET (1024 * 16)
+
 /* Expand UBSAN_OBJECT_SIZE internal call.  */
 
 bool
@@ -941,6 +943,10 @@ ubsan_expand_objsize_ifn (gimple_stmt_iterator *gsi)
       || integer_all_onesp (size))
     /* Yes, __builtin_object_size couldn't determine the
        object size.  */;
+  else if (TREE_CODE (offset) == INTEGER_CST
+	   && wi::ges_p (wi::to_widest (offset), -OBJSZ_MAX_OFFSET)
+	   && wi::les_p (wi::to_widest (offset), -1))
+    /* The offset is in range [-16K, -1].  */;
   else
     {
       /* if (offset > objsize) */
@@ -952,8 +958,42 @@ ubsan_expand_objsize_ifn (gimple_stmt_iterator *gsi)
       gimple_set_location (g, loc);
       gsi_insert_after (&cond_insert_point, g, GSI_NEW_STMT);
 
+      /* If the offset is small enough, we don't need the second
+	 run-time check.  */
+      if (TREE_CODE (offset) == INTEGER_CST
+	  && wi::ges_p (wi::to_widest (offset), 0)
+	  && wi::les_p (wi::to_widest (offset), OBJSZ_MAX_OFFSET))
+	*gsi = gsi_after_labels (then_bb);
+      else
+	{
+	  /* Don't issue run-time error if (ptr > ptr + offset).  That
+	     may happen when computing a POINTER_PLUS_EXPR.  */
+	  basic_block then2_bb, fallthru2_bb;
+
+	  gimple_stmt_iterator gsi2 = gsi_after_labels (then_bb);
+	  cond_insert_point = create_cond_insert_point (&gsi2, false, false,
+							true, &then2_bb,
+							&fallthru2_bb);
+	  /* Convert the pointer to an integer type.  */
+	  tree p = make_ssa_name (pointer_sized_int_node);
+	  g = gimple_build_assign (p, NOP_EXPR, ptr);
+	  gimple_set_location (g, loc);
+	  gsi_insert_before (&cond_insert_point, g, GSI_NEW_STMT);
+	  p = gimple_assign_lhs (g);
+	  /* Compute ptr + offset.  */
+	  g = gimple_build_assign (make_ssa_name (pointer_sized_int_node),
+				   PLUS_EXPR, p, offset);
+	  gimple_set_location (g, loc);
+	  gsi_insert_after (&cond_insert_point, g, GSI_NEW_STMT);
+	  /* Now build the conditional and put it into the IR.  */
+	  g = gimple_build_cond (LE_EXPR, p, gimple_assign_lhs (g),
+				 NULL_TREE, NULL_TREE);
+	  gimple_set_location (g, loc);
+	  gsi_insert_after (&cond_insert_point, g, GSI_NEW_STMT);
+	  *gsi = gsi_after_labels (then2_bb);
+	}
+
       /* Generate __ubsan_handle_type_mismatch call.  */
-      *gsi = gsi_after_labels (then_bb);
       if (flag_sanitize_undefined_trap_on_error)
 	g = gimple_build_call (builtin_decl_explicit (BUILT_IN_TRAP), 0);
       else

@@ -1,3 +1,11 @@
+2015-02-18  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/65081
+	* ubsan.c (OBJSZ_MAX_OFFSET): Define.
+	(ubsan_expand_objsize_ifn): Don't emit run-time check if the offset
+	is in range [-16K, -1].  Don't issue run-time error if
+	(ptr > ptr + offset).
+
 2015-02-18  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* doc/install.texi (nvptx-*-none): New section.
