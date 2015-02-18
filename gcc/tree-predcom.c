@@ -1775,8 +1775,20 @@ determine_unroll_factor (vec<chain_p> chains)
 
   FOR_EACH_VEC_ELT (chains, i, chain)
     {
-      if (chain->type == CT_INVARIANT || chain->combined)
+      if (chain->type == CT_INVARIANT)
 	continue;
+
+      if (chain->combined)
+	{
+	  /* For combined chains, we can't handle unrolling if we replace
+	     looparound PHIs.  */
+	  dref a;
+	  unsigned j;
+	  for (j = 1; chain->refs.iterate (j, &a); j++)
+	    if (gimple_code (a->stmt) == GIMPLE_PHI)
+	      return 1;
+	  continue;
+	}
 
       /* The best unroll factor for this chain is equal to the number of
 	 temporary variables that we create for it.  */

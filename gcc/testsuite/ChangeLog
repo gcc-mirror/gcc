@@ -1,5 +1,10 @@
 2015-02-18  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/65063
+	* gcc.dg/pr65063.c: New testcase.
+
+2015-02-18  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/62217
 	* gcc.dg/tree-ssa/cunroll-11.c: New testcase.
 
