@@ -33,6 +33,10 @@
       builtin_define ("__nvptx__");		\
     } while (0)
 
+/* Avoid the default in ../../gcc.c, which adds "-pthread", which is not
+   supported for nvptx.  */
+#define GOMP_SELF_SPECS ""
+
 /* Storage Layout.  */
 
 #define BITS_BIG_ENDIAN 0

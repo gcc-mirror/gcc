@@ -1,3 +1,7 @@
+2015-02-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/nvptx.h (GOMP_SELF_SPECS): Define macro.
+
 2015-02-18  Andrew Pinski  <apinski@cavium.com>
 	    Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
 
