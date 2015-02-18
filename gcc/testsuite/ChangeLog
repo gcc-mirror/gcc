@@ -1,3 +1,8 @@
+2015-02-18  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/65107
+	* gfortran.dg/read_eof_8.f90: Add missing close.
+
 2015-02-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65063
