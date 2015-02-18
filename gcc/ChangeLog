@@ -1,3 +1,9 @@
+2015-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62217
+	* tree-ssa-dom.c (cprop_operand): Avoid propagating copies
+	into BIVs.
+
 2015-02-18  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/65081

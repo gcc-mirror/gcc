@@ -2291,11 +2291,16 @@ cprop_operand (gimple stmt, use_operand_p op_p)
       if (!may_propagate_copy (op, val))
 	return;
 
-      /* Do not propagate copies into simple IV increment statements.
-         See PR23821 for how this can disturb IV analysis.  */
-      if (TREE_CODE (val) != INTEGER_CST
-	  && simple_iv_increment_p (stmt))
-	return;
+      /* Do not propagate copies into BIVs.
+         See PR23821 and PR62217 for how this can disturb IV and
+	 number of iteration analysis.  */
+      if (TREE_CODE (val) != INTEGER_CST)
+	{
+	  gimple def = SSA_NAME_DEF_STMT (op);
+	  if (gimple_code (def) == GIMPLE_PHI
+	      && gimple_bb (def)->loop_father->header == gimple_bb (def))
+	    return;
+	}
 
       /* Dump details.  */
       if (dump_file && (dump_flags & TDF_DETAILS))
