@@ -1,5 +1,9 @@
 2015-02-18  Tom de Vries  <tom@codesourcery.com>
 
+	* gfortran.dg/finalize_28.f90: Add missing cleanup-tree-dump.
+
+2015-02-18  Tom de Vries  <tom@codesourcery.com>
+
 	* gfortran.dg/fmt_cache_1.f: Add missing close.
 
 2015-02-18  Tom de Vries  <tom@codesourcery.com>
