@@ -1,3 +1,11 @@
+2015-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/65087
+	* cgraphclones.c (cgraph_node::create_virtual_clone): Only copy
+	section if !implicit_section.
+	(cgraph_node::create_version_clone_with_body): Likewise.
+	* trans-mem.c (ipa_tm_create_version): Likewise.
+
 2015-02-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/62217
