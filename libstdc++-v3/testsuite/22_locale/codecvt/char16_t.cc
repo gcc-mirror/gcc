@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++11" }
+// { dg-require-cstdint "" }
 
 // [locale.codecvt], C++11 22.4.1.4.  specialization.
 

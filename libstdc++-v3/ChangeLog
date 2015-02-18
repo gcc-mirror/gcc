@@ -8,6 +8,9 @@
 	* testsuite/22_locale/codecvt/char16_t.cc: New.
 	* testsuite/22_locale/codecvt/in/wchar_t/1.cc: Fix typo.
 
+	* testsuite/22_locale/codecvt/char16_t.cc: Add dg-require-cstdint.
+	* testsuite/22_locale/codecvt/char32_t.cc: Likewise.
+
 2015-02-17  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
