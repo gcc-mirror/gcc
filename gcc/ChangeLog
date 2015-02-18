@@ -1,3 +1,10 @@
+2015-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/t-intelmic (mkoffload.o): Remove dependency on
+	insn-modes.h.
+	(ALL_HOST_OBJS): Add mkoffload.o.
+	* config/nvptx/t-nvptx (ALL_HOST_OBJS): Likewise.
+
 2015-02-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-devirt.c (odr_subtypes_equivalent_p): Fix formating.
