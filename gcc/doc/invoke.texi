@@ -430,7 +430,7 @@ Objective-C and Objective-C++ Dialects}.
 -fshrink-wrap -fsignaling-nans -fsingle-precision-constant @gol
 -fsplit-ivs-in-unroller -fsplit-wide-types -fssa-phiopt @gol
 -fstack-protector -fstack-protector-all -fstack-protector-strong @gol
--fstack-protector-explicit -fstrict-aliasing @gol
+-fstack-protector-explicit -fstdarg-opt -fstrict-aliasing @gol
 -fstrict-overflow -fthread-jumps -ftracer -ftree-bit-ccp @gol
 -ftree-builtin-call-dce -ftree-ccp -ftree-ch @gol
 -ftree-coalesce-inline-vars -ftree-coalesce-vars -ftree-copy-prop @gol
@@ -9866,6 +9866,11 @@ references to local frame addresses.
 @opindex fstack-protector-explicit
 Like @option{-fstack-protector} but only protects those functions which
 have the @code{stack_protect} attribute
+
+@item -fstdarg-opt
+@opindex fstdarg-opt
+Optimize the prologue of variadic argument functions with respect to usage of
+those arguments.
 
 @item -fsection-anchors
 @opindex fsection-anchors

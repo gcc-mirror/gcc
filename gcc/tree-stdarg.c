@@ -704,8 +704,9 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *fun)
     {
-      /* This optimization is only for stdarg functions.  */
-      return fun->stdarg != 0;
+      return (flag_stdarg_opt
+	      /* This optimization is only for stdarg functions.  */
+	      && fun->stdarg != 0);
     }
 
   virtual unsigned int execute (function *);
