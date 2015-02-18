@@ -1,3 +1,10 @@
+2015-02-18  Tom de Vries  <tom@codesourcery.com>
+
+	* common.opt (fstdarg-opt): New option.
+	* tree-stdarg.c (pass_stdarg::gate): Use flag_stdarg_opt.
+	* doc/invoke.texi (@item Optimization Options): Add -fstdarg-opt.
+	(@item -fstdarg-opt): New item.
+
 2015-02-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/65064
