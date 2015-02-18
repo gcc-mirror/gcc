@@ -1,3 +1,9 @@
+2015-02-18  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* target.c (gomp_load_plugin_for_device): Use const char * instead of
+	char * for variables holding dlerror return values.
+	(DLSYM_OPT): Ditto.
+
 2015-02-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* libgomp-plugin.c (GOMP_PLUGIN_debug): Fix typo.

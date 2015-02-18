@@ -919,7 +919,7 @@ static bool
 gomp_load_plugin_for_device (struct gomp_device_descr *device,
 			     const char *plugin_name)
 {
-  char *err = NULL, *last_missing = NULL;
+  const char *err = NULL, *last_missing = NULL;
   int optional_present, optional_total;
 
   /* Clear any existing error.  */
@@ -947,7 +947,7 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
 #define DLSYM_OPT(f, n)						\
   do									\
     {									\
-      char *tmp_err;							\
+      const char *tmp_err;							\
       device->f##_func = dlsym (plugin_handle, "GOMP_OFFLOAD_" #n);	\
       tmp_err = dlerror ();						\
       if (tmp_err == NULL)						\
