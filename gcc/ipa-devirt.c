@@ -551,7 +551,8 @@ set_type_binfo (tree type, tree binfo)
 /* Compare T2 and T2 based on name or structure.  */
 
 static bool
-odr_subtypes_equivalent_p (tree t1, tree t2, hash_set<type_pair,pair_traits> *visited)
+odr_subtypes_equivalent_p (tree t1, tree t2,
+			   hash_set<type_pair,pair_traits> *visited)
 {
   bool an1, an2;
 
@@ -618,7 +619,8 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 	  prevailing = vtable;
 	  vtable = tmp;
 	}
-      if (warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (DECL_CONTEXT (vtable->decl))),
+      if (warning_at (DECL_SOURCE_LOCATION
+			(TYPE_NAME (DECL_CONTEXT (vtable->decl))),
 		      OPT_Wodr,
 		      "virtual table of type %qD violates one definition rule",
 		      DECL_CONTEXT (vtable->decl)))
@@ -633,39 +635,118 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
     {
       struct ipa_ref *ref1, *ref2;
       bool end1, end2;
+
       end1 = !prevailing->iterate_reference (n1, ref1);
       end2 = !vtable->iterate_reference (n2, ref2);
-      if (end1 && end2)
-	return;
-      if (!end1 && !end2
-	  && DECL_ASSEMBLER_NAME (ref1->referred->decl)
-	     != DECL_ASSEMBLER_NAME (ref2->referred->decl)
-	  && !n2
-	  && !DECL_VIRTUAL_P (ref2->referred->decl)
-	  && DECL_VIRTUAL_P (ref1->referred->decl))
+
+      /* !DECL_VIRTUAL_P means RTTI entry;
+	 We warn when RTTI is lost because non-RTTI previals; we silently
+	 accept the other case.  */
+      while (!end2
+	     && (end1
+	         || (DECL_ASSEMBLER_NAME (ref1->referred->decl)
+		     != DECL_ASSEMBLER_NAME (ref2->referred->decl)
+	             && DECL_VIRTUAL_P (ref1->referred->decl)))
+	     && !DECL_VIRTUAL_P (ref2->referred->decl))
 	{
-	  if (warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (DECL_CONTEXT (vtable->decl))), 0,
+	  if (warning_at (DECL_SOURCE_LOCATION
+			    (TYPE_NAME (DECL_CONTEXT (vtable->decl))), 0,
 			  "virtual table of type %qD contains RTTI information",
 			  DECL_CONTEXT (vtable->decl)))
 	    {
-	      inform (DECL_SOURCE_LOCATION (TYPE_NAME (DECL_CONTEXT (prevailing->decl))),
-		      "but is prevailed by one without from other translation unit");
-	      inform (DECL_SOURCE_LOCATION (TYPE_NAME (DECL_CONTEXT (prevailing->decl))),
+	      inform (DECL_SOURCE_LOCATION
+			(TYPE_NAME (DECL_CONTEXT (prevailing->decl))),
+		      "but is prevailed by one without from other translation "
+		      "unit");
+	      inform (DECL_SOURCE_LOCATION
+			(TYPE_NAME (DECL_CONTEXT (prevailing->decl))),
 		      "RTTI will not work on this type");
 	    }
 	  n2++;
           end2 = !vtable->iterate_reference (n2, ref2);
 	}
-      if (!end1 && !end2
-	  && DECL_ASSEMBLER_NAME (ref1->referred->decl)
-	     != DECL_ASSEMBLER_NAME (ref2->referred->decl)
-	  && !n1
-	  && !DECL_VIRTUAL_P (ref1->referred->decl)
-	  && DECL_VIRTUAL_P (ref2->referred->decl))
+      while (!end1
+	     && (end2
+	         || (DECL_ASSEMBLER_NAME (ref2->referred->decl)
+		     != DECL_ASSEMBLER_NAME (ref1->referred->decl)
+	             && DECL_VIRTUAL_P (ref2->referred->decl)))
+	     && !DECL_VIRTUAL_P (ref1->referred->decl))
 	{
 	  n1++;
           end1 = !vtable->iterate_reference (n1, ref1);
 	}
+
+      /* Finished?  */
+      if (end1 && end2)
+	{
+	  /* Extra paranoia; compare the sizes.  We do not have information
+	     about virtual inheritance offsets, so just be sure that these
+	     match.  
+	     Do this as very last check so the not very informative error
+	     is not output too often.  */
+	  if (DECL_SIZE (prevailing->decl) != DECL_SIZE (vtable->decl))
+	    {
+	      if (warning_at (DECL_SOURCE_LOCATION
+				(TYPE_NAME (DECL_CONTEXT (vtable->decl))), 0,
+			      "virtual table of type %qD violates "
+			      "one definition rule  ",
+			      DECL_CONTEXT (vtable->decl)))
+		{
+		  inform (DECL_SOURCE_LOCATION 
+			    (TYPE_NAME (DECL_CONTEXT (prevailing->decl))),
+			  "the conflicting type defined in another translation "
+			  "unit has virtual table of different size");
+		}
+	    }
+	  return;
+	}
+
+      if (!end1 && !end2)
+	{
+	  if (DECL_ASSEMBLER_NAME (ref1->referred->decl)
+	      == DECL_ASSEMBLER_NAME (ref2->referred->decl))
+	    continue;
+
+	  /* If the loops above stopped on non-virtual pointer, we have
+	     mismatch in RTTI information mangling.  */
+	  if (!DECL_VIRTUAL_P (ref1->referred->decl)
+	      && !DECL_VIRTUAL_P (ref2->referred->decl))
+	    {
+	      if (warning_at (DECL_SOURCE_LOCATION
+				(TYPE_NAME (DECL_CONTEXT (vtable->decl))), 0,
+			      "virtual table of type %qD violates "
+			      "one definition rule  ",
+			      DECL_CONTEXT (vtable->decl)))
+		{
+		  inform (DECL_SOURCE_LOCATION 
+			    (TYPE_NAME (DECL_CONTEXT (prevailing->decl))),
+			  "the conflicting type defined in another translation "
+			  "unit virtual table with different RTTI information");
+		}
+	      return;
+	    }
+	  /* At this point both REF1 and REF2 points either to virtual table
+	     or virtual method.  If one points to virtual table and other to
+	     method we can complain the same way as if one table was shorter
+	     than other pointing out the extra method.  */
+	  gcc_assert (DECL_VIRTUAL_P (ref1->referred->decl)
+		      && (TREE_CODE (ref1->referred->decl) == FUNCTION_DECL
+		          || TREE_CODE (ref1->referred->decl) == VAR_DECL));
+	  gcc_assert (DECL_VIRTUAL_P (ref2->referred->decl)
+		      && (TREE_CODE (ref2->referred->decl) == FUNCTION_DECL
+		          || TREE_CODE (ref2->referred->decl) == VAR_DECL));
+	  if (TREE_CODE (ref1->referred->decl)
+	      != TREE_CODE (ref2->referred->decl))
+	    {
+	      if (TREE_CODE (ref1->referred->decl) == VAR_DECL)
+		end1 = true;
+	      else if (TREE_CODE (ref2->referred->decl) == VAR_DECL)
+		end2 = true;
+	    }
+	}
+
+      /* Complain about size mismatch.  Either we have too many virutal
+ 	 functions or too many virtual table pointers.  */
       if (end1 || end2)
 	{
 	  if (end1)
@@ -681,37 +762,56 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
 			  "one definition rule",
 			  DECL_CONTEXT (vtable->decl)))
 	    {
-	      inform (DECL_SOURCE_LOCATION
-		       (TYPE_NAME (DECL_CONTEXT (prevailing->decl))),
-		      "the conflicting type defined in another translation "
-		      "unit");
-	      inform (DECL_SOURCE_LOCATION
-		        (TYPE_NAME (DECL_CONTEXT (ref1->referring->decl))),
-		      "contains additional virtual method %qD",
-		      ref1->referred->decl);
+	      if (TREE_CODE (ref1->referring->decl) == FUNCTION_DECL)
+		{
+		  inform (DECL_SOURCE_LOCATION
+			   (TYPE_NAME (DECL_CONTEXT (prevailing->decl))),
+			  "the conflicting type defined in another translation "
+			  "unit");
+		  inform (DECL_SOURCE_LOCATION
+			    (TYPE_NAME (DECL_CONTEXT (ref1->referring->decl))),
+			  "contains additional virtual method %qD",
+			  ref1->referred->decl);
+		}
+	      else
+		{
+		  inform (DECL_SOURCE_LOCATION
+			   (TYPE_NAME (DECL_CONTEXT (prevailing->decl))),
+			  "the conflicting type defined in another translation "
+			  "unit has virtual table table with more entries");
+		}
 	    }
 	  return;
 	}
-      if (DECL_ASSEMBLER_NAME (ref1->referred->decl)
-	  != DECL_ASSEMBLER_NAME (ref2->referred->decl))
+
+      /* And in the last case we have either mistmatch in between two virtual
+	 methods or two virtual table pointers.  */
+      if (warning_at (DECL_SOURCE_LOCATION
+			(TYPE_NAME (DECL_CONTEXT (vtable->decl))), 0,
+		      "virtual table of type %qD violates "
+		      "one definition rule  ",
+		      DECL_CONTEXT (vtable->decl)))
 	{
-	  if (warning_at (DECL_SOURCE_LOCATION
-			    (TYPE_NAME (DECL_CONTEXT (vtable->decl))), 0,
-			  "virtual table of type %qD violates "
-			  "one definition rule  ",
-			  DECL_CONTEXT (vtable->decl)))
+	  if (TREE_CODE (ref1->referred->decl) == FUNCTION_DECL)
 	    {
 	      inform (DECL_SOURCE_LOCATION 
 			(TYPE_NAME (DECL_CONTEXT (prevailing->decl))),
 		      "the conflicting type defined in another translation "
 		      "unit");
+	      gcc_assert (TREE_CODE (ref2->referred->decl)
+			  == FUNCTION_DECL);
 	      inform (DECL_SOURCE_LOCATION (ref1->referred->decl),
 		      "virtual method %qD", ref1->referred->decl);
 	      inform (DECL_SOURCE_LOCATION (ref2->referred->decl),
 		      "ought to match virtual method %qD but does not",
 		      ref2->referred->decl);
-	      return;
 	    }
+	  else
+	    inform (DECL_SOURCE_LOCATION 
+		      (TYPE_NAME (DECL_CONTEXT (prevailing->decl))),
+		    "the conflicting type defined in another translation "
+		    "unit has virtual table table with different contents");
+	  return;
 	}
     }
 }
@@ -727,6 +827,8 @@ warn_odr (tree t1, tree t2, tree st1, tree st2,
 	  bool warn, bool *warned, const char *reason)
 {
   tree decl2 = TYPE_NAME (t2);
+  if (warned)
+    *warned = false;
 
   if (!warn)
     return;
@@ -840,7 +942,8 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
       return false;
     }
 
-  if (TREE_CODE (t1) == ENUMERAL_TYPE)
+  if (TREE_CODE (t1) == ENUMERAL_TYPE
+      && TYPE_VALUES (t1) && TYPE_VALUES (t2))
     {
       tree v1, v2;
       for (v1 = TYPE_VALUES (t1), v2 = TYPE_VALUES (t2);
@@ -1056,8 +1159,20 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 		  f2 = TREE_CHAIN (f2);
 		if (!f1 || !f2)
 		  break;
+		if (DECL_VIRTUAL_P (f1) != DECL_VIRTUAL_P (f2))
+		  {
+		    warn_odr (t1, t2, NULL, NULL, warn, warned,
+			      G_("a type with different virtual table pointers"
+			         " is defined in another translation unit"));
+		    return false;
+		  }
 		if (DECL_ARTIFICIAL (f1) != DECL_ARTIFICIAL (f2))
-		  break;
+		  {
+		    warn_odr (t1, t2, NULL, NULL, warn, warned,
+			      G_("a type with different bases is defined "
+				 "in another translation unit"));
+		    return false;
+		  }
 		if (DECL_NAME (f1) != DECL_NAME (f2)
 		    && !DECL_ARTIFICIAL (f1))
 		  {
@@ -1066,10 +1181,11 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 				 "in another translation unit"));
 		    return false;
 		  }
-		if (!odr_subtypes_equivalent_p (TREE_TYPE (f1), TREE_TYPE (f2), visited))
+		if (!odr_subtypes_equivalent_p (TREE_TYPE (f1),
+						TREE_TYPE (f2), visited))
 		  {
-		    /* Do not warn about artificial fields and just go into generic
-		       field mismatch warning.  */
+		    /* Do not warn about artificial fields and just go into
+ 		       generic field mismatch warning.  */
 		    if (DECL_ARTIFICIAL (f1))
 		      break;
 
@@ -1082,11 +1198,11 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 		  }
 		if (!gimple_compare_field_offset (f1, f2))
 		  {
-		    /* Do not warn about artificial fields and just go into generic
-		       field mismatch warning.  */
+		    /* Do not warn about artificial fields and just go into
+		       generic field mismatch warning.  */
 		    if (DECL_ARTIFICIAL (f1))
 		      break;
-		    warn_odr (t1, t2, t1, t2, warn, warned,
+		    warn_odr (t1, t2, f1, f2, warn, warned,
 			      G_("fields has different layout "
 				 "in another translation unit"));
 		    return false;
@@ -1099,18 +1215,18 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	       are not the same.  */
 	    if (f1 || f2)
 	      {
-		if (f1 && DECL_ARTIFICIAL (f1))
-		  f1 = NULL;
-		if (f2 && DECL_ARTIFICIAL (f2))
-		  f2 = NULL;
-		if (f1 || f2)
-		  warn_odr (t1, t2, f1, f2, warn, warned,
-			    G_("a type with different number of fields "
-			       "is defined in another translation unit"));
-		/* Ideally we should never get this generic message.  */
+		if ((f1 && DECL_VIRTUAL_P (f1)) || (f2 && DECL_VIRTUAL_P (f2)))
+		  warn_odr (t1, t2, NULL, NULL, warn, warned,
+			    G_("a type with different virtual table pointers"
+			       " is defined in another translation unit"));
+		if ((f1 && DECL_ARTIFICIAL (f1))
+		    || (f2 && DECL_ARTIFICIAL (f2)))
+		  warn_odr (t1, t2, NULL, NULL, warn, warned,
+			    G_("a type with different bases is defined "
+			       "in another translation unit"));
 		else
 		  warn_odr (t1, t2, f1, f2, warn, warned,
-			    G_("a type with different memory representation "
+			    G_("a type with different number of fields "
 			       "is defined in another translation unit"));
 		
 		return false;
@@ -1207,12 +1323,24 @@ add_type_duplicate (odr_type val, tree type)
     val->types_set = new hash_set<tree>;
 
   /* Always prefer complete type to be the leader.  */
-  if ((!COMPLETE_TYPE_P (val->type) || !TYPE_BINFO (val->type))
-      && (COMPLETE_TYPE_P (type) && TYPE_BINFO (val->type)))
+
+  if (!COMPLETE_TYPE_P (val->type) && COMPLETE_TYPE_P (type))
+    build_bases = true;
+  else if (COMPLETE_TYPE_P (val->type) && !COMPLETE_TYPE_P (type))
+    ;
+  else if (TREE_CODE (val->type) == ENUMERAL_TYPE
+	   && TREE_CODE (type) == ENUMERAL_TYPE
+	   && !TYPE_VALUES (val->type) && TYPE_VALUES (type))
+    build_bases = true;
+  else if (TREE_CODE (val->type) == RECORD_TYPE
+	   && TREE_CODE (type) == RECORD_TYPE
+	   && TYPE_BINFO (type) && !TYPE_BINFO (val->type))
+    build_bases = true;
+
+  if (build_bases)
     {
       tree tmp = type;
 
-      build_bases = true;
       type = val->type;
       val->type = tmp;
     }
@@ -1303,11 +1431,14 @@ add_type_duplicate (odr_type val, tree type)
 		if (base_mismatch)
 		  {
 		    if (!warned && !val->odr_violated)
-		      warn_odr (type, val->type, NULL, NULL,
-				!warned, &warned,
-				"a type with the same name but different base "
-				"type is defined in another translation unit");
-		    warn_types_mismatch (type1, type2);
+		      {
+			warn_odr (type, val->type, NULL, NULL,
+				  !warned, &warned,
+				  "a type with the same name but different base "
+				  "type is defined in another translation unit");
+			if (warned)
+			  warn_types_mismatch (type1, type2);
+		      }
 		    break;
 		  }
 		if (BINFO_OFFSET (base1) != BINFO_OFFSET (base2))
@@ -1318,6 +1449,18 @@ add_type_duplicate (odr_type val, tree type)
 				!warned, &warned,
 				"a type with the same name but different base "
 				"layout is defined in another translation unit");
+		    break;
+		  }
+		/* One base is polymorphic and the other not.
+		   This ought to be diagnosed earlier, but do not ICE in the
+	 	   checking bellow.  */
+		if (!TYPE_BINFO (type1) != !TYPE_BINFO (type2)
+		    || (TYPE_BINFO (type1)
+			&& polymorphic_type_binfo_p (TYPE_BINFO (type1))
+		           != polymorphic_type_binfo_p (TYPE_BINFO (type2))))
+		  {
+		    gcc_assert (val->odr_violated);
+		    base_mismatch = true;
 		    break;
 		  }
 	      }
@@ -1468,6 +1611,7 @@ get_odr_type (tree type, bool insert)
       val->anonymous_namespace = type_in_anonymous_namespace_p (type);
       build_bases = COMPLETE_TYPE_P (val->type);
       insert_to_odr_array = true;
+      *slot = val;
     }
 
   if (build_bases && TREE_CODE (type) == RECORD_TYPE && TYPE_BINFO (type)
@@ -1479,7 +1623,6 @@ get_odr_type (tree type, bool insert)
       gcc_assert (BINFO_TYPE (TYPE_BINFO (val->type)) = type);
   
       val->all_derivations_known = type_all_derivations_known_p (type);
-      *slot = val;
       for (i = 0; i < BINFO_N_BASE_BINFOS (binfo); i++)
 	/* For now record only polymorphic types. other are
 	   pointless for devirtualization and we can not precisely
@@ -1557,6 +1700,10 @@ dump_odr_type (FILE *f, odr_type t, int indent=0)
       fprintf (f, "%*s defined at: %s:%i\n", indent * 2, "",
 	       DECL_SOURCE_FILE (TYPE_NAME (t->type)),
 	       DECL_SOURCE_LINE (TYPE_NAME (t->type)));
+      if (DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t->type)))
+        fprintf (f, "%*s mangled name: %s\n", indent * 2, "",
+		 IDENTIFIER_POINTER
+		   (DECL_ASSEMBLER_NAME (TYPE_NAME (t->type))));
     }
   if (t->bases.length ())
     {
