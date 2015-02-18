@@ -69,7 +69,12 @@
 	     of constants here.  */
 	  t = SYMBOL_REF_DECL (op);
 	  if (DECL_P (t))
-	    t = DECL_SIZE_UNIT (t);
+	    {
+	      /* Common symbol isn't placed in small data section.  */
+	      if (DECL_COMMON (t))
+		return false;
+	      t = DECL_SIZE_UNIT (t);
+	    }
 	  else
 	    t = TYPE_SIZE_UNIT (TREE_TYPE (t));
 	  if (t && tree_fits_shwi_p (t))
