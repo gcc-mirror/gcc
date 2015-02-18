@@ -617,7 +617,7 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
      ABI support for this.  */
   set_new_clone_decl_and_node_flags (new_node);
   new_node->clone.tree_map = tree_map;
-  if (!DECL_ONE_ONLY (old_decl))
+  if (!implicit_section)
     new_node->set_section (get_section ());
 
   /* Clones of global symbols or symbols with unique names are unique.  */
@@ -1011,7 +1011,8 @@ cgraph_node::create_version_clone_with_body
   new_version_node->externally_visible = 0;
   new_version_node->local.local = 1;
   new_version_node->lowered = true;
-  new_version_node->set_section (get_section ());
+  if (!implicit_section)
+    new_version_node->set_section (get_section ());
   /* Clones of global symbols or symbols with unique names are unique.  */
   if ((TREE_PUBLIC (old_decl)
        && !DECL_EXTERNAL (old_decl)
