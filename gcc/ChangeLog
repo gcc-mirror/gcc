@@ -1,3 +1,9 @@
+2015-02-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/65064
+	* config/ia64/predicates.md (sdata_symbolic_operand): Return false
+	for common symbols.
+
 2015-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/t-intelmic (mkoffload.o): Remove dependency on
