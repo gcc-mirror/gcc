@@ -28,6 +28,7 @@
       teststring = ""
       read(10,'(a)') teststring
       if (teststring.ne."   arlxca =   0.00000     arlxcc =")call abort
+      close(10, status='delete')
       end program astap
 
 
