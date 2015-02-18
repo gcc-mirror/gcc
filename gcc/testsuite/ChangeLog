@@ -1,3 +1,8 @@
+2015-02-18  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/65081
+	* c-c++-common/ubsan/pr65081.c: New test.
+
 2015-02-17  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* gcc.target/sh/sh.exp (check_effective_target_sh1): New.
