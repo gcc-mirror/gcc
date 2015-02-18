@@ -1,3 +1,8 @@
+2015-02-18  Martin Liska  <mliska@suse.cz>
+
+	* lto-streamer.c (lto_streamer_init): Encapsulate
+	streamer_check_handled_ts_structures with checking macro.
+
 2015-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/65087
