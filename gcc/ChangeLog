@@ -1,3 +1,15 @@
+2015-02-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (odr_subtypes_equivalent_p): Fix formating.
+	(compare_virtual_tables): Be smarter about skipping typeinfos;
+	do sane output on virtual table table mismatch.
+	(warn_odr): Be ready for forward declarations of enums;
+	output sane info on base mismatch and virtual table mismatch.
+	(add_type_duplicate): Fix code choosing prevailing type; do not ICE
+	when only one type is polymorphic.
+	(get_odr_type): Fix hashtable corruption.
+	(dump_odr_type): Dump mangled names.
+
 2015-02-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65063
