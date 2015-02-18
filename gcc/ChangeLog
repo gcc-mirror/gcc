@@ -1,3 +1,9 @@
+2015-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65063
+	* tree-predcom.c (determine_unroll_factor): Return 1 if we
+	have replaced looparound PHIs.
+
 2015-02-18  Martin Liska  <mliska@suse.cz>
 
 	* lto-streamer.c (lto_streamer_init): Encapsulate
