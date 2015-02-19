@@ -1,7 +1,10 @@
+2015-02-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_in_small_data_p): Reject common symbols.
+
 2015-02-19  Sandra Loosemore  <sandra@codesourcery.com>
 
-	* doc/extend.texi (x86 transactional memory intrinsics):
-	Copy-edit.
+	* doc/extend.texi (x86 transactional memory intrinsics): Copy-edit.
 
 2015-02-19  Richard Henderson  <rth@redhat.com>
 
@@ -17,13 +20,13 @@
 
 2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
-        * haifa-sched.c (enum rfs_decision, rfs_str): Remove RFS_DEBUG.
-        (rank_for_schedule_debug): Update.
-        (ready_sort): Make static.  Move sorting logic to ...
-        (ready_sort_debug, ready_sort_real): New static functions.
-        (schedule_block): Sort both debug insns and real insns in preparation
-        for ready list trimming.  Improve debug output.
-        * sched-int.h (ready_sort): Remove global declaration.
+	* haifa-sched.c (enum rfs_decision, rfs_str): Remove RFS_DEBUG.
+	(rank_for_schedule_debug): Update.
+	(ready_sort): Make static.  Move sorting logic to ...
+	(ready_sort_debug, ready_sort_real): New static functions.
+	(schedule_block): Sort both debug insns and real insns in preparation
+	for ready list trimming.  Improve debug output.
+	* sched-int.h (ready_sort): Remove global declaration.
 
 2015-02-18  Trevor Saunders  <tsaunders@mozilla.com>
 
@@ -393,7 +396,7 @@
 	PR ipa/65028
 	* ipa-inline-transform.c (mark_all_inlined_calls_cdtor): New function.
 	(inline_call): Use it.
-	
+
 2015-02-13  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/nvptx/offload.h (ACCEL_COMPILER_acc_device): Define to
@@ -616,7 +619,7 @@
 2015-02-10  David Wohlferd  <dw@LimeGreenSocks.com>
 
 	* doc/extend.texi (Symbol-Renaming Pragmas): Restore (slightly
-        modified) reference to Solaris.
+	modified) reference to Solaris.
 
 2015-02-10  Sandra Loosemore  <sandra@codesourcery.com>
 
