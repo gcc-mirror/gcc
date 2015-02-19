@@ -17257,10 +17257,11 @@ int __builtin_ia32_xtest ()
 @node x86 transactional memory intrinsics
 @subsection x86 Transactional Memory Intrinsics
 
-Hardware transactional memory intrinsics for x86. These allow to use
+These hardware transactional memory intrinsics for x86 allow you to use
 memory transactions with RTM (Restricted Transactional Memory).
-For using HLE (Hardware Lock Elision) see @ref{x86 specific memory model extensions for transactional memory} instead.
 This support is enabled with the @option{-mrtm} option.
+For using HLE (Hardware Lock Elision) see 
+@ref{x86 specific memory model extensions for transactional memory} instead.
 
 A memory transaction commits all changes to memory in an atomic way,
 as visible to other threads. If the transaction fails it is rolled back
@@ -17271,12 +17272,12 @@ and suitable fallback code always needs to be supplied.
 
 @deftypefn {RTM Function} {unsigned} _xbegin ()
 Start a RTM (Restricted Transactional Memory) transaction. 
-Returns _XBEGIN_STARTED when the transaction
+Returns @code{_XBEGIN_STARTED} when the transaction
 started successfully (note this is not 0, so the constant has to be 
-explicitely tested). When the transaction aborts all side effects
+explicitly tested).  If the transaction aborts, all side-effects
 are undone and an abort code is returned. There is no guarantee
 any transaction ever succeeds, so there always needs to be a valid
-tested fallback path.
+fallback path.
 @end deftypefn
 
 @smallexample
@@ -17290,38 +17291,38 @@ if ((status = _xbegin ()) == _XBEGIN_STARTED) @{
 @}
 @end smallexample
 
-Valid abort status bits (when the value is not @code{_XBEGIN_STARTED}) are:
+If the transaction aborts, the return value is one of:
 
 @table @code
 @item _XABORT_EXPLICIT
-Transaction explicitely aborted with @code{_xabort}. The parameter passed
-to @code{_xabort} is available with @code{_XABORT_CODE(status)}
+Transaction was explicitly aborted with @code{_xabort}.  The parameter passed
+to @code{_xabort} is available with @code{_XABORT_CODE(status)}.
 @item _XABORT_RETRY
 Transaction retry is possible.
 @item _XABORT_CONFLICT
-Transaction abort due to a memory conflict with another thread
+Transaction abort due to a memory conflict with another thread.
 @item _XABORT_CAPACITY
-Transaction abort due to the transaction using too much memory
+Transaction abort due to the transaction using too much memory.
 @item _XABORT_DEBUG
-Transaction abort due to a debug trap
+Transaction abort due to a debug trap.
 @item _XABORT_NESTED
-Transaction abort in a inner nested transaction
+Transaction abort in an inner nested transaction.
 @end table
 
 @deftypefn {RTM Function} {void} _xend ()
-Commit the current transaction. When no transaction is active this will
-fault. All memory side effects of the transactions will become visible
-to other threads in an atomic matter.
+Commit the current transaction. When no transaction is active this faults.
+All memory side-effects of the transaction become visible
+to other threads in an atomic manner.
 @end deftypefn
 
 @deftypefn {RTM Function} {int} _xtest ()
-Return a value not zero when a transaction is currently active, otherwise 0.
+Return a nonzero value if a transaction is currently active, otherwise 0.
 @end deftypefn
 
 @deftypefn {RTM Function} {void} _xabort (status)
 Abort the current transaction. When no transaction is active this is a no-op.
-status must be a 8bit constant, that is included in the status code returned
-by @code{_xbegin}
+The @var{status} is an 8-bit constant; its value is encoded in the return 
+value from @code{_xbegin}.
 @end deftypefn
 
 @node Target Format Checks
