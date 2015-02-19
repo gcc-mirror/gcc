@@ -1,3 +1,7 @@
+	* config/pa/pa.c (pa_reloc_rw_mask): New function.
+	(TARGET_ASM_RELOC_RW_MASK): Define.
+	(pa_cannot_force_const_mem): Revert previous change.
+
 2015-02-19  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
