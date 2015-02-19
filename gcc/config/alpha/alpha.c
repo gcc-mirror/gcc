@@ -835,6 +835,10 @@ alpha_in_small_data_p (const_tree exp)
   if (TREE_CODE (exp) == FUNCTION_DECL)
     return false;
 
+  /* COMMON symbols are never small data.  */
+  if (TREE_CODE (exp) == VAR_DECL && DECL_COMMON (exp))
+    return false;
+
   if (TREE_CODE (exp) == VAR_DECL && DECL_SECTION_NAME (exp))
     {
       const char *section = DECL_SECTION_NAME (exp);
