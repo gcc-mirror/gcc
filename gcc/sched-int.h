@@ -1400,7 +1400,6 @@ extern int dfa_lookahead;
 
 extern int autopref_multipass_dfa_lookahead_guard (rtx_insn *, int);
 
-extern void ready_sort (struct ready_list *);
 extern rtx_insn *ready_element (struct ready_list *, int);
 extern rtx_insn **ready_lastpos (struct ready_list *);
 

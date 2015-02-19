@@ -1,5 +1,9 @@
 2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
+        * gcc.dg/pr64935-1.c, gcc.dg/pr64935-2.c: New tests.
+
+2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
 	* testsuite/lib/target-supports.exp (check_compile): Save/restore
 	additional_sources that may belong to an actual test.
 
