@@ -563,10 +563,10 @@ sem_function::equals_private (sem_item *item,
 	  if (e1->flags != e2->flags)
 	    return return_false_with_msg ("flags comparison returns false");
 
-	  if (!bb_dict_test (bb_dict, e1->src->index, e2->src->index))
+	  if (!bb_dict_test (&bb_dict, e1->src->index, e2->src->index))
 	    return return_false_with_msg ("edge comparison returns false");
 
-	  if (!bb_dict_test (bb_dict, e1->dest->index, e2->dest->index))
+	  if (!bb_dict_test (&bb_dict, e1->dest->index, e2->dest->index))
 	    return return_false_with_msg ("BB comparison returns false");
 
 	  if (!m_checker->compare_edge (e1, e2))
@@ -1053,21 +1053,21 @@ sem_function::icf_handled_component_p (tree t)
    corresponds to TARGET.  */
 
 bool
-sem_function::bb_dict_test (auto_vec<int> bb_dict, int source, int target)
+sem_function::bb_dict_test (vec<int> *bb_dict, int source, int target)
 {
   source++;
   target++;
 
-  if (bb_dict.length () <= (unsigned)source)
-    bb_dict.safe_grow_cleared (source + 1);
+  if (bb_dict->length () <= (unsigned)source)
+    bb_dict->safe_grow_cleared (source + 1);
 
-  if (bb_dict[source] == 0)
+  if ((*bb_dict)[source] == 0)
     {
-      bb_dict[source] = target;
+      (*bb_dict)[source] = target;
       return true;
     }
   else
-    return bb_dict[source] == target;
+    return (*bb_dict)[source] == target;
 }
 
 /* Iterates all tree types in T1 and T2 and returns true if all types
