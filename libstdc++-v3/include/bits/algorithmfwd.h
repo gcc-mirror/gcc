@@ -530,9 +530,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _OIter 
     reverse_copy(_BIter, _BIter, _OIter);
 
-  template<typename _FIter>
-    _FIter
-    rotate(_FIter, _FIter, _FIter);
+  inline namespace _V2
+  {
+    template<typename _FIter>
+      _FIter
+      rotate(_FIter, _FIter, _FIter);
+  }
 
   template<typename _FIter, typename _OIter>
     _OIter 
