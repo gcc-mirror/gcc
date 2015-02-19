@@ -1,3 +1,9 @@
+2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	PR testsuite/65116
+	* lib/target-supports.exp (check_compile): Check whether
+	additional_sources is defined before using it.
+
 2015-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/65074
