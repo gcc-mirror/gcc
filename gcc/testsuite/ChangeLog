@@ -1,3 +1,11 @@
+2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	Backport from mainline
+	2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* lib/target-supports.exp (check_compile): Save/restore
+	additional_sources that may belong to an actual test.
+
 2015-02-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backported from mainline

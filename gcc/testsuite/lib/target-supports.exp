@@ -41,6 +41,12 @@ proc check_compile {basename type contents args} {
     global tool
     verbose "check_compile tool: $tool for $basename" 
 
+    # Save additional_sources to avoid compiling testsuite's sources
+    # against check_compile's source.
+    global additional_sources
+    set tmp_additional_sources "$additional_sources"
+    set additional_sources ""
+
     if { [llength $args] > 0 } {
 	set options [list "additional_flags=[lindex $args 0]"]
     } else {
@@ -85,6 +91,9 @@ proc check_compile {basename type contents args} {
 	set scan_output "[glob $src.\[0-9\]\[0-9\]\[0-9\]r.$rtl_type]"
 	file delete $output
     }
+
+    # Restore additional_sources.
+    set additional_sources "$tmp_additional_sources"
 
     return [list $lines $scan_output]
 }
