@@ -9,7 +9,7 @@
 
 	* gomp-constants.h: New file.
 
-2015-12-14  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+2014-12-14  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* libiberty.h: Merge Copyright year update from Binutils.
 
