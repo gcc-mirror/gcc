@@ -1,3 +1,9 @@
+2015-02-19  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/65074
+	* varasm.c (default_binds_local_p_2): Don't test node->definition;
+	test DECL_EXTERNAL independent of symtab_node.
+
 2015-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/65012
