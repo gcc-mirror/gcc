@@ -1,3 +1,13 @@
+2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+        * haifa-sched.c (enum rfs_decision, rfs_str): Remove RFS_DEBUG.
+        (rank_for_schedule_debug): Update.
+        (ready_sort): Make static.  Move sorting logic to ...
+        (ready_sort_debug, ready_sort_real): New static functions.
+        (schedule_block): Sort both debug insns and real insns in preparation
+        for ready list trimming.  Improve debug output.
+        * sched-int.h (ready_sort): Remove global declaration.
+
 2015-02-18  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* ipa-icf.c (sem_function::equals_private): Adjust.
