@@ -149,6 +149,7 @@ static void pa_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static int pa_adjust_cost (rtx_insn *, rtx, rtx_insn *, int);
 static int pa_adjust_priority (rtx_insn *, int);
 static int pa_issue_rate (void);
+static int pa_reloc_rw_mask (void);
 static void pa_som_asm_init_sections (void) ATTRIBUTE_UNUSED;
 static section *pa_som_tm_clone_table_section (void) ATTRIBUTE_UNUSED;
 static section *pa_select_section (tree, int, unsigned HOST_WIDE_INT)
@@ -323,6 +324,9 @@ static size_t n_deferred_plabels = 0;
 #else
 #define TARGET_ASM_FILE_END output_deferred_plabels
 #endif
+
+#undef TARGET_ASM_RELOC_RW_MASK
+#define TARGET_ASM_RELOC_RW_MASK pa_reloc_rw_mask
 
 #undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
 #define TARGET_PRINT_OPERAND_PUNCT_VALID_P pa_print_operand_punct_valid_p
@@ -1569,14 +1573,6 @@ force_mode (machine_mode mode, rtx orig)
 static bool
 pa_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
-  /* Reload sometimes tries to put const data symbolic operands in
-     readonly memory.  The HP SOM linker doesn't allow symbolic data
-     in readonly memory.  */
-  if (TARGET_SOM
-      && !function_label_operand (x, VOIDmode)
-      && symbolic_operand (x, VOIDmode))
-    return true;
-
   return tls_referenced_p (x);
 }
 
@@ -9705,6 +9701,19 @@ pa_select_section (tree exp, int reloc,
     return som_one_only_data_section;
   else
     return data_section;
+}
+
+/* Implement pa_reloc_rw_mask.  */
+
+static int
+pa_reloc_rw_mask (void)
+{
+  /* We force (const (plus (symbol) (const_int))) to memory when the
+     const_int doesn't fit in a 14-bit integer.  The SOM linker can't
+     handle this construct in read-only memory and we want to avoid
+     this for ELF.  So, we always force an RTX needing relocation to
+     the data section.  */
+  return 3;
 }
 
 static void
