@@ -10811,8 +10811,8 @@ fold_binary_loc (location_t loc,
 
 	      /* Don't introduce overflows through reassociation.  */
 	      if (!any_overflows
-		  && ((lit0 && TREE_OVERFLOW (lit0))
-		      || (minus_lit0 && TREE_OVERFLOW (minus_lit0))))
+		  && ((lit0 && TREE_OVERFLOW_P (lit0))
+		      || (minus_lit0 && TREE_OVERFLOW_P (minus_lit0))))
 		return NULL_TREE;
 
 	      if (minus_lit0)

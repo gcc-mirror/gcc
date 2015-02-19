@@ -1,3 +1,36 @@
+2015-02-19  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-12-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64199
+	* fold-const.c (fold_binary_loc): Use TREE_OVERFLOW_P.
+
+	2015-01-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64493
+	PR tree-optimization/64495
+	* tree-vect-loop.c (vect_finalize_reduction): For double-reductions
+	assign the proper vectorized PHI to the inner loop exit PHIs.
+
+	2015-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56273
+	PR tree-optimization/59124
+	PR tree-optimization/64277
+	* tree-vrp.c (vrp_finalize): Emit array-bound warnings only
+	from the first VRP pass.
+
+	2015-02-19  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64365
+	* tree-data-ref.c (dr_analyze_indices): Make sure that accesses
+	for MEM_REF access functions with the same base can never partially
+	overlap.
+
 2015-02-17  Ilya Tocar  <ilya.tocar@intel.com>
 
 	Backported from mainline
