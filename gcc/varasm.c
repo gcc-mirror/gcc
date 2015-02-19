@@ -6828,20 +6828,18 @@ default_binds_local_p_2 (const_tree exp, bool shlib, bool weak_dominate)
      because dynamic linking might overwrite symbols
      in shared libraries.  */
   bool resolved_locally = false;
-  bool defined_locally = false;
+  bool defined_locally = !DECL_EXTERNAL (exp);
   if (symtab_node *node = symtab_node::get (exp))
     {
-      if ((node->definition && !DECL_EXTERNAL (node->decl))
-	  || node->in_other_partition)
-	{
-	  defined_locally = true;
-	  resolved_locally = (weak_dominate && !shlib);
-	}
+      if (node->in_other_partition)
+	defined_locally = true;
       if (resolution_to_local_definition_p (node->resolution))
 	defined_locally = resolved_locally = true;
       else if (resolution_local_p (node->resolution))
 	resolved_locally = true;
     }
+  if (defined_locally && weak_dominate && !shlib)
+    resolved_locally = true;
 
   /* Undefined weak symbols are never defined locally.  */
   if (DECL_WEAK (exp) && !defined_locally)
