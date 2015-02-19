@@ -1,3 +1,8 @@
+2015-02-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (x86 transactional memory intrinsics):
+	Copy-edit.
+
 2015-02-19  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/65074
