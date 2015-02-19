@@ -1,3 +1,9 @@
+2015-02-19  Andrea Azzarone  <azzaronea@gmail.com>
+
+	* g++.dg/cpp1y/udlit-char-template-vs-std-literal-operator.C
+	(size_type): New typedef.
+	(operator "" _script): Use it for the last argument.
+
 2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
         * gcc.dg/pr64935-1.c, gcc.dg/pr64935-2.c: New tests.

@@ -2,12 +2,14 @@
 
 #include <cassert>
 
+typedef decltype(sizeof(0)) size_type;
+
 template<typename CharT, CharT... String>
 int operator"" _script () {
   return 1;
 }
 
-int operator"" _script (const char*, unsigned long) {
+int operator"" _script (const char*, size_type) {
   return 2;
 }
 
