@@ -1,3 +1,9 @@
+2015-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/65012
+	* varpool.c (varpool_node::get_constructor): Return early
+	if this->lto_file_data is NULL.
+
 2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
         * haifa-sched.c (enum rfs_decision, rfs_str): Remove RFS_DEBUG.

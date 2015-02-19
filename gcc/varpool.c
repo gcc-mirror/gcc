@@ -303,7 +303,8 @@ varpool_node::get_constructor (void)
   size_t len;
 
   if (DECL_INITIAL (decl) != error_mark_node
-      || !in_lto_p)
+      || !in_lto_p
+      || !lto_file_data)
     return DECL_INITIAL (decl);
 
   timevar_push (TV_IPA_LTO_CTORS_IN);
