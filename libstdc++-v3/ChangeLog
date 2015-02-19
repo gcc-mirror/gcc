@@ -1,3 +1,15 @@
+2015-02-19  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/65093
+	* testsuite/26_numerics/random/binomial_distribution/operators/values.cc
+	(test01): Add explanatory comment.  Keep only the bd1 sub-test and
+	split out bd2, bd3, bd4, and bd5 sub-tests into...
+	* testsuite/26_numerics/random/binomial_distribution/operators/values2.cc,
+	testsuite/26_numerics/random/binomial_distribution/operators/values3.cc,
+	testsuite/26_numerics/random/binomial_distribution/operators/values4.cc,
+	testsuite/26_numerics/random/binomial_distribution/operators/values5.cc:
+	New separate files with the old parts.
+
 2015-02-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++11/codecvt.cc (write_utf16_code_point): Fix code to output

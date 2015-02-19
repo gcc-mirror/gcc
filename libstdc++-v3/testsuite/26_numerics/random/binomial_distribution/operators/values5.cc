@@ -31,12 +31,10 @@ void test01()
 
   std::mt19937 eng;
 
-  std::binomial_distribution<> bd1(5, 0.3);
-  auto bbd1 = std::bind(bd1, eng);
-  testDiscreteDist(bbd1, [](int n) { return binomial_pdf(n, 5, 0.3); } );
-
-  // These tests take a relatively long time on soft-float simulated
-  // targets, so please don't add new tests here, instead add a new file.
+  std::binomial_distribution<> bd5(100, 0.3);
+  const std::binomial_distribution<>::param_type pm5(100, 0.8);
+  auto bbd5 = std::bind(bd5, eng, pm5);
+  testDiscreteDist(bbd5, [](int n) { return binomial_pdf(n, 100, 0.8); } );
 }
 
 int main()
