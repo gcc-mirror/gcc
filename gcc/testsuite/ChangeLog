@@ -1,3 +1,8 @@
+2015-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/65074
+	* g++.dg/opt/pr65074.C: New file.
+
 2015-02-19  Andrea Azzarone  <azzaronea@gmail.com>
 
 	* g++.dg/cpp1y/udlit-char-template-vs-std-literal-operator.C
