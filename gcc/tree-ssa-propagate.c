@@ -66,6 +66,7 @@
 #include "langhooks.h"
 #include "value-prof.h"
 #include "domwalk.h"
+#include "cfgloop.h"
 
 /* This file implements a generic value propagation engine based on
    the same propagation used by the SSA-CCP algorithm [1].
@@ -992,6 +993,7 @@ replace_phi_args_in (gphi *phi, ssa_prop_get_value_fn get_value)
       print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
     }
 
+  basic_block bb = gimple_bb (phi);
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
       tree arg = gimple_phi_arg_def (phi, i);
@@ -1002,6 +1004,21 @@ replace_phi_args_in (gphi *phi, ssa_prop_get_value_fn get_value)
 
 	  if (val && val != arg && may_propagate_copy (arg, val))
 	    {
+	      edge e = gimple_phi_arg_edge (phi, i);
+
+	      /* Avoid propagating constants into loop latch edge
+	         PHI arguments as this makes coalescing the copy
+		 across this edge impossible.  If the argument is
+		 defined by an assert - otherwise the stmt will
+		 get removed without replacing its uses.  */
+	      if (TREE_CODE (val) != SSA_NAME
+		  && bb->loop_father->header == bb
+		  && dominated_by_p (CDI_DOMINATORS, e->src, bb)
+		  && is_gimple_assign (SSA_NAME_DEF_STMT (arg))
+		  && (gimple_assign_rhs_code (SSA_NAME_DEF_STMT (arg))
+		      == ASSERT_EXPR))
+		continue;
+
 	      if (TREE_CODE (val) != SSA_NAME)
 		prop_stats.num_const_prop++;
 	      else
@@ -1014,8 +1031,15 @@ replace_phi_args_in (gphi *phi, ssa_prop_get_value_fn get_value)
 		 through an abnormal edge, update the replacement
 		 accordingly.  */
 	      if (TREE_CODE (val) == SSA_NAME
-		  && gimple_phi_arg_edge (phi, i)->flags & EDGE_ABNORMAL)
-		SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val) = 1;
+		  && e->flags & EDGE_ABNORMAL
+		  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val))
+		{
+		  /* This can only occur for virtual operands, since
+		     for the real ones SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val))
+		     would prevent replacement.  */
+		  gcc_checking_assert (virtual_operand_p (val));
+		  SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val) = 1;
+		}
 	    }
 	}
     }
