@@ -3783,7 +3783,7 @@ package body Exp_Ch6 is
 
          --  Front end expansion of simple functions returning unconstrained
          --  types (see Check_And_Split_Unconstrained_Function) and simple
-         --  renamings inlined by the front end (see Build_Renamed_Entity).
+         --  renamings inlined by the front end (see Build_Renamed_Body).
 
          else
             Expand_Inlined_Call (Call_Node, Subp, Orig_Subp);
