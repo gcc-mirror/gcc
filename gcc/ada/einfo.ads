@@ -3578,6 +3578,11 @@ package Einfo is
 --       Present in abstract state entities. Contains all constituents that are
 --       subject to indicator Part_Of (both aspect and option variants).
 
+--    Partial_View_Has_Unknown_Discr (Flag280)
+--       Present on types entities. Indicates that the partial view of a type
+--       has unknown discriminants. A default initialization of an object of
+--       the type does not require an invariant check (AI12-0133).
+
 --    Pending_Access_Types (Elist15)
 --       Defined in all types. Set for incomplete, private, Taft-amendment
 --       types, and their corresponding full views. This list contains all
@@ -5358,6 +5363,7 @@ package Einfo is
    --    Must_Have_Preelab_Init              (Flag208)
    --    Optimize_Alignment_Space            (Flag241)
    --    Optimize_Alignment_Time             (Flag242)
+   --    Partial_View_Has_Unknown_Discr      (Flag280)
    --    Size_Depends_On_Discriminant        (Flag177)
    --    Size_Known_At_Compile_Time          (Flag92)
    --    Strict_Alignment                    (Flag145)  (base type only)
@@ -6877,6 +6883,7 @@ package Einfo is
    function Packed_Array_Impl_Type              (Id : E) return E;
    function Parent_Subtype                      (Id : E) return E;
    function Part_Of_Constituents                (Id : E) return L;
+   function Partial_View_Has_Unknown_Discr      (Id : E) return B;
    function Pending_Access_Types                (Id : E) return L;
    function Postcondition_Proc                  (Id : E) return E;
    function Prival                              (Id : E) return E;
@@ -7524,6 +7531,7 @@ package Einfo is
    procedure Set_Packed_Array_Impl_Type          (Id : E; V : E);
    procedure Set_Parent_Subtype                  (Id : E; V : E);
    procedure Set_Part_Of_Constituents            (Id : E; V : L);
+   procedure Set_Partial_View_Has_Unknown_Discr  (Id : E; V : B := True);
    procedure Set_Pending_Access_Types            (Id : E; V : L);
    procedure Set_Postcondition_Proc              (Id : E; V : E);
    procedure Set_Prival                          (Id : E; V : E);
@@ -8323,6 +8331,7 @@ package Einfo is
    pragma Inline (Parameter_Mode);
    pragma Inline (Parent_Subtype);
    pragma Inline (Part_Of_Constituents);
+   pragma Inline (Partial_View_Has_Unknown_Discr);
    pragma Inline (Pending_Access_Types);
    pragma Inline (Postcondition_Proc);
    pragma Inline (Prival);
@@ -8769,6 +8778,7 @@ package Einfo is
    pragma Inline (Set_Packed_Array_Impl_Type);
    pragma Inline (Set_Parent_Subtype);
    pragma Inline (Set_Part_Of_Constituents);
+   pragma Inline (Partial_View_Has_Unknown_Discr);
    pragma Inline (Set_Pending_Access_Types);
    pragma Inline (Set_Postcondition_Proc);
    pragma Inline (Set_Prival);
