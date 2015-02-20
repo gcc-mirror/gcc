@@ -7675,6 +7675,188 @@ package body GNAT.Altivec.Vector_Operations is
       dst (To_PTR (A), B, C);
    end vec_dst;
 
+   -- vec_dstt --
+
+   procedure vec_dstt
+     (A : const_vector_unsigned_char_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_vector_signed_char_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_vector_bool_char_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_vector_unsigned_short_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_vector_signed_short_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_vector_bool_short_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_vector_pixel_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_vector_unsigned_int_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_vector_signed_int_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_vector_bool_int_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_vector_float_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_unsigned_char_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_signed_char_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_unsigned_short_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_short_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_unsigned_int_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_int_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_unsigned_long_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_long_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
+   procedure vec_dstt
+     (A : const_float_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dstt (To_PTR (A), B, C);
+   end vec_dstt;
+
    -- vec_dstst --
 
    procedure vec_dstst
@@ -7856,6 +8038,188 @@ package body GNAT.Altivec.Vector_Operations is
    begin
       dstst (To_PTR (A), B, C);
    end vec_dstst;
+
+   -- vec_dststt --
+
+   procedure vec_dststt
+     (A : const_vector_unsigned_char_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_vector_signed_char_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_vector_bool_char_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_vector_unsigned_short_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_vector_signed_short_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_vector_bool_short_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_vector_pixel_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_vector_unsigned_int_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_vector_signed_int_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_vector_bool_int_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_vector_float_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_unsigned_char_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_signed_char_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_unsigned_short_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_short_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_unsigned_int_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_int_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_unsigned_long_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_long_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
+
+   procedure vec_dststt
+     (A : const_float_ptr;
+      B : c_int;
+      C : c_int)
+   is
+   begin
+      dststt (To_PTR (A), B, C);
+   end vec_dststt;
 
    -----------------------------------
    -- Bodies for Altivec predicates --
