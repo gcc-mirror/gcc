@@ -2008,6 +2008,7 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 
 	  if (flag_pic)
 	    {
+	      rtx_insn *insn;
 	      rtx temp;
 
 	      if (reload_in_progress || reload_completed)
@@ -2021,29 +2022,31 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 	      else
 		temp = gen_reg_rtx (Pmode);
 
-	      /* (const (plus (symbol) (const_int))) must be forced to
-		 memory during/after reload if the const_int will not fit
-		 in 14 bits.  */
+	      /* Force (const (plus (symbol) (const_int))) to memory
+	         if the const_int will not fit in 14 bits.  Although
+		 this requires a relocation, the instruction sequence
+		 needed to load the value is shorter.  */
 	      if (GET_CODE (operand1) == CONST
 		       && GET_CODE (XEXP (operand1, 0)) == PLUS
 		       && GET_CODE (XEXP (XEXP (operand1, 0), 1)) == CONST_INT
-		       && !INT_14_BITS (XEXP (XEXP (operand1, 0), 1))
-		       && (reload_completed || reload_in_progress)
-		       && flag_pic)
+		       && !INT_14_BITS (XEXP (XEXP (operand1, 0), 1)))
 		{
-		  rtx const_mem = force_const_mem (mode, operand1);
-		  operands[1] = legitimize_pic_address (XEXP (const_mem, 0),
-							mode, temp);
-		  operands[1] = replace_equiv_address (const_mem, operands[1]);
-		  pa_emit_move_sequence (operands, mode, temp);
+		  rtx x, m = force_const_mem (mode, operand1);
+
+		  x = legitimize_pic_address (XEXP (m, 0), mode, temp);
+		  x = replace_equiv_address (m, x);
+		  insn = emit_move_insn (operand0, x);
 		}
 	      else
 		{
 		  operands[1] = legitimize_pic_address (operand1, mode, temp);
 		  if (REG_P (operand0) && REG_P (operands[1]))
 		    copy_reg_pointer (operand0, operands[1]);
-		  emit_insn (gen_rtx_SET (VOIDmode, operand0, operands[1]));
+		  insn = emit_move_insn (operand0, operands[1]);
 		}
+
+	      /* Put a REG_EQUAL note on this insn.  */
+	      set_unique_reg_note (insn, REG_EQUAL, operand1);
 	    }
 	  /* On the HPPA, references to data space are supposed to use dp,
 	     register 27, but showing it in the RTL inhibits various cse
