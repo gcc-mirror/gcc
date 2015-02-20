@@ -1,5 +1,31 @@
 2015-02-20  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* sinfo.ads: Add comment.
+
+2015-02-20  Olivier Hainque  <hainque@adacore.com>
+
+	* opt.ads: Replace Opt.Suppress_All_Inlining by two separate
+	flags controlling the actual FE inlining out of pragma Inline
+	and pragma Inline_Always.
+	* adabkend.adb (Scan_Compiler_Arguments): Set both flags to True
+	on -fno-inline, which disables all inlining in compilers with
+	an Ada back-end and without back-end inlining support.
+	* back_end.adb (Scan_Back_End_Switches): Set the Inline related
+	flag to True on -fno-inline and leave Inline_Always alone for
+	gcc back-ends.
+	* back_end.ads (Scan_Compiler_Arguments): Adjust spec wrt the
+	names of the Opt flags it sets.
+	* gnat1drv.adb (Adjust_Global_Switches): Remove test on
+	Opt.Suppress_All_Inlining in the Back_End_Inlining computation.
+	* sem_prag.adb (Make_Inline): Remove early return conditioned
+	on Opt.Suppress_All_Inlining.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Use the flags to
+	disable the calls to Build_Body_To_Inline otherwise triggered
+	by pragma Inline or Inline_Always. This will prevent actual
+	front-end inlining of the subprogram on calls.
+
+2015-02-20  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* exp_ch3.adb (Default_Initialize_Object): Call Add_Inlined_Body on the
 	Abort_Undefer_Direct function.
 	* exp_ch5.adb (Expand_N_Assignment_Statement): Likewise.

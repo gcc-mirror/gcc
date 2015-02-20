@@ -8204,12 +8204,6 @@ package body Sem_Prag is
                Applies := True;
                return;
 
-            --  Ignore if all inlining is suppressed
-
-            elsif Suppress_All_Inlining then
-               Applies := True;
-               return;
-
             --  If inlining is not possible, for now do not treat as an error
 
             elsif Status /= Suppressed
