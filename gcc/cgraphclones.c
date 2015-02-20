@@ -533,19 +533,19 @@ cgraph_node::create_clone (tree decl, gcov_type gcov_count, int freq,
   return new_node;
 }
 
-/* Return a new assembler name for a clone of DECL with SUFFIX.  */
-
 static GTY(()) unsigned int clone_fn_id_num;
 
+/* Return a new assembler name for a clone with SUFFIX of a decl named
+   NAME.  */
+
 tree
-clone_function_name (tree decl, const char *suffix)
+clone_function_name_1 (const char *name, const char *suffix)
 {
-  tree name = DECL_ASSEMBLER_NAME (decl);
-  size_t len = IDENTIFIER_LENGTH (name);
+  size_t len = strlen (name);
   char *tmp_name, *prefix;
 
   prefix = XALLOCAVEC (char, len + strlen (suffix) + 2);
-  memcpy (prefix, IDENTIFIER_POINTER (name), len);
+  memcpy (prefix, name, len);
   strcpy (prefix + len + 1, suffix);
 #ifndef NO_DOT_IN_LABEL
   prefix[len] = '.';
@@ -557,6 +557,16 @@ clone_function_name (tree decl, const char *suffix)
   ASM_FORMAT_PRIVATE_NAME (tmp_name, prefix, clone_fn_id_num++);
   return get_identifier (tmp_name);
 }
+
+/* Return a new assembler name for a clone of DECL with SUFFIX.  */
+
+tree
+clone_function_name (tree decl, const char *suffix)
+{
+  tree name = DECL_ASSEMBLER_NAME (decl);
+  return clone_function_name_1 (IDENTIFIER_POINTER (name), suffix);
+}
+
 
 /* Create callgraph node clone with new declaration.  The actual body will
    be copied later at compilation stage.
