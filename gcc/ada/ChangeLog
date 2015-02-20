@@ -1,3 +1,22 @@
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* switch-c.adb, bindgen.adb: Minor reformatting.
+
+2015-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Type_Invariant):
+	Invariant'class is allowed on an abstract type.
+
+2015-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Access_Definition): If the access definition is
+	for a protected component and defines an access to protected
+	subprogram, do not create an itype reference for it because a
+	full type declaration will be built in order to generate the
+	proper equivalent type.
+	(Analyze_Subtype_Declaration): Add information of incomplete
+	subtypes, for Ada 2012 extended uses of incomplete types.
+
 2015-02-20  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_res.adb: Minor reformatting.
