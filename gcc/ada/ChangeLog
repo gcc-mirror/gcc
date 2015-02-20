@@ -1,5 +1,11 @@
 2015-02-20  Olivier Hainque  <hainque@adacore.com>
 
+	* g-allein.ads (vec_dst): Remove.
+	* g-alveop.ad?: Replace vec_dst renamings by proper Inline_Always
+	wrappers with Intrinsic convention.
+
+2015-02-20  Olivier Hainque  <hainque@adacore.com>
+
 	* g-allein.ads (vec_dss, vec_dssall): Remove.
 	* g-alveop.ads (vec_dss, vec_dssall): Rename the ll versions.
 
