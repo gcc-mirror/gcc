@@ -1,3 +1,8 @@
+2015-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/sibcall-9.c: New test.
+	* gcc.dg/sibcall-10.c: New test.
+
 2015-02-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/sisd-shft-neg_1.c: New test.
