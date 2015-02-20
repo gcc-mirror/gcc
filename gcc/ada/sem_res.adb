@@ -10715,14 +10715,22 @@ package body Sem_Res is
 
          begin
             --  If the type of the operand is a limited view, use the non-
-            --  limited view when available.
+            --  limited view when available. If it is a class-wide type,
+            --  recover class_wide type of the non-limited view.
 
-            if From_Limited_With (Opnd)
-              and then Ekind (Opnd) in Incomplete_Kind
-              and then Present (Non_Limited_View (Opnd))
-            then
-               Opnd := Non_Limited_View (Opnd);
-               Set_Etype (Expression (N), Opnd);
+            if From_Limited_With (Opnd) then
+               if Ekind (Opnd) in Incomplete_Kind
+                 and then Present (Non_Limited_View (Opnd))
+               then
+                  Opnd := Non_Limited_View (Opnd);
+                  Set_Etype (Expression (N), Opnd);
+
+               elsif Is_Class_Wide_Type (Opnd)
+                 and then Present (Non_Limited_View (Etype (Opnd)))
+               then
+                  Opnd := Class_Wide_Type (Non_Limited_View (Etype (Opnd)));
+                  Set_Etype (Expression (N), Opnd);
+               end if;
             end if;
 
             if Is_Access_Type (Opnd) then
