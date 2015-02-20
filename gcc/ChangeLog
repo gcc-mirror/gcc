@@ -1,3 +1,14 @@
+2015-02-20  Jakub Jelinek  <jakub@redhat.com>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR target/63892
+	* ipa-icf.c (sem_function::merge): If DECL_COMDAT_GROUP (alias->decl),
+	don't try to create_thunk if stdarg_p.  If
+	!sem_item::target_supports_symbol_aliases_p (), similarly, and try to
+	redirect_callers if possible.
+	(sem_item_optimizer::execute): Call unregister_hooks here...
+	(ipa_icf_driver): ... instead of here.
+
 2015-02-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.md (*aarch64_lshr_sisd_or_int_<mode>3):
