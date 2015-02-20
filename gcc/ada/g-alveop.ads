@@ -878,12 +878,12 @@ package GNAT.Altivec.Vector_Operations is
 
    procedure vec_dss
      (A : c_int)
-   renames Low_Level_Interface.vec_dss_cint;
+   renames Low_Level_Vectors.dss;
 
    -- vec_dssall --
 
    procedure vec_dssall
-   renames Low_Level_Interface.vec_dssall;
+   renames Low_Level_Vectors.dssall;
 
    -- vec_dst --
 

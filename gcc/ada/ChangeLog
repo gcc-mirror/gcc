@@ -1,3 +1,8 @@
+2015-02-20  Olivier Hainque  <hainque@adacore.com>
+
+	* g-allein.ads (vec_dss, vec_dssall): Remove.
+	* g-alveop.ads (vec_dss, vec_dssall): Rename the ll versions.
+
 2015-02-20  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb: Minor comment clarification.
