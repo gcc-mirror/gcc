@@ -3778,12 +3778,17 @@ package body Exp_Ch6 is
            or else Nkind (Unit_Declaration_Node (Subp)) /=
                                                  N_Subprogram_Declaration
            or else No (Body_To_Inline (Unit_Declaration_Node (Subp)))
+           or else Nkind (Body_To_Inline (Unit_Declaration_Node (Subp))) in
+                                                                      N_Entity
          then
             Add_Inlined_Body (Subp, Call_Node);
 
          --  Front end expansion of simple functions returning unconstrained
-         --  types (see Check_And_Split_Unconstrained_Function) and simple
-         --  renamings inlined by the front end (see Build_Renamed_Body).
+         --  types (see Check_And_Split_Unconstrained_Function). Note that the
+         --  case of a simple renaming (Body_To_Inline in N_Entity above, see
+         --  also Build_Renamed_Body) cannot be expanded here because this may
+         --  give rise to order-of-elaboration issues for the types of the
+         --  parameters of the subprogram, if any.
 
          else
             Expand_Inlined_Call (Call_Node, Subp, Orig_Subp);
