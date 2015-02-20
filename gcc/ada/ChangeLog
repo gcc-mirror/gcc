@@ -1,3 +1,23 @@
+2015-02-20  Vincent Celier  <celier@adacore.com>
+
+	* switch-c.adb (Scan_Front_End_Switches): Do not fail when --RTS=
+	is specified several times with different values that indicates
+	the same runtime directory.
+
+2015-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Check_Not_Incomplete_Type): Clean up code to
+	handle properly illegal uses of attributes on prefixes on an
+	incomplete type, both when the type of the prefix is locally
+	incomplete, and when it is a limited view of a type whose
+	non-limited view is not available.
+	(Analyze_Attribute): Add calls to Check_Not_Incomplete_Type for
+	'Address and others.
+
+2015-02-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb: Fix minor typo in comment.
+
 2015-02-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sinfo.ads: Add comment.
