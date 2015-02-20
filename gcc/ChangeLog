@@ -1,3 +1,11 @@
+2015-02-20  Bernd Schmidt  <bernds@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-streamer.c (preload_common_nodes): Don't preload
+	TI_VA_LIST* for offloading.
+	* tree-stdarg.c (pass_stdarg::gate): Disable for ACCEL_COMPILER
+	in_lto_p.
+
 2015-02-19  John David Anglin  <danlgin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_emit_move_sequence): Always force

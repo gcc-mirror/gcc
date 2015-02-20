@@ -342,7 +342,14 @@ preload_common_nodes (struct streamer_tree_cache_d *cache)
 	&& i != TI_TARGET_OPTION_DEFAULT
 	&& i != TI_TARGET_OPTION_CURRENT
 	&& i != TI_CURRENT_TARGET_PRAGMA
-	&& i != TI_CURRENT_OPTIMIZE_PRAGMA)
+	&& i != TI_CURRENT_OPTIMIZE_PRAGMA
+	/* Skip va_list* related nodes if offloading.  For native LTO
+	   we want them to be merged for the stdarg pass, for offloading
+	   they might not be identical between host and offloading target.  */
+	&& (!lto_stream_offload_p
+	    || (i != TI_VA_LIST_TYPE
+		&& i != TI_VA_LIST_GPR_COUNTER_FIELD
+		&& i != TI_VA_LIST_FPR_COUNTER_FIELD)))
       record_common_node (cache, global_trees[i]);
 }
 
