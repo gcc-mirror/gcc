@@ -9485,7 +9485,8 @@ package body Exp_Ch4 is
 
             Add_Inlined_Body
               (Discriminant_Checking_Func
-                (Original_Record_Component (Entity (S))));
+                (Original_Record_Component (Entity (S))),
+               N);
 
             --  Now reset the flag and generate the call
 

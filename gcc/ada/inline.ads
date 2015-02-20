@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -149,11 +149,11 @@ package Inline is
    --  instantiate the bodies of generic instantiations that appear in the
    --  compilation unit.
 
-   procedure Add_Inlined_Body (E : Entity_Id);
-   --  E is an inlined subprogram appearing in a call, either explicitly, or
-   --  a discriminant check for which gigi builds a call.  Add E's enclosing
-   --  unit to Inlined_Bodies so that body of E can be subsequently retrieved
-   --  and analyzed.
+   procedure Add_Inlined_Body (E : Entity_Id; N : Node_Id);
+   --  E is an inlined subprogram appearing in a call, either explicitly or in
+   --  a discriminant check for which gigi builds a call or an at-end handler.
+   --  Add E's enclosing unit to Inlined_Bodies so that E can be subsequently
+   --  retrieved and analyzed. N is the node giving rise to the call to E.
 
    procedure Analyze_Inlined_Bodies;
    --  At end of compilation, analyze the bodies of all units that contain
@@ -246,9 +246,6 @@ package Inline is
    procedure List_Inlining_Info;
    --  Generate listing of calls inlined by the frontend plus listing of
    --  calls to inline subprograms passed to the backend.
-
-   procedure Register_Backend_Call (N : Node_Id);
-   --  Append N to the list Backend_Calls
 
    procedure Remove_Dead_Instance (N : Node_Id);
    --  If an instantiation appears in unreachable code, delete the pending

@@ -239,10 +239,9 @@ package System.Standard_Library is
    -----------------
 
    procedure Abort_Undefer_Direct;
+   pragma Inline (Abort_Undefer_Direct);
    --  A little procedure that just calls Abort_Undefer.all, for use in
    --  clean up procedures, which only permit a simple subprogram name.
-   --  ??? This procedure is not marked inline because the front-end
-   --  cannot currently mark its calls from at-end handlers as inlined.
 
    procedure Adafinal;
    --  Performs the Ada Runtime finalization the first time it is invoked.

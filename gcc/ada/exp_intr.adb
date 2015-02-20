@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,6 +37,7 @@ with Exp_Code; use Exp_Code;
 with Exp_Fixd; use Exp_Fixd;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
+with Inline;   use Inline;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
@@ -1082,12 +1083,23 @@ package body Exp_Intr is
          if Abort_Allowed then
             Prepend_To (Final_Code, Build_Runtime_Call (Loc, RE_Abort_Defer));
 
-            Blk :=
-              Make_Block_Statement (Loc, Handled_Statement_Sequence =>
-                Make_Handled_Sequence_Of_Statements (Loc,
-                  Statements  => Final_Code,
-                  At_End_Proc =>
-                    New_Occurrence_Of (RTE (RE_Abort_Undefer_Direct), Loc)));
+            declare
+               AUD : constant Entity_Id := RTE (RE_Abort_Undefer_Direct);
+
+            begin
+               Blk :=
+                 Make_Block_Statement (Loc,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements  => Final_Code,
+                       At_End_Proc => New_Occurrence_Of (AUD, Loc)));
+
+               --  Present the Abort_Undefer_Direct function to the backend so
+               --  that it can inline the call to the function.
+
+               Add_Inlined_Body (AUD, N);
+            end;
+
             Add_Block_Identifier (Blk, Blk_Id);
 
             Append (Blk, Stmts);
