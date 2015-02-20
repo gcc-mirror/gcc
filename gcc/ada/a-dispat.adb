@@ -37,7 +37,7 @@ package body Ada.Dispatching is
 
    procedure Yield is
       Self_Id : constant System.Tasking.Task_Id :=
-         System.Task_Primitives.Operations.Self;
+                  System.Task_Primitives.Operations.Self;
 
    begin
       --  If pragma Detect_Blocking is active, Program_Error must be

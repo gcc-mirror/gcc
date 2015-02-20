@@ -6681,9 +6681,11 @@ package body Sem_Ch13 is
       BHi : constant Uint := Expr_Value (Type_High_Bound (Btyp));
       --  Low bound and high bound value of base type of Typ
 
-      TLo : constant Uint := Expr_Value (Type_Low_Bound  (Typ));
-      THi : constant Uint := Expr_Value (Type_High_Bound (Typ));
-      --  Low bound and high bound values of static subtype Typ
+      TLo : Uint;
+      THi : Uint;
+      --  Bounds for constructing the static predicate. We use the bound of the
+      --  subtype if it is static, otherwise the corresponding base type bound.
+      --  Note: a non-static subtype can have a static predicate.
 
       type REnt is record
          Lo, Hi : Uint;
@@ -7406,6 +7408,20 @@ package body Sem_Ch13 is
    --  Start of processing for Build_Discrete_Static_Predicate
 
    begin
+      --  Establish  bounds for the predicate
+
+      if Compile_Time_Known_Value (Type_Low_Bound (Typ)) then
+         TLo := Expr_Value (Type_Low_Bound (Typ));
+      else
+         TLo := BLo;
+      end if;
+
+      if Compile_Time_Known_Value (Type_High_Bound (Typ)) then
+         THi := Expr_Value (Type_High_Bound (Typ));
+      else
+         THi := BHi;
+      end if;
+
       --  Analyze the expression to see if it is a static predicate
 
       declare
@@ -8570,15 +8586,6 @@ package body Sem_Ch13 is
                --  For discrete subtype, build the static predicate list
 
                if Is_Discrete_Type (Typ) then
-                  if not Is_Static_Subtype (Typ) then
-
-                     --  This can only happen in the presence of previous
-                     --  semantic errors.
-
-                     pragma Assert (Serious_Errors_Detected > 0);
-                     return;
-                  end if;
-
                   Build_Discrete_Static_Predicate (Typ, Expr, Object_Name);
 
                   --  If we don't get a static predicate list, it means that we

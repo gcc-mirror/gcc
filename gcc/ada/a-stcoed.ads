@@ -27,5 +27,5 @@ package Ada.Synchronous_Task_Control.EDF is
 
    procedure Suspend_Until_True_And_Set_Deadline
       (S  : in out Suspension_Object;
-       TS :        Ada.Real_Time.Time_Span);
+       TS : Ada.Real_Time.Time_Span);
 end Ada.Synchronous_Task_Control.EDF;

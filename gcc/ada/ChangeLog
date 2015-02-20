@@ -1,5 +1,28 @@
 2015-02-20  Robert Dewar  <dewar@adacore.com>
 
+	* a-dispat.adb, a-stcoed.ads: Minor reformatting.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Build_Discrete_Static_Predicate): Allow static
+	predicate for non-static subtype.
+	(Build_Predicate_Functions): Do not assume subtype associated with a
+	static predicate must be static.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Set_Msg_Node): Better handling of internal names
+	(Set_Msg_Node): Kill message when we cannot eliminate internal name.
+	* errout.ads: Document additional case of message deletion.
+	* namet.adb (Is_Internal_Name): Refined to consider wide
+	strings in brackets notation and character literals not to be
+	internal names.
+	* sem_ch8.adb (Find_Selected_Component): Give additional error
+	when selector name is a subprogram whose first parameter has
+	the same type as the prefix, but that type is untagged.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
 	* g-allein.ads, g-alveop.adb, g-alveop.ads, opt.ads: Minor reformatting
 
 2015-02-20  Tristan Gingold  <gingold@adacore.com>
