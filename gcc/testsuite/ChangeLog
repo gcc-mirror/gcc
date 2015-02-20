@@ -1,3 +1,8 @@
+2015-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65136
+	* gcc.dg/tree-ssa/pr65136.c: New testcase.
+
 2015-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/64158

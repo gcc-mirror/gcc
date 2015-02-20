@@ -1,3 +1,10 @@
+2015-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65136
+	* tree-ssa-propagate.c: Include cfgloop.h.
+	(replace_phi_args_in): Avoid replacing loop latch edge PHI
+	arguments with constants.
+
 2015-02-20  Jakub Jelinek  <jakub@redhat.com>
 	    Martin Liska  <mliska@suse.cz>
 
