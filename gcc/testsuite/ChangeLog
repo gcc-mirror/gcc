@@ -1,5 +1,9 @@
 2015-02-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR testsuite/64158
+	* gcc.dg/pr44194-1.c: Add two extra {} pairs to fix up powerpc*-*-linux*
+	and nvptx-*-* blacklisting.
+
 	* gcc.dg/sibcall-9.c: New test.
 	* gcc.dg/sibcall-10.c: New test.
 
