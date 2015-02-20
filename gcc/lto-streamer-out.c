@@ -135,7 +135,8 @@ tree_is_indexable (tree t)
   /* Parameters and return values of functions of variably modified types
      must go to global stream, because they may be used in the type
      definition.  */
-  if (TREE_CODE (t) == PARM_DECL || TREE_CODE (t) == RESULT_DECL)
+  if ((TREE_CODE (t) == PARM_DECL || TREE_CODE (t) == RESULT_DECL)
+      && DECL_CONTEXT (t))
     return variably_modified_type_p (TREE_TYPE (DECL_CONTEXT (t)), NULL_TREE);
   else if (((TREE_CODE (t) == VAR_DECL && !TREE_STATIC (t))
 	    || TREE_CODE (t) == TYPE_DECL

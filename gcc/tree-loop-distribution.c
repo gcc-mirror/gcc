@@ -1342,6 +1342,7 @@ pg_add_dependence_edges (struct graph *rdg, vec<loop_p> loops, int dir,
   for (int ii = 0; drs1.iterate (ii, &dr1); ++ii)
     for (int jj = 0; drs2.iterate (jj, &dr2); ++jj)
       {
+	data_reference_p saved_dr1 = dr1;
 	int this_dir = 1;
 	ddr_p ddr;
 	/* Re-shuffle data-refs to be in dominator order.  */
@@ -1387,6 +1388,8 @@ pg_add_dependence_edges (struct graph *rdg, vec<loop_p> loops, int dir,
 	  dir = this_dir;
 	else if (dir != this_dir)
 	  return 2;
+	/* Shuffle "back" dr1.  */
+	dr1 = saved_dr1;
       }
   return dir;
 }
