@@ -33,8 +33,8 @@
 --  both bindings (Hard or Soft), and relevant to the interfacing with the
 --  underlying Low Level support.
 
-with GNAT.Altivec.Vector_Types;    use GNAT.Altivec.Vector_Types;
-with GNAT.Altivec.Low_Level_Vectors;    use GNAT.Altivec.Low_Level_Vectors;
+with GNAT.Altivec.Vector_Types;      use GNAT.Altivec.Vector_Types;
+with GNAT.Altivec.Low_Level_Vectors; use GNAT.Altivec.Low_Level_Vectors;
 
 with Ada.Unchecked_Conversion;
 
@@ -53,8 +53,8 @@ package GNAT.Altivec.Low_Level_Interface is
    function To_LL_VBC is new Ada.Unchecked_Conversion (LL_VBI, LL_VBC);
    function To_LL_VBC is new Ada.Unchecked_Conversion (LL_VUI, LL_VBC);
    function To_LL_VBC is new Ada.Unchecked_Conversion (LL_VSI, LL_VBC);
-   function To_LL_VBC is new Ada.Unchecked_Conversion (LL_VF, LL_VBC);
-   function To_LL_VBC is new Ada.Unchecked_Conversion (LL_VP, LL_VBC);
+   function To_LL_VBC is new Ada.Unchecked_Conversion (LL_VF,  LL_VBC);
+   function To_LL_VBC is new Ada.Unchecked_Conversion (LL_VP,  LL_VBC);
 
    function To_LL_VUC is new Ada.Unchecked_Conversion (LL_VBC, LL_VUC);
    function To_LL_VUC is new Ada.Unchecked_Conversion (LL_VUC, LL_VUC);
@@ -65,8 +65,8 @@ package GNAT.Altivec.Low_Level_Interface is
    function To_LL_VUC is new Ada.Unchecked_Conversion (LL_VBI, LL_VUC);
    function To_LL_VUC is new Ada.Unchecked_Conversion (LL_VUI, LL_VUC);
    function To_LL_VUC is new Ada.Unchecked_Conversion (LL_VSI, LL_VUC);
-   function To_LL_VUC is new Ada.Unchecked_Conversion (LL_VF, LL_VUC);
-   function To_LL_VUC is new Ada.Unchecked_Conversion (LL_VP, LL_VUC);
+   function To_LL_VUC is new Ada.Unchecked_Conversion (LL_VF,  LL_VUC);
+   function To_LL_VUC is new Ada.Unchecked_Conversion (LL_VP,  LL_VUC);
 
    function To_LL_VSC is new Ada.Unchecked_Conversion (LL_VBC, LL_VSC);
    function To_LL_VSC is new Ada.Unchecked_Conversion (LL_VUC, LL_VSC);
@@ -77,8 +77,8 @@ package GNAT.Altivec.Low_Level_Interface is
    function To_LL_VSC is new Ada.Unchecked_Conversion (LL_VBI, LL_VSC);
    function To_LL_VSC is new Ada.Unchecked_Conversion (LL_VUI, LL_VSC);
    function To_LL_VSC is new Ada.Unchecked_Conversion (LL_VSI, LL_VSC);
-   function To_LL_VSC is new Ada.Unchecked_Conversion (LL_VF, LL_VSC);
-   function To_LL_VSC is new Ada.Unchecked_Conversion (LL_VP, LL_VSC);
+   function To_LL_VSC is new Ada.Unchecked_Conversion (LL_VF,  LL_VSC);
+   function To_LL_VSC is new Ada.Unchecked_Conversion (LL_VP,  LL_VSC);
 
    function To_LL_VBS is new Ada.Unchecked_Conversion (LL_VBC, LL_VBS);
    function To_LL_VBS is new Ada.Unchecked_Conversion (LL_VUC, LL_VBS);
@@ -101,8 +101,8 @@ package GNAT.Altivec.Low_Level_Interface is
    function To_LL_VUS is new Ada.Unchecked_Conversion (LL_VBI, LL_VUS);
    function To_LL_VUS is new Ada.Unchecked_Conversion (LL_VUI, LL_VUS);
    function To_LL_VUS is new Ada.Unchecked_Conversion (LL_VSI, LL_VUS);
-   function To_LL_VUS is new Ada.Unchecked_Conversion (LL_VF, LL_VUS);
-   function To_LL_VUS is new Ada.Unchecked_Conversion (LL_VP, LL_VUS);
+   function To_LL_VUS is new Ada.Unchecked_Conversion (LL_VF,  LL_VUS);
+   function To_LL_VUS is new Ada.Unchecked_Conversion (LL_VP,  LL_VUS);
 
    function To_LL_VSS is new Ada.Unchecked_Conversion (LL_VBC, LL_VSS);
    function To_LL_VSS is new Ada.Unchecked_Conversion (LL_VUC, LL_VSS);
@@ -113,8 +113,8 @@ package GNAT.Altivec.Low_Level_Interface is
    function To_LL_VSS is new Ada.Unchecked_Conversion (LL_VBI, LL_VSS);
    function To_LL_VSS is new Ada.Unchecked_Conversion (LL_VUI, LL_VSS);
    function To_LL_VSS is new Ada.Unchecked_Conversion (LL_VSI, LL_VSS);
-   function To_LL_VSS is new Ada.Unchecked_Conversion (LL_VF, LL_VSS);
-   function To_LL_VSS is new Ada.Unchecked_Conversion (LL_VP, LL_VSS);
+   function To_LL_VSS is new Ada.Unchecked_Conversion (LL_VF,  LL_VSS);
+   function To_LL_VSS is new Ada.Unchecked_Conversion (LL_VP,  LL_VSS);
 
    function To_LL_VBI is new Ada.Unchecked_Conversion (LL_VBC, LL_VBI);
    function To_LL_VBI is new Ada.Unchecked_Conversion (LL_VUC, LL_VBI);
@@ -125,8 +125,8 @@ package GNAT.Altivec.Low_Level_Interface is
    function To_LL_VBI is new Ada.Unchecked_Conversion (LL_VBI, LL_VBI);
    function To_LL_VBI is new Ada.Unchecked_Conversion (LL_VUI, LL_VBI);
    function To_LL_VBI is new Ada.Unchecked_Conversion (LL_VSI, LL_VBI);
-   function To_LL_VBI is new Ada.Unchecked_Conversion (LL_VF, LL_VBI);
-   function To_LL_VBI is new Ada.Unchecked_Conversion (LL_VP, LL_VBI);
+   function To_LL_VBI is new Ada.Unchecked_Conversion (LL_VF,  LL_VBI);
+   function To_LL_VBI is new Ada.Unchecked_Conversion (LL_VP,  LL_VBI);
 
    function To_LL_VUI is new Ada.Unchecked_Conversion (LL_VBC, LL_VUI);
    function To_LL_VUI is new Ada.Unchecked_Conversion (LL_VUC, LL_VUI);
@@ -137,8 +137,8 @@ package GNAT.Altivec.Low_Level_Interface is
    function To_LL_VUI is new Ada.Unchecked_Conversion (LL_VBI, LL_VUI);
    function To_LL_VUI is new Ada.Unchecked_Conversion (LL_VUI, LL_VUI);
    function To_LL_VUI is new Ada.Unchecked_Conversion (LL_VSI, LL_VUI);
-   function To_LL_VUI is new Ada.Unchecked_Conversion (LL_VF, LL_VUI);
-   function To_LL_VUI is new Ada.Unchecked_Conversion (LL_VP, LL_VUI);
+   function To_LL_VUI is new Ada.Unchecked_Conversion (LL_VF,  LL_VUI);
+   function To_LL_VUI is new Ada.Unchecked_Conversion (LL_VP,  LL_VUI);
 
    function To_LL_VSI is new Ada.Unchecked_Conversion (LL_VBC, LL_VSI);
    function To_LL_VSI is new Ada.Unchecked_Conversion (LL_VUC, LL_VSI);
@@ -149,8 +149,8 @@ package GNAT.Altivec.Low_Level_Interface is
    function To_LL_VSI is new Ada.Unchecked_Conversion (LL_VBI, LL_VSI);
    function To_LL_VSI is new Ada.Unchecked_Conversion (LL_VUI, LL_VSI);
    function To_LL_VSI is new Ada.Unchecked_Conversion (LL_VSI, LL_VSI);
-   function To_LL_VSI is new Ada.Unchecked_Conversion (LL_VF, LL_VSI);
-   function To_LL_VSI is new Ada.Unchecked_Conversion (LL_VP, LL_VSI);
+   function To_LL_VSI is new Ada.Unchecked_Conversion (LL_VF,  LL_VSI);
+   function To_LL_VSI is new Ada.Unchecked_Conversion (LL_VP,  LL_VSI);
 
    function To_LL_VF is new Ada.Unchecked_Conversion (LL_VBC, LL_VF);
    function To_LL_VF is new Ada.Unchecked_Conversion (LL_VUC, LL_VF);
@@ -161,8 +161,8 @@ package GNAT.Altivec.Low_Level_Interface is
    function To_LL_VF is new Ada.Unchecked_Conversion (LL_VBI, LL_VF);
    function To_LL_VF is new Ada.Unchecked_Conversion (LL_VUI, LL_VF);
    function To_LL_VF is new Ada.Unchecked_Conversion (LL_VSI, LL_VF);
-   function To_LL_VF is new Ada.Unchecked_Conversion (LL_VF, LL_VF);
-   function To_LL_VF is new Ada.Unchecked_Conversion (LL_VP, LL_VF);
+   function To_LL_VF is new Ada.Unchecked_Conversion (LL_VF,  LL_VF);
+   function To_LL_VF is new Ada.Unchecked_Conversion (LL_VP,  LL_VF);
 
    function To_LL_VP is new Ada.Unchecked_Conversion (LL_VBC, LL_VP);
    function To_LL_VP is new Ada.Unchecked_Conversion (LL_VUC, LL_VP);
@@ -173,11 +173,11 @@ package GNAT.Altivec.Low_Level_Interface is
    function To_LL_VP is new Ada.Unchecked_Conversion (LL_VBI, LL_VP);
    function To_LL_VP is new Ada.Unchecked_Conversion (LL_VUI, LL_VP);
    function To_LL_VP is new Ada.Unchecked_Conversion (LL_VSI, LL_VP);
-   function To_LL_VP is new Ada.Unchecked_Conversion (LL_VF, LL_VP);
-   function To_LL_VP is new Ada.Unchecked_Conversion (LL_VP, LL_VP);
+   function To_LL_VP is new Ada.Unchecked_Conversion (LL_VF,  LL_VP);
+   function To_LL_VP is new Ada.Unchecked_Conversion (LL_VP,  LL_VP);
 
    ----------------------------------------------
-   -- Conversions between pointer/access types --
+   -- Conversions Between Pointer/Access Types --
    ----------------------------------------------
 
    function To_PTR is
