@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -527,7 +527,8 @@ package Erroutc is
    procedure Set_Msg_Str (Text : String);
    --  Add a sequence of characters to the current message. This routine does
    --  not check for special insertion characters (they are just treated as
-   --  text characters if they occur).
+   --  text characters if they occur). It does perform the transformation of
+   --  the special strings _xxx (xxx = Pre/Post/Type_Invariant) to xxx'Class.
 
    procedure Set_Next_Non_Deleted_Msg (E : in out Error_Msg_Id);
    --  Given a message id, move to next message id, but skip any deleted

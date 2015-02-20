@@ -1,5 +1,35 @@
 2015-02-20  Robert Dewar  <dewar@adacore.com>
 
+	* errout.ads: Document replacement of Name_uPre/Post/Type_Invariant.
+	* erroutc.adb (Set_Msg_Str): Replace _xxx.
+	(Pre/Post/Type_Invariant) by xxx'Class.
+	* erroutc.ads (Set_Msg_Str): Replace _xxx.
+	(Pre/Post/Type_Invariant) by xxx'Class.
+	* sem_prag.adb (Fix_Error): Remove special casing of
+	Name_uType_Invariant.
+	(Analyze_Pre_Post_Condition_In_Decl_Part): Remove special casing of
+	Name_uPre and Name_uPost in aspect case (done in Errout now).
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* g-alveop.adb: Minor style fixes.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Warn_Overlay): Guard against blow up with address
+	clause.
+
+2015-02-20  Bob Duff  <duff@adacore.com>
+
+	* exp_attr.adb (May_Be_External_Call): Remove this. There is no need
+	for the compiler to guess whether the call is internal or external --
+	it is always external.
+	(Expand_Access_To_Protected_Op): For P'Access, where P
+	is a protected subprogram, always create a pointer to the
+	External_Subprogram.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
 	* a-dispat.adb, a-stcoed.ads: Minor reformatting.
 
 2015-02-20  Robert Dewar  <dewar@adacore.com>

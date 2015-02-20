@@ -139,12 +139,18 @@ package Errout is
    --      casing mode. Note: if a unit name ending with %b or %s is passed
    --      for this kind of insertion, this suffix is simply stripped. Use a
    --      unit name insertion ($) to process the suffix.
+   --
+   --      Note: the special names _xxx (xxx = Pre/Post/Invariant) are changed
+   --      to insert the string xxx'Class into the message.
 
    --    Insertion character %% (Double percent: insert literal name)
    --      The character sequence %% acts as described above for %, except
    --      that the name is simply obtained with Get_Name_String and is not
    --      decoded or cased, it is inserted literally from the names table.
    --      A trailing %b or %s is not treated specially.
+   --
+   --      Note: the special names _xxx (xxx = Pre/Post/Invariant) are changed
+   --      to insert the string xxx'Class into the message.
 
    --    Insertion character $ (Dollar: insert unit name from Names table)
    --      The character $ is treated similarly to %, except that the name is
@@ -181,6 +187,9 @@ package Errout is
    --      Error_Msg_Qual_Level is non-zero, then the reference will include
    --      up to the given number of levels of qualification, using the scope
    --      chain.
+   --
+   --      Note: the special names _xxx (xxx = Pre/Post/Invariant) are changed
+   --      to insert the string xxx'Class into the message.
 
    --    Insertion character # (Pound: insert line number reference)
    --      The character # is replaced by the string indicating the source
