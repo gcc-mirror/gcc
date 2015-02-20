@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,58 +53,6 @@ package GNAT.Altivec.Low_Level_Interface is
    ----------------------------------------------------------------------------
 
    use GNAT.Altivec.Vector_Types;
-
-   -- vec_ctf --
-
-   function vec_ctf_vui_cint_r_vf
-     (A : vector_unsigned_int;
-      B : c_int) return vector_float;
-
-   pragma Import
-     (LL_Altivec, vec_ctf_vui_cint_r_vf, "__builtin_altivec_vcfux");
-
-   function vec_ctf_vsi_cint_r_vf
-     (A : vector_signed_int;
-      B : c_int) return vector_float;
-
-   pragma Import
-     (LL_Altivec, vec_ctf_vsi_cint_r_vf, "__builtin_altivec_vcfsx");
-
-   -- vec_vcfsx --
-
-   function vec_vcfsx_vsi_cint_r_vf
-     (A : vector_signed_int;
-      B : c_int) return vector_float;
-
-   pragma Import
-     (LL_Altivec, vec_vcfsx_vsi_cint_r_vf, "__builtin_altivec_vcfsx");
-
-   -- vec_vcfux --
-
-   function vec_vcfux_vui_cint_r_vf
-     (A : vector_unsigned_int;
-      B : c_int) return vector_float;
-
-   pragma Import
-     (LL_Altivec, vec_vcfux_vui_cint_r_vf, "__builtin_altivec_vcfux");
-
-   -- vec_cts --
-
-   function vec_cts_vf_cint_r_vsi
-     (A : vector_float;
-      B : c_int) return vector_signed_int;
-
-   pragma Import
-     (LL_Altivec, vec_cts_vf_cint_r_vsi, "__builtin_altivec_vctsxs");
-
-   -- vec_ctu --
-
-   function vec_ctu_vf_cint_r_vui
-     (A : vector_float;
-      B : c_int) return vector_unsigned_int;
-
-   pragma Import
-     (LL_Altivec, vec_ctu_vf_cint_r_vui, "__builtin_altivec_vctuxs");
 
    -- vec_dss --
 
