@@ -2206,6 +2206,7 @@ basic_block init_lowered_empty_function (tree, bool, gcov_type);
 
 /* In cgraphclones.c  */
 
+tree clone_function_name_1 (const char *, const char *);
 tree clone_function_name (tree decl, const char *);
 
 void tree_function_versioning (tree, tree, vec<ipa_replace_map *, va_gc> *,

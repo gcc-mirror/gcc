@@ -1,3 +1,16 @@
+2015-02-20  Bernd Schmidt  <bernds@codesourcery.com>
+
+    	* cgraph.h (clone_function_name_1): Declare.
+    	* cgraphclones.c (clone_function_name_1): New function.
+    	(clone_function_name): Use it.
+    	* lto-partition.c: Include "stringpool.h".
+    	(must_not_rename, maybe_rewrite_identifier,
+    	validize_symbol_for_target): New static functions.
+    	(privatize_symbol_name): Use must_not_rename.
+    	(promote_symbol): Call validize_symbol_for_target.
+    	(lto_promote_cross_file_statics): Likewise.
+    	(lto_promote_statics_nonwpa): Likewise.
+
 2015-02-20  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/64452
