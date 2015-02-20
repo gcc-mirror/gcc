@@ -54,14 +54,6 @@ package GNAT.Altivec.Low_Level_Interface is
 
    use GNAT.Altivec.Vector_Types;
 
-   -- vec_dss --
-
-   procedure vec_dss_cint
-     (A : c_int);
-
-   pragma Import
-     (LL_Altivec, vec_dss_cint, "__builtin_altivec_dss");
-
    -- vec_dst --
 
    procedure vec_dst_kvucp_cint_cint
@@ -1017,13 +1009,6 @@ package GNAT.Altivec.Low_Level_Interface is
    ------------------------------------------------------------
    -- Imports for low-level signature consistent subprograms --
    ------------------------------------------------------------
-
-   -- vec_dssall --
-
-   procedure vec_dssall;
-
-   pragma Import
-     (LL_Altivec, vec_dssall, "__builtin_altivec_dssall");
 
    -----------------------------------------
    -- Conversions between low level types --
