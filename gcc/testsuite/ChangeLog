@@ -1,3 +1,8 @@
+2015-02-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gcc.dg/tree-ssa/20040204-1.c: Don't XFAIL on sh*-*-*.
+	* gcc.dg/tree-ssa/sra-12.c: Skip for sh*-*-*.
+
 2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
 	PR testsuite/65116
