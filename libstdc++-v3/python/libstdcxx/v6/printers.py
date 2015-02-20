@@ -327,22 +327,35 @@ class StdTuplePrinter:
             return self
 
         def __next__ (self):
-            nodes = self.head.type.fields ()
             # Check for further recursions in the inheritance tree.
+            # For a GCC 5+ tuple self.head is None after visiting all nodes:
+            if not self.head:
+                raise StopIteration
+            nodes = self.head.type.fields ()
+            # For a GCC 4.x tuple there is a final node with no fields:
             if len (nodes) == 0:
                 raise StopIteration
             # Check that this iteration has an expected structure.
-            if len (nodes) != 2:
+            if len (nodes) > 2:
                 raise ValueError("Cannot parse more than 2 nodes in a tuple tree.")
 
-            # - Left node is the next recursion parent.
-            # - Right node is the actual class contained in the tuple.
+            if len (nodes) == 1:
+                # This is the last node of a GCC 5+ std::tuple.
+                impl = self.head.cast (nodes[0].type)
+                self.head = None
+            else:
+                # Either a node before the last node, or the last node of
+                # a GCC 4.x tuple (which has an empty parent).
 
-            # Process right node.
-            impl = self.head.cast (nodes[1].type)
+                # - Left node is the next recursion parent.
+                # - Right node is the actual class contained in the tuple.
 
-            # Process left node and set it as head.
-            self.head  = self.head.cast (nodes[0].type)
+                # Process right node.
+                impl = self.head.cast (nodes[1].type)
+
+                # Process left node and set it as head.
+                self.head  = self.head.cast (nodes[0].type)
+
             self.count = self.count + 1
 
             # Finally, check the implementation.  If it is
