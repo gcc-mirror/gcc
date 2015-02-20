@@ -1,5 +1,16 @@
 2015-02-20  Robert Dewar  <dewar@adacore.com>
 
+	* sem_prag.adb: Minor comment clarification.
+
+2015-02-20  Olivier Hainque  <hainque@adacore.com>
+
+	* g-allein.ads (vec_ctf, vec_vcsfx, vec_vcfux): Remove.
+	* g-alleve.ads, g-alleva.adb (vcfux): Likewise.
+	* g-alveop.ads (vec_vcfsx, vec_vcfux): Just rename the ll versions.
+	(vec_ctf): Now renamings as well.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
 	* switch-c.adb, bindgen.adb: Minor reformatting.
 
 2015-02-20  Ed Schonberg  <schonberg@adacore.com>

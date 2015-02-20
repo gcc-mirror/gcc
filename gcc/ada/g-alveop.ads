@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,17 +34,13 @@
 
 with GNAT.Altivec.Vector_Types;  use GNAT.Altivec.Vector_Types;
 with GNAT.Altivec.Low_Level_Interface;  use GNAT.Altivec.Low_Level_Interface;
+with GNAT.Altivec.Low_Level_Vectors;
 
 package GNAT.Altivec.Vector_Operations is
 
-   --  The vast majority of the operations exposed here are overloads over a
-   --  much smaller set of low level primitives with type conversions around.
-   --
-   --  In some cases, a direct binding without any intermediate body is
-   --  possible or even mandatory for technical reasons. What we provide
-   --  here for such cases are renamings of straight imports exposed by
-   --  Altivec.Low_Level_Interface.  See the comments in the private part for
-   --  additional details.
+   --  The vast majority of the operations exposed here are type conversion
+   --  wrappers around a much smaller set of low level primitives, exposed by
+   --  the Altivec.Low_Level_Interface package.
 
    -------------------------------------------------------
    -- [PIM-4.4 Generic and Specific AltiVec operations] --
@@ -850,45 +846,33 @@ package GNAT.Altivec.Vector_Operations is
      (A : vector_float;
       B : vector_float) return vector_bool_int;
 
-   -- vec_ctf --
-
-   function vec_ctf
-     (A : vector_unsigned_int;
-      B : c_int) return vector_float
-   renames Low_Level_Interface.vec_ctf_vui_cint_r_vf;
-
-   function vec_ctf
-     (A : vector_signed_int;
-      B : c_int) return vector_float
-   renames Low_Level_Interface.vec_ctf_vsi_cint_r_vf;
-
    -- vec_vcfsx --
 
    function vec_vcfsx
      (A : vector_signed_int;
       B : c_int) return vector_float
-   renames Low_Level_Interface.vec_vcfsx_vsi_cint_r_vf;
+   renames Low_Level_Vectors.vcfsx;
 
    -- vec_vcfux --
 
    function vec_vcfux
      (A : vector_unsigned_int;
       B : c_int) return vector_float
-   renames Low_Level_Interface.vec_vcfux_vui_cint_r_vf;
+   renames Low_Level_Vectors.vcfux;
 
-   -- vec_cts --
+   -- vec_vctsxs --
 
-   function vec_cts
+   function vec_vctsxs
      (A : vector_float;
       B : c_int) return vector_signed_int
-   renames Low_Level_Interface.vec_cts_vf_cint_r_vsi;
+   renames Low_Level_Vectors.vctsxs;
 
-   -- vec_ctu --
+   -- vec_vctuxs --
 
-   function vec_ctu
+   function vec_vctuxs
      (A : vector_float;
       B : c_int) return vector_unsigned_int
-   renames Low_Level_Interface.vec_ctu_vf_cint_r_vui;
+   renames Low_Level_Vectors.vctuxs;
 
    -- vec_dss --
 
@@ -5825,6 +5809,32 @@ package GNAT.Altivec.Vector_Operations is
    -- Straight overloads of routines aboves --
    -------------------------------------------
 
+   -- vec_ctf --
+
+   function vec_ctf
+     (A : vector_unsigned_int;
+      B : c_int) return vector_float
+   renames vec_vcfux;
+
+   function vec_ctf
+     (A : vector_signed_int;
+      B : c_int) return vector_float
+   renames vec_vcfsx;
+
+   -- vec_cts --
+
+   function vec_cts
+     (A : vector_float;
+      B : c_int) return vector_signed_int
+   renames vec_vctsxs;
+
+   -- vec_ctu --
+
+   function vec_ctu
+     (A : vector_float;
+      B : c_int) return vector_unsigned_int
+   renames vec_vctuxs;
+
    -- vec_vaddcuw --
 
    function vec_vaddcuw
@@ -6095,20 +6105,6 @@ package GNAT.Altivec.Vector_Operations is
      (A : vector_float;
       B : vector_float) return vector_bool_int
    renames vec_cmpge;
-
-   -- vec_vctsxs --
-
-   function vec_vctsxs
-     (A : vector_float;
-      B : c_int) return vector_signed_int
-   renames vec_cts;
-
-   -- vec_vctuxs --
-
-   function vec_vctuxs
-     (A : vector_float;
-      B : c_int) return vector_unsigned_int
-   renames vec_ctu;
 
    -- vec_vexptefp --
 
@@ -7868,17 +7864,6 @@ private
    --         begin
    --           return To_VBC (vcmpgtub (To_VSC (B), To_VSC (A)));
    --         end vec_cmplt;
-   --
-   --  Conversely, a direct (without wrapper) binding is sometimes mandatory
-   --  in the Hard binding case, because the corresponding low level code
-   --  accept only literal values for some arguments. Inlined calls to the
-   --  wrapper with proper arguments would be fine, but the wrapper body
-   --  itself would not be compilable. These can of course also be used in the
-   --  Soft binding, and so are naturally in this common unit.
-   --
-   --  Fortunately, the sets of operations for which a wrapper is required
-   --  and the set of operations for which a wrapper would not be compilable
-   --  do not intersect.
 
    -----------------------------
    -- Inlining considerations --

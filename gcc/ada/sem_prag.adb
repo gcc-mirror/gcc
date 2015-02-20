@@ -15730,7 +15730,8 @@ package body Sem_Prag is
                  ("pragma% only allowed for private type", Arg1);
             end if;
 
-            --  Not allowed for abstract type
+            --  Not allowed for abstract type in the non-class case (it is
+            --  allowed to use Invariant'Class for abstract types).
 
             if Is_Abstract_Type (Typ) and then not Class_Present (N) then
                Error_Pragma_Arg

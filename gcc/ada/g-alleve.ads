@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                         (Soft Binding Version)                           --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -111,11 +111,11 @@ package GNAT.Altivec.Low_Level_Vectors is
    function vcmpgtsw (A : LL_VSI; B : LL_VSI) return LL_VSI;
    function vcmpgtfp (A : LL_VF; B : LL_VF) return LL_VSI;
 
-   function vcfux (A : LL_VSI; B : c_int) return LL_VF;
+   function vcfux (A : LL_VUI; B : c_int) return LL_VF;
    function vcfsx (A : LL_VSI; B : c_int) return LL_VF;
 
    function vctsxs (A : LL_VF; B : c_int) return LL_VSI;
-   function vctuxs (A : LL_VF; B : c_int) return LL_VSI;
+   function vctuxs (A : LL_VF; B : c_int) return LL_VUI;
 
    procedure dss (A : c_int);
    procedure dssall;
