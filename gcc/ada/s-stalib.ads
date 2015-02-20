@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -239,9 +239,10 @@ package System.Standard_Library is
    -----------------
 
    procedure Abort_Undefer_Direct;
-   pragma Inline (Abort_Undefer_Direct);
    --  A little procedure that just calls Abort_Undefer.all, for use in
    --  clean up procedures, which only permit a simple subprogram name.
+   --  ??? This procedure is not marked inline because the front-end
+   --  cannot currently mark its calls from at-end handers as inlined.
 
    procedure Adafinal;
    --  Performs the Ada Runtime finalization the first time it is invoked.

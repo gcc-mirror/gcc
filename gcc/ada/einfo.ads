@@ -3579,7 +3579,7 @@ package Einfo is
 --       subject to indicator Part_Of (both aspect and option variants).
 
 --    Partial_View_Has_Unknown_Discr (Flag280)
---       Present on types entities. Indicates that the partial view of a type
+--       Present in all types. Set to Indicate that the partial view of a type
 --       has unknown discriminants. A default initialization of an object of
 --       the type does not require an invariant check (AI12-0133).
 
@@ -8778,7 +8778,7 @@ package Einfo is
    pragma Inline (Set_Packed_Array_Impl_Type);
    pragma Inline (Set_Parent_Subtype);
    pragma Inline (Set_Part_Of_Constituents);
-   pragma Inline (Partial_View_Has_Unknown_Discr);
+   pragma Inline (Set_Partial_View_Has_Unknown_Discr);
    pragma Inline (Set_Pending_Access_Types);
    pragma Inline (Set_Postcondition_Proc);
    pragma Inline (Set_Prival);
