@@ -4603,7 +4603,13 @@ package body Sem_Ch12 is
       Gen_Decl         : Node_Id;
       Pack_Id          : Entity_Id;
       Parent_Installed : Boolean := False;
-      Renaming_List    : List_Id;
+
+      Renaming_List : List_Id;
+      --  The list of declarations that link formals and actuals of the
+      --  instance. These are subtype declarations for formal types, and
+      --  renaming declarations for other formals. The subprogram declaration
+      --  for the instance is then appended to the list, and the last item on
+      --  the list is the renaming declaration for the instance.
 
       procedure Analyze_Instance_And_Renamings;
       --  The instance must be analyzed in a context that includes the mappings
@@ -4611,6 +4617,14 @@ package body Sem_Ch12 is
       --  for this purpose, and a subprogram with an internal name within the
       --  package. The subprogram instance is simply an alias for the internal
       --  subprogram, declared in the current scope.
+
+      procedure Build_Subprogram_Renaming;
+      --  If the subprogram is recursive, there are occurrences of the name of
+      --  the generic within the body, which must resolve to the current
+      --  instance. We add a renaming declaration after the declaration, which
+      --  is available in the instance body, as well as in the analysis of
+      --  aspects that appear in the generic. This renaming declaration is
+      --  inserted after the instance declaration which it renames.
 
       ------------------------------------
       -- Analyze_Instance_And_Renamings --
@@ -4765,6 +4779,52 @@ package body Sem_Ch12 is
             Set_Body_Required (Parent (N), False);
          end if;
       end Analyze_Instance_And_Renamings;
+
+      -------------------------------
+      -- Build_Subprogram_Renaming --
+      -------------------------------
+
+      procedure Build_Subprogram_Renaming is
+         Renaming_Decl : Node_Id;
+         Unit_Renaming : Node_Id;
+
+      begin
+         Unit_Renaming :=
+           Make_Subprogram_Renaming_Declaration (Loc,
+             Specification =>
+               Copy_Generic_Node
+                 (Specification (Original_Node (Gen_Decl)),
+                  Empty,
+                  Instantiating => True),
+             Name          => New_Occurrence_Of (Anon_Id, Loc));
+
+         --  The generic may be a a child unit. The renaming needs an
+         --  identifier with the proper name.
+
+         Set_Defining_Unit_Name (Specification (Unit_Renaming),
+            Make_Defining_Identifier (Loc, Chars (Gen_Unit)));
+
+         --  If there is a formal subprogram with the same name as the unit
+         --  itself, do not add this renaming declaration, to prevent
+         --  ambiguities when there is a call with that name in the body.
+         --  This is a partial and ugly fix for one ACATS test. ???
+
+         Renaming_Decl := First (Renaming_List);
+         while Present (Renaming_Decl) loop
+            if Nkind (Renaming_Decl) = N_Subprogram_Renaming_Declaration
+              and then
+                Chars (Defining_Entity (Renaming_Decl)) = Chars (Gen_Unit)
+            then
+               exit;
+            end if;
+
+            Next (Renaming_Decl);
+         end loop;
+
+         if No (Renaming_Decl) then
+            Append  (Unit_Renaming, Renaming_List);
+         end if;
+      end Build_Subprogram_Renaming;
 
       --  Local variables
 
@@ -4931,6 +4991,7 @@ package body Sem_Ch12 is
          end if;
 
          Append (Act_Decl, Renaming_List);
+         Build_Subprogram_Renaming;
          Analyze_Instance_And_Renamings;
 
          --  If the generic is marked Import (Intrinsic), then so is the
@@ -5513,6 +5574,12 @@ package body Sem_Ch12 is
                                N_Formal_Package_Declaration)
            or else Kind in N_Formal_Subprogram_Declaration
          then
+            null;
+
+         --  Ada 2012: If both formal and actual are incomplete types they
+         --  are conformant.
+
+         elsif Is_Incomplete_Type (E1) and then Is_Incomplete_Type (E2) then
             null;
 
          elsif B then
@@ -10686,14 +10753,11 @@ package body Sem_Ch12 is
                         Defining_Unit_Name (Specification (Act_Decl));
       Pack_Id       : constant Entity_Id  :=
                         Defining_Unit_Name (Parent (Act_Decl));
-      Decls         : List_Id;
       Gen_Body      : Node_Id;
       Gen_Body_Id   : Node_Id;
       Act_Body      : Node_Id;
       Pack_Body     : Node_Id;
-      Prev_Formal   : Entity_Id;
       Ret_Expr      : Node_Id;
-      Unit_Renaming : Node_Id;
 
       Parent_Installed : Boolean := False;
 
@@ -10823,47 +10887,14 @@ package body Sem_Ch12 is
             Parent_Installed := True;
          end if;
 
-         --  Inside its body, a reference to the generic unit is a reference
-         --  to the instance. The corresponding renaming is the first
-         --  declaration in the body.
+         --  Subprogram body is placed in the body of wrapper package,
+         --  whose spec contains the subprogram declaration as well as
+         --  the renaming declarations for the generic parameters.
 
-         Unit_Renaming :=
-           Make_Subprogram_Renaming_Declaration (Loc,
-             Specification =>
-               Copy_Generic_Node (
-                 Specification (Original_Node (Gen_Body)),
-                 Empty,
-                 Instantiating => True),
-             Name => New_Occurrence_Of (Anon_Id, Loc));
-
-         --  If there is a formal subprogram with the same name as the unit
-         --  itself, do not add this renaming declaration. This is a temporary
-         --  fix for one ACATS test. ???
-
-         Prev_Formal := First_Entity (Pack_Id);
-         while Present (Prev_Formal) loop
-            if Chars (Prev_Formal) = Chars (Gen_Unit)
-              and then Is_Overloadable (Prev_Formal)
-            then
-               exit;
-            end if;
-
-            Next_Entity (Prev_Formal);
-         end loop;
-
-         if Present (Prev_Formal) then
-            Decls :=  New_List (Act_Body);
-         else
-            Decls :=  New_List (Unit_Renaming, Act_Body);
-         end if;
-
-         --  The subprogram body is placed in the body of a dummy package body,
-         --  whose spec contains the subprogram declaration as well as the
-         --  renaming declarations for the generic parameters.
-
-         Pack_Body := Make_Package_Body (Loc,
-           Defining_Unit_Name => New_Copy (Pack_Id),
-           Declarations       => Decls);
+         Pack_Body :=
+           Make_Package_Body (Loc,
+             Defining_Unit_Name => New_Copy (Pack_Id),
+             Declarations       => New_List (Act_Body));
 
          Set_Corresponding_Spec (Pack_Body, Pack_Id);
 
@@ -12297,6 +12328,14 @@ package body Sem_Ch12 is
          Set_Has_Private_View (Subtype_Indication (Decl_Node));
       end if;
 
+      --  In Ada 2012 the actual may be a limited view. Indicate that
+      --  the local subtype must be treated as such.
+
+      if From_Limited_With (Act_T) then
+         Set_Ekind (Subt, E_Incomplete_Subtype);
+         Set_From_Limited_With (Subt);
+      end if;
+
       Decl_Nodes := New_List (Decl_Node);
 
       --  Flag actual derived types so their elaboration produces the
@@ -12666,14 +12705,24 @@ package body Sem_Ch12 is
                            --  Subprogram instance
 
                            else
-                              --  The instance_spec is the wrapper package,
-                              --  and the subprogram declaration is the last
-                              --  declaration in the wrapper.
+                              --  The instance_spec is in the wrapper package,
+                              --  usually followed by its local renaming
+                              --  declaration. See Build_Subprogram_Renaming
+                              --  for details.
 
-                              Info.Act_Decl :=
-                                Last
-                                  (Visible_Declarations
-                                    (Specification (Info.Act_Decl)));
+                              declare
+                                 Decl : Node_Id :=
+                                          (Last (Visible_Declarations
+                                            (Specification (Info.Act_Decl))));
+                              begin
+                                 if Nkind (Decl) =
+                                      N_Subprogram_Renaming_Declaration
+                                 then
+                                    Decl := Prev (Decl);
+                                 end if;
+
+                                 Info.Act_Decl := Decl;
+                              end;
 
                               Instantiate_Subprogram_Body
                                 (Info, Body_Optional => True);

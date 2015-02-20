@@ -1,3 +1,66 @@
+2015-02-20  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.ads: Minor typo in comment.
+
+2015-02-20  Pascal Obry  <obry@adacore.com>
+
+	* s-osprim-mingw.adb: Fix Get_Base_Time parameter mode.
+
+2015-02-20  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.adb (Get_Directories.Add_Dir): Add a directory only
+	if it exists.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.ads: Minor reformatting.
+
+2015-02-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Size_Known): Do not set the packed size for
+	independent type or component.
+	(Freeze_Array_Type): Check for Independent[_Components] with packing
+	or explicit component size clause.
+	* gnat1drv.adb (Post_Compilation_Validation_Checks): Do the validation
+	of independence pragmas only for non-GCC back-ends.
+	* sem_ch13.adb (Initialize): Likewise for the initialization.
+	* sem_prag.adb (Record_Independence_Check): New procedure to record an
+	independence check in the table.
+	(Analyze_Pragma): Use it throughout instead of doing it manually.
+	* gcc-interface/decl.c (gnat_to_gnu_field): Add support for
+	independent type or component.
+
+2015-02-20  Thomas Quinot  <quinot@adacore.com>
+
+	* adaint.c (__gnat_readdir): For Solaris, use 64 bit variants of
+	struct direct and readdir. This is required for NFS filesystems
+	mounted from servers that use 64-bit cookies.
+
+2015-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Subprogram_Instantiaion): New subprogram
+	Build_Subprogram_Renaming, to create renaming of subprogram
+	instance in the the declaration of the wrapper package rather
+	than in its body, so that it is available for analysis of aspects
+	propagated from generic to instantiation.
+	(Check_Mismatch): An actual for a formal package that is an
+	incomplete type matches a formal type that is incomplete.
+	(Instantiate_Package_Body): Move code that builds subprogram
+	renaming to Analyze_Subprogram_Instantiation.
+	(Instantiate_Type): The generated subtype is a limited view if
+	the actual is a limited view.
+	(Load_Parent_Of_Generic): Retrieve instance declaration from
+	its new position within wrapper package.
+
+2015-02-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-parame-vxworks.adb, s-os_lib.ads: Update comments.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* s-osinte-vxworks.ads (To_Timespec): Add comment about the
+	issue of negative arguments.
+
 2015-02-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat1drv.adb: Minor consistency fix.
