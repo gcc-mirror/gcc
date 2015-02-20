@@ -1,3 +1,9 @@
+2015-02-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/64172
+	* ira-color.c (color_pass): Prevent splitting multi-register
+	pseudos.
+
 2015-02-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65136
