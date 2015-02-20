@@ -15732,7 +15732,7 @@ package body Sem_Prag is
 
             --  Not allowed for abstract type
 
-            if Is_Abstract_Type (Typ) then
+            if Is_Abstract_Type (Typ) and then not Class_Present (N) then
                Error_Pragma_Arg
                  ("pragma% not allowed for abstract type", Arg1);
             end if;
