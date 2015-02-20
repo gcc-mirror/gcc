@@ -1238,8 +1238,8 @@ begin
         and then
           (not (Back_Annotate_Rep_Info or Generate_SCIL or GNATprove_Mode)
             or else Main_Kind = N_Subunit
-            or else Targparm.Frontend_Layout_On_Target
-            or else Targparm.VM_Target /= No_VM)
+            or else Frontend_Layout_On_Target
+            or else VM_Target /= No_VM)
       then
          Post_Compilation_Validation_Checks;
          Errout.Finalize (Last_Call => True);
