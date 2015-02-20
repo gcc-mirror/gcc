@@ -8035,7 +8035,13 @@ package body Freeze is
          end if;
 
          --  If a pragma Import follows, we assume that it is for the current
-         --  target of the address clause, and skip the warning.
+         --  target of the address clause, and skip the warning. There may be
+         --  a source pragma or an aspect that specifies import and generates
+         --  the corresponding pragma. These will indicate that the entity is
+         --  imported and that is checked above so that the spurious warning
+         --  (generated when the entity is frozen) will be suppressed. The
+         --  pragma may be attached to the aspect, so it is not yet a list
+         --  member.
 
          if Is_List_Member (Parent (Expr)) then
             Decl := Next (Parent (Expr));

@@ -1,3 +1,9 @@
+2015-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Obsolescent): Pragma
+	legally applies to an abstract subprogram declaration.
+	* freeze.adb: Minor comment addition.
+
 2015-02-20  Robert Dewar  <dewar@adacore.com>
 
 	* errout.ads: Document replacement of Name_uPre/Post/Type_Invariant.

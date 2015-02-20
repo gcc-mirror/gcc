@@ -17233,13 +17233,16 @@ package body Sem_Prag is
                   end;
                end if;
 
-            --  Cases where we must follow a declaration
+            --  Cases where we must follow a declaration, including an
+            --  abstract subprogram declaration, which is not in the
+            --  other node subtypes.
 
             else
                if         Nkind (Decl) not in N_Declaration
                  and then Nkind (Decl) not in N_Later_Decl_Item
                  and then Nkind (Decl) not in N_Generic_Declaration
                  and then Nkind (Decl) not in N_Renaming_Declaration
+                 and then Nkind (Decl) /= N_Abstract_Subprogram_Declaration
                then
                   Error_Pragma
                     ("pragma% misplaced, "
