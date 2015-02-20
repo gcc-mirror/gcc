@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6862,20 +6862,38 @@ package body Sem_Ch8 is
                Premature_Usage (P);
 
             elsif Nkind (P) /= N_Attribute_Reference then
-               Error_Msg_N (
-                "invalid prefix in selected component&", P);
+
+               --  This may have been meant as a prefixed call to a primitive
+               --  of an untagged type.
+
+               declare
+                  F : constant Entity_Id :=
+                        Current_Entity (Selector_Name (N));
+               begin
+                  if Present (F)
+                    and then Is_Overloadable (F)
+                    and then Present (First_Entity (F))
+                    and then Etype (First_Entity (F)) = Etype (P)
+                    and then not Is_Tagged_Type (Etype (P))
+                  then
+                     Error_Msg_N
+                       ("prefixed call is only allowed for objects "
+                        & "of a tagged type", N);
+                  end if;
+               end;
+
+               Error_Msg_N ("invalid prefix in selected component&", P);
 
                if Is_Access_Type (P_Type)
                  and then Ekind (Designated_Type (P_Type)) = E_Incomplete_Type
                then
                   Error_Msg_N
-                    ("\dereference must not be of an incomplete type " &
-                       "(RM 3.10.1)", P);
+                    ("\dereference must not be of an incomplete type "
+                     & "(RM 3.10.1)", P);
                end if;
 
             else
-               Error_Msg_N (
-                "invalid prefix in selected component", P);
+               Error_Msg_N ("invalid prefix in selected component", P);
             end if;
          end if;
 

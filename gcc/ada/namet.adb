@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -833,8 +833,12 @@ package body Namet is
 
    function Is_Internal_Name (Id : Name_Id) return Boolean is
    begin
-      Get_Name_String (Id);
-      return Is_Internal_Name;
+      if Id in Error_Name_Or_No_Name then
+         return False;
+      else
+         Get_Name_String (Id);
+         return Is_Internal_Name;
+      end if;
    end Is_Internal_Name;
 
    ----------------------
@@ -844,18 +848,41 @@ package body Namet is
    --  Version taking its input from Name_Buffer
 
    function Is_Internal_Name return Boolean is
+      J : Natural;
+
    begin
+      --  AAny name starting with underscore is internal
+
       if Name_Buffer (1) = '_'
         or else Name_Buffer (Name_Len) = '_'
       then
          return True;
 
+      --  Allow quoted character
+
+      elsif Name_Buffer (1) = ''' then
+         return False;
+
+      --  All other cases, scan name
+
       else
          --  Test backwards, because we only want to test the last entity
          --  name if the name we have is qualified with other entities.
 
-         for J in reverse 1 .. Name_Len loop
-            if Is_OK_Internal_Letter (Name_Buffer (J)) then
+         J := Name_Len;
+         while J /= 0 loop
+
+            --  Skip stuff between brackets (A-F OK there)
+
+            if Name_Buffer (J) = ']' then
+               loop
+                  J := J - 1;
+                  exit when J = 1 or else Name_Buffer (J) = '[';
+               end loop;
+
+            --  Test for internal letter
+
+            elsif Is_OK_Internal_Letter (Name_Buffer (J)) then
                return True;
 
             --  Quit if we come to terminating double underscore (note that
@@ -869,6 +896,8 @@ package body Namet is
             then
                return False;
             end if;
+
+            J := J - 1;
          end loop;
       end if;
 
