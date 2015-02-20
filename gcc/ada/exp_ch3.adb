@@ -44,6 +44,7 @@ with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Ghost;    use Ghost;
+with Inline;   use Inline;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -5321,11 +5322,20 @@ package body Exp_Ch3 is
                --       Abort_Undefer_Direct;
                --    end;
 
-               Abrt_HSS :=
-                 Make_Handled_Sequence_Of_Statements (Loc,
-                   Statements  => Fin_Stmts,
-                   At_End_Proc =>
-                     New_Occurrence_Of (RTE (RE_Abort_Undefer_Direct), Loc));
+               declare
+                  AUD : constant Entity_Id := RTE (RE_Abort_Undefer_Direct);
+
+               begin
+                  Abrt_HSS :=
+                    Make_Handled_Sequence_Of_Statements (Loc,
+                      Statements  => Fin_Stmts,
+                      At_End_Proc => New_Occurrence_Of (AUD, Loc));
+
+                  --  Present the Abort_Undefer_Direct function to the backend
+                  --  so that it can inline the call to the function.
+
+                  Add_Inlined_Body (AUD, N);
+               end;
 
                Abrt_Blk :=
                  Make_Block_Statement (Loc,

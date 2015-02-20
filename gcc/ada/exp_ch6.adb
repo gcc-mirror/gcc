@@ -43,7 +43,6 @@ with Exp_Pakd; use Exp_Pakd;
 with Exp_Prag; use Exp_Prag;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
-with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Inline;   use Inline;
 with Lib;      use Lib;
@@ -3757,7 +3756,7 @@ package body Exp_Ch6 is
                else
                   --  Let the back end handle it
 
-                  Add_Inlined_Body (Subp);
+                  Add_Inlined_Body (Subp, Call_Node);
 
                   if Front_End_Inlining
                     and then Nkind (Spec) = N_Subprogram_Declaration
@@ -3780,30 +3779,7 @@ package body Exp_Ch6 is
                                                  N_Subprogram_Declaration
            or else No (Body_To_Inline (Unit_Declaration_Node (Subp)))
          then
-            Add_Inlined_Body (Subp);
-            Register_Backend_Call (Call_Node);
-
-            --  If the call is to a function in a run-time unit that is marked
-            --  Inline_Always, we must suppress debugging information on it,
-            --  so that the code that is eventually inlined will not affect
-            --  debugging of the user program.
-
-            if Is_Predefined_File_Name
-                 (Unit_File_Name (Get_Source_Unit (Sloc (Subp))))
-              and then In_Extended_Main_Source_Unit (N)
-            then
-               --  We make an exception for calls to the Ada hierarchy if call
-               --  comes from source, because some user applications need the
-               --  debugging information for such calls.
-
-               if Comes_From_Source (Call_Node)
-                 and then Name_Buffer (1 .. 2) = "a-"
-               then
-                  null;
-               else
-                  Set_Needs_Debug_Info (Subp, False);
-               end if;
-            end if;
+            Add_Inlined_Body (Subp, Call_Node);
 
          --  Front end expansion of simple functions returning unconstrained
          --  types (see Check_And_Split_Unconstrained_Function) and simple

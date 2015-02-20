@@ -1,5 +1,24 @@
 2015-02-20  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* exp_ch3.adb (Default_Initialize_Object): Call Add_Inlined_Body on the
+	Abort_Undefer_Direct function.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Likewise.
+	* exp_intr.adb (Expand_Unc_Deallocation): Likewise.
+	* exp_prag.adb (Expand_Pragma_Abort_Defer): Likewise.
+	* exp_ch4.adb (Expand_N_Selected_Component): Adjust call to
+	Add_Inlined_Body.
+	* exp_ch6.adb (Expand_Call): Adjust calls to Add_Inlined_Body.
+	 Remove call to Register_Backend_Call and move code resetting
+	Needs_Debug_Info on inlined subprograms to...
+	* inline.ads (Add_Inlined_Body): Add N parameter.
+	(Register_Backend_Call): Delete.
+	* inline.adb (Add_Inlined_Body): ...here and simplify.
+	 Register the call with Backend_Calls directly.
+	(Register_Backend_Call): Delete.
+	* s-stalib.ads (Abort_Undefer_Direct): Restore pragma Inline.
+
+2015-02-20  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* s-stalib.ads: Fix typo.
 
 2015-02-20  Ed Schonberg  <schonberg@adacore.com>
