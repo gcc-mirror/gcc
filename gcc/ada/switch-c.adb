@@ -821,6 +821,7 @@ package body Switch.C is
             when 'g' =>
                Ptr := Ptr + 1;
                GNAT_Mode := True;
+               GNAT_Mode_Config := True;
                Identifier_Character_Set := 'n';
                System_Extend_Unit := Empty;
                Warning_Mode := Treat_As_Error;

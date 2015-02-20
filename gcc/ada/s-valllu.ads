@@ -62,7 +62,7 @@ package System.Val_LLU is
    --
    --  Note: these rules correspond to the requirements for leaving the pointer
    --  positioned in Text_IO.Get. Note that the rules as stated in the RM would
-   --  seem to imply that for a case like
+   --  seem to imply that for a case like:
    --
    --    8#12345670009#
    --
@@ -91,6 +91,15 @@ package System.Val_LLU is
    --
    --  then the pointer is also left at the initial # character, but constraint
    --  error is raised reflecting the encounter of an out of range digit.
+   --
+   --  Finally if we have an unterminated fixed-point constant where the final
+   --  # or : character is missing, Constraint_Error is raised and the pointer
+   --  is left pointing past the last digit, as in:
+   --
+   --   8#22
+   --
+   --  This string results in a Constraint_Error with the pointer pointing
+   --  past the second 2.
    --
    --  Note: if Str is empty, i.e. if Max is less than Ptr, then this is a
    --  special case of an all-blank string, and Ptr is unchanged, and hence

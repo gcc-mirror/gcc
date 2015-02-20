@@ -2154,6 +2154,12 @@ package Opt is
    --  GNAT
    --  True if compiling in GNAT system mode (-gnatg switch)
 
+   GNAT_Mode_Config : Boolean := False;
+   --  GNAT
+   --  True if -gnatg switch is present. GNAT_Mode may be temporary set to
+   --  True during the analysis of a system unit, but GNAT_Mode_Config must
+   --  not changed once scanned.
+
    --  Setting this switch has the following effects on the language that is
    --  accepted. Note that several of the following have the effect of changing
    --  an error to a warning. But warnings are usually treated as fatal errors

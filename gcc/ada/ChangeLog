@@ -1,3 +1,20 @@
+2015-02-20  Tristan Gingold  <gingold@adacore.com>
+
+	* opt.ads (GNAT_Mode_Config): New variable.
+	* opt.adb (Set_Opt_Config_Switches): Consider GNAT_Mode_Config
+	to set Assertions_Enabled.
+	* switch-c.adb (Scan_Front_End_Switches): Set GNAT_Mode_Config
+	for -gnatg.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* s-valllu.ads (Scan_Raw_Long_Long_Unsigned): Add an additional
+	comment regarding the handling of unterminated fixed-point
+	constants.
+	* s-valuns.ads (Scan_Raw_Unsigned): Add comments
+	corresponding to those previously added for
+	System.Val_LLU.Scan_Raw_Long_Long_Unsigned.
+
 2015-02-20  Olivier Hainque  <hainque@adacore.com>
 
 	* g-allein.ads, g-alveop.ads, g-alveop.adb: Code clean ups.
