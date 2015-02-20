@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with GNAT.Altivec.Low_Level_Vectors; use GNAT.Altivec.Low_Level_Vectors;
+with GNAT.Altivec.Low_Level_Interface;  use GNAT.Altivec.Low_Level_Interface;
 
 package body GNAT.Altivec.Vector_Operations is
 
@@ -8272,6 +8272,116 @@ package body GNAT.Altivec.Vector_Operations is
    begin
       return To_LL_VP (vsplth (To_LL_VSS (A), B));
    end vec_vsplth;
+
+   -- vec_vspltb --
+
+   function vec_vspltb
+     (A : vector_unsigned_char;
+      B : c_int) return vector_unsigned_char
+   is
+   begin
+      return To_LL_VUC (vspltb (To_LL_VSC (A), B));
+   end vec_vspltb;
+
+   function vec_vspltb
+     (A : vector_bool_char;
+      B : c_int) return vector_bool_char
+   is
+   begin
+      return To_LL_VBC (vspltb (To_LL_VSC (A), B));
+   end vec_vspltb;
+
+   -- vec_splat_u8 --
+
+   function vec_splat_u8
+     (A : c_int) return vector_unsigned_char
+   is
+   begin
+      return To_LL_VUC (vspltisb (A));
+   end vec_splat_u8;
+
+   -- vec_splat_u16 --
+
+   function vec_splat_u16
+     (A : c_int) return vector_unsigned_short
+   is
+   begin
+      return To_LL_VUS (vspltish (A));
+   end vec_splat_u16;
+
+   -- vec_splat_u32 --
+
+   function vec_splat_u32
+     (A : c_int) return vector_unsigned_int
+   is
+   begin
+      return To_LL_VUI (vspltisw (A));
+   end vec_splat_u32;
+
+   -- vec_sld --
+
+   function vec_sld
+     (A : vector_unsigned_int;
+      B : vector_unsigned_int;
+      C : c_int) return vector_unsigned_int
+   is
+   begin
+      return To_LL_VUI (vsldoi_4si (To_LL_VSI (A), To_LL_VSI (B), C));
+   end vec_sld;
+
+   function vec_sld
+     (A : vector_bool_int;
+      B : vector_bool_int;
+      C : c_int) return vector_bool_int
+   is
+   begin
+      return To_LL_VBI (vsldoi_4si (To_LL_VSI (A), To_LL_VSI (B), C));
+   end vec_sld;
+
+   function vec_sld
+     (A : vector_unsigned_short;
+      B : vector_unsigned_short;
+      C : c_int) return vector_unsigned_short
+   is
+   begin
+      return To_LL_VUS (vsldoi_8hi (To_LL_VSS (A), To_LL_VSS (B), C));
+   end vec_sld;
+
+   function vec_sld
+     (A : vector_bool_short;
+      B : vector_bool_short;
+      C : c_int) return vector_bool_short
+   is
+   begin
+      return To_LL_VBS (vsldoi_8hi (To_LL_VSS (A), To_LL_VSS (B), C));
+   end vec_sld;
+
+   function vec_sld
+     (A : vector_pixel;
+      B : vector_pixel;
+      C : c_int) return vector_pixel
+   is
+   begin
+      return To_LL_VP (vsldoi_8hi (To_LL_VSS (A), To_LL_VSS (B), C));
+   end vec_sld;
+
+   function vec_sld
+     (A : vector_unsigned_char;
+      B : vector_unsigned_char;
+      C : c_int) return vector_unsigned_char
+   is
+   begin
+      return To_LL_VUC (vsldoi_16qi (To_LL_VSC (A), To_LL_VSC (B), C));
+   end vec_sld;
+
+   function vec_sld
+     (A : vector_bool_char;
+      B : vector_bool_char;
+      C : c_int) return vector_bool_char
+   is
+   begin
+      return To_LL_VBC (vsldoi_16qi (To_LL_VSC (A), To_LL_VSC (B), C));
+   end vec_sld;
 
    -----------------------------------
    -- Bodies for Altivec predicates --

@@ -33,14 +33,70 @@
 --  objects. It is common to both the Soft and the Hard bindings.
 
 with GNAT.Altivec.Vector_Types;  use GNAT.Altivec.Vector_Types;
-with GNAT.Altivec.Low_Level_Interface;  use GNAT.Altivec.Low_Level_Interface;
-with GNAT.Altivec.Low_Level_Vectors;
+with GNAT.Altivec.Low_Level_Vectors; use GNAT.Altivec.Low_Level_Vectors;
 
 package GNAT.Altivec.Vector_Operations is
 
-   --  The vast majority of the operations exposed here are type conversion
-   --  wrappers around a much smaller set of low level primitives, exposed by
-   --  the Altivec.Low_Level_Interface package.
+   -------------------------------------
+   -- Different flavors of interfaces --
+   -------------------------------------
+
+   --  The vast majority of the user visible functions are just neutral type
+   --  conversion wrappers around calls to low level primitives. For instance:
+   --
+   --        function vec_sll
+   --          (A : vector_signed_int;
+   --           B : vector_unsigned_char) return vector_signed_int is
+   --        begin
+   --          return To_VSI (vsl (To_VSI (A), To_VSI (B)));
+   --        end vec_sll;
+   --
+   --  We actually don't always need an explicit wrapper and can bind directly
+   --  with a straight Import of the low level routine, or a renaming of such
+   --  instead.
+   --
+   --  A direct binding is not possible (that is, a wrapper is mandatory) in
+   --  a number of cases:
+   --
+   --  o When the high-level/low-level types don't match, in which case a
+   --  straight import would risk wrong code generation or compiler blowups in
+   --  the Hard binding case. This is the case for 'B' in the example above.
+   --
+   --  o When the high-level/low-level argument lists differ, as is the case
+   --  for most of the AltiVec predicates, relying on a low-level primitive
+   --  which expects a control code argument, like:
+   --
+   --        function vec_any_ne
+   --           (A : vector_signed_int;
+   --            B : vector_signed_int) return c_int is
+   --        begin
+   --          return vcmpequw_p (CR6_LT_REV, To_VSI (A), To_VSI (B));
+   --        end vec_any_ne;
+   --
+   --  o When the high-level/low-level arguments order don't match, as in:
+   --
+   --        function vec_cmplt
+   --           (A : vector_unsigned_char;
+   --            B : vector_unsigned_char) return vector_bool_char is
+   --         begin
+   --           return To_VBC (vcmpgtub (To_VSC (B), To_VSC (A)));
+   --         end vec_cmplt;
+
+   -----------------------------
+   -- Inlining considerations --
+   -----------------------------
+
+   --  The intent in the Hard binding case is to eventually map operations to
+   --  hardware instructions. Needless to say, intermediate function calls do
+   --  not fit this purpose, so all the user visible subprograms need to be
+   --  marked Inline_Always. Some of the builtins we eventually bind to expect
+   --  literal arguments. Wrappers to such builtins are made Convention
+   --  Intrinsic as well so we don't attempt to compile the bodies on their
+   --  own.
+
+   --  In the soft case, the bulk of the work is performed by the low level
+   --  routines, and those exported by this unit are short enough for the
+   --  inlining to make sense and even be beneficial.
 
    -------------------------------------------------------
    -- [PIM-4.4 Generic and Specific AltiVec operations] --
@@ -987,6 +1043,9 @@ package GNAT.Altivec.Vector_Operations is
       B : c_int;
       C : c_int);
 
+   pragma Inline_Always (vec_dst);
+   pragma Convention (Intrinsic, vec_dst);
+
    -- vec_dstst --
 
    procedure vec_dstst
@@ -1088,6 +1147,9 @@ package GNAT.Altivec.Vector_Operations is
      (A : const_float_ptr;
       B : c_int;
       C : c_int);
+
+   pragma Inline_Always (vec_dstst);
+   pragma Convention (Intrinsic, vec_dstst);
 
    -- vec_dststt --
 
@@ -1191,6 +1253,9 @@ package GNAT.Altivec.Vector_Operations is
       B : c_int;
       C : c_int);
 
+   pragma Inline_Always (vec_dststt);
+   pragma Convention (Intrinsic, vec_dststt);
+
    -- vec_dstt --
 
    procedure vec_dstt
@@ -1292,6 +1357,9 @@ package GNAT.Altivec.Vector_Operations is
      (A : const_float_ptr;
       B : c_int;
       C : c_int);
+
+   pragma Inline_Always (vec_dstt);
+   pragma Convention (Intrinsic, vec_dstt);
 
    -- vec_expte --
 
@@ -2963,70 +3031,66 @@ package GNAT.Altivec.Vector_Operations is
    -- vec_sld --
 
    function vec_sld
+     (A : vector_unsigned_int;
+      B : vector_unsigned_int;
+      C : c_int) return vector_unsigned_int;
+
+   function vec_sld
+     (A : vector_bool_int;
+      B : vector_bool_int;
+      C : c_int) return vector_bool_int;
+
+   function vec_sld
+     (A : vector_unsigned_short;
+      B : vector_unsigned_short;
+      C : c_int) return vector_unsigned_short;
+
+   function vec_sld
+     (A : vector_bool_short;
+      B : vector_bool_short;
+      C : c_int) return vector_bool_short;
+
+   function vec_sld
+     (A : vector_pixel;
+      B : vector_pixel;
+      C : c_int) return vector_pixel;
+
+   function vec_sld
+     (A : vector_unsigned_char;
+      B : vector_unsigned_char;
+      C : c_int) return vector_unsigned_char;
+
+   function vec_sld
+     (A : vector_bool_char;
+      B : vector_bool_char;
+      C : c_int) return vector_bool_char;
+
+   pragma Inline_Always (vec_sld);
+   pragma Convention (Intrinsic, vec_sld);
+
+   function vec_sld
      (A : vector_float;
       B : vector_float;
       C : c_int) return vector_float
-   renames Low_Level_Interface.vec_sld_vf_vf_cint_r_vf;
+   renames Low_Level_Vectors.vsldoi_4sf;
 
    function vec_sld
      (A : vector_signed_int;
       B : vector_signed_int;
       C : c_int) return vector_signed_int
-   renames Low_Level_Interface.vec_sld_vsi_vsi_cint_r_vsi;
-
-   function vec_sld
-     (A : vector_unsigned_int;
-      B : vector_unsigned_int;
-      C : c_int) return vector_unsigned_int
-   renames Low_Level_Interface.vec_sld_vui_vui_cint_r_vui;
-
-   function vec_sld
-     (A : vector_bool_int;
-      B : vector_bool_int;
-      C : c_int) return vector_bool_int
-   renames Low_Level_Interface.vec_sld_vbi_vbi_cint_r_vbi;
+   renames Low_Level_Vectors.vsldoi_4si;
 
    function vec_sld
      (A : vector_signed_short;
       B : vector_signed_short;
       C : c_int) return vector_signed_short
-   renames Low_Level_Interface.vec_sld_vss_vss_cint_r_vss;
-
-   function vec_sld
-     (A : vector_unsigned_short;
-      B : vector_unsigned_short;
-      C : c_int) return vector_unsigned_short
-   renames Low_Level_Interface.vec_sld_vus_vus_cint_r_vus;
-
-   function vec_sld
-     (A : vector_bool_short;
-      B : vector_bool_short;
-      C : c_int) return vector_bool_short
-   renames Low_Level_Interface.vec_sld_vbs_vbs_cint_r_vbs;
-
-   function vec_sld
-     (A : vector_pixel;
-      B : vector_pixel;
-      C : c_int) return vector_pixel
-   renames Low_Level_Interface.vec_sld_vx_vx_cint_r_vx;
+   renames Low_Level_Vectors.vsldoi_8hi;
 
    function vec_sld
      (A : vector_signed_char;
       B : vector_signed_char;
       C : c_int) return vector_signed_char
-   renames Low_Level_Interface.vec_sld_vsc_vsc_cint_r_vsc;
-
-   function vec_sld
-     (A : vector_unsigned_char;
-      B : vector_unsigned_char;
-      C : c_int) return vector_unsigned_char
-   renames Low_Level_Interface.vec_sld_vuc_vuc_cint_r_vuc;
-
-   function vec_sld
-     (A : vector_bool_char;
-      B : vector_bool_char;
-      C : c_int) return vector_bool_char
-   renames Low_Level_Interface.vec_sld_vbc_vbc_cint_r_vbc;
+   renames Low_Level_Vectors.vsldoi_16qi;
 
    -- vec_sll --
 
@@ -3216,63 +3280,6 @@ package GNAT.Altivec.Vector_Operations is
      (A : vector_unsigned_char;
       B : vector_unsigned_char) return vector_unsigned_char;
 
-   -- vec_splat --
-
-   function vec_splat
-     (A : vector_signed_char;
-      B : c_int) return vector_signed_char
-   renames Low_Level_Interface.vec_splat_vsc_cint_r_vsc;
-
-   function vec_splat
-     (A : vector_unsigned_char;
-      B : c_int) return vector_unsigned_char
-   renames Low_Level_Interface.vec_splat_vuc_cint_r_vuc;
-
-   function vec_splat
-     (A : vector_bool_char;
-      B : c_int) return vector_bool_char
-   renames Low_Level_Interface.vec_splat_vbc_cint_r_vbc;
-
-   function vec_splat
-     (A : vector_signed_short;
-      B : c_int) return vector_signed_short
-   renames Low_Level_Interface.vec_splat_vss_cint_r_vss;
-
-   function vec_splat
-     (A : vector_unsigned_short;
-      B : c_int) return vector_unsigned_short
-   renames Low_Level_Interface.vec_splat_vus_cint_r_vus;
-
-   function vec_splat
-     (A : vector_bool_short;
-      B : c_int) return vector_bool_short
-   renames Low_Level_Interface.vec_splat_vbs_cint_r_vbs;
-
-   function vec_splat
-     (A : vector_pixel;
-      B : c_int) return vector_pixel
-   renames Low_Level_Interface.vec_splat_vx_cint_r_vx;
-
-   function vec_splat
-     (A : vector_float;
-      B : c_int) return vector_float
-   renames Low_Level_Interface.vec_splat_vf_cint_r_vf;
-
-   function vec_splat
-     (A : vector_signed_int;
-      B : c_int) return vector_signed_int
-   renames Low_Level_Interface.vec_splat_vsi_cint_r_vsi;
-
-   function vec_splat
-     (A : vector_unsigned_int;
-      B : c_int) return vector_unsigned_int
-   renames Low_Level_Interface.vec_splat_vui_cint_r_vui;
-
-   function vec_splat
-     (A : vector_bool_int;
-      B : c_int) return vector_bool_int
-   renames Low_Level_Interface.vec_splat_vbi_cint_r_vbi;
-
    -- vec_vspltw --
 
    function vec_vspltw
@@ -3320,55 +3327,38 @@ package GNAT.Altivec.Vector_Operations is
    -- vec_vspltb --
 
    function vec_vspltb
-     (A : vector_signed_char;
-      B : c_int) return vector_signed_char
-   renames Low_Level_Interface.vec_vspltb_vsc_cint_r_vsc;
-
-   function vec_vspltb
      (A : vector_unsigned_char;
-      B : c_int) return vector_unsigned_char
-   renames Low_Level_Interface.vec_vspltb_vuc_cint_r_vuc;
+      B : c_int) return vector_unsigned_char;
 
    function vec_vspltb
      (A : vector_bool_char;
-      B : c_int) return vector_bool_char
-   renames Low_Level_Interface.vec_vspltb_vbc_cint_r_vbc;
+      B : c_int) return vector_bool_char;
 
-   -- vec_splat_s8 --
+   pragma Inline_Always (vec_vspltb);
+   pragma Convention (Intrinsic, vec_vspltb);
 
-   function vec_splat_s8
+   function vec_vspltb
+     (A : vector_signed_char;
+      B : c_int) return vector_signed_char
+   renames Low_Level_Vectors.vspltb;
+
+   -- vec_vspltisb --
+
+   function vec_vspltisb
      (A : c_int) return vector_signed_char
-   renames Low_Level_Interface.vec_splat_s8_cint_r_vsc;
+   renames Low_Level_Vectors.vspltisb;
 
-   -- vec_splat_s16 --
+   -- vec_vspltish --
 
-   function vec_splat_s16
+   function vec_vspltish
      (A : c_int) return vector_signed_short
-   renames Low_Level_Interface.vec_splat_s16_cint_r_vss;
+   renames Low_Level_Vectors.vspltish;
 
-   -- vec_splat_s32 --
+   -- vec_vspltisw --
 
-   function vec_splat_s32
+   function vec_vspltisw
      (A : c_int) return vector_signed_int
-   renames Low_Level_Interface.vec_splat_s32_cint_r_vsi;
-
-   -- vec_splat_u8 --
-
-   function vec_splat_u8
-     (A : c_int) return vector_unsigned_char
-   renames Low_Level_Interface.vec_splat_u8_cint_r_vuc;
-
-   -- vec_splat_u16 --
-
-   function vec_splat_u16
-     (A : c_int) return vector_unsigned_short
-   renames Low_Level_Interface.vec_splat_u16_cint_r_vus;
-
-   -- vec_splat_u32 --
-
-   function vec_splat_u32
-     (A : c_int) return vector_unsigned_int
-   renames Low_Level_Interface.vec_splat_u32_cint_r_vui;
+     renames Low_Level_Vectors.vspltisw;
 
    -- vec_sr --
 
@@ -5729,6 +5719,105 @@ package GNAT.Altivec.Vector_Operations is
    -- Straight overloads of routines aboves --
    -------------------------------------------
 
+   -- vec_splat_s8 --
+
+   function vec_splat_s8
+     (A : c_int) return vector_signed_char
+   renames vec_vspltisb;
+
+   -- vec_splat_s16 --
+
+   function vec_splat_s16
+     (A : c_int) return vector_signed_short
+   renames vec_vspltish;
+
+   -- vec_splat_s32 --
+
+   function vec_splat_s32
+     (A : c_int) return vector_signed_int
+   renames vec_vspltisw;
+
+   -- vec_splat --
+
+   function vec_splat
+     (A : vector_signed_char;
+      B : c_int) return vector_signed_char
+   renames vec_vspltb;
+
+   function vec_splat
+     (A : vector_unsigned_char;
+      B : c_int) return vector_unsigned_char
+   renames vec_vspltb;
+
+   function vec_splat
+     (A : vector_bool_char;
+      B : c_int) return vector_bool_char
+   renames vec_vspltb;
+
+   function vec_splat
+     (A : vector_signed_short;
+      B : c_int) return vector_signed_short
+   renames vec_vsplth;
+
+   function vec_splat
+     (A : vector_unsigned_short;
+      B : c_int) return vector_unsigned_short
+   renames vec_vsplth;
+
+   function vec_splat
+     (A : vector_bool_short;
+      B : c_int) return vector_bool_short
+   renames vec_vsplth;
+
+   function vec_splat
+     (A : vector_pixel;
+      B : c_int) return vector_pixel
+   renames vec_vsplth;
+
+   function vec_splat
+     (A : vector_float;
+      B : c_int) return vector_float
+   renames vec_vspltw;
+
+   function vec_splat
+     (A : vector_signed_int;
+      B : c_int) return vector_signed_int
+   renames vec_vspltw;
+
+   function vec_splat
+     (A : vector_unsigned_int;
+      B : c_int) return vector_unsigned_int
+   renames vec_vspltw;
+
+   function vec_splat
+     (A : vector_bool_int;
+      B : c_int) return vector_bool_int
+   renames vec_vspltw;
+
+   -- vec_splat_u8 --
+
+   function vec_splat_u8
+     (A : c_int) return vector_unsigned_char;
+
+   pragma Inline_Always (vec_splat_u8);
+   pragma Convention (Intrinsic, vec_splat_u8);
+
+   -- vec_splat_u16 --
+
+   function vec_splat_u16
+     (A : c_int) return vector_unsigned_short;
+
+   pragma Inline_Always (vec_splat_u16);
+   pragma Convention (Intrinsic, vec_splat_u16);
+
+   -- vec_splat_u32 --
+
+   function vec_splat_u32
+     (A : c_int) return vector_unsigned_int;
+
+   pragma Inline_Always (vec_splat_u32);
+   pragma Convention (Intrinsic, vec_splat_u32);
+
    -- vec_ctf --
 
    function vec_ctf
@@ -6997,24 +7086,6 @@ package GNAT.Altivec.Vector_Operations is
       B : vector_unsigned_char) return vector_unsigned_char
    renames vec_slo;
 
-   -- vec_vspltisb --
-
-   function vec_vspltisb
-     (A : c_int) return vector_signed_char
-   renames vec_splat_s8;
-
-   -- vec_vspltish --
-
-   function vec_vspltish
-     (A : c_int) return vector_signed_short
-   renames vec_splat_s16;
-
-   -- vec_vspltisw --
-
-   function vec_vspltisw
-     (A : c_int) return vector_signed_int
-   renames vec_splat_s32;
-
    -- vec_vsr --
 
    function vec_vsr
@@ -7740,62 +7811,6 @@ package GNAT.Altivec.Vector_Operations is
 
 private
 
-   -------------------------------------
-   -- Different flavors of interfaces --
-   -------------------------------------
-
-   --  The vast majority of the user visible functions are just neutral type
-   --  conversion wrappers around calls to low level primitives. For instance:
-   --
-   --        function vec_sll
-   --          (A : vector_signed_int;
-   --           B : vector_unsigned_char) return vector_signed_int is
-   --        begin
-   --          return To_VSI (vsl (To_VSI (A), To_VSI (B)));
-   --        end vec_sll;
-   --
-   --  We actually don't always need an explicit wrapper and can bind directly
-   --  with a straight Import of the low level routine, or a renaming of such
-   --  instead.
-   --
-   --  A direct binding is not possible (that is, a wrapper is mandatory) in
-   --  a number of cases:
-   --
-   --  o When the high-level/low-level types don't match, in which case a
-   --  straight import would risk wrong code generation or compiler blowups in
-   --  the Hard binding case. This is the case for 'B' in the example above.
-   --
-   --  o When the high-level/low-level argument lists differ, as is the case
-   --  for most of the AltiVec predicates, relying on a low-level primitive
-   --  which expects a control code argument, like:
-   --
-   --        function vec_any_ne
-   --           (A : vector_signed_int;
-   --            B : vector_signed_int) return c_int is
-   --        begin
-   --          return vcmpequw_p (CR6_LT_REV, To_VSI (A), To_VSI (B));
-   --        end vec_any_ne;
-   --
-   --  o When the high-level/low-level arguments order don't match, as in:
-   --
-   --        function vec_cmplt
-   --           (A : vector_unsigned_char;
-   --            B : vector_unsigned_char) return vector_bool_char is
-   --         begin
-   --           return To_VBC (vcmpgtub (To_VSC (B), To_VSC (A)));
-   --         end vec_cmplt;
-
-   -----------------------------
-   -- Inlining considerations --
-   -----------------------------
-
-   --  The intent in the Hard binding case is to eventually map operations to
-   --  hardware instructions. Needless to say, intermediate function calls do
-   --  not fit this purpose, so all the user visible subprograms are inlined.
-   --  In the soft case, the bulk of the work is performed by the low level
-   --  routines, and those exported by this unit are short enough for the
-   --  inlining to make sense and even be beneficial, so...
-
    pragma Inline_Always (vec_abs);
    pragma Inline_Always (vec_abss);
    pragma Inline_Always (vec_add);
@@ -7999,18 +8014,6 @@ private
    pragma Inline_Always (vec_any_nlt);
    pragma Inline_Always (vec_any_numeric);
    pragma Inline_Always (vec_any_out);
-
-   pragma Inline_Always (vec_dst);
-   pragma Convention (Intrinsic, vec_dst);
-
-   pragma Inline_Always (vec_dstt);
-   pragma Convention (Intrinsic, vec_dstt);
-
-   pragma Inline_Always (vec_dstst);
-   pragma Convention (Intrinsic, vec_dstst);
-
-   pragma Inline_Always (vec_dststt);
-   pragma Convention (Intrinsic, vec_dststt);
 
    --  Similarly, vec_step is expected to be turned into a compile time
    --  constant, so ...
