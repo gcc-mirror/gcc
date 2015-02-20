@@ -32,7 +32,7 @@
 --  This package contains global flags set by the initialization routine from
 --  the command line and referenced throughout the compiler, the binder, or
 --  other GNAT tools. The comments indicate which options are used by which
---  programs (GNAT, GNATBIND, GNATLINK, GNATMAKE, GPRMAKE, etc).
+--  programs (GNAT, GNATBIND, GNATLINK, GNATMAKE, etc).
 
 --  Some flags are labelled "PROJECT MANAGER". These are used by tools that
 --  use the Project Manager. These tools include gnatmake, gnatname, the gnat
@@ -268,7 +268,7 @@ package Opt is
    --  a library. May be set to True by Gnatbind.Scan_Bind_Arg.
 
    Bind_Only : Boolean := False;
-   --  GNATMAKE, GPRMAKE, GPRBUILD
+   --  GNATMAKE, GPRBUILD
    --  Set to True to skip compile and link steps
    --  (except when Compile_Only and/or Link_Only are True).
 
@@ -334,7 +334,7 @@ package Opt is
    --  directly modified by gnatmake, to affect the shared binder routines.
 
    Check_Switches : Boolean := False;
-   --  GNATMAKE, GPRMAKE, GPBUILD
+   --  GNATMAKE, GPBUILD
    --  Set to True to check compiler options during the make process
 
    Check_Unreferenced : Boolean := False;
@@ -378,8 +378,8 @@ package Opt is
    --  Compilation date and time in form YYYY-MM-DD HH:MM:SS
 
    Compile_Only : Boolean := False;
-   --  GNATMAKE, GNATCLEAN, GPRMAKE, GPBUILD, GPRCLEAN
-   --  GNATMAKE, GPRMAKE, GPRMAKE:
+   --  GNATMAKE, GNATCLEAN, GPBUILD, GPRCLEAN
+   --  GNATMAKE, GPRBUILD:
    --    set True to skip bind and link steps (except when Bind_Only is True)
    --  GNATCLEAN, GPRCLEAN:
    --    set True to delete only the files produced by the compiler but not the
@@ -415,7 +415,7 @@ package Opt is
    --  use of -gnatwc/C.
 
    Create_Mapping_File : Boolean := False;
-   --  GNATMAKE, GPRMAKE
+   --  GNATMAKE
    --  Set to True (-C switch) to indicate that the compiler will be invoked
    --  with a mapping file (-gnatem compiler switch).
 
@@ -474,7 +474,7 @@ package Opt is
    --  Set to False with switch -f of gnatclean and gprclean
 
    Display_Compilation_Progress : Boolean := False;
-   --  GNATMAKE, GPRMAKE, GPRBUILD
+   --  GNATMAKE, GPRBUILD
    --  Set True (-d switch) to display information on progress while compiling
    --  files. Internal flag to be used in conjunction with an IDE (e.g GPS).
 
@@ -668,7 +668,7 @@ package Opt is
    --  (-F switch set).
 
    Force_Compilations : Boolean := False;
-   --  GNATMAKE, GPRMAKE, GPRBUILD
+   --  GNATMAKE, GPRBUILD
    --  Set to force recompilations even when the objects are up-to-date.
 
    Front_End_Inlining : Boolean := False;
@@ -864,7 +864,7 @@ package Opt is
    --  if not.
 
    Keep_Going : Boolean := False;
-   --  GNATMAKE, GPRMAKE, GPRBUILD
+   --  GNATMAKE, GPRBUILD
    --  When True signals to ignore compilation errors and keep processing
    --  sources until there is no more work.
 
@@ -879,7 +879,7 @@ package Opt is
    --  children.
 
    Link_Only : Boolean := False;
-   --  GNATMAKE, GPRMAKE, GPRBUILD
+   --  GNATMAKE, GPRBUILD
    --  Set to True to skip compile and bind steps (except when Bind_Only is
    --  set to True).
 
@@ -1028,7 +1028,7 @@ package Opt is
    --  specially concocted test cases. Can be modified by -gnateinn switch.
 
    Maximum_Processes : Positive := 1;
-   --  GNATMAKE, GPRMAKE, GPRBUILD
+   --  GNATMAKE, GPRBUILD
    --  Maximum number of processes that should be spawned to carry out
    --  compilations.
 
@@ -1163,10 +1163,10 @@ package Opt is
    --  for definitions of "optimize_size" for dotnet/jgnat and GNAAMP backends
 
    Output_File_Name_Present : Boolean := False;
-   --  GNATBIND, GNAT, GNATMAKE, GPRMAKE
+   --  GNATBIND, GNAT, GNATMAKE
    --  Set to True when the output C file name is given with option -o for
    --  GNATBIND, when the object file name is given with option -gnatO for GNAT
-   --  or when the executable is given with option -o for GNATMAKE or GPRMAKE.
+   --  or when the executable is given with option -o for GNATMAKE.
 
    Output_Linker_Option_List : Boolean := False;
    --  GNATBIND
@@ -1255,7 +1255,7 @@ package Opt is
    --  policy is set in package System.
 
    Quiet_Output : Boolean := False;
-   --  GNATMAKE, GNATCLEAN, GPRMAKE, GPRBUILD, GPRCLEAN
+   --  GNATMAKE, GNATCLEAN, GPRBUILD, GPRCLEAN
    --  Set to True if the tool should not have any output if there are no
    --  errors or warnings.
 
@@ -1581,15 +1581,15 @@ package Opt is
 
    Verbose_Mode : Boolean := False;
    --  GNAT, GNATBIND, GNATMAKE, GNATLINK, GNATLS, GNATNAME, GNATCLEAN,
-   --  GPRMAKE, GPRBUILD, GPRCLEAN
+   --  GPRBUILD, GPRCLEAN
    --  Set to True to get verbose mode (full error message text and location
    --  information sent to standard output, also header, copyright and summary)
 
    type Verbosity_Level_Type is (None, Low, Medium, High);
    pragma Ordered (Verbosity_Level_Type);
    Verbosity_Level : Verbosity_Level_Type := High;
-   --  GNATMAKE, GPRMAKE
-   --  Modified by gnatmake or gprmake switches -v, -vl, -vm, -vh. Indicates
+   --  GNATMAKE
+   --  Modified by gnatmake switches -v, -vl, -vm, -vh. Indicates
    --  the level of verbosity of informational messages:
    --
    --  In Low Verbosity, the reasons why a source is recompiled, the name

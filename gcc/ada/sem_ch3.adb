@@ -16459,7 +16459,7 @@ package body Sem_Ch3 is
             Set_Has_Private_Declaration (Prev);
             Set_Has_Private_Declaration (Id);
 
-            --  AI12-0133 : indicate whether we have a partial view with
+            --  AI12-0133: Indicate whether we have a partial view with
             --  unknown discriminants, in which case initialization of objects
             --  of the type do not receive an invariant check.
 

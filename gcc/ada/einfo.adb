@@ -8669,6 +8669,7 @@ package body Einfo is
       W ("Optimize_Alignment_Space",        Flag241 (Id));
       W ("Optimize_Alignment_Time",         Flag242 (Id));
       W ("Overlays_Constant",               Flag243 (Id));
+      W ("Partial_View_Has_Unknown_Discr",  Flag280 (Id));
       W ("Reachable",                       Flag49  (Id));
       W ("Referenced",                      Flag156 (Id));
       W ("Referenced_As_LHS",               Flag36  (Id));
