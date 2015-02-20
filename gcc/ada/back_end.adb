@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -22,6 +22,8 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+--  This is the version of the Back_End package for GCC back ends
 
 with Atree;    use Atree;
 with Debug;    use Debug;
@@ -251,11 +253,12 @@ package body Back_End is
          else
             Store_Compilation_Switch (Switch_Chars);
 
-            --  Back end switch -fno-inline also sets the Suppress_All_Inlining
-            --  front end flag to entirely inhibit all inlining.
+            --  For gcc back ends, -fno-inline disables Inline pragmas only,
+            --  not Inline_Always to remain consistent with the always_inline
+            --  attribute behavior.
 
             if Switch_Chars (First .. Last) = "fno-inline" then
-               Opt.Suppress_All_Inlining := True;
+               Opt.Disable_FE_Inline := True;
 
             --  Back end switch -fpreserve-control-flow also sets the front end
             --  flag that inhibits improper control flow transformations.
