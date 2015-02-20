@@ -1,3 +1,24 @@
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb: Minor reformatting.
+	* exp_ch9.adb (Build_Protected_Spec): Copy Aliased setting when
+	building spec.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Exclude Boolean
+	aspects from circuitry setting delay required to false if the
+	argument is an integer literal.
+
+2015-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads. einfo.adb (Partial_View_Has_Unknown_Discr):  New flag
+	on type entities, to enforce AI12-0133: default initialization
+	of types whose partial view has unknown discriminants does not
+	get an invariant check, because clients of the unit can never
+	declare objects of such types.
+	* sem_ch3.adb (Find_Type_Name); Set new flag
+	Partial_View_Has_Unknown_Discr when needed.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Use flag to suppress
+	generation of invariant call on default-initialized object.
+
 2015-02-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_param): Do not strip the padding

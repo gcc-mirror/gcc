@@ -3091,9 +3091,9 @@ package body Sem_Res is
       --  This must be determined before the actual is resolved and expanded
       --  because if needed the transient scope must be introduced earlier.
 
-      ------------------------------
-      --  Check_Aliased_Parameter --
-      ------------------------------
+      -----------------------------
+      -- Check_Aliased_Parameter --
+      -----------------------------
 
       procedure Check_Aliased_Parameter is
          Nominal_Subt : Entity_Id;

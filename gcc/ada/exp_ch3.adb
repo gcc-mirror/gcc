@@ -5503,10 +5503,13 @@ package body Exp_Ch3 is
                Ensure_Freeze_Node (Def_Id);
                Set_Has_Delayed_Freeze (Def_Id);
                Set_Is_Frozen (Def_Id, False);
-               Append_Freeze_Action (Def_Id,
-                 Make_Invariant_Call (New_Occurrence_Of (Def_Id, Loc)));
 
-            else
+               if not Partial_View_Has_Unknown_Discr (Typ) then
+                  Append_Freeze_Action (Def_Id,
+                    Make_Invariant_Call (New_Occurrence_Of (Def_Id, Loc)));
+               end if;
+
+            elsif not Partial_View_Has_Unknown_Discr (Typ) then
                Insert_After (N,
                  Make_Invariant_Call (New_Occurrence_Of (Def_Id, Loc)));
             end if;
