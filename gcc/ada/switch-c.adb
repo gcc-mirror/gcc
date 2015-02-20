@@ -214,7 +214,6 @@ package body Switch.C is
             else
                declare
                   Runtime_Dir : String_Access;
-
                begin
                   if System.OS_Lib.Is_Absolute_Path
                        (Switch_Chars (Ptr + 4 .. Max))
@@ -243,7 +242,11 @@ package body Switch.C is
                   if RTS_Specified /= null then
                      if RTS_Src_Path_Name = null
                        or else RTS_Lib_Path_Name = null
-                       or else RTS_Specified.all /= RTS_Lib_Path_Name.all
+                       or else
+                         System.OS_Lib.Normalize_Pathname
+                           (RTS_Specified.all) /=
+                         System.OS_Lib.Normalize_Pathname
+                           (RTS_Lib_Path_Name.all)
                      then
                         Osint.Fail
                           ("--RTS cannot be specified multiple times");

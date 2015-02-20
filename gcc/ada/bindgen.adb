@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1992,6 +1992,21 @@ package body Bindgen is
          end loop;
       end if;
 
+      if not (Opt.No_Run_Time_Mode or Opt.No_Stdlib) then
+         Name_Len := 0;
+
+         if Opt.Shared_Libgnat then
+            Add_Str_To_Name_Buffer ("-shared");
+         else
+            Add_Str_To_Name_Buffer ("-static");
+         end if;
+
+         --  Write directly to avoid inclusion in -K output as -static and
+         --  -shared are not usually specified linker options.
+
+         WBI ("   --   " & Name_Buffer (1 .. Name_Len));
+      end if;
+
       --  Sort linker options
 
       --  This sort accomplishes two important purposes:
@@ -2050,18 +2065,6 @@ package body Bindgen is
       --  linking (not clear if this is still the case, but it is harmless).
 
       if not (Opt.No_Run_Time_Mode or else Opt.No_Stdlib) then
-         Name_Len := 0;
-
-         if Opt.Shared_Libgnat then
-            Add_Str_To_Name_Buffer ("-shared");
-         else
-            Add_Str_To_Name_Buffer ("-static");
-         end if;
-
-         --  Write directly to avoid -K output (why???)
-
-         WBI ("   --   " & Name_Buffer (1 .. Name_Len));
-
          if With_GNARL then
             Name_Len := 0;
 
@@ -2923,7 +2926,7 @@ package body Bindgen is
          end if;
       end Check_Package;
 
-   --  Start of processing for Check_Package
+   --  Start of processing for Resolve_Binder_Options
 
    begin
       for E in Elab_Order.First .. Elab_Order.Last loop
