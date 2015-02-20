@@ -5918,6 +5918,17 @@ package body Sem_Prag is
             --  Get name from corresponding aspect
 
             Error_Msg_Name_1 := Original_Aspect_Name (N);
+
+            if Class_Present (N) then
+
+               --  Replace the name with a leading underscore used
+               --  internally, with a name that is more user-friendly.
+
+               if Error_Msg_Name_1 = Name_uType_Invariant then
+                  Error_Msg_Name_1 := Name_Type_Invariant_Class;
+               end if;
+            end if;
+
          end if;
 
          --  Return possibly modified message

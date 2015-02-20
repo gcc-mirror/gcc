@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1455,6 +1455,16 @@ package body Ch3 is
 
          else
             Restore_Scan_State (Scan_State);
+
+            --  Reset Token_Node, because it already got changed from an
+            --  Identifier to a Defining_Identifier, and we don't want that
+            --  for a statement!
+
+            Token_Node :=
+              Make_Identifier (Sloc (Token_Node), Chars (Token_Node));
+
+            --  And now scan out one or more statements
+
             Statement_When_Declaration_Expected (Decls, Done, In_Spec);
             return;
          end if;
@@ -4777,6 +4787,12 @@ package body Ch3 is
          if In_Spec then
             null;
 
+         --  Just ignore it if we are in -gnatd.2 (allow statements to appear
+         --  in declaration sequences) mode.
+
+         elsif Debug_Flag_Dot_2 then
+            null;
+
          --  In the declarative part case, take a second statement as a sure
          --  sign that we really have a missing BEGIN, and end the declarative
          --  part now. Note that the caller will fix up the first message to
@@ -4790,26 +4806,32 @@ package body Ch3 is
       --  Case of first occurrence of unexpected statement
 
       else
-         --  If we are in a package spec, then give message of statement
-         --  not allowed in package spec. This message never gets changed.
+         --  Do not give error message if we are operating in -gnatd.2 mode
+         --  (alllow statements to appear in declarative parts).
 
-         if In_Spec then
-            Error_Msg_SC ("statement not allowed in package spec");
+         if not Debug_Flag_Dot_2 then
 
-         --  If in declarative part, then we give the message complaining
-         --  about finding a statement when a declaration is expected. This
-         --  gets changed to a complaint about a missing BEGIN if we later
-         --  find that no BEGIN is present.
+            --  If we are in a package spec, then give message of statement
+            --  not allowed in package spec. This message never gets changed.
 
-         else
-            Error_Msg_SC ("statement not allowed in declarative part");
+            if In_Spec then
+               Error_Msg_SC ("statement not allowed in package spec");
+
+            --  If in declarative part, then we give the message complaining
+            --  about finding a statement when a declaration is expected. This
+            --  gets changed to a complaint about a missing BEGIN if we later
+            --  find that no BEGIN is present.
+
+            else
+               Error_Msg_SC ("statement not allowed in declarative part");
+            end if;
+
+            --  Capture message Id. This is used for two purposes, first to
+            --  stop multiple messages, see test above, and second, to allow
+            --  the replacement of the message in the declarative part case.
+
+            Missing_Begin_Msg := Get_Msg_Id;
          end if;
-
-         --  Capture message Id. This is used for two purposes, first to
-         --  stop multiple messages, see test above, and second, to allow
-         --  the replacement of the message in the declarative part case.
-
-         Missing_Begin_Msg := Get_Msg_Id;
       end if;
 
       --  In all cases except the case in which we decided to terminate the

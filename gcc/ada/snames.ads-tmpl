@@ -1063,12 +1063,12 @@ package Snames is
    --  for FIFO_Within_Priorities). If new policy names are added, the first
    --  character must be distinct.
 
-   First_Task_Dispatching_Policy_Name    : constant Name_Id := N + $;
-   Name_EDF_Across_Priorities            : constant Name_Id := N + $;
-   Name_FIFO_Within_Priorities           : constant Name_Id := N + $;
-   Name_Non_Preemptive_Within_Priorities : constant Name_Id := N + $;
-   Name_Round_Robin_Within_Priorities    : constant Name_Id := N + $;
-   Last_Task_Dispatching_Policy_Name     : constant Name_Id := N + $;
+   First_Task_Dispatching_Policy_Name         : constant Name_Id := N + $;
+   Name_EDF_Across_Priorities                 : constant Name_Id := N + $;
+   Name_FIFO_Within_Priorities                : constant Name_Id := N + $;
+   Name_Non_Preemptive_FIFO_Within_Priorities : constant Name_Id := N + $;
+   Name_Round_Robin_Within_Priorities         : constant Name_Id := N + $;
+   Last_Task_Dispatching_Policy_Name          : constant Name_Id := N + $;
 
    --  Names of recognized partition elaboration policy identifiers
 

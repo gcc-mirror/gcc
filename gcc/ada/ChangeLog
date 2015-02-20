@@ -1,5 +1,42 @@
 2015-02-20  Arnaud Charlet  <charlet@adacore.com>
 
+	* sysdep.c, expect.c, s-oscons-tmplt.c, gsocket.h, adaint.c: Remove
+	obsolete references to RTX, nucleus, VMS.
+
+2015-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Fix_Error): For an illegal Type_Invariant'Class
+	aspect, use name that mentions Class explicitly, rather than
+	compiler-internal name.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Add documentation for -gnatd.2 (allow statements
+	in decl sequences).
+	* par-ch3.adb (P_Identifier_Declarations): Handle
+	statement appearing where declaration expected more cleanly.
+	(Statement_When_Declaration_Expected): Implement debug flag
+	-gnatd.2.
+
+2015-02-20  Jose Ruiz  <ruiz@adacore.com>
+
+	* a-dinopr.ads: Add spec for this package (Unimplemented_Unit).
+	* a-dispat.ads (Yield): Include procedure added in Ada 2012.
+	* a-dispat.adb (Yield): Implement procedure added in Ada 2012.
+	* impunit.adb (Non_Imp_File_Names_05): Mark unit a-dinopr.ads as
+	defined by Ada 2005.
+	* snames.ads-tmpl (Name_Non_Preemptive_FIFO_Within_Priorities):
+	This is the correct name for the dispatching policy (FIFO was
+	missing).
+
+2015-02-20  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): If the type of the
+	operand is the limited-view of a class-wide type then recover
+	the class-wide type of the non-limited view.
+
+2015-02-20  Arnaud Charlet  <charlet@adacore.com>
+
 	* gcc-interface/Makefile.in: Remove references to nucleus.
 	* gcc-interface/decl.c (gnat_to_gnu_entity, case E_Procedure): Set
 	extern_flag to true for Inline_Always subprograms with

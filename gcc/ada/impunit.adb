@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2014, Free Software Foundation, Inc.        --
+--           Copyright (C) 2000-2015, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -427,6 +427,7 @@ package body Impunit is
     ("a-coorse", T),  -- Ada.Containers.Ordered_Sets
     ("a-coteio", T),  -- Ada.Complex_Text_IO
     ("a-direct", T),  -- Ada.Directories
+    ("a-dinopr", T),  -- Ada.Dispatching.Non_Preemptive
     ("a-diroro", T),  -- Ada.Dispatching.Round_Robin
     ("a-disedf", T),  -- Ada.Dispatching.EDF
     ("a-dispat", T),  -- Ada.Dispatching

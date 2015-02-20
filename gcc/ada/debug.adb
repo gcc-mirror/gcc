@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -155,8 +155,8 @@ package body Debug is
    --  d8   Force opposite endianness in packed stuff
    --  d9   Allow lock free implementation
 
-   --  d.1
-   --  d.2
+   --  d.1  Enable unnesting of nested procedures
+   --  d.2  Allow statements in declarative part
    --  d.3
    --  d.4
    --  d.5
@@ -745,6 +745,14 @@ package body Debug is
 
    --  d9   This allows lock free implementation for protected objects
    --       (see Exp_Ch9).
+
+   --  d.1  Enable unnesting of nested procedures. This special pass does not
+   --       actually unnest things, but it ensures that a nested procedure
+   --       does not contain any uplevel references.
+
+   --  d.2  Allow statements within declarative parts. This is not usually
+   --       allowed, but in some debugging contexts (e.g. testing the circuit
+   --       for unnesting of procedures), it is useful to allow this.
 
    ------------------------------------------
    -- Documentation for Binder Debug Flags --

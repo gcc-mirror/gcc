@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -108,16 +108,7 @@ pragma Style_Checks ("M32766");
 #include <fcntl.h>
 #include <time.h>
 
-#if defined (__VMS)
-/** VMS is unable to do vector IO operations with default value of IOV_MAX,
- ** so its value is redefined to a small one which is known to work properly.
- **/
-#undef IOV_MAX
-#define IOV_MAX 16
-#endif
-
-#if ! (defined (__vxworks) || defined (__VMS) || defined (__MINGW32__) || \
-       defined (__nucleus__))
+#if ! (defined (__vxworks) || defined (__MINGW32__))
 # define HAVE_TERMIOS
 #endif
 
@@ -286,12 +277,10 @@ package System.OS_Constants is
    -- General platform parameters --
    ---------------------------------
 
-   type OS_Type is (Windows, VMS, Other_OS);
+   type OS_Type is (Windows, Other_OS);
 */
 #if defined (__MINGW32__)
 # define TARGET_OS "Windows"
-#elif defined (__VMS)
-# define TARGET_OS "VMS"
 #else
 # define TARGET_OS "Other_OS"
 #endif

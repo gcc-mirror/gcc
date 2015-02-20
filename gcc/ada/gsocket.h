@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *         Copyright (C) 2004-2014, Free Software Foundation, Inc.          *
+ *         Copyright (C) 2004-2015, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -29,7 +29,7 @@
  *                                                                          *
  ****************************************************************************/
 
-#if defined(__nucleus__) || defined(VTHREADS) || defined(__PikeOS__)
+#if defined(VTHREADS) || defined(__PikeOS__)
 
 /* Sockets not supported on these platforms.  */
 #undef HAVE_SOCKETS
@@ -251,4 +251,4 @@
 # define HAVE_INET_PTON
 #endif
 
-#endif /* defined(__nucleus__) */
+#endif /* defined(VTHREADS) */
