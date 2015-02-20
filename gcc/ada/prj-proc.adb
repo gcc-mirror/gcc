@@ -2363,13 +2363,17 @@ package body Prj.Proc is
             end if;
 
             if Var_Id = No_Variable then
+               if Node_Tree.Incomplete_With then
+                  return;
 
                --  Should never happen, because this has already been checked
                --  during parsing.
 
-               Write_Line
-                 ("variable """ & Get_Name_String (Name) & """ not found");
-               raise Program_Error;
+               else
+                  Write_Line
+                    ("variable """ & Get_Name_String (Name) & """ not found");
+                  raise Program_Error;
+               end if;
             end if;
 
             --  Get the case variable

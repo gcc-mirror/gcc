@@ -5356,8 +5356,15 @@ package body Exp_Ch3 is
          end if;
 
          --  Step 4: Insert the whole initialization sequence into the tree
+         --  If the object has a delayed freeze, as will be the case when
+         --  it has aspect specifications, the initialization sequence is
+         --  part of the freeze actions.
 
-         Insert_Actions_After (After, Abrt_Stmts);
+         if Has_Delayed_Freeze (Def_Id) then
+            Append_Freeze_Actions (Def_Id, Abrt_Stmts);
+         else
+            Insert_Actions_After (After, Abrt_Stmts);
+         end if;
       end Default_Initialize_Object;
 
       -------------------------
