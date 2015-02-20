@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -297,7 +297,8 @@ int max_path_len = GNAT_MAX_PATH_LEN;
 int __gnat_use_acl = 1;
 
 /* The following macro HAVE_READDIR_R should be defined if the
-   system provides the routine readdir_r.  */
+   system provides the routine readdir_r.
+   ... but we never define it anywhere???  */
 #undef HAVE_READDIR_R
 
 #define MAYBE_TO_PTR32(argv) argv
@@ -1222,6 +1223,13 @@ DIR* __gnat_opendir (char *name)
 
 /* Read the next entry in a directory.  The returned string points somewhere
    in the buffer.  */
+
+#if defined (sun) && defined (__SVR4)
+/* For Solaris, be sure to use the 64-bit version, otherwise NFS reads may
+   fail with EOVERFLOW if the server uses 64-bit cookies.  */
+#define dirent dirent64
+#define readdir readdir64
+#endif
 
 char *
 __gnat_readdir (DIR *dirp, char *buffer, int *len)

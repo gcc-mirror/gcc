@@ -90,7 +90,7 @@ package body System.OS_Primitives is
    Signature : Signature_Type := 0;
    pragma Atomic (Signature);
 
-   procedure Get_Base_Time (Data : out Clock_Data);
+   procedure Get_Base_Time (Data : in out Clock_Data);
    --  Retrieve the base time and base ticks. These values will be used by
    --  clock to compute the current time by adding to it a fraction of the
    --  performance counter. This is for the implementation of a high-resolution
@@ -166,7 +166,7 @@ package body System.OS_Primitives is
    -- Get_Base_Time --
    -------------------
 
-   procedure Get_Base_Time (Data : out Clock_Data) is
+   procedure Get_Base_Time (Data : in out Clock_Data) is
 
       --  The resolution for GetSystemTime is 1 millisecond
 

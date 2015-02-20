@@ -11048,8 +11048,11 @@ package body Sem_Ch13 is
    procedure Initialize is
    begin
       Address_Clause_Checks.Init;
-      Independence_Checks.Init;
       Unchecked_Conversions.Init;
+
+      if VM_Target /= No_VM or else AAMP_On_Target then
+         Independence_Checks.Init;
+      end if;
    end Initialize;
 
    ---------------------------

@@ -6427,17 +6427,22 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 		   bool definition, bool debug_info_p)
 {
   const Entity_Id gnat_field_type = Etype (gnat_field);
+  const bool is_aliased
+    = Is_Aliased (gnat_field);
+  const bool is_atomic
+    = (Is_Atomic (gnat_field) || Is_Atomic (gnat_field_type));
+  const bool is_independent
+    = (Is_Independent (gnat_field) || Is_Independent (gnat_field_type));
+  const bool is_volatile
+    = (Treat_As_Volatile (gnat_field) || Treat_As_Volatile (gnat_field_type));
+  const bool needs_strict_alignment
+    = (is_aliased
+       || is_independent
+       || is_volatile
+       || Strict_Alignment (gnat_field_type));
   tree gnu_field_type = gnat_to_gnu_type (gnat_field_type);
   tree gnu_field_id = get_entity_name (gnat_field);
   tree gnu_field, gnu_size, gnu_pos;
-  bool is_aliased
-    = Is_Aliased (gnat_field);
-  bool is_atomic
-    = (Is_Atomic (gnat_field) || Is_Atomic (gnat_field_type));
-  bool is_volatile
-    = (Treat_As_Volatile (gnat_field) || Treat_As_Volatile (gnat_field_type));
-  bool needs_strict_alignment
-    = (is_aliased || is_volatile || Strict_Alignment (gnat_field_type));
 
   /* If this field requires strict alignment, we cannot pack it because
      it would very likely be under-aligned in the record.  */
@@ -6555,6 +6560,8 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 		s = "position of atomic field& must be multiple of ^ bits";
 	      else if (is_aliased)
 		s = "position of aliased field& must be multiple of ^ bits";
+	      else if (is_independent)
+		s = "position of independent field& must be multiple of ^ bits";
 	      else if (is_volatile)
 		s = "position of volatile field& must be multiple of ^ bits";
 	      else if (Strict_Alignment (gnat_field_type))
@@ -6583,6 +6590,8 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 		    s = "size of atomic field& must be ^ bits";
 		  else if (is_aliased)
 		    s = "size of aliased field& must be ^ bits";
+		  else if (is_independent)
+		    s = "size of independent field& must be at least ^ bits";
 		  else if (is_volatile)
 		    s = "size of volatile field& must be at least ^ bits";
 		  else if (Strict_Alignment (gnat_field_type))
@@ -6602,7 +6611,10 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 		{
 		  const char *s;
 
-		  if (is_volatile)
+		  if (is_independent)
+		    s = "size of independent field& must be multiple of"
+			" Storage_Unit";
+		  else if (is_volatile)
 		    s = "size of volatile field& must be multiple of"
 			" Storage_Unit";
 		  else if (Strict_Alignment (gnat_field_type))

@@ -833,10 +833,14 @@ procedure Gnat1drv is
 
       Sem_Ch13.Validate_Address_Clauses;
 
-      --  Validate independence pragmas (again using values annotated by
-      --  the back end for component layout etc.)
+      --  Validate independence pragmas (again using values annotated by the
+      --  back end for component layout where possible) but only for non-GCC
+      --  back ends, as this is done a priori for GCC back ends.
 
-      Sem_Ch13.Validate_Independence;
+      if VM_Target /= No_VM or else AAMP_On_Target then
+         Sem_Ch13.Validate_Independence;
+      end if;
+
    end Post_Compilation_Validation_Checks;
 
 --  Start of processing for Gnat1drv
