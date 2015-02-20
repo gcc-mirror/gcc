@@ -8034,17 +8034,21 @@ package body Freeze is
             return;
          end if;
 
-         Decl := Next (Parent (Expr));
-
          --  If a pragma Import follows, we assume that it is for the current
          --  target of the address clause, and skip the warning.
 
-         if Present (Decl)
-           and then Nkind (Decl) = N_Pragma
-           and then Pragma_Name (Decl) = Name_Import
-         then
-            return;
+         if Is_List_Member (Parent (Expr)) then
+            Decl := Next (Parent (Expr));
+
+            if Present (Decl)
+              and then Nkind (Decl) = N_Pragma
+              and then Pragma_Name (Decl) = Name_Import
+            then
+               return;
+            end if;
          end if;
+
+         --  Otherwise give warning message
 
          if Present (Old) then
             Error_Msg_Node_2 := Old;

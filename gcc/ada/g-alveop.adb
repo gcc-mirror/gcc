@@ -31,14 +31,6 @@
 
 with GNAT.Altivec.Low_Level_Interface; use GNAT.Altivec.Low_Level_Interface;
 
-------------------------------------
--- GNAT.Altivec.Vector_Operations --
-------------------------------------
-
-------------------------------------
--- GNAT.Altivec.Vector_Operations --
-------------------------------------
-
 package body GNAT.Altivec.Vector_Operations is
 
    --------------------------------------------------------

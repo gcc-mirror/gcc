@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1344,9 +1344,7 @@ package body Erroutc is
 
    procedure Set_Msg_Name_Buffer is
    begin
-      for J in 1 .. Name_Len loop
-         Set_Msg_Char (Name_Buffer (J));
-      end loop;
+      Set_Msg_Str (Name_Buffer (1 .. Name_Len));
    end Set_Msg_Name_Buffer;
 
    -------------------
@@ -1366,9 +1364,42 @@ package body Erroutc is
 
    procedure Set_Msg_Str (Text : String) is
    begin
-      for J in Text'Range loop
-         Set_Msg_Char (Text (J));
-      end loop;
+      --  Do replacement for special x'Class aspect names
+
+      if Text = "_Pre" then
+         Set_Msg_Str ("Pre'Class");
+
+      elsif Text = "_Post" then
+         Set_Msg_Str ("Post'Class");
+
+      elsif Text = "_Type_Invariant" then
+         Set_Msg_Str ("Type_Invariant'Class");
+
+      elsif Text = "_pre" then
+         Set_Msg_Str ("pre'class");
+
+      elsif Text = "_post" then
+         Set_Msg_Str ("post'class");
+
+      elsif Text = "_type_invariant" then
+         Set_Msg_Str ("type_invariant'class");
+
+      elsif Text = "_PRE" then
+         Set_Msg_Str ("PRE'CLASS");
+
+      elsif Text = "_POST" then
+         Set_Msg_Str ("POST'CLASS");
+
+      elsif Text = "_TYPE_INVARIANT" then
+         Set_Msg_Str ("TYPE_INVARIANT'CLASS");
+
+      --  Normal case with no replacement
+
+      else
+         for J in Text'Range loop
+            Set_Msg_Char (Text (J));
+         end loop;
+      end if;
    end Set_Msg_Str;
 
    ------------------------------

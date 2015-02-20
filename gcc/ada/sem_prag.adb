@@ -5918,17 +5918,6 @@ package body Sem_Prag is
             --  Get name from corresponding aspect
 
             Error_Msg_Name_1 := Original_Aspect_Name (N);
-
-            if Class_Present (N) then
-
-               --  Replace the name with a leading underscore used
-               --  internally, with a name that is more user-friendly.
-
-               if Error_Msg_Name_1 = Name_uType_Invariant then
-                  Error_Msg_Name_1 := Name_Type_Invariant_Class;
-               end if;
-            end if;
-
          end if;
 
          --  Return possibly modified message
@@ -21897,16 +21886,9 @@ package body Sem_Prag is
                --  Pre'Class/Post'Class aspect cases
 
                if From_Aspect_Specification (Prag) then
-                  if Nam = Name_uPre then
-                     Error_Msg_Name_1 := Name_Pre;
-                  else
-                     Error_Msg_Name_1 := Name_Post;
-                  end if;
-
-                  Error_Msg_Name_2 := Name_Class;
-
+                  Error_Msg_Name_1 := Nam;
                   Error_Msg_N
-                    ("aspect `%''%` can only be specified for a primitive "
+                    ("aspect% can only be specified for a primitive "
                      & "operation of a tagged type",
                      Corresponding_Aspect (Prag));
 
