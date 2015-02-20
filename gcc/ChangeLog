@@ -1,4 +1,8 @@
-2015-02-19  John David Anglin  <danglin@gcc.gnu.org>
+2015-02-19  John David Anglin  <danlgin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_emit_move_sequence): Always force
+	(const (plus (symbol) (const_int))) to const mem.  Put REG_EQUAL
+	note on insn.
 
 	* config/pa/pa.c (pa_reloc_rw_mask): New function.
 	(TARGET_ASM_RELOC_RW_MASK): Define.
