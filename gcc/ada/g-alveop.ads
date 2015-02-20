@@ -890,244 +890,204 @@ package GNAT.Altivec.Vector_Operations is
    procedure vec_dst
      (A : const_vector_unsigned_char_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_kvucp_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_vector_signed_char_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_kvscp_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_vector_bool_char_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_kvbcp_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_vector_unsigned_short_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_kvusp_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_vector_signed_short_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_kvssp_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_vector_bool_short_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_kvbsp_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_vector_pixel_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_kvxp_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_vector_unsigned_int_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_kvuip_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_vector_signed_int_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_kvsip_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_vector_bool_int_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_kvbip_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_vector_float_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_kvfp_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_unsigned_char_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_kucp_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_signed_char_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_kscp_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_unsigned_short_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_kusp_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_short_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_ksp_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_unsigned_int_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_kuip_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_int_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_kip_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_unsigned_long_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_kulongp_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_long_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_klongp_cint_cint;
+      C : c_int);
 
    procedure vec_dst
      (A : const_float_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dst_kfp_cint_cint;
+      C : c_int);
 
    -- vec_dstst --
 
    procedure vec_dstst
      (A : const_vector_unsigned_char_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_kvucp_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_vector_signed_char_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_kvscp_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_vector_bool_char_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_kvbcp_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_vector_unsigned_short_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_kvusp_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_vector_signed_short_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_kvssp_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_vector_bool_short_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_kvbsp_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_vector_pixel_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_kvxp_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_vector_unsigned_int_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_kvuip_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_vector_signed_int_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_kvsip_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_vector_bool_int_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_kvbip_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_vector_float_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_kvfp_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_unsigned_char_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_kucp_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_signed_char_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_kscp_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_unsigned_short_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_kusp_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_short_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_ksp_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_unsigned_int_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_kuip_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_int_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_kip_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_unsigned_long_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_kulongp_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_long_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_klongp_cint_cint;
+      C : c_int);
 
    procedure vec_dstst
      (A : const_float_ptr;
       B : c_int;
-      C : c_int)
-   renames Low_Level_Interface.vec_dstst_kfp_cint_cint;
+      C : c_int);
 
    -- vec_dststt --
 
@@ -8079,6 +8039,12 @@ private
    pragma Inline_Always (vec_any_nlt);
    pragma Inline_Always (vec_any_numeric);
    pragma Inline_Always (vec_any_out);
+
+   pragma Inline_Always (vec_dst);
+   pragma Convention (Intrinsic, vec_dst);
+
+   pragma Inline_Always (vec_dstst);
+   pragma Convention (Intrinsic, vec_dstst);
 
    --  Similarly, vec_step is expected to be turned into a compile time
    --  constant, so ...
