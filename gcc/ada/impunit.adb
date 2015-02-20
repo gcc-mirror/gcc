@@ -575,6 +575,7 @@ package body Impunit is
     ("a-extiin", T),  -- Ada.Execution_Time.Interrupts
     ("a-iteint", T),  -- Ada.Iterator_Interfaces
     ("a-locale", T),  -- Ada.Locales
+    ("a-stcoed", T),  -- Ada.Synchronous_Task_Control.EDF
     ("a-synbar", T),  -- Ada.Synchronous_Barriers
     ("a-undesu", T),  -- Ada.Unchecked_Deallocate_Subpool
 
