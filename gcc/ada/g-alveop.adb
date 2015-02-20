@@ -8221,6 +8221,58 @@ package body GNAT.Altivec.Vector_Operations is
       dststt (To_PTR (A), B, C);
    end vec_dststt;
 
+   -- vec_vspltw --
+
+   function vec_vspltw
+     (A : vector_float;
+      B : c_int) return vector_float
+   is
+   begin
+      return To_LL_VF (vspltw (To_LL_VSI (A), B));
+   end vec_vspltw;
+
+   function vec_vspltw
+     (A : vector_unsigned_int;
+      B : c_int) return vector_unsigned_int
+   is
+   begin
+      return To_LL_VUI (vspltw (To_LL_VSI (A), B));
+   end vec_vspltw;
+
+   function vec_vspltw
+     (A : vector_bool_int;
+      B : c_int) return vector_bool_int
+   is
+   begin
+      return To_LL_VBI (vspltw (To_LL_VSI (A), B));
+   end vec_vspltw;
+
+   -- vec_vsplth --
+
+   function vec_vsplth
+     (A : vector_bool_short;
+      B : c_int) return vector_bool_short
+   is
+   begin
+      return To_LL_VBS (vsplth (To_LL_VSS (A), B));
+   end vec_vsplth;
+
+   function vec_vsplth
+     (A : vector_unsigned_short;
+      B : c_int) return vector_unsigned_short
+   is
+   begin
+      return To_LL_VUS (vsplth (To_LL_VSS (A), B));
+   end vec_vsplth;
+
+   function vec_vsplth
+     (A : vector_pixel;
+      B : c_int) return vector_pixel
+   is
+   begin
+      return To_LL_VP (vsplth (To_LL_VSS (A), B));
+   end vec_vsplth;
+
    -----------------------------------
    -- Bodies for Altivec predicates --
    -----------------------------------

@@ -3277,45 +3277,45 @@ package GNAT.Altivec.Vector_Operations is
 
    function vec_vspltw
      (A : vector_float;
-      B : c_int) return vector_float
-   renames Low_Level_Interface.vec_vspltw_vf_cint_r_vf;
+      B : c_int) return vector_float;
+
+   function vec_vspltw
+     (A : vector_unsigned_int;
+      B : c_int) return vector_unsigned_int;
+
+   function vec_vspltw
+     (A : vector_bool_int;
+      B : c_int) return vector_bool_int;
+
+   pragma Inline_Always (vec_vspltw);
+   pragma Convention (Intrinsic, vec_vspltw);
 
    function vec_vspltw
      (A : vector_signed_int;
       B : c_int) return vector_signed_int
-   renames Low_Level_Interface.vec_vspltw_vsi_cint_r_vsi;
-
-   function vec_vspltw
-     (A : vector_unsigned_int;
-      B : c_int) return vector_unsigned_int
-   renames Low_Level_Interface.vec_vspltw_vui_cint_r_vui;
-
-   function vec_vspltw
-     (A : vector_bool_int;
-      B : c_int) return vector_bool_int
-   renames Low_Level_Interface.vec_vspltw_vbi_cint_r_vbi;
+   renames Low_Level_Vectors.vspltw;
 
    -- vec_vsplth --
 
    function vec_vsplth
      (A : vector_bool_short;
-      B : c_int) return vector_bool_short
-   renames Low_Level_Interface.vec_vsplth_vbs_cint_r_vbs;
+      B : c_int) return vector_bool_short;
+
+   function vec_vsplth
+     (A : vector_unsigned_short;
+      B : c_int) return vector_unsigned_short;
+
+   function vec_vsplth
+     (A : vector_pixel;
+      B : c_int) return vector_pixel;
+
+   pragma Inline_Always (vec_vsplth);
+   pragma Convention (Intrinsic, vec_vsplth);
 
    function vec_vsplth
      (A : vector_signed_short;
       B : c_int) return vector_signed_short
-   renames Low_Level_Interface.vec_vsplth_vss_cint_r_vss;
-
-   function vec_vsplth
-     (A : vector_unsigned_short;
-      B : c_int) return vector_unsigned_short
-   renames Low_Level_Interface.vec_vsplth_vus_cint_r_vus;
-
-   function vec_vsplth
-     (A : vector_pixel;
-      B : c_int) return vector_pixel
-   renames Low_Level_Interface.vec_vsplth_vx_cint_r_vx;
+   renames Low_Level_Vectors.vsplth;
 
    -- vec_vspltb --
 
