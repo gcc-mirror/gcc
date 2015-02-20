@@ -2576,9 +2576,42 @@ particular release.
    </para>
 
    <para>
+      <emphasis>20.7.2.2.1 [util.smartptr.shared.const]</emphasis>
+      Only <classname>bad_alloc</classname> (or types derived from it) will
+      be thrown.
+   </para>
+
+   <para>
       <emphasis>20.8.9.1.3 [func.bind.place]/1</emphasis> There are 29
       placeholders defined and the placeholder types are
       <literal>CopyAssignable</literal>.
+   </para>
+
+   <para>
+      <emphasis>21.2.3.2 [char.traits.specializations.char16_t]</emphasis>,
+      <emphasis>21.2.3.3 [char.traits.specializations.char32_t]</emphasis>
+      The types <classname>u16streampos</classname> and
+      <classname>u32streampos</classname> are both synonyms for
+      <classname>fpos&lt;mbstate_t&gt;</classname>.
+      The function <function>eof</function> returns <code>int_type(-1)</code>.
+   </para>
+
+   <para>
+      <emphasis>21.2.3.2 [char.traits.specializations.char16_t]</emphasis>
+      The type <classname>u16streampos</classname> is a synonym for
+      <classname>fpos&lt;mbstate_t&gt;</classname>.
+      The function <function>eof</function> returns <code>int_type(-1)</code>.
+   </para>
+
+   <para>
+      <emphasis>22.4.5.1.2 [locale.time.get.virtuals]</emphasis>,
+      <emphasis>22.4.5.3.2 [locale.time.put.virtuals]</emphasis>
+      Additional supported formats should be documented here.
+   </para>
+
+   <para>
+      <emphasis> 22.4.7.1.2 [locale.messages.virtuals]</emphasis>
+      The mapping should be documented here.
    </para>
 
    <para>
@@ -2588,6 +2621,59 @@ particular release.
       <emphasis>23.5.7.2 [unord.multiset.cnstr]</emphasis>
       The default minimal bucket count is 0 for the default constructors, range
       constructors and initializer-list constructors.
+   </para>
+
+   <para>
+      <emphasis>25.3.12 [alg.random.shuffle]</emphasis>
+      The two-argument overload of <function>random_shuffle</function>
+      uses <function>rand</function> as the source of randomness.
+   </para>
+
+   <para>
+      <emphasis>26.5.5 [rand.predef]</emphasis>
+      The type <classname>default_random_engine</classname> is a synonym for
+      <classname>minstd_rand0</classname>.
+   </para>
+
+   <para>
+      <emphasis> 26.5.6 [rand.device] </emphasis>
+      The default <code>token</code> argument to the
+      <classname>random_device</classname> constructor is
+      <literal>"default"</literal>. Other valid arguments are
+      <literal>"/dev/random"</literal> and <literal>"/dev/urandom"</literal>,
+      which determine the character special file to read random bytes from.
+      The <literal>"default"</literal> token will read bytes from a hardware
+      RNG if available (currently this only supports the IA-32 RDRAND
+      instruction) otherwise it is equivalent to
+      <literal>"/dev/urandom"</literal>.
+      An exception of type <classname>runtime_error</classname> will be
+      thrown if a <classname>random_device</classname> object cannot open
+      or read from the source of random bytes.
+   </para>
+
+   <para>
+      <emphasis>26.5.8.1 [rand.dist.general]</emphasis>
+      The algorithms used by the distributions should be documented here.
+   </para>
+
+   <para>
+      <emphasis>26.8 [c.math]</emphasis> Whether the
+      <function>rand</function> function introduces data races depends on
+      the C library as the function is not provided by libstdc++.
+   </para>
+
+   <para>
+      <emphasis>28.5.1 [re.synopt]</emphasis>,
+      <emphasis> 28.5.2 [re.matchflag] </emphasis>,
+      <emphasis> 28.5.3 [re.err] </emphasis>
+      <code>syntax_option_type</code>, <code>match_flag_type</code>
+      and <code>error_type</code> are unscoped enumeration types.
+   </para>
+
+   <para>
+      <emphasis>28.7 [re.traits]</emphasis>
+      The <literal>blank</literal> character class corresponds to the
+      <code>ctype_base::blank</code> mask.
    </para>
 
    <para>
