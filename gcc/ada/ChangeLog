@@ -1,5 +1,14 @@
 2015-02-20  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat1drv.adb: Minor consistency fix.
+
+2015-02-20  Pascal Obry  <obry@adacore.com>
+
+	* s-osprim-mingw.adb (Get_Base_Time): Properly release lock in all
+	paths.
+
+2015-02-20  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* inline.adb (Expand_Inlined_Call): Skip again calls to subprogram
 	renamings.
 	* exp_ch6.adb (Expand_Call): Use back-end inlining

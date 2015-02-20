@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -216,6 +216,7 @@ package body System.OS_Primitives is
       --  base data (time, clock, ticks) have already been updated.
 
       if Sig /= Signature then
+         Unlock;
          return;
       end if;
 
