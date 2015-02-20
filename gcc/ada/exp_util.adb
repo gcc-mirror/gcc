@@ -7315,8 +7315,9 @@ package body Exp_Util is
         (Loc         : Source_Ptr;
          Id          : Character;
          Related_Nod : Node_Id := Empty) return Entity_Id;
-      --  Create an external symbol of the form xxx_FIRST/_LAST if Related_Id
-      --  is present, otherwise it generates an internal temporary.
+      --  Create an external symbol of the form xxx_FIRST/_LAST if Related_Nod
+      --  is present (xxx is taken from the Chars field of Related_Nod),
+      --  otherwise it generates an internal temporary.
 
       ---------------------
       -- Build_Temporary --

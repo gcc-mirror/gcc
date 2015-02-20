@@ -2694,12 +2694,11 @@ package body Inline is
          return;
 
       --  Skip inlining if this is not a true inlining since the attribute
-      --  Body_To_Inline is also set for renamings (see sinfo.ads)
+      --  Body_To_Inline is also set for renamings (see sinfo.ads). For a
+      --  true inlining, Orig_Bod has code rather than being an entity.
 
       elsif Nkind (Orig_Bod) in N_Entity then
-         if not Has_Pragma_Inline (Subp) then
-            return;
-         end if;
+         return;
 
       --  Skip inlining if the function returns an unconstrained type using
       --  an extended return statement since this part of the new inlining
