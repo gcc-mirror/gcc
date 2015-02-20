@@ -1,3 +1,10 @@
+2015-02-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2015-02-20 trunk r220847.
+
+	PR target/64452
+	* gcc.target/avr/torture/pr64452.c: New test.
+
 2015-02-20  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
