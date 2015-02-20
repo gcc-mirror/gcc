@@ -740,7 +740,7 @@ package body Lib.Load is
                goto Done;
             end if;
 
-            --  If loaded unit had a fatal error, then caller inherits setting
+            --  If loaded unit had an error, then caller inherits setting
 
             if Present (Error_Node) then
                case Units.Table (Unum).Fatal_Error is

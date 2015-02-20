@@ -970,6 +970,10 @@ package body Exp_Ch6 is
    -- Expand_Actuals --
    --------------------
 
+   --------------------
+   -- Expand_Actuals --
+   --------------------
+
    procedure Expand_Actuals (N : in out Node_Id; Subp : Entity_Id) is
       Loc       : constant Source_Ptr := Sloc (N);
       Actual    : Node_Id;
@@ -1750,9 +1754,49 @@ package body Exp_Ch6 is
             --  be handled separately because the name does not denote an
             --  overloadable entity.
 
-            declare
+            By_Ref_Predicate_Check : declare
                Aund : constant Entity_Id := Underlying_Type (E_Actual);
                Atyp : Entity_Id;
+
+               function Is_Public_Subp return Boolean;
+               --  Check whether the subprogram being called is a visible
+               --  operation of the type of the actual. Used to determine
+               --  whether an invariant check must be generated on the
+               --  caller side.
+
+               ---------------------
+               --  Is_Public_Subp --
+               ---------------------
+
+               function Is_Public_Subp return Boolean is
+                  Pack      : constant Entity_Id := Scope (Subp);
+                  Subp_Decl : Node_Id;
+
+               begin
+                  if not Is_Subprogram (Subp) then
+                     return False;
+
+                  --  The operation may be inherited, or a primitive of the
+                  --  root type.
+
+                  elsif
+                    Nkind_In (Parent (Subp), N_Private_Extension_Declaration,
+                                             N_Full_Type_Declaration)
+                  then
+                     Subp_Decl := Parent (Subp);
+
+                  else
+                     Subp_Decl := Unit_Declaration_Node (Subp);
+                  end if;
+
+                  return Ekind (Pack) = E_Package
+                    and then
+                      List_Containing (Subp_Decl) =
+                        Visible_Declarations
+                          (Specification (Unit_Declaration_Node (Pack)));
+               end Is_Public_Subp;
+
+            --  Start of processing for By_Ref_Predicate_Check
 
             begin
                if No (Aund) then
@@ -1771,7 +1815,34 @@ package body Exp_Ch6 is
                   Append_To (Post_Call,
                     Make_Predicate_Check (Atyp, Actual));
                end if;
-            end;
+
+               --  We generated caller-side invariant checks in two cases:
+
+               --  a) when calling an inherited operation, where there is an
+               --  implicit view conversion of the actual to the parent type.
+
+               --  b) When the conversion is explicit
+
+               --  We treat these cases separately because the required
+               --  conversion for a) is added later when expanding the call.
+
+               if Has_Invariants (Etype (Actual))
+                  and then
+                    Nkind (Parent (Subp)) = N_Private_Extension_Declaration
+               then
+                  if  Comes_From_Source (N) and then Is_Public_Subp then
+                     Append_To (Post_Call, Make_Invariant_Call (Actual));
+                  end if;
+
+               elsif Nkind (Actual) = N_Type_Conversion
+                 and then Has_Invariants (Etype (Expression (Actual)))
+               then
+                  if Comes_From_Source (N) and then Is_Public_Subp then
+                     Append_To (Post_Call,
+                       Make_Invariant_Call (Expression (Actual)));
+                  end if;
+               end if;
+            end By_Ref_Predicate_Check;
 
          --  Processing for IN parameters
 
@@ -7609,6 +7680,7 @@ package body Exp_Ch6 is
 
                   if Present (Class_Pre) then
                      Merge_Preconditions (Check_Prag, Class_Pre);
+
                   else
                      Class_Pre := Check_Prag;
                   end if;

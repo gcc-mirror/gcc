@@ -1,3 +1,31 @@
+2015-02-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-stalib.ads: Fix typo.
+
+2015-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Default_Initialize_Object): If the object has a
+	delayed freeze, the actions associated with default initialization
+	must be part of the freeze actions, rather that being inserted
+	directly after the object declaration.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* lib-load.adb: Minor comment update.
+
+2015-02-20  Vincent Celier  <celier@adacore.com>
+
+	* prj-proc.adb (Process_Case_Construction): When there are
+	incomplete withed projects and the case variable is unknown,
+	skip the case construction.
+
+2015-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): Add caller-side invariant checks
+	when an actual is a view conversion, either because the call is
+	to an inherited operation, or because the actual is an explicit
+	type conversion to an ancestor type.  Fixes ACATS 4.0D: C732001
+
 2015-02-20  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.ads: Minor comment updates Fix missing pragma Inline
