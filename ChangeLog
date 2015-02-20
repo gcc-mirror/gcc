@@ -1,3 +1,9 @@
+2015-02-20  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* configure.ac [--enable-as-accelerator-for] (enable_languages):
+	Make sure it contains lto.
+	* configure: Regenerate.
+
 2015-02-18  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* configure: Regenerate.
