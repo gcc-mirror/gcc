@@ -4165,8 +4165,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      ? is_required
 	      : (Is_Inlined (gnat_entity) ? is_enabled : is_disabled);
 	bool public_flag = Is_Public (gnat_entity) || imported_p;
+	/* Subprograms marked both Intrinsic and Always_Inline need not
+	   have a body of their own.  */
 	bool extern_flag
-	  = (Is_Public (gnat_entity) && !definition) || imported_p;
+	  = ((Is_Public (gnat_entity) && !definition)
+	     || imported_p
+	     || (Convention (gnat_entity) == Convention_Intrinsic
+		 && Has_Pragma_Inline_Always (gnat_entity)));
 	bool artificial_flag = !Comes_From_Source (gnat_entity);
        /* The semantics of "pure" in Ada essentially matches that of "const"
           in the back-end.  In particular, both properties are orthogonal to
