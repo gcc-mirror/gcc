@@ -4,6 +4,10 @@
 	* python/libstdcxx/v6/printers.py (StdTuplePrinter): Handle new
 	tuple layout.
 
+	* doc/xml/manual/status_cxx2011.xml: Document implementation-defined
+	behavior.
+	* doc/html/manual/status.html: Regenerate.
+
 2015-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/58357

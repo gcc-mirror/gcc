@@ -228,9 +228,32 @@ particular release.
       Specific Behavior</a>. This section only documents behaviour which
       is new in the 2011 standard.
    </p><p>
+      <span class="emphasis"><em>20.7.2.2.1 [util.smartptr.shared.const]</em></span>
+      Only <code class="classname">bad_alloc</code> (or types derived from it) will
+      be thrown.
+   </p><p>
       <span class="emphasis"><em>20.8.9.1.3 [func.bind.place]/1</em></span> There are 29
       placeholders defined and the placeholder types are
       <code class="literal">CopyAssignable</code>.
+   </p><p>
+      <span class="emphasis"><em>21.2.3.2 [char.traits.specializations.char16_t]</em></span>,
+      <span class="emphasis"><em>21.2.3.3 [char.traits.specializations.char32_t]</em></span>
+      The types <code class="classname">u16streampos</code> and
+      <code class="classname">u32streampos</code> are both synonyms for
+      <code class="classname">fpos&lt;mbstate_t&gt;</code>.
+      The function <code class="function">eof</code> returns <code class="code">int_type(-1)</code>.
+   </p><p>
+      <span class="emphasis"><em>21.2.3.2 [char.traits.specializations.char16_t]</em></span>
+      The type <code class="classname">u16streampos</code> is a synonym for
+      <code class="classname">fpos&lt;mbstate_t&gt;</code>.
+      The function <code class="function">eof</code> returns <code class="code">int_type(-1)</code>.
+   </p><p>
+      <span class="emphasis"><em>22.4.5.1.2 [locale.time.get.virtuals]</em></span>,
+      <span class="emphasis"><em>22.4.5.3.2 [locale.time.put.virtuals]</em></span>
+      Additional supported formats should be documented here.
+   </p><p>
+      <span class="emphasis"><em> 22.4.7.1.2 [locale.messages.virtuals]</em></span>
+      The mapping should be documented here.
    </p><p>
       <span class="emphasis"><em>23.5.4.2 [unord.map.cnstr]</em></span>,
       <span class="emphasis"><em>23.5.5.2 [unord.multimap.cnstr]</em></span>,
@@ -238,6 +261,45 @@ particular release.
       <span class="emphasis"><em>23.5.7.2 [unord.multiset.cnstr]</em></span>
       The default minimal bucket count is 0 for the default constructors, range
       constructors and initializer-list constructors.
+   </p><p>
+      <span class="emphasis"><em>25.3.12 [alg.random.shuffle]</em></span>
+      The two-argument overload of <code class="function">random_shuffle</code>
+      uses <code class="function">rand</code> as the source of randomness.
+   </p><p>
+      <span class="emphasis"><em>26.5.5 [rand.predef]</em></span>
+      The type <code class="classname">default_random_engine</code> is a synonym for
+      <code class="classname">minstd_rand0</code>.
+   </p><p>
+      <span class="emphasis"><em> 26.5.6 [rand.device] </em></span>
+      The default <code class="code">token</code> argument to the
+      <code class="classname">random_device</code> constructor is
+      <code class="literal">"default"</code>. Other valid arguments are
+      <code class="literal">"/dev/random"</code> and <code class="literal">"/dev/urandom"</code>,
+      which determine the character special file to read random bytes from.
+      The <code class="literal">"default"</code> token will read bytes from a hardware
+      RNG if available (currently this only supports the IA-32 RDRAND
+      instruction) otherwise it is equivalent to
+      <code class="literal">"/dev/urandom"</code>.
+      An exception of type <code class="classname">runtime_error</code> will be
+      thrown if a <code class="classname">random_device</code> object cannot open
+      or read from the source of random bytes.
+   </p><p>
+      <span class="emphasis"><em>26.5.8.1 [rand.dist.general]</em></span>
+      The algorithms used by the distributions should be documented here.
+   </p><p>
+      <span class="emphasis"><em>26.8 [c.math]</em></span> Whether the
+      <code class="function">rand</code> function introduces data races depends on
+      the C library as the function is not provided by libstdc++.
+   </p><p>
+      <span class="emphasis"><em>28.5.1 [re.synopt]</em></span>,
+      <span class="emphasis"><em> 28.5.2 [re.matchflag] </em></span>,
+      <span class="emphasis"><em> 28.5.3 [re.err] </em></span>
+      <code class="code">syntax_option_type</code>, <code class="code">match_flag_type</code>
+      and <code class="code">error_type</code> are unscoped enumeration types.
+   </p><p>
+      <span class="emphasis"><em>28.7 [re.traits]</em></span>
+      The <code class="literal">blank</code> character class corresponds to the
+      <code class="code">ctype_base::blank</code> mask.
    </p><p>
       <span class="emphasis"><em>30.2.3 [thread.req.native]/1</em></span>
       <code class="classname">native_handle_type</code> and
