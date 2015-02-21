@@ -1,3 +1,7 @@
+2015-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/rtl.texi (fma): Clarify documentation.
+
 2015-02-20  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR debug/58123
