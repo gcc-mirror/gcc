@@ -1,3 +1,14 @@
+2015-02-20  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* tree-streamer-in.c (unpack_ts_decl_common_value_fields,
+	unpack_ts_type_common_value_fields): If ACCEL_COMPILER,
+	restrict alignments to absolute_biggest_alignment.
+	* config/i386/i386.c (TARGET_ABSOLUTE_BIGGEST_ALIGNMENT):
+	Define.
+	* doc/tm.texi.in (TARGET_ABSOLUTE_BIGGEST_ALIGNMENT): Add.
+	* doc/tm.texi: Regenerate.
+	* target.def (absolute_biggest_alignment): New DEFHOOKPOD.
+
 2015-02-20  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/64172

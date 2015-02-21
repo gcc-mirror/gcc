@@ -52131,6 +52131,9 @@ ix86_initialize_bounds (tree var, tree lb, tree ub, tree *stmts)
 #define TARGET_OFFLOAD_OPTIONS \
   ix86_offload_options
 
+#undef TARGET_ABSOLUTE_BIGGEST_ALIGNMENT
+#define TARGET_ABSOLUTE_BIGGEST_ALIGNMENT 512
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-i386.h"
