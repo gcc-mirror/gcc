@@ -1003,6 +1003,12 @@ bits.  Note that this is not the biggest alignment that is supported,
 just the biggest alignment that, when violated, may cause a fault.
 @end defmac
 
+@deftypevr {Target Hook} HOST_WIDE_INT TARGET_ABSOLUTE_BIGGEST_ALIGNMENT
+If defined, this target hook specifies the absolute biggest alignment
+that a type or variable can have on this machine, otherwise,
+@code{BIGGEST_ALIGNMENT} is used.
+@end deftypevr
+
 @defmac MALLOC_ABI_ALIGNMENT
 Alignment, in bits, a C conformant malloc implementation has to
 provide.  If not defined, the default value is @code{BITS_PER_WORD}.

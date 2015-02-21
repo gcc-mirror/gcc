@@ -1868,6 +1868,13 @@ recorded in the offload function and variable table.",
  void, (tree),
  hook_void_tree)
 
+DEFHOOKPOD
+(absolute_biggest_alignment,
+ "If defined, this target hook specifies the absolute biggest alignment\n\
+that a type or variable can have on this machine, otherwise,\n\
+@code{BIGGEST_ALIGNMENT} is used.",
+ HOST_WIDE_INT, BIGGEST_ALIGNMENT)
+
 /* Allow target specific overriding of option settings after options have
   been changed by an attribute or pragma or when it is reset at the
   end of the code affected by an attribute or pragma.  */

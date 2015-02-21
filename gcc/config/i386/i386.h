@@ -795,7 +795,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    rounder than this.
 
    Pentium+ prefers DFmode values to be aligned to 64 bit boundary
-   and Pentium Pro XFmode values at 128 bit boundaries.  */
+   and Pentium Pro XFmode values at 128 bit boundaries.
+
+   When increasing the maximum, also update
+   TARGET_ABSOLUTE_BIGGEST_ALIGNMENT.  */
 
 #define BIGGEST_ALIGNMENT \
   (TARGET_AVX512F ? 512 : (TARGET_AVX ? 256 : 128))
