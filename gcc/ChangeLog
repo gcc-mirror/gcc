@@ -1,3 +1,9 @@
+2015-02-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR debug/58123
+	* gimplify.c (gimplify_expr): Prefer location of TRY_FINALLY_EXPR
+	over input_location.
+
 2015-02-20  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* tree-streamer-in.c (unpack_ts_decl_common_value_fields,

@@ -1,3 +1,10 @@
+2015-02-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR debug/58123
+	* g++.dg/debug/dwarf2/deallocator.C: Adjust for correct try
+	location.
+	* g++.dg/gcov/gcov-2.C: Likewise.
+
 2015-02-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65136
