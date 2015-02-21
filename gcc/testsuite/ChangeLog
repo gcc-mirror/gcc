@@ -1,3 +1,8 @@
+2015-02-21  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/65156
+	* gnat.dg/timing_events.adb: Removed, invalid test.
+
 2015-02-20  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR debug/58123
