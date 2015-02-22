@@ -1,3 +1,17 @@
+2015-02-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2014-12-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/64113
+	* config/alpha/alpha.md (call_value_osf_tlsgd): Do not split insn
+	using post-reload splitter.  Use peephole2 pass instead.
+	(call_value_osf_tlsldm): Ditto.
+	(TLS_CALL): New int iterator.
+	(tls): New int attribute.
+	(call_value_osf_<tls>): Merge insn pattern from call_value_osf_tlsgd
+	and call_value_tlsldm using TLS_CALL int iterator.
+
 2015-02-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

@@ -5984,47 +5984,67 @@
   [(set_attr "type" "jsr")
    (set_attr "length" "*,*,8")])
 
-(define_insn_and_split "call_value_osf_tlsgd"
-  [(set (match_operand 0)
-	(call (mem:DI (match_operand:DI 1 "symbolic_operand"))
-	      (const_int 0)))
-   (unspec [(match_operand:DI 2 "const_int_operand")] UNSPEC_TLSGD_CALL)
-   (use (reg:DI 29))
-   (clobber (reg:DI 26))]
-  "HAVE_AS_TLS"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 3)
-	(unspec:DI [(match_dup 5)
-		    (match_dup 1)
-		    (match_dup 2)] UNSPEC_LITERAL))
-   (parallel [(set (match_dup 0)
-		   (call (mem:DI (match_dup 3))
-			 (const_int 0)))
-	      (set (match_dup 5)
-		   (unspec:DI [(match_dup 5) (match_dup 4)] UNSPEC_LDGP1))
-	      (use (match_dup 1))
-	      (use (unspec [(match_dup 2)] UNSPEC_TLSGD_CALL))
-	      (clobber (reg:DI 26))])
-   (set (match_dup 5)
-	(unspec:DI [(match_dup 5) (match_dup 4)] UNSPEC_LDGP2))]
-{
-  operands[3] = gen_rtx_REG (Pmode, 27);
-  operands[4] = GEN_INT (alpha_next_sequence_number++);
-  operands[5] = pic_offset_table_rtx;
-}
-  [(set_attr "type" "multi")])
+(define_int_iterator TLS_CALL
+	[UNSPEC_TLSGD_CALL
+	 UNSPEC_TLSLDM_CALL])
 
-(define_insn_and_split "call_value_osf_tlsldm"
+(define_int_attr tls
+	[(UNSPEC_TLSGD_CALL "tlsgd")
+	 (UNSPEC_TLSLDM_CALL "tlsldm")])
+
+(define_insn "call_value_osf_<tls>"
   [(set (match_operand 0)
 	(call (mem:DI (match_operand:DI 1 "symbolic_operand"))
 	      (const_int 0)))
-   (unspec [(match_operand:DI 2 "const_int_operand")] UNSPEC_TLSLDM_CALL)
+   (unspec [(match_operand:DI 2 "const_int_operand")] TLS_CALL)
    (use (reg:DI 29))
    (clobber (reg:DI 26))]
   "HAVE_AS_TLS"
-  "#"
-  "&& reload_completed"
+  "ldq $27,%1($29)\t\t!literal!%2\;jsr $26,($27),%1\t\t!lituse_<tls>!%2\;ldah $29,0($26)\t\t!gpdisp!%*\;lda $29,0($29)\t\t!gpdisp!%*"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "16")])
+
+;; We must use peep2 instead of a split because we need accurate life
+;; information for $gp.
+(define_peephole2
+  [(parallel
+    [(set (match_operand 0)
+	  (call (mem:DI (match_operand:DI 1 "symbolic_operand"))
+		(const_int 0)))
+     (unspec [(match_operand:DI 2 "const_int_operand")] TLS_CALL)
+     (use (reg:DI 29))
+     (clobber (reg:DI 26))])]
+  "HAVE_AS_TLS && reload_completed
+   && peep2_regno_dead_p (1, 29)"
+  [(set (match_dup 3)
+	(unspec:DI [(match_dup 5)
+		    (match_dup 1)
+		    (match_dup 2)] UNSPEC_LITERAL))
+   (parallel [(set (match_dup 0)
+		   (call (mem:DI (match_dup 3))
+			 (const_int 0)))
+	      (use (match_dup 5))
+	      (use (match_dup 1))
+	      (use (unspec [(match_dup 2)] TLS_CALL))
+	      (clobber (reg:DI 26))])
+   (set (match_dup 5)
+	(unspec:DI [(match_dup 5) (match_dup 4)] UNSPEC_LDGP2))]
+{
+  operands[3] = gen_rtx_REG (Pmode, 27);
+  operands[4] = GEN_INT (alpha_next_sequence_number++);
+  operands[5] = pic_offset_table_rtx;
+})
+
+(define_peephole2
+  [(parallel
+    [(set (match_operand 0)
+	  (call (mem:DI (match_operand:DI 1 "symbolic_operand"))
+		(const_int 0)))
+     (unspec [(match_operand:DI 2 "const_int_operand")] TLS_CALL)
+     (use (reg:DI 29))
+     (clobber (reg:DI 26))])]
+  "HAVE_AS_TLS && reload_completed
+   && !peep2_regno_dead_p (1, 29)"
   [(set (match_dup 3)
 	(unspec:DI [(match_dup 5)
 		    (match_dup 1)
@@ -6035,7 +6055,7 @@
 	      (set (match_dup 5)
 		   (unspec:DI [(match_dup 5) (match_dup 4)] UNSPEC_LDGP1))
 	      (use (match_dup 1))
-	      (use (unspec [(match_dup 2)] UNSPEC_TLSLDM_CALL))
+	      (use (unspec [(match_dup 2)] TLS_CALL))
 	      (clobber (reg:DI 26))])
    (set (match_dup 5)
 	(unspec:DI [(match_dup 5) (match_dup 4)] UNSPEC_LDGP2))]
@@ -6043,8 +6063,7 @@
   operands[3] = gen_rtx_REG (Pmode, 27);
   operands[4] = GEN_INT (alpha_next_sequence_number++);
   operands[5] = pic_offset_table_rtx;
-}
-  [(set_attr "type" "multi")])
+})
 
 (define_insn "*call_value_osf_1"
   [(set (match_operand 0)
