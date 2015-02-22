@@ -63,6 +63,7 @@ clean:
 
 %.texinfo:
 	$(SPHINXBUILD) -b texinfo $(ALLSPHINXOPTS) $(BUILDDIR)/$*/texinfo
+	sed -e 's/^@dircategory/@dircategory GNU Ada Tools/g' < $(BUILDDIR)/$*/texinfo/$*.texi > $(BUILDDIR)/../../$*.texi
 
 html-all: $(foreach doc, $(DOC_LIST), $(doc).html)
 

@@ -1,5 +1,11 @@
 2015-02-22  Arnaud Charlet  <charlet@adacore.com>
 
+	* doc/Makefile: postprocess texinfo files to update @dircategory
+	and update texi files under gcc/ada.
+	* gnat_ugn.texi, gnat_rm.texi: Regenerated.
+
+2015-02-22  Arnaud Charlet  <charlet@adacore.com>
+
 	* doc/gnat_ugn/project-manager-figure.png,
 	doc/gnat_ugn/rtlibrary-structure.png: New.
 
