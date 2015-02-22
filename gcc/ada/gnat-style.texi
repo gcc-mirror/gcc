@@ -566,7 +566,7 @@ can be saved by aligning the @code{when} clauses with the opening @code{case}.
 @cindex Loop statements
 
 @itemize @bullet
-@noindent
+@item
 When possible, have @code{for} or @code{while} on one line with the
 condition and the @code{loop} keyword.
 
