@@ -1,3 +1,11 @@
+2015-02-22  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR fortran/64980
+	PR fortran/61960
+	* gfortran.dg/pr61960.f90: New.
+	* gfortran.dg/pr64230.f90: New.
+	* gfortran.dg/pr64980.f03: New.
+
 2015-02-22  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/pr30957-1.c: Make pr30957-1.c pass rather xfail.
