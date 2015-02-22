@@ -1,3 +1,9 @@
+2015-02-22  Tom de Vries  <tom@codesourcery.com>
+
+	PR ada/65100
+	* gnat-style.texi (@subsection Loop Statements): Replace @noindent by
+	@item, and fix warning '@itemize has text but no @item'.
+
 2015-02-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma, case Obsolescent): Pragma
