@@ -1,3 +1,8 @@
+2015-02-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_ugn/project-manager-figure.png,
+	doc/gnat_ugn/rtlibrary-structure.png: New.
+
 2015-02-22  Tom de Vries  <tom@codesourcery.com>
 
 	PR ada/65100
