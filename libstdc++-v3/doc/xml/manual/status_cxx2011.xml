@@ -2597,13 +2597,6 @@ particular release.
    </para>
 
    <para>
-      <emphasis>21.2.3.2 [char.traits.specializations.char16_t]</emphasis>
-      The type <classname>u16streampos</classname> is a synonym for
-      <classname>fpos&lt;mbstate_t&gt;</classname>.
-      The function <function>eof</function> returns <code>int_type(-1)</code>.
-   </para>
-
-   <para>
       <emphasis>22.4.5.1.2 [locale.time.get.virtuals]</emphasis>,
       <emphasis>22.4.5.3.2 [locale.time.put.virtuals]</emphasis>
       Additional supported formats should be documented here.
