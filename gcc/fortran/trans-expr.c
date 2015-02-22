@@ -3783,10 +3783,6 @@ gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
 	  expr->symtree = sym->new_sym;
 	else if (sym->expr)
 	  gfc_replace_expr (expr, gfc_copy_expr (sym->expr));
-	/* Replace base type for polymorphic arguments.  */
-	if (expr->ref && expr->ref->type == REF_COMPONENT
-	    && sym->expr && sym->expr->ts.type == BT_CLASS)
-	  expr->ref->u.c.sym = sym->expr->ts.u.derived;
       }
 
       /* ...and to subexpressions in expr->value.  */
@@ -4541,10 +4537,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			   && fsym->ts.type == BT_CLASS
 			   && !CLASS_DATA (fsym)->as
 			   && !CLASS_DATA (e)->as
-			   && (CLASS_DATA (fsym)->attr.class_pointer
-			       != CLASS_DATA (e)->attr.class_pointer
-			       || CLASS_DATA (fsym)->attr.allocatable
-				  != CLASS_DATA (e)->attr.allocatable))
+			   && strcmp (fsym->ts.u.derived->name,
+				      e->ts.u.derived->name))
 		    {
 		      type = gfc_typenode_for_spec (&fsym->ts);
 		      var = gfc_create_var (type, fsym->name);
