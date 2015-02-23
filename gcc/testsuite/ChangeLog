@@ -1,3 +1,11 @@
+2015-02-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2015-02-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/65163
+	* gcc.c-torture/compile/pr65163.c: New.
+
 2015-02-23  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

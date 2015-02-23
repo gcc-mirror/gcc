@@ -5847,7 +5847,7 @@ label:
 (define_insn "swapbsi2"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(ior:SI (and:SI (match_operand:SI 1 "arith_reg_operand" "r")
-			(const_int 4294901760))
+			(const_int -65536)) ;; 0xFFFF0000
 		(ior:SI (and:SI (ashift:SI (match_dup 1) (const_int 8))
 				(const_int 65280))
 			(and:SI (ashiftrt:SI (match_dup 1) (const_int 8))
@@ -5915,7 +5915,7 @@ label:
 (define_peephole2
   [(set (match_operand:SI 0 "arith_reg_dest" "")
 	(ior:SI (and:SI (match_operand:SI 1 "arith_reg_operand" "")
-			(const_int 4294901760))
+			(const_int -65536)) ;; 0xFFFF0000
 		(ior:SI (and:SI (ashift:SI (match_dup 1) (const_int 8))
 				(const_int 65280))
 			(and:SI (ashiftrt:SI (match_dup 1) (const_int 8))
@@ -5925,7 +5925,7 @@ label:
   "TARGET_SH1 && peep2_reg_dead_p (2, operands[0])"
   [(set (match_dup 2)
 	(ior:SI (and:SI (match_operand:SI 1 "arith_reg_operand" "")
-			(const_int 4294901760))
+			(const_int -65536)) ;; 0xFFFF0000
 		(ior:SI (and:SI (ashift:SI (match_dup 1) (const_int 8))
 				(const_int 65280))
 			(and:SI (ashiftrt:SI (match_dup 1) (const_int 8))
