@@ -1,3 +1,9 @@
+2015-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/63888
+	* asan/asan_globals.cc (RegisterGlobal): Disable detect_odr_violation
+	support until it is rewritten upstream.
+
 2015-01-26  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: Move AM_ENABLE_MULTILIB before AC_PROG_CC.
