@@ -174,7 +174,8 @@ extern unsigned xtensa_current_frame_size;
    constants to be word aligned so that 'strcpy' calls that copy
    constants can be done inline.  */
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)					\
-  ((TREE_CODE (EXP) == STRING_CST || TREE_CODE (EXP) == CONSTRUCTOR)	\
+  (!optimize_size &&							\
+   (TREE_CODE (EXP) == STRING_CST || TREE_CODE (EXP) == CONSTRUCTOR)	\
    && (ALIGN) < BITS_PER_WORD						\
 	? BITS_PER_WORD							\
 	: (ALIGN))
@@ -186,7 +187,7 @@ extern unsigned xtensa_current_frame_size;
    that copy constants to character arrays can be done inline.  */
 #undef DATA_ALIGNMENT
 #define DATA_ALIGNMENT(TYPE, ALIGN)					\
-  ((((ALIGN) < BITS_PER_WORD)						\
+  (!optimize_size && (((ALIGN) < BITS_PER_WORD)				\
     && (TREE_CODE (TYPE) == ARRAY_TYPE					\
 	|| TREE_CODE (TYPE) == UNION_TYPE				\
 	|| TREE_CODE (TYPE) == RECORD_TYPE)) ? BITS_PER_WORD : (ALIGN))
