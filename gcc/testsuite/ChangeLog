@@ -1,3 +1,21 @@
+2015-02-23  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61634
+	* gcc.dg/vect/pr61634.c: New testcase.
+
+	2015-01-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59354
+	* gcc.dg/vect/pr59354.c: New testcase.
+
+	2015-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64909
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr64909.c: New testcase.
+
 2015-02-23  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	Backport from mainline

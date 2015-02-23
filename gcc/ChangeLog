@@ -1,3 +1,36 @@
+2015-02-23  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63844
+	* omp-low.c (fixup_child_record_type): Use a restrict qualified
+	referece type for the receiver parameter.
+
+	2014-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61634
+	* tree-vect-slp.c: Include gimple-walk.h.
+	(vect_detect_hybrid_slp_stmts): Rewrite to propagate hybrid
+	down the SLP tree for one scalar statement.
+	(vect_detect_hybrid_slp_1): New walker function.
+	(vect_detect_hybrid_slp_2): Likewise.
+	(vect_detect_hybrid_slp): Properly handle pattern statements
+	in a pre-scan over all loop stmts.
+
+	2015-01-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/59354
+	* tree-vect-slp.c (vect_build_slp_tree_1): Treat loads from
+	groups larger than the slp group size as having gaps.
+
+	2015-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64909
+	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Properly
+	pass a scalar-stmt count estimate to the cost model.
+	* tree-vect-data-refs.c (vect_peeling_hash_get_lowest_cost): Likewise.
+
 2015-02-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
