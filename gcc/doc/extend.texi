@@ -3123,16 +3123,19 @@ this function attribute to make GCC generate the ``hot-patching'' function
 prologue used in Win32 API functions in Microsoft Windows XP Service Pack 2
 and newer.
 
-@item hotpatch [(@var{prologue-halfwords})]
+@item hotpatch (@var{halfwords-before-function-label},@var{halfwords-after-function-label})
 @cindex @code{hotpatch} attribute
 
 On S/390 System z targets, you can use this function attribute to
-make GCC generate a ``hot-patching'' function prologue.  The
-@code{hotpatch} has no effect on funtions that are explicitly
-inline.  If the @option{-mhotpatch} or @option{-mno-hotpatch}
-command-line option is used at the same time, the @code{hotpatch}
-attribute takes precedence.  If an argument is given, the maximum
-allowed value is 1000000.
+make GCC generate a ``hot-patching'' function prologue.  If the
+@option{-mhotpatch=} command-line option is used at the same time,
+the @code{hotpatch} attribute takes precedence.  The first of the
+two arguments specifies the number of halfwords to be added before
+the function label.  A second argument can be used to specify the
+number of halfwords to be added after the function label.  For
+both arguments the maximum allowed value is 1000000.
+
+If both ar guments are zero, hotpatching is disabled.
 
 @item naked
 @cindex function without a prologue/epilogue code
