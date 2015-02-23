@@ -1,3 +1,12 @@
+2015-02-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2015-02-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/65163
+	* config/sh/sh.md (swapbsi2, related peephole2): Use const_int -65536
+	instead of const_int 4294901760.
+
 2015-02-23  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	Backport from mainline
