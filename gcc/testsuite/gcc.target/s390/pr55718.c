@@ -1,7 +1,7 @@
 /* PR target/55717  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=z10 -fPIC" } */
+/* { dg-options "-O2 -march=z10 -fPIC -Wno-implicit-function-declaration" } */
 
 extern char temp[];
 short ansi_value[256];
