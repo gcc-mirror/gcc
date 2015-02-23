@@ -18,12 +18,12 @@ void hp2(void)
 
 __attribute__ ((hotpatch(1000001,1000000)))
 void hp3(void)
-{ /* { dg-error " requested 'hotpatch' attribute is not a comma separated pair" } */
+{ /* { dg-error " requested .hotpatch. attribute is not a comma separated pair" } */
   printf("hello, world!\n");
 }
 
 __attribute__ ((hotpatch(1000000,1000001)))
 void hp4(void)
-{ /* { dg-error " requested 'hotpatch' attribute is not a comma separated pair" } */
+{ /* { dg-error " requested .hotpatch. attribute is not a comma separated pair" } */
   printf("hello, world!\n");
 }
