@@ -1,3 +1,9 @@
+2015-02-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/65181
+	* config/nvptx/t-nvptx (INHIBIT_LIBC_CFLAGS): Define to
+	-Dinhibit_libc.
+
 2015-02-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/arm/bpabi.S (test_div_by_zero): Make label names
