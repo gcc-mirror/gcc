@@ -5,8 +5,6 @@
 
 __attribute__((hotpatch(0,-1)))
 int main (void)
-{
+{/* { dg-error "attribute is not a comma separated pair of non-negative integer constants or too large" } */
   return 0;
 }
-
-/* { dg-excess-errors "argument to '-mhotpatch=' should be a non-negative integer" } */
