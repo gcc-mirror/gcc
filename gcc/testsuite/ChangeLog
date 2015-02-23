@@ -1,3 +1,8 @@
+2015-02-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR fortran/63427
+	* gfortran.dg/integer_exponentiation_6.F90: New test.
+
 2015-02-23  Martin Sebor  <msebor@redhat.com>
 
 	PR target/65109

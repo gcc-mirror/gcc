@@ -1,3 +1,9 @@
+2015-02-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR fortran/63427
+	* wide-int.cc (wi::from_mpz): Cope with unwrapped values that are
+	too big for a wide_int.  Implement missing wrapping operation.
+
 2015-02-23  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/65163

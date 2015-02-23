@@ -237,7 +237,7 @@ wide_int
 wi::from_mpz (const_tree type, mpz_t x, bool wrap)
 {
   size_t count, numb;
-  int prec = TYPE_PRECISION (type);
+  unsigned int prec = TYPE_PRECISION (type);
   wide_int res = wide_int::create (prec);
 
   if (!wrap)
@@ -261,16 +261,28 @@ wi::from_mpz (const_tree type, mpz_t x, bool wrap)
      for representing the value.  The code to calculate count is
      extracted from the GMP manual, section "Integer Import and Export":
      http://gmplib.org/manual/Integer-Import-and-Export.html  */
-  numb = 8 * sizeof(HOST_WIDE_INT);
+  numb = CHAR_BIT * sizeof (HOST_WIDE_INT);
   count = (mpz_sizeinbase (x, 2) + numb - 1) / numb;
   HOST_WIDE_INT *val = res.write_val ();
-  mpz_export (val, &count, -1, sizeof (HOST_WIDE_INT), 0, 0, x);
+  /* Write directly to the wide_int storage if possible, otherwise leave
+     GMP to allocate the memory for us.  It might be slightly more efficient
+     to use mpz_tdiv_r_2exp for the latter case, but the situation is
+     pathological and it seems safer to operate on the original mpz value
+     in all cases.  */
+  void *valres = mpz_export (count <= WIDE_INT_MAX_ELTS ? val : 0,
+			     &count, -1, sizeof (HOST_WIDE_INT), 0, 0, x);
   if (count < 1)
     {
       val[0] = 0;
       count = 1;
     }
-  res.set_len (count);
+  count = MIN (count, BLOCKS_NEEDED (prec));
+  if (valres != val)
+    {
+      memcpy (val, valres, count * sizeof (HOST_WIDE_INT));
+      free (valres);
+    }
+  res.set_len (canonize (val, count, prec));
 
   if (mpz_sgn (x) < 0)
     res = -res;
