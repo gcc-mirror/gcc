@@ -36,7 +36,7 @@ avr-log.o: $(srcdir)/config/avr/avr-log.c \
 avr.o avr-c.o: $(srcdir)/config/avr/builtins.def
 
 # This overrides stdfix.h from USER_H which we supply and include
-# in our own stdint.h as stdint-gcc.h.
+# in our own stdfix.h as stdfix-gcc.h.
 
 EXTRA_HEADERS = $(srcdir)/config/avr/stdfix.h \
 	      	stdfix-gcc.h
