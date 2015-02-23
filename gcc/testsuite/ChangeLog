@@ -1,3 +1,11 @@
+2015-02-23  Martin Sebor  <msebor@redhat.com>
+
+	PR target/65109
+	* gcc.target/powerpc/ppc64-abi-1.c: Split test functions into
+	two parts.  One to save registers, the other to verify the
+	registers have the right values.  Save register state into
+	static data rather than on the stack.
+
 2015-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/63888
