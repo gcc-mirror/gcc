@@ -1,6 +1,6 @@
 2015-02-24  Alan Modra  <amodra@gmail.com>
 
-	PR target/65182
+	PR target/65172
 	* config/rs6000/rs6000.c (get_memref_parts): Only return true
 	when *base is a reg.  Handle nested plus addresses.  Simplify
 	pre_modify test.
