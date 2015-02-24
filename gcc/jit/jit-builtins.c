@@ -288,19 +288,23 @@ builtins_manager::make_type (enum jit_builtin_type type_id)
 #define DEF_FUNCTION_TYPE_3(ENUM, RETURN, ARG1, ARG2, ARG3) \
       case ENUM: return make_fn_type (ENUM, RETURN, 0, 3, ARG1, ARG2, ARG3);
 #define DEF_FUNCTION_TYPE_4(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4) \
-      case ENUM: return make_fn_type (ENUM, RETURN, 0, 4, ARG1, ARG2, ARG3, ARG4);
-#define DEF_FUNCTION_TYPE_5(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5)	\
-      case ENUM: return make_fn_type (ENUM, RETURN, 0, 5, ARG1, ARG2, ARG3, ARG4, ARG5);
+      case ENUM: return make_fn_type (ENUM, RETURN, 0, 4, ARG1, ARG2, ARG3, \
+				      ARG4);
+#define DEF_FUNCTION_TYPE_5(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5) \
+      case ENUM: return make_fn_type (ENUM, RETURN, 0, 5, ARG1, ARG2, ARG3, \
+				      ARG4, ARG5);
 #define DEF_FUNCTION_TYPE_6(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
 			    ARG6)					\
-      case ENUM: return make_fn_type (ENUM, RETURN, 0, 6, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6);
+      case ENUM: return make_fn_type (ENUM, RETURN, 0, 6, ARG1, ARG2, ARG3, \
+				      ARG4, ARG5, ARG6);
 #define DEF_FUNCTION_TYPE_7(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
 			    ARG6, ARG7)					\
-      case ENUM: return make_fn_type (ENUM, RETURN, 0, 7, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7);
+      case ENUM: return make_fn_type (ENUM, RETURN, 0, 7, ARG1, ARG2, ARG3, \
+				      ARG4, ARG5, ARG6, ARG7);
 #define DEF_FUNCTION_TYPE_8(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
 			    ARG6, ARG7, ARG8)				\
-      case ENUM: return make_fn_type (ENUM, RETURN, 0, 8, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, \
-				      ARG7, ARG8);
+      case ENUM: return make_fn_type (ENUM, RETURN, 0, 8, ARG1, ARG2, ARG3, \
+				      ARG4, ARG5, ARG6, ARG7, ARG8);
 #define DEF_FUNCTION_TYPE_VAR_0(ENUM, RETURN) \
       case ENUM: return make_fn_type (ENUM, RETURN, 1, 0);
 #define DEF_FUNCTION_TYPE_VAR_1(ENUM, RETURN, ARG1) \
@@ -310,18 +314,20 @@ builtins_manager::make_type (enum jit_builtin_type type_id)
 #define DEF_FUNCTION_TYPE_VAR_3(ENUM, RETURN, ARG1, ARG2, ARG3) \
       case ENUM: return make_fn_type (ENUM, RETURN, 1, 3, ARG1, ARG2, ARG3);
 #define DEF_FUNCTION_TYPE_VAR_4(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4) \
-      case ENUM: return make_fn_type (ENUM, RETURN, 1, 4, ARG1, ARG2, ARG3, ARG4);
+      case ENUM: return make_fn_type (ENUM, RETURN, 1, 4, ARG1, ARG2, ARG3, \
+				      ARG4);
 #define DEF_FUNCTION_TYPE_VAR_5(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5) \
-      case ENUM: return make_fn_type (ENUM, RETURN, 1, 5, ARG1, ARG2, ARG3, ARG4, ARG5);
-#define DEF_FUNCTION_TYPE_VAR_8(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
-				ARG6, ARG7, ARG8) \
-      case ENUM: return make_fn_type (ENUM, RETURN, 1, 8, ARG1, ARG2, ARG3, \
-				      ARG4, ARG5, ARG6, ARG7, ARG8);
-#define DEF_FUNCTION_TYPE_VAR_12(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
-				 ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) \
-      case ENUM: return make_fn_type (ENUM, RETURN, 1, 12, ARG1, ARG2, ARG3, \
+      case ENUM: return make_fn_type (ENUM, RETURN, 1, 5, ARG1, ARG2, ARG3, \
+				      ARG4, ARG5);
+#define DEF_FUNCTION_TYPE_VAR_7(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+				ARG6, ARG7)				\
+      case ENUM: return make_fn_type (ENUM, RETURN, 1, 7, ARG1, ARG2, ARG3, \
+				      ARG4, ARG5, ARG6, ARG7);
+#define DEF_FUNCTION_TYPE_VAR_11(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4, ARG5, \
+				 ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) \
+      case ENUM: return make_fn_type (ENUM, RETURN, 1, 11, ARG1, ARG2, ARG3, \
 				      ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, \
-				      ARG10, ARG11, ARG12);
+				      ARG10, ARG11);
 #define DEF_POINTER_TYPE(ENUM, TYPE) \
       case ENUM: return make_ptr_type (ENUM, TYPE);
 
@@ -343,8 +349,8 @@ builtins_manager::make_type (enum jit_builtin_type type_id)
 #undef DEF_FUNCTION_TYPE_VAR_3
 #undef DEF_FUNCTION_TYPE_VAR_4
 #undef DEF_FUNCTION_TYPE_VAR_5
-#undef DEF_FUNCTION_TYPE_VAR_8
-#undef DEF_FUNCTION_TYPE_VAR_12
+#undef DEF_FUNCTION_TYPE_VAR_7
+#undef DEF_FUNCTION_TYPE_VAR_11
 #undef DEF_POINTER_TYPE
 
     default:
