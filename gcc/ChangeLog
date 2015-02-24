@@ -1,3 +1,7 @@
+2015-02-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/stdfix.h [__WITH_AVRLIBC__]: Include <stdfix-avrlibc.h>.
+
 2015-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65170
