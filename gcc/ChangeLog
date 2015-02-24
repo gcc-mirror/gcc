@@ -1,3 +1,9 @@
+2015-02-24  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/65123
+	* lra-remat.c (operand_to_remat): Check hard regs in insn
+	definition too.
+
 2015-02-24  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850.h (ASM_SPEC): Pass -msoft-float/-mhard-float on

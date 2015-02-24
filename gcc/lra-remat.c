@@ -459,6 +459,16 @@ operand_to_remat (rtx_insn *insn)
 	     reg2 = reg2->next)
 	  if (reg2->type == OP_OUT && reg->regno == reg2->regno)
 	    return -1;
+	if (reg->regno < FIRST_PSEUDO_REGISTER)
+	  for (struct lra_insn_reg *reg2 = static_id->hard_regs;
+	       reg2 != NULL;
+	       reg2 = reg2->next)
+	    if (reg2->type == OP_OUT
+		&& reg->regno <= reg2->regno
+		&& (reg2->regno
+		    < (reg->regno
+		       + hard_regno_nregs[reg->regno][reg->biggest_mode])))
+	      return -1;
       }
   /* Find the rematerialization operand.  */
   int nop = static_id->n_operands;
