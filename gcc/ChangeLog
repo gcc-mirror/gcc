@@ -1,6 +1,17 @@
 2015-02-24  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2015-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56273
+	PR tree-optimization/59124
+	PR tree-optimization/64277
+	* tree-vrp.c (vrp_finalize): Emit array-bound warnings only
+	from the first VRP pass.
+
+2015-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2015-02-11  Richard Biener  <rguenther@suse.de>
 
 	PR lto/65015
