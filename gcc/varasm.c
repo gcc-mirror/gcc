@@ -6957,7 +6957,13 @@ default_file_start (void)
     fputs (ASM_APP_OFF, asm_out_file);
 
   if (targetm.asm_file_start_file_directive)
-    output_file_directive (asm_out_file, main_input_filename);
+    {
+      /* LTO produced units have no meaningful main_input_filename.  */
+      if (in_lto_p)
+	output_file_directive (asm_out_file, "<artificial>");
+      else
+	output_file_directive (asm_out_file, main_input_filename);
+    }
 }
 
 /* This is a generic routine suitable for use as TARGET_ASM_FILE_END
