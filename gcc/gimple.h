@@ -1303,7 +1303,7 @@ gcall *gimple_build_call_valist (tree, unsigned, va_list);
 gcall *gimple_build_call_internal (enum internal_fn, unsigned, ...);
 gcall *gimple_build_call_internal_vec (enum internal_fn, vec<tree> );
 gcall *gimple_build_call_from_tree (tree);
-gassign *gimple_build_assign (tree, tree CXX_MEM_STAT_DECL);
+gassign *gimple_build_assign (tree, tree CXX_MEM_STAT_INFO);
 gassign *gimple_build_assign (tree, enum tree_code,
 			      tree, tree, tree CXX_MEM_STAT_INFO);
 gassign *gimple_build_assign (tree, enum tree_code,

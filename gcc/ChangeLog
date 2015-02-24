@@ -1,3 +1,8 @@
+2015-02-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple.h (gimple_build_assign): Rename CXX_MEM_STAT_DECL to
+	CXX_MEM_STAT_INFO.
+
 2015-02-24  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78-protos.h (rl78_split_movsi): Accept a mode as
