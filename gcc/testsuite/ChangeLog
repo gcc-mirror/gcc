@@ -1,5 +1,9 @@
 2015-02-24  Tom de Vries  <tom@codesourcery.com>
 
+	* gfortran.dg/readwrite_unf_direct_eor_1.f90: Add missing close.
+
+2015-02-24  Tom de Vries  <tom@codesourcery.com>
+
 	PR testsuite/65126
 	* lib/gcc-defs.exp (additional_sources_used): Add new var.
 	(dg-additional-files-options): Copy additional_sources to
