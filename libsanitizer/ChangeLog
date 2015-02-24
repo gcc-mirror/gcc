@@ -1,4 +1,4 @@
-2015-02-20  Jakub Jelinek  <jakub@redhat.com>
+2015-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/63888
 	* asan/asan_globals.cc (RegisterGlobal): Disable detect_odr_violation
