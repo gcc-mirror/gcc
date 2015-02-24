@@ -4362,7 +4362,10 @@ vect_finalize_reduction:
                            && !STMT_VINFO_LIVE_P (exit_phi_vinfo))
                           || double_reduc);
 
-              STMT_VINFO_VEC_STMT (exit_phi_vinfo) = epilog_stmt;
+	      if (double_reduc)
+		STMT_VINFO_VEC_STMT (exit_phi_vinfo) = inner_phi;
+	      else
+		STMT_VINFO_VEC_STMT (exit_phi_vinfo) = epilog_stmt;
               if (!double_reduc
                   || STMT_VINFO_DEF_TYPE (exit_phi_vinfo)
                       != vect_double_reduction_def)

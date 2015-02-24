@@ -1,6 +1,21 @@
 2015-02-24  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2014-12-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64199
+	* fold-const.c (fold_binary_loc): Use TREE_OVERFLOW_P.
+
+	2015-01-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64493
+	PR tree-optimization/64495
+	* tree-vect-loop.c (vect_finalize_reduction): For double-reductions
+	assign the proper vectorized PHI to the inner loop exit PHIs.
+
+2015-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2015-01-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56273
