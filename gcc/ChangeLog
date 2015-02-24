@@ -1,3 +1,10 @@
+2015-02-24  Jeff Law  <law@redhat.com>
+
+	PR target/65117
+	* config/xtensa/xtensa.md (zero_cost_loop_start): Reverse numbering
+	of operand 0 and operand 2.
+	(zero_cost_loop_end, loop_end): Similarly.
+	
 2015-02-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple.h (gimple_build_assign): Rename CXX_MEM_STAT_DECL to
