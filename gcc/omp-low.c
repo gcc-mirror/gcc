@@ -1369,7 +1369,8 @@ fixup_child_record_type (omp_context *ctx)
       layout_type (type);
     }
 
-  TREE_TYPE (ctx->receiver_decl) = build_pointer_type (type);
+  TREE_TYPE (ctx->receiver_decl)
+    = build_qualified_type (build_reference_type (type), TYPE_QUAL_RESTRICT);
 }
 
 /* Instantiate decls as necessary in CTX to satisfy the data sharing

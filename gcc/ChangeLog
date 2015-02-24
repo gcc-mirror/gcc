@@ -1,6 +1,15 @@
 2015-02-24  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2014-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63844
+	* omp-low.c (fixup_child_record_type): Use a restrict qualified
+	referece type for the receiver parameter.
+
+2015-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2014-12-09  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64199
