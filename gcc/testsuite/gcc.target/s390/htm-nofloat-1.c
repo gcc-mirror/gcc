@@ -48,3 +48,4 @@ int main(void)
 /* Make sure no FPR saves/restores are emitted.  */
 /* { dg-final { scan-assembler-not "\tstd\t" } } */
 /* { dg-final { scan-assembler-not "\tld\t" } } */
+/* { dg-final { cleanup-saved-temps } } */

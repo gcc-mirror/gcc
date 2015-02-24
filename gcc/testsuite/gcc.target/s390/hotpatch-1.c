@@ -1,7 +1,7 @@
 /* Functional tests for the function hotpatching feature.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O3 -mzarch --save-temps" } */
+/* { dg-options "-O3 -mzarch" } */
 
 #include <stdio.h>
 
