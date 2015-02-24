@@ -1,3 +1,15 @@
+2015-02-24  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/65126
+	* lib/gcc-defs.exp (additional_sources_used): Add new var.
+	(dg-additional-files-options): Copy additional_sources to
+	additional_sources_used before emptying additional_sources.
+	* lib/gcc-dg.exp (cleanup-coverage-files, cleanup-repo-files)
+	(cleanup-stack-usage, cleanup-ada-spec, cleanup-dump)
+	(cleanup-saved-temps): Use additional_sources_used instead of
+	additional_sources.
+	(dg-test): Reset additional_sources_used.
+
 2015-02-23  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR fortran/63427
