@@ -1,3 +1,8 @@
+2015-02-24  Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/v850.h (ASM_SPEC): Pass -msoft-float/-mhard-float on
+	to the assembler.
+
 2015-02-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR libgomp/64625
