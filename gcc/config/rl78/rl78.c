@@ -506,12 +506,12 @@ rl78_expand_movsi (rtx *operands)
 
 /* Generate code to move an SImode value.  */
 void
-rl78_split_movsi (rtx *operands)
+rl78_split_movsi (rtx *operands, enum machine_mode omode)
 {
   rtx op00, op02, op10, op12;
 
-  op00 = rl78_subreg (HImode, operands[0], SImode, 0);
-  op02 = rl78_subreg (HImode, operands[0], SImode, 2);
+  op00 = rl78_subreg (HImode, operands[0], omode, 0);
+  op02 = rl78_subreg (HImode, operands[0], omode, 2);
 
   if (GET_CODE (operands[1]) == CONST
       || GET_CODE (operands[1]) == SYMBOL_REF)
@@ -523,8 +523,8 @@ rl78_split_movsi (rtx *operands)
     }
   else
     {
-      op10 = rl78_subreg (HImode, operands[1], SImode, 0);
-      op12 = rl78_subreg (HImode, operands[1], SImode, 2);
+      op10 = rl78_subreg (HImode, operands[1], omode, 0);
+      op12 = rl78_subreg (HImode, operands[1], omode, 2);
     }
 
   if (rtx_equal_p (operands[0], operands[1]))

@@ -1,3 +1,11 @@
+2015-02-24  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78-protos.h (rl78_split_movsi): Accept a mode as
+	well.
+	* config/rl78/rl78-expand.md (movsf): New, same as movsi.
+	* config/rl78/rl78.c (rl78_split_movsi): Accept a mode, use it
+	instead of hardcoding SImode.
+
 2015-02-24  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* omp-low.c (create_omp_child_function): Tag entrypoint
