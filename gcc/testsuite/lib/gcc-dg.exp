@@ -495,14 +495,15 @@ proc cleanup-profile-file { } {
 
 # Remove compiler-generated coverage files for the current test.
 proc cleanup-coverage-files { } {
+    global additional_sources_used
     set testcase [testname-for-summary]
     # The name might include a list of options; extract the file name.
     set testcase [lindex $testcase 0]
     remove-build-file "[file rootname [file tail $testcase]].gc??"
 
     # Clean up coverage files for additional source files.
-    if [info exists additional_sources] {
-	foreach srcfile $additional_sources {
+    if [info exists additional_sources_used] {
+	foreach srcfile $additional_sources_used {
 	    remove-build-file "[file rootname [file tail $srcfile]].gc??"
 	}
     }
@@ -510,6 +511,7 @@ proc cleanup-coverage-files { } {
 
 # Remove compiler-generated files from -repo for the current test.
 proc cleanup-repo-files { } {
+    global additional_sources_used
     set testcase [testname-for-summary]
     # The name might include a list of options; extract the file name.
     set testcase [lindex $testcase 0]
@@ -517,8 +519,8 @@ proc cleanup-repo-files { } {
     remove-build-file "[file rootname [file tail $testcase]].rpo"
 
     # Clean up files for additional source files.
-    if [info exists additional_sources] {
-	foreach srcfile $additional_sources {
+    if [info exists additional_sources_used] {
+	foreach srcfile $additional_sources_used {
 	    remove-build-file "[file rootname [file tail $srcfile]].o"
 	    remove-build-file "[file rootname [file tail $srcfile]].rpo"
 	}
@@ -554,8 +556,8 @@ proc cleanup-stack-usage { } {
     remove-build-file "[file rootname [file tail $testcase]].su"
 
     # Clean up files for additional source files.
-    if [info exists additional_sources] {
-	foreach srcfile $additional_sources {
+    if [info exists additional_sources_used] {
+	foreach srcfile $additional_sources_used {
 	    remove-build-file "[file rootname [file tail $srcfile]].su"
 	}
     }
@@ -563,12 +565,13 @@ proc cleanup-stack-usage { } {
 
 # Remove an Ada spec file for the current test.
 proc cleanup-ada-spec { } {
+    global additional_sources_used
     set testcase [testname-for-summary]
     remove-build-file "[get_ada_spec_filename $testcase]"
 
     # Clean up files for additional source files.
-    if [info exists additional_sources] {
-	foreach srcfile $additional_sources {
+    if [info exists additional_sources_used] {
+	foreach srcfile $additional_sources_used {
 	    remove-build-file "[get_ada_spec_filename $srcfile]"
 	}
     }
@@ -576,6 +579,7 @@ proc cleanup-ada-spec { } {
 
 # Remove all dump files with the provided suffix.
 proc cleanup-dump { suffix } {
+    global additional_sources_used
     set testcase [testname-for-summary]
     # The name might include a list of options; extract the file name.
     set src [file tail [lindex $testcase 0]]
@@ -586,8 +590,8 @@ proc cleanup-dump { suffix } {
     remove-build-file "[file tail $src].gk.$suffix"
 
     # Clean up dump files for additional source files.
-    if [info exists additional_sources] {
-	foreach srcfile $additional_sources {
+    if [info exists additional_sources_used] {
+	foreach srcfile $additional_sources_used {
 	    remove-build-file "[file tail $srcfile].$suffix"
 	    remove-build-file "[file rootname [file tail $srcfile]].exe.$suffix"
 	    remove-build-file "[file rootname [file tail $srcfile]].exe.ltrans\[0-9\]*.$suffix"
@@ -603,7 +607,7 @@ proc cleanup-dump { suffix } {
 # if there are tests generating them.
 # ARGS is a list of suffixes to NOT delete.
 proc cleanup-saved-temps { args } {
-    global additional_sources
+    global additional_sources_used
     set suffixes {}
 
     # add the to-be-kept suffixes
@@ -625,8 +629,8 @@ proc cleanup-saved-temps { args } {
     }
 
     # Clean up saved temp files for additional source files.
-    if [info exists additional_sources] {
-	foreach srcfile $additional_sources {
+    if [info exists additional_sources_used] {
+	foreach srcfile $additional_sources_used {
 	    foreach suffix $suffixes {
 		remove-build-file "[file rootname [file tail $srcfile]]$suffix"
 		remove-build-file "[file rootname [file tail $srcfile]].exe$suffix"
@@ -746,6 +750,7 @@ if { [info procs saved-dg-test] == [list] } {
 	    set saved_info $errorInfo
 	    set additional_files ""
 	    set additional_sources ""
+	    set additional_sources_used ""
 	    set additional_prunes ""
 	    set shouldfail 0
 	    if [info exists compiler_conditional_xfail_data] {
@@ -759,6 +764,7 @@ if { [info procs saved-dg-test] == [list] } {
 	}
 	set additional_files ""
 	set additional_sources ""
+	set additional_sources_used ""
 	set additional_prunes ""
 	set shouldfail 0
 	if [info exists set_target_env_var] {
