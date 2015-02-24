@@ -1,10 +1,11 @@
 /* Functional tests for the function hotpatching feature.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O3 -mesa -m31 -march=g5 -mhotpatch=0,3 --save-temps" } */
+/* { dg-options "-O3 -mzarch --save-temps" } */
 
 #include <stdio.h>
 
+__attribute__ ((hotpatch(1,2)))
 void hp1(void)
 {
   printf("hello, world!\n");

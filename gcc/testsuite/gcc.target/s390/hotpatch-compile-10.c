@@ -3,8 +3,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -mzarch" } */
 
-__attribute__((hotpatch(-1,0)))
+__attribute__((hotpatch(0,0,0)))
 int main (void)
-{/* { dg-error "attribute is not a comma separated pair of non-negative integer constants or too large" } */
+{/* { dg-error "wrong number of arguments specified" } */
   return 0;
 }

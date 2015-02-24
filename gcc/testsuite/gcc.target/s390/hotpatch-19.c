@@ -1,13 +1,20 @@
 /* Functional tests for the function hotpatching feature.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O3 -mesa -m31 -march=g5 -mhotpatch=0,3 --save-temps" } */
+/* { dg-options "-O3 -mzarch -mhotpatch=1,2 --save-temps" } */
 
 #include <stdio.h>
 
-void hp1(void)
+/* { dg-prune-output "always_inline function might not be inlinable" } */
+__attribute__ ((always_inline))
+static void hp2(void)
 {
   printf("hello, world!\n");
+}
+
+void hp1(void)
+{
+  hp2();
 }
 
 /* Check number of occurences of certain instructions.  */
