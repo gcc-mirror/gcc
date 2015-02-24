@@ -1,7 +1,8 @@
 2015-02-23  Thomas Schwinge  <thomas@codesourcery.com>
 
-	* gcc-interface/utils.c (DEF_FUNCTION_TYPE_VAR_8)
-	(DEF_FUNCTION_TYPE_VAR_12): Fix number of arguments parameter.
+	* gcc-interface/utils.c (DEF_FUNCTION_TYPE_VAR_8): Fix number of
+	arguments parameter.
+	(DEF_FUNCTION_TYPE_VAR_12): Likewise.
 
 2015-02-22  Arnaud Charlet  <charlet@adacore.com>
 
