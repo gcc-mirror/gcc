@@ -1,3 +1,9 @@
+2015-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65170
+	* gcc.c-torture/execute/pr65170.c: New test.
+	* gcc.dg/tree-ssa/vrp96.c: New test.
+
 2015-02-24  Tom de Vries  <tom@codesourcery.com>
 
 	* gfortran.dg/readwrite_unf_direct_eor_1.f90: Add missing close.
@@ -27,7 +33,7 @@
 	registers have the right values.  Save register state into
 	static data rather than on the stack.
 
-2015-02-20  Jakub Jelinek  <jakub@redhat.com>
+2015-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/63888
 	* c-c++-common/asan/pr63888.c: New test.

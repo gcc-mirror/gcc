@@ -1309,6 +1309,11 @@ wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1val,
 	      return 1;
 	    }
 	  umul_ppmm (val[1], val[0], op1.ulow (), op2.ulow ());
+	  if (val[1] < 0 && prec > HOST_BITS_PER_WIDE_INT * 2)
+	    {
+	      val[2] = 0;
+	      return 3;
+	    }
 	  return 1 + (val[1] != 0 || val[0] < 0);
 	}
       /* Likewise if the output is a full single HWI, except that the

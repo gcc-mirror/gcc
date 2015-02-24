@@ -1,3 +1,9 @@
+2015-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65170
+	* wide-int.cc (wi::mul_internal): For the umul_ppmm optimization,
+	if val[1] < 0, clear also val[2] and return 3.
+
 2015-02-24  Alan Modra  <amodra@gmail.com>
 
 	PR target/65172
