@@ -1,3 +1,28 @@
+2015-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR lto/65015
+	* dwarf2out.c (gen_producer_string): Drop -fltrans-output-list
+	and -fresolution.
+
+	2015-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR lto/65015
+	* dwarf2out.c (dwarf2out_finish): Use <artificial> as DW_AT_name
+	for LTO produced CUs.
+
+	2015-02-16  Richard Biener  <rguenther@suse.de>
+ 
+	PR lto/65015
+	* varasm.c (default_file_start): For LTO produced units
+	emit <artificial> as file directive.
+
+	2015-01-17  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+        * dwarf2out.c (gen_producer_string): Ignore also OPT_fpreprocessed.
+
 2015-02-23  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
