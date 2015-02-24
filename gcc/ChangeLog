@@ -1,3 +1,8 @@
+2015-02-24  Michael Haubenwallner <michael.haubenwallner@ssi-schaefer.com>
+
+	PR target/65058
+	* config/rs6000/xcoff.h (ASM_OUTPUT_EXTERNAL): Drop unused variable.
+
 2015-02-24  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/65123

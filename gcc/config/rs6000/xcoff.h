@@ -155,7 +155,6 @@
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)				\
 { char *buffer = (char *) alloca (strlen (NAME) + 1);			\
   char *p;								\
-  rtx _symref = XEXP (DECL_RTL (DECL), 0);				\
   int dollar_inside = 0;						\
   strcpy (buffer, NAME);						\
   p = strchr (buffer, '$');						\
