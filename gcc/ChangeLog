@@ -1,3 +1,8 @@
+2015-02-24  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* omp-low.c (create_omp_child_function): Tag entrypoint
+	functions with a special attribute.
+
 2015-02-24  Michael Haubenwallner <michael.haubenwallner@ssi-schaefer.com>
 
 	PR target/65058
