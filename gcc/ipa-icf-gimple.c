@@ -575,6 +575,13 @@ func_checker::compare_variable_decl (tree t1, tree t2)
   if (t1 == t2)
     return true;
 
+  if (DECL_HARD_REGISTER (t1) != DECL_HARD_REGISTER (t2))
+    return return_false_with_msg ("DECL_HARD_REGISTER are different");
+
+  if (DECL_HARD_REGISTER (t1)
+      && DECL_ASSEMBLER_NAME (t1) != DECL_ASSEMBLER_NAME (t2))
+    return return_false_with_msg ("HARD REGISTERS are different");
+
   if (TREE_CODE (t1) == VAR_DECL && (DECL_EXTERNAL (t1) || TREE_STATIC (t1)))
     {
       symtab_node *n1 = symtab_node::get (t1);
