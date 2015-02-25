@@ -1,3 +1,9 @@
+2015-02-25  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/64997
+	* config/aarch64/aarch64.md (*xor_one_cmpl<mode>3): Use FP_REGNUM_P
+	as split condition; force split via '#' in output pattern.
+
 2015-02-25  Richard Biener  <rguenther@suse.de>
 	Kai Tietz  <ktietz@redhat.com>
 
