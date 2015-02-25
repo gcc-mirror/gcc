@@ -4912,7 +4912,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   if (!found_nested_cycle_def)
     reduc_def_stmt = def_stmt;
 
-  if (gimple_code (reduc_def_stmt) != GIMPLE_PHI)
+  if (reduc_def_stmt && gimple_code (reduc_def_stmt) != GIMPLE_PHI)
     return false;
 
   if (!(dt == vect_reduction_def

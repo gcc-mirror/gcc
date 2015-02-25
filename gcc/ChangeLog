@@ -1,5 +1,9 @@
 2015-02-25  Kai Tietz  <ktietz@redhat.com>
 
+	PR tree-optimization/61917
+	* tree-vect-loop.c (vectorizable_reduction): Handle obvious case
+	that reduc_def_stmt is null.
+
 	Merged from mainline
 	PR target/64212
 	* symtab.c (symtab::make_decl_local): Set DECL_IMPORT_P explicit to 0.
