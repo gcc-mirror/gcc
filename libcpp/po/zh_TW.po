@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.8.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2014-02-02 17:35+0000\n"
+"POT-Creation-Date: 2015-02-02 16:02+0000\n"
 "PO-Revision-Date: 2013-03-27 23:37+0800\n"
 "Last-Translator: Wei-Lun Chao <bluebat@member.fsf.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -18,860 +18,937 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: charset.c:673
+#: charset.c:674
 #, c-format
 msgid "conversion from %s to %s not supported by iconv"
 msgstr "iconv 不支援從 %s 到 %s 的轉換"
 
-#: charset.c:676
+#: charset.c:677
 msgid "iconv_open"
 msgstr "iconv_open"
 
-#: charset.c:684
+#: charset.c:685
 #, c-format
 msgid "no iconv implementation, cannot convert from %s to %s"
 msgstr "沒有實作 iconv，無法從 %s 轉換到 %s"
 
-#: charset.c:780
+#: charset.c:781
 #, c-format
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr "字元 0x%lx 不在基本來源字元集中\n"
 
-#: charset.c:797 charset.c:1447
+#: charset.c:798 charset.c:1452
 msgid "converting to execution character set"
 msgstr "轉換到可執行檔案的字元集"
 
-#: charset.c:803
+#: charset.c:804
 #, c-format
 msgid "character 0x%lx is not unibyte in execution character set"
 msgstr "字元 0x%lx 在執行字元集中不是單位元組的"
 
-#: charset.c:997
+#: charset.c:998
 msgid "universal character names are only valid in C++ and C99"
 msgstr "萬國碼字元名稱只在 C++ 和 C99 中有效"
 
-#: charset.c:1000
+#: charset.c:1002
+#, fuzzy
+#| msgid "universal character names are only valid in C++ and C99"
+msgid "C99's universal character names are incompatible with C90"
+msgstr "萬國碼字元名稱只在 C++ 和 C99 中有效"
+
+#: charset.c:1005
 #, c-format
 msgid "the meaning of '\\%c' is different in traditional C"
 msgstr "「\\%c」的意義與在傳統 C 中不同"
 
-#: charset.c:1009
+#: charset.c:1014
 msgid "In _cpp_valid_ucn but not a UCN"
 msgstr "在 _cpp_valid_ucn 中並不是一個 UCN"
 
-#: charset.c:1034
+#: charset.c:1039
 #, c-format
 msgid "incomplete universal character name %.*s"
 msgstr "不完整的萬國碼字元名稱 %.*s"
 
-#: charset.c:1049
+#: charset.c:1054
 #, c-format
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s 不是一個有效的萬國碼字元"
 
-#: charset.c:1059 lex.c:1126
+#: charset.c:1064 lex.c:1217
 msgid "'$' in identifier or number"
 msgstr "「$」出現在識別字或數字中"
 
-#: charset.c:1069
+#: charset.c:1074
 #, c-format
 msgid "universal character %.*s is not valid in an identifier"
 msgstr "萬國碼字元 %.*s 在識別字中無效"
 
-#: charset.c:1073
+#: charset.c:1078
 #, c-format
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "萬國碼字元 %.*s 在識別字開頭無效"
 
-#: charset.c:1105 charset.c:1677
+#: charset.c:1110 charset.c:1682
 msgid "converting UCN to source character set"
 msgstr "將 UCN 轉換到來源字元集"
 
-#: charset.c:1109
+#: charset.c:1114
 msgid "converting UCN to execution character set"
 msgstr "將 UCN 轉換到執行字元集"
 
-#: charset.c:1181
+#: charset.c:1186
 msgid "the meaning of '\\x' is different in traditional C"
 msgstr "「\\x」的意義與在傳統 C 中不同"
 
-#: charset.c:1198
+#: charset.c:1203
 msgid "\\x used with no following hex digits"
 msgstr "\\x 後沒有十六進位數字"
 
-#: charset.c:1205
+#: charset.c:1210
 msgid "hex escape sequence out of range"
 msgstr "十六進位逸出序列越界"
 
-#: charset.c:1243
+#: charset.c:1248
 msgid "octal escape sequence out of range"
 msgstr "八進位逸出序列越界"
 
-#: charset.c:1309
+#: charset.c:1314
 msgid "the meaning of '\\a' is different in traditional C"
 msgstr "「\\a」的意義與在傳統 C 中不同"
 
-#: charset.c:1316
+#: charset.c:1321
 #, c-format
 msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr "非 ISO 標準的逸出序列，「\\%c」"
 
-#: charset.c:1324
+#: charset.c:1329
 #, c-format
 msgid "unknown escape sequence: '\\%c'"
 msgstr "不明的逸出序列：『\\%c』"
 
-#: charset.c:1332
+#: charset.c:1337
 #, c-format
 msgid "unknown escape sequence: '\\%s'"
 msgstr "不明的逸出序列：「\\%s」"
 
-#: charset.c:1339
+#: charset.c:1344
 msgid "converting escape sequence to execution character set"
 msgstr "將逸出序列轉換到執行字元集"
 
-#: charset.c:1512 charset.c:1576
+#: charset.c:1517 charset.c:1581
 msgid "character constant too long for its type"
 msgstr "字元常數大小超出其類型"
 
-#: charset.c:1515
+#: charset.c:1520
 msgid "multi-character character constant"
 msgstr "多位元組字元常數"
 
-#: charset.c:1615
+#: charset.c:1620
 msgid "empty character constant"
 msgstr "空的字元常數"
 
-#: charset.c:1724
+#: charset.c:1729
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "無法從 %s 轉換到 %s"
 
-#: directives.c:224 directives.c:250
+#: directives.c:224 directives.c:267
 #, c-format
 msgid "extra tokens at end of #%s directive"
 msgstr "#%s 指令的末尾有多餘的符記"
 
-#: directives.c:357
+#: directives.c:374
 #, c-format
 msgid "#%s is a GCC extension"
 msgstr "#%s 是 GCC 擴充功能"
 
-#: directives.c:362
+#: directives.c:379
 #, c-format
 msgid "#%s is a deprecated GCC extension"
 msgstr "#%s 是不宜再用的 GCC 擴充功能"
 
-#: directives.c:375
+#: directives.c:392
 msgid "suggest not using #elif in traditional C"
 msgstr "建議在傳統 C 中不要使用 #elif"
 
-#: directives.c:378
+#: directives.c:395
 #, c-format
 msgid "traditional C ignores #%s with the # indented"
 msgstr "當 # 有縮排時傳統 C 忽略 #%s"
 
-#: directives.c:382
+#: directives.c:399
 #, c-format
 msgid "suggest hiding #%s from traditional C with an indented #"
 msgstr "建議使用縮排的 # 以讓 #%s 對傳統 C 不可見"
 
-#: directives.c:408
+#: directives.c:425
 msgid "embedding a directive within macro arguments is not portable"
 msgstr "將一個指令內嵌於巨集參數中是不可移植的"
 
-#: directives.c:428
+#: directives.c:445
 msgid "style of line directive is a GCC extension"
 msgstr "line 指令的風格是 GCC 擴充功能"
 
-#: directives.c:483
+#: directives.c:500
 #, c-format
 msgid "invalid preprocessing directive #%s"
 msgstr "無效的預先處理指令 #%s"
 
-#: directives.c:551
+#: directives.c:568
 msgid "\"defined\" cannot be used as a macro name"
 msgstr "「defined」不能做為巨集名"
 
-#: directives.c:557
+#: directives.c:573
+#, fuzzy
+#| msgid "\"defined\" cannot be used as a macro name"
+msgid "\"__has_include__\" cannot be used as a macro name"
+msgstr "「defined」不能做為巨集名"
+
+#: directives.c:579
 #, c-format
 msgid "\"%s\" cannot be used as a macro name as it is an operator in C++"
 msgstr "「%s」不能做為巨集名，因為它是 C++ 中的一個運算子"
 
-#: directives.c:560
+#: directives.c:582
 #, c-format
 msgid "no macro name given in #%s directive"
 msgstr "#%s 指令中未給出巨集名"
 
-#: directives.c:563
+#: directives.c:585
 msgid "macro names must be identifiers"
 msgstr "巨集名必須是識別字"
 
-#: directives.c:612
+#: directives.c:634 directives.c:639
 #, c-format
 msgid "undefining \"%s\""
 msgstr "取消對「%s」的定義"
 
-#: directives.c:667
+#: directives.c:694
 msgid "missing terminating > character"
 msgstr "缺少結尾的 > 字元"
 
-#: directives.c:726
+#: directives.c:753
 #, c-format
 msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr "#%s 需要 \"FILENAME\" 或 <FILENAME>"
 
-#: directives.c:772
+#: directives.c:799
 #, c-format
 msgid "empty filename in #%s"
 msgstr "#%s 中檔案名稱為空"
 
-#: directives.c:782
+#: directives.c:809
 msgid "#include nested too deeply"
 msgstr "#include 巢狀過深"
 
-#: directives.c:823
+#: directives.c:850
 msgid "#include_next in primary source file"
 msgstr "#include_next 出現在主來源檔案中"
 
-#: directives.c:849
+#: directives.c:876
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
 msgstr "line 指令中有無效的標記「%s」"
 
-#: directives.c:909
+#: directives.c:936
 msgid "unexpected end of file after #line"
 msgstr "#line 之後未預期的檔案結束"
 
-#: directives.c:912
+#: directives.c:939
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr "#line 後的「%s」不是一個正整數"
 
-#: directives.c:918 directives.c:920
+#: directives.c:945 directives.c:947
 msgid "line number out of range"
 msgstr "列號超出範圍"
 
-#: directives.c:933 directives.c:1013
+#: directives.c:960 directives.c:1040
 #, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr "「%s」不是一個有效的檔案名稱"
 
-#: directives.c:973
+#: directives.c:1000
 #, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr "# 後的「%s」不是一個正整數"
 
-#: directives.c:1068 directives.c:1070 directives.c:1072 directives.c:1658
+#: directives.c:1095 directives.c:1097 directives.c:1099 directives.c:1685
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: directives.c:1096
+#: directives.c:1123
 #, c-format
 msgid "invalid #%s directive"
 msgstr "無效的 #%s 指令"
 
-#: directives.c:1159
+#: directives.c:1186
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgstr "以不匹配的名稱擴展去註冊命名空間「%s」中的編譯指示"
 
-#: directives.c:1168
+#: directives.c:1195
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgstr "以名稱擴展以及無命名空間去註冊編譯指示「%s」"
 
-#: directives.c:1186
+#: directives.c:1213
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr "「%s」既被註冊為一個編譯指示又被註冊為一個編譯指示命名空間"
 
-#: directives.c:1189
+#: directives.c:1216
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "#pragma %s %s 已經被註冊"
 
-#: directives.c:1192
+#: directives.c:1219
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr "#pragma %s 已經被註冊"
 
-#: directives.c:1222
+#: directives.c:1249
 msgid "registering pragma with NULL handler"
 msgstr "以空值處理常式去註冊編譯指示"
 
-#: directives.c:1439
+#: directives.c:1466
 msgid "#pragma once in main file"
 msgstr "#pragma 出現在主檔案中一次"
 
-#: directives.c:1462
+#: directives.c:1489
 msgid "invalid #pragma push_macro directive"
 msgstr "無效的 #pragma push_macro 指令"
 
-#: directives.c:1517
+#: directives.c:1544
 msgid "invalid #pragma pop_macro directive"
 msgstr "無效的 #pragma pop_macro 指令"
 
-#: directives.c:1572
+#: directives.c:1599
 msgid "invalid #pragma GCC poison directive"
 msgstr "無效的 #pragma GCC poison 指令"
 
-#: directives.c:1581
+#: directives.c:1608
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "對已存在的巨集「%s」加料"
 
-#: directives.c:1600
+#: directives.c:1627
 msgid "#pragma system_header ignored outside include file"
 msgstr "#pragma system_header 在包含檔案外被忽略"
 
-#: directives.c:1625
+#: directives.c:1652
 #, c-format
 msgid "cannot find source file %s"
 msgstr "找不到來源檔案 %s"
 
-#: directives.c:1629
+#: directives.c:1656
 #, c-format
 msgid "current file is older than %s"
 msgstr "目前檔案早於 %s"
 
-#: directives.c:1653
+#: directives.c:1680
 #, c-format
 msgid "invalid \"#pragma GCC %s\" directive"
 msgstr "無效的 #pragma GCC %s 指令"
 
-#: directives.c:1847
+#: directives.c:1874
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "_Pragma 需要一個括起的字串原文"
 
-#: directives.c:1968
+#: directives.c:1995
 msgid "#else without #if"
 msgstr "#else 沒有匹配的 #if"
 
-#: directives.c:1973
+#: directives.c:2000
 msgid "#else after #else"
 msgstr "#else 出現在 #else 後"
 
-#: directives.c:1975 directives.c:2008
+#: directives.c:2002 directives.c:2035
 msgid "the conditional began here"
 msgstr "條件自此開始"
 
-#: directives.c:2001
+#: directives.c:2028
 msgid "#elif without #if"
 msgstr "#elif 沒有匹配的 #if"
 
-#: directives.c:2006
+#: directives.c:2033
 msgid "#elif after #else"
 msgstr "#elif 出現在 #else 後"
 
-#: directives.c:2044
+#: directives.c:2064
 msgid "#endif without #if"
 msgstr "#endif 沒有匹配的 #if"
 
-#: directives.c:2124
+#: directives.c:2144
 msgid "missing '(' after predicate"
 msgstr "述語後缺少「(」"
 
-#: directives.c:2139
+#: directives.c:2159
 msgid "missing ')' to complete answer"
 msgstr "完整的答案缺少「)」"
 
-#: directives.c:2159
+#: directives.c:2179
 msgid "predicate's answer is empty"
 msgstr "述語的答案為空"
 
-#: directives.c:2186
+#: directives.c:2206
 msgid "assertion without predicate"
 msgstr "判定語後沒有述語"
 
-#: directives.c:2189
+#: directives.c:2209
 msgid "predicate must be an identifier"
 msgstr "述語必須是一個識別字"
 
-#: directives.c:2275
+#: directives.c:2295
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "已再判定「%s」"
 
-#: directives.c:2567
+#: directives.c:2587
 #, c-format
 msgid "unterminated #%s"
 msgstr "未終止的 #%s"
 
-#: directives-only.c:221 lex.c:2311 traditional.c:162
+#: directives-only.c:221 lex.c:2419 traditional.c:164
 msgid "unterminated comment"
 msgstr "未終結的註釋"
 
-#: errors.c:234
+#: errors.c:231
 msgid "stdout"
 msgstr "stdout"
 
-#: errors.c:236
+#: errors.c:233
 #, c-format
 msgid "%s: %s"
 msgstr "%s：%s"
 
-#: expr.c:510 expr.c:620
+#: expr.c:512 expr.c:629
 msgid "fixed-point constants are a GCC extension"
 msgstr "定點常數是一個 GCC 擴充功能"
 
-#: expr.c:535
+#: expr.c:537
 msgid "invalid prefix \"0b\" for floating constant"
 msgstr "無效的浮點常數前綴「0b」"
 
-#: expr.c:545
+#: expr.c:550
+#, fuzzy
+#| msgid "use of C99 hexadecimal floating constant"
+msgid "use of C++11 hexadecimal floating constant"
+msgstr "使用 C99 式的十六進位浮點常數"
+
+#: expr.c:553
 msgid "use of C99 hexadecimal floating constant"
 msgstr "使用 C99 式的十六進位浮點常數"
 
-#: expr.c:588
+#: expr.c:597
 #, c-format
 msgid "invalid suffix \"%.*s\" on floating constant"
 msgstr "浮點常數的「%.*s」字尾無效"
 
-#: expr.c:599 expr.c:659
+#: expr.c:608 expr.c:668
 #, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "傳統 C 不接受「%.*s」字尾"
 
-#: expr.c:607
+#: expr.c:616
 msgid "suffix for double constant is a GCC extension"
 msgstr "雙倍精度常數字尾是 GCC 的擴充功能"
 
-#: expr.c:613
+#: expr.c:622
 #, c-format
 msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "無效的十六進位浮點常數字尾「%.*s」"
 
-#: expr.c:624
+#: expr.c:633
 msgid "decimal float constants are a GCC extension"
 msgstr "十進位浮點數常數是 GCC 的擴充功能"
 
-#: expr.c:642
+#: expr.c:651
 #, c-format
 msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "整數常數的「%.*s」字尾無效"
 
-#: expr.c:667
+#: expr.c:676
 #, fuzzy
 #| msgid "use of C++0x long long integer constant"
 msgid "use of C++11 long long integer constant"
 msgstr "使用 C++0x long long 整數常數"
 
-#: expr.c:668
+#: expr.c:677
 msgid "use of C99 long long integer constant"
 msgstr "使用 C99 long long 整數常數"
 
-#: expr.c:684
+#: expr.c:693
 msgid "imaginary constants are a GCC extension"
 msgstr "虛數常數是 GCC 的擴充功能"
 
-#: expr.c:690
+#: expr.c:699
 #, fuzzy
 #| msgid "binary constants are a GCC extension"
-msgid "binary constants are a C++1y feature or GCC extension"
+msgid "binary constants are a C++14 feature or GCC extension"
 msgstr "二進位常數是 GCC 的擴充功能"
 
-#: expr.c:787
+#: expr.c:701
+msgid "binary constants are a GCC extension"
+msgstr "二進位常數是 GCC 的擴充功能"
+
+#: expr.c:796
 msgid "integer constant is too large for its type"
 msgstr "整數常數值超出其類型"
 
-#: expr.c:818
+#: expr.c:827
 msgid "integer constant is so large that it is unsigned"
 msgstr "整數常數太大，認定為 unsigned"
 
-#: expr.c:913
+#: expr.c:922
 msgid "missing ')' after \"defined\""
 msgstr "「defined」 後缺少「)」"
 
-#: expr.c:920
+#: expr.c:929
 msgid "operator \"defined\" requires an identifier"
 msgstr "運算子「defined」需要一個識別字"
 
-#: expr.c:928
+#: expr.c:937
 #, c-format
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
 msgstr "(在 C++ 中「%s」會是「%s」的替代識別字)"
 
-#: expr.c:938
+#: expr.c:947
 msgid "this use of \"defined\" may not be portable"
 msgstr "使用「defined」可能不利於移植"
 
-#: expr.c:998
+#: expr.c:1007
 msgid "user-defined literal in preprocessor expression"
 msgstr "在前置處理器運算式中有使用者定義的實字"
 
-#: expr.c:1003
+#: expr.c:1012
 msgid "floating constant in preprocessor expression"
 msgstr "浮點常數出現在預先處理運算式中"
 
-#: expr.c:1009
+#: expr.c:1018
 msgid "imaginary number in preprocessor expression"
 msgstr "預先處理運算式中出現虛數"
 
-#: expr.c:1057
+#: expr.c:1070
 #, c-format
 msgid "\"%s\" is not defined"
 msgstr "「%s」未定義"
 
-#: expr.c:1070
+#: expr.c:1083
 msgid "assertions are a GCC extension"
 msgstr "assertions 是 GCC 的擴充功能"
 
-#: expr.c:1073
+#: expr.c:1086
 msgid "assertions are a deprecated extension"
 msgstr "assertions 是不宜再用的擴充功能"
 
-#: expr.c:1318
+#: expr.c:1331
 #, c-format
 msgid "unbalanced stack in %s"
 msgstr "%s 中的堆疊不平衡"
 
-#: expr.c:1338
+#: expr.c:1351
 #, c-format
 msgid "impossible operator '%u'"
 msgstr "不可能的運算子「%u」"
 
-#: expr.c:1439
+#: expr.c:1452
 msgid "missing ')' in expression"
 msgstr "運算式中缺少「)」"
 
-#: expr.c:1468
+#: expr.c:1481
 msgid "'?' without following ':'"
 msgstr "「?」後沒有「:」"
 
-#: expr.c:1478
+#: expr.c:1491
 msgid "integer overflow in preprocessor expression"
 msgstr "預先處理運算式中整數溢出"
 
-#: expr.c:1483
+#: expr.c:1496
 msgid "missing '(' in expression"
 msgstr "運算式中缺少「(」"
 
-#: expr.c:1515
+#: expr.c:1528
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr "「%s」的左運算元在提升時變換了符號"
 
-#: expr.c:1520
+#: expr.c:1533
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr "「%s」的右運算元在提升時變換了符號"
 
-#: expr.c:1779
+#: expr.c:1792
 msgid "traditional C rejects the unary plus operator"
 msgstr "傳統 C 不接受單元 + 運算子"
 
-#: expr.c:1877
+#: expr.c:1890
 msgid "comma operator in operand of #if"
 msgstr "#if 運算元中出現逗號"
 
-#: expr.c:2013
+#: expr.c:2026
 msgid "division by zero in #if"
 msgstr "#if 中用零做除數"
 
-#: files.c:505
+#: expr.c:2123
+#, fuzzy
+#| msgid "operator \"defined\" requires an identifier"
+msgid "operator \"__has_include__\" requires a header string"
+msgstr "運算子「defined」需要一個識別字"
+
+#: expr.c:2139
+#, fuzzy
+#| msgid "missing ')' after \"defined\""
+msgid "missing ')' after \"__has_include__\""
+msgstr "「defined」 後缺少「)」"
+
+#: files.c:511
 msgid "NULL directory in find_file"
 msgstr "find_file 中有 NULL 目錄"
 
-#: files.c:553
+#: files.c:559
 msgid "one or more PCH files were found, but they were invalid"
 msgstr "找到一個或多個 PCH 檔案，但它們是無效的"
 
-#: files.c:556
+#: files.c:562
 msgid "use -Winvalid-pch for more information"
 msgstr "使用 -Winvalid-pch 以獲得更多資訊"
 
-#: files.c:660
+#: files.c:666
 #, c-format
 msgid "%s is a block device"
 msgstr "%s 是一個區塊裝置"
 
-#: files.c:677
+#: files.c:683
 #, c-format
 msgid "%s is too large"
 msgstr "%s 過大"
 
-#: files.c:717
+#: files.c:723
 #, c-format
 msgid "%s is shorter than expected"
 msgstr "%s 短於預期"
 
-#: files.c:953
+#: files.c:959
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr "沒有包含路徑可供搜尋 %s"
 
-#: files.c:1389
+#: files.c:1409
 msgid "Multiple include guards may be useful for:\n"
 msgstr "多個防止重包含可能對其有用：\n"
 
-#: init.c:536
+#: init.c:546
 msgid "cppchar_t must be an unsigned type"
 msgstr "cppchar_t 必須是無號類型"
 
-#: init.c:540
+#: init.c:550
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
 msgstr "預先處理算術的最高精度為 %lu 位；目標需要 %lu 位"
 
-#: init.c:547
+#: init.c:557
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr "CPP 算術必須至少具有目標 int 的精度"
 
-#: init.c:550
+#: init.c:560
 msgid "target char is less than 8 bits wide"
 msgstr "目標 char 短於 8 位"
 
-#: init.c:554
+#: init.c:564
 msgid "target wchar_t is narrower than target char"
 msgstr "目標 wchar_t 短於目標 char"
 
-#: init.c:558
+#: init.c:568
 msgid "target int is narrower than target char"
 msgstr "目標 int 短於目標 char"
 
-#: init.c:563
+#: init.c:573
 msgid "CPP half-integer narrower than CPP character"
 msgstr "CPP 半整數短於 CPP 字元"
 
-#: init.c:567
+#: init.c:577
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "在此宿主機上，CPP 不能處理長於 %lu 位的寬字元常數，但目標需要 %lu 位"
 
-#: lex.c:919
+#: lex.c:1010
 msgid "backslash and newline separated by space"
 msgstr "反斜線和換列為空格所分隔"
 
-#: lex.c:924
+#: lex.c:1015
 msgid "backslash-newline at end of file"
 msgstr "反斜線-換列出現在檔案末尾"
 
-#: lex.c:940
+#: lex.c:1031
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr "三元符 ??%c 轉換為 %c"
 
-#: lex.c:948
+#: lex.c:1039
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "三元符 ??%c 被忽略，請使用 -trigraphs 來啟用"
 
-#: lex.c:997
+#: lex.c:1088
 msgid "\"/*\" within comment"
 msgstr "「/*」出現在註釋中"
 
-#: lex.c:1055
+#: lex.c:1146
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "預先處理指令中出現 %s"
 
-#: lex.c:1064
+#: lex.c:1155
 msgid "null character(s) ignored"
 msgstr "忽略空字元"
 
-#: lex.c:1101
+#: lex.c:1192
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "「%.*s」不在 NFKC 中"
 
-#: lex.c:1104
+#: lex.c:1195
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "「%.*s」不在 NFC 中"
 
-#: lex.c:1173 lex.c:1253
+#: lex.c:1264 lex.c:1353
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "試圖使用已加料的「%s」"
 
-#: lex.c:1181 lex.c:1261
+#: lex.c:1274 lex.c:1363
+#, fuzzy
+#| msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
+msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
+msgstr "__VA_ARGS__ 只能出現在 C99 可變參數巨集的展開中"
+
+#: lex.c:1278 lex.c:1367
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ 只能出現在 C99 可變參數巨集的展開中"
 
-#: lex.c:1187 lex.c:1267
+#: lex.c:1285 lex.c:1374
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr "識別碼「%s」在 C++ 中是特殊運算子名稱"
 
-#: lex.c:1554
+#: lex.c:1661
 msgid "raw string delimiter longer than 16 characters"
 msgstr "原始字串分隔符號長度超過 16 字元"
 
-#: lex.c:1558
+#: lex.c:1665
 #, fuzzy
 #| msgid "invalid character '%c' in raw string delimiter"
 msgid "invalid new-line in raw string delimiter"
 msgstr "無效字元『%c』出現於原始字串分隔符號"
 
-#: lex.c:1562
+#: lex.c:1669
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "無效字元『%c』出現於原始字串分隔符號"
 
-#: lex.c:1611 lex.c:1633
+#: lex.c:1718 lex.c:1740
 msgid "unterminated raw string"
 msgstr "未終結的原始字串"
 
-#: lex.c:1654 lex.c:1783
+#: lex.c:1761 lex.c:1890
 #, fuzzy
 #| msgid "invalid suffix on literal; C++11 requires a space between literal and identifier"
 msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
 msgstr "無效的實字後綴；C++11 要求一個空白位在實字和識別字之間"
 
-#: lex.c:1765
+#: lex.c:1872
 msgid "null character(s) preserved in literal"
 msgstr "空字元將保留在原文中"
 
-#: lex.c:1768
+#: lex.c:1875
 #, c-format
 msgid "missing terminating %c character"
 msgstr "缺少終止 %c 字元"
 
-#: lex.c:2322
+#: lex.c:2433 lex.c:2467
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++ 風格的註釋在 ISO C90 中不被允許"
 
-#: lex.c:2324
+#: lex.c:2435 lex.c:2446 lex.c:2469
 msgid "(this will be reported only once per input file)"
 msgstr "(此警告為每個輸入檔案只報告一次)"
 
-#: lex.c:2329
+#: lex.c:2444
+#, fuzzy
+#| msgid "C++ style comments are not allowed in ISO C90"
+msgid "C++ style comments are incompatible with C90"
+msgstr "C++ 風格的註釋在 ISO C90 中不被允許"
+
+#: lex.c:2475
 msgid "multi-line comment"
 msgstr "多列註釋"
 
-#: lex.c:2660
+#: lex.c:2819
 #, c-format
 msgid "unspellable token %s"
 msgstr "無法拼出的識別字 %s"
 
-#: macro.c:191
+#: macro.c:200
 #, c-format
 msgid "macro \"%s\" is not used"
 msgstr "巨集「%s」未被使用"
 
-#: macro.c:229 macro.c:433
+#: macro.c:238 macro.c:470
 #, c-format
 msgid "invalid built-in macro \"%s\""
 msgstr "無效的內建巨集「%s」"
 
-#: macro.c:236 macro.c:333
+#: macro.c:245 macro.c:342
 #, c-format
 msgid "macro \"%s\" might prevent reproducible builds"
 msgstr ""
 
-#: macro.c:267
+#: macro.c:276
 msgid "could not determine file timestamp"
 msgstr "無法決定檔案時間戳記"
 
-#: macro.c:368
+#: macro.c:377
 msgid "could not determine date and time"
 msgstr "無法決定日期與時間"
 
-#: macro.c:384
+#: macro.c:393
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
 msgstr "__COUNTER__ 以 -fdirectives-only 在指令內部展開"
 
-#: macro.c:542
+#: macro.c:581
 msgid "invalid string literal, ignoring final '\\'"
 msgstr "無效的原文字串，忽略最後的「\\」"
 
-#: macro.c:604
+#: macro.c:643
 #, c-format
 msgid "pasting \"%s\" and \"%s\" does not give a valid preprocessing token"
 msgstr "粘貼「%s」和「%s」不能給出一個有效的預先處理識別字"
 
-#: macro.c:726
-msgid "ISO C99 requires rest arguments to be used"
+#: macro.c:767
+msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
+msgstr ""
+
+#: macro.c:771
+#, fuzzy
+#| msgid "ISO C99 requires rest arguments to be used"
+msgid "ISO C99 requires at least one argument for the \"...\" in a variadic macro"
 msgstr "ISO C99 需要使用剩餘的引數"
 
-#: macro.c:731
+#: macro.c:778
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
 msgstr "巨集「%s」需要 %u 個引數，但只給出了 %u 個"
 
-#: macro.c:736
+#: macro.c:783
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr "巨集「%s」傳遞了 %u 個引數，但只需要 %u 個"
 
-#: macro.c:930 traditional.c:680
+#: macro.c:977 traditional.c:693
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr "呼叫巨集「%s」時引數清單未終止"
 
-#: macro.c:1081
+#: macro.c:1128
 #, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "類似函式的巨集「%s」在傳統 C 中必須與引數一起使用"
 
-#: macro.c:1753
-#, c-format
-msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
+#: macro.c:1797
+#, fuzzy, c-format
+#| msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
+msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
 msgstr "調用巨集 %s 引數 %d：空的巨集引數在 ISO C90 和 ISO C++98 中未定義"
 
-#: macro.c:2715
+#: macro.c:1805 macro.c:1814
+#, fuzzy, c-format
+#| msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
+msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
+msgstr "調用巨集 %s 引數 %d：空的巨集引數在 ISO C90 和 ISO C++98 中未定義"
+
+#: macro.c:2775
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "重複的巨集參數「%s」"
 
-#: macro.c:2761
+#: macro.c:2824
 #, c-format
 msgid "\"%s\" may not appear in macro parameter list"
 msgstr "「%s」不能出現在巨集參數清單中"
 
-#: macro.c:2769
+#: macro.c:2832
 msgid "macro parameters must be comma-separated"
 msgstr "巨集參數必須由逗號隔開"
 
-#: macro.c:2786
+#: macro.c:2850
 msgid "parameter name missing"
 msgstr "缺少參數名"
 
-#: macro.c:2804
+#: macro.c:2871
+#, fuzzy
+#| msgid "anonymous variadic macros were introduced in C99"
+msgid "anonymous variadic macros were introduced in C++11"
+msgstr "匿名可變參數巨集在 C99 中被引入"
+
+#: macro.c:2875 macro.c:2880
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "匿名可變參數巨集在 C99 中被引入"
 
-#: macro.c:2809
+#: macro.c:2887
+#, fuzzy
+#| msgid "ISO C does not permit named variadic macros"
+msgid "ISO C++ does not permit named variadic macros"
+msgstr "ISO C 不允許具名的可變參數巨集"
+
+#: macro.c:2890
 msgid "ISO C does not permit named variadic macros"
 msgstr "ISO C 不允許具名的可變參數巨集"
 
-#: macro.c:2818
+#: macro.c:2900
 msgid "missing ')' in macro parameter list"
 msgstr "在巨集參數表中缺少「)」"
 
-#: macro.c:2867
+#: macro.c:2951
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "「##」不能出現在巨集展開的兩端"
 
-#: macro.c:2902
+#: macro.c:2988
+#, fuzzy
+#| msgid "ISO C99 requires whitespace after the macro name"
+msgid "ISO C++11 requires whitespace after the macro name"
+msgstr "ISO C99 要求巨集名後必須有空白"
+
+#: macro.c:2991
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "ISO C99 要求巨集名後必須有空白"
 
-#: macro.c:2926
+#: macro.c:3016
 msgid "missing whitespace after the macro name"
 msgstr "巨集名後缺少空白"
 
-#: macro.c:2960
+#: macro.c:3050
 msgid "'#' is not followed by a macro parameter"
 msgstr "「#」後沒有巨集參數"
 
-#: macro.c:3118
+#: macro.c:3211
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "「%s」重定義"
 
-#: macro.c:3124
+#: macro.c:3216
 msgid "this is the location of the previous definition"
 msgstr "這是先前定義的位置"
 
-#: macro.c:3185
+#: macro.c:3277
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr "巨集引數「%s」將在傳統 C 中被字串化"
 
-#: macro.c:3212
+#: macro.c:3304
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr "cpp_macro_definition 中有無效的雜湊類型 %d"
@@ -905,16 +982,16 @@ msgstr "%s：未使用，因為「%s」已定義"
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr "%s：未使用因為『__COUNTER__』無效"
 
-#: pch.c:723 pch.c:898
+#: pch.c:723 pch.c:900
 msgid "while reading precompiled header"
 msgstr "在讀取預先編譯標頭時"
 
-#: traditional.c:750
+#: traditional.c:763
 #, c-format
 msgid "detected recursion whilst expanding macro \"%s\""
 msgstr "展開巨集「%s」時偵測到遞迴"
 
-#: traditional.c:968
+#: traditional.c:982
 msgid "syntax error in macro parameter list"
 msgstr "巨集參數清單語法錯誤"
 
