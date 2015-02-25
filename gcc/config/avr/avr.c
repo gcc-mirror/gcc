@@ -8610,7 +8610,8 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
      It is easier to state this in an insn attribute "adjust_len" than
      to clutter up code here...  */
 
-  if (JUMP_TABLE_DATA_P (insn) || recog_memoized (insn) == -1)
+  if (!NONDEBUG_INSN_P (insn)
+      || -1 == recog_memoized (insn))
     {
       return len;
     }
