@@ -1,3 +1,16 @@
+2015-02-25  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63593
+	* gcc.dg/pr63593.c: New testcase.
+
+	2015-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65063
+	* gcc.dg/pr65063.c: New testcase.
+
 2015-02-24  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

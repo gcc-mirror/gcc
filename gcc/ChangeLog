@@ -1,3 +1,19 @@
+2015-02-25  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63593
+	* tree-predcom.c (execute_pred_commoning_chain): Delay removing
+	stmts and releasing SSA names until...
+	(execute_pred_commoning): ... after processing all chains.
+
+	2015-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65063
+	* tree-predcom.c (determine_unroll_factor): Return 1 if we
+	have replaced looparound PHIs.
+
 2015-02-24  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
