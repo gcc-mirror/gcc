@@ -1,3 +1,8 @@
+2015-02-25  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf-gimple.c (func_checker::compare_variable_decl): Compare
+	hard register variables.
+
 2015-02-25  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/64212
