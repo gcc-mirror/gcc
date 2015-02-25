@@ -1,3 +1,13 @@
+2015-02-25  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline
+	2015-02-23  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/65153
+	* config/sh/sh.md (movsicc_true+3): Remove peephole.
+	* config/sh/sh-protos.h (replace_n_hard_rtx): Don't declare.
+	* config/sh/sh.c (replace_n_hard_rtx): Remove.
+
 2015-02-24  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

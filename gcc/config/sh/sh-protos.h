@@ -221,7 +221,6 @@ extern void sh_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree,
 				     signed int, enum machine_mode);
 extern rtx sh_dwarf_register_span (rtx);
 
-extern rtx replace_n_hard_rtx (rtx, rtx *, int , int);
 extern int shmedia_cleanup_truncate (rtx *, void *);
 
 extern bool sh_contains_memref_p (rtx);
