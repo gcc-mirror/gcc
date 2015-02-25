@@ -1,3 +1,8 @@
+2015-02-25  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/direct-move.h: Include string.h/stdlib.h.
+	* gcc.target/powerpc/pack01.c: Include string.h.
+
 2015-02-25  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR target/65167

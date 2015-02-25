@@ -1,6 +1,8 @@
 /* Test functions for direct move support.  */
 
 #include <math.h>
+#include <string.h>
+#include <stdlib.h>
 extern void abort (void);
 
 #ifndef VSX_REG_ATTR
