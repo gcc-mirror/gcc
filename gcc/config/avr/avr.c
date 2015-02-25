@@ -7578,7 +7578,8 @@ avr_adjust_insn_length (rtx insn, int len)
      It is easier to state this in an insn attribute "adjust_len" than
      to clutter up code here...  */
 
-  if (-1 == recog_memoized (insn))
+  if (!NONDEBUG_INSN_P (insn)
+      || -1 == recog_memoized (insn))
     {
       return len;
     }
