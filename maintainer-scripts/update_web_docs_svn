@@ -107,10 +107,8 @@ else
   svn -q export $SVNROOT/tags/$RELEASE gcc
 fi
 
-# Remove all unwanted files.  This is needed (a) to build the Ada
-# generator programs with the installed library, not the new one and
-# (b) to avoid packaging all the sources instead of only documentation
-# sources.
+# Remove all unwanted files.  This is needed to avoid packaging all the
+# sources instead of only documentation sources.
 # Note that we have to preserve gcc/jit/docs since the jit docs are
 # not .texi files (Makefile, .rst and .png), and the jit docs use
 # include directives to pull in content from jit/jit-common.h and
@@ -120,6 +118,7 @@ find gcc -type f \( -name '*.texi' \
   -o -path gcc/gcc/doc/include/texinfo.tex \
   -o -path gcc/gcc/BASE-VER \
   -o -path gcc/gcc/DEV-PHASE \
+  -o -path "gcc/gcc/ada/*.png" \
   -o -path "gcc/gcc/jit/docs/*" \
   -o -path "gcc/gcc/jit/jit-common.h" \
   -o -path "gcc/gcc/jit/notes.txt" \
