@@ -1,3 +1,9 @@
+2015-02-25  Kai Tietz  <ktietz@redhat.com>
+
+	Backported from mainline
+	PR tree-optimization/61917
+	* gcc.dg/vect/vect-pr61917.c: New file.
+
 2015-02-23  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline

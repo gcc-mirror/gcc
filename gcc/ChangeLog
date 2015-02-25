@@ -1,3 +1,11 @@
+2015-02-25  Richard Biener  <rguenther@suse.de>
+	Kai Tietz  <ktietz@redhat.com>
+
+	Backported from mainline
+	PR tree-optimization/61917
+	* tree-vect-loop.c (vectorizable_reduction): Allow
+	vect_internal_def without reduction to exit graceful.
+
 2015-02-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/65196
