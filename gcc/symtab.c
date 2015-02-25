@@ -969,6 +969,7 @@ symtab_make_decl_local (tree decl)
   DECL_VISIBILITY_SPECIFIED (decl) = 0;
   DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
   TREE_PUBLIC (decl) = 0;
+  DECL_DLLIMPORT_P (decl) = 0;
   if (!DECL_RTL_SET_P (decl))
     return;
 
@@ -1222,6 +1223,7 @@ symtab_nonoverwritable_alias (symtab_node *node)
 
   /* Otherwise create a new one.  */
   new_decl = copy_node (node->decl);
+  DECL_DLLIMPORT_P (new_decl) = 0;
   DECL_NAME (new_decl) = clone_function_name (node->decl, "localalias");
   if (TREE_CODE (new_decl) == FUNCTION_DECL)
     DECL_STRUCT_FUNCTION (new_decl) = NULL;

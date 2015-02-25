@@ -1,3 +1,10 @@
+2015-02-25  Kai Tietz  <ktietz@redhat.com>
+
+	Merged from mainline
+	PR target/64212
+	* symtab.c (symtab::make_decl_local): Set DECL_IMPORT_P explicit to 0.
+	(symtab::noninterposable_alias): Likewise.
+
 2015-02-25  Richard Biener  <rguenther@suse.de>
 	Kai Tietz  <ktietz@redhat.com>
 
