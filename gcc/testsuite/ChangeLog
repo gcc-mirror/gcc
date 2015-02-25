@@ -1,3 +1,8 @@
+2015-02-25  Kai Tietz  <ktietz@redhat.com>
+
+	PR tree-optimization/61917
+	* gcc.dg/vect/vect-pr61917.c: New file.
+
 2015-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65170
