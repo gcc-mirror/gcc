@@ -7251,6 +7251,8 @@ on this implementation detail.
 
 @hook TARGET_OPTION_RESTORE
 
+@hook TARGET_OPTION_POST_STREAM_IN
+
 @hook TARGET_OPTION_PRINT
 
 @hook TARGET_OPTION_PRAGMA_PARSE

@@ -559,7 +559,11 @@ streamer_read_tree_bitfields (struct lto_input_block *ib,
 
 #ifndef ACCEL_COMPILER
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
-    cl_target_option_stream_in (data_in, &bp, TREE_TARGET_OPTION (expr));
+    {
+      cl_target_option_stream_in (data_in, &bp, TREE_TARGET_OPTION (expr));
+      if (targetm.target_option.post_stream_in)
+	targetm.target_option.post_stream_in (TREE_TARGET_OPTION (expr));
+    }
 #endif
 
   if (code == OMP_CLAUSE)
