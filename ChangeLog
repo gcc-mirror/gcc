@@ -1,3 +1,12 @@
+2015-02-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	Revert:
+	2014-07-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/47230
+	* configure.ac (alpha*-*-linux*): Use mh-alpha-linux.
+	* configure: Regenerate.
+
 2015-02-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* configure.ac [--enable-as-accelerator-for] (enable_languages):

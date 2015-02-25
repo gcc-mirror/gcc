@@ -1,3 +1,9 @@
+2015-02-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/47230
+	* doc/install.texi (Specific, alpha*-*-*): Document that binutils 2.25
+	or newer are required.
+
 2015-02-25  Kai Tietz  <ktietz@redhat.com>
 
 	PR tree-optimization/61917
@@ -314,8 +320,7 @@
 	* tree-eh.c (frob_into_branch_around): Fix up typos
 	in function comment.
 	(lower_catch): Put eh_seq resulting from EH lowering of
-	the cleanup sequence after the cleanup rather than before
-	it.
+	the cleanup sequence after the cleanup rather than before it.
 
 2015-02-18  Tom de Vries  <tom@codesourcery.com>
 
