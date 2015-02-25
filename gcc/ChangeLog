@@ -1,3 +1,16 @@
+2015-02-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	Use variadic macros with avr-log.c.
+
+	* config/avr/avr-protos.h (avr_vdump): New prototype.
+	(avr_log_set_caller_e, avr_log_set_caller_f): Remove protos.
+	(avr_edump, avr_fdump, avr_dump): (Re)define to use avr_vdump.
+	* config/avr/avr-log.c: Adjust comments.
+	(avr_vdump): New function.
+	(avr_vadump): Pass caller as 2nd argument instead of format string.
+	(avr_log_caller, avr_log_fdump_e, avr_log_fdump_f)
+	(avr_log_set_caller_e, avr_log_set_caller_f): Remove.
+
 2015-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/64374
@@ -16,7 +29,7 @@
 	* config/xtensa/xtensa.md (zero_cost_loop_start): Reverse numbering
 	of operand 0 and operand 2.
 	(zero_cost_loop_end, loop_end): Similarly.
-	
+
 2015-02-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple.h (gimple_build_assign): Rename CXX_MEM_STAT_DECL to
