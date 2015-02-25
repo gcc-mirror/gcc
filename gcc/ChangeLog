@@ -1,3 +1,15 @@
+2015-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/64374
+	* target.def (target_option_stream_in): New target hook.
+	* tree-streamer-in.c (streamer_read_tree_bitfields): Invoke
+	targetm.target_option.post_stream_in if non-NULL.
+	* doc/tm.texi.in: Add @hook TARGET_OPTION_POST_STREAM_IN.
+	* doc/tm.texi: Updated.
+	* config/i386/i386.c (ix86_function_specific_post_stream_in): New
+	function.
+	(TARGET_OPTION_POST_STREAM_IN): Redefine.
+
 2015-02-24  Jeff Law  <law@redhat.com>
 
 	PR target/65117

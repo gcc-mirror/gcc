@@ -2463,6 +2463,7 @@ static void ix86_function_specific_save (struct cl_target_option *,
 					 struct gcc_options *opts);
 static void ix86_function_specific_restore (struct gcc_options *opts,
 					    struct cl_target_option *);
+static void ix86_function_specific_post_stream_in (struct cl_target_option *);
 static void ix86_function_specific_print (FILE *, int,
 					  struct cl_target_option *);
 static bool ix86_valid_target_attribute_p (tree, tree, tree, int);
@@ -4569,6 +4570,57 @@ ix86_function_specific_restore (struct gcc_options *opts,
   /* Recreate the tune optimization tests */
   if (old_tune != ix86_tune)
     set_ix86_tune_features (ix86_tune, false);
+}
+
+/* Adjust target options after streaming them in.  This is mainly about
+   reconciling them with global options.  */
+
+static void
+ix86_function_specific_post_stream_in (struct cl_target_option *ptr)
+{
+  /* flag_pic is a global option, but ix86_cmodel is target saved option
+     partly computed from flag_pic.  If flag_pic is on, adjust x_ix86_cmodel
+     for PIC, or error out.  */
+  if (flag_pic)
+    switch (ptr->x_ix86_cmodel)
+      {
+      case CM_SMALL:
+	ptr->x_ix86_cmodel = CM_SMALL_PIC;
+	break;
+
+      case CM_MEDIUM:
+	ptr->x_ix86_cmodel = CM_MEDIUM_PIC;
+	break;
+
+      case CM_LARGE:
+	ptr->x_ix86_cmodel = CM_LARGE_PIC;
+	break;
+
+      case CM_KERNEL:
+	error ("code model %s does not support PIC mode", "kernel");
+	break;
+
+      default:
+	break;
+      }
+  else
+    switch (ptr->x_ix86_cmodel)
+      {
+      case CM_SMALL_PIC:
+	ptr->x_ix86_cmodel = CM_SMALL;
+	break;
+
+      case CM_MEDIUM_PIC:
+	ptr->x_ix86_cmodel = CM_MEDIUM;
+	break;
+
+      case CM_LARGE_PIC:
+	ptr->x_ix86_cmodel = CM_LARGE;
+	break;
+
+      default:
+	break;
+      }
 }
 
 /* Print the current options */
@@ -52006,6 +52058,9 @@ ix86_initialize_bounds (tree var, tree lb, tree ub, tree *stmts)
 
 #undef TARGET_OPTION_RESTORE
 #define TARGET_OPTION_RESTORE ix86_function_specific_restore
+
+#undef TARGET_OPTION_POST_STREAM_IN
+#define TARGET_OPTION_POST_STREAM_IN ix86_function_specific_post_stream_in
 
 #undef TARGET_OPTION_PRINT
 #define TARGET_OPTION_PRINT ix86_function_specific_print
