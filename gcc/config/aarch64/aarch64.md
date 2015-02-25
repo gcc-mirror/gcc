@@ -3065,8 +3065,10 @@
         (not:GPI (xor:GPI (match_operand:GPI 1 "register_operand" "r,?w")
                           (match_operand:GPI 2 "register_operand" "r,w"))))]
   ""
-  "eon\\t%<w>0, %<w>1, %<w>2" ;; For GPR registers (only).
-  "reload_completed && (which_alternative == 1)" ;; For SIMD registers.
+  "@
+  eon\\t%<w>0, %<w>1, %<w>2
+  #"
+  "reload_completed && FP_REGNUM_P (REGNO (operands[0]))" ;; For SIMD registers.
   [(set (match_operand:GPI 0 "register_operand" "=w")
         (xor:GPI (match_operand:GPI 1 "register_operand" "w")
                  (match_operand:GPI 2 "register_operand" "w")))
