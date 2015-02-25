@@ -118,7 +118,7 @@ find gcc -type f \( -name '*.texi' \
   -o -path gcc/gcc/doc/include/texinfo.tex \
   -o -path gcc/gcc/BASE-VER \
   -o -path gcc/gcc/DEV-PHASE \
-  -o -path "gcc/gcc/ada/*.png" \
+  -o -path "gcc/gcc/ada/doc/gnat_ugn/*.png" \
   -o -path "gcc/gcc/jit/docs/*" \
   -o -path "gcc/gcc/jit/jit-common.h" \
   -o -path "gcc/gcc/jit/notes.txt" \
