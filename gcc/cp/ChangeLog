@@ -1,5 +1,10 @@
 2015-02-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/65209
+	* decl2.c (constrain_visibility) [VISIBILITY_ANON]: Clear
+	DECL_COMDAT.
+	(constrain_visibility_for_template): Handle reference arguments.
+
 	PR debug/58315
 	* decl.c (start_preparsed_function): Use create_artificial_label
 	for cdtor_label.
