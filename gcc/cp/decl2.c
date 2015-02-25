@@ -2175,6 +2175,7 @@ constrain_visibility (tree decl, int visibility, bool tmpl)
 	  TREE_PUBLIC (decl) = 0;
 	  DECL_WEAK (decl) = 0;
 	  DECL_COMMON (decl) = 0;
+	  DECL_COMDAT (decl) = false;
 	  if (TREE_CODE (decl) == FUNCTION_DECL
 	      || TREE_CODE (decl) == VAR_DECL)
 	    {
@@ -2215,9 +2216,12 @@ constrain_visibility_for_template (tree decl, tree targs)
       tree arg = TREE_VEC_ELT (args, i-1);
       if (TYPE_P (arg))
 	vis = type_visibility (arg);
-      else if (TREE_TYPE (arg) && POINTER_TYPE_P (TREE_TYPE (arg)))
+      else
 	{
-	  STRIP_NOPS (arg);
+	  if (REFERENCE_REF_P (arg))
+	    arg = TREE_OPERAND (arg, 0);
+	  if (TREE_TYPE (arg))
+	    STRIP_NOPS (arg);
 	  if (TREE_CODE (arg) == ADDR_EXPR)
 	    arg = TREE_OPERAND (arg, 0);
 	  if (VAR_OR_FUNCTION_DECL_P (arg))
