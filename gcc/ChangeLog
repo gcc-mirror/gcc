@@ -1,5 +1,11 @@
 2015-02-25  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/65196
+	* config/avr/avr.c (avr_adjust_insn_length): Call recog_memoized
+	only with NONDEBUG_INSN_P.
+
+2015-02-25  Georg-Johann Lay  <avr@gjlay.de>
+
 	Use variadic macros with avr-log.c.
 
 	* config/avr/avr-protos.h (avr_vdump): New prototype.
