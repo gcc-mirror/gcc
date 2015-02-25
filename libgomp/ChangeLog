@@ -1,3 +1,12 @@
+2015-02-25  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/reduction-1.c (DO_PRAGMA)
+	(check_reduction_op, check_reduction_macro, max, min):
+	Declare.
+	(test_reductions_int, test_reductions_minmax, test_reductions_bool): New
+	function.
+	(main): Use new functions.
+
 2015-02-18  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* target.c (gomp_load_plugin_for_device): Use const char * instead of
