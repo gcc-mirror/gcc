@@ -1,3 +1,9 @@
+2015-02-25  Jason Merrill  <jason@redhat.com>
+
+	PR debug/58315
+	* decl.c (start_preparsed_function): Use create_artificial_label
+	for cdtor_label.
+
 2015-02-17  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

@@ -13721,9 +13721,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       || (DECL_CONSTRUCTOR_P (decl1)
 	  && targetm.cxx.cdtor_returns_this ()))
     {
-      cdtor_label = build_decl (input_location, 
-				LABEL_DECL, NULL_TREE, void_type_node);
-      DECL_CONTEXT (cdtor_label) = current_function_decl;
+      cdtor_label = create_artificial_label (input_location);
     }
 
   start_fname_decls ();
