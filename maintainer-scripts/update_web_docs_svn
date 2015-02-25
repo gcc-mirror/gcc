@@ -155,7 +155,7 @@ for file in $MANUALS; do
   if [ "${filename}" ]; then
     includes="-I ${includedir} -I `dirname ${filename}`"
     if [ "$file" = "gnat_ugn" ]; then
-      includes="$includes -I gcc/gcc/ada"
+      includes="$includes -I gcc/gcc/ada -I gcc/gcc/ada/doc/gnat_ugn"
     fi
     makeinfo --html $includes -o ${file} ${filename}
     tar cf ${file}-html.tar ${file}/*.html

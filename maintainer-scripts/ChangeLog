@@ -1,3 +1,7 @@
+2015-02-25  Arnaud Charlet  <charlet@adacore.com>
+
+	* update_web_docs_svn: Add -I gcc/gcc/ada/doc/gnat_ugn for gnat_ugn
+
 2015-02-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/64257
