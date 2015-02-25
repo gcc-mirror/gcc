@@ -1,3 +1,8 @@
+2015-02-25  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65167
+	* gcc.target/i386/pr65167.c: New.
+
 2015-02-25  Kai Tietz  <ktietz@redhat.com>
 
 	PR tree-optimization/61917
