@@ -6120,6 +6120,9 @@ ix86_function_arg_regno_p (int regno)
   int i;
   const int *parm_regs;
 
+  if (TARGET_MPX && BND_REGNO_P (regno))
+    return true;
+
   if (!TARGET_64BIT)
     {
       if (TARGET_MACHO)
@@ -26897,6 +26900,16 @@ avoid_func_arg_motion (rtx_insn *first_arg, rtx_insn *insn)
 {
   rtx set;
   rtx tmp;
+
+  /* Add anti dependencies for bounds stores.  */
+  if (INSN_P (insn)
+      && GET_CODE (PATTERN (insn)) == PARALLEL
+      && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == UNSPEC
+      && XINT (XVECEXP (PATTERN (insn), 0, 0), 1) == UNSPEC_BNDSTX)
+    {
+      add_dependence (first_arg, insn, REG_DEP_ANTI);
+      return;
+    }
 
   set = single_set (insn);
   if (!set)
