@@ -1,3 +1,7 @@
+2015-02-25  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/htm-builtin-1.c: Fix tcheck expect value.
+
 2015-02-25  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* gcc.target/powerpc/direct-move.h: Include string.h/stdlib.h.

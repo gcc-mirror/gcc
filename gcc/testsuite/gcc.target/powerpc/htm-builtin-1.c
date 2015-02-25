@@ -10,7 +10,7 @@
 /* { dg-final { scan-assembler-times "tabortdci\\." 1 } } */
 /* { dg-final { scan-assembler-times "tabortwc\\." 1 } } */
 /* { dg-final { scan-assembler-times "tabortwci\\." 2 } } */
-/* { dg-final { scan-assembler-times "tcheck\\." 1 } } */
+/* { dg-final { scan-assembler-times "tcheck" 1 } } */
 /* { dg-final { scan-assembler-times "trechkpt\\." 1 } } */
 /* { dg-final { scan-assembler-times "treclaim\\." 1 } } */
 /* { dg-final { scan-assembler-times "tsr\\." 3 } } */
