@@ -1,3 +1,7 @@
+2015-02-25  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
+
+	* config/rs6000/htm.md (tcheck): Fix assembly encoding.
+
 2015-02-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	Revert:
