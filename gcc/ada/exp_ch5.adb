@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,7 @@ with Exp_Dbug; use Exp_Dbug;
 with Exp_Pakd; use Exp_Pakd;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
+with Inline;   use Inline;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -2342,6 +2343,7 @@ package body Exp_Ch5 is
                   Blk : constant Entity_Id :=
                           New_Internal_Entity
                             (E_Block, Current_Scope, Sloc (N), 'B');
+                  AUD : constant Entity_Id := RTE (RE_Abort_Undefer_Direct);
 
                begin
                   Set_Scope (Blk, Current_Scope);
@@ -2350,7 +2352,13 @@ package body Exp_Ch5 is
 
                   Prepend_To (L, Build_Runtime_Call (Loc, RE_Abort_Defer));
                   Set_At_End_Proc (Handled_Statement_Sequence (N),
-                    New_Occurrence_Of (RTE (RE_Abort_Undefer_Direct), Loc));
+                    New_Occurrence_Of (AUD, Loc));
+
+                  --  Present the Abort_Undefer_Direct function to the backend
+                  --  so that it can inline the call to the function.
+
+                  Add_Inlined_Body (AUD, N);
+
                   Expand_At_End_Handler
                     (Handled_Statement_Sequence (N), Blk);
                end;

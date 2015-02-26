@@ -22,3 +22,4 @@ contains
   end subroutine coo_dump_edges
 end module coo_graphs
 ! { dg-final { scan-tree-dump-times "__builtin_free" 3 "original" } }
+! { dg-final { cleanup-tree-dump "original" } }

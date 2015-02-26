@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -244,7 +244,7 @@ package Sem_Prag is
    --  Returns True if Nam is one of the names recognized as a valid assertion
    --  kind by the Assertion_Policy pragma. Note that the 'Class cases are
    --  represented by the corresponding special names Name_uPre, Name_uPost,
-   --  Name_uInviarnat, and Name_uType_Invariant (_Pre, _Post, _Invariant,
+   --  Name_uInvariant, and Name_uType_Invariant (_Pre, _Post, _Invariant,
    --  and _Type_Invariant).
 
    procedure Make_Aspect_For_PPC_In_Gen_Sub_Decl (Decl : Node_Id);

@@ -476,9 +476,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       {
 	if (__str._M_is_local())
 	  {
-	    if (__str.length())
-	      traits_type::copy(_M_local_buf, __str._M_local_buf,
-				_S_local_capacity + 1);
+	    traits_type::copy(_M_local_buf, __str._M_local_buf,
+			      _S_local_capacity + 1);
 	  }
 	else
 	  {

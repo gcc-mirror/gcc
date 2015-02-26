@@ -1,3 +1,421 @@
+2015-02-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc-interface/utils.c (DEF_FUNCTION_TYPE_VAR_8)
+	(DEF_FUNCTION_TYPE_VAR_12): Fix number of arguments parameter.
+
+2015-02-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/Makefile: postprocess texinfo files to update @dircategory
+	and update texi files under gcc/ada.
+	* gnat_ugn.texi, gnat_rm.texi: Regenerated.
+
+2015-02-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_ugn/project-manager-figure.png,
+	doc/gnat_ugn/rtlibrary-structure.png: New.
+
+2015-02-22  Tom de Vries  <tom@codesourcery.com>
+
+	PR ada/65100
+	* gnat-style.texi (@subsection Loop Statements): Replace @noindent by
+	@item, and fix warning '@itemize has text but no @item'.
+
+2015-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Obsolescent): Pragma
+	legally applies to an abstract subprogram declaration.
+	* freeze.adb: Minor comment addition.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* errout.ads: Document replacement of Name_uPre/Post/Type_Invariant.
+	* erroutc.adb (Set_Msg_Str): Replace _xxx.
+	(Pre/Post/Type_Invariant) by xxx'Class.
+	* erroutc.ads (Set_Msg_Str): Replace _xxx.
+	(Pre/Post/Type_Invariant) by xxx'Class.
+	* sem_prag.adb (Fix_Error): Remove special casing of
+	Name_uType_Invariant.
+	(Analyze_Pre_Post_Condition_In_Decl_Part): Remove special casing of
+	Name_uPre and Name_uPost in aspect case (done in Errout now).
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* g-alveop.adb: Minor style fixes.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Warn_Overlay): Guard against blow up with address
+	clause.
+
+2015-02-20  Bob Duff  <duff@adacore.com>
+
+	* exp_attr.adb (May_Be_External_Call): Remove this. There is no need
+	for the compiler to guess whether the call is internal or external --
+	it is always external.
+	(Expand_Access_To_Protected_Op): For P'Access, where P
+	is a protected subprogram, always create a pointer to the
+	External_Subprogram.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* a-dispat.adb, a-stcoed.ads: Minor reformatting.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Build_Discrete_Static_Predicate): Allow static
+	predicate for non-static subtype.
+	(Build_Predicate_Functions): Do not assume subtype associated with a
+	static predicate must be static.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Set_Msg_Node): Better handling of internal names
+	(Set_Msg_Node): Kill message when we cannot eliminate internal name.
+	* errout.ads: Document additional case of message deletion.
+	* namet.adb (Is_Internal_Name): Refined to consider wide
+	strings in brackets notation and character literals not to be
+	internal names.
+	* sem_ch8.adb (Find_Selected_Component): Give additional error
+	when selector name is a subprogram whose first parameter has
+	the same type as the prefix, but that type is untagged.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* g-allein.ads, g-alveop.adb, g-alveop.ads, opt.ads: Minor reformatting
+
+2015-02-20  Tristan Gingold  <gingold@adacore.com>
+
+	* opt.ads (GNAT_Mode_Config): New variable.
+	* opt.adb (Set_Opt_Config_Switches): Consider GNAT_Mode_Config
+	to set Assertions_Enabled.
+	* switch-c.adb (Scan_Front_End_Switches): Set GNAT_Mode_Config
+	for -gnatg.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* s-valllu.ads (Scan_Raw_Long_Long_Unsigned): Add an additional
+	comment regarding the handling of unterminated fixed-point
+	constants.
+	* s-valuns.ads (Scan_Raw_Unsigned): Add comments
+	corresponding to those previously added for
+	System.Val_LLU.Scan_Raw_Long_Long_Unsigned.
+
+2015-02-20  Olivier Hainque  <hainque@adacore.com>
+
+	* g-allein.ads, g-alveop.ads, g-alveop.adb: Code clean ups.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb: Minor comment clarification.
+
+2015-02-20  Olivier Hainque  <hainque@adacore.com>
+
+	* g-allein.ads (vec_ctf, vec_vcsfx, vec_vcfux): Remove.
+	* g-alleve.ads, g-alleva.adb (vcfux): Likewise.
+	* g-alveop.ads (vec_vcfsx, vec_vcfux): Just rename the ll versions.
+	(vec_ctf): Now renamings as well.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* switch-c.adb, bindgen.adb: Minor reformatting.
+
+2015-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Type_Invariant):
+	Invariant'class is allowed on an abstract type.
+
+2015-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Access_Definition): If the access definition is
+	for a protected component and defines an access to protected
+	subprogram, do not create an itype reference for it because a
+	full type declaration will be built in order to generate the
+	proper equivalent type.
+	(Analyze_Subtype_Declaration): Add information of incomplete
+	subtypes, for Ada 2012 extended uses of incomplete types.
+
+2015-02-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_res.adb: Minor reformatting.
+
+2015-02-20  Vincent Celier  <celier@adacore.com>
+
+	* switch-c.adb (Scan_Front_End_Switches): When comparing runtime
+	path name for several switches --RTS, use the normalized path
+	names.
+
+2015-02-20  Vincent Celier  <celier@adacore.com>
+
+	* bindgen.adb: Minor reformatting and code reorganization.
+
+2015-02-20  Jose Ruiz  <ruiz@adacore.com>
+
+	* a-stcoed.ads: Add spec for this package (Unimplemented_Unit).
+	* impunit.adb (Non_Imp_File_Names_12): Mark unit a-stcoed.ads as
+	defined by Ada 2012.
+
+2015-02-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* sysdep.c, expect.c, s-oscons-tmplt.c, gsocket.h, adaint.c: Remove
+	obsolete references to RTX, nucleus, VMS.
+
+2015-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Fix_Error): For an illegal Type_Invariant'Class
+	aspect, use name that mentions Class explicitly, rather than
+	compiler-internal name.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Add documentation for -gnatd.2 (allow statements
+	in decl sequences).
+	* par-ch3.adb (P_Identifier_Declarations): Handle
+	statement appearing where declaration expected more cleanly.
+	(Statement_When_Declaration_Expected): Implement debug flag
+	-gnatd.2.
+
+2015-02-20  Jose Ruiz  <ruiz@adacore.com>
+
+	* a-dinopr.ads: Add spec for this package (Unimplemented_Unit).
+	* a-dispat.ads (Yield): Include procedure added in Ada 2012.
+	* a-dispat.adb (Yield): Implement procedure added in Ada 2012.
+	* impunit.adb (Non_Imp_File_Names_05): Mark unit a-dinopr.ads as
+	defined by Ada 2005.
+	* snames.ads-tmpl (Name_Non_Preemptive_FIFO_Within_Priorities):
+	This is the correct name for the dispatching policy (FIFO was
+	missing).
+
+2015-02-20  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): If the type of the
+	operand is the limited-view of a class-wide type then recover
+	the class-wide type of the non-limited view.
+
+2015-02-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in: Remove references to nucleus.
+	* gcc-interface/decl.c (gnat_to_gnu_entity, case E_Procedure): Set
+	extern_flag to true for Inline_Always subprograms with
+	Intrinsic convention.
+
+2015-02-20  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.ads: Minor typo in comment.
+
+2015-02-20  Pascal Obry  <obry@adacore.com>
+
+	* s-osprim-mingw.adb: Fix Get_Base_Time parameter mode.
+
+2015-02-20  Vincent Celier  <celier@adacore.com>
+
+	* makeutl.adb (Get_Directories.Add_Dir): Add a directory only
+	if it exists.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.ads: Minor reformatting.
+
+2015-02-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Size_Known): Do not set the packed size for
+	independent type or component.
+	(Freeze_Array_Type): Check for Independent[_Components] with packing
+	or explicit component size clause.
+	* gnat1drv.adb (Post_Compilation_Validation_Checks): Do the validation
+	of independence pragmas only for non-GCC back-ends.
+	* sem_ch13.adb (Initialize): Likewise for the initialization.
+	* sem_prag.adb (Record_Independence_Check): New procedure to record an
+	independence check in the table.
+	(Analyze_Pragma): Use it throughout instead of doing it manually.
+	* gcc-interface/decl.c (gnat_to_gnu_field): Add support for
+	independent type or component.
+
+2015-02-20  Thomas Quinot  <quinot@adacore.com>
+
+	* adaint.c (__gnat_readdir): For Solaris, use 64 bit variants of
+	struct direct and readdir. This is required for NFS filesystems
+	mounted from servers that use 64-bit cookies.
+
+2015-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Subprogram_Instantiaion): New subprogram
+	Build_Subprogram_Renaming, to create renaming of subprogram
+	instance in the the declaration of the wrapper package rather
+	than in its body, so that it is available for analysis of aspects
+	propagated from generic to instantiation.
+	(Check_Mismatch): An actual for a formal package that is an
+	incomplete type matches a formal type that is incomplete.
+	(Instantiate_Package_Body): Move code that builds subprogram
+	renaming to Analyze_Subprogram_Instantiation.
+	(Instantiate_Type): The generated subtype is a limited view if
+	the actual is a limited view.
+	(Load_Parent_Of_Generic): Retrieve instance declaration from
+	its new position within wrapper package.
+
+2015-02-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-parame-vxworks.adb, s-os_lib.ads: Update comments.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* s-osinte-vxworks.ads (To_Timespec): Add comment about the
+	issue of negative arguments.
+
+2015-02-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat1drv.adb: Minor consistency fix.
+
+2015-02-20  Pascal Obry  <obry@adacore.com>
+
+	* s-osprim-mingw.adb (Get_Base_Time): Properly release lock in all
+	paths.
+
+2015-02-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Expand_Inlined_Call): Skip again calls to subprogram
+	renamings.
+	* exp_ch6.adb (Expand_Call): Use back-end inlining
+	instead of expansion for simple subprogram renamings.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb: Minor reformatting.
+
+2015-02-20  Vincent Celier  <celier@adacore.com>
+
+	* switch-c.adb (Scan_Front_End_Switches): Do not fail when --RTS=
+	is specified several times with different values that indicates
+	the same runtime directory.
+
+2015-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Check_Not_Incomplete_Type): Clean up code to
+	handle properly illegal uses of attributes on prefixes on an
+	incomplete type, both when the type of the prefix is locally
+	incomplete, and when it is a limited view of a type whose
+	non-limited view is not available.
+	(Analyze_Attribute): Add calls to Check_Not_Incomplete_Type for
+	'Address and others.
+
+2015-02-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb: Fix minor typo in comment.
+
+2015-02-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sinfo.ads: Add comment.
+
+2015-02-20  Olivier Hainque  <hainque@adacore.com>
+
+	* opt.ads: Replace Opt.Suppress_All_Inlining by two separate
+	flags controlling the actual FE inlining out of pragma Inline
+	and pragma Inline_Always.
+	* adabkend.adb (Scan_Compiler_Arguments): Set both flags to True
+	on -fno-inline, which disables all inlining in compilers with
+	an Ada back-end and without back-end inlining support.
+	* back_end.adb (Scan_Back_End_Switches): Set the Inline related
+	flag to True on -fno-inline and leave Inline_Always alone for
+	gcc back-ends.
+	* back_end.ads (Scan_Compiler_Arguments): Adjust spec wrt the
+	names of the Opt flags it sets.
+	* gnat1drv.adb (Adjust_Global_Switches): Remove test on
+	Opt.Suppress_All_Inlining in the Back_End_Inlining computation.
+	* sem_prag.adb (Make_Inline): Remove early return conditioned
+	on Opt.Suppress_All_Inlining.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Use the flags to
+	disable the calls to Build_Body_To_Inline otherwise triggered
+	by pragma Inline or Inline_Always. This will prevent actual
+	front-end inlining of the subprogram on calls.
+
+2015-02-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Default_Initialize_Object): Call Add_Inlined_Body on the
+	Abort_Undefer_Direct function.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Likewise.
+	* exp_intr.adb (Expand_Unc_Deallocation): Likewise.
+	* exp_prag.adb (Expand_Pragma_Abort_Defer): Likewise.
+	* exp_ch4.adb (Expand_N_Selected_Component): Adjust call to
+	Add_Inlined_Body.
+	* exp_ch6.adb (Expand_Call): Adjust calls to Add_Inlined_Body.
+	 Remove call to Register_Backend_Call and move code resetting
+	Needs_Debug_Info on inlined subprograms to...
+	* inline.ads (Add_Inlined_Body): Add N parameter.
+	(Register_Backend_Call): Delete.
+	* inline.adb (Add_Inlined_Body): ...here and simplify.
+	 Register the call with Backend_Calls directly.
+	(Register_Backend_Call): Delete.
+	* s-stalib.ads (Abort_Undefer_Direct): Restore pragma Inline.
+
+2015-02-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-stalib.ads: Fix typo.
+
+2015-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Default_Initialize_Object): If the object has a
+	delayed freeze, the actions associated with default initialization
+	must be part of the freeze actions, rather that being inserted
+	directly after the object declaration.
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* lib-load.adb: Minor comment update.
+
+2015-02-20  Vincent Celier  <celier@adacore.com>
+
+	* prj-proc.adb (Process_Case_Construction): When there are
+	incomplete withed projects and the case variable is unknown,
+	skip the case construction.
+
+2015-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): Add caller-side invariant checks
+	when an actual is a view conversion, either because the call is
+	to an inherited operation, or because the actual is an explicit
+	type conversion to an ancestor type.  Fixes ACATS 4.0D: C732001
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads: Minor comment updates Fix missing pragma Inline
+	for Set_Partial_View_Has_Unknown_Discr.
+	* einfo.adb (Write_Entity_Flags): Add missing entry for
+	Partial_View_Has_Unknown_Discr.
+	* sem_ch3.adb: Minor reformatting.
+
+2015-02-20  Vincent Celier  <celier@adacore.com>
+
+	* opt.ads: Minor cleanup: remove mention of gprmake.
+	* s-stalib.ads (Abort_Undefer_Direct): Do not inline.
+	* s-tataat.adb: Do not call System.Tasking.Self but directly
+	System.Task_Primitives.Operations.Self.
+
+2015-02-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_rm.texi, gnat_ugn.texi: Now automatically generated from
+	sphinx in the doc directory.
+	* doc: New directory containing sphinx versions of gnat_rm and gnat_ugn
+
+2015-02-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb: Minor reformatting.
+	* exp_ch9.adb (Build_Protected_Spec): Copy Aliased setting when
+	building spec.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Exclude Boolean
+	aspects from circuitry setting delay required to false if the
+	argument is an integer literal.
+
+2015-02-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads. einfo.adb (Partial_View_Has_Unknown_Discr):  New flag
+	on type entities, to enforce AI12-0133: default initialization
+	of types whose partial view has unknown discriminants does not
+	get an invariant check, because clients of the unit can never
+	declare objects of such types.
+	* sem_ch3.adb (Find_Type_Name); Set new flag
+	Partial_View_Has_Unknown_Discr when needed.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Use flag to suppress
+	generation of invariant call on default-initialized object.
+
 2015-02-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_param): Do not strip the padding

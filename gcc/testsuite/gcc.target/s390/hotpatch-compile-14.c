@@ -8,4 +8,4 @@ viod main(void)
   return 0;
 }
 
-/* { dg-excess-errors "argument to '-mhotpatch=n,m' is too large" } */
+/* { dg-error "argument to .-mhotpatch=n,m. is too large" "" { target *-*-* } 1 } */

@@ -2792,18 +2792,29 @@ package body Errout is
          Nam := Pragma_Name (Node);
          Loc := Sloc (Node);
 
-      --  The other cases have Chars fields, and we want to test for possible
-      --  internal names, which generally represent something gone wrong. An
-      --  exception is the case of internal type names, where we try to find a
-      --  reasonable external representation for the external name
+      --  The other cases have Chars fields
+
+      --  First deal with internal names, which generally represent something
+      --  gone wrong. First attempt: if this is a rewritten node that rewrites
+      --  something with a Chars field that is not an internal name, use that.
+
+      elsif Is_Internal_Name (Chars (Node))
+        and then Nkind (Original_Node (Node)) in N_Has_Chars
+        and then not Is_Internal_Name (Chars (Original_Node (Node)))
+      then
+         Nam := Chars (Original_Node (Node));
+         Loc := Sloc (Original_Node (Node));
+
+      --  Another shot for internal names, in the case of internal type names,
+      --  we try to find a reasonable representation for the external name.
 
       elsif Is_Internal_Name (Chars (Node))
         and then
           ((Is_Entity_Name (Node)
-                          and then Present (Entity (Node))
-                          and then Is_Type (Entity (Node)))
-              or else
-           (Nkind (Node) = N_Defining_Identifier and then Is_Type (Node)))
+             and then Present (Entity (Node))
+             and then Is_Type (Entity (Node)))
+            or else
+             (Nkind (Node) = N_Defining_Identifier and then Is_Type (Node)))
       then
          if Nkind (Node) = N_Identifier then
             Ent := Entity (Node);
@@ -2826,7 +2837,8 @@ package body Errout is
             Nam := Chars (Ent);
          end if;
 
-      --  If not internal name, just use name in Chars field
+      --  If not internal name, or if we could not find a reasonable possible
+      --  substitution for the internal name, just use name in Chars field.
 
       else
          Nam := Chars (Node);
@@ -2854,6 +2866,12 @@ package body Errout is
          Kill_Message := True;
       end if;
 
+      --  If we still have an internal name, kill the message (will only
+      --  work if we already had errors!)
+
+      if Is_Internal_Name then
+         Kill_Message := True;
+      end if;
       --  Remaining step is to adjust casing and possibly add 'Class
 
       Adjust_Name_Case (Loc);

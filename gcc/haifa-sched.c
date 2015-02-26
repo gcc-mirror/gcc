@@ -1233,6 +1233,11 @@ recompute_todo_spec (rtx_insn *next, bool for_backtrack)
   if (!sd_lists_empty_p (next, SD_LIST_HARD_BACK))
     return HARD_DEP;
 
+  /* If NEXT is intended to sit adjacent to this instruction, we don't
+     want to try to break any dependencies.  Treat it as a HARD_DEP.  */
+  if (SCHED_GROUP_P (next))
+    return HARD_DEP;
+
   /* Now we've got NEXT with speculative deps only.
      1. Look at the deps to see what we have to do.
      2. Check if we can do 'todo'.  */
@@ -2568,7 +2573,7 @@ model_set_excess_costs (rtx_insn **insns, int count)
 
 /* Enum of rank_for_schedule heuristic decisions.  */
 enum rfs_decision {
-  RFS_DEBUG, RFS_LIVE_RANGE_SHRINK1, RFS_LIVE_RANGE_SHRINK2,
+  RFS_LIVE_RANGE_SHRINK1, RFS_LIVE_RANGE_SHRINK2,
   RFS_SCHED_GROUP, RFS_PRESSURE_DELAY, RFS_PRESSURE_TICK,
   RFS_FEEDS_BACKTRACK_INSN, RFS_PRIORITY, RFS_SPECULATION,
   RFS_SCHED_RANK, RFS_LAST_INSN, RFS_PRESSURE_INDEX,
@@ -2576,7 +2581,7 @@ enum rfs_decision {
 
 /* Corresponding strings for print outs.  */
 static const char *rfs_str[RFS_N] = {
-  "RFS_DEBUG", "RFS_LIVE_RANGE_SHRINK1", "RFS_LIVE_RANGE_SHRINK2",
+  "RFS_LIVE_RANGE_SHRINK1", "RFS_LIVE_RANGE_SHRINK2",
   "RFS_SCHED_GROUP", "RFS_PRESSURE_DELAY", "RFS_PRESSURE_TICK",
   "RFS_FEEDS_BACKTRACK_INSN", "RFS_PRIORITY", "RFS_SPECULATION",
   "RFS_SCHED_RANK", "RFS_LAST_INSN", "RFS_PRESSURE_INDEX",
@@ -2612,12 +2617,11 @@ rank_for_schedule_debug (const void *x, const void *y)
 
   /* Schedule debug insns as early as possible.  */
   if (DEBUG_INSN_P (tmp) && !DEBUG_INSN_P (tmp2))
-    return rfs_result (RFS_DEBUG, -1, tmp, tmp2);
+    return -1;
   else if (!DEBUG_INSN_P (tmp) && DEBUG_INSN_P (tmp2))
-    return rfs_result (RFS_DEBUG, 1, tmp, tmp2);
+    return 1;
   else if (DEBUG_INSN_P (tmp) && DEBUG_INSN_P (tmp2))
-    return rfs_result (RFS_DEBUG, INSN_LUID (tmp) - INSN_LUID (tmp2),
-		       tmp, tmp2);
+    return INSN_LUID (tmp) - INSN_LUID (tmp2);
   else
     return INSN_RFS_DEBUG_ORIG_ORDER (tmp2) - INSN_RFS_DEBUG_ORIG_ORDER (tmp);
 }
@@ -3080,54 +3084,61 @@ print_rank_for_schedule_stats (const char *prefix,
       }
 }
 
-/* Sort the ready list READY by ascending priority, using the SCHED_SORT
-   macro.  */
-
-void
-ready_sort (struct ready_list *ready)
+/* Separate DEBUG_INSNS from normal insns.  DEBUG_INSNs go to the end
+   of array.  */
+static void
+ready_sort_debug (struct ready_list *ready)
 {
   int i;
   rtx_insn **first = ready_lastpos (ready);
-  int n_ready_non_debug = ready->n_ready;
 
   for (i = 0; i < ready->n_ready; ++i)
-    {
-      if (DEBUG_INSN_P (first[i]))
-	--n_ready_non_debug;
-      else
-	{
-	  INSN_RFS_DEBUG_ORIG_ORDER (first[i]) = i;
+    if (!DEBUG_INSN_P (first[i]))
+      INSN_RFS_DEBUG_ORIG_ORDER (first[i]) = i;
 
-	  if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
-	    setup_insn_reg_pressure_info (first[i]);
-	}
-    }
+  qsort (first, ready->n_ready, sizeof (rtx), rank_for_schedule_debug);
+}
 
-  if (sched_pressure == SCHED_PRESSURE_MODEL
-      && model_curr_point < model_num_insns)
-    model_set_excess_costs (first, ready->n_ready);
+/* Sort non-debug insns in the ready list READY by ascending priority.
+   Assumes that all debug insns are separated from the real insns.  */
+static void
+ready_sort_real (struct ready_list *ready)
+{
+  int i;
+  rtx_insn **first = ready_lastpos (ready);
+  int n_ready_real = ready->n_ready - ready->n_debug;
+
+  if (sched_pressure == SCHED_PRESSURE_WEIGHTED)
+    for (i = 0; i < n_ready_real; ++i)
+      setup_insn_reg_pressure_info (first[i]);
+  else if (sched_pressure == SCHED_PRESSURE_MODEL
+	   && model_curr_point < model_num_insns)
+    model_set_excess_costs (first, n_ready_real);
 
   rank_for_schedule_stats_t stats1;
   if (sched_verbose >= 4)
     stats1 = rank_for_schedule_stats;
 
-  if (n_ready_non_debug < ready->n_ready)
-    /* Separate DEBUG_INSNS from normal insns.  DEBUG_INSNs go to the end
-       of array.  */
-    qsort (first, ready->n_ready, sizeof (rtx), rank_for_schedule_debug);
-  else
-    {
-      if (n_ready_non_debug == 2)
-	swap_sort (first, n_ready_non_debug);
-      else if (n_ready_non_debug > 2)
-	qsort (first, n_ready_non_debug, sizeof (rtx), rank_for_schedule);
-    }
+  if (n_ready_real == 2)
+    swap_sort (first, n_ready_real);
+  else if (n_ready_real > 2)
+    qsort (first, n_ready_real, sizeof (rtx), rank_for_schedule);
 
   if (sched_verbose >= 4)
     {
       rank_for_schedule_stats_diff (&stats1, &rank_for_schedule_stats);
       print_rank_for_schedule_stats (";;\t\t", &stats1, ready);
     }
+}
+
+/* Sort the ready list READY by ascending priority.  */
+static void
+ready_sort (struct ready_list *ready)
+{
+  if (ready->n_debug > 0)
+    ready_sort_debug (ready);
+  else
+    ready_sort_real (ready);
 }
 
 /* PREV is an insn that is ready to execute.  Adjust its priority if that
@@ -6490,7 +6501,8 @@ schedule_block (basic_block *target_bb, state_t init_state)
   if (!reload_completed
       && ready.n_ready - ready.n_debug > MAX_SCHED_READY_INSNS)
     {
-      ready_sort (&ready);
+      ready_sort_debug (&ready);
+      ready_sort_real (&ready);
 
       /* Find first free-standing insn past MAX_SCHED_READY_INSNS.
          If there are debug insns, we know they're first.  */
@@ -6501,7 +6513,8 @@ schedule_block (basic_block *target_bb, state_t init_state)
       if (sched_verbose >= 2)
 	{
 	  fprintf (sched_dump,
-		   ";;\t\tReady list on entry: %d insns\n", ready.n_ready);
+		   ";;\t\tReady list on entry: %d insns:  ", ready.n_ready);
+	  debug_ready_list (&ready);
 	  fprintf (sched_dump,
 		   ";;\t\t before reload => truncated to %d insns\n", i);
 	}

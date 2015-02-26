@@ -1,3 +1,256 @@
+2015-02-23  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.dg/hoist-register-pressure-1.c: Make S/390 target check work
+	with -m31 on 64 bit.
+	* gcc.dg/hoist-register-pressure-2.c: Likewise.
+	* gcc.dg/hoist-register-pressure-3.c: Likewise.
+
+2015-02-23  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/20090223-1.c: Add
+	-Wno-implicit-function-declaration option.
+	* gcc.target/s390/pr42224.c: Likewise.
+	* gcc.target/s390/pr55718.c: Likewise.
+
+2015-02-23  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/hotpatch-1.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-10.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-11.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-12.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-13.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-14.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-15.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-16.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-17.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-18.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-19.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-2.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-20.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-3.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-4.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-5.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-6.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-7.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-8.c: Remove --save-temps option.
+	* gcc.target/s390/hotpatch-9.c: Remove --save-temps option.
+	* gcc.target/s390/htm-nofloat-1.c: Cleanup --save-temps files.
+
+2015-02-23  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/hotpatch-8.c: Add -march=g5.
+	* gcc.target/s390/hotpatch-9.c: Add -march=g5.
+	* gcc.target/s390/hotpatch-compile-1.c: Fix error message.
+	* gcc.target/s390/hotpatch-compile-10.c: Likewise.
+	* gcc.target/s390/hotpatch-compile-11.c: Likewise.
+	* gcc.target/s390/hotpatch-compile-12.c: Likewise.
+	* gcc.target/s390/hotpatch-compile-13.c: Likewise.
+	* gcc.target/s390/hotpatch-compile-14.c: Likewise.
+	* gcc.target/s390/hotpatch-compile-2.c: Likewise.
+	* gcc.target/s390/hotpatch-compile-3.c: Likewise.
+	* gcc.target/s390/hotpatch-compile-4.c: Likewise.
+	* gcc.target/s390/hotpatch-compile-5.c: Likewise.
+	* gcc.target/s390/hotpatch-compile-6.c: Likewise.
+	* gcc.target/s390/hotpatch-compile-7.c: Likewise.
+	* gcc.target/s390/hotpatch-compile-8.c: Likewise.
+	* gcc.target/s390/hotpatch-compile-9.c: Likewise.
+
+2015-02-22  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR fortran/64980
+	PR fortran/61960
+	* gfortran.dg/pr61960.f90: New.
+	* gfortran.dg/pr64230.f90: New.
+	* gfortran.dg/pr64980.f03: New.
+
+2015-02-22  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/pr30957-1.c: Make pr30957-1.c pass rather xfail.
+
+2015-02-21  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/65156
+	* gnat.dg/timing_events.adb: Removed, invalid test.
+
+2015-02-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR debug/58123
+	* g++.dg/debug/dwarf2/deallocator.C: Adjust for correct try
+	location.
+	* g++.dg/gcov/gcov-2.C: Likewise.
+
+2015-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65136
+	* gcc.dg/tree-ssa/pr65136.c: New testcase.
+
+2015-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/64158
+	* gcc.dg/pr44194-1.c: Add two extra {} pairs to fix up powerpc*-*-linux*
+	and nvptx-*-* blacklisting.
+
+	* gcc.dg/sibcall-9.c: New test.
+	* gcc.dg/sibcall-10.c: New test.
+
+2015-02-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/sisd-shft-neg_1.c: New test.
+
+2015-02-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/64452
+	* gcc.target/avr/torture/pr64452.c: New test.
+
+2015-02-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gcc.dg/tree-ssa/20040204-1.c: Don't XFAIL on sh*-*-*.
+	* gcc.dg/tree-ssa/sra-12.c: Skip for sh*-*-*.
+
+2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	PR testsuite/65116
+	* lib/target-supports.exp (check_compile): Check whether
+	additional_sources is defined before using it.
+
+2015-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/65074
+	* g++.dg/opt/pr65074.C: New file.
+
+2015-02-19  Andrea Azzarone  <azzaronea@gmail.com>
+
+	* g++.dg/cpp1y/udlit-char-template-vs-std-literal-operator.C
+	(size_type): New typedef.
+	(operator "" _script): Use it for the last argument.
+
+2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+        * gcc.dg/pr64935-1.c, gcc.dg/pr64935-2.c: New tests.
+
+2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* testsuite/lib/target-supports.exp (check_compile): Save/restore
+	additional_sources that may belong to an actual test.
+
+2015-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/64634
+	* g++.dg/gcov/gcov-15.C: New test.
+
+2015-02-18  Tom de Vries  <tom@codesourcery.com>
+
+	* gfortran.dg/coarray_35a.f90: Add missing cleanup-modules.
+
+2015-02-18  Tom de Vries  <tom@codesourcery.com>
+
+	* gfortran.dg/pr37287-1.f90: Add missing cleanup-modules.
+
+2015-02-18  Tom de Vries  <tom@codesourcery.com>
+
+	* gfortran.dg/finalize_28.f90: Add missing cleanup-tree-dump.
+
+2015-02-18  Tom de Vries  <tom@codesourcery.com>
+
+	* gfortran.dg/fmt_cache_1.f: Add missing close.
+
+2015-02-18  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/65107
+	* gfortran.dg/read_eof_8.f90: Add missing close.
+
+2015-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65063
+	* gcc.dg/pr65063.c: New testcase.
+
+2015-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62217
+	* gcc.dg/tree-ssa/cunroll-11.c: New testcase.
+
+2015-02-18  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/65081
+	* c-c++-common/ubsan/pr65081.c: New test.
+
+2015-02-17  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* gcc.target/sh/sh.exp (check_effective_target_sh1): New.
+	* gcc.target/sh/force-cbranch-delay-slot.c: New.
+
+2015-02-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/ipa/propalign-3.c: New test.
+
+2015-02-17  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/64793
+	* gcc.target/sh/pr64793.c: New.
+	* gcc.target/sh/pr51244-20-sh2a.c: Adjust expected cmp/gt insn count.
+
+2015-02-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/arm/divzero.c: New test case.
+
+2015-02-17  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/x86_64/abi/callabi/vaarg-6.c: New test.
+
+2015-02-17  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/65075
+	* g++.dg/cpp0x/pr65075.C: New test.
+
+2015-02-16  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/65058
+	* gcc.target/powerpc/pr65058.c: New test.
+
+2015-02-16  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/64823
+	* gcc.dg/uninit-20.c: New test.
+
+2015-02-16  Jakub Jelinek  <jakub@redhat.com>
+	    James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR ipa/64963
+	* gcc.dg/ipa/ipa-clone-1.c: New test.
+
+2015-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65077
+	* gcc.dg/torture/pr65077.c: New testcase.
+
+2015-02-16  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc.target/aarch64/atomic-op-consume.c (scan-assember-times):
+	Directive adjusted to scan for ldaxr.
+	* gcc.target/arm/atomic-op-consume.c (scan-assember-times): Directive
+	adjusted to scan for ldaex.
+
+2015-02-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65080
+	* g++.dg/cpp0x/constexpr-65080.C: New.
+
+2015-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63593
+	* gcc.dg/pr63593.c: New testcase.
+
+2015-02-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65066
+	* gcc.dg/pr65066.c: New test.
+
+2015-02-16  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.dg/pr65002.C: Move ...
+	* g++.dg/ipa/pr65002.C: ... here.
+
 2015-02-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.target/powerpc/pr64205.c: Skip on AIX.

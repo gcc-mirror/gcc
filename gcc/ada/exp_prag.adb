@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@ with Errout;   use Errout;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Util; use Exp_Util;
 with Expander; use Expander;
+with Inline;   use Inline;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -888,11 +889,11 @@ package body Exp_Prag is
       Stms : List_Id;
       HSS  : Node_Id;
       Blk  : constant Entity_Id :=
-        New_Internal_Entity (E_Block, Current_Scope, Sloc (N), 'B');
+               New_Internal_Entity (E_Block, Current_Scope, Sloc (N), 'B');
+      AUD : constant Entity_Id := RTE (RE_Abort_Undefer_Direct);
 
    begin
       Stms := New_List (Build_Runtime_Call (Loc, RE_Abort_Defer));
-
       loop
          Stm := Remove_Next (N);
          exit when No (Stm);
@@ -901,9 +902,13 @@ package body Exp_Prag is
 
       HSS :=
         Make_Handled_Sequence_Of_Statements (Loc,
-          Statements => Stms,
-          At_End_Proc =>
-            New_Occurrence_Of (RTE (RE_Abort_Undefer_Direct), Loc));
+          Statements  => Stms,
+          At_End_Proc => New_Occurrence_Of (AUD, Loc));
+
+      --  Present the Abort_Undefer_Direct function to the backend so that it
+      --  can inline the call to the function.
+
+      Add_Inlined_Body (AUD, N);
 
       Rewrite (N,
         Make_Block_Statement (Loc,

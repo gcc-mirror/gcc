@@ -1,3 +1,384 @@
+2015-02-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/t-avr: Fix typo in comment.
+
+2015-02-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/rtl.texi (fma): Clarify documentation.
+
+2015-02-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR debug/58123
+	* gimplify.c (gimplify_expr): Prefer location of TRY_FINALLY_EXPR
+	over input_location.
+
+2015-02-20  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* tree-streamer-in.c (unpack_ts_decl_common_value_fields,
+	unpack_ts_type_common_value_fields): If ACCEL_COMPILER,
+	restrict alignments to absolute_biggest_alignment.
+	* config/i386/i386.c (TARGET_ABSOLUTE_BIGGEST_ALIGNMENT):
+	Define.
+	* doc/tm.texi.in (TARGET_ABSOLUTE_BIGGEST_ALIGNMENT): Add.
+	* doc/tm.texi: Regenerate.
+	* target.def (absolute_biggest_alignment): New DEFHOOKPOD.
+
+2015-02-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/64172
+	* ira-color.c (color_pass): Prevent splitting multi-register
+	pseudos.
+
+2015-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65136
+	* tree-ssa-propagate.c: Include cfgloop.h.
+	(replace_phi_args_in): Avoid replacing loop latch edge PHI
+	arguments with constants.
+
+2015-02-20  Jakub Jelinek  <jakub@redhat.com>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR target/63892
+	* ipa-icf.c (sem_function::merge): If DECL_COMDAT_GROUP (alias->decl),
+	don't try to create_thunk if stdarg_p.  If
+	!sem_item::target_supports_symbol_aliases_p (), similarly, and try to
+	redirect_callers if possible.
+	(sem_item_optimizer::execute): Call unregister_hooks here...
+	(ipa_icf_driver): ... instead of here.
+
+2015-02-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (*aarch64_lshr_sisd_or_int_<mode>3):
+	Mark operand 0 as earlyclobber in 2nd alternative.
+	(1st define_split below *aarch64_lshr_sisd_or_int_<mode>3):
+	Write negated shift amount into QI lowpart operand 0 and use it
+	in the shift step.
+	(2nd define_split below *aarch64_lshr_sisd_or_int_<mode>3): Likewise.
+
+2015-02-20  Bernd Schmidt  <bernds@codesourcery.com>
+
+    	* cgraph.h (clone_function_name_1): Declare.
+    	* cgraphclones.c (clone_function_name_1): New function.
+    	(clone_function_name): Use it.
+    	* lto-partition.c: Include "stringpool.h".
+    	(must_not_rename, maybe_rewrite_identifier,
+    	validize_symbol_for_target): New static functions.
+    	(privatize_symbol_name): Use must_not_rename.
+    	(promote_symbol): Call validize_symbol_for_target.
+    	(lto_promote_cross_file_statics): Likewise.
+    	(lto_promote_statics_nonwpa): Likewise.
+
+2015-02-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/64452
+	* config/avr/avr.md (pushhi_insn): New insn.
+	(push<mode>1): Push virtual regs in one chunk using pushhi1_insn.
+
+2015-02-20  Bernd Schmidt  <bernds@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-streamer.c (preload_common_nodes): Don't preload
+	TI_VA_LIST* for offloading.
+	* tree-stdarg.c (pass_stdarg::gate): Disable for ACCEL_COMPILER
+	in_lto_p.
+
+2015-02-19  John David Anglin  <danlgin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_emit_move_sequence): Always force
+	(const (plus (symbol) (const_int))) to const mem.  Put REG_EQUAL
+	note on insn.
+
+	* config/pa/pa.c (pa_reloc_rw_mask): New function.
+	(TARGET_ASM_RELOC_RW_MASK): Define.
+	(pa_cannot_force_const_mem): Revert previous change.
+
+2015-02-19  Martin Jambor  <mjmabor@suse.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65028
+	* ipa-cp.c (propagate_alignment_accross_jump_function): Fix propagation
+	across jump functions.
+
+2015-02-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_in_small_data_p): Reject common symbols.
+
+2015-02-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (x86 transactional memory intrinsics): Copy-edit.
+
+2015-02-19  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/65074
+	* varasm.c (default_binds_local_p_2): Don't test node->definition;
+	test DECL_EXTERNAL independent of symtab_node.
+
+2015-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/65012
+	* varpool.c (varpool_node::get_constructor): Return early
+	if this->lto_file_data is NULL.
+
+2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* haifa-sched.c (enum rfs_decision, rfs_str): Remove RFS_DEBUG.
+	(rank_for_schedule_debug): Update.
+	(ready_sort): Make static.  Move sorting logic to ...
+	(ready_sort_debug, ready_sort_real): New static functions.
+	(schedule_block): Sort both debug insns and real insns in preparation
+	for ready list trimming.  Improve debug output.
+	* sched-int.h (ready_sort): Remove global declaration.
+
+2015-02-18  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* ipa-icf.c (sem_function::equals_private): Adjust.
+	(sem_function::bb_dict_test): Take a vec<int> * instead of
+	auto_vec<int>.
+	* ipa-icf.h (bb_dict_test): Likewise.
+
+2015-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/64634
+	* tree-eh.c (frob_into_branch_around): Fix up typos
+	in function comment.
+	(lower_catch): Put eh_seq resulting from EH lowering of
+	the cleanup sequence after the cleanup rather than before
+	it.
+
+2015-02-18  Tom de Vries  <tom@codesourcery.com>
+
+	* common.opt (fstdarg-opt): New option.
+	* tree-stdarg.c (pass_stdarg::gate): Use flag_stdarg_opt.
+	* doc/invoke.texi (@item Optimization Options): Add -fstdarg-opt.
+	(@item -fstdarg-opt): New item.
+
+2015-02-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/65064
+	* config/ia64/predicates.md (sdata_symbolic_operand): Return false
+	for common symbols.
+
+2015-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/t-intelmic (mkoffload.o): Remove dependency on
+	insn-modes.h.
+	(ALL_HOST_OBJS): Add mkoffload.o.
+	* config/nvptx/t-nvptx (ALL_HOST_OBJS): Likewise.
+
+2015-02-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (odr_subtypes_equivalent_p): Fix formating.
+	(compare_virtual_tables): Be smarter about skipping typeinfos;
+	do sane output on virtual table table mismatch.
+	(warn_odr): Be ready for forward declarations of enums;
+	output sane info on base mismatch and virtual table mismatch.
+	(add_type_duplicate): Fix code choosing prevailing type; do not ICE
+	when only one type is polymorphic.
+	(get_odr_type): Fix hashtable corruption.
+	(dump_odr_type): Dump mangled names.
+
+2015-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65063
+	* tree-predcom.c (determine_unroll_factor): Return 1 if we
+	have replaced looparound PHIs.
+
+2015-02-18  Martin Liska  <mliska@suse.cz>
+
+	* lto-streamer.c (lto_streamer_init): Encapsulate
+	streamer_check_handled_ts_structures with checking macro.
+
+2015-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/65087
+	* cgraphclones.c (cgraph_node::create_virtual_clone): Only copy
+	section if !implicit_section.
+	(cgraph_node::create_version_clone_with_body): Likewise.
+	* trans-mem.c (ipa_tm_create_version): Likewise.
+
+2015-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62217
+	* tree-ssa-dom.c (cprop_operand): Avoid propagating copies
+	into BIVs.
+
+2015-02-18  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/65081
+	* ubsan.c (OBJSZ_MAX_OFFSET): Define.
+	(ubsan_expand_objsize_ifn): Don't emit run-time check if the offset
+	is in range [-16K, -1].  Don't issue run-time error if
+	(ptr > ptr + offset).
+
+2015-02-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/install.texi (nvptx-*-none): New section.
+	* doc/invoke.texi (Nvidia PTX Options): Likewise.
+	* config/nvptx/nvptx.opt: Update.
+
+	* config/nvptx/mkoffload.c (parse_env_var, free_array_of_ptrs)
+	(access_check): New functions, copied from
+	config/i386/intelmic-mkoffload.c.
+	(main): For non-installed testing, look in all COMPILER_PATHs for
+	GCC_INSTALL_NAME.
+
+	* config/nvptx/nvptx.h (GOMP_SELF_SPECS): Define macro.
+
+2015-02-18  Andrew Pinski  <apinski@cavium.com>
+	    Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+
+	* config/aarch64/aarch64.c (*aarch64_load_symref_appropriately):
+	Check whether the destination of SYMBOL_SMALL_TPREL is Pmode.
+
+2015-02-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-visibility.c (function_and_variable_visibility): Only
+	check locality if node is not already local.
+	* ipa-inline.c (want_inline_function_to_all_callers_p): Use
+	call_for_symbol_and_aliases instead of
+	call_for_symbol_thunks_and_aliases.
+	(ipa_inline): Likewise.
+	* cgraph.c (cgraph_node::call_for_symbol_thunks_and_aliases):
+	first walk aliases.
+	* ipa.c (symbol_table::remove_unreachable_nodes): Use
+	call_for_symbol_and_aliases.
+	* ipa-profile.c (ipa_propagate_frequency_data): Add function_symbol.
+	(ipa_propagate_frequency_1): Use it; use opt_for_fn
+	(ipa_propagate_frequency): Update.
+	(ipa_profile): Add opt_for_fn gueards.
+
+2015-02-17  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.opt (mcbranch-force-delay-slot): New option.
+	* doc/invoke.texi (SH options): Document it.
+	* config/sh/sh.c (sh_insn_length_adjustment): Check
+	TARGET_CBRANCH_FORCE_DELAY_SLOT instead of sh_cpu_attr == CPU_SH2E.
+
+2015-02-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* common.opt (fipa-cp-alignment): New.
+	* ipa-cp.c (ipcp_store_alignment_results): Check
+	flag_ipa_cp_alignment.
+	* opts.c (default_options_table): Enable -fipa-cp-alignment for
+	-O2.
+	(enable_fdo_optimizations): Set x_flag_ipa_cp_alignment.
+	* doc/invoke.texi: Document -fipa-cp-alignment.
+
+2015-02-17  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/64793
+	* config/sh/sh.md (cbranch define_delay): Set annulled true branch insn
+	to nil.  Adjust comments.
+
+2015-02-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-visibility.c (function_and_variable_visibility): Only
+	check locality if node is not already local.
+	* ipa-inline.c (want_inline_function_to_all_callers_p): Use
+	call_for_symbol_and_aliases instead of
+	call_for_symbol_thunks_and_aliases.
+	(ipa_inline): Likewise.
+	* cgraph.c (cgraph_node::call_for_symbol_thunks_and_aliases):
+	first walk aliases.
+	* ipa.c (symbol_table::remove_unreachable_nodes): Use
+	call_for_symbol_and_aliases.
+	* ipa-profile.c (ipa_propagate_frequency_data): Add function_symbol.
+	(ipa_propagate_frequency_1): Use it; use opt_for_fn
+	(ipa_propagate_frequency): Update.
+	(ipa_profile): Add opt_for_fn guards.
+
+2015-02-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/mkoffload.c (parse_file): Fix logic error in
+	skipping of "strange" tokens.
+
+2015-02-17  Jeff Law  <law@redhat.com>
+
+	* tree-vrp.c (identify_jump_threads): Use last_stmt.  Remove
+	obsolete comment.
+
+2015-02-17  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* haifa-sched.c (recompute_todo_spec): Treat SCHED_GROUP_P
+	as forcing a HARD_DEP between instructions, thereby
+	disallowing rewriting to break dependencies.
+
+2015-02-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* symtab.c (symtab_node::verify_base): Verify body_removed->!definiton
+	* lto-cgraph.c (lto_output_varpool_node): Do not keep definition of
+	variables in boundary that have no inlitalizer encoded and are
+	not aliases.
+	* varasm.c (default_binds_local_p_2): External definitions do not
+	count as definitions here.
+
+2015-02-16  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/64823
+	* tree-vrp.c (identify_jump_threads): Handle blocks with no real
+	statements.
+	* tree-ssa-threadedge.c (potentially_threadable_block): Allow
+	threading through blocks with PHIs, but no statements.
+	(thread_through_normal_block): Distinguish between blocks where
+	we did not process all the statements and blocks with no statements.
+
+2015-02-16  Jakub Jelinek  <jakub@redhat.com>
+	    James Greenhalgh  <james.greenhalgh@arm.com>
+
+	PR ipa/64963
+	* cgraphclones.c (cgraph_node::create_virtual_clone): Copy
+	section if not linkonce.  Fix up formatting.
+	(cgraph_node::create_version_clone_with_body): Copy section.
+	* trans-mem.c (ipa_tm_create_version): Likewise.
+
+2015-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65077
+	* tree-ssa-structalias.c (get_constraint_for_1): Handle
+	IMAGPART_EXPR, REALPART_EXPR and BIT_FIELD_REF.
+	(find_func_aliases): Allow float values to carry pointers again.
+
+2015-02-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* doc/install.texi (Specific): Reorder targets list to put
+	aarch64 in alphabetical order.  Add a link to aarch64*-*-*
+	from the top menu.
+
+2015-02-16  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
+	    David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/65058
+	* config/rs6000/rs6000.c (rs6000_output_symbol_ref): Append storage
+	mapping class to external variable or function reference.
+	* config/rs6000/xcoff.h (ASM_OUTPUT_EXTERNAL): Do not append storage
+	mapping class.
+
+2015-02-16  David Eelsohn  <dje.gcc@gmail.com>
+
+	PR target/53348
+	* config/rs6000/rs6000.c (rs6000_declare_alias): Only use
+	ASM_WEAKEN_DECL if defined.
+
+2015-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR lto/65015
+	* varasm.c (default_file_start): For LTO produced units
+	emit <artificial> as file directive.
+
+2015-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63593
+	* tree-predcom.c (execute_pred_commoning_chain): Delay removing
+	stmts and releasing SSA names until...
+	(execute_pred_commoning): ... after processing all chains.
+
+2015-02-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65059
+	* ipa-comdats.c (ipa_comdats): Do not categorize thunks to
+	external functions.
+
 2015-02-15  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/bugreport.texi: Adjust section titles throughout the file
@@ -117,7 +498,7 @@
 	PR ipa/65028
 	* ipa-inline-transform.c (mark_all_inlined_calls_cdtor): New function.
 	(inline_call): Use it.
-	
+
 2015-02-13  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/nvptx/offload.h (ACCEL_COMPILER_acc_device): Define to
@@ -340,7 +721,7 @@
 2015-02-10  David Wohlferd  <dw@LimeGreenSocks.com>
 
 	* doc/extend.texi (Symbol-Renaming Pragmas): Restore (slightly
-        modified) reference to Solaris.
+	modified) reference to Solaris.
 
 2015-02-10  Sandra Loosemore  <sandra@codesourcery.com>
 
@@ -744,8 +1125,7 @@
 
 	* config/arm/arm.h (TARGET_NEON_FP): Removed conditional definition,
 	define to zero if !TARGET_NEON.
-	(TARGET_CPU_CPP_BUILTINS): Added second condition before defining
-	__ARM_FP macro.
+	(TARGET_ARM_FP): Added !TARGET_SOFT_FLOAT into conditional definition.
 
 2015-02-04  Jan Hubicka  <hubicka@ucw.cz>
 	    Trevor Saunders  <tsaunders@mozilla.com>

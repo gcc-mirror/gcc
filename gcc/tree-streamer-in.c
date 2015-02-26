@@ -247,7 +247,10 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
   DECL_EXTERNAL (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_GIMPLE_REG_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_ALIGN (expr) = (unsigned) bp_unpack_var_len_unsigned (bp);
-
+#ifdef ACCEL_COMPILER
+  if (DECL_ALIGN (expr) > targetm.absolute_biggest_alignment)
+    DECL_ALIGN (expr) = targetm.absolute_biggest_alignment;
+#endif
   if (TREE_CODE (expr) == LABEL_DECL)
     {
       EH_LANDING_PAD_NR (expr) = (int) bp_unpack_var_len_unsigned (bp);
@@ -391,6 +394,10 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   TYPE_READONLY (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_PRECISION (expr) = bp_unpack_var_len_unsigned (bp);
   TYPE_ALIGN (expr) = bp_unpack_var_len_unsigned (bp);
+#ifdef ACCEL_COMPILER
+  if (TYPE_ALIGN (expr) > targetm.absolute_biggest_alignment)
+    TYPE_ALIGN (expr) = targetm.absolute_biggest_alignment;
+#endif
   TYPE_ALIAS_SET (expr) = bp_unpack_var_len_int (bp);
 }
 

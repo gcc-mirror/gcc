@@ -3274,7 +3274,11 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	       && (loop_tree_node->reg_pressure[pclass]
 		   <= ira_class_hard_regs_num[pclass]))
 	      || (pic_offset_table_rtx != NULL
-		  && regno == (int) REGNO (pic_offset_table_rtx)))
+		  && regno == (int) REGNO (pic_offset_table_rtx))
+	      /* Avoid overlapped multi-registers. Moves between them
+		 might result in wrong code generation.  */
+	      || (hard_regno >= 0
+		  && ira_reg_class_max_nregs[pclass][mode] > 1))
 	    {
 	      if (! ALLOCNO_ASSIGNED_P (subloop_allocno))
 		{

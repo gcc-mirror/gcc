@@ -704,8 +704,16 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *fun)
     {
-      /* This optimization is only for stdarg functions.  */
-      return fun->stdarg != 0;
+      return (flag_stdarg_opt
+#ifdef ACCEL_COMPILER
+	      /* Disable for GCC5 in the offloading compilers, as
+		 va_list and gpr/fpr counter fields are not merged.
+		 In GCC6 when stdarg is lowered late this shouldn't be
+		 an issue.  */
+	      && !in_lto_p
+#endif
+	      /* This optimization is only for stdarg functions.  */
+	      && fun->stdarg != 0);
     }
 
   virtual unsigned int execute (function *);

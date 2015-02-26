@@ -3216,6 +3216,10 @@ package body Sem_Prag is
       --  Suppress_Case is True for the Suppress case, and False for the
       --  Unsuppress case.
 
+      procedure Record_Independence_Check (N : Node_Id; E : Entity_Id);
+      --  Subsidiary to the analysis of pragmas Independent[_Components].
+      --  Record such a pragma N applied to entity E for future checks.
+
       procedure Set_Exported (E : Entity_Id; Arg : Node_Id);
       --  This procedure sets the Is_Exported flag for the given entity,
       --  checking that the entity was not previously imported. Arg is
@@ -6232,7 +6236,7 @@ package body Sem_Prag is
                Set_Is_Independent (Base_Type (E));
 
                if Prag_Id = Pragma_Independent then
-                  Independence_Checks.Append ((N, Base_Type (E)));
+                  Record_Independence_Check (N, Base_Type (E));
                end if;
             end if;
 
@@ -6307,7 +6311,7 @@ package body Sem_Prag is
                Set_Is_Independent (E);
 
                if Prag_Id = Pragma_Independent then
-                  Independence_Checks.Append ((N, E));
+                  Record_Independence_Check (N, E);
                end if;
             end if;
 
@@ -8204,12 +8208,6 @@ package body Sem_Prag is
                Applies := True;
                return;
 
-            --  Ignore if all inlining is suppressed
-
-            elsif Suppress_All_Inlining then
-               Applies := True;
-               return;
-
             --  If inlining is not possible, for now do not treat as an error
 
             elsif Status /= Suppressed
@@ -9199,6 +9197,21 @@ package body Sem_Prag is
             end loop;
          end if;
       end Process_Suppress_Unsuppress;
+
+      -------------------------------
+      -- Record_Independence_Check --
+      -------------------------------
+
+      procedure Record_Independence_Check (N : Node_Id; E : Entity_Id) is
+      begin
+         --  For GCC back ends the validation is done a priori
+
+         if VM_Target = No_VM and then not AAMP_On_Target then
+            return;
+         end if;
+
+         Independence_Checks.Append ((N, E));
+      end Record_Independence_Check;
 
       ------------------
       -- Set_Exported --
@@ -15001,7 +15014,7 @@ package body Sem_Prag is
               and then (Is_Array_Type (E) or else Is_Record_Type (E))
             then
                Set_Has_Independent_Components (Base_Type (E));
-               Independence_Checks.Append ((N, Base_Type (E)));
+               Record_Independence_Check (N, Base_Type (E));
 
                --  For record type, set all components independent
 
@@ -15019,7 +15032,7 @@ package body Sem_Prag is
                                            N_Constrained_Array_Definition
             then
                Set_Has_Independent_Components (E);
-               Independence_Checks.Append ((N, E));
+               Record_Independence_Check (N, E);
 
             else
                Error_Pragma_Arg ("inappropriate entity for pragma%", Arg1);
@@ -15706,9 +15719,10 @@ package body Sem_Prag is
                  ("pragma% only allowed for private type", Arg1);
             end if;
 
-            --  Not allowed for abstract type
+            --  Not allowed for abstract type in the non-class case (it is
+            --  allowed to use Invariant'Class for abstract types).
 
-            if Is_Abstract_Type (Typ) then
+            if Is_Abstract_Type (Typ) and then not Class_Present (N) then
                Error_Pragma_Arg
                  ("pragma% not allowed for abstract type", Arg1);
             end if;
@@ -17219,13 +17233,16 @@ package body Sem_Prag is
                   end;
                end if;
 
-            --  Cases where we must follow a declaration
+            --  Cases where we must follow a declaration, including an
+            --  abstract subprogram declaration, which is not in the
+            --  other node subtypes.
 
             else
                if         Nkind (Decl) not in N_Declaration
                  and then Nkind (Decl) not in N_Later_Decl_Item
                  and then Nkind (Decl) not in N_Generic_Declaration
                  and then Nkind (Decl) not in N_Renaming_Declaration
+                 and then Nkind (Decl) /= N_Abstract_Subprogram_Declaration
                then
                   Error_Pragma
                     ("pragma% misplaced, "
@@ -21872,16 +21889,9 @@ package body Sem_Prag is
                --  Pre'Class/Post'Class aspect cases
 
                if From_Aspect_Specification (Prag) then
-                  if Nam = Name_uPre then
-                     Error_Msg_Name_1 := Name_Pre;
-                  else
-                     Error_Msg_Name_1 := Name_Post;
-                  end if;
-
-                  Error_Msg_Name_2 := Name_Class;
-
+                  Error_Msg_Name_1 := Nam;
                   Error_Msg_N
-                    ("aspect `%''%` can only be specified for a primitive "
+                    ("aspect% can only be specified for a primitive "
                      & "operation of a tagged type",
                      Corresponding_Aspect (Prag));
 

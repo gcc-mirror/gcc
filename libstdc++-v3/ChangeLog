@@ -1,3 +1,61 @@
+2015-02-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Remove duplicated information.
+	* doc/html/manual/status.html: Regenerate.
+
+2015-02-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64695
+	* python/libstdcxx/v6/printers.py (StdTuplePrinter): Handle new
+	tuple layout.
+
+	* doc/xml/manual/status_cxx2011.xml: Document implementation-defined
+	behavior.
+	* doc/html/manual/status.html: Regenerate.
+
+2015-02-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/58357
+	* include/bits/algorithmfwd.h (rotate): Move to inline namespace _V2.
+	* include/bits/stl_algo.h (__rotate, rotate): Likewise.
+
+2015-02-19  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/65093
+	* testsuite/26_numerics/random/binomial_distribution/operators/values.cc
+	(test01): Add explanatory comment.  Keep only the bd1 sub-test and
+	split out bd2, bd3, bd4, and bd5 sub-tests into...
+	* testsuite/26_numerics/random/binomial_distribution/operators/values2.cc,
+	testsuite/26_numerics/random/binomial_distribution/operators/values3.cc,
+	testsuite/26_numerics/random/binomial_distribution/operators/values4.cc,
+	testsuite/26_numerics/random/binomial_distribution/operators/values5.cc:
+	New separate files with the old parts.
+
+2015-02-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/codecvt.cc (write_utf16_code_point): Fix code to output
+	surrogate pairs.
+	(utf16_in): Pass mode argument to write_utf16_code_point.
+	(codecvt<char16_t, char, mbstate_t>::do_in): Set mode according to
+	native byte order.
+	* testsuite/22_locale/codecvt/char16_t.cc: New.
+	* testsuite/22_locale/codecvt/in/wchar_t/1.cc: Fix typo.
+
+	* testsuite/22_locale/codecvt/char16_t.cc: Add dg-require-cstdint.
+	* testsuite/22_locale/codecvt/char32_t.cc: Likewise.
+
+2015-02-17  Rüdiger Sonderfeld  <ruediger@c-plusplus.de>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/22_locale/codecvt/char32_t.cc: New.
+
+2015-02-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65085
+	* include/bits/basic_string.h (basic_string(basic_string&&)): Ensure
+	empty string gets null-terminated.
+	* testsuite/21_strings/basic_string/cons/char/65085.cc: New.
+
 2015-02-13  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* testsuite/28_regex/traits/char/isctype.cc (test01): Fix

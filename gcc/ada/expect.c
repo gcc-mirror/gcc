@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2001-2014, AdaCore                     *
+ *                     Copyright (C) 2001-2015, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -54,8 +54,8 @@
   /* ??? See comment in adaint.c.  */
 # define GCC_RESOURCE_H
 # include <sys/wait.h>
-#elif defined (__nucleus__) || defined (__PikeOS__)
-  /* No wait.h available on Nucleus */
+#elif defined (__PikeOS__)
+  /* No wait.h available */
 #else
 #include <sys/wait.h>
 #endif
@@ -350,7 +350,7 @@ __gnat_expect_poll (int *fd,
 
   return ready;
 }
-#elif defined (__unix__) && !defined (__nucleus__)
+#elif defined (__unix__)
 
 #ifdef __hpux__
 #include <sys/ptyio.h>

@@ -842,6 +842,18 @@ fix = {
 };
 
 /*
+ * stdlib.h on AIX 4.3 declares strtof() with a non-const first argument.
+ */
+fix = {
+    hackname  = aix_strtof_const;
+    files     = stdlib.h;
+    select    = "((extern[ \t]+)?float[ \t]+strtof)\\(char \\*, char \\*\\*\\);";
+    c_fix     = format;
+    c_fix_arg = "%1(const char *, char **);";
+    test_text = "extern float    strtof(char *, char **);";
+};
+
+/*
  *  sys/machine.h on AIX 4.3.3 puts whitespace between a \ and a newline
  *  in an otherwise harmless (and #ifed out) macro definition
  */

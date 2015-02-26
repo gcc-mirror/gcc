@@ -12,3 +12,4 @@ contains
   end subroutine set_null
 end module pr37287_1
 end
+! { dg-final { cleanup-modules "pr37287_2" } }

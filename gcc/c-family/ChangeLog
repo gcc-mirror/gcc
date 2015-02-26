@@ -1,3 +1,8 @@
+2015-02-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65066
+	* c-format.c (check_format_types): Handle null param.
+
 2015-02-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c/65040

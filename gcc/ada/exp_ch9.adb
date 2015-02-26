@@ -4032,8 +4032,9 @@ package body Exp_Ch9 is
            Make_Parameter_Specification (Loc,
              Defining_Identifier =>
                Make_Defining_Identifier (Sloc (Formal), Chars (Formal)),
-             In_Present          => In_Present (Parent (Formal)),
-             Out_Present         => Out_Present (Parent (Formal)),
+             Aliased_Present     => Aliased_Present (Parent (Formal)),
+             In_Present          => In_Present      (Parent (Formal)),
+             Out_Present         => Out_Present     (Parent (Formal)),
              Parameter_Type      => New_Occurrence_Of (Etype (Formal), Loc));
 
          if Unprotected then

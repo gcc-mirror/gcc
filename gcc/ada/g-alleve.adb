@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                         (Soft Binding Version)                           --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2524,9 +2524,9 @@ package body GNAT.Altivec.Low_Level_Vectors is
    -- vcfux --
    -----------
 
-   function vcfux (A : LL_VSI; B : c_int) return LL_VF is
+   function vcfux (A : LL_VUI; B : c_int) return LL_VF is
+      VA : constant VUI_View := To_View (A);
       D  : VF_View;
-      VA : constant VUI_View := To_View (To_LL_VUI (A));
       K  : Vfloat_Range;
 
    begin
@@ -2588,7 +2588,7 @@ package body GNAT.Altivec.Low_Level_Vectors is
    -- vctuxs --
    ------------
 
-   function vctuxs (A : LL_VF; B : c_int) return LL_VSI is
+   function vctuxs (A : LL_VF; B : c_int) return LL_VUI is
       VA : constant VF_View := To_View (A);
       D  : VUI_View;
       K  : Vfloat_Range;
@@ -2602,7 +2602,7 @@ package body GNAT.Altivec.Low_Level_Vectors is
             * F64 (2.0 ** Integer (B)));
       end loop;
 
-      return To_LL_VSI (To_Vector (D));
+      return To_Vector (D);
    end vctuxs;
 
    ---------

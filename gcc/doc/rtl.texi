@@ -2306,8 +2306,8 @@ For unsigned widening multiplication, use the same idiom, but with
 @findex fma
 @item (fma:@var{m} @var{x} @var{y} @var{z})
 Represents the @code{fma}, @code{fmaf}, and @code{fmal} builtin
-functions that do a combined multiply of @var{x} and @var{y} and then
-adding to@var{z} without doing an intermediate rounding step.
+functions, which compute @samp{@var{x} * @var{y} + @var{z}}
+without doing an intermediate rounding step.
 
 @findex div
 @findex ss_div

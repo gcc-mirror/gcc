@@ -8,7 +8,7 @@
 /* { dg-final { scan-assembler-times "nott" 2 } } */
 /* { dg-final { scan-assembler-times "cmp/eq" 2 } } */
 /* { dg-final { scan-assembler-times "cmp/hi" 4 } } */
-/* { dg-final { scan-assembler-times "cmp/gt" 3 } } */
+/* { dg-final { scan-assembler-times "cmp/gt" 2 } } */
 /* { dg-final { scan-assembler-not "not\t" } } */
 
 #include "pr51244-20.c"

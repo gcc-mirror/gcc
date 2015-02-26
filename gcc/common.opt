@@ -1458,6 +1458,10 @@ fipa-cp-clone
 Common Report Var(flag_ipa_cp_clone) Optimization
 Perform cloning to make Interprocedural constant propagation stronger
 
+fipa-cp-alignment
+Common Report Var(flag_ipa_cp_alignment) Optimization
+Perform alignment discovery and propagation to make Interprocedural constant propagation stronger
+
 fipa-profile
 Common Report Var(flag_ipa_profile) Init(0) Optimization
 Perform interprocedural profile propagation
@@ -2064,6 +2068,10 @@ Split wide types into independent registers
 fssa-phiopt
 Common Report Var(flag_ssa_phiopt) Optimization
 Optimize conditional patterns using SSA PHI nodes
+
+fstdarg-opt
+Common Report Var(flag_stdarg_opt) Init(1) Optimization
+Optimize amount of stdarg registers saved to stack at start of function
 
 fvariable-expansion-in-unroller
 Common Report Var(flag_variable_expansion_in_unroller) Optimization

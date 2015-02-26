@@ -4967,6 +4967,8 @@ ipa_tm_create_version (struct cgraph_node *old_node)
   new_node->externally_visible = old_node->externally_visible;
   new_node->lowered = true;
   new_node->tm_clone = 1;
+  if (!old_node->implicit_section)
+    new_node->set_section (old_node->get_section ());
   get_cg_data (&old_node, true)->clone = new_node;
 
   if (old_node->get_availability () >= AVAIL_INTERPOSABLE)

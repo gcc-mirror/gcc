@@ -944,12 +944,15 @@ package body Freeze is
                      Packed_Size_Known := False;
                   end if;
 
-                  --  We do not know the packed size if we have a by reference
-                  --  type, or an atomic type or an atomic component, or an
-                  --  aliased component (because packing does not touch these).
+                  --  We do not know the packed size if we have an atomic type
+                  --  or component, or an independent type or component, or a
+                  --  by reference type or aliased component (because packing
+                  --  does not touch these).
 
                   if Is_Atomic (Ctyp)
                     or else Is_Atomic (Comp)
+                    or else Is_Independent (Ctyp)
+                    or else Is_Independent (Comp)
                     or else Is_By_Reference_Type (Ctyp)
                     or else Is_Aliased (Comp)
                   then
@@ -2498,6 +2501,64 @@ package body Freeze is
                      Complain_CS ("atomic");
                   end if;
                end Alias_Atomic_Check;
+            end if;
+
+            --  Check for Independent_Components/Independent with unsuitable
+            --  packing or explicit component size clause given.
+
+            if (Has_Independent_Components (Arr) or else Is_Independent (Ctyp))
+              and then
+                (Has_Component_Size_Clause (Arr) or else Is_Packed (Arr))
+            then
+               begin
+                  --  If object size of component type isn't known, we cannot
+                  --  be sure so we defer to the back end.
+
+                  if not Known_Static_Esize (Ctyp) then
+                     null;
+
+                  --  Case where component size has no effect. First check for
+                  --  object size of component type multiple of the storage
+                  --  unit size.
+
+                  elsif Esize (Ctyp) mod System_Storage_Unit = 0
+
+                    --  OK in both packing case and component size case if RM
+                    --  size is known and multiple of the storage unit size.
+
+                    and then
+                      ((Known_Static_RM_Size (Ctyp)
+                         and then RM_Size (Ctyp) mod System_Storage_Unit = 0)
+
+                        --  Or if we have an explicit component size clause and
+                        --  the component size is larger than the object size.
+
+                        or else
+                          (Has_Component_Size_Clause (Arr)
+                            and then Component_Size (Arr) >= Esize (Ctyp)))
+                  then
+                     null;
+
+                  else
+                     if Has_Component_Size_Clause (Arr) then
+                        Clause :=
+                          Get_Attribute_Definition_Clause
+                            (FS, Attribute_Component_Size);
+
+                        Error_Msg_N
+                          ("incorrect component size for "
+                           & "independent components", Clause);
+                        Error_Msg_Uint_1 := Esize (Ctyp);
+                        Error_Msg_N
+                          ("\minimum allowed is^", Clause);
+
+                     else
+                        Error_Msg_N
+                          ("cannot pack independent components",
+                           Get_Rep_Pragma (FS, Name_Pack));
+                     end if;
+                  end if;
+               end;
             end if;
 
             --  Warn for case of atomic type
@@ -7973,17 +8034,27 @@ package body Freeze is
             return;
          end if;
 
-         Decl := Next (Parent (Expr));
-
          --  If a pragma Import follows, we assume that it is for the current
-         --  target of the address clause, and skip the warning.
+         --  target of the address clause, and skip the warning. There may be
+         --  a source pragma or an aspect that specifies import and generates
+         --  the corresponding pragma. These will indicate that the entity is
+         --  imported and that is checked above so that the spurious warning
+         --  (generated when the entity is frozen) will be suppressed. The
+         --  pragma may be attached to the aspect, so it is not yet a list
+         --  member.
 
-         if Present (Decl)
-           and then Nkind (Decl) = N_Pragma
-           and then Pragma_Name (Decl) = Name_Import
-         then
-            return;
+         if Is_List_Member (Parent (Expr)) then
+            Decl := Next (Parent (Expr));
+
+            if Present (Decl)
+              and then Nkind (Decl) = N_Pragma
+              and then Pragma_Name (Decl) = Name_Import
+            then
+               return;
+            end if;
          end if;
+
+         --  Otherwise give warning message
 
          if Present (Old) then
             Error_Msg_Node_2 := Old;

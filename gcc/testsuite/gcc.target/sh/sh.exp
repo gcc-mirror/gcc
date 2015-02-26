@@ -33,6 +33,15 @@ proc check_effective_target_sh2a { } {
     } ""]
 }
 
+# Return 1 if target is SH1
+proc check_effective_target_sh1 { } {
+    return [check_no_compiler_messages sh1 object {
+	     #ifndef __SH1__
+	     #error ""
+	     #endif
+    } ""]
+}
+
 # Return 1 if target supports atomic-model=soft-gusa
 proc check_effective_target_atomic_model_soft_gusa_available { } {
     return [check_no_compiler_messages atomic_model_soft_gusa_available object {

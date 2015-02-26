@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -609,13 +609,9 @@ procedure Gnat1drv is
 
       Back_End_Inlining :=
 
-        --  No back end inlining if inlining is suppressed
-
-        not Suppress_All_Inlining
-
         --  No back end inlining available for VM targets
 
-        and then VM_Target = No_VM
+        VM_Target = No_VM
 
         --  No back end inlining available on AAMP
 
@@ -837,10 +833,14 @@ procedure Gnat1drv is
 
       Sem_Ch13.Validate_Address_Clauses;
 
-      --  Validate independence pragmas (again using values annotated by
-      --  the back end for component layout etc.)
+      --  Validate independence pragmas (again using values annotated by the
+      --  back end for component layout where possible) but only for non-GCC
+      --  back ends, as this is done a priori for GCC back ends.
 
-      Sem_Ch13.Validate_Independence;
+      if VM_Target /= No_VM or else AAMP_On_Target then
+         Sem_Ch13.Validate_Independence;
+      end if;
+
    end Post_Compilation_Validation_Checks;
 
 --  Start of processing for Gnat1drv
@@ -1242,8 +1242,8 @@ begin
         and then
           (not (Back_Annotate_Rep_Info or Generate_SCIL or GNATprove_Mode)
             or else Main_Kind = N_Subunit
-            or else Targparm.Frontend_Layout_On_Target
-            or else Targparm.VM_Target /= No_VM)
+            or else Frontend_Layout_On_Target
+            or else VM_Target /= No_VM)
       then
          Post_Compilation_Validation_Checks;
          Errout.Finalize (Last_Call => True);

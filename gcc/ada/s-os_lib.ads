@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -910,7 +910,7 @@ package System.OS_Lib is
    --     On other Unix-like systems: fork, followed in the child
    --     process by execv.
 
-   --     On vxworks, nucleus, and RTX, spawning of processes is not supported
+   --     On vxworks, spawning of processes is not supported
 
    --  For details, look at the functions __gnat_portable_spawn and
    --  __gnat_portable_no_block_spawn in adaint.c.

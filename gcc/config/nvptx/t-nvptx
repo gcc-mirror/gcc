@@ -3,6 +3,7 @@ CFLAGS-mkoffload.o += $(DRIVER_DEFINES) \
 mkoffload.o: $(srcdir)/config/nvptx/mkoffload.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
+ALL_HOST_OBJS += mkoffload.o
 
 mkoffload$(exeext): mkoffload.o collect-utils.o libcommon-target.a $(LIBIBERTY) $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \

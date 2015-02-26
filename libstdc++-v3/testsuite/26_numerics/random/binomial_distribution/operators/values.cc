@@ -35,25 +35,8 @@ void test01()
   auto bbd1 = std::bind(bd1, eng);
   testDiscreteDist(bbd1, [](int n) { return binomial_pdf(n, 5, 0.3); } );
 
-  std::binomial_distribution<> bd2(55, 0.3);
-  auto bbd2 = std::bind(bd2, eng);
-  testDiscreteDist(bbd2, [](int n) { return binomial_pdf(n, 55, 0.3); } );
-
-  // libstdc++/48114
-  std::binomial_distribution<> bd3(10, 0.75);
-  auto bbd3 = std::bind(bd3, eng);
-  testDiscreteDist(bbd3, [](int n) { return binomial_pdf(n, 10, 0.75); } );
-
-  // libstdc++/57674
-  std::binomial_distribution<> bd4(1, 0.8);
-  const std::binomial_distribution<>::param_type pm4(1, 0.3);
-  auto bbd4 = std::bind(bd4, eng, pm4);
-  testDiscreteDist(bbd4, [](int n) { return binomial_pdf(n, 1, 0.3); } );
-
-  std::binomial_distribution<> bd5(100, 0.3);
-  const std::binomial_distribution<>::param_type pm5(100, 0.8);
-  auto bbd5 = std::bind(bd5, eng, pm5);
-  testDiscreteDist(bbd5, [](int n) { return binomial_pdf(n, 100, 0.8); } );
+  // These tests take a relatively long time on soft-float simulated
+  // targets, so please don't add new tests here, instead add a new file.
 }
 
 int main()

@@ -1237,6 +1237,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __m;
     }
 
+  inline namespace _V2
+  {
+
   /// This is a helper function for the rotate algorithm.
   template<typename _ForwardIterator>
     _ForwardIterator
@@ -1437,6 +1440,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::__rotate(__first, __middle, __last,
 			   std::__iterator_category(__first));
     }
+
+  } // namespace _V2
 
   /**
    *  @brief Copy a sequence, rotating its elements.

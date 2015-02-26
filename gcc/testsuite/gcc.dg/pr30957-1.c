@@ -1,12 +1,9 @@
-/* { dg-do run { xfail *-*-* } } */
-/* We don't (and don't want to) perform this optimisation on soft-float
-   targets, where each addition is a library call.  This test requires
-   -fassociative-math for enabling the variable-expansion as well as
-   -fsigned-zeros for honoring the sign of zero; but
-   they can not co-exist; also under -funsafe-math-optimizations, so we
-   expect it to fail.  */
+/* { dg-do run } */
+/* We don't (and don't want to) perform this optimisation on soft-float targets,
+   where each addition is a library call.  /
 /* { dg-require-effective-target hard_float } */
-/* { dg-options "-O2 -funroll-loops -funsafe-math-optimizations -fvariable-expansion-in-unroller -fdump-rtl-loop2_unroll" } */
+/* -fassociative-math requires -fno-trapping-math and -fno-signed-zeros. */
+/* { dg-options "-O2 -funroll-loops -fassociative-math -fno-trapping-math -fno-signed-zeros -fvariable-expansion-in-unroller -fdump-rtl-loop2_unroll" } */
 
 extern void abort (void);
 extern void exit (int);
@@ -26,12 +23,15 @@ foo (float d, int n)
 int
 main ()
 {
-  if (__builtin_copysignf (1.0, foo (0.0 / -5.0, 10)) != -1.0)
+  /* When compiling standard compliant we expect foo to return -0.0.  But the
+     variable expansion during unrolling optimization (for this testcase enabled
+     by non-compliant -fassociative-math) instantiates copy(s) of the
+     accumulator which it initializes with +0.0.  Hence we expect that foo
+     returns +0.0.  */
+  if (__builtin_copysignf (1.0, foo (0.0 / -5.0, 10)) != 1.0)
     abort ();
   exit (0);
 }
 
 /* { dg-final { scan-rtl-dump "Expanding Accumulator" "loop2_unroll" } } */
 /* { dg-final { cleanup-rtl-dump "loop*" } } */
-
-

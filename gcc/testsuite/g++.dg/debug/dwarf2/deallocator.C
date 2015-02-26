@@ -41,6 +41,6 @@ void foo(int i)
   return;
 }
 // { dg-final { scan-assembler "deallocator.C:29" } }
-// { dg-final { scan-assembler "deallocator.C:31" } }
-// { dg-final { scan-assembler "deallocator.C:38" } }
-// { dg-final { scan-assembler "deallocator.C:41" } }
+// { dg-final { scan-assembler "deallocator.C:24" } }
+// { dg-final { scan-assembler "deallocator.C:34" } }
+// { dg-final { scan-assembler "deallocator.C:21" } }

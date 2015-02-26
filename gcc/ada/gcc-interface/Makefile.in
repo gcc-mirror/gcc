@@ -2355,27 +2355,6 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
   GCC_LINK_FLAGS=-static-libstdc++
 endif
 
-# ARM Nucleus
-ifeq ($(strip $(filter-out arm nucleus%,$(target_cpu) $(target_os))),)
-  LIBGNAT_TARGET_PAIRS = \
-  system.ads<system-nucleus-arm.ads \
-  a-numaux.ads<a-numaux-vxworks.ads \
-  a-intnam.ads<a-intnam-nucleus.ads \
-  s-inmaop.adb<s-inmaop-posix.adb \
-  s-intman.adb<s-intman-posix.adb \
-  s-osinte.ads<s-osinte-nucleus.ads \
-  s-osinte.adb<s-osinte-nucleus.adb \
-  s-osprim.adb<s-osprim-nucleus.adb \
-  s-parame.adb<s-parame-vxworks.adb \
-  s-taprop.adb<s-taprop-posix.adb \
-  s-taspri.ads<s-taspri-posix.ads \
-  s-tpopsp.adb<s-tpopsp-posix.adb \
-  $(DUMMY_SOCKETS_TARGET_PAIRS)
-
-  LIBRARY_VERSION := $(LIB_VERSION)
-  GNATRTL_SOCKETS_OBJS =
-endif
-
 ifeq ($(EH_MECHANISM),-gcc)
   LIBGNAT_TARGET_PAIRS += \
     a-exexpr.adb<a-exexpr-gcc.adb \

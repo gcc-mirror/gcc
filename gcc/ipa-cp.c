@@ -1438,8 +1438,7 @@ propagate_alignment_accross_jump_function (struct cgraph_edge *cs,
 	  if (op != NOP_EXPR)
 	    {
 	      if (op != POINTER_PLUS_EXPR
-		  && op != PLUS_EXPR
-		  && op != MINUS_EXPR)
+		  && op != PLUS_EXPR)
 		goto prop_fail;
 	      tree operand = ipa_get_jf_pass_through_operand (jfunc);
 	      if (!tree_fits_shwi_p (operand))
@@ -1451,7 +1450,7 @@ propagate_alignment_accross_jump_function (struct cgraph_edge *cs,
       else
 	{
 	  src_idx = ipa_get_jf_ancestor_formal_id (jfunc);
-	  offset = ipa_get_jf_ancestor_offset (jfunc);
+	  offset = ipa_get_jf_ancestor_offset (jfunc) / BITS_PER_UNIT;;
 	}
 
       src_lats = ipa_get_parm_lattices (caller_info, src_idx);
@@ -4322,6 +4321,15 @@ ipcp_store_alignment_results (void)
     ipa_node_params *info = IPA_NODE_REF (node);
     bool dumped_sth = false;
     bool found_useful_result = false;
+
+    if (!opt_for_fn (node->decl, flag_ipa_cp_alignment))
+      {
+	if (dump_file)
+	  fprintf (dump_file, "Not considering %s for alignment discovery "
+		   "and propagate; -fipa-cp-alignment: disabled.\n",
+		   node->name ());
+	continue;
+      }
 
    if (info->ipcp_orig_node)
       info = IPA_NODE_REF (info->ipcp_orig_node);

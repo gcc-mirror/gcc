@@ -20,6 +20,7 @@ program test
   enddo
   call abort
 100 if (k /= 5) call abort
+  close(25, status="delete")
   stop
 101 call abort
 end program test

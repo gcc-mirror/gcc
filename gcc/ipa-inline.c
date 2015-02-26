@@ -975,14 +975,14 @@ want_inline_function_to_all_callers_p (struct cgraph_node *node, bool cold)
   if (node->global.inlined_to)
     return false;
   /* Does it have callers?  */
-  if (!node->call_for_symbol_thunks_and_aliases (has_caller_p, NULL, true))
+  if (!node->call_for_symbol_and_aliases (has_caller_p, NULL, true))
     return false;
   /* Inlining into all callers would increase size?  */
   if (estimate_growth (node) > 0)
     return false;
   /* All inlines must be possible.  */
-  if (node->call_for_symbol_thunks_and_aliases (check_callers, &has_hot_call,
-						true))
+  if (node->call_for_symbol_and_aliases (check_callers, &has_hot_call,
+					 true))
     return false;
   if (!cold && !has_hot_call)
     return false;
@@ -2359,9 +2359,9 @@ ipa_inline (void)
 	  if (want_inline_function_to_all_callers_p (node, cold))
 	    {
 	      int num_calls = 0;
-	      node->call_for_symbol_thunks_and_aliases (sum_callers, &num_calls,
-						      true);
-	      while (node->call_for_symbol_thunks_and_aliases
+	      node->call_for_symbol_and_aliases (sum_callers, &num_calls,
+						 true);
+	      while (node->call_for_symbol_and_aliases
 		       (inline_to_all_callers, &num_calls, true))
 		;
 	      remove_functions = true;

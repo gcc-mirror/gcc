@@ -1621,14 +1621,25 @@ package body Sem_Ch13 is
                   --  do not delay, since we know the value cannot change.
                   --  This optimization catches most rep clause cases.
 
-               if (Present (Expr) and then Nkind (Expr) = N_Integer_Literal)
-                 or else (A_Id in Boolean_Aspects and then No (Expr))
-               then
-                  Delay_Required := False;
-               else
-                  Delay_Required := True;
-                  Set_Has_Delayed_Rep_Aspects (E);
-               end if;
+                  --  For Boolean aspects, don't delay if no expression
+
+                  if A_Id in Boolean_Aspects and then No (Expr) then
+                     Delay_Required := False;
+
+                  --  For non-Boolean aspects, don't delay if integer literal
+
+                  elsif A_Id not in Boolean_Aspects
+                    and then Present (Expr)
+                    and then Nkind (Expr) = N_Integer_Literal
+                  then
+                     Delay_Required := False;
+
+                  --  All other cases are delayed
+
+                  else
+                     Delay_Required := True;
+                     Set_Has_Delayed_Rep_Aspects (E);
+                  end if;
             end case;
 
             --  Processing based on specific aspect
@@ -6670,9 +6681,11 @@ package body Sem_Ch13 is
       BHi : constant Uint := Expr_Value (Type_High_Bound (Btyp));
       --  Low bound and high bound value of base type of Typ
 
-      TLo : constant Uint := Expr_Value (Type_Low_Bound  (Typ));
-      THi : constant Uint := Expr_Value (Type_High_Bound (Typ));
-      --  Low bound and high bound values of static subtype Typ
+      TLo : Uint;
+      THi : Uint;
+      --  Bounds for constructing the static predicate. We use the bound of the
+      --  subtype if it is static, otherwise the corresponding base type bound.
+      --  Note: a non-static subtype can have a static predicate.
 
       type REnt is record
          Lo, Hi : Uint;
@@ -7395,6 +7408,20 @@ package body Sem_Ch13 is
    --  Start of processing for Build_Discrete_Static_Predicate
 
    begin
+      --  Establish  bounds for the predicate
+
+      if Compile_Time_Known_Value (Type_Low_Bound (Typ)) then
+         TLo := Expr_Value (Type_Low_Bound (Typ));
+      else
+         TLo := BLo;
+      end if;
+
+      if Compile_Time_Known_Value (Type_High_Bound (Typ)) then
+         THi := Expr_Value (Type_High_Bound (Typ));
+      else
+         THi := BHi;
+      end if;
+
       --  Analyze the expression to see if it is a static predicate
 
       declare
@@ -8559,15 +8586,6 @@ package body Sem_Ch13 is
                --  For discrete subtype, build the static predicate list
 
                if Is_Discrete_Type (Typ) then
-                  if not Is_Static_Subtype (Typ) then
-
-                     --  This can only happen in the presence of previous
-                     --  semantic errors.
-
-                     pragma Assert (Serious_Errors_Detected > 0);
-                     return;
-                  end if;
-
                   Build_Discrete_Static_Predicate (Typ, Expr, Object_Name);
 
                   --  If we don't get a static predicate list, it means that we
@@ -11037,8 +11055,11 @@ package body Sem_Ch13 is
    procedure Initialize is
    begin
       Address_Clause_Checks.Init;
-      Independence_Checks.Init;
       Unchecked_Conversions.Init;
+
+      if VM_Target /= No_VM or else AAMP_On_Target then
+         Independence_Checks.Init;
+      end if;
    end Initialize;
 
    ---------------------------

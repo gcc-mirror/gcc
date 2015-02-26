@@ -576,8 +576,7 @@ package body Einfo is
    --    Is_Checked_Ghost_Entity         Flag277
    --    Is_Ignored_Ghost_Entity         Flag278
    --    Contains_Ignored_Ghost_Code     Flag279
-
-   --    (unused)                        Flag280
+   --    Partial_View_Has_Unknown_Discr  Flag280
 
    --    (unused)                        Flag281
    --    (unused)                        Flag282
@@ -2738,6 +2737,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Abstract_State);
       return Elist9 (Id);
    end Part_Of_Constituents;
+
+   function Partial_View_Has_Unknown_Discr (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag280 (Id);
+   end Partial_View_Has_Unknown_Discr;
 
    function Pending_Access_Types (Id : E) return L is
    begin
@@ -5631,6 +5636,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Abstract_State);
       Set_Elist9 (Id, V);
    end Set_Part_Of_Constituents;
+
+   procedure Set_Partial_View_Has_Unknown_Discr (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag280 (Id, V);
+   end Set_Partial_View_Has_Unknown_Discr;
 
    procedure Set_Pending_Access_Types (Id : E; V : L) is
    begin
@@ -8658,6 +8669,7 @@ package body Einfo is
       W ("Optimize_Alignment_Space",        Flag241 (Id));
       W ("Optimize_Alignment_Time",         Flag242 (Id));
       W ("Overlays_Constant",               Flag243 (Id));
+      W ("Partial_View_Has_Unknown_Discr",  Flag280 (Id));
       W ("Reachable",                       Flag49  (Id));
       W ("Referenced",                      Flag156 (Id));
       W ("Referenced_As_LHS",               Flag36  (Id));

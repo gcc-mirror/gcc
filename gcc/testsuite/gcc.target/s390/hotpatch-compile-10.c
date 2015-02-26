@@ -5,8 +5,6 @@
 
 __attribute__((hotpatch(0,0,0)))
 int main (void)
-{
+{/* { dg-error "wrong number of arguments specified" } */
   return 0;
 }
-
-/* { dg-excess-errors "argument to '-mhotpatch=' should be a non-negative integer" } */

@@ -1637,6 +1637,10 @@ package body Sem_Attr is
          --  dereference we have to check wrong uses of incomplete types
          --  (other wrong uses are checked at their freezing point).
 
+         --  In Ada 2012, incomplete types can appear in subprogram
+         --  profiles, but formals with incomplete types cannot be the
+         --  prefix of attributes.
+
          --  Example 1: Limited-with
 
          --    limited with Pkg;
@@ -1668,35 +1672,64 @@ package body Sem_Attr is
                Error_Attr_P
                  ("prefix of % attribute cannot be an incomplete type");
 
-            else
-               if Is_Access_Type (Typ) then
-                  Typ := Directly_Designated_Type (Typ);
-               end if;
+            --  If the prefix is an access type check the designated type
 
-               if Is_Class_Wide_Type (Typ) then
-                  Typ := Root_Type (Typ);
-               end if;
+            elsif Is_Access_Type (Typ)
+              and then Nkind (P) = N_Explicit_Dereference
+            then
+               Typ := Directly_Designated_Type (Typ);
+            end if;
 
-               --  A legal use of a shadow entity occurs only when the unit
-               --  where the non-limited view resides is imported via a regular
-               --  with clause in the current body. Such references to shadow
-               --  entities may occur in subprogram formals.
+            if Is_Class_Wide_Type (Typ) then
+               Typ := Root_Type (Typ);
+            end if;
 
-               if Is_Incomplete_Type (Typ)
-                 and then From_Limited_With (Typ)
-                 and then Present (Non_Limited_View (Typ))
-                 and then Is_Legal_Shadow_Entity_In_Body (Typ)
+            --  A legal use of a shadow entity occurs only when the unit where
+            --  the non-limited view resides is imported via a regular with
+            --  clause in the current body. Such references to shadow entities
+            --  may occur in subprogram formals.
+
+            if Is_Incomplete_Type (Typ)
+              and then From_Limited_With (Typ)
+              and then Present (Non_Limited_View (Typ))
+              and then Is_Legal_Shadow_Entity_In_Body (Typ)
+            then
+               Typ := Non_Limited_View (Typ);
+            end if;
+
+            --  If still incomplete, it can be a local incomplete type, or a
+            --  limited view whose scope is also a limited view.
+
+            if Ekind (Typ) = E_Incomplete_Type then
+               if not From_Limited_With (Typ)
+                  and then No (Full_View (Typ))
                then
-                  Typ := Non_Limited_View (Typ);
-               end if;
+                  Error_Attr_P
+                    ("prefix of % attribute cannot be an incomplete type");
 
-               if Ekind (Typ) = E_Incomplete_Type
-                 and then No (Full_View (Typ))
+               --  The limited view may be available indirectly through
+               --  an intermediate unit. If the non-limited view is available
+               --  the attribute reference is legal.
+
+               elsif From_Limited_With (Typ)
+                 and then
+                   (No (Non_Limited_View (Typ))
+                     or else Is_Incomplete_Type (Non_Limited_View (Typ)))
                then
                   Error_Attr_P
                     ("prefix of % attribute cannot be an incomplete type");
                end if;
             end if;
+
+         --  Ada 2012 : formals in bodies may be incomplete, but no attribute
+         --  legally applies.
+
+         elsif Is_Entity_Name (P)
+           and then Is_Formal (Entity (P))
+           and then Is_Incomplete_Type (Etype (Etype (P)))
+         then
+            Error_Attr_P
+              ("prefix of % attribute cannot be an incomplete type");
          end if;
 
          if not Is_Entity_Name (P)
@@ -2615,6 +2648,7 @@ package body Sem_Attr is
 
       when Attribute_Access =>
          Analyze_Access_Attribute;
+         Check_Not_Incomplete_Type;
 
       -------------
       -- Address --
@@ -2623,6 +2657,7 @@ package body Sem_Attr is
       when Attribute_Address =>
          Check_E0;
          Address_Checks;
+         Check_Not_Incomplete_Type;
          Set_Etype (N, RTE (RE_Address));
 
       ------------------
@@ -6019,6 +6054,7 @@ package body Sem_Attr is
          end if;
 
          Analyze_Access_Attribute;
+         Check_Not_Incomplete_Type;
 
       -------------------------
       -- Unconstrained_Array --
