@@ -1,3 +1,9 @@
+2015-02-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/65171
+	* config/rs6000/rs6000.c (rs6000_analyze_swaps): Ensure
+	instructions with TImode operands are included in the analysis.
+
 2015-02-26  Sebastian Pop  <s.pop@samsung.com>
 
 	* tree-ssa-threadupdate.c (dump_jump_thread_path): Print all edges
