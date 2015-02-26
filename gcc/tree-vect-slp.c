@@ -1805,51 +1805,83 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
    can't be SLPed) in the tree rooted at NODE.  Mark such stmts as HYBRID.  */
 
 static void
-vect_detect_hybrid_slp_stmts (slp_tree node)
+vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype)
 {
-  int i;
-  vec<gimple> stmts = SLP_TREE_SCALAR_STMTS (node);
-  gimple stmt = stmts[0];
+  gimple stmt = SLP_TREE_SCALAR_STMTS (node)[i];
   imm_use_iterator imm_iter;
   gimple use_stmt;
-  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
+  stmt_vec_info use_vinfo, stmt_vinfo = vinfo_for_stmt (stmt);
   slp_void_p child;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
-  struct loop *loop = NULL;
-  bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_vinfo);
-  basic_block bb = NULL;
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  int j;
 
-  if (!node)
-    return;
-
-  if (loop_vinfo)
-    loop = LOOP_VINFO_LOOP (loop_vinfo);
+  /* Propagate hybrid down the SLP tree.  */
+  if (stype == hybrid)
+    ;
+  else if (HYBRID_SLP_STMT (stmt_vinfo))
+    stype = hybrid;
   else
-    bb = BB_VINFO_BB (bb_vinfo);
+    {
+      /* Check if a pure SLP stmt has uses in non-SLP stmts.  */
+      gcc_checking_assert (PURE_SLP_STMT (stmt_vinfo));
+      if (TREE_CODE (gimple_op (stmt, 0)) == SSA_NAME)
+	FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, gimple_op (stmt, 0))
+	  if (gimple_bb (use_stmt)
+	      && flow_bb_inside_loop_p (loop, gimple_bb (use_stmt))
+	      && (use_vinfo = vinfo_for_stmt (use_stmt))
+	      && !STMT_SLP_TYPE (use_vinfo)
+	      && (STMT_VINFO_RELEVANT (use_vinfo)
+		  || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (use_vinfo))
+		  || (STMT_VINFO_IN_PATTERN_P (use_vinfo)
+		      && STMT_VINFO_RELATED_STMT (use_vinfo)
+		      && !STMT_SLP_TYPE (vinfo_for_stmt
+					 (STMT_VINFO_RELATED_STMT (use_vinfo)))))
+	      && !(gimple_code (use_stmt) == GIMPLE_PHI
+		   && STMT_VINFO_DEF_TYPE (use_vinfo) == vect_reduction_def))
+	    stype = hybrid;
+    }
 
-  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt)
-    if (PURE_SLP_STMT (vinfo_for_stmt (stmt))
-	&& TREE_CODE (gimple_op (stmt, 0)) == SSA_NAME)
-      FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, gimple_op (stmt, 0))
-	if (gimple_bb (use_stmt)
-            && ((loop && flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
-		 || bb == gimple_bb (use_stmt))
-	    && (stmt_vinfo = vinfo_for_stmt (use_stmt))
-	    && !STMT_SLP_TYPE (stmt_vinfo)
-            && (STMT_VINFO_RELEVANT (stmt_vinfo)
-                || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_vinfo))
-		|| (STMT_VINFO_IN_PATTERN_P (stmt_vinfo)
-		    && STMT_VINFO_RELATED_STMT (stmt_vinfo)
-		    && !STMT_SLP_TYPE (vinfo_for_stmt (STMT_VINFO_RELATED_STMT (stmt_vinfo)))))
-	    && !(gimple_code (use_stmt) == GIMPLE_PHI
-                 && STMT_VINFO_DEF_TYPE (stmt_vinfo)
-                  == vect_reduction_def))
-	  vect_mark_slp_stmts (node, hybrid, i);
+  if (stype == hybrid)
+    STMT_SLP_TYPE (stmt_vinfo) = hybrid;
 
-  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    vect_detect_hybrid_slp_stmts ((slp_tree) child);
+  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
+    vect_detect_hybrid_slp_stmts ((slp_tree) child, i, stype);
 }
 
+/* Helpers for vect_detect_hybrid_slp walking pattern stmt uses.  */
+
+static tree
+vect_detect_hybrid_slp_1 (tree *tp, int *, void *data)
+{
+  walk_stmt_info *wi = (walk_stmt_info *)data;
+  struct loop *loopp = (struct loop *)wi->info;
+
+  if (wi->is_lhs)
+    return NULL_TREE;
+
+  if (TREE_CODE (*tp) == SSA_NAME
+      && !SSA_NAME_IS_DEFAULT_DEF (*tp))
+    {
+      gimple def_stmt = SSA_NAME_DEF_STMT (*tp);
+      if (flow_bb_inside_loop_p (loopp, gimple_bb (def_stmt))
+	  && PURE_SLP_STMT (vinfo_for_stmt (def_stmt)))
+	STMT_SLP_TYPE (vinfo_for_stmt (def_stmt)) = hybrid;
+    }
+
+  return NULL_TREE;
+}
+
+static tree
+vect_detect_hybrid_slp_2 (gimple_stmt_iterator *gsi, bool *handled,
+			  walk_stmt_info *)
+{
+  /* If the stmt is in a SLP instance then this isn't a reason
+     to mark use definitions in other SLP instances as hybrid.  */
+  if (STMT_SLP_TYPE (vinfo_for_stmt (gsi_stmt (*gsi))) != loop_vect)
+    *handled = true;
+  return NULL_TREE;
+}
 
 /* Find stmts that must be both vectorized and SLPed.  */
 
@@ -1863,8 +1895,41 @@ vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "=== vect_detect_hybrid_slp ===");
 
+  /* First walk all pattern stmt in the loop and mark defs of uses as
+     hybrid because immediate uses in them are not recorded.  */
+  for (i = 0; i < LOOP_VINFO_LOOP (loop_vinfo)->num_nodes; ++i)
+    {
+      basic_block bb = LOOP_VINFO_BBS (loop_vinfo)[i];
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+	  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
+	    {
+	      walk_stmt_info wi;
+	      memset (&wi, 0, sizeof (wi));
+	      wi.info = LOOP_VINFO_LOOP (loop_vinfo);
+	      gimple_stmt_iterator gsi2
+		= gsi_for_stmt (STMT_VINFO_RELATED_STMT (stmt_info));
+	      walk_gimple_stmt (&gsi2, vect_detect_hybrid_slp_2,
+				vect_detect_hybrid_slp_1, &wi);
+	      walk_gimple_seq (STMT_VINFO_PATTERN_DEF_SEQ (stmt_info),
+			       vect_detect_hybrid_slp_2,
+			       vect_detect_hybrid_slp_1, &wi);
+	    }
+	}
+    }
+
+  /* Then walk the SLP instance trees marking stmts with uses in
+     non-SLP stmts as hybrid, also propagating hybrid down the
+     SLP tree, collecting the above info on-the-fly.  */
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
-    vect_detect_hybrid_slp_stmts (SLP_INSTANCE_TREE (instance));
+    {
+      for (unsigned i = 0; i < SLP_INSTANCE_GROUP_SIZE (instance); ++i)
+	vect_detect_hybrid_slp_stmts (SLP_INSTANCE_TREE (instance),
+				      i, pure_slp);
+    }
 }
 
 

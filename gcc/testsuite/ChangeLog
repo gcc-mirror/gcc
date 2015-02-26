@@ -1,3 +1,11 @@
+2015-02-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/61634
+	* gcc.dg/vect/pr61634.c: New testcase.
+
 2015-02-25  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
