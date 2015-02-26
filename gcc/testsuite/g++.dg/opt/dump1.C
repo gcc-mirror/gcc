@@ -1,7 +1,7 @@
 // PR c++/57102
 // { dg-options "-O2 -fno-inline -fdump-final-insns" }
 // { dg-do compile { target c++11 } }
-// { dg-final cleanup-saved-temps }
+// { dg-final cleanup-final-insns-dump }
 
 namespace std
 {
