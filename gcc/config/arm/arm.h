@@ -383,6 +383,9 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_IDIV		((TARGET_ARM && arm_arch_arm_hwdiv) \
 				 || (TARGET_THUMB2 && arm_arch_thumb_hwdiv))
 
+/* Nonzero if disallow volatile memory access in IT block.  */
+#define TARGET_NO_VOLATILE_CE		(arm_arch_no_volatile_ce)
+
 /* Should NEON be used for 64-bits bitops.  */
 #define TARGET_PREFER_NEON_64BITS (prefer_neon_for_64bits)
 
@@ -567,6 +570,9 @@ extern int arm_arch_arm_hwdiv;
 
 /* Nonzero if chip supports integer division instruction in Thumb mode.  */
 extern int arm_arch_thumb_hwdiv;
+
+/* Nonzero if chip disallows volatile memory access in IT block.  */
+extern int arm_arch_no_volatile_ce;
 
 /* Nonzero if we should use Neon to handle 64-bits operations rather
    than core registers.  */
