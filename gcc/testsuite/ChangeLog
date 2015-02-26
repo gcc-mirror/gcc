@@ -1,3 +1,7 @@
+2015-02-26  Tom de Vries  <tom@codesourcery.com>
+
+	* lib/gcov.exp: Cleanup in case of xfail.
+
 2015-02-26  Sebastian Pop  <s.pop@samsung.com>
 
 	* gcc.dg/tree-ssa/ssa-dom-thread-9.c: Fix warning due to missing type.
