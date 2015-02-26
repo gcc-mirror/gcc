@@ -1,3 +1,15 @@
+2015-02-26  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm-cores.def (cortex-m7): Add flag FL_NO_VOLATILE_CE.
+	* config/arm/arm-protos.h (FL_NO_VOLATILE_CE): New flag.
+	(arm_arch_no_volatile_ce): Declare new global variable.
+	* config/arm/arm.c (arm_arch_no_volatile_ce): New global variable.
+	(arm_option_override): Assign value to arm_arch_no_volatile_ce.
+	* config/arm/arm.h (arm_arch_no_volatile_ce): Declare it.
+	(TARGET_NO_VOLATILE_CE): New macro.
+	* config/arm/arm.md (arm_comparison_operator): Disabled if not allow
+	volatile memory access in IT block
+
 2015-02-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/47230

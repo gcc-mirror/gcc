@@ -10755,7 +10755,8 @@
   [(match_operator 0 "arm_comparison_operator"
     [(match_operand 1 "cc_register" "")
      (const_int 0)])]
-  "TARGET_32BIT"
+  "TARGET_32BIT
+   && (!TARGET_NO_VOLATILE_CE || !volatile_refs_p (PATTERN (insn)))"
   ""
 [(set_attr "predicated" "yes")]
 )
