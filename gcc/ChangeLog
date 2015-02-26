@@ -1,3 +1,15 @@
+2015-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65215
+	* tree-ssa-math-opts.c (find_bswap_or_nop_load): Return false
+	for PDP endian targets.
+	(perform_symbolic_merge, find_bswap_or_nop_1, find_bswap_or_nop):
+	Fix up formatting issues.
+	(bswap_replace): Likewise.  For BYTES_BIG_ENDIAN, if the final access
+	size is smaller than the original, adjust MEM_REF offset by the
+	difference of sizes.  Use is_gimple_mem_ref_addr instead of
+	is_gimple_min_invariant test to avoid adding address temporaries.
+
 2015-02-26  Martin Liska  <mliska@suse.cz>
 	    Jan Hubicka  <hubicka@ucw.cz>
 
