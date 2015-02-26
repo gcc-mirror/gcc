@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-O3" } */
 
 int a, b, c, d;
 
@@ -11,3 +10,5 @@ fn1 ()
       d = a - d;
   return d; 
 }
+
+/* { dg-final { cleanup-tree-dump "vect" } } */
