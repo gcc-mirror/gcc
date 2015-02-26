@@ -7401,6 +7401,16 @@ registers after writing to their lower 32-bit half.
 Enabled for Alpha, AArch64 and x86 at levels @option{-O2},
 @option{-O3}, @option{-Os}.
 
+@item -fno-lifetime-dse
+@opindex fno-lifetime-dse
+In C++ the value of an object is only affected by changes within its
+lifetime: when the constructor begins, the object has an indeterminate
+value, and any changes during the lifetime of the object are dead when
+the object is destroyed.  Normally dead store elimination will take
+advantage of this; if your code relies on the value of the object
+storage persisting beyond the lifetime of the object, you can use this
+flag to disable this optimization.
+
 @item -flive-range-shrinkage
 @opindex flive-range-shrinkage
 Attempt to decrease register pressure through register live range

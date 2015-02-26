@@ -1,3 +1,8 @@
+2015-02-25  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (begin_destructor_body): Condition clobber on
+	-flifetime-dse.
+
 2015-02-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/62017

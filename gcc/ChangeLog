@@ -1,3 +1,7 @@
+2015-02-25  Jason Merrill  <jason@redhat.com>
+
+	* common.opt (-flifetime-dse): New.
+
 2015-02-25  Kai Tietz  <ktietz@redhat.com>
 
 	PR tree-optimization/61917
