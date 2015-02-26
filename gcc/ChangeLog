@@ -1,3 +1,15 @@
+2015-02-26  Martin Liska  <mliska@suse.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/64693
+	* ipa-icf.c (symbol_compare_collection::symbol_compare_collection): New.
+	(sem_item_optimizer::subdivide_classes_by_sensitive_refs): New function.
+	(sem_item_optimizer::process_cong_reduction): Include division by
+	sensitive references.
+	* ipa-icf.h (struct symbol_compare_hashmap_traits): New class.
+	* ipa-ref.c (ipa_ref::address_matters_p): New function.
+	* ipa-ref.h (ipa_ref::address_matters_p): Likewise.
+
 2015-02-26  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/65192

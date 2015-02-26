@@ -63,6 +63,70 @@ enum sem_item_type
   VAR
 };
 
+/* Class is container for address references for a symtab_node.  */
+
+class symbol_compare_collection
+{
+public:
+  /* Constructor.  */
+  symbol_compare_collection (symtab_node *node);
+
+  /* Destructor.  */
+  ~symbol_compare_collection ()
+  {
+    m_references.release ();
+    m_interposables.release ();
+  }
+
+  /* Vector of address references.  */
+  vec<symtab_node *> m_references;
+
+  /* Vector of interposable references.  */
+  vec<symtab_node *> m_interposables;
+};
+
+/* Hash traits for symbol_compare_collection map.  */
+
+struct symbol_compare_hashmap_traits: default_hashmap_traits
+{
+  static hashval_t
+  hash (const symbol_compare_collection *v)
+  {
+    inchash::hash hstate;
+    hstate.add_int (v->m_references.length ());
+
+    for (unsigned i = 0; i < v->m_references.length (); i++)
+      hstate.add_ptr (v->m_references[i]->ultimate_alias_target ());
+
+    hstate.add_int (v->m_interposables.length ());
+
+    for (unsigned i = 0; i < v->m_interposables.length (); i++)
+      hstate.add_ptr (v->m_interposables[i]->ultimate_alias_target ());
+
+    return hstate.end ();
+  }
+
+  static bool
+  equal_keys (const symbol_compare_collection *a,
+	      const symbol_compare_collection *b)
+  {
+    if (a->m_references.length () != b->m_references.length ())
+      return false;
+
+    for (unsigned i = 0; i < a->m_references.length (); i++)
+      if (a->m_references[i]->equal_address_to (b->m_references[i]) != 1)
+	return false;
+
+    for (unsigned i = 0; i < a->m_interposables.length (); i++)
+      if (!a->m_interposables[i]->semantically_equivalent_p
+	(b->m_interposables[i]))
+	return false;
+
+    return true;
+  }
+};
+
+
 /* Semantic item usage pair.  */
 class sem_usage_pair
 {
@@ -466,6 +530,13 @@ private:
   /* Equality function for semantic items is used to subdivide existing
      classes. If IN_WPA, fast equality function is invoked.  */
   void subdivide_classes_by_equality (bool in_wpa = false);
+
+  /* Subdivide classes by address and interposable references
+     that members of the class reference.
+     Example can be a pair of functions that have an address
+     taken from a function. If these addresses are different the class
+     is split.  */
+  unsigned subdivide_classes_by_sensitive_refs();
 
   /* Debug function prints all informations about congruence classes.  */
   void dump_cong_classes (void);

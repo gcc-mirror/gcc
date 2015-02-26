@@ -126,6 +126,44 @@ along with GCC; see the file COPYING3.  If not see
 using namespace ipa_icf_gimple;
 
 namespace ipa_icf {
+
+/* Constructor.  */
+
+symbol_compare_collection::symbol_compare_collection (symtab_node *node)
+{
+  m_references.create (0);
+  m_interposables.create (0);
+
+  ipa_ref *ref;
+
+  if (is_a <varpool_node *> (node) && DECL_VIRTUAL_P (node->decl))
+    return;
+
+  for (unsigned i = 0; i < node->num_references (); i++)
+    {
+      ref = node->iterate_reference (i, ref);
+      if (ref->address_matters_p ())
+	m_references.safe_push (ref->referred);
+
+      if (ref->referred->get_availability () <= AVAIL_INTERPOSABLE)
+        {
+	  if (ref->use == IPA_REF_ADDR)
+	    m_references.safe_push (ref->referred);
+	  else
+	    m_interposables.safe_push (ref->referred);
+	}
+    }
+
+  if (is_a <cgraph_node *> (node))
+    {
+      cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
+
+      for (cgraph_edge *e = cnode->callees; e; e = e->next_callee)
+	if (e->callee->get_availability () <= AVAIL_INTERPOSABLE)
+	  m_interposables.safe_push (e->callee);
+    }
+}
+
 /* Constructor for key value pair, where _ITEM is key and _INDEX is a target.  */
 
 sem_usage_pair::sem_usage_pair (sem_item *_item, unsigned int _index):
@@ -1967,6 +2005,84 @@ sem_item_optimizer::subdivide_classes_by_equality (bool in_wpa)
   verify_classes ();
 }
 
+/* Subdivide classes by address references that members of the class
+   reference. Example can be a pair of functions that have an address
+   taken from a function. If these addresses are different the class
+   is split.  */
+
+unsigned
+sem_item_optimizer::subdivide_classes_by_sensitive_refs ()
+{
+  unsigned newly_created_classes = 0;
+
+  for (hash_table <congruence_class_group_hash>::iterator it = m_classes.begin ();
+       it != m_classes.end (); ++it)
+    {
+      unsigned int class_count = (*it)->classes.length ();
+      auto_vec<congruence_class *> new_classes;
+
+      for (unsigned i = 0; i < class_count; i++)
+	{
+	  congruence_class *c = (*it)->classes [i];
+
+	  if (c->members.length() > 1)
+	    {
+	      hash_map <symbol_compare_collection *, vec <sem_item *>,
+		symbol_compare_hashmap_traits> split_map;
+
+	      for (unsigned j = 0; j < c->members.length (); j++)
+	        {
+		  sem_item *source_node = c->members[j];
+
+		  symbol_compare_collection *collection = new symbol_compare_collection (source_node->node);
+
+		  vec <sem_item *> *slot = &split_map.get_or_insert (collection);
+		  gcc_checking_assert (slot);
+
+		  slot->safe_push (source_node);
+	        }
+
+	       /* If the map contains more than one key, we have to split the map
+		  appropriately.  */
+	      if (split_map.elements () != 1)
+	        {
+		  bool first_class = true;
+
+		  hash_map <symbol_compare_collection *, vec <sem_item *>,
+		  symbol_compare_hashmap_traits>::iterator it2 = split_map.begin ();
+		  for (; it2 != split_map.end (); ++it2)
+		    {
+		      congruence_class *new_cls;
+		      new_cls = new congruence_class (class_id++);
+
+		      for (unsigned k = 0; k < (*it2).second.length (); k++)
+			add_item_to_class (new_cls, (*it2).second[k]);
+
+		      worklist_push (new_cls);
+		      newly_created_classes++;
+
+		      if (first_class)
+		        {
+			  (*it)->classes[i] = new_cls;
+			  first_class = false;
+			}
+		      else
+		        {
+		          new_classes.safe_push (new_cls);
+			  m_classes_count++;
+		        }
+		    }
+		}
+	    }
+	  }
+
+	for (unsigned i = 0; i < new_classes.length (); i++)
+	  (*it)->classes.safe_push (new_classes[i]);
+    }
+
+  return newly_created_classes;
+}
+
 /* Verify congruence classes if checking is enabled.  */
 
 void
@@ -2256,8 +2372,17 @@ sem_item_optimizer::process_cong_reduction (void)
     fprintf (dump_file, "Congruence class reduction\n");
 
   congruence_class *cls;
+
+  /* Process complete congruence reduction.  */
   while ((cls = worklist_pop ()) != NULL)
     do_congruence_step (cls);
+
+  /* Subdivide newly created classes according to references.  */
+  unsigned new_classes = subdivide_classes_by_sensitive_refs ();
+
+  if (dump_file)
+    fprintf (dump_file, "Address reference subdivision created: %u "
+	     "new classes.\n", new_classes);
 }
 
 /* Debug function prints all informations about congruence classes.  */

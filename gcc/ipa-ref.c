@@ -124,3 +124,23 @@ ipa_ref::referred_ref_list (void)
 {
   return &referred->ref_list;
 }
+
+/* Return true if refernece may be used in address compare.  */
+bool
+ipa_ref::address_matters_p ()
+{
+  if (use != IPA_REF_ADDR)
+    return false;
+  /* Addresses taken from virtual tables are never compared.  */
+  if (is_a <varpool_node *> (referring)
+      && DECL_VIRTUAL_P (referring->decl))
+    return false;
+  /* Address of virtual tables and functions is never compared.  */
+  if (DECL_VIRTUAL_P (referred->decl))
+    return false;
+  /* Address of C++ cdtors is never compared.  */
+  if (is_a <cgraph_node *> (referred)
+      && (DECL_CXX_CONSTRUCTOR_P (referred->decl) || DECL_CXX_DESTRUCTOR_P (referred->decl)))
+    return false;
+  return true;
+}
