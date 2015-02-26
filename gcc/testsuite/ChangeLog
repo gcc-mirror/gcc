@@ -1,3 +1,8 @@
+2015-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65202
+	* g++.dg/cpp1y/pr65202.C: New test.
+
 2015-02-26  Tom de Vries  <tom@codesourcery.com>
 
 	* g++.dg/gcov/gcov-14.C: Add cleanup of iostream.gcov, ostream.gcov and
