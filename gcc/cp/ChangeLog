@@ -1,3 +1,9 @@
+2015-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65202
+	* constexpr.c (cxx_eval_constant_expression): Don't evaluate
+	a RETURN_EXPR if its operand is null.
+
 2015-02-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65209
