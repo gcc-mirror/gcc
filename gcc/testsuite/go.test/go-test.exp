@@ -614,6 +614,7 @@ proc go-gc-tests { } {
 		    pass "$name execution"
 		    regsub "\\.go$" $test ".out" expect
 		    filecmp $expect $base.p "$name compare"
+		    file delete $output_file
 		}
 		file delete $base.p
 	    } else {
