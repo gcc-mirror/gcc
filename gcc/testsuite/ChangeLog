@@ -1,3 +1,7 @@
+2015-02-26  Sebastian Pop  <s.pop@samsung.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-9.c: Fix warning due to missing type.
+
 2015-02-25  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR debug/46102

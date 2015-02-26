@@ -6,7 +6,7 @@ int a, b, c, d;
 void fn (void);
 
 int
-foo (x)
+foo (int x)
 {
   switch (x)
     {
