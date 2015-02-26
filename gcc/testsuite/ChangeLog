@@ -1,3 +1,8 @@
+2015-02-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/65217
+	* gcc.target/i386/pr65217.c: New.
+
 2015-02-26  Tom de Vries  <tom@codesourcery.com>
 
 	* lib/dg-pch.exp (pch-init): Add missing cleanup of pchtest<n>.o.
