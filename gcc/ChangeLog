@@ -1,3 +1,8 @@
+2015-02-26  Sebastian Pop  <s.pop@samsung.com>
+
+	* tree-ssa-threadupdate.c (dump_jump_thread_path): Print all edges
+	of an EDGE_FSM_THREAD.
+
 2015-02-25  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
 
 	* config/rs6000/htm.md (tcheck): Fix assembly encoding.

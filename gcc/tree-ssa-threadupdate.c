@@ -197,6 +197,9 @@ dump_jump_thread_path (FILE *dump_file, vec<jump_thread_edge *> path,
       if (path[i]->type == EDGE_NO_COPY_SRC_BLOCK)
        fprintf (dump_file, " (%d, %d) nocopy;",
 		 path[i]->e->src->index, path[i]->e->dest->index);
+      if (path[0]->type == EDGE_FSM_THREAD)
+	fprintf (dump_file, " (%d, %d) ",
+		 path[i]->e->src->index, path[i]->e->dest->index);
     }
   fputc ('\n', dump_file);
 }
