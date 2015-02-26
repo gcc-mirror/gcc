@@ -4251,6 +4251,13 @@ LCF0:
       [AC_DEFINE(HAVE_AS_GNU_ATTRIBUTE, 1,
 	  [Define if your assembler supports .gnu_attribute.])])
 
+    gcc_GAS_CHECK_FEATURE([.module support],
+      gcc_cv_as_mips_dot_module,,[-32],
+      [.module mips2
+       .module fp=xx],,
+      [AC_DEFINE(HAVE_AS_DOT_MODULE, 1,
+	  [Define if your assembler supports .module.])])
+
     gcc_GAS_CHECK_FEATURE([.micromips support],
       gcc_cv_as_micromips_support,,[--fatal-warnings],
       [.set micromips],,

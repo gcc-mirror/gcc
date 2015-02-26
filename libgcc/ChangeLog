@@ -1,3 +1,9 @@
+2015-02-26  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	Backported from mainline r213870
+
+	* config/mips/mips16.S: Do not build for soft-float.
+
 2015-02-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backported from mainline

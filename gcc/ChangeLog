@@ -1,3 +1,14 @@
+2015-02-26  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	Backported from mainline: r213872, r217446, r217939, r219867
+
+	* config.in [!USED_FOR_TARGET] (HAVE_AS_DOT_MODULE): Undefine.
+	* config/mips/mips.h (FP_ASM_SPEC): New macro.
+	(ASM_SPEC): Use FP_ASM_SPEC.
+	* configure.ac (HAVE_AS_DOT_MODULE): Detect support for .module
+	and FPXX extensions.
+	* configure: Regenerate.
+
 2015-02-25  Jason Merrill  <jason@redhat.com>
 
 	* common.opt (-flifetime-dse): New.
