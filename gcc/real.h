@@ -155,6 +155,7 @@ struct real_format
   bool has_signed_zero;
   bool qnan_msb_set;
   bool canonical_nan_lsbs_set;
+  const char *name;
 };
 
 

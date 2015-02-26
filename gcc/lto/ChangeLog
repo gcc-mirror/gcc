@@ -1,3 +1,11 @@
+2015-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto.c (lto_mode_identity_table): New variable.
+	(lto_read_decls): Add mode_table argument to the lto_input_block
+	constructor.
+	(lto_file_finalize): Initialize mode_table.
+	(lto_init): Initialize lto_mode_identity_table.
+
 2015-02-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR libgomp/64625

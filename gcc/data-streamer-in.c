@@ -70,7 +70,7 @@ string_for_index (struct data_in *data_in, unsigned int loc, unsigned int *rlen)
     }
 
   /* Get the string stored at location LOC in DATA_IN->STRINGS.  */
-  lto_input_block str_tab (data_in->strings, loc - 1, data_in->strings_len);
+  lto_input_block str_tab (data_in->strings, loc - 1, data_in->strings_len, NULL);
   len = streamer_read_uhwi (&str_tab);
   *rlen = len;
 

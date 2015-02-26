@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "streamer-hooks.h"
 #include "lto-streamer.h"
+#include "data-streamer.h"
 #include "hash-map.h"
 
 /* Cache of pickled nodes.  Used to avoid writing the same node more
@@ -91,6 +92,7 @@ void streamer_write_integer_cst (struct output_block *, tree, bool);
 void streamer_write_builtin (struct output_block *, tree);
 
 /* In tree-streamer.c.  */
+extern unsigned char streamer_mode_table[1 << 8];
 void streamer_check_handled_ts_structures (void);
 bool streamer_tree_cache_insert (struct streamer_tree_cache_d *, tree,
 				 hashval_t, unsigned *);
@@ -119,5 +121,19 @@ streamer_tree_cache_get_hash (struct streamer_tree_cache_d *cache, unsigned ix)
   return cache->hashes[ix];
 }
 
+static inline void
+bp_pack_machine_mode (struct bitpack_d *bp, machine_mode mode)
+{
+  streamer_mode_table[mode] = 1;
+  bp_pack_enum (bp, machine_mode, 1 << 8, mode);
+}
+
+static inline machine_mode
+bp_unpack_machine_mode (struct bitpack_d *bp)
+{
+  return (machine_mode)
+	   ((struct lto_input_block *)
+	    bp->stream)->mode_table[bp_unpack_enum (bp, machine_mode, 1 << 8)];
+}
 
 #endif  /* GCC_TREE_STREAMER_H  */

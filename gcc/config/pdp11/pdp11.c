@@ -107,7 +107,8 @@ const struct real_format pdp11_f_format =
     false,
     false,
     false,
-    false
+    false,
+    "pdp11_f"
   };
 
 const struct real_format pdp11_d_format =
@@ -128,7 +129,8 @@ const struct real_format pdp11_d_format =
     false,
     false,
     false,
-    false
+    false,
+    "pdp11_d"
   };
 
 static void
