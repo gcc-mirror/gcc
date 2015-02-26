@@ -1,5 +1,8 @@
 2015-02-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/65216
+	* gcc.c-torture/execute/pr65216.c: New test.
+
 	PR tree-optimization/65215
 	* gcc.c-torture/execute/pr65215-1.c: New test.
 	* gcc.c-torture/execute/pr65215-2.c: New test.

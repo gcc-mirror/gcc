@@ -1,5 +1,10 @@
 2015-02-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/65216
+	* tree-ssa-reassoc.c (rewrite_expr_tree): Force creation of
+	new stmt and new SSA_NAME for lhs whenever the arguments have
+	changed and weren't just swapped.  Fix comment typo.
+
 	PR tree-optimization/65215
 	* tree-ssa-math-opts.c (find_bswap_or_nop_load): Return false
 	for PDP endian targets.
