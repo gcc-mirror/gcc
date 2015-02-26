@@ -1,3 +1,52 @@
+2015-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* passes.c (ipa_write_summaries_1): Call lto_output_init_mode_table.
+	(ipa_write_optimization_summaries): Likewise.
+	* tree-streamer.h: Include data-streamer.h.
+	(streamer_mode_table): Declare extern variable.
+	(bp_pack_machine_mode, bp_unpack_machine_mode): New inline functions.
+	* lto-streamer-out.c (lto_output_init_mode_table,
+	lto_write_mode_table): New functions.
+	(produce_asm_for_decls): Call lto_write_mode_table when streaming
+	offloading LTO.
+	* lto-section-in.c (lto_section_name): Add "mode_table" entry.
+	(lto_create_simple_input_block): Add mode_table argument to the
+	lto_input_block constructors.
+	* ipa-prop.c (ipa_prop_read_section, read_replacements_section):
+	Likewise.
+	* data-streamer-in.c (string_for_index): Likewise.
+	* ipa-inline-analysis.c (inline_read_section): Likewise.
+	* ipa-icf.c (sem_item_optimizer::read_section): Likewise.
+	* lto-cgraph.c (input_cgraph_opt_section): Likewise.
+	* lto-streamer-in.c (lto_read_body_or_constructor,
+	lto_input_toplevel_asms): Likewise.
+	(lto_input_mode_table): New function.
+	* tree-streamer-out.c (pack_ts_fixed_cst_value_fields,
+	pack_ts_decl_common_value_fields, pack_ts_type_common_value_fields):
+	Use bp_pack_machine_mode.
+	* real.h (struct real_format): Add name field.
+	* lto-streamer.h (enum lto_section_type): Add LTO_section_mode_table.
+	(class lto_input_block): Add mode_table member.
+	(lto_input_block::lto_input_block): Add mode_table_ argument,
+	initialize mode_table.
+	(struct lto_file_decl_data): Add mode_table field.
+	(lto_input_mode_table, lto_output_init_mode_table): New prototypes.
+	* tree-streamer-in.c (unpack_ts_fixed_cst_value_fields,
+	unpack_ts_decl_common_value_fields,
+	unpack_ts_type_common_value_fields): Call bp_unpack_machine_mode.
+	* tree-streamer.c (streamer_mode_table): New variable.
+	* real.c (ieee_single_format, mips_single_format,
+	motorola_single_format, spu_single_format, ieee_double_format,
+	mips_double_format, motorola_double_format,
+	ieee_extended_motorola_format, ieee_extended_intel_96_format,
+	ieee_extended_intel_128_format, ieee_extended_intel_96_round_53_format,
+	ibm_extended_format, mips_extended_format, ieee_quad_format,
+	mips_quad_format, vax_f_format, vax_d_format, vax_g_format,
+	decimal_single_format, decimal_double_format, decimal_quad_format,
+	ieee_half_format, arm_half_format, real_internal_format): Add name
+	field.
+	* config/pdp11/pdp11.c (pdp11_f_format, pdp11_d_format): Likewise.
+
 2015-02-26  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR target/65161

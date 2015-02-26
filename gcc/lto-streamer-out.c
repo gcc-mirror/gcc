@@ -2642,6 +2642,96 @@ produce_symtab (struct output_block *ob)
 }
 
 
+/* Init the streamer_mode_table for output, where we collect info on what
+   machine_mode values have been streamed.  */
+void
+lto_output_init_mode_table (void)
+{
+  memset (streamer_mode_table, '\0', MAX_MACHINE_MODE);
+}
+
+
+/* Write the mode table.  */
+static void
+lto_write_mode_table (void)
+{
+  struct output_block *ob;
+  ob = create_output_block (LTO_section_mode_table);
+  bitpack_d bp = bitpack_create (ob->main_stream);
+
+  /* Ensure that for GET_MODE_INNER (m) != VOIDmode we have
+     also the inner mode marked.  */
+  for (int i = 0; i < (int) MAX_MACHINE_MODE; i++)
+    if (streamer_mode_table[i])
+      {
+	machine_mode m = (machine_mode) i;
+	if (GET_MODE_INNER (m) != VOIDmode)
+	  streamer_mode_table[(int) GET_MODE_INNER (m)] = 1;
+      }
+  /* First stream modes that have GET_MODE_INNER (m) == VOIDmode,
+     so that we can refer to them afterwards.  */
+  for (int pass = 0; pass < 2; pass++)
+    for (int i = 0; i < (int) MAX_MACHINE_MODE; i++)
+      if (streamer_mode_table[i] && i != (int) VOIDmode && i != (int) BLKmode)
+	{
+	  machine_mode m = (machine_mode) i;
+	  if ((GET_MODE_INNER (m) == VOIDmode) ^ (pass == 0))
+	    continue;
+	  bp_pack_value (&bp, m, 8);
+	  bp_pack_enum (&bp, mode_class, MAX_MODE_CLASS, GET_MODE_CLASS (m));
+	  bp_pack_value (&bp, GET_MODE_SIZE (m), 8);
+	  bp_pack_value (&bp, GET_MODE_PRECISION (m), 16);
+	  bp_pack_value (&bp, GET_MODE_INNER (m), 8);
+	  bp_pack_value (&bp, GET_MODE_NUNITS (m), 8);
+	  switch (GET_MODE_CLASS (m))
+	    {
+	    case MODE_FRACT:
+	    case MODE_UFRACT:
+	    case MODE_ACCUM:
+	    case MODE_UACCUM:
+	      bp_pack_value (&bp, GET_MODE_IBIT (m), 8);
+	      bp_pack_value (&bp, GET_MODE_FBIT (m), 8);
+	      break;
+	    case MODE_FLOAT:
+	    case MODE_DECIMAL_FLOAT:
+	      bp_pack_string (ob, &bp, REAL_MODE_FORMAT (m)->name, true);
+	      break;
+	    default:
+	      break;
+	    }
+	  bp_pack_string (ob, &bp, GET_MODE_NAME (m), true);
+	}
+  bp_pack_value (&bp, VOIDmode, 8);
+
+  streamer_write_bitpack (&bp);
+
+  char *section_name
+    = lto_get_section_name (LTO_section_mode_table, NULL, NULL);
+  lto_begin_section (section_name, !flag_wpa);
+  free (section_name);
+
+  /* The entire header stream is computed here.  */
+  struct lto_simple_header_with_strings header;
+  memset (&header, 0, sizeof (header));
+
+  /* Write the header.  */
+  header.major_version = LTO_major_version;
+  header.minor_version = LTO_minor_version;
+
+  header.main_size = ob->main_stream->total_size;
+  header.string_size = ob->string_stream->total_size;
+  lto_write_data (&header, sizeof header);
+
+  /* Put all of the gimple and the string table out the asm file as a
+     block of text.  */
+  lto_write_stream (ob->main_stream);
+  lto_write_stream (ob->string_stream);
+
+  lto_end_section ();
+  destroy_output_block (ob);
+}
+
+
 /* This pass is run after all of the functions are serialized and all
    of the IPA passes have written their serialized forms.  This pass
    causes the vector of all of the global decls and types used from
@@ -2749,4 +2839,6 @@ produce_asm_for_decls (void)
   lto_symtab_encoder_delete (ob->decl_state->symtab_node_encoder);
   lto_function_decl_states.release ();
   destroy_output_block (ob);
+  if (lto_stream_offload_p)
+    lto_write_mode_table ();
 }

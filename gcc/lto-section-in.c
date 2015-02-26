@@ -89,7 +89,8 @@ const char *lto_section_name[LTO_N_SECTION_TYPES] =
   "inline",
   "ipcp_trans",
   "icf",
-  "offload_table"
+  "offload_table",
+  "mode_table"
 };
 
 
@@ -262,7 +263,8 @@ lto_create_simple_input_block (struct lto_file_decl_data *file_data,
     return NULL;
 
   *datar = data;
-  return new lto_input_block (data + main_offset, header->main_size);
+  return new lto_input_block (data + main_offset, header->main_size,
+			      file_data->mode_table);
 }
 
 

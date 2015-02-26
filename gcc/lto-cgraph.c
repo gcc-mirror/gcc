@@ -2122,7 +2122,7 @@ input_cgraph_opt_section (struct lto_file_decl_data *file_data,
   unsigned int count;
 
   lto_input_block ib_main ((const char *) data + main_offset,
-			   header->main_size);
+			   header->main_size, file_data->mode_table);
 
   data_in =
     lto_data_in_create (file_data, (const char *) data + string_offset,
