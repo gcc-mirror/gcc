@@ -1,3 +1,8 @@
+2015-02-26  Sebastian Pop  <s.pop@samsung.com>
+
+	PR tree-optimization/65048
+	* gcc.dg/tree-ssa/ssa-dom-thread-9.c: New.
+
 2015-02-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/gcc-dg.exp (cleanup-final-insns-dump): New procedure.
