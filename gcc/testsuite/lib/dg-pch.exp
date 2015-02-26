@@ -30,15 +30,17 @@ proc pch-init { args } {
     set pch_unsupported_debug \
 	[regexp "debug format cannot be used with pre-compiled headers" \
 		[lindex $result 0]]
+    remote_file build delete [lindex $result 1]
 
     set pch_unsupported 0
     if { $pch_unsupported_debug } {
 	verbose -log "pch is unsupported with the debug info format"
 
 	set result [check_compile pchtest object "int i;" "-x c-header"]
-	    set pch_unsupported \
-		[regexp "debug format cannot be used with pre-compiled headers" \
-			[lindex $result 0]]
+	set pch_unsupported \
+	    [regexp "debug format cannot be used with pre-compiled headers" \
+		 [lindex $result 0]]
+	remote_file build delete [lindex $result 1]
     }
 }
 
