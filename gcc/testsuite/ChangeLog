@@ -1,3 +1,10 @@
+2015-02-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/vect/vect-pr61917.c: Rename to ...
+	* gcc.dg/vect/O3-vect-pr61917.c: ... this.
+	(dg-additional-options): Remove dg directive.
+	(dg-final): Add dg directive.
+
 2015-02-26  Marek Polacek  <polacek@redhat.com>
 
 	PR ipa/65008
