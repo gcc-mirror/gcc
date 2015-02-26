@@ -309,6 +309,7 @@ extern bool sh_insn_operands_modified_between_p (rtx_insn* operands_insn,
 
 extern bool sh_reg_dead_or_unused_after_insn (const rtx_insn* i, int regno);
 extern void sh_remove_reg_dead_or_unused_notes (rtx_insn* i, int regno);
+extern rtx_insn* sh_check_add_incdec_notes (rtx_insn* i);
 
 extern bool sh_in_recog_treg_set_expr (void);
 extern bool sh_recog_treg_set_expr (rtx op, machine_mode mode);

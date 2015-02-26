@@ -798,6 +798,12 @@
   return 0;
 })
 
+;; Returns true if OP is a valid constant source operand for a logical
+;; operations tst/and/or/xor #imm,r0.
+(define_predicate "const_logical_operand"
+  (and (match_code "const_int")
+       (match_test "satisfies_constraint_K08 (op)")))
+
 ;; Like logical_operand but allows additional constant values which can be
 ;; done with zero extensions.  Used for the second operand of and insns.
 (define_predicate "logical_and_operand"
