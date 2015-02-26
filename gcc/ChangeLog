@@ -1,3 +1,15 @@
+2015-02-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/65192
+	* config/avr/avr-protos.h (tiny_valid_direct_memory_access_range):
+	Remove.
+	* config/avr/avr.c: Same.
+	(avr_legitimate_address_p) <AVR_TINY, CONSTANT_ADDRESS_P>:
+	Refuse any constant address not in 0..0xbf.
+	* config/avr/avr.md (*mov<mode>, *movsf): Remove
+	tiny_valid_direct_memory_access_range from insn conditions.
+	(mov<mode>): Don't special-case expansion of avrtiny addresses.
+
 2015-02-26  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/61142

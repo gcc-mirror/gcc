@@ -1823,6 +1823,16 @@ avr_legitimate_address_p (machine_mode mode, rtx x, bool strict)
       break;
     }
 
+  if (AVR_TINY
+      && CONSTANT_ADDRESS_P (x))
+    {
+      /* avrtiny's load / store instructions only cover addresses 0..0xbf:
+         IN / OUT range is 0..0x3f and LDS / STS can access 0x40..0xbf.  */
+
+      ok = (CONST_INT_P (x)
+            && IN_RANGE (INTVAL (x), 0, 0xc0 - GET_MODE_SIZE (mode)));
+    }
+
   if (avr_log.legitimate_address_p)
     {
       avr_edump ("\n%?: ret=%d, mode=%m strict=%d "
@@ -3209,37 +3219,6 @@ avr_out_xload (rtx_insn *insn ATTRIBUTE_UNUSED, rtx *op, int *plen)
   return "";
 }
 
-
-/* AVRTC-579
-   If OP is a symbol or a constant expression with value > 0xbf
-   return FALSE, otherwise TRUE.
-   This check is used to avoid LDS / STS instruction with invalid memory
-   access range (valid range 0x40..0xbf).  For I/O operand range 0x0..0x3f,
-   IN / OUT instruction will be generated.  */
-
-bool
-tiny_valid_direct_memory_access_range (rtx op, machine_mode mode)
-{
-  rtx x;
-
-  if (!AVR_TINY)
-    return true;
-
-  x = XEXP (op,0);
-
-  if (MEM_P (op) && x && GET_CODE (x) == SYMBOL_REF)
-    {
-      return false;
-    }
-
-  if (MEM_P (op) && x && (CONSTANT_ADDRESS_P (x))
-      && !(IN_RANGE (INTVAL (x), 0, 0xC0 - GET_MODE_SIZE (mode))))
-    {
-      return false;
-    }
-
-  return true;
-}
 
 const char*
 output_movqi (rtx_insn *insn, rtx operands[], int *plen)
