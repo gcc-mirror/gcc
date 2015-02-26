@@ -1,3 +1,11 @@
+2015-02-26  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/61142
+	* config/sh/sh.c (sh_check_add_incdec_notes): New function.
+	* config/sh/sh-protos.h (sh_check_add_incdec_notes): Declare it.
+	* config/sh/predicates.md (const_logical_operand): New predicate.
+	* config/sh/sh.md: Add new peephole2 patterns.
+
 2015-02-26  Marek Polacek  <polacek@redhat.com>
 
 	PR ipa/65008

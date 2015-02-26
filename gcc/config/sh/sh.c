@@ -13757,6 +13757,35 @@ sh_remove_reg_dead_or_unused_notes (rtx_insn* i, int regno)
     remove_note (i, n);
 }
 
+/* Given an insn check if it contains any post/pre inc/dec mem operands and
+   add the REG_INC notes accordingly.
+   FIXME: This function is very similar to lra.c (add_auto_inc_notes).
+   FIXME: This function is currently used by peephole2 patterns because
+	  the peephole2 pass does not preserve REG_INC notes.  If the notes
+	  are dropped the following passes will do wrong things.  */
+rtx_insn*
+sh_check_add_incdec_notes (rtx_insn* i)
+{
+  struct for_each_inc_dec_clb
+  {
+    static int func (rtx mem ATTRIBUTE_UNUSED, rtx op ATTRIBUTE_UNUSED,
+		     rtx dest, rtx src ATTRIBUTE_UNUSED,
+		     rtx srcoff ATTRIBUTE_UNUSED, void* arg)
+    {
+      gcc_assert (REG_P (dest));
+
+      rtx_insn* i = (rtx_insn*)arg;
+      if (find_regno_note (i, REG_INC, REGNO (dest)) == NULL)
+	add_reg_note (i, REG_INC, dest);
+
+      return 0;
+    }
+  };
+
+  for_each_inc_dec (PATTERN (i), for_each_inc_dec_clb::func, i);
+  return i;
+}
+
 /* Given an op rtx and an insn, try to find out whether the result of the
    specified op consists only of logical operations on T bit stores.  */
 bool

@@ -14532,6 +14532,179 @@ label:
 	(mem:HI (plus:SI (match_dup 1) (match_dup 2))))]
   "")
 
+;;	extu.bw	a,b
+;;	mov	b,c	->	extu.bw	a,c
+(define_peephole2
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(zero_extend:SI (match_operand:QIHI 1 "arith_reg_operand")))
+   (set (match_operand:SI 2 "arith_reg_dest")
+	(match_dup 0))]
+  "TARGET_SH1 && peep2_reg_dead_p (2, operands[0])"
+  [(set (match_dup 2) (zero_extend:SI (match_dup 1)))])
+
+;;	mov	r0,r1
+;;	extu.bw	r1,r1   ->	extu.bw	r0,r1
+(define_peephole2
+  [(set (match_operand 0 "arith_reg_dest")
+	(match_operand 1 "arith_reg_operand"))
+   (set (match_operand:SI 2 "arith_reg_dest")
+	(zero_extend:SI (match_operand:QIHI 3 "arith_reg_operand")))]
+  "TARGET_SH1
+   && REGNO (operands[0]) == REGNO (operands[3])
+   && (REGNO (operands[0]) == REGNO (operands[2])
+       || peep2_reg_dead_p (2, operands[0]))"
+  [(set (match_dup 2) (zero_extend:SI (match_dup 1)))]
+{
+  operands[1] = gen_rtx_REG (<MODE>mode, REGNO (operands[1]));
+})
+
+;;	mov	a,b
+;;	mov	b,a	->	< nop >
+(define_peephole2
+  [(set (match_operand 0 "register_operand")
+	(match_operand 1 "register_operand"))
+   (set (match_operand 2 "register_operand")
+	(match_operand 3 "register_operand"))]
+  "TARGET_SH1
+   && REGNO (operands[0]) == REGNO (operands[3])
+   && REGNO (operands[1]) == REGNO (operands[2])
+   && peep2_reg_dead_p (2, operands[3])"
+  [(const_int 0)])
+
+;;	mov	#3,r4
+;;	and	r4,r1	->	mov	r1,r0
+;;	mov	r1,r0		and	#3,r0
+(define_code_iterator ANDIORXOR [and ior xor])
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand")
+	(match_operand:SI 1 "const_logical_operand"))
+   (set (match_operand:SI 2) (ANDIORXOR:SI (match_dup 2) (match_dup 0)))
+   (set (reg:SI R0_REG) (match_dup 2))]
+  "TARGET_SH1
+   && peep2_reg_dead_p (3, operands[0]) && peep2_reg_dead_p (3, operands[2])"
+  [(set (reg:SI R0_REG) (match_dup 2))
+   (set (reg:SI R0_REG) (ANDIORXOR:SI (reg:SI R0_REG) (match_dup 1)))])
+
+;;	...	r2,r0		...	r2,r0
+;;	or	r1,r0	->	or	r0,r1
+;;	mov	r0,r1
+;;	(r0 dead)
+(define_code_iterator ANDIORXORPLUS [and ior xor plus])
+(define_peephole2
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ANDIORXORPLUS:SI (match_dup 0) (match_operand:SI 1 "arith_reg_dest")))
+   (set (match_dup 1) (match_dup 0))]
+  "TARGET_SH1 && peep2_reg_dead_p (2, operands[0])"
+  [(set (match_dup 1) (ANDIORXORPLUS:SI (match_dup 1) (match_dup 0)))])
+
+;;	mov	r12,r0
+;;	add	#-48,r0     ->	add	#-48,r12
+;;	mov.l	r0,@(4,r10)	mov.l	r12,@(4,r10)
+;;	(r12 dead)
+(define_peephole2
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(match_operand:SI 1 "arith_reg_dest"))
+   (set (match_dup 0) (plus:SI (match_dup 0)
+			       (match_operand:SI 2 "const_int_operand")))
+   (set (match_operand:SI 3 "general_movdst_operand") (match_dup 0))]
+  "TARGET_SH1
+   && peep2_reg_dead_p (2, operands[1]) && peep2_reg_dead_p (3, operands[0])"
+  [(const_int 0)]
+{
+  emit_insn (gen_addsi3 (operands[1], operands[1], operands[2]));
+  sh_check_add_incdec_notes (emit_move_insn (operands[3], operands[1]));
+})
+
+;;	mov.l	@(r0,r9),r1
+;;	mov	r1,r0	    ->	mov	@(r0,r9),r0
+(define_peephole2
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(match_operand:SI 1 "general_movsrc_operand"))
+   (set (match_operand:SI 2 "arith_reg_dest")
+	(match_dup 0))]
+  "TARGET_SH1 && peep2_reg_dead_p (2, operands[0])"
+  [(const_int 0)]
+{
+  sh_check_add_incdec_notes (emit_move_insn (operands[2], operands[1]));
+})
+
+(define_peephole2
+  [(set (match_operand:QIHI 0 "register_operand")
+	(match_operand:QIHI 1 "movsrc_no_disp_mem_operand"))
+   (set (match_operand:QIHI 2 "register_operand")
+	(match_dup 0))]
+  "TARGET_SH1 && peep2_reg_dead_p (2, operands[0])"
+  [(const_int 0)]
+{
+  sh_check_add_incdec_notes (emit_move_insn (operands[2], operands[1]));
+})
+
+(define_peephole2
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(sign_extend:SI (match_operand:QIHI 1 "movsrc_no_disp_mem_operand")))
+   (set (match_operand:SI 2 "arith_reg_dest")
+	(match_dup 0))]
+  "TARGET_SH1 && peep2_reg_dead_p (2, operands[0])"
+  [(const_int 0)]
+{
+  sh_check_add_incdec_notes (emit_insn (gen_extend<mode>si2 (operands[2],
+							     operands[1])));
+})
+
+;;	mov.w	@(18,r1),r0 (r0 = HImode)
+;;	mov	r0,r1       (r0 = r1 = HImode)		mov.w	@(18,r1),r0
+;;	...	..,r13      (r13 = SImode)	-> 	...	..,r13
+;;	tst	r1,r13					tst	r0,r13
+(define_peephole2
+  [(set (match_operand 0 "arith_reg_dest")
+	(match_operand 1 "arith_reg_dest"))
+   (set (match_operand:SI 2 "arith_reg_dest")
+	(match_operand:SI 3))
+   (set (reg:SI T_REG)
+	(eq:SI (and:SI (match_operand:SI 4 "arith_reg_operand")
+		       (match_operand:SI 5 "arith_reg_operand"))
+	       (const_int 0)))]
+  "TARGET_SH1
+   && peep2_reg_dead_p (3, operands[0])
+   && !reg_overlap_mentioned_p (operands[0], operands[3])
+   && (REGNO (operands[0]) == REGNO (operands[4])
+       || REGNO (operands[0]) == REGNO (operands[5]))
+   && (REGNO (operands[2]) == REGNO (operands[4])
+       || REGNO (operands[2]) == REGNO (operands[5]))"
+  [(const_int 0)]
+{
+  sh_check_add_incdec_notes (emit_move_insn (operands[2], operands[3]));
+  emit_insn (gen_tstsi_t (operands[2],
+			  gen_rtx_REG (SImode, (REGNO (operands[1])))));
+})
+
+;;	mov.w	@(18,r1),r0 (r0 = HImode)
+;;	...	..,r13	    (r13 = SImode)		mov.w	@(18,r1),r0
+;;	mov	r0,r1       (r0 = r1 = HImode)	->	...	..,r13
+;;	tst	r1,r13					tst	r0,r13
+(define_peephole2
+  [(set (match_operand:SI 2 "arith_reg_dest")
+	(match_operand:SI 3))
+   (set (match_operand 0 "arith_reg_dest")
+	(match_operand 1 "arith_reg_operand"))
+   (set (reg:SI T_REG)
+	(eq:SI (and:SI (match_operand:SI 4 "arith_reg_operand")
+		       (match_operand:SI 5 "arith_reg_operand"))
+	       (const_int 0)))]
+  "TARGET_SH1
+   && peep2_reg_dead_p (3, operands[0])
+   && !reg_overlap_mentioned_p (operands[0], operands[3])
+   && (REGNO (operands[0]) == REGNO (operands[4])
+       || REGNO (operands[0]) == REGNO (operands[5]))
+   && (REGNO (operands[2]) == REGNO (operands[4])
+       || REGNO (operands[2]) == REGNO (operands[5]))"
+  [(const_int 0)]
+{
+  sh_check_add_incdec_notes (emit_move_insn (operands[2], operands[3]));
+  emit_insn (gen_tstsi_t (operands[2],
+			  gen_rtx_REG (SImode, (REGNO (operands[1])))));
+})
+
 (define_peephole
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(plus:SI (match_dup 0) (match_operand:SI 1 "register_operand" "r")))
