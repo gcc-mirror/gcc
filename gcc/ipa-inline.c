@@ -2559,6 +2559,19 @@ early_inliner (function *fun)
 	{
 	  timevar_push (TV_INTEGRATION);
 	  todo |= optimize_inline_calls (current_function_decl);
+	  /* optimize_inline_calls call above might have introduced new
+	     statements that don't have inline parameters computed.  */
+	  for (edge = node->callees; edge; edge = edge->next_callee)
+	    {
+	      if (inline_edge_summary_vec.length () > (unsigned) edge->uid)
+		{
+		  struct inline_edge_summary *es = inline_edge_summary (edge);
+		  es->call_stmt_size
+		    = estimate_num_insns (edge->call_stmt, &eni_size_weights);
+		  es->call_stmt_time
+		    = estimate_num_insns (edge->call_stmt, &eni_time_weights);
+		}
+	    }
 	  inline_update_overall_summary (node);
 	  inlined = false;
 	  timevar_pop (TV_INTEGRATION);
