@@ -1,3 +1,7 @@
+2015-02-26  Tom de Vries  <tom@codesourcery.com>
+
+	* go.test/go-test.exp (go-gc-tests): Add missing cleanup for cmpout.
+
 2015-02-26  Martin Liska  <mliska@suse.cz>
 	    Jan Hubicka  <hubicka@ucw.cz>
 
