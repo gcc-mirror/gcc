@@ -1,3 +1,9 @@
+2015-02-26  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR target/65161
+	* config/i386/i386.c (ix86_sched_reorder): Skip instruction
+	reordering for selective scheduling.
+
 2015-02-26  Terry Guo  <terry.guo@arm.com>
 
 	* config/arm/arm-cores.def (cortex-m7): Add flag FL_NO_VOLATILE_CE.

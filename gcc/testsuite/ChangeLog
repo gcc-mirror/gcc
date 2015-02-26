@@ -1,3 +1,8 @@
+2015-02-26  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR target/65161
+	* gcc.target/i386/pr65161.c: New test.
+
 2015-02-26  Terry Guo  <terry.guo@arm.com>
 
 	* gcc.target/arm/no-volatile-in-it.c: New test.
