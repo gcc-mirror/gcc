@@ -1,3 +1,8 @@
+2015-02-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR debug/46102
+	* dwarf2out.c (dwarf2out_init): Disable -feliminate-dwarf2-dups.
+
 2015-02-26  Sebastian Pop  <s.pop@samsung.com>
 
 	PR tree-optimization/65048

@@ -22621,6 +22621,14 @@ output_macinfo (void)
 static void
 dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 {
+  /* This option is currently broken, see (PR53118 and PR46102).  */
+  if (flag_eliminate_dwarf2_dups
+      && strstr (lang_hooks.name, "C++"))
+    {
+      warning (0, "-feliminate-dwarf2-dups is broken for C++, ignoring");
+      flag_eliminate_dwarf2_dups = 0;
+    }
+
   /* Allocate the file_table.  */
   file_table = hash_table<dwarf_file_hasher>::create_ggc (50);
 
