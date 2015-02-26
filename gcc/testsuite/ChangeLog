@@ -1,3 +1,11 @@
+2015-02-26  Martin Liska  <mliska@suse.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/pr64146.C: Update expected results.
+	* gcc.dg/ipa/ipa-icf-26.c: Update test.
+	* gcc.dg/ipa/ipa-icf-33.c: Remove redundant line.
+	* gcc.dg/ipa/ipa-icf-34.c: New test.
+
 2015-02-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/vect/vect-pr61917.c: Rename to ...
