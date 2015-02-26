@@ -1,3 +1,8 @@
+2015-02-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/gcc-dg.exp (cleanup-final-insns-dump): New procedure.
+	* g++.dg/opt/dump1.C (dg-final): Call cleanup-final-insns-dump.
+
 2015-02-26  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	PR target/65161
@@ -209,7 +214,7 @@
 
 2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
-	* testsuite/lib/target-supports.exp (check_compile): Save/restore
+	* lib/target-supports.exp (check_compile): Save/restore
 	additional_sources that may belong to an actual test.
 
 2015-02-18  Jakub Jelinek  <jakub@redhat.com>
@@ -695,7 +700,7 @@
 	    Brian Rzycki  <b.rzycki@samsung.com>
 
 	PR tree-optimization/64878
-	* testsuite/gcc.dg/tree-ssa/ssa-dom-thread-8.c: New.
+	* gcc.dg/tree-ssa/ssa-dom-thread-8.c: New.
 
 2015-02-06  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1437,7 +1442,7 @@
 
 2015-01-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
-	* gcc/testsuite/c-c++-common/tsan/step.c: New testcase.
+	* c-c++-common/tsan/step.c: New testcase.
 
 2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
 

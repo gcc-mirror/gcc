@@ -548,6 +548,21 @@ proc cleanup-ipa-dump { suffix } {
   cleanup-dump "\[0-9\]\[0-9\]\[0-9\]i.$suffix"
 }
 
+# Remove a final insns dump file for the current test.
+proc cleanup-final-insns-dump { } {
+    set testcase [testname-for-summary]
+    # The name might include a list of options; extract the file name.
+    set testcase [lindex $testcase 0]
+    remove-build-file "[file rootname [file tail $testcase]].s.gkd"
+
+    # Clean up files for additional source files.
+    if [info exists additional_sources_used] {
+	foreach srcfile $additional_sources_used {
+	    remove-build-file "[file rootname [file tail $srcfile]].s.gkd"
+	}
+    }
+}
+
 # Remove a stack usage file for the current test.
 proc cleanup-stack-usage { } {
     set testcase [testname-for-summary]
