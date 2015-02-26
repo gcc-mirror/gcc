@@ -1,5 +1,9 @@
 2015-02-26  Tom de Vries  <tom@codesourcery.com>
 
+	* lib/dg-pch.exp (pch-init): Add missing cleanup of pchtest<n>.o.
+
+2015-02-26  Tom de Vries  <tom@codesourcery.com>
+
 	* gcc.misc-tests/godump-1.c: Add missing cleanup of godump-1.out.
 
 2015-02-26  Sebastian Pop  <s.pop@samsung.com>
