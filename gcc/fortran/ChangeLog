@@ -1,3 +1,8 @@
+2015-02-26  Martin Liska  <mliska@suse.cz>
+
+	* resolve.c: Rename enum 'comparison' to 'compare_result' as
+	solution for -Wodr issue.
+
 2015-02-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR libgomp/64625
