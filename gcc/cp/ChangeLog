@@ -1,5 +1,9 @@
 2015-02-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/62255
+	* pt.c (instantiate_decl): Handle recursive instantiation of
+	static data member.
+
 	* decl.c (begin_destructor_body): Condition clobber on
 	-flifetime-dse.
 

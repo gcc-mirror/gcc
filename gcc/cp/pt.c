@@ -19794,13 +19794,18 @@ instantiate_decl (tree d, int defer_ok,
 			      args,
 			      tf_warning_or_error, NULL_TREE,
 			      /*integral_constant_expression_p=*/false);
-	  /* Make sure the initializer is still constant, in case of
-	     circular dependency (template/instantiate6.C). */
-	  const_init
-	    = DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (code_pattern);
-	  cp_finish_decl (d, init, /*init_const_expr_p=*/const_init,
-			  /*asmspec_tree=*/NULL_TREE,
-			  LOOKUP_ONLYCONVERTING);
+	  /* If instantiating the initializer involved instantiating this
+	     again, don't call cp_finish_decl twice.  */
+	  if (!DECL_INITIAL (d))
+	    {
+	      /* Make sure the initializer is still constant, in case of
+		 circular dependency (template/instantiate6.C). */
+	      const_init
+		= DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (code_pattern);
+	      cp_finish_decl (d, init, /*init_const_expr_p=*/const_init,
+			      /*asmspec_tree=*/NULL_TREE,
+			      LOOKUP_ONLYCONVERTING);
+	    }
 	  pop_nested_class ();
 	  pop_nested_namespace (ns);
 	}
