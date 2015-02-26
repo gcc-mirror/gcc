@@ -1,3 +1,10 @@
+2015-02-25  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2015-02-25  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
+
+	* config/rs6000/htm.md (tcheck): Fix assembly encoding.
+
 2015-02-26  Matthew Fortune  <matthew.fortune@imgtec.com>
 
 	PR target/64569

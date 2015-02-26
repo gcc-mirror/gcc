@@ -245,7 +245,7 @@
 	(unspec_volatile:CC [(match_operand 0 "u3bit_cint_operand" "n")]
 			    UNSPECV_HTM_TCHECK))]
   "TARGET_HTM"
-  "tcheck. %0"
+  "tcheck %0"
   [(set_attr "type" "htm")
    (set_attr "length" "4")])
 
