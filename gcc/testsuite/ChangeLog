@@ -1,5 +1,10 @@
 2015-02-26  Tom de Vries  <tom@codesourcery.com>
 
+	* g++.dg/gcov/gcov-14.C: Add cleanup of iostream.gcov, ostream.gcov and
+	locale_facets.h.gcov.
+
+2015-02-26  Tom de Vries  <tom@codesourcery.com>
+
 	* gcc.target/i386/mcount_pic.c: Add missing cleanup-profile-file.
 
 2015-02-26  Tom de Vries  <tom@codesourcery.com>
