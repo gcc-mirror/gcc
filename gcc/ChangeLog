@@ -1,5 +1,6 @@
 2015-02-26  Matthew Fortune  <matthew.fortune@imgtec.com>
 
+	PR target/64569
 	Backported from mainline: r213872, r217446, r217939, r219867
 
 	* config.in [!USED_FOR_TARGET] (HAVE_AS_DOT_MODULE): Undefine.
