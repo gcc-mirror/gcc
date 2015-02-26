@@ -34781,7 +34781,7 @@ rs6000_analyze_swaps (function *fun)
 		    mode = V4SImode;
 		}
 
-	      if (VECTOR_MODE_P (mode))
+	      if (VECTOR_MODE_P (mode) || mode == TImode)
 		{
 		  insn_entry[uid].is_relevant = 1;
 		  if (mode == TImode || mode == V1TImode)
@@ -34808,7 +34808,7 @@ rs6000_analyze_swaps (function *fun)
 		  && VECTOR_MODE_P (GET_MODE (SET_DEST (insn))))
 		mode = GET_MODE (SET_DEST (insn));
 
-	      if (VECTOR_MODE_P (mode))
+	      if (VECTOR_MODE_P (mode) || mode == TImode)
 		{
 		  insn_entry[uid].is_relevant = 1;
 		  if (mode == TImode || mode == V1TImode)
