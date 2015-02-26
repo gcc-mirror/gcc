@@ -1,3 +1,16 @@
+2015-02-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR debug/46102
+	* g++.dg/debug/dwarf2-1.C: XFAIL and move...
+	* g++.dg/debug/dwarf2/dwarf2-1.C: ...here.
+	* g++.dg/debug/dwarf2-2.C: XFAIL and move...
+	* g++.dg/debug/dwarf2/dwarf2-2.C: ...here.
+	* g++.dg/debug/dwarf2/typedef5.C: XFAIL.
+	* g++.dg/debug/pr46123.C: XFAIL and move...
+	* g++.dg/debug/dwarf2/pr46123-2.C: ...here.
+	* gcc.dg/debug/dwarf2-3.c: Move...
+	* gcc.dg/debug/dwarf2/dwarf2-3.c: ...here.
+
 2015-02-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/65202

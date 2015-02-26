@@ -1,12 +1,19 @@
-// Origin: PR debug/46101
-// { dg-options "-g -feliminate-dwarf2-dups" }
+// PR debug/27057
 // { dg-do compile }
+// { dg-options "-gdwarf -feliminate-dwarf2-dups" }
 
-typedef struct
+namespace N
 {
-  virtual void f () { }
-} A;
+}
 
-A a;
+struct A
+{
+  void foo ();
+};
+
+void A::foo ()
+{
+  using namespace N;
+}
 
 /* { dg-bogus "-feliminate-dwarf2-dups is broken for C\\+\\+, ignoring" "broken -feliminate-dwarf2-dups" { xfail *-*-* } 1 } */
