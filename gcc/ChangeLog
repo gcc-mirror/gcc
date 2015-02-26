@@ -1,3 +1,14 @@
+2015-02-26  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (Function Attributes): Fix spelling and typos.
+	(Label Attributes): Likewise.
+	(Cilk Plus Builtins): Likewise.
+	(ARC SIMD Built-in Functions): Likewise.
+	(ARM C Language Extensions (ACLE)): Likewise.
+	(PowerPC Built-in Functions): Likewise.
+	(PowerPC Hardware Transactional Memory Built-in Functions):
+	Likewise.
+
 2015-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65216
