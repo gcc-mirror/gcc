@@ -1,3 +1,16 @@
+2015-02-26  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2015-02-25  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/htm-builtin-1.c (dg-do) Change to assemble.
+	(dg-options): Add -save-temps.
+	(dg-final): Add cleanup-saved-temps.
+
+	2015-02-25  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/htm-builtin-1.c: Fix tcheck expect value.
+
 2015-02-26  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
