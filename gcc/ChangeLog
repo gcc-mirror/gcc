@@ -1,3 +1,10 @@
+2015-02-26  Sebastian Pop  <s.pop@samsung.com>
+
+	PR tree-optimization/65048
+	* tree-ssa-threadupdate.c (valid_jump_thread_path): New.
+	(thread_through_all_blocks): Call valid_jump_thread_path.
+	Remove invalid FSM jump-thread paths.
+
 2015-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* passes.c (ipa_write_summaries_1): Call lto_output_init_mode_table.
