@@ -1,3 +1,12 @@
+2015-02-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c: (enum s390_builtin, s390_expand_builtin):
+	Rename S390_BUILTIN_max to S390_BUILTIN_MAX.
+	(s390_builtin_decls): New array.
+	(s390_init_builtins): Put builtin decls into s390_builtin_decls.
+	(s390_builtin_decl): New function.
+	(TARGET_BUILTIN_DECL): Define macro.
+
 2015-02-27  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63175
