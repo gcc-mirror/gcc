@@ -1,5 +1,11 @@
 2015-02-27  Marek Polacek  <polacek@redhat.com>
 
+	PR c/65040
+	* gcc.dg/pr65066.c: Use -Wformat -Wformat-signedness and not
+	-Wformat=2.
+
+2015-02-27  Marek Polacek  <polacek@redhat.com>
+
 	PR c/65228
 	* gcc.dg/pr65228.c: New test.
 

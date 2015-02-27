@@ -1,3 +1,9 @@
+2015-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65040
+	* doc/invoke.texi: Update to reflect that -Wformat=2 doesn't enable
+	-Wformat-signedness anymore.
+
 2015-02-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c: (s390_atomic_assign_expand_fenv): New
