@@ -1,3 +1,16 @@
+2015-02-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/64317
+	* params.def (PARAM_LRA_INHERITANCE_EBB_PROBABILITY_CUTOFF): New.
+	* params.h (LRA_INHERITANCE_EBB_PROBABILITY_CUTOFF): New.
+	* lra-constraints.c: Include "params.h".
+	(EBB_PROBABILITY_CUTOFF): Use
+	LRA_INHERITANCE_EBB_PROBABILITY_CUTOFF.
+	(lra_inheritance): Use '<' instead of '<=' for
+	EBB_PROBABILITY_CUTOFF.
+	* doc/invoke.texi (lra-inheritance-ebb-probability-cutoff):
+	Document change.
+
 2015-02-27  Martin Liska  <mliska@suse.cz>
 
 	* ipa-icf.h (struct symbol_compare_hashmap_traits): Add missing
