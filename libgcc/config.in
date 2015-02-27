@@ -3,6 +3,9 @@
 /* Define to 1 if the target assembler supports thread-local storage. */
 #undef HAVE_CC_TLS
 
+/* Define to 1 if you have the <ftw.h> header file. */
+#undef HAVE_FTW_H
+
 /* Define if _Unwind_GetIPInfo is available. */
 #undef HAVE_GETIPINFO
 

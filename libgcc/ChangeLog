@@ -1,3 +1,16 @@
+2015-02-27  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/65038
+	* config.in: Regenerated.
+	* configure: Likewise.
+	* configure.ac (AC_HEADER_STDC): Add explicit.
+	(AC_CHECK_HEADERS): Check for default headers
+	plus for ftw.h one.
+	* libgcov-util.c (gcov_read_profile_dir): Disable use
+	of ftw-function, if header not found.
+	(ftw_read_file): Don't translate if ftw header isn't
+	present.
+
 2015-02-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR target/65181
