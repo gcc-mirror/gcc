@@ -1,5 +1,11 @@
 2015-02-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
+	* config/s390/s390.c: (s390_atomic_assign_expand_fenv): New
+	function.
+	(TARGET_ATOMIC_ASSIGN_EXPAND_FENV): Define macro.
+
+2015-02-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
 	* config/s390/s390.c (enum s390_builtin):
 	Add S390_BUILTIN_S390_SFPC and S390_BUILTIN_S390_EFPC.
 	(code_for_builtin): Add CODE_FOR_s390_sfpc and CODE_FOR_s390_efpc.
