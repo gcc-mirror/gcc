@@ -1,3 +1,9 @@
+2015-02-27  Andrew Pinski  <apinski@cavium.com>
+	    Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
+ 
+	* config/aarch64/aarch64.c (*aarch64_load_symref_appropriately):
+	Check whether the destination of SYMBOL_SMALL_TPREL is Pmode.
+
 2015-02-27  Richard Biener  <rguenther@suse.de>
 
 	PR lto/65193
