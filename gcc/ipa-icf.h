@@ -110,7 +110,8 @@ struct symbol_compare_hashmap_traits: default_hashmap_traits
   equal_keys (const symbol_compare_collection *a,
 	      const symbol_compare_collection *b)
   {
-    if (a->m_references.length () != b->m_references.length ())
+    if (a->m_references.length () != b->m_references.length ()
+	|| a->m_interposables.length () != b->m_interposables.length ())
       return false;
 
     for (unsigned i = 0; i < a->m_references.length (); i++)
