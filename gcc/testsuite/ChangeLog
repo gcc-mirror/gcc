@@ -1,3 +1,8 @@
+2015-02-27  Richard Biener  <rguenther@suse.de>
+
+	PR lto/65193
+	* g++.dg/lto/pr65193_0.C: New testcase.
+
 2015-02-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.target/s390/20140327-1.c: Remove -m31 and guard with ! lp64.
