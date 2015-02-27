@@ -1,3 +1,10 @@
+2015-02-27  Kai Tietz  <ktietz@redhat.com>
+
+	PR c/35330
+	* c-pragma.c (handle_pragma_weak): Do not try to create
+	weak/alias of declarations not being function, or variable
+	declarations.
+
 2015-02-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR libgomp/64625
