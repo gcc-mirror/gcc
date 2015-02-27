@@ -1,3 +1,7 @@
+2015-02-27  Pat Haugen <pthaugen@us.ibm.com>
+
+	* gcc.dg/vect/pr59354.c: Move vector producing code to separate function.
+
 2015-02-27  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline
