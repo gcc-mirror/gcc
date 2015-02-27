@@ -1,3 +1,8 @@
+2015-02-27  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.h (struct symbol_compare_hashmap_traits): Add missing
+	vector length condition.
+
 2015-02-27  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/extend.texi (x86 transactional memory intrinsics):
