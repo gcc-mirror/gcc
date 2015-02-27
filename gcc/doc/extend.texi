@@ -17274,24 +17274,11 @@ and suitable fallback code always needs to be supplied.
 Start a RTM (Restricted Transactional Memory) transaction. 
 Returns @code{_XBEGIN_STARTED} when the transaction
 started successfully (note this is not 0, so the constant has to be 
-explicitly tested).  If the transaction aborts, all side-effects
-are undone and an abort code is returned. There is no guarantee
-any transaction ever succeeds, so there always needs to be a valid
-fallback path.
-@end deftypefn
+explicitly tested).  
 
-@smallexample
-#include <immintrin.h>
-
-if ((status = _xbegin ()) == _XBEGIN_STARTED) @{
-    ... transaction code...
-    _xend ();
-@} else @{
-    ... non transactional fallback path...
-@}
-@end smallexample
-
-If the transaction aborts, the return value is one of:
+If the transaction aborts, all side-effects 
+are undone and an abort code encoded as a bit mask is returned.
+The following macros are defined:
 
 @table @code
 @item _XABORT_EXPLICIT
@@ -17309,6 +17296,11 @@ Transaction abort due to a debug trap.
 Transaction abort in an inner nested transaction.
 @end table
 
+There is no guarantee
+any transaction ever succeeds, so there always needs to be a valid
+fallback path.
+@end deftypefn
+
 @deftypefn {RTM Function} {void} _xend ()
 Commit the current transaction. When no transaction is active this faults.
 All memory side-effects of the transaction become visible
@@ -17324,6 +17316,37 @@ Abort the current transaction. When no transaction is active this is a no-op.
 The @var{status} is an 8-bit constant; its value is encoded in the return 
 value from @code{_xbegin}.
 @end deftypefn
+
+Here is an example showing handling for @code{_XABORT_RETRY}
+and a fallback path for other failures:
+
+@smallexample
+#include <immintrin.h>
+
+int n_tries, max_tries;
+unsigned status = _XABORT_EXPLICIT;
+...
+
+for (n_tries = 0; n_tries < max_tries; n_tries++) 
+  @{
+    status = _xbegin ();
+    if (status == _XBEGIN_STARTED || !(status & _XABORT_RETRY))
+      break;
+  @}
+if (status == _XBEGIN_STARTED) 
+  @{
+    ... transaction code...
+    _xend ();
+  @} 
+else 
+  @{
+    ... non-transactional fallback path...
+  @}
+@end smallexample
+
+@noindent
+Note that, in most cases, the transactional and non-transactional code
+must synchronize together to ensure consistency.
 
 @node Target Format Checks
 @section Format Checks Specific to Particular Target Machines

@@ -1,3 +1,9 @@
+2015-02-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (x86 transactional memory intrinsics):
+	Reorganize discussion of _xbegin.  Clarify that the return
+	value is a bit mask.  Expand example and move to end of section.
+
 2015-02-26  Jakub Jelinek  <jakub@redhat.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
 
