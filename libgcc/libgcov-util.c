@@ -52,7 +52,9 @@ void gcov_set_verbose (void)
 
 #include "obstack.h"
 #include <unistd.h>
+#ifdef HAVE_FTW_H
 #include <ftw.h>
+#endif
 
 static void tag_function (unsigned, unsigned);
 static void tag_blocks (unsigned, unsigned);
@@ -380,6 +382,7 @@ read_gcda_file (const char *filename)
   return obj_info;
 }
 
+#ifdef HAVE_FTW_H
 /* This will be called by ftw(). It opens and read a gcda file FILENAME.
    Return a non-zero value to stop the tree walk.  */
 
@@ -417,6 +420,7 @@ ftw_read_file (const char *filename,
 
   return 0;
 }
+#endif
 
 /* Initializer for reading a profile dir.  */
 
@@ -451,7 +455,9 @@ gcov_read_profile_dir (const char* dir_name, int recompute_summary ATTRIBUTE_UNU
       fnotice (stderr, "%s is not a directory\n", dir_name);
       return NULL;
     }
+#ifdef HAVE_FTW_H
   ftw (".", ftw_read_file, 50);
+#endif
   ret = chdir (pwd);
   free (pwd);
 
