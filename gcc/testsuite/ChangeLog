@@ -1,3 +1,11 @@
+2015-02-27  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2015-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65228
+	* gcc.dg/pr65228.c: New test.
+
 2015-02-27  Richard Biener  <rguenther@suse.de>
 
 	PR lto/65193
