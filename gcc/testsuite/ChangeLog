@@ -1,3 +1,8 @@
+2015-02-27  Kai Tietz  <ktietz@redhat.com>
+
+	PR c/35330
+	* gcc.dg/weak/weak-17.c: New file.
+
 2015-02-27  Richard Biener  <rguenther@suse.de>
 
 	PR lto/65193

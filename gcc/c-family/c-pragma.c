@@ -392,6 +392,9 @@ handle_pragma_weak (cpp_reader * ARG_UNUSED (dummy))
   decl = identifier_global_value (name);
   if (decl && DECL_P (decl))
     {
+      if (!VAR_OR_FUNCTION_DECL_P (decl))
+	GCC_BAD2 ("%<#pragma weak%> declaration of %q+D not allowed,"
+		  " ignored", decl);
       apply_pragma_weak (decl, value);
       if (value)
 	{
