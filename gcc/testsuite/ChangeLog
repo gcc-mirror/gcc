@@ -1,3 +1,13 @@
+2015-02-26  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/65150
+	* gcc.dg/pr64454.c: Disable ICF.
+	* gcc.dg/pr28685-1.c: Disable ICF
+	* gcc.dg/ipa/iinline-5.c: Disable ICF.
+	* g++.dg/warn/Wsuggest-final.C: Force methods to be different.
+	* g++.dg/ipa/ipa-icf-4.C: Update template.
+
 2015-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65216

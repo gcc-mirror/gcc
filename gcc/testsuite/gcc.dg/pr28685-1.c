@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" }  */
+/* { dg-options "-O2 -fdump-tree-optimized -fno-ipa-icf" }  */
 
 /* Should produce <=.  */
 int test1 (int a, int b)

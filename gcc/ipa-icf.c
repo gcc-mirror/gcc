@@ -147,7 +147,7 @@ symbol_compare_collection::symbol_compare_collection (symtab_node *node)
 
       if (ref->referred->get_availability () <= AVAIL_INTERPOSABLE)
         {
-	  if (ref->use == IPA_REF_ADDR)
+	  if (ref->address_matters_p ())
 	    m_references.safe_push (ref->referred);
 	  else
 	    m_interposables.safe_push (ref->referred);
@@ -632,8 +632,56 @@ set_local (cgraph_node *node, void *data)
   return false;
 }
 
+/* TREE_ADDRESSABLE of NODE to true if DATA is non-NULL.
+   Helper for call_for_symbol_thunks_and_aliases.  */
+
+static bool
+set_addressable (varpool_node *node, void *)
+{
+  TREE_ADDRESSABLE (node->decl) = 1;
+  return false;
+}
+
+/* Redirect all callers of N and its aliases to TO.  Remove aliases if
+   possible.  Return number of redirections made.  */
+
+static int
+redirect_all_callers (cgraph_node *n, cgraph_node *to)
+{
+  int nredirected = 0;
+  ipa_ref *ref;
+
+  while (n->callers)
+    {
+      cgraph_edge *e = n->callers;
+      e->redirect_callee (to);
+      nredirected++;
+    }
+  for (unsigned i = 0; n->iterate_direct_aliases (i, ref);)
+    {
+      bool removed = false;
+      cgraph_node *n_alias = dyn_cast <cgraph_node *> (ref->referring);
+
+      if ((DECL_COMDAT_GROUP (n->decl)
+	   && (DECL_COMDAT_GROUP (n->decl)
+	       == DECL_COMDAT_GROUP (n_alias->decl)))
+	  || (n_alias->get_availability () > AVAIL_INTERPOSABLE
+	      && n->get_availability () > AVAIL_INTERPOSABLE))
+	{
+	  nredirected += redirect_all_callers (n_alias, to);
+	  if (n_alias->can_remove_if_no_direct_calls_p ()
+	      && !n_alias->has_aliases_p ())
+	    n_alias->remove ();
+	}
+      if (!removed)
+	i++;
+    }
+  return nredirected;
+}
+
 /* Merges instance with an ALIAS_ITEM, where alias, thunk or redirection can
    be applied.  */
+
 bool
 sem_function::merge (sem_item *alias_item)
 {
@@ -642,15 +690,28 @@ sem_function::merge (sem_item *alias_item)
   sem_function *alias_func = static_cast<sem_function *> (alias_item);
 
   cgraph_node *original = get_node ();
-  cgraph_node *local_original = original;
+  cgraph_node *local_original = NULL;
   cgraph_node *alias = alias_func->get_node ();
-  bool original_address_matters;
-  bool alias_address_matters;
 
-  bool create_thunk = false;
+  bool create_wrapper = false;
   bool create_alias = false;
   bool redirect_callers = false;
+  bool remove = false;
+
   bool original_discardable = false;
+
+  bool original_address_matters = original->address_matters_p ();
+  bool alias_address_matters = alias->address_matters_p ();
+
+  if (DECL_NO_INLINE_WARNING_P (original->decl)
+      != DECL_NO_INLINE_WARNING_P (alias->decl))
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "Not unifying; "
+		 "DECL_NO_INLINE_WARNING mismatch.\n\n");
+      return false;
+    }
 
   /* Do not attempt to mix functions from different user sections;
      we do not know what user intends with those.  */
@@ -660,123 +721,173 @@ sem_function::merge (sem_item *alias_item)
     {
       if (dump_file)
 	fprintf (dump_file,
-		 "Not unifying; original and alias are in different sections.\n\n");
+		 "Not unifying; "
+		 "original and alias are in different sections.\n\n");
       return false;
     }
 
   /* See if original is in a section that can be discarded if the main
-     symbol is not used.  */
-  if (DECL_EXTERNAL (original->decl))
-    original_discardable = true;
-  if (original->resolution == LDPR_PREEMPTED_REG
-      || original->resolution == LDPR_PREEMPTED_IR)
-    original_discardable = true;
-  if (original->can_be_discarded_p ())
+     symbol is not used.
+
+     Also consider case where we have resolution info and we know that
+     original's definition is not going to be used.  In this case we can not
+     create alias to original.  */
+  if (original->can_be_discarded_p ()
+      || (node->resolution != LDPR_UNKNOWN
+	  && !decl_binds_to_current_def_p (node->decl)))
     original_discardable = true;
 
-  /* See if original and/or alias address can be compared for equality.  */
-  original_address_matters
-    = (!DECL_VIRTUAL_P (original->decl)
-       && (original->externally_visible
-	   || original->address_taken_from_non_vtable_p ()));
-  alias_address_matters
-    = (!DECL_VIRTUAL_P (alias->decl)
-       && (alias->externally_visible
-	   || alias->address_taken_from_non_vtable_p ()));
+  /* Creating a symtab alias is the optimal way to merge.
+     It however can not be used in the following cases:
 
-  /* If alias and original can be compared for address equality, we need
-     to create a thunk.  Also we can not create extra aliases into discardable
-     section (or we risk link failures when section is discarded).  */
-  if ((original_address_matters
-       && alias_address_matters)
+     1) if ORIGINAL and ALIAS may be possibly compared for address equality.
+     2) if ORIGINAL is in a section that may be discarded by linker or if
+	it is an external functions where we can not create an alias
+	(ORIGINAL_DISCARDABLE)
+     3) if target do not support symbol aliases.
+
+     If we can not produce alias, we will turn ALIAS into WRAPPER of ORIGINAL
+     and/or redirect all callers from ALIAS to ORIGINAL.  */
+  if ((original_address_matters && alias_address_matters)
       || original_discardable
-      || DECL_COMDAT_GROUP (alias->decl)
       || !sem_item::target_supports_symbol_aliases_p ())
     {
-      create_thunk = !stdarg_p (TREE_TYPE (alias->decl));
-      create_alias = false;
-      /* When both alias and original are not overwritable, we can save
-         the extra thunk wrapper for direct calls.  */
-      redirect_callers
-	= (!original_discardable
-	   && !DECL_COMDAT_GROUP (alias->decl)
-	   && alias->get_availability () > AVAIL_INTERPOSABLE
-	   && original->get_availability () > AVAIL_INTERPOSABLE
-	   && !alias->instrumented_version);
-    }
-  else
-    {
-      create_alias = true;
-      create_thunk = false;
-      redirect_callers = false;
-    }
+      /* First see if we can produce wrapper.  */
 
-  /* We want thunk to always jump to the local function body
-     unless the body is comdat and may be optimized out.  */
-  if ((create_thunk || redirect_callers)
-      && (!original_discardable
+      /* Do not turn function in one comdat group into wrapper to another
+	 comdat group. Other compiler producing the body of the
+	 another comdat group may make opossite decision and with unfortunate
+	 linker choices this may close a loop.  */
+      if (DECL_COMDAT_GROUP (alias->decl)
+	  && (DECL_COMDAT_GROUP (alias->decl)
+	      != DECL_COMDAT_GROUP (original->decl)))
+	{
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Wrapper cannot be created because of COMDAT\n");
+	}
+      else if (DECL_STATIC_CHAIN (alias->decl))
+        {
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Can not create wrapper of nested functions.\n");
+        }
+      /* TODO: We can also deal with variadic functions never calling
+	 VA_START.  */
+      else if (stdarg_p (TREE_TYPE (alias->decl)))
+	{
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "can not create wrapper of stdarg function.\n");
+	}
+      else if (inline_summaries
+	       && inline_summaries->get (alias)->self_size <= 2)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Wrapper creation is not "
+		     "profitable (function is too small).\n");
+	}
+      /* If user paid attention to mark function noinline, assume it is
+	 somewhat special and do not try to turn it into a wrapper that can
+	 not be undone by inliner.  */
+      else if (lookup_attribute ("noinline", DECL_ATTRIBUTES (alias->decl)))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Wrappers are not created for noinline.\n");
+	}
+      else
+        create_wrapper = true;
+
+      /* We can redirect local calls in the case both alias and orignal
+	 are not interposable.  */
+      redirect_callers
+	= alias->get_availability () > AVAIL_INTERPOSABLE
+	  && original->get_availability () > AVAIL_INTERPOSABLE
+	  && !alias->instrumented_version;
+
+      if (!redirect_callers && !create_wrapper)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Not unifying; can not redirect callers nor "
+		     "produce wrapper\n\n");
+	  return false;
+	}
+
+      /* Work out the symbol the wrapper should call.
+	 If ORIGINAL is interposable, we need to call a local alias.
+	 Also produce local alias (if possible) as an optimization.  */
+      if (!original_discardable
 	  || (DECL_COMDAT_GROUP (original->decl)
 	      && (DECL_COMDAT_GROUP (original->decl)
-		  == DECL_COMDAT_GROUP (alias->decl)))))
-    local_original
-      = dyn_cast <cgraph_node *> (original->noninterposable_alias ());
+		  == DECL_COMDAT_GROUP (alias->decl))))
+	{
+	  local_original
+	    = dyn_cast <cgraph_node *> (original->noninterposable_alias ());
+	  if (!local_original
+	      && original->get_availability () > AVAIL_INTERPOSABLE)
+	    local_original = original;
+	  /* If original is COMDAT local, we can not really redirect external
+	     callers to it.  */
+	  if (original->comdat_local_p ())
+	    redirect_callers = false;
+	}
+      /* If we can not use local alias, fallback to the original
+	 when possible.  */
+      else if (original->get_availability () > AVAIL_INTERPOSABLE)
+	local_original = original;
+      if (!local_original)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Not unifying; "
+		     "can not produce local alias.\n\n");
+	  return false;
+	}
 
-    if (!local_original)
-      {
-	if (dump_file)
-	  fprintf (dump_file, "Noninterposable alias cannot be created.\n\n");
-
-	return false;
-      }
-
-  if (!decl_binds_to_current_def_p (alias->decl))
-    {
-      if (dump_file)
-	fprintf (dump_file, "Declaration does not bind to currect definition.\n\n");
-      return false;
+      if (!redirect_callers && !create_wrapper)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Not unifying; "
+		     "can not redirect callers nor produce a wrapper\n\n");
+	  return false;
+	}
+      if (!create_wrapper
+	  && !alias->can_remove_if_no_direct_calls_p ())
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Not unifying; can not make wrapper and "
+		     "function has other uses than direct calls\n\n");
+	  return false;
+	}
     }
+  else
+    create_alias = true;
 
   if (redirect_callers)
     {
-      /* If alias is non-overwritable then
-         all direct calls are safe to be redirected to the original.  */
-      bool redirected = false;
-      while (alias->callers)
+      int nredirected = redirect_all_callers (alias, local_original);
+
+      if (nredirected)
 	{
-	  cgraph_edge *e = alias->callers;
-	  e->redirect_callee (local_original);
-	  push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
+	  alias->icf_merged = true;
+	  local_original->icf_merged = true;
 
-	  if (e->call_stmt)
-	    e->redirect_call_stmt_to_callee ();
-
-	  pop_cfun ();
-	  redirected = true;
+	  if (dump_file && nredirected)
+	    fprintf (dump_file, "%i local calls have been "
+		     "redirected.\n", nredirected);
 	}
 
-      alias->icf_merged = true;
-      if (local_original->lto_file_data
-	  && alias->lto_file_data
-	  && local_original->lto_file_data != alias->lto_file_data)
-      local_original->merged = true;
-
-      /* The alias function is removed if symbol address
-         does not matter.  */
-      if (!alias_address_matters)
-	alias->remove ();
-
-      if (dump_file && redirected)
-	fprintf (dump_file, "Callgraph local calls have been redirected.\n\n");
+      /* If all callers was redirected, do not produce wrapper.  */
+      if (alias->can_remove_if_no_direct_calls_p ()
+	  && !alias->has_aliases_p ())
+	{
+	  create_wrapper = false;
+	  remove = true;
+	}
+      gcc_assert (!create_alias);
     }
-  /* If the condtion above is not met, we are lucky and can turn the
-     function into real alias.  */
   else if (create_alias)
     {
       alias->icf_merged = true;
-      if (local_original->lto_file_data
-	  && alias->lto_file_data
-	  && local_original->lto_file_data != alias->lto_file_data)
-      local_original->merged = true;
 
       /* Remove the function's body.  */
       ipa_merge_profiles (original, alias);
@@ -791,39 +902,38 @@ sem_function::merge (sem_item *alias_item)
 	 (set_local, (void *)(size_t) original->local_p (), true);
 
       if (dump_file)
-	fprintf (dump_file, "Callgraph alias has been created.\n\n");
+	fprintf (dump_file, "Unified; Function alias has been created.\n\n");
     }
-  else if (create_thunk)
+  if (create_wrapper)
     {
-      if (DECL_COMDAT_GROUP (alias->decl))
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "Callgraph thunk cannot be created because of COMDAT\n");
-
-	  return 0;
-	}
-
-      if (DECL_STATIC_CHAIN (alias->decl))
-        {
-         if (dump_file)
-           fprintf (dump_file, "Thunk creation is risky for static-chain functions.\n\n");
-
-         return 0;
-        }
-
+      gcc_assert (!create_alias);
       alias->icf_merged = true;
-      if (local_original->lto_file_data
-	  && alias->lto_file_data
-	  && local_original->lto_file_data != alias->lto_file_data)
-      local_original->merged = true;
+      local_original->icf_merged = true;
+
       ipa_merge_profiles (local_original, alias, true);
       alias->create_wrapper (local_original);
 
       if (dump_file)
-	fprintf (dump_file, "Callgraph thunk has been created.\n\n");
+	fprintf (dump_file, "Unified; Wrapper has been created.\n\n");
     }
-  else if (dump_file)
-    fprintf (dump_file, "Callgraph merge operation cannot be performed.\n\n");
+  gcc_assert (alias->icf_merged || remove);
+  original->icf_merged = true;
+
+  /* Inform the inliner about cross-module merging.  */
+  if ((original->lto_file_data || alias->lto_file_data)
+      && original->lto_file_data != alias->lto_file_data)
+    local_original->merged = original->merged = true;
+
+  if (remove)
+    {
+      ipa_merge_profiles (original, alias);
+      alias->release_body ();
+      alias->reset ();
+      alias->body_removed = true;
+      alias->icf_merged = true;
+      if (dump_file)
+	fprintf (dump_file, "Unified; Function body was removed.\n");
+    }
 
   return true;
 }
@@ -1319,7 +1429,8 @@ sem_variable::merge (sem_item *alias_item)
   if (!sem_item::target_supports_symbol_aliases_p ())
     {
       if (dump_file)
-	fprintf (dump_file, "Symbol aliases are not supported by target\n\n");
+	fprintf (dump_file, "Not unifying; "
+		 "Symbol aliases are not supported by target\n\n");
       return false;
     }
 
@@ -1329,71 +1440,91 @@ sem_variable::merge (sem_item *alias_item)
   varpool_node *alias = alias_var->get_node ();
   bool original_discardable = false;
 
+  bool original_address_matters = original->address_matters_p ();
+  bool alias_address_matters = alias->address_matters_p ();
+
   /* See if original is in a section that can be discarded if the main
-     symbol is not used.  */
-  if (DECL_EXTERNAL (original->decl))
-    original_discardable = true;
-  if (original->resolution == LDPR_PREEMPTED_REG
-      || original->resolution == LDPR_PREEMPTED_IR)
-    original_discardable = true;
-  if (original->can_be_discarded_p ())
+     symbol is not used.
+     Also consider case where we have resolution info and we know that
+     original's definition is not going to be used.  In this case we can not
+     create alias to original.  */
+  if (original->can_be_discarded_p ()
+      || (node->resolution != LDPR_UNKNOWN
+	  && !decl_binds_to_current_def_p (node->decl)))
     original_discardable = true;
 
   gcc_assert (!TREE_ASM_WRITTEN (alias->decl));
 
-  if (original_discardable || DECL_EXTERNAL (alias_var->decl) ||
-      !compare_sections (alias_var))
+  /* Constant pool machinery is not quite ready for aliases.
+     TODO: varasm code contains logic for merging DECL_IN_CONSTANT_POOL.
+     For LTO merging does not happen that is an important missing feature.
+     We can enable merging with LTO if the DECL_IN_CONSTANT_POOL
+     flag is dropped and non-local symbol name is assigned.  */
+  if (DECL_IN_CONSTANT_POOL (alias->decl)
+      || DECL_IN_CONSTANT_POOL (original->decl))
     {
       if (dump_file)
-	fprintf (dump_file, "Varpool alias cannot be created\n\n");
+	fprintf (dump_file,
+		 "Not unifying; constant pool variables.\n\n");
+      return false;
+    }
+
+  /* Do not attempt to mix functions from different user sections;
+     we do not know what user intends with those.  */
+  if (((DECL_SECTION_NAME (original->decl) && !original->implicit_section)
+       || (DECL_SECTION_NAME (alias->decl) && !alias->implicit_section))
+      && DECL_SECTION_NAME (original->decl) != DECL_SECTION_NAME (alias->decl))
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "Not unifying; "
+		 "original and alias are in different sections.\n\n");
+      return false;
+    }
+
+  /* We can not merge if address comparsion metters.  */
+  if (original_address_matters && alias_address_matters
+      && flag_merge_constants < 2)
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "Not unifying; "
+		 "adress of original and alias may be compared.\n\n");
+      return false;
+    }
+
+  if (original_discardable
+      && (!DECL_COMDAT_GROUP (original->decl)
+	  || (DECL_COMDAT_GROUP (original->decl)
+	      != DECL_COMDAT_GROUP (alias->decl))))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not unifying; alias cannot be created; "
+		 "target is discardable\n\n");
 
       return false;
     }
   else
     {
-      // alias cycle creation check
-      varpool_node *n = original;
-
-      while (n->alias)
-	{
-	  n = n->get_alias_target ();
-	  if (n == alias)
-	    {
-	      if (dump_file)
-		fprintf (dump_file, "Varpool alias cannot be created (alias cycle).\n\n");
-
-	      return false;
-	    }
-	}
+      gcc_assert (!original->alias);
+      gcc_assert (!alias->alias);
 
       alias->analyzed = false;
 
       DECL_INITIAL (alias->decl) = NULL;
       alias->need_bounds_init = false;
       alias->remove_all_references ();
+      if (TREE_ADDRESSABLE (alias->decl))
+        original->call_for_symbol_and_aliases (set_addressable, NULL, true);
 
       varpool_node::create_alias (alias_var->decl, decl);
       alias->resolve_alias (original);
 
       if (dump_file)
-	fprintf (dump_file, "Varpool alias has been created.\n\n");
+	fprintf (dump_file, "Unified; Variable alias has been created.\n\n");
 
       return true;
     }
-}
-
-bool
-sem_variable::compare_sections (sem_variable *alias)
-{
-  const char *source = node->get_section ();
-  const char *target = alias->node->get_section();
-
-  if (source == NULL && target == NULL)
-    return true;
-  else if(!source || !target)
-    return false;
-  else
-    return strcmp (source, target) == 0;
 }
 
 /* Dump symbol to FILE.  */
