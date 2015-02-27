@@ -838,7 +838,7 @@ DEFPARAM (PARAM_LRA_MAX_CONSIDERED_RELOAD_PSEUDOS,
 
 DEFPARAM (PARAM_LRA_INHERITANCE_EBB_PROBABILITY_CUTOFF,
 	  "lra-inheritance-ebb-probability-cutoff",
-	  "Minimal fall-through edge probability in percentage used to add BB to inheritance EEB in LRA",
+	  "Minimal fall-through edge probability in percentage used to add BB to inheritance EBB in LRA",
 	  40, 0, 100)
 
 /* Switch initialization conversion will refuse to create arrays that are
