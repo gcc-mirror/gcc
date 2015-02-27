@@ -138,6 +138,9 @@ tree_is_indexable (tree t)
   if ((TREE_CODE (t) == PARM_DECL || TREE_CODE (t) == RESULT_DECL)
       && DECL_CONTEXT (t))
     return variably_modified_type_p (TREE_TYPE (DECL_CONTEXT (t)), NULL_TREE);
+  /* IMPORTED_DECL is put into BLOCK and thus it never can be shared.  */
+  else if (TREE_CODE (t) == IMPORTED_DECL)
+    return false;
   else if (((TREE_CODE (t) == VAR_DECL && !TREE_STATIC (t))
 	    || TREE_CODE (t) == TYPE_DECL
 	    || TREE_CODE (t) == CONST_DECL
