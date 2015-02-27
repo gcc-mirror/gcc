@@ -47,12 +47,6 @@ AC_SUBST(libgcc_topdir)
 AC_CONFIG_AUX_DIR($libgcc_topdir)
 AC_CONFIG_HEADER(auto-target.h:config.in)
 
-AC_CHECK_HEADERS(inttypes.h \
-		 stdint.h stdlib.h \
-		 ftw.h unistd.h sys/stat.h sys/types.h \
-		 string.h strings.h memory.h)
-AC_HEADER_STDC
-
 AC_ARG_ENABLE(shared,
 [  --disable-shared        don't provide a shared libgcc],
 [
