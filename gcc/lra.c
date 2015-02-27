@@ -1907,6 +1907,24 @@ lra_former_scratch_operand_p (rtx_insn *insn, int nop)
 		       INSN_UID (insn) * MAX_RECOG_OPERANDS + nop) != 0;
 }
 
+/* Register operand NOP in INSN as a former scratch.  It will be
+   changed to scratch back, if it is necessary, at the LRA end.  */
+void
+lra_register_new_scratch_op (rtx_insn *insn, int nop)
+{
+  lra_insn_recog_data_t id = lra_get_insn_recog_data (insn);
+  rtx op = *id->operand_loc[nop];
+  sloc_t loc = XNEW (struct sloc);
+  lra_assert (REG_P (op));
+  loc->insn = insn;
+  loc->nop = nop;
+  scratches.safe_push (loc);
+  bitmap_set_bit (&scratch_bitmap, REGNO (op));
+  bitmap_set_bit (&scratch_operand_bitmap,
+		  INSN_UID (insn) * MAX_RECOG_OPERANDS + nop);
+  add_reg_note (insn, REG_UNUSED, op);
+}
+
 /* Change scratches onto pseudos and save their location.  */
 static void
 remove_scratches (void)
@@ -1916,7 +1934,6 @@ remove_scratches (void)
   basic_block bb;
   rtx_insn *insn;
   rtx reg;
-  sloc_t loc;
   lra_insn_recog_data_t id;
   struct lra_static_insn_data *static_id;
 
@@ -1938,15 +1955,7 @@ remove_scratches (void)
 	      *id->operand_loc[i] = reg
 		= lra_create_new_reg (static_id->operand[i].mode,
 				      *id->operand_loc[i], ALL_REGS, NULL);
-	      add_reg_note (insn, REG_UNUSED, reg);
-	      lra_update_dup (id, i);
-	      loc = XNEW (struct sloc);
-	      loc->insn = insn;
-	      loc->nop = i;
-	      scratches.safe_push (loc);
-	      bitmap_set_bit (&scratch_bitmap, REGNO (*id->operand_loc[i]));
-	      bitmap_set_bit (&scratch_operand_bitmap,
-			      INSN_UID (insn) * MAX_RECOG_OPERANDS + i);
+	      lra_register_new_scratch_op (insn, i);
 	      if (lra_dump_file != NULL)
 		fprintf (lra_dump_file,
 			 "Removing SCRATCH in insn #%u (nop %d)\n",
