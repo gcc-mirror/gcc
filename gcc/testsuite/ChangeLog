@@ -1,3 +1,8 @@
+2015-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65228
+	* gcc.dg/pr65228.c: New test.
+
 2015-02-27  Kai Tietz  <ktietz@redhat.com>
 
 	PR c/35330
