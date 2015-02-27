@@ -1,3 +1,35 @@
+2015-02-26  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/65150
+	* ipa-icf.c (symbol_compare_collection::symbol_compare_colleciton):
+	Use address_matters_p.
+	(redirect_all_callers, set_addressable): New functions.
+	(sem_function::merge): Reorganize and fix merging issues.
+	(sem_variable::merge): Likewise.
+	(sem_variable::compare_sections): Remove.
+	* common.opt (fmerge-all-constants, fmerge-constants): Remove
+	Optimization flag.
+	* symtab.c (symtab_node::resolve_alias): When alias has aliases,
+	redirect them.
+	(symtab_node::make_decl_local): Set ADDRESSABLE bit when
+	decl is used.
+	(address_matters_1): New function.
+	(symtab_node::address_matters_p): New function.
+	* cgraph.c (cgraph_edge::verify_corresponds_to_fndecl): Fix
+	check for merged flag.
+	* cgraph.h (address_matters_p): Declare.
+	(symtab_node::address_taken_from_non_vtable_p): Remove.
+	(symtab_node::address_can_be_compared_p): New method.
+	(ipa_ref::address_matters_p): Move here from ipa-ref.c; simplify.
+	* ipa-visibility.c (symtab_node::address_taken_from_non_vtable_p):
+	Remove.
+	(comdat_can_be_unshared_p_1) Use address_matters_p.
+	(update_vtable_references): Fix formating.
+	* ipa-ref.c (ipa_ref::address_matters_p): Move inline.
+	* cgraphunit.c (cgraph_node::create_wrapper): Drop UNINLINABLE flag.
+	* cgraphclones.c: Preserve merged and icf_merged flags.
+
 2015-02-26  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/extend.texi (Function Attributes): Fix spelling and typos.

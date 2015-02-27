@@ -1644,11 +1644,11 @@ Report on permanent memory allocation in WPA only
 ; string constants and constants from constant pool, if 2 also constant
 ; variables.
 fmerge-all-constants
-Common Report Var(flag_merge_constants,2) Init(1) Optimization
+Common Report Var(flag_merge_constants,2) Init(1)
 Attempt to merge identical constants and constant variables
 
 fmerge-constants
-Common Report Var(flag_merge_constants,1) Optimization
+Common Report Var(flag_merge_constants,1)
 Attempt to merge identical constants across compilation units
 
 fmerge-debug-strings

@@ -2468,6 +2468,7 @@ cgraph_node::create_wrapper (cgraph_node *target)
   release_body (true);
   reset ();
 
+  DECL_UNINLINABLE (decl) = false;
   DECL_RESULT (decl) = decl_result;
   DECL_INITIAL (decl) = NULL;
   allocate_struct_function (decl, false);

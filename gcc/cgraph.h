@@ -326,9 +326,6 @@ public:
   /* Return true if ONE and TWO are part of the same COMDAT group.  */
   inline bool in_same_comdat_group_p (symtab_node *target);
 
-  /* Return true when there is a reference to node and it is not vtable.  */
-  bool address_taken_from_non_vtable_p (void);
-
   /* Return true if symbol is known to be nonzero.  */
   bool nonzero_address ();
 
@@ -336,6 +333,15 @@ public:
      Return 1 if symbol is known to have same address as S2,
      return 2 otherwise.   */
   int equal_address_to (symtab_node *s2);
+
+  /* Return true if symbol's address may possibly be compared to other
+     symbol's address.  */
+  bool address_matters_p ();
+
+  /* Return true if NODE's address can be compared.  This use properties
+     of NODE only and does not look if the address is actually taken in
+     interesting way.  For that use ADDRESS_MATTERS_P instead.  */
+  bool address_can_be_compared_p (void);
 
   /* Return symbol table node associated with DECL, if any,
      and NULL otherwise.  */
@@ -3020,6 +3026,43 @@ varpool_node::call_for_symbol_and_aliases (bool (*callback) (varpool_node *,
   if (has_aliases_p ())
     return call_for_symbol_and_aliases_1 (callback, data, include_overwritable);
   return false;
+}
+
+/* Return true if NODE's address can be compared.  */
+
+inline bool
+symtab_node::address_can_be_compared_p ()
+{
+  /* Address of virtual tables and functions is never compared.  */
+  if (DECL_VIRTUAL_P (decl))
+    return false;
+  /* Address of C++ cdtors is never compared.  */
+  if (is_a <cgraph_node *> (this)
+      && (DECL_CXX_CONSTRUCTOR_P (decl)
+	  || DECL_CXX_DESTRUCTOR_P (decl)))
+    return false;
+  /* Constant pool symbols addresses are never compared.
+     flag_merge_constants permits us to assume the same on readonly vars.  */
+  if (is_a <varpool_node *> (this)
+      && (DECL_IN_CONSTANT_POOL (decl)
+	  || (flag_merge_constants >= 2
+	      && TREE_READONLY (decl) && !TREE_THIS_VOLATILE (decl))))
+    return false;
+  return true;
+}
+
+/* Return true if refernece may be used in address compare.  */
+
+inline bool
+ipa_ref::address_matters_p ()
+{
+  if (use != IPA_REF_ADDR)
+    return false;
+  /* Addresses taken from virtual tables are never compared.  */
+  if (is_a <varpool_node *> (referring)
+      && DECL_VIRTUAL_P (referring->decl))
+    return false;
+  return referred->address_can_be_compared_p ();
 }
 
 /* Build polymorphic call context for indirect call E.  */

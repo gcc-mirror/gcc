@@ -1,6 +1,6 @@
 /* PR tree-optimization/64454 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1" } */
+/* { dg-options "-O2 -fdump-tree-vrp1 -fno-ipa-icf" } */
 
 unsigned
 f1 (unsigned x)
