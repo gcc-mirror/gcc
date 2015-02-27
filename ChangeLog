@@ -1,3 +1,7 @@
+2015-02-26  Martin Sebor  <msebor@redhat.com>
+
+	* MAINTAINERS (Various Maintainers): Add self.
+
 2015-02-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	Revert:
