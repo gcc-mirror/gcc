@@ -1,3 +1,8 @@
+2015-02-27  Richard Biener  <rguenther@suse.de>
+
+	PR lto/65193
+	* g++.dg/lto/pr65193_0.C: New testcase.
+
 2015-02-26  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline
