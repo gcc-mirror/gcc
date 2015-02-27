@@ -1,12 +1,13 @@
 /* PR 65048 */
 /* { dg-do compile } */
-/* { dg-options "-O3" } */
+/* { dg-options "-O3 -std=gnu89" } */
 
 int a, b, c, d;
 void fn (void);
 
 int
-foo (int x)
+foo (x)
+     int x;
 {
   switch (x)
     {
