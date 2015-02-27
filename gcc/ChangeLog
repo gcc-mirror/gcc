@@ -1,3 +1,12 @@
+2015-02-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/65032
+	* lra-remat.c (update_scratch_ops): New.
+	(do_remat): Call it.
+	* lra.c (lra_register_new_scratch_op): New. Take code from ...
+	(remove_scratches): ... here.
+	* lra-int.h (lra_register_new_scratch_op): New prototype.
+
 2015-02-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c/65040
