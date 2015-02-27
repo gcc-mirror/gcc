@@ -4460,8 +4460,8 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
   decl = grokdeclarator (declarator, declspecs,
 			 NORMAL, initialized, NULL, &attributes, &expr, NULL,
 			 deprecated_state);
-  if (!decl)
-    return 0;
+  if (!decl || decl == error_mark_node)
+    return NULL_TREE;
 
   if (expr)
     add_stmt (fold_convert (void_type_node, expr));
