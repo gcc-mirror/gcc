@@ -9982,6 +9982,9 @@ enum s390_builtin
   S390_BUILTIN_TX_NESTING_DEPTH,
   S390_BUILTIN_TX_ASSIST,
 
+  S390_BUILTIN_S390_SFPC,
+  S390_BUILTIN_S390_EFPC,
+
   S390_BUILTIN_MAX
 };
 
@@ -9997,7 +10000,10 @@ static enum insn_code const code_for_builtin[S390_BUILTIN_MAX] = {
   CODE_FOR_tabort,
   CODE_FOR_ntstg,
   CODE_FOR_etnd,
-  CODE_FOR_tx_assist
+  CODE_FOR_tx_assist,
+
+  CODE_FOR_s390_sfpc,
+  CODE_FOR_s390_efpc
 };
 
 static void
@@ -10025,6 +10031,12 @@ s390_init_builtins (void)
     add_builtin_function ("__builtin_tx_assist", ftype,
 			  S390_BUILTIN_TX_ASSIST, BUILT_IN_MD, NULL, NULL_TREE);
 
+  /* void foo (unsigned) */
+  ftype = build_function_type_list (void_type_node, unsigned_type_node,
+				    NULL_TREE);
+  s390_builtin_decls[S390_BUILTIN_S390_SFPC] =
+    add_builtin_function ("__builtin_s390_sfpc", ftype,
+			  S390_BUILTIN_S390_SFPC, BUILT_IN_MD, NULL, NULL_TREE);
 
   /* int foo (void *) */
   ftype = build_function_type_list (integer_type_node, ptr_type_node,
@@ -10061,6 +10073,11 @@ s390_init_builtins (void)
     add_builtin_function ("__builtin_tend", ftype,
 			  S390_BUILTIN_TEND, BUILT_IN_MD, NULL, NULL_TREE);
 
+  /* unsigned foo (void) */
+  ftype = build_function_type_list (unsigned_type_node, NULL_TREE);
+  s390_builtin_decls[S390_BUILTIN_S390_EFPC] =
+    add_builtin_function ("__builtin_s390_efpc", ftype,
+			  S390_BUILTIN_S390_EFPC, BUILT_IN_MD, NULL, NULL_TREE);
 
   /* void foo (uint64_t *, uint64_t) */
   if (TARGET_64BIT)

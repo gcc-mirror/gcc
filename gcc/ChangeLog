@@ -1,5 +1,14 @@
 2015-02-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
+	* config/s390/s390.c (enum s390_builtin):
+	Add S390_BUILTIN_S390_SFPC and S390_BUILTIN_S390_EFPC.
+	(code_for_builtin): Add CODE_FOR_s390_sfpc and CODE_FOR_s390_efpc.
+	(s390_init_builtins): Generate new builtin functions.
+	* config/s390/s390.md (UNSPECV_SFPC, UNSPECV_EFPC): New constants.
+	(s390_sfpc, s390_efpc): New pattern definitions.
+
+2015-02-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
 	* config/s390/s390.c: (enum s390_builtin, s390_expand_builtin):
 	Rename S390_BUILTIN_max to S390_BUILTIN_MAX.
 	(s390_builtin_decls): New array.
