@@ -1,3 +1,11 @@
+2015-02-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65237
+	* gcc.dg/attr-noinline.c: Add -fno-ipa-icf
+	* gcc.dg/noreturn-7.c: Add -fno-ipa-icf.
+	* gcc.dg/ipa/ipa-cp-1.c: Revert accidental commit.
+	* gcc.dg/ipa/ipa-cp-2.c: Revert accidental commit.
+
 2015-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65048
