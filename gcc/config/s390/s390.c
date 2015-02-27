@@ -9982,10 +9982,12 @@ enum s390_builtin
   S390_BUILTIN_TX_NESTING_DEPTH,
   S390_BUILTIN_TX_ASSIST,
 
-  S390_BUILTIN_max
+  S390_BUILTIN_MAX
 };
 
-static enum insn_code const code_for_builtin[S390_BUILTIN_max] = {
+tree s390_builtin_decls[S390_BUILTIN_MAX];
+
+static enum insn_code const code_for_builtin[S390_BUILTIN_MAX] = {
   CODE_FOR_tbegin,
   CODE_FOR_tbegin_nofloat,
   CODE_FOR_tbegin_retry,
@@ -10008,44 +10010,57 @@ s390_init_builtins (void)
 
   /* void foo (void) */
   ftype = build_function_type_list (void_type_node, NULL_TREE);
-  add_builtin_function ("__builtin_tbeginc", ftype, S390_BUILTIN_TBEGINC,
-			BUILT_IN_MD, NULL, NULL_TREE);
+  s390_builtin_decls[S390_BUILTIN_TBEGINC] =
+    add_builtin_function ("__builtin_tbeginc", ftype, S390_BUILTIN_TBEGINC,
+			  BUILT_IN_MD, NULL, NULL_TREE);
 
   /* void foo (int) */
   ftype = build_function_type_list (void_type_node, integer_type_node,
 				    NULL_TREE);
-  add_builtin_function ("__builtin_tabort", ftype,
-			S390_BUILTIN_TABORT, BUILT_IN_MD, NULL, noreturn_attr);
-  add_builtin_function ("__builtin_tx_assist", ftype,
-			S390_BUILTIN_TX_ASSIST, BUILT_IN_MD, NULL, NULL_TREE);
+  s390_builtin_decls[S390_BUILTIN_TABORT] =
+    add_builtin_function ("__builtin_tabort", ftype,
+			  S390_BUILTIN_TABORT, BUILT_IN_MD, NULL,
+			  noreturn_attr);
+  s390_builtin_decls[S390_BUILTIN_TX_ASSIST] =
+    add_builtin_function ("__builtin_tx_assist", ftype,
+			  S390_BUILTIN_TX_ASSIST, BUILT_IN_MD, NULL, NULL_TREE);
+
 
   /* int foo (void *) */
-  ftype = build_function_type_list (integer_type_node, ptr_type_node, NULL_TREE);
-  add_builtin_function ("__builtin_tbegin", ftype, S390_BUILTIN_TBEGIN,
-			BUILT_IN_MD, NULL, returns_twice_attr);
-  add_builtin_function ("__builtin_tbegin_nofloat", ftype,
-			S390_BUILTIN_TBEGIN_NOFLOAT,
-			BUILT_IN_MD, NULL, returns_twice_attr);
+  ftype = build_function_type_list (integer_type_node, ptr_type_node,
+				    NULL_TREE);
+  s390_builtin_decls[S390_BUILTIN_TBEGIN] =
+    add_builtin_function ("__builtin_tbegin", ftype, S390_BUILTIN_TBEGIN,
+			  BUILT_IN_MD, NULL, returns_twice_attr);
+  s390_builtin_decls[S390_BUILTIN_TBEGIN_NOFLOAT] =
+    add_builtin_function ("__builtin_tbegin_nofloat", ftype,
+			  S390_BUILTIN_TBEGIN_NOFLOAT,
+			  BUILT_IN_MD, NULL, returns_twice_attr);
 
   /* int foo (void *, int) */
   ftype = build_function_type_list (integer_type_node, ptr_type_node,
 				    integer_type_node, NULL_TREE);
-  add_builtin_function ("__builtin_tbegin_retry", ftype,
-			S390_BUILTIN_TBEGIN_RETRY,
-			BUILT_IN_MD,
-			NULL, returns_twice_attr);
-  add_builtin_function ("__builtin_tbegin_retry_nofloat", ftype,
-			S390_BUILTIN_TBEGIN_RETRY_NOFLOAT,
-			BUILT_IN_MD,
-			NULL, returns_twice_attr);
+  s390_builtin_decls[S390_BUILTIN_TBEGIN_RETRY] =
+    add_builtin_function ("__builtin_tbegin_retry", ftype,
+			  S390_BUILTIN_TBEGIN_RETRY,
+			  BUILT_IN_MD,
+			  NULL, returns_twice_attr);
+  s390_builtin_decls[S390_BUILTIN_TBEGIN_RETRY_NOFLOAT] =
+    add_builtin_function ("__builtin_tbegin_retry_nofloat", ftype,
+			  S390_BUILTIN_TBEGIN_RETRY_NOFLOAT,
+			  BUILT_IN_MD,
+			  NULL, returns_twice_attr);
 
   /* int foo (void) */
   ftype = build_function_type_list (integer_type_node, NULL_TREE);
-  add_builtin_function ("__builtin_tx_nesting_depth", ftype,
-			S390_BUILTIN_TX_NESTING_DEPTH,
-			BUILT_IN_MD, NULL, NULL_TREE);
-  add_builtin_function ("__builtin_tend", ftype,
-			S390_BUILTIN_TEND, BUILT_IN_MD,	NULL, NULL_TREE);
+  s390_builtin_decls[S390_BUILTIN_TX_NESTING_DEPTH] =
+    add_builtin_function ("__builtin_tx_nesting_depth", ftype,
+			  S390_BUILTIN_TX_NESTING_DEPTH,
+			  BUILT_IN_MD, NULL, NULL_TREE);
+  s390_builtin_decls[S390_BUILTIN_TEND] =
+    add_builtin_function ("__builtin_tend", ftype,
+			  S390_BUILTIN_TEND, BUILT_IN_MD, NULL, NULL_TREE);
+
 
   /* void foo (uint64_t *, uint64_t) */
   if (TARGET_64BIT)
@@ -10053,12 +10068,13 @@ s390_init_builtins (void)
   else
     uint64_type = long_long_unsigned_type_node;
 
-   ftype = build_function_type_list (void_type_node,
+  ftype = build_function_type_list (void_type_node,
  				    build_pointer_type (uint64_type),
 				    uint64_type, NULL_TREE);
-  add_builtin_function ("__builtin_non_tx_store", ftype,
-			S390_BUILTIN_NON_TX_STORE,
-			BUILT_IN_MD, NULL, NULL_TREE);
+  s390_builtin_decls[S390_BUILTIN_NON_TX_STORE] =
+    add_builtin_function ("__builtin_non_tx_store", ftype,
+			  S390_BUILTIN_NON_TX_STORE,
+			  BUILT_IN_MD, NULL, NULL_TREE);
 }
 
 /* Expand an expression EXP that calls a built-in function,
@@ -10083,7 +10099,7 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   tree arg;
   call_expr_arg_iterator iter;
 
-  if (fcode >= S390_BUILTIN_max)
+  if (fcode >= S390_BUILTIN_MAX)
     internal_error ("bad builtin fcode");
   icode = code_for_builtin[fcode];
   if (icode == 0)
@@ -10168,6 +10184,18 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     return target;
   else
     return const0_rtx;
+}
+
+/* Return the decl for the target specific builtin with the function
+   code FCODE.  */
+
+static tree
+s390_builtin_decl (unsigned fcode, bool initialized_p ATTRIBUTE_UNUSED)
+{
+  if (fcode >= S390_BUILTIN_MAX)
+    return error_mark_node;
+
+  return s390_builtin_decls[fcode];
 }
 
 /* We call mcount before the function prologue.  So a profiled leaf
@@ -12138,6 +12166,8 @@ s390_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 #define TARGET_INIT_BUILTINS s390_init_builtins
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN s390_expand_builtin
+#undef  TARGET_BUILTIN_DECL
+#define TARGET_BUILTIN_DECL s390_builtin_decl
 
 #undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
 #define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA s390_output_addr_const_extra
