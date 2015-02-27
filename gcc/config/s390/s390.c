@@ -12139,6 +12139,80 @@ s390_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 	  || size == 4 || (TARGET_ZARCH && size == 8));
 }
 
+/* Implement TARGET_ATOMIC_ASSIGN_EXPAND_FENV hook.  */
+
+static void
+s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
+{
+  tree sfpc = s390_builtin_decls[S390_BUILTIN_S390_SFPC];
+  tree efpc = s390_builtin_decls[S390_BUILTIN_S390_EFPC];
+  tree call_efpc = build_call_expr (efpc, 0);
+  tree fenv_var = create_tmp_var (unsigned_type_node);
+
+#define FPC_EXCEPTION_MASK	 HOST_WIDE_INT_UC (0xf8000000)
+#define FPC_FLAGS_MASK		 HOST_WIDE_INT_UC (0x00f80000)
+#define FPC_DXC_MASK		 HOST_WIDE_INT_UC (0x0000ff00)
+#define FPC_EXCEPTION_MASK_SHIFT HOST_WIDE_INT_UC (24)
+#define FPC_FLAGS_SHIFT		 HOST_WIDE_INT_UC (16)
+#define FPC_DXC_SHIFT		 HOST_WIDE_INT_UC (8)
+
+  /* Generates the equivalent of feholdexcept (&fenv_var)
+
+     fenv_var = __builtin_s390_efpc ();
+     __builtin_s390_sfpc (fenv_var & mask) */
+  tree old_fpc = build2 (MODIFY_EXPR, unsigned_type_node, fenv_var, call_efpc);
+  tree new_fpc =
+    build2 (BIT_AND_EXPR, unsigned_type_node, fenv_var,
+	    build_int_cst (unsigned_type_node,
+			   ~(FPC_DXC_MASK | FPC_FLAGS_MASK |
+			     FPC_EXCEPTION_MASK)));
+  tree set_new_fpc = build_call_expr (sfpc, 1, new_fpc);
+  *hold = build2 (COMPOUND_EXPR, void_type_node, old_fpc, set_new_fpc);
+
+  /* Generates the equivalent of feclearexcept (FE_ALL_EXCEPT)
+
+     __builtin_s390_sfpc (__builtin_s390_efpc () & mask) */
+  new_fpc = build2 (BIT_AND_EXPR, unsigned_type_node, call_efpc,
+		    build_int_cst (unsigned_type_node,
+				   ~(FPC_DXC_MASK | FPC_FLAGS_MASK)));
+  *clear = build_call_expr (sfpc, 1, new_fpc);
+
+  /* Generates the equivalent of feupdateenv (fenv_var)
+
+  old_fpc = __builtin_s390_efpc ();
+  __builtin_s390_sfpc (fenv_var);
+  __atomic_feraiseexcept ((old_fpc & FPC_FLAGS_MASK) >> FPC_FLAGS_SHIFT);  */
+
+  old_fpc = create_tmp_var (unsigned_type_node);
+  tree store_old_fpc = build2 (MODIFY_EXPR, void_type_node,
+			       old_fpc, call_efpc);
+
+  set_new_fpc = build_call_expr (sfpc, 1, fenv_var);
+
+  tree raise_old_except = build2 (BIT_AND_EXPR, unsigned_type_node, old_fpc,
+				  build_int_cst (unsigned_type_node,
+						 FPC_FLAGS_MASK));
+  raise_old_except = build2 (RSHIFT_EXPR, unsigned_type_node, raise_old_except,
+			     build_int_cst (unsigned_type_node,
+					    FPC_FLAGS_SHIFT));
+  tree atomic_feraiseexcept
+    = builtin_decl_implicit (BUILT_IN_ATOMIC_FERAISEEXCEPT);
+  raise_old_except = build_call_expr (atomic_feraiseexcept,
+				      1, raise_old_except);
+
+  *update = build2 (COMPOUND_EXPR, void_type_node,
+		    build2 (COMPOUND_EXPR, void_type_node,
+			    store_old_fpc, set_new_fpc),
+		    raise_old_except);
+
+#undef FPC_EXCEPTION_MASK
+#undef FPC_FLAGS_MASK
+#undef FPC_DXC_MASK
+#undef FPC_EXCEPTION_MASK_SHIFT
+#undef FPC_FLAGS_SHIFT
+#undef FPC_DXC_SHIFT
+}
+
 /* Initialize GCC target structure.  */
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -12329,6 +12403,9 @@ s390_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 #undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
 #define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \
   s390_use_by_pieces_infrastructure_p
+
+#undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
+#define TARGET_ATOMIC_ASSIGN_EXPAND_FENV s390_atomic_assign_expand_fenv
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
