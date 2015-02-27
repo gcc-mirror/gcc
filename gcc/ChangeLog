@@ -1,5 +1,10 @@
 2015-02-27  Vladimir Makarov  <vmakarov@redhat.com>
 
+	* params.def (PARAM_LRA_INHERITANCE_EBB_PROBABILITY_CUTOFF): Fix
+	a typo in the description.
+
+2015-02-27  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR target/64317
 	* params.def (PARAM_LRA_INHERITANCE_EBB_PROBABILITY_CUTOFF): New.
 	* params.h (LRA_INHERITANCE_EBB_PROBABILITY_CUTOFF): New.
