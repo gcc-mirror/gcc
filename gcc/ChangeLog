@@ -1,3 +1,12 @@
+2015-02-27  Richard Biener  <rguenther@suse.de>
+
+	PR lto/65193
+	Backport from mainline
+	2014-07-24  Jan Hubicka  <hubicka@ucw.cz>
+ 
+	* lto-streamer-out.c (tree_is_indexable): Consider IMPORTED_DECL
+	as non-indexable.
+
 2015-02-26  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline
