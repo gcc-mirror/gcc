@@ -3631,7 +3631,7 @@ The C standard specifies that zero-length formats are allowed.
 @opindex Wformat=2
 Enable @option{-Wformat} plus additional format checks.  Currently
 equivalent to @option{-Wformat -Wformat-nonliteral -Wformat-security
--Wformat-signedness -Wformat-y2k}.
+-Wformat-y2k}.
 
 @item -Wformat-nonliteral
 @opindex Wformat-nonliteral

@@ -456,7 +456,7 @@ C ObjC C++ ObjC++ Var(warn_format_security) Warning LangEnabledBy(C ObjC C++ Obj
 Warn about possible security problems with format functions
 
 Wformat-signedness
-C ObjC C++ ObjC++ Var(warn_format_signedness) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 2, 0)
+C ObjC C++ ObjC++ Var(warn_format_signedness) Warning
 Warn about sign differences with format functions
 
 Wformat-y2k
