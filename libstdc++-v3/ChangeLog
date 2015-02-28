@@ -1,3 +1,8 @@
+2015-02-28  Matthias Klose  <doko@ubuntu.com>
+
+	PR libstdc++/65246
+	* python/libstdcxx/v6/__init__.py: Use explicit relative imports.
+
 2015-02-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2011.xml: Remove duplicated information.
