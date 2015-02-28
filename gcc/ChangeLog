@@ -1,5 +1,11 @@
 2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/65237
+	* ipa-icf.c (sem_function::merge): Do not attempt to produce alias
+	across COMDAT group boundary.
+
+2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/65232
 	* ipa-icf.c (clear_decl_rtl): New function.
 	(sem_function::merge): Clear RTL before forming alias.

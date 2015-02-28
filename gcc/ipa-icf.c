@@ -755,12 +755,17 @@ sem_function::merge (sem_item *alias_item)
 	it is an external functions where we can not create an alias
 	(ORIGINAL_DISCARDABLE)
      3) if target do not support symbol aliases.
+     4) original and alias lie in different comdat groups.
 
      If we can not produce alias, we will turn ALIAS into WRAPPER of ORIGINAL
      and/or redirect all callers from ALIAS to ORIGINAL.  */
   if ((original_address_matters && alias_address_matters)
-      || original_discardable
-      || !sem_item::target_supports_symbol_aliases_p ())
+      || (original_discardable
+	  && (!DECL_COMDAT_GROUP (alias->decl)
+	      || (DECL_COMDAT_GROUP (alias->decl)
+		  != DECL_COMDAT_GROUP (original->decl))))
+      || !sem_item::target_supports_symbol_aliases_p ()
+      || DECL_COMDAT_GROUP (alias->decl) != DECL_COMDAT_GROUP (original->decl))
     {
       /* First see if we can produce wrapper.  */
 
