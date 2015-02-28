@@ -1,3 +1,8 @@
+2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65236
+	* g++.dg/ipa/ipa-icf-6.C: New testcase.
+
 2015-02-27  Pat Haugen <pthaugen@us.ibm.com>
 
 	* gcc.dg/vect/pr59354.c: Move vector producing code to separate function.

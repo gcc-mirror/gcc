@@ -1,3 +1,9 @@
+2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65236
+	* cgraphunit.c (cgraph_node::expand_thunk): Enable return slot
+	opt.
+
 2015-02-28  Xingxing Pan  <xxingpan@marvell.com>
 
 	* config/aarch64/aarch64.md: (mov<mode>_aarch64): Change type
