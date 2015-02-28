@@ -1,3 +1,8 @@
+2015-02-28  Xingxing Pan  <xxingpan@marvell.com>
+
+	* config/aarch64/aarch64.md: (mov<mode>_aarch64): Change type
+	to neon_to_gp<q>.
+
 2015-02-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* params.def (PARAM_LRA_INHERITANCE_EBB_PROBABILITY_CUTOFF): Fix
