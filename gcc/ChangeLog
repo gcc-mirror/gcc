@@ -1,5 +1,12 @@
 2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/65232
+	* ipa-icf.c (clear_decl_rtl): New function.
+	(sem_function::merge): Clear RTL before forming alias.
+	(sem_variable::merge): Clear RTL before forming alias.
+
+2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/65236
 	* cgraphunit.c (cgraph_node::expand_thunk): Enable return slot
 	opt.
