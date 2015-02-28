@@ -632,13 +632,23 @@ set_local (cgraph_node *node, void *data)
   return false;
 }
 
-/* TREE_ADDRESSABLE of NODE to true if DATA is non-NULL.
+/* TREE_ADDRESSABLE of NODE to true.
    Helper for call_for_symbol_thunks_and_aliases.  */
 
 static bool
 set_addressable (varpool_node *node, void *)
 {
   TREE_ADDRESSABLE (node->decl) = 1;
+  return false;
+}
+
+/* Clear DECL_RTL of NODE. 
+   Helper for call_for_symbol_thunks_and_aliases.  */
+
+static bool
+clear_decl_rtl (symtab_node *node, void *)
+{
+  SET_DECL_RTL (node->decl, NULL);
   return false;
 }
 
@@ -893,6 +903,9 @@ sem_function::merge (sem_item *alias_item)
       ipa_merge_profiles (original, alias);
       alias->release_body (true);
       alias->reset ();
+      /* Notice global symbol possibly produced RTL.  */
+      ((symtab_node *)alias)->call_for_symbol_and_aliases (clear_decl_rtl,
+							   NULL, true);
 
       /* Create the alias.  */
       cgraph_node::create_alias (alias_func->decl, decl);
@@ -1512,6 +1525,8 @@ sem_variable::merge (sem_item *alias_item)
       alias->analyzed = false;
 
       DECL_INITIAL (alias->decl) = NULL;
+      ((symtab_node *)alias)->call_for_symbol_and_aliases (clear_decl_rtl,
+							   NULL, true);
       alias->need_bounds_init = false;
       alias->remove_all_references ();
       if (TREE_ADDRESSABLE (alias->decl))
