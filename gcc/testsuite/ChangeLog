@@ -1,3 +1,8 @@
+2015-03-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/61142
+	* gcc.target/sh/sh/pr61142.c: New.
+
 2015-03-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/other/dump-ada-spec-3.C: New test.
