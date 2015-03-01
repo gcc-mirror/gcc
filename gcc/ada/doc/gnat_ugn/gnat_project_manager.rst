@@ -2593,9 +2593,9 @@ The following three attributes can be used only in an aggregate project:
   the attribute agg1'Project_Path, nor is agg1 influenced by
   agg2'Project_Path.
 
-  This can potentially lead to errors. Consider the following example:
+  This can potentially lead to errors. Consider the following example::
 
-  .. --
+     --
      --  +---------------+                  +----------------+
      --  | Agg1.gpr      |-=--includes--=-->| Agg2.gpr       |
      --  |  'project_path|                  |  'project_path |
@@ -2616,8 +2616,6 @@ The following three attributes can be used only in an aggregate project:
      --    | R.gpr |      | R'.gpr  |
      --    +-------+      +---------+
 
-  .. image:: project-manager-figure.png
-    
   When looking for p.gpr, both aggregates find the same physical file on
   the disk. However, it might happen that with their different project
   paths, both aggregate projects would in fact find a different r.gpr.

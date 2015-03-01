@@ -1,3 +1,12 @@
+2015-03-01  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/65259
+
+	* doc/gnat_ugn/gnat_project_manager.rst,
+	doc/gnat_ugn/platform_specific_information.rst: Remove reference to
+	image, too troublesome with texi format.
+	* gnat_ugn.texi: Regenerate.
+
 2015-02-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR libgomp/64625
