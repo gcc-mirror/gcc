@@ -1,3 +1,8 @@
+2015-03-01  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/stackalign/longlong-2.c: Omit ICF.
+	* g++.dg/ipa/pr63595.C: Update expected results.
+
 2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65236
