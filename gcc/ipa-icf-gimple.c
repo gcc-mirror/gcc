@@ -448,18 +448,23 @@ func_checker::compare_operand (tree t1, tree t2)
     /* Virtual table call.  */
     case OBJ_TYPE_REF:
       {
-	x1 = TREE_OPERAND (t1, 0);
-	x2 = TREE_OPERAND (t2, 0);
-	y1 = TREE_OPERAND (t1, 1);
-	y2 = TREE_OPERAND (t2, 1);
-	z1 = TREE_OPERAND (t1, 2);
-	z2 = TREE_OPERAND (t2, 2);
+	if (!compare_ssa_name (OBJ_TYPE_REF_EXPR (t1), OBJ_TYPE_REF_EXPR (t2)))
+	  return return_false ();
+	if (opt_for_fn (m_source_func_decl, flag_devirtualize)
+	    && virtual_method_call_p (t1))
+	  {
+	    if (tree_to_uhwi (OBJ_TYPE_REF_TOKEN (t1))
+		!= tree_to_uhwi (OBJ_TYPE_REF_TOKEN (t2)))
+	      return return_false_with_msg ("OBJ_TYPE_REF token mismatch");
+	    if (!types_same_for_odr (obj_type_ref_class (t1),
+				     obj_type_ref_class (t2)))
+	      return return_false_with_msg ("OBJ_TYPE_REF OTR type mismatch");
+	    if (!compare_ssa_name (OBJ_TYPE_REF_OBJECT (t1),
+				   OBJ_TYPE_REF_OBJECT (t2)))
+	      return return_false_with_msg ("OBJ_TYPE_REF object mismatch");
+	  }
 
-	ret = compare_ssa_name (x1, x2)
-	      && compare_operand (y1, y2)
-	      && compare_cst_or_decl (z1, z2);
-
-	return return_with_debug (ret);
+	return return_with_debug (true);
       }
     case IMAGPART_EXPR:
     case REALPART_EXPR:
