@@ -335,17 +335,26 @@ sem_function::get_hash (void)
 
 /* For a given symbol table nodes N1 and N2, we check that FUNCTION_DECLs
    point to a same function. Comparison can be skipped if IGNORED_NODES
-   contains these nodes.  */
+   contains these nodes.  ADDRESS indicate if address is taken.  */
 
 bool
-sem_function::compare_cgraph_references (hash_map <symtab_node *, sem_item *>
-    &ignored_nodes,
-    symtab_node *n1, symtab_node *n2)
+sem_function::compare_cgraph_references (
+    hash_map <symtab_node *, sem_item *> &ignored_nodes,
+    symtab_node *n1, symtab_node *n2, bool address)
 {
-  if (n1 == n2 || (ignored_nodes.get (n1) && ignored_nodes.get (n2)))
+  enum availability avail1, avail2;
+
+  if (address && n1->equal_address_to (n2) == 1)
+    return true;
+  if (!address && n1->semantically_equivalent_p (n2))
     return true;
 
-  /* TODO: add more precise comparison for weakrefs, etc.  */
+  n1 = n1->ultimate_alias_target (&avail1);
+  n2 = n2->ultimate_alias_target (&avail2);
+
+  if (avail1 >= AVAIL_INTERPOSABLE && ignored_nodes.get (n1)
+      && avail2 >= AVAIL_INTERPOSABLE && ignored_nodes.get (n2))
+    return true;
 
   return return_false_with_msg ("different references");
 }
@@ -412,7 +421,9 @@ sem_function::equals_wpa (sem_item *item,
     {
       item->node->iterate_reference (i, ref2);
 
-      if (!compare_cgraph_references (ignored_nodes, ref->referred, ref2->referred))
+      if (!compare_cgraph_references (ignored_nodes, ref->referred,
+				      ref2->referred,
+				      ref->address_matters_p ()))
 	return false;
     }
 
@@ -421,7 +432,8 @@ sem_function::equals_wpa (sem_item *item,
 
   while (e1 && e2)
     {
-      if (!compare_cgraph_references (ignored_nodes, e1->callee, e2->callee))
+      if (!compare_cgraph_references (ignored_nodes, e1->callee,
+				      e2->callee, false))
 	return false;
 
       e1 = e1->next_callee;
@@ -1117,7 +1129,7 @@ sem_function::parse (cgraph_node *node, bitmap_obstack *stack)
   tree fndecl = node->decl;
   function *func = DECL_STRUCT_FUNCTION (fndecl);
 
-  /* TODO: add support for thunks and aliases.  */
+  /* TODO: add support for thunks.  */
 
   if (!func || !node->has_gimple_body_p ())
     return NULL;
@@ -1428,6 +1440,9 @@ sem_variable *
 sem_variable::parse (varpool_node *node, bitmap_obstack *stack)
 {
   tree decl = node->decl;
+
+  if (node->alias)
+    return NULL;
 
   bool readonly = TYPE_P (decl) ? TYPE_READONLY (decl) : TREE_READONLY (decl);
   if (!readonly)
@@ -2086,7 +2101,8 @@ sem_item_optimizer::build_graph (void)
 	  cgraph_edge *e = cnode->callees;
 	  while (e)
 	    {
-	      sem_item **slot = m_symtab_node_map.get (e->callee);
+	      sem_item **slot = m_symtab_node_map.get
+		(e->callee->ultimate_alias_target ());
 	      if (slot)
 		item->add_reference (*slot);
 
@@ -2097,7 +2113,8 @@ sem_item_optimizer::build_graph (void)
       ipa_ref *ref = NULL;
       for (unsigned i = 0; item->node->iterate_reference (i, ref); i++)
 	{
-	  sem_item **slot = m_symtab_node_map.get (ref->referred);
+	  sem_item **slot = m_symtab_node_map.get
+	    (ref->referred->ultimate_alias_target ());
 	  if (slot)
 	    item->add_reference (*slot);
 	}
