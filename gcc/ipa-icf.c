@@ -619,6 +619,30 @@ sem_function::equals_private (sem_item *item,
     if (!compare_phi_node (bb_sorted[i]->bb, m_compared_func->bb_sorted[i]->bb))
       return return_false_with_msg ("PHI node comparison returns false");
 
+  /* Compare special function DECL attributes.  */
+  if (DECL_FUNCTION_PERSONALITY (decl) != DECL_FUNCTION_PERSONALITY (item->decl))
+    return return_false_with_msg ("function personalities are different");
+
+  if (DECL_DISREGARD_INLINE_LIMITS (decl) != DECL_DISREGARD_INLINE_LIMITS (item->decl))
+    return return_false_with_msg ("DECL_DISREGARD_INLINE_LIMITS are different");
+
+  if (DECL_DECLARED_INLINE_P (decl) != DECL_DECLARED_INLINE_P (item->decl))
+    return return_false_with_msg ("inline attributes are different");
+
+  if (DECL_IS_OPERATOR_NEW (decl) != DECL_IS_OPERATOR_NEW (item->decl))
+    return return_false_with_msg ("operator new flags are different");
+
+  if (DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl)
+       != DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (item->decl))
+    return return_false_with_msg ("intrument function entry exit "
+				  "attributes are different");
+
+  if (DECL_NO_LIMIT_STACK (decl) != DECL_NO_LIMIT_STACK (item->decl))
+    return return_false_with_msg ("no stack limit attributes are different");
+
+  if (flags_from_decl_or_type (decl) != flags_from_decl_or_type (item->decl))
+    return return_false_with_msg ("decl_or_type flags are different");
+
   return result;
 }
 
@@ -1297,6 +1321,17 @@ sem_variable::equals (sem_item *item,
 
   if (!ctor || !v->ctor)
     return return_false_with_msg ("ctor is missing for semantic variable");
+
+  if (DECL_IN_CONSTANT_POOL (decl)
+      && (DECL_IN_CONSTANT_POOL (item->decl)
+	  || item->node->address_matters_p ()))
+    return return_false_with_msg ("constant pool");
+
+  if (DECL_IN_TEXT_SECTION (decl) != DECL_IN_TEXT_SECTION (item->decl))
+    return return_false_with_msg ("text section");
+
+  if (DECL_TLS_MODEL (decl) || DECL_TLS_MODEL (item->decl))
+    return return_false_with_msg ("TLS model");
 
   return sem_variable::equals (ctor, v->ctor);
 }

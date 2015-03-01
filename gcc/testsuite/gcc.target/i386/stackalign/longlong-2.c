@@ -1,6 +1,6 @@
 /* { dg-do compile  { target { ! *-*-darwin* } } } */
 /* { dg-require-effective-target ia32 } */
-/* { dg-options "-O2 -mpreferred-stack-boundary=2" } */
+/* { dg-options "-O2 -mpreferred-stack-boundary=2 -fno-ipa-icf" } */
 /* { dg-final { scan-assembler-times "and\[lq\]?\[^\\n\]*-8,\[^\\n\]*sp" 2 } } */ 
 /* { dg-final { scan-assembler-times "and\[lq\]?\[^\\n\]*-16,\[^\\n\]*sp" 2 } } */ 
 
