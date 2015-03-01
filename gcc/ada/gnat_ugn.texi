@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , February 22, 2015
+GNAT User's Guide for Native Platforms , March 01, 2015
 
 AdaCore
 
@@ -19532,28 +19532,28 @@ agg2'Project_Path.
 
 This can potentially lead to errors. Consider the following example:
 
-@c --
-@c --  +---------------+                  +----------------+
-@c --  | Agg1.gpr      |-=--includes--=-->| Agg2.gpr       |
-@c --  |  'project_path|                  |  'project_path |
-@c --  |               |                  |                |
-@c --  +---------------+                  +----------------+
-@c --        :                                   :
-@c --        includes                        includes
-@c --        :                                   :
-@c --        v                                   v
-@c --    +-------+                          +---------+
-@c --    | P.gpr |<---------- withs --------|  Q.gpr  |
-@c --    +-------+---------\                +---------+
-@c --        |             |
-@c --        withs         |
-@c --        |             |
-@c --        v             v
-@c --    +-------+      +---------+
-@c --    | R.gpr |      | R'.gpr  |
-@c --    +-------+      +---------+
-
-@image{project-manager-figure,,,,png}
+@example
+--
+--  +---------------+                  +----------------+
+--  | Agg1.gpr      |-=--includes--=-->| Agg2.gpr       |
+--  |  'project_path|                  |  'project_path |
+--  |               |                  |                |
+--  +---------------+                  +----------------+
+--        :                                   :
+--        includes                        includes
+--        :                                   :
+--        v                                   v
+--    +-------+                          +---------+
+--    | P.gpr |<---------- withs --------|  Q.gpr  |
+--    +-------+---------\                +---------+
+--        |             |
+--        withs         |
+--        |             |
+--        v             v
+--    +-------+      +---------+
+--    | R.gpr |      | R'.gpr  |
+--    +-------+      +---------+
+@end example
 
 When looking for p.gpr, both aggregates find the same physical file on
 the disk. However, it might happen that with their different project
@@ -29588,29 +29588,26 @@ The default run-time library (when GNAT is installed) is @emph{rts-native}.
 This default run time is selected by the means of soft links.
 For example on x86-linux:
 
-@quotation
-
-@image{rtlibrary-structure,,,,png}
-@end quotation
-
-@c --
-@c --  $(target-dir)
-@c --      |
-@c --      +--- adainclude----------+
-@c --      |                        |
-@c --      +--- adalib-----------+  |
-@c --      |                     |  |
-@c --      +--- rts-native       |  |
-@c --      |    |                |  |
-@c --      |    +--- adainclude <---+
-@c --      |    |                |
-@c --      |    +--- adalib <----+
-@c --      |
-@c --      +--- rts-sjlj
-@c --           |
-@c --           +--- adainclude
-@c --           |
-@c --           +--- adalib
+@example
+--
+--  $(target-dir)
+--      |
+--      +--- adainclude----------+
+--      |                        |
+--      +--- adalib-----------+  |
+--      |                     |  |
+--      +--- rts-native       |  |
+--      |    |                |  |
+--      |    +--- adainclude <---+
+--      |    |                |
+--      |    +--- adalib <----+
+--      |
+--      +--- rts-sjlj
+--           |
+--           +--- adainclude
+--           |
+--           +--- adalib
+@end example
 
 If the @emph{rts-sjlj} library is to be selected on a permanent basis,
 these soft links can be modified with the following commands:
