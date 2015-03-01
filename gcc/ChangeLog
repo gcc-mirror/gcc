@@ -1,5 +1,10 @@
 2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-icf.c (sem_function::merge): Fix handling of COMDAT.
+	(sem_variable::merge) Likewise.
+
+2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline.c (can_inline_edge_p): Match opt_for_fn on inline
 	target; also match flag_ipa_devirt.
 

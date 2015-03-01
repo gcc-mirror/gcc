@@ -733,6 +733,7 @@ sem_function::merge (sem_item *alias_item)
   bool remove = false;
 
   bool original_discardable = false;
+  bool original_discarded = false;
 
   bool original_address_matters = original->address_matters_p ();
   bool alias_address_matters = alias->address_matters_p ();
@@ -761,15 +762,16 @@ sem_function::merge (sem_item *alias_item)
     }
 
   /* See if original is in a section that can be discarded if the main
-     symbol is not used.
+     symbol is not used.  */
 
-     Also consider case where we have resolution info and we know that
+  if (original->can_be_discarded_p ())
+    original_discardable = true;
+  /* Also consider case where we have resolution info and we know that
      original's definition is not going to be used.  In this case we can not
      create alias to original.  */
-  if (original->can_be_discarded_p ()
-      || (node->resolution != LDPR_UNKNOWN
-	  && !decl_binds_to_current_def_p (node->decl)))
-    original_discardable = true;
+  if (node->resolution != LDPR_UNKNOWN
+      && !decl_binds_to_current_def_p (node->decl))
+    original_discardable = original_discarded = true;
 
   /* Creating a symtab alias is the optimal way to merge.
      It however can not be used in the following cases:
@@ -788,6 +790,7 @@ sem_function::merge (sem_item *alias_item)
 	  && (!DECL_COMDAT_GROUP (alias->decl)
 	      || (DECL_COMDAT_GROUP (alias->decl)
 		  != DECL_COMDAT_GROUP (original->decl))))
+      || original_discarded
       || !sem_item::target_supports_symbol_aliases_p ()
       || DECL_COMDAT_GROUP (alias->decl) != DECL_COMDAT_GROUP (original->decl))
     {
@@ -797,7 +800,7 @@ sem_function::merge (sem_item *alias_item)
 	 comdat group. Other compiler producing the body of the
 	 another comdat group may make opossite decision and with unfortunate
 	 linker choices this may close a loop.  */
-      if (DECL_COMDAT_GROUP (alias->decl)
+      if (DECL_COMDAT_GROUP (original->decl) && DECL_COMDAT_GROUP (alias->decl)
 	  && (DECL_COMDAT_GROUP (alias->decl)
 	      != DECL_COMDAT_GROUP (original->decl)))
 	{
@@ -854,26 +857,27 @@ sem_function::merge (sem_item *alias_item)
 
       /* Work out the symbol the wrapper should call.
 	 If ORIGINAL is interposable, we need to call a local alias.
-	 Also produce local alias (if possible) as an optimization.  */
-      if (!original_discardable
-	  || (DECL_COMDAT_GROUP (original->decl)
-	      && (DECL_COMDAT_GROUP (original->decl)
-		  == DECL_COMDAT_GROUP (alias->decl))))
+	 Also produce local alias (if possible) as an optimization.
+
+	 Local aliases can not be created inside comdat groups because that
+	 prevents inlining.  */
+      if (!original_discardable && !original->get_comdat_group ())
 	{
 	  local_original
 	    = dyn_cast <cgraph_node *> (original->noninterposable_alias ());
 	  if (!local_original
 	      && original->get_availability () > AVAIL_INTERPOSABLE)
 	    local_original = original;
-	  /* If original is COMDAT local, we can not really redirect external
-	     callers to it.  */
-	  if (original->comdat_local_p ())
-	    redirect_callers = false;
 	}
       /* If we can not use local alias, fallback to the original
 	 when possible.  */
       else if (original->get_availability () > AVAIL_INTERPOSABLE)
 	local_original = original;
+
+      /* If original is COMDAT local, we can not really redirect calls outside
+	 of its comdat group to it.  */
+      if (original->comdat_local_p ())
+        redirect_callers = false;
       if (!local_original)
 	{
 	  if (dump_file)
@@ -1545,11 +1549,16 @@ sem_variable::merge (sem_item *alias_item)
 		 "adress of original and alias may be compared.\n\n");
       return false;
     }
+  if (DECL_COMDAT_GROUP (original->decl) != DECL_COMDAT_GROUP (alias->decl))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not unifying; alias cannot be created; "
+		 "across comdat group boundary\n\n");
 
-  if (original_discardable
-      && (!DECL_COMDAT_GROUP (original->decl)
-	  || (DECL_COMDAT_GROUP (original->decl)
-	      != DECL_COMDAT_GROUP (alias->decl))))
+      return false;
+    }
+
+  if (original_discardable)
     {
       if (dump_file)
 	fprintf (dump_file, "Not unifying; alias cannot be created; "
