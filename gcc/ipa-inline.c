@@ -310,7 +310,7 @@ sanitize_attrs_match_for_inline_p (const_tree caller, const_tree callee)
 
 static bool
 can_inline_edge_p (struct cgraph_edge *e, bool report,
-		   bool disregard_limits = false)
+		   bool disregard_limits = false, bool early = false)
 {
   bool inlinable = true;
   enum availability avail;
@@ -409,39 +409,48 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
 	 Not even for always_inline declared functions.  */
       /* Strictly speaking only when the callee contains signed integer
          math where overflow is undefined.  */
-      if ((opt_for_fn (e->caller->decl, flag_strict_overflow)
-	   != opt_for_fn (e->caller->decl, flag_strict_overflow))
-	  || (opt_for_fn (e->caller->decl, flag_wrapv)
-	      != opt_for_fn (e->caller->decl, flag_wrapv))
-	  || (opt_for_fn (e->caller->decl, flag_trapv)
-	      != opt_for_fn (e->caller->decl, flag_trapv))
+      if ((opt_for_fn (caller->decl, flag_strict_overflow)
+	   != opt_for_fn (caller->decl, flag_strict_overflow))
+	  || (opt_for_fn (caller->decl, flag_wrapv)
+	      != opt_for_fn (caller->decl, flag_wrapv))
+	  || (opt_for_fn (caller->decl, flag_trapv)
+	      != opt_for_fn (caller->decl, flag_trapv))
 	  /* Strictly speaking only when the callee contains memory
 	     accesses that are not using alias-set zero anyway.  */
-	  || (opt_for_fn (e->caller->decl, flag_strict_aliasing)
-	      != opt_for_fn (e->caller->decl, flag_strict_aliasing))
+	  || (opt_for_fn (caller->decl, flag_strict_aliasing)
+	      != opt_for_fn (caller->decl, flag_strict_aliasing))
 	  /* Strictly speaking only when the callee uses FP math.  */
-	  || (opt_for_fn (e->caller->decl, flag_rounding_math)
-	      != opt_for_fn (e->caller->decl, flag_rounding_math))
-	  || (opt_for_fn (e->caller->decl, flag_trapping_math)
-	      != opt_for_fn (e->caller->decl, flag_trapping_math))
-	  || (opt_for_fn (e->caller->decl, flag_unsafe_math_optimizations)
-	      != opt_for_fn (e->caller->decl, flag_unsafe_math_optimizations))
-	  || (opt_for_fn (e->caller->decl, flag_finite_math_only)
-	      != opt_for_fn (e->caller->decl, flag_finite_math_only))
-	  || (opt_for_fn (e->caller->decl, flag_signaling_nans)
-	      != opt_for_fn (e->caller->decl, flag_signaling_nans))
-	  || (opt_for_fn (e->caller->decl, flag_cx_limited_range)
-	      != opt_for_fn (e->caller->decl, flag_cx_limited_range))
-	  || (opt_for_fn (e->caller->decl, flag_signed_zeros)
-	      != opt_for_fn (e->caller->decl, flag_signed_zeros))
-	  || (opt_for_fn (e->caller->decl, flag_associative_math)
-	      != opt_for_fn (e->caller->decl, flag_associative_math))
-	  || (opt_for_fn (e->caller->decl, flag_reciprocal_math)
-	      != opt_for_fn (e->caller->decl, flag_reciprocal_math))
+	  || (opt_for_fn (caller->decl, flag_rounding_math)
+	      != opt_for_fn (caller->decl, flag_rounding_math))
+	  || (opt_for_fn (caller->decl, flag_trapping_math)
+	      != opt_for_fn (caller->decl, flag_trapping_math))
+	  || (opt_for_fn (caller->decl, flag_unsafe_math_optimizations)
+	      != opt_for_fn (caller->decl, flag_unsafe_math_optimizations))
+	  || (opt_for_fn (caller->decl, flag_finite_math_only)
+	      != opt_for_fn (caller->decl, flag_finite_math_only))
+	  || (opt_for_fn (caller->decl, flag_signaling_nans)
+	      != opt_for_fn (caller->decl, flag_signaling_nans))
+	  || (opt_for_fn (caller->decl, flag_cx_limited_range)
+	      != opt_for_fn (caller->decl, flag_cx_limited_range))
+	  || (opt_for_fn (caller->decl, flag_signed_zeros)
+	      != opt_for_fn (caller->decl, flag_signed_zeros))
+	  || (opt_for_fn (caller->decl, flag_associative_math)
+	      != opt_for_fn (caller->decl, flag_associative_math))
+	  || (opt_for_fn (caller->decl, flag_reciprocal_math)
+	      != opt_for_fn (caller->decl, flag_reciprocal_math))
 	  /* Strictly speaking only when the callee contains function
 	     calls that may end up setting errno.  */
-	  || (opt_for_fn (e->caller->decl, flag_errno_math)
-	      != opt_for_fn (e->caller->decl, flag_errno_math)))
+	  || (opt_for_fn (caller->decl, flag_errno_math)
+	      != opt_for_fn (caller->decl, flag_errno_math))
+	  /* When devirtualization is diabled for callee, it is not safe
+	     to inline it as we possibly mangled the type info.
+	     Allow early inlining of always inlines.  */
+	  || (opt_for_fn (caller->decl, flag_devirtualize)
+	      && !opt_for_fn (callee->decl, flag_devirtualize)
+	      && (!early
+		  || (!DECL_DISREGARD_INLINE_LIMITS (callee->decl)
+		      || !lookup_attribute ("always_inline",
+				            DECL_ATTRIBUTES (callee->decl))))))
 	{
 	  e->inline_failed = CIF_OPTIMIZATION_MISMATCH;
 	  inlinable = false;
@@ -532,7 +541,7 @@ can_early_inline_edge_p (struct cgraph_edge *e)
 	fprintf (dump_file, "  edge not inlinable: not in SSA form\n");
       return false;
     }
-  if (!can_inline_edge_p (e, true))
+  if (!can_inline_edge_p (e, true, false, true))
     return false;
   return true;
 }
