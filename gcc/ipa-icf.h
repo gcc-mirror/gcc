@@ -241,6 +241,8 @@ public:
 protected:
   /* Cached, once calculated hash for the item.  */
   hashval_t hash;
+  /* Accumulate to HSTATE a hash of constructor expression EXP.  */
+  static void add_expr (const_tree exp, inchash::hash &hstate);
 
 private:
   /* Initialize internal data structures. Bitmap STACK is used for
@@ -290,7 +292,7 @@ public:
   }
 
   /* Improve accumulated hash for HSTATE based on a gimple statement STMT.  */
-  void hash_stmt (inchash::hash *inchash, gimple stmt);
+  void hash_stmt (gimple stmt, inchash::hash &inchash);
 
   /* Return true if polymorphic comparison must be processed.  */
   bool compare_polymorphic_p (void);
