@@ -1,3 +1,7 @@
+2015-03-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/other/dump-ada-spec-3.C: New test.
+
 2015-03-01  Martin Liska  <mliska@suse.cz>
 
 	* gcc.target/i386/stackalign/longlong-2.c: Omit ICF.
