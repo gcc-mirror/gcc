@@ -1,8 +1,8 @@
 # Swedish messages for GCC.
-# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014 Free Software Foundation, Inc.
+# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
-# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014.
+# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015.
 #
 # Reminder to translator: GCC team does not want RCS keywords in the header!
 #
@@ -13,10 +13,10 @@
 # rank			ordning
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.9-b20140202\n"
+"Project-Id-Version: gcc 5.1-b20150208\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-02-02 16:02+0000\n"
-"PO-Revision-Date: 2014-04-11 20:56+0200\n"
+"PO-Revision-Date: 2015-03-01 20:31+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -527,12 +527,12 @@ msgstr "gcc-drivrutin version %s %skör gcc version %s\n"
 #: gcc.c:6429 gcc.c:6641
 #, c-format
 msgid "The bug is not reproducible, so it is likely a hardware or OS problem.\n"
-msgstr ""
+msgstr "Felet är inte reproducerbart, så det är förmodligen ett problem med hårdvara eller OS.\n"
 
 #: gcc.c:6565
 #, c-format
 msgid "Preprocessed source stored into %s file, please attach this to your bugreport.\n"
-msgstr ""
+msgstr "Preprocessad källkod lagrad i filen %s, bifoga den till din felrapport.\n"
 
 #: gcc.c:7437
 #, c-format
@@ -625,111 +625,104 @@ msgstr "Använd ”-Wa,FLAGGA” för att skicka ”FLAGGA” till assemblern.\n
 #: gcov-tool.c:161
 #, c-format
 msgid "  merge [options] <dir1> <dir2>         Merge coverage file contents\n"
-msgstr ""
+msgstr "  merge [flaggor] <kat1> <kat2>         Slå samman innehåll i täckningsfiler\n"
 
 #: gcov-tool.c:162 gcov-tool.c:259 gcov-tool.c:415
-#, fuzzy, c-format
-#| msgid "  -v, --version                   Print version number, then exit\n"
+#, c-format
 msgid "    -v, --verbose                       Verbose mode\n"
-msgstr "  -v, --version                   Skriv ut versionsnummer, avsluta sedan\n"
+msgstr "    -v, --version                       Utförligt läge\n"
 
 #: gcov-tool.c:163 gcov-tool.c:260
-#, fuzzy, c-format
-#| msgid "  -n, --no-output                 Do not create an output file\n"
+#, c-format
 msgid "    -o, --output <dir>                  Output directory\n"
-msgstr "  -n, --no-output                 Skapa ingen utdatafil\n"
+msgstr "    -o, --output <kat>                  Utdatakatalog\n"
 
 #: gcov-tool.c:164
 #, c-format
 msgid "    -w, --weight <w1,w2>                Set weights (float point values)\n"
-msgstr ""
+msgstr "    -w, --weight <v1,v2>                Sätt vikter (flyttalsvärden)\n"
 
 #: gcov-tool.c:180
 #, c-format
 msgid "Merge subcomand usage:"
-msgstr ""
+msgstr "Användning av underkommandot merge:"
 
 #: gcov-tool.c:258
 #, c-format
 msgid "  rewrite [options] <dir>               Rewrite coverage file contents\n"
-msgstr ""
+msgstr "  rewrite [flaggor] <kat>               Skriv om innehåll i täckningsfiler\n"
 
 #: gcov-tool.c:261
 #, c-format
 msgid "    -s, --scale <float or simple-frac>  Scale the profile counters\n"
-msgstr ""
+msgstr "    -s, --scale <flyttal el. bråk>      Skala profilräknarna\n"
 
 #: gcov-tool.c:262
 #, c-format
 msgid "    -n, --normalize <long long>         Normalize the profile\n"
-msgstr ""
+msgstr "    -n, --normalize <long long>         Normalisera profilen\n"
 
 #: gcov-tool.c:279
 #, c-format
 msgid "Rewrite subcommand usage:"
-msgstr ""
+msgstr "Användning av underkommandot rewrite:"
 
 #: gcov-tool.c:324
 #, c-format
 msgid "scaling cannot co-exist with normalization, skipping\n"
-msgstr ""
+msgstr "skalning kan inte samexistera med normalisering, hoppar över\n"
 
 #: gcov-tool.c:337 gcov-tool.c:347
 #, c-format
 msgid "incorrect format in scaling, using 1/1\n"
-msgstr ""
+msgstr "felaktigt format i skalning, använder 1/1\n"
 
 #: gcov-tool.c:357
 #, c-format
 msgid "normalization cannot co-exist with scaling\n"
-msgstr ""
+msgstr "normalisering kan inte samexistera med skalning\n"
 
 #: gcov-tool.c:414
 #, c-format
 msgid "  overlap [options] <dir1> <dir2>       Compute the overlap of two profiles\n"
-msgstr ""
+msgstr "  overlap [flaggor] <kat1> <kag2>       Beräkna överlappningen mellan två profiler\n"
 
 #: gcov-tool.c:416
-#, fuzzy, c-format
-#| msgid "  -h, --help                      Print this help, then exit\n"
+#, c-format
 msgid "    -h, --hotonly                       Only print info for hot objects/functions\n"
-msgstr "  -h, --help                      Visa denna hjälp, avsluta sedan\n"
+msgstr "    -h, --hotonly                       Skriv endast info om heta objekt/funktioner\n"
 
 #: gcov-tool.c:417
-#, fuzzy, c-format
-#| msgid "  -h, --help                      Print this help, then exit\n"
+#, c-format
 msgid "    -f, --function                      Print function level info\n"
-msgstr "  -h, --help                      Visa denna hjälp, avsluta sedan\n"
+msgstr "    -f, --function                      Skriv funktionsnivåinfo\n"
 
 #: gcov-tool.c:418
-#, fuzzy, c-format
-#| msgid "  -h, --help                      Print this help, then exit\n"
+#, c-format
 msgid "    -F, --fullname                      Print full filename\n"
-msgstr "  -h, --help                      Visa denna hjälp, avsluta sedan\n"
+msgstr "    -F, --fullname                      Skriv fullständiga filnamn\n"
 
 #: gcov-tool.c:419
-#, fuzzy, c-format
-#| msgid "  -h, --help                      Print this help, then exit\n"
+#, c-format
 msgid "    -o, --object                        Print object level info\n"
-msgstr "  -h, --help                      Visa denna hjälp, avsluta sedan\n"
+msgstr "    -o, --objekt                        Skriv objektnivåinfo\n"
 
 #: gcov-tool.c:420
 #, c-format
 msgid "    -t <float>, --hot_threshold <float> Set the threshold for hotness\n"
-msgstr ""
+msgstr "    -t <float>, --hot_threshold <float> Ange gränsvärdet för värme\n"
 
 #: gcov-tool.c:440
 #, c-format
 msgid "Overlap subcomand usage:"
-msgstr ""
+msgstr "Användning av underkommandot overlap:"
 
 #: gcov-tool.c:506
-#, fuzzy, c-format
-#| msgid "Usage: %s [OPTIONS]... CLASSNAMEmain [OUTFILE]\n"
+#, c-format
 msgid ""
 "Usage: %s [OPTION]... SUB_COMMAND [OPTION]...\n"
 "\n"
-msgstr "Användning: %s [FLAGGOR]... KLASSNAMNmain [UTFIL]\n"
+msgstr "Användning: %s [FLAGGA]… UNDERKOMMANDO [FLAGGA]…\n"
 
 #: gcov-tool.c:507
 #, c-format
@@ -737,6 +730,8 @@ msgid ""
 "Offline tool to handle gcda counts\n"
 "\n"
 msgstr ""
+"Fristående verktyg för att hantera gcda-räkningar\n"
+"\n"
 
 #: gcov-tool.c:508
 #, fuzzy, c-format
@@ -765,7 +760,7 @@ msgstr ""
 #: gcov-tool.c:524
 #, c-format
 msgid "Copyright %s 2014-2015 Free Software Foundation, Inc.\n"
-msgstr ""
+msgstr "Copyright %s 2014-2015 Free Software Foundation, Inc.\n"
 
 #: gcov-tool.c:527 gcov.c:506
 #, c-format
@@ -1224,7 +1219,7 @@ msgstr "Denna flagga saknar dokumentation"
 #: opts.c:1013
 #, c-format
 msgid "default %d minimum %d maximum %d"
-msgstr ""
+msgstr "standard %d minimum %d maximum %d"
 
 #: opts.c:1120
 msgid "[default]"
@@ -1984,7 +1979,7 @@ msgstr "Minimala avståndet mellan lagring och läsning som kan vara i konflikt"
 
 #: params.def:673
 msgid "Hardware autoprefetcher scheduler model control flag.  Number of lookahead cycles the model looks into; at '0' only enable instruction sorting heuristic.  Disabled by default."
-msgstr ""
+msgstr "Styrflagga för schemaläggningsmodell av automatis förhandshämtning i hårdvara.  Antalet cykler av framförhållning modellen tittar in i; vid ”0” aktiveras endast heurisitk för instruktionssortering.  Avaktiverat som standard."
 
 #: params.def:678
 msgid "The maximum number of RTL nodes that can be recorded as combiner's last value"
@@ -2074,7 +2069,7 @@ msgstr "Antalet register i varje klass som behålls oanvänt vid flyttning av sl
 
 #: params.def:836
 msgid "The max number of reload pseudos which are considered during spilling a non-reload pseudo"
-msgstr ""
+msgstr "Maximalt antal omläsningar av pseudoregister som övervägs när ett icke-omläst pseudregister spills"
 
 #: params.def:844
 msgid "The maximum ratio between array size and switch branches for a switch conversion to take place"
@@ -2086,11 +2081,11 @@ msgstr "storlek på bitar för slingblockning"
 
 #: params.def:859
 msgid "size of unrolling factor for unroll-and-jam"
-msgstr ""
+msgstr "storlek på utrullningsfaktorn för unroll-and-jam"
 
 #: params.def:866
 msgid "depth of unrolled loop for unroll-and-jam"
-msgstr ""
+msgstr "djupet på utrullade slingor för unroll-and-jam"
 
 #: params.def:874
 msgid "maximum number of parameters in a SCoP"
@@ -2116,7 +2111,7 @@ msgstr "ogiltig funktion i gimple-anrop"
 
 #: params.def:910
 msgid "track topn target addresses in indirect-call profile"
-msgstr ""
+msgstr "spåra topn måladresser i indirekt-anropsprofil"
 
 #: params.def:916
 msgid "Maximum number of instructions in basic block to be considered for SLP vectorization"
@@ -2156,11 +2151,11 @@ msgstr "Storlek i byte efter vilken trådlokala aggregat skall instrumenteras me
 
 #: params.def:975
 msgid "Maximum size, in storage units, of an aggregate which should be considered for scalarization when compiling for speed"
-msgstr ""
+msgstr "Maximal storlek, i lagringsenheter, av ett aggregat som skall övervägas för skalärisering vid kompilering för hastighet"
 
 #: params.def:981
 msgid "Maximum size, in storage units, of an aggregate which should be considered for scalarization when compiling for size"
-msgstr ""
+msgstr "Maximal storlek, i lagringsenheter, av ett aggregat som skall övervägas för skalärisering vid kompilering för storlek"
 
 #: params.def:987
 msgid "Maximum size of a list of values associated with each parameter for interprocedural constant propagation"
@@ -2184,7 +2179,7 @@ msgstr "Bonus IPA-CP tilldelar vid kompileringstillfället till kandidater som g
 
 #: params.def:1017
 msgid "Maximum number of statements that will be visited by IPA formal parameter analysis based on alias analysis in any given function"
-msgstr ""
+msgstr "Mximalt antal satser som kommer besökas av IPA-formatparameteranalysen baserat på aliasanalys i varje given funktion"
 
 #: params.def:1025
 msgid "Number of partitions the program should be split to"
@@ -2256,11 +2251,11 @@ msgstr "Aktivera asan-skydd av inbyggda funktioner"
 
 #: params.def:1128
 msgid "Enable asan detection of use-after-return bugs"
-msgstr ""
+msgstr "Aktivera asan-detektering av använd-efter-retur-fel"
 
 #: params.def:1133
 msgid "Use callbacks instead of inline code if number of accesses in function becomes greater or equal to this number"
-msgstr ""
+msgstr "Använd återanrop istället för inline:ad kod om antalet åtkomster i funktioner blir större eller lika med detta tal"
 
 #: params.def:1139
 #, fuzzy
@@ -2270,11 +2265,11 @@ msgstr "Det maximala antalet namnrymder att söka i för alternativ när namnupp
 
 #: params.def:1145
 msgid "Maximum number of statements to be included into a single static constructor generated by Pointer Bounds Checker"
-msgstr ""
+msgstr "Maximalt antal satser som skall inkluderas i en enskild statisk konstruerare genererad av pekargränskontrolleraren"
 
 #: params.def:1151
 msgid "Maximum number of instructions to copy when duplicating blocks on a finite state automaton jump thread path"
-msgstr ""
+msgstr "Maximalt antal instruktioner att kopiera vid duplicering av block på hopptrådvägen för en ändlig tillståndsmaskin"
 
 #: params.def:1156
 #, fuzzy
@@ -3865,7 +3860,7 @@ msgstr "adressavstånd inte en konstant"
 
 #: c/c-objc-common.c:173
 msgid "aka"
-msgstr ""
+msgstr "även"
 
 #: c/c-objc-common.c:200
 msgid "({anonymous})"
@@ -4163,7 +4158,7 @@ msgstr "<lambda>"
 
 #: cp/error.c:2703
 msgid "*this"
-msgstr ""
+msgstr "*this"
 
 #: cp/error.c:2713
 msgid "<expression error>"
@@ -5580,7 +5575,7 @@ msgstr "Producera en varning vid körning om en vektortemporär har skapats för
 
 #: fortran/lang.opt:386
 msgid "-fconvert=<big-endian|little-endian|native|swap> The endianness used for unformatted files."
-msgstr ""
+msgstr "-fconvert=<big-endian|little-endian|native|swap> Byteordningen som används för oformaterade filer."
 
 #: fortran/lang.opt:389
 #, fuzzy, c-format
@@ -5973,7 +5968,7 @@ msgstr "Varna för saker som skulle ändras vid kompilering med en kompilator so
 
 #: c-family/c.opt:261
 msgid "Warn about things that change between the current -fabi-version and the specified version"
-msgstr ""
+msgstr "Varna för saker som ändras mellan den nuvarande -fabi-version och den angivna versionen"
 
 #: c-family/c.opt:265
 msgid "Warn if a subobject has an abi_tag attribute that the complete object type does not have"
@@ -5997,7 +5992,7 @@ msgstr "Varna för typkonvertering av funktioner till inkompatibla typer"
 
 #: c-family/c.opt:296
 msgid "Warn about boolean expression compared with an integer value different from true/false"
-msgstr ""
+msgstr "Varna för booleska uttryck som jämförs med ett heltalsvärde annat skilt från sant/falskt"
 
 #: c-family/c.opt:300
 msgid "Warn when a built-in preprocessor macro is undefined or redefined"
@@ -6043,7 +6038,7 @@ msgstr "Varna för index vars typ är ”char”"
 
 #: c-family/c.opt:336
 msgid "Warn about memory access errors found by Pointer Bounds Checker"
-msgstr ""
+msgstr "Farna för minnesåtkomstfel som hittas av pekargränskontrollen"
 
 #: c-family/c.opt:340
 msgid "Warn about variables that might be changed by \"longjmp\" or \"vfork\""
@@ -6101,7 +6096,7 @@ msgstr "Varna för eventuellt saknade klamrar runt initierare"
 
 #: c-family/c.opt:396
 msgid "Warn if qualifiers on arrays which are pointer targets are discarded"
-msgstr ""
+msgstr "Varna om kvalificerare på vektorer som är pekarmål kastas bort"
 
 #: c-family/c.opt:400
 #, fuzzy
@@ -6211,7 +6206,7 @@ msgstr "Varna för C++11 ärvda konstruerare när basen har en variadisk konstru
 
 #: c-family/c.opt:511
 msgid "Warn about incompatible integer to pointer and pointer to integer conversions"
-msgstr ""
+msgstr "Varna för inkompatibla konverteringar från heltal till pekare och pekare till heltal"
 
 #: c-family/c.opt:515
 msgid "Warn when there is a cast to a pointer from an integer of a different size"
@@ -6239,7 +6234,7 @@ msgstr "Varna när en logisk operator misstänkt nog alltid beräknas till sant 
 
 #: c-family/c.opt:539
 msgid "Warn when logical not is used on the left hand side operand of a comparison"
-msgstr ""
+msgstr "Varna när logiskt icke används på den vänstra operanden i en jämförelse"
 
 #: c-family/c.opt:543
 msgid "Do not warn about using \"long long\" when -pedantic"
@@ -6251,7 +6246,7 @@ msgstr "Varna för tveksamma deklarationer av ”main”"
 
 #: c-family/c.opt:555
 msgid "Warn about suspicious calls to memset where the third argument is constant literal zero and the second is not"
-msgstr ""
+msgstr "Varna för misstänkta anrop till memset där det tredje argumentet är en konstant literal nolla och det andra inte är det"
 
 #: c-family/c.opt:559
 msgid "Warn about possibly missing braces around initializers"
@@ -6273,11 +6268,11 @@ msgstr "Varna för saknade fält i postinitierare"
 
 #: c-family/c.opt:575
 msgid "Warn about suspicious length parameters to certain string functions if the argument uses sizeof"
-msgstr ""
+msgstr "Varna för misstänkta längdparametrar till vissa strängfunktioner om argumentet använder sizeof"
 
 #: c-family/c.opt:579
 msgid "Warn when sizeof is applied on a parameter declared as an array"
-msgstr ""
+msgstr "Varna när sizeof används på en parameter som är deklarerad som en vektor"
 
 #: c-family/c.opt:583
 msgid "Warn about functions which might be candidates for format attributes"
@@ -6285,7 +6280,7 @@ msgstr "Varna för funktioner som kan vara kandidater för formatattribut"
 
 #: c-family/c.opt:587
 msgid "Suggest that the override keyword be used when the declaration of a virtual"
-msgstr ""
+msgstr "Föreslå att använda nyckelorder override när deklarationen av en virtuell funktion åsidosätter en annan"
 
 #: c-family/c.opt:592
 msgid "Warn about enumerated switches, with no default, missing a case"
@@ -6579,7 +6574,7 @@ msgstr "En synonym för -std=c89 (för C) or -std=c++98 (för C++)"
 
 #: c-family/c.opt:926
 msgid "The version of the C++ ABI used for -Wabi warnings and link compatibility aliases"
-msgstr ""
+msgstr "Versionen på det C++-ABI som används för -Wabi-varningar och länkkompatibilitetsalias"
 
 #: c-family/c.opt:930
 msgid "Enforce class member access control semantics"
@@ -6612,51 +6607,51 @@ msgstr "När de är kortare, använd kanoniska sökvägar till systemhuvuden."
 
 #: c-family/c.opt:968
 msgid "Add Pointer Bounds Checker instrumentation.  fchkp-* flags are used to"
-msgstr ""
+msgstr "Lägg till instrumentering för pekargränskontroller.  fchkp-*-flaggor används för att styra instrumenteringen.  För närvarande tillgängligt för C, C++ och ObjC."
 
 #: c-family/c.opt:973
 msgid "Generate pointer bounds checks for variables with incomplete type"
-msgstr ""
+msgstr "Generera pekargränskontroller för variabler med ofullständig typ"
 
 #: c-family/c.opt:977
 msgid "Use zero bounds for all incoming arguments in 'main' function.  It helps when"
-msgstr ""
+msgstr "Använd nollgränser för alla inkommande argument i funktionen ”main”.  Det hjälper till instrumenterade binärer används med gamla bibliotek."
 
 #: c-family/c.opt:982
 msgid "Forces Pointer Bounds Checker to use narrowed bounds for address of the first"
-msgstr ""
+msgstr "Tvingar pekargränskontrollen att använda avsmalnade gränser för adresser till det första fältet i posten.  Som standard har pekare till det första fältet samma gränser som pekare till hela posten."
 
 #: c-family/c.opt:988
 msgid "Control how Pointer Bounds Checker handle pointers to object fields.  When"
-msgstr ""
+msgstr "Styr hur pekargränskontrollen hanterare pekare till objektfält.  När avsmalning är påslaget används fältgränser.  Annars används hela objektets gränser."
 
 #: c-family/c.opt:993
 msgid "Forces Pointer Bounds Checker to use bounds of the innermost arrays in case of"
-msgstr ""
+msgstr "Tvingar pekargränskontrollen att använda gränser för de innersta vektorerna för nästade statiska vektoråtkomster.  Som standard används den yttersta vektorn."
 
 #: c-family/c.opt:998
 msgid "Allow Pointer Bounds Checker optimizations.  By default allowed"
-msgstr ""
+msgstr "Tillåt optimeringar av pekargränskontrollen.  Som standard tillåts det vid optimeringsnivåer >0."
 
 #: c-family/c.opt:1003
 msgid "Allow to use *_nobnd versions of string functions by Pointer Bounds Checker."
-msgstr ""
+msgstr "Tillåt användning av *_nobnd-versioner av strängfunktioner av pekargränskontrollen."
 
 #: c-family/c.opt:1007
 msgid "Allow to use *_nochk versions of string functions by Pointer Bounds Checker."
-msgstr ""
+msgstr "Tillåt användning av *_nochk-versioner av strängfunktioner av pekargränskontrollen."
 
 #: c-family/c.opt:1011
 msgid "Use statically initialized variable for vars bounds instead of"
-msgstr ""
+msgstr "Använd en statiskt initierad för variabelgränser istället för att generera dem varje gång det behövs."
 
 #: c-family/c.opt:1016
 msgid "Use statically initialized variable for constant bounds instead of"
-msgstr ""
+msgstr "Anävnd en statiskt initerad variabel för konstantgränser istället för att generera dem varje gång det bheövs."
 
 #: c-family/c.opt:1021
 msgid "With this option zero size obtained dynamically for objects with"
-msgstr ""
+msgstr "Med denna flagga kommer en dynamiskt erhållen storlek på noll för objekt med ofullständig typ hanteras som oändlig."
 
 #: c-family/c.opt:1026
 #, fuzzy
@@ -6823,7 +6818,7 @@ msgstr "Anta att mottagare av Objective-C-meddelanden kan var nil"
 
 #: c-family/c.opt:1218
 msgid "Allow access to instance variables as if they were local declarations within instance method implementations."
-msgstr ""
+msgstr "Tillåt åtkomst till instansvariabler som om de vore lokala deklarationer i instansmetodimplementationer."
 
 #: c-family/c.opt:1222
 #, fuzzy
@@ -6875,7 +6870,7 @@ msgstr "Följ språket Objective-C 1.0 så som det implementerades i GCC 4.0"
 
 #: c-family/c.opt:1288
 msgid "Enable OpenACC"
-msgstr ""
+msgstr "Aktivera OpenACC"
 
 #: c-family/c.opt:1292
 msgid "Enable OpenMP (implies -frecursive in Fortran)"
@@ -7776,7 +7771,7 @@ msgstr "Generera kod som använder endast generella register"
 
 #: config/aarch64/aarch64.opt:72
 msgid "Workaround for ARM Cortex-A53 Erratum number 835769"
-msgstr ""
+msgstr "Sätt att gå runt ARM Cortex-A53:s errata nummer 835796"
 
 #: config/aarch64/aarch64.opt:76 config/arm/arm.opt:151
 #: config/microblaze/microblaze.opt:64
@@ -8879,15 +8874,15 @@ msgstr "Generera profileringsräknaranrop vid funktionsstart före prologen"
 
 #: config/i386/i386.opt:831
 msgid "Generate __mcount_loc section with all mcount or __fentry__ calls."
-msgstr ""
+msgstr "Generera en __mcount_loc-sektion med alla mcount- eller __fentry__-anrop"
 
 #: config/i386/i386.opt:835
 msgid "Generate mcount/__fentry__ calls as nops. To activate they need to be"
-msgstr ""
+msgstr "Generera mcount-/__fentry__-anrop som nop:ar.  För att aktiveras behöver de patchas in."
 
 #: config/i386/i386.opt:840
 msgid "Skip setting up RAX register when passing variable arguments."
-msgstr ""
+msgstr "Hoppa över att sätta upp RAX-register när variabelt antal argument skickas."
 
 #: config/i386/i386.opt:844
 msgid "Expand 32bit/64bit integer divide into 8bit unsigned integer divide with run-time check"
@@ -9158,7 +9153,7 @@ msgstr "Generera kod för en Fido A"
 
 #: config/nvptx/nvptx.opt:30
 msgid "Link in code for a __main kernel."
-msgstr ""
+msgstr "Länka med kod för en __main-kärna."
 
 #: config/vxworks.opt:36
 msgid "Assume the VxWorks RTP environment"
@@ -9218,15 +9213,15 @@ msgstr "-march=ARK\tAnvänd funktioner i arkitekturen ARK"
 
 #: config/avr/avr.opt:38
 msgid "Set the number of 64 KiB flash segments"
-msgstr ""
+msgstr "Sätt antalet 64 KiB flash-segment"
 
 #: config/avr/avr.opt:42
 msgid "Indicate presence of a processor erratum"
-msgstr ""
+msgstr "Indikera närvaron av ett processor-errata"
 
 #: config/avr/avr.opt:46
 msgid "Enable Read-Modify-Write (RMW) instructions support/use"
-msgstr ""
+msgstr "Aktivera stöd/användning av Läs-Ändra-Skriv- (RMW-)instruktioner"
 
 #: config/avr/avr.opt:56
 msgid "Use an 8-bit 'int' type"
@@ -9370,7 +9365,7 @@ msgstr "Använd hårdvaruflyttal"
 
 #: config/s390/s390.opt:101
 msgid "Takes two non-negative integer numbers separated by a comma."
-msgstr ""
+msgstr "Tar två icke-negativa heltal separerade av ett komma."
 
 #: config/s390/s390.opt:119
 msgid "Use hardware transactional execution instructions"
@@ -9443,7 +9438,7 @@ msgstr "Sikta på serien RL78/G10"
 
 #: config/rl78/rl78.opt:59
 msgid "Assume ES is zero throughout program execution, use ES: for read-only data."
-msgstr ""
+msgstr "Anta att ES är noll genom hela programkörningen, använd ES: för endast läsbara data."
 
 #: config/stormy16/stormy16.opt:24
 msgid "Provide libraries for the simulator"
@@ -9623,7 +9618,7 @@ msgstr "Anta att ladda data från flash är långsammare än att hämta instrukt
 
 #: config/arm/arm.opt:273
 msgid "Assume unified syntax for Thumb inline assembly code."
-msgstr ""
+msgstr "Anta unfierad syntax för Thumb-inline assemblerkod."
 
 # fixme: fp = flyttal, men hur skall man skriva det. Förkortat eller FPU?
 #: config/sparc/sparc.opt:30 config/sparc/sparc.opt:34
@@ -10155,7 +10150,7 @@ msgstr "Tillåt double-variabler i övre register med -mcpu=power7 eller -mvsx"
 
 #: config/rs6000/rs6000.opt:598
 msgid "Analyze and remove doubleword swaps from VSX computations."
-msgstr ""
+msgstr "Analysera och ta bort dubbelordsbyten från VSX-beräkningar."
 
 #: config/rs6000/sysv4.opt:24
 msgid "Select ABI calling convention"
@@ -10407,15 +10402,15 @@ msgstr "ovanlig TP-relativ adress"
 
 #: config/nios2/nios2.opt:67
 msgid "Valid options for GP-relative addressing (for -mgpopt):"
-msgstr ""
+msgstr "Giltiga flaggor för GP-relativ adressering (för -mgpopt):"
 
 #: config/nios2/nios2.opt:86
 msgid "Equivalent to -mgpopt=local."
-msgstr ""
+msgstr "Ekvivalent med -gpopt=local."
 
 #: config/nios2/nios2.opt:90
 msgid "Equivalent to -mgpopt=none."
-msgstr ""
+msgstr "Ekvivalent med -mgpopt=none."
 
 #: config/nios2/nios2.opt:94 config/c6x/c6x.opt:30 config/mep/mep.opt:82
 #: config/mips/mips.opt:134
@@ -11014,7 +11009,7 @@ msgstr "%<-mfused-madd%> bör undvikas, använd %<-ffp-contract=%> istället"
 
 #: config/sol2.opt:32
 msgid "Clear hardware capabilities when linking"
-msgstr ""
+msgstr "Nollställ hårdvaruförmågor vid länkning"
 
 #: config/sol2.opt:36
 msgid "Pass -z text to linker"
@@ -11376,7 +11371,7 @@ msgstr "Kända ARM-arkitekturer (att användas med flaggan -march=):"
 
 #: config/nds32/nds32.opt:83
 msgid "Specify the address generation strategy for code model."
-msgstr ""
+msgstr "Ange adressgenereringsstrategin för kodmodellen."
 
 #: config/nds32/nds32.opt:87
 #, fuzzy
@@ -12067,7 +12062,7 @@ msgstr "Använd 32-bitars flyttalsregister"
 
 #: config/mips/mips.opt:202
 msgid "Conform to the o32 FPXX ABI"
-msgstr ""
+msgstr "Följ ABI:t o32 FPXX"
 
 #: config/mips/mips.opt:206
 msgid "Use 64-bit floating-point registers"
@@ -12711,7 +12706,7 @@ msgstr "Kär optimeraren för länktillfället i läget helprogramanalys (WPA)."
 
 #: lto/lang.opt:41
 msgid "Whole program analysis (WPA) mode with number of parallel jobs specified."
-msgstr ""
+msgstr "Läget helprogramanalys (WPA) med antal parallella jobb angivna."
 
 #: lto/lang.opt:45
 msgid "The resolution file"
@@ -12827,7 +12822,7 @@ msgstr "Varna för slingan inte kan optimeras på grund av icketriviala antagand
 
 #: common.opt:604
 msgid "Warn about some C++ One Definition Rule violations during link time optimization"
-msgstr ""
+msgstr "Varna för några brott mot C++ endefinitionsregel under optimeringar vid länktillfället"
 
 #: common.opt:608
 msgid "Warn about overflow in arithmetic expressions"
@@ -12883,11 +12878,11 @@ msgstr "Varna för funktioner som är möjliga kandidater för __attribute__((no
 
 #: common.opt:668
 msgid "Warn about C++ polymorphic types where adding final keyword would improve code quality"
-msgstr ""
+msgstr "Varna för polymorfa C++-typer där det skulle förbättra kodkvaliteten att lägga till nyckelordet final"
 
 #: common.opt:672
 msgid "Warn about C++ virtual methods where adding final keyword would improve code quality"
-msgstr ""
+msgstr "Varna för virtuella C++-metoder där det skulle förbättra kodkvaliteten att lägga till nyckelordet final"
 
 #: common.opt:676
 msgid "Do not suppress warnings from system headers"
@@ -12967,7 +12962,7 @@ msgstr "-dumpdir <kat>\tAnge katalognamn att användas för dumpar"
 
 #: common.opt:840
 msgid "The version of the C++ ABI in use"
-msgstr ""
+msgstr "Versionen av C++-ABI:et som används"
 
 #: common.opt:844
 msgid "Aggressively optimize loops using language constraints"
@@ -12995,11 +12990,11 @@ msgstr "Välj vad som skall saneras"
 
 #: common.opt:896
 msgid "-fasan-shadow-offset=<number>\tUse custom shadow memory offset."
-msgstr ""
+msgstr "-fasan-shadow-offset=<tal>\tAnvänd anpassat avstånd till skuggminne."
 
 #: common.opt:900
 msgid "After diagnosing undefined behavior attempt to continue execution"
-msgstr ""
+msgstr "Efter att diagnosticera odefinierat beteende, försök fortsätta körningen"
 
 #: common.opt:904
 #, fuzzy
@@ -13009,7 +13004,7 @@ msgstr "Denna flagga bör undvikas, använd -Wextra istället"
 
 #: common.opt:908
 msgid "Use trap instead of a library function for undefined behavior sanitization"
-msgstr ""
+msgstr "Använd trap istället för en biblioteksfunktion för sanering av odefinierat beteende"
 
 #: common.opt:912
 msgid "Generate unwind tables that are exact at each instruction boundary"
@@ -13021,7 +13016,7 @@ msgstr "Generera auto-inc/dec-instruktioner"
 
 #: common.opt:920
 msgid "Use sample profile information for call graph node weights. The default"
-msgstr ""
+msgstr "Använd samplingprofilinformation till anropsgrafers nodvikter.  Standard profilfil är fbdata.afdo i ”pwd”."
 
 #: common.opt:925
 #, fuzzy
@@ -13155,7 +13150,7 @@ msgstr "Ta bort onödiga nollpekarkontroller"
 
 #: common.opt:1071
 msgid "Stream extra data to support more aggressive devirtualization in LTO local transformation mode"
-msgstr ""
+msgstr "Strömma extra data för att stödja mer aggressiv avvirtualisering i lokaltransformationsläge i LTO"
 
 #: common.opt:1075
 msgid "Perform speculative devirtualization"
@@ -13207,7 +13202,7 @@ msgstr "Undertryck utskrift av adresser i felsökningsutskrifter"
 
 #: common.opt:1159
 msgid "Collect and dump debug information into temporary file if ICE in C/C++"
-msgstr ""
+msgstr "Samla och skriv ut felsökningsinformation till en temporärfil om ICE sker i C/C++-kompilatorn."
 
 #: common.opt:1164
 msgid "Dump optimization passes"
@@ -13359,7 +13354,7 @@ msgstr "Aktivera stöd för GNU:s transationsminne"
 
 #: common.opt:1340
 msgid "Use STB_GNU_UNIQUE if supported by the assembler"
-msgstr ""
+msgstr "Använd STB_GNU_UNIQUE om det stödjs av assemblern"
 
 #: common.opt:1348
 msgid "Enable the ISL based loop nest optimizer"
@@ -13468,11 +13463,11 @@ msgstr "Upptäck pure- och const-funktioner"
 
 #: common.opt:1473
 msgid "Perform Identical Code Folding for functions and read-only variables"
-msgstr ""
+msgstr "Fäll ihop identisk kod för funktioner och endast läsbara variabler"
 
 #: common.opt:1477
 msgid "Perform Identical Code Folding for functions"
-msgstr ""
+msgstr "Fäll ihop identisk kod för funktioner"
 
 #: common.opt:1481
 #, fuzzy
@@ -13540,7 +13535,7 @@ msgstr "Ge externa symboler ett inledande understrykningstecken"
 
 #: common.opt:1572
 msgid "Do CFG-sensitive rematerialization in LRA"
-msgstr ""
+msgstr "Gör CFG-känsliga återmaterialiseringar i LRA"
 
 #: common.opt:1576
 msgid "Enable link-time optimization."
@@ -13558,7 +13553,7 @@ msgstr "okänd TLS-modell %qs"
 
 #: common.opt:1602
 msgid "Specify the algorithm to partition symbols and vars at linktime"
-msgstr ""
+msgstr "Ange algoritmen för att dela upp symboler och variabler vid länktillfället"
 
 #: common.opt:1607
 msgid "-flto-compression-level=<number>\tUse zlib compression level <number> for IL"
@@ -13566,7 +13561,7 @@ msgstr "-flto-compression-level=<tal>\tAnvänd zlib-komprimering på nivå <tal>
 
 #: common.opt:1611
 msgid "Merge C++ types using One Definition Rule"
-msgstr ""
+msgstr "Slå samman C++-typer med endefinitionsregeln"
 
 #: common.opt:1615
 msgid "Report various link-time optimization statistics"
@@ -13644,11 +13639,11 @@ msgstr "försäkran saknas efter %qs"
 
 #: common.opt:1686
 msgid "-foffload=<targets>=<options>  Specify offloading targets and options for them"
-msgstr ""
+msgstr "-foffload=<mål>=<flaggor>  Ange mål att lasta av till och flaggor för dem"
 
 #: common.opt:1690
 msgid "-foffload-abi=[lp64|ilp32]     Set the ABI to use in an offload compiler"
-msgstr ""
+msgstr "-foffload-abi=[lp64|ilp32]     Ange ABI:et att använda i en avlastningskompilator"
 
 #: common.opt:1693
 #, fuzzy, c-format
@@ -13886,7 +13881,7 @@ msgstr "Schemalägg om rörlagda regioner utan rörläggning"
 
 #: common.opt:1960
 msgid "Allow interposing function (or variables) by ones with different semantics (or initializer) respectively by dynamic linker"
-msgstr ""
+msgstr "Tillåt funktioner (eller variabler) som står emellan för sådana med annan semantik (respektive initierare) i den dynamiska länkaren"
 
 #: common.opt:1966
 msgid "Allow premature scheduling of queued insns"
@@ -13970,7 +13965,7 @@ msgstr "Dela upp breda typer i oberoende register"
 
 #: common.opt:2059
 msgid "Optimize conditional patterns using SSA PHI nodes"
-msgstr ""
+msgstr "Optimera villkorliga mönster med SSA PHI-noder"
 
 #: common.opt:2063
 msgid "Apply variable expansion when loops are unrolled"
@@ -14506,7 +14501,7 @@ msgstr "Skapa ett positionsoberoende körbart program"
 
 #: common.opt:2843
 msgid "Use caller save register across calls if possible"
-msgstr ""
+msgstr "Använd anroparens sparregister mellan anrop om möjligt"
 
 #: go/gofrontend/expressions.cc:93 c-family/c-common.c:1900 cp/cvt.c:1170
 #: cp/cvt.c:1418
@@ -14693,7 +14688,7 @@ msgstr "ogiltig användning av %<...%> med annat än skiva"
 
 #: go/gofrontend/expressions.cc:9107
 msgid "function result count mismatch"
-msgstr ""
+msgstr "funktionsresultatsräknare stämmer inte"
 
 #: go/gofrontend/expressions.cc:9125
 msgid "incompatible type for receiver"
@@ -14982,7 +14977,7 @@ msgstr "typattribut ignoreras efter att typen redan är definierad"
 #: auto-profile.c:382
 #, gcc-internal-format
 msgid "Offset exceeds 16 bytes."
-msgstr ""
+msgstr "Avstånd överskrider 16 byte."
 
 #: auto-profile.c:859
 #, fuzzy, gcc-internal-format
@@ -14999,12 +14994,12 @@ msgstr "Kan inte öppna källkodsfilen %s\n"
 #: auto-profile.c:927
 #, gcc-internal-format
 msgid "AutoFDO profile magic number does not mathch."
-msgstr ""
+msgstr "AutoFDO-profilens magiska tal stämmer inte."
 
 #: auto-profile.c:932
 #, gcc-internal-format, gfc-internal-format
 msgid "AutoFDO profile version %u does match %u."
-msgstr ""
+msgstr "AutoFDO-profilens version %u stämmer inte med %u."
 
 #: auto-profile.c:941
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -15948,7 +15943,7 @@ msgstr "Analyserat alias har ingen referens"
 #: cgraph.c:2914
 #, gcc-internal-format
 msgid "Instrumentation clone does not reference original node"
-msgstr ""
+msgstr "Instrumenteringsklonen refererar inte originalnoden"
 
 #: cgraph.c:2921
 #, fuzzy, gcc-internal-format
@@ -15998,7 +15993,7 @@ msgstr "Snuttar får inte ha en kropp"
 #: cgraph.c:2987
 #, gcc-internal-format
 msgid "Instrumentation thunk has wrong edge callee"
-msgstr ""
+msgstr "Instrumenteringssnutten har fel anropande båge"
 
 #: cgraph.c:3023
 #, gcc-internal-format
@@ -16554,7 +16549,7 @@ msgstr "stackgränser stödjs inte på denna målarkitektur"
 #: expmed.c:569
 #, gcc-internal-format
 msgid "write of %wu-bit data outside the bound of destination object, data truncated into %wu-bit"
-msgstr ""
+msgstr "skrivning av %wu-bitsdata utanför gränsen för destinationsobjektet, data avhuggen till %wu bitar"
 
 #: expr.c:7731
 #, gcc-internal-format
@@ -16751,7 +16746,7 @@ msgstr "okänd kommandoradsflagga %qs"
 #: gcc.c:3435
 #, gcc-internal-format, gfc-internal-format
 msgid "GCC is not configured to support %s as offload target"
-msgstr ""
+msgstr "GCC är inte konfigurerat för att stödja %s som ett avlastningsmål"
 
 #: gcc.c:3734
 #, gcc-internal-format
@@ -17053,7 +17048,7 @@ msgstr "kan inte ta adressen till %qs"
 #: gcov-tool.c:106
 #, gcc-internal-format
 msgid "Cannot get current directory name"
-msgstr ""
+msgstr "Kan inte få namnet på aktuell katalog"
 
 #: gcov-tool.c:110 gcov-tool.c:116
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -17247,7 +17242,7 @@ msgstr "%s-variabel %qE är privat i yttre sammanhang"
 #: gimplify.c:8369 gimplify.c:8375 gimplify.c:8383
 #, gcc-internal-format
 msgid "directive not yet implemented"
-msgstr ""
+msgstr "direktivet är inte implementerat ännu"
 
 #: gimplify.c:8552
 #, gcc-internal-format
@@ -17322,17 +17317,17 @@ msgstr "en typ med samma namn men andra baser är definerad i en annan översät
 #: ipa-devirt.c:648
 #, gcc-internal-format
 msgid "virtual table of type %qD contains RTTI information"
-msgstr ""
+msgstr "den virtuella tabellen för typen %qD innehåller RTTI-information"
 
 #: ipa-devirt.c:652
 #, gcc-internal-format
 msgid "but is prevailed by one without from other translation unit"
-msgstr ""
+msgstr "men övertrumfas av en utan från en annan översättningsenhet"
 
 #: ipa-devirt.c:654
 #, gcc-internal-format
 msgid "RTTI will not work on this type"
-msgstr ""
+msgstr "RTTI kommer inte att fungera för denna typ"
 
 #: ipa-devirt.c:686 ipa-devirt.c:706
 #, fuzzy, gcc-internal-format
@@ -17361,7 +17356,7 @@ msgstr "virtuell funktion %q+D"
 #: ipa-devirt.c:711
 #, gcc-internal-format
 msgid "ought to match virtual method %qD but does not"
-msgstr ""
+msgstr "borde matcha den virtuella metoden %qD men gör det inte"
 
 #: ipa-devirt.c:734
 #, fuzzy, gcc-internal-format
@@ -17379,17 +17374,17 @@ msgstr "en typ med samma namn men andra baser är definerad i en annan översät
 #: ipa-devirt.c:752
 #, gcc-internal-format
 msgid "the first difference of corresponding definitions is field %qD"
-msgstr ""
+msgstr "den första skillnaden mellan motsvarande definitioner är fältet %qD"
 
 #: ipa-devirt.c:762
 #, gcc-internal-format
 msgid "the first difference of corresponding definitions is method %qD"
-msgstr ""
+msgstr "den första skillnaden mellan motsvarande definitioner är metoden %qD"
 
 #: ipa-devirt.c:793
 #, gcc-internal-format
 msgid "type %qT should match type %qT but is defined in different namespace  "
-msgstr ""
+msgstr "Typen %qT borde matcha typen %qT men är definierad i en annan namnrymd "
 
 #: ipa-devirt.c:798
 #, fuzzy, gcc-internal-format
@@ -17551,43 +17546,43 @@ msgstr "en typ med samma namn men andra baser är definerad i en annan översät
 #, gcc-internal-format
 msgid "Declaring type %qD final would enable devirtualization of %i call"
 msgid_plural "Declaring type %qD final would enable devirtualization of %i calls"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Deklaration av typen %qD final skulle möjliggöra avvirtualisering av %i anrop"
+msgstr[1] "Deklaration av typen %qD final skulle möjliggöra avvirtualisering av %i anrop"
 
 #: ipa-devirt.c:3045
 #, gcc-internal-format
 msgid "Declaring type %qD final would enable devirtualization of %i call executed %lli times"
 msgid_plural "Declaring type %qD final would enable devirtualization of %i calls executed %lli times"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Deklaration av typen %qD final skulle möjliggöra avvirtualisering av %i anrop utfört %lli gånger"
+msgstr[1] "Deklaration av typen %qD final skulle möjliggöra avvirtualisering av %i anrop utförda %lli gånger"
 
 #: ipa-devirt.c:3074
 #, gcc-internal-format
 msgid "Declaring virtual destructor of %qD final would enable devirtualization of %i call"
 msgid_plural "Declaring virtual destructor of %qD final would enable devirtualization of %i calls"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Deklaration av den virtuella destrueraren %qD final skulle möjliggöra avvirtualisering av %i anrop"
+msgstr[1] "Deklaration av den virtuella destrueraren %qD final skulle möjliggöra avvirtualisering av %i anrop"
 
 #: ipa-devirt.c:3082
 #, gcc-internal-format
 msgid "Declaring method %qD final would enable devirtualization of %i call"
 msgid_plural "Declaring method %qD final would enable devirtualization of %i calls"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Deklaration av metoden %qD final skulle möjliggöra avvirtualisering av %i anrop"
+msgstr[1] "Deklaration av metoden %qD final skulle möjliggöra avvirtualisering av %i anrop"
 
 #: ipa-devirt.c:3090
 #, gcc-internal-format
 msgid "Declaring virtual destructor of %qD final would enable devirtualization of %i call executed %lli times"
 msgid_plural "Declaring virtual destructor of %qD final would enable devirtualization of %i calls executed %lli times"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Deklaration av den virtuella destrueraren %qD final skulle möjliggöra avvirtualisering av %i anrop utfört %lli gånger"
+msgstr[1] "Deklaration av den virtuella destrueraren %qD final skulle möjliggöra avvirtualisering av %i anrop utförda %lli gånger"
 
 #: ipa-devirt.c:3100
 #, gcc-internal-format
 msgid "Declaring method %qD final would enable devirtualization of %i call executed %lli times"
 msgid_plural "Declaring method %qD final would enable devirtualization of %i calls executed %lli times"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Deklaration av metoden %qD final skulle möjliggöra avvirtualisering av %i anrop utfört %lli gånger"
+msgstr[1] "Deklaration av metoden %qD final skulle möjliggöra avvirtualisering av %i anrop utförda %lli gånger"
 
 #: ipa-inline-analysis.c:4255
 #, gcc-internal-format
@@ -17762,7 +17757,7 @@ msgstr "Flaggan %s inte konsekvent använd i alla LTO-indatafiler"
 #: lto-wrapper.c:736
 #, gcc-internal-format, gfc-internal-format
 msgid "problem with building target image for %s\n"
-msgstr ""
+msgstr "problem med att bygga målavbild för %s\n"
 
 #: lto-wrapper.c:755
 #, fuzzy, gcc-internal-format
@@ -17779,12 +17774,12 @@ msgstr "Fel när utdatafilen ”%s” skrevs\n"
 #: lto-wrapper.c:786
 #, gcc-internal-format
 msgid "installation error, can't find crtoffloadend.o"
-msgstr ""
+msgstr "installationsfel, kan inte hitta crtoffloadend.o"
 
 #: lto-wrapper.c:798
 #, gcc-internal-format
 msgid "installation error, can't find crtoffloadbegin.o"
-msgstr ""
+msgstr "installationsfel, kan inte hitta crtoffloadbegin.o"
 
 #: lto-wrapper.c:902
 #, gcc-internal-format
@@ -17817,22 +17812,22 @@ msgstr "-pipe stödjs inte"
 #: omp-low.c:2576
 #, gcc-internal-format
 msgid "no arguments allowed to gang, worker and vector clauses inside parallel"
-msgstr ""
+msgstr "inga argumen tillåtna i gang-, worker- och vector-klausuler inuti parallel"
 
 #: omp-low.c:2597
 #, gcc-internal-format
 msgid "gang, worker and vector may occur only once in a loop nest"
-msgstr ""
+msgstr "gang, worker och vector får endast förekomma en gång i ett slingnäste"
 
 #: omp-low.c:2601
 #, gcc-internal-format
 msgid "gang, worker and vector must occur in this order in a loop nest"
-msgstr ""
+msgstr "gang, worker och vector måste förekomma i denna ordning inuti ett slingnäste"
 
 #: omp-low.c:2734
 #, gcc-internal-format
 msgid "non-OpenACC construct inside of OpenACC region"
-msgstr ""
+msgstr "icke-OpenACC-konstruktion inuti OpenACC-region"
 
 #: omp-low.c:2745
 #, gcc-internal-format
@@ -17917,7 +17912,7 @@ msgstr "teams-konstruktion inte vara nära innesluten inuti målregionen"
 #: omp-low.c:3007
 #, gcc-internal-format
 msgid "OpenACC construct inside of non-OpenACC region"
-msgstr ""
+msgstr "OpenACC-konstruktion inuti en icke-OpenACC-region"
 
 #: omp-low.c:3041
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -18030,7 +18025,7 @@ msgstr "okänt registernamn %qs"
 #: opts-global.c:455
 #, gcc-internal-format
 msgid "-fasan-shadow-offset should only be used with -fsanitize=kernel-address"
-msgstr ""
+msgstr "-fasan-shadow-offset skall bara användas med -fsanitize=kernel-address"
 
 #: opts-global.c:458
 #, fuzzy, gcc-internal-format
@@ -18151,7 +18146,7 @@ msgstr "okänt argument till --help=-flagga: %q.*s"
 #: opts.c:1619
 #, gcc-internal-format
 msgid "-fsanitize=all option is not valid"
-msgstr ""
+msgstr "flaggan -fsanitize=all är inte giltig"
 
 #: opts.c:1634
 #, fuzzy, gcc-internal-format
@@ -18162,7 +18157,7 @@ msgstr "okänt argument till flaggan -fsanitize=: %q.*s"
 #: opts.c:1829
 #, gcc-internal-format
 msgid "-foffload-abi option can be specified only for offload compiler"
-msgstr ""
+msgstr "flaggan -foffload-abi kan anges endast för en avlastande kompilator"
 
 #: opts.c:1837
 #, gcc-internal-format, gfc-internal-format
@@ -18768,12 +18763,12 @@ msgstr "noden har okänd typ"
 #: symtab.c:999
 #, gcc-internal-format
 msgid "node not found node->decl->decl_with_vis.symtab_node"
-msgstr ""
+msgstr "nod ej funnen found node->decl->decl_with_vis.symtab_node"
 
 #: symtab.c:1007
 #, gcc-internal-format
 msgid "node differs from node->decl->decl_with_vis.symtab_node"
-msgstr ""
+msgstr "noden skiljer från node->decl->decl_with_vis.symtab_node"
 
 #: symtab.c:1016
 #, gcc-internal-format
@@ -18851,7 +18846,7 @@ msgstr "comdat-lokal symbol refererad till av %s utanför dess comdat"
 #: symtab.c:1117
 #, gcc-internal-format
 msgid "implicit_section flag is set but section isn't"
-msgstr ""
+msgstr "flaggan implicit_section är satt men sektionen är inte det"
 
 #: symtab.c:1124
 #, fuzzy, gcc-internal-format
@@ -18862,12 +18857,12 @@ msgstr "noden är ensam i en comdat-grupp"
 #: symtab.c:1136
 #, gcc-internal-format
 msgid "Alias and target's section differs"
-msgstr ""
+msgstr "Aliasets och målets sektion skiljer"
 
 #: symtab.c:1143
 #, gcc-internal-format
 msgid "Alias and target's comdat groups differs"
-msgstr ""
+msgstr "Aliasets och målets comdat-grupper skiljer"
 
 #: symtab.c:1166 symtab.c:1198
 #, fuzzy, gcc-internal-format
@@ -18878,7 +18873,7 @@ msgstr "verify_symtab_node misslyckades"
 #: symtab.c:1195
 #, gcc-internal-format
 msgid "Two symbols with same comdat_group are not linked by the same_comdat_group list."
-msgstr ""
+msgstr "Två symbolser med samma comdat_group är inte länkade av listan same_comdat_group."
 
 #: symtab.c:1570
 #, gcc-internal-format
@@ -18893,7 +18888,7 @@ msgstr "variabeln %q+D är del i en aliascykel"
 #: symtab.c:1595
 #, gcc-internal-format
 msgid "section of alias %q+D must match section of its target"
-msgstr ""
+msgstr "sektionen för aliaset %q+D måste stämma med sektionen för dess mål"
 
 #: targhooks.c:198
 #, gcc-internal-format
@@ -19506,7 +19501,7 @@ msgstr "ogiltiga typer i konvertering till heltal"
 #: tree-cfg.c:3610
 #, gcc-internal-format
 msgid "reduction should convert from vector to element type"
-msgstr ""
+msgstr "reduktionen borde konvertera från vektor- till elementtyp"
 
 #: tree-cfg.c:3638
 #, gcc-internal-format
@@ -19927,42 +19922,42 @@ msgstr "ignorerar returvärdet av funktion deklarerad med attributet warn_unused
 #: tree-chkp-opt.c:761
 #, gcc-internal-format
 msgid "memory access check always fail"
-msgstr ""
+msgstr "minnesåtkomstkontrollen misslyckas alltid"
 
 #: tree-chkp.c:2641
 #, gcc-internal-format, gfc-internal-format
 msgid "pointer bounds were lost due to unexpected expression %s"
-msgstr ""
+msgstr "pekargränserna gick förlorade på grund av det oväntade uttrycket %s"
 
 #: tree-chkp.c:2716
 #, gcc-internal-format, gfc-internal-format
 msgid "chkp_get_bounds_by_definition: Unexpected var of type %s"
-msgstr ""
+msgstr "chkp_get_bounds_by_definition: Oväntad variabel av typen %s"
 
 #: tree-chkp.c:2759
 #, gcc-internal-format, gfc-internal-format
 msgid "chkp_get_bounds_by_definition: Unexpected GIMPLE code %s"
-msgstr ""
+msgstr "chkp_get_bounds_by_definition: Oväntad GIMPLE-kod %s"
 
 #: tree-chkp.c:3380
 #, gcc-internal-format, gfc-internal-format
 msgid "chkp_make_addressed_object_bounds: Unexpected tree code %s"
-msgstr ""
+msgstr "chkp_make_addressed_object_bounds: Oväntad trädkod %s"
 
 #: tree-chkp.c:3532
 #, gcc-internal-format, gfc-internal-format
 msgid "chkp_find_bounds: Unexpected tree code %s"
-msgstr ""
+msgstr "chkp_find_bounds: Oväntad trädkod %s"
 
 #: tree-chkp.c:3543
 #, gcc-internal-format
 msgid "chkp_find_bounds: Cannot find bounds for pointer"
-msgstr ""
+msgstr "chkp_find_bounds: Kan inte hitta gränserna för pekare"
 
 #: tree-chkp.c:3659
 #, gcc-internal-format, gfc-internal-format
 msgid "chkp_walk_pointer_assignments: unexpected RHS type: %s"
-msgstr ""
+msgstr "chkp_walk_pointer_assignments: oväntad RHS-typ: %s"
 
 #: tree-diagnostic.c:213
 #, gcc-internal-format
@@ -20092,12 +20087,12 @@ msgstr "inline:ing misslyckades i anrop av %q+F: %s"
 #: tree-into-ssa.c:3233
 #, gcc-internal-format
 msgid "statement uses released SSA name:"
-msgstr ""
+msgstr "satsen använder ett släppt SSA-namn:"
 
 #: tree-into-ssa.c:3245
 #, gcc-internal-format
 msgid "cannot update SSA form"
-msgstr ""
+msgstr "kan inte uppdatera SSA-formen"
 
 #: tree-into-ssa.c:3332 tree-outof-ssa.c:891 tree-outof-ssa.c:948
 #: tree-ssa-coalesce.c:927 tree-ssa-live.c:1389
@@ -20123,12 +20118,12 @@ msgstr "kringliggande slinga"
 #: tree-ssa-loop-niter.c:3447
 #, gcc-internal-format
 msgid "loop exit may only be reached after undefined behavior"
-msgstr ""
+msgstr "slingutgången kanske endast nås efter odefinierat beteende"
 
 #: tree-ssa-loop-niter.c:3459
 #, gcc-internal-format
 msgid "possible undefined statement is here"
-msgstr ""
+msgstr "möjligen odefinierad sats finns här"
 
 #: tree-ssa-operands.c:1002
 #, gcc-internal-format
@@ -20897,7 +20892,7 @@ msgstr "logiskt %<and%> mellan ömsesidigt uteslutande tester är alltid falskt"
 #: c-family/c-common.c:1804
 #, gcc-internal-format
 msgid "logical not is only applied to the left hand side of comparison"
-msgstr ""
+msgstr "logiskt icke tillämpas endast på vänstersidan av jämförelsen"
 
 #: c-family/c-common.c:1934
 #, gcc-internal-format
