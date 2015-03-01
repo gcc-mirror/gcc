@@ -1030,7 +1030,8 @@ sem_function::init (void)
     unsigned nondbg_stmt_count = 0;
 
     edge e;
-    for (edge_iterator ei = ei_start (bb->preds); ei_cond (ei, &e); ei_next (&ei))
+    for (edge_iterator ei = ei_start (bb->preds); ei_cond (ei, &e);
+	 ei_next (&ei))
       cfg_checksum = iterative_hash_host_wide_int (e->flags,
 		     cfg_checksum);
 
@@ -1039,9 +1040,10 @@ sem_function::init (void)
       {
 	gimple stmt = gsi_stmt (gsi);
 
-	if (gimple_code (stmt) != GIMPLE_DEBUG)
+	if (gimple_code (stmt) != GIMPLE_DEBUG
+	    && gimple_code (stmt) != GIMPLE_PREDICT)
 	  {
-	    hash_stmt (&hstate, stmt);
+	    hash_stmt (stmt, hstate);
 	    nondbg_stmt_count++;
 	  }
       }
@@ -1051,7 +1053,8 @@ sem_function::init (void)
 
     /* Inserting basic block to hash table.  */
     sem_bb *semantic_bb = new sem_bb (bb, nondbg_stmt_count,
-				      EDGE_COUNT (bb->preds) + EDGE_COUNT (bb->succs));
+				      EDGE_COUNT (bb->preds)
+				      + EDGE_COUNT (bb->succs));
 
     bb_sorted.safe_push (semantic_bb);
   }
@@ -1059,52 +1062,119 @@ sem_function::init (void)
   parse_tree_args ();
 }
 
+/* Accumulate to HSTATE a hash of expression EXP.
+   Identical to inchash::add_expr, but guaranteed to be stable across LTO
+   and DECL equality classes.  */
+
+void
+sem_item::add_expr (const_tree exp, inchash::hash &hstate)
+{
+  if (exp == NULL_TREE)
+    {
+      hstate.merge_hash (0);
+      return;
+    }
+
+  /* Handled component can be matched in a cureful way proving equivalence
+     even if they syntactically differ.  Just skip them.  */
+  STRIP_NOPS (exp);
+  while (handled_component_p (exp))
+    exp = TREE_OPERAND (exp, 0);
+
+  enum tree_code code = TREE_CODE (exp);
+  hstate.add_int (code);
+
+  switch (code)
+    {
+    /* Use inchash::add_expr for everything that is LTO stable.  */
+    case VOID_CST:
+    case INTEGER_CST:
+    case REAL_CST:
+    case FIXED_CST:
+    case STRING_CST:
+    case COMPLEX_CST:
+    case VECTOR_CST:
+      inchash::add_expr (exp, hstate);
+      break;
+    case CONSTRUCTOR:
+      {
+	unsigned HOST_WIDE_INT idx;
+	tree value;
+
+	hstate.add_wide_int (int_size_in_bytes (TREE_TYPE (exp)));
+
+	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (exp), idx, value)
+	  if (value)
+	    add_expr (value, hstate);
+	break;
+      }
+    case ADDR_EXPR:
+    case FDESC_EXPR:
+      add_expr (get_base_address (TREE_OPERAND (exp, 0)), hstate);
+      break;
+    case SSA_NAME:
+    case VAR_DECL:
+    case CONST_DECL:
+    case PARM_DECL:
+      hstate.add_wide_int (int_size_in_bytes (TREE_TYPE (exp)));
+      break;
+    case MEM_REF:
+    case POINTER_PLUS_EXPR:
+    case MINUS_EXPR:
+    case RANGE_EXPR:
+      add_expr (TREE_OPERAND (exp, 0), hstate);
+      add_expr (TREE_OPERAND (exp, 1), hstate);
+      break;
+    case PLUS_EXPR:
+      {
+	inchash::hash one, two;
+	add_expr (TREE_OPERAND (exp, 0), one);
+	add_expr (TREE_OPERAND (exp, 1), two);
+	hstate.add_commutative (one, two);
+      }
+      break;
+    CASE_CONVERT:
+      hstate.add_wide_int (int_size_in_bytes (TREE_TYPE (exp)));
+      return add_expr (TREE_OPERAND (exp, 0), hstate);
+    default:
+      break;
+    }
+}
+
 /* Improve accumulated hash for HSTATE based on a gimple statement STMT.  */
 
 void
-sem_function::hash_stmt (inchash::hash *hstate, gimple stmt)
+sem_function::hash_stmt (gimple stmt, inchash::hash &hstate)
 {
   enum gimple_code code = gimple_code (stmt);
 
-  hstate->add_int (code);
+  hstate.add_int (code);
 
-  if (code == GIMPLE_CALL)
+  switch (code)
     {
-      /* Checking of argument.  */
-      for (unsigned i = 0; i < gimple_call_num_args (stmt); ++i)
+    case GIMPLE_ASSIGN:
+      if (commutative_tree_code (gimple_assign_rhs_code (stmt))
+	  || commutative_ternary_tree_code (gimple_assign_rhs_code (stmt)))
 	{
-	  tree argument = gimple_call_arg (stmt, i);
+	  inchash::hash one, two;
 
-	  switch (TREE_CODE (argument))
-	    {
-	    case INTEGER_CST:
-	      if (tree_fits_shwi_p (argument))
-		hstate->add_wide_int (tree_to_shwi (argument));
-	      else if (tree_fits_uhwi_p (argument))
-		hstate->add_wide_int (tree_to_uhwi (argument));
-	      break;
-	    case REAL_CST:
-	      REAL_VALUE_TYPE c;
-	      HOST_WIDE_INT n;
-
-	      c = TREE_REAL_CST (argument);
-	      n = real_to_integer (&c);
-
-	      hstate->add_wide_int (n);
-	      break;
-	    case ADDR_EXPR:
-	      {
-		tree addr_operand = TREE_OPERAND (argument, 0);
-
-		if (TREE_CODE (addr_operand) == STRING_CST)
-		  hstate->add (TREE_STRING_POINTER (addr_operand),
-			       TREE_STRING_LENGTH (addr_operand));
-		break;
-	      }
-	    default:
-	      break;
-	    }
+	  add_expr (gimple_assign_rhs1 (stmt), one);
+	  add_expr (gimple_assign_rhs2 (stmt), two);
+	  hstate.add_commutative (one, two);
+	  add_expr (gimple_assign_lhs (stmt), hstate);
+	  break;
 	}
+      /* ... fall through ... */
+    case GIMPLE_CALL:
+    case GIMPLE_ASM:
+    case GIMPLE_COND:
+    case GIMPLE_GOTO:
+    case GIMPLE_RETURN:
+      /* All these statements are equivalent if their operands are.  */
+      for (unsigned i = 0; i < gimple_num_ops (stmt); ++i)
+	add_expr (gimple_op (stmt, i), hstate);
+    default:
+      break;
     }
 }
 
@@ -1474,17 +1544,17 @@ sem_variable::get_hash (void)
   if (hash)
     return hash;
 
+  /* All WPA streamed in symbols should have their hashes computed at compile
+     time.  At this point, the constructor may not be in memory at all.
+     DECL_INITIAL (decl) would be error_mark_node in that case.  */
+  gcc_assert (!node->lto_file_data);
+  tree ctor = DECL_INITIAL (decl);
   inchash::hash hstate;
 
   hstate.add_int (456346417);
-  hstate.add_int (TREE_CODE (ctor));
-
-  if (TREE_CODE (ctor) == CONSTRUCTOR)
-    {
-      unsigned length = vec_safe_length (CONSTRUCTOR_ELTS (ctor));
-      hstate.add_int (length);
-    }
-
+  if (DECL_SIZE (decl) && tree_fits_shwi_p (DECL_SIZE (decl)))
+    hstate.add_wide_int (tree_to_shwi (DECL_SIZE (decl)));
+  add_expr (ctor, hstate);
   hash = hstate.end ();
 
   return hash;

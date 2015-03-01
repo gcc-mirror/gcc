@@ -1,3 +1,12 @@
+2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-icf.c (sem_function::init): Fix formating; skip GIMPLE_PREDICT.
+	(sem_item::add_expr): New function.
+	(sem_function::hash_stmt): Handle operands of most statements.
+	(sem_variable::get_hash): Hash the actual constructor.
+	* ipa-icf.h (sem_item): Add add_expr.
+	(sem_function): Update prototype of hash_stmt
+
 2015-02-28  Martin Liska  <mliska@suse.cz>
 	    Jan Hubicka   <hubicka@ucw.cz>
 
