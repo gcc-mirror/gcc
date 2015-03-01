@@ -1,5 +1,10 @@
 2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-icf-gimple.c (func_checker::compare_operand): Fix handling
+	of OBJ_TYPE_REF.
+
+2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-icf.c (sem_function::merge): Fix handling of COMDAT.
 	(sem_variable::merge) Likewise.
 
