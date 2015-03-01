@@ -1,5 +1,9 @@
-2015-03-01  Martin Liska  <mliska@suse.cz>
+2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline.c (can_inline_edge_p): Match opt_for_fn on inline
+	target; also match flag_ipa_devirt.
+
+2015-03-01  Martin Liska  <mliska@suse.cz>
 	    Jan Hubicka   <hubicka@ucw.cz>
 
 	* ipa-icf-gimple.c (func_checker::compare_variable_decl):
