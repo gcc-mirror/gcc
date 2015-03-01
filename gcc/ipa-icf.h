@@ -353,10 +353,11 @@ private:
 
   /* For a given symbol table nodes N1 and N2, we check that FUNCTION_DECLs
      point to a same function. Comparison can be skipped if IGNORED_NODES
-     contains these nodes.  */
+     contains these nodes.  ADDRESS indicate if address is taken.  */
   bool compare_cgraph_references (hash_map <symtab_node *, sem_item *>
 				  &ignored_nodes,
-				  symtab_node *n1, symtab_node *n2);
+				  symtab_node *n1, symtab_node *n2,
+				  bool address);
 
   /* Processes function equality comparison.  */
   bool equals_private (sem_item *item,

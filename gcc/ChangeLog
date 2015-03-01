@@ -1,3 +1,19 @@
+2015-02-28  Martin Liska  <mliska@suse.cz>
+	    Jan Hubicka   <hubicka@ucw.cz>
+
+	PR ipa/65245
+	* ipa-icf-gimple.c (func_checker::compare_function_decl):
+	Remove.
+	(func_checker::compare_variable_decl): Skip symtab vars.
+	(func_checker::compare_cst_or_decl): Update.
+	* ipa-icf.c (sem_function::parse): Do not consider aliases.
+	(sem_function::compare_cgraph_references): Add ADDRESS parameter;
+	use correct symtab predicates.
+	(sem_function::equals_wpa): Update uses of compare_cgraph_references.
+	(sem_variable::parse):  Update comment.
+	(sem_item_optimizer::build_graph): Consider ultimate aliases
+	for references.
+
 2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-icf-gimple.c (func_checker::compare_operand): Fix handling

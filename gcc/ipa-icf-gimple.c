@@ -312,10 +312,9 @@ func_checker::compare_cst_or_decl (tree t1, tree t2)
 	return return_with_debug (ret);
       }
     case FUNCTION_DECL:
-      {
-	ret = compare_function_decl (t1, t2);
-	return return_with_debug (ret);
-      }
+      /* All function decls are in the symbol table and known to match
+	 before we start comparing bodies.  */
+      return true;
     case VAR_DECL:
       return return_with_debug (compare_variable_decl (t1, t2));
     case FIELD_DECL:
@@ -537,39 +536,6 @@ func_checker::compare_tree_list_operand (tree t1, tree t2)
   return true;
 }
 
-/* Verifies that trees T1 and T2, representing function declarations
-   are equivalent from perspective of ICF.  */
-
-bool
-func_checker::compare_function_decl (tree t1, tree t2)
-{
-  bool ret = false;
-
-  if (t1 == t2)
-    return true;
-
-  symtab_node *n1 = symtab_node::get (t1);
-  symtab_node *n2 = symtab_node::get (t2);
-
-  if (m_ignored_source_nodes != NULL && m_ignored_target_nodes != NULL)
-    {
-      ret = m_ignored_source_nodes->contains (n1)
-	    && m_ignored_target_nodes->contains (n2);
-
-      if (ret)
-	return true;
-    }
-
-  /* If function decl is WEAKREF, we compare targets.  */
-  cgraph_node *f1 = cgraph_node::get (t1);
-  cgraph_node *f2 = cgraph_node::get (t2);
-
-  if(f1 && f2 && f1->weakref && f2->weakref)
-    ret = f1->alias_target == f2->alias_target;
-
-  return ret;
-}
-
 /* Verifies that trees T1 and T2 do correspond.  */
 
 bool
@@ -590,20 +556,10 @@ func_checker::compare_variable_decl (tree t1, tree t2)
       && DECL_ASSEMBLER_NAME (t1) != DECL_ASSEMBLER_NAME (t2))
     return return_false_with_msg ("HARD REGISTERS are different");
 
-  if (TREE_CODE (t1) == VAR_DECL && (DECL_EXTERNAL (t1) || TREE_STATIC (t1)))
-    {
-      symtab_node *n1 = symtab_node::get (t1);
-      symtab_node *n2 = symtab_node::get (t2);
-
-      if (m_ignored_source_nodes != NULL && m_ignored_target_nodes != NULL)
-	{
-	  ret = m_ignored_source_nodes->contains (n1)
-		&& m_ignored_target_nodes->contains (n2);
-
-	  if (ret)
-	    return true;
-	}
-    }
+  /* Symbol table variables are known to match before we start comparing
+     bodies.  */
+  if (decl_in_symtab_p (t1))
+    return decl_in_symtab_p (t2);
   ret = compare_decl (t1, t2);
 
   return return_with_debug (ret);
