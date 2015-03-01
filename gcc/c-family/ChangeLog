@@ -1,3 +1,10 @@
+2015-03-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (is_tagged_type): Add guard for DECL_VINDEX.
+	(dump_template_types): Adjust DECL_TEMPLATE_INSTANTIATIONS and
+	DECL_TEMPLATE_RESULT emulations.
+	(dump_ada_template)): Add guard for TYPE_METHODS.
+
 2015-02-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c/65040
