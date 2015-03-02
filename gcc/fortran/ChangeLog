@@ -1,3 +1,8 @@
+2015-03-02  Tobias Burnus  <burnus@net-b.de>
+
+	* check.c (gfc_check_atomic): Properly check for coarrayness
+	and for being coindexed.
+
 2015-02-26  Martin Liska  <mliska@suse.cz>
 
 	* resolve.c: Rename enum 'comparison' to 'compare_result' as
