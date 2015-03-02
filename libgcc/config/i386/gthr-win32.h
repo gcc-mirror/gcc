@@ -583,7 +583,7 @@ __gthread_once (__gthread_once_t *__once, void (*__func) (void))
    C++ EH. Mingw uses a thread-support DLL to work-around this problem.  */
 static inline int
 __gthread_key_create (__gthread_key_t *__key,
-		      void (*__dtor) (void *) __attribute__((unused)))
+		      void (*__dtor) (void *) __attribute__((__unused__)))
 {
   int __status = 0;
   DWORD __tls_index = TlsAlloc ();

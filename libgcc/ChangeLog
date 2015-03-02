@@ -1,3 +1,10 @@
+2015-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libgcc/64885
+	* gthr-single.h: Use __unused__ attribute instead of unused.
+	* config/gthr-vxworks.h: Likewise.
+	* config/i386/gthr-win32.h: Likewise.
+
 2015-02-27  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/65038
