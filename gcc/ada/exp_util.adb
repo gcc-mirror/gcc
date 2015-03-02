@@ -6938,6 +6938,13 @@ package body Exp_Util is
 
    function Possible_Bit_Aligned_Component (N : Node_Id) return Boolean is
    begin
+      --  Do not process an unanalyzed node because it is not yet decorated and
+      --  most checks performed below will fail.
+
+      if not Analyzed (N) then
+         return False;
+      end if;
+
       case Nkind (N) is
 
          --  Case of indexed component

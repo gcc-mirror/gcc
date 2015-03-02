@@ -13012,20 +13012,33 @@ package body Sem_Util is
             Kill_Checks (Ent);
             Set_Current_Value (Ent, Empty);
 
-            if not Can_Never_Be_Null (Ent) then
-               Set_Is_Known_Non_Null (Ent, False);
-            end if;
+            --  Do not reset the Is_Known_[Non_]Null and Is_Known_Valid flags
+            --  for a constant. Once the constant is elaborated, its value is
+            --  not changed, therefore the associated flags that describe the
+            --  value should not be modified either.
 
-            Set_Is_Known_Null (Ent, False);
+            if Ekind (Ent) = E_Constant then
+               null;
 
-            --  Reset Is_Known_Valid unless type is always valid, or if we have
-            --  a loop parameter (loop parameters are always valid, since their
-            --  bounds are defined by the bounds given in the loop header).
+            --  Non-constant entities
 
-            if not Is_Known_Valid (Etype (Ent))
-              and then Ekind (Ent) /= E_Loop_Parameter
-            then
-               Set_Is_Known_Valid (Ent, False);
+            else
+               if not Can_Never_Be_Null (Ent) then
+                  Set_Is_Known_Non_Null (Ent, False);
+               end if;
+
+               Set_Is_Known_Null (Ent, False);
+
+               --  Reset the Is_Known_Valid flag unless the type is always
+               --  valid. This does not apply to a loop parameter because its
+               --  bounds are defined by the loop header and therefore always
+               --  valid.
+
+               if not Is_Known_Valid (Etype (Ent))
+                 and then Ekind (Ent) /= E_Loop_Parameter
+               then
+                  Set_Is_Known_Valid (Ent, False);
+               end if;
             end if;
          end if;
       end if;
