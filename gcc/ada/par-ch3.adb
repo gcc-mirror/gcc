@@ -1514,14 +1514,34 @@ package body Ch3 is
             return;
 
          --  Otherwise we definitely have an ordinary identifier with a junk
-         --  token after it. Just complain that we expect a declaration, and
-         --  skip to a semicolon
+         --  token after it.
 
          else
-            Set_Declaration_Expected;
-            Resync_Past_Semicolon;
-            Done := False;
-            return;
+            --  If in -gnatd.2 mode, try for statements
+
+            if Debug_Flag_Dot_2 then
+               Restore_Scan_State (Scan_State);
+
+               --  Reset Token_Node, because it already got changed from an
+               --  Identifier to a Defining_Identifier, and we don't want that
+               --  for a statement!
+
+               Token_Node :=
+                 Make_Identifier (Sloc (Token_Node), Chars (Token_Node));
+
+               --  And now scan out one or more statements
+
+               Statement_When_Declaration_Expected (Decls, Done, In_Spec);
+               return;
+
+            --  Normal case, just complain and skip to semicolon
+
+            else
+               Set_Declaration_Expected;
+               Resync_Past_Semicolon;
+               Done := False;
+               return;
+            end if;
          end if;
       end if;
 

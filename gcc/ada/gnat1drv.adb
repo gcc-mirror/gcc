@@ -130,6 +130,12 @@ procedure Gnat1drv is
          Relaxed_RM_Semantics := True;
       end if;
 
+      --  -gnatd.1 enables unnesting of subprograms
+
+      if Debug_Flag_Dot_1 then
+         Unnest_Subprogram_Mode := True;
+      end if;
+
       --  -gnatd.V or -gnatd.u enables special C expansion mode
 
       if Debug_Flag_Dot_VV or Debug_Flag_Dot_U then

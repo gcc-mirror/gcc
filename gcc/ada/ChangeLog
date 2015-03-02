@@ -1,3 +1,31 @@
+2015-03-02  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Document new debug flag -gnatd.1.
+	* einfo.ads, einfo.adb (Has_Nested_Subprogram): New flag.
+	(Has_Uplevel_Reference): New flag (Is_Static_Type): New flag.
+	(Uplevel_Reference_Noted):New flag (Uplevel_References): New field.
+	* elists.ads elists.adb (List_Length): New function.
+	* exp_ch6.adb (Expand_N_Subprogram_Body): Call Unnest_Subprogram
+	when appropriate (Process_Preconditions): Minor code
+	reorganization and reformatting
+	* exp_unst.ads, exp_unst.adb: New files.
+	* gnat1drv.adb (Adjust_Global_Switches): Set
+	Unnest_Subprogram_Mode if -gnatd.1
+	* namet.ads, namet.adb (Name_Find_Str): New version of Name_Find with
+	string argument.
+	* opt.ads (Unnest_Subprogram_Mode): New flag.
+	* par-ch3.adb (P_Identifier_Declarations): Fixes to -gnatd.2 handling.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Set
+	Has_Nested_Subprogram flag.
+	* sem_ch8.adb (Find_Direct_Name): New calling sequence for
+	Check_Nested_Access.
+	(Find_Selected_Component): Minor comment addition.
+	* sem_util.adb (Check_Nested_Access): New version for use with Exp_Unst.
+	(Note_Possible_Modification): New calling sequence for
+	Check_Nested_Access.
+	* sem_util.ads (Check_Nested_Access): New version for use with Exp_Unst.
+	* gcc-interface/Make-lang.in (GNAT1_OBJS): Add exp_unst.o
+
 2015-03-02  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gcc-interface/utils.c (gnat_pushdecl): For non-artificial pointer

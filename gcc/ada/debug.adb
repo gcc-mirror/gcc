@@ -746,9 +746,10 @@ package body Debug is
    --  d9   This allows lock free implementation for protected objects
    --       (see Exp_Ch9).
 
-   --  d.1  Enable unnesting of nested procedures. This special pass does not
-   --       actually unnest things, but it ensures that a nested procedure
-   --       does not contain any uplevel references.
+   --  d.1  Sets Opt.Unnest_Subprogram_Mode to enable unnesting of subprograms.
+   --       This special pass does not actually unnest things, but it ensures
+   --       that a nested procedure does not contain any uplevel references.
+   --       See spec of Exp_Unst for full details.
 
    --  d.2  Allow statements within declarative parts. This is not usually
    --       allowed, but in some debugging contexts (e.g. testing the circuit

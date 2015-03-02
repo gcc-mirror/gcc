@@ -32,6 +32,7 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Disp; use Exp_Disp;
+with Exp_Unst; use Exp_Unst;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
@@ -2863,23 +2864,37 @@ package body Sem_Util is
    -- Check_Nested_Access --
    -------------------------
 
-   procedure Check_Nested_Access (Ent : Entity_Id) is
+   procedure Check_Nested_Access (N : Node_Id; Ent : Entity_Id) is
       Scop         : constant Entity_Id := Current_Scope;
       Current_Subp : Entity_Id;
       Enclosing    : Entity_Id;
 
    begin
       --  Currently only enabled for VM back-ends for efficiency, should we
-      --  enable it more systematically ???
+      --  enable it more systematically? Probably not unless someone actually
+      --  needs it. It will be needed for C generation and is activated if the
+      --  Opt.Unnest_Subprogram_Mode flag is set True.
 
-      --  Check for Is_Imported needs commenting below ???
-
-      if VM_Target /= No_VM
-        and then Ekind_In (Ent, E_Variable, E_Constant, E_Loop_Parameter)
+      if (VM_Target /= No_VM or else Unnest_Subprogram_Mode)
         and then Scope (Ent) /= Empty
         and then not Is_Library_Level_Entity (Ent)
+
+        --  Comment the exclusion of imported entities ???
+
         and then not Is_Imported (Ent)
       then
+         --  For VM case, we are only interested in variables, constants,
+         --  and loop parameters. For general nested procedure usage, we
+         --  allow types as well.
+
+         if Ekind_In (Ent, E_Variable, E_Constant, E_Loop_Parameter) then
+            null;
+         elsif not (Unnest_Subprogram_Mode and then Is_Type (Ent)) then
+            return;
+         end if;
+
+         --  Get current subprogram that is relevant
+
          if Is_Subprogram (Scop)
            or else Is_Generic_Subprogram (Scop)
            or else Is_Entry (Scop)
@@ -2891,8 +2906,19 @@ package body Sem_Util is
 
          Enclosing := Enclosing_Subprogram (Ent);
 
+         --  Set flag if uplevel reference
+
          if Enclosing /= Empty and then Enclosing /= Current_Subp then
-            Set_Has_Up_Level_Access (Ent, True);
+            if Is_Type (Ent) then
+               Check_Uplevel_Reference_To_Type (Ent);
+            else
+               Set_Has_Uplevel_Reference (Ent, True);
+
+               if Unnest_Subprogram_Mode then
+                  Set_Has_Uplevel_Reference (Current_Subp, True);
+                  Note_Uplevel_Reference (N, Enclosing);
+               end if;
+            end if;
          end if;
       end if;
    end Check_Nested_Access;
@@ -15168,7 +15194,7 @@ package body Sem_Util is
                   end if;
                end if;
 
-               Check_Nested_Access (Ent);
+               Check_Nested_Access (N, Ent);
             end if;
 
             Kill_Checks (Ent);

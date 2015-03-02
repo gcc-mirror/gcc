@@ -42,6 +42,7 @@ with Exp_Intr; use Exp_Intr;
 with Exp_Pakd; use Exp_Pakd;
 with Exp_Prag; use Exp_Prag;
 with Exp_Tss;  use Exp_Tss;
+with Exp_Unst; use Exp_Unst;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Inline;   use Inline;
@@ -5339,6 +5340,16 @@ package body Exp_Ch6 is
       --  Set to encode entity names in package body before gigi is called
 
       Qualify_Entity_Names (N);
+
+      --  If we are unnesting procedures, and this is an outer level procedure
+      --  with nested subprograms, do the unnesting operation now.
+
+      if Opt.Unnest_Subprogram_Mode
+        and then Is_Library_Level_Entity (Spec_Id)
+        and then Has_Nested_Subprogram (Spec_Id)
+      then
+         Unnest_Subprogram (Spec_Id, N);
+      end if;
    end Expand_N_Subprogram_Body;
 
    -----------------------------------
@@ -7716,14 +7727,9 @@ package body Exp_Ch6 is
 
          if Present (Decls) then
             Decl := First (Decls);
-
             while Present (Decl) loop
-               if Comes_From_Source (Decl) then
-                  exit;
-               else
-                  Insert_Node := Decl;
-               end if;
-
+               exit when Comes_From_Source (Decl);
+               Insert_Node := Decl;
                Next (Decl);
             end loop;
          end if;

@@ -1104,6 +1104,17 @@ package body Namet is
       end if;
    end Name_Find;
 
+   -------------------
+   -- Name_Find_Str --
+   -------------------
+
+   function Name_Find_Str (S : String) return Name_Id is
+   begin
+      Name_Len := S'Length;
+      Name_Buffer (1 .. Name_Len) := S;
+      return Name_Find;
+   end Name_Find_Str;
+
    -------------
    -- Nam_In --
    -------------
