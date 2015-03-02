@@ -1,3 +1,15 @@
+2015-02-28  Martin Liska  <mliska@suse.cz>
+	    Jan Hubicka   <hubicka@ucw.cz>
+
+	* ipa-icf.c (sem_variable::equals): Improve debug output;
+	get variable constructor.
+	(sem_variable::parse): Do not filter out too early; give up on
+	volatile and register vars.
+	(sem_item_optimizer::filter_removed_items): Filter out nonreadonly
+	variables.
+	* ipa-icf.h (sem_variable::init): Do not set ctor.
+	(sem_variable::ctor): Remove.
+
 2015-03-01  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/65233

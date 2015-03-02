@@ -1448,18 +1448,29 @@ sem_variable::equals_wpa (sem_item *item,
 
 /* Returns true if the item equals to ITEM given as argument.  */
 
+/* Returns true if the item equals to ITEM given as argument.  */
+
 bool
 sem_variable::equals (sem_item *item,
-		      hash_map <symtab_node *, sem_item *> & ARG_UNUSED (ignored_nodes))
+		      hash_map <symtab_node *, sem_item *> &)
 {
   gcc_assert (item->type == VAR);
+  bool ret;
 
-  sem_variable *v = static_cast<sem_variable *>(item);
+  if (DECL_INITIAL (decl) == error_mark_node && in_lto_p)
+    dyn_cast <varpool_node *>(node)->get_constructor ();
+  if (DECL_INITIAL (item->decl) == error_mark_node && in_lto_p)
+    dyn_cast <varpool_node *>(item->node)->get_constructor ();
 
-  if (!ctor || !v->ctor)
-    return return_false_with_msg ("ctor is missing for semantic variable");
+  ret = sem_variable::equals (DECL_INITIAL (decl),
+			      DECL_INITIAL (item->node->decl));
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file,
+	     "Equals called for vars:%s:%s (%u:%u) (%s:%s) with result: %s\n\n",
+	     name(), item->name (), node->order, item->node->order, asm_name (),
+	     item->asm_name (), ret ? "true" : "false");
 
-  return sem_variable::equals (ctor, v->ctor);
+  return ret;
 }
 
 /* Compares trees T1 and T2 for semantic equality.  */
@@ -1653,24 +1664,7 @@ sem_variable::equals (tree t1, tree t2)
 sem_variable *
 sem_variable::parse (varpool_node *node, bitmap_obstack *stack)
 {
-  tree decl = node->decl;
-
-  if (node->alias)
-    return NULL;
-
-  bool readonly = TYPE_P (decl) ? TYPE_READONLY (decl) : TREE_READONLY (decl);
-  if (!readonly)
-    return NULL;
-
-  bool can_handle = DECL_VIRTUAL_P (decl)
-		    || flag_merge_constants >= 2
-		    || (!TREE_ADDRESSABLE (decl) && !node->externally_visible);
-
-  if (!can_handle || DECL_EXTERNAL (decl))
-    return NULL;
-
-  tree ctor = ctor_for_folding (decl);
-  if (!ctor)
+  if (TREE_THIS_VOLATILE (node->decl) || DECL_HARD_REGISTER (node->decl))
     return NULL;
 
   sem_variable *v = new sem_variable (node, 0, stack);
@@ -1686,8 +1680,8 @@ hashval_t
 sem_variable::get_hash (void)
 {
   if (hash)
-    return hash;
 
+    return hash;
   /* All WPA streamed in symbols should have their hashes computed at compile
      time.  At this point, the constructor may not be in memory at all.
      DECL_INITIAL (decl) would be error_mark_node in that case.  */
@@ -2155,7 +2149,14 @@ sem_item_optimizer::filter_removed_items (void)
 	  if (!flag_ipa_icf_variables)
 	    remove_item (item);
 	  else
-	    filtered.safe_push (item);
+	    {
+	      /* Filter out non-readonly variables.  */
+	      tree decl = item->decl;
+	      if (TREE_READONLY (decl))
+		filtered.safe_push (item);
+	      else
+		remove_item (item);
+	    }
         }
     }
 
