@@ -213,6 +213,7 @@ package body Einfo is
    --    Stored_Constraint               Elist23
 
    --    Related_Expression              Node24
+   --    Uplevel_References              Elist24
 
    --    Interface_Alias                 Node25
    --    Interfaces                      Elist25
@@ -505,7 +506,7 @@ package body Einfo is
    --    Has_Pragma_Unreferenced_Objects Flag212
    --    Requires_Overriding             Flag213
    --    Has_RACW                        Flag214
-   --    Has_Up_Level_Access             Flag215
+   --    Has_Uplevel_Reference           Flag215
    --    Universal_Aliasing              Flag216
    --    Suppress_Value_Tracking_On_Call Flag217
    --    Is_Primitive                    Flag218
@@ -578,9 +579,10 @@ package body Einfo is
    --    Contains_Ignored_Ghost_Code     Flag279
    --    Partial_View_Has_Unknown_Discr  Flag280
 
-   --    (unused)                        Flag281
-   --    (unused)                        Flag282
-   --    (unused)                        Flag283
+   --    Is_Static_Type                  Flag281
+   --    Has_Nested_Subprogram           Flag282
+   --    Uplevel_Reference_Noted         Flag283
+
    --    (unused)                        Flag284
    --    (unused)                        Flag285
    --    (unused)                        Flag286
@@ -1544,6 +1546,12 @@ package body Einfo is
       return Flag101 (Id);
    end Has_Nested_Block_With_Handler;
 
+   function Has_Nested_Subprogram (Id : E) return B is
+   begin
+      pragma Assert (Is_Subprogram (Id));
+      return Flag282 (Id);
+   end Has_Nested_Subprogram;
+
    function Has_Non_Standard_Rep (Id : E) return B is
    begin
       return Flag75 (Implementation_Base_Type (Id));
@@ -1786,12 +1794,10 @@ package body Einfo is
       return Flag72 (Id);
    end Has_Unknown_Discriminants;
 
-   function Has_Up_Level_Access (Id : E) return B is
+   function Has_Uplevel_Reference (Id : E) return B is
    begin
-      pragma Assert
-        (Ekind_In (Id, E_Variable, E_Constant, E_Loop_Parameter));
       return Flag215 (Id);
-   end Has_Up_Level_Access;
+   end Has_Uplevel_Reference;
 
    function Has_Visible_Refinement (Id : E) return B is
    begin
@@ -2375,6 +2381,12 @@ package body Einfo is
    begin
       return Flag60 (Id);
    end Is_Shared_Passive;
+
+   function Is_Static_Type (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag281 (Id);
+   end Is_Static_Type;
 
    function Is_Statically_Allocated (Id : E) return B is
    begin
@@ -3187,6 +3199,17 @@ package body Einfo is
    begin
       return Node16 (Id);
    end Unset_Reference;
+
+   function Uplevel_Reference_Noted (Id : E) return B is
+   begin
+      return Flag283 (Id);
+   end Uplevel_Reference_Noted;
+
+   function Uplevel_References (Id : E) return L is
+   begin
+      pragma Assert (Is_Subprogram (Id));
+      return Elist24 (Id);
+   end Uplevel_References;
 
    function Used_As_Generic_Actual (Id : E) return B is
    begin
@@ -4371,11 +4394,16 @@ package body Einfo is
       Set_Flag101 (Id, V);
    end Set_Has_Nested_Block_With_Handler;
 
-   procedure Set_Has_Up_Level_Access (Id : E; V : B := True) is
+   procedure Set_Has_Nested_Subprogram (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Variable, E_Constant, E_Loop_Parameter));
+      pragma Assert (Is_Subprogram (Id));
+      Set_Flag282 (Id, V);
+   end Set_Has_Nested_Subprogram;
+
+   procedure Set_Has_Uplevel_Reference (Id : E; V : B := True) is
+   begin
       Set_Flag215 (Id, V);
-   end Set_Has_Up_Level_Access;
+   end Set_Has_Uplevel_Reference;
 
    procedure Set_Has_Non_Standard_Rep (Id : E; V : B := True) is
    begin
@@ -5270,6 +5298,12 @@ package body Einfo is
       Set_Flag60 (Id, V);
    end Set_Is_Shared_Passive;
 
+   procedure Set_Is_Static_Type (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag281 (Id, V);
+   end Set_Is_Static_Type;
+
    procedure Set_Is_Statically_Allocated (Id : E; V : B := True) is
    begin
       pragma Assert
@@ -6118,6 +6152,17 @@ package body Einfo is
    begin
       Set_Node16 (Id, V);
    end Set_Unset_Reference;
+
+   procedure Set_Uplevel_Reference_Noted (Id : E; V : B := True) is
+   begin
+      Set_Flag283 (Id, V);
+   end Set_Uplevel_Reference_Noted;
+
+   procedure Set_Uplevel_References (Id : E; V : L) is
+   begin
+      pragma Assert (Is_Subprogram (Id));
+      Set_Elist24 (Id, V);
+   end Set_Uplevel_References;
 
    procedure Set_Used_As_Generic_Actual (Id : E; V : B := True) is
    begin
@@ -8517,6 +8562,7 @@ package body Einfo is
       W ("Has_Master_Entity",               Flag21  (Id));
       W ("Has_Missing_Return",              Flag142 (Id));
       W ("Has_Nested_Block_With_Handler",   Flag101 (Id));
+      W ("Has_Nested_Subprogram",           Flag282 (Id));
       W ("Has_Non_Standard_Rep",            Flag75  (Id));
       W ("Has_Out_Or_In_Out_Parameter",     Flag110 (Id));
       W ("Has_Object_Size_Clause",          Flag172 (Id));
@@ -8561,7 +8607,7 @@ package body Einfo is
       W ("Has_Thunks",                      Flag228 (Id));
       W ("Has_Unchecked_Union",             Flag123 (Id));
       W ("Has_Unknown_Discriminants",       Flag72  (Id));
-      W ("Has_Up_Level_Access",             Flag215 (Id));
+      W ("Has_Uplevel_Reference",           Flag215 (Id));
       W ("Has_Visible_Refinement",          Flag263 (Id));
       W ("Has_Volatile_Components",         Flag87  (Id));
       W ("Has_Xref_Entry",                  Flag182 (Id));
@@ -8662,6 +8708,7 @@ package body Einfo is
       W ("Is_Return_Object",                Flag209 (Id));
       W ("Is_Safe_To_Reevaluate",           Flag249 (Id));
       W ("Is_Shared_Passive",               Flag60  (Id));
+      W ("Is_Static_Type",                  Flag281 (Id));
       W ("Is_Statically_Allocated",         Flag28  (Id));
       W ("Is_Tag",                          Flag78  (Id));
       W ("Is_Tagged_Type",                  Flag55  (Id));
@@ -8728,6 +8775,7 @@ package body Einfo is
       W ("Suppress_Value_Tracking_On_Call", Flag217 (Id));
       W ("Treat_As_Volatile",               Flag41  (Id));
       W ("Universal_Aliasing",              Flag216 (Id));
+      W ("Uplevel_Reference_Noted",         Flag283 (Id));
       W ("Used_As_Generic_Actual",          Flag222 (Id));
       W ("Uses_Sec_Stack",                  Flag95  (Id));
       W ("Warnings_Off",                    Flag96  (Id));
@@ -9637,6 +9685,11 @@ package body Einfo is
               E_Variable                                   |
               Type_Kind                                    =>
             Write_Str ("Related_Expression");
+
+         when E_Function                                   |
+              E_Operator                                   |
+              E_Procedure                                  =>
+            Write_Str ("Uplevel_References");
 
          when others                                       =>
             Write_Str ("Field24???");

@@ -3223,8 +3223,7 @@ package body Sem_Ch6 is
                --  We make two copies of the given spec, one for the new
                --  declaration, and one for the body.
 
-               if No (Spec_Id)
-                 and then GNATprove_Mode
+               if No (Spec_Id) and then GNATprove_Mode
 
                  --  Inlining does not apply during pre-analysis of code
 
@@ -4156,6 +4155,28 @@ package body Sem_Ch6 is
          --  Check references in body
 
          Check_References (Body_Id);
+      end;
+
+      --  Check for nested subprogram, and mark outer level subprogram if so
+
+      declare
+         Ent : Entity_Id;
+
+      begin
+         if Present (Spec_Id) then
+            Ent := Spec_Id;
+         else
+            Ent := Body_Id;
+         end if;
+
+         loop
+            Ent := Enclosing_Subprogram (Ent);
+            exit when No (Ent) or else Is_Subprogram (Ent);
+         end loop;
+
+         if Present (Ent) then
+            Set_Has_Nested_Subprogram (Ent);
+         end if;
       end;
    end Analyze_Subprogram_Body_Helper;
 

@@ -5623,7 +5623,7 @@ package body Sem_Ch8 is
                   end if;
                end if;
 
-               Check_Nested_Access (E);
+               Check_Nested_Access (N, E);
             end if;
 
             Set_Entity_Or_Discriminal (N, E);
@@ -6593,6 +6593,8 @@ package body Sem_Ch8 is
                  and then (not Is_Entity_Name (P)
                             or else Chars (Entity (P)) /= Name_uInit)
                then
+                  --  Check if we already have an available subtype we can use
+
                   if Ekind (Etype (P)) = E_Record_Subtype
                     and then Nkind (Parent (Etype (P))) = N_Subtype_Declaration
                     and then Is_Array_Type (Etype (Selector))
