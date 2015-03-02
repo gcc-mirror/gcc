@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include <list>
 #include "coretypes.h"
 #include "hash-set.h"
 #include "machmode.h"
@@ -119,9 +120,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "data-streamer.h"
 #include "ipa-utils.h"
-#include <list>
 #include "ipa-icf-gimple.h"
 #include "ipa-icf.h"
+#include "stor-layout.h"
 
 using namespace ipa_icf_gimple;
 
@@ -338,7 +339,7 @@ sem_function::get_hash (void)
    contains these nodes.  ADDRESS indicate if address is taken.  */
 
 bool
-sem_function::compare_cgraph_references (
+sem_item::compare_cgraph_references (
     hash_map <symtab_node *, sem_item *> &ignored_nodes,
     symtab_node *n1, symtab_node *n2, bool address)
 {
@@ -1395,6 +1396,56 @@ sem_variable::sem_variable (varpool_node *node, hashval_t _hash,
   gcc_checking_assert (get_node ());
 }
 
+/* Fast equality function based on knowledge known in WPA.  */
+
+bool
+sem_variable::equals_wpa (sem_item *item,
+			  hash_map <symtab_node *, sem_item *> &ignored_nodes)
+{
+  gcc_assert (item->type == VAR);
+
+  if (node->num_references () != item->node->num_references ())
+    return return_false_with_msg ("different number of references");
+
+  if (DECL_TLS_MODEL (decl) || DECL_TLS_MODEL (item->decl))
+    return return_false_with_msg ("TLS model");
+
+  if (DECL_ALIGN (decl) != DECL_ALIGN (item->decl))
+    return return_false_with_msg ("alignment mismatch");
+
+  if (DECL_VIRTUAL_P (decl) != DECL_VIRTUAL_P (item->decl))
+    return return_false_with_msg ("Virtual flag mismatch");
+
+  if (DECL_SIZE (decl) != DECL_SIZE (item->decl)
+      && ((!DECL_SIZE (decl) || !DECL_SIZE (item->decl))
+	  || !operand_equal_p (DECL_SIZE (decl),
+			       DECL_SIZE (item->decl), OEP_ONLY_CONST)))
+    return return_false_with_msg ("size mismatch");
+
+  /* Do not attempt to mix data from different user sections;
+     we do not know what user intends with those.  */
+  if (((DECL_SECTION_NAME (decl) && !node->implicit_section)
+       || (DECL_SECTION_NAME (item->decl) && !item->node->implicit_section))
+      && DECL_SECTION_NAME (decl) != DECL_SECTION_NAME (item->decl))
+    return return_false_with_msg ("user section mismatch");
+
+  if (DECL_IN_TEXT_SECTION (decl) != DECL_IN_TEXT_SECTION (item->decl))
+    return return_false_with_msg ("text section");
+
+  ipa_ref *ref = NULL, *ref2 = NULL;
+  for (unsigned i = 0; node->iterate_reference (i, ref); i++)
+    {
+      item->node->iterate_reference (i, ref2);
+
+      if (!compare_cgraph_references (ignored_nodes,
+				      ref->referred, ref2->referred,
+				      ref->address_matters_p ()))
+	return false;
+    }
+
+  return true;
+}
+
 /* Returns true if the item equals to ITEM given as argument.  */
 
 bool
@@ -1408,17 +1459,6 @@ sem_variable::equals (sem_item *item,
   if (!ctor || !v->ctor)
     return return_false_with_msg ("ctor is missing for semantic variable");
 
-  if (DECL_IN_CONSTANT_POOL (decl)
-      && (DECL_IN_CONSTANT_POOL (item->decl)
-	  || item->node->address_matters_p ()))
-    return return_false_with_msg ("constant pool");
-
-  if (DECL_IN_TEXT_SECTION (decl) != DECL_IN_TEXT_SECTION (item->decl))
-    return return_false_with_msg ("text section");
-
-  if (DECL_TLS_MODEL (decl) || DECL_TLS_MODEL (item->decl))
-    return return_false_with_msg ("TLS model");
-
   return sem_variable::equals (ctor, v->ctor);
 }
 
@@ -1427,28 +1467,57 @@ sem_variable::equals (sem_item *item,
 bool
 sem_variable::equals (tree t1, tree t2)
 {
+  if (!t1 || !t2)
+    return return_with_debug (t1 == t2);
+  if (t1 == t2)
+    return true;
   tree_code tc1 = TREE_CODE (t1);
   tree_code tc2 = TREE_CODE (t2);
 
   if (tc1 != tc2)
-    return false;
+    return return_false_with_msg ("TREE_CODE mismatch");
 
   switch (tc1)
     {
     case CONSTRUCTOR:
       {
-	unsigned len1 = vec_safe_length (CONSTRUCTOR_ELTS (t1));
-	unsigned len2 = vec_safe_length (CONSTRUCTOR_ELTS (t2));
+	vec<constructor_elt, va_gc> *v1, *v2;
+	unsigned HOST_WIDE_INT idx;
 
-	if (len1 != len2)
-	  return false;
+	enum tree_code typecode = TREE_CODE (TREE_TYPE (t1));
+	if (typecode != TREE_CODE (TREE_TYPE (t2)))
+	  return return_false_with_msg ("constructor type mismatch");
 
-	for (unsigned i = 0; i < len1; i++)
-	  if (!sem_variable::equals (CONSTRUCTOR_ELT (t1, i)->value,
-				     CONSTRUCTOR_ELT (t2, i)->value)
-	      || CONSTRUCTOR_ELT (t1, i)->index != CONSTRUCTOR_ELT (t2, i)->index)
-	    return false;
+	if (typecode == ARRAY_TYPE)
+	  {
+	    HOST_WIDE_INT size_1 = int_size_in_bytes (TREE_TYPE (t1));
+	    /* For arrays, check that the sizes all match.  */
+	    if (TYPE_MODE (TREE_TYPE (t1)) != TYPE_MODE (TREE_TYPE (t2))
+		|| size_1 == -1
+		|| size_1 != int_size_in_bytes (TREE_TYPE (t2)))
+	      return return_false_with_msg ("constructor array size mismatch");
+	  }
+	else if (!func_checker::compatible_types_p (TREE_TYPE (t1),
+						    TREE_TYPE (t2)))
+	  return return_false_with_msg ("constructor type incompatible");
 
+	v1 = CONSTRUCTOR_ELTS (t1);
+	v2 = CONSTRUCTOR_ELTS (t2);
+	if (vec_safe_length (v1) != vec_safe_length (v2))
+	  return return_false_with_msg ("constructor number of elts mismatch");
+
+	for (idx = 0; idx < vec_safe_length (v1); ++idx)
+	  {
+	    constructor_elt *c1 = &(*v1)[idx];
+	    constructor_elt *c2 = &(*v2)[idx];
+
+	    /* Check that each value is the same...  */
+	    if (!sem_variable::equals (c1->value, c2->value))
+	      return false;
+	    /* ... and that they apply to the same fields!  */
+	    if (!sem_variable::equals (c1->index, c2->index))
+	      return false;
+	  }
 	return true;
       }
     case MEM_REF:
@@ -1463,32 +1532,100 @@ sem_variable::equals (tree t1, tree t2)
 	  return return_false ();
 
 	/* Type of the offset on MEM_REF does not matter.  */
-	return sem_variable::equals (x1, x2)
-	       && wi::to_offset  (y1) == wi::to_offset  (y2);
+	return return_with_debug (sem_variable::equals (x1, x2)
+			          && wi::to_offset  (y1)
+				     == wi::to_offset  (y2));
       }
-    case NOP_EXPR:
     case ADDR_EXPR:
+    case FDESC_EXPR:
       {
 	tree op1 = TREE_OPERAND (t1, 0);
 	tree op2 = TREE_OPERAND (t2, 0);
 	return sem_variable::equals (op1, op2);
       }
+    /* References to other vars/decls are compared using ipa-ref.  */
     case FUNCTION_DECL:
     case VAR_DECL:
+      if (decl_in_symtab_p (t1) && decl_in_symtab_p (t2))
+	return true;
+      return return_false_with_msg ("Declaration mismatch");
+    case CONST_DECL:
+      /* TODO: We can check CONST_DECL by its DECL_INITIAL, but for that we
+	 need to process its VAR/FUNCTION references without relying on ipa-ref
+	 compare.  */
     case FIELD_DECL:
     case LABEL_DECL:
-      return t1 == t2;
+      return return_false_with_msg ("Declaration mismatch");
     case INTEGER_CST:
-      return func_checker::compatible_types_p (TREE_TYPE (t1), TREE_TYPE (t2),
-	     true)
-	     && wi::to_offset (t1) == wi::to_offset (t2);
+      /* Integer constants are the same only if the same width of type.  */
+      if (TYPE_PRECISION (TREE_TYPE (t1)) != TYPE_PRECISION (TREE_TYPE (t2)))
+        return return_false_with_msg ("INTEGER_CST precision mismatch");
+      if (TYPE_MODE (TREE_TYPE (t1)) != TYPE_MODE (TREE_TYPE (t2)))
+        return return_false_with_msg ("INTEGER_CST mode mismatch");
+      return return_with_debug (tree_int_cst_equal (t1, t2));
     case STRING_CST:
-    case REAL_CST:
+      if (TYPE_MODE (TREE_TYPE (t1)) != TYPE_MODE (TREE_TYPE (t2)))
+        return return_false_with_msg ("STRING_CST mode mismatch");
+      if (TREE_STRING_LENGTH (t1) != TREE_STRING_LENGTH (t2))
+	return return_false_with_msg ("STRING_CST length mismatch");
+      if (memcmp (TREE_STRING_POINTER (t1), TREE_STRING_POINTER (t2),
+		    TREE_STRING_LENGTH (t1)))
+	return return_false_with_msg ("STRING_CST mismatch");
+      return true;
+    case FIXED_CST:
+      /* Fixed constants are the same only if the same width of type.  */
+      if (TYPE_PRECISION (TREE_TYPE (t1)) != TYPE_PRECISION (TREE_TYPE (t2)))
+        return return_false_with_msg ("FIXED_CST precision mismatch");
+
+      return return_with_debug (FIXED_VALUES_IDENTICAL (TREE_FIXED_CST (t1),
+							TREE_FIXED_CST (t2)));
     case COMPLEX_CST:
-      return operand_equal_p (t1, t2, OEP_ONLY_CONST);
-    case COMPONENT_REF:
+      return (sem_variable::equals (TREE_REALPART (t1), TREE_REALPART (t2))
+	      && sem_variable::equals (TREE_IMAGPART (t1), TREE_IMAGPART (t2)));
+    case REAL_CST:
+      /* Real constants are the same only if the same width of type.  */
+      if (TYPE_PRECISION (TREE_TYPE (t1)) != TYPE_PRECISION (TREE_TYPE (t2)))
+        return return_false_with_msg ("REAL_CST precision mismatch");
+      return return_with_debug (REAL_VALUES_IDENTICAL (TREE_REAL_CST (t1),
+						       TREE_REAL_CST (t2)));
+    case VECTOR_CST:
+      {
+	unsigned i;
+
+        if (VECTOR_CST_NELTS (t1) != VECTOR_CST_NELTS (t2))
+          return return_false_with_msg ("VECTOR_CST nelts mismatch");
+
+	for (i = 0; i < VECTOR_CST_NELTS (t1); ++i)
+	  if (!sem_variable::equals (VECTOR_CST_ELT (t1, i),
+				     VECTOR_CST_ELT (t2, i)))
+	    return 0;
+
+	return 1;
+      }
     case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+      {
+	tree x1 = TREE_OPERAND (t1, 0);
+	tree x2 = TREE_OPERAND (t2, 0);
+	tree y1 = TREE_OPERAND (t1, 1);
+	tree y2 = TREE_OPERAND (t2, 1);
+
+	if (!sem_variable::equals (x1, x2) && sem_variable::equals (y1, y2))
+	  return false;
+	if (!sem_variable::equals (array_ref_low_bound (t1),
+				   array_ref_low_bound (t2)))
+	  return false;
+        if (!sem_variable::equals (array_ref_element_size (t1),
+			           array_ref_element_size (t2)))
+	  return false;
+	return true;
+      }
+     
+    case COMPONENT_REF:
     case POINTER_PLUS_EXPR:
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case RANGE_EXPR:
       {
 	tree x1 = TREE_OPERAND (t1, 0);
 	tree x2 = TREE_OPERAND (t2, 0);
@@ -1497,6 +1634,13 @@ sem_variable::equals (tree t1, tree t2)
 
 	return sem_variable::equals (x1, x2) && sem_variable::equals (y1, y2);
       }
+
+    CASE_CONVERT:
+    case VIEW_CONVERT_EXPR:
+      if (!func_checker::compatible_types_p (TREE_TYPE (t1), TREE_TYPE (t2),
+					     true))
+	  return return_false ();
+      return sem_variable::equals (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
     case ERROR_MARK:
       return return_false_with_msg ("ERROR_MARK");
     default:
