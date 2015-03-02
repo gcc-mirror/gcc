@@ -1,3 +1,31 @@
+2015-03-02  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch9.adb (Build_Corresponding_Record): Propagate type
+	invariants to the corresponding record type.
+	* exp_disp.ad[sb] (Set_DT_Position_Value): New subprogram
+	which sets the value of the DTC_Entity associated with a given
+	primitive of a tagged type and propagates the value to the
+	wrapped subprogram.
+	(Set_DTC_Entity_Value): Propagate the DTC
+	value to the wrapped entity.
+	* sem_ch13.adb (Build_Invariant_Procedure): Append the code
+	associated with invariants of progenitors.
+	* sem_ch3.adb (Build_Derived_Record_Type): Inherit type invariants
+	of parents and progenitors.
+	(Process_Full_View): Check hidden inheritance of class-wide type
+	invariants.
+	* sem_ch7.adb (Analyze_Package_Specification): Do not generate
+	the invariant procedure for interface types; build the invariant
+	procedure for tagged types inheriting invariants from their
+	progenitors.
+	* sem_prag.adb (Pragma_Invariant) Allow invariants in interface
+	types but do not build their invariant procedure since their
+	invariants will be propagated to the invariant procedure of
+	types covering the interface.
+	* exp_ch6.adb, exp_disp.adb, sem_ch3.adb, sem_ch7.adb,
+	sem_ch8.adb, sem_disp.adb: Replace all calls to Set_DT_Position
+	by calls to Set_DT_Position_Value.
+
 2015-03-02  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute): Factor out heavily indented

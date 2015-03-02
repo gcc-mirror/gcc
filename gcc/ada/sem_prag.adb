@@ -15277,6 +15277,11 @@ package body Sem_Prag is
             if Typ = Any_Type then
                return;
 
+            --  Invariants allowed in interface types (RM 7.3.2(3/3))
+
+            elsif Is_Interface (Typ) then
+               null;
+
             --  An invariant must apply to a private type, or appear in the
             --  private part of a package spec and apply to a completion.
             --  a class-wide invariant can only appear on a private declaration
@@ -15318,8 +15323,14 @@ package body Sem_Prag is
             --  procedure declaration, so that calls to it can be generated
             --  before the body is built (e.g. within an expression function).
 
-            Insert_After_And_Analyze
-              (N, Build_Invariant_Procedure_Declaration (Typ));
+            --  Interface types have no invariant procedure; their invariants
+            --  are propagated to the build invariant procedure of all the
+            --  types covering the interface type.
+
+            if not Is_Interface (Typ) then
+               Insert_After_And_Analyze
+                 (N, Build_Invariant_Procedure_Declaration (Typ));
+            end if;
 
             if Class_Present (N) then
                Set_Has_Inheritable_Invariants (Typ);

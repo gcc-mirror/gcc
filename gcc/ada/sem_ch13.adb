@@ -7966,6 +7966,30 @@ package body Sem_Ch13 is
          end loop;
       end;
 
+      --  Add invariants of progenitors
+
+      if Is_Tagged_Type (Typ) and then not Is_Interface (Typ) then
+         declare
+            Ifaces_List : Elist_Id;
+            AI          : Elmt_Id;
+            Iface       : Entity_Id;
+
+         begin
+            Collect_Interfaces (Typ, Ifaces_List);
+
+            AI := First_Elmt (Ifaces_List);
+            while Present (AI) loop
+               Iface := Node (AI);
+
+               if not Is_Ancestor (Iface, Typ, Use_Full_View => True) then
+                  Add_Invariants (Iface, Inherit => True);
+               end if;
+
+               Next_Elmt (AI);
+            end loop;
+         end;
+      end if;
+
       --  Build the procedure if we generated at least one Check pragma
 
       if Stmts /= No_List then

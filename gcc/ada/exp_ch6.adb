@@ -671,7 +671,7 @@ package body Exp_Ch6 is
               and then Is_Hidden (Par_Op)
               and then Type_Conformant (Prim_Op, Subp)
             then
-               Set_DT_Position (Subp, DT_Position (Prim_Op));
+               Set_DT_Position_Value (Subp, DT_Position (Prim_Op));
             end if;
 
             Next_Elmt (Op_Elmt);

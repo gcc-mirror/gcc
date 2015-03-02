@@ -28,6 +28,7 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
+with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
@@ -3261,7 +3262,7 @@ package body Sem_Ch8 is
 
                      if Present (DTC_Entity (Old_S)) then
                         Set_DTC_Entity  (New_S, DTC_Entity (Old_S));
-                        Set_DT_Position (New_S, DT_Position (Old_S));
+                        Set_DT_Position_Value (New_S, DT_Position (Old_S));
                      end if;
                   end if;
                end;
