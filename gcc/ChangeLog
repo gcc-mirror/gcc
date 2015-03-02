@@ -1,5 +1,18 @@
 2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-icf.c: Include stor-layout.h
+	(sem_function::compare_cgraph_references): Rename to ...
+	(sem_item::compare_cgraph_references): ... this one.
+	(sem_variable::equals_wpa): New function
+	(sem_variable::equals): Do not check stuff already verified by
+	equals_wpa.
+	(sem_variable::equals): Reorg based on varasm.c:compare_constant.
+	* ipa-icf.h (sem_item): Add compare_cgraph_references.
+	(sem_function): Remove compare_cgraph_references.
+	(sem_variable): Turns equals_wpa into non-inline.
+
+2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-icf.c (sem_function::init): Fix formating; skip GIMPLE_PREDICT.
 	(sem_item::add_expr): New function.
 	(sem_function::hash_stmt): Handle operands of most statements.

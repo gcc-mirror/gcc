@@ -241,8 +241,17 @@ public:
 protected:
   /* Cached, once calculated hash for the item.  */
   hashval_t hash;
+
   /* Accumulate to HSTATE a hash of constructor expression EXP.  */
   static void add_expr (const_tree exp, inchash::hash &hstate);
+
+  /* For a given symbol table nodes N1 and N2, we check that FUNCTION_DECLs
+     point to a same function. Comparison can be skipped if IGNORED_NODES
+     contains these nodes.  ADDRESS indicate if address is taken.  */
+  bool compare_cgraph_references (hash_map <symtab_node *, sem_item *>
+				  &ignored_nodes,
+				  symtab_node *n1, symtab_node *n2,
+				  bool address);
 
 private:
   /* Initialize internal data structures. Bitmap STACK is used for
@@ -353,14 +362,6 @@ private:
      ICF flags are the same.  */
   bool compare_edge_flags (cgraph_edge *e1, cgraph_edge *e2);
 
-  /* For a given symbol table nodes N1 and N2, we check that FUNCTION_DECLs
-     point to a same function. Comparison can be skipped if IGNORED_NODES
-     contains these nodes.  ADDRESS indicate if address is taken.  */
-  bool compare_cgraph_references (hash_map <symtab_node *, sem_item *>
-				  &ignored_nodes,
-				  symtab_node *n1, symtab_node *n2,
-				  bool address);
-
   /* Processes function equality comparison.  */
   bool equals_private (sem_item *item,
 		       hash_map <symtab_node *, sem_item *> &ignored_nodes);
@@ -402,12 +403,8 @@ public:
 		       hash_map <symtab_node *, sem_item *> &ignored_nodes);
 
   /* Fast equality variable based on knowledge known in WPA.  */
-  inline virtual bool equals_wpa (sem_item *item,
-				  hash_map <symtab_node *, sem_item *> & ARG_UNUSED(ignored_nodes))
-  {
-    gcc_assert (item->type == VAR);
-    return true;
-  }
+  virtual bool equals_wpa (sem_item *item,
+			   hash_map <symtab_node *, sem_item *> &ignored_nodes);
 
   /* Returns varpool_node.  */
   inline varpool_node *get_node (void)
