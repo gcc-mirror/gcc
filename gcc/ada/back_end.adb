@@ -118,6 +118,12 @@ package body Back_End is
          return;
       end if;
 
+      --  Skip call if unnesting subprograms (temp for now ???)
+
+      if Opt.Unnest_Subprogram_Mode then
+         return;
+      end if;
+
       --  The back end needs to know the maximum line number that can appear
       --  in a Sloc, in other words the maximum logical line number.
 

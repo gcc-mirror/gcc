@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3181,6 +3181,17 @@ package body Atree is
          end if;
       end Uint22;
 
+      function Uint24 (N : Node_Id) return Uint is
+         pragma Assert (Nkind (N) in N_Entity);
+         U : constant Union_Id := Nodes.Table (N + 4).Field6;
+      begin
+         if U = 0 then
+            return Uint_0;
+         else
+            return From_Union (U);
+         end if;
+      end Uint24;
+
       function Ureal3 (N : Node_Id) return Ureal is
       begin
          pragma Assert (N <= Nodes.Last);
@@ -5785,6 +5796,12 @@ package body Atree is
          pragma Assert (Nkind (N) in N_Entity);
          Nodes.Table (N + 3).Field9 := To_Union (Val);
       end Set_Uint22;
+
+      procedure Set_Uint24 (N : Node_Id; Val : Uint) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 4).Field6 := To_Union (Val);
+      end Set_Uint24;
 
       procedure Set_Ureal3 (N : Node_Id; Val : Ureal) is
       begin

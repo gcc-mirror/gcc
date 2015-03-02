@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -535,6 +535,7 @@ extern Node_Id Current_Error_Node;
 #define Uint16(N)     ((Field16 (N) == 0) ? Uint_0 : Field16 (N))
 #define Uint17(N)     ((Field17 (N) == 0) ? Uint_0 : Field17 (N))
 #define Uint22(N)     ((Field22 (N) == 0) ? Uint_0 : Field22 (N))
+#define Uint24(N)     ((Field24 (N) == 0) ? Uint_0 : Field24 (N))
 
 #define Ureal3(N)     Field3  (N)
 #define Ureal18(N)    Field18 (N)

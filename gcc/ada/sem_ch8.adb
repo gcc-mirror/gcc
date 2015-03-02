@@ -4026,6 +4026,15 @@ package body Sem_Ch8 is
          if not In_Open_Scopes (Pack) then
             null;  --  default as well
 
+         --  If the use clause appears in an ancestor and we are in the
+         --  private part of the immediate parent, the use clauses are
+         --  already installed.
+
+         elsif Pack /= Scope (Current_Scope)
+           and then In_Private_Part (Scope (Current_Scope))
+         then
+            null;
+
          else
             --  Find entry for parent unit in scope stack
 

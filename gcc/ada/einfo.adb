@@ -214,6 +214,7 @@ package body Einfo is
 
    --    Related_Expression              Node24
    --    Uplevel_References              Elist24
+   --    Subps_Index                     Uint24
 
    --    Interface_Alias                 Node25
    --    Interfaces                      Elist25
@@ -251,6 +252,7 @@ package body Einfo is
 
    --    Derived_Type_Link               Node31
    --    Thunk_Entity                    Node31
+   --    Activation_Record_Component     Node31
 
    --    SPARK_Pragma                    Node32
    --    No_Tagged_Streams_Pragma        Node32
@@ -688,6 +690,17 @@ package body Einfo is
                                    E_Record_Subtype));
       return Elist16 (Implementation_Base_Type (Id));
    end Access_Disp_Table;
+
+   function Activation_Record_Component (Id : E) return E is
+   begin
+      pragma Assert (Ekind_In (Id, E_Constant,
+                                   E_In_Parameter,
+                                   E_In_Out_Parameter,
+                                   E_Loop_Parameter,
+                                   E_Out_Parameter,
+                                   E_Variable));
+      return Node31 (Id);
+   end Activation_Record_Component;
 
    function Actual_Subtype (Id : E) return E is
    begin
@@ -3139,6 +3152,12 @@ package body Einfo is
       return Node29 (Id);
    end Subprograms_For_Type;
 
+   function Subps_Index (Id : E) return U is
+   begin
+      pragma Assert (Is_Subprogram (Id));
+      return Uint24 (Id);
+   end Subps_Index;
+
    function Suppress_Elaboration_Warnings (Id : E) return B is
    begin
       return Flag148 (Id);
@@ -3532,6 +3551,17 @@ package body Einfo is
       pragma Assert (Is_Access_Type (Id) and then Is_Base_Type (Id));
       Set_Node22 (Id, V);
    end Set_Associated_Storage_Pool;
+
+   procedure Set_Activation_Record_Component (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Constant,
+                                   E_In_Parameter,
+                                   E_In_Out_Parameter,
+                                   E_Loop_Parameter,
+                                   E_Out_Parameter,
+                                   E_Variable));
+      Set_Node31 (Id, V);
+   end Set_Activation_Record_Component;
 
    procedure Set_Actual_Subtype (Id : E; V : E) is
    begin
@@ -6090,6 +6120,12 @@ package body Einfo is
       pragma Assert (Is_Type (Id) or else Is_Subprogram (Id));
       Set_Node29 (Id, V);
    end Set_Subprograms_For_Type;
+
+   procedure Set_Subps_Index (Id : E; V : U) is
+   begin
+      pragma Assert (Is_Subprogram (Id));
+      Set_Uint24 (Id, V);
+   end Set_Subps_Index;
 
    procedure Set_Suppress_Elaboration_Warnings (Id : E; V : B := True) is
    begin
@@ -9689,7 +9725,11 @@ package body Einfo is
          when E_Function                                   |
               E_Operator                                   |
               E_Procedure                                  =>
-            Write_Str ("Uplevel_References");
+            if Field24 (Id) in Uint_Range then
+               Write_Str ("Subps_Index");
+            else
+               Write_Str ("Uplevel_References");
+            end if;
 
          when others                                       =>
             Write_Str ("Field24???");
@@ -9898,6 +9938,14 @@ package body Einfo is
 
          when Type_Kind                                    =>
             Write_Str ("Derived_Type_Link");
+
+         when E_Constant                                   |
+              E_In_Parameter                               |
+              E_In_Out_Parameter                           |
+              E_Loop_Parameter                             |
+              E_Out_Parameter                              |
+              E_Variable                                   =>
+            Write_Str ("Activation_Record_Component");
 
          when others                                       =>
             Write_Str ("Field31??");

@@ -386,7 +386,7 @@ package Exp_Disp is
 
    procedure Set_DTC_Entity_Value (Tagged_Type : Entity_Id; Prim : Entity_Id);
    --  Set the definite value of the DTC_Entity value associated with a given
-   --  primitive of a tagged type. For subprogram wrappers propagat the value
+   --  primitive of a tagged type. For subprogram wrappers, propagate the value
    --  to the wrapped subprogram.
 
    procedure Write_DT (Typ : Entity_Id);
