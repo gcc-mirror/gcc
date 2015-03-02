@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2703,10 +2703,13 @@ package body Sprint is
                --  it is emitted when the access definition is displayed.
 
                if Null_Exclusion_Present (Node)
-                 and then Nkind (Parameter_Type (Node))
-                   /= N_Access_Definition
+                 and then Nkind (Parameter_Type (Node)) /= N_Access_Definition
                then
                   Write_Str ("not null ");
+               end if;
+
+               if Aliased_Present (Node) then
+                  Write_Str ("aliased ");
                end if;
 
                Sprint_Node (Parameter_Type (Node));

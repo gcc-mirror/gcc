@@ -295,17 +295,23 @@ package body Elists is
    function List_Length (List : Elist_Id) return Nat is
       Elmt : Elmt_Id;
       N    : Nat;
+
    begin
-      N := 0;
-      Elmt := First_Elmt (List);
-      loop
-         if No (Elmt) then
-            return N;
-         else
-            N := N + 1;
-            Next_Elmt (Elmt);
-         end if;
-      end loop;
+      if List = No_Elist then
+         return 0;
+
+      else
+         N := 0;
+         Elmt := First_Elmt (List);
+         loop
+            if No (Elmt) then
+               return N;
+            else
+               N := N + 1;
+               Next_Elmt (Elmt);
+            end if;
+         end loop;
+      end if;
    end List_Length;
 
    ----------

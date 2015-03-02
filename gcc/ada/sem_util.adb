@@ -2883,13 +2883,22 @@ package body Sem_Util is
 
         and then not Is_Imported (Ent)
       then
-         --  For VM case, we are only interested in variables, constants,
-         --  and loop parameters. For general nested procedure usage, we
-         --  allow types as well.
+         --  In both the VM case and in Unnest_Subprogram_Mode, we mark
+         --  variables, constants, and loop parameters.
 
          if Ekind_In (Ent, E_Variable, E_Constant, E_Loop_Parameter) then
             null;
-         elsif not (Unnest_Subprogram_Mode and then Is_Type (Ent)) then
+
+         --  In Unnest_Subprogram_Mode, we also mark types and formals
+
+         elsif Unnest_Subprogram_Mode
+           and then (Is_Type (Ent) or else Is_Formal (Ent))
+         then
+            null;
+
+            --  All other cases, do not mark
+
+         else
             return;
          end if;
 
@@ -14081,8 +14090,8 @@ package body Sem_Util is
                   New_Next := First (Parameter_Associations (New_Node));
 
                   while Nkind (Old_Next) /= N_Parameter_Association
-                    or else  Explicit_Actual_Parameter (Old_Next)
-                      /= Next_Named_Actual (Old_E)
+                    or else Explicit_Actual_Parameter (Old_Next) /=
+                                              Next_Named_Actual (Old_E)
                   loop
                      Next (Old_Next);
                      Next (New_Next);
