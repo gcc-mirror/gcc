@@ -1,3 +1,9 @@
+2015-03-02  Jan Hubicka   <hubicka@ucw.cz>
+
+	PR ipa/64988
+	* ipa-inline-transform.c (clone_inlined_nodes): Do not dissolve
+	comdat groups.
+
 2015-03-02  Jan Hubicka  <hubicka@ucw.cz>
 	    Aldy Hernandez  <aldyh@redhat.com>
 
