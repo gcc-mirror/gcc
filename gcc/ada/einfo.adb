@@ -79,7 +79,6 @@ package body Einfo is
    --    Hiding_Loop_Variable            Node8
    --    Mechanism                       Uint8 (but returns Mechanism_Type)
    --    Normalized_First_Bit            Uint8
-   --    Postcondition_Proc              Node8
    --    Refinement_Constituents         Elist8
    --    Return_Applies_To               Node8
    --    First_Exit_Statement            Node8
@@ -116,6 +115,7 @@ package body Einfo is
 
    --    Alignment                       Uint14
    --    Normalized_Position             Uint14
+   --    Postconditions_Proc             Node14
    --    Shadow_Entities                 List14
 
    --    Discriminant_Number             Uint15
@@ -532,7 +532,7 @@ package body Einfo is
    --    Warnings_Off_Used_Unmodified    Flag237
    --    Warnings_Off_Used_Unreferenced  Flag238
    --    OK_To_Reorder_Components        Flag239
-   --    Has_Postconditions              Flag240
+   --    Has_Expanded_Contract           Flag240
 
    --    Optimize_Alignment_Space        Flag241
    --    Optimize_Alignment_Time         Flag242
@@ -1456,6 +1456,12 @@ package body Einfo is
       return Flag47 (Id);
    end Has_Exit;
 
+   function Has_Expanded_Contract (Id : E) return B is
+   begin
+      pragma Assert (Is_Subprogram (Id));
+      return Flag240 (Id);
+   end Has_Expanded_Contract;
+
    function Has_Forward_Instantiation (Id : E) return B is
    begin
       return Flag175 (Id);
@@ -1559,12 +1565,6 @@ package body Einfo is
    begin
       return Flag154 (Id);
    end Has_Per_Object_Constraint;
-
-   function Has_Postconditions (Id : E) return B is
-   begin
-      pragma Assert (Is_Subprogram (Id));
-      return Flag240 (Id);
-   end Has_Postconditions;
 
    function Has_Pragma_Controlled (Id : E) return B is
    begin
@@ -2750,11 +2750,14 @@ package body Einfo is
       return Elist15 (Id);
    end Pending_Access_Types;
 
-   function Postcondition_Proc (Id : E) return E is
+   function Postconditions_Proc (Id : E) return E is
    begin
-      pragma Assert (Ekind (Id) = E_Procedure);
-      return Node8 (Id);
-   end Postcondition_Proc;
+      pragma Assert (Ekind_In (Id, E_Entry,
+                                   E_Entry_Family,
+                                   E_Function,
+                                   E_Procedure));
+      return Node14 (Id);
+   end Postconditions_Proc;
 
    function PPC_Wrapper (Id : E) return E is
    begin
@@ -4276,6 +4279,15 @@ package body Einfo is
       Set_Flag47 (Id, V);
    end Set_Has_Exit;
 
+   procedure Set_Has_Expanded_Contract (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Entry,
+                                   E_Entry_Family,
+                                   E_Function,
+                                   E_Procedure));
+      Set_Flag240 (Id, V);
+   end Set_Has_Expanded_Contract;
+
    procedure Set_Has_Forward_Instantiation (Id : E; V : B := True) is
    begin
       Set_Flag175 (Id, V);
@@ -4387,12 +4399,6 @@ package body Einfo is
    begin
       Set_Flag154 (Id, V);
    end Set_Has_Per_Object_Constraint;
-
-   procedure Set_Has_Postconditions (Id : E; V : B := True) is
-   begin
-      pragma Assert (Is_Subprogram (Id));
-      Set_Flag240 (Id, V);
-   end Set_Has_Postconditions;
 
    procedure Set_Has_Pragma_Controlled (Id : E; V : B := True) is
    begin
@@ -5649,11 +5655,14 @@ package body Einfo is
       Set_Elist15 (Id, V);
    end Set_Pending_Access_Types;
 
-   procedure Set_Postcondition_Proc (Id : E; V : E) is
+   procedure Set_Postconditions_Proc (Id : E; V : E) is
    begin
-      pragma Assert (Ekind (Id) = E_Procedure);
-      Set_Node8 (Id, V);
-   end Set_Postcondition_Proc;
+      pragma Assert (Ekind_In (Id, E_Entry,
+                                   E_Entry_Family,
+                                   E_Function,
+                                   E_Procedure));
+      Set_Node14 (Id, V);
+   end Set_Postconditions_Proc;
 
    procedure Set_PPC_Wrapper (Id : E; V : E) is
    begin
@@ -6685,7 +6694,8 @@ package body Einfo is
 
    begin
       pragma Assert
-        (Is_Overloadable (Id)
+        (Is_Generic_Subprogram (Id)
+           or else Is_Overloadable (Id)
            or else Ekind_In (Id, E_Entry_Family,
                                  E_Subprogram_Body,
                                  E_Subprogram_Type));
@@ -6695,6 +6705,16 @@ package body Einfo is
 
       else
          Formal := First_Entity (Id);
+
+         --  The first/next entity chain of a generic subprogram contains all
+         --  generic formal parameters, followed by the formal parameters. Go
+         --  directly to the paramters by skipping the formal part.
+
+         if Is_Generic_Subprogram (Id) then
+            while Present (Formal) and then not Is_Formal (Formal) loop
+               Next_Entity (Formal);
+            end loop;
+         end if;
 
          if Present (Formal) and then Is_Formal (Formal) then
             return Formal;
@@ -6713,7 +6733,8 @@ package body Einfo is
 
    begin
       pragma Assert
-        (Is_Overloadable (Id)
+        (Is_Generic_Subprogram (Id)
+           or else Is_Overloadable (Id)
            or else Ekind_In (Id, E_Entry_Family,
                                  E_Subprogram_Body,
                                  E_Subprogram_Type));
@@ -6723,6 +6744,16 @@ package body Einfo is
 
       else
          Formal := First_Entity (Id);
+
+         --  The first/next entity chain of a generic subprogram contains all
+         --  generic formal parameters, followed by the formal parameters. Go
+         --  directly to the paramters by skipping the formal part.
+
+         if Is_Generic_Subprogram (Id) then
+            while Present (Formal) and then not Is_Formal (Formal) loop
+               Next_Entity (Formal);
+            end loop;
+         end if;
 
          if Present (Formal) and then Is_Formal (Formal) then
             return Formal;
@@ -8470,6 +8501,7 @@ package body Einfo is
       W ("Has_Dynamic_Predicate_Aspect",    Flag258 (Id));
       W ("Has_Enumeration_Rep_Clause",      Flag66  (Id));
       W ("Has_Exit",                        Flag47  (Id));
+      W ("Has_Expanded_Contract",           Flag240 (Id));
       W ("Has_Forward_Instantiation",       Flag175 (Id));
       W ("Has_Fully_Qualified_Name",        Flag173 (Id));
       W ("Has_Gigi_Rep_Item",               Flag82  (Id));
@@ -8489,7 +8521,6 @@ package body Einfo is
       W ("Has_Out_Or_In_Out_Parameter",     Flag110 (Id));
       W ("Has_Object_Size_Clause",          Flag172 (Id));
       W ("Has_Per_Object_Constraint",       Flag154 (Id));
-      W ("Has_Postconditions",              Flag240 (Id));
       W ("Has_Pragma_Controlled",           Flag27  (Id));
       W ("Has_Pragma_Elaborate_Body",       Flag150 (Id));
       W ("Has_Pragma_Inline",               Flag157 (Id));
@@ -8882,9 +8913,6 @@ package body Einfo is
               E_Discriminant                               =>
             Write_Str ("Normalized_First_Bit");
 
-         when E_Procedure                                  =>
-            Write_Str ("Postcondition_Proc");
-
          when E_Abstract_State                             =>
             Write_Str ("Refinement_Constituents");
 
@@ -9083,16 +9111,22 @@ package body Einfo is
               Formal_Kind                                  |
               E_Constant                                   |
               E_Exception                                  |
-              E_Variable                                   |
-              E_Loop_Parameter                             =>
+              E_Loop_Parameter                             |
+              E_Variable                                   =>
             Write_Str ("Alignment");
 
          when E_Component                                  |
               E_Discriminant                               =>
             Write_Str ("Normalized_Position");
 
-         when E_Package                                    |
-              E_Generic_Package                            =>
+         when E_Entry                                      |
+              E_Entry_Family                               |
+              E_Function                                   |
+              E_Procedure                                  =>
+            Write_Str ("Postconditions_Proc");
+
+         when E_Generic_Package                            |
+              E_Package                                    =>
             Write_Str ("Shadow_Entities");
 
          when others                                       =>

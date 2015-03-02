@@ -59,7 +59,6 @@ with Sem_Disp; use Sem_Disp;
 with Sem_Elab; use Sem_Elab;
 with Sem_Elim; use Sem_Elim;
 with Sem_Eval; use Sem_Eval;
-with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
@@ -3073,9 +3072,8 @@ package body Sem_Ch12 is
       Start_Generic;
 
       Enter_Name (Id);
-      Set_Ekind    (Id, E_Generic_Package);
-      Set_Etype    (Id, Standard_Void_Type);
-      Set_Contract (Id, Make_Contract (Sloc (Id)));
+      Set_Ekind  (Id, E_Generic_Package);
+      Set_Etype  (Id, Standard_Void_Type);
 
       --  A generic package declared within a Ghost region is rendered Ghost
       --  (SPARK RM 6.9(2)).
@@ -3170,12 +3168,12 @@ package body Sem_Ch12 is
    --------------------------------------------
 
    procedure Analyze_Generic_Subprogram_Declaration (N : Node_Id) is
-      Spec        : Node_Id;
-      Id          : Entity_Id;
       Formals     : List_Id;
+      Id          : Entity_Id;
       New_N       : Node_Id;
       Result_Type : Entity_Id;
       Save_Parent : Node_Id;
+      Spec        : Node_Id;
       Typ         : Entity_Id;
 
    begin
@@ -3206,7 +3204,6 @@ package body Sem_Ch12 is
       Spec := Specification (N);
       Id := Defining_Entity (Spec);
       Generate_Definition (Id);
-      Set_Contract (Id, Make_Contract (Sloc (Id)));
 
       if Nkind (Id) = N_Defining_Operator_Symbol then
          Error_Msg_N
@@ -3311,16 +3308,13 @@ package body Sem_Ch12 is
       Set_Categorization_From_Pragmas (N);
       Validate_Categorization_Dependency (N, Id);
 
+      --  Capture all global references that occur within the profile of the
+      --  generic subprogram. Aspects are not part of this processing because
+      --  they must be delayed. If processed now, Save_Global_References will
+      --  destroy the Associated_Node links and prevent the capture of global
+      --  references when the contract of the generic subprogram is analyzed.
+
       Save_Global_References (Original_Node (N));
-
-      --  For ASIS purposes, convert any postcondition, precondition pragmas
-      --  into aspects, if N is not a compilation unit by itself, in order to
-      --  enable the analysis of expressions inside the corresponding PPC
-      --  pragmas.
-
-      if ASIS_Mode and then Is_List_Member (N) then
-         Make_Aspect_For_PPC_In_Gen_Sub_Decl (N);
-      end if;
 
       End_Generic;
       End_Scope;
@@ -4626,6 +4620,10 @@ package body Sem_Ch12 is
       --  aspects that appear in the generic. This renaming declaration is
       --  inserted after the instance declaration which it renames.
 
+      procedure Instantiate_Contract (Subp_Id : Entity_Id);
+      --  Instantiate all source pragmas found in the contract of subprogram
+      --  Subp_Id. The instantiated pragmas are added to list Renaming_List.
+
       ------------------------------------
       -- Analyze_Instance_And_Renamings --
       ------------------------------------
@@ -4658,11 +4656,12 @@ package body Sem_Ch12 is
                             Suffix_Index => Source_Offset (Sloc (Def_Ent))));
          end if;
 
-         Pack_Decl := Make_Package_Declaration (Loc,
-           Specification => Make_Package_Specification (Loc,
-             Defining_Unit_Name   => Pack_Id,
-             Visible_Declarations => Renaming_List,
-             End_Label            => Empty));
+         Pack_Decl :=
+           Make_Package_Declaration (Loc,
+             Specification => Make_Package_Specification (Loc,
+               Defining_Unit_Name   => Pack_Id,
+               Visible_Declarations => Renaming_List,
+               End_Label            => Empty));
 
          Set_Instance_Spec (N, Pack_Decl);
          Set_Is_Generic_Instance (Pack_Id);
@@ -4825,6 +4824,62 @@ package body Sem_Ch12 is
             Append  (Unit_Renaming, Renaming_List);
          end if;
       end Build_Subprogram_Renaming;
+
+      --------------------------
+      -- Instantiate_Contract --
+      --------------------------
+
+      procedure Instantiate_Contract (Subp_Id : Entity_Id) is
+         procedure Instantiate_Pragmas (First_Prag : Node_Id);
+         --  Instantiate all contract-related source pragmas found in the list
+         --  starting with pragma First_Prag. Each instantiated pragma is added
+         --  to list Renaming_List.
+
+         -------------------------
+         -- Instantiate_Pragmas --
+         -------------------------
+
+         procedure Instantiate_Pragmas (First_Prag : Node_Id) is
+            Inst_Prag : Node_Id;
+            Prag      : Node_Id;
+
+         begin
+            Prag := First_Prag;
+            while Present (Prag) loop
+               if Comes_From_Source (Prag)
+                 and then Nam_In (Pragma_Name (Prag), Name_Contract_Cases,
+                                                      Name_Depends,
+                                                      Name_Extensions_Visible,
+                                                      Name_Global,
+                                                      Name_Postcondition,
+                                                      Name_Precondition,
+                                                      Name_Test_Case)
+               then
+                  Inst_Prag :=
+                    Copy_Generic_Node
+                      (Original_Node (Prag), Empty, Instantiating => True);
+
+                  Set_Analyzed (Inst_Prag, False);
+                  Append_To (Renaming_List, Inst_Prag);
+               end if;
+
+               Prag := Next_Pragma (Prag);
+            end loop;
+         end Instantiate_Pragmas;
+
+         --  Local variables
+
+         Items : constant Node_Id := Contract (Subp_Id);
+
+      --  Start of processing for Instantiate_Contract
+
+      begin
+         if Present (Items) then
+            Instantiate_Pragmas (Pre_Post_Conditions (Items));
+            Instantiate_Pragmas (Contract_Test_Cases (Items));
+            Instantiate_Pragmas (Classifications     (Items));
+         end if;
+      end Instantiate_Contract;
 
       --  Local variables
 
@@ -4991,7 +5046,9 @@ package body Sem_Ch12 is
          end if;
 
          Append (Act_Decl, Renaming_List);
+         Instantiate_Contract (Gen_Unit);
          Build_Subprogram_Renaming;
+
          Analyze_Instance_And_Renamings;
 
          --  If the generic is marked Import (Intrinsic), then so is the
@@ -5022,9 +5079,6 @@ package body Sem_Ch12 is
          end if;
 
          Generate_Definition (Act_Decl_Id);
-         --  Set_Contract (Anon_Id, Make_Contract (Sloc (Anon_Id)));
-         --  ??? needed?
-         Set_Contract (Act_Decl_Id, Make_Contract (Sloc (Act_Decl_Id)));
 
          --  Inherit all inlining-related flags which apply to the generic in
          --  the subprogram and its declaration.
@@ -10743,29 +10797,29 @@ package body Sem_Ch12 is
      (Body_Info     : Pending_Body_Info;
       Body_Optional : Boolean := False)
    is
-      Act_Decl      : constant Node_Id    := Body_Info.Act_Decl;
-      Inst_Node     : constant Node_Id    := Body_Info.Inst_Node;
-      Loc           : constant Source_Ptr := Sloc (Inst_Node);
-      Gen_Id        : constant Node_Id    := Name (Inst_Node);
-      Gen_Unit      : constant Entity_Id  := Get_Generic_Entity (Inst_Node);
-      Gen_Decl      : constant Node_Id    := Unit_Declaration_Node (Gen_Unit);
-      Anon_Id       : constant Entity_Id  :=
-                        Defining_Unit_Name (Specification (Act_Decl));
-      Pack_Id       : constant Entity_Id  :=
-                        Defining_Unit_Name (Parent (Act_Decl));
-      Gen_Body      : Node_Id;
-      Gen_Body_Id   : Node_Id;
-      Act_Body      : Node_Id;
-      Pack_Body     : Node_Id;
-      Ret_Expr      : Node_Id;
-
-      Parent_Installed : Boolean := False;
+      Act_Decl    : constant Node_Id    := Body_Info.Act_Decl;
+      Inst_Node   : constant Node_Id    := Body_Info.Inst_Node;
+      Loc         : constant Source_Ptr := Sloc (Inst_Node);
+      Gen_Id      : constant Node_Id    := Name (Inst_Node);
+      Gen_Unit    : constant Entity_Id  := Get_Generic_Entity (Inst_Node);
+      Gen_Decl    : constant Node_Id    := Unit_Declaration_Node (Gen_Unit);
+      Anon_Id     : constant Entity_Id  :=
+                      Defining_Unit_Name (Specification (Act_Decl));
+      Pack_Id     : constant Entity_Id  :=
+                      Defining_Unit_Name (Parent (Act_Decl));
 
       Saved_Style_Check : constant Boolean        := Style_Check;
       Saved_Warnings    : constant Warning_Record := Save_Warnings;
 
-      Par_Ent : Entity_Id := Empty;
-      Par_Vis : Boolean   := False;
+      Act_Body    : Node_Id;
+      Gen_Body    : Node_Id;
+      Gen_Body_Id : Node_Id;
+      Pack_Body   : Node_Id;
+      Par_Ent     : Entity_Id := Empty;
+      Par_Vis     : Boolean   := False;
+      Ret_Expr    : Node_Id;
+
+      Parent_Installed : Boolean := False;
 
    begin
       Gen_Body_Id := Corresponding_Body (Gen_Decl);
@@ -14314,23 +14368,14 @@ package body Sem_Ch12 is
             end;
          end if;
 
-         --  If a node has aspects, references within their expressions must
-         --  be saved separately, given they are not directly in the tree.
+         --  Save all global references found within the aspects of the related
+         --  node. This is not done for generic subprograms because the aspects
+         --  must be delayed and analyzed at the end of the declarative part.
+         --  Only then can global references be saved. This action is performed
+         --  by the analysis of the generic subprogram contract.
 
-         if Has_Aspects (N) then
-            declare
-               Aspect : Node_Id;
-
-            begin
-               Aspect := First (Aspect_Specifications (N));
-               while Present (Aspect) loop
-                  if Present (Expression (Aspect)) then
-                     Save_Global_References (Expression (Aspect));
-                  end if;
-
-                  Next (Aspect);
-               end loop;
-            end;
+         if Nkind (N) /= N_Generic_Subprogram_Declaration then
+            Save_Global_References_In_Aspects (N);
          end if;
       end Save_References;
 
@@ -14351,6 +14396,29 @@ package body Sem_Ch12 is
 
       Save_References (N);
    end Save_Global_References;
+
+   ---------------------------------------
+   -- Save_Global_References_In_Aspects --
+   ---------------------------------------
+
+   procedure Save_Global_References_In_Aspects (N : Node_Id) is
+      Asp  : Node_Id;
+      Expr : Node_Id;
+
+   begin
+      if Permits_Aspect_Specifications (N) and then Has_Aspects (N) then
+         Asp := First (Aspect_Specifications (N));
+         while Present (Asp) loop
+            Expr := Expression (Asp);
+
+            if Present (Expr) then
+               Save_Global_References (Expr);
+            end if;
+
+            Next (Asp);
+         end loop;
+      end if;
+   end Save_Global_References_In_Aspects;
 
    --------------------------------------
    -- Set_Copied_Sloc_For_Inlined_Body --

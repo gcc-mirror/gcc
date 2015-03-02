@@ -40,6 +40,7 @@ with Sem;      use Sem;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Eval; use Sem_Eval;
+with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
@@ -1855,7 +1856,7 @@ package body Sem_Warn is
 
                               if Nkind (P) = N_Pragma
                                 and then Pragma_Name (P) = Name_Test_Case
-                                and then Nod = Get_Ensures_From_CTC_Pragma (P)
+                                and then Nod = Test_Case_Arg (P, Name_Ensures)
                               then
                                  return True;
                               end if;

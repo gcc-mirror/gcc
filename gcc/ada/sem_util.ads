@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -321,13 +321,10 @@ package Sem_Util is
    --  N is one of the statement forms that is a potentially blocking
    --  operation. If it appears within a protected action, emit warning.
 
-   procedure Check_Result_And_Post_State
-     (Prag        : Node_Id;
-      Result_Seen : in out Boolean);
-   --  Determine whether pragma Prag mentions attribute 'Result and whether
-   --  the pragma contains an expression that evaluates differently in pre-
-   --  and post-state. Prag is a [refined] postcondition or a contract-cases
-   --  pragma. Result_Seen is set when the pragma mentions attribute 'Result.
+   procedure Check_Result_And_Post_State (Subp_Id : Entity_Id);
+   --  Determine whether the contract of subprogram Subp_Id mentions attribute
+   --  'Result and it contains an expression that evaluates differently in pre-
+   --  and post-state.
 
    procedure Check_Unprotected_Access
      (Context : Node_Id;
@@ -418,6 +415,11 @@ package Sem_Util is
    --  the generic parent unit. There is no direct link in the tree for this
    --  attribute, except in the case of formal private and derived types.
    --  Possible optimization???
+
+   function Corresponding_Spec_Of (Subp_Decl : Node_Id) return Entity_Id;
+   --  Return the corresponding spec of Subp_Decl when it denotes a body [stub]
+   --  or the defining entity of subprogram declaration Subp_Decl in all other
+   --  cases.
 
    function Current_Entity (N : Node_Id) return Entity_Id;
    pragma Inline (Current_Entity);
@@ -819,10 +821,6 @@ package Sem_Util is
    --  If expression N references a part of an object, return this object.
    --  Otherwise return Empty. Expression N should have been resolved already.
 
-   function Get_Ensures_From_CTC_Pragma (N : Node_Id) return Node_Id;
-   --  Return the Ensures component of Test_Case pragma N, or Empty otherwise
-   --  Bad name now that this no longer applies to Contract_Case ???
-
    function Get_Generic_Entity (N : Node_Id) return Entity_Id;
    --  Returns the true generic entity in an instantiation. If the name in the
    --  instantiation is a renaming, the function returns the renamed generic.
@@ -898,10 +896,6 @@ package Sem_Util is
    --  returns the ultimately renamed entity if this is a renaming. If this is
    --  not a renamed entity, returns its argument. It is an error to call this
    --  with any other kind of entity.
-
-   function Get_Requires_From_CTC_Pragma (N : Node_Id) return Node_Id;
-   --  Return the Requires component of Test_Case pragma N, or Empty otherwise
-   --  Bad name now that this no longer applies to Contract_Case ???
 
    function Get_Subprogram_Entity (Nod : Node_Id) return Entity_Id;
    --  Nod is either a procedure call statement, or a function call, or an
@@ -1010,6 +1004,11 @@ package Sem_Util is
    function Has_Signed_Zeros (E : Entity_Id) return Boolean;
    --  Determines if the floating-point type E supports signed zeros.
    --  Returns False if E is not a floating-point type.
+
+   function Has_Significant_Contract (Subp_Id : Entity_Id) return Boolean;
+   --  Determine whether subprogram [body] Subp_Id has a significant contract.
+   --  All subprograms have a N_Contract node, but this does not mean that the
+   --  contract is useful.
 
    function Has_Static_Array_Bounds (Typ : Node_Id) return Boolean;
    --  Return whether an array type has static bounds
@@ -1127,6 +1126,10 @@ package Sem_Util is
    --  Examine all deferred constants in the declaration list Decls and check
    --  whether they have been completed by a full constant declaration or an
    --  Import pragma. Emit the error message if that is not the case.
+
+   procedure Install_Generic_Formals (Subp_Id : Entity_Id);
+   --  Install both the generic formal parameters and the formal parameters of
+   --  generic subprogram Subp_Id into visibility.
 
    function Is_Actual_Out_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter of out mode in a subprogram call
@@ -1673,15 +1676,19 @@ package Sem_Util is
    --  corresponding operation of S is the original corresponding operation of
    --  S2. Otherwise, it is S itself.
 
-   function Original_Aspect_Name (N : Node_Id) return Name_Id;
-   --  N is a pragma node or aspect specification node. This function returns
-   --  the name of the pragma or aspect in original source form, taking into
-   --  account possible rewrites, and also cases where a pragma comes from an
-   --  aspect (in such cases, the name can be different from the pragma name,
-   --  e.g. a Pre aspect generates a Precondition pragma). This also deals with
-   --  the presence of 'Class, which results in one of the special names
-   --  Name_uPre, Name_uPost, Name_uInvariant, or Name_uType_Invariant being
-   --  returned to represent the corresponding aspects with x'Class names.
+   function Original_Aspect_Pragma_Name (N : Node_Id) return Name_Id;
+   --  Retrieve the name of aspect or pragma N taking into account a possible
+   --  rewrite and whether the pragma is generated from an aspect as the names
+   --  may be different. The routine also deals with 'Class in which case it
+   --  returns the following values:
+   --
+   --    Invariant            -> Name_uInvariant
+   --    Post                 -> Name_uPost
+   --    Post'Class           -> Name_uPost
+   --    Pre                  -> Name_uPre
+   --    Pre'Class            -> Name_uPre
+   --    Type_Invariant       -> Name_uType_Invariant
+   --    Type_Invariant'Class -> Name_uType_Invariant
 
    function Policy_In_Effect (Policy : Name_Id) return Name_Id;
    --  Given a policy, return the policy identifier associated with it. If no

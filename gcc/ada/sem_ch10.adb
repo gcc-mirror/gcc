@@ -246,13 +246,6 @@ package body Sem_Ch10 is
    ------------------------------
 
    procedure Analyze_Compilation_Unit (N : Node_Id) is
-      Unit_Node     : constant Node_Id := Unit (N);
-      Lib_Unit      : Node_Id          := Library_Unit (N);
-      Spec_Id       : Entity_Id;
-      Main_Cunit    : constant Node_Id := Cunit (Main_Unit);
-      Par_Spec_Name : Unit_Name_Type;
-      Unum          : Unit_Number_Type;
-
       procedure Check_Redundant_Withs
         (Context_Items      : List_Id;
          Spec_Context_Items : List_Id := No_List);
@@ -602,6 +595,15 @@ package body Sem_Ch10 is
          end loop;
       end Check_Redundant_Withs;
 
+      --  Local variables
+
+      Main_Cunit    : constant Node_Id := Cunit (Main_Unit);
+      Unit_Node     : constant Node_Id := Unit (N);
+      Lib_Unit      : Node_Id          := Library_Unit (N);
+      Par_Spec_Name : Unit_Name_Type;
+      Spec_Id       : Entity_Id;
+      Unum          : Unit_Number_Type;
+
    --  Start of processing for Analyze_Compilation_Unit
 
    begin
@@ -928,6 +930,15 @@ package body Sem_Ch10 is
                Next (Prag_Node);
             end loop;
          end;
+      end if;
+
+      --  Analyze the contract of a [generic] subprogram that acts as a
+      --  compilation unit after all compilation pragmas have been analyzed.
+
+      if Nkind_In (Unit_Node, N_Generic_Subprogram_Declaration,
+                              N_Subprogram_Declaration)
+      then
+         Analyze_Subprogram_Contract (Defining_Entity (Unit_Node));
       end if;
 
       --  Generate distribution stubs if requested and no error
@@ -1920,39 +1931,6 @@ package body Sem_Ch10 is
       end if;
    end Analyze_Protected_Body_Stub;
 
-   -------------------------------------------
-   -- Analyze_Subprogram_Body_Stub_Contract --
-   -------------------------------------------
-
-   procedure Analyze_Subprogram_Body_Stub_Contract (Stub_Id : Entity_Id) is
-      Stub_Decl : constant Node_Id   := Parent (Parent (Stub_Id));
-      Spec_Id   : constant Entity_Id := Corresponding_Spec_Of_Stub (Stub_Decl);
-
-   begin
-      --  A subprogram body stub may act as its own spec or as the completion
-      --  of a previous declaration. Depending on the context, the contract of
-      --  the stub may contain two sets of pragmas.
-
-      --  The stub is a completion, the applicable pragmas are:
-      --    Contract_Cases
-      --    Depends
-      --    Global
-      --    Postcondition
-      --    Precondition
-      --    Test_Case
-
-      if Present (Spec_Id) then
-         Analyze_Subprogram_Body_Contract (Stub_Id);
-
-      --  The stub acts as its own spec, the applicable pragmas are:
-      --    Refined_Depends
-      --    Refined_Global
-
-      else
-         Analyze_Subprogram_Contract (Stub_Id);
-      end if;
-   end Analyze_Subprogram_Body_Stub_Contract;
-
    ----------------------------------
    -- Analyze_Subprogram_Body_Stub --
    ----------------------------------
@@ -2004,6 +1982,39 @@ package body Sem_Ch10 is
 
       Restore_Opt_Config_Switches (Opts);
    end Analyze_Subprogram_Body_Stub;
+
+   -------------------------------------------
+   -- Analyze_Subprogram_Body_Stub_Contract --
+   -------------------------------------------
+
+   procedure Analyze_Subprogram_Body_Stub_Contract (Stub_Id : Entity_Id) is
+      Stub_Decl : constant Node_Id   := Parent (Parent (Stub_Id));
+      Spec_Id   : constant Entity_Id := Corresponding_Spec_Of_Stub (Stub_Decl);
+
+   begin
+      --  A subprogram body stub may act as its own spec or as the completion
+      --  of a previous declaration. Depending on the context, the contract of
+      --  the stub may contain two sets of pragmas.
+
+      --  The stub is a completion, the applicable pragmas are:
+      --    Refined_Depends
+      --    Refined_Global
+
+      if Present (Spec_Id) then
+         Analyze_Subprogram_Body_Contract (Stub_Id);
+
+      --  The stub acts as its own spec, the applicable pragmas are:
+      --    Contract_Cases
+      --    Depends
+      --    Global
+      --    Postcondition
+      --    Precondition
+      --    Test_Case
+
+      else
+         Analyze_Subprogram_Contract (Stub_Id);
+      end if;
+   end Analyze_Subprogram_Body_Stub_Contract;
 
    ---------------------
    -- Analyze_Subunit --
@@ -2831,13 +2842,13 @@ package body Sem_Ch10 is
          when None =>
             null;
 
-            --  If with'ed unit had a detected fatal error, propagate it
+         --  If with'ed unit had a detected fatal error, propagate it
 
          when Error_Detected =>
             Set_Fatal_Error (Current_Sem_Unit, Error_Detected);
 
-            --  If with'ed unit had an ignored error, then propagate it
-            --  but do not overide an existring setting.
+         --  If with'ed unit had an ignored error, then propagate it but do not
+         --  overide an existring setting.
 
          when Error_Ignored =>
             if Fatal_Error (Current_Sem_Unit) = None then

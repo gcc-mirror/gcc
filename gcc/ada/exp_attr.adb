@@ -3630,18 +3630,15 @@ package body Exp_Attr is
 
                declare
                   Rtyp : constant Entity_Id := Root_Type (P_Type);
-                  Dnn  : Entity_Id;
-                  Decl : Node_Id;
                   Expr : Node_Id;
 
                begin
                   --  Read the internal tag (RM 13.13.2(34)) and use it to
-                  --  initialize a dummy tag object:
+                  --  initialize a dummy tag value:
 
-                  --    Dnn : Ada.Tags.Tag :=
-                  --            Descendant_Tag (String'Input (Strm), P_Type);
+                  --     Descendant_Tag (String'Input (Strm), P_Type);
 
-                  --  This dummy object is used only to provide a controlling
+                  --  This value is used only to provide a controlling
                   --  argument for the eventual _Input call. Descendant_Tag is
                   --  called rather than Internal_Tag to ensure that we have a
                   --  tag for a type that is descended from the prefix type and
@@ -3649,6 +3646,11 @@ package body Exp_Attr is
                   --  Tag_Error will be raised otherwise). The level check is
                   --  required for Ada 2005 because tagged types can be
                   --  extended in nested scopes (AI-344).
+
+                  --  Note: we used to generate an explicit declaration of a
+                  --  constant Ada.Tags.Tag object, and use an occurrence of
+                  --  this constant in Cntrl, but this caused a secondary stack
+                  --  leak.
 
                   Expr :=
                     Make_Function_Call (Loc,
@@ -3663,17 +3665,7 @@ package body Exp_Attr is
                         Make_Attribute_Reference (Loc,
                           Prefix => New_Occurrence_Of (P_Type, Loc),
                           Attribute_Name => Name_Tag)));
-
-                  Dnn := Make_Temporary (Loc, 'D', Expr);
-
-                  Decl :=
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => Dnn,
-                      Object_Definition   =>
-                        New_Occurrence_Of (RTE (RE_Tag), Loc),
-                      Expression          => Expr);
-
-                  Insert_Action (N, Decl);
+                  Set_Etype (Expr, RTE (RE_Tag));
 
                   --  Now we need to get the entity for the call, and construct
                   --  a function call node, where we preset a reference to Dnn
@@ -3682,9 +3674,7 @@ package body Exp_Attr is
                   --  tagged object).
 
                   Fname := Find_Prim_Op (Rtyp, TSS_Stream_Input);
-                  Cntrl :=
-                    Unchecked_Convert_To (P_Type,
-                      New_Occurrence_Of (Dnn, Loc));
+                  Cntrl := Unchecked_Convert_To (P_Type, Expr);
                   Set_Etype (Cntrl, P_Type);
                   Set_Parent (Cntrl, N);
                end;

@@ -1257,22 +1257,7 @@ package body Sem_Ch13 is
          Decl : Node_Id;
 
       begin
-         --  When the context is a library unit, the pragma is added to the
-         --  Pragmas_After list.
-
-         if Nkind (Parent (N)) = N_Compilation_Unit then
-            Aux := Aux_Decls_Node (Parent (N));
-
-            if No (Pragmas_After (Aux)) then
-               Set_Pragmas_After (Aux, New_List);
-            end if;
-
-            Prepend (Prag, Pragmas_After (Aux));
-
-         --  Pragmas associated with subprogram bodies are inserted in the
-         --  declarative part.
-
-         elsif Nkind (N) = N_Subprogram_Body then
+         if Nkind (N) = N_Subprogram_Body then
             if Present (Declarations (N)) then
 
                --  Skip other internally generated pragmas from aspects to find
@@ -1307,6 +1292,18 @@ package body Sem_Ch13 is
             else
                Set_Declarations (N, New_List (Prag));
             end if;
+
+         --  When the context is a library unit, the pragma is added to the
+         --  Pragmas_After list.
+
+         elsif Nkind (Parent (N)) = N_Compilation_Unit then
+            Aux := Aux_Decls_Node (Parent (N));
+
+            if No (Pragmas_After (Aux)) then
+               Set_Pragmas_After (Aux, New_List);
+            end if;
+
+            Prepend (Prag, Pragmas_After (Aux));
 
          --  Default
 
@@ -2929,7 +2926,7 @@ package body Sem_Ch13 is
                   if not Opt.Exception_Locations_Suppressed then
                      Append_To (Pragma_Argument_Associations (Aitem),
                        Make_Pragma_Argument_Association (Eloc,
-                         Chars     => Name_Message,
+                         Chars      => Name_Message,
                          Expression =>
                            Make_String_Literal (Eloc,
                              Strval => "failed "
@@ -2983,7 +2980,6 @@ package body Sem_Ch13 is
                   Comp_Expr := First (Expressions (Expr));
                   while Present (Comp_Expr) loop
                      New_Expr := Relocate_Node (Comp_Expr);
-                     Set_Original_Node (New_Expr, Comp_Expr);
                      Append_To (Args,
                        Make_Pragma_Argument_Association (Sloc (Comp_Expr),
                          Expression => New_Expr));
@@ -3002,12 +2998,11 @@ package body Sem_Ch13 is
                         goto Continue;
                      end if;
 
-                     New_Expr := Relocate_Node (Expression (Comp_Assn));
-                     Set_Original_Node (New_Expr, Expression (Comp_Assn));
                      Append_To (Args,
                        Make_Pragma_Argument_Association (Sloc (Comp_Assn),
-                       Chars      => Chars (First (Choices (Comp_Assn))),
-                       Expression => New_Expr));
+                         Chars      => Chars (First (Choices (Comp_Assn))),
+                         Expression =>
+                           Relocate_Node (Expression (Comp_Assn))));
                      Next (Comp_Assn);
                   end loop;
 

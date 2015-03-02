@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -297,6 +297,7 @@ package body Sem_Ch7 is
 
                elsif Nkind (N) = N_Attribute_Reference
                  and then Is_Entity_Name (Prefix (N))
+                 and then Present (Entity (Prefix (N)))
                  and then Is_Subprogram (Entity (Prefix (N)))
                then
                   Reference_Seen := True;
@@ -690,7 +691,6 @@ package body Sem_Ch7 is
       Set_Ekind (Body_Id, E_Package_Body);
       Set_Body_Entity (Spec_Id, Body_Id);
       Set_Spec_Entity (Body_Id, Spec_Id);
-      Set_Contract    (Body_Id, Make_Contract (Sloc (Body_Id)));
 
       --  Defining name for the package body is not a visible entity: Only the
       --  defining name for the declaration is visible.
@@ -1017,9 +1017,8 @@ package body Sem_Ch7 is
 
       Generate_Definition (Id);
       Enter_Name (Id);
-      Set_Ekind    (Id, E_Package);
-      Set_Etype    (Id, Standard_Void_Type);
-      Set_Contract (Id, Make_Contract (Sloc (Id)));
+      Set_Ekind  (Id, E_Package);
+      Set_Etype  (Id, Standard_Void_Type);
 
       --  Set SPARK_Mode from context only for non-generic package
 
