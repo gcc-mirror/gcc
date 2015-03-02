@@ -1,5 +1,28 @@
 2015-03-02  Robert Dewar  <dewar@adacore.com>
 
+	* scng.adb (Scan): Ignore illegal character in relaxed
+	semantics mode.
+
+2015-03-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Set_Membership); Retain Overloaded flag
+	on left operand, so it can be properly resolved with type of
+	alternatives of right operand.
+	* sem_res.adb (Resolve_Set_Membership): Handle properly an
+	overloaded left-hand side when the alternatives on the right
+	hand side are literals of some universal type.	Use first
+	non-overloaded alternative to find expected type.
+
+2015-03-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch7.adb (Make_Set_Finalize_Address_Call): Use underlying
+	type to retrieve designated type, because the purported access
+	type may be a partial (private) view, when it is declared in
+	the private part of a nested package, and finalization actions
+	are generated when completing compilation of enclosing unit.
+
+2015-03-02  Robert Dewar  <dewar@adacore.com>
+
 	* back_end.adb (Call_Back_End): Remove previous patch,
 	the back end now gets to see the result of -gnatd.1
 	(Unnest_Subprogram_Mode) processing.
