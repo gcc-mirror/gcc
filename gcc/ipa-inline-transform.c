@@ -213,7 +213,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	     For now we keep the ohter functions in the group in program until
 	     cgraph_remove_unreachable_functions gets rid of them.  */
 	  gcc_assert (!e->callee->global.inlined_to);
-	  e->callee->dissolve_same_comdat_group_list ();
+	  e->callee->remove_from_same_comdat_group ();
 	  if (e->callee->definition
 	      && inline_account_function_p (e->callee))
 	    {
@@ -243,7 +243,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	}
     }
   else
-    e->callee->dissolve_same_comdat_group_list ();
+    e->callee->remove_from_same_comdat_group ();
 
   e->callee->global.inlined_to = inlining_into;
 

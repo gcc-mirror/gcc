@@ -1,3 +1,8 @@
+2015-03-02  Jan Hubicka   <hubicka@ucw.cz>
+
+	PR ipa/64988
+	* g++.dg/torture/pr64988.C: New testcase.
+
 2015-03-02  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/coarray_atomic_6.f90: New.
