@@ -1459,7 +1459,6 @@ add_type_duplicate (odr_type val, tree type)
 			&& polymorphic_type_binfo_p (TYPE_BINFO (type1))
 		           != polymorphic_type_binfo_p (TYPE_BINFO (type2))))
 		  {
-		    gcc_assert (val->odr_violated);
 		    base_mismatch = true;
 		    break;
 		  }
