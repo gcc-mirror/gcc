@@ -1,3 +1,8 @@
+2015-03-02  Ulrich Drepper  <drepper@gmail.com>
+
+	* doc/invoke.texi (Options for Code Generation Conventions):
+	Fix URL of DSO paper.
+		
 2015-03-02  Jan Hubicka   <hubicka@ucw.cz>
 
 	PR ipa/65130
