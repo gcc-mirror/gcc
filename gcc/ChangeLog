@@ -1,5 +1,14 @@
 2015-03-02  Jan Hubicka   <hubicka@ucw.cz>
 
+	PR ipa/65130
+	* ipa-inline.c (check_callers): Looks for recursion.
+	(inline_to_all_callers): Give up on uninlinable or recursive edges.
+	* ipa-inline-analysis.c (inline_summary_t::duplicate): Do not update
+	summary of inline clones.
+	(do_estimate_growth_1): Fix recursion check.
+
+2015-03-02  Jan Hubicka   <hubicka@ucw.cz>
+
 	PR ipa/64988
 	* ipa-inline-transform.c (clone_inlined_nodes): Do not dissolve
 	comdat groups.
