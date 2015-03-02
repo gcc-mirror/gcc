@@ -77,6 +77,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <list>
 #include "tree-ssanames.h"
 #include "tree-eh.h"
+#include "builtins.h"
 
 #include "ipa-icf-gimple.h"
 #include "ipa-icf.h"
@@ -286,6 +287,24 @@ func_checker::compare_memory_operand (tree t1, tree t2)
       if (ao_ref_alias_set (&r1) != ao_ref_alias_set (&r2)
 	  || ao_ref_base_alias_set (&r1) != ao_ref_base_alias_set (&r2))
 	return return_false_with_msg ("ao alias sets are different");
+
+      /* We can't simply use get_object_alignment_1 on the full
+         reference as for accesses with variable indexes this reports
+	 too conservative alignment.  We also can't use the ao_ref_base
+	 base objects as ao_ref_base happily strips MEM_REFs around
+	 decls even though that may carry alignment info.  */
+      b1 = t1;
+      while (handled_component_p (b1))
+	b1 = TREE_OPERAND (b1, 0);
+      b2 = t2;
+      while (handled_component_p (b2))
+	b2 = TREE_OPERAND (b2, 0);
+      unsigned int align1, align2;
+      unsigned HOST_WIDE_INT tem;
+      get_object_alignment_1 (b1, &align1, &tem);
+      get_object_alignment_1 (b2, &align2, &tem);
+      if (align1 != align2)
+	return return_false_with_msg ("different access alignment");
     }
 
   return compare_operand (t1, t2);
