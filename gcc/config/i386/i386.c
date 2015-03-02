@@ -7914,6 +7914,11 @@ ix86_pass_by_reference (cumulative_args_t cum_v, machine_mode mode,
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
+  /* Bounds are never passed by reference.  */
+  if ((type && POINTER_BOUNDS_TYPE_P (type))
+      || POINTER_BOUNDS_MODE_P (mode))
+    return false;
+
   /* See Windows x64 Software Convention.  */
   if (TARGET_64BIT && (cum ? cum->call_abi : ix86_abi) == MS_ABI)
     {

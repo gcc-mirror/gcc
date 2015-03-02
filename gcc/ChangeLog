@@ -1,5 +1,11 @@
 2015-03-02  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	PR target/65184
+	* gcc/config/i386/i386.c (ix86_pass_by_reference) Bounds
+	are never passed by reference.
+
+2015-03-02  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	PR target/65183
 	* tree-chkp.c (chkp_check_lower): Don't check against
 	zero bounds for already instrumented functions.
