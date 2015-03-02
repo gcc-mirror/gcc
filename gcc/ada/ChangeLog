@@ -1,3 +1,10 @@
+2015-03-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Possible_Bit_Aligned_Component): Do not process
+	an unanalyzed node.
+	* sem_util.adb (Kill_Current_Values): Do not invalidate and
+	de-null a constant.
+
 2015-03-02  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, exp_attr.adb, checks.adb, exp_aggr.adb: Minor
