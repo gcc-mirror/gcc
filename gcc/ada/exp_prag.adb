@@ -274,18 +274,20 @@ package body Exp_Prag is
       --  Given the entity Id of a boolean flag, generate:
       --    Id : Boolean := False;
 
-      procedure Expand_Old_In_Consequence
+      procedure Expand_Attributes_In_Consequence
         (Decls  : List_Id;
          Evals  : in out Node_Id;
          Flag   : Entity_Id;
          Conseq : Node_Id);
       --  Perform specialized expansion of all attribute 'Old references found
       --  in consequence Conseq such that at runtime only prefixes coming from
-      --  the selected consequence are evaluated. Any temporaries generated in
-      --  the process are added to declarative list Decls. Evals is a complex
-      --  if statement tasked with the evaluation of all prefixes coming from
-      --  a selected consequence. Flag is the corresponding case guard flag.
-      --  Conseq is the consequence expression.
+      --  the selected consequence are evaluated. Similarly expand attribute
+      --  'Result references by replacing them with identifier _result which
+      --  resolves to the sole formal parameter of procedure _Postconditions.
+      --  Any temporaries generated in the process are added to declarations
+      --  Decls. Evals is a complex if statement tasked with the evaluation of
+      --  all prefixes coming from a single selected consequence. Flag is the
+      --  corresponding case guard flag. Conseq is the consequence expression.
 
       function Increment (Id : Entity_Id) return Node_Id;
       --  Given the entity Id of a numerical variable, generate:
@@ -409,11 +411,11 @@ package body Exp_Prag is
              Expression          => New_Occurrence_Of (Standard_False, Loc));
       end Declaration_Of;
 
-      -------------------------------
-      -- Expand_Old_In_Consequence --
-      -------------------------------
+      --------------------------------------
+      -- Expand_Attributes_In_Consequence --
+      --------------------------------------
 
-      procedure Expand_Old_In_Consequence
+      procedure Expand_Attributes_In_Consequence
         (Decls  : List_Id;
          Evals  : in out Node_Id;
          Flag   : Entity_Id;
@@ -423,20 +425,22 @@ package body Exp_Prag is
          --  The evaluation sequence expressed as assignment statements of all
          --  prefixes of attribute 'Old found in the current consequence.
 
-         function Expand_Old (N : Node_Id) return Traverse_Result;
-         --  Determine whether an arbitrary node denotes attribute 'Old and if
-         --  it does, perform all expansion-related actions.
+         function Expand_Attributes (N : Node_Id) return Traverse_Result;
+         --  Determine whether an arbitrary node denotes attribute 'Old or
+         --  'Result and if it does, perform all expansion-related actions.
 
-         ----------------
-         -- Expand_Old --
-         ----------------
+         -----------------------
+         -- Expand_Attributes --
+         -----------------------
 
-         function Expand_Old (N : Node_Id) return Traverse_Result is
+         function Expand_Attributes (N : Node_Id) return Traverse_Result is
             Decl : Node_Id;
             Pref : Node_Id;
             Temp : Entity_Id;
 
          begin
+            --  Attribute 'Old
+
             if Nkind (N) = N_Attribute_Reference
               and then Attribute_Name (N) = Name_Old
             then
@@ -458,6 +462,7 @@ package body Exp_Prag is
                Set_No_Initialization (Decl);
 
                Prepend_To (Decls, Decl);
+               Analyze (Decl);
 
                --  Evaluate the prefix, generate:
                --    Temp := <Pref>;
@@ -481,20 +486,32 @@ package body Exp_Prag is
                --  generated temporary.
 
                Rewrite (N, New_Occurrence_Of (Temp, Loc));
+
+            --  Attribute 'Result
+
+            elsif Is_Attribute_Result (N) then
+               Rewrite (N, Make_Identifier (Loc, Name_uResult));
             end if;
 
             return OK;
-         end Expand_Old;
+         end Expand_Attributes;
 
-         procedure Expand_Olds is new Traverse_Proc (Expand_Old);
+         procedure Expand_Attributes_In is
+           new Traverse_Proc (Expand_Attributes);
 
-      --  Start of processing for Expand_Old_In_Consequence
+      --  Start of processing for Expand_Attributes_In_Consequence
 
       begin
-         --  Inspect the consequence and expand any attribute 'Old references
-         --  found within.
+         --  Inspect the consequence and expand any attribute 'Old and 'Result
+         --  references found within.
 
-         Expand_Olds (Conseq);
+         Expand_Attributes_In (Conseq);
+
+         --  The consequence does not contain any attribute 'Old references
+
+         if No (Eval_Stmts) then
+            return;
+         end if;
 
          --  Augment the machinery to trigger the evaluation of all prefixes
          --  found in the step above. If Eval is empty, then this is the first
@@ -525,7 +542,7 @@ package body Exp_Prag is
                 Condition       => New_Occurrence_Of (Flag, Loc),
                 Then_Statements => Eval_Stmts));
          end if;
-      end Expand_Old_In_Consequence;
+      end Expand_Attributes_In_Consequence;
 
       ---------------
       -- Increment --
@@ -565,11 +582,15 @@ package body Exp_Prag is
       Conseq        : Node_Id;
       Conseq_Checks : Node_Id   := Empty;
       Count         : Entity_Id;
+      Count_Decl    : Node_Id;
       Error_Decls   : List_Id;
       Flag          : Entity_Id;
+      Flag_Decl     : Node_Id;
+      If_Stmt       : Node_Id;
       Msg_Str       : Entity_Id;
       Multiple_PCs  : Boolean;
       Old_Evals     : Node_Id   := Empty;
+      Others_Decl   : Node_Id;
       Others_Flag   : Entity_Id := Empty;
       Post_Case     : Node_Id;
 
@@ -596,12 +617,14 @@ package body Exp_Prag is
       --    Count : Natural := 0;
 
       Count := Make_Temporary (Loc, 'C');
-
-      Prepend_To (Decls,
+      Count_Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Count,
           Object_Definition   => New_Occurrence_Of (Standard_Natural, Loc),
-          Expression          => Make_Integer_Literal (Loc, 0)));
+          Expression          => Make_Integer_Literal (Loc, 0));
+
+      Prepend_To (Decls, Count_Decl);
+      Analyze (Count_Decl);
 
       --  Create the base error message for multiple overlapping case guards
 
@@ -634,7 +657,10 @@ package body Exp_Prag is
 
          if Nkind (Case_Guard) = N_Others_Choice then
             Others_Flag := Make_Temporary (Loc, 'F');
-            Prepend_To (Decls, Declaration_Of (Others_Flag));
+            Others_Decl := Declaration_Of (Others_Flag);
+
+            Prepend_To (Decls, Others_Decl);
+            Analyze (Others_Decl);
 
             --  Check possible overlap between a case guard and "others"
 
@@ -647,9 +673,9 @@ package body Exp_Prag is
             end if;
 
             --  Inspect the consequence and perform special expansion of any
-            --  attribute 'Old references found within.
+            --  attribute 'Old and 'Result references found within.
 
-            Expand_Old_In_Consequence
+            Expand_Attributes_In_Consequence
               (Decls  => Decls,
                Evals  => Old_Evals,
                Flag   => Others_Flag,
@@ -669,7 +695,10 @@ package body Exp_Prag is
             --  guard.
 
             Flag := Make_Temporary (Loc, 'F');
-            Prepend_To (Decls, Declaration_Of (Flag));
+            Flag_Decl := Declaration_Of (Flag);
+
+            Prepend_To (Decls, Flag_Decl);
+            Analyze (Flag_Decl);
 
             --  The flag is set when the case guard is evaluated to True
             --    if Case_Guard then
@@ -677,12 +706,15 @@ package body Exp_Prag is
             --       Count := Count + 1;
             --    end if;
 
-            Append_To (Decls,
+            If_Stmt :=
               Make_Implicit_If_Statement (CCs,
                 Condition       => Relocate_Node (Case_Guard),
                 Then_Statements => New_List (
                   Set (Flag),
-                  Increment (Count))));
+                  Increment (Count)));
+
+            Append_To (Decls, If_Stmt);
+            Analyze (If_Stmt);
 
             --  Check whether this case guard overlaps with another one
 
@@ -695,9 +727,9 @@ package body Exp_Prag is
             end if;
 
             --  Inspect the consequence and perform special expansion of any
-            --  attribute 'Old references found within.
+            --  attribute 'Old and 'Result references found within.
 
-            Expand_Old_In_Consequence
+            Expand_Attributes_In_Consequence
               (Decls  => Decls,
                Evals  => Old_Evals,
                Flag   => Flag,
@@ -783,11 +815,15 @@ package body Exp_Prag is
       end if;
 
       Append_To (Decls, CG_Checks);
+      Analyze (CG_Checks);
 
       --  Once all case guards are evaluated and checked, evaluate any prefixes
       --  of attribute 'Old founds in the selected consequence.
 
-      Append_To (Decls, Old_Evals);
+      if Present (Old_Evals) then
+         Append_To (Decls, Old_Evals);
+         Analyze (Old_Evals);
+      end if;
 
       --  Raise Assertion_Error when the corresponding consequence of a case
       --  guard that evaluated to True fails.

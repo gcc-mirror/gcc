@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -151,6 +151,9 @@ package Sem_Ch12 is
    --  involving the actuals and other data-structures, must be saved and
    --  restored in stack-like fashion. Front-end inlining also uses these
    --  structures for the management of private/full views.
+
+   procedure Save_Global_References_In_Aspects (N : Node_Id);
+   --  Save all global references in the aspect specifications of node N
 
    procedure Set_Copied_Sloc_For_Inlined_Body (N : Node_Id; E : Entity_Id);
    --  This procedure is used when a subprogram body is inlined. This process

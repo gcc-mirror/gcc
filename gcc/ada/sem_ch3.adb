@@ -2471,6 +2471,7 @@ package body Sem_Ch3 is
             Analyze_Object_Contract (Defining_Entity (Decl));
 
          elsif Nkind_In (Decl, N_Abstract_Subprogram_Declaration,
+                               N_Generic_Subprogram_Declaration,
                                N_Subprogram_Declaration)
          then
             Analyze_Subprogram_Contract (Defining_Entity (Decl));
@@ -4116,8 +4117,6 @@ package body Sem_Ch3 is
          if Present (E) then
             Set_Has_Initial_Value (Id);
          end if;
-
-         Set_Contract (Id, Make_Contract (Sloc (Id)));
       end if;
 
       --  Initialize alignment and size and capture alignment setting
@@ -14486,7 +14485,6 @@ package body Sem_Ch3 is
    begin
       New_Subp := New_Entity (Nkind (Parent_Subp), Sloc (Derived_Type));
       Set_Ekind (New_Subp, Ekind (Parent_Subp));
-      Set_Contract (New_Subp, Make_Contract (Sloc (New_Subp)));
 
       --  Check whether the inherited subprogram is a private operation that
       --  should be inherited but not yet made visible. Such subprograms can
@@ -16468,7 +16466,7 @@ package body Sem_Ch3 is
             Set_Has_Private_Declaration (Prev);
             Set_Has_Private_Declaration (Id);
 
-            --  AI12-0133: Indicate whether we have a partial view with
+            --  AI12-0133: indicate whether we have a partial view with
             --  unknown discriminants, in which case initialization of objects
             --  of the type do not receive an invariant check.
 
@@ -19445,7 +19443,7 @@ package body Sem_Ch3 is
               and then Limited_Present (Type_Definition (Orig_Decl))
             then
                Error_Msg_N
-                ("full view of non-limited extension cannot be limited", N);
+                 ("full view of non-limited extension cannot be limited", N);
 
             --  Conversely, if the partial view carries the limited keyword,
             --  the full view must as well, even if it may be redundant.
@@ -19454,8 +19452,8 @@ package body Sem_Ch3 is
               and then not Limited_Present (Type_Definition (Orig_Decl))
             then
                Error_Msg_N
-                ("full view of limited extension must be explicitly limited",
-                 N);
+                 ("full view of limited extension must be explicitly limited",
+                  N);
             end if;
          end if;
       end;

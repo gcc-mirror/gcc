@@ -2871,7 +2871,6 @@ package body Sem_Ch8 is
          --  constructed later at the freeze point, so indicate that the
          --  completion has not been seen yet.
 
-         Set_Contract (New_S, Empty);
          Set_Ekind (New_S, E_Subprogram_Body);
          New_S := Rename_Spec;
          Set_Has_Completion (Rename_Spec, False);
@@ -6459,7 +6458,8 @@ package body Sem_Ch8 is
       --  is an array type we may already have a usable subtype for it, so we
       --  can use it rather than generating a new one, because the bounds
       --  will be the values of the discriminants and not discriminant refs.
-      --  This simplifies value tracing in GNATProve.
+      --  This simplifies value tracing in GNATProve. For consistency, both
+      --  the entity name and the subtype come from the constrained component.
 
       function Is_Reference_In_Subunit return Boolean;
       --  In a subunit, the scope depth is not a proper measure of hiding,
@@ -6474,12 +6474,14 @@ package body Sem_Ch8 is
 
       function Available_Subtype return Boolean is
          Comp : Entity_Id;
+
       begin
          Comp := First_Entity (Etype (P));
          while Present (Comp) loop
             if Chars (Comp) = Chars (Selector_Name (N)) then
                Set_Etype (N, Etype (Comp));
-               Set_Etype (Selector_Name (N), Etype (Comp));
+               Set_Entity (Selector_Name (N), Comp);
+               Set_Etype  (Selector_Name (N), Etype (Comp));
                return True;
             end if;
 

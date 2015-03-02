@@ -1565,6 +1565,12 @@ package Einfo is
 --    Has_Exit (Flag47)
 --       Defined in loop entities. Set if the loop contains an exit statement.
 
+--    Has_Expanded_Contract (Flag240)
+--       Defined in functions, procedures, entries, and entry families. Set
+--       when a subprogram has a N_Contract node that has been expanded. The
+--       flag prevents double expansion of a contract when a construct is
+--       rewritten into something else and subsequently reanalyzed/expanded.
+
 --    Has_Foreign_Convention (synthesized)
 --       Applies to all entities. Determines if the Convention for the
 --       entity is a foreign convention (i.e. is other than Convention_Ada,
@@ -1733,10 +1739,6 @@ package Einfo is
 --          the enclosing type.
 --       5. N_Range_Constraint - when the range expression uses the
 --          discriminant of the enclosing type.
-
---    Has_Postconditions (Flag240)
---      Defined in subprogram entities. Set if postconditions are active for
---      the procedure, and a _postconditions procedure has been generated.
 
 --    Has_Pragma_Controlled (Flag27) [implementation base type only]
 --       Defined in access type entities. It is set if a pragma Controlled
@@ -3591,11 +3593,10 @@ package Einfo is
 --       ensure that the finalization masters of all pending access types are
 --       fully initialized when the full view is frozen.
 
---    Postcondition_Proc (Node8)
---       Defined only in procedure entities, saves the entity of the generated
---       postcondition proc if one is present, otherwise is set to Empty. Used
---       to generate the call to this procedure in case the expander inserts
---       implicit return statements.
+--    Postconditions_Proc (Node14)
+--       Defined in functions, procedures, entries, and entry families. Refers
+--       to the entity of the _Postconditions procedure used to check contract
+--       assertions on exit from a subprogram.
 
 --    PPC_Wrapper (Node25)
 --       Defined in entries and entry families. Set only if pre- or post-
@@ -5611,6 +5612,7 @@ package Einfo is
    --  E_Entry_Family
    --    Protected_Body_Subprogram           (Node11)
    --    Barrier_Function                    (Node12)
+   --    Postconditions_Proc                 (Node14)
    --    Entry_Parameters_Type               (Node15)
    --    First_Entity                        (Node17)
    --    Alias                               (Node18)   (for entry only. Empty)
@@ -5621,11 +5623,12 @@ package Einfo is
    --    PPC_Wrapper                         (Node25)
    --    Extra_Formals                       (Node28)
    --    Contract                            (Node34)
+   --    Needs_No_Actuals                    (Flag22)
+   --    Uses_Sec_Stack                      (Flag95)
    --    Default_Expressions_Processed       (Flag108)
    --    Entry_Accepted                      (Flag152)
-   --    Needs_No_Actuals                    (Flag22)
    --    Sec_Stack_Needed_For_Return         (Flag167)
-   --    Uses_Sec_Stack                      (Flag95)
+   --    Has_Expanded_Contract               (Flag240)
    --    Address_Clause                      (synth)
    --    Entry_Index_Type                    (synth)
    --    First_Formal                        (synth)
@@ -5707,6 +5710,7 @@ package Einfo is
    --    Protected_Body_Subprogram           (Node11)
    --    Next_Inlined_Subprogram             (Node12)
    --    Elaboration_Entity                  (Node13)   (not implicit /=)
+   --    Postconditions_Proc                 (Node14)   (non-generic case only)
    --    DT_Position                         (Uint15)
    --    DTC_Entity                          (Node16)
    --    First_Entity                        (Node17)
@@ -5739,12 +5743,12 @@ package Einfo is
    --    Has_Anonymous_Master                (Flag253)
    --    Has_Completion                      (Flag26)
    --    Has_Controlling_Result              (Flag98)
+   --    Has_Expanded_Contract               (Flag240)  (non-generic case only)
    --    Has_Invariants                      (Flag232)
    --    Has_Master_Entity                   (Flag21)
    --    Has_Missing_Return                  (Flag142)
    --    Has_Nested_Block_With_Handler       (Flag101)
    --    Has_Out_Or_In_Out_Parameter         (Flag110)
-   --    Has_Postconditions                  (Flag240)
    --    Has_Recursive_Call                  (Flag143)
    --    Is_Abstract_Subprogram              (Flag19)   (non-generic case only)
    --    Is_Called                           (Flag102)  (non-generic case only)
@@ -5892,7 +5896,6 @@ package Einfo is
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
    --    Has_Invariants                      (Flag232)
-   --    Has_Postconditions                  (Flag240)
    --    Is_Machine_Code_Subprogram          (Flag137)
    --    Is_Pure                             (Flag44)
    --    Is_Intrinsic_Subprogram             (Flag64)
@@ -6002,12 +6005,12 @@ package Einfo is
 
    --  E_Procedure
    --  E_Generic_Procedure
-   --    Postcondition_Proc                  (Node8)    (non-generic case only)
    --    Renaming_Map                        (Uint9)
    --    Handler_Records                     (List10)   (non-generic case only)
    --    Protected_Body_Subprogram           (Node11)
    --    Next_Inlined_Subprogram             (Node12)
    --    Elaboration_Entity                  (Node13)
+   --    Postconditions_Proc                 (Node14)   (non-generic case only)
    --    DT_Position                         (Uint15)
    --    DTC_Entity                          (Node16)
    --    First_Entity                        (Node17)
@@ -6039,10 +6042,10 @@ package Einfo is
    --    Discard_Names                       (Flag88)
    --    Has_Anonymous_Master                (Flag253)
    --    Has_Completion                      (Flag26)
+   --    Has_Expanded_Contract               (Flag240)  (non-generic case only)
    --    Has_Invariants                      (Flag232)
    --    Has_Master_Entity                   (Flag21)
    --    Has_Nested_Block_With_Handler       (Flag101)
-   --    Has_Postconditions                  (Flag240)
    --    Is_Abstract_Subprogram              (Flag19)   (non-generic case only)
    --    Is_Asynchronous                     (Flag81)
    --    Is_Called                           (Flag102)  (non-generic case only)
@@ -6656,6 +6659,7 @@ package Einfo is
    function Has_Dynamic_Predicate_Aspect        (Id : E) return B;
    function Has_Enumeration_Rep_Clause          (Id : E) return B;
    function Has_Exit                            (Id : E) return B;
+   function Has_Expanded_Contract               (Id : E) return B;
    function Has_Forward_Instantiation           (Id : E) return B;
    function Has_Fully_Qualified_Name            (Id : E) return B;
    function Has_Gigi_Rep_Item                   (Id : E) return B;
@@ -6676,7 +6680,6 @@ package Einfo is
    function Has_Object_Size_Clause              (Id : E) return B;
    function Has_Out_Or_In_Out_Parameter         (Id : E) return B;
    function Has_Per_Object_Constraint           (Id : E) return B;
-   function Has_Postconditions                  (Id : E) return B;
    function Has_Pragma_Controlled               (Id : E) return B;
    function Has_Pragma_Elaborate_Body           (Id : E) return B;
    function Has_Pragma_Inline                   (Id : E) return B;
@@ -6885,7 +6888,7 @@ package Einfo is
    function Part_Of_Constituents                (Id : E) return L;
    function Partial_View_Has_Unknown_Discr      (Id : E) return B;
    function Pending_Access_Types                (Id : E) return L;
-   function Postcondition_Proc                  (Id : E) return E;
+   function Postconditions_Proc                 (Id : E) return E;
    function Prival                              (Id : E) return E;
    function Prival_Link                         (Id : E) return E;
    function Private_Dependents                  (Id : E) return L;
@@ -7299,6 +7302,7 @@ package Einfo is
    procedure Set_Has_Dynamic_Predicate_Aspect    (Id : E; V : B := True);
    procedure Set_Has_Enumeration_Rep_Clause      (Id : E; V : B := True);
    procedure Set_Has_Exit                        (Id : E; V : B := True);
+   procedure Set_Has_Expanded_Contract           (Id : E; V : B := True);
    procedure Set_Has_Forward_Instantiation       (Id : E; V : B := True);
    procedure Set_Has_Fully_Qualified_Name        (Id : E; V : B := True);
    procedure Set_Has_Gigi_Rep_Item               (Id : E; V : B := True);
@@ -7318,7 +7322,6 @@ package Einfo is
    procedure Set_Has_Object_Size_Clause          (Id : E; V : B := True);
    procedure Set_Has_Out_Or_In_Out_Parameter     (Id : E; V : B := True);
    procedure Set_Has_Per_Object_Constraint       (Id : E; V : B := True);
-   procedure Set_Has_Postconditions              (Id : E; V : B := True);
    procedure Set_Has_Pragma_Controlled           (Id : E; V : B := True);
    procedure Set_Has_Pragma_Elaborate_Body       (Id : E; V : B := True);
    procedure Set_Has_Pragma_Inline               (Id : E; V : B := True);
@@ -7533,7 +7536,7 @@ package Einfo is
    procedure Set_Part_Of_Constituents            (Id : E; V : L);
    procedure Set_Partial_View_Has_Unknown_Discr  (Id : E; V : B := True);
    procedure Set_Pending_Access_Types            (Id : E; V : L);
-   procedure Set_Postcondition_Proc              (Id : E; V : E);
+   procedure Set_Postconditions_Proc             (Id : E; V : E);
    procedure Set_Prival                          (Id : E; V : E);
    procedure Set_Prival_Link                     (Id : E; V : E);
    procedure Set_Private_Dependents              (Id : E; V : L);
@@ -8057,6 +8060,7 @@ package Einfo is
    pragma Inline (Has_Dynamic_Predicate_Aspect);
    pragma Inline (Has_Enumeration_Rep_Clause);
    pragma Inline (Has_Exit);
+   pragma Inline (Has_Expanded_Contract);
    pragma Inline (Has_Forward_Instantiation);
    pragma Inline (Has_Fully_Qualified_Name);
    pragma Inline (Has_Gigi_Rep_Item);
@@ -8076,7 +8080,6 @@ package Einfo is
    pragma Inline (Has_Object_Size_Clause);
    pragma Inline (Has_Out_Or_In_Out_Parameter);
    pragma Inline (Has_Per_Object_Constraint);
-   pragma Inline (Has_Postconditions);
    pragma Inline (Has_Pragma_Controlled);
    pragma Inline (Has_Pragma_Elaborate_Body);
    pragma Inline (Has_Pragma_Inline);
@@ -8333,7 +8336,7 @@ package Einfo is
    pragma Inline (Part_Of_Constituents);
    pragma Inline (Partial_View_Has_Unknown_Discr);
    pragma Inline (Pending_Access_Types);
-   pragma Inline (Postcondition_Proc);
+   pragma Inline (Postconditions_Proc);
    pragma Inline (Prival);
    pragma Inline (Prival_Link);
    pragma Inline (Private_Dependents);
@@ -8547,6 +8550,7 @@ package Einfo is
    pragma Inline (Set_Has_Dynamic_Predicate_Aspect);
    pragma Inline (Set_Has_Enumeration_Rep_Clause);
    pragma Inline (Set_Has_Exit);
+   pragma Inline (Set_Has_Expanded_Contract);
    pragma Inline (Set_Has_Forward_Instantiation);
    pragma Inline (Set_Has_Fully_Qualified_Name);
    pragma Inline (Set_Has_Gigi_Rep_Item);
@@ -8566,7 +8570,6 @@ package Einfo is
    pragma Inline (Set_Has_Object_Size_Clause);
    pragma Inline (Set_Has_Out_Or_In_Out_Parameter);
    pragma Inline (Set_Has_Per_Object_Constraint);
-   pragma Inline (Set_Has_Postconditions);
    pragma Inline (Set_Has_Pragma_Controlled);
    pragma Inline (Set_Has_Pragma_Elaborate_Body);
    pragma Inline (Set_Has_Pragma_Inline);
@@ -8780,7 +8783,7 @@ package Einfo is
    pragma Inline (Set_Part_Of_Constituents);
    pragma Inline (Set_Partial_View_Has_Unknown_Discr);
    pragma Inline (Set_Pending_Access_Types);
-   pragma Inline (Set_Postcondition_Proc);
+   pragma Inline (Set_Postconditions_Proc);
    pragma Inline (Set_Prival);
    pragma Inline (Set_Prival_Link);
    pragma Inline (Set_Private_Dependents);

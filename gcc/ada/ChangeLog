@@ -1,3 +1,215 @@
+2015-03-02  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, case Input): When
+	expanding a 'Input attribute reference for a class-wide type,
+	do not generate a separate object declaration for the controlling
+	tag dummy object; instead, generate the expression inline in the
+	dispatching call. Otherwise, the declaration (which involves a
+	call to String'Input, returning a dynamically sized value on the
+	secondary stack) will be expanded outside of proper secondary
+	stack mark/release operations, and will thus cause a secondary
+	stack leak.
+
+2015-03-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Add_Validity_Check): Change the names of all
+	formal parameters to better illustrate their purpose. Update
+	the subprogram documentation. Update all occurrences of the
+	formal parameters. Generate a pre/postcondition pragma by
+	calling Build_Pre_Post_Condition.
+	(Build_PPC_Pragma): Removed.
+	(Build_Pre_Post_Condition): New routine.
+	* einfo.adb Node8 is no longer used as Postcondition_Proc. Node14
+	is now used as Postconditions_Proc. Flag240 is now renamed to
+	Has_Expanded_Contract.	(First_Formal): The routine can now
+	operate on generic subprograms.
+	(First_Formal_With_Extras): The routine can now operate on generic
+	subprograms.
+	(Has_Expanded_Contract): New routine.
+	(Has_Postconditions): Removed.
+	(Postcondition_Proc): Removed.
+	(Postconditions_Proc): New routine.
+	(Set_Has_Expanded_Contract): New routine.
+	(Set_Has_Postconditions): Removed.
+	(Set_Postcondition_Proc): Removed.
+	(Set_Postconditions_Proc): New routine.
+	(Write_Entity_Flags): Remove the output of Has_Postconditions. Add
+	the output of Has_Expanded_Contract.
+	(Write_Field8_Name): Remove the output of Postcondition_Proc.
+	(Write_Field14_Name): Add the output of Postconditions_Proc.
+	* einfo.ads New attributes Has_Expanded_Contract and
+	Postconditions_Proc along with occurrences in entities.
+	Remove attributes Has_Postconditions and Postcondition_Proc
+	along with occurrences in entities.
+	(Has_Expanded_Contract): New routine along with pragma Inline.
+	(Has_Postconditions): Removed along with pragma Inline.
+	(Postcondition_Proc): Removed along with pragma Inline.
+	(Postconditions_Proc): New routine along with pragma Inline.
+	(Set_Has_Expanded_Contract): New routine along with pragma Inline.
+	(Set_Has_Postconditions): Removed along with pragma Inline.
+	(Set_Postcondition_Proc): Removed along with pragma Inline.
+	(Set_Postconditions_Proc): New routine along with pragma Inline.
+	* exp_ch6.adb (Add_Return): Code cleanup. Update the
+	generation of the call to the _Postconditions routine of
+	the procedure.	(Expand_Non_Function_Return): Reformat the
+	comment on usage. Code cleanup.  Update the generation of
+	the call to the _Postconditions routine of the procedure or
+	entry [family].
+	(Expand_Simple_Function_Return): Update the
+	generation of the _Postconditions routine of the function.
+	(Expand_Subprogram_Contract): Reimplemented.
+	* exp_ch6.ads (Expand_Subprogram_Contract): Update the parameter
+	profile along the comment on usage.
+	* exp_ch9.adb (Build_PPC_Wrapper): Code cleanup.
+	(Expand_N_Task_Type_Declaration): Generate pre/postconditions
+	wrapper when the entry [family] has a contract with
+	pre/postconditions.
+	* exp_prag.adb (Expand_Attributes_In_Consequence): New routine.
+	(Expand_Contract_Cases): This routine and its subsidiaries now
+	analyze all generated code.
+	(Expand_Old_In_Consequence): Removed.
+	* sem_attr.adb Add with and use clause for Sem_Prag.
+	(Analyze_Attribute): Reimplment the analysis of attribute 'Result.
+	(Check_Use_In_Test_Case): Use routine Test_Case_Arg to obtain
+	"Ensures".
+	* sem_ch3.adb (Analyze_Declarations): Analyze the contract of
+	a generic subprogram.
+	(Analyze_Object_Declaration): Do not create a contract node.
+	(Derive_Subprogram): Do not create a contract node.
+	* sem_ch6.adb (Analyze_Abstract_Subprogram_Declaration): Do
+	not create a contract node.
+	(Analyze_Completion_Contract): New routine.
+	(Analyze_Function_Return): Alphabetize.
+	(Analyze_Generic_Subprogram_Body): Alphabetize. Do not create a
+	contract node.	Do not copy pre/postconditions to the original
+	generic template.
+	(Analyze_Null_Procedure): Do not create a contract node.
+	(Analyze_Subprogram_Body_Contract): Reimplemented.
+	(Analyze_Subprogram_Body_Helper): Do not mark the enclosing scope
+	as having postconditions. Do not create a contract node. Analyze
+	the subprogram body contract of a body that acts as a compilation
+	unit. Expand the subprogram contract after the declarations have
+	been analyzed.
+	(Analyze_Subprogram_Contract): Reimplemented.
+	(Analyze_Subprogram_Specification): Do not create a contract node.
+	(List_Inherited_Pre_Post_Aspects): Code cleanup.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Contract): Update the
+	comment on usage.
+	(Analyze_Subprogram_Contract): Update the
+	parameter profile and the comment on usage.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Do not create a
+	contract node.
+	(Analyze_Package_Declaration): Do not create a
+	contract node.
+	(Is_Subp_Or_Const_Ref): Ensure that the prefix has an entity.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Do not create a
+	contract node.
+	* sem_ch9.adb (Analyze_Entry_Declaration): Do not create a
+	contract node.
+	* sem_ch10.adb (Analyze_Compilation_Unit): Move local variables to
+	their proper section and alphabetize them. Analyze the contract of
+	a [generic] subprogram after all Pragmas_After have been analyzed.
+	(Analyze_Subprogram_Body_Stub_Contract): Alphabetize.
+	* sem_ch12.adb (Analyze_Generic_Package_Declaration): Do not
+	create a contract node.
+	(Analyze_Generic_Subprogram_Declaration):
+	Alphabetize local variables. Do not create a contract
+	node. Do not generate aspects out of pragmas for ASIS.
+	(Analyze_Subprogram_Instantiation): Instantiate
+	the contract of the subprogram.  Do not create a
+	contract node.	(Instantiate_Contract): New routine.
+	(Instantiate_Subprogram_Body): Alphabetize local variables.
+	(Save_Global_References_In_Aspects): New routine.
+	(Save_References): Do not save the global references found within
+	the aspects of a generic subprogram.
+	* sem_ch12.ads (Save_Global_References_In_Aspects): New routine.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Do not use
+	Original_Node for establishing linkages.
+	(Insert_Pragma): Insertion in a subprogram body takes precedence over
+	the case where the subprogram body is also a compilation unit.
+	* sem_prag.adb (Analyze_Contract_Cases_In_Decl_Part): Use
+	Get_Argument to obtain the proper expression. Install the generic
+	formals when the related context is a generic subprogram.
+	(Analyze_Depends_In_Decl_Part): Use Get_Argument to obtain
+	the proper expression. Use Corresponding_Spec_Of to obtain
+	the spec. Install the generic formal when the related context
+	is a generic subprogram.
+	(Analyze_Global_In_Decl_Part): Use Get_Argument to obtain the proper
+	expression. Use Corresponding_Spec_Of to obtain the spec. Install the
+	generic formal when the related context is a generic subprogram.
+	(Analyze_Initial_Condition_In_Decl_Part): Use Get_Argument
+	to obtain the proper expression. Remove the call to
+	Check_SPARK_Aspect_For_ASIS as the analysis is now done
+	automatically.
+	(Analyze_Pragma): Update all occurrences
+	to Original_Aspect_Name. Pragmas Contract_Cases, Depends,
+	Extensions_Visible, Global, Postcondition, Precondition and
+	Test_Case now carry generic templates when the related context
+	is a generic subprogram. The same pragmas are no longer
+	forcefully fully analyzed when the context is a subprogram
+	that acts as a compilation unit. Pragmas Abstract_State,
+	Initial_Condition, Initializes and Refined_State have been clean
+	up. Pragmas Post, Post_Class, Postcondition, Pre, Pre_Class
+	and Precondition now use the same routine for analysis. Pragma
+	Refined_Post does not need to check the use of 'Result or
+	the lack of a post-state in its expression. Reimplement the
+	analysis of pragma Test_Case.
+	(Analyze_Pre_Post_Condition): New routine.
+	(Analyze_Pre_Post_Condition_In_Decl_Part):
+	Reimplemented.
+	(Analyze_Refined_Depends_In_Decl_Part): Use Get_Argument to obtain the
+	proper expression.
+	(Analyze_Refined_Global_In_Decl_Part): Use Get_Argument to obtain
+	the proper expression.
+	(Analyze_Test_Case_In_Decl_Part): Reimplemented.
+	(Check_Pre_Post): Removed.
+	(Check_Precondition_Postcondition): Removed.
+	(Check_SPARK_Aspect_For_ASIS): Removed.
+	(Check_Test_Case): Removed.
+	(Collect_Subprogram_Inputs_Outputs): Use Get_Argument
+	to obtain the proper expression. Use Corresponding_Spec_Of to
+	find the proper spec.
+	(Create_Generic_Template): New routine.
+	(Duplication_Error): New routine.
+	(Expression_Function_Error): New routine.
+	(Find_Related_Subprogram_Or_Body): Moved to the spec
+	of Sem_Prag. Emit precise error messages. Account for cases of
+	rewritten expression functions, generic instantiations, handled
+	sequence of statements and pragmas from aspects.
+	(Get_Argument): New routine.
+	(Make_Aspect_For_PPC_In_Gen_Sub_Decl): Removed.
+	(Preanalyze_CTC_Args): Removed.
+	(Process_Class_Wide_Condition): New routine.
+	* sem_prag.ads (Analyze_Test_Case_In_Decl_Part): Update
+	the parameter profile along with the comment on usage.
+	(Find_Related_Subprogram_Or_Body): Moved from the body of Sem_Prag.
+	(Make_Aspect_For_PPC_In_Gen_Sub_Decl): Removed.
+	(Test_Case_Arg): New routine.
+	* sem_util.adb Add with and use clauses for Sem_Ch6.
+	(Add_Contract_Item): This routine now creates a contract
+	node the first time an item is added. Remove the duplicate
+	aspect/pragma checks.
+	(Check_Result_And_Post_State): Reimplemented.
+	(Corresponding_Spec_Of): New routine.
+	(Get_Ensures_From_CTC_Pragma): Removed.
+	(Get_Requires_From_CTC_Pragma): Removed.
+	(Has_Significant_Contract): New routine.
+	(Inherit_Subprogram_Contract): Inherit only if the source
+	has a contract.
+	(Install_Generic_Formals): New routine.
+	(Original_Aspect_Name): Removed.
+	(Original_Aspect_Pragma_Name): New routine.
+	* sem_util.ads (Check_Result_And_Post_State): Reimplemented.
+	(Corresponding_Spec_Of): New routine.
+	(Get_Ensures_From_CTC_Pragma): Removed.
+	(Get_Requires_From_CTC_Pragma): Removed.
+	(Has_Significant_Contract): New routine.
+	(Install_Generic_Formals): New routine.
+	(Original_Aspect_Name): Removed.
+	(Original_Aspect_Pragma_Name): New routine.
+	* sem_warn.adb Add with and use clauses for Sem_Prag.
+	(Within_Postcondition): Use Test_Case_Arg to extract "Ensures".
+
 2015-03-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch8.adb (Available_Subtype): Optimization in

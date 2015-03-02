@@ -103,14 +103,9 @@ package Sem_Prag is
    procedure Analyze_Initializes_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Initializes
 
-   procedure Analyze_Pre_Post_Condition_In_Decl_Part
-     (Prag    : Node_Id;
-      Subp_Id : Entity_Id);
-   --  Perform preanalysis of a [refined] precondition or postcondition that
-   --  appears on a subprogram declaration or body [stub]. Prag denotes the
-   --  pragma, Subp_Id is the entity of the related subprogram. The preanalysis
-   --  of the expression is done as "spec expression" (see section "Handling
-   --  of Default and Per-Object Expressions in Sem).
+   procedure Analyze_Pre_Post_Condition_In_Decl_Part (N : Node_Id);
+   --  Perform preanalysis of [refined] precondition or postcondition pragma
+   --  N that appears on a subprogram declaration or body [stub].
 
    procedure Analyze_Refined_Depends_In_Decl_Part (N : Node_Id);
    --  Preform full analysis of delayed pragma Refined_Depends. This routine
@@ -125,12 +120,8 @@ package Sem_Prag is
    procedure Analyze_Refined_State_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Refined_State
 
-   procedure Analyze_Test_Case_In_Decl_Part (N : Node_Id; S : Entity_Id);
-   --  Perform preanalysis of pragma Test_Case that applies to a subprogram
-   --  declaration. Parameter N denotes the pragma, S is the entity of the
-   --  related subprogram. The preanalysis of the expression is done as "spec
-   --  expression" (see section "Handling of Default and Per-Object Expressions
-   --  in Sem).
+   procedure Analyze_Test_Case_In_Decl_Part (N : Node_Id);
+   --  Perform preanalysis of pragma Test_Case
 
    procedure Check_Applicable_Policy (N : Node_Id);
    --  N is either an N_Aspect or an N_Pragma node. There are two cases. If
@@ -199,6 +190,23 @@ package Sem_Prag is
    --  True have their analysis delayed until after the main program is parsed
    --  and analyzed.
 
+   function Find_Related_Subprogram_Or_Body
+     (Prag      : Node_Id;
+      Do_Checks : Boolean := False) return Node_Id;
+   --  Subsidiary to the analysis of pragmas Contract_Cases, Depends, Global,
+   --  Refined_Depends, Refined_Global and Refined_Post and attribute 'Result.
+   --  Find the declaration of the related subprogram [body or stub] subject
+   --  to pragma Prag. If flag Do_Checks is set, the routine reports duplicate
+   --  pragmas and detects improper use of refinement pragmas in stand alone
+   --  expression functions. The returned value depends on the related pragma
+   --  as follows:
+   --    1) Pragmas Contract_Cases, Depends and Global yield the corresponding
+   --       N_Subprogram_Declaration node or if the pragma applies to a stand
+   --       alone body, the N_Subprogram_Body node or Empty if illegal.
+   --    2) Pragmas Refined_Depends, Refined_Global and Refined_Post yield
+   --       N_Subprogram_Body or N_Subprogram_Body_Stub nodes or Empty if
+   --       illegal.
+
    function Get_SPARK_Mode_From_Pragma (N : Node_Id) return SPARK_Mode_Type;
    --  Given a pragma SPARK_Mode node, return corresponding mode id
 
@@ -247,12 +255,6 @@ package Sem_Prag is
    --  Name_uInvariant, and Name_uType_Invariant (_Pre, _Post, _Invariant,
    --  and _Type_Invariant).
 
-   procedure Make_Aspect_For_PPC_In_Gen_Sub_Decl (Decl : Node_Id);
-   --  This routine makes aspects from precondition or postcondition pragmas
-   --  that appear within a generic subprogram declaration. Decl is the generic
-   --  subprogram declaration node. Note that the aspects are attached to the
-   --  generic copy and also to the orginal tree.
-
    procedure Process_Compilation_Unit_Pragmas (N : Node_Id);
    --  Called at the start of processing compilation unit N to deal with any
    --  special issues regarding pragmas. In particular, we have to deal with
@@ -275,5 +277,24 @@ package Sem_Prag is
    --  S contains a name that is a valid C identifier, then S is simply set as
    --  the value of the Interface_Name. Otherwise it is encoded as needed by
    --  particular operating systems. See the body for details of the encoding.
+
+   function Test_Case_Arg
+     (Prag        : Node_Id;
+      Arg_Nam     : Name_Id;
+      From_Aspect : Boolean := False) return Node_Id;
+   --  Obtain argument "Name", "Mode", "Ensures" or "Requires" from Test_Case
+   --  pragma Prag as denoted by Arg_Nam. When From_Aspect is set, an attempt
+   --  is made to retrieve the argument from the corresponding aspect if there
+   --  is one. The returned argument has several formats:
+   --
+   --    N_Pragma_Argument_Association if retrieved directly from the pragma
+   --
+   --    N_Component_Association if retrieved from the corresponding aspect and
+   --    the argument appears in a named association form.
+   --
+   --    An arbitrary expression if retrieved from the corresponding aspect and
+   --    the argument appears in positional form.
+   --
+   --    Empty if there is no such argument
 
 end Sem_Prag;

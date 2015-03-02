@@ -1919,68 +1919,59 @@ package body Exp_Ch9 is
    -----------------------
 
    procedure Build_PPC_Wrapper (E : Entity_Id; Decl : Node_Id) is
+      Items      : constant Node_Id    := Contract (E);
       Loc        : constant Source_Ptr := Sloc (E);
-      Synch_Type : constant Entity_Id := Scope (E);
-
-      Wrapper_Id : constant Entity_Id :=
-                     Make_Defining_Identifier (Loc,
-                       Chars => New_External_Name (Chars (E), 'E'));
-      --  the wrapper procedure name
-
-      Wrapper_Body : Node_Id;
-
-      Synch_Id : constant Entity_Id :=
-                   Make_Defining_Identifier (Loc,
-                     Chars => New_External_Name (Chars (Scope (E)), 'A'));
-      --  The parameter that designates the synchronized object in the call
-
-      Actuals : constant List_Id := New_List;
-      --  The actuals in the entry call
-
-      Decls : constant List_Id := New_List;
-
+      Synch_Type : constant Entity_Id  := Scope (E);
+      Actuals    : List_Id;
+      Decls      : List_Id;
       Entry_Call : Node_Id;
       Entry_Name : Node_Id;
-
-      Specs : List_Id;
-      --  The specification of the wrapper procedure
+      Params     : List_Id;
+      Prag       : Node_Id;
+      Synch_Id   : Entity_Id;
+      Wrapper_Id : Entity_Id;
 
    begin
-
-      --  Only build the wrapper if entry has pre/postconditions.
+      --  Only build the wrapper if entry has pre/postconditions
       --  Should this be done unconditionally instead ???
 
-      declare
-         P : Node_Id;
+      if Present (Items) then
+         Prag := Pre_Post_Conditions (Items);
 
-      begin
-         P := Pre_Post_Conditions (Contract (E));
-
-         if No (P) then
+         if No (Prag) then
             return;
          end if;
 
          --  Transfer ppc pragmas to the declarations of the wrapper
 
-         while Present (P) loop
-            if Nam_In (Pragma_Name (P), Name_Precondition,
-                                        Name_Postcondition)
+         Decls := New_List;
+
+         while Present (Prag) loop
+            if Nam_In (Pragma_Name (Prag), Name_Precondition,
+                                           Name_Postcondition)
             then
-               Append (Relocate_Node (P), Decls);
+               Append (Relocate_Node (Prag), Decls);
                Set_Analyzed (Last (Decls), False);
             end if;
 
-            P := Next_Pragma (P);
+            Prag := Next_Pragma (Prag);
          end loop;
-      end;
+      else
+         return;
+      end if;
+
+      Actuals  := New_List;
+      Synch_Id :=
+        Make_Defining_Identifier (Loc,
+          Chars => New_External_Name (Chars (Scope (E)), 'A'));
 
       --  First formal is synchronized object
 
-      Specs := New_List (
+      Params := New_List (
         Make_Parameter_Specification (Loc,
           Defining_Identifier => Synch_Id,
-          Out_Present         =>  True,
-          In_Present          =>  True,
+          Out_Present         => True,
+          In_Present          => True,
           Parameter_Type      => New_Occurrence_Of (Scope (E), Loc)));
 
       Entry_Name :=
@@ -1996,7 +1987,7 @@ package body Exp_Ch9 is
             Index : constant Entity_Id :=
                       Make_Defining_Identifier (Loc, Name_I);
          begin
-            Append_To (Specs,
+            Append_To (Params,
               Make_Parameter_Specification (Loc,
                 Defining_Identifier => Index,
                 Parameter_Type      =>
@@ -2033,7 +2024,7 @@ package body Exp_Ch9 is
                 In_Present          => In_Present  (Parent (Form)),
                 Parameter_Type      => New_Occurrence_Of (Etype (Form), Loc));
 
-            Append (Parm_Spec, Specs);
+            Append (Parm_Spec, Params);
             Append (New_Occurrence_Of (New_Form, Loc), Actuals);
             Next_Formal (Form);
          end loop;
@@ -2065,21 +2056,22 @@ package body Exp_Ch9 is
          end;
       end if;
 
+      Wrapper_Id :=
+        Make_Defining_Identifier (Loc, New_External_Name (Chars (E), 'E'));
       Set_PPC_Wrapper (E, Wrapper_Id);
-      Wrapper_Body :=
+
+      --  The wrapper body is analyzed when the enclosing type is frozen
+
+      Append_Freeze_Action (Defining_Entity (Decl),
         Make_Subprogram_Body (Loc,
           Specification              =>
             Make_Procedure_Specification (Loc,
               Defining_Unit_Name       => Wrapper_Id,
-              Parameter_Specifications => Specs),
+              Parameter_Specifications => Params),
           Declarations               => Decls,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => New_List (Entry_Call)));
-
-      --  The wrapper body is analyzed when the enclosing type is frozen
-
-      Append_Freeze_Action (Defining_Entity (Decl), Wrapper_Body);
+              Statements => New_List (Entry_Call))));
    end Build_PPC_Wrapper;
 
    --------------------------
@@ -12087,6 +12079,7 @@ package body Exp_Ch9 is
          Ent := First_Entity (Tasktyp);
          while Present (Ent) loop
             if Ekind_In (Ent, E_Entry, E_Entry_Family)
+              and then Present (Contract (Ent))
               and then Present (Pre_Post_Conditions (Contract (Ent)))
             then
                Build_PPC_Wrapper (Ent, N);
