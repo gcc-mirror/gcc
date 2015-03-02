@@ -1,3 +1,8 @@
+2015-03-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/65233
+	* ipa-polymorphic-call.c (walk_ssa_copies): Handle empty PHIs.
+
 2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-icf.c: Include stor-layout.h

@@ -835,7 +835,10 @@ walk_ssa_copies (tree op, hash_set<tree> **global_visited = NULL)
 	{
 	  gimple phi = SSA_NAME_DEF_STMT (op);
 
-	  if (gimple_phi_num_args (phi) > 2)
+	  if (gimple_phi_num_args (phi) > 2
+	      /* We can be called while cleaning up the CFG and can
+		 have empty PHIs about to be removed.  */
+	      || gimple_phi_num_args (phi) == 0)
 	    goto done;
 	  if (gimple_phi_num_args (phi) == 1)
 	    op = gimple_phi_arg_def (phi, 0);
