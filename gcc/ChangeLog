@@ -1,3 +1,10 @@
+2015-03-02  Jan Hubicka  <hubicka@ucw.cz>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	PR lto/65276
+	* ipa-devirt.c (add_type_duplicate): Remove odr_violated assert
+	when checking TYPE_BINFO.
+
 2015-03-02  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/65270
