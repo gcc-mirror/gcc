@@ -2882,7 +2882,7 @@ package Einfo is
 --    Is_Public (Flag10)
 --       Defined in all entities. Set to indicate that an entity defined in
 --       one compilation unit can be referenced from other compilation units.
---       If this reference causes a reference in the generated variable, for
+--       If this reference causes a reference in the generated code, for
 --       example in the case of a variable name, then the backend will generate
 --       an appropriate external name for use by the linker.
 
@@ -3875,8 +3875,8 @@ package Einfo is
 --       Defined in all entities. Points to the entity for the scope (block,
 --       loop, subprogram, package etc.) in which the entity is declared.
 --       Since this field is in the base part of the entity node, the access
---       routines for this field are in Sinfo. Note that for a child package,
---       the Scope will be the parent package, and for a non-child package,
+--       routines for this field are in Sinfo. Note that for a child unit,
+--       the Scope will be the parent package, and for a root library unit,
 --       the Scope will be Standard.
 
 --    Scope_Depth (synthesized)
