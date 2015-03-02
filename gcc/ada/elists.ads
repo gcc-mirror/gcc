@@ -108,7 +108,7 @@ package Elists is
    --  no items, then No_Elmt is returned.
 
    function List_Length (List : Elist_Id) return Nat;
-   --  Returns number of elements in given List
+   --  Returns number of elements in given List (zero if List = No_Elist)
 
    function Next_Elmt (Elmt : Elmt_Id) return Elmt_Id;
    pragma Inline (Next_Elmt);

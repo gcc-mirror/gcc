@@ -1,5 +1,18 @@
 2015-03-02  Robert Dewar  <dewar@adacore.com>
 
+	* back_end.adb (Call_Back_End): Remove previous patch,
+	the back end now gets to see the result of -gnatd.1
+	(Unnest_Subprogram_Mode) processing.
+	* elists.ads, elists.adb (List_Length): New function.
+	* exp_unst.ads, exp_unst.adb: Major changes, first complete version.
+	* sem_util.adb (Check_Nested_Access): Handle formals in
+	Unnest_Subprogram_Mode.
+	(Adjust_Named_Associations): Minor reformatting.
+	* sprint.adb (Sprint_Node_Actual): Fix failure to print aliased
+	for parameters.
+
+2015-03-02  Robert Dewar  <dewar@adacore.com>
+
 	* atree.ads, atree.adb (Uint24): New function
 	(Set_Uint24): New procedure.
 	* atree.h (Uint24): New macro for field access.
