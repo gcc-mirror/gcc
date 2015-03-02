@@ -1122,7 +1122,7 @@ package body Sem_Disp is
 
                      if Present (DTC_Entity (Old_Subp)) then
                         Set_DTC_Entity (Subp, DTC_Entity (Old_Subp));
-                        Set_DT_Position (Subp, DT_Position (Old_Subp));
+                        Set_DT_Position_Value (Subp, DT_Position (Old_Subp));
 
                         if not Restriction_Active (No_Dispatching_Calls) then
                            if Building_Static_DT (Tagged_Type) then
@@ -1419,7 +1419,7 @@ package body Sem_Disp is
       end if;
 
       if not Body_Is_Last_Primitive then
-         Set_DT_Position (Subp, No_Uint);
+         Set_DT_Position_Value (Subp, No_Uint);
 
       elsif Has_Controlled_Component (Tagged_Type)
         and then Nam_In (Chars (Subp), Name_Initialize,
@@ -1678,7 +1678,7 @@ package body Sem_Disp is
 
                Check_Controlling_Formals (Tagged_Type, Old_Subp);
                Set_Is_Dispatching_Operation (Old_Subp, True);
-               Set_DT_Position (Old_Subp, No_Uint);
+               Set_DT_Position_Value (Old_Subp, No_Uint);
             end if;
 
             --  If the old subprogram is an explicit renaming of some other
