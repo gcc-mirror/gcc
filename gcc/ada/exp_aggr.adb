@@ -1542,12 +1542,12 @@ package body Exp_Aggr is
             if Is_Scalar_Type (Ctype) then
                if Present (Default_Aspect_Component_Value (Typ)) then
                   return Default_Aspect_Component_Value (Typ);
-
                elsif Present (Default_Aspect_Value (Ctype)) then
                   return Default_Aspect_Value (Ctype);
                else
                   return Empty;
                end if;
+
             else
                return Empty;
             end if;

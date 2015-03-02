@@ -1,3 +1,37 @@
+2015-03-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, exp_attr.adb, checks.adb, exp_aggr.adb: Minor
+	reformatting.
+
+2015-03-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb: extend use of Available_Subtype.
+
+2015-03-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Duplication_Error): Remove the special handling
+	of 'Class or _Class in the context of pre/postconditions.
+	(Process_Class_Wide_Condition): Remove the special handling of
+	'Class or _Class in the context of pre/postconditions.
+	* sem_util.adb (Original_Aspect_Pragma_Name): Names Pre_Class
+	and Post_Class no longer need to be converted to _Pre and _Post.
+	* sem_util.ads (Original_Aspect_Pragma_Name): Update the comment
+	on usage.
+
+2015-03-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Process_Preconditions): Modify the
+	mechanism that find the first source declaration to correct exit
+	the loop once it has been found.
+
+2015-03-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* a-strsea.adb: Minor typo fix.
+
+2015-03-02  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads: Minor comment fixes.
+
 2015-03-02  Gary Dismukes  <dismukes@adacore.com>
 
 	* einfo.adb, checks.adb: Minor reformatting and typo fixes.

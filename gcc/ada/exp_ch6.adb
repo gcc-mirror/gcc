@@ -7718,9 +7718,10 @@ package body Exp_Ch6 is
             Decl := First (Decls);
 
             while Present (Decl) loop
-               if not Comes_From_Source (Decl) then
-                  Insert_Node := Decl;
+               if Comes_From_Source (Decl) then
                   exit;
+               else
+                  Insert_Node := Decl;
                end if;
 
                Next (Decl);

@@ -6593,8 +6593,7 @@ package body Sem_Ch8 is
                  and then (not Is_Entity_Name (P)
                             or else Chars (Entity (P)) /= Name_uInit)
                then
-                  if Is_Entity_Name (P)
-                    and then Ekind (Etype (P)) = E_Record_Subtype
+                  if Ekind (Etype (P)) = E_Record_Subtype
                     and then Nkind (Parent (Etype (P))) = N_Subtype_Declaration
                     and then Is_Array_Type (Etype (Selector))
                     and then not Is_Packed (Etype (Selector))

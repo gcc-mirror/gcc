@@ -1683,9 +1683,7 @@ package Sem_Util is
    --  returns the following values:
    --
    --    Invariant            -> Name_uInvariant
-   --    Post                 -> Name_uPost
    --    Post'Class           -> Name_uPost
-   --    Pre                  -> Name_uPre
    --    Pre'Class            -> Name_uPre
    --    Type_Invariant       -> Name_uType_Invariant
    --    Type_Invariant'Class -> Name_uType_Invariant

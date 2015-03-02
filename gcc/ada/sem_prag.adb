@@ -21445,10 +21445,6 @@ package body Sem_Prag is
 
          procedure Replace_Types is new Traverse_Proc (Replace_Type);
 
-         --  Local variables
-
-         Prag_Nam : constant Name_Id := Original_Aspect_Pragma_Name (N);
-
       --  Start of processing for Process_Class_Wide_Condition
 
       begin
@@ -21456,8 +21452,9 @@ package body Sem_Prag is
          --  dispatching type, therefore the aspect/pragma is illegal.
 
          if No (Disp_Typ) then
+            Error_Msg_Name_1 := Original_Aspect_Pragma_Name (N);
+
             if From_Aspect_Specification (N) then
-               Error_Msg_Name_1 := Prag_Nam;
                Error_Msg_N
                  ("aspect % can only be specified for a primitive operation "
                   & "of a tagged type", Corresponding_Aspect (N));
@@ -21465,12 +21462,6 @@ package body Sem_Prag is
             --  The pragma is a source construct
 
             else
-               if Prag_Nam = Name_Precondition then
-                  Error_Msg_Name_1 := Name_Pre_Class;
-               else
-                  Error_Msg_Name_1 := Name_Post_Class;
-               end if;
-
                Error_Msg_N
                  ("pragma % can only be specified for a primitive operation "
                   & "of a tagged type", N);
@@ -24973,11 +24964,11 @@ package body Sem_Prag is
 
    procedure Duplication_Error (Prag : Node_Id; Prev : Node_Id) is
       Prag_From_Asp : constant Boolean := From_Aspect_Specification (Prag);
-      Prag_Nam      : constant Name_Id := Original_Aspect_Pragma_Name (Prag);
       Prev_From_Asp : constant Boolean := From_Aspect_Specification (Prev);
 
    begin
-      Error_Msg_Sloc := Sloc (Prev);
+      Error_Msg_Sloc   := Sloc (Prev);
+      Error_Msg_Name_1 := Original_Aspect_Pragma_Name (Prag);
 
       --  Emit a precise message to distinguish between source pragmas and
       --  pragmas generated from aspects. The ordering of the two pragmas is
@@ -24989,42 +24980,14 @@ package body Sem_Prag is
       --  No error is emitted when both pragmas come from aspects because this
       --  is already detected by the general aspect analysis mechanism.
 
-      if Prag_Nam = Name_uPre then
-         Error_Msg_Name_1 := Name_Pre;
-      elsif Prag_Nam = Name_uPost then
-         Error_Msg_Name_1 := Name_Post;
+      if Prag_From_Asp and Prev_From_Asp then
+         null;
+      elsif Prag_From_Asp then
+         Error_Msg_N ("aspect % duplicates pragma declared #", Prag);
+      elsif Prev_From_Asp then
+         Error_Msg_N ("pragma % duplicates aspect declared #", Prag);
       else
-         Error_Msg_Name_1 := Prag_Nam;
-      end if;
-
-      --  The item appears as aspect XXX'Class or pragma XXX_Class
-
-      if Class_Present (Prag) then
-         if Prag_From_Asp and Prev_From_Asp then
-            null;
-         elsif Prag_From_Asp then
-            Error_Msg_N
-              ("aspect `%'Class` duplicates pragma declared #", Prag);
-         elsif Prev_From_Asp then
-            Error_Msg_N
-              ("pragma `%_Class` duplicates aspect declared #", Prag);
-         else
-            Error_Msg_N
-              ("pragma `%_Class` duplicates pragma declared #", Prag);
-         end if;
-
-      --  Otherwise the pragma appears in its normal form
-
-      else
-         if Prag_From_Asp and Prev_From_Asp then
-            null;
-         elsif Prag_From_Asp then
-            Error_Msg_N ("aspect % duplicates pragma declared #", Prag);
-         elsif Prev_From_Asp then
-            Error_Msg_N ("pragma % duplicates aspect declared #", Prag);
-         else
-            Error_Msg_N ("pragma % duplicates pragma declared #", Prag);
-         end if;
+         Error_Msg_N ("pragma % duplicates pragma declared #", Prag);
       end if;
    end Duplication_Error;
 

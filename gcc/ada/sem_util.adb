@@ -15538,14 +15538,11 @@ package body Sem_Util is
          if Item_Nam = Name_Invariant then
             Item_Nam := Name_uInvariant;
 
-         elsif Nam_In (Item_Nam, Name_Post, Name_Post_Class) then
+         elsif Item_Nam = Name_Post then
             Item_Nam := Name_uPost;
 
-         elsif Nam_In (Item_Nam, Name_Pre, Name_Pre_Class) then
+         elsif Item_Nam = Name_Pre then
             Item_Nam := Name_uPre;
-
-         elsif Item_Nam = Name_Invariant then
-            Item_Nam := Name_uInvariant;
 
          elsif Nam_In (Item_Nam, Name_Type_Invariant,
                                  Name_Type_Invariant_Class)
