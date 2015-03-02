@@ -1,3 +1,11 @@
+2015-03-02  Bob Duff  <duff@adacore.com>
+
+	* sem_ch6.adb (Check_Private_Overriding): Refine the legality
+	checks here. It used to check that the function is merely
+	overriding SOMEthing. Now it checks that the function is
+	overriding a corresponding public operation. This is a correction
+	to the implementation of the rule in RM-3.9.3(10).
+
 2015-03-02  Robert Dewar  <dewar@adacore.com>
 
 	* debug.adb: Document new debug flag -gnatd.1.
