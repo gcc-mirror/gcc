@@ -1,3 +1,8 @@
+2015-03-02  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* MAINTAINERS (Various Maintainers): Add myself as libmpx,
+	pointer bounds checker and i386 MPX maintainer.
+
 2015-02-26  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* MAINTAINERS (Various Maintainers): Add self as docs co-maintainer.
