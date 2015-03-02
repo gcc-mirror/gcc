@@ -1062,6 +1062,13 @@ build_binary_op (enum tree_code op_code, tree result_type,
 		gcc_unreachable ();
 	    }
 
+	  else if (POINTER_TYPE_P (left_base_type)
+		   && POINTER_TYPE_P (right_base_type))
+	    {
+	      gcc_assert (TREE_TYPE (left_base_type)
+			  == TREE_TYPE (right_base_type));
+	      best_type = left_base_type;
+	    }
 	  else
 	    gcc_unreachable ();
 
