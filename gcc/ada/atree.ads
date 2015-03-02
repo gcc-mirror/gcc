@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1424,6 +1424,9 @@ package Atree is
       function Uint22 (N : Node_Id) return Uint;
       pragma Inline (Uint22);
 
+      function Uint24 (N : Node_Id) return Uint;
+      pragma Inline (Uint24);
+
       function Ureal3 (N : Node_Id) return Ureal;
       pragma Inline (Ureal3);
 
@@ -2730,6 +2733,9 @@ package Atree is
 
       procedure Set_Uint22 (N : Node_Id; Val : Uint);
       pragma Inline (Set_Uint22);
+
+      procedure Set_Uint24 (N : Node_Id; Val : Uint);
+      pragma Inline (Set_Uint24);
 
       procedure Set_Ureal3 (N : Node_Id; Val : Ureal);
       pragma Inline (Set_Ureal3);

@@ -1,3 +1,27 @@
+2015-03-02  Robert Dewar  <dewar@adacore.com>
+
+	* atree.ads, atree.adb (Uint24): New function
+	(Set_Uint24): New procedure.
+	* atree.h (Uint24): New macro for field access.
+	* back_end.adb (Call_Back_End): For now, don't call back end
+	if unnesting subprogs.
+	* einfo.adb (Activation_Record_Component): New field
+	(Subps_Index): New field.
+	* einfo.ads (Activation_Record_Component): New field
+	(Subps_Index): New field Minor reordering of comments into alpha order.
+	* exp_unst.ads, exp_unst.adb: Continued development.
+
+2015-03-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_disp.ads: Minor reformatting.
+
+2015-03-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Chain_Use_Clause): Do not chain use clause from
+	ancestor to list of use clauses active in descendant unit if we
+	are within the private part of an intervening parent, to prevent
+	circularities in use clause list.
+
 2015-03-02  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch9.adb (Build_Corresponding_Record): Propagate type

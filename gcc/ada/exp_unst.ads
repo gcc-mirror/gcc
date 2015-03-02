@@ -165,9 +165,6 @@ package Exp_Unst is
    --    since they will be accessed indirectly via an activation record as
    --    described below.
 
-   --    For each such entity xxx we create an access type xxxPTR (forced to
-   --    single length in the unconstrained case).
-
    --    An activation record is created containing system address values
    --    for each uplevel referenced entity in a given scope. In the example
    --    given before, we would have:
@@ -177,8 +174,11 @@ package Exp_Unst is
    --         x  : Address;
    --         rv : Address;
    --      end record;
-   --      type AREC1P is access all AREC1T;
-   --      AREC1 : AREC1T;
+
+   --      AREC1 : aliased AREC1T;
+
+   --      type AREC1PT is access all AREC1T;
+   --      AREC1P : constant AREC1PT := AREC1'Access;
 
    --   The fields of AREC1 are set at the point the corresponding entity
    --   is declared (immediately for parameters).
@@ -188,8 +188,8 @@ package Exp_Unst is
    --   will use AREC2, AREC3, ...
 
    --   For all subprograms nested immediately within the corresponding scope,
-   --   a parameter AREC1P is passed, and all calls to these routines have
-   --   AREC1 added as an additional formal.
+   --   a parameter AREC1F is passed, and all calls to these routines have
+   --   AREC1P added as an additional formal.
 
    --   Now within the nested procedures, any reference to an uplevel entity
    --   xxx is replaced by Tnn!(AREC1.xxx).all (where ! represents a call
@@ -216,11 +216,11 @@ package Exp_Unst is
    --
    --          AREC1.b := b'Address;
    --
-   --          procedure inner (bb : integer; AREC1P : AREC1PT);
+   --          procedure inner (bb : integer; AREC1F : AREC1PT);
    --
-   --          procedure inner2 (AREC1P : AREC1PT) is
+   --          procedure inner2 (AREC1F : AREC1PT) is
    --          begin
-   --            inner(5, AREC1P);
+   --            inner(5, AREC1F);
    --          end;
    --
    --          x  : aliased integer := 77;
@@ -231,13 +231,13 @@ package Exp_Unst is
    --          rv : aliased Integer;
    --          AREC1.rv := rv'Address;
    --
-   --          procedure inner (bb : integer; AREC1P : AREC1PT) is
+   --          procedure inner (bb : integer; AREC1F : AREC1PT) is
    --          begin
    --             type Tnn1 is access all Integer;
    --             type Tnn2 is access all Integer;
    --             type Tnn3 is access all Integer;
-   --             Tnn1!(AREC1P.x).all :=
-   --               Tnn2!(AREC1P.rv).all + y + b + Tnn3!(AREC1P.b).all;
+   --             Tnn1!(AREC1F.x).all :=
+   --               Tnn2!(AREC1F.rv).all + y + b + Tnn3!(AREC1F.b).all;
    --          end;
    --
    --       begin
@@ -386,10 +386,10 @@ package Exp_Unst is
    --          end record;
    --          darecv : darec;
    --
-   --          function inner (b : integer; AREC1P : AREC1PT) return boolean is
+   --          function inner (b : integer; AREC1F : AREC1PT) return boolean is
    --          begin
    --             type Tnn is access all Integer
-   --             return b in x .. Tnn!(AREC1P.dynam_LAST).all
+   --             return b in x .. Tnn!(AREC1F.dynam_LAST).all
    --               and then darecv.b in 42 .. 73;
    --          end inner;
    --
@@ -414,9 +414,9 @@ package Exp_Unst is
    --  approach described above for case 2, except that we need an activation
    --  record at each nested level. Basically the rule is that any procedure
    --  that has nested procedures needs an activation record. When we do this,
-   --  the inner activation records have a pointer to the immediately enclosing
-   --  activation record, the normal arrangement of static links. The following
-   --  shows the full translation of this fourth case.
+   --  the inner activation records have a pointer (uplink) to the immediately
+   --  enclosing activation record, the normal arrangement of static links. The
+   --  following shows the full translation of this fourth case.
 
    --     function case4x (x : integer) return integer is
    --        type AREC1T is record
@@ -430,10 +430,10 @@ package Exp_Unst is
    --        v1 : integer := x;
    --        AREC1.v1 := v1'Address;
    --
-   --        function inner1 (y : integer; AREC1P : ARECPT) return integer is
+   --        function inner1 (y : integer; AREC1F : AREC1PT) return integer is
    --           type AREC2T is record
-   --              AREC1 : AREC1PT := AREC1P;
-   --              v2    : Address;
+   --              AREC1U : AREC1PT := AREC1F;
+   --              v2     : Address;
    --           end record;
    --
    --           AREC2 : aliased AREC2T;
@@ -441,22 +441,22 @@ package Exp_Unst is
    --           AREC2P : constant AREC2PT := AREC2'Access;
    --
    --           type Tnn1 is access all Integer;
-   --           v2 : integer := Tnn1!(AREC1P.v1).all {+} 1;
+   --           v2 : integer := Tnn1!(AREC1F.v1).all {+} 1;
    --           AREC2.v2 := v2'Address;
    --
    --           function inner2
-   --              (z : integer; AREC2P : AREC2PT) return integer
+   --              (z : integer; AREC2F : AREC2PT) return integer
    --           is
    --           begin
    --              type Tnn1 is access all Integer;
    --              type Tnn2 is access all Integer;
    --              return integer(z {+}
-   --                             Tnn1!(AREC2P.AREC1.v1).all {+}
-   --                             Tnn2!(AREC2P.v2).all);
+   --                             Tnn1!(AREC2F.AREC1U.v1).all {+}
+   --                             Tnn2!(AREC2F.v2).all);
    --           end inner2;
    --        begin
    --           type Tnn is access all Integer;
-   --           return integer(y {+} inner2 (Tnn!(AREC1P.v1).all, AREC2P));
+   --           return integer(y {+} inner2 (Tnn!(AREC1F.v1).all, AREC2P));
    --        end inner1;
    --     begin
    --        return inner1 (x, AREC1P);
