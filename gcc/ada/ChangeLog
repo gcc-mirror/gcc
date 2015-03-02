@@ -1,3 +1,12 @@
+2015-03-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Available_Subtype): Optimization in
+	Find_Selected_Component: when safe, use existing subtype of
+	array component, possibly discriminant-dependent, rather than
+	creating new subtype declaration for it. In this fashion different
+	occurrences of the component have the same subtype, rather than
+	just equivalent ones. Simplifies value tracing in GNATProve.
+
 2015-03-01  Arnaud Charlet  <charlet@adacore.com>
 
 	PR ada/65259
