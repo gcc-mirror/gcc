@@ -1,3 +1,11 @@
+2015-03-02  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65183
+	* tree-chkp.c (chkp_check_lower): Don't check against
+	zero bounds for already instrumented functions.
+	(chkp_check_upper): Likewise.
+	(chkp_fini): Clean pass local data to avoid wrong reusage.
+
 2015-02-28  Martin Liska  <mliska@suse.cz>
 	    Jan Hubicka   <hubicka@ucw.cz>
 

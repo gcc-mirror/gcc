@@ -1268,7 +1268,8 @@ chkp_check_lower (tree addr, tree bounds,
   gimple check;
   tree node;
 
-  if (bounds == chkp_get_zero_bounds ())
+  if (!chkp_function_instrumented_p (current_function_decl)
+      && bounds == chkp_get_zero_bounds ())
     return;
 
   if (dirflag == integer_zero_node
@@ -1314,7 +1315,8 @@ chkp_check_upper (tree addr, tree bounds,
   gimple check;
   tree node;
 
-  if (bounds == chkp_get_zero_bounds ())
+  if (!chkp_function_instrumented_p (current_function_decl)
+      && bounds == chkp_get_zero_bounds ())
     return;
 
   if (dirflag == integer_zero_node
@@ -4306,6 +4308,10 @@ chkp_fini (void)
   free_dominance_info (CDI_POST_DOMINATORS);
 
   bitmap_obstack_release (NULL);
+
+  entry_block = NULL;
+  zero_bounds = NULL_TREE;
+  none_bounds = NULL_TREE;
 }
 
 /* Main instrumentation pass function.  */
