@@ -202,6 +202,13 @@ package body Sem_Prag is
    --  _Post, _Invariant, or _Type_Invariant, which are special names used
    --  in identifiers to represent these attribute references.
 
+   procedure Check_Postcondition_Use_In_Inlined_Subprogram
+     (Prag    : Node_Id;
+      Subp_Id : Entity_Id);
+   --  Subsidiary to the analysis of pragmas Contract_Cases, Postcondition,
+   --  Precondition, Refined_Post and Test_Case. Emit a warning when pragma
+   --  Prag is associated with subprogram Subp_Id subject to Inline_Always.
+
    procedure Check_State_And_Constituent_Use
      (States   : Elist_Id;
       Constits : Elist_Id;
@@ -427,6 +434,7 @@ package body Sem_Prag is
 
       All_Cases : Node_Id;
       CCase     : Node_Id;
+      Spec_Id   : Entity_Id;
       Subp_Decl : Node_Id;
       Subp_Id   : Entity_Id;
 
@@ -439,6 +447,7 @@ package body Sem_Prag is
       Set_Analyzed (N);
 
       Subp_Decl := Find_Related_Subprogram_Or_Body (N);
+      Spec_Id   := Corresponding_Spec_Of (Subp_Decl);
       Subp_Id   := Defining_Entity (Subp_Decl);
       All_Cases := Expression (Get_Argument (N, Subp_Id));
 
@@ -455,14 +464,14 @@ package body Sem_Prag is
          --  to subprogram declarations. Skip the installation for subprogram
          --  bodies because the formals are already visible.
 
-         if not In_Open_Scopes (Subp_Id) then
+         if not In_Open_Scopes (Spec_Id) then
             Restore_Scope := True;
-            Push_Scope (Subp_Id);
+            Push_Scope (Spec_Id);
 
-            if Is_Generic_Subprogram (Subp_Id) then
-               Install_Generic_Formals (Subp_Id);
+            if Is_Generic_Subprogram (Spec_Id) then
+               Install_Generic_Formals (Spec_Id);
             else
-               Install_Formals (Subp_Id);
+               Install_Formals (Spec_Id);
             end if;
          end if;
 
@@ -471,6 +480,11 @@ package body Sem_Prag is
             Analyze_Contract_Case (CCase);
             Next (CCase);
          end loop;
+
+         --  Currently it is not possible to inline pre/postconditions on a
+         --  subprogram subject to pragma Inline_Always.
+
+         Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
 
          if Restore_Scope then
             End_Scope;
@@ -18465,6 +18479,11 @@ package body Sem_Prag is
             if Legal then
                Analyze_Pre_Post_Condition_In_Decl_Part (N);
 
+               --  Currently it is not possible to inline pre/postconditions on
+               --  a subprogram subject to pragma Inline_Always.
+
+               Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
+
                --  Chain the pragma on the contract for easy retrieval
 
                Add_Contract_Item (N, Body_Id);
@@ -21513,6 +21532,11 @@ package body Sem_Prag is
          Process_Class_Wide_Condition (Expr, Spec_Id, Subp_Decl);
       end if;
 
+      --  Currently it is not possible to inline pre/postconditions on a
+      --  subprogram subject to pragma Inline_Always.
+
+      Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
+
       --  Remove the subprogram from the scope stack now that the pre-analysis
       --  of the precondition/postcondition is done.
 
@@ -24151,10 +24175,10 @@ package body Sem_Prag is
    procedure Analyze_Test_Case_In_Decl_Part (N : Node_Id) is
       procedure Preanalyze_Test_Case_Arg
         (Arg_Nam : Name_Id;
-         Subp_Id : Entity_Id);
+         Spec_Id : Entity_Id);
       --  Preanalyze one of the optional arguments "Requires" or "Ensures"
-      --  denoted by Arg_Nam. Subp_Id is the entity of the subprogram subject
-      --  to pragma Test_Case.
+      --  denoted by Arg_Nam. Spec_Id is the entity of the subprogram spec
+      --  subject to pragma Test_Case.
 
       ------------------------------
       -- Preanalyze_Test_Case_Arg --
@@ -24162,7 +24186,7 @@ package body Sem_Prag is
 
       procedure Preanalyze_Test_Case_Arg
         (Arg_Nam : Name_Id;
-         Subp_Id : Entity_Id)
+         Spec_Id : Entity_Id)
       is
          Arg : Node_Id;
 
@@ -24170,7 +24194,7 @@ package body Sem_Prag is
          --  Preanalyze the original aspect argument for ASIS or for a generic
          --  subprogram to properly capture global references.
 
-         if ASIS_Mode or else Is_Generic_Subprogram (Subp_Id) then
+         if ASIS_Mode or else Is_Generic_Subprogram (Spec_Id) then
             Arg :=
               Test_Case_Arg
                 (Prag        => N,
@@ -24192,8 +24216,8 @@ package body Sem_Prag is
 
       --  Local variables
 
+      Spec_Id   : Entity_Id;
       Subp_Decl : Node_Id;
-      Subp_Id   : Entity_Id;
 
       Restore_Scope : Boolean := False;
       --  Gets set True if we do a Push_Scope needing a Pop_Scope on exit
@@ -24202,25 +24226,30 @@ package body Sem_Prag is
 
    begin
       Subp_Decl := Find_Related_Subprogram_Or_Body (N);
-      Subp_Id   := Defining_Entity (Subp_Decl);
+      Spec_Id   := Corresponding_Spec_Of (Subp_Decl);
 
       --  Ensure that the formal parameters are visible when analyzing all
       --  clauses. This falls out of the general rule of aspects pertaining
       --  to subprogram declarations.
 
-      if not In_Open_Scopes (Subp_Id) then
+      if not In_Open_Scopes (Spec_Id) then
          Restore_Scope := True;
-         Push_Scope (Subp_Id);
+         Push_Scope (Spec_Id);
 
-         if Is_Generic_Subprogram (Subp_Id) then
-            Install_Generic_Formals (Subp_Id);
+         if Is_Generic_Subprogram (Spec_Id) then
+            Install_Generic_Formals (Spec_Id);
          else
-            Install_Formals (Subp_Id);
+            Install_Formals (Spec_Id);
          end if;
       end if;
 
-      Preanalyze_Test_Case_Arg (Name_Requires, Subp_Id);
-      Preanalyze_Test_Case_Arg (Name_Ensures,  Subp_Id);
+      Preanalyze_Test_Case_Arg (Name_Requires, Spec_Id);
+      Preanalyze_Test_Case_Arg (Name_Ensures,  Spec_Id);
+
+      --  Currently it is not possible to inline pre/postconditions on a
+      --  subprogram subject to pragma Inline_Always.
+
+      Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
 
       if Restore_Scope then
          End_Scope;
@@ -24603,6 +24632,32 @@ package body Sem_Prag is
          end if;
       end if;
    end Check_Missing_Part_Of;
+
+   ---------------------------------------------------
+   -- Check_Postcondition_Use_In_Inlined_Subprogram --
+   ---------------------------------------------------
+
+   procedure Check_Postcondition_Use_In_Inlined_Subprogram
+     (Prag    : Node_Id;
+      Subp_Id : Entity_Id)
+   is
+   begin
+      if Warn_On_Redundant_Constructs
+        and then Has_Pragma_Inline_Always (Subp_Id)
+      then
+         Error_Msg_Name_1 := Original_Aspect_Pragma_Name (Prag);
+
+         if From_Aspect_Specification (Prag) then
+            Error_Msg_NE
+              ("aspect % not enforced on inlined subprogram &?r?",
+               Corresponding_Aspect (Prag), Subp_Id);
+         else
+            Error_Msg_NE
+              ("pragma % not enforced on inlined subprogram &?r?",
+               Prag, Subp_Id);
+         end if;
+      end if;
+   end Check_Postcondition_Use_In_Inlined_Subprogram;
 
    -------------------------------------
    -- Check_State_And_Constituent_Use --

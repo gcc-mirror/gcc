@@ -1,5 +1,22 @@
 2015-03-02  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_attr.adb (Analyze_Attribute): Factor out heavily indented
+	code in Denote_Same_Function.  Do not analyze attribute 'Result
+	when it is inside procedure _Postconditions.  Remove a misplaced
+	warning diagnostic. Code cleanup.
+	(Denote_Same_Function): New routine.
+	* sem_prag.adb (Analyze_Contract_Cases_In_Decl_Part): Code
+	cleanup. Warn on pre/postconditions on an inlined subprogram.
+	(Analyze_Pragma, Refined_Post case): Warn on pre/postconditions on
+	an inlined subprogram.
+	(Analyze_Pre_Post_Condition_In_Decl_Part): Code cleanup. Warn on
+	pre/post condition on an inlined subprogram.
+	(Analyze_Test_Case_In_Decl_Part): Code cleanup. Warn on
+	pre/postconditions on an inlined subprogram.
+	(Check_Postcondition_Use_In_Inlined_Subprogram): New routine.
+
+2015-03-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_prag.adb (Ensure_Aggregate_Form):
 	Ensure that the name denoted by the Chars of a pragma argument
 	association has the proper Sloc when converted into an aggregate.
