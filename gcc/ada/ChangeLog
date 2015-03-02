@@ -1,3 +1,30 @@
+2015-03-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Ensure_Aggregate_Form):
+	Ensure that the name denoted by the Chars of a pragma argument
+	association has the proper Sloc when converted into an aggregate.
+
+2015-03-02  Bob Duff  <duff@adacore.com>
+
+	* sem_ch6.adb (Check_Private_Overriding): Capture
+	Incomplete_Or_Partial_View in a constant. This is cleaner and
+	more efficient.
+
+2015-03-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* einfo.ads, exp_unst.ads: Minor reformatting.
+
+2015-03-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-strsea.adb (Find_Token): Ensure that the range of iteration
+	does not perform any improper character access. This prevents
+	erroneous access in the unusual case of an empty string target
+	and a From parameter less than Source'First.
+
+2015-03-02  Robert Dewar  <dewar@adacore.com>
+
+	* elists.adb (List_Length): Fix incorrect result.
+
 2015-03-02  Bob Duff  <duff@adacore.com>
 
 	* sem_ch6.adb (Check_Private_Overriding): Refine the legality

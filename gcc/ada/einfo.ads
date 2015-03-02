@@ -1999,7 +1999,7 @@ package Einfo is
 --       the case where we are unnesting nested subprograms (in which case it
 --       is also set for types and subtypes which are not static types, and
 --       that are referenced uplevel, as well as for subprograms that contain
---       uplevel references or call other subprogram, see Exp_unst for details.
+--       uplevel references or call other subprograms (Exp_Unst has details).
 
 --    Has_Visible_Refinement (Flag263)
 --       Defined in E_Abstract_State entities. Set when a state has at least
@@ -2978,7 +2978,7 @@ package Einfo is
 --       type is known to be a static type (defined as a discrete type with
 --       static bounds, a record all of whose component types are static types,
 --       or an array, all of whose bounds are of a static type, and also have
---       a component type that is a static type. See Set_Uplevel_Type for more
+--       a component type that is a static type). See Set_Uplevel_Type for more
 --       information on how this flag is used. Note that if Is_Static_Type is
 --       True, then it is never the case that the Has_Uplevel_Reference flag is
 --       set for the same type.

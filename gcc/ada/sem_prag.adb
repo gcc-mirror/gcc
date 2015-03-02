@@ -5222,21 +5222,32 @@ package body Sem_Prag is
       ---------------------------
 
       procedure Ensure_Aggregate_Form (Arg : Node_Id) is
-         Expr  : constant Node_Id    := Expression (Arg);
-         Loc   : constant Source_Ptr := Sloc (Expr);
-         Comps : List_Id := No_List;
-         Exprs : List_Id := No_List;
-         Nam   : Name_Id;
-
-         CFSD : constant Boolean := Get_Comes_From_Source_Default;
-         --  Used to restore Comes_From_Source_Default
+         CFSD    : constant Boolean    := Get_Comes_From_Source_Default;
+         Expr    : constant Node_Id    := Expression (Arg);
+         Loc     : constant Source_Ptr := Sloc (Expr);
+         Comps   : List_Id := No_List;
+         Exprs   : List_Id := No_List;
+         Nam     : Name_Id := No_Name;
+         Nam_Loc : Source_Ptr;
 
       begin
-         if Nkind (Arg) = N_Aspect_Specification then
-            Nam := No_Name;
-         else
-            pragma Assert (Nkind (Arg) = N_Pragma_Argument_Association);
-            Nam := Chars (Arg);
+         --  The pragma argument is in positional form:
+
+         --    pragma Depends (Nam => ...)
+         --                    ^
+         --                    Chars field
+
+         --  Note that the Sloc of the Chars field is the Sloc of the pragma
+         --  argument association.
+
+         if Nkind (Arg) = N_Pragma_Argument_Association then
+            Nam     := Chars (Arg);
+            Nam_Loc := Sloc (Arg);
+
+            --  Remove the pragma argument name as this will be captured in the
+            --  aggregate.
+
+            Set_Chars (Arg, No_Name);
          end if;
 
          --  The argument is already in aggregate form, but the presence of a
@@ -5279,15 +5290,8 @@ package body Sem_Prag is
          else
             Comps := New_List (
               Make_Component_Association (Loc,
-                Choices    => New_List (Make_Identifier (Loc, Chars (Arg))),
+                Choices    => New_List (Make_Identifier (Nam_Loc, Nam)),
                 Expression => Relocate_Node (Expr)));
-         end if;
-
-         --  Remove the pragma argument name as this information has been
-         --  captured in the aggregate.
-
-         if Nkind (Arg) = N_Pragma_Argument_Association then
-            Set_Chars (Arg, No_Name);
          end if;
 
          Set_Expression (Arg,

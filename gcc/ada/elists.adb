@@ -302,6 +302,7 @@ package body Elists is
          if No (Elmt) then
             return N;
          else
+            N := N + 1;
             Next_Elmt (Elmt);
          end if;
       end loop;
