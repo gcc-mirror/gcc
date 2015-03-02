@@ -1,3 +1,13 @@
+2015-03-02  Gary Dismukes  <dismukes@adacore.com>
+
+	* einfo.adb, checks.adb: Minor reformatting and typo fixes.
+
+2015-03-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Get_Assoc_Expr): If the Default_Component_Value
+	is defined for the array type, use it instead of a Default_Value
+	specified for the component type itself.
+
 2015-03-02  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_attr.adb (Expand_N_Attribute_Reference, case Input): When

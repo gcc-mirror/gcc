@@ -6708,7 +6708,7 @@ package body Einfo is
 
          --  The first/next entity chain of a generic subprogram contains all
          --  generic formal parameters, followed by the formal parameters. Go
-         --  directly to the paramters by skipping the formal part.
+         --  directly to the parameters by skipping the formal part.
 
          if Is_Generic_Subprogram (Id) then
             while Present (Formal) and then not Is_Formal (Formal) loop
@@ -6747,7 +6747,7 @@ package body Einfo is
 
          --  The first/next entity chain of a generic subprogram contains all
          --  generic formal parameters, followed by the formal parameters. Go
-         --  directly to the paramters by skipping the formal part.
+         --  directly to the parameters by skipping the formal part.
 
          if Is_Generic_Subprogram (Id) then
             while Present (Formal) and then not Is_Formal (Formal) loop

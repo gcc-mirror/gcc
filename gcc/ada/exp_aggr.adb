@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -786,8 +786,10 @@ package body Exp_Aggr is
       --  Otherwise we call Build_Code recursively
 
       function Get_Assoc_Expr (Assoc : Node_Id) return Node_Id;
-      --  For an association with a box, use default aspect of component type
-      --  if present, to initialize one or more components.
+      --  For an association with a box, use value given by aspect
+     --   Default_Component_Value of array type if specified, else use
+     --   value given by aspect Default_Value for component type itself
+     --   if specified, else return Empty.
 
       function Local_Compile_Time_Known_Value (E : Node_Id) return Boolean;
       function Local_Expr_Value               (E : Node_Id) return Uint;
@@ -1533,12 +1535,19 @@ package body Exp_Aggr is
       --------------------
 
       function Get_Assoc_Expr (Assoc : Node_Id) return Node_Id is
+         Typ : constant Entity_Id := Base_Type (Etype (N));
+
       begin
          if Box_Present (Assoc) then
-            if Is_Scalar_Type (Ctype)
-              and then Present (Default_Aspect_Value (Ctype))
-            then
-               return Default_Aspect_Value (Ctype);
+            if Is_Scalar_Type (Ctype) then
+               if Present (Default_Aspect_Component_Value (Typ)) then
+                  return Default_Aspect_Component_Value (Typ);
+
+               elsif Present (Default_Aspect_Value (Ctype)) then
+                  return Default_Aspect_Value (Ctype);
+               else
+                  return Empty;
+               end if;
             else
                return Empty;
             end if;
