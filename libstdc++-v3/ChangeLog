@@ -1,3 +1,9 @@
+2015-03-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64367
+	* include/std/stdexcept (__sso_string): Don't use non-static member
+	in sizeof.
+
 2015-02-28  Matthias Klose  <doko@ubuntu.com>
 
 	PR libstdc++/65246
