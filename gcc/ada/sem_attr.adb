@@ -4997,6 +4997,12 @@ package body Sem_Attr is
          --  Verify that attribute 'Result appears within the Ensures argument
          --  of pragma Test_Case.
 
+         function Denote_Same_Function
+           (Pref_Id : Entity_Id;
+            Spec_Id : Entity_Id) return Boolean;
+         --  Determine whether the entity of the prefix Pref_Id denotes the
+         --  same entity as that of the related subprogram Spec_Id.
+
          function Is_Within
            (Nod      : Node_Id;
             Encl_Nod : Node_Id) return Boolean;
@@ -5078,6 +5084,57 @@ package body Sem_Attr is
             end if;
          end Check_Placement_In_Test_Case;
 
+         --------------------------
+         -- Denote_Same_Function --
+         --------------------------
+
+         function Denote_Same_Function
+           (Pref_Id : Entity_Id;
+            Spec_Id : Entity_Id) return Boolean
+         is
+            Subp_Spec : constant Node_Id := Parent (Spec_Id);
+
+         begin
+            --  The prefix denotes the related subprogram
+
+            if Pref_Id = Spec_Id then
+               return True;
+
+            --  Account for a special case when attribute 'Result appears in
+            --  the postcondition of a generic function.
+
+            --    generic
+            --    function Gen_Func return ...
+            --      with Post => Gen_Func'Result ...;
+
+            --  When the generic function is instantiated, the Chars field of
+            --  the instantiated prefix still denotes the name of the generic
+            --  function. Note that any preemptive transformation is impossible
+            --  without a proper analysis. The structure of the wrapper package
+            --  is as follows:
+
+            --    package Anon_Gen_Pack is
+            --       <subtypes and renamings>
+            --       function Subp_Decl return ...;               --  (!)
+            --       pragma Postcondition (Gen_Func'Result ...);  --  (!)
+            --       function Gen_Func ... renames Subp_Decl;
+            --    end Anon_Gen_Pack;
+
+            elsif Nkind (Subp_Spec) = N_Function_Specification
+              and then Present (Generic_Parent (Subp_Spec))
+              and then Ekind (Pref_Id) = E_Function
+              and then Present (Alias (Pref_Id))
+              and then Alias (Pref_Id) = Spec_Id
+            then
+               return True;
+
+            --  Otherwise the prefix does not denote the related subprogram
+
+            else
+               return False;
+            end if;
+         end Denote_Same_Function;
+
          ---------------
          -- Is_Within --
          ---------------
@@ -5108,14 +5165,11 @@ package body Sem_Attr is
 
          --  Local variables
 
-         In_Post   : Boolean := False;
          Prag      : Node_Id;
          Prag_Id   : Pragma_Id;
          Pref_Id   : Entity_Id;
          Spec_Id   : Entity_Id;
          Subp_Decl : Node_Id;
-         Subp_Id   : Entity_Id;
-         Subp_Spec : Node_Id;
 
       --  Start of processing for Result
 
@@ -5204,128 +5258,62 @@ package body Sem_Attr is
             Subp_Decl := Find_Related_Subprogram_Or_Body (Prag);
          end if;
 
-         --  The pragma where attribute 'Result appears is associated with a
-         --  subprogram declaration or a body.
+         --  The pragma where attribute 'Result resides should be associated
+         --  with a subprogram declaration or a body. If this is not the case,
+         --  then the pragma is illegal. Return as analysis cannot be carried
+         --  out.
 
-         if Nkind_In (Subp_Decl, N_Abstract_Subprogram_Declaration,
-                                 N_Entry_Declaration,
-                                 N_Generic_Subprogram_Declaration,
-                                 N_Subprogram_Body,
-                                 N_Subprogram_Body_Stub,
-                                 N_Subprogram_Declaration)
+         if not Nkind_In (Subp_Decl, N_Abstract_Subprogram_Declaration,
+                                     N_Entry_Declaration,
+                                     N_Generic_Subprogram_Declaration,
+                                     N_Subprogram_Body,
+                                     N_Subprogram_Body_Stub,
+                                     N_Subprogram_Declaration)
          then
-            Subp_Id := Defining_Entity (Subp_Decl);
+            return;
+         end if;
 
-            --  Attribute 'Result is part of the _Postconditions procedure of
-            --  the related subprogram. Retrieve the related subprogram.
+         Spec_Id := Corresponding_Spec_Of (Subp_Decl);
 
-            if Chars (Subp_Id) = Name_uPostconditions then
-               In_Post   := True;
-               Subp_Decl := Parent (Subp_Decl);
-               Subp_Id   := Scope (Subp_Id);
-            end if;
+         --  Attribute 'Result is part of a _Postconditions procedure. There is
+         --  no need to perform the semantic checks below as they were already
+         --  verified when the attribute was analyzed in its original context.
+         --  Instead, rewrite the attribute as a reference to formal parameter
+         --  _Result of the _Postconditions procedure.
 
-            --  Retrieve the entity of the spec (if any)
+         if Chars (Spec_Id) = Name_uPostconditions then
+            Rewrite (N, Make_Identifier (Loc, Name_uResult));
 
-            if Nkind (Subp_Decl) = N_Subprogram_Body
-              and then Present (Corresponding_Spec (Subp_Decl))
-            then
-               Spec_Id := Corresponding_Spec (Subp_Decl);
+            --  The type of formal parameter _Result is that of the function
+            --  encapsulating the _Postconditions procedure. Resolution must
+            --  be carried out against the function return type.
 
-            elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
-              and then Present (Corresponding_Spec_Of_Stub (Subp_Decl))
-            then
-               Spec_Id := Corresponding_Spec_Of_Stub (Subp_Decl);
+            Analyze_And_Resolve (N, Etype (Scope (Spec_Id)));
 
-            else
-               Spec_Id := Subp_Id;
-            end if;
+         --  Otherwise attribute 'Result appears in its original context and
+         --  all semantic checks should be carried out.
 
-            --  When the subprogram is always inlined, the postcondition will
-            --  not be propagated to the expanded body.
-
-            if Warn_On_Redundant_Constructs
-              and then Has_Pragma_Inline_Always (Spec_Id)
-            then
-               Error_Msg_N
-                 ("postconditions on inlined functions not enforced?r?", P);
-            end if;
-
-            --  Ensure that the prefix of attribute 'Result denotes the related
-            --  subprogram.
+         else
+            --  Verify the legality of the prefix. It must denotes the entity
+            --  of the related [generic] function.
 
             if Is_Entity_Name (P) then
                Pref_Id := Entity (P);
 
-               --  When a subprogram with contract assertions is imported, it
-               --  is encapsulated in a wrapper. In this case the scope of the
-               --  wrapper denotes the original imported subprogram.
-
-               if Is_Imported (Pref_Id) then
-                  Pref_Id := Scope (Pref_Id);
-               end if;
-
                if Ekind_In (Pref_Id, E_Function, E_Generic_Function) then
+                  if Denote_Same_Function (Pref_Id, Spec_Id) then
+                     Set_Etype (N, Etype (Spec_Id));
 
-                  --  The prefix of attribute 'Result denotes the entity of
-                  --  some other unrelated function.
+                  --  Otherwise the prefix denotes some unrelated function
 
-                  if Pref_Id /= Spec_Id then
-                     Subp_Spec := Parent (Spec_Id);
-
-                     --  Attribute 'Result appears in a postcondition of a
-                     --  generic function that acts as a compilation unit:
-
-                     --    generic
-                     --    function Gen_Func return ...
-                     --      with Post => Gen_Func'Result ...;
-
-                     --  When the function is instantiated, the Chars field of
-                     --  attribute 'Result's prefix still denotes the generic
-                     --  function. Note that any preemptive transformation is
-                     --  impossible without a proper analysis. The structure of
-                     --  the anonymous wrapper package is as follows:
-
-                     --    package Anon_Gen_Pack is
-                     --       <subtypes and renamings>
-                     --       function Subp_Decl return ...;
-                     --       pragma Postcondition (Gen_Func'Result ...);
-                     --       function Gen_Func ... renames Subp_Decl;
-                     --    end Anon_Gen_Pack;
-
-                     --  Recognize this case and do not flag it as illegal
-
-                     if Nkind (Subp_Spec) = N_Function_Specification
-                       and then Present (Generic_Parent (Subp_Spec))
-                     then
-                        if Generic_Parent (Subp_Spec) = Pref_Id then
-                           null;
-
-                        elsif Ekind (Pref_Id) = E_Function
-                          and then Present (Alias (Pref_Id))
-                          and then Alias (Pref_Id) = Spec_Id
-                        then
-                           null;
-
-                        else
-                           Error_Msg_Name_2 := Chars (Spec_Id);
-                           Error_Attr
-                             ("incorrect prefix for % attribute, expected %",
-                              P);
-                        end if;
-
-                     --  Otherwise the context is not a function instantiation
-                     --  and the prefix is illegal
-
-                     else
-                        Error_Msg_Name_2 := Chars (Spec_Id);
-                        Error_Attr
-                          ("incorrect prefix for % attribute, expected %", P);
-                     end if;
+                  else
+                     Error_Msg_Name_2 := Chars (Spec_Id);
+                     Error_Attr
+                       ("incorrect prefix for % attribute, expected %", P);
                   end if;
 
-               --  Otherwise the attribute's prefix denotes some other form of
-               --  a non-function subprogram.
+               --  Otherwise the prefix denotes some other form of subprogram
+               --  entity.
 
                else
                   Error_Attr
@@ -5338,20 +5326,6 @@ package body Sem_Attr is
             else
                Error_Msg_Name_2 := Chars (Spec_Id);
                Error_Attr ("incorrect prefix for % attribute, expected %", P);
-            end if;
-
-            --  Attribute 'Result is part of the _Postconditions procedure of
-            --  the related subprogram. Rewrite the attribute as a reference to
-            --  the _Result formal parameter of _Postconditions.
-
-            if In_Post then
-               Rewrite (N, Make_Identifier (Loc, Name_uResult));
-               Analyze_And_Resolve (N, Etype (Subp_Id));
-
-            --  Otherwise decorate the attribute
-
-            else
-               Set_Etype (N, Etype (Subp_Id));
             end if;
          end if;
       end Result;
