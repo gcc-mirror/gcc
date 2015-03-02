@@ -197,6 +197,9 @@ dump_jump_thread_path (FILE *dump_file, vec<jump_thread_edge *> path,
       if (path[i]->type == EDGE_NO_COPY_SRC_BLOCK)
        fprintf (dump_file, " (%d, %d) nocopy;",
 		 path[i]->e->src->index, path[i]->e->dest->index);
+      if (path[0]->type == EDGE_FSM_THREAD)
+	fprintf (dump_file, " (%d, %d) ",
+		 path[i]->e->src->index, path[i]->e->dest->index);
     }
   fputc ('\n', dump_file);
 }
@@ -2473,6 +2476,21 @@ duplicate_seme_region (edge entry, edge exit,
   return true;
 }
 
+/* Return true when PATH is a valid jump-thread path.  */
+
+static bool
+valid_jump_thread_path (vec<jump_thread_edge *> *path)
+{
+  unsigned len = path->length ();
+
+  /* Check that the path is connected.  */
+  for (unsigned int j = 0; j < len - 1; j++)
+    if ((*path)[j]->e->dest != (*path)[j+1]->e->src)
+      return false;
+
+  return true;
+}
+
 /* Walk through all blocks and thread incoming edges to the appropriate
    outgoing edge for each edge pair recorded in THREADED_EDGES.
 
@@ -2505,12 +2523,25 @@ thread_through_all_blocks (bool may_peel_loop_headers)
       vec<jump_thread_edge *> *path = paths[i];
       edge entry = (*path)[0]->e;
 
-      if ((*path)[0]->type != EDGE_FSM_THREAD
-	  /* Do not jump-thread twice from the same block.  */
-	  || bitmap_bit_p (threaded_blocks, entry->src->index)) {
-	i++;
-	continue;
-      }
+      /* Only code-generate FSM jump-threads in this loop.  */
+      if ((*path)[0]->type != EDGE_FSM_THREAD)
+	{
+	  i++;
+	  continue;
+	}
+
+      /* Do not jump-thread twice from the same block.  */
+      if (bitmap_bit_p (threaded_blocks, entry->src->index)
+	  /* Verify that the jump thread path is still valid: a
+	     previous jump-thread may have changed the CFG, and
+	     invalidated the current path.  */
+	  || !valid_jump_thread_path (path))
+	{
+	  /* Remove invalid FSM jump-thread paths.  */
+	  delete_jump_thread_path (path);
+	  paths.unordered_remove (i);
+	  continue;
+	}
 
       unsigned len = path->length ();
       edge exit = (*path)[len - 1]->e;

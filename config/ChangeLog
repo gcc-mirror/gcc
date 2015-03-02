@@ -1,3 +1,11 @@
+2015-02-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	Revert:
+	2014-07-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/47230
+	* mh-alpha-linux: New file.
+
 2015-02-18  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* elf.m4 (ACX_ELF_TARGET_IFELSE): nvptx-*-none isn't ELF.

@@ -1116,10 +1116,12 @@ lto_read_body_or_constructor (struct lto_file_decl_data *file_data, struct symta
 
       /* Set up the struct function.  */
       from = data_in->reader_cache->nodes.length ();
-      lto_input_block ib_main (data + main_offset, header->main_size);
+      lto_input_block ib_main (data + main_offset, header->main_size,
+			       file_data->mode_table);
       if (TREE_CODE (node->decl) == FUNCTION_DECL)
 	{
-	  lto_input_block ib_cfg (data + cfg_offset, header->cfg_size);
+	  lto_input_block ib_cfg (data + cfg_offset, header->cfg_size,
+				  file_data->mode_table);
 	  input_function (fn_decl, data_in, &ib_main, &ib_cfg);
 	}
       else
@@ -1384,7 +1386,8 @@ lto_input_toplevel_asms (struct lto_file_decl_data *file_data, int order_base)
 
   string_offset = sizeof (*header) + header->main_size;
 
-  lto_input_block ib (data + sizeof (*header), header->main_size);
+  lto_input_block ib (data + sizeof (*header), header->main_size,
+		      file_data->mode_table);
 
   data_in = lto_data_in_create (file_data, data + string_offset,
 			      header->string_size, vNULL);
@@ -1400,6 +1403,123 @@ lto_input_toplevel_asms (struct lto_file_decl_data *file_data, int order_base)
   lto_data_in_delete (data_in);
 
   lto_free_section_data (file_data, LTO_section_asm, NULL, data, len);
+}
+
+
+/* Input mode table.  */
+
+void
+lto_input_mode_table (struct lto_file_decl_data *file_data)
+{
+  size_t len;
+  const char *data = lto_get_section_data (file_data, LTO_section_mode_table,
+					   NULL, &len);
+  if (! data)
+    {
+      internal_error ("cannot read LTO mode table from %s",
+		      file_data->file_name);
+      return;
+    }
+
+  unsigned char *table = ggc_cleared_vec_alloc<unsigned char> (1 << 8);
+  file_data->mode_table = table;
+  const struct lto_simple_header_with_strings *header
+    = (const struct lto_simple_header_with_strings *) data;
+  int string_offset;
+  struct data_in *data_in;
+  string_offset = sizeof (*header) + header->main_size;
+
+  lto_input_block ib (data + sizeof (*header), header->main_size, NULL);
+  data_in = lto_data_in_create (file_data, data + string_offset,
+				header->string_size, vNULL);
+  bitpack_d bp = streamer_read_bitpack (&ib);
+
+  table[VOIDmode] = VOIDmode;
+  table[BLKmode] = BLKmode;
+  unsigned int m;
+  while ((m = bp_unpack_value (&bp, 8)) != VOIDmode)
+    {
+      enum mode_class mclass
+	= bp_unpack_enum (&bp, mode_class, MAX_MODE_CLASS);
+      unsigned int size = bp_unpack_value (&bp, 8);
+      unsigned int prec = bp_unpack_value (&bp, 16);
+      machine_mode inner = (machine_mode) table[bp_unpack_value (&bp, 8)];
+      unsigned int nunits = bp_unpack_value (&bp, 8);
+      unsigned int ibit = 0, fbit = 0;
+      unsigned int real_fmt_len = 0;
+      const char *real_fmt_name = NULL;
+      switch (mclass)
+	{
+	case MODE_FRACT:
+	case MODE_UFRACT:
+	case MODE_ACCUM:
+	case MODE_UACCUM:
+	  ibit = bp_unpack_value (&bp, 8);
+	  fbit = bp_unpack_value (&bp, 8);
+	  break;
+	case MODE_FLOAT:
+	case MODE_DECIMAL_FLOAT:
+	  real_fmt_name = bp_unpack_indexed_string (data_in, &bp,
+						    &real_fmt_len);
+	  break;
+	default:
+	  break;
+	}
+      /* First search just the GET_CLASS_NARROWEST_MODE to wider modes,
+	 if not found, fallback to all modes.  */
+      int pass;
+      for (pass = 0; pass < 2; pass++)
+	for (machine_mode mr = pass ? VOIDmode
+				    : GET_CLASS_NARROWEST_MODE (mclass);
+	     pass ? mr < MAX_MACHINE_MODE : mr != VOIDmode;
+	     pass ? mr = (machine_mode) (m + 1)
+		  : mr = GET_MODE_WIDER_MODE (mr))
+	  if (GET_MODE_CLASS (mr) != mclass
+	      || GET_MODE_SIZE (mr) != size
+	      || GET_MODE_PRECISION (mr) != prec
+	      || GET_MODE_INNER (mr) != inner
+	      || GET_MODE_IBIT (mr) != ibit
+	      || GET_MODE_FBIT (mr) != fbit
+	      || GET_MODE_NUNITS (mr) != nunits)
+	    continue;
+	  else if ((mclass == MODE_FLOAT || mclass == MODE_DECIMAL_FLOAT)
+		   && strcmp (REAL_MODE_FORMAT (mr)->name, real_fmt_name) != 0)
+	    continue;
+	  else
+	    {
+	      table[m] = mr;
+	      pass = 2;
+	      break;
+	    }
+      unsigned int mname_len;
+      const char *mname = bp_unpack_indexed_string (data_in, &bp, &mname_len);
+      if (pass == 2)
+	{
+	  switch (mclass)
+	    {
+	    case MODE_VECTOR_INT:
+	    case MODE_VECTOR_FLOAT:
+	    case MODE_VECTOR_FRACT:
+	    case MODE_VECTOR_UFRACT:
+	    case MODE_VECTOR_ACCUM:
+	    case MODE_VECTOR_UACCUM:
+	      /* For unsupported vector modes just use BLKmode,
+		 if the scalar mode is supported.  */
+	      if (inner != VOIDmode)
+		{
+		  table[m] = BLKmode;
+		  break;
+		}
+	      /* FALLTHRU */
+	    default:
+	      fatal_error (UNKNOWN_LOCATION, "unsupported mode %s\n", mname);
+	      break;
+	    }
+	}
+    }
+  lto_data_in_delete (data_in);
+
+  lto_free_section_data (file_data, LTO_section_mode_table, NULL, data, len);
 }
 
 

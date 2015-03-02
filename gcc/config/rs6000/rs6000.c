@@ -27188,25 +27188,21 @@ get_memref_parts (rtx mem, rtx *base, HOST_WIDE_INT *offset,
   else
     return false;
 
-  if (GET_CODE (XEXP (mem, 0)) == PRE_MODIFY)
-    addr_rtx = XEXP (XEXP (mem, 0), 1);
-  else
-    addr_rtx = (XEXP (mem, 0));
+  addr_rtx = (XEXP (mem, 0));
+  if (GET_CODE (addr_rtx) == PRE_MODIFY)
+    addr_rtx = XEXP (addr_rtx, 1);
 
-  if (GET_CODE (addr_rtx) == REG)
+  *offset = 0;
+  while (GET_CODE (addr_rtx) == PLUS
+	 && CONST_INT_P (XEXP (addr_rtx, 1)))
     {
-      *base = addr_rtx;
-      *offset = 0;
+      *offset += INTVAL (XEXP (addr_rtx, 1));
+      addr_rtx = XEXP (addr_rtx, 0);
     }
-  else if (GET_CODE (addr_rtx) == PLUS
-	   && CONST_INT_P (XEXP (addr_rtx, 1)))
-    {
-      *base = XEXP (addr_rtx, 0);
-      *offset = INTVAL (XEXP (addr_rtx, 1));
-    }
-  else
+  if (!REG_P (addr_rtx))
     return false;
 
+  *base = addr_rtx;
   return true;
 }
 
@@ -34801,7 +34797,7 @@ rs6000_analyze_swaps (function *fun)
 		    mode = V4SImode;
 		}
 
-	      if (VECTOR_MODE_P (mode))
+	      if (VECTOR_MODE_P (mode) || mode == TImode)
 		{
 		  insn_entry[uid].is_relevant = 1;
 		  if (mode == TImode || mode == V1TImode)
@@ -34828,7 +34824,7 @@ rs6000_analyze_swaps (function *fun)
 		  && VECTOR_MODE_P (GET_MODE (SET_DEST (insn))))
 		mode = GET_MODE (SET_DEST (insn));
 
-	      if (VECTOR_MODE_P (mode))
+	      if (VECTOR_MODE_P (mode) || mode == TImode)
 		{
 		  insn_entry[uid].is_relevant = 1;
 		  if (mode == TImode || mode == V1TImode)

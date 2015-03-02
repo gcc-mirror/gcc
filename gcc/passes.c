@@ -2460,6 +2460,7 @@ ipa_write_summaries_1 (lto_symtab_encoder_t encoder)
   struct lto_out_decl_state *state = lto_new_out_decl_state ();
   state->symtab_node_encoder = encoder;
 
+  lto_output_init_mode_table ();
   lto_push_out_decl_state (state);
 
   gcc_assert (!flag_wpa);
@@ -2581,6 +2582,7 @@ ipa_write_optimization_summaries (lto_symtab_encoder_t encoder)
   lto_symtab_encoder_iterator lsei;
   state->symtab_node_encoder = encoder;
 
+  lto_output_init_mode_table ();
   lto_push_out_decl_state (state);
   for (lsei = lsei_start_function_in_partition (encoder);
        !lsei_end_p (lsei); lsei_next_function_in_partition (&lsei))

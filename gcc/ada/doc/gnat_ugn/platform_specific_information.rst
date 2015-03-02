@@ -135,11 +135,9 @@ their thread support.
 
 The default run-time library (when GNAT is installed) is *rts-native*.
 This default run time is selected by the means of soft links.
-For example on x86-linux:
+For example on x86-linux::
 
-  .. image:: rtlibrary-structure.png
-
-.. --
+   --
    --  $(target-dir)
    --      |
    --      +--- adainclude----------+

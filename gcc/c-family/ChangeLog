@@ -1,3 +1,29 @@
+2015-03-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (is_tagged_type): Add guard for DECL_VINDEX.
+	(dump_template_types): Adjust DECL_TEMPLATE_INSTANTIATIONS and
+	DECL_TEMPLATE_RESULT emulations.
+	(dump_ada_template)): Add guard for TYPE_METHODS.
+
+2015-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65040
+	* c.opt (Wformat-signedness): Don't enable by -Wformat=2.
+
+2015-02-27  Kai Tietz  <ktietz@redhat.com>
+
+	PR c/35330
+	* c-pragma.c (handle_pragma_weak): Do not try to create
+	weak/alias of declarations not being function, or variable
+	declarations.
+
+2015-02-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/64625
+	* c-common.c (DEF_FUNCTION_TYPE_VAR_8, DEF_FUNCTION_TYPE_VAR_12):
+	Remove macros.
+	(DEF_FUNCTION_TYPE_VAR_7, DEF_FUNCTION_TYPE_VAR_11): New macros.
+
 2015-02-16  Marek Polacek  <polacek@redhat.com>
 
 	PR c/65066

@@ -268,6 +268,7 @@ proc dg-additional-options { args } {
 # main source file.
 
 set additional_sources ""
+set additional_sources_used ""
 
 proc dg-additional-sources { args } {
     global additional_sources
@@ -290,6 +291,7 @@ proc dg-additional-files { args } {
 
 proc dg-additional-files-options { options source } {
     global additional_sources
+    global additional_sources_used
     global additional_files
     set to_download [list]
     if { $additional_sources != "" } then {
@@ -301,6 +303,7 @@ proc dg-additional-files-options { options source } {
 	    lappend options "additional_flags=$additional_sources"
 	}
 	set to_download [concat $to_download $additional_sources]
+	set additional_sources_used "$additional_sources"
 	set additional_sources ""
     }
     if { $additional_files != "" } then { 

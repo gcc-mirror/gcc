@@ -2985,7 +2985,7 @@ which this handler should be assigned.  If the argument is a name it
 is treated as a symbolic name for the vector slot.  These names should
 match up with appropriate entries in the linker script.  By default
 the names @code{watchdog} for vector 26, @code{nmi} for vector 30 and
-@code{reset} for vector 31 are recognised.
+@code{reset} for vector 31 are recognized.
 
 You can also use the following function attributes to modify how
 normal functions interact with interrupt functions:
@@ -3388,7 +3388,7 @@ the function label.  A second argument can be used to specify the
 number of halfwords to be added after the function label.  For
 both arguments the maximum allowed value is 1000000.
 
-If both ar guments are zero, hotpatching is disabled.
+If both arguments are zero, hotpatching is disabled.
 
 @item naked
 @cindex function without a prologue/epilogue code
@@ -4633,7 +4633,7 @@ This example uses the @code{cold} label attribute to indicate the
 
    asm goto ("some asm" : : : : NoError);
 
-/* This branch (the fallthru from the asm) is less commonly used */
+/* This branch (the fall-through from the asm) is less commonly used */
 ErrorHandling: 
    __attribute__((cold, unused)); /* Semi-colon is required here */
    printf("error\n");
@@ -8988,7 +8988,7 @@ returns -1.
 @node Cilk Plus Builtins
 @section Cilk Plus C/C++ Language Extension Built-in Functions
 
-GCC provides support for the following built-in reduction funtions if Cilk Plus
+GCC provides support for the following built-in reduction functions if Cilk Plus
 is enabled. Cilk Plus can be enabled using the @option{-fcilkplus} flag.
 
 @itemize @bullet
@@ -10744,7 +10744,7 @@ __v8hi __builtin_arc_vupsbaw (__v8hi)
 __v8hi __builtin_arc_vupsbw (__v8hi)
 @end example
 
-The followign take two @code{int} arguments and return no result:
+The following take two @code{int} arguments and return no result:
 @example
 void __builtin_arc_vdirun (int, int)
 void __builtin_arc_vdorun (int, int)
@@ -10983,11 +10983,11 @@ intrinsics can be found at
 The built-in intrinsics for the Advanced SIMD extension are available when
 NEON is enabled.
 
-Currently, ARM and AArch64 back-ends do not support ACLE 2.0 fully.  Both
-back-ends support CRC32 intrinsics from @file{arm_acle.h}.  The ARM backend's
-16-bit floating-point Advanded SIMD Intrinsics currently comply to ACLE v1.1.
-AArch64's backend does not have support for 16-bit floating point Advanced SIMD
-Intrinsics yet.
+Currently, ARM and AArch64 back ends do not support ACLE 2.0 fully.  Both
+back ends support CRC32 intrinsics from @file{arm_acle.h}.  The ARM back end's
+16-bit floating-point Advanced SIMD intrinsics currently comply to ACLE v1.1.
+AArch64's back end does not have support for 16-bit floating point Advanced SIMD
+intrinsics yet.
 
 See @ref{ARM Options} and @ref{AArch64 Options} for more information on the
 availability of extensions.
@@ -12451,7 +12451,7 @@ unsigned int addg6s (unsigned int, unsigned int);
 @end smallexample
 
 The @code{__builtin_divde}, @code{__builtin_divdeo},
-@code{__builitin_divdeu}, @code{__builtin_divdeou} functions require a
+@code{__builtin_divdeu}, @code{__builtin_divdeou} functions require a
 64-bit environment support ISA 2.06 or later.
 
 The following built-in functions are available for the PowerPC family
@@ -12467,9 +12467,9 @@ _Decimal128 __builtin_denbcdq (int, _Decimal128);
 _Decimal64 __builtin_diex (_Decimal64, _Decimal64);
 _Decimal128 _builtin_diexq (_Decimal128, _Decimal128);
 _Decimal64 __builtin_dscli (_Decimal64, int);
-_Decimal128 __builitn_dscliq (_Decimal128, int);
+_Decimal128 __builtin_dscliq (_Decimal128, int);
 _Decimal64 __builtin_dscri (_Decimal64, int);
-_Decimal128 __builitn_dscriq (_Decimal128, int);
+_Decimal128 __builtin_dscriq (_Decimal128, int);
 unsigned long long __builtin_unpack_dec128 (_Decimal128, int);
 _Decimal128 __builtin_pack_dec128 (unsigned long long, unsigned long long);
 @end smallexample
@@ -15079,7 +15079,7 @@ must be a constant integer in the range of 0 to 15.
 @subsection PowerPC Hardware Transactional Memory Built-in Functions
 GCC provides two interfaces for accessing the Hardware Transactional
 Memory (HTM) instructions available on some of the PowerPC family
-of prcoessors (eg, POWER8).  The two interfaces come in a low level
+of processors (eg, POWER8).  The two interfaces come in a low level
 interface, consisting of built-in functions specific to PowerPC and a
 higher level interface consisting of inline functions that are common
 between PowerPC and S/390.
@@ -17274,24 +17274,11 @@ and suitable fallback code always needs to be supplied.
 Start a RTM (Restricted Transactional Memory) transaction. 
 Returns @code{_XBEGIN_STARTED} when the transaction
 started successfully (note this is not 0, so the constant has to be 
-explicitly tested).  If the transaction aborts, all side-effects
-are undone and an abort code is returned. There is no guarantee
-any transaction ever succeeds, so there always needs to be a valid
-fallback path.
-@end deftypefn
+explicitly tested).  
 
-@smallexample
-#include <immintrin.h>
-
-if ((status = _xbegin ()) == _XBEGIN_STARTED) @{
-    ... transaction code...
-    _xend ();
-@} else @{
-    ... non transactional fallback path...
-@}
-@end smallexample
-
-If the transaction aborts, the return value is one of:
+If the transaction aborts, all side-effects 
+are undone and an abort code encoded as a bit mask is returned.
+The following macros are defined:
 
 @table @code
 @item _XABORT_EXPLICIT
@@ -17309,6 +17296,11 @@ Transaction abort due to a debug trap.
 Transaction abort in an inner nested transaction.
 @end table
 
+There is no guarantee
+any transaction ever succeeds, so there always needs to be a valid
+fallback path.
+@end deftypefn
+
 @deftypefn {RTM Function} {void} _xend ()
 Commit the current transaction. When no transaction is active this faults.
 All memory side-effects of the transaction become visible
@@ -17324,6 +17316,37 @@ Abort the current transaction. When no transaction is active this is a no-op.
 The @var{status} is an 8-bit constant; its value is encoded in the return 
 value from @code{_xbegin}.
 @end deftypefn
+
+Here is an example showing handling for @code{_XABORT_RETRY}
+and a fallback path for other failures:
+
+@smallexample
+#include <immintrin.h>
+
+int n_tries, max_tries;
+unsigned status = _XABORT_EXPLICIT;
+...
+
+for (n_tries = 0; n_tries < max_tries; n_tries++) 
+  @{
+    status = _xbegin ();
+    if (status == _XBEGIN_STARTED || !(status & _XABORT_RETRY))
+      break;
+  @}
+if (status == _XBEGIN_STARTED) 
+  @{
+    ... transaction code...
+    _xend ();
+  @} 
+else 
+  @{
+    ... non-transactional fallback path...
+  @}
+@end smallexample
+
+@noindent
+Note that, in most cases, the transactional and non-transactional code
+must synchronize together to ensure consistency.
 
 @node Target Format Checks
 @section Format Checks Specific to Particular Target Machines
@@ -19255,4 +19278,4 @@ than no arguments, as C++ demands.
 @end table
 
 @c  LocalWords:  emph deftypefn builtin ARCv2EM SIMD builtins msimd
-@c  LocalWords:  typedef v4si v8hi DMA dma vdiwr vdowr followign
+@c  LocalWords:  typedef v4si v8hi DMA dma vdiwr vdowr

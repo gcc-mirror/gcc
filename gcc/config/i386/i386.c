@@ -2463,6 +2463,7 @@ static void ix86_function_specific_save (struct cl_target_option *,
 					 struct gcc_options *opts);
 static void ix86_function_specific_restore (struct gcc_options *opts,
 					    struct cl_target_option *);
+static void ix86_function_specific_post_stream_in (struct cl_target_option *);
 static void ix86_function_specific_print (FILE *, int,
 					  struct cl_target_option *);
 static bool ix86_valid_target_attribute_p (tree, tree, tree, int);
@@ -4571,6 +4572,57 @@ ix86_function_specific_restore (struct gcc_options *opts,
     set_ix86_tune_features (ix86_tune, false);
 }
 
+/* Adjust target options after streaming them in.  This is mainly about
+   reconciling them with global options.  */
+
+static void
+ix86_function_specific_post_stream_in (struct cl_target_option *ptr)
+{
+  /* flag_pic is a global option, but ix86_cmodel is target saved option
+     partly computed from flag_pic.  If flag_pic is on, adjust x_ix86_cmodel
+     for PIC, or error out.  */
+  if (flag_pic)
+    switch (ptr->x_ix86_cmodel)
+      {
+      case CM_SMALL:
+	ptr->x_ix86_cmodel = CM_SMALL_PIC;
+	break;
+
+      case CM_MEDIUM:
+	ptr->x_ix86_cmodel = CM_MEDIUM_PIC;
+	break;
+
+      case CM_LARGE:
+	ptr->x_ix86_cmodel = CM_LARGE_PIC;
+	break;
+
+      case CM_KERNEL:
+	error ("code model %s does not support PIC mode", "kernel");
+	break;
+
+      default:
+	break;
+      }
+  else
+    switch (ptr->x_ix86_cmodel)
+      {
+      case CM_SMALL_PIC:
+	ptr->x_ix86_cmodel = CM_SMALL;
+	break;
+
+      case CM_MEDIUM_PIC:
+	ptr->x_ix86_cmodel = CM_MEDIUM;
+	break;
+
+      case CM_LARGE_PIC:
+	ptr->x_ix86_cmodel = CM_LARGE;
+	break;
+
+      default:
+	break;
+      }
+}
+
 /* Print the current options */
 
 static void
@@ -6067,6 +6119,9 @@ ix86_function_arg_regno_p (int regno)
 {
   int i;
   const int *parm_regs;
+
+  if (TARGET_MPX && BND_REGNO_P (regno))
+    return true;
 
   if (!TARGET_64BIT)
     {
@@ -26752,7 +26807,11 @@ ix86_sched_reorder (FILE *dump, int sched_verbose, rtx_insn **ready,
       ready[n_ready - 1] = insn;
       return issue_rate;
     }
-  if (clock_var != 0 && swap_top_of_ready_list (ready, n_ready))
+
+  /* Skip selective scheduling since HID is not populated in it.  */
+  if (clock_var != 0
+      && !sel_sched_p ()
+      && swap_top_of_ready_list (ready, n_ready))
     {
       if (sched_verbose > 1)
 	fprintf (dump, ";;\tslm sched_reorder: swap %d and %d insns\n",
@@ -26860,6 +26919,16 @@ avoid_func_arg_motion (rtx_insn *first_arg, rtx_insn *insn)
 {
   rtx set;
   rtx tmp;
+
+  /* Add anti dependencies for bounds stores.  */
+  if (INSN_P (insn)
+      && GET_CODE (PATTERN (insn)) == PARALLEL
+      && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == UNSPEC
+      && XINT (XVECEXP (PATTERN (insn), 0, 0), 1) == UNSPEC_BNDSTX)
+    {
+      add_dependence (first_arg, insn, REG_DEP_ANTI);
+      return;
+    }
 
   set = single_set (insn);
   if (!set)
@@ -52021,6 +52090,9 @@ ix86_initialize_bounds (tree var, tree lb, tree ub, tree *stmts)
 
 #undef TARGET_OPTION_RESTORE
 #define TARGET_OPTION_RESTORE ix86_function_specific_restore
+
+#undef TARGET_OPTION_POST_STREAM_IN
+#define TARGET_OPTION_POST_STREAM_IN ix86_function_specific_post_stream_in
 
 #undef TARGET_OPTION_PRINT
 #define TARGET_OPTION_PRINT ix86_function_specific_print

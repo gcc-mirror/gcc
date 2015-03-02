@@ -836,6 +836,11 @@ DEFPARAM (PARAM_LRA_MAX_CONSIDERED_RELOAD_PSEUDOS,
 	  "The max number of reload pseudos which are considered during spilling a non-reload pseudo",
 	  500, 0, 0)
 
+DEFPARAM (PARAM_LRA_INHERITANCE_EBB_PROBABILITY_CUTOFF,
+	  "lra-inheritance-ebb-probability-cutoff",
+	  "Minimal fall-through edge probability in percentage used to add BB to inheritance EBB in LRA",
+	  40, 0, 100)
+
 /* Switch initialization conversion will refuse to create arrays that are
    bigger than this parameter times the number of switch branches.  */
 

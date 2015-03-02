@@ -3416,10 +3416,11 @@ alpha-based platforms using ELF (in particular, ignore this section for
 DEC OSF/1, Digital UNIX and Tru64 UNIX)@.  In addition to reading this
 section, please read all other sections that match your target.
 
-We require binutils 2.11.2 or newer.
-Previous binutils releases had a number of problems with DWARF 2
-debugging information, not the least of which is incorrect linking of
-shared libraries.
+Binutils 2.25 or newer are required.
+Versions prior to 2.25 have faulty relaxation pass that may result in
+GPREL16 relocation truncation errors.  Versions prior to 2.11.2 had a
+number of problems with DWARF 2 debugging information, not the least of
+which is incorrect linking of shared libraries.
 
 @html
 <hr />

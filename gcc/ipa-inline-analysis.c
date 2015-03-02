@@ -4190,7 +4190,8 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
   unsigned int i, count2, j;
   unsigned int f_count;
 
-  lto_input_block ib ((const char *) data + main_offset, header->main_size);
+  lto_input_block ib ((const char *) data + main_offset, header->main_size,
+		      file_data->mode_table);
 
   data_in =
     lto_data_in_create (file_data, (const char *) data + string_offset,

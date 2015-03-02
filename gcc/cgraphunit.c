@@ -1680,6 +1680,14 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       callees->call_stmt = call;
       gimple_call_set_from_thunk (call, true);
       gimple_call_set_with_bounds (call, instrumentation_clone);
+
+      /* Return slot optimization is always possible and in fact requred to
+         return values with DECL_BY_REFERENCE.  */
+      if (aggregate_value_p (resdecl, TREE_TYPE (thunk_fndecl))
+	  && (!is_gimple_reg_type (TREE_TYPE (resdecl))
+	      || DECL_BY_REFERENCE (resdecl)))
+        gimple_call_set_return_slot_opt (call, true);
+
       if (restmp && !alias_is_noreturn)
 	{
           gimple_call_set_lhs (call, restmp);
@@ -2468,6 +2476,7 @@ cgraph_node::create_wrapper (cgraph_node *target)
   release_body (true);
   reset ();
 
+  DECL_UNINLINABLE (decl) = false;
   DECL_RESULT (decl) = decl_result;
   DECL_INITIAL (decl) = NULL;
   allocate_struct_function (decl, false);

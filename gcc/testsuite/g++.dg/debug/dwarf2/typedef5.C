@@ -8,3 +8,5 @@ typedef struct
 } A;
 
 A a;
+
+/* { dg-bogus "-feliminate-dwarf2-dups is broken for C\\+\\+, ignoring" "broken -feliminate-dwarf2-dups" { xfail *-*-* } 1 } */

@@ -1,3 +1,281 @@
+2015-02-28  Martin Liska  <mliska@suse.cz>
+	    Jan Hubicka   <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/ipa-icf-35.c: New test.
+	* gcc.dg/ipa/ipa-icf-36.c: New test.
+	* gcc.dg/ipa/ipa-icf-37.c: New test.
+
+2015-02-28  Martin Liska  <mliska@suse.cz>
+	    Jan Hubicka   <hubicka@ucw.cz>
+
+	PR ipa/65245
+	* gcc.dg/ipa/ipa-icf-34.c: New test.
+
+2015-03-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/61142
+	* gcc.target/sh/sh/pr61142.c: New.
+
+2015-03-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/other/dump-ada-spec-3.C: New test.
+
+2015-03-01  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/stackalign/longlong-2.c: Omit ICF.
+	* g++.dg/ipa/pr63595.C: Update expected results.
+
+2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65236
+	* g++.dg/ipa/ipa-icf-6.C: New testcase.
+
+2015-02-27  Pat Haugen <pthaugen@us.ibm.com>
+
+	* gcc.dg/vect/pr59354.c: Move vector producing code to separate function.
+
+2015-02-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65237
+	* gcc.dg/attr-noinline.c: Add -fno-ipa-icf
+	* gcc.dg/noreturn-7.c: Add -fno-ipa-icf.
+	* gcc.dg/ipa/ipa-cp-1.c: Revert accidental commit.
+	* gcc.dg/ipa/ipa-cp-2.c: Revert accidental commit.
+
+2015-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65048
+	* gcc.dg/tree-ssa/ssa-dom-thread-9.c: Add -std=gnu89 to dg-options.
+	(foo): Use K&R style definition.
+
+2015-02-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/65032
+	* g++.dg/pr65032.C: New.
+
+2015-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65040
+	* gcc.dg/pr65066.c: Use -Wformat -Wformat-signedness and not
+	-Wformat=2.
+
+2015-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65228
+	* gcc.dg/pr65228.c: New test.
+
+2015-02-27  Kai Tietz  <ktietz@redhat.com>
+
+	PR c/35330
+	* gcc.dg/weak/weak-17.c: New file.
+
+2015-02-27  Richard Biener  <rguenther@suse.de>
+
+	PR lto/65193
+	* g++.dg/lto/pr65193_0.C: New testcase.
+
+2015-02-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/20140327-1.c: Remove -m31 and guard with ! lp64.
+	* gcc.target/s390/hotpatch-8.c: Likewise.
+	* gcc.target/s390/hotpatch-9.c: Likewise.
+	* gcc.target/s390/pr61078.c: Likewise.
+	* gcc.target/s390/pr57960.c: Remove -m64.
+	* gcc.target/s390/pr61078.c: Likewise.
+
+2015-02-26  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/65150
+	* gcc.dg/pr64454.c: Disable ICF.
+	* gcc.dg/pr28685-1.c: Disable ICF
+	* gcc.dg/ipa/iinline-5.c: Disable ICF.
+	* g++.dg/warn/Wsuggest-final.C: Force methods to be different.
+	* g++.dg/ipa/ipa-icf-4.C: Update template.
+
+2015-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65216
+	* gcc.c-torture/execute/pr65216.c: New test.
+
+	PR tree-optimization/65215
+	* gcc.c-torture/execute/pr65215-1.c: New test.
+	* gcc.c-torture/execute/pr65215-2.c: New test.
+	* gcc.c-torture/execute/pr65215-3.c: New test.
+	* gcc.c-torture/execute/pr65215-4.c: New test.
+	* gcc.c-torture/execute/pr65215-5.c: New test.
+
+2015-02-26  Tom de Vries  <tom@codesourcery.com>
+
+	* go.test/go-test.exp (go-gc-tests): Add missing cleanup for cmpout.
+
+2015-02-26  Martin Liska  <mliska@suse.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/ipa/pr64146.C: Update expected results.
+	* gcc.dg/ipa/ipa-icf-26.c: Update test.
+	* gcc.dg/ipa/ipa-icf-33.c: Remove redundant line.
+	* gcc.dg/ipa/ipa-icf-34.c: New test.
+
+2015-02-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/vect/vect-pr61917.c: Rename to ...
+	* gcc.dg/vect/O3-vect-pr61917.c: ... this.
+	(dg-additional-options): Remove dg directive.
+	(dg-final): Add dg directive.
+
+2015-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR ipa/65008
+	* g++.dg/ipa/pr65008.C: New test.
+
+2015-02-26  Tom de Vries  <tom@codesourcery.com>
+
+	* lib/profopt.exp (profopt-target-cleanup): New proc.
+	(profopt-execute): Use profopt-target-cleanup to handle cleanup of
+	files from sources from dg-additional-sources.
+
+2015-02-26  Tom de Vries  <tom@codesourcery.com>
+
+	* lib/gcov.exp: Cleanup in case of xfail.
+
+2015-02-26  Sebastian Pop  <s.pop@samsung.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-9.c: Fix warning due to missing type.
+
+2015-02-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR debug/46102
+	* g++.dg/debug/dwarf2-1.C: XFAIL and move...
+	* g++.dg/debug/dwarf2/dwarf2-1.C: ...here.
+	* g++.dg/debug/dwarf2-2.C: XFAIL and move...
+	* g++.dg/debug/dwarf2/dwarf2-2.C: ...here.
+	* g++.dg/debug/dwarf2/typedef5.C: XFAIL.
+	* g++.dg/debug/pr46123.C: XFAIL and move...
+	* g++.dg/debug/dwarf2/pr46123-2.C: ...here.
+	* gcc.dg/debug/dwarf2-3.c: Move...
+	* gcc.dg/debug/dwarf2/dwarf2-3.c: ...here.
+
+2015-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65202
+	* g++.dg/cpp1y/pr65202.C: New test.
+
+2015-02-26  Tom de Vries  <tom@codesourcery.com>
+
+	* g++.dg/gcov/gcov-14.C: Add cleanup of iostream.gcov, ostream.gcov and
+	locale_facets.h.gcov.
+
+2015-02-26  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/i386/mcount_pic.c: Add missing cleanup-profile-file.
+
+2015-02-26  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/aru-2.c: Add missing cleanup-profile-file.
+
+2015-02-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/65217
+	* gcc.target/i386/pr65217.c: New.
+
+2015-02-26  Tom de Vries  <tom@codesourcery.com>
+
+	* lib/dg-pch.exp (pch-init): Add missing cleanup of pchtest<n>.o.
+
+2015-02-26  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.misc-tests/godump-1.c: Add missing cleanup of godump-1.out.
+
+2015-02-26  Sebastian Pop  <s.pop@samsung.com>
+
+	PR tree-optimization/65048
+	* gcc.dg/tree-ssa/ssa-dom-thread-9.c: New.
+
+2015-02-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/gcc-dg.exp (cleanup-final-insns-dump): New procedure.
+	* g++.dg/opt/dump1.C (dg-final): Call cleanup-final-insns-dump.
+
+2015-02-26  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	PR target/65161
+	* gcc.target/i386/pr65161.c: New test.
+
+2015-02-26  Terry Guo  <terry.guo@arm.com>
+
+	* gcc.target/arm/no-volatile-in-it.c: New test.
+
+2015-02-25  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/htm-builtin-1.c (dg-do) Change to assemble.
+	(dg-options): Add -save-temps.
+	(dg-final): Add cleanup-saved-temps.
+
+2015-02-25  Adhemerval Zanella  <azanella@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/htm-builtin-1.c: Fix tcheck expect value.
+
+2015-02-25  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/direct-move.h: Include string.h/stdlib.h.
+	* gcc.target/powerpc/pack01.c: Include string.h.
+
+2015-02-25  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65167
+	* gcc.target/i386/pr65167.c: New.
+
+2015-02-25  Kai Tietz  <ktietz@redhat.com>
+
+	PR tree-optimization/61917
+	* gcc.dg/vect/vect-pr61917.c: New file.
+
+2015-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65170
+	* gcc.c-torture/execute/pr65170.c: New test.
+	* gcc.dg/tree-ssa/vrp96.c: New test.
+
+2015-02-24  Tom de Vries  <tom@codesourcery.com>
+
+	* gfortran.dg/readwrite_unf_direct_eor_1.f90: Add missing close.
+
+2015-02-24  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/65126
+	* lib/gcc-defs.exp (additional_sources_used): Add new var.
+	(dg-additional-files-options): Copy additional_sources to
+	additional_sources_used before emptying additional_sources.
+	* lib/gcc-dg.exp (cleanup-coverage-files, cleanup-repo-files)
+	(cleanup-stack-usage, cleanup-ada-spec, cleanup-dump)
+	(cleanup-saved-temps): Use additional_sources_used instead of
+	additional_sources.
+	(dg-test): Reset additional_sources_used.
+
+2015-02-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR fortran/63427
+	* gfortran.dg/integer_exponentiation_6.F90: New test.
+
+2015-02-23  Martin Sebor  <msebor@redhat.com>
+
+	PR target/65109
+	* gcc.target/powerpc/ppc64-abi-1.c: Split test functions into
+	two parts.  One to save registers, the other to verify the
+	registers have the right values.  Save register state into
+	static data rather than on the stack.
+
+2015-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/63888
+	* c-c++-common/asan/pr63888.c: New test.
+
+2015-02-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/65163
+	* gcc.c-torture/compile/pr65163.c: New.
+
 2015-02-23  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.dg/hoist-register-pressure-1.c: Make S/390 target check work
@@ -130,7 +408,7 @@
 
 2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
-	* testsuite/lib/target-supports.exp (check_compile): Save/restore
+	* lib/target-supports.exp (check_compile): Save/restore
 	additional_sources that may belong to an actual test.
 
 2015-02-18  Jakub Jelinek  <jakub@redhat.com>
@@ -616,7 +894,7 @@
 	    Brian Rzycki  <b.rzycki@samsung.com>
 
 	PR tree-optimization/64878
-	* testsuite/gcc.dg/tree-ssa/ssa-dom-thread-8.c: New.
+	* gcc.dg/tree-ssa/ssa-dom-thread-8.c: New.
 
 2015-02-06  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1358,7 +1636,7 @@
 
 2015-01-21  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
-	* gcc/testsuite/c-c++-common/tsan/step.c: New testcase.
+	* c-c++-common/tsan/step.c: New testcase.
 
 2015-01-21  Christophe Lyon  <christophe.lyon@linaro.org>
 

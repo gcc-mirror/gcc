@@ -1290,11 +1290,11 @@
 
 (define_insn "zero_cost_loop_start"
   [(set (pc)
-        (if_then_else (ne (match_operand:SI 0 "register_operand" "2")
+        (if_then_else (ne (match_operand:SI 2 "register_operand" "0")
                           (const_int 1))
                       (label_ref (match_operand 1 "" ""))
                       (pc)))
-   (set (match_operand:SI 2 "register_operand" "=a")
+   (set (match_operand:SI 0 "register_operand" "=a")
         (plus (match_dup 0)
               (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_START)]
@@ -1306,11 +1306,11 @@
 
 (define_insn "zero_cost_loop_end"
   [(set (pc)
-        (if_then_else (ne (match_operand:SI 0 "nonimmediate_operand" "2,2")
+        (if_then_else (ne (match_operand:SI 2 "nonimmediate_operand" "0,0")
                           (const_int 1))
                       (label_ref (match_operand 1 "" ""))
                       (pc)))
-   (set (match_operand:SI 2 "nonimmediate_operand" "=a,m")
+   (set (match_operand:SI 0 "nonimmediate_operand" "=a,m")
         (plus (match_dup 0)
               (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_END)
@@ -1323,11 +1323,11 @@
 
 (define_insn "loop_end"
   [(set (pc)
-        (if_then_else (ne (match_operand:SI 0 "register_operand" "2")
+        (if_then_else (ne (match_operand:SI 2 "register_operand" "0")
                           (const_int 1))
                       (label_ref (match_operand 1 "" ""))
                       (pc)))
-   (set (match_operand:SI 2 "register_operand" "=a")
+   (set (match_operand:SI 0 "register_operand" "=a")
         (plus (match_dup 0)
               (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_END)]

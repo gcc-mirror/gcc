@@ -4981,6 +4981,12 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   if (!vectype_in)
     vectype_in = tem;
   gcc_assert (is_simple_use);
+  if (!found_nested_cycle_def)
+    reduc_def_stmt = def_stmt;
+
+  if (reduc_def_stmt && gimple_code (reduc_def_stmt) != GIMPLE_PHI)
+    return false;
+
   if (!(dt == vect_reduction_def
 	|| dt == vect_nested_cycle
 	|| ((dt == vect_internal_def || dt == vect_external_def
@@ -4993,10 +4999,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       gcc_assert (orig_stmt);
       return false;
     }
-  if (!found_nested_cycle_def)
-    reduc_def_stmt = def_stmt;
 
-  gcc_assert (gimple_code (reduc_def_stmt) == GIMPLE_PHI);
   if (orig_stmt)
     gcc_assert (orig_stmt == vect_is_simple_reduction (loop_vinfo,
                                                        reduc_def_stmt,

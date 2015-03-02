@@ -1,3 +1,8 @@
+2015-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65228
+	* c-decl.c (start_decl): Return NULL_TREE if decl is an error node.
+
 2015-02-14  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64768

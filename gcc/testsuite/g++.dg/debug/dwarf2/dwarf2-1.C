@@ -4,7 +4,7 @@
 // PR 24824
 // Origin:   	 wanderer@rsu.ru
 
-// { dg-options "-feliminate-dwarf2-dups" }
+// { dg-options "-gdwarf -feliminate-dwarf2-dups" }
 
 namespace N
 {
@@ -20,3 +20,5 @@ namespace N
 }
 
 N::Derived thing;
+
+/* { dg-bogus "-feliminate-dwarf2-dups is broken for C\\+\\+, ignoring" "broken -feliminate-dwarf2-dups" { xfail *-*-* } 1 } */

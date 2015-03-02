@@ -81,6 +81,30 @@ proc profopt-cleanup { testcase extlist } {
 }
 
 #
+# profopt-target-cleanup -- remove profiling result files.
+#
+# DIR is the name of the directory
+# TESTCASE is the name of the test
+# EXT is the extensions of files to remove
+#
+proc profopt-target-cleanup { dir testcase ext } {
+    global additional_sources_used
+    set basename [file tail $testcase]
+    set base [file rootname $basename]
+    set file "$dir/$base.$ext"
+    eval "remote_file target delete $file"
+
+    if [info exists additional_sources_used] {
+	foreach srcfile $additional_sources_used {
+	    set basename [file tail $srcfile]
+	    set base [file rootname $basename]
+	    set file "$dir/$base.$ext"
+	    eval "remote_file target delete $file"
+	}
+    }
+}
+
+#
 # profopt-perf-value -- get performance value for a test
 #
 # TESTCASE is the name of the test
@@ -262,10 +286,7 @@ proc profopt-execute { src } {
 	remote_file build delete $execname3
 	verbose "Testing $testcase, $option" 1
 
-	# Remove old profiling and performance data files.
-	foreach ext $prof_ext {
-	    remote_file target delete $tmpdir/$base.$ext
-	}
+	# Remove old performance data files.
 	if [info exists perf_ext] {
 	    profopt-cleanup $testcase $perf_ext
 	}
@@ -284,6 +305,12 @@ proc profopt-execute { src } {
 	}
 
         set extra_options [dg-additional-files-options "" "$src"]
+
+	# Remove old profiling data files.  Make sure additional_sources_used is
+	# valid, by running it after dg-additional-files-options.
+	foreach ext $prof_ext {
+	    profopt-target-cleanup $tmpdir $base $ext
+	}
 
 	# Tree profiling requires TLS runtime support, which may need
 	# additional flags.
@@ -368,7 +395,7 @@ proc profopt-execute { src } {
 
 	# Remove the profiling data files.
 	foreach ext $prof_ext {
-	    remote_file target delete $tmpdir/$base.$ext
+	    profopt-target-cleanup $tmpdir $base $ext
 	}
 
 	if { $status != "pass" } {

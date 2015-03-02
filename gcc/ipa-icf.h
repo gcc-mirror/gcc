@@ -63,6 +63,71 @@ enum sem_item_type
   VAR
 };
 
+/* Class is container for address references for a symtab_node.  */
+
+class symbol_compare_collection
+{
+public:
+  /* Constructor.  */
+  symbol_compare_collection (symtab_node *node);
+
+  /* Destructor.  */
+  ~symbol_compare_collection ()
+  {
+    m_references.release ();
+    m_interposables.release ();
+  }
+
+  /* Vector of address references.  */
+  vec<symtab_node *> m_references;
+
+  /* Vector of interposable references.  */
+  vec<symtab_node *> m_interposables;
+};
+
+/* Hash traits for symbol_compare_collection map.  */
+
+struct symbol_compare_hashmap_traits: default_hashmap_traits
+{
+  static hashval_t
+  hash (const symbol_compare_collection *v)
+  {
+    inchash::hash hstate;
+    hstate.add_int (v->m_references.length ());
+
+    for (unsigned i = 0; i < v->m_references.length (); i++)
+      hstate.add_ptr (v->m_references[i]->ultimate_alias_target ());
+
+    hstate.add_int (v->m_interposables.length ());
+
+    for (unsigned i = 0; i < v->m_interposables.length (); i++)
+      hstate.add_ptr (v->m_interposables[i]->ultimate_alias_target ());
+
+    return hstate.end ();
+  }
+
+  static bool
+  equal_keys (const symbol_compare_collection *a,
+	      const symbol_compare_collection *b)
+  {
+    if (a->m_references.length () != b->m_references.length ()
+	|| a->m_interposables.length () != b->m_interposables.length ())
+      return false;
+
+    for (unsigned i = 0; i < a->m_references.length (); i++)
+      if (a->m_references[i]->equal_address_to (b->m_references[i]) != 1)
+	return false;
+
+    for (unsigned i = 0; i < a->m_interposables.length (); i++)
+      if (!a->m_interposables[i]->semantically_equivalent_p
+	(b->m_interposables[i]))
+	return false;
+
+    return true;
+  }
+};
+
+
 /* Semantic item usage pair.  */
 class sem_usage_pair
 {
@@ -177,6 +242,17 @@ protected:
   /* Cached, once calculated hash for the item.  */
   hashval_t hash;
 
+  /* Accumulate to HSTATE a hash of constructor expression EXP.  */
+  static void add_expr (const_tree exp, inchash::hash &hstate);
+
+  /* For a given symbol table nodes N1 and N2, we check that FUNCTION_DECLs
+     point to a same function. Comparison can be skipped if IGNORED_NODES
+     contains these nodes.  ADDRESS indicate if address is taken.  */
+  bool compare_cgraph_references (hash_map <symtab_node *, sem_item *>
+				  &ignored_nodes,
+				  symtab_node *n1, symtab_node *n2,
+				  bool address);
+
 private:
   /* Initialize internal data structures. Bitmap STACK is used for
      bitmap memory allocation process.  */
@@ -225,7 +301,7 @@ public:
   }
 
   /* Improve accumulated hash for HSTATE based on a gimple statement STMT.  */
-  void hash_stmt (inchash::hash *inchash, gimple stmt);
+  void hash_stmt (gimple stmt, inchash::hash &inchash);
 
   /* Return true if polymorphic comparison must be processed.  */
   bool compare_polymorphic_p (void);
@@ -286,13 +362,6 @@ private:
      ICF flags are the same.  */
   bool compare_edge_flags (cgraph_edge *e1, cgraph_edge *e2);
 
-  /* For a given symbol table nodes N1 and N2, we check that FUNCTION_DECLs
-     point to a same function. Comparison can be skipped if IGNORED_NODES
-     contains these nodes.  */
-  bool compare_cgraph_references (hash_map <symtab_node *, sem_item *>
-				  &ignored_nodes,
-				  symtab_node *n1, symtab_node *n2);
-
   /* Processes function equality comparison.  */
   bool equals_private (sem_item *item,
 		       hash_map <symtab_node *, sem_item *> &ignored_nodes);
@@ -324,7 +393,6 @@ public:
   inline virtual void init (void)
   {
     decl = get_node ()->decl;
-    ctor = ctor_for_folding (decl);
   }
 
   virtual hashval_t get_hash (void);
@@ -334,12 +402,8 @@ public:
 		       hash_map <symtab_node *, sem_item *> &ignored_nodes);
 
   /* Fast equality variable based on knowledge known in WPA.  */
-  inline virtual bool equals_wpa (sem_item *item,
-				  hash_map <symtab_node *, sem_item *> & ARG_UNUSED(ignored_nodes))
-  {
-    gcc_assert (item->type == VAR);
-    return true;
-  }
+  virtual bool equals_wpa (sem_item *item,
+			   hash_map <symtab_node *, sem_item *> &ignored_nodes);
 
   /* Returns varpool_node.  */
   inline varpool_node *get_node (void)
@@ -349,9 +413,6 @@ public:
 
   /* Parser function that visits a varpool NODE.  */
   static sem_variable *parse (varpool_node *node, bitmap_obstack *stack);
-
-  /* Variable constructor.  */
-  tree ctor;
 
 private:
   /* Iterates though a constructor and identifies tree references
@@ -363,7 +424,6 @@ private:
 
   /* Compare that symbol sections are either NULL or have same name.  */
   bool compare_sections (sem_variable *alias);
-
 }; // class sem_variable
 
 class sem_item_optimizer;
@@ -466,6 +526,13 @@ private:
   /* Equality function for semantic items is used to subdivide existing
      classes. If IN_WPA, fast equality function is invoked.  */
   void subdivide_classes_by_equality (bool in_wpa = false);
+
+  /* Subdivide classes by address and interposable references
+     that members of the class reference.
+     Example can be a pair of functions that have an address
+     taken from a function. If these addresses are different the class
+     is split.  */
+  unsigned subdivide_classes_by_sensitive_refs();
 
   /* Debug function prints all informations about congruence classes.  */
   void dump_cong_classes (void);

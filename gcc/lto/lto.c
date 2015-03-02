@@ -85,6 +85,8 @@ static int lto_parallelism;
 
 static GTY(()) tree first_personality_decl;
 
+static GTY(()) const unsigned char *lto_mode_identity_table;
+
 /* Returns a hash code for P.  */
 
 static hashval_t
@@ -1877,7 +1879,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
   uint32_t num_decl_states;
 
   lto_input_block ib_main ((const char *) data + main_offset,
-			   header->main_size);
+			   header->main_size, decl_data->mode_table);
 
   data_in = lto_data_in_create (decl_data, (const char *) data + string_offset,
 				header->string_size, resolutions);
@@ -2219,6 +2221,11 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
 
   file_data->renaming_hash_table = lto_create_renaming_table ();
   file_data->file_name = file->filename;
+#ifdef ACCEL_COMPILER
+  lto_input_mode_table (file_data);
+#else
+  file_data->mode_table = lto_mode_identity_table;
+#endif
   data = lto_get_section_data (file_data, LTO_section_decls, NULL, &len);
   if (data == NULL)
     {
@@ -3394,6 +3401,13 @@ lto_init (void)
   memset (&lto_stats, 0, sizeof (lto_stats));
   bitmap_obstack_initialize (NULL);
   gimple_register_cfg_hooks ();
+#ifndef ACCEL_COMPILER
+  unsigned char *table
+    = ggc_vec_alloc<unsigned char> (MAX_MACHINE_MODE);
+  for (int m = 0; m < MAX_MACHINE_MODE; m++)
+    table[m] = m;
+  lto_mode_identity_table = table;
+#endif
 }
 
 

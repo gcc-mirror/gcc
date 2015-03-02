@@ -2630,7 +2630,7 @@ cgraph_edge::verify_corresponds_to_fndecl (tree decl)
   if (!node
       || node->body_removed
       || node->in_other_partition
-      || node->icf_merged
+      || callee->icf_merged
       || callee->in_other_partition)
     return false;
 

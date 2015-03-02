@@ -9982,10 +9982,15 @@ enum s390_builtin
   S390_BUILTIN_TX_NESTING_DEPTH,
   S390_BUILTIN_TX_ASSIST,
 
-  S390_BUILTIN_max
+  S390_BUILTIN_S390_SFPC,
+  S390_BUILTIN_S390_EFPC,
+
+  S390_BUILTIN_MAX
 };
 
-static enum insn_code const code_for_builtin[S390_BUILTIN_max] = {
+tree s390_builtin_decls[S390_BUILTIN_MAX];
+
+static enum insn_code const code_for_builtin[S390_BUILTIN_MAX] = {
   CODE_FOR_tbegin,
   CODE_FOR_tbegin_nofloat,
   CODE_FOR_tbegin_retry,
@@ -9995,7 +10000,10 @@ static enum insn_code const code_for_builtin[S390_BUILTIN_max] = {
   CODE_FOR_tabort,
   CODE_FOR_ntstg,
   CODE_FOR_etnd,
-  CODE_FOR_tx_assist
+  CODE_FOR_tx_assist,
+
+  CODE_FOR_s390_sfpc,
+  CODE_FOR_s390_efpc
 };
 
 static void
@@ -10008,44 +10016,68 @@ s390_init_builtins (void)
 
   /* void foo (void) */
   ftype = build_function_type_list (void_type_node, NULL_TREE);
-  add_builtin_function ("__builtin_tbeginc", ftype, S390_BUILTIN_TBEGINC,
-			BUILT_IN_MD, NULL, NULL_TREE);
+  s390_builtin_decls[S390_BUILTIN_TBEGINC] =
+    add_builtin_function ("__builtin_tbeginc", ftype, S390_BUILTIN_TBEGINC,
+			  BUILT_IN_MD, NULL, NULL_TREE);
 
   /* void foo (int) */
   ftype = build_function_type_list (void_type_node, integer_type_node,
 				    NULL_TREE);
-  add_builtin_function ("__builtin_tabort", ftype,
-			S390_BUILTIN_TABORT, BUILT_IN_MD, NULL, noreturn_attr);
-  add_builtin_function ("__builtin_tx_assist", ftype,
-			S390_BUILTIN_TX_ASSIST, BUILT_IN_MD, NULL, NULL_TREE);
+  s390_builtin_decls[S390_BUILTIN_TABORT] =
+    add_builtin_function ("__builtin_tabort", ftype,
+			  S390_BUILTIN_TABORT, BUILT_IN_MD, NULL,
+			  noreturn_attr);
+  s390_builtin_decls[S390_BUILTIN_TX_ASSIST] =
+    add_builtin_function ("__builtin_tx_assist", ftype,
+			  S390_BUILTIN_TX_ASSIST, BUILT_IN_MD, NULL, NULL_TREE);
+
+  /* void foo (unsigned) */
+  ftype = build_function_type_list (void_type_node, unsigned_type_node,
+				    NULL_TREE);
+  s390_builtin_decls[S390_BUILTIN_S390_SFPC] =
+    add_builtin_function ("__builtin_s390_sfpc", ftype,
+			  S390_BUILTIN_S390_SFPC, BUILT_IN_MD, NULL, NULL_TREE);
 
   /* int foo (void *) */
-  ftype = build_function_type_list (integer_type_node, ptr_type_node, NULL_TREE);
-  add_builtin_function ("__builtin_tbegin", ftype, S390_BUILTIN_TBEGIN,
-			BUILT_IN_MD, NULL, returns_twice_attr);
-  add_builtin_function ("__builtin_tbegin_nofloat", ftype,
-			S390_BUILTIN_TBEGIN_NOFLOAT,
-			BUILT_IN_MD, NULL, returns_twice_attr);
+  ftype = build_function_type_list (integer_type_node, ptr_type_node,
+				    NULL_TREE);
+  s390_builtin_decls[S390_BUILTIN_TBEGIN] =
+    add_builtin_function ("__builtin_tbegin", ftype, S390_BUILTIN_TBEGIN,
+			  BUILT_IN_MD, NULL, returns_twice_attr);
+  s390_builtin_decls[S390_BUILTIN_TBEGIN_NOFLOAT] =
+    add_builtin_function ("__builtin_tbegin_nofloat", ftype,
+			  S390_BUILTIN_TBEGIN_NOFLOAT,
+			  BUILT_IN_MD, NULL, returns_twice_attr);
 
   /* int foo (void *, int) */
   ftype = build_function_type_list (integer_type_node, ptr_type_node,
 				    integer_type_node, NULL_TREE);
-  add_builtin_function ("__builtin_tbegin_retry", ftype,
-			S390_BUILTIN_TBEGIN_RETRY,
-			BUILT_IN_MD,
-			NULL, returns_twice_attr);
-  add_builtin_function ("__builtin_tbegin_retry_nofloat", ftype,
-			S390_BUILTIN_TBEGIN_RETRY_NOFLOAT,
-			BUILT_IN_MD,
-			NULL, returns_twice_attr);
+  s390_builtin_decls[S390_BUILTIN_TBEGIN_RETRY] =
+    add_builtin_function ("__builtin_tbegin_retry", ftype,
+			  S390_BUILTIN_TBEGIN_RETRY,
+			  BUILT_IN_MD,
+			  NULL, returns_twice_attr);
+  s390_builtin_decls[S390_BUILTIN_TBEGIN_RETRY_NOFLOAT] =
+    add_builtin_function ("__builtin_tbegin_retry_nofloat", ftype,
+			  S390_BUILTIN_TBEGIN_RETRY_NOFLOAT,
+			  BUILT_IN_MD,
+			  NULL, returns_twice_attr);
 
   /* int foo (void) */
   ftype = build_function_type_list (integer_type_node, NULL_TREE);
-  add_builtin_function ("__builtin_tx_nesting_depth", ftype,
-			S390_BUILTIN_TX_NESTING_DEPTH,
-			BUILT_IN_MD, NULL, NULL_TREE);
-  add_builtin_function ("__builtin_tend", ftype,
-			S390_BUILTIN_TEND, BUILT_IN_MD,	NULL, NULL_TREE);
+  s390_builtin_decls[S390_BUILTIN_TX_NESTING_DEPTH] =
+    add_builtin_function ("__builtin_tx_nesting_depth", ftype,
+			  S390_BUILTIN_TX_NESTING_DEPTH,
+			  BUILT_IN_MD, NULL, NULL_TREE);
+  s390_builtin_decls[S390_BUILTIN_TEND] =
+    add_builtin_function ("__builtin_tend", ftype,
+			  S390_BUILTIN_TEND, BUILT_IN_MD, NULL, NULL_TREE);
+
+  /* unsigned foo (void) */
+  ftype = build_function_type_list (unsigned_type_node, NULL_TREE);
+  s390_builtin_decls[S390_BUILTIN_S390_EFPC] =
+    add_builtin_function ("__builtin_s390_efpc", ftype,
+			  S390_BUILTIN_S390_EFPC, BUILT_IN_MD, NULL, NULL_TREE);
 
   /* void foo (uint64_t *, uint64_t) */
   if (TARGET_64BIT)
@@ -10053,12 +10085,13 @@ s390_init_builtins (void)
   else
     uint64_type = long_long_unsigned_type_node;
 
-   ftype = build_function_type_list (void_type_node,
+  ftype = build_function_type_list (void_type_node,
  				    build_pointer_type (uint64_type),
 				    uint64_type, NULL_TREE);
-  add_builtin_function ("__builtin_non_tx_store", ftype,
-			S390_BUILTIN_NON_TX_STORE,
-			BUILT_IN_MD, NULL, NULL_TREE);
+  s390_builtin_decls[S390_BUILTIN_NON_TX_STORE] =
+    add_builtin_function ("__builtin_non_tx_store", ftype,
+			  S390_BUILTIN_NON_TX_STORE,
+			  BUILT_IN_MD, NULL, NULL_TREE);
 }
 
 /* Expand an expression EXP that calls a built-in function,
@@ -10083,7 +10116,7 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   tree arg;
   call_expr_arg_iterator iter;
 
-  if (fcode >= S390_BUILTIN_max)
+  if (fcode >= S390_BUILTIN_MAX)
     internal_error ("bad builtin fcode");
   icode = code_for_builtin[fcode];
   if (icode == 0)
@@ -10168,6 +10201,18 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     return target;
   else
     return const0_rtx;
+}
+
+/* Return the decl for the target specific builtin with the function
+   code FCODE.  */
+
+static tree
+s390_builtin_decl (unsigned fcode, bool initialized_p ATTRIBUTE_UNUSED)
+{
+  if (fcode >= S390_BUILTIN_MAX)
+    return error_mark_node;
+
+  return s390_builtin_decls[fcode];
 }
 
 /* We call mcount before the function prologue.  So a profiled leaf
@@ -12094,6 +12139,80 @@ s390_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 	  || size == 4 || (TARGET_ZARCH && size == 8));
 }
 
+/* Implement TARGET_ATOMIC_ASSIGN_EXPAND_FENV hook.  */
+
+static void
+s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
+{
+  tree sfpc = s390_builtin_decls[S390_BUILTIN_S390_SFPC];
+  tree efpc = s390_builtin_decls[S390_BUILTIN_S390_EFPC];
+  tree call_efpc = build_call_expr (efpc, 0);
+  tree fenv_var = create_tmp_var (unsigned_type_node);
+
+#define FPC_EXCEPTION_MASK	 HOST_WIDE_INT_UC (0xf8000000)
+#define FPC_FLAGS_MASK		 HOST_WIDE_INT_UC (0x00f80000)
+#define FPC_DXC_MASK		 HOST_WIDE_INT_UC (0x0000ff00)
+#define FPC_EXCEPTION_MASK_SHIFT HOST_WIDE_INT_UC (24)
+#define FPC_FLAGS_SHIFT		 HOST_WIDE_INT_UC (16)
+#define FPC_DXC_SHIFT		 HOST_WIDE_INT_UC (8)
+
+  /* Generates the equivalent of feholdexcept (&fenv_var)
+
+     fenv_var = __builtin_s390_efpc ();
+     __builtin_s390_sfpc (fenv_var & mask) */
+  tree old_fpc = build2 (MODIFY_EXPR, unsigned_type_node, fenv_var, call_efpc);
+  tree new_fpc =
+    build2 (BIT_AND_EXPR, unsigned_type_node, fenv_var,
+	    build_int_cst (unsigned_type_node,
+			   ~(FPC_DXC_MASK | FPC_FLAGS_MASK |
+			     FPC_EXCEPTION_MASK)));
+  tree set_new_fpc = build_call_expr (sfpc, 1, new_fpc);
+  *hold = build2 (COMPOUND_EXPR, void_type_node, old_fpc, set_new_fpc);
+
+  /* Generates the equivalent of feclearexcept (FE_ALL_EXCEPT)
+
+     __builtin_s390_sfpc (__builtin_s390_efpc () & mask) */
+  new_fpc = build2 (BIT_AND_EXPR, unsigned_type_node, call_efpc,
+		    build_int_cst (unsigned_type_node,
+				   ~(FPC_DXC_MASK | FPC_FLAGS_MASK)));
+  *clear = build_call_expr (sfpc, 1, new_fpc);
+
+  /* Generates the equivalent of feupdateenv (fenv_var)
+
+  old_fpc = __builtin_s390_efpc ();
+  __builtin_s390_sfpc (fenv_var);
+  __atomic_feraiseexcept ((old_fpc & FPC_FLAGS_MASK) >> FPC_FLAGS_SHIFT);  */
+
+  old_fpc = create_tmp_var (unsigned_type_node);
+  tree store_old_fpc = build2 (MODIFY_EXPR, void_type_node,
+			       old_fpc, call_efpc);
+
+  set_new_fpc = build_call_expr (sfpc, 1, fenv_var);
+
+  tree raise_old_except = build2 (BIT_AND_EXPR, unsigned_type_node, old_fpc,
+				  build_int_cst (unsigned_type_node,
+						 FPC_FLAGS_MASK));
+  raise_old_except = build2 (RSHIFT_EXPR, unsigned_type_node, raise_old_except,
+			     build_int_cst (unsigned_type_node,
+					    FPC_FLAGS_SHIFT));
+  tree atomic_feraiseexcept
+    = builtin_decl_implicit (BUILT_IN_ATOMIC_FERAISEEXCEPT);
+  raise_old_except = build_call_expr (atomic_feraiseexcept,
+				      1, raise_old_except);
+
+  *update = build2 (COMPOUND_EXPR, void_type_node,
+		    build2 (COMPOUND_EXPR, void_type_node,
+			    store_old_fpc, set_new_fpc),
+		    raise_old_except);
+
+#undef FPC_EXCEPTION_MASK
+#undef FPC_FLAGS_MASK
+#undef FPC_DXC_MASK
+#undef FPC_EXCEPTION_MASK_SHIFT
+#undef FPC_FLAGS_SHIFT
+#undef FPC_DXC_SHIFT
+}
+
 /* Initialize GCC target structure.  */
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -12138,6 +12257,8 @@ s390_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 #define TARGET_INIT_BUILTINS s390_init_builtins
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN s390_expand_builtin
+#undef  TARGET_BUILTIN_DECL
+#define TARGET_BUILTIN_DECL s390_builtin_decl
 
 #undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
 #define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA s390_output_addr_const_extra
@@ -12282,6 +12403,9 @@ s390_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 #undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
 #define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \
   s390_use_by_pieces_infrastructure_p
+
+#undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
+#define TARGET_ATOMIC_ASSIGN_EXPAND_FENV s390_atomic_assign_expand_fenv
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

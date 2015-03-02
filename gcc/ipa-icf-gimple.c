@@ -312,10 +312,9 @@ func_checker::compare_cst_or_decl (tree t1, tree t2)
 	return return_with_debug (ret);
       }
     case FUNCTION_DECL:
-      {
-	ret = compare_function_decl (t1, t2);
-	return return_with_debug (ret);
-      }
+      /* All function decls are in the symbol table and known to match
+	 before we start comparing bodies.  */
+      return true;
     case VAR_DECL:
       return return_with_debug (compare_variable_decl (t1, t2));
     case FIELD_DECL:
@@ -448,18 +447,23 @@ func_checker::compare_operand (tree t1, tree t2)
     /* Virtual table call.  */
     case OBJ_TYPE_REF:
       {
-	x1 = TREE_OPERAND (t1, 0);
-	x2 = TREE_OPERAND (t2, 0);
-	y1 = TREE_OPERAND (t1, 1);
-	y2 = TREE_OPERAND (t2, 1);
-	z1 = TREE_OPERAND (t1, 2);
-	z2 = TREE_OPERAND (t2, 2);
+	if (!compare_ssa_name (OBJ_TYPE_REF_EXPR (t1), OBJ_TYPE_REF_EXPR (t2)))
+	  return return_false ();
+	if (opt_for_fn (m_source_func_decl, flag_devirtualize)
+	    && virtual_method_call_p (t1))
+	  {
+	    if (tree_to_uhwi (OBJ_TYPE_REF_TOKEN (t1))
+		!= tree_to_uhwi (OBJ_TYPE_REF_TOKEN (t2)))
+	      return return_false_with_msg ("OBJ_TYPE_REF token mismatch");
+	    if (!types_same_for_odr (obj_type_ref_class (t1),
+				     obj_type_ref_class (t2)))
+	      return return_false_with_msg ("OBJ_TYPE_REF OTR type mismatch");
+	    if (!compare_ssa_name (OBJ_TYPE_REF_OBJECT (t1),
+				   OBJ_TYPE_REF_OBJECT (t2)))
+	      return return_false_with_msg ("OBJ_TYPE_REF object mismatch");
+	  }
 
-	ret = compare_ssa_name (x1, x2)
-	      && compare_operand (y1, y2)
-	      && compare_cst_or_decl (z1, z2);
-
-	return return_with_debug (ret);
+	return return_with_debug (true);
       }
     case IMAGPART_EXPR:
     case REALPART_EXPR:
@@ -532,39 +536,6 @@ func_checker::compare_tree_list_operand (tree t1, tree t2)
   return true;
 }
 
-/* Verifies that trees T1 and T2, representing function declarations
-   are equivalent from perspective of ICF.  */
-
-bool
-func_checker::compare_function_decl (tree t1, tree t2)
-{
-  bool ret = false;
-
-  if (t1 == t2)
-    return true;
-
-  symtab_node *n1 = symtab_node::get (t1);
-  symtab_node *n2 = symtab_node::get (t2);
-
-  if (m_ignored_source_nodes != NULL && m_ignored_target_nodes != NULL)
-    {
-      ret = m_ignored_source_nodes->contains (n1)
-	    && m_ignored_target_nodes->contains (n2);
-
-      if (ret)
-	return true;
-    }
-
-  /* If function decl is WEAKREF, we compare targets.  */
-  cgraph_node *f1 = cgraph_node::get (t1);
-  cgraph_node *f2 = cgraph_node::get (t2);
-
-  if(f1 && f2 && f1->weakref && f2->weakref)
-    ret = f1->alias_target == f2->alias_target;
-
-  return ret;
-}
-
 /* Verifies that trees T1 and T2 do correspond.  */
 
 bool
@@ -575,20 +546,20 @@ func_checker::compare_variable_decl (tree t1, tree t2)
   if (t1 == t2)
     return true;
 
-  if (TREE_CODE (t1) == VAR_DECL && (DECL_EXTERNAL (t1) || TREE_STATIC (t1)))
-    {
-      symtab_node *n1 = symtab_node::get (t1);
-      symtab_node *n2 = symtab_node::get (t2);
+  if (DECL_ALIGN (t1) != DECL_ALIGN (t2))
+    return return_false_with_msg ("alignments are different");
 
-      if (m_ignored_source_nodes != NULL && m_ignored_target_nodes != NULL)
-	{
-	  ret = m_ignored_source_nodes->contains (n1)
-		&& m_ignored_target_nodes->contains (n2);
+  if (DECL_HARD_REGISTER (t1) != DECL_HARD_REGISTER (t2))
+    return return_false_with_msg ("DECL_HARD_REGISTER are different");
 
-	  if (ret)
-	    return true;
-	}
-    }
+  if (DECL_HARD_REGISTER (t1)
+      && DECL_ASSEMBLER_NAME (t1) != DECL_ASSEMBLER_NAME (t2))
+    return return_false_with_msg ("HARD REGISTERS are different");
+
+  /* Symbol table variables are known to match before we start comparing
+     bodies.  */
+  if (decl_in_symtab_p (t1))
+    return decl_in_symtab_p (t2);
   ret = compare_decl (t1, t2);
 
   return return_with_debug (ret);

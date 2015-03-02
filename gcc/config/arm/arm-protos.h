@@ -360,6 +360,7 @@ extern bool arm_is_constant_pool_ref (rtx);
 #define FL_CRC32      (1 << 25)	      /* ARMv8 CRC32 instructions.  */
 
 #define FL_SMALLMUL   (1 << 26)       /* Small multiply supported.  */
+#define FL_NO_VOLATILE_CE   (1 << 27) /* No volatile memory in IT block.  */
 
 #define FL_IWMMXT     (1 << 29)	      /* XScale v2 or "Intel Wireless MMX technology".  */
 #define FL_IWMMXT2    (1 << 30)       /* "Intel Wireless MMX2 technology".  */
@@ -481,6 +482,9 @@ extern int arm_arch_thumb2;
 /* Nonzero if chip supports integer division instruction.  */
 extern int arm_arch_arm_hwdiv;
 extern int arm_arch_thumb_hwdiv;
+
+/* Nonzero if chip disallows volatile memory access in IT block.  */
+extern int arm_arch_no_volatile_ce;
 
 /* Nonzero if we should use Neon to handle 64-bits operations rather
    than core registers.  */

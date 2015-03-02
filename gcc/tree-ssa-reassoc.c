@@ -3532,7 +3532,7 @@ rewrite_expr_tree (gimple stmt, unsigned int opindex,
 
   /* The final recursion case for this function is that you have
      exactly two operations left.
-     If we had one exactly one op in the entire list to start with, we
+     If we had exactly one op in the entire list to start with, we
      would have never called this function, and the tail recursion
      rewrites them one at a time.  */
   if (opindex + 2 == ops.length ())
@@ -3553,7 +3553,11 @@ rewrite_expr_tree (gimple stmt, unsigned int opindex,
 	      print_gimple_stmt (dump_file, stmt, 0, 0);
 	    }
 
-	  if (changed)
+	  /* Even when changed is false, reassociation could have e.g. removed
+	     some redundant operations, so unless we are just swapping the
+	     arguments or unless there is no change at all (then we just
+	     return lhs), force creation of a new SSA_NAME.  */
+	  if (changed || ((rhs1 != oe2->op || rhs2 != oe1->op) && opindex))
 	    {
 	      gimple insert_point = find_insert_point (stmt, oe1->op, oe2->op);
 	      lhs = make_ssa_name (TREE_TYPE (lhs));

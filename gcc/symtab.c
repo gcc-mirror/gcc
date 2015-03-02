@@ -1156,7 +1156,11 @@ symtab_node::make_decl_local (void)
     return;
 
   if (TREE_CODE (decl) == VAR_DECL)
-    DECL_COMMON (decl) = 0;
+    {
+      DECL_COMMON (decl) = 0;
+      /* ADDRESSABLE flag is not defined for public symbols.  */
+      TREE_ADDRESSABLE (decl) = 1;
+    }
   else gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
 
   DECL_COMDAT (decl) = 0;
@@ -1165,6 +1169,7 @@ symtab_node::make_decl_local (void)
   DECL_VISIBILITY_SPECIFIED (decl) = 0;
   DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
   TREE_PUBLIC (decl) = 0;
+  DECL_DLLIMPORT_P (decl) = 0;
   if (!DECL_RTL_SET_P (decl))
     return;
 
@@ -1512,6 +1517,19 @@ symtab_node::resolve_alias (symtab_node *target)
   /* If alias has address taken, so does the target.  */
   if (address_taken)
     target->ultimate_alias_target ()->address_taken = true;
+
+  /* All non-weakref aliases of THIS are now in fact aliases of TARGET.  */
+  ipa_ref *ref;
+  for (unsigned i = 0; iterate_direct_aliases (i, ref);)
+    {
+      struct symtab_node *alias_alias = ref->referring;
+      if (!alias_alias->weakref)
+	{
+	  alias_alias->remove_all_references ();
+	  alias_alias->create_reference (target, IPA_REF_ALIAS, NULL);
+	}
+      else i++;
+    }
   return true;
 }
 
@@ -1534,7 +1552,6 @@ symtab_node::noninterposable_alias (symtab_node *node, void *data)
 		 != flags_from_decl_or_type (fn->decl))
 	  || DECL_ATTRIBUTES (node->decl) != DECL_ATTRIBUTES (fn->decl))
 	return false;
-
       *(symtab_node **)data = node;
       return true;
     }
@@ -1566,6 +1583,7 @@ symtab_node::noninterposable_alias (void)
 
   /* Otherwise create a new one.  */
   new_decl = copy_node (node->decl);
+  DECL_DLLIMPORT_P (new_decl) = 0;
   DECL_NAME (new_decl) = clone_function_name (node->decl, "localalias");
   if (TREE_CODE (new_decl) == FUNCTION_DECL)
     DECL_STRUCT_FUNCTION (new_decl) = NULL;
@@ -1861,4 +1879,32 @@ symtab_node::call_for_symbol_and_aliases_1 (bool (*callback) (symtab_node *,
 	  return true;
     }
   return false;
+}
+
+/* Return ture if address of N is possibly compared.  */
+
+static bool
+address_matters_1 (symtab_node *n, void *)
+{
+  struct ipa_ref *ref;
+
+  if (!n->address_can_be_compared_p ())
+    return false;
+  if (n->externally_visible || n->force_output)
+    return true;
+
+  for (unsigned int i = 0; n->iterate_referring (i, ref); i++)
+    if (ref->address_matters_p ())
+      return true;
+  return false;
+}
+
+/* Return true if symbol's address may possibly be compared to other
+   symbol's address.  */
+
+bool
+symtab_node::address_matters_p ()
+{
+  gcc_assert (!alias);
+  return call_for_symbol_and_aliases (address_matters_1, NULL, true);
 }

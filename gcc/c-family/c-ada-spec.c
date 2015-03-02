@@ -961,7 +961,7 @@ is_tagged_type (const_tree type)
     return false;
 
   for (tmp = TYPE_METHODS (type); tmp; tmp = TREE_CHAIN (tmp))
-    if (DECL_VINDEX (tmp))
+    if (TREE_CODE (tmp) == FUNCTION_DECL && DECL_VINDEX (tmp))
       return true;
 
   return false;
@@ -1730,10 +1730,15 @@ dump_template_types (pretty_printer *buffer, tree types, int spc)
 static int
 dump_ada_template (pretty_printer *buffer, tree t, int spc)
 {
-  /* DECL_VINDEX is DECL_TEMPLATE_INSTANTIATIONS in this context.  */
-  tree inst = DECL_VINDEX (t);
-  /* DECL_RESULT_FLD is DECL_TEMPLATE_RESULT in this context.  */
-  tree result = DECL_RESULT_FLD (t);
+  /* DECL_SIZE_UNIT is DECL_TEMPLATE_INSTANTIATIONS in this context.  */
+  tree inst = DECL_SIZE_UNIT (t);
+  /* This emulates DECL_TEMPLATE_RESULT in this context.  */
+  struct tree_template_decl {
+    struct tree_decl_common common;
+    tree arguments;
+    tree result;
+  };
+  tree result = ((struct tree_template_decl *) t)->result;
   int num_inst = 0;
 
   /* Don't look at template declarations declaring something coming from
@@ -1750,7 +1755,7 @@ dump_ada_template (pretty_printer *buffer, tree t, int spc)
       if (TREE_VEC_LENGTH (types) == 0)
 	break;
 
-      if (!TYPE_P (instance) || !TYPE_METHODS (instance))
+      if (!RECORD_OR_UNION_TYPE_P (instance) || !TYPE_METHODS (instance))
 	break;
 
       num_inst++;

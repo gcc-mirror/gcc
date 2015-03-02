@@ -3631,7 +3631,7 @@ The C standard specifies that zero-length formats are allowed.
 @opindex Wformat=2
 Enable @option{-Wformat} plus additional format checks.  Currently
 equivalent to @option{-Wformat -Wformat-nonliteral -Wformat-security
--Wformat-signedness -Wformat-y2k}.
+-Wformat-y2k}.
 
 @item -Wformat-nonliteral
 @opindex Wformat-nonliteral
@@ -10569,6 +10569,14 @@ of available registers reserved for some other purposes is given
 by this parameter.  The default value of the parameter is 2, which is
 the minimal number of registers needed by typical instructions.
 This value is the best found from numerous experiments.
+
+@item lra-inheritance-ebb-probability-cutoff
+LRA tries to reuse values reloaded in registers in subsequent insns.
+This optimization is called inheritance.  EBB is used as a region to
+do this optimization.  The parameter defines a minimal fall-through
+edge probability in percentage used to add BB to inheritance EBB in
+LRA.  The default value of the parameter is 40.  The value was chosen
+from numerous runs of SPEC2000 on x86-64.
 
 @item loop-invariant-max-bbs-in-loop
 Loop invariant motion can be very expensive, both in compilation time and

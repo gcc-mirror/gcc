@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1496,7 +1496,7 @@ package body Sem_Ch9 is
 
    begin
       Generate_Definition (Def_Id);
-      Set_Contract (Def_Id, Make_Contract (Sloc (Def_Id)));
+
       Tasking_Used := True;
 
       --  Case of no discrete subtype definition

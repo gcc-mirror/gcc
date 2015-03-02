@@ -1,3 +1,21 @@
+2015-02-27  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/65038
+	* config.in: Regenerated.
+	* configure: Likewise.
+	* configure.ac (AC_HEADER_STDC): Added explicit.
+	(AC_CHECK_HEADERS): Check for default headers  plus
+	for ftw.h header.
+	* libgcov-util.c (gcov_read_profile_dir): Disable use
+	of ftw-function, if header is not found.
+	(ftw_read_file): Likewise.
+
+2015-02-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/65181
+	* config/nvptx/t-nvptx (INHIBIT_LIBC_CFLAGS): Define to
+	-Dinhibit_libc.
+
 2015-02-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/arm/bpabi.S (test_div_by_zero): Make label names

@@ -87,7 +87,21 @@
 	(match_operand:HI 4 "general_operand"))
    (set (match_operand:HI 3 "nonimmediate_operand")
 	(match_operand:HI 5 "general_operand"))]
-  "rl78_split_movsi (operands);"
+  "rl78_split_movsi (operands, SImode);"
+  [(set_attr "valloc" "op1")]
+)
+
+(define_insn_and_split "movsf"
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=vYS,v,Wfr")
+	(match_operand:SF 1 "general_operand" "viYS,Wfr,v"))]
+  ""
+  "#"
+  ""
+  [(set (match_operand:HI 2 "nonimmediate_operand")
+	(match_operand:HI 4 "general_operand"))
+   (set (match_operand:HI 3 "nonimmediate_operand")
+	(match_operand:HI 5 "general_operand"))]
+  "rl78_split_movsi (operands, SFmode);"
   [(set_attr "valloc" "op1")]
 )
 

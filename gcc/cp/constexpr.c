@@ -3113,9 +3113,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case RETURN_EXPR:
-      r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 0),
-					lval,
-					non_constant_p, overflow_p);
+      if (TREE_OPERAND (t, 0) != NULL_TREE)
+	r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 0),
+					  lval,
+					  non_constant_p, overflow_p);
       *jump_target = t;
       break;
 

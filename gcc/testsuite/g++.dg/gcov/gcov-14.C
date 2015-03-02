@@ -14,3 +14,8 @@ int main ()
 }
 
 /* { dg-final { run-gcov gcov-14.C } } */
+/* run-gcov cleanups up after itself, but doesn't find all created gcov files.
+   We could try to grep for ^Created in the exec log, but since there's only one
+   testcase where we create these extra gcov files, do a local cleanup for
+   now.  */
+/* { dg-final { remote_file target delete iostream.gcov ostream.gcov locale_facets.h.gcov } } */
