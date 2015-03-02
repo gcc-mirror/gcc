@@ -393,7 +393,6 @@ public:
   inline virtual void init (void)
   {
     decl = get_node ()->decl;
-    ctor = ctor_for_folding (decl);
   }
 
   virtual hashval_t get_hash (void);
@@ -415,9 +414,6 @@ public:
   /* Parser function that visits a varpool NODE.  */
   static sem_variable *parse (varpool_node *node, bitmap_obstack *stack);
 
-  /* Variable constructor.  */
-  tree ctor;
-
 private:
   /* Iterates though a constructor and identifies tree references
      we are interested in semantic function equality.  */
@@ -428,7 +424,6 @@ private:
 
   /* Compare that symbol sections are either NULL or have same name.  */
   bool compare_sections (sem_variable *alias);
-
 }; // class sem_variable
 
 class sem_item_optimizer;
