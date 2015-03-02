@@ -209,7 +209,11 @@ package body Ada.Strings.Search is
          raise Index_Error;
       end if;
 
-      for J in From .. Source'Last loop
+      --  If Source is the empty string, From may still be out of its
+      --  range.  The following ensures that in all cases there is no
+      --  possible erroneous access to a non-existing character.
+
+      for J in Integer'Max (From, Source'First) .. Source'Last loop
          if Belongs (Source (J), Set, Test) then
             First := J;
 

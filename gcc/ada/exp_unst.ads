@@ -195,7 +195,7 @@ package Exp_Unst is
    --   xxx is replaced by Tnn!(AREC1.xxx).all (where ! represents a call
    --   to unchecked conversion to convert the address to the access type
    --   and Tnn is a locally declared type that is "access all t", where t
-   --   is the type of the reference.
+   --   is the type of the reference).
 
    --   Note: the reason that we use Address as the component type in the
    --   declaration of AREC1T is that we may create this type before we see
