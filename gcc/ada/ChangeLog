@@ -1,3 +1,15 @@
+2015-03-02  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-interface/utils.c (gnat_pushdecl): For non-artificial pointer
+	types, preserve the original type and create copies just like the C
+	front-end does.  For artificial ones, do not define a name for
+	the original type.
+	(create_type_decl): When gnat_pushdecl made the input type the
+	original type for the new declaration, do not define a stub
+	declaration for it.
+	* gcc-interface/utils2.c (build_binary_op): Accept two different
+	pointer types when they point to the same type.
+
 2015-03-02  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_util.adb (Possible_Bit_Aligned_Component): Do not process
