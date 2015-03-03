@@ -1,3 +1,9 @@
+2015-03-03  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/65249
+	* config/sh/sh.md (symGOT_load): Use R0 reg for operands[2] when
+	called for __stack_chk_guard symbol.
+
 2015-03-03  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78-real.md (*addqi_real): Allow SADDR types for
