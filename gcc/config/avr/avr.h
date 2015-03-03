@@ -492,41 +492,17 @@ typedef struct avr_args
 #define ADJUST_INSN_LENGTH(INSN, LENGTH)                \
     (LENGTH = avr_adjust_insn_length (INSN, LENGTH))
 
-#define DRIVER_SELF_SPECS " %{mmcu=*:-specs=device-specs/specs-%*%s %<mmcu=*} "
-#define CPP_SPEC ""
+#define DRIVER_SELF_SPECS                                       \
+  " %{!mmcu=*:%{!march=*:-specs=device-specs/specs-avr2%s} "    \
+  "           %{march=*:-specs=device-specs/specs-%*%s}} "      \
+  " %{mmcu=*:-specs=device-specs/specs-%*%s %<mmcu=*} "
 
 /* We want cc1plus used as a preprocessor to pick up the cpp spec from the
    per-device spec files  */
 #define CPLUSPLUS_CPP_SPEC "%(cpp)"
 
-#define CC1_SPEC ""
-
-#define CC1PLUS_SPEC "%{!frtti:-fno-rtti} \
-    %{!fenforce-eh-specs:-fno-enforce-eh-specs} \
-    %{!fexceptions:-fno-exceptions}"
-
-#define ASM_SPEC "%{march=*:-mmcu=%*}%{mrelax: --mlink-relax}"
-  
-#define LINK_SPEC "\
-%{mrelax:--relax\
-         %{mpmem-wrap-around:%{mmcu=at90usb8*:--pmem-wrap-around=8k}\
-                             %{mmcu=atmega16*:--pmem-wrap-around=16k}\
-                             %{mmcu=atmega32*|\
-                               mmcu=at90can32*:--pmem-wrap-around=32k}\
-                             %{mmcu=atmega64*|\
-                               mmcu=at90can64*|\
-                               mmcu=at90usb64*:--pmem-wrap-around=64k}}}\
-%{march=*:-m%*}\
-%{shared:%eshared is not supported}"
-
-#define LIB_SPEC \
-  "%{!mmcu=at90s1*:%{!mmcu=attiny11:%{!mmcu=attiny12:%{!mmcu=attiny15:%{!mmcu=attiny28: -lc }}}}}"
-
 #define LIBSTDCXX "gcc"
 /* No libstdc++ for now.  Empty string doesn't work.  */
-
-#define LIBGCC_SPEC \
-  "%{!mmcu=at90s1*:%{!mmcu=attiny11:%{!mmcu=attiny12:%{!mmcu=attiny15:%{!mmcu=attiny28: -lgcc }}}}}"
 
 /* The actual definition will come from the device-specific spec file.  */
 #define STARTFILE_SPEC ""
