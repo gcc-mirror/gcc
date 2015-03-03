@@ -470,8 +470,10 @@ public:
      read-only variables that can be merged.  */
   void parse_funcs_and_vars (void);
 
-  /* Optimizer entry point.  */
-  void execute (void);
+  /* Optimizer entry point which returns true in case it processes
+     a merge operation. True is returned if there's a merge operation
+     processed.  */
+  bool execute (void);
 
   /* Dump function. */
   void dump (void);
@@ -545,8 +547,9 @@ private:
 
   /* After reduction is done, we can declare all items in a group
      to be equal. PREV_CLASS_COUNT is start number of classes
-     before reduction.  */
-  void merge_classes (unsigned int prev_class_count);
+     before reduction. True is returned if there's a merge operation
+     processed.  */
+  bool merge_classes (unsigned int prev_class_count);
 
   /* Adds a newly created congruence class CLS to worklist.  */
   void worklist_push (congruence_class *cls);
