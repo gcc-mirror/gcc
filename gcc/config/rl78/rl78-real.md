@@ -113,14 +113,14 @@
 ;;---------- Arithmetic ------------------------
 
 (define_insn "*addqi3_real"
-  [(set (match_operand:QI          0 "rl78_nonimmediate_operand"  "=rvWabWhlWh1,rvWabWhlWh1,a,*bcdehl,Wsa")
+  [(set (match_operand:QI          0 "rl78_nonimmediate_operand"  "=rvWabWhlWh1Wsa,rvWabWhlWh1Wsa,a,*bcdehl,Wsa")
 	(plus:QI (match_operand:QI 1 "rl78_general_operand"  "%0,0,0,0,0")
 		 (match_operand:QI 2 "rl78_general_operand" "K,L,RWhlWh1Wabi,a,i")))
    ]
   "rl78_real_insns_ok ()"
   "@
-    inc\t%0
-    dec\t%0
+    inc\t%p0
+    dec\t%p0
     add\t%0, %2
     add\t%0, %2
     add\t%0, %2"
@@ -128,7 +128,7 @@
 )
 
 (define_insn "*addhi3_real"
-  [(set (match_operand:HI          0 "rl78_nonimmediate_operand"  "=vABDTWh1Wab,vABDTWh1Wab,v,v,A,S,S,A")
+  [(set (match_operand:HI          0 "rl78_nonimmediate_operand"  "=vABDTWhlWh1WabWsa,vABDTWhlWh1WabWsa,v,v,A,S,S,A")
 	(plus:HI (match_operand:HI 1 "rl78_general_operand"  "%0,0,0,0,0,0,0,S")
 		 (match_operand:HI 2 "" "K,L,N,O,RWh1WhlWabiv,Int8Qs8,J,Ri")))
    ]

@@ -1,3 +1,17 @@
+2015-03-03  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78-real.md (*addqi_real): Allow SADDR types for
+	inc/dec.
+	(*addhi3_real): Likewise.
+	* config/rl78/rl78-virt.md (*inc<mode>3_virt): Additional
+	pattern to match incrementing memory.
+	* config/rl78/predicates.md (rl78_1_2_operand): New.
+	* config/rl78/rl78.c (rl78_force_nonfar_3): Allow far mem-mem if
+	it's the same and only mem.
+	(rl78_alloc_physical_registers_op2): If there's effectively only
+	one MEM, transcode it into HL.
+	(rl78_far_p): Reject addresses that aren't legitimate.
+
 2015-03-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (round_up_loc): Cast divisor to HOST_WIDE_INT before
