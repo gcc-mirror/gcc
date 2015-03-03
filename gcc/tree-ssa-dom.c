@@ -2649,19 +2649,22 @@ lookup_avail_expr (gimple stmt, bool insert)
 	    && walk_non_aliased_vuses (&ref, vuse2,
 				       vuse_eq, NULL, NULL, vuse1) != NULL))
 	{
-	  struct expr_hash_elt *element2 = XNEW (struct expr_hash_elt);
-	  *element2 = element;
-	  element2->stamp = element2;
-
-	  /* Insert the expr into the hash by replacing the current
-	     entry and recording the value to restore in the
-	     aval_exprs_stack.  */
-	  avail_exprs_stack.safe_push (std::make_pair (element2, *slot));
-	  *slot = element2;
-	  if (dump_file && (dump_flags & TDF_DETAILS))
+	  if (insert)
 	    {
-	      fprintf (dump_file, "2>>> ");
-	      print_expr_hash_elt (dump_file, *slot);
+	      struct expr_hash_elt *element2 = XNEW (struct expr_hash_elt);
+	      *element2 = element;
+	      element2->stamp = element2;
+
+	      /* Insert the expr into the hash by replacing the current
+		 entry and recording the value to restore in the
+		 avail_exprs_stack.  */
+	      avail_exprs_stack.safe_push (std::make_pair (element2, *slot));
+	      *slot = element2;
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "2>>> ");
+		  print_expr_hash_elt (dump_file, *slot);
+		}
 	    }
 	  return NULL_TREE;
 	}

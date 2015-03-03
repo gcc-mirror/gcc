@@ -1,3 +1,8 @@
+2015-03-13  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/65241
+	* gcc.c-torture/compile/pr65241.c: New test.
+
 2015-03-03  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/64331

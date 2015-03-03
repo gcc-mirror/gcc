@@ -1,3 +1,9 @@
+2015-03-23  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/65241
+	* tree-ssa-dom.c (lookup_avail_expr): Only modify the avail_expr
+	hash table if INSERT is true.
+
 2015-03-03  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/65296
