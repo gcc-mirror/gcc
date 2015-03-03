@@ -44,7 +44,7 @@ their own patches from other maintainers or reviewers.
 aarch64 port		Marcus Shawcroft	<marcus.shawcroft@arm.com>
 aarch64 port		Richard Earnshaw	<richard.earnshaw@arm.com>
 alpha port		Richard Henderson	<rth@redhat.com>
-arc port		Joern Rennecke		<joern.rennecke@embecosm.com>
+arc port		Joern Rennecke		<gnu@amylaar.uk>
 arm port		Nick Clifton		<nickc@redhat.com>
 arm port		Richard Earnshaw	<richard.earnshaw@arm.com>
 arm port		Paul Brook		<paul@codesourcery.com>
@@ -54,7 +54,7 @@ bfin port		Bernd Schmidt		<bernds@codesourcery.com>
 bfin port		Jie Zhang		<jzhang918@gmail.com>
 c6x port		Bernd Schmidt		<bernds@codesourcery.com>
 cris port		Hans-Peter Nilsson	<hp@axis.com>
-epiphany port		Joern Rennecke		<joern.rennecke@embecosm.com>
+epiphany port		Joern Rennecke		<gnu@amylaar.uk>
 fr30 port		Nick Clifton		<nickc@redhat.com>
 frv port		Nick Clifton		<nickc@redhat.com>
 frv port		Alexandre Oliva		<aoliva@redhat.com>
