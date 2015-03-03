@@ -1,3 +1,12 @@
+2015-03-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/64331
+	* config/avr/avr.c (context.h, tree-pass.h): Include them.
+	(avr_pass_data_recompute_notes): New static variable.
+	(avr_pass_recompute_notes): New class.
+	(avr_register_passes): New static function.
+	(avr_option_override): Call it.
+
 2015-03-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/ia64/ia64.c (expand_vec_perm_interleave_2): Use gen_raw_REG
@@ -23,7 +32,7 @@
 
 2015-02-27  Andrew Pinski  <apinski@cavium.com>
 	    Naveen H.S  <Naveen.Hurugalawadi@caviumnetworks.com>
- 
+
 	* config/aarch64/aarch64.c (*aarch64_load_symref_appropriately):
 	Check whether the destination of SYMBOL_SMALL_TPREL is Pmode.
 

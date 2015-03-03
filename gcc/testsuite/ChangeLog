@@ -1,3 +1,8 @@
+2015-03-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/64331
+	* gcc.target/avr/torture/pr64331.c: New test.
+
 2015-03-03  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	Backport from mainline
