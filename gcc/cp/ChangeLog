@@ -1,3 +1,9 @@
+2015-03-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR c++/65295
+	* constexpr.c (cxx_eval_constant_expression): Remove assert in
+	RESULT_DECL handling.
+
 2015-02-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/65202

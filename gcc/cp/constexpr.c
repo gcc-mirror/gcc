@@ -2955,8 +2955,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       if (lval)
 	return t;
       /* We ask for an rvalue for the RESULT_DECL when indirecting
-	 through an invisible reference.  */
-      gcc_assert (DECL_BY_REFERENCE (t));
+	 through an invisible reference, or in named return value
+	 optimization.  */
       return (*ctx->values->get (t));
 
     case VAR_DECL:
