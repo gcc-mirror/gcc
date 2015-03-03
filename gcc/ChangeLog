@@ -1,3 +1,23 @@
+2015-03-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	Fix various problems with specs file generation.
+
+	PR target/65296
+	* config.gcc (extra_gcc_objs) [avr]: Remove.
+	* config/avr/driver-avr.c: Remove file.
+	* config/avr/t-avr (driver-avr.o): Remove rule.
+	(gen-avr-mmcu-specs): Use CXX_FOR_BUILD, CXXFLAGS_FOR_BUILD and
+	INCLUDES to build.  Depend on TM_H.
+	* config/avr/gen-avr-mmcu-specs.c: Tidy up code.  Fix various
+	build warnings.  Fix non-matching types and non-existing %-codes.
+	(tm.h): Include.
+	(*lib) [!WITH_AVRLIBC]: Don't link libdev.a.
+	(*libgcc) [WITH_AVRLIBC]: Add "-lm".
+	* config/avr/avrlibc.h (LIBGCC_SPEC): Remove definition.
+	* config/avr/avr.h (DRIVER_SELF_SPECS): Fix handling of -march=.
+	(CPP_SPEC, CC1PLUS_SPEC, ASM_SPEC, LINK_SPEC, LIB_SPEC)
+	(LIBGCC_SPEC): Remove definitions.
+
 2015-03-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/ia64/ia64.c (expand_vec_perm_interleave_2): Use gen_raw_REG

@@ -19,11 +19,13 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* AVR-Libc implements functions from libgcc.a in libm.a, see PR54461.  */
+/* AVR-Libc implements functions from libgcc.a in libm.a, see PR54461.
+   More AVR-Libc specific specs originate from gen-avr-mmcu-specs.c:
 
-#undef  LIBGCC_SPEC
-#define LIBGCC_SPEC                                                     \
-  "%{!mmcu=at90s1*:%{!mmcu=attiny11:%{!mmcu=attiny12:%{!mmcu=attiny15:%{!mmcu=attiny28: -lgcc -lm }}}}}"
+   - LIBGCC_SPEC (*libgcc)
+   - LIB_SPEC (*lib)
+   
+*/
 
 #undef  LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC \
