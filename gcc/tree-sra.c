@@ -5009,13 +5009,54 @@ modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
   return cfg_changed;
 }
 
-/* If NODE has a caller, return true.  */
+/* Means of communication between ipa_sra_check_caller and
+   ipa_sra_preliminary_function_checks.  */
+
+struct ipa_sra_check_caller_data
+{
+  bool has_callers;
+  bool bad_arg_alignment;
+};
+
+/* If NODE has a caller, mark that fact in DATA which is pointer to
+   ipa_sra_check_caller_data.  Also check all aggregate arguments in all known
+   calls if they are unit aligned and if not, set the appropriate flag in DATA
+   too. */
 
 static bool
-has_caller_p (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
+ipa_sra_check_caller (struct cgraph_node *node, void *data)
 {
-  if (node->callers)
-    return true;
+  if (!node->callers)
+    return false;
+
+  struct ipa_sra_check_caller_data *iscc;
+  iscc = (struct ipa_sra_check_caller_data *) data;
+  iscc->has_callers = true;
+
+  for (cgraph_edge *cs = node->callers; cs; cs = cs->next_caller)
+    {
+      gimple call_stmt = cs->call_stmt;
+      unsigned count = gimple_call_num_args (call_stmt);
+      for (unsigned i = 0; i < count; i++)
+	{
+	  tree arg = gimple_call_arg (call_stmt, i);
+	  if (is_gimple_reg (arg))
+	      continue;
+
+	  tree offset;
+	  HOST_WIDE_INT bitsize, bitpos;
+	  machine_mode mode;
+	  int unsignedp, volatilep = 0;
+	  get_inner_reference (arg, &bitsize, &bitpos, &offset, &mode,
+			       &unsignedp, &volatilep, false);
+	  if (bitpos % BITS_PER_UNIT)
+	    {
+	      iscc->bad_arg_alignment = true;
+	      return true;
+	    }
+	}
+    }
+
   return false;
 }
 
@@ -5070,14 +5111,6 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
       return false;
     }
 
-  if (!node->call_for_symbol_thunks_and_aliases (has_caller_p, NULL, true))
-    {
-      if (dump_file)
-	fprintf (dump_file,
-		 "Function has no callers in this compilation unit.\n");
-      return false;
-    }
-
   if (cfun->stdarg)
     {
       if (dump_file)
@@ -5093,6 +5126,25 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
       if (dump_file)
 	fprintf (dump_file, "Always inline function will be inlined "
 		 "anyway. \n");
+      return false;
+    }
+
+  struct ipa_sra_check_caller_data iscc;
+  memset (&iscc, 0, sizeof(iscc));
+  node->call_for_symbol_thunks_and_aliases (ipa_sra_check_caller, &iscc, true);
+  if (!iscc.has_callers)
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "Function has no callers in this compilation unit.\n");
+      return false;
+    }
+
+  if (iscc.bad_arg_alignment)
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "A function call has an argument with non-unit alignemnt.\n");
       return false;
     }
 

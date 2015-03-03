@@ -1,3 +1,11 @@
+2015-03-03  Martin Jambor  <mjambor@suse.cz>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-sra.c (ipa_sra_check_caller_data): New type.
+	(has_caller_p): Removed.
+	(ipa_sra_check_caller): New function.
+	(ipa_sra_preliminary_function_checks): Use it.
+
 2015-03-03  Martin Liska  <mliska@suse.cz>
 
 	* ipa-icf.c (sem_item_optimizer::merge_classes): Use bit or
