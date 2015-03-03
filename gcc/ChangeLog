@@ -1,3 +1,8 @@
+2015-03-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR 65138/target
+	* config/rs6000/rs6000-tables.opt: Regenerate table.
+
 2015-03-03  Renlin Li  <renlin.li@arm.com>
 
 	* doc/md.texi (@item ^): Change ? into ^.
