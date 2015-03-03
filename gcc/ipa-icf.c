@@ -2976,8 +2976,7 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 		alias->dump_to_file (dump_file);
 	      }
 
-	    if (source->merge (alias))
-	      merged_p = true;
+	    merged_p |= source->merge (alias);
 	  }
       }
 
