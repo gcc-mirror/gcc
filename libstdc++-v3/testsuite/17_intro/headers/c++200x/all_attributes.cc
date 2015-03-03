@@ -22,11 +22,14 @@
 // Don't test 'const' and 'noreturn' because they are reserved anyway.
 #define abi_tag 1
 #define always_inline 1
-#define deprecated 1
+#ifndef __APPLE__
+// darwin headers use these, see PR 64883
+# define visibility 1
+# define deprecated 1
+#endif
 #define packed 1
 #define pure 1
 #define unused 1
-#define visibility 1
 
 #include <bits/stdc++.h> // TODO: this is missing from <bits/extc++.h>
 #include <codecvt>       // TODO: this is missing from <bits/stdc++.h>
