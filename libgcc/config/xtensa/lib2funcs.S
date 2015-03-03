@@ -29,6 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    current register window.  This is used to set up the stack so that
    arbitrary frames can be accessed.  */
 
+#if XCHAL_HAVE_WINDOWED && !__XTENSA_CALL0_ABI__
 	.align	4
 	.global	__xtensa_libgcc_window_spill
 	.type	__xtensa_libgcc_window_spill,@function
@@ -38,6 +39,7 @@ __xtensa_libgcc_window_spill:
 	syscall
 	retw
 	.size	__xtensa_libgcc_window_spill, .-__xtensa_libgcc_window_spill
+#endif
 
 
 /* __xtensa_nonlocal_goto: This code does all the hard work of a
@@ -51,6 +53,7 @@ __xtensa_libgcc_window_spill:
   This function never returns to its caller but instead goes directly
   to the address of the specified goto handler.  */
 
+#if XCHAL_HAVE_WINDOWED && !__XTENSA_CALL0_ABI__
 	.align	4
 	.global	__xtensa_nonlocal_goto
 	.type	__xtensa_nonlocal_goto,@function
@@ -128,6 +131,7 @@ __xtensa_nonlocal_goto:
 
 	retw
 	.size	__xtensa_nonlocal_goto, .-__xtensa_nonlocal_goto
+#endif
 
 
 /* __xtensa_sync_caches: This function is called after writing a trampoline
@@ -154,7 +158,9 @@ __xtensa_nonlocal_goto:
 	.global	__xtensa_sync_caches
 	.type	__xtensa_sync_caches,@function
 __xtensa_sync_caches:
+#if XCHAL_HAVE_WINDOWED && !__XTENSA_CALL0_ABI__
 	entry 	sp, 32
+#endif
 #if XCHAL_DCACHE_SIZE > 0
 	/* Flush the trampoline from the data cache.  */
 	extui	a4, a2, 0, XCHAL_DCACHE_LINEWIDTH
@@ -182,5 +188,9 @@ __xtensa_sync_caches:
 	bnez	a4, .Licache_loop
 #endif
 	isync
+#if XCHAL_HAVE_WINDOWED && !__XTENSA_CALL0_ABI__
 	retw
+#else
+	ret
+#endif
 	.size	__xtensa_sync_caches, .-__xtensa_sync_caches

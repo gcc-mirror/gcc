@@ -1,3 +1,16 @@
+2015-03-03  Max Filippov  <jcmvbkbc@gmail.com>
+	
+	Implement call0 ABI for xtensa
+	* config/xtensa/lib2funcs.S (__xtensa_libgcc_window_spill,
+	__xtensa_nonlocal_goto): Don't compile for call0 ABI.
+	(__xtensa_sync_caches): Only use entry and retw in windowed ABI,
+	use ret in call0 ABI.
+	* config/xtensa/t-windowed: New file.
+	* libgcc/config/xtensa/t-xtensa (LIB2ADDEH): Move to t-windowed.
+	* libgcc/configure: Regenerated.
+	* libgcc/configure.ac: Check if xtensa target is configured for
+	windowed ABI and thus needs to use custom unwind code.
+
 2015-02-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libgcc/64885

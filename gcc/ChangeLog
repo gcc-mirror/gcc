@@ -1,3 +1,83 @@
+2015-03-03  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Implement call0 ABI for xtensa
+	* config/xtensa/constraints.md ("a" constraint): Include stack
+	pointer in case of call0 ABI.
+	("q" constraint): Make empty in case of call0 ABI.
+	("D" constraint): Include stack pointer in case of call0 ABI.
+	* config/xtensa/xtensa-protos.h (xtensa_set_return_address,
+	xtensa_expand_epilogue, xtensa_regno_to_class): Add new function
+	prototypes.
+	* config/xtensa/xtensa.c (xtensa_callee_save_size): New
+	variable.
+	(xtensa_regno_to_class): Make it a local variable in the
+	function xtensa_regno_to_class.
+	(xtensa_function_epilogue, TARGET_ASM_FUNCTION_EPILOGUE): Remove
+	macro, function prototype and implementation.
+	(reg_nonleaf_alloc_order): Make it a local variable in the
+	function order_regs_for_local_alloc.
+	(xtensa_conditional_register_usage): New function.
+	(TARGET_CONDITIONAL_REGISTER_USAGE): Define macro.
+	(xtensa_valid_move): Allow direct moves to stack pointer
+	register in call0 ABI.
+	(xtensa_setup_frame_addresses): Only spill register windows in
+	windowed ABI.
+	(xtensa_emit_call): Emit call(x)8 or call(x)0 in windowed and
+	call0 ABI respectively.
+	(xtensa_function_arg_1): Only mark a7 register for copying in
+	windowed ABI.
+	(xtensa_call_save_reg): New function.
+	(compute_frame_size): Add space for callee saved register
+	storage to the frame size in call0 ABI.
+	(xtensa_expand_prologue): Generate code to set up stack frame
+	and save callee-saved registers in call0 ABI.
+	(xtensa_expand_epilogue): New function.
+	(xtensa_set_return_address): New function.
+	(xtensa_return_addr): Calculate return address in call0 ABI.
+	(xtensa_builtin_saveregs): Only mark a7 register for copying and
+	emit copying code in windowed ABI.
+	(order_regs_for_local_alloc): Add preferred register allocation
+	order for non-leaf function in call0 ABI.
+	(xtensa_static_chain): Add atatic chain passing for call0 ABI.
+	(xtensa_asm_trampoline_template): Add trampoline generation for
+	call0 ABI.
+	(xtensa_trampoline_init): Add trampoline initialization for
+	call0 ABI.
+	(xtensa_conditional_register_usage, xtensa_regno_to_class): New
+	functions.
+	* config/xtensa/xtensa.h (TARGET_WINDOWED_ABI): New macro.
+	(TARGET_CPU_CPP_BUILTINS): Add built-in define for call0 ABI.
+	(CALL_USED_REGISTERS): Modify to encode both windowed and call0
+	ABI call-used registers.
+	(HARD_FRAME_POINTER_REGNUM): Add frame pointer for call0 ABI.
+	(INCOMING_REGNO, OUTGOING_REGNO): Use argument unchanged in
+	call0 ABI.
+	(REG_CLASS_CONTENTS): Include all registers into the preferred
+	reload registers set, adjust the set in the
+	xtensa_conditional_register_usage.
+	(xtensa_regno_to_class): Drop variable declaration.
+	(REGNO_REG_CLASS): Redefine to use xtensa_regno_to_class
+	function.
+	(WINDOW_SIZE): Define as 8 or 0 for windowed and call0 ABI
+	respectively.
+	(FUNCTION_PROFILER): Add _mcount call for call0 ABI.
+	(TRAMPOLINE_SIZE): Define trampoline size for call0 ABI.
+	(RETURN_ADDR_IN_PREVIOUS_FRAME): Define to 0 in call0 ABI.
+	(ASM_OUTPUT_POOL_PROLOGUE): Always generate literal pool
+	location in call0 ABI.
+	(EH_RETURN_STACKADJ_RTX): New definition, use a10 for passing
+	stack adjustment size when handling exception.
+	(CRT_CALL_STATIC_FUNCTION): Add definition for call0 ABI.
+	* config/xtensa/xtensa.md (A9_REG, UNSPECV_BLOCKAGE): New
+	definitions.
+	("return" pattern): Generate ret.n/ret in call0 ABI.
+	("epilogue" pattern): Expand epilogue.
+	("nonlocal_goto" pattern): Use default in call0 ABI.
+	("eh_return" pattern): Move implementation to eh_set_a0_windowed,
+	emit eh_set_a0_* depending on ABI.
+	("eh_set_a0_windowed" pattern): Former eh_return pattern.
+	("eh_set_a0_call0", "blockage"): New patterns.
+
 2015-03-03  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/65287
