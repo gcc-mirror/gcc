@@ -1,3 +1,9 @@
+2015-03-03  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/65249
+	* config/sh/sh.md (symGOT_load): Use R0 reg for operands[2] when
+	called for __stack_chk_guard symbol.
+
 2015-03-03  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/64331

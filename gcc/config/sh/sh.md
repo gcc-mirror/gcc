@@ -10164,9 +10164,24 @@ label:
   ""
 {
   rtx mem;
+  bool stack_chk_guard_p = false;
 
   operands[2] = !can_create_pseudo_p () ? operands[0] : gen_reg_rtx (Pmode);
   operands[3] = !can_create_pseudo_p () ? operands[0] : gen_reg_rtx (Pmode);
+
+  if (!TARGET_SHMEDIA
+      && flag_stack_protect
+      && GET_CODE (operands[1]) == CONST
+      && GET_CODE (XEXP (operands[1], 0)) == UNSPEC
+      && GET_CODE (XVECEXP (XEXP (operands[1], 0), 0, 0)) == SYMBOL_REF
+      && strcmp (XSTR (XVECEXP (XEXP (operands[1], 0), 0, 0), 0),
+		 "__stack_chk_guard") == 0)
+    stack_chk_guard_p = true;
+
+  /* Use R0 to avoid long R0 liveness which stack-protector tends to
+     produce.  */
+  if (stack_chk_guard_p && ! reload_in_progress && ! reload_completed)
+    operands[2] = gen_rtx_REG (Pmode, R0_REG);
 
   if (TARGET_SHMEDIA)
     {
@@ -10195,13 +10210,7 @@ label:
      insn to avoid combining (set A (plus rX r12)) and (set op0 (mem A))
      when rX is a GOT address for the guard symbol.  Ugly but doesn't
      matter because this is a rare situation.  */
-  if (!TARGET_SHMEDIA
-      && flag_stack_protect
-      && GET_CODE (operands[1]) == CONST
-      && GET_CODE (XEXP (operands[1], 0)) == UNSPEC
-      && GET_CODE (XVECEXP (XEXP (operands[1], 0), 0, 0)) == SYMBOL_REF
-      && strcmp (XSTR (XVECEXP (XEXP (operands[1], 0), 0, 0), 0),
-		 "__stack_chk_guard") == 0)
+  if (stack_chk_guard_p)
     emit_insn (gen_chk_guard_add (operands[3], operands[2]));
   else
     emit_move_insn (operands[3], gen_rtx_PLUS (Pmode, operands[2],
