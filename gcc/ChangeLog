@@ -1,3 +1,8 @@
+2015-03-03  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/65282
+	* ipa-icf.c (sem_variable::equals): Fix wrong condition.
+
 2015-03-23  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/65241

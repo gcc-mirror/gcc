@@ -1638,7 +1638,7 @@ sem_variable::equals (tree t1, tree t2)
 	tree y1 = TREE_OPERAND (t1, 1);
 	tree y2 = TREE_OPERAND (t2, 1);
 
-	if (!sem_variable::equals (x1, x2) && sem_variable::equals (y1, y2))
+	if (!sem_variable::equals (x1, x2) || !sem_variable::equals (y1, y2))
 	  return false;
 	if (!sem_variable::equals (array_ref_low_bound (t1),
 				   array_ref_low_bound (t2)))
