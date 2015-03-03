@@ -1,5 +1,14 @@
 2015-03-03  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/64331
+	* config/avr/avr.c (context.h, tree-pass.h): Include them.
+	(avr_pass_data_recompute_notes): New static variable.
+	(avr_pass_recompute_notes): New class.
+	(avr_register_passes): New static function.
+	(avr_option_override): Call it.
+
+2015-03-03  Georg-Johann Lay  <avr@gjlay.de>
+
 	Fix various problems with specs file generation.
 
 	PR target/65296
