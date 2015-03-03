@@ -1,3 +1,7 @@
+2015-03-03  Joern Rennecke  <gnu@amylaar.uk>
+
+	* MAINTAINERS (CPU Port Maintainers): Update my email address.
+
 2015-03-02  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* MAINTAINERS (Various Maintainers): Add myself as libmpx,
