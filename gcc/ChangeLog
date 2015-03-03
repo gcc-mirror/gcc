@@ -1,3 +1,7 @@
+2015-03-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/tm.texi: Regenerated.
+
 2015-03-03  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* builtins.c (expand_builtin_return_addr): Add
