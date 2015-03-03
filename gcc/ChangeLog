@@ -1,4 +1,13 @@
 2015-03-03  Martin Liska  <mliska@suse.cz>
+	    Jan Hubicka   <hubicka@ucw.cz>
+
+	PR ipa/65263
+	* cgraph.c (cgraph_node::has_thunk_p): New function.
+	* cgraph.h (cgraph_node::has_thunk_p: Likewise.
+	* ipa-icf.c (redirect_all_callers): Do not redirect thunks.
+	(sem_function::merge): Assert is changed.
+
+2015-03-03  Martin Liska  <mliska@suse.cz>
 	    Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/65087
