@@ -579,6 +579,13 @@ rl78_force_nonfar_3 (rtx *operands, rtx (*gen)(rtx,rtx,rtx))
   int did = 0;
   rtx temp_reg = NULL;
 
+  /* As an exception, we allow two far operands if they're identical
+     and the third operand is not a MEM.  This allows global variables
+     to be incremented, for example.  */
+  if (rtx_equal_p (operands[0], operands[1])
+      && ! MEM_P (operands[2]))
+    return 0;
+
   /* FIXME: Likewise.  */
   if (rl78_far_p (operands[1]))
     {
@@ -970,6 +977,12 @@ rl78_far_p (rtx x)
   fprintf (stderr, "\033[35mrl78_far_p: "); debug_rtx (x);
   fprintf (stderr, " = %d\033[0m\n", MEM_ADDR_SPACE (x) == ADDR_SPACE_FAR);
 #endif
+
+  /* Not all far addresses are legitimate, because the devirtualizer
+     can't handle them.  */
+  if (! rl78_as_legitimate_address (GET_MODE (x), XEXP (x, 0), false, ADDR_SPACE_FAR))
+    return 0;
+
   return GET_MODE_BITSIZE (rl78_addr_space_address_mode (MEM_ADDR_SPACE (x))) == 32;
 }
 
@@ -3007,9 +3020,18 @@ rl78_alloc_physical_registers_op2 (rtx_insn * insn)
 
   if (rtx_equal_p (OP (0), OP (1)))
     {
-      OP (0) =
-      OP (1) = transcode_memory_rtx (OP (1), DE, insn);
-      OP (2) = transcode_memory_rtx (OP (2), HL, insn);
+      if (MEM_P (OP (2)))
+	{
+	  OP (0) =
+	  OP (1) = transcode_memory_rtx (OP (1), DE, insn);
+	  OP (2) = transcode_memory_rtx (OP (2), HL, insn);
+	}
+      else
+	{
+	  OP (0) =
+	  OP (1) = transcode_memory_rtx (OP (1), HL, insn);
+	  OP (2) = transcode_memory_rtx (OP (2), DE, insn);
+	}
     }
   else if (rtx_equal_p (OP (0), OP (2)))
     {
