@@ -3325,4 +3325,16 @@ cgraph_node::call_for_symbol_and_aliases_1 (bool (*callback) (cgraph_node *,
     }
   return false;
 }
+
+/* Return true if NODE has thunk.  */
+
+bool
+cgraph_node::has_thunk_p (cgraph_node *node, void *)
+{
+  for (cgraph_edge *e = node->callers; e; e = e->next_caller)
+    if (e->caller->thunk.thunk_p)
+      return true;
+  return false;
+}
+
 #include "gt-cgraph.h"

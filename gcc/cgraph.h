@@ -1204,6 +1204,9 @@ public:
      with (not necessarily cgraph_node (DECL).  */
   static cgraph_node *create_alias (tree alias, tree target);
 
+  /* Return true if NODE has thunk.  */
+  static bool has_thunk_p (cgraph_node *node, void *);
+
   cgraph_edge *callees;
   cgraph_edge *callers;
   /* List of edges representing indirect calls with a yet undetermined

@@ -697,12 +697,22 @@ redirect_all_callers (cgraph_node *n, cgraph_node *to)
 {
   int nredirected = 0;
   ipa_ref *ref;
+  cgraph_edge *e = n->callers;
 
-  while (n->callers)
+  while (e)
     {
-      cgraph_edge *e = n->callers;
-      e->redirect_callee (to);
-      nredirected++;
+      /* Redirecting thunks to interposable symbols or symbols in other sections
+	 may not be supported by target output code.  Play safe for now and
+	 punt on redirection.  */
+      if (!e->caller->thunk.thunk_p)
+	{
+	  struct cgraph_edge *nexte = e->next_caller;
+          e->redirect_callee (to);
+	  e = nexte;
+          nredirected++;
+	}
+      else
+	e = e->next_callee;
     }
   for (unsigned i = 0; n->iterate_direct_aliases (i, ref);)
     {
@@ -717,6 +727,8 @@ redirect_all_callers (cgraph_node *n, cgraph_node *to)
 	{
 	  nredirected += redirect_all_callers (n_alias, to);
 	  if (n_alias->can_remove_if_no_direct_calls_p ()
+	      && !n_alias->call_for_symbol_and_aliases (cgraph_node::has_thunk_p,
+							NULL, true)
 	      && !n_alias->has_aliases_p ())
 	    n_alias->remove ();
 	}
@@ -907,6 +919,8 @@ sem_function::merge (sem_item *alias_item)
 	  return false;
 	}
       if (!create_wrapper
+	  && !alias->call_for_symbol_and_aliases (cgraph_node::has_thunk_p,
+						  NULL, true)
 	  && !alias->can_remove_if_no_direct_calls_p ())
 	{
 	  if (dump_file)
@@ -975,7 +989,10 @@ sem_function::merge (sem_item *alias_item)
       if (dump_file)
 	fprintf (dump_file, "Unified; Wrapper has been created.\n\n");
     }
-  gcc_assert (alias->icf_merged || remove);
+
+  /* It's possible that redirection can hit thunks that block
+     redirection opportunities.  */
+  gcc_assert (alias->icf_merged || remove || redirect_callers);
   original->icf_merged = true;
 
   /* Inform the inliner about cross-module merging.  */

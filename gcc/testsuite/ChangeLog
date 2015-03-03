@@ -1,3 +1,8 @@
+2015-03-03  Martin Liska  <mliska@suse.cz>
+	    Jan Hubicka   <hubicka@ucw.cz>
+
+	* g++.dg/ipa/pr65263.C: New test.
+
 2015-03-02  Jan Hubicka   <hubicka@ucw.cz>
 
 	PR ipa/65130
