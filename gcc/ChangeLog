@@ -1,3 +1,9 @@
+2015-03-02  Steve Ellcey  <sellcey@imgtec.com>
+
+	PR target/58158
+	* config/mips/mips.md (mov<mode>cc): Change ISA_HAS_SEL check to
+	!ISA_HAS_FP_CONDMOVE.
+
 2015-03-02  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/i386/i386.md (*udivmod<mode>4_pow2): Remove
