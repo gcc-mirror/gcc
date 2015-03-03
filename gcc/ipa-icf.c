@@ -1681,7 +1681,8 @@ sem_variable::equals (tree t1, tree t2)
 sem_variable *
 sem_variable::parse (varpool_node *node, bitmap_obstack *stack)
 {
-  if (TREE_THIS_VOLATILE (node->decl) || DECL_HARD_REGISTER (node->decl))
+  if (TREE_THIS_VOLATILE (node->decl) || DECL_HARD_REGISTER (node->decl)
+      || node->alias)
     return NULL;
 
   sem_variable *v = new sem_variable (node, 0, stack);
