@@ -1,3 +1,17 @@
+2015-03-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR 65138/target
+	* config/rs6000/rs6000-cpus.def (powerpc64le): Add new generic
+	processor type for 64-bit little endian PowerPC.
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): If
+	-mdebug=reg, print TARGET_DEFAULT.  Fix logic to use
+	TARGET_DEFAULT if there is no default cpu.  Fix -mdebug=reg
+	printing built-in mask so it does not pass NULL pointers.
+
+	* doc/invoke.texi (IBM RS/6000 and PowerPC options): Document
+	-mcpu=powerpc64le.
+
 2015-03-02  Steve Ellcey  <sellcey@imgtec.com>
 
 	PR target/58158
@@ -13,7 +27,7 @@
 
 	* doc/invoke.texi (Options for Code Generation Conventions):
 	Fix URL of DSO paper.
-		
+
 2015-03-02  Jan Hubicka   <hubicka@ucw.cz>
 
 	PR ipa/65130
