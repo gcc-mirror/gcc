@@ -1,3 +1,8 @@
+2015-03-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/ia64/ia64.c (expand_vec_perm_interleave_2): Use gen_raw_REG
+	to create a register in testing mode.
+
 2015-03-03  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	Backport from mainline
