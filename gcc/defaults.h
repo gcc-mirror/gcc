@@ -1095,6 +1095,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define FRAME_GROWS_DOWNWARD 0
 #endif
 
+#ifndef RETURN_ADDR_IN_PREVIOUS_FRAME
+#define RETURN_ADDR_IN_PREVIOUS_FRAME 0
+#endif
+
 /* On most machines, the CFA coincides with the first incoming parm.  */
 #ifndef ARG_POINTER_CFA_OFFSET
 #define ARG_POINTER_CFA_OFFSET(FNDECL) \

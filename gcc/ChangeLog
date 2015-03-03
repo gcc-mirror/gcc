@@ -1,3 +1,17 @@
+2015-03-03  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* builtins.c (expand_builtin_return_addr): Add
+	RETURN_ADDR_IN_PREVIOUS_FRAME to 'if' condition, remove
+	surrounding #ifdef.
+	* config/sparc/sparc.h (RETURN_ADDR_IN_PREVIOUS_FRAME): Change
+	definition to 1.
+	* config/xtensa/xtensa.h (RETURN_ADDR_IN_PREVIOUS_FRAME):
+	Likewise.
+	* defaults.h (RETURN_ADDR_IN_PREVIOUS_FRAME): Define to 0 if
+	undefined.
+	* doc/tm.texi.in (RETURN_ADDR_IN_PREVIOUS_FRAME): Update
+	paragraph.
+
 2015-03-03  Martin Jambor  <mjambor@suse.cz>
             Eric Botcazou  <ebotcazou@adacore.com>
 
