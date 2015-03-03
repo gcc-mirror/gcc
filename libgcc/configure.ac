@@ -436,6 +436,22 @@ EOF
   ;;
 esac
 
+# Check if xtensa target is configured for windowed ABI and thus needs to use
+# custom unwind code.
+# This is after config.host so we can augment tmake_file.
+case ${host} in
+xtensa*-*)
+  cat > conftest.c <<EOF
+	#ifdef __XTENSA_CALL0_ABI__
+	#error
+	#endif
+EOF
+  if AC_TRY_COMMAND(${CC-cc} -E -o conftest.i conftest.c 1>&AS_MESSAGE_LOG_FD); then
+      tmake_file="${tmake_file} xtensa/t-windowed"
+  fi
+  ;;
+esac
+
 # Check for visibility support.  This is after config.host so that
 # we can check for asm_hidden_op.
 AC_CACHE_CHECK([for __attribute__((visibility("hidden")))],

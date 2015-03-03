@@ -118,6 +118,8 @@ char xtensa_hard_regno_mode_ok[(int) MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
 
 /* Current frame size calculated by compute_frame_size.  */
 unsigned xtensa_current_frame_size;
+/* Callee-save area size in the current frame calculated by compute_frame_size. */
+int xtensa_callee_save_size;
 
 /* Largest block move to handle in-line.  */
 #define LARGEST_MOVE_RATIO 15
@@ -144,21 +146,6 @@ const char xtensa_leaf_regs[FIRST_PSEUDO_REGISTER] =
   1
 };
 
-/* Map hard register number to register class */
-const enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER] =
-{
-  RL_REGS,	SP_REG,		RL_REGS,	RL_REGS,
-  RL_REGS,	RL_REGS,	RL_REGS,	GR_REGS,
-  RL_REGS,	RL_REGS,	RL_REGS,	RL_REGS,
-  RL_REGS,	RL_REGS,	RL_REGS,	RL_REGS,
-  AR_REGS,	AR_REGS,	BR_REGS,
-  FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-  FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-  FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-  FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-  ACC_REG,
-};
-
 static void xtensa_option_override (void);
 static enum internal_test map_test_to_internal_test (enum rtx_code);
 static rtx gen_int_relational (enum rtx_code, rtx, rtx, int *);
@@ -171,7 +158,6 @@ static rtx xtensa_legitimize_address (rtx, rtx, machine_mode);
 static bool xtensa_mode_dependent_address_p (const_rtx, addr_space_t);
 static bool xtensa_return_in_msb (const_tree);
 static void printx (FILE *, signed int);
-static void xtensa_function_epilogue (FILE *, HOST_WIDE_INT);
 static rtx xtensa_builtin_saveregs (void);
 static bool xtensa_legitimate_address_p (machine_mode, rtx, bool);
 static unsigned int xtensa_multibss_section_type_flags (tree, const char *,
@@ -224,17 +210,9 @@ static const char *xtensa_invalid_within_doloop (const rtx_insn *);
 static bool xtensa_member_type_forces_blk (const_tree,
 					   machine_mode mode);
 
-static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
-  REG_ALLOC_ORDER;
+static void xtensa_conditional_register_usage (void);
+
 
-
-/* This macro generates the assembly code for function exit,
-   on machines that need it.  If FUNCTION_EPILOGUE is not defined
-   then individual return instructions are generated for each
-   return statement.  Args are same as for FUNCTION_PROLOGUE.  */
-
-#undef TARGET_ASM_FUNCTION_EPILOGUE
-#define TARGET_ASM_FUNCTION_EPILOGUE xtensa_function_epilogue
 
 /* These hooks specify assembly directives for creating certain kinds
    of integer object.  */
@@ -354,6 +332,9 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 
 #undef TARGET_INVALID_WITHIN_DOLOOP
 #define TARGET_INVALID_WITHIN_DOLOOP xtensa_invalid_within_doloop
+
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE xtensa_conditional_register_usage
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -522,9 +503,10 @@ xtensa_valid_move (machine_mode mode, rtx *operands)
 
       /* The stack pointer can only be assigned with a MOVSP opcode.  */
       if (dst_regnum == STACK_POINTER_REGNUM)
-	return (mode == SImode
-		&& register_operand (operands[1], mode)
-		&& !ACC_REG_P (xt_true_regnum (operands[1])));
+	return !TARGET_WINDOWED_ABI
+	  || (mode == SImode
+	      && register_operand (operands[1], mode)
+	      && !ACC_REG_P (xt_true_regnum (operands[1])));
 
       if (!ACC_REG_P (dst_regnum))
 	return true;
@@ -1665,9 +1647,10 @@ xtensa_setup_frame_addresses (void)
   /* Set flag to cause TARGET_FRAME_POINTER_REQUIRED to return true.  */
   cfun->machine->accesses_prev_frame = 1;
 
-  emit_library_call
-    (gen_rtx_SYMBOL_REF (Pmode, "__xtensa_libgcc_window_spill"),
-     LCT_NORMAL, VOIDmode, 0);
+  if (TARGET_WINDOWED_ABI)
+    emit_library_call
+      (gen_rtx_SYMBOL_REF (Pmode, "__xtensa_libgcc_window_spill"),
+       LCT_NORMAL, VOIDmode, 0);
 }
 
 
@@ -1825,11 +1808,11 @@ xtensa_emit_call (int callop, rtx *operands)
   rtx tgt = operands[callop];
 
   if (GET_CODE (tgt) == CONST_INT)
-    sprintf (result, "call8\t0x%lx", INTVAL (tgt));
+    sprintf (result, "call%d\t0x%lx", WINDOW_SIZE, INTVAL (tgt));
   else if (register_operand (tgt, VOIDmode))
-    sprintf (result, "callx8\t%%%d", callop);
+    sprintf (result, "callx%d\t%%%d", WINDOW_SIZE, callop);
   else
-    sprintf (result, "call8\t%%%d", callop);
+    sprintf (result, "call%d\t%%%d", WINDOW_SIZE, callop);
 
   return result;
 }
@@ -2174,7 +2157,7 @@ xtensa_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
   regno = regbase + *arg_words;
 
   if (cum->incoming && regno <= A7_REG && regno + words > A7_REG)
-    cfun->machine->need_a7_copy = true;
+    cfun->machine->need_a7_copy = TARGET_WINDOWED_ABI;
 
   return gen_rtx_REG (mode, regno);
 }
@@ -2641,6 +2624,22 @@ xtensa_output_literal (FILE *file, rtx x, machine_mode mode, int labelno)
     }
 }
 
+static bool
+xtensa_call_save_reg(int regno)
+{
+  if (TARGET_WINDOWED_ABI)
+    return false;
+
+  if (regno == A0_REG)
+    return crtl->profile || !crtl->is_leaf || crtl->calls_eh_return ||
+      df_regs_ever_live_p (regno);
+
+  if (crtl->calls_eh_return && regno >= 2 && regno < 4)
+    return true;
+
+  return !fixed_regs[regno] && !call_used_regs[regno] &&
+    df_regs_ever_live_p (regno);
+}
 
 /* Return the bytes needed to compute the frame pointer from the current
    stack pointer.  */
@@ -2651,14 +2650,25 @@ xtensa_output_literal (FILE *file, rtx x, machine_mode mode, int labelno)
 long
 compute_frame_size (int size)
 {
+  int regno;
+
   /* Add space for the incoming static chain value.  */
   if (cfun->static_chain_decl != NULL)
     size += (1 * UNITS_PER_WORD);
 
+  xtensa_callee_save_size = 0;
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
+    {
+      if (xtensa_call_save_reg(regno))
+	xtensa_callee_save_size += UNITS_PER_WORD;
+    }
+
   xtensa_current_frame_size =
     XTENSA_STACK_ALIGN (size
+			+ xtensa_callee_save_size
 			+ crtl->outgoing_args_size
 			+ (WINDOW_SIZE * UNITS_PER_WORD));
+  xtensa_callee_save_size = XTENSA_STACK_ALIGN (xtensa_callee_save_size);
   return xtensa_current_frame_size;
 }
 
@@ -2686,23 +2696,103 @@ void
 xtensa_expand_prologue (void)
 {
   HOST_WIDE_INT total_size;
-  rtx size_rtx;
-  rtx_insn *insn;
+  rtx_insn *insn = NULL;
   rtx note_rtx;
 
-  total_size = compute_frame_size (get_frame_size ());
-  size_rtx = GEN_INT (total_size);
 
-  if (total_size < (1 << (12+3)))
-    insn = emit_insn (gen_entry (size_rtx));
+  total_size = compute_frame_size (get_frame_size ());
+
+  if (TARGET_WINDOWED_ABI)
+    {
+      if (total_size < (1 << (12+3)))
+	insn = emit_insn (gen_entry (GEN_INT (total_size)));
+      else
+	{
+	  /* Use a8 as a temporary since a0-a7 may be live.  */
+	  rtx tmp_reg = gen_rtx_REG (Pmode, A8_REG);
+	  emit_insn (gen_entry (GEN_INT (MIN_FRAME_SIZE)));
+	  emit_move_insn (tmp_reg, GEN_INT (total_size - MIN_FRAME_SIZE));
+	  emit_insn (gen_subsi3 (tmp_reg, stack_pointer_rtx, tmp_reg));
+	  insn = emit_insn (gen_movsi (stack_pointer_rtx, tmp_reg));
+	}
+    }
   else
     {
-      /* Use a8 as a temporary since a0-a7 may be live.  */
-      rtx tmp_reg = gen_rtx_REG (Pmode, A8_REG);
-      emit_insn (gen_entry (GEN_INT (MIN_FRAME_SIZE)));
-      emit_move_insn (tmp_reg, GEN_INT (total_size - MIN_FRAME_SIZE));
-      emit_insn (gen_subsi3 (tmp_reg, stack_pointer_rtx, tmp_reg));
-      insn = emit_insn (gen_movsi (stack_pointer_rtx, tmp_reg));
+      int regno;
+      HOST_WIDE_INT offset = 0;
+
+      /* -128 is a limit of single addi instruction. */
+      if (total_size > 0 && total_size <= 128)
+	{
+	  insn = emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
+					GEN_INT (-total_size)));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  note_rtx = gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+				  plus_constant (Pmode, stack_pointer_rtx,
+						 -total_size));
+	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, note_rtx);
+	  offset = total_size - UNITS_PER_WORD;
+	}
+      else if (xtensa_callee_save_size)
+	{
+	  /* 1020 is maximal s32i offset, if the frame is bigger than that
+	   * we move sp to the end of callee-saved save area, save and then
+	   * move it to its final location. */
+	  if (total_size > 1024)
+	    {
+	      insn = emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
+					    GEN_INT (-xtensa_callee_save_size)));
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	      note_rtx = gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+				      plus_constant (Pmode, stack_pointer_rtx,
+						     -xtensa_callee_save_size));
+	      add_reg_note (insn, REG_FRAME_RELATED_EXPR, note_rtx);
+	      offset = xtensa_callee_save_size - UNITS_PER_WORD;
+	    }
+	  else
+	    {
+	      rtx tmp_reg = gen_rtx_REG (Pmode, A9_REG);
+	      emit_move_insn (tmp_reg, GEN_INT (total_size));
+	      insn = emit_insn (gen_subsi3 (stack_pointer_rtx,
+					    stack_pointer_rtx, tmp_reg));
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	      note_rtx = gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+				      plus_constant (Pmode, stack_pointer_rtx,
+						     -total_size));
+	      add_reg_note (insn, REG_FRAME_RELATED_EXPR, note_rtx);
+	      offset = total_size - UNITS_PER_WORD;
+	    }
+	}
+
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
+	{
+	  if (xtensa_call_save_reg(regno))
+	    {
+	      rtx x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (offset));
+	      rtx mem = gen_frame_mem (SImode, x);
+	      rtx reg = gen_rtx_REG (SImode, regno);
+
+	      offset -= UNITS_PER_WORD;
+	      insn = emit_move_insn (mem, reg);
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	      add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+			    gen_rtx_SET (VOIDmode, mem, reg));
+	    }
+	}
+      if (total_size > 1024)
+	{
+	  rtx tmp_reg = gen_rtx_REG (Pmode, A9_REG);
+	  emit_move_insn (tmp_reg, GEN_INT (total_size -
+					    xtensa_callee_save_size));
+	  insn = emit_insn (gen_subsi3 (stack_pointer_rtx,
+					stack_pointer_rtx, tmp_reg));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  note_rtx = gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+				  plus_constant (Pmode, stack_pointer_rtx,
+						 xtensa_callee_save_size -
+						 total_size));
+	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, note_rtx);
+	}
     }
 
   if (frame_pointer_needed)
@@ -2731,37 +2821,146 @@ xtensa_expand_prologue (void)
 	    }
 	}
       else
-	insn = emit_insn (gen_movsi (hard_frame_pointer_rtx,
-				     stack_pointer_rtx));
+        {
+	  insn = emit_insn (gen_movsi (hard_frame_pointer_rtx,
+				       stack_pointer_rtx));
+	  if (!TARGET_WINDOWED_ABI)
+	    {
+	      note_rtx = gen_rtx_SET (VOIDmode, hard_frame_pointer_rtx,
+				      stack_pointer_rtx);
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	      add_reg_note (insn, REG_FRAME_RELATED_EXPR, note_rtx);
+	    }
+	}
     }
 
-  /* Create a note to describe the CFA.  Because this is only used to set
-     DW_AT_frame_base for debug info, don't bother tracking changes through
-     each instruction in the prologue.  It just takes up space.  */
-  note_rtx = gen_rtx_SET (VOIDmode, (frame_pointer_needed
-				     ? hard_frame_pointer_rtx
-				     : stack_pointer_rtx),
-			  plus_constant (Pmode, stack_pointer_rtx,
-					 -total_size));
-  RTX_FRAME_RELATED_P (insn) = 1;
-  add_reg_note (insn, REG_FRAME_RELATED_EXPR, note_rtx);
+  if (TARGET_WINDOWED_ABI)
+    {
+      /* Create a note to describe the CFA.  Because this is only used to set
+	 DW_AT_frame_base for debug info, don't bother tracking changes through
+	 each instruction in the prologue.  It just takes up space.  */
+      note_rtx = gen_rtx_SET (VOIDmode, (frame_pointer_needed
+					 ? hard_frame_pointer_rtx
+					 : stack_pointer_rtx),
+			      plus_constant (Pmode, stack_pointer_rtx,
+					     -total_size));
+      RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_FRAME_RELATED_EXPR, note_rtx);
+    }
 }
-
-
-/* Clear variables at function end.  */
 
 void
-xtensa_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
-			  HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+xtensa_expand_epilogue (void)
 {
+  if (!TARGET_WINDOWED_ABI)
+    {
+      int regno;
+      HOST_WIDE_INT offset;
+
+      if (xtensa_current_frame_size > (frame_pointer_needed ? 127 : 1024))
+	{
+	  rtx tmp_reg = gen_rtx_REG (Pmode, A9_REG);
+	  emit_move_insn (tmp_reg, GEN_INT (xtensa_current_frame_size -
+					    xtensa_callee_save_size));
+	  emit_insn (gen_addsi3 (stack_pointer_rtx, frame_pointer_needed ?
+				 hard_frame_pointer_rtx : stack_pointer_rtx,
+				 tmp_reg));
+	  offset = xtensa_callee_save_size - UNITS_PER_WORD;
+	}
+      else
+	{
+	  if (frame_pointer_needed)
+	    emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
+	  offset = xtensa_current_frame_size - UNITS_PER_WORD;
+	}
+
+      /* Prevent reordering of saved a0 update and loading it back from
+	 the save area.  */
+      if (crtl->calls_eh_return)
+	emit_insn (gen_blockage ());
+
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
+	{
+	  if (xtensa_call_save_reg(regno))
+	    {
+	      rtx x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (offset));
+
+	      offset -= UNITS_PER_WORD;
+	      emit_move_insn (gen_rtx_REG (SImode, regno),
+			      gen_frame_mem (SImode, x));
+	    }
+	}
+
+      if (xtensa_current_frame_size > 0)
+	{
+	  if (frame_pointer_needed || /* always reachable with addi */
+	      xtensa_current_frame_size > 1024 ||
+	      xtensa_current_frame_size <= 127)
+	    {
+	      if (xtensa_current_frame_size <= 127)
+		offset = xtensa_current_frame_size;
+	      else
+		offset = xtensa_callee_save_size;
+
+	      emit_insn (gen_addsi3 (stack_pointer_rtx,
+				     stack_pointer_rtx,
+				     GEN_INT (offset)));
+	    }
+	  else
+	    {
+	      rtx tmp_reg = gen_rtx_REG (Pmode, A9_REG);
+	      emit_move_insn (tmp_reg, GEN_INT (xtensa_current_frame_size));
+	      emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
+				     tmp_reg));
+	    }
+	}
+
+      if (crtl->calls_eh_return)
+	emit_insn (gen_add3_insn (stack_pointer_rtx,
+				  stack_pointer_rtx,
+				  EH_RETURN_STACKADJ_RTX));
+    }
   xtensa_current_frame_size = 0;
+  xtensa_callee_save_size = 0;
+  emit_jump_insn (gen_return ());
 }
 
+void
+xtensa_set_return_address (rtx address, rtx scratch)
+{
+  HOST_WIDE_INT total_size = compute_frame_size (get_frame_size ());
+  rtx frame = frame_pointer_needed ?
+    hard_frame_pointer_rtx : stack_pointer_rtx;
+  rtx a0_addr = plus_constant (Pmode, frame,
+			       total_size - UNITS_PER_WORD);
+  rtx note = gen_rtx_SET (VOIDmode,
+			  gen_frame_mem (SImode, a0_addr),
+			  gen_rtx_REG (SImode, A0_REG));
+  rtx insn;
+
+  if (total_size > 1024) {
+    emit_move_insn (scratch, GEN_INT (total_size - UNITS_PER_WORD));
+    emit_insn (gen_addsi3 (scratch, frame, scratch));
+    a0_addr = scratch;
+  }
+
+  insn = emit_move_insn (gen_frame_mem (SImode, a0_addr), address);
+  RTX_FRAME_RELATED_P (insn) = 1;
+  add_reg_note (insn, REG_FRAME_RELATED_EXPR, note);
+}
 
 rtx
 xtensa_return_addr (int count, rtx frame)
 {
   rtx result, retaddr, curaddr, label;
+
+  if (!TARGET_WINDOWED_ABI)
+    {
+      if (count != 0)
+	return const0_rtx;
+
+      return get_hard_reg_initial_val (Pmode, A0_REG);
+    }
 
   if (count == -1)
     retaddr = gen_rtx_REG (Pmode, A0_REG);
@@ -2879,14 +3078,14 @@ xtensa_builtin_saveregs (void)
   set_mem_alias_set (gp_regs, get_varargs_alias_set ());
 
   /* Now store the incoming registers.  */
-  cfun->machine->need_a7_copy = true;
+  cfun->machine->need_a7_copy = TARGET_WINDOWED_ABI;
   cfun->machine->vararg_a7 = true;
   move_block_from_reg (GP_ARG_FIRST + arg_words,
 		       adjust_address (gp_regs, BLKmode,
 				       arg_words * UNITS_PER_WORD),
 		       gp_left);
-  gcc_assert (cfun->machine->vararg_a7_copy != 0);
-  emit_insn_before (cfun->machine->vararg_a7_copy, get_insns ());
+  if (cfun->machine->vararg_a7_copy != 0)
+    emit_insn_before (cfun->machine->vararg_a7_copy, get_insns ());
 
   return XEXP (gp_regs, 0);
 }
@@ -3272,7 +3471,19 @@ order_regs_for_local_alloc (void)
 {
   if (!leaf_function_p ())
     {
-      memcpy (reg_alloc_order, reg_nonleaf_alloc_order,
+      static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
+	REG_ALLOC_ORDER;
+      static const int reg_nonleaf_alloc_order_call0[FIRST_PSEUDO_REGISTER] =
+	{
+	  11, 10,  9,  8,  7,  6,  5,  4,  3,  2, 12, 13, 14, 15,
+	  18,
+	  19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
+	  0,  1, 16, 17,
+	  35,
+	};
+
+      memcpy (reg_alloc_order, TARGET_WINDOWED_ABI ?
+	      reg_nonleaf_alloc_order : reg_nonleaf_alloc_order_call0,
 	      FIRST_PSEUDO_REGISTER * sizeof (int));
     }
   else
@@ -3642,9 +3853,14 @@ xtensa_function_value_regno_p (const unsigned int regno)
 static rtx
 xtensa_static_chain (const_tree ARG_UNUSED (fndecl_or_type), bool incoming_p)
 {
-  rtx base = incoming_p ? arg_pointer_rtx : stack_pointer_rtx;
-  return gen_frame_mem (Pmode, plus_constant (Pmode, base,
-					      -5 * UNITS_PER_WORD));
+  if (TARGET_WINDOWED_ABI)
+    {
+      rtx base = incoming_p ? arg_pointer_rtx : stack_pointer_rtx;
+      return gen_frame_mem (Pmode, plus_constant (Pmode, base,
+						  -5 * UNITS_PER_WORD));
+    }
+  else
+    return gen_rtx_REG (Pmode, A8_REG);
 }
 
 
@@ -3662,65 +3878,109 @@ xtensa_asm_trampoline_template (FILE *stream)
   bool use_call0 = (TARGET_CONST16 || TARGET_ABSOLUTE_LITERALS);
 
   fprintf (stream, "\t.begin no-transform\n");
-  fprintf (stream, "\tentry\tsp, %d\n", MIN_FRAME_SIZE);
 
-  if (use_call0)
+  if (TARGET_WINDOWED_ABI)
     {
-      /* Save the return address.  */
-      fprintf (stream, "\tmov\ta10, a0\n");
+      fprintf (stream, "\tentry\tsp, %d\n", MIN_FRAME_SIZE);
 
-      /* Use a CALL0 instruction to skip past the constants and in the
-	 process get the PC into A0.  This allows PC-relative access to
-	 the constants without relying on L32R.  */
-      fprintf (stream, "\tcall0\t.Lskipconsts\n");
+      if (use_call0)
+	{
+	  /* Save the return address.  */
+	  fprintf (stream, "\tmov\ta10, a0\n");
+
+	  /* Use a CALL0 instruction to skip past the constants and in the
+	     process get the PC into A0.  This allows PC-relative access to
+	     the constants without relying on L32R.  */
+	  fprintf (stream, "\tcall0\t.Lskipconsts\n");
+	}
+      else
+	fprintf (stream, "\tj\t.Lskipconsts\n");
+
+      fprintf (stream, "\t.align\t4\n");
+      fprintf (stream, ".Lchainval:%s0\n", integer_asm_op (4, TRUE));
+      fprintf (stream, ".Lfnaddr:%s0\n", integer_asm_op (4, TRUE));
+      fprintf (stream, ".Lskipconsts:\n");
+
+      /* Load the static chain and function address from the trampoline.  */
+      if (use_call0)
+	{
+	  fprintf (stream, "\taddi\ta0, a0, 3\n");
+	  fprintf (stream, "\tl32i\ta9, a0, 0\n");
+	  fprintf (stream, "\tl32i\ta8, a0, 4\n");
+	}
+      else
+	{
+	  fprintf (stream, "\tl32r\ta9, .Lchainval\n");
+	  fprintf (stream, "\tl32r\ta8, .Lfnaddr\n");
+	}
+
+      /* Store the static chain.  */
+      fprintf (stream, "\ts32i\ta9, sp, %d\n", MIN_FRAME_SIZE - 20);
+
+      /* Set the proper stack pointer value.  */
+      fprintf (stream, "\tl32i\ta9, a8, 0\n");
+      fprintf (stream, "\textui\ta9, a9, %d, 12\n",
+	       TARGET_BIG_ENDIAN ? 8 : 12);
+      fprintf (stream, "\tslli\ta9, a9, 3\n");
+      fprintf (stream, "\taddi\ta9, a9, %d\n", -MIN_FRAME_SIZE);
+      fprintf (stream, "\tsub\ta9, sp, a9\n");
+      fprintf (stream, "\tmovsp\tsp, a9\n");
+
+      if (use_call0)
+	/* Restore the return address.  */
+	fprintf (stream, "\tmov\ta0, a10\n");
+
+      /* Jump to the instruction following the ENTRY.  */
+      fprintf (stream, "\taddi\ta8, a8, 3\n");
+      fprintf (stream, "\tjx\ta8\n");
+
+      /* Pad size to a multiple of TRAMPOLINE_ALIGNMENT.  */
+      if (use_call0)
+	fprintf (stream, "\t.byte\t0\n");
+      else
+	fprintf (stream, "\tnop\n");
     }
   else
-    fprintf (stream, "\tj\t.Lskipconsts\n");
-
-  fprintf (stream, "\t.align\t4\n");
-  fprintf (stream, ".Lchainval:%s0\n", integer_asm_op (4, TRUE));
-  fprintf (stream, ".Lfnaddr:%s0\n", integer_asm_op (4, TRUE));
-  fprintf (stream, ".Lskipconsts:\n");
-
-  /* Load the static chain and function address from the trampoline.  */
-  if (use_call0)
     {
-      fprintf (stream, "\taddi\ta0, a0, 3\n");
-      fprintf (stream, "\tl32i\ta9, a0, 0\n");
-      fprintf (stream, "\tl32i\ta8, a0, 4\n");
+      if (use_call0)
+	{
+	  /* Save the return address.  */
+	  fprintf (stream, "\tmov\ta10, a0\n");
+
+	  /* Use a CALL0 instruction to skip past the constants and in the
+	     process get the PC into A0.  This allows PC-relative access to
+	     the constants without relying on L32R.  */
+	  fprintf (stream, "\tcall0\t.Lskipconsts\n");
+	}
+      else
+	fprintf (stream, "\tj\t.Lskipconsts\n");
+
+      fprintf (stream, "\t.align\t4\n");
+      fprintf (stream, ".Lchainval:%s0\n", integer_asm_op (4, TRUE));
+      fprintf (stream, ".Lfnaddr:%s0\n", integer_asm_op (4, TRUE));
+      fprintf (stream, ".Lskipconsts:\n");
+
+      /* Load the static chain and function address from the trampoline.  */
+      if (use_call0)
+	{
+	  fprintf (stream, "\taddi\ta0, a0, 3\n");
+	  fprintf (stream, "\tl32i\ta8, a0, 0\n");
+	  fprintf (stream, "\tl32i\ta9, a0, 4\n");
+	  fprintf (stream, "\tmov\ta0, a10\n");
+	}
+      else
+	{
+	  fprintf (stream, "\tl32r\ta8, .Lchainval\n");
+	  fprintf (stream, "\tl32r\ta9, .Lfnaddr\n");
+	}
+      fprintf (stream, "\tjx\ta9\n");
+
+      /* Pad size to a multiple of TRAMPOLINE_ALIGNMENT.  */
+      if (use_call0)
+	fprintf (stream, "\t.byte\t0\n");
+      else
+	fprintf (stream, "\tnop\n");
     }
-  else
-    {
-      fprintf (stream, "\tl32r\ta9, .Lchainval\n");
-      fprintf (stream, "\tl32r\ta8, .Lfnaddr\n");
-    }
-
-  /* Store the static chain.  */
-  fprintf (stream, "\ts32i\ta9, sp, %d\n", MIN_FRAME_SIZE - 20);
-
-  /* Set the proper stack pointer value.  */
-  fprintf (stream, "\tl32i\ta9, a8, 0\n");
-  fprintf (stream, "\textui\ta9, a9, %d, 12\n",
-	   TARGET_BIG_ENDIAN ? 8 : 12);
-  fprintf (stream, "\tslli\ta9, a9, 3\n");
-  fprintf (stream, "\taddi\ta9, a9, %d\n", -MIN_FRAME_SIZE);
-  fprintf (stream, "\tsub\ta9, sp, a9\n");
-  fprintf (stream, "\tmovsp\tsp, a9\n");
-
-  if (use_call0)
-    /* Restore the return address.  */
-    fprintf (stream, "\tmov\ta0, a10\n");
-
-  /* Jump to the instruction following the ENTRY.  */
-  fprintf (stream, "\taddi\ta8, a8, 3\n");
-  fprintf (stream, "\tjx\ta8\n");
-
-  /* Pad size to a multiple of TRAMPOLINE_ALIGNMENT.  */
-  if (use_call0)
-    fprintf (stream, "\t.byte\t0\n");
-  else
-    fprintf (stream, "\tnop\n");
-
   fprintf (stream, "\t.end no-transform\n");
 }
 
@@ -3729,8 +3989,19 @@ xtensa_trampoline_init (rtx m_tramp, tree fndecl, rtx chain)
 {
   rtx func = XEXP (DECL_RTL (fndecl), 0);
   bool use_call0 = (TARGET_CONST16 || TARGET_ABSOLUTE_LITERALS);
-  int chain_off = use_call0 ? 12 : 8;
-  int func_off = use_call0 ? 16 : 12;
+  int chain_off;
+  int func_off;
+
+  if (TARGET_WINDOWED_ABI)
+    {
+      chain_off = use_call0 ? 12 : 8;
+      func_off = use_call0 ? 16 : 12;
+    }
+  else
+    {
+      chain_off = use_call0 ? 8 : 4;
+      func_off = use_call0 ? 12 : 8;
+    }
 
   emit_block_move (m_tramp, assemble_trampoline_template (),
 		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
@@ -3987,6 +4258,52 @@ xtensa_reorg (void)
 
   /* Doloop optimization.  */
   xtensa_reorg_loops ();
+}
+
+/* Update register usage after having seen the compiler flags.  */
+
+static void
+xtensa_conditional_register_usage (void)
+{
+  unsigned i, c_mask;
+
+  c_mask = TARGET_WINDOWED_ABI ? (1 << 1) : (1 << 2);
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    {
+      /* Set/reset conditionally defined registers from
+	 CALL_USED_REGISTERS initializer.  */
+      if (call_used_regs[i] > 1)
+	call_used_regs[i] = !!(call_used_regs[i] & c_mask);
+    }
+
+  /* Remove hard FP register from the preferred reload registers set.  */
+  CLEAR_HARD_REG_BIT (reg_class_contents[(int)RL_REGS],
+		      HARD_FRAME_POINTER_REGNUM);
+}
+
+/* Map hard register number to register class */
+
+enum reg_class xtensa_regno_to_class (int regno)
+{
+  static const enum reg_class regno_to_class[FIRST_PSEUDO_REGISTER] =
+    {
+      RL_REGS,	SP_REG,		RL_REGS,	RL_REGS,
+      RL_REGS,	RL_REGS,	RL_REGS,	RL_REGS,
+      RL_REGS,	RL_REGS,	RL_REGS,	RL_REGS,
+      RL_REGS,	RL_REGS,	RL_REGS,	RL_REGS,
+      AR_REGS,	AR_REGS,	BR_REGS,
+      FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
+      FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
+      FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
+      FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
+      ACC_REG,
+    };
+
+  if (regno == HARD_FRAME_POINTER_REGNUM)
+    return GR_REGS;
+  else
+    return regno_to_class[regno];
 }
 
 #include "gt-xtensa.h"

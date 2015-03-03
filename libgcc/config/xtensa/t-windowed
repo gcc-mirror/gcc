@@ -1,0 +1,2 @@
+LIB2ADDEH = $(srcdir)/config/xtensa/unwind-dw2-xtensa.c \
+   $(srcdir)/unwind-dw2-fde.c $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
