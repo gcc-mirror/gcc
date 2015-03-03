@@ -1,3 +1,10 @@
+2015-03-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (round_up_loc): Cast divisor to HOST_WIDE_INT before
+	negating it.
+
+	* tree-sra.c (pa_sra_preliminary_function_checks): Fix typo in message.
+
 2015-03-03  Max Filippov  <jcmvbkbc@gmail.com>
 
 	Implement call0 ABI for xtensa

@@ -1,3 +1,7 @@
+2015-03-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/object_overflow5.adb: New test.
+
 2015-03-03  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/65287

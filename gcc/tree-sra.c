@@ -5144,7 +5144,7 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
     {
       if (dump_file)
 	fprintf (dump_file,
-		 "A function call has an argument with non-unit alignemnt.\n");
+		 "A function call has an argument with non-unit alignment.\n");
       return false;
     }
 
