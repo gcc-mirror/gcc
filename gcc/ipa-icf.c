@@ -2167,9 +2167,11 @@ sem_item_optimizer::filter_removed_items (void)
     m_items.safe_push (filtered[i]);
 }
 
-/* Optimizer entry point.  */
+/* Optimizer entry point which returns true in case it processes
+   a merge operation. True is returned if there's a merge operation
+   processed.  */
 
-void
+bool
 sem_item_optimizer::execute (void)
 {
   filter_removed_items ();
@@ -2214,10 +2216,12 @@ sem_item_optimizer::execute (void)
   process_cong_reduction ();
   dump_cong_classes ();
   verify_classes ();
-  merge_classes (prev_class_count);
+  bool merged_p = merge_classes (prev_class_count);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     symtab_node::dump_table (dump_file);
+
+  return merged_p;
 }
 
 /* Function responsible for visiting all potential functions and
@@ -2870,9 +2874,10 @@ sem_item_optimizer::dump_cong_classes (void)
 
 /* After reduction is done, we can declare all items in a group
    to be equal. PREV_CLASS_COUNT is start number of classes
-   before reduction.  */
+   before reduction. True is returned if there's a merge operation
+   processed. */
 
-void
+bool
 sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 {
   unsigned int item_count = m_items.length ();
@@ -2881,6 +2886,8 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 
   unsigned int non_singular_classes_count = 0;
   unsigned int non_singular_classes_sum = 0;
+
+  bool merged_p = false;
 
   for (hash_table<congruence_class_group_hash>::iterator it = m_classes.begin ();
        it != m_classes.end (); ++it)
@@ -2952,9 +2959,12 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 		alias->dump_to_file (dump_file);
 	      }
 
-	    source->merge (alias);
+	    if (source->merge (alias))
+	      merged_p = true;
 	  }
       }
+
+  return merged_p;
 }
 
 /* Dump function prints all class members to a FILE with an INDENT.  */
@@ -3031,12 +3041,12 @@ ipa_icf_driver (void)
 {
   gcc_assert (optimizer);
 
-  optimizer->execute ();
+  bool merged_p = optimizer->execute ();
 
   delete optimizer;
   optimizer = NULL;
 
-  return 0;
+  return merged_p ? TODO_remove_functions : 0;
 }
 
 const pass_data pass_data_ipa_icf =
