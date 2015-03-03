@@ -1,5 +1,10 @@
 2015-03-03  Martin Liska  <mliska@suse.cz>
 
+	* ipa-icf.c (sem_item_optimizer::merge_classes): Use bit or
+	instead of if branch.
+
+2015-03-03  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/65282
 	* ipa-icf.c (sem_variable::equals): Fix wrong condition.
 
