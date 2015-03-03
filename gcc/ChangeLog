@@ -1,3 +1,7 @@
+2015-03-03  Renlin Li  <renlin.li@arm.com>
+
+	* doc/md.texi (@item ^): Change ? into ^.
+
 2015-03-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/tm.texi: Regenerated.

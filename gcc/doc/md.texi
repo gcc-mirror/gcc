@@ -1512,7 +1512,7 @@ but if reloading is needed, some other alternative will be used.
 @cindex caret
 @item ^
 This constraint is analogous to @samp{?} but it disparages slightly
-the alternative only if the operand with the @samp{?} needs a reload.
+the alternative only if the operand with the @samp{^} needs a reload.
 
 @cindex @samp{$} in constraint
 @cindex dollar sign
