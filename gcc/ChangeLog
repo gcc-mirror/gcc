@@ -1,5 +1,10 @@
 2015-03-03  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/65296
+	* config.gcc (extra_gcc_objs) [avr-*-rtems*]: Remove.
+
+2015-03-03  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/64331
 	* config/avr/avr.c (context.h, tree-pass.h): Include them.
 	(avr_pass_data_recompute_notes): New static variable.

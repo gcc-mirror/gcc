@@ -1092,7 +1092,6 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 avr-*-rtems*)
 	tm_file="elfos.h avr/elf.h avr/avr-arch.h avr/avr.h dbxelf.h avr/rtems.h rtems.h newlib-stdint.h"
 	tmake_file="${tmake_file} avr/t-avr avr/t-multilib avr/t-rtems"
-	extra_gcc_objs="driver-avr.o avr-devices.o"
 	extra_objs="avr-devices.o avr-log.o"
 	;;
 avr-*-*)
