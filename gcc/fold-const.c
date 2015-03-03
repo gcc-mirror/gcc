@@ -16032,7 +16032,7 @@ round_up_loc (location_t loc, tree value, unsigned int divisor)
 
 	  t = build_int_cst (TREE_TYPE (value), divisor - 1);
 	  value = size_binop_loc (loc, PLUS_EXPR, value, t);
-	  t = build_int_cst (TREE_TYPE (value), -divisor);
+	  t = build_int_cst (TREE_TYPE (value), - (HOST_WIDE_INT) divisor);
 	  value = size_binop_loc (loc, BIT_AND_EXPR, value, t);
 	}
     }
