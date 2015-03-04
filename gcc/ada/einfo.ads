@@ -1214,10 +1214,12 @@ package Einfo is
 --       Extra_Formal field (i.e. the Extra_Formal field of the last "real"
 --       formal points to the first extra formal, and the Extra_Formal field of
 --       each extra formal points to the next one, with Empty indicating the
---       end of the list of extra formals).
+--       end of the list of extra formals). Another case of Extra_Formal arises
+--       in connection with unnesting of subprograms, where the ARECnF formal
+--       that represents an activation record pointer is an extra formal.
 
 --    Extra_Formals (Node28)
---       Applies to subprograms and subprogram types, and also in entries
+--       Applies to subprograms and subprogram types, and also to entries
 --       and entry families. Returns first extra formal of the subprogram
 --       or entry. Returns Empty if there are no extra formals.
 
@@ -2175,15 +2177,6 @@ package Einfo is
 --       Defined in all entities. Set for objects and types whose declarations
 --       carry the keyword aliased, and on record components that have the
 --       keyword. For Ada 2012, also applies to formal parameters.
-
---    Is_ARECnF_Entity (Flag284)
---       Defined in all entities. Set for the ARECnF E_In_Parameter entity that
---       is generated for nested subprograms that require an activation record.
---       Logically this is an extra formal, and must be treated that way, but
---       we can't use the normal Extra_Formal mechanism since it is designed
---       to handle only cases where an extra formal is associated with one of
---       the source formals, which is not the case for ARECnF entities. Hence
---       we use this special flag to deal with this special extra formal.
 
 --    Is_Atomic (Flag85)
 --       Defined in all type entities, and also in constants, components and
@@ -5257,7 +5250,6 @@ package Einfo is
    --    In_Private_Part                     (Flag45)
    --    Is_Ada_2005_Only                    (Flag185)
    --    Is_Ada_2012_Only                    (Flag199)
-   --    Is_ARECnF_Entity                    (Flag284)
    --    Is_Bit_Packed_Array                 (Flag122)  (base type only)
    --    Is_Aliased                          (Flag15)
    --    Is_Character_Type                   (Flag63)
@@ -6811,7 +6803,6 @@ package Einfo is
    function Is_Ada_2005_Only                    (Id : E) return B;
    function Is_Ada_2012_Only                    (Id : E) return B;
    function Is_Aliased                          (Id : E) return B;
-   function Is_ARECnF_Entity                    (Id : E) return B;
    function Is_Asynchronous                     (Id : E) return B;
    function Is_Atomic                           (Id : E) return B;
    function Is_Bit_Packed_Array                 (Id : E) return B;
@@ -7460,7 +7451,6 @@ package Einfo is
    procedure Set_Is_Ada_2005_Only                (Id : E; V : B := True);
    procedure Set_Is_Ada_2012_Only                (Id : E; V : B := True);
    procedure Set_Is_Aliased                      (Id : E; V : B := True);
-   procedure Set_Is_ARECnF_Entity                (Id : E; V : B := True);
    procedure Set_Is_Asynchronous                 (Id : E; V : B := True);
    procedure Set_Is_Atomic                       (Id : E; V : B := True);
    procedure Set_Is_Bit_Packed_Array             (Id : E; V : B := True);
@@ -8228,7 +8218,6 @@ package Einfo is
    pragma Inline (Is_Ada_2012_Only);
    pragma Inline (Is_Aggregate_Type);
    pragma Inline (Is_Aliased);
-   pragma Inline (Is_ARECnF_Entity);
    pragma Inline (Is_Array_Type);
    pragma Inline (Is_Assignable);
    pragma Inline (Is_Asynchronous);
@@ -8721,7 +8710,6 @@ package Einfo is
    pragma Inline (Set_Is_Ada_2005_Only);
    pragma Inline (Set_Is_Ada_2012_Only);
    pragma Inline (Set_Is_Aliased);
-   pragma Inline (Set_Is_ARECnF_Entity);
    pragma Inline (Set_Is_Asynchronous);
    pragma Inline (Set_Is_Atomic);
    pragma Inline (Set_Is_Bit_Packed_Array);

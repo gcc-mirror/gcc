@@ -1,5 +1,28 @@
 2015-03-04  Robert Dewar  <dewar@adacore.com>
 
+	* einfo.adb (Is_ARECnF_Entity): Removed.
+	(Last_Formal): Remove special handling of Is_ARECnF_Entity.
+	(Next_Formal): Remove special handling of Is_ARECnF_Entity.
+	(Next_Formal_With_Extras): Remove special handling of Is_ARECnF_Entity.
+	(Number_Entries): Minor reformatting.
+	* einfo.ads (Is_ARECnF_Entity): Removed.
+	* exp_unst.adb (Unnest_Subprogram): Remove setting of
+	Is_ARECnF_Entity.
+	(Add_Extra_Formal): Use normal Extra_Formal circuit.
+	* sprint.adb (Write_Param_Specs): Properly handle case where
+	there are no source formals, but we have at least one Extra_Formal
+	present.
+
+2015-03-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregate,
+	Add_Discriminant_Values): If the value is a reference to the
+	current instance of an enclosing type, use its base type to check
+	against prefix of attribute reference, because the target type
+	may be otherwise constrained.
+
+2015-03-04  Robert Dewar  <dewar@adacore.com>
+
 	* atree.h: Add entries for Flag287-Flag309.
 	* einfo.adb: Add (unused) flags Flag287-Flag309.
 
