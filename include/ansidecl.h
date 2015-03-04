@@ -276,6 +276,15 @@ So instead we use the macro below and test it against specific values.  */
 # endif /* GNUC >= 4.3 */
 #endif /* ATTRIBUTE_HOT */
 
+/* Attribute 'no_sanitize_undefined' was valid as of gcc 4.9.  */
+#ifndef ATTRIBUTE_NO_SANITIZE_UNDEFINED
+# if (GCC_VERSION >= 4009)
+#  define ATTRIBUTE_NO_SANITIZE_UNDEFINED __attribute__ ((no_sanitize_undefined))
+# else
+#  define ATTRIBUTE_NO_SANITIZE_UNDEFINED
+# endif /* GNUC >= 4.9 */
+#endif /* ATTRIBUTE_NO_SANITIZE_UNDEFINED */
+
 /* We use __extension__ in some places to suppress -pedantic warnings
    about GCC extensions.  This feature didn't work properly before
    gcc 2.8.  */
