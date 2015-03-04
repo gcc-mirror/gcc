@@ -1,3 +1,10 @@
+2015-03-04  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/atomic-comp-swap-release-acquire.c: Add
+	-fno-ipa-icf to dg-options
+	* gcc.target/aarch64/vect_saddl_1.c: Likewise.
+	* gcc.target/aarch64/vect_smlal_1.c: Likewise.
+
 2015-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/64398
