@@ -584,12 +584,26 @@ package body Einfo is
    --    Is_Static_Type                  Flag281
    --    Has_Nested_Subprogram           Flag282
    --    Uplevel_Reference_Noted         Flag283
-
    --    Is_ARECnF_Entity                Flag284
+
    --    (unused)                        Flag285
    --    (unused)                        Flag286
+   --    (unused)                        Flag287
+   --    (unused)                        Flag288
+   --    (unused)                        Flag289
+   --    (unused)                        Flag300
 
-   --  Note: Flag287-317 are defined in atree.ads/adb, but not yet in atree.h
+   --    (unused)                        Flag301
+   --    (unused)                        Flag302
+   --    (unused)                        Flag303
+   --    (unused)                        Flag304
+   --    (unused)                        Flag305
+   --    (unused)                        Flag306
+   --    (unused)                        Flag307
+   --    (unused)                        Flag308
+   --    (unused)                        Flag309
+
+   --  Note: Flag310-317 are defined in atree.ads/adb, but not yet in atree.h
 
    -----------------------
    -- Local subprograms --
