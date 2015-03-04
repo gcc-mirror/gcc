@@ -1,3 +1,9 @@
+2015-03-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (round_up_loc): Cast divisor to signed on all paths
+	before negating it.
+	* stor-layout.c (finalize_record_size): Revert latest change.
+
 2015-03-04  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/rs6000/t-freebsd64: Remove 32-bit soft-float multilibs.
@@ -25,8 +31,8 @@
 
 2015-03-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
-	* gcc/config/s390/s390.c (s390_expand_builtin): Exlude non-htm
-	builtins from checking for -mhtm option.
+	* config/s390/s390.c (s390_expand_builtin): Exlude non-htm builtins
+	from checking for -mhtm option.
 
 2015-03-03  Jan Hubicka  <hubicka@ucw.cz>
 

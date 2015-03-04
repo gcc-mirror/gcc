@@ -1627,11 +1627,6 @@ finalize_record_size (record_layout_info rli)
     unpadded_size_unit
       = size_binop (PLUS_EXPR, unpadded_size_unit, size_one_node);
 
-  if (TREE_CODE (unpadded_size_unit) == INTEGER_CST
-      && !TREE_OVERFLOW (unpadded_size_unit)
-      && !valid_constant_size_p (unpadded_size_unit))
-    error ("type %qT is too large", rli->t);
-
   /* Round the size up to be a multiple of the required alignment.  */
   TYPE_SIZE (rli->t) = round_up (unpadded_size, TYPE_ALIGN (rli->t));
   TYPE_SIZE_UNIT (rli->t)
