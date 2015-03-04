@@ -7853,12 +7853,10 @@ package body Exp_Ch7 is
      (Loc     : Source_Ptr;
       Ptr_Typ : Entity_Id) return Node_Id
    is
-
-      --  It is possible for Ptr_Typ to be a partial view, if the access
-      --  type is a full view declared in the private part of a nested package,
-      --  and the finalization actions take place when completing analysis
-      --  of the enclosing unit. For this reason we use Underlying_Type
-      --  in two places below.
+      --  It is possible for Ptr_Typ to be a partial view, if the access type
+      --  is a full view declared in the private part of a nested package, and
+      --  the finalization actions take place when completing analysis of the
+      --  enclosing unit. For this reason use Underlying_Type twice below.
 
       Desig_Typ : constant Entity_Id :=
                     Available_View

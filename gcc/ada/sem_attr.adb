@@ -241,6 +241,15 @@ package body Sem_Attr is
       --  Used for Access, Unchecked_Access, Unrestricted_Access attributes.
       --  Internally, Id distinguishes which of the three cases is involved.
 
+      procedure Analyze_Attribute_Old_Result
+        (Legal   : out Boolean;
+         Spec_Id : out Entity_Id);
+      --  Common processing for attributes 'Old and 'Result. The routine checks
+      --  that the attribute appears in a postcondition-like aspect or pragma
+      --  associated with a suitable subprogram or a body. Flag Legal is set
+      --  when the above criterias are met. Spec_Id denotes the entity of the
+      --  subprogram [body] or Empty if the attribute is illegal.
+
       procedure Bad_Attribute_For_Predicate;
       --  Output error message for use of a predicate (First, Last, Range) not
       --  allowed with a type that has predicates. If the type is a generic
@@ -343,6 +352,9 @@ package body Sem_Attr is
       procedure Check_Object_Reference (P : Node_Id);
       --  Check that P is an object reference
 
+      procedure Check_PolyORB_Attribute;
+      --  Validity checking for PolyORB/DSA attribute
+
       procedure Check_Program_Unit;
       --  Verify that prefix of attribute N is a program unit
 
@@ -363,9 +375,6 @@ package body Sem_Attr is
 
       procedure Check_System_Prefix;
       --  Verify that prefix of attribute N is package System
-
-      procedure Check_PolyORB_Attribute;
-      --  Validity checking for PolyORB/DSA attribute
 
       procedure Check_Task_Prefix;
       --  Verify that prefix of attribute N is a task or task type
@@ -396,10 +405,6 @@ package body Sem_Attr is
       procedure Error_Attr_P (Msg : String);
       pragma No_Return (Error_Attr);
       --  Like Error_Attr, but error is posted at the start of the prefix
-
-      function In_Refined_Post return Boolean;
-      --  Determine whether the current attribute appears in pragma
-      --  Refined_Post.
 
       procedure Legal_Formal_Attribute;
       --  Common processing for attributes Definite and Has_Discriminants.
@@ -1071,6 +1076,263 @@ package body Sem_Attr is
             null;
          end if;
       end Analyze_Access_Attribute;
+
+      ----------------------------------
+      -- Analyze_Attribute_Old_Result --
+      ----------------------------------
+
+      procedure Analyze_Attribute_Old_Result
+        (Legal   : out Boolean;
+         Spec_Id : out Entity_Id)
+      is
+         procedure Check_Placement_In_Check (Prag : Node_Id);
+         --  Verify that the attribute appears within pragma Check that mimics
+         --  a postcondition.
+
+         procedure Check_Placement_In_Contract_Cases (Prag : Node_Id);
+         --  Verify that the attribute appears within a consequence of aspect
+         --  or pragma Contract_Cases denoted by Prag.
+
+         procedure Check_Placement_In_Test_Case (Prag : Node_Id);
+         --  Verify that the attribute appears within the "Ensures" argument of
+         --  aspect or pragma Test_Case denoted by Prag.
+
+         function Is_Within
+           (Nod      : Node_Id;
+            Encl_Nod : Node_Id) return Boolean;
+         --  Subsidiary to Check_Placemenet_In_XXX. Determine whether arbitrary
+         --  node Nod is within enclosing node Encl_Nod.
+
+         ------------------------------
+         -- Check_Placement_In_Check --
+         ------------------------------
+
+         procedure Check_Placement_In_Check (Prag : Node_Id) is
+            Args : constant List_Id := Pragma_Argument_Associations (Prag);
+            Nam  : constant Name_Id := Chars (Get_Pragma_Arg (First (Args)));
+
+         begin
+            --  The "Name" argument of pragma Check denotes a postcondition
+
+            if Nam_In (Nam, Name_Post,
+                            Name_Post_Class,
+                            Name_Postcondition,
+                            Name_Refined_Post)
+            then
+               null;
+
+            --  Otherwise the placement of the attribute is illegal
+
+            else
+               if Aname = Name_Old then
+                  Error_Attr
+                    ("attribute % can only appear in postcondition", P);
+
+               --  Specialize the error message for attribute 'Result
+
+               else
+                  Error_Attr
+                    ("attribute % can only appear in postcondition of "
+                     & "function", P);
+               end if;
+            end if;
+         end Check_Placement_In_Check;
+
+         ---------------------------------------
+         -- Check_Placement_In_Contract_Cases --
+         ---------------------------------------
+
+         procedure Check_Placement_In_Contract_Cases (Prag : Node_Id) is
+            Arg   : Node_Id;
+            Cases : Node_Id;
+            CCase : Node_Id;
+
+         begin
+            --  Obtain the argument of the aspect or pragma
+
+            if Nkind (Prag) = N_Aspect_Specification then
+               Arg := Prag;
+            else
+               Arg := First (Pragma_Argument_Associations (Prag));
+            end if;
+
+            Cases := Expression (Arg);
+
+            if Present (Component_Associations (Cases)) then
+               CCase := First (Component_Associations (Cases));
+               while Present (CCase) loop
+
+                  --  Detect whether the attribute appears within the
+                  --  consequence of the current contract case.
+
+                  if Nkind (CCase) = N_Component_Association
+                    and then Is_Within (N, Expression (CCase))
+                  then
+                     return;
+                  end if;
+
+                  Next (CCase);
+               end loop;
+            end if;
+
+            --  Otherwise aspect or pragma Contract_Cases is either malformed
+            --  or the attribute does not appear within a consequence.
+
+            Error_Attr
+              ("attribute % must appear in the consequence of a contract case",
+               P);
+         end Check_Placement_In_Contract_Cases;
+
+         ----------------------------------
+         -- Check_Placement_In_Test_Case --
+         ----------------------------------
+
+         procedure Check_Placement_In_Test_Case (Prag : Node_Id) is
+            Arg : constant Node_Id :=
+                    Test_Case_Arg
+                      (Prag        => Prag,
+                       Arg_Nam     => Name_Ensures,
+                       From_Aspect => Nkind (Prag) = N_Aspect_Specification);
+
+         begin
+            --  Detect whether the attribute appears within the "Ensures"
+            --  expression of aspect or pragma Test_Case.
+
+            if Present (Arg) and then Is_Within (N, Arg) then
+               null;
+
+            else
+               Error_Attr
+                 ("attribute % must appear in the ensures expression of a "
+                  & "test case", P);
+            end if;
+         end Check_Placement_In_Test_Case;
+
+         ---------------
+         -- Is_Within --
+         ---------------
+
+         function Is_Within
+           (Nod      : Node_Id;
+            Encl_Nod : Node_Id) return Boolean
+         is
+            Par : Node_Id;
+
+         begin
+            Par := Nod;
+            while Present (Par) loop
+               if Par = Encl_Nod then
+                  return True;
+
+               --  Prevent the search from going too far
+
+               elsif Is_Body_Or_Package_Declaration (Par) then
+                  exit;
+               end if;
+
+               Par := Parent (Par);
+            end loop;
+
+            return False;
+         end Is_Within;
+
+         --  Local variables
+
+         Prag      : Node_Id;
+         Prag_Nam  : Name_Id;
+         Subp_Decl : Node_Id;
+
+      --  Start of processing for Analyze_Attribute_Old_Result
+
+      begin
+         --  Assume that the attribute is illegal
+
+         Legal   := False;
+         Spec_Id := Empty;
+
+         --  Traverse the parent chain to find the aspect or pragma where the
+         --  attribute resides.
+
+         Prag := N;
+         while Present (Prag) loop
+            if Nkind_In (Prag, N_Aspect_Specification, N_Pragma) then
+               exit;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Prag) then
+               exit;
+            end if;
+
+            Prag := Parent (Prag);
+         end loop;
+
+         --  The attribute is allowed to appear only in postcondition-like
+         --  aspects or pragmas.
+
+         if Nkind_In (Prag, N_Aspect_Specification, N_Pragma) then
+            if Nkind (Prag) = N_Aspect_Specification then
+               Prag_Nam := Chars (Identifier (Prag));
+            else
+               Prag_Nam := Pragma_Name (Prag);
+            end if;
+
+            if Prag_Nam = Name_Check then
+               Check_Placement_In_Check (Prag);
+
+            elsif Prag_Nam = Name_Contract_Cases then
+               Check_Placement_In_Contract_Cases (Prag);
+
+            elsif Nam_In (Prag_Nam, Name_Post,
+                                    Name_Post_Class,
+                                    Name_Postcondition,
+                                    Name_Refined_Post)
+            then
+               null;
+
+            elsif Prag_Nam = Name_Test_Case then
+               Check_Placement_In_Test_Case (Prag);
+
+            else
+               Error_Attr ("attribute % can only appear in postcondition", P);
+               return;
+            end if;
+
+         --  Otherwise the placement of the attribute is illegal
+
+         else
+            Error_Attr ("attribute % can only appear in postcondition", P);
+            return;
+         end if;
+
+         --  Find the related subprogram subject to the aspect or pragma
+
+         if Nkind (Prag) = N_Aspect_Specification then
+            Subp_Decl := Parent (Prag);
+         else
+            Subp_Decl := Find_Related_Subprogram_Or_Body (Prag);
+         end if;
+
+         --  The aspect or pragma where the attribute resides should be
+         --  associated with a subprogram declaration or a body. If this is not
+         --  the case, then the aspect or pragma is illegal. Return as analysis
+         --  cannot be carried out.
+
+         if not Nkind_In (Subp_Decl, N_Abstract_Subprogram_Declaration,
+                                     N_Entry_Declaration,
+                                     N_Generic_Subprogram_Declaration,
+                                     N_Subprogram_Body,
+                                     N_Subprogram_Body_Stub,
+                                     N_Subprogram_Declaration)
+         then
+            return;
+         end if;
+
+         --  If we get here, then the attribute is legal
+
+         Legal   := True;
+         Spec_Id := Corresponding_Spec_Of (Subp_Decl);
+      end Analyze_Attribute_Old_Result;
 
       ---------------------------------
       -- Bad_Attribute_For_Predicate --
@@ -2174,60 +2436,6 @@ package body Sem_Attr is
          Error_Msg_F (Msg, P);
          Error_Attr;
       end Error_Attr_P;
-
-      ---------------------
-      -- In_Refined_Post --
-      ---------------------
-
-      function In_Refined_Post return Boolean is
-         function Is_Refined_Post (Prag : Node_Id) return Boolean;
-         --  Determine whether Prag denotes one of the incarnations of pragma
-         --  Refined_Post (either as is or pragma Check (Refined_Post, ...).
-
-         ---------------------
-         -- Is_Refined_Post --
-         ---------------------
-
-         function Is_Refined_Post (Prag : Node_Id) return Boolean is
-            Args : constant List_Id := Pragma_Argument_Associations (Prag);
-            Nam  : constant Name_Id := Pragma_Name (Prag);
-
-         begin
-            if Nam = Name_Refined_Post then
-               return True;
-
-            elsif Nam = Name_Check then
-               pragma Assert (Present (Args));
-
-               return Chars (Expression (First (Args))) = Name_Refined_Post;
-            end if;
-
-            return False;
-         end Is_Refined_Post;
-
-         --  Local variables
-
-         Stmt : Node_Id;
-
-      --  Start of processing for In_Refined_Post
-
-      begin
-         Stmt := Parent (N);
-         while Present (Stmt) loop
-            if Nkind (Stmt) = N_Pragma and then Is_Refined_Post (Stmt) then
-               return True;
-
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (Stmt) then
-               exit;
-            end if;
-
-            Stmt := Parent (Stmt);
-         end loop;
-
-         return False;
-      end In_Refined_Post;
 
       ----------------------------
       -- Legal_Formal_Attribute --
@@ -4462,14 +4670,6 @@ package body Sem_Attr is
          --  the related postcondition expression. Subp_Id is the subprogram to
          --  which the related postcondition applies.
 
-         procedure Check_Use_In_Contract_Cases (Prag : Node_Id);
-         --  Perform various semantic checks related to the placement of the
-         --  attribute in pragma Contract_Cases.
-
-         procedure Check_Use_In_Test_Case (Prag : Node_Id);
-         --  Perform various semantic checks related to the placement of the
-         --  attribute in pragma Contract_Cases.
-
          --------------------------------
          -- Check_References_In_Prefix --
          --------------------------------
@@ -4504,7 +4704,7 @@ package body Sem_Attr is
                --  case, then the scope of the local entity is nested within
                --  that of the subprogram.
 
-               elsif Nkind (Nod) = N_Identifier
+               elsif Is_Entity_Name (Nod)
                  and then Present (Entity (Nod))
                  and then Scope_Within (Scope (Entity (Nod)), Subp_Id)
                then
@@ -4512,6 +4712,9 @@ package body Sem_Attr is
                     ("prefix of attribute % cannot reference local entities",
                      Nod);
                   return Abandon;
+
+               --  Otherwise keep inspecting the prefix
+
                else
                   return OK;
                end if;
@@ -4525,261 +4728,130 @@ package body Sem_Attr is
             Check_References (P);
          end Check_References_In_Prefix;
 
-         ---------------------------------
-         -- Check_Use_In_Contract_Cases --
-         ---------------------------------
-
-         procedure Check_Use_In_Contract_Cases (Prag : Node_Id) is
-            Cases : constant Node_Id :=
-                      Get_Pragma_Arg
-                        (First (Pragma_Argument_Associations (Prag)));
-            Expr  : Node_Id;
-
-         begin
-            --  Climb the parent chain to reach the top of the expression where
-            --  attribute 'Old resides.
-
-            Expr := N;
-            while Parent (Parent (Expr)) /= Cases loop
-               Expr := Parent (Expr);
-            end loop;
-
-            --  Ensure that the obtained expression is the consequence of a
-            --  contract case as this is the only postcondition-like part of
-            --  the pragma. Otherwise, attribute 'Old appears in the condition
-            --  of a contract case. Emit an error since this is not a
-            --  postcondition-like context. (SPARK RM 6.1.3(2))
-
-            if Expr /= Expression (Parent (Expr)) then
-               Error_Attr
-                 ("attribute % cannot appear in the condition "
-                  & "of a contract case", P);
-            end if;
-         end Check_Use_In_Contract_Cases;
-
-         ----------------------------
-         -- Check_Use_In_Test_Case --
-         ----------------------------
-
-         procedure Check_Use_In_Test_Case (Prag : Node_Id) is
-            Ensures : constant Node_Id := Test_Case_Arg (Prag, Name_Ensures);
-            Expr    : Node_Id;
-
-         begin
-            --  Climb the parent chain to reach the top of the Ensures part of
-            --  pragma Test_Case.
-
-            Expr := N;
-            while Expr /= Prag loop
-               if Expr = Ensures then
-                  return;
-               end if;
-
-               Expr := Parent (Expr);
-            end loop;
-
-            --  If we get there, then attribute 'Old appears in the requires
-            --  expression of pragma Test_Case which is not a postcondition-
-            --  like context.
-
-            Error_Attr
-              ("attribute % cannot appear in the requires expression of a "
-               & "test case", P);
-         end Check_Use_In_Test_Case;
-
          --  Local variables
 
-         CS : Entity_Id;
-         --  The enclosing scope, excluding loops for quantified expressions.
-         --  During analysis, it is the postcondition subprogram. During
-         --  pre-analysis, it is the scope of the subprogram declaration.
-
-         Prag : Node_Id;
-         --  During pre-analysis, Prag is the enclosing pragma node if any
+         Legal    : Boolean;
+         Pref_Id  : Entity_Id;
+         Pref_Typ : Entity_Id;
+         Spec_Id  : Entity_Id;
 
       --  Start of processing for Old
 
       begin
-         Prag := Empty;
-
-         --  Find enclosing scopes, excluding loops
-
-         CS := Current_Scope;
-         while Ekind (CS) = E_Loop loop
-            CS := Scope (CS);
-         end loop;
-
-         --  Check the legality of attribute 'Old when it appears inside pragma
-         --  Refined_Post. These specialized checks are required only when code
-         --  generation is disabled. In the general case pragma Refined_Post is
-         --  transformed into pragma Check by Process_PPCs which in turn is
-         --  relocated to procedure _Postconditions. From then on the legality
-         --  of 'Old is determined as usual.
-
-         if not Expander_Active and then In_Refined_Post then
-            Preanalyze_And_Resolve (P);
-            Check_References_In_Prefix (CS);
-            P_Type := Etype (P);
-            Set_Etype (N, P_Type);
-
-            if Is_Limited_Type (P_Type) then
-               Error_Attr ("attribute % cannot apply to limited objects", P);
-            end if;
-
-            if Is_Entity_Name (P)
-              and then Is_Constant_Object (Entity (P))
-            then
-               Error_Msg_N
-                 ("??attribute Old applied to constant has no effect", P);
-            end if;
-
-            return;
-
-         --  A Contract_Cases, Postcondition or Test_Case pragma is in the
-         --  process of being preanalyzed. Perform the semantic checks now
-         --  before the pragma is relocated and/or expanded.
-
-         --  For a generic subprogram, postconditions are preanalyzed as well
-         --  for name capture, and still appear within an aspect spec.
-
-         elsif In_Spec_Expression or Inside_A_Generic then
-            Prag := N;
-            while Present (Prag)
-               and then not Nkind_In (Prag, N_Aspect_Specification,
-                                            N_Function_Specification,
-                                            N_Pragma,
-                                            N_Procedure_Specification,
-                                            N_Subprogram_Body)
-            loop
-               Prag := Parent (Prag);
-            end loop;
-
-            --  In ASIS mode, the aspect itself is analyzed, in addition to the
-            --  corresponding pragma. Don't issue errors when analyzing aspect.
-
-            if Nkind (Prag) = N_Aspect_Specification
-              and then Nam_In (Chars (Identifier (Prag)), Name_Post,
-                                                          Name_Refined_Post)
-            then
-               null;
-
-            --  In all other cases the related context must be a pragma
-
-            elsif Nkind (Prag) /= N_Pragma then
-               Error_Attr ("% attribute can only appear in postcondition", P);
-
-            --  Verify the placement of the attribute with respect to the
-            --  related pragma.
-
-            else
-               case Get_Pragma_Id (Prag) is
-                  when Pragma_Contract_Cases =>
-                     Check_Use_In_Contract_Cases (Prag);
-
-                  when Pragma_Postcondition | Pragma_Refined_Post =>
-                     null;
-
-                  when Pragma_Test_Case =>
-                     Check_Use_In_Test_Case (Prag);
-
-                  when others =>
-                     Error_Attr
-                       ("% attribute can only appear in postcondition", P);
-               end case;
-            end if;
-
-         --  Body case, where we must be inside a generated _Postconditions
-         --  procedure, or else the attribute use is definitely misplaced. The
-         --  postcondition itself may have generated transient scopes, and is
-         --  not necessarily the current one.
-
-         else
-            while Present (CS) and then CS /= Standard_Standard loop
-               if Chars (CS) = Name_uPostconditions then
-                  exit;
-               else
-                  CS := Scope (CS);
-               end if;
-            end loop;
-
-            if Chars (CS) /= Name_uPostconditions then
-               Error_Attr ("% attribute can only appear in postcondition", P);
-            end if;
-         end if;
-
-         --  If the attribute reference is generated for a Requires clause,
-         --  then no expressions follow. Otherwise it is a primary, in which
-         --  case, if expressions follow, the attribute reference must be an
-         --  indexable object, so rewrite the node accordingly.
+         --  The attribute reference is a primary. If any expressions follow,
+         --  then the attribute reference is an indexable object. Transform the
+         --  attribute into an indexed component and analyze it.
 
          if Present (E1) then
             Rewrite (N,
               Make_Indexed_Component (Loc,
                 Prefix      =>
                   Make_Attribute_Reference (Loc,
-                    Prefix         => Relocate_Node (Prefix (N)),
+                    Prefix         => Relocate_Node (P),
                     Attribute_Name => Name_Old),
                 Expressions => Expressions (N)));
-
             Analyze (N);
             return;
          end if;
 
-         Check_E0;
+         Analyze_Attribute_Old_Result (Legal, Spec_Id);
 
-         --  Prefix has not been analyzed yet, and its full analysis will take
-         --  place during expansion (see below).
+         --  The aspect or pragma where attribute 'Old resides should be
+         --  associated with a subprogram declaration or a body. If this is not
+         --  the case, then the aspect or pragma is illegal. Return as analysis
+         --  cannot be carried out.
+
+         if not Legal then
+            return;
+         end if;
+
+         --  The prefix must be preanalyzed as the full analysis will take
+         --  place during expansion.
 
          Preanalyze_And_Resolve (P);
-         Check_References_In_Prefix (CS);
-         P_Type := Etype (P);
-         Set_Etype (N, P_Type);
 
-         if Is_Limited_Type (P_Type) then
+         --  Ensure that the prefix does not contain attributes 'Old or 'Result
+
+         Check_References_In_Prefix (Spec_Id);
+
+         --  Set the type of the attribute now to prevent cascaded errors
+
+         Pref_Typ := Etype (P);
+         Set_Etype (N, Pref_Typ);
+
+         --  Legality checks
+
+         if Is_Limited_Type (Pref_Typ) then
             Error_Attr ("attribute % cannot apply to limited objects", P);
          end if;
 
-         if Is_Entity_Name (P)
-           and then Is_Constant_Object (Entity (P))
-         then
-            Error_Msg_N
-              ("??attribute Old applied to constant has no effect", P);
-         end if;
+         --  The prefix is a simple name
 
-         --  Check that the prefix of 'Old is an entity when it may be
-         --  potentially unevaluated (6.1.1 (27/3)).
+         if Is_Entity_Name (P) and then Present (Entity (P)) then
+            Pref_Id := Entity (P);
 
-         if Present (Prag)
-           and then Is_Potentially_Unevaluated (N)
-           and then not Is_Entity_Name (P)
-         then
-            Uneval_Old_Msg;
-         end if;
+            --  Emit a warning when the prefix is a constant. Note that the use
+            --  of Error_Attr would reset the type of N to Any_Type even though
+            --  this is a warning. Use Error_Msg_XXX instead.
 
-         --  The attribute appears within a pre/postcondition, but refers to
-         --  an entity in the enclosing subprogram. If it is a component of
-         --  a formal its expansion might generate actual subtypes that may
-         --  be referenced in an inner context, and which must be elaborated
-         --  within the subprogram itself. If the prefix includes a function
-         --  call it may involve finalization actions that should only be
-         --  inserted when the attribute has been rewritten as a declarations.
-         --  As a result, if the prefix is not a simple name we create
-         --  a declaration for it now, and insert it at the start of the
-         --  enclosing subprogram. This is properly an expansion activity
-         --  but it has to be performed now to prevent out-of-order issues.
+            if Is_Constant_Object (Pref_Id) then
+               Error_Msg_Name_1 := Name_Old;
+               Error_Msg_N
+                 ("??atribute % applied to constant has no effect", P);
+            end if;
 
-         --  This expansion is both harmful and not needed in SPARK mode, since
-         --  the formal verification backend relies on the types of nodes
-         --  (hence is not robust w.r.t. a change to base type here), and does
-         --  not suffer from the out-of-order issue described above. Thus, this
-         --  expansion is skipped in SPARK mode.
+         --  Otherwise the prefix is not a simple name
 
-         if not Is_Entity_Name (P) and then not GNATprove_Mode then
-            P_Type := Base_Type (P_Type);
-            Set_Etype (N, P_Type);
-            Set_Etype (P, P_Type);
-            Analyze_Dimension (N);
-            Expand (N);
+         else
+            --  Ensure that the prefix of attribute 'Old is an entity when it
+            --  is potentially unevaluated (6.1.1 (27/3)).
+
+            if Is_Potentially_Unevaluated (N) then
+               Uneval_Old_Msg;
+
+            --  Detect a possible infinite recursion when the prefix denotes
+            --  the related function.
+
+            --    function Func (...) return ...
+            --      with Post => Func'Old ...;
+
+            elsif Nkind (P) = N_Function_Call then
+               Pref_Id := Entity (Name (P));
+
+               if Ekind_In (Spec_Id, E_Function, E_Generic_Function)
+                 and then Pref_Id = Spec_Id
+               then
+                  Error_Msg_Warn := SPARK_Mode /= On;
+                  Error_Msg_N ("!possible infinite recursion<<", P);
+                  Error_Msg_N ("\!??Storage_Error ]<<", P);
+               end if;
+            end if;
+
+            --  The prefix of attribute 'Old may refer to a component of a
+            --  formal parameter. In this case its expansion may generate
+            --  actual subtypes that are referenced in an inner context and
+            --  that must be elaborated within the subprogram itself. If the
+            --  prefix includes a function call, it may involve finalization
+            --  actions that should be inserted when the attribute has been
+            --  rewritten as a declaration. Create a declaration for the prefix
+            --  and insert it at the start of the enclosing subprogram. This is
+            --  an expansion activity that has to be performed now to prevent
+            --  out-of-order issues.
+
+            --  This expansion is both harmful and not needed in SPARK mode,
+            --  since the formal verification backend relies on the types of
+            --  nodes (hence is not robust w.r.t. a change to base type here),
+            --  and does not suffer from the out-of-order issue described
+            --  above. Thus, this expansion is skipped in SPARK mode.
+
+            if not GNATprove_Mode then
+               Pref_Typ := Base_Type (Pref_Typ);
+               Set_Etype (N, Pref_Typ);
+               Set_Etype (P, Pref_Typ);
+
+               Analyze_Dimension (N);
+               Expand (N);
+            end if;
          end if;
       end Old;
 
@@ -4985,104 +5057,11 @@ package body Sem_Attr is
       ------------
 
       when Attribute_Result => Result : declare
-         procedure Check_Placement_In_Check (Prag : Node_Id);
-         --  Verify that attribute 'Result appears within pragma Check that
-         --  emulates a postcondition.
-
-         procedure Check_Placement_In_Contract_Cases (Prag : Node_Id);
-         --  Verify that attribute 'Result appears within a consequence of
-         --  pragma Contract_Cases.
-
-         procedure Check_Placement_In_Test_Case (Prag : Node_Id);
-         --  Verify that attribute 'Result appears within the Ensures argument
-         --  of pragma Test_Case.
-
          function Denote_Same_Function
            (Pref_Id : Entity_Id;
             Spec_Id : Entity_Id) return Boolean;
          --  Determine whether the entity of the prefix Pref_Id denotes the
          --  same entity as that of the related subprogram Spec_Id.
-
-         function Is_Within
-           (Nod      : Node_Id;
-            Encl_Nod : Node_Id) return Boolean;
-         --  Subsidiary to Check_Placemenet_In_XXX_Case. Determine whether
-         --  arbitrary node Nod is within enclosing node Encl_Nod.
-
-         ------------------------------
-         -- Check_Placement_In_Check --
-         ------------------------------
-
-         procedure Check_Placement_In_Check (Prag : Node_Id) is
-            Args : constant List_Id := Pragma_Argument_Associations (Prag);
-            Nam  : constant Name_Id := Chars (Get_Pragma_Arg (First (Args)));
-
-         begin
-            --  The "Name" argument of pragma Check denotes a postcondition
-
-            if Nam_In (Nam, Name_Post,
-                            Name_Postcondition,
-                            Name_Refined_Post)
-            then
-               null;
-
-            --  Otherwise the placement of attribute 'Result is illegal
-
-            else
-               Error_Attr
-                 ("% attribute can only appear in postcondition of function",
-                  P);
-            end if;
-         end Check_Placement_In_Check;
-
-         ---------------------------------------
-         -- Check_Placement_In_Contract_Cases --
-         ---------------------------------------
-
-         procedure Check_Placement_In_Contract_Cases (Prag : Node_Id) is
-            Args  : constant List_Id := Pragma_Argument_Associations (Prag);
-            Cases : constant Node_Id := Get_Pragma_Arg (First (Args));
-            CCase : Node_Id;
-
-         begin
-            if Present (Component_Associations (Cases)) then
-               CCase := First (Component_Associations (Cases));
-               while Present (CCase) loop
-
-                  --  Guard against a malformed contract case. Detect whether
-                  --  attribute 'Result appears within the consequence of the
-                  --  current contract case.
-
-                  if Nkind (CCase) = N_Component_Association
-                    and then Is_Within (N, Expression (CCase))
-                  then
-                     return;
-                  end if;
-
-                  Next (CCase);
-               end loop;
-            end if;
-
-            --  Otherwise pragma Contract_Cases is either malformed in some
-            --  way or attribute 'Result does not appear within a consequence
-            --  expression.
-
-            Error_Attr ("% attribute misplaced inside contract cases", P);
-         end Check_Placement_In_Contract_Cases;
-
-         ----------------------------------
-         -- Check_Placement_In_Test_Case --
-         ----------------------------------
-
-         procedure Check_Placement_In_Test_Case (Prag : Node_Id) is
-         begin
-            --  Detect whether attribute 'Result appears within the "Ensures"
-            --  expression of pragma Test_Case.
-
-            if not Is_Within (N, Test_Case_Arg (Prag, Name_Ensures)) then
-               Error_Attr ("% attribute misplaced inside test case", P);
-            end if;
-         end Check_Placement_In_Test_Case;
 
          --------------------------
          -- Denote_Same_Function --
@@ -5135,41 +5114,11 @@ package body Sem_Attr is
             end if;
          end Denote_Same_Function;
 
-         ---------------
-         -- Is_Within --
-         ---------------
-
-         function Is_Within
-           (Nod      : Node_Id;
-            Encl_Nod : Node_Id) return Boolean
-         is
-            Par : Node_Id;
-
-         begin
-            Par := Nod;
-            while Present (Par) loop
-               if Par = Encl_Nod then
-                  return True;
-
-               --  Prevent the search from going too far
-
-               elsif Is_Body_Or_Package_Declaration (Par) then
-                  exit;
-               end if;
-
-               Par := Parent (Par);
-            end loop;
-
-            return False;
-         end Is_Within;
-
          --  Local variables
 
-         Prag      : Node_Id;
-         Prag_Id   : Pragma_Id;
-         Pref_Id   : Entity_Id;
-         Spec_Id   : Entity_Id;
-         Subp_Decl : Node_Id;
+         Legal   : Boolean;
+         Pref_Id : Entity_Id;
+         Spec_Id : Entity_Id;
 
       --  Start of processing for Result
 
@@ -5190,90 +5139,16 @@ package body Sem_Attr is
             return;
          end if;
 
-         --  Traverse the parent chain to find the aspect or pragma where
-         --  attribute 'Result resides.
+         Analyze_Attribute_Old_Result (Legal, Spec_Id);
 
-         Prag := N;
-         while Present (Prag) loop
-            if Nkind_In (Prag, N_Aspect_Specification, N_Pragma) then
-               exit;
+         --  The aspect or pragma where attribute 'Result resides should be
+         --  associated with a subprogram declaration or a body. If this is not
+         --  the case, then the aspect or pragma is illegal. Return as analysis
+         --  cannot be carried out.
 
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (Prag) then
-               exit;
-            end if;
-
-            Prag := Parent (Prag);
-         end loop;
-
-         --  Do not emit an error when preanalyzing an aspect for ASIS. If the
-         --  placement of attribute 'Result is illegal, the error is reported
-         --  when analyzing the corresponding pragma.
-
-         if ASIS_Mode and then Nkind (Prag) = N_Aspect_Specification then
-            null;
-
-         --  Attribute 'Result is allowed to appear only in postcondition-like
-         --  pragmas.
-
-         elsif Nkind (Prag) = N_Pragma then
-            Prag_Id := Get_Pragma_Id (Prag);
-
-            if Prag_Id = Pragma_Check then
-               Check_Placement_In_Check (Prag);
-
-            elsif Prag_Id = Pragma_Contract_Cases then
-               Check_Placement_In_Contract_Cases (Prag);
-
-            elsif Prag_Id = Pragma_Postcondition
-              or else Prag_Id = Pragma_Refined_Post
-            then
-               null;
-
-            elsif Prag_Id = Pragma_Test_Case then
-               Check_Placement_In_Test_Case (Prag);
-
-            else
-               Error_Attr
-                 ("% attribute can only appear in postcondition of function",
-                  P);
-               return;
-            end if;
-
-         --  Otherwise the placement of the attribute is illegal
-
-         else
-            Error_Attr
-              ("% attribute can only appear in postcondition of function", P);
+         if not Legal then
             return;
          end if;
-
-         --  Attribute 'Result appears within a postcondition-like pragma. Find
-         --  the related subprogram subject to the pragma.
-
-         if Nkind (Prag) = N_Aspect_Specification then
-            Subp_Decl := Parent (Prag);
-         else
-            Subp_Decl := Find_Related_Subprogram_Or_Body (Prag);
-         end if;
-
-         --  The pragma where attribute 'Result resides should be associated
-         --  with a subprogram declaration or a body. If this is not the case,
-         --  then the pragma is illegal. Return as analysis cannot be carried
-         --  out.
-
-         if not Nkind_In (Subp_Decl, N_Abstract_Subprogram_Declaration,
-                                     N_Entry_Declaration,
-                                     N_Generic_Subprogram_Declaration,
-                                     N_Subprogram_Body,
-                                     N_Subprogram_Body_Stub,
-                                     N_Subprogram_Declaration)
-         then
-            return;
-         end if;
-
-         Spec_Id := Corresponding_Spec_Of (Subp_Decl);
 
          --  Attribute 'Result is part of a _Postconditions procedure. There is
          --  no need to perform the semantic checks below as they were already
@@ -5309,7 +5184,7 @@ package body Sem_Attr is
                   else
                      Error_Msg_Name_2 := Chars (Spec_Id);
                      Error_Attr
-                       ("incorrect prefix for % attribute, expected %", P);
+                       ("incorrect prefix for attribute %, expected %", P);
                   end if;
 
                --  Otherwise the prefix denotes some other form of subprogram
@@ -5317,7 +5192,7 @@ package body Sem_Attr is
 
                else
                   Error_Attr
-                    ("% attribute can only appear in postcondition of "
+                    ("attribute % can only appear in postcondition of "
                      & "function", P);
                end if;
 
@@ -5325,7 +5200,7 @@ package body Sem_Attr is
 
             else
                Error_Msg_Name_2 := Chars (Spec_Id);
-               Error_Attr ("incorrect prefix for % attribute, expected %", P);
+               Error_Attr ("incorrect prefix for attribute %, expected %", P);
             end if;
          end if;
       end Result;

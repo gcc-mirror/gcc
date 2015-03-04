@@ -1,3 +1,35 @@
+2015-03-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch7.adb: Minor reformatting.
+	* exp_unst.adb (Build_Tables): Fix minor glitch for no separate
+	spec case.
+	* erroutc.adb (Delete_Msg): add missing decrement of info msg counter.
+
+2015-03-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Build_Pragma_Check_Equivalent): Suppress
+	references to formal parameters subject to pragma Unreferenced.
+	(Suppress_Reference): New routine.
+	* sem_attr.adb (Analyze_Attribute): Reimplement the analysis
+	of attribute 'Old. Attributes 'Old and 'Result now share
+	common processing.
+	(Analyze_Old_Result_Attribute): New routine.
+	(Check_Placement_In_Check): Removed.
+	(Check_Placement_In_Contract_Cases): Removed.
+	(Check_Placement_In_Test_Case): Removed.
+	(Check_Use_In_Contract_Cases): Removed.
+	(Check_Use_In_Test_Case): Removed.
+	(In_Refined_Post): Removed.
+	(Is_Within): Removed.
+	* sem_warn.adb (Check_Low_Bound_Tested): Code cleanup.
+	(Check_Low_Bound_Tested_For): New routine.
+
+2015-03-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration):
+	Generate a runtime check to test the expression of pragma
+	Default_Initial_Condition when the object is default initialized.
+
 2015-03-02  Robert Dewar  <dewar@adacore.com>
 
 	* scng.adb (Scan): Ignore illegal character in relaxed
