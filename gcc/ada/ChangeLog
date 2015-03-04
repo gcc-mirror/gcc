@@ -1,3 +1,20 @@
+2015-03-04  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb (Is_ARECnF_Entity): New flag (ARECnF is an extra formal).
+	(Next_Formal): Don't return ARECnF formal.
+	(Last_Formal): Don't consider ARECnF formal.
+	(Next_Formal_With_Extras): Do consider ARECnF formal.
+	* einfo.ads (Is_ARECnF_Entity): New flag (ARECnF is an extra formal).
+	* exp_unst.adb (Create_Entities): Set Is_ARECnF_Entity flag.
+
+2015-03-04  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (Expand_Simple_Function_Return): When the returned
+	object is a class-wide interface object and we generate the
+	accessibility described in RM 6.5(8/3) then displace the pointer
+	to the object to reference the base of the object (to get access
+	to the TSD of the object).
+
 2015-03-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Abstract_State): Use routine

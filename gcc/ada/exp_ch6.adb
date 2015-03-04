@@ -4379,7 +4379,7 @@ package body Exp_Ch6 is
            (Result, New_Occurrence_Of (Return_Statement_Entity (N), Loc));
 
          --  If the object decl was already rewritten as a renaming, then we
-         --  don't want to do the object allocation and transformation of of
+         --  don't want to do the object allocation and transformation of
          --  the return object declaration to a renaming. This case occurs
          --  when the return object is initialized by a call to another
          --  build-in-place function, and that function is responsible for
@@ -6266,18 +6266,60 @@ package body Exp_Ch6 is
 
             if Is_Class_Wide_Type (Etype (Exp))
               and then Is_Interface (Etype (Exp))
-              and then Nkind (Exp) = N_Explicit_Dereference
             then
-               Tag_Node :=
-                 Make_Explicit_Dereference (Loc,
-                   Prefix =>
-                     Unchecked_Convert_To (RTE (RE_Tag_Ptr),
-                       Make_Function_Call (Loc,
-                         Name                   =>
-                           New_Occurrence_Of (RTE (RE_Base_Address), Loc),
-                         Parameter_Associations => New_List (
-                           Unchecked_Convert_To (RTE (RE_Address),
-                             Duplicate_Subexpr (Prefix (Exp)))))));
+               --  If the expression is an explicit dereference then we can
+               --  directly displace the pointer to reference the base of
+               --  the object.
+
+               if Nkind (Exp) = N_Explicit_Dereference then
+                  Tag_Node :=
+                    Make_Explicit_Dereference (Loc,
+                      Prefix =>
+                        Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                          Make_Function_Call (Loc,
+                            Name                   =>
+                              New_Occurrence_Of (RTE (RE_Base_Address), Loc),
+                            Parameter_Associations => New_List (
+                              Unchecked_Convert_To (RTE (RE_Address),
+                                Duplicate_Subexpr (Prefix (Exp)))))));
+
+               --  Similar case to the previous one but the expression is a
+               --  renaming of an explicit dereference.
+
+               elsif Nkind (Exp) = N_Identifier
+                 and then Present (Renamed_Object (Entity (Exp)))
+                 and then Nkind (Renamed_Object (Entity (Exp)))
+                            = N_Explicit_Dereference
+               then
+                  Tag_Node :=
+                    Make_Explicit_Dereference (Loc,
+                      Prefix =>
+                        Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                          Make_Function_Call (Loc,
+                            Name                   =>
+                              New_Occurrence_Of (RTE (RE_Base_Address), Loc),
+                            Parameter_Associations => New_List (
+                              Unchecked_Convert_To (RTE (RE_Address),
+                                Duplicate_Subexpr
+                                  (Prefix
+                                    (Renamed_Object (Entity (Exp)))))))));
+
+               --  Common case: obtain the address of the actual object and
+               --  displace the pointer to reference the base of the object.
+
+               else
+                  Tag_Node :=
+                    Make_Explicit_Dereference (Loc,
+                      Prefix =>
+                        Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                          Make_Function_Call (Loc,
+                            Name               =>
+                              New_Occurrence_Of (RTE (RE_Base_Address), Loc),
+                            Parameter_Associations => New_List (
+                              Make_Attribute_Reference (Loc,
+                                Prefix         => Duplicate_Subexpr (Exp),
+                                Attribute_Name => Name_Address)))));
+               end if;
             else
                Tag_Node :=
                  Make_Attribute_Reference (Loc,
