@@ -330,6 +330,24 @@ package body System.Img_Dec is
                DA := DA - LZ;
 
                if DA < ND then
+
+                  --  Note: it is definitely possible for the above condition
+                  --  to be True, for example:
+
+                  --    V => 1234, Scale => 5, Fore => 0, After => 1, Exp => 0
+
+                  --  but in this case DA = 0, ND = 1, FD = 1, FD + DA-1 = 0
+                  --  so the arguments in the call are (1, 0) meaning that no
+                  --  digits are output.
+
+                  --  No obvious example exists where the following call to
+                  --  Set_Digits actually outputs some digits, but we lack a
+                  --  proof that no such example exists.
+
+                  --  So it is safer to retain this call, even though as a
+                  --  result it is hard (or perhaps impossible) to create a
+                  --  coverage test for the inlined code of the call.
+
                   Set_Digits (FD, FD + DA - 1);
 
                else

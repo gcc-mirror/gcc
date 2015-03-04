@@ -3234,12 +3234,12 @@ package Einfo is
 --       derived from a type with a clause present.
 
 --    Master_Id (Node17)
---       Defined in access types and subtypes. Empty unless Has_Task is
---       set for the designated type, in which case it points to the entity
---       for the Master_Id for the access type master. Also set for access-to-
---       limited-class-wide types whose root may be extended with task
---       components, and for access-to-limited-interfaces because they can be
---       used to reference tasks implementing such interface.
+--       Defined in access types and subtypes. Empty unless Has_Task is set for
+--       the designated type, in which case it points to the entity for the
+--       Master_Id for the access type master. Also set for access-to-limited-
+--       class-wide types whose root may be extended with task components, and
+--       for access-to-limited-interfaces because they can be used to reference
+--       tasks implementing such interface.
 
 --    Materialize_Entity (Flag168)
 --       Defined in all entities. Set only for renamed obects which should be
@@ -3317,10 +3317,10 @@ package Einfo is
 --       not all of the fields in a partially initialized record). The code
 --       generator should instead use the flag Is_True_Constant.
 --
---       For the purposes of this warning, the default assignment of
---       access variables to null is not considered the assignment of
---       of a value (so the warning can be given for code that relies
---       on this initial null value, when no other value is ever set).
+--       For the purposes of this warning, the default assignment of access
+--       variables to null is not considered the assignment of a value (so
+--       the warning can be given for code that relies on this initial null
+--       value when no other value is ever set).
 --
 --       In variables and out parameters, if this flag is set after full
 --       processing of the corresponding declarative unit, it indicates that
@@ -3333,10 +3333,10 @@ package Einfo is
 --       statement sequence, the meaning of the flag is "not set yet", and
 --       once this analysis is complete the flag means "never assigned".
 
---       Note: for variables appearing in package declarations, this flag
---       is never set. That is because there is no way to tell if some
---       client modifies the variable (or in the case of variables in the
---       private part, if some child unit modifies the variables).
+--       Note: for variables appearing in package declarations, this flag is
+--       never set. That is because there is no way to tell if some client
+--       modifies the variable (or, in the case of variables in the private
+--       part, if some child unit modifies the variables).
 
 --       Note: in the case of renamed objects, the flag must be set in the
 --       ultimate renamed object. Clients noting a possible modification
@@ -3358,12 +3358,12 @@ package Einfo is
 --      discriminants in the record.
 
 --    Next_Discriminant (synthesized)
---       Applies to discriminants returned by First/Next_Discriminant.
---       Returns the next language-defined (ie: perhaps non-girder)
---       discriminant by following the chain of declared entities as long as
---       the kind of the entity corresponds to a discriminant. Note that the
---       discriminants might be the only components of the record.
---       Returns Empty if there are no more.
+--       Applies to discriminants returned by First/Next_Discriminant. Returns
+--       the next language-defined (ie: perhaps non-girder) discriminant by
+--       following the chain of declared entities as long as the kind of the
+--       entity corresponds to a discriminant. Note that the discriminants
+--       might be the only components of the record. Returns Empty if there
+--       are no more discriminants.
 
 --    Next_Entity (Node2)
 --       Defined in all entities. The entities of a scope are chained, with
@@ -3374,9 +3374,9 @@ package Einfo is
 --       field are in Sinfo.
 
 --    Next_Formal (synthesized)
---       Applies to the entity for a formal parameter. Returns the next
---       formal parameter of the subprogram or subprogram type. Returns
---       Empty if there are no more formals.
+--       Applies to the entity for a formal parameter. Returns the next formal
+--       parameter of the subprogram or subprogram type. Returns Empty if there
+--       are no more formals.
 
 --    Next_Formal_With_Extras (synthesized)
 --       Applies to the entity for a formal parameter. Returns the next
