@@ -391,7 +391,7 @@ proc go-gc-tests { } {
 	}
 
 	# Handle certain tests in a target-dependant way.
-	if { [istarget "alpha*-*-*"] || [istarget "sparc*-*-solaris*"] || [istarget "powerpc*-*-*"] } {
+	if { [istarget "alpha*-*-*"] || [istarget "sparc*-*-solaris*"] || [istarget "powerpc*-*-*"] || [istarget "s390*-*-*"] } {
 	    if { [string match "*go.test/test/nilptr.go" $test] } {
 		untested $test
 		continue
