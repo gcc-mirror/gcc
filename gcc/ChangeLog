@@ -1,3 +1,12 @@
+2015-03-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-sra.c (convert_callers): Use call_for_symbol_and_aliases.
+	(struct ipa_sra_check_caller_data): Add has_thunk field.
+	(ipa_sra_check_caller): Check for thunk.
+	(ipa_sra_preliminary_function_checks): Give up on function with
+	thunks.
+	(ipa_early_sra): Use call_for_symbol_and_aliases.
+
 2015-03-03  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/65249

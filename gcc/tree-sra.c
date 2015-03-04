@@ -4947,8 +4947,8 @@ convert_callers (struct cgraph_node *node, tree old_decl,
 {
   basic_block this_block;
 
-  node->call_for_symbol_thunks_and_aliases (convert_callers_for_node,
-					  &adjustments, false);
+  node->call_for_symbol_and_aliases (convert_callers_for_node,
+				     &adjustments, false);
 
   if (!encountered_recursive_call)
     return;
@@ -5016,6 +5016,7 @@ struct ipa_sra_check_caller_data
 {
   bool has_callers;
   bool bad_arg_alignment;
+  bool has_thunk;
 };
 
 /* If NODE has a caller, mark that fact in DATA which is pointer to
@@ -5035,6 +5036,11 @@ ipa_sra_check_caller (struct cgraph_node *node, void *data)
 
   for (cgraph_edge *cs = node->callers; cs; cs = cs->next_caller)
     {
+      if (cs->caller->thunk.thunk_p)
+	{
+	  iscc->has_thunk = true;
+	  return true;
+	}
       gimple call_stmt = cs->call_stmt;
       unsigned count = gimple_call_num_args (call_stmt);
       for (unsigned i = 0; i < count; i++)
@@ -5131,7 +5137,7 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
 
   struct ipa_sra_check_caller_data iscc;
   memset (&iscc, 0, sizeof(iscc));
-  node->call_for_symbol_thunks_and_aliases (ipa_sra_check_caller, &iscc, true);
+  node->call_for_symbol_and_aliases (ipa_sra_check_caller, &iscc, true);
   if (!iscc.has_callers)
     {
       if (dump_file)
@@ -5145,6 +5151,14 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
       if (dump_file)
 	fprintf (dump_file,
 		 "A function call has an argument with non-unit alignment.\n");
+      return false;
+    }
+
+  if (iscc.has_thunk)
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "A has thunk.\n");
       return false;
     }
 
@@ -5173,7 +5187,7 @@ ipa_early_sra (void)
       goto simple_out;
     }
 
-  if (node->call_for_symbol_thunks_and_aliases
+  if (node->call_for_symbol_and_aliases
        (some_callers_have_mismatched_arguments_p, NULL, true))
     {
       if (dump_file)
@@ -5182,7 +5196,7 @@ ipa_early_sra (void)
       goto simple_out;
     }
 
-  if (node->call_for_symbol_thunks_and_aliases
+  if (node->call_for_symbol_and_aliases
        (some_callers_have_no_vuse_p, NULL, true))
     {
       if (dump_file)
