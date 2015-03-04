@@ -1,3 +1,10 @@
+2015-03-04  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.h (enum reg_class): Remove real registers from
+	General register class.
+	* config/rl78/rl78-real.md: Replace general register constraints
+	with real+virtual register constraints.
+
 2015-03-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc/config/s390/s390.c (s390_expand_builtin): Exlude non-htm
