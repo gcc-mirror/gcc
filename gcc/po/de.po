@@ -4,19 +4,21 @@
 # Karl Eichwalder <ke@suse.de>, 2002, 2003.
 # Philipp Thomas <pth@suse.de>, 1999, 2000, 2001, 2011.
 # Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012, 2013.
+# Mario Blättermann <mario.blaettermann@gmail.com>, 2015.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.8.0\n"
+"Project-Id-Version: gcc 5.1-b20150208\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-02-02 16:02+0000\n"
-"PO-Revision-Date: 2013-04-17 22:18+0200\n"
-"Last-Translator: Roland Stigge <stigge@antcom.de>\n"
+"PO-Revision-Date: 2015-03-03 21:06+0100\n"
+"Last-Translator: Mario Blättermann <mario.blaettermann@gmail.com>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Poedit 1.7.3\n"
 
 #: cfgrtl.c:2698
 msgid "flow control insn inside a basic block"
@@ -20369,7 +20371,7 @@ msgstr ""
 #: tree-diagnostic.c:213
 #, gcc-internal-format
 msgid "in definition of macro %qs"
-msgstr "in Dedefinition des Makros %qs"
+msgstr "in Definition des Makros %qs"
 
 #: tree-diagnostic.c:230
 #, gcc-internal-format
