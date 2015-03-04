@@ -258,8 +258,8 @@ public:
      When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
      skipped.  */
   bool call_for_symbol_and_aliases (bool (*callback) (symtab_node *, void *),
-				  void *data,
-				  bool include_overwrite);
+				    void *data,
+				    bool include_overwrite);
 
   /* If node can not be interposable by static or dynamic linker to point to
      different definition, return this symbol. Otherwise look for alias with
@@ -1186,12 +1186,6 @@ public:
      and cgraph_node::get (ALIAS) transparently
      returns cgraph_node::get (DECL).  */
   static cgraph_node * create_same_body_alias (tree alias, tree decl);
-
-  /* Worker for cgraph_can_remove_if_no_direct_calls_p.  */
-  static bool used_from_object_file_p_worker (cgraph_node *node, void *)
-  {
-    return node->used_from_object_file_p ();
-  }
 
   /* Verify whole cgraph structure.  */
   static void DEBUG_FUNCTION verify_cgraph_nodes (void);
@@ -2736,6 +2730,7 @@ cgraph_node::only_called_directly_or_aliased_p (void)
 	  && !DECL_VIRTUAL_P (decl)
 	  && !DECL_STATIC_CONSTRUCTOR (decl)
 	  && !DECL_STATIC_DESTRUCTOR (decl)
+	  && !used_from_object_file_p ()
 	  && !externally_visible);
 }
 

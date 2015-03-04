@@ -4007,6 +4007,8 @@ growth_likely_positive (struct cgraph_node *node,
   struct cgraph_edge *e;
   gcc_checking_assert (edge_growth > 0);
 
+  if (DECL_EXTERNAL (node->decl))
+    return true;
   /* Unlike for functions called once, we play unsafe with
      COMDATs.  We can allow that since we know functions
      in consideration are small (and thus risk is small) and
@@ -4014,18 +4016,13 @@ growth_likely_positive (struct cgraph_node *node,
      functions may or may not disappear when eliminated from
      current unit. With good probability making aggressive
      choice in all units is going to make overall program
-     smaller.
-
-     Consequently we ask cgraph_can_remove_if_no_direct_calls_p
-     instead of
-     cgraph_will_be_removed_from_program_if_no_direct_calls  */
-  if (DECL_EXTERNAL (node->decl)
-      || !node->can_remove_if_no_direct_calls_p ())
-    return true;
-
-  if (!node->will_be_removed_from_program_if_no_direct_calls_p ()
-      && (!DECL_COMDAT (node->decl)
-	  || !node->can_remove_if_no_direct_calls_p ()))
+     smaller.  */
+  if (DECL_COMDAT (node->decl))
+    {
+      if (!node->can_remove_if_no_direct_calls_p ())
+	return true;
+    }
+  else if (!node->will_be_removed_from_program_if_no_direct_calls_p ())
     return true;
   max_callers = inline_summaries->get (node)->size * 4 / edge_growth + 2;
 
