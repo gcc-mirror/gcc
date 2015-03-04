@@ -266,7 +266,7 @@ enum reg_class
   { 0x00000c00, 0x00000000 }, 	/* R10 - HImode */		\
   { 0xff000000, 0x00000000 }, 	/* INT - HImode */		\
   { 0xff7fff00, 0x00000000 },	/* Virtual registers.  */	\
-  { 0xff7fffff, 0x00000002 },	/* General registers.  */	\
+  { 0xff7fff00, 0x00000002 },	/* General registers.  */	\
   { 0x04000000, 0x00000004 },	/* PSW.  */	\
   { 0xff7fffff, 0x0000001f }	/* All registers.  */		\
 }
