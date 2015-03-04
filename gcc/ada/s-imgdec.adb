@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -319,9 +319,11 @@ package body System.Img_Dec is
                DA : Natural := Digits_After_Point;
                --  Digits remaining to output after point
 
-               LZ : constant Integer :=
-                      Integer'Max (0, Integer'Min (DA, -Digits_Before_Point));
-               --  Number of leading zeroes after point
+               LZ : constant Integer := Integer'Min (DA, -Digits_Before_Point);
+               --  Number of leading zeroes after point. Note: there used to be
+               --  a Max of this result with zero, but that's redundant, since
+               --  we know DA is positive, and because of the test above, we
+               --  know that -Digits_Before_Point >= 0.
 
             begin
                Set_Zeroes (LZ);

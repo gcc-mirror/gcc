@@ -247,7 +247,7 @@ package body Sem_Attr is
       --  Common processing for attributes 'Old and 'Result. The routine checks
       --  that the attribute appears in a postcondition-like aspect or pragma
       --  associated with a suitable subprogram or a body. Flag Legal is set
-      --  when the above criterias are met. Spec_Id denotes the entity of the
+      --  when the above criteria are met. Spec_Id denotes the entity of the
       --  subprogram [body] or Empty if the attribute is illegal.
 
       procedure Bad_Attribute_For_Predicate;
