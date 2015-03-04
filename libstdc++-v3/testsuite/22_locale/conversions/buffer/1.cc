@@ -17,62 +17,62 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 22.3.3.2.2  String conversions
+// 22.3.3.2.3  Buffer conversions
 
 #include <locale>
-#include <string>
+#include <sstream>
 #include <testsuite_hooks.h>
 
 template<typename Elem>
 struct cvt : std::codecvt<Elem, char, std::mbstate_t> { };
 
 template<typename Elem>
-using str_conv = std::wstring_convert<cvt<Elem>, Elem>;
+using buf_conv = std::wbuffer_convert<cvt<Elem>, Elem>;
 
 using std::string;
-using std::u16string;
-using std::u32string;
-
-// test conversion errors, with and without error strings
+using std::stringstream;
+using std::wstring;
+using std::wstringstream;
 
 void test01()
 {
-  typedef str_conv<char16_t> sc;
-
-  const sc::byte_string berr = "invalid wide string";
-  const sc::wide_string werr = u"invalid byte string";
-
-  sc c(berr, werr);
-  string input = "Stop";
-  input += char(0xFF);
-  u16string woutput = c.from_bytes(input);
-  VERIFY( werr == woutput );
-  u16string winput = u"Stop";
-  winput += char16_t(0xDC00);
-  string output = c.to_bytes(winput);
-  VERIFY( berr == output );
+  buf_conv<wchar_t> buf;
+  std::stringbuf sbuf;
+  VERIFY( buf.rdbuf() == nullptr );
+  VERIFY( buf.rdbuf(&sbuf) == nullptr );
+  VERIFY( buf.rdbuf() == &sbuf );
+  VERIFY( buf.rdbuf(nullptr) == &sbuf );
 }
 
 void test02()
 {
-  typedef str_conv<char32_t> sc;
+  std::stringbuf sbuf;
+  buf_conv<char> buf(&sbuf);  // noconv
 
-  const sc::byte_string berr = "invalid wide string";
-  const sc::wide_string werr = U"invalid byte string";
+  stringstream ss;
+  ss.std::ios::rdbuf(&buf);
+  string input = "King for a day...";
+  ss << input << std::flush;
+  string output = sbuf.str();
+  VERIFY( input == output );
+}
 
-  sc c(berr, werr);
-  string input = "Halt";
-  input += char(0xff);
-  u32string woutput = c.from_bytes(input);
-  VERIFY( werr == woutput );
-  u32string winput = U"Halt";
-  winput += char32_t(-1);
-  string output = c.to_bytes(winput);
-  VERIFY( berr == output );
+void test03()
+{
+  std::stringbuf sbuf;
+  buf_conv<wchar_t> buf(&sbuf);
+
+  wstringstream ss;
+  ss.std::wios::rdbuf(&buf);
+  wstring input = L"Fool for a lifetime";
+  ss << input << std::flush;
+  string output = sbuf.str();
+  VERIFY( output == "Fool for a lifetime" );
 }
 
 int main()
 {
   test01();
   test02();
+  test03();
 }

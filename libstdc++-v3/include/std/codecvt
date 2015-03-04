@@ -148,7 +148,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public: \
       explicit \
       _NAME(size_t __refs = 0) \
-      : __ ## _NAME ## _base<_ELEM>(_Maxcode, _Mode, __refs) { } \
+      : __ ## _NAME ## _base<_ELEM>(std::min(_Maxcode, 0x10fffful), \
+				    _Mode, __refs) \
+      { } \
     }
 
   template<typename _Elem> class __codecvt_utf8_base;

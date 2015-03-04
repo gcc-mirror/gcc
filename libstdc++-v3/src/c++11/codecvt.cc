@@ -35,7 +35,13 @@ namespace
 {
   // Largest code point that fits in a single UTF-16 code unit.
   const char32_t max_single_utf16_unit = 0xFFFF;
+
   const char32_t max_code_point = 0x10FFFF;
+
+  // The functions below rely on maxcode < incomplete_mb_character
+  // (which is enforced by the codecvt_utf* classes on construction).
+  const char32_t incomplete_mb_character = char32_t(-2);
+  const char32_t invalid_mb_sequence = char32_t(-1);
 
   template<typename Elem>
     struct range
@@ -131,13 +137,13 @@ namespace
 
   // Read a codepoint from a UTF-8 multibyte sequence.
   // Updates from.next if the codepoint is not greater than maxcode.
-  // Returns -1 if there is an invalid or incomplete multibyte character.
+  // Returns invalid_mb_sequence, incomplete_mb_character or the code point.
   char32_t
   read_utf8_code_point(range<const char>& from, unsigned long maxcode)
   {
-    size_t avail = from.size();
+    const size_t avail = from.size();
     if (avail == 0)
-      return -1;
+      return incomplete_mb_character;
     unsigned char c1 = from.next[0];
     // https://en.wikipedia.org/wiki/UTF-8#Sample_code
     if (c1 < 0x80)
@@ -146,14 +152,14 @@ namespace
       return c1;
     }
     else if (c1 < 0xC2) // continuation or overlong 2-byte sequence
-      return -1;
+      return invalid_mb_sequence;
     else if (c1 < 0xE0) // 2-byte sequence
     {
       if (avail < 2)
-	return -1;
+	return incomplete_mb_character;
       unsigned char c2 = from.next[1];
       if ((c2 & 0xC0) != 0x80)
-	return -1;
+	return invalid_mb_sequence;
       char32_t c = (c1 << 6) + c2 - 0x3080;
       if (c <= maxcode)
 	from.next += 2;
@@ -162,15 +168,15 @@ namespace
     else if (c1 < 0xF0) // 3-byte sequence
     {
       if (avail < 3)
-	return -1;
+	return incomplete_mb_character;
       unsigned char c2 = from.next[1];
       if ((c2 & 0xC0) != 0x80)
-	return -1;
+	return invalid_mb_sequence;
       if (c1 == 0xE0 && c2 < 0xA0) // overlong
-	return -1;
+	return invalid_mb_sequence;
       unsigned char c3 = from.next[2];
       if ((c3 & 0xC0) != 0x80)
-	return -1;
+	return invalid_mb_sequence;
       char32_t c = (c1 << 12) + (c2 << 6) + c3 - 0xE2080;
       if (c <= maxcode)
 	from.next += 3;
@@ -179,27 +185,27 @@ namespace
     else if (c1 < 0xF5) // 4-byte sequence
     {
       if (avail < 4)
-	return -1;
+	return incomplete_mb_character;
       unsigned char c2 = from.next[1];
       if ((c2 & 0xC0) != 0x80)
-	return -1;
+	return invalid_mb_sequence;
       if (c1 == 0xF0 && c2 < 0x90) // overlong
-	return -1;
+	return invalid_mb_sequence;
       if (c1 == 0xF4 && c2 >= 0x90) // > U+10FFFF
-      return -1;
+      return invalid_mb_sequence;
       unsigned char c3 = from.next[2];
       if ((c3 & 0xC0) != 0x80)
-	return -1;
+	return invalid_mb_sequence;
       unsigned char c4 = from.next[3];
       if ((c4 & 0xC0) != 0x80)
-	return -1;
+	return invalid_mb_sequence;
       char32_t c = (c1 << 18) + (c2 << 12) + (c3 << 6) + c4 - 0x3C82080;
       if (c <= maxcode)
 	from.next += 4;
       return c;
     }
     else // > U+10FFFF
-      return -1;
+      return invalid_mb_sequence;
   }
 
   bool
@@ -250,27 +256,54 @@ namespace
 #endif
   }
 
+  // Return true if c is a high-surrogate (aka leading) code point.
+  inline bool
+  is_high_surrogate(char32_t c)
+  {
+    return c >= 0xD800 && c <= 0xDBFF;
+  }
+
+  // Return true if c is a low-surrogate (aka trailing) code point.
+  inline bool
+  is_low_surrogate(char32_t c)
+  {
+    return c >= 0xDC00 && c <= 0xDFFF;
+  }
+
+  inline char32_t
+  surrogate_pair_to_code_point(char32_t high, char32_t low)
+  {
+    return (high << 10) + low - 0x35FDC00;
+  }
+
   // Read a codepoint from a UTF-16 multibyte sequence.
   // The sequence's endianness is indicated by (mode & little_endian).
   // Updates from.next if the codepoint is not greater than maxcode.
-  // Returns -1 if there is an incomplete multibyte character.
+  // Returns invalid_mb_sequence, incomplete_mb_character or the code point.
   char32_t
   read_utf16_code_point(range<const char16_t>& from, unsigned long maxcode,
 			codecvt_mode mode)
   {
+    const size_t avail = from.size();
+    if (avail == 0)
+      return incomplete_mb_character;
     int inc = 1;
     char32_t c = adjust_byte_order(from.next[0], mode);
-    if (c >= 0xD800 && c <= 0xDBFF)
+    if (is_high_surrogate(c))
       {
-	if (from.size() < 2)
-	  return -1;
+	if (avail < 2)
+	  return incomplete_mb_character;
 	const char16_t c2 = adjust_byte_order(from.next[1], mode);
-	if (c2 >= 0xDC00 && c2 <= 0xDFFF)
+	if (is_low_surrogate(c2))
 	  {
-	    c = (c << 10) + c2 - 0x35FDC00;
+	    c = surrogate_pair_to_code_point(c, c2);
 	    inc = 2;
 	  }
+	else
+	  return invalid_mb_sequence;
       }
+    else if (is_low_surrogate(c))
+      return invalid_mb_sequence;
     if (c <= maxcode)
       from.next += inc;
     return c;
@@ -314,8 +347,8 @@ namespace
     while (from.size() && to.size())
       {
 	const char32_t codepoint = read_utf8_code_point(from, maxcode);
-	if (codepoint == char32_t(-1))
-	  break;
+	if (codepoint == incomplete_mb_character)
+	  return codecvt_base::partial;
 	if (codepoint > maxcode)
 	  return codecvt_base::error;
 	*to.next++ = codepoint;
@@ -352,8 +385,8 @@ namespace
     while (from.size() && to.size())
       {
 	const char32_t codepoint = read_utf16_code_point(from, maxcode, mode);
-	if (codepoint == char32_t(-1))
-	  break;
+	if (codepoint == incomplete_mb_character)
+	  return codecvt_base::partial;
 	if (codepoint > maxcode)
 	  return codecvt_base::error;
 	*to.next++ = codepoint;
@@ -389,11 +422,9 @@ namespace
     read_utf8_bom(from, mode);
     while (from.size() && to.size())
       {
-	const char* first = from.next;
-	if ((unsigned char)*first >= 0xF0 && to.size() < 2)
-	  return codecvt_base::partial;
+	const char* const first = from.next;
 	const char32_t codepoint = read_utf8_code_point(from, maxcode);
-	if (codepoint == char32_t(-1))
+	if (codepoint == incomplete_mb_character)
 	  return codecvt_base::partial;
 	if (codepoint > maxcode)
 	  return codecvt_base::error;
@@ -418,20 +449,22 @@ namespace
       {
 	char32_t c = from.next[0];
 	int inc = 1;
-	if (c >= 0xD800 && c <= 0xDBFF) // start of surrogate pair
+	if (is_high_surrogate(c))
 	  {
 	    if (from.size() < 2)
 	      return codecvt_base::ok; // stop converting at this point
 
 	    const char32_t c2 = from.next[1];
-	    if (c2 >= 0xDC00 && c2 <= 0xDFFF)
+	    if (is_low_surrogate(c2))
 	      {
+		c = surrogate_pair_to_code_point(c, c2);
 		inc = 2;
-		c = (c << 10) + c2 - 0x35FDC00;
 	      }
 	    else
 	      return codecvt_base::error;
 	  }
+	else if (is_low_surrogate(c))
+	  return codecvt_base::error;
 	if (c > maxcode)
 	  return codecvt_base::error;
 	if (!write_utf8_code_point(to, c))
@@ -452,8 +485,8 @@ namespace
     while (count+1 < max)
       {
 	char32_t c = read_utf8_code_point(from, maxcode);
-	if (c == char32_t(-1))
-	  break;
+	if (c > maxcode)
+	  return from.next;
 	else if (c > max_single_utf16_unit)
 	  ++count;
 	++count;
@@ -489,7 +522,7 @@ namespace
     while (from.size() && to.size())
       {
 	char16_t c = from.next[0];
-	if (c >= 0xD800 && c <= 0xDBFF) // start of surrogate pair
+	if (is_high_surrogate(c))
 	  return codecvt_base::error;
 	if (c > maxcode)
 	  return codecvt_base::error;
@@ -510,9 +543,9 @@ namespace
     while (from.size() && to.size())
       {
 	const char32_t c = read_utf16_code_point(from, maxcode, mode);
-	if (c == char32_t(-1))
-	  break;
-	if (c >= maxcode)
+	if (c == incomplete_mb_character)
+	  return codecvt_base::partial;
+	if (c > maxcode)
 	  return codecvt_base::error;
 	*to.next++ = c;
       }
