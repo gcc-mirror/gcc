@@ -1,3 +1,24 @@
+2015-03-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Abstract_State): Use routine
+	Malformed_State_Error to issue general errors.
+	(Analyze_Pragma): Diagnose a syntax error related to a state
+	declaration with a simple option.
+	(Malformed_State_Error): New routine.
+
+2015-03-04  Robert Dewar  <dewar@adacore.com>
+
+	* a-strsup.adb (Super_Slice): Deal with super flat case.
+	* einfo.ads: Minor reformatting.
+	* s-imgdec.adb (Set_Decimal_Digits): Add comment about possibly
+	redundant code.
+
+2015-03-04  Claire Dross  <dross@adacore.com>
+
+	* a-cfdlli.ads, a-cfhase.ads, a-cforma.ads, a-cfhama.ads,
+	a-cforse.ads, a-cofove.ads: Use Default_Initial_Condition on formal
+	containers.
+
 2015-03-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_warn.adb (Check_References): When checking for an unused

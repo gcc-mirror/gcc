@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1473,6 +1473,9 @@ package body Ada.Strings.Superbounded is
             raise Index_Error;
          end if;
 
+         --  Note: in this case, superflat bounds are not a problem, we just
+         --  get the null string in accordance with normal Ada slice rules.
+
          R := Source.Data (Low .. High);
       end return;
    end Super_Slice;
@@ -1490,7 +1493,9 @@ package body Ada.Strings.Superbounded is
             raise Index_Error;
          end if;
 
-         Result.Current_Length := High - Low + 1;
+         --  Note: the Max operation here deals with the superflat case
+
+         Result.Current_Length := Integer'Max (0, High - Low + 1);
          Result.Data (1 .. Result.Current_Length) := Source.Data (Low .. High);
       end return;
    end Super_Slice;
@@ -1506,10 +1511,12 @@ package body Ada.Strings.Superbounded is
         or else High > Source.Current_Length
       then
          raise Index_Error;
-      else
-         Target.Current_Length := High - Low + 1;
-         Target.Data (1 .. Target.Current_Length) := Source.Data (Low .. High);
       end if;
+
+      --  Note: the Max operation here deals with the superflat case
+
+      Target.Current_Length := Integer'Max (0, High - Low + 1);
+      Target.Data (1 .. Target.Current_Length) := Source.Data (Low .. High);
    end Super_Slice;
 
    ----------------
