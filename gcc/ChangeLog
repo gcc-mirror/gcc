@@ -1,3 +1,16 @@
+2015-03-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Backport from mainline
+	2014-11-27  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/59593
+	* config/arm/arm.c (dump_minipool): dispatch to consttable pattern
+	based on mode size.
+	* config/arm/arm.md (consttable_1): Make it TARGET_EITHER.
+	(consttable_2): Make it TARGET_EITHER and move HFmode handling from
+	consttable_4 to it.
+	(consttable_4): Move HFmode handling to consttable_2 pattern.
+
 2015-03-03  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/65249
