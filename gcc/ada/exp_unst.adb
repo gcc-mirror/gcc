@@ -591,7 +591,7 @@ package body Exp_Unst is
       --  at the start so that all the entities are defined, regardless of the
       --  order in which we do the code insertions.
 
-      for J in Subps.First .. Subps.Last loop
+      Create_Entities : for J in Subps.First .. Subps.Last loop
          declare
             STJ : Subp_Entry renames Subps.Table (J);
             Loc : constant Source_Ptr := Sloc (STJ.Bod);
@@ -611,6 +611,7 @@ package body Exp_Unst is
                STJ.ARECnF :=
                  Make_Defining_Identifier (Loc,
                    Chars => Name_Find_Str (AREC_String (STJ.Lev - 1) & "F"));
+               Set_Is_ARECnF_Entity (STJ.ARECnF, True);
             else
                STJ.ARECnF := Empty;
             end if;
@@ -654,7 +655,7 @@ package body Exp_Unst is
                STJ.ARECnU := Empty;
             end if;
          end;
-      end loop;
+      end loop Create_Entities;
 
       --  Loop through subprograms
 
