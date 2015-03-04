@@ -1,3 +1,8 @@
+2015-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64227
+	* g++.dg/cpp1y/lambda-generic-ice1.C: New.
+
 2015-03-04  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/atomic-comp-swap-release-acquire.c: Add
