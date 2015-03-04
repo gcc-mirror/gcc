@@ -153,12 +153,19 @@ package body Exp_Unst is
             Set_Has_Uplevel_Reference (Typ);
             return True;
 
+         --  If the type is at library level, always consider it static, since
+         --  uplevel references do not matter in this case.
+
+         elsif Is_Library_Level_Entity (T) then
+            Set_Is_Static_Type (T);
+            return False;
+
          --  Otherwise we need to figure out what the story is with this type
 
          else
             DT := False;
 
-         --  For a scalar type, check bounds
+            --  For a scalar type, check bounds
 
             if Is_Scalar_Type (T) then
 
@@ -243,9 +250,14 @@ package body Exp_Unst is
    --  Start of processing for Check_Uplevel_Reference_To_Type
 
    begin
+      --  Nothing to do inside a generic (all processing is for instance)
+
+      if Inside_A_Generic then
+         return;
+
       --  Nothing to do if we know this is a static type
 
-      if Is_Static_Type (Typ) then
+      elsif Is_Static_Type (Typ) then
          return;
 
       --  Nothing to do if already marked as uplevel referenced
@@ -270,9 +282,15 @@ package body Exp_Unst is
 
    procedure Note_Uplevel_Reference (N : Node_Id; Subp : Entity_Id) is
    begin
+      --  Nothing to do inside a generic (all processing is for instance)
+
+      if Inside_A_Generic then
+         return;
+      end if;
+
       --  Nothing to do if reference has no entity field
 
-      if Nkind (N) not in N_Entity then
+      if Nkind (N) not in N_Has_Entity then
          return;
       end if;
 
@@ -382,6 +400,11 @@ package body Exp_Unst is
    --  Start of processing for Unnest_Subprogram
 
    begin
+      --  Nothing to do inside a generic (all processing is for instance)
+
+      if Inside_A_Generic then
+         return;
+      end if;
       --  At least for now, do not unnest anything but main source unit
 
       if not In_Extended_Main_Source_Unit (Subp_Body) then
@@ -434,7 +457,7 @@ package body Exp_Unst is
 
                   if Nkind (Nod) = N_Subprogram_Body then
                      if Acts_As_Spec (Nod) then
-                        return Defining_Unit_Name (Specification (Nod));
+                        return Defining_Entity (Specification (Nod));
                      else
                         return Corresponding_Spec (Nod);
                      end if;
@@ -470,6 +493,11 @@ package body Exp_Unst is
                   then
                      null;
 
+                  --  Ignore calls to imported routines
+
+                  elsif Is_Imported (Ent) then
+                     null;
+
                   --  Here we have a call to keep and analyze
 
                   else
@@ -501,14 +529,14 @@ package body Exp_Unst is
                begin
                   --  Set fields of Subp_Entry for new subprogram
 
-                  STJ.Ent := Defining_Unit_Name (Specification (N));
+                  STJ.Ent := Defining_Entity (Specification (N));
                   STJ.Lev := Get_Level (STJ.Ent);
 
                   if Nkind (N) = N_Subprogram_Body then
                      STJ.Bod := N;
                   else
-                     STJ.Bod := Parent (Parent (Corresponding_Body (N)));
-
+                     STJ.Bod :=
+                       Parent (Declaration_Node (Corresponding_Body (N)));
                      pragma Assert (Nkind (STJ.Bod) = N_Subprogram_Body);
                   end if;
 
@@ -697,7 +725,7 @@ package body Exp_Unst is
                      ----------------------
 
                      procedure Add_Form_To_Spec (F : Entity_Id; S : Node_Id) is
-                        Sub : constant Entity_Id := Defining_Unit_Name (S);
+                        Sub : constant Entity_Id := Defining_Entity (S);
                         Ent : Entity_Id;
 
                      begin

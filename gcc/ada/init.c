@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -38,9 +38,9 @@
     installed by this file are used to catch the resulting signals that come
     from these probes failing (i.e. touching protected pages).  */
 
-/* This file should be kept synchronized with 2sinit.ads, 2sinit.adb,
-   s-init-ae653-cert.adb and s-init-xi-sparc.adb.  All these files implement
-   the required functionality for different targets.  */
+/* This file should be kept synchronized with s-init.ads, s-init.adb and the
+   s-init-*.adb variants. All these files implement the required functionality
+   for different targets.  */
 
 /* The following include is here to meet the published VxWorks requirement
    that the __vxworks header appear before any other include.  */
@@ -674,7 +674,7 @@ __gnat_error_handler (int sig)
       msg = "unhandled signal";
     }
 
-    Raise_From_Signal_Handler(exception, msg);
+    Raise_From_Signal_Handler (exception, msg);
 }
 
 void
@@ -1912,8 +1912,8 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
   sigprocmask (SIG_SETMASK, &mask, NULL);
 
 #if defined (__ARMEL__) || defined (__PPC__)
-  /* On PowerPC, kernel mode, we process signals through a Call Frame Info
-     trampoline, voiding the need for myriads of fallback_frame_state
+  /* On ARM and PowerPC, kernel mode, we process signals through a Call Frame
+     Info trampoline, voiding the need for myriads of fallback_frame_state
      variants in the ZCX runtime.  We have no simple way to distinguish ZCX
      from SJLJ here, so we do this for SJLJ as well even though this is not
      necessary.  This only incurs a few extra instructions and a tiny
@@ -2100,7 +2100,7 @@ __gnat_error_handler (int sig)
       msg = "unhandled signal";
     }
 
-    Raise_From_Signal_Handler(exception, msg);
+    Raise_From_Signal_Handler (exception, msg);
 }
 
 void
@@ -2163,7 +2163,7 @@ __gnat_error_handler (int sig)
       msg = "unhandled signal";
     }
 
-    Raise_From_Signal_Handler(exception, msg);
+    Raise_From_Signal_Handler (exception, msg);
 }
 
 void

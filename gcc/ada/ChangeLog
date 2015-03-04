@@ -1,5 +1,26 @@
 2015-03-04  Robert Dewar  <dewar@adacore.com>
 
+	* sem_warn.adb: Minor reformatting.
+	* init.c: Minor tweaks.
+
+2015-03-04  Dmitriy Anisimko  <anisimko@adacore.com>
+
+	* a-coinho-shared.adb: Fix clear of already empty holder.
+
+2015-03-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_unst.adb (Check_Dynamic_Type): Ignore library level types.
+	(Check_Uplevel_Reference_To_Type): Ignore call inside generic.
+	(Note_Uplevel_Reference): Ignore call inside generic.
+	(Note_Uplevel_Reference): Fix check for no entity field.
+	(Unnest_Subprogram): Ignore call inside generic.
+	(Find_Current_Subprogram): Use Defining_Entity, not Defining_Unit_Name.
+	(Visit_Node): Ignore calls to Imported subprograms.
+	(Visit_Node): Fix problem in finding subprogram body in some cases.
+	(Add_Form_To_Spec): Use Defining_Entity, not Defining_Unit_Name.
+
+2015-03-04  Robert Dewar  <dewar@adacore.com>
+
 	* einfo.adb (Is_ARECnF_Entity): Removed.
 	(Last_Formal): Remove special handling of Is_ARECnF_Entity.
 	(Next_Formal): Remove special handling of Is_ARECnF_Entity.
