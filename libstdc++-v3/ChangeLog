@@ -1,3 +1,28 @@
+2015-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64797
+	* include/bits/locale_conv.h (wstring_convert::_M_conv): Handle
+	incomplete multibyte sequences correctly.
+	* include/std/codecvt (codecvt_utf8, codecvt_utf16,
+	codecvt_utf8_utf16): Limit _Maxcode to maximum Unicode code point.
+	* src/c++11/codecvt.cc (invalid_mb_sequence, incomplete_mb_character):
+	Define constants.
+	(is_high_surrogate, is_low_surrogate, surrogate_pair_to_code_point):
+	Define convenience functions.
+	(read_utf8_code_point): Return relevant constant to distinguish
+	incomplete characters from invalid sequences.
+	(read_utf16_code_point): Likewise. Check for invalid sequences.
+	(ucs4_in, utf16_in): Use incomplete_mb_character constant.
+	(utf16_out): Check for invalid sequences.
+	(utf16_span): Fix condition.
+	(ucs2_out): Use is_high_surrogate.
+	(ucs2_in): Use incomplete_mb_character constant and fix condition.
+	* testsuite/22_locale/codecvt/char16_t.cc: Fix whitespace.
+	* testsuite/22_locale/conversions/buffer/1.cc: New.
+	* testsuite/22_locale/conversions/string/2.cc: Use char16_t and
+	char32_t instead of wchar_t.
+	* testsuite/22_locale/conversions/string/3.cc: New.
+
 2015-03-03  Iain Sandoe  <iain@codesourcery.com>
 
 	PR libstdc++/64883

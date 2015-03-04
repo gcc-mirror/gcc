@@ -79,8 +79,7 @@ test01()
 
     codecvt_c16::state_type state01;
     state01 = {};
-    codecvt_base::result res = cvt->out(state01, u16dat, u16dat_end,
-from_next,
+    codecvt_base::result res = cvt->out(state01, u16dat, u16dat_end, from_next,
                                         buffer, buffer_end, to_next);
 
     VERIFY(res == codecvt_base::ok);

@@ -30,49 +30,32 @@ template<typename Elem>
 using str_conv = std::wstring_convert<cvt<Elem>, Elem>;
 
 using std::string;
-using std::u16string;
 using std::u32string;
 
-// test conversion errors, with and without error strings
+// test construction with state, for partial conversions
 
 void test01()
 {
-  typedef str_conv<char16_t> sc;
+  typedef str_conv<char32_t> wsc;
 
-  const sc::byte_string berr = "invalid wide string";
-  const sc::wide_string werr = u"invalid byte string";
+  wsc c;
+  string input = u8"\u00a3 shillings pence";
+  u32string woutput = c.from_bytes(input.substr(0, 1));
+  auto partial_state = c.state();
+  auto partial_count = c.converted();
 
-  sc c(berr, werr);
-  string input = "Stop";
-  input += char(0xFF);
-  u16string woutput = c.from_bytes(input);
-  VERIFY( werr == woutput );
-  u16string winput = u"Stop";
-  winput += char16_t(0xDC00);
-  string output = c.to_bytes(winput);
-  VERIFY( berr == output );
-}
+  auto woutput2 = c.from_bytes("state reset on next conversion");
+  VERIFY( woutput2 == U"state reset on next conversion" );
 
-void test02()
-{
-  typedef str_conv<char32_t> sc;
+  wsc c2(new cvt<char32_t>, partial_state);
+  woutput += c2.from_bytes(input.substr(partial_count));
+  VERIFY( U"\u00a3 shillings pence" == woutput );
 
-  const sc::byte_string berr = "invalid wide string";
-  const sc::wide_string werr = U"invalid byte string";
-
-  sc c(berr, werr);
-  string input = "Halt";
-  input += char(0xff);
-  u32string woutput = c.from_bytes(input);
-  VERIFY( werr == woutput );
-  u32string winput = U"Halt";
-  winput += char32_t(-1);
-  string output = c.to_bytes(winput);
-  VERIFY( berr == output );
+  string roundtrip = c2.to_bytes(woutput);
+  VERIFY( input == roundtrip );
 }
 
 int main()
 {
   test01();
-  test02();
 }
