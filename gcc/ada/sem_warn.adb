@@ -3109,9 +3109,7 @@ package body Sem_Warn is
 
    procedure Output_Unreferenced_Messages is
    begin
-      for J in Unreferenced_Entities.First ..
-               Unreferenced_Entities.Last
-      loop
+      for J in Unreferenced_Entities.First .. Unreferenced_Entities.Last loop
          Warn_On_Unreferenced_Entity (Unreferenced_Entities.Table (J));
       end loop;
    end Output_Unreferenced_Messages;
