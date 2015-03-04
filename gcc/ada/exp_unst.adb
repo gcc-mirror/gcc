@@ -491,16 +491,16 @@ package body Exp_Unst is
          --  then we won't catch it in the traversal of the body. But we do
          --  want to visit the declaration in this case!
 
-         declare
-            Dummy : Traverse_Result;
-            Decl  : constant Node_Id :=
-              Parent (Declaration_Node (Corresponding_Spec (Subp_Body)));
-            pragma Assert (Nkind (Decl) = N_Subprogram_Declaration);
-         begin
-            if not Acts_As_Spec (Subp_Body) then
+         if not Acts_As_Spec (Subp_Body) then
+            declare
+               Dummy : Traverse_Result;
+               Decl  : constant Node_Id :=
+                 Parent (Declaration_Node (Corresponding_Spec (Subp_Body)));
+               pragma Assert (Nkind (Decl) = N_Subprogram_Declaration);
+            begin
                Dummy := Visit_Node (Decl);
-            end if;
-         end;
+            end;
+         end if;
 
          --  Traverse the body to get the rest of the subprograms and calls
 

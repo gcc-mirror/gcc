@@ -7163,6 +7163,42 @@ package body Exp_Ch6 is
          Subp_Id  : Entity_Id := Empty;
          Inher_Id : Entity_Id := Empty) return Node_Id
       is
+         function Suppress_Reference (N : Node_Id) return Traverse_Result;
+         --  Detect whether node N references a formal parameter subject to
+         --  pragma Unreferenced. If this is the case, set Comes_From_Source
+         --  to False to suppress the generation of a reference when analyzing
+         --  N later on.
+
+         ------------------------
+         -- Suppress_Reference --
+         ------------------------
+
+         function Suppress_Reference (N : Node_Id) return Traverse_Result is
+            Formal : Entity_Id;
+
+         begin
+            if Is_Entity_Name (N) and then Present (Entity (N)) then
+               Formal := Entity (N);
+
+               --  The formal parameter is subject to pragma Unreferenced.
+               --  Prevent the generation of a reference by resetting the
+               --  Comes_From_Source flag.
+
+               if Is_Formal (Formal)
+                 and then Has_Pragma_Unreferenced (Formal)
+               then
+                  Set_Comes_From_Source (N, False);
+               end if;
+            end if;
+
+            return OK;
+         end Suppress_Reference;
+
+         procedure Suppress_References is
+           new Traverse_Proc (Suppress_Reference);
+
+         --  Local variables
+
          Loc          : constant Source_Ptr := Sloc (Prag);
          Prag_Nam     : constant Name_Id    := Pragma_Name (Prag);
          Check_Prag   : Node_Id;
@@ -7171,6 +7207,8 @@ package body Exp_Ch6 is
          Msg_Arg      : Node_Id;
          Nam          : Name_Id;
          Subp_Formal  : Entity_Id;
+
+      --  Start of processing for Build_Pragma_Check_Equivalent
 
       begin
          Formals_Map := No_Elist;
@@ -7208,8 +7246,26 @@ package body Exp_Ch6 is
          --  Mark the pragma as being internally generated and reset the
          --  Analyzed flag.
 
-         Set_Comes_From_Source (Check_Prag, False);
          Set_Analyzed          (Check_Prag, False);
+         Set_Comes_From_Source (Check_Prag, False);
+
+         --  The tree of the original pragma may contain references to the
+         --  formal parameters of the related subprogram. At the same time
+         --  the corresponding body may mark the formals as unreferenced:
+
+         --     procedure Proc (Formal : ...)
+         --       with Pre => Formal ...;
+
+         --     procedure Proc (Formal : ...) is
+         --        pragma Unreferenced (Formal);
+         --     ...
+
+         --  This creates problems because all pragma Check equivalents are
+         --  analyzed at the end of the body declarations. Since all source
+         --  references have already been accounted for, reset any references
+         --  to such formals in the generated pragma Check equivalent.
+
+         Suppress_References (Check_Prag);
 
          if Present (Corresponding_Aspect (Prag)) then
             Nam := Chars (Identifier (Corresponding_Aspect (Prag)));
