@@ -3516,13 +3516,17 @@ package body Sem_Util is
       begin
          Full_T := Typ;
 
-         --  Handle private types
+         --  Handle private types and subtypes
 
          if Use_Full_View
            and then Is_Private_Type (Typ)
            and then Present (Full_View (Typ))
          then
             Full_T := Full_View (Typ);
+
+            if Ekind (Full_T) = E_Record_Subtype then
+               Full_T := Full_View (Etype (Typ));
+            end if;
          end if;
 
          --  Include the ancestor if we are generating the whole list of
@@ -15147,7 +15151,7 @@ package body Sem_Util is
 
                   --  If the entity is the loop variable in an iteration over
                   --  a container, retrieve container expression to indicate
-                  --  possible modificastion.
+                  --  possible modification.
 
                   if Present (Related_Expression (Ent))
                     and then Nkind (Parent (Related_Expression (Ent))) =

@@ -1,5 +1,16 @@
 2015-03-04  Robert Dewar  <dewar@adacore.com>
 
+	* atree.h: Add entries for Flag287-Flag309.
+	* einfo.adb: Add (unused) flags Flag287-Flag309.
+
+2015-03-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Collect_Interfaces, Collect): When gathering
+	interfaces of ancestors, handle properly a subtype of a private
+	extension.
+
+2015-03-04  Robert Dewar  <dewar@adacore.com>
+
 	* einfo.adb (Is_ARECnF_Entity): New flag (ARECnF is an extra formal).
 	(Next_Formal): Don't return ARECnF formal.
 	(Last_Formal): Don't consider ARECnF formal.
