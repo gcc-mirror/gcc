@@ -584,8 +584,8 @@ package body Einfo is
    --    Is_Static_Type                  Flag281
    --    Has_Nested_Subprogram           Flag282
    --    Uplevel_Reference_Noted         Flag283
-   --    Is_ARECnF_Entity                Flag284
 
+   --    (unused)                        Flag284
    --    (unused)                        Flag285
    --    (unused)                        Flag286
    --    (unused)                        Flag287
@@ -1914,11 +1914,6 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       return Flag146 (Id);
    end Is_Abstract_Type;
-
-   function Is_ARECnF_Entity (Id : E) return B is
-   begin
-      return Flag284 (Id);
-   end Is_ARECnF_Entity;
 
    function Is_Local_Anonymous_Access (Id : E) return B is
    begin
@@ -4802,11 +4797,6 @@ package body Einfo is
       Set_Flag146 (Id, V);
    end Set_Is_Abstract_Type;
 
-   procedure Set_Is_ARECnF_Entity (Id : E; V : B := True) is
-   begin
-      Set_Flag284 (Id, V);
-   end Set_Is_ARECnF_Entity;
-
    procedure Set_Is_Local_Anonymous_Access (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Access_Type (Id));
@@ -7586,7 +7576,7 @@ package body Einfo is
 
    function Last_Formal (Id : E) return E is
       Formal : E;
-      NForm  : E;
+
    begin
       pragma Assert
         (Is_Overloadable (Id)
@@ -7601,10 +7591,8 @@ package body Einfo is
          Formal := First_Formal (Id);
 
          if Present (Formal) then
-            loop
-               NForm := Next_Formal (Formal);
-               exit when No (NForm) or else Is_ARECnF_Entity (NForm);
-               Formal := NForm;
+            while Present (Next_Formal (Formal)) loop
+               Formal := Next_Formal (Formal);
             end loop;
          end if;
 
@@ -7812,19 +7800,8 @@ package body Einfo is
       loop
          Next_Entity (P);
 
-         --  Return Empty if no next entity, or its an ARECnF entity (since
-         --  the latter is the last extra formal, not to be returned here).
-
-         if No (P) or else Is_ARECnF_Entity (P) then
-            return Empty;
-
-         --  If next entity is a formal, return it
-
-         elsif Is_Formal (P) then
+         if No (P) or else Is_Formal (P) then
             return P;
-
-         --  Else one, unless we have an internal entity, which we skip
-
          elsif not Is_Internal (P) then
             return Empty;
          end if;
@@ -7836,30 +7813,11 @@ package body Einfo is
    -----------------------------
 
    function Next_Formal_With_Extras (Id : E) return E is
-      NForm : Entity_Id;
-      Next  : Entity_Id;
-
    begin
       if Present (Extra_Formal (Id)) then
          return Extra_Formal (Id);
-
       else
-         NForm := Next_Formal (Id);
-
-         if Present (NForm) then
-            return NForm;
-
-         --  Deal with ARECnF entity as last extra formal
-
-         else
-            Next := Next_Entity (Id);
-
-            if Present (Next) and then Is_ARECnF_Entity (Next) then
-               return Next;
-            else
-               return Empty;
-            end if;
-         end if;
+         return Next_Formal (Id);
       end if;
    end Next_Formal_With_Extras;
 
@@ -7922,8 +7880,8 @@ package body Einfo is
    --------------------
 
    function Number_Entries (Id : E) return Nat is
-      N      : Int;
-      Ent    : Entity_Id;
+      N   : Int;
+      Ent : Entity_Id;
 
    begin
       pragma Assert (Is_Concurrent_Type (Id));
@@ -8708,7 +8666,6 @@ package body Einfo is
       W ("In_Use",                          Flag8   (Id));
       W ("Is_Abstract_Subprogram",          Flag19  (Id));
       W ("Is_Abstract_Type",                Flag146 (Id));
-      W ("Is_ARECnF_Entity",                Flag284 (Id));
       W ("Is_Access_Constant",              Flag69  (Id));
       W ("Is_Ada_2005_Only",                Flag185 (Id));
       W ("Is_Ada_2012_Only",                Flag199 (Id));
