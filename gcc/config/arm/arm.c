@@ -13337,7 +13337,7 @@ dump_minipool (rtx scan)
 	      fputc ('\n', dump_file);
 	    }
 
-	  switch (mp->fix_size)
+	  switch (GET_MODE_SIZE (mp->mode))
 	    {
 #ifdef HAVE_consttable_1
 	    case 1:

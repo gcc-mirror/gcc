@@ -1,5 +1,13 @@
 2015-03-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
+	Backport from mainline
+	2014-11-27  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/59593
+	* gcc.target/arm/constant-pool.c: New test.
+
+2015-03-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
 	PR target/64453
 	* gcc.target/arm/pr64453.c: New.
 
