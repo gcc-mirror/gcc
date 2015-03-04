@@ -16019,8 +16019,8 @@ round_up_loc (location_t loc, tree value, unsigned int divisor)
 	    return value;
 
 	  overflow_p = TREE_OVERFLOW (value);
-	  val &= ~(divisor - 1);
-	  val += divisor;
+	  val += divisor - 1;
+	  val &= - (int) divisor;
 	  if (val == 0)
 	    overflow_p = true;
 
@@ -16032,7 +16032,7 @@ round_up_loc (location_t loc, tree value, unsigned int divisor)
 
 	  t = build_int_cst (TREE_TYPE (value), divisor - 1);
 	  value = size_binop_loc (loc, PLUS_EXPR, value, t);
-	  t = build_int_cst (TREE_TYPE (value), - (HOST_WIDE_INT) divisor);
+	  t = build_int_cst (TREE_TYPE (value), - (int) divisor);
 	  value = size_binop_loc (loc, BIT_AND_EXPR, value, t);
 	}
     }
