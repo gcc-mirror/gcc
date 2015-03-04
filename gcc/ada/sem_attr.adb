@@ -1103,6 +1103,10 @@ package body Sem_Attr is
          --  Subsidiary to Check_Placemenet_In_XXX. Determine whether arbitrary
          --  node Nod is within enclosing node Encl_Nod.
 
+         procedure Placement_Error;
+         --  Emit a general error when the attributes does not appear in a
+         --  postcondition-like aspect or pragma.
+
          ------------------------------
          -- Check_Placement_In_Check --
          ------------------------------
@@ -1124,17 +1128,7 @@ package body Sem_Attr is
             --  Otherwise the placement of the attribute is illegal
 
             else
-               if Aname = Name_Old then
-                  Error_Attr
-                    ("attribute % can only appear in postcondition", P);
-
-               --  Specialize the error message for attribute 'Result
-
-               else
-                  Error_Attr
-                    ("attribute % can only appear in postcondition of "
-                     & "function", P);
-               end if;
+               Placement_Error;
             end if;
          end Check_Placement_In_Check;
 
@@ -1236,6 +1230,24 @@ package body Sem_Attr is
             return False;
          end Is_Within;
 
+         ---------------------
+         -- Placement_Error --
+         ---------------------
+
+         procedure Placement_Error is
+         begin
+            if Aname = Name_Old then
+               Error_Attr ("attribute % can only appear in postcondition", P);
+
+            --  Specialize the error message for attribute 'Result
+
+            else
+               Error_Attr
+                 ("attribute % can only appear in postcondition of function",
+                  P);
+            end if;
+         end Placement_Error;
+
          --  Local variables
 
          Prag      : Node_Id;
@@ -1294,14 +1306,14 @@ package body Sem_Attr is
                Check_Placement_In_Test_Case (Prag);
 
             else
-               Error_Attr ("attribute % can only appear in postcondition", P);
+               Placement_Error;
                return;
             end if;
 
          --  Otherwise the placement of the attribute is illegal
 
          else
-            Error_Attr ("attribute % can only appear in postcondition", P);
+            Placement_Error;
             return;
          end if;
 
@@ -4797,7 +4809,7 @@ package body Sem_Attr is
             if Is_Constant_Object (Pref_Id) then
                Error_Msg_Name_1 := Name_Old;
                Error_Msg_N
-                 ("??atribute % applied to constant has no effect", P);
+                 ("??attribute % applied to constant has no effect", P);
             end if;
 
          --  Otherwise the prefix is not a simple name

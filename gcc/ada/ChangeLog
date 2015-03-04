@@ -1,3 +1,14 @@
+2015-03-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb (Check_References): When checking for an unused
+	in-out parameter of a class- wide type, use its type to determine
+	whether it is private, in order to avoid a spurious warning when
+	subprogram spec and body are in different units.
+
+2015-03-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_attr.adb: Improve warning messages.
+
 2015-03-04  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch6.adb (Expand_N_Subprogram_Body): Avoid trying to unnest
