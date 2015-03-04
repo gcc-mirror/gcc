@@ -1080,6 +1080,13 @@ package body Sem_Warn is
                 (Ekind_In (E1, E_Out_Parameter, E_In_Out_Parameter)
                   and then not Is_Protected_Type (Current_Scope))
             then
+               --  If the formal has a class-wide type, retrieve its type
+               --  because checks below depend on its private nature.
+
+               if Is_Class_Wide_Type (E1T) then
+                  E1T := Etype (E1T);
+               end if;
+
                --  Case of an unassigned variable
 
                --  First gather any Unset_Reference indication for E1. In the
