@@ -1,3 +1,8 @@
+2015-03-04  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR target/64453
+	* gcc.target/arm/pr64453.c: New.
+
 2015-02-27  Richard Biener  <rguenther@suse.de>
 
 	PR lto/65193
