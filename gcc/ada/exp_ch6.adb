@@ -5345,7 +5345,19 @@ package body Exp_Ch6 is
       --  with nested subprograms, do the unnesting operation now.
 
       if Opt.Unnest_Subprogram_Mode
-        and then Is_Library_Level_Entity (Spec_Id)
+
+        --  We are only interested in subprograms (not generic subprograms)
+
+        and then Is_Subprogram (Spec_Id)
+
+        --  Only deal with outer level subprograms. Nested subprograms are
+        --  handled as part of dealing with the outer level subprogram in
+        --  which they are nested.
+
+        and then Enclosing_Subprogram (Spec_Id) = Empty
+
+        --  We are only interested in subprograms that have nested subprograms
+
         and then Has_Nested_Subprogram (Spec_Id)
       then
          Unnest_Subprogram (Spec_Id, N);

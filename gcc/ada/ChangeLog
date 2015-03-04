@@ -1,5 +1,29 @@
 2015-03-04  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch6.adb (Expand_N_Subprogram_Body): Avoid trying to unnest
+	generic subprograms.
+	* exp_unst.adb (Check_Dynamic_Type): Handle record types properly
+	(Note_Uplevel_Reference): Ignore uplevel references to non-types
+	(Get_Level): Consider only subprograms, not blocks.
+	(Visit_Node): Set proper condition for generating ARECnF entity.
+	Ignore indirect calls. Ignore calls to subprograms
+	outside our nest.
+	(Unnest_Subprogram): Minor changes in dealing with ARECnF entity.
+	(Add_Form_To_Spec): Properly set Last_Entity field.
+	(Unnest_Subprogram): Set current subprogram scope for analyze calls.
+	Handle case of no uplevel refs in outer subprogram
+	Don't mark uplevel entities as aliased.
+	Don't deal with calls with no ARECnF requirement.
+
+2015-03-04  Robert Dewar  <dewar@adacore.com>
+
+	* s-valrea.adb (Scan_Real): Remove redundant tests from scaling loops.
+	* s-imgdec.adb (Set_Decimal_Digits): Remove redundant Max
+	operation in computing LZ.
+	* sem_attr.adb: Minor typo fix
+
+2015-03-04  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch7.adb: Minor reformatting.
 	* exp_unst.adb (Build_Tables): Fix minor glitch for no separate
 	spec case.
