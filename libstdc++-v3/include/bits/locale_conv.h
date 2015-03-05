@@ -213,6 +213,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  while (__result == codecvt_base::partial && __next != __last
 		 && (__outstr.size() - __outchars) < __maxlen);
 
+	  if (__result == codecvt_base::noconv)
+	    {
+	      __outstr.assign(__first, __last);
+	      _M_count = __outstr.size();
+	      return __outstr;
+	    }
+
 	  __outstr.resize(__outchars);
 	  _M_count = __next - __first;
 

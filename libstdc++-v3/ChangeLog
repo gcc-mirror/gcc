@@ -1,3 +1,10 @@
+2015-03-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (wstring_convert::_M_conv): Handle
+	noconv result.
+	* testsuite/22_locale/conversions/string/2.cc: Also test UTF-8.
+	* testsuite/22_locale/conversions/string/3.cc: Likewise, and UTF-16.
+
 2015-03-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64797
