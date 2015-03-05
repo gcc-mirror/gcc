@@ -1,3 +1,10 @@
+2015-03-05  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/64342
+	* lra-assigns.c (find_hard_regno_for): Rename to
+	find_hard_regno_for_1.  Add a new parameter.
+	(find_hard_regno_for): New function using find_hard_regno_for_1.
+
 2015-03-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR rtl-optimization/65067
