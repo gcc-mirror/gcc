@@ -1,3 +1,8 @@
+2015-03-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64665
+	* g++.dg/cpp0x/initlist92.C: New.
+
 2015-03-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65310
