@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM RS/6000.
-   Copyright (C) 1991-2014 Free Software Foundation, Inc.
+   Copyright (C) 1991-2015 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -3100,6 +3100,10 @@ rs6000_option_override_internal (bool global_init_p)
     = ((global_init_p || target_option_default_node == NULL)
        ? NULL : TREE_TARGET_OPTION (target_option_default_node));
 
+  /* Print defaults.  */
+  if ((TARGET_DEBUG_REG || TARGET_DEBUG_TARGET) && global_init_p)
+    rs6000_print_isa_options (stderr, 0, "TARGET_DEFAULT", TARGET_DEFAULT);
+
   /* Remember the explicit arguments.  */
   if (global_init_p)
     rs6000_isa_flags_explicit = global_options_set.x_rs6000_isa_flags;
@@ -3176,7 +3180,13 @@ rs6000_option_override_internal (bool global_init_p)
     }
   else
     {
-      const char *default_cpu = (TARGET_POWERPC64 ? "powerpc64" : "powerpc");
+      /* PowerPC 64-bit LE requires at least ISA 2.07.  */
+      const char *default_cpu = ((!TARGET_POWERPC64)
+				 ? "powerpc"
+				 : ((BYTES_BIG_ENDIAN)
+				    ? "powerpc64"
+				    : "powerpc64le"));
+
       rs6000_cpu_index = cpu_index = rs6000_cpu_name_lookup (default_cpu);
       have_cpu = false;
     }
@@ -3195,15 +3205,18 @@ rs6000_option_override_internal (bool global_init_p)
 			   & set_masks);
     }
   else
-    rs6000_isa_flags |= (processor_target_table[cpu_index].target_enable
-			 & ~rs6000_isa_flags_explicit);
+    {
+      /* If no -mcpu=<xxx>, inherit any default options that were cleared via
+	 POWERPC_MASKS.  Originally, TARGET_DEFAULT was used to initialize
+	 target_flags via the TARGET_DEFAULT_TARGET_FLAGS hook.  When we switched
+	 to using rs6000_isa_flags, we need to do the initialization here.
 
-  /* If no -mcpu=<xxx>, inherit any default options that were cleared via
-     POWERPC_MASKS.  Originally, TARGET_DEFAULT was used to initialize
-     target_flags via the TARGET_DEFAULT_TARGET_FLAGS hook.  When we switched
-     to using rs6000_isa_flags, we need to do the initialization here.  */
-  if (!have_cpu)
-    rs6000_isa_flags |= (TARGET_DEFAULT & ~rs6000_isa_flags_explicit);
+	 If there is a TARGET_DEFAULT, use that.  Otherwise fall back to using
+	 -mcpu=powerpc, -mcpu=powerpc64, or -mcpu=powerpc64le defaults.  */
+      HOST_WIDE_INT flags = ((TARGET_DEFAULT) ? TARGET_DEFAULT
+			     : processor_target_table[cpu_index].target_enable);
+      rs6000_isa_flags |= (flags & ~rs6000_isa_flags_explicit);
+    }
 
   if (rs6000_tune_index >= 0)
     tune_index = rs6000_tune_index;
@@ -4055,12 +4068,8 @@ rs6000_option_override_internal (bool global_init_p)
      target_flags.  */
   rs6000_builtin_mask = rs6000_builtin_mask_calculate ();
   if (TARGET_DEBUG_BUILTIN || TARGET_DEBUG_TARGET)
-    {
-      fprintf (stderr,
-	       "new builtin mask = " HOST_WIDE_INT_PRINT_HEX ", ",
-	       rs6000_builtin_mask);
-      rs6000_print_builtin_options (stderr, 0, NULL, rs6000_builtin_mask);
-    }
+    rs6000_print_builtin_options (stderr, 0, "builtin mask",
+				  rs6000_builtin_mask);
 
   /* Initialize all of the registers.  */
   rs6000_init_hard_regno_mode_ok (global_init_p);
@@ -4930,6 +4939,28 @@ rs6000_file_start (void)
       switch_to_section (toc_section);
       switch_to_section (text_section);
     }
+
+#ifdef USING_ELFOS_H
+  if (rs6000_default_cpu == 0 || rs6000_default_cpu[0] == '\0'
+      || !global_options_set.x_rs6000_cpu_index)
+    {
+      fputs ("\t.machine ", asm_out_file);
+      if ((rs6000_isa_flags & OPTION_MASK_DIRECT_MOVE) != 0)
+	fputs ("power8\n", asm_out_file);
+      else if ((rs6000_isa_flags & OPTION_MASK_POPCNTD) != 0)
+	fputs ("power7\n", asm_out_file);
+      else if ((rs6000_isa_flags & OPTION_MASK_CMPB) != 0)
+	fputs ("power6\n", asm_out_file);
+      else if ((rs6000_isa_flags & OPTION_MASK_POPCNTB) != 0)
+	fputs ("power5\n", asm_out_file);
+      else if ((rs6000_isa_flags & OPTION_MASK_MFCRF) != 0)
+	fputs ("power4\n", asm_out_file);
+      else if ((rs6000_isa_flags & OPTION_MASK_POWERPC64) != 0)
+	fputs ("ppc64\n", asm_out_file);
+      else
+	fputs ("ppc\n", asm_out_file);
+    }
+#endif
 }
 
 
