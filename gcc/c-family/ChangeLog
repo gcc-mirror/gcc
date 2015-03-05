@@ -1,3 +1,8 @@
+2015-03-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/65319
+	* c-ada-spec.c (print_destructor): Remove obsolete code.
+
 2015-03-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (is_tagged_type): Add guard for DECL_VINDEX.
