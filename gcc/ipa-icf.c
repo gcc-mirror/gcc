@@ -1501,6 +1501,11 @@ sem_variable::equals (sem_item *item,
   if (DECL_INITIAL (item->decl) == error_mark_node && in_lto_p)
     dyn_cast <varpool_node *>(item->node)->get_constructor ();
 
+  /* As seen in PR ipa/65303 we have to compare variables types.  */
+  if (!func_checker::compatible_types_p (TREE_TYPE (decl),
+					 TREE_TYPE (item->decl)))
+    return return_false_with_msg ("variables types are different");
+
   ret = sem_variable::equals (DECL_INITIAL (decl),
 			      DECL_INITIAL (item->node->decl));
   if (dump_file && (dump_flags & TDF_DETAILS))
