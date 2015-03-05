@@ -4,45 +4,44 @@
 #include <string>
 #include <cassert>
 
-bool Test1(const bool arg) 
+bool Test1(bool) 
 {
   return true;
 }
-bool Test1(const std::string arg)
+bool Test1(std::string)
 {
   return false;
 }
 
-bool Test2(const int arg) 
+bool Test2(int)
 {
   return false;
 }
-bool Test2(const std::initializer_list<int> arg)
+bool Test2(std::initializer_list<int>)
 {
   return true;
 }
 
 struct S 
 { 
-    S(int _a) : a(_a){}
-    int getA() const { return a; }
+    S(int _a) : a(_a) {}
 private:
     int a;
 };
-bool Test3(const int arg) 
+bool Test3(int)
 {
   return true;
 }
-bool Test3(const S arg)
+bool Test3(S)
 {
   return false;
 }
 
-bool Test4(const bool arg) 
+bool Test4(bool) 
 {
   return false;
 }
-bool Test4(const std::initializer_list<std::string> arg)
+bool Test4(std::initializer_list<std::string>)
 {
   return true;
 }
