@@ -1,5 +1,9 @@
 2015-03-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	Fix last commit.
+
+2015-03-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/64665
 	* g++.dg/cpp0x/initlist92.C: New.
 
