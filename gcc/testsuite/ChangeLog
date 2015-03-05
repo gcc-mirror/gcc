@@ -1,3 +1,8 @@
+2015-03-05  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.dg/var-expand1.c: Force max-completely-peel-times and
+	max-unroll-times back to defaults for s390.
+
 2015-03-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Fix last commit.
