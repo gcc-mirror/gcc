@@ -1712,7 +1712,7 @@ inline_small_functions (void)
   FOR_EACH_DEFINED_FUNCTION (node)
     {
       bool update = false;
-      struct cgraph_edge *next;
+      struct cgraph_edge *next = NULL;
       bool has_speculative = false;
 
       if (dump_file)

@@ -1,3 +1,10 @@
+2015-03-05  Martin Liska  <mliska@suse.cz>
+
+	* ipa-inline.c (inline_small_functions): Set default value to
+	prevent warning during bootstrap.
+	* tree.h: Add pragma guard that ignores false positives during
+	bootstrap.
+
 2015-03-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65310
