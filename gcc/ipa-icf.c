@@ -1480,6 +1480,18 @@ sem_variable::equals_wpa (sem_item *item,
 				      ref->referred, ref2->referred,
 				      ref->address_matters_p ()))
 	return false;
+
+      /* DECL_FINAL_P flag on methods referred by virtual tables is used
+	 to decide on completeness possible_polymorphic_call_targets lists
+	 and therefore it must match.  */
+      if ((DECL_VIRTUAL_P (decl) || DECL_VIRTUAL_P (item->decl))
+	  && (DECL_VIRTUAL_P (ref->referred->decl)
+	      || DECL_VIRTUAL_P (ref2->referred->decl))
+	  && ((DECL_VIRTUAL_P (ref->referred->decl)
+	       != DECL_VIRTUAL_P (ref2->referred->decl))
+	      || (DECL_FINAL_P (ref->referred->decl)
+		  != DECL_FINAL_P (ref2->referred->decl))))
+        return return_false_with_msg ("virtual or final flag mismatch");
     }
 
   return true;

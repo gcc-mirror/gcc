@@ -1,3 +1,7 @@
+2015-03-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-icf.c (sem_variable::equals_wpa): Check FINAL flags.
+
 2015-03-05  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/64342
