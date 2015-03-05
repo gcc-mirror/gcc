@@ -1,5 +1,11 @@
 2015-03-05  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/65310
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment):
+	Properly preserve alignment of the base of the access.
+
+2015-03-05  Richard Biener  <rguenther@suse.de>
+
 	PR ipa/65270
 	* ipa-icf-gimple.c (func_checker::compare_memory_operand):
 	Compare dependence info.

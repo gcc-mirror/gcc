@@ -650,7 +650,8 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   tree base, base_addr;
   bool base_aligned;
   tree misalign;
-  tree aligned_to, alignment;
+  tree aligned_to;
+  unsigned HOST_WIDE_INT alignment;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -720,36 +721,43 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 	}
     }
 
-  base = build_fold_indirect_ref (base_addr);
-  alignment = ssize_int (TYPE_ALIGN (vectype)/BITS_PER_UNIT);
+  alignment = TYPE_ALIGN_UNIT (vectype);
 
-  if ((aligned_to && tree_int_cst_compare (aligned_to, alignment) < 0)
+  if ((compare_tree_int (aligned_to, alignment) < 0)
       || !misalign)
     {
       if (dump_enabled_p ())
 	{
 	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 	                   "Unknown alignment for access: ");
-	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, base);
+	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, ref);
 	  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 	}
       return true;
     }
 
-  if ((DECL_P (base)
-       && tree_int_cst_compare (ssize_int (DECL_ALIGN_UNIT (base)),
-				alignment) >= 0)
-      || (TREE_CODE (base_addr) == SSA_NAME
-	  && tree_int_cst_compare (ssize_int (TYPE_ALIGN_UNIT (TREE_TYPE (
-						      TREE_TYPE (base_addr)))),
-				   alignment) >= 0)
-      || (get_pointer_alignment (base_addr) >= TYPE_ALIGN (vectype)))
+  /* To look at alignment of the base we have to preserve an inner MEM_REF
+     as that carries alignment information of the actual access.  */
+  base = ref;
+  while (handled_component_p (base))
+    base = TREE_OPERAND (base, 0);
+  if (TREE_CODE (base) == MEM_REF)
+    base = build2 (MEM_REF, TREE_TYPE (base), base_addr,
+		   build_int_cst (TREE_TYPE (TREE_OPERAND (base, 1)), 0));
+
+  if (get_object_alignment (base) >= TYPE_ALIGN (vectype))
     base_aligned = true;
   else
     base_aligned = false;
 
   if (!base_aligned)
     {
+      /* Strip an inner MEM_REF to a bare decl if possible.  */
+      if (TREE_CODE (base) == MEM_REF
+	  && integer_zerop (TREE_OPERAND (base, 1))
+	  && TREE_CODE (TREE_OPERAND (base, 0)) == ADDR_EXPR)
+	base = TREE_OPERAND (TREE_OPERAND (base, 0), 0);
+
       /* Do not change the alignment of global variables here if
 	 flag_section_anchors is enabled as we already generated
 	 RTL for other functions.  Most global variables should
@@ -784,7 +792,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   /* If this is a backward running DR then first access in the larger
      vectype actually is N-1 elements before the address in the DR.
      Adjust misalign accordingly.  */
-  if (tree_int_cst_compare (DR_STEP (dr), size_zero_node) < 0)
+  if (tree_int_cst_sgn (DR_STEP (dr)) < 0)
     {
       tree offset = ssize_int (TYPE_VECTOR_SUBPARTS (vectype) - 1);
       /* DR_STEP(dr) is the same as -TYPE_SIZE of the scalar type,
@@ -794,19 +802,8 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
       misalign = size_binop (PLUS_EXPR, misalign, offset);
     }
 
-  /* Modulo alignment.  */
-  misalign = size_binop (FLOOR_MOD_EXPR, misalign, alignment);
-
-  if (!tree_fits_uhwi_p (misalign))
-    {
-      /* Negative or overflowed misalignment value.  */
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-	                 "unexpected misalign value\n");
-      return false;
-    }
-
-  SET_DR_MISALIGNMENT (dr, tree_to_uhwi (misalign));
+  SET_DR_MISALIGNMENT (dr,
+		       wi::mod_floor (misalign, alignment, SIGNED).to_uhwi ());
 
   if (dump_enabled_p ())
     {
