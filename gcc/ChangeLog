@@ -1,3 +1,9 @@
+2015-03-05  Steve Ellcey  <sellcey@imgtec.com>
+
+	PR middle-end/65315
+	* cfgexpand.c (expand_stack_vars): Update large_align to maximum
+	needed alignment.
+
 2015-03-05  Martin Liska  <mliska@suse.cz>
 
 	* ipa-inline.c (inline_small_functions): Set default value to
