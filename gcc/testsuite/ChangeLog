@@ -1,3 +1,7 @@
+2015-03-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.target/arm/pr65067.c: New test.
+
 2015-03-05  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/65318
