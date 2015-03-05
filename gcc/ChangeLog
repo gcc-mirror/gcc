@@ -1,3 +1,11 @@
+2015-03-03  Jan Hubicka  <hubicka@ucw.cz>
+
+ 	PR ipa/65270
+	* ipa-icf.c (sem_item::compare_cgraph_references): Compare
+	vtable references for their containing type.
+	(sem_function::equals_wpa): Compare TYPE_RESTRICT
+	and type attributes.
+
 2015-03-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (round_up_loc): Cast divisor to signed on all paths
