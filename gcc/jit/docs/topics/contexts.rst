@@ -138,7 +138,7 @@ be responsible for all of the rest:
    If no errors occurred, this will be NULL.
 
 If you are wrapping the C API for a higher-level language that supports
-exception-handling, you may instead by interested in the last error that
+exception-handling, you may instead be interested in the last error that
 occurred on the context, so that you can embed this in an exception:
 
 .. function:: const char *\

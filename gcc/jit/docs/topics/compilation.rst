@@ -37,7 +37,7 @@ In-memory compilation
    This calls into GCC and builds the code, returning a
    `gcc_jit_result *`.
 
-   If this is non-NULL, the caller becomes responsible for
+   If the result is non-NULL, the caller becomes responsible for
    calling :func:`gcc_jit_result_release` on it once they're done
    with it.
 
