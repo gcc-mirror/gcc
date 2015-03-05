@@ -1,3 +1,11 @@
+2015-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65233
+	* ipa-polymorphic-call.c: Include tree-ssa-operands.h and
+	tree-into-ssa.h.
+	(walk_ssa_copies): Revert last chage.  Instead do not walk
+	SSA names registered for SSA update.
+
 2015-03-03  Jan Hubicka  <hubicka@ucw.cz>
 
  	PR ipa/65270

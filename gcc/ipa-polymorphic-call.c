@@ -81,6 +81,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "data-streamer.h"
 #include "lto-streamer.h"
 #include "streamer-hooks.h"
+#include "tree-ssa-operands.h"
+#include "tree-into-ssa.h"
 
 /* Return true when TYPE contains an polymorphic type and thus is interesting
    for devirtualization machinery.  */
@@ -804,7 +806,9 @@ walk_ssa_copies (tree op, hash_set<tree> **global_visited = NULL)
   STRIP_NOPS (op);
   while (TREE_CODE (op) == SSA_NAME
 	 && !SSA_NAME_IS_DEFAULT_DEF (op)
-	 && SSA_NAME_DEF_STMT (op)
+	 /* We might be called via fold_stmt during cfgcleanup where
+	    SSA form need not be up-to-date.  */
+	 && !name_registered_for_update_p (op) 
 	 && (gimple_assign_single_p (SSA_NAME_DEF_STMT (op))
 	     || gimple_code (SSA_NAME_DEF_STMT (op)) == GIMPLE_PHI))
     {
@@ -835,10 +839,7 @@ walk_ssa_copies (tree op, hash_set<tree> **global_visited = NULL)
 	{
 	  gimple phi = SSA_NAME_DEF_STMT (op);
 
-	  if (gimple_phi_num_args (phi) > 2
-	      /* We can be called while cleaning up the CFG and can
-		 have empty PHIs about to be removed.  */
-	      || gimple_phi_num_args (phi) == 0)
+	  if (gimple_phi_num_args (phi) > 2)
 	    goto done;
 	  if (gimple_phi_num_args (phi) == 1)
 	    op = gimple_phi_arg_def (phi, 0);
