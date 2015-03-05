@@ -345,6 +345,20 @@ sem_item::compare_cgraph_references (
 {
   enum availability avail1, avail2;
 
+  if (n1 == n2)
+    return true;
+
+  /* Merging two definitions with a reference to equivalent vtables, but
+     belonging to a different type may result in ipa-polymorphic-call analysis
+     giving a wrong answer about the dynamic type of instance.  */
+  if (is_a <varpool_node *> (n1)
+      && (DECL_VIRTUAL_P (n1->decl) || DECL_VIRTUAL_P (n2->decl))
+      && (DECL_VIRTUAL_P (n1->decl) != DECL_VIRTUAL_P (n2->decl)
+	  || !types_must_be_same_for_odr (DECL_CONTEXT (n1->decl),
+					  DECL_CONTEXT (n2->decl))))
+    return return_false_with_msg
+	     ("references to virtual tables can not be merged");
+
   if (address && n1->equal_address_to (n2) == 1)
     return true;
   if (!address && n1->semantically_equivalent_p (n2))
@@ -407,6 +421,10 @@ sem_function::equals_wpa (sem_item *item,
 					     m_compared_func->arg_types[i],
 					     is_not_leaf, i == 0))
 	return return_false_with_msg ("argument type is different");
+      if (POINTER_TYPE_P (arg_types[i])
+	  && (TYPE_RESTRICT (arg_types[i])
+	      != TYPE_RESTRICT (m_compared_func->arg_types[i])))
+	return return_false_with_msg ("argument restrict flag mismatch");
     }
 
   /* Result type checking.  */
@@ -416,6 +434,10 @@ sem_function::equals_wpa (sem_item *item,
 
   if (node->num_references () != item->node->num_references ())
     return return_false_with_msg ("different number of references");
+
+  if (comp_type_attributes (TREE_TYPE (decl),
+			    TREE_TYPE (item->decl)) != 1)
+    return return_false_with_msg ("different type attributes");
 
   ipa_ref *ref = NULL, *ref2 = NULL;
   for (unsigned i = 0; node->iterate_reference (i, ref); i++)
