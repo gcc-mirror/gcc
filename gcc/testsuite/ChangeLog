@@ -1,5 +1,9 @@
 2015-03-05  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c:
+
+2015-03-05  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.dg/var-expand1.c: Force max-completely-peel-times and
 	max-unroll-times back to defaults for s390.
 
