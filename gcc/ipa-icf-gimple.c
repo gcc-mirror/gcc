@@ -305,6 +305,23 @@ func_checker::compare_memory_operand (tree t1, tree t2)
       get_object_alignment_1 (b2, &align2, &tem);
       if (align1 != align2)
 	return return_false_with_msg ("different access alignment");
+
+      /* Similarly we have to compare dependence info where equality
+         tells us we are safe (even some unequal values would be safe
+	 but then we have to maintain a map of bases and cliques).  */
+      unsigned short clique1 = 0, base1 = 0, clique2 = 0, base2 = 0;
+      if (TREE_CODE (b1) == MEM_REF)
+	{
+	  clique1 = MR_DEPENDENCE_CLIQUE (b1);
+	  base1 = MR_DEPENDENCE_BASE (b1);
+	}
+      if (TREE_CODE (b2) == MEM_REF)
+	{
+	  clique2 = MR_DEPENDENCE_CLIQUE (b2);
+	  base2 = MR_DEPENDENCE_BASE (b2);
+	}
+      if (clique1 != clique2 || base1 != base2)
+	return return_false_with_msg ("different dependence info");
     }
 
   return compare_operand (t1, t2);
