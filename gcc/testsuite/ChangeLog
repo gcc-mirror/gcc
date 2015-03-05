@@ -1,3 +1,7 @@
+2015-03-05  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/bounds-6.c: Use dg-do run.
+
 2015-03-05  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.dg/tree-ssa/ssa-dom-cse-2.c:
