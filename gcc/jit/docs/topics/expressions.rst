@@ -233,7 +233,7 @@ Binary Operation                          C equivalent
 
    For pointer addition, use :c:func:`gcc_jit_context_new_array_access`.
 
-.. c:macro:: GCC_JIT_BINARY_OP_MINUS`
+.. c:macro:: GCC_JIT_BINARY_OP_MINUS
 
    Subtraction of arithmetic values; analogous to:
 

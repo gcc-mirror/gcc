@@ -238,7 +238,9 @@ and can then use this to add `b_loop_cond`'s sole statement, via
 
 .. code-block:: c++
 
-  b_loop_cond.end_with_conditional (guard);
+  b_loop_cond.end_with_conditional (guard,
+                                    b_after_loop, // on_true
+                                    b_loop_body); // on_false
 
 However :type:`gccjit::rvalue` has overloaded operators for this, so we
 express the conditional as
@@ -247,14 +249,14 @@ express the conditional as
 
    gccjit::rvalue guard = (i >= n);
 
-and hence write the block more concisely as:
+and hence we can write the block more concisely as:
 
 .. code-block:: c++
 
   b_loop_cond.end_with_conditional (
     i >= n,
-    b_after_loop,
-    b_loop_body);
+    b_after_loop, // on_true
+    b_loop_body); // on_false
 
 Next, we populate the body of the loop.
 
