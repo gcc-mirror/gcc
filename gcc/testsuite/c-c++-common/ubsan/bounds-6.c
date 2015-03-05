@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do run } */
 /* { dg-options "-fsanitize=bounds -Wall -Wextra" } */
 
 /* Test off-by-one.  */
