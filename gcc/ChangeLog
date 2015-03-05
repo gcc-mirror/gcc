@@ -1,3 +1,8 @@
+2015-03-05  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/65318
+	* ipa-icf.c (sem_variable::equals): Compare variables types.
+
 2015-03-05  Alex Velenko  <alex.velenko@arm.com>
 
 	* config/arm/arm.c (arm_function_in_section_p): Fix predicate to

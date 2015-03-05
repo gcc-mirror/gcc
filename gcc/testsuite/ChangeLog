@@ -1,3 +1,8 @@
+2015-03-05  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/65318
+	* gcc.dg/ipa/pr65318.c: New test.
+
 2015-03-05  Marek Polacek  <polacek@redhat.com>
 
 	* c-c++-common/ubsan/bounds-6.c: Use dg-do run.
