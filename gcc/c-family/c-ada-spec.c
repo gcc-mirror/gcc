@@ -2538,18 +2538,9 @@ static void
 print_destructor (pretty_printer *buffer, tree t)
 {
   tree decl_name = DECL_NAME (DECL_ORIGIN (t));
-  const char *s = IDENTIFIER_POINTER (decl_name);
 
-  if (*s == '_')
-    {
-      for (s += 2; *s != ' '; s++)
-	pp_character (buffer, *s);
-    }
-  else
-    {
-      pp_string (buffer, "Delete_");
-      pp_ada_tree_identifier (buffer, decl_name, t, false);
-    }
+  pp_string (buffer, "Delete_");
+  pp_ada_tree_identifier (buffer, decl_name, t, false);
 }
 
 /* Return the name of type T.  */
