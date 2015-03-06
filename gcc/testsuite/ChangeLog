@@ -1,3 +1,11 @@
+2015-03-05  Martin Sebor  <msebor@redhat.com>
+
+	* PR testsuite/63175
+	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a.c (main1): Move
+	checking of results into main to prevent it from getting optimized
+	away.
+	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a-pr63175.c: New test.
+
 2015-03-06  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* gcc.dg/tree-ssa/pr45685.c: Move to gcc.target/i386.
