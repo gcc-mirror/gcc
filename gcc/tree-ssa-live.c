@@ -973,13 +973,6 @@ remove_unused_locals (void)
   timevar_pop (TV_REMOVE_UNUSED);
 }
 
-/* Obstack for globale liveness info bitmaps.  We don't want to put these
-   on the default obstack because these bitmaps can grow quite large and
-   we'll hold on to all that memory until the end of the compiler run.
-   As a bonus, delete_tree_live_info can destroy all the bitmaps by just
-   releasing the whole obstack.  */
-static bitmap_obstack liveness_bitmap_obstack;
-
 /* Allocate and return a new live range information object base on MAP.  */
 
 static tree_live_info_p
@@ -992,18 +985,20 @@ new_tree_live_info (var_map map)
   live->map = map;
   live->num_blocks = last_basic_block_for_fn (cfun);
 
+  bitmap_obstack_initialize (&live->livein_obstack);
+  bitmap_obstack_initialize (&live->liveout_obstack);
   live->livein = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
   FOR_EACH_BB_FN (bb, cfun)
-    bitmap_initialize (&live->livein[bb->index], &liveness_bitmap_obstack);
+    bitmap_initialize (&live->livein[bb->index], &live->livein_obstack);
 
   live->liveout = XNEWVEC (bitmap_head, last_basic_block_for_fn (cfun));
   FOR_EACH_BB_FN (bb, cfun)
-    bitmap_initialize (&live->liveout[bb->index], &liveness_bitmap_obstack);
+    bitmap_initialize (&live->liveout[bb->index], &live->liveout_obstack);
 
   live->work_stack = XNEWVEC (int, last_basic_block_for_fn (cfun));
   live->stack_top = live->work_stack;
 
-  live->global = BITMAP_ALLOC (&liveness_bitmap_obstack);
+  live->global = BITMAP_ALLOC (NULL);
   return live;
 }
 
@@ -1013,10 +1008,18 @@ new_tree_live_info (var_map map)
 void
 delete_tree_live_info (tree_live_info_p live)
 {
-  bitmap_obstack_release (&liveness_bitmap_obstack);
+  if (live->livein)
+    {
+      bitmap_obstack_release (&live->livein_obstack);
+      free (live->livein);
+    }
+  if (live->liveout)
+    {
+      bitmap_obstack_release (&live->liveout_obstack);
+      free (live->liveout);
+    }
+  BITMAP_FREE (live->global);
   free (live->work_stack);
-  free (live->liveout);
-  free (live->livein);
   free (live);
 }
 
@@ -1027,8 +1030,7 @@ delete_tree_live_info (tree_live_info_p live)
    it each time.  */
 
 static void
-loe_visit_block (tree_live_info_p live, basic_block bb, sbitmap visited,
-		 bitmap tmp)
+loe_visit_block (tree_live_info_p live, basic_block bb, sbitmap visited)
 {
   edge e;
   bool change;
@@ -1046,17 +1048,17 @@ loe_visit_block (tree_live_info_p live, basic_block bb, sbitmap visited,
       pred_bb = e->src;
       if (pred_bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	continue;
-      /* TMP is variables live-on-entry from BB that aren't defined in the
+      /* Variables live-on-entry from BB that aren't defined in the
 	 predecessor block.  This should be the live on entry vars to pred.
 	 Note that liveout is the DEFs in a block while live on entry is
-	 being calculated.  */
-      bitmap_and_compl (tmp, loe, &live->liveout[pred_bb->index]);
-
-      /* Add these bits to live-on-entry for the pred. if there are any
+	 being calculated.
+	 Add these bits to live-on-entry for the pred. if there are any
 	 changes, and pred_bb has been visited already, add it to the
 	 revisit stack.  */
-      change = bitmap_ior_into (live_on_entry (live, pred_bb), tmp);
-      if (bitmap_bit_p (visited, pred_bb->index) && change)
+      change = bitmap_ior_and_compl_into (live_on_entry (live, pred_bb),
+					  loe, &live->liveout[pred_bb->index]);
+      if (change
+	  && bitmap_bit_p (visited, pred_bb->index))
 	{
 	  bitmap_clear_bit (visited, pred_bb->index);
 	  *(live->stack_top)++ = pred_bb->index;
@@ -1074,23 +1076,21 @@ live_worklist (tree_live_info_p live)
   unsigned b;
   basic_block bb;
   sbitmap visited = sbitmap_alloc (last_basic_block_for_fn (cfun) + 1);
-  bitmap tmp = BITMAP_ALLOC (&liveness_bitmap_obstack);
 
   bitmap_clear (visited);
 
   /* Visit all the blocks in reverse order and propagate live on entry values
      into the predecessors blocks.  */
   FOR_EACH_BB_REVERSE_FN (bb, cfun)
-    loe_visit_block (live, bb, visited, tmp);
+    loe_visit_block (live, bb, visited);
 
   /* Process any blocks which require further iteration.  */
   while (live->stack_top != live->work_stack)
     {
       b = *--(live->stack_top);
-      loe_visit_block (live, BASIC_BLOCK_FOR_FN (cfun, b), visited, tmp);
+      loe_visit_block (live, BASIC_BLOCK_FOR_FN (cfun, b), visited);
     }
 
-  BITMAP_FREE (tmp);
   sbitmap_free (visited);
 }
 
@@ -1175,7 +1175,7 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
 
 /* Calculate the live on exit vectors based on the entry info in LIVEINFO.  */
 
-void
+static void
 calculate_live_on_exit (tree_live_info_p liveinfo)
 {
   basic_block bb;
@@ -1226,13 +1226,12 @@ calculate_live_on_exit (tree_live_info_p liveinfo)
    each partition.  Return a new live info object.  */
 
 tree_live_info_p
-calculate_live_ranges (var_map map)
+calculate_live_ranges (var_map map, bool want_livein)
 {
   tree var;
   unsigned i;
   tree_live_info_p live;
 
-  bitmap_obstack_initialize (&liveness_bitmap_obstack);
   live = new_tree_live_info (map);
   for (i = 0; i < num_var_partitions (map); i++)
     {
@@ -1248,6 +1247,14 @@ calculate_live_ranges (var_map map)
 #endif
 
   calculate_live_on_exit (live);
+
+  if (!want_livein)
+    {
+      bitmap_obstack_release (&live->livein_obstack);
+      free (live->livein);
+      live->livein = NULL;
+    }
+
   return live;
 }
 

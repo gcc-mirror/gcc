@@ -1344,7 +1344,7 @@ coalesce_ssa_name (void)
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_var_map (dump_file, map);
 
-  liveinfo = calculate_live_ranges (map);
+  liveinfo = calculate_live_ranges (map, false);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_live_info (dump_file, liveinfo, LIVEDUMP_ENTRY);
