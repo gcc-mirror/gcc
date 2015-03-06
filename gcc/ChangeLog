@@ -1,3 +1,9 @@
+2015-03-07  Marek Polacek  <polacek@redhat.com>
+	    Martin Uecker  <uecker@eecs.berkeley.edu>
+
+	PR sanitizer/65280
+	* doc/invoke.texi: Update description of -fsanitize=bounds.
+
 2015-03-06  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* tree-ssa-phiopt.c (neg_replacement): Remove.

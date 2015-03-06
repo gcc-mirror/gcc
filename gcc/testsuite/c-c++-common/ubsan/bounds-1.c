@@ -6,6 +6,7 @@
 struct S { int a[10]; };
 struct T { int l; int a[]; };
 struct U { int l; int a[0]; };
+struct V { int l; int a[1]; };
 
 __attribute__ ((noinline, noclone))
 void
@@ -64,8 +65,13 @@ main (void)
   struct T *t = (struct T *) __builtin_malloc (sizeof (struct T) + 10);
   t->a[1] = 1;
 
+  /* Don't instrument zero-sized arrays (GNU extension).  */
   struct U *u = (struct U *) __builtin_malloc (sizeof (struct U) + 10);
   u->a[1] = 1;
+
+  /* Don't instrument last array in a struct.  */
+  struct V *v = (struct V *) __builtin_malloc (sizeof (struct V) + 10);
+  v->a[1] = 1;
 
   long int *d[10][5];
   d[9][0] = (long int *) 0;

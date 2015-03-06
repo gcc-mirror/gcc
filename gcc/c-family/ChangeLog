@@ -1,3 +1,9 @@
+2015-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/65280
+	* c-ubsan.c (ubsan_instrument_bounds): Check for COMPONENT_REF
+	before trying to figure out whether we have a flexible array member.
+
 2015-03-06  Eric Botcazou  <ebotcazou@adacore.com>
             Jonathan Wakely  <jwakely.gcc@gmail.com>
 

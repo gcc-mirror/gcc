@@ -1,3 +1,13 @@
+2015-03-07  Marek Polacek  <polacek@redhat.com>
+	    Martin Uecker  <uecker@eecs.berkeley.edu>
+
+	PR sanitizer/65280
+	* c-c++-common/ubsan/bounds-1.c: Add testing of flexible array
+	member-like arrays.
+	* c-c++-common/ubsan/bounds-8.c: New test.
+	* c-c++-common/ubsan/bounds-9.c: New test.
+	* gcc.dg/ubsan/bounds-2.c: New test.
+
 2015-03-05  Martin Sebor  <msebor@redhat.com>
 
 	* PR testsuite/63175
