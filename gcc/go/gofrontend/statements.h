@@ -250,7 +250,7 @@ class Statement
 
   // Make a type switch statement.
   static Type_switch_statement*
-  make_type_switch_statement(Named_object* var, Expression*, Location);
+  make_type_switch_statement(const std::string&, Expression*, Location);
 
   // Make a send statement.
   static Send_statement*
@@ -1607,11 +1607,11 @@ class Type_case_clauses
 class Type_switch_statement : public Statement
 {
  public:
-  Type_switch_statement(Named_object* var, Expression* expr,
+  Type_switch_statement(const std::string& name, Expression* expr,
 			Location location)
     : Statement(STATEMENT_TYPE_SWITCH, location),
-      var_(var), expr_(expr), clauses_(NULL), break_label_(NULL)
-  { go_assert(var == NULL || expr == NULL); }
+      name_(name), expr_(expr), clauses_(NULL), break_label_(NULL)
+  { }
 
   // Add the clauses.
   void
@@ -1643,8 +1643,9 @@ class Type_switch_statement : public Statement
   do_may_fall_through() const;
 
  private:
-  // The variable holding the value we are switching on.
-  Named_object* var_;
+  // The name of the variable declared in the type switch guard.  Empty if there
+  // is no variable declared.
+  std::string name_;
   // The expression we are switching on if there is no variable.
   Expression* expr_;
   // The type case clauses.
