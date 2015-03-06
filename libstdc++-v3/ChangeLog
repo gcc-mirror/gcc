@@ -1,3 +1,10 @@
+2015-03-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future (future_error(error_code)): Construct base
+	class with error_code's message.
+	* src/c++11/future.cc (future_error::what()): Do not call c_str() on
+	temporary string.
+
 2015-03-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/locale_conv.h (wstring_convert::_M_conv): Handle
