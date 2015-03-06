@@ -303,8 +303,9 @@ ubsan_instrument_bounds (location_t loc, tree array, tree *index,
 
   /* Detect flexible array members and suchlike.  */
   tree base = get_base_address (array);
-  if (base && (TREE_CODE (base) == INDIRECT_REF
-	       || TREE_CODE (base) == MEM_REF))
+  if (TREE_CODE (array) == COMPONENT_REF
+      && base && (TREE_CODE (base) == INDIRECT_REF
+		  || TREE_CODE (base) == MEM_REF))
     {
       tree next = NULL_TREE;
       tree cref = array;
