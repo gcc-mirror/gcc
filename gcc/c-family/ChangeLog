@@ -1,3 +1,12 @@
+2015-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/other/dump-ada-spec-3.C: Remove include and adjust.
+
+2015-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+            Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* c-ada-spec.c (dump_ada_double_name): Fix pasto.
+
 2015-03-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/65319

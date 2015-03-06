@@ -1392,7 +1392,7 @@ dump_ada_double_name (pretty_printer *buffer, tree t1, tree t2, const char *s)
 
   pp_underscore (buffer);
 
-  if (DECL_NAME (t1))
+  if (DECL_NAME (t2))
     pp_ada_tree_identifier (buffer, DECL_NAME (t2), t2, false);
   else
     {
