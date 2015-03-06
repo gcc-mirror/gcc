@@ -2075,7 +2075,7 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
 	     because the hex digits used in real_from_mpfr did not
 	     start with a digit 8 to f, but the exponent bounds above
 	     should have avoided underflow or overflow.  */
-	  gcc_assert (r->cl = rvc_normal);
+	  gcc_assert (r->cl == rvc_normal);
 	  /* Set a sticky bit if mpfr_strtofr was inexact.  */
 	  r->sig[0] |= inexact;
 	  mpfr_clear (m);
