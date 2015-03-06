@@ -1,3 +1,22 @@
+2015-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64928
+	* tree-ssa-live.h (struct tree_live_info_d): Add livein_obstack
+	and liveout_obstack members.
+	(calculate_live_on_exit): Remove.
+	(calculate_live_ranges): Change declaration.
+	* tree-ssa-live.c (liveness_bitmap_obstack): Remove global var.
+	(new_tree_live_info): Adjust.
+	(calculate_live_ranges): Delete livein when not wanted.
+	(calculate_live_ranges): Do not initialize liveness_bitmap_obstack.
+	Deal with partly deleted live info.
+	(loe_visit_block): Remove temporary bitmap by using
+	bitmap_ior_and_compl_into.
+	(live_worklist): Adjust accordingly.
+	(calculate_live_on_exit): Make static.
+	* tree-ssa-coalesce.c (coalesce_ssa_name): Tell calculate_live_ranges
+	we do not need livein.
+
 2015-03-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* real.c (real_from_string): Fix typo in assertion.
