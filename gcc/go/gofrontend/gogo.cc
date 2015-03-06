@@ -6030,6 +6030,7 @@ Variable::type()
   Type* type = this->type_;
   Expression* init = this->init_;
   if (this->is_type_switch_var_
+      && type != NULL
       && this->type_->is_nil_constant_as_type())
     {
       Type_guard_expression* tge = this->init_->type_guard_expression();
@@ -6103,7 +6104,9 @@ Variable::determine_type()
   // type here.  It will have an initializer which is a type guard.
   // We want to initialize it to the value without the type guard, and
   // use the type of that value as well.
-  if (this->is_type_switch_var_ && this->type_->is_nil_constant_as_type())
+  if (this->is_type_switch_var_
+      && this->type_ != NULL
+      && this->type_->is_nil_constant_as_type())
     {
       Type_guard_expression* tge = this->init_->type_guard_expression();
       go_assert(tge != NULL);
