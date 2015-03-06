@@ -32,7 +32,7 @@ PROGNAME=dg-extract-results.sh
 PYTHON_VER=`echo "$0" | sed 's/sh$/py/'`
 if test "$PYTHON_VER" != "$0" &&
    test -f "$PYTHON_VER" &&
-   python -c 'import sys; sys.exit (0 if sys.version_info >= (2, 6) else 1)' \
+   python -c 'import sys, getopt, re, io, datetime, operator; sys.exit (0 if sys.version_info >= (2, 6) else 1)' \
      > /dev/null 2> /dev/null; then
   exec python $PYTHON_VER "$@"
 fi
