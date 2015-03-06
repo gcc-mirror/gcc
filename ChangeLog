@@ -1,3 +1,8 @@
+2015-03-06  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add myself
+	i386 vector ISA extns mantainer.
+
 2015-03-13  Jeff Law  <law@redhat.com>
 
 	* MAINTAINERS: Remove Paul Brook as a Fortran and ARM
