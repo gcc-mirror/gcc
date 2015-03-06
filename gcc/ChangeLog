@@ -1,3 +1,8 @@
+2015-03-06  Alex Velenko  <alex.velenko@arm.com>
+
+	* ChangeLog (2015-03-05): Reflect Richard Henderson as actual author of
+	the patch.
+
 2015-03-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-icf.c (sem_variable::equals_wpa): Check FINAL flags.
@@ -20,7 +25,7 @@
 	PR ipa/65318
 	* ipa-icf.c (sem_variable::equals): Compare variables types.
 
-2015-03-05  Alex Velenko  <alex.velenko@arm.com>
+2015-03-05  Richard Henderson  <rth@redhat.com>
 
 	* config/arm/arm.c (arm_function_in_section_p): Fix predicate to
 	correctly check weak symbol binding.
