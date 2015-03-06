@@ -1,3 +1,10 @@
+2015-03-06  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc.dg/tree-ssa/pr45685.c: Move to gcc.target/i386.
+	* gcc.target/aarch64/csneg-1.c (test_csneg_cmp): New test.
+	* gcc.target/i386/pr45685.c: Moved test, check for conditional move on
+	x64.
+
 2015-03-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/lto/pr65302_1.C: New testcase.
