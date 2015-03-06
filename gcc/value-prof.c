@@ -1576,6 +1576,8 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
 		     PHI_ARG_DEF_FROM_EDGE (phi, e_eh));
 	  }
        }
+  if (!stmt_could_throw_p (dcall_stmt))
+    gimple_purge_dead_eh_edges (dcall_bb);
   return dcall_stmt;
 }
 

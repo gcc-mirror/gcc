@@ -1,3 +1,8 @@
+2015-03-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/lto/pr65302_1.C: New testcase.
+	* g++.dg/lto/pr65302_0.C: New testcase.
+
 2015-03-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/arm/atomic-comp-swap-release-acquire.c: Add

@@ -1,3 +1,8 @@
+2015-03-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65302
+	* value-prof.c (gimple_ic): Pure dead eh edges when needed.
+
 2015-03-06  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64928
