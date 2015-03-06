@@ -1,3 +1,8 @@
+2015-03-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ptree.c (cxx_print_lambda_node): New.
+	(cxx_print_xnode): Handle LAMBDA_EXPR.
+
 2015-03-03  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR c++/65295
