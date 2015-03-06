@@ -1,5 +1,10 @@
 2015-03-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* gcc.target/arm/atomic-comp-swap-release-acquire.c: Add
+	-fno-ipa-icf to dg-options.
+
+2015-03-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* c-c++-common/torture/aarch64-vect-lane-2.c: XFAIL for LTO
 	compiles using the linker plugin.
 
