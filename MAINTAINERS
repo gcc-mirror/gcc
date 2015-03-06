@@ -63,6 +63,7 @@ hppa port		Jeff Law		<law@redhat.com>
 hppa port		John David Anglin	<dave.anglin@bell.net>
 i386 port		Jan Hubicka		<hubicka@ucw.cz>
 i386 port		Uros Bizjak		<ubizjak@gmail.com>
+i386 vector ISA extns	Kirill Yukhin		<kirill.yukhin@gmail.com>
 ia64 port		Jim Wilson		<wilson@tuliptree.org>
 ia64 port		Steve Ellcey		<sellcey@mips.com>
 iq2000 port		Nick Clifton		<nickc@redhat.com>
