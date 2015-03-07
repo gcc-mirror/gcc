@@ -1,5 +1,10 @@
 2015-03-07  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/65153
+	* gcc.c-torture/compile/pr65153.c: New.
+
+2015-03-07  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/65249
 	* g++.dg/torture/pr65249.C: New.
 
