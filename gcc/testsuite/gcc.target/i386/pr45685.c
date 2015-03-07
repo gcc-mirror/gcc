@@ -1,8 +1,8 @@
 /* { dg-do compile { target { ! { ia32 } } } } */
 /* { dg-options "-O3" } */
 
-typedef unsigned long int uint64_t;
-typedef long int int64_t;
+typedef unsigned long long int uint64_t;
+typedef long long int int64_t;
 int summation_helper_1(int64_t* products, uint64_t count)
 {
 	int s = 0;
