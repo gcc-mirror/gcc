@@ -1,3 +1,9 @@
+2015-03-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65316
+	* tree.c (free_lang_data_in_type): Be sure to keep BINFO_VTABLE
+	when outputting debug.
+
 2015-03-07  Marek Polacek  <polacek@redhat.com>
 	    Martin Uecker  <uecker@eecs.berkeley.edu>
 

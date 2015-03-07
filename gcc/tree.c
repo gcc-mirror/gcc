@@ -5081,9 +5081,15 @@ free_lang_data_in_type (tree type)
       if (TYPE_BINFO (type))
 	{
 	  free_lang_data_in_binfo (TYPE_BINFO (type));
+	  /* We need to preserve link to bases and virtual table for all
+	     polymorphic types to make devirtualization machinery working.
+	     Debug output cares only about bases, but output also
+	     virtual table pointers so merging of -fdevirtualize and
+	     -fno-devirtualize units is easier.  */
 	  if ((!BINFO_VTABLE (TYPE_BINFO (type))
 	       || !flag_devirtualize)
-	      && (!BINFO_N_BASE_BINFOS (TYPE_BINFO (type))
+	      && ((!BINFO_N_BASE_BINFOS (TYPE_BINFO (type))
+		   && !BINFO_VTABLE (TYPE_BINFO (type)))
 		  || debug_info_level != DINFO_LEVEL_NONE))
 	    TYPE_BINFO (type) = NULL;
 	}
