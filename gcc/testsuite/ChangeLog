@@ -1,3 +1,8 @@
+2015-03-07  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/65249
+	* g++.dg/torture/pr65249.C: New.
+
 2015-03-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/pr45685.c (uint64_t): Replace long with long
