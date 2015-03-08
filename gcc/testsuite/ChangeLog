@@ -1,5 +1,7 @@
 2015-03-08  John David Anglin  <danglin@gcc.gnu.org>
 
+	* g++.dg/ipa/pr63621.C: Add dg-require-effective-target named_sections.
+
 	PR target/62251
 	* gfortran.dg/quad_2.f90: xfail hppa*-*-hpux*.
 
