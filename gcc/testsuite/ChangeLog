@@ -1,5 +1,8 @@
 2015-03-08  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR target/62251
+	* gfortran.dg/quad_2.f90: xfail hppa*-*-hpux*.
+
 	* gcc.dg/signbit-sa.c: Add dg-require-effective-target c99_runtime
 
 	* gcc.dg/ipa/pr64307.c: Add target c99_runtime.
