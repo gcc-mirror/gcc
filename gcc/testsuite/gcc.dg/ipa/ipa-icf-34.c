@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-alias "" } */
 /* { dg-options "-O0 -fipa-icf -fdump-ipa-icf"  } */
 
 static int do_work(void)
