@@ -10,6 +10,13 @@
 	can_increase_alignment_p.
 	* tree-vectorizer.c (increase_alignment): Use increase_alignment.
 	* tree-vect-stmts.c (ensure_base_align): Likewise.
+	* varasm.c (function_section_1): Use definition_alignment.
+	(assemble_start_function): Likewise.
+	(emit_local): likewise.
+	(build_constant_desc): Likewsie.
+	(output_constant_def_contents): Likewise.
+	(place_block_symbol): Likewise.
+	(output_object_block): Likewise.
 
 2015-03-05  Jan Hubicka  <hubicka@ucw.cz>
 
