@@ -4956,8 +4956,13 @@ ensure_base_align (stmt_vec_info stmt_info, struct data_reference *dr)
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
       tree base_decl = ((dataref_aux *)dr->aux)->base_decl;
 
-      DECL_ALIGN (base_decl) = TYPE_ALIGN (vectype);
-      DECL_USER_ALIGN (base_decl) = 1;
+      if (decl_in_symtab_p (base_decl))
+	symtab_node::get (base_decl)->increase_alignment (TYPE_ALIGN (vectype));
+      else
+	{
+          DECL_ALIGN (base_decl) = TYPE_ALIGN (vectype);
+          DECL_USER_ALIGN (base_decl) = 1;
+	}
       ((dataref_aux *)dr->aux)->base_misaligned = false;
     }
 }
