@@ -1,5 +1,10 @@
 2015-03-08  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR target/62247
+	* g++.dg/abi/anon3.C: Skip failing scan-assembler checks on
+	hppa*-*-hpux*.
+	* g++.dg/abi/rtti3.C: Likewise.
+
 	* g++.dg/ipa/pr63621.C: Add dg-require-effective-target named_sections.
 
 	PR target/62251
