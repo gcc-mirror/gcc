@@ -659,7 +659,7 @@ function_section_1 (tree decl, bool force_cold)
   else
     return targetm.asm_out.select_section
 	    (decl, freq == NODE_FREQUENCY_UNLIKELY_EXECUTED,
-	     DECL_ALIGN (decl));
+	     symtab_node::get (decl)->definition_alignment ());
 #else
   if (targetm.asm_out.function_section)
     section = targetm.asm_out.function_section (decl, freq, startup, exit);
@@ -1740,6 +1740,8 @@ assemble_start_function (tree decl, const char *fnname)
   if (CONSTANT_POOL_BEFORE_FUNCTION)
     output_constant_pool (fnname, decl);
 
+  align = symtab_node::get (decl)->definition_alignment ();
+
   /* Make sure the not and cold text (code) sections are properly
      aligned.  This is necessary here in the case where the function
      has both hot and cold sections, because we don't want to re-set
@@ -1750,7 +1752,7 @@ assemble_start_function (tree decl, const char *fnname)
       first_function_block_is_cold = false;
 
       switch_to_section (unlikely_text_section ());
-      assemble_align (DECL_ALIGN (decl));
+      assemble_align (align);
       ASM_OUTPUT_LABEL (asm_out_file, crtl->subsections.cold_section_label);
 
       /* When the function starts with a cold section, we need to explicitly
@@ -1760,7 +1762,7 @@ assemble_start_function (tree decl, const char *fnname)
 	  && BB_PARTITION (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb) == BB_COLD_PARTITION)
 	{
 	  switch_to_section (text_section);
-	  assemble_align (DECL_ALIGN (decl));
+	  assemble_align (align);
 	  ASM_OUTPUT_LABEL (asm_out_file, crtl->subsections.hot_section_label);
 	  hot_label_written = true;
 	  first_function_block_is_cold = true;
@@ -1777,7 +1779,7 @@ assemble_start_function (tree decl, const char *fnname)
     ASM_OUTPUT_LABEL (asm_out_file, crtl->subsections.hot_section_label);
 
   /* Tell assembler to move to target machine's alignment for functions.  */
-  align = floor_log2 (DECL_ALIGN (decl) / BITS_PER_UNIT);
+  align = floor_log2 (align / BITS_PER_UNIT);
   if (align > 0)
     {
       ASM_OUTPUT_ALIGN (asm_out_file, align);
@@ -1931,17 +1933,18 @@ assemble_string (const char *p, int size)
 /* A noswitch_section_callback for lcomm_section.  */
 
 static bool
-emit_local (tree decl ATTRIBUTE_UNUSED,
+emit_local (tree decl,
 	    const char *name ATTRIBUTE_UNUSED,
 	    unsigned HOST_WIDE_INT size ATTRIBUTE_UNUSED,
 	    unsigned HOST_WIDE_INT rounded ATTRIBUTE_UNUSED)
 {
+  int align = symtab_node::get (decl)->definition_alignment ();
 #if defined ASM_OUTPUT_ALIGNED_DECL_LOCAL
   ASM_OUTPUT_ALIGNED_DECL_LOCAL (asm_out_file, decl, name,
-				 size, DECL_ALIGN (decl));
+				 size, align);
   return true;
 #elif defined ASM_OUTPUT_ALIGNED_LOCAL
-  ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size, DECL_ALIGN (decl));
+  ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size, align);
   return true;
 #else
   ASM_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
@@ -3295,7 +3298,12 @@ build_constant_desc (tree exp)
   /* Now construct the SYMBOL_REF and the MEM.  */
   if (use_object_blocks_p ())
     {
-      section *sect = get_constant_section (exp, DECL_ALIGN (decl));
+      int align = (TREE_CODE (decl) == CONST_DECL
+		   || (TREE_CODE (decl) == VAR_DECL
+		       && DECL_IN_CONSTANT_POOL (decl))
+		   ? DECL_ALIGN (decl)
+		   : symtab_node::get (decl)->definition_alignment ());
+      section *sect = get_constant_section (exp, align);
       symbol = create_block_symbol (ggc_strdup (label),
 				    get_block_for_section (sect), -1);
     }
@@ -3423,7 +3431,6 @@ output_constant_def_contents (rtx symbol)
 {
   tree decl = SYMBOL_REF_DECL (symbol);
   tree exp = DECL_INITIAL (decl);
-  unsigned int align;
   bool asan_protected = false;
 
   /* Make sure any other constants whose addresses appear in EXP
@@ -3449,7 +3456,11 @@ output_constant_def_contents (rtx symbol)
     place_block_symbol (symbol);
   else
     {
-      align = DECL_ALIGN (decl);
+      int align = (TREE_CODE (decl) == CONST_DECL
+		   || (TREE_CODE (decl) == VAR_DECL
+		       && DECL_IN_CONSTANT_POOL (decl))
+		   ? DECL_ALIGN (decl)
+		   : symtab_node::get (decl)->definition_alignment ());
       switch_to_section (get_constant_section (exp, align));
       if (align > BITS_PER_UNIT)
 	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
@@ -7159,6 +7170,7 @@ place_block_symbol (rtx symbol)
   else if (TREE_CONSTANT_POOL_ADDRESS_P (symbol))
     {
       decl = SYMBOL_REF_DECL (symbol);
+      gcc_checking_assert (DECL_IN_CONSTANT_POOL (decl));
       alignment = DECL_ALIGN (decl);
       size = get_constant_size (DECL_INITIAL (decl));
       if ((flag_sanitize & SANITIZE_ADDRESS)
@@ -7333,8 +7345,9 @@ output_object_block (struct object_block *block)
 	{
 	  HOST_WIDE_INT size;
 	  decl = SYMBOL_REF_DECL (symbol);
-	  assemble_constant_contents (DECL_INITIAL (decl), XSTR (symbol, 0),
-				      DECL_ALIGN (decl));
+	  assemble_constant_contents
+	       (DECL_INITIAL (decl), XSTR (symbol, 0), DECL_ALIGN (decl));
+
 	  size = get_constant_size (DECL_INITIAL (decl));
 	  offset += size;
 	  if ((flag_sanitize & SANITIZE_ADDRESS)
