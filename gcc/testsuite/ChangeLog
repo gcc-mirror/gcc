@@ -1,5 +1,7 @@
 2015-03-08  John David Anglin  <danglin@gcc.gnu.org>
 
+	* gcc.dg/signbit-sa.c: Add dg-require-effective-target c99_runtime
+
 	* gcc.dg/ipa/pr64307.c: Add target c99_runtime.
 
 	* gcc.dg/ipa/ipa-icf-34.c: Add dg-require-alias.
