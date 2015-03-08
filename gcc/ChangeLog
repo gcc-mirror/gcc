@@ -3672,6 +3672,7 @@
 
 2015-01-19  David Edelsohn  <dje.gcc@gmail.com>
 
+	PR target/59828
 	* config/rs6000/default64.h: Include rs6000-cpus.def.
 	(TARGET_DEFAULT) [LITTLE_ENDIAN]: Use ISA 2.7 (POWER8).
 	(TARGET_DEFAULT) [BIG_ENDIAN]: Use POWER4.
