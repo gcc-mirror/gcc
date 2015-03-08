@@ -289,6 +289,18 @@ public:
   /* Make DECL local.  */
   void make_decl_local (void);
 
+  /* Return desired alignment of the definition.  This is NOT alignment useful
+     to access THIS, because THIS may be interposable and DECL_ALIGN should
+     be used instead.  It however must be guaranteed when output definition
+     of THIS.  */
+  unsigned int definition_alignment ();
+
+  /* Return true if alignment can be increased.  */
+  bool can_increase_alignment_p ();
+
+  /* Increase alignment of symbol to ALIGN.  */
+  void increase_alignment (unsigned int align);
+
   /* Return true if list contains an alias.  */
   bool has_aliases_p (void);
 

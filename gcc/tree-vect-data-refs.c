@@ -5703,57 +5703,9 @@ vect_can_force_dr_alignment_p (const_tree decl, unsigned int alignment)
   if (TREE_CODE (decl) != VAR_DECL)
     return false;
 
-  /* With -fno-toplevel-reorder we may have already output the constant.  */
-  if (TREE_ASM_WRITTEN (decl))
+  if (decl_in_symtab_p (decl)
+      && !symtab_node::get (decl)->can_increase_alignment_p ())
     return false;
-
-  /* Constant pool entries may be shared and not properly merged by LTO.  */
-  if (DECL_IN_CONSTANT_POOL (decl))
-    return false;
-
-  if (TREE_PUBLIC (decl) || DECL_EXTERNAL (decl))
-    {
-      symtab_node *snode;
-
-      /* We cannot change alignment of symbols that may bind to symbols
-	 in other translation unit that may contain a definition with lower
-	 alignment.  */
-      if (!decl_binds_to_current_def_p (decl))
-	return false;
-
-      /* When compiling partition, be sure the symbol is not output by other
-	 partition.  */
-      snode = symtab_node::get (decl);
-      if (flag_ltrans
-	  && (snode->in_other_partition
-	      || snode->get_partitioning_class () == SYMBOL_DUPLICATE))
-	return false;
-    }
-
-  /* Do not override the alignment as specified by the ABI when the used
-     attribute is set.  */
-  if (DECL_PRESERVE_P (decl))
-    return false;
-
-  /* Do not override explicit alignment set by the user when an explicit
-     section name is also used.  This is a common idiom used by many
-     software projects.  */
-  if (TREE_STATIC (decl) 
-      && DECL_SECTION_NAME (decl) != NULL
-      && !symtab_node::get (decl)->implicit_section)
-    return false;
-
-  /* If symbol is an alias, we need to check that target is OK.  */
-  if (TREE_STATIC (decl))
-    {
-      tree target = symtab_node::get (decl)->ultimate_alias_target ()->decl;
-      if (target != decl)
-	{
-	  if (DECL_PRESERVE_P (target))
-	    return false;
-	  decl = target;
-	}
-    }
 
   if (TREE_STATIC (decl))
     return (alignment <= MAX_OFILE_ALIGNMENT);

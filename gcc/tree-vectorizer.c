@@ -719,14 +719,7 @@ increase_alignment (void)
 
       if (vect_can_force_dr_alignment_p (decl, alignment))
         {
-          DECL_ALIGN (decl) = TYPE_ALIGN (vectype);
-          DECL_USER_ALIGN (decl) = 1;
-	  if (TREE_STATIC (decl))
-	    {
-	      tree target = symtab_node::get (decl)->ultimate_alias_target ()->decl;
-              DECL_ALIGN (target) = TYPE_ALIGN (vectype);
-              DECL_USER_ALIGN (target) = 1;
-	    }
+	  vnode->increase_alignment (TYPE_ALIGN (vectype));
           dump_printf (MSG_NOTE, "Increasing alignment of decl: ");
           dump_generic_expr (MSG_NOTE, TDF_SLIM, decl);
           dump_printf (MSG_NOTE, "\n");

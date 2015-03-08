@@ -1,5 +1,18 @@
 2015-03-05  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/65334
+	* cgraph.h (symtab_node): Add definition_alignment,
+	can_increase_alignment_p and increase_alignment.
+	* symtab.c (symtab_node::can_increase_alignment_p,
+	increase_alignment_1, symtab_node::increase_alignment,
+	symtab_node::definition_alignment): New.
+	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p): Use
+	can_increase_alignment_p.
+	* tree-vectorizer.c (increase_alignment): Use increase_alignment.
+	* tree-vect-stmts.c (ensure_base_align): Likewise.
+
+2015-03-05  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/65316
 	* tree.c (free_lang_data_in_type): Be sure to keep BINFO_VTABLE
 	when outputting debug.
