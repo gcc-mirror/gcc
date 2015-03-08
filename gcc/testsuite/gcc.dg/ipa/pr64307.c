@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target c99_runtime } } */
 /* { dg-options "-O0 -fipa-icf -fdump-ipa-icf"  } */
 
 #include <complex.h>
