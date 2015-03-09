@@ -1,9 +1,16 @@
 # do not define the multiarch name if configured for a soft-float cpu
 # or soft-float.
 ifeq (,$(filter $(with_cpu),$(SOFT_FLOAT_CPUS))$(findstring soft,$(with_float)))
-ifneq (,$(findstring spe,$(target)))
-MULTIARCH_DIRNAME = powerpc-linux-gnuspe$(if $(findstring rs6000/e500-double.h, $(tm_file_list)),,v1)
+ifneq (,$(findstring powerpc64,$(target)))
+MULTIARCH_DIRNAME := powerpc64-linux-gnu
 else
-MULTIARCH_DIRNAME = powerpc-linux-gnu
+ifneq (,$(findstring spe,$(target)))
+MULTIARCH_DIRNAME := powerpc-linux-gnuspe$(if $(findstring rs6000/e500-double.h, $(tm_file_list)),,v1)
+else
+MULTIARCH_DIRNAME := powerpc-linux-gnu
+endif
+endif
+ifneq (,$(findstring powerpcle,$(target))$(findstring powerpc64le,$(target)))
+MULTIARCH_DIRNAME := $(subst -linux,le-linux,$(MULTIARCH_DIRNAME))
 endif
 endif
