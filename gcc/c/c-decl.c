@@ -5837,10 +5837,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		    warn_variable_length_array (name, size);
 		    if (flag_sanitize & SANITIZE_VLA
 		        && decl_context == NORMAL
-			&& current_function_decl != NULL_TREE
-			&& !lookup_attribute ("no_sanitize_undefined",
-					      DECL_ATTRIBUTES
-						(current_function_decl)))
+			&& do_ubsan_in_current_function ())
 		      {
 			/* Evaluate the array size only once.  */
 			size = c_save_expr (size);
