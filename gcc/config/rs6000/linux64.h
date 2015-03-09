@@ -97,7 +97,7 @@ extern int dot_symbols;
     {								\
       if (!global_options_set.x_rs6000_alignment_flags)		\
 	rs6000_alignment_flags = MASK_ALIGN_NATURAL;		\
-      if (TARGET_64BIT)						\
+      if (rs6000_isa_flags & OPTION_MASK_64BIT)			\
 	{							\
 	  if (DEFAULT_ABI != ABI_AIX)				\
 	    {							\
