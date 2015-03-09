@@ -1,3 +1,12 @@
+2015-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65270
+	* tree-core.h (enum operand_equal_flag): Add OEP_ADDRESS_OF.
+	* fold-const.c (operand_equal_p): When recursing for ADDR_EXPRs
+	operand set OEP_ADDRESS_OF.  Clear it when recursing to non-bases
+	of that.  When comparing dereferences compare alignment.
+	When comparing MEM_REFs or TARGET_MEM_REFs compare dependence info.
+
 2015-03-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline-analysis.c (check_callers): Check
