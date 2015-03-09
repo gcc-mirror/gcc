@@ -1,3 +1,9 @@
+2015-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/65120
+	* c-typeck.c (parser_build_binary_op): Don't warn for
+	!!x == y or !b == y where b is _Bool.
+
 2015-03-09  Marek Polacek  <polacek@redhat.com>
 
 	* c-convert.c (convert): Make use of do_ubsan_in_current_function.

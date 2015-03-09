@@ -1,3 +1,11 @@
+2015-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/65120
+	* c-c++-common/pr49706.c: Adjust tests for not warning
+	about !!x == y or !b == y where b is boolean, and add
+	some further tests.
+	* c-c++-common/pr62199-2.c: Likewise.
+
 2015-03-09  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/65270

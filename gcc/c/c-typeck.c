@@ -3460,8 +3460,34 @@ parser_build_binary_op (location_t location, enum tree_code code,
 
   if (warn_logical_not_paren
       && code1 == TRUTH_NOT_EXPR
-      && code2 != TRUTH_NOT_EXPR)
-    warn_logical_not_parentheses (location, code, arg2.value);
+      && code2 != TRUTH_NOT_EXPR
+      /* Avoid warning for !!x == y.  */
+      && (TREE_CODE (arg1.value) != NE_EXPR
+	  || !integer_zerop (TREE_OPERAND (arg1.value, 1))))
+    {
+      /* Avoid warning for !b == y where b has _Bool type.  */
+      tree t = integer_zero_node;
+      if (TREE_CODE (arg1.value) == EQ_EXPR
+	  && integer_zerop (TREE_OPERAND (arg1.value, 1))
+	  && TREE_TYPE (TREE_OPERAND (arg1.value, 0)) == integer_type_node)
+	{
+	  t = TREE_OPERAND (arg1.value, 0);
+	  do
+	    {
+	      if (TREE_TYPE (t) != integer_type_node)
+		break;
+	      if (TREE_CODE (t) == C_MAYBE_CONST_EXPR)
+		t = C_MAYBE_CONST_EXPR_EXPR (t);
+	      else if (CONVERT_EXPR_P (t))
+		t = TREE_OPERAND (t, 0);
+	      else
+		break;
+	    }
+	  while (1);
+	}
+      if (TREE_CODE (TREE_TYPE (t)) != BOOLEAN_TYPE)
+	warn_logical_not_parentheses (location, code, arg2.value);
+    }
 
   /* Warn about comparisons against string literals, with the exception
      of testing for equality or inequality of a string literal with NULL.  */
