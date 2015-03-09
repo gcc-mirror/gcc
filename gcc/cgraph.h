@@ -1110,16 +1110,23 @@ public:
      all uses of COMDAT function does not make it necessarily disappear from
      the program unless we are compiling whole program or we do LTO.  In this
      case we know we win since dynamic linking will not really discard the
-     linkonce section.  */
-  bool will_be_removed_from_program_if_no_direct_calls_p (void);
+     linkonce section.  
+
+     If WILL_INLINE is true, assume that function will be inlined into all the
+     direct calls.  */
+  bool will_be_removed_from_program_if_no_direct_calls_p
+	 (bool will_inline = false);
 
   /* Return true when function can be removed from callgraph
-     if all direct calls are eliminated.  */
+     if all direct calls and references are eliminated.  The function does
+     not take into account comdat groups.  */
   bool can_remove_if_no_direct_calls_and_refs_p (void);
 
   /* Return true when function cgraph_node and its aliases can be removed from
-     callgraph if all direct calls are eliminated.  */
-  bool can_remove_if_no_direct_calls_p (void);
+     callgraph if all direct calls are eliminated. 
+     If WILL_INLINE is true, assume that function will be inlined into all the
+     direct calls.  */
+  bool can_remove_if_no_direct_calls_p (bool will_inline = false);
 
   /* Return true when callgraph node is a function with Gimple body defined
      in current unit.  Functions can also be define externally or they

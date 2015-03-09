@@ -2415,7 +2415,7 @@ nonremovable_p (cgraph_node *node, void *)
    calls to THIS.  */
 
 bool
-cgraph_node::can_remove_if_no_direct_calls_p (void)
+cgraph_node::can_remove_if_no_direct_calls_p (bool will_inline)
 {
   struct ipa_ref *ref;
 
@@ -2429,6 +2429,9 @@ cgraph_node::can_remove_if_no_direct_calls_p (void)
 	return false;
       return !call_for_symbol_and_aliases (nonremovable_p, NULL, true);
     }
+
+  if (will_inline && address_taken)
+    return false;
 
   /* Otheriwse check if we can remove the symbol itself and then verify
      that only uses of the comdat groups are direct call to THIS
@@ -2454,12 +2457,16 @@ cgraph_node::can_remove_if_no_direct_calls_p (void)
       /* If we see different symbol than THIS, be sure to check calls.  */
       if (next->ultimate_alias_target () != target)
 	for (cgraph_edge *e = next->callers; e; e = e->next_caller)
-	  if (e->caller->get_comdat_group () != get_comdat_group ())
+	  if (e->caller->get_comdat_group () != get_comdat_group ()
+	      || will_inline)
 	    return false;
 
-      for (int i = 0; next->iterate_referring (i, ref); i++)
-	if (ref->referring->get_comdat_group () != get_comdat_group ())
-	  return false;
+      /* If function is not being inlined, we care only about
+	 references outside of the comdat group.  */
+      if (!will_inline)
+        for (int i = 0; next->iterate_referring (i, ref); i++)
+	  if (ref->referring->get_comdat_group () != get_comdat_group ())
+	    return false;
     }
   return true;
 }
@@ -2479,9 +2486,9 @@ cgraph_node::can_remove_if_no_direct_calls_p (void)
    linkonce section.  */
 
 bool
-cgraph_node::will_be_removed_from_program_if_no_direct_calls_p (void)
+cgraph_node::will_be_removed_from_program_if_no_direct_calls_p
+	 (bool will_inline)
 {
-  struct ipa_ref *ref;
   gcc_assert (!global.inlined_to);
   if (DECL_EXTERNAL (decl))
     return true;
@@ -2496,6 +2503,9 @@ cgraph_node::will_be_removed_from_program_if_no_direct_calls_p (void)
       if (same_comdat_group && externally_visible)
 	{
 	  struct cgraph_node *target = ultimate_alias_target ();
+
+	  if (will_inline && address_taken)
+	    return true;
 	  for (cgraph_node *next = dyn_cast<cgraph_node *> (same_comdat_group);
 	       next != this;
 	       next = dyn_cast<cgraph_node *> (next->same_comdat_group))
@@ -2510,18 +2520,15 @@ cgraph_node::will_be_removed_from_program_if_no_direct_calls_p (void)
 		 be sure to check calls.  */
 	      if (next->ultimate_alias_target () != target)
 		for (cgraph_edge *e = next->callers; e; e = e->next_caller)
-		  if (e->caller->get_comdat_group () != get_comdat_group ())
+		  if (e->caller->get_comdat_group () != get_comdat_group ()
+		      || will_inline)
 		    return false;
-
-	      for (int i = 0; next->iterate_referring (i, ref); i++)
-		if (ref->referring->get_comdat_group () != get_comdat_group ())
-		  return false;
 	    }
 	}
       return true;
     }
   else
-    return can_remove_if_no_direct_calls_p ();
+    return can_remove_if_no_direct_calls_p (will_inline);
 }
 
 
