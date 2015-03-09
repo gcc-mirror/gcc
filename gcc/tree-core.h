@@ -700,7 +700,8 @@ enum size_type_kind {
 enum operand_equal_flag {
   OEP_ONLY_CONST = 1,
   OEP_PURE_SAME = 2,
-  OEP_CONSTANT_ADDRESS_OF = 4
+  OEP_CONSTANT_ADDRESS_OF = 4,
+  OEP_ADDRESS_OF = 8
 };
 
 /* Enum and arrays used for tree allocation stats.

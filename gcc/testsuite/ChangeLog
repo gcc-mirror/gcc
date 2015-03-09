@@ -1,3 +1,9 @@
+2015-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65270
+	* gcc.dg/torture/pr65270-1.c: New testcase.
+	* gcc.dg/torture/pr65270-2.c: Likewise. 
+
 2015-03-09  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/63743
