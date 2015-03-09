@@ -1,3 +1,36 @@
+2015-03-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/65316
+	* ipa-utils.h (types_odr_comparable): Add strict argument.
+	* ipa-devirt.c: Fix whitespace;
+	(odr_hasher): Remove.
+	(odr_name_hasher, odr_vtable_hasher): New hashers.
+	(can_be_name_hashed_p): New predicate.
+	(hash_type_name): remove.
+	(hash_odr_name): New.
+	(odr_name_hasher::hash): new.
+	(can_be_vtable_hashed_p): New.
+	(hash_odr_vtable): New.
+	(odr_vtable_hasher::hash): New.
+	(types_same_for_odr): Add strict parameter.
+	(types_odr_comparable): Likewise.
+	(odr_name_hasher::equal): New.
+	(odr_vtable_hasher::equal): New.
+	(odr_name_hasher::remove): New.
+	(odr_hash_type): Change to hash_table<odr_name_hasher>.
+	(odr_vtable_hash_type): New.
+	(odr_vtable_hash): New.
+	(odr_subtypes_equivalent_p): Do strict comparsion.
+	(add_type_duplicate): Merge type names; cleanup; avoid type
+	duplicates.
+	(register_odr_type): Initialize vtable hash.
+	(build_type_inheritance_graph): Likewise
+	(get_odr_type): Reorg to use two hashes.
+	(dump_possible_polymorphic_call_targets): Move sanity check after debug
+	output.
+	(ipa_devirt): Dump type_inheritance_graph.
+	(types_same_for_odr): Add strict mode.
+
 2015-03-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65334
