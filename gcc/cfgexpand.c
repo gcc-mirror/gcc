@@ -5124,13 +5124,11 @@ reorder_operands (basic_block bb)
 	continue;
       /* Swap operands if the second one is more expensive.  */
       def0 = get_gimple_for_ssa_name (op0);
-      if (!def0)
-	continue;
       def1 = get_gimple_for_ssa_name (op1);
       if (!def1)
 	continue;
       swap = false;
-      if (lattice[gimple_uid (def1)] > lattice[gimple_uid (def0)])
+      if (!def0 || lattice[gimple_uid (def1)] > lattice[gimple_uid (def0)])
 	swap = true;
       if (swap)
 	{
@@ -5139,7 +5137,7 @@ reorder_operands (basic_block bb)
 	      fprintf (dump_file, "Swap operands in stmt:\n");
 	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	      fprintf (dump_file, "Cost left opnd=%d, right opnd=%d\n",
-		       lattice[gimple_uid (def0)],
+		       def0 ? lattice[gimple_uid (def0)] : 0,
 		       lattice[gimple_uid (def1)]);
 	    }
 	  swap_ssa_operands (stmt, gimple_assign_rhs1_ptr (stmt),
