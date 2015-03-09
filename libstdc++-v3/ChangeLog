@@ -1,3 +1,9 @@
+2015-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64467
+	* testsuite/28_regex/traits/char/isctype.cc: Don't test newline
+	for newlib targets. Really fix mixed line-endings this time.
+
 2015-03-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/future (future_error(error_code)): Construct base
@@ -136,7 +142,7 @@
 
 2015-02-04  Matthew Wahab  <matthew.wahab@arm.com>
 
-	PR  libstdc++/64467
+	PR libstdc++/64467
 	* testsuite/28_regex/traits/char/isctype.cc (test01):	Add newlib
 	special case for '\n'.
 	* testsuite/28_regex/traits/wchar_t/isctype.cc (test01): Likewise.
