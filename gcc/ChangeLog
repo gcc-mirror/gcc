@@ -1,3 +1,16 @@
+2015-03-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-analysis.c (check_callers): Check
+	node->can_remove_if_no_direct_calls_and_refs_p.
+	(growth_likely_positive): Reorganize to call
+	can_remove_if_no_direct_calls_p later.
+	* cgraph.h (will_be_removed_from_program_if_no_direct_calls_p,
+	will_be_removed_from_program_if_no_direct_calls_p): Add 
+	will_inline parameter.
+	* cgraph.c (cgraph_node::can_remove_if_no_direct_calls_p,
+	cgraph_node::will_be_removed_from_program_if_no_direct_calls_p):
+	Handle inliner case correctly.
+
 2015-03-09  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR tree-optimization/63743

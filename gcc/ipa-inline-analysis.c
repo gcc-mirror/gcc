@@ -3978,6 +3978,9 @@ check_callers (cgraph_node *node, int *max_callers)
 {
   ipa_ref *ref;
 
+  if (!node->can_remove_if_no_direct_calls_and_refs_p ())
+    return true;
+
   for (cgraph_edge *e = node->callers; e; e = e->next_caller)
     {
       (*max_callers)--;
@@ -4007,8 +4010,28 @@ growth_likely_positive (struct cgraph_node *node,
   struct cgraph_edge *e;
   gcc_checking_assert (edge_growth > 0);
 
+  /* First quickly check if NODE is removable at all.  */
   if (DECL_EXTERNAL (node->decl))
     return true;
+  if (!node->can_remove_if_no_direct_calls_and_refs_p ()
+      || node->address_taken)
+    return true;
+
+  max_callers = inline_summaries->get (node)->size * 4 / edge_growth + 2;
+
+  for (e = node->callers; e; e = e->next_caller)
+    {
+      max_callers--;
+      if (!max_callers
+	  || cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
+	return true;
+    }
+
+  ipa_ref *ref;
+  FOR_EACH_ALIAS (node, ref)
+    if (check_callers (dyn_cast <cgraph_node *> (ref->referring), &max_callers))
+      return true;
+
   /* Unlike for functions called once, we play unsafe with
      COMDATs.  We can allow that since we know functions
      in consideration are small (and thus risk is small) and
@@ -4024,20 +4047,6 @@ growth_likely_positive (struct cgraph_node *node,
     }
   else if (!node->will_be_removed_from_program_if_no_direct_calls_p ())
     return true;
-  max_callers = inline_summaries->get (node)->size * 4 / edge_growth + 2;
-
-  for (e = node->callers; e; e = e->next_caller)
-    {
-      max_callers--;
-      if (!max_callers
-	  || cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
-	return true;
-    }
-
-  ipa_ref *ref;
-  FOR_EACH_ALIAS (node, ref)
-    if (check_callers (dyn_cast <cgraph_node *> (ref->referring), &max_callers))
-      return true;
 
   return estimate_growth (node) > 0;
 }
