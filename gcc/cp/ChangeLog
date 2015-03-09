@@ -1,3 +1,9 @@
+2015-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/65120
+	* parser.c (cp_parser_binary_expression): Don't warn for
+	!!x == y or !b == y where b is bool.
+
 2015-03-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	* ptree.c (cxx_print_lambda_node): New.
