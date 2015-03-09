@@ -1,3 +1,9 @@
+2015-03-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/65316
+	* g++.dg/lto/pr65316_0.C: New testcase.
+	* g++.dg/lto/pr65316_1.C: New testcase.
+
 2015-03-08  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/62247

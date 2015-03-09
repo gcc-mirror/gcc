@@ -4470,7 +4470,8 @@ extern tree block_ultimate_origin (const_tree);
 extern tree get_binfo_at_offset (tree, HOST_WIDE_INT, tree);
 extern bool virtual_method_call_p (tree);
 extern tree obj_type_ref_class (tree ref);
-extern bool types_same_for_odr (const_tree type1, const_tree type2);
+extern bool types_same_for_odr (const_tree type1, const_tree type2,
+				bool strict=false);
 extern bool contains_bitfld_component_ref_p (const_tree);
 extern bool type_in_anonymous_namespace_p (const_tree);
 extern bool block_may_fallthru (const_tree);
