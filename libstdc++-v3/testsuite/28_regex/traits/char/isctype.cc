@@ -54,11 +54,7 @@ test01()
   VERIFY(!t.isctype('_', t.lookup_classname(range(digit))));
   VERIFY( t.isctype(' ', t.lookup_classname(range(blank))));
   VERIFY( t.isctype('\t', t.lookup_classname(range(blank))));
-#if defined (NEWLINE_IN_CLASS_BLANK)
-  /* On some targets, '\n' is in class 'blank'.
-     See https://gcc.gnu.org/ml/gcc-patches/2015-02/msg00059.html.  */
-  VERIFY( t.isctype('\n', t.lookup_classname(range(blank))));
-#else
+#if !defined (NEWLINE_IN_CLASS_BLANK)
   VERIFY(!t.isctype('\n', t.lookup_classname(range(blank))));
 #endif
   VERIFY( t.isctype('t', t.lookup_classname(range(upper), true)));
