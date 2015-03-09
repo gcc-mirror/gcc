@@ -1,3 +1,9 @@
+2015-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/65361
+	* ipa-devirt.c (add_type_duplicate): Don't use DECL_CONTEXT
+	on a TREE_BINFO, instead use BINFO_TYPE.
+
 2015-03-09  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/65270
