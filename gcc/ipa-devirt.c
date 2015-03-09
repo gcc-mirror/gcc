@@ -1505,9 +1505,9 @@ add_type_duplicate (odr_type val, tree type)
 		extra_base = BINFO_BASE_BINFO
 			     (TYPE_BINFO (val->type),
 			      BINFO_N_BASE_BINFOS (TYPE_BINFO (type)));
-	      inform (DECL_SOURCE_LOCATION
-			(TYPE_NAME (DECL_CONTEXT (extra_base))),
-		      "the extra base is defined here ");
+	      tree extra_base_type = BINFO_TYPE (extra_base);
+	      inform (DECL_SOURCE_LOCATION (TYPE_NAME (extra_base_type)),
+		      "the extra base is defined here");
 	    }
 	  base_mismatch = true;
 	}
