@@ -1,3 +1,8 @@
+2015-03-09  Yoshinori Sato  <ysato@users.sourceforge.jp>
+	    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/t-linux (MULTILIB_EXCEPTIONS): Define for m2a cases.
+
 2015-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/65361
