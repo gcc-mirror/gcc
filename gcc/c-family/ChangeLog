@@ -1,3 +1,9 @@
+2015-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/65120
+	* c-common.c (warn_logical_not_parentheses): Don't warn for
+	!x == 0 or !x != 0.
+
 2015-03-07  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/65280

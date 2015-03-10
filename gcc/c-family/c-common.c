@@ -1800,6 +1800,12 @@ warn_logical_not_parentheses (location_t location, enum tree_code code,
       || TREE_CODE (TREE_TYPE (rhs)) == BOOLEAN_TYPE)
     return;
 
+  /* Don't warn for !x == 0 or !y != 0, those are equivalent to
+     !(x == 0) or !(y != 0).  */
+  if ((code == EQ_EXPR || code == NE_EXPR)
+      && integer_zerop (rhs))
+    return;
+
   warning_at (location, OPT_Wlogical_not_parentheses,
 	      "logical not is only applied to the left hand side of "
 	      "comparison");

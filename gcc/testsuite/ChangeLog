@@ -1,5 +1,11 @@
 2015-03-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/65120
+	* c-c++-common/pr49706.c (fn2): Don't expect warning if enumerator
+	on rhs is 0.
+	(fn4): New test.
+	* c-c++-common/pr65120.c: New test.
+
 	PR rtl-optimization/65321
 	* gcc.dg/pr65321.c: New test.
 

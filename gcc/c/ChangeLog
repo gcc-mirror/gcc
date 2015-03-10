@@ -1,3 +1,9 @@
+2015-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/65120
+	* c-typeck.c (parser_build_binary_op): Check for tcc_comparison
+	before preparing arguments to warn_logical_not_parentheses.
+
 2015-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/65120
