@@ -1,3 +1,11 @@
+2015-03-10  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/63175
+	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a.c (main1): Move
+	checking of results into main to prevent it from getting optimized
+	away.
+	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a-pr63175.c: New test.
+
 2015-03-10  Yvan Roux  <yvan.roux@linaro.org>
 
 	Backport from trunk r220489.
