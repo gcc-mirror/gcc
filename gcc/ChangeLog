@@ -1,3 +1,22 @@
+2015-03-10  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.h (callee_saved_regs_size): Rename to ...
+	(callee_saved_gpr_regs_size): ... this.
+	(callee_saved_regs_first_regno): Rename to ...
+	(callee_saved_first_gpr_regno): ... this.
+	(callee_saved_regs_last_regno) Rename to ...
+	(callee_saved_last_gpr_regno): ... this.
+	* config/nds32/nds32.c (nds32_compute_stack_frame): Adjust renamed
+	variables.
+	(nds32_initial_elimination_offset): Likewise.
+	(nds32_expand_prologue): Likewise.
+	(nds32_expand_epilogue): Likewise.
+	(nds32_expand_prologue_v3push): Likewise.
+	(nds32_expand_epilogue_v3pop): Likewise.
+	* config/nds32/nds32-md-auxiliary.c (nds32_output_stack_push):
+	Adjust renamed variables.
+	(nds32_output_stack_pop): Likewise.
+
 2015-03-10  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* dominance.c (nearest_common_dominator_for_set): Fix A_Dominated_by_B

@@ -218,15 +218,17 @@ struct GTY(()) machine_function
   /* Number of bytes on the stack for saving $lp.  */
   int lp_size;
 
-  /* Number of bytes on the stack for saving callee-saved registers.  */
-  int callee_saved_regs_size;
-  /* The padding bytes in callee-saved area may be required.  */
-  int callee_saved_area_padding_bytes;
+  /* Number of bytes on the stack for saving general purpose
+     callee-saved registers.  */
+  int callee_saved_gpr_regs_size;
 
-  /* The first required callee-saved register.  */
-  int callee_saved_regs_first_regno;
-  /* The last required callee-saved register.  */
-  int callee_saved_regs_last_regno;
+  /* The padding bytes in callee-saved area may be required.  */
+  int callee_saved_area_gpr_padding_bytes;
+
+  /* The first required general purpose callee-saved register.  */
+  int callee_saved_first_gpr_regno;
+  /* The last required general purpose callee-saved register.  */
+  int callee_saved_last_gpr_regno;
 
   /* The padding bytes in varargs area may be required.  */
   int va_args_area_padding_bytes;
