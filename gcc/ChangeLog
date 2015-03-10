@@ -1,3 +1,15 @@
+2015-03-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/44563
+	* cgraph.h (struct cgraph_edge_hasher): Add hash overload
+	for compare_type.
+	* cgraph.c (cgraph_edge_hasher::hash): Inline htab_hash_pointer.
+	(cgraph_update_edge_in_call_site_hash): Use cgraph_edge_hasher::hash.
+	(cgraph_add_edge_to_call_site_hash): Likewise.
+	(cgraph_node::get_edge): Likewise.
+	(cgraph_edge::set_call_stmt): Likewise.
+	(cgraph_edge::remove_caller): Likewise.
+
 2015-03-10  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.h (callee_saved_regs_size): Rename to ...

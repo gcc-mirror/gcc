@@ -663,7 +663,19 @@ cgraph_node::get_for_asmname (tree asmname)
 hashval_t
 cgraph_edge_hasher::hash (cgraph_edge *e)
 {
-  return htab_hash_pointer (e->call_stmt);
+  /* This is a really poor hash function, but it is what htab_hash_pointer
+     uses.  */
+  return (hashval_t) ((intptr_t)e->call_stmt >> 3);
+}
+
+/* Returns a hash value for X (which really is a cgraph_edge).  */
+
+hashval_t
+cgraph_edge_hasher::hash (gimple call_stmt)
+{
+  /* This is a really poor hash function, but it is what htab_hash_pointer
+     uses.  */
+  return (hashval_t) ((intptr_t)call_stmt >> 3);
 }
 
 /* Return nonzero if the call_stmt of of cgraph_edge X is stmt *Y.  */
@@ -680,9 +692,8 @@ static inline void
 cgraph_update_edge_in_call_site_hash (cgraph_edge *e)
 {
   gimple call = e->call_stmt;
-  *e->caller->call_site_hash->find_slot_with_hash (call,
-						   htab_hash_pointer (call),
-						   INSERT) = e;
+  *e->caller->call_site_hash->find_slot_with_hash
+      (call, cgraph_edge_hasher::hash (call), INSERT) = e;
 }
 
 /* Add call graph edge E to call site hash of its caller.  */
@@ -695,8 +706,7 @@ cgraph_add_edge_to_call_site_hash (cgraph_edge *e)
   if (e->speculative && e->indirect_unknown_callee)
     return;
   cgraph_edge **slot = e->caller->call_site_hash->find_slot_with_hash
-				   (e->call_stmt,
-				    htab_hash_pointer (e->call_stmt), INSERT);
+      (e->call_stmt, cgraph_edge_hasher::hash (e->call_stmt), INSERT);
   if (*slot)
     {
       gcc_assert (((cgraph_edge *)*slot)->speculative);
@@ -718,8 +728,8 @@ cgraph_node::get_edge (gimple call_stmt)
   int n = 0;
 
   if (call_site_hash)
-    return call_site_hash->find_with_hash (call_stmt,
-					   htab_hash_pointer (call_stmt));
+    return call_site_hash->find_with_hash
+	(call_stmt, cgraph_edge_hasher::hash (call_stmt));
 
   /* This loop may turn out to be performance problem.  In such case adding
      hashtables into call nodes with very many edges is probably best
@@ -782,7 +792,7 @@ cgraph_edge::set_call_stmt (gcall *new_stmt, bool update_speculative)
       && (!speculative || !indirect_unknown_callee))
     {
       caller->call_site_hash->remove_elt_with_hash
-	(call_stmt, htab_hash_pointer (call_stmt));
+	(call_stmt, cgraph_edge_hasher::hash (call_stmt));
     }
 
   cgraph_edge *e = this;
@@ -987,8 +997,8 @@ cgraph_edge::remove_caller (void)
 	caller->callees = next_callee;
     }
   if (caller->call_site_hash)
-    caller->call_site_hash->remove_elt_with_hash (call_stmt,
-						  htab_hash_pointer (call_stmt));
+    caller->call_site_hash->remove_elt_with_hash
+	(call_stmt, cgraph_edge_hasher::hash (call_stmt));
 }
 
 /* Put the edge onto the free list.  */
