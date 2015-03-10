@@ -8270,6 +8270,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	c_inhibit_evaluation_warnings -= current.lhs == truthvalue_true_node;
 
       if (warn_logical_not_paren
+	  && TREE_CODE_CLASS (current.tree_type) == tcc_comparison
 	  && current.lhs_type == TRUTH_NOT_EXPR
 	  /* Avoid warning for !!x == y.  */
 	  && (TREE_CODE (current.lhs) != NE_EXPR
@@ -8284,7 +8285,8 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	  && (!DECL_P (current.lhs)
 	      || TREE_TYPE (current.lhs) == NULL_TREE
 	      || TREE_CODE (TREE_TYPE (current.lhs)) != BOOLEAN_TYPE))
-	warn_logical_not_parentheses (current.loc, current.tree_type, rhs);
+	warn_logical_not_parentheses (current.loc, current.tree_type,
+				      maybe_constant_value (rhs));
 
       overload = NULL;
       /* ??? Currently we pass lhs_type == ERROR_MARK and rhs_type ==

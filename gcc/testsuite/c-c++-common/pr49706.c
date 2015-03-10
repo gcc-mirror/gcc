@@ -107,9 +107,9 @@ fn2 (enum E e)
   b = foo_e () == A;
   b = foo_e () == foo_e ();
 
-  b = !e == A; /* { dg-warning "logical not is only applied to the left hand side of comparison" } */
+  b = !e == A;
   b = !e == foo_e (); /* { dg-warning "logical not is only applied to the left hand side of comparison" } */
-  b = !foo_e () == A; /* { dg-warning "logical not is only applied to the left hand side of comparison" } */
+  b = !foo_e () == A;
   b = !foo_e () == foo_e (); /* { dg-warning "logical not is only applied to the left hand side of comparison" } */
 
   b = !(e == A);
@@ -162,4 +162,28 @@ fn3 (int i1, float f2)
   b = !!i1 > f2; /* { dg-bogus "logical not is only applied to the left hand side of comparison" } */
   b = !!i1 <= f2; /* { dg-bogus "logical not is only applied to the left hand side of comparison" } */
   b = !!i1 >= f2; /* { dg-bogus "logical not is only applied to the left hand side of comparison" } */
+}
+
+void
+fn4 (enum E e)
+{
+  b = e == A;
+  b = e == foo_e ();
+  b = foo_e () == B;
+  b = foo_e () == foo_e ();
+
+  b = !e == B; /* { dg-warning "logical not is only applied to the left hand side of comparison" } */
+  b = !e == foo_e (); /* { dg-warning "logical not is only applied to the left hand side of comparison" } */
+  b = !foo_e () == B; /* { dg-warning "logical not is only applied to the left hand side of comparison" } */
+  b = !foo_e () == foo_e (); /* { dg-warning "logical not is only applied to the left hand side of comparison" } */
+
+  b = !(e == B);
+  b = !(e == foo_e ());
+  b = !(foo_e () == B);
+  b = !(foo_e () == foo_e ());
+
+  b = (!e) == B;
+  b = (!e) == foo_e ();
+  b = (!foo_e ()) == B;
+  b = (!foo_e ()) == foo_e ();
 }
