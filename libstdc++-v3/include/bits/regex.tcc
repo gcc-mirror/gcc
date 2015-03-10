@@ -63,7 +63,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       typename match_results<_BiIter, _Alloc>::_Base_type& __res = __m;
       __m._M_begin = __s;
-      __res.resize(__re._M_automaton->_M_sub_count() + 2);
+      __m._M_resize(__re._M_automaton->_M_sub_count());
       for (auto& __it : __res)
 	__it.matched = false;
 
@@ -99,8 +99,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  for (auto& __it : __res)
 	    if (!__it.matched)
 	      __it.first = __it.second = __e;
-	  auto& __pre = __res[__res.size()-2];
-	  auto& __suf = __res[__res.size()-1];
+	  auto& __pre = __m._M_prefix();
+	  auto& __suf = __m._M_suffix();
 	  if (__match_mode)
 	    {
 	      __pre.matched = false;
@@ -118,6 +118,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __suf.first = __res[0].second;
 	      __suf.second = __e;
 	      __suf.matched = (__suf.first != __suf.second);
+	    }
+	}
+      else
+	{
+	  __m._M_resize(0);
+	  for (auto& __it : __res)
+	    {
+	      __it.matched = false;
+	      __it.first = __it.second = __e;
 	    }
 	}
       return __ret;
@@ -374,7 +383,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       auto __output = [&](size_t __idx)
 	{
-	  auto& __sub = _Base_type::operator[](__idx);
+	  auto& __sub = (*this)[__idx];
 	  if (__sub.matched)
 	    __out = std::copy(__sub.first, __sub.second, __out);
 	};
@@ -425,9 +434,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      else if (__eat('&'))
 		__output(0);
 	      else if (__eat('`'))
-		__output(_Base_type::size()-2);
+		{
+		  auto& __sub = _M_prefix();
+		  if (__sub.matched)
+		    __out = std::copy(__sub.first, __sub.second, __out);
+		}
 	      else if (__eat('\''))
-		__output(_Base_type::size()-1);
+		{
+		  auto& __sub = _M_suffix();
+		  if (__sub.matched)
+		    __out = std::copy(__sub.first, __sub.second, __out);
+		}
 	      else if (__fctyp.is(__ctype_type::digit, *__next))
 		{
 		  long __num = __traits.value(*__next, 10);
@@ -532,7 +549,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				   | regex_constants::match_continuous))
 		    {
 		      _GLIBCXX_DEBUG_ASSERT(_M_match[0].matched);
-		      auto& __prefix = _M_match.at(_M_match.size());
+		      auto& __prefix = _M_match._M_prefix();
 		      __prefix.first = __prefix_first;
 		      __prefix.matched = __prefix.first != __prefix.second;
 		      // [28.12.1.4.5]
@@ -547,7 +564,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (regex_search(__start, _M_end, _M_match, *_M_pregex, _M_flags))
 	    {
 	      _GLIBCXX_DEBUG_ASSERT(_M_match[0].matched);
-	      auto& __prefix = _M_match.at(_M_match.size());
+	      auto& __prefix = _M_match._M_prefix();
 	      __prefix.first = __prefix_first;
 	      __prefix.matched = __prefix.first != __prefix.second;
 	      // [28.12.1.4.5]

@@ -1483,17 +1483,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   // [7.10] Class template match_results
 
-  /*
-   * Special sub_match object representing an unmatched sub-expression.
-   */
-  template<typename _Bi_iter>
-    inline const sub_match<_Bi_iter>&
-    __unmatched_sub()
-    {
-      static const sub_match<_Bi_iter> __unmatched = sub_match<_Bi_iter>();
-      return __unmatched;
-    }
-
   /**
    * @brief The results of a match or search operation.
    *
@@ -1523,15 +1512,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     {
     private:
       /*
-       * The vector base is empty if this does not represent a successful match.
-       * Otherwise it contains n+3 elements where n is the number of marked
+       * The vector base is empty if this does not represent a match (!ready());
+       * Otherwise if it's a match failure, it contains 3 elements:
+       * [0] unmatched
+       * [1] prefix
+       * [2] suffix
+       * Otherwise it contains n+4 elements where n is the number of marked
        * sub-expressions:
        * [0] entire match
        * [1] 1st marked subexpression
        * ...
        * [n] nth marked subexpression
-       * [n+1] prefix
-       * [n+2] suffix
+       * [n+1] unmatched
+       * [n+2] prefix
+       * [n+3] suffix
        */
       typedef std::vector<sub_match<_Bi_iter>, _Alloc>     _Base_type;
       typedef std::iterator_traits<_Bi_iter>   	   	   __iter_traits;
@@ -1623,10 +1617,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       size_type
       size() const
-      {
-      	size_type __size = _Base_type::size();
-      	return (__size && _Base_type::operator[](0).matched) ? __size - 2 : 0;
-      }
+      { return _Base_type::empty() ? 0 : _Base_type::size() - 3; }
 
       size_type
       max_size() const
@@ -1670,15 +1661,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * is zero (the default), in which case this function returns the offset
        * from the beginning of the target sequence to the beginning of the
        * match.
-       *
-       * Returns -1 if @p __sub is out of range.
        */
       difference_type
       position(size_type __sub = 0) const
-      {
-	return __sub < size() ? std::distance(_M_begin,
-					      (*this)[__sub].first) : -1;
-      }
+      { return std::distance(_M_begin, (*this)[__sub].first); }
 
       /**
        * @brief Gets the match or submatch converted to a string type.
@@ -1691,7 +1677,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       string_type
       str(size_type __sub = 0) const
-      { return (*this)[__sub].str(); }
+      { return string_type((*this)[__sub]); }
 
       /**
        * @brief Gets a %sub_match reference for the match or submatch.
@@ -1707,10 +1693,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       const_reference
       operator[](size_type __sub) const
       {
-      	_GLIBCXX_DEBUG_ASSERT( ready() );
-      	return __sub < size()
-	       ?  _Base_type::operator[](__sub)
-	       : __unmatched_sub<_Bi_iter>();
+	_GLIBCXX_DEBUG_ASSERT( ready() );
+	return __sub < size()
+	       ? _Base_type::operator[](__sub)
+	       : _M_unmatched_sub();
       }
 
       /**
@@ -1724,10 +1710,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       const_reference
       prefix() const
       {
-      	_GLIBCXX_DEBUG_ASSERT( ready() );
-      	return !empty()
-      	       ? _Base_type::operator[](_Base_type::size() - 2)
-	       : __unmatched_sub<_Bi_iter>();
+	_GLIBCXX_DEBUG_ASSERT( ready() );
+	return !empty() ? _M_prefix() : _M_unmatched_sub();
       }
 
       /**
@@ -1742,9 +1726,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       suffix() const
       {
 	_GLIBCXX_DEBUG_ASSERT( ready() );
-	return !empty()
-	       ? _Base_type::operator[](_Base_type::size() - 1)
-	       : __unmatched_sub<_Bi_iter>();
+	return !empty() ? _M_suffix() : _M_unmatched_sub();
       }
 
       /**
@@ -1766,7 +1748,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       const_iterator
       end() const
-      { return _Base_type::end() - 2; }
+      { return _Base_type::end() - 3; }
 
       /**
        * @brief Gets an iterator to one-past-the-end of the collection.
@@ -1882,6 +1864,34 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	__detail::__regex_algo_impl(_Bp, _Bp, match_results<_Bp, _Ap>&,
 				    const basic_regex<_Cp, _Rp>&,
 				    regex_constants::match_flag_type);
+
+      void
+      _M_resize(unsigned int __size)
+      { _Base_type::resize(__size + 3); }
+
+      const_reference
+      _M_unmatched_sub() const
+      { return _Base_type::operator[](_Base_type::size() - 3); }
+
+      sub_match<_Bi_iter>&
+      _M_unmatched_sub()
+      { return _Base_type::operator[](_Base_type::size() - 3); }
+
+      const_reference
+      _M_prefix() const
+      { return _Base_type::operator[](_Base_type::size() - 2); }
+
+      sub_match<_Bi_iter>&
+      _M_prefix()
+      { return _Base_type::operator[](_Base_type::size() - 2); }
+
+      const_reference
+      _M_suffix() const
+      { return _Base_type::operator[](_Base_type::size() - 1); }
+
+      sub_match<_Bi_iter>&
+      _M_suffix()
+      { return _Base_type::operator[](_Base_type::size() - 1); }
 
       _Bi_iter _M_begin;
     };
