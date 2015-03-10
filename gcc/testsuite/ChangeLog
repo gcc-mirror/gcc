@@ -1,3 +1,7 @@
+2015-03-10  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.dg/vect/pr65310.c (c): Reduce alignment to 4-bytes.
+
 2015-03-10  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* gcc.target/sh/pr54680.c: Add -fno-ipa-icf option.
