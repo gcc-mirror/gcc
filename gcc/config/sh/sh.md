@@ -651,32 +651,6 @@
   "tst	#255,%0"
   [(set_attr "type" "mt_group")])
 
-;; This pattern might be risky because it also tests the upper bits and not
-;; only the subreg.  However, it seems that combine will get to this only
-;; when testing sign/zero extended values.  In this case the extended upper
-;; bits do not matter.
-(define_insn "*tst<mode>_t_zero"
-  [(set (reg:SI T_REG)
-	(eq:SI
-	  (subreg:QIHI
-	    (and:SI (match_operand:SI 0 "arith_reg_operand" "%r")
-		    (match_operand:SI 1 "arith_reg_operand" "r")) <lowpart_le>)
-	  (const_int 0)))]
-  "TARGET_SH1 && TARGET_LITTLE_ENDIAN"
-  "tst	%0,%1"
-  [(set_attr "type" "mt_group")])
-
-(define_insn "*tst<mode>_t_zero"
-  [(set (reg:SI T_REG)
-	(eq:SI
-	  (subreg:QIHI
-	    (and:SI (match_operand:SI 0 "arith_reg_operand" "%r")
-		    (match_operand:SI 1 "arith_reg_operand" "r")) <lowpart_be>)
-	  (const_int 0)))]
-  "TARGET_SH1 && !TARGET_LITTLE_ENDIAN"
-  "tst	%0,%1"
-  [(set_attr "type" "mt_group")])
-
 ;; Extract LSB, negate and store in T bit.
 (define_insn "tstsi_t_and_not"
   [(set (reg:SI T_REG)

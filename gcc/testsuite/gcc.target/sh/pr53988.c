@@ -5,9 +5,9 @@
 /* { dg-do compile { target "sh*-*-*" } } */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
-/* { dg-final { scan-assembler-times "tst\tr" 8 } } */
-/* { dg-final { scan-assembler-not "tst\t#255" } } */
-/* { dg-final { scan-assembler-not "exts|extu|and|movu" } } */
+/* { dg-final { scan-assembler-times "tst\tr" 8 { xfail *-*-*} } }  */
+/* { dg-final { scan-assembler-not "tst\t#255" { xfail *-*-*} } }  */
+/* { dg-final { scan-assembler-not "exts|extu|and|movu" { xfail *-*-*} } }  */
 
 int
 test00 (char* a, char* b, int c, int d)
