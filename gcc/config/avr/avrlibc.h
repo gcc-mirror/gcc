@@ -27,6 +27,18 @@ along with GCC; see the file COPYING3.  If not see
    
 */
 
+#undef  LIB_SPEC
+#define LIB_SPEC                                \
+  " -lc %(avrlibc_devicelib) "
+
+#undef  LIBGCC_SPEC
+#define LIBGCC_SPEC                             \
+  " -lgcc -lm "
+
+#undef  STARTFILE_SPEC
+#define STARTFILE_SPEC                          \
+  " %(avrlibc_startfile) "
+
 #undef  LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC \
   "--start-group %G %L --end-group"

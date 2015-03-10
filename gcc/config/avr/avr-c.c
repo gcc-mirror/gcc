@@ -305,8 +305,11 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
 
   builtin_define_std ("AVR");
 
-  if (avr_current_arch->macro)
-    cpp_define_formatted (pfile, "__AVR_ARCH__=%s", avr_current_arch->macro);
+  /* __AVR_DEVICE_NAME__ and  avr_mcu_types[].macro like __AVR_ATmega8__
+	 are defined by -D command option, see device-specs file.  */
+
+  if (avr_arch->macro)
+    cpp_define_formatted (pfile, "__AVR_ARCH__=%s", avr_arch->macro);
   if (AVR_HAVE_RAMPD)    cpp_define (pfile, "__AVR_HAVE_RAMPD__");
   if (AVR_HAVE_RAMPX)    cpp_define (pfile, "__AVR_HAVE_RAMPX__");
   if (AVR_HAVE_RAMPY)    cpp_define (pfile, "__AVR_HAVE_RAMPY__");
@@ -316,14 +319,14 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   if (AVR_HAVE_MOVW)     cpp_define (pfile, "__AVR_HAVE_MOVW__");
   if (AVR_HAVE_LPMX)     cpp_define (pfile, "__AVR_HAVE_LPMX__");
 
-  if (avr_current_arch->asm_only)
+  if (avr_arch->asm_only)
     cpp_define (pfile, "__AVR_ASM_ONLY__");
   if (AVR_HAVE_MUL)
     {
       cpp_define (pfile, "__AVR_ENHANCED__");
       cpp_define (pfile, "__AVR_HAVE_MUL__");
     }
-  if (avr_current_arch->have_jmp_call)
+  if (avr_arch->have_jmp_call)
     {
       cpp_define (pfile, "__AVR_MEGA__");
       cpp_define (pfile, "__AVR_HAVE_JMP_CALL__");
@@ -347,7 +350,7 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
       cpp_define (pfile, "__AVR_TINY_PM_BASE_ADDRESS__=0x4000");
     }
 
-  if (avr_current_arch->have_eijmp_eicall)
+  if (AVR_HAVE_EIJMP_EICALL)
     {
       cpp_define (pfile, "__AVR_HAVE_EIJMP_EICALL__");
       cpp_define (pfile, "__AVR_3_BYTE_PC__");
@@ -362,11 +365,10 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
   else
     cpp_define (pfile, "__AVR_HAVE_16BIT_SP__");
 
-  if (avr_sp8)
-    cpp_define (pfile, "__AVR_SP8__");
-
   if (AVR_HAVE_SPH)
     cpp_define (pfile, "__AVR_HAVE_SPH__");
+  else
+    cpp_define (pfile, "__AVR_SP8__");
 
   if (TARGET_NO_INTERRUPTS)
     cpp_define (pfile, "__NO_INTERRUPTS__");
@@ -375,7 +377,7 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
     {
       cpp_define (pfile, "__AVR_ERRATA_SKIP__");
 
-      if (avr_current_arch->have_jmp_call)
+      if (AVR_HAVE_JMP_CALL)
         cpp_define (pfile, "__AVR_ERRATA_SKIP_JMP_CALL__");
     }
 
@@ -383,7 +385,7 @@ avr_cpu_cpp_builtins (struct cpp_reader *pfile)
     cpp_define (pfile, "__AVR_ISA_RMW__");
 
   cpp_define_formatted (pfile, "__AVR_SFR_OFFSET__=0x%x",
-                        avr_current_arch->sfr_offset);
+                        avr_arch->sfr_offset);
 
 #ifdef WITH_AVRLIBC
   cpp_define (pfile, "__WITH_AVRLIBC__");

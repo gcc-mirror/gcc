@@ -234,10 +234,7 @@ static GTY(()) rtx xstring_empty;
 static GTY(()) rtx xstring_e;
 
 /* Current architecture.  */
-const avr_arch_t *avr_current_arch;
-
-/* Current device.  */
-const avr_mcu_t *avr_current_device;
+const avr_arch_t *avr_arch;
 
 /* Section to put switch tables in.  */
 static GTY(()) section *progmem_swtable_section;
@@ -380,6 +377,49 @@ avr_register_passes (void)
 }
 
 
+/* Set `avr_arch' as specified by `-mmcu='.
+   Return true on success.  */
+
+static bool
+avr_set_core_architecture (void)
+{
+  /* Search for mcu core architecture.  */
+
+  if (!avr_mmcu)
+    avr_mmcu = AVR_MMCU_DEFAULT;
+
+  avr_arch = &avr_arch_types[0];
+
+  for (const avr_mcu_t *mcu = avr_mcu_types; ; mcu++)
+    {
+      if (NULL == mcu->name)
+        {
+          /* Reached the end of `avr_mcu_types'.  This should actually never
+             happen as options are provided by device-specs.  It could be a
+             typo in a device-specs or calling the compiler proper directly
+             with -mmcu=<device>. */
+
+          error ("unknown core architecture %qs specified with %qs",
+                 avr_mmcu, "-mmcu=");
+          avr_inform_core_architectures ();
+          break;
+        }
+      else if (0 == strcmp (mcu->name, avr_mmcu)
+               // Is this a proper architecture ? 
+               && NULL == mcu->macro)
+        {
+          avr_arch = &avr_arch_types[mcu->arch_id];
+          if (avr_n_flash < 0)
+            avr_n_flash = mcu->n_flash;
+
+          return true;
+        }
+    }
+
+  return false;
+}
+
+
 /* Implement `TARGET_OPTION_OVERRIDE'.  */
 
 static void
@@ -424,39 +464,24 @@ avr_option_override (void)
   if (flag_pie == 2)
     warning (OPT_fPIE, "-fPIE is not supported");
 
-  /* Search for mcu arch.
-     ??? We should probably just put the architecture-default device
-     settings in the architecture struct and remove any notion of a current
-     device from gcc.  */
-
-  for (avr_current_device = avr_mcu_types; ; avr_current_device++)
-    {
-      if (!avr_current_device->name)
-        fatal_error (input_location, "mcu not found");
-      if (!avr_current_device->macro
-          && avr_current_device->arch == avr_arch_index)
-        break;
-    }
-
-  avr_current_arch = &avr_arch_types[avr_arch_index];
-  if (avr_n_flash < 0)
-    avr_n_flash = avr_current_device->n_flash;
+  if (!avr_set_core_architecture())
+    return;
 
   /* RAM addresses of some SFRs common to all devices in respective arch. */
 
   /* SREG: Status Register containing flags like I (global IRQ) */
-  avr_addr.sreg = 0x3F + avr_current_arch->sfr_offset;
+  avr_addr.sreg = 0x3F + avr_arch->sfr_offset;
 
   /* RAMPZ: Address' high part when loading via ELPM */
-  avr_addr.rampz = 0x3B + avr_current_arch->sfr_offset;
+  avr_addr.rampz = 0x3B + avr_arch->sfr_offset;
 
-  avr_addr.rampy = 0x3A + avr_current_arch->sfr_offset;
-  avr_addr.rampx = 0x39 + avr_current_arch->sfr_offset;
-  avr_addr.rampd = 0x38 + avr_current_arch->sfr_offset;
-  avr_addr.ccp = (AVR_TINY ? 0x3C : 0x34) + avr_current_arch->sfr_offset;
+  avr_addr.rampy = 0x3A + avr_arch->sfr_offset;
+  avr_addr.rampx = 0x39 + avr_arch->sfr_offset;
+  avr_addr.rampd = 0x38 + avr_arch->sfr_offset;
+  avr_addr.ccp = (AVR_TINY ? 0x3C : 0x34) + avr_arch->sfr_offset;
 
   /* SP: Stack Pointer (SP_H:SP_L) */
-  avr_addr.sp_l = 0x3D + avr_current_arch->sfr_offset;
+  avr_addr.sp_l = 0x3D + avr_arch->sfr_offset;
   avr_addr.sp_h = avr_addr.sp_l + 1;
 
   init_machine_status = avr_init_machine_status;
@@ -2328,7 +2353,7 @@ avr_print_operand (FILE *file, rtx x, int code)
           else
             {
               fprintf (file, HOST_WIDE_INT_PRINT_HEX,
-                       ival - avr_current_arch->sfr_offset);
+                       ival - avr_arch->sfr_offset);
             }
         }
       else
@@ -2396,7 +2421,7 @@ avr_print_operand (FILE *file, rtx x, int code)
     {
       if (GET_CODE (x) == SYMBOL_REF && (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_IO))
 	avr_print_operand_address
-	  (file, plus_constant (HImode, x, -avr_current_arch->sfr_offset));
+	  (file, plus_constant (HImode, x, -avr_arch->sfr_offset));
       else
 	fatal_insn ("bad address, not an I/O address:", x);
     }
@@ -9246,12 +9271,11 @@ avr_pgm_check_var_decl (tree node)
       if (avr_addrspace[as].segment >= avr_n_flash)
         {
           if (TYPE_P (node))
-            error ("%qT uses address space %qs beyond flash of %qs",
-                   node, avr_addrspace[as].name, avr_current_device->name);
+            error ("%qT uses address space %qs beyond flash of %d KiB",
+                   node, avr_addrspace[as].name, avr_n_flash);
           else
-            error ("%s %q+D uses address space %qs beyond flash of %qs",
-                   reason, node, avr_addrspace[as].name,
-                   avr_current_device->name);
+            error ("%s %q+D uses address space %qs beyond flash of %d KiB",
+                   reason, node, avr_addrspace[as].name, avr_n_flash);
         }
       else
         {
@@ -9297,15 +9321,14 @@ avr_insert_attributes (tree node, tree *attributes)
 
       if (avr_addrspace[as].segment >= avr_n_flash)
         {
-          error ("variable %q+D located in address space %qs"
-                 " beyond flash of %qs",
-                 node, avr_addrspace[as].name, avr_current_device->name);
+          error ("variable %q+D located in address space %qs beyond flash "
+                 "of %d KiB", node, avr_addrspace[as].name, avr_n_flash);
         }
       else if (!AVR_HAVE_LPM && avr_addrspace[as].pointer_size > 2)
 	{
           error ("variable %q+D located in address space %qs"
-                 " which is not supported by %qs",
-                 node, avr_addrspace[as].name, avr_current_arch->arch_name);
+                 " which is not supported for architecture %qs",
+                 node, avr_addrspace[as].name, avr_arch->name);
 	}
 
       if (!TYPE_READONLY (node0)
@@ -9723,10 +9746,10 @@ avr_asm_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
 static void
 avr_file_start (void)
 {
-  int sfr_offset = avr_current_arch->sfr_offset;
+  int sfr_offset = avr_arch->sfr_offset;
 
-  if (avr_current_arch->asm_only)
-    error ("MCU %qs supported for assembler only", avr_current_device->name);
+  if (avr_arch->asm_only)
+    error ("architecture %qs supported for assembler only", avr_mmcu);
 
   default_file_start ();
 
