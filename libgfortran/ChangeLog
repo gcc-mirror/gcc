@@ -1,3 +1,11 @@
+2015-03-10  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* caf/libcaf.h (_gfortran_caf_sync_memory): New prototype.
+	* caf/single.c (_gfortran_caf_sync_memory): Implement.
+	(_gfortran_caf_sync_all, _gfortran_caf_sync_image): Add
+	__asm__ __volatile___ ("":::"memory").
+
 2015-02-10 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/57822

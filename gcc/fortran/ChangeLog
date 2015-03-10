@@ -1,3 +1,13 @@
+2015-03-10  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* trans.h (caf_sync_memory): New function decl tree.
+	* trans-decl.c (gfc_build_builtin_function_decls): Define it.
+	(create_main_function): Don't call sync_synchronize and leave
+	it to the CAF library.
+	* trans-stmt.c (gfc_trans_stop): Ditto.
+	(gfc_trans_sync): Ditto; add call library call for sync memory.
+
 2015-03-08  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/60898
