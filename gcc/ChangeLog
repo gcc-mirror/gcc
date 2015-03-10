@@ -1,5 +1,11 @@
 2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	* config/i386/linux-common.h (LIBMPX_WRAPPERSSPEC): New.
+	(CHKP_SPEC): Add wrappers library.
+	* c-family/c.opt (static-libmpxwrappers): New.
+
+2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	* config/i386/linux-common.h (LIBMPX_LIBS): New.
 	(LIBMPX_SPEC): New.
 	(CHKP_SPEC): New.

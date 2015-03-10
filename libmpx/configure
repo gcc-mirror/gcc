@@ -621,6 +621,8 @@ LD
 FGREP
 SED
 LIBTOOL
+MPX_AS_SUPPORTED_FALSE
+MPX_AS_SUPPORTED_TRUE
 RANLIB
 AR
 AS
@@ -5541,6 +5543,30 @@ esac
   fi
 else
   RANLIB="$ac_cv_prog_RANLIB"
+fi
+
+
+# Check we may build wrappers library
+echo "test:  bndmov %bnd0, %bnd1" > conftest.s
+if { ac_try='$AS -o conftest.o conftest.s 1>&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+then
+    mpx_as=yes
+else
+    mpx_as=no
+    echo "configure: no MPX support fo as" >&5
+fi
+rm -f conftest.o conftest.s
+ if test "x$mpx_as" = "xyes"; then
+  MPX_AS_SUPPORTED_TRUE=
+  MPX_AS_SUPPORTED_FALSE='#'
+else
+  MPX_AS_SUPPORTED_TRUE='#'
+  MPX_AS_SUPPORTED_FALSE=
 fi
 
 
@@ -11622,7 +11648,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11625 "configure"
+#line 11651 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11728,7 +11754,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11731 "configure"
+#line 11757 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14997,7 +15023,7 @@ ac_config_files="$ac_config_files Makefile libmpx.spec"
 
 ac_config_headers="$ac_config_headers config.h"
 
-ac_config_files="$ac_config_files mpxrt/Makefile"
+ac_config_files="$ac_config_files mpxrt/Makefile mpxwrap/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -15111,6 +15137,10 @@ fi
 
 if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
   as_fn_error "conditional \"MAINTAINER_MODE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${MPX_AS_SUPPORTED_TRUE}" && test -z "${MPX_AS_SUPPORTED_FALSE}"; then
+  as_fn_error "conditional \"MPX_AS_SUPPORTED\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
@@ -16085,6 +16115,7 @@ do
     "libmpx.spec") CONFIG_FILES="$CONFIG_FILES libmpx.spec" ;;
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
     "mpxrt/Makefile") CONFIG_FILES="$CONFIG_FILES mpxrt/Makefile" ;;
+    "mpxwrap/Makefile") CONFIG_FILES="$CONFIG_FILES mpxwrap/Makefile" ;;
 
   *) as_fn_error "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
@@ -17488,6 +17519,17 @@ _LT_EOF
 
  ;;
     "mpxrt/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   { ml_norecursion=; unset ml_norecursion;}
+ ;;
+    "mpxwrap/Makefile":F) cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
    sed -f vpsed$$ $ac_file > tmp$$

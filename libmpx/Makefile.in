@@ -35,6 +35,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@LIBMPX_SUPPORTED_TRUE@@MPX_AS_SUPPORTED_TRUE@am__append_1 = mpxwrap
 subdir = .
 DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -102,7 +103,7 @@ AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
 	$(RECURSIVE_CLEAN_TARGETS:-recursive=) tags TAGS ctags CTAGS
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = mpxrt
+DIST_SUBDIRS = mpxrt mpxwrap
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AR = @AR@
@@ -232,7 +233,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I .. -I ../config
-@LIBMPX_SUPPORTED_TRUE@SUBDIRS = mpxrt
+@LIBMPX_SUPPORTED_TRUE@SUBDIRS = mpxrt $(am__append_1)
 @LIBMPX_SUPPORTED_TRUE@nodist_toolexeclib_HEADERS = libmpx.spec
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
@@ -274,6 +275,7 @@ AM_MAKEFLAGS = \
 	"RANLIB=$(RANLIB)" \
 	"DESTDIR=$(DESTDIR)"
 
+MAKEOVERRIDES = 
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 

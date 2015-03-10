@@ -100,6 +100,18 @@ AC_CHECK_TOOL(AS, as)
 AC_CHECK_TOOL(AR, ar)
 AC_CHECK_TOOL(RANLIB, ranlib, :)
 
+# Check we may build wrappers library
+echo "test:  bndmov %bnd0, %bnd1" > conftest.s
+if AC_TRY_COMMAND([$AS -o conftest.o conftest.s 1>&AS_MESSAGE_LOG_FD])
+then
+    mpx_as=yes
+else
+    mpx_as=no
+    echo "configure: no MPX support fo as" >&AS_MESSAGE_LOG_FD
+fi
+rm -f conftest.o conftest.s
+AM_CONDITIONAL(MPX_AS_SUPPORTED, [test "x$mpx_as" = "xyes"])
+
 # Configure libtool
 AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
@@ -117,7 +129,7 @@ fi
 
 AC_CONFIG_FILES([Makefile libmpx.spec])
 AC_CONFIG_HEADERS(config.h)
-AC_CONFIG_FILES(AC_FOREACH([DIR], [mpxrt], [DIR/Makefile]),
+AC_CONFIG_FILES(AC_FOREACH([DIR], [mpxrt mpxwrap], [DIR/Makefile ]),
   [cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF

@@ -1044,6 +1044,9 @@ Instrument only functions marked with bnd_instrument attribute.
 static-libmpx
 Driver
 
+static-libmpxwrappers
+Driver
+
 fcilkplus
 C ObjC C++ ObjC++ LTO Report Var(flag_cilkplus) Init(0)
 Enable Cilk Plus
