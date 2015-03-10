@@ -1,3 +1,17 @@
+2015-03-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63155
+	* tree-ssa-coalesce.h (verify_ssa_coalescing): Declare.
+	* tree-ssa-coalesce.c: Include timevar.h.
+	(attempt_coalesce): Handle graph being NULL.
+	(coalesce_partitions): Call verify_ssa_coalescing if ENABLE_CHECKING.
+	Split out abnormal coalescing to ...
+	(perform_abnormal_coalescing): ... this function.
+	(coalesce_ssa_name): Perform abnormal coalescing without computing
+	live/conflict.
+	(verify_ssa_coalescing_worker): New function.
+	(verify_ssa_coalescing): Likewise.
+
 2015-03-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/65296
