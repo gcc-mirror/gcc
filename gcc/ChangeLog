@@ -1,3 +1,7 @@
+2015-03-10  Marek Polacek  <polacek@redhat.com>
+
+	* gdbinit.in (pcfun): Define and document.
+
 2015-03-10  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* config/i386/intelmic-mkoffload.c: Include intelmic-offload.h instead

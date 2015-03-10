@@ -199,6 +199,15 @@ document pel
 Print expanded location of $.
 end
 
+define pcfun
+output debug_function (cfun ? cfun->decl : current_function_decl, 0)
+echo \n
+end
+
+document pcfun
+Print current function.
+end
+
 # Define some macros helpful to gdb when it is expanding macros.
 macro define __FILE__ "gdb"
 macro define __LINE__ 1
