@@ -1,3 +1,12 @@
+2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* config/i386/linux-common.h (LIBMPX_LIBS): New.
+	(LIBMPX_SPEC): New.
+	(CHKP_SPEC): New.
+	* gcc.c (CHKP_SPEC): New.
+	(LINK_COMMAND_SPEC): Add CHKP_SPEC.
+	* c-family/c.opt (static-libmpx): New.
+
 2015-03-10  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/44563

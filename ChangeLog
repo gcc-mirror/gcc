@@ -1,3 +1,10 @@
+2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* Makefile.def: Add libmpx.
+	* configure.ac: Add libmpx.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2015-03-06  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* MAINTAINERS (CPU Port Maintainers): Add myself
