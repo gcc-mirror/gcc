@@ -406,6 +406,66 @@ sem_function::equals_wpa (sem_item *item,
   if (arg_types.length () != m_compared_func->arg_types.length ())
     return return_false_with_msg ("different number of arguments");
 
+  /* Compare special function DECL attributes.  */
+  if (DECL_FUNCTION_PERSONALITY (decl)
+      != DECL_FUNCTION_PERSONALITY (item->decl))
+    return return_false_with_msg ("function personalities are different");
+
+  if (DECL_DISREGARD_INLINE_LIMITS (decl)
+      != DECL_DISREGARD_INLINE_LIMITS (item->decl))
+    return return_false_with_msg ("DECL_DISREGARD_INLINE_LIMITS are different");
+
+  if (DECL_DECLARED_INLINE_P (decl) != DECL_DECLARED_INLINE_P (item->decl))
+    return return_false_with_msg ("inline attributes are different");
+
+  if (DECL_IS_OPERATOR_NEW (decl) != DECL_IS_OPERATOR_NEW (item->decl))
+    return return_false_with_msg ("operator new flags are different");
+
+  if (DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl)
+       != DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (item->decl))
+    return return_false_with_msg ("intrument function entry exit "
+				  "attributes are different");
+
+  if (DECL_NO_LIMIT_STACK (decl) != DECL_NO_LIMIT_STACK (item->decl))
+    return return_false_with_msg ("no stack limit attributes are different");
+
+  if (flags_from_decl_or_type (decl) != flags_from_decl_or_type (item->decl))
+    return return_false_with_msg ("decl_or_type flags are different");
+
+  /* Checking function TARGET and OPTIMIZATION flags.  */
+  cl_target_option *tar1 = target_opts_for_fn (decl);
+  cl_target_option *tar2 = target_opts_for_fn (item->decl);
+
+  if (tar1 != tar2 && !cl_target_option_eq (tar1, tar2))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "target flags difference");
+	  cl_target_option_print_diff (dump_file, 2, tar1, tar2);
+	}
+
+      return return_false_with_msg ("Target flags are different");
+    }
+
+  cl_optimization *opt1 = opts_for_fn (decl);
+  cl_optimization *opt2 = opts_for_fn (item->decl);
+
+  if (opt1 != opt2 && memcmp (opt1, opt2, sizeof(cl_optimization)))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "optimization flags difference");
+	  cl_optimization_print_diff (dump_file, 2, opt1, opt2);
+	}
+
+      return return_false_with_msg ("optimization flags are different");
+    }
+
+  /* Result type checking.  */
+  if (!func_checker::compatible_types_p (result_type,
+					 m_compared_func->result_type))
+    return return_false_with_msg ("result types are different");
+
   /* Checking types of arguments.  */
   for (unsigned i = 0; i < arg_types.length (); i++)
     {
@@ -426,11 +486,6 @@ sem_function::equals_wpa (sem_item *item,
 	      != TYPE_RESTRICT (m_compared_func->arg_types[i])))
 	return return_false_with_msg ("argument restrict flag mismatch");
     }
-
-  /* Result type checking.  */
-  if (!func_checker::compatible_types_p (result_type,
-					 m_compared_func->result_type))
-    return return_false_with_msg ("result types are different");
 
   if (node->num_references () != item->node->num_references ())
     return return_false_with_msg ("different number of references");
@@ -519,45 +574,6 @@ sem_function::equals_private (sem_item *item,
 
   if (!equals_wpa (item, ignored_nodes))
     return false;
-
-  /* Checking function TARGET and OPTIMIZATION flags.  */
-  cl_target_option *tar1 = target_opts_for_fn (decl);
-  cl_target_option *tar2 = target_opts_for_fn (m_compared_func->decl);
-
-  if (tar1 != NULL && tar2 != NULL)
-    {
-      if (!cl_target_option_eq (tar1, tar2))
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "target flags difference");
-	      cl_target_option_print_diff (dump_file, 2, tar1, tar2);
-	    }
-
-	  return return_false_with_msg ("Target flags are different");
-	}
-    }
-  else if (tar1 != NULL || tar2 != NULL)
-    return return_false_with_msg ("Target flags are different");
-
-  cl_optimization *opt1 = opts_for_fn (decl);
-  cl_optimization *opt2 = opts_for_fn (m_compared_func->decl);
-
-  if (opt1 != NULL && opt2 != NULL)
-    {
-      if (memcmp (opt1, opt2, sizeof(cl_optimization)))
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "optimization flags difference");
-	      cl_optimization_print_diff (dump_file, 2, opt1, opt2);
-	    }
-
-	  return return_false_with_msg ("optimization flags are different");
-	}
-    }
-  else if (opt1 != NULL || opt2 != NULL)
-    return return_false_with_msg ("optimization flags are different");
 
   /* Checking function arguments.  */
   tree decl1 = DECL_ATTRIBUTES (decl);
@@ -653,30 +669,6 @@ sem_function::equals_private (sem_item *item,
   for (unsigned i = 0; i < bb_sorted.length (); i++)
     if (!compare_phi_node (bb_sorted[i]->bb, m_compared_func->bb_sorted[i]->bb))
       return return_false_with_msg ("PHI node comparison returns false");
-
-  /* Compare special function DECL attributes.  */
-  if (DECL_FUNCTION_PERSONALITY (decl) != DECL_FUNCTION_PERSONALITY (item->decl))
-    return return_false_with_msg ("function personalities are different");
-
-  if (DECL_DISREGARD_INLINE_LIMITS (decl) != DECL_DISREGARD_INLINE_LIMITS (item->decl))
-    return return_false_with_msg ("DECL_DISREGARD_INLINE_LIMITS are different");
-
-  if (DECL_DECLARED_INLINE_P (decl) != DECL_DECLARED_INLINE_P (item->decl))
-    return return_false_with_msg ("inline attributes are different");
-
-  if (DECL_IS_OPERATOR_NEW (decl) != DECL_IS_OPERATOR_NEW (item->decl))
-    return return_false_with_msg ("operator new flags are different");
-
-  if (DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl)
-       != DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (item->decl))
-    return return_false_with_msg ("intrument function entry exit "
-				  "attributes are different");
-
-  if (DECL_NO_LIMIT_STACK (decl) != DECL_NO_LIMIT_STACK (item->decl))
-    return return_false_with_msg ("no stack limit attributes are different");
-
-  if (flags_from_decl_or_type (decl) != flags_from_decl_or_type (item->decl))
-    return return_false_with_msg ("decl_or_type flags are different");
 
   return result;
 }
