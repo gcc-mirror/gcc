@@ -1,3 +1,7 @@
+2015-03-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/PR64550.c: Update template.
+
 2015-03-10  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 	    Tobias Burnus  <burnus@net-b.de>
 

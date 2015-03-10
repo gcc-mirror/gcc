@@ -71,6 +71,5 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-ipa-dump "different operand volatility" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 0" "icf"  } } */
 /* { dg-final { cleanup-ipa-dump "icf" } } */
