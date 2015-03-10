@@ -788,6 +788,7 @@ struct cgraph_edge_hasher : ggc_hasher<cgraph_edge *>
   typedef gimple compare_type;
 
   static hashval_t hash (cgraph_edge *);
+  static hashval_t hash (gimple);
   static bool equal (cgraph_edge *, gimple);
 };
 
