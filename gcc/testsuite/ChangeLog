@@ -1,3 +1,8 @@
+2015-03-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/ipa/ipa-icf-36.c (dg-final): Cleanup icf ipa dump.
+	* gcc.dg/ipa/ipa-icf-37.c (dg-final): Ditto.
+
 2015-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/65120
@@ -26,7 +31,7 @@
 
 	PR middle-end/65270
 	* gcc.dg/torture/pr65270-1.c: New testcase.
-	* gcc.dg/torture/pr65270-2.c: Likewise. 
+	* gcc.dg/torture/pr65270-2.c: Likewise.
 
 2015-03-09  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
@@ -198,7 +203,7 @@
 	* gcc.dg/ipa/pr65287.c: New test.
 
 2015-03-03  Martin Jambor  <mjambor@suse.cz>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/pack12.ads: New test.
 
@@ -217,17 +222,17 @@
 	* gcc.target/avr/torture/pr64331.c: New test.
 
 2015-03-03  Martin Liska  <mliska@suse.cz>
-	    Jan Hubicka   <hubicka@ucw.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/ipa/pr65263.C: New test.
 
-2015-03-02  Jan Hubicka   <hubicka@ucw.cz>
+2015-03-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65130
 	* gcc.dg/lto/pr65130_0.c: New testcase.
 	* gcc.dg/lto/pr65130_1.c: New testcase.
 
-2015-03-02  Jan Hubicka   <hubicka@ucw.cz>
+2015-03-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/64988
 	* g++.dg/torture/pr64988.C: New testcase.
@@ -247,14 +252,14 @@
 	* gcc.target/i386/pr65183.c: New.
 
 2015-02-28  Martin Liska  <mliska@suse.cz>
-	    Jan Hubicka   <hubicka@ucw.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/ipa/ipa-icf-35.c: New test.
 	* gcc.dg/ipa/ipa-icf-36.c: New test.
 	* gcc.dg/ipa/ipa-icf-37.c: New test.
 
 2015-02-28  Martin Liska  <mliska@suse.cz>
-	    Jan Hubicka   <hubicka@ucw.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65245
 	* gcc.dg/ipa/ipa-icf-34.c: New test.
@@ -652,7 +657,7 @@
 
 2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
-        * gcc.dg/pr64935-1.c, gcc.dg/pr64935-2.c: New tests.
+	* gcc.dg/pr64935-1.c, gcc.dg/pr64935-2.c: New tests.
 
 2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 

@@ -34,3 +34,4 @@ int t(int tt)
 /* { dg-final { scan-ipa-dump "Semantic equality hit:f->e" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Semantic equality hit:h->g" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Semantic equality hit:k->i" "icf"  } } */
+/* { dg-final { cleanup-ipa-dump "icf" } } */
