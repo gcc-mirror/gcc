@@ -2751,6 +2751,7 @@ target_libraries="target-libgcc \
 		target-libstdc++-v3 \
 		target-libsanitizer \
 		target-libvtv \
+		target-libmpx \
 		target-libssp \
 		target-libquadmath \
 		target-libgfortran \
@@ -3289,6 +3290,30 @@ $as_echo "yes" >&6; }
 	fi
     fi
 fi
+
+
+# Enable libmpx on supported systems by request.
+if test -d ${srcdir}/libmpx; then
+    if test x$enable_libmpx = xyes; then
+       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libmpx support" >&5
+$as_echo_n "checking for libmpx support... " >&6; }
+       if (srcdir=${srcdir}/libmpx; \
+               . ${srcdir}/configure.tgt; \
+               test "$LIBMPX_SUPPORTED" != "yes")
+       then
+           { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+           noconfigdirs="$noconfigdirs target-libmpx"
+       else
+           { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+       fi
+    else
+       noconfigdirs="$noconfigdirs target-libmpx"
+    fi
+fi
+
+
 
 # Disable libquadmath for some systems.
 case "${target}" in
@@ -7030,6 +7055,11 @@ fi
 if echo " ${target_configdirs} " | grep " libvtv " > /dev/null 2>&1 &&
    test "$enable_vtable_verify" != no; then
   bootstrap_target_libs=${bootstrap_target_libs}target-libvtv,
+fi
+
+# If we are building libmpx, bootstrap it.
+if echo " ${target_configdirs} " | grep " libmpx " > /dev/null 2>&1; then
+  bootstrap_target_libs=${bootstrap_target_libs}target-libmpx,
 fi
 
 # Determine whether gdb needs tk/tcl or not.
