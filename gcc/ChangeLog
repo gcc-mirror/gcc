@@ -1,3 +1,14 @@
+2015-03-10  Yvan Roux  <yvan.roux@linaro.org>
+
+	Backport from trunk r220489.
+	2015-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/64896
+	* cgraphunit.c (cgraph_node::expand_thunk): If
+	restype is not is_gimple_reg_type nor the thunk_fndecl
+	returns aggregate_value_p, set restmp to a temporary variable
+	instead of resdecl.
+
 2015-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/65286

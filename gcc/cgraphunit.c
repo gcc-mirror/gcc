@@ -1572,9 +1572,14 @@ expand_thunk (struct cgraph_node *node, bool output_asm_thunks)
 	    restmp = gimple_fold_indirect_ref (resdecl);
 	  else if (!is_gimple_reg_type (restype))
 	    {
-	      restmp = resdecl;
-	      add_local_decl (cfun, restmp);
-	      BLOCK_VARS (DECL_INITIAL (current_function_decl)) = restmp;
+	      if (aggregate_value_p (resdecl, TREE_TYPE (thunk_fndecl)))
+		{
+		  restmp = resdecl;
+		  add_local_decl (cfun, restmp);
+		  BLOCK_VARS (DECL_INITIAL (current_function_decl)) = restmp;
+		}
+	      else
+		restmp = create_tmp_var (restype, "retval");
 	    }
 	  else
 	    restmp = create_tmp_reg (restype, "retval");
