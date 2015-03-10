@@ -18314,7 +18314,9 @@ parsing_nsdmi (void)
 {
   /* We recognize NSDMI context by the context-less 'this' pointer set up
      by the function above.  */
-  if (current_class_ptr && DECL_CONTEXT (current_class_ptr) == NULL_TREE)
+  if (current_class_ptr
+      && TREE_CODE (current_class_ptr) == PARM_DECL
+      && DECL_CONTEXT (current_class_ptr) == NULL_TREE)
     return true;
   return false;
 }
