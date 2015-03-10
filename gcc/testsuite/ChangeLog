@@ -1,3 +1,8 @@
+2015-03-10  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_sync_memory.f90: New.
+
 2015-03-10  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/65367

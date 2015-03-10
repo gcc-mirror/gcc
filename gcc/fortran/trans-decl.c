@@ -153,6 +153,7 @@ tree gfor_fndecl_caf_get;
 tree gfor_fndecl_caf_send;
 tree gfor_fndecl_caf_sendget;
 tree gfor_fndecl_caf_sync_all;
+tree gfor_fndecl_caf_sync_memory;
 tree gfor_fndecl_caf_sync_images;
 tree gfor_fndecl_caf_error_stop;
 tree gfor_fndecl_caf_error_stop_str;
@@ -3451,6 +3452,10 @@ gfc_build_builtin_function_decls (void)
 	get_identifier (PREFIX("caf_sync_all")), ".WW", void_type_node,
 	3, pint_type, pchar_type_node, integer_type_node);
 
+      gfor_fndecl_caf_sync_memory = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("caf_sync_memory")), ".WW", void_type_node,
+	3, pint_type, pchar_type_node, integer_type_node);
+
       gfor_fndecl_caf_sync_images = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_sync_images")), ".RRWW", void_type_node,
 	5, integer_type_node, pint_type, pint_type,
@@ -5583,12 +5588,6 @@ create_main_function (tree fndecl)
   /* Coarray: Call _gfortran_caf_finalize(void).  */
   if (flag_coarray == GFC_FCOARRAY_LIB)
     {
-      /* Per F2008, 8.5.1 END of the main program implies a
-	 SYNC MEMORY.  */
-      tmp = builtin_decl_explicit (BUILT_IN_SYNC_SYNCHRONIZE);
-      tmp = build_call_expr_loc (input_location, tmp, 0);
-      gfc_add_expr_to_block (&body, tmp);
-
       tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_finalize, 0);
       gfc_add_expr_to_block (&body, tmp);
     }

@@ -162,6 +162,18 @@ _gfortran_caf_sync_all (int *stat,
 			char *errmsg __attribute__ ((unused)),
 			int errmsg_len __attribute__ ((unused)))
 {
+  __asm__ __volatile__ ("":::"memory");
+  if (stat)
+    *stat = 0;
+}
+
+
+void
+_gfortran_caf_sync_memory (int *stat,
+			   char *errmsg __attribute__ ((unused)),
+			   int errmsg_len __attribute__ ((unused)))
+{
+  __asm__ __volatile__ ("":::"memory");
   if (stat)
     *stat = 0;
 }
@@ -186,6 +198,7 @@ _gfortran_caf_sync_images (int count __attribute__ ((unused)),
       }
 #endif
 
+  __asm__ __volatile__ ("":::"memory");
   if (stat)
     *stat = 0;
 }
