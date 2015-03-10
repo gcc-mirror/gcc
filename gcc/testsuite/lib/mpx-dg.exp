@@ -48,6 +48,14 @@ proc mpx_link_flags { paths } {
 	  append flags " -L${gccpath}/libmpx/mpxrt/.libs "
 	  append ld_library_path ":${gccpath}/libmpx/mpxrt/.libs"
       }
+
+      if { [file exists "${gccpath}/libmpx/mpxwrap/.libs/libmpxwrappers.a"]
+	   || [file exists "${gccpath}/libmpx/mpxwrap/.libs/libmpxwrappers.${shlib_ext}"] } {
+	  append flags " -B${gccpath}/libmpx/ "
+	  append flags " -B${gccpath}/libmpx/mpxwrap "
+	  append flags " -L${gccpath}/libmpx/mpxwrap/.libs "
+	  append ld_library_path ":${gccpath}/libmpx/mpxwrap/.libs"
+      }
     } else {
       global tool_root_dir
 
@@ -55,6 +63,12 @@ proc mpx_link_flags { paths } {
       if { $libmpx != "" } {
 	  append flags "-L${libmpx} "
 	  append ld_library_path ":${libmpx}"
+      }
+
+      set libmpxwrappers [lookfor_file ${tool_root_dir} libmpxwrappers]
+      if { $libmpxwrappers != "" } {
+	  append flags "-L${libmpxwrappers} "
+	  append ld_library_path ":${libmpxwrappers}"
       }
     }
 
