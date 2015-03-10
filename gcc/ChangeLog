@@ -1,3 +1,9 @@
+2015-03-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/44563
+	* tree-inline.c (copy_cfg_body): Skip block mapped to entry/exit
+	for redirect_all_calls.
+
 2015-03-10  Marek Polacek  <polacek@redhat.com>
 
 	* gdbinit.in (pcfun): Define and document.
