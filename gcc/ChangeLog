@@ -25,7 +25,7 @@
 	(avr_devicespecs_file): New specs function proto.
 	(DRIVER_SELF_SPECS): Use device-specs-file spec function.
 	* config/avr/avr.c (avr_current_arch): Rename to avr_arch.
-	(avr_current_device): Remove definition and usage.
+	(avr_current_device): Remove definition and usage.
 	(avr_set_core_architecture): New static function.
 	(avr_option_override): Use it.
 	* config/avr/avr-devices.c (diagnostic.h, avr-arch.h): Include them.
