@@ -22,9 +22,11 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef AVR_ARCH_H
 #define AVR_ARCH_H
 
+#define AVR_MMCU_DEFAULT "avr2"
+
 /* This enum supplies indices into the avr_arch_types[] table below. */
 
-enum avr_arch
+enum avr_arch_id
 {
   ARCH_UNKNOWN,
   ARCH_AVR1,
@@ -92,7 +94,7 @@ typedef struct
   const char *const macro;
 
   /* Architecture name.  */
-  const char *const arch_name;
+  const char *const name;
 } avr_arch_t;
 
 
@@ -104,7 +106,7 @@ typedef struct
   const char *const name;
 
   /* Index in avr_arch_types[].  */
-  enum avr_arch arch;
+  enum avr_arch_id arch_id;
 
   /* device specific feature */
   int dev_attribute;
@@ -166,7 +168,7 @@ enum avr_device_specific_features
 typedef struct
 {
   /* Architecture ID.  */
-  enum avr_arch arch;
+  enum avr_arch_id arch_id;
 
   /* textinfo source to describe the archtiecture.  */
   const char *texinfo;
@@ -175,9 +177,11 @@ typedef struct
 /* Preprocessor macros to define depending on MCU type.  */
 
 extern const avr_arch_t avr_arch_types[];
-extern const avr_arch_t *avr_current_arch;
+extern const avr_arch_t *avr_arch;
 
 extern const avr_mcu_t avr_mcu_types[];
-extern const avr_mcu_t *avr_current_device;
+
+extern void avr_inform_devices (void);
+extern void avr_inform_core_architectures (void);
 
 #endif /* AVR_ARCH_H */

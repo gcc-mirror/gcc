@@ -60,19 +60,19 @@ enum
 
 #define TARGET_CPU_CPP_BUILTINS()	avr_cpu_cpp_builtins (pfile)
 
-#define AVR_HAVE_JMP_CALL (avr_current_arch->have_jmp_call)
-#define AVR_HAVE_MUL (avr_current_arch->have_mul)
-#define AVR_HAVE_MOVW (avr_current_arch->have_movw_lpmx)
+#define AVR_HAVE_JMP_CALL (avr_arch->have_jmp_call)
+#define AVR_HAVE_MUL (avr_arch->have_mul)
+#define AVR_HAVE_MOVW (avr_arch->have_movw_lpmx)
 #define AVR_HAVE_LPM (!AVR_TINY)
-#define AVR_HAVE_LPMX (avr_current_arch->have_movw_lpmx)
-#define AVR_HAVE_ELPM (avr_current_arch->have_elpm)
-#define AVR_HAVE_ELPMX (avr_current_arch->have_elpmx)
-#define AVR_HAVE_RAMPD (avr_current_arch->have_rampd)
-#define AVR_HAVE_RAMPX (avr_current_arch->have_rampd)
-#define AVR_HAVE_RAMPY (avr_current_arch->have_rampd)
-#define AVR_HAVE_RAMPZ (avr_current_arch->have_elpm             \
-                        || avr_current_arch->have_rampd)
-#define AVR_HAVE_EIJMP_EICALL (avr_current_arch->have_eijmp_eicall)
+#define AVR_HAVE_LPMX (avr_arch->have_movw_lpmx)
+#define AVR_HAVE_ELPM (avr_arch->have_elpm)
+#define AVR_HAVE_ELPMX (avr_arch->have_elpmx)
+#define AVR_HAVE_RAMPD (avr_arch->have_rampd)
+#define AVR_HAVE_RAMPX (avr_arch->have_rampd)
+#define AVR_HAVE_RAMPY (avr_arch->have_rampd)
+#define AVR_HAVE_RAMPZ (avr_arch->have_elpm             \
+                        || avr_arch->have_rampd)
+#define AVR_HAVE_EIJMP_EICALL (avr_arch->have_eijmp_eicall)
 
 /* Handling of 8-bit SP versus 16-bit SP is as follows:
 
@@ -90,17 +90,16 @@ FIXME: DRIVER_SELF_SPECS has changed.
    __AVR_HAVE_8BIT_SP__ and __AVR_HAVE_16BIT_SP__.  During multilib generation
    there is always __AVR_SP8__ == __AVR_HAVE_8BIT_SP__.  */
 
-#define AVR_HAVE_8BIT_SP                                 \
-  ((avr_current_device->dev_attribute & AVR_SHORT_SP)    \
-   || TARGET_TINY_STACK || avr_sp8)
+#define AVR_HAVE_8BIT_SP                        \
+  (TARGET_TINY_STACK || avr_sp8)
 
 #define AVR_HAVE_SPH (!avr_sp8)
 
 #define AVR_2_BYTE_PC (!AVR_HAVE_EIJMP_EICALL)
 #define AVR_3_BYTE_PC (AVR_HAVE_EIJMP_EICALL)
 
-#define AVR_XMEGA (avr_current_arch->xmega_p)
-#define AVR_TINY  (avr_current_arch->tiny_p)
+#define AVR_XMEGA (avr_arch->xmega_p)
+#define AVR_TINY  (avr_arch->tiny_p)
 
 #define BITS_BIG_ENDIAN 0
 #define BYTES_BIG_ENDIAN 0
@@ -492,25 +491,24 @@ typedef struct avr_args
 #define ADJUST_INSN_LENGTH(INSN, LENGTH)                \
     (LENGTH = avr_adjust_insn_length (INSN, LENGTH))
 
-#define DRIVER_SELF_SPECS                                       \
-  " %{!mmcu=*:%{!march=*:-specs=device-specs/specs-avr2%s} "    \
-  "           %{march=*:-specs=device-specs/specs-%*%s}} "      \
-  " %{mmcu=*:-specs=device-specs/specs-%*%s %<mmcu=*} "
+extern const char *avr_devicespecs_file (int, const char**);
 
-/* We want cc1plus used as a preprocessor to pick up the cpp spec from the
-   per-device spec files  */
-#define CPLUSPLUS_CPP_SPEC "%(cpp)"
+#define EXTRA_SPEC_FUNCTIONS                                   \
+  { "device-specs-file", avr_devicespecs_file },
 
-#define LIBSTDCXX "gcc"
+/* Driver self specs has lmited functionality w.r.t. '%s' for dynamic specs.
+   Apply '%s' to a static string to inflate the file (directory) name which
+   is used to diagnose problems with reading the specs file.  */
+
+#undef  DRIVER_SELF_SPECS
+#define DRIVER_SELF_SPECS                       \
+  " %:device-specs-file(device-specs%s %{mmcu=*:%*})"
+
 /* No libstdc++ for now.  Empty string doesn't work.  */
+#define LIBSTDCXX "gcc"
 
-/* The actual definition will come from the device-specific spec file.  */
-#define STARTFILE_SPEC ""
-
-#define ENDFILE_SPEC ""
-
-/* This is the default without any -mmcu=* option (AT90S*).  */
-#define MULTILIB_DEFAULTS { "mmcu=avr2" }
+/* This is the default without any -mmcu=* option.  */
+#define MULTILIB_DEFAULTS { "mmcu=" AVR_MMCU_DEFAULT }
 
 #define TEST_HARD_REG_CLASS(CLASS, REGNO) \
   TEST_HARD_REG_BIT (reg_class_contents[ (int) (CLASS)], REGNO)

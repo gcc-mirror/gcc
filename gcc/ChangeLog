@@ -1,3 +1,49 @@
+2015-03-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/65296
+	* config.gcc (extra_options) [avr]: Remove.
+	(extra_gcc_objs) [avr]: Use driver-avr.o, avr-devices.o.
+	(tm_file) [avr]: Add avr/specs.h after avr/avr.h.
+	(tm_defines) [avr-*-rtems*]: Add WITH_RTEMS.
+
+	* config/avr/avr.opt (config/avr/avr-arch.h): Remove include.
+	(-mmcu=): Add Var and MissingArgError properties.
+	(-march=): Remove.
+	* config/avr/genmultilib.awk: Use -mmcu= instead of -march=.
+	* config/avr/t-multilib: Regenerate.
+	* config/avr/specs.h: New file.
+	* config/avr/driver-avr.c: New file.
+	* config/avr/genopt.sh: Remove file.
+	* config/avr/avr-tables.opt: Remove file.
+	* config/avr/predicates.md (avr_current_arch): Rename to avr_arch.
+	* config/avr/avr-c.c: Same.
+	* avr-arch.h: Same.
+	(avr_current_device): Remove proto.
+	* config/avr/avr.h (avr_current_arch): Rename to avr_arch.
+	(AVR_HAVE_8BIT_SP): Don't depend on avr_current_device.
+	(EXTRA_SPEC_FUNCTIONS): Define.
+	(avr_devicespecs_file): New specs function proto.
+	(DRIVER_SELF_SPECS): Use device-specs-file spec function.
+	* config/avr/avr.c (avr_current_arch): Rename to avr_arch.
+	(avr_current_device): Remove definition and usage.
+	(avr_set_core_architecture): New static function.
+	(avr_option_override): Use it.
+	* config/avr/avr-devices.c (diagnostic.h, avr-arch.h): Include them.
+	(mcu_name): New static array.
+	(comparator, avr_archs_str, avr_mcus_str): New static functions.
+	(avr_inform_devices, avr_inform_core_architectures): New functions.
+	* config/avr/gen-avr-mmcu-specs.c (avr-arch.h, specs.h): Include.
+	(avrlibc.h) [WITH_AVRLIBC]: Include.
+	(../rtems.h, rtems.h) [WITH_RTEMS]: Include.
+	(print_mcu): Rewrite from scratch.
+	* config/avr/avrlibc.h (LIB_SPEC, LIBGCC_SPEC, STARTFILE_SPEC):
+	Forward to avr-specific specs defined in device-specs file.
+	* config/avr/t-avr (driver-avr.o): New rule.
+	(avr-devices.o): Depend on avr-arch.h.
+	(avr-mcus): No more depend on avr-tables.opt.
+	(avr-tables.opt): Remove rule.
+	(install-device-specs): Use INSTALL_DATA, not INSTALL_PROGRAM.
+
 2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* c-family/c.opt (fchkp-use-wrappers): New.
