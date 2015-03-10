@@ -1,3 +1,10 @@
+2015-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/65321
+	* cfgexpand.c (expand_debug_expr): Ensure shift amount isn't wider
+	than shift mode.
+	* var-tracking.c (use_narrower_mode): Likewise.
+
 2015-03-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR tree-optimization/65355
