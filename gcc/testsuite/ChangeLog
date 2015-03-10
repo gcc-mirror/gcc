@@ -1,3 +1,8 @@
+2015-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/65367
+	* c-c++-common/ubsan/pr65367.c: New test.
+
 2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* lib/mpx-dg.exp (mpx_link_flags): Set path to wrappers library.

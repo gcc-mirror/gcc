@@ -1,3 +1,11 @@
+2015-03-10  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/65367
+	* ubsan.c (ubsan_expand_objsize_ifn): Update GSI instead of GSI_ORIG
+	when only removing the statement.  Handle expanding UBSAN_OBJECT_SIZE
+	separately.
+
 2015-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/65286
