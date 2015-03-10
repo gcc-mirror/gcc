@@ -1,3 +1,11 @@
+2015-03-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from mainline
+	PR fortran/65024
+	* trans-expr.c (gfc_conv_component_ref): If the component
+	backend declaration is missing and the derived type symbol is
+	available in the reference, call gfc_build_derived_type.
+
 2015-02-13  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/63744
