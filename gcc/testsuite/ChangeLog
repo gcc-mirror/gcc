@@ -1,3 +1,8 @@
+2015-03-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/65355
+	* gcc.dg/vect/section-anchors-vect-69.c: Update template.
+
 2015-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/65120

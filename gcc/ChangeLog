@@ -1,3 +1,12 @@
+2015-03-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/65355
+	* varasm.c (notice_global_symbol): Do not produce RTL.
+	* symtab.c (symtab_node::can_increase_alignment_p): Check for section
+	anchor.
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Do not
+	check for section anchors.
+
 2015-03-10  Alan Modra  <amodra@gmail.com>
 
 	PR target/65286
