@@ -302,6 +302,15 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
 -fsanitize=@var{style} -fsanitize-recover -fsanitize-recover=@var{style} @gol
 -fasan-shadow-offset=@var{number} -fsanitize-undefined-trap-on-error @gol
+-fcheck-pointer-bounds -fchkp-check-incomplete-type @gol
+-fchkp-first-field-has-own-bounds -fchkp-narrow-bounds @gol
+-fchkp-narrow-to-innermost-array -fchkp-optimize @gol
+-fchkp-use-fast-string-functions -fchkp-use-nochk-string-functions @gol
+-fchkp-use-static-bounds -fchkp-use-static-const-bounds @gol
+-fchkp-treat-zero-dynamic-size-as-infinite -fchkp-check-read @gol
+-fchkp-check-read -fchkp-check-write -fchkp-store-bounds @gol
+-fchkp-instrument-calls -fchkp-instrument-marked-only @gol
+-fchkp-use-wrappers @gol
 -fdbg-cnt-list -fdbg-cnt=@var{counter-value-list} @gol
 -fdisable-ipa-@var{pass_name} @gol
 -fdisable-rtl-@var{pass_name} @gol
@@ -477,6 +486,7 @@ Objective-C and Objective-C++ Dialects}.
 -nostartfiles  -nodefaultlibs  -nostdlib -pie -rdynamic @gol
 -s  -static -static-libgcc -static-libstdc++ @gol
 -static-libasan -static-libtsan -static-liblsan -static-libubsan @gol
+-static-libmpx -static-libmpxwrappers @gol
 -shared -shared-libgcc  -symbolic @gol
 -T @var{script}  -Wl,@var{option}  -Xlinker @var{option} @gol
 -u @var{symbol} -z @var{keyword}}
@@ -5827,6 +5837,135 @@ a @code{libubsan} library routine.  The advantage of this is that the
 @code{libubsan} library is not needed and is not linked in, so this
 is usable even in freestanding environments.
 
+@item -fcheck-pointer-bounds
+@opindex fcheck-pointer-bounds
+@opindex fno-check-pointer-bounds
+Enable Pointer Bounds Checker instrumentation.  Each memory reference
+is instrumented with checks of pointer used for memory access against
+bounds associated with that pointer.  Generated instrumentation may
+be controlled by various @option{-fchkp-*} options.  Currently there
+is only Intel MPX based implementation available, thus i386 target
+and @option{-mmpx} are required.  MPX based instrumentation requires
+a runtime library to enable MPX in a hardware and handle bounds
+violation signals.  By default when @option{-fcheck-pointer-bounds}
+and @option{-mmpx} options are used to link a program, the GCC driver
+links against @option{libmpx} runtime library.  MPX based instrumentation
+may be used for a debugging and also it may be included into a release
+version to increase program security.  Depending on usage you may
+put different requirements to runtime library.  Current version
+ of MPX runtime library is more oriented to be used as a debugging
+tool.  MPX runtime library usage implies @option{-lpthread}.  See
+also @option{-static-libmpx}.  The runtime library  behavior can be
+influenced using various @env{CHKP_RT_*} environment variables.  See
+@uref{https://gcc.gnu.org/wiki/Intel%20MPX%20support%20in%20the%20GCC%20compiler}
+for more details.
+
+@item -fchkp-check-incomplete-type
+@opindex fchkp-check-incomplete-type
+@opindex fno-chkp-check-incomplete-type
+Generate pointer bounds checks for variables with incomplete type.
+Enabled by default
+
+@item -fchkp-narrow-bounds
+@opindex fchkp-narrow-bounds
+@opindex fno-chkp-narrow-bounds
+Controls bounds used by Pointer Bounds Checker for pointers to object
+fields.  If narrowing is enabled then field bounds are used.  Otherwise
+object bounds are used.  See also @option{-fchkp-narrow-to-innermost-array}
+and @option{-fchkp-first-field-has-own-bounds}.  Enabled by default.
+
+@item -fchkp-first-field-has-own-bounds
+@opindex fchkp-first-field-has-own-bounds
+@opindex fno-chkp-first-field-has-own-bounds
+Forces Pointer Bounds Checker to use narrowed bounds for address of the
+first field in the structure.  By default pointer to the first field has
+the same bounds as pointer to the whole structure.
+
+@item -fchkp-narrow-to-innermost-array
+@opindex fchkp-narrow-to-innermost-array
+@opindex fno-chkp-narrow-to-innermost-array
+Forces Pointer Bounds Checker to use bounds of the innermost arrays in
+case of nested static arryas access.  By default it is disabled and
+bounds of the outermost array are used.
+
+@item -fchkp-optimize
+@opindex fchkp-optimize
+@opindex fno-chkp-optimize
+Enables Pointer Bounds Checker optimizations.  Enabled by default at
+optimization levels @option{-O}, @option{-O2}, @option{-O3}.
+
+@item -fchkp-use-fast-string-functions
+@opindex fchkp-use-fast-string-functions
+@opindex fno-chkp-use-fast-string-functions
+Allow to use @code{*_nobnd} versions of string functions (not copying bounds)
+by Pointer Bounds Checker.  Disabled by default.
+
+@item -fchkp-use-nochk-string-functions
+@opindex fchkp-use-nochk-string-functions
+@opindex fno-chkp-use-nochk-string-functions
+Allow to use @code{*_nochk} versions of string functions (not checking bounds)
+by Pointer Bounds Checker.  Disabled by default.
+
+@item -fchkp-use-static-bounds
+@opindex fchkp-use-static-bounds
+@opindex fno-chkp-use-static-bounds
+Allow Pointer Bounds Checker to generate static bounds holding
+bounds of static variables.  Enabled by default.
+
+@item -fchkp-use-static-const-bounds
+@opindex fchkp-use-static-const-bounds
+@opindex fno-chkp-use-static-const-bounds
+Use statically initialized bounds for constant bounds instead of
+generating them each time it is required.  By default enabled when
+@option{-fchkp-use-static-bounds} is enabled.
+
+@item -fchkp-treat-zero-dynamic-size-as-infinite
+@opindex fchkp-treat-zero-dynamic-size-as-infinite
+@opindex fno-chkp-treat-zero-dynamic-size-as-infinite
+With this option zero size obtained dynamically for objects with
+incomplete type will be treated as infinite by Pointer Bounds
+Checker.  It may be helpful if program is linked with a library
+missing size information for some symbols.  Disabled by default.
+
+@item -fchkp-check-read
+@opindex fchkp-check-read
+@opindex fno-chkp-check-read
+Instructs Pointer Bounds Checker to generate checks for all read
+accesses to memory.  Enabled by default.
+
+@item -fchkp-check-write
+@opindex fchkp-check-write
+@opindex fno-chkp-check-write
+Instructs Pointer Bounds Checker to generate checks for all write
+accesses to memory.  Enabled by default.
+
+@item -fchkp-store-bounds
+@opindex fchkp-store-bounds
+@opindex fno-chkp-store-bounds
+Instructs Pointer Bounds Checker to generate bounds stores for
+pointer writes.  Enabled by default.
+
+@item -fchkp-instrument-calls
+@opindex fchkp-instrument-calls
+@opindex fno-chkp-instrument-calls
+Instructs Pointer Bounds Checker to pass pointer bounds to calls.
+Enabled by default.
+
+@item -fchkp-instrument-marked-only
+@opindex fchkp-instrument-marked-only
+@opindex fno-chkp-instrument-marked-only
+Instructs Pointer Bounds Checker to instrument only functions
+marked with @code{bnd_instrument} attribute.  Disabled by default.
+
+@item -fchkp-use-wrappers
+@opindex fchkp-use-wrappers
+@opindex fno-chkp-use-wrappers
+Allows Pointer Bounds Checker to replace calls to built-in function
+with calls to wrapper functions.  When the @option{-fchkp-use-wrappers}
+is used to link a program, the GCC driver automatically links
+agains @option{libmpxwrappers}.  See also @option{-static-libmpxwrappers}.
+Enabled by default.
+
 @item -fdump-final-insns@r{[}=@var{file}@r{]}
 @opindex fdump-final-insns
 Dump the final internal representation (RTL) to @var{file}.  If the
@@ -11135,6 +11274,27 @@ option is not used, then this links against the shared version of
 @file{libubsan}.  The @option{-static-libubsan} option directs the GCC
 driver to link @file{libubsan} statically, without necessarily linking
 other libraries statically.
+
+@item -static-libmpx
+@opindex static-libmpx
+When @option{-fcheck-pointer bounds} and @option{-mmpx} options are
+used to link a program, the GCC driver automatically links against
+@option{libmpx}.  If @file{libmpx} is available as a shared library,
+and the @option{-static} option is not used, then this links against
+the shared version of @file{libmpx}.  The @option{-static-libmpx}
+option directs the GCC driver to link @file{libmpx} statically,
+without necessarily linking other libraries statically.
+
+@item -static-libmpxwrappers
+@opindex static-libmpxwrappers
+When @option{-fcheck-pointer bounds}, @option{-mmpx} options are used and
+@option{-fno-chkp-use-wrappers} option is not used to link a program, the
+GCC driver automatically links against @option{libmpxwrappers}.  If
+@file{libmpxwrappers} is available as a shared library, and the
+@option{-static} option is not used, then this links against the shared
+version of @file{libmpxwrappers}.  The @option{-static-libmpxwrappers}
+option directs the GCC driver to link @file{libmpxwrappers} statically,
+without necessarily linking other libraries statically.
 
 @item -static-libstdc++
 @opindex static-libstdc++

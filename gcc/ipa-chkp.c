@@ -100,6 +100,44 @@ along with GCC; see the file COPYING3.  If not see
     removed.  */
 
 #define CHKP_BOUNDS_OF_SYMBOL_PREFIX "__chkp_bounds_of_"
+#define CHKP_WRAPPER_SYMBOL_PREFIX "__mpx_wrapper_"
+
+/* Return 1 calls to FNDECL should be replaced with
+   a call to wrapper function.  */
+static bool
+chkp_wrap_function (tree fndecl)
+{
+  if (!flag_chkp_use_wrappers)
+    return false;
+
+  if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    {
+      switch (DECL_FUNCTION_CODE (fndecl))
+	{
+	case BUILT_IN_STRLEN:
+	case BUILT_IN_STRCPY:
+	case BUILT_IN_STRNCPY:
+	case BUILT_IN_STPCPY:
+	case BUILT_IN_STPNCPY:
+	case BUILT_IN_STRCAT:
+	case BUILT_IN_STRNCAT:
+	case BUILT_IN_MEMCPY:
+	case BUILT_IN_MEMPCPY:
+	case BUILT_IN_MEMSET:
+	case BUILT_IN_MEMMOVE:
+	case BUILT_IN_BZERO:
+	case BUILT_IN_MALLOC:
+	case BUILT_IN_CALLOC:
+	case BUILT_IN_REALLOC:
+	  return 1;
+
+	default:
+	  return 0;
+	}
+    }
+
+  return false;
+}
 
 /* Build a clone of FNDECL with a modified name.  */
 
@@ -124,11 +162,20 @@ chkp_build_instrumented_fndecl (tree fndecl)
      because it conflicts with decl merging algorithms in LTO.
      Achieve the result by using transparent alias name for the
      instrumented version.  */
-  s = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl));
-  s += ".chkp";
-  new_name = get_identifier (s.c_str ());
-  IDENTIFIER_TRANSPARENT_ALIAS (new_name) = 1;
-  TREE_CHAIN (new_name) = DECL_ASSEMBLER_NAME (fndecl);
+  if (chkp_wrap_function(fndecl))
+    {
+      s = CHKP_WRAPPER_SYMBOL_PREFIX;
+      s += IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl));
+      new_name = get_identifier (s.c_str ());
+    }
+  else
+    {
+      s = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl));
+      s += ".chkp";
+      new_name = get_identifier (s.c_str ());
+      IDENTIFIER_TRANSPARENT_ALIAS (new_name) = 1;
+      TREE_CHAIN (new_name) = DECL_ASSEMBLER_NAME (fndecl);
+    }
   SET_DECL_ASSEMBLER_NAME (new_decl, new_name);
 
   /* For functions with body versioning will make a copy of arguments.
