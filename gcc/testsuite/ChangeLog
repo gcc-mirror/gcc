@@ -1,3 +1,8 @@
+2015-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65368
+	* gcc.target/i386/bmi2-bzhi-2.c: New test.
+
 2015-03-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/65024

@@ -1,3 +1,10 @@
+2015-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65368
+	* config/i386/i386.md (bmi2_bzhi_<mode>3): Removed define_insn,
+	new define_expand.
+	(*bmi2_bzhi_<mode>3, *bmi2_bzhi_<mode>3_1): New define_insns.
+
 2015-03-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-icf.c (sem_function::equals_wpa): Move here some checks
