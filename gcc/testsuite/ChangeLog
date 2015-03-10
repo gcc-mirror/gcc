@@ -1,5 +1,21 @@
 2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	* lib/mpx-dg.exp (mpx_link_flags): Set path to wrappers library.
+	* gcc.target/i386/mpx/calloc-1-lbv.c: New.
+	* gcc.target/i386/mpx/calloc-1-ubv.c: New.
+	* gcc.target/i386/mpx/calloc-1-nov.c: New.
+	* gcc.target/i386/mpx/malloc-1-lbv.c: New.
+	* gcc.target/i386/mpx/malloc-1-nov.c: New.
+	* gcc.target/i386/mpx/malloc-1-ubv.c: New.
+	* gcc.target/i386/mpx/realloc-1-lbv.c: New.
+	* gcc.target/i386/mpx/realloc-1-nov.c: New.
+	* gcc.target/i386/mpx/realloc-1-ubv.c: New.
+	* gcc.target/i386/mpx/realloc-2-lbv.c: New.
+	* gcc.target/i386/mpx/realloc-2-nov.c: New.
+	* gcc.target/i386/mpx/realloc-2-ubv.c: New.
+
+2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	* gcc/testsuite/lib/mpx-dg.exp (mpx_link_flags): New.
 	(mpx_init): New.
 	(mpx_finish): New.
