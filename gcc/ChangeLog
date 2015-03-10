@@ -1,5 +1,32 @@
 2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	* c-family/c.opt (fchkp-use-wrappers): New.
+	* ipa-chkp.c (CHKP_WRAPPER_SYMBOL_PREFIX): New.
+	(chkp_wrap_function): New.
+	(chkp_build_instrumented_fndecl): Support wrapped
+	functions.
+	* doc/invoke.texi (-fcheck-pointer-bounds): New.
+	(-fchkp-check-incomplete-type): New.
+	(-fchkp-first-field-has-own-bounds): New.
+	(-fchkp-narrow-bounds): New.
+	(-fchkp-narrow-to-innermost-array): New.
+	(-fchkp-optimize): New.
+	(-fchkp-use-fast-string-functions): New.
+	(-fchkp-use-nochk-string-functions): New.
+	(-fchkp-use-static-bounds): New.
+	(-fchkp-use-static-const-bounds): New.
+	(-fchkp-treat-zero-dynamic-size-as-infinite): New.
+	(-fchkp-check-read): New.
+	(-fchkp-check-write): New.
+	(-fchkp-store-bounds): New.
+	(-fchkp-instrument-calls): New.
+	(-fchkp-instrument-marked-only): New.
+	(-fchkp-use-wrappers): New.
+	(-static-libmpx): New.
+	(-static-libmpxwrappers): New.
+
+2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	* config/i386/linux-common.h (LIBMPX_WRAPPERSSPEC): New.
 	(CHKP_SPEC): Add wrappers library.
 	* c-family/c.opt (static-libmpxwrappers): New.
