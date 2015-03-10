@@ -1,3 +1,9 @@
+2015-03-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-icf.c (sem_function::equals_wpa): Move here some checks
+	from ...
+	(sem_function::equals_wpa): ... here.
+
 2015-03-10  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
