@@ -1011,7 +1011,13 @@ use_narrower_mode (rtx x, machine_mode mode, machine_mode wmode)
       return simplify_gen_binary (GET_CODE (x), mode, op0, op1);
     case ASHIFT:
       op0 = use_narrower_mode (XEXP (x, 0), mode, wmode);
-      return simplify_gen_binary (ASHIFT, mode, op0, XEXP (x, 1));
+      op1 = XEXP (x, 1);
+      /* Ensure shift amount is not wider than mode.  */
+      if (GET_MODE (op1) == VOIDmode)
+	op1 = lowpart_subreg (mode, op1, wmode);
+      else if (GET_MODE_PRECISION (mode) < GET_MODE_PRECISION (GET_MODE (op1)))
+	op1 = lowpart_subreg (mode, op1, GET_MODE (op1));
+      return simplify_gen_binary (ASHIFT, mode, op0, op1);
     default:
       gcc_unreachable ();
     }
