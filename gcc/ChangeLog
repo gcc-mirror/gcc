@@ -1,3 +1,18 @@
+2015-03-10  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* config/i386/intelmic-mkoffload.c: Include intelmic-offload.h instead
+	of libgomp-plugin.h.
+	(find_target_compiler): Support a case when the path to gcc is specified
+	in the PATH env var, so COLLECT_GCC doesn't contain a path.
+	(generate_host_descr_file): Use GOMP_DEVICE_INTEL_MIC from
+	intelmic-offload.h instead of OFFLOAD_TARGET_TYPE_INTEL_MIC from
+	libgomp-plugin.h.
+	(main): Use GCC_INSTALL_NAME as target_driver_name.
+	* config/i386/t-intelmic (CFLAGS-mkoffload.o): Add GCC_INSTALL_NAME
+	define.
+	(mkoffload.o): Remove obsolete include path and defines.
+	(mkoffload$(exeext)): Use $(LINKER) instead of $(COMPILER).
+
 2015-03-10  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/63155
