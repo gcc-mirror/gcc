@@ -22,13 +22,13 @@
 
 #include "config.h"
 #include <libgen.h>
-#include "libgomp-plugin.h"
 #include "system.h"
 #include "coretypes.h"
 #include "obstack.h"
 #include "intl.h"
 #include "diagnostic.h"
 #include "collect-utils.h"
+#include "intelmic-offload.h"
 
 const char tool_name[] = "intelmic mkoffload";
 
@@ -158,10 +158,21 @@ find_target_compiler (const char *name)
   bool found = false;
   char **paths = NULL;
   unsigned n_paths, i;
-  const char *collect_path = dirname (ASTRDUP (getenv ("COLLECT_GCC")));
-  size_t len = strlen (collect_path) + 1 + strlen (name) + 1;
-  char *target_compiler = XNEWVEC (char, len);
-  sprintf (target_compiler, "%s/%s", collect_path, name);
+  char *target_compiler;
+  const char *collect_gcc = getenv ("COLLECT_GCC");
+  const char *gcc_path = dirname (ASTRDUP (collect_gcc));
+  const char *gcc_exec = basename (ASTRDUP (collect_gcc));
+
+  if (strcmp (gcc_exec, collect_gcc) == 0)
+    {
+      /* collect_gcc has no path, so it was found in PATH.  Make sure we also
+	 find accel-gcc in PATH.  */
+      target_compiler = XDUPVEC (char, name, strlen (name) + 1);
+      found = true;
+      goto out;
+    }
+
+  target_compiler = concat (gcc_path, "/", name, NULL);
   if (access_check (target_compiler, X_OK) == 0)
     {
       found = true;
@@ -171,7 +182,7 @@ find_target_compiler (const char *name)
   n_paths = parse_env_var (getenv ("COMPILER_PATH"), &paths);
   for (i = 0; i < n_paths; i++)
     {
-      len = strlen (paths[i]) + 1 + strlen (name) + 1;
+      size_t len = strlen (paths[i]) + 1 + strlen (name) + 1;
       target_compiler = XRESIZEVEC (char, target_compiler, len);
       sprintf (target_compiler, "%s/%s", paths[i], name);
       if (access_check (target_compiler, X_OK) == 0)
@@ -346,7 +357,7 @@ generate_host_descr_file (const char *host_compiler)
 	   "init (void)\n"
 	   "{\n"
 	   "  GOMP_offload_register (&__OFFLOAD_TABLE__, %d, __offload_target_data);\n"
-	   "}\n", OFFLOAD_TARGET_TYPE_INTEL_MIC);
+	   "}\n", GOMP_DEVICE_INTEL_MIC);
   fclose (src_file);
 
   unsigned new_argc = 0;
@@ -483,8 +494,7 @@ main (int argc, char **argv)
   if (!host_compiler)
     fatal_error (input_location, "COLLECT_GCC must be set");
 
-  const char *target_driver_name
-    = DEFAULT_REAL_TARGET_MACHINE "-accel-" DEFAULT_TARGET_MACHINE "-gcc";
+  const char *target_driver_name = GCC_INSTALL_NAME;
   char *target_compiler = find_target_compiler (target_driver_name);
   if (target_compiler == NULL)
     fatal_error (input_location, "offload compiler %s not found",
