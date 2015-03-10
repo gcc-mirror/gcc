@@ -1,3 +1,9 @@
+2015-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65333
+	DR 1558
+	* pt.c (dependent_type_p_r): Check both class and alias template args.
+
 2015-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/65120
