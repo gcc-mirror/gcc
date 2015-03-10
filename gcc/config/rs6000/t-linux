@@ -2,7 +2,7 @@
 # or soft-float.
 ifeq (,$(filter $(with_cpu),$(SOFT_FLOAT_CPUS))$(findstring soft,$(with_float)))
 ifneq (,$(findstring powerpc64,$(target)))
-MULTIARCH_DIRNAME := powerpc64-linux-gnu
+MULTILIB_OSDIRNAMES := .=../lib64$(call if_multiarch,:powerpc64-linux-gnu)
 else
 ifneq (,$(findstring spe,$(target)))
 MULTIARCH_DIRNAME := powerpc-linux-gnuspe$(if $(findstring rs6000/e500-double.h, $(tm_file_list)),,v1)
@@ -10,7 +10,10 @@ else
 MULTIARCH_DIRNAME := powerpc-linux-gnu
 endif
 endif
-ifneq (,$(findstring powerpcle,$(target))$(findstring powerpc64le,$(target)))
+ifneq (,$(findstring powerpcle,$(target)))
 MULTIARCH_DIRNAME := $(subst -linux,le-linux,$(MULTIARCH_DIRNAME))
+endif
+ifneq (,$(findstring powerpc64le,$(target)))
+MULTILIB_OSDIRNAMES := $(subst -linux,le-linux,$(MULTILIB_OSDIRNAMES))
 endif
 endif

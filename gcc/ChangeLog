@@ -1,3 +1,9 @@
+2015-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65286
+	* config/rs6000/t-linux: For powerpc64* target set
+	MULTILIB_OSDIRNAMES instead of MULTIARCH_DIRNAME.
+
 2015-03-10  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53988
