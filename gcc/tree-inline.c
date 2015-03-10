@@ -2805,7 +2805,9 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
 	  maybe_move_debug_stmts_to_successors (id, (basic_block) bb->aux);
 	/* Update call edge destinations.  This can not be done before loop
 	   info is updated, because we may split basic blocks.  */
-	if (id->transform_call_graph_edges == CB_CGE_DUPLICATE)
+	if (id->transform_call_graph_edges == CB_CGE_DUPLICATE
+	    && bb->index != ENTRY_BLOCK
+	    && bb->index != EXIT_BLOCK)
 	  redirect_all_calls (id, (basic_block)bb->aux);
 	((basic_block)bb->aux)->aux = NULL;
 	bb->aux = NULL;
