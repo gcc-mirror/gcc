@@ -224,12 +224,12 @@ nds32_compute_stack_frame (void)
   cfun->machine->lp_size = (df_regs_ever_live_p (LP_REGNUM)) ? 4 : 0;
 
   /* Initially there is no padding bytes.  */
-  cfun->machine->callee_saved_area_padding_bytes = 0;
+  cfun->machine->callee_saved_area_gpr_padding_bytes = 0;
 
   /* Calculate the bytes of saving callee-saved registers on stack.  */
-  cfun->machine->callee_saved_regs_size = 0;
-  cfun->machine->callee_saved_regs_first_regno = SP_REGNUM;
-  cfun->machine->callee_saved_regs_last_regno  = SP_REGNUM;
+  cfun->machine->callee_saved_gpr_regs_size = 0;
+  cfun->machine->callee_saved_first_gpr_regno = SP_REGNUM;
+  cfun->machine->callee_saved_last_gpr_regno  = SP_REGNUM;
   /* Currently, there is no need to check $r28~$r31
      because we will save them in another way.  */
   for (r = 0; r < 28; r++)
@@ -240,10 +240,10 @@ nds32_compute_stack_frame (void)
 	     (only need to set it once).
 	     If first regno == SP_REGNUM, we can tell that
 	     it is the first time to be here.  */
-	  if (cfun->machine->callee_saved_regs_first_regno == SP_REGNUM)
-	    cfun->machine->callee_saved_regs_first_regno = r;
+	  if (cfun->machine->callee_saved_first_gpr_regno == SP_REGNUM)
+	    cfun->machine->callee_saved_first_gpr_regno = r;
 	  /* Mark the last required callee-saved register.  */
-	  cfun->machine->callee_saved_regs_last_regno = r;
+	  cfun->machine->callee_saved_last_gpr_regno = r;
 	}
     }
 
@@ -262,8 +262,8 @@ nds32_compute_stack_frame (void)
        condition 3: There is no local_size, which means
                     we do not need to adjust $sp.  */
   if (lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl))
-      || (cfun->machine->callee_saved_regs_first_regno == SP_REGNUM
-	  && cfun->machine->callee_saved_regs_last_regno == SP_REGNUM
+      || (cfun->machine->callee_saved_first_gpr_regno == SP_REGNUM
+	  && cfun->machine->callee_saved_last_gpr_regno == SP_REGNUM
 	  && !df_regs_ever_live_p (FP_REGNUM)
 	  && !df_regs_ever_live_p (LP_REGNUM)
 	  && cfun->machine->local_size == 0))
@@ -315,33 +315,33 @@ nds32_compute_stack_frame (void)
       cfun->machine->lp_size = 4;
 
       /* Remember to set Rb = $r6.  */
-      cfun->machine->callee_saved_regs_first_regno = 6;
+      cfun->machine->callee_saved_first_gpr_regno = 6;
 
-      if (cfun->machine->callee_saved_regs_last_regno <= 6)
+      if (cfun->machine->callee_saved_last_gpr_regno <= 6)
 	{
 	  /* Re = $r6 */
-	  cfun->machine->callee_saved_regs_last_regno = 6;
+	  cfun->machine->callee_saved_last_gpr_regno = 6;
 	}
-      else if (cfun->machine->callee_saved_regs_last_regno <= 8)
+      else if (cfun->machine->callee_saved_last_gpr_regno <= 8)
 	{
 	  /* Re = $r8 */
-	  cfun->machine->callee_saved_regs_last_regno = 8;
+	  cfun->machine->callee_saved_last_gpr_regno = 8;
 	}
-      else if (cfun->machine->callee_saved_regs_last_regno <= 10)
+      else if (cfun->machine->callee_saved_last_gpr_regno <= 10)
 	{
 	  /* Re = $r10 */
-	  cfun->machine->callee_saved_regs_last_regno = 10;
+	  cfun->machine->callee_saved_last_gpr_regno = 10;
 	}
-      else if (cfun->machine->callee_saved_regs_last_regno <= 14)
+      else if (cfun->machine->callee_saved_last_gpr_regno <= 14)
 	{
 	  /* Re = $r14 */
-	  cfun->machine->callee_saved_regs_last_regno = 14;
+	  cfun->machine->callee_saved_last_gpr_regno = 14;
 	}
-      else if (cfun->machine->callee_saved_regs_last_regno == SP_REGNUM)
+      else if (cfun->machine->callee_saved_last_gpr_regno == SP_REGNUM)
 	{
 	  /* If last_regno is SP_REGNUM, which means
 	     it is never changed, so set it to Re = $r6.  */
-	  cfun->machine->callee_saved_regs_last_regno = 6;
+	  cfun->machine->callee_saved_last_gpr_regno = 6;
 	}
       else
 	{
@@ -355,12 +355,12 @@ nds32_compute_stack_frame (void)
      Initially, the callee_saved_regs_size is supposed to be 0.
      As long as callee_saved_regs_last_regno is not SP_REGNUM,
      we can update callee_saved_regs_size with new size.  */
-  if (cfun->machine->callee_saved_regs_last_regno != SP_REGNUM)
+  if (cfun->machine->callee_saved_last_gpr_regno != SP_REGNUM)
     {
       /* Compute pushed size of callee-saved registers.  */
-      cfun->machine->callee_saved_regs_size
-	= 4 * (cfun->machine->callee_saved_regs_last_regno
-	       - cfun->machine->callee_saved_regs_first_regno
+      cfun->machine->callee_saved_gpr_regs_size
+	= 4 * (cfun->machine->callee_saved_last_gpr_regno
+	       - cfun->machine->callee_saved_first_gpr_regno
 	       + 1);
     }
 
@@ -371,10 +371,10 @@ nds32_compute_stack_frame (void)
   block_size = cfun->machine->fp_size
 	       + cfun->machine->gp_size
 	       + cfun->machine->lp_size
-	       + cfun->machine->callee_saved_regs_size;
+	       + cfun->machine->callee_saved_gpr_regs_size;
   if (!NDS32_DOUBLE_WORD_ALIGN_P (block_size))
     {
-      cfun->machine->callee_saved_area_padding_bytes
+      cfun->machine->callee_saved_area_gpr_padding_bytes
 	= NDS32_ROUND_UP_DOUBLE_WORD (block_size) - block_size;
     }
 
@@ -2866,8 +2866,8 @@ nds32_initial_elimination_offset (unsigned int from_reg, unsigned int to_reg)
       offset = (cfun->machine->fp_size
 	        + cfun->machine->gp_size
 		+ cfun->machine->lp_size
-		+ cfun->machine->callee_saved_regs_size
-		+ cfun->machine->callee_saved_area_padding_bytes
+		+ cfun->machine->callee_saved_gpr_regs_size
+		+ cfun->machine->callee_saved_area_gpr_padding_bytes
 		+ cfun->machine->local_size
 		+ cfun->machine->out_args_size);
     }
@@ -2887,8 +2887,8 @@ nds32_initial_elimination_offset (unsigned int from_reg, unsigned int to_reg)
       offset = (-1) * (cfun->machine->fp_size
 		       + cfun->machine->gp_size
 		       + cfun->machine->lp_size
-		       + cfun->machine->callee_saved_regs_size
-		       + cfun->machine->callee_saved_area_padding_bytes);
+		       + cfun->machine->callee_saved_gpr_regs_size
+		       + cfun->machine->callee_saved_area_gpr_padding_bytes);
     }
   else
     {
@@ -2965,8 +2965,8 @@ nds32_expand_prologue (void)
     return;
 
   /* Get callee_first_regno and callee_last_regno.  */
-  Rb = gen_rtx_REG (SImode, cfun->machine->callee_saved_regs_first_regno);
-  Re = gen_rtx_REG (SImode, cfun->machine->callee_saved_regs_last_regno);
+  Rb = gen_rtx_REG (SImode, cfun->machine->callee_saved_first_gpr_regno);
+  Re = gen_rtx_REG (SImode, cfun->machine->callee_saved_last_gpr_regno);
 
   /* nds32_emit_stack_push_multiple(first_regno, last_regno),
      the pattern 'stack_push_multiple' is implemented in nds32.md.
@@ -3002,7 +3002,7 @@ nds32_expand_prologue (void)
       fp_adjust = cfun->machine->fp_size
 		  + cfun->machine->gp_size
 		  + cfun->machine->lp_size
-		  + cfun->machine->callee_saved_regs_size;
+		  + cfun->machine->callee_saved_gpr_regs_size;
       fp_adjust_insn = gen_addsi3 (hard_frame_pointer_rtx,
 				   stack_pointer_rtx,
 				   GEN_INT (fp_adjust));
@@ -3017,7 +3017,7 @@ nds32_expand_prologue (void)
                       - callee_saved_area_padding_bytes.  */
   sp_adjust = cfun->machine->local_size
 	      + cfun->machine->out_args_size
-	      + cfun->machine->callee_saved_area_padding_bytes;
+	      + cfun->machine->callee_saved_area_gpr_padding_bytes;
   /* sp_adjust value may be out of range of the addi instruction,
      create alternative add behavior with TA_REGNUM if necessary,
      using NEGATIVE value to tell that we are decreasing address.  */
@@ -3105,7 +3105,7 @@ nds32_expand_epilogue (bool sibcall_p)
       sp_adjust = cfun->machine->fp_size
 		  + cfun->machine->gp_size
 		  + cfun->machine->lp_size
-		  + cfun->machine->callee_saved_regs_size;
+		  + cfun->machine->callee_saved_gpr_regs_size;
       sp_adjust_insn = gen_addsi3 (stack_pointer_rtx,
 				   hard_frame_pointer_rtx,
 				   GEN_INT (-1 * sp_adjust));
@@ -3128,7 +3128,7 @@ nds32_expand_epilogue (bool sibcall_p)
                           + callee_saved_area_padding_bytes.  */
       sp_adjust = cfun->machine->local_size
 		  + cfun->machine->out_args_size
-		  + cfun->machine->callee_saved_area_padding_bytes;
+		  + cfun->machine->callee_saved_area_gpr_padding_bytes;
       /* sp_adjust value may be out of range of the addi instruction,
          create alternative add behavior with TA_REGNUM if necessary,
          using POSITIVE value to tell that we are increasing address.  */
@@ -3149,8 +3149,8 @@ nds32_expand_epilogue (bool sibcall_p)
     }
 
   /* Get callee_first_regno and callee_last_regno.  */
-  Rb = gen_rtx_REG (SImode, cfun->machine->callee_saved_regs_first_regno);
-  Re = gen_rtx_REG (SImode, cfun->machine->callee_saved_regs_last_regno);
+  Rb = gen_rtx_REG (SImode, cfun->machine->callee_saved_first_gpr_regno);
+  Re = gen_rtx_REG (SImode, cfun->machine->callee_saved_last_gpr_regno);
 
   /* nds32_emit_stack_pop_multiple(first_regno, last_regno),
      the pattern 'stack_pop_multiple' is implementad in nds32.md.
@@ -3219,14 +3219,14 @@ nds32_expand_prologue_v3push (void)
     return;
 
   /* Get callee_first_regno and callee_last_regno.  */
-  Rb = gen_rtx_REG (SImode, cfun->machine->callee_saved_regs_first_regno);
-  Re = gen_rtx_REG (SImode, cfun->machine->callee_saved_regs_last_regno);
+  Rb = gen_rtx_REG (SImode, cfun->machine->callee_saved_first_gpr_regno);
+  Re = gen_rtx_REG (SImode, cfun->machine->callee_saved_last_gpr_regno);
 
   /* Calculate sp_adjust first to test if 'push25 Re,imm8u' is available,
      where imm8u has to be 8-byte alignment.  */
   sp_adjust = cfun->machine->local_size
 	      + cfun->machine->out_args_size
-	      + cfun->machine->callee_saved_area_padding_bytes;
+	      + cfun->machine->callee_saved_area_gpr_padding_bytes;
 
   if (satisfies_constraint_Iu08 (GEN_INT (sp_adjust))
       && NDS32_DOUBLE_WORD_ALIGN_P (sp_adjust))
@@ -3256,7 +3256,7 @@ nds32_expand_prologue_v3push (void)
 	  fp_adjust = cfun->machine->fp_size
 		      + cfun->machine->gp_size
 		      + cfun->machine->lp_size
-		      + cfun->machine->callee_saved_regs_size
+		      + cfun->machine->callee_saved_gpr_regs_size
 		      + sp_adjust;
 	  fp_adjust_insn = gen_addsi3 (hard_frame_pointer_rtx,
 				       stack_pointer_rtx,
@@ -3291,7 +3291,7 @@ nds32_expand_prologue_v3push (void)
 	  fp_adjust = cfun->machine->fp_size
 		      + cfun->machine->gp_size
 		      + cfun->machine->lp_size
-		      + cfun->machine->callee_saved_regs_size;
+		      + cfun->machine->callee_saved_gpr_regs_size;
 	  fp_adjust_insn = gen_addsi3 (hard_frame_pointer_rtx,
 				       stack_pointer_rtx,
 				       GEN_INT (fp_adjust));
@@ -3356,14 +3356,14 @@ nds32_expand_epilogue_v3pop (bool sibcall_p)
     }
 
   /* Get callee_first_regno and callee_last_regno.  */
-  Rb = gen_rtx_REG (SImode, cfun->machine->callee_saved_regs_first_regno);
-  Re = gen_rtx_REG (SImode, cfun->machine->callee_saved_regs_last_regno);
+  Rb = gen_rtx_REG (SImode, cfun->machine->callee_saved_first_gpr_regno);
+  Re = gen_rtx_REG (SImode, cfun->machine->callee_saved_last_gpr_regno);
 
   /* Calculate sp_adjust first to test if 'pop25 Re,imm8u' is available,
      where imm8u has to be 8-byte alignment.  */
   sp_adjust = cfun->machine->local_size
 	      + cfun->machine->out_args_size
-	      + cfun->machine->callee_saved_area_padding_bytes;
+	      + cfun->machine->callee_saved_area_gpr_padding_bytes;
 
   /* We have to consider alloca issue as well.
      If the function does call alloca(), the stack pointer is not fixed.
@@ -3402,7 +3402,7 @@ nds32_expand_epilogue_v3pop (bool sibcall_p)
 	  sp_adjust = cfun->machine->fp_size
 		      + cfun->machine->gp_size
 		      + cfun->machine->lp_size
-		      + cfun->machine->callee_saved_regs_size;
+		      + cfun->machine->callee_saved_gpr_regs_size;
 	  sp_adjust_insn = gen_addsi3 (stack_pointer_rtx,
 				       hard_frame_pointer_rtx,
 				       GEN_INT (-1 * sp_adjust));
@@ -3422,7 +3422,7 @@ nds32_expand_epilogue_v3pop (bool sibcall_p)
 			      + callee_saved_area_padding_bytes.  */
 	  sp_adjust = cfun->machine->local_size
 		      + cfun->machine->out_args_size
-		      + cfun->machine->callee_saved_area_padding_bytes;
+		      + cfun->machine->callee_saved_area_gpr_padding_bytes;
 	  /* sp_adjust value may be out of range of the addi instruction,
 	     create alternative add behavior with TA_REGNUM if necessary,
 	     using POSITIVE value to tell that we are increasing address.  */
