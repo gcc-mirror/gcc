@@ -1,3 +1,9 @@
+2015-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/65127
+	* parser.c (parsing_nsdmi): Don't return true if current_class_ptr
+	is not a PARM_DECL.
+
 2015-03-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65333
