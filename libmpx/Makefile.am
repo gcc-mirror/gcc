@@ -2,6 +2,9 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 
 if LIBMPX_SUPPORTED
 SUBDIRS = mpxrt
+if MPX_AS_SUPPORTED
+SUBDIRS += mpxwrap
+endif
 nodist_toolexeclib_HEADERS = libmpx.spec
 endif
 
@@ -45,3 +48,5 @@ AM_MAKEFLAGS = \
 	"PICFLAG=$(PICFLAG)" \
 	"RANLIB=$(RANLIB)" \
 	"DESTDIR=$(DESTDIR)"
+
+MAKEOVERRIDES =

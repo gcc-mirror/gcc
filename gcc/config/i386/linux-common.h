@@ -73,7 +73,21 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 #endif
 
+#ifndef LIBMPXWRAPPERS_SPEC
+#if defined(HAVE_LD_STATIC_DYNAMIC)
+#define LIBMPXWRAPPERS_SPEC "\
+%{mmpx:%{fcheck-pointer-bounds:%{!fno-chkp-use-wrappers:\
+    %{static:-lmpxwrappers}\
+    %{!static:%{static-libmpxwrappers:" LD_STATIC_OPTION " --whole-archive}\
+    -lmpxwrappers %{static-libmpxwrappers:--no-whole-archive "\
+    LD_DYNAMIC_OPTION "}}}}}"
+#else
+#define LIBMPXWRAPPERS_SPEC "\
+%{mmpx:%{fcheck-pointer-bounds:{!fno-chkp-use-wrappers:-lmpxwrappers}}}"
+#endif
+#endif
+
 #ifndef CHKP_SPEC
 #define CHKP_SPEC "\
-%{!nostdlib:%{!nodefaultlibs:" LIBMPX_SPEC "}}"
+%{!nostdlib:%{!nodefaultlibs:" LIBMPX_SPEC LIBMPXWRAPPERS_SPEC "}}"
 #endif
