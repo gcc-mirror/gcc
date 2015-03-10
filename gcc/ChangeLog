@@ -1,3 +1,8 @@
+2015-03-10  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* dominance.c (nearest_common_dominator_for_set): Fix A_Dominated_by_B
+	code in comment.
+
 2015-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/65321

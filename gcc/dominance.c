@@ -982,7 +982,7 @@ nearest_common_dominator_for_set (enum cdi_direction dir, bitmap blocks)
 
    A_Dominated_by_B (node A, node B)
    {
-     return DFS_Number_In(A) >= DFS_Number_In(A)
+     return DFS_Number_In(A) >= DFS_Number_In(B)
             && DFS_Number_Out (A) <= DFS_Number_Out(B);
    }  */
 
