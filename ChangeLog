@@ -1,3 +1,10 @@
+2015-03-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR bootstrap/25672
+	* configure.ac: Do not initialize CFLAGS_FOR_TARGET from CFLAGS if
+	cross-compiling.  Similarly for CXX_FOR_TARGET.
+	* configure: Regenerate.
+
 2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* Makefile.def: Add libmpx.
