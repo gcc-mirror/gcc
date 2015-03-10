@@ -1,3 +1,9 @@
+2015-03-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65370
+	* decl.c (duplicate_decls): Call check_redeclaration_no_default_args
+	only if the location of newdecl doesn't match the location of olddecl.
+
 2015-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/65127
