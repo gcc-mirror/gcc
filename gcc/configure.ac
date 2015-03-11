@@ -3603,6 +3603,13 @@ AS_HELP_STRING([--disable-fix-cortex-a53-835769],
 		[Define if your assembler supports the -no-mul-bug-abort option.])])
     ;;
 
+  avr-*-*)
+    gcc_GAS_CHECK_FEATURE([-mrmw option], gcc_cv_as_avr_mrmw,,
+      [-mrmw], [.text],,
+      [AC_DEFINE(HAVE_AS_AVR_MRMW_OPTION, 1,
+		[Define if your assembler supports -mrmw option.])])
+    ;;
+
   sparc*-*-*)
     gcc_GAS_CHECK_FEATURE([.register], gcc_cv_as_sparc_register_op,,,
       [.register %g2, #scratch],,

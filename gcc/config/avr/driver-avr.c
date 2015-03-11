@@ -60,7 +60,10 @@ avr_device_to_as (int argc, const char **argv)
 
   return concat ("-mmcu=", avr_current_arch->arch_name,
     avr_current_device->dev_attribute & AVR_ERRATA_SKIP ? "" : " -mno-skip-bug",
-    avr_current_device->dev_attribute & AVR_ISA_RMW ? " -mrmw" : "", NULL);
+#ifdef HAVE_AS_AVR_MRMW_OPTION
+    avr_current_device->dev_attribute & AVR_ISA_RMW ? " -mrmw" : "",
+#endif // have as -mrmw
+    NULL);
 }
 
 /* Returns command line parameters to pass to ld.  */

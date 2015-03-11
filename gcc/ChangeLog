@@ -1,3 +1,12 @@
+2015-03-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/65296
+	* configure.ac [avr]: Check as for option -mrmw.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/avr/driver-avr.c (avr_device_to_as): Don't add -mrmw to
+	assembler options if not HAVE_AS_AVR_MRMW_OPTION.
+
 2015-03-11  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline

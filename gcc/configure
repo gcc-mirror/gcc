@@ -24158,6 +24158,39 @@ $as_echo "#define HAVE_AS_NO_MUL_BUG_ABORT_OPTION 1" >>confdefs.h
 fi
     ;;
 
+  avr-*-*)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for -mrmw option" >&5
+$as_echo_n "checking assembler for -mrmw option... " >&6; }
+if test "${gcc_cv_as_avr_mrmw+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_avr_mrmw=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.text' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -mrmw -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_avr_mrmw=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_avr_mrmw" >&5
+$as_echo "$gcc_cv_as_avr_mrmw" >&6; }
+if test $gcc_cv_as_avr_mrmw = yes; then
+
+$as_echo "#define HAVE_AS_AVR_MRMW_OPTION 1" >>confdefs.h
+
+fi
+    ;;
+
   sparc*-*-*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for .register" >&5
 $as_echo_n "checking assembler for .register... " >&6; }
