@@ -747,12 +747,12 @@
 
 (define_insn_reservation "cortex_a57_crypto_simple" 4
   (and (eq_attr "tune" "cortexa57")
-       (eq_attr "type" "crypto_aese,crypto_aesmc,crypto_sha1_fast"))
+       (eq_attr "type" "crypto_aese,crypto_aesmc,crypto_sha1_fast,crypto_sha256_fast"))
   "ca57_cx2")
 
 (define_insn_reservation "cortex_a57_crypto_complex" 7
   (and (eq_attr "tune" "cortexa57")
-       (eq_attr "type" "crypto_sha1_slow"))
+       (eq_attr "type" "crypto_sha1_slow,crypto_sha256_slow"))
   "ca57_cx2+(ca57_cx2_issue,ca57_cx2)")
 
 (define_insn_reservation "cortex_a57_crypto_xor" 7

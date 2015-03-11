@@ -1,3 +1,8 @@
+2015-03-11  Junmo Park  <junmoz.park@samsung.com>
+
+	* config/arm/cortex-a57.md (cortex_a57_crypto_simple): Add crypto_sha256_fast.
+	(cortex_a57_crypto_complex): Add crypto_sha256_slow.
+
 2015-03-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65310
