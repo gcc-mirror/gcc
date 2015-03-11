@@ -1,3 +1,17 @@
+2015-03-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/65296
+	* configure.ac [avr]: Check as for options -mrmw, --mlink-relax.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* doc/invoke.texi (AVR Options) [-mrmw]: Document it.
+	[-mn-flash]: Document it.
+	[__AVR_ARCH__]: Document avrtiny.
+
+	* config/avr/gen-avr-mmcu-specs.c (config.h): Include it.
+	(*asm_relax): Only define spec if HAVE_AS_AVR_MLINK_RELAX_OPTION.
+	(*asm_rmw): Only define spec if HAVE_AS_AVR_MRMW_OPTION.
+
 2015-03-11  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* doc/invoke.texi: Add missing cpu values (z196, zEC12).

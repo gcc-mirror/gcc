@@ -1,8 +1,8 @@
 /* { dg-do compile } */
-/* { dg-options "-march=avrtiny -gdwarf -Os" } */
+/* { dg-options "-mmcu=avrtiny -gdwarf -Os" } */
 
 /* This is a stripped down piece of libgcc2.c that triggerd an ICE for avr with
-   "-march=avrtiny -g -Os"; replace_reg_with_saved_mem would generate:
+   "-mmcu=avrtiny -g -Os"; replace_reg_with_saved_mem would generate:
    (concatn:SI [
                     (reg:SI 18 r18)
                     (reg:SI 19 r19)

@@ -3623,6 +3623,18 @@ AS_HELP_STRING([--disable-fix-cortex-a53-835769],
   [Define if your assembler supports the lituse_jsrdirect relocation.])])
     ;;
 
+  avr-*-*)
+    gcc_GAS_CHECK_FEATURE([--mlink-relax option], gcc_cv_as_avr_mlink_relax,,
+      [--mlink-relax], [.text],,
+      [AC_DEFINE(HAVE_AS_AVR_MLINK_RELAX_OPTION, 1,
+		[Define if your avr assembler supports --mlink-relax option.])])
+
+    gcc_GAS_CHECK_FEATURE([-mrmw option], gcc_cv_as_avr_mrmw,,
+      [-mrmw], [.text],,
+      [AC_DEFINE(HAVE_AS_AVR_MRMW_OPTION, 1,
+		[Define if your avr assembler supports -mrmw option.])])
+    ;;
+
   cris-*-*)
     gcc_GAS_CHECK_FEATURE([-no-mul-bug-abort option],
       gcc_cv_as_cris_no_mul_bug,[2,15,91],
