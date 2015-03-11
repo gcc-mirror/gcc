@@ -17645,8 +17645,10 @@ rs6000_preferred_reload_class (rtx x, enum reg_class rclass)
   machine_mode mode = GET_MODE (x);
   bool is_constant = CONSTANT_P (x);
 
-  /* Do VSX tests before handling traditional floaitng point registers.  */
-  if (TARGET_VSX && VSX_REG_CLASS_P (rclass))
+  /* For VSX, see if we should prefer FLOAT_REGS or ALTIVEC_REGS.  Do not allow
+     the reloading of address expressions using PLUS into floating point
+     registers.  */
+  if (TARGET_VSX && VSX_REG_CLASS_P (rclass) && GET_CODE (x) != PLUS)
     {
       if (is_constant)
 	{
