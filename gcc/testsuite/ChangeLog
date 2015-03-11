@@ -1,3 +1,7 @@
+2015-03-11  Marat Zakirov  <m.zakirov@samsung.com>
+
+	* c-c++-common/asan/no-asan-check-glob.c: New test.
+
 2015-03-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65370

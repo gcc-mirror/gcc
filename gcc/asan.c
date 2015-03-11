@@ -1820,6 +1820,8 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
     {
       if (DECL_THREAD_LOCAL_P (inner))
 	return;
+      if (!ASAN_GLOBALS && is_global_var (inner))
+        return;
       if (!TREE_STATIC (inner))
 	{
 	  /* Automatic vars in the current function will be always
