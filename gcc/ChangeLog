@@ -1,3 +1,7 @@
+2015-03-11  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* doc/invoke.texi: Add missing cpu values (z196, zEC12).
+
 2015-03-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/65242
