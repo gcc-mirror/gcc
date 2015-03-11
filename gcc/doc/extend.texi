@@ -786,26 +786,6 @@ evaluated only once when using @code{__auto_type}, but twice if
 @code{typeof} is used.
 @end itemize
 
-@emph{Compatibility Note:} In addition to @code{typeof}, GCC 2 supported
-a more limited extension that permitted one to write
-
-@smallexample
-typedef @var{T} = @var{expr};
-@end smallexample
-
-@noindent
-with the effect of declaring @var{T} to have the type of the expression
-@var{expr}.  This extension does not work with GCC 3 (versions between
-3.0 and 3.2 crash; 3.2.1 and later give an error).  Code that
-relies on it should be rewritten to use @code{typeof}:
-
-@smallexample
-typedef typeof(@var{expr}) @var{T};
-@end smallexample
-
-@noindent
-This works with all versions of GCC@.
-
 @node Conditionals
 @section Conditionals with Omitted Operands
 @cindex conditional expressions, extensions
@@ -1498,16 +1478,13 @@ structure or an element of an array.  (However, these uses are
 permitted by GCC as extensions.)
 @end itemize
 
-GCC versions before 3.0 allowed zero-length arrays to be statically
-initialized, as if they were flexible arrays.  In addition to those
-cases that were useful, it also allowed initializations in situations
-that would corrupt later data.  Non-empty initialization of zero-length
-arrays is now treated like any case where there are more initializer
+Non-empty initialization of zero-length
+arrays is treated like any case where there are more initializer
 elements than the array holds, in that a suitable warning about ``excess
 elements in array'' is given, and the excess elements (all of them, in
 this case) are ignored.
 
-Instead GCC allows static initialization of flexible array members.
+GCC allows static initialization of flexible array members.
 This is equivalent to defining a new structure containing the original
 structure followed by an array of sufficient size to contain the data.
 E.g.@: in the following, @code{f1} is constructed as if it were declared
@@ -1729,9 +1706,10 @@ argument, these arguments are not macro expanded.
 @cindex escaped newlines
 @cindex newlines (escaped)
 
-Recently, the preprocessor has relaxed its treatment of escaped
-newlines.  Previously, the newline had to immediately follow a
-backslash.  The current implementation allows whitespace in the form
+The preprocessor treatment of escaped newlines is more relaxed 
+than that specified by the C90 standard, which requires the newline
+to immediately follow a backslash.  
+GCC's implementation allows whitespace in the form
 of spaces, horizontal and vertical tabs, and form feeds between the
 backslash and the subsequent newline.  The preprocessor issues a
 warning, but treats it as a valid escaped newline and combines the two
@@ -1905,12 +1883,12 @@ In C, a compound literal designates an unnamed object with static or
 automatic storage duration.  In C++, a compound literal designates a
 temporary object, which only lives until the end of its
 full-expression.  As a result, well-defined C code that takes the
-address of a subobject of a compound literal can be undefined in C++.
+address of a subobject of a compound literal can be undefined in C++,
+so the C++ compiler rejects the conversion of a temporary array to a pointer.
 For instance, if the array compound literal example above appeared
 inside a function, any subsequent use of @samp{foo} in C++ has
 undefined behavior because the lifetime of the array ends after the
-declaration of @samp{foo}.  As a result, the C++ compiler now rejects
-the conversion of a temporary array to a pointer.
+declaration of @samp{foo}.  
 
 As an optimization, the C++ compiler sometimes gives array compound
 literals longer lifetimes: when the array either appears outside a
@@ -2447,21 +2425,6 @@ function that calls a non-@code{const} function usually must not be
 @code{const}.  It does not make sense for a @code{const} function to
 return @code{void}.
 
-The attribute @code{const} is not implemented in GCC versions earlier
-than 2.5.  An alternative way to declare that a function has no side
-effects, which works in the current version and in some older versions,
-is as follows:
-
-@smallexample
-typedef int intfn ();
-
-extern const intfn square;
-@end smallexample
-
-@noindent
-This approach does not work in GNU C++ from 2.6.0 on, since the language
-specifies that the @samp{const} must be attached to the return value.
-
 @item constructor
 @itemx destructor
 @itemx constructor (@var{priority})
@@ -2536,14 +2499,13 @@ On systems that support the @code{visibility} attribute, this
 attribute also implies ``default'' visibility.  It is an error to
 explicitly specify any other visibility.
 
-In previous versions of GCC, the @code{dllexport} attribute was ignored
-for inlined functions, unless the @option{-fkeep-inline-functions} flag
-had been used.  The default behavior now is to emit all dllexported
-inline functions; however, this can cause object file-size bloat, in
-which case the old behavior can be restored by using
-@option{-fno-keep-inline-dllexport}.
+GCC's default behavior is to emit all inline functions with the
+@code{dllexport} attribute.  Since this can cause object file-size bloat,
+you can use @option{-fno-keep-inline-dllexport}, which tells GCC to
+ignore the attribute for inlined functions unless the 
+@option{-fkeep-inline-functions} flag is used instead.
 
-The attribute is also ignored for undefined symbols.
+The attribute is ignored for undefined symbols.
 
 When applied to C++ classes, the attribute marks defined non-inlined
 member functions and static data members as exports.  Static consts
@@ -2595,8 +2557,7 @@ the current translation unit.
 For Microsoft Windows targets the use of the @code{dllimport}
 attribute on functions is not necessary, but provides a small
 performance benefit by eliminating a thunk in the DLL@.  The use of the
-@code{dllimport} attribute on imported variables was required on older
-versions of the GNU linker, but can now be avoided by passing the
+@code{dllimport} attribute on imported variables can be avoided by passing the
 @option{--enable-auto-import} switch to the GNU linker.  As with
 functions, using the attribute for a variable eliminates a thunk in
 the DLL@.
@@ -2931,8 +2892,8 @@ void *memcpy (void *, const void *, size_t)
      __attribute__ ((ifunc ("resolve_memcpy")));
 @end smallexample
 
-Indirect functions cannot be weak, and require a recent binutils (at
-least version 2.20.1), and GNU C library (at least version 2.11.1).
+Indirect functions cannot be weak.  Binutils version 2.20.1 or higher
+and GNU C Library version 2.11.1 are required to use this feature.
 
 @item interrupt
 @cindex interrupt handler functions
@@ -3573,28 +3534,13 @@ restored before calling the @code{noreturn} function.
 It does not make sense for a @code{noreturn} function to have a return
 type other than @code{void}.
 
-The attribute @code{noreturn} is not implemented in GCC versions
-earlier than 2.5.  An alternative way to declare that a function does
-not return, which works in the current version and in some older
-versions, is as follows:
-
-@smallexample
-typedef void voidfn ();
-
-volatile voidfn fatal;
-@end smallexample
-
-@noindent
-This approach does not work in GNU C++.
-
 @item nothrow
 @cindex @code{nothrow} function attribute
 The @code{nothrow} attribute is used to inform the compiler that a
 function cannot throw an exception.  For example, most functions in
 the standard C library can be guaranteed not to throw an exception
 with the notable exceptions of @code{qsort} and @code{bsearch} that
-take function pointer arguments.  The @code{nothrow} attribute is not
-implemented in GCC versions earlier than 3.3.
+take function pointer arguments.
 
 @item nosave_low_regs
 @cindex @code{nosave_low_regs} attribute
@@ -3692,9 +3638,6 @@ Interesting non-pure functions are functions with infinite loops or those
 depending on volatile memory or other system resource, that may change between
 two consecutive calls (such as @code{feof} in a multithreading environment).
 
-The attribute @code{pure} is not implemented in GCC versions earlier
-than 2.96.
-
 @item hot
 @cindex @code{hot} function attribute
 The @code{hot} attribute on a function is used to inform the compiler that
@@ -3705,9 +3648,6 @@ improving locality.
 
 When profile feedback is available, via @option{-fprofile-use}, hot functions
 are automatically detected and this attribute is ignored.
-
-The @code{hot} attribute on functions is not implemented in GCC versions
-earlier than 4.3.
 
 @item cold
 @cindex @code{cold} function attribute
@@ -3723,9 +3663,6 @@ of hot functions that do call marked functions in rare occasions.
 
 When profile feedback is available, via @option{-fprofile-use}, cold functions
 are automatically detected and this attribute is ignored.
-
-The @code{cold} attribute on functions is not implemented in GCC versions
-earlier than 4.3.
 
 @item no_sanitize_address
 @itemx no_address_safety_analysis
@@ -4660,18 +4597,12 @@ the path following the label is more likely than paths that are not so
 annotated.  This attribute is used in cases where @code{__builtin_expect}
 cannot be used, for instance with computed goto or @code{asm goto}.
 
-The @code{hot} attribute on labels is not implemented in GCC versions
-earlier than 4.8.
-
 @item cold
 @cindex @code{cold} label attribute
 The @code{cold} attribute on labels is used to inform the compiler that
 the path following the label is unlikely to be executed.  This attribute
 is used in cases where @code{__builtin_expect} cannot be used, for instance
 with computed goto or @code{asm goto}.
-
-The @code{cold} attribute on labels is not implemented in GCC versions
-earlier than 4.8.
 
 @end table
 
@@ -5985,7 +5916,7 @@ main (void)
 If you replaced @code{short_a} with @code{short} in the variable
 declaration, the above program would abort when compiled with
 @option{-fstrict-aliasing}, which is on by default at @option{-O2} or
-above in recent GCC versions.
+above.
 
 @item visibility
 In C++, attribute visibility (@pxref{Function Attributes}) can also be
@@ -7845,21 +7776,8 @@ static const char __func__[] = "function-name";
 appeared, where function-name is the name of the lexically-enclosing
 function.  This name is the unadorned name of the function.
 
-@code{__FUNCTION__} is another name for @code{__func__}.  Older
-versions of GCC recognize only this name.  However, it is not
-standardized.  For maximum portability, we recommend you use
-@code{__func__}, but provide a fallback definition with the
-preprocessor:
-
-@smallexample
-#if __STDC_VERSION__ < 199901L
-# if __GNUC__ >= 2
-#  define __func__ __FUNCTION__
-# else
-#  define __func__ "<unknown>"
-# endif
-#endif
-@end smallexample
+@code{__FUNCTION__} is another name for @code{__func__}, provided for
+backward compatibility with old versions of GCC.
 
 In C, @code{__PRETTY_FUNCTION__} is yet another name for
 @code{__func__}.  However, in C++, @code{__PRETTY_FUNCTION__} contains
@@ -7897,13 +7815,9 @@ __FUNCTION__ = sub
 __PRETTY_FUNCTION__ = void a::sub(int)
 @end smallexample
 
-These identifiers are not preprocessor macros.  In GCC 3.3 and
-earlier, in C only, @code{__FUNCTION__} and @code{__PRETTY_FUNCTION__}
-were treated as string literals; they could be used to initialize
-@code{char} arrays, and they could be concatenated with other string
-literals.  GCC 3.4 and later treat them as variables, like
-@code{__func__}.  In C++, @code{__FUNCTION__} and
-@code{__PRETTY_FUNCTION__} have always been variables.
+These identifiers are variables, not preprocessor macros, and may not
+be used to initialize @code{char} arrays or be concatenated with other string
+literals.
 
 @node Return Address
 @section Getting the Return or Frame Address of a Function
@@ -9718,10 +9632,6 @@ not otherwise permitted in a static initializer (for example,
 @code{0 && foo ()}).  GCC must be more conservative about evaluating the
 built-in in this case, because it has no opportunity to perform
 optimization.
-
-Previous versions of GCC did not accept this built-in in data
-initializers.  The earliest version where it is completely safe is
-3.0.1.
 @end deftypefn
 
 @deftypefn {Built-in Function} long __builtin_expect (long @var{exp}, long @var{c})
@@ -17894,9 +17804,6 @@ if @code{attribute((optimize("STRING")))} was specified for that
 function.  The parenthesis around the options is optional.
 @xref{Function Attributes}, for more information about the
 @code{optimize} attribute and the attribute syntax.
-
-The @samp{#pragma GCC optimize} pragma is not implemented in GCC
-versions earlier than 4.4.
 @end table
 
 @table @code
@@ -17910,9 +17817,6 @@ options.  It is intended for include files where you temporarily want
 to switch to using a different @samp{#pragma GCC target} or
 @samp{#pragma GCC optimize} and then to pop back to the previous
 options.
-
-The @samp{#pragma GCC push_options} and @samp{#pragma GCC pop_options}
-pragmas are not implemented in GCC versions earlier than 4.4.
 @end table
 
 @table @code
@@ -17922,9 +17826,6 @@ pragmas are not implemented in GCC versions earlier than 4.4.
 This pragma clears the current @code{#pragma GCC target} and
 @code{#pragma GCC optimize} to use the default switches as specified
 on the command line.
-
-The @samp{#pragma GCC reset_options} pragma is not implemented in GCC
-versions earlier than 4.4.
 @end table
 
 @node Loop-Specific Pragmas
@@ -18557,14 +18458,11 @@ user with a way of explicitly directing the compiler to emit entities
 with vague linkage (and debugging information) in a particular
 translation unit.
 
-@emph{Note:} As of GCC 2.7.2, these @code{#pragma}s are not useful in
-most cases, because of COMDAT support and the ``key method'' heuristic
+@emph{Note:} These @code{#pragma}s have been superceded as of GCC 2.7.2
+by COMDAT support and the ``key method'' heuristic
 mentioned in @ref{Vague Linkage}.  Using them can actually cause your
 program to grow due to unnecessary out-of-line copies of inline
-functions.  Currently (3.4) the only benefit of these
-@code{#pragma}s is reduced duplication of debugging information, and
-that should be addressed soon on DWARF 2 targets with the use of
-COMDAT groups.
+functions.
 
 @table @code
 @item #pragma interface
@@ -18607,12 +18505,6 @@ suffixes, such as @samp{.h} or @samp{.C} or @samp{.cc}.} as your source
 file.  For example, in @file{allclass.cc}, giving just
 @samp{#pragma implementation}
 by itself is equivalent to @samp{#pragma implementation "allclass.h"}.
-
-In versions of GNU C++ prior to 2.6.0 @file{allclass.h} was treated as
-an implementation file whenever you would include it from
-@file{allclass.cc} even if you never specified @samp{#pragma
-implementation}.  This was deemed to be more trouble than it was worth,
-however, and disabled.
 
 Use the string argument if you want a single implementation file to
 include code from multiple header files.  (You must also use
