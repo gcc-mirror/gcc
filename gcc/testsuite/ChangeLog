@@ -1,3 +1,8 @@
+2015-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/asan/no-asan-check-glob.c: Add -ffat-lto-objects
+	to dg-options, fix up dg-skip-if.
+
 2015-03-11  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/65296

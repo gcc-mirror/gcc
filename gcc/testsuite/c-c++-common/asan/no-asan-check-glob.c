@@ -1,6 +1,6 @@
-/* { dg-options "--param asan-globals=0 -fdump-tree-asan" } */
+/* { dg-options "--param asan-globals=0 -fdump-tree-asan1 -ffat-lto-objects" } */
 /* { dg-do compile } */
-/* { dg-skip-if "" { *-*-* } { "-O0" } { "*" } } */
+/* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
 
 extern int a;
 
