@@ -1,3 +1,9 @@
+2015-03-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/65296
+	* gcc.target/avr/tiny-memx: Use -mmcu instead of -march.
+	* gcc.target/avr/tiny-caller-save.c: Same.
+
 2015-03-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/65242

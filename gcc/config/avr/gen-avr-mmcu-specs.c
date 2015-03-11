@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "config.h"
+
 #define IN_GEN_AVR_MMCU_TEXI
 
 #include "avr-devices.c"
@@ -155,11 +157,15 @@ print_mcu (const avr_mcu_t *mcu)
 
   fprintf (f, "*asm_arch:\n\t-mmcu=%s\n\n", arch->name);
 
+#ifdef HAVE_AS_AVR_MLINK_RELAX_OPTION
   fprintf (f, "*asm_relax:\n\t%s\n\n", ASM_RELAX_SPEC);
+#endif // have as --mlink-relax
 
+#ifdef HAVE_AS_AVR_MRMW_OPTION
   fprintf (f, "*asm_rmw:\n%s\n\n", rmw
            ? "\t%{!mno-rmw: -mrmw}"
            : "\t%{mrmw}");
+#endif // have as -mrmw
 
   fprintf (f, "*asm_errata_skip:\n%s\n\n", errata_skip
            ? "\t%{mno-skip-bug}"
