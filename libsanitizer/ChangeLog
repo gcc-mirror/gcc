@@ -1,3 +1,8 @@
+2015-03-11  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* tsan/tsan_rtl_report.cc (ScopedReport::AddThread): Cherry pick
+	upstream 224508 and 224755.
+
 2015-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/63958
