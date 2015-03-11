@@ -1,3 +1,12 @@
+2015-03-11  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2014-12-04  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/56917
+	* fold-const.c (fold_unary_loc): Perform the negation in A's type
+	when transforming ~ (A - 1) or ~ (A + -1) to -A.
+
 2015-03-10  Yvan Roux  <yvan.roux@linaro.org>
 
 	Backport from trunk r220489.

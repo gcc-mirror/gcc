@@ -1,3 +1,11 @@
+2015-03-11  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2014-12-04  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/56917
+	* c-c++-common/ubsan/pr56917.c: New test.
+
 2015-03-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from mainline

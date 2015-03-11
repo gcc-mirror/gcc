@@ -8324,9 +8324,14 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 		    && integer_onep (TREE_OPERAND (arg0, 1)))
 		   || (TREE_CODE (arg0) == PLUS_EXPR
 		       && integer_all_onesp (TREE_OPERAND (arg0, 1)))))
-	return fold_build1_loc (loc, NEGATE_EXPR, type,
-			    fold_convert_loc (loc, type,
-					      TREE_OPERAND (arg0, 0)));
+	{
+	  /* Perform the negation in ARG0's type and only then convert
+	     to TYPE as to avoid introducing undefined behavior.  */
+	  tree t = fold_build1_loc (loc, NEGATE_EXPR,
+				    TREE_TYPE (TREE_OPERAND (arg0, 0)),
+				    TREE_OPERAND (arg0, 0));
+	  return fold_convert_loc (loc, type, t);
+	}
       /* Convert ~(X ^ Y) to ~X ^ Y or X ^ ~Y if ~X or ~Y simplify.  */
       else if (TREE_CODE (arg0) == BIT_XOR_EXPR
 	       && (tem = fold_unary_loc (loc, BIT_NOT_EXPR, type,
