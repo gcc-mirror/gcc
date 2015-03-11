@@ -1,3 +1,10 @@
+2015-03-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* cp-gimplify.c (simple_empty_class_p): New.
+	* cp-gimplify.c (cp_gimplify_expr): Handle RETURN_EXPR.  Abstract
+	the code for empty class copies into simple_empty_class_p, and
+	adapt it to handle COMPOUND_EXPRs.
+
 2015-03-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65370
