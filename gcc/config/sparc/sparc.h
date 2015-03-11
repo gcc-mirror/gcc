@@ -1293,7 +1293,7 @@ do {									\
    access it from the current frame pointer.  We can access it from the
    previous frame pointer though by reading a value from the register window
    save area.  */
-#define RETURN_ADDR_IN_PREVIOUS_FRAME
+#define RETURN_ADDR_IN_PREVIOUS_FRAME 1
 
 /* This is the offset of the return address to the true next instruction to be
    executed for the current function.  */

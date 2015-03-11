@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -421,6 +421,11 @@ package Namet is
    --  fields set to zero/false. The contents of Name_Buffer and Name_Len are
    --  not modified by this call. Note that it is permissible for Name_Len to
    --  be set to zero to lookup the null name string.
+
+   function Name_Find_Str (S : String) return Name_Id;
+   --  Similar to Name_Find, except that the string is provided as an argument.
+   --  This call destroys the contents of Name_Buffer and Name_Len (by storing
+   --  the given string there.
 
    function Name_Enter return Name_Id;
    --  Name_Enter has the same calling interface as Name_Find. The difference

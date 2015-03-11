@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -319,15 +319,35 @@ package body System.Img_Dec is
                DA : Natural := Digits_After_Point;
                --  Digits remaining to output after point
 
-               LZ : constant Integer :=
-                      Integer'Max (0, Integer'Min (DA, -Digits_Before_Point));
-               --  Number of leading zeroes after point
+               LZ : constant Integer := Integer'Min (DA, -Digits_Before_Point);
+               --  Number of leading zeroes after point. Note: there used to be
+               --  a Max of this result with zero, but that's redundant, since
+               --  we know DA is positive, and because of the test above, we
+               --  know that -Digits_Before_Point >= 0.
 
             begin
                Set_Zeroes (LZ);
                DA := DA - LZ;
 
                if DA < ND then
+
+                  --  Note: it is definitely possible for the above condition
+                  --  to be True, for example:
+
+                  --    V => 1234, Scale => 5, Fore => 0, After => 1, Exp => 0
+
+                  --  but in this case DA = 0, ND = 1, FD = 1, FD + DA-1 = 0
+                  --  so the arguments in the call are (1, 0) meaning that no
+                  --  digits are output.
+
+                  --  No obvious example exists where the following call to
+                  --  Set_Digits actually outputs some digits, but we lack a
+                  --  proof that no such example exists.
+
+                  --  So it is safer to retain this call, even though as a
+                  --  result it is hard (or perhaps impossible) to create a
+                  --  coverage test for the inlined code of the call.
+
                   Set_Digits (FD, FD + DA - 1);
 
                else

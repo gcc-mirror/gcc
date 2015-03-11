@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fno-ipa-icf" } */
 
 #include "atomic-comp-swap-release-acquire.x"
 

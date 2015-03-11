@@ -1,3 +1,23 @@
+2015-03-06  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* MAINTAINERS (CPU Port Maintainers): Add myself
+	i386 vector ISA extns mantainer.
+
+2015-03-13  Jeff Law  <law@redhat.com>
+
+	* MAINTAINERS: Remove Paul Brook as a Fortran and ARM
+	maintainer.
+	Remove Richard Henderson as a maintainer for the x86 port.
+
+2015-03-03  Joern Rennecke  <gnu@amylaar.uk>
+
+	* MAINTAINERS (CPU Port Maintainers): Update my email address.
+
+2015-03-02  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* MAINTAINERS (Various Maintainers): Add myself as libmpx,
+	pointer bounds checker and i386 MPX maintainer.
+
 2015-02-26  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* MAINTAINERS (Various Maintainers): Add self as docs co-maintainer.

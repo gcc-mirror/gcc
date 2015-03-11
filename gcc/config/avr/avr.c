@@ -81,6 +81,8 @@
 #include "basic-block.h"
 #include "df.h"
 #include "builtins.h"
+#include "context.h"
+#include "tree-pass.h"
 
 /* Maximal allowed offset for an address in the LD command */
 #define MAX_LD_OFFSET(MODE) (64 - (signed)GET_MODE_SIZE (MODE))
@@ -329,6 +331,55 @@ avr_to_int_mode (rtx x)
 }
 
 
+static const pass_data avr_pass_data_recompute_notes =
+{
+  RTL_PASS,      // type
+  "",            // name (will be patched)
+  OPTGROUP_NONE, // optinfo_flags
+  TV_DF_SCAN,    // tv_id
+  0,             // properties_required
+  0,             // properties_provided
+  0,             // properties_destroyed
+  0,             // todo_flags_start
+  TODO_df_finish | TODO_df_verify // todo_flags_finish
+};
+
+
+class avr_pass_recompute_notes : public rtl_opt_pass
+{
+public:
+  avr_pass_recompute_notes (gcc::context *ctxt, const char *name)
+    : rtl_opt_pass (avr_pass_data_recompute_notes, ctxt)
+  {
+    this->name = name;
+  }
+
+  virtual unsigned int execute (function*)
+  {
+    df_note_add_problem ();
+    df_analyze ();
+
+    return 0;
+  }
+}; // avr_pass_recompute_notes
+
+
+static void
+avr_register_passes (void)
+{
+  /* This avr-specific pass (re)computes insn notes, in particular REG_DEAD
+     notes which are used by `avr.c::reg_unused_after' and branch offset
+     computations.  These notes must be correct, i.e. there must be no
+     dangling REG_DEAD notes; otherwise wrong code might result, cf. PR64331.
+
+     DF needs (correct) CFG, hence right before free_cfg is the last
+     opportunity to rectify notes.  */
+
+  register_pass (new avr_pass_recompute_notes (g, "avr-notes-free-cfg"),
+                 PASS_POS_INSERT_BEFORE, "*free_cfg", 1);
+}
+
+
 /* Implement `TARGET_OPTION_OVERRIDE'.  */
 
 static void
@@ -411,6 +462,11 @@ avr_option_override (void)
   init_machine_status = avr_init_machine_status;
 
   avr_log_set_avr_log();
+
+  /* Register some avr-specific pass(es).  There is no canonical place for
+     pass registration.  This function is convenient.  */
+
+  avr_register_passes ();
 }
 
 /* Function to set up the backend function structure.  */

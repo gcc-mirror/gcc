@@ -308,10 +308,12 @@ package Sem_Util is
    --  remains in the Examiner (JB01-005). Note that the Examiner does not
    --  count package declarations in later declarative items.
 
-   procedure Check_Nested_Access (Ent : Entity_Id);
+   procedure Check_Nested_Access (N : Node_Id; Ent : Entity_Id);
    --  Check whether Ent denotes an entity declared in an uplevel scope, which
-   --  is accessed inside a nested procedure, and set Has_Up_Level_Access flag
-   --  accordingly. This is currently only enabled for VM_Target /= No_VM.
+   --  is accessed inside a nested procedure, and set the Has_Uplevel_Reference
+   --  flag accordingly. This is currently only enabled for if on a VM target,
+   --  or if Opt.Unnest_Subprogram_Mode is active. N is the node for the
+   --  possible uplevel reference.
 
    procedure Check_No_Hidden_State (Id : Entity_Id);
    --  Determine whether object or state Id introduces a hidden state. If this

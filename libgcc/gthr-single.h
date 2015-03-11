@@ -38,7 +38,7 @@ typedef int __gthread_recursive_mutex_t;
 #define __GTHREAD_MUTEX_INIT_FUNCTION(mx)
 #define __GTHREAD_RECURSIVE_MUTEX_INIT 0
 
-#define UNUSED __attribute__((unused))
+#define UNUSED __attribute__((__unused__))
 
 #ifdef _LIBOBJC
 

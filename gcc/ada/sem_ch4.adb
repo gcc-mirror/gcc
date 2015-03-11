@@ -2683,7 +2683,9 @@ package body Sem_Ch4 is
 
          if Present (Common_Type) then
             Set_Etype (L, Common_Type);
-            Set_Is_Overloaded (L, False);
+
+            --  The left operand may still be overloaded, to be resolved using
+            --  the Common_Type.
 
          else
             Error_Msg_N ("cannot resolve membership operation", N);

@@ -2411,18 +2411,64 @@ nonremovable_p (cgraph_node *node, void *)
   return !node->can_remove_if_no_direct_calls_and_refs_p ();
 }
 
-/* Return true when function cgraph_node and its aliases can be removed from
-   callgraph if all direct calls are eliminated.  */
+/* Return true if whole comdat group can be removed if there are no direct
+   calls to THIS.  */
 
 bool
-cgraph_node::can_remove_if_no_direct_calls_p (void)
+cgraph_node::can_remove_if_no_direct_calls_p (bool will_inline)
 {
-  /* Extern inlines can always go, we will use the external definition.  */
-  if (DECL_EXTERNAL (decl))
-    return true;
-  if (address_taken)
+  struct ipa_ref *ref;
+
+  /* For local symbols or non-comdat group it is the same as 
+     can_remove_if_no_direct_calls_p.  */
+  if (!externally_visible || !same_comdat_group)
+    {
+      if (DECL_EXTERNAL (decl))
+	return true;
+      if (address_taken)
+	return false;
+      return !call_for_symbol_and_aliases (nonremovable_p, NULL, true);
+    }
+
+  if (will_inline && address_taken)
     return false;
-  return !call_for_symbol_and_aliases (nonremovable_p, NULL, true);
+
+  /* Otheriwse check if we can remove the symbol itself and then verify
+     that only uses of the comdat groups are direct call to THIS
+     or its aliases.   */
+  if (!can_remove_if_no_direct_calls_and_refs_p ())
+    return false;
+
+  /* Check that all refs come from within the comdat group.  */
+  for (int i = 0; iterate_referring (i, ref); i++)
+    if (ref->referring->get_comdat_group () != get_comdat_group ())
+      return false;
+
+  struct cgraph_node *target = ultimate_alias_target ();
+  for (cgraph_node *next = dyn_cast<cgraph_node *> (same_comdat_group);
+       next != this; next = dyn_cast<cgraph_node *> (next->same_comdat_group))
+    {
+      if (!externally_visible)
+	continue;
+      if (!next->alias
+	  && !next->can_remove_if_no_direct_calls_and_refs_p ())
+	return false;
+
+      /* If we see different symbol than THIS, be sure to check calls.  */
+      if (next->ultimate_alias_target () != target)
+	for (cgraph_edge *e = next->callers; e; e = e->next_caller)
+	  if (e->caller->get_comdat_group () != get_comdat_group ()
+	      || will_inline)
+	    return false;
+
+      /* If function is not being inlined, we care only about
+	 references outside of the comdat group.  */
+      if (!will_inline)
+        for (int i = 0; next->iterate_referring (i, ref); i++)
+	  if (ref->referring->get_comdat_group () != get_comdat_group ())
+	    return false;
+    }
+  return true;
 }
 
 /* Return true when function cgraph_node can be expected to be removed
@@ -2440,21 +2486,49 @@ cgraph_node::can_remove_if_no_direct_calls_p (void)
    linkonce section.  */
 
 bool
-cgraph_node::will_be_removed_from_program_if_no_direct_calls_p (void)
+cgraph_node::will_be_removed_from_program_if_no_direct_calls_p
+	 (bool will_inline)
 {
   gcc_assert (!global.inlined_to);
+  if (DECL_EXTERNAL (decl))
+    return true;
 
-  if (call_for_symbol_and_aliases (used_from_object_file_p_worker,
-				   NULL, true))
-    return false;
   if (!in_lto_p && !flag_whole_program)
-    return only_called_directly_p ();
-  else
     {
-       if (DECL_EXTERNAL (decl))
-         return true;
-      return can_remove_if_no_direct_calls_p ();
+      /* If the symbol is in comdat group, we need to verify that whole comdat
+	 group becomes unreachable.  Technically we could skip references from
+	 within the group, too.  */
+      if (!only_called_directly_p ())
+	return false;
+      if (same_comdat_group && externally_visible)
+	{
+	  struct cgraph_node *target = ultimate_alias_target ();
+
+	  if (will_inline && address_taken)
+	    return true;
+	  for (cgraph_node *next = dyn_cast<cgraph_node *> (same_comdat_group);
+	       next != this;
+	       next = dyn_cast<cgraph_node *> (next->same_comdat_group))
+	    {
+	      if (!externally_visible)
+		continue;
+	      if (!next->alias
+		  && !next->only_called_directly_p ())
+		return false;
+
+	      /* If we see different symbol than THIS,
+		 be sure to check calls.  */
+	      if (next->ultimate_alias_target () != target)
+		for (cgraph_edge *e = next->callers; e; e = e->next_caller)
+		  if (e->caller->get_comdat_group () != get_comdat_group ()
+		      || will_inline)
+		    return false;
+	    }
+	}
+      return true;
     }
+  else
+    return can_remove_if_no_direct_calls_p (will_inline);
 }
 
 
@@ -3325,4 +3399,16 @@ cgraph_node::call_for_symbol_and_aliases_1 (bool (*callback) (cgraph_node *,
     }
   return false;
 }
+
+/* Return true if NODE has thunk.  */
+
+bool
+cgraph_node::has_thunk_p (cgraph_node *node, void *)
+{
+  for (cgraph_edge *e = node->callers; e; e = e->next_caller)
+    if (e->caller->thunk.thunk_p)
+      return true;
+  return false;
+}
+
 #include "gt-cgraph.h"

@@ -491,10 +491,13 @@ adjust_hard_regno_cost (int hard_regno, int incr)
    pseudos in complicated situations where pseudo sizes are different.
 
    If TRY_ONLY_HARD_REGNO >= 0, consider only that hard register,
-   otherwise consider all hard registers in REGNO's class.  */
+   otherwise consider all hard registers in REGNO's class.
+
+   If REGNO_SET is not empty, only hard registers from the set are
+   considered.  */
 static int
-find_hard_regno_for (int regno, int *cost, int try_only_hard_regno,
-		     bool first_p)
+find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
+		       bool first_p, HARD_REG_SET regno_set)
 {
   HARD_REG_SET conflict_set;
   int best_cost = INT_MAX, best_priority = INT_MIN, best_usage = INT_MAX;
@@ -509,7 +512,13 @@ find_hard_regno_for (int regno, int *cost, int try_only_hard_regno,
   bool *rclass_intersect_p;
   HARD_REG_SET impossible_start_hard_regs, available_regs;
 
-  COPY_HARD_REG_SET (conflict_set, lra_no_alloc_regs);
+  if (hard_reg_set_empty_p (regno_set))
+    COPY_HARD_REG_SET (conflict_set, lra_no_alloc_regs);
+  else
+    {
+      COMPL_HARD_REG_SET (conflict_set, regno_set);
+      IOR_HARD_REG_SET (conflict_set, lra_no_alloc_regs);
+    }
   rclass = regno_allocno_class_array[regno];
   rclass_intersect_p = ira_reg_classes_intersect_p[rclass];
   curr_hard_regno_costs_check++;
@@ -678,6 +687,33 @@ find_hard_regno_for (int regno, int *cost, int try_only_hard_regno,
   if (best_hard_regno >= 0)
     *cost = best_cost - lra_reg_info[regno].freq;
   return best_hard_regno;
+}
+
+/* A wrapper for find_hard_regno_for_1 (see comments for that function
+   description).  This function tries to find a hard register for
+   preferred class first if it is worth.  */
+static int
+find_hard_regno_for (int regno, int *cost, int try_only_hard_regno, bool first_p)
+{
+  int hard_regno;
+  HARD_REG_SET regno_set;
+
+  /* Only original pseudos can have a different preferred class.  */
+  if (try_only_hard_regno < 0 && regno < lra_new_regno_start)
+    {
+      enum reg_class pref_class = reg_preferred_class (regno);
+      
+      if (regno_allocno_class_array[regno] != pref_class)
+	{
+	  hard_regno = find_hard_regno_for_1 (regno, cost, -1, first_p,
+					      reg_class_contents[pref_class]);
+	  if (hard_regno >= 0)
+	    return hard_regno;
+	}
+    }
+  CLEAR_HARD_REG_SET (regno_set);
+  return find_hard_regno_for_1 (regno, cost, try_only_hard_regno, first_p,
+				regno_set);
 }
 
 /* Current value used for checking elements in

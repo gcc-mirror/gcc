@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -309,8 +309,9 @@ package body Sprint is
    --  characters {} if the Do_Overflow flag is set on the node N.
 
    procedure Write_Param_Specs (N : Node_Id);
-   --  Output parameter specifications for node (which is either a function
-   --  or procedure specification with a Parameter_Specifications field)
+   --  Output parameter specifications for node N (which is a subprogram, or
+   --  entry or entry family or access-subprogram-definition, all of which
+   --  have a Parameter_Specificatioons field).
 
    procedure Write_Rewrite_Str (S : String);
    --  Writes out a string (typically containing <<< or >>>}) for a node
@@ -2703,10 +2704,13 @@ package body Sprint is
                --  it is emitted when the access definition is displayed.
 
                if Null_Exclusion_Present (Node)
-                 and then Nkind (Parameter_Type (Node))
-                   /= N_Access_Definition
+                 and then Nkind (Parameter_Type (Node)) /= N_Access_Definition
                then
                   Write_Str ("not null ");
+               end if;
+
+               if Aliased_Present (Node) then
+                  Write_Str ("aliased ");
                end if;
 
                Sprint_Node (Parameter_Type (Node));
@@ -4551,17 +4555,25 @@ package body Sprint is
    -----------------------
 
    procedure Write_Param_Specs (N : Node_Id) is
-      Specs  : List_Id;
+      Specs         : constant List_Id := Parameter_Specifications (N);
+      Specs_Present : constant Boolean := Is_Non_Empty_List (Specs);
+
+      Ent    : Entity_Id;
+      Extras : Node_Id;
       Spec   : Node_Id;
       Formal : Node_Id;
 
+      Output : Boolean := False;
+      --  Set true if we output at least one parameter
+
    begin
-      Specs := Parameter_Specifications (N);
+      --  Write out explicit specs from Parameter_Speficiations list
 
-      if Is_Non_Empty_List (Specs) then
+      if Specs_Present then
          Write_Str_With_Col_Check (" (");
-         Spec := First (Specs);
+         Output := True;
 
+         Spec := First (Specs);
          loop
             Sprint_Node (Spec);
             Formal := Defining_Identifier (Spec);
@@ -4576,17 +4588,42 @@ package body Sprint is
                Write_Str ("; ");
             end if;
          end loop;
+      end if;
 
-         --  Write out any extra formals
+      --  See if we have extra formals
 
-         while Present (Extra_Formal (Formal)) loop
-            Formal := Extra_Formal (Formal);
-            Write_Str ("; ");
-            Write_Name_With_Col_Check (Chars (Formal));
-            Write_Str (" : ");
-            Write_Name_With_Col_Check (Chars (Etype (Formal)));
-         end loop;
+      if Nkind_In (N, N_Function_Specification,
+                      N_Procedure_Specification)
+      then
+         Ent := Defining_Entity (N);
 
+         --  Loop to write extra formals (if any)
+
+         if Present (Ent) and then Is_Subprogram (Ent) then
+            Extras := Extra_Formals (Ent);
+
+            if Present (Extras) then
+               if not Specs_Present then
+                  Write_Str_With_Col_Check (" (");
+                  Output := True;
+               end if;
+
+               Formal := Extras;
+               while Present (Formal) loop
+                  if Specs_Present or else Formal /= Extras then
+                     Write_Str ("; ");
+                  end if;
+
+                  Write_Name_With_Col_Check (Chars (Formal));
+                  Write_Str (" : ");
+                  Write_Name_With_Col_Check (Chars (Etype (Formal)));
+                  Formal := Extra_Formal (Formal);
+               end loop;
+            end if;
+         end if;
+      end if;
+
+      if Output then
          Write_Char (')');
       end if;
    end Write_Param_Specs;

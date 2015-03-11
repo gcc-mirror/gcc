@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -80,7 +80,7 @@ is
                   Next        => Next,
                   Has_Element => Has_Element,
                   Element     => Element),
-     Default_Initial_Condition;
+     Default_Initial_Condition => Is_Empty (Map);
    pragma Preelaborable_Initialization (Map);
 
    type Cursor is private;

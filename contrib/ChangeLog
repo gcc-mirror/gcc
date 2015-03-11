@@ -1,3 +1,7 @@
+2015-03-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* dg-extract-results.sh: Check that the necessary python modules exist.
+
 2015-02-05  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* gcc_update (files_and_dependencies): Add rules for liboffloadmic and

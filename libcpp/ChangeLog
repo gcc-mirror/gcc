@@ -1,3 +1,8 @@
+2015-03-02  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR target/65261
+	* lex.c (search_line_fast): Silence ubsan errors.
+
 2015-02-03    <dodji@redhat.com>
 
 	PR preprocessor/64803

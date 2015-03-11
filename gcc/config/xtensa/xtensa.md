@@ -24,6 +24,7 @@
   (A1_REG		1)
   (A7_REG		7)
   (A8_REG		8)
+  (A9_REG		9)
 
   (UNSPEC_NOP		2)
   (UNSPEC_PLT		3)
@@ -44,6 +45,7 @@
   (UNSPECV_S32C1I	5)
   (UNSPECV_EH_RETURN	6)
   (UNSPECV_SET_TP	7)
+  (UNSPECV_BLOCKAGE	8)
 ])
 
 ;; This code iterator allows signed and unsigned widening multiplications
@@ -1658,9 +1660,11 @@
 (define_insn "return"
   [(return)
    (use (reg:SI A0_REG))]
-  "reload_completed"
+  "(TARGET_WINDOWED_ABI || !xtensa_current_frame_size) && reload_completed"
 {
-  return (TARGET_DENSITY ? "retw.n" : "retw");
+  return TARGET_WINDOWED_ABI ?
+      (TARGET_DENSITY ? "retw.n" : "retw") :
+      (TARGET_DENSITY ? "ret.n" : "ret");
 }
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
@@ -1681,7 +1685,7 @@
   [(return)]
   ""
 {
-  emit_jump_insn (gen_return ());
+  xtensa_expand_epilogue ();
   DONE;
 })
 
@@ -1700,7 +1704,7 @@
    (match_operand:SI 1 "general_operand" "")
    (match_operand:SI 2 "general_operand" "")
    (match_operand:SI 3 "" "")]
-  ""
+  "TARGET_WINDOWED_ABI"
 {
   xtensa_expand_nonlocal_goto (operands);
   DONE;
@@ -1713,7 +1717,18 @@
 ;; already been applied to the handler, but the generic version doesn't
 ;; allow us to frob it quite enough, so we just frob here.
 
-(define_insn_and_split "eh_return"
+(define_expand "eh_return"
+  [(use (match_operand 0 "general_operand"))]
+  ""
+{
+  if (TARGET_WINDOWED_ABI)
+    emit_insn (gen_eh_set_a0_windowed (operands[0]));
+  else
+    emit_insn (gen_eh_set_a0_call0 (operands[0]));
+  DONE;
+})
+
+(define_insn_and_split "eh_set_a0_windowed"
   [(set (reg:SI A0_REG)
 	(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")]
 			    UNSPECV_EH_RETURN))
@@ -1725,6 +1740,29 @@
    (set (match_dup 1) (plus:SI (match_dup 1) (const_int 2)))
    (set (reg:SI A0_REG) (rotatert:SI (match_dup 1) (const_int 2)))]
   "")
+
+(define_insn_and_split "eh_set_a0_call0"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")]
+		    UNSPECV_EH_RETURN)
+   (clobber (match_scratch:SI 1 "=r"))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  xtensa_set_return_address (operands[0], operands[1]);
+  DONE;
+})
+
+;; UNSPEC_VOLATILE is considered to use and clobber all hard registers and
+;; all of memory.  This blocks insns from being moved across this point.
+
+(define_insn "blockage"
+  [(unspec_volatile [(const_int 0)] UNSPECV_BLOCKAGE)]
+  ""
+  ""
+  [(set_attr "length" "0")
+   (set_attr "type" "nop")])
 
 ;; Setting up a frame pointer is tricky for Xtensa because GCC doesn't
 ;; know if a frame pointer is required until the reload pass, and

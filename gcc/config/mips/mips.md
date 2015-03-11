@@ -7150,7 +7150,8 @@
 			  (match_operand:GPR 3 "reg_or_0_operand")))]
   "ISA_HAS_CONDMOVE || ISA_HAS_SEL"
 {
-  if (ISA_HAS_SEL && !INTEGRAL_MODE_P (GET_MODE (XEXP (operands[1], 0))))
+  if (!ISA_HAS_FP_CONDMOVE
+      && !INTEGRAL_MODE_P (GET_MODE (XEXP (operands[1], 0))))
     FAIL;
 
   mips_expand_conditional_move (operands);

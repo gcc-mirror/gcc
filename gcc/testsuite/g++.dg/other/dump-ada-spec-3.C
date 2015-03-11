@@ -1,8 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fdump-ada-spec" } */
 
-#include <iostream>
-
 using namespace std;
 
 class Base {
@@ -14,7 +12,6 @@ class Base {
 };
 
 void Base::Primitive () {
-  cout << "C++ Primitive  " << this->My_V << "\n";
 }
 
 Base::Base () {

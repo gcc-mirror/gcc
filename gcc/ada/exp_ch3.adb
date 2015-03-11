@@ -6138,11 +6138,9 @@ package body Exp_Ch3 is
          end;
       end if;
 
-      --  At this point the object is fully initialized by either invoking the
-      --  related type init proc, routine [Deep_]Initialize or performing in-
-      --  place assingments for an array object. If the related type is subject
-      --  to pragma Default_Initial_Condition, add a runtime check to verify
-      --  the assumption of the pragma. Generate:
+      --  If the object is default initialized and its type is subject to
+      --  pragma Default_Initial_Condition, add a runtime check to verify
+      --  the assumption of the pragma (SPARK RM 7.3.3). Generate:
 
       --    <Base_Typ>Default_Init_Cond (<Base_Typ> (Def_Id));
 
@@ -6152,6 +6150,7 @@ package body Exp_Ch3 is
         and then (Has_Default_Init_Cond           (Base_Typ)
                     or else
                   Has_Inherited_Default_Init_Cond (Base_Typ))
+        and then not Has_Init_Expression (N)
       then
          declare
             DIC_Call : constant Node_Id :=

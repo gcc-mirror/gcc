@@ -1291,7 +1291,8 @@ inline_summary_t::duplicate (cgraph_node *src,
 	  set_hint_predicate (&info->array_index, p);
 	}
     }
-  inline_update_overall_summary (dst);
+  if (!dst->global.inlined_to)
+    inline_update_overall_summary (dst);
 }
 
 
@@ -3924,10 +3925,11 @@ do_estimate_growth_1 (struct cgraph_node *node, void *data)
           continue;
 	}
 
-      if (e->caller == d->node
-	  || (e->caller->global.inlined_to
-	      && e->caller->global.inlined_to == d->node))
-	d->self_recursive = true;
+      if (e->recursive_p ())
+	{
+	  d->self_recursive = true;
+	  continue;
+	}
       d->growth += estimate_edge_growth (e);
     }
   return false;
@@ -3976,6 +3978,9 @@ check_callers (cgraph_node *node, int *max_callers)
 {
   ipa_ref *ref;
 
+  if (!node->can_remove_if_no_direct_calls_and_refs_p ())
+    return true;
+
   for (cgraph_edge *e = node->callers; e; e = e->next_caller)
     {
       (*max_callers)--;
@@ -4005,26 +4010,13 @@ growth_likely_positive (struct cgraph_node *node,
   struct cgraph_edge *e;
   gcc_checking_assert (edge_growth > 0);
 
-  /* Unlike for functions called once, we play unsafe with
-     COMDATs.  We can allow that since we know functions
-     in consideration are small (and thus risk is small) and
-     moreover grow estimates already accounts that COMDAT
-     functions may or may not disappear when eliminated from
-     current unit. With good probability making aggressive
-     choice in all units is going to make overall program
-     smaller.
-
-     Consequently we ask cgraph_can_remove_if_no_direct_calls_p
-     instead of
-     cgraph_will_be_removed_from_program_if_no_direct_calls  */
-  if (DECL_EXTERNAL (node->decl)
-      || !node->can_remove_if_no_direct_calls_p ())
+  /* First quickly check if NODE is removable at all.  */
+  if (DECL_EXTERNAL (node->decl))
+    return true;
+  if (!node->can_remove_if_no_direct_calls_and_refs_p ()
+      || node->address_taken)
     return true;
 
-  if (!node->will_be_removed_from_program_if_no_direct_calls_p ()
-      && (!DECL_COMDAT (node->decl)
-	  || !node->can_remove_if_no_direct_calls_p ()))
-    return true;
   max_callers = inline_summaries->get (node)->size * 4 / edge_growth + 2;
 
   for (e = node->callers; e; e = e->next_caller)
@@ -4039,6 +4031,22 @@ growth_likely_positive (struct cgraph_node *node,
   FOR_EACH_ALIAS (node, ref)
     if (check_callers (dyn_cast <cgraph_node *> (ref->referring), &max_callers))
       return true;
+
+  /* Unlike for functions called once, we play unsafe with
+     COMDATs.  We can allow that since we know functions
+     in consideration are small (and thus risk is small) and
+     moreover grow estimates already accounts that COMDAT
+     functions may or may not disappear when eliminated from
+     current unit. With good probability making aggressive
+     choice in all units is going to make overall program
+     smaller.  */
+  if (DECL_COMDAT (node->decl))
+    {
+      if (!node->can_remove_if_no_direct_calls_p ())
+	return true;
+    }
+  else if (!node->will_be_removed_from_program_if_no_direct_calls_p ())
+    return true;
 
   return estimate_growth (node) > 0;
 }

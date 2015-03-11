@@ -1,3 +1,18 @@
+2015-03-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/intro/tutorial03.rst: Add missing arguments to
+	gccjit::block::end_with_conditional call.  Add on_true/on_false
+	comments.  Tweak the wording.
+	* docs/intro/tutorial03.rst: Add missing arguments to
+	gcc_jit_block_end_with_conditional call.  Add some clarifying
+	comments.
+	* docs/topics/compilation.rst: Tweak the wording to avoid an
+	ambiguous use of "this".
+	* docs/topics/contexts.rst: Fix a typo.
+	* docs/topics/expressions.rst (GCC_JIT_BINARY_OP_MINUS): Remove
+	a stray backtick.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
 2015-02-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR libgomp/64625

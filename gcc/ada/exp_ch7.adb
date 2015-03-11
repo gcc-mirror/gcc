@@ -7853,10 +7853,17 @@ package body Exp_Ch7 is
      (Loc     : Source_Ptr;
       Ptr_Typ : Entity_Id) return Node_Id
    is
+      --  It is possible for Ptr_Typ to be a partial view, if the access type
+      --  is a full view declared in the private part of a nested package, and
+      --  the finalization actions take place when completing analysis of the
+      --  enclosing unit. For this reason use Underlying_Type twice below.
+
       Desig_Typ : constant Entity_Id :=
-                    Available_View (Designated_Type (Ptr_Typ));
+                    Available_View
+                      (Designated_Type (Underlying_Type (Ptr_Typ)));
       Fin_Addr  : constant Entity_Id := Finalize_Address (Desig_Typ);
-      Fin_Mas   : constant Entity_Id := Finalization_Master (Ptr_Typ);
+      Fin_Mas   : constant Entity_Id :=
+                    Finalization_Master (Underlying_Type (Ptr_Typ));
 
    begin
       --  Both the finalization master and primitive Finalize_Address must be

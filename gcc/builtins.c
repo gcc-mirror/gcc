@@ -802,10 +802,8 @@ expand_builtin_return_addr (enum built_in_function fndecl_code, int count)
      register.  There is no way to access it off of the current frame
      pointer, but it can be accessed off the previous frame pointer by
      reading the value from the register window save area.  */
-#ifdef RETURN_ADDR_IN_PREVIOUS_FRAME
-  if (fndecl_code == BUILT_IN_RETURN_ADDRESS)
+  if (RETURN_ADDR_IN_PREVIOUS_FRAME && fndecl_code == BUILT_IN_RETURN_ADDRESS)
     count--;
-#endif
 
   /* Scan back COUNT frames to the specified frame.  */
   for (i = 0; i < count; i++)

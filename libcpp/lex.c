@@ -519,6 +519,7 @@ init_vectorized_lexer (void)
    and VSX unaligned loads (when VSX is available).  This is otherwise
    the same as the pre-GCC 5 version.  */
 
+ATTRIBUTE_NO_SANITIZE_UNDEFINED
 static const uchar *
 search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 {

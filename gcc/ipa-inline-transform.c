@@ -112,9 +112,12 @@ can_remove_node_now_p_1 (struct cgraph_node *node, struct cgraph_edge *e)
     }
   /* FIXME: When address is taken of DECL_EXTERNAL function we still
      can remove its offline copy, but we would need to keep unanalyzed node in
-     the callgraph so references can point to it.  */
+     the callgraph so references can point to it.
+
+     Also for comdat group we can ignore references inside a group as we
+     want to prove the group as a whole to be dead.  */
   return (!node->address_taken
-	  && node->can_remove_if_no_direct_calls_p ()
+	  && node->can_remove_if_no_direct_calls_and_refs_p ()
 	  /* Inlining might enable more devirtualizing, so we want to remove
 	     those only after all devirtualizable virtual calls are processed.
 	     Lacking may edges in callgraph we just preserve them post
@@ -213,7 +216,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	     For now we keep the ohter functions in the group in program until
 	     cgraph_remove_unreachable_functions gets rid of them.  */
 	  gcc_assert (!e->callee->global.inlined_to);
-	  e->callee->dissolve_same_comdat_group_list ();
+	  e->callee->remove_from_same_comdat_group ();
 	  if (e->callee->definition
 	      && inline_account_function_p (e->callee))
 	    {
@@ -243,7 +246,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	}
     }
   else
-    e->callee->dissolve_same_comdat_group_list ();
+    e->callee->remove_from_same_comdat_group ();
 
   e->callee->global.inlined_to = inlining_into;
 

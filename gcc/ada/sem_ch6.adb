@@ -3223,8 +3223,7 @@ package body Sem_Ch6 is
                --  We make two copies of the given spec, one for the new
                --  declaration, and one for the body.
 
-               if No (Spec_Id)
-                 and then GNATprove_Mode
+               if No (Spec_Id) and then GNATprove_Mode
 
                  --  Inlining does not apply during pre-analysis of code
 
@@ -4156,6 +4155,28 @@ package body Sem_Ch6 is
          --  Check references in body
 
          Check_References (Body_Id);
+      end;
+
+      --  Check for nested subprogram, and mark outer level subprogram if so
+
+      declare
+         Ent : Entity_Id;
+
+      begin
+         if Present (Spec_Id) then
+            Ent := Spec_Id;
+         else
+            Ent := Body_Id;
+         end if;
+
+         loop
+            Ent := Enclosing_Subprogram (Ent);
+            exit when No (Ent) or else Is_Subprogram (Ent);
+         end loop;
+
+         if Present (Ent) then
+            Set_Has_Nested_Subprogram (Ent);
+         end if;
       end;
    end Analyze_Subprogram_Body_Helper;
 
@@ -8884,6 +8905,52 @@ package body Sem_Ch6 is
          ------------------------------
 
          procedure Check_Private_Overriding (T : Entity_Id) is
+
+            function Overrides_Visible_Function
+              (Partial_View : Entity_Id) return Boolean;
+            --  True if S overrides a function in the visible part. The
+            --  overridden function could be explicitly or implicitly declared.
+
+            function Overrides_Visible_Function
+              (Partial_View : Entity_Id) return Boolean
+            is
+            begin
+               if not Is_Overriding or else not Has_Homonym (S) then
+                  return False;
+               end if;
+
+               if not Present (Partial_View) then
+                  return True;
+               end if;
+
+               --  Search through all the homonyms H of S in the current
+               --  package spec, and return True if we find one that matches.
+               --  Note that Parent (H) will be the declaration of the
+               --  partial view of T for a match.
+
+               declare
+                  H : Entity_Id := S;
+               begin
+                  loop
+                     H := Homonym (H);
+                     exit when not Present (H) or else Scope (H) /= Scope (S);
+
+                     if Nkind_In
+                       (Parent (H),
+                        N_Private_Extension_Declaration,
+                        N_Private_Type_Declaration)
+                       and then Defining_Identifier (Parent (H)) = Partial_View
+                     then
+                        return True;
+                     end if;
+                  end loop;
+               end;
+
+               return False;
+            end Overrides_Visible_Function;
+
+         --  Start of processing for Check_Private_Overriding
+
          begin
             if Is_Package_Or_Generic_Package (Current_Scope)
               and then In_Private_Part (Current_Scope)
@@ -8898,29 +8965,52 @@ package body Sem_Ch6 is
                   Error_Msg_N ("abstract subprograms must be visible "
                                & "(RM 3.9.3(10))!", S);
 
-               elsif Ekind (S) = E_Function and then not Is_Overriding then
-                  if Is_Tagged_Type (T) and then T = Base_Type (Etype (S)) then
-                     Error_Msg_N ("private function with tagged result must"
-                                  & " override visible-part function", S);
-                     Error_Msg_N ("\move subprogram to the visible part"
-                                  & " (RM 3.9.3(10))", S);
+               elsif Ekind (S) = E_Function then
+                  declare
+                     Partial_View : constant Entity_Id :=
+                                      Incomplete_Or_Partial_View (T);
 
-                  --  AI05-0073: extend this test to the case of a function
-                  --  with a controlling access result.
+                  begin
+                     if not Overrides_Visible_Function (Partial_View) then
 
-                  elsif Ekind (Etype (S)) = E_Anonymous_Access_Type
-                    and then Is_Tagged_Type (Designated_Type (Etype (S)))
-                    and then
-                      not Is_Class_Wide_Type (Designated_Type (Etype (S)))
-                    and then Ada_Version >= Ada_2012
-                  then
-                     Error_Msg_N
-                       ("private function with controlling access result "
-                        & "must override visible-part function", S);
-                     Error_Msg_N
-                       ("\move subprogram to the visible part"
-                        & " (RM 3.9.3(10))", S);
-                  end if;
+                        --  Here, S is "function ... return T;" declared in
+                        --  the private part, not overriding some visible
+                        --  operation.  That's illegal in the tagged case
+                        --  (but not if the private type is untagged).
+
+                        if ((Present (Partial_View)
+                              and then Is_Tagged_Type (Partial_View))
+                          or else (not Present (Partial_View)
+                                    and then Is_Tagged_Type (T)))
+                          and then T = Base_Type (Etype (S))
+                        then
+                           Error_Msg_N
+                             ("private function with tagged result must"
+                              & " override visible-part function", S);
+                           Error_Msg_N
+                             ("\move subprogram to the visible part"
+                              & " (RM 3.9.3(10))", S);
+
+                        --  AI05-0073: extend this test to the case of a
+                        --  function with a controlling access result.
+
+                        elsif Ekind (Etype (S)) = E_Anonymous_Access_Type
+                          and then Is_Tagged_Type (Designated_Type (Etype (S)))
+                          and then
+                            not Is_Class_Wide_Type
+                                  (Designated_Type (Etype (S)))
+                          and then Ada_Version >= Ada_2012
+                        then
+                           Error_Msg_N
+                             ("private function with controlling access "
+                              & "result must override visible-part function",
+                              S);
+                           Error_Msg_N
+                             ("\move subprogram to the visible part"
+                              & " (RM 3.9.3(10))", S);
+                        end if;
+                     end if;
+                  end;
                end if;
             end if;
          end Check_Private_Overriding;

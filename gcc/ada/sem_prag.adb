@@ -202,6 +202,13 @@ package body Sem_Prag is
    --  _Post, _Invariant, or _Type_Invariant, which are special names used
    --  in identifiers to represent these attribute references.
 
+   procedure Check_Postcondition_Use_In_Inlined_Subprogram
+     (Prag    : Node_Id;
+      Subp_Id : Entity_Id);
+   --  Subsidiary to the analysis of pragmas Contract_Cases, Postcondition,
+   --  Precondition, Refined_Post and Test_Case. Emit a warning when pragma
+   --  Prag is associated with subprogram Subp_Id subject to Inline_Always.
+
    procedure Check_State_And_Constituent_Use
      (States   : Elist_Id;
       Constits : Elist_Id;
@@ -427,6 +434,7 @@ package body Sem_Prag is
 
       All_Cases : Node_Id;
       CCase     : Node_Id;
+      Spec_Id   : Entity_Id;
       Subp_Decl : Node_Id;
       Subp_Id   : Entity_Id;
 
@@ -439,6 +447,7 @@ package body Sem_Prag is
       Set_Analyzed (N);
 
       Subp_Decl := Find_Related_Subprogram_Or_Body (N);
+      Spec_Id   := Corresponding_Spec_Of (Subp_Decl);
       Subp_Id   := Defining_Entity (Subp_Decl);
       All_Cases := Expression (Get_Argument (N, Subp_Id));
 
@@ -455,14 +464,14 @@ package body Sem_Prag is
          --  to subprogram declarations. Skip the installation for subprogram
          --  bodies because the formals are already visible.
 
-         if not In_Open_Scopes (Subp_Id) then
+         if not In_Open_Scopes (Spec_Id) then
             Restore_Scope := True;
-            Push_Scope (Subp_Id);
+            Push_Scope (Spec_Id);
 
-            if Is_Generic_Subprogram (Subp_Id) then
-               Install_Generic_Formals (Subp_Id);
+            if Is_Generic_Subprogram (Spec_Id) then
+               Install_Generic_Formals (Spec_Id);
             else
-               Install_Formals (Subp_Id);
+               Install_Formals (Spec_Id);
             end if;
          end if;
 
@@ -471,6 +480,11 @@ package body Sem_Prag is
             Analyze_Contract_Case (CCase);
             Next (CCase);
          end loop;
+
+         --  Currently it is not possible to inline pre/postconditions on a
+         --  subprogram subject to pragma Inline_Always.
+
+         Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
 
          if Restore_Scope then
             End_Scope;
@@ -5222,21 +5236,32 @@ package body Sem_Prag is
       ---------------------------
 
       procedure Ensure_Aggregate_Form (Arg : Node_Id) is
-         Expr  : constant Node_Id    := Expression (Arg);
-         Loc   : constant Source_Ptr := Sloc (Expr);
-         Comps : List_Id := No_List;
-         Exprs : List_Id := No_List;
-         Nam   : Name_Id;
-
-         CFSD : constant Boolean := Get_Comes_From_Source_Default;
-         --  Used to restore Comes_From_Source_Default
+         CFSD    : constant Boolean    := Get_Comes_From_Source_Default;
+         Expr    : constant Node_Id    := Expression (Arg);
+         Loc     : constant Source_Ptr := Sloc (Expr);
+         Comps   : List_Id := No_List;
+         Exprs   : List_Id := No_List;
+         Nam     : Name_Id := No_Name;
+         Nam_Loc : Source_Ptr;
 
       begin
-         if Nkind (Arg) = N_Aspect_Specification then
-            Nam := No_Name;
-         else
-            pragma Assert (Nkind (Arg) = N_Pragma_Argument_Association);
-            Nam := Chars (Arg);
+         --  The pragma argument is in positional form:
+
+         --    pragma Depends (Nam => ...)
+         --                    ^
+         --                    Chars field
+
+         --  Note that the Sloc of the Chars field is the Sloc of the pragma
+         --  argument association.
+
+         if Nkind (Arg) = N_Pragma_Argument_Association then
+            Nam     := Chars (Arg);
+            Nam_Loc := Sloc (Arg);
+
+            --  Remove the pragma argument name as this will be captured in the
+            --  aggregate.
+
+            Set_Chars (Arg, No_Name);
          end if;
 
          --  The argument is already in aggregate form, but the presence of a
@@ -5279,15 +5304,8 @@ package body Sem_Prag is
          else
             Comps := New_List (
               Make_Component_Association (Loc,
-                Choices    => New_List (Make_Identifier (Loc, Chars (Arg))),
+                Choices    => New_List (Make_Identifier (Nam_Loc, Nam)),
                 Expression => Relocate_Node (Expr)));
-         end if;
-
-         --  Remove the pragma argument name as this information has been
-         --  captured in the aggregate.
-
-         if Nkind (Arg) = N_Pragma_Argument_Association then
-            Set_Chars (Arg, No_Name);
          end if;
 
          Set_Expression (Arg,
@@ -9508,6 +9526,12 @@ package body Sem_Prag is
             --  visibility chain. Pack_Id denotes the entity or the related
             --  package where pragma Abstract_State appears.
 
+            procedure Malformed_State_Error (State : Node_Id);
+            --  Emit an error concerning the illegal declaration of abstract
+            --  state State. This routine diagnoses syntax errors that lead to
+            --  a different parse tree. The error is issued regardless of the
+            --  SPARK mode in effect.
+
             ----------------------------
             -- Analyze_Abstract_State --
             ----------------------------
@@ -10041,11 +10065,10 @@ package body Sem_Prag is
                      Next (Opt);
                   end loop;
 
-               --  Any other attempt to declare a state is illegal. This is a
-               --  syntax error, always report.
+               --  Any other attempt to declare a state is illegal
 
                else
-                  Error_Msg_N ("malformed abstract state declaration", State);
+                  Malformed_State_Error (State);
                   return;
                end if;
 
@@ -10078,11 +10101,29 @@ package body Sem_Prag is
                end if;
             end Analyze_Abstract_State;
 
+            ---------------------------
+            -- Malformed_State_Error --
+            ---------------------------
+
+            procedure Malformed_State_Error (State : Node_Id) is
+            begin
+               Error_Msg_N ("malformed abstract state declaration", State);
+
+               --  An abstract state with a simple option is being declared
+               --  with "=>" rather than the legal "with". The state appears
+               --  as a component association.
+
+               if Nkind (State) = N_Component_Association then
+                  Error_Msg_N ("\\use WITH to specify simple option", State);
+               end if;
+            end Malformed_State_Error;
+
             --  Local variables
 
             Pack_Decl : Node_Id;
             Pack_Id   : Entity_Id;
             State     : Node_Id;
+            States    : Node_Id;
 
          --  Start of processing for Abstract_State
 
@@ -10119,22 +10160,34 @@ package body Sem_Prag is
                Set_Is_Ghost_Entity (Pack_Id);
             end if;
 
-            State := Expression (Get_Argument (N));
+            States := Expression (Get_Argument (N));
 
             --  Multiple non-null abstract states appear as an aggregate
 
-            if Nkind (State) = N_Aggregate then
-               State := First (Expressions (State));
+            if Nkind (States) = N_Aggregate then
+               State := First (Expressions (States));
                while Present (State) loop
                   Analyze_Abstract_State (State, Pack_Id);
                   Next (State);
                end loop;
 
+               --  An abstract state with a simple option is being illegaly
+               --  declared with "=>" rather than "with". In this case the
+               --  state declaration appears as a component association.
+
+               if Present (Component_Associations (States)) then
+                  State := First (Component_Associations (States));
+                  while Present (State) loop
+                     Malformed_State_Error (State);
+                     Next (State);
+                  end loop;
+               end if;
+
             --  Various forms of a single abstract state. Note that these may
             --  include malformed state declarations.
 
             else
-               Analyze_Abstract_State (State, Pack_Id);
+               Analyze_Abstract_State (States, Pack_Id);
             end if;
 
             --  Save the pragma for retrieval by other tools
@@ -15259,6 +15312,11 @@ package body Sem_Prag is
             if Typ = Any_Type then
                return;
 
+            --  Invariants allowed in interface types (RM 7.3.2(3/3))
+
+            elsif Is_Interface (Typ) then
+               null;
+
             --  An invariant must apply to a private type, or appear in the
             --  private part of a package spec and apply to a completion.
             --  a class-wide invariant can only appear on a private declaration
@@ -15300,8 +15358,14 @@ package body Sem_Prag is
             --  procedure declaration, so that calls to it can be generated
             --  before the body is built (e.g. within an expression function).
 
-            Insert_After_And_Analyze
-              (N, Build_Invariant_Procedure_Declaration (Typ));
+            --  Interface types have no invariant procedure; their invariants
+            --  are propagated to the build invariant procedure of all the
+            --  types covering the interface type.
+
+            if not Is_Interface (Typ) then
+               Insert_After_And_Analyze
+                 (N, Build_Invariant_Procedure_Declaration (Typ));
+            end if;
 
             if Class_Present (N) then
                Set_Has_Inheritable_Invariants (Typ);
@@ -18461,6 +18525,11 @@ package body Sem_Prag is
             if Legal then
                Analyze_Pre_Post_Condition_In_Decl_Part (N);
 
+               --  Currently it is not possible to inline pre/postconditions on
+               --  a subprogram subject to pragma Inline_Always.
+
+               Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
+
                --  Chain the pragma on the contract for easy retrieval
 
                Add_Contract_Item (N, Body_Id);
@@ -21509,6 +21578,11 @@ package body Sem_Prag is
          Process_Class_Wide_Condition (Expr, Spec_Id, Subp_Decl);
       end if;
 
+      --  Currently it is not possible to inline pre/postconditions on a
+      --  subprogram subject to pragma Inline_Always.
+
+      Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
+
       --  Remove the subprogram from the scope stack now that the pre-analysis
       --  of the precondition/postcondition is done.
 
@@ -24147,10 +24221,10 @@ package body Sem_Prag is
    procedure Analyze_Test_Case_In_Decl_Part (N : Node_Id) is
       procedure Preanalyze_Test_Case_Arg
         (Arg_Nam : Name_Id;
-         Subp_Id : Entity_Id);
+         Spec_Id : Entity_Id);
       --  Preanalyze one of the optional arguments "Requires" or "Ensures"
-      --  denoted by Arg_Nam. Subp_Id is the entity of the subprogram subject
-      --  to pragma Test_Case.
+      --  denoted by Arg_Nam. Spec_Id is the entity of the subprogram spec
+      --  subject to pragma Test_Case.
 
       ------------------------------
       -- Preanalyze_Test_Case_Arg --
@@ -24158,7 +24232,7 @@ package body Sem_Prag is
 
       procedure Preanalyze_Test_Case_Arg
         (Arg_Nam : Name_Id;
-         Subp_Id : Entity_Id)
+         Spec_Id : Entity_Id)
       is
          Arg : Node_Id;
 
@@ -24166,7 +24240,7 @@ package body Sem_Prag is
          --  Preanalyze the original aspect argument for ASIS or for a generic
          --  subprogram to properly capture global references.
 
-         if ASIS_Mode or else Is_Generic_Subprogram (Subp_Id) then
+         if ASIS_Mode or else Is_Generic_Subprogram (Spec_Id) then
             Arg :=
               Test_Case_Arg
                 (Prag        => N,
@@ -24188,8 +24262,8 @@ package body Sem_Prag is
 
       --  Local variables
 
+      Spec_Id   : Entity_Id;
       Subp_Decl : Node_Id;
-      Subp_Id   : Entity_Id;
 
       Restore_Scope : Boolean := False;
       --  Gets set True if we do a Push_Scope needing a Pop_Scope on exit
@@ -24198,25 +24272,30 @@ package body Sem_Prag is
 
    begin
       Subp_Decl := Find_Related_Subprogram_Or_Body (N);
-      Subp_Id   := Defining_Entity (Subp_Decl);
+      Spec_Id   := Corresponding_Spec_Of (Subp_Decl);
 
       --  Ensure that the formal parameters are visible when analyzing all
       --  clauses. This falls out of the general rule of aspects pertaining
       --  to subprogram declarations.
 
-      if not In_Open_Scopes (Subp_Id) then
+      if not In_Open_Scopes (Spec_Id) then
          Restore_Scope := True;
-         Push_Scope (Subp_Id);
+         Push_Scope (Spec_Id);
 
-         if Is_Generic_Subprogram (Subp_Id) then
-            Install_Generic_Formals (Subp_Id);
+         if Is_Generic_Subprogram (Spec_Id) then
+            Install_Generic_Formals (Spec_Id);
          else
-            Install_Formals (Subp_Id);
+            Install_Formals (Spec_Id);
          end if;
       end if;
 
-      Preanalyze_Test_Case_Arg (Name_Requires, Subp_Id);
-      Preanalyze_Test_Case_Arg (Name_Ensures,  Subp_Id);
+      Preanalyze_Test_Case_Arg (Name_Requires, Spec_Id);
+      Preanalyze_Test_Case_Arg (Name_Ensures,  Spec_Id);
+
+      --  Currently it is not possible to inline pre/postconditions on a
+      --  subprogram subject to pragma Inline_Always.
+
+      Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
 
       if Restore_Scope then
          End_Scope;
@@ -24599,6 +24678,32 @@ package body Sem_Prag is
          end if;
       end if;
    end Check_Missing_Part_Of;
+
+   ---------------------------------------------------
+   -- Check_Postcondition_Use_In_Inlined_Subprogram --
+   ---------------------------------------------------
+
+   procedure Check_Postcondition_Use_In_Inlined_Subprogram
+     (Prag    : Node_Id;
+      Subp_Id : Entity_Id)
+   is
+   begin
+      if Warn_On_Redundant_Constructs
+        and then Has_Pragma_Inline_Always (Subp_Id)
+      then
+         Error_Msg_Name_1 := Original_Aspect_Pragma_Name (Prag);
+
+         if From_Aspect_Specification (Prag) then
+            Error_Msg_NE
+              ("aspect % not enforced on inlined subprogram &?r?",
+               Corresponding_Aspect (Prag), Subp_Id);
+         else
+            Error_Msg_NE
+              ("pragma % not enforced on inlined subprogram &?r?",
+               Prag, Subp_Id);
+         end if;
+      end if;
+   end Check_Postcondition_Use_In_Inlined_Subprogram;
 
    -------------------------------------
    -- Check_State_And_Constituent_Use --

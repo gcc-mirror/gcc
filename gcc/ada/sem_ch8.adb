@@ -28,6 +28,7 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
+with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
@@ -3261,7 +3262,7 @@ package body Sem_Ch8 is
 
                      if Present (DTC_Entity (Old_S)) then
                         Set_DTC_Entity  (New_S, DTC_Entity (Old_S));
-                        Set_DT_Position (New_S, DT_Position (Old_S));
+                        Set_DT_Position_Value (New_S, DT_Position (Old_S));
                      end if;
                   end if;
                end;
@@ -4024,6 +4025,15 @@ package body Sem_Ch8 is
          Pack := Defining_Entity (Parent (N));
          if not In_Open_Scopes (Pack) then
             null;  --  default as well
+
+         --  If the use clause appears in an ancestor and we are in the
+         --  private part of the immediate parent, the use clauses are
+         --  already installed.
+
+         elsif Pack /= Scope (Current_Scope)
+           and then In_Private_Part (Scope (Current_Scope))
+         then
+            null;
 
          else
             --  Find entry for parent unit in scope stack
@@ -5623,7 +5633,7 @@ package body Sem_Ch8 is
                   end if;
                end if;
 
-               Check_Nested_Access (E);
+               Check_Nested_Access (N, E);
             end if;
 
             Set_Entity_Or_Discriminal (N, E);
@@ -6593,6 +6603,8 @@ package body Sem_Ch8 is
                  and then (not Is_Entity_Name (P)
                             or else Chars (Entity (P)) /= Name_uInit)
                then
+                  --  Check if we already have an available subtype we can use
+
                   if Ekind (Etype (P)) = E_Record_Subtype
                     and then Nkind (Parent (Etype (P))) = N_Subtype_Declaration
                     and then Is_Array_Type (Etype (Selector))

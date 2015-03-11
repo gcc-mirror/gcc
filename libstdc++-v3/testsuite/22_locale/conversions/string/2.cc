@@ -30,26 +30,61 @@ template<typename Elem>
 using str_conv = std::wstring_convert<cvt<Elem>, Elem>;
 
 using std::string;
-using std::wstring;
+using std::u16string;
+using std::u32string;
 
 // test conversion errors, with and without error strings
 
 void test01()
 {
-  typedef str_conv<wchar_t> sc;
+  typedef str_conv<char> sc;
 
   const sc::byte_string berr = "invalid wide string";
-  const sc::wide_string werr = L"invalid byte string";
+  const sc::wide_string werr = u8"invalid byte string";
 
   sc c(berr, werr);
   string input = "Stop";
-  input += char(0xff);
-  input += char(0xff);
-  wstring woutput = c.from_bytes(input);
+  input += char(0xFF);
+  string woutput = c.from_bytes(input);
+  VERIFY( input == woutput ); // noconv case doesn't detect invalid input
+  string winput = u8"Stop";
+  winput += char(0xFF);
+  string output = c.to_bytes(winput);
+  VERIFY( winput == output ); // noconv case doesn't detect invalid input
+}
+
+void test02()
+{
+  typedef str_conv<char16_t> sc;
+
+  const sc::byte_string berr = "invalid wide string";
+  const sc::wide_string werr = u"invalid byte string";
+
+  sc c(berr, werr);
+  string input = "Stop";
+  input += char(0xFF);
+  u16string woutput = c.from_bytes(input);
   VERIFY( werr == woutput );
-  wstring winput = L"Stop";
-  winput += wchar_t(0xff);
-  winput += wchar_t(0xff);
+  u16string winput = u"Stop";
+  winput += char16_t(0xDC00);
+  string output = c.to_bytes(winput);
+  VERIFY( berr == output );
+}
+
+void test03()
+{
+  typedef str_conv<char32_t> sc;
+
+  const sc::byte_string berr = "invalid wide string";
+  const sc::wide_string werr = U"invalid byte string";
+
+  sc c(berr, werr);
+  string input = "Halt";
+  input += char(0xff);
+  u32string woutput = c.from_bytes(input);
+  VERIFY( werr == woutput );
+  u32string winput = U"Halt";
+  winput += char32_t(-1);
   string output = c.to_bytes(winput);
   VERIFY( berr == output );
 }
@@ -57,4 +92,6 @@ void test01()
 int main()
 {
   test01();
+  test02();
+  test03();
 }

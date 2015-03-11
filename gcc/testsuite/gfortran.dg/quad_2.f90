@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { xfail hppa*-*-hpux* } }
 ! { dg-require-effective-target fortran_largest_fp_has_sqrt }
 !
 ! This test checks whether the largest possible

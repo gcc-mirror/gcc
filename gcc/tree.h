@@ -3338,6 +3338,11 @@ non_type_check (const_tree __t, const char *__f, int __l, const char *__g)
   return __t;
 }
 
+# if GCC_VERSION >= 4006
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-overflow"
+#endif
+
 inline const_tree *
 tree_vec_elt_check (const_tree __t, int __i,
                     const char *__f, int __l, const char *__g)
@@ -3349,6 +3354,10 @@ tree_vec_elt_check (const_tree __t, int __i,
   return CONST_CAST (const_tree *, &__t->vec.a[__i]);
   //return &__t->vec.a[__i];
 }
+
+# if GCC_VERSION >= 4006
+#pragma GCC diagnostic pop
+#endif
 
 inline const_tree *
 omp_clause_elt_check (const_tree __t, int __i,
@@ -4542,7 +4551,8 @@ extern tree block_ultimate_origin (const_tree);
 extern tree get_binfo_at_offset (tree, HOST_WIDE_INT, tree);
 extern bool virtual_method_call_p (tree);
 extern tree obj_type_ref_class (tree ref);
-extern bool types_same_for_odr (const_tree type1, const_tree type2);
+extern bool types_same_for_odr (const_tree type1, const_tree type2,
+				bool strict=false);
 extern bool contains_bitfld_component_ref_p (const_tree);
 extern bool type_in_anonymous_namespace_p (const_tree);
 extern bool block_may_fallthru (const_tree);

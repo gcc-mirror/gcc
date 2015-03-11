@@ -50,8 +50,7 @@ Parse::Parse(Lex* lex, Gogo* gogo)
     break_stack_(NULL),
     continue_stack_(NULL),
     iota_(0),
-    enclosing_vars_(),
-    type_switch_vars_()
+    enclosing_vars_()
 {
 }
 
@@ -4596,32 +4595,33 @@ Statement*
 Parse::type_switch_body(Label* label, const Type_switch& type_switch,
 			Location location)
 {
-  Named_object* switch_no = NULL;
-  if (!type_switch.name.empty())
+  Expression* init = type_switch.expr;
+  std::string var_name = type_switch.name;
+  if (!var_name.empty())
     {
-      if (Gogo::is_sink_name(type_switch.name))
-	error_at(type_switch.location,
-		 "no new variables on left side of %<:=%>");
+      if (Gogo::is_sink_name(var_name))
+        {
+          error_at(type_switch.location,
+                   "no new variables on left side of %<:=%>");
+          var_name.clear();
+        }
       else
 	{
-	  Variable* switch_var = new Variable(NULL, type_switch.expr, false,
-					      false, false,
-					      type_switch.location);
-	  switch_no = this->gogo_->add_variable(type_switch.name, switch_var);
+          Location loc = type_switch.location;
+	  Temporary_statement* switch_temp =
+              Statement::make_temporary(NULL, init, loc);
+	  this->gogo_->add_statement(switch_temp);
+          init = Expression::make_temporary_reference(switch_temp, loc);
 	}
     }
 
   Type_switch_statement* statement =
-    Statement::make_type_switch_statement(switch_no,
-					  (switch_no == NULL
-					   ? type_switch.expr
-					   : NULL),
-					  location);
-
+      Statement::make_type_switch_statement(var_name, init, location);
   this->push_break_statement(statement, label);
 
   Type_case_clauses* case_clauses = new Type_case_clauses();
   bool saw_default = false;
+  std::vector<Named_object*> implicit_vars;
   while (!this->peek_token()->is_op(OPERATOR_RCURLY))
     {
       if (this->peek_token()->is_eof())
@@ -4629,7 +4629,8 @@ Parse::type_switch_body(Label* label, const Type_switch& type_switch,
 	  error_at(this->location(), "missing %<}%>");
 	  return NULL;
 	}
-      this->type_case_clause(switch_no, case_clauses, &saw_default);
+      this->type_case_clause(var_name, init, case_clauses, &saw_default,
+                             &implicit_vars);
     }
   this->advance_token();
 
@@ -4637,14 +4638,36 @@ Parse::type_switch_body(Label* label, const Type_switch& type_switch,
 
   this->pop_break_statement();
 
+  // If there is a type switch variable implicitly declared in each case clause,
+  // check that it is used in at least one of the cases.
+  if (!var_name.empty())
+    {
+      bool used = false;
+      for (std::vector<Named_object*>::iterator p = implicit_vars.begin();
+	   p != implicit_vars.end();
+	   ++p)
+	{
+	  if ((*p)->var_value()->is_used())
+	    {
+	      used = true;
+	      break;
+	    }
+	}
+      if (!used)
+	error_at(type_switch.location, "%qs declared and not used",
+		 Gogo::message_name(var_name).c_str());
+    }
   return statement;
 }
 
 // TypeCaseClause  = TypeSwitchCase ":" [ StatementList ] .
+// IMPLICIT_VARS is the list of variables implicitly declared for each type
+// case if there is a type switch variable declared.
 
 void
-Parse::type_case_clause(Named_object* switch_no, Type_case_clauses* clauses,
-			bool* saw_default)
+Parse::type_case_clause(const std::string& var_name, Expression* init,
+                        Type_case_clauses* clauses, bool* saw_default,
+			std::vector<Named_object*>* implicit_vars)
 {
   Location location = this->location();
 
@@ -4661,24 +4684,21 @@ Parse::type_case_clause(Named_object* switch_no, Type_case_clauses* clauses,
   if (this->statement_list_may_start_here())
     {
       this->gogo_->start_block(this->location());
-      if (switch_no != NULL && types.size() == 1)
+      if (!var_name.empty())
 	{
-	  Type* type = types.front();
-	  Expression* init = Expression::make_var_reference(switch_no,
-							    location);
-	  init = Expression::make_type_guard(init, type, location);
-	  Variable* v = new Variable(type, init, false, false, false,
-				     location);
-	  v->set_is_type_switch_var();
-	  Named_object* no = this->gogo_->add_variable(switch_no->name(), v);
+	  Type* type = NULL;
+          Location var_loc = init->location();
+	  if (types.size() == 1)
+	    {
+	      type = types.front();
+	      init = Expression::make_type_guard(init, type, location);
+	    }
 
-	  // We don't want to issue an error if the compiler
-	  // introduced special variable is not used.  Instead we want
-	  // to issue an error if the variable defined by the switch
-	  // is not used.  That is handled via type_switch_vars_ and
-	  // Parse::mark_var_used.
+	  Variable* v = new Variable(type, init, false, false, false,
+				     var_loc);
 	  v->set_is_used();
-	  this->type_switch_vars_[no] = switch_no;
+	  v->set_is_type_switch_var();
+	  implicit_vars->push_back(this->gogo_->add_variable(var_name, v));
 	}
       this->statement_list();
       statements = this->gogo_->finish_block(this->location());
@@ -5752,15 +5772,5 @@ void
 Parse::mark_var_used(Named_object* no)
 {
   if (no->is_variable())
-    {
-      no->var_value()->set_is_used();
-
-      // When a type switch uses := to define a variable, then for
-      // each case with a single type we introduce a new variable with
-      // the appropriate type.  When we do, if the newly introduced
-      // variable is used, then the type switch variable is used.
-      Type_switch_vars::iterator p = this->type_switch_vars_.find(no);
-      if (p != this->type_switch_vars_.end())
-	p->second->var_value()->set_is_used();
-    }
+    no->var_value()->set_is_used();
 }

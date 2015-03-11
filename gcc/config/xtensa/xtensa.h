@@ -66,6 +66,7 @@ extern unsigned xtensa_current_frame_size;
 #define TARGET_ABSOLUTE_LITERALS XSHAL_USE_ABSOLUTE_LITERALS
 #define TARGET_THREADPTR	XCHAL_HAVE_THREADPTR
 #define TARGET_LOOPS	        XCHAL_HAVE_LOOPS
+#define TARGET_WINDOWED_ABI	(XSHAL_ABI == XTHAL_ABI_WINDOWED)
 
 #define TARGET_DEFAULT \
   ((XCHAL_HAVE_L32R	? 0 : MASK_CONST16) |				\
@@ -83,7 +84,8 @@ extern unsigned xtensa_current_frame_size;
     builtin_assert ("machine=xtensa");					\
     builtin_define ("__xtensa__");					\
     builtin_define ("__XTENSA__");					\
-    builtin_define ("__XTENSA_WINDOWED_ABI__");				\
+    builtin_define (TARGET_WINDOWED_ABI ?				\
+		    "__XTENSA_WINDOWED_ABI__" : "__XTENSA_CALL0_ABI__");\
     builtin_define (TARGET_BIG_ENDIAN ? "__XTENSA_EB__" : "__XTENSA_EL__"); \
     if (!TARGET_HARD_FLOAT)						\
       builtin_define ("__XTENSA_SOFT_FLOAT__");				\
@@ -238,10 +240,18 @@ extern unsigned xtensa_current_frame_size;
    registers that can be used without being saved.
    The latter must include the registers where values are returned
    and the register where structure-value addresses are passed.
-   Aside from that, you can include as many other registers as you like.  */
+   Aside from that, you can include as many other registers as you like.
+
+   The value encoding is the following:
+   1: register is used by all ABIs;
+   bit 1 is set: register is used by windowed ABI;
+   bit 2 is set: register is used by call0 ABI.
+
+   Proper values are computed in TARGET_CONDITIONAL_REGISTER_USAGE.  */
+
 #define CALL_USED_REGISTERS						\
 {									\
-  1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,			\
+  1, 1, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 2, 2, 2, 2,			\
   1, 1, 1,								\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   1,									\
@@ -341,7 +351,8 @@ extern char xtensa_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 #define STACK_POINTER_REGNUM (GP_REG_FIRST + 1)
 
 /* Base register for access to local variables of the function.  */
-#define HARD_FRAME_POINTER_REGNUM (GP_REG_FIRST + 7)
+#define HARD_FRAME_POINTER_REGNUM (GP_REG_FIRST + \
+				   (TARGET_WINDOWED_ABI ? 7 : 15))
 
 /* The register number of the frame pointer register, which is used to
    access automatic variables in the stack frame.  For Xtensa, this
@@ -366,14 +377,16 @@ extern char xtensa_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
    we use a fixed window size of 8.  */
 
 #define INCOMING_REGNO(OUT)						\
-  ((GP_REG_P (OUT) &&							\
-    ((unsigned) ((OUT) - GP_REG_FIRST) >= WINDOW_SIZE)) ?		\
-   (OUT) - WINDOW_SIZE : (OUT))
+  (TARGET_WINDOWED_ABI ?						\
+   ((GP_REG_P (OUT) &&							\
+     ((unsigned) ((OUT) - GP_REG_FIRST) >= WINDOW_SIZE)) ?		\
+    (OUT) - WINDOW_SIZE : (OUT)) : (OUT))
 
 #define OUTGOING_REGNO(IN)						\
-  ((GP_REG_P (IN) &&							\
-    ((unsigned) ((IN) - GP_REG_FIRST) < WINDOW_SIZE)) ?			\
-   (IN) + WINDOW_SIZE : (IN))
+  (TARGET_WINDOWED_ABI ?						\
+   ((GP_REG_P (IN) &&							\
+     ((unsigned) ((IN) - GP_REG_FIRST) < WINDOW_SIZE)) ?		\
+    (IN) + WINDOW_SIZE : (IN)) : (IN))
 
 
 /* Define the classes of registers for register constraints in the
@@ -422,7 +435,7 @@ enum reg_class
   { 0xfff80000, 0x00000007 }, /* floating-point registers */ \
   { 0x00000000, 0x00000008 }, /* MAC16 accumulator */ \
   { 0x00000002, 0x00000000 }, /* stack pointer register */ \
-  { 0x0000ff7d, 0x00000000 }, /* preferred reload registers */ \
+  { 0x0000fffd, 0x00000000 }, /* preferred reload registers */ \
   { 0x0000fffd, 0x00000000 }, /* general-purpose registers */ \
   { 0x0003ffff, 0x00000000 }, /* integer registers */ \
   { 0xffffffff, 0x0000000f }  /* all registers */ \
@@ -432,9 +445,7 @@ enum reg_class
    register REGNO.  In general there is more that one such class;
    choose a class which is "minimal", meaning that no smaller class
    also contains the register.  */
-extern const enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER];
-
-#define REGNO_REG_CLASS(REGNO) xtensa_regno_to_class[ (REGNO) ]
+#define REGNO_REG_CLASS(REGNO) xtensa_regno_to_class (REGNO)
 
 /* Use the Xtensa AR register file for base registers.
    No index registers.  */
@@ -497,7 +508,7 @@ extern const enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER];
 #define STACK_BOUNDARY 128
 
 /* Use a fixed register window size of 8.  */
-#define WINDOW_SIZE 8
+#define WINDOW_SIZE (TARGET_WINDOWED_ABI ? 8 : 0)
 
 /* Symbolic macros for the registers used to return integer, floating
    point, and values of coprocessor and user-defined modes.  */
@@ -561,11 +572,11 @@ typedef struct xtensa_args
     fprintf (FILE, "\t%s\ta10, a0\n", TARGET_DENSITY ? "mov.n" : "mov"); \
     if (flag_pic)							\
       {									\
-	fprintf (FILE, "\tmovi\ta8, _mcount@PLT\n");			\
-	fprintf (FILE, "\tcallx8\ta8\n");				\
+	fprintf (FILE, "\tmovi\ta%d, _mcount@PLT\n", WINDOW_SIZE);	\
+	fprintf (FILE, "\tcallx%d\ta%d\n", WINDOW_SIZE, WINDOW_SIZE);	\
       }									\
     else								\
-      fprintf (FILE, "\tcall8\t_mcount\n");				\
+      fprintf (FILE, "\tcall%d\t_mcount\n", WINDOW_SIZE);		\
   } while (0)
 
 /* Stack pointer value doesn't matter at exit.  */
@@ -573,7 +584,11 @@ typedef struct xtensa_args
 
 /* Size in bytes of the trampoline, as an integer.  Make sure this is
    a multiple of TRAMPOLINE_ALIGNMENT to avoid -Wpadded warnings.  */
-#define TRAMPOLINE_SIZE (TARGET_CONST16 || TARGET_ABSOLUTE_LITERALS ? 60 : 52)
+#define TRAMPOLINE_SIZE (TARGET_WINDOWED_ABI ? \
+			 (TARGET_CONST16 || TARGET_ABSOLUTE_LITERALS ? \
+			  60 : 52) : \
+			 (TARGET_CONST16 || TARGET_ABSOLUTE_LITERALS ? \
+			  32 : 24))
 
 /* Alignment required for trampolines, in bits.  */
 #define TRAMPOLINE_ALIGNMENT 32
@@ -615,7 +630,7 @@ typedef struct xtensa_args
 
 /* Define this if the return address of a particular stack frame is
    accessed from the frame pointer of the previous stack frame.  */
-#define RETURN_ADDR_IN_PREVIOUS_FRAME
+#define RETURN_ADDR_IN_PREVIOUS_FRAME TARGET_WINDOWED_ABI
 
 /* A C expression whose value is RTL representing the value of the
    return address for the frame COUNT steps up from the current
@@ -770,7 +785,7 @@ typedef struct xtensa_args
 /* Define output to appear before the constant pool.  */
 #define ASM_OUTPUT_POOL_PROLOGUE(FILE, FUNNAME, FUNDECL, SIZE)          \
   do {									\
-    if ((SIZE) > 0)							\
+    if ((SIZE) > 0 || !TARGET_WINDOWED_ABI)				\
       {									\
 	resolve_unique_section ((FUNDECL), 0, flag_function_sections);	\
 	switch_to_section (function_section (FUNDECL));			\
@@ -805,6 +820,8 @@ typedef struct xtensa_args
       | DW_EH_PE_pcrel | DW_EH_PE_sdata4)				\
    : DW_EH_PE_absptr)
 
+#define EH_RETURN_STACKADJ_RTX gen_rtx_REG (Pmode, GP_REG_FIRST + 10)
+
 /* Emit a PC-relative relocation.  */
 #define ASM_OUTPUT_DWARF_PCREL(FILE, SIZE, LABEL)			\
   do {									\
@@ -818,8 +835,16 @@ typedef struct xtensa_args
    a MOVI and let the assembler relax it -- for the .init and .fini
    sections, the assembler knows to put the literal in the right
    place.  */
+#if defined(__XTENSA_WINDOWED_ABI__)
 #define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC) \
     asm (SECTION_OP "\n\
 	movi\ta8, " USER_LABEL_PREFIX #FUNC "\n\
 	callx8\ta8\n" \
 	TEXT_SECTION_ASM_OP);
+#elif defined(__XTENSA_CALL0_ABI__)
+#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC) \
+    asm (SECTION_OP "\n\
+	movi\ta0, " USER_LABEL_PREFIX #FUNC "\n\
+	callx0\ta0\n" \
+	TEXT_SECTION_ASM_OP);
+#endif

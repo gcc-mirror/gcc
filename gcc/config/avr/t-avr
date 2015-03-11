@@ -16,10 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-driver-avr.o: $(srcdir)/config/avr/driver-avr.c \
-  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
-
 avr-devices.o: $(srcdir)/config/avr/avr-devices.c \
   $(srcdir)/config/avr/avr-mcus.def \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
@@ -69,8 +65,8 @@ gen-avr-mmcu-texi$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-texi.c \
 
 gen-avr-mmcu-specs$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-specs.c \
   $(AVR_MCUS) $(srcdir)/config/avr/avr-devices.c \
-  $(srcdir)/config/avr/avr-arch.h
-	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $< -o $@
+  $(srcdir)/config/avr/avr-arch.h $(TM_H)
+	$(CXX_FOR_BUILD) $(CXXFLAGS_FOR_BUILD) $< -o $@ $(INCLUDES)
 
 $(srcdir)/doc/avr-mmcu.texi: gen-avr-mmcu-texi$(build_exeext)
 	$(RUN_GEN) ./$< > $@

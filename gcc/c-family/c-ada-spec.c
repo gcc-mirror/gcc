@@ -1390,7 +1390,7 @@ dump_ada_double_name (pretty_printer *buffer, tree t1, tree t2, const char *s)
 
   pp_underscore (buffer);
 
-  if (DECL_NAME (t1))
+  if (DECL_NAME (t2))
     pp_ada_tree_identifier (buffer, DECL_NAME (t2), t2, false);
   else
     {
@@ -2541,18 +2541,9 @@ static void
 print_destructor (pretty_printer *buffer, tree t)
 {
   tree decl_name = DECL_NAME (DECL_ORIGIN (t));
-  const char *s = IDENTIFIER_POINTER (decl_name);
 
-  if (*s == '_')
-    {
-      for (s += 2; *s != ' '; s++)
-	pp_character (buffer, *s);
-    }
-  else
-    {
-      pp_string (buffer, "Delete_");
-      pp_ada_tree_identifier (buffer, decl_name, t, false);
-    }
+  pp_string (buffer, "Delete_");
+  pp_ada_tree_identifier (buffer, decl_name, t, false);
 }
 
 /* Return the name of type T.  */

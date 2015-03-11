@@ -198,18 +198,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  auto __outstr = __err ? _OutStr(__err->get_allocator()) : _OutStr();
 	  size_t __outchars = 0;
 	  auto __next = __first;
+	  const auto __maxlen = _M_cvt->max_length();
 
 	  codecvt_base::result __result;
 	  do
 	    {
-	      __outstr.resize(__outstr.size() + (__last - __next));
+	      __outstr.resize(__outstr.size() + (__last - __next) + __maxlen);
 	      auto __outnext = &__outstr.front() + __outchars;
 	      auto const __outlast = &__outstr.back() + 1;
 	      __result = ((*_M_cvt).*__memfn)(_M_state, __next, __last, __next,
 					    __outnext, __outlast, __outnext);
 	      __outchars = __outnext - &__outstr.front();
 	    }
-	  while (__result == codecvt_base::partial && __next != __last);
+	  while (__result == codecvt_base::partial && __next != __last
+		 && (__outstr.size() - __outchars) < __maxlen);
+
+	  if (__result == codecvt_base::noconv)
+	    {
+	      __outstr.assign(__first, __last);
+	      _M_count = __outstr.size();
+	      return __outstr;
+	    }
 
 	  __outstr.resize(__outchars);
 	  _M_count = __next - __first;
@@ -428,7 +437,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      return _M_put(__next, __pending);
 
 	    if (!_M_put(__outbuf, __outnext - __outbuf))
-		return false;
+	      return false;
 	  }
 	while (__next != __last && __next != __start);
 

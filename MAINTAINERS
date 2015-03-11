@@ -44,17 +44,16 @@ their own patches from other maintainers or reviewers.
 aarch64 port		Marcus Shawcroft	<marcus.shawcroft@arm.com>
 aarch64 port		Richard Earnshaw	<richard.earnshaw@arm.com>
 alpha port		Richard Henderson	<rth@redhat.com>
-arc port		Joern Rennecke		<joern.rennecke@embecosm.com>
+arc port		Joern Rennecke		<gnu@amylaar.uk>
 arm port		Nick Clifton		<nickc@redhat.com>
 arm port		Richard Earnshaw	<richard.earnshaw@arm.com>
-arm port		Paul Brook		<paul@codesourcery.com>
 arm port		Ramana Radhakrishnan	<ramana.radhakrishnan@arm.com>
 avr port		Denis Chertykov		<chertykov@gmail.com>
 bfin port		Bernd Schmidt		<bernds@codesourcery.com>
 bfin port		Jie Zhang		<jzhang918@gmail.com>
 c6x port		Bernd Schmidt		<bernds@codesourcery.com>
 cris port		Hans-Peter Nilsson	<hp@axis.com>
-epiphany port		Joern Rennecke		<joern.rennecke@embecosm.com>
+epiphany port		Joern Rennecke		<gnu@amylaar.uk>
 fr30 port		Nick Clifton		<nickc@redhat.com>
 frv port		Nick Clifton		<nickc@redhat.com>
 frv port		Alexandre Oliva		<aoliva@redhat.com>
@@ -62,9 +61,9 @@ h8 port			Jeff Law		<law@redhat.com>
 h8 port			Kazu Hirata		<kazu@codesourcery.com>
 hppa port		Jeff Law		<law@redhat.com>
 hppa port		John David Anglin	<dave.anglin@bell.net>
-i386 port		Richard Henderson	<rth@redhat.com>
 i386 port		Jan Hubicka		<hubicka@ucw.cz>
 i386 port		Uros Bizjak		<ubizjak@gmail.com>
+i386 vector ISA extns	Kirill Yukhin		<kirill.yukhin@gmail.com>
 ia64 port		Jim Wilson		<wilson@tuliptree.org>
 ia64 port		Steve Ellcey		<sellcey@mips.com>
 iq2000 port		Nick Clifton		<nickc@redhat.com>
@@ -151,7 +150,6 @@ Ada front end		Geert Bosch		<bosch@gnat.com>
 Ada front end		Robert Dewar		<dewar@gnat.com>
 Ada front end		Arnaud Charlet		<charlet@act-europe.fr>
 Ada front end		Eric Botcazou		<ebotcazou@libertysurf.fr>
-Fortran			Paul Brook		<paul@codesourcery.com>
 c++			Jason Merrill		<jason@redhat.com>
 c++			Nathan Sidwell		<nathan@codesourcery.com>
 go			Ian Lance Taylor	<ian@airs.com>
@@ -178,6 +176,7 @@ libiberty		DJ Delorie		<dj@redhat.com>
 libiberty		Ian Lance Taylor	<ian@airs.com>
 libitm			Torvald Riegel		<triegel@redhat.com>
 libffi testsuite	Andreas Tobler		<andreast@gcc.gnu.org>
+libmpx			Ilya Enkovich		<enkovich.gnu@gmail.com>
 libobjc			Nicola Pero		<nicola.pero@meta-innovation.com>
 libobjc			Andrew Pinski		<pinskia@gmail.com>
 libquadmath		Tobias Burnus		<burnus@net-b.de>
@@ -261,6 +260,8 @@ register allocation	Vladimir Makarov	<vmakarov@redhat.com>
 gdbhooks.py		David Malcolm		<dmalcolm@redhat.com>
 SLSR			Bill Schmidt		<wschmidt@linux.vnet.ibm.com>
 jit			David Malcolm		<dmalcolm@redhat.com>
+pointer bounds checker	Ilya Enkovich		<enkovich.gnu@gmail.com>
+i386 MPX		Ilya Enkovich		<enkovich.gnu@gmail.com>
 
 Note that individuals who maintain parts of the compiler need approval to
 check in changes outside of the parts of the compiler they maintain.

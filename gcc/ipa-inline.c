@@ -952,6 +952,8 @@ check_callers (struct cgraph_node *node, void *has_hot_call)
 	 return true;
        if (!can_inline_edge_p (e, true))
          return true;
+       if (e->recursive_p ())
+	 return true;
        if (!(*(bool *)has_hot_call) && e->maybe_hot_p ())
 	 *(bool *)has_hot_call = true;
      }
@@ -1710,7 +1712,7 @@ inline_small_functions (void)
   FOR_EACH_DEFINED_FUNCTION (node)
     {
       bool update = false;
-      struct cgraph_edge *next;
+      struct cgraph_edge *next = NULL;
       bool has_speculative = false;
 
       if (dump_file)
@@ -2093,6 +2095,15 @@ inline_to_all_callers (struct cgraph_node *node, void *data)
   while (node->callers && !node->global.inlined_to)
     {
       struct cgraph_node *caller = node->callers->caller;
+
+      if (!can_inline_edge_p (node->callers, true)
+	  || node->callers->recursive_p ())
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Uninlinable call found; giving up.\n");
+	  *num_calls = 0;
+	  return false;
+	}
 
       if (dump_file)
 	{

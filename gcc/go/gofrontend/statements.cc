@@ -4279,11 +4279,8 @@ Type_case_clauses::dump_clauses(Ast_dump_context* ast_dump_context) const
 int
 Type_switch_statement::do_traverse(Traverse* traverse)
 {
-  if (this->var_ == NULL)
-    {
-      if (this->traverse_expression(traverse, &this->expr_) == TRAVERSE_EXIT)
-	return TRAVERSE_EXIT;
-    }
+  if (this->traverse_expression(traverse, &this->expr_) == TRAVERSE_EXIT)
+    return TRAVERSE_EXIT;
   if (this->clauses_ != NULL)
     return this->clauses_->traverse(traverse);
   return TRAVERSE_CONTINUE;
@@ -4306,10 +4303,7 @@ Type_switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
 
   Block* b = new Block(enclosing, loc);
 
-  Type* val_type = (this->var_ != NULL
-		    ? this->var_->var_value()->type()
-		    : this->expr_->type());
-
+  Type* val_type = this->expr_->type();
   if (val_type->interface_type() == NULL)
     {
       if (!val_type->is_error())
@@ -4326,15 +4320,10 @@ Type_switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
   // descriptor_temp = ifacetype(val_temp) FIXME: This should be
   // inlined.
   bool is_empty = val_type->interface_type()->is_empty();
-  Expression* ref;
-  if (this->var_ == NULL)
-    ref = this->expr_;
-  else
-    ref = Expression::make_var_reference(this->var_, loc);
   Expression* call = Runtime::make_call((is_empty
 					 ? Runtime::EFACETYPE
 					 : Runtime::IFACETYPE),
-					loc, 1, ref);
+					loc, 1, this->expr_);
   Temporary_reference_expression* lhs =
     Expression::make_temporary_reference(descriptor_temp, loc);
   lhs->set_is_lvalue();
@@ -4384,7 +4373,9 @@ Type_switch_statement::do_dump_statement(Ast_dump_context* ast_dump_context)
     const
 {
   ast_dump_context->print_indent();
-  ast_dump_context->ostream() << "switch " << this->var_->name() << " = ";
+  ast_dump_context->ostream() << "switch ";
+  if (!this->name_.empty())
+    ast_dump_context->ostream() << this->name_ << " = ";
   ast_dump_context->dump_expression(this->expr_);
   ast_dump_context->ostream() << " .(type)";
   if (ast_dump_context->dump_subblocks())
@@ -4399,10 +4390,10 @@ Type_switch_statement::do_dump_statement(Ast_dump_context* ast_dump_context)
 // Make a type switch statement.
 
 Type_switch_statement*
-Statement::make_type_switch_statement(Named_object* var, Expression* expr,
+Statement::make_type_switch_statement(const std::string& name, Expression* expr,
 				      Location location)
 {
-  return new Type_switch_statement(var, expr, location);
+  return new Type_switch_statement(name, expr, location);
 }
 
 // Class Send_statement.

@@ -204,6 +204,34 @@ cxx_print_identifier (FILE *file, tree node, int indent)
 }
 
 void
+cxx_print_lambda_node (FILE *file, tree node, int indent)
+{
+  if (LAMBDA_EXPR_MUTABLE_P (node))
+    fprintf (file, " /mutable");
+  fprintf (file, " default_capture_mode=[");
+  switch (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (node))
+    {
+    case CPLD_NONE:
+      fprintf (file, "NONE");
+      break;
+    case CPLD_COPY:
+      fprintf (file, "COPY");
+      break;
+    case CPLD_REFERENCE:
+      fprintf (file, "CPLD_REFERENCE");
+      break;
+    default:
+      fprintf (file, "??");
+      break;
+    }
+  fprintf (file, "] ");
+  print_node (file, "capture_list", LAMBDA_EXPR_CAPTURE_LIST (node), indent + 4);
+  print_node (file, "this_capture", LAMBDA_EXPR_THIS_CAPTURE (node), indent + 4);
+  print_node (file, "return_type", LAMBDA_EXPR_RETURN_TYPE (node), indent + 4);
+  print_node (file, "closure", LAMBDA_EXPR_CLOSURE (node), indent + 4);
+}
+
+void
 cxx_print_xnode (FILE *file, tree node, int indent)
 {
   switch (TREE_CODE (node))
@@ -242,6 +270,9 @@ cxx_print_xnode (FILE *file, tree node, int indent)
     case DEFERRED_NOEXCEPT:
       print_node (file, "pattern", DEFERRED_NOEXCEPT_PATTERN (node), indent+4);
       print_node (file, "args", DEFERRED_NOEXCEPT_ARGS (node), indent+4);
+      break;
+    case LAMBDA_EXPR:
+      cxx_print_lambda_node (file, node, indent);
       break;
     default:
       break;

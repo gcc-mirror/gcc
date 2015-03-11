@@ -345,6 +345,20 @@ sem_item::compare_cgraph_references (
 {
   enum availability avail1, avail2;
 
+  if (n1 == n2)
+    return true;
+
+  /* Merging two definitions with a reference to equivalent vtables, but
+     belonging to a different type may result in ipa-polymorphic-call analysis
+     giving a wrong answer about the dynamic type of instance.  */
+  if (is_a <varpool_node *> (n1)
+      && (DECL_VIRTUAL_P (n1->decl) || DECL_VIRTUAL_P (n2->decl))
+      && (DECL_VIRTUAL_P (n1->decl) != DECL_VIRTUAL_P (n2->decl)
+	  || !types_must_be_same_for_odr (DECL_CONTEXT (n1->decl),
+					  DECL_CONTEXT (n2->decl))))
+    return return_false_with_msg
+	     ("references to virtual tables can not be merged");
+
   if (address && n1->equal_address_to (n2) == 1)
     return true;
   if (!address && n1->semantically_equivalent_p (n2))
@@ -407,6 +421,10 @@ sem_function::equals_wpa (sem_item *item,
 					     m_compared_func->arg_types[i],
 					     is_not_leaf, i == 0))
 	return return_false_with_msg ("argument type is different");
+      if (POINTER_TYPE_P (arg_types[i])
+	  && (TYPE_RESTRICT (arg_types[i])
+	      != TYPE_RESTRICT (m_compared_func->arg_types[i])))
+	return return_false_with_msg ("argument restrict flag mismatch");
     }
 
   /* Result type checking.  */
@@ -416,6 +434,10 @@ sem_function::equals_wpa (sem_item *item,
 
   if (node->num_references () != item->node->num_references ())
     return return_false_with_msg ("different number of references");
+
+  if (comp_type_attributes (TREE_TYPE (decl),
+			    TREE_TYPE (item->decl)) != 1)
+    return return_false_with_msg ("different type attributes");
 
   ipa_ref *ref = NULL, *ref2 = NULL;
   for (unsigned i = 0; node->iterate_reference (i, ref); i++)
@@ -697,12 +719,22 @@ redirect_all_callers (cgraph_node *n, cgraph_node *to)
 {
   int nredirected = 0;
   ipa_ref *ref;
+  cgraph_edge *e = n->callers;
 
-  while (n->callers)
+  while (e)
     {
-      cgraph_edge *e = n->callers;
-      e->redirect_callee (to);
-      nredirected++;
+      /* Redirecting thunks to interposable symbols or symbols in other sections
+	 may not be supported by target output code.  Play safe for now and
+	 punt on redirection.  */
+      if (!e->caller->thunk.thunk_p)
+	{
+	  struct cgraph_edge *nexte = e->next_caller;
+          e->redirect_callee (to);
+	  e = nexte;
+          nredirected++;
+	}
+      else
+	e = e->next_callee;
     }
   for (unsigned i = 0; n->iterate_direct_aliases (i, ref);)
     {
@@ -717,6 +749,8 @@ redirect_all_callers (cgraph_node *n, cgraph_node *to)
 	{
 	  nredirected += redirect_all_callers (n_alias, to);
 	  if (n_alias->can_remove_if_no_direct_calls_p ()
+	      && !n_alias->call_for_symbol_and_aliases (cgraph_node::has_thunk_p,
+							NULL, true)
 	      && !n_alias->has_aliases_p ())
 	    n_alias->remove ();
 	}
@@ -907,6 +941,8 @@ sem_function::merge (sem_item *alias_item)
 	  return false;
 	}
       if (!create_wrapper
+	  && !alias->call_for_symbol_and_aliases (cgraph_node::has_thunk_p,
+						  NULL, true)
 	  && !alias->can_remove_if_no_direct_calls_p ())
 	{
 	  if (dump_file)
@@ -975,7 +1011,10 @@ sem_function::merge (sem_item *alias_item)
       if (dump_file)
 	fprintf (dump_file, "Unified; Wrapper has been created.\n\n");
     }
-  gcc_assert (alias->icf_merged || remove);
+
+  /* It's possible that redirection can hit thunks that block
+     redirection opportunities.  */
+  gcc_assert (alias->icf_merged || remove || redirect_callers);
   original->icf_merged = true;
 
   /* Inform the inliner about cross-module merging.  */
@@ -1441,6 +1480,18 @@ sem_variable::equals_wpa (sem_item *item,
 				      ref->referred, ref2->referred,
 				      ref->address_matters_p ()))
 	return false;
+
+      /* DECL_FINAL_P flag on methods referred by virtual tables is used
+	 to decide on completeness possible_polymorphic_call_targets lists
+	 and therefore it must match.  */
+      if ((DECL_VIRTUAL_P (decl) || DECL_VIRTUAL_P (item->decl))
+	  && (DECL_VIRTUAL_P (ref->referred->decl)
+	      || DECL_VIRTUAL_P (ref2->referred->decl))
+	  && ((DECL_VIRTUAL_P (ref->referred->decl)
+	       != DECL_VIRTUAL_P (ref2->referred->decl))
+	      || (DECL_FINAL_P (ref->referred->decl)
+		  != DECL_FINAL_P (ref2->referred->decl))))
+        return return_false_with_msg ("virtual or final flag mismatch");
     }
 
   return true;
@@ -1461,6 +1512,11 @@ sem_variable::equals (sem_item *item,
     dyn_cast <varpool_node *>(node)->get_constructor ();
   if (DECL_INITIAL (item->decl) == error_mark_node && in_lto_p)
     dyn_cast <varpool_node *>(item->node)->get_constructor ();
+
+  /* As seen in PR ipa/65303 we have to compare variables types.  */
+  if (!func_checker::compatible_types_p (TREE_TYPE (decl),
+					 TREE_TYPE (item->decl)))
+    return return_false_with_msg ("variables types are different");
 
   ret = sem_variable::equals (DECL_INITIAL (decl),
 			      DECL_INITIAL (item->node->decl));
@@ -1621,7 +1677,7 @@ sem_variable::equals (tree t1, tree t2)
 	tree y1 = TREE_OPERAND (t1, 1);
 	tree y2 = TREE_OPERAND (t2, 1);
 
-	if (!sem_variable::equals (x1, x2) && sem_variable::equals (y1, y2))
+	if (!sem_variable::equals (x1, x2) || !sem_variable::equals (y1, y2))
 	  return false;
 	if (!sem_variable::equals (array_ref_low_bound (t1),
 				   array_ref_low_bound (t2)))
@@ -1664,7 +1720,8 @@ sem_variable::equals (tree t1, tree t2)
 sem_variable *
 sem_variable::parse (varpool_node *node, bitmap_obstack *stack)
 {
-  if (TREE_THIS_VOLATILE (node->decl) || DECL_HARD_REGISTER (node->decl))
+  if (TREE_THIS_VOLATILE (node->decl) || DECL_HARD_REGISTER (node->decl)
+      || node->alias)
     return NULL;
 
   sem_variable *v = new sem_variable (node, 0, stack);
@@ -2167,9 +2224,11 @@ sem_item_optimizer::filter_removed_items (void)
     m_items.safe_push (filtered[i]);
 }
 
-/* Optimizer entry point.  */
+/* Optimizer entry point which returns true in case it processes
+   a merge operation. True is returned if there's a merge operation
+   processed.  */
 
-void
+bool
 sem_item_optimizer::execute (void)
 {
   filter_removed_items ();
@@ -2214,10 +2273,12 @@ sem_item_optimizer::execute (void)
   process_cong_reduction ();
   dump_cong_classes ();
   verify_classes ();
-  merge_classes (prev_class_count);
+  bool merged_p = merge_classes (prev_class_count);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     symtab_node::dump_table (dump_file);
+
+  return merged_p;
 }
 
 /* Function responsible for visiting all potential functions and
@@ -2870,9 +2931,10 @@ sem_item_optimizer::dump_cong_classes (void)
 
 /* After reduction is done, we can declare all items in a group
    to be equal. PREV_CLASS_COUNT is start number of classes
-   before reduction.  */
+   before reduction. True is returned if there's a merge operation
+   processed. */
 
-void
+bool
 sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 {
   unsigned int item_count = m_items.length ();
@@ -2881,6 +2943,8 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 
   unsigned int non_singular_classes_count = 0;
   unsigned int non_singular_classes_sum = 0;
+
+  bool merged_p = false;
 
   for (hash_table<congruence_class_group_hash>::iterator it = m_classes.begin ();
        it != m_classes.end (); ++it)
@@ -2952,9 +3016,11 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 		alias->dump_to_file (dump_file);
 	      }
 
-	    source->merge (alias);
+	    merged_p |= source->merge (alias);
 	  }
       }
+
+  return merged_p;
 }
 
 /* Dump function prints all class members to a FILE with an INDENT.  */
@@ -3031,12 +3097,12 @@ ipa_icf_driver (void)
 {
   gcc_assert (optimizer);
 
-  optimizer->execute ();
+  bool merged_p = optimizer->execute ();
 
   delete optimizer;
   optimizer = NULL;
 
-  return 0;
+  return merged_p ? TODO_remove_functions : 0;
 }
 
 const pass_data pass_data_ipa_icf =

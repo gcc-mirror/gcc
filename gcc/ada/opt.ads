@@ -1533,6 +1533,10 @@ package Opt is
    --  Indicates if error messages are to be prefixed by the string error:
    --  Initialized from Tag_Errors, can be forced on with the -gnatU switch.
 
+   Unnest_Subprogram_Mode : Boolean := False;
+   --  If true, activates the circuitry for unnesting subprograms (see the spec
+   --  of Exp_Unst for full details). Currently set only by use of -gnatd.1.
+
    Universal_Addressing_On_AAMP : Boolean := False;
    --  GNAAMP
    --  Indicates if library-level objects should be accessed and updated using

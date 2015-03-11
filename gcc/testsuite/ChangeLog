@@ -1,3 +1,221 @@
+2015-03-09  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR tree-optimization/63743
+	* gcc.dg/pr63743.c: New test.
+
+2015-03-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/65316
+	* g++.dg/lto/pr65316_0.C: New testcase.
+	* g++.dg/lto/pr65316_1.C: New testcase.
+
+2015-03-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/62247
+	* g++.dg/abi/anon3.C: Skip failing scan-assembler checks on
+	hppa*-*-hpux*.
+	* g++.dg/abi/rtti3.C: Likewise.
+
+	* g++.dg/ipa/pr63621.C: Add dg-require-effective-target named_sections.
+
+	PR target/62251
+	* gfortran.dg/quad_2.f90: xfail hppa*-*-hpux*.
+
+	* gcc.dg/signbit-sa.c: Add dg-require-effective-target c99_runtime
+
+	* gcc.dg/ipa/pr64307.c: Add target c99_runtime.
+
+	* gcc.dg/ipa/ipa-icf-34.c: Add dg-require-alias.
+
+2015-03-08  Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/60898
+	* gfortran.dg/entry_20.f90: New.
+
+2015-03-07  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/65153
+	* gcc.c-torture/compile/pr65153.c: New.
+
+2015-03-07  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/65249
+	* g++.dg/torture/pr65249.C: New.
+
+2015-03-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr45685.c (uint64_t): Replace long with long
+	long.
+	(int64_t): Likewise.
+
+2015-03-07  Marek Polacek  <polacek@redhat.com>
+	    Martin Uecker  <uecker@eecs.berkeley.edu>
+
+	PR sanitizer/65280
+	* c-c++-common/ubsan/bounds-1.c: Add testing of flexible array
+	member-like arrays.
+	* c-c++-common/ubsan/bounds-8.c: New test.
+	* c-c++-common/ubsan/bounds-9.c: New test.
+	* gcc.dg/ubsan/bounds-2.c: New test.
+
+2015-03-05  Martin Sebor  <msebor@redhat.com>
+
+	* PR testsuite/63175
+	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a.c (main1): Move
+	checking of results into main to prevent it from getting optimized
+	away.
+	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a-pr63175.c: New test.
+
+2015-03-06  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc.dg/tree-ssa/pr45685.c: Move to gcc.target/i386.
+	* gcc.target/aarch64/csneg-1.c (test_csneg_cmp): New test.
+	* gcc.target/i386/pr45685.c: Moved test, check for conditional move on
+	x64.
+
+2015-03-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/lto/pr65302_1.C: New testcase.
+	* g++.dg/lto/pr65302_0.C: New testcase.
+
+2015-03-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/arm/atomic-comp-swap-release-acquire.c: Add
+	-fno-ipa-icf to dg-options.
+
+2015-03-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* c-c++-common/torture/aarch64-vect-lane-2.c: XFAIL for LTO
+	compiles using the linker plugin.
+
+2015-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/other/dump-ada-spec-3.C: Remove include and adjust.
+
+2015-03-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.target/arm/pr65067.c: New test.
+
+2015-03-05  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/65318
+	* gcc.dg/ipa/pr65318.c: New test.
+
+2015-03-05  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/ubsan/bounds-6.c: Use dg-do run.
+
+2015-03-05  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c:
+
+2015-03-05  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.dg/var-expand1.c: Force max-completely-peel-times and
+	max-unroll-times back to defaults for s390.
+
+2015-03-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Fix last commit.
+
+2015-03-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64665
+	* g++.dg/cpp0x/initlist92.C: New.
+
+2015-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65310
+	* gcc.dg/vect/pr65310.c: New testcase.
+
+2015-03-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64834
+	* g++.dg/cpp1y/lambda-generic-uneval1.C: New.
+
+2015-03-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/entry_queues3.adb: New test.
+
+2015-03-04  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp (go-gc-tests): Skip nilptr test on s390*.
+
+2015-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64227
+	* g++.dg/cpp1y/lambda-generic-ice1.C: New.
+
+2015-03-04  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/atomic-comp-swap-release-acquire.c: Add
+	-fno-ipa-icf to dg-options
+	* gcc.target/aarch64/vect_saddl_1.c: Likewise.
+	* gcc.target/aarch64/vect_smlal_1.c: Likewise.
+
+2015-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64398
+	* g++.dg/cpp0x/decltype62.C: New.
+
+2015-03-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/object_overflow5.adb: New test.
+
+2015-03-03  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/65287
+	* gcc.dg/ipa/pr65287.c: New test.
+
+2015-03-03  Martin Jambor  <mjambor@suse.cz>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/pack12.ads: New test.
+
+2015-03-03  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/ipa/PR65282.c: New test.
+
+2015-03-13  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/65241
+	* gcc.c-torture/compile/pr65241.c: New test.
+
+2015-03-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/64331
+	* gcc.target/avr/torture/pr64331.c: New test.
+
+2015-03-03  Martin Liska  <mliska@suse.cz>
+	    Jan Hubicka   <hubicka@ucw.cz>
+
+	* g++.dg/ipa/pr65263.C: New test.
+
+2015-03-02  Jan Hubicka   <hubicka@ucw.cz>
+
+	PR ipa/65130
+	* gcc.dg/lto/pr65130_0.c: New testcase.
+	* gcc.dg/lto/pr65130_1.c: New testcase.
+
+2015-03-02  Jan Hubicka   <hubicka@ucw.cz>
+
+	PR ipa/64988
+	* g++.dg/torture/pr64988.C: New testcase.
+
+2015-03-02  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_atomic_6.f90: New.
+
+2015-03-02  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65184
+	* gcc.target/i386/pr65184.c: New.
+
+2015-03-02  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65183
+	* gcc.target/i386/pr65183.c: New.
+
 2015-02-28  Martin Liska  <mliska@suse.cz>
 	    Jan Hubicka   <hubicka@ucw.cz>
 

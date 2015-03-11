@@ -1,3 +1,8 @@
+2015-03-02  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR target/65261
+	* ansidecl.h (ATTRIBUTE_NO_SANITIZE_UNDEFINED): New macro.
+
 2015-02-19  Pedro Alves  <palves@redhat.com>
 
 	* floatformat.h [__cplusplus]: Wrap in extern "C".

@@ -19,7 +19,7 @@
 
 ;; Register constraints.
 
-(define_register_constraint "a" "GR_REGS"
+(define_register_constraint "a" "TARGET_WINDOWED_ABI ? GR_REGS : AR_REGS"
  "General-purpose AR registers @code{a0}-@code{a15},
   except @code{a1} (@code{sp}).")
 
@@ -36,7 +36,7 @@
  "Floating-point registers @code{f0}-@code{f15}; only available if the
   Xtensa Floating-Pointer Coprocessor is configured.")
 
-(define_register_constraint "q" "SP_REG"
+(define_register_constraint "q" "TARGET_WINDOWED_ABI ? SP_REG : NO_REGS"
  "@internal
   The stack pointer (register @code{a1}).")
 
@@ -53,7 +53,7 @@
   General-purpose AR registers, but only if the Xtensa 16-Bit Integer
   Multiply Option is configured.")
 
-(define_register_constraint "D" "TARGET_DENSITY ? GR_REGS: NO_REGS"
+(define_register_constraint "D" "TARGET_DENSITY ? (TARGET_WINDOWED_ABI ? GR_REGS : AR_REGS) : NO_REGS"
  "@internal
   General-purpose AR registers, but only if the Xtensa Code Density
   Option is configured.")

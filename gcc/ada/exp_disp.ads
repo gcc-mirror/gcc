@@ -4,9 +4,9 @@
 --                                                                          --
 --                             E X P _ D I S P                              --
 --                                                                          --
---                                 S p e c                                  --
+--                                 GS p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,6 +27,7 @@
 --  dispatching expansion.
 
 with Types; use Types;
+with Uintp; use Uintp;
 
 package Exp_Disp is
 
@@ -379,11 +380,14 @@ package Exp_Disp is
    --  target object in its first argument; such implicit argument is explicit
    --  in the IP procedures built here.
 
-   procedure Set_DTC_Entity_Value
-     (Tagged_Type : Entity_Id;
-      Prim        : Entity_Id);
+   procedure Set_DT_Position_Value (Prim  : Entity_Id; Value : Uint);
+   --  Set the position of a dispatching primitive its dispatch table. For
+   --  subprogram wrappers propagate the value to the wrapped subprogram.
+
+   procedure Set_DTC_Entity_Value (Tagged_Type : Entity_Id; Prim : Entity_Id);
    --  Set the definite value of the DTC_Entity value associated with a given
-   --  primitive of a tagged type.
+   --  primitive of a tagged type. For subprogram wrappers, propagate the value
+   --  to the wrapped subprogram.
 
    procedure Write_DT (Typ : Entity_Id);
    pragma Export (Ada, Write_DT);

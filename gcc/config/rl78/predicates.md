@@ -58,6 +58,21 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 255)")))
 
+(define_predicate "rl78_incdec_memory_operand"
+  (and (match_code "mem")
+       (match_test "rl78_far_p (op)
+|| satisfies_constraint_Wsa (op)
+|| satisfies_constraint_Whl (op)
+|| satisfies_constraint_Wh1 (op)
+|| satisfies_constraint_Wab (op)")
+  )
+)
+
+(define_predicate "rl78_1_2_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 1, 2)
+		   || IN_RANGE (INTVAL (op), -2, -1)")))
+
 (define_predicate "rl78_24_operand"
   (and (match_code "const_int")
        (match_test "INTVAL (op) == 2 || INTVAL (op) == 4")))

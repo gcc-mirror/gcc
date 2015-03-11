@@ -105,6 +105,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __inner_type_impl() = default;
       __inner_type_impl(const __inner_type_impl&) = default;
       __inner_type_impl(__inner_type_impl&&) = default;
+      __inner_type_impl& operator=(const __inner_type_impl&) = default;
+      __inner_type_impl& operator=(__inner_type_impl&&) = default;
       
       template<typename _Alloc>
       __inner_type_impl(const __inner_type_impl<_Alloc>& __other)
@@ -136,6 +138,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __inner_type_impl() = default;
       __inner_type_impl(const __inner_type_impl&) = default;
       __inner_type_impl(__inner_type_impl&&) = default;
+      __inner_type_impl& operator=(const __inner_type_impl&) = default;
+      __inner_type_impl& operator=(__inner_type_impl&&) = default;
       
       template<typename... _Allocs>
       __inner_type_impl(const __inner_type_impl<_Allocs...>& __other)
@@ -309,6 +313,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         : _OuterAlloc(std::move(__other.outer_allocator())),
           _M_inner(std::move(__other._M_inner))
         { }
+
+      scoped_allocator_adaptor&
+      operator=(const scoped_allocator_adaptor&) = default;
+
+      scoped_allocator_adaptor&
+      operator=(scoped_allocator_adaptor&&) = default;
 
       inner_allocator_type& inner_allocator() noexcept
       { return _M_inner._M_get(this); }

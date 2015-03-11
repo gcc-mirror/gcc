@@ -8640,6 +8640,36 @@ package body Sem_Ch3 is
                   end;
                end if;
 
+               --  Propagate inherited invariant information of parents
+               --  and progenitors
+
+               if Ada_Version >= Ada_2012
+                 and then not Is_Interface (Derived_Type)
+               then
+                  if Has_Inheritable_Invariants (Parent_Type) then
+                     Set_Has_Invariants (Derived_Type);
+                     Set_Has_Inheritable_Invariants (Derived_Type);
+
+                  elsif not Is_Empty_Elmt_List (Ifaces_List) then
+                     declare
+                        AI : Elmt_Id;
+
+                     begin
+                        AI := First_Elmt (Ifaces_List);
+                        while Present (AI) loop
+                           if Has_Inheritable_Invariants (Node (AI)) then
+                              Set_Has_Invariants (Derived_Type);
+                              Set_Has_Inheritable_Invariants (Derived_Type);
+
+                              exit;
+                           end if;
+
+                           Next_Elmt (AI);
+                        end loop;
+                     end;
+                  end if;
+               end if;
+
                --  A type extension is automatically Ghost when one of its
                --  progenitors is Ghost (SPARK RM 6.9(9)). This property is
                --  also inherited when the parent type is Ghost, but this is
@@ -14811,7 +14841,7 @@ package body Sem_Ch3 is
 
          if Present (DTC_Entity (Actual_Subp)) then
             Set_DTC_Entity (New_Subp, DTC_Entity (Actual_Subp));
-            Set_DT_Position (New_Subp, DT_Position (Actual_Subp));
+            Set_DT_Position_Value (New_Subp, DT_Position (Actual_Subp));
          end if;
       end if;
 
@@ -19681,7 +19711,7 @@ package body Sem_Ch3 is
                         if not Is_Dispatching_Operation (Prim) then
                            Append_Elmt (Prim, Full_List);
                            Set_Is_Dispatching_Operation (Prim, True);
-                           Set_DT_Position (Prim, No_Uint);
+                           Set_DT_Position_Value (Prim, No_Uint);
                         end if;
 
                      elsif Is_Dispatching_Operation (Prim)
@@ -19835,6 +19865,34 @@ package body Sem_Ch3 is
 
       if Has_Inheritable_Invariants (Priv_T) then
          Set_Has_Inheritable_Invariants (Full_T);
+      end if;
+
+      --  Check hidden inheritance of class-wide type invariants
+
+      if Ada_Version >= Ada_2012
+        and then not Has_Inheritable_Invariants (Full_T)
+        and then In_Private_Part (Current_Scope)
+        and then Has_Interfaces (Full_T)
+      then
+         declare
+            Ifaces : Elist_Id;
+            AI     : Elmt_Id;
+
+         begin
+            Collect_Interfaces (Full_T, Ifaces, Exclude_Parents => True);
+
+            AI := First_Elmt (Ifaces);
+            while Present (AI) loop
+               if Has_Inheritable_Invariants (Node (AI)) then
+                  Error_Msg_N
+                    ("hidden inheritance of class-wide type invariants " &
+                     "not allowed", N);
+                  exit;
+               end if;
+
+               Next_Elmt (AI);
+            end loop;
+         end;
       end if;
 
       --  Propagate predicates to full type, and predicate function if already

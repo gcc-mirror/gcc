@@ -52,6 +52,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define ENTRY_BYTE 0x36
 #endif
 
+#ifdef __XTENSA_WINDOWED_ABI__
 #define MD_FALLBACK_FRAME_STATE_FOR xtensa_fallback_frame_state
 
 static _Unwind_Reason_Code
@@ -93,5 +94,7 @@ xtensa_fallback_frame_state (struct _Unwind_Context *context,
   fs->signal_frame = 1;
   return _URC_NO_REASON;
 }
+
+#endif /* __XTENSA_WINDOWED_ABI__ */
 
 #endif /* ifdef inhibit_libc  */

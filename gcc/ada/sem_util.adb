@@ -32,6 +32,7 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Disp; use Exp_Disp;
+with Exp_Unst; use Exp_Unst;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
@@ -2863,23 +2864,46 @@ package body Sem_Util is
    -- Check_Nested_Access --
    -------------------------
 
-   procedure Check_Nested_Access (Ent : Entity_Id) is
+   procedure Check_Nested_Access (N : Node_Id; Ent : Entity_Id) is
       Scop         : constant Entity_Id := Current_Scope;
       Current_Subp : Entity_Id;
       Enclosing    : Entity_Id;
 
    begin
       --  Currently only enabled for VM back-ends for efficiency, should we
-      --  enable it more systematically ???
+      --  enable it more systematically? Probably not unless someone actually
+      --  needs it. It will be needed for C generation and is activated if the
+      --  Opt.Unnest_Subprogram_Mode flag is set True.
 
-      --  Check for Is_Imported needs commenting below ???
-
-      if VM_Target /= No_VM
-        and then Ekind_In (Ent, E_Variable, E_Constant, E_Loop_Parameter)
+      if (VM_Target /= No_VM or else Unnest_Subprogram_Mode)
         and then Scope (Ent) /= Empty
         and then not Is_Library_Level_Entity (Ent)
+
+        --  Comment the exclusion of imported entities ???
+
         and then not Is_Imported (Ent)
       then
+         --  In both the VM case and in Unnest_Subprogram_Mode, we mark
+         --  variables, constants, and loop parameters.
+
+         if Ekind_In (Ent, E_Variable, E_Constant, E_Loop_Parameter) then
+            null;
+
+         --  In Unnest_Subprogram_Mode, we also mark types and formals
+
+         elsif Unnest_Subprogram_Mode
+           and then (Is_Type (Ent) or else Is_Formal (Ent))
+         then
+            null;
+
+            --  All other cases, do not mark
+
+         else
+            return;
+         end if;
+
+         --  Get current subprogram that is relevant
+
          if Is_Subprogram (Scop)
            or else Is_Generic_Subprogram (Scop)
            or else Is_Entry (Scop)
@@ -2891,8 +2915,19 @@ package body Sem_Util is
 
          Enclosing := Enclosing_Subprogram (Ent);
 
+         --  Set flag if uplevel reference
+
          if Enclosing /= Empty and then Enclosing /= Current_Subp then
-            Set_Has_Up_Level_Access (Ent, True);
+            if Is_Type (Ent) then
+               Check_Uplevel_Reference_To_Type (Ent);
+            else
+               Set_Has_Uplevel_Reference (Ent, True);
+
+               if Unnest_Subprogram_Mode then
+                  Set_Has_Uplevel_Reference (Current_Subp, True);
+                  Note_Uplevel_Reference (N, Enclosing);
+               end if;
+            end if;
          end if;
       end if;
    end Check_Nested_Access;
@@ -3481,13 +3516,17 @@ package body Sem_Util is
       begin
          Full_T := Typ;
 
-         --  Handle private types
+         --  Handle private types and subtypes
 
          if Use_Full_View
            and then Is_Private_Type (Typ)
            and then Present (Full_View (Typ))
          then
             Full_T := Full_View (Typ);
+
+            if Ekind (Full_T) = E_Record_Subtype then
+               Full_T := Full_View (Etype (Typ));
+            end if;
          end if;
 
          --  Include the ancestor if we are generating the whole list of
@@ -13012,20 +13051,33 @@ package body Sem_Util is
             Kill_Checks (Ent);
             Set_Current_Value (Ent, Empty);
 
-            if not Can_Never_Be_Null (Ent) then
-               Set_Is_Known_Non_Null (Ent, False);
-            end if;
+            --  Do not reset the Is_Known_[Non_]Null and Is_Known_Valid flags
+            --  for a constant. Once the constant is elaborated, its value is
+            --  not changed, therefore the associated flags that describe the
+            --  value should not be modified either.
 
-            Set_Is_Known_Null (Ent, False);
+            if Ekind (Ent) = E_Constant then
+               null;
 
-            --  Reset Is_Known_Valid unless type is always valid, or if we have
-            --  a loop parameter (loop parameters are always valid, since their
-            --  bounds are defined by the bounds given in the loop header).
+            --  Non-constant entities
 
-            if not Is_Known_Valid (Etype (Ent))
-              and then Ekind (Ent) /= E_Loop_Parameter
-            then
-               Set_Is_Known_Valid (Ent, False);
+            else
+               if not Can_Never_Be_Null (Ent) then
+                  Set_Is_Known_Non_Null (Ent, False);
+               end if;
+
+               Set_Is_Known_Null (Ent, False);
+
+               --  Reset the Is_Known_Valid flag unless the type is always
+               --  valid. This does not apply to a loop parameter because its
+               --  bounds are defined by the loop header and therefore always
+               --  valid.
+
+               if not Is_Known_Valid (Etype (Ent))
+                 and then Ekind (Ent) /= E_Loop_Parameter
+               then
+                  Set_Is_Known_Valid (Ent, False);
+               end if;
             end if;
          end if;
       end if;
@@ -14042,8 +14094,8 @@ package body Sem_Util is
                   New_Next := First (Parameter_Associations (New_Node));
 
                   while Nkind (Old_Next) /= N_Parameter_Association
-                    or else  Explicit_Actual_Parameter (Old_Next)
-                      /= Next_Named_Actual (Old_E)
+                    or else Explicit_Actual_Parameter (Old_Next) /=
+                                              Next_Named_Actual (Old_E)
                   loop
                      Next (Old_Next);
                      Next (New_Next);
@@ -15099,7 +15151,7 @@ package body Sem_Util is
 
                   --  If the entity is the loop variable in an iteration over
                   --  a container, retrieve container expression to indicate
-                  --  possible modificastion.
+                  --  possible modification.
 
                   if Present (Related_Expression (Ent))
                     and then Nkind (Parent (Related_Expression (Ent))) =
@@ -15155,7 +15207,7 @@ package body Sem_Util is
                   end if;
                end if;
 
-               Check_Nested_Access (Ent);
+               Check_Nested_Access (N, Ent);
             end if;
 
             Kill_Checks (Ent);

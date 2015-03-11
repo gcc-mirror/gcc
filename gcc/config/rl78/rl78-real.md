@@ -59,7 +59,7 @@
 )
 
 (define_insn "*movqi_real"
-  [(set (match_operand:QI 0 "rl78_nonimmediate_operand" "=g,RaxbcWab,RaxbcWab,a,                               bcx,R,     WabWd2WhlWh1WhbWbcWs1v, bcx,WsaWsf")
+  [(set (match_operand:QI 0 "rl78_nonimmediate_operand" "=Rv,RaxbcWab,RaxbcWab,a,                               bcx,R,     WabWd2WhlWh1WhbWbcWs1v, bcx,WsaWsf")
 	(match_operand    1 "rl78_general_operand"      "0,K,        M,       RInt8sJvWabWdeWd2WhlWh1WhbWbcWs1,Wab,aInt8J,a,                      R,  i"))]
   "rl78_real_insns_ok ()"
   "@
@@ -75,7 +75,7 @@
 )
 
 (define_insn "*movhi_real"
-  [(set (match_operand:HI 0 "rl78_nonimmediate_operand" "=g,AB,AB,RSv,A,BDTvSWabWd2WdeWhlWh1WbcWs1, BDT,ABDT,v")
+  [(set (match_operand:HI 0 "rl78_nonimmediate_operand" "=Rv,AB,AB,RSv,A,BDTvSWabWd2WdeWhlWh1WbcWs1, BDT,ABDT,v")
 	(match_operand:HI 1 "rl78_general_operand"      " 0,K, M, i,  BDTvSWabWd2WdeWh1WhlWbcWs1,A, BDT,vS,  ABDT"))]
   "rl78_real_insns_ok ()"
   "@
@@ -93,7 +93,7 @@
 ;;---------- Conversions ------------------------
 
 (define_insn "*zero_extendqihi2_real"
-  [(set (match_operand:HI                 0 "nonimmediate_operand" "=rv,A")
+  [(set (match_operand:HI                 0 "nonimmediate_operand" "=Rv,A")
 	(zero_extend:HI (match_operand:QI 1 "general_operand" "0,a")))]
   "rl78_real_insns_ok ()"
   "@
@@ -113,14 +113,14 @@
 ;;---------- Arithmetic ------------------------
 
 (define_insn "*addqi3_real"
-  [(set (match_operand:QI          0 "rl78_nonimmediate_operand"  "=rvWabWhlWh1,rvWabWhlWh1,a,*bcdehl,Wsa")
+  [(set (match_operand:QI          0 "rl78_nonimmediate_operand"  "=RvWabWhlWh1Wsa,RvWabWhlWh1Wsa,a,*bcdehl,Wsa")
 	(plus:QI (match_operand:QI 1 "rl78_general_operand"  "%0,0,0,0,0")
 		 (match_operand:QI 2 "rl78_general_operand" "K,L,RWhlWh1Wabi,a,i")))
    ]
   "rl78_real_insns_ok ()"
   "@
-    inc\t%0
-    dec\t%0
+    inc\t%p0
+    dec\t%p0
     add\t%0, %2
     add\t%0, %2
     add\t%0, %2"
@@ -128,7 +128,7 @@
 )
 
 (define_insn "*addhi3_real"
-  [(set (match_operand:HI          0 "rl78_nonimmediate_operand"  "=vABDTWh1Wab,vABDTWh1Wab,v,v,A,S,S,A")
+  [(set (match_operand:HI          0 "rl78_nonimmediate_operand"  "=vABDTWhlWh1WabWsa,vABDTWhlWh1WabWsa,v,v,A,S,S,A")
 	(plus:HI (match_operand:HI 1 "rl78_general_operand"  "%0,0,0,0,0,0,0,S")
 		 (match_operand:HI 2 "" "K,L,N,O,RWh1WhlWabiv,Int8Qs8,J,Ri")))
    ]
@@ -146,8 +146,8 @@
 )
 
 (define_insn "*addqihi3a_real"
-  [(set (match_operand:HI                          0 "register_operand" "=r")
-	(plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand"  "r"))
+  [(set (match_operand:HI                          0 "register_operand" "=R")
+	(plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand"  "R"))
 		 (match_operand:HI                 2 "register_operand"  "0")))
    ]
   "rl78_real_insns_ok ()"
@@ -381,7 +381,7 @@
   [(set (pc) (if_then_else
 	      (match_operator 0 "rl78_cmp_operator_real"
 			      [(match_operand:QI 1 "rl78_general_operand" "Wabvaxbc,a,              vWsaWab,bcdehl")
-			       (match_operand:QI 2 "rl78_general_operand" "M,       irvWabWhlWh1Whb,i,a")])
+			       (match_operand:QI 2 "rl78_general_operand" "M,       iRvWabWhlWh1Whb,i,a")])
               (label_ref (match_operand 3 "" ""))
 	      (pc)))]
   "rl78_real_insns_ok ()"

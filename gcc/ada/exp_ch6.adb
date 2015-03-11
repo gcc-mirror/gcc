@@ -42,6 +42,7 @@ with Exp_Intr; use Exp_Intr;
 with Exp_Pakd; use Exp_Pakd;
 with Exp_Prag; use Exp_Prag;
 with Exp_Tss;  use Exp_Tss;
+with Exp_Unst; use Exp_Unst;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Inline;   use Inline;
@@ -670,7 +671,7 @@ package body Exp_Ch6 is
               and then Is_Hidden (Par_Op)
               and then Type_Conformant (Prim_Op, Subp)
             then
-               Set_DT_Position (Subp, DT_Position (Prim_Op));
+               Set_DT_Position_Value (Subp, DT_Position (Prim_Op));
             end if;
 
             Next_Elmt (Op_Elmt);
@@ -4378,7 +4379,7 @@ package body Exp_Ch6 is
            (Result, New_Occurrence_Of (Return_Statement_Entity (N), Loc));
 
          --  If the object decl was already rewritten as a renaming, then we
-         --  don't want to do the object allocation and transformation of of
+         --  don't want to do the object allocation and transformation of
          --  the return object declaration to a renaming. This case occurs
          --  when the return object is initialized by a call to another
          --  build-in-place function, and that function is responsible for
@@ -5339,6 +5340,28 @@ package body Exp_Ch6 is
       --  Set to encode entity names in package body before gigi is called
 
       Qualify_Entity_Names (N);
+
+      --  If we are unnesting procedures, and this is an outer level procedure
+      --  with nested subprograms, do the unnesting operation now.
+
+      if Opt.Unnest_Subprogram_Mode
+
+        --  We are only interested in subprograms (not generic subprograms)
+
+        and then Is_Subprogram (Spec_Id)
+
+        --  Only deal with outer level subprograms. Nested subprograms are
+        --  handled as part of dealing with the outer level subprogram in
+        --  which they are nested.
+
+        and then Enclosing_Subprogram (Spec_Id) = Empty
+
+        --  We are only interested in subprograms that have nested subprograms
+
+        and then Has_Nested_Subprogram (Spec_Id)
+      then
+         Unnest_Subprogram (Spec_Id, N);
+      end if;
    end Expand_N_Subprogram_Body;
 
    -----------------------------------
@@ -6243,18 +6266,60 @@ package body Exp_Ch6 is
 
             if Is_Class_Wide_Type (Etype (Exp))
               and then Is_Interface (Etype (Exp))
-              and then Nkind (Exp) = N_Explicit_Dereference
             then
-               Tag_Node :=
-                 Make_Explicit_Dereference (Loc,
-                   Prefix =>
-                     Unchecked_Convert_To (RTE (RE_Tag_Ptr),
-                       Make_Function_Call (Loc,
-                         Name                   =>
-                           New_Occurrence_Of (RTE (RE_Base_Address), Loc),
-                         Parameter_Associations => New_List (
-                           Unchecked_Convert_To (RTE (RE_Address),
-                             Duplicate_Subexpr (Prefix (Exp)))))));
+               --  If the expression is an explicit dereference then we can
+               --  directly displace the pointer to reference the base of
+               --  the object.
+
+               if Nkind (Exp) = N_Explicit_Dereference then
+                  Tag_Node :=
+                    Make_Explicit_Dereference (Loc,
+                      Prefix =>
+                        Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                          Make_Function_Call (Loc,
+                            Name                   =>
+                              New_Occurrence_Of (RTE (RE_Base_Address), Loc),
+                            Parameter_Associations => New_List (
+                              Unchecked_Convert_To (RTE (RE_Address),
+                                Duplicate_Subexpr (Prefix (Exp)))))));
+
+               --  Similar case to the previous one but the expression is a
+               --  renaming of an explicit dereference.
+
+               elsif Nkind (Exp) = N_Identifier
+                 and then Present (Renamed_Object (Entity (Exp)))
+                 and then Nkind (Renamed_Object (Entity (Exp)))
+                            = N_Explicit_Dereference
+               then
+                  Tag_Node :=
+                    Make_Explicit_Dereference (Loc,
+                      Prefix =>
+                        Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                          Make_Function_Call (Loc,
+                            Name                   =>
+                              New_Occurrence_Of (RTE (RE_Base_Address), Loc),
+                            Parameter_Associations => New_List (
+                              Unchecked_Convert_To (RTE (RE_Address),
+                                Duplicate_Subexpr
+                                  (Prefix
+                                    (Renamed_Object (Entity (Exp)))))))));
+
+               --  Common case: obtain the address of the actual object and
+               --  displace the pointer to reference the base of the object.
+
+               else
+                  Tag_Node :=
+                    Make_Explicit_Dereference (Loc,
+                      Prefix =>
+                        Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+                          Make_Function_Call (Loc,
+                            Name               =>
+                              New_Occurrence_Of (RTE (RE_Base_Address), Loc),
+                            Parameter_Associations => New_List (
+                              Make_Attribute_Reference (Loc,
+                                Prefix         => Duplicate_Subexpr (Exp),
+                                Attribute_Name => Name_Address)))));
+               end if;
             else
                Tag_Node :=
                  Make_Attribute_Reference (Loc,
@@ -7152,6 +7217,42 @@ package body Exp_Ch6 is
          Subp_Id  : Entity_Id := Empty;
          Inher_Id : Entity_Id := Empty) return Node_Id
       is
+         function Suppress_Reference (N : Node_Id) return Traverse_Result;
+         --  Detect whether node N references a formal parameter subject to
+         --  pragma Unreferenced. If this is the case, set Comes_From_Source
+         --  to False to suppress the generation of a reference when analyzing
+         --  N later on.
+
+         ------------------------
+         -- Suppress_Reference --
+         ------------------------
+
+         function Suppress_Reference (N : Node_Id) return Traverse_Result is
+            Formal : Entity_Id;
+
+         begin
+            if Is_Entity_Name (N) and then Present (Entity (N)) then
+               Formal := Entity (N);
+
+               --  The formal parameter is subject to pragma Unreferenced.
+               --  Prevent the generation of a reference by resetting the
+               --  Comes_From_Source flag.
+
+               if Is_Formal (Formal)
+                 and then Has_Pragma_Unreferenced (Formal)
+               then
+                  Set_Comes_From_Source (N, False);
+               end if;
+            end if;
+
+            return OK;
+         end Suppress_Reference;
+
+         procedure Suppress_References is
+           new Traverse_Proc (Suppress_Reference);
+
+         --  Local variables
+
          Loc          : constant Source_Ptr := Sloc (Prag);
          Prag_Nam     : constant Name_Id    := Pragma_Name (Prag);
          Check_Prag   : Node_Id;
@@ -7160,6 +7261,8 @@ package body Exp_Ch6 is
          Msg_Arg      : Node_Id;
          Nam          : Name_Id;
          Subp_Formal  : Entity_Id;
+
+      --  Start of processing for Build_Pragma_Check_Equivalent
 
       begin
          Formals_Map := No_Elist;
@@ -7197,8 +7300,26 @@ package body Exp_Ch6 is
          --  Mark the pragma as being internally generated and reset the
          --  Analyzed flag.
 
-         Set_Comes_From_Source (Check_Prag, False);
          Set_Analyzed          (Check_Prag, False);
+         Set_Comes_From_Source (Check_Prag, False);
+
+         --  The tree of the original pragma may contain references to the
+         --  formal parameters of the related subprogram. At the same time
+         --  the corresponding body may mark the formals as unreferenced:
+
+         --     procedure Proc (Formal : ...)
+         --       with Pre => Formal ...;
+
+         --     procedure Proc (Formal : ...) is
+         --        pragma Unreferenced (Formal);
+         --     ...
+
+         --  This creates problems because all pragma Check equivalents are
+         --  analyzed at the end of the body declarations. Since all source
+         --  references have already been accounted for, reset any references
+         --  to such formals in the generated pragma Check equivalent.
+
+         Suppress_References (Check_Prag);
 
          if Present (Corresponding_Aspect (Prag)) then
             Nam := Chars (Identifier (Corresponding_Aspect (Prag)));
@@ -7716,14 +7837,9 @@ package body Exp_Ch6 is
 
          if Present (Decls) then
             Decl := First (Decls);
-
             while Present (Decl) loop
-               if Comes_From_Source (Decl) then
-                  exit;
-               else
-                  Insert_Node := Decl;
-               end if;
-
+               exit when Comes_From_Source (Decl);
+               Insert_Node := Decl;
                Next (Decl);
             end loop;
          end if;
