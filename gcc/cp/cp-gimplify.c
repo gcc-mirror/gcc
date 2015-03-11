@@ -53,6 +53,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "c-family/c-ubsan.h"
 #include "cilk.h"
+#include "gimplify.h"
+#include "gimple-expr.h"
 
 /* Forward declarations.  */
 
@@ -528,6 +530,29 @@ gimplify_must_not_throw_expr (tree *expr_p, gimple_seq *pre_p)
   return GS_ALL_DONE;
 }
 
+/* Return TRUE if an operand (OP) of a given TYPE being copied is
+   really just an empty class copy.
+
+   Check that the operand has a simple form so that TARGET_EXPRs and
+   non-empty CONSTRUCTORs get reduced properly, and we leave the
+   return slot optimization alone because it isn't a copy.  */
+
+static bool
+simple_empty_class_p (tree type, tree op)
+{
+  return
+    ((TREE_CODE (op) == COMPOUND_EXPR
+      && simple_empty_class_p (type, TREE_OPERAND (op, 1)))
+     || is_gimple_lvalue (op)
+     || INDIRECT_REF_P (op)
+     || (TREE_CODE (op) == CONSTRUCTOR
+	 && CONSTRUCTOR_NELTS (op) == 0
+	 && !TREE_CLOBBER_P (op))
+     || (TREE_CODE (op) == CALL_EXPR
+	 && !CALL_EXPR_RETURN_SLOT_OPT (op)))
+    && is_really_empty_class (type);
+}
+
 /* Do C++-specific gimplification.  Args are as for gimplify_expr.  */
 
 int
@@ -597,6 +622,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	return GS_OK;
       /* Otherwise fall through.  */
     case MODIFY_EXPR:
+    modify_expr_case:
       {
 	if (fn_contains_cilk_spawn_p (cfun)
 	    && cilk_detect_spawn_and_unwrap (expr_p)
@@ -616,31 +642,22 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  TREE_OPERAND (*expr_p, 1) = build1 (VIEW_CONVERT_EXPR,
 					      TREE_TYPE (op0), op1);
 
-	else if ((is_gimple_lvalue (op1) || INDIRECT_REF_P (op1)
-		  || (TREE_CODE (op1) == CONSTRUCTOR
-		      && CONSTRUCTOR_NELTS (op1) == 0
-		      && !TREE_CLOBBER_P (op1))
-		  || (TREE_CODE (op1) == CALL_EXPR
-		      && !CALL_EXPR_RETURN_SLOT_OPT (op1)))
-		 && is_really_empty_class (TREE_TYPE (op0)))
+	else if (simple_empty_class_p (TREE_TYPE (op0), op1))
 	  {
-	    /* Remove any copies of empty classes.  We check that the RHS
-	       has a simple form so that TARGET_EXPRs and non-empty
-	       CONSTRUCTORs get reduced properly, and we leave the return
-	       slot optimization alone because it isn't a copy (FIXME so it
-	       shouldn't be represented as one).
+	    /* Remove any copies of empty classes.  Also drop volatile
+	       variables on the RHS to avoid infinite recursion from
+	       gimplify_expr trying to load the value.  */
+	    gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
+			   is_gimple_lvalue, fb_lvalue);
+	    if (TREE_SIDE_EFFECTS (op1))
+	      {
+		if (TREE_THIS_VOLATILE (op1)
+		    && (REFERENCE_CLASS_P (op1) || DECL_P (op1)))
+		  op1 = build_fold_addr_expr (op1);
 
-	       Also drop volatile variables on the RHS to avoid infinite
-	       recursion from gimplify_expr trying to load the value.  */
-	    if (!TREE_SIDE_EFFECTS (op1))
-	      *expr_p = op0;
-	    else if (TREE_THIS_VOLATILE (op1)
-		     && (REFERENCE_CLASS_P (op1) || DECL_P (op1)))
-	      *expr_p = build2 (COMPOUND_EXPR, TREE_TYPE (*expr_p),
-				build_fold_addr_expr (op1), op0);
-	    else
-	      *expr_p = build2 (COMPOUND_EXPR, TREE_TYPE (*expr_p),
-				op0, op1);
+		gimplify_and_add (op1, pre_p);
+	      }
+	    *expr_p = TREE_OPERAND (*expr_p, 0);
 	  }
       }
       ret = GS_OK;
@@ -739,6 +756,19 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	    }
 	}
       break;
+
+    case RETURN_EXPR:
+      if (TREE_OPERAND (*expr_p, 0)
+	  && (TREE_CODE (TREE_OPERAND (*expr_p, 0)) == INIT_EXPR
+	      || TREE_CODE (TREE_OPERAND (*expr_p, 0)) == MODIFY_EXPR))
+	{
+	  expr_p = &TREE_OPERAND (*expr_p, 0);
+	  code = TREE_CODE (*expr_p);
+	  /* Avoid going through the INIT_EXPR case, which can
+	     degrade INIT_EXPRs into AGGR_INIT_EXPRs.  */
+	  goto modify_expr_case;
+	}
+      /* Fall through.  */
 
     default:
       ret = (enum gimplify_status) c_gimplify_expr (expr_p, pre_p, post_p);
