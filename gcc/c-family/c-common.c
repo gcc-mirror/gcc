@@ -5458,11 +5458,10 @@ c_common_nodes_and_builtins (void)
       char name[25];
 
       sprintf (name, "__int%d", int_n_data[i].bitsize);
-      record_builtin_type ((enum rid)(RID_FIRST_INT_N + i), xstrdup (name),
+      record_builtin_type ((enum rid)(RID_FIRST_INT_N + i), name,
 			   int_n_trees[i].signed_type);
       sprintf (name, "__int%d unsigned", int_n_data[i].bitsize);
-      record_builtin_type (RID_MAX, xstrdup (name),
-			   int_n_trees[i].unsigned_type);
+      record_builtin_type (RID_MAX, name, int_n_trees[i].unsigned_type);
     }
 
   if (c_dialect_cxx ())

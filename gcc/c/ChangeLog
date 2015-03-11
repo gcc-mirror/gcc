@@ -1,3 +1,8 @@
+2015-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parse_init): Don't call xstrdup on get_identifier
+	argument.
+
 2015-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/65120

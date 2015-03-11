@@ -139,7 +139,7 @@ c_parse_init (void)
       /* We always create the symbols but they aren't always supported.  */
       char name[50];
       sprintf (name, "__int%d", int_n_data[i].bitsize);
-      id = get_identifier (xstrdup (name));
+      id = get_identifier (name);
       C_SET_RID_CODE (id, RID_FIRST_INT_N + i);
       C_IS_RESERVED_WORD (id) = 1;
     }
