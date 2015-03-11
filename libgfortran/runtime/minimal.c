@@ -73,7 +73,10 @@ recursion_check (void)
   magic = MAGIC;
 }
 
-#define STRERR_MAXSZ 256
+
+/* os_error()-- Operating system error.  We get a message from the
+ * operating system, show it and leave.  Some operating system errors
+ * are caught and processed by the library.  If not, we come here. */
 
 void
 os_error (const char *message)
@@ -84,6 +87,10 @@ os_error (const char *message)
   exit (1);
 }
 iexport(os_error);
+
+
+/* void runtime_error()-- These are errors associated with an
+ * invalid fortran program. */
 
 void
 runtime_error (const char *message, ...)
@@ -109,7 +116,8 @@ runtime_error_at (const char *where, const char *message, ...)
   va_list ap;
 
   recursion_check ();
-  printf ("Fortran runtime error: ");
+  printf ("%s", where);
+  printf ("\nFortran runtime error: ");
   va_start (ap, message);
   vprintf (message, ap);
   va_end (ap);
@@ -117,6 +125,43 @@ runtime_error_at (const char *where, const char *message, ...)
   exit (2);
 }
 iexport(runtime_error_at);
+
+
+void
+runtime_warning_at (const char *where, const char *message, ...)
+{
+  va_list ap;
+
+  printf ("%s", where);
+  printf ("\nFortran runtime warning: ");
+  va_start (ap, message);
+  vprintf (message, ap);
+  va_end (ap);
+  printf ("\n");
+}
+iexport(runtime_warning_at);
+
+
+/* void internal_error()-- These are this-can't-happen errors
+ * that indicate something deeply wrong. */
+
+void
+internal_error (st_parameter_common *cmp, const char *message)
+{
+  recursion_check ();
+  printf ("Internal Error: ");
+  printf ("%s", message);
+  printf ("\n");
+
+  /* This function call is here to get the main.o object file included
+     when linking statically. This works because error.o is supposed to
+     be always linked in (and the function call is in internal_error
+     because hopefully it doesn't happen too often).  */
+  stupid_function_name_for_static_linking();
+
+  exit (3);
+}
+
 
 /* Return the full path of the executable.  */
 char *
@@ -153,6 +198,13 @@ get_args (int *argc, char ***argv)
 void
 sys_abort (void)
 {
-  printf ("Abort called.\n");
+  /* If backtracing is enabled, print backtrace and disable signal
+     handler for ABRT.  */
+  if (options.backtrace == 1
+      || (options.backtrace == -1 && compile_options.backtrace == 1))
+    {
+      printf ("\nProgram aborted.\n");
+    }
+
   abort();
 }
