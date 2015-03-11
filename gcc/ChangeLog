@@ -1,3 +1,9 @@
+2015-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65310
+	* tree-sra.c (build_ref_for_offset): Also preserve larger
+	alignment.
+
 2015-03-11  Marat Zakirov  <m.zakirov@samsung.com>
 
 	* asan.c (instrument_derefs): Disable instrumentation on asan-globals=0.
