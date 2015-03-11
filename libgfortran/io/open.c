@@ -502,34 +502,12 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
   s = open_external (opp, flags);
   if (s == NULL)
     {
+      char errbuf[256];
       char *path = fc_strdup (opp->file, opp->file_len);
-      size_t msglen = opp->file_len + 51;
+      size_t msglen = opp->file_len + 22 + sizeof (errbuf);
       char *msg = xmalloc (msglen);
-
-      switch (errno)
-	{
-	case ENOENT: 
-	  snprintf (msg, msglen, "File '%s' does not exist", path);
-	  break;
-
-	case EEXIST:
-	  snprintf (msg, msglen, "File '%s' already exists", path);
-	  break;
-
-	case EACCES:
-	  snprintf (msg, msglen, 
-		    "Permission denied trying to open file '%s'", path);
-	  break;
-
-	case EISDIR:
-	  snprintf (msg, msglen, "'%s' is a directory", path);
-	  break;
-
-	default:
-	  free (msg);
-	  msg = NULL;
-	}
-
+      snprintf (msg, msglen, "Cannot open file '%s': %s", path,
+		gf_strerror (errno, errbuf, sizeof (errbuf)));
       generate_error (&opp->common, LIBERROR_OS, msg);
       free (msg);
       free (path);
