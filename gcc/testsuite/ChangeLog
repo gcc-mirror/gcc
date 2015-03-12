@@ -1,4 +1,4 @@
-2015-03-12  Morin  <mikael@gcc.gnu.org>
+2015-03-12  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/60898
 	* gfortran.dg/entry_20.f90: New.
