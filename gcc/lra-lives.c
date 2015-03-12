@@ -636,8 +636,12 @@ check_pseudos_live_through_calls (int regno)
   if (! sparseset_bit_p (pseudos_live_through_calls, regno))
     return;
   sparseset_clear_bit (pseudos_live_through_calls, regno);
+  bool actual_call_used_reg_set_available_p
+    = !hard_reg_set_empty_p (lra_reg_info[regno].actual_call_used_reg_set);
   IOR_HARD_REG_SET (lra_reg_info[regno].conflict_hard_regs,
-		    call_used_reg_set);
+		    (actual_call_used_reg_set_available_p
+		     ? lra_reg_info[regno].actual_call_used_reg_set
+		     : call_used_reg_set));
 
   for (hr = 0; hr < FIRST_PSEUDO_REGISTER; hr++)
     if (HARD_REGNO_CALL_PART_CLOBBERED (hr, PSEUDO_REGNO_MODE (regno)))

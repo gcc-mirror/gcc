@@ -1,3 +1,8 @@
+2015-03-12  Tom de Vries  <tom@codesourcery.com>
+
+	* lra-lives.c (check_pseudos_live_through_calls): Use
+	actual_call_used_reg_set instead of call_used_reg_set, if available.
+
 2015-03-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.c (cgraph_node::release_body): Free function_in_decl_state.
