@@ -1,3 +1,11 @@
+2015-03-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_node::release_body): Free function_in_decl_state.
+	(cgraph_node::remove): Likewise.
+	(cgraph_node::get_untransformed_body): Likewise.
+	* varpool.c (varpool_node::remove): Likewise.
+	(varpool_node::get_constructor): Add sanity check.
+
 2015-03-11  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (-fgnu89-inline): Remove discussion about 
