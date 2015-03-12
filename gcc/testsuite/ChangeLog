@@ -1,3 +1,7 @@
+2015-03-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/pr63569.c: Fix template.
+
 2015-03-11  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* g++.dg/ipa/pr64146.C: Require fpic support.
