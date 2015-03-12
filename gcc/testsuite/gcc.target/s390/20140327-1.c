@@ -1,5 +1,5 @@
-/* { dg-do compile } */
-/* { dg-options "-O3 -m31 -mzarch" } */
+/* { dg-do compile { target { ! lp64 } } } */
+/* { dg-options "-O3 -mzarch" } */
 
 void
 foo ()
