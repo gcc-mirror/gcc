@@ -2934,21 +2934,12 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	  return OP_SAME (0);
 
 	case TARGET_MEM_REF:
-	  flags &= ~(OEP_CONSTANT_ADDRESS_OF|OEP_ADDRESS_OF);
-	  /* Require equal extra operands and then fall through to MEM_REF
-	     handling of the two common operands.  */
-	  if (!OP_SAME_WITH_NULL (2)
-	      || !OP_SAME_WITH_NULL (3)
-	      || !OP_SAME_WITH_NULL (4))
-	    return 0;
-	  /* Fallthru.  */
 	case MEM_REF:
-	  flags &= ~(OEP_CONSTANT_ADDRESS_OF|OEP_ADDRESS_OF);
 	  /* Require equal access sizes, and similar pointer types.
 	     We can have incomplete types for array references of
 	     variable-sized arrays from the Fortran frontend
 	     though.  Also verify the types are compatible.  */
-	  return ((TYPE_SIZE (TREE_TYPE (arg0)) == TYPE_SIZE (TREE_TYPE (arg1))
+	  if (!((TYPE_SIZE (TREE_TYPE (arg0)) == TYPE_SIZE (TREE_TYPE (arg1))
 		   || (TYPE_SIZE (TREE_TYPE (arg0))
 		       && TYPE_SIZE (TREE_TYPE (arg1))
 		       && operand_equal_p (TYPE_SIZE (TREE_TYPE (arg0)),
@@ -2963,8 +2954,15 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 			  && (MR_DEPENDENCE_BASE (arg0)
 			      == MR_DEPENDENCE_BASE (arg1))
 			  && (TYPE_ALIGN (TREE_TYPE (arg0))
-			      == TYPE_ALIGN (TREE_TYPE (arg1)))))
-		  && OP_SAME (0) && OP_SAME (1));
+			    == TYPE_ALIGN (TREE_TYPE (arg1)))))))
+	    return 0;
+	  flags &= ~(OEP_CONSTANT_ADDRESS_OF|OEP_ADDRESS_OF);
+	  return (OP_SAME (0) && OP_SAME (1)
+		  /* TARGET_MEM_REF require equal extra operands.  */
+		  && (TREE_CODE (arg0) != TARGET_MEM_REF
+		      || (OP_SAME_WITH_NULL (2)
+			  && OP_SAME_WITH_NULL (3)
+			  && OP_SAME_WITH_NULL (4))));
 
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:

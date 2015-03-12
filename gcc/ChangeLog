@@ -1,3 +1,9 @@
+2015-03-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65270
+	* fold-const.c (operand_equal_p): Fix ordering of resetting
+	OEP_ADDRESS_OF and checking for it in the [TARGET_]MEM_REF case.
+
 2015-03-12  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_reorg): Move code to output nops after label
