@@ -1,5 +1,6 @@
 2015-03-12  Tom de Vries  <tom@codesourcery.com>
 
+	PR rtl-optimization/64895
 	* lra-lives.c (check_pseudos_live_through_calls): Use
 	actual_call_used_reg_set instead of call_used_reg_set, if available.
 
