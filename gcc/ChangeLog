@@ -1,3 +1,9 @@
+2015-03-12  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65044
+	* toplev.c (process_options): Restrict Pointer Bounds Checker
+	usage with Address Sanitizer.
+
 2015-03-12  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfg.c (gimple_split_block): Remove loop finding stmt
