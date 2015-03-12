@@ -1,3 +1,8 @@
+2015-03-12  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/hotpatch-8.c: Remove -m31 and guard with ! lp64.
+	* gcc.target/s390/hotpatch-9.c: Likewise.
+
 2015-03-10  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53988
