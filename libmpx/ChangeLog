@@ -1,3 +1,9 @@
+2015-03-12  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR other/65384
+	* configure.ac: Fix x32 test.
+	* configure: Regenerate.
+
 2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* Makefile.am (SUBDIRS): Add mpxwrap when used

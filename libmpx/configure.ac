@@ -28,7 +28,7 @@ GCC_LIBSTDCXX_RAW_CXX_FLAGS
 # See if supported.
 unset LIBMPX_SUPPORTED
 AC_MSG_CHECKING([for target support for Intel MPX runtime library])
-echo "int i[sizeof (void *) == 4 ? 1 : -1] = { __x86_64__ };" > conftest.c
+echo "int i[[sizeof (void *) == 4 ? 1 : -1]] = { __x86_64__ };" > conftest.c
 if AC_TRY_COMMAND([${CC} ${CFLAGS} -c -o conftest.o conftest.c 1>&AS_MESSAGE_LOG_FD])
 then
     LIBMPX_SUPPORTED=no
