@@ -13,4 +13,4 @@ void hp1(void)
 /* Check number of occurences of certain instructions.  */
 /* { dg-final { scan-assembler-not "nopr\t%r7" } } */
 /* { dg-final { scan-assembler-times "nop\t0" 2 } } */
-/* { dg-final { scan-assembler-not "brcl\t\t0,0" } } */
+/* { dg-final { scan-assembler-not "brcl\t0, 0" } } */

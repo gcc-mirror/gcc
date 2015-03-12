@@ -5,13 +5,10 @@
 
 #include <stdio.h>
 
-void hp1(void)
+void __attribute__ ((aligned(512))) hp1(void)
 {
   printf("hello, world!\n");
 }
 
 /* Check number of occurences of certain instructions.  */
-/* { dg-final { scan-assembler-times "nopr\t%r7" 1 } } */
-/* { dg-final { scan-assembler-not "nop\t0" } } */
-/* { dg-final { scan-assembler-not "brcl\t0, 0" } } */
-/* { dg-final { scan-assembler-times "\.align\t8" 2 } } */
+/* { dg-final { scan-assembler-times "\.align\t512" 2 } } */
