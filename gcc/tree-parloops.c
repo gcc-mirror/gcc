@@ -1111,7 +1111,8 @@ create_call_for_reduction_1 (reduction_info **slot, struct clsn_data *clsn_data)
   /* Create phi node.  */
   bb = clsn_data->load_bb;
 
-  e = split_block (bb, t);
+  gsi = gsi_last_bb (bb);
+  e = split_block (bb, gsi_stmt (gsi));
   new_bb = e->dest;
 
   tmp_load = create_tmp_var (TREE_TYPE (TREE_TYPE (addr)));

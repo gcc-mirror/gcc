@@ -5514,8 +5514,8 @@ expand_omp_taskreg (struct omp_region *region)
       stmt = gsi_stmt (gsi);
       gcc_assert (stmt && (gimple_code (stmt) == GIMPLE_OMP_PARALLEL
 			   || gimple_code (stmt) == GIMPLE_OMP_TASK));
-      gsi_remove (&gsi, true);
       e = split_block (entry_bb, stmt);
+      gsi_remove (&gsi, true);
       entry_bb = e->dest;
       single_succ_edge (entry_bb)->flags = EDGE_FALLTHRU;
 
@@ -8889,8 +8889,8 @@ expand_omp_target (struct omp_region *region)
       stmt = gsi_stmt (gsi);
       gcc_assert (stmt
 		  && gimple_code (stmt) == gimple_code (entry_stmt));
-      gsi_remove (&gsi, true);
       e = split_block (entry_bb, stmt);
+      gsi_remove (&gsi, true);
       entry_bb = e->dest;
       single_succ_edge (entry_bb)->flags = EDGE_FALLTHRU;
 

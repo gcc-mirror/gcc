@@ -1,3 +1,14 @@
+2015-03-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (gimple_split_block): Remove loop finding stmt
+	to split on.
+	* omp-low.c (expand_omp_taskreg): Split block before removing
+	the stmt.
+	(expand_omp_target): Likewise.
+	* ubsan.c (ubsan_expand_null_ifn): Adjust stmt if we replaced it.
+	* tree-parloops.c (create_call_for_reduction_1): Pass a proper
+	stmt to split_block.
+
 2015-03-12  Tom de Vries  <tom@codesourcery.com>
 
 	PR rtl-optimization/64895

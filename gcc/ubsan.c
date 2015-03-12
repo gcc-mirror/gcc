@@ -864,6 +864,7 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
 
       /* Replace the UBSAN_NULL with a GIMPLE_COND stmt.  */
       gsi_replace (&gsi, g, false);
+      stmt = g;
     }
 
   if (check_align)
