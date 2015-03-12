@@ -1,3 +1,9 @@
+2015-03-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/60898
+	* resolve.c (resolve_symbol): Check that the symbol found by
+	name lookup really is the current symbol being resolved.
+
 2015-03-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from mainline

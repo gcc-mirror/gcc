@@ -1,3 +1,8 @@
+2015-03-12  Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/60898
+	* gfortran.dg/entry_20.f90: New.
+
 2015-03-12  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	Backport from mainline
@@ -29,7 +34,7 @@
 2015-03-12  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	Backport from mainline
-        2015-02-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+	2015-02-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.target/s390/20140327-1.c: Remove -m31 and guard with ! lp64.
 	* gcc.target/s390/hotpatch-8.c: Likewise.
