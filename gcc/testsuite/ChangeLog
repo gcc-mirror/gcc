@@ -1,5 +1,10 @@
 2015-03-12  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	PR target/65103
+	* gcc.target/i386/pr65103-1.c: New.
+
+2015-03-12  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	PR target/65044
 	* gcc.target/i386/pr65044.c: New.
 

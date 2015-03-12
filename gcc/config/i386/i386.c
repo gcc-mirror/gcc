@@ -12931,30 +12931,26 @@ ix86_address_cost (rtx x, machine_mode, addr_space_t, bool)
   if (parts.index && GET_CODE (parts.index) == SUBREG)
     parts.index = SUBREG_REG (parts.index);
 
-  /* Attempt to minimize number of registers in the address.  */
-  if ((parts.base
-       && (!REG_P (parts.base) || REGNO (parts.base) >= FIRST_PSEUDO_REGISTER))
-      || (parts.index
-	  && (!REG_P (parts.index)
-	      || REGNO (parts.index) >= FIRST_PSEUDO_REGISTER)))
+  /* Attempt to minimize number of registers in the address by increasing
+     address cost for each used register.  We don't increase address cost
+     for "pic_offset_table_rtx".  When a memopt with "pic_offset_table_rtx"
+     is not invariant itself it most likely means that base or index is not
+     invariant.  Therefore only "pic_offset_table_rtx" could be hoisted out,
+     which is not profitable for x86.  */
+  if (parts.base
+      && (!REG_P (parts.base) || REGNO (parts.base) >= FIRST_PSEUDO_REGISTER)
+      && (current_pass->type == GIMPLE_PASS
+	  || !pic_offset_table_rtx
+	  || !REG_P (parts.base)
+	  || REGNO (pic_offset_table_rtx) != REGNO (parts.base)))
     cost++;
 
-  /* When address base or index is "pic_offset_table_rtx" we don't increase
-     address cost.  When a memopt with "pic_offset_table_rtx" is not invariant
-     itself it most likely means that base or index is not invariant.
-     Therefore only "pic_offset_table_rtx" could be hoisted out, which is not
-     profitable for x86.  */
-  if (parts.base
-      && (current_pass->type == GIMPLE_PASS
-	  || (!pic_offset_table_rtx
-	      || REGNO (pic_offset_table_rtx) != REGNO(parts.base)))
-      && (!REG_P (parts.base) || REGNO (parts.base) >= FIRST_PSEUDO_REGISTER)
-      && parts.index
-      && (current_pass->type == GIMPLE_PASS
-	  || (!pic_offset_table_rtx
-	      || REGNO (pic_offset_table_rtx) != REGNO(parts.index)))
+  if (parts.index
       && (!REG_P (parts.index) || REGNO (parts.index) >= FIRST_PSEUDO_REGISTER)
-      && parts.base != parts.index)
+      && (current_pass->type == GIMPLE_PASS
+	  || !pic_offset_table_rtx
+	  || !REG_P (parts.index)
+	  || REGNO (pic_offset_table_rtx) != REGNO (parts.index)))
     cost++;
 
   /* AMD-K6 don't like addresses with ModR/M set to 00_xxx_100b,
