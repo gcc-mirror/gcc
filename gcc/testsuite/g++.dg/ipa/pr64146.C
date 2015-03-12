@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-alias "" } */
+/* { dg-require-effective-target fpic } */
 /* { dg-options "-fpic -fdump-ipa-icf-details -fipa-icf"  } */
 
 extern "C" const char*
