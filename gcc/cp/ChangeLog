@@ -1,3 +1,9 @@
+2015-03-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65323
+	* decl.c (check_default_argument): Don't call
+	maybe_warn_zero_as_null_pointer_constant.
+
 2015-03-11  Aldy Hernandez  <aldyh@redhat.com>
 
 	* cp-gimplify.c (simple_empty_class_p): New.
