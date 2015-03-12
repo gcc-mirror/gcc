@@ -3555,7 +3555,21 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  while (GET_MODE (vec) != mode
 		 && GET_CODE (vec) == VEC_CONCAT)
 	    {
-	      HOST_WIDE_INT vec_size = GET_MODE_SIZE (GET_MODE (XEXP (vec, 0)));
+	      HOST_WIDE_INT vec_size;
+
+	      if (CONST_INT_P (XEXP (vec, 0)))
+	        {
+	          /* vec_concat of two const_ints doesn't make sense with
+	             respect to modes.  */
+	          if (CONST_INT_P (XEXP (vec, 1)))
+	            return 0;
+
+	          vec_size = GET_MODE_SIZE (GET_MODE (trueop0))
+	                     - GET_MODE_SIZE (GET_MODE (XEXP (vec, 1)));
+	        }
+	      else
+	        vec_size = GET_MODE_SIZE (GET_MODE (XEXP (vec, 0)));
+
 	      if (offset < vec_size)
 		vec = XEXP (vec, 0);
 	      else
