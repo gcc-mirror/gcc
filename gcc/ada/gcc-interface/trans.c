@@ -155,6 +155,14 @@ struct GTY(()) language_function {
 #define f_gnat_ret \
   DECL_STRUCT_FUNCTION (current_function_decl)->language->gnat_ret
 
+/* Expected to be defined from the tm headers, though not always available.
+   0 indicates that function symbols designate function descriptors on the
+   target so we don't need to use runtime descriptors of our own.  */
+
+#ifndef USE_RUNTIME_DESCRIPTORS
+#define USE_RUNTIME_DESCRIPTORS (-1)
+#endif
+
 /* A structure used to gather together information about a statement group.
    We use this to gather related statements, for example the "then" part
    of a IF.  In the case where it represents a lexical scope, we may also
@@ -1725,13 +1733,32 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 			  gnu_result_type, gnu_prefix);
 
       /* For 'Code_Address, find an inner ADDR_EXPR and mark it so that we
-	 don't try to build a trampoline.  */
+	 don't try to build a trampoline.  Then if the function address
+	 denotes a function descriptor on this target, fetch the code address
+	 from the descriptor.  */
       if (attribute == Attr_Code_Address)
 	{
 	  gnu_expr = remove_conversions (gnu_result, false);
 
 	  if (TREE_CODE (gnu_expr) == ADDR_EXPR)
 	    TREE_NO_TRAMPOLINE (gnu_expr) = TREE_CONSTANT (gnu_expr) = 1;
+
+	  /* On targets on which function symbols denote a function
+	     descriptor, the code address is always stored within the
+	     first slot of the descriptor.  */
+
+	  if (USE_RUNTIME_DESCRIPTORS == 0)
+	    {
+	      /* result = * ((result_type *) result),
+		 where we expect result to be of some pointer type already.  */
+
+	      const tree result_ptr_type
+		= build_pointer_type (gnu_result_type);
+
+	      gnu_result = build_unary_op
+		(INDIRECT_REF, gnu_result_type,
+		 convert (result_ptr_type, gnu_result));
+	    }
 	}
 
       /* For 'Access, issue an error message if the prefix is a C++ method

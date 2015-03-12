@@ -1,3 +1,9 @@
+2015-03-12  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/trans.c (Attribute_to_gnu) <Code_Address case>:
+	On targets where a function symbol designates a function descriptor,
+	fetch the function code address from the descriptor.
+
 2015-03-04  Robert Dewar  <dewar@adacore.com>
 
 	* sem_warn.adb: Minor reformatting.
