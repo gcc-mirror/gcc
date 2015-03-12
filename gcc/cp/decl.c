@@ -11229,11 +11229,10 @@ check_default_argument (tree decl, tree arg, tsubst_flags_t complain)
 				     LOOKUP_IMPLICIT);
   --cp_unevaluated_operand;
 
-  if (warn_zero_as_null_pointer_constant
-      && TYPE_PTR_OR_PTRMEM_P (decl_type)
-      && null_ptr_cst_p (arg)
-      && (complain & tf_warning)
-      && maybe_warn_zero_as_null_pointer_constant (arg, input_location))
+  /* Avoid redundant -Wzero-as-null-pointer-constant warnings at
+     the call sites.  */
+  if (TYPE_PTR_OR_PTRMEM_P (decl_type)
+      && null_ptr_cst_p (arg))
     return nullptr_node;
 
   /* [dcl.fct.default]
