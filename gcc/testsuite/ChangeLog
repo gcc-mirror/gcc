@@ -1,3 +1,10 @@
+2015-03-12  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/64895
+	* gcc.target/i386/fuse-caller-save-rec.c: Revert require nonpic target.
+	* gcc.target/i386/fuse-caller-save-xmm.c: Ditto.
+	* gcc.target/i386/fuse-caller-save.c: Ditto.
+
 2015-03-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/ipa/pr63569.c: Fix template.
