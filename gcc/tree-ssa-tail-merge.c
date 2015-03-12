@@ -550,7 +550,7 @@ same_succ_def::equal (const value_type *e1, const compare_type *e2)
   if (!inverse_flags (e1, e2))
     {
       for (i = 0; i < e1->succ_flags.length (); ++i)
-	if (e1->succ_flags[i] != e1->succ_flags[i])
+	if (e1->succ_flags[i] != e2->succ_flags[i])
 	  return 0;
     }
 
