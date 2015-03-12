@@ -1,3 +1,8 @@
+2015-03-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (read_cgraph_and_symbols): Do not do merging
+	at ltrans stage.
+
 2015-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* lto.c (lto_mode_identity_table): New variable.
