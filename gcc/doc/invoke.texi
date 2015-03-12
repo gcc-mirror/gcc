@@ -20322,9 +20322,9 @@ The @var{stack-guard} option can only be used in conjunction with @var{stack-siz
 If the hotpatch option is enabled, a ``hot-patching'' function
 prologue is generated for all functions in the compilation unit.
 The funtion label is prepended with the given number of two-byte
-Nop instructions (@var{pre-halfwords}, maximum 1000000).  After
+NOP instructions (@var{pre-halfwords}, maximum 1000000).  After
 the label, 2 * @var{post-halfwords} bytes are appended, using the
-larges nop like instructions the architecture allows (maximum
+largest NOP like instructions the architecture allows (maximum
 1000000).
 
 If both arguments are zero, hotpatching is disabled.

@@ -5314,6 +5314,7 @@ s390_asm_output_function_label (FILE *asm_out_file, const char *fname,
 
   if (hotpatch_p)
     {
+      unsigned int function_alignment;
       int i;
 
       /* Add a trampoline code area before the function label and initialize it
@@ -5327,34 +5328,14 @@ s390_asm_output_function_label (FILE *asm_out_file, const char *fname,
 	 stored directly before the label without crossing a cacheline
 	 boundary.  All this is necessary to make sure the trampoline code can
 	 be changed atomically.  */
+      function_alignment = MAX (8, DECL_ALIGN (decl) / BITS_PER_UNIT);
+      if (! DECL_USER_ALIGN (decl))
+	function_alignment = MAX (function_alignment,
+				  (unsigned int) align_functions);
+      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (function_alignment));
     }
 
   ASM_OUTPUT_LABEL (asm_out_file, fname);
-
-  /* Output a series of NOPs after the function label.  */
-  if (hotpatch_p)
-    {
-      while (hw_after > 0)
-	{
-	  if (hw_after >= 3 && TARGET_CPU_ZARCH)
-	    {
-	      asm_fprintf (asm_out_file, "\tbrcl\t\t0,0\n");
-	      hw_after -= 3;
-	    }
-	  else if (hw_after >= 2)
-	    {
-	      gcc_assert (hw_after == 2 || !TARGET_CPU_ZARCH);
-	      asm_fprintf (asm_out_file, "\tnop\t0\n");
-	      hw_after -= 2;
-	    }
-	  else
-	    {
-	      gcc_assert (hw_after == 1);
-	      asm_fprintf (asm_out_file, "\tnopr\t%%r7\n");
-	      hw_after -= 1;
-	    }
-	}
-    }
 }
 
 /* Output machine-dependent UNSPECs occurring in address constant X
@@ -11332,6 +11313,7 @@ static void
 s390_reorg (void)
 {
   bool pool_overflow = false;
+  int hw_before, hw_after;
 
   /* Make sure all splits have been performed; splits after
      machine_dependent_reorg might confuse insn length counts.  */
@@ -11465,6 +11447,40 @@ s390_reorg (void)
       /* Adjust branches if we added new instructions.  */
       if (insn_added_p)
 	shorten_branches (get_insns ());
+    }
+
+  s390_function_num_hotpatch_hw (current_function_decl, &hw_before, &hw_after);
+  if (hw_after > 0)
+    {
+      rtx insn;
+
+      /* Inject nops for hotpatching. */
+      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	{
+	  if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_FUNCTION_BEG)
+	    break;
+	}
+      gcc_assert (insn);
+      /* Output a series of NOPs after the NOTE_INSN_FUNCTION_BEG.  */
+      while (hw_after > 0)
+	{
+	  if (hw_after >= 3 && TARGET_CPU_ZARCH)
+	    {
+	      insn = emit_insn_after (gen_nop_6_byte (), insn);
+	      hw_after -= 3;
+	    }
+	  else if (hw_after >= 2)
+	    {
+	      insn = emit_insn_after (gen_nop_4_byte (), insn);
+	      hw_after -= 2;
+	    }
+	  else
+	    {
+	      insn = emit_insn_after (gen_nop_2_byte (), insn);
+	      hw_after -= 1;
+	    }
+	}
+      gcc_assert (hw_after == 0);
     }
 }
 
