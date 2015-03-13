@@ -173,7 +173,7 @@ varpool_node::get_create (tree decl)
   node = varpool_node::create_empty ();
   node->decl = decl;
 
-  if ((flag_openacc || flag_openmp)
+  if ((flag_openacc || flag_openmp) && !DECL_EXTERNAL (decl)
       && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl)))
     {
       node->offloadable = 1;

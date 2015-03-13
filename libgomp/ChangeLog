@@ -1,3 +1,8 @@
+2015-03-13  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* testsuite/libgomp.fortran/declare-target-1.f90: New test.
+	* testsuite/libgomp.fortran/declare-target-2.f90: New file.
+
 2015-03-13  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* configure.tgt (*-*-rtems*): Use local-exec TLS model.
