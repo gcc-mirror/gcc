@@ -1,3 +1,16 @@
+2015-03-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* style.adb (Missing_Overriding): Apply the
+	Comes_From_Source test to the Original_Node of the subprogram
+	node, to handle the case of a null procedure declaration that
+	has been rewritten as an empty procedure body.
+
+2015-03-13  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.ads: Minor fix to comment.
+	* sem_ch3.adb (Constrain_Index): Correct pasto from previous
+	change.
+
 2015-03-13  Robert Dewar  <dewar@adacore.com>
 
 	* exp_util.ads, exp_util.adb (Force_Evaluation): Add Related_Id and

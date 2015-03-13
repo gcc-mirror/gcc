@@ -13172,6 +13172,10 @@ package body Sem_Ch3 is
       T      : constant Entity_Id := Etype (Index);
 
    begin
+      Def_Id :=
+        Create_Itype (E_Void, Related_Nod, Related_Id, Suffix, Suffix_Index);
+      Set_Etype (Def_Id, Base_Type (T));
+
       if Nkind (S) = N_Range
         or else
           (Nkind (S) = N_Attribute_Reference
@@ -13221,9 +13225,9 @@ package body Sem_Ch3 is
 
          if Expander_Active or GNATprove_Mode then
             Force_Evaluation
-              (Low_Bound (R),  Related_Id => Related_Id, Is_Low_Bound => True);
+              (Low_Bound (R),  Related_Id => Def_Id, Is_Low_Bound  => True);
             Force_Evaluation
-              (High_Bound (R), Related_Id => Related_Id, Is_Low_Bound => True);
+              (High_Bound (R), Related_Id => Def_Id, Is_High_Bound => True);
          end if;
 
       elsif Nkind (S) = N_Discriminant_Association then
@@ -13263,10 +13267,7 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      Def_Id :=
-        Create_Itype (E_Void, Related_Nod, Related_Id, Suffix, Suffix_Index);
-
-      Set_Etype (Def_Id, Base_Type (T));
+      --  Complete construction of the Itype
 
       if Is_Modular_Integer_Type (T) then
          Set_Ekind (Def_Id, E_Modular_Integer_Subtype);
@@ -13382,7 +13383,6 @@ package body Sem_Ch3 is
       else
          pragma Assert (No (C));
          Set_Scalar_Range (Def_Id, Scalar_Range (T));
-
       end if;
 
       Set_Discrete_RM_Size (Def_Id);
@@ -20188,9 +20188,9 @@ package body Sem_Ch3 is
                  (Hi, Related_Id => Subtyp, Is_High_Bound => True);
             end if;
 
-            --  We use a flag here instead of suppressing checks on the
-            --  type because the type we check against isn't necessarily
-            --  the place where we put the check.
+            --  We use a flag here instead of suppressing checks on the type
+            --  because the type we check against isn't necessarily the place
+            --  where we put the check.
 
             if not R_Check_Off then
                R_Checks := Get_Range_Checks (R, T);

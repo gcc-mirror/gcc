@@ -881,7 +881,7 @@ package Exp_Util is
    --  Is_Low_Bound and Is_High_Bound specify whether the expression to check
    --  is the low or the high bound of a range. These three optional arguments
    --  signal Remove_Side_Effects to create an external symbol of the form
-   --  Chars (Related_Id)_FIRST/_LAST. If Related_Id is set, the exactly one
+   --  Chars (Related_Id)_FIRST/_LAST. If Related_Id is set, then exactly one
    --  of the Is_xxx_Bound flags must be set. For use of these parameters see
    --  the warning in the body of Sem_Ch3.Process_Range_Expr_In_Decl.
 
