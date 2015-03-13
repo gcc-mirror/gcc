@@ -1,3 +1,29 @@
+2015-03-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/44563
+	* tree-cfgcleanup.c (split_bb_on_noreturn_calls): Remove.
+	(cleanup_tree_cfg_1): Do not call it.
+	(execute_cleanup_cfg_post_optimizing): Fixup the CFG here.
+	(fixup_noreturn_call): Mark the stmt as control altering.
+	* tree-cfg.c (execute_fixup_cfg): Do not dump the function
+	here.
+	(pass_data_fixup_cfg): Produce a dump file.
+	* tree-ssa-dom.c: Include tree-cfgcleanup.h.
+	(need_noreturn_fixup): New global.
+	(pass_dominator::execute): Fixup queued noreturn calls.
+	(optimize_stmt): Queue calls that became noreturn for fixup.
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Likewise.
+	* tree-ssa-pre.c: Include tree-cfgcleanup.h.
+	(el_to_fixup): New global.
+	(eliminate_dom_walker::before_dom_childre): Queue calls that
+	became noreturn for fixup.
+	(eliminate): Fixup queued noreturn calls.
+	* tree-ssa-propagate.c: Include tree-cfgcleanup.h.
+	(substitute_and_fold_dom_walker): New member stmts_to_fixup.
+	(substitute_and_fold_dom_walker::before_dom_children): Queue
+	alls that became noreturn for fixup.
+	(substitute_and_fold): Fixup queued noreturn calls.
+
 2015-03-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-icf.c (sem_function::equals_wpa): Match CXX_CONSTRUCTOR_P
