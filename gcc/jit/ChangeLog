@@ -1,3 +1,8 @@
+2015-03-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/internals/index.rst (Packaging notes): New section.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
 2015-03-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/cp/intro/tutorial03.rst: Add missing arguments to
