@@ -20,6 +20,10 @@ if test $gcc_cv_have_tls = yes ; then
     *-*-linux* | *-*-gnu*)
 	XCFLAGS="${XCFLAGS} -ftls-model=initial-exec"
 	;;
+
+    *-*-rtems*)
+	XCFLAGS="${XCFLAGS} -ftls-model=local-exec"
+	;;
   esac
 fi
 
