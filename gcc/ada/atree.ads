@@ -68,11 +68,11 @@ package Atree is
    -- Size of Entities --
    ----------------------
 
-   --  Currently entities are composed of 6 sequentially allocated 32-byte
+   --  Currently entities are composed of 7 sequentially allocated 32-byte
    --  nodes, considered as a single record. The following definition gives
    --  the number of extension nodes.
 
-   Num_Extension_Nodes : Node_Id := 5;
+   Num_Extension_Nodes : Node_Id := 6;
    --  This value is increased by one if debug flag -gnatd.N is set. This is
    --  for testing performance impact of adding a new extension node. We make
    --  this of type Node_Id for easy reference in loops using this value.
@@ -213,8 +213,8 @@ package Atree is
    --   Elist6        Synonym for Field6 typed as Elist_Id (Empty = No_Elist)
    --   Uint6         Synonym for Field6 typed as Uint (Empty = Uint_0)
 
-   --   Similar definitions for Field7 to Field35 (and also Node7-Node35,
-   --   Elist7-Elist35, Uint7-Uint35, Ureal7-Ureal35). Note that not all
+   --   Similar definitions for Field7 to Field41 (and also Node7-Node41,
+   --   Elist7-Elist41, Uint7-Uint41, Ureal7-Ureal41). Note that not all
    --   these functions are defined, only the ones that are actually used.
 
    function Last_Node_Id return Node_Id;
@@ -355,13 +355,13 @@ package Atree is
 
    --  Field1-5 fields are set to Empty
 
-   --  Field6-35 fields in extended nodes are set to Empty
+   --  Field6-41 fields in extended nodes are set to Empty
 
    --  Parent is set to Empty
 
    --  All Boolean flag fields are set to False
 
-   --  Note: the value Empty is used in Field1-Field35 to indicate a null node.
+   --  Note: the value Empty is used in Field1-Field41 to indicate a null node.
    --  The usage varies. The common uses are to indicate absence of an optional
    --  clause or a completely unused Field1-35 field.
 
@@ -1185,6 +1185,24 @@ package Atree is
       function Field35 (N : Node_Id) return Union_Id;
       pragma Inline (Field35);
 
+      function Field36 (N : Node_Id) return Union_Id;
+      pragma Inline (Field36);
+
+      function Field37 (N : Node_Id) return Union_Id;
+      pragma Inline (Field37);
+
+      function Field38 (N : Node_Id) return Union_Id;
+      pragma Inline (Field38);
+
+      function Field39 (N : Node_Id) return Union_Id;
+      pragma Inline (Field39);
+
+      function Field40 (N : Node_Id) return Union_Id;
+      pragma Inline (Field40);
+
+      function Field41 (N : Node_Id) return Union_Id;
+      pragma Inline (Field41);
+
       function Node1 (N : Node_Id) return Node_Id;
       pragma Inline (Node1);
 
@@ -1289,6 +1307,24 @@ package Atree is
 
       function Node35 (N : Node_Id) return Node_Id;
       pragma Inline (Node35);
+
+      function Node36 (N : Node_Id) return Node_Id;
+      pragma Inline (Node36);
+
+      function Node37 (N : Node_Id) return Node_Id;
+      pragma Inline (Node37);
+
+      function Node38 (N : Node_Id) return Node_Id;
+      pragma Inline (Node38);
+
+      function Node39 (N : Node_Id) return Node_Id;
+      pragma Inline (Node39);
+
+      function Node40 (N : Node_Id) return Node_Id;
+      pragma Inline (Node40);
+
+      function Node41 (N : Node_Id) return Node_Id;
+      pragma Inline (Node41);
 
       function List1 (N : Node_Id) return List_Id;
       pragma Inline (List1);
@@ -2500,6 +2536,24 @@ package Atree is
       procedure Set_Field35 (N : Node_Id; Val : Union_Id);
       pragma Inline (Set_Field35);
 
+      procedure Set_Field36 (N : Node_Id; Val : Union_Id);
+      pragma Inline (Set_Field36);
+
+      procedure Set_Field37 (N : Node_Id; Val : Union_Id);
+      pragma Inline (Set_Field37);
+
+      procedure Set_Field38 (N : Node_Id; Val : Union_Id);
+      pragma Inline (Set_Field38);
+
+      procedure Set_Field39 (N : Node_Id; Val : Union_Id);
+      pragma Inline (Set_Field39);
+
+      procedure Set_Field40 (N : Node_Id; Val : Union_Id);
+      pragma Inline (Set_Field40);
+
+      procedure Set_Field41 (N : Node_Id; Val : Union_Id);
+      pragma Inline (Set_Field41);
+
       procedure Set_Node1 (N : Node_Id; Val : Node_Id);
       pragma Inline (Set_Node1);
 
@@ -2604,6 +2658,24 @@ package Atree is
 
       procedure Set_Node35 (N : Node_Id; Val : Node_Id);
       pragma Inline (Set_Node35);
+
+      procedure Set_Node36 (N : Node_Id; Val : Node_Id);
+      pragma Inline (Set_Node36);
+
+      procedure Set_Node37 (N : Node_Id; Val : Node_Id);
+      pragma Inline (Set_Node37);
+
+      procedure Set_Node38 (N : Node_Id; Val : Node_Id);
+      pragma Inline (Set_Node38);
+
+      procedure Set_Node39 (N : Node_Id; Val : Node_Id);
+      pragma Inline (Set_Node39);
+
+      procedure Set_Node40 (N : Node_Id; Val : Node_Id);
+      pragma Inline (Set_Node40);
+
+      procedure Set_Node41 (N : Node_Id; Val : Node_Id);
+      pragma Inline (Set_Node41);
 
       procedure Set_List1 (N : Node_Id; Val : List_Id);
       pragma Inline (Set_List1);
@@ -3817,8 +3889,10 @@ package Atree is
          --  Flags 4-18 for a normal node. Note that Flags 0-3 are stored
          --  separately in the Flags array.
 
-         --  The above fields are used as follows in components 2-6 of
-         --  an extended node entry.
+         --  The above fields are used as follows in components 2-6 of an
+         --  extended node entry. Currently they are not used in component 7,
+         --  since for now we have all the flags we need, but of course they
+         --  can be used for additional flags when needed in component 7.
 
          --    In_List           used as Flag19,Flag40,Flag129,Flag216,Flag287
          --    Has_Aspects       used as Flag20,Flag41,Flag130,Flag217,Flag288
@@ -3849,11 +3923,12 @@ package Atree is
          --  node, this field holds the Node_Kind value. For an extended node,
          --  The Nkind field is used as follows:
          --
-         --     Second entry: holds the Ekind field of the entity
-         --     Third entry:  holds 8 additional flags (Flag65-Flag72)
-         --     Fourth entry: holds 8 additional flags (Flag239-246)
-         --     Fifth entry:  holds 8 additional flags (Flag247-254)
-         --     Sixth entry:  holds 8 additional flags (Flag310-317)
+         --     Second entry:  holds the Ekind field of the entity
+         --     Third entry:   holds 8 additional flags (Flag65-Flag72)
+         --     Fourth entry:  holds 8 additional flags (Flag239-246)
+         --     Fifth entry:   holds 8 additional flags (Flag247-254)
+         --     Sixth entry:   holds 8 additional flags (Flag310-317)
+         --     Seventh entry: currently unused
 
          --  Now finally (on an 32-bit boundary) comes the variant part
 
@@ -3926,6 +4001,13 @@ package Atree is
             --    Field6-11      Holds Field30-Field35
             --    Field12        Holds Flag255-Flag286
 
+            --  In the seventh component, the extension format as described
+            --  above is used to hold additional general fields as follows.
+            --  Flags are also available potentially, but not used now, as
+            --  we are not short of entity flags.
+
+            --    Field6-11     Holds Field36-Field41
+
          end case;
       end record;
 
@@ -3979,8 +4061,8 @@ package Atree is
          Field5            => Empty_List_Or_Node);
 
       --  Default value used to initialize node extensions (i.e. the second
-      --  through sixth components of an extended node). Note we are cheating
-      --  a bit here when it comes to Node12, which really holds flags and (for
+      --  through seventh components of an extended node). Note we are cheating
+      --  a bit here when it comes to Node12, which often holds flags and (for
       --  the third component), the convention. But it works because Empty,
       --  False, Convention_Ada, all happen to be all zero bits.
 

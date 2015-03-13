@@ -3159,6 +3159,11 @@ package body Sem_Ch3 is
          if SPARK_Mode = On
            and then Is_Effectively_Volatile (Obj_Id)
            and then No (Corresponding_Generic_Association (Parent (Obj_Id)))
+
+           --  Don't give this for internally generated entities (such as the
+           --  FIRST and LAST temporaries generated for bounds.
+
+           and then Comes_From_Source (Obj_Id)
          then
             Error_Msg_N ("constant cannot be volatile", Obj_Id);
          end if;

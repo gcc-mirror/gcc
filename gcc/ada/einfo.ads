@@ -8001,6 +8001,12 @@ package Einfo is
    procedure Write_Field33_Name (Id : Entity_Id);
    procedure Write_Field34_Name (Id : Entity_Id);
    procedure Write_Field35_Name (Id : Entity_Id);
+   procedure Write_Field36_Name (Id : Entity_Id);
+   procedure Write_Field37_Name (Id : Entity_Id);
+   procedure Write_Field38_Name (Id : Entity_Id);
+   procedure Write_Field39_Name (Id : Entity_Id);
+   procedure Write_Field40_Name (Id : Entity_Id);
+   procedure Write_Field41_Name (Id : Entity_Id);
    --  These routines are used in Treepr to output a nice symbolic name for
    --  the given field, depending on the Ekind. No blanks or end of lines are
    --  output, just the characters of the field name.
