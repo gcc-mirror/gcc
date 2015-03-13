@@ -1,3 +1,8 @@
+2015-03-13  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* varpool.c (varpool_node::get_create): Don't set 'offloadable' flag for
+	the external decls.
+
 2015-03-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/64600
