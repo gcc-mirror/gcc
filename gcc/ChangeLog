@@ -88,7 +88,7 @@
 
 2015-03-11  Sandra Loosemore  <sandra@codesourcery.com>
 
-	* doc/invoke.texi (-fgnu89-inline): Remove discussion about 
+	* doc/invoke.texi (-fgnu89-inline): Remove discussion about
 	old GCC versions.
 	(-fabi-compat-version): Likewise.
 	(-ffriend-injection): Likewise.
@@ -143,7 +143,8 @@
 
 2015-03-11  Junmo Park  <junmoz.park@samsung.com>
 
-	* config/arm/cortex-a57.md (cortex_a57_crypto_simple): Add crypto_sha256_fast.
+	* config/arm/cortex-a57.md (cortex_a57_crypto_simple): Add
+	crypto_sha256_fast.
 	(cortex_a57_crypto_complex): Add crypto_sha256_slow.
 
 2015-03-11  Richard Biener  <rguenther@suse.de>
@@ -165,8 +166,7 @@
 
 2015-03-10  Jan Hubicka  <hubicka@ucw.cz>
 
-	* ipa-icf.c (sem_function::equals_wpa): Move here some checks
-	from ...
+	* ipa-icf.c (sem_function::equals_wpa): Move here some checks from ...
 	(sem_function::equals_wpa): ... here.
 
 2015-03-10  Marek Polacek  <polacek@redhat.com>
@@ -197,8 +197,8 @@
 
 	* config/i386/intelmic-mkoffload.c: Include intelmic-offload.h instead
 	of libgomp-plugin.h.
-	(find_target_compiler): Support a case when the path to gcc is specified
-	in the PATH env var, so COLLECT_GCC doesn't contain a path.
+	(find_target_compiler): Support a case when the path to gcc is
+	specified in the PATH env var, so COLLECT_GCC doesn't contain a path.
 	(generate_host_descr_file): Use GOMP_DEVICE_INTEL_MIC from
 	intelmic-offload.h instead of OFFLOAD_TARGET_TYPE_INTEL_MIC from
 	libgomp-plugin.h.
@@ -401,7 +401,7 @@
 	(growth_likely_positive): Reorganize to call
 	can_remove_if_no_direct_calls_p later.
 	* cgraph.h (will_be_removed_from_program_if_no_direct_calls_p,
-	will_be_removed_from_program_if_no_direct_calls_p): Add 
+	will_be_removed_from_program_if_no_direct_calls_p): Add
 	will_inline parameter.
 	* cgraph.c (cgraph_node::can_remove_if_no_direct_calls_p,
 	cgraph_node::will_be_removed_from_program_if_no_direct_calls_p):
@@ -770,7 +770,7 @@
 	paragraph.
 
 2015-03-03  Martin Jambor  <mjambor@suse.cz>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-sra.c (ipa_sra_check_caller_data): New type.
 	(has_caller_p): Removed.
@@ -882,7 +882,7 @@
 	* doc/invoke.texi (Options for Code Generation Conventions):
 	Fix URL of DSO paper.
 
-2015-03-02  Jan Hubicka   <hubicka@ucw.cz>
+2015-03-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65130
 	* ipa-inline.c (check_callers): Looks for recursion.
@@ -891,7 +891,7 @@
 	summary of inline clones.
 	(do_estimate_growth_1): Fix recursion check.
 
-2015-03-02  Jan Hubicka   <hubicka@ucw.cz>
+2015-03-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/64988
 	* ipa-inline-transform.c (clone_inlined_nodes): Do not dissolve
@@ -925,7 +925,7 @@
 	(chkp_fini): Clean pass local data to avoid wrong reusage.
 
 2015-02-28  Martin Liska  <mliska@suse.cz>
-	    Jan Hubicka   <hubicka@ucw.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-icf.c (sem_variable::equals): Improve debug output;
 	get variable constructor.
@@ -964,7 +964,7 @@
 	(sem_function): Update prototype of hash_stmt
 
 2015-02-28  Martin Liska  <mliska@suse.cz>
-	    Jan Hubicka   <hubicka@ucw.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65245
 	* ipa-icf-gimple.c (func_checker::compare_function_decl):
@@ -995,7 +995,7 @@
 	target; also match flag_ipa_devirt.
 
 2015-03-01  Martin Liska  <mliska@suse.cz>
-	    Jan Hubicka   <hubicka@ucw.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-icf-gimple.c (func_checker::compare_variable_decl):
 	Validate variable alignment.
@@ -1019,8 +1019,7 @@
 2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65236
-	* cgraphunit.c (cgraph_node::expand_thunk): Enable return slot
-	opt.
+	* cgraphunit.c (cgraph_node::expand_thunk): Enable return slot opt.
 
 2015-02-28  Xingxing Pan  <xxingpan@marvell.com>
 
@@ -1336,7 +1335,7 @@
 	as split condition; force split via '#' in output pattern.
 
 2015-02-25  Richard Biener  <rguenther@suse.de>
-	Kai Tietz  <ktietz@redhat.com>
+	    Kai Tietz  <ktietz@redhat.com>
 
 	PR tree-optimization/61917
 	* tree-vect-loop.c (vectorizable_reduction): Allow
@@ -1387,8 +1386,7 @@
 
 2015-02-24  DJ Delorie  <dj@redhat.com>
 
-	* config/rl78/rl78-protos.h (rl78_split_movsi): Accept a mode as
-	well.
+	* config/rl78/rl78-protos.h (rl78_split_movsi): Accept a mode as well.
 	* config/rl78/rl78-expand.md (movsf): New, same as movsi.
 	* config/rl78/rl78.c (rl78_split_movsi): Accept a mode, use it
 	instead of hardcoding SImode.
@@ -1504,8 +1502,7 @@
 2015-02-20  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/64172
-	* ira-color.c (color_pass): Prevent splitting multi-register
-	pseudos.
+	* ira-color.c (color_pass): Prevent splitting multi-register pseudos.
 
 2015-02-20  Richard Biener  <rguenther@suse.de>
 
@@ -1536,16 +1533,16 @@
 
 2015-02-20  Bernd Schmidt  <bernds@codesourcery.com>
 
-    	* cgraph.h (clone_function_name_1): Declare.
-    	* cgraphclones.c (clone_function_name_1): New function.
-    	(clone_function_name): Use it.
-    	* lto-partition.c: Include "stringpool.h".
-    	(must_not_rename, maybe_rewrite_identifier,
-    	validize_symbol_for_target): New static functions.
-    	(privatize_symbol_name): Use must_not_rename.
-    	(promote_symbol): Call validize_symbol_for_target.
-    	(lto_promote_cross_file_statics): Likewise.
-    	(lto_promote_statics_nonwpa): Likewise.
+	* cgraph.h (clone_function_name_1): Declare.
+	* cgraphclones.c (clone_function_name_1): New function.
+	(clone_function_name): Use it.
+	* lto-partition.c: Include "stringpool.h".
+	(must_not_rename, maybe_rewrite_identifier)
+	(validize_symbol_for_target): New static functions.
+	(privatize_symbol_name): Use must_not_rename.
+	(promote_symbol): Call validize_symbol_for_target.
+	(lto_promote_cross_file_statics): Likewise.
+	(lto_promote_statics_nonwpa): Likewise.
 
 2015-02-20  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -2347,7 +2344,7 @@
 	* ipa-visibility.c (update_visibility_by_resolution_info): Only
 	assert when not in lto mode.
 
-2015-02-09  Zhouyi Zhou   <yizhouzhou@ict.ac.cn>
+2015-02-09  Zhouyi Zhou  <yizhouzhou@ict.ac.cn>
 
 	* ira-color.c (setup_left_conflict_sizes_p): Simplify
 	initialization/assignment of conflict_size.
@@ -5809,7 +5806,7 @@
 	(*sub_<optab>si_multp2_uxtw, *sub_uxt<mode>_multp2)
 	(*sub_uxtsi_multp2_uxtw): Add stack pointer sources.
 
-2015-01-13  Andrew Pinski   <apinski@cavium.com>
+2015-01-13  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64.c (fusion_load_store): Check dest mode
 	instead of src mode.
@@ -5820,7 +5817,7 @@
 	* lto-streamer-out.c (tree_is_indexable): Guard for NULL
 	DECL_CONTEXT.
 
-2015-01-13  Andrew Pinski   <apinski@cavium.com>
+2015-01-13  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64.c (aarch64_operands_ok_for_ldpstp): Reject
 	volatile mems.
