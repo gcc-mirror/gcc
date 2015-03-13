@@ -3735,6 +3735,17 @@ Parse::labeled_stmt(const std::string& label_name, Location location)
 
   if (!this->statement_may_start_here())
     {
+      if (this->peek_token()->is_keyword(KEYWORD_FALLTHROUGH))
+	{
+	  // We don't treat the fallthrough keyword as a statement,
+	  // because it can't appear most places where a statement is
+	  // permitted, but it may have a label.  We introduce a
+	  // semicolon because the caller expects to see a statement.
+	  this->unget_token(Token::make_operator_token(OPERATOR_SEMICOLON,
+						       location));
+	  return;
+	}
+
       // Mark the label as used to avoid a useless error about an
       // unused label.
       if (label != NULL)
