@@ -1,3 +1,9 @@
+2015-03-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* graph.c (print_graph_cfg): Make function names visible and append
+	parenthesis to it.  Also make groups of basic blocks belonging to the
+	same function visible.
+
 2015-03-12  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/44563
