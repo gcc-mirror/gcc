@@ -650,8 +650,18 @@ cleanup_tree_cfg_bb (basic_block bb)
   if (single_succ_p (bb)
       && can_merge_blocks_p (bb, single_succ (bb)))
     {
-      merge_blocks (bb, single_succ (bb));
-      return true;
+      /* If there is a merge opportunity with the predecessor
+         do nothing now but wait until we process the predecessor.
+	 This happens when we visit BBs in a non-optimal order and
+	 avoids quadratic behavior with adjusting stmts BB pointer.  */
+      if (single_pred_p (bb)
+	  && can_merge_blocks_p (single_pred (bb), bb))
+	;
+      else
+	{
+	  merge_blocks (bb, single_succ (bb));
+	  return true;
+	}
     }
 
   return retval;

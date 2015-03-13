@@ -1,3 +1,13 @@
+2015-03-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/44563
+	* tree-inline.c (gimple_expand_calls_inline): Walk BB backwards
+	to avoid quadratic behavior with inline expansion splitting blocks.
+	* tree-cfgcleanup.c (cleanup_tree_cfg_bb): Do not merge block
+	with the successor if the predecessor will be merged with it.
+	* tree-cfg.c (gimple_can_merge_blocks_p): We can't merge the
+	entry block with its successor.
+
 2015-03-13  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/44563

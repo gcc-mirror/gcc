@@ -1703,7 +1703,8 @@ gimple_can_merge_blocks_p (basic_block a, basic_block b)
   if (!single_pred_p (b))
     return false;
 
-  if (b == EXIT_BLOCK_PTR_FOR_FN (cfun))
+  if (a == ENTRY_BLOCK_PTR_FOR_FN (cfun)
+      || b == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return false;
 
   /* If A ends by a statement causing exceptions or something similar, we
