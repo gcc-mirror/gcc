@@ -2553,6 +2553,42 @@ package body Atree is
          return Nodes.Table (N + 5).Field11;
       end Field35;
 
+      function Field36 (N : Node_Id) return Union_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 6).Field6;
+      end Field36;
+
+      function Field37 (N : Node_Id) return Union_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 6).Field7;
+      end Field37;
+
+      function Field38 (N : Node_Id) return Union_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 6).Field8;
+      end Field38;
+
+      function Field39 (N : Node_Id) return Union_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 6).Field9;
+      end Field39;
+
+      function Field40 (N : Node_Id) return Union_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 6).Field10;
+      end Field40;
+
+      function Field41 (N : Node_Id) return Union_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Nodes.Table (N + 6).Field11;
+      end Field41;
+
       function Node1 (N : Node_Id) return Node_Id is
       begin
          pragma Assert (N <= Nodes.Last);
@@ -2762,6 +2798,42 @@ package body Atree is
          pragma Assert (Nkind (N) in N_Entity);
          return Node_Id (Nodes.Table (N + 5).Field11);
       end Node35;
+
+      function Node36 (N : Node_Id) return Node_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Node_Id (Nodes.Table (N + 6).Field6);
+      end Node36;
+
+      function Node37 (N : Node_Id) return Node_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Node_Id (Nodes.Table (N + 6).Field7);
+      end Node37;
+
+      function Node38 (N : Node_Id) return Node_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Node_Id (Nodes.Table (N + 6).Field8);
+      end Node38;
+
+      function Node39 (N : Node_Id) return Node_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Node_Id (Nodes.Table (N + 6).Field9);
+      end Node39;
+
+      function Node40 (N : Node_Id) return Node_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Node_Id (Nodes.Table (N + 6).Field10);
+      end Node40;
+
+      function Node41 (N : Node_Id) return Node_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Node_Id (Nodes.Table (N + 6).Field11);
+      end Node41;
 
       function List1 (N : Node_Id) return List_Id is
       begin
@@ -5334,6 +5406,42 @@ package body Atree is
          Nodes.Table (N + 5).Field11 := Val;
       end Set_Field35;
 
+      procedure Set_Field36 (N : Node_Id; Val : Union_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 6).Field6 := Val;
+      end Set_Field36;
+
+      procedure Set_Field37 (N : Node_Id; Val : Union_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 6).Field7 := Val;
+      end Set_Field37;
+
+      procedure Set_Field38 (N : Node_Id; Val : Union_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 6).Field8 := Val;
+      end Set_Field38;
+
+      procedure Set_Field39 (N : Node_Id; Val : Union_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 6).Field9 := Val;
+      end Set_Field39;
+
+      procedure Set_Field40 (N : Node_Id; Val : Union_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 6).Field10 := Val;
+      end Set_Field40;
+
+      procedure Set_Field41 (N : Node_Id; Val : Union_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 6).Field11 := Val;
+      end Set_Field41;
+
       procedure Set_Node1 (N : Node_Id; Val : Node_Id) is
       begin
          pragma Assert (N <= Nodes.Last);
@@ -5543,6 +5651,42 @@ package body Atree is
          pragma Assert (Nkind (N) in N_Entity);
          Nodes.Table (N + 5).Field11 := Union_Id (Val);
       end Set_Node35;
+
+      procedure Set_Node36 (N : Node_Id; Val : Node_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 6).Field6 := Union_Id (Val);
+      end Set_Node36;
+
+      procedure Set_Node37 (N : Node_Id; Val : Node_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 6).Field7 := Union_Id (Val);
+      end Set_Node37;
+
+      procedure Set_Node38 (N : Node_Id; Val : Node_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 6).Field8 := Union_Id (Val);
+      end Set_Node38;
+
+      procedure Set_Node39 (N : Node_Id; Val : Node_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 6).Field9 := Union_Id (Val);
+      end Set_Node39;
+
+      procedure Set_Node40 (N : Node_Id; Val : Node_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 6).Field10 := Union_Id (Val);
+      end Set_Node40;
+
+      procedure Set_Node41 (N : Node_Id; Val : Node_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 6).Field11 := Union_Id (Val);
+      end Set_Node41;
 
       procedure Set_List1 (N : Node_Id; Val : List_Id) is
       begin

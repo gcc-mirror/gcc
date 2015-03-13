@@ -5710,6 +5710,11 @@ package body Exp_Util is
       elsif Is_Entity_Name (N) and then Is_Type (Entity (N)) then
          return False;
 
+      --  Never true for a compile time known constant
+
+      elsif Compile_Time_Known_Value (N) then
+         return False;
+
       --  True if object reference with volatile type
 
       elsif Is_Volatile_Object (N) then

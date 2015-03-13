@@ -1,3 +1,50 @@
+2015-03-13  Robert Dewar  <dewar@adacore.com>
+
+	* exp_unst.adb (Note_Uplevel_Reference): Eliminate duplicate
+	references.
+	(Actual_Ref): New function.
+	(AREC_String): Minor reformatting.
+	(Unnest_Subprogram): Use Actual_Ref.
+	* frontend.adb (Frontend): Turn off Unnest_Subprogram_Mode
+	before call to Instantiate_Bodies.
+
+2015-03-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Profile): If the return type of a function
+	being frozen is an untagged limited view and the function is
+	abstract, mark the type as frozen because there is no later
+	point at which the profile of the subprogram will be elaborated.
+
+2015-03-13  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb, einfo.ads, atree.adb, atree.ads, atree.h: Add seventh
+	component to entities. Add new fields Field36-41 and Node36-41.
+
+2015-03-13  Claire Dross  <dross@adacore.com>
+
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Rewrite after review.
+
+2015-03-13  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb (Is_Volatile_Reference): Compile time known
+	value is never considered to be a volatile reference.
+
+2015-03-13  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Contract): Suppress "constant
+	cannot be volatile" for internally generated object (such as
+	FIRST and LAST constants).
+
+2015-03-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Validate_Access_Subprogram_Instance): If a
+	convention is specified for the formal parameter, verify that
+	the actual has the same convention.
+	* sem_prag.adb (Set_Convention_From_Pragma): Allow convention
+	pragma to be set on a generic formal type.
+	* sem_util.adb (Set_Convention): Ignore within an instance,
+	as it has already been verified in the generic unit.
+
 2015-03-13  Claire Dross  <dross@adacore.com>
 
 	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Do not inline
