@@ -1,3 +1,10 @@
+2015-03-13  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* configure.tgt (*-*-rtems*): Use local-exec TLS model.
+	* configure.ac (*-*-rtems*): Assume Pthread is supported.
+	(pthread.h): Check for this header file.
+	* configure: Regenerate.
+
 2015-02-25  Tom de Vries  <tom@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/reduction-1.c (DO_PRAGMA)
