@@ -74,6 +74,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-dom.h"
 #include "inchash.h"
 #include "gimplify.h"
+#include "tree-cfgcleanup.h"
 
 /* This file implements optimizations on the dominator tree.  */
 
@@ -246,6 +247,7 @@ static bool cfg_altered;
 /* Bitmap of blocks that have had EH statements cleaned.  We should
    remove their dead edges eventually.  */
 static bitmap need_eh_cleanup;
+static vec<gimple> need_noreturn_fixup;
 
 /* Statistics for dominator optimizations.  */
 struct opt_stats_d
@@ -885,6 +887,7 @@ pass_dominator::execute (function *fun)
   avail_exprs_stack.create (20);
   const_and_copies_stack.create (20);
   need_eh_cleanup = BITMAP_ALLOC (NULL);
+  need_noreturn_fixup.create (0);
 
   calculate_dominance_info (CDI_DOMINATORS);
   cfg_altered = false;
@@ -967,6 +970,23 @@ pass_dominator::execute (function *fun)
       bitmap_clear (need_eh_cleanup);
     }
 
+  /* Fixup stmts that became noreturn calls.  This may require splitting
+     blocks and thus isn't possible during the dominator walk or before
+     jump threading finished.  Do this in reverse order so we don't
+     inadvertedly remove a stmt we want to fixup by visiting a dominating
+     now noreturn call first.  */
+  while (!need_noreturn_fixup.is_empty ())
+    {
+      gimple stmt = need_noreturn_fixup.pop ();
+      if (dump_file && dump_flags & TDF_DETAILS)
+	{
+	  fprintf (dump_file, "Fixing up noreturn call ");
+	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	  fprintf (dump_file, "\n");
+	}
+      fixup_noreturn_call (stmt);
+    }
+
   statistics_counter_event (fun, "Redundant expressions eliminated",
 			    opt_stats.num_re);
   statistics_counter_event (fun, "Constants propagated",
@@ -986,7 +1006,7 @@ pass_dominator::execute (function *fun)
 
   /* Free asserted bitmaps and stacks.  */
   BITMAP_FREE (need_eh_cleanup);
-
+  need_noreturn_fixup.release ();
   avail_exprs_stack.release ();
   const_and_copies_stack.release ();
 
@@ -2364,8 +2384,10 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si)
   gimple stmt, old_stmt;
   bool may_optimize_p;
   bool modified_p = false;
+  bool was_noreturn;
 
   old_stmt = stmt = gsi_stmt (si);
+  was_noreturn = is_gimple_call (stmt) && gimple_call_noreturn_p (stmt);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -2545,6 +2567,10 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  Flagged to clear EH edges.\n");
 	}
+
+      if (!was_noreturn
+	  && is_gimple_call (stmt) && gimple_call_noreturn_p (stmt))
+	need_noreturn_fixup.safe_push (stmt);
     }
 }
 
