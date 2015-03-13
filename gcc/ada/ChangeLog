@@ -1,3 +1,10 @@
+2015-03-13  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.ads, exp_util.adb (Force_Evaluation): Add Related_Id and
+	Is_Low/High_Bound params.
+	* sem_ch3.adb (Constrain_Index): Use new Force_Evaluation calling
+	sequence to simplify generation of FIRST/LAST temps for bounds.
+
 2015-03-12  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/trans.c (Attribute_to_gnu) <Code_Address case>:

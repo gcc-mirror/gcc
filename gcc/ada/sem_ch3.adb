@@ -8053,9 +8053,9 @@ package body Sem_Ch3 is
                while Present (C) loop
                   Expr := Node (C);
 
-                  --  It is safe here to call New_Copy_Tree since
-                  --  Force_Evaluation was called on each constraint in
-                  --  Build_Discriminant_Constraints.
+                  --  It is safe here to call New_Copy_Tree since we called
+                  --  Force_Evaluation on each constraint previously
+                  --  in Build_Discriminant_Constraints.
 
                   Append (New_Copy_Tree (Expr), To => Constr_List);
 
@@ -13220,8 +13220,10 @@ package body Sem_Ch3 is
          --  supposed to occur, e.g. on default parameters of a call.
 
          if Expander_Active or GNATprove_Mode then
-            Force_Evaluation (Low_Bound (R));
-            Force_Evaluation (High_Bound (R));
+            Force_Evaluation
+              (Low_Bound (R),  Related_Id => Related_Id, Is_Low_Bound => True);
+            Force_Evaluation
+              (High_Bound (R), Related_Id => Related_Id, Is_Low_Bound => True);
          end if;
 
       elsif Nkind (S) = N_Discriminant_Association then
@@ -20171,80 +20173,19 @@ package body Sem_Ch3 is
 
             if Expander_Active or GNATprove_Mode then
 
-               --  If no subtype name, then just call Force_Evaluation to
-               --  create declarations as needed to deal with side effects.
-               --  Also ignore calls from within a record type, where we
-               --  have possible scoping issues.
-
-               if No (Subtyp) or else Is_Record_Type (Current_Scope) then
-                  Force_Evaluation (Lo);
-                  Force_Evaluation (Hi);
-
-               --  If a subtype is given, then we capture the bounds if they
-               --  are not known at compile time, using constant identifiers
-               --  xxx_FIRST and xxx_LAST where xxx is the name of the subtype.
+               --  Call Force_Evaluation to create declarations as needed to
+               --  deal with side effects, and also create typ_FIRST/LAST
+               --  entities for bounds if we have a subtype name.
 
                --  Note: we do this transformation even if expansion is not
-               --  active, and in particular we do it in GNATprove_Mode since
-               --  the transformation is in general required to ensure that the
-               --  resulting tree has proper Ada semantics.
+               --  active if we are in GNATprove_Mode since the transformation
+               --  is in general required to ensure that the resulting tree has
+               --  proper Ada semantics.
 
-               --  Historical note: We used to just do Force_Evaluation calls
-               --  in all cases, but it is better to capture the bounds with
-               --  proper non-serialized names, since these will be accessed
-               --  from other units, and hence may be public, and also we can
-               --  then expand 'First and 'Last references to be references to
-               --  these special names.
-
-               else
-                  if not Compile_Time_Known_Value (Lo)
-
-                    --  No need to capture bounds if they already are
-                    --  references to constants.
-
-                    and then not (Is_Entity_Name (Lo)
-                                   and then Is_Constant_Object (Entity (Lo)))
-                  then
-                     declare
-                        Loc : constant Source_Ptr := Sloc (Lo);
-                        Lov : constant Entity_Id  :=
-                          Make_Defining_Identifier (Loc,
-                            Chars =>
-                              New_External_Name (Chars (Subtyp), "_FIRST"));
-                     begin
-                        Insert_Action (R,
-                          Make_Object_Declaration (Loc,
-                            Defining_Identifier => Lov,
-                            Object_Definition   =>
-                              New_Occurrence_Of (Base_Type (T), Loc),
-                            Constant_Present    => True,
-                            Expression          => Relocate_Node (Lo)));
-                        Rewrite (Lo, New_Occurrence_Of (Lov, Loc));
-                     end;
-                  end if;
-
-                  if not Compile_Time_Known_Value (Hi)
-                    and then not (Is_Entity_Name (Hi)
-                                  and then Is_Constant_Object (Entity (Hi)))
-                  then
-                     declare
-                        Loc : constant Source_Ptr := Sloc (Hi);
-                        Hiv : constant Entity_Id  :=
-                          Make_Defining_Identifier (Loc,
-                            Chars =>
-                              New_External_Name (Chars (Subtyp), "_LAST"));
-                     begin
-                        Insert_Action (R,
-                          Make_Object_Declaration (Loc,
-                            Defining_Identifier => Hiv,
-                            Object_Definition   =>
-                              New_Occurrence_Of (Base_Type (T), Loc),
-                            Constant_Present    => True,
-                            Expression          => Relocate_Node (Hi)));
-                        Rewrite (Hi, New_Occurrence_Of (Hiv, Loc));
-                     end;
-                  end if;
-               end if;
+               Force_Evaluation
+                 (Lo, Related_Id => Subtyp, Is_Low_Bound  => True);
+               Force_Evaluation
+                 (Hi, Related_Id => Subtyp, Is_High_Bound => True);
             end if;
 
             --  We use a flag here instead of suppressing checks on the
