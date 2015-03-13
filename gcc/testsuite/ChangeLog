@@ -1,3 +1,8 @@
+2015-03-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/64600
+	* gcc.target/arm/pr64600_1.c: New test.
+
 2015-03-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/65235
