@@ -1,3 +1,8 @@
+2015-03-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4: Make --enable-libstdcxx-time=auto work for dragonfly.
+	* configure: Regenerate.
+
 2015-03-12  Renlin Li  <renlin.li@arm.com>
 
 	* testsuite/27_io/ios_base/sync_with_stdio/1.cc: Remove xfail for
