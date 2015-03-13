@@ -429,8 +429,28 @@ sem_function::equals_wpa (sem_item *item,
   if (DECL_NO_LIMIT_STACK (decl) != DECL_NO_LIMIT_STACK (item->decl))
     return return_false_with_msg ("no stack limit attributes are different");
 
+  if (DECL_CXX_CONSTRUCTOR_P (decl) != DECL_CXX_CONSTRUCTOR_P (item->decl))
+    return return_false_with_msg ("DELC_CXX_CONSTRUCTOR mismatch");
+
+  if (DECL_CXX_DESTRUCTOR_P (decl) != DECL_CXX_DESTRUCTOR_P (item->decl))
+    return return_false_with_msg ("DELC_CXX_DESTRUCTOR mismatch");
+
   if (flags_from_decl_or_type (decl) != flags_from_decl_or_type (item->decl))
     return return_false_with_msg ("decl_or_type flags are different");
+
+  /* Do not match polymorphic constructors of different types.  They calls
+     type memory location for ipa-polymorphic-call and we do not want
+     it to get confused by wrong type.  */
+  if (DECL_CXX_CONSTRUCTOR_P (decl)
+      && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
+    {
+      if (TREE_CODE (TREE_TYPE (item->decl)) != METHOD_TYPE)
+        return return_false_with_msg ("DECL_CXX_CONSTURCTOR type mismatch");
+      else if (!func_checker::compatible_polymorphic_types_p
+		 (method_class_type (TREE_TYPE (decl)),
+		  method_class_type (TREE_TYPE (item->decl)), false))
+        return return_false_with_msg ("ctor polymorphic type mismatch");
+    }
 
   /* Checking function TARGET and OPTIMIZATION flags.  */
   cl_target_option *tar1 = target_opts_for_fn (decl);
@@ -473,13 +493,8 @@ sem_function::equals_wpa (sem_item *item,
       if (!arg_types[i] || !m_compared_func->arg_types[i])
 	return return_false_with_msg ("NULL argument type");
 
-      /* Polymorphic comparison is executed just for non-leaf functions.  */
-      bool is_not_leaf = get_node ()->callees != NULL
-			 || get_node ()->indirect_calls != NULL;
-
       if (!func_checker::compatible_types_p (arg_types[i],
-					     m_compared_func->arg_types[i],
-					     is_not_leaf, i == 0))
+					     m_compared_func->arg_types[i]))
 	return return_false_with_msg ("argument type is different");
       if (POINTER_TYPE_P (arg_types[i])
 	  && (TYPE_RESTRICT (arg_types[i])
@@ -493,6 +508,24 @@ sem_function::equals_wpa (sem_item *item,
   if (comp_type_attributes (TREE_TYPE (decl),
 			    TREE_TYPE (item->decl)) != 1)
     return return_false_with_msg ("different type attributes");
+
+  /* The type of THIS pointer type memory location for
+     ipa-polymorphic-call-analysis.  */
+  if (opt_for_fn (decl, flag_devirtualize)
+      && (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE
+          || TREE_CODE (TREE_TYPE (item->decl)) == METHOD_TYPE)
+      && (!flag_ipa_cp
+	  || ipa_is_param_used (IPA_NODE_REF (dyn_cast <cgraph_node *>(node)),
+				0))
+      && compare_polymorphic_p ())
+    {
+      if (TREE_CODE (TREE_TYPE (decl)) != TREE_CODE (TREE_TYPE (item->decl)))
+	return return_false_with_msg ("METHOD_TYPE and FUNCTION_TYPE mismatch");
+      if (!func_checker::compatible_polymorphic_types_p
+	   (method_class_type (TREE_TYPE (decl)),
+	    method_class_type (TREE_TYPE (item->decl)), false))
+	return return_false_with_msg ("THIS pointer ODR type mismatch");
+    }
 
   ipa_ref *ref = NULL, *ref2 = NULL;
   for (unsigned i = 0; node->iterate_reference (i, ref); i++)
@@ -613,7 +646,6 @@ sem_function::equals_private (sem_item *item,
 
   if (decl1 != decl2)
     return return_false();
-
 
   for (arg1 = DECL_ARGUMENTS (decl),
        arg2 = DECL_ARGUMENTS (m_compared_func->decl);
@@ -1216,10 +1248,20 @@ sem_function::hash_stmt (gimple stmt, inchash::hash &hstate)
 bool
 sem_function::compare_polymorphic_p (void)
 {
-  return get_node ()->callees != NULL
-	 || get_node ()->indirect_calls != NULL
-	 || m_compared_func->get_node ()->callees != NULL
-	 || m_compared_func->get_node ()->indirect_calls != NULL;
+  struct cgraph_edge *e;
+
+  if (!opt_for_fn (decl, flag_devirtualize))
+    return false;
+  if (get_node ()->indirect_calls != NULL
+      || m_compared_func->get_node ()->indirect_calls != NULL)
+    return true;
+  /* TODO: We can do simple propagation determining what calls may lead to
+     a polymorphic call.  */
+  for (e = m_compared_func->get_node ()->callees; e; e = e->next_callee)
+    if (e->callee->definition
+	&& opt_for_fn (e->callee->decl, flag_devirtualize))
+      return true;
+  return false;
 }
 
 /* For a given call graph NODE, the function constructs new
@@ -1372,41 +1414,6 @@ sem_function::bb_dict_test (vec<int> *bb_dict, int source, int target)
     }
   else
     return (*bb_dict)[source] == target;
-}
-
-/* Iterates all tree types in T1 and T2 and returns true if all types
-   are compatible. If COMPARE_POLYMORPHIC is set to true,
-   more strict comparison is executed.  */
-
-bool
-sem_function::compare_type_list (tree t1, tree t2, bool compare_polymorphic)
-{
-  tree tv1, tv2;
-  tree_code tc1, tc2;
-
-  if (!t1 && !t2)
-    return true;
-
-  while (t1 != NULL && t2 != NULL)
-    {
-      tv1 = TREE_VALUE (t1);
-      tv2 = TREE_VALUE (t2);
-
-      tc1 = TREE_CODE (tv1);
-      tc2 = TREE_CODE (tv2);
-
-      if (tc1 == NOP_EXPR && tc2 == NOP_EXPR)
-	{}
-      else if (tc1 == NOP_EXPR || tc2 == NOP_EXPR)
-	return false;
-      else if (!func_checker::compatible_types_p (tv1, tv2, compare_polymorphic))
-	return false;
-
-      t1 = TREE_CHAIN (t1);
-      t2 = TREE_CHAIN (t2);
-    }
-
-  return !(t1 || t2);
 }
 
 
@@ -1586,8 +1593,7 @@ sem_variable::equals (tree t1, tree t2)
 	tree y1 = TREE_OPERAND (t1, 1);
 	tree y2 = TREE_OPERAND (t2, 1);
 
-	if (!func_checker::compatible_types_p (TREE_TYPE (x1), TREE_TYPE (x2),
-					       true))
+	if (!func_checker::compatible_types_p (TREE_TYPE (x1), TREE_TYPE (x2)))
 	  return return_false ();
 
 	/* Type of the offset on MEM_REF does not matter.  */
@@ -1696,8 +1702,7 @@ sem_variable::equals (tree t1, tree t2)
 
     CASE_CONVERT:
     case VIEW_CONVERT_EXPR:
-      if (!func_checker::compatible_types_p (TREE_TYPE (t1), TREE_TYPE (t2),
-					     true))
+      if (!func_checker::compatible_types_p (TREE_TYPE (t1), TREE_TYPE (t2)))
 	  return return_false ();
       return sem_variable::equals (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
     case ERROR_MARK:
@@ -1872,40 +1877,6 @@ sem_variable::dump_to_file (FILE *file)
 
   print_node (file, "", decl, 0);
   fprintf (file, "\n\n");
-}
-
-/* Iterates though a constructor and identifies tree references
-   we are interested in semantic function equality.  */
-
-void
-sem_variable::parse_tree_refs (tree t)
-{
-  switch (TREE_CODE (t))
-    {
-    case CONSTRUCTOR:
-      {
-	unsigned length = vec_safe_length (CONSTRUCTOR_ELTS (t));
-
-	for (unsigned i = 0; i < length; i++)
-	  parse_tree_refs(CONSTRUCTOR_ELT (t, i)->value);
-
-	break;
-      }
-    case NOP_EXPR:
-    case ADDR_EXPR:
-      {
-	tree op = TREE_OPERAND (t, 0);
-	parse_tree_refs (op);
-	break;
-      }
-    case FUNCTION_DECL:
-      {
-	tree_refs.safe_push (t);
-	break;
-      }
-    default:
-      break;
-    }
 }
 
 unsigned int sem_item_optimizer::class_id = 0;
@@ -2185,10 +2156,7 @@ sem_item_optimizer::filter_removed_items (void)
         {
 	  cgraph_node *cnode = static_cast <sem_function *>(item)->get_node ();
 
-	  bool no_body_function = in_lto_p && (cnode->alias || cnode->body_removed);
-	  if (no_body_function || !opt_for_fn (item->decl, flag_ipa_icf_functions)
-	      || DECL_CXX_CONSTRUCTOR_P (item->decl)
-	      || DECL_CXX_DESTRUCTOR_P (item->decl))
+	  if (in_lto_p && (cnode->alias || cnode->body_removed))
 	    remove_item (item);
 	  else
 	    filtered.safe_push (item);

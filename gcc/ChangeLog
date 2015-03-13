@@ -1,3 +1,26 @@
+2015-03-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-icf.c (sem_function::equals_wpa): Match CXX_CONSTRUCTOR_P
+	and CXX_DESTURCTOR_P. For consutrctors match ODR type of class they
+	are building; for methods check ODR type of class they belong to if
+	they may lead to a polymorphic call.
+	(sem_function::compare_polymorphic_p): Be bit smarter about testing
+	when function may lead to a polymorphic call.
+	(sem_function::compare_type_list): Remove.
+	(sem_variable::equals): Update use of compatible_types_p.
+	(sem_variable::parse_tree_refs): Remove.
+	(sem_item_optimizer::filter_removed_items): Do not filter out CXX
+	cdtor.
+	* ipa-icf-gimple.c (func_checker::compare_decl): Do polymorphic
+	matching here.
+	(func_checker::compatible_polymorphic_types_p): Break out from ...
+	(unc_checker::compatible_types_p): ... here.
+	* ipa-icf-gimple.h (func_checker::compatible_polymorphic_types_p):
+	Declare.
+	(unc_checker::compatible_types_p): Update.
+	* ipa-icf.h (compare_type_list, parse_tree_refs, compare_sections):
+	Remove.
+
 2015-03-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR rtl-optimization/65235
