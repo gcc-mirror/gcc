@@ -134,7 +134,7 @@
 
 2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
 
-	* gcc/testsuite/lib/mpx-dg.exp (mpx_link_flags): New.
+	* lib/mpx-dg.exp (mpx_link_flags): New.
 	(mpx_init): New.
 	(mpx_finish): New.
 	* gcc.target/i386/mpx/alloca-1-lbv.c: New.
@@ -688,7 +688,8 @@
 
 2015-02-27  Pat Haugen <pthaugen@us.ibm.com>
 
-	* gcc.dg/vect/pr59354.c: Move vector producing code to separate function.
+	* gcc.dg/vect/pr59354.c: Move vector producing code to
+	separate function.
 
 2015-02-27  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -3393,7 +3394,7 @@
 2015-01-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/63470
-	* testsuite/g++.dg/ipa/pr63470.C: New testcase.
+	* g++.dg/ipa/pr63470.C: New testcase.
 
 2015-01-11  Janus Weil  <janus@gcc.gnu.org>
 
