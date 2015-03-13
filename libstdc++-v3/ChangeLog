@@ -3,6 +3,8 @@
 	* acinclude.m4: Make --enable-libstdcxx-time=auto work for dragonfly.
 	* configure: Regenerate.
 
+	* include/experimental/system_error: Fix include guard.
+
 2015-03-12  Renlin Li  <renlin.li@arm.com>
 
 	* testsuite/27_io/ios_base/sync_with_stdio/1.cc: Remove xfail for
