@@ -617,6 +617,17 @@ package Sinfo is
    --       checks on empty ranges, which typically appear in deactivated
    --       code in a particular configuration).
 
+   --    6. Subtypes should match in the AST, even after a generic is
+   --       instantiated. In particular, GNATprove relies on the fact that,
+   --       on a selected component, the type of the selected component is
+   --       the type of the corresponding component in the prefix of the
+   --       selected component.
+   --
+   --       Note that, in some cases, we know that this rule is broken by the
+   --       frontend. In particular, if the selected component is a packed
+   --       array depending on a discriminant of a unconstrained formal object
+   --       parameter of a generic.
+
    -----------------------
    -- Check Flag Fields --
    -----------------------

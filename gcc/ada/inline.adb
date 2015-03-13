@@ -1335,6 +1335,11 @@ package body Inline is
      (Spec_Id : Entity_Id;
       Body_Id : Entity_Id) return Boolean
    is
+      function Has_Parameter_With_Discriminant_Dependent_Fields
+        (Id : Entity_Id) return Boolean;
+      --  Returns true if the subprogram as parameters of an unconstrained
+      --  record types with fields whose types depend on a discriminant.
+
       function Has_Some_Contract (Id : Entity_Id) return Boolean;
       --  Returns True if subprogram Id has any contract (Pre, Post, Global,
       --  Depends, etc.)
@@ -1350,6 +1355,73 @@ package body Inline is
       function Is_Expression_Function (Id : Entity_Id) return Boolean;
       --  Returns True if subprogram Id was defined originally as an expression
       --  function.
+
+      ------------------------------------------------------
+      -- Has_Parameter_With_Discriminant_Dependent_Fields --
+      ------------------------------------------------------
+
+      function Has_Parameter_With_Discriminant_Dependent_Fields
+        (Id : Entity_Id) return Boolean
+      is
+         E    : Entity_Id := Id;
+         Spec : Node_Id   := Parent (E);
+
+      begin
+         --  Get the specification of the subprogram. Go through alias if
+         --  needed.
+
+         if Nkind (Spec) = N_Defining_Program_Unit_Name then
+            Spec := Parent (Spec);
+         end if;
+
+         while Nkind (Spec) not in N_Subprogram_Specification loop
+            pragma Assert (Present (Alias (E)));
+            E := Alias (E);
+            Spec := Parent (E);
+
+            if Nkind (Spec) = N_Defining_Program_Unit_Name then
+               Spec := Parent (Spec);
+            end if;
+         end loop;
+
+         declare
+            Params   : constant List_Id := Parameter_Specifications (Spec);
+            Param    : Node_Id;
+            Param_Ty : Entity_Id;
+
+         begin
+            if Is_Non_Empty_List (Params) then
+               Param := First (Params);
+               while Present (Param) loop
+                  Param_Ty := Etype (Defining_Identifier (Param));
+
+                  --  If the parameter is an unconstrained record, check if
+                  --  it has components whose types depend on a discriminant.
+
+                  if Is_Record_Type (Param_Ty)
+                    and then not Is_Constrained (Param_Ty)
+                  then
+                     declare
+                        Comp : Node_Id := First_Component (Param_Ty);
+
+                     begin
+                        while Present (Comp) loop
+                           if Has_Discriminant_Dependent_Constraint (Comp) then
+                              return True;
+                           end if;
+
+                           Comp := Next_Component (Comp);
+                        end loop;
+                     end;
+                  end if;
+
+                  Param := Next (Param);
+               end loop;
+            end if;
+         end;
+
+         return False;
+      end Has_Parameter_With_Discriminant_Dependent_Fields;
 
       -----------------------
       -- Has_Some_Contract --
@@ -1497,9 +1569,18 @@ package body Inline is
       elsif Instantiation_Location (Sloc (Id)) /= No_Location then
          return False;
 
-      --  Don't inline predicate functions (treated specially by GNATprove)
+      --  Do not inline predicate functions (treated specially by GNATprove)
 
       elsif Is_Predicate_Function (Id) then
+         return False;
+
+      --  Do not inline subprograms with a parameter of an unconstrained
+      --  record type if it has discrimiant dependent fields. Indeed, with
+      --  such parameters, the frontend cannot always ensure type compliance
+      --  in record component accesses (in particular with records containing
+      --  packed arrays).
+
+      elsif Has_Parameter_With_Discriminant_Dependent_Fields (Id) then
          return False;
 
       --  Otherwise, this is a subprogram declared inside the private part of a

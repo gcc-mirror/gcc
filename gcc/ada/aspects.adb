@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -595,6 +595,7 @@ package body Aspects is
     Aspect_Thread_Local_Storage         => Aspect_Thread_Local_Storage,
     Aspect_Type_Invariant               => Aspect_Invariant,
     Aspect_Unchecked_Union              => Aspect_Unchecked_Union,
+    Aspect_Unimplemented                => Aspect_Unimplemented,
     Aspect_Universal_Aliasing           => Aspect_Universal_Aliasing,
     Aspect_Universal_Data               => Aspect_Universal_Data,
     Aspect_Unmodified                   => Aspect_Unmodified,

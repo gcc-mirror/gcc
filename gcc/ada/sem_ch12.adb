@@ -12456,6 +12456,14 @@ package body Sem_Ch12 is
          end;
       end if;
 
+      --  For a floating-point type, capture dimension info if any, because
+      --  the generated subtype declaration does not come from source and
+      --  will not process dimensions.
+
+      if Is_Floating_Point_Type (Act_T) then
+         Copy_Dimensions (Act_T, Subt);
+      end if;
+
       return Decl_Nodes;
    end Instantiate_Type;
 

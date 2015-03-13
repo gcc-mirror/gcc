@@ -1,3 +1,31 @@
+2015-03-13  Claire Dross  <dross@adacore.com>
+
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Do not inline
+	subprograms with unconstrained record parameters containing
+	Itype declarations.
+	* sinfo.ads Document GNATprove assumption that type should match
+	in the AST.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Contract):
+	Do not check for Refined_Depends and Refined_Globals contracts
+	as they are optional.
+
+2015-03-13  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Type): For a floating-point type,
+	capture dimension info if any, because the generated subtype
+	declaration does not come from source and will not process dimensions.
+	* sem_dim,adb (Analyze_Dimension_Extension_Or_Record_Aggregate):
+	Do not analyze expressions with an initialization procedure
+	because aggregates will have been checked at the point of record
+	declaration.
+
+2015-03-13  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads, aspects.adb: Add entries for aspect Unimplemented.
+	* einfo.ads, einfo.adb (Is_Unimplemented): New flag.
+	* sem_ch13.adb: Add dummy entry for aspect Unimplemented.
+	* snames.ads-tmpl: Add entry for Name_Unimplemented.
+
 2015-03-13  Gary Dismukes  <dismukes@adacore.com>
 
 	* style.adb (Missing_Overriding): Apply the
