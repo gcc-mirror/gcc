@@ -1,5 +1,10 @@
 2015-03-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/65418
+	* tree-ssa-reassoc.c (extract_bit_test_mask): If there
+	are casts in the first PLUS_EXPR operand, ensure tbias and
+	*totallowp are in the inner type.
+
 	PR rtl-optimization/65401
 	* combine.c (rtx_equal_for_field_assignment_p): Add widen_x
 	argument.  If true, adjust_address_nv of x with big-endian
