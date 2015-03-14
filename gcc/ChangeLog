@@ -1,5 +1,10 @@
 2015-03-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/65369
+	* tree-vect-stmts.c (vectorizable_load) <case dr_explicit_realign>:
+	Set bump to vs * TYPE_SIZE_UNIT (elem_type) - 1 instead of
+	(vs - 1) * TYPE_SIZE_UNIT (elem_type).
+
 	PR tree-optimization/65418
 	* tree-ssa-reassoc.c (extract_bit_test_mask): If there
 	are casts in the first PLUS_EXPR operand, ensure tbias and
