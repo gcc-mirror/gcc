@@ -475,7 +475,7 @@ static rtx force_to_mode (rtx, machine_mode,
 			  unsigned HOST_WIDE_INT, int);
 static rtx if_then_else_cond (rtx, rtx *, rtx *);
 static rtx known_cond (rtx, enum rtx_code, rtx, rtx);
-static int rtx_equal_for_field_assignment_p (rtx, rtx);
+static int rtx_equal_for_field_assignment_p (rtx, rtx, bool = false);
 static rtx make_field_assignment (rtx);
 static rtx apply_distributive_law (rtx);
 static rtx distribute_and_simplify_rtx (rtx, int);
@@ -9184,8 +9184,23 @@ known_cond (rtx x, enum rtx_code cond, rtx reg, rtx val)
    assignment as a field assignment.  */
 
 static int
-rtx_equal_for_field_assignment_p (rtx x, rtx y)
+rtx_equal_for_field_assignment_p (rtx x, rtx y, bool widen_x)
 {
+  if (widen_x && GET_MODE (x) != GET_MODE (y))
+    {
+      if (GET_MODE_SIZE (GET_MODE (x)) > GET_MODE_SIZE (GET_MODE (y)))
+	return 0;
+      if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
+	return 0;
+      /* For big endian, adjust the memory offset.  */
+      if (BYTES_BIG_ENDIAN)
+	x = adjust_address_nv (x, GET_MODE (y),
+			       -subreg_lowpart_offset (GET_MODE (x),
+						       GET_MODE (y)));
+      else
+	x = adjust_address_nv (x, GET_MODE (y), 0);
+    }
+
   if (x == y || rtx_equal_p (x, y))
     return 1;
 
@@ -9339,16 +9354,15 @@ make_field_assignment (rtx x)
   /* The second SUBREG that might get in the way is a paradoxical
      SUBREG around the first operand of the AND.  We want to 
      pretend the operand is as wide as the destination here.   We
-     do this by creating a new MEM in the wider mode for the sole
+     do this by adjusting the MEM to wider mode for the sole
      purpose of the call to rtx_equal_for_field_assignment_p.   Also
      note this trick only works for MEMs.  */
   else if (GET_CODE (rhs) == AND
 	   && paradoxical_subreg_p (XEXP (rhs, 0))
-	   && GET_CODE (SUBREG_REG (XEXP (rhs, 0))) == MEM
+	   && MEM_P (SUBREG_REG (XEXP (rhs, 0)))
 	   && CONST_INT_P (XEXP (rhs, 1))
-	   && rtx_equal_for_field_assignment_p (gen_rtx_MEM (GET_MODE (dest),
-							     XEXP (SUBREG_REG (XEXP (rhs, 0)), 0)),
-						dest))
+	   && rtx_equal_for_field_assignment_p (SUBREG_REG (XEXP (rhs, 0)),
+						dest, true))
     c1 = INTVAL (XEXP (rhs, 1)), other = lhs;
   else if (GET_CODE (lhs) == AND
 	   && CONST_INT_P (XEXP (lhs, 1))
@@ -9357,16 +9371,15 @@ make_field_assignment (rtx x)
   /* The second SUBREG that might get in the way is a paradoxical
      SUBREG around the first operand of the AND.  We want to 
      pretend the operand is as wide as the destination here.   We
-     do this by creating a new MEM in the wider mode for the sole
+     do this by adjusting the MEM to wider mode for the sole
      purpose of the call to rtx_equal_for_field_assignment_p.   Also
      note this trick only works for MEMs.  */
   else if (GET_CODE (lhs) == AND
 	   && paradoxical_subreg_p (XEXP (lhs, 0))
-	   && GET_CODE (SUBREG_REG (XEXP (lhs, 0))) == MEM
+	   && MEM_P (SUBREG_REG (XEXP (lhs, 0)))
 	   && CONST_INT_P (XEXP (lhs, 1))
-	   && rtx_equal_for_field_assignment_p (gen_rtx_MEM (GET_MODE (dest),
-							     XEXP (SUBREG_REG (XEXP (lhs, 0)), 0)),
-						dest))
+	   && rtx_equal_for_field_assignment_p (SUBREG_REG (XEXP (lhs, 0)),
+						dest, true))
     c1 = INTVAL (XEXP (lhs, 1)), other = rhs;
   else
     return x;

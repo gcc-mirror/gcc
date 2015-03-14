@@ -1,3 +1,12 @@
+2015-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/65401
+	* combine.c (rtx_equal_for_field_assignment_p): Add widen_x
+	argument.  If true, adjust_address_nv of x with big-endian
+	correction for the mode widening to GET_MODE (y).
+	(make_field_assignment): Don't do MEM mode widening here.
+	Use MEM_P instead of GET_CODE == MEM.
+
 2015-03-13  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* varpool.c (varpool_node::get_create): Don't set 'offloadable' flag for
