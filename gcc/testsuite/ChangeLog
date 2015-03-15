@@ -1,3 +1,9 @@
+2015-03-15  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/torture/pr65270-1.c: Add -fno-common to dg-options on
+	hppa*-*-hpux*.
+	* gcc.dg/torture/pr65270-2.c: Likewise.
+
 2015-03-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/61138
