@@ -1553,10 +1553,12 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
 
   c = ref->u.c.component;
 
-  gcc_assert (c->backend_decl);
+  if (c->backend_decl == NULL_TREE
+      && ref->u.c.sym != NULL)
+    gfc_get_derived_type (ref->u.c.sym);
 
   field = c->backend_decl;
-  gcc_assert (TREE_CODE (field) == FIELD_DECL);
+  gcc_assert (field && TREE_CODE (field) == FIELD_DECL);
   decl = se->expr;
 
   /* Components can correspond to fields of different containing

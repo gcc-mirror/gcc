@@ -1,3 +1,9 @@
+2015-03-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from mainline
+	PR fortran/65024
+	* gfortran.dg/unlimited_polymorphic_23.f90: New test
+
 2015-03-12  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/60898
@@ -630,7 +636,7 @@
 	Backported from mainline
 	2013-09-17  Cong Hou  <congh@google.com>
 
-	* gcc.dg/vect/vect-reduc-dot-s16c.c: Add a test case with dot product 
+	* gcc.dg/vect/vect-reduc-dot-s16c.c: Add a test case with dot product
 	on two arrays with short and int types. This should not be recognized
 	as a dot product pattern.
 
