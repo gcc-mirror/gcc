@@ -1,3 +1,9 @@
+2015-03-16  Marek Polacek  <polacek@redhat.com>
+
+	DR 1688
+	PR c++/65327
+	* decl.c (grokdeclarator): Allow volatile and constexpr together.
+
 2015-03-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65323

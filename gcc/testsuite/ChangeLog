@@ -1,3 +1,10 @@
+2015-03-16  Marek Polacek  <polacek@redhat.com>
+
+	DR 1688
+	PR c++/65327
+	* g++.dg/cpp0x/constexpr-object1.C: Change dg-error to dg-bogus.
+	* g++.dg/cpp0x/pr65327.C: New test.
+
 2015-03-16  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	PR sanitizer/64820
