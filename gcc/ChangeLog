@@ -1,3 +1,10 @@
+2015-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65427
+	* tree-vect-generic.c (do_cond, expand_vector_scalar_condition): New
+	functions.
+	(expand_vector_operations_1): Handle BLKmode vector COND_EXPR.
+
 2015-03-16  Marek Polacek  <polacek@redhat.com>
 
 	* cgraph.h (add_new_static_var): Remove declaration.
