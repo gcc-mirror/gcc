@@ -5109,7 +5109,7 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
       return false;
     }
 
-  if ((DECL_COMDAT (node->decl) || DECL_EXTERNAL (node->decl))
+  if ((DECL_ONE_ONLY (node->decl) || DECL_EXTERNAL (node->decl))
       && inline_summaries->get (node)->size >= MAX_INLINE_INSNS_AUTO)
     {
       if (dump_file)
