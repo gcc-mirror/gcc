@@ -1,5 +1,10 @@
 2015-03-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils2.c (gnat_invariant_expr): Return null if the type
+	of the expression ends up being composite.
+
+2015-03-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (is_from_limited_with_of_main): New predicate.
 	(gnat_to_gnu_entity) <E_Subprogram_Type>: Invoke it on return and
 	parameter types to detect circularities in ASIS mode.
