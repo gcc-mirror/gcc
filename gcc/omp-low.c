@@ -1580,10 +1580,12 @@ delete_omp_context (splay_tree_value value)
     splay_tree_delete (ctx->field_map);
   if (ctx->sfield_map)
     splay_tree_delete (ctx->sfield_map);
+  /* Reduction map is copied to nested contexts, so only delete it in the
+     owner.  */
   if (ctx->reduction_map
-      /* Shared over several omp_contexts.  */
-      && (ctx->outer == NULL
-	  || ctx->reduction_map != ctx->outer->reduction_map))
+      && gimple_code (ctx->stmt) == GIMPLE_OMP_TARGET
+      && is_gimple_omp_offloaded (ctx->stmt)
+      && is_gimple_omp_oacc (ctx->stmt))
     splay_tree_delete (ctx->reduction_map);
 
   /* We hijacked DECL_ABSTRACT_ORIGIN earlier.  We need to clear it before
