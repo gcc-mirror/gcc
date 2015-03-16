@@ -1,5 +1,9 @@
 2015-03-16  Jakub Jelinek  <jakub@redhat.com>
 
+	* omp-low.c (expand_omp_target): Use auto_vec<tree, 11>
+	instead of vec<tree> * with vec_alloc and release for args.
+	Adjust all users.
+
 	PR middle-end/65431
 	* omp-low.c (delete_omp_context): Only splay_tree_delete
 	reduction_map in GIMPLE_OMP_TARGET is_gimple_omp_offloaded
