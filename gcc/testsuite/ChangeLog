@@ -1,3 +1,9 @@
+2015-03-16  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/i386/fuse-caller-save-rec.c: Add PR64895 xfail on scans.
+	* gcc.target/i386/fuse-caller-save-xmm.c: Same.
+	* gcc.target/i386/fuse-caller-save.c: Same.
+
 2015-03-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/loop_optimization18.ad[sb]: New test.
