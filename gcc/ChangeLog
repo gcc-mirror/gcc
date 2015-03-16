@@ -1,3 +1,10 @@
+2015-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/65431
+	* omp-low.c (delete_omp_context): Only splay_tree_delete
+	reduction_map in GIMPLE_OMP_TARGET is_gimple_omp_offloaded
+	is_gimple_omp_oacc contexts.  Don't look at ctx->outer.
+
 2015-03-16  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	PR sanitizer/64820
