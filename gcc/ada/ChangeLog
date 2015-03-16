@@ -1,5 +1,12 @@
 2015-03-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (is_from_limited_with_of_main): New predicate.
+	(gnat_to_gnu_entity) <E_Subprogram_Type>: Invoke it on return and
+	parameter types to detect circularities in ASIS mode.
+	* gcc-interface/trans.c (Attribute_to_gnu): Mention AI05-0151.
+
+2015-03-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Abstract_State>: Do not
 	short-circuit the regular handling.
 
