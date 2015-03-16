@@ -2745,8 +2745,8 @@ package Einfo is
 --       including generic formal parameters.
 
 --    Is_Obsolescent (Flag153)
---       Defined in all entities. Set for any entity for which a valid pragma
---       Obsolescent applies.
+--       Defined in all entities. Set for any entity to which a valid pragma
+--       or aspect Obsolescent applies.
 
 --    Is_Only_Out_Parameter (Flag226)
 --       Defined in formal parameter entities. Set if this parameter is the
@@ -3089,6 +3089,10 @@ package Einfo is
 --       with unknown discriminants; it is a record with the same structure
 --       as its corresponding record type, but whose parent is the full view
 --       of the parent in the original type extension.
+
+--    Is_Unimplemented (Flag284)
+--       Defined in all entities. Set for any entity to which a valid pragma
+--       or aspect Unimplemented applies.
 
 --    Is_Unsigned_Type (Flag144)
 --       Defined in all types, but can be set only for discrete and fixed-point
@@ -5299,6 +5303,7 @@ package Einfo is
    --    Is_Thunk                            (Flag225)
    --    Is_Trivial_Subprogram               (Flag235)
    --    Is_Unchecked_Union                  (Flag117)
+   --    Is_Unimplemented                    (Flag284)
    --    Is_Visible_Formal                   (Flag206)
    --    Kill_Elaboration_Checks             (Flag32)
    --    Kill_Range_Checks                   (Flag33)
@@ -5784,6 +5789,7 @@ package Einfo is
    --    SPARK_Pragma                        (Node32)
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
+   --    Import_Pragma                       (Node35)   (non-generic case only)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Default_Expressions_Processed       (Flag108)
@@ -5951,6 +5957,7 @@ package Einfo is
    --    Subprograms_For_Type                (Node29)
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
+   --    Import_Pragma                       (Node35)
    --    Has_Invariants                      (Flag232)
    --    Is_Machine_Code_Subprogram          (Flag137)
    --    Is_Pure                             (Flag44)
@@ -6089,6 +6096,7 @@ package Einfo is
    --    SPARK_Pragma                        (Node32)
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
+   --    Import_Pragma                       (Node35)   (non-generic case only)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Delay_Cleanups                      (Flag114)
@@ -6894,6 +6902,7 @@ package Einfo is
    function Is_True_Constant                    (Id : E) return B;
    function Is_Unchecked_Union                  (Id : E) return B;
    function Is_Underlying_Record_View           (Id : E) return B;
+   function Is_Unimplemented                    (Id : E) return B;
    function Is_Unsigned_Type                    (Id : E) return B;
    function Is_Valued_Procedure                 (Id : E) return B;
    function Is_Visible_Formal                   (Id : E) return B;
@@ -7548,6 +7557,7 @@ package Einfo is
    procedure Set_Is_True_Constant                (Id : E; V : B := True);
    procedure Set_Is_Unchecked_Union              (Id : E; V : B := True);
    procedure Set_Is_Underlying_Record_View       (Id : E; V : B := True);
+   procedure Set_Is_Unimplemented                (Id : E; V : B := True);
    procedure Set_Is_Unsigned_Type                (Id : E; V : B := True);
    procedure Set_Is_Valued_Procedure             (Id : E; V : B := True);
    procedure Set_Is_Visible_Formal               (Id : E; V : B := True);
@@ -7991,6 +8001,12 @@ package Einfo is
    procedure Write_Field33_Name (Id : Entity_Id);
    procedure Write_Field34_Name (Id : Entity_Id);
    procedure Write_Field35_Name (Id : Entity_Id);
+   procedure Write_Field36_Name (Id : Entity_Id);
+   procedure Write_Field37_Name (Id : Entity_Id);
+   procedure Write_Field38_Name (Id : Entity_Id);
+   procedure Write_Field39_Name (Id : Entity_Id);
+   procedure Write_Field40_Name (Id : Entity_Id);
+   procedure Write_Field41_Name (Id : Entity_Id);
    --  These routines are used in Treepr to output a nice symbolic name for
    --  the given field, depending on the Ekind. No blanks or end of lines are
    --  output, just the characters of the field name.
@@ -8352,6 +8368,7 @@ package Einfo is
    pragma Inline (Is_Type);
    pragma Inline (Is_Unchecked_Union);
    pragma Inline (Is_Underlying_Record_View);
+   pragma Inline (Is_Unimplemented);
    pragma Inline (Is_Unsigned_Type);
    pragma Inline (Is_Valued_Procedure);
    pragma Inline (Is_Visible_Formal);
@@ -8807,6 +8824,7 @@ package Einfo is
    pragma Inline (Set_Is_True_Constant);
    pragma Inline (Set_Is_Unchecked_Union);
    pragma Inline (Set_Is_Underlying_Record_View);
+   pragma Inline (Set_Is_Unimplemented);
    pragma Inline (Set_Is_Unsigned_Type);
    pragma Inline (Set_Is_Valued_Procedure);
    pragma Inline (Set_Is_Visible_Formal);

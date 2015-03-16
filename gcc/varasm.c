@@ -1630,35 +1630,30 @@ default_ctor_section_asm_out_constructor (rtx symbol,
 void
 notice_global_symbol (tree decl)
 {
-  const char **type = &first_global_object_name;
+  const char **t = &first_global_object_name;
 
   if (first_global_object_name
       || !TREE_PUBLIC (decl)
       || DECL_EXTERNAL (decl)
       || !DECL_NAME (decl)
+      || (TREE_CODE (decl) == VAR_DECL && DECL_HARD_REGISTER (decl))
       || (TREE_CODE (decl) != FUNCTION_DECL
 	  && (TREE_CODE (decl) != VAR_DECL
 	      || (DECL_COMMON (decl)
 		  && (DECL_INITIAL (decl) == 0
-		      || DECL_INITIAL (decl) == error_mark_node))))
-      || !MEM_P (DECL_RTL (decl)))
+		      || DECL_INITIAL (decl) == error_mark_node)))))
     return;
 
   /* We win when global object is found, but it is useful to know about weak
      symbol as well so we can produce nicer unique names.  */
   if (DECL_WEAK (decl) || DECL_ONE_ONLY (decl) || flag_shlib)
-    type = &weak_global_object_name;
+    t = &weak_global_object_name;
 
-  if (!*type)
+  if (!*t)
     {
-      const char *p;
-      const char *name;
-      rtx decl_rtl = DECL_RTL (decl);
-
-      p = targetm.strip_name_encoding (XSTR (XEXP (decl_rtl, 0), 0));
-      name = ggc_strdup (p);
-
-      *type = name;
+      tree id = DECL_ASSEMBLER_NAME (decl);
+      ultimate_transparent_alias_target (&id);
+      *t = ggc_strdup (targetm.strip_name_encoding (IDENTIFIER_POINTER (id)));
     }
 }
 

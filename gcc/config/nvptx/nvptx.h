@@ -366,4 +366,8 @@ struct GTY(()) machine_function
 #define FUNCTION_MODE QImode
 #define HAS_INIT_SECTION 1
 
+/* The C++ front end insists to link against libstdc++ -- which we don't build.
+   Tell it to instead link against the innocuous libgcc.  */
+#define LIBSTDCXX "gcc"
+
 #endif /* GCC_NVPTX_H */

@@ -6591,7 +6591,17 @@ package body Sem_Prag is
             Set_Convention_From_Pragma (E);
 
             if Is_Type (E) then
-               Check_First_Subtype (Arg2);
+
+               --  The pragma must apply to a first subtype, but it can also
+               --  apply to a generic type in a generic formal part, in which
+               --  case it will also appear in the corresponding instance.
+
+               if Is_Generic_Type (E) or else In_Instance then
+                  null;
+               else
+                  Check_First_Subtype (Arg2);
+               end if;
+
                Set_Convention_From_Pragma (Base_Type (E));
 
                --  For access subprograms, we must set the convention on the

@@ -2805,7 +2805,9 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
 	  maybe_move_debug_stmts_to_successors (id, (basic_block) bb->aux);
 	/* Update call edge destinations.  This can not be done before loop
 	   info is updated, because we may split basic blocks.  */
-	if (id->transform_call_graph_edges == CB_CGE_DUPLICATE)
+	if (id->transform_call_graph_edges == CB_CGE_DUPLICATE
+	    && bb->index != ENTRY_BLOCK
+	    && bb->index != EXIT_BLOCK)
 	  redirect_all_calls (id, (basic_block)bb->aux);
 	((basic_block)bb->aux)->aux = NULL;
 	bb->aux = NULL;
@@ -4777,18 +4779,19 @@ static bool
 gimple_expand_calls_inline (basic_block bb, copy_body_data *id)
 {
   gimple_stmt_iterator gsi;
+  bool inlined = false;
 
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi);)
     {
       gimple stmt = gsi_stmt (gsi);
+      gsi_prev (&gsi);
 
       if (is_gimple_call (stmt)
-	  && !gimple_call_internal_p (stmt)
-	  && expand_call_inline (bb, stmt, id))
-	return true;
+	  && !gimple_call_internal_p (stmt))
+	inlined |= expand_call_inline (bb, stmt, id);
     }
 
-  return false;
+  return inlined;
 }
 
 

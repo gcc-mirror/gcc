@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -140,6 +140,7 @@ package Aspects is
       Aspect_Synchronization,
       Aspect_Test_Case,                     -- GNAT
       Aspect_Type_Invariant,
+      Aspect_Unimplemented,                 -- GNAT
       Aspect_Unsuppress,
       Aspect_Value_Size,                    -- GNAT
       Aspect_Variable_Indexing,
@@ -369,6 +370,7 @@ package Aspects is
       Aspect_Synchronization           => Name,
       Aspect_Test_Case                 => Expression,
       Aspect_Type_Invariant            => Expression,
+      Aspect_Unimplemented             => Optional_Expression,
       Aspect_Unsuppress                => Name,
       Aspect_Value_Size                => Expression,
       Aspect_Variable_Indexing         => Name,
@@ -490,6 +492,7 @@ package Aspects is
       Aspect_Test_Case                    => Name_Test_Case,
       Aspect_Type_Invariant               => Name_Type_Invariant,
       Aspect_Unchecked_Union              => Name_Unchecked_Union,
+      Aspect_Unimplemented                => Name_Unimplemented,
       Aspect_Universal_Aliasing           => Name_Universal_Aliasing,
       Aspect_Universal_Data               => Name_Universal_Data,
       Aspect_Unmodified                   => Name_Unmodified,
@@ -717,6 +720,7 @@ package Aspects is
       Aspect_SPARK_Mode                   => Never_Delay,
       Aspect_Synchronization              => Never_Delay,
       Aspect_Test_Case                    => Never_Delay,
+      Aspect_Unimplemented                => Never_Delay,
       Aspect_Warnings                     => Never_Delay,
 
       Aspect_Alignment                    => Rep_Aspect,

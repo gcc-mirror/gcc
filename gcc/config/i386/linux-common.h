@@ -53,3 +53,41 @@ along with GCC; see the file COPYING3.  If not see
 		       GNU_USER_TARGET_ENDFILE_SPEC,	 \
 		       GNU_USER_TARGET_MATHFILE_SPEC " " \
 		       ANDROID_ENDFILE_SPEC)
+
+#ifndef LIBMPX_LIBS
+#define LIBMPX_LIBS "\
+ %:include(libmpx.spec)%(link_libmpx)"
+#endif
+
+#ifndef LIBMPX_SPEC
+#if defined(HAVE_LD_STATIC_DYNAMIC)
+#define LIBMPX_SPEC "\
+%{mmpx:%{fcheck-pointer-bounds:\
+    %{static:--whole-archive -lmpx --no-whole-archive" LIBMPX_LIBS "}\
+    %{!static:%{static-libmpx:" LD_STATIC_OPTION " --whole-archive}\
+    -lmpx %{static-libmpx:--no-whole-archive " LD_DYNAMIC_OPTION \
+    LIBMPX_LIBS "}}}}"
+#else
+#define LIBMPX_SPEC "\
+%{mmpx:%{fcheck-pointer-bounds:-lmpx" LIBMPX_LIBS "}}"
+#endif
+#endif
+
+#ifndef LIBMPXWRAPPERS_SPEC
+#if defined(HAVE_LD_STATIC_DYNAMIC)
+#define LIBMPXWRAPPERS_SPEC "\
+%{mmpx:%{fcheck-pointer-bounds:%{!fno-chkp-use-wrappers:\
+    %{static:-lmpxwrappers}\
+    %{!static:%{static-libmpxwrappers:" LD_STATIC_OPTION " --whole-archive}\
+    -lmpxwrappers %{static-libmpxwrappers:--no-whole-archive "\
+    LD_DYNAMIC_OPTION "}}}}}"
+#else
+#define LIBMPXWRAPPERS_SPEC "\
+%{mmpx:%{fcheck-pointer-bounds:{!fno-chkp-use-wrappers:-lmpxwrappers}}}"
+#endif
+#endif
+
+#ifndef CHKP_SPEC
+#define CHKP_SPEC "\
+%{!nostdlib:%{!nodefaultlibs:" LIBMPX_SPEC LIBMPXWRAPPERS_SPEC "}}"
+#endif

@@ -1,3 +1,26 @@
+2015-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parse_init): Don't call xstrdup on get_identifier
+	argument.
+
+2015-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/65120
+	* c-typeck.c (parser_build_binary_op): Check for tcc_comparison
+	before preparing arguments to warn_logical_not_parentheses.
+
+2015-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/65120
+	* c-typeck.c (parser_build_binary_op): Don't warn for
+	!!x == y or !b == y where b is _Bool.
+
+2015-03-09  Marek Polacek  <polacek@redhat.com>
+
+	* c-convert.c (convert): Make use of do_ubsan_in_current_function.
+	* c-decl.c (grokdeclarator): Likewise.
+	* c-typeck.c (build_binary_op): Likewise.
+
 2015-02-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c/65228

@@ -236,6 +236,54 @@ variables:
       ./jit-hello-world
   hello world
 
+Packaging notes
+---------------
+The configure-time option :option:`--enable-host-shared` is needed when
+building the jit in order to get position-independent code.  This will
+slow down the regular compiler by a few percent.  Hence when packaging gcc
+with libgccjit, please configure and build twice:
+
+  * once without :option:`--enable-host-shared` for most languages, and
+
+  * once with :option:`--enable-host-shared` for the jit
+
+For example:
+
+.. code-block:: bash
+
+  # Configure and build with --enable-host-shared
+  # for the jit:
+  mkdir configuration-for-jit
+  pushd configuration-for-jit
+  $(SRCDIR)/configure \
+    --enable-host-shared \
+    --enable-languages=jit \
+    --prefix=$(DESTDIR)
+  make
+  popd
+
+  # Configure and build *without* --enable-host-shared
+  # for maximum speed:
+  mkdir standard-configuration
+  pushd standard-configuration
+  $(SRCDIR)/configure \
+    --enable-languages=all \
+    --prefix=$(DESTDIR)
+  make
+  popd
+
+  # Both of the above are configured to install to $(DESTDIR)
+  # Install the configuration with --enable-host-shared first
+  # *then* the one without, so that the faster build
+  # of "cc1" et al overwrites the slower build.
+  pushd configuration-for-jit
+  make install
+  popd
+
+  pushd standard-configuration
+  make install
+  popd
+
 Overview of code structure
 --------------------------
 

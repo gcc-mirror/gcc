@@ -1,3 +1,8 @@
+2015-03-12  Ian Lance Taylor  <iant@google.com>
+
+	* Makefile.am (GOLINK): Add GOCFLAGS.
+	* Makefile.in: Rebuild.
+
 2015-01-23  Ian Lance Taylor  <iant@google.com>
 
 	PR go/64738

@@ -353,11 +353,6 @@ private:
      corresponds to TARGET.  */
   bool bb_dict_test (vec<int> *bb_dict, int source, int target);
 
-  /* Iterates all tree types in T1 and T2 and returns true if all types
-     are compatible. If COMPARE_POLYMORPHIC is set to true,
-     more strict comparison is executed.  */
-  bool compare_type_list (tree t1, tree t2, bool compare_polymorphic);
-
   /* If cgraph edges E1 and E2 are indirect calls, verify that
      ICF flags are the same.  */
   bool compare_edge_flags (cgraph_edge *e1, cgraph_edge *e2);
@@ -415,15 +410,8 @@ public:
   static sem_variable *parse (varpool_node *node, bitmap_obstack *stack);
 
 private:
-  /* Iterates though a constructor and identifies tree references
-     we are interested in semantic function equality.  */
-  void parse_tree_refs (tree t);
-
   /* Compares trees T1 and T2 for semantic equality.  */
   static bool equals (tree t1, tree t2);
-
-  /* Compare that symbol sections are either NULL or have same name.  */
-  bool compare_sections (sem_variable *alias);
 }; // class sem_variable
 
 class sem_item_optimizer;

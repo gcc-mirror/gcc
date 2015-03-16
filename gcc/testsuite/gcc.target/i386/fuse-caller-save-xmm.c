@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target nonpic } */
 /* { dg-options "-O2 -msse2 -mno-avx -fipa-ra -fomit-frame-pointer" } */
 
 typedef double v2df __attribute__((vector_size (16)));

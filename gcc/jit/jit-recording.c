@@ -77,8 +77,9 @@ dump::~dump ()
 void
 dump::write (const char *fmt, ...)
 {
+  int len;
   va_list ap;
-  char *buf = NULL;
+  char *buf;
 
   /* If there was an error opening the file, we've already reported it.
      Don't attempt further work.  */
@@ -86,10 +87,10 @@ dump::write (const char *fmt, ...)
     return;
 
   va_start (ap, fmt);
-  vasprintf (&buf, fmt, ap);
+  len = vasprintf (&buf, fmt, ap);
   va_end (ap);
 
-  if (!buf)
+  if (buf == NULL || len < 0)
     {
       m_ctxt.add_error (NULL, "malloc failure writing to dumpfile %s",
 			m_filename);
@@ -1231,22 +1232,23 @@ recording::context::add_error (location *loc, const char *fmt, ...)
 void
 recording::context::add_error_va (location *loc, const char *fmt, va_list ap)
 {
+  int len;
   char *malloced_msg;
   const char *errmsg;
   bool has_ownership;
 
   JIT_LOG_SCOPE (get_logger ());
 
-  vasprintf (&malloced_msg, fmt, ap);
-  if (malloced_msg)
-    {
-      errmsg = malloced_msg;
-      has_ownership = true;
-    }
-  else
+  len = vasprintf (&malloced_msg, fmt, ap);
+  if (malloced_msg == NULL || len < 0)
     {
       errmsg = "out of memory generating error message";
       has_ownership = false;
+    }
+  else
+    {
+      errmsg = malloced_msg;
+      has_ownership = true;
     }
   if (get_logger ())
     get_logger ()->log ("error %i: %s", m_error_count, errmsg);
@@ -1709,15 +1711,16 @@ recording::string::~string ()
 recording::string *
 recording::string::from_printf (context *ctxt, const char *fmt, ...)
 {
+  int len;
   va_list ap;
-  char *buf = NULL;
+  char *buf;
   recording::string *result;
 
   va_start (ap, fmt);
-  vasprintf (&buf, fmt, ap);
+  len = vasprintf (&buf, fmt, ap);
   va_end (ap);
 
-  if (!buf)
+  if (buf == NULL || len < 0)
     {
       ctxt->add_error (NULL, "malloc failure");
       return NULL;

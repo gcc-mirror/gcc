@@ -1703,7 +1703,8 @@ gimple_can_merge_blocks_p (basic_block a, basic_block b)
   if (!single_pred_p (b))
     return false;
 
-  if (b == EXIT_BLOCK_PTR_FOR_FN (cfun))
+  if (a == ENTRY_BLOCK_PTR_FOR_FN (cfun)
+      || b == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return false;
 
   /* If A ends by a statement causing exceptions or something similar, we
@@ -5683,7 +5684,6 @@ gimple_split_block (basic_block bb, void *stmt)
 {
   gimple_stmt_iterator gsi;
   gimple_stmt_iterator gsi_tgt;
-  gimple act;
   gimple_seq list;
   basic_block new_bb;
   edge e;
@@ -5697,26 +5697,16 @@ gimple_split_block (basic_block bb, void *stmt)
   FOR_EACH_EDGE (e, ei, new_bb->succs)
     e->src = new_bb;
 
-  if (stmt && gimple_code ((gimple) stmt) == GIMPLE_LABEL)
-    stmt = NULL;
-
-  /* Move everything from GSI to the new basic block.  */
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  /* Get a stmt iterator pointing to the first stmt to move.  */
+  if (!stmt || gimple_code ((gimple) stmt) == GIMPLE_LABEL)
+    gsi = gsi_after_labels (bb);
+  else
     {
-      act = gsi_stmt (gsi);
-      if (gimple_code (act) == GIMPLE_LABEL)
-	continue;
-
-      if (!stmt)
-	break;
-
-      if (stmt == act)
-	{
-	  gsi_next (&gsi);
-	  break;
-	}
+      gsi = gsi_for_stmt ((gimple) stmt);
+      gsi_next (&gsi);
     }
-
+ 
+  /* Move everything from GSI to the new basic block.  */
   if (gsi_end_p (gsi))
     return new_bb;
 
@@ -8732,10 +8722,6 @@ execute_fixup_cfg (void)
   if (count_scale != REG_BR_PROB_BASE)
     compute_function_frequency ();
 
-  /* Dump a textual representation of the flowgraph.  */
-  if (dump_file)
-    gimple_dump_cfg (dump_file, dump_flags);
-
   if (current_loops
       && (todo & TODO_cleanup_cfg))
     loops_state_set (LOOPS_NEED_FIXUP);
@@ -8748,7 +8734,7 @@ namespace {
 const pass_data pass_data_fixup_cfg =
 {
   GIMPLE_PASS, /* type */
-  "*free_cfg_annotations", /* name */
+  "fixup_cfg", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */

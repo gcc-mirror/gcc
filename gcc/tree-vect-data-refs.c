@@ -758,12 +758,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 	  && TREE_CODE (TREE_OPERAND (base, 0)) == ADDR_EXPR)
 	base = TREE_OPERAND (TREE_OPERAND (base, 0), 0);
 
-      /* Do not change the alignment of global variables here if
-	 flag_section_anchors is enabled as we already generated
-	 RTL for other functions.  Most global variables should
-	 have been aligned during the IPA increase_alignment pass.  */
-      if (!vect_can_force_dr_alignment_p (base, TYPE_ALIGN (vectype))
-	  || (TREE_STATIC (base) && flag_section_anchors))
+      if (!vect_can_force_dr_alignment_p (base, TYPE_ALIGN (vectype)))
 	{
 	  if (dump_enabled_p ())
 	    {

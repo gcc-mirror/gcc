@@ -408,6 +408,13 @@ begin
 
          --  Cleanup processing after completing main analysis
 
+         --  Turn off unnesting of subprograms mode. This is not right
+         --  with respect to instantiations. What needs to happen is that
+         --  we do the unnesting AFTER the call to Instantiate_Bodies. We
+         --  will take care of that later ???
+
+         Opt.Unnest_Subprogram_Mode := False;
+
          --  Comment needed for ASIS mode test and GNATprove mode test???
 
          if Operating_Mode = Generate_Code

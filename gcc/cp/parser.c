@@ -8270,8 +8270,23 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	c_inhibit_evaluation_warnings -= current.lhs == truthvalue_true_node;
 
       if (warn_logical_not_paren
-	  && current.lhs_type == TRUTH_NOT_EXPR)
-	warn_logical_not_parentheses (current.loc, current.tree_type, rhs);
+	  && TREE_CODE_CLASS (current.tree_type) == tcc_comparison
+	  && current.lhs_type == TRUTH_NOT_EXPR
+	  /* Avoid warning for !!x == y.  */
+	  && (TREE_CODE (current.lhs) != NE_EXPR
+	      || !integer_zerop (TREE_OPERAND (current.lhs, 1)))
+	  && (TREE_CODE (current.lhs) != TRUTH_NOT_EXPR
+	      || (TREE_CODE (TREE_OPERAND (current.lhs, 0)) != TRUTH_NOT_EXPR
+		  /* Avoid warning for !b == y where b is boolean.  */
+		  && (TREE_TYPE (TREE_OPERAND (current.lhs, 0)) == NULL_TREE
+		      || (TREE_CODE (TREE_TYPE (TREE_OPERAND (current.lhs, 0)))
+			  != BOOLEAN_TYPE))))
+	  /* Avoid warning for !!b == y where b is boolean.  */
+	  && (!DECL_P (current.lhs)
+	      || TREE_TYPE (current.lhs) == NULL_TREE
+	      || TREE_CODE (TREE_TYPE (current.lhs)) != BOOLEAN_TYPE))
+	warn_logical_not_parentheses (current.loc, current.tree_type,
+				      maybe_constant_value (rhs));
 
       overload = NULL;
       /* ??? Currently we pass lhs_type == ERROR_MARK and rhs_type ==
@@ -18299,7 +18314,9 @@ parsing_nsdmi (void)
 {
   /* We recognize NSDMI context by the context-less 'this' pointer set up
      by the function above.  */
-  if (current_class_ptr && DECL_CONTEXT (current_class_ptr) == NULL_TREE)
+  if (current_class_ptr
+      && TREE_CODE (current_class_ptr) == PARM_DECL
+      && DECL_CONTEXT (current_class_ptr) == NULL_TREE)
     return true;
   return false;
 }

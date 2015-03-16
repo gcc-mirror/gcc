@@ -1335,6 +1335,12 @@ package body Inline is
      (Spec_Id : Entity_Id;
       Body_Id : Entity_Id) return Boolean
    is
+      function Has_Formal_With_Discriminant_Dependent_Fields
+        (Id : Entity_Id) return Boolean;
+      --  Returns true if the subprogram has at least one formal parameters of
+      --  an unconstrained record type with per-object constraints on component
+      --  types.
+
       function Has_Some_Contract (Id : Entity_Id) return Boolean;
       --  Returns True if subprogram Id has any contract (Pre, Post, Global,
       --  Depends, etc.)
@@ -1350,6 +1356,74 @@ package body Inline is
       function Is_Expression_Function (Id : Entity_Id) return Boolean;
       --  Returns True if subprogram Id was defined originally as an expression
       --  function.
+
+      ---------------------------------------------------
+      -- Has_Formal_With_Discriminant_Dependent_Fields --
+      ---------------------------------------------------
+
+      function Has_Formal_With_Discriminant_Dependent_Fields
+        (Id : Entity_Id) return Boolean is
+
+         function Has_Discriminant_Dependent_Component
+           (Typ : Entity_Id) return Boolean;
+         --  Determine whether unconstrained record type Typ has at least
+         --  one component that depends on a discriminant.
+
+         ------------------------------------------
+         -- Has_Discriminant_Dependent_Component --
+         ------------------------------------------
+
+         function Has_Discriminant_Dependent_Component
+           (Typ : Entity_Id) return Boolean
+         is
+            Comp : Entity_Id;
+
+         begin
+            --  Inspect all components of the record type looking for one
+            --  that depends on a discriminant.
+
+            Comp := First_Component (Typ);
+            while Present (Comp) loop
+               if Has_Discriminant_Dependent_Constraint (Comp) then
+                  return True;
+               end if;
+
+               Next_Component (Comp);
+            end loop;
+
+            return False;
+         end Has_Discriminant_Dependent_Component;
+
+         --  Local variables
+
+         Subp_Id    : constant Entity_Id := Ultimate_Alias (Id);
+         Formal     : Entity_Id;
+         Formal_Typ : Entity_Id;
+
+         --  Start of processing for
+         --  Has_Formal_With_Discriminant_Dependent_Component
+
+      begin
+         --  Inspect all parameters of the subprogram looking for a formal
+         --  of an unconstrained record type with at least one discriminant
+         --  dependent component.
+
+         Formal := First_Formal (Subp_Id);
+         while Present (Formal) loop
+            Formal_Typ := Etype (Formal);
+
+            if Is_Record_Type (Formal_Typ)
+              and then not Is_Constrained (Formal_Typ)
+              and then Has_Discriminant_Dependent_Component (Formal_Typ)
+            then
+               return True;
+            end if;
+
+            Next_Formal (Formal);
+         end loop;
+
+         return False;
+      end Has_Formal_With_Discriminant_Dependent_Fields;
 
       -----------------------
       -- Has_Some_Contract --
@@ -1497,9 +1571,18 @@ package body Inline is
       elsif Instantiation_Location (Sloc (Id)) /= No_Location then
          return False;
 
-      --  Don't inline predicate functions (treated specially by GNATprove)
+      --  Do not inline predicate functions (treated specially by GNATprove)
 
       elsif Is_Predicate_Function (Id) then
+         return False;
+
+      --  Do not inline subprograms with a parameter of an unconstrained
+      --  record type if it has discrimiant dependent fields. Indeed, with
+      --  such parameters, the frontend cannot always ensure type compliance
+      --  in record component accesses (in particular with records containing
+      --  packed arrays).
+
+      elsif Has_Formal_With_Discriminant_Dependent_Fields (Id) then
          return False;
 
       --  Otherwise, this is a subprogram declared inside the private part of a

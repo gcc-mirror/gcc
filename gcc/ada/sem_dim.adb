@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,6 +27,7 @@ with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
+with Exp_Util; use Exp_Util;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -1792,9 +1793,14 @@ package body Sem_Dim is
 
    begin
       --  Aspect is an Ada 2012 feature. Note that there is no need to check
-      --  dimensions for aggregates that don't come from source.
+      --  dimensions for aggregates that don't come from source, or if we are
+      --  within an initialization procedure, whose expressions have been
+      --  checked at the point of record declaration.
 
-      if Ada_Version < Ada_2012 or else not Comes_From_Source (N) then
+      if Ada_Version < Ada_2012
+        or else not Comes_From_Source (N)
+        or else Inside_Init_Proc
+      then
          return;
       end if;
 

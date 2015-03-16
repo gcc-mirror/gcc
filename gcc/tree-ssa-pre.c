@@ -98,6 +98,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "tree-ssa-propagate.h"
 #include "ipa-utils.h"
+#include "tree-cfgcleanup.h"
 
 /* TODO:
 
@@ -3922,6 +3923,7 @@ compute_avail (void)
 
 /* Local state for the eliminate domwalk.  */
 static vec<gimple> el_to_remove;
+static vec<gimple> el_to_fixup;
 static unsigned int el_todo;
 static vec<tree> el_avail;
 static vec<tree> el_avail_stack;
@@ -4429,7 +4431,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	      /* When changing a call into a noreturn call, cfg cleanup
 		 is needed to fix up the noreturn call.  */
 	      if (!was_noreturn && gimple_call_noreturn_p (stmt))
-		el_todo |= TODO_cleanup_cfg;
+		el_to_fixup.safe_push  (stmt);
 	    }
 	  else
 	    {
@@ -4529,6 +4531,7 @@ eliminate (bool do_pre)
   need_ab_cleanup = BITMAP_ALLOC (NULL);
 
   el_to_remove.create (0);
+  el_to_fixup.create (0);
   el_todo = 0;
   el_avail.create (num_ssa_names);
   el_avail_stack.create (0);
@@ -4579,6 +4582,25 @@ eliminate (bool do_pre)
       el_todo |= TODO_cleanup_cfg;
     }
   el_to_remove.release ();
+
+  /* Fixup stmts that became noreturn calls.  This may require splitting
+     blocks and thus isn't possible during the dominator walk.  Do this
+     in reverse order so we don't inadvertedly remove a stmt we want to
+     fixup by visiting a dominating now noreturn call first.  */
+  while (!el_to_fixup.is_empty ())
+    {
+      stmt = el_to_fixup.pop ();
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Fixing up noreturn call ");
+	  print_gimple_stmt (dump_file, stmt, 0, 0);
+	}
+
+      if (fixup_noreturn_call (stmt))
+	el_todo |= TODO_cleanup_cfg;
+    }
+  el_to_fixup.release ();
 
   return el_todo;
 }

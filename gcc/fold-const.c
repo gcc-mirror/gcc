@@ -2860,7 +2860,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       case ADDR_EXPR:
 	return operand_equal_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg1, 0),
 				TREE_CONSTANT (arg0) && TREE_CONSTANT (arg1)
-				? OEP_CONSTANT_ADDRESS_OF : 0);
+				? OEP_CONSTANT_ADDRESS_OF | OEP_ADDRESS_OF : 0);
       default:
 	break;
       }
@@ -2922,7 +2922,11 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       switch (TREE_CODE (arg0))
 	{
 	case INDIRECT_REF:
-	  flags &= ~OEP_CONSTANT_ADDRESS_OF;
+	  if (!(flags & OEP_ADDRESS_OF)
+	      && (TYPE_ALIGN (TREE_TYPE (arg0))
+		  != TYPE_ALIGN (TREE_TYPE (arg1))))
+	    return 0;
+	  flags &= ~(OEP_CONSTANT_ADDRESS_OF|OEP_ADDRESS_OF);
 	  return OP_SAME (0);
 
 	case REALPART_EXPR:
@@ -2930,30 +2934,35 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	  return OP_SAME (0);
 
 	case TARGET_MEM_REF:
-	  flags &= ~OEP_CONSTANT_ADDRESS_OF;
-	  /* Require equal extra operands and then fall through to MEM_REF
-	     handling of the two common operands.  */
-	  if (!OP_SAME_WITH_NULL (2)
-	      || !OP_SAME_WITH_NULL (3)
-	      || !OP_SAME_WITH_NULL (4))
-	    return 0;
-	  /* Fallthru.  */
 	case MEM_REF:
-	  flags &= ~OEP_CONSTANT_ADDRESS_OF;
 	  /* Require equal access sizes, and similar pointer types.
 	     We can have incomplete types for array references of
 	     variable-sized arrays from the Fortran frontend
 	     though.  Also verify the types are compatible.  */
-	  return ((TYPE_SIZE (TREE_TYPE (arg0)) == TYPE_SIZE (TREE_TYPE (arg1))
+	  if (!((TYPE_SIZE (TREE_TYPE (arg0)) == TYPE_SIZE (TREE_TYPE (arg1))
 		   || (TYPE_SIZE (TREE_TYPE (arg0))
 		       && TYPE_SIZE (TREE_TYPE (arg1))
 		       && operand_equal_p (TYPE_SIZE (TREE_TYPE (arg0)),
 					   TYPE_SIZE (TREE_TYPE (arg1)), flags)))
 		  && types_compatible_p (TREE_TYPE (arg0), TREE_TYPE (arg1))
-		  && alias_ptr_types_compatible_p
-		       (TREE_TYPE (TREE_OPERAND (arg0, 1)),
-			TREE_TYPE (TREE_OPERAND (arg1, 1)))
-		  && OP_SAME (0) && OP_SAME (1));
+		  && ((flags & OEP_ADDRESS_OF)
+		      || (alias_ptr_types_compatible_p
+			    (TREE_TYPE (TREE_OPERAND (arg0, 1)),
+			     TREE_TYPE (TREE_OPERAND (arg1, 1)))
+			  && (MR_DEPENDENCE_CLIQUE (arg0)
+			      == MR_DEPENDENCE_CLIQUE (arg1))
+			  && (MR_DEPENDENCE_BASE (arg0)
+			      == MR_DEPENDENCE_BASE (arg1))
+			  && (TYPE_ALIGN (TREE_TYPE (arg0))
+			    == TYPE_ALIGN (TREE_TYPE (arg1)))))))
+	    return 0;
+	  flags &= ~(OEP_CONSTANT_ADDRESS_OF|OEP_ADDRESS_OF);
+	  return (OP_SAME (0) && OP_SAME (1)
+		  /* TARGET_MEM_REF require equal extra operands.  */
+		  && (TREE_CODE (arg0) != TARGET_MEM_REF
+		      || (OP_SAME_WITH_NULL (2)
+			  && OP_SAME_WITH_NULL (3)
+			  && OP_SAME_WITH_NULL (4))));
 
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
@@ -2962,7 +2971,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	     may have different types but same value here.  */
 	  if (!OP_SAME (0))
 	    return 0;
-	  flags &= ~OEP_CONSTANT_ADDRESS_OF;
+	  flags &= ~(OEP_CONSTANT_ADDRESS_OF|OEP_ADDRESS_OF);
 	  return ((tree_int_cst_equal (TREE_OPERAND (arg0, 1),
 				       TREE_OPERAND (arg1, 1))
 		   || OP_SAME (1))
@@ -2975,13 +2984,13 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	  if (!OP_SAME_WITH_NULL (0)
 	      || !OP_SAME (1))
 	    return 0;
-	  flags &= ~OEP_CONSTANT_ADDRESS_OF;
+	  flags &= ~(OEP_CONSTANT_ADDRESS_OF|OEP_ADDRESS_OF);
 	  return OP_SAME_WITH_NULL (2);
 
 	case BIT_FIELD_REF:
 	  if (!OP_SAME (0))
 	    return 0;
-	  flags &= ~OEP_CONSTANT_ADDRESS_OF;
+	  flags &= ~(OEP_CONSTANT_ADDRESS_OF|OEP_ADDRESS_OF);
 	  return OP_SAME (1) && OP_SAME (2);
 
 	default:
@@ -2992,6 +3001,10 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       switch (TREE_CODE (arg0))
 	{
 	case ADDR_EXPR:
+	  return operand_equal_p (TREE_OPERAND (arg0, 0),
+				  TREE_OPERAND (arg1, 0),
+				  flags | OEP_ADDRESS_OF);
+
 	case TRUTH_NOT_EXPR:
 	  return OP_SAME (0);
 

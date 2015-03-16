@@ -2996,9 +2996,22 @@ package body Exp_Util is
    -- Force_Evaluation --
    ----------------------
 
-   procedure Force_Evaluation (Exp : Node_Id; Name_Req : Boolean := False) is
+   procedure Force_Evaluation
+     (Exp           : Node_Id;
+      Name_Req      : Boolean   := False;
+      Related_Id    : Entity_Id := Empty;
+      Is_Low_Bound  : Boolean   := False;
+      Is_High_Bound : Boolean   := False)
+   is
    begin
-      Remove_Side_Effects (Exp, Name_Req, Variable_Ref => True);
+      Remove_Side_Effects
+        (Exp           => Exp,
+         Name_Req      => Name_Req,
+         Variable_Ref  => True,
+         Renaming_Req  => False,
+         Related_Id    => Related_Id,
+         Is_Low_Bound  => Is_Low_Bound,
+         Is_High_Bound => Is_High_Bound);
    end Force_Evaluation;
 
    ---------------------------------
@@ -5695,6 +5708,11 @@ package body Exp_Util is
       --  Never true for reference to a type
 
       elsif Is_Entity_Name (N) and then Is_Type (Entity (N)) then
+         return False;
+
+      --  Never true for a compile time known constant
+
+      elsif Compile_Time_Known_Value (N) then
          return False;
 
       --  True if object reference with volatile type

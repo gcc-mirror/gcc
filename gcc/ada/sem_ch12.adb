@@ -11204,6 +11204,17 @@ package body Sem_Ch12 is
               ("expect protected access type for formal &",
                Actual, Gen_T);
          end if;
+
+         --  If the formal has a specified convention (which in most cases
+         --  will be StdCall) verify that the actual has the same convention.
+
+         if Has_Convention_Pragma (A_Gen_T)
+           and then Convention (A_Gen_T) /= Convention (Act_T)
+         then
+            Error_Msg_Name_1 := Get_Convention_Name (Convention (A_Gen_T));
+            Error_Msg_NE
+              ("actual for formal & must have convention %", Actual, Gen_T);
+         end if;
       end Validate_Access_Subprogram_Instance;
 
       -----------------------------------
@@ -12454,6 +12465,14 @@ package body Sem_Ch12 is
             Set_Generic_Parent_Type (Corr_Decl, Ancestor);
             Set_Generic_Parent_Type (Decl_Node, Empty);
          end;
+      end if;
+
+      --  For a floating-point type, capture dimension info if any, because
+      --  the generated subtype declaration does not come from source and
+      --  will not process dimensions.
+
+      if Is_Floating_Point_Type (Act_T) then
+         Copy_Dimensions (Act_T, Subt);
       end if;
 
       return Decl_Nodes;

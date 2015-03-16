@@ -1,3 +1,14 @@
+2015-03-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* jit-recording.c (dump::write): Also check vasprintf return value.
+	(recording::context::add_error_va): Ditto.
+	(recording::string::from_printf): Ditto.
+
+2015-03-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/internals/index.rst (Packaging notes): New section.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
 2015-03-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/cp/intro/tutorial03.rst: Add missing arguments to

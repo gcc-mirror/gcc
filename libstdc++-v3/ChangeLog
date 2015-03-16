@@ -1,3 +1,37 @@
+2015-03-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4: Make --enable-libstdcxx-time=auto work for dragonfly.
+	* configure: Regenerate.
+
+	* include/experimental/system_error: Fix include guard.
+
+2015-03-12  Renlin Li  <renlin.li@arm.com>
+
+	* testsuite/27_io/ios_base/sync_with_stdio/1.cc: Remove xfail for
+	wrapped target.
+
+2015-03-10  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/64441
+	* include/bits/regex.h (match_results<>::size,
+	match_results<>::position, match_results<>::str,
+	match_results<>::operator[], match_results<>::prefix,
+	match_results<>::suffix, match_results<>::end,
+	match_results<>::_M_resize, match_results<>::_M_unmatched_sub,
+	match_results<>::_M_prefix, match_results<>::_M_suffix): Remove
+	global __unmatched_sub. Add unmatched submatch as part of
+	match_results.
+	* include/bits/regex.tcc (__regex_algo_impl<>, regex_replace<>,
+	regex_iterator<>::operator++): Adjust to use match_results::_M_prefix.
+	* testsuite/28_regex/match_results/out_of_range_submatches.cc:
+	New testcases.
+
+2015-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64467
+	* testsuite/28_regex/traits/char/isctype.cc: Don't test newline
+	for newlib targets. Really fix mixed line-endings this time.
+
 2015-03-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/future (future_error(error_code)): Construct base
@@ -136,7 +170,7 @@
 
 2015-02-04  Matthew Wahab  <matthew.wahab@arm.com>
 
-	PR  libstdc++/64467
+	PR libstdc++/64467
 	* testsuite/28_regex/traits/char/isctype.cc (test01):	Add newlib
 	special case for '\n'.
 	* testsuite/28_regex/traits/wchar_t/isctype.cc (test01): Likewise.

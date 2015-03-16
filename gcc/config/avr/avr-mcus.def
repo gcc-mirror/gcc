@@ -24,11 +24,10 @@
    This will regenerate / update the following source files:
 
    -  $(srcdir)/config/avr/t-multilib
-   -  $(srcdir)/config/avr/avr-tables.opt
    -  $(srcdir)/doc/avr-mmcu.texi
 
    After that, rebuild everything and check-in the new sources to the repo.
-   The device list below has to be kept in sync with AVR-LibC.
+   The device list below should be kept in sync with AVR-LibC.
 
 
    Before including this file, define a macro:
@@ -53,8 +52,7 @@
 
        N_FLASH       Number of 64 KiB flash segments, rounded up.
 
-       LIBRARY_NAME  Used by the driver to linke startup code from avr-libc
-                     as of  crt<LIBRARY_NAME>.o
+       LIBRARY_NAME  Used to define __AVR_DEV_LIB_NAME__.
 
    "avr2" must be first for the "0" default to work as intended.  */
 

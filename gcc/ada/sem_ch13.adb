@@ -1642,6 +1642,8 @@ package body Sem_Ch13 is
             --  Processing based on specific aspect
 
             case A_Id is
+               when Aspect_Unimplemented =>
+                  null; -- ??? temp for now
 
                --  No_Aspect should be impossible
 
@@ -9024,7 +9026,8 @@ package body Sem_Ch13 is
               Aspect_Refined_Post              |
               Aspect_Refined_State             |
               Aspect_SPARK_Mode                |
-              Aspect_Test_Case                 =>
+              Aspect_Test_Case                 |
+              Aspect_Unimplemented             =>
             raise Program_Error;
 
       end case;

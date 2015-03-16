@@ -21,8 +21,11 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "diagnostic.h"
 #include "tm.h"
 #endif /* IN_GEN_AVR_MMCU_TEXI */
+
+#include "avr-arch.h"
 
 /* List of all known AVR MCU architectures.
    Order as of enum avr_arch from avr.h.  */
@@ -31,7 +34,7 @@ const avr_arch_t
 avr_arch_types[] =
 {
   /* unknown device specified */
-  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x0060, 32, NULL,  "avr2"  },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x0060, 32, NULL, AVR_MMCU_DEFAULT },
   /*
     A  M  J  LM E  E  E  X  R  T  d S   S O   A
     S  U  M  PO L  L  I  M  A  I  a t   F ff  r
@@ -116,3 +119,98 @@ avr_mcu_types[] =
   { NULL, ARCH_UNKNOWN, AVR_ISA_NONE, NULL, 0, 0, 0, NULL }
 };
 
+
+
+
+#ifndef IN_GEN_AVR_MMCU_TEXI
+
+/* Copy-pastes from `gen-avr-mmcu-texi.c' follow...  */
+
+static const char*
+mcu_name[sizeof avr_mcu_types / sizeof avr_mcu_types[0]];
+
+static int
+comparator (const void *va, const void *vb)
+{
+  const char *a = *(const char* const*) va;
+  const char *b = *(const char* const*) vb;
+
+  while (*a && *b)
+    {
+      /* Make letters smaller than digits so that `atmega16a' follows
+         `atmega16' without `atmega161' etc. between them.  */
+      
+      if (ISALPHA (*a) && ISDIGIT (*b))
+        return -1;
+
+      if (ISDIGIT (*a) && ISALPHA (*b))
+        return 1;
+
+      if (*a != *b)
+        return *a - *b;
+      
+      a++;
+      b++;
+    }
+
+  return *a - *b;
+}
+
+
+static char*
+avr_archs_str (void)
+{
+  char *archs = concat ("", NULL);
+
+  // Build of core architectures' names.
+
+  for (const avr_mcu_t *mcu = avr_mcu_types; mcu->name; mcu++)
+    if (!mcu->macro)
+      archs = concat (archs, " ", avr_arch_types[mcu->arch_id].name, NULL);
+
+  return archs;
+}
+
+  
+static char*
+avr_mcus_str (void)
+{
+  size_t n_mcus = 0;
+  char *mcus = concat ("", NULL);
+
+  // Build array of proper devices' names.
+
+  for (const avr_mcu_t *mcu = avr_mcu_types; mcu->name; mcu++)
+    if (mcu->macro)
+      mcu_name[n_mcus++] = mcu->name;
+
+  // Sort MCUs so that they are displayed in the same canonical order as
+  // in doc/avr-mcus.texi.
+
+  qsort (mcu_name, n_mcus, sizeof (char*), comparator);
+
+  for (size_t i = 0; i < n_mcus; i++)
+    mcus = concat (mcus, " ", mcu_name[i], NULL);
+
+  return mcus;
+}
+
+
+void
+avr_inform_devices (void)
+{
+  char *mcus = avr_mcus_str ();
+  inform (input_location, "devices natively supported:%s", mcus);
+  free (mcus);
+}
+
+
+void
+avr_inform_core_architectures (void)
+{
+  char *archs = avr_archs_str ();
+  inform (input_location, "supported core architectures:%s", archs);
+  free (archs);
+}
+
+#endif // IN_GEN_AVR_MMCU_TEXI

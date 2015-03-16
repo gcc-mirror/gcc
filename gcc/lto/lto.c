@@ -3118,13 +3118,20 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
       fprintf (symtab->dump_file, "Before merging:\n");
       symtab_node::dump_table (symtab->dump_file);
     }
-  lto_symtab_merge_symbols ();
-  /* Removal of unreachable symbols is needed to make verify_symtab to pass;
-     we are still having duplicated comdat groups containing local statics.
-     We could also just remove them while merging.  */
-  symtab->remove_unreachable_nodes (dump_file);
+  if (!flag_ltrans)
+    {
+      lto_symtab_merge_symbols ();
+      /* Removal of unreachable symbols is needed to make verify_symtab to pass;
+	 we are still having duplicated comdat groups containing local statics.
+	 We could also just remove them while merging.  */
+      symtab->remove_unreachable_nodes (dump_file);
+    }
   ggc_collect ();
   symtab->state = IPA_SSA;
+  /* FIXME: Technically all node removals happening here are useless, because
+     WPA should not stream them.  */
+  if (flag_ltrans)
+    symtab->remove_unreachable_nodes (dump_file);
 
   timevar_pop (TV_IPA_LTO_CGRAPH_MERGE);
 

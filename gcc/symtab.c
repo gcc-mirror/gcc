@@ -1924,6 +1924,13 @@ symtab_node::can_increase_alignment_p (void)
   if (TREE_ASM_WRITTEN (target->decl))
     return false;
 
+  /* If target is already placed in an anchor, we can not touch its
+     alignment.  */
+  if (DECL_RTL_SET_P (target->decl)
+      && MEM_P (DECL_RTL (target->decl))
+      && SYMBOL_REF_HAS_BLOCK_INFO_P (XEXP (DECL_RTL (target->decl), 0)))
+    return false;
+
   /* Constant pool entries may be shared.  */
   if (DECL_IN_CONSTANT_POOL (target->decl))
     return false;

@@ -173,7 +173,7 @@ varpool_node::get_create (tree decl)
   node = varpool_node::create_empty ();
   node->decl = decl;
 
-  if ((flag_openacc || flag_openmp)
+  if ((flag_openacc || flag_openmp) && !DECL_EXTERNAL (decl)
       && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl)))
     {
       node->offloadable = 1;
@@ -195,6 +195,11 @@ void
 varpool_node::remove (void)
 {
   symtab->call_varpool_removal_hooks (this);
+  if (lto_file_data)
+    {
+      lto_free_function_in_decl_state_for_node (this);
+      lto_file_data = NULL;
+    }
 
   /* When streaming we can have multiple nodes associated with decl.  */
   if (symtab->state == LTO_STREAMING)
@@ -323,6 +328,7 @@ varpool_node::get_constructor (void)
 		 name);
 
   lto_input_variable_constructor (file_data, this, data);
+  gcc_assert (DECL_INITIAL (decl) != error_mark_node);
   lto_stats.num_function_bodies++;
   lto_free_section_data (file_data, LTO_section_function_body, name,
 			 data, len);

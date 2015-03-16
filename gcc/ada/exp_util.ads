@@ -520,15 +520,26 @@ package Exp_Util is
    --  like a potential bug ???
 
    procedure Force_Evaluation
-     (Exp      : Node_Id;
-      Name_Req : Boolean := False);
+     (Exp           : Node_Id;
+      Name_Req      : Boolean   := False;
+      Related_Id    : Entity_Id := Empty;
+      Is_Low_Bound  : Boolean   := False;
+      Is_High_Bound : Boolean   := False);
    --  Force the evaluation of the expression right away. Similar behavior
    --  to Remove_Side_Effects when Variable_Ref is set to TRUE. That is to
-   --  say, it removes the side-effects and captures the values of the
+   --  say, it removes the side effects and captures the values of the
    --  variables. Remove_Side_Effects guarantees that multiple evaluations
    --  of the same expression won't generate multiple side effects, whereas
    --  Force_Evaluation further guarantees that all evaluations will yield
    --  the same result.
+   --
+   --  Related_Id denotes the entity of the context where Expr appears. Flags
+   --  Is_Low_Bound and Is_High_Bound specify whether the expression to check
+   --  is the low or the high bound of a range. These three optional arguments
+   --  signal Remove_Side_Effects to create an external symbol of the form
+   --  Chars (Related_Id)_FIRST/_LAST. If Related_Id is set, then exactly one
+   --  of the Is_xxx_Bound flags must be set. For use of these parameters see
+   --  the warning in the body of Sem_Ch3.Process_Range_Expr_In_Decl.
 
    function Fully_Qualified_Name_String
      (E          : Entity_Id;
@@ -870,7 +881,7 @@ package Exp_Util is
    --  Is_Low_Bound and Is_High_Bound specify whether the expression to check
    --  is the low or the high bound of a range. These three optional arguments
    --  signal Remove_Side_Effects to create an external symbol of the form
-   --  Chars (Related_Id)_FIRST/_LAST. If Related_Id is set, the exactly one
+   --  Chars (Related_Id)_FIRST/_LAST. If Related_Id is set, then exactly one
    --  of the Is_xxx_Bound flags must be set. For use of these parameters see
    --  the warning in the body of Sem_Ch3.Process_Range_Expr_In_Decl.
 

@@ -4536,19 +4536,20 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
 
 	  if ((remainder | shift_mask) != 0xffffffff)
 	    {
+	      HOST_WIDE_INT new_val
+	        = ARM_SIGN_EXTEND (remainder | shift_mask);
+
 	      if (generate)
 		{
 		  rtx new_src = subtargets ? gen_reg_rtx (mode) : target;
-		  insns = arm_gen_constant (AND, mode, cond,
-					    remainder | shift_mask,
+		  insns = arm_gen_constant (AND, SImode, cond, new_val,
 					    new_src, source, subtargets, 1);
 		  source = new_src;
 		}
 	      else
 		{
 		  rtx targ = subtargets ? NULL_RTX : target;
-		  insns = arm_gen_constant (AND, mode, cond,
-					    remainder | shift_mask,
+		  insns = arm_gen_constant (AND, mode, cond, new_val,
 					    targ, source, subtargets, 0);
 		}
 	    }
@@ -4571,12 +4572,13 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
 
 	  if ((remainder | shift_mask) != 0xffffffff)
 	    {
+	      HOST_WIDE_INT new_val
+	        = ARM_SIGN_EXTEND (remainder | shift_mask);
 	      if (generate)
 		{
 		  rtx new_src = subtargets ? gen_reg_rtx (mode) : target;
 
-		  insns = arm_gen_constant (AND, mode, cond,
-					    remainder | shift_mask,
+		  insns = arm_gen_constant (AND, mode, cond, new_val,
 					    new_src, source, subtargets, 1);
 		  source = new_src;
 		}
@@ -4584,8 +4586,7 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
 		{
 		  rtx targ = subtargets ? NULL_RTX : target;
 
-		  insns = arm_gen_constant (AND, mode, cond,
-					    remainder | shift_mask,
+		  insns = arm_gen_constant (AND, mode, cond, new_val,
 					    targ, source, subtargets, 0);
 		}
 	    }

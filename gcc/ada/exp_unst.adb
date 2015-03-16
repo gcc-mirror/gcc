@@ -281,6 +281,8 @@ package body Exp_Unst is
    ----------------------------
 
    procedure Note_Uplevel_Reference (N : Node_Id; Subp : Entity_Id) is
+      Elmt : Elmt_Id;
+
    begin
       --  Nothing to do inside a generic (all processing is for instance)
 
@@ -299,6 +301,18 @@ package body Exp_Unst is
       if No (Uplevel_References (Subp)) then
          Set_Uplevel_References (Subp, New_Elmt_List);
       end if;
+
+      --  Ignore if node is already in the list. This is a bit inefficient,
+      --  but we can definitely get duplicates that cause trouble!
+
+      Elmt := First_Elmt (Uplevel_References (Subp));
+      while Present (Elmt) loop
+         if N = Node (Elmt) then
+            return;
+         else
+            Next_Elmt (Elmt);
+         end if;
+      end loop;
 
       --  Add new entry to Uplevel_References. Each entry is two elements of
       --  the list. The first is the actual reference, the second is the
@@ -322,6 +336,12 @@ package body Exp_Unst is
    -----------------------
 
    procedure Unnest_Subprogram (Subp : Entity_Id; Subp_Body : Node_Id) is
+      function Actual_Ref (N : Node_Id) return Node_Id;
+      --  This function is applied to an element in the Uplevel_References
+      --  list, and it finds the actual reference. Often this is just N itself,
+      --  but in some cases it gets rewritten, e.g. as a Type_Conversion, and
+      --  this function digs out the actual reference
+
       function AREC_String (Lev : Pos) return String;
       --  Given a level value, 1, 2, ... returns the string AREC, AREC2, ...
 
@@ -338,6 +358,36 @@ package body Exp_Unst is
       function Subp_Index (Sub : Entity_Id) return SI_Type;
       --  Given the entity for a subprogram, return corresponding Subps index
 
+      ----------------
+      -- Actual_Ref --
+      ----------------
+
+      function Actual_Ref (N : Node_Id) return Node_Id is
+      begin
+         case Nkind (N) is
+
+            --  If we have an entity reference, then this is the actual ref
+
+            when N_Has_Entity =>
+               return N;
+
+            --  For a type conversion, go get the expression
+
+            when N_Type_Conversion =>
+               return Expression (N);
+
+            --  For an explicit dereference, get the prefix
+
+            when N_Explicit_Dereference =>
+               return Prefix (N);
+
+            --  No other possibilities should exist
+
+            when others =>
+               raise Program_Error;
+         end case;
+      end Actual_Ref;
+
       -----------------
       -- AREC_String --
       -----------------
@@ -345,11 +395,9 @@ package body Exp_Unst is
       function AREC_String (Lev : Pos) return String is
       begin
          if Lev > 9 then
-            return
-              AREC_String (Lev / 10) & Character'Val (Lev mod 10 + 48);
+            return AREC_String (Lev / 10) & Character'Val (Lev mod 10 + 48);
          else
-            return
-              "AREC" & Character'Val (Lev + 48);
+            return "AREC" & Character'Val (Lev + 48);
          end if;
       end AREC_String;
 
@@ -789,6 +837,7 @@ package body Exp_Unst is
                   declare
                      Loc   : constant Source_Ptr := Sloc (STJ.Bod);
                      Elmt  : Elmt_Id;
+                     Nod   : Node_Id;
                      Ent   : Entity_Id;
                      Clist : List_Id;
                      Comp  : Entity_Id;
@@ -817,7 +866,8 @@ package body Exp_Unst is
                      if Present (STJ.Urefs) then
                         Elmt := First_Elmt (STJ.Urefs);
                         while Present (Elmt) loop
-                           Ent := Entity (Node (Elmt));
+                           Nod := Actual_Ref (Node (Elmt));
+                           Ent := Entity (Nod);
 
                            if not Uplevel_Reference_Noted (Ent) then
                               Set_Uplevel_Reference_Noted (Ent, True);
@@ -1049,19 +1099,11 @@ package body Exp_Unst is
                   Elmt := First_Elmt (STJ.Urefs);
                   while Present (Elmt) loop
 
-                     --  Skip if we have an explicit dereference. This means
-                     --  that we already did the expansion. There can be
-                     --  duplicates in ths STJ.Urefs list.
-
-                     if Nkind (Node (Elmt)) = N_Explicit_Dereference then
-                        goto Continue;
-                     end if;
-
-                     --  Otherwise, rewrite this reference
+                     --  Rewrite one reference
 
                      declare
-                        Ref : constant Node_Id := Node (Elmt);
-                        --  The uplevel reference itself
+                        Ref : constant Node_Id := Actual_Ref (Node (Elmt));
+                        --  The reference to be rewritten
 
                         Loc : constant Source_Ptr := Sloc (Ref);
                         --  Source location for the reference
@@ -1103,7 +1145,7 @@ package body Exp_Unst is
 
                         --    type Tnn is access all typ;
 
-                        Insert_Action (Ref,
+                        Insert_Action (Node (Elmt),
                           Make_Full_Type_Declaration (Loc,
                             Defining_Identifier => Tnn,
                             Type_Definition     =>
@@ -1191,7 +1233,6 @@ package body Exp_Unst is
                         Pop_Scope;
                      end;
 
-                  <<Continue>>
                      Next_Elmt (Elmt);
                      Next_Elmt (Elmt);
                   end loop;

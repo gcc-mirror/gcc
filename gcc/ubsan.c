@@ -864,6 +864,7 @@ ubsan_expand_null_ifn (gimple_stmt_iterator *gsip)
 
       /* Replace the UBSAN_NULL with a GIMPLE_COND stmt.  */
       gsi_replace (&gsi, g, false);
+      stmt = g;
     }
 
   if (check_align)
@@ -1022,11 +1023,16 @@ ubsan_expand_objsize_ifn (gimple_stmt_iterator *gsi)
 
       /* Point GSI to next logical statement.  */
       *gsi = gsi_start_bb (fallthru_bb);
+
+      /* Get rid of the UBSAN_OBJECT_SIZE call from the IR.  */
+      unlink_stmt_vdef (stmt);
+      gsi_remove (&gsi_orig, true);
+      return true;
     }
 
   /* Get rid of the UBSAN_OBJECT_SIZE call from the IR.  */
   unlink_stmt_vdef (stmt);
-  gsi_remove (&gsi_orig, true);
+  gsi_remove (gsi, true);
   return true;
 }
 

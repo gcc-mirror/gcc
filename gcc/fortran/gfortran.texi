@@ -1139,6 +1139,7 @@ might in some way or another become visible to the programmer.
 * Internal representation of LOGICAL variables::
 * Thread-safety of the runtime library::
 * Data consistency and durability::
+* Files opened without an explicit ACTION= specifier::
 @end menu
 
 
@@ -1326,6 +1327,22 @@ data. @code{fsync} will also force a flush of dirty data and metadata
 to the server. Similar to @code{open} and @code{close}, acquiring and
 releasing @code{fcntl} file locks, if the server supports them, will
 also force cache validation and flushing dirty data and metadata.
+
+
+@node Files opened without an explicit ACTION= specifier
+@section Files opened without an explicit ACTION= specifier
+@cindex open, action
+
+The Fortran standard says that if an @code{OPEN} statement is executed
+without an explicit @code{ACTION=} specifier, the default value is
+processor dependent.  GNU Fortran behaves as follows:
+
+@enumerate
+@item Attempt to open the file with @code{ACTION='READWRITE'}
+@item If that fails, try to open with @code{ACTION='READ'}
+@item If that fails, try to open with @code{ACTION='WRITE'}
+@item If that fails, generate an error
+@end enumerate
 
 
 @c ---------------------------------------------------------------------

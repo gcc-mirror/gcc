@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-libgccjit 5.0.0 (experimental 20150305), March 05, 2015
+libgccjit 5.0.0 (experimental 20150313), March 13, 2015
 
 David Malcolm
 
@@ -336,6 +336,7 @@ Internals
 * Working on the JIT library:: 
 * Running the test suite:: 
 * Environment variables:: 
+* Packaging notes:: 
 * Overview of code structure:: 
 * Design notes:: 
 
@@ -13196,6 +13197,7 @@ This is a thin wrapper around the
 * Working on the JIT library:: 
 * Running the test suite:: 
 * Environment variables:: 
+* Packaging notes:: 
 * Overview of code structure:: 
 * Design notes:: 
 
@@ -13398,7 +13400,7 @@ When running under valgrind, it's best to have configured gcc with
 @code{--enable-valgrind-annotations}, which automatically suppresses
 various known false positives.
 
-@node Environment variables,Overview of code structure,Running the test suite,Internals
+@node Environment variables,Packaging notes,Running the test suite,Internals
 @anchor{internals/index environment-variables}@anchor{198}
 @section Environment variables
 
@@ -13483,8 +13485,70 @@ hello world
 
 @noindent
 
-@node Overview of code structure,Design notes,Environment variables,Internals
-@anchor{internals/index overview-of-code-structure}@anchor{19c}
+@node Packaging notes,Overview of code structure,Environment variables,Internals
+@anchor{internals/index packaging-notes}@anchor{19c}
+@section Packaging notes
+
+
+The configure-time option @pxref{192,,--enable-host-shared} is needed when
+building the jit in order to get position-independent code.  This will
+slow down the regular compiler by a few percent.  Hence when packaging gcc
+with libgccjit, please configure and build twice:
+
+@quotation
+
+
+@itemize *
+
+@item 
+once without @pxref{192,,--enable-host-shared} for most languages, and
+
+@item 
+once with @pxref{192,,--enable-host-shared} for the jit
+@end itemize
+@end quotation
+
+For example:
+
+@example
+# Configure and build with --enable-host-shared
+# for the jit:
+mkdir configuration-for-jit
+pushd configuration-for-jit
+$(SRCDIR)/configure \
+  --enable-host-shared \
+  --enable-languages=jit \
+  --prefix=$(DESTDIR)
+make
+popd
+
+# Configure and build *without* --enable-host-shared
+# for maximum speed:
+mkdir standard-configuration
+pushd standard-configuration
+$(SRCDIR)/configure \
+  --enable-languages=all \
+  --prefix=$(DESTDIR)
+make
+popd
+
+# Both of the above are configured to install to $(DESTDIR)
+# Install the configuration with --enable-host-shared first
+# *then* the one without, so that the faster build
+# of "cc1" et al overwrites the slower build.
+pushd configuration-for-jit
+make install
+popd
+
+pushd standard-configuration
+make install
+popd
+@end example
+
+@noindent
+
+@node Overview of code structure,Design notes,Packaging notes,Internals
+@anchor{internals/index overview-of-code-structure}@anchor{19d}
 @section Overview of code structure
 
 
@@ -13948,7 +14012,7 @@ JIT: gcc::jit::logger::~logger()
 @noindent
 
 @node Design notes,,Overview of code structure,Internals
-@anchor{internals/index design-notes}@anchor{19d}
+@anchor{internals/index design-notes}@anchor{19e}
 @section Design notes
 
 
@@ -13961,7 +14025,7 @@ close as possible to the error; failing that, a good place is within
 @code{recording::context::validate ()} in jit-recording.c.
 
 @node Indices and tables,Index,Internals,Top
-@anchor{index indices-and-tables}@anchor{19e}
+@anchor{index indices-and-tables}@anchor{19f}
 @unnumbered Indices and tables
 
 

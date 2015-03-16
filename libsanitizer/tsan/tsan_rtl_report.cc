@@ -242,7 +242,8 @@ ThreadContext *IsThreadStackOrTls(uptr addr, bool *is_stack) {
 
 void ScopedReport::AddThread(int unique_tid, bool suppressable) {
 #ifndef TSAN_GO
-  AddThread(FindThreadByUidLocked(unique_tid), suppressable);
+  if (const ThreadContext *tctx = FindThreadByUidLocked(unique_tid))
+    AddThread(tctx, suppressable);
 #endif
 }
 

@@ -3921,6 +3921,31 @@ expand_debug_expr (tree exp)
       op1 = expand_debug_expr (TREE_OPERAND (exp, 1));
       if (!op1)
 	return NULL_RTX;
+      switch (TREE_CODE (exp))
+	{
+	case LSHIFT_EXPR:
+	case RSHIFT_EXPR:
+	case LROTATE_EXPR:
+	case RROTATE_EXPR:
+	case WIDEN_LSHIFT_EXPR:
+	  /* Ensure second operand isn't wider than the first one.  */
+	  inner_mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 1)));
+	  if (SCALAR_INT_MODE_P (inner_mode))
+	    {
+	      machine_mode opmode = mode;
+	      if (VECTOR_MODE_P (mode))
+		opmode = GET_MODE_INNER (mode);
+	      if (SCALAR_INT_MODE_P (opmode)
+		  && (GET_MODE_PRECISION (opmode)
+		      < GET_MODE_PRECISION (inner_mode)))
+		op1 = simplify_gen_subreg (opmode, op1, inner_mode,
+					   subreg_lowpart_offset (opmode,
+								  inner_mode));
+	    }
+	  break;
+	default:
+	  break;
+	}
       /* Fall through.  */
 
     unary:

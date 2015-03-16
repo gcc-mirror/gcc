@@ -264,6 +264,13 @@ package body Einfo is
 
    --    Import_Pragma                   Node35
 
+   --    (unused)                        Node36
+   --    (unused)                        Node37
+   --    (unused)                        Node38
+   --    (unused)                        Node39
+   --    (unused)                        Node40
+   --    (unused)                        Node41
+
    ---------------------------------------------
    -- Usage of Flags in Defining Entity Nodes --
    ---------------------------------------------
@@ -584,8 +591,8 @@ package body Einfo is
    --    Is_Static_Type                  Flag281
    --    Has_Nested_Subprogram           Flag282
    --    Uplevel_Reference_Noted         Flag283
+   --    Is_Unimplemented                Flag284
 
-   --    (unused)                        Flag284
    --    (unused)                        Flag285
    --    (unused)                        Flag286
    --    (unused)                        Flag287
@@ -2455,6 +2462,11 @@ package body Einfo is
    begin
       return Flag246 (Id);
    end Is_Underlying_Record_View;
+
+   function Is_Unimplemented (Id : E) return B is
+   begin
+      return Flag284 (Id);
+   end Is_Unimplemented;
 
    function Is_Unsigned_Type (Id : E) return B is
    begin
@@ -5397,6 +5409,11 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Record_Type);
       Set_Flag246 (Id, V);
    end Set_Is_Underlying_Record_View;
+
+   procedure Set_Is_Unimplemented (Id : E; V : B := True) is
+   begin
+      Set_Flag284 (Id, V);
+   end Set_Is_Unimplemented;
 
    procedure Set_Is_Unsigned_Type (Id : E; V : B := True) is
    begin
@@ -8767,6 +8784,7 @@ package body Einfo is
       W ("Is_True_Constant",                Flag163 (Id));
       W ("Is_Unchecked_Union",              Flag117 (Id));
       W ("Is_Underlying_Record_View",       Flag246 (Id));
+      W ("Is_Unimplemented",                Flag284 (Id));
       W ("Is_Unsigned_Type",                Flag144 (Id));
       W ("Is_Valued_Procedure",             Flag127 (Id));
       W ("Is_Visible_Formal",               Flag206 (Id));
@@ -10051,6 +10069,78 @@ package body Einfo is
             Write_Str ("Field35??");
       end case;
    end Write_Field35_Name;
+
+   ------------------------
+   -- Write_Field36_Name --
+   ------------------------
+
+   procedure Write_Field36_Name (Id : Entity_Id) is
+   begin
+      case Ekind (Id) is
+         when others                                       =>
+            Write_Str ("Field36??");
+      end case;
+   end Write_Field36_Name;
+
+   ------------------------
+   -- Write_Field37_Name --
+   ------------------------
+
+   procedure Write_Field37_Name (Id : Entity_Id) is
+   begin
+      case Ekind (Id) is
+         when others                                       =>
+            Write_Str ("Field37??");
+      end case;
+   end Write_Field37_Name;
+
+   ------------------------
+   -- Write_Field38_Name --
+   ------------------------
+
+   procedure Write_Field38_Name (Id : Entity_Id) is
+   begin
+      case Ekind (Id) is
+         when others                                       =>
+            Write_Str ("Field38??");
+      end case;
+   end Write_Field38_Name;
+
+   ------------------------
+   -- Write_Field39_Name --
+   ------------------------
+
+   procedure Write_Field39_Name (Id : Entity_Id) is
+   begin
+      case Ekind (Id) is
+         when others                                       =>
+            Write_Str ("Field39??");
+      end case;
+   end Write_Field39_Name;
+
+   ------------------------
+   -- Write_Field40_Name --
+   ------------------------
+
+   procedure Write_Field40_Name (Id : Entity_Id) is
+   begin
+      case Ekind (Id) is
+         when others                                       =>
+            Write_Str ("Field40??");
+      end case;
+   end Write_Field40_Name;
+
+   ------------------------
+   -- Write_Field41_Name --
+   ------------------------
+
+   procedure Write_Field41_Name (Id : Entity_Id) is
+   begin
+      case Ekind (Id) is
+         when others                                       =>
+            Write_Str ("Field41??");
+      end case;
+   end Write_Field41_Name;
 
    -------------------------
    -- Iterator Procedures --

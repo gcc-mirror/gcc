@@ -2439,26 +2439,25 @@ extract_bit_test_mask (tree exp, int prec, tree totallow, tree low, tree high,
 	      && TREE_CODE (exp) == PLUS_EXPR
 	      && TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST)
 	    {
+	      tree ret = TREE_OPERAND (exp, 0);
+	      STRIP_NOPS (ret);
 	      widest_int bias
 	        = wi::neg (wi::sext (wi::to_widest (TREE_OPERAND (exp, 1)),
 				     TYPE_PRECISION (TREE_TYPE (low))));
-	      tree tbias = wide_int_to_tree (TREE_TYPE (low), bias);
+	      tree tbias = wide_int_to_tree (TREE_TYPE (ret), bias);
 	      if (totallowp)
 		{
 		  *totallowp = tbias;
-		  exp = TREE_OPERAND (exp, 0);
-		  STRIP_NOPS (exp);
-		  return exp;
+		  return ret;
 		}
 	      else if (!tree_int_cst_lt (totallow, tbias))
 		return NULL_TREE;
+	      bias = wi::to_widest (tbias);
 	      bias -= wi::to_widest (totallow);
 	      if (wi::ges_p (bias, 0) && wi::lts_p (bias, prec - max))
 		{
 		  *mask = wi::lshift (*mask, bias);
-		  exp = TREE_OPERAND (exp, 0);
-		  STRIP_NOPS (exp);
-		  return exp;
+		  return ret;
 		}
 	    }
 	}

@@ -1,3 +1,26 @@
+2015-03-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* caf/single.c (caf_runtime_error): Revert 2014-11-28 changes.
+	* runtime/minimal.c (STRERR_MAXSZ): Don't define.
+	(runtime_error_at, sys_abort): Bring more in line with the
+	non-LIBGFOR_MINIMAL code.
+	(runtime_warning_at, internal_error): New functions.
+
+2015-03-11  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/65200
+	* io/open.c (new_unit): Use gf_strerror rather than hardcoding
+	error messages for different errno values.
+	* io/unix.c (regular_file2): Handle EPERM in addition to EACCES.
+
+2015-03-10  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* caf/libcaf.h (_gfortran_caf_sync_memory): New prototype.
+	* caf/single.c (_gfortran_caf_sync_memory): Implement.
+	(_gfortran_caf_sync_all, _gfortran_caf_sync_image): Add
+	__asm__ __volatile___ ("":::"memory").
+
 2015-02-10 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/57822

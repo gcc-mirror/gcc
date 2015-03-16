@@ -3026,18 +3026,23 @@ package body Freeze is
                R_Type := Full_View (R_Type);
                Set_Etype (E, R_Type);
 
-            --  If the return type is a limited view and the non-
-            --  limited view is still incomplete, the function has
-            --  to be frozen at a later time.
+            --  If the return type is a limited view and the non-limited
+            --  view is still incomplete, the function has to be frozen at a
+            --  later time. If the function is abstract there is no place at
+            --  which the full view will become available, and no code to be
+            --  generated for it, so mark type as frozen.
 
             elsif Ekind (R_Type) = E_Incomplete_Type
               and then From_Limited_With (R_Type)
-              and then
-                Ekind (Non_Limited_View (R_Type)) = E_Incomplete_Type
+              and then Ekind (Non_Limited_View (R_Type)) = E_Incomplete_Type
             then
-               Set_Is_Frozen (E, False);
-               Set_Returns_Limited_View (E);
-               return False;
+               if Is_Abstract_Subprogram (E) then
+                  null;
+               else
+                  Set_Is_Frozen (E, False);
+                  Set_Returns_Limited_View (E);
+                  return False;
+               end if;
             end if;
 
             Freeze_And_Append (R_Type, N, Result);

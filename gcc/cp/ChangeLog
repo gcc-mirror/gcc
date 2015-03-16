@@ -1,3 +1,52 @@
+2015-03-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65323
+	* decl.c (check_default_argument): Don't call
+	maybe_warn_zero_as_null_pointer_constant.
+
+2015-03-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* cp-gimplify.c (simple_empty_class_p): New.
+	* cp-gimplify.c (cp_gimplify_expr): Handle RETURN_EXPR.  Abstract
+	the code for empty class copies into simple_empty_class_p, and
+	adapt it to handle COMPOUND_EXPRs.
+
+2015-03-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65370
+	* decl.c (duplicate_decls): Call check_redeclaration_no_default_args
+	only if the location of newdecl doesn't match the location of olddecl.
+
+2015-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/65127
+	* parser.c (parsing_nsdmi): Don't return true if current_class_ptr
+	is not a PARM_DECL.
+
+2015-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65333
+	DR 1558
+	* pt.c (dependent_type_p_r): Check both class and alias template args.
+
+2015-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/65120
+	* parser.c (cp_parser_binary_expression): Check for tcc_comparison
+	before preparing arguments to warn_logical_not_parentheses.
+	Use maybe_constant_value on rhs.
+
+2015-03-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65339
+	* call.c: Don't call maybe_resolve_dummy when calling a constructor.
+
+2015-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/65120
+	* parser.c (cp_parser_binary_expression): Don't warn for
+	!!x == y or !b == y where b is bool.
+
 2015-03-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	* ptree.c (cxx_print_lambda_node): New.

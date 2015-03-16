@@ -1,3 +1,484 @@
+2015-03-16  Alan Modra  <amodra@gmail.com>
+
+	PR target/63150
+	* config/rs6000/rs6000.md (bswapdi2): Remove one scratch reg.
+	Modify Z->r bswapdi splitter to use dest in place of scratch.
+	In r->Z and Z->r bswapdi splitter rename word_high, word_low
+	to word1, word2 and rearrange logic to suit.
+	(bswapdi2_64bit): Remove early clobber on Z->r alternative.
+	(bswapdi2_ldbrx): Likewise.  Remove '??' on r->r.
+	(bswapdi2_32bit): Remove early clobber on Z->r alternative.
+	Add one '?' on r->r.  Modify Z->r splitter to avoid need for
+	early clobber.
+
+2015-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65369
+	* tree-vect-stmts.c (vectorizable_load) <case dr_explicit_realign>:
+	Set bump to vs * TYPE_SIZE_UNIT (elem_type) - 1 instead of
+	(vs - 1) * TYPE_SIZE_UNIT (elem_type).
+
+	PR tree-optimization/65418
+	* tree-ssa-reassoc.c (extract_bit_test_mask): If there
+	are casts in the first PLUS_EXPR operand, ensure tbias and
+	*totallowp are in the inner type.
+
+	PR rtl-optimization/65401
+	* combine.c (rtx_equal_for_field_assignment_p): Add widen_x
+	argument.  If true, adjust_address_nv of x with big-endian
+	correction for the mode widening to GET_MODE (y).
+	(make_field_assignment): Don't do MEM mode widening here.
+	Use MEM_P instead of GET_CODE == MEM.
+
+2015-03-13  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* varpool.c (varpool_node::get_create): Don't set 'offloadable' flag for
+	the external decls.
+
+2015-03-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/64600
+	* config/arm/arm.c (arm_gen_constant, AND case): Use
+	ARM_SIGN_EXTEND when constructing AND mask.
+
+2015-03-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* graph.c (print_graph_cfg): Make function names visible and append
+	parenthesis to it.  Also make groups of basic blocks belonging to the
+	same function visible.
+
+2015-03-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/44563
+	* tree-inline.c (gimple_expand_calls_inline): Walk BB backwards
+	to avoid quadratic behavior with inline expansion splitting blocks.
+	* tree-cfgcleanup.c (cleanup_tree_cfg_bb): Do not merge block
+	with the successor if the predecessor will be merged with it.
+	* tree-cfg.c (gimple_can_merge_blocks_p): We can't merge the
+	entry block with its successor.
+
+2015-03-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/44563
+	* tree-cfgcleanup.c (split_bb_on_noreturn_calls): Remove.
+	(cleanup_tree_cfg_1): Do not call it.
+	(execute_cleanup_cfg_post_optimizing): Fixup the CFG here.
+	(fixup_noreturn_call): Mark the stmt as control altering.
+	* tree-cfg.c (execute_fixup_cfg): Do not dump the function
+	here.
+	(pass_data_fixup_cfg): Produce a dump file.
+	* tree-ssa-dom.c: Include tree-cfgcleanup.h.
+	(need_noreturn_fixup): New global.
+	(pass_dominator::execute): Fixup queued noreturn calls.
+	(optimize_stmt): Queue calls that became noreturn for fixup.
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Likewise.
+	* tree-ssa-pre.c: Include tree-cfgcleanup.h.
+	(el_to_fixup): New global.
+	(eliminate_dom_walker::before_dom_childre): Queue calls that
+	became noreturn for fixup.
+	(eliminate): Fixup queued noreturn calls.
+	* tree-ssa-propagate.c: Include tree-cfgcleanup.h.
+	(substitute_and_fold_dom_walker): New member stmts_to_fixup.
+	(substitute_and_fold_dom_walker::before_dom_children): Queue
+	alls that became noreturn for fixup.
+	(substitute_and_fold): Fixup queued noreturn calls.
+
+2015-03-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-icf.c (sem_function::equals_wpa): Match CXX_CONSTRUCTOR_P
+	and CXX_DESTURCTOR_P. For consutrctors match ODR type of class they
+	are building; for methods check ODR type of class they belong to if
+	they may lead to a polymorphic call.
+	(sem_function::compare_polymorphic_p): Be bit smarter about testing
+	when function may lead to a polymorphic call.
+	(sem_function::compare_type_list): Remove.
+	(sem_variable::equals): Update use of compatible_types_p.
+	(sem_variable::parse_tree_refs): Remove.
+	(sem_item_optimizer::filter_removed_items): Do not filter out CXX
+	cdtor.
+	* ipa-icf-gimple.c (func_checker::compare_decl): Do polymorphic
+	matching here.
+	(func_checker::compatible_polymorphic_types_p): Break out from ...
+	(unc_checker::compatible_types_p): ... here.
+	* ipa-icf-gimple.h (func_checker::compatible_polymorphic_types_p):
+	Declare.
+	(unc_checker::compatible_types_p): Update.
+	* ipa-icf.h (compare_type_list, parse_tree_refs, compare_sections):
+	Remove.
+
+2015-03-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/65235
+	* simplify-rtx.c (simplify_binary_operation_1, VEC_SELECT case):
+	When first element of vec_concat is const_int, calculate its size
+	using second element.
+
+2015-03-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65270
+	* fold-const.c (operand_equal_p): Fix ordering of resetting
+	OEP_ADDRESS_OF and checking for it in the [TARGET_]MEM_REF case.
+
+2015-03-12  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_reorg): Move code to output nops after label
+	to s390_reorg ().
+	(s390_asm_output_function_label): Likewise.
+	* config/s390/s390.c (s390_asm_output_function_label):
+	Fix function label alignment with -mhtopatch.
+	* config/s390/s390.md ("unspecv"): New values UNSPECV_NOP_2_BYTE,
+	UNSPECV_NOP_4_BYTE and UNSPECV_NOP_6_BYTE
+	("nop_2_byte"): New define_insn.
+	("nop_4_byte"): Likewise.
+	("nop_6_byte"): Likewise.
+	* doc/extend.texi (hotpatch): hotpatch attribute doc fixes.
+	* doc/invoke.texi (-mhotpatch): -mhotpatch doc fixes.
+
+2015-03-12  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65103
+	* config/i386/i386.c (ix86_address_cost): Fix cost of a PIC
+	register.
+
+2015-03-12  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65044
+	* toplev.c (process_options): Restrict Pointer Bounds Checker
+	usage with Address Sanitizer.
+
+2015-03-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (gimple_split_block): Remove loop finding stmt
+	to split on.
+	* omp-low.c (expand_omp_taskreg): Split block before removing
+	the stmt.
+	(expand_omp_target): Likewise.
+	* ubsan.c (ubsan_expand_null_ifn): Adjust stmt if we replaced it.
+	* tree-parloops.c (create_call_for_reduction_1): Pass a proper
+	stmt to split_block.
+
+2015-03-12  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/64895
+	* lra-lives.c (check_pseudos_live_through_calls): Use
+	actual_call_used_reg_set instead of call_used_reg_set, if available.
+
+2015-03-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_node::release_body): Free function_in_decl_state.
+	(cgraph_node::remove): Likewise.
+	(cgraph_node::get_untransformed_body): Likewise.
+	* varpool.c (varpool_node::remove): Likewise.
+	(varpool_node::get_constructor): Add sanity check.
+
+2015-03-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (-fgnu89-inline): Remove discussion about
+	old GCC versions.
+	(-fabi-compat-version): Likewise.
+	(-ffriend-injection): Likewise.
+	(-Wdeclaration-after-statement): Likewise.
+	(-fomit-frame-pointer): Likewise.
+	(-ftree-coalesce-inlined-vars): Likewise.
+	(-fvisibility=): Likewise.
+	* doc/extend.texi (Typeof): Likewise.
+	(Zero Length): Likewise.
+	(Escaped Newlines): Likewise.
+	(Compound Literals): Likewise.
+	(Function Attributes): Likewise.
+	(Label Attributes): Likewise.
+	(Type Attributes): Likewise.
+	(Function Names): Likewise.
+	(Other Builtins): Likewise.
+	(Function Specific Option Pragmas): Likewise.
+	(C++ Interface): Likewise.
+
+2015-03-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/nvptx.h (LIBSTDCXX): Define to "gcc".
+
+2015-03-11  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/65388
+	* tree-ssa-tail-merge.c (same_succ_def::equal): Fix typo in comparison.
+
+2015-03-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/65296
+	* configure.ac [avr]: Check as for options -mrmw, --mlink-relax.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* doc/invoke.texi (AVR Options) [-mrmw]: Document it.
+	[-mn-flash]: Document it.
+	[__AVR_ARCH__]: Document avrtiny.
+
+	* config/avr/gen-avr-mmcu-specs.c (config.h): Include it.
+	(*asm_relax): Only define spec if HAVE_AS_AVR_MLINK_RELAX_OPTION.
+	(*asm_rmw): Only define spec if HAVE_AS_AVR_MRMW_OPTION.
+
+2015-03-11  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* doc/invoke.texi: Add missing cpu values (z196, zEC12).
+
+2015-03-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/65242
+	* config/rs6000/rs6000.c (rs6000_preferred_reload_class): Do not
+	allow reloads of PLUS in floating point/VSX registers.
+
+2015-03-11  Junmo Park  <junmoz.park@samsung.com>
+
+	* config/arm/cortex-a57.md (cortex_a57_crypto_simple): Add
+	crypto_sha256_fast.
+	(cortex_a57_crypto_complex): Add crypto_sha256_slow.
+
+2015-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65310
+	* tree-sra.c (build_ref_for_offset): Also preserve larger
+	alignment.
+
+2015-03-11  Marat Zakirov  <m.zakirov@samsung.com>
+
+	* asan.c (instrument_derefs): Disable instrumentation on asan-globals=0.
+
+2015-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65368
+	* config/i386/i386.md (bmi2_bzhi_<mode>3): Removed define_insn,
+	new define_expand.
+	(*bmi2_bzhi_<mode>3, *bmi2_bzhi_<mode>3_1): New define_insns.
+
+2015-03-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-icf.c (sem_function::equals_wpa): Move here some checks from ...
+	(sem_function::equals_wpa): ... here.
+
+2015-03-10  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/65367
+	* ubsan.c (ubsan_expand_objsize_ifn): Update GSI instead of GSI_ORIG
+	when only removing the statement.  Handle expanding UBSAN_OBJECT_SIZE
+	separately.
+
+2015-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65286
+	* config/rs6000/t-linux: For powerpc64* target set
+	MULTILIB_OSDIRNAMES instead of MULTIARCH_DIRNAME.
+
+2015-03-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/44563
+	* tree-inline.c (copy_cfg_body): Skip block mapped to entry/exit
+	for redirect_all_calls.
+
+2015-03-10  Marek Polacek  <polacek@redhat.com>
+
+	* gdbinit.in (pcfun): Define and document.
+
+2015-03-10  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* config/i386/intelmic-mkoffload.c: Include intelmic-offload.h instead
+	of libgomp-plugin.h.
+	(find_target_compiler): Support a case when the path to gcc is
+	specified in the PATH env var, so COLLECT_GCC doesn't contain a path.
+	(generate_host_descr_file): Use GOMP_DEVICE_INTEL_MIC from
+	intelmic-offload.h instead of OFFLOAD_TARGET_TYPE_INTEL_MIC from
+	libgomp-plugin.h.
+	(main): Use GCC_INSTALL_NAME as target_driver_name.
+	* config/i386/t-intelmic (CFLAGS-mkoffload.o): Add GCC_INSTALL_NAME
+	define.
+	(mkoffload.o): Remove obsolete include path and defines.
+	(mkoffload$(exeext)): Use $(LINKER) instead of $(COMPILER).
+
+2015-03-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63155
+	* tree-ssa-coalesce.h (verify_ssa_coalescing): Declare.
+	* tree-ssa-coalesce.c: Include timevar.h.
+	(attempt_coalesce): Handle graph being NULL.
+	(coalesce_partitions): Call verify_ssa_coalescing if ENABLE_CHECKING.
+	Split out abnormal coalescing to ...
+	(perform_abnormal_coalescing): ... this function.
+	(coalesce_ssa_name): Perform abnormal coalescing without computing
+	live/conflict.
+	(verify_ssa_coalescing_worker): New function.
+	(verify_ssa_coalescing): Likewise.
+
+2015-03-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/65296
+	* config.gcc (extra_options) [avr]: Remove.
+	(extra_gcc_objs) [avr]: Use driver-avr.o, avr-devices.o.
+	(tm_file) [avr]: Add avr/specs.h after avr/avr.h.
+	(tm_defines) [avr-*-rtems*]: Add WITH_RTEMS.
+
+	* config/avr/avr.opt (config/avr/avr-arch.h): Remove include.
+	(-mmcu=): Add Var and MissingArgError properties.
+	(-march=): Remove.
+	* config/avr/genmultilib.awk: Use -mmcu= instead of -march=.
+	* config/avr/t-multilib: Regenerate.
+	* config/avr/specs.h: New file.
+	* config/avr/driver-avr.c: New file.
+	* config/avr/genopt.sh: Remove file.
+	* config/avr/avr-tables.opt: Remove file.
+	* config/avr/predicates.md (avr_current_arch): Rename to avr_arch.
+	* config/avr/avr-c.c: Same.
+	* avr-arch.h: Same.
+	(avr_current_device): Remove proto.
+	* config/avr/avr.h (avr_current_arch): Rename to avr_arch.
+	(AVR_HAVE_8BIT_SP): Don't depend on avr_current_device.
+	(EXTRA_SPEC_FUNCTIONS): Define.
+	(avr_devicespecs_file): New specs function proto.
+	(DRIVER_SELF_SPECS): Use device-specs-file spec function.
+	* config/avr/avr.c (avr_current_arch): Rename to avr_arch.
+	(avr_current_device): Remove definition and usage.
+	(avr_set_core_architecture): New static function.
+	(avr_option_override): Use it.
+	* config/avr/avr-devices.c (diagnostic.h, avr-arch.h): Include them.
+	(mcu_name): New static array.
+	(comparator, avr_archs_str, avr_mcus_str): New static functions.
+	(avr_inform_devices, avr_inform_core_architectures): New functions.
+	* config/avr/gen-avr-mmcu-specs.c (avr-arch.h, specs.h): Include.
+	(avrlibc.h) [WITH_AVRLIBC]: Include.
+	(../rtems.h, rtems.h) [WITH_RTEMS]: Include.
+	(print_mcu): Rewrite from scratch.
+	* config/avr/avrlibc.h (LIB_SPEC, LIBGCC_SPEC, STARTFILE_SPEC):
+	Forward to avr-specific specs defined in device-specs file.
+	* config/avr/t-avr (driver-avr.o): New rule.
+	(avr-devices.o): Depend on avr-arch.h.
+	(avr-mcus): No more depend on avr-tables.opt.
+	(avr-tables.opt): Remove rule.
+	(install-device-specs): Use INSTALL_DATA, not INSTALL_PROGRAM.
+
+2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* c-family/c.opt (fchkp-use-wrappers): New.
+	* ipa-chkp.c (CHKP_WRAPPER_SYMBOL_PREFIX): New.
+	(chkp_wrap_function): New.
+	(chkp_build_instrumented_fndecl): Support wrapped
+	functions.
+	* doc/invoke.texi (-fcheck-pointer-bounds): New.
+	(-fchkp-check-incomplete-type): New.
+	(-fchkp-first-field-has-own-bounds): New.
+	(-fchkp-narrow-bounds): New.
+	(-fchkp-narrow-to-innermost-array): New.
+	(-fchkp-optimize): New.
+	(-fchkp-use-fast-string-functions): New.
+	(-fchkp-use-nochk-string-functions): New.
+	(-fchkp-use-static-bounds): New.
+	(-fchkp-use-static-const-bounds): New.
+	(-fchkp-treat-zero-dynamic-size-as-infinite): New.
+	(-fchkp-check-read): New.
+	(-fchkp-check-write): New.
+	(-fchkp-store-bounds): New.
+	(-fchkp-instrument-calls): New.
+	(-fchkp-instrument-marked-only): New.
+	(-fchkp-use-wrappers): New.
+	(-static-libmpx): New.
+	(-static-libmpxwrappers): New.
+
+2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* config/i386/linux-common.h (LIBMPX_WRAPPERSSPEC): New.
+	(CHKP_SPEC): Add wrappers library.
+	* c-family/c.opt (static-libmpxwrappers): New.
+
+2015-03-10  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* config/i386/linux-common.h (LIBMPX_LIBS): New.
+	(LIBMPX_SPEC): New.
+	(CHKP_SPEC): New.
+	* gcc.c (CHKP_SPEC): New.
+	(LINK_COMMAND_SPEC): Add CHKP_SPEC.
+	* c-family/c.opt (static-libmpx): New.
+
+2015-03-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/44563
+	* cgraph.h (struct cgraph_edge_hasher): Add hash overload
+	for compare_type.
+	* cgraph.c (cgraph_edge_hasher::hash): Inline htab_hash_pointer.
+	(cgraph_update_edge_in_call_site_hash): Use cgraph_edge_hasher::hash.
+	(cgraph_add_edge_to_call_site_hash): Likewise.
+	(cgraph_node::get_edge): Likewise.
+	(cgraph_edge::set_call_stmt): Likewise.
+	(cgraph_edge::remove_caller): Likewise.
+
+2015-03-10  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.h (callee_saved_regs_size): Rename to ...
+	(callee_saved_gpr_regs_size): ... this.
+	(callee_saved_regs_first_regno): Rename to ...
+	(callee_saved_first_gpr_regno): ... this.
+	(callee_saved_regs_last_regno) Rename to ...
+	(callee_saved_last_gpr_regno): ... this.
+	* config/nds32/nds32.c (nds32_compute_stack_frame): Adjust renamed
+	variables.
+	(nds32_initial_elimination_offset): Likewise.
+	(nds32_expand_prologue): Likewise.
+	(nds32_expand_epilogue): Likewise.
+	(nds32_expand_prologue_v3push): Likewise.
+	(nds32_expand_epilogue_v3pop): Likewise.
+	* config/nds32/nds32-md-auxiliary.c (nds32_output_stack_push):
+	Adjust renamed variables.
+	(nds32_output_stack_pop): Likewise.
+
+2015-03-10  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* dominance.c (nearest_common_dominator_for_set): Fix A_Dominated_by_B
+	code in comment.
+
+2015-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/65321
+	* cfgexpand.c (expand_debug_expr): Ensure shift amount isn't wider
+	than shift mode.
+	* var-tracking.c (use_narrower_mode): Likewise.
+
+2015-03-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/65355
+	* varasm.c (notice_global_symbol): Do not produce RTL.
+	* symtab.c (symtab_node::can_increase_alignment_p): Check for section
+	anchor.
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Do not
+	check for section anchors.
+
+2015-03-10  Alan Modra  <amodra@gmail.com>
+
+	PR target/65286
+	* config.gcc (powerpc*-*-linux*): Arrange for powerpc64le-linux
+	to be single-arch by default.  Set cpu_is_64bit for powerpc64
+	given --with-cpu=native.
+	* config/rs6000/t-fprules: Do not set default MULTILIB vars.
+	* config/rs6000/t-linux (MULTIARCH_DIRNAME): Support powerpc64
+	and powerpc64le.
+	* config/rs6000/linux64.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Test
+	rs6000_isa_flags rather than TARGET_64BIT.
+
+2015-03-09  Yoshinori Sato  <ysato@users.sourceforge.jp>
+	    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/t-linux (MULTILIB_EXCEPTIONS): Define for m2a cases.
+
+2015-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/65361
+	* ipa-devirt.c (add_type_duplicate): Don't use DECL_CONTEXT
+	on a TREE_BINFO, instead use BINFO_TYPE.
+
+2015-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65270
+	* tree-core.h (enum operand_equal_flag): Add OEP_ADDRESS_OF.
+	* fold-const.c (operand_equal_p): When recursing for ADDR_EXPRs
+	operand set OEP_ADDRESS_OF.  Clear it when recursing to non-bases
+	of that.  When comparing dereferences compare alignment.
+	When comparing MEM_REFs or TARGET_MEM_REFs compare dependence info.
+
 2015-03-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline-analysis.c (check_callers): Check
@@ -5,7 +486,7 @@
 	(growth_likely_positive): Reorganize to call
 	can_remove_if_no_direct_calls_p later.
 	* cgraph.h (will_be_removed_from_program_if_no_direct_calls_p,
-	will_be_removed_from_program_if_no_direct_calls_p): Add 
+	will_be_removed_from_program_if_no_direct_calls_p): Add
 	will_inline parameter.
 	* cgraph.c (cgraph_node::can_remove_if_no_direct_calls_p,
 	cgraph_node::will_be_removed_from_program_if_no_direct_calls_p):
@@ -144,6 +625,7 @@
 
 2015-03-05  Richard Henderson  <rth@redhat.com>
 
+	PR target/65121
 	* config/arm/arm.c (arm_function_in_section_p): Fix predicate to
 	correctly check weak symbol binding.
 
@@ -373,7 +855,7 @@
 	paragraph.
 
 2015-03-03  Martin Jambor  <mjambor@suse.cz>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-sra.c (ipa_sra_check_caller_data): New type.
 	(has_caller_p): Removed.
@@ -485,7 +967,7 @@
 	* doc/invoke.texi (Options for Code Generation Conventions):
 	Fix URL of DSO paper.
 
-2015-03-02  Jan Hubicka   <hubicka@ucw.cz>
+2015-03-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65130
 	* ipa-inline.c (check_callers): Looks for recursion.
@@ -494,7 +976,7 @@
 	summary of inline clones.
 	(do_estimate_growth_1): Fix recursion check.
 
-2015-03-02  Jan Hubicka   <hubicka@ucw.cz>
+2015-03-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/64988
 	* ipa-inline-transform.c (clone_inlined_nodes): Do not dissolve
@@ -528,7 +1010,7 @@
 	(chkp_fini): Clean pass local data to avoid wrong reusage.
 
 2015-02-28  Martin Liska  <mliska@suse.cz>
-	    Jan Hubicka   <hubicka@ucw.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-icf.c (sem_variable::equals): Improve debug output;
 	get variable constructor.
@@ -567,7 +1049,7 @@
 	(sem_function): Update prototype of hash_stmt
 
 2015-02-28  Martin Liska  <mliska@suse.cz>
-	    Jan Hubicka   <hubicka@ucw.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65245
 	* ipa-icf-gimple.c (func_checker::compare_function_decl):
@@ -598,7 +1080,7 @@
 	target; also match flag_ipa_devirt.
 
 2015-03-01  Martin Liska  <mliska@suse.cz>
-	    Jan Hubicka   <hubicka@ucw.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-icf-gimple.c (func_checker::compare_variable_decl):
 	Validate variable alignment.
@@ -622,8 +1104,7 @@
 2015-02-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65236
-	* cgraphunit.c (cgraph_node::expand_thunk): Enable return slot
-	opt.
+	* cgraphunit.c (cgraph_node::expand_thunk): Enable return slot opt.
 
 2015-02-28  Xingxing Pan  <xxingpan@marvell.com>
 
@@ -939,7 +1420,7 @@
 	as split condition; force split via '#' in output pattern.
 
 2015-02-25  Richard Biener  <rguenther@suse.de>
-	Kai Tietz  <ktietz@redhat.com>
+	    Kai Tietz  <ktietz@redhat.com>
 
 	PR tree-optimization/61917
 	* tree-vect-loop.c (vectorizable_reduction): Allow
@@ -990,8 +1471,7 @@
 
 2015-02-24  DJ Delorie  <dj@redhat.com>
 
-	* config/rl78/rl78-protos.h (rl78_split_movsi): Accept a mode as
-	well.
+	* config/rl78/rl78-protos.h (rl78_split_movsi): Accept a mode as well.
 	* config/rl78/rl78-expand.md (movsf): New, same as movsi.
 	* config/rl78/rl78.c (rl78_split_movsi): Accept a mode, use it
 	instead of hardcoding SImode.
@@ -1107,8 +1587,7 @@
 2015-02-20  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/64172
-	* ira-color.c (color_pass): Prevent splitting multi-register
-	pseudos.
+	* ira-color.c (color_pass): Prevent splitting multi-register pseudos.
 
 2015-02-20  Richard Biener  <rguenther@suse.de>
 
@@ -1139,16 +1618,16 @@
 
 2015-02-20  Bernd Schmidt  <bernds@codesourcery.com>
 
-    	* cgraph.h (clone_function_name_1): Declare.
-    	* cgraphclones.c (clone_function_name_1): New function.
-    	(clone_function_name): Use it.
-    	* lto-partition.c: Include "stringpool.h".
-    	(must_not_rename, maybe_rewrite_identifier,
-    	validize_symbol_for_target): New static functions.
-    	(privatize_symbol_name): Use must_not_rename.
-    	(promote_symbol): Call validize_symbol_for_target.
-    	(lto_promote_cross_file_statics): Likewise.
-    	(lto_promote_statics_nonwpa): Likewise.
+	* cgraph.h (clone_function_name_1): Declare.
+	* cgraphclones.c (clone_function_name_1): New function.
+	(clone_function_name): Use it.
+	* lto-partition.c: Include "stringpool.h".
+	(must_not_rename, maybe_rewrite_identifier)
+	(validize_symbol_for_target): New static functions.
+	(privatize_symbol_name): Use must_not_rename.
+	(promote_symbol): Call validize_symbol_for_target.
+	(lto_promote_cross_file_statics): Likewise.
+	(lto_promote_statics_nonwpa): Likewise.
 
 2015-02-20  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -1950,7 +2429,7 @@
 	* ipa-visibility.c (update_visibility_by_resolution_info): Only
 	assert when not in lto mode.
 
-2015-02-09  Zhouyi Zhou   <yizhouzhou@ict.ac.cn>
+2015-02-09  Zhouyi Zhou  <yizhouzhou@ict.ac.cn>
 
 	* ira-color.c (setup_left_conflict_sizes_p): Simplify
 	initialization/assignment of conflict_size.
@@ -5412,7 +5891,7 @@
 	(*sub_<optab>si_multp2_uxtw, *sub_uxt<mode>_multp2)
 	(*sub_uxtsi_multp2_uxtw): Add stack pointer sources.
 
-2015-01-13  Andrew Pinski   <apinski@cavium.com>
+2015-01-13  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64.c (fusion_load_store): Check dest mode
 	instead of src mode.
@@ -5423,7 +5902,7 @@
 	* lto-streamer-out.c (tree_is_indexable): Guard for NULL
 	DECL_CONTEXT.
 
-2015-01-13  Andrew Pinski   <apinski@cavium.com>
+2015-01-13  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64.c (aarch64_operands_ok_for_ldpstp): Reject
 	volatile mems.

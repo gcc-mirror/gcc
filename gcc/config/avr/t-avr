@@ -16,8 +16,14 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+driver-avr.o: $(srcdir)/config/avr/driver-avr.c \
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+  $(srcdir)/config/avr/avr-arch.h $(TM_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
 avr-devices.o: $(srcdir)/config/avr/avr-devices.c \
   $(srcdir)/config/avr/avr-mcus.def \
+  $(srcdir)/config/avr/avr-arch.h \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
@@ -49,15 +55,9 @@ AVR_MCUS = $(srcdir)/config/avr/avr-mcus.def
 .PHONY: avr-mcus
 
 avr-mcus: $(srcdir)/config/avr/t-multilib \
-	  $(srcdir)/config/avr/avr-tables.opt \
 	  $(srcdir)/doc/avr-mmcu.texi ; @true
 
-# Make sure that -mmcu= is supported for devices from avr-mcus.def and
-# all -mmcu= values are displayed on the help screen
-$(srcdir)/config/avr/avr-tables.opt: $(srcdir)/config/avr/genopt.sh $(AVR_MCUS)
-	$(SHELL) $< $(AVR_MCUS) > $@
-
-# Make sure that -mmcu= support is in sync with -mmcu= documentation.
+# Make sure that native -mmcu= support is in sync with -mmcu= documentation.
 gen-avr-mmcu-texi$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-texi.c \
   $(AVR_MCUS) $(srcdir)/config/avr/avr-devices.c \
   $(srcdir)/config/avr/avr-arch.h
@@ -84,7 +84,7 @@ install-device-specs: s-device-specs installdirs
 	-rm -rf $(DESTDIR)$(libsubdir)/device-specs
 	mkdir $(DESTDIR)$(libsubdir)/device-specs
 	-for file in device-specs/*; do \
-	$(INSTALL_PROGRAM) $${file} $(DESTDIR)$(libsubdir)/$${file}; \
+		$(INSTALL_DATA) $${file} $(DESTDIR)$(libsubdir)/$${file}; \
 	done
 
 # Map -mmcu= to the right multilib variant
