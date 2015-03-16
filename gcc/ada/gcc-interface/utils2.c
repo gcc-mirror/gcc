@@ -2792,6 +2792,12 @@ gnat_invariant_expr (tree expr)
       expr = remove_conversions (expr, false);
     }
 
+  /* We are only interested in scalar types at the moment and, even if we may
+     have gone through padding types in the above loop, we must be back to a
+     scalar value at this point.  */
+  if (AGGREGATE_TYPE_P (TREE_TYPE (expr)))
+    return NULL_TREE;
+
   if (TREE_CONSTANT (expr))
     return fold_convert (type, expr);
 

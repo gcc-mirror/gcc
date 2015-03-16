@@ -1,3 +1,8 @@
+2015-03-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization18.ad[sb]: New test.
+	* gnat.dg/loop_optimization18_pkg.ads: New helper.
+
 2015-03-12  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/60898
