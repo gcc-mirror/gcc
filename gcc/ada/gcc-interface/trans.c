@@ -1593,8 +1593,9 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
   bool prefix_unused = false;
 
   /* ??? If this is an access attribute for a public subprogram to be used in
-     a dispatch table, do not translate its type as it's useless there and the
-     parameter types might be incomplete types coming from a limited with.  */
+     a dispatch table, do not translate its type as it's useless in this case
+     and the parameter types might be incomplete types coming from a limited
+     context in Ada 2012 (AI05-0151).  */
   if (Ekind (Etype (gnat_node)) == E_Access_Subprogram_Type
       && Is_Dispatch_Table_Entity (Etype (gnat_node))
       && Nkind (gnat_prefix) == N_Identifier
