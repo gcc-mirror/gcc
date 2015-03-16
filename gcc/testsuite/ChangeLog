@@ -1,3 +1,8 @@
+2015-03-16  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/pr53199.c: Add extra functions.  Revert
+	2014-12-05 change.
+
 2015-03-15  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/torture/pr65270-1.c: Add -fno-common to dg-options on
