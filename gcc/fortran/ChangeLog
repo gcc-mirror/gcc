@@ -1,3 +1,7 @@
+2015-03-16  Andre Vehreschild  <vehre@gmx.de>
+
+	* resolve.c: Prevent segfault on illegal input.
+
 2015-03-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/61138

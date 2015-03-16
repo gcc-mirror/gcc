@@ -2639,6 +2639,10 @@ found:
     expr->ts = sym->ts;
   expr->value.function.name = sym->name;
   expr->value.function.esym = sym;
+  /* Prevent crash when sym->ts.u.derived->components is not set due to previous
+     error(s).  */
+  if (sym->ts.type == BT_CLASS && !CLASS_DATA (sym))
+    return MATCH_ERROR;
   if (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->as)
     expr->rank = CLASS_DATA (sym)->as->rank;
   else if (sym->as != NULL)
