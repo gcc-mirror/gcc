@@ -760,27 +760,6 @@ symbol_table::output_variables (void)
   return changed;
 }
 
-/* Create a new global variable of type TYPE.  */
-tree
-add_new_static_var (tree type)
-{
-  tree new_decl;
-  varpool_node *new_node;
-
-  new_decl = create_tmp_var_raw (type);
-  DECL_NAME (new_decl) = create_tmp_var_name (NULL);
-  TREE_READONLY (new_decl) = 0;
-  TREE_STATIC (new_decl) = 1;
-  TREE_USED (new_decl) = 1;
-  DECL_CONTEXT (new_decl) = NULL_TREE;
-  DECL_ABSTRACT_P (new_decl) = false;
-  lang_hooks.dup_lang_specific_decl (new_decl);
-  new_node = varpool_node::get_create (new_decl);
-  varpool_node::finalize_decl (new_decl);
-
-  return new_node->decl;
-}
-
 /* Attempt to mark ALIAS as an alias to DECL.  Return TRUE if successful.
    Extra name aliases are output whenever DECL is output.  */
 

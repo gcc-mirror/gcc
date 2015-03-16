@@ -1,3 +1,8 @@
+2015-03-16  Marek Polacek  <polacek@redhat.com>
+
+	* cgraph.h (add_new_static_var): Remove declaration.
+	* varpool.c (add_new_static_var): Remove function.
+
 2015-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (expand_omp_target): Use auto_vec<tree, 11>

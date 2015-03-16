@@ -2717,9 +2717,6 @@ cgraph_node::has_gimple_body_p (void)
    for ((node) = symtab->first_function_with_gimple_body (); (node); \
 	(node) = symtab->next_function_with_gimple_body (node))
 
-/* Create a new static variable of type TYPE.  */
-tree add_new_static_var (tree type);
-
 /* Uniquize all constants that appear in memory.
    Each constant in memory thus far output is recorded
    in `const_desc_table'.  */
