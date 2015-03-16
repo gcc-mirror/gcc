@@ -6645,11 +6645,12 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	  && mode != TYPE_MODE (TREE_TYPE (exp)))
 	temp = convert_modes (mode, TYPE_MODE (TREE_TYPE (exp)), temp, 1);
 
-      /* If the modes of TEMP and TARGET are both BLKmode, both
-	 must be in memory and BITPOS must be aligned on a byte
-	 boundary.  If so, we simply do a block copy.  Likewise
-	 for a BLKmode-like TARGET.  */
-      if (GET_MODE (temp) == BLKmode
+      /* If TEMP is not a PARALLEL (see below) and its mode and that of TARGET
+	 are both BLKmode, both must be in memory and BITPOS must be aligned
+	 on a byte boundary.  If so, we simply do a block copy.  Likewise for
+	 a BLKmode-like TARGET.  */
+      if (GET_CODE (temp) != PARALLEL
+	  && GET_MODE (temp) == BLKmode
 	  && (GET_MODE (target) == BLKmode
 	      || (MEM_P (target)
 		  && GET_MODE_CLASS (GET_MODE (target)) == MODE_INT
