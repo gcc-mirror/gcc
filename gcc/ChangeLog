@@ -1,3 +1,9 @@
+2015-03-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-sra.c (ipa_sra_preliminary_function_checks): Use
+	DECL_ONE_ONLY to check if decl is one only.
+	* ipa-split.c (consider_split): Limit splitt of one only functions.
+
 2015-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65427

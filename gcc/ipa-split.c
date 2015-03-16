@@ -598,6 +598,31 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
       return;
     }
 
+  /* Splitting functions brings the target out of comdat group; this will
+     lead to code duplication if the function is reused by other unit.
+     Limit this duplication.  This is consistent with limit in tree-sra.c  
+     FIXME: with LTO we ought to be able to do better!  */
+  if (DECL_ONE_ONLY (current_function_decl)
+      && current->split_size >= (unsigned int) MAX_INLINE_INSNS_AUTO)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "  Refused: function is COMDAT and tail is too large\n");
+      return;
+    }
+  /* For comdat functions also reject very small tails; those will likely get
+     inlined back and we do not want to risk the duplication overhead.
+     FIXME: with LTO we ought to be able to do better!  */
+  if (DECL_ONE_ONLY (current_function_decl)
+      && current->split_size
+	 <= (unsigned int) PARAM_VALUE (PARAM_EARLY_INLINING_INSNS) / 2)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "  Refused: function is COMDAT and tail is too small\n");
+      return;
+    }
+
   /* FIXME: we currently can pass only SSA function parameters to the split
      arguments.  Once parm_adjustment infrastructure is supported by cloning,
      we can pass more than that.  */
