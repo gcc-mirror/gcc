@@ -1,3 +1,8 @@
+2015-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65061
+	* parser.c (cp_parser_template_name): Call strip_using_decl.
+
 2015-03-16  Marek Polacek  <polacek@redhat.com>
 
 	DR 1688

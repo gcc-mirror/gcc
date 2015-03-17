@@ -14051,6 +14051,8 @@ cp_parser_template_name (cp_parser* parser,
 				/*ambiguous_decls=*/NULL,
 				token->location);
 
+  decl = strip_using_decl (decl);
+
   /* If DECL is a template, then the name was a template-name.  */
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
