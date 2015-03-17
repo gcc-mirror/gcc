@@ -5,6 +5,13 @@
 	* testsuite/18_support/nested_exception/throw_with_nested.cc: Test
 	final class.
 
+	* testsuite/30_threads/shared_lock/modifiers/1.cc: Remove name of
+	unused exception variable.
+	* testsuite/30_threads/unique_lock/modifiers/1.cc: Likewise.
+	* testsuite/30_threads/shared_lock/modifiers/2.cc: Remove duplicate
+	test.
+	* testsuite/30_threads/unique_lock/modifiers/2.cc: Likewise.
+
 2015-03-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4: Make --enable-libstdcxx-time=auto work for dragonfly.
