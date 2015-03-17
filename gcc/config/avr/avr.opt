@@ -94,3 +94,7 @@ Warn if the address space of an address is changed.
 mfract-convert-truncate
 Target Report Mask(FRACT_CONV_TRUNC)
 Allow to use truncation instead of rounding towards 0 for fractional int types
+
+nodevicelib
+Driver Target Report RejectNegative
+Do not link against the device-specific library libdev.a

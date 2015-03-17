@@ -1,3 +1,22 @@
+2015-03-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/65296
+	* config/avr/avr.opt (-nodevicelib): New option.
+	* doc/invoke.texi (AVR Options): Document it.
+	* config/avr/avrlibc.h (LIB_SPEC, LIBGCC_SPEC) [avr1]: Don't link
+	libgcc.a, libc.a, libm.a.
+	* config/avr/specs.h: Same.
+	* config/avr/gen-avr-mmcu-specs.c (print_mcu): Don't print specs
+	which don't (directly) depend on the device.  Print more help.
+	(*avrlibc_devicelib) [-nodevicelib]: Don't link libdev.a.
+	(*cpp): Don't define __AVR_DEV_LIB_NAME__.
+	* config/avr/driver-avr.c: Remove -nodevicelib from option list in
+	case of an error.
+	(avr_devicespecs_file): Use suffix "%s" instead of absolute path
+	for specs file name.
+	* config/avr/avr-arch.h (avr_mcu_t) [.library_name]: Remove.
+	* config/avr/avr-mcus.def: Adjust initializers and comments.
+
 2015-03-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-sra.c (ipa_sra_preliminary_function_checks): Use
