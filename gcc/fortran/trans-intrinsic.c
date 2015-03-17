@@ -2671,21 +2671,12 @@ conv_intrinsic_system_clock (gfc_code *code)
   stmtblock_t block;
   gfc_se count_se, count_rate_se, count_max_se;
   tree arg1 = NULL_TREE, arg2 = NULL_TREE, arg3 = NULL_TREE;
-  tree type, tmp;
-  int kind;
+  tree tmp;
+  int least;
 
   gfc_expr *count = code->ext.actual->expr;
   gfc_expr *count_rate = code->ext.actual->next->expr;
   gfc_expr *count_max = code->ext.actual->next->next->expr;
-
-  /* The INTEGER(8) version has higher precision, it is used if both COUNT
-     and COUNT_MAX can hold 64-bit values, or are absent.  */
-  if ((!count || count->ts.kind >= 8)
-      && (!count_max || count_max->ts.kind >= 8))
-    kind = 8;
-  else
-    kind = gfc_default_integer_kind;
-  type = gfc_get_int_type (kind);
 
   /* Evaluate our arguments.  */
   if (count)
@@ -2706,36 +2697,103 @@ conv_intrinsic_system_clock (gfc_code *code)
       gfc_conv_expr (&count_max_se, count_max);
     }
 
-  /* Prepare temporary variables if we need them.  */
-  if (count && count->ts.kind != kind)
-    arg1 = gfc_create_var (type, "count");
-  else if (count)
-    arg1 = count_se.expr;
+  /* Find the smallest kind found of the arguments.  */
+  least = 16;
+  least = (count && count->ts.kind < least) ? count->ts.kind : least;
+  least = (count_rate && count_rate->ts.kind < least) ? count_rate->ts.kind
+						      : least;
+  least = (count_max && count_max->ts.kind < least) ? count_max->ts.kind
+						    : least;
 
-  if (count_rate && (count_rate->ts.kind != kind
-		     || count_rate->ts.type != BT_INTEGER))
-    arg2 = gfc_create_var (type, "count_rate");
-  else if (count_rate)
-    arg2 = count_rate_se.expr;
+  /* Prepare temporary variables.  */
 
-  if (count_max && count_max->ts.kind != kind)
-    arg3 = gfc_create_var (type, "count_max");
-  else if (count_max)
-    arg3 = count_max_se.expr;
+  if (count)
+    {
+      if (least >= 8)
+	arg1 = gfc_create_var (gfc_get_int_type (8), "count");
+      else if (least == 4)
+	arg1 = gfc_create_var (gfc_get_int_type (4), "count");
+      else if (count->ts.kind == 1)
+        arg1 = gfc_conv_mpz_to_tree (gfc_integer_kinds[0].pedantic_min_int,
+				     count->ts.kind);
+      else
+        arg1 = gfc_conv_mpz_to_tree (gfc_integer_kinds[1].pedantic_min_int,
+				     count->ts.kind);
+    }
+
+  if (count_rate)
+    {
+      if (least >= 8)
+	arg2 = gfc_create_var (gfc_get_int_type (8), "count_rate");
+      else if (least == 4)
+	arg2 = gfc_create_var (gfc_get_int_type (4), "count_rate");
+      else
+        arg2 = integer_zero_node;
+    }
+
+  if (count_max)
+    {
+      if (least >= 8)
+	arg3 = gfc_create_var (gfc_get_int_type (8), "count_max");
+      else if (least == 4)
+	arg3 = gfc_create_var (gfc_get_int_type (4), "count_max");
+      else
+        arg3 = integer_zero_node;
+    }
 
   /* Make the function call.  */
   gfc_init_block (&block);
-  tmp = build_call_expr_loc (input_location,
-			     kind == 4 ? gfor_fndecl_system_clock4
-				       : gfor_fndecl_system_clock8,
-                             3,
-			     arg1 ? gfc_build_addr_expr (NULL_TREE, arg1)
-				  : null_pointer_node,
-			     arg2 ? gfc_build_addr_expr (NULL_TREE, arg2)
-				  : null_pointer_node,
-			     arg3 ? gfc_build_addr_expr (NULL_TREE, arg3)
-				  : null_pointer_node);
-  gfc_add_expr_to_block (&block, tmp);
+
+if (least <= 2)
+  {
+    if (least == 1)
+      {
+	arg1 ? gfc_build_addr_expr (NULL_TREE, arg1)
+	       : null_pointer_node;
+	arg2 ? gfc_build_addr_expr (NULL_TREE, arg2)
+	       : null_pointer_node;
+	arg3 ? gfc_build_addr_expr (NULL_TREE, arg3)
+	       : null_pointer_node;
+      }
+  
+    if (least == 2)
+      {
+	arg1 ? gfc_build_addr_expr (NULL_TREE, arg1)
+	       : null_pointer_node;
+	arg2 ? gfc_build_addr_expr (NULL_TREE, arg2)
+	       : null_pointer_node;
+	arg3 ? gfc_build_addr_expr (NULL_TREE, arg3)
+	       : null_pointer_node;
+      }
+  }
+else
+  {
+    if (least == 4)
+      {
+	tmp = build_call_expr_loc (input_location,
+		gfor_fndecl_system_clock4, 3,
+		arg1 ? gfc_build_addr_expr (NULL_TREE, arg1)
+		       : null_pointer_node,
+		arg2 ? gfc_build_addr_expr (NULL_TREE, arg2)
+		       : null_pointer_node,
+		arg3 ? gfc_build_addr_expr (NULL_TREE, arg3)
+		       : null_pointer_node);
+	gfc_add_expr_to_block (&block, tmp);
+      }
+    /* Handle kind>=8, 10, or 16 arguments */
+    if (least >= 8)
+      {
+	tmp = build_call_expr_loc (input_location,
+		gfor_fndecl_system_clock8, 3,
+		arg1 ? gfc_build_addr_expr (NULL_TREE, arg1)
+		       : null_pointer_node,
+		arg2 ? gfc_build_addr_expr (NULL_TREE, arg2)
+		       : null_pointer_node,
+		arg3 ? gfc_build_addr_expr (NULL_TREE, arg3)
+		       : null_pointer_node);
+	gfc_add_expr_to_block (&block, tmp);
+      }
+  }
 
   /* And store values back if needed.  */
   if (arg1 && arg1 != count_se.expr)
