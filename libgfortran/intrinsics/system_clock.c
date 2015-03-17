@@ -109,10 +109,14 @@ gf_gettime_mono (time_t * secs, long * fracsecs, long * tck)
 
 #endif /* !__MINGW32 && !__CYGWIN__  */
 
-extern void system_clock_4 (GFC_INTEGER_4 *, GFC_INTEGER_4 *, GFC_INTEGER_4 *);
+extern void
+system_clock_4 (GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
+		GFC_INTEGER_4 *count_max);
 export_proto(system_clock_4);
 
-extern void system_clock_8 (GFC_INTEGER_8 *, GFC_INTEGER_8 *, GFC_INTEGER_8 *);
+extern void
+system_clock_8 (GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
+		GFC_INTEGER_8 *count_max);
 export_proto(system_clock_8);
 
 
@@ -122,10 +126,10 @@ export_proto(system_clock_8);
    for COUNT.  */
 
 void
-system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
+system_clock_4 (GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
 	       GFC_INTEGER_4 *count_max)
 {
-#if defined(__MINGW32__) || defined(__CYGWIN__) 
+#if defined(__MINGW32__) || defined(__CYGWIN__)
   if (count)
     {
       /* Use GetTickCount here as the resolution and range is
@@ -176,7 +180,7 @@ system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
 
 void
 system_clock_8 (GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
-		GFC_INTEGER_8 *count_max)
+		 GFC_INTEGER_8 *count_max)
 {
 #if defined(__MINGW32__) || defined(__CYGWIN__) 
   LARGE_INTEGER cnt;
