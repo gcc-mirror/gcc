@@ -1,3 +1,10 @@
+2015-03-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/nested_exception.h: Do not try to derive from final
+	classes.
+	* testsuite/18_support/nested_exception/throw_with_nested.cc: Test
+	final class.
+
 2015-03-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4: Make --enable-libstdcxx-time=auto work for dragonfly.
