@@ -1,4 +1,10 @@
 2015-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/13631
+	* config/locale/gnu/messages_members.cc (get_glibc_msg): Fix fallback
+	implementation for old glibc. Fix whitespace.
+
+2015-03-18  Jonathan Wakely  <jwakely@redhat.com>
 	    Torvald Riegel  <triegel@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_GTHREADS): Check for pthread_rwlock_t.
