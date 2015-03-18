@@ -1,5 +1,17 @@
 2015-03-18  Richard Biener  <rguenther@suse.de>
 
+	* tree-data-ref.h (struct access_matrix): Remove.
+	(AM_LOOP_NEST, AM_NB_INDUCTION_VARS, AM_PARAMETERS, AM_MATRIX,
+	AM_NB_PARAMETERS, AM_CONST_COLUMN_INDEX, AM_NB_COLUMNS,
+	AM_GET_SUBSCRIPT_ACCESS_VECTOR, AM_GET_ACCESS_MATRIX_ELEMENT): Likewise.
+	(am_vector_index_for_loop): Likewise.
+	(struct data_reference): Remove access_matrix member.
+	(DR_ACCESS_MATRIX): Remove.
+	(lambda_vector_new): Add comment.
+	(lambda_matrix_new): Use XOBNEWVEC.
+
+2015-03-18  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-loop-ch.c (pass_data_ch): Remove TODO_cleanup_cfg.
 	(pass_ch::execute): Cleanup the CFG only if we did sth.
 	* tree-vect-generic.c (pass_data_lower_vector): Remove TODO_cleanup_cfg.
