@@ -1740,8 +1740,7 @@ const pass_data pass_data_lower_vector =
   PROP_gimple_lvec, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  ( TODO_update_ssa
-    | TODO_cleanup_cfg ), /* todo_flags_finish */
+  TODO_update_ssa, /* todo_flags_finish */
 };
 
 class pass_lower_vector : public gimple_opt_pass
