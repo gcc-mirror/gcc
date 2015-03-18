@@ -1,4 +1,9 @@
-2014-03-18  Paul Thomas  <pault@gcc.gnu.org>
+2015-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59816
+	* g++.dg/cpp0x/pr59816.C: New.
+
+2015-03-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/59198
 	* gfortran.dg/proc_ptr_comp_45.f90 : Make tests fuzzy.
@@ -47,7 +52,7 @@
 	PR fortran/64432
 	* gfortran.dg/system_clock_3.f08: Adjust test.
 
-2014-03-17  Paul Thomas  <pault@gcc.gnu.org>
+2015-03-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/59198
 	* gfortran.dg/proc_ptr_comp_44.f90 : New test
