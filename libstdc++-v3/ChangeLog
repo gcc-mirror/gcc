@@ -1,3 +1,15 @@
+2015-03-18  Jonathan Wakely  <jwakely@redhat.com>
+	    Torvald Riegel  <triegel@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_GTHREADS): Check for pthread_rwlock_t.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/std/shared_mutex: Check _GLIBCXX_USE_PTHREAD_RWLOCK_T.
+	(shared_timed_mutex::_M_rwlock): Use PTHREAD_RWLOCK_INITIALIZER.
+	(shared_timed_mutex::lock_shared()): Retry on EAGAIN.
+	(shared_timed_mutex::try_lock_shared_until()): Retry on EAGAIN and
+	EDEADLK.
+
 2015-03-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/nested_exception.h: Do not try to derive from final
