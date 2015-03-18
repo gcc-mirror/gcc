@@ -2153,7 +2153,7 @@ try_create_reduction_list (loop_p loop,
    primitives.  Returns true if some loop was parallelized, false
    otherwise.  */
 
-bool
+static bool
 parallelize_loops (void)
 {
   unsigned n_threads = flag_tree_parallelize_loops;

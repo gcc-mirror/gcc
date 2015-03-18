@@ -1,3 +1,8 @@
+2015-03-18  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-parloops.c (parallelize_loops): Make static.
+	* tree-parloops.h (parallelize_loops): Remove extern declaration.
+
 2015-03-18  Andrew Stubbs  <ams@codesourcery.com>
 
 	PR middle-end/64491
