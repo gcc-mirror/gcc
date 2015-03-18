@@ -1,3 +1,23 @@
+2015-03-18  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/65432
+	* cgraph.c (cgraph_node::get_create): Remove unnecessary
+	xstrdup_for_dump wrapper.
+	* ipa-icf.c (sem_item::dump): Use symtab_node::name instead of
+	sem_item::name.
+	(sem_function::equals): Wrap symtab_node::name and symtab_node::asm_name
+	with xstrdup_for_dump.
+	(sem_variable::equals): Likewise.
+	(sem_item_optimizer::read_section): Use symtab_node::name instead of
+	sem_item::name.
+	(sem_item_optimizer::parse_funcs_and_vars): Likewise.
+	(sem_item_optimizer::merge_classes): Wrap symtab_node::name and
+	symtab_node::asm_name with xstrdup_for_dump.
+	(congruence_class::dump): Use symtab_node::name instead of
+	sem_item::name.
+	* ipa-icf.h (symtab_node::name): Remove.
+	(symtab_node::asm_name): Likewise.
+
 2015-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65450

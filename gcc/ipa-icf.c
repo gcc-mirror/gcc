@@ -239,12 +239,12 @@ sem_item::dump (void)
   if (dump_file)
     {
       fprintf (dump_file, "[%s] %s (%u) (tree:%p)\n", type == FUNC ? "func" : "var",
-	       name(), node->order, (void *) node->decl);
+	       node->name(), node->order, (void *) node->decl);
       fprintf (dump_file, "  hash: %u\n", get_hash ());
       fprintf (dump_file, "  references: ");
 
       for (unsigned i = 0; i < refs.length (); i++)
-	fprintf (dump_file, "%s%s ", refs[i]->name (),
+	fprintf (dump_file, "%s%s ", refs[i]->node->name (),
 		 i < refs.length() - 1 ? "," : "");
 
       fprintf (dump_file, "\n");
@@ -575,8 +575,13 @@ sem_function::equals (sem_item *item,
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file,
 	     "Equals called for:%s:%s (%u:%u) (%s:%s) with result: %s\n\n",
-	     name(), item->name (), node->order, item->node->order, asm_name (),
-	     item->asm_name (), eq ? "true" : "false");
+	     xstrdup_for_dump (node->name()),
+	     xstrdup_for_dump (item->node->name ()),
+	     node->order,
+	     item->node->order,
+	     xstrdup_for_dump (node->asm_name ()),
+	     xstrdup_for_dump (item->node->asm_name ()),
+	     eq ? "true" : "false");
 
   return eq;
 }
@@ -1522,8 +1527,11 @@ sem_variable::equals (sem_item *item,
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file,
 	     "Equals called for vars:%s:%s (%u:%u) (%s:%s) with result: %s\n\n",
-	     name(), item->name (), node->order, item->node->order, asm_name (),
-	     item->asm_name (), ret ? "true" : "false");
+	     xstrdup_for_dump (node->name()),
+	     xstrdup_for_dump (item->node->name ()),
+	     node->order, item->node->order,
+	     xstrdup_for_dump (node->asm_name ()),
+	     xstrdup_for_dump (item->node->asm_name ()), ret ? "true" : "false");
 
   return ret;
 }
@@ -1995,8 +2003,8 @@ sem_item_optimizer::read_section (lto_file_decl_data *file_data,
       gcc_assert (node->definition);
 
       if (dump_file)
-	fprintf (dump_file, "Symbol added:%s (tree: %p, uid:%u)\n", node->asm_name (),
-		 (void *) node->decl, node->order);
+	fprintf (dump_file, "Symbol added:%s (tree: %p, uid:%u)\n",
+		 node->asm_name (), (void *) node->decl, node->order);
 
       if (is_a<cgraph_node *> (node))
 	{
@@ -2259,7 +2267,7 @@ sem_item_optimizer::parse_funcs_and_vars (void)
 	  m_symtab_node_map.put (cnode, f);
 
 	  if (dump_file)
-	    fprintf (dump_file, "Parsed function:%s\n", f->asm_name ());
+	    fprintf (dump_file, "Parsed function:%s\n", f->node->asm_name ());
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    f->dump_to_file (dump_file);
@@ -2955,9 +2963,11 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 	    if (dump_file)
 	      {
 		fprintf (dump_file, "Semantic equality hit:%s->%s\n",
-			 source->name (), alias->name ());
+			 xstrdup_for_dump (source->node->name ()),
+			 xstrdup_for_dump (alias->node->name ()));
 		fprintf (dump_file, "Assembler symbol names:%s->%s\n",
-			 source->asm_name (), alias->asm_name ());
+			 xstrdup_for_dump (source->node->asm_name ()),
+			 xstrdup_for_dump (alias->node->asm_name ()));
 	      }
 
 	    if (lookup_attribute ("no_icf", DECL_ATTRIBUTES (alias->decl)))
@@ -2993,7 +3003,8 @@ congruence_class::dump (FILE *file, unsigned int indent) const
 
   FPUTS_SPACES (file, indent + 2, "");
   for (unsigned i = 0; i < members.length (); i++)
-    fprintf (file, "%s(%p/%u) ", members[i]->asm_name (), (void *) members[i]->decl,
+    fprintf (file, "%s(%p/%u) ", members[i]->node->asm_name (),
+	     (void *) members[i]->decl,
 	     members[i]->node->order);
 
   fprintf (file, "\n");
