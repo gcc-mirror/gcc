@@ -1,3 +1,13 @@
+2015-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65078
+	* gcc.target/i386/pr65078-1.c: New test.
+	* gcc.target/i386/pr65078-2.c: New test.
+	* gcc.target/i386/pr65078-3.c: New test.
+	* gcc.target/i386/pr65078-4.c: New test.
+	* gcc.target/i386/pr65078-5.c: New test.
+	* gcc.target/i386/pr65078-6.c: New test.
+
 2015-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65340
