@@ -1,5 +1,21 @@
 2015-03-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR c++/65046
+	* config/locale/gnu/messages_members.cc (Catalog_info, Catalogs,
+	get_catalogs): Add abi-tag.
+	* include/ext/codecvt_specializations.h (encoding_state,
+	encoding_char_traits): Likewise.
+	* src/c++11/cxx11-ios_failure.cc (io_error_category): Likewise.
+	* src/c++11/cxx11-shim_facets.cc (__any_string::operator basic_string,
+	numpunct_shim, collate_shim, time_get_shim, moneypunct_shim,
+	money_get_shim, money_put_shim, messages_shim): Likewise.
+	* src/c++11/future.cc (future_error_category::message): Likewise.
+	* src/c++11/system_error.cc (generic_error_category::message,
+	system_error_category::message): Likewise.
+	(__sso_string): Disable -Wabi-tag warnings.
+
+2015-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/13631
 	* config/locale/gnu/messages_members.cc (get_glibc_msg): Fix fallback
 	implementation for old glibc. Fix whitespace.
