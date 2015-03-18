@@ -3845,6 +3845,20 @@ vect_get_new_vect_var (tree type, enum vect_var_kind var_kind, const char *name)
   return new_vect_var;
 }
 
+/* Duplicate ptr info and set alignment/misaligment on NAME from DR.  */
+
+static void
+vect_duplicate_ssa_name_ptr_info (tree name, data_reference *dr,
+				  stmt_vec_info stmt_info)
+{
+  duplicate_ssa_name_ptr_info (name, DR_PTR_INFO (dr));
+  unsigned int align = TYPE_ALIGN_UNIT (STMT_VINFO_VECTYPE (stmt_info));
+  int misalign = DR_MISALIGNMENT (dr);
+  if (misalign == -1)
+    mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (name));
+  else
+    set_ptr_info_alignment (SSA_NAME_PTR_INFO (name), align, misalign);
+}
 
 /* Function vect_create_addr_base_for_vector_ref.
 
@@ -3964,13 +3978,9 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
   if (DR_PTR_INFO (dr)
       && TREE_CODE (addr_base) == SSA_NAME)
     {
-      duplicate_ssa_name_ptr_info (addr_base, DR_PTR_INFO (dr));
-      unsigned int align = TYPE_ALIGN_UNIT (STMT_VINFO_VECTYPE (stmt_info));
-      int misalign = DR_MISALIGNMENT (dr);
-      if (offset || byte_offset || (misalign == -1))
+      vect_duplicate_ssa_name_ptr_info (addr_base, dr, stmt_info);
+      if (offset || byte_offset)
 	mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (addr_base));
-      else
-	set_ptr_info_alignment (SSA_NAME_PTR_INFO (addr_base), align, misalign);
     }
 
   if (dump_enabled_p ())
@@ -4210,7 +4220,7 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
       aggr_ptr_init = make_ssa_name (aggr_ptr, vec_stmt);
       /* Copy the points-to information if it exists. */
       if (DR_PTR_INFO (dr))
-	duplicate_ssa_name_ptr_info (aggr_ptr_init, DR_PTR_INFO (dr));
+	vect_duplicate_ssa_name_ptr_info (aggr_ptr_init, dr, stmt_info);
       gimple_assign_set_lhs (vec_stmt, aggr_ptr_init);
       if (pe)
 	{
@@ -4253,8 +4263,8 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
       /* Copy the points-to information if it exists. */
       if (DR_PTR_INFO (dr))
 	{
-	  duplicate_ssa_name_ptr_info (indx_before_incr, DR_PTR_INFO (dr));
-	  duplicate_ssa_name_ptr_info (indx_after_incr, DR_PTR_INFO (dr));
+	  vect_duplicate_ssa_name_ptr_info (indx_before_incr, dr, stmt_info);
+	  vect_duplicate_ssa_name_ptr_info (indx_after_incr, dr, stmt_info);
 	}
       if (ptr_incr)
 	*ptr_incr = incr;
@@ -4283,8 +4293,8 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
       /* Copy the points-to information if it exists. */
       if (DR_PTR_INFO (dr))
 	{
-	  duplicate_ssa_name_ptr_info (indx_before_incr, DR_PTR_INFO (dr));
-	  duplicate_ssa_name_ptr_info (indx_after_incr, DR_PTR_INFO (dr));
+	  vect_duplicate_ssa_name_ptr_info (indx_before_incr, dr, stmt_info);
+	  vect_duplicate_ssa_name_ptr_info (indx_after_incr, dr, stmt_info);
 	}
       if (ptr_incr)
 	*ptr_incr = incr;
