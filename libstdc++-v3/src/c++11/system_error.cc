@@ -41,6 +41,7 @@ namespace
     name() const noexcept
     { return "generic"; }
 
+    _GLIBCXX_DEFAULT_ABI_TAG
     virtual string 
     message(int i) const
     {
@@ -56,6 +57,7 @@ namespace
     name() const noexcept
     { return "system"; }
 
+    _GLIBCXX_DEFAULT_ABI_TAG
     virtual string
     message(int i) const
     {
@@ -111,6 +113,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 #if _GLIBCXX_USE_DUAL_ABI
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wabi-tag"
   // Redefine __sso_string so that we can define and export its members
   // in terms of the SSO std::string.
   struct __sso_string
@@ -137,6 +141,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __sso_string(__sso_string&&) noexcept;
     __sso_string& operator=(__sso_string&&) noexcept;
   };
+#pragma GCC diagnostic pop
 
   __sso_string::__sso_string() : _M_str() { }
 

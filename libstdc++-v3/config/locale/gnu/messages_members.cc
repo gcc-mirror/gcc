@@ -46,8 +46,8 @@ namespace
 
   typedef messages_base::catalog catalog;
 
-  struct Catalog_info
-    {
+  struct _GLIBCXX_DEFAULT_ABI_TAG Catalog_info
+  {
     Catalog_info(catalog __id, const string& __domain, locale __loc)
       : _M_id(__id), _M_domain(__domain), _M_locale(__loc)
     { }
@@ -57,7 +57,7 @@ namespace
     locale _M_locale;
   };
 
-  class Catalogs
+  class _GLIBCXX_DEFAULT_ABI_TAG Catalogs
   {
   public:
     Catalogs() : _M_catalog_counter(0) { }
@@ -133,6 +133,7 @@ namespace
     std::vector<Catalog_info*> _M_infos;
   };
 
+  _GLIBCXX_DEFAULT_ABI_TAG
   Catalogs&
   get_catalogs()
   {

@@ -47,7 +47,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // This includes conversions and comparisons between various character
   // sets.  This object encapsulates data that may need to be shared between
   // char_traits, codecvt and ctype.
-  class encoding_state
+  class _GLIBCXX_DEFAULT_ABI_TAG encoding_state
   {
   public:
     // Types: 
@@ -207,7 +207,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // associated fpos<encoding_state> for the position type, all other
   // bits equivalent to the required char_traits instantiations.
   template<typename _CharT>
-    struct encoding_char_traits : public std::char_traits<_CharT>
+    struct _GLIBCXX_DEFAULT_ABI_TAG encoding_char_traits
+    : public std::char_traits<_CharT>
     {
       typedef encoding_state				state_type;
       typedef typename std::fpos<state_type>		pos_type;
