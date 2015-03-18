@@ -1,3 +1,9 @@
+2015-03-18  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/65439
+	* g++.dg/ipa/ipa-icf-4.C: Extend expected number of
+	equivalences either to 6 or 7.
+
 2015-03-18  Andrew Stubbs  <ams@codesourcery.com>
 
 	PR middle-end/64491
