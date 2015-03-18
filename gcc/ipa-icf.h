@@ -171,18 +171,6 @@ public:
   /* Add reference to a semantic TARGET.  */
   void add_reference (sem_item *target);
 
-  /* Gets symbol name of the item.  */
-  const char *name (void)
-  {
-    return node->name ();
-  }
-
-  /* Gets assembler name of the item.  */
-  const char *asm_name (void)
-  {
-    return node->asm_name ();
-  }
-
   /* Fast equality function based on knowledge known in WPA.  */
   virtual bool equals_wpa (sem_item *item,
 			   hash_map <symtab_node *, sem_item *> &ignored_nodes) = 0;
