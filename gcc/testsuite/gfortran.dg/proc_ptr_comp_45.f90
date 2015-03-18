@@ -43,7 +43,7 @@ end
   allocate (template)
   allocate (template%rng)
   template%obs1_int => cos
-  if (template%obs1_int (arg) .ne. cos (arg)) call abort
+  if (abs (template%obs1_int (arg) - cos (arg)) .gt. 1e-4) call abort
   allocate (object, source = template)
-  if (object%obs1_int (arg) .ne. cos (arg)) call abort
+  if (abs (object%obs1_int (arg) - cos (arg)) .gt. 1e-4) call abort
 end
