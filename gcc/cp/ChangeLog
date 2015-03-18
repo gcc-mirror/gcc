@@ -1,3 +1,11 @@
+2015-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65340
+	* call.c (build_over_call): Pass the tsubst_flags_t argument to
+	mark_used.
+	* decl2.c (mark_used): Inline the require_deduced_type call and
+	guard the error call.
+
 2015-03-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65061

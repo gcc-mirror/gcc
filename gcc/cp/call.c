@@ -7486,7 +7486,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     }
 
   if (!already_used
-      && !mark_used (fn))
+      && !mark_used (fn, complain))
     return error_mark_node;
 
   if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0
