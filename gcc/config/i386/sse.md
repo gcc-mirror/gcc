@@ -12805,6 +12805,65 @@
   operands[1] = adjust_address (operands[1], <ssescalarmode>mode, offs);
 })
 
+;; Turn SImode or DImode extraction from arbitrary SSE/AVX/AVX512F
+;; vector modes into vec_extract*.
+(define_split
+  [(set (match_operand:SWI48x 0 "nonimmediate_operand")
+	(match_operand:SWI48x 1 "register_operand"))]
+  "can_create_pseudo_p ()
+   && GET_CODE (operands[1]) == SUBREG
+   && REG_P (SUBREG_REG (operands[1]))
+   && (GET_MODE_CLASS (GET_MODE (SUBREG_REG (operands[1]))) == MODE_VECTOR_INT
+       || (GET_MODE_CLASS (GET_MODE (SUBREG_REG (operands[1])))
+	   == MODE_VECTOR_FLOAT))
+   && SUBREG_BYTE (operands[1]) == 0
+   && TARGET_SSE
+   && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (operands[1]))) == 16
+       || (GET_MODE_SIZE (GET_MODE (SUBREG_REG (operands[1]))) == 32
+	   && TARGET_AVX)
+       || (GET_MODE_SIZE (GET_MODE (SUBREG_REG (operands[1]))) == 64
+	   && TARGET_AVX512F))
+   && (<MODE>mode == SImode || TARGET_64BIT || MEM_P (operands[0]))"
+  [(set (match_dup 0) (vec_select:SWI48x (match_dup 1)
+					 (parallel [(const_int 0)])))]
+{
+  rtx tmp;
+  operands[1] = SUBREG_REG (operands[1]);
+  switch (GET_MODE_SIZE (GET_MODE (operands[1])))
+    {
+    case 64:
+      if (<MODE>mode == SImode)
+	{
+	  tmp = gen_reg_rtx (V8SImode);
+	  emit_insn (gen_vec_extract_lo_v16si (tmp,
+					       gen_lowpart (V16SImode,
+							    operands[1])));
+	}
+      else
+	{
+	  tmp = gen_reg_rtx (V4DImode);
+	  emit_insn (gen_vec_extract_lo_v8di (tmp,
+					      gen_lowpart (V8DImode,
+							   operands[1])));
+	}
+      operands[1] = tmp;
+      /* FALLTHRU */
+    case 32:
+      tmp = gen_reg_rtx (<ssevecmode>mode);
+      if (<MODE>mode == SImode)
+	emit_insn (gen_vec_extract_lo_v8si (tmp, gen_lowpart (V8SImode,
+							      operands[1])));
+      else
+	emit_insn (gen_vec_extract_lo_v4di (tmp, gen_lowpart (V4DImode,
+							      operands[1])));
+      operands[1] = tmp;
+      break;
+    case 16:
+      operands[1] = gen_lowpart (<ssevecmode>mode, operands[1]);
+      break;
+    }
+})
+
 (define_insn "*vec_concatv2si_sse4_1"
   [(set (match_operand:V2SI 0 "register_operand"     "=Yr,*x,x, Yr,*x,x, x, *y,*y")
 	(vec_concat:V2SI
