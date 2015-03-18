@@ -159,7 +159,7 @@ const pass_data pass_data_ch =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_cleanup_cfg, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_ch : public gimple_opt_pass
@@ -184,6 +184,7 @@ pass_ch::execute (function *fun)
   basic_block *bbs, *copied_bbs;
   unsigned n_bbs;
   unsigned bbs_size;
+  bool changed = false;
 
   loop_optimizer_init (LOOPS_HAVE_PREHEADERS
 		       | LOOPS_HAVE_SIMPLE_LATCHES);
@@ -291,6 +292,8 @@ pass_ch::execute (function *fun)
 	 are not now, since there was the loop exit condition.  */
       split_edge (loop_preheader_edge (loop));
       split_edge (loop_latch_edge (loop));
+
+      changed = true;
     }
 
   update_ssa (TODO_update_ssa);
@@ -298,7 +301,7 @@ pass_ch::execute (function *fun)
   free (copied_bbs);
 
   loop_optimizer_finalize ();
-  return 0;
+  return changed ? TODO_cleanup_cfg : 0;
 }
 
 } // anon namespace

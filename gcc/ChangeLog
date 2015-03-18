@@ -1,3 +1,9 @@
+2015-03-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-ch.c (pass_data_ch): Remove TODO_cleanup_cfg.
+	(pass_ch::execute): Cleanup the CFG only if we did sth.
+	* tree-vect-generic.c (pass_data_lower_vector): Remove TODO_cleanup_cfg.
+
 2015-03-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* expmed.c (synth_mult): Use std::swap instead of manually
