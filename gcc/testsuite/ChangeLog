@@ -1,3 +1,8 @@
+2014-03-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/59198
+	* gfortran.dg/proc_ptr_comp_45.f90 : Make tests fuzzy.
+
 2015-03-18  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/65439
