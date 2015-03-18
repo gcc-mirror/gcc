@@ -1,3 +1,8 @@
+2015-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65222
+	* doc/invoke.texi: Add knl as x86 -march=/-mtune= CPU type.
+
 2015-03-18  Richard Biener  <rguenther@suse.de>
 
 	* tree-data-ref.h (struct access_matrix): Remove.
