@@ -131,8 +131,8 @@
 )
 
 (define_insn "*andqi3_virt"
-  [(set (match_operand:QI         0 "rl78_nonfar_nonimm_operand" "=vm")
-	(and:QI (match_operand:QI 1 "rl78_nonfar_operand" "vim")
+  [(set (match_operand:QI         0 "rl78_nonimmediate_operand" "=vm")
+	(and:QI (match_operand:QI 1 "rl78_general_operand" "vim")
 		(match_operand:QI 2 "rl78_general_operand" "vim")))
    ]
   "rl78_virt_insns_ok ()"
@@ -140,8 +140,8 @@
 )
 
 (define_insn "*iorqi3_virt"
-  [(set (match_operand:QI         0 "rl78_nonfar_nonimm_operand" "=vm")
-	(ior:QI (match_operand:QI 1 "rl78_nonfar_operand" "vim")
+  [(set (match_operand:QI         0 "rl78_nonimmediate_operand" "=vm")
+	(ior:QI (match_operand:QI 1 "rl78_general_operand" "vim")
 		(match_operand:QI 2 "rl78_general_operand" "vim")))
    ]
   "rl78_virt_insns_ok ()"
