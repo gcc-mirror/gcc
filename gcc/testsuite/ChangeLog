@@ -1,5 +1,8 @@
 2015-03-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/64265
+	* g++.dg/tsan/pr64265.C: New test.
+
 	PR sanitizer/65400
 	* c-c++-common/tsan/pr65400-1.c: New test.
 	* c-c++-common/tsan/pr65400-2.c: New test.
