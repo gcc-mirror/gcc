@@ -1,3 +1,25 @@
+2015-03-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65046
+	Automatically propagate ABI tags to variables and functions
+	from their (return) type.
+	* class.c (check_tag): Handle variables and functions.
+	(mark_or_check_attr_tags): Split out from find_abi_tags_r.
+	(mark_or_check_tags): Likewise.
+	(mark_abi_tags): Use it.  Rename from mark_type_abi_tags.
+	(check_abi_tags): Add single argument overload for decls.
+	Handle inheriting tags for decls.
+	* mangle.c (write_mangled_name): Call it.
+	(mangle_return_type_p): Split out from write_encoding.
+	(unmangled_name_p): Split out from write_mangled_name.
+	(write_mangled_name): Ignore abi_tag on namespace.
+	* cp-tree.h (NAMESPACE_IS_INLINE): Replace NAMESPACE_ABI_TAG.
+	* parser.c (cp_parser_namespace_definition): Set it.
+	* name-lookup.c (handle_namespace_attrs): Use arguments. Warn
+	about abi_tag attribute on non-inline namespace.
+	* tree.c (check_abi_tag_args): Split out from handle_abi_tag_attribute.
+	(handle_abi_tag_attribute): Allow tags on variables.
+
 2015-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl2.c (cplus_decl_attributes): Also add "omp declare target"

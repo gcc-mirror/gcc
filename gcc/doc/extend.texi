@@ -18722,18 +18722,26 @@ Some attributes only make sense for C++ programs.
 @table @code
 @item abi_tag ("@var{tag}", ...)
 @cindex @code{abi_tag} attribute
-The @code{abi_tag} attribute can be applied to a function or class
-declaration.  It modifies the mangled name of the function or class to
+The @code{abi_tag} attribute can be applied to a function, variable, or class
+declaration.  It modifies the mangled name of the entity to
 incorporate the tag name, in order to distinguish the function or
 class from an earlier version with a different ABI; perhaps the class
 has changed size, or the function has a different return type that is
 not encoded in the mangled name.
 
+The attribute can also be applied to an inline namespace, but does not
+affect the mangled name of the namespace; in this case it is only used
+for @option{-Wabi-tag} warnings and automatic tagging of functions and
+variables.  Tagging inline namespaces is generally preferable to
+tagging individual declarations, but the latter is sometimes
+necessary, such as when only certain members of a class need to be
+tagged.
+
 The argument can be a list of strings of arbitrary length.  The
 strings are sorted on output, so the order of the list is
 unimportant.
 
-A redeclaration of a function or class must not add new ABI tags,
+A redeclaration of an entity must not add new ABI tags,
 since doing so would change the mangled name.
 
 The ABI tags apply to a name, so all instantiations and
@@ -18744,6 +18752,13 @@ The @option{-Wabi-tag} flag enables a warning about a class which does
 not have all the ABI tags used by its subobjects and virtual functions; for users with code
 that needs to coexist with an earlier ABI, using this option can help
 to find all affected types that need to be tagged.
+
+When a type involving an ABI tag is used as the type of a variable or
+return type of a function where that tag is not already present in the
+signature of the function, the tag is automatically applied to the
+variable or function.  @option{-Wabi-tag} also warns about this
+situation; this warning can be avoided by explicitly tagging the
+variable or function or moving it into a tagged inline namespace.
 
 @item init_priority (@var{priority})
 @cindex @code{init_priority} attribute

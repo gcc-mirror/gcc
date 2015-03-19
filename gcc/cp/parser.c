@@ -16233,6 +16233,7 @@ cp_parser_namespace_definition (cp_parser* parser)
   if (is_inline)
     {
       tree name_space = current_namespace;
+      NAMESPACE_IS_INLINE (name_space) = true;
       /* Set up namespace association.  */
       DECL_NAMESPACE_ASSOCIATIONS (name_space)
 	= tree_cons (CP_DECL_CONTEXT (name_space), NULL_TREE,
