@@ -814,6 +814,13 @@ sem_function::merge (sem_item *alias_item)
   bool original_address_matters = original->address_matters_p ();
   bool alias_address_matters = alias->address_matters_p ();
 
+  if (DECL_EXTERNAL (alias->decl))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not unifying; alias is external.\n\n");
+      return false;
+    }
+
   if (DECL_NO_INLINE_WARNING_P (original->decl)
       != DECL_NO_INLINE_WARNING_P (alias->decl))
     {
@@ -1773,6 +1780,13 @@ sem_variable::merge (sem_item *alias_item)
       if (dump_file)
 	fprintf (dump_file, "Not unifying; "
 		 "Symbol aliases are not supported by target\n\n");
+      return false;
+    }
+
+  if (DECL_EXTERNAL (alias_item->decl))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not unifying; alias is external.\n\n");
       return false;
     }
 
