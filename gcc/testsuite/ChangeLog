@@ -1,3 +1,11 @@
+2015-03-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2015-03-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/65235
+	* gcc.target/aarch64/pr65235_1.c: New test.
+
 2015-03-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* testsuite/g++.dg/pr65049.C: New test.

@@ -1,3 +1,13 @@
+2015-03-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2015-03-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR rtl-optimization/65235
+	* simplify-rtx.c (simplify_binary_operation_1, VEC_SELECT case):
+	When first element of vec_concat is const_int, calculate its size
+	using second element.
+
 2015-03-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/65409
