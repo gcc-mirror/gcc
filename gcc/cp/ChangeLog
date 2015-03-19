@@ -1,3 +1,8 @@
+2015-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl2.c (cplus_decl_attributes): Also add "omp declare target"
+	attribute for DECL_EXTERNAL VAR_DECLs.
+
 2015-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65340
