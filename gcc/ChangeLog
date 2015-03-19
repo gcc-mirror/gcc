@@ -1,3 +1,9 @@
+2015-03-19  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/65465
+	* cgraphunit.c (cgraph_node::create_wrapper): Correctly reset
+	all fields of cgraph_thunk_info.
+
 2015-03-19  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* ipa-chkp.c (chkp_maybe_create_clone): Don't try to
