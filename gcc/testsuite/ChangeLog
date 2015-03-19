@@ -1,3 +1,8 @@
+2015-03-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/63491
+	* gcc.target/powerpc/pr63491.c: New.
+
 2015-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/ipa/pr65465.C: New test.
