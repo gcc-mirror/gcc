@@ -1,3 +1,12 @@
+2015-03-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/65240
+	* gcc/testsuite/g++.dg/pr65240.h: Add tests for PR 65240.
+	* gcc/testsuite/g++.dg/pr65240-1.C: Likewise.
+	* gcc/testsuite/g++.dg/pr65240-2.C: Likewise.
+	* gcc/testsuite/g++.dg/pr65240-3.C: Likewise.
+	* gcc/testsuite/g++.dg/pr65240-4.C: Likewise.
+
 2015-03-19  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/63491

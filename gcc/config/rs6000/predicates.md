@@ -432,9 +432,6 @@
 (define_predicate "easy_fp_constant"
   (match_code "const_double")
 {
-  long k[4];
-  REAL_VALUE_TYPE rv;
-
   if (GET_MODE (op) != mode
       || (!SCALAR_FLOAT_MODE_P (mode) && mode != DImode))
     return 0;
@@ -446,8 +443,7 @@
     return 1;
 
   /* The constant 0.0 is easy under VSX.  */
-  if ((mode == SFmode || mode == DFmode || mode == SDmode || mode == DDmode)
-      && VECTOR_UNIT_VSX_P (DFmode) && op == CONST0_RTX (mode))
+  if (TARGET_VSX && SCALAR_FLOAT_MODE_P (mode) && op == CONST0_RTX (mode))
     return 1;
 
   if (DECIMAL_FLOAT_MODE_P (mode))
@@ -464,82 +460,28 @@
     return 0;
 #endif
 
+  /* If we have real FPRs, consider floating point constants hard (other than
+     0.0 under VSX), so that the constant gets pushed to memory during the
+     early RTL phases.  This has the advantage that double precision constants
+     that can be represented in single precision without a loss of precision
+     will use single precision loads.  */
+
   switch (mode)
     {
     case TFmode:
-      if (TARGET_E500_DOUBLE)
-	return 0;
-
-      REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
-      REAL_VALUE_TO_TARGET_LONG_DOUBLE (rv, k);
-
-      return (num_insns_constant_wide ((HOST_WIDE_INT) k[0]) == 1
-	      && num_insns_constant_wide ((HOST_WIDE_INT) k[1]) == 1
-	      && num_insns_constant_wide ((HOST_WIDE_INT) k[2]) == 1
-	      && num_insns_constant_wide ((HOST_WIDE_INT) k[3]) == 1);
-
     case DFmode:
-      /* Force constants to memory before reload to utilize
-	 compress_float_constant.
-	 Avoid this when flag_unsafe_math_optimizations is enabled
-	 because RDIV division to reciprocal optimization is not able
-	 to regenerate the division.  */
-      if (TARGET_E500_DOUBLE
-          || (!reload_in_progress && !reload_completed
-	      && !flag_unsafe_math_optimizations))
-        return 0;
-
-      REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
-      REAL_VALUE_TO_TARGET_DOUBLE (rv, k);
-
-      return (num_insns_constant_wide ((HOST_WIDE_INT) k[0]) == 1
-	      && num_insns_constant_wide ((HOST_WIDE_INT) k[1]) == 1);
-
     case SFmode:
-      /* Force constants to memory before reload to utilize
-	 compress_float_constant.
-	 Avoid this when flag_unsafe_math_optimizations is enabled
-	 because RDIV division to reciprocal optimization is not able
-	 to regenerate the division.  */
-      if (!reload_in_progress && !reload_completed
-          && !flag_unsafe_math_optimizations)
-	return 0;
+      return 0;
 
-      REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
-      REAL_VALUE_TO_TARGET_SINGLE (rv, k[0]);
+    case DImode:
+      return (num_insns_constant (op, DImode) <= 2);
 
-      return num_insns_constant_wide (k[0]) == 1;
+    case SImode:
+      return 1;
 
-  case DImode:
-    return (num_insns_constant (op, DImode) <= 2);
-
-  case SImode:
-    return 1;
-
-  default:
-    gcc_unreachable ();
-  }
-})
-
-;; Return 1 if the operand must be loaded from memory.  This is used by a
-;; define_split to insure constants get pushed to the constant pool before
-;; reload.  If -ffast-math is used, easy_fp_constant will allow move insns to
-;; have constants in order not interfere with reciprocal estimation.  However,
-;; with -mupper-regs support, these constants must be moved to the constant
-;; pool before register allocation.
-
-(define_predicate "memory_fp_constant"
-  (match_code "const_double")
-{
-  if (TARGET_VSX && op == CONST0_RTX (mode))
-    return 0;
-
-  if (!TARGET_HARD_FLOAT || !TARGET_FPRS
-      || (mode == SFmode && !TARGET_SINGLE_FLOAT)
-      || (mode == DFmode && !TARGET_DOUBLE_FLOAT))
-    return 0;
-	  
-  return 1;
+    default:
+      gcc_unreachable ();
+    }
 })
 
 ;; Return 1 if the operand is a CONST_VECTOR and can be loaded into a
