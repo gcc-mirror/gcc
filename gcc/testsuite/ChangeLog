@@ -1,3 +1,10 @@
+2014-03-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from mainline
+	PR fortran/59198
+	* gfortran.dg/proc_ptr_comp_44.f90 : New test
+	* gfortran.dg/proc_ptr_comp_45.f90 : New test
+
 2015-03-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline

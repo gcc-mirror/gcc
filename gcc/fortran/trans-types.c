@@ -2415,9 +2415,24 @@ gfc_get_derived_type (gfc_symbol * derived)
       /* Its components' backend_decl have been built or we are
 	 seeing recursion through the formal arglist of a procedure
 	 pointer component.  */
-      if (TYPE_FIELDS (derived->backend_decl)
-	    || derived->attr.proc_pointer_comp)
+      if (TYPE_FIELDS (derived->backend_decl))
         return derived->backend_decl;
+      else if (derived->attr.abstract
+	       && derived->attr.proc_pointer_comp)
+	{
+	  /* If an abstract derived type with procedure pointer
+	     components has no other type of component, return the
+	     backend_decl. Otherwise build the components if any of the
+	     non-procedure pointer components have no backend_decl.  */
+	  for (c = derived->components; c; c = c->next)
+	    {
+	      if (!c->attr.proc_pointer && c->backend_decl == NULL)
+		break;
+	      else if (c->next == NULL)
+		return derived->backend_decl;
+	    }
+	  typenode = derived->backend_decl;
+	}
       else
         typenode = derived->backend_decl;
     }

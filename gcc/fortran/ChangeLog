@@ -1,3 +1,13 @@
+2014-03-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from mainline
+	PR fortran/59198
+	* trans-types.c (gfc_get_derived_type): If an abstract derived
+	type with procedure pointer components has no other type of
+	component, return the backend_decl. Otherwise build the
+	components if any of the non-procedure pointer components have
+	no backend_decl.
+
 2015-03-12  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/60898
