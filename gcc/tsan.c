@@ -680,6 +680,10 @@ instrument_gimple (gimple_stmt_iterator *gsi)
       && (gimple_call_fndecl (stmt)
 	  != builtin_decl_implicit (BUILT_IN_TSAN_INIT)))
     {
+      /* All functions with function call will have exit instrumented,
+	 therefore no function calls other than __tsan_func_exit
+	 shall appear in the functions.  */
+      gimple_call_set_tail (as_a <gcall *> (stmt), false);
       if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
 	instrument_builtin_call (gsi);
       return true;
