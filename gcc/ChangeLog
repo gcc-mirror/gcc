@@ -1,3 +1,17 @@
+2015-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/65400
+	* ipa-split.c (find_return_bb): Allow TSAN_FUNC_EXIT internal
+	call in the return bb.
+	(find_split_points): Add RETURN_BB argument, don't call
+	find_return_bb.
+	(split_function): Likewise.  Add ADD_TSAN_FUNC_EXIT argument,
+	if true append TSAN_FUNC_EXIT internal call after the call to
+	the split off function.
+	(execute_split_functions): Call find_return_bb here.
+	Don't optimize if TSAN_FUNC_EXIT is found in unexpected places.
+	Adjust find_split_points and split_function calls.
+
 2015-03-18  DJ Delorie  <dj@redhat.com>
 	
 	* config/rl78/rl78-virt.md (andqi3_virt): Allow far operands.
