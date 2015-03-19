@@ -1,3 +1,8 @@
+2015-03-19  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* ipa-chkp.c (chkp_maybe_create_clone): Don't try to
+	clone instrumented thunks.
+
 2015-03-19  Richard Biener  <rguenther@suse.de>
 
 	Revert
