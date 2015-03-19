@@ -1,3 +1,26 @@
+2015-03-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/65240
+	* config/rs6000/predicates.md (easy_fp_constant): Remove special
+	-ffast-math handling that kept non-0 constants live in the RTL
+	until reload.  Remove logic testing the number of instructions it
+	took to create a constant in a GPR that was never used, due to a
+	test for soft-float earlier.
+	(memory_fp_constant): Delete, no longer used.
+
+	* config/rs6000/rs6000.md (mov<MODE>_hardfloat): Remove
+	alternatives for loading non-0 constants into GPRs for hard
+	floating point that is no longer needed due to changes in
+	easy_fp_constant.  Add support for loading 0.0 into GPRs.
+	(mov<mode>_hardfloat32): Likewise.
+	(mov<mode>_hardfloat64): Likewise.
+	(mov<mode>_64bit_dm): Likewise.
+	(movtd_64bit_nodm): Likewise.
+	(pre-reload move FP constant define_split): Delete define_split,
+	since it is no longer used.
+	(extenddftf2_internal): Remove GHF constraints that are not valid
+	for extenddftf2.
+
 2015-03-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65380
