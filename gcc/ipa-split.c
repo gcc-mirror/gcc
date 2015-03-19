@@ -769,7 +769,8 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
    of the form:
    <retval> = tmp_var;
    return <retval>
-   but return_bb can not be more complex than this.
+   but return_bb can not be more complex than this (except for
+   -fsanitize=thread we allow TSAN_FUNC_EXIT () internal call in there).
    If nothing is found, return the exit block.
 
    When there are multiple RETURN statement, chose one with return value,
@@ -814,6 +815,13 @@ find_return_bb (void)
 	  found_return = true;
 	  retval = gimple_return_retval (return_stmt);
 	}
+      /* For -fsanitize=thread, allow also TSAN_FUNC_EXIT () in the return
+	 bb.  */
+      else if ((flag_sanitize & SANITIZE_THREAD)
+	       && is_gimple_call (stmt)
+	       && gimple_call_internal_p (stmt)
+	       && gimple_call_internal_fn (stmt) == IFN_TSAN_FUNC_EXIT)
+	;
       else
 	break;
     }
@@ -1074,12 +1082,11 @@ typedef struct
    the component used by consider_split.  */
 
 static void
-find_split_points (int overall_time, int overall_size)
+find_split_points (basic_block return_bb, int overall_time, int overall_size)
 {
   stack_entry first;
   vec<stack_entry> stack = vNULL;
   basic_block bb;
-  basic_block return_bb = find_return_bb ();
   struct split_point current;
 
   current.header_time = overall_time;
@@ -1236,19 +1243,20 @@ insert_bndret_call_after (tree retbnd, tree retval, gimple_stmt_iterator *gsi)
   gimple_call_set_lhs (bndret, retbnd);
   gsi_insert_after (gsi, bndret, GSI_CONTINUE_LINKING);
 }
+
 /* Split function at SPLIT_POINT.  */
 
 static void
-split_function (struct split_point *split_point)
+split_function (basic_block return_bb, struct split_point *split_point,
+		bool add_tsan_func_exit)
 {
   vec<tree> args_to_pass = vNULL;
   bitmap args_to_skip;
   tree parm;
   int num = 0;
   cgraph_node *node, *cur_node = cgraph_node::get (current_function_decl);
-  basic_block return_bb = find_return_bb ();
   basic_block call_bb;
-  gcall *call;
+  gcall *call, *tsan_func_exit_call = NULL;
   edge e;
   edge_iterator ei;
   tree retval = NULL, real_retval = NULL, retbnd = NULL;
@@ -1534,11 +1542,18 @@ split_function (struct split_point *split_point)
 	  || DECL_BY_REFERENCE (DECL_RESULT (current_function_decl))))
     gimple_call_set_return_slot_opt (call, true);
 
+  if (add_tsan_func_exit)
+    tsan_func_exit_call = gimple_build_call_internal (IFN_TSAN_FUNC_EXIT, 0);
+
   /* Update return value.  This is bit tricky.  When we do not return,
      do nothing.  When we return we might need to update return_bb
      or produce a new return statement.  */
   if (!split_part_return_p)
-    gsi_insert_after (&gsi, call, GSI_NEW_STMT);
+    {
+      gsi_insert_after (&gsi, call, GSI_NEW_STMT);
+      if (tsan_func_exit_call)
+	gsi_insert_after (&gsi, tsan_func_exit_call, GSI_NEW_STMT);
+    }
   else
     {
       e = make_edge (call_bb, return_bb,
@@ -1642,6 +1657,8 @@ split_function (struct split_point *split_point)
 	    }
 	  else
 	    gsi_insert_after (&gsi, call, GSI_NEW_STMT);
+	  if (tsan_func_exit_call)
+	    gsi_insert_after (&gsi, tsan_func_exit_call, GSI_NEW_STMT);
 	}
       /* We don't use return block (there is either no return in function or
 	 multiple of them).  So create new basic block with return statement.
@@ -1684,6 +1701,8 @@ split_function (struct split_point *split_point)
 	  /* Build bndret call to obtain returned bounds.  */
 	  if (retbnd)
 	    insert_bndret_call_after (retbnd, retval, &gsi);
+	  if (tsan_func_exit_call)
+	    gsi_insert_after (&gsi, tsan_func_exit_call, GSI_NEW_STMT);
 	  ret = gimple_build_return (retval);
 	  gsi_insert_after (&gsi, ret, GSI_NEW_STMT);
 	}
@@ -1792,6 +1811,8 @@ execute_split_functions (void)
   /* Compute local info about basic blocks and determine function size/time.  */
   bb_info_vec.safe_grow_cleared (last_basic_block_for_fn (cfun) + 1);
   memset (&best_split_point, 0, sizeof (best_split_point));
+  basic_block return_bb = find_return_bb ();
+  int tsan_exit_found = -1;
   FOR_EACH_BB_FN (bb, cfun)
     {
       int time = 0;
@@ -1818,16 +1839,37 @@ execute_split_functions (void)
 		       freq, this_size, this_time);
 	      print_gimple_stmt (dump_file, stmt, 0, 0);
 	    }
+
+	  if ((flag_sanitize & SANITIZE_THREAD)
+	      && is_gimple_call (stmt)
+	      && gimple_call_internal_p (stmt)
+	      && gimple_call_internal_fn (stmt) == IFN_TSAN_FUNC_EXIT)
+	    {
+	      /* We handle TSAN_FUNC_EXIT for splitting either in the
+		 return_bb, or in its immediate predecessors.  */
+	      if ((bb != return_bb && !find_edge (bb, return_bb))
+		  || (tsan_exit_found != -1
+		      && tsan_exit_found != (bb != return_bb)))
+		{
+		  if (dump_file)
+		    fprintf (dump_file, "Not splitting: TSAN_FUNC_EXIT"
+			     " in unexpected basic block.\n");
+		  BITMAP_FREE (forbidden_dominators);
+		  bb_info_vec.release ();
+		  return 0;
+		}
+	      tsan_exit_found = bb != return_bb;
+	    }
 	}
       overall_time += time;
       overall_size += size;
       bb_info_vec[bb->index].time = time;
       bb_info_vec[bb->index].size = size;
     }
-  find_split_points (overall_time, overall_size);
+  find_split_points (return_bb, overall_time, overall_size);
   if (best_split_point.split_bbs)
     {
-      split_function (&best_split_point);
+      split_function (return_bb, &best_split_point, tsan_exit_found == 1);
       BITMAP_FREE (best_split_point.ssa_names_to_pass);
       BITMAP_FREE (best_split_point.split_bbs);
       todo = TODO_update_ssa | TODO_cleanup_cfg;

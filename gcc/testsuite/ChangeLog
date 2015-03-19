@@ -1,3 +1,9 @@
+2015-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/65400
+	* c-c++-common/tsan/pr65400-1.c: New test.
+	* c-c++-common/tsan/pr65400-2.c: New test.
+
 2015-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59816
@@ -6,7 +12,7 @@
 2015-03-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/59198
-	* gfortran.dg/proc_ptr_comp_45.f90 : Make tests fuzzy.
+	* gfortran.dg/proc_ptr_comp_45.f90: Make tests fuzzy.
 
 2015-03-18  Martin Liska  <mliska@suse.cz>
 
@@ -55,8 +61,8 @@
 2015-03-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/59198
-	* gfortran.dg/proc_ptr_comp_44.f90 : New test
-	* gfortran.dg/proc_ptr_comp_45.f90 : New test
+	* gfortran.dg/proc_ptr_comp_44.f90: New test.
+	* gfortran.dg/proc_ptr_comp_45.f90: New test.
 
 2015-03-16 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
