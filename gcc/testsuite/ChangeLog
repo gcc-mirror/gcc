@@ -1,3 +1,8 @@
+2015-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59686
+	* g++.dg/cpp0x/constexpr-59686.C: New.
+
 2015-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/64265
