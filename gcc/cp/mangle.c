@@ -648,6 +648,48 @@ find_substitution (tree node)
   return 1;
 }
 
+/* Returns whether DECL's symbol name should be the plain unqualified-id
+   rather than a more complicated mangled name.  */
+
+static bool
+unmangled_name_p (const tree decl)
+{
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      /* The names of `extern "C"' functions are not mangled.  */
+      return (DECL_EXTERN_C_FUNCTION_P (decl)
+	      /* But overloaded operator names *are* mangled.  */
+	      && !DECL_OVERLOADED_OPERATOR_P (decl));
+    }
+  else if (VAR_P (decl))
+    {
+      /* static variables are mangled.  */
+      if (!DECL_EXTERNAL_LINKAGE_P (decl))
+	return false;
+
+      /* extern "C" declarations aren't mangled.  */
+      if (DECL_EXTERN_C_P (decl))
+	return true;
+
+      /* Other variables at non-global scope are mangled.  */
+      if (CP_DECL_CONTEXT (decl) != global_namespace)
+	return false;
+
+      /* Variable template instantiations are mangled.  */
+      if (DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)
+	  && variable_template_p (DECL_TI_TEMPLATE (decl)))
+	return false;
+
+      /* Declarations with ABI tags are mangled.  */
+      if (lookup_attribute ("abi_tag", DECL_ATTRIBUTES (decl)))
+	return false;
+
+      /* The names of non-static global variables aren't mangled.  */
+      return true;
+    }
+
+  return false;
+}
 
 /* TOP_LEVEL is true, if this is being called at outermost level of
   mangling. It should be false when mangling a decl appearing in an
@@ -660,13 +702,10 @@ write_mangled_name (const tree decl, bool top_level)
 {
   MANGLE_TRACE_TREE ("mangled-name", decl);
 
-  if (/* The names of `extern "C"' functions are not mangled.  */
-      DECL_EXTERN_C_FUNCTION_P (decl)
-      /* But overloaded operator names *are* mangled.  */
-      && !DECL_OVERLOADED_OPERATOR_P (decl))
-    {
-    unmangled_name:;
+  check_abi_tags (decl);
 
+  if (unmangled_name_p (decl))
+    {
       if (top_level)
 	write_string (IDENTIFIER_POINTER (DECL_NAME (decl)));
       else
@@ -680,23 +719,23 @@ write_mangled_name (const tree decl, bool top_level)
 	  write_source_name (DECL_NAME (decl));
 	}
     }
-  else if (VAR_P (decl)
-	   /* Variable template instantiations are mangled.  */
-	   && !(DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)
-		&& variable_template_p (DECL_TI_TEMPLATE (decl)))
-	   /* The names of non-static global variables aren't mangled.  */
-	   && DECL_EXTERNAL_LINKAGE_P (decl)
-	   && (CP_DECL_CONTEXT (decl) == global_namespace
-	       /* And neither are `extern "C"' variables.  */
-	       || DECL_EXTERN_C_P (decl)))
-    {
-      goto unmangled_name;
-    }
   else
     {
       write_string ("_Z");
       write_encoding (decl);
     }
+}
+
+/* Returns true if the return type of DECL is part of its signature, and
+   therefore its mangling.  */
+
+bool
+mangle_return_type_p (tree decl)
+{
+  return (!DECL_CONSTRUCTOR_P (decl)
+	  && !DECL_DESTRUCTOR_P (decl)
+	  && !DECL_CONV_FN_P (decl)
+	  && decl_is_template_id (decl, NULL));
 }
 
 /*   <encoding>		::= <function name> <bare-function-type>
@@ -740,10 +779,7 @@ write_encoding (const tree decl)
 	}
 
       write_bare_function_type (fn_type,
-				(!DECL_CONSTRUCTOR_P (decl)
-				 && !DECL_DESTRUCTOR_P (decl)
-				 && !DECL_CONV_FN_P (decl)
-				 && decl_is_template_id (decl, NULL)),
+				mangle_return_type_p (decl),
 				d);
     }
 }
@@ -1290,7 +1326,7 @@ write_unqualified_name (tree decl)
   if (tree tmpl = most_general_template (decl))
     decl = DECL_TEMPLATE_RESULT (tmpl);
   /* Don't crash on an unbound class template.  */
-  if (decl)
+  if (decl && TREE_CODE (decl) != NAMESPACE_DECL)
     {
       tree attrs = (TREE_CODE (decl) == TYPE_DECL
 		    ? TYPE_ATTRIBUTES (TREE_TYPE (decl))

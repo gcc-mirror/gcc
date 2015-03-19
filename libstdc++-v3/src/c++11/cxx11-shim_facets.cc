@@ -227,8 +227,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace // unnamed
   {
     template<typename _CharT>
-      struct _GLIBCXX_DEFAULT_ABI_TAG numpunct_shim
-      : std::numpunct<_CharT>, facet::__shim
+      struct numpunct_shim : std::numpunct<_CharT>, facet::__shim
       {
 	typedef typename numpunct<_CharT>::__cache_type __cache_type;
 
@@ -252,8 +251,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 
     template<typename _CharT>
-      struct _GLIBCXX_DEFAULT_ABI_TAG collate_shim
-      : std::collate<_CharT>, facet::__shim
+      struct collate_shim : std::collate<_CharT>, facet::__shim
       {
 	typedef basic_string<_CharT>	string_type;
 
@@ -278,8 +276,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 
     template<typename _CharT>
-      struct _GLIBCXX_DEFAULT_ABI_TAG time_get_shim
-      : std::time_get<_CharT>, facet::__shim
+      struct time_get_shim : std::time_get<_CharT>, facet::__shim
       {
 	typedef typename std::time_get<_CharT>::iter_type iter_type;
 	typedef typename std::time_get<_CharT>::char_type char_type;
@@ -333,8 +330,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 
     template<typename _CharT, bool _Intl>
-      struct _GLIBCXX_DEFAULT_ABI_TAG moneypunct_shim
-      : std::moneypunct<_CharT, _Intl>, facet::__shim
+      struct moneypunct_shim : std::moneypunct<_CharT, _Intl>, facet::__shim
       {
 	typedef typename moneypunct<_CharT, _Intl>::__cache_type __cache_type;
 
@@ -361,8 +357,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 
     template<typename _CharT>
-      struct _GLIBCXX_DEFAULT_ABI_TAG money_get_shim
-      : std::money_get<_CharT>, facet::__shim
+      struct money_get_shim : std::money_get<_CharT>, facet::__shim
       {
 	typedef typename std::money_get<_CharT>::iter_type iter_type;
 	typedef typename std::money_get<_CharT>::char_type char_type;
@@ -403,8 +398,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 
     template<typename _CharT>
-      struct _GLIBCXX_DEFAULT_ABI_TAG money_put_shim
-      : std::money_put<_CharT>, facet::__shim
+      struct money_put_shim : std::money_put<_CharT>, facet::__shim
       {
 	typedef typename std::money_put<_CharT>::iter_type iter_type;
 	typedef typename std::money_put<_CharT>::char_type char_type;
@@ -433,8 +427,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 
     template<typename _CharT>
-      struct _GLIBCXX_DEFAULT_ABI_TAG messages_shim
-      : std::messages<_CharT>, facet::__shim
+      struct messages_shim : std::messages<_CharT>, facet::__shim
       {
 	typedef messages_base::catalog  catalog;
 	typedef basic_string<_CharT>	string_type;

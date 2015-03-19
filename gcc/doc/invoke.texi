@@ -197,7 +197,7 @@ in the following sections.
 -fvtv-counts -fvtv-debug @gol
 -fvisibility-ms-compat @gol
 -fext-numeric-literals @gol
--Wabi=@var{n}  -Wconversion-null  -Wctor-dtor-privacy @gol
+-Wabi=@var{n}  -Wabi-tag  -Wconversion-null  -Wctor-dtor-privacy @gol
 -Wdelete-non-virtual-dtor -Wliteral-suffix -Wnarrowing @gol
 -Wnoexcept -Wnon-virtual-dtor  -Wreorder @gol
 -Weffc++  -Wstrict-null-sentinel @gol
@@ -2640,6 +2640,13 @@ union U @{
 @code{union U} is always passed in memory.
 
 @end itemize
+
+@item -Wabi-tag @r{(C++ and Objective-C++ only)}
+@opindex Wabi-tag
+@opindex -Wabi-tag
+Warn when a type with an ABI tag is used in a context that does not
+have that ABI tag.  See @ref{C++ Attributes} for more information
+about ABI tags.
 
 @item -Wctor-dtor-privacy @r{(C++ and Objective-C++ only)}
 @opindex Wctor-dtor-privacy

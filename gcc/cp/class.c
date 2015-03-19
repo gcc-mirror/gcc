@@ -1382,44 +1382,53 @@ struct abi_tag_data
    a tag NAMESPACE_DECL) or a STRING_CST (a tag attribute).  */
 
 static void
-check_tag (tree tag, tree *tp, abi_tag_data *p)
+check_tag (tree tag, tree id, tree *tp, abi_tag_data *p)
 {
-  tree id;
-
-  if (TREE_CODE (tag) == STRING_CST)
-    id = get_identifier (TREE_STRING_POINTER (tag));
-  else
-    {
-      id = tag;
-      tag = NULL_TREE;
-    }
-
   if (!IDENTIFIER_MARKED (id))
     {
-      if (!tag)
-	tag = build_string (IDENTIFIER_LENGTH (id) + 1,
-			    IDENTIFIER_POINTER (id));
       if (p->tags != error_mark_node)
 	{
-	  /* We're collecting tags from template arguments.  */
+	  /* We're collecting tags from template arguments or from
+	     the type of a variable or function return type.  */
 	  p->tags = tree_cons (NULL_TREE, tag, p->tags);
-	  ABI_TAG_IMPLICIT (p->tags) = true;
 
 	  /* Don't inherit this tag multiple times.  */
 	  IDENTIFIER_MARKED (id) = true;
+
+	  if (TYPE_P (p->t))
+	    {
+	      /* Tags inherited from type template arguments are only used
+		 to avoid warnings.  */
+	      ABI_TAG_IMPLICIT (p->tags) = true;
+	      return;
+	    }
+	  /* For functions and variables we want to warn, too.  */
 	}
 
       /* Otherwise we're diagnosing missing tags.  */
+      if (TREE_CODE (p->t) == FUNCTION_DECL)
+	{
+	  if (warning (OPT_Wabi_tag, "%qD inherits the %E ABI tag "
+		       "that %qT (used in its return type) has",
+		       p->t, tag, *tp))
+	    inform (location_of (*tp), "%qT declared here", *tp);
+	}
+      else if (TREE_CODE (p->t) == VAR_DECL)
+	{
+	  if (warning (OPT_Wabi_tag, "%qD inherits the %E ABI tag "
+		       "that %qT (used in its type) has", p->t, tag, *tp))
+	    inform (location_of (*tp), "%qT declared here", *tp);
+	}
       else if (TYPE_P (p->subob))
 	{
-	  if (warning (OPT_Wabi_tag, "%qT does not have the %E abi tag "
+	  if (warning (OPT_Wabi_tag, "%qT does not have the %E ABI tag "
 		       "that base %qT has", p->t, tag, p->subob))
 	    inform (location_of (p->subob), "%qT declared here",
 		    p->subob);
 	}
       else
 	{
-	  if (warning (OPT_Wabi_tag, "%qT does not have the %E abi tag "
+	  if (warning (OPT_Wabi_tag, "%qT does not have the %E ABI tag "
 		       "that %qT (used in the type of %qD) has",
 		       p->t, tag, *tp, p->subob))
 	    {
@@ -1431,8 +1440,53 @@ check_tag (tree tag, tree *tp, abi_tag_data *p)
     }
 }
 
+/* Find all the ABI tags in the attribute list ATTR and either call
+   check_tag (if TP is non-null) or set IDENTIFIER_MARKED to val.  */
+
+static void
+mark_or_check_attr_tags (tree attr, tree *tp, abi_tag_data *p, bool val)
+{
+  if (!attr)
+    return;
+  for (; (attr = lookup_attribute ("abi_tag", attr));
+       attr = TREE_CHAIN (attr))
+    for (tree list = TREE_VALUE (attr); list;
+	 list = TREE_CHAIN (list))
+      {
+	tree tag = TREE_VALUE (list);
+	tree id = get_identifier (TREE_STRING_POINTER (tag));
+	if (tp)
+	  check_tag (tag, id, tp, p);
+	else
+	  IDENTIFIER_MARKED (id) = val;
+      }
+}
+
+/* Find all the ABI tags on T and its enclosing scopes and either call
+   check_tag (if TP is non-null) or set IDENTIFIER_MARKED to val.  */
+
+static void
+mark_or_check_tags (tree t, tree *tp, abi_tag_data *p, bool val)
+{
+  while (t != global_namespace)
+    {
+      tree attr;
+      if (TYPE_P (t))
+	{
+	  attr = TYPE_ATTRIBUTES (t);
+	  t = CP_TYPE_CONTEXT (t);
+	}
+      else
+	{
+	  attr = DECL_ATTRIBUTES (t);
+	  t = CP_DECL_CONTEXT (t);
+	}
+      mark_or_check_attr_tags (attr, tp, p, val);
+    }
+}
+
 /* walk_tree callback for check_abi_tags: if the type at *TP involves any
-   types with abi tags, add the corresponding identifiers to the VEC in
+   types with ABI tags, add the corresponding identifiers to the VEC in
    *DATA and set IDENTIFIER_MARKED.  */
 
 static tree
@@ -1447,63 +1501,112 @@ find_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
 
   abi_tag_data *p = static_cast<struct abi_tag_data*>(data);
 
-  for (tree ns = decl_namespace_context (*tp);
-       ns != global_namespace;
-       ns = CP_DECL_CONTEXT (ns))
-    if (NAMESPACE_ABI_TAG (ns))
-      check_tag (DECL_NAME (ns), tp, p);
+  mark_or_check_tags (*tp, tp, p, false);
 
-  if (tree attributes = lookup_attribute ("abi_tag", TYPE_ATTRIBUTES (*tp)))
-    {
-      for (tree list = TREE_VALUE (attributes); list;
-	   list = TREE_CHAIN (list))
-	{
-	  tree tag = TREE_VALUE (list);
-	  check_tag (tag, tp, p);
-	}
-    }
   return NULL_TREE;
 }
 
-/* Set IDENTIFIER_MARKED on all the ABI tags on T and its (transitively
-   complete) template arguments.  */
+/* walk_tree callback for mark_abi_tags: if *TP is a class, set
+   IDENTIFIER_MARKED on its ABI tags.  */
+
+static tree
+mark_abi_tags_r (tree *tp, int *walk_subtrees, void *data)
+{
+  if (!OVERLOAD_TYPE_P (*tp))
+    return NULL_TREE;
+
+  /* walk_tree shouldn't be walking into any subtrees of a RECORD_TYPE
+     anyway, but let's make sure of it.  */
+  *walk_subtrees = false;
+
+  bool *valp = static_cast<bool*>(data);
+
+  mark_or_check_tags (*tp, NULL, NULL, *valp);
+
+  return NULL_TREE;
+}
+
+/* Set IDENTIFIER_MARKED on all the ABI tags on T and its enclosing
+   scopes.  */
 
 static void
-mark_type_abi_tags (tree t, bool val)
+mark_abi_tags (tree t, bool val)
 {
-  for (tree ns = decl_namespace_context (t);
-       ns != global_namespace;
-       ns = CP_DECL_CONTEXT (ns))
-    if (NAMESPACE_ABI_TAG (ns))
-      IDENTIFIER_MARKED (DECL_NAME (ns)) = val;
-
-  tree attributes = lookup_attribute ("abi_tag", TYPE_ATTRIBUTES (t));
-  if (attributes)
+  mark_or_check_tags (t, NULL, NULL, val);
+  if (DECL_P (t))
     {
-      for (tree list = TREE_VALUE (attributes); list;
-	   list = TREE_CHAIN (list))
+      if (DECL_LANG_SPECIFIC (t) && DECL_USE_TEMPLATE (t)
+	  && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (t)))
 	{
-	  tree tag = TREE_VALUE (list);
-	  tree id = get_identifier (TREE_STRING_POINTER (tag));
-	  IDENTIFIER_MARKED (id) = val;
+	  /* Template arguments are part of the signature.  */
+	  tree level = INNERMOST_TEMPLATE_ARGS (DECL_TI_ARGS (t));
+	  for (int j = 0; j < TREE_VEC_LENGTH (level); ++j)
+	    {
+	      tree arg = TREE_VEC_ELT (level, j);
+	      cp_walk_tree_without_duplicates (&arg, mark_abi_tags_r, &val);
+	    }
 	}
+      if (TREE_CODE (t) == FUNCTION_DECL)
+	/* A function's parameter types are part of the signature, so
+	   we don't need to inherit any tags that are also in them.  */
+	for (tree arg = FUNCTION_FIRST_USER_PARMTYPE (t); arg;
+	     arg = TREE_CHAIN (arg))
+	  cp_walk_tree_without_duplicates (&TREE_VALUE (arg),
+					   mark_abi_tags_r, &val);
     }
 }
 
-/* Check that class T has all the abi tags that subobject SUBOB has, or
-   warn if not.  */
+/* Check that T has all the ABI tags that subobject SUBOB has, or
+   warn if not.  If T is a (variable or function) declaration, also
+   add any missing tags.  */
 
 static void
 check_abi_tags (tree t, tree subob)
 {
-  mark_type_abi_tags (t, true);
+  bool inherit = DECL_P (t);
+
+  if (!inherit && !warn_abi_tag)
+    return;
+
+  tree decl = TYPE_P (t) ? TYPE_NAME (t) : t;
+  if (!TREE_PUBLIC (decl))
+    /* No need to worry about things local to this TU.  */
+    return;
+
+  mark_abi_tags (t, true);
 
   tree subtype = TYPE_P (subob) ? subob : TREE_TYPE (subob);
   struct abi_tag_data data = { t, subob, error_mark_node };
+  if (inherit)
+    data.tags = NULL_TREE;
 
   cp_walk_tree_without_duplicates (&subtype, find_abi_tags_r, &data);
 
-  mark_type_abi_tags (t, false);
+  if (inherit && data.tags)
+    {
+      tree attr = lookup_attribute ("abi_tag", DECL_ATTRIBUTES (t));
+      if (attr)
+	TREE_VALUE (attr) = chainon (data.tags, TREE_VALUE (attr));
+      else
+	DECL_ATTRIBUTES (t)
+	  = tree_cons (get_identifier ("abi_tag"), data.tags,
+		       DECL_ATTRIBUTES (t));
+    }
+
+  mark_abi_tags (t, false);
+}
+
+/* Check that DECL has all the ABI tags that are used in parts of its type
+   that are not reflected in its mangled name.  */
+
+void
+check_abi_tags (tree decl)
+{
+  if (TREE_CODE (decl) == VAR_DECL)
+    check_abi_tags (decl, TREE_TYPE (decl));
+  else if (TREE_CODE (decl) == FUNCTION_DECL
+	   && !mangle_return_type_p (decl))
+    check_abi_tags (decl, TREE_TYPE (TREE_TYPE (decl)));
 }
 
 void
@@ -1513,7 +1616,7 @@ inherit_targ_abi_tags (tree t)
       || CLASSTYPE_TEMPLATE_INFO (t) == NULL_TREE)
     return;
 
-  mark_type_abi_tags (t, true);
+  mark_abi_tags (t, true);
 
   tree args = CLASSTYPE_TI_ARGS (t);
   struct abi_tag_data data = { t, NULL_TREE, NULL_TREE };
@@ -1541,7 +1644,7 @@ inherit_targ_abi_tags (tree t)
 		       TYPE_ATTRIBUTES (t));
     }
 
-  mark_type_abi_tags (t, false);
+  mark_abi_tags (t, false);
 }
 
 /* Return true, iff class T has a non-virtual destructor that is
