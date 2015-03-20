@@ -1,3 +1,9 @@
+2015-03-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/64366
+	* lra.c (lra_update_insn_regno_info): Consider regs in
+	CALL_INSN_FUNCTION_USAGE memory.
+
 2015-03-20  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/64715

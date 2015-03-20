@@ -1633,7 +1633,8 @@ lra_update_insn_regno_info (rtx_insn *insn)
   lra_insn_recog_data_t data;
   struct lra_static_insn_data *static_data;
   enum rtx_code code;
-
+  rtx link;
+  
   if (! INSN_P (insn))
     return;
   data = lra_get_insn_recog_data (insn);
@@ -1648,6 +1649,18 @@ lra_update_insn_regno_info (rtx_insn *insn)
   if ((code = GET_CODE (PATTERN (insn))) == CLOBBER || code == USE)
     add_regs_to_insn_regno_info (data, XEXP (PATTERN (insn), 0), uid,
 				 code == USE ? OP_IN : OP_OUT, false);
+  if (CALL_P (insn))
+    /* On some targets call insns can refer to pseudos in memory in
+       CALL_INSN_FUNCTION_USAGE list.  Process them in order to
+       consider their occurrences in calls for different
+       transformations (e.g. inheritance) with given pseudos.  */
+    for (link = CALL_INSN_FUNCTION_USAGE (insn);
+	 link != NULL_RTX;
+	 link = XEXP (link, 1))
+      if (((code = GET_CODE (XEXP (link, 0))) == USE || code == CLOBBER)
+	  && MEM_P (XEXP (XEXP (link, 0), 0)))
+	add_regs_to_insn_regno_info (data, XEXP (XEXP (link, 0), 0), uid,
+				     code == USE ? OP_IN : OP_OUT, false);
   if (NONDEBUG_INSN_P (insn))
     setup_insn_reg_info (data, freq);
 }
