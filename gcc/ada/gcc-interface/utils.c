@@ -787,19 +787,17 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	{
 	  /* Array types aren't "tagged" types so we force the type to be
 	     associated with its typedef in the DWARF back-end, in order to
-	     make sure that the latter is always preserved.  We used to do the
-	     same for pointer types, but to have consistent DWARF output we now
-	     create copies for DECL_ORIGINAL_TYPE just like the C front-end
-	     does in c-common.c:set_underlying_type.  */
+	     make sure that the latter is always preserved, by creating an
+	     on-side copy for DECL_ORIGINAL_TYPE.  We used to do the same
+	     for pointer types, but to have consistent DWARF output we now
+	     create a copy for the type itself and use the original type
+	     for DECL_ORIGINAL_TYPE like the C front-end.  */
 	  if (!DECL_ARTIFICIAL (decl) && TREE_CODE (t) == ARRAY_TYPE)
 	    {
 	      tree tt = build_distinct_type_copy (t);
-	      if (TREE_CODE (t) == POINTER_TYPE)
-		TYPE_NEXT_PTR_TO (t) = tt;
-	      /* Array types need to have a name so that they can be related to
-		 their GNAT encodings.  */
-	      if (TREE_CODE (t) == ARRAY_TYPE)
-		TYPE_NAME (tt) = DECL_NAME (decl);
+	      /* Array types need to have a name so that they can be related
+		 to their GNAT encodings.  */
+	      TYPE_NAME (tt) = DECL_NAME (decl);
 	      defer_or_set_type_context (tt,
 					 DECL_CONTEXT (decl),
 					 deferred_decl_context);
@@ -811,13 +809,17 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	       && (TREE_CODE (t) == POINTER_TYPE || TYPE_IS_FAT_POINTER_P (t)))
 	{
 	  tree tt;
-	  /* ??? We need a variant for the placeholder machinery to work.  */
+	  /* ??? Copy and original type are not supposed to be variant but we
+	     really need a variant for the placeholder machinery to work.  */
 	  if (TYPE_IS_FAT_POINTER_P (t))
 	    tt = build_variant_type_copy (t);
 	  else
-	    tt = build_distinct_type_copy (t);
-	  if (TREE_CODE (t) == POINTER_TYPE)
-	    TYPE_NEXT_PTR_TO (t) = tt;
+	    {
+	      /* TYPE_NEXT_PTR_TO is a chain of main variants.  */
+	      tt = build_distinct_type_copy (TYPE_MAIN_VARIANT (t));
+	      TYPE_NEXT_PTR_TO (TYPE_MAIN_VARIANT (t)) = tt;
+	      tt = build_qualified_type (tt, TYPE_QUALS (t));
+	    }
 	  TYPE_NAME (tt) = decl;
 	  defer_or_set_type_context (tt,
 				     DECL_CONTEXT (decl),

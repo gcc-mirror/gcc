@@ -1,3 +1,7 @@
+2015-03-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/volatile13.ad[sb]: New test.
+
 2015-03-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/60851
