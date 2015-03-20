@@ -1,5 +1,11 @@
 2015-03-20  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/65398
+	* constexpr.c (cxx_fold_indirect_ref): Transform *(&A[i] p+ j) into
+	A[i + j].
+
+2015-03-20  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/65072
 	* typeck.c (lookup_anon_field): Make sure we're dealing with the main
 	variant.
