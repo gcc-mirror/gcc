@@ -1,3 +1,9 @@
+2015-03-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65475
+	* g++.dg/lto/pr65475_0.C: New testcase.
+	* g++.dg/lto/pr65475_1.C: New testcase.
+
 2015-03-20  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/64366

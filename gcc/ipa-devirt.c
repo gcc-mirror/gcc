@@ -1412,9 +1412,18 @@ add_type_duplicate (odr_type val, tree type)
   if (!val->types_set)
     val->types_set = new hash_set<tree>;
 
+  /* Chose polymorphic type as leader (this happens only in case of ODR
+     violations.  */
+  if ((TREE_CODE (type) == RECORD_TYPE && TYPE_BINFO (type)
+       && polymorphic_type_binfo_p (TYPE_BINFO (type)))
+      && (TREE_CODE (val->type) != RECORD_TYPE || !TYPE_BINFO (val->type)
+          || !polymorphic_type_binfo_p (TYPE_BINFO (val->type))))
+    {
+      prevail = true;
+      build_bases = true;
+    }
   /* Always prefer complete type to be the leader.  */
-
-  if (!COMPLETE_TYPE_P (val->type) && COMPLETE_TYPE_P (type))
+  else if (!COMPLETE_TYPE_P (val->type) && COMPLETE_TYPE_P (type))
     {
       prevail = true;
       build_bases = TYPE_BINFO (type);
@@ -1563,7 +1572,8 @@ add_type_duplicate (odr_type val, tree type)
 		   Be sure this does not happen.  */
 		gcc_assert (TYPE_BINFO (type2)
 			    || !polymorphic_type_binfo_p (TYPE_BINFO (type1))
-			    || build_bases);
+			    || build_bases
+			    || val->odr_violated);
 	        break;
 	      }
 	    /* One base is polymorphic and the other not.
@@ -1865,9 +1875,9 @@ dump_odr_type (FILE *f, odr_type t, int indent=0)
   fprintf (f, "%s\n", t->all_derivations_known ? " (derivations known)":"");
   if (TYPE_NAME (t->type))
     {
-      fprintf (f, "%*s defined at: %s:%i\n", indent * 2, "",
+      /*fprintf (f, "%*s defined at: %s:%i\n", indent * 2, "",
 	       DECL_SOURCE_FILE (TYPE_NAME (t->type)),
-	       DECL_SOURCE_LINE (TYPE_NAME (t->type)));
+	       DECL_SOURCE_LINE (TYPE_NAME (t->type)));*/
       if (DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t->type)))
         fprintf (f, "%*s mangled name: %s\n", indent * 2, "",
 		 IDENTIFIER_POINTER
