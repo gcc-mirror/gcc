@@ -1,3 +1,10 @@
+2015-03-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (__gnu_cxx::__cxx11): Define new namespace.
+	* include/ext/codecvt_specializations.h (encoding_state,
+	encoding_char_traits): Remove abi-tag and use inline namespace.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust dg-error line.
+
 2015-03-19  Jason Merrill  <jason@redhat.com>
 
 	* config/locale/gnu/messages_members.cc: Revert abi-tag change.
