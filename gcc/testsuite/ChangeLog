@@ -1,3 +1,8 @@
+2015-03-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/64366
+	* gcc.target/sh/pr64366.c: New.
+
 2015-03-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/48324
