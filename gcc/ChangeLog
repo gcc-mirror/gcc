@@ -1,3 +1,14 @@
+2015-03-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64715
+	* tree-chrec.c (chrec_fold_poly_cst): Use useless_type_conversion_p
+	for type comparison and gcc_checking_assert.
+	(chrec_fold_plus_poly_poly): Likewise.
+	(chrec_fold_multiply_poly_poly): Likewise.
+	(chrec_convert_1): Likewise.
+	* gimplify.c (gimplify_expr): Remove premature folding of
+	&X + CST to &MEM[&X, CST].
+
 2015-03-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline.c (can_inline_edge_p): Short circuit if inline_failed
