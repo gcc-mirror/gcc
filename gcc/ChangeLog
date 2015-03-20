@@ -1,3 +1,12 @@
+2015-03-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (can_inline_edge_p): Short circuit if inline_failed
+	already is final.
+	(ipa_inline): Recompute inline_failed codes.
+	* cif-code.def (FUNCTION_NOT_OPTIMIZED, REDEFINED_EXTERN_INLINE,
+	USES_COMDAT_LOCAL, ATTRIBUTE_MISMATCH, UNREACHABLE): Declare as 
+	CIF_FINAL_ERROR.
+
 2015-03-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/60851
