@@ -312,6 +312,15 @@ static bool
 can_inline_edge_p (struct cgraph_edge *e, bool report,
 		   bool disregard_limits = false, bool early = false)
 {
+  gcc_checking_assert (e->inline_failed);
+
+  if (cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
+    {
+      if (report)
+        report_inline_failed_reason (e);
+      return false;
+    }
+
   bool inlinable = true;
   enum availability avail;
   cgraph_node *callee = e->callee->ultimate_alias_target (&avail);
@@ -323,9 +332,7 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
   struct function *caller_fun = caller->get_fun ();
   struct function *callee_fun = callee ? callee->get_fun () : NULL;
 
-  gcc_assert (e->inline_failed);
-
-  if (!callee || !callee->definition)
+  if (!callee->definition)
     {
       e->inline_failed = CIF_BODY_NOT_AVAILABLE;
       inlinable = false;
@@ -363,8 +370,7 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
     }
   /* TM pure functions should not be inlined into non-TM_pure
      functions.  */
-  else if (is_tm_pure (callee->decl)
-	   && !is_tm_pure (caller->decl))
+  else if (is_tm_pure (callee->decl) && !is_tm_pure (caller->decl))
     {
       e->inline_failed = CIF_UNSPECIFIED;
       inlinable = false;
@@ -2289,7 +2295,22 @@ ipa_inline (void)
   nnodes = ipa_reverse_postorder (order);
 
   FOR_EACH_FUNCTION (node)
-    node->aux = 0;
+    {
+      node->aux = 0;
+
+      /* Recompute the default reasons for inlining because they may have
+	 changed during merging.  */
+      if (in_lto_p)
+	{
+	  for (cgraph_edge *e = node->callees; e; e = e->next_callee)
+	    {
+	      gcc_assert (e->inline_failed);
+	      initialize_inline_failed (e);
+	    }
+	  for (cgraph_edge *e = node->indirect_calls; e; e = e->next_callee)
+	    initialize_inline_failed (e);
+	}
+    }
 
   if (dump_file)
     fprintf (dump_file, "\nFlattening functions:\n");
