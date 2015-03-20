@@ -21,6 +21,12 @@
 	(extenddftf2_internal): Remove GHF constraints that are not valid
 	for extenddftf2.
 
+2015-03-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/63491
+	* lra-constraints.c (check_and_process_move): Use src instead of
+	sreg.  Remove some dead code.
+
 2015-03-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65380
@@ -77,7 +83,7 @@
 	Adjust find_split_points and split_function calls.
 
 2015-03-18  DJ Delorie  <dj@redhat.com>
-	
+
 	* config/rl78/rl78-virt.md (andqi3_virt): Allow far operands.
 	(iorqi3_virt): Likewise.
 
