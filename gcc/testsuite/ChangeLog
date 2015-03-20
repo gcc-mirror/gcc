@@ -1,4 +1,9 @@
-2015-03-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+2015-03-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/60851
+	* gcc.target/i386/pr60851.c: New test.
+
+2015-03-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/65240
 	* gcc/testsuite/g++.dg/pr65240.h: Add tests for PR 65240.
