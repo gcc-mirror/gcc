@@ -2213,6 +2213,8 @@ lookup_anon_field (tree t, tree type)
 {
   tree field;
 
+  t = TYPE_MAIN_VARIANT (t);
+
   for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
     {
       if (TREE_STATIC (field))
