@@ -3253,7 +3253,7 @@ option is known to the diagnostic machinery).  Specifying the
 By default, each diagnostic emitted includes the original source line
 and a caret '^' indicating the column.  This option suppresses this
 information.  The source line is truncated to @var{n} characters, if
-the @option{-fmessage-length=n} is given.  When the output is done
+the @option{-fmessage-length=n} option is given.  When the output is done
 to the terminal, the width is limited to the width given by the
 @env{COLUMNS} environment variable or, if not set, to the terminal width.
 
@@ -5157,8 +5157,8 @@ Requires @option{-flto-odr-type-merging} to be enabled.  Enabled by default.
 @item -Wopenmp-simd
 @opindex Wopenm-simd
 Warn if the vectorizer cost model overrides the OpenMP or the Cilk Plus
-simd directive set by user.  The @option{-fsimd-cost-model=unlimited} can
-be used to relax the cost model.
+simd directive set by user.  The @option{-fsimd-cost-model=unlimited}
+option can be used to relax the cost model.
 
 @item -Woverride-init @r{(C and Objective-C only)}
 @opindex Woverride-init
@@ -5810,7 +5810,8 @@ for a sanitizer component causes it to attempt to continue
 running the program as if no error happened.  This means multiple
 runtime errors can be reported in a single program run, and the exit
 code of the program may indicate success even when errors
-have been reported.  The @option{-fno-sanitize-recover=} can be used to alter
+have been reported.  The @option{-fno-sanitize-recover=} option
+can be used to alter
 this behavior: only the first detected error is reported
 and program then exits with a non-zero exit code.
 
@@ -5834,7 +5835,7 @@ Similarly @option{-fno-sanitize-recover} is equivalent to
 
 @item -fsanitize-undefined-trap-on-error
 @opindex fsanitize-undefined-trap-on-error
-The @option{-fsanitize-undefined-trap-on-error} instructs the compiler to
+The @option{-fsanitize-undefined-trap-on-error} option instructs the compiler to
 report undefined behavior using @code{__builtin_trap} rather than
 a @code{libubsan} library routine.  The advantage of this is that the
 @code{libubsan} library is not needed and is not linked in, so this
@@ -9259,7 +9260,8 @@ them as usual to produce @file{myprog}.
 The only important thing to keep in mind is that to enable link-time
 optimizations you need to use the GCC driver to perform the link-step.
 GCC then automatically performs link-time optimization if any of the
-objects involved were compiled with the @option{-flto}.  You generally
+objects involved were compiled with the @option{-flto} command-line option.  
+You generally
 should specify the optimization options to be used for link-time
 optimization though GCC tries to be clever at guessing an
 optimization level to use from the options used at compile-time
@@ -10446,7 +10448,8 @@ This value is used to limit superblock formation once the given percentage of
 executed instructions is covered.  This limits unnecessary code size
 expansion.
 
-The @option{tracer-dynamic-coverage-feedback} is used only when profile
+The @option{tracer-dynamic-coverage-feedback} parameter
+is used only when profile
 feedback is available.  The real profiles (as opposed to statically estimated
 ones) are much less balanced allowing the threshold to be larger value.
 
@@ -10534,7 +10537,8 @@ branch or duplicate the code on its destination.  Code is duplicated when its
 estimated size is smaller than this value multiplied by the estimated size of
 unconditional jump in the hot spots of the program.
 
-The @option{reorder-block-duplicate-feedback} is used only when profile
+The @option{reorder-block-duplicate-feedback} parameter
+is used only when profile
 feedback is available.  It may be set to higher values than
 @option{reorder-block-duplicate} since information about the hot spots is more
 accurate.
@@ -10811,7 +10815,7 @@ length can be changed using the @option{loop-block-tile-size}
 parameter.  The default value is 51 iterations.
 
 @item loop-unroll-jam-size
-Specify the unroll factor for the @option{-floop-unroll-and-jam}.  The 
+Specify the unroll factor for the @option{-floop-unroll-and-jam} option.  The 
 default value is 4.
 
 @item loop-unroll-jam-depth
@@ -11446,7 +11450,7 @@ those results in a file name that is found, the unmodified program
 name is searched for using the directories specified in your
 @env{PATH} environment variable.
 
-The compiler checks to see if the path provided by the @option{-B}
+The compiler checks to see if the path provided by @option{-B}
 refers to a directory, and if necessary it adds a directory
 separator character at the end of the path.
 
@@ -11508,13 +11512,14 @@ such a suffix.
 @item -I-
 @opindex I-
 This option has been deprecated.  Please use @option{-iquote} instead for
-@option{-I} directories before the @option{-I-} and remove the @option{-I-}.
+@option{-I} directories before the @option{-I-} and remove the @option{-I-}
+option.
 Any directories you specify with @option{-I} options before the @option{-I-}
 option are searched only for the case of @code{#include "@var{file}"};
 they are not searched for @code{#include <@var{file}>}.
 
 If additional directories are specified with @option{-I} options after
-the @option{-I-}, these directories are searched for all @code{#include}
+the @option{-I-} option, these directories are searched for all @code{#include}
 directives.  (Ordinarily @emph{all} @option{-I} directories are used
 this way.)
 
@@ -17172,7 +17177,7 @@ These options control the treatment of the special not-a-number (NaN)
 IEEE 754 floating-point data with the @code{abs.@i{fmt}} and
 @code{neg.@i{fmt}} machine instructions.
 
-By default or when the @option{-mabs=legacy} is used the legacy
+By default or when @option{-mabs=legacy} is used the legacy
 treatment is selected.  In this case these instructions are considered
 arithmetic and avoided where correct operation is required and the
 input operand might be a NaN.  A longer sequence of instructions that
@@ -19048,8 +19053,8 @@ instructions.  The @option{-mquad-memory-atomic} option requires use of
 Generate code that uses (does not use) the scalar double precision
 instructions that target all 64 registers in the vector/scalar
 floating point register set that were added in version 2.06 of the
-PowerPC ISA.  The @option{-mupper-regs-df} turned on by default if you
-use either of the @option{-mcpu=power7}, @option{-mcpu=power8}, or
+PowerPC ISA.  @option{-mupper-regs-df} is turned on by default if you
+use any of the @option{-mcpu=power7}, @option{-mcpu=power8}, or
 @option{-mvsx} options.
 
 @item -mupper-regs-sf
@@ -19059,8 +19064,8 @@ use either of the @option{-mcpu=power7}, @option{-mcpu=power8}, or
 Generate code that uses (does not use) the scalar single precision
 instructions that target all 64 registers in the vector/scalar
 floating point register set that were added in version 2.07 of the
-PowerPC ISA.  The @option{-mupper-regs-sf} turned on by default if you
-use either of the @option{-mcpu=power8}, or @option{-mpower8-vector}
+PowerPC ISA.  @option{-mupper-regs-sf} is turned on by default if you
+use either of the @option{-mcpu=power8} or @option{-mpower8-vector}
 options.
 
 @item -mupper-regs
@@ -19829,7 +19834,7 @@ static chain value to be loaded in register @code{r11}.  The
 @option{-mpointers-to-nested-functions} is on by default.  You cannot
 call through pointers to nested functions or pointers
 to functions compiled in other languages that use the static chain if
-you use the @option{-mno-pointers-to-nested-functions}.
+you use @option{-mno-pointers-to-nested-functions}.
 
 @item -msave-toc-indirect
 @itemx -mno-save-toc-indirect
