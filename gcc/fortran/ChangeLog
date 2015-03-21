@@ -1,3 +1,8 @@
+2015-03-21  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-expr.c (gfc_get_tree_for_caf_expr): Reject unimplemented
+	coindexed coarray accesses.
+
 2014-03-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/59198

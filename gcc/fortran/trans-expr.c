@@ -1498,9 +1498,64 @@ gfc_get_tree_for_caf_expr (gfc_expr *expr)
 {
   tree caf_decl;
   bool found = false;
-  gfc_ref *ref;
+  gfc_ref *ref, *comp_ref = NULL;
 
   gcc_assert (expr && expr->expr_type == EXPR_VARIABLE);
+
+  /* Not-implemented diagnostic.  */
+  for (ref = expr->ref; ref; ref = ref->next)
+    if (ref->type == REF_COMPONENT)
+      {
+        comp_ref = ref;
+	if ((ref->u.c.component->ts.type == BT_CLASS
+	     && !CLASS_DATA (ref->u.c.component)->attr.codimension
+	     && (CLASS_DATA (ref->u.c.component)->attr.pointer
+		 || CLASS_DATA (ref->u.c.component)->attr.allocatable))
+	    || (ref->u.c.component->ts.type != BT_CLASS
+		&& !ref->u.c.component->attr.codimension
+		&& (ref->u.c.component->attr.pointer
+		    || ref->u.c.component->attr.allocatable)))
+	  gfc_error ("Sorry, coindexed access to a pointer or allocatable "
+		     "component of the coindexed coarray at %L is not yet "
+		     "supported", &expr->where);
+      }
+  if ((!comp_ref
+       && ((expr->symtree->n.sym->ts.type == BT_CLASS
+	    && CLASS_DATA (expr->symtree->n.sym)->attr.alloc_comp)
+	   || (expr->symtree->n.sym->ts.type == BT_DERIVED
+	       && expr->symtree->n.sym->ts.u.derived->attr.alloc_comp)))
+      || (comp_ref
+	  && ((comp_ref->u.c.component->ts.type == BT_CLASS
+	       && CLASS_DATA (comp_ref->u.c.component)->attr.alloc_comp)
+	      || (comp_ref->u.c.component->ts.type == BT_DERIVED
+		  && comp_ref->u.c.component->ts.u.derived->attr.alloc_comp))))
+    gfc_error ("Sorry, coindexed coarray at %L with allocatable component is "
+	       "not yet supported", &expr->where);
+
+  if (expr->rank)
+    {
+      /* Without the new array descriptor, access like "caf[i]%a(:)%b" is in
+	 general not possible as the required stride multiplier might be not
+	 a multiple of c_sizeof(b). In case of noncoindexed access, the
+	 scalarizer often takes care of it - for coarrays, it always fails.  */
+      for (ref = expr->ref; ref; ref = ref->next)
+        if (ref->type == REF_COMPONENT
+	    && ((ref->u.c.component->ts.type == BT_CLASS
+		 && CLASS_DATA (ref->u.c.component)->attr.codimension)
+	        || (ref->u.c.component->ts.type != BT_CLASS
+		    && ref->u.c.component->attr.codimension)))
+	  break;
+      if (ref == NULL)
+	ref = expr->ref;
+      for ( ; ref; ref = ref->next)
+	if (ref->type == REF_ARRAY && ref->u.ar.dimen)
+	  break;
+      for ( ; ref; ref = ref->next)
+	if (ref->type == REF_COMPONENT)
+	  gfc_error ("Sorry, coindexed access at %L to a scalar component "
+		     "with an array partref is not yet supported",
+		     &expr->where);
+    }
 
   caf_decl = expr->symtree->n.sym->backend_decl;
   gcc_assert (caf_decl);
