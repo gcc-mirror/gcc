@@ -1,4 +1,9 @@
-2014-03-19  Paul Thomas  <pault@gcc.gnu.org>
+2015-03-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/61138
+	* gfortran.dg/pointer_remapping_9.f90: New.
+
+2015-03-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from mainline
 	PR fortran/59198
