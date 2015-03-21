@@ -215,7 +215,7 @@
 2015-03-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/61138
-	gfortran.dg/pointer_remapping_9.f90: New.
+	* gfortran.dg/pointer_remapping_9.f90: New.
 
 2015-03-14  Jakub Jelinek  <jakub@redhat.com>
 
