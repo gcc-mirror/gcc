@@ -16,7 +16,7 @@
 	* trans-expr.c (gfc_get_tree_for_caf_expr): Reject unimplemented
 	coindexed coarray accesses.
 
-2014-03-17  Paul Thomas  <pault@gcc.gnu.org>
+2015-03-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/59198
 	* trans-types.c (gfc_get_derived_type): If an abstract derived
