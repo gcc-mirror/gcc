@@ -2008,6 +2008,8 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " only_called_at_exit");
   if (opt_for_fn (decl, optimize_size))
     fprintf (f, " optimize_size");
+  if (parallelized_function)
+    fprintf (f, " parallelized_function");
 
   fprintf (f, "\n");
 

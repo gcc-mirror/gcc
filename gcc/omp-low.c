@@ -1564,6 +1564,7 @@ finalize_task_copyfn (gomp_task *task_stmt)
 
   /* Inform the callgraph about the new function.  */
   cgraph_node::add_new_function (child_fn, false);
+  cgraph_node::get (child_fn)->parallelized_function = 1;
 }
 
 /* Destroy a omp_context data structures.  Called through the splay tree
@@ -5569,6 +5570,7 @@ expand_omp_taskreg (struct omp_region *region)
       /* Inform the callgraph about the new function.  */
       DECL_STRUCT_FUNCTION (child_fn)->curr_properties = cfun->curr_properties;
       cgraph_node::add_new_function (child_fn, true);
+      cgraph_node::get (child_fn)->parallelized_function = 1;
 
       /* Fix the callgraph edges for child_cfun.  Those for cfun will be
 	 fixed in a following pass.  */

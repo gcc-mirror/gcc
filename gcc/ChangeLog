@@ -1,3 +1,20 @@
+2015-03-21  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/65458
+	* cgraph.c (cgraph_node::dump): Handle parallelized_function field.
+	* cgraph.h (cgraph_node): Add parallelized_function field.
+	* lto-cgraph.c (lto_output_node): Write parallelized_function field.
+	(input_overwrite_node): Read parallelized_function field.
+	* omp-low.c (expand_omp_taskreg, finalize_task_copyfn): Set
+	parallelized_function on cgraph_node for child_fn.
+	* tree-parloops.c: Add include of plugin-api.h, ipa-ref.h and cgraph.h.
+	Remove include of gt-tree-parloops.h.
+	(parallelized_functions): Remove static variable.
+	(parallelized_function_p): Rewrite using parallelized_function field of
+	cgraph_node.
+	(create_loop_fn): Remove adding to parallelized_functions.
+	* Makefile.in (GTFILES): Remove tree-parloops.c
+
 2015-03-20  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/64366

@@ -574,6 +574,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->icf_merged, 1);
   bp_pack_value (&bp, node->nonfreeing_fn, 1);
   bp_pack_value (&bp, node->thunk.thunk_p, 1);
+  bp_pack_value (&bp, node->parallelized_function, 1);
   bp_pack_enum (&bp, ld_plugin_symbol_resolution,
 	        LDPR_NUM_KNOWN, node->resolution);
   bp_pack_value (&bp, node->instrumentation_clone, 1);
@@ -1209,6 +1210,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->icf_merged = bp_unpack_value (bp, 1);
   node->nonfreeing_fn = bp_unpack_value (bp, 1);
   node->thunk.thunk_p = bp_unpack_value (bp, 1);
+  node->parallelized_function = bp_unpack_value (bp, 1);
   node->resolution = bp_unpack_enum (bp, ld_plugin_symbol_resolution,
 				     LDPR_NUM_KNOWN);
   node->instrumentation_clone = bp_unpack_value (bp, 1);
