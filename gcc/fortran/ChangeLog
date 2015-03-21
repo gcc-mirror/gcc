@@ -1,3 +1,8 @@
+2015-03-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gfortran.texi (_gfortran_caf_sync_memory): Put @{xxx} in one
+	line.
+
 2015-03-21  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi (_gfortran_caf_sync_all, _gfortran_caf_sync_images,
