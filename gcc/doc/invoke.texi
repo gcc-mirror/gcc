@@ -5843,31 +5843,42 @@ is usable even in freestanding environments.
 @item -fcheck-pointer-bounds
 @opindex fcheck-pointer-bounds
 @opindex fno-check-pointer-bounds
+@cindex Pointer Bounds Checker options
 Enable Pointer Bounds Checker instrumentation.  Each memory reference
-is instrumented with checks of pointer used for memory access against
-bounds associated with that pointer.  Generated instrumentation may
-be controlled by various @option{-fchkp-*} options.  Currently there
-is only Intel MPX based implementation available, thus i386 target
-and @option{-mmpx} are required.  MPX based instrumentation requires
-a runtime library to enable MPX in a hardware and handle bounds
+is instrumented with checks of the pointer used for memory access against
+bounds associated with that pointer.  
+
+Currently there
+is only an implementation for Intel MPX available, thus x86 target
+and @option{-mmpx} are required to enable this feature.  
+MPX-based instrumentation requires
+a runtime library to enable MPX in hardware and handle bounds
 violation signals.  By default when @option{-fcheck-pointer-bounds}
 and @option{-mmpx} options are used to link a program, the GCC driver
-links against @option{libmpx} runtime library.  MPX based instrumentation
-may be used for a debugging and also it may be included into a release
-version to increase program security.  Depending on usage you may
-put different requirements to runtime library.  Current version
- of MPX runtime library is more oriented to be used as a debugging
+links against the @file{libmpx} runtime library.  MPX-based instrumentation
+may be used for debugging and also may be included in production code
+to increase program security.  Depending on usage, you may
+have different requirements for the runtime library.  The current version
+of the MPX runtime library is more oriented for use as a debugging
 tool.  MPX runtime library usage implies @option{-lpthread}.  See
 also @option{-static-libmpx}.  The runtime library  behavior can be
 influenced using various @env{CHKP_RT_*} environment variables.  See
 @uref{https://gcc.gnu.org/wiki/Intel%20MPX%20support%20in%20the%20GCC%20compiler}
 for more details.
 
+Generated instrumentation may be controlled by various
+@option{-fchkp-*} options and by the @code{bnd_variable_size}
+structure field attribute (@pxref{Type Attributes}) and
+@code{bnd_legacy}, and @code{bnd_instrument} function attributes
+(@pxref{Function Attributes}).  GCC also provides a number of built-in
+functions for controlling the Pointer Bounds Checker.  @xref{Pointer
+Bounds Checker builtins}, for more information.
+
 @item -fchkp-check-incomplete-type
 @opindex fchkp-check-incomplete-type
 @opindex fno-chkp-check-incomplete-type
 Generate pointer bounds checks for variables with incomplete type.
-Enabled by default
+Enabled by default.  
 
 @item -fchkp-narrow-bounds
 @opindex fchkp-narrow-bounds
@@ -5880,15 +5891,15 @@ and @option{-fchkp-first-field-has-own-bounds}.  Enabled by default.
 @item -fchkp-first-field-has-own-bounds
 @opindex fchkp-first-field-has-own-bounds
 @opindex fno-chkp-first-field-has-own-bounds
-Forces Pointer Bounds Checker to use narrowed bounds for address of the
-first field in the structure.  By default pointer to the first field has
-the same bounds as pointer to the whole structure.
+Forces Pointer Bounds Checker to use narrowed bounds for the address of the
+first field in the structure.  By default a pointer to the first field has
+the same bounds as a pointer to the whole structure.
 
 @item -fchkp-narrow-to-innermost-array
 @opindex fchkp-narrow-to-innermost-array
 @opindex fno-chkp-narrow-to-innermost-array
 Forces Pointer Bounds Checker to use bounds of the innermost arrays in
-case of nested static arryas access.  By default it is disabled and
+case of nested static array access.  By default this option is disabled and
 bounds of the outermost array are used.
 
 @item -fchkp-optimize
@@ -5900,13 +5911,13 @@ optimization levels @option{-O}, @option{-O2}, @option{-O3}.
 @item -fchkp-use-fast-string-functions
 @opindex fchkp-use-fast-string-functions
 @opindex fno-chkp-use-fast-string-functions
-Allow to use @code{*_nobnd} versions of string functions (not copying bounds)
+Enables use of @code{*_nobnd} versions of string functions (not copying bounds)
 by Pointer Bounds Checker.  Disabled by default.
 
 @item -fchkp-use-nochk-string-functions
 @opindex fchkp-use-nochk-string-functions
 @opindex fno-chkp-use-nochk-string-functions
-Allow to use @code{*_nochk} versions of string functions (not checking bounds)
+Enables use of @code{*_nochk} versions of string functions (not checking bounds)
 by Pointer Bounds Checker.  Disabled by default.
 
 @item -fchkp-use-static-bounds
@@ -5918,16 +5929,17 @@ bounds of static variables.  Enabled by default.
 @item -fchkp-use-static-const-bounds
 @opindex fchkp-use-static-const-bounds
 @opindex fno-chkp-use-static-const-bounds
-Use statically initialized bounds for constant bounds instead of
-generating them each time it is required.  By default enabled when
+Use statically-initialized bounds for constant bounds instead of
+generating them each time they are required.  By default enabled when
 @option{-fchkp-use-static-bounds} is enabled.
 
 @item -fchkp-treat-zero-dynamic-size-as-infinite
 @opindex fchkp-treat-zero-dynamic-size-as-infinite
 @opindex fno-chkp-treat-zero-dynamic-size-as-infinite
-With this option zero size obtained dynamically for objects with
-incomplete type will be treated as infinite by Pointer Bounds
-Checker.  It may be helpful if program is linked with a library
+With this option, objects with incomplete type whose
+dynamically-obtained size is zero are treated as having infinite size
+instead by Pointer Bounds
+Checker.  This option may be helpful if a program is linked with a library
 missing size information for some symbols.  Disabled by default.
 
 @item -fchkp-check-read
@@ -5958,15 +5970,16 @@ Enabled by default.
 @opindex fchkp-instrument-marked-only
 @opindex fno-chkp-instrument-marked-only
 Instructs Pointer Bounds Checker to instrument only functions
-marked with @code{bnd_instrument} attribute.  Disabled by default.
+marked with the @code{bnd_instrument} attribute
+(@pxref{Function Attributes}).  Disabled by default.
 
 @item -fchkp-use-wrappers
 @opindex fchkp-use-wrappers
 @opindex fno-chkp-use-wrappers
-Allows Pointer Bounds Checker to replace calls to built-in function
-with calls to wrapper functions.  When the @option{-fchkp-use-wrappers}
+Allows Pointer Bounds Checker to replace calls to built-in functions
+with calls to wrapper functions.  When @option{-fchkp-use-wrappers}
 is used to link a program, the GCC driver automatically links
-agains @option{libmpxwrappers}.  See also @option{-static-libmpxwrappers}.
+against @file{libmpxwrappers}.  See also @option{-static-libmpxwrappers}.
 Enabled by default.
 
 @item -fdump-final-insns@r{[}=@var{file}@r{]}
@@ -11278,9 +11291,9 @@ other libraries statically.
 
 @item -static-libmpx
 @opindex static-libmpx
-When @option{-fcheck-pointer bounds} and @option{-mmpx} options are
+When the @option{-fcheck-pointer bounds} and @option{-mmpx} options are
 used to link a program, the GCC driver automatically links against
-@option{libmpx}.  If @file{libmpx} is available as a shared library,
+@file{libmpx}.  If @file{libmpx} is available as a shared library,
 and the @option{-static} option is not used, then this links against
 the shared version of @file{libmpx}.  The @option{-static-libmpx}
 option directs the GCC driver to link @file{libmpx} statically,
@@ -11288,9 +11301,9 @@ without necessarily linking other libraries statically.
 
 @item -static-libmpxwrappers
 @opindex static-libmpxwrappers
-When @option{-fcheck-pointer bounds}, @option{-mmpx} options are used and
-@option{-fno-chkp-use-wrappers} option is not used to link a program, the
-GCC driver automatically links against @option{libmpxwrappers}.  If
+When the @option{-fcheck-pointer bounds} and @option{-mmpx} options are used
+to link a program without also using @option{-fno-chkp-use-wrappers}, the
+GCC driver automatically links against @file{libmpxwrappers}.  If
 @file{libmpxwrappers} is available as a shared library, and the
 @option{-static} option is not used, then this links against the shared
 version of @file{libmpxwrappers}.  The @option{-static-libmpxwrappers}
