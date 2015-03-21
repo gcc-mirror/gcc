@@ -3314,6 +3314,15 @@ caf_register_t;
 * _gfortran_caf_sendget:: Sending data between remote images
 * _gfortran_caf_lock:: Locking a lock variable
 * _gfortran_caf_unlock:: Unlocking a lock variable
+* _gfortran_caf_sync_all:: All-image barrier
+* _gfortran_caf_sync_images:: Barrier for selected images
+* _gfortran_caf_sync_memory:: Wait for completion of segment-memory operations
+* _gfortran_caf_error_stop:: Error termination with exit code
+* _gfortran_caf_error_stop_str:: Error termination with string
+* _gfortran_caf_atomic_define:: Atomic variable assignment
+* _gfortran_caf_atomic_ref:: Atomic variable reference
+* _gfortran_caf_atomic_cas:: Atomic compare and swap
+* _gfortran_caf_atomic_op:: Atomic operation
 * _gfortran_caf_co_broadcast:: Sending data to all images
 * _gfortran_caf_co_max:: Collective maximum reduction
 * _gfortran_caf_co_min:: Collective minimum reduction
@@ -3760,6 +3769,270 @@ images for critical-block locking variables.
 @end table
 
 
+@node _gfortran_caf_sync_all
+@subsection @code{_gfortran_caf_sync_all} --- All-image barrier
+@cindex Coarray, _gfortran_caf_sync_all
+
+@table @asis
+@item @emph{Description}:
+Synchronization of all images in the current team; the program only continues
+on a given image after this function has been called on all images of the
+current team.  Additionally, it ensures that all pending data transfers of
+previous segment have completed.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_sync_all (int *stat, char *errmsg, int errmsg_len)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
+@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+an error message; may be NULL
+@item @var{errmsg_len} @tab the buffer size of errmsg.
+@end multitable
+@end table
+
+
+
+@node _gfortran_caf_sync_images
+@subsection @code{_gfortran_caf_sync_images} --- Barrier for selected images
+@cindex Coarray, _gfortran_caf_sync_images
+
+@table @asis
+@item @emph{Description}:
+Synchronization between the specified images; the program only continues on a
+given image after this function has been called on all images specified for
+that image. Note that one image can wait for all other images in the current
+team (e.g. via @code{sync images(*)}) while those only wait for that specific
+image.  Additionally, @code{sync images} it ensures that all pending data
+transfers of previous segment have completed.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_sync_images (int count, int images[], int *stat,
+char *errmsg, int errmsg_len)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{count} @tab the number of images which are provided in the next
+argument.  For a zero-sized array, the value is zero.  For @code{sync
+images (*)}, the value is @math{-1}.
+@item @var{images} @tab intent(in) an array with the images provided by the
+user. If @var{count} is zero, a NULL pointer is passed.
+@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
+@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+an error message; may be NULL
+@item @var{errmsg_len} @tab the buffer size of errmsg.
+@end multitable
+@end table
+
+
+
+@node _gfortran_caf_sync_memory
+@subsection @code{_gfortran_caf_sync_memory} --- Wait for completion of segment-memory operations
+@cindex Coarray, _gfortran_caf_sync_memory
+
+@table @asis
+@item @emph{Description}:
+Acts as optimization barrier between different segments. It also ensures that
+all pending memory operations of this image have been completed.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_sync_memory (int *stat, char *errmsg, int errmsg_len)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
+@item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
+an error message; may be NULL
+@item @var{errmsg_len} @tab the buffer size of errmsg.
+@end multitable
+
+@item @emph{NOTE} A simple implementation could be a simple @code{__asm__
+__volatile__ ("":::"memory)} to prevent code movements.
+@end table
+
+
+
+@node _gfortran_caf_error_stop
+@subsection @code{_gfortran_caf_error_stop} --- Error termination with exit code
+@cindex Coarray, _gfortran_caf_error_stop
+
+@table @asis
+@item @emph{Description}:
+Invoked for an @code{ERROR STOP} statement which has an integer argument.  The
+function should terminate the program with the specified exit code.
+
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_error_stop (int32_t error)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{error} @tab the exit status to be used.
+@end multitable
+@end table
+
+
+
+@node _gfortran_caf_error_stop_str
+@subsection @code{_gfortran_caf_error_stop_str} --- Error termination with string
+@cindex Coarray, _gfortran_caf_error_stop_str
+
+@table @asis
+@item @emph{Description}:
+Invoked for an @code{ERROR STOP} statement which has a string as argument.  The
+function should terminate the program with a nonzero-exit code.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_error_stop (const char *string, int32_t len)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{string} @tab the error message (not zero terminated)
+@item @var{len} @tab the length of the string
+@end multitable
+@end table
+
+
+
+@node _gfortran_caf_atomic_define
+@subsection @code{_gfortran_caf_atomic_define} --- Atomic variable assignment
+@cindex Coarray, _gfortran_caf_atomic_define
+
+@table @asis
+@item @emph{Description}:
+Assign atomically a value to an integer or logical variable.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_atomic_define (caf_token_t token, size_t offset,
+int image_index, void *value, int *stat, int type, int kind)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
+@item @var{offset} @tab By which amount of bytes the actual data is shifted
+compared to the base address of the coarray.
+@item @var{image_index} @tab The ID of the remote image; must be a positive
+number.
+@item @var{value} @tab intent(in) the value to be assigned, passed by reference.
+@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
+@item @var{type} @tab the data type, i.e. @code{BT_INTEGER} (1) or
+@code{BT_LOGICAL} (2).
+@item @var{kind} @tab The kind value (only 4; always @code{int})
+@end multitable
+@end table
+
+
+
+@node _gfortran_caf_atomic_ref
+@subsection @code{_gfortran_caf_atomic_ref} --- Atomic variable reference
+@cindex Coarray, _gfortran_caf_atomic_ref
+
+@table @asis
+@item @emph{Description}:
+Reference atomically a value of a kind-4 integer or logical variable.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_atomic_ref (caf_token_t token, size_t offset,
+int image_index, void *value, int *stat, int type, int kind)}
+
+@item @emph{Arguments}:
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
+@item @var{offset} @tab By which amount of bytes the actual data is shifted
+compared to the base address of the coarray.
+@item @var{image_index} @tab The ID of the remote image; must be a positive
+number.
+@item @var{value} @tab intent(out) The variable assigned the atomically
+referenced variable.
+@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
+@item @var{type} @tab the data type, i.e. @code{BT_INTEGER} (1) or
+@code{BT_LOGICAL} (2).
+@item @var{kind} @tab The kind value (only 4; always @code{int})
+@end multitable
+@end table
+
+
+
+@node _gfortran_caf_atomic_cas
+@subsection @code{_gfortran_caf_atomic_cas} --- Atomic compare and swap
+@cindex Coarray, _gfortran_caf_atomic_cas
+
+@table @asis
+@item @emph{Description}:
+Atomic compare and swap of a kind-4 integer or logical variable. Assigns
+atomically the specified value to the atomic variable, if the latter has
+the value specified by the passed condition value.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_atomic_cas (caf_token_t token, size_t offset,
+int image_index, void *old, void *compare, void *new_val, int *stat,
+int type, int kind)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
+@item @var{offset} @tab By which amount of bytes the actual data is shifted
+compared to the base address of the coarray.
+@item @var{image_index} @tab The ID of the remote image; must be a positive
+number.
+@item @var{old} @tab intent(out) the value which the atomic variable had
+just before the cas operation.
+@item @var{compare} @tab intent(in) The value used for comparision.
+@item @var{new_val} @tab intent(in) The new value for the atomic variable,
+assigned to the atomic variable, if @code{compare} equals the value of the
+atomic variable.
+@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
+@item @var{type} @tab the data type, i.e. @code{BT_INTEGER} (1) or
+@code{BT_LOGICAL} (2).
+@item @var{kind} @tab The kind value (only 4; always @code{int})
+@end multitable
+@end table
+
+
+
+@node _gfortran_caf_atomic_op
+@subsection @code{_gfortran_caf_atomic_op} --- Atomic operation
+@cindex Coarray, _gfortran_caf_atomic_op
+
+@table @asis
+@item @emph{Description}:
+Apply an operation atomically to an atomic integer or logical variable.
+After the operation, @var{old} contains the value just before the operation,
+which, respectively, adds (GFC_CAF_ATOMIC_ADD) atomically the @code{value} to
+the atomic integer variable or does a bitwise AND, OR or exclusive OR of the
+between the atomic variable and @var{value}; the result is then stored in the
+atomic variable.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_atomic_op (int op, caf_token_t token, size_t offset,
+int image_index, void *value, void *old, int *stat, int type, int kind)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{op} @tab the operation to be performed; possible values
+@code{GFC_CAF_ATOMIC_ADD} (1), @code{GFC_CAF_ATOMIC_AND} (2),
+@code{GFC_CAF_ATOMIC_OR} (3), @code{GFC_CAF_ATOMIC_XOR} (4).
+@item @var{token} @tab intent(in) An opaque pointer identifying the coarray.
+@item @var{offset} @tab By which amount of bytes the actual data is shifted
+compared to the base address of the coarray.
+@item @var{image_index} @tab The ID of the remote image; must be a positive
+number.
+@item @var{old} @tab intent(out) the value which the atomic variable had
+just before the atomic operation.
+@item @var{val} @tab intent(in) The new value for the atomic variable,
+assigned to the atomic variable, if @code{compare} equals the value of the
+atomic variable.
+@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
+@item @var{type} @tab the data type, i.e. @code{BT_INTEGER} (1) or
+@code{BT_LOGICAL} (2).
+@item @var{kind} @tab The kind value (only 4; always @code{int})
+@end multitable
+@end table
+
+
+
 
 @node _gfortran_caf_co_broadcast
 @subsection @code{_gfortran_caf_co_broadcast} --- Sending data to all images
@@ -3780,7 +4053,7 @@ int source_image, int *stat, char *errmsg, int errmsg_len)}
 breoadcasted (on @var{source_image}) or to be received (other images).
 @item @var{source_image} @tab The ID of the image from which the data should
 be taken.
-@item @var{stat} @tab intent(out) Stores the status STAT= and my may be NULL.
+@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
 @item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
 an error message; may be NULL
 @item @var{errmsg_len} @tab the buffer size of errmsg.
@@ -3811,7 +4084,7 @@ int *stat, char *errmsg, int a_len, int errmsg_len)}
 breoadcasted (on @var{source_image}) or to be received (other images).
 @item @var{result_image} @tab The ID of the image to which the reduced
 value should be copied to; if zero, it has to be copied to all images.
-@item @var{stat} @tab intent(out) Stores the status STAT= and my may be NULL.
+@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
 @item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
 an error message; may be NULL
 @item @var{a_len} @tab The string length of argument @var{a}.
@@ -3847,7 +4120,7 @@ int *stat, char *errmsg, int a_len, int errmsg_len)}
 breoadcasted (on @var{source_image}) or to be received (other images).
 @item @var{result_image} @tab The ID of the image to which the reduced
 value should be copied to; if zero, it has to be copied to all images.
-@item @var{stat} @tab intent(out) Stores the status STAT= and my may be NULL.
+@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
 @item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
 an error message; may be NULL
 @item @var{a_len} @tab The string length of argument @var{a}.
@@ -3882,7 +4155,7 @@ int *stat, char *errmsg, int errmsg_len)}
 breoadcasted (on @var{source_image}) or to be received (other images).
 @item @var{result_image} @tab The ID of the image to which the reduced
 value should be copied to; if zero, it has to be copied to all images.
-@item @var{stat} @tab intent(out) Stores the status STAT= and my may be NULL.
+@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
 @item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
 an error message; may be NULL
 @item @var{errmsg_len} @tab the buffer size of errmsg.
@@ -3928,7 +4201,7 @@ int *stat, char *errmsg, int a_len, int errmsg_len)}
 breoadcasted (on @var{source_image}) or to be received (other images).
 @item @var{result_image} @tab The ID of the image to which the reduced
 value should be copied to; if zero, it has to be copied to all images.
-@item @var{stat} @tab intent(out) Stores the status STAT= and my may be NULL.
+@item @var{stat} @tab intent(out) Stores the status STAT= and may be NULL.
 @item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
 an error message; may be NULL
 @item @var{a_len} @tab The string length of argument @var{a}.
