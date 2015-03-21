@@ -1,5 +1,13 @@
 2015-03-21  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.texi (_gfortran_caf_sync_all, _gfortran_caf_sync_images,
+	_gfortran_caf_sync_memory, _gfortran_caf_error_stop,
+	_gfortran_caf_error_stop_str, _gfortran_caf_atomic_define,
+	_gfortran_caf_atomic_ref, _gfortran_caf_atomic_cas,
+	_gfortran_caf_atomic_op): New sections.
+
+2015-03-21  Tobias Burnus  <burnus@net-b.de>
+
 	* trans-expr.c (gfc_get_tree_for_caf_expr): Reject unimplemented
 	coindexed coarray accesses.
 
