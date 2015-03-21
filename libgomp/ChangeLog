@@ -1,3 +1,8 @@
+2015-03-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/libgomp.oacc-c-c++-common/reduction-4.c: Don't run on
+	hppa*-*-hpux*.
+
 2015-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/target-10.c: New test.

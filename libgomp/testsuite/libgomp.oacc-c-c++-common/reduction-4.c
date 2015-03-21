@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target { ! { hppa*-*-hpux* } } } } */
 
 /* complex reductions.  */
 
