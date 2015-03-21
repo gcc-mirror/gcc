@@ -1,3 +1,23 @@
+2015-03-21  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (-fcheck-pointer-bounds): Copy-edit, add
+	additional index entries and cross-references.
+	(-fchkp-check-incomplete-type): Likewise.
+	(-fchkp-first-field-has-own-bounds): Likewise.
+	(-fchkp-narrow-to-innermost-array): Likewise.
+	(-fchkp-use-fast-string-functions): Likewise.
+	(-fchkp-use-nochk-string-functions): Likewise.
+	(-fchkp-use-static-const-bounds): Likewise.
+	(-fchkp-treat-zero-dynamic-size-as-infinite): Likewise.
+	(-fchkp-instrument-marked-only): Likewise.
+	(-fchkp-use-wrappers): Likewise.
+	(-static-libmpx): Likewise.
+	(-static-libmpxwrappers): Likewise.
+	* doc/extend.texi (bnd_legacy): Likewise.
+	(bnd_instrument): Likewise.
+	(bnd_variable_size): Likewise.
+	(Pointer Bounds Checker builtins): Likewise.
+
 2015-03-21  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/65458
