@@ -1,3 +1,12 @@
+2015-03-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backport from trunk:
+	2015-03-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/61138
+	* trans-expr.c (gfc_trans_pointer_assignment): Clear DESCRIPTOR_ONLY
+	field before reusing LSE.
+
 2015-03-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from mainline
