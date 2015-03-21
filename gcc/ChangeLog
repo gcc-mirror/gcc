@@ -1,5 +1,9 @@
 2015-03-21  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* doc/extend.texi (Cilk Plus Builtins): Add markup.
+
+2015-03-21  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* doc/invoke.texi (-fcheck-pointer-bounds): Copy-edit, add
 	additional index entries and cross-references.
 	(-fchkp-check-incomplete-type): Likewise.
