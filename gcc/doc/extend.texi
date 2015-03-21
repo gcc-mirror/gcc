@@ -8916,19 +8916,19 @@ GCC provides support for the following built-in reduction functions if Cilk Plus
 is enabled. Cilk Plus can be enabled using the @option{-fcilkplus} flag.
 
 @itemize @bullet
-@item __sec_implicit_index
-@item __sec_reduce
-@item __sec_reduce_add
-@item __sec_reduce_all_nonzero
-@item __sec_reduce_all_zero
-@item __sec_reduce_any_nonzero
-@item __sec_reduce_any_zero
-@item __sec_reduce_max
-@item __sec_reduce_min
-@item __sec_reduce_max_ind
-@item __sec_reduce_min_ind
-@item __sec_reduce_mul
-@item __sec_reduce_mutating
+@item @code{__sec_implicit_index}
+@item @code{__sec_reduce}
+@item @code{__sec_reduce_add}
+@item @code{__sec_reduce_all_nonzero}
+@item @code{__sec_reduce_all_zero}
+@item @code{__sec_reduce_any_nonzero}
+@item @code{__sec_reduce_any_zero}
+@item @code{__sec_reduce_max}
+@item @code{__sec_reduce_min}
+@item @code{__sec_reduce_max_ind}
+@item @code{__sec_reduce_min_ind}
+@item @code{__sec_reduce_mul}
+@item @code{__sec_reduce_mutating}
 @end itemize
 
 Further details and examples about these built-in functions are described 
