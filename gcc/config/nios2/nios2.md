@@ -726,7 +726,7 @@
                     (match_operand 1 "" ""))
               (clobber (reg:SI RA_REGNO))])]
   ""
-  "nios2_adjust_call_address (&operands[0]);")
+  "nios2_adjust_call_address (&operands[0], NULL_RTX);")
 
 (define_expand "call_value"
   [(parallel [(set (match_operand 0 "" "")
@@ -734,7 +734,7 @@
                          (match_operand 2 "" "")))
               (clobber (reg:SI RA_REGNO))])]
   ""
-  "nios2_adjust_call_address (&operands[1]);")
+  "nios2_adjust_call_address (&operands[1], NULL_RTX);")
 
 (define_insn "*call"
   [(call (mem:QI (match_operand:SI 0 "call_operand" "i,r"))
@@ -762,7 +762,7 @@
                     (match_operand 1 "" ""))
               (return)])]
   ""
-  "nios2_adjust_call_address (&operands[0]);")
+  "nios2_adjust_call_address (&operands[0], NULL_RTX);")
 
 (define_expand "sibcall_value"
   [(parallel [(set (match_operand 0 "" "")
@@ -770,9 +770,9 @@
                          (match_operand 2 "" "")))
               (return)])]
   ""
-  "nios2_adjust_call_address (&operands[1]);")
+  "nios2_adjust_call_address (&operands[1], NULL_RTX);")
 
-(define_insn "*sibcall"
+(define_insn "sibcall_internal"
  [(call (mem:QI (match_operand:SI 0 "call_operand" "i,j"))
         (match_operand 1 "" ""))
   (return)]
@@ -782,7 +782,7 @@
    jmp\\t%0"
   [(set_attr "type" "control")])
 
-(define_insn "*sibcall_value"
+(define_insn "sibcall_value_internal"
  [(set (match_operand 0 "register_operand" "")
        (call (mem:QI (match_operand:SI 1 "call_operand" "i,j"))
              (match_operand 2 "" "")))

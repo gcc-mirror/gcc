@@ -1,3 +1,26 @@
+2015-03-21  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2-protos.h (nios2_adjust_call_address): Adjust
+	function parameter declaration.
+	* config/nios2/nios2.md (call,call_value,sibcall,sibcall_value):
+	Update arguments to nios2_adjust_call_address().
+	(sibcall_internal): Rename from *sibcall.
+	(sibcall_value_internal): Rename from *sibcall_value.
+	* config/nios2/nios2.c (nios2_emit_add_constant): New function.
+	(nios2_large_got_address): Add target temp reg parameter.
+	(nios2_got_address): Adjust call to nios2_large_got_address, add
+	force_reg around it.
+	(nios2_load_pic_address): Add target temp reg parameter, replace call
+	to nios2_got_address with corresponding code.
+	(nios2_legitimize_constant_address): Update call to
+	nios2_load_pic_address.
+	(nios2_adjust_call_address): Add temp reg parameter, update PIC case
+	to use temp reg for PIC loading purposes.
+	(nios2_asm_output_mi_thunk): Implement TARGET_ASM_OUTPUT_MI_THUNK.
+	(TARGET_ASM_CAN_OUTPUT_MI_THUNK): Define.
+	(TARGET_ASM_OUTPUT_MI_THUNK): Likewise.
+
 2015-03-21  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (-fno-diagnostics-show-caret): Fix
