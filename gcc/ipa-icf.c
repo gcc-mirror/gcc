@@ -557,6 +557,72 @@ sem_function::equals_wpa (sem_item *item,
   return true;
 }
 
+/* Update hash by address sensitive references. We iterate over all
+   sensitive references (address_matters_p) and we hash ultime alias
+   target of these nodes, which can improve a semantic item hash.
+   TODO: stronger SCC based hashing would be desirable here.  */
+
+void
+sem_item::update_hash_by_addr_refs (hash_map <symtab_node *,
+				    sem_item *> &m_symtab_node_map)
+{
+  if (is_a <varpool_node *> (node) && DECL_VIRTUAL_P (node->decl))
+    return;
+
+  ipa_ref* ref;
+  inchash::hash hstate (hash);
+  for (unsigned i = 0; i < node->num_references (); i++)
+    {
+      ref = node->iterate_reference (i, ref);
+      if (ref->address_matters_p () || !m_symtab_node_map.get (ref->referred))
+	hstate.add_ptr (ref->referred->ultimate_alias_target ());
+    }
+
+  if (is_a <cgraph_node *> (node))
+    {
+      for (cgraph_edge *e = dyn_cast <cgraph_node *> (node)->callers; e;
+	   e = e->next_caller)
+	{
+	  sem_item **result = m_symtab_node_map.get (e->callee);
+	  if (!result)
+	    hstate.add_ptr (e->callee->ultimate_alias_target ());
+	}
+    }
+
+  hash = hstate.end ();
+}
+
+/* Update hash by computed local hash values taken from different
+   semantic items.  */
+
+void
+sem_item::update_hash_by_local_refs (hash_map <symtab_node *,
+				     sem_item *> &m_symtab_node_map)
+{
+  inchash::hash state (hash);
+  for (unsigned j = 0; j < node->num_references (); j++)
+    {
+      ipa_ref *ref;
+      ref = node->iterate_reference (j, ref);
+      sem_item **result = m_symtab_node_map.get (ref->referring);
+      if (result)
+	state.merge_hash ((*result)->hash);
+    }
+
+  if (type == FUNC)
+    {
+      for (cgraph_edge *e = dyn_cast <cgraph_node *> (node)->callees; e;
+	   e = e->next_callee)
+	{
+	  sem_item **result = m_symtab_node_map.get (e->caller);
+	  if (result)
+	    state.merge_hash ((*result)->hash);
+	}
+    }
+
+  global_hash = state.end ();
+}
+
 /* Returns true if the item equals to ITEM given as argument.  */
 
 bool
@@ -1749,8 +1815,8 @@ hashval_t
 sem_variable::get_hash (void)
 {
   if (hash)
-
     return hash;
+
   /* All WPA streamed in symbols should have their hashes computed at compile
      time.  At this point, the constructor may not be in memory at all.
      DECL_INITIAL (decl) would be error_mark_node in that case.  */
@@ -2216,6 +2282,8 @@ sem_item_optimizer::execute (void)
   filter_removed_items ();
   unregister_hooks ();
 
+  build_graph ();
+  update_hash_by_addr_refs ();
   build_hash_based_classes ();
 
   if (dump_file)
@@ -2224,8 +2292,6 @@ sem_item_optimizer::execute (void)
 
   for (unsigned int i = 0; i < m_items.length(); i++)
     m_items[i]->init_wpa ();
-
-  build_graph ();
 
   subdivide_classes_by_equality (true);
 
@@ -2315,6 +2381,27 @@ sem_item_optimizer::add_item_to_class (congruence_class *cls, sem_item *item)
   item->cls = cls;
 }
 
+/* For each semantic item, append hash values of references.  */
+
+void
+sem_item_optimizer::update_hash_by_addr_refs ()
+{
+  /* First, append to hash sensitive references.  */
+  for (unsigned i = 0; i < m_items.length (); i++)
+    m_items[i]->update_hash_by_addr_refs (m_symtab_node_map);
+
+  /* Once all symbols have enhanced hash value, we can append
+     hash values of symbols that are seen by IPA ICF and are
+     references by a semantic item. Newly computed values
+     are saved to global_hash member variable.  */
+  for (unsigned i = 0; i < m_items.length (); i++)
+    m_items[i]->update_hash_by_local_refs (m_symtab_node_map);
+
+  /* Global hash value replace current hash values.  */
+  for (unsigned i = 0; i < m_items.length (); i++)
+    m_items[i]->hash = m_items[i]->global_hash;
+}
+
 /* Congruence classes are built by hash value.  */
 
 void
@@ -2324,7 +2411,7 @@ sem_item_optimizer::build_hash_based_classes (void)
     {
       sem_item *item = m_items[i];
 
-      congruence_class_group *group = get_group_by_hash (item->get_hash (),
+      congruence_class_group *group = get_group_by_hash (item->hash,
 				      item->type);
 
       if (!group->classes.length ())

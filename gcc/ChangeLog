@@ -1,3 +1,14 @@
+2015-03-22  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.c (sem_item::update_hash_by_addr_refs): New function.
+	(sem_item::update_hash_by_local_refs): Likewise.
+	(sem_variable::get_hash): Empty line is fixed.
+	(sem_item_optimizer::execute): Include adding of hash references.
+	(sem_item_optimizer::update_hash_by_addr_refs): New function.
+	(sem_item_optimizer::build_hash_based_classes): Use local hash.
+	* ipa-icf.h (sem_item::update_hash_by_addr_refs): New function.
+	(sem_item::update_hash_by_local_refs): Likewise.
+
 2015-03-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65502

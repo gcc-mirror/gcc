@@ -189,6 +189,15 @@ public:
   /* Dump symbol to FILE.  */
   virtual void dump_to_file (FILE *file) = 0;
 
+  /* Update hash by address sensitive references.  */
+  void update_hash_by_addr_refs (hash_map <symtab_node *,
+				 sem_item *> &m_symtab_node_map);
+
+  /* Update hash by computed local hash values taken from different
+     semantic items.  */
+  void update_hash_by_local_refs (hash_map <symtab_node *,
+				  sem_item *> &m_symtab_node_map);
+
   /* Return base tree that can be used for compatible_types_p and
      contains_polymorphic_type_p comparison.  */
   static bool get_base_types (tree *t1, tree *t2);
@@ -226,9 +235,13 @@ public:
   /* A set with symbol table references.  */
   hash_set <symtab_node *> refs_set;
 
+  /* Hash of item.  */
+  hashval_t hash;
+
+  /* Temporary hash used where hash values of references are added.  */
+  hashval_t global_hash;
 protected:
   /* Cached, once calculated hash for the item.  */
-  hashval_t hash;
 
   /* Accumulate to HSTATE a hash of constructor expression EXP.  */
   static void add_expr (const_tree exp, inchash::hash &hstate);
@@ -493,6 +506,9 @@ public:
       sem_item_type type);
 
 private:
+
+  /* For each semantic item, append hash values of references.  */
+  void update_hash_by_addr_refs ();
 
   /* Congruence classes are built by hash value.  */
   void build_hash_based_classes (void);
