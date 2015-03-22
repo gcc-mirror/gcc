@@ -1404,6 +1404,7 @@ without warning.
 * OpenMP::
 * OpenACC::
 * Argument list functions::
+* Read/Write after EOF marker::
 @end menu
 
 @node Old-style kind specifications
@@ -2049,6 +2050,18 @@ For details refer to the g77 manual
 Also, @code{c_by_val.f} and its partner @code{c_by_val.c} of the
 GNU Fortran testsuite are worth a look.
 
+@node Read/Write after EOF marker
+@subsection Read/Write after EOF marker
+@cindex @code{EOF}
+@cindex @code{BACKSPACE}
+@cindex @code{REWIND}
+
+Some legacy codes rely on allowing @code{READ} or @code{WRITE} after the
+EOF file marker in order to find the end of a file. GNU Fortran normally
+rejects these codes with a run-time error message and suggests the user
+consider @code{BACKSPACE} or @code{REWIND} to properly position
+the file before the EOF marker.  As an extension, the run-time error may
+be disabled using -std=legacy.
 
 @node Extensions not implemented in GNU Fortran
 @section Extensions not implemented in GNU Fortran
