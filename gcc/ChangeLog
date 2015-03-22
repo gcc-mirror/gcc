@@ -1,5 +1,12 @@
 2015-03-20  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/65502
+	* ipa-comdats.c (enqueue_references): Walk through thunks.
+	(ipa_comdats): Likewise.
+	(set_comdat_group_1): New function.
+
+2015-03-20  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/65475
 	* ipa-devirt.c (add_type_duplicate): Prevail polymorphic type over
 	non-polymorphic
