@@ -31,7 +31,7 @@ extern void nios2_function_profiler (FILE *, int);
 #ifdef RTX_CODE
 extern int nios2_emit_move_sequence (rtx *, machine_mode);
 extern void nios2_emit_expensive_div (rtx *, machine_mode);
-extern void nios2_adjust_call_address (rtx *);
+extern void nios2_adjust_call_address (rtx *, rtx);
 
 extern rtx nios2_get_return_address (int);
 extern void nios2_set_return_address (rtx, rtx);
