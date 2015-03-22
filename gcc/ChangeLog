@@ -1,3 +1,9 @@
+2015-03-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65475
+	* ipa-devirt.c (add_type_duplicate): Prevail polymorphic type over
+	non-polymorphic
+
 2015-03-22  Dave Korn  <dave.korn.cygwin@gmail.com>
 	    Gerald Pfeifer  <gerald@pfeifer.com>
 
