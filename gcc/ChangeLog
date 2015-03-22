@@ -1,5 +1,14 @@
 2015-03-22  Martin Liska  <mliska@suse.cz>
 
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (def_builtin): Set deferred_isa_values for
+	masks that can potentially include a builtin.
+	(ix86_add_new_builtins): Introduce fast filter for isa values
+	that cannot trigger builtin inclusion.
+
+2015-03-22  Martin Liska  <mliska@suse.cz>
+
 	* ipa-icf.c (sem_item::update_hash_by_addr_refs): New function.
 	(sem_item::update_hash_by_local_refs): Likewise.
 	(sem_variable::get_hash): Empty line is fixed.
