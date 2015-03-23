@@ -1,5 +1,11 @@
 2015-03-23  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/65518
+	* tree-vect-stmts.c (vectorizable_load): Reject single-element
+	interleaving cases we generate absymal code for.
+
+2015-03-23  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/65494
 	* tree-vect-slp.c (vect_build_slp_tree): Do not (re-)allocate
 	matches here.
