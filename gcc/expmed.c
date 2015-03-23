@@ -2611,7 +2611,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 		 Thus we prefer addition in that case.  */
 	      && t != 3))
 	{
-	  /* T ends with ...111.  Multiply by (T + 1) and subtract 1.  */
+	  /* T ends with ...111.  Multiply by (T + 1) and subtract T.  */
 
 	  op_cost = add_cost (speed, mode);
 	  new_limit.cost = best_cost.cost - op_cost;
@@ -2630,7 +2630,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	}
       else
 	{
-	  /* T ends with ...01 or ...011.  Multiply by (T - 1) and add 1.  */
+	  /* T ends with ...01 or ...011.  Multiply by (T - 1) and add T.  */
 
 	  op_cost = add_cost (speed, mode);
 	  new_limit.cost = best_cost.cost - op_cost;

@@ -1,3 +1,8 @@
+2015-03-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* expmed.c (synth_mult): Fix comment about multiplying by T-1 and
+	adding T or multiplying by T+1 and subracting T.
+
 2015-03-22  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/64317
