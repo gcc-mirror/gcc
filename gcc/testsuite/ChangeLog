@@ -1,3 +1,11 @@
+2015-03-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65475
+	* g++.dg/lto/pr65475b_0.C: New testcase.
+	* g++.dg/lto/pr65475b_1.C: New testcase.
+	* g++.dg/lto/pr65475c_0.C: New testcase.
+	* g++.dg/lto/pr65475c_1.C: New testcase.
+
 2015-03-21  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/coarray_38.f90: New.
