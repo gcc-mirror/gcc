@@ -166,7 +166,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "stor-layout.h"
 #include "intl.h"
-#include "demangle.h"
 
 /* Hash based set of pairs of types.  */
 typedef struct
