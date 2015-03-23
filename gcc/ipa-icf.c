@@ -575,7 +575,7 @@ sem_item::update_hash_by_addr_refs (hash_map <symtab_node *,
     {
       ref = node->iterate_reference (i, ref);
       if (ref->address_matters_p () || !m_symtab_node_map.get (ref->referred))
-	hstate.add_ptr (ref->referred->ultimate_alias_target ());
+	hstate.add_int (ref->referred->ultimate_alias_target ()->order);
     }
 
   if (is_a <cgraph_node *> (node))
@@ -585,7 +585,7 @@ sem_item::update_hash_by_addr_refs (hash_map <symtab_node *,
 	{
 	  sem_item **result = m_symtab_node_map.get (e->callee);
 	  if (!result)
-	    hstate.add_ptr (e->callee->ultimate_alias_target ());
+	    hstate.add_int (e->callee->ultimate_alias_target ()->order);
 	}
     }
 
