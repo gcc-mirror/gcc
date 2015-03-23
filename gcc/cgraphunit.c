@@ -1575,7 +1575,9 @@ expand_thunk (struct cgraph_node *node, bool output_asm_thunks)
 	      if (aggregate_value_p (resdecl, TREE_TYPE (thunk_fndecl)))
 		{
 		  restmp = resdecl;
-		  add_local_decl (cfun, restmp);
+
+	      if (TREE_CODE (restmp) == VAR_DECL)
+		    add_local_decl (cfun, restmp);
 		  BLOCK_VARS (DECL_INITIAL (current_function_decl)) = restmp;
 		}
 	      else

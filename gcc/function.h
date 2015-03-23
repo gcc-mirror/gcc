@@ -674,11 +674,7 @@ struct GTY(()) function {
 
 /* Add the decl D to the local_decls list of FUN.  */
 
-static inline void
-add_local_decl (struct function *fun, tree d)
-{
-  vec_safe_push (fun->local_decls, d);
-}
+void add_local_decl (struct function *fun, tree d);
 
 #define FOR_EACH_LOCAL_DECL(FUN, I, D)		\
   FOR_EACH_VEC_SAFE_ELT_REVERSE ((FUN)->local_decls, I, D)

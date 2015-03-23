@@ -7193,6 +7193,15 @@ match_asm_constraints_1 (rtx insn, rtx *p_sets, int noutputs)
     df_insn_rescan (insn);
 }
 
+/* Add the decl D to the local_decls list of FUN.  */
+
+void
+add_local_decl (struct function *fun, tree d)
+{
+  gcc_assert (TREE_CODE (d) == VAR_DECL);
+  vec_safe_push (fun->local_decls, d);
+}
+
 static unsigned
 rest_of_match_asm_constraints (void)
 {

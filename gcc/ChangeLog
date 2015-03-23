@@ -1,3 +1,15 @@
+2015-03-23  Yvan Roux  <yvan.roux@linaro.org>
+
+	Backport from trunk r216841.
+	2014-10-29  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/63587
+	* cgraphunit.c (cgraph_node::expand_thunk): Only VAR_DECLs are put to local
+	declarations.
+	* function.c (add_local_decl): Implementation moved from header file, assert
+	introduced for tree type.
+	* function.h: Likewise.
+
 2015-03-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline

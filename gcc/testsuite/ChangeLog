@@ -1,3 +1,12 @@
+2015-03-23  Yvan Roux  <yvan.roux@linaro.org>
+
+	Backport from trunk r216841.
+	2014-10-29  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/63587
+	* g++.dg/ipa/pr63587-1.C: New test.
+	* g++.dg/ipa/pr63587-2.C: New test.
+
 2015-03-21  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/61138
