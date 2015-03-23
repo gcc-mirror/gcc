@@ -1,3 +1,27 @@
+2015-03-23  Paul Thomas  <pault@gcc.gnu.org>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/64952
+	* gfortran.h (struct symbol_attribute) : New field
+	'array_outer_dependency'.
+	* trans.h (struct gfc_ss_info): New field 'array_outer_dependency'.
+	* module.c (enum ab_attribute): New value AB_ARRAY_OUTER_DEPENDENCY.
+	(attr_bits): Append same value to initializer.
+	(mio_symbol_attribute): Handle 'array_outer_dependency' attr
+	in module read and write.
+	* resolve.c (update_current_proc_outer_array_dependency): New function.
+	(resolve_function, resolve_call): Add code to update current procedure's
+	'array_outer_dependency' attribute.
+	(resolve_variable): Mark current procedure with attribute
+	array_outer_dependency if the variable is an array coming from outside
+	the current namespace.
+	(resolve_fl_procedure): Mark a procedure without body with attribute
+	'array_outer_dependency'.
+	* trans-array.c (gfc_conv_resolve_dependencies): If any ss is
+	marked as 'array_outer_dependency' generate a temporary.
+	(gfc_walk_function_expr): If the function may reference external arrays,
+	mark the head gfc_ss with flag 'array_outer_dependency'.
+
 2015-03-22 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/59513
