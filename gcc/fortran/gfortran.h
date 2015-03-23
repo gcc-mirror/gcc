@@ -789,6 +789,13 @@ typedef struct
      cannot alias.  Note that this is zero for PURE procedures.  */
   unsigned implicit_pure:1;
 
+  /* This is set for a procedure that contains expressions referencing
+     arrays coming from outside its namespace.  
+     This is used to force the creation of a temporary when the LHS of
+     an array assignment may be used by an elemental procedure appearing
+     on the RHS.  */
+  unsigned array_outer_dependency:1;
+
   /* This is set if the subroutine doesn't return.  Currently, this
      is only possible for intrinsic subroutines.  */
   unsigned noreturn:1;

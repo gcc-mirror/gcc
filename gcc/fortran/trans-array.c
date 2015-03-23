@@ -4391,6 +4391,12 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
     {
       ss_expr = ss->info->expr;
 
+      if (ss->info->array_outer_dependency)
+	{
+	  nDepend = 1;
+	  break;
+	}
+
       if (ss->info->type != GFC_SS_SECTION)
 	{
 	  if (flag_realloc_lhs
@@ -9096,9 +9102,20 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
   /* Walk the parameters of an elemental function.  For now we always pass
      by reference.  */
   if (sym->attr.elemental || (comp && comp->attr.elemental))
-    return gfc_walk_elemental_function_args (ss, expr->value.function.actual,
+    {
+      gfc_ss *old_ss = ss;
+
+      ss = gfc_walk_elemental_function_args (old_ss,
+					     expr->value.function.actual,
 					     gfc_get_proc_ifc_for_expr (expr),
 					     GFC_SS_REFERENCE);
+      if (ss != old_ss
+	  && (comp
+	      || sym->attr.proc_pointer
+	      || sym->attr.if_source != IFSRC_DECL
+	      || sym->attr.array_outer_dependency))
+	ss->info->array_outer_dependency = 1;
+    }
 
   /* Scalar functions are OK as these are evaluated outside the scalarization
      loop.  Pass back and let the caller deal with it.  */
