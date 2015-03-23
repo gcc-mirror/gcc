@@ -708,7 +708,7 @@ extern void _cpp_preprocess_dir_only (cpp_reader *,
 				      const struct _cpp_dir_only_callbacks *);
 
 /* In traditional.c.  */
-extern bool _cpp_scan_out_logical_line (cpp_reader *, cpp_macro *);
+extern bool _cpp_scan_out_logical_line (cpp_reader *, cpp_macro *, bool);
 extern bool _cpp_read_logical_line_trad (cpp_reader *);
 extern void _cpp_overlay_buffer (cpp_reader *pfile, const unsigned char *,
 				 size_t);
