@@ -926,13 +926,8 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 		     bool *matches, unsigned *npermutes, unsigned *tree_size,
 		     unsigned max_tree_size)
 {
-  unsigned nops, i, this_npermutes = 0, this_tree_size = 0;
+  unsigned nops, i, this_tree_size = 0;
   gimple stmt;
-
-  if (!matches)
-    matches = XALLOCAVEC (bool, group_size);
-  if (!npermutes)
-    npermutes = &this_npermutes;
 
   matches[0] = false;
 
@@ -1012,7 +1007,6 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	  return false;
 	}
 
-      bool *matches = XALLOCAVEC (bool, group_size);
       if (vect_build_slp_tree (loop_vinfo, bb_vinfo, &child,
 			       group_size, max_nunits, loads,
 			       vectorization_factor, matches,
@@ -1637,9 +1631,11 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   loads.create (group_size);
 
   /* Build the tree for the SLP instance.  */
+  bool *matches = XALLOCAVEC (bool, group_size);
+  unsigned npermutes = 0;
   if (vect_build_slp_tree (loop_vinfo, bb_vinfo, &node, group_size,
 			   &max_nunits, &loads,
-			   vectorization_factor, NULL, NULL, NULL,
+			   vectorization_factor, matches, &npermutes, NULL,
 			   max_tree_size))
     {
       /* Calculate the unrolling factor based on the smallest type.  */
