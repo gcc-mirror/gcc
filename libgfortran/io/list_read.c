@@ -2054,6 +2054,7 @@ cleanup:
       free_line (dtp);
       hit_eof (dtp);
     }
+  fbuf_flush_list (dtp->u.p.current_unit, LIST_READING);
   return err;
 }
 

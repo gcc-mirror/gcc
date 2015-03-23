@@ -1,3 +1,15 @@
+2015-03-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/60956
+	Backport from mainline
+	* io/fbuf.c (fbuf_flush_list): New function that only flushes
+	if current fbuf position exceeds a limit.
+	* io/fbuf.h: Declare the new function.
+	* io/io.h (enum unit_mode): Add two new modes.
+	* io/list_read.c (list_formatted_read_scalar): Call new function.
+	* io/write.c: Include fbuf.h. (list_formatted_write_scalar):
+	Call new function.
+
 2014-10-30  Release Manager
 
 	* GCC 4.9.2 released.
