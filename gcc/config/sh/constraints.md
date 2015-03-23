@@ -300,9 +300,9 @@
 (define_memory_constraint "Sdd"
   "A memory reference that uses displacement addressing."
   (and (match_code "mem")
-       (match_test "GET_CODE (XEXP (op, 0)) == PLUS")
-       (match_test "REG_P (XEXP (XEXP (op, 0), 0))")
-       (match_test "CONST_INT_P (XEXP (XEXP (op, 0), 1))")))
+       (match_code "plus" "0")
+       (match_code "reg" "00")
+       (match_code "const_int" "01")))
 
 (define_memory_constraint "Snd"
   "A memory reference that excludes displacement addressing."
@@ -322,8 +322,8 @@
 
 (define_memory_constraint "Sra"
   "A memory reference that uses simple register addressing."
-  (and (match_test "MEM_P (op)")
-       (match_test "REG_P (XEXP (op, 0))")))
+  (and (match_code "mem")
+       (match_code "reg" "0")))
 
 (define_memory_constraint "Ara"
   "A memory reference that uses simple register addressing suitable for
