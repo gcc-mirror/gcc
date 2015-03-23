@@ -1,3 +1,11 @@
+2015-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/65238
+	* c-c++-common/cpp/pr65238-1.c: New test.
+	* gcc.dg/cpp/pr65238-2.c: New test.
+	* gcc.dg/cpp/trad/pr65238-3.c: New test.
+	* gcc.dg/cpp/trad/pr65238-4.c: New test.
+
 2015-03-23  Paul Thomas  <pault@gcc.gnu.org>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 

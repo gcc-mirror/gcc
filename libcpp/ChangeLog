@@ -1,3 +1,22 @@
+2015-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/65238
+	* internal.h (_cpp_scan_out_logical_line): Add third argument.
+	* directives.c (prepare_directive_trad): Pass false to it.
+	* traditional.c (_cpp_read_logical_line_trad,
+	_cpp_create_trad_definition): Likewise.
+	(struct fun_macro): Add paramc field.
+	(fun_like_macro): New function.
+	(maybe_start_funlike): Handle NODE_BUILTIN macros.  Initialize
+	macro->paramc field.
+	(save_argument): Use macro->paramc instead of
+	macro->node->value.macro->paramc.
+	(push_replacement_text): Formatting fix.
+	(recursive_macro): Use fun_like_macro helper.
+	(_cpp_scan_out_logical_line): Likewise.  Add BUILTIN_MACRO_ARG
+	argument.  Initialize fmacro.paramc field.  Handle builtin
+	function-like macros.
+
 2015-03-16  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/64626
