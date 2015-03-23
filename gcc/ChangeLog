@@ -1,5 +1,25 @@
-2015-03-22  Martin Liska  <mliska@suse.cz>
+2015-03-22  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/65475
+	* ipa-devirt.c: Include demangle.h
+	(odr_type_d): Add field rtti_broken.
+	(odr_subtypes_equivalent_p): Do not require name to match.
+	(compare_virtual_tables): Fix typo; if type already has ODR violation,
+	bypass the tests; be ready for function referneces in vtables that are
+	not DECL_VIRTUAL; make warnings to be OPT_Wodr.
+	(warn_odr): Give up for nameless types.
+	(warn_types_mismatch): Report mismatch in mangled names;
+	report mismatch in anonymous namespaces; look into component types to
+	give useful error; report when mismatch is dragged in from other ODR
+	type.
+	(odr_types_equivalent_p): Match types for being polymorphic; avoid
+	duplicated diagnostics.
+	(add_type_duplicate): Reorder checks so more informative ones come
+	first; fix typo; do not output "the extra base is defined here" when
+	we did not warn.
+	(BINFO_N_BASE_BINFOS): Relax sanity check.
+
+2015-03-22  Martin Liska  <mliska@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (def_builtin): Set deferred_isa_values for
