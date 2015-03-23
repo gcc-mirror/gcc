@@ -217,7 +217,6 @@
 	    (and (match_test "mode == SImode")
 		 (and (match_test "!TARGET_ATOMIC_HARD_LLCS")
 		      (match_test "!TARGET_SH4A || TARGET_ATOMIC_STRICT"))
-		 (match_operand 0 "displacement_mem_operand")
 		 (match_operand 0 "short_displacement_mem_operand")))))
 
 (define_expand "atomic_compare_and_swap<mode>"
@@ -707,7 +706,6 @@
 	    (and (match_test "mode == SImode")
 		 (match_test "TARGET_ATOMIC_SOFT_GUSA
 			      && (!TARGET_SH4A || TARGET_ATOMIC_STRICT)")
-		 (match_operand 0 "displacement_mem_operand")
 		 (match_operand 0 "short_displacement_mem_operand"))
 	    (and (ior (match_test "(TARGET_ATOMIC_SOFT_TCB
 				    || TARGET_ATOMIC_SOFT_IMASK)
@@ -716,8 +714,7 @@
 				    || TARGET_ATOMIC_SOFT_IMASK)
 				   && TARGET_SH4A && !TARGET_ATOMIC_STRICT
 				   && mode != SImode"))
-		 (ior (and (match_operand 0 "displacement_mem_operand")
-			   (match_operand 0 "short_displacement_mem_operand"))
+		 (ior (match_operand 0 "short_displacement_mem_operand")
 		      (match_operand 0 "gbr_address_mem"))))))
 
 (define_expand "atomic_fetch_<fetchop_name><mode>"

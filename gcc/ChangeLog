@@ -1,3 +1,14 @@
+2015-03-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/65505
+	* config/sh/predicates.md (simple_mem_operand,
+	displacement_mem_operand): Add test for reg.
+	(short_displacement_mem_operand): Test for displacement_mem_operand
+	before invoking sh_disp_addr_displacement.
+	* config/sh/constraints.md (Sdd, Sra): Simplify.
+	* config/sh/sync.md (atomic_mem_operand_0, atomic_mem_operand_1):
+	Remove redundant displacement_mem_operand tests.
+
 2015-03-23  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/65296

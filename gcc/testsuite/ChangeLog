@@ -1,3 +1,8 @@
+2015-03-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/65505
+	* gcc.target/sh/torture/pr65505.c: New.
+
 2015-03-23  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/63175
