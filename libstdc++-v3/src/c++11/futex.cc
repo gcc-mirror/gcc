@@ -93,6 +93,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     syscall (SYS_futex, __addr, futex_wake_op, INT_MAX);
   }
 
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 #endif
 #endif

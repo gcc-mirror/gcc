@@ -1,3 +1,12 @@
+2015-03-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64967
+	* acinclude.m4: Disable dual ABI when gnu-versioned-namespace in use.
+	* configure: Regenerate.
+	* src/c++11/compatibility-c++0x.cc (error_category), generic_category,
+	system_category): Use macros for versioned namespace.
+	* src/c++11/futex.cc: Add missing end macro for versioned namespace.
+
 2015-03-20  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* testsuite/17_intro/headers/c++1998/all_attributes.cc: Disable
