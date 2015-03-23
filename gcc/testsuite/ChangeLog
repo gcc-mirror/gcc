@@ -1,4 +1,7 @@
-2014-03-23  Jakub Jelinek  <jakub@redhat.com>
+2015-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65504
+	* gfortran.dg/pr65504.f90: New test.
 
 	PR ipa/65521
 	* gcc.dg/pr65521.c: New test.
