@@ -194,7 +194,7 @@ suitable for @command{make} describing the dependencies of the main
 source file.  The preprocessor outputs one @command{make} rule containing
 the object file name for that source file, a colon, and the names of all
 the included files, including those coming from @option{-include} or
-@option{-imacros} command line options.
+@option{-imacros} command-line options.
 
 Unless specified explicitly (with @option{-MT} or @option{-MQ}), the
 object file name consists of the name of the source file with any
@@ -645,7 +645,7 @@ Set the input character set, used for translation from the character
 set of the input file to the source character set used by GCC@.  If the
 locale does not specify, or GCC cannot get this information from the
 locale, the default is UTF-8.  This can be overridden by either the locale
-or this command line option.  Currently the command line option takes
+or this command-line option.  Currently the command-line option takes
 precedence if there's a conflict.  @var{charset} can be any encoding
 supported by the system's @code{iconv} library routine.
 
@@ -811,7 +811,7 @@ short file names, such as MS-DOS@.
 @itemx --target-help
 @opindex help
 @opindex target-help
-Print text describing all the command line options instead of
+Print text describing all the command-line options instead of
 preprocessing anything.
 
 @item -v

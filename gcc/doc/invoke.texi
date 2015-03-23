@@ -13901,7 +13901,7 @@ The device has the @code{RAMPD}, @code{RAMPX}, @code{RAMPY},
 @code{RAMPZ} special function register, respectively.
 
 @item __NO_INTERRUPTS__
-This macro reflects the @option{-mno-interrupts} command line option.
+This macro reflects the @option{-mno-interrupts} command-line option.
 
 @item __AVR_ERRATA_SKIP__
 @itemx __AVR_ERRATA_SKIP_JMP_CALL__
@@ -21629,7 +21629,7 @@ then the C preprocessor symbol @code{__V850_CALLT__} is defined.
 @itemx -mno-relax
 @opindex mrelax
 @opindex mno-relax
-Pass on (or do not pass on) the @option{-mrelax} command line option
+Pass on (or do not pass on) the @option{-mrelax} command-line option
 to the assembler.
 
 @item -mlong-jumps
@@ -21675,11 +21675,11 @@ value.
 Functions are aligned to 16-bit boundaries.
 
 @item
-The @option{-m8byte-align} command line option is supported.
+The @option{-m8byte-align} command-line option is supported.
 
 @item
-The @option{-mdisable-callt} command line option is enabled by
-default.  The @option{-mno-disable-callt} command line option is not
+The @option{-mdisable-callt} command-line option is enabled by
+default.  The @option{-mno-disable-callt} command-line option is not
 supported.
 @end itemize
 
@@ -21704,10 +21704,10 @@ Functions are aligned to 32-bit boundaries, unless optimizing for
 size.
 
 @item
-The @option{-m8byte-align} command line option is not supported.
+The @option{-m8byte-align} command-line option is not supported.
 
 @item
-The @option{-mdisable-callt} command line option is supported but not
+The @option{-mdisable-callt} command-line option is supported but not
 enabled by default.
 @end itemize
 

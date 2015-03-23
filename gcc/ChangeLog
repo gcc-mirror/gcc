@@ -1,3 +1,18 @@
+2015-03-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/cpp.texi (Search Path): Hyphenate "command-line" when used
+	as an adjective.
+	(System Headers): Likewise.
+	(Ifdef): Likewise.
+	(Traditional macros): Likewise.
+	(Invocation): Likewise.
+	(Option Index): Likewise.
+	* doc/cppopts.texi (-M): Likewise.
+	(-finput-charset): Likewise.
+	(--help): Likewise.
+	* doc.invoke.texi (AVR Options): Likewise.
+	(V850 Options): Likewise.
+	
 2015-03-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65475
