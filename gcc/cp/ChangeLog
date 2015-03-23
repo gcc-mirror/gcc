@@ -1,3 +1,61 @@
+2015-03-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65398
+	* constexpr.c (cxx_fold_indirect_ref): Transform *(&A[i] p+ j) into
+	A[i + j].
+
+2015-03-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65072
+	* typeck.c (lookup_anon_field): Make sure we're dealing with the main
+	variant.
+
+2015-03-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65046
+	Automatically propagate ABI tags to variables and functions
+	from their (return) type.
+	* class.c (check_tag): Handle variables and functions.
+	(mark_or_check_attr_tags): Split out from find_abi_tags_r.
+	(mark_or_check_tags): Likewise.
+	(mark_abi_tags): Use it.  Rename from mark_type_abi_tags.
+	(check_abi_tags): Add single argument overload for decls.
+	Handle inheriting tags for decls.
+	* mangle.c (write_mangled_name): Call it.
+	(mangle_return_type_p): Split out from write_encoding.
+	(unmangled_name_p): Split out from write_mangled_name.
+	(write_mangled_name): Ignore abi_tag on namespace.
+	* cp-tree.h (NAMESPACE_IS_INLINE): Replace NAMESPACE_ABI_TAG.
+	* parser.c (cp_parser_namespace_definition): Set it.
+	* name-lookup.c (handle_namespace_attrs): Use arguments. Warn
+	about abi_tag attribute on non-inline namespace.
+	* tree.c (check_abi_tag_args): Split out from handle_abi_tag_attribute.
+	(handle_abi_tag_attribute): Allow tags on variables.
+
+2015-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl2.c (cplus_decl_attributes): Also add "omp declare target"
+	attribute for DECL_EXTERNAL VAR_DECLs.
+
+2015-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65340
+	* call.c (build_over_call): Pass the tsubst_flags_t argument to
+	mark_used.
+	* decl2.c (mark_used): Inline the require_deduced_type call and
+	guard the error call.
+
+2015-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65061
+	* parser.c (cp_parser_template_name): Call strip_using_decl.
+
+2015-03-16  Marek Polacek  <polacek@redhat.com>
+
+	DR 1688
+	PR c++/65327
+	* decl.c (grokdeclarator): Allow volatile and constexpr together.
+
 2015-03-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65323

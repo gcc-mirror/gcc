@@ -3688,15 +3688,16 @@ in the function when compiling with the @option{-fsanitize=undefined} option.
 
 @item bnd_legacy
 @cindex @code{bnd_legacy} function attribute
-The @code{bnd_legacy} attribute on functions is used to inform
-compiler that function should not be instrumented when compiled
-with @option{-fcheck-pointer-bounds} option.
+@cindex Pointer Bounds Checker attributes
+The @code{bnd_legacy} attribute on functions is used to inform the
+compiler that the function should not be instrumented when compiled
+with the @option{-fcheck-pointer-bounds} option.
 
 @item bnd_instrument
 @cindex @code{bnd_instrument} function attribute
-The @code{bnd_instrument} attribute on functions is used to inform
-compiler that function should be instrumented when compiled
-with @option{-fchkp-instrument-marked-only} option.
+The @code{bnd_instrument} attribute on functions is used to inform the
+compiler that the function should be instrumented when compiled
+with the @option{-fchkp-instrument-marked-only} option.
 
 @item regparm (@var{number})
 @cindex @code{regparm} attribute
@@ -5943,10 +5944,12 @@ GCC emits warnings based on this attribute by default; use
 @option{-Wno-designated-init} to suppress them.
 
 @item bnd_variable_size
+@cindex @code{bnd_variable_size} attribute
+@cindex Pointer Bounds Checker attributes
 When applied to a structure field, this attribute tells Pointer
 Bounds Checker that the size of this field should not be computed
-using static type information.  It may be used to mark variable
-sized static array fields placed at the end of a structure.
+using static type information.  It may be used to mark variably-sized
+static array fields placed at the end of a structure.
 
 @smallexample
 struct S
@@ -5958,8 +5961,9 @@ S *p = (S *)malloc (sizeof(S) + 100);
 p->data[10] = 0; //Bounds violation
 @end smallexample
 
-By using an attribute for a field we may avoid bound violation
-we most probably do not want to see:
+@noindent
+By using an attribute for the field we may avoid unwanted bound
+violation checks:
 
 @smallexample
 struct S
@@ -8731,6 +8735,7 @@ is called and the @var{flag} argument passed to it.
 
 @node Pointer Bounds Checker builtins
 @section Pointer Bounds Checker Built-in Functions
+@cindex Pointer Bounds Checker builtins
 @findex __builtin___bnd_set_ptr_bounds
 @findex __builtin___bnd_narrow_ptr_bounds
 @findex __builtin___bnd_copy_ptr_bounds
@@ -8744,15 +8749,16 @@ is called and the @var{flag} argument passed to it.
 @findex __builtin___bnd_get_ptr_ubound
 
 GCC provides a set of built-in functions to control Pointer Bounds Checker
-instrumentation.  Note that all Pointer Bounds Checker builtins are allowed
-to use even if you compile with Pointer Bounds Checker off.  The builtins
-behavior may differ in such case as documented below.
+instrumentation.  Note that all Pointer Bounds Checker builtins can be used
+even if you compile with Pointer Bounds Checker off
+(@option{-fno-check-pointer-bounds}).
+The behavior may differ in such case as documented below.
 
-@deftypefn {Built-in Function} void * __builtin___bnd_set_ptr_bounds (const void * @var{q}, size_t @var{size})
+@deftypefn {Built-in Function} {void *} __builtin___bnd_set_ptr_bounds (const void *@var{q}, size_t @var{size})
 
 This built-in function returns a new pointer with the value of @var{q}, and
 associate it with the bounds [@var{q}, @var{q}+@var{size}-1].  With Pointer
-Bounds Checker off built-in function just returns the first argument.
+Bounds Checker off, the built-in function just returns the first argument.
 
 @smallexample
 extern void *__wrap_malloc (size_t n)
@@ -8765,72 +8771,75 @@ extern void *__wrap_malloc (size_t n)
 
 @end deftypefn
 
-@deftypefn {Built-in Function} void * __builtin___bnd_narrow_ptr_bounds (const void * @var{p}, const void * @var{q}, size_t  @var{size})
+@deftypefn {Built-in Function} {void *} __builtin___bnd_narrow_ptr_bounds (const void *@var{p}, const void *@var{q}, size_t  @var{size})
 
 This built-in function returns a new pointer with the value of @var{p}
-and associate it with the narrowed bounds formed by the intersection
-of bounds associated with @var{q} and the [@var{p}, @var{p} + @var{size} - 1].
-With Pointer Bounds Checker off built-in function just returns the first
+and associates it with the narrowed bounds formed by the intersection
+of bounds associated with @var{q} and the bounds
+[@var{p}, @var{p} + @var{size} - 1].
+With Pointer Bounds Checker off, the built-in function just returns the first
 argument.
 
 @smallexample
 void init_objects (object *objs, size_t size)
 @{
   size_t i;
-  /* Initialize objects one-by-one passing pointers with bounds of an object,
-     not the full array of objects.  */
+  /* Initialize objects one-by-one passing pointers with bounds of 
+     an object, not the full array of objects.  */
   for (i = 0; i < size; i++)
-    init_object (__builtin___bnd_narrow_ptr_bounds (objs + i, objs, sizeof(object)));
+    init_object (__builtin___bnd_narrow_ptr_bounds (objs + i, objs,
+                                                    sizeof(object)));
 @}
 @end smallexample
 
 @end deftypefn
 
-@deftypefn {Built-in Function} void * __builtin___bnd_copy_ptr_bounds (const void * @var{q}, const void * @var{r})
+@deftypefn {Built-in Function} {void *} __builtin___bnd_copy_ptr_bounds (const void *@var{q}, const void *@var{r})
 
 This built-in function returns a new pointer with the value of @var{q},
-and associate it with the bounds already associated with pointer @var{r}.
-With Pointer Bounds Checker off built-in function just returns the first
+and associates it with the bounds already associated with pointer @var{r}.
+With Pointer Bounds Checker off, the built-in function just returns the first
 argument.
 
 @smallexample
 /* Here is a way to get pointer to object's field but
    still with the full object's bounds.  */
-int *field_ptr = __builtin___bnd_copy_ptr_bounds (&objptr->int_filed, objptr);
+int *field_ptr = __builtin___bnd_copy_ptr_bounds (&objptr->int_field, 
+                                                  objptr);
 @end smallexample
 
 @end deftypefn
 
-@deftypefn {Built-in Function} void * __builtin___bnd_init_ptr_bounds (const void * @var{q})
+@deftypefn {Built-in Function} {void *} __builtin___bnd_init_ptr_bounds (const void *@var{q})
 
 This built-in function returns a new pointer with the value of @var{q}, and
-associate it with INIT (allowing full memory access) bounds. With Pointer
-Bounds Checker off built-in function just returns the first argument.
+associates it with INIT (allowing full memory access) bounds. With Pointer
+Bounds Checker off, the built-in function just returns the first argument.
 
 @end deftypefn
 
-@deftypefn {Built-in Function} void * __builtin___bnd_null_ptr_bounds (const void * @var{q})
+@deftypefn {Built-in Function} {void *} __builtin___bnd_null_ptr_bounds (const void *@var{q})
 
 This built-in function returns a new pointer with the value of @var{q}, and
-associate it with NULL (allowing no memory access) bounds. With Pointer
-Bounds Checker off built-in function just returns the first argument.
+associates it with NULL (allowing no memory access) bounds. With Pointer
+Bounds Checker off, the built-in function just returns the first argument.
 
 @end deftypefn
 
-@deftypefn {Built-in Function} void __builtin___bnd_store_ptr_bounds (const void ** @var{ptr_addr}, const void * @var{ptr_val})
+@deftypefn {Built-in Function} void __builtin___bnd_store_ptr_bounds (const void **@var{ptr_addr}, const void *@var{ptr_val})
 
 This built-in function stores the bounds associated with pointer @var{ptr_val}
 and location @var{ptr_addr} into Bounds Table.  This can be useful to propagate
 bounds from legacy code without touching the associated pointer's memory when
-pointers were copied as integers.  With Pointer Bounds Checker off built-in
+pointers are copied as integers.  With Pointer Bounds Checker off, the built-in
 function call is ignored.
 
 @end deftypefn
 
-@deftypefn {Built-in Function} void __builtin___bnd_chk_ptr_lbounds (const void * @var{q})
+@deftypefn {Built-in Function} void __builtin___bnd_chk_ptr_lbounds (const void *@var{q})
 
 This built-in function checks if the pointer @var{q} is within the lower
-bound of its associated bounds.  With Pointer Bounds Checker off built-in
+bound of its associated bounds.  With Pointer Bounds Checker off, the built-in
 function call is ignored.
 
 @smallexample
@@ -8848,19 +8857,19 @@ extern void *__wrap_memset (void *dst, int c, size_t len)
 
 @end deftypefn
 
-@deftypefn {Built-in Function} void __builtin___bnd_chk_ptr_ubounds (const void * @var{q})
+@deftypefn {Built-in Function} void __builtin___bnd_chk_ptr_ubounds (const void *@var{q})
 
 This built-in function checks if the pointer @var{q} is within the upper
-bound of its associated bounds.  With Pointer Bounds Checker off built-in
+bound of its associated bounds.  With Pointer Bounds Checker off, the built-in
 function call is ignored.
 
 @end deftypefn
 
-@deftypefn {Built-in Function} void __builtin___bnd_chk_ptr_bounds (const void * @var{q}, size_t @var{size})
+@deftypefn {Built-in Function} void __builtin___bnd_chk_ptr_bounds (const void *@var{q}, size_t @var{size})
 
 This built-in function checks if [@var{q}, @var{q} + @var{size} - 1] is within
 the lower and upper bounds associated with @var{q}.  With Pointer Bounds Checker
-off built-in function call is ignored.
+off, the built-in function call is ignored.
 
 @smallexample
 extern void *__wrap_memcpy (void *dst, const void *src, size_t n)
@@ -8877,11 +8886,12 @@ extern void *__wrap_memcpy (void *dst, const void *src, size_t n)
 
 @end deftypefn
 
-@deftypefn {Built-in Function} const void * __builtin___bnd_get_ptr_lbound (const void * @var{q})
+@deftypefn {Built-in Function} {const void *} __builtin___bnd_get_ptr_lbound (const void *@var{q})
 
-This built-in function returns the lower bound (which is a pointer) associated
-with the pointer @var{q}.  This is at least useful for debugging using printf.
-With Pointer Bounds Checker off built-in function returns 0.
+This built-in function returns the lower bound associated
+with the pointer @var{q}, as a pointer value.  
+This is useful for debugging using @code{printf}.
+With Pointer Bounds Checker off, the built-in function returns 0.
 
 @smallexample
 void *lb = __builtin___bnd_get_ptr_lbound (q);
@@ -8891,11 +8901,11 @@ printf ("q = %p  lb(q) = %p  ub(q) = %p", q, lb, ub);
 
 @end deftypefn
 
-@deftypefn {Built-in Function} const void * __builtin___bnd_get_ptr_ubound (const void * @var{q})
+@deftypefn {Built-in Function} {const void *} __builtin___bnd_get_ptr_ubound (const void *@var{q})
 
 This built-in function returns the upper bound (which is a pointer) associated
-with the pointer @var{q}.  With Pointer Bounds Checker off built-in function
-returns -1.
+with the pointer @var{q}.  With Pointer Bounds Checker off,
+the built-in function returns -1.
 
 @end deftypefn
 
@@ -8906,19 +8916,19 @@ GCC provides support for the following built-in reduction functions if Cilk Plus
 is enabled. Cilk Plus can be enabled using the @option{-fcilkplus} flag.
 
 @itemize @bullet
-@item __sec_implicit_index
-@item __sec_reduce
-@item __sec_reduce_add
-@item __sec_reduce_all_nonzero
-@item __sec_reduce_all_zero
-@item __sec_reduce_any_nonzero
-@item __sec_reduce_any_zero
-@item __sec_reduce_max
-@item __sec_reduce_min
-@item __sec_reduce_max_ind
-@item __sec_reduce_min_ind
-@item __sec_reduce_mul
-@item __sec_reduce_mutating
+@item @code{__sec_implicit_index}
+@item @code{__sec_reduce}
+@item @code{__sec_reduce_add}
+@item @code{__sec_reduce_all_nonzero}
+@item @code{__sec_reduce_all_zero}
+@item @code{__sec_reduce_any_nonzero}
+@item @code{__sec_reduce_any_zero}
+@item @code{__sec_reduce_max}
+@item @code{__sec_reduce_min}
+@item @code{__sec_reduce_max_ind}
+@item @code{__sec_reduce_min_ind}
+@item @code{__sec_reduce_mul}
+@item @code{__sec_reduce_mutating}
 @end itemize
 
 Further details and examples about these built-in functions are described 
@@ -18722,18 +18732,26 @@ Some attributes only make sense for C++ programs.
 @table @code
 @item abi_tag ("@var{tag}", ...)
 @cindex @code{abi_tag} attribute
-The @code{abi_tag} attribute can be applied to a function or class
-declaration.  It modifies the mangled name of the function or class to
+The @code{abi_tag} attribute can be applied to a function, variable, or class
+declaration.  It modifies the mangled name of the entity to
 incorporate the tag name, in order to distinguish the function or
 class from an earlier version with a different ABI; perhaps the class
 has changed size, or the function has a different return type that is
 not encoded in the mangled name.
 
+The attribute can also be applied to an inline namespace, but does not
+affect the mangled name of the namespace; in this case it is only used
+for @option{-Wabi-tag} warnings and automatic tagging of functions and
+variables.  Tagging inline namespaces is generally preferable to
+tagging individual declarations, but the latter is sometimes
+necessary, such as when only certain members of a class need to be
+tagged.
+
 The argument can be a list of strings of arbitrary length.  The
 strings are sorted on output, so the order of the list is
 unimportant.
 
-A redeclaration of a function or class must not add new ABI tags,
+A redeclaration of an entity must not add new ABI tags,
 since doing so would change the mangled name.
 
 The ABI tags apply to a name, so all instantiations and
@@ -18744,6 +18762,13 @@ The @option{-Wabi-tag} flag enables a warning about a class which does
 not have all the ABI tags used by its subobjects and virtual functions; for users with code
 that needs to coexist with an earlier ABI, using this option can help
 to find all affected types that need to be tagged.
+
+When a type involving an ABI tag is used as the type of a variable or
+return type of a function where that tag is not already present in the
+signature of the function, the tag is automatically applied to the
+variable or function.  @option{-Wabi-tag} also warns about this
+situation; this warning can be avoided by explicitly tagging the
+variable or function or moving it into a tagged inline namespace.
 
 @item init_priority (@var{priority})
 @cindex @code{init_priority} attribute

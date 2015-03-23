@@ -489,6 +489,21 @@ nios2_emit_stack_limit_check (void)
 /* Temp regno used inside prologue/epilogue.  */
 #define TEMP_REG_NUM 8
 
+static rtx
+nios2_emit_add_constant (rtx reg, HOST_WIDE_INT immed)
+{
+  rtx insn;
+  if (SMALL_INT (immed))
+    insn = emit_insn (gen_add2_insn (reg, gen_int_mode (immed, Pmode)));
+  else
+    {
+      rtx tmp = gen_rtx_REG (Pmode, TEMP_REG_NUM);
+      emit_move_insn (tmp, gen_int_mode (immed, Pmode));
+      insn = emit_insn (gen_add2_insn (reg, tmp));
+    }
+  return insn;
+}
+
 void
 nios2_expand_prologue (void)
 {
@@ -1229,12 +1244,12 @@ nios2_unspec_offset (rtx loc, int unspec)
 
 /* Generate GOT pointer based address with large offset.  */
 static rtx
-nios2_large_got_address (rtx offset)
+nios2_large_got_address (rtx offset, rtx tmp)
 {
-  rtx addr = gen_reg_rtx (Pmode);
-  emit_insn (gen_add3_insn (addr, pic_offset_table_rtx,
-			    force_reg (Pmode, offset)));
-  return addr;
+  if (!tmp)
+    tmp = gen_reg_rtx (Pmode);
+  emit_move_insn (tmp, offset);
+  return gen_rtx_PLUS (Pmode, tmp, pic_offset_table_rtx);
 }
 
 /* Generate a GOT pointer based address.  */
@@ -1245,7 +1260,7 @@ nios2_got_address (rtx loc, int unspec)
   crtl->uses_pic_offset_table = 1;
 
   if (nios2_large_offset_p (unspec))
-    return nios2_large_got_address (offset);
+    return force_reg (Pmode, nios2_large_got_address (offset, NULL_RTX));
 
   return gen_rtx_PLUS (Pmode, pic_offset_table_rtx, offset);
 }
@@ -1784,13 +1799,17 @@ nios2_load_pic_register (void)
 
 /* Generate a PIC address as a MEM rtx.  */
 static rtx
-nios2_load_pic_address (rtx sym, int unspec)
+nios2_load_pic_address (rtx sym, int unspec, rtx tmp)
 {
   if (flag_pic == 2
       && GET_CODE (sym) == SYMBOL_REF
       && nios2_symbol_binds_local_p (sym))
     /* Under -fPIC, generate a GOTOFF address for local symbols.  */
-    return nios2_got_address (sym, UNSPEC_PIC_GOTOFF_SYM);
+    {
+      rtx offset = nios2_unspec_offset (sym, UNSPEC_PIC_GOTOFF_SYM);
+      crtl->uses_pic_offset_table = 1;
+      return nios2_large_got_address (offset, tmp);
+    }
 
   return gen_const_mem (Pmode, nios2_got_address (sym, unspec));
 }
@@ -1828,7 +1847,7 @@ nios2_legitimize_constant_address (rtx addr)
   if (nios2_tls_symbol_p (base))
     base = nios2_legitimize_tls_address (base);
   else if (flag_pic)
-    base = nios2_load_pic_address (base, UNSPEC_PIC_SYM);
+    base = nios2_load_pic_address (base, UNSPEC_PIC_SYM, NULL_RTX);
   else
     return addr;
 
@@ -1943,18 +1962,24 @@ nios2_emit_move_sequence (rtx *operands, machine_mode mode)
 
 /* The function with address *ADDR is being called.  If the address
    needs to be loaded from the GOT, emit the instruction to do so and
-   update *ADDR to point to the rtx for the loaded value.  */
+   update *ADDR to point to the rtx for the loaded value.
+   If REG != NULL_RTX, it is used as the target/scratch register in the
+   GOT address calculation.  */
 void
-nios2_adjust_call_address (rtx *call_op)
+nios2_adjust_call_address (rtx *call_op, rtx reg)
 {
-  rtx addr;
-  gcc_assert (MEM_P (*call_op));
-  addr = XEXP (*call_op, 0);
+  if (MEM_P (*call_op))
+    call_op = &XEXP (*call_op, 0);
+
+  rtx addr = *call_op;
   if (flag_pic && CONSTANT_P (addr))
     {
-      rtx reg = gen_reg_rtx (Pmode);
-      emit_move_insn (reg, nios2_load_pic_address (addr, UNSPEC_PIC_CALL_SYM));
-      XEXP (*call_op, 0) = reg;
+      rtx tmp = reg ? reg : NULL_RTX;
+      if (!reg)
+	reg = gen_reg_rtx (Pmode);
+      addr = nios2_load_pic_address (addr, UNSPEC_PIC_CALL_SYM, tmp);
+      emit_insn (gen_rtx_SET (VOIDmode, reg, addr));
+      *call_op = reg;
     }
 }
 
@@ -3319,6 +3344,73 @@ nios2_merge_decl_attributes (tree olddecl, tree newdecl)
 			   DECL_ATTRIBUTES (newdecl));
 }
 
+/* Implement TARGET_ASM_OUTPUT_MI_THUNK.  */
+static void
+nios2_asm_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
+			   HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
+			   tree function)
+{
+  rtx this_rtx, funexp;
+  rtx_insn *insn;
+
+  /* Pretend to be a post-reload pass while generating rtl.  */
+  reload_completed = 1;
+
+  if (flag_pic)
+    nios2_load_pic_register ();
+
+  /* Mark the end of the (empty) prologue.  */
+  emit_note (NOTE_INSN_PROLOGUE_END);
+
+  /* Find the "this" pointer.  If the function returns a structure,
+     the structure return pointer is in $5.  */
+  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
+    this_rtx = gen_rtx_REG (Pmode, FIRST_ARG_REGNO + 1);
+  else
+    this_rtx = gen_rtx_REG (Pmode, FIRST_ARG_REGNO);
+
+  /* Add DELTA to THIS_RTX.  */
+  nios2_emit_add_constant (this_rtx, delta);
+
+  /* If needed, add *(*THIS_RTX + VCALL_OFFSET) to THIS_RTX.  */
+  if (vcall_offset)
+    {
+      rtx tmp;
+
+      tmp = gen_rtx_REG (Pmode, 2);
+      emit_move_insn (tmp, gen_rtx_MEM (Pmode, this_rtx));
+      nios2_emit_add_constant (tmp, vcall_offset);
+      emit_move_insn (tmp, gen_rtx_MEM (Pmode, tmp));
+      emit_insn (gen_add2_insn (this_rtx, tmp));
+    }
+
+  /* Generate a tail call to the target function.  */
+  if (!TREE_USED (function))
+    {
+      assemble_external (function);
+      TREE_USED (function) = 1;
+    }
+  funexp = XEXP (DECL_RTL (function), 0);
+  /* Function address needs to be constructed under PIC,
+     provide r2 to use here.  */
+  nios2_adjust_call_address (&funexp, gen_rtx_REG (Pmode, 2));
+  insn = emit_call_insn (gen_sibcall_internal (funexp, const0_rtx));
+  SIBLING_CALL_P (insn) = 1;
+
+  /* Run just enough of rest_of_compilation to get the insns emitted.
+     There's not really enough bulk here to make other passes such as
+     instruction scheduling worth while.  Note that use_thunk calls
+     assemble_start_function and assemble_end_function.  */
+  insn = get_insns ();
+  shorten_branches (insn);
+  final_start_function (insn, file, 1);
+  final (insn, file, 1);
+  final_end_function ();
+
+  /* Stop pretending to be a post-reload pass.  */
+  reload_completed = 0;
+}
+
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_FUNCTION_PROLOGUE
@@ -3438,6 +3530,13 @@ nios2_merge_decl_attributes (tree olddecl, tree newdecl)
 
 #undef TARGET_MERGE_DECL_ATTRIBUTES
 #define TARGET_MERGE_DECL_ATTRIBUTES nios2_merge_decl_attributes
+
+#undef  TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK \
+  hook_bool_const_tree_hwi_hwi_const_tree_true
+
+#undef  TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK nios2_asm_output_mi_thunk
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

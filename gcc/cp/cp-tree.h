@@ -152,7 +152,7 @@ c-common.h, not after.
       DECL_MUTABLE_P (in FIELD_DECL)
       DECL_DEPENDENT_P (in USING_DECL)
       LABEL_DECL_BREAK (in LABEL_DECL)
-      NAMESPACE_ABI_TAG (in NAMESPACE_DECL)
+      NAMESPACE_IS_INLINE (in NAMESPACE_DECL)
    1: C_TYPEDEF_EXPLICITLY_SIGNED (in TYPE_DECL).
       DECL_TEMPLATE_INSTANTIATED (in a VAR_DECL or a FUNCTION_DECL)
       DECL_MEMBER_TEMPLATE_P (in TEMPLATE_DECL)
@@ -2657,9 +2657,8 @@ struct GTY(()) lang_decl {
 #define LOCAL_CLASS_P(NODE)				\
   (decl_function_context (TYPE_MAIN_DECL (NODE)) != NULL_TREE)
 
-/* 1 iff this NAMESPACE_DECL should also be treated as an ABI tag for
-   -Wabi-tag.  */
-#define NAMESPACE_ABI_TAG(NODE)				\
+/* 1 iff this NAMESPACE_DECL is an inline namespace.  */
+#define NAMESPACE_IS_INLINE(NODE)				\
   DECL_LANG_FLAG_0 (NAMESPACE_DECL_CHECK (NODE))
 
 /* For a NAMESPACE_DECL: the list of using namespace directives
@@ -5311,6 +5310,7 @@ extern void explain_non_literal_class		(tree);
 extern void inherit_targ_abi_tags		(tree);
 extern void defaulted_late_check		(tree);
 extern bool defaultable_fn_check		(tree);
+extern void check_abi_tags			(tree);
 extern void fixup_type_variants			(tree);
 extern void fixup_attribute_variants		(tree);
 extern tree* decl_cloned_function_p		(const_tree, bool);
@@ -6069,6 +6069,7 @@ extern bool type_has_nontrivial_copy_init	(const_tree);
 extern bool class_tmpl_impl_spec_p		(const_tree);
 extern int zero_init_p				(const_tree);
 extern bool check_abi_tag_redeclaration		(const_tree, const_tree, const_tree);
+extern bool check_abi_tag_args			(tree, tree);
 extern tree strip_typedefs			(tree);
 extern tree strip_typedefs_expr			(tree);
 extern tree copy_binfo				(tree, tree, tree,
@@ -6345,6 +6346,7 @@ extern tree mangle_tls_wrapper_fn		(tree);
 extern bool decl_tls_wrapper_p			(tree);
 extern tree mangle_ref_init_variable		(tree);
 extern char * get_mangled_vtable_map_var_name   (tree);
+extern bool mangle_return_type_p		(tree);
 
 /* in dump.c */
 extern bool cp_dump_tree			(void *, tree);

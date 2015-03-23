@@ -239,12 +239,12 @@ sem_item::dump (void)
   if (dump_file)
     {
       fprintf (dump_file, "[%s] %s (%u) (tree:%p)\n", type == FUNC ? "func" : "var",
-	       name(), node->order, (void *) node->decl);
+	       node->name(), node->order, (void *) node->decl);
       fprintf (dump_file, "  hash: %u\n", get_hash ());
       fprintf (dump_file, "  references: ");
 
       for (unsigned i = 0; i < refs.length (); i++)
-	fprintf (dump_file, "%s%s ", refs[i]->name (),
+	fprintf (dump_file, "%s%s ", refs[i]->node->name (),
 		 i < refs.length() - 1 ? "," : "");
 
       fprintf (dump_file, "\n");
@@ -557,6 +557,72 @@ sem_function::equals_wpa (sem_item *item,
   return true;
 }
 
+/* Update hash by address sensitive references. We iterate over all
+   sensitive references (address_matters_p) and we hash ultime alias
+   target of these nodes, which can improve a semantic item hash.
+   TODO: stronger SCC based hashing would be desirable here.  */
+
+void
+sem_item::update_hash_by_addr_refs (hash_map <symtab_node *,
+				    sem_item *> &m_symtab_node_map)
+{
+  if (is_a <varpool_node *> (node) && DECL_VIRTUAL_P (node->decl))
+    return;
+
+  ipa_ref* ref;
+  inchash::hash hstate (hash);
+  for (unsigned i = 0; i < node->num_references (); i++)
+    {
+      ref = node->iterate_reference (i, ref);
+      if (ref->address_matters_p () || !m_symtab_node_map.get (ref->referred))
+	hstate.add_ptr (ref->referred->ultimate_alias_target ());
+    }
+
+  if (is_a <cgraph_node *> (node))
+    {
+      for (cgraph_edge *e = dyn_cast <cgraph_node *> (node)->callers; e;
+	   e = e->next_caller)
+	{
+	  sem_item **result = m_symtab_node_map.get (e->callee);
+	  if (!result)
+	    hstate.add_ptr (e->callee->ultimate_alias_target ());
+	}
+    }
+
+  hash = hstate.end ();
+}
+
+/* Update hash by computed local hash values taken from different
+   semantic items.  */
+
+void
+sem_item::update_hash_by_local_refs (hash_map <symtab_node *,
+				     sem_item *> &m_symtab_node_map)
+{
+  inchash::hash state (hash);
+  for (unsigned j = 0; j < node->num_references (); j++)
+    {
+      ipa_ref *ref;
+      ref = node->iterate_reference (j, ref);
+      sem_item **result = m_symtab_node_map.get (ref->referring);
+      if (result)
+	state.merge_hash ((*result)->hash);
+    }
+
+  if (type == FUNC)
+    {
+      for (cgraph_edge *e = dyn_cast <cgraph_node *> (node)->callees; e;
+	   e = e->next_callee)
+	{
+	  sem_item **result = m_symtab_node_map.get (e->caller);
+	  if (result)
+	    state.merge_hash ((*result)->hash);
+	}
+    }
+
+  global_hash = state.end ();
+}
+
 /* Returns true if the item equals to ITEM given as argument.  */
 
 bool
@@ -575,8 +641,13 @@ sem_function::equals (sem_item *item,
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file,
 	     "Equals called for:%s:%s (%u:%u) (%s:%s) with result: %s\n\n",
-	     name(), item->name (), node->order, item->node->order, asm_name (),
-	     item->asm_name (), eq ? "true" : "false");
+	     xstrdup_for_dump (node->name()),
+	     xstrdup_for_dump (item->node->name ()),
+	     node->order,
+	     item->node->order,
+	     xstrdup_for_dump (node->asm_name ()),
+	     xstrdup_for_dump (item->node->asm_name ()),
+	     eq ? "true" : "false");
 
   return eq;
 }
@@ -808,6 +879,13 @@ sem_function::merge (sem_item *alias_item)
 
   bool original_address_matters = original->address_matters_p ();
   bool alias_address_matters = alias->address_matters_p ();
+
+  if (DECL_EXTERNAL (alias->decl))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not unifying; alias is external.\n\n");
+      return false;
+    }
 
   if (DECL_NO_INLINE_WARNING_P (original->decl)
       != DECL_NO_INLINE_WARNING_P (alias->decl))
@@ -1522,8 +1600,11 @@ sem_variable::equals (sem_item *item,
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file,
 	     "Equals called for vars:%s:%s (%u:%u) (%s:%s) with result: %s\n\n",
-	     name(), item->name (), node->order, item->node->order, asm_name (),
-	     item->asm_name (), ret ? "true" : "false");
+	     xstrdup_for_dump (node->name()),
+	     xstrdup_for_dump (item->node->name ()),
+	     node->order, item->node->order,
+	     xstrdup_for_dump (node->asm_name ()),
+	     xstrdup_for_dump (item->node->asm_name ()), ret ? "true" : "false");
 
   return ret;
 }
@@ -1734,8 +1815,8 @@ hashval_t
 sem_variable::get_hash (void)
 {
   if (hash)
-
     return hash;
+
   /* All WPA streamed in symbols should have their hashes computed at compile
      time.  At this point, the constructor may not be in memory at all.
      DECL_INITIAL (decl) would be error_mark_node in that case.  */
@@ -1765,6 +1846,13 @@ sem_variable::merge (sem_item *alias_item)
       if (dump_file)
 	fprintf (dump_file, "Not unifying; "
 		 "Symbol aliases are not supported by target\n\n");
+      return false;
+    }
+
+  if (DECL_EXTERNAL (alias_item->decl))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Not unifying; alias is external.\n\n");
       return false;
     }
 
@@ -1995,8 +2083,8 @@ sem_item_optimizer::read_section (lto_file_decl_data *file_data,
       gcc_assert (node->definition);
 
       if (dump_file)
-	fprintf (dump_file, "Symbol added:%s (tree: %p, uid:%u)\n", node->asm_name (),
-		 (void *) node->decl, node->order);
+	fprintf (dump_file, "Symbol added:%s (tree: %p, uid:%u)\n",
+		 node->asm_name (), (void *) node->decl, node->order);
 
       if (is_a<cgraph_node *> (node))
 	{
@@ -2194,6 +2282,8 @@ sem_item_optimizer::execute (void)
   filter_removed_items ();
   unregister_hooks ();
 
+  build_graph ();
+  update_hash_by_addr_refs ();
   build_hash_based_classes ();
 
   if (dump_file)
@@ -2202,8 +2292,6 @@ sem_item_optimizer::execute (void)
 
   for (unsigned int i = 0; i < m_items.length(); i++)
     m_items[i]->init_wpa ();
-
-  build_graph ();
 
   subdivide_classes_by_equality (true);
 
@@ -2259,7 +2347,7 @@ sem_item_optimizer::parse_funcs_and_vars (void)
 	  m_symtab_node_map.put (cnode, f);
 
 	  if (dump_file)
-	    fprintf (dump_file, "Parsed function:%s\n", f->asm_name ());
+	    fprintf (dump_file, "Parsed function:%s\n", f->node->asm_name ());
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    f->dump_to_file (dump_file);
@@ -2293,6 +2381,27 @@ sem_item_optimizer::add_item_to_class (congruence_class *cls, sem_item *item)
   item->cls = cls;
 }
 
+/* For each semantic item, append hash values of references.  */
+
+void
+sem_item_optimizer::update_hash_by_addr_refs ()
+{
+  /* First, append to hash sensitive references.  */
+  for (unsigned i = 0; i < m_items.length (); i++)
+    m_items[i]->update_hash_by_addr_refs (m_symtab_node_map);
+
+  /* Once all symbols have enhanced hash value, we can append
+     hash values of symbols that are seen by IPA ICF and are
+     references by a semantic item. Newly computed values
+     are saved to global_hash member variable.  */
+  for (unsigned i = 0; i < m_items.length (); i++)
+    m_items[i]->update_hash_by_local_refs (m_symtab_node_map);
+
+  /* Global hash value replace current hash values.  */
+  for (unsigned i = 0; i < m_items.length (); i++)
+    m_items[i]->hash = m_items[i]->global_hash;
+}
+
 /* Congruence classes are built by hash value.  */
 
 void
@@ -2302,7 +2411,7 @@ sem_item_optimizer::build_hash_based_classes (void)
     {
       sem_item *item = m_items[i];
 
-      congruence_class_group *group = get_group_by_hash (item->get_hash (),
+      congruence_class_group *group = get_group_by_hash (item->hash,
 				      item->type);
 
       if (!group->classes.length ())
@@ -2955,9 +3064,11 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 	    if (dump_file)
 	      {
 		fprintf (dump_file, "Semantic equality hit:%s->%s\n",
-			 source->name (), alias->name ());
+			 xstrdup_for_dump (source->node->name ()),
+			 xstrdup_for_dump (alias->node->name ()));
 		fprintf (dump_file, "Assembler symbol names:%s->%s\n",
-			 source->asm_name (), alias->asm_name ());
+			 xstrdup_for_dump (source->node->asm_name ()),
+			 xstrdup_for_dump (alias->node->asm_name ()));
 	      }
 
 	    if (lookup_attribute ("no_icf", DECL_ATTRIBUTES (alias->decl)))
@@ -2993,7 +3104,8 @@ congruence_class::dump (FILE *file, unsigned int indent) const
 
   FPUTS_SPACES (file, indent + 2, "");
   for (unsigned i = 0; i < members.length (); i++)
-    fprintf (file, "%s(%p/%u) ", members[i]->asm_name (), (void *) members[i]->decl,
+    fprintf (file, "%s(%p/%u) ", members[i]->node->asm_name (),
+	     (void *) members[i]->decl,
 	     members[i]->node->order);
 
   fprintf (file, "\n");

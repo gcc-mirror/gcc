@@ -3485,13 +3485,17 @@ check_abi_tag_redeclaration (const_tree decl, const_tree old, const_tree new_)
   return true;
 }
 
-/* Handle an "abi_tag" attribute; arguments as in
-   struct attribute_spec.handler.  */
+/* The abi_tag attribute with the name NAME was given ARGS.  If they are
+   ill-formed, give an error and return false; otherwise, return true.  */
 
-static tree
-handle_abi_tag_attribute (tree* node, tree name, tree args,
-			  int flags, bool* no_add_attrs)
+bool
+check_abi_tag_args (tree args, tree name)
 {
+  if (!args)
+    {
+      error ("the %qE attribute requires arguments", name);
+      return false;
+    }
   for (tree arg = args; arg; arg = TREE_CHAIN (arg))
     {
       tree elt = TREE_VALUE (arg);
@@ -3502,7 +3506,7 @@ handle_abi_tag_attribute (tree* node, tree name, tree args,
 	{
 	  error ("arguments to the %qE attribute must be narrow string "
 		 "literals", name);
-	  goto fail;
+	  return false;
 	}
       const char *begin = TREE_STRING_POINTER (elt);
       const char *end = begin + TREE_STRING_LENGTH (elt);
@@ -3517,7 +3521,7 @@ handle_abi_tag_attribute (tree* node, tree name, tree args,
 			 "identifiers", name);
 		  inform (input_location, "%<%c%> is not a valid first "
 			  "character for an identifier", c);
-		  goto fail;
+		  return false;
 		}
 	    }
 	  else if (p == end - 1)
@@ -3530,11 +3534,23 @@ handle_abi_tag_attribute (tree* node, tree name, tree args,
 			 "identifiers", name);
 		  inform (input_location, "%<%c%> is not a valid character "
 			  "in an identifier", c);
-		  goto fail;
+		  return false;
 		}
 	    }
 	}
     }
+  return true;
+}
+
+/* Handle an "abi_tag" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_abi_tag_attribute (tree* node, tree name, tree args,
+			  int flags, bool* no_add_attrs)
+{
+  if (!check_abi_tag_args (args, name))
+    goto fail;
 
   if (TYPE_P (*node))
     {
@@ -3578,14 +3594,16 @@ handle_abi_tag_attribute (tree* node, tree name, tree args,
     }
   else
     {
-      if (TREE_CODE (*node) != FUNCTION_DECL)
+      if (TREE_CODE (*node) != FUNCTION_DECL
+	  && TREE_CODE (*node) != VAR_DECL)
 	{
-	  error ("%qE attribute applied to non-function %qD", name, *node);
+	  error ("%qE attribute applied to non-function, non-variable %qD",
+		 name, *node);
 	  goto fail;
 	}
       else if (DECL_LANGUAGE (*node) == lang_c)
 	{
-	  error ("%qE attribute applied to extern \"C\" function %qD",
+	  error ("%qE attribute applied to extern \"C\" declaration %qD",
 		 name, *node);
 	  goto fail;
 	}

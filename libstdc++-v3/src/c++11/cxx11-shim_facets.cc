@@ -147,6 +147,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // The returned object will match the caller's string ABI, even when the
     // stored string doesn't.
     template<typename C>
+      _GLIBCXX_DEFAULT_ABI_TAG
       operator basic_string<C>() const
       {
 	if (!_M_dtor)

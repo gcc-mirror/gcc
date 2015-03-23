@@ -3657,7 +3657,24 @@ handle_namespace_attrs (tree ns, tree attributes)
 	}
       else if (is_attribute_p ("abi_tag", name))
 	{
-	  NAMESPACE_ABI_TAG (ns) = true;
+	  if (!NAMESPACE_IS_INLINE (ns))
+	    {
+	      warning (OPT_Wattributes, "ignoring %qD attribute on non-inline "
+		       "namespace", name);
+	      continue;
+	    }
+	  if (!args)
+	    {
+	      tree dn = DECL_NAME (ns);
+	      args = build_string (IDENTIFIER_LENGTH (dn) + 1,
+				   IDENTIFIER_POINTER (dn));
+	      TREE_TYPE (args) = char_array_type_node;
+	      args = fix_string_type (args);
+	      args = build_tree_list (NULL_TREE, args);
+	    }
+	  if (check_abi_tag_args (args, name))
+	    DECL_ATTRIBUTES (ns) = tree_cons (name, args,
+					      DECL_ATTRIBUTES (ns));
 	}
       else
 	{

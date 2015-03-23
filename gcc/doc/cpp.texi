@@ -858,7 +858,7 @@ GCC was configured to compile code for; often but not always the same as
 the canonical name of the system it runs on.  @var{version} is the
 version of GCC in use.
 
-You can add to this list with the @option{-I@var{dir}} command line
+You can add to this list with the @option{-I@var{dir}} command-line
 option.  All the directories named by @option{-I} are searched, in
 left-to-right order, @emph{before} the default directories.  The only
 exception is when @file{dir} is already searched by default.  In
@@ -1147,7 +1147,7 @@ Normally, only the headers found in specific directories are considered
 system headers.  These directories are determined when GCC is compiled.
 There are, however, two ways to make normal headers into system headers.
 
-The @option{-isystem} command line option adds its argument to the list of
+The @option{-isystem} command-line option adds its argument to the list of
 directories to search for headers, just like @option{-I}.  Any headers
 found in that directory will be considered system headers.
 
@@ -3217,11 +3217,11 @@ using a system feature on a machine where it is not implemented.
 
 @item
 Macros can be defined or undefined with the @option{-D} and @option{-U}
-command line options when you compile the program.  You can arrange to
+command-line options when you compile the program.  You can arrange to
 compile the same source file into two different programs by choosing a
 macro name to specify which program you want, writing conditionals to
 test whether or how this macro is defined, and then controlling the
-state of the macro with command line options, perhaps set in the
+state of the macro with command-line options, perhaps set in the
 Makefile.  @xref{Invocation}.
 
 @item
@@ -3904,7 +3904,7 @@ produce a single token.
 
 Normally comments are removed from the replacement text after the
 macro is expanded, but if the @option{-CC} option is passed on the
-command line comments are preserved.  (In fact, the current
+command-line comments are preserved.  (In fact, the current
 implementation removes comments even before saving the macro
 replacement text, but it careful to do it in such a way that the
 observed effect is identical even in the function-like macro case.)
@@ -4325,7 +4325,7 @@ leaving out the answer:
 In either form, if no such assertion has been made, @samp{#unassert} has
 no effect.
 
-You can also make or cancel assertions using command line options.
+You can also make or cancel assertions using command-line options.
 @xref{Invocation}.
 
 @node Differences from previous versions
@@ -4433,7 +4433,7 @@ file.
 @emph{Note:} Whether you use the preprocessor by way of @command{gcc}
 or @command{cpp}, the @dfn{compiler driver} is run first.  This
 program's purpose is to translate your command into invocations of the
-programs that do the actual work.  Their command line interfaces are
+programs that do the actual work.  Their command-line interfaces are
 similar but not identical to the documented interface, and may change
 without notice.
 
@@ -4513,7 +4513,7 @@ configuration of GCC@.
 @node Option Index
 @unnumbered Option Index
 @noindent
-CPP's command line options and environment variables are indexed here
+CPP's command-line options and environment variables are indexed here
 without any initial @samp{-} or @samp{--}.
 @printindex op
 

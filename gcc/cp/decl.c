@@ -10134,8 +10134,9 @@ grokdeclarator (const cp_declarator *declarator,
      the object as `const'.  */
   if (constexpr_p && innermost_code != cdk_function)
     {
-      if (type_quals & TYPE_QUAL_VOLATILE)
-        error ("both %<volatile%> and %<constexpr%> cannot be used here");
+      /* DR1688 says that a `constexpr' specifier in combination with
+	 `volatile' is valid.  */
+
       if (TREE_CODE (type) != REFERENCE_TYPE)
 	{
 	  type_quals |= TYPE_QUAL_CONST;

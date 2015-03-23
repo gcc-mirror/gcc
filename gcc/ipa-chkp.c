@@ -592,7 +592,8 @@ chkp_maybe_create_clone (tree fndecl)
       /* Clone all thunks.  */
       for (e = node->callers; e; e = e->next_caller)
 	if (e->caller->thunk.thunk_p
-	    && !e->caller->thunk.add_pointer_bounds_args)
+	    && !e->caller->thunk.add_pointer_bounds_args
+	    && !e->caller->instrumentation_clone)
 	  {
 	    struct cgraph_node *thunk
 	      = chkp_maybe_create_clone (e->caller->decl);

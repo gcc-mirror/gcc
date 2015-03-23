@@ -32,6 +32,7 @@ namespace
     name() const noexcept
     { return "future"; }
 
+    _GLIBCXX_DEFAULT_ABI_TAG
     virtual std::string message(int __ec) const
     {
       std::string __msg;

@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do compile }
 !
 ! Contributed by Reinhold Bader
 !
@@ -45,8 +45,8 @@ program pmup
   allocate(t :: a(3)[*])
   IF (this_image() == num_images()) THEN
     SELECT TYPE (a)
-      TYPE IS (t)
-      a(:)[1]%a = 4.0
+      TYPE IS (t)     ! FIXME: When implemented, turn into "do-do run"
+      a(:)[1]%a = 4.0 ! { dg-error "Sorry, coindexed access at \\(1\\) to a scalar component with an array partref is not yet supported" }
     END SELECT
   END IF
   SYNC ALL
@@ -56,8 +56,8 @@ program pmup
    TYPE IS (real)
       ii = a(1)[1]
       call abort()
-    TYPE IS (t)
-      IF (ALL(A(:)[1]%a == 4.0)) THEN
+    TYPE IS (t)                       ! FIXME: When implemented, turn into "do-do run"
+      IF (ALL(A(:)[1]%a == 4.0)) THEN ! { dg-error "Sorry, coindexed access at \\(1\\) to a scalar component with an array partref is not yet supported" }
         !WRITE(*,*) 'OK'
       ELSE
         WRITE(*,*) 'FAIL'

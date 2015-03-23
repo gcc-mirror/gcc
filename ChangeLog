@@ -331,7 +331,6 @@
 
 2014-11-11  Tobias Burnus  <burnus@net-b.de>
 
-	* config/cloog.m4: Remove.
 	* Makefile.def: Remove CLooG.
 	* Makefile.tpl: Ditto.
 	* configure.ac: Ditto.

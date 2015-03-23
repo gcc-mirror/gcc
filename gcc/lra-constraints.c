@@ -1074,10 +1074,9 @@ static bool
 check_and_process_move (bool *change_p, bool *sec_mem_p ATTRIBUTE_UNUSED)
 {
   int sregno, dregno;
-  rtx dest, src, dreg, sreg, old_sreg, new_reg, scratch_reg;
+  rtx dest, src, dreg, sreg, new_reg, scratch_reg;
   rtx_insn *before;
   enum reg_class dclass, sclass, secondary_class;
-  machine_mode sreg_mode;
   secondary_reload_info sri;
 
   lra_assert (curr_insn_set != NULL_RTX);
@@ -1101,8 +1100,6 @@ check_and_process_move (bool *change_p, bool *sec_mem_p ATTRIBUTE_UNUSED)
        were a right class for the pseudo, secondary_... hooks usually
        are not define for ALL_REGS.  */
     return false;
-  sreg_mode = GET_MODE (sreg);
-  old_sreg = sreg;
   if (REG_P (sreg))
     sclass = get_reg_class (REGNO (sreg));
   if (sclass == ALL_REGS)
@@ -1161,9 +1158,9 @@ check_and_process_move (bool *change_p, bool *sec_mem_p ATTRIBUTE_UNUSED)
       sri.icode = CODE_FOR_nothing;
       sri.extra_cost = 0;
       secondary_class
-	= (enum reg_class) targetm.secondary_reload (true, sreg,
+	= (enum reg_class) targetm.secondary_reload (true, src,
 						     (reg_class_t) dclass,
-						     sreg_mode, &sri);
+						     GET_MODE (src), &sri);
       /* Check the target hook consistency.  */
       lra_assert
 	((secondary_class == NO_REGS && sri.icode == CODE_FOR_nothing)
@@ -1179,14 +1176,12 @@ check_and_process_move (bool *change_p, bool *sec_mem_p ATTRIBUTE_UNUSED)
   *change_p = true;
   new_reg = NULL_RTX;
   if (secondary_class != NO_REGS)
-    new_reg = lra_create_new_reg_with_unique_value (sreg_mode, NULL_RTX,
+    new_reg = lra_create_new_reg_with_unique_value (GET_MODE (src), NULL_RTX,
 						    secondary_class,
 						    "secondary");
   start_sequence ();
-  if (old_sreg != sreg)
-    sreg = copy_rtx (sreg);
   if (sri.icode == CODE_FOR_nothing)
-    lra_emit_move (new_reg, sreg);
+    lra_emit_move (new_reg, src);
   else
     {
       enum reg_class scratch_class;
@@ -1197,18 +1192,13 @@ check_and_process_move (bool *change_p, bool *sec_mem_p ATTRIBUTE_UNUSED)
 		     (insn_data[sri.icode].operand[2].mode, NULL_RTX,
 		      scratch_class, "scratch"));
       emit_insn (GEN_FCN (sri.icode) (new_reg != NULL_RTX ? new_reg : dest,
-				      sreg, scratch_reg));
+				      src, scratch_reg));
     }
   before = get_insns ();
   end_sequence ();
   lra_process_new_insns (curr_insn, before, NULL, "Inserting the move");
   if (new_reg != NULL_RTX)
-    {
-      if (GET_CODE (src) == SUBREG)
-	SUBREG_REG (src) = new_reg;
-      else
-	SET_SRC (curr_insn_set) = new_reg;
-    }
+    SET_SRC (curr_insn_set) = new_reg;
   else
     {
       if (lra_dump_file != NULL)

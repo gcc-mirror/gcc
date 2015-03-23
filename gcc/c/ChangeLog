@@ -1,3 +1,8 @@
+2015-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.c (c_decl_attributes): Also add "omp declare target"
+	attribute for DECL_EXTERNAL VAR_DECLs.
+
 2015-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parse_init): Don't call xstrdup on get_identifier

@@ -1238,6 +1238,7 @@ OBJS = \
 	function.o \
 	fwprop.o \
 	gcse.o \
+	gcse-common.o \
 	ggc-common.o \
 	gimple.o \
 	gimple-builder.o \
@@ -2328,7 +2329,6 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-scalar-evolution.c \
   $(srcdir)/tree-ssa-operands.h \
   $(srcdir)/tree-profile.c $(srcdir)/tree-nested.c \
-  $(srcdir)/tree-parloops.c \
   $(srcdir)/omp-low.c \
   $(srcdir)/omp-low.h \
   $(srcdir)/targhooks.c $(out_file) $(srcdir)/passes.c $(srcdir)/cgraphunit.c \

@@ -68,10 +68,10 @@ along with GCC; see the file COPYING3.  If not see
   "%{shared:%eshared is not supported} "
 
 #undef  LIB_SPEC
-#define LIB_SPEC " -lc "
+#define LIB_SPEC " %{!mmcu=avr1:-lc} "
 
 #undef  LIBGCC_SPEC
-#define LIBGCC_SPEC " -lgcc "
+#define LIBGCC_SPEC " %{!mmcu=avr1:-lgcc} "
 
 #define STARTFILE_SPEC ""
 #define ENDFILE_SPEC ""

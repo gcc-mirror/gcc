@@ -346,7 +346,7 @@ prepare_directive_trad (cpp_reader *pfile)
 
       if (no_expand)
 	pfile->state.prevent_expansion++;
-      _cpp_scan_out_logical_line (pfile, NULL);
+      _cpp_scan_out_logical_line (pfile, NULL, false);
       if (no_expand)
 	pfile->state.prevent_expansion--;
 

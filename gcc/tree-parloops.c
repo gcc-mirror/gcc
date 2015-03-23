@@ -75,6 +75,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-parloops.h"
 #include "omp-low.h"
 #include "tree-nested.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
 
 /* This pass tries to distribute iterations of loops into several threads.
    The implementation is straightforward -- for each loop we test whether its
@@ -1422,21 +1425,14 @@ separate_decls_in_region (edge entry, edge exit,
     }
 }
 
-/* Bitmap containing uids of functions created by parallelization.  We cannot
-   allocate it from the default obstack, as it must live across compilation
-   of several functions; we make it gc allocated instead.  */
-
-static GTY(()) bitmap parallelized_functions;
-
-/* Returns true if FN was created by create_loop_fn.  */
+/* Returns true if FN was created to run in parallel.  */
 
 bool
-parallelized_function_p (tree fn)
+parallelized_function_p (tree fndecl)
 {
-  if (!parallelized_functions || !DECL_ARTIFICIAL (fn))
-    return false;
-
-  return bitmap_bit_p (parallelized_functions, DECL_UID (fn));
+  cgraph_node *node = cgraph_node::get (fndecl);
+  gcc_assert (node != NULL);
+  return node->parallelized_function;
 }
 
 /* Creates and returns an empty function that will receive the body of
@@ -1459,10 +1455,6 @@ create_loop_fn (location_t loc)
   type = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
 
   decl = build_decl (loc, FUNCTION_DECL, name, type);
-  if (!parallelized_functions)
-    parallelized_functions = BITMAP_GGC_ALLOC ();
-  bitmap_set_bit (parallelized_functions, DECL_UID (decl));
-
   TREE_STATIC (decl) = 1;
   TREE_USED (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
@@ -2153,7 +2145,7 @@ try_create_reduction_list (loop_p loop,
    primitives.  Returns true if some loop was parallelized, false
    otherwise.  */
 
-bool
+static bool
 parallelize_loops (void)
 {
   unsigned n_threads = flag_tree_parallelize_loops;
@@ -2314,6 +2306,3 @@ make_pass_parallelize_loops (gcc::context *ctxt)
 {
   return new pass_parallelize_loops (ctxt);
 }
-
-
-#include "gt-tree-parloops.h"

@@ -3563,6 +3563,13 @@ AC_DEFUN([GLIBCXX_CHECK_GTHREADS], [
   if test x"$ac_has_gthreads" = x"yes"; then
     AC_DEFINE(_GLIBCXX_HAS_GTHREADS, 1,
 	      [Define if gthreads library is available.])
+
+    # Also check for pthread_rwlock_t for std::shared_timed_mutex in C++14
+    AC_CHECK_TYPE([pthread_rwlock_t],
+            [AC_DEFINE([_GLIBCXX_USE_PTHREAD_RWLOCK_T], 1,
+            [Define if POSIX read/write locks are available in <gthr.h>.])],
+            [],
+            [#include "gthr.h"])
   fi
 
   CXXFLAGS="$ac_save_CXXFLAGS"

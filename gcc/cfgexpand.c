@@ -282,6 +282,15 @@ align_local_variable (tree decl)
   return align / BITS_PER_UNIT;
 }
 
+/* Align given offset BASE with ALIGN.  Truncate up if ALIGN_UP is true,
+   down otherwise.  Return truncated BASE value.  */
+
+static inline unsigned HOST_WIDE_INT
+align_base (HOST_WIDE_INT base, unsigned HOST_WIDE_INT align, bool align_up)
+{
+  return align_up ? (base + align - 1) & -align : base & -align;
+}
+
 /* Allocate SIZE bytes at byte alignment ALIGN from the stack frame.
    Return the frame offset.  */
 
@@ -290,20 +299,17 @@ alloc_stack_frame_space (HOST_WIDE_INT size, unsigned HOST_WIDE_INT align)
 {
   HOST_WIDE_INT offset, new_frame_offset;
 
-  new_frame_offset = frame_offset;
   if (FRAME_GROWS_DOWNWARD)
     {
-      new_frame_offset -= size + frame_phase;
-      new_frame_offset &= -align;
-      new_frame_offset += frame_phase;
+      new_frame_offset
+	= align_base (frame_offset - frame_phase - size,
+		      align, false) + frame_phase;
       offset = new_frame_offset;
     }
   else
     {
-      new_frame_offset -= frame_phase;
-      new_frame_offset += align - 1;
-      new_frame_offset &= -align;
-      new_frame_offset += frame_phase;
+      new_frame_offset
+	= align_base (frame_offset - frame_phase, align, true) + frame_phase;
       offset = new_frame_offset;
       new_frame_offset += size;
     }
@@ -1038,13 +1044,16 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 	  base = virtual_stack_vars_rtx;
 	  if ((flag_sanitize & SANITIZE_ADDRESS) && ASAN_STACK && pred)
 	    {
-	      HOST_WIDE_INT prev_offset = frame_offset;
+	      HOST_WIDE_INT prev_offset
+		= align_base (frame_offset,
+			      MAX (alignb, ASAN_RED_ZONE_SIZE),
+			      FRAME_GROWS_DOWNWARD);
 	      tree repr_decl = NULL_TREE;
-
 	      offset
 		= alloc_stack_frame_space (stack_vars[i].size
 					   + ASAN_RED_ZONE_SIZE,
 					   MAX (alignb, ASAN_RED_ZONE_SIZE));
+
 	      data->asan_vec.safe_push (prev_offset);
 	      data->asan_vec.safe_push (offset + stack_vars[i].size);
 	      /* Find best representative of the partition.

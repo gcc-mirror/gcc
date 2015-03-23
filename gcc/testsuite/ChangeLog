@@ -1,3 +1,229 @@
+2015-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/65238
+	* c-c++-common/cpp/pr65238-1.c: New test.
+	* gcc.dg/cpp/pr65238-2.c: New test.
+	* gcc.dg/cpp/trad/pr65238-3.c: New test.
+	* gcc.dg/cpp/trad/pr65238-4.c: New test.
+
+2015-03-23  Paul Thomas  <pault@gcc.gnu.org>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/64952
+	* gfortran.dg/elemental_dependency_4.f90: New.
+	* gfortran.dg/elemental_dependency_5.f90: New.
+
+2015-03-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65475
+	* g++.dg/lto/pr65475b_0.C: New testcase.
+	* g++.dg/lto/pr65475b_1.C: New testcase.
+	* g++.dg/lto/pr65475c_0.C: New testcase.
+	* g++.dg/lto/pr65475c_1.C: New testcase.
+
+2015-03-21  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_38.f90: New.
+	* gfortran.dg/coarray_39.f90: New.
+	* gfortran.dg/coarray/coindexed_3.f90: Add dg-error, turn into
+	compile test.
+
+2015-03-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65398
+	* g++.dg/cpp0x/pr65398.C: New test.
+
+2015-03-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65475
+	* g++.dg/lto/pr65475_0.C: New testcase.
+	* g++.dg/lto/pr65475_1.C: New testcase.
+
+2015-03-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/64366
+	* gcc.target/sh/pr64366.c: New.
+
+2015-03-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/48324
+	* g++.dg/cpp0x/constexpr-48324.C: New.
+
+2015-03-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/48453
+	* g++.dg/cpp0x/pr48453.C: New.
+
+2015-03-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65072
+	* g++.dg/cpp0x/pr65072.C: New test.
+
+2015-03-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64715
+	* gcc.dg/pr15347.c: Use -O.
+	* c-c++-common/pr19807-1.c: Likewise.
+
+2015-03-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/volatile13.ad[sb]: New test.
+
+2015-03-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/60851
+	* gcc.target/i386/pr60851.c: New test.
+
+2015-03-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/65240
+	* gcc/testsuite/g++.dg/pr65240.h: Add tests for PR 65240.
+	* gcc/testsuite/g++.dg/pr65240-1.C: Likewise.
+	* gcc/testsuite/g++.dg/pr65240-2.C: Likewise.
+	* gcc/testsuite/g++.dg/pr65240-3.C: Likewise.
+	* gcc/testsuite/g++.dg/pr65240-4.C: Likewise.
+
+2015-03-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/63491
+	* gcc.target/powerpc/pr63491.c: New.
+
+2015-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/ipa/pr65465.C: New test.
+
+2015-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52659
+	* g++.dg/cpp0x/deleted11.C: New.
+
+2015-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/65400
+	* c-c++-common/tsan/pr65400-3.c: New test.
+
+2015-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59686
+	* g++.dg/cpp0x/constexpr-59686.C: New.
+
+2015-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/64265
+	* g++.dg/tsan/pr64265.C: New test.
+
+	PR sanitizer/65400
+	* c-c++-common/tsan/pr65400-1.c: New test.
+	* c-c++-common/tsan/pr65400-2.c: New test.
+
+2015-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59816
+	* g++.dg/cpp0x/pr59816.C: New.
+
+2015-03-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/59198
+	* gfortran.dg/proc_ptr_comp_45.f90: Make tests fuzzy.
+
+2015-03-18  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/65439
+	* g++.dg/ipa/ipa-icf-4.C: Extend expected number of
+	equivalences either to 6 or 7.
+
+2015-03-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR middle-end/64491
+	Revert:
+	2014-11-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/undefined-loop-1.c: New file.
+	* gcc.dg/undefined-loop-2.c: New file.
+
+	2014-12-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	PR testsuite/64032
+	* gcc.dg/undefined-loop-2.c: Don't allow GCC to optimize away the
+	loop exits too early.
+
+2015-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65450
+	* gfortran.dg/pr65450.f90: New test.
+
+	PR target/65078
+	* gcc.target/i386/pr65078-1.c: New test.
+	* gcc.target/i386/pr65078-2.c: New test.
+	* gcc.target/i386/pr65078-3.c: New test.
+	* gcc.target/i386/pr65078-4.c: New test.
+	* gcc.target/i386/pr65078-5.c: New test.
+	* gcc.target/i386/pr65078-6.c: New test.
+
+2015-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65340
+	* g++.dg/cpp1y/pr65340.C: New.
+
+2015-03-17 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/64432
+	* gfortran.dg/system_clock_3.f08: Adjust test.
+
+2015-03-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/59198
+	* gfortran.dg/proc_ptr_comp_44.f90: New test.
+	* gfortran.dg/proc_ptr_comp_45.f90: New test.
+
+2015-03-16 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/64432
+	* gfortran.dg/system_clock_3.f08: New test.
+
+2015-03-16  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/64626
+	g++.dg/cpp1y/pr64626-1.C: New.
+	g++.dg/cpp1y/pr64626-2.C: New.
+	g++.dg/cpp1y/digit-sep-neg.C: Adjust errors and warnings.
+
+2015-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65427
+	* gcc.c-torture/execute/pr65427.c: New test.
+
+2015-03-16  Marek Polacek  <polacek@redhat.com>
+
+	DR 1688
+	PR c++/65327
+	* g++.dg/cpp0x/constexpr-object1.C: Change dg-error to dg-bogus.
+	* g++.dg/cpp0x/pr65327.C: New test.
+
+2015-03-16  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR sanitizer/64820
+	* c-c++-common/asan/pr64820.c: New test.
+
+2015-03-16  Andre Vehreschild  <vehre@gmx.de>
+
+	* gfortran.dg/pointer_2.f90: New test.
+
+2015-03-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* testsuite/g++.dg/pr65049.C: New test.
+
+2015-03-16  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/i386/fuse-caller-save-rec.c: Add PR64895 xfail on scans.
+	* gcc.target/i386/fuse-caller-save-xmm.c: Same.
+	* gcc.target/i386/fuse-caller-save.c: Same.
+
+2015-03-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization18.ad[sb]: New test.
+	* gnat.dg/loop_optimization18_pkg.ads: New helper.
+
 2015-03-16  Alan Modra  <amodra@gmail.com>
 
 	* gcc.target/powerpc/pr53199.c: Add extra functions.  Revert
@@ -12,7 +238,7 @@
 2015-03-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/61138
-	gfortran.dg/pointer_remapping_9.f90: New.
+	* gfortran.dg/pointer_remapping_9.f90: New.
 
 2015-03-14  Jakub Jelinek  <jakub@redhat.com>
 

@@ -1,3 +1,70 @@
+2015-03-20  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* testsuite/17_intro/headers/c++1998/all_attributes.cc: Disable
+	test for unused for ARM.
+	* testsuite/17_intro/headers/c++200x/all_attributes.cc: Likewise.
+	* testsuite/17_intro/headers/c++2014/all_attributes.cc: Likewise.
+
+2015-03-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (__gnu_cxx::__cxx11): Define new namespace.
+	* include/ext/codecvt_specializations.h (encoding_state,
+	encoding_char_traits): Remove abi-tag and use inline namespace.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust dg-error line.
+
+2015-03-19  Jason Merrill  <jason@redhat.com>
+
+	* config/locale/gnu/messages_members.cc: Revert abi-tag change.
+	* src/c++11/cxx11-shim_facets.cc: Revert abi-tag change.
+
+2015-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/65046
+	* config/locale/gnu/messages_members.cc (Catalog_info, Catalogs,
+	get_catalogs): Add abi-tag.
+	* include/ext/codecvt_specializations.h (encoding_state,
+	encoding_char_traits): Likewise.
+	* src/c++11/cxx11-ios_failure.cc (io_error_category): Likewise.
+	* src/c++11/cxx11-shim_facets.cc (__any_string::operator basic_string,
+	numpunct_shim, collate_shim, time_get_shim, moneypunct_shim,
+	money_get_shim, money_put_shim, messages_shim): Likewise.
+	* src/c++11/future.cc (future_error_category::message): Likewise.
+	* src/c++11/system_error.cc (generic_error_category::message,
+	system_error_category::message): Likewise.
+	(__sso_string): Disable -Wabi-tag warnings.
+
+2015-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/13631
+	* config/locale/gnu/messages_members.cc (get_glibc_msg): Fix fallback
+	implementation for old glibc. Fix whitespace.
+
+2015-03-18  Jonathan Wakely  <jwakely@redhat.com>
+	    Torvald Riegel  <triegel@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_GTHREADS): Check for pthread_rwlock_t.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/std/shared_mutex: Check _GLIBCXX_USE_PTHREAD_RWLOCK_T.
+	(shared_timed_mutex::_M_rwlock): Use PTHREAD_RWLOCK_INITIALIZER.
+	(shared_timed_mutex::lock_shared()): Retry on EAGAIN.
+	(shared_timed_mutex::try_lock_shared_until()): Retry on EAGAIN and
+	EDEADLK.
+
+2015-03-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/nested_exception.h: Do not try to derive from final
+	classes.
+	* testsuite/18_support/nested_exception/throw_with_nested.cc: Test
+	final class.
+
+	* testsuite/30_threads/shared_lock/modifiers/1.cc: Remove name of
+	unused exception variable.
+	* testsuite/30_threads/unique_lock/modifiers/1.cc: Likewise.
+	* testsuite/30_threads/shared_lock/modifiers/2.cc: Remove duplicate
+	test.
+	* testsuite/30_threads/unique_lock/modifiers/2.cc: Likewise.
+
 2015-03-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4: Make --enable-libstdcxx-time=auto work for dragonfly.

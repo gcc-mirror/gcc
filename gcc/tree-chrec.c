@@ -78,8 +78,8 @@ chrec_fold_poly_cst (enum tree_code code,
   gcc_assert (poly);
   gcc_assert (cst);
   gcc_assert (TREE_CODE (poly) == POLYNOMIAL_CHREC);
-  gcc_assert (!is_not_constant_evolution (cst));
-  gcc_assert (type == chrec_type (poly));
+  gcc_checking_assert (!is_not_constant_evolution (cst));
+  gcc_checking_assert (useless_type_conversion_p (type, chrec_type (poly)));
 
   switch (code)
     {
@@ -124,10 +124,11 @@ chrec_fold_plus_poly_poly (enum tree_code code,
   gcc_assert (TREE_CODE (poly0) == POLYNOMIAL_CHREC);
   gcc_assert (TREE_CODE (poly1) == POLYNOMIAL_CHREC);
   if (POINTER_TYPE_P (chrec_type (poly0)))
-    gcc_assert (ptrofftype_p (chrec_type (poly1)));
+    gcc_checking_assert (ptrofftype_p (chrec_type (poly1))
+			 && useless_type_conversion_p (type, chrec_type (poly0)));
   else
-    gcc_assert (chrec_type (poly0) == chrec_type (poly1));
-  gcc_assert (type == chrec_type (poly0));
+    gcc_checking_assert (useless_type_conversion_p (type, chrec_type (poly0))
+			 && useless_type_conversion_p (type, chrec_type (poly1)));
 
   /*
     {a, +, b}_1 + {c, +, d}_2  ->  {{a, +, b}_1 + c, +, d}_2,
@@ -208,8 +209,8 @@ chrec_fold_multiply_poly_poly (tree type,
   gcc_assert (poly1);
   gcc_assert (TREE_CODE (poly0) == POLYNOMIAL_CHREC);
   gcc_assert (TREE_CODE (poly1) == POLYNOMIAL_CHREC);
-  gcc_assert (chrec_type (poly0) == chrec_type (poly1));
-  gcc_assert (type == chrec_type (poly0));
+  gcc_checking_assert (useless_type_conversion_p (type, chrec_type (poly0))
+		       && useless_type_conversion_p (type, chrec_type (poly1)));
 
   /* {a, +, b}_1 * {c, +, d}_2  ->  {c*{a, +, b}_1, +, d}_2,
      {a, +, b}_2 * {c, +, d}_1  ->  {a*{c, +, d}_1, +, b}_2,
@@ -1352,7 +1353,7 @@ chrec_convert_1 (tree type, tree chrec, gimple at_stmt,
     return chrec;
 
   ct = chrec_type (chrec);
-  if (ct == type)
+  if (useless_type_conversion_p (type, ct))
     return chrec;
 
   if (!evolution_function_is_affine_p (chrec))

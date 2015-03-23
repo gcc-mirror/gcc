@@ -1317,6 +1317,8 @@ public:
   unsigned nonfreeing_fn : 1;
   /* True if there was multiple COMDAT bodies merged by lto-symtab.  */
   unsigned merged : 1;
+  /* True if function was created to be executed in parallel.  */
+  unsigned parallelized_function : 1;
 
 private:
   /* Worker for call_for_symbol_and_aliases.  */
@@ -2716,9 +2718,6 @@ cgraph_node::has_gimple_body_p (void)
 #define FOR_EACH_FUNCTION_WITH_GIMPLE_BODY(node) \
    for ((node) = symtab->first_function_with_gimple_body (); (node); \
 	(node) = symtab->next_function_with_gimple_body (node))
-
-/* Create a new static variable of type TYPE.  */
-tree add_new_static_var (tree type);
 
 /* Uniquize all constants that appear in memory.
    Each constant in memory thus far output is recorded

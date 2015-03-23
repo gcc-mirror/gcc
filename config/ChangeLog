@@ -25,6 +25,10 @@
 
 	* target-posix: New file.
 
+2014-11-11  Tobias Burnus  <burnus@net-b.de>
+
+	* cloog.m4: Remove.
+
 2014-10-27  Tom Tromey  <tromey@redhat.com>
 
 	* gcc-plugin.m4: New file.

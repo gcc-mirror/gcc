@@ -1400,6 +1400,9 @@ lex_number (cpp_reader *pfile, cpp_string *number,
 	  NORMALIZE_STATE_UPDATE_IDNUM (nst, *cur);
 	  cur++;
 	}
+      /* A number can't end with a digit separator.  */
+      while (cur > pfile->buffer->cur && DIGIT_SEP (cur[-1]))
+	--cur;
 
       pfile->buffer->cur = cur;
     }

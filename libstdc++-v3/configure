@@ -2498,6 +2498,60 @@ $as_echo "$ac_res" >&6; }
   eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
 
 } # ac_fn_c_check_type
+
+# ac_fn_cxx_check_type LINENO TYPE VAR INCLUDES
+# ---------------------------------------------
+# Tests whether TYPE exists after having included INCLUDES, setting cache
+# variable VAR accordingly.
+ac_fn_cxx_check_type ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+$as_echo_n "checking for $2... " >&6; }
+if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
+  $as_echo_n "(cached) " >&6
+else
+  eval "$3=no"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+int
+main ()
+{
+if (sizeof ($2))
+	 return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+int
+main ()
+{
+if (sizeof (($2)))
+	    return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+
+else
+  eval "$3=yes"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
+
+} # ac_fn_cxx_check_type
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -11539,7 +11593,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11542 "configure"
+#line 11596 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11645,7 +11699,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11648 "configure"
+#line 11702 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15065,7 +15119,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 15068 "configure"
+#line 15122 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15417,7 +15471,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15420 "configure"
+#line 15474 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15452,7 +15506,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15455 "configure"
+#line 15509 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15487,7 +15541,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15490 "configure"
+#line 15544 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15523,7 +15577,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15526 "configure"
+#line 15580 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15602,7 +15656,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15605 "configure"
+#line 15659 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15644,7 +15698,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15647 "configure"
+#line 15701 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15678,7 +15732,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15681 "configure"
+#line 15735 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -78785,6 +78839,16 @@ $as_echo "$ac_has_gthreads" >&6; }
   if test x"$ac_has_gthreads" = x"yes"; then
 
 $as_echo "#define _GLIBCXX_HAS_GTHREADS 1" >>confdefs.h
+
+
+    # Also check for pthread_rwlock_t for std::shared_timed_mutex in C++14
+    ac_fn_cxx_check_type "$LINENO" "pthread_rwlock_t" "ac_cv_type_pthread_rwlock_t" "#include \"gthr.h\"
+"
+if test "x$ac_cv_type_pthread_rwlock_t" = x""yes; then :
+
+$as_echo "#define _GLIBCXX_USE_PTHREAD_RWLOCK_T 1" >>confdefs.h
+
+fi
 
   fi
 

@@ -1,3 +1,8 @@
+2015-03-19  Richard Biener  <rguenther@suse.de>
+
+	* partition.h (struct partition_elem): Re-order elements to
+	avoid padding.
+
 2015-03-02  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR target/65261

@@ -851,6 +851,9 @@
 /* Define if pthreads_num_processors_np is available in <pthread.h>. */
 #undef _GLIBCXX_USE_PTHREADS_NUM_PROCESSORS_NP
 
+/* Define if POSIX read/write locks are available in <gthr.h>. */
+#undef _GLIBCXX_USE_PTHREAD_RWLOCK_T
+
 /* Define if /dev/random and /dev/urandom are available for the random_device
    of TR1 (Chapter 5.1). */
 #undef _GLIBCXX_USE_RANDOM_TR1

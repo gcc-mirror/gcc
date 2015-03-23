@@ -57,10 +57,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// shared_timed_mutex
   class shared_timed_mutex
   {
-#if defined(__GTHREADS_CXX0X)
+#ifdef _GLIBCXX_USE_PTHREAD_RWLOCK_T
     typedef chrono::system_clock	__clock_t;
 
-    pthread_rwlock_t			_M_rwlock;
+#ifdef PTHREAD_RWLOCK_INITIALIZER
+    pthread_rwlock_t	_M_rwlock = PTHREAD_RWLOCK_INITIALIZER;
+
+  public:
+    shared_timed_mutex() = default;
+    ~shared_timed_mutex() = default;
+#else
+    pthread_rwlock_t	_M_rwlock;
 
   public:
     shared_timed_mutex()
@@ -82,6 +89,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Errors not handled: EBUSY, EINVAL
       _GLIBCXX_DEBUG_ASSERT(__ret == 0);
     }
+#endif
 
     shared_timed_mutex(const shared_timed_mutex&) = delete;
     shared_timed_mutex& operator=(const shared_timed_mutex&) = delete;
@@ -165,12 +173,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     lock_shared()
     {
-      int __ret = pthread_rwlock_rdlock(&_M_rwlock);
+      int __ret;
+      // We retry if we exceeded the maximum number of read locks supported by
+      // the POSIX implementation; this can result in busy-waiting, but this
+      // is okay based on the current specification of forward progress
+      // guarantees by the standard.
+      do
+	__ret = pthread_rwlock_rdlock(&_M_rwlock);
+      while (__ret == EAGAIN);
       if (__ret == EDEADLK)
 	__throw_system_error(int(errc::resource_deadlock_would_occur));
-      if (__ret == EAGAIN)
-	// Maximum number of read locks has been exceeded.
-	__throw_system_error(int(errc::device_or_resource_busy));
       // Errors not handled: EINVAL
       _GLIBCXX_DEBUG_ASSERT(__ret == 0);
     }
@@ -210,11 +222,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    static_cast<long>(__ns.count())
 	  };
 
-	int __ret = pthread_rwlock_timedrdlock(&_M_rwlock, &__ts);
-	// If the maximum number of read locks has been exceeded, or we would
-	// deadlock, we just fail to acquire the lock.  Unlike for lock(),
-	// we are not allowed to throw an exception.
-	if (__ret == ETIMEDOUT || __ret == EAGAIN || __ret == EDEADLK)
+	int __ret;
+	// Unlike for lock(), we are not allowed to throw an exception so if
+	// the maximum number of read locks has been exceeded, or we would
+	// deadlock, we just try to acquire the lock again (and will time out
+	// eventually). 
+	// In cases where we would exceed the maximum number of read locks
+	// throughout the whole time until the timeout, we will fail to
+	// acquire the lock even if it would be logically free; however, this
+	// is allowed by the standard, and we made a "strong effort"
+	// (see C++14 30.4.1.4p26).
+	// For cases where the implementation detects a deadlock we
+	// intentionally block and timeout so that an early return isn't
+	// mistaken for a spurious failure, which might help users realise
+	// there is a deadlock.
+	do
+	  __ret = pthread_rwlock_timedrdlock(&_M_rwlock, &__ts);
+	while (__ret == EAGAIN || __ret == EDEADLK);
+	if (__ret == ETIMEDOUT)
 	  return false;
 	// Errors not handled: EINVAL
 	_GLIBCXX_DEBUG_ASSERT(__ret == 0);
@@ -241,7 +266,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       unlock();
     }
 
-#else // defined(__GTHREADS_CXX0X)
+#else // ! _GLIBCXX_USE_PTHREAD_RWLOCK_T
 
 #if _GTHREAD_USE_MUTEX_TIMEDLOCK
     struct _Mutex : mutex, __timed_mutex_impl<_Mutex>
@@ -438,7 +463,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_gate1.notify_one();
 	}
     }
-#endif // !defined(__GTHREADS_CXX0X)
+#endif // ! _GLIBCXX_USE_PTHREAD_RWLOCK_T
   };
 #endif // _GLIBCXX_HAS_GTHREADS
 

@@ -2484,8 +2484,9 @@ cgraph_node::create_wrapper (cgraph_node *target)
 
   /* Turn alias into thunk and expand it into GIMPLE representation.  */
   definition = true;
+
+  memset (&thunk, 0, sizeof (cgraph_thunk_info));
   thunk.thunk_p = true;
-  thunk.this_adjusting = false;
   create_edge (target, NULL, count, CGRAPH_FREQ_BASE);
 
   tree arguments = DECL_ARGUMENTS (decl);

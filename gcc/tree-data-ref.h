@@ -100,66 +100,7 @@ typedef int *lambda_vector;
    all vectors are the same length).  */
 typedef lambda_vector *lambda_matrix;
 
-/* Each vector of the access matrix represents a linear access
-   function for a subscript.  First elements correspond to the
-   leftmost indices, ie. for a[i][j] the first vector corresponds to
-   the subscript in "i".  The elements of a vector are relative to
-   the loop nests in which the data reference is considered,
-   i.e. the vector is relative to the SCoP that provides the context
-   in which this data reference occurs.
 
-   For example, in
-
-   | loop_1
-   |    loop_2
-   |      a[i+3][2*j+n-1]
-
-   if "i" varies in loop_1 and "j" varies in loop_2, the access
-   matrix with respect to the loop nest {loop_1, loop_2} is:
-
-   | loop_1  loop_2  param_n  cst
-   |   1       0        0      3
-   |   0       2        1     -1
-
-   whereas the access matrix with respect to loop_2 considers "i" as
-   a parameter:
-
-   | loop_2  param_i  param_n  cst
-   |   0       1         0      3
-   |   2       0         1     -1
-*/
-struct access_matrix
-{
-  vec<loop_p> loop_nest;
-  int nb_induction_vars;
-  vec<tree> parameters;
-  vec<lambda_vector, va_gc> *matrix;
-};
-
-#define AM_LOOP_NEST(M) (M)->loop_nest
-#define AM_NB_INDUCTION_VARS(M) (M)->nb_induction_vars
-#define AM_PARAMETERS(M) (M)->parameters
-#define AM_MATRIX(M) (M)->matrix
-#define AM_NB_PARAMETERS(M) (AM_PARAMETERS (M)).length ()
-#define AM_CONST_COLUMN_INDEX(M) (AM_NB_INDUCTION_VARS (M) + AM_NB_PARAMETERS (M))
-#define AM_NB_COLUMNS(M) (AM_NB_INDUCTION_VARS (M) + AM_NB_PARAMETERS (M) + 1)
-#define AM_GET_SUBSCRIPT_ACCESS_VECTOR(M, I) AM_MATRIX (M)[I]
-#define AM_GET_ACCESS_MATRIX_ELEMENT(M, I, J) AM_GET_SUBSCRIPT_ACCESS_VECTOR (M, I)[J]
-
-/* Return the column in the access matrix of LOOP_NUM.  */
-
-static inline int
-am_vector_index_for_loop (struct access_matrix *access_matrix, int loop_num)
-{
-  int i;
-  loop_p l;
-
-  for (i = 0; AM_LOOP_NEST (access_matrix).iterate (i, &l); i++)
-    if (l->num == loop_num)
-      return i;
-
-  gcc_unreachable ();
-}
 
 struct data_reference
 {
@@ -183,9 +124,6 @@ struct data_reference
 
   /* Alias information for the data reference.  */
   struct dr_alias alias;
-
-  /* Matrix representation for the data access functions.  */
-  struct access_matrix *access_matrix;
 };
 
 #define DR_STMT(DR)                (DR)->stmt
@@ -202,7 +140,6 @@ struct data_reference
 #define DR_STEP(DR)                (DR)->innermost.step
 #define DR_PTR_INFO(DR)            (DR)->alias.ptr_info
 #define DR_ALIGNED_TO(DR)          (DR)->innermost.aligned_to
-#define DR_ACCESS_MATRIX(DR)       (DR)->access_matrix
 
 typedef struct data_reference *data_reference_p;
 
@@ -560,6 +497,7 @@ lambda_vector_gcd (lambda_vector vector, int size)
 static inline lambda_vector
 lambda_vector_new (int size)
 {
+  /* ???  We shouldn't abuse the GC allocator here.  */
   return ggc_cleared_vec_alloc<int> (size);
 }
 
@@ -611,11 +549,10 @@ lambda_matrix_new (int m, int n, struct obstack *lambda_obstack)
   lambda_matrix mat;
   int i;
 
-  mat = (lambda_matrix) obstack_alloc (lambda_obstack,
-				       sizeof (lambda_vector *) * m);
+  mat = XOBNEWVEC (lambda_obstack, lambda_vector, m);
 
   for (i = 0; i < m; i++)
-    mat[i] = lambda_vector_new (n);
+    mat[i] = XOBNEWVEC (lambda_obstack, int, n);
 
   return mat;
 }

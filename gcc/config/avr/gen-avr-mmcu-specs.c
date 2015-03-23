@@ -78,6 +78,40 @@ static const char header[] =
   "# for a documentation of spec files.\n"
   "\n";
 
+static const char help_copy_paste[] =
+  "# If you intend to use an existing device specs file as a starting point\n"
+  "# for a new device spec file, make sure you are copying from a specs\n"
+  "# file for a device from the same core architecture and SP width.\n";
+
+#if defined (WITH_AVRLIBC)
+static const char help_dev_lib_name[] =
+  "# AVR-LibC's avr/io.h uses the device specifying macro to determine\n"
+  "# the name of the device header.  For example, -mmcu=atmega8a triggers\n"
+  "# the definition of __AVR_ATmega8A__ and avr/io.h includes the device\n"
+  "# header 'iom8a.h' by means of:\n"
+  "#\n"
+  "#     ...\n"
+  "#     #elif defined (__AVR_ATmega8A__)\n"
+  "#     #  include <avr/iom8a.h>\n"
+  "#     #elif ...\n"
+  "# \n"
+  "# If no device macro is defined, AVR-LibC uses __AVR_DEV_LIB_NAME__\n"
+  "# as fallback to determine the name of the device header as\n"
+  "#\n"
+  "#     \"avr/io\" + __AVR_DEV_LIB_NAME__ + \".h\"\n"
+  "#\n"
+  "# If you provide your own specs file for a device not yet known to\n"
+  "# AVR-LibC, you can now define the hook macro __AVR_DEV_LIB_NAME__\n"
+  "# as needed so that\n"
+  "#\n"
+  "#     #include <avr/io.h>\n"
+  "#\n"
+  "# will include the desired device header.  For ATmega8A the supplement\n"
+  "# to *cpp would read\n"
+  "#\n"
+  "#     -D__AVR_DEV_LIB_NAME__=m8a\n"
+  "\n";
+#endif // WITH_AVRLIBC
 
 static void
 print_mcu (const avr_mcu_t *mcu)
@@ -128,19 +162,25 @@ print_mcu (const avr_mcu_t *mcu)
              mcu->name, arch->name, sp8 ? 8 : 16);
   fprintf (f, "%s\n", header);
 
-  // avrlibc-specific specs for linking / thelinker.
-
-  fprintf (f, "*avrlibc_startfile:\n");
   if (is_device)
-    fprintf (f, "\tdev/%s/crt1.o%%s", mcu->name);
-  fprintf (f, "\n\n");
+    fprintf (f, "%s\n", help_copy_paste);
 
-  fprintf (f, "*avrlibc_devicelib:\n");
+#if defined (WITH_AVRLIBC)
+  // AVR-LibC specific.  See avrlibc.h for the specs using them as subspecs.
+
   if (is_device)
-    fprintf (f, "\tdev/%s/libdev.a%%s", mcu->name);
-  fprintf (f, "\n\n");
+    {
+      fprintf (f, "*avrlibc_startfile:\n");
+      fprintf (f, "\tdev/%s/crt1.o%%s", mcu->name);
+      fprintf (f, "\n\n");
 
-  // avr-specific specs for the compilation / the compiler proper.
+      fprintf (f, "*avrlibc_devicelib:\n");
+      fprintf (f, "\t%%{!nodevicelib:dev/%s/libdev.a%%s}", mcu->name);
+      fprintf (f, "\n\n");
+    }
+#endif  // WITH_AVRLIBC
+
+  // avr-gcc specific specs for the compilation / the compiler proper.
 
   fprintf (f, "*cc1_n_flash:\n"
            "\t%%{!mn-flash=*:-mn-flash=%d}\n\n", mcu->n_flash);
@@ -153,19 +193,19 @@ print_mcu (const avr_mcu_t *mcu)
            ? "\t%{!mno-skip-bug: -mskip-bug}"
            : "\t%{!mskip-bug: -mno-skip-bug}");
 
-  // avr-specific specs for assembling / the assembler.
+  // avr-gcc specific specs for assembling / the assembler.
 
   fprintf (f, "*asm_arch:\n\t-mmcu=%s\n\n", arch->name);
 
 #ifdef HAVE_AS_AVR_MLINK_RELAX_OPTION
   fprintf (f, "*asm_relax:\n\t%s\n\n", ASM_RELAX_SPEC);
-#endif // have as --mlink-relax
+#endif // have avr-as --mlink-relax
 
 #ifdef HAVE_AS_AVR_MRMW_OPTION
   fprintf (f, "*asm_rmw:\n%s\n\n", rmw
            ? "\t%{!mno-rmw: -mrmw}"
            : "\t%{mrmw}");
-#endif // have as -mrmw
+#endif // have avr-as -mrmw
 
   fprintf (f, "*asm_errata_skip:\n%s\n\n", errata_skip
            ? "\t%{mno-skip-bug}"
@@ -192,50 +232,36 @@ print_mcu (const avr_mcu_t *mcu)
 
   fprintf (f, "*link_arch:\n\t%s\n\n", LINK_ARCH_SPEC);
 
-  fprintf (f, "*link_data_start:\n");
-  if (mcu->data_section_start
-      != arch->default_data_section_start)
-    fprintf (f, "\t-Tdata 0x%lX", 0x800000UL + mcu->data_section_start);
-  fprintf (f, "\n\n");
-
-  fprintf (f, "*link_text_start:\n");
-  if (mcu->text_section_start != 0x0)
-    fprintf (f, "\t-Ttext 0x%lX", 0UL + mcu->text_section_start);
-  fprintf (f, "\n\n");
-
-  // Default specs.  Rewritten to the device-specific specs file so
-  // they can be adjusted as needed.
-     
-  bool has_libs = arch_id != ARCH_AVR1;
-
-  fprintf (f, "*self_spec:\n");
   if (is_device)
-    fprintf (f, "\t%%{!mmcu=avr*: %%<mmcu=* -mmcu=%s} ", arch->name);
-  fprintf (f, "%s\n\n", sp8_spec);
+    {
+      fprintf (f, "*link_data_start:\n");
+      if (mcu->data_section_start
+          != arch->default_data_section_start)
+        fprintf (f, "\t-Tdata 0x%lX", 0x800000UL + mcu->data_section_start);
+      fprintf (f, "\n\n");
 
-  fprintf (f, "*cpp:\n");
+      fprintf (f, "*link_text_start:\n");
+      if (mcu->text_section_start != 0x0)
+        fprintf (f, "\t-Ttext 0x%lX", 0UL + mcu->text_section_start);
+      fprintf (f, "\n\n");
+    }
+
+  // Specs known to GCC.
+
   if (is_device)
-    fprintf (f,"\t-D__AVR_DEV_LIB_NAME__=%s"
-             " -D%s"
-	     " -D__AVR_DEVICE_NAME__=%s",
-	     mcu->library_name, mcu->macro, mcu->name);
-  fprintf (f, "\n\n");
+    {
+      fprintf (f, "*self_spec:\n");
+      fprintf (f, "\t%%{!mmcu=avr*: %%<mmcu=* -mmcu=%s} ", arch->name);
+      fprintf (f, "%s\n\n", sp8_spec);
 
-  fprintf (f, "*cc1:\n\t%s\n\n", CC1_SPEC);
+#if defined (WITH_AVRLIBC)
+      fprintf (f, "%s\n", help_dev_lib_name);
+#endif // WITH_AVRLIBC
 
-  fprintf (f, "*cc1plus:\n\t%s\n\n", CC1PLUS_SPEC);
-
-  fprintf (f, "*asm:\n\t%s\n\n", ASM_SPEC);
-
-  fprintf (f, "*link:\n\t%s\n\n", LINK_SPEC);
-
-  fprintf (f, "*lib:\n\t%s\n\n", has_libs ? LIB_SPEC : "");
-
-  fprintf (f, "*libgcc:\n\t%s\n\n", has_libs ? LIBGCC_SPEC : "");
-
-  fprintf (f, "*startfile:\n\t%s\n\n", STARTFILE_SPEC);
-
-  fprintf (f, "*endfile:\n%s\n\n", ENDFILE_SPEC);
+      fprintf (f, "*cpp:\n");
+      fprintf (f, "\t-D%s -D__AVR_DEVICE_NAME__=%s", mcu->macro, mcu->name);
+      fprintf (f, "\n\n");
+    }
 
   fprintf (f, "# End of file\n");
 }

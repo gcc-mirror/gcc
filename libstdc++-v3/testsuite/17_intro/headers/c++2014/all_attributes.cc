@@ -29,7 +29,10 @@
 #endif
 #define packed 1
 #define pure 1
+// glibc's sysdeps/unix/sysv/linux/arm/sys/ucontext.h uses this on ARM.
+#ifndef __arm__
 #define unused 1
+#endif
 
 #include <bits/stdc++.h> // TODO: this is missing from <bits/extc++.h>
 #include <shared_mutex>  // TODO: this is missing from <bits/stdc++.h>

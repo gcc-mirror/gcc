@@ -55,7 +55,7 @@ int main()
       VERIFY( !(bool)l1 );
       VERIFY( (bool)l2 );
     }
-  catch (const std::system_error& e)
+  catch (const std::system_error&)
     {
       VERIFY( false );
     }
