@@ -92,6 +92,7 @@ gfc_conv_scalar_to_descriptor (gfc_se *se, tree scalar, symbol_attribute attr)
    in future implementations.  Use the corresponding APIs.  */
 #define CLASS_DATA_FIELD 0
 #define CLASS_VPTR_FIELD 1
+#define CLASS_LEN_FIELD 2
 #define VTABLE_HASH_FIELD 0
 #define VTABLE_SIZE_FIELD 1
 #define VTABLE_EXTENDS_FIELD 2
@@ -142,6 +143,20 @@ gfc_class_vptr_get (tree decl)
 			    CLASS_VPTR_FIELD);
   return fold_build3_loc (input_location, COMPONENT_REF,
 			  TREE_TYPE (vptr), decl, vptr,
+			  NULL_TREE);
+}
+
+
+tree
+gfc_class_len_get (tree decl)
+{
+  tree len;
+  if (POINTER_TYPE_P (TREE_TYPE (decl)))
+    decl = build_fold_indirect_ref_loc (input_location, decl);
+  len = gfc_advance_chain (TYPE_FIELDS (TREE_TYPE (decl)),
+			    CLASS_LEN_FIELD);
+  return fold_build3_loc (input_location, COMPONENT_REF,
+			  TREE_TYPE (len), decl, len,
 			  NULL_TREE);
 }
 
@@ -599,6 +614,45 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
 	}
     }
 
+  /* When the actual arg is a char array, then set the _len component of the
+     unlimited polymorphic entity, too.  */
+  if (e->ts.type == BT_CHARACTER)
+    {
+      ctree = gfc_class_len_get (var);
+      /* Start with parmse->string_length because this seems to be set to a
+	 correct value more often.  */
+      if (parmse->string_length)
+	  gfc_add_modify (&parmse->pre, ctree, parmse->string_length);
+      /* When the string_length is not yet set, then try the backend_decl of
+	 the cl.  */
+      else if (e->ts.u.cl->backend_decl)
+          gfc_add_modify (&parmse->pre, ctree, e->ts.u.cl->backend_decl);
+      /* If both of the above approaches fail, then try to generate an
+	 expression from the input, which is only feasible currently, when the
+	 expression can be evaluated to a constant one.  */
+      else
+	{
+	  /* Try to simplify the expression.  */
+	  gfc_simplify_expr (e, 0);
+	  if (e->expr_type == EXPR_CONSTANT && !e->ts.u.cl->resolved)
+	    {
+	      /* Amazingly all data is present to compute the length of a
+		 constant string, but the expression is not yet there.  */
+	      e->ts.u.cl->length = gfc_get_constant_expr (BT_INTEGER, 4,
+							  &e->where);
+	      mpz_set_ui (e->ts.u.cl->length->value.integer,
+			  e->value.character.length);
+	      gfc_conv_const_charlen (e->ts.u.cl);
+	      e->ts.u.cl->resolved = 1;
+	      gfc_add_modify (&parmse->pre, ctree, e->ts.u.cl->backend_decl);
+	    }
+	  else
+	    {
+	      gfc_error ("Can't compute the length of the char array at %L.",
+			 &e->where);
+	    }
+	}
+    }
   /* Pass the address of the class object.  */
   parmse->expr = gfc_build_addr_expr (NULL_TREE, var);
 }
@@ -6193,7 +6247,7 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 	 of EXPR_NULL,... by default, the static nullify is not needed
 	 since this is done every time we come into scope.  */
       if (!c->expr || (cm->attr.allocatable && cm->attr.flavor != FL_PROCEDURE))
-        continue;
+	continue;
 
       if (cm->initializer && cm->initializer->expr_type != EXPR_NULL
 	  && strcmp (cm->name, "_extends") == 0
@@ -6211,6 +6265,10 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 	  val = TYPE_SIZE_UNIT (gfc_get_derived_type (cm->ts.u.derived));
 	  CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, val);
 	}
+      else if (cm->ts.type == BT_INTEGER && strcmp (cm->name, "_len") == 0)
+	CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl,
+				fold_convert (TREE_TYPE (cm->backend_decl),
+					      integer_zero_node));
       else
 	{
 	  val = gfc_conv_initializer (c->expr, &cm->ts,
@@ -6287,7 +6345,8 @@ gfc_conv_expr (gfc_se * se, gfc_expr * expr)
      null_pointer_node.  C_PTR and C_FUNPTR are converted to match the
      typespec for the C_PTR and C_FUNPTR symbols, which has already been
      updated to be an integer with a kind equal to the size of a (void *).  */
-  if (expr->ts.type == BT_DERIVED && expr->ts.u.derived->ts.f90_type == BT_VOID)
+  if (expr->ts.type == BT_DERIVED && expr->ts.u.derived->ts.f90_type == BT_VOID
+      && expr->ts.u.derived->attr.is_bind_c)
     {
       if (expr->expr_type == EXPR_VARIABLE
 	  && (expr->symtree->n.sym->intmod_sym_id == ISOCBINDING_NULL_PTR
@@ -6551,6 +6610,27 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	  && expr2->symtree->n.sym->attr.dummy)
 	rse.expr = build_fold_indirect_ref_loc (input_location,
 					    rse.expr);
+
+      /* For string assignments to unlimited polymorphic pointers add an
+	 assignment of the string_length to the _len component of the
+	 pointer.  */
+      if ((expr1->ts.type == BT_CLASS || expr1->ts.type == BT_DERIVED)
+	  && expr1->ts.u.derived->attr.unlimited_polymorphic
+	  && (expr2->ts.type == BT_CHARACTER ||
+	      ((expr2->ts.type == BT_DERIVED || expr2->ts.type == BT_CLASS)
+	       && expr2->ts.u.derived->attr.unlimited_polymorphic)))
+	{
+	  gfc_expr *len_comp;
+	  gfc_se se;
+	  len_comp = gfc_get_len_component (expr1);
+	  gfc_init_se (&se, NULL);
+	  gfc_conv_expr (&se, len_comp);
+
+	  /* ptr % _len = len (str)  */
+	  gfc_add_modify (&block, se.expr, rse.string_length);
+	  lse.string_length = se.expr;
+	  gfc_free_expr (len_comp);
+	}
 
       gfc_add_block_to_block (&block, &lse.pre);
       gfc_add_block_to_block (&block, &rse.pre);

@@ -1,3 +1,28 @@
+2015-03-23  Andre Vehreschild  <vehre@gmx.de>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	Backported from mainline
+	PR fortran/60255
+	Initial patch version: Janus Weil
+	* class.c (gfc_get_len_component): New.
+	(gfc_build_class_symbol): Add _len component to unlimited
+	polymorphic entities.
+	(find_intrinsic_vtab): Removed emitting of error message.
+	* gfortran.h: Added prototype for gfc_get_len_component.
+	* simplify.c (gfc_simplify_len): Use _len component where
+	available.
+	* trans-expr.c (gfc_class_len_get): New.
+	(gfc_conv_intrinsic_to_class): Add handling for deferred
+	character arrays.
+	(gfc_conv_structure): Treat _len component correctly.
+	(gfc_conv_expr): Prevent bind_c handling when not required.
+	(gfc_trans_pointer_assignment): Propagate _len component.
+	* trans-stmt.c (class_has_len_component): New.
+	(trans_associate_var): _len component treatement for associate
+	context.
+	(gfc_trans_allocate): Same as for trans_associate_var()
+	* trans.h: Add prototype for gfc_class_len_get.
+
 2015-03-21  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/61138

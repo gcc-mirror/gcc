@@ -1133,6 +1133,22 @@ gfc_trans_critical (gfc_code *code)
 }
 
 
+/* Return true, when the class has a _len component.  */
+
+static bool
+class_has_len_component (gfc_symbol *sym)
+{
+  gfc_component *comp = sym->ts.u.derived->components;
+  while (comp)
+    {
+      if (strcmp (comp->name, "_len") == 0)
+	return true;
+      comp = comp->next;
+    }
+  return false;
+}
+
+
 /* Do proper initialization for ASSOCIATE names.  */
 
 static void
@@ -1146,6 +1162,8 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
   tree offset;
   tree dim;
   int n;
+  tree charlen;
+  bool need_len_assign;
 
   gcc_assert (sym->assoc);
   e = sym->assoc->target;
@@ -1156,6 +1174,20 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 
   unlimited = UNLIMITED_POLY (e);
 
+  /* Assignments to the string length need to be generated, when
+     ( sym is a char array or
+       sym has a _len component)
+     and the associated expression is unlimited polymorphic, which is
+     not (yet) correctly in 'unlimited', because for an already associated
+     BT_DERIVED the u-poly flag is not set, i.e.,
+      __tmp_CHARACTER_0_1 => w => arg
+       ^ generated temp      ^ from code, the w does not have the u-poly
+     flag set, where UNLIMITED_POLY(e) expects it.  */
+  need_len_assign = ((unlimited || (e->ts.type == BT_DERIVED
+                     && e->ts.u.derived->attr.unlimited_polymorphic))
+      && (sym->ts.type == BT_CHARACTER
+          || ((sym->ts.type == BT_CLASS || sym->ts.type == BT_DERIVED)
+              && class_has_len_component (sym))));
   /* Do a `pointer assignment' with updated descriptor (or assign descriptor
      to array temporary) for arrays with either unknown shape or if associating
      to a variable.  */
@@ -1255,8 +1287,11 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	 unconditionally associate pointers and the symbol is scalar.  */
       if (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.dimension)
 	{
+	  tree target_expr;
 	  /* For a class array we need a descriptor for the selector.  */
 	  gfc_conv_expr_descriptor (&se, e);
+	  /* Needed to get/set the _len component below.  */
+	  target_expr = se.expr;
 
 	  /* Obtain a temporary class container for the result.  */
 	  gfc_conv_class_to_class (&se, e, sym->ts, false, true, false, false);
@@ -1276,6 +1311,23 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 				        gfc_array_index_type,
 				        offset, tmp);
 	    }
+	  if (need_len_assign)
+	    {
+	      /* Get the _len comp from the target expr by stripping _data
+		 from it and adding component-ref to _len.  */
+	      tmp = gfc_class_len_get (TREE_OPERAND (target_expr, 0));
+	      /* Get the component-ref for the temp structure's _len comp.  */
+	      charlen = gfc_class_len_get (se.expr);
+	      /* Add the assign to the beginning of the the block...  */
+	      gfc_add_modify (&se.pre, charlen,
+			      fold_convert (TREE_TYPE (charlen), tmp));
+	      /* and the oposite way at the end of the block, to hand changes
+		 on the string length back.  */
+	      gfc_add_modify (&se.post, tmp,
+			      fold_convert (TREE_TYPE (tmp), charlen));
+	      /* Length assignment done, prevent adding it again below.  */
+	      need_len_assign = false;
+	    }
 	  gfc_conv_descriptor_offset_set (&se.pre, desc, offset);
 	}
       else if (sym->ts.type == BT_CLASS && e->ts.type == BT_CLASS
@@ -1290,7 +1342,13 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  se.expr = build_fold_indirect_ref_loc (input_location, se.expr);
 	}
       else
-	gfc_conv_expr (&se, e);
+	{
+	  /* For BT_CLASS and BT_DERIVED, this boils down to a pointer assign,
+	     which has the string length included.  For CHARACTERS it is still
+	     needed and will be done at the end of this routine.  */
+	  gfc_conv_expr (&se, e);
+	  need_len_assign = need_len_assign && sym->ts.type == BT_CHARACTER;
+	}
 
       tmp = TREE_TYPE (sym->backend_decl);
       tmp = gfc_build_addr_expr (tmp, se.expr);
@@ -1311,21 +1369,30 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       gfc_add_init_cleanup (block, tmp, NULL_TREE);
     }
 
-  /* Set the stringlength from the vtable size.  */
-  if (sym->ts.type == BT_CHARACTER && sym->attr.select_type_temporary)
+  /* Set the stringlength, when needed.  */
+  if (need_len_assign)
     {
-      tree charlen;
       gfc_se se;
       gfc_init_se (&se, NULL);
-      gcc_assert (UNLIMITED_POLY (e->symtree->n.sym));
-      tmp = gfc_get_symbol_decl (e->symtree->n.sym);
-      tmp = gfc_vtable_size_get (tmp);
+      if (e->symtree->n.sym->ts.type == BT_CHARACTER)
+	{
+	  /* What about deferred strings?  */
+	  gcc_assert (!e->symtree->n.sym->ts.deferred);
+	  tmp = e->symtree->n.sym->ts.u.cl->backend_decl;
+	}
+      else
+	tmp = gfc_class_len_get (gfc_get_symbol_decl (e->symtree->n.sym));
       gfc_get_symbol_decl (sym);
-      charlen = sym->ts.u.cl->backend_decl;
-      gfc_add_modify (&se.pre, charlen,
-		      fold_convert (TREE_TYPE (charlen), tmp));
-      gfc_add_init_cleanup (block, gfc_finish_block( &se.pre),
-			    gfc_finish_block (&se.post));
+      charlen = sym->ts.type == BT_CHARACTER ? sym->ts.u.cl->backend_decl
+					: gfc_class_len_get (sym->backend_decl);
+      /* Prevent adding a noop len= len.  */
+      if (tmp != charlen)
+	{
+	  gfc_add_modify (&se.pre, charlen,
+			  fold_convert (TREE_TYPE (charlen), tmp));
+	  gfc_add_init_cleanup (block, gfc_finish_block (&se.pre),
+				gfc_finish_block (&se.post));
+	}
     }
 }
 
@@ -5038,6 +5105,15 @@ gfc_trans_allocate (gfc_code * code)
 		gfc_add_modify (&se.pre, se.string_length,
 				fold_convert (TREE_TYPE (se.string_length),
 				memsz));
+	      else if ((al->expr->ts.type == BT_DERIVED
+			|| al->expr->ts.type == BT_CLASS)
+		       && expr->ts.u.derived->attr.unlimited_polymorphic)
+		{
+		  tmp = gfc_class_len_get (al->expr->symtree->n.sym->backend_decl);
+		  gfc_add_modify (&se.pre, tmp,
+				  fold_convert (TREE_TYPE (tmp),
+						memsz));
+		}
 
 	      /* Convert to size in bytes, using the character KIND.  */
 	      if (unlimited_char)

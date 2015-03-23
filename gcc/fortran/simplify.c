@@ -3690,6 +3690,14 @@ gfc_simplify_len (gfc_expr *e, gfc_expr *kind)
       mpz_set (result->value.integer, e->ts.u.cl->length->value.integer);
       return range_check (result, "LEN");
     }
+  else if (e->expr_type == EXPR_VARIABLE && e->ts.type == BT_CHARACTER
+	   && e->symtree->n.sym
+	   && e->symtree->n.sym->assoc && e->symtree->n.sym->assoc->target
+	   && e->symtree->n.sym->assoc->target->ts.type == BT_DERIVED)
+    /* The expression in assoc->target points to a ref to the _data component
+       of the unlimited polymorphic entity.  To get the _len component the last
+       _data ref needs to be stripped and a ref to the _len component added.  */
+    return gfc_get_len_component (e->symtree->n.sym->assoc->target);
   else
     return NULL;
 }
