@@ -1441,6 +1441,7 @@ PRE_SYSCALL(fchown)(long fd, long user, long group) {}
 
 POST_SYSCALL(fchown)(long res, long fd, long user, long group) {}
 
+#if SANITIZER_USES_UID16_SYSCALLS
 PRE_SYSCALL(chown16)(const void *filename, long user, long group) {
   if (filename)
     PRE_READ(filename,
@@ -1550,6 +1551,7 @@ POST_SYSCALL(getgid16)(long res) {}
 PRE_SYSCALL(getegid16)() {}
 
 POST_SYSCALL(getegid16)(long res) {}
+#endif // SANITIZER_USES_UID16_SYSCALLS
 
 PRE_SYSCALL(utime)(void *filename, void *times) {}
 

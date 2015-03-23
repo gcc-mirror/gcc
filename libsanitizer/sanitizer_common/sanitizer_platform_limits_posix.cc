@@ -1004,7 +1004,7 @@ CHECK_SIZE_AND_OFFSET(__sysctl_args, newlen);
 CHECK_TYPE_SIZE(__kernel_uid_t);
 CHECK_TYPE_SIZE(__kernel_gid_t);
 
-#if !defined(__aarch64__)
+#if SANITIZER_USES_UID16_SYSCALLS
 CHECK_TYPE_SIZE(__kernel_old_uid_t);
 CHECK_TYPE_SIZE(__kernel_old_gid_t);
 #endif
