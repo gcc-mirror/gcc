@@ -55,9 +55,10 @@ avr_diagnose_devicespecs_error (const char *mcu, const char *filename)
 
 /* Implement spec function `device-specs-file´.
 
-   Compose -specs=<specs-file-name>.  If everything went well then argv[0]
-   is the inflated specs directory and argv[1] is a device or core name as
-   supplied to -mmcu=*.  */
+   Compose -specs=<specs-file-name>%s.  If everything went well then argv[0]
+   is the inflated (absolute) specs directory and argv[1] is a device or
+   core name as supplied by -mmcu=*.  When building GCC the path might
+   be relative.  */
 
 const char*
 avr_devicespecs_file (int argc, const char **argv)
@@ -82,13 +83,19 @@ avr_devicespecs_file (int argc, const char **argv)
       mmcu = AVR_MMCU_DEFAULT;
       break;
 
-    case 2:
-      mmcu = argv[1];
-      break;
-
     default:
-      error ("specified option %qs more than once", "-mmcu=");
-      return X_NODEVLIB;
+      mmcu = argv[1];
+
+      // Allow specifying the same MCU more than once.
+
+      for (int i = 2; i < argc; i++)
+        if (0 != strcmp (mmcu, argv[i]))
+          {
+            error ("specified option %qs more than once", "-mmcu");
+            return X_NODEVLIB;
+          }
+
+      break;
     }
 
   specfile_name = concat (argv[0], dir_separator_str, "specs-", mmcu, NULL);
