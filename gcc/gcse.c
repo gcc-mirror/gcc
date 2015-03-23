@@ -189,6 +189,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "target.h"
 #include "gcse.h"
+#include "gcse-common.h"
 
 /* We support GCSE via Partial Redundancy Elimination.  PRE optimizations
    are a superset of those done by classic GCSE.
@@ -424,13 +425,6 @@ static regset reg_set_bitmap;
 static vec<rtx_insn *> *modify_mem_list;
 static bitmap modify_mem_list_set;
 
-typedef struct modify_pair_s
-{
-  rtx dest;			/* A MEM.  */
-  rtx dest_addr;		/* The canonical address of `dest'.  */
-} modify_pair;
-
-
 /* This array parallels modify_mem_list, except that it stores MEMs
    being set and their canonicalized memory addresses.  */
 static vec<modify_pair> *canon_modify_mem_list;
@@ -507,12 +501,10 @@ static void alloc_hash_table (struct gcse_hash_table_d *);
 static void free_hash_table (struct gcse_hash_table_d *);
 static void compute_hash_table_work (struct gcse_hash_table_d *);
 static void dump_hash_table (FILE *, const char *, struct gcse_hash_table_d *);
-static void compute_transp (const_rtx, int, sbitmap *);
 static void compute_local_properties (sbitmap *, sbitmap *, sbitmap *,
 				      struct gcse_hash_table_d *);
 static void mems_conflict_for_gcse_p (rtx, const_rtx, void *);
 static int load_killed_in_block_p (const_basic_block, int, const_rtx, int);
-static void canon_list_insert (rtx, const_rtx, void *);
 static void alloc_pre_mem (int, int);
 static void free_pre_mem (void);
 static struct edge_list *compute_pre_data (void);
@@ -733,7 +725,10 @@ compute_local_properties (sbitmap *transp, sbitmap *comp, sbitmap *antloc,
 	     We start by assuming all are transparent [none are killed], and
 	     then reset the bits for those that are.  */
 	  if (transp)
-	    compute_transp (expr->expr, indx, transp);
+	    compute_transp (expr->expr, indx, transp,
+			    blocks_with_calls,
+			    modify_mem_list_set,
+			    canon_modify_mem_list);
 
 	  /* The occurrences recorded in antic_occr are exactly those that
 	     we want to set to nonzero in ANTLOC.  */
@@ -1489,40 +1484,6 @@ record_last_reg_set_info (rtx insn, int regno)
     }
 }
 
-/* Record all of the canonicalized MEMs of record_last_mem_set_info's insn.
-   Note we store a pair of elements in the list, so they have to be
-   taken off pairwise.  */
-
-static void
-canon_list_insert (rtx dest ATTRIBUTE_UNUSED, const_rtx x ATTRIBUTE_UNUSED,
-		   void * v_insn)
-{
-  rtx dest_addr, insn;
-  int bb;
-  modify_pair pair;
-
-  while (GET_CODE (dest) == SUBREG
-      || GET_CODE (dest) == ZERO_EXTRACT
-      || GET_CODE (dest) == STRICT_LOW_PART)
-    dest = XEXP (dest, 0);
-
-  /* If DEST is not a MEM, then it will not conflict with a load.  Note
-     that function calls are assumed to clobber memory, but are handled
-     elsewhere.  */
-
-  if (! MEM_P (dest))
-    return;
-
-  dest_addr = get_addr (XEXP (dest, 0));
-  dest_addr = canon_rtx (dest_addr);
-  insn = (rtx) v_insn;
-  bb = BLOCK_FOR_INSN (insn)->index;
-
-  pair.dest = dest;
-  pair.dest_addr = dest_addr;
-  canon_modify_mem_list[bb].safe_push (pair);
-}
-
 /* Record memory modification information for INSN.  We do not actually care
    about the memory location(s) that are set, or even how they are set (consider
    a CALL_INSN).  We merely need to record which insns modify memory.  */
@@ -1530,21 +1491,13 @@ canon_list_insert (rtx dest ATTRIBUTE_UNUSED, const_rtx x ATTRIBUTE_UNUSED,
 static void
 record_last_mem_set_info (rtx_insn *insn)
 {
-  int bb;
-
   if (! flag_gcse_lm)
     return;
 
-  /* load_killed_in_block_p will handle the case of calls clobbering
-     everything.  */
-  bb = BLOCK_FOR_INSN (insn)->index;
-  modify_mem_list[bb].safe_push (insn);
-  bitmap_set_bit (modify_mem_list_set, bb);
-
-  if (CALL_P (insn))
-    bitmap_set_bit (blocks_with_calls, bb);
-  else
-    note_stores (PATTERN (insn), canon_list_insert, (void*) insn);
+  record_last_mem_set_info_common (insn, modify_mem_list,
+				   canon_modify_mem_list,
+				   modify_mem_list_set,
+				   blocks_with_calls);
 }
 
 /* Called from compute_hash_table via note_stores to handle one
@@ -1697,120 +1650,6 @@ free_modify_mem_tables (void)
   free (canon_modify_mem_list);
   modify_mem_list = 0;
   canon_modify_mem_list = 0;
-}
-
-/* For each block, compute whether X is transparent.  X is either an
-   expression or an assignment [though we don't care which, for this context
-   an assignment is treated as an expression].  For each block where an
-   element of X is modified, reset the INDX bit in BMAP.  */
-
-static void
-compute_transp (const_rtx x, int indx, sbitmap *bmap)
-{
-  int i, j;
-  enum rtx_code code;
-  const char *fmt;
-
-  /* repeat is used to turn tail-recursion into iteration since GCC
-     can't do it when there's no return value.  */
- repeat:
-
-  if (x == 0)
-    return;
-
-  code = GET_CODE (x);
-  switch (code)
-    {
-    case REG:
-	{
-	  df_ref def;
-	  for (def = DF_REG_DEF_CHAIN (REGNO (x));
-	       def;
-	       def = DF_REF_NEXT_REG (def))
-	    bitmap_clear_bit (bmap[DF_REF_BB (def)->index], indx);
-	}
-
-      return;
-
-    case MEM:
-      if (! MEM_READONLY_P (x))
-	{
-	  bitmap_iterator bi;
-	  unsigned bb_index;
-	  rtx x_addr;
-
-	  x_addr = get_addr (XEXP (x, 0));
-	  x_addr = canon_rtx (x_addr);
-
-	  /* First handle all the blocks with calls.  We don't need to
-	     do any list walking for them.  */
-	  EXECUTE_IF_SET_IN_BITMAP (blocks_with_calls, 0, bb_index, bi)
-	    {
-	      bitmap_clear_bit (bmap[bb_index], indx);
-	    }
-
-	  /* Now iterate over the blocks which have memory modifications
-	     but which do not have any calls.  */
-	  EXECUTE_IF_AND_COMPL_IN_BITMAP (modify_mem_list_set,
-					  blocks_with_calls,
-					  0, bb_index, bi)
-	    {
-	      vec<modify_pair> list
-		= canon_modify_mem_list[bb_index];
-	      modify_pair *pair;
-	      unsigned ix;
-
-	      FOR_EACH_VEC_ELT_REVERSE (list, ix, pair)
-		{
-		  rtx dest = pair->dest;
-		  rtx dest_addr = pair->dest_addr;
-
-		  if (canon_true_dependence (dest, GET_MODE (dest),
-					     dest_addr, x, x_addr))
-		    {
-		      bitmap_clear_bit (bmap[bb_index], indx);
-		      break;
-		    }
-	        }
-	    }
-	}
-
-      x = XEXP (x, 0);
-      goto repeat;
-
-    case PC:
-    case CC0: /*FIXME*/
-    case CONST:
-    CASE_CONST_ANY:
-    case SYMBOL_REF:
-    case LABEL_REF:
-    case ADDR_VEC:
-    case ADDR_DIFF_VEC:
-      return;
-
-    default:
-      break;
-    }
-
-  for (i = GET_RTX_LENGTH (code) - 1, fmt = GET_RTX_FORMAT (code); i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  /* If we are about to do the last recursive call
-	     needed at this level, change it into iteration.
-	     This function is called enough to be worth it.  */
-	  if (i == 0)
-	    {
-	      x = XEXP (x, i);
-	      goto repeat;
-	    }
-
-	  compute_transp (XEXP (x, i), indx, bmap);
-	}
-      else if (fmt[i] == 'E')
-	for (j = 0; j < XVECLEN (x, i); j++)
-	  compute_transp (XVECEXP (x, i, j), indx, bmap);
-    }
 }
 
 /* Compute PRE+LCM working variables.  */

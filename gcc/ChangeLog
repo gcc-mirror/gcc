@@ -1,3 +1,34 @@
+2015-03-22  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/64317
+	* Makefile.in (OBJS): Add gcse-common.c
+	* gcse.c: Include gcse-common.h
+	(struct modify_pair_s): Move structure definition to gcse-common.h
+	(compute_transp): Move function to gcse-common.c.
+	(canon_list_insert): Similarly.
+	(record_last_mem_set_info): Break out some code and put it into
+	gcse-common.c.  Call into the new common code.
+	(compute_local_properties): Pass additional arguments to compute_transp.
+	* postreload-gcse.c: Include gcse-common.h and df.h
+	(modify_mem_list_set, blocks_with_calls): New variables.
+	(modify_mem_list, canon_modify_mem_list, transp): Likewise.
+	(get_bb_avail_insn): Pass in the expression index too.
+	(alloc_mem): Allocate memory for the new bitmaps and lists.
+	(free_mem): Free memory for the new bitmaps and lists.
+	(insert_expr_in_table): Record a bitmap index for each entry we
+	add to the table.
+	(record_last_mem_set_info): Call into common code in gcse-common.c.
+	(get_bb_avail_insn): If no available insn was found in the requested
+	BB.  If BB has a single predecessor, see if the expression is
+	transparent in BB and available in that single predecessor.
+	(compute_expr_transp): New wrapper for compute_transp.
+	(eliminate_partially_redundant_load): Pass expression's bitmap_index
+	to get_bb_avail_insn.  Compute next_pred_bb_end a bit later.
+	(gcse_after_reload_main): If there are elements in the hash table,
+	then compute transparency for all the elements in the hash table.
+	* gcse-common.h: New file.
+	* gcse-common.c: New file.
+
 2015-03-22  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/cpp.texi (Search Path): Hyphenate "command-line" when used
