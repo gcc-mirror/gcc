@@ -1,4 +1,10 @@
-2014-03-23  Jakub Jelinek  <jakub@redhat.com>
+2015-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65504
+	* config/i386/i386.c (ix86_copy_addr_to_reg): Set REG_POINTER
+	on the pseudo.
+	(expand_set_or_movmem_prologue_epilogue_by_misaligned_moves): Set
+	REG_POINTER on *destptr after adjusting it for prologue size.
 
 	PR ipa/65521
 	* ipa-icf.c (sem_item::update_hash_by_addr_refs): Hash
