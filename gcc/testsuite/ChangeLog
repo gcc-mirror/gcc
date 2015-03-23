@@ -1,3 +1,9 @@
+2015-03-23  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/63175
+	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a-pr63175.c: Scan
+	assembly for lvx in addition to lxv.
+
 2015-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/65504
