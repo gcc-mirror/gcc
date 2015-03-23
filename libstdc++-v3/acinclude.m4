@@ -3859,6 +3859,10 @@ dnl  _GLIBCXX_USE_DUAL_ABI (always defined, either to 1 or 0)
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_DUAL_ABI], [
   GLIBCXX_ENABLE(libstdcxx-dual-abi,$1,,[support two versions of std::string])
+  if test x$enable_symvers = xgnu-versioned-namespace; then
+    # gnu-versioned-namespace is incompatible with the dual ABI.
+    enable_libstdcxx_dual_abi="no"
+  fi
   if test x"$enable_libstdcxx_dual_abi" != xyes; then
     AC_MSG_NOTICE([dual ABI is disabled])
     default_libstdcxx_abi="c++98"

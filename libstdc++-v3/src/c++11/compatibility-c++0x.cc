@@ -130,6 +130,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     constexpr bool system_clock::is_monotonic;
   } // namespace chrono
 
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
   // gcc-5 replaces this with _V2::error_category
   class error_category
   {
@@ -168,6 +169,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     operator!=(const error_category& __other) const noexcept
     { return this != &__other; }
   };
+_GLIBCXX_END_NAMESPACE_VERSION
 
   // gcc-4.9.0
   // LWG 2145 changes this constructor to constexpr i.e. inline
@@ -213,6 +215,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     const system_error_category system_category_instance{};
   }
 
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
   const error_category&
   system_category() noexcept { return system_category_instance; }
 
@@ -224,6 +227,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     _GLIBCXX_CONST const error_categoryxx& system_category() noexcept;
     _GLIBCXX_CONST const error_categoryxx& generic_category() noexcept;
   }
+_GLIBCXX_END_NAMESPACE_VERSION
 
   error_condition
   error_category::default_error_condition(int __i) const noexcept
