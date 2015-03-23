@@ -1532,6 +1532,7 @@ expand_thunk (struct cgraph_node *node, bool output_asm_thunks)
 
       gimple call;
       gimple ret;
+      bool alias_is_noreturn = TREE_THIS_VOLATILE (alias);
 
       if (in_lto_p)
 	cgraph_get_body (node);
@@ -1566,7 +1567,7 @@ expand_thunk (struct cgraph_node *node, bool output_asm_thunks)
       bsi = gsi_start_bb (bb);
 
       /* Build call to the function being thunked.  */
-      if (!VOID_TYPE_P (restype))
+      if (!VOID_TYPE_P (restype) && !alias_is_noreturn)
 	{
 	  if (DECL_BY_REFERENCE (resdecl))
 	    restmp = gimple_fold_indirect_ref (resdecl);
@@ -1612,14 +1613,14 @@ expand_thunk (struct cgraph_node *node, bool output_asm_thunks)
       call = gimple_build_call_vec (build_fold_addr_expr_loc (0, alias), vargs);
       node->callees->call_stmt = call;
       gimple_call_set_from_thunk (call, true);
-      if (restmp)
+      if (restmp && !alias_is_noreturn)
 	{
           gimple_call_set_lhs (call, restmp);
 	  gcc_assert (useless_type_conversion_p (TREE_TYPE (restmp),
 						 TREE_TYPE (TREE_TYPE (alias))));
 	}
       gsi_insert_after (&bsi, call, GSI_NEW_STMT);
-      if (!(gimple_call_flags (call) & ECF_NORETURN))
+      if (!alias_is_noreturn)
 	{
 	  if (restmp && !this_adjusting
 	      && (fixed_offset || virtual_offset))
