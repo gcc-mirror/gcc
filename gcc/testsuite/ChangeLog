@@ -154,7 +154,8 @@
 
 2015-02-27  Pat Haugen <pthaugen@us.ibm.com>
 
-	* gcc.dg/vect/pr59354.c: Move vector producing code to separate function.
+	* gcc.dg/vect/pr59354.c: Move vector producing code to
+	separate function.
 
 2015-02-27  Marek Polacek  <polacek@redhat.com>
 
@@ -451,7 +452,7 @@
 	Backport from mainline
 	2015-01-31  Uros Bizjak  <ubizjak@gmail.com>
 
-        PR target/64882
+	PR target/64882
 	* gcc.dg/torture/pr64882.c: New test.
 
 2015-02-01  H.J. Lu  <hongjiu.lu@intel.com>
@@ -954,7 +955,7 @@
 2014-10-25  Yury Gribov  <y.gribov@samsung.com>
 
 	PR sanitizer/63638
-    	* c-c++-common/asan/pr63638.c: New test.
+	* c-c++-common/asan/pr63638.c: New test.
 
 2014-10-24  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
@@ -1136,7 +1137,7 @@
 	2014-10-11  Christophe Lyon  <christophe.lyon@linaro.org>
 	* lib/target-supports.exp (check_effective_target_shared): New
 	function.
-        * g++.dg/ipa/devirt-28a.C: Check if -shared is supported.
+	* g++.dg/ipa/devirt-28a.C: Check if -shared is supported.
 
 2014-10-10  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1304,7 +1305,7 @@
 2014-09-12  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/61654
-        * g++.dg/ipa/pr61654.C: New test.
+	* g++.dg/ipa/pr61654.C: New test.
 
 2014-09-11  Alan Lawrence  <alan.lawrence@arm.com>
 
@@ -2565,10 +2566,10 @@
 	PR middle-end/60849
 	* g++.dg/opt/pr60849.C: New testcase.
 
-2014-04-22   Richard Biener  <rguenther@suse.de>
+2014-04-22  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
-	2014-04-17   Richard Biener  <rguenther@suse.de>
+	2014-04-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/60841
 	* gcc.dg/vect/pr60841.c: New testcase.
