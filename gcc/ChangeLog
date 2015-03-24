@@ -1,3 +1,17 @@
+2015-03-24  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf-gimple.h (return_with_result): Add missing colon to dump.
+	* ipa-icf.c (sem_function::get_hash): Hash new declaration properties.
+	(sem_item::add_type): New function.
+	(sem_function::hash_stmt): Add TREE_TYPE of gimple_op.
+	(sem_function::compare_polymorphic_p): Do not consider indirect calls.
+	(sem_item_optimizer::update_hash_by_addr_refs): Add ODR type to hash.
+	(sem_function::equals_wpa): Fix typo.
+	* ipa-icf.h (sem_item::add_type): New function.
+	(symbol_compare_hashmap_traits): Replace hashing of pointer with symbol
+	order.
+
 2015-03-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65533
