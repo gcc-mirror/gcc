@@ -1,3 +1,9 @@
+2015-03-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65498
+	* pt.c (get_mostly_instantiated_function_type): Just return the
+	type of the partially instantiated template in DECL_TI_TEMPLATE.
+
 2015-03-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/65398
