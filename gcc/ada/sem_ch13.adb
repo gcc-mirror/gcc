@@ -11738,6 +11738,8 @@ package body Sem_Ch13 is
 
       elsif Is_Type (T)
         and then Is_Generic_Type (Root_Type (T))
+        and then (Nkind (N) /= N_Pragma
+                   or else Get_Pragma_Id (N) /= Pragma_Convention)
       then
          Error_Msg_N ("representation item not allowed for generic type", N);
          return True;

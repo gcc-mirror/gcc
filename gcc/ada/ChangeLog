@@ -1,3 +1,12 @@
+2015-03-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Rep_Item_Too_Early): allow pragma Convention
+	on generic type.
+
+2015-03-24  Gary Dismukes  <dismukes@adacore.com>
+
+	* inline.adb: Minor typo fix.
+
 2015-03-24  Arnaud Charlet  <charlet@adacore.com>
 
 	* doc/gnat_ugn/building_executable_programs_with_gnat.rst,

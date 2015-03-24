@@ -1337,7 +1337,7 @@ package body Inline is
    is
       function Has_Formal_With_Discriminant_Dependent_Fields
         (Id : Entity_Id) return Boolean;
-      --  Returns true if the subprogram has at least one formal parameters of
+      --  Returns true if the subprogram has at least one formal parameter of
       --  an unconstrained record type with per-object constraints on component
       --  types.
 
