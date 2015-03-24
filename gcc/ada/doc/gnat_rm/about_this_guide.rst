@@ -115,10 +115,9 @@ This reference manual contains the following chapters:
 This reference manual assumes a basic familiarity with the Ada 95 language, as
 described in the 
 :title:`International Standard ANSI/ISO/IEC-8652:1995`.
-It does not require knowledge of the new features introduced by Ada 2005,
-(officially known as `ISO/IEC 8652:1995 with Technical Corrigendum 1
-and Amendment 1`).
-Both reference manuals are included in the GNAT documentation
+It does not require knowledge of the new features introduced by Ada 2005 or
+Ada 2012.
+All three reference manuals are included in the GNAT documentation
 package.
 
 Conventions

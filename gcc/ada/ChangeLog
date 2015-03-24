@@ -1,3 +1,14 @@
+2015-03-24  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst,
+	doc/gnat_ugn/gnat_utility_programs.rst
+	doc/gnat_rm/implementation_defined_attributes.rst
+	doc/gnat_rm/implementation_defined_pragmas.rst
+	doc/gnat_rm/representation_clauses_and_pragmas.rst
+	doc/gnat_rm/about_this_guide.rst
+	doc/gnat_rm/implementation_of_ada_2012_features.rst: Doc improvements.
+	* gnat_rm.texi, gnat_ugn.texi: Regenerate.
+
 2015-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/65522

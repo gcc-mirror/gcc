@@ -4676,8 +4676,12 @@ checks to be performed. The following checks are defined:
 :samp:`-gnatyO`
   *Check that overriding subprograms are explicitly marked as such.*
 
-  The declaration of a primitive operation of a type extension that overrides
-  an inherited operation must carry an overriding indicator.
+  This applies to all subprograms of a derived type that override a primitive
+  operation of the type, for both tagged and untagged types. In particular,
+  the declaration of a primitive operation of a type extension that overrides
+  an inherited operation must carry an overriding indicator. Another case is
+  the declaration of a function that overrides a predefined operator (such
+  as an equality operator).
 
 
 .. index:: -gnatyp (gcc)

@@ -146,7 +146,7 @@ an address clause as in the following example:
   procedure L;
   for L'Address use K'Address;
   pragma Import (Ada, L);
-  
+
 
 A call to `L` is then expected to result in a call to `K`.
 In Ada 83, where there were no access-to-subprogram values, this was
@@ -186,6 +186,7 @@ attribute in the generic instance when applied to a scalar type or a
 record type without discriminants is always `True`. This usage is
 compatible with older Ada compilers, including notably DEC Ada.
 
+
 Attribute Default_Bit_Order
 ===========================
 .. index:: Big endian
@@ -214,6 +215,16 @@ order (as specified using pragma `Default_Scalar_Storage_Order`, or
 equal to `Default_Bit_Order` if unspecified) as a
 `System.Bit_Order` value. This is a static attribute.
 
+Attribute Deref
+===============
+.. index:: Deref
+
+The attribute `typ'Deref(expr)` where `expr` is of type `System.Address` yields
+the variable of type `typ` that is located at the given address. It is similar
+to `(totyp (expr).all)`, where `totyp` is an unchecked conversion from address to
+a named access-to-`typ` type, except that it yields a variable, so it can be
+used on the left side of an assignment.
+
 Attribute Descriptor_Size
 =========================
 .. index:: Descriptor
@@ -232,7 +243,7 @@ the first element of the array.
 
   type Unconstr_Array is array (Positive range <>) of Boolean;
   Put_Line ("Descriptor size = " & Unconstr_Array'Descriptor_Size'Img);
-  
+
 
 The attribute takes into account any additional padding due to type alignment.
 In the example above, the descriptor contains two values of type
@@ -331,7 +342,7 @@ function with the following spec:
 .. code-block:: ada
 
   function S'Enum_Rep (Arg : S'Base) return <Universal_Integer>;
-  
+
 
 It is also allowable to apply `Enum_Rep` directly to an object of an
 enumeration type or to a non-overloaded enumeration
@@ -366,7 +377,7 @@ function with the following spec:
 .. code-block:: ada
 
   function S'Enum_Val (Arg : <Universal_Integer>) return S'Base;
-  
+
 
 The function returns the enumeration value whose representation matches the
 argument, or raises Constraint_Error if no enumeration literal of the type
@@ -403,11 +414,11 @@ function with the following specification:
 .. code-block:: ada
 
   function S'Fixed_Value (Arg : <Universal_Integer>) return S;
-  
+
 The value returned is the fixed-point value `V` such that::
 
   V = Arg * S'Small
-  
+
 
 The effect is thus similar to first converting the argument to the
 integer type used to represent `S`, and then doing an unchecked
@@ -461,14 +472,14 @@ debugging:
 .. code-block:: ada
 
   Put_Line ("X = " & X'Img);
-  
+
 
 has the same meaning as the more verbose:
 
 .. code-block:: ada
 
   Put_Line ("X = " & T'Image (X));
-  
+
 where `T` is the (sub)type of the object `X`.
 
 Note that technically, in analogy to `Image`,
@@ -491,7 +502,7 @@ function with the following spec:
 The value returned is the integer value `V`, such that::
 
   Arg = V * T'Small
-  
+
 
 where `T` is the type of `Arg`.
 The effect is thus similar to first doing an unchecked conversion from
@@ -550,7 +561,7 @@ in this example:
        "Gen can only be instantiated at library level");
     ...
   end Gen;
-  
+
 
 Attribute Lock_Free
 ===================
@@ -566,7 +577,7 @@ Attribute Loop_Entry
 Syntax::
 
   X'Loop_Entry [(loop_name)]
-  
+
 
 The `Loop_Entry` attribute is used to refer to the value that an
 expression had upon entry to a given loop in much the same way that the
@@ -678,7 +689,7 @@ Similarly, a record containing an integer and a character:
      I : Integer;
      C : Character;
   end record;
-  
+
 
 will have a size of 40 (that is `Rec'Size` will be 40).  The
 alignment will be 4, because of the
@@ -715,7 +726,7 @@ Consider this example:
              type "R1" defined at line 3
 
   13. end;
-  
+
 
 In the absence of lines 5 and 6,
 types `R1` and `R2` statically match and
@@ -765,8 +776,8 @@ bounds are allocated just before the first component,
 whereas ``X'Address`` returns the address of the first
 component.
 
-Here, we are interpreting 'storage pool' broadly to mean 
-``wherever the object is allocated``, which could be a 
+Here, we are interpreting 'storage pool' broadly to mean
+``wherever the object is allocated``, which could be a
 user-defined storage pool,
 the global heap, on the stack, or in a static memory area.
 For an object created by `new`, ``Ptr.all'Pool_Address`` is
@@ -803,7 +814,7 @@ There are two forms:
 
   System'Restriction_Set (partition_boolean_restriction_NAME)
   System'Restriction_Set (No_Dependence => library_unit_NAME);
-  
+
 
 In the case of the first form, the only restriction names
 allowed are parameterless restrictions that are checked
@@ -839,7 +850,7 @@ So for example if you write
   else
      ...
   end if;
-  
+
 
 And the result is False, so that the else branch is executed,
 you can assume that this restriction is not set for any unit
@@ -939,7 +950,7 @@ of the use of this feature:
      --  If Scalar_Storage_Order is specified, it must be consistent with
      --  Bit_Order, so it's best to always define the latter explicitly if
      --  the former is used.
-  
+
 
 Other properties are as for standard representation attribute `Bit_Order`,
 as defined by Ada RM 13.5.3(4). The default is `System.Default_Bit_Order`.
@@ -1020,7 +1031,7 @@ via an attribute_definition_clause (or by specifying the equivalent aspect):
 
   for Acc'Simple_Storage_Pool use My_Pool;
 
-  
+
 
 The name given in an attribute_definition_clause for the
 `Simple_Storage_Pool` attribute shall denote a variable of
@@ -1174,7 +1185,7 @@ corresponding actual subtype.  The value of this attribute is of type
      Type_Class_Access,
      Type_Class_Task,
      Type_Class_Address);
-  
+
 
 Protected types yield the value `Type_Class_Task`, which thus
 applies to all concurrent types.  This attribute is designed to
@@ -1241,7 +1252,7 @@ For example, the following program prints the first 50 digits of pi:
   begin
      Put (Ada.Numerics.Pi'Universal_Literal_String);
   end;
-  
+
 
 Attribute Unrestricted_Access
 =============================
@@ -1291,7 +1302,7 @@ has returned, such calls are erroneous. For example:
      end P2;
 
   end P;
-  
+
 
 When P1 is called from P2, the call via Global is OK, but if P1 were
 called after P2 returns, it would be an erroneous use of a dangling
@@ -1348,7 +1359,7 @@ reject the use as illegal, as shown in the following example:
 
      P (X2'Unrestricted_Access);         -- OK
   end;
-  
+
 
 but other cases cannot be detected by the compiler, and are
 considered to be erroneous. Consider the following example:
@@ -1376,7 +1387,7 @@ considered to be erroneous. Consider the following example:
   begin
      P (A (Y));
   end;
-  
+
 
 A normal unconstrained array value
 or a constrained array object marked as aliased has the bounds in memory
@@ -1408,7 +1419,7 @@ is not well-defined. Consider this example:
   RV : R := P'Unrestricted_Access;
   ..
   RV.all := 3;
-  
+
 
 Here we attempt to modify the constant P from 4 to 3, but the compiler may
 or may not notice this attempt, and subsequent references to P may yield
@@ -1425,7 +1436,7 @@ value of an `IN` parameter:
   begin
      RV.all := 'a';
   end;
-  
+
 
 In general this is a risky approach. It may appear to "work" but such uses of
 `Unrestricted_Access` are potentially non-portable, even from one version
@@ -1446,7 +1457,7 @@ with one or more modified components. The syntax is::
   MULTIDIMENSIONAL_ARRAY_COMPONENT_ASSOCIATION ::= INDEX_EXPRESSION_LIST_LIST => EXPRESSION
   INDEX_EXPRESSION_LIST_LIST                   ::= INDEX_EXPRESSION_LIST {| INDEX_EXPRESSION_LIST }
   INDEX_EXPRESSION_LIST                        ::= ( EXPRESSION {, EXPRESSION } )
-  
+
 
 where `PREFIX` is the name of an array or record object, the
 association list in parentheses does not contain an `others`
@@ -1463,7 +1474,7 @@ example:
   ...
   Avar1 : Arr := (1,2,3,4,5);
   Avar2 : Arr := Avar1'Update (2 => 10, 3 .. 4 => 20);
-  
+
 
 yields a value for `Avar2` of 1,10,20,20,5 with `Avar1`
 begin unmodified. Similarly:
@@ -1474,7 +1485,7 @@ begin unmodified. Similarly:
   ...
   Rvar1 : Rec := (A => 1, B => 2, C => 3);
   Rvar2 : Rec := Rvar1'Update (B => 20);
-  
+
 
 yields a value for `Rvar2` of (A => 1, B => 20, C => 3),
 with `Rvar1` being unmodifed.
@@ -1484,7 +1495,7 @@ completely before it is used. This means that if you write:
 .. code-block:: ada
 
   Avar1 := Avar1'Update (1 => 10, 2 => Function_Call);
-  
+
 
 then the value of `Avar1` is not modified if `Function_Call`
 raises an exception, unlike the effect of a series of direct assignments
@@ -1508,7 +1519,7 @@ Multi-dimensional arrays can be modified, as shown by this example:
   A : array (1 .. 10, 1 .. 10) of Integer;
   ..
   A := A'Update ((1, 2) => 20, (3, 4) => 30);
-  
+
 
 which changes element (1,2) to 20 and (3,4) to 30.
 
