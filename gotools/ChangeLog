@@ -1,3 +1,9 @@
+2015-03-24  Ian Lance Taylor  <iant@google.com>
+
+	PR go/65462
+	* Makefile.am (go_cmd_go_files): Add $(libgodir)/zstdpkglist.go.
+	* Makefile.in: Rebuild.
+
 2015-03-12  Ian Lance Taylor  <iant@google.com>
 
 	* Makefile.am (GOLINK): Add GOCFLAGS.

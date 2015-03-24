@@ -112,7 +112,11 @@ func (p *Package) copyBuild(pp *build.Package) {
 	p.ConflictDir = pp.ConflictDir
 	// TODO? Target
 	p.Goroot = pp.Goroot
-	p.Standard = p.Goroot && p.ImportPath != "" && !strings.Contains(p.ImportPath, ".")
+	if buildContext.Compiler == "gccgo" {
+		p.Standard = stdpkg[p.ImportPath]
+	} else {
+		p.Standard = p.Goroot && p.ImportPath != "" && !strings.Contains(p.ImportPath, ".")
+	}
 	p.GoFiles = pp.GoFiles
 	p.CgoFiles = pp.CgoFiles
 	p.IgnoredGoFiles = pp.IgnoredGoFiles
@@ -582,7 +586,7 @@ func (p *Package) load(stk *importStack, bp *build.Package, err error) *Package 
 			continue
 		}
 		p1 := loadImport(path, p.Dir, stk, p.build.ImportPos[path])
-		if !reqPkgSrc && p1.Root == "" {
+		if !reqStdPkgSrc && p1.Standard {
 			continue
 		}
 		if p1.local {
