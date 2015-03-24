@@ -1,3 +1,8 @@
+2015-03-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65513
+	* g++.dg/cpp0x/constexpr-array11.C: New.
+
 2015-03-24  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/65517
