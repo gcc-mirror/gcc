@@ -1,5 +1,11 @@
 2015-03-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/65046
+	* cp-tree.h (NAMESPACE_IS_INLINE): Remove.
+	* parser.c (cp_parser_namespace_definition): Don't set it.
+	* name-lookup.c (handle_namespace_attrs): Check
+	DECL_NAMESPACE_ASSOCIATIONS instead.
+
 	PR c++/65498
 	* pt.c (get_mostly_instantiated_function_type): Just return the
 	type of the partially instantiated template in DECL_TI_TEMPLATE.
