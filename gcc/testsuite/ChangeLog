@@ -1,4 +1,9 @@
-2015-03-20  Andre Vehreschild  <vehre@gmx.de>
+2015-03-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/60851
+	* gcc.target/i386/pr60851.c: New test.
+
+2015-03-23  Andre Vehreschild  <vehre@gmx.de>
 
 	Backport from mainline
 	PR fortran/60255

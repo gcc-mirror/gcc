@@ -2627,8 +2627,13 @@ constrain_operands (int strict)
 		      break;
 		    win = 1;
 		  }
-		/* Before reload, accept what reload can turn into mem.  */
+		/* Before reload, accept what reload can turn into a mem.  */
 		else if (strict < 0 && CONSTANT_P (op))
+		  win = 1;
+		/* Before reload, accept a pseudo,
+		   since LRA can turn it into a mem.  */
+		else if (strict < 0 && targetm.lra_p () && REG_P (op)
+			 && REGNO (op) >= FIRST_PSEUDO_REGISTER)
 		  win = 1;
 		/* During reload, accept a pseudo  */
 		else if (reload_in_progress && REG_P (op)
@@ -2708,6 +2713,10 @@ constrain_operands (int strict)
 		    /* Before reload, accept what reload can handle.  */
 		    || (strict < 0
 			&& (CONSTANT_P (op) || MEM_P (op)))
+		    /* Before reload, accept a pseudo,
+		       since LRA can turn it into a mem.  */
+		    || (strict < 0 && targetm.lra_p () && REG_P (op)
+			&& REGNO (op) >= FIRST_PSEUDO_REGISTER)
 		    /* During reload, accept a pseudo  */
 		    || (reload_in_progress && REG_P (op)
 			&& REGNO (op) >= FIRST_PSEUDO_REGISTER))
@@ -2739,8 +2748,12 @@ constrain_operands (int strict)
 			   /* Every memory operand can be reloaded to fit.  */
 			   && ((strict < 0 && MEM_P (op))
 			       /* Before reload, accept what reload can turn
-				  into mem.  */
+				  into a mem.  */
 			       || (strict < 0 && CONSTANT_P (op))
+			       /* Before reload, accept a pseudo,
+				  since LRA can turn it into a mem.  */
+			       || (strict < 0 && targetm.lra_p () && REG_P (op)
+				   && REGNO (op) >= FIRST_PSEUDO_REGISTER)
 			       /* During reload, accept a pseudo  */
 			       || (reload_in_progress && REG_P (op)
 				   && REGNO (op) >= FIRST_PSEUDO_REGISTER)))

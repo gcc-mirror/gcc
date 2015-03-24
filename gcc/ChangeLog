@@ -1,3 +1,9 @@
+2015-03-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/60851
+	* recog.c (constrain_operands): Accept a pseudo register before reload
+	for LRA enabled targets.
+
 2015-03-23  Yvan Roux  <yvan.roux@linaro.org>
 
 	Backport from trunk r220616.
