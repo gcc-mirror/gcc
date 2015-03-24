@@ -7824,6 +7824,13 @@ remove_edge_and_dominated_blocks (edge e)
   basic_block bb, dbb;
   bitmap_iterator bi;
 
+  /* If we are removing a path inside a non-root loop that may change
+     loop ownership of blocks or remove loops.  Mark loops for fixup.  */
+  if (current_loops
+      && loop_outer (e->src->loop_father) != NULL
+      && e->src->loop_father == e->dest->loop_father)
+    loops_state_set (LOOPS_NEED_FIXUP);
+
   if (!dom_info_available_p (CDI_DOMINATORS))
     {
       remove_edge (e);

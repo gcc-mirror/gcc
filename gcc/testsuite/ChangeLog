@@ -1,3 +1,8 @@
+2015-03-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65517
+	* gcc.dg/torture/pr65517.c: New testcase.
+
 2015-03-24  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/coindexed_1.f90: Moved from
