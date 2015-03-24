@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-fcoarray=lib" }
 !
 ! Contributed by Reinhold Bader
 !
