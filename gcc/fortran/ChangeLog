@@ -1,5 +1,16 @@
 2015-03-24  Andre Vehreschild  <vehre@gmx.de>
 
+	PR fortran/55901
+	* trans-expr.c (gfc_conv_structure): Fixed indendation.
+	Using integer_zero_node now instead of explicitly
+	constructing a integer constant zero node.
+	(gfc_conv_derived_to_class): Add handling of _len component,
+	i.e., when the rhs has a string_length then assign that to
+	class' _len, else assign 0.
+	(gfc_conv_intrinsic_to_class): Likewise.
+
+2015-03-24  Andre Vehreschild  <vehre@gmx.de>
+
 	PR fortran/64787
 	PR fortran/57456
 	PR fortran/63230
