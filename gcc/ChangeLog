@@ -1,3 +1,9 @@
+2015-03-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65517
+	* tree-cfg.c (remove_edge_and_dominated_blocks): Mark loops
+	for fixup if necessary.
+
 2015-03-23  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/extend.texi (Function Attributes): Add @cindex entries
