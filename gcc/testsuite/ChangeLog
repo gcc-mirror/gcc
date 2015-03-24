@@ -1,3 +1,18 @@
+2015-03-24  Andre Vehreschild  <vehre@gmx.de>
+
+	* gfortran.dg/allocate_alloc_opt_13.f90: Added tests for
+	source= and mold= expressions functionality.
+	* gfortran.dg/allocate_class_4.f90: New test.
+	* gfortran.dg/unlimited_polymorphic_20.f90: Added test whether
+	copying an unlimited polymorhpic object containing a char array
+	to another unlimited polymorphic object respects the _len
+	component.
+	* gfortran.dg/unlimited_polymorphic_22.f90: Extended to check
+	whether deferred length char array allocate works, unlimited
+	polymorphic object allocation from a string works and if
+	allocating an array of deferred length strings works.
+	* gfortran.dg/unlimited_polymorphic_24.f03: New test.
+
 2015-03-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65513

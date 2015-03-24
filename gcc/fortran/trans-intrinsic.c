@@ -2755,7 +2755,7 @@ if (least <= 2)
 	arg3 ? gfc_build_addr_expr (NULL_TREE, arg3)
 	       : null_pointer_node;
       }
-  
+
     if (least == 2)
       {
 	arg1 ? gfc_build_addr_expr (NULL_TREE, arg1)
@@ -5922,9 +5922,9 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
   else if (arg->ts.type == BT_CLASS)
     {
       if (arg->rank)
-	byte_size = gfc_vtable_size_get (TREE_OPERAND (argse.expr, 0));
+	byte_size = gfc_class_vtab_size_get (TREE_OPERAND (argse.expr, 0));
       else
-	byte_size = gfc_vtable_size_get (argse.expr);
+	byte_size = gfc_class_vtab_size_get (argse.expr);
     }
   else
     {
@@ -6053,7 +6053,7 @@ gfc_conv_intrinsic_storage_size (gfc_se *se, gfc_expr *expr)
       gfc_conv_expr_descriptor (&argse, arg);
       if (arg->ts.type == BT_CLASS)
 	{
-	  tmp = gfc_vtable_size_get (TREE_OPERAND (argse.expr, 0));
+	  tmp = gfc_class_vtab_size_get (TREE_OPERAND (argse.expr, 0));
 	  tmp = fold_convert (result_type, tmp);
 	  goto done;
 	}
@@ -6198,7 +6198,7 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 					 argse.string_length);
 	  break;
 	case BT_CLASS:
-	  tmp = gfc_vtable_size_get (argse.expr);
+	  tmp = gfc_class_vtab_size_get (argse.expr);
 	  break;
 	default:
 	  source_type = TREE_TYPE (build_fold_indirect_ref_loc (input_location,
@@ -6322,7 +6322,7 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
       mold_type = gfc_get_character_type_len (arg->expr->ts.kind, tmp);
       break;
     case BT_CLASS:
-      tmp = gfc_vtable_size_get (argse.expr);
+      tmp = gfc_class_vtab_size_get (argse.expr);
       break;
     default:
       tmp = fold_convert (gfc_array_index_type, size_in_bytes (mold_type));
