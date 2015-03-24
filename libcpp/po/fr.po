@@ -122,7 +122,7 @@ msgstr ""
 "Project-Id-Version: GNU cpplib 5.1-b20150208\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-02-02 16:02+0000\n"
-"PO-Revision-Date: 2015-03-23 03:19+0100\n"
+"PO-Revision-Date: 2015-03-24 00:22+0100\n"
 "Last-Translator: Stéphane Aulery <lkppo@free.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -875,7 +875,7 @@ msgstr "« __VA_ARGS__ » peut seulement appraître dans l'expansion des macros C99
 #: lex.c:1285 lex.c:1374
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
-msgstr ""
+msgstr "l'identifiant « %s » est un nom d'opérateur spécial en C++"
 
 #: lex.c:1661
 msgid "raw string delimiter longer than 16 characters"
