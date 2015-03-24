@@ -1,3 +1,8 @@
+2015-03-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/33394
+	* testsuite/21_strings/basic_string/pthread33394.cc: Add test.
+
 2015-03-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/64967
