@@ -3860,8 +3860,8 @@ an error message; may be NULL
 @item @var{errmsg_len} @tab the buffer size of errmsg.
 @end multitable
 
-@item @emph{NOTE} A simple implementation could be a simple
-@code{__asm__ __volatile__ ("":::"memory)} to prevent code movements.
+@item @emph{NOTE} A simple implementation could be
+@code{__asm__ __volatile__ ("":::"memory")} to prevent code movements.
 @end table
 
 

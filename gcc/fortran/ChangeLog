@@ -1,3 +1,8 @@
+2015-03-24  Iain Sandoe  <iain@codesourcery.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (_gfortran_caf_sync_memory): Improve wording.
+
 2015-03-23  Paul Thomas  <pault@gcc.gnu.org>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 
