@@ -132,7 +132,8 @@ var buildLdflags []string    // -ldflags flag
 var buildGccgoflags []string // -gccgoflags flag
 var buildRace bool           // -race flag
 
-var reqPkgSrc bool // req src for Imports
+// Require the source for go std packages
+var reqStdPkgSrc bool
 var buildContext = build.Default
 var buildToolchain toolchain = noToolchain{}
 
@@ -187,9 +188,9 @@ func addBuildFlags(cmd *Command) {
 	cmd.Flag.BoolVar(&buildRace, "race", false, "")
 	switch build.Default.Compiler {
 	case "gc":
-		reqPkgSrc = true
+		reqStdPkgSrc = true
 	case "gccgo":
-		reqPkgSrc = false
+		reqStdPkgSrc = false
 	}
 }
 
@@ -579,7 +580,7 @@ func (b *builder) action(mode buildMode, depMode buildMode, p *Package) *action 
 	// are writing is not the cgo we need to use.
 
 	if goos == runtime.GOOS && goarch == runtime.GOARCH && !buildRace {
-		if reqPkgSrc {
+		if reqStdPkgSrc {
 			if len(p.CgoFiles) > 0 || p.Standard && p.ImportPath == "runtime/cgo" {
 				var stk importStack
 				p1 := loadPackage("cmd/cgo", &stk)
