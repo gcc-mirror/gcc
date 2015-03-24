@@ -1196,7 +1196,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
 	elemsize = fold_convert (gfc_array_index_type,
 			TYPE_SIZE_UNIT (gfc_get_element_type (type)));
       else
-	elemsize = gfc_vtable_size_get (class_expr);
+	elemsize = gfc_class_vtab_size_get (class_expr);
 
       size = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
 			      size, elemsize);
@@ -3066,7 +3066,7 @@ build_class_array_ref (gfc_se *se, tree base, tree index)
   if (!GFC_CLASS_TYPE_P (TREE_TYPE (decl)))
     return false;
 
-  size = gfc_vtable_size_get (decl);
+  size = gfc_class_vtab_size_get (decl);
 
   /* Build the address of the element.  */
   type = TREE_TYPE (TREE_TYPE (base));
@@ -4956,8 +4956,7 @@ static tree
 gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 		     gfc_expr ** lower, gfc_expr ** upper, stmtblock_t * pblock,
 		     stmtblock_t * descriptor_block, tree * overflow,
-		     tree expr3_elem_size, tree *nelems, gfc_expr *expr3,
-		     gfc_typespec *ts)
+		     tree expr3_elem_size, tree *nelems, gfc_expr *expr3)
 {
   tree type;
   tree tmp;
@@ -4983,7 +4982,7 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 
   /* Set the dtype.  */
   tmp = gfc_conv_descriptor_dtype (descriptor);
-  gfc_add_modify (descriptor_block, tmp, gfc_get_dtype (TREE_TYPE (descriptor)));
+  gfc_add_modify (descriptor_block, tmp, gfc_get_dtype (type));
 
   or_expr = boolean_false_node;
 
@@ -5137,9 +5136,6 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 	  tmp = TYPE_SIZE_UNIT (tmp);
 	}
     }
-  else if (ts->type != BT_UNKNOWN && ts->type != BT_CHARACTER)
-    /* FIXME: Properly handle characters.  See PR 57456.  */
-    tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (ts));
   else
     tmp = TYPE_SIZE_UNIT (gfc_get_element_type (type));
 
@@ -5211,7 +5207,7 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 bool
 gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 		    tree errlen, tree label_finish, tree expr3_elem_size,
-		    tree *nelems, gfc_expr *expr3, gfc_typespec *ts)
+		    tree *nelems, gfc_expr *expr3)
 {
   tree tmp;
   tree pointer;
@@ -5296,7 +5292,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
   size = gfc_array_init_size (se->expr, ref->u.ar.as->rank,
 			      ref->u.ar.as->corank, &offset, lower, upper,
 			      &se->pre, &set_descriptor_block, &overflow,
-			      expr3_elem_size, nelems, expr3, ts);
+			      expr3_elem_size, nelems, expr3);
 
   if (dimension)
     {
@@ -7942,7 +7938,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
 	      dst_data = gfc_class_data_get (dcmp);
 	      src_data = gfc_class_data_get (comp);
-	      size = fold_convert (size_type_node, gfc_vtable_size_get (comp));
+	      size = fold_convert (size_type_node,
+				   gfc_class_vtab_size_get (comp));
 
 	      if (CLASS_DATA (c)->attr.dimension)
 		{
@@ -7977,7 +7974,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 				  fold_convert (TREE_TYPE (dst_data), tmp));
 		}
 
-	      tmp = gfc_copy_class_to_class (comp, dcmp, nelems);
+	      tmp = gfc_copy_class_to_class (comp, dcmp, nelems,
+					     UNLIMITED_POLY (c));
 	      gfc_add_expr_to_block (&tmpblock, tmp);
 	      tmp = gfc_finish_block (&tmpblock);
 

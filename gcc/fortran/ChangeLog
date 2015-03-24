@@ -1,3 +1,62 @@
+2015-03-24  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/64787
+	PR fortran/57456
+	PR fortran/63230
+	* class.c (gfc_add_component_ref):  Free no longer needed
+	ref-chains to prevent memory loss.
+	(find_intrinsic_vtab): For deferred length char arrays or
+	unlimited polymorphic objects, store the size in bytes of one
+	character in the size component of the vtab.
+	* gfortran.h: Added gfc_add_len_component () define.
+	* trans-array.c (gfc_trans_create_temp_array): Switched to new
+	function name for getting a class' vtab's field.
+	(build_class_array_ref): Likewise.
+	(gfc_array_init_size): Using the size information from allocate
+	more consequently now, i.e., the typespec of the entity to
+	allocate is no longer needed.  This is to address the last open
+	comment in PR fortran/57456.
+	(gfc_array_allocate): Likewise.
+	(structure_alloc_comps): gfc_copy_class_to_class () needs to
+	know whether the class is unlimited polymorphic.
+	* trans-array.h: Changed interface of gfc_array_allocate () to
+	reflect the no longer needed typespec.
+	* trans-expr.c (gfc_find_and_cut_at_last_class_ref): New.
+	(gfc_reset_len): New.
+	(gfc_get_class_array_ref): Switch to new function name for
+	getting a class' vtab's field.
+	(gfc_copy_class_to_class):  Added flag to know whether the class
+	to copy is unlimited polymorphic.  Adding _len dependent code
+	then, which calls ->vptr->copy () with four arguments adding
+	the length information ->vptr->copy(from, to, from_len, to_cap).
+	(gfc_conv_procedure_call): Switch to new function name for
+	getting a class' vtab's field. 
+	(alloc_scalar_allocatable_for_assignment): Use the string_length
+	as computed by gfc_conv_expr and not the statically backend_decl
+	which may be incorrect when ref-ing.
+	(gfc_trans_assignment_1): Use the string_length variable and
+	not the rse.string_length.  The former has been computed more
+	generally.
+	* trans-intrinsic.c (gfc_conv_intrinsic_sizeof): Switch to new
+	function name for getting a class' vtab's field.
+	(gfc_conv_intrinsic_storage_size): Likewise.
+	(gfc_conv_intrinsic_transfer): Likewise.
+	* trans-stmt.c (gfc_trans_allocate): Restructured to evaluate
+	source=expr3 only once before the loop over the objects to
+	allocate, when the objects are not arrays. Doing correct _len
+	initialization and calling of vptr->copy () fixing PR 64787.
+	(gfc_trans_deallocate): Reseting _len to 0, preventing future
+	errors.
+	* trans.c (gfc_build_array_ref): Switch to new function name
+	for getting a class' vtab's field.
+	(gfc_add_comp_finalizer_call): Likewise.
+	* trans.h: Define the prototypes for the gfc_class_vtab_*_get ()
+	and gfc_vptr_*_get () functions.
+	Added gfc_find_and_cut_at_last_class_ref () and
+	gfc_reset_len () routine prototype.  Added flag to
+	gfc_copy_class_to_class () prototype to signal an unlimited
+	polymorphic entity to copy.    
+
 2015-03-24  Iain Sandoe  <iain@codesourcery.com>
 	    Tobias Burnus  <burnus@net-b.de>
 

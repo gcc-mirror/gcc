@@ -23,12 +23,14 @@ program test
     implicit none
     character(LEN=:), allocatable, target :: S
     character(LEN=100) :: res
-    class(*), pointer :: ucp
+    class(*), pointer :: ucp, ucp2
     call sub1 ("long test string", 16)
     call sub2 ()
     S = "test"
     ucp => S
     call sub3 (ucp)
+    allocate (ucp2, source=ucp)
+    call sub3 (ucp2)
     call sub4 (S, 4)
     call sub4 ("This is a longer string.", 24)
     call bar (S, res)
