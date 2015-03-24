@@ -1,3 +1,16 @@
+2015-03-24  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	Backport from mainline:
+
+	2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+	PR testsuite/65116
+	* lib/target-supports.exp (check_compile): Check whether
+	additional_sources is defined before using it.
+
+	2015-02-19  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+	* lib/target-supports.exp (check_compile): Save/restore
+	additional_sources that may belong to an actual test.
+
 2015-03-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/60851
