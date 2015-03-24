@@ -2196,6 +2196,25 @@ Syntax:
 This pragma is identical in effect to pragma `Comment`. It is provided
 for compatibility with other Ada compilers providing this pragma.
 
+Pragma Ignore_Pragma
+====================
+
+Syntax:
+
+
+.. code-block:: ada
+
+  pragma Ignore_Pragma (pragma_IDENTIFIER);
+
+This is a configuration pragma
+that takes a single argument that is a simple identifier. Any subsequent
+use of a pragma whose pragma identifier matches this argument will be
+silently ignored. This may be useful when legacy code or code intended
+for compilation with some other compiler contains pragmas that match the
+name, but not the exact implementation, of a `GNAT` pragma. The use of this
+pragma allows such pragmas to be ignored, which may be useful in `CodePeer`
+mode, or during porting of legacy code.
+
 Pragma Implementation_Defined
 =============================
 
@@ -5737,6 +5756,8 @@ names that are implementation defined (as permitted by the RM):
   on addresses used in address clauses. Such checks can also be suppressed
   by suppressing range checks, but the specific use of `Alignment_Check`
   allows suppression of alignment checks without suppressing other range checks.
+  Note that `Alignment_Check` is suppressed by default on machines (such as
+  the x86) with non-strict alignment.
 
 *
   `Atomic_Synchronization` can be used to suppress the special memory

@@ -84,7 +84,7 @@ values are as follows:
           A, B : Character;
        end record;
        for Small'Size use 16;
-    
+
   then the default alignment of the record type `Small` is 2, not 1. This
   leads to more efficient code when the record is treated as a unit, and also
   allows the type to specified as `Atomic` on architectures requiring
@@ -122,7 +122,7 @@ to control this choice. Consider:
      type R is range 1 .. 10_000;
      for R'Alignment use 1;
      subtype RS is R range 1 .. 1000;
-  
+
 The alignment clause specifies an alignment of 1 for the first named subtype
 `R` but this does not necessarily apply to `RS`. When writing
 portable Ada code, you should avoid writing code that explicitly or
@@ -159,7 +159,7 @@ For example:
         Y1 : integer;
         Y2 : boolean;
      end record;
-  
+
 In this example, `Smallint'Size` = `Smallint'Value_Size` = 3,
 as specified by the RM rules,
 but objects of this type will have a size of 8
@@ -189,7 +189,7 @@ increasing it.  For example, if we have:
 
      type My_Boolean is new Boolean;
      for My_Boolean'Size use 32;
-  
+
 then values of this type will always be 32 bits long.  In the case of
 discrete types, the size can be increased up to 64 bits, with the effect
 that the entire specified field is used to hold the value, sign- or
@@ -227,7 +227,7 @@ task definition a pragma of the form:
 .. code-block:: ada
 
      pragma Storage_Size (Default_Stack_Size);
-  
+
 Then `Default_Stack_Size` can be defined in a global package, and
 modified as required. Any tasks requiring stack sizes different from the
 default can have an appropriate alternative reference in the pragma.
@@ -269,7 +269,7 @@ size storage pool is eliminated.  Consider the following example:
         --  ...
         y := new R;
      end;
-  
+
 As indicated in this example, these dummy storage pools are often useful in
 connection with interfacing where no object will ever be allocated.  If you
 compile the above example, you get the warning:
@@ -278,7 +278,7 @@ compile the above example, you get the warning:
 
      p.adb:16:09: warning: allocation from empty storage pool
      p.adb:16:09: warning: Storage_Error will be raised at run time
-  
+
 
 Of course in practice, there will not be any explicit allocators in the
 case of such an access declaration.
@@ -314,7 +314,7 @@ for any variant.  Consider the following program
      Put_Line (Integer'Image (V1'Size));
      Put_Line (Integer'Image (V2'Size));
   end q;
-  
+
 Here we are dealing with a variant record, where the True variant
 requires 16 bits, and the False variant requires 8 bits.
 In the above example, both V1 and V2 contain the False variant,
@@ -325,7 +325,7 @@ program is:
 
   8
   16
-  
+
 The reason for the difference here is that the discriminant value of
 V1 is fixed, and will always be False.  It is not possible to assign
 a True variant value to V1, therefore 8 bits is sufficient.  On the
@@ -376,7 +376,7 @@ Consider the following modified version of the above program:
      Put_Line (Integer'Image (V2'Size));
      Put_Line (Integer'IMage (Size (V2)));
   end q;
-  
+
 The output from this program is
 
 ::
@@ -385,7 +385,7 @@ The output from this program is
   8
   16
   16
-  
+
 Here we see that while the `'Size` attribute always returns
 the maximum size, regardless of the current variant value, the
 `Size` function does indeed return the size of the current
@@ -413,7 +413,7 @@ For example, suppose we have the declaration:
 
      type Small is range -7 .. -4;
      for Small'Size use 2;
-  
+
 Although the default size of type `Small` is 4, the `Size`
 clause is accepted by GNAT and results in the following representation
 scheme:
@@ -424,7 +424,7 @@ scheme:
     -6 is represented as 2#01#
     -5 is represented as 2#10#
     -4 is represented as 2#11#
-  
+
 Biased representation is only used if the specified `Size` clause
 cannot be accepted in any other manner.  These reduced sizes that force
 biased representation can be used for all discrete types except for
@@ -461,7 +461,7 @@ from Ada 83 to Ada 95 or Ada 2005.  For example, consider:
         at 0  range 0 .. Natural'Size - 1;
         at 0  range Natural'Size .. 2 * Natural'Size - 1;
      end record;
-  
+
 In the above code, since the typical size of `Natural` objects
 is 32 bits and `Natural'Size` is 31, the above code can cause
 unexpected inefficient packing in Ada 95 and Ada 2005, and in general
@@ -485,19 +485,19 @@ byte access instructions such as the Alpha.
 The default rules for the value of `Object_Size` for
 discrete types are as follows:
 
-* 
+*
   The `Object_Size` for base subtypes reflect the natural hardware
   size in bits (run the compiler with *-gnatS* to find those values
   for numeric types). Enumeration types and fixed-point base subtypes have
   8, 16, 32 or 64 bits for this size, depending on the range of values
   to be stored.
 
-* 
+*
   The `Object_Size` of a subtype is the same as the
   `Object_Size` of
   the type from which it is obtained.
 
-* 
+*
   The `Object_Size` of a derived base type is copied from the parent
   base type, and the `Object_Size` of a derived first subtype is copied
   from the parent first subtype.
@@ -513,18 +513,18 @@ target dependent).
 
 The default rules for the value of `Value_Size` are as follows:
 
-* 
+*
   The `Value_Size` for a base subtype is the minimum number of bits
   required to store all values of the type (including the sign bit
   only if negative values are possible).
 
-* 
+*
   If a subtype statically matches the first subtype of a given type, then it has
   by default the same `Value_Size` as the first subtype.  This is a
   consequence of RM 13.1(14): "if two subtypes statically match,
   then their subtype-specific aspects are the same".)
 
-* 
+*
   All other subtypes have a `Value_Size` corresponding to the minimum
   number of bits required to store all values of the subtype.  For
   dynamic bounds, it is assumed that the value can range down or up
@@ -588,13 +588,13 @@ under what conditions must the RM `Size` be used.
 The following is a list
 of the occasions on which the RM `Size` must be used:
 
-* 
+*
   Component size for packed arrays or records
 
-* 
+*
   Value of the attribute `Size` for a type
 
-* 
+*
   Warning about sizes not matching for unchecked conversion
 
 For record types, the `Object_Size` is always a multiple of the
@@ -608,7 +608,7 @@ alignment of the type (this is true for all types). In some cases the
        X : Integer;
        Y : Character;
      end record;
-  
+
 
 On a typical 32-bit architecture, the X component will be four bytes, and
 require four-byte alignment, and the Y component will be one byte. In this
@@ -632,7 +632,7 @@ for a particular subtype. Consider this example:
      type R is (A, B, C, D, E, F);
      subtype RAB is R range A .. B;
      subtype REF is R range E .. F;
-  
+
 
 By default, `RAB`
 has a size of 1 (sufficient to accommodate the representation
@@ -645,7 +645,7 @@ following `Value_Size` attribute definition clause:
 .. code-block:: ada
 
      for REF'Value_Size use 1;
-  
+
 
 then biased representation is forced for `REF`,
 and 0 will represent `E` and 1 will represent `F`.
@@ -676,7 +676,7 @@ honor all packing requests in this range.  For example, if we have:
 
   type r is array (1 .. 8) of Natural;
   for r'Component_Size use 31;
-  
+
 
 then the resulting array has a length of 31 bytes (248 bits = 8 * 31).
 Of course access to the components of such an array is considerably
@@ -695,7 +695,7 @@ padded because of its default alignment.  For example, if we have:
 
   type a is array (1 .. 8) of r;
   for a'Component_Size use 72;
-  
+
 
 then the resulting array has a length of 72 bytes, instead of 96 bytes
 if the alignment of the record (4) was obeyed.
@@ -758,7 +758,7 @@ restrictions placed on component clauses as follows:
           A at 0 range 7 .. 7;
           B at 0 range 0 .. 6;
        end record;
-    
+
 
   The useful application here is to write the second declaration with the
   `Bit_Order` attribute definition clause, and know that it will be treated
@@ -784,7 +784,7 @@ restrictions placed on component clauses as follows:
        for R2 use record
           A at 0 range 0 .. 31;
        end record;
-    
+
 
   This declaration will result in a little-endian integer on a
   little-endian machine, and a big-endian integer on a big-endian machine.
@@ -804,7 +804,7 @@ restrictions placed on component clauses as follows:
 Since the misconception that Bit_Order automatically deals with all
 endian-related incompatibilities is a common one, the specification of
 a component field that is an integral number of bytes will always
-generate a warning.  This warning may be suppressed using `pragma Warnings (Off)` 
+generate a warning.  This warning may be suppressed using `pragma Warnings (Off)`
 if desired.  The following section contains additional
 details regarding the issue of byte ordering.
 
@@ -907,7 +907,7 @@ On a big-endian machine, we can write the following representation clause
         Slave_V6       at 1 range 6 .. 6;
         Slave_V7       at 1 range 7 .. 7;
      end record;
-  
+
 
 Now if we move this to a little endian machine, then the bit ordering within
 the byte is backwards, so we have to rewrite the record rep clause as:
@@ -933,7 +933,7 @@ the byte is backwards, so we have to rewrite the record rep clause as:
         Slave_V6       at 1 range 1 .. 1;
         Slave_V7       at 1 range 0 .. 0;
      end record;
-  
+
 
 It is a nuisance to have to rewrite the clause, especially if
 the code has to be maintained on both machines.  However,
@@ -948,7 +948,7 @@ first record clause, together with the declaration
 .. code-block:: ada
 
      for Data'Bit_Order use High_Order_First;
-  
+
 
 and the effect is what is desired, namely the layout is exactly the same,
 independent of whether the code is compiled on a big-endian or little-endian
@@ -982,7 +982,7 @@ example as:
         Slave_V6       at 0 range 14 .. 14;
         Slave_V7       at 0 range 15 .. 15;
      end record;
-  
+
 
 This is exactly equivalent to saying (a repeat of the first example):
 
@@ -1008,7 +1008,7 @@ This is exactly equivalent to saying (a repeat of the first example):
         Slave_V6       at 1 range 6 .. 6;
         Slave_V7       at 1 range 7 .. 7;
      end record;
-  
+
 
 Why are they equivalent? Well take a specific field, the `Slave_V2`
 field.  The storage place attributes are obtained by normalizing the
@@ -1060,7 +1060,7 @@ some machines we might write:
         Slave_V6       at Slave_Byte  range 6 .. 6;
         Slave_V7       at Slave_Byte  range 7 .. 7;
      end record;
-  
+
 Now to switch between machines, all that is necessary is
 to set the boolean constant `Master_Byte_First` in
 an appropriate manner.
@@ -1076,13 +1076,13 @@ Pragma `Pack` applied to an array has no effect unless the component type
 is packable.  For a component type to be packable, it must be one of the
 following cases:
 
-* 
+*
   Any scalar type
-* 
+*
   Any type whose size is specified with a size clause
-* 
+*
   Any packed array type with a static size
-* 
+*
   Any record type padded because of its default alignment
 
 For all these cases, if the component subtype size is in the range
@@ -1096,7 +1096,7 @@ For example if we have:
 
      type ar is array (1 .. 8) of r;
      pragma Pack (ar);
-  
+
 Then the component size of `ar` will be set to 5 (i.e., to `r'size`,
 and the size of the array `ar` will be exactly 40 bits.
 
@@ -1154,7 +1154,7 @@ occurs with subtype `Natural`. Consider:
 
      type Arr is array (1 .. 32) of Natural;
      pragma Pack (Arr);
-  
+
 In all commonly used Ada 83 compilers, this pragma Pack would be ignored,
 since typically `Natural'Size` is 32 in Ada 83, and in any case most
 Ada 83 compilers did not attempt 31 bit packing.
@@ -1170,7 +1170,7 @@ explicitly:
 
      type Arr is array (1 .. 32) of Natural;
      for Arr'Component_Size use 31;
-  
+
 Here 31-bit packing is achieved as required, and no warning is generated,
 since in this case the programmer intention is clear.
 
@@ -1187,11 +1187,11 @@ taken by components.  We distinguish between *packable* components and
 *non-packable* components.
 Components of the following types are considered packable:
 
-* 
+*
   Components of a primitive type are packable unless they are aliased
   or of an atomic type.
 
-* 
+*
   Small packed arrays, whose size does not exceed 64 bits, and where the
   size is statically known at compile time, are represented internally
   as modular integers, and so they are also packable.
@@ -1226,7 +1226,7 @@ For example, consider the record
         L6 : Rb2;
      end record;
      pragma Pack (X2);
-  
+
 The representation for the record X2 is as follows:
 
 .. code-block:: ada
@@ -1282,7 +1282,7 @@ thus the same lack of restriction applies.  For example, if you declare:
      type R is array (1 .. 49) of Boolean;
      pragma Pack (R);
      for R'Size use 49;
-  
+
 then a component clause for a component of type R may start on any
 specified bit boundary, and may specify a value of 49 bits or greater.
 
@@ -1331,7 +1331,7 @@ so for example, the following is permitted:
         L at 0 range  2 ..  81;
         R at 0 range 82 .. 161;
      end record;
-  
+
 Note: the above rules apply to recent releases of GNAT 5.
 In GNAT 3, there are more severe restrictions on larger components.
 For non-primitive types, including packed arrays with a size greater than
@@ -1371,7 +1371,7 @@ or address overlays. For example
      C : Character;
      I : Integer;
   end record;
-  
+
 On typical machines, integers need to be aligned on a four-byte
 boundary, resulting in three bytes of undefined rubbish following
 the 8-bit field for C. To ensure that the hole in a variable of
@@ -1387,7 +1387,7 @@ you could for example do:
   BaseVar : Base;
   RealVar : Hrec;
   for RealVar'Address use BaseVar'Address;
-  
+
 
 Now the 8-bytes of the value of RealVar start out containing all zero
 bits. A safer approach is to just define dummy fields, avoiding the
@@ -1402,7 +1402,7 @@ holes, as in:
      Dummy3 : Short_Short_Integer := 0;
      I      : Integer;
   end record;
-  
+
 And to make absolutely sure that the intent of this is followed, you
 can use representation clauses:
 
@@ -1416,7 +1416,7 @@ can use representation clauses:
      I      at 4 range 0 .. 31;
   end record;
   for Hrec'Size use 64;
-  
+
 
 .. _Enumeration_Clauses:
 
@@ -1437,7 +1437,7 @@ be in the range:
 .. code-block:: ada
 
      0 .. System.Max_Binary_Modulus;
-  
+
 
 A *confirming* representation clause is one in which the values range
 from 0 in sequence, i.e., a clause that confirms the default representation
@@ -1455,7 +1455,7 @@ manner.  Consider the declarations:
      type r is (A, B, C);
      for r use (A => 1, B => 5, C => 10);
      type t is array (r) of Character;
-  
+
 The array type t corresponds to a vector with exactly three elements and
 has a default size equal to `3*Character'Size`.  This ensures efficient
 use of space, but means that accesses to elements of the array will incur
@@ -1519,14 +1519,14 @@ if one is present, is inexpensive).  In addition, if there is no implicit or
 explicit initialization, then there are no restrictions.  GNAT will reject
 only the case where all three of these conditions hold:
 
-* 
+*
   The type of the item is non-elementary (e.g., a record or array).
 
-* 
+*
   There is explicit or implicit initialization required for the object.
   Note that access values are always implicitly initialized.
 
-* 
+*
   The address value is non-static.  Here GNAT is more permissive than the
   RM, and allows the address value to be the address of a previously declared
   stand-alone variable, as long as it does not itself have an address clause.
@@ -1536,7 +1536,7 @@ only the case where all three of these conditions hold:
                Anchor  : Some_Initialized_Type;
                Overlay : Some_Initialized_Type;
                for Overlay'Address use Anchor'Address;
-    
+
   However, the prefix of the address clause cannot be an array component, or
   a component of a discriminated record.
 
@@ -1553,7 +1553,7 @@ expressions have identical values:
 
      To_Address (16#1234_0000#)
      System'To_Address (16#1234_0000#);
-  
+
 except that the second form is considered to be a static expression, and
 thus when used as an address clause value is always permitted.
 
@@ -1569,13 +1569,15 @@ the same as the alignment of the type of the object).  If an address clause
 is given that specifies an inappropriately aligned address value, then the
 program execution is erroneous.
 
-Since this source of erroneous behavior can have unfortunate effects, GNAT
+Since this source of erroneous behavior can have unfortunate effects on
+machines with strict alignment requirements, GNAT
 checks (at compile time if possible, generating a warning, or at execution
 time with a run-time check) that the alignment is appropriate.  If the
 run-time check fails, then `Program_Error` is raised.  This run-time
 check is suppressed if range checks are suppressed, or if the special GNAT
 check Alignment_Check is suppressed, or if
-`pragma Restrictions (No_Elaboration_Code)` is in effect.
+`pragma Restrictions (No_Elaboration_Code)` is in effect. It is also
+suppressed by default on non-strict alignment machines (such as the x86).
 
 Finally, GNAT does not permit overlaying of objects of controlled types or
 composite types containing a controlled component. In most cases, the compiler
@@ -1621,7 +1623,7 @@ programmer wants, so GNAT will output a warning:
         initialization (RM B(24))
 
     end G;
-  
+
 As indicated by the warning message, the solution is to use a (dummy) pragma
 Import to suppress this initialization.  The pragma tell the compiler that the
 object is declared and initialized elsewhere.  The following package compiles
@@ -1639,7 +1641,7 @@ without warnings (and the initialization is suppressed):
         for Ext'Address use System'To_Address (16#1234_1234#);
         pragma Import (Ada, Ext);
      end G;
-  
+
 
 A final issue with address clauses involves their use for overlaying
 variables, as in the following example:
@@ -1651,7 +1653,7 @@ variables, as in the following example:
     A : Integer;
     B : Integer;
     for B'Address use A'Address;
-  
+
 
 or alternatively, using the form recommended by the RM:
 
@@ -1661,7 +1663,7 @@ or alternatively, using the form recommended by the RM:
     Addr : constant Address := A'Address;
     B    : Integer;
     for B'Address use Addr;
-  
+
 
 In both of these cases, `A`
 and `B` become aliased to one another via the
@@ -1702,7 +1704,7 @@ issue of unintentional initialization, as shown by this example:
       suppress initialization (RM B.1(24))
 
   end Overwrite_Record;
-  
+
 Here the default initialization of `Y` will clobber the value
 of `X`, which justifies the warning. The warning notes that
 this effect can be eliminated by adding a `pragma Import`
@@ -1720,7 +1722,7 @@ which suppresses the initialization:
      for Y'Address use X'Address;
      pragma Import (Ada, Y);
   end Overwrite_Record;
-  
+
 
 Note that the use of `pragma Initialize_Scalars` may cause variables to
 be initialized when they would not otherwise have been in the absence
@@ -1751,7 +1753,7 @@ for the composite object:
         Put_Line ("X was not clobbered");
      end if;
   end Overwrite_Array;
-  
+
 The above program generates the warning as shown, and at execution
 time, prints `X was clobbered`. If the `pragma Import` is
 added as suggested:
@@ -1773,7 +1775,7 @@ added as suggested:
         Put_Line ("X was not clobbered");
      end if;
   end Overwrite_Array;
-  
+
 then the program compiles without the warning and when run will generate
 the output `X was not clobbered`.
 
@@ -1803,7 +1805,7 @@ operations, for example:
       Temp := Mem;
       Temp.A := 32;
       Mem := Temp;
-  
+
 For a full access (reference or modification) of the variable (Mem) in
 this case, as in the above examples, GNAT guarantees that the entire atomic
 word will be accessed. It is not clear whether the RM requires this. For
@@ -1816,7 +1818,7 @@ A problem arises with a component access such as:
 .. code-block:: ada
 
       Mem.A := 32;
-  
+
 Note that the component A is not declared as atomic. This means that it is
 not clear what this assignment means. It could correspond to full word read
 and write as given in the first example, or on architectures that supported
@@ -1831,7 +1833,7 @@ a warning in such a case:
       |
       >>> warning: access to non-atomic component of atomic array,
           may cause unexpected accesses to atomic object
-  
+
 It is best to be explicit in this situation, by either declaring the
 components to be atomic if you want the byte store, or explicitly writing
 the full word access sequence if that is what the hardware requires.
@@ -1869,7 +1871,7 @@ There are four exceptions to this general rule:
   ::
 
        type Color is (Red, Green, Blue);
-    
+
   8 bits is sufficient to store all values of the type, so by default, objects
   of type `Color` will be represented using 8 bits.  However, normal C
   convention is to use 32 bits for all enum values in C, since enum values
@@ -1902,7 +1904,7 @@ There are four exceptions to this general rule:
 
        type C_Switch is new Boolean;
        pragma Convention (C, C_Switch);
-    
+
 
   then the GNAT generated code will treat any nonzero value as true.  For truth
   values generated by GNAT, the conventional value 1 will be used for True, but
@@ -1984,7 +1986,7 @@ The following program shows these conventions in action:
   >>> subprogram "F" has wrong convention
   >>> does not match access to subprogram declared at line 24
        39. end ConvComp;
-  
+
 
 .. _Determining_the_Representations_chosen_by_GNAT:
 
@@ -2058,7 +2060,7 @@ clauses.  For example, if we compile the package:
      end record;
      pragma Pack (x2);
   end q;
-  
+
 using the switch *-gnatR* we obtain the following output:
 
 .. code-block:: ada
@@ -2111,7 +2113,7 @@ using the switch *-gnatR* we obtain the following output:
      l5 at 16 range  1 .. 13;
      l6 at 18 range  0 .. 71;
   end record;
-  
+
 The Size values are actually the Object_Size, i.e., the default size that
 will be allocated for objects of the type.
 The ``??`` size for type r indicates that we have a variant record, and the
