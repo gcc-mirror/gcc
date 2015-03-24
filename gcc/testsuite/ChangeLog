@@ -1,3 +1,8 @@
+2015-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65533
+	* gcc.dg/pr65533.c: New test.
+
 2015-03-24  Andre Vehreschild  <vehre@gmx.de>
 
 	* gfortran.dg/allocate_alloc_opt_13.f90: Added tests for

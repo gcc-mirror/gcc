@@ -1,3 +1,11 @@
+2015-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65533
+	* tree-vect-slp.c (vect_build_slp_tree): Before re-trying
+	with swapped operands, call vect_free_slp_tree on
+	SLP_TREE_CHILDREN of child and truncate the SLP_TREE_CHILDREN
+	vector.
+
 2015-03-24  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/65517
