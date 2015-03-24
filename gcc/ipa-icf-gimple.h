@@ -75,7 +75,7 @@ static inline bool
 return_with_result (bool result, const char *func, unsigned int line)
 {
   if (!result && dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "  false returned (%s:%u)\n", func, line);
+    fprintf (dump_file, "  false returned: (%s:%u)\n", func, line);
 
   return result;
 }

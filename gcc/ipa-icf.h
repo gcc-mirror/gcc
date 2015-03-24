@@ -96,12 +96,12 @@ struct symbol_compare_hashmap_traits: default_hashmap_traits
     hstate.add_int (v->m_references.length ());
 
     for (unsigned i = 0; i < v->m_references.length (); i++)
-      hstate.add_ptr (v->m_references[i]->ultimate_alias_target ());
+      hstate.add_int (v->m_references[i]->ultimate_alias_target ()->order);
 
     hstate.add_int (v->m_interposables.length ());
 
     for (unsigned i = 0; i < v->m_interposables.length (); i++)
-      hstate.add_ptr (v->m_interposables[i]->ultimate_alias_target ());
+      hstate.add_int (v->m_interposables[i]->ultimate_alias_target ()->order);
 
     return hstate.end ();
   }
@@ -243,8 +243,10 @@ public:
 protected:
   /* Cached, once calculated hash for the item.  */
 
-  /* Accumulate to HSTATE a hash of constructor expression EXP.  */
+  /* Accumulate to HSTATE a hash of expression EXP.  */
   static void add_expr (const_tree exp, inchash::hash &hstate);
+  /* Accumulate to HSTATE a hash of type T.  */
+  static void add_type (const_tree t, inchash::hash &hstate);
 
   /* For a given symbol table nodes N1 and N2, we check that FUNCTION_DECLs
      point to a same function. Comparison can be skipped if IGNORED_NODES
@@ -505,6 +507,8 @@ public:
   congruence_class_group *get_group_by_hash (hashval_t hash,
       sem_item_type type);
 
+  /* Because types can be arbitrarily large, avoid quadratic bottleneck.  */
+  hash_map<const_tree, hashval_t> m_type_hash_cache;
 private:
 
   /* For each semantic item, append hash values of references.  */
