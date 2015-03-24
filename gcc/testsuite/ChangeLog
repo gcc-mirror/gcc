@@ -1,5 +1,10 @@
 2015-03-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/60130
+	* g++.dg/cpp0x/vt-60130.C: New.
+
+2015-03-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/61971
 	* g++.dg/warn/Warray-bounds-7.C: New.
 
