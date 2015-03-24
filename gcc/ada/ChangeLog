@@ -1,3 +1,18 @@
+2015-03-24  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb: Minor typo fix (missing paren).
+
+2015-03-24  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads: Update comment.
+
+2015-03-24  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb: Add entry for typ'Deref.
+	* sem_attr.adb (Deref): New GNAT attribute.
+	* sem_attr.ads: Add entry for new GNAT attribute Deref.
+	* snames.ads-tmpl: Add entries for new attribute Deref.
+
 2015-03-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Rep_Item_Too_Early): allow pragma Convention

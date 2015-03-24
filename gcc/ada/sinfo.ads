@@ -827,7 +827,9 @@ package Sinfo is
    --    setting tag values, etc. N_Object_Declaration nodes also have this
    --    flag defined. Here it is used to indicate that an initialization
    --    expression is valid, even where it would normally not be allowed
-   --    (e.g. where the type involved is limited).
+   --    (e.g. where the type involved is limited). It is also used to stop
+   --    a Force_Evaluation call for an unchecked conversion, but this usage
+   --    is unclear and not documented ???
 
    --  Associated_Node (Node4-Sem)
    --    Present in nodes that can denote an entity: identifiers, character
