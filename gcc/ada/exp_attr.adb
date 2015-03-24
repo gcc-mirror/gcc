@@ -7103,6 +7103,7 @@ package body Exp_Attr is
       when Attribute_Bit_Order                    |
            Attribute_Code_Address                 |
            Attribute_Definite                     |
+           Attribute_Deref                        |
            Attribute_Null_Parameter               |
            Attribute_Passed_By_Reference          |
            Attribute_Pool_Address                 |

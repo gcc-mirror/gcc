@@ -3540,6 +3540,16 @@ package body Sem_Attr is
          Check_Floating_Point_Type_0;
          Set_Etype (N, Standard_Boolean);
 
+      -----------
+      -- Deref --
+      -----------
+
+      when Attribute_Deref =>
+         Check_Type;
+         Check_E1;
+         Resolve (E1, RTE (RE_Address));
+         Set_Etype (N, P_Type);
+
       ---------------------
       -- Descriptor_Size --
       ---------------------
@@ -9642,6 +9652,7 @@ package body Sem_Attr is
            Attribute_Count                        |
            Attribute_Default_Bit_Order            |
            Attribute_Default_Scalar_Storage_Order |
+           Attribute_Deref                        |
            Attribute_Elaborated                   |
            Attribute_Elab_Body                    |
            Attribute_Elab_Spec                    |
