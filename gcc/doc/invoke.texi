@@ -550,6 +550,7 @@ Objective-C and Objective-C++ Dialects}.
 -mfp16-format=@var{name}
 -mthumb-interwork  -mno-thumb-interwork @gol
 -mcpu=@var{name}  -march=@var{name}  -mfpu=@var{name}  @gol
+-mtune=@var{name} -mprint-tune-info @gol
 -mstructure-size-boundary=@var{n} @gol
 -mabort-on-noreturn @gol
 -mlong-calls  -mno-long-calls @gol
@@ -13474,6 +13475,13 @@ should be considered deprecated.
 Restricts generation of IT blocks to conform to the rules of ARMv8.
 IT blocks can only contain a single 16-bit instruction from a select
 set of instructions. This option is on by default for ARMv8 Thumb mode.
+
+@item -mprint-tune-info
+@opindex mprint-tune-info
+Print CPU tuning information as comment in assembler file.  This is
+an option used only for regression testing of the compiler and not
+intended for ordinary use in compiling code.  This option is disabled
+by default.
 @end table
 
 @node AVR Options

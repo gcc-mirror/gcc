@@ -264,6 +264,9 @@ enum arm_sched_autopref
     ARM_SCHED_AUTOPREF_FULL
   };
 
+/* Dump function ARM_PRINT_TUNE_INFO should be updated whenever this
+   structure is modified.  */
+
 struct tune_params
 {
   bool (*rtx_costs) (rtx, RTX_CODE, RTX_CODE, int *, bool);
