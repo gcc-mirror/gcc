@@ -1,3 +1,10 @@
+2015-03-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR bootstrap/65537
+	* doc/install.texi (Building a native compiler): Document new
+	bootstrap-lto-noplugin configuration.  Mention that bootstrap-lto
+	configuration assumes that the host supports the linker plugin.
+
 2015-03-25  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR target/65508
