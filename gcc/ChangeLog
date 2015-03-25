@@ -1,3 +1,10 @@
+2015-03-25  Richard Biener  <rguenther@suse.de>
+
+	* passes.c (pass_manager::execute_early_local_passes): Guard
+	execution of pass_chkp_instrumentation_passes with
+	flag_check_pointer_bounds.
+	(pass_chkp_instrumentation_passes::gate): Likewise.
+
 2015-03-25  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/65538
