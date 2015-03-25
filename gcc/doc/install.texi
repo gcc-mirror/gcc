@@ -2519,7 +2519,13 @@ Analogous to @code{bootstrap-O1}.
 @item @samp{bootstrap-lto}
 Enables Link-Time Optimization for host tools during bootstrapping.
 @samp{BUILD_CONFIG=bootstrap-lto} is equivalent to adding
-@option{-flto} to @samp{BOOT_CFLAGS}.
+@option{-flto} to @samp{BOOT_CFLAGS}.  This option assumes that the host
+supports the linker plugin (e.g. GNU ld version 2.21 or later or GNU gold
+version 2.21 or later).
+
+@item @samp{bootstrap-lto-noplugin}
+This option is similar to @code{bootstrap-lto}, but is intended for
+hosts that do not support the linker plugin.
 
 @item @samp{bootstrap-debug}
 Verifies that the compiler generates the same executable code, whether
