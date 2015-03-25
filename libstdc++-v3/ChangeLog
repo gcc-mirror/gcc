@@ -1,3 +1,12 @@
+2015-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/65543
+	* include/std/istream (operator>>(basic_istream<>&&, _Tp&): Revert
+	thinko in r150387.
+	* include/std/ostream (operator<<(basic_ostream<>&&, const _Tp&):
+	Likewise.
+	* testsuite/27_io/rvalue_streams-2.cc: New.
+
 2015-02-03  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/64680
