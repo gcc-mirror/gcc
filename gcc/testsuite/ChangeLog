@@ -1,3 +1,8 @@
+2015-03-25  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65508
+	* gcc.target/i386/mpx/pr65508.c: New.
+
 2015-03-25  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/64952

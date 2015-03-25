@@ -1838,6 +1838,7 @@ chkp_add_bounds_to_call_stmt (gimple_stmt_iterator *gsi)
       new_call = gimple_build_call_vec (gimple_op (call, 1), new_args);
       gimple_call_set_lhs (new_call, gimple_call_lhs (call));
       gimple_call_copy_flags (new_call, call);
+      gimple_call_set_chain (new_call, gimple_call_chain (call));
     }
   new_args.release ();
 
