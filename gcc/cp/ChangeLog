@@ -1,3 +1,8 @@
+2015-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/61670
+	* class.c (remove_zero_width_bit_fields): Check for null DECL_SIZE.
+
 2015-03-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65046
