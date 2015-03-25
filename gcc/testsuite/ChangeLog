@@ -1,3 +1,9 @@
+2015-03-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse-13.c: Include x86intrin.h and adjust #defines.
+	* gcc.target/i386/sse-23.c: Do not explicitly include wmmintrin.h,
+	smmintrin.h and mm3dnow.h.
+
 2015-03-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/65558
