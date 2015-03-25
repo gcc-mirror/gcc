@@ -3663,6 +3663,12 @@ handle_namespace_attrs (tree ns, tree attributes)
 		       "namespace", name);
 	      continue;
 	    }
+	  if (!DECL_NAME (ns))
+	    {
+	      warning (OPT_Wattributes, "ignoring %qD attribute on anonymous "
+		       "namespace", name);
+	      continue;
+	    }
 	  if (!args)
 	    {
 	      tree dn = DECL_NAME (ns);

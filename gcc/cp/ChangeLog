@@ -1,5 +1,11 @@
 2015-03-25  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/65558
+	* name-lookup.c (handle_namespace_attrs): Ignore abi_tag attribute
+	on an anonymous namespace.
+
+2015-03-25  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/61670
 	* class.c (remove_zero_width_bit_fields): Check for null DECL_SIZE.
 

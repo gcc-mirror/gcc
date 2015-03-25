@@ -1,5 +1,10 @@
 2015-03-25  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/65558
+	* g++.dg/cpp0x/pr65558.C: New test.
+
+2015-03-25  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/61670
 	* g++.dg/template/pr61670.C: New test.
 
