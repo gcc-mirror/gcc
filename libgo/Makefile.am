@@ -987,7 +987,7 @@ s-zstdpkglist: Makefile
 	echo 'package main' > zstdpkglist.go.tmp
 	echo "" >> zstdpkglist.go.tmp
 	echo 'var stdpkg = map[string]bool{' >> zstdpkglist.go.tmp
-	echo $(libgo_go_objs) 'unsafe.lo' | sed 's/\.lo /\": true,\n/g' | sed 's/\.lo/\": true,/' | sed 's/-go//' | grep -v _c | sed 's/^/\t\"/' | sort | uniq >> zstdpkglist.go.tmp
+	echo $(libgo_go_objs) 'unsafe.lo' 'runtime/cgo.lo' | sed 's/\.lo /\": true,\n/g' | sed 's/\.lo/\": true,/' | sed 's/-go//' | grep -v _c | sed 's/^/\t\"/' | sort | uniq >> zstdpkglist.go.tmp
 	echo '}' >> zstdpkglist.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh zstdpkglist.go.tmp zstdpkglist.go
 	$(STAMP) $@
