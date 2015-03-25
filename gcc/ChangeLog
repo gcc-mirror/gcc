@@ -1,3 +1,9 @@
+2015-03-25  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65508
+	* tree-chkp.c (chkp_add_bounds_to_call_stmt): Set static
+	chain for generated call.
+
 2015-03-25  Richard Biener  <rguenther@suse.de>
 
 	* passes.c (pass_manager::execute_early_local_passes): Guard
