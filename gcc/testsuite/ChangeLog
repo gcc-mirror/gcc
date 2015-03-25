@@ -1,3 +1,14 @@
+2015-03-25  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/65526
+	* lib/target-supports.exp (check_effective_target_arm32): Fail early
+	when target isn't arm*-*-*-*.
+	(check_effective_target_arm_nothumb): Likewise.
+	(check_effective_target_arm_little_endian): Likewise.
+	(check_effective_target_arm_vect_no_misalign): Likewise.
+	(check_effective_target_aarch64_little_endian): Fail early if target
+	isn't aarch64*-*-*.
+
 2015-03-25  Sebastian Pop  <s.pop@samsung.com>
 
 	PR tree-optimization/65177

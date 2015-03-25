@@ -2373,6 +2373,10 @@ proc check_effective_target_aarch64_big_endian { } {
 
 # Return 1 if this is a AArch64 target supporting little endian
 proc check_effective_target_aarch64_little_endian { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+
     return [check_no_compiler_messages aarch64_little_endian assembly {
         #if !defined(__aarch64__) || defined(__AARCH64EB__)
         #error FOO
@@ -2382,6 +2386,10 @@ proc check_effective_target_aarch64_little_endian { } {
 
 # Return 1 if this is an arm target using 32-bit instructions
 proc check_effective_target_arm32 { } {
+    if { ![istarget arm*-*-*] } {
+	return 0
+    }
+
     return [check_no_compiler_messages arm32 assembly {
 	#if !defined(__arm__) || (defined(__thumb__) && !defined(__thumb2__))
 	#error !__arm || __thumb__ && !__thumb2__
@@ -2391,6 +2399,10 @@ proc check_effective_target_arm32 { } {
 
 # Return 1 if this is an arm target not using Thumb
 proc check_effective_target_arm_nothumb { } {
+    if { ![istarget arm*-*-*] } {
+	return 0
+    }
+
     return [check_no_compiler_messages arm_nothumb assembly {
 	#if !defined(__arm__) || (defined(__thumb__) || defined(__thumb2__))
 	#error !__arm__ || __thumb || __thumb2__
@@ -2400,6 +2412,10 @@ proc check_effective_target_arm_nothumb { } {
 
 # Return 1 if this is a little-endian ARM target
 proc check_effective_target_arm_little_endian { } {
+    if { ![istarget arm*-*-*] } {
+	return 0
+    }
+
     return [check_no_compiler_messages arm_little_endian assembly {
 	#if !defined(__arm__) || !defined(__ARMEL__)
 	#error !__arm__ || !__ARMEL__
@@ -2409,6 +2425,10 @@ proc check_effective_target_arm_little_endian { } {
 
 # Return 1 if this is an ARM target that only supports aligned vector accesses
 proc check_effective_target_arm_vect_no_misalign { } {
+    if { ![istarget arm*-*-*] } {
+	return 0
+    }
+
     return [check_no_compiler_messages arm_vect_no_misalign assembly {
 	#if !defined(__arm__) \
 	    || (defined(__ARM_FEATURE_UNALIGNED) \
