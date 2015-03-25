@@ -81,6 +81,11 @@ public:
     m_symtab_insertion_hook = NULL;
     m_symtab_removal_hook = NULL;
     m_symtab_duplication_hook = NULL;
+
+    /* Release all summaries.  */
+    typedef typename hash_map <int, T *, summary_hashmap_traits>::iterator map_iterator;
+    for (map_iterator it = m_map.begin (); it != m_map.end (); ++it)
+      release ((*it).second);
   }
 
   /* Traverses all summarys with a function F called with
@@ -104,6 +109,18 @@ public:
   T* allocate_new ()
   {
     return m_ggc ? new (ggc_alloc <T> ()) T() : new T () ;
+  }
+
+  /* Release an item that is stored within map.  */
+  void release (T *item)
+  {
+    if (m_ggc)
+      {
+	item->~T ();
+	ggc_free (item);
+      }
+    else
+      delete item;
   }
 
   /* Getter for summary callgraph node pointer.  */

@@ -1,3 +1,10 @@
+2015-03-25  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/65538
+	* symbol-summary.h (function_summary::~function_summary):
+	Relese memory for allocated summaries.
+	(function_summary::release): New function.
+
 2015-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/65515
