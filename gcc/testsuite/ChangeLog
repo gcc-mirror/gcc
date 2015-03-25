@@ -1,3 +1,8 @@
+2015-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65519
+	* gnat.dg/specs/opt2.ads: New testcase.
+
 2015-03-25  Bin Cheng  <bin.cheng@arm.com>
 
 	* lib/target-supports.exp (arm_tune_string_ops_prefer_neon): New.

@@ -1742,22 +1742,18 @@ expr::gen_transform (FILE *f, const char *dest, bool gimple, int depth,
 
   if (gimple)
     {
-      /* ???  Have another helper that is like gimple_build but may
-	 fail if seq == NULL.  */
-      fprintf (f, "  if (!seq)\n"
-	       "    {\n"
-	       "      res = gimple_simplify (%s, %s", opr, type);
+      /* ???  Building a stmt can fail for various reasons here, seq being
+         NULL or the stmt referencing SSA names occuring in abnormal PHIs.
+	 So if we fail here we should continue matching other patterns.  */
+      fprintf (f, "  code_helper tem_code = %s;\n"
+	       "  tree tem_ops[3] = { ", opr);
       for (unsigned i = 0; i < ops.length (); ++i)
-	fprintf (f, ", ops%d[%u]", depth, i);
-      fprintf (f, ", seq, valueize);\n");
-      fprintf (f, "      if (!res) return false;\n");
-      fprintf (f, "    }\n");
-      fprintf (f, "  else\n");
-      fprintf (f, "    res = gimple_build (seq, UNKNOWN_LOCATION, %s, %s",
-	       opr, type);
-      for (unsigned i = 0; i < ops.length (); ++i)
-	fprintf (f, ", ops%d[%u]", depth, i);
-      fprintf (f, ", valueize);\n");
+	fprintf (f, "ops%d[%u]%s", depth, i,
+		 i == ops.length () - 1 ? " };\n" : ", ");
+      fprintf (f, "  gimple_resimplify%d (seq, &tem_code, %s, tem_ops, valueize);\n",
+	       ops.length (), type);
+      fprintf (f, "  res = maybe_push_res_to_seq (tem_code, %s, tem_ops, seq);\n"
+	       "  if (!res) return false;\n", type);
     }
   else
     {
@@ -1771,7 +1767,7 @@ expr::gen_transform (FILE *f, const char *dest, bool gimple, int depth,
 	fprintf (f, ", ops%d[%u]", depth, i);
       fprintf (f, ");\n");
     }
-  fprintf (f, "  %s = res;\n", dest);
+  fprintf (f, "%s = res;\n", dest);
   fprintf (f, "}\n");
 }
 

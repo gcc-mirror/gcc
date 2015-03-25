@@ -1,3 +1,9 @@
+2015-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65519
+	* genmatch.c (expr::gen_transform): Re-write to avoid
+	using gimple_build.
+
 2015-03-25  Bin Cheng  <bin.cheng@arm.com>
 
 	* doc/sourcebuild.texi (arm_tune_string_ops_prefer_neon): New.
