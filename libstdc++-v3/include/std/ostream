@@ -600,7 +600,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits, typename _Tp>
     inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>&& __os, const _Tp& __x)
-    { return (__os << __x); }
+    {
+      __os << __x;
+      return __os;
+    }
 #endif // C++11
 
 _GLIBCXX_END_NAMESPACE_VERSION
