@@ -1691,6 +1691,9 @@ typedef struct gfc_namespace
      Holds -1 during resolution.  */
   signed resolved:2;
 
+  /* Set when resolve_types has been called for this namespace.  */
+  unsigned types_resolved:1;
+
   /* Set to 1 if code has been generated for this namespace.  */
   unsigned translated:1;
 
