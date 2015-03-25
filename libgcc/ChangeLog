@@ -1,5 +1,9 @@
+2015-03-25  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config.host (nios2-*-linux*): Remove 'extra_parts' setting.
+
 2015-03-03  Max Filippov  <jcmvbkbc@gmail.com>
-	
+
 	Implement call0 ABI for xtensa
 	* config/xtensa/lib2funcs.S (__xtensa_libgcc_window_spill,
 	__xtensa_nonlocal_goto): Don't compile for call0 ABI.
