@@ -1,3 +1,8 @@
+2015-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54987
+	* g++.dg/template/pr54987.C: New.
+
 2015-03-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/62630
