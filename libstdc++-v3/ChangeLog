@@ -1,3 +1,14 @@
+2015-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2015-03-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65279
+	* include/std/scoped_allocator (__inner_type_impl,
+	scoped_allocator_adaptor): Add defaulted copy assignment and move
+	assignment operators.
+	* testsuite/20_util/scoped_allocator/65279.cc: New.
+
 2015-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/65543
