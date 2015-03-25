@@ -1,3 +1,8 @@
+2015-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62630
+	* gcc.dg/graphite/vect-pr43423.c: XFAIL.
+
 2015-03-25  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR target/65508
