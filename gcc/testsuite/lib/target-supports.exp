@@ -2954,6 +2954,14 @@ proc check_effective_target_arm_cortex_m { } {
     } "-mthumb"]
 }
 
+# Return 1 if this compilation turns on string_ops_prefer_neon on.
+
+proc check_effective_target_arm_tune_string_ops_prefer_neon { } {
+    return [check_no_messages_and_pattern arm_tune_string_ops_prefer_neon "@string_ops_prefer_neon:\t1" assembly {
+	int foo (void) { return 0; }
+    } "-O2 -mprint-tune-info" ]
+}
+
 # Return 1 if the target supports executing NEON instructions, 0
 # otherwise.  Cache the result.
 

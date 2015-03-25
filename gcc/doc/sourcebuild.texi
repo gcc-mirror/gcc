@@ -1527,6 +1527,9 @@ Some multilibs may be incompatible with this option.
 @item arm_neon
 ARM target supports generating NEON instructions.
 
+@item arm_tune_string_ops_prefer_neon
+Test CPU tune supports inlining string operations with NEON instructions.
+
 @item arm_neon_hw
 Test system supports executing NEON instructions.
 

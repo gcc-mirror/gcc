@@ -1,5 +1,9 @@
 2015-03-25  Bin Cheng  <bin.cheng@arm.com>
 
+	* doc/sourcebuild.texi (arm_tune_string_ops_prefer_neon): New.
+
+2015-03-25  Bin Cheng  <bin.cheng@arm.com>
+
 	* config/arm/arm.opt (print_tune_info): New option.
 	* config/arm/arm.c (arm_print_tune_info): New function.
 	(arm_file_start): Call arm_print_tune_info.

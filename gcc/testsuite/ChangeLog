@@ -1,3 +1,13 @@
+2015-03-25  Bin Cheng  <bin.cheng@arm.com>
+
+	* lib/target-supports.exp (arm_tune_string_ops_prefer_neon): New.
+	* gcc.target/arm/memset-inline-4.c: Skip for
+	arm_tune_string_ops_prefer_neon.
+	* gcc.target/arm/memset-inline-5.c: Ditto.
+	* gcc.target/arm/memset-inline-6.c: Ditto.
+	* gcc.target/arm/memset-inline-8.c: Ditto.
+	* gcc.target/arm/memset-inline-9.c: Ditto.
+
 2015-03-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58923
