@@ -1,3 +1,8 @@
+2015-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/61670
+	* g++.dg/template/pr61670.C: New test.
+
 2015-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54987

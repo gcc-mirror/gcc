@@ -5434,7 +5434,8 @@ remove_zero_width_bit_fields (tree t)
 	     DECL_INITIAL (*fieldsp).
 	     check_bitfield_decl eventually sets DECL_SIZE (*fieldsp)
 	     to that width.  */
-	  && integer_zerop (DECL_SIZE (*fieldsp)))
+	  && (DECL_SIZE (*fieldsp) == NULL_TREE
+	      || integer_zerop (DECL_SIZE (*fieldsp))))
 	*fieldsp = DECL_CHAIN (*fieldsp);
       else
 	fieldsp = &DECL_CHAIN (*fieldsp);
