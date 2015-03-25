@@ -33,6 +33,9 @@
 #include <limits.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>  /* For PRIu64.  */
+#endif
 #include <string.h>
 #include <assert.h>
 
@@ -438,9 +441,16 @@ gomp_map_vars (struct gomp_device_descr *devicep, size_t mapnum,
 		      /* We already looked up the memory region above and it
 			 was missing.  */
 		      size_t size = k->host_end - k->host_start;
+#ifdef HAVE_INTTYPES_H
 		      gomp_fatal ("present clause: !acc_is_present (%p, "
-				  "%zd (0x%zx))", (void *) k->host_start,
-				  size, size);
+				  "%"PRIu64" (0x%"PRIx64"))",
+				  (void *) k->host_start,
+				  (uint64_t) size, (uint64_t) size);
+#else
+		      gomp_fatal ("present clause: !acc_is_present (%p, "
+				  "%lu (0x%lx))", (void *) k->host_start,
+				  (unsigned long) size, (unsigned long) size);
+#endif
 		    }
 		    break;
 		  case GOMP_MAP_FORCE_DEVICEPTR:
