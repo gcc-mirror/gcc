@@ -1,3 +1,16 @@
+2015-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/65515
+	* lto-streamer-out.c (DFS::worklist): New struct.
+	(DFS::worklist_vec): New data member.
+	(DFS::next_dfs_num): Remove.
+	(DFS::DFS): Rewritten using worklist instead of recursion,
+	using most of code from DFS::DFS_write_tree.
+	(DFS::DFS_write_tree_body): Remove SINGLE_P argument, don't
+	pass it to DFS_write_tree calls.
+	(DFS::DFS_write_tree): Remove SINGLE_P argument, after
+	quick initial checks push it into worklist_vec and return.
+
 2015-03-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/65519
