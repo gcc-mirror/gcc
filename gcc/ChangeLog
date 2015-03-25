@@ -1,3 +1,12 @@
+2015-03-25  Bin Cheng  <bin.cheng@arm.com>
+
+	* config/arm/arm.opt (print_tune_info): New option.
+	* config/arm/arm.c (arm_print_tune_info): New function.
+	(arm_file_start): Call arm_print_tune_info.
+	* config/arm/arm-protos.h (struct tune_params): Add comment.
+	* doc/invoke.texi (@item -mprint-tune-info): New item.
+	(-mtune): mention it in ARM Option Summary.
+
 2015-03-25  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78.c (rl78_print_operand_1): Move 'p' test to
