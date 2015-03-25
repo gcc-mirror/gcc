@@ -872,10 +872,10 @@ mail-report-with-warnings.log: warning.log
 # Local Vim config
 
 $(srcdir)/.local.vimrc:
-	$(LN_S) $(srcdir)/contrib/vimrc $@
+	$(LN_S) contrib/vimrc $@
 
 $(srcdir)/.lvimrc:
-	$(LN_S) $(srcdir)/contrib/vimrc $@
+	$(LN_S) contrib/vimrc $@
 
 vimrc: $(srcdir)/.local.vimrc $(srcdir)/.lvimrc
 
