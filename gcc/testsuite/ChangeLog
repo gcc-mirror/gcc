@@ -1,3 +1,8 @@
+2015-03-25  Sebastian Pop  <s.pop@samsung.com>
+
+	PR tree-optimization/65177
+	* gcc.dg/tree-ssa/ssa-dom-thread-10.c: New.
+
 2015-03-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse-13.c: Include x86intrin.h and adjust #defines.

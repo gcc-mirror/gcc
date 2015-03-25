@@ -1,3 +1,11 @@
+2015-03-25  Sebastian Pop  <s.pop@samsung.com>
+
+	PR tree-optimization/65177
+	* tree-ssa-threadupdate.c (verify_seme): Renamed verify_jump_thread.
+	(bb_in_bbs): New.
+	(duplicate_seme_region): Renamed duplicate_thread_path.  Redirect all
+	edges not adjacent on the path to the original code.
+
 2015-03-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR bootstrap/65537
