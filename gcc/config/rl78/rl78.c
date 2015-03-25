@@ -1644,14 +1644,14 @@ rl78_print_operand_1 (FILE * file, rtx op, int letter)
 	      rl78_print_operand_1 (file, XEXP (XEXP (op, 0), 1), 'u');
 	      fprintf (file, "[");
 	      rl78_print_operand_1 (file, XEXP (XEXP (op, 0), 0), 0);
-	      if (letter == 'p' && GET_CODE (XEXP (op, 0)) == REG)
-		fprintf (file, "+0");
 	      fprintf (file, "]");
 	    }
 	  else
 	    {
 	      fprintf (file, "[");
 	      rl78_print_operand_1 (file, XEXP (op, 0), letter);
+	      if (letter == 'p' && GET_CODE (XEXP (op, 0)) == REG)
+		fprintf (file, "+0");
 	      fprintf (file, "]");
 	    }
 	}
