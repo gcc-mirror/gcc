@@ -18,7 +18,7 @@
 // { dg-do run { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* *-*-cygwin *-*-darwin* } }
 // { dg-options "-pthread" { target *-*-freebsd* *-*-dragonfly* *-*-netbsd* *-*-linux* *-*-gnu* *-*-solaris* } }
 
-// { dg-options "-DITERATIONS=1000" { target simulator } }
+// { dg-additional-options "-DITERATIONS=1000" { target simulator } }
 #ifndef ITERATIONS
 #define ITERATIONS 50000
 #endif

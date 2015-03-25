@@ -1,3 +1,9 @@
+2015-03-25  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR libstdc++/33394
+	* testsuite/21_strings/basic_string/pthread33394.cc: Use
+	dg-additional-options.
+
 2015-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/65543
