@@ -485,31 +485,225 @@ private:
     unsigned int dfsnum;
     unsigned int low;
   };
+  struct worklist
+  {
+    tree expr;
+    sccs *from_state;
+    sccs *cstate;
+    bool ref_p;
+    bool this_ref_p;
+  };
 
   static int scc_entry_compare (const void *, const void *);
 
   void DFS_write_tree_body (struct output_block *ob,
-			    tree expr, sccs *expr_state, bool ref_p,
-			    bool single_p);
+			    tree expr, sccs *expr_state, bool ref_p);
 
   void DFS_write_tree (struct output_block *ob, sccs *from_state,
-		       tree expr, bool ref_p, bool this_ref_p,
-		       bool single_p);
+		       tree expr, bool ref_p, bool this_ref_p);
+
   hashval_t
   hash_scc (struct output_block *ob, unsigned first, unsigned size);
 
-  unsigned int next_dfs_num;
   hash_map<tree, sccs *> sccstate;
+  vec<worklist> worklist_vec;
   struct obstack sccstate_obstack;
 };
 
 DFS::DFS (struct output_block *ob, tree expr, bool ref_p, bool this_ref_p,
 	  bool single_p)
 {
+  unsigned int next_dfs_num = 1;
   sccstack.create (0);
   gcc_obstack_init (&sccstate_obstack);
-  next_dfs_num = 1;
-  DFS_write_tree (ob, NULL, expr, ref_p, this_ref_p, single_p);
+  worklist_vec = vNULL;
+  DFS_write_tree (ob, NULL, expr, ref_p, this_ref_p);
+  while (!worklist_vec.is_empty ())
+    {
+      worklist &w = worklist_vec.last ();
+      expr = w.expr;
+      sccs *from_state = w.from_state;
+      sccs *cstate = w.cstate;
+      ref_p = w.ref_p;
+      this_ref_p = w.this_ref_p;
+      if (cstate == NULL)
+	{
+	  sccs **slot = &sccstate.get_or_insert (expr);
+	  cstate = *slot;
+	  if (cstate)
+	    {
+	      gcc_checking_assert (from_state);
+	      if (cstate->dfsnum < from_state->dfsnum)
+		from_state->low = MIN (cstate->dfsnum, from_state->low);
+	      worklist_vec.pop ();
+	      continue;
+	    }
+
+	  scc_entry e = { expr, 0 };
+	  /* Not yet visited.  DFS recurse and push it onto the stack.  */
+	  *slot = cstate = XOBNEW (&sccstate_obstack, struct sccs);
+	  sccstack.safe_push (e);
+	  cstate->dfsnum = next_dfs_num++;
+	  cstate->low = cstate->dfsnum;
+	  w.cstate = cstate;
+
+	  if (streamer_handle_as_builtin_p (expr))
+	    ;
+	  else if (TREE_CODE (expr) == INTEGER_CST
+		   && !TREE_OVERFLOW (expr))
+	    DFS_write_tree (ob, cstate, TREE_TYPE (expr), ref_p, ref_p);
+	  else
+	    {
+	      DFS_write_tree_body (ob, expr, cstate, ref_p);
+
+	      /* Walk any LTO-specific edges.  */
+	      if (DECL_P (expr)
+		  && TREE_CODE (expr) != FUNCTION_DECL
+		  && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
+		{
+		  /* Handle DECL_INITIAL for symbols.  */
+		  tree initial
+		    = get_symbol_initial_value (ob->decl_state->symtab_node_encoder,
+						expr);
+		  DFS_write_tree (ob, cstate, initial, ref_p, ref_p);
+		}
+	    }
+	  continue;
+	}
+
+      /* See if we found an SCC.  */
+      if (cstate->low == cstate->dfsnum)
+	{
+	  unsigned first, size;
+	  tree x;
+
+	  /* If we are re-walking a single leaf-SCC just pop it,
+	     let earlier worklist item access the sccstack.  */
+	  if (single_p)
+	    {
+	      worklist_vec.pop ();
+	      continue;
+	    }
+
+	  /* Pop the SCC and compute its size.  */
+	  first = sccstack.length ();
+	  do
+	    {
+	      x = sccstack[--first].t;
+	    }
+	  while (x != expr);
+	  size = sccstack.length () - first;
+
+	  /* No need to compute hashes for LTRANS units, we don't perform
+	     any merging there.  */
+	  hashval_t scc_hash = 0;
+	  unsigned scc_entry_len = 0;
+	  if (!flag_wpa)
+	    {
+	      scc_hash = hash_scc (ob, first, size);
+
+	      /* Put the entries with the least number of collisions first.  */
+	      unsigned entry_start = 0;
+	      scc_entry_len = size + 1;
+	      for (unsigned i = 0; i < size;)
+		{
+		  unsigned from = i;
+		  for (i = i + 1; i < size
+		       && (sccstack[first + i].hash
+			   == sccstack[first + from].hash); ++i)
+		    ;
+		  if (i - from < scc_entry_len)
+		    {
+		      scc_entry_len = i - from;
+		      entry_start = from;
+		    }
+		}
+	      for (unsigned i = 0; i < scc_entry_len; ++i)
+		{
+		  scc_entry tem = sccstack[first + i];
+		  sccstack[first + i] = sccstack[first + entry_start + i];
+		  sccstack[first + entry_start + i] = tem;
+		}
+
+	      if (scc_entry_len == 1)
+		; /* We already sorted SCC deterministically in hash_scc.  */
+	      else
+		/* Check that we have only one SCC.
+		   Naturally we may have conflicts if hash function is not
+ 		   strong enough.  Lets see how far this gets.  */
+		{
+#ifdef ENABLE_CHECKING
+		  gcc_unreachable ();
+#endif
+		}
+	    }
+
+	  /* Write LTO_tree_scc.  */
+	  streamer_write_record_start (ob, LTO_tree_scc);
+	  streamer_write_uhwi (ob, size);
+	  streamer_write_uhwi (ob, scc_hash);
+
+	  /* Write size-1 SCCs without wrapping them inside SCC bundles.
+	     All INTEGER_CSTs need to be handled this way as we need
+	     their type to materialize them.  Also builtins are handled
+	     this way.
+	     ???  We still wrap these in LTO_tree_scc so at the
+	     input side we can properly identify the tree we want
+	     to ultimatively return.  */
+	  if (size == 1)
+	    lto_output_tree_1 (ob, expr, scc_hash, ref_p, this_ref_p);
+	  else
+	    {
+	      /* Write the size of the SCC entry candidates.  */
+	      streamer_write_uhwi (ob, scc_entry_len);
+
+	      /* Write all headers and populate the streamer cache.  */
+	      for (unsigned i = 0; i < size; ++i)
+		{
+		  hashval_t hash = sccstack[first+i].hash;
+		  tree t = sccstack[first+i].t;
+		  bool exists_p = streamer_tree_cache_insert (ob->writer_cache,
+							      t, hash, NULL);
+		  gcc_assert (!exists_p);
+
+		  if (!lto_is_streamable (t))
+		    internal_error ("tree code %qs is not supported "
+				    "in LTO streams",
+				    get_tree_code_name (TREE_CODE (t)));
+
+		  gcc_checking_assert (!streamer_handle_as_builtin_p (t));
+
+		  /* Write the header, containing everything needed to
+		     materialize EXPR on the reading side.  */
+		  streamer_write_tree_header (ob, t);
+		}
+
+	      /* Write the bitpacks and tree references.  */
+	      for (unsigned i = 0; i < size; ++i)
+		{
+		  lto_write_tree_1 (ob, sccstack[first+i].t, ref_p);
+
+		  /* Mark the end of the tree.  */
+		  streamer_write_zero (ob);
+		}
+	    }
+
+	  /* Finally truncate the vector.  */
+	  sccstack.truncate (first);
+
+	  if (from_state)
+	    from_state->low = MIN (from_state->low, cstate->low);
+	  worklist_vec.pop ();
+	  continue;
+	}
+
+      gcc_checking_assert (from_state);
+      from_state->low = MIN (from_state->low, cstate->low);
+      if (cstate->dfsnum < from_state->dfsnum)
+	from_state->low = MIN (cstate->dfsnum, from_state->low);
+      worklist_vec.pop ();
+    }
+  worklist_vec.release ();
 }
 
 DFS::~DFS ()
@@ -523,11 +717,10 @@ DFS::~DFS ()
 
 void
 DFS::DFS_write_tree_body (struct output_block *ob,
-			  tree expr, sccs *expr_state, bool ref_p,
-			  bool single_p)
+			  tree expr, sccs *expr_state, bool ref_p)
 {
 #define DFS_follow_tree_edge(DEST) \
-  DFS_write_tree (ob, expr_state, DEST, ref_p, ref_p, single_p)
+  DFS_write_tree (ob, expr_state, DEST, ref_p, ref_p)
 
   enum tree_code code;
 
@@ -680,7 +873,7 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 	  /* We have to stream externals in the block chain as
 	     non-references.  See also
 	     tree-streamer-out.c:streamer_write_chain.  */
-	  DFS_write_tree (ob, expr_state, t, ref_p, false, single_p);
+	  DFS_write_tree (ob, expr_state, t, ref_p, false);
 	else
 	  DFS_follow_tree_edge (t);
 
@@ -1339,10 +1532,8 @@ DFS::hash_scc (struct output_block *ob,
 
 void
 DFS::DFS_write_tree (struct output_block *ob, sccs *from_state,
-		     tree expr, bool ref_p, bool this_ref_p, bool single_p)
+		     tree expr, bool ref_p, bool this_ref_p)
 {
-  unsigned ix;
-
   /* Handle special cases.  */
   if (expr == NULL_TREE)
     return;
@@ -1352,169 +1543,16 @@ DFS::DFS_write_tree (struct output_block *ob, sccs *from_state,
     return;
 
   /* Check if we already streamed EXPR.  */
-  if (streamer_tree_cache_lookup (ob->writer_cache, expr, &ix))
+  if (streamer_tree_cache_lookup (ob->writer_cache, expr, NULL))
     return;
 
-  sccs **slot = &sccstate.get_or_insert (expr);
-  sccs *cstate = *slot;
-  if (!cstate)
-    {
-      scc_entry e = { expr, 0 };
-      /* Not yet visited.  DFS recurse and push it onto the stack.  */
-      *slot = cstate = XOBNEW (&sccstate_obstack, struct sccs);
-      sccstack.safe_push (e);
-      cstate->dfsnum = next_dfs_num++;
-      cstate->low = cstate->dfsnum;
-
-      if (streamer_handle_as_builtin_p (expr))
-	;
-      else if (TREE_CODE (expr) == INTEGER_CST
-	       && !TREE_OVERFLOW (expr))
-	DFS_write_tree (ob, cstate, TREE_TYPE (expr), ref_p, ref_p, single_p);
-      else
-	{
-	  DFS_write_tree_body (ob, expr, cstate, ref_p, single_p);
-
-	  /* Walk any LTO-specific edges.  */
-	  if (DECL_P (expr)
-	      && TREE_CODE (expr) != FUNCTION_DECL
-	      && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
-	    {
-	      /* Handle DECL_INITIAL for symbols.  */
-	      tree initial = get_symbol_initial_value (ob->decl_state->symtab_node_encoder,
-						       expr);
-	      DFS_write_tree (ob, cstate, initial, ref_p, ref_p, single_p);
-	    }
-	}
-
-      /* See if we found an SCC.  */
-      if (cstate->low == cstate->dfsnum)
-	{
-	  unsigned first, size;
-	  tree x;
-
-	  /* If we are re-walking a single leaf-SCC just return and
-	     let the caller access the sccstack.  */
-	  if (single_p)
-	    return;
-
-	  /* Pop the SCC and compute its size.  */
-	  first = sccstack.length ();
-	  do
-	    {
-	      x = sccstack[--first].t;
-	    }
-	  while (x != expr);
-	  size = sccstack.length () - first;
-
-	  /* No need to compute hashes for LTRANS units, we don't perform
-	     any merging there.  */
-	  hashval_t scc_hash = 0;
-	  unsigned scc_entry_len = 0;
-	  if (!flag_wpa)
-	    {
-	      scc_hash = hash_scc (ob, first, size);
-
-	      /* Put the entries with the least number of collisions first.  */
-	      unsigned entry_start = 0;
-	      scc_entry_len = size + 1;
-	      for (unsigned i = 0; i < size;)
-		{
-		  unsigned from = i;
-		  for (i = i + 1; i < size
-		       && (sccstack[first + i].hash
-			   == sccstack[first + from].hash); ++i)
-		    ;
-		  if (i - from < scc_entry_len)
-		    {
-		      scc_entry_len = i - from;
-		      entry_start = from;
-		    }
-		}
-	      for (unsigned i = 0; i < scc_entry_len; ++i)
-		{
-		  scc_entry tem = sccstack[first + i];
-		  sccstack[first + i] = sccstack[first + entry_start + i];
-		  sccstack[first + entry_start + i] = tem;
-		}
-
-	      if (scc_entry_len == 1)
-		; /* We already sorted SCC deterministically in hash_scc.  */
-	      else
-		/* Check that we have only one SCC.
-		   Naturally we may have conflicts if hash function is not
- 		   strong enough.  Lets see how far this gets.  */
-		{
-#ifdef ENABLE_CHECKING
-		  gcc_unreachable ();
-#endif
-		}
-	    }
-
-	  /* Write LTO_tree_scc.  */
-	  streamer_write_record_start (ob, LTO_tree_scc);
-	  streamer_write_uhwi (ob, size);
-	  streamer_write_uhwi (ob, scc_hash);
-
-	  /* Write size-1 SCCs without wrapping them inside SCC bundles.
-	     All INTEGER_CSTs need to be handled this way as we need
-	     their type to materialize them.  Also builtins are handled
-	     this way.
-	     ???  We still wrap these in LTO_tree_scc so at the
-	     input side we can properly identify the tree we want
-	     to ultimatively return.  */
-	  if (size == 1)
-	    lto_output_tree_1 (ob, expr, scc_hash, ref_p, this_ref_p);
-	  else
-	    {
-	      /* Write the size of the SCC entry candidates.  */
-	      streamer_write_uhwi (ob, scc_entry_len);
-
-	      /* Write all headers and populate the streamer cache.  */
-	      for (unsigned i = 0; i < size; ++i)
-		{
-		  hashval_t hash = sccstack[first+i].hash;
-		  tree t = sccstack[first+i].t;
-		  bool exists_p = streamer_tree_cache_insert (ob->writer_cache,
-							      t, hash, &ix);
-		  gcc_assert (!exists_p);
-
-		  if (!lto_is_streamable (t))
-		    internal_error ("tree code %qs is not supported "
-				    "in LTO streams",
-				    get_tree_code_name (TREE_CODE (t)));
-
-		  gcc_checking_assert (!streamer_handle_as_builtin_p (t));
-
-		  /* Write the header, containing everything needed to
-		     materialize EXPR on the reading side.  */
-		  streamer_write_tree_header (ob, t);
-		}
-
-	      /* Write the bitpacks and tree references.  */
-	      for (unsigned i = 0; i < size; ++i)
-		{
-		  lto_write_tree_1 (ob, sccstack[first+i].t, ref_p);
-
-		  /* Mark the end of the tree.  */
-		  streamer_write_zero (ob);
-		}
-	    }
-
-	  /* Finally truncate the vector.  */
-	  sccstack.truncate (first);
-
-	  if (from_state)
-	    from_state->low = MIN (from_state->low, cstate->low);
-	  return;
-	}
-
-      if (from_state)
-	from_state->low = MIN (from_state->low, cstate->low);
-    }
-  gcc_checking_assert (from_state);
-  if (cstate->dfsnum < from_state->dfsnum)
-    from_state->low = MIN (cstate->dfsnum, from_state->low);
+  worklist w;
+  w.expr = expr;
+  w.from_state = from_state;
+  w.cstate = NULL;
+  w.ref_p = ref_p;
+  w.this_ref_p = this_ref_p;
+  worklist_vec.safe_push (w);
 }
 
 
