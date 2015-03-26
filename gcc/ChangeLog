@@ -1,5 +1,14 @@
 2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
 
+	* cgraph.c (cgraph_update_edges_for_call_stmt_node): Do not bring
+	dead calls back to live.
+	(cgraph_edge::verify_count_and_frequency): Move cgraph/cfg frequency
+	cross check to ...
+	(cgraph_node::verify_node): ... here; verify only callee edges,
+	not caller.
+
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline-analysis.c (redirect_to_unreachable): New function.
 	(edge_set_predicate): Use it to mark unreachable edges.
 	(inline_summary_t::duplicate): Remove unnecesary code.
