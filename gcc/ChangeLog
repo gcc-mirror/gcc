@@ -224,7 +224,7 @@
 	(--help): Likewise.
 	* doc.invoke.texi (AVR Options): Likewise.
 	(V850 Options): Likewise.
-	
+
 2015-03-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65475
@@ -388,7 +388,7 @@
 	already is final.
 	(ipa_inline): Recompute inline_failed codes.
 	* cif-code.def (FUNCTION_NOT_OPTIMIZED, REDEFINED_EXTERN_INLINE,
-	USES_COMDAT_LOCAL, ATTRIBUTE_MISMATCH, UNREACHABLE): Declare as 
+	USES_COMDAT_LOCAL, ATTRIBUTE_MISMATCH, UNREACHABLE): Declare as
 	CIF_FINAL_ERROR.
 
 2015-03-20  Uros Bizjak  <ubizjak@gmail.com>
@@ -1297,7 +1297,7 @@
 
 2015-03-03  Jan Hubicka  <hubicka@ucw.cz>
 
- 	PR ipa/65270
+	PR ipa/65270
 	* ipa-icf.c (sem_item::compare_cgraph_references): Compare
 	vtable references for their containing type.
 	(sem_function::equals_wpa): Compare TYPE_RESTRICT
@@ -1551,7 +1551,7 @@
 	to create a register in testing mode.
 
 2015-03-03  Martin Liska  <mliska@suse.cz>
-	    Jan Hubicka   <hubicka@ucw.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65263
 	* cgraph.c (cgraph_node::has_thunk_p): New function.
