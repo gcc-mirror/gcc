@@ -1,3 +1,14 @@
+2015-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/65561
+	* config/i386/sse.md (avx512dq_vextract<shuffletype>64x2_1_maskm):
+	Check operand 4 and operand 0 for equality.
+	(avx512f_vextract<shuffletype>32x4_1_maskm):
+	Check operand 6 and operand 0 for equality.
+	(vec_extract_lo_<mode>_maskm): Check operand 2 and operand 0
+	for equality.
+	(vec_extract_hi_<mode>_maskm): Ditto.
+
 2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cgraph.c (cgraph_update_edges_for_call_stmt_node): Do not bring
@@ -17,7 +28,7 @@
 	(compute_inline_parameters): Compute contains_cilk_spawn.
 	(inline_read_section, inline_write_summary): Stream
 	contains_cilk_spawn.
-	* ipa-inline.c (can_inline_edge_p): Do not tuch 
+	* ipa-inline.c (can_inline_edge_p): Do not touch
 	DECL_STRUCT_FUNCTION that may not be available;
 	use CIF_CILK_SPAWN for cilk; fix optimization attribute checks;
 	remove check for callee_fun->can_throw_non_call_exceptions and
@@ -41,8 +52,7 @@
 2015-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/64715
-	* passes.def: Add another instance of pass_object_sizes before
-	ccp1.
+	* passes.def: Add another instance of pass_object_sizes before ccp1.
 	* tree-object-size.c (pass_object_sizes::execute): In
 	first_pass_instance, only handle __bos (, 1) and __bos (, 3)
 	calls, and keep the call in the IL, as {MIN,MAX}_EXPR of the
