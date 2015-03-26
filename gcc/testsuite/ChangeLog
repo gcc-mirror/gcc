@@ -1,3 +1,7 @@
+2015-03-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vmx/extract-vsx.c: Add more cases.
+
 2015-03-21  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/61138

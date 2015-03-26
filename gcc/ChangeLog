@@ -1,3 +1,9 @@
+2015-03-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/vsx.md (*vsx_extract_<mode>_zero): Remove
+	endianness requirement.
+	(*vsx_extract_<mode>_one_le): Remove define_insn.
+
 2015-03-26  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
