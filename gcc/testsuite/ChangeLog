@@ -1,3 +1,10 @@
+2015-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/64715
+	* gcc.dg/builtin-object-size-15.c: New test.
+	* gcc.dg/pr64715-1.c: New test.
+	* gcc.dg/pr64715-2.c: New test.
+
 2015-03-26  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/65519

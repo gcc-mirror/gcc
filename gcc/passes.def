@@ -77,6 +77,7 @@ along with GCC; see the file COPYING3.  If not see
       PUSH_INSERT_PASSES_WITHIN (pass_all_early_optimizations)
 	  NEXT_PASS (pass_remove_cgraph_callee_edges);
 	  NEXT_PASS (pass_rename_ssa_copies);
+	  NEXT_PASS (pass_object_sizes);
 	  NEXT_PASS (pass_ccp);
 	  /* After CCP we rewrite no longer addressed locals into SSA
 	     form if possible.  */
