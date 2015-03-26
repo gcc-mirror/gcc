@@ -1,3 +1,9 @@
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (check_maybe_up, check_maybe_down, check_match):
+	New macros.
+	(can_inline_edge_p): Relax option matching for always inline functions.
+
 2015-03-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/65561
