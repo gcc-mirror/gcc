@@ -4395,6 +4395,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
     case ARRAY_RANGE_REF:
     case MEMBER_REF:
     case DOTSTAR_EXPR:
+    case MEM_REF:
     binary:
       for (i = 0; i < 2; ++i)
 	if (!RECUR (TREE_OPERAND (t, i), want_rval))
