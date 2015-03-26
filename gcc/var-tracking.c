@@ -10311,7 +10311,10 @@ variable_tracking_main_1 (void)
 {
   bool success;
 
-  if (flag_var_tracking_assignments < 0)
+  if (flag_var_tracking_assignments < 0
+      /* Var-tracking right now assumes the IR doesn't contain
+	 any pseudos at this point.  */
+      || targetm.no_register_allocation)
     {
       delete_debug_insns ();
       return 0;

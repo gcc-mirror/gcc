@@ -1,3 +1,8 @@
+2015-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* var-tracking.c (variable_tracking_main_1): Don't track
+	variables for targetm.no_register_allocation targets.
+
 2015-03-26  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/t-linux (DEFAULT_ENDIAN, MULTILIB_EXCEPTIONS): Remove.
