@@ -1,3 +1,9 @@
+2015-03-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65555
+	* tree-cfg.c (verify_gimple_call): Do not require a call to
+	have no LHS if it wasn't recognized as control altering yet.
+
 2015-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/64715

@@ -3335,7 +3335,9 @@ verify_gimple_call (gcall *stmt)
       return true;
     }
 
-  if (gimple_call_lhs (stmt) && gimple_call_noreturn_p (stmt))
+  if (gimple_call_ctrl_altering_p (stmt)
+      && gimple_call_lhs (stmt)
+      && gimple_call_noreturn_p (stmt))
     {
       error ("LHS in noreturn call");
       return true;
