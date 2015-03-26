@@ -1352,7 +1352,11 @@ fully_constant_vn_reference_p (vn_reference_t ref)
 	       || TYPE_PRECISION (ref->type) % BITS_PER_UNIT == 0))
     {
       HOST_WIDE_INT off = 0;
-      HOST_WIDE_INT size = TYPE_PRECISION (ref->type);
+      HOST_WIDE_INT size;
+      if (INTEGRAL_TYPE_P (ref->type))
+	size = TYPE_PRECISION (ref->type);
+      else
+	size = tree_to_shwi (TYPE_SIZE (ref->type));
       if (size % BITS_PER_UNIT != 0
 	  || size > MAX_BITSIZE_MODE_ANY_MODE)
 	return NULL_TREE;

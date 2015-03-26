@@ -1,3 +1,9 @@
+2015-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65551
+	* tree-ssa-sccvn.c (fully_constant_vn_reference_p): Use
+	TYPE_PRECISION only for INTEGRAL_TYPE_P types.
+
 2015-03-26  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/65555
