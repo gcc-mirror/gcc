@@ -1,3 +1,22 @@
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-analysis.c (redirect_to_unreachable): New function.
+	(edge_set_predicate): Use it to mark unreachable edges.
+	(inline_summary_t::duplicate): Remove unnecesary code.
+	(remap_edge_summaries): Likewise.
+	(dump_inline_summary): Report contains_cilk_spawn.
+	(compute_inline_parameters): Compute contains_cilk_spawn.
+	(inline_read_section, inline_write_summary): Stream
+	contains_cilk_spawn.
+	* ipa-inline.c (can_inline_edge_p): Do not tuch 
+	DECL_STRUCT_FUNCTION that may not be available;
+	use CIF_CILK_SPAWN for cilk; fix optimization attribute checks;
+	remove check for callee_fun->can_throw_non_call_exceptions and
+	replace it by optimization attribute check; check for flag_exceptions.
+	* ipa-inline-transform.c (inline_call): Maintain
+	DECL_FUNCTION_PERSONALITY
+	* ipa-inline.h (inline_summary): Add contains_cilk_spawn.
+
 2015-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65551

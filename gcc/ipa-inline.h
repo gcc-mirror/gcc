@@ -126,6 +126,9 @@ struct GTY(()) inline_summary
 
   /* False when there something makes inlining impossible (such as va_arg).  */
   unsigned inlinable : 1;
+  /* True when function contains cilk spawn (and thus we can not inline
+     into it).  */
+  unsigned contains_cilk_spawn : 1;
 
   /* Information about function that will result after applying all the
      inline decisions present in the callgraph.  Generally kept up to

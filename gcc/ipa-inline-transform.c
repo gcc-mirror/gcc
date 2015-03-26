@@ -322,6 +322,10 @@ inline_call (struct cgraph_edge *e, bool update_original,
   if (to->global.inlined_to)
     to = to->global.inlined_to;
 
+  if (DECL_FUNCTION_PERSONALITY (callee->decl))
+    DECL_FUNCTION_PERSONALITY (to->decl)
+      = DECL_FUNCTION_PERSONALITY (callee->decl);
+
   /* If aliases are involved, redirect edge to the actual destination and
      possibly remove the aliases.  */
   if (e->callee != callee)
