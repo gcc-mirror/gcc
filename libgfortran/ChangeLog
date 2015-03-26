@@ -1,3 +1,9 @@
+2015-03-25 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/65541
+	* io/write.c (nml_write_obj): Convert '+' to '%' before emitting
+	object names in namelists.
+
 2015-03-22 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/59513
