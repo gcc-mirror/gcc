@@ -1,5 +1,15 @@
 2015-03-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/58038
+	PR libstdc++/60421
+	* include/std/thread (this_thread::sleep_for): Check for negative
+	durations.
+	(this_thread::sleep_until): Check for times in the past.
+	* testsuite/30_threads/this_thread/58038.cc: New.
+	* testsuite/30_threads/this_thread/60421.cc: New.
+
+2015-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/62259
 	PR libstdc++/65147
 	* include/std/atomic (atomic<T>): Increase alignment for types with
