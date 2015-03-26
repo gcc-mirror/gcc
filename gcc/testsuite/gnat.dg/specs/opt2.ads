@@ -8,4 +8,4 @@ package Opt2 is
 
   type Arr is array (Unsigned_32 range <>) of Unbounded_String;
 
-end P;
+end Opt2;
