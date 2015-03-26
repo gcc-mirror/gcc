@@ -1,3 +1,8 @@
+2015-03-26  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/pr53199.c: Add extra functions.  Revert
+	2014-12-05 change.
+
 2015-03-24  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
 
 	Backport from mainline:

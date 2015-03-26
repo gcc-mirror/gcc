@@ -1,3 +1,22 @@
+2015-03-26  Alan Modra  <amodra@gmail.com>
+
+	PR target/63150
+	Backport from trunk 211857 and 221445.
+	2014-06-20  Maciej W. Rozycki  <macro@codesourcery.com>
+	* config/rs6000/rs6000.md: Append `DONE' to preparation
+	statements of `bswap' pattern splitters.
+
+	2015-03-16  Alan Modra  <amodra@gmail.com>
+	* config/rs6000/rs6000.md (bswapdi2): Remove one scratch reg.
+	Modify Z->r bswapdi splitter to use dest in place of scratch.
+	In r->Z and Z->r bswapdi splitter rename word_high, word_low
+	to word1, word2 and rearrange logic to suit.
+	(bswapdi2_64bit): Remove early clobber on Z->r alternative.
+	(bswapdi2_ldbrx): Likewise.  Remove '??' on r->r.
+	(bswapdi2_32bit): Remove early clobber on Z->r alternative.
+	Add one '?' on r->r.  Modify Z->r splitter to avoid need for
+	early clobber.
+
 2015-03-26  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
