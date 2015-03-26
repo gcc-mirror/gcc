@@ -1,3 +1,10 @@
+2015-03-26  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2015-03-26  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/t-sh (MULTILIB_EXCEPTIONS): Handle default endian.
+
 2015-03-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/60851
