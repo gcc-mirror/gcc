@@ -17,6 +17,7 @@
 	cross check to ...
 	(cgraph_node::verify_node): ... here; verify only callee edges,
 	not caller.
+	* cif-code.def (CILK_SPAWN): New code.
 
 2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
 
