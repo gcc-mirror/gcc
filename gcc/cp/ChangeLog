@@ -1,3 +1,9 @@
+2015-03-26  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR c++/65154
+	* init.c (build_vec_init): Fix initializing aggregates
+	with empty init list.
+
 2015-03-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65209

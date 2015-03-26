@@ -3734,11 +3734,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 	{
 	  if (cxx_dialect >= cxx11 && AGGREGATE_TYPE_P (type))
 	    {
-	      if (BRACE_ENCLOSED_INITIALIZER_P (init)
-		  && CONSTRUCTOR_NELTS (init) == 0)
-		/* Reuse it.  */;
-	      else
-		init = build_constructor (init_list_type_node, NULL);
+	      init = build_constructor (init_list_type_node, NULL);
 	      CONSTRUCTOR_IS_DIRECT_INIT (init) = true;
 	    }
 	  else
