@@ -1,5 +1,14 @@
 2015-03-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/64715
+	* passes.def: Add another instance of pass_object_sizes before
+	ccp1.
+	* tree-object-size.c (pass_object_sizes::execute): In
+	first_pass_instance, only handle __bos (, 1) and __bos (, 3)
+	calls, and keep the call in the IL, as {MIN,MAX}_EXPR of the
+	__bos result and the computed constant.  Remove redundant
+	checks, obsoleted by gimple_call_builtin_p test.
+
 	* var-tracking.c (variable_tracking_main_1): Don't track
 	variables for targetm.no_register_allocation targets.
 
