@@ -1132,20 +1132,22 @@ df_get_artificial_uses (unsigned int bb_index)
 
 /* web */
 
-/* This entry is allocated for each reference in the insn stream.  */
-struct web_entry
+class web_entry_base
 {
-  /* Pointer to the parent in the union/find tree.  */
-  struct web_entry *pred;
-  /* Newly assigned register to the entry.  Set only for roots.  */
-  rtx reg;
-  void* extra_info;
-};
+ private:
+  /* Reference to the parent in the union/find tree.  */
+  web_entry_base *pred_pvt;
 
-extern struct web_entry *unionfind_root (struct web_entry *);
-extern bool unionfind_union (struct web_entry *, struct web_entry *);
-extern void union_defs (df_ref, struct web_entry *,
-			unsigned int *used, struct web_entry *,
-			bool (*fun) (struct web_entry *, struct web_entry *));
+ public:
+  /* Accessors.  */
+  web_entry_base *pred () { return pred_pvt; }
+  void set_pred (web_entry_base *p) { pred_pvt = p; }
+
+  /* Find representative in union-find tree.  */
+  web_entry_base *unionfind_root ();
+
+  /* Union with another set, returning TRUE if they are already unioned.  */
+  friend bool unionfind_union (web_entry_base *first, web_entry_base *second);
+};
 
 #endif /* GCC_DF_H */

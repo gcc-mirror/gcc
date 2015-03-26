@@ -53,17 +53,17 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Find the root of unionfind tree (the representative of set).  */
 
-struct web_entry *
-unionfind_root (struct web_entry *element)
+web_entry_base *
+web_entry_base::unionfind_root ()
 {
-  struct web_entry *element1 = element, *element2;
+  web_entry_base *element = this, *element1 = this, *element2;
 
-  while (element->pred)
-    element = element->pred;
-  while (element1->pred)
+  while (element->pred ())
+    element = element->pred ();
+  while (element1->pred ())
     {
-      element2 = element1->pred;
-      element1->pred = element;
+      element2 = element1->pred ();
+      element1->set_pred (element);
       element1 = element2;
     }
   return element;
@@ -74,23 +74,32 @@ unionfind_root (struct web_entry *element)
    nothing is done.  Otherwise, return false.  */
 
 bool
-unionfind_union (struct web_entry *first, struct web_entry *second)
+unionfind_union (web_entry_base *first, web_entry_base *second)
 {
-  first = unionfind_root (first);
-  second = unionfind_root (second);
+  first = first->unionfind_root ();
+  second = second->unionfind_root ();
   if (first == second)
     return true;
-  second->pred = first;
+  second->set_pred (first);
   return false;
 }
+
+class web_entry : public web_entry_base
+{
+ private:
+  rtx reg_pvt;
+
+ public:
+  rtx reg () { return reg_pvt; }
+  void set_reg (rtx r) { reg_pvt = r; }
+};
 
 /* For INSN, union all defs and uses that are linked by match_dup.
    FUN is the function that does the union.  */
 
 static void
-union_match_dups (rtx insn, struct web_entry *def_entry,
-		  struct web_entry *use_entry,
-		  bool (*fun) (struct web_entry *, struct web_entry *))
+union_match_dups (rtx insn, web_entry *def_entry, web_entry *use_entry,
+		  bool (*fun) (web_entry_base *, web_entry_base *))
 {
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
   df_ref *use_link = DF_INSN_INFO_USES (insn_info);
@@ -157,9 +166,9 @@ union_match_dups (rtx insn, struct web_entry *def_entry,
    the values 0 and 1 are reserved for use by entry_register.  */
 
 void
-union_defs (df_ref use, struct web_entry *def_entry,
-	    unsigned int *used, struct web_entry *use_entry,
- 	    bool (*fun) (struct web_entry *, struct web_entry *))
+union_defs (df_ref use, web_entry *def_entry,
+	    unsigned int *used, web_entry *use_entry,
+ 	    bool (*fun) (web_entry_base *, web_entry_base *))
 {
   struct df_insn_info *insn_info = DF_REF_INSN_INFO (use);
   struct df_link *link = DF_REF_CHAIN (use);
@@ -260,15 +269,15 @@ union_defs (df_ref use, struct web_entry *def_entry,
 /* Find the corresponding register for the given entry.  */
 
 static rtx
-entry_register (struct web_entry *entry, df_ref ref, unsigned int *used)
+entry_register (web_entry *entry, df_ref ref, unsigned int *used)
 {
-  struct web_entry *root;
+  web_entry *root;
   rtx reg, newreg;
 
   /* Find the corresponding web and see if it has been visited.  */
-  root = unionfind_root (entry);
-  if (root->reg)
-    return root->reg;
+  root = (web_entry *)entry->unionfind_root ();
+  if (root->reg ())
+    return root->reg ();
 
   /* We are seeing this web for the first time, do the assignment.  */
   reg = DF_REF_REAL_REG (ref);
@@ -292,7 +301,7 @@ entry_register (struct web_entry *entry, df_ref ref, unsigned int *used)
 		 REGNO (newreg));
     }
 
-  root->reg = newreg;
+  root->set_reg (newreg);
   return newreg;
 }
 
@@ -326,8 +335,8 @@ gate_handle_web (void)
 static unsigned int
 web_main (void)
 {
-  struct web_entry *def_entry;
-  struct web_entry *use_entry;
+  web_entry *def_entry;
+  web_entry *use_entry;
   unsigned int max = max_reg_num ();
   unsigned int *used;
   basic_block bb;
@@ -364,9 +373,9 @@ web_main (void)
     }
 
   /* Record the number of uses and defs at the beginning of the optimization.  */
-  def_entry = XCNEWVEC (struct web_entry, DF_DEFS_TABLE_SIZE());
+  def_entry = XCNEWVEC (web_entry, DF_DEFS_TABLE_SIZE());
   used = XCNEWVEC (unsigned, max);
-  use_entry = XCNEWVEC (struct web_entry, uses_num);
+  use_entry = XCNEWVEC (web_entry, uses_num);
 
   /* Produce the web.  */
   FOR_ALL_BB (bb)
