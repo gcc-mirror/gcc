@@ -1,3 +1,54 @@
+2015-03-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport of r214242, r214254, and bug fix patches from mainline
+	* config/rs6000/rs6000.c (context.h): New #include.
+	(tree-pass.h): Likewise.
+	(make_pass_analyze_swaps): New declaration.
+	(rs6000_option_override): Register swap-optimization pass.
+	(swap_web_entry): New class.
+	(special_handling_values): New enum.
+	(union_defs): New function.
+	(union_uses): Likewise.
+	(insn_is_load_p): Likewise.
+	(insn_is_store_p): Likewise.
+	(insn_is_swap_p): Likewise.
+	(rtx_is_swappable_p): Likewise.
+	(insn_is_swappable_p): Likewise.
+	(chain_purpose): New enum.
+	(chain_contains_only_swaps): New function.
+	(mark_swaps_for_removal): Likewise.
+	(swap_const_vector_halves): Likewise.
+	(adjust_subreg_index): Likewise.
+	(permute_load): Likewise.
+	(permute_store): Likewise.
+	(adjust_extract): Likewise.
+	(adjust_splat): Likewise.
+	(handle_special_swappables): Likewise.
+	(replace_swap_with_copy): Likewise.
+	(dump_swap_insn_table): Likewise.
+	(rs6000_analyze_swaps): Likewise.
+	(pass_data_analyze_swaps): New pass_data.
+	(pass_analyze_swaps): New class.
+	(pass_analyze_swaps::gate): New method.
+	(pass_analyze_swaps::execute): New method.
+	(make_pass_analyze_swaps): New function.
+	* config/rs6000/rs6000.opt (moptimize-swaps): New option.
+	* df.h (web_entry_base): New class, replacing struct web_entry.
+	(web_entry_base::pred): New method.
+	(web_entry_base::set_pred): Likewise.
+	(web_entry_base::unionfind_root): Likewise.
+	(web_entry_base::unionfind_union): Likewise.
+	(unionfind_root): Delete external reference.
+	(unionfind_union): Likewise.
+	(union_defs): Likewise.
+	* web.c (web_entry_base::unionfind_root): Convert to method.
+	(web_entry_base::unionfind_union): Likewise.
+	(web_entry): New class.
+	(union_match_dups): Convert to use class structure.
+	(union_defs): Likewise.
+	(entry_register): Likewise.
+	(web_main): Likewise.
+
 2015-03-26  Alan Modra  <amodra@gmail.com>
 
 	PR target/63150

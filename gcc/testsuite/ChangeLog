@@ -1,3 +1,24 @@
+2015-03-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport r214254 and related tests from mainline
+	* gcc.target/powerpc/swaps-p8-1.c: New test.
+	* gcc.target/powerpc/swaps-p8-2.c: New test.
+	* gcc.target/powerpc/swaps-p8-3.c: New test.
+	* gcc.target/powerpc/swaps-p8-4.c: New test.
+	* gcc.target/powerpc/swaps-p8-5.c: New test.
+	* gcc.target/powerpc/swaps-p8-6.c: New test.
+	* gcc.target/powerpc/swaps-p8-7.c: New test.
+	* gcc.target/powerpc/swaps-p8-8.c: New test.
+	* gcc.target/powerpc/swaps-p8-9.c: New test.
+	* gcc.target/powerpc/swaps-p8-10.c: New test.
+	* gcc.target/powerpc/swaps-p8-11.c: New test.
+	* gcc.target/powerpc/swaps-p8-12.c: New test.
+	* gcc.target/powerpc/swaps-p8-13.c: New test.
+	* gcc.target/powerpc/swaps-p8-14.c: New test.
+	* gcc.target/powerpc/swaps-p8-15.c: New test.
+	* gcc.target/powerpc/swaps-p8-16.c: New test.
+	* gcc.target/powerpc/swaps-p8-17.c: New test.
+
 2015-03-26  Alan Modra  <amodra@gmail.com>
 
 	* gcc.target/powerpc/pr53199.c: Add extra functions.  Revert
