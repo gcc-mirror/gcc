@@ -1,3 +1,12 @@
+2015-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/65561
+	* config/i386/sse.md (avx512f_vextract<shuffletype>32x4_1_maskm):
+	Check operand 6 and operand 0 for equality.
+	(vec_extract_lo_<mode>_maskm): Check operand 2 and operand 0
+	for equality.
+	(vec_extract_hi_<mode>_maskm): Ditto.
+
 2015-03-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport of r214242, r214254, and bug fix patches from mainline
@@ -87,8 +96,8 @@
 	2015-02-11  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/64813
-	 * cgraphunit.c (cgraph_node::expand_thunk): Do not create a return
-	 value for call to a function that is noreturn.
+	* cgraphunit.c (cgraph_node::expand_thunk): Do not create a return
+	value for call to a function that is noreturn.
 
 2015-03-23  Yvan Roux  <yvan.roux@linaro.org>
 
@@ -1254,7 +1263,7 @@
 	Backport from mainline.
 	2014-11-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        * config/arm/t-aprofile (MULTILIB_MATCHES): New entry for
+	* config/arm/t-aprofile (MULTILIB_MATCHES): New entry for
 	-march=armv8-a+crc.
 
 2014-11-26  Richard Biener  <rguenther@suse.de>
