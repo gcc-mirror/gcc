@@ -1,3 +1,11 @@
+2015-03-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/65569
+	* config/rs6000/rs6000.md (extenddftf2_fprs): On VSX systems use
+	XXLXOR to create 0.0.  On pre-VSX systems make sure the constant
+	0.0 is correctly setup.
+	(extenddftf2_internal): Likewise.
+
 2015-03-25  Sebastian Pop  <s.pop@samsung.com>
 
 	PR tree-optimization/65177
