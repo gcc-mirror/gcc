@@ -124,6 +124,10 @@ DEFCIFCODE(USES_COMDAT_LOCAL, CIF_FINAL_ERROR,
 DEFCIFCODE(ATTRIBUTE_MISMATCH, CIF_FINAL_ERROR,
 	   N_("function attribute mismatch"))
 
+/* We can't inline because of mismatched caller/callee attributes.  */
+DEFCIFCODE(CILK_SPAWN, CIF_FINAL_ERROR,
+	   N_("caller function contains cilk spawn"))
+
 /* We proved that the call is unreachable.  */
 DEFCIFCODE(UNREACHABLE, CIF_FINAL_ERROR,
 	   N_("unreachable"))
