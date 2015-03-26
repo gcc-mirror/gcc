@@ -1,3 +1,7 @@
+2015-03-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Deref>: New case.
+
 2015-03-24  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch3.adb: Minor typo fix (missing paren).
