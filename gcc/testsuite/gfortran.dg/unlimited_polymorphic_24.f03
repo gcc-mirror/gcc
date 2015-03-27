@@ -1,9 +1,11 @@
 ! { dg-do run }
 !
+! Copyright 2011 STMicroelectronics
+!
 ! Test case for unlimited polymorphism that is derived from the article
-! by Mark Leair, in the 'PGI Insider':
+! by Mark Leair, in the 'PGInsider':
 ! https://www.pgroup.com/lit/articles/insider/v3n2a2.htm
-! Note that 'getValue' has been removed from the generic 'add' becuse
+! Note that 'addValue' has been removed from the generic 'add' because
 ! gfortran asserts that this is ambiguous. See
 ! https://gcc.gnu.org/ml/fortran/2015-03/msg00002.html for a discussion.
 !
@@ -213,3 +215,4 @@ program main
   end do
 end program main
 
+! { dg-final { cleanup-modules "list_mod link_mod" } }

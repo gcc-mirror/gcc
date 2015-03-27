@@ -1,3 +1,8 @@
+2015-03-27  Andre Vehreschild  <vehre@gmx.de>
+
+	* gfortran.dg/unlimited_polymorphic_24.f03: Added copyright
+	statement and cleanup. Fixed typos.
+
 2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/65595
