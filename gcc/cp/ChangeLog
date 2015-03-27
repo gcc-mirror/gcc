@@ -1,3 +1,11 @@
+2015-03-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR c/65586
+	* parser.c (cp_parser_omp_for, cp_parser_omp_parallel,
+	cp_parser_omp_distribute, cp_parser_omp_teams, cp_parser_omp_target,
+	cp_parser_omp_declare): Don't show error for skipped omp pragmas with
+	-fopenmp-simd.
+
 2015-03-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/65556

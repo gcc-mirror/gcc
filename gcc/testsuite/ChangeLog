@@ -1,3 +1,9 @@
+2015-03-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR c/65586
+	* g++.dg/gomp/openmp-simd-3.C: New.
+	* gcc.dg/gomp/openmp-simd-3.c: New.
+
 2015-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/65248
