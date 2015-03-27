@@ -775,7 +775,7 @@
 		       UNSPEC_MISALIGNED_ACCESS))]
   "TARGET_INSNS_64"
 {
-  if (memory_operand (operands[0], <MODE>mode))
+  if (MEM_P (operands[0]))
     {
       emit_insn (gen_movmisalign<mode>_store (operands[0], operands[1]));
       DONE;
