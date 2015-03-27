@@ -964,32 +964,32 @@ C ObjC C++ ObjC++
 Where shorter, use canonicalized paths to systems headers.
 
 fcheck-pointer-bounds
-Common Report Var(flag_check_pointer_bounds)
+C ObjC C++ ObjC++ LTO Report Var(flag_check_pointer_bounds)
 Add Pointer Bounds Checker instrumentation.  fchkp-* flags are used to
 control instrumentation.  Currently available for C, C++ and ObjC.
 
 fchkp-check-incomplete-type
-C ObjC C++ ObjC++ Report Var(flag_chkp_incomplete_type) Init(1)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_incomplete_type) Init(1)
 Generate pointer bounds checks for variables with incomplete type
 
 fchkp-zero-input-bounds-for-main
-C ObjC C++ ObjC++ Report Var(flag_chkp_zero_input_bounds_for_main) Init(0)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_zero_input_bounds_for_main) Init(0)
 Use zero bounds for all incoming arguments in 'main' function.  It helps when
 instrumented binaries are used with legacy libs.
 
 fchkp-first-field-has-own-bounds
-C ObjC C++ ObjC++ RejectNegative Report Var(flag_chkp_first_field_has_own_bounds)
+C ObjC C++ ObjC++ LTO RejectNegative Report Var(flag_chkp_first_field_has_own_bounds)
 Forces Pointer Bounds Checker to use narrowed bounds for address of the first
 field in the structure.  By default pointer to the first field has the same
 bounds as pointer to the whole structure.
 
 fchkp-narrow-bounds
-C ObjC C++ ObjC++ Report Var(flag_chkp_narrow_bounds) Init(1)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_narrow_bounds) Init(1)
 Control how Pointer Bounds Checker handle pointers to object fields.  When
 narrowing is on, field bounds are used.  Otherwise full object bounds are used.
 
 fchkp-narrow-to-innermost-array
-C ObjC C++ ObjC++ RejectNegative Report Var(flag_chkp_narrow_to_innermost_arrray)
+C ObjC C++ ObjC++ LTO RejectNegative Report Var(flag_chkp_narrow_to_innermost_arrray)
 Forces Pointer Bounds Checker to use bounds of the innermost arrays in case of
 nested static arryas access.  By default outermost array is used.
 
@@ -1007,17 +1007,17 @@ C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_nochk_string_functions) Init(0)
 Allow to use *_nochk versions of string functions by Pointer Bounds Checker.
 
 fchkp-use-static-bounds
-C ObjC C++ ObjC++ Report Var(flag_chkp_use_static_bounds) Init(1)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_static_bounds) Init(1)
 Use statically initialized variable for vars bounds instead of
 generating them each time it is required.
 
 fchkp-use-static-const-bounds
-C ObjC C++ ObjC++ Report Var(flag_chkp_use_static_const_bounds) Init(-1)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_use_static_const_bounds) Init(-1)
 Use statically initialized variable for constant bounds instead of
 generating them each time it is required.
 
 fchkp-treat-zero-dynamic-size-as-infinite
-C ObjC C++ ObjC++ Report Var(flag_chkp_zero_dynamic_size_as_infinite) Init(0)
+C ObjC C++ ObjC++ LTO Report Var(flag_chkp_zero_dynamic_size_as_infinite) Init(0)
 With this option zero size obtained dynamically for objects with
 incomplete type will be treated as infinite.
 
