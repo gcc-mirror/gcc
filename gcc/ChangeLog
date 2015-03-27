@@ -1,5 +1,37 @@
 2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR lto/65536
+	* lto-streamer.h (class lto_location_cache): New.
+	(struct data_in): Add location_cache.
+	(lto_input_location): Update prototype.
+	(stream_input_location_now): New.
+	* streamer-hooks.h (struct streamer_hooks): Make input_location to take
+	pointer to location.
+	(stream_input_location): Update.
+	* ipa-devirt.c: Include streamer-hooks.h and lto-streamer.h
+	(warn_odr): Apply location cache before warning.
+	(lto_input_location): Update prototype.
+	* gimple-streamer-in.c (input_phi, input_gimple_stmt):
+	Use stream_input_location_now.
+	* lto-streamer-in.c (lto_location_cache::current_cache): New static
+	variable.
+	(lto_location_cache::cmp_loc): New function.
+	(lto_location_cache::apply_location_cache): New function.
+	(lto_location_cache::accept_location_cache): New function.
+	(lto_location_cache::revert_location_cache): New function.
+	(lto_location_cache::input_location): New function.
+	(lto_input_location): Do location caching.
+	(stream_input_location_now): New function.
+	(input_eh_region, input_struct_function_base): Use
+	stream_input_location_now.
+	(lto_data_in_create): use new.
+	(lto_data_in_delete): Use delete.
+	* tree-streamer-in.c (unpack_ts_block_value_fields,
+	unpack_ts_omp_clause_value_fields, streamer_read_tree_bitfields,
+	lto_input_ts_exp_tree_pointers): Update for cached location api.
+
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/65076
 	* passes.def: Add pass_nothrow.
 	* ipa-pure-const.c: (pass_data_nothrow): New.
