@@ -250,7 +250,7 @@ gsi_next_nondebug (gimple_stmt_iterator *i)
   while (!gsi_end_p (*i) && is_gimple_debug (gsi_stmt (*i)));
 }
 
-/* Advance the iterator to the next non-debug gimple statement.  */
+/* Advance the iterator to the previous non-debug gimple statement.  */
 
 static inline void
 gsi_prev_nondebug (gimple_stmt_iterator *i)
