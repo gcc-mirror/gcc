@@ -1,3 +1,9 @@
+2015-03-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65556
+	* semantics.c (finish_switch_cond): If the unlowered type is not an
+	enum, use the type of the condition.
+
 2015-03-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65509
