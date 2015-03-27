@@ -1,5 +1,9 @@
 2015-03-27  Marek Polacek  <polacek@redhat.com>
 
+	* gimple-iterator.h (gsi_prev_nondebug): Fix typo.
+
+2015-03-27  Marek Polacek  <polacek@redhat.com>
+
 	PR sanitizer/65583
 	* ubsan.c (ubsan_create_edge): New function.
 	(instrument_bool_enum_load): Call it.
