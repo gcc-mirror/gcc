@@ -1,3 +1,9 @@
+2015-03-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/65407
+	* ira-costs.c (record_reg_classes): Process all constraint string
+	containing 0-9.
+
 2015-03-27  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* config/c6x/c6x.md (movmisalign<mode>): Use MEM_P, not
