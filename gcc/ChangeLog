@@ -1,5 +1,13 @@
 2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline-analysis.c (redirect_to_unreachable): Be prepared for
+	edge to change by speculation resolution or redirection.
+	(edge_set_predicate): Likewise.
+	(inline_summary_t::duplicate): Likewise.
+	(remap_edge_summaries): Likewise.
+
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline.c (check_maybe_up, check_maybe_down, check_match):
 	New macros.
 	(can_inline_edge_p): Relax option matching for always inline functions.

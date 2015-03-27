@@ -1,3 +1,7 @@
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.c-torture/compile/20150327.c: New testcase.
+
 2015-03-26  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/65555

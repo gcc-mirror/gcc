@@ -762,20 +762,20 @@ account_size_time (struct inline_summary *summary, int size, int time,
 
 /* We proved E to be unreachable, redirect it to __bultin_unreachable.  */
 
-static void
+static struct cgraph_edge *
 redirect_to_unreachable (struct cgraph_edge *e)
 {
   struct cgraph_node *callee = !e->inline_failed ? e->callee : NULL;
-  struct inline_edge_summary *es = inline_edge_summary (e);
 
   if (e->speculative)
-    e->resolve_speculation (builtin_decl_implicit (BUILT_IN_UNREACHABLE));
-  if (!e->callee)
+    e = e->resolve_speculation (builtin_decl_implicit (BUILT_IN_UNREACHABLE));
+  else if (!e->callee)
     e->make_direct (cgraph_node::get_create
 		      (builtin_decl_implicit (BUILT_IN_UNREACHABLE)));
   else
     e->redirect_callee (cgraph_node::get_create
 			(builtin_decl_implicit (BUILT_IN_UNREACHABLE)));
+  struct inline_edge_summary *es = inline_edge_summary (e);
   e->inline_failed = CIF_UNREACHABLE;
   e->frequency = 0;
   e->count = 0;
@@ -783,6 +783,7 @@ redirect_to_unreachable (struct cgraph_edge *e)
   es->call_stmt_time = 0;
   if (callee)
     callee->remove_symbol_and_inline_clones ();
+  return e;
 }
 
 /* Set predicate for edge E.  */
@@ -790,12 +791,12 @@ redirect_to_unreachable (struct cgraph_edge *e)
 static void
 edge_set_predicate (struct cgraph_edge *e, struct predicate *predicate)
 {
-  struct inline_edge_summary *es = inline_edge_summary (e);
-
   /* If the edge is determined to be never executed, redirect it
      to BUILTIN_UNREACHABLE to save inliner from inlining into it.  */
   if (predicate && false_predicate_p (predicate))
-    redirect_to_unreachable (e);
+    e = redirect_to_unreachable (e);
+
+  struct inline_edge_summary *es = inline_edge_summary (e);
   if (predicate && !true_predicate_p (predicate))
     {
       if (!es->predicate)
@@ -1184,7 +1185,7 @@ inline_summary_t::duplicate (cgraph_node *src,
       size_time_entry *e;
       int optimized_out_size = 0;
       bool inlined_to_p = false;
-      struct cgraph_edge *edge;
+      struct cgraph_edge *edge, *next;
 
       info->entry = 0;
       known_vals.safe_grow_cleared (count);
@@ -1229,10 +1230,11 @@ inline_summary_t::duplicate (cgraph_node *src,
 
       /* Remap edge predicates with the same simplification as above.
          Also copy constantness arrays.   */
-      for (edge = dst->callees; edge; edge = edge->next_callee)
+      for (edge = dst->callees; edge; edge = next)
 	{
 	  struct predicate new_predicate;
 	  struct inline_edge_summary *es = inline_edge_summary (edge);
+	  next = edge->next_callee;
 
 	  if (!edge->inline_failed)
 	    inlined_to_p = true;
@@ -1249,10 +1251,11 @@ inline_summary_t::duplicate (cgraph_node *src,
 
       /* Remap indirect edge predicates with the same simplificaiton as above. 
          Also copy constantness arrays.   */
-      for (edge = dst->indirect_calls; edge; edge = edge->next_callee)
+      for (edge = dst->indirect_calls; edge; edge = next)
 	{
 	  struct predicate new_predicate;
 	  struct inline_edge_summary *es = inline_edge_summary (edge);
+	  next = edge->next_callee;
 
 	  gcc_checking_assert (edge->inline_failed);
 	  if (!es->predicate)
@@ -3484,11 +3487,12 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
 		      clause_t possible_truths,
 		      struct predicate *toplev_predicate)
 {
-  struct cgraph_edge *e;
-  for (e = node->callees; e; e = e->next_callee)
+  struct cgraph_edge *e, *next;
+  for (e = node->callees; e; e = next)
     {
       struct inline_edge_summary *es = inline_edge_summary (e);
       struct predicate p;
+      next = e->next_callee;
 
       if (e->inline_failed)
 	{
@@ -3509,10 +3513,11 @@ remap_edge_summaries (struct cgraph_edge *inlined_edge,
 			      operand_map, offset_map, possible_truths,
 			      toplev_predicate);
     }
-  for (e = node->indirect_calls; e; e = e->next_callee)
+  for (e = node->indirect_calls; e; e = next)
     {
       struct inline_edge_summary *es = inline_edge_summary (e);
       struct predicate p;
+      next = e->next_callee;
 
       remap_edge_change_prob (inlined_edge, e);
       if (es->predicate)
