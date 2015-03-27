@@ -1,3 +1,8 @@
+2015-03-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59329
+	* g++.dg/cpp1y/constexpr-assert1.C: New.
+
 2015-03-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/65556
