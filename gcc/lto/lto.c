@@ -1734,10 +1734,11 @@ cmp_tree (const void *p1_, const void *p2_)
    that was successful, otherwise return false.  */
 
 static bool
-unify_scc (struct streamer_tree_cache_d *cache, unsigned from,
+unify_scc (struct data_in *data_in, unsigned from,
 	   unsigned len, unsigned scc_entry_len, hashval_t scc_hash)
 {
   bool unified_p = false;
+  struct streamer_tree_cache_d *cache = data_in->reader_cache;
   tree_scc *scc
     = (tree_scc *) alloca (sizeof (tree_scc) + (len - 1) * sizeof (tree));
   scc->next = NULL;
@@ -1827,6 +1828,7 @@ unify_scc (struct streamer_tree_cache_d *cache, unsigned from,
 	    }
 
 	  /* Free the tree nodes from the read SCC.  */
+	  data_in->location_cache.revert_location_cache ();
 	  for (unsigned i = 0; i < len; ++i)
 	    {
 	      enum tree_code code;
@@ -1920,9 +1922,13 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 
 	  /* Try to unify the SCC with already existing ones.  */
 	  if (!flag_ltrans
-	      && unify_scc (data_in->reader_cache, from,
+	      && unify_scc (data_in, from,
 			    len, scc_entry_len, scc_hash))
 	    continue;
+
+	  /* Tree merging failed, mark entries in location cache as
+	     permanent.  */
+	  data_in->location_cache.accept_location_cache ();
 
 	  bool seen_type = false;
 	  for (unsigned i = 0; i < len; ++i)
@@ -1953,7 +1959,13 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 	      /* Register TYPE_DECLs with the debuginfo machinery.  */
 	      if (!flag_wpa
 		  && TREE_CODE (t) == TYPE_DECL)
-		debug_hooks->type_decl (t, !DECL_FILE_SCOPE_P (t));
+		{
+		  /* Dwarf2out needs location information.
+		     TODO: Moving this out of the streamer loop may noticealy
+		     improve ltrans linemap memory use.  */
+		  data_in->location_cache.apply_location_cache ();
+		  debug_hooks->type_decl (t, !DECL_FILE_SCOPE_P (t));
+		}
 	      if (!flag_ltrans)
 		{
 		  /* Register variables and functions with the
@@ -1979,6 +1991,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 	  gcc_assert (t && data_in->reader_cache->nodes.length () == from);
 	}
     }
+  data_in->location_cache.apply_location_cache ();
 
   /* Read in lto_in_decl_state objects.  */
   data_ptr = (const uint32_t *) ((const char*) data + decl_offset); 

@@ -87,7 +87,9 @@ input_phi (struct lto_input_block *ib, basic_block bb, struct data_in *data_in,
       tree def = stream_read_tree (ib, data_in);
       int src_index = streamer_read_uhwi (ib);
       bitpack_d bp = streamer_read_bitpack (ib);
-      location_t arg_loc = stream_input_location (&bp, data_in);
+      /* Do not cache a location - we do not have API to get pointer to the
+	 location in PHI statement and we may trigger reallocation.  */
+      location_t arg_loc = stream_input_location_now (&bp, data_in);
       basic_block sbb = BASIC_BLOCK_FOR_FN (fn, src_index);
 
       edge e = NULL;
@@ -134,8 +136,9 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
   has_hist = bp_unpack_value (&bp, 1);
   stmt->subcode = bp_unpack_var_len_unsigned (&bp);
 
-  /* Read location information.  */
-  gimple_set_location (stmt, stream_input_location (&bp, data_in));
+  /* Read location information.  Caching here makes no sense until streamer
+     cache can handle the following gimple_set_block.  */
+  gimple_set_location (stmt, stream_input_location_now (&bp, data_in));
 
   /* Read lexical block reference.  */
   gimple_set_block (stmt, stream_read_tree (ib, data_in));

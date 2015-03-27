@@ -1,3 +1,11 @@
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/65536
+	* lto.c (unify_scc): Revert location cache when unification
+	suceeded.
+	(lto_read_decls): Accept location cache after sucess;
+	apply location cache before calling debug hooks.
+
 2015-03-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (read_cgraph_and_symbols): Do not do merging

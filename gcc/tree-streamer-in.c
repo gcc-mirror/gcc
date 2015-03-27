@@ -411,7 +411,7 @@ unpack_ts_block_value_fields (struct data_in *data_in,
 {
   BLOCK_ABSTRACT (expr) = (unsigned) bp_unpack_value (bp, 1);
   /* BLOCK_NUMBER is recomputed.  */
-  BLOCK_SOURCE_LOCATION (expr) = stream_input_location (bp, data_in);
+  stream_input_location (&BLOCK_SOURCE_LOCATION (expr), bp, data_in);
 }
 
 /* Unpack all the non-pointer fields of the TS_TRANSLATION_UNIT_DECL
@@ -433,7 +433,7 @@ static void
 unpack_ts_omp_clause_value_fields (struct data_in *data_in,
 				   struct bitpack_d *bp, tree expr)
 {
-  OMP_CLAUSE_LOCATION (expr) = stream_input_location (bp, data_in);
+  stream_input_location (&OMP_CLAUSE_LOCATION (expr), bp, data_in);
   switch (OMP_CLAUSE_CODE (expr))
     {
     case OMP_CLAUSE_DEFAULT:
@@ -503,7 +503,7 @@ streamer_read_tree_bitfields (struct lto_input_block *ib,
     unpack_ts_fixed_cst_value_fields (&bp, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
-    DECL_SOURCE_LOCATION (expr) = stream_input_location (&bp, data_in);
+    stream_input_location (&DECL_SOURCE_LOCATION (expr), &bp, data_in);
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
     unpack_ts_decl_common_value_fields (&bp, expr);
@@ -522,7 +522,7 @@ streamer_read_tree_bitfields (struct lto_input_block *ib,
 
   if (CODE_CONTAINS_STRUCT (code, TS_EXP))
     {
-      SET_EXPR_LOCATION (expr, stream_input_location (&bp, data_in));
+      stream_input_location (&EXPR_CHECK (expr)->exp.locus, &bp, data_in);
       if (code == MEM_REF
 	  || code == TARGET_MEM_REF)
 	{
@@ -905,11 +905,20 @@ lto_input_ts_exp_tree_pointers (struct lto_input_block *ib,
 			        struct data_in *data_in, tree expr)
 {
   int i;
+  tree block;
 
   for (i = 0; i < TREE_OPERAND_LENGTH (expr); i++)
     TREE_OPERAND (expr, i) = stream_read_tree (ib, data_in);
 
-  TREE_SET_BLOCK (expr, stream_read_tree (ib, data_in));
+  block = stream_read_tree (ib, data_in);
+
+  /* TODO: Block is stored in the locus information.  It may make more sense to
+     to make it go via the location cache.  */
+  if (block)
+    {
+      data_in->location_cache.apply_location_cache ();
+      TREE_SET_BLOCK (expr, block);
+    }
 }
 
 
