@@ -1,5 +1,11 @@
 2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR target/65531
+	* symtab.c (symtab_node::verify_symtab_nodes): Fix verification of
+	comdat groups.
+
+2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/65600
 	* cgraph.c (cgraph_update_edges_for_call_stmt_node): Fix the case
 	of optimized out indirect call.
