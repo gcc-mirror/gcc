@@ -686,6 +686,21 @@ is_ubsan_builtin_p (tree t)
 		     "__builtin___ubsan_", 18) == 0;
 }
 
+/* Create a callgraph edge for statement STMT.  */
+
+static void
+ubsan_create_edge (gimple stmt)
+{
+  gcall *call_stmt = dyn_cast <gcall *> (stmt);
+  basic_block bb = gimple_bb (stmt);
+  int freq = compute_call_stmt_bb_frequency (current_function_decl, bb);
+  cgraph_node *node = cgraph_node::get (current_function_decl);
+  tree decl = gimple_call_fndecl (call_stmt);
+  if (decl)
+    node->create_edge (cgraph_node::get_create (decl), call_stmt, bb->count,
+		       freq);
+}
+
 /* Expand the UBSAN_BOUNDS special builtin function.  */
 
 bool
@@ -1483,6 +1498,7 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
     }
   gimple_set_location (g, loc);
   gsi_insert_before (&gsi2, g, GSI_SAME_STMT);
+  ubsan_create_edge (g);
   *gsi = gsi_for_stmt (stmt);
 }
 
@@ -1670,6 +1686,7 @@ instrument_nonnull_arg (gimple_stmt_iterator *gsi)
 	    }
 	  gimple_set_location (g, loc[0]);
 	  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	  ubsan_create_edge (g);
 	}
       *gsi = gsi_for_stmt (stmt);
     }
@@ -1722,6 +1739,7 @@ instrument_nonnull_return (gimple_stmt_iterator *gsi)
 	}
       gimple_set_location (g, loc[0]);
       gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      ubsan_create_edge (g);
       *gsi = gsi_for_stmt (stmt);
     }
   flag_delete_null_pointer_checks = save_flag_delete_null_pointer_checks;
@@ -1818,6 +1836,7 @@ instrument_object_size (gimple_stmt_iterator *gsi, bool is_lhs)
 
   tree sizet;
   tree base_addr = base;
+  gimple bos_stmt = NULL;
   if (decl_p)
     base_addr = build1 (ADDR_EXPR,
 			build_pointer_type (TREE_TYPE (base)), base);
@@ -1834,6 +1853,17 @@ instrument_object_size (gimple_stmt_iterator *gsi, bool is_lhs)
 				   integer_zero_node);
       sizet = force_gimple_operand_gsi (gsi, sizet, false, NULL_TREE, true,
 					GSI_SAME_STMT);
+      /* If the call above didn't end up being an integer constant, go one
+	 statement back and get the __builtin_object_size stmt.  Save it,
+	 we might need it later.  */
+      if (SSA_VAR_P (sizet))
+	{
+	  gsi_prev (gsi);
+	  bos_stmt = gsi_stmt (*gsi);
+
+	  /* Move on to where we were.  */
+	  gsi_next (gsi);
+	}
     }
   else
     return;
@@ -1870,7 +1900,10 @@ instrument_object_size (gimple_stmt_iterator *gsi, bool is_lhs)
 	}
     }
 
-  /* Nope.  Emit the check.  */
+  if (bos_stmt && gimple_call_builtin_p (bos_stmt, BUILT_IN_OBJECT_SIZE))
+    ubsan_create_edge (bos_stmt);
+
+  /* We have to emit the check.  */
   t = force_gimple_operand_gsi (gsi, t, true, NULL_TREE, true,
 				GSI_SAME_STMT);
   ptr = force_gimple_operand_gsi (gsi, ptr, true, NULL_TREE, true,

@@ -1,3 +1,12 @@
+2015-03-27  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/65583
+	* ubsan.c (ubsan_create_edge): New function.
+	(instrument_bool_enum_load): Call it.
+	(instrument_nonnull_arg): Likewise.
+	(instrument_nonnull_return): Likewise.
+	(instrument_object_size): Likewise.
+
 2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-streamer.h (class lto_location_cache): Turn loc_cache into
