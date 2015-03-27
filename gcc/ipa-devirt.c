@@ -166,6 +166,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "stor-layout.h"
 #include "intl.h"
+#include "streamer-hooks.h"
+#include "lto-streamer.h"
 
 /* Hash based set of pairs of types.  */
 typedef struct
@@ -934,6 +936,10 @@ warn_odr (tree t1, tree t2, tree st1, tree st2,
 
   if (!warn || !TYPE_NAME(t1))
     return;
+
+  /* ODR warnings are output druing LTO streaming; we must apply location
+     cache for potential warnings to be output correctly.  */
+  lto_location_cache::current_cache->apply_location_cache ();
 
   if (!warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (t1)), OPT_Wodr,
 		   "type %qT violates one definition rule",
