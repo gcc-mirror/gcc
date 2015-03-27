@@ -1,3 +1,16 @@
+2015-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/65248
+	* output.h (default_binds_local_p_2): New.
+	* varasm.c (default_binds_local_p_2): Renamed to ...
+	(default_binds_local_p_3): This.  Don't return true on protected
+	data symbol if protected data may be external.
+	(default_binds_local_p): Use default_binds_local_p_3.
+	(default_binds_local_p_1): Likewise.
+	(default_binds_local_p_2): New.
+	* config/i386/i386.c (TARGET_BINDS_LOCAL_P): Set to
+	default_binds_local_p_2 if TARGET_MACHO is undefined.
+
 2015-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/65593
