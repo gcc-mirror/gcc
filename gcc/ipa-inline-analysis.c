@@ -766,15 +766,15 @@ static struct cgraph_edge *
 redirect_to_unreachable (struct cgraph_edge *e)
 {
   struct cgraph_node *callee = !e->inline_failed ? e->callee : NULL;
+  struct cgraph_node *target = cgraph_node::get_create
+		      (builtin_decl_implicit (BUILT_IN_UNREACHABLE));
 
   if (e->speculative)
-    e = e->resolve_speculation (builtin_decl_implicit (BUILT_IN_UNREACHABLE));
+    e = e->resolve_speculation (target->decl);
   else if (!e->callee)
-    e->make_direct (cgraph_node::get_create
-		      (builtin_decl_implicit (BUILT_IN_UNREACHABLE)));
+    e->make_direct (target);
   else
-    e->redirect_callee (cgraph_node::get_create
-			(builtin_decl_implicit (BUILT_IN_UNREACHABLE)));
+    e->redirect_callee (target);
   struct inline_edge_summary *es = inline_edge_summary (e);
   e->inline_failed = CIF_UNREACHABLE;
   e->frequency = 0;

@@ -1,3 +1,8 @@
+2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65600
+	* g++.dg/torture/pr65600.C: New testcase.
+
 2015-03-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/65407
