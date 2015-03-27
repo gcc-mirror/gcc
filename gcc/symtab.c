@@ -1130,15 +1130,20 @@ symtab_node::verify_symtab_nodes (void)
 						  &existed);
 	  if (!existed)
 	    *entry = node;
-	  else
-	    for (s = (*entry)->same_comdat_group; s != NULL && s != node; s = s->same_comdat_group)
+	  else if (!DECL_EXTERNAL (node->decl))
+	    {
+	      for (s = (*entry)->same_comdat_group; s != NULL && s != node;
+		   s = s->same_comdat_group)
+		;
 	      if (!s || s == *entry)
 		{
-		  error ("Two symbols with same comdat_group are not linked by the same_comdat_group list.");
+		  error ("Two symbols with same comdat_group are not linked by "
+			 "the same_comdat_group list.");
 		  (*entry)->debug ();
 		  node->debug ();
 		  internal_error ("symtab_node::verify failed");
 		}
+	    }
 	}
     }
 }
