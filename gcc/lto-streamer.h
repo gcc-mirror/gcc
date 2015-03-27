@@ -354,7 +354,7 @@ private:
 
   /* The location cache.  */
 
-  vec<cached_location> loc_cache;
+  auto_vec<cached_location> loc_cache;
 
   /* Accepted entries are ones used by trees that are known to be not unified
      by tree merging.  */
