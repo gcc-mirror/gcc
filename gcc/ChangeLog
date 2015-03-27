@@ -2203,12 +2203,6 @@
 	* config/arm/arm.md (arm_comparison_operator): Disabled if not allow
 	volatile memory access in IT block
 
-2015-02-25  Uros Bizjak  <ubizjak@gmail.com>
-
-	PR target/47230
-	* doc/install.texi (Specific, alpha*-*-*): Document that binutils 2.25
-	or newer are required.
-
 2015-02-25  Kai Tietz  <ktietz@redhat.com>
 
 	PR tree-optimization/61917
