@@ -1,5 +1,15 @@
 2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/65076
+	* passes.def: Add pass_nothrow.
+	* ipa-pure-const.c: (pass_data_nothrow): New.
+	(pass_nothrow): New.
+	(pass_nothrow::execute): New.
+	(make_pass_nothrow): New.
+	* tree-pass.h (make_pass_nothrow): Declare.
+
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-inline-analysis.c (redirect_to_unreachable): Be prepared for
 	edge to change by speculation resolution or redirection.
 	(edge_set_predicate): Likewise.
