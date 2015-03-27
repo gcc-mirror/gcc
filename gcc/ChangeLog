@@ -1,3 +1,11 @@
+2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65588
+	* symtab.c (symtab_node::get_partitioning_class): Register vars
+	are duplicated.
+	* varpool.c (symbol_table::output_variables) Do not assemble unefined
+	decls for non-symbols.
+
 2015-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/65248

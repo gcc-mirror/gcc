@@ -1689,6 +1689,8 @@ symtab_node::get_partitioning_class (void)
          objects that can not be duplicated across partitions.  */
       if (DECL_IN_CONSTANT_POOL (decl))
 	return SYMBOL_DUPLICATE;
+      if (DECL_HARD_REGISTER (decl))
+	return SYMBOL_DUPLICATE;
       gcc_checking_assert (vnode->definition);
     }
   /* Functions that are cloned may stay in callgraph even if they are unused.

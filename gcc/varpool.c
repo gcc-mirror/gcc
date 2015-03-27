@@ -737,7 +737,9 @@ symbol_table::output_variables (void)
   timevar_push (TV_VAROUT);
 
   FOR_EACH_VARIABLE (node)
-    if (!node->definition)
+    if (!node->definition
+	&& !DECL_HAS_VALUE_EXPR_P (node->decl)
+ 	&& !DECL_HARD_REGISTER (node->decl))
       assemble_undefined_decl (node->decl);
   FOR_EACH_DEFINED_VARIABLE (node)
     {
