@@ -589,7 +589,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 	  while (*p == '%' || *p == '=' || *p == '+' || *p == '&')
 	    p++;
 
-	  if (p[0] >= '0' && p[0] <= '0' + i && (p[1] == ',' || p[1] == 0))
+	  if (p[0] >= '0' && p[0] <= '0' + i)
 	    {
 	      /* Copy class and whether memory is allowed from the
 		 matching alternative.  Then perform any needed cost
@@ -754,14 +754,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		      && ! find_reg_note (insn, REG_DEAD, op))
 		    alt_cost += 2;
 
-		  /* This is in place of ordinary cost computation for
-		     this operand, so skip to the end of the
-		     alternative (should be just one character).  */
-		  while (*p && *p++ != ',')
-		    ;
-
-		  constraints[i] = p;
-		  continue;
+		  p++;
 		}
 	    }
 

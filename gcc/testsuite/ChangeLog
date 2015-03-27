@@ -1,3 +1,8 @@
+2015-03-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/65407
+	* gcc.target/i386/avx512f-kandnw-1.c: Add scanning kmovw.
+
 2015-03-27  Andre Vehreschild  <vehre@gmx.de>
 
 	* gfortran.dg/unlimited_polymorphic_24.f03: Added copyright
