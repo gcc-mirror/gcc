@@ -1,3 +1,9 @@
+2015-03-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65509
+	* decl.c (make_rtl_for_nonlocal_decl): Don't defer static
+	constants.
+
 2015-03-26  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	PR c++/65154
