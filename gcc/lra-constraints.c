@@ -144,6 +144,10 @@ static basic_block curr_bb;
 static lra_insn_recog_data_t curr_id;
 static struct lra_static_insn_data *curr_static_id;
 static enum machine_mode curr_operand_mode[MAX_RECOG_OPERANDS];
+/* Mode of the register substituted by its equivalence with VOIDmode
+   (e.g. constant) and whose subreg is given operand of the current
+   insn.  VOIDmode in all other cases.  */
+static machine_mode original_subreg_reg_mode[MAX_RECOG_OPERANDS];
 
 
 
@@ -1235,13 +1239,13 @@ static int valid_address_p (enum machine_mode mode, rtx addr, addr_space_t as);
 
 /* Make reloads for subreg in operand NOP with internal subreg mode
    REG_MODE, add new reloads for further processing.  Return true if
-   any reload was generated.  */
+   any change was done.  */
 static bool
 simplify_operand_subreg (int nop, enum machine_mode reg_mode)
 {
   int hard_regno;
   rtx before, after;
-  enum machine_mode mode;
+  enum machine_mode mode, innermode;
   rtx reg, new_reg;
   rtx operand = *curr_id->operand_loc[nop];
   enum reg_class regclass;
@@ -1254,6 +1258,7 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
 
   mode = GET_MODE (operand);
   reg = SUBREG_REG (operand);
+  innermode = GET_MODE (reg);
   type = curr_static_id->operand[nop].type;
   /* If we change address for paradoxical subreg of memory, the
      address might violate the necessary alignment or the access might
@@ -1272,7 +1277,7 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
       alter_subreg (curr_id->operand_loc[nop], false);
       subst = *curr_id->operand_loc[nop];
       lra_assert (MEM_P (subst));
-      if (! valid_address_p (GET_MODE (reg), XEXP (reg, 0),
+      if (! valid_address_p (innermode, XEXP (reg, 0),
 			     MEM_ADDR_SPACE (reg))
 	  || valid_address_p (GET_MODE (subst), XEXP (subst, 0),
 			      MEM_ADDR_SPACE (subst)))
@@ -1286,6 +1291,20 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
     {
       alter_subreg (curr_id->operand_loc[nop], false);
       return true;
+    }
+  else if (CONSTANT_P (reg))
+    {
+      /* Try to simplify subreg of constant.  It is usually result of
+	 equivalence substitution.  */
+      if (innermode == VOIDmode
+	  && (innermode = original_subreg_reg_mode[nop]) == VOIDmode)
+	innermode = curr_static_id->operand[nop].mode;
+      if ((new_reg = simplify_subreg (mode, reg, innermode,
+				      SUBREG_BYTE (operand))) != NULL_RTX)
+	{
+	  *curr_id->operand_loc[nop] = new_reg;
+	  return true;
+	}
     }
   /* Put constant into memory when we have mixed modes.  It generates
      a better code in most cases as it does not need a secondary
@@ -1306,9 +1325,9 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
        && (hard_regno = lra_get_regno_hard_regno (REGNO (reg))) >= 0
        /* Don't reload paradoxical subregs because we could be looping
 	  having repeatedly final regno out of hard regs range.  */
-       && (hard_regno_nregs[hard_regno][GET_MODE (reg)]
+       && (hard_regno_nregs[hard_regno][innermode]
 	   >= hard_regno_nregs[hard_regno][mode])
-       && simplify_subreg_regno (hard_regno, GET_MODE (reg),
+       && simplify_subreg_regno (hard_regno, innermode,
 				 SUBREG_BYTE (operand), mode) < 0
        /* Don't reload subreg for matching reload.  It is actually
 	  valid subreg in LRA.  */
@@ -1334,7 +1353,7 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
 	  bitmap_set_bit (&lra_subreg_reload_pseudos, REGNO (new_reg));
 
 	  insert_before = (type != OP_OUT
-			   || GET_MODE_SIZE (GET_MODE (reg)) > GET_MODE_SIZE (mode));
+			   || GET_MODE_SIZE (innermode) > GET_MODE_SIZE (mode));
 	  insert_after = (type != OP_IN);
 	  insert_move_for_subreg (insert_before ? &before : NULL,
 				  insert_after ? &after : NULL,
@@ -1377,7 +1396,7 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
   else if (REG_P (reg)
 	   && REGNO (reg) >= FIRST_PSEUDO_REGISTER
 	   && (hard_regno = lra_get_regno_hard_regno (REGNO (reg))) >= 0
-	   && (hard_regno_nregs[hard_regno][GET_MODE (reg)]
+	   && (hard_regno_nregs[hard_regno][innermode]
 	       < hard_regno_nregs[hard_regno][mode])
 	   && (regclass = lra_get_allocno_class (REGNO (reg)))
 	   && (type != OP_IN
@@ -1395,7 +1414,7 @@ simplify_operand_subreg (int nop, enum machine_mode reg_mode)
 	  bool insert_before, insert_after;
 
 	  PUT_MODE (new_reg, mode);
-          subreg = simplify_gen_subreg (GET_MODE (reg), new_reg, mode, 0);
+          subreg = simplify_gen_subreg (innermode, new_reg, mode, 0);
 	  bitmap_set_bit (&lra_subreg_reload_pseudos, REGNO (new_reg));
 
 	  insert_before = (type != OP_OUT);
@@ -3184,6 +3203,9 @@ swap_operands (int nop)
   enum machine_mode mode = curr_operand_mode[nop];
   curr_operand_mode[nop] = curr_operand_mode[nop + 1];
   curr_operand_mode[nop + 1] = mode;
+  mode = original_subreg_reg_mode[nop];
+  original_subreg_reg_mode[nop] = original_subreg_reg_mode[nop + 1];
+  original_subreg_reg_mode[nop + 1] = mode;
   rtx x = *curr_id->operand_loc[nop];
   *curr_id->operand_loc[nop] = *curr_id->operand_loc[nop + 1];
   *curr_id->operand_loc[nop + 1] = x;
@@ -3280,14 +3302,19 @@ curr_insn_transform (void)
       if (GET_CODE (old) == SUBREG)
 	old = SUBREG_REG (old);
       subst = get_equiv_with_elimination (old, curr_insn);
+      original_subreg_reg_mode[i] = VOIDmode;
       if (subst != old)
 	{
 	  subst = copy_rtx (subst);
 	  lra_assert (REG_P (old));
-	  if (GET_CODE (op) == SUBREG)
-	    SUBREG_REG (op) = subst;
-	  else
+	  if (GET_CODE (op) != SUBREG)
 	    *curr_id->operand_loc[i] = subst;
+	  else
+	    {
+	      SUBREG_REG (op) = subst;
+	      if (GET_MODE (subst) == VOIDmode)
+		original_subreg_reg_mode[i] = GET_MODE (old);
+	    }
 	  if (lra_dump_file != NULL)
 	    {
 	      fprintf (lra_dump_file,
