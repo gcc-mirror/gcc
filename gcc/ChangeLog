@@ -1,5 +1,10 @@
 2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
 
+	* lto-streamer.h (class lto_location_cache): Turn loc_cache into
+	auto_vec.
+
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR lto/65536
 	* lto-streamer.h (class lto_location_cache): New.
 	(struct data_in): Add location_cache.
