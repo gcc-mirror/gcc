@@ -1,3 +1,9 @@
+2015-03-27  Tom de Vries  <tom@codesourcery.com>
+
+	PR testsuite/65594
+	* testsuite/libgomp.graphite/force-parallel-6.c (M): Define.
+	(foo): Use M for non-inner loops to scale down test-case.
+
 2015-03-25  Kai Tietz  <ktietz@redhat.com>
 
 	PR libgomp/64972

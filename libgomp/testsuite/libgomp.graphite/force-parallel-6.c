@@ -1,4 +1,5 @@
 #define N 500
+#define M 50
 
 int X[2*N], Y[2*N], B[2*N];
 int A[2*N][2*N], C[2*N][2*N];
@@ -7,10 +8,10 @@ int foo(void)
 {
   int i, j, k;
 
-  for (i = 0; i < N; i++)
+  for (i = 0; i < M; i++)
     {
       X[i] = Y[i] + 10;
-      for (j = 0; j < N; j++)
+      for (j = 0; j < M; j++)
 	{
 	  B[j] = A[j][N];
 	  for (k = 0; k < N; k++)
