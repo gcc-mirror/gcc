@@ -1516,7 +1516,7 @@ cgraph_update_edges_for_call_stmt_node (cgraph_node *node,
       if (e)
 	{
 	  /* Keep calls marked as dead dead.  */
-	  if (new_call && e->callee
+	  if (new_stmt && is_gimple_call (new_stmt) && e->callee
 	      && DECL_BUILT_IN_CLASS (e->callee->decl) == BUILT_IN_NORMAL
 	      && DECL_FUNCTION_CODE (e->callee->decl) == BUILT_IN_UNREACHABLE)
 	    {
