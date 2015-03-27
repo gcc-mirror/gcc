@@ -1519,7 +1519,7 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn "real_jump"
-  [(unspec [(match_operand 0 "c6x_jump_operand" "a,b,s") (const_int 0)]
+  [(unspec [(match_operand 0 "c6x_jump_operand" "a,b,S3") (const_int 0)]
 	   UNSPEC_REAL_JUMP)]
   ""
 {

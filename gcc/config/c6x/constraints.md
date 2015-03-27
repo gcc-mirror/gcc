@@ -160,6 +160,11 @@ not C64X or higher).")
    Any SYMBOL_REF or LABEL_REF."
   (ior (match_code "symbol_ref") (match_code "label_ref")))
 
+(define_constraint "S3"
+  "Matches a symbolic integer constant, even if invalid for PIC."
+  (and (match_test "CONSTANT_P (op)")
+       (match_test "!CONST_SCALAR_INT_P (op)")))
+
 (define_constraint "Si"
   "@internal
    Any immediate value, unless it matches the S0 constraint."
