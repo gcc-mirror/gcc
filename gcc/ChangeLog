@@ -1,5 +1,8 @@
 2015-03-27  Bernd Schmidt  <bernds@codesourcery.com>
 
+	* config/c6x/c6x.md (movmisalign<mode>): Use MEM_P, not
+	memory_operand.
+
 	PR target/65052
         * config/c6x/constraints.md (S3): New constraint.
         * config/c6x/c6x.md (real_jump): Use it.
