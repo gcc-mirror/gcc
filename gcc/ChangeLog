@@ -1,3 +1,10 @@
+2015-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65593
+	* config/i386/i386.c (legitimize_pic_address): If base
+	is SYMBOL_REF or LABEL_REF using %rip addressing, force
+	it to reg to avoid PLUS of SYMBOL_REF/LABEL_REF and register.
+
 2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR target/65531
