@@ -1,3 +1,8 @@
+2015-03-28 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/65596
+	* gfortran.dg/namelist_86.f90: New test.
+
 2015-03-28  Andre Vehreschild  <vehre@gmx.de>
 
 	* gfortran.dg/unlimited_polymorphic_24.f03: Fixing copyright
