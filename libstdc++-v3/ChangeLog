@@ -1,3 +1,9 @@
+2015-03-28  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/65420
+	* include/bits/regex_constants.h: Use constexpr variables for flags.
+	* testsuite/28_regex/constants/constexpr.cc: New testcase.
+
 2015-03-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/65499
