@@ -1,3 +1,8 @@
+2015-03-28 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/65596
+	* gfortran.dg/namelist_86.f90: New test.
+
 2015-03-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Backport from mainline
