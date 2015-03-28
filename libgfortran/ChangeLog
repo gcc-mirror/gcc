@@ -1,3 +1,10 @@
+2015-03-28 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/65596
+	* io/transfer.c (data_transfer_init): If in namelist mode and
+	delimiter is not specified, set it to DELIM_QUOTE, independent
+	of -std.
+
 2015-03-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/60956
