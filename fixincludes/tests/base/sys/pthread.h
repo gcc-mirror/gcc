@@ -9,6 +9,11 @@
 
 
 
+#if defined( HPUX11_LWP_RWLOCK_VALID_CHECK )
+#define __LWP_RWLOCK_VALID              -29551
+#endif  /* HPUX11_LWP_RWLOCK_VALID_CHECK */
+
+
 #if defined( HPUX11_PTHREAD_CONST_CHECK )
 #define __POINTER_SET		((void *) 1L)
 #endif  /* HPUX11_PTHREAD_CONST_CHECK */

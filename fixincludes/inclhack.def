@@ -2074,6 +2074,19 @@ fix = {
 };
 
 /*
+ *  Fix hpux11 __LWP_RWLOCK_VALID define
+ */
+fix = {
+    hackname  = hpux11_lwp_rwlock_valid;
+    mach      = "*-hp-hpux11*";
+    files     = sys/pthread.h;
+    select    = "#define __LWP_RWLOCK_VALID[ \t]*0x8c91";
+    c_fix     = format;
+    c_fix_arg = "#define __LWP_RWLOCK_VALID              -29551";
+    test_text = "#define __LWP_RWLOCK_VALID 0x8c91";
+};
+
+/*
  * hpux sendfile()
  */
 fix = {
