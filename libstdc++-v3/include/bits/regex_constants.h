@@ -77,88 +77,97 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * elements @c ECMAScript, @c basic, @c extended, @c awk, @c grep, @c egrep
    * %set.
    */
-  enum syntax_option_type : unsigned int
-  {
-    /**
-     * Specifies that the matching of regular expressions against a character
-     * sequence shall be performed without regard to case.
-     */
-    icase      = 1 << _S_icase,
+  enum syntax_option_type : unsigned int { };
 
-    /**
-     * Specifies that when a regular expression is matched against a character
-     * container sequence, no sub-expression matches are to be stored in the
-     * supplied match_results structure.
-     */
-    nosubs     = 1 << _S_nosubs,
+  /**
+   * Specifies that the matching of regular expressions against a character
+   * sequence shall be performed without regard to case.
+   */
+  constexpr syntax_option_type icase =
+    static_cast<syntax_option_type>(1 << _S_icase);
 
-    /**
-     * Specifies that the regular expression engine should pay more attention to
-     * the speed with which regular expressions are matched, and less to the
-     * speed with which regular expression objects are constructed. Otherwise
-     * it has no detectable effect on the program output.
-     */
-    optimize   = 1 << _S_optimize,
+  /**
+   * Specifies that when a regular expression is matched against a character
+   * container sequence, no sub-expression matches are to be stored in the
+   * supplied match_results structure.
+   */
+  constexpr syntax_option_type nosubs =
+    static_cast<syntax_option_type>(1 << _S_nosubs);
 
-    /**
-     * Specifies that character ranges of the form [a-b] should be locale
-     * sensitive.
-     */
-    collate    = 1 << _S_collate,
+  /**
+   * Specifies that the regular expression engine should pay more attention to
+   * the speed with which regular expressions are matched, and less to the
+   * speed with which regular expression objects are constructed. Otherwise
+   * it has no detectable effect on the program output.
+   */
+  constexpr syntax_option_type optimize =
+    static_cast<syntax_option_type>(1 << _S_optimize);
 
-    /**
-     * Specifies that the grammar recognized by the regular expression engine is
-     * that used by ECMAScript in ECMA-262 [Ecma International, ECMAScript
-     * Language Specification, Standard Ecma-262, third edition, 1999], as
-     * modified in section [28.13].  This grammar is similar to that defined
-     * in the PERL scripting language but extended with elements found in the
-     * POSIX regular expression grammar.
-     */
-    ECMAScript = 1 << _S_ECMAScript,
+  /**
+   * Specifies that character ranges of the form [a-b] should be locale
+   * sensitive.
+   */
+  constexpr syntax_option_type collate =
+    static_cast<syntax_option_type>(1 << _S_collate);
 
-    /**
-     * Specifies that the grammar recognized by the regular expression engine is
-     * that used by POSIX basic regular expressions in IEEE Std 1003.1-2001,
-     * Portable Operating System Interface (POSIX), Base Definitions and
-     * Headers, Section 9, Regular Expressions [IEEE, Information Technology --
-     * Portable Operating System Interface (POSIX), IEEE Standard 1003.1-2001].
-     */
-    basic      = 1 << _S_basic,
+  /**
+   * Specifies that the grammar recognized by the regular expression engine is
+   * that used by ECMAScript in ECMA-262 [Ecma International, ECMAScript
+   * Language Specification, Standard Ecma-262, third edition, 1999], as
+   * modified in section [28.13].  This grammar is similar to that defined
+   * in the PERL scripting language but extended with elements found in the
+   * POSIX regular expression grammar.
+   */
+  constexpr syntax_option_type ECMAScript =
+    static_cast<syntax_option_type>(1 << _S_ECMAScript);
 
-    /**
-     * Specifies that the grammar recognized by the regular expression engine is
-     * that used by POSIX extended regular expressions in IEEE Std 1003.1-2001,
-     * Portable Operating System Interface (POSIX), Base Definitions and
-     * Headers, Section 9, Regular Expressions.
-     */
-    extended   = 1 << _S_extended,
+  /**
+   * Specifies that the grammar recognized by the regular expression engine is
+   * that used by POSIX basic regular expressions in IEEE Std 1003.1-2001,
+   * Portable Operating System Interface (POSIX), Base Definitions and
+   * Headers, Section 9, Regular Expressions [IEEE, Information Technology --
+   * Portable Operating System Interface (POSIX), IEEE Standard 1003.1-2001].
+   */
+  constexpr syntax_option_type basic =
+    static_cast<syntax_option_type>(1 << _S_basic);
 
-    /**
-     * Specifies that the grammar recognized by the regular expression engine is
-     * that used by POSIX utility awk in IEEE Std 1003.1-2001.  This option is
-     * identical to syntax_option_type extended, except that C-style escape
-     * sequences are supported.  These sequences are:
-     * \\\\, \\a, \\b, \\f, \\n, \\r, \\t , \\v, \\&apos,, &apos,,
-     * and \\ddd (where ddd is one, two, or three octal digits).
-     */
-    awk        = 1 << _S_awk,
+  /**
+   * Specifies that the grammar recognized by the regular expression engine is
+   * that used by POSIX extended regular expressions in IEEE Std 1003.1-2001,
+   * Portable Operating System Interface (POSIX), Base Definitions and
+   * Headers, Section 9, Regular Expressions.
+   */
+  constexpr syntax_option_type extended =
+    static_cast<syntax_option_type>(1 << _S_extended);
 
-    /**
-     * Specifies that the grammar recognized by the regular expression engine is
-     * that used by POSIX utility grep in IEEE Std 1003.1-2001.  This option is
-     * identical to syntax_option_type basic, except that newlines are treated
-     * as whitespace.
-     */
-    grep       = 1 << _S_grep,
+  /**
+   * Specifies that the grammar recognized by the regular expression engine is
+   * that used by POSIX utility awk in IEEE Std 1003.1-2001.  This option is
+   * identical to syntax_option_type extended, except that C-style escape
+   * sequences are supported.  These sequences are:
+   * \\\\, \\a, \\b, \\f, \\n, \\r, \\t , \\v, \\&apos,, &apos,,
+   * and \\ddd (where ddd is one, two, or three octal digits).
+   */
+  constexpr syntax_option_type awk =
+    static_cast<syntax_option_type>(1 << _S_awk);
 
-    /**
-     * Specifies that the grammar recognized by the regular expression engine is
-     * that used by POSIX utility grep when given the -E option in
-     * IEEE Std 1003.1-2001.  This option is identical to syntax_option_type
-     * extended, except that newlines are treated as whitespace.
-     */
-    egrep      = 1 << _S_egrep,
-  };
+  /**
+   * Specifies that the grammar recognized by the regular expression engine is
+   * that used by POSIX utility grep in IEEE Std 1003.1-2001.  This option is
+   * identical to syntax_option_type basic, except that newlines are treated
+   * as whitespace.
+   */
+  constexpr syntax_option_type grep =
+    static_cast<syntax_option_type>(1 << _S_grep);
+
+  /**
+   * Specifies that the grammar recognized by the regular expression engine is
+   * that used by POSIX utility grep when given the -E option in
+   * IEEE Std 1003.1-2001.  This option is identical to syntax_option_type
+   * extended, except that newlines are treated as whitespace.
+   */
+  constexpr syntax_option_type egrep =
+    static_cast<syntax_option_type>(1 << _S_egrep);
 
   constexpr inline syntax_option_type
   operator&(syntax_option_type __a, syntax_option_type __b)
@@ -233,111 +242,121 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * perform bitwise operations on these values and expect the right thing to
    * happen.
    */
-  enum match_flag_type : unsigned int
-  {
-    /**
-     * The default matching rules.
-     */
-    match_default     = 0,
+  enum match_flag_type : unsigned int { };
 
-    /**
-     * The first character in the sequence [first, last) is treated as though it
-     * is not at the beginning of a line, so the character (^) in the regular
-     * expression shall not match [first, first).
-     */
-    match_not_bol     = 1 << _S_not_bol,
+  /**
+   * The default matching rules.
+   */
+  constexpr match_flag_type match_default = static_cast<match_flag_type>(0);
 
-    /**
-     * The last character in the sequence [first, last) is treated as though it
-     * is not at the end of a line, so the character ($) in the regular
-     * expression shall not match [last, last).
-     */
-    match_not_eol     = 1 << _S_not_eol,
+  /**
+   * The first character in the sequence [first, last) is treated as though it
+   * is not at the beginning of a line, so the character (^) in the regular
+   * expression shall not match [first, first).
+   */
+  constexpr match_flag_type match_not_bol =
+    static_cast<match_flag_type>(1 << _S_not_bol);
 
-    /**
-     * The expression \\b is not matched against the sub-sequence
-     * [first,first).
-     */
-    match_not_bow     = 1 << _S_not_bow,
+  /**
+   * The last character in the sequence [first, last) is treated as though it
+   * is not at the end of a line, so the character ($) in the regular
+   * expression shall not match [last, last).
+   */
+  constexpr match_flag_type match_not_eol =
+    static_cast<match_flag_type>(1 << _S_not_eol);
 
-    /**
-     * The expression \\b should not be matched against the sub-sequence
-     * [last,last).
-     */
-    match_not_eow     = 1 << _S_not_eow,
+  /**
+   * The expression \\b is not matched against the sub-sequence
+   * [first,first).
+   */
+  constexpr match_flag_type match_not_bow =
+    static_cast<match_flag_type>(1 << _S_not_bow);
 
-    /**
-     * If more than one match is possible then any match is an acceptable
-     * result.
-     */
-    match_any         = 1 << _S_any,
+  /**
+   * The expression \\b should not be matched against the sub-sequence
+   * [last,last).
+   */
+  constexpr match_flag_type match_not_eow =
+    static_cast<match_flag_type>(1 << _S_not_eow);
 
-    /**
-     * The expression does not match an empty sequence.
-     */
-    match_not_null    = 1 << _S_not_null,
+  /**
+   * If more than one match is possible then any match is an acceptable
+   * result.
+   */
+  constexpr match_flag_type match_any =
+    static_cast<match_flag_type>(1 << _S_any);
 
-    /**
-     * The expression only matches a sub-sequence that begins at first .
-     */
-    match_continuous  = 1 << _S_continuous,
+  /**
+   * The expression does not match an empty sequence.
+   */
+  constexpr match_flag_type match_not_null =
+    static_cast<match_flag_type>(1 << _S_not_null);
 
-    /**
-     * --first is a valid iterator position.  When this flag is set then the
-     * flags match_not_bol and match_not_bow are ignored by the regular
-     * expression algorithms 28.11 and iterators 28.12.
-     */
-    match_prev_avail  = 1 << _S_prev_avail,
+  /**
+   * The expression only matches a sub-sequence that begins at first .
+   */
+  constexpr match_flag_type match_continuous =
+    static_cast<match_flag_type>(1 << _S_continuous);
 
-    /**
-     * When a regular expression match is to be replaced by a new string, the
-     * new string is constructed using the rules used by the ECMAScript replace
-     * function in ECMA- 262 [Ecma International, ECMAScript Language
-     * Specification, Standard Ecma-262, third edition, 1999], part 15.5.4.11
-     * String.prototype.replace. In addition, during search and replace
-     * operations all non-overlapping occurrences of the regular expression
-     * are located and replaced, and sections of the input that did not match
-     * the expression are copied unchanged to the output string.
-     *
-     * Format strings (from ECMA-262 [15.5.4.11]):
-     * @li $$  The dollar-sign itself ($)
-     * @li $&  The matched substring.
-     * @li $`  The portion of @a string that precedes the matched substring.
-     *         This would be match_results::prefix().
-     * @li $'  The portion of @a string that follows the matched substring.
-     *         This would be match_results::suffix().
-     * @li $n  The nth capture, where n is in [1,9] and $n is not followed by a
-     *         decimal digit.  If n <= match_results::size() and the nth capture
-     *         is undefined, use the empty string instead.  If n >
-     *         match_results::size(), the result is implementation-defined.
-     * @li $nn The nnth capture, where nn is a two-digit decimal number on
-     *         [01, 99].  If nn <= match_results::size() and the nth capture is
-     *         undefined, use the empty string instead. If
-     *         nn > match_results::size(), the result is implementation-defined.
-     */
-    format_default    = 0,
+  /**
+   * --first is a valid iterator position.  When this flag is set then the
+   * flags match_not_bol and match_not_bow are ignored by the regular
+   * expression algorithms 28.11 and iterators 28.12.
+   */
+  constexpr match_flag_type match_prev_avail =
+    static_cast<match_flag_type>(1 << _S_prev_avail);
 
-    /**
-     * When a regular expression match is to be replaced by a new string, the
-     * new string is constructed using the rules used by the POSIX sed utility
-     * in IEEE Std 1003.1- 2001 [IEEE, Information Technology -- Portable
-     * Operating System Interface (POSIX), IEEE Standard 1003.1-2001].
-     */
-    format_sed        = 1 << _S_sed,
+  /**
+   * When a regular expression match is to be replaced by a new string, the
+   * new string is constructed using the rules used by the ECMAScript replace
+   * function in ECMA- 262 [Ecma International, ECMAScript Language
+   * Specification, Standard Ecma-262, third edition, 1999], part 15.5.4.11
+   * String.prototype.replace. In addition, during search and replace
+   * operations all non-overlapping occurrences of the regular expression
+   * are located and replaced, and sections of the input that did not match
+   * the expression are copied unchanged to the output string.
+   *
+   * Format strings (from ECMA-262 [15.5.4.11]):
+   * @li $$  The dollar-sign itself ($)
+   * @li $&  The matched substring.
+   * @li $`  The portion of @a string that precedes the matched substring.
+   *         This would be match_results::prefix().
+   * @li $'  The portion of @a string that follows the matched substring.
+   *         This would be match_results::suffix().
+   * @li $n  The nth capture, where n is in [1,9] and $n is not followed by a
+   *         decimal digit.  If n <= match_results::size() and the nth capture
+   *         is undefined, use the empty string instead.  If n >
+   *         match_results::size(), the result is implementation-defined.
+   * @li $nn The nnth capture, where nn is a two-digit decimal number on
+   *         [01, 99].  If nn <= match_results::size() and the nth capture is
+   *         undefined, use the empty string instead. If
+   *         nn > match_results::size(), the result is implementation-defined.
+   */
+  constexpr match_flag_type format_default = static_cast<match_flag_type>(0);
 
-    /**
-     * During a search and replace operation, sections of the character
-     * container sequence being searched that do not match the regular
-     * expression shall not be copied to the output string.
-     */
-    format_no_copy    = 1 << _S_no_copy,
+  /**
+   * When a regular expression match is to be replaced by a new string, the
+   * new string is constructed using the rules used by the POSIX sed utility
+   * in IEEE Std 1003.1- 2001 [IEEE, Information Technology -- Portable
+   * Operating System Interface (POSIX), IEEE Standard 1003.1-2001].
+   */
+  constexpr match_flag_type format_sed =
+    static_cast<match_flag_type>(1 << _S_sed);
 
-    /**
-     * When specified during a search and replace operation, only the first
-     * occurrence of the regular expression shall be replaced.
-     */
-    format_first_only = 1 << _S_first_only,
-  };
+  /**
+   * During a search and replace operation, sections of the character
+   * container sequence being searched that do not match the regular
+   * expression shall not be copied to the output string.
+   */
+  constexpr match_flag_type format_no_copy =
+    static_cast<match_flag_type>(1 << _S_no_copy);
+
+  /**
+   * When specified during a search and replace operation, only the first
+   * occurrence of the regular expression shall be replaced.
+   */
+  constexpr match_flag_type format_first_only =
+    static_cast<match_flag_type>(1 << _S_first_only);
 
   constexpr inline match_flag_type
   operator&(match_flag_type __a, match_flag_type __b)
