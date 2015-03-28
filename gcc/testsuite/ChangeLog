@@ -1,3 +1,8 @@
+2015-03-28  Andre Vehreschild  <vehre@gmx.de>
+
+	* gfortran.dg/unlimited_polymorphic_24.f03: Fixing copyright
+	statement to reflect new ownership.
+
 2015-03-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/42328

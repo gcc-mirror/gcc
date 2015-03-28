@@ -1,6 +1,6 @@
 ! { dg-do run }
 !
-! Copyright 2011 STMicroelectronics
+! Copyright 2015 NVIDIA Corporation
 !
 ! Test case for unlimited polymorphism that is derived from the article
 ! by Mark Leair, in the 'PGInsider':
