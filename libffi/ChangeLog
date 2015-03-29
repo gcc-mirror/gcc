@@ -1,3 +1,9 @@
+2015-03-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libffi/65567
+	* testsuite/lib/libffi.exp (libffi_feature_test): Use split to ensure
+	lindex is applied to a list.
+
 2015-02-10  Andrew Pinski  <apinski@cavium.com>
 
 	* src/aarch64/ffitarget.h (ffi_arg): Use unsigned long long for ILP32.

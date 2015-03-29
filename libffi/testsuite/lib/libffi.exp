@@ -238,7 +238,7 @@ proc libffi_feature_test { test } {
     set lines [libffi_target_compile $src "" "preprocess" ""]
     file delete $src
 
-    set last [lindex $lines end]
+    set last [lindex [split $lines] end]
     return [regexp -- "xyzzy" $last]
 }
 
