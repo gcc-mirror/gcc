@@ -1,6 +1,6 @@
 2015-03-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
-	PR libgfortran/65564
+	PR libgfortran/65563
 	* gfortran.dg/open_errors_2.f90:  New test.
 
 2015-03-28 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
