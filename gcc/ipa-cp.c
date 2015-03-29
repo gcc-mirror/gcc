@@ -811,6 +811,41 @@ set_all_contains_variable (struct ipcp_param_lattices *plats)
   return ret;
 }
 
+/* Worker of call_for_symbol_thunks_and_aliases, increment the integer DATA
+   points to by the number of callers to NODE.  */
+
+static bool
+count_callers (cgraph_node *node, void *data)
+{
+  int *caller_count = (int *) data;
+
+  for (cgraph_edge *cs = node->callers; cs; cs = cs->next_caller)
+    /* Local thunks can be handled transparently, but if the thunk can not
+       be optimized out, count it as a real use.  */
+    if (!cs->caller->thunk.thunk_p || !cs->caller->local.local)
+      ++*caller_count;
+  return false;
+}
+
+/* Worker of call_for_symbol_thunks_and_aliases, it is supposed to be called on
+   the one caller of some other node.  Set the caller's corresponding flag.  */
+
+static bool
+set_single_call_flag (cgraph_node *node, void *)
+{
+  cgraph_edge *cs = node->callers;
+  /* Local thunks can be handled transparently, skip them.  */
+  while (cs && cs->caller->thunk.thunk_p && cs->caller->local.local)
+    cs = cs->next_caller;
+  if (cs)
+    {
+      gcc_assert (!cs->next_caller);
+      IPA_NODE_REF (cs->caller)->node_calling_single_call = true;
+      return true;
+    }
+  return false;
+}
+
 /* Initialize ipcp_lattices.  */
 
 static void
@@ -822,7 +857,17 @@ initialize_node_lattices (struct cgraph_node *node)
   int i;
 
   gcc_checking_assert (node->has_gimple_body_p ());
-  if (!cgraph_local_p (node))
+  if (cgraph_local_p (node))
+    {
+      int caller_count = 0;
+      node->call_for_symbol_thunks_and_aliases (count_callers, &caller_count,
+						true);
+      gcc_checking_assert (caller_count > 0);
+      if (caller_count == 1)
+	node->call_for_symbol_thunks_and_aliases (set_single_call_flag,
+						  NULL, true);
+    }
+  else
     {
       /* When cloning is allowed, we can assume that externally visible
 	 functions are not called.  We will compensate this by cloning
@@ -2105,6 +2150,24 @@ hint_time_bonus (inline_hints hints)
   return result;
 }
 
+/* If there is a reason to penalize the function described by INFO in the
+   cloning goodness evaluation, do so.  */
+
+static inline int64_t
+incorporate_penalties (ipa_node_params *info, int64_t evaluation)
+{
+  if (info->node_within_scc)
+    evaluation = (evaluation
+		  * (100 - PARAM_VALUE (PARAM_IPA_CP_RECURSION_PENALTY))) / 100;
+
+  if (info->node_calling_single_call)
+    evaluation = (evaluation
+		  * (100 - PARAM_VALUE (PARAM_IPA_CP_SINGLE_CALL_PENALTY)))
+      / 100;
+
+  return evaluation;
+}
+
 /* Return true if cloning NODE is a good idea, given the estimated TIME_BENEFIT
    and SIZE_COST and with the sum of frequencies of incoming edges to the
    potential new clone in FREQUENCIES.  */
@@ -2120,18 +2183,22 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
 
   gcc_assert (size_cost > 0);
 
+  struct ipa_node_params *info = IPA_NODE_REF (node);
   if (max_count)
     {
       int factor = (count_sum * 1000) / max_count;
       int64_t evaluation = (((int64_t) time_benefit * factor)
 				    / size_cost);
+      evaluation = incorporate_penalties (info, evaluation);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "     good_cloning_opportunity_p (time: %i, "
 		 "size: %i, count_sum: " HOST_WIDE_INT_PRINT_DEC
-		 ") -> evaluation: " "%"PRId64
+		 "%s%s) -> evaluation: " "%"PRId64
 		 ", threshold: %i\n",
 		 time_benefit, size_cost, (HOST_WIDE_INT) count_sum,
+		 info->node_within_scc ? ", scc" : "",
+		 info->node_calling_single_call ? ", single_call" : "",
 		 evaluation, PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD));
 
       return evaluation >= PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD);
@@ -2140,13 +2207,16 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
     {
       int64_t evaluation = (((int64_t) time_benefit * freq_sum)
 				    / size_cost);
+      evaluation = incorporate_penalties (info, evaluation);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "     good_cloning_opportunity_p (time: %i, "
-		 "size: %i, freq_sum: %i) -> evaluation: "
+		 "size: %i, freq_sum: %i%s%s) -> evaluation: "
 		 "%"PRId64 ", threshold: %i\n",
-		 time_benefit, size_cost, freq_sum, evaluation,
-		 PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD));
+		 time_benefit, size_cost, freq_sum,
+		 info->node_within_scc ? ", scc" : "",
+		 info->node_calling_single_call ? ", single_call" : "",
+		 evaluation, PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD));
 
       return evaluation >= PARAM_VALUE (PARAM_IPA_CP_EVAL_THRESHOLD);
     }
@@ -2637,9 +2707,12 @@ propagate_constants_topo (struct ipa_topo_info *topo)
 	  struct cgraph_edge *cs;
 
 	  for (cs = v->callees; cs; cs = cs->next_callee)
-	    if (ipa_edge_within_scc (cs)
-		&& propagate_constants_accross_call (cs))
-	      push_node_to_stack (topo, cs->callee->function_symbol ());
+	    if (ipa_edge_within_scc (cs))
+	      {
+		IPA_NODE_REF (v)->node_within_scc = true;
+		if (propagate_constants_accross_call (cs))
+		  push_node_to_stack (topo, cs->callee->function_symbol ());
+	      }
 	  v = pop_node_from_stack (topo);
 	}
 

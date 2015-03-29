@@ -10834,6 +10834,15 @@ IPA-CP calculates its own score of cloning profitability heuristics
 and performs those cloning opportunities with scores that exceed
 @option{ipa-cp-eval-threshold}.
 
+@item ipa-cp-recursion-penalty
+Percentage penalty the recursive functions will receive when they
+are evaluated for cloning.
+
+@item ipa-cp-single-call-penalty
+Percentage penalty functions containg a single call to another
+function will receive when they are evaluated for cloning.
+
+
 @item ipa-max-agg-items
 IPA-CP is also capable to propagate a number of scalar values passed
 in an aggregate. @option{ipa-max-agg-items} controls the maximum
