@@ -330,6 +330,10 @@ struct ipa_node_params
   /* Node has been completely replaced by clones and will be removed after
      ipa-cp is finished.  */
   unsigned node_dead : 1;
+  /* Node is involved in a recursion, potentionally indirect.  */
+  unsigned node_within_scc : 1;
+  /* Node is calling a private function called only once.  */
+  unsigned node_calling_single_call : 1;
 };
 
 /* ipa_node_params access functions.  Please use these to access fields that

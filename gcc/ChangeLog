@@ -1,3 +1,20 @@
+2015-03-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/65478
+	* params.def (PARAM_IPA_CP_RECURSION_PENALTY) : New.
+	(PARAM_IPA_CP_SINGLE_CALL_PENALTY): Likewise.
+	* ipa-prop.h (ipa_node_params): New flags node_within_scc and
+	node_calling_single_call.
+	* ipa-cp.c (count_callers): New function.
+	(set_single_call_flag): Likewise.
+	(initialize_node_lattices): Count callers and set single_flag_call if
+	necessary.
+	(incorporate_penalties): New function.
+	(good_cloning_opportunity_p): Use it, dump new flags.
+	(propagate_constants_topo): Set node_within_scc flag if appropriate.
+	* doc/invoke.texi (ipa-cp-recursion-penalty,
+	ipa-cp-single-call-pentalty): Document.
+
 2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65588
