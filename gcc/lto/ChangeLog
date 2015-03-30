@@ -1,5 +1,10 @@
 2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
 
+	* lto-symtab.c (lto_symtab_merge_decls_2): Silence warning on
+	DECL_ARTIFICAL symbols.
+
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR lto/65536
 	* lto.c (unify_scc): Revert location cache when unification
 	suceeded.
