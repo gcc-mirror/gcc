@@ -2534,7 +2534,8 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	}
 
       if (compile_options.warn_std &&
-          dtp->u.p.current_unit->endfile == AFTER_ENDFILE)      	{
+          dtp->u.p.current_unit->endfile == AFTER_ENDFILE)
+	{
 	  generate_error (&dtp->common, LIBERROR_OPTION_CONFLICT,
 			"Sequential READ or WRITE not allowed after "
 			"EOF marker, possibly use REWIND or BACKSPACE");
