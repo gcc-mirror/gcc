@@ -1,5 +1,10 @@
 2015-03-30  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/65398
+	* g++.dg/cpp0x/pr65398-2.C: New test.
+
+2015-03-30  Marek Polacek  <polacek@redhat.com>
+
 	* c-c++-common/pr65556.c: Change the width of bit-fields.
 
 2015-03-27  Jan Hubicka  <hubicka@ucw.cz>

@@ -2427,27 +2427,6 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 		    break;
 		  }
 	    }
-	  /* *(&A[i] p+ j) => A[i + j] */
-	  else if (TREE_CODE (op00) == ARRAY_REF
-		   && TREE_CODE (TREE_OPERAND (op00, 1)) == INTEGER_CST
-		   && TREE_CODE (op01) == INTEGER_CST)
-	    {
-	      tree t = fold_convert_loc (loc, ssizetype,
-					 TREE_OPERAND (op00, 1));
-	      tree nelts
-		= array_type_nelts_top (TREE_TYPE (TREE_OPERAND (op00, 0)));
-	      /* Don't fold an out-of-bound access.  */
-	      if (!tree_int_cst_le (t, nelts))
-		return NULL_TREE;
-	      /* Make sure to treat the second operand of POINTER_PLUS_EXPR
-		 as signed.  */
-	      op01 = fold_build2_loc (loc, EXACT_DIV_EXPR, ssizetype,
-				      cp_fold_convert (ssizetype, op01),
-				      TYPE_SIZE_UNIT (type));
-	      t = size_binop_loc (loc, PLUS_EXPR, op01, t);
-	      return build4_loc (loc, ARRAY_REF, type, TREE_OPERAND (op00, 0),
-				 t, NULL_TREE, NULL_TREE);
-	    }
 	}
     }
   /* *(foo *)fooarrptr => (*fooarrptr)[0] */
@@ -2942,6 +2921,51 @@ cxx_eval_switch_expr (const constexpr_ctx *ctx, tree t,
   return NULL_TREE;
 }
 
+/* Subroutine of cxx_eval_constant_expression.
+   Attempt to reduce a POINTER_PLUS_EXPR expression T.  */
+
+static tree
+cxx_eval_pointer_plus_expression (const constexpr_ctx *ctx, tree t,
+				  bool lval, bool *non_constant_p,
+				  bool *overflow_p)
+{
+  tree op00 = TREE_OPERAND (t, 0);
+  tree op01 = TREE_OPERAND (t, 1);
+  location_t loc = EXPR_LOCATION (t);
+
+  STRIP_NOPS (op00);
+  if (TREE_CODE (op00) != ADDR_EXPR)
+    return NULL_TREE;
+
+  op00 = TREE_OPERAND (op00, 0);
+
+  /* &A[i] p+ j => &A[i + j] */
+  if (TREE_CODE (op00) == ARRAY_REF
+      && TREE_CODE (TREE_OPERAND (op00, 1)) == INTEGER_CST
+      && TREE_CODE (op01) == INTEGER_CST)
+    {
+      tree type = TREE_TYPE (op00);
+      t = fold_convert_loc (loc, ssizetype, TREE_OPERAND (op00, 1));
+      tree nelts = array_type_nelts_top (TREE_TYPE (TREE_OPERAND (op00, 0)));
+      /* Don't fold an out-of-bound access.  */
+      if (!tree_int_cst_le (t, nelts))
+	return NULL_TREE;
+      /* Make sure to treat the second operand of POINTER_PLUS_EXPR
+	 as signed.  */
+      op01 = fold_build2_loc (loc, EXACT_DIV_EXPR, ssizetype,
+			      cp_fold_convert (ssizetype, op01),
+			      TYPE_SIZE_UNIT (type));
+      t = size_binop_loc (loc, PLUS_EXPR, op01, t);
+      t = build4_loc (loc, ARRAY_REF, type, TREE_OPERAND (op00, 0),
+		      t, NULL_TREE, NULL_TREE);
+      t = cp_build_addr_expr (t, tf_warning_or_error);
+      return cxx_eval_constant_expression (ctx, t, lval, non_constant_p,
+					   overflow_p);
+    }
+
+  return NULL_TREE;
+}
+
 /* Attempt to reduce the expression T to a constant value.
    On failure, issue diagnostic and return error_mark_node.  */
 /* FIXME unify with c_fully_fold */
@@ -3247,6 +3271,12 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case POINTER_PLUS_EXPR:
+      r = cxx_eval_pointer_plus_expression (ctx, t, lval, non_constant_p,
+					    overflow_p);
+      if (r)
+	break;
+      /* else fall through */
+
     case PLUS_EXPR:
     case MINUS_EXPR:
     case MULT_EXPR:
