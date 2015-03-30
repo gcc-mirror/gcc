@@ -1,3 +1,8 @@
+2015-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/65597
+	* testsuite/libgomp.fortran/pr65597.f90: New test.
+
 2015-03-27  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/65594
