@@ -1,3 +1,9 @@
+2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65076
+	* ipa-inline.c (edge_badness): Base denominator on callee's
+	grwoth squared.
+
 2015-03-27  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/65478

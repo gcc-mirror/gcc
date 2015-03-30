@@ -1099,7 +1099,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	numerator = numerator >> 11;
       denominator = growth;
       if (callee_info->growth > 0)
-	denominator *= callee_info->growth;
+	denominator *= callee_info->growth * callee_info->growth;
 
       badness = - numerator / denominator;
 
