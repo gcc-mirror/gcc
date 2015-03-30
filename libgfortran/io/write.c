@@ -1704,10 +1704,11 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
   size_t clen;
   index_type elem_ctr;
   size_t obj_name_len;
-  void * p ;
+  void * p;
   char cup;
   char * obj_name;
   char * ext_name;
+  char * q;
   size_t ext_name_len;
   char rep_buff[NML_DIGITS];
   namelist_info * cmp;
@@ -1745,6 +1746,8 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
       for (dim_i = len; dim_i < clen; dim_i++)
 	{
 	  cup = toupper ((int) obj->var_name[dim_i]);
+	  if (cup == '+')
+	    cup = '%';
 	  write_character (dtp, &cup, 1, 1, NODELIM);
 	}
       write_character (dtp, "=", 1, 1, NODELIM);
@@ -1894,6 +1897,9 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 		}
 
 	      ext_name[tot_len] = '\0';
+	      for (q = ext_name; *q; q++)
+		if (*q == '+')
+		  *q = '%';
 
 	      /* Now obj_name.  */
 

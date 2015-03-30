@@ -3657,9 +3657,15 @@ handle_namespace_attrs (tree ns, tree attributes)
 	}
       else if (is_attribute_p ("abi_tag", name))
 	{
-	  if (!NAMESPACE_IS_INLINE (ns))
+	  if (!DECL_NAMESPACE_ASSOCIATIONS (ns))
 	    {
 	      warning (OPT_Wattributes, "ignoring %qD attribute on non-inline "
+		       "namespace", name);
+	      continue;
+	    }
+	  if (!DECL_NAME (ns))
+	    {
+	      warning (OPT_Wattributes, "ignoring %qD attribute on anonymous "
 		       "namespace", name);
 	      continue;
 	    }

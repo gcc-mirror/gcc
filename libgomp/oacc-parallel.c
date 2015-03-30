@@ -31,6 +31,9 @@
 #include "libgomp_g.h"
 #include "gomp-constants.h"
 #include "oacc-int.h"
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>  /* For PRIu64.  */
+#endif
 #include <string.h>
 #include <stdarg.h>
 #include <assert.h>
@@ -99,9 +102,15 @@ GOACC_parallel (int device, void (*fn) (void *),
     gomp_fatal ("num_workers (%d) different from one is not yet supported",
 		num_workers);
 
-  gomp_debug (0, "%s: mapnum=%zd, hostaddrs=%p, sizes=%p, kinds=%p, async=%d\n",
-	      __FUNCTION__, mapnum, hostaddrs, sizes, kinds, async);
-
+#ifdef HAVE_INTTYPES_H
+  gomp_debug (0, "%s: mapnum=%"PRIu64", hostaddrs=%p, size=%p, kinds=%p, "
+		 "async = %d\n",
+	      __FUNCTION__, (uint64_t) mapnum, hostaddrs, sizes, kinds, async);
+#else
+  gomp_debug (0, "%s: mapnum=%lu, hostaddrs=%p, sizes=%p, kinds=%p, async=%d\n",
+	      __FUNCTION__, (unsigned long) mapnum, hostaddrs, sizes, kinds,
+	      async);
+#endif
   select_acc_device (device);
 
   thr = goacc_thread ();
@@ -178,8 +187,13 @@ GOACC_data_start (int device, size_t mapnum,
   bool host_fallback = device == GOMP_DEVICE_HOST_FALLBACK;
   struct target_mem_desc *tgt;
 
-  gomp_debug (0, "%s: mapnum=%zd, hostaddrs=%p, sizes=%p, kinds=%p\n",
-	      __FUNCTION__, mapnum, hostaddrs, sizes, kinds);
+#ifdef HAVE_INTTYPES_H
+  gomp_debug (0, "%s: mapnum=%"PRIu64", hostaddrs=%p, size=%p, kinds=%p\n",
+	      __FUNCTION__, (uint64_t) mapnum, hostaddrs, sizes, kinds);
+#else
+  gomp_debug (0, "%s: mapnum=%lu, hostaddrs=%p, sizes=%p, kinds=%p\n",
+	      __FUNCTION__, (unsigned long) mapnum, hostaddrs, sizes, kinds);
+#endif
 
   select_acc_device (device);
 

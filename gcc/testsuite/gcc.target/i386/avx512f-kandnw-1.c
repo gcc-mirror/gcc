@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512f -O2" } */
 /* { dg-final { scan-assembler-times "kandnw\[ \\t\]+\[^\{\n\]*%k\[0-7\](?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "kmovw" 2 } } */
 
 #include <immintrin.h>
 

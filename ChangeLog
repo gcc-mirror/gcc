@@ -1,3 +1,9 @@
+2015-03-25  Martin Liska  <mliska@suse.cz>
+	    Yury Gribov  <y.gribov@samsung.com>
+
+	* Makefile.in: Fix ln source location for vimrc file.
+	* Makefile.tpl: Likewise.
+
 2015-03-09  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR bootstrap/25672
@@ -39,15 +45,6 @@
 2015-02-26  Martin Sebor  <msebor@redhat.com>
 
 	* MAINTAINERS (Various Maintainers): Add self.
-
-2015-02-25  Uros Bizjak  <ubizjak@gmail.com>
-
-	Revert:
-	2014-07-26  Uros Bizjak  <ubizjak@gmail.com>
-
-	PR target/47230
-	* configure.ac (alpha*-*-linux*): Use mh-alpha-linux.
-	* configure: Regenerate.
 
 2015-02-20  Thomas Schwinge  <thomas@codesourcery.com>
 

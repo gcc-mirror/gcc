@@ -2469,6 +2469,18 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	}
       break;
 
+    case Attr_Deref:
+      prefix_unused = true;
+      gnu_expr = gnat_to_gnu (First (Expressions (gnat_node)));
+      gnu_result_type = get_unpadded_type (Etype (gnat_node));
+      /* This can be a random address so build an alias-all pointer type.  */
+      gnu_expr
+	= convert (build_pointer_type_for_mode (gnu_result_type, ptr_mode,
+						true),
+		   gnu_expr);
+      gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_expr);
+      break;
+
     default:
       /* This abort means that we have an unimplemented attribute.  */
       gcc_unreachable ();

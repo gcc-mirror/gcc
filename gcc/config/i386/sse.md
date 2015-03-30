@@ -6633,7 +6633,8 @@
 	  (match_operand:QI 5 "register_operand" "k")))]
   "TARGET_AVX512DQ
    && (INTVAL (operands[2]) % 2 == 0)
-   && (INTVAL (operands[2]) == INTVAL (operands[3]) - 1 )"
+   && (INTVAL (operands[2]) == INTVAL (operands[3]) - 1)
+   && rtx_equal_p (operands[4], operands[0])"
 {
   operands[2] = GEN_INT ((INTVAL (operands[2])) >> 1);
   return "vextract<shuffletype>64x2\t{%2, %1, %0%{%5%}|%0%{%5%}, %1, %2}";
@@ -6660,7 +6661,8 @@
    && ((INTVAL (operands[2]) % 4 == 0)
        && INTVAL (operands[2]) == (INTVAL (operands[3]) - 1)
        && INTVAL (operands[3]) == (INTVAL (operands[4]) - 1)
-       && INTVAL (operands[4]) == (INTVAL (operands[5]) - 1))"
+       && INTVAL (operands[4]) == (INTVAL (operands[5]) - 1))
+   && rtx_equal_p (operands[6], operands[0])"
 {
   operands[2] = GEN_INT ((INTVAL (operands[2])) >> 2);
   return "vextract<shuffletype>32x4\t{%2, %1, %0%{%7%}|%0%{%7%}, %1, %2}";
@@ -6777,7 +6779,8 @@
 	      (const_int 2) (const_int 3)]))
 	  (match_operand:<ssehalfvecmode> 2 "memory_operand" "0")
 	  (match_operand:QI 3 "register_operand" "Yk")))]
-  "TARGET_AVX512F"
+  "TARGET_AVX512F
+   && rtx_equal_p (operands[2], operands[0])"
   "vextract<shuffletype>64x4\t{$0x0, %1, %0%{%3%}|%0%{%3%}, %1, 0x0}"
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
@@ -6813,7 +6816,8 @@
 	      (const_int 6) (const_int 7)]))
 	  (match_operand:<ssehalfvecmode> 2 "memory_operand" "0")
 	  (match_operand:QI 3 "register_operand" "Yk")))]
-  "TARGET_AVX512F"
+  "TARGET_AVX512F
+   && rtx_equal_p (operands[2], operands[0])"
   "vextract<shuffletype>64x4\t{$0x1, %1, %0%{%3%}|%0%{%3%}, %1, 0x1}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
@@ -6847,7 +6851,8 @@
 	      (const_int 14) (const_int 15)]))
 	  (match_operand:<ssehalfvecmode> 2 "memory_operand" "0")
 	  (match_operand:QI 3 "register_operand" "k")))]
-  "TARGET_AVX512DQ"
+  "TARGET_AVX512DQ
+   && rtx_equal_p (operands[2], operands[0])"
   "vextract<shuffletype>32x8\t{$0x1, %1, %0%{%3%}|%0%{%3%}, %1, 0x1}"
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
@@ -7071,8 +7076,9 @@
 		      (const_int 2) (const_int 3)]))
 	  (match_operand:<ssehalfvecmode> 2 "memory_operand" "0")
 	  (match_operand:QI 3 "register_operand" "k")))]
-  "TARGET_AVX512VL && TARGET_AVX512F"
-  "vextract<shuffletype>32x4\t{$0x0, %1, %0%{3%}|%0%{%3%}, %1, 0x0}"
+  "TARGET_AVX512VL && TARGET_AVX512F
+   && rtx_equal_p (operands[2], operands[0])"
+  "vextract<shuffletype>32x4\t{$0x0, %1, %0%{%3%}|%0%{%3%}, %1, 0x0}"
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
@@ -7088,10 +7094,9 @@
 		      (const_int 6) (const_int 7)]))
 	  (match_operand:<ssehalfvecmode> 2 "memory_operand" "0")
 	  (match_operand:<ssehalfvecmode> 3 "register_operand" "k")))]
-  "TARGET_AVX512F && TARGET_AVX512VL"
-{
-  return "vextract<shuffletype>32x4\t{$0x1, %1, %0%{%3%}|%0%{%3%}, %1, 0x1}";
-}
+  "TARGET_AVX512F && TARGET_AVX512VL
+   && rtx_equal_p (operands[2], operands[0])"
+  "vextract<shuffletype>32x4\t{$0x1, %1, %0%{%3%}|%0%{%3%}, %1, 0x1}"
   [(set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")

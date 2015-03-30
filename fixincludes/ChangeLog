@@ -1,3 +1,10 @@
+2015-03-28  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libstdc++/65500
+	* inclhack.def (hpux11_lwp_rwlock_valid): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/sys/pthread.h [HPUX11_LWP_RWLOCK_VALID_CHECK]: New test.
+
 2015-02-16  Daniel Richard G.  <skunk@iskunk.org>
 
 	PR bootstrap/48009

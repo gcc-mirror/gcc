@@ -999,6 +999,18 @@ DEFPARAM (PARAM_IPA_CP_EVAL_THRESHOLD,
 	  "beneficial to clone.",
 	  500, 0, 0)
 
+DEFPARAM (PARAM_IPA_CP_RECURSION_PENALTY,
+	  "ipa-cp-recursion-penalty",
+	  "Percentage penalty the recursive functions will receive when they "
+	  "are evaluated for cloning.",
+	  40, 0, 100)
+
+DEFPARAM (PARAM_IPA_CP_SINGLE_CALL_PENALTY,
+	  "ipa-cp-single-call-penalty",
+	  "Percentage penalty functions containg a single call to another "
+	  "function will receive when they are evaluated for cloning.",
+	  15, 0, 100)
+
 DEFPARAM (PARAM_IPA_MAX_AGG_ITEMS,
 	  "ipa-max-agg-items",
 	  "Maximum number of aggregate content items for a parameter in "

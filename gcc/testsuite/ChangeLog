@@ -1,3 +1,275 @@
+2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65588
+	* gcc.target/i386/pr65588.c: New testcase.
+
+2015-03-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libgfortran/65563
+	* gfortran.dg/open_errors_2.f90:  New test.
+
+2015-03-28 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/65596
+	* gfortran.dg/namelist_86.f90: New test.
+
+2015-03-28  Andre Vehreschild  <vehre@gmx.de>
+
+	* gfortran.dg/unlimited_polymorphic_24.f03: Fixing copyright
+	statement to reflect new ownership.
+
+2015-03-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/42328
+	* g++.dg/template/friend58.C: New.
+	* g++.dg/template/friend59.C: Likewise.
+
+2015-03-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR c/65586
+	* g++.dg/gomp/openmp-simd-3.C: New.
+	* gcc.dg/gomp/openmp-simd-3.c: New.
+
+2015-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/65248
+	* gcc.target/i386/pr65248-1.c: New file.
+	* gcc.target/i386/pr65248-2.c: Likewise.
+	* gcc.target/i386/pr65248-3.c: Likewise.
+	* gcc.target/i386/pr65248-4.c: Likewise.
+
+2015-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65593
+	* gcc.c-torture/compile/pr65593.c: New test.
+
+2015-03-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59329
+	* g++.dg/cpp1y/constexpr-assert1.C: New.
+
+2015-03-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65556
+	* c-c++-common/pr65556.c: New test.
+
+2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65600
+	* g++.dg/torture/pr65600.C: New testcase.
+
+2015-03-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/65407
+	* gcc.target/i386/avx512f-kandnw-1.c: Add scanning kmovw.
+
+2015-03-27  Andre Vehreschild  <vehre@gmx.de>
+
+	* gfortran.dg/unlimited_polymorphic_24.f03: Added copyright
+	statement and cleanup. Fixed typos.
+
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/65595
+	* gcc.c-torture/compile/pr65595.c: New testcase.
+
+2015-03-27  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/65583
+	* g++.dg/ubsan/pr65583.C: New test.
+
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.c-torture/compile/20150327.c: New testcase.
+
+2015-03-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65555
+	* g++.dg/torture/pr65555.C: New testcase.
+
+2015-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/64715
+	* gcc.dg/builtin-object-size-15.c: New test.
+	* gcc.dg/pr64715-1.c: New test.
+	* gcc.dg/pr64715-2.c: New test.
+
+2015-03-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65519
+	* gnat.dg/specs/opt2.ads: Fix testcase.
+
+2015-03-25  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/65526
+	* lib/target-supports.exp (check_effective_target_arm32): Fail early
+	when target isn't arm*-*-*-*.
+	(check_effective_target_arm_nothumb): Likewise.
+	(check_effective_target_arm_little_endian): Likewise.
+	(check_effective_target_arm_vect_no_misalign): Likewise.
+	(check_effective_target_aarch64_little_endian): Fail early if target
+	isn't aarch64*-*-*.
+
+2015-03-25  Sebastian Pop  <s.pop@samsung.com>
+
+	PR tree-optimization/65177
+	* gcc.dg/tree-ssa/ssa-dom-thread-10.c: New.
+
+2015-03-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse-13.c: Include x86intrin.h and adjust #defines.
+	* gcc.target/i386/sse-23.c: Do not explicitly include wmmintrin.h,
+	smmintrin.h and mm3dnow.h.
+
+2015-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65558
+	* g++.dg/cpp0x/pr65558.C: New test.
+
+2015-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/61670
+	* g++.dg/template/pr61670.C: New test.
+
+2015-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54987
+	* g++.dg/template/pr54987.C: New.
+
+2015-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62630
+	* gcc.dg/graphite/vect-pr43423.c: XFAIL.
+
+2015-03-25  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65508
+	* gcc.target/i386/mpx/pr65508.c: New.
+
+2015-03-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/64952
+	PR fortran/65532
+	* gfortran.dg/data_initialized_3.f90: New.
+
+2015-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65519
+	* gnat.dg/specs/opt2.ads: New testcase.
+
+2015-03-25  Bin Cheng  <bin.cheng@arm.com>
+
+	* lib/target-supports.exp (arm_tune_string_ops_prefer_neon): New.
+	* gcc.target/arm/memset-inline-4.c: Skip for
+	arm_tune_string_ops_prefer_neon.
+	* gcc.target/arm/memset-inline-5.c: Ditto.
+	* gcc.target/arm/memset-inline-6.c: Ditto.
+	* gcc.target/arm/memset-inline-8.c: Ditto.
+	* gcc.target/arm/memset-inline-9.c: Ditto.
+
+2015-03-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58923
+	* g++.dg/other/virtual3.C: New.
+
+2015-03-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60130
+	* g++.dg/cpp0x/vt-60130.C: New.
+
+2015-03-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61971
+	* g++.dg/warn/Warray-bounds-7.C: New.
+
+2015-03-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/60067
+	* g++.dg/template/defarg18.C: New.
+
+2015-03-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59988
+	* g++.dg/cpp0x/vt-59988.C: New.
+
+2015-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65533
+	* gcc.dg/pr65533.c: New test.
+
+2015-03-24  Andre Vehreschild  <vehre@gmx.de>
+
+	* gfortran.dg/allocate_alloc_opt_13.f90: Added tests for
+	source= and mold= expressions functionality.
+	* gfortran.dg/allocate_class_4.f90: New test.
+	* gfortran.dg/unlimited_polymorphic_20.f90: Added test whether
+	copying an unlimited polymorhpic object containing a char array
+	to another unlimited polymorphic object respects the _len
+	component.
+	* gfortran.dg/unlimited_polymorphic_22.f90: Extended to check
+	whether deferred length char array allocate works, unlimited
+	polymorphic object allocation from a string works and if
+	allocating an array of deferred length strings works.
+	* gfortran.dg/unlimited_polymorphic_24.f03: New test.
+
+2015-03-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65513
+	* g++.dg/cpp0x/constexpr-array11.C: New.
+
+2015-03-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65517
+	* gcc.dg/torture/pr65517.c: New testcase.
+
+2015-03-24  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coindexed_1.f90: Moved from
+	gfortran.dg/coarray/coindexed_3.f90; added dg-options.
+
+2015-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/65506
+	* gcc.dg/pr29215.c: Dump and analyze ccp1 dump instead of
+	gimple dump.
+
+	PR target/65523
+	* gcc.target/i386/pr65523.c: New test.
+
+	PR ipa/65475
+	* g++.dg/lto/pr65475_0.C: Use dg-lto-options instead of
+	dg-options.
+	* g++.dg/lto/pr65475b_0.C: Likewise.
+
+2015-03-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/65505
+	* gcc.target/sh/torture/pr65505.c: New.
+
+2015-03-23  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/63175
+	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a-pr63175.c: Scan
+	assembly for lvx in addition to lxv.
+
+2015-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65504
+	* gfortran.dg/pr65504.f90: New test.
+
+	PR ipa/65521
+	* gcc.dg/pr65521.c: New test.
+
+2015-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65518
+	* gcc.dg/vect/pr65518.c: New testcase.
+
+2015-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65494
+	* gcc.dg/vect/pr65494.c: New testcase.
+
 2015-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/65238

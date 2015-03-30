@@ -1,3 +1,422 @@
+2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65076
+	* ipa-inline.c (edge_badness): Base denominator on callee's
+	grwoth squared.
+
+2015-03-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/65478
+	* params.def (PARAM_IPA_CP_RECURSION_PENALTY) : New.
+	(PARAM_IPA_CP_SINGLE_CALL_PENALTY): Likewise.
+	* ipa-prop.h (ipa_node_params): New flags node_within_scc and
+	node_calling_single_call.
+	* ipa-cp.c (count_callers): New function.
+	(set_single_call_flag): Likewise.
+	(initialize_node_lattices): Count callers and set single_flag_call if
+	necessary.
+	(incorporate_penalties): New function.
+	(good_cloning_opportunity_p): Use it, dump new flags.
+	(propagate_constants_topo): Set node_within_scc flag if appropriate.
+	* doc/invoke.texi (ipa-cp-recursion-penalty,
+	ipa-cp-single-call-pentalty): Document.
+
+2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65588
+	* symtab.c (symtab_node::get_partitioning_class): Register vars
+	are duplicated.
+	* varpool.c (symbol_table::output_variables) Do not assemble unefined
+	decls for non-symbols.
+
+2015-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/65248
+	* output.h (default_binds_local_p_2): New.
+	* varasm.c (default_binds_local_p_2): Renamed to ...
+	(default_binds_local_p_3): This.  Don't return true on protected
+	data symbol if protected data may be external.
+	(default_binds_local_p): Use default_binds_local_p_3.
+	(default_binds_local_p_1): Likewise.
+	(default_binds_local_p_2): New.
+	* config/i386/i386.c (TARGET_BINDS_LOCAL_P): Set to
+	default_binds_local_p_2 if TARGET_MACHO is undefined.
+
+2015-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65593
+	* config/i386/i386.c (legitimize_pic_address): If base
+	is SYMBOL_REF or LABEL_REF using %rip addressing, force
+	it to reg to avoid PLUS of SYMBOL_REF/LABEL_REF and register.
+
+2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/65531
+	* symtab.c (symtab_node::verify_symtab_nodes): Fix verification of
+	comdat groups.
+
+2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65600
+	* cgraph.c (cgraph_update_edges_for_call_stmt_node): Fix the case
+	of optimized out indirect call.
+	(redirect_to_unreachable): Always build symbol table node for
+	BUILT_IN_UNREACHABLE
+
+2015-03-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/65407
+	* ira-costs.c (record_reg_classes): Process all constraint string
+	containing 0-9.
+
+2015-03-27  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/c6x/c6x.md (movmisalign<mode>): Use MEM_P, not
+	memory_operand.
+
+	PR target/65052
+        * config/c6x/constraints.md (S3): New constraint.
+        * config/c6x/c6x.md (real_jump): Use it.
+
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/65595
+	* cgraph.c (cgraph_update_edges_for_call_stmt_node): Only
+	do redirection if the call is not optimized out.
+
+2015-03-27  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65495
+	* c-family/c.opt (fcheck-pointer-bounds): List supported languages.
+	(fchkp-check-incomplete-type): Add LTO.
+	(fchkp-zero-input-bounds-for-main): Likewise.
+	(fchkp-first-field-has-own-bounds): Likewise.
+	(fchkp-narrow-bounds): Likewise.
+	(fchkp-narrow-to-innermost-array): Likewise.
+	(fchkp-use-static-bounds): Likewise.
+	(fchkp-use-static-const-bounds): Likewise.
+	(fchkp-treat-zero-dynamic-size-as-infinite): Likewise.
+
+2015-03-27  Marek Polacek  <polacek@redhat.com>
+
+	* gimple-iterator.h (gsi_prev_nondebug): Fix typo.
+
+2015-03-27  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/65583
+	* ubsan.c (ubsan_create_edge): New function.
+	(instrument_bool_enum_load): Call it.
+	(instrument_nonnull_arg): Likewise.
+	(instrument_nonnull_return): Likewise.
+	(instrument_object_size): Likewise.
+
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-streamer.h (class lto_location_cache): Turn loc_cache into
+	auto_vec.
+
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/65536
+	* lto-streamer.h (class lto_location_cache): New.
+	(struct data_in): Add location_cache.
+	(lto_input_location): Update prototype.
+	(stream_input_location_now): New.
+	* streamer-hooks.h (struct streamer_hooks): Make input_location to take
+	pointer to location.
+	(stream_input_location): Update.
+	* ipa-devirt.c: Include streamer-hooks.h and lto-streamer.h
+	(warn_odr): Apply location cache before warning.
+	(lto_input_location): Update prototype.
+	* gimple-streamer-in.c (input_phi, input_gimple_stmt):
+	Use stream_input_location_now.
+	* lto-streamer-in.c (lto_location_cache::current_cache): New static
+	variable.
+	(lto_location_cache::cmp_loc): New function.
+	(lto_location_cache::apply_location_cache): New function.
+	(lto_location_cache::accept_location_cache): New function.
+	(lto_location_cache::revert_location_cache): New function.
+	(lto_location_cache::input_location): New function.
+	(lto_input_location): Do location caching.
+	(stream_input_location_now): New function.
+	(input_eh_region, input_struct_function_base): Use
+	stream_input_location_now.
+	(lto_data_in_create): use new.
+	(lto_data_in_delete): Use delete.
+	* tree-streamer-in.c (unpack_ts_block_value_fields,
+	unpack_ts_omp_clause_value_fields, streamer_read_tree_bitfields,
+	lto_input_ts_exp_tree_pointers): Update for cached location api.
+
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65076
+	* passes.def: Add pass_nothrow.
+	* ipa-pure-const.c: (pass_data_nothrow): New.
+	(pass_nothrow): New.
+	(pass_nothrow::execute): New.
+	(make_pass_nothrow): New.
+	* tree-pass.h (make_pass_nothrow): Declare.
+
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-analysis.c (redirect_to_unreachable): Be prepared for
+	edge to change by speculation resolution or redirection.
+	(edge_set_predicate): Likewise.
+	(inline_summary_t::duplicate): Likewise.
+	(remap_edge_summaries): Likewise.
+
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.c (check_maybe_up, check_maybe_down, check_match):
+	New macros.
+	(can_inline_edge_p): Relax option matching for always inline functions.
+
+2015-03-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/65561
+	* config/i386/sse.md (avx512dq_vextract<shuffletype>64x2_1_maskm):
+	Check operand 4 and operand 0 for equality.
+	(avx512f_vextract<shuffletype>32x4_1_maskm):
+	Check operand 6 and operand 0 for equality.
+	(vec_extract_lo_<mode>_maskm): Check operand 2 and operand 0
+	for equality.
+	(vec_extract_hi_<mode>_maskm): Ditto.
+
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cgraph.c (cgraph_update_edges_for_call_stmt_node): Do not bring
+	dead calls back to live.
+	(cgraph_edge::verify_count_and_frequency): Move cgraph/cfg frequency
+	cross check to ...
+	(cgraph_node::verify_node): ... here; verify only callee edges,
+	not caller.
+	* cif-code.def (CILK_SPAWN): New code.
+
+2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline-analysis.c (redirect_to_unreachable): New function.
+	(edge_set_predicate): Use it to mark unreachable edges.
+	(inline_summary_t::duplicate): Remove unnecesary code.
+	(remap_edge_summaries): Likewise.
+	(dump_inline_summary): Report contains_cilk_spawn.
+	(compute_inline_parameters): Compute contains_cilk_spawn.
+	(inline_read_section, inline_write_summary): Stream
+	contains_cilk_spawn.
+	* ipa-inline.c (can_inline_edge_p): Do not touch
+	DECL_STRUCT_FUNCTION that may not be available;
+	use CIF_CILK_SPAWN for cilk; fix optimization attribute checks;
+	remove check for callee_fun->can_throw_non_call_exceptions and
+	replace it by optimization attribute check; check for flag_exceptions.
+	* ipa-inline-transform.c (inline_call): Maintain
+	DECL_FUNCTION_PERSONALITY
+	* ipa-inline.h (inline_summary): Add contains_cilk_spawn.
+
+2015-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65551
+	* tree-ssa-sccvn.c (fully_constant_vn_reference_p): Use
+	TYPE_PRECISION only for INTEGRAL_TYPE_P types.
+
+2015-03-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65555
+	* tree-cfg.c (verify_gimple_call): Do not require a call to
+	have no LHS if it wasn't recognized as control altering yet.
+
+2015-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/64715
+	* passes.def: Add another instance of pass_object_sizes before ccp1.
+	* tree-object-size.c (pass_object_sizes::execute): In
+	first_pass_instance, only handle __bos (, 1) and __bos (, 3)
+	calls, and keep the call in the IL, as {MIN,MAX}_EXPR of the
+	__bos result and the computed constant.  Remove redundant
+	checks, obsoleted by gimple_call_builtin_p test.
+
+	* var-tracking.c (variable_tracking_main_1): Don't track
+	variables for targetm.no_register_allocation targets.
+
+2015-03-26  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/t-linux (DEFAULT_ENDIAN, MULTILIB_EXCEPTIONS): Remove.
+	* config/sh/t-sh (MULTILIB_EXCEPTIONS): Handle default endian.
+
+2015-03-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/65569
+	* config/rs6000/rs6000.md (extenddftf2_fprs): On VSX systems use
+	XXLXOR to create 0.0.  On pre-VSX systems make sure the constant
+	0.0 is correctly setup.
+	(extenddftf2_internal): Likewise.
+
+2015-03-25  Sebastian Pop  <s.pop@samsung.com>
+
+	PR tree-optimization/65177
+	* tree-ssa-threadupdate.c (verify_seme): Renamed verify_jump_thread.
+	(bb_in_bbs): New.
+	(duplicate_seme_region): Renamed duplicate_thread_path.  Redirect all
+	edges not adjacent on the path to the original code.
+
+2015-03-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR bootstrap/65537
+	* doc/install.texi (Building a native compiler): Document new
+	bootstrap-lto-noplugin configuration.  Mention that bootstrap-lto
+	configuration assumes that the host supports the linker plugin.
+
+2015-03-25  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65508
+	* tree-chkp.c (chkp_add_bounds_to_call_stmt): Set static
+	chain for generated call.
+
+2015-03-25  Richard Biener  <rguenther@suse.de>
+
+	* passes.c (pass_manager::execute_early_local_passes): Guard
+	execution of pass_chkp_instrumentation_passes with
+	flag_check_pointer_bounds.
+	(pass_chkp_instrumentation_passes::gate): Likewise.
+
+2015-03-25  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/65538
+	* symbol-summary.h (function_summary::~function_summary):
+	Relese memory for allocated summaries.
+	(function_summary::release): New function.
+
+2015-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/65515
+	* lto-streamer-out.c (DFS::worklist): New struct.
+	(DFS::worklist_vec): New data member.
+	(DFS::next_dfs_num): Remove.
+	(DFS::DFS): Rewritten using worklist instead of recursion,
+	using most of code from DFS::DFS_write_tree.
+	(DFS::DFS_write_tree_body): Remove SINGLE_P argument, don't
+	pass it to DFS_write_tree calls.
+	(DFS::DFS_write_tree): Remove SINGLE_P argument, after
+	quick initial checks push it into worklist_vec and return.
+
+2015-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65519
+	* genmatch.c (expr::gen_transform): Re-write to avoid
+	using gimple_build.
+
+2015-03-25  Bin Cheng  <bin.cheng@arm.com>
+
+	* doc/sourcebuild.texi (arm_tune_string_ops_prefer_neon): New.
+
+2015-03-25  Bin Cheng  <bin.cheng@arm.com>
+
+	* config/arm/arm.opt (print_tune_info): New option.
+	* config/arm/arm.c (arm_print_tune_info): New function.
+	(arm_file_start): Call arm_print_tune_info.
+	* config/arm/arm-protos.h (struct tune_params): Add comment.
+	* doc/invoke.texi (@item -mprint-tune-info): New item.
+	(-mtune): mention it in ARM Option Summary.
+
+2015-03-25  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78.c (rl78_print_operand_1): Move 'p' test to
+	correct clause.
+
+2015-03-24  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf-gimple.h (return_with_result): Add missing colon to dump.
+	* ipa-icf.c (sem_function::get_hash): Hash new declaration properties.
+	(sem_item::add_type): New function.
+	(sem_function::hash_stmt): Add TREE_TYPE of gimple_op.
+	(sem_function::compare_polymorphic_p): Do not consider indirect calls.
+	(sem_item_optimizer::update_hash_by_addr_refs): Add ODR type to hash.
+	(sem_function::equals_wpa): Fix typo.
+	* ipa-icf.h (sem_item::add_type): New function.
+	(symbol_compare_hashmap_traits): Replace hashing of pointer with symbol
+	order.
+
+2015-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65533
+	* tree-vect-slp.c (vect_build_slp_tree): Before re-trying
+	with swapped operands, call vect_free_slp_tree on
+	SLP_TREE_CHILDREN of child and truncate the SLP_TREE_CHILDREN
+	vector.
+
+2015-03-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65517
+	* tree-cfg.c (remove_edge_and_dominated_blocks): Mark loops
+	for fixup if necessary.
+
+2015-03-23  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (Function Attributes): Add @cindex entries
+	for all attributes and regularize their format.  Delete text
+	about long-obsolete 68HC11 and 68HC12 targets.  Move misplaced
+	information about "eightbit_data", "tiny_data", and "model"
+	variable attributes to the Variable Attributes section.  Fix
+	some obvious typos and copy-editing issues.
+	(Variable Attributes, Type Attributes): Likewise add/fix
+	@cindex entries for all attributes.
+
+2015-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65523
+	* tree-chkp.c (chkp_build_returned_bound): Ignore
+	ERF_RETURNS_ARG calls if they have fewer than needed arguments.
+
+2015-03-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/65505
+	* config/sh/predicates.md (simple_mem_operand,
+	displacement_mem_operand): Add test for reg.
+	(short_displacement_mem_operand): Test for displacement_mem_operand
+	before invoking sh_disp_addr_displacement.
+	* config/sh/constraints.md (Sdd, Sra): Simplify.
+	* config/sh/sync.md (atomic_mem_operand_0, atomic_mem_operand_1):
+	Remove redundant displacement_mem_operand tests.
+
+2015-03-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/65296
+	* config/avr/driver-avr.c (avr_devicespecs_file): Allow to specify
+	the same -mmcu=MCU more than once.
+
+2015-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/65522
+	* ipa-devirt.c: Remove duplicate demangle.h include.
+
+	PR target/65504
+	* config/i386/i386.c (ix86_copy_addr_to_reg): Set REG_POINTER
+	on the pseudo.
+	(expand_set_or_movmem_prologue_epilogue_by_misaligned_moves): Set
+	REG_POINTER on *destptr after adjusting it for prologue size.
+
+	PR ipa/65521
+	* ipa-icf.c (sem_item::update_hash_by_addr_refs): Hash
+	ultimate_alias_target ()->order ints instead of
+	ultimate_alias_target () pointers.
+
+2015-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65518
+	* tree-vect-stmts.c (vectorizable_load): Reject single-element
+	interleaving cases we generate absymal code for.
+
+2015-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65494
+	* tree-vect-slp.c (vect_build_slp_tree): Do not (re-)allocate
+	matches here.
+	(vect_analyze_slp_instance): But do that here, always and once.
+
+2015-03-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* expmed.c (synth_mult): Fix comment about multiplying by T-1 and
+	adding T or multiplying by T+1 and subracting T.
+
 2015-03-22  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/64317
@@ -43,7 +462,7 @@
 	(--help): Likewise.
 	* doc.invoke.texi (AVR Options): Likewise.
 	(V850 Options): Likewise.
-	
+
 2015-03-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65475
@@ -207,7 +626,7 @@
 	already is final.
 	(ipa_inline): Recompute inline_failed codes.
 	* cif-code.def (FUNCTION_NOT_OPTIMIZED, REDEFINED_EXTERN_INLINE,
-	USES_COMDAT_LOCAL, ATTRIBUTE_MISMATCH, UNREACHABLE): Declare as 
+	USES_COMDAT_LOCAL, ATTRIBUTE_MISMATCH, UNREACHABLE): Declare as
 	CIF_FINAL_ERROR.
 
 2015-03-20  Uros Bizjak  <ubizjak@gmail.com>
@@ -1116,7 +1535,7 @@
 
 2015-03-03  Jan Hubicka  <hubicka@ucw.cz>
 
- 	PR ipa/65270
+	PR ipa/65270
 	* ipa-icf.c (sem_item::compare_cgraph_references): Compare
 	vtable references for their containing type.
 	(sem_function::equals_wpa): Compare TYPE_RESTRICT
@@ -1370,7 +1789,7 @@
 	to create a register in testing mode.
 
 2015-03-03  Martin Liska  <mliska@suse.cz>
-	    Jan Hubicka   <hubicka@ucw.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65263
 	* cgraph.c (cgraph_node::has_thunk_p): New function.
@@ -1834,12 +2253,6 @@
 	(TARGET_NO_VOLATILE_CE): New macro.
 	* config/arm/arm.md (arm_comparison_operator): Disabled if not allow
 	volatile memory access in IT block
-
-2015-02-25  Uros Bizjak  <ubizjak@gmail.com>
-
-	PR target/47230
-	* doc/install.texi (Specific, alpha*-*-*): Document that binutils 2.25
-	or newer are required.
 
 2015-02-25  Kai Tietz  <ktietz@redhat.com>
 

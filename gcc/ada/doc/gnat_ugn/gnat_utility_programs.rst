@@ -57,7 +57,7 @@ The `gnatclean` command has the form:
   ::
 
       $ gnatclean switches `names`
-  
+
 where `names` is a list of source file names. Suffixes :file:`.ads` and
 :file:`adb` may be omitted. If a project file is specified using switch
 :samp:`-P`, then `names` may be completely omitted.
@@ -465,7 +465,7 @@ building specialized scripts.
       /home/comar/local/adainclude/s-tasoli.ads
       /home/comar/local/adainclude/s-unstyp.ads
       /home/comar/local/adainclude/unchconv.ads
-  
+
 
 .. _The_Cross-Referencing_Tools_gnatxref_and_gnatfind:
 
@@ -511,7 +511,7 @@ The command invocation for `gnatxref` is:
   ::
 
       $ gnatxref [`switches`] `sourcefile1` [`sourcefile2` ...]
-  
+
 where
 
 *sourcefile1* [, *sourcefile2* ...]
@@ -939,7 +939,7 @@ account.
     [default: `""`].
     Specifies the name of the executable for the application. This variable can
     be referred to in the following lines by using the :samp:`{${main}` notation.
-  
+
 
 * *comp_cmd=COMMAND*
     [default: `"gcc -c -I${src_dir} -g -gnatq"`].
@@ -1002,14 +1002,14 @@ are recognized:
     ::
 
         regexp ::= term {| term}   -- alternation (term or term ...)
-  
+
         term ::= item {item}       -- concatenation (item then item)
 
         item ::= elmt              -- match elmt
         item ::= elmt *            -- zero or more elmt's
         item ::= elmt +            -- one or more elmt's
         item ::= elmt ?            -- matches elmt or nothing
-  
+
         elmt ::= nschar            -- matches given character
         elmt ::= [nschar {nschar}]   -- matches any character listed
         elmt ::= [^ nschar {nschar}] -- matches any character not listed
@@ -1020,7 +1020,7 @@ are recognized:
 
         char ::= any character, including special characters
         nschar ::= any character except ()[].*+?^
-    
+
     Here are a few examples:
 
       ``abcde|fghi``
@@ -1111,7 +1111,7 @@ You can then issue any of the following commands:
           Print                                                   Type: Unit
             Decl: bar.ads           2:15
             Ref:  main.adb          6:12     7:12
-    
+
 
     This shows that the entity `Main` is declared in main.ads, line 2, column 9,
     its body is in main.adb, line 1, column 14 and is not referenced any where.
@@ -1137,7 +1137,7 @@ free implementation of *vi*, such as *vim*.
   ::
 
      $ gnatxref -v gnatfind.adb > tags
-  
+
 
 The following command will generate the tags file for `gnatfind` itself
 (if the sources are in the search path!):
@@ -1145,7 +1145,7 @@ The following command will generate the tags file for `gnatfind` itself
   ::
 
      $ gnatxref -v gnatfind.adb > tags
-  
+
 From *vi*, you can then use the command :samp:`:tag {entity}`
 (replacing `entity` by whatever you are looking for), and vi will
 display a new file with the corresponding declaration of entity.
@@ -1171,7 +1171,7 @@ Examples of `gnatfind` Usage
        directory/main.ads:106:14: xyz <= declaration
        directory/main.adb:24:10: xyz <= body
        directory/foo.ads:45:23: xyz <= declaration
-    
+
   I.e., one of the entities xyz found in main.adb is declared at
   line 12 of main.ads (and its body is in main.adb), and another one is
   declared at line 45 of foo.ads
@@ -1190,7 +1190,7 @@ Examples of `gnatfind` Usage
          procedure xyz is
       directory/foo.ads:45:23: xyz <= declaration
          xyz : Integer;
-    
+
   This can make it easier to find exactly the location your are looking
   for.
 
@@ -1352,13 +1352,13 @@ is located. The syntax of this line is:
   ::
 
      #!full_path_name_to_perl
-  
+
 Alternatively, you may run the script using the following command line:
 
   ::
 
      $ perl gnathtml.pl [`switches`] `files`
-  
+
 
 
 
@@ -1392,7 +1392,7 @@ Alternatively, you may run the script using the following command line:
     ::
 
        $ gnat2xml [options] filenames [-files filename] [-cargs gcc_switches]
-  
+
   Options:
 
      :samp:`--help`
@@ -1409,7 +1409,7 @@ Alternatively, you may run the script using the following command line:
           the set of sources to be processed. The exact set of argument
           sources depends on other options specified, see below.
 
-     :samp:`-U` 
+     :samp:`-U`
           If a project file is specified and no argument source is explicitly
           specified, process all the units of the closure of the argument project.
           Otherwise this option has no effect.
@@ -1420,7 +1420,7 @@ Alternatively, you may run the script using the following command line:
           option), process the closure of units rooted at `main_unit`.
           Otherwise this option has no effect.
 
-     :samp:`-X{name}={value}` 
+     :samp:`-X{name}={value}`
           Indicates that external variable `name` in
           the argument project has the value `value`. Has no effect if no
           project is specified as tool argument.
@@ -1437,7 +1437,7 @@ Alternatively, you may run the script using the following command line:
           only compiles files that need to be recompiled. A project file
           is required in this mode.
 
-     :samp:`-j{n}` 
+     :samp:`-j{n}`
            In *--incremental* mode, use `n` *gnat2xml*
            processes to perform XML generation in parallel. If `n` is 0, then
            the maximum number of parallel tree creations is the number of core
@@ -1452,7 +1452,7 @@ Alternatively, you may run the script using the following command line:
           Directories to search for dependencies.
           You can also set the ADA_INCLUDE_PATH environment variable for this.
 
-     :samp:`--compact` 
+     :samp:`--compact`
           Debugging version, with interspersed source, and a more
           compact representation of "sloc". This version does not conform
           to any schema.
@@ -1463,15 +1463,15 @@ Alternatively, you may run the script using the following command line:
      :samp:`-files={filename}`
          The name of a text file containing a list of Ada source files to process
 
-     :samp:`-q` 
+     :samp:`-q`
          Quiet
 
-     :samp:`-v` 
+     :samp:`-v`
          Verbose
 
-     :samp:`-cargs` ... 
+     :samp:`-cargs` ...
          Options to pass to gcc
-   
+
   If a project file is specified and no argument source is explicitly
   specified, and no *-U* is specified, then the set of processed
   sources is all the immediate units of the argument project.
@@ -1481,7 +1481,7 @@ Alternatively, you may run the script using the following command line:
     ::
 
        $ gnat2xml -v -output-dir=xml-files *.ad[sb]
-  
+
   The above will create \*.xml files in the :file:`xml-files` subdirectory.
   For example, if there is an Ada package Mumble.Dumble, whose spec and
   body source code lives in mumble-dumble.ads and mumble-dumble.adb,
@@ -1505,7 +1505,7 @@ Alternatively, you may run the script using the following command line:
     ::
 
         $ gnat2xsd > ada-schema.xsd
-  
+
 
   *gnat2xml* generates XML files that will validate against
   :file:`ada-schema.xsd`.
@@ -1549,7 +1549,7 @@ Alternatively, you may run the script using the following command line:
 
        type T is range 1..10;
        X, Y : constant T := 1;
-  
+
 
   The first 'T' is the defining occurrence of a type. The 'X' is the
   defining occurrence of a constant, as is the 'Y', and the second 'T' is
@@ -1577,14 +1577,14 @@ Alternatively, you may run the script using the following command line:
         ...
         --  Returns Element_Kinds:
         --       An_Expression
-  
+
 
   The corresponding sub-element of type Assignment_Statement is:
 
     ::
 
         <xsd:element name="assignment_expression_q" type="Expression_Class"/>
-  
+
   where Expression_Class is defined by an xsd:choice of all the
   various kinds of expression.
 
@@ -1774,7 +1774,7 @@ Alternatively, you may run the script using the following command line:
         formal_function
         formal_package
         formal_package_declaration_with_box
-  
+
   .. _Generating_Representation_Clauses:
 
   Generating Representation Clauses
@@ -1808,7 +1808,7 @@ Alternatively, you may run the script using the following command line:
         ...
         <comment text="--gen-">
         ...
-  
+
 
 .. only:: PRO or GPL
 
@@ -2194,7 +2194,7 @@ Alternatively, you may run the script using the following command line:
 
   * *Maximal static nesting level of inner program units*
       According to :title:`Ada Reference Manual`, 10.1(1):
-    
+
         "A program unit is either a package, a task unit, a protected unit, a
         protected entry, a generic unit, or an explicitly declared subprogram other
         than an enumeration literal."
@@ -2619,7 +2619,7 @@ Alternatively, you may run the script using the following command line:
                 return F_1 (I);
              end Fun;
          end Pack;
-    
+
   If we apply *gnatmetric* with the *--coupling-all* option to
   these units, the result will be:
 
@@ -2852,11 +2852,6 @@ Alternatively, you may run the script using the following command line:
    You can specify various style directives via switches; e.g.,
    identifier case conventions, rules of indentation, and comment layout.
 
-   Note: A newly-redesigned set of formatting algorithms used by gnatpp
-   is now available.
-   To invoke the old formatting algorithms, use the ``--pp-old`` switch.
-   Support for ``--pp-old`` will be removed in some future version.
-
    To produce a reformatted file, *gnatpp* invokes the Ada
    compiler and generates and uses the ASIS tree for the input source;
    thus the input must be legal Ada code, and the tool should have all the
@@ -2875,7 +2870,7 @@ Alternatively, you may run the script using the following command line:
      ::
 
         $ gnatpp [`switches`] `filename` [-cargs `gcc_switches`]
-     
+
    where
 
    * `switches` is an optional sequence of switches defining such properties as
@@ -3499,12 +3494,6 @@ Alternatively, you may run the script using the following command line:
      of the default `--!pp on`.
 
 
-   .. index:: --pp-old  (gnatpp)
-
-   :samp:`--pp-old`
-     Use the old formatting algorithms.
-
-
    .. index:: -files (gnatpp)
 
    :samp:`-files {filename}`
@@ -3597,12 +3586,12 @@ Alternatively, you may run the script using the following command line:
                      Green_Interrupt_Kind);
            --!pp on -- reenable pretty printing
            ...
-     
+
    You can specify different comment strings using the ``--pp-off``
    and ``--pp-on`` switches. For example, if you say:
 
      ::
-     
+
         $ gnatpp --pp-off=' pp-' *.ad?
 
    then gnatpp will recognize comments of the form
@@ -3765,7 +3754,7 @@ Alternatively, you may run the script using the following command line:
         `casing_schema` ::= `identifier` | `simple_identifier`
 
         `simple_identifier` ::= `letter`{`letter_or_digit`}
-     
+
 
    (See :title:`Ada Reference Manual`, Section 2.3) for the definition of the
    `identifier` lexical element and the `letter_or_digit` category.)
@@ -3804,7 +3793,7 @@ Alternatively, you may run the script using the following command line:
    For example, suppose we have the following source to reformat:
 
      .. code-block:: ada
-     
+
         procedure test is
            name1 : integer := 1;
            name4_name3_name2 : integer := 2;
@@ -3813,7 +3802,7 @@ Alternatively, you may run the script using the following command line:
         begin
            name2_name3_name4 := name4_name3_name2 > name1;
         end;
-     
+
    And suppose we have two dictionaries:
 
      ::
@@ -3825,13 +3814,13 @@ Alternatively, you may run the script using the following command line:
 
         *dict2:*
           *NAME3*
-     
+
    If *gnatpp* is called with the following switches:
 
      ::
 
         $ gnatpp -nM -D dict1 -D dict2 test.adb
-     
+
    then we will get the following name casing in the *gnatpp* output:
 
 
@@ -3885,13 +3874,13 @@ Alternatively, you may run the script using the following command line:
 
   Running *gnatstub*
   ------------------
-  
+
   *gnatstub* invocation has the following form:
 
     ::
 
        $ gnatstub [`switches`] `filename` [-cargs `gcc_switches`]
-    
+
   where
 
   * *filename*
@@ -3912,7 +3901,7 @@ Alternatively, you may run the script using the following command line:
       or creates the name file to generate using the standard GNAT
       naming conventions.
 
-  * *gcc_switches* is a list of switches for *gcc*. 
+  * *gcc_switches* is a list of switches for *gcc*.
       They will be passed on to all compiler invocations made by
       *gnatstub* to generate the ASIS trees. Here you can provide
       ``-I`` switches to form the source search path,
@@ -4212,7 +4201,7 @@ Alternatively, you may run the script using the following command line:
     ::
 
         $ gnattest `-Pprojname` [`--harness-dir=dirname`] [`switches`] [`filename`] [-cargs `gcc_switches`]
-    
+
   where
 
   * :samp:`-P{projname}`
@@ -4281,7 +4270,7 @@ Alternatively, you may run the script using the following command line:
     ::
 
         $ gnattest `test_drivers.list` [`switches`]
-    
+
   where
 
   * :samp:`{test_drivers.list}`
@@ -4557,15 +4546,15 @@ Alternatively, you may run the script using the following command line:
   located in:
 
     ::
-    
+
         <install_prefix>/share/examples/gnattest/simple
-    
+
   This project contains a simple package containing one subprogram. By running gnattest:
 
     ::
 
         $ gnattest --harness-dir=driver -Psimple.gpr
-    
+
   a test driver is created in directory ``driver``. It can be compiled and run:
 
     ::
@@ -4573,7 +4562,7 @@ Alternatively, you may run the script using the following command line:
        $ cd obj/driver
        $ gnatmake -Ptest_driver
        $ test_runner
-    
+
   One failed test with diagnosis ``test not implemented`` is reported.
   Since no special output option was specified, the test package ``Simple.Tests``
   is located in:
@@ -4581,7 +4570,7 @@ Alternatively, you may run the script using the following command line:
     ::
 
         <install_prefix>/share/examples/gnattest/simple/obj/gnattest/tests
-    
+
 
   For each package containing visible subprograms, a child test package is
   generated. It contains one test routine per tested subprogram. Each
@@ -4601,7 +4590,7 @@ Alternatively, you may run the script using the following command line:
     ::
 
         Assert (Inc (1) = 2, "wrong incrementation");
-    
+
   After recompiling and running the test driver, one successfully passed test
   is reported.
 
@@ -4642,7 +4631,7 @@ Alternatively, you may run the script using the following command line:
         $ cd obj/driver
         $ gnatmake -Ptest_driver
         $ test_runner
-    
+
   The old test is not replaced with a stub, nor is it lost, but a new test
   skeleton is created for function Dec.
 
@@ -4668,11 +4657,11 @@ Alternatively, you may run the script using the following command line:
   as passed to gnattest when generating the test driver.
 
   Passing it to the driver generated on the first example:
-   
+
     ::
 
         $ test_runner --skeleton-default=pass
-    
+
   makes both tests pass, even the unimplemented one.
 
 
@@ -4695,7 +4684,7 @@ Alternatively, you may run the script using the following command line:
 
         $ cd <install_prefix>/share/examples/gnattest/tagged_rec
         $ gnattest --harness-dir=driver -Ptagged_rec.gpr
-    
+
   Taking a closer look at the test type declared in the test package
   Speed1.Controller_Test_Data is necessary. It is declared in:
 
@@ -4741,7 +4730,7 @@ Alternatively, you may run the script using the following command line:
         $ cd obj/driver
         $ gnatmake -Ptest_driver
         $ test_runner
-    
+
   There are 6 passed tests while there are only 5 testable subprograms. The test
   routine for function Speed has been inherited and run against objects of the
   derived type.
@@ -4784,7 +4773,7 @@ Alternatively, you may run the script using the following command line:
         $ cd obj/driver
         $ gnatmake -Ptest_driver
         $ test_runner
-    
+
   While all the tests pass by themselves, the parent test for Adjust_Speed fails
   against objects of the derived type.
 
@@ -4812,7 +4801,7 @@ Alternatively, you may run the script using the following command line:
 
         $ cd <install_prefix>/share/examples/gnattest/contracts
         $ gnattest --harness-dir=driver -Pcontracts.gpr
-    
+
   Putting actual checks within the range of the contract does not cause any
   error reports. For example, for the test routine which corresponds to
   test case 1:
@@ -4820,7 +4809,7 @@ Alternatively, you may run the script using the following command line:
     ::
 
         Assert (Sqrt (9.0) = 3.0, "wrong sqrt");
-    
+
   and for the test routine corresponding to test case 2:
 
     ::
@@ -4834,7 +4823,7 @@ Alternatively, you may run the script using the following command line:
         $ cd obj/driver
         $ gnatmake -Ptest_driver
         $ test_runner
-    
+
   However, by changing 9.0 to 25.0 and 3.0 to 5.0, for example, you can get
   a precondition violation for test case one. Also, by using any otherwise
   correct but positive pair of numbers in the second test routine, you can also
@@ -4861,7 +4850,7 @@ Alternatively, you may run the script using the following command line:
     ::
 
         <install_prefix>/share/examples/gnattest/additional_tests/
-    
+
   To create a test driver for already-written tests, use the ``--harness-only``
   option:
 
@@ -4871,7 +4860,7 @@ Alternatively, you may run the script using the following command line:
           --harness-only
         gnatmake -Pharness_only/test_driver.gpr
         harness_only/test_runner
-    
+
   Additional tests can also be executed together with generated tests:
 
     ::
@@ -4983,7 +4972,7 @@ Alternatively, you may run the script using the following command line:
     ::
 
         $ powerpc-elf-gnattest -Psimple.gpr -XPLATFORM=powerpc-elf -XRUNTIME=zfp
-    
+
 
   .. _Current_Limitations:
 
@@ -4994,4 +4983,5 @@ Alternatively, you may run the script using the following command line:
 
   * generic tests for nested generic packages and their instantiations
   * tests for protected subprograms and entries
-
+  * if pragmas for C and C++ interaction are used, manual adjustments might be
+    necessary to make the test driver compilable

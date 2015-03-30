@@ -1691,6 +1691,9 @@ typedef struct gfc_namespace
      Holds -1 during resolution.  */
   signed resolved:2;
 
+  /* Set when resolve_types has been called for this namespace.  */
+  unsigned types_resolved:1;
+
   /* Set to 1 if code has been generated for this namespace.  */
   unsigned translated:1;
 
@@ -3175,6 +3178,7 @@ void gfc_add_component_ref (gfc_expr *, const char *);
 void gfc_add_class_array_ref (gfc_expr *);
 #define gfc_add_data_component(e)     gfc_add_component_ref(e,"_data")
 #define gfc_add_vptr_component(e)     gfc_add_component_ref(e,"_vptr")
+#define gfc_add_len_component(e)      gfc_add_component_ref(e,"_len")
 #define gfc_add_hash_component(e)     gfc_add_component_ref(e,"_hash")
 #define gfc_add_size_component(e)     gfc_add_component_ref(e,"_size")
 #define gfc_add_def_init_component(e) gfc_add_component_ref(e,"_def_init")

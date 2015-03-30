@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,9 +42,9 @@ package Sem_Attr is
    -- Implementation Dependent Attributes --
    -----------------------------------------
 
-   --  This section describes the implementation dependent attributes
-   --  provided in GNAT, as well as constructing an array of flags
-   --  indicating which attributes these are.
+   --  This section describes the implementation dependent attributes provided
+   --  in GNAT, as well as constructing an array of flags indicating which
+   --  attributes these are.
 
    Attribute_Impl_Def : Attribute_Class_Array := Attribute_Class_Array'(
 
@@ -151,6 +151,17 @@ package Sem_Attr is
       --  default scalar storage order (as specified using pragma
       --  Default_Scalar_Storage_Order, or equal to Default_Bit_Order if
       --  unspecified) as a System.Bit_Order value. This is a static attribute.
+
+      -----------
+      -- Deref --
+      -----------
+
+      Attribute_Deref => True,
+      --  typ'Deref (expr) is valid only if expr is of type System'Address.
+      --  The result is an object of type typ that is obtained by treating the
+      --  address as an access-to-typ value that points to the result. It is
+      --  basically equivalent to (atyp!expr).all where atyp is an access type
+      --  for the type.
 
       ---------------
       -- Elab_Body --

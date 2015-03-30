@@ -165,7 +165,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct atomic
     {
     private:
-      _Tp _M_i;
+      // Align 1/2/4/8/16-byte types the same as integer types of that size.
+      // This matches the alignment effects of the C11 _Atomic qualifier.
+      static constexpr int _S_min_alignment
+	= sizeof(_Tp) == sizeof(char)	   ? alignof(char)
+	: sizeof(_Tp) == sizeof(short)	   ? alignof(short)
+	: sizeof(_Tp) == sizeof(int)	   ? alignof(int)
+	: sizeof(_Tp) == sizeof(long)	   ? alignof(long)
+	: sizeof(_Tp) == sizeof(long long) ? alignof(long long)
+#ifdef _GLIBCXX_USE_INT128
+	: sizeof(_Tp) == sizeof(__int128)  ? alignof(__int128)
+#endif
+	: 0;
+
+      static constexpr int _S_alignment
+        = _S_min_alignment > alignof(_Tp) ? _S_min_alignment : alignof(_Tp);
+
+      alignas(_S_alignment) _Tp _M_i;
 
       static_assert(__is_trivially_copyable(_Tp),
 		    "std::atomic requires a trivially copyable type");
@@ -198,11 +214,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       bool
       is_lock_free() const noexcept
-      { return __atomic_is_lock_free(sizeof(_M_i), nullptr); }
+      {
+	// Produce a fake, minimally aligned pointer.
+	void *__a = reinterpret_cast<void *>(-__alignof(_M_i));
+	return __atomic_is_lock_free(sizeof(_M_i), __a);
+      }
 
       bool
       is_lock_free() const volatile noexcept
-      { return __atomic_is_lock_free(sizeof(_M_i), nullptr); }
+      {
+	// Produce a fake, minimally aligned pointer.
+	void *__a = reinterpret_cast<void *>(-__alignof(_M_i));
+	return __atomic_is_lock_free(sizeof(_M_i), __a);
+      }
 
       void
       store(_Tp __i, memory_order __m = memory_order_seq_cst) noexcept

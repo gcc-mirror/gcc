@@ -3161,7 +3161,7 @@ package body Sem_Ch3 is
            and then No (Corresponding_Generic_Association (Parent (Obj_Id)))
 
            --  Don't give this for internally generated entities (such as the
-           --  FIRST and LAST temporaries generated for bounds.
+           --  FIRST and LAST temporaries generated for bounds).
 
            and then Comes_From_Source (Obj_Id)
          then

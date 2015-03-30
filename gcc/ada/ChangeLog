@@ -1,3 +1,47 @@
+2015-03-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Deref>: New case.
+
+2015-03-24  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb: Minor typo fix (missing paren).
+
+2015-03-24  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads: Update comment.
+
+2015-03-24  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb: Add entry for typ'Deref.
+	* sem_attr.adb (Deref): New GNAT attribute.
+	* sem_attr.ads: Add entry for new GNAT attribute Deref.
+	* snames.ads-tmpl: Add entries for new attribute Deref.
+
+2015-03-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Rep_Item_Too_Early): allow pragma Convention
+	on generic type.
+
+2015-03-24  Gary Dismukes  <dismukes@adacore.com>
+
+	* inline.adb: Minor typo fix.
+
+2015-03-24  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst,
+	doc/gnat_ugn/gnat_utility_programs.rst
+	doc/gnat_rm/implementation_defined_attributes.rst
+	doc/gnat_rm/implementation_defined_pragmas.rst
+	doc/gnat_rm/representation_clauses_and_pragmas.rst
+	doc/gnat_rm/about_this_guide.rst
+	doc/gnat_rm/implementation_of_ada_2012_features.rst: Doc improvements.
+	* gnat_rm.texi, gnat_ugn.texi: Regenerate.
+
+2015-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/65522
+	* adadecode.c (ada_demangle): Guard with IN_RTS instead of IN_GCC.
+
 2015-03-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/65451

@@ -1,5 +1,5 @@
 /* { dg-lto-do link } */
-/* { dg-options "-O2  -Wno-odr" } */
+/* { dg-lto-options "-O2  -Wno-odr" } */
 /* { dg-extra-ld-options { -O2 -Wno-odr -r -nostdlib } } */
 namespace std {
 class ios_base {
@@ -7,4 +7,3 @@ class ios_base {
   class __attribute((__abi_tag__("cxx11"))) failure : A {};
 } a;
 }
-

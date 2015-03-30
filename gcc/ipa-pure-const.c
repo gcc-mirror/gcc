@@ -86,6 +86,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "intl.h"
 #include "opts.h"
+#include "varasm.h"
 
 /* Lattice values for const and pure functions.  Everything starts out
    being const, then may drop to pure and then neither depending on
@@ -708,6 +709,16 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
   gimple stmt = gsi_stmt (*gsip);
 
   if (is_gimple_debug (stmt))
+    return;
+
+  /* Do consider clobber as side effects before IPA, so we rather inline
+     C++ destructors and keep clobber semantics than eliminate them.
+
+     TODO: We may get smarter during early optimizations on these and let
+     functions containing only clobbers to be optimized more.  This is a common
+     case of C++ destructors.  */
+
+  if ((ipa || cfun->after_inlining) && gimple_clobber_p (stmt))
     return;
 
   if (dump_file)
@@ -1869,4 +1880,97 @@ gimple_opt_pass *
 make_pass_warn_function_noreturn (gcc::context *ctxt)
 {
   return new pass_warn_function_noreturn (ctxt);
+}
+
+/* Simple local pass for pure const discovery reusing the analysis from
+   ipa_pure_const.   This pass is effective when executed together with
+   other optimization passes in early optimization pass queue.  */
+
+namespace {
+
+const pass_data pass_data_nothrow =
+{
+  GIMPLE_PASS, /* type */
+  "nothrow", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_IPA_PURE_CONST, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_nothrow : public gimple_opt_pass
+{
+public:
+  pass_nothrow (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_nothrow, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_nothrow (m_ctxt); }
+  virtual bool gate (function *) { return optimize; }
+  virtual unsigned int execute (function *);
+
+}; // class pass_nothrow
+
+unsigned int
+pass_nothrow::execute (function *)
+{
+  struct cgraph_node *node;
+  basic_block this_block;
+
+  if (TREE_NOTHROW (current_function_decl))
+    return 0;
+
+  node = cgraph_node::get (current_function_decl);
+
+  /* We run during lowering, we can not really use availability yet.  */
+  if (cgraph_node::get (current_function_decl)->get_availability ()
+      <= AVAIL_INTERPOSABLE)
+    {
+      if (dump_file)
+        fprintf (dump_file, "Function is interposable;"
+	         " not analyzing.\n");
+      return true;
+    }
+
+  FOR_EACH_BB_FN (this_block, cfun)
+    {
+      for (gimple_stmt_iterator gsi = gsi_start_bb (this_block);
+	   !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+        if (stmt_can_throw_external (gsi_stmt (gsi)))
+	  {
+	    if (is_gimple_call (gsi_stmt (gsi)))
+	      {
+		tree callee_t = gimple_call_fndecl (gsi_stmt (gsi));
+		if (callee_t && recursive_call_p (current_function_decl,
+						  callee_t))
+		  continue;
+	      }
+	
+	    if (dump_file)
+	      {
+		fprintf (dump_file, "Statement can throw: ");
+		print_gimple_stmt (dump_file, gsi_stmt (gsi), 0, 0);
+	      }
+	    return 0;
+	  }
+    }
+
+  node->set_nothrow_flag (true);
+  if (dump_file)
+    fprintf (dump_file, "Function found to be nothrow: %s\n",
+	     current_function_name ());
+  return 0;
+}
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_nothrow (gcc::context *ctxt)
+{
+  return new pass_nothrow (ctxt);
 }

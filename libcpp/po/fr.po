@@ -1,7 +1,9 @@
 # Messages français pour GNU concernant cpplib.
 # Copyright © 2001, 2008 Free Software Foundation, Inc.
+# This file is distributed under the same license as the gcc package.
 # Michel Robitaille <robitail@IRO.UMontreal.CA>, traducteur depuis/since 1996.
 # François-Xavier Coudert <fxcoudert@gcc.gnu.org>
+# Stéphane Aulery <lkppo@free.fr>, 2015
 #
 # Vocabulaire utilisé
 # 	lvalue	 	= membre gauche
@@ -117,11 +119,11 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU cpplib 4.3.0\n"
+"Project-Id-Version: GNU cpplib 5.1-b20150208\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-02-02 16:02+0000\n"
-"PO-Revision-Date: 2008-03-27 22:46+0000\n"
-"Last-Translator: François-Xavier Coudert <fxcoudert@gmail.com>\n"
+"PO-Revision-Date: 2015-03-24 00:22+0100\n"
+"Last-Translator: Stéphane Aulery <lkppo@free.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -277,10 +279,9 @@ msgid "#%s is a GCC extension"
 msgstr "#%s est une extension GCC"
 
 #: directives.c:379
-#, fuzzy, c-format
-#| msgid "#%s is a GCC extension"
+#, c-format
 msgid "#%s is a deprecated GCC extension"
-msgstr "#%s est une extension GCC"
+msgstr "#%s est une extension obsolète de GCC"
 
 #: directives.c:392
 msgid "suggest not using #elif in traditional C"
@@ -874,7 +875,7 @@ msgstr "« __VA_ARGS__ » peut seulement appraître dans l'expansion des macros C99
 #: lex.c:1285 lex.c:1374
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
-msgstr ""
+msgstr "l'identifiant « %s » est un nom d'opérateur spécial en C++"
 
 #: lex.c:1661
 msgid "raw string delimiter longer than 16 characters"

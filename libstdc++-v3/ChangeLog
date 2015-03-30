@@ -1,3 +1,71 @@
+2015-03-28  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/65420
+	* include/bits/regex_constants.h: Use constexpr variables for flags.
+	* testsuite/28_regex/constants/constexpr.cc: New testcase.
+
+2015-03-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65499
+	* include/std/chrono: Add using-directive for literals to std::chrono.
+	* testsuite/20_util/duration/literals/65499.cc: New.
+
+2015-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/58038
+	PR libstdc++/60421
+	* include/std/thread (this_thread::sleep_for): Check for negative
+	durations.
+	(this_thread::sleep_until): Check for times in the past.
+	* testsuite/30_threads/this_thread/58038.cc: New.
+	* testsuite/30_threads/this_thread/60421.cc: New.
+
+2015-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/62259
+	PR libstdc++/65147
+	* include/std/atomic (atomic<T>): Increase alignment for types with
+	the same size as one of the integral types.
+	* testsuite/29_atomics/atomic/60695.cc: Adjust dg-error line number.
+	* testsuite/29_atomics/atomic/62259.cc: New.
+
+2015-03-26  Richard Henderson  <rth@redhat.com>
+
+	PR libstdc++/65033
+	* include/bits/atomic_base.h (__atomic_base<T>::is_lock_free): Build
+	a fake pointer indicating type alignment.
+	(__atomic_base<T *>::is_lock_free): Likewise.
+	* include/std/atomic (atomic<T>::is_lock_free): Likewise.
+
+2015-03-25  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR libstdc++/33394
+	* testsuite/21_strings/basic_string/pthread33394.cc: Use
+	dg-additional-options.
+
+2015-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/65543
+	* include/std/istream (operator>>(basic_istream<>&&, _Tp&): Revert
+	thinko in r150387.
+	* include/std/ostream (operator<<(basic_ostream<>&&, const _Tp&):
+	Likewise.
+	* testsuite/27_io/rvalue_streams-2.cc: New.
+
+2015-03-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/33394
+	* testsuite/21_strings/basic_string/pthread33394.cc: Add test.
+
+2015-03-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64967
+	* acinclude.m4: Disable dual ABI when gnu-versioned-namespace in use.
+	* configure: Regenerate.
+	* src/c++11/compatibility-c++0x.cc (error_category), generic_category,
+	system_category): Use macros for versioned namespace.
+	* src/c++11/futex.cc: Add missing end macro for versioned namespace.
+
 2015-03-20  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* testsuite/17_intro/headers/c++1998/all_attributes.cc: Disable

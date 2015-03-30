@@ -473,7 +473,8 @@ lto_symtab_merge_decls_2 (symtab_node *first, bool diagnosed_p)
     if (TREE_PUBLIC (e->decl))
       {
 	if (!lto_symtab_merge (prevailing, e)
-	    && !diagnosed_p)
+	    && !diagnosed_p
+	    && !DECL_ARTIFICIAL (e->decl))
 	  mismatches.safe_push (e->decl);
       }
   if (mismatches.is_empty ())

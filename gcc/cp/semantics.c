@@ -1165,6 +1165,8 @@ finish_switch_cond (tree cond, tree switch_stmt)
 	}
       /* We want unlowered type here to handle enum bit-fields.  */
       orig_type = unlowered_expr_type (cond);
+      if (TREE_CODE (orig_type) != ENUMERAL_TYPE)
+	orig_type = TREE_TYPE (cond);
       if (cond != error_mark_node)
 	{
 	  /* Warn if the condition has boolean value.  */

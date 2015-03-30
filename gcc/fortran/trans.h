@@ -350,20 +350,31 @@ typedef struct
 gfc_wrapped_block;
 
 /* Class API functions.  */
+tree gfc_class_set_static_fields (tree, tree, tree);
 tree gfc_class_data_get (tree);
 tree gfc_class_vptr_get (tree);
 tree gfc_class_len_get (tree);
+gfc_expr * gfc_find_and_cut_at_last_class_ref (gfc_expr *);
+/* Get an accessor to the class' vtab's * field, when a class handle is
+   available.  */
+tree gfc_class_vtab_hash_get (tree);
+tree gfc_class_vtab_size_get (tree);
+tree gfc_class_vtab_extends_get (tree);
+tree gfc_class_vtab_def_init_get (tree);
+tree gfc_class_vtab_copy_get (tree);
+tree gfc_class_vtab_final_get (tree);
+/* Get an accessor to the vtab's * field, when a vptr handle is present.  */
+tree gfc_vtpr_hash_get (tree);
+tree gfc_vptr_size_get (tree);
+tree gfc_vptr_extends_get (tree);
+tree gfc_vptr_def_init_get (tree);
+tree gfc_vptr_copy_get (tree);
+tree gfc_vptr_final_get (tree);
 void gfc_reset_vptr (stmtblock_t *, gfc_expr *);
-tree gfc_class_set_static_fields (tree, tree, tree);
-tree gfc_vtable_hash_get (tree);
-tree gfc_vtable_size_get (tree);
-tree gfc_vtable_extends_get (tree);
-tree gfc_vtable_def_init_get (tree);
-tree gfc_vtable_copy_get (tree);
-tree gfc_vtable_final_get (tree);
+void gfc_reset_len (stmtblock_t *, gfc_expr *);
 tree gfc_get_vptr_from_expr (tree);
 tree gfc_get_class_array_ref (tree, tree);
-tree gfc_copy_class_to_class (tree, tree, tree);
+tree gfc_copy_class_to_class (tree, tree, tree, bool);
 bool gfc_add_finalizer_call (stmtblock_t *, gfc_expr *);
 bool gfc_add_comp_finalizer_call (stmtblock_t *, tree, gfc_component *, bool);
 

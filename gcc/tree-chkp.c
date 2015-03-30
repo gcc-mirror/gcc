@@ -1838,6 +1838,7 @@ chkp_add_bounds_to_call_stmt (gimple_stmt_iterator *gsi)
       new_call = gimple_build_call_vec (gimple_op (call, 1), new_args);
       gimple_call_set_lhs (new_call, gimple_call_lhs (call));
       gimple_call_copy_flags (new_call, call);
+      gimple_call_set_chain (new_call, gimple_call_chain (call));
     }
   new_args.release ();
 
@@ -2153,6 +2154,7 @@ chkp_build_returned_bound (gcall *call)
   tree bounds;
   gimple stmt;
   tree fndecl = gimple_call_fndecl (call);
+  unsigned int retflags;
 
   /* To avoid fixing alloca expands in targets we handle
      it separately.  */
@@ -2196,12 +2198,11 @@ chkp_build_returned_bound (gcall *call)
     }
   /* Do not use retbnd when returned bounds are equal to some
      of passed bounds.  */
-  else if (gimple_call_return_flags (call) & ERF_RETURNS_ARG)
+  else if (((retflags = gimple_call_return_flags (call)) & ERF_RETURNS_ARG)
+	   && (retflags & ERF_RETURN_ARG_MASK) < gimple_call_num_args (call))
     {
       gimple_stmt_iterator iter = gsi_for_stmt (call);
-      unsigned int retarg = 0, argno;
-      if (gimple_call_return_flags (call) & ERF_RETURNS_ARG)
-	retarg = gimple_call_return_flags (call) & ERF_RETURN_ARG_MASK;
+      unsigned int retarg = retflags & ERF_RETURN_ARG_MASK, argno;
       if (gimple_call_with_bounds_p (call))
 	{
 	  for (argno = 0; argno < gimple_call_num_args (call); argno++)

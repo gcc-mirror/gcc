@@ -15,8 +15,10 @@ Implementation of Ada 2012 Features
 .. index:: Ada_2012 configuration pragma
 
 This chapter contains a complete list of Ada 2012 features that have been
-implemented as of GNAT version 6.4. Generally, these features are only
-available if the *-gnat12* (Ada 2012 features enabled) flag is set
+implemented.
+Generally, these features are only
+available if the *-gnat12* (Ada 2012 features enabled) option is set,
+which is the default behavior,
 or if the configuration pragma `Ada_2012` is used.
 
 However, new pragmas, attributes, and restrictions are

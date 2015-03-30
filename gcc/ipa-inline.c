@@ -142,7 +142,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "sreal.h"
 #include "auto-profile.h"
-#include "cilk.h"
 #include "builtins.h"
 #include "fibonacci_heap.h"
 #include "lto-streamer.h"
@@ -299,6 +298,27 @@ sanitize_attrs_match_for_inline_p (const_tree caller, const_tree callee)
       DECL_ATTRIBUTES (callee));
 }
 
+/* Used for flags where it is safe to inline when caller's value is
+   grater than callee's.  */
+#define check_maybe_up(flag) \
+      (opts_for_fn (caller->decl)->x_##flag		\
+       != opts_for_fn (callee->decl)->x_##flag		\
+       && (!always_inline 				\
+	   || opts_for_fn (caller->decl)->x_##flag	\
+	      < opts_for_fn (callee->decl)->x_##flag))
+/* Used for flags where it is safe to inline when caller's value is
+   smaller than callee's.  */
+#define check_maybe_down(flag) \
+      (opts_for_fn (caller->decl)->x_##flag		\
+       != opts_for_fn (callee->decl)->x_##flag		\
+       && (!always_inline 				\
+	   || opts_for_fn (caller->decl)->x_##flag	\
+	      > opts_for_fn (callee->decl)->x_##flag))
+/* Used for flags where exact match is needed for correctness.  */
+#define check_match(flag) \
+      (opts_for_fn (caller->decl)->x_##flag		\
+       != opts_for_fn (callee->decl)->x_##flag)
+
  /* Decide if we can inline the edge and possibly update
    inline_failed reason.  
    We check whether inlining is possible at all and whether
@@ -329,8 +349,6 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
   tree caller_tree = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (caller->decl);
   tree callee_tree
     = callee ? DECL_FUNCTION_SPECIFIC_OPTIMIZATION (callee->decl) : NULL;
-  struct function *caller_fun = caller->get_fun ();
-  struct function *callee_fun = callee ? callee->get_fun () : NULL;
 
   if (!callee->definition)
     {
@@ -340,12 +358,6 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
   else if (callee->calls_comdat_local)
     {
       e->inline_failed = CIF_USES_COMDAT_LOCAL;
-      inlinable = false;
-    }
-  else if (!inline_summaries->get (callee)->inlinable
-	   || (caller_fun && fn_contains_cilk_spawn_p (caller_fun)))
-    {
-      e->inline_failed = CIF_FUNCTION_NOT_INLINABLE;
       inlinable = false;
     }
   else if (avail <= AVAIL_INTERPOSABLE)
@@ -375,21 +387,21 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       e->inline_failed = CIF_UNSPECIFIED;
       inlinable = false;
     }
-  /* Don't inline if the callee can throw non-call exceptions but the
-     caller cannot.
-     FIXME: this is obviously wrong for LTO where STRUCT_FUNCTION is missing.
-     Move the flag into cgraph node or mirror it in the inline summary.  */
-  else if (callee_fun && callee_fun->can_throw_non_call_exceptions
-	   && !(caller_fun && caller_fun->can_throw_non_call_exceptions))
-    {
-      e->inline_failed = CIF_NON_CALL_EXCEPTIONS;
-      inlinable = false;
-    }
   /* Check compatibility of target optimization options.  */
   else if (!targetm.target_option.can_inline_p (caller->decl,
 						callee->decl))
     {
       e->inline_failed = CIF_TARGET_OPTION_MISMATCH;
+      inlinable = false;
+    }
+  else if (!inline_summaries->get (callee)->inlinable)
+    {
+      e->inline_failed = CIF_FUNCTION_NOT_INLINABLE;
+      inlinable = false;
+    }
+  else if (inline_summaries->get (caller)->contains_cilk_spawn)
+    {
+      e->inline_failed = CIF_CILK_SPAWN;
       inlinable = false;
     }
   /* Don't inline a function with mismatched sanitization attributes. */
@@ -410,61 +422,60 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
      optimization attribute.  */
   else if (caller_tree != callee_tree)
     {
+      bool always_inline =
+	     (DECL_DISREGARD_INLINE_LIMITS (callee->decl)
+	      && lookup_attribute ("always_inline",
+				   DECL_ATTRIBUTES (callee->decl)));
+
       /* There are some options that change IL semantics which means
          we cannot inline in these cases for correctness reason.
 	 Not even for always_inline declared functions.  */
       /* Strictly speaking only when the callee contains signed integer
          math where overflow is undefined.  */
-      if ((opt_for_fn (caller->decl, flag_strict_overflow)
-	   != opt_for_fn (caller->decl, flag_strict_overflow))
-	  || (opt_for_fn (caller->decl, flag_wrapv)
-	      != opt_for_fn (caller->decl, flag_wrapv))
-	  || (opt_for_fn (caller->decl, flag_trapv)
-	      != opt_for_fn (caller->decl, flag_trapv))
+      if ((check_maybe_up (flag_strict_overflow)
+	   /* this flag is set by optimize.  Allow inlining across
+	      optimize boundary.  */
+	   && (!opt_for_fn (caller->decl, optimize)
+	       == !opt_for_fn (callee->decl, optimize) || !always_inline))
+	  || check_match (flag_wrapv)
+	  || check_match (flag_trapv)
 	  /* Strictly speaking only when the callee contains memory
 	     accesses that are not using alias-set zero anyway.  */
-	  || (opt_for_fn (caller->decl, flag_strict_aliasing)
-	      != opt_for_fn (caller->decl, flag_strict_aliasing))
+	  || check_maybe_down (flag_strict_aliasing)
 	  /* Strictly speaking only when the callee uses FP math.  */
-	  || (opt_for_fn (caller->decl, flag_rounding_math)
-	      != opt_for_fn (caller->decl, flag_rounding_math))
-	  || (opt_for_fn (caller->decl, flag_trapping_math)
-	      != opt_for_fn (caller->decl, flag_trapping_math))
-	  || (opt_for_fn (caller->decl, flag_unsafe_math_optimizations)
-	      != opt_for_fn (caller->decl, flag_unsafe_math_optimizations))
-	  || (opt_for_fn (caller->decl, flag_finite_math_only)
-	      != opt_for_fn (caller->decl, flag_finite_math_only))
-	  || (opt_for_fn (caller->decl, flag_signaling_nans)
-	      != opt_for_fn (caller->decl, flag_signaling_nans))
-	  || (opt_for_fn (caller->decl, flag_cx_limited_range)
-	      != opt_for_fn (caller->decl, flag_cx_limited_range))
-	  || (opt_for_fn (caller->decl, flag_signed_zeros)
-	      != opt_for_fn (caller->decl, flag_signed_zeros))
-	  || (opt_for_fn (caller->decl, flag_associative_math)
-	      != opt_for_fn (caller->decl, flag_associative_math))
-	  || (opt_for_fn (caller->decl, flag_reciprocal_math)
-	      != opt_for_fn (caller->decl, flag_reciprocal_math))
+	  || check_maybe_up (flag_rounding_math)
+	  || check_maybe_up (flag_trapping_math)
+	  || check_maybe_down (flag_unsafe_math_optimizations)
+	  || check_maybe_down (flag_finite_math_only)
+	  || check_maybe_up (flag_signaling_nans)
+	  || check_maybe_down (flag_cx_limited_range)
+	  || check_maybe_up (flag_signed_zeros)
+	  || check_maybe_down (flag_associative_math)
+	  || check_maybe_down (flag_reciprocal_math)
+	  /* We do not want to make code compiled with exceptions to be brought
+	     into a non-EH function unless we know that the callee does not
+	     throw.  This is tracked by DECL_FUNCTION_PERSONALITY.  */
+	  || (check_match (flag_non_call_exceptions)
+	      /* TODO: We also may allow bringing !flag_non_call_exceptions
+		 to flag_non_call_exceptions function, but that may need
+		 extra work in tree-inline to add the extra EH edges.  */
+	      && (!opt_for_fn (callee->decl, flag_non_call_exceptions)
+		  || DECL_FUNCTION_PERSONALITY (callee->decl)))
+	  || (check_maybe_up (flag_exceptions)
+	      && DECL_FUNCTION_PERSONALITY (callee->decl))
 	  /* Strictly speaking only when the callee contains function
 	     calls that may end up setting errno.  */
-	  || (opt_for_fn (caller->decl, flag_errno_math)
-	      != opt_for_fn (caller->decl, flag_errno_math))
+	  || check_maybe_up (flag_errno_math)
 	  /* When devirtualization is diabled for callee, it is not safe
 	     to inline it as we possibly mangled the type info.
 	     Allow early inlining of always inlines.  */
-	  || (opt_for_fn (caller->decl, flag_devirtualize)
-	      && !opt_for_fn (callee->decl, flag_devirtualize)
-	      && (!early
-		  || (!DECL_DISREGARD_INLINE_LIMITS (callee->decl)
-		      || !lookup_attribute ("always_inline",
-				            DECL_ATTRIBUTES (callee->decl))))))
+	  || (!early && check_maybe_down (flag_devirtualize)))
 	{
 	  e->inline_failed = CIF_OPTIMIZATION_MISMATCH;
 	  inlinable = false;
 	}
       /* gcc.dg/pr43564.c.  Apply user-forced inline even at -O0.  */
-      else if (DECL_DISREGARD_INLINE_LIMITS (callee->decl)
-	       && lookup_attribute ("always_inline",
-				    DECL_ATTRIBUTES (callee->decl)))
+      else if (always_inline)
 	;
       /* When user added an attribute to the callee honor it.  */
       else if (lookup_attribute ("optimize", DECL_ATTRIBUTES (callee->decl))
@@ -1088,7 +1099,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	numerator = numerator >> 11;
       denominator = growth;
       if (callee_info->growth > 0)
-	denominator *= callee_info->growth;
+	denominator *= callee_info->growth * callee_info->growth;
 
       badness = - numerator / denominator;
 

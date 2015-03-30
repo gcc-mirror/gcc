@@ -67,7 +67,8 @@ go_cmd_go_files = \
 	$(cmdsrcdir)/go/tool.go \
 	$(cmdsrcdir)/go/vcs.go \
 	$(cmdsrcdir)/go/version.go \
-	$(cmdsrcdir)/go/vet.go
+	$(cmdsrcdir)/go/vet.go \
+	$(libgodir)/zstdpkglist.go
 
 go_cmd_gofmt_files = \
 	$(cmdsrcdir)/gofmt/doc.go \

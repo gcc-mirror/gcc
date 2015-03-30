@@ -234,6 +234,9 @@ gfc_add_component_ref (gfc_expr *e, const char *name)
     }
   if (*tail != NULL && strcmp (name, "_data") == 0)
     next = *tail;
+  else
+    /* Avoid losing memory.  */
+    gfc_free_ref_list (*tail);
   (*tail) = gfc_get_ref();
   (*tail)->next = next;
   (*tail)->type = REF_COMPONENT;
@@ -2562,13 +2565,19 @@ find_intrinsic_vtab (gfc_typespec *ts)
 	      c->attr.access = ACCESS_PRIVATE;
 
 	      /* Build a minimal expression to make use of
-		 target-memory.c/gfc_element_size for 'size'.  */
+		 target-memory.c/gfc_element_size for 'size'.  Special handling
+		 for character arrays, that are not constant sized: to support
+		 len (str) * kind, only the kind information is stored in the
+		 vtab.  */
 	      e = gfc_get_expr ();
 	      e->ts = *ts;
 	      e->expr_type = EXPR_VARIABLE;
 	      c->initializer = gfc_get_int_expr (gfc_default_integer_kind,
 						 NULL,
-						 (int)gfc_element_size (e));
+						 ts->type == BT_CHARACTER
+						 && charlen == 0 ?
+						   ts->kind :
+						   (int)gfc_element_size (e));
 	      gfc_free_expr (e);
 
 	      /* Add component _extends.  */

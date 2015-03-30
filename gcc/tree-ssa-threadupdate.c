@@ -2328,36 +2328,32 @@ bb_ends_with_multiway_branch (basic_block bb ATTRIBUTE_UNUSED)
   return false;
 }
 
-/* Verify that the REGION is a Single Entry Multiple Exits region: make sure no
-   edge other than ENTRY is entering the REGION.  */
+/* Verify that the REGION is a valid jump thread.  A jump thread is a special
+   case of SEME Single Entry Multiple Exits region in which all nodes in the
+   REGION have exactly one incoming edge.  The only exception is the first block
+   that may not have been connected to the rest of the cfg yet.  */
 
 DEBUG_FUNCTION void
-verify_seme (edge entry, basic_block *region, unsigned n_region)
+verify_jump_thread (basic_block *region, unsigned n_region)
 {
-  bitmap bbs = BITMAP_ALLOC (NULL);
-
   for (unsigned i = 0; i < n_region; i++)
-    bitmap_set_bit (bbs, region[i]->index);
-
-  for (unsigned i = 0; i < n_region; i++)
-    {
-      edge e;
-      edge_iterator ei;
-      basic_block bb = region[i];
-
-      /* All predecessors other than ENTRY->src should be in the region.  */
-      for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); ei_next (&ei))
-	if (e != entry)
-	  gcc_assert (bitmap_bit_p (bbs, e->src->index));
-    }
-
-  BITMAP_FREE (bbs);
+    gcc_assert (EDGE_COUNT (region[i]->preds) <= 1);
 }
 
-/* Duplicates a Single Entry Multiple Exit REGION (set of N_REGION basic
-   blocks).  The ENTRY edge is redirected to the duplicate of the region.  If
-   REGION is not a Single Entry region, ignore any incoming edges other than
-   ENTRY: this makes the copied region a Single Entry region.
+/* Return true when BB is one of the first N items in BBS.  */
+
+static inline bool
+bb_in_bbs (basic_block bb, basic_block *bbs, int n)
+{
+  for (int i = 0; i < n; i++)
+    if (bb == bbs[i])
+      return true;
+
+  return false;
+}
+
+/* Duplicates a jump-thread path of N_REGION basic blocks.
+   The ENTRY edge is redirected to the duplicate of the region.
 
    Remove the last conditional statement in the last basic block in the REGION,
    and create a single fallthru edge pointing to the same destination as the
@@ -2369,7 +2365,7 @@ verify_seme (edge entry, basic_block *region, unsigned n_region)
    Returns false if it is unable to copy the region, true otherwise.  */
 
 static bool
-duplicate_seme_region (edge entry, edge exit,
+duplicate_thread_path (edge entry, edge exit,
 		       basic_block *region, unsigned n_region,
 		       basic_block *region_copy)
 {
@@ -2428,7 +2424,53 @@ duplicate_seme_region (edge entry, edge exit,
     }
 
   copy_bbs (region, n_region, region_copy, &exit, 1, &exit_copy, loop,
-	    split_edge_bb_loc (entry), 0);
+	    split_edge_bb_loc (entry), false);
+
+  /* Fix up: copy_bbs redirects all edges pointing to copied blocks.  The
+     following code ensures that all the edges exiting the jump-thread path are
+     redirected back to the original code: these edges are exceptions
+     invalidating the property that is propagated by executing all the blocks of
+     the jump-thread path in order.  */
+
+  for (i = 0; i < n_region; i++)
+    {
+      edge e;
+      edge_iterator ei;
+      basic_block bb = region_copy[i];
+
+      if (single_succ_p (bb))
+	{
+	  /* Make sure the successor is the next node in the path.  */
+	  gcc_assert (i + 1 == n_region
+		      || region_copy[i + 1] == single_succ_edge (bb)->dest);
+	  continue;
+	}
+
+      /* Special case the last block on the path: make sure that it does not
+	 jump back on the copied path.  */
+      if (i + 1 == n_region)
+	{
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    if (bb_in_bbs (e->dest, region_copy, n_region - 1))
+	      {
+		basic_block orig = get_bb_original (e->dest);
+		if (orig)
+		  redirect_edge_and_branch_force (e, orig);
+	      }
+	  continue;
+	}
+
+      /* Redirect all other edges jumping to non-adjacent blocks back to the
+	 original code.  */
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (region_copy[i + 1] != e->dest)
+	  {
+	    basic_block orig = get_bb_original (e->dest);
+	    if (orig)
+	      redirect_edge_and_branch_force (e, orig);
+	  }
+    }
+
   if (total_count)
     {
       scale_bbs_frequencies_gcov_type (region, n_region,
@@ -2445,8 +2487,7 @@ duplicate_seme_region (edge entry, edge exit,
     }
 
 #ifdef ENABLE_CHECKING
-  /* Make sure no edge other than ENTRY is entering the copied region.  */
-  verify_seme (entry, region_copy, n_region);
+  verify_jump_thread (region_copy, n_region);
 #endif
 
   /* Remove the last branch in the jump thread path.  */
@@ -2550,7 +2591,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
       for (unsigned int j = 0; j < len - 1; j++)
 	region[j] = (*path)[j]->e->dest;
 
-      if (duplicate_seme_region (entry, exit, region, len - 1, NULL))
+      if (duplicate_thread_path (entry, exit, region, len - 1, NULL))
 	{
 	  /* We do not update dominance info.  */
 	  free_dominance_info (CDI_DOMINATORS);

@@ -12,6 +12,9 @@ class(t), pointer :: b, d(:)
 allocate (a, b, source=c(1))
 allocate (c(4), d(6), source=e)
 
+allocate (a, b, mold=f())
+allocate (c(1), d(6), mold=g())
+
 allocate (a, b, source=f())
 allocate (c(1), d(6), source=g())
 

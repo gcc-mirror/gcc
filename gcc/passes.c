@@ -156,7 +156,8 @@ void
 pass_manager::execute_early_local_passes ()
 {
   execute_pass_list (cfun, pass_build_ssa_passes_1->sub);
-  execute_pass_list (cfun, pass_chkp_instrumentation_passes_1->sub);
+  if (flag_check_pointer_bounds)
+    execute_pass_list (cfun, pass_chkp_instrumentation_passes_1->sub);
   execute_pass_list (cfun, pass_local_optimization_passes_1->sub);
 }
 
@@ -424,7 +425,8 @@ public:
   virtual bool gate (function *)
     {
       /* Don't bother doing anything if the program has errors.  */
-      return (!seen_error () && !in_lto_p);
+      return (flag_check_pointer_bounds
+	      && !seen_error () && !in_lto_p);
     }
 
 }; // class pass_chkp_instrumentation_passes

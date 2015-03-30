@@ -943,7 +943,6 @@ nds32*-elf*)
 	;;
 nios2-*-linux*)
 	tmake_file="$tmake_file nios2/t-nios2 nios2/t-linux t-libgcc-pic t-slibgcc-libgcc"
-	extra_parts="$extra_parts crti.o crtn.o"
 	md_unwind_header=nios2/linux-unwind.h
 	;;
 nios2-*-*)

@@ -926,13 +926,8 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 		     bool *matches, unsigned *npermutes, unsigned *tree_size,
 		     unsigned max_tree_size)
 {
-  unsigned nops, i, this_npermutes = 0, this_tree_size = 0;
+  unsigned nops, i, this_tree_size = 0;
   gimple stmt;
-
-  if (!matches)
-    matches = XALLOCAVEC (bool, group_size);
-  if (!npermutes)
-    npermutes = &this_npermutes;
 
   matches[0] = false;
 
@@ -1012,7 +1007,6 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	  return false;
 	}
 
-      bool *matches = XALLOCAVEC (bool, group_size);
       if (vect_build_slp_tree (loop_vinfo, bb_vinfo, &child,
 			       group_size, max_nunits, loads,
 			       vectorization_factor, matches,
@@ -1041,13 +1035,20 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	     behavior.  */
 	  && *npermutes < 4)
 	{
+	  unsigned int j;
+	  slp_tree grandchild;
+
 	  /* Roll back.  */
 	  *max_nunits = old_max_nunits;
 	  loads->truncate (old_nloads);
+	  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (child), j, grandchild)
+	    vect_free_slp_tree (grandchild);
+	  SLP_TREE_CHILDREN (child).truncate (0);
+
 	  /* Swap mismatched definition stmts.  */
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "Re-trying with swapped operands of stmts ");
-	  for (unsigned j = 0; j < group_size; ++j)
+	  for (j = 0; j < group_size; ++j)
 	    if (!matches[j])
 	      {
 		gimple tem = oprnds_info[0]->def_stmts[j];
@@ -1637,9 +1638,11 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   loads.create (group_size);
 
   /* Build the tree for the SLP instance.  */
+  bool *matches = XALLOCAVEC (bool, group_size);
+  unsigned npermutes = 0;
   if (vect_build_slp_tree (loop_vinfo, bb_vinfo, &node, group_size,
 			   &max_nunits, &loads,
-			   vectorization_factor, NULL, NULL, NULL,
+			   vectorization_factor, matches, &npermutes, NULL,
 			   max_tree_size))
     {
       /* Calculate the unrolling factor based on the smallest type.  */

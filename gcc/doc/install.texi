@@ -2519,7 +2519,16 @@ Analogous to @code{bootstrap-O1}.
 @item @samp{bootstrap-lto}
 Enables Link-Time Optimization for host tools during bootstrapping.
 @samp{BUILD_CONFIG=bootstrap-lto} is equivalent to adding
-@option{-flto} to @samp{BOOT_CFLAGS}.
+@option{-flto} to @samp{BOOT_CFLAGS}.  This option assumes that the host
+supports the linker plugin (e.g. GNU ld version 2.21 or later or GNU gold
+version 2.21 or later).
+
+@item @samp{bootstrap-lto-noplugin}
+This option is similar to @code{bootstrap-lto}, but is intended for
+hosts that do not support the linker plugin. Please note that static
+libraries are not compiled with link time optimizations without
+linker plugin.  Since GCC middle-end and back-end are in libbackend.a,
+it means that only part of the frontend is actually LTO optimized.
 
 @item @samp{bootstrap-debug}
 Verifies that the compiler generates the same executable code, whether
@@ -3416,11 +3425,10 @@ alpha-based platforms using ELF (in particular, ignore this section for
 DEC OSF/1, Digital UNIX and Tru64 UNIX)@.  In addition to reading this
 section, please read all other sections that match your target.
 
-Binutils 2.25 or newer are required.
-Versions prior to 2.25 have faulty relaxation pass that may result in
-GPREL16 relocation truncation errors.  Versions prior to 2.11.2 had a
-number of problems with DWARF 2 debugging information, not the least of
-which is incorrect linking of shared libraries.
+We require binutils 2.11.2 or newer.
+Previous binutils releases had a number of problems with DWARF 2
+debugging information, not the least of which is incorrect linking of
+shared libraries.
 
 @html
 <hr />

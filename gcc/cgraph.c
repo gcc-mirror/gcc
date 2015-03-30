@@ -1515,6 +1515,15 @@ cgraph_update_edges_for_call_stmt_node (cgraph_node *node,
 
       if (e)
 	{
+	  /* Keep calls marked as dead dead.  */
+	  if (new_stmt && is_gimple_call (new_stmt) && e->callee
+	      && DECL_BUILT_IN_CLASS (e->callee->decl) == BUILT_IN_NORMAL
+	      && DECL_FUNCTION_CODE (e->callee->decl) == BUILT_IN_UNREACHABLE)
+	    {
+              node->get_edge (old_stmt)->set_call_stmt
+		 (as_a <gcall *> (new_stmt));
+	      return;
+	    }
 	  /* See if the edge is already there and has the correct callee.  It
 	     might be so because of indirect inlining has already updated
 	     it.  We also might've cloned and redirected the edge.  */
@@ -2661,25 +2670,6 @@ cgraph_edge::verify_count_and_frequency ()
       error ("caller edge frequency is too large");
       error_found = true;
     }
-  if (gimple_has_body_p (caller->decl)
-      && !caller->global.inlined_to
-      && !speculative
-      /* FIXME: Inline-analysis sets frequency to 0 when edge is optimized out.
-	 Remove this once edges are actually removed from the function at that time.  */
-      && (frequency
-	  || (inline_edge_summary_vec.exists ()
-	      && ((inline_edge_summary_vec.length () <= (unsigned) uid)
-	          || !inline_edge_summary (this)->predicate)))
-      && (frequency
-	  != compute_call_stmt_bb_frequency (caller->decl,
-					     gimple_bb (call_stmt))))
-    {
-      error ("caller edge frequency %i does not match BB frequency %i",
-	     frequency,
-	     compute_call_stmt_bb_frequency (caller->decl,
-					     gimple_bb (call_stmt)));
-      error_found = true;
-    }
   return error_found;
 }
 
@@ -2848,9 +2838,46 @@ cgraph_node::verify_node (void)
 	    error_found = true;
 	  }
     }
+  for (e = callees; e; e = e->next_callee)
+    {
+      if (e->verify_count_and_frequency ())
+	error_found = true;
+      if (gimple_has_body_p (e->caller->decl)
+	  && !e->caller->global.inlined_to
+	  && !e->speculative
+	  /* Optimized out calls are redirected to __builtin_unreachable.  */
+	  && (e->frequency
+	      || e->callee->decl
+		 != builtin_decl_implicit (BUILT_IN_UNREACHABLE))
+	  && (e->frequency
+	      != compute_call_stmt_bb_frequency (e->caller->decl,
+						 gimple_bb (e->call_stmt))))
+	{
+	  error ("caller edge frequency %i does not match BB frequency %i",
+		 e->frequency,
+		 compute_call_stmt_bb_frequency (e->caller->decl,
+						 gimple_bb (e->call_stmt)));
+	  error_found = true;
+	}
+    }
   for (e = indirect_calls; e; e = e->next_callee)
-    if (e->verify_count_and_frequency ())
-      error_found = true;
+    {
+      if (e->verify_count_and_frequency ())
+	error_found = true;
+      if (gimple_has_body_p (e->caller->decl)
+	  && !e->caller->global.inlined_to
+	  && !e->speculative
+	  && (e->frequency
+	      != compute_call_stmt_bb_frequency (e->caller->decl,
+						 gimple_bb (e->call_stmt))))
+	{
+	  error ("indirect call frequency %i does not match BB frequency %i",
+		 e->frequency,
+		 compute_call_stmt_bb_frequency (e->caller->decl,
+						 gimple_bb (e->call_stmt)));
+	  error_found = true;
+	}
+    }
   if (!callers && global.inlined_to)
     {
       error ("inlined_to pointer is set but no predecessors found");

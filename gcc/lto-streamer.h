@@ -307,6 +307,71 @@ typedef void (lto_free_section_data_f) (struct lto_file_decl_data *,
 					const char *,
 					size_t);
 
+/* The location cache holds expanded locations for streamed in trees.
+   This is done to reduce memory usage of libcpp linemap that strongly preffers
+   locations to be inserted in the soruce order.  */
+
+class lto_location_cache
+{
+public:
+  /* Apply all changes in location cache.  Add locations into linemap and patch
+     trees.  */
+  bool apply_location_cache ();
+  /* Tree merging did not suceed; mark all changes in the cache as accepted.  */
+  void accept_location_cache ();
+  /* Tree merging did suceed; throw away recent changes.  */
+  void revert_location_cache ();
+  void input_location (location_t *loc, struct bitpack_d *bp,
+		       struct data_in *data_in);
+  lto_location_cache ()
+     : loc_cache (), accepted_length (0), current_file (NULL), current_line (0),
+       current_col (0), current_loc (UNKNOWN_LOCATION)
+  {
+    gcc_assert (!current_cache);
+    current_cache = this;
+  }
+  ~lto_location_cache ()
+  {
+    apply_location_cache ();
+    gcc_assert (current_cache == this);
+    current_cache = NULL;
+  }
+
+  /* There can be at most one instance of location cache (combining multiple
+     would bring it out of sync with libcpp linemap); point to current
+     one.  */
+  static lto_location_cache *current_cache;
+  
+private:
+  static int cmp_loc (const void *pa, const void *pb);
+
+  struct cached_location
+  {
+    const char *file;
+    location_t *loc;
+    int line, col;
+  };
+
+  /* The location cache.  */
+
+  auto_vec<cached_location> loc_cache;
+
+  /* Accepted entries are ones used by trees that are known to be not unified
+     by tree merging.  */
+
+  int accepted_length;
+
+  /* Bookkeeping to remember state in between calls to lto_apply_location_cache
+     When streaming gimple, the location cache is not used and thus
+     lto_apply_location_cache happens per location basis.  It is then
+     useful to avoid redundant calls of linemap API.  */
+
+  const char *current_file;
+  int current_line;
+  int current_col;
+  location_t current_loc;
+};
+
 /* Structure used as buffer for reading an LTO file.  */
 class lto_input_block
 {
@@ -680,6 +745,9 @@ struct data_in
 
   /* Cache of pickled nodes.  */
   struct streamer_tree_cache_d *reader_cache;
+
+  /* Cache of source code location.  */
+  lto_location_cache location_cache;
 };
 
 
@@ -788,7 +856,9 @@ extern struct data_in *lto_data_in_create (struct lto_file_decl_data *,
 				    vec<ld_plugin_symbol_resolution_t> );
 extern void lto_data_in_delete (struct data_in *);
 extern void lto_input_data_block (struct lto_input_block *, void *, size_t);
-location_t lto_input_location (struct bitpack_d *, struct data_in *);
+void lto_input_location (location_t *, struct bitpack_d *, struct data_in *);
+location_t stream_input_location_now (struct bitpack_d *bp,
+				      struct data_in *data);
 tree lto_input_tree_ref (struct lto_input_block *, struct data_in *,
 			 struct function *, enum LTO_tags);
 void lto_tag_check_set (enum LTO_tags, int, ...);
