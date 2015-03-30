@@ -1,3 +1,20 @@
+2015-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/65610
+	* ipa-utils.h (inlined_polymorphic_ctor_dtor_block_p): Declare.
+	* ipa-polymorphic-call.c (inlined_polymorphic_ctor_dtor_block_p): New
+	function.
+	(decl_maybe_in_construction_p, noncall_stmt_may_be_vtbl_ptr_store):
+	Use it.
+	* ipa-prop.c (param_type_may_change_p): Likewise.
+	* tree-ssa-live.c: Include ipa-utils.h and its dependencies.
+	(remove_unused_scope_block_p): Add in_ctor_dtor_block
+	argument.  Before inlining, preserve
+	inlined_polymorphic_ctor_dtor_block_p blocks and the outermost block
+	with FUNCTION_DECL BLOCK_ABSTRACT_ORIGIN inside of them.  Adjust
+	recursive calls.
+	(remove_unused_locals): Adjust remove_unused_scope_block_p caller.
+
 2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65076

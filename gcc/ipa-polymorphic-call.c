@@ -513,6 +513,38 @@ contains_type_p (tree outer_type, HOST_WIDE_INT offset,
 }
 
 
+/* Return a FUNCTION_DECL if BLOCK represents a constructor or destructor.
+   If CHECK_CLONES is true, also check for clones of ctor/dtors.  */
+
+tree
+inlined_polymorphic_ctor_dtor_block_p (tree block, bool check_clones)
+{
+  tree fn = BLOCK_ABSTRACT_ORIGIN (block);
+  if (fn == NULL || TREE_CODE (fn) != FUNCTION_DECL)
+    return NULL_TREE;
+
+  if (TREE_CODE (TREE_TYPE (fn)) != METHOD_TYPE
+      || (!DECL_CXX_CONSTRUCTOR_P (fn) && !DECL_CXX_DESTRUCTOR_P (fn)))
+    {
+      if (!check_clones)
+	return NULL_TREE;
+
+      /* Watch for clones where we constant propagated the first
+	 argument (pointer to the instance).  */
+      fn = DECL_ABSTRACT_ORIGIN (fn);
+      if (!fn
+	  || TREE_CODE (TREE_TYPE (fn)) != METHOD_TYPE
+	  || (!DECL_CXX_CONSTRUCTOR_P (fn) && !DECL_CXX_DESTRUCTOR_P (fn)))
+	return NULL_TREE;
+    }
+
+  if (flags_from_decl_or_type (fn) & (ECF_PURE | ECF_CONST))
+    return NULL_TREE;
+
+  return fn;
+}
+
+
 /* We know that the instance is stored in variable or parameter
    (not dynamically allocated) and we want to disprove the fact
    that it may be in construction at invocation of CALL.
@@ -550,30 +582,11 @@ decl_maybe_in_construction_p (tree base, tree outer_type,
       && flags_from_decl_or_type (function) & (ECF_PURE | ECF_CONST))
     return false;
 
+  bool check_clones = !base || is_global_var (base);
   for (tree block = gimple_block (call); block && TREE_CODE (block) == BLOCK;
        block = BLOCK_SUPERCONTEXT (block))
-    if (BLOCK_ABSTRACT_ORIGIN (block)
-	&& TREE_CODE (BLOCK_ABSTRACT_ORIGIN (block)) == FUNCTION_DECL)
+    if (tree fn = inlined_polymorphic_ctor_dtor_block_p (block, check_clones))
       {
-	tree fn = BLOCK_ABSTRACT_ORIGIN (block);
-
-	if (TREE_CODE (TREE_TYPE (fn)) != METHOD_TYPE
-	    || (!DECL_CXX_CONSTRUCTOR_P (fn)
-		&& !DECL_CXX_DESTRUCTOR_P (fn)))
-	  {
-	    /* Watch for clones where we constant propagated the first
-	       argument (pointer to the instance).  */
-	    fn = DECL_ABSTRACT_ORIGIN (fn);
-	    if (!fn
-		|| (base && !is_global_var (base))
-	        || TREE_CODE (TREE_TYPE (fn)) != METHOD_TYPE
-		|| (!DECL_CXX_CONSTRUCTOR_P (fn)
-		    && !DECL_CXX_DESTRUCTOR_P (fn)))
-	      continue;
-	  }
-	if (flags_from_decl_or_type (fn) & (ECF_PURE | ECF_CONST))
-	  continue;
-
 	tree type = TYPE_MAIN_VARIANT (method_class_type (TREE_TYPE (fn)));
 
 	if (!outer_type || !types_odr_comparable (type, outer_type))
@@ -1163,15 +1176,7 @@ noncall_stmt_may_be_vtbl_ptr_store (gimple stmt)
        block = BLOCK_SUPERCONTEXT (block))
     if (BLOCK_ABSTRACT_ORIGIN (block)
 	&& TREE_CODE (BLOCK_ABSTRACT_ORIGIN (block)) == FUNCTION_DECL)
-      {
-	tree fn = BLOCK_ABSTRACT_ORIGIN (block);
-
-	if (flags_from_decl_or_type (fn) & (ECF_PURE | ECF_CONST))
-	  return false;
-	return (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE
-		&& (DECL_CXX_CONSTRUCTOR_P (fn)
-		    || DECL_CXX_DESTRUCTOR_P (fn)));
-      }
+      return inlined_polymorphic_ctor_dtor_block_p (block, false);
   return (TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE
 	  && (DECL_CXX_CONSTRUCTOR_P (current_function_decl)
 	      || DECL_CXX_DESTRUCTOR_P (current_function_decl)));
