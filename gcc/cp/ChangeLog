@@ -1,3 +1,11 @@
+2015-03-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65398
+	* constexpr.c (cxx_fold_indirect_ref): Don't perform the
+	 *(&A[i] p+ j) => A[i + j] transformation here.
+	(cxx_eval_pointer_plus_expression): New function.
+	(cxx_eval_constant_expression): Use it here.
+
 2015-03-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR c/65586
