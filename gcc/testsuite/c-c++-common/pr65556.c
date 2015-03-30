@@ -4,9 +4,9 @@
 struct S
 {
   long l: 1;
-  long l2: 41;
+  long l2: 21;
   unsigned long ul: 1;
-  unsigned long ul2: 41;
+  unsigned long ul2: 21;
 } s;
 
 void
