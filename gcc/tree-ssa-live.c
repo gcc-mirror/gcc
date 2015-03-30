@@ -76,6 +76,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "debug.h"
 #include "tree-ssa.h"
+#include "lto-streamer.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
+#include "ipa-utils.h"
 
 #ifdef ENABLE_CHECKING
 static void  verify_live_on_entry (tree_live_info_p);
@@ -509,11 +513,28 @@ mark_scope_block_unused (tree scope)
    done by the inliner.  */
 
 static bool
-remove_unused_scope_block_p (tree scope)
+remove_unused_scope_block_p (tree scope, bool in_ctor_dtor_block)
 {
   tree *t, *next;
   bool unused = !TREE_USED (scope);
   int nsubblocks = 0;
+
+  /* For ipa-polymorphic-call.c purposes, preserve blocks:
+     1) with BLOCK_ABSTRACT_ORIGIN of a ctor/dtor or their clones  */
+  if (inlined_polymorphic_ctor_dtor_block_p (scope, true))
+    {
+      in_ctor_dtor_block = true;
+      unused = false;
+    }
+  /* 2) inside such blocks, the outermost block with BLOCK_ABSTRACT_ORIGIN
+     being a FUNCTION_DECL.  */
+  else if (in_ctor_dtor_block
+	   && BLOCK_ABSTRACT_ORIGIN (scope)
+	   && TREE_CODE (BLOCK_ABSTRACT_ORIGIN (scope)) == FUNCTION_DECL)
+    {
+      in_ctor_dtor_block = false;
+      unused = false;
+    }
 
   for (t = &BLOCK_VARS (scope); *t; t = next)
     {
@@ -594,7 +615,7 @@ remove_unused_scope_block_p (tree scope)
     }
 
   for (t = &BLOCK_SUBBLOCKS (scope); *t ;)
-    if (remove_unused_scope_block_p (*t))
+    if (remove_unused_scope_block_p (*t, in_ctor_dtor_block))
       {
 	if (BLOCK_SUBBLOCKS (*t))
 	  {
@@ -959,7 +980,7 @@ remove_unused_locals (void)
       cfun->local_decls->truncate (dstidx);
     }
 
-  remove_unused_scope_block_p (DECL_INITIAL (current_function_decl));
+  remove_unused_scope_block_p (DECL_INITIAL (current_function_decl), false);
   clear_unused_block_pointer ();
 
   BITMAP_FREE (usedvars);

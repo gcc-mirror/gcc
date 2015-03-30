@@ -715,18 +715,8 @@ param_type_may_change_p (tree function, tree arg, gimple call)
 	  /* Walk the inline stack and watch out for ctors/dtors.  */
 	  for (tree block = gimple_block (call); block && TREE_CODE (block) == BLOCK;
 	       block = BLOCK_SUPERCONTEXT (block))
-	    if (BLOCK_ABSTRACT_ORIGIN (block)
-	        && TREE_CODE (BLOCK_ABSTRACT_ORIGIN (block)) == FUNCTION_DECL)
-	      {
-		tree fn = BLOCK_ABSTRACT_ORIGIN (block);
-
-		if (flags_from_decl_or_type (fn) & (ECF_PURE | ECF_CONST))
-		  continue;
-		if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE
-		    && (DECL_CXX_CONSTRUCTOR_P (fn)
-		        || DECL_CXX_DESTRUCTOR_P (fn)))
-		  return true;
-	      }
+	    if (inlined_polymorphic_ctor_dtor_block_p (block, false))
+	      return true;
 	  return false;
 	}
     }
