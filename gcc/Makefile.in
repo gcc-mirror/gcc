@@ -3255,7 +3255,7 @@ install-plugin: installdirs lang.install-plugin s-header-vars install-gengtype
 # We keep the directory structure for files in config or c-family and .def
 # files. All other files are flattened to a single directory.
 	$(mkinstalldirs) $(DESTDIR)$(plugin_includedir)
-	headers=`echo $(PLUGIN_HEADERS) | tr ' ' '\012' | sort -u`; \
+	headers=`echo $(PLUGIN_HEADERS) $$(cd $(srcdir); echo *.h *.def) | tr ' ' '\012' | sort -u`; \
 	srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`; \
 	for file in $$headers; do \
 	  if [ -f $$file ] ; then \
