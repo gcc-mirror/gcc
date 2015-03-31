@@ -5253,51 +5253,35 @@ get_some_local_dynamic_name (void)
   gcc_unreachable ();
 }
 
-/* Returns false if the function should not be made hotpatchable.
-   Otherwise it assigns the number of NOP halfwords to be emitted
-   before and after the function label to hw_before and hw_after.
-   Both must not be NULL.  */
+/* Assigns the number of NOP halfwords to be emitted before and after the
+   function label to *HW_BEFORE and *HW_AFTER.  Both pointers must not be NULL.
+   If hotpatching is disabled for the function, the values are set to zero.
+*/
 
-static bool
+static void
 s390_function_num_hotpatch_hw (tree decl,
 			       int *hw_before,
 			       int *hw_after)
 {
   tree attr;
 
-  *hw_before = 0;
-  *hw_after = 0;
-
   attr = lookup_attribute ("hotpatch", DECL_ATTRIBUTES (decl));
 
-  /* Handle the arguments of the hotpatch attribute.  The values
-     specified via attribute might override the cmdline argument
-     values.  */
   if (attr)
     {
       tree args = TREE_VALUE (attr);
 
+      /* If the hotpatch attribute is present, its values are used even if the
+	 -mhotpatch cmdline option is used.  */
       *hw_before = TREE_INT_CST_LOW (TREE_VALUE (args));
       *hw_after = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args)));
     }
   else
     {
-      /* Use the values specified by the cmdline arguments.  */
+      /* Values specified by the -mhotpatch cmdline option.  */
       *hw_before = s390_hotpatch_hw_before_label;
       *hw_after = s390_hotpatch_hw_after_label;
     }
-
-  if (*hw_before == 0 && *hw_after == 0)
-    return false;
-
-  if (decl_function_context (decl) != NULL_TREE)
-    {
-      warning_at (DECL_SOURCE_LOCATION (decl), OPT_mhotpatch_,
-		  "hotpatching is not compatible with nested functions");
-      return false;
-    }
-
-  return true;
 }
 
 /* Write the extra assembler code needed to declare a function properly.  */
@@ -5307,35 +5291,45 @@ s390_asm_output_function_label (FILE *asm_out_file, const char *fname,
 				tree decl)
 {
   int hw_before, hw_after;
-  bool hotpatch_p = (decl
-		     ? s390_function_num_hotpatch_hw (decl,
-						      &hw_before, &hw_after)
-		     : false);
 
-  if (hotpatch_p)
+  s390_function_num_hotpatch_hw (decl, &hw_before, &hw_after);
+  if (hw_before > 0)
     {
       unsigned int function_alignment;
       int i;
 
-      /* Add a trampoline code area before the function label and initialize it
-	 with two-byte nop instructions.  This area can be overwritten with code
+      /* Add trampoline code area before the function label and initialize it
+	 with two-byte NOP instructions.  This area can be overwritten with code
 	 that jumps to a patched version of the function.  */
-      for (i = 0; i < hw_before; i++)
-	asm_fprintf (asm_out_file, "\tnopr\t%%r7\n");
+      asm_fprintf (asm_out_file, "\tnopr\t%%r7"
+		   "\t# pre-label NOPs for hotpatch (%d halfwords)\n",
+		   hw_before);
+      for (i = 1; i < hw_before; i++)
+	fputs ("\tnopr\t%r7\n", asm_out_file);
+
       /* Note:  The function label must be aligned so that (a) the bytes of the
-	 following nop do not cross a cacheline boundary, and (b) a jump address
+	 following NOP do not cross a cacheline boundary, and (b) a jump address
 	 (eight bytes for 64 bit targets, 4 bytes for 32 bit targets) can be
 	 stored directly before the label without crossing a cacheline
 	 boundary.  All this is necessary to make sure the trampoline code can
-	 be changed atomically.  */
+	 be changed atomically.
+	 This alignment is done automatically using the FOUNCTION_BOUNDARY
+	 macro, but if there are NOPs before the function label, the alignment
+	 is placed before them.  So it is necessary to duplicate the alignment
+	 after the NOPs.  */
       function_alignment = MAX (8, DECL_ALIGN (decl) / BITS_PER_UNIT);
       if (! DECL_USER_ALIGN (decl))
 	function_alignment = MAX (function_alignment,
 				  (unsigned int) align_functions);
+      fputs ("\t# alignment for hotpatch\n", asm_out_file);
       ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (function_alignment));
     }
 
   ASM_OUTPUT_LABEL (asm_out_file, fname);
+  if (hw_after > 0)
+    asm_fprintf (asm_out_file,
+		 "\t# post-label NOPs for hotpatch (%d halfwords)\n",
+		 hw_after);
 }
 
 /* Output machine-dependent UNSPECs occurring in address constant X
@@ -11454,7 +11448,7 @@ s390_reorg (void)
     {
       rtx insn;
 
-      /* Inject nops for hotpatching. */
+      /* Insert NOPs for hotpatching. */
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	{
 	  if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_FUNCTION_BEG)

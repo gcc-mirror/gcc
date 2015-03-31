@@ -12,6 +12,9 @@ void hp1(void)
 }
 
 /* Check number of occurences of certain instructions.  */
+/* { dg-final { scan-assembler-not "pre-label NOPs" } } */
+/* { dg-final { scan-assembler "post-label.*(2 halfwords)" } } */
 /* { dg-final { scan-assembler-not "nopr\t%r7" } } */
 /* { dg-final { scan-assembler-times "nop\t0" 1 } } */
 /* { dg-final { scan-assembler-not "brcl\t0, 0" } } */
+/* { dg-final { scan-assembler-not "alignment for hotpatch" } } */
