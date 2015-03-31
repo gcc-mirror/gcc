@@ -1,3 +1,10 @@
+2015-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65626
+	* tree-cfgcleanup.c (fixup_noreturn_call): Only split the block
+	of the noreturn call so it is last and cleanup_control_flow_bb
+	can do the CFG part.
+
 2015-03-31  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR target/65531
