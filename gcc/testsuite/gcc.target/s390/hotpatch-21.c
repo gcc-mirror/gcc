@@ -11,4 +11,4 @@ void __attribute__ ((aligned(512))) hp1(void)
 }
 
 /* Check number of occurences of certain instructions.  */
-/* { dg-final { scan-assembler-times "\.align\t512" 2 } } */
+/* { dg-final { scan-assembler-not "alignment for hotpatch" } } */
