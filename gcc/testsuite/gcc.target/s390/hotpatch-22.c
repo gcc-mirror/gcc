@@ -11,4 +11,4 @@ void hp1(void)
 }
 
 /* Check number of occurences of certain instructions.  */
-/* { dg-final { scan-assembler-times "\.align\t1024" 2 } } */
+/* { dg-final { scan-assembler-not "alignment for hotpatch" } } */
