@@ -20,7 +20,13 @@
 proc check_effective_target_mpx {} {
     return [check_no_compiler_messages mpx executable {
 	int *foo (int *arg) { return arg; }
-	int main (void) { return foo ((void *)0) == 0; }
+	int main (void)
+	{
+	    int *p = __builtin_malloc (sizeof (int));
+	    int res = foo (p) == 0;
+	    __builtin_free (p);
+	    return res;
+	}
     } "-fcheck-pointer-bounds -mmpx"]
 }
 
