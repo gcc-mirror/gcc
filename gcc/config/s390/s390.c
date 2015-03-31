@@ -5447,13 +5447,6 @@ s390_function_num_hotpatch_hw (tree decl,
   *hw_before = 0;
   *hw_after = 0;
 
-  if (DECL_ARTIFICIAL (decl)
-      || MAIN_NAME_P (DECL_NAME (decl)))
-    {
-      /* - Artificial functions need not be hotpatched.
-	 - Making the main function hotpatchable is useless.  */
-      return false;
-    }
   attr = lookup_attribute ("hotpatch", DECL_ATTRIBUTES (decl));
 
   /* Handle the arguments of the hotpatch attribute.  The values

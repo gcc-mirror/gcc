@@ -3,8 +3,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -mzarch" } */
 
-#include <stdio.h>
-
 typedef int (*fn_t)(void);
 
 fn_t hp1(void)

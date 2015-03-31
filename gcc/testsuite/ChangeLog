@@ -1,3 +1,7 @@
+2015-03-31  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.target/s390/hotpatch-compile-16.c: Remove include of stdio.h.
+
 2015-03-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport r214254 and related tests from mainline
