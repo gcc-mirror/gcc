@@ -1,3 +1,7 @@
+2015-03-31  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ipa/pr65557.C: New test.
+
 2015-03-31  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.target/s390/hotpatch-25.c: New test.

@@ -1,3 +1,10 @@
+2015-03-31  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/65557
+	* ipa-icf.c (sem_function::equals_wpa): Check if IPA CP
+	has already filled up function summary.
+	(sem_item_optimizer::update_hash_by_addr_refs): Likewise.
+
 2015-03-31  Richard Biener  <rguenther@suse.de>
 
 	* tree-sra.c (create_access_replacement): Drop under-/over-alignment
