@@ -939,7 +939,8 @@ warn_odr (tree t1, tree t2, tree st1, tree st2,
 
   /* ODR warnings are output druing LTO streaming; we must apply location
      cache for potential warnings to be output correctly.  */
-  lto_location_cache::current_cache->apply_location_cache ();
+  if (lto_location_cache::current_cache)
+    lto_location_cache::current_cache->apply_location_cache ();
 
   if (!warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (t1)), OPT_Wodr,
 		   "type %qT violates one definition rule",

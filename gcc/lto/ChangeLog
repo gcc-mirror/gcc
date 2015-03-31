@@ -1,3 +1,8 @@
+2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (lto_read_decls): Move code registering odr types out
+	of TYPE_CANONICAL conditional and also register polymorphic types.
+
 2015-03-26  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-symtab.c (lto_symtab_merge_decls_2): Silence warning on
