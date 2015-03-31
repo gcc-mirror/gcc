@@ -1,3 +1,8 @@
+2015-03-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65390
+	* g++.dg/template/pr65390.C: New test.
+
 2015-03-31  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/ipa/pr65557.C: New test.

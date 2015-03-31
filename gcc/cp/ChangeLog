@@ -1,3 +1,9 @@
+2015-03-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65390
+	* tree.c (build_cplus_array_type): Use dependent_type_p rather than
+	checking for constness.
+
 2015-03-30  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/65398
