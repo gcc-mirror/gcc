@@ -1,3 +1,8 @@
+2015-03-31  Richard Biener  <rguenther@suse.de>
+
+	* tree-sra.c (create_access_replacement): Drop under-/over-alignment
+	of types.
+
 2015-03-31  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_function_num_hotpatch_hw): Allow hotpatching
