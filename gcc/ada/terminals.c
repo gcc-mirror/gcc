@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2008-2014, AdaCore                     *
+ *                     Copyright (C) 2008-2015, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1263,7 +1263,7 @@ child_setup_tty (int fd)
   int    status;
 
   /* ensure that s is filled with 0 */
-  bzero (&s, sizeof (&s));
+  bzero (&s, sizeof (s));
 
   /* Get the current terminal settings */
   status = tcgetattr (fd, &s);
