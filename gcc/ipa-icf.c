@@ -534,7 +534,7 @@ sem_function::equals_wpa (sem_item *item,
   if (opt_for_fn (decl, flag_devirtualize)
       && (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE
           || TREE_CODE (TREE_TYPE (item->decl)) == METHOD_TYPE)
-      && (!flag_ipa_cp
+      && (ipa_node_params_sum == NULL
 	  || ipa_is_param_used (IPA_NODE_REF (dyn_cast <cgraph_node *>(node)),
 				0))
       && compare_polymorphic_p ())
@@ -2505,7 +2505,7 @@ sem_item_optimizer::update_hash_by_addr_refs ()
 	      && contains_polymorphic_type_p
 		   (method_class_type (TREE_TYPE (m_items[i]->decl)))
 	      && (DECL_CXX_CONSTRUCTOR_P (m_items[i]->decl)
-		  || ((!flag_ipa_cp
+		  || ((ipa_node_params_sum == NULL
 		       || ipa_is_param_used (
 			    IPA_NODE_REF
 			      (dyn_cast <cgraph_node *>(m_items[i]->node)), 0))
