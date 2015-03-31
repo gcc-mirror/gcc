@@ -1,3 +1,11 @@
+2015-03-31  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65531
+	* ipa-chkp.c (chkp_maybe_create_clone): Don't set
+	same_comdat_group for external symbols.
+	* symtab.c (symtab_node::verify_symtab_nodes): Avoid
+	infinite same_comdat_group traversal loop.
+
 2015-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR plugins/61176
