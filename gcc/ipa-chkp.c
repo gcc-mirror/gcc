@@ -574,7 +574,8 @@ chkp_maybe_create_clone (tree fndecl)
 
       /* Clones have the same comdat group as originals.  */
       if (node->same_comdat_group
-	  || DECL_ONE_ONLY (node->decl))
+	  || (DECL_ONE_ONLY (node->decl)
+	      && !DECL_EXTERNAL (node->decl)))
 	clone->add_to_same_comdat_group (node);
 
       if (gimple_has_body_p (fndecl))

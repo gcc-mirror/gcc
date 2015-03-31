@@ -1,5 +1,10 @@
 2015-03-31  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	PR target/65531
+	* gcc.target/i386/mpx/pr65531.cc: New.
+
+2015-03-31  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	PR target/65602
 	* gcc.target/i386/mpx/alloca-1-lbv.c (mpx_test): Use
 	__builtin_alloca instead of alloca.

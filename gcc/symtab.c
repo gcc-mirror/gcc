@@ -1132,7 +1132,8 @@ symtab_node::verify_symtab_nodes (void)
 	    *entry = node;
 	  else if (!DECL_EXTERNAL (node->decl))
 	    {
-	      for (s = (*entry)->same_comdat_group; s != NULL && s != node;
+	      for (s = (*entry)->same_comdat_group;
+		   s != NULL && s != node && s != *entry;
 		   s = s->same_comdat_group)
 		;
 	      if (!s || s == *entry)
