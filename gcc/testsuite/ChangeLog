@@ -1,3 +1,10 @@
+2015-03-31  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc.target/arm/pr45701-1.c (history_expand_line_internal): Add an
+	extra variable to force stack alignment.
+	* gcc.target/arm/pr45701-2.c (history_expand_line_internal): Add an
+	extra variable to force stack alignment.
+
 2015-03-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/65390
