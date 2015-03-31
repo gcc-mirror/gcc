@@ -13,7 +13,7 @@ int rd (int *p, int i)
 
 int mpx_test (int argc, const char **argv)
 {
-  int *buf = (int *)alloca (100 * sizeof(int));
+  int *buf = (int *)__builtin_alloca (100 * sizeof(int));
 
   rd (buf, 0);
   rd (buf, 99);

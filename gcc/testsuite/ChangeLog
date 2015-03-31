@@ -1,3 +1,13 @@
+2015-03-31  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65602
+	* gcc.target/i386/mpx/alloca-1-lbv.c (mpx_test): Use
+	__builtin_alloca instead of alloca.
+	* gcc.target/i386/mpx/alloca-1-nov.c (mpx_test): Likewise.
+	* gcc.target/i386/mpx/alloca-1-ubv.c (mpx_test): Likewise.
+	* lib/mpx-dg.exp (check_effective_target_mpx): Add wrapper
+	check.
+
 2015-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/65610
