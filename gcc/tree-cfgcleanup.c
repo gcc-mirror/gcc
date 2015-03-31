@@ -579,13 +579,15 @@ remove_forwarder_block (basic_block bb)
   return true;
 }
 
-/* STMT is a call that has been discovered noreturn.  Fixup the CFG
-   and remove LHS.  Return true if something changed.  */
+/* STMT is a call that has been discovered noreturn.  Split the
+   block to prepare fixing up the CFG and remove LHS.
+   Return true if cleanup-cfg needs to run.  */
 
 bool
 fixup_noreturn_call (gimple stmt)
 {
   basic_block bb = gimple_bb (stmt);
+  bool changed = false;
 
   if (gimple_call_builtin_p (stmt, BUILT_IN_RETURN))
     return false;
@@ -604,7 +606,10 @@ fixup_noreturn_call (gimple stmt)
 	    gsi_remove (&gsi, true);
 	}
       else
-	split_block (bb, stmt);
+	{
+	  split_block (bb, stmt);
+	  changed = true;
+	}
     }
 
   /* If there is an LHS, remove it.  */
@@ -626,9 +631,13 @@ fixup_noreturn_call (gimple stmt)
     }
 
   /* Mark the call as altering control flow.  */
-  gimple_call_set_ctrl_altering (stmt, true);
+  if (!gimple_call_ctrl_altering_p (stmt))
+    {
+      gimple_call_set_ctrl_altering (stmt, true);
+      changed = true;
+    }
 
-  return remove_fallthru_edge (bb->succs);
+  return changed;
 }
 
 
