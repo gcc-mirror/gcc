@@ -2012,7 +2012,11 @@ create_access_replacement (struct access *access)
       DECL_CONTEXT (repl) = current_function_decl;
     }
   else
-    repl = create_tmp_var (access->type, "SR");
+    /* Drop any special alignment on the type if it's not on the main
+       variant.  This avoids issues with weirdo ABIs like AAPCS.  */
+    repl = create_tmp_var (build_qualified_type
+			     (TYPE_MAIN_VARIANT (access->type),
+			      TYPE_QUALS (access->type)), "SR");
   if (TREE_CODE (access->type) == COMPLEX_TYPE
       || TREE_CODE (access->type) == VECTOR_TYPE)
     {
