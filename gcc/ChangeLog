@@ -1,7 +1,14 @@
-2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
+2015-03-31  Uros Bizjak  <ubizjak@gmail.com>
 
-	* tree.c (need_assembler_name_p): Artificial types have no ODR
-	names.
+	PR target/58945
+	* config/i386/sync.md (atomic_compare_and_swap<dwi>_doubleword):
+	Do not split operands 0 and operands 2 to halfmode.
+	(atomic_compare_and_swap<mode>): Update for
+	atomic_compare_and_swap<dwi>_doubleword changes.
+
+2015-03-31  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (need_assembler_name_p): Artificial types have no ODR names.
 	* ipa-devirt.c (warn_odr): Do not try to apply ODR cache when
 	no caching is done.
 

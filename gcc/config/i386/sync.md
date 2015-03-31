@@ -351,27 +351,40 @@
   else
     {
       machine_mode hmode = <CASHMODE>mode;
-      rtx lo_o, lo_e, lo_n, hi_o, hi_e, hi_n;
-
-      lo_o = operands[1];
-      lo_e = operands[3];
-      lo_n = operands[4];
-      hi_o = gen_highpart (hmode, lo_o);
-      hi_e = gen_highpart (hmode, lo_e);
-      hi_n = gen_highpart (hmode, lo_n);
-      lo_o = gen_lowpart (hmode, lo_o);
-      lo_e = gen_lowpart (hmode, lo_e);
-      lo_n = gen_lowpart (hmode, lo_n);
 
       emit_insn
        (gen_atomic_compare_and_swap<mode>_doubleword
-        (lo_o, hi_o, operands[2], lo_e, hi_e, lo_n, hi_n, operands[6]));
+        (operands[1], operands[2], operands[3],
+	 gen_lowpart (hmode, operands[4]), gen_highpart (hmode, operands[4]),
+	 operands[6]));
     }
 
   ix86_expand_setcc (operands[0], EQ, gen_rtx_REG (CCZmode, FLAGS_REG),
 		     const0_rtx);
   DONE;
 })
+
+;; For double-word compare and swap, we are obliged to play tricks with
+;; the input newval (op3:op4) because the Intel register numbering does
+;; not match the gcc register numbering, so the pair must be CX:BX.
+
+(define_mode_attr doublemodesuffix [(SI "8") (DI "16")])
+
+(define_insn "atomic_compare_and_swap<dwi>_doubleword"
+  [(set (match_operand:<DWI> 0 "register_operand" "=A")
+	(unspec_volatile:<DWI>
+	  [(match_operand:<DWI> 1 "memory_operand" "+m")
+	   (match_operand:<DWI> 2 "register_operand" "0")
+	   (match_operand:DWIH 3 "register_operand" "b")
+	   (match_operand:DWIH 4 "register_operand" "c")
+	   (match_operand:SI 5 "const_int_operand")]
+	  UNSPECV_CMPXCHG))
+   (set (match_dup 1)
+	(unspec_volatile:<DWI> [(const_int 0)] UNSPECV_CMPXCHG))
+   (set (reg:CCZ FLAGS_REG)
+        (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG))]
+  "TARGET_CMPXCHG<doublemodesuffix>B"
+  "lock{%;} %K5cmpxchg<doublemodesuffix>b\t%1")
 
 (define_insn "atomic_compare_and_swap<mode>_1"
   [(set (match_operand:SWI 0 "register_operand" "=a")
@@ -387,33 +400,6 @@
         (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG))]
   "TARGET_CMPXCHG"
   "lock{%;} %K4cmpxchg{<imodesuffix>}\t{%3, %1|%1, %3}")
-
-;; For double-word compare and swap, we are obliged to play tricks with
-;; the input newval (op5:op6) because the Intel register numbering does
-;; not match the gcc register numbering, so the pair must be CX:BX.
-;; That said, in order to take advantage of possible lower-subreg opts,
-;; treat all of the integral operands in the same way.
-
-(define_mode_attr doublemodesuffix [(SI "8") (DI "16")])
-
-(define_insn "atomic_compare_and_swap<dwi>_doubleword"
-  [(set (match_operand:DWIH 0 "register_operand" "=a")
-	(unspec_volatile:DWIH
-	  [(match_operand:<DWI> 2 "memory_operand" "+m")
-	   (match_operand:DWIH 3 "register_operand" "0")
-	   (match_operand:DWIH 4 "register_operand" "1")
-	   (match_operand:DWIH 5 "register_operand" "b")
-	   (match_operand:DWIH 6 "register_operand" "c")
-	   (match_operand:SI 7 "const_int_operand")]
-	  UNSPECV_CMPXCHG))
-   (set (match_operand:DWIH 1 "register_operand" "=d")
-	(unspec_volatile:DWIH [(const_int 0)] UNSPECV_CMPXCHG))
-   (set (match_dup 2)
-	(unspec_volatile:<DWI> [(const_int 0)] UNSPECV_CMPXCHG))
-   (set (reg:CCZ FLAGS_REG)
-        (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG))]
-  "TARGET_CMPXCHG<doublemodesuffix>B"
-  "lock{%;} %K7cmpxchg<doublemodesuffix>b\t%2")
 
 ;; For operand 2 nonmemory_operand predicate is used instead of
 ;; register_operand to allow combiner to better optimize atomic
