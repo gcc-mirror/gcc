@@ -1,3 +1,10 @@
+2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (need_assembler_name_p): Artificial types have no ODR
+	names.
+	* ipa-devirt.c (warn_odr): Do not try to apply ODR cache when
+	no caching is done.
+
 2015-03-31  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/65557
