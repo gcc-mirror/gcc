@@ -5732,6 +5732,7 @@ extern tree get_mostly_instantiated_function_type (tree);
 extern bool problematic_instantiation_changed	(void);
 extern void record_last_problematic_instantiation (void);
 extern struct tinst_level *current_instantiation(void);
+extern bool instantiating_current_function_p    (void);
 extern tree maybe_get_template_decl_from_type_decl (tree);
 extern int processing_template_parmlist;
 extern bool dependent_type_p			(tree);
