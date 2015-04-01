@@ -1,3 +1,10 @@
+2015-04-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* expmed.c (strict_volatile_bitfield_p): Check that the access will
+	not cross a MODESIZE boundary.
+	(store_bit_field, extract_bit_field): Added assertions in the
+	strict volatile bitfields code path.
+
 2015-04-01  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	PR target/65624
