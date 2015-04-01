@@ -1,3 +1,8 @@
+2015-04-01  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR target/65624
+	* gcc.target/aarch64/pr65624.c: New test.
+
 2015-03-31  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/ipa/inlinehint-4.c: New testcase.

@@ -1025,7 +1025,7 @@ aarch64_simd_expand_builtin (int fcode, tree exp, rtx target)
   aarch64_simd_builtin_datum *d =
 		&aarch64_simd_builtin_data[fcode - AARCH64_SIMD_PATTERN_START];
   enum insn_code icode = d->code;
-  builtin_simd_arg args[SIMD_MAX_BUILTIN_ARGS];
+  builtin_simd_arg args[SIMD_MAX_BUILTIN_ARGS + 1];
   int num_args = insn_data[d->code].n_operands;
   int is_void = 0;
   int k;
