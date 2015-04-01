@@ -6891,7 +6891,7 @@ finish_struct (tree t, tree attributes)
 	  if (f && TREE_CODE (TREE_TYPE (f)) == POINTER_TYPE)
 	    {
 	      f = next_initializable_field (DECL_CHAIN (f));
-	      if (f && TREE_CODE (TREE_TYPE (f)) == INTEGER_TYPE)
+	      if (f && same_type_p (TREE_TYPE (f), size_type_node))
 		ok = true;
 	    }
 	}
