@@ -20773,6 +20773,16 @@ current_instantiation (void)
   return current_tinst_level;
 }
 
+/* Return TRUE if current_function_decl is being instantiated, false
+   otherwise.  */
+
+bool
+instantiating_current_function_p (void)
+{
+  return (current_instantiation ()
+	  && current_instantiation ()->decl == current_function_decl);
+}
+
 /* [temp.param] Check that template non-type parm TYPE is of an allowable
    type. Return zero for ok, nonzero for disallowed. Issue error and
    warning messages under control of COMPLAIN.  */
