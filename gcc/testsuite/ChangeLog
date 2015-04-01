@@ -1,3 +1,9 @@
+2015-04-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65554
+	* g++.dg/cpp0x/initlist93.C: New test.
+	* g++.dg/cpp0x/initlist94.C: New test.
+
 2015-04-01  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	PR target/65624
