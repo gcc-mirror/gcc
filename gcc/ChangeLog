@@ -1,3 +1,15 @@
+2015-03-31  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-cgraph.c (lto_output_node, input_overwrite_node): Stream
+	split_part.
+	* ipa-inline.c (edge_badness): Add wrapper penalty.
+	(sum_callers): Move up.
+	(inline_small_functions): Set single_caller.
+	* ipa-inline.h (inline_summary): Add single_caller.
+	* ipa-split.c (split_function): Set split_part.
+	(cgraph_node::create_clone): Do not shadow decl; copy split_part.
+	* cgraph.h (cgraph_node): Add split_part.
+
 2015-03-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/58945
