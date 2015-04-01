@@ -1,3 +1,7 @@
+2015-03-31  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/inlinehint-4.c: New testcase.
+
 2015-03-31  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* gcc.target/arm/pr45701-1.c (history_expand_line_internal): Add an
