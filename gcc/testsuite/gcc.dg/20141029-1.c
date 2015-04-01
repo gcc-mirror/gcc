@@ -14,7 +14,7 @@ struct system_periph {
       unsigned short  :8;
     } BIT;
   } ALL;
-};
+} __attribute__((aligned(2)));
 
 void
 foo()
