@@ -1,3 +1,9 @@
+2015-04-01  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR target/65624
+	* config/aarch64/aarch64-builtins.c (aarch64_simd_expand_builtin): Increase
+	args array size by one to avoid buffer overflow.
+
 2015-03-31  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-cgraph.c (lto_output_node, input_overwrite_node): Stream
