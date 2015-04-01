@@ -1,3 +1,17 @@
+2015-04-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sync.md (UNSPEC_MOVA): Remove.
+	(atomic_load<mode>): Change operand 0 predicate to
+	nonimmediate_operand and fix up the destination when needed.
+	Use UNSPEC_LDA.
+	(atomic_loaddi_fpu): Use UNSPEC_LDA.
+	(atomic_store<mode>): Change operand 1 predicate to
+	nonimmendate_operand and move the source to register when needed.
+	Use UNSPEC_STA.
+	(atomic_store<mode>_1): Use UNSPEC_STA.
+	(atomic_storedi_fpu): Change operand 1 to nonimmediate_operand.
+	Fix moves from memory operand.  Use UNSPEC_STA.
+
 2015-04-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* expmed.c (strict_volatile_bitfield_p): Check that the access will
@@ -8,8 +22,8 @@
 2015-04-01  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	PR target/65624
-	* config/aarch64/aarch64-builtins.c (aarch64_simd_expand_builtin): Increase
-	args array size by one to avoid buffer overflow.
+	* config/aarch64/aarch64-builtins.c (aarch64_simd_expand_builtin):
+	Increase args array size by one to avoid buffer overflow.
 
 2015-03-31  Jan Hubicka  <hubicka@ucw.cz>
 
