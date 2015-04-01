@@ -1,3 +1,9 @@
+2015-04-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65646
+	* decl.c (grokvardecl): Don't call check_explicit_specialization
+	for non-template members of a class template.
+
 2015-04-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/65554
