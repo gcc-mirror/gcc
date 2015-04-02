@@ -1,3 +1,8 @@
+2015-04-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65625
+	* decl.c (make_typename_type): Handle seeing a variable template.
+
 2015-04-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56100
