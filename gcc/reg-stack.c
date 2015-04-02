@@ -448,7 +448,7 @@ get_true_reg (rtx *pat)
 
       case UNSPEC:
 	if (XINT (*pat, 1) == UNSPEC_TRUNC_NOOP
-	    || XINT (*pat, 1) == UNSPEC_LDA)
+	    || XINT (*pat, 1) == UNSPEC_FILD_ATOMIC)
 	  pat = & XVECEXP (*pat, 0, 0);
 	return pat;
 
@@ -1670,8 +1670,8 @@ subst_stack_regs_pat (rtx_insn *insn, stack_ptr regstack, rtx pat)
 	  case UNSPEC:
 	    switch (XINT (pat_src, 1))
 	      {
-	      case UNSPEC_STA:
 	      case UNSPEC_FIST:
+	      case UNSPEC_FIST_ATOMIC:
 
 	      case UNSPEC_FIST_FLOOR:
 	      case UNSPEC_FIST_CEIL:

@@ -1,3 +1,11 @@
+2015-04-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sync.md (UNSPEC_FILD_ATOMIC, UNSPEC_FIST_ATOMIC): New.
+	(loaddi_via_fpu): Use UNSPEC_FILD_ATOMIC.
+	(storedi_via_fpu): Use UNSPEC_FIST_ATOMIC.
+	* reg-stack.c (get_true_reg): Change UNSPEC_LDA to UNSPEC_FILD_ATOMIC.
+	(subst_stack_regs_pat): Change UNSPEC_STA to UNSPEC_FIST_ATOMIC.
+
 2015-04-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sync.md (UNSPEC_MOVA): Remove.
