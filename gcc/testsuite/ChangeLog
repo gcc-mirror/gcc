@@ -1,3 +1,9 @@
+2015-04-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65642
+	* g++.dg/cpp0x/constexpr-fold1.C: New test.
+	* g++.dg/cpp0x/constexpr-fold2.C: New test.
+
 2015-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/61977
