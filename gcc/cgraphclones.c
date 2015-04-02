@@ -437,7 +437,7 @@ cgraph_node::expand_all_artificial_thunks ()
    node is not inlined.  */
 
 cgraph_node *
-cgraph_node::create_clone (tree decl, gcov_type gcov_count, int freq,
+cgraph_node::create_clone (tree new_decl, gcov_type gcov_count, int freq,
 			   bool update_original,
 			   vec<cgraph_edge *> redirect_callers,
 			   bool call_duplication_hook,
@@ -449,7 +449,7 @@ cgraph_node::create_clone (tree decl, gcov_type gcov_count, int freq,
   gcov_type count_scale;
   unsigned i;
 
-  new_node->decl = decl;
+  new_node->decl = new_decl;
   new_node->register_symbol ();
   new_node->origin = origin;
   new_node->lto_file_data = lto_file_data;
@@ -476,6 +476,7 @@ cgraph_node::create_clone (tree decl, gcov_type gcov_count, int freq,
 
   new_node->clone.tree_map = NULL;
   new_node->clone.args_to_skip = args_to_skip;
+  new_node->split_part = split_part;
   if (!args_to_skip)
     new_node->clone.combined_args_to_skip = clone.combined_args_to_skip;
   else if (clone.combined_args_to_skip)
