@@ -2080,6 +2080,12 @@ cpp_peek_token (cpp_reader *pfile, int index)
   count = index;
   pfile->keep_tokens++;
 
+  /* For peeked tokens temporarily disable line_change reporting,
+     until the tokens are parsed for real.  */
+  void (*line_change) (cpp_reader *, const cpp_token *, int)
+    = pfile->cb.line_change;
+  pfile->cb.line_change = NULL;
+
   do
     {
       peektok = _cpp_lex_token (pfile);
@@ -2090,6 +2096,7 @@ cpp_peek_token (cpp_reader *pfile, int index)
 
   _cpp_backup_tokens_direct (pfile, count + 1);
   pfile->keep_tokens--;
+  pfile->cb.line_change = line_change;
 
   return peektok;
 }
