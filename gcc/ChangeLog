@@ -1,5 +1,9 @@
 2015-04-02  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.c (ix86_register_priority): Use AX_REG.
+
+2015-04-02  Uros Bizjak  <ubizjak@gmail.com>
+
 	Revert parts of r216820.
 	* config/i386/i386.md (movqi_internal): Correct type calculation
 	for alternatives 3 and 5.

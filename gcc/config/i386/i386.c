@@ -41256,7 +41256,7 @@ ix86_register_priority (int hard_regno)
   if (FIRST_REX_SSE_REG <= hard_regno && hard_regno <= LAST_REX_SSE_REG)
     return 2;
   /* Usage of AX register results in smaller code.  Prefer it.  */
-  if (hard_regno == 0)
+  if (hard_regno == AX_REG)
     return 4;
   return 3;
 }
