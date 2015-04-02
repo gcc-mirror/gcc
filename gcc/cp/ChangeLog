@@ -1,3 +1,10 @@
+2015-04-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56100
+	* pt.c (instantiating_current_function_p): New.
+	* name-lookup.c (pushdecl_maybe_friend_1): Use it.
+	* cp-tree.h (instantiating_current_function_p): Declare.
+
 2015-04-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65646
