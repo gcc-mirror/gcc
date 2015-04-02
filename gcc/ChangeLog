@@ -1,3 +1,11 @@
+2015-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/61977
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Don't
+	predefine __vector/__bool/__pixel macros nor context sensitive
+	macros for CLK_ASM.
+	* config/spu/spu-c.c (spu_cpu_cpp_builtins): Similarly.
+
 2015-04-02  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_output_move_double): Directly handle register
