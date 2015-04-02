@@ -1,3 +1,7 @@
+2015-04-02  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* MAINTAINERS: Add myself as a reviewer for the AArch64 port.
+
 2015-04-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* MAINTAINERS: Add myself as an arm port reviewer.
