@@ -3480,9 +3480,9 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
   if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
     {
       name = TREE_OPERAND (name, 0);
-      if (TREE_CODE (name) == TEMPLATE_DECL)
+      if (DECL_TYPE_TEMPLATE_P (name))
 	name = TREE_OPERAND (fullname, 0) = DECL_NAME (name);
-      else if (TREE_CODE (name) == OVERLOAD)
+      if (TREE_CODE (name) != IDENTIFIER_NODE)
 	{
 	  if (complain & tf_error)
 	    error ("%qD is not a type", name);
