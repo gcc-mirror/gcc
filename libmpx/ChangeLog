@@ -1,3 +1,11 @@
+2015-04-02  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR driver/65444
+	* configure.ac: Add check for '-z bndplt' support
+	by linker. Add link_mpx output variable.
+	* libmpx.spec.in (link_mpx): New.
+	* configure: Regenerate.
+
 2015-03-12  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR other/65384
