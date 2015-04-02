@@ -22,6 +22,9 @@
   UNSPEC_SFENCE
   UNSPEC_MFENCE
 
+  UNSPEC_FILD_ATOMIC
+  UNSPEC_FIST_ATOMIC
+
   ;; __atomic support
   UNSPEC_LDA
   UNSPEC_STA
@@ -302,7 +305,8 @@
 
 (define_insn "loaddi_via_fpu"
   [(set (match_operand:DF 0 "register_operand" "=f")
-	(unspec:DF [(match_operand:DI 1 "memory_operand" "m")] UNSPEC_LDA))]
+	(unspec:DF [(match_operand:DI 1 "memory_operand" "m")]
+		   UNSPEC_FILD_ATOMIC))]
   "TARGET_80387"
   "fild%Z1\t%1"
   [(set_attr "type" "fmov")
@@ -311,7 +315,8 @@
 
 (define_insn "storedi_via_fpu"
   [(set (match_operand:DI 0 "memory_operand" "=m")
-	(unspec:DI [(match_operand:DF 1 "register_operand" "f")] UNSPEC_STA))]
+	(unspec:DI [(match_operand:DF 1 "register_operand" "f")]
+		   UNSPEC_FIST_ATOMIC))]
   "TARGET_80387"
 {
   gcc_assert (find_regno_note (insn, REG_DEAD, FIRST_STACK_REG) != NULL_RTX);
