@@ -2933,6 +2933,9 @@ cxx_eval_pointer_plus_expression (const constexpr_ctx *ctx, tree t,
   tree op01 = TREE_OPERAND (t, 1);
   location_t loc = EXPR_LOCATION (t);
 
+  op00 = cxx_eval_constant_expression (ctx, op00, lval,
+				       non_constant_p, overflow_p);
+
   STRIP_NOPS (op00);
   if (TREE_CODE (op00) != ADDR_EXPR)
     return NULL_TREE;
