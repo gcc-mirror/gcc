@@ -14587,7 +14587,7 @@ $as_echo "#define STRING_WITH_STRINGS 1" >>confdefs.h
 
 fi
 
-for ac_header in unistd.h semaphore.h sys/loadavg.h sys/time.h sys/time.h
+for ac_header in pthread.h unistd.h semaphore.h sys/loadavg.h sys/time.h sys/time.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -15009,14 +15009,19 @@ ac_config_commands="$ac_config_commands gstdint.h"
 
 
 
-# Check to see if -pthread or -lpthread is needed.  Prefer the former.
-# In case the pthread.h system header is not found, this test will fail.
 XPCFLAGS=""
-CFLAGS="$CFLAGS -pthread"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+case "$host" in
+  *-*-rtems*)
+    # RTEMS supports Pthreads, but the library is not available at GCC build time.
+    ;;
+  *)
+    # Check to see if -pthread or -lpthread is needed.  Prefer the former.
+    # In case the pthread.h system header is not found, this test will fail.
+    CFLAGS="$CFLAGS -pthread"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <pthread.h>
-   void *g(void *d) { return NULL; }
+       void *g(void *d) { return NULL; }
 int
 main ()
 {
@@ -15029,10 +15034,10 @@ if ac_fn_c_try_link "$LINENO"; then :
   XPCFLAGS=" -Wc,-pthread"
 else
   CFLAGS="$save_CFLAGS" LIBS="-lpthread $LIBS"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <pthread.h>
-     void *g(void *d) { return NULL; }
+         void *g(void *d) { return NULL; }
 int
 main ()
 {
@@ -15051,6 +15056,7 @@ rm -f core conftest.err conftest.$ac_objext \
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+esac
 
 # Check for functions needed.
 for ac_func in getloadavg clock_gettime strtoull

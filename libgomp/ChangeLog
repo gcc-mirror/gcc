@@ -1,3 +1,13 @@
+2015-04-02  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backported from mainline
+	2015-03-13  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* configure.tgt (*-*-rtems*): Use local-exec TLS model.
+	* configure.ac (*-*-rtems*): Assume Pthread is supported.
+	(pthread.h): Check for this header file.
+	* configure: Regenerate.
+
 2015-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/64824
