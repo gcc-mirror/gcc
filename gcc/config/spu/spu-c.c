@@ -203,7 +203,8 @@ spu_cpu_cpp_builtins (struct cpp_reader *pfile)
   cpp_assert (pfile, "machine=spu");
   if (spu_arch == PROCESSOR_CELLEDP)
     cpp_define (pfile, "__SPU_EDP__");
-  cpp_define (pfile, "__vector=__attribute__((__spu_vector__))");
+  if (cpp_get_options (pfile)->lang != CLK_ASM)
+    cpp_define (pfile, "__vector=__attribute__((__spu_vector__))");
   switch (spu_ea_model)
     {
     case 32:
@@ -216,7 +217,7 @@ spu_cpu_cpp_builtins (struct cpp_reader *pfile)
        gcc_unreachable ();
     }
 
-  if (!flag_iso)
+  if (!flag_iso && cpp_get_options (pfile)->lang != CLK_ASM)
     {
       /* Define this when supporting context-sensitive keywords.  */
       cpp_define (pfile, "__VECTOR_KEYWORD_SUPPORTED__");
