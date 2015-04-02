@@ -1,3 +1,11 @@
+2015-04-02  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR driver/65444
+	* config/i386/linux-common.h (MPX_SPEC): New.
+	(CHKP_SPEC): Add MPX_SPEC.
+	* doc/invoke.texi (-fcheck-pointer-boudns): Document
+	possible issues with '-z bndplt' support in linker.
+
 2015-04-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sync.md (UNSPEC_FILD_ATOMIC, UNSPEC_FIST_ATOMIC): New.
