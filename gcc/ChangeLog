@@ -1,3 +1,12 @@
+2015-04-04  Alan Modra  <amodra@gmail.com>
+
+	PR target/65576
+	PR target/65240
+	* config/rs6000/predicates.md (zero_reg_mem_operand): Exclude
+	0.0 constant unless TARGET_VSX.
+	* config/rs6000/rs6000.md (extenddftf2_internal): Remove last
+	alternative.
+
 2015-04-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65648
