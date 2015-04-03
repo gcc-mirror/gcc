@@ -1,3 +1,8 @@
+2015-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64085
+	* g++.dg/cpp1y/lambda-init13.C: New.
+
 2015-04-03  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/cpp0x/pr57101.C: Use proper type for size_t.
