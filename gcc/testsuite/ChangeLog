@@ -1,3 +1,7 @@
+2015-04-03  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/pr57101.C: Use proper type for size_t.
+
 2015-04-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/65642
