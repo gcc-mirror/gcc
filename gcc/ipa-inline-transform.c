@@ -304,7 +304,8 @@ inline_call (struct cgraph_edge *e, bool update_original,
   struct cgraph_node *callee = e->callee->ultimate_alias_target ();
   bool new_edges_found = false;
 
-#ifdef ENABLE_CHECKING
+  /* This is used only for assert bellow.  */
+#if 0
   int estimated_growth = estimate_edge_growth (e);
   bool predicated = inline_edge_summary (e)->predicate != NULL;
 #endif
@@ -375,7 +376,10 @@ inline_call (struct cgraph_edge *e, bool update_original,
 	to->calls_comdat_local = false;
     }
 
-#ifdef ENABLE_CHECKING
+  /* FIXME: This assert suffers from roundoff errors, disable it for GCC 5
+     and revisit it after conversion to sreals in GCC 6.
+     See PR 65654.  */
+#if 0
   /* Verify that estimated growth match real growth.  Allow off-by-one
      error due to INLINE_SIZE_SCALE roudoff errors.  */
   gcc_assert (!update_overall_summary || !overall_size || new_edges_found
