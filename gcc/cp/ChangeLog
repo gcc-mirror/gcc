@@ -1,3 +1,9 @@
+2015-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64085
+	* lambda.c (add_capture): Use dependent_type_p for capture by
+	reference too.
+
 2015-04-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/65642
