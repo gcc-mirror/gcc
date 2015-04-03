@@ -1,7 +1,7 @@
 // { dg-do compile { target c++11 } }
 // { dg-options "-fcompare-debug" }
 
-typedef long unsigned size_t;
+typedef __SIZE_TYPE__ size_t;
 namespace
 {
   template < typename _Tp, _Tp __v > struct integral_constant
