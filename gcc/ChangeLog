@@ -1,5 +1,10 @@
 2015-04-02  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	* cgraphunit.c (cgraph_node::expand_thunk): Don't expand
+	instrumentation thunks.
+
+2015-04-02  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	* config/i386/i386.c (ix86_expand_call): Avoid nested
 	PARALLEL in returned call value.
 
