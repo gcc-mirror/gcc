@@ -1,3 +1,8 @@
+2015-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (scan_omp_parallel, scan_omp_task, scan_omp_target): Set
+	TYPE_ARTIFICIAL on the .omp_data* types.
+
 2015-04-02  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* cgraphunit.c (cgraph_node::expand_thunk): Don't expand
