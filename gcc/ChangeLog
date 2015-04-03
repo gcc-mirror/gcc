@@ -1,5 +1,11 @@
 2015-04-03  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/65655
+	* ipa-inline-analysis.c (edge_set_predicate): Do not redirect
+	speculative indirect edges to avoid ordering issue.
+
+2015-04-03  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/65076
 	* ipa-inline.c (edge_badness): Add combined size to the denominator.
 
