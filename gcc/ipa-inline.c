@@ -1077,8 +1077,8 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   /* When profile is available. Compute badness as:
      
                  time_saved * caller_count
-     goodness =  ---------------------------------
-	         growth_of_caller * overall_growth
+     goodness =  -------------------------------------------------
+	         growth_of_caller * overall_growth * combined_size
 
      badness = - goodness
 
@@ -1167,6 +1167,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	    overall_growth += 256 * 256 - 256;
 	  denominator *= overall_growth;
         }
+      denominator *= inline_summaries->get (caller)->self_size + growth;
 
       badness = - numerator / denominator;
 
