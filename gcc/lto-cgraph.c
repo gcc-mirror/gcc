@@ -1617,9 +1617,8 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
 		}
 
 	      /* Restore decl names reference.  */
-	      if (IDENTIFIER_TRANSPARENT_ALIAS (DECL_ASSEMBLER_NAME (cnode->decl))
-		  && !TREE_CHAIN (DECL_ASSEMBLER_NAME (cnode->decl)))
-		TREE_CHAIN (DECL_ASSEMBLER_NAME (cnode->decl))
+	      IDENTIFIER_TRANSPARENT_ALIAS (DECL_ASSEMBLER_NAME (cnode->decl)) = 1;
+	      TREE_CHAIN (DECL_ASSEMBLER_NAME (cnode->decl))
 		  = DECL_ASSEMBLER_NAME (cnode->orig_decl);
 	    }
 	}
