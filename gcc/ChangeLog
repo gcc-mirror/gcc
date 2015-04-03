@@ -1,3 +1,8 @@
+2015-04-02  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* lto-cgraph.c (input_cgraph_1): Always link instrumented
+	assembler name with original one.
+
 2015-04-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_register_priority): Use AX_REG.
