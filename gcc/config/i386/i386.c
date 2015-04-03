@@ -25624,8 +25624,19 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 	{
 	  rtx b0 = gen_rtx_REG (BND64mode, FIRST_BND_REG);
 	  rtx b1 = gen_rtx_REG (BND64mode, FIRST_BND_REG + 1);
-	  retval = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (3, retval, b0, b1));
-	  chkp_put_regs_to_expr_list (retval);
+	  if (GET_CODE (retval) == PARALLEL)
+	    {
+	      b0 = gen_rtx_EXPR_LIST (VOIDmode, b0, const0_rtx);
+	      b1 = gen_rtx_EXPR_LIST (VOIDmode, b1, const0_rtx);
+	      rtx par = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, b0, b1));
+	      retval = chkp_join_splitted_slot (retval, par);
+	    }
+	  else
+	    {
+	      retval = gen_rtx_PARALLEL (VOIDmode,
+					 gen_rtvec (3, retval, b0, b1));
+	      chkp_put_regs_to_expr_list (retval);
+	    }
 	}
 
       call = gen_rtx_SET (VOIDmode, retval, call);
