@@ -190,7 +190,7 @@ DEFPARAM(PARAM_LARGE_UNIT_INSNS,
 DEFPARAM(PARAM_INLINE_UNIT_GROWTH,
 	 "inline-unit-growth",
 	 "How much can given compilation unit grow because of the inlining (in percent)",
-	 15, 0, 0)
+	 20, 0, 0)
 DEFPARAM(PARAM_IPCP_UNIT_GROWTH,
 	 "ipcp-unit-growth",
 	 "How much can given compilation unit grow because of the interprocedural constant propagation (in percent)",
