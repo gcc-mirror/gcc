@@ -1,3 +1,8 @@
+2015-04-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* invoke.texi (inline-unit-growth): Increase growth to 20%
+	* params.def (PARAM_INLINE_UNIT_GROWTH): Likewise.
+
 2015-04-04  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/65647
