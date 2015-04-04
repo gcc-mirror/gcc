@@ -271,6 +271,14 @@ typedef struct lra_insn_recog_data *lra_insn_recog_data_t;
 #error wrong LRA_MAX_INHERITANCE_PASSES value
 #endif
 
+/* Analogous macro to the above one but for rematerialization.  */
+#define LRA_MAX_REMATERIALIZATION_PASSES 2
+
+#if LRA_MAX_REMATERIALIZATION_PASSES <= 0 \
+    || LRA_MAX_REMATERIALIZATION_PASSES >= LRA_MAX_ASSIGNMENT_ITERATION_NUMBER - 8
+#error wrong LRA_MAX_REMATERIALIZATION_PASSES value
+#endif
+
 /* lra.c: */
 
 extern FILE *lra_dump_file;
@@ -392,6 +400,7 @@ extern void lra_final_code_change (void);
 
 /* lra-remat.c:  */
 
+extern int lra_rematerialization_iter;
 extern bool lra_remat (void);
 
 /* lra-elimination.c: */

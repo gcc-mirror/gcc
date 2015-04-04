@@ -1,3 +1,16 @@
+2015-04-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/65647
+	* lra-int.h (LRA_MAX_REMATERIALIZATION_PASSES): New.  Add its
+	value checking.
+	(lra_rematerialization_iter): New.
+	* lra.c (lra): Initialize lra_rematerialization_iter.
+	Stop updating lra_constraint_new_regno_start after switching of
+	inheritance and rematerialization.
+	* lra-remat.c (lra_rematerialization_iter): New.
+	(lra_remat): Add printing pass iteration.  Do rematerialization
+	only first LRA_MAX_REMATERIALIZATION_PASSES iterations.
+
 2015-04-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/64909

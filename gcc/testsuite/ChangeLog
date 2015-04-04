@@ -1,3 +1,8 @@
+2015-04-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/65647
+	* gcc.target/arm/pr65647.c: New.
+
 2015-04-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65655
