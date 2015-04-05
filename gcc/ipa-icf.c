@@ -535,7 +535,8 @@ sem_function::equals_wpa (sem_item *item,
       && (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE
           || TREE_CODE (TREE_TYPE (item->decl)) == METHOD_TYPE)
       && (ipa_node_params_sum == NULL
-	  || ipa_is_param_used (IPA_NODE_REF (dyn_cast <cgraph_node *>(node)),
+	  || IPA_NODE_REF (get_node ())->descriptors.is_empty ()
+	  || ipa_is_param_used (IPA_NODE_REF (get_node ()),
 				0))
       && compare_polymorphic_p ())
     {
@@ -2501,14 +2502,15 @@ sem_item_optimizer::update_hash_by_addr_refs ()
       m_items[i]->update_hash_by_addr_refs (m_symtab_node_map);
       if (m_items[i]->type == FUNC)
 	{
+	  cgraph_node *cnode = dyn_cast <cgraph_node *> (m_items[i]->node);
+
 	  if (TREE_CODE (TREE_TYPE (m_items[i]->decl)) == METHOD_TYPE
 	      && contains_polymorphic_type_p
 		   (method_class_type (TREE_TYPE (m_items[i]->decl)))
 	      && (DECL_CXX_CONSTRUCTOR_P (m_items[i]->decl)
 		  || ((ipa_node_params_sum == NULL
-		       || ipa_is_param_used (
-			    IPA_NODE_REF
-			      (dyn_cast <cgraph_node *>(m_items[i]->node)), 0))
+		       || IPA_NODE_REF (cnode)->descriptors.is_empty ()
+		       || ipa_is_param_used (IPA_NODE_REF (cnode), 0))
 		      && static_cast<sem_function *> (m_items[i])
 			   ->compare_polymorphic_p ())))
 	     {
