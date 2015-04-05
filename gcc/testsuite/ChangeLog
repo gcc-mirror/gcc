@@ -1,3 +1,12 @@
+2015-04-05  Yvan Roux  <yvan.roux@linaro.org>
+
+	Backport from trunk r221867
+	2015-04-04  Vladimir Makarov <vmakarov@redhat.com>
+
+	PR target/65647
+	* gcc.target/arm/pr65647.c: New.
+	* gcc.target/arm/pr65647-2.c: New.
+
 2015-03-31  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* gcc.target/s390/hotpatch-25.c: New test.
