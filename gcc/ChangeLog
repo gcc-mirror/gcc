@@ -1,3 +1,10 @@
+2015-04-05  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/65665
+	* ipa-icf.c (sem_function::equals_wpa): Verify that IPA CP
+	has computed data structure.
+	(sem_item_optimizer::update_hash_by_addr_refs): Likewise.
+
 2015-04-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	* invoke.texi (inline-unit-growth): Increase growth to 20%
