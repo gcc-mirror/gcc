@@ -144,9 +144,9 @@ GOACC_parallel (int device, void (*fn) (void *),
     {
       k.host_start = (uintptr_t) fn;
       k.host_end = k.host_start + 1;
-      gomp_mutex_lock (&acc_dev->mem_map.lock);
-      tgt_fn_key = splay_tree_lookup (&acc_dev->mem_map.splay_tree, &k);
-      gomp_mutex_unlock (&acc_dev->mem_map.lock);
+      gomp_mutex_lock (&acc_dev->lock);
+      tgt_fn_key = splay_tree_lookup (&acc_dev->mem_map, &k);
+      gomp_mutex_unlock (&acc_dev->lock);
 
       if (tgt_fn_key == NULL)
 	gomp_fatal ("target function wasn't mapped");

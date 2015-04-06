@@ -284,12 +284,6 @@ lazy_open (int ord)
     = acc_dev->openacc.create_thread_data_func (acc_dev->openacc.target_data);
 
   acc_dev->openacc.async_set_async_func (acc_async_sync);
-
-  struct gomp_memory_mapping *mem_map = &acc_dev->mem_map;
-  gomp_mutex_lock (&mem_map->lock);
-  if (!mem_map->is_initialized)
-    gomp_init_tables (acc_dev, mem_map);
-  gomp_mutex_unlock (&mem_map->lock);
 }
 
 /* OpenACC 2.0a (3.2.12, 3.2.13) doesn't specify whether the serialization of
@@ -351,10 +345,9 @@ acc_shutdown_1 (acc_device_t d)
 
 	  walk->dev->openacc.target_data = target_data = NULL;
 
-	  struct gomp_memory_mapping *mem_map = &walk->dev->mem_map;
-	  gomp_mutex_lock (&mem_map->lock);
-	  gomp_free_memmap (mem_map);
-	  gomp_mutex_unlock (&mem_map->lock);
+	  gomp_mutex_lock (&walk->dev->lock);
+	  gomp_free_memmap (&walk->dev->mem_map);
+	  gomp_mutex_unlock (&walk->dev->lock);
 
 	  walk->dev = NULL;
 	}

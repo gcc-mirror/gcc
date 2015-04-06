@@ -1,3 +1,8 @@
+2015-04-06  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* config/i386/intelmic-mkoffload.c (generate_host_descr_file): Call
+	GOMP_offload_unregister from the destructor.
+
 2015-04-06  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* ipa-chkp.c (chkp_maybe_create_clone): Reset cdtor

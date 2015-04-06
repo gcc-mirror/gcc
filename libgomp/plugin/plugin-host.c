@@ -95,12 +95,6 @@ GOMP_OFFLOAD_get_num_devices (void)
 }
 
 STATIC void
-GOMP_OFFLOAD_register_image (void *host_table __attribute__ ((unused)),
-			     void *target_data __attribute__ ((unused)))
-{
-}
-
-STATIC void
 GOMP_OFFLOAD_init_device (int n __attribute__ ((unused)))
 {
 }
@@ -111,10 +105,17 @@ GOMP_OFFLOAD_fini_device (int n __attribute__ ((unused)))
 }
 
 STATIC int
-GOMP_OFFLOAD_get_table (int n __attribute__ ((unused)),
-			struct mapping_table **table __attribute__ ((unused)))
+GOMP_OFFLOAD_load_image (int n __attribute__ ((unused)),
+			 void *i __attribute__ ((unused)),
+			 struct addr_pair **r __attribute__ ((unused)))
 {
   return 0;
+}
+
+STATIC void
+GOMP_OFFLOAD_unload_image (int n __attribute__ ((unused)),
+			   void *i __attribute__ ((unused)))
+{
 }
 
 STATIC void *

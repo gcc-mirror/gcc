@@ -1,3 +1,17 @@
+2015-04-06  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* plugin/libgomp-plugin-intelmic.cpp: Include map.
+	(AddrVect, DevAddrVect, ImgDevAddrMap): New typedefs.
+	(num_devices, num_images, address_table): New static vars.
+	(num_libraries, lib_descrs): Remove static vars.
+	(set_mic_lib_path): Rename to ...
+	(init): ... this.  Allocate address_table and get num_devices.
+	(GOMP_OFFLOAD_get_num_devices): return num_devices.
+	(load_lib_and_get_table): Remove static function.
+	(offload_image): New static function.
+	(GOMP_OFFLOAD_get_table): Remove function.
+	(GOMP_OFFLOAD_load_image, GOMP_OFFLOAD_unload_image): New functions.
+
 2015-01-15  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* plugin/libgomp-plugin-intelmic.cpp (GOMP_OFFLOAD_get_name)

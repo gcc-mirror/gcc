@@ -1,3 +1,74 @@
+2015-04-06  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* libgomp-plugin.h (struct mapping_table): Replace with addr_pair.
+	* libgomp.h (struct gomp_memory_mapping): Remove.
+	(struct target_mem_desc): Change type of mem_map from
+	gomp_memory_mapping * to splay_tree_s *.
+	(struct gomp_device_descr): Remove register_image_func, get_table_func.
+	Add load_image_func, unload_image_func.
+	Change type of mem_map from gomp_memory_mapping to splay_tree_s.
+	Remove offload_regions_registered.
+	(gomp_init_tables): Remove.
+	(gomp_free_memmap): Change type of argument from gomp_memory_mapping *
+	to splay_tree_s *.
+	* libgomp.map (GOMP_4.0.1): Add GOMP_offload_unregister.
+	* oacc-host.c (host_dispatch): Do not initialize register_image_func,
+	get_table_func, mem_map.is_initialized, mem_map.splay_tree.root,
+	offload_regions_registered.
+	Initialize load_image_func, unload_image_func, mem_map.root.
+	(goacc_host_init): Do not initialize host_dispatch.mem_map.lock.
+	* oacc-init.c (lazy_open): Don't call gomp_init_tables.
+	(acc_shutdown_1): Use dev's lock and splay_tree instead of mem_map's.
+	* oacc-mem.c (lookup_host): Get gomp_device_descr *dev instead of
+	gomp_memory_mapping *.  Use dev's lock and splay_tree.
+	(lookup_dev): Use dev's lock.
+	(acc_deviceptr): Pass dev to lookup_host instead of mem_map.
+	(acc_is_present): Likewise.
+	(acc_map_data): Likewise.
+	(acc_unmap_data): Likewise.  Use dev's lock.
+	(present_create_copy): Likewise.
+	(delete_copyout): Pass dev to lookup_host instead of mem_map.
+	(update_dev_host): Likewise.
+	(gomp_acc_remove_pointer): Likewise.  Use dev's lock.
+	* oacc-parallel.c (GOACC_parallel): Use dev's lock and splay_tree.
+	* plugin/plugin-host.c (GOMP_OFFLOAD_register_image): Remove.
+	(GOMP_OFFLOAD_get_table): Remove
+	(GOMP_OFFLOAD_load_image): New function.
+	(GOMP_OFFLOAD_unload_image): New function.
+	* target.c (register_lock): New mutex for offload image registration.
+	(num_devices): Do not guard with PLUGIN_SUPPORT.
+	(gomp_realloc_unlock): New static function.
+	(gomp_map_vars_existing): Add device descriptor argument.  Unlock mutex
+	before gomp_fatal.
+	(gomp_map_vars): Use dev's lock and splay_tree instead of mem_map's.
+	Pass devicep to gomp_map_vars_existing.  Unlock mutex before gomp_fatal.
+	(gomp_copy_from_async): Use dev's lock and splay_tree instead of
+	mem_map's.
+	(gomp_unmap_vars): Likewise.
+	(gomp_update): Remove gomp_memory_mapping argument.  Use dev's lock and
+	splay_tree instead of mm's.  Unlock mutex before gomp_fatal.
+	(gomp_offload_image_to_device): New static function.
+	(GOMP_offload_register): Add mutex lock.
+	Call gomp_offload_image_to_device for all initialized devices.
+	Replace gomp_realloc with gomp_realloc_unlock.
+	(GOMP_offload_unregister): New function.
+	(gomp_init_tables): Replace with gomp_init_device.  Replace a call to
+	get_table_func from the plugin with calls to init_device_func and
+	gomp_offload_image_to_device.
+	(gomp_free_memmap): Change type of argument from gomp_memory_mapping *
+	to splay_tree_s *.
+	(GOMP_target): Do not call gomp_init_tables.  Use dev's lock and
+	splay_tree instead of mem_map's.  Unlock mutex before gomp_fatal.
+	(GOMP_target_data): Do not call gomp_init_tables.
+	(GOMP_target_update): Likewise.  Remove argument from gomp_update.
+	(gomp_load_plugin_for_device): Replace register_image and get_table
+	with load_image and unload_image in DLSYM ().
+	(gomp_register_images_for_device): Remove function.
+	(gomp_target_init): Do not initialize current_device.mem_map.*,
+	current_device.offload_regions_registered.
+	Remove call to gomp_register_images_for_device.
+	Do not free offload_images and num_offload_images.
+
 2015-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/65597
