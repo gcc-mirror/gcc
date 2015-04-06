@@ -550,6 +550,9 @@ chkp_maybe_create_clone (tree fndecl)
 	      clone->thunk.thunk_p = true;
 	      clone->thunk.add_pointer_bounds_args = true;
 	      clone->create_edge (node, NULL, 0, CGRAPH_FREQ_BASE);
+	      /* Thunk shouldn't be a cdtor.  */
+	      DECL_STATIC_CONSTRUCTOR (clone->decl) = 0;
+	      DECL_STATIC_DESTRUCTOR (clone->decl) = 0;
 	    }
 	  else
 	    {
@@ -714,6 +717,9 @@ chkp_produce_thunks (bool early)
 			     0, CGRAPH_FREQ_BASE);
 	  node->create_reference (node->instrumented_version,
 			       IPA_REF_CHKP, NULL);
+	  /* Thunk shouldn't be a cdtor.  */
+	  DECL_STATIC_CONSTRUCTOR (node->decl) = 0;
+	  DECL_STATIC_DESTRUCTOR (node->decl) = 0;
 	}
     }
 
