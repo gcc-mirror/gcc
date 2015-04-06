@@ -1,3 +1,7 @@
+2015-04-06  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.dg/lto/chkp-ctor-merge_0.c: New.
+
 2015-04-04  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/65647
