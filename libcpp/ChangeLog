@@ -1,3 +1,9 @@
+2015-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/61977
+	* lex.c (cpp_peek_token): If peektok is CPP_EOF, back it up
+	with all tokens peeked by the current function.
+
 2015-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/61977

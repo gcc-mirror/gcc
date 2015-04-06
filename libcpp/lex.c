@@ -2090,11 +2090,14 @@ cpp_peek_token (cpp_reader *pfile, int index)
     {
       peektok = _cpp_lex_token (pfile);
       if (peektok->type == CPP_EOF)
-	return peektok;
+	{
+	  index--;
+	  break;
+	}
     }
   while (index--);
 
-  _cpp_backup_tokens_direct (pfile, count + 1);
+  _cpp_backup_tokens_direct (pfile, count - index);
   pfile->keep_tokens--;
   pfile->cb.line_change = line_change;
 
