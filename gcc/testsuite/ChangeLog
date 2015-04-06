@@ -1,3 +1,8 @@
+2015-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/61977
+	* gcc.dg/cpp/pr61977.c: New test.
+
 2015-04-06  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* gcc.dg/lto/chkp-ctor-merge_0.c: New.
