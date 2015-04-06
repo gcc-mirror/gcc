@@ -1,3 +1,8 @@
+2015-04-06  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* ipa-cp (set_single_call_flag): Remove too
+	restrictive assert.
+
 2015-04-06  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* config/i386/intelmic-mkoffload.c (generate_host_descr_file): Call
