@@ -1,5 +1,11 @@
 2015-04-06  Evandro Menezes  <e.menezes@samsung.com>
 
+	* doc/invoke.texi (AARCH64/mtune): Add exynos-m1 as an option.
+	* config/aarch64/aarch64-cores.def (exynos-m1): New core.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+
+2015-04-06  Evandro Menezes  <e.menezes@samsung.com>
+
 	* doc/invoke.texi (ARM/mtune): Add "exynos-m1" as an option.
 	* config/arm/arm.c (arm_issue_rate): Specify "3" for "exynosm1".
 	* config/arm/arm-cores.def (exynos-m1): New core.
