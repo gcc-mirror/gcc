@@ -1,5 +1,8 @@
 2015-04-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/65678
+	* g++.dg/debug/pr65678.C: New test.
+
 	PR middle-end/65680
 	* gcc.c-torture/compile/pr65680.c: New test.
 
