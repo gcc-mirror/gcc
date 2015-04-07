@@ -1,3 +1,9 @@
+2015-04-07  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/65678
+	* lra-remat.c (do_remat): Process input and non-input insn
+	registers separately.
+
 2015-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/65678
