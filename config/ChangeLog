@@ -1,3 +1,9 @@
+2015-04-07  Jakub Jelinek  <jakub@redhat.com>
+	    Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/65351
+	* picflag.m4: Append -mno-dynamic-no-pic for Darwin.
+
 2015-03-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR bootstrap/65537

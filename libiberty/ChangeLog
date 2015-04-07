@@ -1,3 +1,9 @@
+2015-04-07  Jakub Jelinek  <jakub@redhat.com>
+	    Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/65351
+	* configure: Regenerate.
+
 2015-01-19  Eli Zaretskii  <eliz@gnu.org>
 
 	* strerror.c <sys_nerr, sys_errlist>: Declare only if they aren't

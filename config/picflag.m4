@@ -9,7 +9,9 @@ case "${$2}" in
     *-*-darwin*)
 	# PIC is the default on this platform
 	# Common symbols not allowed in MH_DYLIB files
-	$1=-fno-common
+	# Cancel any earlier -mdynamic-no-pic, as that makes
+	# the code not suitable for shared libraries.
+	$1='-fno-common -mno-dynamic-no-pic'
 	;;
     alpha*-dec-osf5*)
 	# PIC is the default.

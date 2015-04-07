@@ -2826,7 +2826,9 @@ case "${host}" in
     *-*-darwin*)
 	# PIC is the default on this platform
 	# Common symbols not allowed in MH_DYLIB files
-	PICFLAG=-fno-common
+	# Cancel any earlier -mdynamic-no-pic, as that makes
+	# the code not suitable for shared libraries.
+	PICFLAG='-fno-common -mno-dynamic-no-pic'
 	;;
     alpha*-dec-osf5*)
 	# PIC is the default.
