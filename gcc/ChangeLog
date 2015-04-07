@@ -1,5 +1,9 @@
 2015-04-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/65678
+	* valtrack.c (debug_lowpart_subreg): New function.
+	(dead_debug_insert_temp): Use it.
+
 	PR middle-end/65680
 	* expr.c (get_inner_reference): Handle bit_offset that doesn't fit
 	into signed HOST_WIDE_INT the same as negative bit_offset.
