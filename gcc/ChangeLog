@@ -1,3 +1,9 @@
+2015-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/65680
+	* expr.c (get_inner_reference): Handle bit_offset that doesn't fit
+	into signed HOST_WIDE_INT the same as negative bit_offset.
+
 2015-04-07  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* ipa-comdats.c (ipa_comdats): Visit all thunks

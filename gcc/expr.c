@@ -6941,7 +6941,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
   if (offset)
     {
       /* Avoid returning a negative bitpos as this may wreak havoc later.  */
-      if (wi::neg_p (bit_offset))
+      if (wi::neg_p (bit_offset) || !wi::fits_shwi_p (bit_offset))
         {
 	  offset_int mask = wi::mask <offset_int> (LOG2_BITS_PER_UNIT, false);
 	  offset_int tem = bit_offset.and_not (mask);
