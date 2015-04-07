@@ -1,3 +1,48 @@
+2015-04-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/65614
+	* config/rs6000/rs6000.c (struct processor_costs): Add cost field
+	for SF->DF conversions to make FLOAT_EXTEND more expensive, so
+	that LFD is used to load double constants instead of LFS.  Add
+	defaults for all costs structures.  Add comments for missing
+	initialization fields.
+	(size32_cost): Likewise.
+	(size64_cost): Likewise.
+	(rs64a_cost): Likewise.
+	(mpccore_cost): Likewise.
+	(ppc403_cost): Likewise.
+	(ppc405_cost): Likewise.
+	(ppc440_cost): Likewise.
+	(ppc476_cost): Likewise.
+	(ppc601_cost): Likewise.
+	(ppc603_cost): Likewise.
+	(ppc604_cost): Likewise.
+	(ppc604e_cost): Likewise.
+	(ppc620_cost): Likewise.
+	(ppc630_cost): Likewise.
+	(ppccell_cost): Likewise.
+	(ppc750_cost): Likewise.
+	(ppc7450_cost): Likewise.
+	(ppc8540_cost): Likewise.
+	(ppce300c2c3_cost): Likewise.
+	(ppce500mc_cost): Likewise.
+	(ppce500mc64_cost): Likewise.
+	(ppce5500_cost): Likewise.
+	(ppce6500_cost): Likewise.
+	(titan_cost): Likewise.
+	(power4_cost): Likewise.
+	(power6_cost): Likewise.
+	(power7_cost): Likewise.
+	(power8_cost): Likewise.
+	(ppca2_cost): Likewise.
+	(rs6000_rtx_costs): Make FLOAT_EXTEND use SFDF_convert field.
+
+	* config/rs6000/rs6000.md (extendsfdf2_fpr): Generate XSCPSGNDP
+	instead of XXLOR to copy SFmode to clear out dirty bits created
+	when SFmode denormals are generated.
+	(mov<mode>_hardfloat, FMOVE32 case): Likewise.
+	(truncdfsf2_fpr): Add support for ISA 2.07 XSRSP instruction.
+
 2015-04-06  Evandro Menezes  <e.menezes@samsung.com>
 
 	* doc/invoke.texi (AARCH64/mtune): Add exynos-m1 as an option.
