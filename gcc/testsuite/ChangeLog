@@ -1,3 +1,7 @@
+2015-04-07  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.target/arm/pr65647.c: Add option "-mfloat-abi=soft".
+
 2015-04-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/65614
