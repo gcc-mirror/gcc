@@ -1,3 +1,9 @@
+2015-04-07  Bin Cheng  <bin.cheng@arm.com>
+
+	Backport from trunk r221889
+	2015-04-07  Bin Cheng  <bin.cheng@arm.com>
+	* gcc.target/arm/pr65647.c: Add option "-mfloat-abi=soft".
+
 2015-04-05  Yvan Roux  <yvan.roux@linaro.org>
 
 	Backport from trunk r221867
