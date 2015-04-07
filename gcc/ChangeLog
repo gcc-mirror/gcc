@@ -1,6 +1,6 @@
 2015-04-07  Vladimir Makarov  <vmakarov@redhat.com>
 
-	PR target/65678
+	PR target/65648
 	* lra-remat.c (do_remat): Process input and non-input insn
 	registers separately.
 
@@ -158,7 +158,7 @@
 
 2015-04-03  Jan Hubicka  <hubicka@ucw.cz>
 
-	PR ipa/65648
+	PR ipa/65654
 	* ipa-inline-transform.c (inline_call): Skip sanity check to work
 	around the ICE
 
