@@ -1,3 +1,9 @@
+2015-04-07  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/65548
+	* trans-stmt.c (gfc_trans_allocate): For intrinsic functions
+	use conv_expr_descriptor() instead of conv_expr_reference().
+
 2015-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/65597

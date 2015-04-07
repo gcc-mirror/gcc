@@ -5049,12 +5049,17 @@ gfc_trans_allocate (gfc_code * code)
 	      /* In all other cases evaluate the expr3 and create a
 		 temporary.  */
 	      gfc_init_se (&se, NULL);
-	      gfc_conv_expr_reference (&se, code->expr3);
+	      if (code->expr3->rank != 0
+		  && code->expr3->expr_type == EXPR_FUNCTION
+		  && code->expr3->value.function.isym)
+		gfc_conv_expr_descriptor (&se, code->expr3);
+	      else
+		gfc_conv_expr_reference (&se, code->expr3);
 	      if (code->expr3->ts.type == BT_CLASS)
 		gfc_conv_class_to_class (&se, code->expr3,
 					 code->expr3->ts,
 					 false, true,
-					  false,false);
+					 false, false);
 	      gfc_add_block_to_block (&block, &se.pre);
 	      gfc_add_block_to_block (&post, &se.post);
 	      /* Prevent aliasing, i.e., se.expr may be already a
