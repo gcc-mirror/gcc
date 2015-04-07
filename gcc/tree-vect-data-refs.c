@@ -1126,7 +1126,6 @@ vect_peeling_hash_get_lowest_cost (_vect_peel_info **slot,
   vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   struct data_reference *dr;
   stmt_vector_for_cost prologue_cost_vec, body_cost_vec, epilogue_cost_vec;
-  int single_iter_cost;
 
   prologue_cost_vec.create (2);
   body_cost_vec.create (2);
@@ -1149,14 +1148,11 @@ vect_peeling_hash_get_lowest_cost (_vect_peel_info **slot,
       SET_DR_MISALIGNMENT (dr, save_misalignment);
     }
 
-  single_iter_cost = vect_get_single_scalar_iteration_cost (loop_vinfo);
+  auto_vec<stmt_info_for_cost> scalar_cost_vec;
+  vect_get_single_scalar_iteration_cost (loop_vinfo, &scalar_cost_vec);
   outside_cost += vect_get_known_peeling_cost
     (loop_vinfo, elem->npeel, &dummy,
-     /* ???  We use this cost as number of stmts with scalar_stmt cost,
-	thus divide by that.  This introduces rounding errors, thus better 
-	introduce a new cost kind (raw_cost?  scalar_iter_cost?). */
-     single_iter_cost / vect_get_stmt_cost (scalar_stmt),
-     &prologue_cost_vec, &epilogue_cost_vec);
+     &scalar_cost_vec, &prologue_cost_vec, &epilogue_cost_vec);
 
   /* Prologue and epilogue costs are added to the target model later.
      These costs depend only on the scalar iteration cost, the

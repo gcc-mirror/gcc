@@ -1,11 +1,29 @@
+2015-04-07  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64909
+	PR tree-optimization/65660
+	* tree-vectorizer.h (vect_get_known_peeling_cost): Adjust
+	to take a cost vector for scalar iteration cost.
+	(vect_get_single_scalar_iteration_cost): Likewise.
+	* tree-vect-loop.c (vect_get_single_scalar_iteration_cost):
+	Compute the scalar iteration cost into a cost vector.
+	(vect_get_known_peeling_cost): Use the scalar cost vector to
+	account for the cost of the peeled iterations.
+	(vect_estimate_min_profitable_iters): Likewise.
+	* tree-vect-data-refs.c (vect_peeling_hash_get_lowest_cost):
+	Likewise.
+
 2015-04-05  Yvan Roux  <yvan.roux@linaro.org>
 
 	Backport from trunk r221867
 	2015-04-04  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/65647
-	* lra.c (lra): Stop updating lra_constraint_new_regno_start after switching
-	off inheritance.
+	* lra.c (lra): Stop updating lra_constraint_new_regno_start after
+	switching off inheritance.
 
 2015-04-02  John David Anglin  <danglin@gcc.gnu.org>
 
