@@ -1,3 +1,9 @@
+2015-04-07  Jakub Jelinek  <jakub@redhat.com>
+	    Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/65351
+	* configure: Regenerate.
+
 2015-03-25  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config.host (nios2-*-linux*): Remove 'extra_parts' setting.

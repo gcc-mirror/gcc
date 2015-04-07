@@ -4788,7 +4788,9 @@ case "${target}" in
     *-*-darwin*)
 	# PIC is the default on this platform
 	# Common symbols not allowed in MH_DYLIB files
-	PICFLAG_FOR_TARGET=-fno-common
+	# Cancel any earlier -mdynamic-no-pic, as that makes
+	# the code not suitable for shared libraries.
+	PICFLAG_FOR_TARGET='-fno-common -mno-dynamic-no-pic'
 	;;
     alpha*-dec-osf5*)
 	# PIC is the default.
@@ -18147,7 +18149,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18150 "configure"
+#line 18152 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18253,7 +18255,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18256 "configure"
+#line 18258 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
