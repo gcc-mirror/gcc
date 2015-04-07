@@ -377,7 +377,7 @@ ipa_comdats (void)
 	      fprintf (dump_file, "To group: %s\n", IDENTIFIER_POINTER (group));
 	    }
 	  if (is_a <cgraph_node *> (symbol))
-	   dyn_cast <cgraph_node *>(symbol)->call_for_symbol_and_aliases
+	   dyn_cast <cgraph_node *>(symbol)->call_for_symbol_thunks_and_aliases
 		  (set_comdat_group_1,
 		   *comdat_head_map.get (group),
 		   true);

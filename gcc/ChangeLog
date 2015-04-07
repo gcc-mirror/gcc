@@ -1,3 +1,8 @@
+2015-04-07  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* ipa-comdats.c (ipa_comdats): Visit all thunks
+	to set proper comdat group.
+
 2015-04-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/65489
