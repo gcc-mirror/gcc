@@ -1321,6 +1321,15 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 		  && TREE_CODE (base) != SSA_NAME
 		  && (!DECL_P (base) || MEM_P (DECL_RTL (base)))))
 	    {
+	      /* We may have turned the parameter value into an SSA name.
+		 Go back to the original parameter so we can take the
+		 address.  */
+	      if (TREE_CODE (args[i].tree_value) == SSA_NAME)
+		{
+		  gcc_assert (SSA_NAME_IS_DEFAULT_DEF (args[i].tree_value));
+		  args[i].tree_value = SSA_NAME_VAR (args[i].tree_value);
+		  gcc_assert (TREE_CODE (args[i].tree_value) == PARM_DECL);
+		}
 	      /* Argument setup code may have copied the value to register.  We
 		 revert that optimization now because the tail call code must
 		 use the original location.  */
