@@ -1,3 +1,9 @@
+2015-04-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65540
+	* calls.c (initialize_argument_information): When producing tail
+	call also turn SSA_NAMES passed by references to original PARM_DECLs
+
 2015-04-07  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/65648

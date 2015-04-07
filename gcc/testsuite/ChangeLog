@@ -1,3 +1,8 @@
+2015-04-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65540
+	* gcc.c-torture/compile/pr65540.c: New.
+
 2015-04-07  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/c-output-template-3.c: Add -O, remove
