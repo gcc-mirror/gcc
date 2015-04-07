@@ -1,3 +1,8 @@
+2015-04-07  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.target/i386/mpx/chkp-thunk-comdat-1.cc: New.
+	* gcc.target/i386/mpx/chkp-thunk-comdat-2.cc: New.
+
 2015-04-07  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.target/arm/pr65647.c: Add option "-mfloat-abi=soft".
