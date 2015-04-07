@@ -1,3 +1,9 @@
+2015-04-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/65489
+	* config/arm/arm.c (arm_legitimate_constant_p_1): Remove restriction
+	on constants for NEON VSTRUCT modes.
+
 2015-04-07  Jakub Jelinek  <jakub@redhat.com>
 	    Iain Sandoe  <iain@codesourcery.com>
 

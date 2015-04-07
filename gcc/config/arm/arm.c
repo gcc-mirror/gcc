@@ -8193,14 +8193,8 @@ arm_tls_referenced_p (rtx x)
    When generating pic allow anything.  */
 
 static bool
-arm_legitimate_constant_p_1 (machine_mode mode, rtx x)
+arm_legitimate_constant_p_1 (machine_mode, rtx x)
 {
-  /* At present, we have no support for Neon structure constants, so forbid
-     them here.  It might be possible to handle simple cases like 0 and -1
-     in future.  */
-  if (TARGET_NEON && VALID_NEON_STRUCT_MODE (mode))
-    return false;
-
   return flag_pic || !label_mentioned_p (x);
 }
 
