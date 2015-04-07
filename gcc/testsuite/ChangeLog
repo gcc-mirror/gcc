@@ -1,3 +1,10 @@
+2015-04-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/65614
+	* gcc.target/powerpc/compress-float-ppc-pic.c: Run test on power5
+	to get floating point compression.
+	* gcc.target/powerpc/compress-foat-ppc.c: Likewise.
+
 2015-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/61977
