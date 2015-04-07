@@ -1,3 +1,8 @@
+2015-04-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update_web_docs_libstdcxx_svn (FILTER): Introduce.
+	Use to filter output of the copying process.
+
 2015-02-25  Arnaud Charlet  <charlet@adacore.com>
 
 	* update_web_docs_svn: Preserve gcc/ada/*.png. Update comments.
