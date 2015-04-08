@@ -1273,4 +1273,9 @@ if ! grep 'const SizeofICMPv6Filter ' ${OUT} >/dev/null 2>&1; then
     echo 'const SizeofICMPv6Filter = 32' >> ${OUT}
 fi
 
+# The Solaris 11 Update 1 _zone_net_addr_t struct.
+grep '^type _zone_net_addr_t ' gen-sysinfo.go | \
+    sed -e 's/_in6_addr/[16]byte/' \
+    >> ${OUT}
+
 exit $?
