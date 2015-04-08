@@ -1,3 +1,7 @@
+2015-04-08  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (__sync Builtins): Fix grammar.
+
 2015-04-08  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* doc/cfg.texi (GIMPLE statement iterators): Fix typo.
