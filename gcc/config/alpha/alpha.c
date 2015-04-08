@@ -9665,7 +9665,7 @@ alpha_use_linkage (rtx func, bool lflag, bool rflag)
   if (cfun->machine->links)
     {
       /* Is this name already defined?  */
-      alpha_links *slot = cfun->machine->links->get (name);
+      alpha_links **slot = cfun->machine->links->get (name);
       if (slot)
 	al = *slot;
     }
@@ -9711,7 +9711,7 @@ alpha_use_linkage (rtx func, bool lflag, bool rflag)
 }
 
 static int
-alpha_write_one_linkage (const char *name, alpha_links *link, FILE *steam)
+alpha_write_one_linkage (const char *name, alpha_links *link, FILE *stream)
 {
   ASM_OUTPUT_INTERNAL_LABEL (stream, XSTR (link->linkage, 0));
   if (link->rkind == KIND_CODEADDR)

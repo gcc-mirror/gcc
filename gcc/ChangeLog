@@ -1,3 +1,9 @@
+2015-03-27  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/alpha/alpha.c (alpha_use_linkage): Change type of slot to
+	alpha_links **.
+	(alpha_write_one_linkage): Correct typo.
+
 2015-04-08  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* ipa-comdats.c (propagate_comdat_group): Walk through thunks.
