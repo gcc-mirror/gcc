@@ -1,3 +1,10 @@
+2015-04-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/65693
+	* combine.c (is_parallel_of_n_reg_sets): Change first argument
+	from an rtx_insn * to an rtx.
+	(try_combine): Adjust both callers.  Use it once more.
+
 2015-04-08  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* tree-chkp.c (chkp_find_const_bounds_var): Remove.
