@@ -1444,7 +1444,8 @@ Pragma_to_gnu (Node_Id gnat_node)
 	      }
 
 	    /* Deal with optional pattern (but ignore Reason => "...").  */
-	    if (Present (Next (gnat_temp)) && No (Chars (Next (gnat_temp))))
+	    if (Present (Next (gnat_temp))
+		&& Chars (Next (gnat_temp)) != Name_Reason)
 	      {
 		/* pragma Warnings (On | Off, Name) is handled differently.  */
 		if (Nkind (Expression (Next (gnat_temp))) != N_String_Literal)
