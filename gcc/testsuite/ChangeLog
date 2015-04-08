@@ -1,5 +1,9 @@
 2015-04-08  Ilya Enkovich  <ilya.enkovich@intel.com>
 
+	* gcc.target/i386/mpx/chkp-thunk-comdat-3.c: New.
+
+2015-04-08  Ilya Enkovich  <ilya.enkovich@intel.com>
+
 	* gcc/testsuite/gcc.target/i386/thunk-retbnd.c: New.
 
 2015-04-08  Eric Botcazou  <ebotcazou@adacore.com>
