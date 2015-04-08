@@ -142,12 +142,14 @@ propagate_comdat_group (struct symtab_node *symbol,
       {
 	struct symtab_node *symbol2 = edge->caller;
 
-	/* If we see inline clone, its comdat group actually
-	   corresponds to the comdat group of the function it is inlined
-	   to.  */
-
 	if (cgraph_node * cn = dyn_cast <cgraph_node *> (symbol2))
 	  {
+	    /* Thunks can not call across section boundary.  */
+	    if (cn->thunk.thunk_p)
+	      newgroup = propagate_comdat_group (symbol2, newgroup, map);
+	    /* If we see inline clone, its comdat group actually
+	       corresponds to the comdat group of the function it
+	       is inlined to.  */
 	    if (cn->global.inlined_to)
 	      symbol2 = cn->global.inlined_to;
 	  }

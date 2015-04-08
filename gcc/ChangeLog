@@ -1,3 +1,7 @@
+2015-04-08  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* ipa-comdats.c (propagate_comdat_group): Walk through thunks.
+
 2015-04-08  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (bootstrap-lto-noplugin): Rewrite. 
