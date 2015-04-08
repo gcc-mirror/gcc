@@ -1,3 +1,11 @@
+2015-04-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Function>: Do not make
+	a function returning an unconstrained type 'const' for the middle-end.
+
+	* gcc-interface/trans.c (Pragma_to_gnu) <case Pragma_Warning>: Use
+	exact condition to detect Reason => "..." pattern.
+
 2015-03-31  Tom de Vries  <tom@codesourcery.com>
 
 	PR ada/65490

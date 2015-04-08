@@ -4266,8 +4266,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		return_by_direct_ref_p = true;
 	      }
 
-	    /* If we are supposed to return an unconstrained array type, make
-	       the actual return type the fat pointer type.  */
+	    /* If the return type is an unconstrained array type, the return
+	       value will be allocated on the secondary stack so the actual
+	       return type is the fat pointer type.  */
 	    else if (TREE_CODE (gnu_return_type) == UNCONSTRAINED_ARRAY_TYPE)
 	      {
 		gnu_return_type = TREE_TYPE (gnu_return_type);
@@ -4275,8 +4276,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      }
 
 	    /* Likewise, if the return type requires a transient scope, the
-	       return value will be allocated on the secondary stack so the
-	       actual return type is the pointer type.  */
+	       return value will also be allocated on the secondary stack so
+	       the actual return type is the pointer type.  */
 	    else if (Requires_Transient_Scope (gnat_return_type))
 	      {
 		gnu_return_type = build_pointer_type (gnu_return_type);
@@ -4591,11 +4592,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				 return_by_direct_ref_p,
 				 return_by_invisi_ref_p);
 
-	/* A subprogram (something that doesn't return anything) shouldn't
-	   be considered const since there would be no reason for such a
+	/* A procedure (something that doesn't return anything) shouldn't be
+	   considered const since there would be no reason for calling such a
 	   subprogram.  Note that procedures with Out (or In Out) parameters
-	   have already been converted into a function with a return type.  */
-	if (TREE_CODE (gnu_return_type) == VOID_TYPE)
+	   have already been converted into a function with a return type.
+	   Similarly, if the function returns an unconstrained type, then the
+	   function will allocate the return value on the secondary stack and
+	   thus calls to it cannot be CSE'ed, lest the stack be reclaimed.  */
+	if (TREE_CODE (gnu_return_type) == VOID_TYPE || return_unconstrained_p)
 	  const_flag = false;
 
 	if (const_flag || volatile_flag)
