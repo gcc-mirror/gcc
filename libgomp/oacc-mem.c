@@ -107,7 +107,9 @@ acc_malloc (size_t s)
 
   struct goacc_thread *thr = goacc_thread ();
 
-  return base_dev->alloc_func (thr->dev->target_id, s);
+  assert (thr->dev);
+
+  return thr->dev->alloc_func (thr->dev->target_id, s);
 }
 
 /* OpenACC 2.0a (3.2.16) doesn't specify what to do in the event
@@ -122,6 +124,8 @@ acc_free (void *d)
   if (!d)
     return;
 
+  assert (thr && thr->dev);
+
   /* We don't have to call lazy open here, as the ptr value must have
      been returned by acc_malloc.  It's not permitted to pass NULL in
      (unless you got that null from acc_malloc).  */
@@ -134,7 +138,7 @@ acc_free (void *d)
      acc_unmap_data ((void *)(k->host_start + offset));
    }
 
-  base_dev->free_func (thr->dev->target_id, d);
+  thr->dev->free_func (thr->dev->target_id, d);
 }
 
 void
@@ -144,7 +148,9 @@ acc_memcpy_to_device (void *d, void *h, size_t s)
      been obtained from a routine that did that.  */
   struct goacc_thread *thr = goacc_thread ();
 
-  base_dev->host2dev_func (thr->dev->target_id, d, h, s);
+  assert (thr && thr->dev);
+
+  thr->dev->host2dev_func (thr->dev->target_id, d, h, s);
 }
 
 void
@@ -154,7 +160,9 @@ acc_memcpy_from_device (void *h, void *d, size_t s)
      been obtained from a routine that did that.  */
   struct goacc_thread *thr = goacc_thread ();
 
-  base_dev->dev2host_func (thr->dev->target_id, h, d, s);
+  assert (thr && thr->dev);
+
+  thr->dev->dev2host_func (thr->dev->target_id, h, d, s);
 }
 
 /* Return the device pointer that corresponds to host data H.  Or NULL

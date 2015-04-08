@@ -1,3 +1,89 @@
+2015-04-08  Julian Brown  <julian@codesourcery.com>
+
+	* libgomp.h (target_mem_desc: Remove mem_map field.
+	(acc_dispatch_t): Remove open_device_func, close_device_func,
+	get_device_num_func, set_device_num_func, target_data members.
+	Change create_thread_data_func argument to device number instead of
+	generic pointer.
+	* oacc-async.c (assert.h): Include.
+	(acc_async_test, acc_async_test_all, acc_wait, acc_wait_async)
+	(acc_wait_all, acc_wait_all_async): Use current host thread's
+	active device, not base_dev.
+	* oacc-cuda.c (acc_get_current_cuda_device)
+	(acc_get_current_cuda_context, acc_get_cuda_stream)
+	(acc_set_cuda_stream): Likewise.
+	* oacc-host.c (host_dispatch): Don't set open_device_func,
+	close_device_func, get_device_num_func or set_device_num_func.
+	* oacc-init.c (base_dev, init_key): Remove.
+	(cached_base_dev): New.
+	(name_of_acc_device_t): New.
+	(acc_init_1): Initialise default-numbered device, not zeroth.
+	(acc_shutdown_1): Close all devices of a given type.
+	(goacc_destroy_thread): Don't use base_dev.
+	(lazy_open, lazy_init, lazy_init_and_open): Remove.
+	(goacc_attach_host_thread_to_device): New.
+	(acc_init): Reimplement with goacc_attach_host_thread_to_device.
+	(acc_get_num_devices): Don't use base_dev.
+	(acc_set_device_type): Reimplement.
+	(acc_get_device_type): Don't use base_dev.
+	(acc_get_device_num): Tweak logic.
+	(acc_set_device_num): Likewise.
+	(acc_on_device): Use acc_get_device_type.
+	(goacc_runtime_initialize): Initialize cached_base_dev not base_dev.
+	(goacc_lazy_initialize): Reimplement with acc_init and
+	goacc_attach_host_thread_to_device.
+	* oacc-int.h (goacc_thread): Add base_dev field.
+	(base_dev): Remove extern declaration.
+	(goacc_attach_host_thread_to_device): Add prototype.
+	* oacc-mem.c (acc_malloc): Use current thread's device instead of
+	base_dev.
+	(acc_free): Likewise.
+	(acc_memcpy_to_device): Likewise.
+	(acc_memcpy_from_device): Likewise.
+	* oacc-parallel.c (select_acc_device): Remove. Replace calls with
+	goacc_lazy_initialize (throughout).
+	(GOACC_parallel): Use tgt_offset to locate target functions.
+	* target.c (gomp_map_vars): Don't set tgt->mem_map.
+	(gomp_unmap_vars): Use devicep->mem_map pointer not tgt->mem_map.
+	(gomp_load_plugin_for_device): Remove open_device, close_device,
+	get_device_num, set_device_num openacc hook initialisation. Don't set
+	openacc.target_data.
+	* plugin/plugin-host.c (GOMP_OFFLOAD_openacc_open_device)
+	(GOMP_OFFLOAD_openacc_close_device)
+	(GOMP_OFFLOAD_openacc_get_device_num)
+	(GOMP_OFFLOAD_openacc_set_device_num): Remove.
+	(GOMP_OFFLOAD_openacc_create_thread_data): Change (unused) argument
+	to int.
+	* plugin/plugin-nvptx.c (ptx_inited): Remove.
+	(instantiated_devices, ptx_dev_lock): New.
+	(struct ptx_image_data): New.
+	(ptx_devices, ptx_images, ptx_image_lock): New.
+	(fini_streams_for_device): Reorder cuStreamDestroy call.
+	(nvptx_get_num_devices): Remove forward declaration.
+	(nvptx_init): Change return type to bool.
+	(nvptx_fini): Remove.
+	(nvptx_attach_host_thread_to_device): New.
+	(nvptx_open_device): Return struct ptx_device* instead of void*.
+	(nvptx_close_device): Change argument type to struct ptx_device*,
+	return type to void.
+	(nvptx_get_num_devices): Use instantiated_devices not ptx_inited.
+	(kernel_target_data, kernel_host_table): Remove static globals.
+	(GOMP_OFFLOAD_register_image, GOMP_OFFLOAD_get_table): Remove.
+	(GOMP_OFFLOAD_init_device): Reimplement.
+	(GOMP_OFFLOAD_fini_device): Likewise.
+	(GOMP_OFFLOAD_load_image, GOMP_OFFLOAD_unload_image): New.
+	(GOMP_OFFLOAD_alloc, GOMP_OFFLOAD_free, GOMP_OFFLOAD_dev2host)
+	(GOMP_OFFLOAD_host2dev): Use ORD argument.
+	(GOMP_OFFLOAD_openacc_open_device)
+	(GOMP_OFFLOAD_openacc_close_device)
+	(GOMP_OFFLOAD_openacc_set_device_num)
+	(GOMP_OFFLOAD_openacc_get_device_num): Remove.
+	(GOMP_OFFLOAD_openacc_create_thread_data): Change argument to int
+	(device number).
+
+	testsuite/
+	* libgomp.oacc-c-c++-common/lib-9.c: Fix devnum check in test.
+
 2015-04-06  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* libgomp-plugin.h (struct mapping_table): Replace with addr_pair.

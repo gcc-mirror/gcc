@@ -178,7 +178,6 @@ gomp_map_vars (struct gomp_device_descr *devicep, size_t mapnum,
   tgt->list_count = mapnum;
   tgt->refcount = 1;
   tgt->device_descr = devicep;
-  tgt->mem_map = mem_map;
 
   if (mapnum == 0)
     return tgt;
@@ -597,7 +596,7 @@ gomp_unmap_vars (struct target_mem_desc *tgt, bool do_copyfrom)
 	  devicep->dev2host_func (devicep->target_id, (void *) k->host_start,
 				  (void *) (k->tgt->tgt_start + k->tgt_offset),
 				  k->host_end - k->host_start);
-	splay_tree_remove (tgt->mem_map, k);
+	splay_tree_remove (&devicep->mem_map, k);
 	if (k->tgt->refcount > 1)
 	  k->tgt->refcount--;
 	else
@@ -1159,10 +1158,6 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
     {
       optional_present = optional_total = 0;
       DLSYM_OPT (openacc.exec, openacc_parallel);
-      DLSYM_OPT (openacc.open_device, openacc_open_device);
-      DLSYM_OPT (openacc.close_device, openacc_close_device);
-      DLSYM_OPT (openacc.get_device_num, openacc_get_device_num);
-      DLSYM_OPT (openacc.set_device_num, openacc_set_device_num);
       DLSYM_OPT (openacc.register_async_cleanup,
 		 openacc_register_async_cleanup);
       DLSYM_OPT (openacc.async_test, openacc_async_test);
@@ -1271,7 +1266,6 @@ gomp_target_init (void)
 		current_device.mem_map.root = NULL;
 		current_device.is_initialized = false;
 		current_device.openacc.data_environ = NULL;
-		current_device.openacc.target_data = NULL;
 		for (i = 0; i < new_num_devices; i++)
 		  {
 		    current_device.target_id = i;

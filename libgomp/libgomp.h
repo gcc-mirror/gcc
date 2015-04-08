@@ -655,9 +655,6 @@ struct target_mem_desc {
   /* Corresponding target device descriptor.  */
   struct gomp_device_descr *device_descr;
 
-  /* Memory mapping info for the thread that created this descriptor.  */
-  struct splay_tree_s *mem_map;
-
   /* List of splay keys to remove (or decrease refcount)
      at the end of region.  */
   splay_tree_key list[];
@@ -691,18 +688,6 @@ typedef struct acc_dispatch_t
   /* This is guarded by the lock in the "outer" struct gomp_device_descr.  */
   struct target_mem_desc *data_environ;
 
-  /* Extra information required for a device instance by a given target.  */
-  /* This is guarded by the lock in the "outer" struct gomp_device_descr.  */
-  void *target_data;
-
-  /* Open or close a device instance.  */
-  void *(*open_device_func) (int n);
-  int (*close_device_func) (void *h);
-
-  /* Set or get the device number.  */
-  int (*get_device_num_func) (void);
-  void (*set_device_num_func) (int);
-
   /* Execute.  */
   void (*exec_func) (void (*) (void *), size_t, void **, void **, size_t *,
 		     unsigned short *, int, int, int, int, void *);
@@ -720,7 +705,7 @@ typedef struct acc_dispatch_t
   void (*async_set_async_func) (int);
 
   /* Create/destroy TLS data.  */
-  void *(*create_thread_data_func) (void *);
+  void *(*create_thread_data_func) (int);
   void (*destroy_thread_data_func) (void *);
 
   /* NVIDIA target specific routines.  */
