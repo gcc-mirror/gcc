@@ -1902,33 +1902,6 @@ chkp_add_bounds_to_call_stmt (gimple_stmt_iterator *gsi)
   gimple_call_set_with_bounds (new_call, true);
 }
 
-/* Return constant static bounds var with specified LB and UB
-   if such var exists in varpool.  Return NULL otherwise.  */
-static tree
-chkp_find_const_bounds_var (HOST_WIDE_INT lb,
-			    HOST_WIDE_INT ub)
-{
-  tree val = targetm.chkp_make_bounds_constant (lb, ub);
-  struct varpool_node *node;
-
-  /* We expect bounds constant is represented as a complex value
-     of two pointer sized integers.  */
-  gcc_assert (TREE_CODE (val) == COMPLEX_CST);
-
-  FOR_EACH_VARIABLE (node)
-    if (POINTER_BOUNDS_P (node->decl)
-	&& TREE_READONLY (node->decl)
-	&& DECL_INITIAL (node->decl)
-	&& TREE_CODE (DECL_INITIAL (node->decl)) == COMPLEX_CST
-	&& tree_int_cst_equal (TREE_REALPART (DECL_INITIAL (node->decl)),
-			       TREE_REALPART (val))
-	&& tree_int_cst_equal (TREE_IMAGPART (DECL_INITIAL (node->decl)),
-			       TREE_IMAGPART (val)))
-      return node->decl;
-
-  return NULL;
-}
-
 /* Return constant static bounds var with specified bounds LB and UB.
    If such var does not exists then new var is created with specified NAME.  */
 static tree
@@ -1936,37 +1909,43 @@ chkp_make_static_const_bounds (HOST_WIDE_INT lb,
 			       HOST_WIDE_INT ub,
 			       const char *name)
 {
+  tree id = get_identifier (name);
   tree var;
+  varpool_node *node;
+  symtab_node *snode;
+
+  var  = build_decl (UNKNOWN_LOCATION, VAR_DECL, id,
+		     pointer_bounds_type_node);
+  TREE_STATIC (var) = 1;
+  TREE_PUBLIC (var) = 1;
 
   /* With LTO we may have constant bounds already in varpool.
      Try to find it.  */
-  var = chkp_find_const_bounds_var (lb, ub);
+  if ((snode = symtab_node::get_for_asmname (DECL_ASSEMBLER_NAME (var))))
+    {
+      /* We don't allow this symbol usage for non bounds.  */
+      if (snode->type != SYMTAB_VARIABLE
+	  || !POINTER_BOUNDS_P (snode->decl))
+	sorry ("-fcheck-pointer-bounds requires '%s' "
+	       "name for internal usage",
+	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (var)));
 
-  if (var)
-    return var;
+      return snode->decl;
+    }
 
-  var  = build_decl (UNKNOWN_LOCATION, VAR_DECL,
-		     get_identifier (name), pointer_bounds_type_node);
-
-  TREE_PUBLIC (var) = 1;
   TREE_USED (var) = 1;
   TREE_READONLY (var) = 1;
-  TREE_STATIC (var) = 1;
   TREE_ADDRESSABLE (var) = 0;
   DECL_ARTIFICIAL (var) = 1;
   DECL_READ_P (var) = 1;
+  DECL_INITIAL (var) = targetm.chkp_make_bounds_constant (lb, ub);
+  make_decl_one_only (var, DECL_ASSEMBLER_NAME (var));
   /* We may use this symbol during ctors generation in chkp_finish_file
      when all symbols are emitted.  Force output to avoid undefined
      symbols in ctors.  */
-  if (!in_lto_p)
-    {
-      DECL_INITIAL (var) = targetm.chkp_make_bounds_constant (lb, ub);
-      DECL_COMDAT (var) = 1;
-      varpool_node::get_create (var)->set_comdat_group (DECL_ASSEMBLER_NAME (var));
-      varpool_node::get_create (var)->force_output = 1;
-    }
-  else
-    DECL_EXTERNAL (var) = 1;
+  node = varpool_node::get_create (var);
+  node->force_output = 1;
+
   varpool_node::finalize_decl (var);
 
   return var;
@@ -2030,14 +2009,6 @@ tree
 chkp_get_zero_bounds_var (void)
 {
   if (!chkp_zero_bounds_var)
-    {
-      tree id = get_identifier (CHKP_ZERO_BOUNDS_VAR_NAME);
-      symtab_node *node = symtab_node::get_for_asmname (id);
-      if (node)
-	chkp_zero_bounds_var = node->decl;
-    }
-
-  if (!chkp_zero_bounds_var)
     chkp_zero_bounds_var
       = chkp_make_static_const_bounds (0, -1,
 				       CHKP_ZERO_BOUNDS_VAR_NAME);
@@ -2048,14 +2019,6 @@ chkp_get_zero_bounds_var (void)
 tree
 chkp_get_none_bounds_var (void)
 {
-  if (!chkp_none_bounds_var)
-    {
-      tree id = get_identifier (CHKP_NONE_BOUNDS_VAR_NAME);
-      symtab_node *node = symtab_node::get_for_asmname (id);
-      if (node)
-	chkp_none_bounds_var = node->decl;
-    }
-
   if (!chkp_none_bounds_var)
     chkp_none_bounds_var
       = chkp_make_static_const_bounds (-1, 0,
