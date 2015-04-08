@@ -1,3 +1,7 @@
+2015-04-08  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* tree.h (CONVERT_EXPR_P): Commentary typo fix.
+
 2015-04-08  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/extend.texi (__sync Builtins): Fix grammar.

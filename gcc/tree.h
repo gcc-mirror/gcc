@@ -428,7 +428,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define CONVERT_EXPR_CODE_P(CODE)				\
   ((CODE) == NOP_EXPR || (CODE) == CONVERT_EXPR)
 
-/* Similarly, but accept an expressions instead of a tree code.  */
+/* Similarly, but accept an expression instead of a tree code.  */
 #define CONVERT_EXPR_P(EXP)	CONVERT_EXPR_CODE_P (TREE_CODE (EXP))
 
 /* Generate case for NOP_EXPR, CONVERT_EXPR.  */
