@@ -56,6 +56,9 @@ acc_device_type (enum offload_target_type type)
 
 struct goacc_thread
 {
+  /* The base device for the current thread.  */
+  struct gomp_device_descr *base_dev;
+
   /* The device for the current thread.  */
   struct gomp_device_descr *dev;
 
@@ -89,10 +92,7 @@ goacc_thread (void)
 #endif
 
 void goacc_register (struct gomp_device_descr *) __GOACC_NOTHROW;
-
-/* Current dispatcher.  */
-extern struct gomp_device_descr *base_dev;
-
+void goacc_attach_host_thread_to_device (int);
 void goacc_runtime_initialize (void);
 void goacc_save_and_set_bind (acc_device_t);
 void goacc_restore_bind (void);

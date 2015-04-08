@@ -58,7 +58,7 @@ main (int argc, char **argv)
       acc_set_device_num (1, (acc_device_t) 0);
 
       devnum = acc_get_device_num (devtype);
-      if (devnum != 0)
+      if (devnum != 1)
 	abort ();
   }
 

@@ -53,16 +53,9 @@ static struct gomp_device_descr host_dispatch =
     .host2dev_func = GOMP_OFFLOAD_host2dev,
     .run_func = GOMP_OFFLOAD_run,
 
-    .mem_map.root = NULL,
     .is_initialized = false,
 
     .openacc = {
-      .open_device_func = GOMP_OFFLOAD_openacc_open_device,
-      .close_device_func = GOMP_OFFLOAD_openacc_close_device,
-
-      .get_device_num_func = GOMP_OFFLOAD_openacc_get_device_num,
-      .set_device_num_func = GOMP_OFFLOAD_openacc_set_device_num,
-
       .exec_func = GOMP_OFFLOAD_openacc_parallel,
 
       .register_async_cleanup_func
