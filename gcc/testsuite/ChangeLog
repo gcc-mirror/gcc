@@ -1,3 +1,7 @@
+2015-04-08  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc/testsuite/gcc.target/i386/thunk-retbnd.c: New.
+
 2015-04-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt48.adb: New test.

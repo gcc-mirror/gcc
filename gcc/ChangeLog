@@ -1,3 +1,12 @@
+2015-04-08  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* tree-chkp.h (chkp_insert_retbnd_call): New.
+	* tree-chkp.c (chkp_insert_retbnd_call): New.
+	* ipa-split.c (insert_bndret_call_after): Remove.
+	(split_function): Use chkp_insert_retbnd_call.
+	* cgraphunit.c (cgraph_node::expand_thunk): Build returned
+	bounds for instrumented functions.
+
 2015-04-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65540

@@ -500,6 +500,35 @@ chkp_expand_bounds_reset_for_mem (tree mem, tree ptr)
   expand_normal (bndstx);
 }
 
+/* Build retbnd call for returned value RETVAL.
+
+   If BNDVAL is not NULL then result is stored
+   in it.  Otherwise a temporary is created to
+   hold returned value.
+
+   GSI points to a position for a retbnd call
+   and is set to created stmt.
+
+   Cgraph edge is created for a new call if
+   UPDATE_EDGE is 1.
+
+   Obtained bounds are returned.  */
+tree
+chkp_insert_retbnd_call (tree bndval, tree retval,
+			 gimple_stmt_iterator *gsi)
+{
+  gimple call;
+
+  if (!bndval)
+    bndval = create_tmp_reg (pointer_bounds_type_node, "retbnd");
+
+  call = gimple_build_call (chkp_ret_bnd_fndecl, 1, retval);
+  gimple_call_set_lhs (call, bndval);
+  gsi_insert_after (gsi, call, GSI_CONTINUE_LINKING);
+
+  return bndval;
+}
+
 /* Mark statement S to not be instrumented.  */
 static void
 chkp_mark_stmt (gimple s)
