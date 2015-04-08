@@ -1,3 +1,8 @@
+2015-04-08  Michael Witten  <mfwitten@gmail.com>
+
+	* doc/extend.texi (Attribute Syntax): Add a trailing semicolon
+	to an example.
+
 2015-04-08  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* tree.h (CONVERT_EXPR_P): Commentary typo fix.
