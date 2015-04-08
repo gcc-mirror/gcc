@@ -1,3 +1,7 @@
+2015-04-08  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (bootstrap-lto-noplugin): Rewrite. 
+
 2015-04-08  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* tree-chkp.h (chkp_insert_retbnd_call): New.

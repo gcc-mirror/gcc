@@ -2525,10 +2525,10 @@ version 2.21 or later).
 
 @item @samp{bootstrap-lto-noplugin}
 This option is similar to @code{bootstrap-lto}, but is intended for
-hosts that do not support the linker plugin. Please note that static
-libraries are not compiled with link time optimizations without
-linker plugin.  Since GCC middle-end and back-end are in libbackend.a,
-it means that only part of the frontend is actually LTO optimized.
+hosts that do not support the linker plugin.  Without the linker plugin 
+static libraries are not compiled with link-time optimizations.  Since 
+the GCC middle end and back end are in @file{libbackend.a} this means
+that only the front end is actually LTO optimized.
 
 @item @samp{bootstrap-debug}
 Verifies that the compiler generates the same executable code, whether
