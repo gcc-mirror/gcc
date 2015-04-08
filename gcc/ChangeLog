@@ -1,3 +1,7 @@
+2015-04-08  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* varasm.c (emit_local): Move definition of align.
+
 2015-04-08  Julian Brown  <julian@codesourcery.com>
 
 	* config/nvptx/mkoffload.c (process): Support variable mapping.

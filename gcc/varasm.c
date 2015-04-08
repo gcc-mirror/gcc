@@ -1928,17 +1928,18 @@ assemble_string (const char *p, int size)
 /* A noswitch_section_callback for lcomm_section.  */
 
 static bool
-emit_local (tree decl,
+emit_local (tree decl ATTRIBUTE_UNUSED,
 	    const char *name ATTRIBUTE_UNUSED,
 	    unsigned HOST_WIDE_INT size ATTRIBUTE_UNUSED,
 	    unsigned HOST_WIDE_INT rounded ATTRIBUTE_UNUSED)
 {
-  int align = symtab_node::get (decl)->definition_alignment ();
 #if defined ASM_OUTPUT_ALIGNED_DECL_LOCAL
+  int align = symtab_node::get (decl)->definition_alignment ();
   ASM_OUTPUT_ALIGNED_DECL_LOCAL (asm_out_file, decl, name,
 				 size, align);
   return true;
 #elif defined ASM_OUTPUT_ALIGNED_LOCAL
+  int align = symtab_node::get (decl)->definition_alignment ();
   ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size, align);
   return true;
 #else
