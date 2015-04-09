@@ -590,6 +590,9 @@ implementation of the automaton based instruction scheduler.
 Bob Manson for his behind the scenes work on dejagnu.
 
 @item
+John Marino for contributing the DragonFly BSD port.
+
+@item
 Philip Martin for lots of libstdc++ string and vector iterator fixes and
 improvements, and string clean up and testsuites.
 

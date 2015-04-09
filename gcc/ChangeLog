@@ -1,3 +1,7 @@
+2015-04-09  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/contrib.texi (Contributors): Add John Marino.
+
 2015-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65709
