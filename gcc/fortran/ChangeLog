@@ -1,3 +1,9 @@
+2013-04-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/56852
+	* primary.c (gfc_variable_attr): Avoid ICE on AR_UNKNOWN if any
+	of the index variables are untyped and errors are present.
+
 2015-04-07  Andre Vehreschild  <vehre@gmx.de>
 
 	PR fortran/65548
@@ -63,7 +69,7 @@
 	then, which calls ->vptr->copy () with four arguments adding
 	the length information ->vptr->copy(from, to, from_len, to_cap).
 	(gfc_conv_procedure_call): Switch to new function name for
-	getting a class' vtab's field. 
+	getting a class' vtab's field.
 	(alloc_scalar_allocatable_for_assignment): Use the string_length
 	as computed by gfc_conv_expr and not the statically backend_decl
 	which may be incorrect when ref-ing.
@@ -88,7 +94,7 @@
 	Added gfc_find_and_cut_at_last_class_ref () and
 	gfc_reset_len () routine prototype.  Added flag to
 	gfc_copy_class_to_class () prototype to signal an unlimited
-	polymorphic entity to copy.    
+	polymorphic entity to copy.
 
 2015-03-24  Iain Sandoe  <iain@codesourcery.com>
 	    Tobias Burnus  <burnus@net-b.de>
