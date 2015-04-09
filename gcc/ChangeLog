@@ -1,3 +1,11 @@
+2015-04-09  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/65554
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Update comment.
+	(fold_ctor_reference): Use STRIP_USELESS_TYPE_CONVERSION instead
+	of STRIP_NOPS.
+
 2015-04-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/65693
