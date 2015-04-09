@@ -97,6 +97,9 @@ __mpx_wrapper_memmove (void *dst, const void *src, size_t n)
   size_t offset_src = ((size_t) s) & (sizeof (void *) - 1);
   size_t offset_dst = ((size_t) d) & (sizeof (void *) - 1);
 
+  if (n == 0)
+    return ret;
+
   __bnd_chk_ptr_bounds (dst, n);
   __bnd_chk_ptr_bounds (src, n);
 
