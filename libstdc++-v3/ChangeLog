@@ -1,3 +1,15 @@
+2015-04-09  Jonathan Wakely  <jwakely@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	PR libstdc++/65147
+	* include/bits/atomic_base.h (__atomic_base<_ITp>): Increase
+	alignment.
+	* include/std/atomic (atomic): For types with a power of two size set
+	alignment to at least the size.
+	* testsuite/29_atomics/atomic/60695.cc: Adjust dg-error line number.
+	* testsuite/29_atomics/atomic/65147.cc: New.
+	* testsuite/29_atomics/atomic_integral/65147.cc: New.
+
 2015-04-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/abi/post/solaris2.10/baseline_symbols.txt: Regenerate.

@@ -1,8 +1,4 @@
-// { dg-require-atomic-builtins "" }
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
-
-// Copyright (C) 2014-2015 Free Software Foundation, Inc.
+// Copyright (C) 2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,12 +15,14 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
+
 #include <atomic>
 
-// libstdc++/60695
-
-struct X {
-  char stuff[0]; // GNU extension, type has zero size
+struct S16 {
+   char c[16];
 };
 
-std::atomic<X> a;  // { dg-error "not supported" "" { target *-*-* } 181 }
+static_assert( alignof(std::atomic<S16>) >= 16,
+    "atomic<S16> must be aligned to at least its size" );
