@@ -80,6 +80,19 @@ avr_devicespecs_file (int argc, const char **argv)
       return X_NODEVLIB;
 
     case 1:
+      if (0 == strcmp ("device-specs", argv[0]))
+        {
+          /* FIXME:  This means "device-specs%s" from avr.h:DRIVER_SELF_SPECS
+             has not been resolved to a path.  That case can occur when the
+             c++ testsuite is run from the build directory.  DejaGNU's
+             libgloss.exp:get_multilibs runs $compiler without -B, i.e.runs
+             xgcc without specifying a prefix.  Without any prefix, there is
+             no means to find out where the specs files might be located.
+             get_multilibs runs xgcc --print-multi-lib, hence we don't actually
+             need information form a specs file and may skip it here.  */
+          return X_NODEVLIB;
+        }
+
       mmcu = AVR_MMCU_DEFAULT;
       break;
 
