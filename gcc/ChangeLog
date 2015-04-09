@@ -1,3 +1,9 @@
+2015-04-09  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/65671
+	* config/i386/sse.md: Generate vextract32x4 if AVX-512DQ
+	is disabled.
+
 2015-04-09  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/contrib.texi (Contributors): Add John Marino.
