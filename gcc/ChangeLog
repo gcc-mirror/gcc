@@ -1,3 +1,9 @@
+2015-04-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/65296
+	* config/avr/driver-avr.c (avr_devicespecs_file): Don't specify a
+	device specs file if "device-specs%s" didn't resolve to a path.
+
 2015-04-09  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/65676
