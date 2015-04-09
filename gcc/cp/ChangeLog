@@ -1,6 +1,10 @@
 2015-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/65690
+	* tree.c (cp_build_qualified_type_real): Copy TYPE_ALIGN and
+	TYPE_USER_ALIGN.
+
+	PR c++/65690
 	* tree.c (build_cplus_array_type): Layout type before variants are
 	set, but copy over TYPE_SIZE and TYPE_SIZE_UNIT from the main
 	variant.

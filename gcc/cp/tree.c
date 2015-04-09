@@ -1079,6 +1079,8 @@ cp_build_qualified_type_real (tree type,
 	    {
 	      t = build_variant_type_copy (t);
 	      TYPE_NAME (t) = TYPE_NAME (type);
+	      TYPE_ALIGN (t) = TYPE_ALIGN (type);
+	      TYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (type);
 	    }
 	}
 
