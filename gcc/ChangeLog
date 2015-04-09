@@ -1,3 +1,9 @@
+2015-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65693
+	* config/i386/i386.md (*udivmod<mode>4_pow2): Allow
+	any pow2 integer in between 2 and 0x80000000U inclusive.
+
 2015-04-08  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/65693
