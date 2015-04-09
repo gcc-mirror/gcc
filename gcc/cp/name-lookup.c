@@ -973,9 +973,8 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	  /* If this is a locally defined typedef in a function that
 	     is not a template instantation, record it to implement
 	     -Wunused-local-typedefs.  */
-	  if (current_instantiation () == NULL
-	      || (current_instantiation ()->decl != current_function_decl))
-	  record_locally_defined_typedef (x);
+	  if (!instantiating_current_function_p ())
+	    record_locally_defined_typedef (x);
 	}
 
       /* Multiple external decls of the same identifier ought to match.
@@ -1277,7 +1276,8 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
                               old and new decls are type decls.  */
                            || (TREE_CODE (oldglobal) == TYPE_DECL
                                && (!DECL_ARTIFICIAL (oldglobal)
-                                   || TREE_CODE (x) == TYPE_DECL))))
+                                   || TREE_CODE (x) == TYPE_DECL)))
+		       && !instantiating_current_function_p ())
 		/* XXX shadow warnings in outer-more namespaces */
 		{
 		  if (warning_at (input_location, OPT_Wshadow,

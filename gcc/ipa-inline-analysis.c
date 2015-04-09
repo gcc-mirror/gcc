@@ -793,7 +793,11 @@ edge_set_predicate (struct cgraph_edge *e, struct predicate *predicate)
 {
   /* If the edge is determined to be never executed, redirect it
      to BUILTIN_UNREACHABLE to save inliner from inlining into it.  */
-  if (predicate && false_predicate_p (predicate))
+  if (predicate && false_predicate_p (predicate)
+      /* When handling speculative edges, we need to do the redirection
+         just once.  Do it always on the direct edge, so we do not
+	 attempt to resolve speculation while duplicating the edge.  */
+      && (!e->speculative || e->callee))
     e = redirect_to_unreachable (e);
 
   struct inline_edge_summary *es = inline_edge_summary (e);

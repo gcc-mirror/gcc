@@ -1,3 +1,141 @@
+2015-04-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/65647
+	* gcc.target/arm/pr65647.c: New.
+
+2015-04-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65655
+	* g++.dg/torture/pr65655.C: New testcase.
+
+2015-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64085
+	* g++.dg/cpp1y/lambda-init13.C: New.
+
+2015-04-03  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp0x/pr57101.C: Use proper type for size_t.
+
+2015-04-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65642
+	* g++.dg/cpp0x/constexpr-fold1.C: New test.
+	* g++.dg/cpp0x/constexpr-fold2.C: New test.
+
+2015-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/61977
+	* gcc.target/powerpc/pr61977-1.c: New test.
+	* gcc.target/powerpc/pr61977-2.c: New test.
+
+2015-04-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56100
+	* g++.dg/warn/Wshadow-8.C: New.
+	* g++.dg/warn/Wshadow-9.C: Likewise.
+	* g++.dg/warn/Wshadow-10.C: Likewise.
+	* g++.dg/warn/Wshadow-11.C: Likewise.
+
+2015-04-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.dg/pr23623.c: Added aligned attribute.
+	* gcc.dg/20141029-1.c: Likewise.
+	* gcc.dg/20150306-1.c: New test.
+
+2015-04-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65554
+	* g++.dg/cpp0x/initlist93.C: New test.
+	* g++.dg/cpp0x/initlist94.C: New test.
+
+2015-04-01  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR target/65624
+	* gcc.target/aarch64/pr65624.c: New test.
+
+2015-03-31  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/inlinehint-4.c: New testcase.
+
+2015-03-31  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* gcc.target/arm/pr45701-1.c (history_expand_line_internal): Add an
+	extra variable to force stack alignment.
+	* gcc.target/arm/pr45701-2.c (history_expand_line_internal): Add an
+	extra variable to force stack alignment.
+
+2015-03-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65390
+	* g++.dg/template/pr65390.C: New test.
+
+2015-03-31  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ipa/pr65557.C: New test.
+
+2015-03-31  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* gcc.target/s390/hotpatch-25.c: New test.
+	* gcc.target/s390/hotpatch-1.c: Update test.
+	* gcc.target/s390/hotpatch-10.c: Update test.
+	* gcc.target/s390/hotpatch-11.c: Update test.
+	* gcc.target/s390/hotpatch-12.c: Update test.
+	* gcc.target/s390/hotpatch-13.c: Update test.
+	* gcc.target/s390/hotpatch-14.c: Update test.
+	* gcc.target/s390/hotpatch-15.c: Update test.
+	* gcc.target/s390/hotpatch-16.c: Update test.
+	* gcc.target/s390/hotpatch-17.c: Update test.
+	* gcc.target/s390/hotpatch-18.c: Update test.
+	* gcc.target/s390/hotpatch-19.c: Update test.
+	* gcc.target/s390/hotpatch-2.c: Update test.
+	* gcc.target/s390/hotpatch-21.c: Update test.
+	* gcc.target/s390/hotpatch-22.c: Update test.
+	* gcc.target/s390/hotpatch-23.c: Update test.
+	* gcc.target/s390/hotpatch-24.c: Update test.
+	* gcc.target/s390/hotpatch-3.c: Update test.
+	* gcc.target/s390/hotpatch-4.c: Update test.
+	* gcc.target/s390/hotpatch-5.c: Update test.
+	* gcc.target/s390/hotpatch-6.c: Update test.
+	* gcc.target/s390/hotpatch-7.c: Update test.
+	* gcc.target/s390/hotpatch-8.c: Update test.
+	* gcc.target/s390/hotpatch-9.c: Update test.
+	* gcc.target/s390/hotpatch-compile-16.c: Update test.
+
+2015-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65626
+	* g++.dg/torture/pr65626.C: New testcase.
+
+2015-03-31  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65531
+	* gcc.target/i386/mpx/pr65531.cc: New.
+
+2015-03-31  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65602
+	* gcc.target/i386/mpx/alloca-1-lbv.c (mpx_test): Use
+	__builtin_alloca instead of alloca.
+	* gcc.target/i386/mpx/alloca-1-nov.c (mpx_test): Likewise.
+	* gcc.target/i386/mpx/alloca-1-ubv.c (mpx_test): Likewise.
+	* lib/mpx-dg.exp (check_effective_target_mpx): Add wrapper
+	check.
+
+2015-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/65610
+	* g++.dg/ubsan/pr65610.C: New test.
+
+2015-03-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65398
+	* g++.dg/cpp0x/pr65398-2.C: New test.
+
+2015-03-30  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/pr65556.c: Change the width of bit-fields.
+
 2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65588

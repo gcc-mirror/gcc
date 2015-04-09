@@ -964,7 +964,8 @@
 
 ;; Return 1 if the operand is CONST_DOUBLE 0, register or memory operand.
 (define_predicate "zero_reg_mem_operand"
-  (ior (match_operand 0 "zero_fp_constant")
+  (ior (and (match_test "TARGET_VSX")
+	    (match_operand 0 "zero_fp_constant"))
        (match_operand 0 "reg_or_mem_operand")))
 
 ;; Return 1 if the operand is a CONST_INT and it is the element for 64-bit

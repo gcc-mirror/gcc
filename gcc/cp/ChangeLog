@@ -1,3 +1,53 @@
+2015-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64085
+	* lambda.c (add_capture): Use dependent_type_p for capture by
+	reference too.
+
+2015-04-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65642
+	* constexpr.c (cxx_eval_pointer_plus_expression): Call
+	cxx_eval_constant_expression on the first operand.
+
+2015-04-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65625
+	* decl.c (make_typename_type): Handle seeing a variable template.
+
+2015-04-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56100
+	* pt.c (instantiating_current_function_p): New.
+	* name-lookup.c (pushdecl_maybe_friend_1): Use it.
+	* cp-tree.h (instantiating_current_function_p): Declare.
+
+2015-04-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65646
+	* decl.c (grokvardecl): Don't call check_explicit_specialization
+	for non-template members of a class template.
+
+2015-04-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65554
+	* class.c (finish_struct): Require that the second field of a
+	user-defined initializer_list be of size type.
+
+2015-03-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65390
+	* tree.c (build_cplus_array_type): Use dependent_type_p rather than
+	checking for constness.
+
+2015-03-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65398
+	* constexpr.c (cxx_fold_indirect_ref): Don't perform the
+	 *(&A[i] p+ j) => A[i + j] transformation here.
+	(cxx_eval_pointer_plus_expression): New function.
+	(cxx_eval_constant_expression): Use it here.
+
 2015-03-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR c/65586

@@ -1402,6 +1402,8 @@ split_function (basic_block return_bb, struct split_point *split_point,
     (vNULL, NULL, args_to_skip, !split_part_return_p, split_point->split_bbs,
      split_point->entry_bb, "part");
 
+  node->split_part = true;
+
   /* Let's take a time profile for splitted function.  */
   node->tp_first_run = cur_node->tp_first_run + 1;
 

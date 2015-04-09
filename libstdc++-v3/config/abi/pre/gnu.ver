@@ -1675,6 +1675,9 @@ GLIBCXX_3.4.21 {
     _ZNSt7__cxx1112basic_string*;
     _ZNKSt7__cxx1112basic_string*;
 
+    # operator+ for ABI-tagged std::basic_string
+    _ZStplI[cw]St11char_traitsI[cw]ESaI[cw]EENSt7__cxx1112basic_stringIT_T0_T1_EE*;
+
     # ABI-tagged stringstreams
     _ZNSt7__cxx1115basic_stringbuf*;
     _ZNSt7__cxx1118basic_stringstream*;

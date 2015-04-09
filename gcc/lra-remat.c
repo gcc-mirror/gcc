@@ -1259,6 +1259,9 @@ do_remat (void)
 
 
 
+/* Current number of rematerialization iteration.  */
+int lra_rematerialization_iter;
+
 /* Entry point of the rematerialization sub-pass.  Return true if we
    did any rematerialization.  */
 bool
@@ -1270,6 +1273,13 @@ lra_remat (void)
 
   if (! flag_lra_remat)
     return false;
+  lra_rematerialization_iter++;
+  if (lra_rematerialization_iter > LRA_MAX_REMATERIALIZATION_PASSES)
+    return false;
+  if (lra_dump_file != NULL)
+    fprintf (lra_dump_file,
+	     "\n******** Rematerialization #%d: ********\n\n",
+	     lra_rematerialization_iter);
   timevar_push (TV_LRA_REMAT);
   insn_to_cand = XCNEWVEC (cand_t, get_max_uid ());
   regno_cands = XCNEWVEC (cand_t, max_regno);

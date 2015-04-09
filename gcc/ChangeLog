@@ -1,3 +1,242 @@
+2015-04-05  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/65665
+	* ipa-icf.c (sem_function::equals_wpa): Verify that IPA CP
+	has computed data structure.
+	(sem_item_optimizer::update_hash_by_addr_refs): Likewise.
+
+2015-04-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* invoke.texi (inline-unit-growth): Increase growth to 20%
+	* params.def (PARAM_INLINE_UNIT_GROWTH): Likewise.
+
+2015-04-04  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/65647
+	* lra-int.h (LRA_MAX_REMATERIALIZATION_PASSES): New.  Add its
+	value checking.
+	(lra_rematerialization_iter): New.
+	* lra.c (lra): Initialize lra_rematerialization_iter.
+	Stop updating lra_constraint_new_regno_start after switching of
+	inheritance and rematerialization.
+	* lra-remat.c (lra_rematerialization_iter): New.
+	(lra_remat): Add printing pass iteration.  Do rematerialization
+	only first LRA_MAX_REMATERIALIZATION_PASSES iterations.
+
+2015-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64909
+	PR tree-optimization/65660
+	* tree-vectorizer.h (vect_get_known_peeling_cost): Adjust
+	to take a cost vector for scalar iteration cost.
+	(vect_get_single_scalar_iteration_cost): Likewise.
+	* tree-vect-loop.c (vect_get_single_scalar_iteration_cost):
+	Compute the scalar iteration cost into a cost vector.
+	(vect_get_known_peeling_cost): Use the scalar cost vector to
+	account for the cost of the peeled iterations.
+	(vect_estimate_min_profitable_iters): Likewise.
+	* tree-vect-data-refs.c (vect_peeling_hash_get_lowest_cost):
+	Likewise.
+
+2015-04-04  Alan Modra  <amodra@gmail.com>
+
+	PR target/65576
+	PR target/65240
+	* config/rs6000/predicates.md (zero_reg_mem_operand): Exclude
+	0.0 constant unless TARGET_VSX.
+	* config/rs6000/rs6000.md (extenddftf2_internal): Remove last
+	alternative.
+
+2015-04-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65648
+	* ipa-inline-transform.c (inline_call): Skip sanity check to work
+	around the ICE
+
+2015-04-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65655
+	* ipa-inline-analysis.c (edge_set_predicate): Do not redirect
+	speculative indirect edges to avoid ordering issue.
+
+2015-04-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65076
+	* ipa-inline.c (edge_badness): Add combined size to the denominator.
+
+2015-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (scan_omp_parallel, scan_omp_task, scan_omp_target): Set
+	TYPE_ARTIFICIAL on the .omp_data* types.
+
+2015-04-02  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* cgraphunit.c (cgraph_node::expand_thunk): Don't expand
+	instrumentation thunks.
+
+2015-04-02  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* config/i386/i386.c (ix86_expand_call): Avoid nested
+	PARALLEL in returned call value.
+
+2015-04-02  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* lto-cgraph.c (input_cgraph_1): Always link instrumented
+	assembler name with original one.
+
+2015-04-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_register_priority): Use AX_REG.
+
+2015-04-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	Revert parts of r216820.
+	* config/i386/i386.md (movqi_internal): Correct type calculation
+	for alternatives 3 and 5.
+
+2015-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/61977
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Don't
+	predefine __vector/__bool/__pixel macros nor context sensitive
+	macros for CLK_ASM.
+	* config/spu/spu-c.c (spu_cpu_cpp_builtins): Similarly.
+
+2015-04-02  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_output_move_double): Directly handle register
+	indexed memory operand.  Simplify handling of scaled register indexed
+	memory operands.
+
+2015-04-02  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR driver/65444
+	* config/i386/linux-common.h (MPX_SPEC): New.
+	(CHKP_SPEC): Add MPX_SPEC.
+	* doc/invoke.texi (-fcheck-pointer-boudns): Document
+	possible issues with '-z bndplt' support in linker.
+
+2015-04-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sync.md (UNSPEC_FILD_ATOMIC, UNSPEC_FIST_ATOMIC): New.
+	(loaddi_via_fpu): Use UNSPEC_FILD_ATOMIC.
+	(storedi_via_fpu): Use UNSPEC_FIST_ATOMIC.
+	* reg-stack.c (get_true_reg): Change UNSPEC_LDA to UNSPEC_FILD_ATOMIC.
+	(subst_stack_regs_pat): Change UNSPEC_STA to UNSPEC_FIST_ATOMIC.
+
+2015-04-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sync.md (UNSPEC_MOVA): Remove.
+	(atomic_load<mode>): Change operand 0 predicate to
+	nonimmediate_operand and fix up the destination when needed.
+	Use UNSPEC_LDA.
+	(atomic_loaddi_fpu): Use UNSPEC_LDA.
+	(atomic_store<mode>): Change operand 1 predicate to
+	nonimmendate_operand and move the source to register when needed.
+	Use UNSPEC_STA.
+	(atomic_store<mode>_1): Use UNSPEC_STA.
+	(atomic_storedi_fpu): Change operand 1 to nonimmediate_operand.
+	Fix moves from memory operand.  Use UNSPEC_STA.
+
+2015-04-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* expmed.c (strict_volatile_bitfield_p): Check that the access will
+	not cross a MODESIZE boundary.
+	(store_bit_field, extract_bit_field): Added assertions in the
+	strict volatile bitfields code path.
+
+2015-04-01  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	PR target/65624
+	* config/aarch64/aarch64-builtins.c (aarch64_simd_expand_builtin):
+	Increase args array size by one to avoid buffer overflow.
+
+2015-03-31  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-cgraph.c (lto_output_node, input_overwrite_node): Stream
+	split_part.
+	* ipa-inline.c (edge_badness): Add wrapper penalty.
+	(sum_callers): Move up.
+	(inline_small_functions): Set single_caller.
+	* ipa-inline.h (inline_summary): Add single_caller.
+	* ipa-split.c (split_function): Set split_part.
+	(cgraph_node::create_clone): Do not shadow decl; copy split_part.
+	* cgraph.h (cgraph_node): Add split_part.
+
+2015-03-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/58945
+	* config/i386/sync.md (atomic_compare_and_swap<dwi>_doubleword):
+	Do not split operands 0 and operands 2 to halfmode.
+	(atomic_compare_and_swap<mode>): Update for
+	atomic_compare_and_swap<dwi>_doubleword changes.
+
+2015-03-31  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (need_assembler_name_p): Artificial types have no ODR names.
+	* ipa-devirt.c (warn_odr): Do not try to apply ODR cache when
+	no caching is done.
+
+2015-03-31  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/65557
+	* ipa-icf.c (sem_function::equals_wpa): Check if IPA CP
+	has already filled up function summary.
+	(sem_item_optimizer::update_hash_by_addr_refs): Likewise.
+
+2015-03-31  Richard Biener  <rguenther@suse.de>
+
+	* tree-sra.c (create_access_replacement): Drop under-/over-alignment
+	of types.
+
+2015-03-31  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_function_num_hotpatch_hw): Allow hotpatching
+	nested functions.
+	(s390_reorg): Adapt to new signature of s390_function_num_hotpatch_hw.
+	(s390_asm_output_function_label): Adapt to new signature of
+	s390_function_num_hotpatch_hw
+	Optimise the code generating assembler output.
+	Add comments to assembler file.
+
+2015-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/65626
+	* tree-cfgcleanup.c (fixup_noreturn_call): Only split the block
+	of the noreturn call so it is last and cleanup_control_flow_bb
+	can do the CFG part.
+
+2015-03-31  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65531
+	* ipa-chkp.c (chkp_maybe_create_clone): Don't set
+	same_comdat_group for external symbols.
+	* symtab.c (symtab_node::verify_symtab_nodes): Avoid
+	infinite same_comdat_group traversal loop.
+
+2015-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR plugins/61176
+	* Makefile.in (install-plugin): Add all gcc/*.{h,def} files
+	automatically to $headers.
+
+2015-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/65610
+	* ipa-utils.h (inlined_polymorphic_ctor_dtor_block_p): Declare.
+	* ipa-polymorphic-call.c (inlined_polymorphic_ctor_dtor_block_p): New
+	function.
+	(decl_maybe_in_construction_p, noncall_stmt_may_be_vtbl_ptr_store):
+	Use it.
+	* ipa-prop.c (param_type_may_change_p): Likewise.
+	* tree-ssa-live.c: Include ipa-utils.h and its dependencies.
+	(remove_unused_scope_block_p): Add in_ctor_dtor_block
+	argument.  Before inlining, preserve
+	inlined_polymorphic_ctor_dtor_block_p blocks and the outermost block
+	with FUNCTION_DECL BLOCK_ABSTRACT_ORIGIN inside of them.  Adjust
+	recursive calls.
+	(remove_unused_locals): Adjust remove_unused_scope_block_p caller.
+
 2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65076

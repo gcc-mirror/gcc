@@ -2351,6 +2351,7 @@ scan_omp_parallel (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
   DECL_ARTIFICIAL (name) = 1;
   DECL_NAMELESS (name) = 1;
   TYPE_NAME (ctx->record_type) = name;
+  TYPE_ARTIFICIAL (ctx->record_type) = 1;
   create_omp_child_function (ctx, false);
   gimple_omp_parallel_set_child_fn (stmt, ctx->cb.dst_fn);
 
@@ -2391,6 +2392,7 @@ scan_omp_task (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
   DECL_ARTIFICIAL (name) = 1;
   DECL_NAMELESS (name) = 1;
   TYPE_NAME (ctx->record_type) = name;
+  TYPE_ARTIFICIAL (ctx->record_type) = 1;
   create_omp_child_function (ctx, false);
   gimple_omp_task_set_child_fn (stmt, ctx->cb.dst_fn);
 
@@ -2404,6 +2406,7 @@ scan_omp_task (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
       DECL_ARTIFICIAL (name) = 1;
       DECL_NAMELESS (name) = 1;
       TYPE_NAME (ctx->srecord_type) = name;
+      TYPE_ARTIFICIAL (ctx->srecord_type) = 1;
       create_omp_child_function (ctx, true);
     }
 
@@ -2671,6 +2674,7 @@ scan_omp_target (gomp_target *stmt, omp_context *outer_ctx)
   DECL_ARTIFICIAL (name) = 1;
   DECL_NAMELESS (name) = 1;
   TYPE_NAME (ctx->record_type) = name;
+  TYPE_ARTIFICIAL (ctx->record_type) = 1;
   if (offloaded)
     {
       if (is_gimple_omp_oacc (stmt))

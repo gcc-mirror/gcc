@@ -25639,8 +25639,19 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 	{
 	  rtx b0 = gen_rtx_REG (BND64mode, FIRST_BND_REG);
 	  rtx b1 = gen_rtx_REG (BND64mode, FIRST_BND_REG + 1);
-	  retval = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (3, retval, b0, b1));
-	  chkp_put_regs_to_expr_list (retval);
+	  if (GET_CODE (retval) == PARALLEL)
+	    {
+	      b0 = gen_rtx_EXPR_LIST (VOIDmode, b0, const0_rtx);
+	      b1 = gen_rtx_EXPR_LIST (VOIDmode, b1, const0_rtx);
+	      rtx par = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, b0, b1));
+	      retval = chkp_join_splitted_slot (retval, par);
+	    }
+	  else
+	    {
+	      retval = gen_rtx_PARALLEL (VOIDmode,
+					 gen_rtvec (3, retval, b0, b1));
+	      chkp_put_regs_to_expr_list (retval);
+	    }
 	}
 
       call = gen_rtx_SET (VOIDmode, retval, call);
@@ -41271,7 +41282,7 @@ ix86_register_priority (int hard_regno)
   if (FIRST_REX_SSE_REG <= hard_regno && hard_regno <= LAST_REX_SSE_REG)
     return 2;
   /* Usage of AX register results in smaller code.  Prefer it.  */
-  if (hard_regno == 0)
+  if (hard_regno == AX_REG)
     return 4;
   return 3;
 }

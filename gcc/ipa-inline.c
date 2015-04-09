@@ -1077,8 +1077,8 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   /* When profile is available. Compute badness as:
      
                  time_saved * caller_count
-     goodness =  ---------------------------------
-	         growth_of_caller * overall_growth
+     goodness =  -------------------------------------------------
+	         growth_of_caller * overall_growth * combined_size
 
      badness = - goodness
 
@@ -1088,6 +1088,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   else if (opt_for_fn (caller->decl, flag_guess_branch_prob) || caller->count)
     {
       sreal numerator, denominator;
+      int overall_growth;
 
       numerator = (compute_uninlined_call_time (callee_info, edge)
 		   - compute_inlined_call_time (edge, edge_time));
@@ -1098,8 +1099,75 @@ edge_badness (struct cgraph_edge *edge, bool dump)
       else if (opt_for_fn (caller->decl, flag_branch_probabilities))
 	numerator = numerator >> 11;
       denominator = growth;
-      if (callee_info->growth > 0)
-	denominator *= callee_info->growth * callee_info->growth;
+
+      overall_growth = callee_info->growth;
+
+      /* Look for inliner wrappers of the form:
+
+	 inline_caller ()
+	   {
+	     do_fast_job...
+	     if (need_more_work)
+	       noninline_callee ();
+	   }
+	 Withhout panilizing this case, we usually inline noninline_callee
+	 into the inline_caller because overall_growth is small preventing
+	 further inlining of inline_caller.
+
+	 Penalize only callgraph edges to functions with small overall
+	 growth ...
+	*/
+      if (growth > overall_growth
+	  /* ... and having only one caller which is not inlined ... */
+	  && callee_info->single_caller
+	  && !edge->caller->global.inlined_to
+	  /* ... and edges executed only conditionally ... */
+	  && edge->frequency < CGRAPH_FREQ_BASE
+	  /* ... consider case where callee is not inline but caller is ... */
+	  && ((!DECL_DECLARED_INLINE_P (edge->callee->decl)
+	       && DECL_DECLARED_INLINE_P (caller->decl))
+	      /* ... or when early optimizers decided to split and edge
+		 frequency still indicates splitting is a win ... */
+	      || (callee->split_part && !caller->split_part
+		  && edge->frequency
+		     < CGRAPH_FREQ_BASE
+		       * PARAM_VALUE
+			  (PARAM_PARTIAL_INLINING_ENTRY_PROBABILITY) / 100
+		  /* ... and do not overwrite user specified hints.   */
+		  && (!DECL_DECLARED_INLINE_P (edge->callee->decl)
+		      || DECL_DECLARED_INLINE_P (caller->decl)))))
+	{
+	  struct inline_summary *caller_info = inline_summaries->get (caller);
+	  int caller_growth = caller_info->growth;
+
+	  /* Only apply the penalty when caller looks like inline candidate,
+	     and it is not called once and.  */
+	  if (!caller_info->single_caller && overall_growth < caller_growth
+	      && caller_info->inlinable
+	      && caller_info->size
+		 < (DECL_DECLARED_INLINE_P (caller->decl)
+		    ? MAX_INLINE_INSNS_SINGLE : MAX_INLINE_INSNS_AUTO))
+	    {
+	      if (dump)
+		fprintf (dump_file,
+			 "     Wrapper penalty. Increasing growth %i to %i\n",
+			 overall_growth, caller_growth);
+	      overall_growth = caller_growth;
+	    }
+	}
+      if (overall_growth > 0)
+        {
+	  /* Strongly preffer functions with few callers that can be inlined
+	     fully.  The square root here leads to smaller binaries at average.
+	     Watch however for extreme cases and return to linear function
+	     when growth is large.  */
+	  if (overall_growth < 256)
+	    overall_growth *= overall_growth;
+	  else
+	    overall_growth += 256 * 256 - 256;
+	  denominator *= overall_growth;
+        }
+      denominator *= inline_summaries->get (caller)->self_size + growth;
 
       badness = - numerator / denominator;
 
@@ -1109,13 +1177,15 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 		   "      %f: guessed profile. frequency %f, count %"PRId64
 		   " caller count %"PRId64
 		   " time w/o inlining %f, time w inlining %f"
-		   " overall growth %i (current) %i (original)\n",
-		   badness.to_double (), (double)edge->frequency / CGRAPH_FREQ_BASE,
+		   " overall growth %i (current) %i (original)"
+		   " %i (compensated)\n",
+		   badness.to_double (),
+		  (double)edge->frequency / CGRAPH_FREQ_BASE,
 		   edge->count, caller->count,
 		   compute_uninlined_call_time (callee_info, edge).to_double (),
 		   compute_inlined_call_time (edge, edge_time).to_double (),
 		   estimate_growth (callee),
-		   callee_info->growth);
+		   callee_info->growth, overall_growth);
 	}
     }
   /* When function local profile is not available or it does not give
@@ -1133,8 +1203,8 @@ edge_badness (struct cgraph_edge *edge, bool dump)
       else
 	badness = badness << nest;
       if (dump)
-	fprintf (dump_file, "      %f: no profile. nest %i\n", badness.to_double (),
-		 nest);
+	fprintf (dump_file, "      %f: no profile. nest %i\n",
+		 badness.to_double (), nest);
     }
   gcc_checking_assert (badness != 0);
 
@@ -1649,6 +1719,20 @@ inline_account_function_p (struct cgraph_node *node)
 	   && node->frequency != NODE_FREQUENCY_UNLIKELY_EXECUTED);
 }
 
+/* Count number of callers of NODE and store it into DATA (that
+   points to int.  Worker for cgraph_for_node_and_aliases.  */
+
+static bool
+sum_callers (struct cgraph_node *node, void *data)
+{
+  struct cgraph_edge *e;
+  int *num_calls = (int *)data;
+
+  for (e = node->callers; e; e = e->next_caller)
+    (*num_calls)++;
+  return false;
+}
+
 /* We use greedy algorithm for inlining of small functions:
    All inline candidates are put into prioritized heap ordered in
    increasing badness.
@@ -1693,6 +1777,12 @@ inline_small_functions (void)
 	    if (inline_account_function_p (node))
 	      initial_size += info->size;
 	    info->growth = estimate_growth (node);
+
+	    int num_calls = 0;
+	    node->call_for_symbol_and_aliases (sum_callers, &num_calls,
+					       true);
+	    if (num_calls == 1)
+	      info->single_caller = true;
 	    if (dfs && dfs->next_cycle)
 	      {
 		struct cgraph_node *n2;
@@ -2083,20 +2173,6 @@ flatten_function (struct cgraph_node *node, bool early)
   node->aux = NULL;
   if (!node->global.inlined_to)
     inline_update_overall_summary (node);
-}
-
-/* Count number of callers of NODE and store it into DATA (that
-   points to int.  Worker for cgraph_for_node_and_aliases.  */
-
-static bool
-sum_callers (struct cgraph_node *node, void *data)
-{
-  struct cgraph_edge *e;
-  int *num_calls = (int *)data;
-
-  for (e = node->callers; e; e = e->next_caller)
-    (*num_calls)++;
-  return false;
 }
 
 /* Inline NODE to all callers.  Worker for cgraph_for_node_and_aliases.

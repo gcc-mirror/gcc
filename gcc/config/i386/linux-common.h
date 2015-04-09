@@ -59,6 +59,11 @@ along with GCC; see the file COPYING3.  If not see
  %:include(libmpx.spec)%(link_libmpx)"
 #endif
 
+#ifndef MPX_SPEC
+#define MPX_SPEC "\
+ %{mmpx:%{fcheck-pointer-bounds:%{!static:%:include(libmpx.spec)%(link_mpx)}}}"
+#endif
+
 #ifndef LIBMPX_SPEC
 #if defined(HAVE_LD_STATIC_DYNAMIC)
 #define LIBMPX_SPEC "\
@@ -89,5 +94,5 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef CHKP_SPEC
 #define CHKP_SPEC "\
-%{!nostdlib:%{!nodefaultlibs:" LIBMPX_SPEC LIBMPXWRAPPERS_SPEC "}}"
+%{!nostdlib:%{!nodefaultlibs:" LIBMPX_SPEC LIBMPXWRAPPERS_SPEC "}}" MPX_SPEC
 #endif

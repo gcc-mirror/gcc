@@ -1,3 +1,9 @@
+2015-03-31  Tom de Vries  <tom@codesourcery.com>
+
+	PR ada/65490
+	* terminals.c (child_setup_tty): Fix warning 'argument to sizeof in
+	bzero call is the same expression as the destination'.
+
 2015-03-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Deref>: New case.

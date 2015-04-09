@@ -772,16 +772,16 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
     }
 
   // An unsafe.Pointer type may be converted to any pointer type or to
-  // uintptr, and vice-versa.
+  // a type whose underlying type is uintptr, and vice-versa.
   if (lhs->is_unsafe_pointer_type()
       && (rhs->points_to() != NULL
 	  || (rhs->integer_type() != NULL
-	      && rhs->forwarded() == Type::lookup_integer_type("uintptr"))))
+	      && rhs->integer_type() == Type::lookup_integer_type("uintptr")->real_type())))
     return true;
   if (rhs->is_unsafe_pointer_type()
       && (lhs->points_to() != NULL
 	  || (lhs->integer_type() != NULL
-	      && lhs->forwarded() == Type::lookup_integer_type("uintptr"))))
+	      && lhs->integer_type() == Type::lookup_integer_type("uintptr")->real_type())))
     return true;
 
   // Give a better error message.

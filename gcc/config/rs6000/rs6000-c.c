@@ -420,7 +420,7 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
   if (TARGET_FRSQRTES)
     builtin_define ("__RSQRTEF__");
 
-  if (TARGET_EXTRA_BUILTINS)
+  if (TARGET_EXTRA_BUILTINS && cpp_get_options (pfile)->lang != CLK_ASM)
     {
       /* Define the AltiVec syntactic elements.  */
       builtin_define ("__vector=__attribute__((altivec(vector__)))");

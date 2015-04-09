@@ -1508,6 +1508,10 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
   tree thunk_fndecl = decl;
   tree a;
 
+  /* Instrumentation thunk is the same function with
+     a different signature.  Never need to expand it.  */
+  if (thunk.add_pointer_bounds_args)
+    return false;
 
   if (!force_gimple_thunk && this_adjusting
       && targetm.asm_out.can_output_mi_thunk (thunk_fndecl, fixed_offset,

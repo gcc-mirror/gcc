@@ -1,3 +1,11 @@
+2015-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/65597
+	* trans-openmp.c (gfc_trans_omp_do): For !simple simd with explicit
+	linear clause for the iterator set OMP_CLAUSE_LINEAR_NO_COPYIN.
+	For implcitly added !simple OMP_CLAUSE_LINEAR set it too.  Use step 1
+	instead of the original step on the new iterator - count.
+
 2015-03-25  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/64952

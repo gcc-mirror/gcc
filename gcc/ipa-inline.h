@@ -129,6 +129,9 @@ struct GTY(()) inline_summary
   /* True when function contains cilk spawn (and thus we can not inline
      into it).  */
   unsigned contains_cilk_spawn : 1;
+  /* True wen there is only one caller of the function before small function
+     inlining.  */
+  unsigned int single_caller : 1;
 
   /* Information about function that will result after applying all the
      inline decisions present in the callgraph.  Generally kept up to
