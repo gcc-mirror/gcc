@@ -1,3 +1,10 @@
+2015-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/65690
+	* tree.c (build_cplus_array_type): Layout type before variants are
+	set, but copy over TYPE_SIZE and TYPE_SIZE_UNIT from the main
+	variant.
+
 2015-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/64085
