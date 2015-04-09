@@ -2492,7 +2492,6 @@ update_cfg_for_uncondjump (rtx_insn *insn)
     }
 }
 
-#ifndef HAVE_cc0
 /* Return whether PAT is a PARALLEL of exactly N register SETs followed
    by an arbitrary number of CLOBBERs.  */
 static bool
@@ -2517,6 +2516,7 @@ is_parallel_of_n_reg_sets (rtx pat, int n)
   return true;
 }
 
+#ifndef HAVE_cc0
 /* Return whether INSN, a PARALLEL of N register SETs (and maybe some
    CLOBBERs), can be split into individual SETs in that order, without
    changing semantics.  */
