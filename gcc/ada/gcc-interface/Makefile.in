@@ -2321,7 +2321,9 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
       s-intman.adb<s-intman-posix.adb \
       s-osprim.adb<s-osprim-posix.adb \
       a-numaux.ads<a-numaux-darwin.ads \
-      a-numaux.adb<a-numaux-darwin.adb
+      a-numaux.adb<a-numaux-darwin.adb \
+      $(ATOMICS_TARGET_PAIRS) \
+      $(ATOMICS_BUILTINS_TARGET_PAIRS)
 
     ifeq ($(strip $(MULTISUBDIR)),/ppc64)
       LIBGNAT_TARGET_PAIRS += \
