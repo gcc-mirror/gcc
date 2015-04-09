@@ -1,3 +1,12 @@
+2015-04-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/65691
+	* docs/cp/topics/expressions.rst (Simple expressions): Fix copy
+	and paste error in description of gccjit::context::one.
+	* docs/topics/expressions.rst (Simple expressions): Likewise in
+	description of gcc_jit_context_one.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
 2015-03-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* jit-recording.c (dump::write): Also check vasprintf return value.

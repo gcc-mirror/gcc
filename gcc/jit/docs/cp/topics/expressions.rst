@@ -80,7 +80,7 @@ Simple expressions
                gccjit::context::one (gccjit::type numeric_type) const
 
    Given a numeric type (integer or floating point), get the rvalue for
-   zero.  Essentially this is just a shortcut for:
+   one.  Essentially this is just a shortcut for:
 
    .. code-block:: c++
 
