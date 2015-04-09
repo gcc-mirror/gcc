@@ -84,7 +84,7 @@ Simple expressions
                                                     gcc_jit_type *numeric_type)
 
    Given a numeric type (integer or floating point), get the rvalue for
-   zero.  Essentially this is just a shortcut for:
+   one.  Essentially this is just a shortcut for:
 
    .. code-block:: c
 

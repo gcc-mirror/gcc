@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-libgccjit 5.0.0 (experimental 20150313), March 13, 2015
+libgccjit 5.0.0 (experimental 20150409), April 09, 2015
 
 David Malcolm
 
@@ -6182,7 +6182,7 @@ gcc_jit_context_new_rvalue_from_int (ctxt, numeric_type, 0)
 @deffn {C Function} gcc_jit_rvalue *gcc_jit_context_one (gcc_jit_context@w{ }*ctxt, gcc_jit_type@w{ }*numeric_type)
 
 Given a numeric type (integer or floating point), get the rvalue for
-zero.  Essentially this is just a shortcut for:
+one.  Essentially this is just a shortcut for:
 
 @example
 gcc_jit_context_new_rvalue_from_int (ctxt, numeric_type, 1)
@@ -12012,7 +12012,7 @@ ctxt.new_rvalue (numeric_type, 0)
 @deffn {C++ Function} gccjit::rvalue gccjit::context::one (gccjit::type numeric_type) const
 
 Given a numeric type (integer or floating point), get the rvalue for
-zero.  Essentially this is just a shortcut for:
+one.  Essentially this is just a shortcut for:
 
 @example
 ctxt.new_rvalue (numeric_type, 1)
