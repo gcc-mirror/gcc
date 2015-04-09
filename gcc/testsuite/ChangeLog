@@ -1,3 +1,7 @@
+2015-04-09  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	* gcc.target/i386/mpx/memmove-zero-length.c: New.
+
 2015-04-09  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/65676
