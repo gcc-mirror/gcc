@@ -1,3 +1,9 @@
+2015-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65709
+	* ubsan.c (instrument_mem_ref): Use TREE_TYPE (base) instead of
+	TREE_TYPE (TREE_TYPE (t)).
+
 2015-04-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/65710

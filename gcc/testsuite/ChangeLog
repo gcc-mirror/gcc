@@ -1,7 +1,12 @@
+2015-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65709
+	* c-c++-common/ubsan/align-9.c: New test.
+
 2013-04-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/56852
-	* gfortran.dg/pr56852.f90 : New test
+	* gfortran.dg/pr56852.f90: New test.
 
 2015-04-09  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
