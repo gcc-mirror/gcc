@@ -1,3 +1,9 @@
+2015-04-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/65693
+	* combine.c (is_parallel_of_n_reg_sets): Move outside of
+	#ifndef HAVE_cc0.
+
 2015-04-09  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/65296
