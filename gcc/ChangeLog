@@ -1,3 +1,7 @@
+2015-04-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/contrib.texi (Contributors): Update Joe Buck's entry.
+
 2015-04-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/65710
