@@ -166,12 +166,20 @@ make check-target-libstdc++-v3 RUNTESTFLAGS="-v"
     </p><pre class="programlisting">
 make check-target-libstdc++-v3 RUNTESTFLAGS="-v -v"
 </pre><p>
-      To run a subset of the library tests, you will need to generate
-      the <span class="emphasis"><em>testsuite_files</em></span> file by running
+      To run a subset of the library tests, you can either generate the
+      <span class="emphasis"><em>testsuite_files</em></span> file (described below) by running
       <span class="command"><strong>make testsuite_files</strong></span> in the
-      <span class="emphasis"><em>libbuilddir/testsuite</em></span> directory, described
-      below.  Edit the file to remove the tests you don't want and
-      then run the testsuite as normal.
+      <span class="emphasis"><em>libbuilddir/testsuite</em></span> directory, then edit the
+      file to remove the tests you don't want and then run the testsuite as
+      normal, or you can specify a testsuite and a subset of tests in the
+      RUNTESTFLAGS variable.
+    </p><p>
+      For example, to run only the tests for containers you could use:
+    </p><pre class="programlisting">
+make check-target-libstdc++-v3 RUNTESTFLAGS="conformance.exp=23_containers/*"
+</pre><p>
+      When combining this with other options in RUNTESTFLAGS the
+      <span class="emphasis"><em>testsuite.exp=testfiles</em></span> options must come first.
     </p><p>
       There are two ways to run on a simulator: set up DEJAGNU to point to a
       specially crafted site.exp, or pass down --target_board flags.
