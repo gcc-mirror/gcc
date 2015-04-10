@@ -1,3 +1,7 @@
+2015-04-10  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Update.
+
 2015-04-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/test.xml: Improve documentation on running a subset
