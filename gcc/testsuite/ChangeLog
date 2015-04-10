@@ -1,3 +1,8 @@
+2015-04-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/65694
+	* g++.dg/torture/pr65694.C: New test.
+
 2015-04-10  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/coarray_lock_6.f90: New.

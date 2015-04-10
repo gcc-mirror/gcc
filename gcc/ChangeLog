@@ -1,3 +1,9 @@
+2015-04-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/65694
+	* config/arm/arm.c (arm_canonicalize_comparison): Use ARM_SIGN_EXTEND
+	when creating +1 values for SImode.
+
 2015-04-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/65729
