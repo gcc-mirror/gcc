@@ -1,3 +1,12 @@
+2015-04-10  Jakub Jelinek  <jakub@redhat.com>
+	    Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/65351
+	* mh-darwin: Only apply -mdynamic-no-pic for m32 Darwin when the
+	compiler in use supports -mno-dynamic-no-pic.
+	* picflag.m4: Only append -mno-dynamic-no-pic for Darwin when
+	-mdynamic-no-pic is present in CFLAGS.
+
 2015-04-07  Jakub Jelinek  <jakub@redhat.com>
 	    Iain Sandoe  <iain@codesourcery.com>
 
