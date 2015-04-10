@@ -67,6 +67,10 @@ along with GCC; see the file COPYING3.  If not see
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
+/* Mode used to build pointers (VOIDmode means ptr_mode).  */
+
+machine_mode c_default_pointer_mode = VOIDmode;
+
 /* The following symbols are subsumed in the c_global_trees array, and
    listed here individually for documentation purposes.
 

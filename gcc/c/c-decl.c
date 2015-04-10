@@ -168,10 +168,6 @@ static int warn_about_return_type;
 
 static bool undef_nested_function;
 
-/* Mode used to build pointers (VOIDmode means ptr_mode).  */
-
-machine_mode c_default_pointer_mode = VOIDmode;
-
 /* If non-zero, implicit "omp declare target" attribute is added into the
    attribute lists.  */
 int current_omp_declare_target_attribute;

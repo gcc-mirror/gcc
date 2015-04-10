@@ -358,6 +358,10 @@ struct c_common_resword
   const unsigned int disable   : 16;
 };
 
+/* Mode used to build pointers (VOIDmode means ptr_mode).  */
+
+extern machine_mode c_default_pointer_mode;
+
 /* Extra cpp_ttype values for C++.  */
 
 /* A token type for template-ids.  If a template-id is processed while

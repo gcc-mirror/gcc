@@ -1,3 +1,9 @@
+2015-04-10  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR target/55143
+	* c-common.c (c_default_pointer_mode): Add definition.
+	* c-common.h (c_default_pointer_mode): Add declaration.
+
 2015-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.c (c_common_nodes_and_builtins): Don't call xstrdup
