@@ -1,3 +1,9 @@
+2015-04-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/65710
+	* lra-assigns.c (spill_for): Update smallest_bad_spills_num.
+	Print bad_spills_num and insn_pseudos_num.
+
 2015-04-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/65710

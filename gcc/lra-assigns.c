@@ -982,12 +982,14 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 			  && best_cost > cost))))
 	    {
 	      best_insn_pseudos_num = insn_pseudos_num;
+	      smallest_bad_spills_num = bad_spills_num;
 	      best_cost = cost;
 	      best_hard_regno = hard_regno;
 	      bitmap_copy (&best_spill_pseudos_bitmap, &spill_pseudos_bitmap);
 	      if (lra_dump_file != NULL)
-		fprintf (lra_dump_file, "	 Now best %d(cost=%d)\n",
-			 hard_regno, cost);
+		fprintf (lra_dump_file,
+			 "	 Now best %d(cost=%d, bad_spills=%d, insn_pseudos=%d)\n",
+			 hard_regno, cost, bad_spills_num, insn_pseudos_num);
 	    }
 	  assign_temporarily (regno, -1);
 	  for (j = 0; j < n; j++)
