@@ -128,7 +128,8 @@ Herman A.J. ten Brugge for various fixes.
 Joerg Brunsmann for Java compiler hacking and help with the GCJ FAQ@.
 
 @item
-Joe Buck for his direction via the steering committee.
+Joe Buck for his direction via the steering committee from its creation
+to 2013.
 
 @item
 Craig Burley for leadership of the G77 Fortran effort.
