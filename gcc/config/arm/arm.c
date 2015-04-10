@@ -4814,7 +4814,7 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
       if (i != maxval
 	  && (const_ok_for_arm (i + 1) || const_ok_for_arm (-(i + 1))))
 	{
-	  *op1 = GEN_INT (i + 1);
+	  *op1 = GEN_INT (ARM_SIGN_EXTEND (i + 1));
 	  *code = *code == GT ? GE : LT;
 	  return;
 	}
@@ -4836,7 +4836,7 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
       if (i != ~((unsigned HOST_WIDE_INT) 0)
 	  && (const_ok_for_arm (i + 1) || const_ok_for_arm (-(i + 1))))
 	{
-	  *op1 = GEN_INT (i + 1);
+	  *op1 = GEN_INT (ARM_SIGN_EXTEND (i + 1));
 	  *code = *code == GTU ? GEU : LTU;
 	  return;
 	}
