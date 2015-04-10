@@ -48,7 +48,7 @@
 
 2015-04-08  Ilya Enkovich  <ilya.enkovich@intel.com>
 
-	* gcc/testsuite/gcc.target/i386/thunk-retbnd.c: New.
+	* gcc.target/i386/thunk-retbnd.c: New.
 
 2015-04-08  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -593,11 +593,11 @@
 2015-03-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/65240
-	* gcc/testsuite/g++.dg/pr65240.h: Add tests for PR 65240.
-	* gcc/testsuite/g++.dg/pr65240-1.C: Likewise.
-	* gcc/testsuite/g++.dg/pr65240-2.C: Likewise.
-	* gcc/testsuite/g++.dg/pr65240-3.C: Likewise.
-	* gcc/testsuite/g++.dg/pr65240-4.C: Likewise.
+	* g++.dg/pr65240.h: Add tests for PR 65240.
+	* g++.dg/pr65240-1.C: Likewise.
+	* g++.dg/pr65240-2.C: Likewise.
+	* g++.dg/pr65240-3.C: Likewise.
+	* g++.dg/pr65240-4.C: Likewise.
 
 2015-03-19  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -727,7 +727,7 @@
 
 2015-03-16  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* testsuite/g++.dg/pr65049.C: New test.
+	* g++.dg/pr65049.C: New test.
 
 2015-03-16  Tom de Vries  <tom@codesourcery.com>
 
