@@ -700,7 +700,8 @@ gfc_allocate_using_malloc (stmtblock_t * block, tree pointer,
     }  */
 static void
 gfc_allocate_using_lib (stmtblock_t * block, tree pointer, tree size,
-			tree token, tree status, tree errmsg, tree errlen)
+			tree token, tree status, tree errmsg, tree errlen,
+			bool lock_var)
 {
   tree tmp, pstat;
 
@@ -730,7 +731,8 @@ gfc_allocate_using_lib (stmtblock_t * block, tree pointer, tree size,
 			      MAX_EXPR, size_type_node, size,
 			      build_int_cst (size_type_node, 1)),
 	     build_int_cst (integer_type_node,
-			    GFC_CAF_COARRAY_ALLOC),
+			    lock_var ? GFC_CAF_LOCK_ALLOC
+				     : GFC_CAF_COARRAY_ALLOC),
 	     token, pstat, errmsg, errlen);
 
   tmp = fold_build2_loc (input_location, MODIFY_EXPR,
@@ -787,9 +789,22 @@ gfc_allocate_allocatable (stmtblock_t * block, tree mem, tree size, tree token,
       && gfc_expr_attr (expr).codimension)
     {
       tree cond;
+      bool lock_var = expr->ts.type == BT_DERIVED
+		      && expr->ts.u.derived->from_intmod
+			 == INTMOD_ISO_FORTRAN_ENV
+		      && expr->ts.u.derived->intmod_sym_id
+		         == ISOFORTRAN_LOCK_TYPE;
+      /* In the front end, we represent the lock variable as pointer. However,
+	 the FE only passes the pointer around and leaves the actual
+	 representation to the library. Hence, we have to convert back to the
+	 number of elements.  */
+      if (lock_var)
+	size = fold_build2_loc (input_location, TRUNC_DIV_EXPR, size_type_node,
+				size, TYPE_SIZE_UNIT (ptr_type_node));
 
       gfc_allocate_using_lib (&alloc_block, mem, size, token, status,
-			      errmsg, errlen);
+			      errmsg, errlen, lock_var);
+
       if (status != NULL_TREE)
 	{
 	  TREE_USED (label_finish) = 1;

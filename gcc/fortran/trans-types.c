@@ -2376,7 +2376,10 @@ gfc_get_derived_type (gfc_symbol * derived)
   gfc_dt_list *dt;
   gfc_namespace *ns;
 
-  if (derived->attr.unlimited_polymorphic)
+  if (derived->attr.unlimited_polymorphic
+      || (flag_coarray == GFC_FCOARRAY_LIB
+	  && derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
+	  && derived->intmod_sym_id == ISOFORTRAN_LOCK_TYPE))
     return ptr_type_node;
 
   if (derived && derived->attr.flavor == FL_PROCEDURE
