@@ -1,3 +1,9 @@
+2015-04-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/test.xml: Improve documentation on running a subset
+	of tests.
+	* doc/html/manual/test.html: Regenerate.
+
 2015-04-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Update
