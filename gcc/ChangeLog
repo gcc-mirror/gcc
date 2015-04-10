@@ -1,3 +1,9 @@
+2015-04-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/65729
+	* lra-constraints.c (prohibited_class_reg_set_mode_p): Comment the
+	assert.
+
 2015-04-10  Jakub Jelinek  <jakub@redhat.com>
 	    Iain Sandoe  <iain@codesourcery.com>
 
