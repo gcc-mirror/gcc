@@ -1,3 +1,9 @@
+2015-04-10  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR target/55143
+	* c-decl.c (c_default_pointer_mode): Remove definition.
+	* c-tree.h (c_default_pointer_mode): Remove declaration.
+
 2015-03-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR c/65586
