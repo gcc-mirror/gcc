@@ -12,7 +12,7 @@
 # aggregate -> en variabel af en sammensat type (fx struct, class)
 # ambigeous -> tvetydig
 # arg, argument -> parameter (for ikke at blande sammen med diskussionsargument)
-# array -> tabel
+# array -> tabel (array har vi vis ofte uoversat?)
 # assembler -> maskinkodeoversætter
 # assertion -> postulat
 # attribute -> egenskab
@@ -2294,17 +2294,16 @@ msgid "depth of unrolled loop for unroll-and-jam"
 msgstr ""
 
 #: params.def:874
-#, fuzzy
 msgid "maximum number of parameters in a SCoP"
-msgstr "Det maksimale antal faser der skal gennemgås ved udførsel af GCSE"
+msgstr "Det maksimale antal parametre i en SCoP"
 
 #: params.def:881
 msgid "maximum number of basic blocks per function to be analyzed by Graphite"
-msgstr ""
+msgstr "Det maksimale antal grundlæggende blokke per funktion, der skal analyseres af Graphite"
 
 #: params.def:887
 msgid "Maximum number of datarefs in loop for building loop data dependencies"
-msgstr ""
+msgstr "Det maksimale antal datareferencer i loop for bygning af loop-dataafhængigheder"
 
 #: params.def:894
 msgid "Max basic blocks number in loop for loop invariant motion"
@@ -2312,17 +2311,15 @@ msgstr ""
 
 #: params.def:902
 msgid "use internal function id in profile lookup"
-msgstr ""
+msgstr "brug intern funktions-id i profilopslag"
 
 #: params.def:910
 msgid "track topn target addresses in indirect-call profile"
 msgstr ""
 
 #: params.def:916
-#, fuzzy
-#| msgid "The maximum number of instructions in a single function eligible for inlining"
 msgid "Maximum number of instructions in basic block to be considered for SLP vectorization"
-msgstr "Det maksimale antal instruktioner i en enkelt funktion der må indbygges"
+msgstr "Det maksimale antal instruktioner i basisblokke som skal overvejes i SLP-vektorisering"
 
 #: params.def:921
 msgid "Min. ratio of insns to prefetches to enable prefetching for a loop with an unknown trip count"
@@ -9306,10 +9303,8 @@ msgid "Generate floating point mathematics using given instruction set"
 msgstr "Generér kommatalsmatematik vha. givent instruktionssæt"
 
 #: config/i386/i386.opt:329
-#, fuzzy
-#| msgid "too many arguments for format"
 msgid "Valid arguments to -mfpmath=:"
-msgstr "for mange parametre til formatering"
+msgstr "Gyldige  parametre til -mfpmath=:"
 
 #: config/i386/i386.opt:362
 msgid "Inline all known string operations"
@@ -9325,17 +9320,15 @@ msgstr ""
 
 #: config/i386/i386.opt:394
 msgid "Set 80387 floating-point precision to 32-bit"
-msgstr ""
+msgstr "Sæt 80387-kommatalsresultater til 32-bit"
 
 #: config/i386/i386.opt:398
 msgid "Set 80387 floating-point precision to 64-bit"
-msgstr ""
+msgstr "Sæt 80387-kommatalsresultater til 64-bit"
 
 #: config/i386/i386.opt:402
-#, fuzzy
-#| msgid "Return floating point results in ac0"
 msgid "Set 80387 floating-point precision to 80-bit"
-msgstr "Returnér kommatalsresultater i ac0"
+msgstr "Sæt 80387-kommatalsresultater til 80-bit"
 
 #: config/i386/i386.opt:406
 msgid "Attempt to keep stack aligned to this power of 2"
@@ -9420,76 +9413,64 @@ msgid "Clear all tune features"
 msgstr "Forbyd alle grimme faciliteter"
 
 #: config/i386/i386.opt:519
-#, fuzzy
-#| msgid "Generate code for given CPU"
 msgid "Generate code that conforms to the given ABI"
-msgstr "Generér kode til en given processor"
+msgstr "Opret kode som overholde den angivne ABI"
 
 #: config/i386/i386.opt:523
 msgid "Known ABIs (for use with the -mabi= option):"
-msgstr ""
+msgstr "Kendte ABI'er (for brug med tilvalget -mabi=):"
 
 #: config/i386/i386.opt:533 config/rs6000/rs6000.opt:189
-#, fuzzy
-#| msgid "Specify ABI to use"
 msgid "Vector library ABI to use"
-msgstr "Angiv ABI der skal bruges"
+msgstr "Vektorbiblioteks-ABI der skal bruges"
 
 #: config/i386/i386.opt:537
 msgid "Known vectorization library ABIs (for use with the -mveclibabi= option):"
 msgstr ""
 
 #: config/i386/i386.opt:547
-#, fuzzy
-#| msgid "Return floating point results in memory"
 msgid "Return 8-byte vectors in memory"
-msgstr "Returnér kommatalsresultater i hukommelse"
+msgstr "Returner 8-byte vektorer i hukommelse"
 
 #: config/i386/i386.opt:551
 msgid "Generate reciprocals instead of divss and sqrtss."
-msgstr ""
+msgstr "Opret reciprokke i stedet for divss og sqrtss."
 
 #: config/i386/i386.opt:555
 msgid "Control generation of reciprocal estimates."
-msgstr ""
+msgstr "Kontroller oprettelse af reciprokke stimater."
 
 #: config/i386/i386.opt:559
-#, fuzzy
-#| msgid "Do not move instructions into a function's prologue"
 msgid "Generate cld instruction in the function prologue."
-msgstr "Flyt ikke instruktioner til en funktions begyndelse"
+msgstr "Opret cld-instruktion i en funktions begyndelse."
 
 #: config/i386/i386.opt:563
 msgid "Generate vzeroupper instruction before a transfer of control flow out of"
-msgstr ""
+msgstr "Oprete vzeroupper-instruktion før en overførsel af kontrol forløb ud af"
 
 #: config/i386/i386.opt:568
 msgid "Do dispatch scheduling if processor is bdver1 or bdver2 or bdver3 or bdver4 and Haifa scheduling"
-msgstr ""
+msgstr "Udfør afsendelsesplanlægning hvis processor er bdver1 eller bdver2 eller bdver3 eller bdver4 og Haifaplanlæggende"
 
 #: config/i386/i386.opt:573
 msgid "Use 128-bit AVX instructions instead of 256-bit AVX instructions in the auto-vectorizer."
-msgstr ""
+msgstr "Brug 128-bit AVX-instruktioner i stedet for 256-bit AVX-instruktioner i auto-vectorizer."
 
 #: config/i386/i386.opt:579
 msgid "Generate 32bit i386 code"
-msgstr "Generér 64 bit i386-kode"
+msgstr "Opret 32-bit i386-kode"
 
 #: config/i386/i386.opt:583
 msgid "Generate 64bit x86-64 code"
-msgstr "Generér 64 bit x86-64-kode"
+msgstr "Opret 64-bit x86-64-kode"
 
 #: config/i386/i386.opt:587
-#, fuzzy
-#| msgid "Generate 64bit x86-64 code"
 msgid "Generate 32bit x86-64 code"
-msgstr "Generér 64 bit x86-64-kode"
+msgstr "Opret 32-bit x86-64-kode"
 
 #: config/i386/i386.opt:591
-#, fuzzy
-#| msgid "Generate 32bit i386 code"
 msgid "Generate 16bit i386 code"
-msgstr "Generér 64 bit i386-kode"
+msgstr "Opret 32-bit i386-kode"
 
 # shadowing betyder at en funktion har samme navn og dermed skjuler en anden
 #: config/i386/i386.opt:595
@@ -9503,10 +9484,8 @@ msgstr "Understøt indbyggede 3DNow!-funktioner"
 
 # shadowing betyder at en funktion har samme navn og dermed skjuler en anden
 #: config/i386/i386.opt:603
-#, fuzzy
-#| msgid "Support 3DNow! built-in functions"
 msgid "Support Athlon 3Dnow! built-in functions"
-msgstr "Understøt indbyggede 3DNow!-funktioner"
+msgstr "Understøt indbyggede Athlon 3DNow!-funktioner"
 
 #: config/i386/i386.opt:607
 msgid "Support MMX and SSE built-in functions and code generation"
@@ -9517,65 +9496,52 @@ msgid "Support MMX, SSE and SSE2 built-in functions and code generation"
 msgstr "Understøt indbyggede MMX-, SSE- og SSE2-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:615
-#, fuzzy
 msgid "Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation"
-msgstr "Understøt indbyggede MMX-, SSE- og SSE2-funktioner og kodegenerering"
+msgstr "Understøt indbyggede MMX-, SSE-, SSE2- og SSE3-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:619
-#, fuzzy
 msgid "Support MMX, SSE, SSE2, SSE3 and SSSE3 built-in functions and code generation"
-msgstr "Understøt indbyggede MMX-, SSE- og SSE2-funktioner og kodegenerering"
+msgstr "Understøt indbyggede MMX-, SSE-, SSE2-, SSE3- og SSSE3-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:623
-#, fuzzy
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1 built-in functions and code generation"
-msgstr "Understøt indbyggede MMX-, SSE- og SSE2-funktioner og kodegenerering"
+msgstr "Understøt indbyggede MMX-, SSE-, SSE2-, SSE3-, SSSE3- og SSE4.1-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:627 config/i386/i386.opt:631
-#, fuzzy
-#| msgid "Support MMX, SSE and SSE2 built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation"
-msgstr "Understøt indbyggede MMX-, SSE- og SSE2-funktioner og kodegenerering"
+msgstr "Understøt indbyggede MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1- og SSE4.2-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:635
-#, fuzzy
-#| msgid "Do not support MMX, SSE and SSE2 built-in functions and code generation"
 msgid "Do not support SSE4.1 and SSE4.2 built-in functions and code generation"
-msgstr "Understøt ikke indbyggede MMX-, SSE- og SSE2-funktioner og kodegenerering"
+msgstr "Understøt ikke indbyggede SSE4.1- og SSE4.2-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:638
 msgid "%<-msse5%> was removed"
-msgstr ""
+msgstr "%<-msse5%> blev fjernet"
 
 #: config/i386/i386.opt:643
-#, fuzzy
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in functions and code generation"
-msgstr "Understøt indbyggede MMX-, SSE- og SSE2-funktioner og kodegenerering"
+msgstr "Understøt indbyggede MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2- og AVX-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:647
-#, fuzzy
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation"
-msgstr "Understøt indbyggede MMX-, SSE- og SSE2-funktioner og kodegenerering"
+msgstr "Understøt indbyggede MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX- og AVX2-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:651
-#, fuzzy
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation"
-msgstr "Understøt indbyggede MMX-, SSE- og SSE2-funktioner og kodegenerering"
+msgstr "Understøt indbyggede MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2- og AVX512F-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:655
-#, fuzzy
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512PF built-in functions and code generation"
-msgstr "Understøt indbyggede MMX-, SSE- og SSE2-funktioner og kodegenerering"
+msgstr "Understøt indbyggede MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2- og AVX512F- og AVX512PF-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:659
-#, fuzzy
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512ER built-in functions and code generation"
-msgstr "Understøt indbyggede MMX-, SSE- og SSE2-funktioner og kodegenerering"
+msgstr "Understøt indbyggede MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2- og AVX512F- og AVX512ER-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:663
-#, fuzzy
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512CD built-in functions and code generation"
-msgstr "Understøt indbyggede MMX-, SSE- og SSE2-funktioner og kodegenerering"
+msgstr "Understøt indbyggede MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2- og AVX512F- og AVX512CD-funktioner og kodegenerering"
 
 #: config/i386/i386.opt:667
 #, fuzzy
@@ -11954,40 +11920,32 @@ msgid "Integer id (N) of fatans custom instruction"
 msgstr ""
 
 #: config/nios2/nios2.opt:426
-#, fuzzy
-#| msgid "Do not use the callt instruction"
 msgid "Do not use the ftans custom instruction"
-msgstr "Benyt ikke callt-instruktionen"
+msgstr "Benyt ikke den tilpassede ftnas-instruktion"
 
 #: config/nios2/nios2.opt:430
 msgid "Integer id (N) of ftans custom instruction"
-msgstr ""
+msgstr "Heltal id (N) for ftans tilpassede instruktion"
 
 #: config/nios2/nios2.opt:434
-#, fuzzy
-#| msgid "Do not use the callt instruction"
 msgid "Do not use the fsins custom instruction"
-msgstr "Benyt ikke callt-instruktionen"
+msgstr "Benyt ikke den tilpassede fsins-instruktion"
 
 #: config/nios2/nios2.opt:438
 msgid "Integer id (N) of fsins custom instruction"
-msgstr ""
+msgstr "Heltal id (N) for fsins tilpassede instruktion"
 
 #: config/nios2/nios2.opt:442
-#, fuzzy
-#| msgid "Do not use the callt instruction"
 msgid "Do not use the fcoss custom instruction"
-msgstr "Benyt ikke callt-instruktionen"
+msgstr "Benyt ikke den fcoss tilpassede instruktion"
 
 #: config/nios2/nios2.opt:446
 msgid "Integer id (N) of fcoss custom instruction"
-msgstr ""
+msgstr "Heltal id (N) for fcoss tilpasset instruktion"
 
 #: config/nios2/nios2.opt:450
-#, fuzzy
-#| msgid "Do not use the callt instruction"
 msgid "Do not use the fsqrts custom instruction"
-msgstr "Benyt ikke callt-instruktionen"
+msgstr "Benyt ikke den fsqrts tilpassede instruktion"
 
 #: config/nios2/nios2.opt:454
 msgid "Integer id (N) of fsqrts custom instruction"
@@ -12034,102 +11992,80 @@ msgid "Integer id (N) of fmins custom instruction"
 msgstr ""
 
 #: config/nios2/nios2.opt:490
-#, fuzzy
-#| msgid "Do not use the divide instruction"
 msgid "Do not use the fdivs custom instruction"
-msgstr "Benyt ikke divisionsinstruktionen"
+msgstr "Benyt ikke fivs tilpassede instruktion"
 
 #: config/nios2/nios2.opt:494
 msgid "Integer id (N) of fdivs custom instruction"
-msgstr ""
+msgstr "Heltal id (N) for fdvis tilpassede instruktion"
 
 #: config/nios2/nios2.opt:498
-#, fuzzy
-#| msgid "Do not use the callt instruction"
 msgid "Do not use the fmuls custom instruction"
-msgstr "Benyt ikke callt-instruktionen"
+msgstr "Benyt ikke fmuls tilpassede instruktion"
 
 #: config/nios2/nios2.opt:502
-#, fuzzy
-#| msgid "Do not generate multm instructions"
 msgid "Integer id (N) of fmuls custom instruction"
-msgstr "Generér ikke multm-instruktioner"
+msgstr "Heltal id (N) for fmuls tilpassede instruktion"
 
 #: config/nios2/nios2.opt:506
-#, fuzzy
-#| msgid "Do not use the callt instruction"
 msgid "Do not use the fsubs custom instruction"
-msgstr "Benyt ikke callt-instruktionen"
+msgstr "Benyt ikke fsubs tilpassede instruktion"
 
 #: config/nios2/nios2.opt:510
 msgid "Integer id (N) of fsubs custom instruction"
-msgstr ""
+msgstr "Heltal id (N) for fsubs tilpassede instruktion"
 
 #: config/nios2/nios2.opt:514
-#, fuzzy
-#| msgid "Do not use the callt instruction"
 msgid "Do not use the fadds custom instruction"
-msgstr "Benyt ikke callt-instruktionen"
+msgstr "Benyt ikke fadds tilpassede instruktion"
 
 #: config/nios2/nios2.opt:518
 msgid "Integer id (N) of fadds custom instruction"
-msgstr ""
+msgstr "Heltal id (N) for fadds tilpassede instruktion"
 
 #: config/nios2/nios2.opt:522
-#, fuzzy
-#| msgid "Do not use the callt instruction"
 msgid "Do not use the frdy custom instruction"
-msgstr "Benyt ikke callt-instruktionen"
+msgstr "Benyt ikke frdy tilpasset instruktion"
 
 #: config/nios2/nios2.opt:526
 msgid "Integer id (N) of frdy custom instruction"
-msgstr ""
+msgstr "Heltal id (N) for frdy tilpasset instruktion"
 
 #: config/nios2/nios2.opt:530
-#, fuzzy
-#| msgid "Do not use the callt instruction"
 msgid "Do not use the frdxhi custom instruction"
-msgstr "Benyt ikke callt-instruktionen"
+msgstr "Benyt ikke frdxhi tilpasset instruktion"
 
 #: config/nios2/nios2.opt:534
 msgid "Integer id (N) of frdxhi custom instruction"
-msgstr ""
+msgstr "Heltal id (N) for frdxhi tilpasset instruktion"
 
 #: config/nios2/nios2.opt:538
-#, fuzzy
-#| msgid "Do not use the callt instruction"
 msgid "Do not use the frdxlo custom instruction"
-msgstr "Benyt ikke callt-instruktionen"
+msgstr "Benyt ikke frdxlo tilpasset instruktion"
 
 #: config/nios2/nios2.opt:542
 msgid "Integer id (N) of frdxlo custom instruction"
 msgstr ""
 
 #: config/nios2/nios2.opt:546
-#, fuzzy
-#| msgid "Do not use the callt instruction"
 msgid "Do not use the fwry custom instruction"
-msgstr "Benyt ikke callt-instruktionen"
+msgstr "Benyt ikke fwry tilpasset instruktion"
 
 #: config/nios2/nios2.opt:550
 msgid "Integer id (N) of fwry custom instruction"
 msgstr ""
 
 #: config/nios2/nios2.opt:554
-#, fuzzy
-#| msgid "Do not use the callt instruction"
 msgid "Do not use the fwrx custom instruction"
-msgstr "Benyt ikke callt-instruktionen"
+msgstr "Benyt ikke fwrx tilpasset instruktion"
 
 #: config/nios2/nios2.opt:558
 msgid "Integer id (N) of fwrx custom instruction"
 msgstr ""
 
 #: config/nios2/nios2.opt:562
-#, fuzzy
-#| msgid "Do not use the callt instruction"
 msgid "Do not use the round custom instruction"
-msgstr "Benyt ikke callt-instruktionen"
+msgstr "Benyt ikke den runde tilpasset instruktion"
 
 #: config/nios2/nios2.opt:566
 msgid "Integer id (N) of round custom instruction"
@@ -12144,20 +12080,16 @@ msgid "Stores doubles in 32 bits.  This is the default."
 msgstr ""
 
 #: config/rx/rx.opt:37
-#, fuzzy
-#| msgid "Disable use of RTPS instruction"
 msgid "Disable the use of RX FPU instructions.  "
-msgstr "Deaktivér brug af RTPS-instruktionen"
+msgstr "Deaktiver brugen af RX FPU-instruktioner.  "
 
 #: config/rx/rx.opt:44
-#, fuzzy
-#| msgid "Enable use of RTPS instruction"
 msgid "Enable the use of RX FPU instructions.  This is the default."
-msgstr "Aktivér brug af RTPS-instruktionen"
+msgstr "Aktiver brugen af RX FPU-instruktioner. Dette er standarden."
 
 #: config/rx/rx.opt:50
 msgid "Specify the target RX cpu type."
-msgstr ""
+msgstr "Specificer mål-RX-cpu-typen."
 
 #: config/rx/rx.opt:71
 msgid "Data is stored in big-endian format."
@@ -12321,21 +12253,17 @@ msgid "Use the hardware barrel shifter instead of emulation"
 msgstr "Benyt hardware quad-kommatalsinstruktioner"
 
 #: config/microblaze/microblaze.opt:84
-#, fuzzy
-#| msgid "Generate char instructions"
 msgid "Use pattern compare instructions"
-msgstr "Generér char-instruktioner"
+msgstr "Benyt mønstersammenligningsinstruktioner"
 
 #: config/microblaze/microblaze.opt:87
-#, fuzzy, c-format
+#, c-format
 msgid "%qs is deprecated; use -fstack-check"
-msgstr "Angiv klassesti (forældet: benyt --classpath i stedet)"
+msgstr "%qs er forældet; brug -fstack-check"
 
 #: config/microblaze/microblaze.opt:88
-#, fuzzy
-#| msgid "Check for syntax errors, then stop"
 msgid "Check for stack overflow at runtime"
-msgstr "Kontrollér syntaks og stop derefter"
+msgstr "Kontroller for stakoverløb ved kørselstid"
 
 #: config/microblaze/microblaze.opt:92 config/iq2000/iq2000.opt:65
 msgid "Use GP relative sdata/sbss sections"
@@ -12344,7 +12272,7 @@ msgstr "Benyt GP-relative sdata/sbss-sektioner"
 #: config/microblaze/microblaze.opt:95
 #, c-format
 msgid "%qs is deprecated; use -fno-zero-initialized-in-bss"
-msgstr ""
+msgstr "%qs er forældet; brug -fno-zero-initialized-in-bss"
 
 #: config/microblaze/microblaze.opt:96
 msgid "Clear the BSS to zero and place zero initialized in BSS"
@@ -12463,7 +12391,7 @@ msgstr "Angiv navnet på målprocessoren"
 
 #: config/frv/frv.opt:73
 msgid "Known FR-V CPUs (for use with the -mcpu= option):"
-msgstr ""
+msgstr "Kendt FR-V CPU'er (for brug med -mcpu= option):"
 
 #: config/frv/frv.opt:122
 #, fuzzy
@@ -12477,33 +12405,31 @@ msgstr ""
 
 #: config/frv/frv.opt:134
 msgid "Just use icc0/fcc0"
-msgstr ""
+msgstr "Brug kun icc0/fcc0"
 
 #: config/frv/frv.opt:138
 msgid "Only use 32 FPRs"
-msgstr ""
+msgstr "Brug kun 32 FPR'er"
 
 #: config/frv/frv.opt:142
 msgid "Use 64 FPRs"
-msgstr ""
+msgstr "Brug 64 FPR'er"
 
 #: config/frv/frv.opt:146
 msgid "Only use 32 GPRs"
-msgstr ""
+msgstr "Brug kun 32 GPR'er"
 
 #: config/frv/frv.opt:150
 msgid "Use 64 GPRs"
-msgstr ""
+msgstr "Brug 64 GPR'er"
 
 #: config/frv/frv.opt:154
 msgid "Enable use of GPREL for read-only data in FDPIC"
-msgstr ""
+msgstr "Aktiver brug af GPREl for skrivebeskyttede data i FDPIC"
 
 #: config/frv/frv.opt:166
-#, fuzzy
-#| msgid "Enable support for huge objects"
 msgid "Enable PIC support for building libraries"
-msgstr "Aktivér understøttelse af enorme objekter"
+msgstr "Aktiver PIC-understøttelse for bygning af biblioteker"
 
 #: config/frv/frv.opt:170
 msgid "Follow the EABI linkage requirements"
@@ -12543,13 +12469,11 @@ msgstr ""
 
 #: config/frv/frv.opt:199
 msgid "Remove redundant membars"
-msgstr ""
+msgstr "Fjern redundante membars"
 
 #: config/frv/frv.opt:203
-#, fuzzy
-#| msgid "Use AltiVec instructions"
 msgid "Pack VLIW instructions"
-msgstr "Benyt AltiVec-instruktioner"
+msgstr "Pak VLIW-instruktioner"
 
 #: config/frv/frv.opt:207
 msgid "Enable setting GPRs to the result of comparisons"
@@ -31074,9 +30998,9 @@ msgid "switch jumps into statement expression"
 msgstr "overløb i konstant udtryk"
 
 #: c/c-decl.c:3886
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE defined as wrong kind of tag"
-msgstr "'%s' omerklæret som en anden form for symbol"
+msgstr "%qE defineret som forkert slags mærke"
 
 #: c/c-decl.c:4115
 #, gcc-internal-format
@@ -31084,76 +31008,64 @@ msgid "unnamed struct/union that defines no instances"
 msgstr "unavngiven struct/union som ikke definerer nogen instanser"
 
 #: c/c-decl.c:4125
-#, fuzzy, gcc-internal-format
-#| msgid "storage class specifier in array declarator"
+#, gcc-internal-format
 msgid "empty declaration with storage class specifier does not redeclare tag"
-msgstr "lagringsklasseanvisning i tabelerklæring"
+msgstr "tom erklæring med lagringsklasseanvisning erklærer ikke mærke igen"
 
 #: c/c-decl.c:4140
-#, fuzzy, gcc-internal-format
-#| msgid "declaration does not declare anything"
+#, gcc-internal-format
 msgid "empty declaration with type qualifier does not redeclare tag"
-msgstr "erklæring erklærer ikke noget"
+msgstr "tom erklæring med typemodifikation erklærer ikke mærke igen"
 
 #: c/c-decl.c:4151
-#, fuzzy, gcc-internal-format
-#| msgid "declaration does not declare anything"
+#, gcc-internal-format
 msgid "empty declaration with %<_Alignas%> does not redeclare tag"
-msgstr "erklæring erklærer ikke noget"
+msgstr "tom erklæring med %<_Alignas%> erklærer ikke mærke igen"
 
 #: c/c-decl.c:4173 c/c-decl.c:4181
-#, fuzzy, gcc-internal-format
-#| msgid "useless keyword or type name in empty declaration"
+#, gcc-internal-format
 msgid "useless type name in empty declaration"
-msgstr "ubrugeligt reserveret ord eller typenavn i tom erklæring"
+msgstr "ubrugeligt typenavn i tom erklæring"
 
 #: c/c-decl.c:4189
-#, fuzzy, gcc-internal-format
-#| msgid "empty declaration"
+#, gcc-internal-format
 msgid "%<inline%> in empty declaration"
-msgstr "tom erklæring"
+msgstr "%<inline%>i tom erklæring"
 
 #: c/c-decl.c:4195
-#, fuzzy, gcc-internal-format
-#| msgid "empty declaration"
+#, gcc-internal-format
 msgid "%<_Noreturn%> in empty declaration"
-msgstr "tom erklæring"
+msgstr "%<_Noreturn%> i tom erklæring"
 
 #: c/c-decl.c:4201
-#, fuzzy, gcc-internal-format
-#| msgid "two types specified in one empty declaration"
+#, gcc-internal-format
 msgid "%<auto%> in file-scope empty declaration"
-msgstr "to typer angivet i én tom erklæring"
+msgstr "%<auto%> i file-scope tom erklæring"
 
 #: c/c-decl.c:4207
-#, fuzzy, gcc-internal-format
-#| msgid "two types specified in one empty declaration"
+#, gcc-internal-format
 msgid "%<register%> in file-scope empty declaration"
-msgstr "to typer angivet i én tom erklæring"
+msgstr "%<register%> i file-scope tom erklæring"
 
 #: c/c-decl.c:4214
-#, fuzzy, gcc-internal-format
-#| msgid "storage class specifier in array declarator"
+#, gcc-internal-format
 msgid "useless storage class specifier in empty declaration"
-msgstr "lagringsklasseanvisning i tabelerklæring"
+msgstr "ubrugelig lagringsklasseanvisning i tom erklæring"
 
 #: c/c-decl.c:4220
-#, fuzzy, gcc-internal-format
-#| msgid "useless keyword or type name in empty declaration"
+#, gcc-internal-format
 msgid "useless %qs in empty declaration"
-msgstr "ubrugeligt reserveret ord eller typenavn i tom erklæring"
+msgstr "ubrugelig %qs i tom erklæring"
 
 #: c/c-decl.c:4233
-#, fuzzy, gcc-internal-format
-#| msgid "duplicate type qualifiers in %s declaration"
+#, gcc-internal-format
 msgid "useless type qualifier in empty declaration"
-msgstr "dobbelte typemodifikationer i %s-erklæring"
+msgstr "ubrugelig typemodifikationer i tom erklæring"
 
 #: c/c-decl.c:4240
-#, fuzzy, gcc-internal-format
-#| msgid "useless keyword or type name in empty declaration"
+#, gcc-internal-format
 msgid "useless %<_Alignas%> in empty declaration"
-msgstr "ubrugeligt reserveret ord eller typenavn i tom erklæring"
+msgstr "ubrugelig %<_Alignas%> i tom erklæring"
 
 #: c/c-decl.c:4247 c/c-parser.c:1594
 #, gcc-internal-format
@@ -31161,16 +31073,14 @@ msgid "empty declaration"
 msgstr "tom erklæring"
 
 #: c/c-decl.c:4318
-#, fuzzy, gcc-internal-format
-#| msgid "ISO C90 does not support `static' or type qualifiers in parameter array declarators"
+#, gcc-internal-format
 msgid "ISO C90 does not support %<static%> or type qualifiers in parameter array declarators"
-msgstr "ISO C90 understøtter ikke 'static' eller typemodifikationer i parametertabelerklæringer"
+msgstr "ISO C90 understøtter ikke %<static%> eller typemodifikationer i parameterarrayerklæringer"
 
 #: c/c-decl.c:4322
-#, fuzzy, gcc-internal-format
-#| msgid "ISO C90 does not support `[*]' array declarators"
+#, gcc-internal-format
 msgid "ISO C90 does not support %<[*]%> array declarators"
-msgstr "ISO C90 understøtter ikke tabelerklæringer med '[*]'"
+msgstr "ISO C90 understøtter ikke %<[*]%> arrayerklæringer"
 
 #. C99 6.7.5.2p4
 #. A function definition isn't function prototype scope C99 6.2.1p4.
@@ -31191,29 +31101,26 @@ msgid "%q+D in declare target directive does not have mappable type"
 msgstr ""
 
 #: c/c-decl.c:4470
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q+D is usually a function"
-msgstr "'%s' er sædvanligvis en funktion"
+msgstr "%q+D er normalt en funktion"
 
 # init dækker over værditildeling her - samme for de næste mange
 #: c/c-decl.c:4479
-#, fuzzy, gcc-internal-format
-#| msgid "typedef `%D' is initialized (use __typeof__ instead)"
+#, gcc-internal-format
 msgid "typedef %qD is initialized (use __typeof__ instead)"
-msgstr "typedef '%D' bliver tildelt en værdi (benyt __typeof__ i stedet)"
+msgstr "typedef %qD bliver tildelt en værdi (benyt __typeof__ i stedet)"
 
 #: c/c-decl.c:4484
-#, fuzzy, gcc-internal-format
-#| msgid "function `%#D' is initialized like a variable"
+#, gcc-internal-format
 msgid "function %qD is initialized like a variable"
-msgstr "funktionen '%#D' bliver tildelt en startværdi som en variabel"
+msgstr "funktionen %qD bliver tildelt en startværdi som en variabel"
 
 #. DECL_INITIAL in a PARM_DECL is really DECL_ARG_TYPE.
 #: c/c-decl.c:4490
-#, fuzzy, gcc-internal-format
-#| msgid "parameter `%s' is initialized"
+#, gcc-internal-format
 msgid "parameter %qD is initialized"
-msgstr "parameteren '%s' bliver tildelt en startværdi"
+msgstr "parameteren %qD bliver tildelt en startværdi"
 
 #. Although C99 is unclear about whether incomplete arrays
 #. of VLAs themselves count as VLAs, it does not make
@@ -31225,15 +31132,14 @@ msgid "variable-sized object may not be initialized"
 msgstr "et objekt af variabel størrelse må ikke tildeles en startværdi"
 
 #: c/c-decl.c:4515
-#, fuzzy, gcc-internal-format
-#| msgid "variable `%#D' has initializer but incomplete type"
+#, gcc-internal-format
 msgid "variable %qD has initializer but incomplete type"
-msgstr "variablen '%#D' bliver tildelt en startværdi, men er af en ufuldstændig type"
+msgstr "variablen %qD bliver tildelt en startværdi, men er af en ufuldstændig type"
 
 #: c/c-decl.c:4604 cp/decl.c:4706 cp/decl.c:13369
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "inline function %q+D given attribute noinline"
-msgstr "inline funktion '%s' givet egenskaben noinline"
+msgstr "inline funktion %q+D givet egenskaben noinline"
 
 #: c/c-decl.c:4655
 #, fuzzy, gcc-internal-format
@@ -31242,10 +31148,9 @@ msgid "uninitialized const member in %qT is invalid in C++"
 msgstr "konstant medlem '%D' uden startværdi"
 
 #: c/c-decl.c:4657
-#, fuzzy, gcc-internal-format
-#| msgid "`%D' will be initialized after"
+#, gcc-internal-format
 msgid "%qD should be initialized"
-msgstr "'%D' vil blive klargjort efter"
+msgstr "%qD skal tildeles en startværdi"
 
 #: c/c-decl.c:4735
 #, fuzzy, gcc-internal-format
@@ -31615,34 +31520,29 @@ msgid "array type has incomplete element type"
 msgstr "tabeltypen er af en ufuldstændig type"
 
 #: c/c-decl.c:6059
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' declared as function returning a function"
+#, gcc-internal-format
 msgid "%qE declared as function returning a function"
-msgstr "'%s' er erklæret som en funktion der returnerer en funktion"
+msgstr "%qE er erklæret som en funktion, der returnerer en funktion"
 
 #: c/c-decl.c:6062
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' declared as function returning a function"
+#, gcc-internal-format
 msgid "type name declared as function returning a function"
-msgstr "'%s' er erklæret som en funktion der returnerer en funktion"
+msgstr "'typenavn er erklæret som en funktion, der returnerer en funktion"
 
 #: c/c-decl.c:6069
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' declared as function returning an array"
+#, gcc-internal-format
 msgid "%qE declared as function returning an array"
-msgstr "'%s' er erklæret som en funktion der returnerer en tabel"
+msgstr "%qE er erklæret som en funktion, der returnerer en array"
 
 #: c/c-decl.c:6072
-#, fuzzy, gcc-internal-format
-#| msgid "`%s' declared as function returning an array"
+#, gcc-internal-format
 msgid "type name declared as function returning an array"
-msgstr "'%s' er erklæret som en funktion der returnerer en tabel"
+msgstr "typenavn er erklæret som en funktion, der returnerer en array"
 
 #: c/c-decl.c:6100
-#, fuzzy, gcc-internal-format
-#| msgid "invalid definition of qualified type `%T'"
+#, gcc-internal-format
 msgid "function definition has qualified void return type"
-msgstr "ugyldig definition af modificeret type '%T'"
+msgstr "funktiondefinition har kvalificeret void-returtype"
 
 #: c/c-decl.c:6103 cp/decl.c:9713
 #, gcc-internal-format
