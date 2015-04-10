@@ -1,3 +1,8 @@
+2015-04-19  Yvan Roux  <yvan.roux@linaro.org>
+
+	PR target/65648
+	* gcc.target/arm/pr65647-2.c: New.
+
 2015-04-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/65694
