@@ -16,6 +16,14 @@
 	(unlock_shared): Add Debug Mode assertion.
 	* testsuite/30_threads/shared_timed_mutex/try_lock/3.cc: New.
 
+	* include/std/shared_mutex (shared_timed_mutex): Only use
+	pthread_rwlock_t when the POSIX Timeouts option is supported.
+	* testsuite/30_threads/shared_lock/cons/5.cc: Remove
+	dg-require-gthreads-timed.
+	* testsuite/30_threads/shared_lock/cons/6.cc: Likewise.
+	* testsuite/30_threads/shared_lock/locking/3.cc: Likewise.
+	* testsuite/30_threads/shared_lock/locking/4.cc: Likewise.
+
 2015-04-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Update.

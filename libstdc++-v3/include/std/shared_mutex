@@ -57,7 +57,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// shared_timed_mutex
   class shared_timed_mutex
   {
-#ifdef _GLIBCXX_USE_PTHREAD_RWLOCK_T
+#if _GLIBCXX_USE_PTHREAD_RWLOCK_T && _GTHREAD_USE_MUTEX_TIMEDLOCK
     typedef chrono::system_clock	__clock_t;
 
 #ifdef PTHREAD_RWLOCK_INITIALIZER
@@ -116,7 +116,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return true;
     }
 
-#if _GTHREAD_USE_MUTEX_TIMEDLOCK
     template<typename _Rep, typename _Period>
       bool
       try_lock_for(const chrono::duration<_Rep, _Period>& __rel_time)
@@ -158,7 +157,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const auto __s_atime = __s_entry + __delta;
 	return try_lock_until(__s_atime);
       }
-#endif
 
     void
     unlock()
@@ -200,7 +198,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return true;
     }
 
-#if _GTHREAD_USE_MUTEX_TIMEDLOCK
     template<typename _Rep, typename _Period>
       bool
       try_lock_shared_for(const chrono::duration<_Rep, _Period>& __rel_time)
@@ -258,7 +255,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const auto __s_atime = __s_entry + __delta;
 	return try_lock_shared_until(__s_atime);
       }
-#endif
 
     void
     unlock_shared()
@@ -266,7 +262,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       unlock();
     }
 
-#else // ! _GLIBCXX_USE_PTHREAD_RWLOCK_T
+#else // ! (_GLIBCXX_USE_PTHREAD_RWLOCK_T && _GTHREAD_USE_MUTEX_TIMEDLOCK)
 
     // Must use the same clock as condition_variable
     typedef chrono::system_clock	__clock_t;
@@ -459,7 +455,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_gate1.notify_one();
 	}
     }
-#endif // ! _GLIBCXX_USE_PTHREAD_RWLOCK_T
+#endif // _GLIBCXX_USE_PTHREAD_RWLOCK_T && _GTHREAD_USE_MUTEX_TIMEDLOCK
   };
 #endif // _GLIBCXX_HAS_GTHREADS
 
