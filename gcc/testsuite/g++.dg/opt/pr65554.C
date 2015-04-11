@@ -48,7 +48,7 @@ namespace std
   {
     typedef _E *const_iterator;
     _E *_M_array;
-    unsigned long _M_len;
+    __SIZE_TYPE__ _M_len;
     const_iterator begin () { return _M_array; }
     const_iterator end () { return begin () + 1; }
   };

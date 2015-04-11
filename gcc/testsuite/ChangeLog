@@ -1,3 +1,8 @@
+2015-04-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/65554
+	* g++.dg/opt/pr65554.C: Use __SIZE_TYPE__ instead of unsigned long.
+
 2015-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/65671
