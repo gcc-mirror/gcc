@@ -1,5 +1,11 @@
 2015-04-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/30_threads/shared_lock/cons/5.cc: Remove
+	dg-require-gthreads-timed.
+	* testsuite/30_threads/shared_lock/cons/6.cc: Likewise.
+	* testsuite/30_threads/shared_lock/locking/3.cc: Likewise.
+	* testsuite/30_threads/shared_lock/locking/4.cc: Likewise.
+
 	Backport from mainline
 	2015-04-10  Jonathan Wakely  <jwakely@redhat.com>
 
