@@ -1,6 +1,13 @@
 2015-04-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2015-03-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65499
+	* include/std/chrono: Add using-directive for literals to std::chrono.
+	* testsuite/20_util/duration/literals/65499.cc: New.
+
+	Backport from mainline
 	2015-03-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/58038
