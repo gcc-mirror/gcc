@@ -1,6 +1,7 @@
 /* PR target/65671 */
 /* { dg-do assemble } */
 /* { dg-require-effective-target lp64 } */
+/* { dg-require-effective-target avx512vl } */
 /* { dg-options "-O2 -mavx512vl -ffixed-ymm16" } */
 
 #include <x86intrin.h>
