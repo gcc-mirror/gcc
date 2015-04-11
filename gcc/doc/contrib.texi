@@ -68,6 +68,9 @@ David Binderman tests weekly snapshots of GCC trunk against Fedora Rawhide
 for several architectures.
 
 @item
+Laurynas Biveinis for memory management work and DJGPP port fixes.
+
+@item
 Uros Bizjak for the implementation of x87 math built-in functions and
 for various middle end and i386 back end improvements and bug fixes.
 
