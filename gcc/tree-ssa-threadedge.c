@@ -1015,7 +1015,7 @@ static int max_threaded_paths;
 
 static void
 fsm_find_control_statement_thread_paths (tree expr,
-					 hash_set<gimple> *visited_phis,
+					 hash_set<basic_block> *visited_bbs,
 					 vec<basic_block, va_gc> *&path,
 					 bool seen_loop_phi)
 {
@@ -1034,7 +1034,7 @@ fsm_find_control_statement_thread_paths (tree expr,
     return;
 
   /* Avoid infinite recursion.  */
-  if (visited_phis->add (def_stmt))
+  if (visited_bbs->add (var_bb))
     return;
 
   gphi *phi = as_a <gphi *> (def_stmt);
@@ -1109,7 +1109,7 @@ fsm_find_control_statement_thread_paths (tree expr,
 	{
 	  vec_safe_push (path, bbi);
 	  /* Recursively follow SSA_NAMEs looking for a constant definition.  */
-	  fsm_find_control_statement_thread_paths (arg, visited_phis, path,
+	  fsm_find_control_statement_thread_paths (arg, visited_bbs, path,
 						   seen_loop_phi);
 
 	  path->pop ();
@@ -1391,13 +1391,13 @@ thread_through_normal_block (edge e,
       vec<basic_block, va_gc> *bb_path;
       vec_alloc (bb_path, n_basic_blocks_for_fn (cfun));
       vec_safe_push (bb_path, e->dest);
-      hash_set<gimple> *visited_phis = new hash_set<gimple>;
+      hash_set<basic_block> *visited_bbs = new hash_set<basic_block>;
 
       max_threaded_paths = PARAM_VALUE (PARAM_MAX_FSM_THREAD_PATHS);
-      fsm_find_control_statement_thread_paths (cond, visited_phis, bb_path,
+      fsm_find_control_statement_thread_paths (cond, visited_bbs, bb_path,
 					       false);
 
-      delete visited_phis;
+      delete visited_bbs;
       vec_free (bb_path);
     }
   return 0;

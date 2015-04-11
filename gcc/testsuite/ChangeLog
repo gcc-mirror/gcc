@@ -1,3 +1,8 @@
+2015-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65735
+	* gcc.c-torture/compile/pr65735.c: New test.
+
 2015-04-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/65554
