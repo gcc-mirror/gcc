@@ -1,8 +1,19 @@
+2015-04-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2015-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/58038
+	* include/std/thread (this_thread::sleep_for): Check for negative
+	durations.
+	(this_thread::sleep_until): Check for times in the past.
+	* testsuite/30_threads/this_thread/58038.cc: New.
+	* testsuite/30_threads/this_thread/60421.cc: New.
+
 2015-03-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
 	2015-03-02  Jonathan Wakely  <jwakely@redhat.com>
-
 	PR libstdc++/65279
 	* include/std/scoped_allocator (__inner_type_impl,
 	scoped_allocator_adaptor): Add defaulted copy assignment and move
