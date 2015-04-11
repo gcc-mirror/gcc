@@ -5649,7 +5649,7 @@ ix86_handle_cconv_attribute (tree *node, tree name,
   else if (is_attribute_p ("thiscall", name))
     {
       if (TREE_CODE (*node) != METHOD_TYPE && pedantic)
-	warning (OPT_Wattributes, "%qE attribute is used for none class-method",
+	warning (OPT_Wattributes, "%qE attribute is used for non-class method",
 	         name);
       if (lookup_attribute ("stdcall", TYPE_ATTRIBUTES (*node)))
 	{
@@ -37672,7 +37672,7 @@ ix86_expand_sse_comi_round (const struct builtin_description *d,
     }
   if (INTVAL (op2) < 0 || INTVAL (op2) >= 32)
     {
-      error ("incorect comparison mode");
+      error ("incorrect comparison mode");
       return const0_rtx;
     }
 
