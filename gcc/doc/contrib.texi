@@ -800,6 +800,9 @@ translation of the old @file{g77-0.5.16/f/DOC} file.
 Ken Rose for fixes to GCC's delay slot filling code.
 
 @item
+Ira Rosen for her contributions to the auto-vectorizer.
+
+@item
 Paul Rubin wrote most of the preprocessor.
 
 @item
