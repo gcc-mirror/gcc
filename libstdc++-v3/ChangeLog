@@ -1,6 +1,25 @@
 2015-04-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2015-04-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/shared_mutex (shared_timed_mutex): Add comments to
+	explain the logic in the non-pthread_rwlock_t version.
+	(_Mutex): Remove redundant type.
+	(_M_n_readers): Rename to _S_max_readers.
+	(_M_write_entered, _M_readers): New convenience functions.
+	(lock, lock_shared, try_lock_shared, unlock_shared): Use convenience
+	functions. Use predicates with condition variables. Simplify bitwise
+	operations.
+	(try_lock_for, try_shared_lock_for): Convert duration to time_point
+	and call try_lock_until or try_shared_lock_until respectively.
+	(try_lock_until, try_shared_lock_until): Wait on the condition
+	variables until the specified time passes.
+	(unlock): Add Debug Mode assertion.
+	(unlock_shared): Add Debug Mode assertion.
+	* testsuite/30_threads/shared_timed_mutex/try_lock/3.cc: New.
+
+	Backport from mainline
 	2015-03-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/65499
