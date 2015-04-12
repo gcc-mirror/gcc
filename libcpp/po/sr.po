@@ -1,13 +1,13 @@
 # Serbian translation of cpplib.
 # Copyright (C) 2014 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Мирослав Николић <miroslavnikolic@rocketmail.com>, 2012—2014.
+# Мирослав Николић <miroslavnikolic@rocketmail.com>, 2012—2014, 2015.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib-4.9-b20140202\n"
+"Project-Id-Version: cpplib-5.1-b20150208\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-02-02 16:02+0000\n"
-"PO-Revision-Date: 2014-02-24 08:51+0200\n"
+"PO-Revision-Date: 2015-04-12 10:37+0200\n"
 "Last-Translator: Мирослав Николић <miroslavnikolic@rocketmail.com>\n"
 "Language-Team: Serbian <(nothing)>\n"
 "Language: sr\n"
@@ -49,10 +49,8 @@ msgid "universal character names are only valid in C++ and C99"
 msgstr "називи свеопштег знака су једино исправни у Ц++ и Ц99"
 
 #: charset.c:1002
-#, fuzzy
-#| msgid "universal character names are only valid in C++ and C99"
 msgid "C99's universal character names are incompatible with C90"
-msgstr "називи свеопштег знака су једино исправни у Ц++ и Ц99"
+msgstr "називи свеопштег знака Ц99 нису сагласни са Ц90"
 
 #: charset.c:1005
 #, c-format
@@ -198,10 +196,8 @@ msgid "\"defined\" cannot be used as a macro name"
 msgstr "„defined“ не може бити коришћено као назив макроа"
 
 #: directives.c:573
-#, fuzzy
-#| msgid "\"defined\" cannot be used as a macro name"
 msgid "\"__has_include__\" cannot be used as a macro name"
-msgstr "„defined“ не може бити коришћено као назив макроа"
+msgstr "„__has_include__“ не може бити коришћено као назив макроа"
 
 #: directives.c:579
 #, c-format
@@ -431,10 +427,8 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "неисправан префикс „0b“ за покретну константу"
 
 #: expr.c:550
-#, fuzzy
-#| msgid "use of C99 hexadecimal floating constant"
 msgid "use of C++11 hexadecimal floating constant"
-msgstr "употреба Ц99 хексадецималне покретне константе"
+msgstr "употреба Ц+11 хексадецималне покретне константе"
 
 #: expr.c:553
 msgid "use of C99 hexadecimal floating constant"
@@ -481,16 +475,12 @@ msgid "imaginary constants are a GCC extension"
 msgstr "имагинарне константе су ГЦЦ проширења"
 
 #: expr.c:699
-#, fuzzy
-#| msgid "binary constants are a C++1y feature or GCC extension"
 msgid "binary constants are a C++14 feature or GCC extension"
-msgstr "бинарне константе су Ц++1у функције или ГЦЦ проширења"
+msgstr "бинарне константе су Ц++14 функције или ГЦЦ проширења"
 
 #: expr.c:701
-#, fuzzy
-#| msgid "imaginary constants are a GCC extension"
 msgid "binary constants are a GCC extension"
-msgstr "имагинарне константе су ГЦЦ проширења"
+msgstr "бинарне константе су ГЦЦ проширења"
 
 #: expr.c:796
 msgid "integer constant is too large for its type"
@@ -591,16 +581,12 @@ msgid "division by zero in #if"
 msgstr "дељење нулом у „#if“"
 
 #: expr.c:2123
-#, fuzzy
-#| msgid "operator \"defined\" requires an identifier"
 msgid "operator \"__has_include__\" requires a header string"
-msgstr "оператор „defined“ захтева одредника"
+msgstr "оператор „__has_include__“ захтева ниску заглавља"
 
 #: expr.c:2139
-#, fuzzy
-#| msgid "missing ')' after \"defined\""
 msgid "missing ')' after \"__has_include__\""
-msgstr "недостаје ( након „defined“"
+msgstr "недостаје ) након „__has_include__“"
 
 #: files.c:511
 msgid "NULL directory in find_file"
@@ -719,10 +705,8 @@ msgid "attempt to use poisoned \"%s\""
 msgstr "покушај коришћења отрованог „%s“"
 
 #: lex.c:1274 lex.c:1363
-#, fuzzy
-#| msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
-msgstr "„__VA_ARGS__“ може само да се појави у ширењу вариадик макроа Ц99"
+msgstr "„__VA_ARGS__“ може само да се појави у ширењу вариадик макроа Ц++11"
 
 #: lex.c:1278 lex.c:1367
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
@@ -772,10 +756,8 @@ msgid "(this will be reported only once per input file)"
 msgstr "(ово ће бити извештено само једном по улазној датотеци)"
 
 #: lex.c:2444
-#, fuzzy
-#| msgid "C++ style comments are not allowed in ISO C90"
 msgid "C++ style comments are incompatible with C90"
-msgstr "Напомене Ц++ стила нису допуштене у ИСО Ц90"
+msgstr "Напомене Ц++ стила нису сагласне са Ц90"
 
 #: lex.c:2475
 msgid "multi-line comment"
@@ -824,13 +806,11 @@ msgstr "налепљивање „%s“ и „%s“ не даје исправа
 
 #: macro.c:767
 msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
-msgstr ""
+msgstr "ИСО Ц++11 захтева барем један аргумент за „...“ у вариадик макроу"
 
 #: macro.c:771
-#, fuzzy
-#| msgid "ISO C99 requires rest arguments to be used"
 msgid "ISO C99 requires at least one argument for the \"...\" in a variadic macro"
-msgstr "ИСО Ц99 захтева да остали аргументи буду коришћени"
+msgstr "ИСО Ц99 захтева барем један аргумент за „...“ у вариадик макроу"
 
 #: macro.c:778
 #, c-format
@@ -853,16 +833,14 @@ msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "макро налик функцији „%s“ мора бити коришћен са аргументима у уобичајеном Ц-у"
 
 #: macro.c:1797
-#, fuzzy, c-format
-#| msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
+#, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
-msgstr "призивајући макро %s аргумент %d: празни аргументи макроа нису одређени у ИСО Ц90 и ИСО Ц++98"
+msgstr "призивајући макро %s аргумент %d: празни аргументи макроа нису одређени у ИСО Ц++98"
 
 #: macro.c:1805 macro.c:1814
-#, fuzzy, c-format
-#| msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90 and ISO C++98"
+#, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
-msgstr "призивајући макро %s аргумент %d: празни аргументи макроа нису одређени у ИСО Ц90 и ИСО Ц++98"
+msgstr "призивајући макро %s аргумент %d: празни аргументи макроа нису одређени у ИСО Ц90"
 
 #: macro.c:2775
 #, c-format
@@ -883,20 +861,16 @@ msgid "parameter name missing"
 msgstr "недостаје назив параметра"
 
 #: macro.c:2871
-#, fuzzy
-#| msgid "anonymous variadic macros were introduced in C99"
 msgid "anonymous variadic macros were introduced in C++11"
-msgstr "безимени вариадик макрои су уведени у Ц99"
+msgstr "безимени вариадик макрои су уведени у Ц++11"
 
 #: macro.c:2875 macro.c:2880
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "безимени вариадик макрои су уведени у Ц99"
 
 #: macro.c:2887
-#, fuzzy
-#| msgid "ISO C does not permit named variadic macros"
 msgid "ISO C++ does not permit named variadic macros"
-msgstr "ИСО Ц не дозвољава именоване вариадик макрое"
+msgstr "ИСО Ц++ не дозвољава именоване вариадик макрое"
 
 #: macro.c:2890
 msgid "ISO C does not permit named variadic macros"
@@ -911,10 +885,8 @@ msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "„##“ не може да се појави у или на крају макро ширења"
 
 #: macro.c:2988
-#, fuzzy
-#| msgid "ISO C99 requires whitespace after the macro name"
 msgid "ISO C++11 requires whitespace after the macro name"
-msgstr "ИСО Ц99 захтева празнине након назива макроа"
+msgstr "ИСО Ц++11 захтева празнине након назива макроа"
 
 #: macro.c:2991
 msgid "ISO C99 requires whitespace after the macro name"
