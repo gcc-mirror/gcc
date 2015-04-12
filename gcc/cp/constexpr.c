@@ -2929,6 +2929,7 @@ cxx_eval_pointer_plus_expression (const constexpr_ctx *ctx, tree t,
 				  bool lval, bool *non_constant_p,
 				  bool *overflow_p)
 {
+  tree orig_type = TREE_TYPE (t);
   tree op00 = TREE_OPERAND (t, 0);
   tree op01 = TREE_OPERAND (t, 1);
   location_t loc = EXPR_LOCATION (t);
@@ -2945,7 +2946,9 @@ cxx_eval_pointer_plus_expression (const constexpr_ctx *ctx, tree t,
   /* &A[i] p+ j => &A[i + j] */
   if (TREE_CODE (op00) == ARRAY_REF
       && TREE_CODE (TREE_OPERAND (op00, 1)) == INTEGER_CST
-      && TREE_CODE (op01) == INTEGER_CST)
+      && TREE_CODE (op01) == INTEGER_CST
+      && TYPE_SIZE_UNIT (TREE_TYPE (op00))
+      && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (op00))) == INTEGER_CST)
     {
       tree type = TREE_TYPE (op00);
       t = fold_convert_loc (loc, ssizetype, TREE_OPERAND (op00, 1));
@@ -2953,15 +2956,21 @@ cxx_eval_pointer_plus_expression (const constexpr_ctx *ctx, tree t,
       /* Don't fold an out-of-bound access.  */
       if (!tree_int_cst_le (t, nelts))
 	return NULL_TREE;
+      op01 = cp_fold_convert (ssizetype, op01);
+      /* Don't fold if op01 can't be divided exactly by TYPE_SIZE_UNIT.
+	 constexpr int A[1]; ... (char *)&A[0] + 1 */
+      if (!integer_zerop (fold_build2_loc (loc, TRUNC_MOD_EXPR, sizetype,
+					   op01, TYPE_SIZE_UNIT (type))))
+	return NULL_TREE;
       /* Make sure to treat the second operand of POINTER_PLUS_EXPR
 	 as signed.  */
-      op01 = fold_build2_loc (loc, EXACT_DIV_EXPR, ssizetype,
-			      cp_fold_convert (ssizetype, op01),
+      op01 = fold_build2_loc (loc, EXACT_DIV_EXPR, ssizetype, op01,
 			      TYPE_SIZE_UNIT (type));
       t = size_binop_loc (loc, PLUS_EXPR, op01, t);
       t = build4_loc (loc, ARRAY_REF, type, TREE_OPERAND (op00, 0),
 		      t, NULL_TREE, NULL_TREE);
       t = cp_build_addr_expr (t, tf_warning_or_error);
+      t = cp_fold_convert (orig_type, t);
       return cxx_eval_constant_expression (ctx, t, lval, non_constant_p,
 					   overflow_p);
     }

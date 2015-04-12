@@ -1,3 +1,10 @@
+2015-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/65736
+	* constexpr.c (cxx_eval_pointer_plus_expression): Don't fold for VLAs,
+	don't fold if op01 isn't divisible by TYPE_SIZE_UNIT.  Convert
+	the expression to the original type at the end.
+
 2015-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/65690
