@@ -1,4 +1,14 @@
 2015-04-11 Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65743
+	* ipa-inline-transform.c (speculation_removed): Remove static var.
+	(check_speculations): New function.
+	(clone_inlined_nodes): Do not check spculations.
+	(inline_call): Call check_speculations.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Do not
+	consider non-invariants.
+
+2015-04-11 Jan Hubicka  <hubicka@ucw.cz>
 	   Martin Liska  <mliska@suse.cz>
 
 	PR ipa/65722
