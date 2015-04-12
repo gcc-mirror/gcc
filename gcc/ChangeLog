@@ -1,3 +1,8 @@
+2015-04-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Don't set
+	-fprefetch-loop-arrays if optimizing for size.
+
 2015-04-12  Jan Hubicka  <hubicka@ucw.cz>
 	    Gerald Pfeifer  <gerald@pfeifer.com>
 

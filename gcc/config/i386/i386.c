@@ -4168,6 +4168,7 @@ ix86_option_override_internal (bool main_args_p,
   if (opts->x_flag_prefetch_loop_arrays < 0
       && HAVE_prefetch
       && (opts->x_optimize >= 3 || opts->x_flag_profile_use)
+      && !opts->x_optimize_size
       && TARGET_SOFTWARE_PREFETCHING_BENEFICIAL)
     opts->x_flag_prefetch_loop_arrays = 1;
 
