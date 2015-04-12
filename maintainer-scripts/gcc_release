@@ -9,7 +9,7 @@
 # Contents:
 #   Script to create a GCC release.
 #
-# Copyright (c) 2001-2014 Free Software Foundation.
+# Copyright (c) 2001-2015 Free Software Foundation.
 #
 # This file is part of GCC.
 #
@@ -130,8 +130,20 @@ EOF
 
     # Update gcc/DEV-PHASE.
 
-    [ `cat ${SOURCE_DIRECTORY}/gcc/BASE-VER` = ${RELEASE} ] || \
-    error "Release number ${RELEASE} does not match BASE-VER"
+    if [ `cat ${SOURCE_DIRECTORY}/gcc/BASE-VER` = ${RELEASE} ]; then
+      [ ${RELEASE_MAJOR} -lt 5 ] && \
+	error "Release number ${RELEASE} does not match BASE-VER"
+      if [ `cat ${SOURCE_DIRECTORY}/gcc/BASE-VER` \
+	   = ${RELEASE_MAJOR}.`expr ${RELEASE_MINOR} - 1`.1 \
+	   -a x${RELEASE_REVISION} = x0 ]; then
+	(changedir ${SOURCE_DIRECTORY}/gcc && \
+	 echo ${RELEASE} > BASE-VER && \
+	 ${SVN} -q ci -m 'Bump release' BASE-VER) || \
+	error "Could not update BASE-VER"
+      else
+	error "Release number ${RELEASE} does not match BASE-VER"
+      fi
+    fi
     (changedir ${SOURCE_DIRECTORY}/gcc && \
      : > DEV-PHASE && \
      ${SVN} -q ci -m 'Mark as release' DEV-PHASE) || \
@@ -605,7 +617,11 @@ if [ $SNAPSHOT -eq 0 ]; then
 
   # Compute the name of the branch, which is based solely on the major
   # and minor release numbers.
-  SVNBRANCH="branches/gcc-${RELEASE_MAJOR}_${RELEASE_MINOR}-branch"
+  if [ ${RELEASE_MAJOR} -ge 5 ]; then
+    SVNBRANCH="branches/gcc-${RELEASE_MAJOR}-branch"
+  else
+    SVNBRANCH="branches/gcc-${RELEASE_MAJOR}_${RELEASE_MINOR}-branch"
+  fi
 
   # If this is not a final release, set various parameters accordingly.
   if [ ${FINAL} -ne 1 ]; then

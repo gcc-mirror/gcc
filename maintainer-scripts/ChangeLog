@@ -1,5 +1,10 @@
 2015-04-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc_release: For RELEASE_MAJOR 5+ only use the major
+	number in branch name.  When doing final release of 5+,
+	if BASE-VER doesn't match release, but is *.*.1 for the
+	one smaller minor version, bump BASE-VER.
+
 	* crontab: Enable snapshots from gcc-5-branch.
 
 2015-04-07  Gerald Pfeifer  <gerald@pfeifer.com>
