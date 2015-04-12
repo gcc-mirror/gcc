@@ -628,7 +628,7 @@ sem_item::update_hash_by_local_refs (hash_map <symtab_node *,
       ref = node->iterate_reference (j, ref);
       sem_item **result = m_symtab_node_map.get (ref->referring);
       if (result)
-	state.add_int (ref->referring->type);
+	state.merge_hash ((*result)->hash);
     }
 
   if (type == FUNC)
