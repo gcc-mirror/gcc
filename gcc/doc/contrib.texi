@@ -509,6 +509,10 @@ Bruce Korb for the new and improved fixincludes code.
 Benjamin Kosnik for his G++ work and for leading the libstdc++-v3 effort.
 
 @item
+Maxim Kuvyrkov for contributions to the instruction scheduler, the Android 
+and m68k/Coldfire ports, and optimizations.
+
+@item
 Charles LaBrec contributed the support for the Integrated Solutions
 68020 system.
 
