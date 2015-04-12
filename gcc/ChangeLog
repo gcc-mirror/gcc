@@ -1,3 +1,12 @@
+2015-04-11 Jan Hubicka  <hubicka@ucw.cz>
+	   Martin Liska  <mliska@suse.cz>
+
+	PR ipa/65722
+	* ipa-icf.c (sem_item::compare_cgraph_references): function and
+	variable can not match.
+	(sem_item::update_hash_by_addr_refs): Fix handling of virtual tables.
+	(sem_variable::equals_wpa): Fix checking of DECL_FINAL_P patch.
+
 2015-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65735

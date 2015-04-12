@@ -1,3 +1,9 @@
+2015-04-11 Jan Hubicka  <hubicka@ucw.cz>
+	   Martin Liska  <mliska@suse.cz>
+
+	PR ipa/65722
+	* g++.dg/ipa/pr65722.C: New testcase.
+
 2015-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65735
