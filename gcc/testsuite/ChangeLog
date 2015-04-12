@@ -1,5 +1,10 @@
-2015-04-11 Jan Hubicka  <hubicka@ucw.cz>
-	   Martin Liska  <mliska@suse.cz>
+2015-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/65736
+	* g++.dg/cpp0x/pr65736.C: New test.
+
+2015-04-11  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Liska  <mliska@suse.cz>
 
 	PR ipa/65722
 	* g++.dg/ipa/pr65722.C: New testcase.

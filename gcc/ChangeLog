@@ -2,7 +2,7 @@
 
 	* doc/contrib.texi (Contributors): Add Maxim Kuvyrkov.
 
-2015-04-11 Jan Hubicka  <hubicka@ucw.cz>
+2015-04-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65743
 	* ipa-inline-transform.c (speculation_removed): Remove static var.
@@ -12,8 +12,8 @@
 	* ipa-prop.c (ipa_make_edge_direct_to_target): Do not
 	consider non-invariants.
 
-2015-04-11 Jan Hubicka  <hubicka@ucw.cz>
-	   Martin Liska  <mliska@suse.cz>
+2015-04-11  Jan Hubicka  <hubicka@ucw.cz>
+	    Martin Liska  <mliska@suse.cz>
 
 	PR ipa/65722
 	* ipa-icf.c (sem_item::compare_cgraph_references): function and
