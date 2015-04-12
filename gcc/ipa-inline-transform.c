@@ -64,7 +64,6 @@ along with GCC; see the file COPYING3.  If not see
 
 int ncalls_inlined;
 int nfunctions_inlined;
-bool speculation_removed;
 
 /* Scale frequency of NODE edges by FREQ_SCALE.  */
 
@@ -256,12 +255,29 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
       next = e->next_callee;
       if (!e->inline_failed)
         clone_inlined_nodes (e, duplicate, update_original, overall_size, freq_scale);
+    }
+}
+
+/* Check all speculations in N and resolve them if they seems useless. */
+
+static bool
+check_speculations (cgraph_node *n)
+{
+  bool speculation_removed = false;
+  cgraph_edge *next;
+
+  for (cgraph_edge *e = n->callees; e; e = next)
+    {
+      next = e->next_callee;
       if (e->speculative && !speculation_useful_p (e, true))
 	{
 	  e->resolve_speculation (NULL);
 	  speculation_removed = true;
 	}
+      else if (!e->inline_failed)
+	speculation_removed |= check_speculations (e->callee);
     }
+  return speculation_removed;
 }
 
 /* Mark all call graph edges coming out of NODE and all nodes that have been
@@ -310,7 +326,6 @@ inline_call (struct cgraph_edge *e, bool update_original,
   bool predicated = inline_edge_summary (e)->predicate != NULL;
 #endif
 
-  speculation_removed = false;
   /* Don't inline inlined edges.  */
   gcc_assert (e->inline_failed);
   /* Don't even think of inlining inline clone.  */
@@ -360,6 +375,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
     mark_all_inlined_calls_cdtor (e->callee);
   if (opt_for_fn (e->caller->decl, optimize))
     new_edges_found = ipa_propagate_indirect_call_infos (curr, new_edges);
+  check_speculations (e->callee);
   if (update_overall_summary)
    inline_update_overall_summary (to);
   new_size = inline_summaries->get (to)->size;
