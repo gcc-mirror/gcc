@@ -1,5 +1,8 @@
 2015-04-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* BASE-VER: Set to 5.0.1.
+	* DEV-PHASE: Set to prerelease.
+
 	PR tree-optimization/65747
 	* ipa-icf-gimple.c (func_checker::compare_operand): Use compare_operand
 	rather than compare_ssa_name for OBJ_TYPE_REF_OBJECT.
