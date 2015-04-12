@@ -521,8 +521,8 @@ func_checker::compare_operand (tree t1, tree t2)
 	    if (!types_same_for_odr (obj_type_ref_class (t1),
 				     obj_type_ref_class (t2)))
 	      return return_false_with_msg ("OBJ_TYPE_REF OTR type mismatch");
-	    if (!compare_ssa_name (OBJ_TYPE_REF_OBJECT (t1),
-				   OBJ_TYPE_REF_OBJECT (t2)))
+	    if (!compare_operand (OBJ_TYPE_REF_OBJECT (t1),
+				  OBJ_TYPE_REF_OBJECT (t2)))
 	      return return_false_with_msg ("OBJ_TYPE_REF object mismatch");
 	  }
 
