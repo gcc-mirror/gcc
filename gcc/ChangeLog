@@ -1,5 +1,10 @@
 2015-04-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/invoke.texi (-Wmemset-transposed-args): Break a long
+	sentence.  Improve grammar.
+
+2015-04-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
 	* doc/contrib.texi (Contributors): Add Maxim Kuvyrkov.
 
 2015-04-11  Jan Hubicka  <hubicka@ucw.cz>

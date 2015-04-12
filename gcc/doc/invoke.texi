@@ -4909,10 +4909,10 @@ Warn for suspicious calls to the @code{memset} built-in function, if the
 second argument is not zero and the third argument is zero.  This warns e.g.@
 about @code{memset (buf, sizeof buf, 0)} where most probably
 @code{memset (buf, 0, sizeof buf)} was meant instead.  The diagnostics
-is only emitted if the third argument is literal zero, if it is some expression
-that is folded to zero, or e.g. a cast of zero to some type etc., it
-is far less likely that user has mistakenly exchanged the arguments and
-no warning is emitted.  This warning is enabled by @option{-Wall}.
+is only emitted if the third argument is literal zero.  If it is some
+expression that is folded to zero, a cast of zero to some type, etc., 
+it is far less likely that the user has mistakenly exchanged the arguments 
+and no warning is emitted.  This warning is enabled by @option{-Wall}.
 
 @item -Waddress
 @opindex Waddress
