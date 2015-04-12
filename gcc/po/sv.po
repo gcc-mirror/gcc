@@ -16,7 +16,7 @@ msgstr ""
 "Project-Id-Version: gcc 5.1-b20150208\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-02-02 16:02+0000\n"
-"PO-Revision-Date: 2015-03-01 20:31+0100\n"
+"PO-Revision-Date: 2015-04-12 17:17+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -24364,7 +24364,7 @@ msgstr "attributet %qE har ingen effekt"
 #: config/avr/avr.c:9001
 #, gcc-internal-format
 msgid "both %s and %qE attribute provide address"
-msgstr ""
+msgstr "både attributet %s och %qE anger en adress"
 
 #: config/avr/avr.c:9011
 #, fuzzy, gcc-internal-format
@@ -25436,7 +25436,7 @@ msgstr "argumenttyp %qT som inte stödjs till till simd\n"
 #: config/i386/i386.c:51592
 #, gcc-internal-format
 msgid "Pointer Checker requires MPX support on this target. Use -mmpx options to enable MPX."
-msgstr ""
+msgstr "Pekarkontrolleraren kräver stöd för MPX på detta mål.  Använd flaggan -mmpx för att aktivera MPX."
 
 #: config/i386/intelmic-mkoffload.c:230 config/i386/intelmic-mkoffload.c:290
 #: config/i386/intelmic-mkoffload.c:327 config/nvptx/mkoffload.c:898
@@ -26293,12 +26293,12 @@ msgstr "attributet %qE tillåter endast en heltalskonstant som argument"
 #: config/msp430/msp430.c:1479
 #, gcc-internal-format
 msgid "__delay_cycles only takes non-negative cycle counts."
-msgstr ""
+msgstr "__delay_cycles tar endast ickenegativa antal cykler."
 
 #: config/msp430/msp430.c:1499
 #, gcc-internal-format
 msgid "__delay_cycles is limited to 32-bit loop counts."
-msgstr ""
+msgstr "__delay_cycles är begränsad till 32-bitars slingräknare."
 
 #: config/msp430/msp430.c:1569
 #, gcc-internal-format
@@ -26505,7 +26505,7 @@ msgstr "Kan inte öppna intermediär utfil %s\n"
 #: config/nvptx/nvptx.c:1287
 #, gcc-internal-format
 msgid "cannot emit unaligned pointers in ptx assembly"
-msgstr ""
+msgstr "kan inte skicka ut ojusterade pekare i ptx-assembler"
 
 #: config/nvptx/nvptx.c:2007
 #, fuzzy, gcc-internal-format
@@ -26632,12 +26632,12 @@ msgstr "skräp vid slutet av #pragma longcall"
 #: config/rs6000/rs6000-c.c:4367
 #, gcc-internal-format
 msgid "vec_lvsl is deprecated for little endian; use assignment for unaligned loads and stores"
-msgstr ""
+msgstr "vec_lvsl bör undvikas för omvänd byteordning; använd tilldelning för ojusterade laddningar och lagringar"
 
 #: config/rs6000/rs6000-c.c:4370
 #, gcc-internal-format
 msgid "vec_lvsr is deprecated for little endian; use assignment for unaligned loads and stores"
-msgstr ""
+msgstr "vec_lvsr bör undvikas för omvänd byteordning; använd tilldelning för ojusterade laddningar och lagringar"
 
 #: config/rs6000/rs6000-c.c:4386
 #, gcc-internal-format, gfc-internal-format
@@ -26774,7 +26774,7 @@ msgstr "-mpower8-vector behöver -mvsx"
 #: config/rs6000/rs6000.c:3588
 #, gcc-internal-format
 msgid "-mupper-regs-sf requires -mpower8-vector"
-msgstr ""
+msgstr "-mupper-regs-sf behöver -mpower8-vector"
 
 #: config/rs6000/rs6000.c:3693
 #, gcc-internal-format, gfc-internal-format
@@ -27888,7 +27888,7 @@ msgstr "-fexcess-precision=standard för Ada"
 #: ada/gcc-interface/trans.c:1523
 #, gcc-internal-format
 msgid "subprogram %q+F not marked Inline_Always"
-msgstr ""
+msgstr "underprogrammet %q+F är inte markerat Inline_Always"
 
 #: ada/gcc-interface/trans.c:1524 ada/gcc-interface/trans.c:1530
 #, fuzzy, gcc-internal-format
@@ -27899,7 +27899,7 @@ msgstr "mallparametrar kan inte vara vänner"
 #: ada/gcc-interface/trans.c:1528
 #, gcc-internal-format
 msgid "subprogram %q+F not marked Inline"
-msgstr ""
+msgstr "underprogrammet %q+F är inte markerat Inline"
 
 #: ada/gcc-interface/utils.c:3607
 #, gcc-internal-format
@@ -30021,7 +30021,7 @@ msgstr "föreslår klamrar runt tom kropp i en %<else%>-sats"
 #: c/c-parser.c:5258
 #, gcc-internal-format
 msgid "if statement cannot contain %<Cilk_spawn%>"
-msgstr ""
+msgstr "if-satser kan inte innehålla %<Cilk_spawn%>"
 
 #: c/c-parser.c:5387
 #, gcc-internal-format
@@ -30162,7 +30162,7 @@ msgstr "ISO C stödjer inte typen %<__int128%>"
 #: c/c-parser.c:7239
 #, gcc-internal-format
 msgid "ISO C does not support %<__PRETTY_FUNCTION__%> predefined identifier"
-msgstr ""
+msgstr "ISO C stödjer inte den fördefinierade identifieraren %<__PRETTY_FUNCTION__%>"
 
 #: c/c-parser.c:7247
 #, fuzzy, gcc-internal-format
@@ -30246,7 +30246,7 @@ msgstr "ISO C90 förbjuder sammansatta literaler"
 #: c/c-parser.c:7889 cp/parser.c:6315
 #, gcc-internal-format
 msgid "%<memset%> used with constant zero length parameter; this could be due to transposed parameters"
-msgstr ""
+msgstr "%<memset%> använd med konstant parameter med längd noll; detta kan bero på omkastade parametrar"
 
 #: c/c-parser.c:8236
 #, gcc-internal-format
@@ -30561,7 +30561,7 @@ msgstr "ogiltigt #pragma %s"
 #: c/c-parser.c:12150 cp/parser.c:31608
 #, gcc-internal-format
 msgid "%<#pragma acc enter data%> has no data movement clause"
-msgstr ""
+msgstr "%<#pragma acc enter data%> har ingen dataflyttningsklausul"
 
 #: c/c-parser.c:12277 cp/parser.c:31747
 #, fuzzy, gcc-internal-format
@@ -30988,7 +30988,7 @@ msgstr "uppräkningskonstant definierad här"
 #: c/c-typeck.c:2786 cp/typeck.c:1641
 #, gcc-internal-format
 msgid "%<sizeof%> on array function parameter %qE will return size of %qT"
-msgstr ""
+msgstr "%<sizeof%> på vektorfunktionsparametern %qE kommer returnera storleken på %qT"
 
 #: c/c-typeck.c:2935
 #, gcc-internal-format
@@ -31765,7 +31765,7 @@ msgstr "överflödiga element i postinitierare"
 #: c/c-typeck.c:8757
 #, gcc-internal-format
 msgid "positional initialization of field in %<struct%> declared with %<designated_init%> attribute"
-msgstr ""
+msgstr "positionsinitiering av fält i %<struct%> deklarerad med attributet %<designated_init%>"
 
 #: c/c-typeck.c:8828
 #, gcc-internal-format
@@ -31846,7 +31846,7 @@ msgstr "switch-argument är inte ett heltal"
 #: c/c-typeck.c:9579
 #, gcc-internal-format
 msgid "switch condition has boolean value"
-msgstr ""
+msgstr "switch-villkor har booleskt värde"
 
 #: c/c-typeck.c:9585
 #, gcc-internal-format
@@ -32445,7 +32445,7 @@ msgstr "operander till ?: har olika typer %qT och %qT"
 #: cp/call.c:4826
 #, gcc-internal-format
 msgid "  and each type can be converted to the other"
-msgstr ""
+msgstr "  och båda typerna kan konverteras till den andra"
 
 #: cp/call.c:5027
 #, gcc-internal-format
@@ -32603,7 +32603,7 @@ msgstr "det går inte att binda rvalue %qE till %qT"
 #: cp/call.c:6619 cp/cvt.c:1734
 #, gcc-internal-format
 msgid "scoped enum %qT passed through ... as %qT before -fabi-version=6, %qT after"
-msgstr ""
+msgstr "enum %qT med räckvidd skickad vidare … som %qT före -fabi-version=6, %qT efter"
 
 #: cp/call.c:6660
 #, fuzzy, gcc-internal-format
@@ -33370,7 +33370,7 @@ msgstr "beräkning av constexpr överskrider maxvärdet på %d (använd -fconste
 #: cp/constexpr.c:1404
 #, gcc-internal-format
 msgid "constexpr call flows off the end of the function"
-msgstr ""
+msgstr "constexpr-anrop flödar förbi slutet på funktionen"
 
 #: cp/constexpr.c:1491
 #, gcc-internal-format
@@ -33386,7 +33386,7 @@ msgstr "höger operand av kommauttryck har ingen effekt"
 #: cp/constexpr.c:1538
 #, gcc-internal-format
 msgid "right operand of shift expression %q+E is >= than the precision of the left operand"
-msgstr ""
+msgstr "högra operanden av skiftuttrycket %q+E är ≥ precisionen på den vänstra operanden"
 
 #: cp/constexpr.c:1555
 #, fuzzy, gcc-internal-format
@@ -35970,7 +35970,7 @@ msgstr "%qD får inte deklareras som statisk"
 #: cp/decl.c:11772
 #, gcc-internal-format
 msgid "%qD is a usual (non-placement) deallocation function in C++14 (or with -fsized-deallocation)"
-msgstr ""
+msgstr "%qD är som en vanlig (icke placerande) avallokeringsfunktion i C++14 (eller med -fsized-deallocation)"
 
 #: cp/decl.c:11799
 #, gcc-internal-format
@@ -36570,7 +36570,7 @@ msgstr "typen %qT utan någon länkklass använd för att deklarera funktionen %
 #: cp/decl2.c:4353 cp/decl2.c:4356
 #, gcc-internal-format
 msgid "the program should also define %qD"
-msgstr ""
+msgstr "programmet borde även definiera %qD"
 
 #: cp/decl2.c:4691
 #, gcc-internal-format
@@ -38481,12 +38481,12 @@ msgstr "att blanda deklarationer och funktionsdefinitioner är förbjudet"
 #: cp/parser.c:11691
 #, gcc-internal-format
 msgid "initializer in range-based %<for%> loop"
-msgstr ""
+msgstr "initierare i intervallbaserad %<for%>-slinga"
 
 #: cp/parser.c:11694
 #, gcc-internal-format
 msgid "multiple declarations in range-based %<for%> loop"
-msgstr ""
+msgstr "flera deklarationer i intervallbaserad %<for%>-slinga"
 
 #: cp/parser.c:11830
 #, gcc-internal-format
@@ -39098,7 +39098,7 @@ msgstr "klassnyckel förväntades"
 #: cp/parser.c:20589
 #, gcc-internal-format
 msgid "ISO C++ forbids typename key in template template parameter; use -std=c++1z or -std=gnu++1z"
-msgstr ""
+msgstr "ISO C++ förbjuder nyckelordet typename i mall-mall-parameter; använd -std=c++1z eeller -std=gnu++1z"
 
 #: cp/parser.c:20593
 #, fuzzy, gcc-internal-format
@@ -39195,7 +39195,7 @@ msgstr "en identifierare förväntades som attributnamn"
 #: cp/parser.c:22426
 #, gcc-internal-format
 msgid "%<deprecated%> is a C++14 feature; use %<gnu::deprecated%>"
-msgstr ""
+msgstr "%<deprecated%> är en funktion i C++14; använd %<gnu::deprecated%>"
 
 #: cp/parser.c:23093
 #, gcc-internal-format
@@ -39564,7 +39564,7 @@ msgstr "initiering i parenteser är inte tillåtet i en for-slinga"
 #: cp/parser.c:30329
 #, gcc-internal-format
 msgid "%<_Cilk_for%> allows expression instead of declaration only in C, not in C++"
-msgstr ""
+msgstr "%<_Cilk_for%> tillåter ett uttryck istället för en deklaration endast i C, inte i C++"
 
 #: cp/parser.c:30502 cp/pt.c:13664
 #, gcc-internal-format
@@ -40433,7 +40433,7 @@ msgstr "pack-expansionsargument för icke-pack-parametern %qD till aliasmall %qD
 #: cp/pt.c:7125
 #, gcc-internal-format
 msgid "so any instantiation with a non-empty parameter pack would be ill-formed"
-msgstr ""
+msgstr "så varje instantiering med ett icke-tomt parameterpaket vore felformulerad"
 
 #: cp/pt.c:7428
 #, gcc-internal-format
@@ -40787,12 +40787,12 @@ msgstr "härledning från klammeromgiven initierarlista kräver #include <initia
 #: cp/pt.c:22176
 #, gcc-internal-format
 msgid "direct-list-initialization of %<auto%> requires exactly one element"
-msgstr ""
+msgstr "direkt listinitiering av %<auto%> tar precis ett element"
 
 #: cp/pt.c:22179
 #, gcc-internal-format
 msgid "for deduction to %<std::initializer_list%>, use copy-list-initialization (i.e. add %<=%> before the %<{%>)"
-msgstr ""
+msgstr "för härledning till %<std::initializer_list%>, använd kopielistinitiering (d.v.s. lägg till %<=%> före %<{%>)"
 
 #: cp/pt.c:22196
 #, gcc-internal-format
@@ -40964,7 +40964,7 @@ msgstr "föreslår uttryckliga klamrar runt tom kropp i %<do%>-sats"
 #: cp/semantics.c:1173
 #, gcc-internal-format
 msgid "switch condition has type bool"
-msgstr ""
+msgstr "switch-villkor har typen bool"
 
 #: cp/semantics.c:1521
 #, gcc-internal-format
@@ -41065,12 +41065,12 @@ msgstr "%qD är inte fångad"
 #: cp/semantics.c:3188
 #, gcc-internal-format
 msgid "the lambda has no capture-default"
-msgstr ""
+msgstr "lambdat har ingen standardfångst"
 
 #: cp/semantics.c:3190
 #, gcc-internal-format
 msgid "lambda in local class %q+T cannot capture variables from the enclosing context"
-msgstr ""
+msgstr "lambda i lokal klass %q+T kan inte fånga variabler från det omgivande sammanhanget"
 
 #: cp/semantics.c:3201
 #, gcc-internal-format
@@ -41142,7 +41142,7 @@ msgstr "det går inte att använda %<offsetof%> på medlemsfunktion %qD"
 #: cp/semantics.c:3920
 #, gcc-internal-format
 msgid "offsetof within non-standard-layout type %qT is undefined"
-msgstr ""
+msgstr "offsetof inom icke-standardlayouttypen %qT är odefinierat"
 
 #: cp/semantics.c:4851
 #, gcc-internal-format
@@ -42584,7 +42584,7 @@ msgstr "gfc_trans_code(): Felaktig satskod"
 #: fortran/arith.c:150
 #, gcc-internal-format
 msgid "Fix min_int calculation"
-msgstr ""
+msgstr "Fixa min_int-beräkningen"
 
 #: fortran/arith.c:530
 #, fuzzy, gcc-internal-format
@@ -42595,32 +42595,32 @@ msgstr "gfc_trans_code(): Felaktig satskod"
 #: fortran/arith.c:603
 #, gcc-internal-format
 msgid "gfc_arith_uminus(): Bad basic type"
-msgstr ""
+msgstr "gfc_arith_uminus(): Felaktig bastyp"
 
 #: fortran/arith.c:637
 #, gcc-internal-format
 msgid "gfc_arith_plus(): Bad basic type"
-msgstr ""
+msgstr "gfc_arith_plus(): Felaktig bastyp"
 
 #: fortran/arith.c:671
 #, gcc-internal-format
 msgid "gfc_arith_minus(): Bad basic type"
-msgstr ""
+msgstr "gfc_arith_minus(): Felaktig bastyp"
 
 #: fortran/arith.c:706
 #, gcc-internal-format
 msgid "gfc_arith_times(): Bad basic type"
-msgstr ""
+msgstr "gfc_arith_times(): Felaktig bastyp"
 
 #: fortran/arith.c:771
 #, gcc-internal-format
 msgid "gfc_arith_divide(): Bad basic type"
-msgstr ""
+msgstr "gfc_arith_divide(): Felaktig bastyp"
 
 #: fortran/arith.c:817
 #, gcc-internal-format
 msgid "arith_power(): Bad base"
-msgstr ""
+msgstr "arith_power(): Felaktig bas"
 
 #: fortran/arith.c:904 fortran/arith.c:929
 #, gcc-internal-format, gfc-internal-format
@@ -42647,17 +42647,17 @@ msgstr "Felaktig operator"
 #: fortran/arith.c:1044
 #, gcc-internal-format
 msgid "gfc_compare_expr(): Bad basic type"
-msgstr ""
+msgstr "gfc_compare_expr(): Felaktig bastyp"
 
 #: fortran/arith.c:1555
 #, gcc-internal-format
 msgid "eval_intrinsic(): Bad operator"
-msgstr ""
+msgstr "eval_intrinsic(): Felaktig operator"
 
 #: fortran/arith.c:1604
 #, gcc-internal-format
 msgid "eval_type_intrinsic0(): op NULL"
-msgstr ""
+msgstr "eval_type_intrinsic0(): op NULL"
 
 #: fortran/arith.c:1913
 #, gcc-internal-format, gfc-internal-format
@@ -42855,7 +42855,7 @@ msgstr "Vektorn ”%s” med antagen ordning vid %L skall inte ha en co-dimensio
 #: fortran/array.c:840
 #, gcc-internal-format
 msgid "gfc_compare_array_spec(): Array spec clobbered"
-msgstr ""
+msgstr "gfc_compare_array_spec(): Vektorspecifikation sönderskriven"
 
 #: fortran/array.c:916
 #, fuzzy, gcc-internal-format
@@ -42932,38 +42932,38 @@ msgstr "Olika CHARACTER-längder (%d/%d) i vektorkonstruerare vid %L"
 #: fortran/array.c:2064
 #, gcc-internal-format
 msgid "spec_dimen_size(): Bad dimension"
-msgstr ""
+msgstr "spec_dimen_size(): Felaktig dimension"
 
 #: fortran/array.c:2122
 #, gcc-internal-format
 msgid "gfc_ref_dimen_size(): Bad dimension"
-msgstr ""
+msgstr "gfc_ref_dimen_size(): Felaktig dimension"
 
 #: fortran/array.c:2250
 #, gcc-internal-format
 msgid "gfc_ref_dimen_size(): Bad dimen_type"
-msgstr ""
+msgstr "gfc_ref_dimen_size(): Felaktig dimen_type"
 
 #: fortran/array.c:2301
 #, gcc-internal-format
 msgid "gfc_array_dimen_size(): Bad dimension"
-msgstr ""
+msgstr "gfc_array_dimen_size(): Felaktig dimension"
 
 #: fortran/array.c:2346
 #, gcc-internal-format
 msgid "gfc_array_dimen_size(): Bad EXPR_ARRAY expr"
-msgstr ""
+msgstr "gfc_array_dimen_size(): Felaktigt EXPR_ARRAY-uttryck"
 
 #: fortran/array.c:2490
 #, gcc-internal-format
 msgid "gfc_find_array_ref(): No ref found"
-msgstr ""
+msgstr "gfc_find_array_ref(): Det finns ingen referens"
 
 #. if (c == 0)
 #: fortran/bbt.c:119
 #, gcc-internal-format
 msgid "insert_bbt(): Duplicate key found!"
-msgstr ""
+msgstr "insert_bbt(): Dublettnyckel hittad!"
 
 #: fortran/check.c:46
 #, fuzzy, gcc-internal-format
@@ -43248,7 +43248,7 @@ msgstr "Konvertering från %s till standardsorten COMPLEX(%d) vid %L kan tappa p
 #: fortran/check.c:1431
 #, gcc-internal-format
 msgid "Argument %<A%> with INTENT(INOUT) at %L of the intrinsic subroutine %s shall not have a vector subscript"
-msgstr ""
+msgstr "Argumentet %<A%> med INTENT(INOUT) vid %L till den inbyggda subrutinen %s skall inte ha ett vektorindex"
 
 #: fortran/check.c:1439
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -43277,7 +43277,7 @@ msgstr "Co-vektorer avaktiverade vid %C, använd -fcoarray= för att aktivera"
 #: fortran/check.c:1501
 #, gcc-internal-format, gfc-internal-format
 msgid "Support for the A argument at %L which is polymorphic A argument or has allocatable components is not yet implemented"
-msgstr ""
+msgstr "Stöd för argumentet A vid %L som är ett polymorft argument A eller har allokerbara komponenter är inte implementerat ännu"
 
 #: fortran/check.c:1520
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -43288,7 +43288,7 @@ msgstr "X-argumentet vir %L till C_LOC får inte vara polymorft"
 #: fortran/check.c:1527
 #, gcc-internal-format, gfc-internal-format
 msgid "Support for the A argument at %L with allocatable components is not yet implemented"
-msgstr ""
+msgstr "Stöd för argumentet A vid %L med allokerbara komponenter är inte implementerat ännu"
 
 #: fortran/check.c:1541
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -43308,52 +43308,52 @@ msgstr "Inbyggd funktion ”%s” vid %L är inte tillåten i ett initieringsutt
 #: fortran/check.c:1568
 #, gcc-internal-format, gfc-internal-format
 msgid "The function passed as OPERATOR at %L shall have two arguments"
-msgstr ""
+msgstr "Funktionen som skickas som OPERATOR vid %L skall ha två argument"
 
 #: fortran/check.c:1578
 #, gcc-internal-format, gfc-internal-format
 msgid "A argument at %L has type %s but the function passed as OPERATOR at %L returns %s"
-msgstr ""
+msgstr "Ett argument vid %L har typen %s men funktionen som skickas som OPERATOR vid %L teturnerar %s"
 
 #: fortran/check.c:1587
 #, gcc-internal-format, gfc-internal-format
 msgid "The function passed as OPERATOR at %L has arguments of type %s and %s but shall have type %s"
-msgstr ""
+msgstr "Funktionen som skickas som OPERATOR vid %L har argument av typerna %s och %s men skall ha typen %s"
 
 #: fortran/check.c:1598
 #, gcc-internal-format, gfc-internal-format
 msgid "The function passed as OPERATOR at %L shall have scalar nonallocatable nonpointer arguments and return a nonallocatable nonpointer scalar"
-msgstr ""
+msgstr "Funktionen som skickas som OPERATOR vid %L skall ha skalära argument som ej är allokerbara och ej är pekare och returnera en skalär som ej är allokerbar och ej är en pekare"
 
 #: fortran/check.c:1606
 #, gcc-internal-format, gfc-internal-format
 msgid "The function passed as OPERATOR at %L shall have the VALUE attribute either for none or both arguments"
-msgstr ""
+msgstr "Funktionen som skickas som OPERATOR vid %L skall ha attributet VALUE antingen för inget eller båda argumenten"
 
 #: fortran/check.c:1613
 #, gcc-internal-format, gfc-internal-format
 msgid "The function passed as OPERATOR at %L shall have the TARGET attribute either for none or both arguments"
-msgstr ""
+msgstr "Funktionen som skickas som OPERATOR vid %L skall ha attributet TARGET antingen för inget eller båda argumenten"
 
 #: fortran/check.c:1620
 #, gcc-internal-format, gfc-internal-format
 msgid "The function passed as OPERATOR at %L shall have the ASYNCHRONOUS attribute either for none or both arguments"
-msgstr ""
+msgstr "Funktionen som skickas som OPERATOR vid %L skall ha attributet ASYNCHRONOUS antingen för inget eller båda argumenten"
 
 #: fortran/check.c:1628
 #, gcc-internal-format, gfc-internal-format
 msgid "The function passed as OPERATOR at %L shall not have the OPTIONAL attribute for either of the arguments"
-msgstr ""
+msgstr "Funktionen som skickas som OPERATOR vid %L skall ha attributet OPTIONAL antingen för inget eller båda argumenten"
 
 #: fortran/check.c:1658
 #, gcc-internal-format, gfc-internal-format
 msgid "The character length of the A argument at %L and of the arguments of the OPERATOR at %L shall be the same"
-msgstr ""
+msgstr "Teckenlängden för argumentet A vid %L och argumenten till OPERATOR vid %L skall vara samma"
 
 #: fortran/check.c:1665
 #, gcc-internal-format, gfc-internal-format
 msgid "The character length of the A argument at %L and of the function result of the OPERATOR at %L shall be the same"
-msgstr ""
+msgstr "Teckenlängden för argumentet A vid %L och funktionsresultatet av OPERATOR vid %L skall vara samma"
 
 #: fortran/check.c:1683
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -43690,7 +43690,7 @@ msgstr "Argumentet ”%s” till inbyggd ”%s” vid %L får inte vara en vekto
 #: fortran/check.c:4191
 #, gcc-internal-format
 msgid "is_c_interoperable(): gfc_simplify_expr failed"
-msgstr ""
+msgstr "is_c_interoperable(): gfc_simplify_expr misslyckades"
 
 #: fortran/check.c:4240
 #, fuzzy, gcc-internal-format
@@ -43864,7 +43864,7 @@ msgstr "Antalet vektorelement i argumentet SUB till IMAGE_INDEX vid %L skall var
 #: fortran/check.c:4912
 #, gcc-internal-format, gfc-internal-format
 msgid "DISTANCE= argument to NUM_IMAGES at %L"
-msgstr ""
+msgstr "DISTANCE= argument till NUM_IMAGES vid %L"
 
 #: fortran/check.c:4925
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -43881,7 +43881,7 @@ msgstr "DIM-argument utan ARRAY-argument är inte tillåtet för inbyggd THIS_IM
 #: fortran/check.c:4955
 #, gcc-internal-format, gfc-internal-format
 msgid "The DISTANCE argument may not be specified together with the COARRAY or DIM argument in intrinsic at %L"
-msgstr ""
+msgstr "Argumentet DISTANCE får inte anges tillsammans med argumentet COARRAY eller DIM i den inbyggda vid %L"
 
 #: fortran/check.c:4966
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -43892,7 +43892,7 @@ msgstr "Oväntat skräp i formell argumentlista vid %C"
 #: fortran/check.c:4984
 #, gcc-internal-format, gfc-internal-format
 msgid "DISTANCE= argument to THIS_IMAGE at %L"
-msgstr ""
+msgstr "DISTANCE= argument till THIS_IMAGE vid %L"
 
 #: fortran/check.c:5064
 #, fuzzy, gcc-internal-format
@@ -43937,7 +43937,7 @@ msgstr "Argumentet TO till MOVE_ALLOC %L skall inte vara co-indexerat"
 #: fortran/check.c:5584
 #, gcc-internal-format, gfc-internal-format
 msgid "Real COUNT_RATE argument to SYSTEM_CLOCK at %L"
-msgstr ""
+msgstr "Reellt COUNT_RATE-argument till SYSTEM_CLOCK vid %L"
 
 #: fortran/check.c:5594
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -44033,7 +44033,7 @@ msgstr "ominitiering av ”%s” vid %L"
 #: fortran/data.c:693
 #, gcc-internal-format
 msgid "TODO: Vector sections in data statements"
-msgstr ""
+msgstr "ATTGÖRA: Vektorsektionen i datasatser"
 
 #: fortran/decl.c:287
 #, fuzzy, gcc-internal-format
@@ -44296,7 +44296,7 @@ msgstr "Dubblerad vektorspecifikation för Cray-utpekad vid vid %C"
 #: fortran/decl.c:1959
 #, gcc-internal-format
 msgid "Couldn't set pointee array spec."
-msgstr ""
+msgstr "Kunde inte sätta utpekads vektorspecifikation."
 
 #: fortran/decl.c:2022
 #, gcc-internal-format, gfc-internal-format
@@ -44441,7 +44441,7 @@ msgstr "Dubblerad IMPLICIT NONE-sats vid %C"
 #: fortran/decl.c:2992
 #, gcc-internal-format, gfc-internal-format
 msgid "IMPORT NONE with spec list at %C"
-msgstr ""
+msgstr "IMPORT NONE med specifikationslista vid %C"
 
 #: fortran/decl.c:3051
 #, gcc-internal-format, gfc-internal-format
@@ -44564,7 +44564,7 @@ msgstr "Attributet VOLATILE vid %C"
 #: fortran/decl.c:3923
 #, gcc-internal-format
 msgid "match_attr_spec(): Bad attribute"
-msgstr ""
+msgstr "match_attr_spec(): Felaktigt attribut"
 
 #: fortran/decl.c:3961
 #, gcc-internal-format, gfc-internal-format
@@ -44881,7 +44881,7 @@ msgstr "ASYNCHRONOUS=-specificerare vid %L måste vara ett initieringsuttryck"
 #: fortran/decl.c:5990
 #, gcc-internal-format, gfc-internal-format
 msgid "NAME= specifier at %C should be a scalar of default character kind"
-msgstr ""
+msgstr "NAME=-specificerare vid %C skall vara en skalär av standardteckensort"
 
 #: fortran/decl.c:6009
 #, gcc-internal-format, gfc-internal-format
@@ -44995,7 +44995,7 @@ msgstr "”,” förväntades vid %C"
 #: fortran/decl.c:6673
 #, gcc-internal-format
 msgid "Couldn't set Cray pointee array spec."
-msgstr ""
+msgstr "Kunde inte sätta Cray-utpekad vektorspecifikation."
 
 #: fortran/decl.c:6697
 #, gcc-internal-format, gfc-internal-format
@@ -45459,7 +45459,7 @@ msgstr "Syntaxfel i !GCC$ ATTRIBUTES-sats vid %C"
 #: fortran/dependency.c:192
 #, gcc-internal-format
 msgid "are_identical_variables: Bad type"
-msgstr ""
+msgstr "are_identical_variables: Felaktig typ"
 
 #. We are told not to check dependencies.
 #. We do it, however, and issue a warning in case we find one.
@@ -45474,12 +45474,12 @@ msgstr "Aktuellt INTENT(%s)-argument vid %L kan störa det aktuella argumentet v
 #: fortran/dump-parse-tree.c:179
 #, gcc-internal-format
 msgid "show_array_spec(): Unhandled array shape type."
-msgstr ""
+msgstr "show_array_spec(): Ohanterad vektorformtyp."
 
 #: fortran/dump-parse-tree.c:258
 #, gcc-internal-format
 msgid "show_array_ref(): Unknown array reference"
-msgstr ""
+msgstr "show_array_ref(): Okänd vektorreferens"
 
 #: fortran/dump-parse-tree.c:290
 #, fuzzy, gcc-internal-format
@@ -45490,12 +45490,12 @@ msgstr "gfc_trans_code(): Felaktig satskod"
 #: fortran/dump-parse-tree.c:554
 #, gcc-internal-format
 msgid "show_expr(): Bad intrinsic in expression!"
-msgstr ""
+msgstr "show_expr(): Felaktig inbyggd i uttryck!"
 
 #: fortran/dump-parse-tree.c:597
 #, gcc-internal-format
 msgid "show_expr(): Don't know how to show expr"
-msgstr ""
+msgstr "show_expr(): Vet inte hur uttrycket skall visas"
 
 #: fortran/dump-parse-tree.c:2479
 #, fuzzy, gcc-internal-format
@@ -45521,7 +45521,7 @@ msgstr "Felantal nådde gränsen vid %d."
 #: fortran/expr.c:148
 #, gcc-internal-format
 msgid "gfc_get_constant_expr(): locus %<where%> cannot be NULL"
-msgstr ""
+msgstr "gfc_get_constant_expr(): locus %<where%> kan inte vara NULL"
 
 #: fortran/expr.c:347
 #, fuzzy, gcc-internal-format
@@ -45532,17 +45532,17 @@ msgstr "gfc_trans_code(): Felaktig satskod"
 #: fortran/expr.c:494
 #, gcc-internal-format
 msgid "free_expr0(): Bad expr type"
-msgstr ""
+msgstr "free_expr0(): Felaktig uttryckstyp"
 
 #: fortran/expr.c:973
 #, gcc-internal-format
 msgid "gfc_is_constant_expr(): Unknown expression type"
-msgstr ""
+msgstr "gfc_is_constant_expr(): Okänd uttryckstyp"
 
 #: fortran/expr.c:1125
 #, gcc-internal-format
 msgid "simplify_intrinsic_op(): Bad operator"
-msgstr ""
+msgstr "simplify_intrinsic_op(): Felaktig operator"
 
 #: fortran/expr.c:1231
 #, gcc-internal-format, gfc-internal-format
@@ -45943,7 +45943,7 @@ msgstr "Gränssnitten stämmer inte överens i procedurpekartilldelning vid %L: 
 #: fortran/expr.c:3618
 #, gcc-internal-format
 msgid "Procedure pointer target %qs at %L must be either an intrinsic, host or use associated, referenced or have the EXTERNAL attribute"
-msgstr ""
+msgstr "Procedurpekarmålet %qs vid %L måste vara antingen en inbyggd, värd, värd- eller användningsassocierad, refererad eller ha attributet EXTERNAL"
 
 #: fortran/expr.c:3635
 #, gcc-internal-format, gfc-internal-format
@@ -46127,7 +46127,7 @@ msgstr "Kan inte öppna indatafil: %s"
 #: fortran/frontend-passes.c:278
 #, gcc-internal-format
 msgid "Illegal id in copy_walk_reduction_arg"
-msgstr ""
+msgstr "Ottilåtet id i copy_walk_reduction_arg"
 
 #: fortran/frontend-passes.c:658 fortran/trans-array.c:1057
 #: fortran/trans-array.c:5944 fortran/trans-array.c:7232
@@ -46296,17 +46296,17 @@ msgstr "Operatorgränssnitt vid %L står i konflikt med inbyggt gränssnitt"
 #: fortran/interface.c:1189 fortran/interface.c:1248
 #, gcc-internal-format, gfc-internal-format
 msgid "check_dummy_characteristics: Unexpected result %i of gfc_dep_compare_expr"
-msgstr ""
+msgstr "check_dummy_characteristics: Oväntat resultat %i från gfc_dep_compare_expr"
 
 #: fortran/interface.c:1361
 #, gcc-internal-format, gfc-internal-format
 msgid "check_result_characteristics (1): Unexpected result %i of gfc_dep_compare_expr"
-msgstr ""
+msgstr "check_result_characteristics (1): Oväntat resultat %i från gfc_dep_compare_expr"
 
 #: fortran/interface.c:1408
 #, gcc-internal-format, gfc-internal-format
 msgid "check_result_characteristics (2): Unexpected result %i of gfc_dep_compare_expr"
-msgstr ""
+msgstr "check_result_characteristics (2): Oväntat resultat %i från gfc_dep_compare_expr"
 
 #: fortran/interface.c:1575
 #, fuzzy, gcc-internal-format
@@ -46664,17 +46664,17 @@ msgstr "Aktuellt argument saknas för argument ”%s” vid %L"
 #: fortran/interface.c:3124
 #, gcc-internal-format
 msgid "compare_actual_expr(): Bad component code"
-msgstr ""
+msgstr "compare_actual_expr(): Felaktig komponentkod"
 
 #: fortran/interface.c:3153
 #, gcc-internal-format
 msgid "check_some_aliasing(): List mismatch"
-msgstr ""
+msgstr "check_some_aliasing(): Listor stämmer inte"
 
 #: fortran/interface.c:3179
 #, gcc-internal-format
 msgid "check_some_aliasing(): corrupted data"
-msgstr ""
+msgstr "check_some_aliasing(): trasig data"
 
 #: fortran/interface.c:3189
 #, fuzzy, gcc-internal-format
@@ -46685,7 +46685,7 @@ msgstr "Samma aktuella argument associerat med INTENT(%s)-argument ”%s” och 
 #: fortran/interface.c:3219
 #, gcc-internal-format
 msgid "check_intents(): List mismatch"
-msgstr ""
+msgstr "check_intents(): Listor stämmer inte"
 
 #: fortran/interface.c:3239
 #, gcc-internal-format, gfc-internal-format
@@ -46797,7 +46797,7 @@ msgstr "Entiteten ”%s” vid %L finns redan i gränssnittet"
 #: fortran/interface.c:4071
 #, gcc-internal-format
 msgid "gfc_add_interface(): Bad interface type"
-msgstr ""
+msgstr "gfc_add_interface(): Felaktig gränssnittstyp"
 
 #: fortran/interface.c:4166
 #, fuzzy, gcc-internal-format
@@ -46929,7 +46929,7 @@ msgstr "för många argument"
 #: fortran/intrinsic.c:360
 #, gcc-internal-format
 msgid "add_sym(): Bad sizing mode"
-msgstr ""
+msgstr "add_sym(): Felaktigt storleksläge"
 
 #: fortran/intrinsic.c:1054
 #, fuzzy, gcc-internal-format
@@ -46940,7 +46940,7 @@ msgstr "Den inbyggda ”%s” vid %L ingår inte i den valda standarden utan %s 
 #: fortran/intrinsic.c:1089
 #, gcc-internal-format
 msgid "make_generic(): Can't find generic symbol %qs"
-msgstr ""
+msgstr "make_generic(): Kan inte hitta den generiska symbolen %qs"
 
 #: fortran/intrinsic.c:3818
 #, fuzzy, gcc-internal-format
@@ -46985,12 +46985,12 @@ msgstr "Typen på argument ”%s” i anrop till ”%s” vid %L skulle varit %s
 #: fortran/intrinsic.c:4035
 #, gcc-internal-format
 msgid "resolve_intrinsic(): Too many args for intrinsic"
-msgstr ""
+msgstr "resolve_intrinsic(): För många argument för inbyggd"
 
 #: fortran/intrinsic.c:4121
 #, gcc-internal-format
 msgid "do_simplify(): Too many args for intrinsic"
-msgstr ""
+msgstr "do_simplify(): För många argument för inbyggd"
 
 #: fortran/intrinsic.c:4160
 #, fuzzy, gcc-internal-format
@@ -47470,7 +47470,7 @@ msgstr "FORMAT-etikett %d vid %L inte definierad"
 #: fortran/io.c:2982
 #, gcc-internal-format
 msgid "io_kind_name(): bad I/O-kind"
-msgstr ""
+msgstr "io_kind_name(): felaktig I/O-sort"
 
 #: fortran/io.c:3071
 #, gcc-internal-format, gfc-internal-format
@@ -48352,17 +48352,17 @@ msgstr "Utökning: Unär operator följer aritmetisk operator (använd parentese
 #: fortran/matchexp.c:665
 #, gcc-internal-format
 msgid "match_level_4(): Bad operator"
-msgstr ""
+msgstr "match_level_4(): Felaktig operator"
 
 #: fortran/misc.c:105
 #, gcc-internal-format
 msgid "gfc_basic_typename(): Undefined type"
-msgstr ""
+msgstr "gfc_basic_typename(): Odefinierad typ"
 
 #: fortran/misc.c:167
 #, gcc-internal-format
 msgid "gfc_typename(): Undefined type"
-msgstr ""
+msgstr "gfc_typename(): Odefinierad typ"
 
 #: fortran/misc.c:187
 #, fuzzy, gcc-internal-format
@@ -48373,12 +48373,12 @@ msgstr "gfc_trans_code(): Felaktig satskod"
 #: fortran/module.c:241
 #, gcc-internal-format
 msgid "free_pi_tree(): Unresolved fixup"
-msgstr ""
+msgstr "free_pi_tree(): Ej upplöst upprättning"
 
 #: fortran/module.c:458
 #, gcc-internal-format
 msgid "associate_integer_pointer(): Already associated"
-msgstr ""
+msgstr "associate_integer_pointer(): Redan associerad"
 
 #: fortran/module.c:540
 #, gcc-internal-format, gfc-internal-format
@@ -48437,7 +48437,7 @@ msgstr "Modul %s på rad %d kolumn %d: %s"
 #: fortran/module.c:1470
 #, gcc-internal-format
 msgid "require_atom(): bad atom type required"
-msgstr ""
+msgstr "require_atom(): felaktig atomtyp begärd"
 
 #: fortran/module.c:1519
 #, gcc-internal-format, gfc-internal-format
@@ -48447,22 +48447,22 @@ msgstr "Fel när modulfil skrevs: %s"
 #: fortran/module.c:1563
 #, gcc-internal-format
 msgid "write_atom(): Writing negative integer"
-msgstr ""
+msgstr "write_atom(): Skriver negativt heltal"
 
 #: fortran/module.c:1570
 #, gcc-internal-format
 msgid "write_atom(): Trying to write dab atom"
-msgstr ""
+msgstr "write_atom(): Försöker skriva dab-atom"
 
 #: fortran/module.c:1776
 #, gcc-internal-format
 msgid "unquote_string(): got bad string"
-msgstr ""
+msgstr "unquote_string(): fick en felaktig sträng"
 
 #: fortran/module.c:2516
 #, gcc-internal-format
 msgid "mio_array_ref(): Unknown array ref"
-msgstr ""
+msgstr "mio_array_ref(): Okänd vektorreferens"
 
 #: fortran/module.c:3492
 #, gcc-internal-format, gfc-internal-format
@@ -48472,12 +48472,12 @@ msgstr "Namnlistan %s får inte namnändras av USE-association till %s"
 #: fortran/module.c:4616
 #, gcc-internal-format, gfc-internal-format
 msgid "Ambiguous !$OMP DECLARE REDUCTION from module %s at %L"
-msgstr ""
+msgstr "Tvetydig !$OMP DECLARE REDUCTION från modulen %s vid %L"
 
 #: fortran/module.c:4619
 #, gcc-internal-format, gfc-internal-format
 msgid "Previous !$OMP DECLARE REDUCTION from module %s at %L"
-msgstr ""
+msgstr "Tidigare !$OMP DECLARE REDUCTION från modulen %s vid %L"
 
 #: fortran/module.c:4806
 #, fuzzy, gcc-internal-format
@@ -48506,12 +48506,12 @@ msgstr "Inbyggd operator ”%s” refererad från %L finns inte i modulen ”%s�
 #: fortran/module.c:5398
 #, gcc-internal-format
 msgid "write_symbol(): bad module symbol %qs"
-msgstr ""
+msgstr "write_symbol(): felaktig modulsymbol %qs"
 
 #: fortran/module.c:5731
 #, gcc-internal-format
 msgid "write_symtree(): Symbol not written"
-msgstr ""
+msgstr "write_symtree(): Symbolen inte skriven"
 
 #: fortran/module.c:5905
 #, fuzzy, gcc-internal-format
@@ -48553,7 +48553,7 @@ msgstr "Symbolen ”%s” är redan deklarerad"
 #: fortran/module.c:6035
 #, gcc-internal-format, gfc-internal-format
 msgid "import_iso_c_binding_module(): Unable to create symbol for %s"
-msgstr ""
+msgstr "import_iso_c_binding_module(): Kan inte skapa en symbol för %s"
 
 #: fortran/module.c:6143 fortran/module.c:6487
 #, fuzzy, gcc-internal-format
@@ -48678,7 +48678,7 @@ msgstr "Syntaxfel i uttryck vid %C"
 #: fortran/openmp.c:837
 #, gcc-internal-format, gfc-internal-format
 msgid "!$OMP DECLARE REDUCTION %s not found at %L"
-msgstr ""
+msgstr "!$OMP DECLARE REDUCTION %s finns inte vid %L"
 
 #: fortran/openmp.c:935
 #, gcc-internal-format, gfc-internal-format
@@ -48706,12 +48706,12 @@ msgstr "NUM_THREADS-klausul vid %L kräver ett skalärt INTEGER-uttryck"
 #: fortran/openmp.c:1402
 #, gcc-internal-format, gfc-internal-format
 msgid "ACC CACHE directive must be inside of loop %C"
-msgstr ""
+msgstr "Direktivet ACC CACHE måste vara inuti en slinga %C"
 
 #: fortran/openmp.c:1428
 #, gcc-internal-format, gfc-internal-format
 msgid "Only the !$ACC ROUTINE form without list is allowed in interface block at %C"
-msgstr ""
+msgstr "Endast formen !$ACC ROUTINE utan en lista är tillåten i gränssnittsblock vid %C"
 
 #: fortran/openmp.c:1452
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -48722,12 +48722,12 @@ msgstr "Syntaxfel i !GCC$ ATTRIBUTES-sats vid %C"
 #: fortran/openmp.c:1459
 #, gcc-internal-format
 msgid "Syntax error in !$ACC ROUTINE ( NAME ) at %C, invalid function name %qs"
-msgstr ""
+msgstr "Syntaxfel i !$ACC ROUTINE ( NAMN ) vid %C, felaktigt funktionsnamn %qs"
 
 #: fortran/openmp.c:1467
 #, gcc-internal-format, gfc-internal-format
 msgid "Syntax error in !$ACC ROUTINE ( NAME ) at %C, expecting ')' after NAME"
-msgstr ""
+msgstr "Syntaxfel i !$ACC ROUTINE ( NAMN ) vid %C, ')' förväntades efter NAMN"
 
 #: fortran/openmp.c:1475
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -48748,22 +48748,22 @@ msgstr "Oväntat skräp efter $OMP FLUSH-sats vid %C"
 #: fortran/openmp.c:1992 fortran/openmp.c:4823
 #, gcc-internal-format, gfc-internal-format
 msgid "Redefinition of predefined %s !$OMP DECLARE REDUCTION at %L"
-msgstr ""
+msgstr "Omdefinition av fördefinierad %s !$OMP DECLARE REDUCTION vid %L"
 
 #: fortran/openmp.c:1996 fortran/openmp.c:4827
 #, gcc-internal-format, gfc-internal-format
 msgid "Redefinition of predefined !$OMP DECLARE REDUCTION at %L"
-msgstr ""
+msgstr "Omdefinition av fördefinierad !$OMP DECLARE REDUCTION vid %L"
 
 #: fortran/openmp.c:2001
 #, gcc-internal-format, gfc-internal-format
 msgid "Redefinition of !$OMP DECLARE REDUCTION at %L"
-msgstr ""
+msgstr "Omdefinition av !$OMP DECLARE REDUCTION vid %L"
 
 #: fortran/openmp.c:2003
 #, gcc-internal-format, gfc-internal-format
 msgid "Previous !$OMP DECLARE REDUCTION at %L"
-msgstr ""
+msgstr "Föregående !$OMP DECLARE REDUCTION vid %L"
 
 #: fortran/openmp.c:2023
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -48774,7 +48774,7 @@ msgstr "Oväntat skräp efter $OMP ORDERED-sats vid %C"
 #: fortran/openmp.c:2052
 #, gcc-internal-format, gfc-internal-format
 msgid "Only the !$OMP DECLARE TARGET form without list is allowed in interface block at %C"
-msgstr ""
+msgstr "Endast formen !$OMP DECLARE TARGET utan lista är tillåten i gränssnittsblock vid %C"
 
 #: fortran/openmp.c:2078
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -48973,12 +48973,12 @@ msgstr "POINTER-objekt ”%s” i %s-fall vid %L"
 #: fortran/openmp.c:2777
 #, gcc-internal-format, gfc-internal-format
 msgid "Implicitly declared function %s used in !$OMP DECLARE REDUCTION at %L "
-msgstr ""
+msgstr "Den implicit deklarerade funktionen %s används i !$OMP DECLARE REDUCTION vid %L "
 
 #: fortran/openmp.c:2826
 #, gcc-internal-format, gfc-internal-format
 msgid "Implicitly declared subroutine %s used in !$OMP DECLARE REDUCTION at %L "
-msgstr ""
+msgstr "Den implicit deklarede subrutinen %s används i !$OMP DECLARE REDUCTION vid %L "
 
 #: fortran/openmp.c:2885 fortran/resolve.c:9103 fortran/resolve.c:10188
 #, gcc-internal-format, gfc-internal-format
@@ -49064,7 +49064,7 @@ msgstr "THREADPRIVATE objekt ”%s” i SHARED fall vid %L"
 #: fortran/openmp.c:3090
 #, gcc-internal-format
 msgid "%qs in ALIGNED clause must be POINTER, ALLOCATABLE, Cray pointer or C_PTR at %L"
-msgstr ""
+msgstr "%qs i ALIGNED-klausul måste vara POINTER, ALLOCATABLE, Cray-pekare eller C_PTR vid %L"
 
 #: fortran/openmp.c:3102
 #, fuzzy, gcc-internal-format
@@ -49075,7 +49075,7 @@ msgstr "%<simdlen%>-klausulens uttryck måste vara ett positivt konstant heltals
 #: fortran/openmp.c:3121 fortran/openmp.c:3141
 #, gcc-internal-format
 msgid "%qs in %s clause at %L is not a proper array section"
-msgstr ""
+msgstr "%qs i %s-klausul vid %L är inte en riktig vektorsektion"
 
 #: fortran/openmp.c:3124
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -49092,7 +49092,7 @@ msgstr "negativ nedre gräns i vektorsektion i %qs-klausul"
 #: fortran/openmp.c:3154
 #, gcc-internal-format
 msgid "%qs in DEPEND clause at %L is a zero size array section"
-msgstr ""
+msgstr "%qs i DEPEND-klausul vid %L är en vektorsektion mes storlek noll"
 
 #: fortran/openmp.c:3176 fortran/openmp.c:3188
 #, fuzzy, gcc-internal-format
@@ -49140,7 +49140,7 @@ msgstr "POINTER-objekt ”%s” i %s-fall vid %L"
 #: fortran/openmp.c:3318
 #, gcc-internal-format, gfc-internal-format
 msgid "!$OMP DECLARE REDUCTION %s not found for type %s at %L"
-msgstr ""
+msgstr "!$OMP DECLARE REDUCTION %s finns inte för typen %s vid %L"
 
 #: fortran/openmp.c:3341
 #, fuzzy, gcc-internal-format
@@ -49235,7 +49235,7 @@ msgstr "!$OMP ATOMIC CAPTURE-fångstsats läser från en annan variabel än uppd
 #: fortran/openmp.c:3655
 #, gcc-internal-format, gfc-internal-format
 msgid "!$OMP ATOMIC with ALLOCATABLE variable at %L"
-msgstr ""
+msgstr "!$OMP ATOMIC med ALLOCATABLE variabel vid %L"
 
 #: fortran/openmp.c:3697
 #, gcc-internal-format, gfc-internal-format
@@ -49303,7 +49303,7 @@ msgstr "!$OMP DO får inte vara en DO WHILE eller DO utan slingstyrning vid %L"
 #: fortran/openmp.c:4169
 #, gcc-internal-format, gfc-internal-format
 msgid "%s cannot be a DO CONCURRENT loop at %L"
-msgstr ""
+msgstr "%s kan inte vara en DO CONCURRENT-slinga vid %L"
 
 #: fortran/openmp.c:4175
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -49356,7 +49356,7 @@ msgstr "inte tillräckligt med DO-slingor för kollapsad !$OMP DO vid %L"
 #: fortran/openmp.c:4331 fortran/openmp.c:4344
 #, gcc-internal-format, gfc-internal-format
 msgid "The %s directive cannot be specified within a %s region at %L"
-msgstr ""
+msgstr "Direktivet %s kan inte anges inuti en %s-region vid %L"
 
 #: fortran/openmp.c:4363
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -49391,32 +49391,32 @@ msgstr "inte tillräckligt med DO-slingor för kollapsad !$OMP DO vid %L"
 #: fortran/openmp.c:4432 fortran/openmp.c:4439
 #, gcc-internal-format, gfc-internal-format
 msgid "!$ACC LOOP %s in PARALLEL region doesn't allow non-static arguments at %L"
-msgstr ""
+msgstr "!$ACC LOOP %s i PARALLEL-region tillåter inte icke-statiska argument vid %L"
 
 #: fortran/openmp.c:4461
 #, gcc-internal-format, gfc-internal-format
 msgid "Loop parallelized across gangs is not allowed inside another loop parallelized across gangs at %L"
-msgstr ""
+msgstr "Slinga parallelliserad över gang är inte tillåten inuti en annan slinga parallelliserad över gang vid %L"
 
 #: fortran/openmp.c:4465 fortran/openmp.c:4469
 #, gcc-internal-format, gfc-internal-format
 msgid "Loop parallelized across gangs is not allowed inside loop parallelized across workers at %L"
-msgstr ""
+msgstr "Slinga parallelliserad över gang är inte tillåten inuti en slinga parallelliserad över worker vid %L"
 
 #: fortran/openmp.c:4476
 #, gcc-internal-format, gfc-internal-format
 msgid "Loop parallelized across workers is not allowed inside another loop parallelized across workers at %L"
-msgstr ""
+msgstr "Slinga parallelliserad över worker är inte tillåten inuti en annan slinga parallelliserad över worker vid %L"
 
 #: fortran/openmp.c:4480
 #, gcc-internal-format, gfc-internal-format
 msgid "Loop parallelized across workers is not allowed inside another loop parallelized across vectors at %L"
-msgstr ""
+msgstr "Slinga parallelliserad över worker är inte tillåten inuti en annan slinga parallelliserad över vektorer vid %L"
 
 #: fortran/openmp.c:4486
 #, gcc-internal-format, gfc-internal-format
 msgid "Loop parallelized across vectors is not allowed inside another loop parallelized across vectors at %L"
-msgstr ""
+msgstr "Slinga parallelliserad över vektorer är inte tillåten inuti en annan slinga parallelliserad över vektorer vid %L"
 
 #: fortran/openmp.c:4498
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -49481,12 +49481,12 @@ msgstr "MOLD-taggen vid %L står i konflikt med SOURCE-taggen vid %L"
 #: fortran/openmp.c:4528
 #, gcc-internal-format, gfc-internal-format
 msgid "Clause WORKER conflicts with VECTOR at %L"
-msgstr ""
+msgstr "WORKER-klausulen står i konflikt med VECTOR vid %L"
 
 #: fortran/openmp.c:4533
 #, gcc-internal-format, gfc-internal-format
 msgid "Tiled loop cannot be parallelized across gangs, workers and vectors at the same time at %L"
-msgstr ""
+msgstr "Slinga uppdelad i bitar kan inte parallelliseras över gang, worker och vektorer på samma gång vid %L"
 
 #: fortran/openmp.c:4556
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -49509,52 +49509,52 @@ msgstr "POINTER-objekt ”%s” i %s-fall vid %L"
 #: fortran/openmp.c:4732
 #, gcc-internal-format, gfc-internal-format
 msgid "OMP TARGET UPDATE at %L requires at least one TO or FROM clause"
-msgstr ""
+msgstr "OMP TARGET UPDATE vid %L behöver åtminstone en TO- eller FROM-klausul"
 
 #: fortran/openmp.c:4753
 #, gcc-internal-format
 msgid "!$OMP DECLARE SIMD should refer to containing procedure %qs at %L"
-msgstr ""
+msgstr "!$OMP DECLARE SIMD skall referera till den inneslutande proceduren %qs vid %L"
 
 #: fortran/openmp.c:4777
 #, gcc-internal-format, gfc-internal-format
 msgid "Variable other than OMP_PRIV or OMP_ORIG used in INITIALIZER clause of !$OMP DECLARE REDUCTION at %L"
-msgstr ""
+msgstr "En annan variabel än OMP_PRIV elller OMP_ORIG använd i INITIALIZER-klausul i !$OMP DECLARE REDUCTION vid %L"
 
 #: fortran/openmp.c:4785
 #, gcc-internal-format, gfc-internal-format
 msgid "Variable other than OMP_OUT or OMP_IN used in combiner of !$OMP DECLARE REDUCTION at %L"
-msgstr ""
+msgstr "En annan variabel än OMP_OUT eller OMP_IN använd i kombineraren i !$OMP DECLARE REDUCTION vid %L"
 
 #: fortran/openmp.c:4814
 #, gcc-internal-format, gfc-internal-format
 msgid "Invalid operator for !$OMP DECLARE REDUCTION %s at %L"
-msgstr ""
+msgstr "Felaktig operator för !$OMP DECLARE REDUCTION %s vid %L"
 
 #: fortran/openmp.c:4836
 #, gcc-internal-format, gfc-internal-format
 msgid "CHARACTER length in !$OMP DECLARE REDUCTION %s not constant at %L"
-msgstr ""
+msgstr "CHARACTER-längden i !$OMP DECLARE REDUCTION %s är inte konstant vid %L"
 
 #: fortran/openmp.c:4852
 #, gcc-internal-format, gfc-internal-format
 msgid "Subroutine call with alternate returns in combiner of !$OMP DECLARE REDUCTION at %L"
-msgstr ""
+msgstr "Subrutinanrop med alternativa returer i kombinerare i !$OMP DECLARE REDUCTION vid %L"
 
 #: fortran/openmp.c:4867
 #, gcc-internal-format, gfc-internal-format
 msgid "Subroutine call with alternate returns in INITIALIZER clause of !$OMP DECLARE REDUCTION at %L"
-msgstr ""
+msgstr "Subrutinanrop med alternativa returer i INITIALIZER-klausul i !$OMP DELCARE REDUCTION vid %L"
 
 #: fortran/openmp.c:4877
 #, gcc-internal-format, gfc-internal-format
 msgid "One of actual subroutine arguments in INITIALIZER clause of !$OMP DECLARE REDUCTION must be OMP_PRIV at %L"
-msgstr ""
+msgstr "Ett av de aktuella subritinargumentetn i INITIALIZER-klausulen i !$OMP DECLARE REDUCTION måste vara OMP_PRIV vid %L"
 
 #: fortran/openmp.c:4885
 #, gcc-internal-format, gfc-internal-format
 msgid "Missing INITIALIZER clause for !$OMP DECLARE REDUCTION of derived type without default initializer at %L"
-msgstr ""
+msgstr "INITIALIZER-klausul saknas i !$OMP DECLARE REDUCTION av härledd typ utan standardinitierare vid %L"
 
 #: fortran/options.c:216
 #, gcc-internal-format
@@ -50103,7 +50103,7 @@ msgstr "CONTAINS-sats vid %C är redan i en innesluten programenhet"
 #: fortran/parse.c:5069
 #, gcc-internal-format
 msgid "gfc_global_used(): Bad type"
-msgstr ""
+msgstr "gfc_global_used(): Felaktig typ"
 
 #: fortran/parse.c:5074
 #, gcc-internal-format, gfc-internal-format
@@ -50146,7 +50146,7 @@ msgstr "Sortparameter saknas vid %C"
 #: fortran/primary.c:138
 #, gcc-internal-format
 msgid "gfc_check_digit(): bad radix"
-msgstr ""
+msgstr "gfc_check_digit(): felaktig radix"
 
 #: fortran/primary.c:232
 #, gcc-internal-format, gfc-internal-format
@@ -50260,7 +50260,7 @@ msgstr "Reell konstant spiller under sin sort vid %C"
 #: fortran/primary.c:736
 #, gcc-internal-format
 msgid "gfc_range_check() returned bad value"
-msgstr ""
+msgstr "gfc_range_check() returnerade felaktigt värde"
 
 #: fortran/primary.c:823
 #, gcc-internal-format, gfc-internal-format
@@ -50286,7 +50286,7 @@ msgstr "Tecknet ”%s” i sträng vid %C är inte representerbart i teckensort 
 #: fortran/primary.c:1099
 #, gcc-internal-format
 msgid "match_string_constant(): Delimiter not found"
-msgstr ""
+msgstr "match_string_constant(): Avgränsare finns inte"
 
 #: fortran/primary.c:1169
 #, gcc-internal-format, gfc-internal-format
@@ -50316,7 +50316,7 @@ msgstr "PARAMETER-symbol i komplex konstant vid %C"
 #: fortran/primary.c:1240
 #, gcc-internal-format
 msgid "gfc_match_sym_complex_part(): Bad type"
-msgstr ""
+msgstr "gfc_match_sym_complex_part(): Felaktig typ"
 
 #: fortran/primary.c:1247
 #, gcc-internal-format, gfc-internal-format
@@ -50357,7 +50357,7 @@ msgstr "Syntaxfel i argumentlista vid %C"
 #: fortran/primary.c:1804
 #, gcc-internal-format
 msgid "extend_ref(): Bad tail"
-msgstr ""
+msgstr "extend_ref(): Felaktig svans"
 
 #: fortran/primary.c:1842
 #, gcc-internal-format, gfc-internal-format
@@ -51164,12 +51164,12 @@ msgstr "Formerna för operanderna vid %L och %L är inte konforma"
 #: fortran/resolve.c:3678
 #, gcc-internal-format
 msgid "resolve_operator(): Bad intrinsic"
-msgstr ""
+msgstr "resolve_operator(): Felaktig inbyggd"
 
 #: fortran/resolve.c:3849 fortran/resolve.c:3872
 #, gcc-internal-format
 msgid "compare_bound_int(): Bad expression"
-msgstr ""
+msgstr "compare_bound_int(): Felaktigt uttryck"
 
 #: fortran/resolve.c:3967
 #, gcc-internal-format, gfc-internal-format
@@ -51270,17 +51270,17 @@ msgstr "Dim-argumentet vid %L måste ha INTEGER-typ"
 #: fortran/resolve.c:4261
 #, gcc-internal-format
 msgid "find_array_spec(): Missing spec"
-msgstr ""
+msgstr "find_array_spec(): Specifikation saknas"
 
 #: fortran/resolve.c:4272
 #, gcc-internal-format
 msgid "find_array_spec(): unused as(1)"
-msgstr ""
+msgstr "find_array_spec(): oanvänd as(1)"
 
 #: fortran/resolve.c:4283
 #, gcc-internal-format
 msgid "find_array_spec(): unused as(2)"
-msgstr ""
+msgstr "find_array_spec(): oanvänd as(2)"
 
 #: fortran/resolve.c:4326
 #, gcc-internal-format, gfc-internal-format
@@ -51346,7 +51346,7 @@ msgstr "Två eller flera delreferenser med ordning skild från noll får inte an
 #: fortran/resolve.c:4759
 #, gcc-internal-format
 msgid "expression_rank(): Two array specs"
-msgstr ""
+msgstr "expression_rank(): Två vektorspecifikationer"
 
 #: fortran/resolve.c:4841
 #, gcc-internal-format, gfc-internal-format
@@ -51891,7 +51891,7 @@ msgstr "WHERE/ELSEWHERE-klausul vid %L kräver en LOGICAL-vektor"
 #: fortran/resolve.c:9187
 #, gcc-internal-format
 msgid "gfc_resolve_blocks(): Bad block type"
-msgstr ""
+msgstr "gfc_resolve_blocks(): Felaktig blocktyp"
 
 #: fortran/resolve.c:9301
 #, gcc-internal-format, gfc-internal-format
@@ -51980,7 +51980,7 @@ msgstr "Aritmetisk IF-sats vid %L kräver ett numeriskt uttryck"
 #: fortran/resolve.c:10231
 #, gcc-internal-format
 msgid "gfc_resolve_code(): No expression on DO WHILE"
-msgstr ""
+msgstr "gfc_resolve_code(): Inget uttryck i DO WHILE"
 
 #: fortran/resolve.c:10236
 #, gcc-internal-format, gfc-internal-format
@@ -52824,12 +52824,12 @@ msgstr "Trådprivat vid %L är inte SAVE:ad"
 #: fortran/resolve.c:13762
 #, gcc-internal-format
 msgid "!$OMP DECLARE TARGET variable %qs at %L isn't SAVEd"
-msgstr ""
+msgstr "!$OMP DECLARE TARGET-variabeln %qs vid %L är inte SAVE:ad"
 
 #: fortran/resolve.c:13849
 #, gcc-internal-format
 msgid "check_data_variable(): Bad expression"
-msgstr ""
+msgstr "check_data_variable(): Felaktigt uttryck"
 
 #: fortran/resolve.c:13855
 #, fuzzy, gcc-internal-format
@@ -53119,7 +53119,7 @@ msgstr "Ogiltig KIND-parameter %s vid %L"
 #: fortran/simplify.c:692
 #, gcc-internal-format
 msgid "gfc_simplify_abs(): Bad type"
-msgstr ""
+msgstr "gfc_simplify_abs(): Felaktig typ"
 
 #: fortran/simplify.c:713
 #, gcc-internal-format, gfc-internal-format
@@ -53144,7 +53144,7 @@ msgstr "Argument till ACOS vid %L måste vara mellan -1 och 1"
 #: fortran/simplify.c:789
 #, gcc-internal-format
 msgid "in gfc_simplify_acos(): Bad type"
-msgstr ""
+msgstr "in gfc_simplify_acos(): Felaktig typ"
 
 #: fortran/simplify.c:808
 #, gcc-internal-format, gfc-internal-format
@@ -53154,7 +53154,7 @@ msgstr "Argumentet till ACOSH vid %L får inte vara mindre än 1"
 #: fortran/simplify.c:823
 #, gcc-internal-format
 msgid "in gfc_simplify_acosh(): Bad type"
-msgstr ""
+msgstr "in gfc_simplify_acosh(): Felaktig typ"
 
 #: fortran/simplify.c:1052
 #, gcc-internal-format, gfc-internal-format
@@ -53164,17 +53164,17 @@ msgstr "Argument till till ASIN vid %L måste vara mellan -1 och 1"
 #: fortran/simplify.c:1066
 #, gcc-internal-format
 msgid "in gfc_simplify_asin(): Bad type"
-msgstr ""
+msgstr "i gfc_simplify_asin(): Felaktig typ"
 
 #: fortran/simplify.c:1094
 #, gcc-internal-format
 msgid "in gfc_simplify_asinh(): Bad type"
-msgstr ""
+msgstr "i gfc_simplify_asinh(): Bad type"
 
 #: fortran/simplify.c:1122
 #, gcc-internal-format
 msgid "in gfc_simplify_atan(): Bad type"
-msgstr ""
+msgstr "i gfc_simplify_atan(): Felaktig typ"
 
 #: fortran/simplify.c:1143
 #, gcc-internal-format, gfc-internal-format
@@ -53184,7 +53184,7 @@ msgstr "Argument till ATANH vid %L måste vara i intervallet -1 till 1"
 #: fortran/simplify.c:1157
 #, gcc-internal-format
 msgid "in gfc_simplify_atanh(): Bad type"
-msgstr ""
+msgstr "i gfc_simplify_atanh(): Felaktig typ"
 
 #: fortran/simplify.c:1174
 #, gcc-internal-format, gfc-internal-format
@@ -53199,22 +53199,22 @@ msgstr "Resultatet av BESSEL_YN är -INF vid %L"
 #: fortran/simplify.c:1635
 #, gcc-internal-format
 msgid "gfc_simplify_dcmplx(): Bad type (x)"
-msgstr ""
+msgstr "gfc_simplify_dcmplx(): Felaktig typ (x)"
 
 #: fortran/simplify.c:1654
 #, gcc-internal-format
 msgid "gfc_simplify_dcmplx(): Bad type (y)"
-msgstr ""
+msgstr "gfc_simplify_dcmplx(): Felaktig typ (y)"
 
 #: fortran/simplify.c:1731
 #, gcc-internal-format
 msgid "in gfc_simplify_cos(): Bad type"
-msgstr ""
+msgstr "i gfc_simplify_cos(): Felaktig typ"
 
 #: fortran/simplify.c:1876
 #, gcc-internal-format
 msgid "gfc_simplify_dim(): Bad type"
-msgstr ""
+msgstr "gfc_simplify_dim(): Felaktig typ"
 
 #: fortran/simplify.c:2184
 #, gcc-internal-format
