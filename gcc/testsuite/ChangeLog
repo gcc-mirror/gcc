@@ -1,5 +1,10 @@
 2015-04-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/65747
+	* g++.dg/torture/pr65747.C: New test.
+
+2015-04-12  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c++/65736
 	* g++.dg/cpp0x/pr65736.C: New test.
 
