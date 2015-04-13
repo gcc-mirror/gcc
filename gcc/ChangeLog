@@ -1,5 +1,10 @@
 2015-04-12  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-vrp.c (nonnull_arg_p): THIS pointers and references are non-zero.
+	(gimple_stmt_nonzero_warnv_p): Reference return values are non-zero.
+
+2015-04-12  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-profie.c (ipa_profile): Check number of parameters
 	and possible polymorphic call targets before
 	devirtualizing.

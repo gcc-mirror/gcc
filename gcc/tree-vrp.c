@@ -393,6 +393,17 @@ nonnull_arg_p (const_tree arg)
   if (arg == cfun->static_chain_decl)
     return true;
 
+  /* THIS argument of method is always non-NULL.  */
+  if (TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE
+      && arg == DECL_ARGUMENTS (current_function_decl)
+      && flag_delete_null_pointer_checks)
+    return true;
+
+  /* Values passed by reference are always non-NULL.  */
+  if (TREE_CODE (TREE_TYPE (arg)) == REFERENCE_TYPE
+      && flag_delete_null_pointer_checks)
+    return true;
+
   fntype = TREE_TYPE (current_function_decl);
   for (attrs = TYPE_ATTRIBUTES (fntype); attrs; attrs = TREE_CHAIN (attrs))
     {
@@ -1215,6 +1226,10 @@ gimple_stmt_nonzero_warnv_p (gimple stmt, bool *strict_overflow_p)
 	if (flag_delete_null_pointer_checks && !flag_check_new
 	    && DECL_IS_OPERATOR_NEW (fndecl)
 	    && !TREE_NOTHROW (fndecl))
+	  return true;
+	/* References are always non-NULL.  */
+	if (flag_delete_null_pointer_checks
+	    && TREE_CODE (TREE_TYPE (fndecl)) == REFERENCE_TYPE)
 	  return true;
 	if (flag_delete_null_pointer_checks && 
 	    lookup_attribute ("returns_nonnull",
