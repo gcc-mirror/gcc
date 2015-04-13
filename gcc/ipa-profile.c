@@ -524,6 +524,7 @@ ipa_profile (void)
   gcov_type overall_time = 0, cutoff = 0, cumulated = 0, overall_size = 0;
   struct cgraph_node *n,*n2;
   int nindirect = 0, ncommon = 0, nunknown = 0, nuseless = 0, nconverted = 0;
+  int nmismatch = 0, nimpossible = 0;
   bool node_map_initialized = false;
 
   if (dump_file)
@@ -651,6 +652,31 @@ ipa_profile (void)
 				 "Not speculating: target is overwritable "
 				 "and can be discarded.\n");
 		    }
+		  else if (ipa_node_params_sum && ipa_edge_args_vector
+			   && !IPA_NODE_REF (n2)->descriptors.is_empty ()
+			   && ipa_get_param_count (IPA_NODE_REF (n2))
+			      != ipa_get_cs_argument_count (IPA_EDGE_REF (e))
+			    && (ipa_get_param_count (IPA_NODE_REF (n2))
+				>= ipa_get_cs_argument_count (IPA_EDGE_REF (e))
+				|| !stdarg_p (TREE_TYPE (n2->decl))))
+		    {
+		      nmismatch++;
+		      if (dump_file)
+			fprintf (dump_file,
+				 "Not speculating: "
+				 "parameter count mistmatch\n");
+		    }
+		  else if (e->indirect_info->polymorphic
+			   && !opt_for_fn (n->decl, flag_devirtualize)
+			   && !possible_polymorphic_call_target_p (e, n2))
+		    {
+		      nimpossible++;
+		      if (dump_file)
+			fprintf (dump_file,
+				 "Not speculating: "
+				 "function is not in the polymorphic "
+				 "call target list\n");
+		    }
 		  else
 		    {
 		      /* Target may be overwritable, but profile says that
@@ -693,11 +719,15 @@ ipa_profile (void)
 	     "%i indirect calls trained.\n"
 	     "%i (%3.2f%%) have common target.\n"
 	     "%i (%3.2f%%) targets was not found.\n"
+	     "%i (%3.2f%%) targets had parameter count mismatch.\n"
+	     "%i (%3.2f%%) targets was not in polymorphic call target list.\n"
 	     "%i (%3.2f%%) speculations seems useless.\n"
 	     "%i (%3.2f%%) speculations produced.\n",
 	     nindirect,
 	     ncommon, ncommon * 100.0 / nindirect,
 	     nunknown, nunknown * 100.0 / nindirect,
+	     nmismatch, nmismatch * 100.0 / nindirect,
+	     nimpossible, nimpossible * 100.0 / nindirect,
 	     nuseless, nuseless * 100.0 / nindirect,
 	     nconverted, nconverted * 100.0 / nindirect);
 
