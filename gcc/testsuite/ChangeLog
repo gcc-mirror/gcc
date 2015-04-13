@@ -1,3 +1,7 @@
+2015-04-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-ssa/nonzero-3.C: New testcase.
+
 2015-04-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65204
