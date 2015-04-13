@@ -1,3 +1,8 @@
+2015-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65204
+	* gcc.dg/tree-ssa/ssa-ccp-35.c: New testcase.
+
 2015-04-13  Terry Guo  <terry.guo@arm.com>
 
 	PR target/65710
