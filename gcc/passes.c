@@ -2350,8 +2350,9 @@ execute_one_pass (opt_pass *pass)
   if (pass->type == IPA_PASS)
     {
       struct cgraph_node *node;
-      FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
-	node->ipa_transforms_to_apply.safe_push ((ipa_opt_pass_d *)pass);
+      if (((ipa_opt_pass_d *)pass)->function_transform)
+	FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
+	  node->ipa_transforms_to_apply.safe_push ((ipa_opt_pass_d *)pass);
     }
 
   if (!current_function_decl)
