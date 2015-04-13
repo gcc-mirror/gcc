@@ -434,6 +434,10 @@ Balaji V. Iyer for Cilk+ development and merging.
 Andreas Jaeger for testing and benchmarking of GCC and various bug fixes.
 
 @item
+Martin Jambor for his work on inter-procedural optimizations, the
+switch conversion pass, and scalar replacement of aggregates.
+
+@item
 Jakub Jelinek for his SPARC work and sibling call optimizations as well
 as lots of bug fixes and test cases, and for improving the Java build
 system.
@@ -603,6 +607,10 @@ John Marino for contributing the DragonFly BSD port.
 @item
 Philip Martin for lots of libstdc++ string and vector iterator fixes and
 improvements, and string clean up and testsuites.
+
+@item
+Michael Matz for his work on dominance tree discovery, the x86-64 port,
+link-time optimization framework and general optimization improvements.
 
 @item
 All of the Mauve project

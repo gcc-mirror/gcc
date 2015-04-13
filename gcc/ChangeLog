@@ -1,3 +1,9 @@
+2015-04-13  Jan Hubicka  <hubicka@ucw.cz>
+	    Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/contrib.texi (Contributors): Add Martin Jambor and
+	Michael Matz.
+
 2015-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Set to 5.0.1.
