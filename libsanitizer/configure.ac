@@ -312,6 +312,24 @@ if test "$have_getexecname" = "yes"; then
   AC_DEFINE(HAVE_GETEXECNAME, 1, [Define if getexecname is available.])
 fi
 
+# Check for rpc/xdr.h
+AC_CHECK_HEADERS(rpc/xdr.h)
+if test x"$ac_cv_header_rpc_xdr_h" = xyes; then
+  rpc_defs="$rpc_defs -DHAVE_RPC_XDR_H=1"
+else
+  rpc_defs="$rpc_defs -DHAVE_RPC_XDR_H=0"
+fi
+
+# Check for tirpc/rpc/xdr.h
+AC_CHECK_HEADERS(tirpc/rpc/xdr.h)
+if test x"$ac_cv_header_tirpc_rpc_xdr_h" = xyes; then
+  rpc_defs="$rpc_defs -DHAVE_TIRPC_RPC_XDR_H=1"
+else
+  rpc_defs="$rpc_defs -DHAVE_TIRPC_RPC_XDR_H=0"
+fi
+
+AC_SUBST([RPC_DEFS], [$rpc_defs])
+
 AM_CONDITIONAL(LIBBACKTRACE_SUPPORTED,
 	       [test "x${BACKTRACE_SUPPORTED}x${BACKTRACE_USES_MALLOC}" = "x1x0"])
 
