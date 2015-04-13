@@ -1025,8 +1025,8 @@ const struct processor_costs bdver1_cost = {
   4,					/* vec_align_load_cost.  */
   4,					/* vec_unalign_load_cost.  */
   4,					/* vec_store_cost.  */
-  2,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  4,					/* cond_taken_branch_cost.  */
+  2,					/* cond_not_taken_branch_cost.  */
 };
 
 /*  BDVER2 has optimized REP instruction for medium sized blocks, but for
@@ -1121,8 +1121,8 @@ const struct processor_costs bdver2_cost = {
   4,					/* vec_align_load_cost.  */
   4,					/* vec_unalign_load_cost.  */
   4,					/* vec_store_cost.  */
-  2,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  4,					/* cond_taken_branch_cost.  */
+  2,					/* cond_not_taken_branch_cost.  */
 };
 
 
@@ -1208,8 +1208,8 @@ struct processor_costs bdver3_cost = {
   4,					/* vec_align_load_cost.  */
   4,					/* vec_unalign_load_cost.  */
   4,					/* vec_store_cost.  */
-  2,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  4,					/* cond_taken_branch_cost.  */
+  2,					/* cond_not_taken_branch_cost.  */
 };
 
 /*  BDVER4 has optimized REP instruction for medium sized blocks, but for
@@ -1294,8 +1294,8 @@ struct processor_costs bdver4_cost = {
   4,					/* vec_align_load_cost.  */
   4,					/* vec_unalign_load_cost.  */
   4,					/* vec_store_cost.  */
-  2,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
+  4,					/* cond_taken_branch_cost.  */
+  2,					/* cond_not_taken_branch_cost.  */
 };
 
   /* BTVER1 has optimized REP instruction for medium sized blocks, but for
