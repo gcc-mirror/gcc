@@ -1,3 +1,9 @@
+2015-04-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-profie.c (ipa_profile): Check number of parameters
+	and possible polymorphic call targets before
+	devirtualizing.
+
 2015-04-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*bmi2_umul<mode><dwi>3_1): Merge from
