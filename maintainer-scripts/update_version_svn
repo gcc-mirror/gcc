@@ -20,7 +20,7 @@ SVN=${SVN:-/usr/bin/svn}
 # Compute the branches which we should update.
 BRANCHES=`$SVN ls $SVNROOT/branches \
 	  | sed -e 's/\///' \
-          | egrep 'gcc-[0-9]+_[0-9]+-branch$' \
+          | egrep 'gcc-[0-9]+(_[0-9]+)?-branch$' \
           | egrep -v $IGNORE_BRANCHES`
 # Always update the mainline.
 BRANCHES="${BRANCHES} ${ADD_BRANCHES}"

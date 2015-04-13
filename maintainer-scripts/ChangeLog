@@ -1,5 +1,8 @@
 2015-04-13  Jakub Jelinek  <jakub@redhat.com>
 
+	* update_version_svn: Update DATESTAMP also on
+	branches/gcc-[0-9]+-branch.
+
 	* gcc_release: Fix up thinko in the last commit, improve error
 	message.  Commit all ChangeLog, DEV-PHASE and BASE-VER changes
 	together, rather than doing dozens of separate commits.
