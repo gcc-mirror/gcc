@@ -1,3 +1,8 @@
+2015-04-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*bmi2_umul<mode><dwi>3_1): Merge from
+	*bmi2_umulsidi3_1 and *bmi2_umulditi3_1 using DWIH mode iterator.
+
 2015-04-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65204
