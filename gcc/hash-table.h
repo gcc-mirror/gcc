@@ -615,7 +615,7 @@ class hash_table<Descriptor, Allocator, false>
   typedef typename Descriptor::compare_type compare_type;
 
 public:
-  hash_table (size_t);
+  hash_table (size_t CXX_MEM_STAT_INFO);
   ~hash_table ();
 
   /* Current size (in entries) of the hash table.  */
@@ -751,7 +751,8 @@ private:
 };
 
 template<typename Descriptor, template<typename Type> class Allocator>
-hash_table<Descriptor, Allocator, false>::hash_table (size_t size) :
+hash_table<Descriptor, Allocator, false>::hash_table (size_t size
+						      MEM_STAT_DECL) :
   m_n_elements (0), m_n_deleted (0), m_searches (0), m_collisions (0)
 {
   unsigned int size_prime_index;
@@ -1116,7 +1117,7 @@ class hash_table<Descriptor, Allocator, true>
   typedef typename Descriptor::compare_type compare_type;
 
 public:
-  explicit hash_table (size_t, bool ggc = false);
+  explicit hash_table (size_t, bool ggc = false CXX_MEM_STAT_INFO);
   ~hash_table ();
 
   /* Create a hash_table in gc memory.  */
@@ -1245,7 +1246,7 @@ private:
   template<typename T> friend void gt_pch_nx (hash_table<T> *,
 					      gt_pointer_operator, void *);
 
-  value_type *alloc_entries (size_t n) const;
+  value_type *alloc_entries (size_t n CXX_MEM_STAT_INFO) const;
   value_type *find_empty_slot_for_expand (hashval_t);
   void expand ();
   static bool is_deleted (value_type &v)
@@ -1295,7 +1296,8 @@ private:
 };
 
 template<typename Descriptor, template<typename Type> class Allocator>
-hash_table<Descriptor, Allocator, true>::hash_table (size_t size, bool ggc) :
+hash_table<Descriptor, Allocator, true>::hash_table (size_t size, bool ggc
+						     MEM_STAT_DECL) :
   m_n_elements (0), m_n_deleted (0), m_searches (0), m_collisions (0),
   m_ggc (ggc)
 {
@@ -1304,7 +1306,7 @@ hash_table<Descriptor, Allocator, true>::hash_table (size_t size, bool ggc) :
   size_prime_index = hash_table_higher_prime_index (size);
   size = prime_tab[size_prime_index].prime;
 
-  m_entries = alloc_entries (size);
+  m_entries = alloc_entries (size PASS_MEM_STAT);
   m_size = size;
   m_size_prime_index = size_prime_index;
 }
@@ -1326,14 +1328,15 @@ hash_table<Descriptor, Allocator, true>::~hash_table ()
 
 template<typename Descriptor, template<typename Type> class Allocator>
 inline typename hash_table<Descriptor, Allocator, true>::value_type *
-hash_table<Descriptor, Allocator, true>::alloc_entries (size_t n) const
+hash_table<Descriptor, Allocator, true>::alloc_entries
+	 (size_t n MEM_STAT_DECL) const
 {
   value_type *nentries;
 
   if (!m_ggc)
     nentries = Allocator <value_type> ::data_alloc (n);
   else
-    nentries = ::ggc_cleared_vec_alloc<value_type> (n);
+    nentries = ::ggc_cleared_vec_alloc<value_type> (n PASS_MEM_STAT);
 
   gcc_assert (nentries != NULL);
   for (size_t i = 0; i < n; i++)
