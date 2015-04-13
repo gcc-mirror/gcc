@@ -1,5 +1,11 @@
 2015-04-13  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/65204
+	* tree-ssa-ccp.c (evaluate_stmt): Always evaluate address
+	takens for bit-CCP.
+
+2015-04-13  Richard Biener  <rguenther@suse.de>
+
 	PR target/65660
 	* config/i386/i386.c (bdver1_cost): Double cond_taken_branch_cost
 	and cond_not_taken_branch_cost to 4 and 2.
