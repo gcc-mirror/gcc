@@ -7,9 +7,9 @@
 @chapter Plugins
 @cindex Plugins
 
-GCC plugin is a loadable module that provides extra
-features to the compiler, which they can further pass
-around as a shareable module.
+GCC plugins are loadable modules that provide extra features to the
+compiler.  Like GCC itself they can be distributed in source and
+binary forms.
 
 GCC plugins provide developers with a rich subset of
 the GCC API to allow them to extend GCC as they see fit.

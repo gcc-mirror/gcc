@@ -1,3 +1,7 @@
+2015-04-13  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/plugins.texi: Rewrite first introductory paragraph.
+
 2015-04-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-vrp.c (nonnull_arg_p): THIS pointers and references are non-zero.
