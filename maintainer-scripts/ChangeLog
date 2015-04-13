@@ -1,3 +1,9 @@
+2015-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc_release: Fix up thinko in the last commit, improve error
+	message.  Commit all ChangeLog, DEV-PHASE and BASE-VER changes
+	together, rather than doing dozens of separate commits.
+
 2015-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc_release: For RELEASE_MAJOR 5+ only use the major
