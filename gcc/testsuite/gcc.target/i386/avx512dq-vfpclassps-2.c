@@ -21,7 +21,7 @@ int check_fp_class_sp (float src, int imm)
   int PInf_res = (isinf (src) == 1);
   int NInf_res = (isinf (src) == -1);
   int Denorm_res = (fpclassify (src) == FP_SUBNORMAL);
-  int FinNeg_res = finite (src) && (src < 0);
+  int FinNeg_res = __builtin_finite (src) && (src < 0);
 
   int result = (((imm & 1) && qNaN_res)
 		|| (((imm >> 1) & 1) && Pzero_res)
