@@ -1,3 +1,9 @@
+2015-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/65761
+	* cfgrtl.c (rtl_split_edge): For EDGE_CROSSING split, use
+	get_last_bb_insn (after) instead of NEXT_INSN (BB_END (after)).
+
 2015-04-13  Jan Hubicka  <hubicka@ucw.cz>
 	    Gerald Pfeifer  <gerald@pfeifer.com>
 
