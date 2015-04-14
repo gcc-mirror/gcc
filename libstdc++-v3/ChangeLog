@@ -1,3 +1,8 @@
+2015-04-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Fix typos.
+	* doc/html/manual/api.html: Regenerate.
+
 2015-04-14  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/29_atomics/atomic/62259.cc: Assert atomic
