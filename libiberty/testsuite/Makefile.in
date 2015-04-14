@@ -33,7 +33,7 @@ SHELL = @SHELL@
 
 CC = @CC@
 CFLAGS = @CFLAGS@
-LIBCFLAGS = $(CFLAGS)
+LIBCFLAGS = $(CFLAGS) $(LDFLAGS)
 
 # Multilib support variables.
 MULTISRCTOP =
