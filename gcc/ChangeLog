@@ -1,3 +1,14 @@
+2015-04-14  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/arm_neon.h (vst1_lane_f32, vst1_lane_f64,
+	vst1_lane_p8, vst1_lane_p16, vst1_lane_s8, vst1_lane_s16,
+	vst1_lane_s32, vst1_lane_s64, vst1_lane_u8, vst1_lane_u16,
+	vst1_lane_u32, vst1_lane_u64, vst1q_lane_f32, vst1q_lane_f64,
+	vst1q_lane_p8, vst1q_lane_p16, vst1q_lane_s8, vst1q_lane_s16,
+	vst1q_lane_s32, vst1q_lane_s64, vst1q_lane_u8, vst1q_lane_u16,
+	vst1q_lane_u32, vst1q_lane_u64): Reimplement with pointer dereference
+	and __aarch64_vget_lane_any.
+
 2015-04-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/65761
