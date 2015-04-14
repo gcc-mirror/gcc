@@ -2941,7 +2941,6 @@ create_cie_data (void)
   dw_trace_info cie_trace;
 
   dw_stack_pointer_regnum = DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM);
-  dw_frame_pointer_regnum = DWARF_FRAME_REGNUM (HARD_FRAME_POINTER_REGNUM);
 
   memset (&cie_trace, 0, sizeof (cie_trace));
   cur_trace = &cie_trace;
@@ -2994,6 +2993,9 @@ create_cie_data (void)
 static unsigned int
 execute_dwarf2_frame (void)
 {
+  /* Different HARD_FRAME_POINTER_REGNUM might coexist in the same file.  */
+  dw_frame_pointer_regnum = DWARF_FRAME_REGNUM (HARD_FRAME_POINTER_REGNUM);
+
   /* The first time we're called, compute the incoming frame state.  */
   if (cie_cfi_vec == NULL)
     create_cie_data ();

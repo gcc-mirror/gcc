@@ -1,3 +1,8 @@
+2015-04-14  Christian Bruel  <christian.bruel@st.com>
+
+	* execute_dwarf2_frame (dw_frame_pointer_regnum): Reinitialize for each
+	function.
+
 2015-04-14  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/63387
