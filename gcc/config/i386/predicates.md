@@ -62,19 +62,31 @@
   (and (match_code "reg")
        (match_test "MASK_REGNO_P (REGNO (op))")))
 
-;; True if the operand is a Q_REGS class register.
-(define_predicate "q_regs_operand"
-  (match_operand 0 "register_operand")
-{
-  if (GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
-  return ANY_QI_REG_P (op);
-})
+;; Return true if op is a QImode register.
+(define_predicate "any_QIreg_operand"
+  (and (match_code "reg")
+       (match_test "ANY_QI_REGNO_P (REGNO (op))")))
 
-;; Return true if OP is a memory operands that can be used in sibcalls.
-(define_predicate "sibcall_memory_operand"
-  (and (match_operand 0 "memory_operand")
-       (match_test "CONSTANT_P (XEXP (op, 0))")))
+;; Return true if op is one of QImode registers: %[abcd][hl].
+(define_predicate "QIreg_operand"
+  (and (match_code "reg")
+       (match_test "QI_REGNO_P (REGNO (op))")))
+
+;; Return true if op is a QImode register operand other than %[abcd][hl].
+(define_predicate "ext_QIreg_operand"
+  (and (match_test "TARGET_64BIT")
+       (match_code "reg")
+       (not (match_test "QI_REGNO_P (REGNO (op))"))))
+
+;; Return true if op is the AX register.
+(define_predicate "ax_reg_operand"
+  (and (match_code "reg")
+       (match_test "REGNO (op) == AX_REG")))
+
+;; Return true if op is the flags register.
+(define_predicate "flags_reg_operand"
+  (and (match_code "reg")
+       (match_test "REGNO (op) == FLAGS_REG")))
 
 ;; Match an SI or HImode register for a zero_extract.
 (define_special_predicate "ext_register_operand"
@@ -88,7 +100,7 @@
 
   /* Be careful to accept only registers having upper parts.  */
   return (REG_P (op)
-	  && (REGNO (op) > LAST_VIRTUAL_REGISTER || REGNO (op) <= BX_REG));
+	  && (REGNO (op) > LAST_VIRTUAL_REGISTER || QI_REGNO_P (REGNO (op))));
 })
 
 ;; Match nonimmediate operands, but exclude memory operands on 64bit targets.
@@ -102,27 +114,6 @@
   (if_then_else (match_test "TARGET_64BIT")
     (match_operand 0 "nonmemory_operand")
     (match_operand 0 "general_operand")))
-
-;; Return true if op is the AX register.
-(define_predicate "ax_reg_operand"
-  (and (match_code "reg")
-       (match_test "REGNO (op) == AX_REG")))
-
-;; Return true if op is the flags register.
-(define_predicate "flags_reg_operand"
-  (and (match_code "reg")
-       (match_test "REGNO (op) == FLAGS_REG")))
-
-;; Return true if op is one of QImode registers: %[abcd][hl].
-(define_predicate "QIreg_operand"
-  (match_test "QI_REG_P (op)"))
-
-;; Return true if op is a QImode register operand other than
-;; %[abcd][hl].
-(define_predicate "ext_QIreg_operand"
-  (and (match_code "reg")
-       (match_test "TARGET_64BIT")
-       (match_test "REGNO (op) > BX_REG")))
 
 ;; Return true if VALUE is symbol reference
 (define_predicate "symbol_operand"
@@ -603,6 +594,11 @@
   (ior (match_operand 0 "register_operand")
        (and (not (match_test "TARGET_X32"))
 	    (match_operand 0 "memory_operand"))))
+
+;; Return true if OP is a memory operands that can be used in sibcalls.
+(define_predicate "sibcall_memory_operand"
+  (and (match_operand 0 "memory_operand")
+       (match_test "CONSTANT_P (XEXP (op, 0))")))
 
 ;; Test for a valid operand for a call instruction.
 ;; Allow constant call address operands in Pmode only.

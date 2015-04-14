@@ -1,3 +1,19 @@
+2015-04-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (any_QIreg_operand): Rename from
+	q_regs_operand.  Do not process subregs.
+	(QIreg_operand): Use QI_REGNO_P predicate.
+	(ext_QIreg_operand): Ditto.
+	(ext_register_operand): Ditto.
+	* config/i386/i386.md (TEST splitters): Use QIreg_operand predicate.
+	(AND splitters): Ditto.
+	(AND with -65536 splitter): Add SWI48 mode for operand 0.
+	(AND with -256 splitter): Use any_QIreg_operand predicate and
+	SWI248 mode for operand 0.
+	(AND with -65281 splitter): Use QIreg_operand predicate and SWI248
+	mode for operand 0.
+	(SETCC + MOVZBL peepholes): Update for renamed any_QIreg_operand.
+
 2015-04-13  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/plugins.texi: Rewrite first introductory paragraph.
