@@ -1,3 +1,14 @@
+2015-04-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/61347
+	* include/bits/stl_iterator_base_funcs.h (_List_iterator,
+	_List_const_iterator): Declare.
+	(__distance): Declare new overloads for _List_iterator and
+	_List_const_iterator.
+	* include/bits/stl_list.h (__distance): New overloads for
+	_List_iterator and _List_const_iterator.
+	* testsuite/23_containers/list/61347.cc: New testcase.
+
 2015-04-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/evolution.xml: Fix typos.
