@@ -1,3 +1,7 @@
+2015-04-14  Max Ostapenko  <m.ostapenko@partner.samsung.com>
+
+	* testsuite/Makefile.in (LIBCFLAGS): Add LDFLAGS.
+
 2015-04-10  Jakub Jelinek  <jakub@redhat.com>
 	    Iain Sandoe  <iain@codesourcery.com>
 
