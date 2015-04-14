@@ -1,5 +1,7 @@
 2015-04-14  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (lookup_template_class_1): Use coerce_innermost_template_parms.
+
 	PR c++/65695
 	* cvt.c (cp_fold_convert): Avoid wrapping PTRMEM_CST in NOP_EXPR.
 
