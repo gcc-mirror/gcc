@@ -1,3 +1,10 @@
+2015-04-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/avx512dq-vfpclasspd-2.c (check_fp_class_dp): Use
+	__builtin_finite instead of finite.
+	* gcc.target/i386/avx512dq-vfpclassps-2.c (check_fp_class_sp):
+	Likewise.
+
 2015-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65747
