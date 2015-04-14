@@ -70,7 +70,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "sese.h"
 #include "tree-ssa-propagate.h"
-#include "cp/cp-tree.h"
 
 #ifdef HAVE_isl
 #include "graphite-poly.h"
@@ -239,7 +238,7 @@ graphite_can_represent_scev (tree scev)
      the only nodes, which are disabled in case they are pointers to object
      types, but this can be changed.  */
 
-  if (TYPE_PTROB_P (TREE_TYPE (scev)) && TREE_CODE (scev) == SSA_NAME)
+  if (POINTER_TYPE_P (TREE_TYPE (scev)) && TREE_CODE (scev) == SSA_NAME)
     return false;
 
   switch (TREE_CODE (scev))
