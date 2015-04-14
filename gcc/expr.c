@@ -4879,7 +4879,13 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	  offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, EXPAND_SUM);
 	  address_mode = get_address_mode (to_rtx);
 	  if (GET_MODE (offset_rtx) != address_mode)
-	    offset_rtx = convert_to_mode (address_mode, offset_rtx, 0);
+	    {
+		/* We cannot be sure that the RTL in offset_rtx is valid outside
+		   of a memory address context, so force it into a register
+		   before attempting to convert it to the desired mode.  */
+	      offset_rtx = force_operand (offset_rtx, NULL_RTX);
+	      offset_rtx = convert_to_mode (address_mode, offset_rtx, 0);
+	    }
 
 	  /* If we have an expression in OFFSET_RTX and a non-zero
 	     byte offset in BITPOS, adding the byte offset before the
@@ -10258,7 +10264,13 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 
 	    address_mode = get_address_mode (op0);
 	    if (GET_MODE (offset_rtx) != address_mode)
-	      offset_rtx = convert_to_mode (address_mode, offset_rtx, 0);
+	      {
+		/* We cannot be sure that the RTL in offset_rtx is valid outside
+		   of a memory address context, so force it into a register
+		   before attempting to convert it to the desired mode.  */
+		offset_rtx = force_operand (offset_rtx, NULL_RTX);
+		offset_rtx = convert_to_mode (address_mode, offset_rtx, 0);
+	      }
 
 	    /* See the comment in expand_assignment for the rationale.  */
 	    if (mode1 != VOIDmode
