@@ -932,6 +932,15 @@ along with GCC; see the file COPYING3.  If not see
    (if (ic == ncmp)
     (ncmp @0 @1)))))
 
+/* Unordered tests if either argument is a NaN.  */
+(simplify
+ (bit_ior (unordered @0 @0) (unordered @1 @1))
+ (if ((GIMPLE && types_compatible_p (TREE_TYPE (@0), TREE_TYPE (@1)))
+      || (GENERIC && TREE_TYPE (@0) == TREE_TYPE (@1)))
+  (unordered @0 @1)))
+(simplify
+ (bit_ior:c (unordered @0 @0) (unordered:c@2 @0 @1))
+ @2)
 
 /* Simplification of math builtins.  */
 

@@ -1,3 +1,9 @@
+2015-04-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/63387
+	* match.pd ((x unord x) | (y unord y) -> (x unord y),
+	(x unord x) | (x unord y) -> (x unord y)): New simplifications.
+
 2015-04-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (any_QIreg_operand): Rename from
