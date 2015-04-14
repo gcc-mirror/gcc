@@ -1,3 +1,12 @@
+2015-04-14  Momchil Velikov  <momchil.velikov@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/60994
+	* parser.c (cp_parser_class_name): Add enum_ok parameter.
+	(cp_parser_qualifying_entity): Use it instead of cp_parser_type_name.
+	(cp_parser_diagnose_invalid_type_name): Don't assume a template is
+	a class template.
+
 2015-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/65736
