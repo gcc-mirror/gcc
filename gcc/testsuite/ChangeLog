@@ -1,3 +1,8 @@
+2015-04-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/63387
+	* gcc.dg/pr63387.c: New testcase.
+
 2015-04-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/tree-ssa/nonzero-3.C: New testcase.
