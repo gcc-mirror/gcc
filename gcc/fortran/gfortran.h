@@ -2815,6 +2815,7 @@ bool verify_bind_c_derived_type (gfc_symbol *);
 bool verify_com_block_vars_c_interop (gfc_common_head *);
 gfc_symtree *generate_isocbinding_symbol (const char *, iso_c_binding_symbol,
 					  const char *, gfc_symtree *, bool);
+void gfc_save_symbol_data (gfc_symbol *);
 int gfc_get_sym_tree (const char *, gfc_namespace *, gfc_symtree **, bool);
 int gfc_get_ha_symbol (const char *, gfc_symbol **);
 int gfc_get_ha_sym_tree (const char *, gfc_symtree **);

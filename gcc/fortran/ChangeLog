@@ -1,3 +1,15 @@
+2015-04-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/56674
+	PR fortran/58813
+	PR fortran/59016
+	PR fortran/59024
+	* symbol.c (save_symbol_data, gfc_save_symbol_data): Rename the
+	former to the latter and make it non-static.  Update callers.
+	* gfortran.h (gfc_save_symbol_data): New prototype.
+	* decl.c (gfc_match_decl_type_spec): Call 'gfc_save_symbol_data'
+	before modifying symbols 'sym' and 'dt_sym'.
+
 2015-03-23  Andre Vehreschild  <vehre@gmx.de>
 	    Janus Weil  <janus@gcc.gnu.org>
 
