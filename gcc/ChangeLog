@@ -1,5 +1,10 @@
 2015-04-14  Richard Biener  <rguenther@suse.de>
 
+	* graphite-scop-detection.c: Do not include cp/cp-tree.h.
+	(graphite_can_represent_scev): Use POINTER_TYPE_P.
+
+2015-04-14  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/65758
 	* tree-ssa-ccp.c (get_value_from_alignment): Adjust mask test
 	against -1.
