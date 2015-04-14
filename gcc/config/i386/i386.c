@@ -15211,7 +15211,7 @@ print_reg (rtx x, int code, FILE *file)
 	      && regno != FPSR_REG
 	      && regno != FPCR_REG);
 
-  if (code == 'w' || MMX_REG_P (x))
+  if (code == 'w')
     code = 2;
   else if (code == 'b')
     code = 1;
@@ -15276,7 +15276,7 @@ print_reg (rtx x, int code, FILE *file)
     case 8:
     case 4:
     case 12:
-      if (! ANY_FP_REG_P (x) && ! ANY_MASK_REG_P (x) && ! ANY_BND_REG_P (x))
+      if (LEGACY_INT_REG_P (x))
 	putc (code == 8 && TARGET_64BIT ? 'r' : 'e', file);
       /* FALLTHRU */
     case 16:
@@ -15295,21 +15295,14 @@ print_reg (rtx x, int code, FILE *file)
       reg = qi_high_reg_name[regno];
       break;
     case 32:
+    case 64:
       if (SSE_REG_P (x))
 	{
 	  gcc_assert (!duplicated);
-	  putc ('y', file);
+	  putc (code == 32 ? 'y' : 'z', file);
 	  fputs (hi_reg_name[regno] + 1, file);
 	  return;
 	}
-    case 64:
-      if (SSE_REG_P (x))
-        {
-          gcc_assert (!duplicated);
-          putc ('z', file);
-          fputs (hi_reg_name[REGNO (x)] + 1, file);
-          return;
-        }
       break;
     default:
       gcc_unreachable ();

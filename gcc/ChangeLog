@@ -1,3 +1,14 @@
+2015-04-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (LEGACY_INT_REG_P): New define.
+	(LEGACY_INT_REGNO_P): Ditto.
+	(GENERAL_REGNO_P): Use LEGACY_INT_REGNO_P.
+	(ANY_MASK_REG_P): Remove.
+	(BND_REG_P): Rename from ANY_BND_REG_P.
+	* config/i386/i386.c (print_reg): Use LEGACY_INT_REG_P to print
+	legacy integer registers.  Do not handle MMX_REG_P in a special way.
+	Merge 64byte and 32byte SSE handling.
+
 2015-04-14  Nick Clifton  <nickc@redhat.com>
 
 	* expr.c (expand_assignment): Force an address offset computation
