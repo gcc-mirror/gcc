@@ -7724,60 +7724,10 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       /* Calculate the BOUND_ARGS.  These will be the args that are
 	 actually tsubst'd into the definition to create the
 	 instantiation.  */
-      if (parm_depth > 1)
-	{
-	  /* We have multiple levels of arguments to coerce, at once.  */
-	  int i;
-	  int saved_depth = TMPL_ARGS_DEPTH (arglist);
-
-	  tree bound_args = make_tree_vec (parm_depth);
-
-	  for (i = saved_depth,
-		 t = DECL_TEMPLATE_PARMS (gen_tmpl);
-	       i > 0 && t != NULL_TREE;
-	       --i, t = TREE_CHAIN (t))
-	    {
-	      tree a;
-	      if (i == saved_depth)
-		a = coerce_template_parms (TREE_VALUE (t),
-					   arglist, gen_tmpl,
-					   complain,
-					   /*require_all_args=*/true,
-					   /*use_default_args=*/true);
-	      else
-		/* Outer levels should have already been coerced.  */
-		a = TMPL_ARGS_LEVEL (arglist, i);
-
-	      /* Don't process further if one of the levels fails.  */
-	      if (a == error_mark_node)
-		{
-		  /* Restore the ARGLIST to its full size.  */
-		  TREE_VEC_LENGTH (arglist) = saved_depth;
-		  return error_mark_node;
-		}
-
-	      SET_TMPL_ARGS_LEVEL (bound_args, i, a);
-
-	      /* We temporarily reduce the length of the ARGLIST so
-		 that coerce_template_parms will see only the arguments
-		 corresponding to the template parameters it is
-		 examining.  */
-	      TREE_VEC_LENGTH (arglist)--;
-	    }
-
-	  /* Restore the ARGLIST to its full size.  */
-	  TREE_VEC_LENGTH (arglist) = saved_depth;
-
-	  arglist = bound_args;
-	}
-      else
-	arglist
-	  = coerce_template_parms (INNERMOST_TEMPLATE_PARMS (parmlist),
-				   INNERMOST_TEMPLATE_ARGS (arglist),
-				   gen_tmpl,
-				   complain,
-				   /*require_all_args=*/true,
-				   /*use_default_args=*/true);
+      arglist = coerce_innermost_template_parms (parmlist, arglist, gen_tmpl,
+						 complain,
+						 /*require_all_args=*/true,
+						 /*use_default_args=*/true);
 
       if (arglist == error_mark_node)
 	/* We were unable to bind the arguments.  */
