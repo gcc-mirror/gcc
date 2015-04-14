@@ -1656,8 +1656,7 @@ prohibited_class_reg_set_mode_p (enum reg_class rclass,
 {
   HARD_REG_SET temp;
   
-  // ??? Is this assert right
-  // lra_assert (hard_reg_set_subset_p (set, reg_class_contents[rclass]));
+  lra_assert (hard_reg_set_subset_p (reg_class_contents[rclass], set));
   COPY_HARD_REG_SET (temp, set);
   AND_COMPL_HARD_REG_SET (temp, lra_no_alloc_regs);
   return (hard_reg_set_subset_p

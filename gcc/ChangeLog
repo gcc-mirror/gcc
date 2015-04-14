@@ -1,3 +1,9 @@
+2015-04-14  Yvan Roux  <yvan.roux@linaro.org>
+
+	PR target/65729
+	* lra-constraints.c (prohibited_class_reg_set_mode_p): Restore and fix
+	the assertiion.
+
 2015-04-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (LEGACY_INT_REG_P): New define.
