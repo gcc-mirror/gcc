@@ -585,7 +585,8 @@ get_value_from_alignment (tree expr)
   val.mask = (POINTER_TYPE_P (type) || TYPE_UNSIGNED (type)
 	      ? wi::mask <widest_int> (TYPE_PRECISION (type), false)
 	      : -1).and_not (align / BITS_PER_UNIT - 1);
-  val.lattice_val = val.mask == -1 ? VARYING : CONSTANT;
+  val.lattice_val
+    = wi::sext (val.mask, TYPE_PRECISION (type)) == -1 ? VARYING : CONSTANT;
   if (val.lattice_val == CONSTANT)
     val.value = build_int_cstu (type, bitpos / BITS_PER_UNIT);
   else
@@ -990,7 +991,7 @@ ccp_lattice_meet (ccp_prop_value_t *val1, ccp_prop_value_t *val2)
       val1->mask = (val1->mask | val2->mask
 		    | (wi::to_widest (val1->value)
 		       ^ wi::to_widest (val2->value)));
-      if (val1->mask == -1)
+      if (wi::sext (val1->mask, TYPE_PRECISION (TREE_TYPE (val1->value))) == -1)
 	{
 	  val1->lattice_val = VARYING;
 	  val1->value = NULL_TREE;
@@ -1499,10 +1500,10 @@ bit_value_unop (enum tree_code code, tree type, tree rhs)
 
   gcc_assert ((rval.lattice_val == CONSTANT
 	       && TREE_CODE (rval.value) == INTEGER_CST)
-	      || rval.mask == -1);
+	      || wi::sext (rval.mask, TYPE_PRECISION (TREE_TYPE (rhs))) == -1);
   bit_value_unop_1 (code, type, &value, &mask,
 		    TREE_TYPE (rhs), value_to_wide_int (rval), rval.mask);
-  if (mask != -1)
+  if (wi::sext (mask, TYPE_PRECISION (type)) != -1)
     {
       val.lattice_val = CONSTANT;
       val.mask = mask;
@@ -1540,14 +1541,16 @@ bit_value_binop (enum tree_code code, tree type, tree rhs1, tree rhs2)
 
   gcc_assert ((r1val.lattice_val == CONSTANT
 	       && TREE_CODE (r1val.value) == INTEGER_CST)
-	      || r1val.mask == -1);
+	      || wi::sext (r1val.mask,
+			   TYPE_PRECISION (TREE_TYPE (rhs1))) == -1);
   gcc_assert ((r2val.lattice_val == CONSTANT
 	       && TREE_CODE (r2val.value) == INTEGER_CST)
-	      || r2val.mask == -1);
+	      || wi::sext (r2val.mask,
+			   TYPE_PRECISION (TREE_TYPE (rhs2))) == -1);
   bit_value_binop_1 (code, type, &value, &mask,
 		     TREE_TYPE (rhs1), value_to_wide_int (r1val), r1val.mask,
 		     TREE_TYPE (rhs2), value_to_wide_int (r2val), r2val.mask);
-  if (mask != -1)
+  if (wi::sext (mask, TYPE_PRECISION (type)) != -1)
     {
       val.lattice_val = CONSTANT;
       val.mask = mask;
@@ -1596,7 +1599,7 @@ bit_value_assume_aligned (gimple stmt, tree attr, ccp_prop_value_t ptrval,
     return ptrval;
   gcc_assert ((ptrval.lattice_val == CONSTANT
 	       && TREE_CODE (ptrval.value) == INTEGER_CST)
-	      || ptrval.mask == -1);
+	      || wi::sext (ptrval.mask, TYPE_PRECISION (type)) == -1);
   if (attr == NULL_TREE)
     {
       /* Get aligni and misaligni from __builtin_assume_aligned.  */
@@ -1648,7 +1651,7 @@ bit_value_assume_aligned (gimple stmt, tree attr, ccp_prop_value_t ptrval,
   bit_value_binop_1 (BIT_AND_EXPR, type, &value, &mask,
 		     type, value_to_wide_int (ptrval), ptrval.mask,
 		     type, value_to_wide_int (alignval), alignval.mask);
-  if (mask != -1)
+  if (wi::sext (mask, TYPE_PRECISION (type)) != -1)
     {
       val.lattice_val = CONSTANT;
       val.mask = mask;
