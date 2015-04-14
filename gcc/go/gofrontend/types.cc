@@ -2259,6 +2259,14 @@ Type::uncommon_type_constructor(Gogo* gogo, Type* uncommon_type,
 	  if (in_function != NULL)
 	    {
 	      n.append(1, '.');
+	      const Typed_identifier* rcvr =
+		in_function->func_value()->type()->receiver();
+	      if (rcvr != NULL)
+		{
+		  Named_type* rcvr_type = rcvr->type()->deref()->named_type();
+		  n.append(Gogo::unpack_hidden_name(rcvr_type->name()));
+		  n.append(1, '.');
+		}
 	      n.append(Gogo::unpack_hidden_name(in_function->name()));
 	      if (index > 0)
 		{
@@ -9102,22 +9110,17 @@ Named_type::do_reflection(Gogo* gogo, std::string* ret) const
     }
   if (!this->is_builtin())
     {
-      // We handle -fgo-prefix and -fgo-pkgpath differently here for
-      // compatibility with how the compiler worked before
-      // -fgo-pkgpath was introduced.  When -fgo-pkgpath is specified,
-      // we use it to make a unique reflection string, so that the
-      // type canonicalization in the reflect package will work.  In
-      // order to be compatible with the gc compiler, we put tabs into
-      // the package path, so that the reflect methods can discard it.
+      // When -fgo-pkgpath or -fgo-prefix is specified, we use it to
+      // make a unique reflection string, so that the type
+      // canonicalization in the reflect package will work.  In order
+      // to be compatible with the gc compiler, we put tabs into the
+      // package path, so that the reflect methods can discard it.
       const Package* package = this->named_object_->package();
-      if (gogo->pkgpath_from_option())
-	{
-	  ret->push_back('\t');
-	  ret->append(package != NULL
-		      ? package->pkgpath_symbol()
-		      : gogo->pkgpath_symbol());
-	  ret->push_back('\t');
-	}
+      ret->push_back('\t');
+      ret->append(package != NULL
+		  ? package->pkgpath_symbol()
+		  : gogo->pkgpath_symbol());
+      ret->push_back('\t');
       ret->append(package != NULL
 		  ? package->package_name()
 		  : gogo->package_name());
@@ -9126,6 +9129,14 @@ Named_type::do_reflection(Gogo* gogo, std::string* ret) const
   if (this->in_function_ != NULL)
     {
       ret->push_back('\t');
+      const Typed_identifier* rcvr =
+	this->in_function_->func_value()->type()->receiver();
+      if (rcvr != NULL)
+	{
+	  Named_type* rcvr_type = rcvr->type()->deref()->named_type();
+	  ret->append(Gogo::unpack_hidden_name(rcvr_type->name()));
+	  ret->push_back('.');
+	}
       ret->append(Gogo::unpack_hidden_name(this->in_function_->name()));
       ret->push_back('$');
       if (this->in_function_index_ > 0)
