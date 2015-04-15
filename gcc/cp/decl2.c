@@ -1861,15 +1861,19 @@ maybe_make_one_only (tree decl)
 bool
 vague_linkage_p (tree decl)
 {
+  if (!TREE_PUBLIC (decl))
+    {
+      gcc_checking_assert (!DECL_COMDAT (decl));
+      return false;
+    }
   /* Unfortunately, import_export_decl has not always been called
      before the function is processed, so we cannot simply check
      DECL_COMDAT.  */
   if (DECL_COMDAT (decl)
-      || (((TREE_CODE (decl) == FUNCTION_DECL
-	    && DECL_DECLARED_INLINE_P (decl))
-	   || (DECL_LANG_SPECIFIC (decl)
-	       && DECL_TEMPLATE_INSTANTIATION (decl)))
-	  && TREE_PUBLIC (decl)))
+      || (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_DECLARED_INLINE_P (decl))
+      || (DECL_LANG_SPECIFIC (decl)
+	  && DECL_TEMPLATE_INSTANTIATION (decl)))
     return true;
   else if (DECL_FUNCTION_SCOPE_P (decl))
     /* A local static in an inline effectively has vague linkage.  */

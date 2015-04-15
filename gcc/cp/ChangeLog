@@ -1,5 +1,9 @@
 2015-04-15  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (grokmethod): Only set DECL_COMDAT if TREE_PUBLIC is set.
+	* method.c (implicitly_declare_fn): Likewise.
+	* decl2.c (vague_linkage_p): Check TREE_PUBLIC first.
+
 	* decl2.c (determine_visibility): Use get_template_info.
 
 2015-04-15  Jason Merrill  <jason@redhat.com>
