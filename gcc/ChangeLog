@@ -1,3 +1,9 @@
+2015-04-14  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* doc/extend.texi (__sync Builtins): Simplify some text.  Update
+	details about the implementation.  Make clear preference for
+	__atomic builtins.  Reduce possibility of future change.
+
 2015-04-15  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.opt (mallow-string-insns): New option.

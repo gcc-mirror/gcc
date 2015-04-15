@@ -8213,14 +8213,18 @@ identifier, or a sequence of member accesses and array references.
 The following built-in functions
 are intended to be compatible with those described
 in the @cite{Intel Itanium Processor-specific Application Binary Interface},
-section 7.4.  As such, they depart from the normal GCC practice of using
-the @samp{__builtin_} prefix, and further that they are overloaded such that
-they work on multiple types.
+section 7.4.  As such, they depart from normal GCC practice by not using
+the @samp{__builtin_} prefix and also by being overloaded so that they
+work on multiple types.
 
 The definition given in the Intel documentation allows only for the use of
-the types @code{int}, @code{long}, @code{long long} as well as their unsigned
+the types @code{int}, @code{long}, @code{long long} or their unsigned
 counterparts.  GCC allows any integral scalar or pointer type that is
 1, 2, 4 or 8 bytes in length.
+
+These functions are implemented in terms of the @samp{__atomic}
+builtins (@pxref{__atomic Builtins}).  They should not be used for new
+code which should use the @samp{__atomic} builtins instead.
 
 Not all operations are supported by all target processors.  If a particular
 operation cannot be implemented on the target processor, a warning is
@@ -8243,11 +8247,10 @@ after the operation.
 All of the routines are described in the Intel documentation to take
 ``an optional list of variables protected by the memory barrier''.  It's
 not clear what is meant by that; it could mean that @emph{only} the
-following variables are protected, or it could mean that these variables
-should in addition be protected.  At present GCC ignores this list and
-protects all variables that are globally accessible.  If in the future
-we make some use of this list, an empty list will continue to mean all
-globally accessible variables.
+listed variables are protected, or it could mean a list of additional
+variables to be protected.  The list is ignored by GCC which treats it as
+empty.  GCC interprets an empty list as meaning that all globally
+accessible variables should be protected.
 
 @table @code
 @item @var{type} __sync_fetch_and_add (@var{type} *ptr, @var{type} value, ...)
