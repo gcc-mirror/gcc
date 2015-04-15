@@ -1,3 +1,15 @@
+2015-04-14 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/65089
+	* io/format.h (free_format): New function to free memory
+	allocated for building format error messages.
+	* io/format.c (format_error): Add checks before freeing memory
+	to avoid potential segfaults and free formatting data when
+	needed on error conditions. Always allocate and NULL terminate
+	the string.
+	* io/transfer.c (st_read_done, st_write_done): Use new
+	free_format function to clean up memory allocations when done.
+
 2015-03-28 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/65596

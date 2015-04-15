@@ -243,6 +243,18 @@ get_fnode (format_data *fmt, fnode **head, fnode **tail, format_token t)
 }
 
 
+/* free_format()-- Free allocated format string.  */
+void
+free_format (st_parameter_dt *dtp)
+{
+  if ((dtp->common.flags & IOPARM_DT_HAS_FORMAT) && dtp->format)
+    {
+      free (dtp->format);
+      dtp->format = NULL;
+    }
+}
+
+
 /* free_format_data()-- Free all allocated format data.  */
 
 void
@@ -1145,7 +1157,8 @@ format_error (st_parameter_dt *dtp, const fnode *f, const char *message)
 
   p = strchr (buffer, '\0');
 
-  memcpy (p, dtp->format, width);
+  if (dtp->format)
+    memcpy (p, dtp->format, width);
 
   p += width;
   *p++ = '\n';
@@ -1157,6 +1170,26 @@ format_error (st_parameter_dt *dtp, const fnode *f, const char *message)
 
   *p++ = '^';
   *p = '\0';
+
+  /* Cleanup any left over memory allocations before calling generate
+     error.  */
+  if (is_internal_unit (dtp))
+    {
+      if (dtp->format != NULL)
+	{
+	  free (dtp->format);
+	  dtp->format = NULL;
+	}
+
+      /* Leave these alone if IOSTAT was given because execution will
+	 return from generate error in those cases.  */
+      if (!(dtp->common.flags & IOPARM_HAS_IOSTAT))
+	{
+	  free (dtp->u.p.fmt);
+	  free_format_hash_table (dtp->u.p.current_unit);
+	  free_internal_unit (dtp);
+	}
+    }
 
   generate_error (&dtp->common, LIBERROR_FORMAT, buffer);
 }
@@ -1218,13 +1251,8 @@ parse_format (st_parameter_dt *dtp)
 
   /* Not found so proceed as follows.  */
 
-  if (format_cache_ok)
-    {
-      char *fmt_string = xmalloc (dtp->format_len + 1);
-      memcpy (fmt_string, dtp->format, dtp->format_len);
-      dtp->format = fmt_string;
-      dtp->format[dtp->format_len] = '\0';
-    }
+  char *fmt_string = fc_strdup_notrim (dtp->format, dtp->format_len);
+  dtp->format = fmt_string;
 
   dtp->u.p.fmt = fmt = xmalloc (sizeof (format_data));
   fmt->format_string = dtp->format;
@@ -1256,19 +1284,13 @@ parse_format (st_parameter_dt *dtp)
   else
     fmt->error = "Missing initial left parenthesis in format";
 
-  if (fmt->error)
-    {
-      format_error (dtp, NULL, fmt->error);
-      if (format_cache_ok)
-	free (dtp->format);
-      free_format_hash_table (dtp->u.p.current_unit);
-      return;
-    }
-
   if (format_cache_ok)
     save_parsed_format (dtp);
   else
     dtp->u.p.format_not_saved = 1;
+
+  if (fmt->error)
+    format_error (dtp, NULL, fmt->error);
 }
 
 
