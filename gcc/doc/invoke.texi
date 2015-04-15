@@ -940,6 +940,7 @@ See RS/6000 and PowerPC Options.
 -mmax-constant-size=@gol
 -mint-register=@gol
 -mpid@gol
+-mallow-string-insns -mno-allow-string-insns@gol
 -mno-warn-multiple-fast-interrupts@gol
 -msave-acc-in-interrupts}
 
@@ -20057,6 +20058,27 @@ fast interrupt handler when it is compiling a file.  The default is to
 issue a warning for each extra fast interrupt handler found, as the RX
 only supports one such interrupt.
 
+@item -mallow-string-insns
+@itemx -mno-allow-string-insns
+@opindex mallow-string-insns
+@opindex mno-allow-string-insns
+Enables or disables the use of the string manipulation instructions
+@code{SMOVF}, @code{SCMPU}, @code{SMOVB}, @code{SMOVU}, @code{SUNTIL}
+@code{SWHILE} and also the @code{RMPA} instruction.  These
+instructions may prefetch data, which is not safe to do if accessing
+an I/O register.  (See section 12.2.7 of the RX62N Group User's Manual
+for more information).
+
+The default is to allow these instructions, but it is not possible for
+GCC to reliably detect all circumstances where a string instruction
+might be used to access an I/O register, so their use cannot be
+disabled automatically.  Instead it is reliant upon the programmer to
+use the @option{-mno-allow-string-insns} option if their program
+accesses I/O space.
+
+When the instructions are enabled GCC defines the C preprocessor
+symbol @code{__RX_ALLOW_STRING_INSNS__}, otherwise it defines the
+symbol @code{__RX_DISALLOW_STRING_INSNS__}.
 @end table
 
 @emph{Note:} The generic GCC command-line option @option{-ffixed-@var{reg}}
