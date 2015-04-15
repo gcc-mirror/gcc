@@ -1,3 +1,8 @@
+2015-04-14  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* tree.c (replace_placeholders_t): Remove unused type.
+	(replace_placeholders): Remove unused pset.
+
 2015-04-14  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (lookup_template_class_1): Use coerce_innermost_template_parms.
