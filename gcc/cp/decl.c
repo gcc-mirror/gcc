@@ -13708,6 +13708,20 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 
   store_parm_decls (current_function_parms);
 
+  if (!processing_template_decl
+      && flag_lifetime_dse && DECL_CONSTRUCTOR_P (decl1))
+    {
+      /* Insert a clobber to let the back end know that the object storage
+	 is dead when we enter the constructor.  */
+      tree btype = CLASSTYPE_AS_BASE (current_class_type);
+      tree clobber = build_constructor (btype, NULL);
+      TREE_THIS_VOLATILE (clobber) = true;
+      tree bref = build_nop (build_reference_type (btype), current_class_ptr);
+      bref = convert_from_reference (bref);
+      tree exprstmt = build2 (MODIFY_EXPR, btype, bref, clobber);
+      finish_expr_stmt (exprstmt);
+    }
+
   return true;
 }
 

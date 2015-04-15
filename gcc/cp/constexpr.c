@@ -543,7 +543,16 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
       || TREE_CODE (body) == EH_SPEC_BLOCK)
     body = TREE_OPERAND (body, 0);
   if (TREE_CODE (body) == STATEMENT_LIST)
-    body = STATEMENT_LIST_HEAD (body)->stmt;
+    {
+      tree_stmt_iterator i = tsi_start (body);
+      while (true)
+	{
+	  body = tsi_stmt (i);
+	  if (TREE_CODE (body) == BIND_EXPR)
+	    break;
+	  tsi_next (&i);
+	}
+    }
   body = BIND_EXPR_BODY (body);
   if (TREE_CODE (body) == CLEANUP_POINT_EXPR)
     {
@@ -2552,6 +2561,11 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 {
   constexpr_ctx new_ctx = *ctx;
 
+  tree init = TREE_OPERAND (t, 1);
+  if (TREE_CLOBBER_P (init))
+    /* Just ignore clobbers.  */
+    return void_node;
+
   /* First we figure out where we're storing to.  */
   tree target = TREE_OPERAND (t, 0);
   target = cxx_eval_constant_expression (ctx, target,
@@ -2633,9 +2647,8 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       new_ctx.object = target;
     }
 
-  tree init = cxx_eval_constant_expression (&new_ctx, TREE_OPERAND (t, 1),
-					    false,
-					    non_constant_p, overflow_p);
+  init = cxx_eval_constant_expression (&new_ctx, init, false,
+				       non_constant_p, overflow_p);
   if (target == object)
     /* The hash table might have moved since the get earlier.  */
     ctx->values->put (object, init);
