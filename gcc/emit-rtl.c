@@ -3175,12 +3175,10 @@ make_safe_from (rtx x, rtx other)
 rtx_insn *
 get_last_insn_anywhere (void)
 {
-  struct sequence_stack *stack;
-  if (get_last_insn ())
-    return get_last_insn ();
-  for (stack = seq_stack; stack; stack = stack->next)
-    if (stack->last != 0)
-      return stack->last;
+  struct sequence_stack *seq;
+  for (seq = get_current_sequence (); seq; seq = seq->next)
+    if (seq->last != 0)
+      return seq->last;
   return 0;
 }
 
@@ -4014,19 +4012,14 @@ add_insn_after_nobb (rtx_insn *insn, rtx_insn *after)
 
   if (next == NULL)
     {
-      if (get_last_insn () == after)
-	set_last_insn (insn);
-      else
-	{
-	  struct sequence_stack *stack = seq_stack;
-	  /* Scan all pending sequences too.  */
-	  for (; stack; stack = stack->next)
-	    if (after == stack->last)
-	      {
-		stack->last = insn;
-		break;
-	      }
-	}
+      struct sequence_stack *seq;
+
+      for (seq = get_current_sequence (); seq; seq = seq->next)
+	if (after == seq->last)
+	  {
+	    seq->last = insn;
+	    break;
+	  }
     }
 }
 
@@ -4043,21 +4036,16 @@ add_insn_before_nobb (rtx_insn *insn, rtx_insn *before)
 
   if (prev == NULL)
     {
-      if (get_insns () == before)
-	set_first_insn (insn);
-      else
-	{
-	  struct sequence_stack *stack = seq_stack;
-	  /* Scan all pending sequences too.  */
-	  for (; stack; stack = stack->next)
-	    if (before == stack->first)
-	      {
-		stack->first = insn;
-		break;
-	      }
+      struct sequence_stack *seq;
 
-	  gcc_assert (stack);
-	}
+      for (seq = get_current_sequence (); seq; seq = seq->next)
+	if (before == seq->first)
+	  {
+	    seq->first = insn;
+	    break;
+	  }
+
+      gcc_assert (seq);
     }
 }
 
@@ -4168,24 +4156,18 @@ remove_insn (rtx uncast_insn)
 	  SET_NEXT_INSN (sequence->insn (sequence->len () - 1)) = next;
 	}
     }
-  else if (get_insns () == insn)
-    {
-      if (next)
-        SET_PREV_INSN (next) = NULL;
-      set_first_insn (next);
-    }
   else
     {
-      struct sequence_stack *stack = seq_stack;
-      /* Scan all pending sequences too.  */
-      for (; stack; stack = stack->next)
-	if (insn == stack->first)
+      struct sequence_stack *seq;
+
+      for (seq = get_current_sequence (); seq; seq = seq->next)
+	if (insn == seq->first)
 	  {
-	    stack->first = next;
+	    seq->first = next;
 	    break;
 	  }
 
-      gcc_assert (stack);
+      gcc_assert (seq);
     }
 
   if (next)
@@ -4197,20 +4179,18 @@ remove_insn (rtx uncast_insn)
 	  SET_PREV_INSN (sequence->insn (0)) = prev;
 	}
     }
-  else if (get_last_insn () == insn)
-    set_last_insn (prev);
   else
     {
-      struct sequence_stack *stack = seq_stack;
-      /* Scan all pending sequences too.  */
-      for (; stack; stack = stack->next)
-	if (insn == stack->last)
+      struct sequence_stack *seq;
+
+      for (seq = get_current_sequence (); seq; seq = seq->next)
+	if (insn == seq->last)
 	  {
-	    stack->last = prev;
+	    seq->last = prev;
 	    break;
 	  }
 
-      gcc_assert (stack);
+      gcc_assert (seq);
     }
 
   /* Fix up basic block boundaries, if necessary.  */
@@ -5399,11 +5379,10 @@ start_sequence (void)
   else
     tem = ggc_alloc<sequence_stack> ();
 
-  tem->next = seq_stack;
+  tem->next = get_current_sequence ()->next;
   tem->first = get_insns ();
   tem->last = get_last_insn ();
-
-  seq_stack = tem;
+  get_current_sequence ()->next = tem;
 
   set_first_insn (0);
   set_last_insn (0);
@@ -5445,13 +5424,11 @@ push_to_sequence2 (rtx_insn *first, rtx_insn *last)
 void
 push_topmost_sequence (void)
 {
-  struct sequence_stack *stack, *top = NULL;
+  struct sequence_stack *top;
 
   start_sequence ();
 
-  for (stack = seq_stack; stack; stack = stack->next)
-    top = stack;
-
+  top = get_topmost_sequence ();
   set_first_insn (top->first);
   set_last_insn (top->last);
 }
@@ -5462,11 +5439,9 @@ push_topmost_sequence (void)
 void
 pop_topmost_sequence (void)
 {
-  struct sequence_stack *stack, *top = NULL;
+  struct sequence_stack *top;
 
-  for (stack = seq_stack; stack; stack = stack->next)
-    top = stack;
-
+  top = get_topmost_sequence ();
   top->first = get_insns ();
   top->last = get_last_insn ();
 
@@ -5489,11 +5464,11 @@ pop_topmost_sequence (void)
 void
 end_sequence (void)
 {
-  struct sequence_stack *tem = seq_stack;
+  struct sequence_stack *tem = get_current_sequence ()->next;
 
   set_first_insn (tem->first);
   set_last_insn (tem->last);
-  seq_stack = tem->next;
+  get_current_sequence ()->next = tem->next;
 
   memset (tem, 0, sizeof (*tem));
   tem->next = free_sequence_stack;
@@ -5505,7 +5480,7 @@ end_sequence (void)
 int
 in_sequence_p (void)
 {
-  return seq_stack != 0;
+  return get_current_sequence ()->next != 0;
 }
 
 /* Put the various virtual registers into REGNO_REG_RTX.  */
@@ -5721,7 +5696,7 @@ init_emit (void)
   cur_debug_insn_uid = 1;
   reg_rtx_no = LAST_VIRTUAL_REGISTER + 1;
   first_label_num = label_num;
-  seq_stack = NULL;
+  get_current_sequence ()->next = NULL;
 
   /* Init the tables that describe all the pseudo regs.  */
 

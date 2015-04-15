@@ -4056,24 +4056,11 @@ m32c_encode_section_info (tree decl, rtx rtl, int first)
 static int
 m32c_leaf_function_p (void)
 {
-  rtx_insn *saved_first, *saved_last;
-  struct sequence_stack *seq;
   int rv;
 
-  saved_first = crtl->emit.x_first_insn;
-  saved_last = crtl->emit.x_last_insn;
-  for (seq = crtl->emit.sequence_stack; seq && seq->next; seq = seq->next)
-    ;
-  if (seq)
-    {
-      crtl->emit.x_first_insn = seq->first;
-      crtl->emit.x_last_insn = seq->last;
-    }
-
+  push_topmost_sequence ();
   rv = leaf_function_p ();
-
-  crtl->emit.x_first_insn = saved_first;
-  crtl->emit.x_last_insn = saved_last;
+  pop_topmost_sequence ();
   return rv;
 }
 
@@ -4084,23 +4071,17 @@ static bool
 m32c_function_needs_enter (void)
 {
   rtx_insn *insn;
-  struct sequence_stack *seq;
   rtx sp = gen_rtx_REG (Pmode, SP_REGNO);
   rtx fb = gen_rtx_REG (Pmode, FB_REGNO);
 
-  insn = get_insns ();
-  for (seq = crtl->emit.sequence_stack;
-       seq;
-       insn = seq->first, seq = seq->next);
-
-  while (insn)
-    {
-      if (reg_mentioned_p (sp, insn))
-	return true;
-      if (reg_mentioned_p (fb, insn))
-	return true;
-      insn = NEXT_INSN (insn);
-    }
+  for (insn = get_topmost_sequence ()->first; insn; insn = NEXT_INSN (insn))
+    if (NONDEBUG_INSN_P (insn))
+      {
+	if (reg_mentioned_p (sp, insn))
+	  return true;
+	if (reg_mentioned_p (fb, insn))
+	  return true;
+      }
   return false;
 }
 

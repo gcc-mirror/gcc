@@ -1,3 +1,22 @@
+2015-04-15  Alan Modra  <amodra@gmail.com>
+
+	* function.h (struct emit_status): Delete x_first_insn, x_last_insn
+	and sequence_stack.  Add seq.
+	(seq_stack): Delete.
+	* function.c (prepare_function_start): Don't access x_last_insn.
+	* emit-rtl.h (get_current_sequence, get_topmost_sequence): New.
+	(get_insns, set_first_insn, get_last_insn, set_last_insn): Use them.
+	* emit_rtl.c (start_sequence, push_topmost_sequence,
+	pop_topmost_sequence, end_sequence, in_sequence_p, init_emit): Use
+	sequence accessors.
+	(get_last_insn_anywhere, add_insn_after_nobb, add_insn_before_nobb,
+	remove_insn): Likewise.  Simplify.
+	* config/m32c/m32c.c (m32c_leaf_function_p): Use push_topmost_sequence
+	and pop_topmost_sequence.
+	(m32c_function_needs_enter): Use get_topmost_sequence.  Ignore
+	debug insns.
+	* config/rs6000/rs6000.c (rs6000_call_aix): Use get_current_sequence.
+
 2015-04-14  Yvan Roux  <yvan.roux@linaro.org>
 
 	PR target/65729
