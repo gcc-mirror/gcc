@@ -4330,8 +4330,10 @@ chkp_execute (void)
 static bool
 chkp_gate (void)
 {
-  return cgraph_node::get (cfun->decl)->instrumentation_clone
-    || lookup_attribute ("chkp ctor", DECL_ATTRIBUTES (cfun->decl));
+  cgraph_node *node = cgraph_node::get (cfun->decl);
+  return ((node != NULL
+	   && node->instrumentation_clone)
+	   || lookup_attribute ("chkp ctor", DECL_ATTRIBUTES (cfun->decl)));
 }
 
 namespace {

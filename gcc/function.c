@@ -4862,6 +4862,29 @@ prepare_function_start (void)
   frame_pointer_needed = 0;
 }
 
+void
+push_dummy_function (bool with_decl)
+{
+  tree fn_decl, fn_type, fn_result_decl;
+
+  gcc_assert (!in_dummy_function);
+  in_dummy_function = true;
+
+  if (with_decl)
+    {
+      fn_type = build_function_type_list (void_type_node, NULL_TREE);
+      fn_decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL, NULL_TREE,
+			    fn_type);
+      fn_result_decl = build_decl (UNKNOWN_LOCATION, RESULT_DECL,
+					 NULL_TREE, void_type_node);
+      DECL_RESULT (fn_decl) = fn_result_decl;
+    }
+  else
+    fn_decl = NULL_TREE;
+
+  push_struct_function (fn_decl);
+}
+
 /* Initialize the rtl expansion mechanism so that we can do simple things
    like generate sequences.  This is used to provide a context during global
    initialization of some passes.  You must call expand_dummy_function_end
@@ -4870,9 +4893,7 @@ prepare_function_start (void)
 void
 init_dummy_function_start (void)
 {
-  gcc_assert (!in_dummy_function);
-  in_dummy_function = true;
-  push_struct_function (NULL_TREE);
+  push_dummy_function (false);
   prepare_function_start ();
 }
 
@@ -5144,6 +5165,13 @@ expand_function_start (tree subr)
     stack_check_probe_note = emit_note (NOTE_INSN_DELETED);
 }
 
+void
+pop_dummy_function (void)
+{
+  pop_cfun ();
+  in_dummy_function = false;
+}
+
 /* Undo the effects of init_dummy_function_start.  */
 void
 expand_dummy_function_end (void)
@@ -5159,8 +5187,7 @@ expand_dummy_function_end (void)
 
   free_after_parsing (cfun);
   free_after_compilation (cfun);
-  pop_cfun ();
-  in_dummy_function = false;
+  pop_dummy_function ();
 }
 
 /* Helper for diddle_return_value.  */

@@ -896,6 +896,8 @@ extern int get_next_funcdef_no (void);
 extern int get_last_funcdef_no (void);
 extern void allocate_struct_function (tree, bool);
 extern void push_struct_function (tree fndecl);
+extern void push_dummy_function (bool);
+extern void pop_dummy_function (void);
 extern void init_dummy_function_start (void);
 extern void init_function_start (tree);
 extern void stack_protect_epilogue (void);
