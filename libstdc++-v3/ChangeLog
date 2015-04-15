@@ -1,3 +1,7 @@
+2015-04-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* scripts/extract_symvers.pl: Ignore elfdump error output.
+
 2015-04-14  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/61347
