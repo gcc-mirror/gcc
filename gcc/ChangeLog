@@ -1,3 +1,15 @@
+2015-04-15  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/65487
+	* function.c (push_dummy_function): New function.
+	(init_dummy_function_start): Use push_dummy_function.
+	(pop_dummy_function): New function.  Factored out of ...
+	(expand_dummy_function_end): ... here.
+	* function.h (push_dummy_function, pop_dummy_function): Declare.
+	* passes.c (pass_manager::dump_passes): Use push_dummy_function and
+	pop_dummy_function.
+	* tree-chkp.c (chkp_gate): Handle cgraph_node::get (cfun->decl) == NULL.
+
 2015-04-15  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/42522
