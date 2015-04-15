@@ -1,3 +1,11 @@
+2015-04-15  Jason Merrill  <jason@redhat.com>
+	    Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65727
+	* lambda.c (lambda_expr_this_capture): In unevaluated context go
+	through the normal loop, just don't capture.
+	(maybe_resolve_dummy): Handle null return.
+
 2015-04-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* call.c (enforce_access): Emit error + inform.
