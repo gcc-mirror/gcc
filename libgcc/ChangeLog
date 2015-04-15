@@ -1,3 +1,8 @@
+2015-04-15  Chen Gang  <gang.chen.5i5j@gmail.com>
+
+	* gthr-single.h (__GTHREAD_MUTEX_INIT_FUNCTION): Use empty
+	do-while loop as macro body to avoid warnings.
+
 2015-04-10  Jakub Jelinek  <jakub@redhat.com>
 	    Iain Sandoe  <iain@codesourcery.com>
 
