@@ -2620,7 +2620,12 @@ rx_expand_builtin (tree exp,
 	(op, gen_mvtachi, true);
     case RX_BUILTIN_MVTACLO: return rx_expand_void_builtin_1_arg
 	(op, gen_mvtaclo, true);
-    case RX_BUILTIN_RMPA:    emit_insn (gen_rmpa ()); return NULL_RTX;
+    case RX_BUILTIN_RMPA:
+      if (rx_allow_string_insns)
+	emit_insn (gen_rmpa ());
+      else
+	error ("-mno-allow-string-insns forbids the generation of the RMPA instruction");
+      return NULL_RTX;
     case RX_BUILTIN_MVFC:    return rx_expand_builtin_mvfc (arg, target);
     case RX_BUILTIN_MVTC:    return rx_expand_builtin_mvtc (exp);
     case RX_BUILTIN_MVTIPL:  return rx_expand_builtin_mvtipl (op);

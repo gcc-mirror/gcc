@@ -2165,7 +2165,7 @@
 	(match_operand:BLK 2 "memory_operand"))   ;; Source
    (use (match_operand:SI  0 "register_operand")) ;; Updated Dest
   ]
-  ""
+  "rx_allow_string_insns"
   {
     rtx addr1 = gen_rtx_REG (SImode, 1);
     rtx addr2 = gen_rtx_REG (SImode, 2);
@@ -2192,7 +2192,7 @@
    (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (clobber (reg:SI 3))]
-  ""
+  "rx_allow_string_insns"
   "smovu"
   [(set_attr "length" "2")
    (set_attr "timings" "1111")] ;; The timing is a guesstimate.
@@ -2207,7 +2207,7 @@
    (clobber (reg:SI 3))
    (clobber (reg:CC CC_REG))
    ]
-  ""
+  "rx_allow_string_insns"
   "mov\t%1, r1\n\tmov\t#0, r2\n\tsuntil.b\n\tmov\tr1, %0\n\tsub\t#1, %0"
   [(set_attr "length" "10")
    (set_attr "timings" "1111")] ;; The timing is a guesstimate.
@@ -2221,7 +2221,7 @@
      (match_operand          3 "immediate_operand") ;; Align
      (unspec_volatile:BLK [(reg:SI 1) (reg:SI 2) (reg:SI 3)] UNSPEC_MOVMEM)]
     )]
-  ""
+  "rx_allow_string_insns"
   {
     rtx addr1 = gen_rtx_REG (SImode, 1);
     rtx addr2 = gen_rtx_REG (SImode, 2);
@@ -2263,7 +2263,7 @@
    (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (clobber (reg:SI 3))]
-  ""
+  "rx_allow_string_insns"
   "smovf"
   [(set_attr "length" "2")
    (set_attr "timings" "1111")] ;; The timing is a guesstimate.
@@ -2307,7 +2307,7 @@
 			    UNSPEC_CMPSTRN))
    (use (match_operand:SI                       3 "register_operand"))  ;; Max Length
    (match_operand:SI                            4 "immediate_operand")] ;; Known Align
-  ""
+  "rx_allow_string_insns"
   {
     rtx str1 = gen_rtx_REG (SImode, 1);
     rtx str2 = gen_rtx_REG (SImode, 2);
@@ -2328,7 +2328,7 @@
 			     (match_operand:BLK 2 "memory_operand")]    ;; String2
 			    UNSPEC_CMPSTRN))
    (match_operand:SI                            3 "immediate_operand")] ;; Known Align
-  ""
+  "rx_allow_string_insns"
   {
     rtx str1 = gen_rtx_REG (SImode, 1);
     rtx str2 = gen_rtx_REG (SImode, 2);
@@ -2353,7 +2353,7 @@
    (clobber (reg:SI 2))
    (clobber (reg:SI 3))
    (clobber (reg:CC CC_REG))]
-  ""
+  "rx_allow_string_insns"
   "scmpu		; Perform the string comparison
    mov     #-1, %0      ; Set up -1 result (which cannot be created
                         ; by the SC insn)
@@ -2471,7 +2471,7 @@
   (clobber (reg:SI 1))
   (clobber (reg:SI 2))
   (clobber (reg:SI 3))]
-  ""
+  "rx_allow_string_insns"
   "rmpa"
   [(set_attr "length" "2")
    (set_attr "timings" "1010")]

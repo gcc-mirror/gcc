@@ -1,3 +1,19 @@
+2015-04-15  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.opt (mallow-string-insns): New option.
+	* config/rx/rx.c (RX_BUILTIN_RMPA): Disable the use of this
+	builtin if string instructions are denied.
+	* config/rx/rx.h (TARGET_CPU_CPP_BUILTINS): Define
+	__RX_ALLOW_STRING_INSNS__ or __RX_DISALLOW_STRING_INSNS__, as
+	appropriate.
+	(ASM_SPEC): Pass -mno-allow-string-insns on to the assembler.
+	* config/rx/rx.md (movstr): Enable pattern only if string
+	instructions are allowed.
+	(rx_movstr, rx_strend, movmemsi, rx_movmem): Likewise.
+	(cmpstrnsi, cmpstrsi, rx_cmpstrn, rmpa): Likewise.
+	* config/rx/t-rx (MULTILIB_OPTIONS): Add mno-allow-string-insns.
+	(MULTILIB_DIRNAMES): Add no-strings.
+	* doc/invoke.texi: Document -mno-allow-string-insns.
 2015-04-15  Alan Modra  <amodra@gmail.com>
 
 	PR target/65408
