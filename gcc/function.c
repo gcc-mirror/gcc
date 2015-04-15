@@ -4831,7 +4831,7 @@ push_struct_function (tree fndecl)
 static void
 prepare_function_start (void)
 {
-  gcc_assert (!crtl->emit.x_last_insn);
+  gcc_assert (!get_last_insn ());
   init_temp_slots ();
   init_emit ();
   init_varasm_status ();

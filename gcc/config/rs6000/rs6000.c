@@ -33096,7 +33096,7 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
 	     override a static chain value.  */
 	  if (!direct_call_p
 	      && TARGET_POINTERS_TO_NESTED_FUNCTIONS
-	      && !chain_already_loaded (crtl->emit.sequence_stack->last))
+	      && !chain_already_loaded (get_current_sequence ()->next->last))
 	    {
 	      rtx sc_reg = gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM);
 	      rtx func_sc_offset = GEN_INT (2 * GET_MODE_SIZE (Pmode));

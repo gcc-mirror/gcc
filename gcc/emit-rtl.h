@@ -75,12 +75,36 @@ extern int mem_expr_equal_p (const_tree, const_tree);
 
 extern bool need_atomic_barrier_p (enum memmodel, bool);
 
+/* Return the current sequence.  */
+
+static inline struct sequence_stack *
+get_current_sequence (void)
+{
+  return &crtl->emit.seq;
+}
+
+/* Return the outermost sequence.  */
+
+static inline struct sequence_stack *
+get_topmost_sequence (void)
+{
+  struct sequence_stack *seq, *top;
+
+  seq = get_current_sequence ();
+  do
+    {
+      top = seq;
+      seq = seq->next;
+    } while (seq);
+  return top;
+}
+
 /* Return the first insn of the current sequence or current function.  */
 
 static inline rtx_insn *
 get_insns (void)
 {
-  return crtl->emit.x_first_insn;
+  return get_current_sequence ()->first;
 }
 
 /* Specify a new insn as the first in the chain.  */
@@ -89,7 +113,7 @@ static inline void
 set_first_insn (rtx_insn *insn)
 {
   gcc_checking_assert (!insn || !PREV_INSN (insn));
-  crtl->emit.x_first_insn = insn;
+  get_current_sequence ()->first = insn;
 }
 
 /* Return the last insn emitted in current sequence or current function.  */
@@ -97,7 +121,7 @@ set_first_insn (rtx_insn *insn)
 static inline rtx_insn *
 get_last_insn (void)
 {
-  return crtl->emit.x_last_insn;
+  return get_current_sequence ()->last;
 }
 
 /* Specify a new insn as the last in the chain.  */
@@ -106,7 +130,7 @@ static inline void
 set_last_insn (rtx_insn *insn)
 {
   gcc_checking_assert (!insn || !NEXT_INSN (insn));
-  crtl->emit.x_last_insn = insn;
+  get_current_sequence ()->last = insn;
 }
 
 /* Return a number larger than any instruction's uid in this function.  */
