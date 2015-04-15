@@ -9,17 +9,17 @@ namespace N {
   namespace M {
     class A {
       friend void f<int>(int); // N::f
-      static int x;   // { dg-error "private" }
+      static int x;   // { dg-message "private" }
     };
     
     class B {
       template <class T> friend void f(T);  // M::f
-      static int x;   // { dg-error "private" }
+      static int x;   // { dg-message "private" }
     };
 
     class C {
       friend void g(); // M::g
-      static int x;   // { dg-error "private" }
+      static int x;   // { dg-message "private" }
     };
 
     template <class T> void f(T)  // will be instantiated as f<long>

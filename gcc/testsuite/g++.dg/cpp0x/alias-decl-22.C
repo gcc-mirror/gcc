@@ -7,6 +7,6 @@ using foo = typename T::bar;	// { dg-error "this context" }
 
 class B
 {
-  typedef int bar;		// { dg-error "private" }
+  typedef int bar;		// { dg-message "private" }
   foo<B> f;			// { dg-message "required" }
 };

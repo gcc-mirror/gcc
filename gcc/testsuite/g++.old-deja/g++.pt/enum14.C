@@ -24,8 +24,8 @@ template <class>
 struct B
 {
   private:
-  enum foo {bar}; // { dg-error "" } private
-  typedef int baz;  // { dg-error "" } private
+  enum foo {bar}; // { dg-message "" } private
+  typedef int baz;  // { dg-message "" } private
 };
 
 struct D: public B<int>

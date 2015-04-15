@@ -18,7 +18,7 @@ public:
   void test();
 };
 
-int Base::fooprivate=42;	// { dg-error "private" }
+int Base::fooprivate=42;	// { dg-message "private" }
 int Base::fooprotected=42;
 int Base::foopublic=42;
 

@@ -4,7 +4,7 @@
 
 class x
 {
-  typedef int privtype; // { dg-error "is private" }
+  typedef int privtype; // { dg-message "private" }
 
 protected:
   typedef int type;

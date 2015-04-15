@@ -3,7 +3,7 @@
 // Date: 25 Jan 1994 23:41:33 -0500
 // Bug: g++ forgets access decls after the definition.
 
-class inh { // { dg-error "" } inaccessible
+class inh { // { dg-message "" } inaccessible
         int a;
 protected:
         void myf(int);

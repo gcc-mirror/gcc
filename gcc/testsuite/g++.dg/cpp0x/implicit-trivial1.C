@@ -8,7 +8,7 @@ struct A
 {
   A() {}
 private:
-  template <class T> A(T&);	// { dg-error "private" }
+  template <class T> A(T&);	// { dg-message "private" }
 };
 
 struct B			// { dg-error "implicitly deleted|this context" }

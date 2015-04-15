@@ -2,7 +2,7 @@
 
 template<int> class A
 {
-  virtual ~A();			// { dg-error "non-deleted|private" }
+  virtual ~A();			// { dg-message "non-deleted|private" }
 };
 
 struct B : A<0>, A<1>		// { dg-error "deleted|context" }

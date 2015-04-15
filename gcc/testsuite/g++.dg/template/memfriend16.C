@@ -17,7 +17,7 @@ template<class T> struct A
 };
 
 class C {
-  int i;	// { dg-error "private" }
+  int i;	// { dg-message "private" }
   template<class T> template <class U> friend struct A<T>::B1;
 };
 

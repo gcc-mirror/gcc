@@ -2,24 +2,24 @@
 
 class A {
   union {
-    int i;       // { dg-error "private" }
+    int i;       // { dg-message "private" }
   };
   union {
-    int j;       // { dg-error "private" }
+    int j;       // { dg-message "private" }
   }; 
   union {
     union {
-      int k;     // { dg-error "private" }
+      int k;     // { dg-message "private" }
     };
     union {
       union {
-	int l;   // { dg-error "private" }
+	int l;   // { dg-message "private" }
       };
       union {
-	int m;   // { dg-error "private" }
+	int m;   // { dg-message "private" }
 	union {
-	  int n; // { dg-error "private" }
-	  int o; // { dg-error "private" }
+	  int n; // { dg-message "private" }
+	  int o; // { dg-message "private" }
 	};
       };
     };

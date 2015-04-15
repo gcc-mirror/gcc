@@ -4,7 +4,7 @@
 
 class A
 {
-  typedef int mytype; // { dg-error "typedef int A::mytype' is private" }
+  typedef int mytype; // { dg-message "private" }
 };
 
 template <class T> class B : public A

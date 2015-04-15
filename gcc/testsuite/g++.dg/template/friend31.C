@@ -10,7 +10,7 @@ template <typename T, typename U> struct F; // { dg-message "previous declaratio
 class W
 {
   template<int i> friend class F;	// { dg-error "template parameter" }
-  int x;                                // { dg-error "private" }
+  int x;                                // { dg-message "private" }
 };
 
 template <typename T, typename U> struct F

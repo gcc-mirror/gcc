@@ -21,7 +21,7 @@ class C
   template <class U>
   friend void S<T>::f(U);
 
-  int i; // { dg-error "" } private
+  int i; // { dg-message "" } private
 };
 
 

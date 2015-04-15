@@ -14,7 +14,7 @@ template <class T>
 class A
 {
 public:
-      void Fun() { printf( "Fun fun fun!\n" ); } // { dg-error "" } private
+      void Fun() { printf( "Fun fun fun!\n" ); } // { dg-message "" } private
 };
 
 

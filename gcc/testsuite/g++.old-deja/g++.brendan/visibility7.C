@@ -3,7 +3,7 @@
 class X
 {
 public:
-  void fn ();// { dg-error "" } .*
+  void fn ();// { dg-message "" } .*
 };
 class Y : private X
 {};

@@ -9,8 +9,8 @@ template <typename> struct Template {};
  
 template<template<typename> class D> 
 struct B { 
-    static void foo1(const D<void> *);	// { dg-error "const" }
-    static void foo2(volatile D<void> *);// { dg-error "volatile" }
+    static void foo1(const D<void> *);	// { dg-message "declared" }
+    static void foo2(volatile D<void> *);// { dg-message "declared" }
 }; 
  
 class E : protected B<Template> {}; 

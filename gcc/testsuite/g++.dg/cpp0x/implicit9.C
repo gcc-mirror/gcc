@@ -5,7 +5,7 @@ struct A
 {
   A();
 private:
-  ~A();				// { dg-error "private" }
+  ~A();				// { dg-message "private" }
 };
 
 struct B: A { };		// { dg-error "implicitly deleted|context" }

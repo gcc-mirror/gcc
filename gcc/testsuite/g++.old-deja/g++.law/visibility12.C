@@ -6,7 +6,7 @@
 // Subject:  member access rule bug
 // Message-ID: <9306300528.AA17185@coda.mel.dit.CSIRO.AU>
 struct a {
-  int aa; // { dg-error "" } private
+  int aa; // { dg-message "" } private
         };
 
 class b : private a {

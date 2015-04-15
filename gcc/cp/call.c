@@ -6020,12 +6020,22 @@ enforce_access (tree basetype_path, tree decl, tree diag_decl,
       if (complain & tf_error)
 	{
 	  if (TREE_PRIVATE (decl))
-	    error ("%q+#D is private", diag_decl);
+	    {
+	      error ("%q#D is private within this context", diag_decl);
+	      inform (DECL_SOURCE_LOCATION (diag_decl),
+		      "declared private here");
+	    }
 	  else if (TREE_PROTECTED (decl))
-	    error ("%q+#D is protected", diag_decl);
+	    {
+	      error ("%q#D is protected within this context", diag_decl);
+	      inform (DECL_SOURCE_LOCATION (diag_decl),
+		      "declared protected here");
+	    }
 	  else
-	    error ("%q+#D is inaccessible", diag_decl);
-	  error ("within this context");
+	    {
+	      error ("%q#D is inaccessible within this context", diag_decl);
+	      inform (DECL_SOURCE_LOCATION (diag_decl), "declared here");
+	    }
 	}
       return false;
     }

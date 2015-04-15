@@ -3,8 +3,8 @@
 extern "C" int printf (const char *, ...);
 
 class A {
-        int	i; // { dg-error "" } private
-        int	j; // { dg-error "" } private
+        int	i; // { dg-message "" } private
+        int	j; // { dg-message "" } private
     public:
 	int	h;
 	A() { i=10; j=20; }

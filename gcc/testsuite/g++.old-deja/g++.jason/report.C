@@ -42,7 +42,7 @@ int foo2 (int (*a)(int) = &foo)
 }
 
 class X{
-  class Y{};			// { dg-error "" } private
+  class Y{};			// { dg-message "" } private
 };
 
 typedef int const * bart ();

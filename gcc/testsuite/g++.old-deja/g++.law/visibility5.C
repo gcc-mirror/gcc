@@ -4,7 +4,7 @@
 class a {
 
 private:
-  a (int i);// { dg-error "" } .*
+  a (int i);// { dg-message "" } .*
 
 public:
   a ();

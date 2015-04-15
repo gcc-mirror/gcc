@@ -1,7 +1,7 @@
 // { dg-do assemble  }
 // GROUPS passed visibility
 class X {
-      void g (int); // { dg-error "" } private
+      void g (int); // { dg-message "" } private
 public:
   void g (double);
 };
