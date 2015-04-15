@@ -12,6 +12,11 @@
 
 2015-04-15  Jeff Law  <law@redhat.com>
 
+	PR tree-optimization/47679
+	* tree-ssa-dom.c (build_and_record_new_cond): Moved to avoid
+	need for forward declaration in upcoming changes.
+	(record_conditions, record_edge_info): Likewise.
+
 	PR rtl-optimization/42522
 	* cse.c (fold_rtx): Try to simplify a ZERO_EXTRACT or
 	SIGN_EXTRACT as a whole object rather than simplifying
