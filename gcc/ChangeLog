@@ -1,3 +1,20 @@
+2015-04-15  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c (rl78_expand_prologue): Mark large stack
+	decrement instruction as being frame related.
+	(rl78_print_operand_1): Handle 'p' modifier to add +0 to HL
+	based addresses.
+	If zero extending a function address enclose the operation in
+	%code(...).
+	(rl78_preferred_reload_class): New function.
+	(TARGET_PREFERRED_RELOAD_CLASS): Define.
+	* config/rl78/rl78.md: Remove useless constraints in expanders.
+	(mulqi3_rl78): Remove + qualifier on input-only operand 1.
+	(mulhi3_rl78): Likewise.
+	(mulhi3_g13): Likewise.
+	(mulsi3_rl78): Likewise.
+	(es_addr): Move to before the multiply patterns.
+
 2015-04-15  Alan Modra  <amodra@gmail.com>
 
 	* function.h (struct emit_status): Delete x_first_insn, x_last_insn
