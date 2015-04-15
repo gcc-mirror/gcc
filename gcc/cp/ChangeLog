@@ -1,4 +1,8 @@
 2015-04-15  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (determine_visibility): Use get_template_info.
+
+2015-04-15  Jason Merrill  <jason@redhat.com>
 	    Marek Polacek  <polacek@redhat.com>
 
 	PR c++/65727
