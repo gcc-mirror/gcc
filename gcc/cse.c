@@ -3150,6 +3150,15 @@ fold_rtx (rtx x, rtx_insn *insn)
     {
     case MEM:
     case SUBREG:
+    /* The first operand of a SIGN/ZERO_EXTRACT has a different meaning
+       than it would in other contexts.  Basically its mode does not
+       signify the size of the object read.  That information is carried
+       by size operand.    If we happen to have a MEM of the appropriate
+       mode in our tables with a constant value we could simplify the
+       extraction incorrectly if we allowed substitution of that value
+       for the MEM.   */
+    case ZERO_EXTRACT:
+    case SIGN_EXTRACT:
       if ((new_rtx = equiv_constant (x)) != NULL_RTX)
         return new_rtx;
       return x;
