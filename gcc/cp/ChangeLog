@@ -1,5 +1,11 @@
 2015-04-15  Jason Merrill  <jason@redhat.com>
 
+	* constexpr.c (cxx_eval_store_expression): Ignore clobbers.
+	(build_constexpr_constructor_member_initializers): Loop to find
+	the BIND_EXPR.
+	* decl.c (start_preparsed_function): Clobber the object at the
+	beginning of a constructor.
+
 	* decl.c (grokmethod): Only set DECL_COMDAT if TREE_PUBLIC is set.
 	* method.c (implicitly_declare_fn): Likewise.
 	* decl2.c (vague_linkage_p): Check TREE_PUBLIC first.
