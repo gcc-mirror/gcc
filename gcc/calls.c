@@ -2099,6 +2099,26 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 					   (XEXP (args[i].value, 0), size)))
 		*sibcall_failure = 1;
 
+	      if (size % UNITS_PER_WORD == 0
+		  || MEM_ALIGN (mem) % BITS_PER_WORD == 0)
+		move_block_to_reg (REGNO (reg), mem, nregs, args[i].mode);
+	      else
+		{
+		  if (nregs > 1)
+		    move_block_to_reg (REGNO (reg), mem, nregs - 1,
+				       args[i].mode);
+		  rtx dest = gen_rtx_REG (word_mode, REGNO (reg) + nregs - 1);
+		  unsigned int bitoff = (nregs - 1) * BITS_PER_WORD;
+		  unsigned int bitsize = size * BITS_PER_UNIT - bitoff;
+		  rtx x = extract_bit_field (mem, bitsize, bitoff, 1,
+					     dest, word_mode, word_mode);
+		  if (BYTES_BIG_ENDIAN)
+		    x = expand_shift (LSHIFT_EXPR, word_mode, x,
+				      BITS_PER_WORD - bitsize, dest, 1);
+		  if (x != dest)
+		    emit_move_insn (dest, x);
+		}
+
 	      /* Handle a BLKmode that needs shifting.  */
 	      if (nregs == 1 && size < UNITS_PER_WORD
 #ifdef BLOCK_REG_PADDING
@@ -2106,22 +2126,18 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 #else
 		  && BYTES_BIG_ENDIAN
 #endif
-		 )
+		  )
 		{
-		  rtx tem = operand_subword_force (mem, 0, args[i].mode);
-		  rtx ri = gen_rtx_REG (word_mode, REGNO (reg));
-		  rtx x = gen_reg_rtx (word_mode);
+		  rtx dest = gen_rtx_REG (word_mode, REGNO (reg));
 		  int shift = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
-		  enum tree_code dir = BYTES_BIG_ENDIAN ? RSHIFT_EXPR
-							: LSHIFT_EXPR;
+		  enum tree_code dir = (BYTES_BIG_ENDIAN
+					? RSHIFT_EXPR : LSHIFT_EXPR);
+		  rtx x;
 
-		  emit_move_insn (x, tem);
-		  x = expand_shift (dir, word_mode, x, shift, ri, 1);
-		  if (x != ri)
-		    emit_move_insn (ri, x);
+		  x = expand_shift (dir, word_mode, dest, shift, dest, 1);
+		  if (x != dest)
+		    emit_move_insn (dest, x);
 		}
-	      else
-		move_block_to_reg (REGNO (reg), mem, nregs, args[i].mode);
 	    }
 
 	  /* When a parameter is a block, and perhaps in other cases, it is
