@@ -1,3 +1,10 @@
+2015-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/65765
+	* ipa-icf-gimple.c (func_checker::compare_bb): For GIMPLE_NOP
+	and GIMPLE_PREDICT use break instead of return true. For
+	GIMPLE_EH_DISPATCH, compare dispatch region.
+
 2015-04-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/65761

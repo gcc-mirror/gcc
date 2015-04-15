@@ -1,3 +1,8 @@
+2015-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/65765
+	* g++.dg/ipa/pr65765.C: New test.
+
 2015-04-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/avx512dq-vfpclasspd-2.c (check_fp_class_dp): Use
