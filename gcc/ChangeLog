@@ -1,3 +1,18 @@
+2015-04-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*cmpi<FPCMP:unord><MODEF:mode>_mixed):
+	Merge with *cmpi<FPCMP:unord><MODEF:mode>_sse using enabled attribute.
+	(*extendsfdf2_mixed): Merge with *extendsfdf2_sse using enabled
+	attribute.
+	(*truncdfsf_fast_mixed): Merge with *truncdfsf_fast_sse using
+	enabled attribute.
+	(*float<SWI48:mode><MODEF:mode>2_mixed): Rename from
+	*float<SWI48:mode><MODEF:mode>2_sse.
+	(*absneg<mode>2_mixed): Merge with *absneg<mode>2_sse using
+	enabled attribute.
+	(*fop_<mode>_comm_mixed): Merge with *fop_<mode>_comm_sse using
+	enabled attribute.
+
 2015-04-15  Tom de Vries  <tom@codesourcery.com>
 
 	PR other/65487
