@@ -5,7 +5,7 @@
 // Access checking during explicit instantiation.
 
 class A {
-  typedef int X;		// { dg-error "private" }
+  typedef int X;		// { dg-message "private" }
 };
 
 class X {

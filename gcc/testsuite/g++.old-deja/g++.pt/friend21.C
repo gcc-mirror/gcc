@@ -7,7 +7,7 @@ template <class T> struct A {
 template <class T> class B
 {
   friend class A<T>;
-  static int i; // { dg-error "" } private
+  static int i; // { dg-message "" } private
 };
 
 template <class T> class C

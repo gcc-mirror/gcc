@@ -6,8 +6,8 @@
 int r = 0;
 class A {
   private:
-    A() { r = 1; }		// { dg-error "" } 
-    ~A() {}			// { dg-error "" } 
+    A() { r = 1; }		// { dg-message "" } 
+    ~A() {}			// { dg-message "" } 
 };
     
 class B : public A {

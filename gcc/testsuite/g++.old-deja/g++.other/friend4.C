@@ -10,7 +10,7 @@
 
 template <class A, class B> void foo();
 template <class C> class bar {
-  int i; // { dg-error "" } private
+  int i; // { dg-message "" } private
   template <class B> friend void foo<C,B>(); // { dg-error "" } bogus declaration
 };
 template <class A, class B> void foo() {

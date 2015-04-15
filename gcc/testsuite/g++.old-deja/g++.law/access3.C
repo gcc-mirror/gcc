@@ -7,7 +7,7 @@
 // Subject: bug with access control to member functions
 
        class X {
-	     void g (int); // { dg-error "" } is private
+	     void g (int); // { dg-message "" } is private
         public:
           void g (double);
         };

@@ -18,7 +18,7 @@ public:
 };
 
 struct_0::struct_0 (int i) { }
-struct_0::struct_0 (int, int) { } // { dg-error "is private" }
+struct_0::struct_0 (int, int) { } // { dg-message "private" }
 
 struct struct_1 : public struct_0 {
 

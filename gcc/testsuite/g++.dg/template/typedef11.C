@@ -5,13 +5,13 @@
 
 class Alpha
 {
-  typedef int X; // { dg-error "'typedef int Alpha::X' is private" }
+  typedef int X; // { dg-message "private" }
 };
 
 template<int>
 class Beta
 {
-    typedef int Y; // { dg-error "'typedef int Beta<0>::Y' is private" }
+    typedef int Y; // { dg-message "private" }
 };
 
 template <int>

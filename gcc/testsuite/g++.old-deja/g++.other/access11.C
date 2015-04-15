@@ -10,7 +10,7 @@ private:
 };
 
 template <>
-void A::g<int>(int t) { i = 1; } // { dg-error "" } private
+void A::g<int>(int t) { i = 1; } // { dg-message "" } private
 
 int main()
 {

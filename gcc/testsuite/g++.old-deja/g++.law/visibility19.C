@@ -7,7 +7,7 @@
 // Message-ID: <9308252030.AA02352@tnt.acsys.com>
 class B {
 protected:
-    int i; // { dg-error "" } protected
+    int i; // { dg-message "" } protected
 };
 
 class D1 : public B {

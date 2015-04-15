@@ -3,8 +3,8 @@
 
 struct A {
 protected:
-  int i;                        // { dg-error "" } private
-  int f ();			// { dg-error "" } 
+  int i;                        // { dg-message "" } private
+  int f ();			// { dg-message "" } 
 };
 
 struct B: public A {

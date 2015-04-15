@@ -6,7 +6,7 @@ template <typename T>
 struct B
 {
 protected:
-  typedef int M; // { dg-error "protected" }
+  typedef int M; // { dg-message "protected" }
 };
 
 template <typename T>

@@ -9,7 +9,7 @@ struct A
 struct B
 {
 private:
-    int next; // { dg-error "private" }
+    int next; // { dg-message "private" }
 };
 
 struct C

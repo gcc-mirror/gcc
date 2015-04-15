@@ -3,7 +3,7 @@
 template <typename T> struct B
 {
         protected:
-        T v;			// { dg-error "protected" }
+        T v;			// { dg-message "protected" }
 };
 template <typename T> struct D : B<T>
 {

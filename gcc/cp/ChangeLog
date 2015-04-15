@@ -1,3 +1,7 @@
+2015-04-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* call.c (enforce_access): Emit error + inform.
+
 2015-04-15  Marek Polacek  <polacek@redhat.com>
 
 	* constexpr.c (use_new_call): Remove #define.

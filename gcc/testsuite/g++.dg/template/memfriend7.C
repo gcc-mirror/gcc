@@ -15,7 +15,7 @@ template <class T> struct A {
 };
 
 class C {
-  int ii;				// { dg-error "private" }
+  int ii;				// { dg-message "private" }
   template <class U> template <class V>
     friend void A<U>::f(V);
   template <class U> friend void A<U>::g();

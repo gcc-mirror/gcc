@@ -7,7 +7,7 @@ namespace std
   template < typename _Tp > class allocator;
   template < typename _Alloc > struct allocator_traits {
   private:
-      template < typename _Tp > auto construct ( _Alloc & __a, _Tp * __p)-> // { dg-error "is private" }
+      template < typename _Tp > auto construct ( _Alloc & __a, _Tp * __p)-> // { dg-message "private" }
       decltype (_S_construct (__a, __p)) { }
   };
   namespace __gnu_cxx

@@ -5,7 +5,7 @@
 
 class C
 {
-  void operator delete (void *); // { dg-error "private" }
+  void operator delete (void *); // { dg-message "private" }
 public:
   virtual ~C();			// { dg-error "overriding" }
 };

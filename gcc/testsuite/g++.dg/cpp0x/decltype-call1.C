@@ -17,7 +17,7 @@ decltype(45,f(),42) g4b();	 // { dg-error "" }
 
 class B
 {
-  ~B();				// { dg-error "private" }
+  ~B();				// { dg-message "private" }
 public:
   int i;
   void operator[](int);

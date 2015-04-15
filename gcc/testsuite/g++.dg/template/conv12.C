@@ -16,7 +16,7 @@ struct C2
 {
 private:
   template <class T>
-  operator T();			// { dg-error "private" }
+  operator T();			// { dg-message "private" }
 public:
   operator bool() { return false; }
 } c2;
