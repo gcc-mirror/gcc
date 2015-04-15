@@ -2473,12 +2473,6 @@ build_ctor_subob_ref (tree index, tree type, tree obj)
 /* Like substitute_placeholder_in_expr, but handle C++ tree codes and
    build up subexpressions as we go deeper.  */
 
-struct replace_placeholders_t
-{
-  tree obj;
-  hash_set<tree> *pset;
-};
-
 static tree
 replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
 {
@@ -2539,7 +2533,6 @@ replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
 tree
 replace_placeholders (tree exp, tree obj)
 {
-  hash_set<tree> pset;
   tree *tp = &exp;
   if (TREE_CODE (exp) == TARGET_EXPR)
     tp = &TARGET_EXPR_INITIAL (exp);
