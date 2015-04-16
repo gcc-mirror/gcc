@@ -1,3 +1,8 @@
+2015-04-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/mpx/alloca-1-lbv.c (mpx_test): Replace
+	__buitlin_alloca with __builtin_alloca.
+
 2015-04-16  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/vldN_lane_1.c: Correct dup->lane in comments.
