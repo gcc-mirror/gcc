@@ -1,3 +1,12 @@
+2015-04-16  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/65676
+	* config/i386/i386.c (fixup_modeless_constant): New.
+	(ix86_expand_args_builtin): Fixup modeless constant operand.
+	(ix86_expand_round_builtin): Ditto.
+	(ix86_expand_special_args_builtin): Ditto.
+	(ix86_expand_builtin): Ditto.
+
 2015-04-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/65710

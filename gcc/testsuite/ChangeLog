@@ -1,3 +1,8 @@
+2015-04-16  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/65676
+	* gcc.target/i386/sse-25.c: New.
+
 2015-04-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/56674
