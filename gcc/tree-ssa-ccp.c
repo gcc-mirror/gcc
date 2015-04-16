@@ -1772,35 +1772,28 @@ evaluate_stmt (gimple stmt)
 	{
 	  enum tree_code subcode = gimple_assign_rhs_code (stmt);
 	  tree rhs1 = gimple_assign_rhs1 (stmt);
-	  switch (get_gimple_rhs_class (subcode))
-	    {
-	    case GIMPLE_SINGLE_RHS:
-	      if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
-		  || POINTER_TYPE_P (TREE_TYPE (rhs1)))
-		val = get_value_for_expr (rhs1, true);
-	      break;
+	  tree lhs = gimple_assign_lhs (stmt);
+	  if ((INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+	       || POINTER_TYPE_P (TREE_TYPE (lhs)))
+	      && (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
+		  || POINTER_TYPE_P (TREE_TYPE (rhs1))))
+	    switch (get_gimple_rhs_class (subcode))
+	      {
+	      case GIMPLE_SINGLE_RHS:
+	        val = get_value_for_expr (rhs1, true);
+		break;
 
-	    case GIMPLE_UNARY_RHS:
-	      if ((INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
-		   || POINTER_TYPE_P (TREE_TYPE (rhs1)))
-		  && (INTEGRAL_TYPE_P (gimple_expr_type (stmt))
-		      || POINTER_TYPE_P (gimple_expr_type (stmt))))
-		val = bit_value_unop (subcode, gimple_expr_type (stmt), rhs1);
-	      break;
+	      case GIMPLE_UNARY_RHS:
+		val = bit_value_unop (subcode, TREE_TYPE (lhs), rhs1);
+		break;
 
-	    case GIMPLE_BINARY_RHS:
-	      if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
-		  || POINTER_TYPE_P (TREE_TYPE (rhs1)))
-		{
-		  tree lhs = gimple_assign_lhs (stmt);
-		  tree rhs2 = gimple_assign_rhs2 (stmt);
-		  val = bit_value_binop (subcode,
-					 TREE_TYPE (lhs), rhs1, rhs2);
-		}
-	      break;
+	      case GIMPLE_BINARY_RHS:
+		val = bit_value_binop (subcode, TREE_TYPE (lhs), rhs1,
+				       gimple_assign_rhs2 (stmt));
+		break;
 
-	    default:;
-	    }
+	      default:;
+	      }
 	}
       else if (code == GIMPLE_COND)
 	{
