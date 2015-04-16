@@ -938,7 +938,7 @@ setup_left_conflict_sizes_p (ira_allocno_t a)
       subnodes[i].left_conflict_subnodes_size = 0;
     }
   start = node_preorder_num * allocno_hard_regs_nodes_num;
-  for (i = data->hard_regs_subnodes_num - 1; i >= 0; i--)
+  for (i = data->hard_regs_subnodes_num - 1; i > 0; i--)
     {
       int size, parent_i;
       allocno_hard_regs_node_t parent;
@@ -948,12 +948,10 @@ setup_left_conflict_sizes_p (ira_allocno_t a)
 		     - subnodes[i].left_conflict_subnodes_size,
 		     subnodes[i].left_conflict_size));
       parent = allocno_hard_regs_nodes[i + node_preorder_num]->parent;
-      if (parent == NULL)
-	continue;
+      gcc_checking_assert(parent);
       parent_i
 	= allocno_hard_regs_subnode_index[start + parent->preorder_num];
-      if (parent_i < 0)
-	continue;
+      gcc_checking_assert(parent_i >= 0);
       subnodes[parent_i].left_conflict_subnodes_size += size;
     }
   left_conflict_subnodes_size = subnodes[0].left_conflict_subnodes_size;

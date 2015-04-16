@@ -1,3 +1,8 @@
+2015-04-16  Zhouyi Zhou  <yizhouzhou@ict.ac.cn> 
+
+	* ira-color.c (setup_left_conflict_sizes_p): Do not process
+	node itself when computing left conflict subnode size.
+
 2015-04-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (register_mixssei387nonimm_operand): New.
