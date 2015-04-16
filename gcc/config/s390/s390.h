@@ -477,7 +477,7 @@ enum reg_class
    reload can decide not to use the hard register because some
    constant was forced to be in memory.  */
 #define IRA_HARD_REGNO_ADD_COST_MULTIPLIER(regno)	\
-  (regno == BASE_REGNUM ? 0.0 : 0.5)
+  (regno != BASE_REGNUM ? 0.0 : 0.5)
 
 /* Register -> class mapping.  */
 extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
