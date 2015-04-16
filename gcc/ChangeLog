@@ -1,5 +1,11 @@
 2015-04-16  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/65774
+	* tree-ssa-ccp.c (evaluate_stmt): Constrain types we invoke
+	bit-value tracking on.
+
+2015-04-16  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/64277
 	* tree-vrp.c (check_array_ref): Fix anti-range handling,
 	simplify upper bound handling.
