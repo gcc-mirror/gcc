@@ -1,3 +1,12 @@
+2015-04-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-ccp.c (likely_value): See if we have operands that
+	are marked as never simulate again and return CONSTANT in this
+	case.
+	* tree-ssa-propagate.c (simulate_stmt): Mark stmts that do
+	not have any operands that will be simulated again as
+	not being simulated again.
+
 2015-04-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*cmpi<FPCMP:unord><MODEF:mode>_mixed):

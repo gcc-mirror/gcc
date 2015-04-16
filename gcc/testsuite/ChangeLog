@@ -1,3 +1,9 @@
+2015-04-16  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-ccp-36.c: New testcase.
+	* gcc.dg/tree-ssa/pr37508.c: Adjust.
+	* gfortran.dg/reassoc_6.f: Remove XFAIL.
+
 2015-04-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp0x/alias-decl-22.C: Adjust for error + inform change.

@@ -21,7 +21,7 @@ int test2 (struct foo2 *x)
 {
   if (x->i == 0)
     return 1;
-  else if (x->i == -1)
+  else if (x->i == -1) /* This test is already folded to false by ccp1.  */
     return 1;
   return 0;
 }
@@ -44,5 +44,5 @@ int test4 (struct foo2 *x)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Folding" 3 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "Folding" 2 "vrp1" } } */
 /* { dg-final { cleanup-tree-dump "vrp1" } } */
