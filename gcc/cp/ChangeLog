@@ -1,3 +1,16 @@
+2015-04-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* call.c (build_op_delete_call, build_over_call): Check mark_used
+	return value.
+	* class.c (resolve_address_of_overloaded_function): Likewise.
+	* decl.c (cxx_maybe_build_cleanup): Likewise.
+	* pt.c (gen_elem_of_pack_expansion_instantiation, tsubst_baselink,
+	tsubst_qualified_id, tsubst_copy, tsubst_copy_and_build): Likewise.
+	* rtti.c (build_dynamic_cast_1): Likewise.
+	* semantics.c (process_outer_var_ref): Likewise.
+	* typeck.c (build_class_member_access_expr,
+	cp_build_function_call_vec, cp_build_addr_expr_1): Likewise.
+
 2015-04-15  Jason Merrill  <jason@redhat.com>
 
 	* constexpr.c (cxx_eval_store_expression): Ignore clobbers.

@@ -2298,7 +2298,8 @@ build_class_member_access_expr (tree object, tree member,
   if (DECL_P (member))
     {
       member_scope = DECL_CLASS_CONTEXT (member);
-      mark_used (member);
+      if (!mark_used (member, complain) && !(complain & tf_error))
+	return error_mark_node;
       if (TREE_DEPRECATED (member))
 	warn_deprecated_use (member, NULL_TREE);
     }
@@ -3477,7 +3478,8 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
 
   if (TREE_CODE (function) == FUNCTION_DECL)
     {
-      mark_used (function);
+      if (!mark_used (function, complain) && !(complain & tf_error))
+	return error_mark_node;
       fndecl = function;
 
       /* Convert anything with function type to a pointer-to-function.  */
@@ -5376,7 +5378,8 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 	 and the created OFFSET_REF.  */
       tree base = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (arg, 0)));
       tree fn = get_first_fn (TREE_OPERAND (arg, 1));
-      mark_used (fn);
+      if (!mark_used (fn, complain) && !(complain & tf_error))
+	return error_mark_node;
 
       if (! flag_ms_extensions)
 	{
@@ -5563,7 +5566,8 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 	 function.  */
       gcc_assert (TREE_CODE (fn) == FUNCTION_DECL
 		  && DECL_STATIC_FUNCTION_P (fn));
-      mark_used (fn);
+      if (!mark_used (fn, complain) && !(complain & tf_error))
+	return error_mark_node;
       val = build_address (fn);
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (arg, 0)))
 	/* Do not lose object's side effects.  */
