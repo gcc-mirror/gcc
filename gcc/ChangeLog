@@ -1,3 +1,39 @@
+2015-04-16  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78-opts.h (enum rl78_mul_types): Add MUL_G14 and
+	MUL_UNINIT.
+	(enum rl78_cpu_type): New.
+	* config/rl78/rl78-virt.md (attr valloc): Add divhi and divsi.
+	(umulhi3_shift_virt): Remove m constraint from operand 1.
+	(umulqihi3_virt): Likewise.
+	* config/rl78/rl78.c (rl78_option_override): Add code to process
+	-mcpu and -mmul options.
+	(rl78_alloc_physical_registers): Add code to handle divhi and
+	divsi valloc attributes.
+	(set_origin): Likewise.
+	* config/rl78/rl78.h (RL78_MUL_G14): Define.
+	(TARGET_G10, TARGET_G13, TARGET_G14): Define.
+	(TARGET_CPU_CPP_BUILTINS): Define __RL78_MUL_xxx__ and
+	__RL78_Gxx__.
+	(ASM_SPEC): Pass -mcpu on to assembler.
+	* config/rl78/rl78.md (mulqi3): Add a clobber of AX.
+	(mulqi3_rl78): Likewise.
+	(mulhi3_g13): Likewise.
+	(mulhi3): Generate the G13 or G14 versions of the insn directly.
+	(mulsi3): Likewise.
+	(mulhi3_g14): Add clobbers of AX and BC.
+	(mulsi3_g14): Likewise.
+	(mulsi3_g13): Likewise.
+	(udivmodhi4, udivmodhi4_g14, udivmodsi4): New patterns.
+	(udivmodsi4_g14, udivmodsi4_g13): New patterns.
+	* config/rl78/rl78.opt (mmul): Initialise value to
+	RL78_MUL_UNINIT.
+	(mcpu): New option.
+	(m13, m14, mrl78): New option aliases.
+	* config/rl78/t-rl78 (MULTILIB_OPTIONS): Add mg13 and mg14.
+	(MULTILIB_DIRNAMES): Add g13 and g14.
+	* doc/invoke.texi: Document -mcpu and -mmul options.
+
 2015-04-16  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-ccp.c (likely_value): See if we have operands that
@@ -75,6 +111,7 @@
 	* config/rx/t-rx (MULTILIB_OPTIONS): Add mno-allow-string-insns.
 	(MULTILIB_DIRNAMES): Add no-strings.
 	* doc/invoke.texi: Document -mno-allow-string-insns.
+
 2015-04-15  Alan Modra  <amodra@gmail.com>
 
 	PR target/65408

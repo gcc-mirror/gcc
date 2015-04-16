@@ -28,7 +28,7 @@
 ;; instruction - op1 is of the form "a = op(b)", op2 is "a = b op c"
 ;; etc.
 
-(define_attr "valloc" "op1,op2,ro1,cmp,umul,macax"
+(define_attr "valloc" "op1,op2,ro1,cmp,umul,macax,divhi,divsi"
   (const_string "op2"))
 
 ;;---------- Moving ------------------------
@@ -113,7 +113,7 @@
 )
 
 (define_insn "*umulhi3_shift_virt"
-  [(set (match_operand:HI 0 "register_operand" "=vm")
+  [(set (match_operand:HI          0 "register_operand" "=v")
         (mult:HI (match_operand:HI 1 "rl78_nonfar_operand" "%vim")
                  (match_operand:HI 2 "rl78_24_operand" "Ni")))]
   "rl78_virt_insns_ok () && !TARGET_G10"
@@ -122,7 +122,7 @@
 )
 
 (define_insn "*umulqihi3_virt"
-  [(set (match_operand:HI 0 "register_operand" "=vm")
+  [(set (match_operand:HI                          0 "register_operand" "=v")
         (mult:HI (zero_extend:HI (match_operand:QI 1 "rl78_nonfar_operand" "%vim"))
                  (zero_extend:HI (match_operand:QI 2 "general_operand" "vim"))))]
   "rl78_virt_insns_ok () && !TARGET_G10"

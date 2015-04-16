@@ -12,6 +12,18 @@
 #elif defined (__sh__)
   /* On SH division by zero does not trap.  */
 # define DO_TEST 0
+#elif defined (__v850__)
+  /* On V850 division by zero does not trap.  */
+# define DO_TEST 0
+#elif defined (__MSP430__)
+  /* On MSP430 division by zero does not trap.  */
+# define DO_TEST 0
+#elif defined (__RL78__)
+  /* On RL78 division by zero does not trap.  */
+# define DO_TEST 0
+#elif defined (__RX__)
+  /* On RX division by zero does not trap.  */
+# define DO_TEST 0
 #elif defined (__aarch64__)
   /* On AArch64 integer division by zero does not trap.  */
 # define DO_TEST 0

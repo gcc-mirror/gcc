@@ -23,5 +23,7 @@ rl78-c.o: $(srcdir)/config/rl78/rl78-c.c $(RTL_H) $(TREE_H) $(CONFIG_H) $(TM_H)
 
 # Enable multilibs:
 
-MULTILIB_OPTIONS    = mg10
-MULTILIB_DIRNAMES   = g10
+MULTILIB_OPTIONS    = mg10/mg13/mg14
+MULTILIB_DIRNAMES   = g10 g13 g14
+
+MULTILIB_MATCHES    = mg10=mcpu?g10 mg13=mcpu?g13 mg14=mcpu?g14 mg14=mcpu?rl78

@@ -265,7 +265,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wmain -Wmaybe-uninitialized -Wmemset-transposed-args -Wmissing-braces @gol
 -Wmissing-field-initializers -Wmissing-include-dirs @gol
 -Wno-multichar  -Wnonnull  -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
- -Wodr  -Wno-overflow  -Wopenmp-simd @gol
+-Wodr  -Wno-overflow  -Wopenmp-simd @gol
 -Woverlength-strings  -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
@@ -277,7 +277,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wstack-protector -Wstack-usage=@var{len} -Wstrict-aliasing @gol
 -Wstrict-aliasing=n @gol -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]} @gol
--Wsuggest-final-types @gol -Wsuggest-final-methods @gol -Wsuggest-override @gol
+-Wsuggest-final-types @gol -Wsuggest-final-methods -Wsuggest-override @gol
 -Wmissing-format-attribute @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum -Wswitch-bool -Wsync-nand @gol
 -Wsystem-headers  -Wtrampolines  -Wtrigraphs  -Wtype-limits  -Wundef @gol
@@ -405,7 +405,7 @@ Objective-C and Objective-C++ Dialects}.
 -fisolate-erroneous-paths-dereference -fisolate-erroneous-paths-attribute @gol
 -fivopts -fkeep-inline-functions -fkeep-static-consts @gol
 -flive-range-shrinkage @gol
--floop-block -floop-interchange -floop-strip-mine @gol  
+-floop-block -floop-interchange -floop-strip-mine @gol
 -floop-unroll-and-jam -floop-nest-optimize @gol
 -floop-parallelize-all -flra-remat -flto -flto-compression-level @gol
 -flto-partition=@var{alg} -flto-report -flto-report-wpa -fmerge-all-constants @gol
@@ -870,7 +870,8 @@ Objective-C and Objective-C++ Dialects}.
 See RS/6000 and PowerPC Options.
 
 @emph{RL78 Options}
-@gccoptlist{-msim -mmul=none -mmul=g13 -mmul=rl78 @gol
+@gccoptlist{-msim -mmul=none -mmul=g13 -mmul=g14 -mallregs @gol
+-mcpu=g10 -mcpu=g13 -mcpu=g14 -mg10 -mg13 -mg14 @gol
 -m64bit-doubles -m32bit-doubles}
 
 @emph{RS/6000 and PowerPC Options}
@@ -1786,7 +1787,7 @@ Using this option is roughly equivalent to adding the
 
 The option @option{-fno-gnu89-inline} explicitly tells GCC to use the
 C99 semantics for @code{inline} when in C99 or gnu99 mode (i.e., it
-specifies the default behavior).  
+specifies the default behavior).
 This option is not supported in @option{-std=c90} or
 @option{-std=gnu90} mode.
 
@@ -2090,7 +2091,7 @@ Version 0 refers to the version conforming most closely to
 the C++ ABI specification.  Therefore, the ABI obtained using version 0
 will change in different versions of G++ as ABI bugs are fixed.
 
-Version 1 is the version of the C++ ABI that first appeared in G++ 3.2.  
+Version 1 is the version of the C++ ABI that first appeared in G++ 3.2.
 
 Version 2 is the version of the C++ ABI that first appeared in G++
 3.4, and was the default through G++ 4.9.
@@ -4354,7 +4355,6 @@ pointers. This warning level may give a larger number of
 false positives and is deactivated by default.
 @end table
 
-
 @item -Wbool-compare
 @opindex Wno-bool-compare
 @opindex Wbool-compare
@@ -5890,7 +5890,7 @@ Bounds Checker builtins}, for more information.
 @opindex fchkp-check-incomplete-type
 @opindex fno-chkp-check-incomplete-type
 Generate pointer bounds checks for variables with incomplete type.
-Enabled by default.  
+Enabled by default.
 
 @item -fchkp-narrow-bounds
 @opindex fchkp-narrow-bounds
@@ -18730,14 +18730,72 @@ Links in additional target libraries to support operation within a
 simulator.
 
 @item -mmul=none
+@itemx -mmul=g10
 @itemx -mmul=g13
+@itemx -mmul=g14
 @itemx -mmul=rl78
 @opindex mmul
-Specifies the type of hardware multiplication support to be used.  The
-default is @samp{none}, which uses software multiplication functions.
-The @samp{g13} option is for the hardware multiply/divide peripheral
-only on the RL78/G13 targets.  The @samp{rl78} option is for the
-standard hardware multiplication defined in the RL78 software manual.
+Specifies the type of hardware multiplication and division support to
+be used.  The simplest is @code{none}, which uses software for both
+multiplication and division.  This is the default.  The @code{g13}
+value is for the hardware multiply/divide peripheral found on the
+RL78/G13 (S2 core) targets.  The @code{g14} value selects the use of
+the multiplication and division instructions supported by the RL78/G14
+(S3 core) parts.  The value @code{rl78} is an alias for @code{g14} and
+the value @code{mg10} is an alias for @code{none}.
+
+In addition a C preprocessor macro is defined, based upon the setting
+of this option.  Possible values are: @code{__RL78_MUL_NONE__},
+@code{__RL78_MUL_G13__} or @code{__RL78_MUL_G14__}.
+
+@item -mcpu=g10
+@itemx -mcpu=g13
+@itemx -mcpu=g14
+@itemx -mcpu=rl78
+@opindex mcpu
+Specifies the RL78 core to target.  The default is the G14 core, also
+known as an S3 core or just RL78.  The G13 or S2 core does not have
+multiply or divide instructions, instead it uses a hardware peripheral
+for these operations.  The G10 or S1 core does not have register
+banks, so it uses a different calling convention.
+
+If this option is set it also selects the type of hardware multiply
+support to use, unless this is overridden by an explicit
+@option{-mmul=none} option on the command line.  Thus specifying
+@option{-mcpu=g13} enables the use of the G13 hardware multiply
+peripheral and specifying @option{-mcpu=g10} disables the use of
+hardware multipications altogether.
+
+Note, although the RL78/G14 core is the default target, specifying
+@option{-mcpu=g14} or @option{-mcpu=rl78} on the command line does
+change the behaviour of the toolchain since it also enables G14
+hardware multiply support.  If these options are not specified on the
+command line then software multiplication routines will be used even
+though the code targets the RL78 core.  This is for backwards
+compatibility with older toolchains which did not have hardware
+multiply and divide support.
+
+In addition a C preprocessor macro is defined, based upon the setting
+of this option.  Possible values are: @code{__RL78_G10__},
+@code{__RL78_G13__} or @code{__RL78_G14__}.
+
+@item -mg10
+@itemx -mg13
+@itemx -mg14
+@itemx -mrl78
+@opindex mg10
+@opindex mg13
+@opindex mg14
+@opindex mrl78
+These are aliases for the corresponding @option{-mcpu=} option.  They
+are provided for backwards compatibility.
+
+@item -mallregs
+@opindex mallregs
+Allow the compiler to use all of the available registers.  By default
+registers @code{r24..r31} are reserved for use in interrupt handlers.
+With this option enabled these registers can be used in ordinary
+functions as well.
 
 @item -m64bit-doubles
 @itemx -m32bit-doubles
