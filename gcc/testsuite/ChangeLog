@@ -1,3 +1,8 @@
+2015-04-16  Renlin Li  <renlin.li@arm.com>
+
+	* gcc.target/aarch64/unsigned-unsignedfloat.c: New.
+	* gcc.target/arm/unsigned-float.c: New.
+
 2015-04-16  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-ccp-36.c: New testcase.
