@@ -377,6 +377,48 @@ rl78_option_override (void)
       && strcmp (lang_hooks.name, "GNU GIMPLE"))
     /* Address spaces are currently only supported by C.  */
     error ("-mes0 can only be used with C");
+
+  switch (rl78_cpu_type)
+    {
+    case CPU_UNINIT:
+      rl78_cpu_type = CPU_G14;
+      if (rl78_mul_type == MUL_UNINIT)
+	rl78_mul_type = MUL_NONE;
+      break;
+
+    case CPU_G10:
+      switch (rl78_mul_type)
+	{
+	case MUL_UNINIT: rl78_mul_type = MUL_NONE; break;
+	case MUL_NONE:   break;
+	case MUL_G13:  	 error ("-mmul=g13 cannot be used with -mcpu=g10"); break;
+	case MUL_G14:  	 error ("-mmul=g14 cannot be used with -mcpu=g10"); break;
+	}
+      break;
+
+    case CPU_G13:
+      switch (rl78_mul_type)
+	{
+	case MUL_UNINIT: rl78_mul_type = MUL_G13; break;
+	case MUL_NONE:   break;
+	case MUL_G13:  	break;
+	  /* The S2 core does not have mul/div instructions.  */
+	case MUL_G14: 	error ("-mmul=g14 cannot be used with -mcpu=g13"); break;
+	}
+      break;
+
+    case CPU_G14:
+      switch (rl78_mul_type)
+	{
+	case MUL_UNINIT: rl78_mul_type = MUL_G14; break;
+	case MUL_NONE:   break;
+	case MUL_G14:  	break;
+	/* The G14 core does not have the hardware multiply peripheral used by the
+	   G13 core, hence you cannot use G13 multipliy routines on G14 hardware.  */
+	case MUL_G13: 	error ("-mmul=g13 cannot be used with -mcpu=g14"); break;
+	}
+      break;
+    }
 }
 
 /* Most registers are 8 bits.  Some are 16 bits because, for example,
@@ -3514,6 +3556,18 @@ rl78_alloc_physical_registers (void)
 	  record_content (BC, NULL_RTX);
 	  record_content (DE, NULL_RTX);
 	}
+      else if (valloc_method == VALLOC_DIVHI)
+	{
+	  record_content (AX, NULL_RTX);
+	  record_content (BC, NULL_RTX);
+	}
+      else if (valloc_method == VALLOC_DIVSI)
+	{
+	  record_content (AX, NULL_RTX);
+	  record_content (BC, NULL_RTX);
+	  record_content (DE, NULL_RTX);
+	  record_content (HL, NULL_RTX);
+	}
 
       if (insn_ok_now (insn))
 	continue;
@@ -3541,6 +3595,7 @@ rl78_alloc_physical_registers (void)
 	  break;
 	case VALLOC_UMUL:
 	  rl78_alloc_physical_registers_umul (insn);
+	  record_content (AX, NULL_RTX);
 	  break;
 	case VALLOC_MACAX:
 	  /* Macro that clobbers AX.  */
@@ -3548,6 +3603,18 @@ rl78_alloc_physical_registers (void)
 	  record_content (AX, NULL_RTX);
 	  record_content (BC, NULL_RTX);
 	  record_content (DE, NULL_RTX);
+	  break;
+	case VALLOC_DIVSI:
+	  rl78_alloc_address_registers_div (insn);
+	  record_content (AX, NULL_RTX);
+	  record_content (BC, NULL_RTX);
+	  record_content (DE, NULL_RTX);
+	  record_content (HL, NULL_RTX);
+	  break;
+	case VALLOC_DIVHI:
+	  rl78_alloc_address_registers_div (insn);
+	  record_content (AX, NULL_RTX);
+	  record_content (BC, NULL_RTX);
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -3863,6 +3930,37 @@ set_origin (rtx pat, rtx_insn * insn, int * origins, int * age)
 	    age[i] = 0;
 	  }
     }
+  else if (get_attr_valloc (insn) == VALLOC_DIVHI)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Resetting origin of AX/DE for DIVHI pattern.\n");
+
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (i == A_REG
+	    || i == X_REG
+	    || i == D_REG
+	    || i == E_REG
+	    || origins[i] == A_REG
+	    || origins[i] == X_REG
+	    || origins[i] == D_REG
+	    || origins[i] == E_REG)
+	  {
+	    origins[i] = i;
+	    age[i] = 0;
+	  }
+    }
+  else if (get_attr_valloc (insn) == VALLOC_DIVSI)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Resetting origin of AX/BC/DE/HL for DIVSI pattern.\n");
+
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (i <= 7 || origins[i] <= 7)
+	  {
+	    origins[i] = i;
+	    age[i] = 0;
+	  }
+    }
 
   if (GET_CODE (src) == ASHIFT
       || GET_CODE (src) == ASHIFTRT
@@ -4087,7 +4185,7 @@ rl78_rtx_costs (rtx   x,
       switch (code)
 	{
 	case MULT:
-	  if (RL78_MUL_RL78)
+	  if (RL78_MUL_G14)
 	    *total = COSTS_N_INSNS (14);
 	  else if (RL78_MUL_G13)
 	    *total = COSTS_N_INSNS (29);
@@ -4407,7 +4505,7 @@ rl78_insert_attributes (tree decl, tree *attributes ATTRIBUTE_UNUSED)
       tree type = TREE_TYPE (decl);
       tree attr = TYPE_ATTRIBUTES (type);
       int q = TYPE_QUALS_NO_ADDR_SPACE (type) | ENCODE_QUAL_ADDR_SPACE (ADDR_SPACE_FAR);
-      
+
       TREE_TYPE (decl) = build_type_attribute_qual_variant (type, attr, q);
     }
 }
@@ -4503,7 +4601,7 @@ rl78_flags_already_set (rtx op, rtx operand)
     {
       if (LABEL_P (insn))
 	break;
-      
+
       if (! INSN_P (insn))
 	continue;
 

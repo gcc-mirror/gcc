@@ -1,3 +1,10 @@
+2015-04-16  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/divmodhi.S: Add G14 and G13 versions of the __divhi3
+	and __modhi3 functions.
+	* config/rl78/divmodso.S: Add G14 and G13 versions of the
+	__divsi3, __udivsi3, __modsi3 and __umodsi3 functions.
+
 2015-04-15  Chen Gang  <gang.chen.5i5j@gmail.com>
 
 	* gthr-single.h (__GTHREAD_MUTEX_INIT_FUNCTION): Use empty
