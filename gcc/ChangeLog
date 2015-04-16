@@ -1,3 +1,8 @@
+2015-04-16  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.h (IRA_HARD_REGNO_ADD_COST_MULTIPLIER):
+	Invert the condition.
+
 2015-04-16  Renlin Li  <renlin.li@arm.com>
 
 	* simplify-rtx.c (simplify_unary_operation_1): Fix a typo. Enable two
