@@ -54,11 +54,11 @@ test_vld##STRUCT##Q##_lane##SUFFIX (const BASE##_t *data,		\
 }
 
 
-/* Tests of vld2_dup and vld2q_dup.  */
+/* Tests of vld2_lane and vld2q_lane.  */
 VARIANTS (TESTMETH, 2)
-/* Tests of vld3_dup and vld3q_dup.  */
+/* Tests of vld3_lane and vld3q_lane.  */
 VARIANTS (TESTMETH, 3)
-/* Tests of vld4_dup and vld4q_dup.  */
+/* Tests of vld4_lane and vld4q_lane.  */
 VARIANTS (TESTMETH, 4)
 
 #define CHECK(BASE, Q, ELTS, SUFFIX, LANE, STRUCT)			\
