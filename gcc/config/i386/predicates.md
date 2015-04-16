@@ -115,6 +115,12 @@
     (match_operand 0 "nonmemory_operand")
     (match_operand 0 "general_operand")))
 
+;; Match register operands, include memory operand for TARGET_MIX_SSE_I387.
+(define_predicate "register_mixssei387nonimm_operand"
+  (if_then_else (match_test "TARGET_MIX_SSE_I387")
+    (match_operand 0 "nonimmediate_operand")
+    (match_operand 0 "register_operand")))
+
 ;; Return true if VALUE is symbol reference
 (define_predicate "symbol_operand"
   (match_code "symbol_ref"))
