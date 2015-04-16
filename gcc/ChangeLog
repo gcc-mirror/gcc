@@ -1,3 +1,12 @@
+2015-04-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64277
+	* tree-vrp.c (check_array_ref): Fix anti-range handling,
+	simplify upper bound handling.
+	(search_for_addr_array): Simplify.
+	(check_array_bounds): Handle ADDR_EXPRs here.
+	(check_all_array_refs): Simplify.
+
 2015-04-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (print_reg): Rewrite function.
