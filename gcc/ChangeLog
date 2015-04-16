@@ -1,3 +1,11 @@
+2015-04-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (register_mixssei387nonimm_operand): New.
+	* config/i386/i386.md (*fop_<mode>_1_mixed): Merge with
+	*fop_<mode>_1_sse using enabled attribute.  Use
+	register_mixssei387nonimm_operand operand 1 predicate. Change
+	alternative 3 constraints from "x" to "v".
+
 2015-04-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65774
