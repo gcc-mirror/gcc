@@ -1171,7 +1171,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
          = (float_truncate:SF foo:DF).
 
          (float_truncate:DF (float_extend:XF foo:SF))
-         = (float_extend:SF foo:DF).  */
+         = (float_extend:DF foo:SF).  */
       if ((GET_CODE (op) == FLOAT_TRUNCATE
 	   && flag_unsafe_math_optimizations)
 	  || GET_CODE (op) == FLOAT_EXTEND)
@@ -1183,14 +1183,14 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 				   XEXP (op, 0), mode);
 
       /*  (float_truncate (float x)) is (float x)  */
-      if (GET_CODE (op) == FLOAT
+      if ((GET_CODE (op) == FLOAT || GET_CODE (op) == UNSIGNED_FLOAT)
 	  && (flag_unsafe_math_optimizations
 	      || (SCALAR_FLOAT_MODE_P (GET_MODE (op))
 		  && ((unsigned)significand_size (GET_MODE (op))
 		      >= (GET_MODE_PRECISION (GET_MODE (XEXP (op, 0)))
 			  - num_sign_bit_copies (XEXP (op, 0),
 						 GET_MODE (XEXP (op, 0))))))))
-	return simplify_gen_unary (FLOAT, mode,
+	return simplify_gen_unary (GET_CODE (op), mode,
 				   XEXP (op, 0),
 				   GET_MODE (XEXP (op, 0)));
 
@@ -1221,7 +1221,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  rounding can't happen.
           */
       if (GET_CODE (op) == FLOAT_EXTEND
-	  || (GET_CODE (op) == FLOAT
+	  || ((GET_CODE (op) == FLOAT || GET_CODE (op) == UNSIGNED_FLOAT)
 	      && SCALAR_FLOAT_MODE_P (GET_MODE (op))
 	      && ((unsigned)significand_size (GET_MODE (op))
 		  >= (GET_MODE_PRECISION (GET_MODE (XEXP (op, 0)))

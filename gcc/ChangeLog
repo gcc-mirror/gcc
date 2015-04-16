@@ -1,3 +1,8 @@
+2015-04-16  Renlin Li  <renlin.li@arm.com>
+
+	* simplify-rtx.c (simplify_unary_operation_1): Fix a typo. Enable two
+	simplifications for UNSIGNED_FLOAT.
+
 2015-04-16  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78-opts.h (enum rl78_mul_types): Add MUL_G14 and
