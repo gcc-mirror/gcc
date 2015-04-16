@@ -15191,8 +15191,9 @@ void
 print_reg (rtx x, int code, FILE *file)
 {
   const char *reg;
+  int msize;
   unsigned int regno;
-  bool duplicated = code == 'd' && TARGET_AVX;
+  bool duplicated;
 
   if (ASSEMBLER_DIALECT == ASM_ATT)
     putc ('%', file);
@@ -15204,42 +15205,85 @@ print_reg (rtx x, int code, FILE *file)
       return;
     }
 
+  if (code == 'y' && STACK_TOP_P (x))
+    {
+      fputs ("st(0)", file);
+      return;
+    }
+
+  if (code == 'w')
+    msize = 2;
+  else if (code == 'b')
+    msize = 1;
+  else if (code == 'k')
+    msize = 4;
+  else if (code == 'q')
+    msize = 8;
+  else if (code == 'h')
+    msize = 0;
+  else if (code == 'x')
+    msize = 16;
+  else if (code == 't')
+    msize = 32;
+  else if (code == 'g')
+    msize = 64;
+  else
+    msize = GET_MODE_SIZE (GET_MODE (x));
+
   regno = true_regnum (x);
+
   gcc_assert (regno != ARG_POINTER_REGNUM
 	      && regno != FRAME_POINTER_REGNUM
 	      && regno != FLAGS_REG
 	      && regno != FPSR_REG
 	      && regno != FPCR_REG);
 
-  if (code == 'w')
-    code = 2;
-  else if (code == 'b')
-    code = 1;
-  else if (code == 'k')
-    code = 4;
-  else if (code == 'q')
-    code = 8;
-  else if (code == 'y')
-    code = 3;
-  else if (code == 'h')
-    code = 0;
-  else if (code == 'x')
-    code = 16;
-  else if (code == 't')
-    code = 32;
-  else if (code == 'g')
-    code = 64;
-  else
-    code = GET_MODE_SIZE (GET_MODE (x));
+  duplicated = code == 'd' && TARGET_AVX;
 
-  /* Irritatingly, AMD extended registers use different naming convention
-     from the normal registers: "r%d[bwd]"  */
+  switch (msize)
+    {
+    case 8:
+    case 4:
+      if (LEGACY_INT_REGNO_P (regno))
+	putc (msize == 8 ? 'r' : 'e', file);
+    case 16:
+    case 12:
+    case 2:
+    normal:
+      reg = hi_reg_name[regno];
+      break;
+    case 1:
+      if (regno >= ARRAY_SIZE (qi_reg_name))
+	goto normal;
+      reg = qi_reg_name[regno];
+      break;
+    case 0:
+      if (regno >= ARRAY_SIZE (qi_high_reg_name))
+	goto normal;
+      reg = qi_high_reg_name[regno];
+      break;
+    case 32:
+    case 64:
+      if (SSE_REGNO_P (regno))
+	{
+	  gcc_assert (!duplicated);
+	  putc (msize == 32 ? 'y' : 'z', file);
+	  reg = hi_reg_name[regno] + 1;
+	  break;
+	}
+      goto normal;
+    default:
+      gcc_unreachable ();
+    }
+
+  fputs (reg, file);
+
+  /* Irritatingly, AMD extended registers use
+     different naming convention: "r%d[bwd]"  */
   if (REX_INT_REGNO_P (regno))
     {
       gcc_assert (TARGET_64BIT);
-      putc ('r', file);
-      fprint_ul (file, regno - FIRST_REX_INT_REG + 8);
-      switch (code)
+      switch (msize)
 	{
 	  case 0:
 	    error ("extended registers have no high halves");
@@ -15263,52 +15307,6 @@ print_reg (rtx x, int code, FILE *file)
       return;
     }
 
-  reg = NULL;
-  switch (code)
-    {
-    case 3:
-      if (STACK_TOP_P (x))
-	{
-	  reg = "st(0)";
-	  break;
-	}
-      /* FALLTHRU */
-    case 8:
-    case 4:
-    case 12:
-      if (LEGACY_INT_REG_P (x))
-	putc (code == 8 && TARGET_64BIT ? 'r' : 'e', file);
-      /* FALLTHRU */
-    case 16:
-    case 2:
-    normal:
-      reg = hi_reg_name[regno];
-      break;
-    case 1:
-      if (regno >= ARRAY_SIZE (qi_reg_name))
-	goto normal;
-      reg = qi_reg_name[regno];
-      break;
-    case 0:
-      if (regno >= ARRAY_SIZE (qi_high_reg_name))
-	goto normal;
-      reg = qi_high_reg_name[regno];
-      break;
-    case 32:
-    case 64:
-      if (SSE_REG_P (x))
-	{
-	  gcc_assert (!duplicated);
-	  putc (code == 32 ? 'y' : 'z', file);
-	  fputs (hi_reg_name[regno] + 1, file);
-	  return;
-	}
-      break;
-    default:
-      gcc_unreachable ();
-    }
-
-  fputs (reg, file);
   if (duplicated)
     {
       if (ASSEMBLER_DIALECT == ASM_ATT)

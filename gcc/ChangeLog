@@ -1,3 +1,7 @@
+2015-04-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (print_reg): Rewrite function.
+
 2015-04-16  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.h (IRA_HARD_REGNO_ADD_COST_MULTIPLIER):
