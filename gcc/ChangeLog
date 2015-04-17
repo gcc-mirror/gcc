@@ -1,5 +1,6 @@
 2015-04-17  Tom de Vries  <tom@codesourcery.com>
 
+	PR tree-optimization/64950
 	* gimplify.c (gimplify_function_tree): Tentatively set PROP_gimple_lva
 	in cfun->curr_properties.
 	(gimplify_va_arg_expr): Clear PROP_gimple_lva in cfun->curr_properties
@@ -10,6 +11,7 @@
 2015-04-17  Tom de Vries  <tom@codesourcery.com>
 	    Michael Matz  <matz@suse.de>
 
+	PR tree-optimization/64950
 	* gimple-iterator.c (update_modified_stmts): Remove static.
 	* gimple-iterator.h (update_modified_stmts): Declare.
 	* gimplify.c (gimplify_modify_expr): Handle IFN_VA_ARG.

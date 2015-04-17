@@ -1,6 +1,7 @@
 2015-04-17  Tom de Vries  <tom@codesourcery.com>
 	    Michael Matz  <matz@suse.de>
 
+	PR tree-optimization/64950
 	* gcc.dg/tree-ssa/stdarg-2.c: Change f15 scan-tree-dump for target
 	x86_64-*-*.
 
