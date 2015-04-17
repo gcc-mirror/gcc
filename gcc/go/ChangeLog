@@ -1,3 +1,7 @@
+2015-04-17  Chris Manghane  <cmang@google.com>
+
+	* Make-lang.in (GO_OBJS): Add go/escape.o.
+
 2015-02-02  Ian Lance Taylor  <iant@google.com>
 
 	PR go/64836
