@@ -1,3 +1,9 @@
+2015-04-17  Tom de Vries  <tom@codesourcery.com>
+	    Michael Matz  <matz@suse.de>
+
+	* gcc.dg/tree-ssa/stdarg-2.c: Change f15 scan-tree-dump for target
+	x86_64-*-*.
+
 2015-04-17  Yury Gribov  <y.gribov@samsung.com>
 
 	* c-c++-common/asan/user-section-1.c: New test.

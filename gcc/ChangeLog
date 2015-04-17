@@ -1,4 +1,29 @@
 2015-04-17  Tom de Vries  <tom@codesourcery.com>
+	    Michael Matz  <matz@suse.de>
+
+	* gimple-iterator.c (update_modified_stmts): Remove static.
+	* gimple-iterator.h (update_modified_stmts): Declare.
+	* gimplify.c (gimplify_modify_expr): Handle IFN_VA_ARG.
+	(gimplify_va_arg_internal): New function.
+	(gimplify_va_arg_expr): Use IFN_VA_ARG.
+	* gimplify.h (gimplify_va_arg_internal): Declare.
+	* internal-fn.c (expand_VA_ARG): New unreachable function.
+	* internal-fn.def (VA_ARG): New DEF_INTERNAL_FN.
+	* tree-stdarg.c (gimple_call_ifn_va_arg_p, expand_ifn_va_arg_1)
+	(expand_ifn_va_arg): New function.
+	(pass_data_stdarg): Add PROP_gimple_lva to properties_provided field.
+	(pass_stdarg::execute): Call expand_ifn_va_arg.
+	(pass_data_lower_vaarg): New pass_data.
+	(pass_lower_vaarg): New gimple_opt_pass.
+	(pass_lower_vaarg::gate, pass_lower_vaarg::execute)
+	(make_pass_lower_vaarg): New function.
+	* cfgexpand.c (pass_data_expand): Add PROP_gimple_lva to
+	properties_required field.
+	* passes.def (all_passes): Add pass_lower_vaarg.
+	* tree-pass.h (PROP_gimple_lva): Add define.
+	(make_pass_lower_vaarg): Declare.
+
+2015-04-17  Tom de Vries  <tom@codesourcery.com>
 
 	* fold-const.c (operand_equal_p): Handle INTERNAL_FNs.
 	* calls.c (call_expr_flags): Same.

@@ -4564,6 +4564,7 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   gimple assign;
   location_t loc = EXPR_LOCATION (*expr_p);
   gimple_stmt_iterator gsi;
+  tree ap = NULL_TREE, ap_copy = NULL_TREE;
 
   gcc_assert (TREE_CODE (*expr_p) == MODIFY_EXPR
 	      || TREE_CODE (*expr_p) == INIT_EXPR);
@@ -4640,6 +4641,27 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   if (ret == GS_ERROR)
     return ret;
 
+  /* In case of va_arg internal fn wrappped in a WITH_SIZE_EXPR, add the type
+     size as argument to the the call.  */
+  if (TREE_CODE (*from_p) == WITH_SIZE_EXPR)
+    {
+      tree call = TREE_OPERAND (*from_p, 0);
+      tree vlasize = TREE_OPERAND (*from_p, 1);
+
+      if (TREE_CODE (call) == CALL_EXPR
+	  && CALL_EXPR_IFN (call) == IFN_VA_ARG)
+	{
+	  tree type = TREE_TYPE (call);
+	  tree ap = CALL_EXPR_ARG (call, 0);
+	  tree tag = CALL_EXPR_ARG (call, 1);
+	  tree newcall = build_call_expr_internal_loc (EXPR_LOCATION (call),
+						       IFN_VA_ARG, type, 3, ap,
+						       tag, vlasize);
+	  tree *call_p = &(TREE_OPERAND (*from_p, 0));
+	  *call_p = newcall;
+	}
+    }
+
   /* Now see if the above changed *from_p to something we handle specially.  */
   ret = gimplify_modify_expr_rhs (expr_p, from_p, to_p, pre_p, post_p,
 				  want_value);
@@ -4703,12 +4725,16 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  enum internal_fn ifn = CALL_EXPR_IFN (*from_p);
 	  auto_vec<tree> vargs (nargs);
 
+	  if (ifn == IFN_VA_ARG)
+	    ap = unshare_expr (CALL_EXPR_ARG (*from_p, 0));
 	  for (i = 0; i < nargs; i++)
 	    {
 	      gimplify_arg (&CALL_EXPR_ARG (*from_p, i), pre_p,
 			    EXPR_LOCATION (*from_p));
 	      vargs.quick_push (CALL_EXPR_ARG (*from_p, i));
 	    }
+	  if (ifn == IFN_VA_ARG)
+	    ap_copy = CALL_EXPR_ARG (*from_p, 0);
 	  call_stmt = gimple_build_call_internal_vec (ifn, vargs);
 	  gimple_set_location (call_stmt, EXPR_LOCATION (*expr_p));
 	}
@@ -4752,6 +4778,17 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   gimplify_seq_add_stmt (pre_p, assign);
   gsi = gsi_last (*pre_p);
   maybe_fold_stmt (&gsi);
+
+  /* When gimplifying the &ap argument of va_arg, we might end up with
+       ap.1 = ap
+       va_arg (&ap.1, 0B)
+     We need to assign ap.1 back to ap, otherwise va_arg has no effect on
+     ap.  */
+  if (ap != NULL_TREE
+      && TREE_CODE (ap) == ADDR_EXPR
+      && TREE_CODE (ap_copy) == ADDR_EXPR
+      && TREE_OPERAND (ap, 0) != TREE_OPERAND (ap_copy, 0))
+    gimplify_assign (TREE_OPERAND (ap, 0), TREE_OPERAND (ap_copy, 0), pre_p);
 
   if (want_value)
     {
@@ -9273,16 +9310,53 @@ dummy_object (tree type)
   return build2 (MEM_REF, type, t, t);
 }
 
+/* Call the target expander for evaluating a va_arg call of VALIST
+   and TYPE.  */
+
+tree
+gimplify_va_arg_internal (tree valist, tree type, location_t loc,
+			  gimple_seq *pre_p, gimple_seq *post_p)
+{
+  tree have_va_type = TREE_TYPE (valist);
+  tree cano_type = targetm.canonical_va_list_type (have_va_type);
+
+  if (cano_type != NULL_TREE)
+    have_va_type = cano_type;
+
+  /* Make it easier for the backends by protecting the valist argument
+     from multiple evaluations.  */
+  if (TREE_CODE (have_va_type) == ARRAY_TYPE)
+    {
+      /* For this case, the backends will be expecting a pointer to
+	 TREE_TYPE (abi), but it's possible we've
+	 actually been given an array (an actual TARGET_FN_ABI_VA_LIST).
+	 So fix it.  */
+      if (TREE_CODE (TREE_TYPE (valist)) == ARRAY_TYPE)
+	{
+	  tree p1 = build_pointer_type (TREE_TYPE (have_va_type));
+	  valist = fold_convert_loc (loc, p1,
+				     build_fold_addr_expr_loc (loc, valist));
+	}
+
+      gimplify_expr (&valist, pre_p, post_p, is_gimple_val, fb_rvalue);
+    }
+  else
+    gimplify_expr (&valist, pre_p, post_p, is_gimple_min_lval, fb_lvalue);
+
+  return targetm.gimplify_va_arg_expr (valist, type, pre_p, post_p);
+}
+
 /* Gimplify __builtin_va_arg, aka VA_ARG_EXPR, which is not really a
    builtin function, but a very special sort of operator.  */
 
 enum gimplify_status
-gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
+gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p,
+		      gimple_seq *post_p ATTRIBUTE_UNUSED)
 {
   tree promoted_type, have_va_type;
   tree valist = TREE_OPERAND (*expr_p, 0);
   tree type = TREE_TYPE (*expr_p);
-  tree t;
+  tree t, tag, ap;
   location_t loc = EXPR_LOCATION (*expr_p);
 
   /* Verify that valist is of the proper type.  */
@@ -9334,36 +9408,13 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       *expr_p = dummy_object (type);
       return GS_ALL_DONE;
     }
-  else
-    {
-      /* Make it easier for the backends by protecting the valist argument
-	 from multiple evaluations.  */
-      if (TREE_CODE (have_va_type) == ARRAY_TYPE)
-	{
-	  /* For this case, the backends will be expecting a pointer to
-	     TREE_TYPE (abi), but it's possible we've
-	     actually been given an array (an actual TARGET_FN_ABI_VA_LIST).
-	     So fix it.  */
-	  if (TREE_CODE (TREE_TYPE (valist)) == ARRAY_TYPE)
-	    {
-	      tree p1 = build_pointer_type (TREE_TYPE (have_va_type));
-	      valist = fold_convert_loc (loc, p1,
-					 build_fold_addr_expr_loc (loc, valist));
-	    }
 
-	  gimplify_expr (&valist, pre_p, post_p, is_gimple_val, fb_rvalue);
-	}
-      else
-	gimplify_expr (&valist, pre_p, post_p, is_gimple_min_lval, fb_lvalue);
+  /* Transform a VA_ARG_EXPR into an VA_ARG internal function.  */
+  ap = build_fold_addr_expr_loc (loc, valist);
+  tag = build_int_cst (build_pointer_type (type), 0);
+  *expr_p = build_call_expr_internal_loc (loc, IFN_VA_ARG, type, 2, ap, tag);
 
-      if (!targetm.gimplify_va_arg_expr)
-	/* FIXME: Once most targets are converted we should merely
-	   assert this is non-null.  */
-	return GS_ALL_DONE;
-
-      *expr_p = targetm.gimplify_va_arg_expr (valist, type, pre_p, post_p);
-      return GS_OK;
-    }
+  return GS_OK;
 }
 
 /* Build a new GIMPLE_ASSIGN tuple and append it to the end of *SEQ_P.
