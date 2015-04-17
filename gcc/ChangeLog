@@ -1,5 +1,10 @@
 2015-04-17  Tom de Vries  <tom@codesourcery.com>
 
+	* fold-const.c (operand_equal_p): Handle INTERNAL_FNs.
+	* calls.c (call_expr_flags): Same.
+
+2015-04-17  Tom de Vries  <tom@codesourcery.com>
+
 	* tree-stdarg.c (optimize_va_list_gpr_fpr_size): Factor out of ...
 	(pass_stdarg::execute): ... here.
 

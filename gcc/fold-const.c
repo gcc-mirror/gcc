@@ -3045,11 +3045,26 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       switch (TREE_CODE (arg0))
 	{
 	case CALL_EXPR:
-	  /* If the CALL_EXPRs call different functions, then they
-	     clearly can not be equal.  */
-	  if (! operand_equal_p (CALL_EXPR_FN (arg0), CALL_EXPR_FN (arg1),
-				 flags))
+	  if ((CALL_EXPR_FN (arg0) == NULL_TREE)
+	      != (CALL_EXPR_FN (arg1) == NULL_TREE))
+	    /* If not both CALL_EXPRs are either internal or normal function
+	       functions, then they are not equal.  */
 	    return 0;
+	  else if (CALL_EXPR_FN (arg0) == NULL_TREE)
+	    {
+	      /* If the CALL_EXPRs call different internal functions, then they
+		 are not equal.  */
+	      if (CALL_EXPR_IFN (arg0) != CALL_EXPR_IFN (arg1))
+		return 0;
+	    }
+	  else
+	    {
+	      /* If the CALL_EXPRs call different functions, then they are not
+		 equal.  */
+	      if (! operand_equal_p (CALL_EXPR_FN (arg0), CALL_EXPR_FN (arg1),
+				     flags))
+		return 0;
+	    }
 
 	  {
 	    unsigned int cef = call_expr_flags (arg0);
