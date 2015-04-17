@@ -1,3 +1,13 @@
+2015-04-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/65612
+	* g++.dg/ext/mv18.C: New test.
+	* g++.dg/ext/mv19.C: Likewise.
+	* g++.dg/ext/mv20.C: Likewise.
+	* g++.dg/ext/mv21.C: Likewise.
+	* g++.dg/ext/mv22.C: Likewise.
+	* g++.dg/ext/mv23.C: Likewise.
+
 2015-04-17  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/64527

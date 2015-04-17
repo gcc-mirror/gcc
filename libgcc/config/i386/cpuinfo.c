@@ -109,7 +109,7 @@ struct __processor_model
   unsigned int __cpu_type;
   unsigned int __cpu_subtype;
   unsigned int __cpu_features[1];
-} __cpu_model;
+} __cpu_model = { };
 
 
 /* Get the specific type of AMD CPU.  */
@@ -424,3 +424,8 @@ __cpu_indicator_init (void)
 
   return 0;
 }
+
+#if defined SHARED && defined USE_ELF_SYMVER
+__asm__ (".symver __cpu_indicator_init, __cpu_indicator_init@GCC_4.8.0");
+__asm__ (".symver __cpu_model, __cpu_model@GCC_4.8.0");
+#endif
