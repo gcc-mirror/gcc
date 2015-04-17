@@ -169,8 +169,20 @@ Dataflow_traverse_statements::statement(Block* block, size_t* pindex,
 					Statement *statement)
 {
   Dataflow_traverse_assignment dta(this->dataflow_, statement);
-  if (!statement->traverse_assignments(&dta))
+
+  // For thunk statements, make sure to traverse the call expression to
+  // find any reference to a variable being used as an argument.
+  if (!statement->traverse_assignments(&dta)
+      || statement->thunk_statement() != NULL)
     {
+      // Case statements in selects will be lowered into temporaries at this
+      // point so our dataflow analysis will miss references between a/c and ch
+      // in case statements of the form a,c := <-ch.  Do a special dataflow
+      // analysis for select statements here; the analysis for the blocks will
+      // be handled as usual.
+      if (statement->select_statement() != NULL)
+	statement->select_statement()->analyze_dataflow(this->dataflow_);
+
       Dataflow_traverse_expressions dte(this->dataflow_, statement);
       statement->traverse(block, pindex, &dte);
     }
@@ -195,12 +207,21 @@ Dataflow::Compare_vars::operator()(const Named_object* no1,
     return false;
   if (loc1 > loc2)
     return true;
+  if (Linemap::is_predeclared_location(loc1))
+    return false;
 
-  if (no1 == no2)
+  if (no1 == no2
+      || (no1->is_result_variable()
+	  && no2->is_result_variable())
+      || ((no1->is_variable()
+	   && no1->var_value()->is_type_switch_var())
+	  && (no2->is_variable()
+	      && no2->var_value()->is_type_switch_var())))
     return false;
 
   // We can't have two variables with the same name in the same
-  // location.
+  // location unless they are type switch variables which share the same
+  // fake location.
   go_unreachable();
 }
 

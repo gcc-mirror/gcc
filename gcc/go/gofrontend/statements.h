@@ -15,12 +15,14 @@ class Statement_inserter;
 class Block;
 class Function;
 class Unnamed_label;
+class Assignment_statement;
 class Temporary_statement;
 class Variable_declaration_statement;
 class Expression_statement;
 class Return_statement;
 class Thunk_statement;
 class Label_statement;
+class If_statement;
 class For_statement;
 class For_range_statement;
 class Switch_statement;
@@ -45,6 +47,7 @@ class Bexpression;
 class Bstatement;
 class Bvariable;
 class Ast_dump_context;
+class Dataflow;
 
 // This class is used to traverse assignments made by a statement
 // which makes assignments.
@@ -331,6 +334,22 @@ class Statement
   is_block_statement() const
   { return this->classification_ == STATEMENT_BLOCK; }
 
+  // If this is an assignment statement, return it.  Otherwise return
+  // NULL.
+  Assignment_statement*
+  assignment_statement()
+  {
+    return this->convert<Assignment_statement, STATEMENT_ASSIGNMENT>();
+  }
+
+  // If this is an temporary statement, return it.  Otherwise return
+  // NULL.
+  Temporary_statement*
+  temporary_statement()
+  {
+    return this->convert<Temporary_statement, STATEMENT_TEMPORARY>();
+  }
+
   // If this is a variable declaration statement, return it.
   // Otherwise return NULL.
   Variable_declaration_statement*
@@ -363,6 +382,11 @@ class Statement
   label_statement()
   { return this->convert<Label_statement, STATEMENT_LABEL>(); }
 
+  // If this is an if statement, return it.  Otherwise return NULL.
+  If_statement*
+  if_statement()
+  { return this->convert<If_statement, STATEMENT_IF>(); }
+
   // If this is a for statement, return it.  Otherwise return NULL.
   For_statement*
   for_statement()
@@ -384,6 +408,11 @@ class Statement
   Type_switch_statement*
   type_switch_statement()
   { return this->convert<Type_switch_statement, STATEMENT_TYPE_SWITCH>(); }
+
+  // If this is a send statement, return it.  Otherwise return NULL.
+  Send_statement*
+  send_statement()
+  { return this->convert<Send_statement, STATEMENT_SEND>(); }
 
   // If this is a select statement, return it.  Otherwise return NULL.
   Select_statement*
@@ -505,6 +534,54 @@ class Statement
   Statement_classification classification_;
   // The location in the input file of the start of this statement.
   Location location_;
+};
+
+// An assignment statement.
+
+class Assignment_statement : public Statement
+{
+ public:
+  Assignment_statement(Expression* lhs, Expression* rhs,
+		       Location location)
+    : Statement(STATEMENT_ASSIGNMENT, location),
+      lhs_(lhs), rhs_(rhs)
+  { }
+
+  Expression*
+  lhs() const
+  { return this->lhs_; }
+
+  Expression*
+  rhs() const
+  { return this->rhs_; }
+
+ protected:
+  int
+  do_traverse(Traverse* traverse);
+
+  bool
+  do_traverse_assignments(Traverse_assignments*);
+
+  void
+  do_determine_types();
+
+  void
+  do_check_types(Gogo*);
+
+  Statement*
+  do_flatten(Gogo*, Named_object*, Block*, Statement_inserter*);
+
+  Bstatement*
+  do_get_backend(Translate_context*);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
+
+ private:
+  // Left hand side--the lvalue.
+  Expression* lhs_;
+  // Right hand side--the rvalue.
+  Expression* rhs_;
 };
 
 // A statement which creates and initializes a temporary variable.
@@ -697,6 +774,14 @@ class Send_statement : public Statement
       channel_(channel), val_(val)
   { }
 
+  Expression*
+  channel()
+  { return this->channel_; }  
+
+  Expression*
+  val()
+  { return this->val_; }
+
  protected:
   int
   do_traverse(Traverse* traverse);
@@ -775,6 +860,10 @@ class Select_clauses
   void
   check_types();
 
+  // Analyze the dataflow across each case statement.
+  void
+  analyze_dataflow(Dataflow*);
+
   // Whether the select clauses may fall through to the statement
   // which follows the overall select statement.
   bool
@@ -830,6 +919,10 @@ class Select_clauses
     // Check types.
     void
     check_types();
+
+    // Analyze the dataflow across each case statement.
+    void
+    analyze_dataflow(Dataflow*);
 
     // Return true if this is the default clause.
     bool
@@ -936,6 +1029,10 @@ class Select_statement : public Statement
   // Return the break label for this select statement.
   Unnamed_label*
   break_label();
+
+  void
+  analyze_dataflow(Dataflow* dataflow)
+  { this->clauses_->analyze_dataflow(dataflow); }
 
  protected:
   int
@@ -1106,6 +1203,46 @@ class Label_statement : public Statement
  private:
   // The label.
   Label* label_;
+};
+
+// An if statement.
+
+class If_statement : public Statement
+{
+ public:
+  If_statement(Expression* cond, Block* then_block, Block* else_block,
+	       Location location)
+    : Statement(STATEMENT_IF, location),
+      cond_(cond), then_block_(then_block), else_block_(else_block)
+  { }
+
+  Expression*
+  condition() const
+  { return this->cond_; }
+
+ protected:
+  int
+  do_traverse(Traverse*);
+
+  void
+  do_determine_types();
+
+  void
+  do_check_types(Gogo*);
+
+  bool
+  do_may_fall_through() const;
+
+  Bstatement*
+  do_get_backend(Translate_context*);
+
+  void
+  do_dump_statement(Ast_dump_context*) const;
+
+ private:
+  Expression* cond_;
+  Block* then_block_;
+  Block* else_block_;
 };
 
 // A for statement.

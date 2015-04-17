@@ -7,6 +7,7 @@
 #ifndef GO_IMPORT_H
 #define GO_IMPORT_H
 
+#include "escape.h"
 #include "export.h"
 #include "go-linemap.h"
 
@@ -196,6 +197,10 @@ class Import
   // Read a type.
   Type*
   read_type();
+
+  // Read escape information.
+  Node::Escapement_lattice
+  read_escape_info();
 
  private:
   static Stream*
