@@ -587,6 +587,7 @@ extern bool default_use_anchors_for_symbol_p (const_rtx);
 extern bool default_binds_local_p (const_tree);
 extern bool default_binds_local_p_1 (const_tree, int);
 extern bool default_binds_local_p_2 (const_tree);
+extern bool default_binds_local_p_3 (const_tree, bool, bool, bool, bool);
 extern void default_globalize_label (FILE *, const char *);
 extern void default_globalize_decl_name (FILE *, tree);
 extern void default_emit_unwind_label (FILE *, tree, int, int);
