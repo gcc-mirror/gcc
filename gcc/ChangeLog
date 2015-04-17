@@ -1,3 +1,9 @@
+2015-04-17  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	PR target/65535
+	* config.gcc: Exit with a comment when we do not have a major version
+	number for the FreeBSD target.
+
 2015-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/65689
