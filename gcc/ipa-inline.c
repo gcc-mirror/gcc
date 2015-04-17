@@ -515,7 +515,7 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       else if (opt_for_fn (callee->decl, optimize_size)
 	       < opt_for_fn (caller->decl, optimize_size)
 	       || (opt_for_fn (callee->decl, optimize)
-		   >= opt_for_fn (caller->decl, optimize)))
+		   > opt_for_fn (caller->decl, optimize)))
 	{
 	  if (estimate_edge_time (e)
 	      >= 20 + inline_edge_summary (e)->call_stmt_time)
