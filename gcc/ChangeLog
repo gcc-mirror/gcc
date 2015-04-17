@@ -1,4 +1,13 @@
 2015-04-17  Tom de Vries  <tom@codesourcery.com>
+
+	* gimplify.c (gimplify_function_tree): Tentatively set PROP_gimple_lva
+	in cfun->curr_properties.
+	(gimplify_va_arg_expr): Clear PROP_gimple_lva in cfun->curr_properties
+	if we generate an IFN_VA_ARG.
+	* tree-inline.c (expand_call_inline): Reset PROP_gimple_lva in dest
+	function if PROP_gimple_lva is not set in src function.
+
+2015-04-17  Tom de Vries  <tom@codesourcery.com>
 	    Michael Matz  <matz@suse.de>
 
 	* gimple-iterator.c (update_modified_stmts): Remove static.
