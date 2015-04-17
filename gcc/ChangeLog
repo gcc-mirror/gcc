@@ -1,3 +1,37 @@
+2015-04-17  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/47679
+	* Makefile.in (OBJS); Add tree-ssa-scopedtables.o.
+	* tree-ssa-scopedtables.c: New file.
+	* tree-ssa-scopedtables.h: New file.
+	* tree-ssa-dom.c: Include tree-ssa-scopedtables.h.
+	(const_and_copies): Change name/type.
+	(record_const_or_copy): Move into tree-ssa-scopedtables.c
+	(record_const_or_copy_1): Similarly.
+	(restore_vars_to_original_value): Similarly.
+	(pass_dominator::execute): Create and destroy const_and_copies table.
+	(thread_across_edge): Update passing of const_and_copies.
+	(record_temporary_equivalence): Use method calls rather than
+	manipulating const_and_copies directly.
+	(record_equality, cprop_into_successor_phis): Similarly.
+	(dom_opt_dom_walker::before_dom_children): Similarly.
+	(dom_opt_dom_walker::after_dom_children): Similarly.
+	(eliminate_redundant_computations): Similarly.
+	* tree-ssa-threadedge.c (remove_temporary_equivalences): Delete.
+	(record_temporary_equivalence): Likewise.
+	(invalidate_equivalences): Likewise.
+	(record_temporary_equivalences_from_phis): Update due to type
+	change of const_and_copies.  Use method calls rather than
+	manipulating the stack directly.
+	(record_temporary_equivalences_from_stmts_at_dest): Likewise.
+	(thread_through_normal_block, thread_across_edge): Likewise.
+	(thread_across_edge): Likewise.
+	* tree-ssa-threadedge.h (thread_across_edge): Update prototype.
+	* tree-vrp.c: Include tree-ssa-scopedtables.h.  Change type
+	of equiv_stack.
+	(identify_jump_threads): Update due to type change of equiv_stack.
+	(finalize_jump_threads): Delete the equiv_stack when complete.
+
 2015-04-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (LEGITIMIZE_RELOAD_ADDRESS): Remove.
