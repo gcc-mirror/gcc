@@ -1452,6 +1452,7 @@ OBJS = \
 	tree-ssa-propagate.o \
 	tree-ssa-reassoc.o \
 	tree-ssa-sccvn.o \
+	tree-ssa-scopedtables.o \
 	tree-ssa-sink.o \
 	tree-ssa-strlen.o \
 	tree-ssa-structalias.o \

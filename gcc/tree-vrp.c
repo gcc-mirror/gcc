@@ -88,6 +88,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "insn-codes.h"
 #include "optabs.h"
+#include "tree-ssa-scopedtables.h"
 #include "tree-ssa-threadedge.h"
 
 
@@ -10054,12 +10055,8 @@ vrp_fold_stmt (gimple_stmt_iterator *si)
   return simplify_stmt_using_ranges (si);
 }
 
-/* Stack of dest,src equivalency pairs that need to be restored after
-   each attempt to thread a block's incoming edge to an outgoing edge.
-
-   A NULL entry is used to mark the end of pairs which need to be
-   restored.  */
-static vec<tree> equiv_stack;
+/* Unwindable const/copy equivalences.  */
+const_and_copies *equiv_stack;
 
 /* A trivial wrapper so that we can present the generic jump threading
    code with a simple API for simplifying statements.  STMT is the
@@ -10140,7 +10137,7 @@ identify_jump_threads (void)
 
   /* Allocate our unwinder stack to unwind any temporary equivalences
      that might be recorded.  */
-  equiv_stack.create (20);
+  equiv_stack = new const_and_copies (dump_file, dump_flags);
 
   /* To avoid lots of silly node creation, we create a single
      conditional and just modify it in-place when attempting to
@@ -10198,7 +10195,7 @@ identify_jump_threads (void)
 	      if (e->flags & (EDGE_DFS_BACK | EDGE_COMPLEX))
 		continue;
 
-	      thread_across_edge (dummy, e, true, &equiv_stack,
+	      thread_across_edge (dummy, e, true, equiv_stack,
 				  simplify_stmt_for_jump_threading);
 	    }
 	}
@@ -10219,7 +10216,7 @@ static void
 finalize_jump_threads (void)
 {
   thread_through_all_blocks (false);
-  equiv_stack.release ();
+  delete equiv_stack;
 }
 
 

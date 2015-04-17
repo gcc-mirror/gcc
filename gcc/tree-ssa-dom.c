@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-threadupdate.h"
 #include "langhooks.h"
 #include "params.h"
+#include "tree-ssa-scopedtables.h"
 #include "tree-ssa-threadedge.h"
 #include "tree-ssa-dom.h"
 #include "inchash.h"
@@ -235,11 +236,8 @@ expr_elt_hasher::remove (value_type &element)
    in this table.  */
 static hash_table<expr_elt_hasher> *avail_exprs;
 
-/* Stack of dest,src pairs that need to be restored during finalization.
-
-   A NULL entry is used to mark the end of pairs which need to be
-   restored during finalization of this block.  */
-static vec<tree> const_and_copies_stack;
+/* Unwindable const/copy equivalences.  */
+static const_and_copies *const_and_copies;
 
 /* Track whether or not we have changed the control flow graph.  */
 static bool cfg_altered;
@@ -268,14 +266,12 @@ static hashval_t avail_expr_hash (const void *);
 static void htab_statistics (FILE *,
 			     const hash_table<expr_elt_hasher> &);
 static void record_cond (cond_equivalence *);
-static void record_const_or_copy (tree, tree);
 static void record_equality (tree, tree);
 static void record_equivalences_from_phis (basic_block);
 static void record_equivalences_from_incoming_edge (basic_block);
 static void eliminate_redundant_computations (gimple_stmt_iterator *);
 static void record_equivalences_from_stmt (gimple, int);
 static void remove_local_expressions_from_table (void);
-static void restore_vars_to_original_value (void);
 static edge single_incoming_edge_ignoring_loop_edges (basic_block);
 
 
@@ -1196,7 +1192,7 @@ pass_dominator::execute (function *fun)
   /* Create our hash tables.  */
   avail_exprs = new hash_table<expr_elt_hasher> (1024);
   avail_exprs_stack.create (20);
-  const_and_copies_stack.create (20);
+  const_and_copies = new class const_and_copies (dump_file, dump_flags);
   need_eh_cleanup = BITMAP_ALLOC (NULL);
   need_noreturn_fixup.create (0);
 
@@ -1319,7 +1315,7 @@ pass_dominator::execute (function *fun)
   BITMAP_FREE (need_eh_cleanup);
   need_noreturn_fixup.release ();
   avail_exprs_stack.release ();
-  const_and_copies_stack.release ();
+  delete const_and_copies;
 
   /* Free the value-handle array.  */
   threadedge_finalize_values ();
@@ -1420,36 +1416,6 @@ remove_local_expressions_from_table (void)
     }
 }
 
-/* Use the source/dest pairs in CONST_AND_COPIES_STACK to restore
-   CONST_AND_COPIES to its original state, stopping when we hit a
-   NULL marker.  */
-
-static void
-restore_vars_to_original_value (void)
-{
-  while (const_and_copies_stack.length () > 0)
-    {
-      tree prev_value, dest;
-
-      dest = const_and_copies_stack.pop ();
-
-      if (dest == NULL)
-	break;
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "<<<< COPY ");
-	  print_generic_expr (dump_file, dest, 0);
-	  fprintf (dump_file, " = ");
-	  print_generic_expr (dump_file, SSA_NAME_VALUE (dest), 0);
-	  fprintf (dump_file, "\n");
-	}
-
-      prev_value = const_and_copies_stack.pop ();
-      set_ssa_name_value (dest, prev_value);
-    }
-}
-
 /* A trivial wrapper so that we can present the generic jump
    threading code with a simple API for simplifying statements.  */
 static tree
@@ -1479,7 +1445,7 @@ record_temporary_equivalences (edge e)
 
       /* If we have a simple NAME = VALUE equivalence, record it.  */
       if (lhs && TREE_CODE (lhs) == SSA_NAME)
-	record_const_or_copy (lhs, rhs);
+	const_and_copies->record_const_or_copy (lhs, rhs);
 
       /* If we have 0 = COND or 1 = COND equivalences, record them
 	 into our expression hash tables.  */
@@ -1505,7 +1471,7 @@ dom_opt_dom_walker::thread_across_edge (edge e)
      current state.  */
   avail_exprs_stack.safe_push
     (std::pair<expr_hash_elt_t, expr_hash_elt_t> (NULL, NULL));
-  const_and_copies_stack.safe_push (NULL_TREE);
+  const_and_copies->push_marker ();
 
   /* Traversing E may result in equivalences we can utilize.  */
   record_temporary_equivalences (e);
@@ -1513,7 +1479,7 @@ dom_opt_dom_walker::thread_across_edge (edge e)
   /* With all the edge equivalences in the tables, go ahead and attempt
      to thread through E->dest.  */
   ::thread_across_edge (m_dummy_cond, e, false,
-		        &const_and_copies_stack,
+		        const_and_copies,
 		        simplify_stmt_for_jump_threading);
 
   /* And restore the various tables to their state before
@@ -1752,48 +1718,6 @@ record_cond (cond_equivalence *p)
     free_expr_hash_elt (element);
 }
 
-/* A helper function for record_const_or_copy and record_equality.
-   Do the work of recording the value and undo info.  */
-
-static void
-record_const_or_copy_1 (tree x, tree y, tree prev_x)
-{
-  set_ssa_name_value (x, y);
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "0>>> COPY ");
-      print_generic_expr (dump_file, x, 0);
-      fprintf (dump_file, " = ");
-      print_generic_expr (dump_file, y, 0);
-      fprintf (dump_file, "\n");
-    }
-
-  const_and_copies_stack.reserve (2);
-  const_and_copies_stack.quick_push (prev_x);
-  const_and_copies_stack.quick_push (x);
-}
-
-/* Record that X is equal to Y in const_and_copies.  Record undo
-   information in the block-local vector.  */
-
-static void
-record_const_or_copy (tree x, tree y)
-{
-  tree prev_x = SSA_NAME_VALUE (x);
-
-  gcc_assert (TREE_CODE (x) == SSA_NAME);
-
-  if (TREE_CODE (y) == SSA_NAME)
-    {
-      tree tmp = SSA_NAME_VALUE (y);
-      if (tmp)
-	y = tmp;
-    }
-
-  record_const_or_copy_1 (x, y, prev_x);
-}
-
 /* Return the loop depth of the basic block of the defining statement of X.
    This number should not be treated as absolutely correct because the loop
    information may not be completely up-to-date when dom runs.  However, it
@@ -1863,7 +1787,7 @@ record_equality (tree x, tree y)
 	  || REAL_VALUES_EQUAL (dconst0, TREE_REAL_CST (y))))
     return;
 
-  record_const_or_copy_1 (x, y, prev_x);
+  const_and_copies->record_const_or_copy (x, y, prev_x);
 }
 
 /* Returns true when STMT is a simple iv increment.  It detects the
@@ -1940,7 +1864,7 @@ cprop_into_successor_phis (basic_block bb)
 
       /* Push the unwind marker so we can reset the const and copies
 	 table back to its original state after processing this edge.  */
-      const_and_copies_stack.safe_push (NULL_TREE);
+      const_and_copies->push_marker ();
 
       /* Extract and record any simple NAME = VALUE equivalences.
 
@@ -1953,7 +1877,7 @@ cprop_into_successor_phis (basic_block bb)
 	  tree rhs = edge_info->rhs;
 
 	  if (lhs && TREE_CODE (lhs) == SSA_NAME)
-	    record_const_or_copy (lhs, rhs);
+	    const_and_copies->record_const_or_copy (lhs, rhs);
 	}
 
       indx = e->dest_idx;
@@ -1982,7 +1906,7 @@ cprop_into_successor_phis (basic_block bb)
 	    propagate_value (orig_p, new_val);
 	}
 
-      restore_vars_to_original_value ();
+      const_and_copies->pop_to_marker ();
     }
 }
 
@@ -1998,7 +1922,7 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
      far to unwind when we finalize this block.  */
   avail_exprs_stack.safe_push
     (std::pair<expr_hash_elt_t, expr_hash_elt_t> (NULL, NULL));
-  const_and_copies_stack.safe_push (NULL_TREE);
+  const_and_copies->push_marker ();
 
   record_equivalences_from_incoming_edge (bb);
 
@@ -2064,7 +1988,7 @@ dom_opt_dom_walker::after_dom_children (basic_block bb)
 
   /* These remove expressions local to BB from the tables.  */
   remove_local_expressions_from_table ();
-  restore_vars_to_original_value ();
+  const_and_copies->pop_to_marker ();
 }
 
 /* Search for redundant computations in STMT.  If any are found, then
@@ -2128,7 +2052,7 @@ eliminate_redundant_computations (gimple_stmt_iterator* gsi)
        This should be sufficient to kill the redundant phi.  */
     {
       if (def && cached_lhs)
-	record_const_or_copy (def, cached_lhs);
+	const_and_copies->record_const_or_copy (def, cached_lhs);
       return;
     }
   else
