@@ -1,3 +1,12 @@
+2015-04-17  Sivanupandi Pitchumani <Pitchumani.Sivanupandi@atmel.com>
+
+	PR target/65296
+	* config/avr/gen-avr-mmcu-specs.c (*avrlibc_startfile): Adjust
+	to new AVR-LibC file layout (bug #44574).
+	(*avrlibc_devicelib): Same.
+	* config/avr/avr-mcus.def: Adjust comments.
+	* config/avr/avr.opt (nodevicelib): Adjust help.
+
 2015-04-17  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/arm_neon.h (vdup_n_f32): Remove forward declaration.
