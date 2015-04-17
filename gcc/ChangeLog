@@ -1,3 +1,10 @@
+2015-04-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/65787
+	* config/rs6000/rs6000.c (rtx_is_swappable_p): Remove previous
+	fix; ensure that a subsequent SH_NONE operand does not overwrite
+	an existing *special value.
+
 2015-04-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/65780

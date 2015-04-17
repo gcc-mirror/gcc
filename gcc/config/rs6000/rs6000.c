@@ -34204,17 +34204,6 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
       else
 	return 0;
 
-    case PARALLEL:
-      /* A vec_extract operation may be wrapped in a PARALLEL with a
-	 clobber, so account for that possibility.  */
-      if (XVECLEN (op, 0) != 2)
-	return 0;
-
-      if (GET_CODE (XVECEXP (op, 0, 1)) != CLOBBER)
-	return 0;
-
-      return rtx_is_swappable_p (XVECEXP (op, 0, 0), special);
-
     case UNSPEC:
       {
 	/* Various operations are unsafe for this optimization, at least
@@ -34296,10 +34285,11 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
       {
 	unsigned int special_op = SH_NONE;
 	ok &= rtx_is_swappable_p (XEXP (op, i), &special_op);
+	if (special_op == SH_NONE)
+	  continue;
 	/* Ensure we never have two kinds of special handling
 	   for the same insn.  */
-	if (*special != SH_NONE && special_op != SH_NONE
-	    && *special != special_op)
+	if (*special != SH_NONE && *special != special_op)
 	  return 0;
 	*special = special_op;
       }
@@ -34308,10 +34298,11 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	{
 	  unsigned int special_op = SH_NONE;
 	  ok &= rtx_is_swappable_p (XVECEXP (op, i, j), &special_op);
+	  if (special_op == SH_NONE)
+	    continue;
 	  /* Ensure we never have two kinds of special handling
 	     for the same insn.  */
-	  if (*special != SH_NONE && special_op != SH_NONE
-	      && *special != special_op)
+	  if (*special != SH_NONE && *special != special_op)
 	    return 0;
 	  *special = special_op;
 	}
