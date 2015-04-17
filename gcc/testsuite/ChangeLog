@@ -1,3 +1,8 @@
+2015-04-17  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/64527
+	* g++.dg/init/pr64527.C: New test.
+
 2015-04-17  Tom de Vries  <tom@codesourcery.com>
 	    Michael Matz  <matz@suse.de>
 
