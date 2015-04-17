@@ -897,6 +897,11 @@ fasan-shadow-offset=
 Common Joined RejectNegative Var(common_deferred_options) Defer
 -fasan-shadow-offset=<number>	Use custom shadow memory offset.
 
+fsanitize-sections=
+Common Joined RejectNegative Var(common_deferred_options) Defer
+-fsanitize-sections=<sec1,sec2,...>	Sanitize global variables
+in user-defined sections.
+
 fsanitize-recover=
 Common Report Joined
 After diagnosing undefined behavior attempt to continue execution

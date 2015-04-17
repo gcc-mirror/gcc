@@ -301,7 +301,8 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
 -fsanitize=@var{style} -fsanitize-recover -fsanitize-recover=@var{style} @gol
--fasan-shadow-offset=@var{number} -fsanitize-undefined-trap-on-error @gol
+-fasan-shadow-offset=@var{number} -fsanitize-sections=@var{s1,s2,...} @gol
+-fsanitize-undefined-trap-on-error @gol
 -fcheck-pointer-bounds -fchkp-check-incomplete-type @gol
 -fchkp-first-field-has-own-bounds -fchkp-narrow-bounds @gol
 -fchkp-narrow-to-innermost-array -fchkp-optimize @gol
@@ -5802,6 +5803,10 @@ together.
 This option forces GCC to use custom shadow offset in AddressSanitizer checks.
 It is useful for experimenting with different shadow memory layouts in
 Kernel AddressSanitizer.
+
+@item -fsanitize-sections=@var{s1,s2,...}
+@opindex fsanitize-sections
+Sanitize global variables in selected user-defined sections.
 
 @item -fsanitize-recover@r{[}=@var{opts}@r{]}
 @opindex fsanitize-recover

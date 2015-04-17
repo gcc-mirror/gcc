@@ -272,6 +272,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static unsigned HOST_WIDE_INT asan_shadow_offset_value;
 static bool asan_shadow_offset_computed;
+static const char *sanitized_sections;
 
 /* Sets shadow offset to value in string VAL.  */
 
@@ -292,6 +293,33 @@ set_asan_shadow_offset (const char *val)
   asan_shadow_offset_computed = true;
 
   return true;
+}
+
+/* Set list of user-defined sections that need to be sanitized.  */
+
+void
+set_sanitized_sections (const char *secs)
+{
+  sanitized_sections = secs;
+}
+
+/* Checks whether section SEC should be sanitized.  */
+
+static bool
+section_sanitized_p (const char *sec)
+{
+  if (!sanitized_sections)
+    return false;
+  size_t len = strlen (sec);
+  const char *p = sanitized_sections;
+  while ((p = strstr (p, sec)))
+    {
+      if ((p == sanitized_sections || p[-1] == ',')
+	  && (p[len] == 0 || p[len] == ','))
+	return true;
+      ++p;
+    }
+  return false;
 }
 
 /* Returns Asan shadow offset.  */
@@ -1374,7 +1402,8 @@ asan_protect_global (tree decl)
 	 to be an array of such vars, putting padding in there
 	 breaks this assumption.  */
       || (DECL_SECTION_NAME (decl) != NULL
-	  && !symtab_node::get (decl)->implicit_section)
+	  && !symtab_node::get (decl)->implicit_section
+	  && !section_sanitized_p (DECL_SECTION_NAME (decl)))
       || DECL_SIZE (decl) == 0
       || ASAN_RED_ZONE_SIZE * BITS_PER_UNIT > MAX_OFILE_ALIGNMENT
       || !valid_constant_size_p (DECL_SIZE_UNIT (decl))
