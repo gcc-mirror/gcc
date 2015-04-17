@@ -34204,6 +34204,17 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
       else
 	return 0;
 
+    case PARALLEL:
+      /* A vec_extract operation may be wrapped in a PARALLEL with a
+	 clobber, so account for that possibility.  */
+      if (XVECLEN (op, 0) != 2)
+	return 0;
+
+      if (GET_CODE (XVECEXP (op, 0, 1)) != CLOBBER)
+	return 0;
+
+      return rtx_is_swappable_p (XVECEXP (op, 0, 0), special);
+
     case UNSPEC:
       {
 	/* Various operations are unsafe for this optimization, at least
@@ -34603,7 +34614,10 @@ permute_store (rtx_insn *insn)
 static void
 adjust_extract (rtx_insn *insn)
 {
-  rtx src = SET_SRC (PATTERN (insn));
+  rtx pattern = PATTERN (insn);
+  if (GET_CODE (pattern) == PARALLEL)
+    pattern = XVECEXP (pattern, 0, 0);
+  rtx src = SET_SRC (pattern);
   /* The vec_select may be wrapped in a vec_duplicate for a splat, so
      account for that.  */
   rtx sel = GET_CODE (src) == VEC_DUPLICATE ? XEXP (src, 0) : src;

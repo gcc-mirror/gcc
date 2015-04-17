@@ -1,3 +1,10 @@
+2015-04-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/65787
+	* config/rs6000/rs6000.c (rtx_is_swappable_p): Handle case where
+	vec_extract operation is wrapped in a PARALLEL with a CLOBBER.
+	(adjust_extract): Likewise.
+
 2015-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/65771
