@@ -678,50 +678,10 @@ check_all_va_list_escapes (struct stdarg_info *si)
   return false;
 }
 
+/* Optimize FUN->va_list_gpr_size and FUN->va_list_fpr_size.  */
 
-namespace {
-
-const pass_data pass_data_stdarg =
-{
-  GIMPLE_PASS, /* type */
-  "stdarg", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_NONE, /* tv_id */
-  ( PROP_cfg | PROP_ssa ), /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_stdarg : public gimple_opt_pass
-{
-public:
-  pass_stdarg (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_stdarg, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  virtual bool gate (function *fun)
-    {
-      return (flag_stdarg_opt
-#ifdef ACCEL_COMPILER
-	      /* Disable for GCC5 in the offloading compilers, as
-		 va_list and gpr/fpr counter fields are not merged.
-		 In GCC6 when stdarg is lowered late this shouldn't be
-		 an issue.  */
-	      && !in_lto_p
-#endif
-	      /* This optimization is only for stdarg functions.  */
-	      && fun->stdarg != 0);
-    }
-
-  virtual unsigned int execute (function *);
-
-}; // class pass_stdarg
-
-unsigned int
-pass_stdarg::execute (function *fun)
+static void
+optimize_va_list_gpr_fpr_size (function *fun)
 {
   basic_block bb;
   bool va_list_escapes = false;
@@ -1054,6 +1014,54 @@ finish:
 	fprintf (dump_file, "%d", cfun->va_list_fpr_size);
       fputs (" FPR units.\n", dump_file);
     }
+}
+
+namespace {
+
+const pass_data pass_data_stdarg =
+{
+  GIMPLE_PASS, /* type */
+  "stdarg", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_stdarg : public gimple_opt_pass
+{
+public:
+  pass_stdarg (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_stdarg, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *fun)
+    {
+      return (flag_stdarg_opt
+#ifdef ACCEL_COMPILER
+	      /* Disable for GCC5 in the offloading compilers, as
+		 va_list and gpr/fpr counter fields are not merged.
+		 In GCC6 when stdarg is lowered late this shouldn't be
+		 an issue.  */
+	      && !in_lto_p
+#endif
+	      /* This optimization is only for stdarg functions.  */
+	      && fun->stdarg != 0);
+    }
+
+  virtual unsigned int execute (function *);
+
+}; // class pass_stdarg
+
+unsigned int
+pass_stdarg::execute (function *fun)
+{
+  optimize_va_list_gpr_fpr_size (fun);
+
   return 0;
 }
 

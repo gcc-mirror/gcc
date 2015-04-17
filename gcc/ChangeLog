@@ -1,4 +1,9 @@
 2015-04-17  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-stdarg.c (optimize_va_list_gpr_fpr_size): Factor out of ...
+	(pass_stdarg::execute): ... here.
+
+2015-04-17  Tom de Vries  <tom@codesourcery.com>
 	    Michael Matz  <matz@suse.de>
 
 	* tree-cfg.c (make_blocks_1): Factor out of ...
