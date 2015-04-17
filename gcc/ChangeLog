@@ -1,3 +1,9 @@
+2015-04-17  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.c (sem_item_optimizer::subdivide_classes_by_sensitive_refs):
+	Release symbol_compare_collection.
+	* ipa-reference.c: Add TODO that a vector should be released.
+
 2015-04-17  Sivanupandi Pitchumani <Pitchumani.Sivanupandi@atmel.com>
 
 	PR target/65296

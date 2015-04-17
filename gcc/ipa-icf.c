@@ -2712,6 +2712,9 @@ sem_item_optimizer::subdivide_classes_by_equality (bool in_wpa)
 unsigned
 sem_item_optimizer::subdivide_classes_by_sensitive_refs ()
 {
+  typedef hash_map <symbol_compare_collection *, vec <sem_item *>,
+    symbol_compare_hashmap_traits> subdivide_hash_map;
+
   unsigned newly_created_classes = 0;
 
   for (hash_table <congruence_class_group_hash>::iterator it = m_classes.begin ();
@@ -2726,8 +2729,7 @@ sem_item_optimizer::subdivide_classes_by_sensitive_refs ()
 
 	  if (c->members.length() > 1)
 	    {
-	      hash_map <symbol_compare_collection *, vec <sem_item *>,
-		symbol_compare_hashmap_traits> split_map;
+	      subdivide_hash_map split_map;
 
 	      for (unsigned j = 0; j < c->members.length (); j++)
 	        {
@@ -2735,10 +2737,15 @@ sem_item_optimizer::subdivide_classes_by_sensitive_refs ()
 
 		  symbol_compare_collection *collection = new symbol_compare_collection (source_node->node);
 
-		  vec <sem_item *> *slot = &split_map.get_or_insert (collection);
+		  bool existed;
+		  vec <sem_item *> *slot = &split_map.get_or_insert (collection,
+								     &existed);
 		  gcc_checking_assert (slot);
 
 		  slot->safe_push (source_node);
+
+		  if (existed)
+		    delete collection;
 	        }
 
 	       /* If the map contains more than one key, we have to split the map
@@ -2747,9 +2754,8 @@ sem_item_optimizer::subdivide_classes_by_sensitive_refs ()
 	        {
 		  bool first_class = true;
 
-		  hash_map <symbol_compare_collection *, vec <sem_item *>,
-		  symbol_compare_hashmap_traits>::iterator it2 = split_map.begin ();
-		  for (; it2 != split_map.end (); ++it2)
+		  for (subdivide_hash_map::iterator it2 = split_map.begin ();
+		       it2 != split_map.end (); ++it2)
 		    {
 		      congruence_class *new_cls;
 		      new_cls = new congruence_class (class_id++);
@@ -2771,6 +2777,14 @@ sem_item_optimizer::subdivide_classes_by_sensitive_refs ()
 			  m_classes_count++;
 		        }
 		    }
+		}
+
+	      /* Release memory.  */
+	      for (subdivide_hash_map::iterator it2 = split_map.begin ();
+		   it2 != split_map.end (); ++it2)
+		{
+		  delete (*it2).first;
+		  (*it2).second.release ();
 		}
 	    }
 	  }
