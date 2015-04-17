@@ -1,3 +1,12 @@
+2015-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/62077
+	* configure.ac (--enable-stage1-checking): Default to
+	release,misc,gimple,rtlflag,tree,types if --disable-checking
+	or --enable-checking is not specified and DEV-PHASE is not
+	experimental.
+	* configure: Regenerated.
+
 2015-04-08  Cary Coutant  <ccoutant@gmail.com>
 
 	* MAINTAINERS: Update my email address.
