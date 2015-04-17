@@ -1,3 +1,9 @@
+2015-04-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (LEGITIMIZE_RELOAD_ADDRESS): Remove.
+	* config/i386/i386.c (ix86_legitimize_reload_address): Ditto.
+	* config/i386/i386-protos.h (ix86_legitimize_reload_address): Ditto.
+
 2015-04-17  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	PR target/65535
