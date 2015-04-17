@@ -5822,6 +5822,8 @@ free_lang_data (void)
      still be used indirectly via the get_alias_set langhook.  */
   lang_hooks.dwarf_name = lhd_dwarf_name;
   lang_hooks.decl_printable_name = gimple_decl_printable_name;
+  lang_hooks.gimplify_expr = lhd_gimplify_expr;
+
   /* We do not want the default decl_assembler_name implementation,
      rather if we have fixed everything we want a wrapper around it
      asserting that all non-local symbols already got their assembler
