@@ -5665,8 +5665,6 @@ vaddlvq_u32 (uint32x4_t a)
 
 /* vcvt_high_f32_f16 not supported */
 
-static float32x2_t vdup_n_f32 (float32_t);
-
 #define vcvt_n_f32_s32(a, b)                                            \
   __extension__                                                         \
     ({                                                                  \

@@ -1,3 +1,7 @@
+2015-04-17  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/arm_neon.h (vdup_n_f32): Remove forward declaration.
+
 2015-04-17  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/64527
