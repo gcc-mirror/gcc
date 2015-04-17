@@ -3994,6 +3994,9 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 					pre_p, post_p, &preeval_data);
 	  }
 
+	bool ctor_has_side_effects_p
+	  = TREE_SIDE_EFFECTS (TREE_OPERAND (*expr_p, 1));
+
 	if (cleared)
 	  {
 	    /* Zap the CONSTRUCTOR element list, which simplifies this case.
@@ -4006,9 +4009,11 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  }
 
 	/* If we have not block cleared the object, or if there are nonzero
-	   elements in the constructor, add assignments to the individual
-	   scalar fields of the object.  */
-	if (!cleared || num_nonzero_elements > 0)
+	   elements in the constructor, or if the constructor has side effects,
+	   add assignments to the individual scalar fields of the object.  */
+	if (!cleared
+	    || num_nonzero_elements > 0
+	    || ctor_has_side_effects_p)
 	  gimplify_init_ctor_eval (object, elts, pre_p, cleared);
 
 	*expr_p = NULL_TREE;

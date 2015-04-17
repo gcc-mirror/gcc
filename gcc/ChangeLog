@@ -1,3 +1,9 @@
+2015-04-17  Patrick Palka  <ppalka@gcc.gnu.org>
+
+	PR c++/64527
+	* gimplify.c (gimplify_init_constructor): Always emit a
+	side-effecting constructor.
+
 2015-04-17  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/64950
