@@ -12799,7 +12799,12 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	}
 
       if (!const_ok_for_output (rtl))
-	break;
+	{
+	  if (GET_CODE (rtl) == CONST)
+	    mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0), mode, mem_mode,
+						 initialized);
+	  break;
+	}
 
     symref:
       mem_loc_result = new_addr_loc_descr (rtl, dtprel_false);
