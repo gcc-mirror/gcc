@@ -171,11 +171,11 @@ print_mcu (const avr_mcu_t *mcu)
   if (is_device)
     {
       fprintf (f, "*avrlibc_startfile:\n");
-      fprintf (f, "\tdev/%s/crt1.o%%s", mcu->name);
+      fprintf (f, "\tcrt%s.o%%s", mcu->name);
       fprintf (f, "\n\n");
 
       fprintf (f, "*avrlibc_devicelib:\n");
-      fprintf (f, "\t%%{!nodevicelib:dev/%s/libdev.a%%s}", mcu->name);
+      fprintf (f, "\t%%{!nodevicelib:-l%s}", mcu->name);
       fprintf (f, "\n\n");
     }
 #endif  // WITH_AVRLIBC
