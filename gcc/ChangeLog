@@ -1,3 +1,9 @@
+2015-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/65771
+	* dwarf2out.c (mem_loc_descriptor): For CONST, fallback to
+	trying mem_loc_descriptor on XEXP (rtl, 0).
+
 2015-04-17  Martin Liska  <mliska@suse.cz>
 
 	* ipa-icf.c (sem_item_optimizer::subdivide_classes_by_sensitive_refs):
