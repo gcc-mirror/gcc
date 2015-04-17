@@ -664,6 +664,11 @@ case ${target} in
   gas=yes
   gnu_ld=yes
   fbsd_major=`echo ${target} | sed -e 's/.*freebsd//g' | sed -e 's/\..*//g'`
+  if test "$fbsd_major" = ""; then
+    echo "Specify the major version number of the targeted FreeBSD release"
+    echo "like this: --target=amd64-unknown-freebsd10.1"
+    exit 1
+  fi
   tm_defines="${tm_defines} FBSD_MAJOR=${fbsd_major}"
   tmake_file="t-slibgcc"
   case ${enable_threads} in
