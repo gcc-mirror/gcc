@@ -1,3 +1,7 @@
+2015-04-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/plugins.texi: Rewrite first introductory paragraph.
+
 2015-04-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/65780
