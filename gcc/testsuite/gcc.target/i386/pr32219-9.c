@@ -1,8 +1,8 @@
 /* { dg-do compile { target *-*-linux* } } */
+/* { dg-require-effective-target pie_copyreloc } */
 /* { dg-options "-O2 -fpie" } */
 
-/* Initialized common symbol with -fpie.  */
-int xxx = 5;
+/* Uninitialized common symbol with -fpie.  */
 int xxx;
 
 int
@@ -13,5 +13,3 @@ foo ()
 
 /* { dg-final { scan-assembler "movl\[ \t\]xxx\\(%rip\\), %eax" { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-not "xxx@GOTPCREL" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler "movl\[ \t\]xxx@GOTOFF\\(%\[^,\]*\\), %eax" { target ia32 } } } */
-/* { dg-final { scan-assembler-not "movl\[ \t\]xxx@GOT\\(%\[^,\]*\\), %eax" { target ia32 } } } */

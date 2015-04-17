@@ -1,3 +1,17 @@
+2015-04-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/65780
+	* output.h (default_binds_local_p_3): New.
+	* varasm.c (default_binds_local_p_3): Make it public.  Take an
+	argument to indicate if common symbol may be local.  If common
+	symbol may be local, treat non-external variable as defined
+	locally.
+	(default_binds_local_p_2): Pass !flag_pic to default_binds_local_p_3.
+	(default_binds_local_p_1): Pass false to default_binds_local_p_3.
+	* config/i386/i386.c (ix86_binds_local_p): New.
+	(TARGET_BINDS_LOCAL_P): Replace default_binds_local_p_2 with
+	ix86_binds_local_p.
+
 2015-04-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/65787
