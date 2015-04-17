@@ -51801,6 +51801,7 @@ ix86_initialize_bounds (tree var, tree lb, tree ub, tree *stmts)
   return 2;
 }
 
+#if !TARGET_MACHO && !TARGET_DLLIMPORT_DECL_ATTRIBUTES
 /* For i386, common symbol is local only for non-PIE binaries.  For
    x86-64, common symbol is local only for non-PIE binaries or linker
    supports copy reloc in PIE binaries.   */
@@ -51813,6 +51814,7 @@ ix86_binds_local_p (const_tree exp)
 				   || (TARGET_64BIT
 				       && HAVE_LD_PIE_COPYRELOC != 0)));
 }
+#endif
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_RETURN_IN_MEMORY
