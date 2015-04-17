@@ -1,3 +1,13 @@
+2015-04-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/65612
+	* config.host (tmake_file): Add t-slibgcc-libgcc for Linux/x86.
+	* config/i386/cpuinfo.c (__cpu_model): Initialize.
+	(__cpu_indicator_init@GCC_4.8.0): New.
+	(__cpu_model@GCC_4.8.0): Likewise.
+	* config/i386/t-linux (HOST_LIBGCC2_CFLAGS): Add
+	-DUSE_ELF_SYMVER.
+
 2015-04-16  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/divmodhi.S: Add G14 and G13 versions of the __divhi3
