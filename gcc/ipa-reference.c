@@ -150,6 +150,7 @@ static struct cgraph_node_hook_list *node_removal_hook_holder;
    Indexed by UID of call graph nodes.  */
 static vec<ipa_reference_vars_info_t> ipa_reference_vars_vector;
 
+/* TODO: find a place where we should release the vector.  */
 static vec<ipa_reference_optimization_summary_t> ipa_reference_opt_sum_vector;
 
 /* Return the ipa_reference_vars structure starting from the cgraph NODE.  */
