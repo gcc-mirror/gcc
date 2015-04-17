@@ -1940,13 +1940,7 @@ func canonicalize(t Type) Type {
 	if t == nil {
 		return nil
 	}
-	u := t.uncommon()
-	var s string
-	if u == nil || u.PkgPath() == "" {
-		s = t.rawString()
-	} else {
-		s = u.PkgPath() + "." + u.Name()
-	}
+	s := t.rawString()
 	canonicalTypeLock.RLock()
 	if r, ok := canonicalType[s]; ok {
 		canonicalTypeLock.RUnlock()
