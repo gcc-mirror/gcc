@@ -1,4 +1,9 @@
-2015-04-16  Zhouyi Zhou  <yizhouzhou@ict.ac.cn> 
+2015-04-17  Christian Bruel  <christian.bruel@st.com>
+
+	* ipa-inline.c (can_inline_edge_p): Allow inlining of functions with
+	same attributes.
+
+2015-04-16  Zhouyi Zhou  <yizhouzhou@ict.ac.cn>
 
 	* ira-color.c (setup_left_conflict_sizes_p): Do not process
 	node itself when computing left conflict subnode size.
