@@ -458,6 +458,10 @@ handle_common_deferred_options (void)
 	     error ("unrecognized shadow offset %qs", opt->arg);
 	  break;
 
+	case OPT_fsanitize_sections_:
+	  set_sanitized_sections (opt->arg);
+	  break;
+
 	default:
 	  gcc_unreachable ();
 	}

@@ -1,3 +1,7 @@
+2015-04-17  Yury Gribov  <y.gribov@samsung.com>
+
+	* c-c++-common/asan/user-section-1.c: New test.
+
 2015-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/65771

@@ -1,3 +1,15 @@
+2015-04-17  Yury Gribov  <y.gribov@samsung.com>
+
+	* asan.c (set_sanitized_sections): New function.
+	(section_sanitized_p): Ditto.
+	(asan_protect_global): Optionally sanitize user-defined
+	sections.
+	* asan.h (set_sanitized_sections): Declare new function.
+	* common.opt (fsanitize-sections): New option.
+	* doc/invoke.texi (-fsanitize-sections): Document new option.
+	* opts-global.c (handle_common_deferred_options): Handle new
+	option.
+
 2015-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/65771
