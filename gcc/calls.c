@@ -847,6 +847,8 @@ call_expr_flags (const_tree t)
 
   if (decl)
     flags = flags_from_decl_or_type (decl);
+  else if (CALL_EXPR_FN (t) == NULL_TREE)
+    flags = internal_fn_flags (CALL_EXPR_IFN (t));
   else
     {
       t = TREE_TYPE (CALL_EXPR_FN (t));
