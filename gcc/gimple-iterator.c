@@ -72,7 +72,7 @@ update_modified_stmt (gimple stmt)
 
 /* Mark the statements in SEQ as modified, and update them.  */
 
-static void
+void
 update_modified_stmts (gimple_seq seq)
 {
   gimple_stmt_iterator gsi;

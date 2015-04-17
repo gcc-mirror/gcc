@@ -5899,7 +5899,8 @@ const pass_data pass_data_expand =
   TV_EXPAND, /* tv_id */
   ( PROP_ssa | PROP_gimple_leh | PROP_cfg
     | PROP_gimple_lcx
-    | PROP_gimple_lvec ), /* properties_required */
+    | PROP_gimple_lvec
+    | PROP_gimple_lva), /* properties_required */
   PROP_rtl, /* properties_provided */
   ( PROP_ssa | PROP_trees ), /* properties_destroyed */
   0, /* todo_flags_start */
