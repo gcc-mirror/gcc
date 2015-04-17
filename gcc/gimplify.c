@@ -9201,6 +9201,10 @@ gimplify_function_tree (tree fndecl)
   else
     push_struct_function (fndecl);
 
+  /* Tentatively set PROP_gimple_lva here, and reset it in gimplify_va_arg_expr
+     if necessary.  */
+  cfun->curr_properties |= PROP_gimple_lva;
+
   for (parm = DECL_ARGUMENTS (fndecl); parm ; parm = DECL_CHAIN (parm))
     {
       /* Preliminarily mark non-addressed complex variables as eligible
@@ -9295,7 +9299,7 @@ gimplify_function_tree (tree fndecl)
     }
 
   DECL_SAVED_TREE (fndecl) = NULL_TREE;
-  cfun->curr_properties = PROP_gimple_any;
+  cfun->curr_properties |= PROP_gimple_any;
 
   pop_cfun ();
 }
@@ -9413,6 +9417,10 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p,
   ap = build_fold_addr_expr_loc (loc, valist);
   tag = build_int_cst (build_pointer_type (type), 0);
   *expr_p = build_call_expr_internal_loc (loc, IFN_VA_ARG, type, 2, ap, tag);
+
+  /* Clear the tentatively set PROP_gimple_lva, to indicate that IFN_VA_ARG
+     needs to be expanded.  */
+  cfun->curr_properties &= ~PROP_gimple_lva;
 
   return GS_OK;
 }
