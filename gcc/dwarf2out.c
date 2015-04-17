@@ -14642,6 +14642,7 @@ loc_list_from_tree (tree loc, int want_address,
 
     case TARGET_MEM_REF:
     case SSA_NAME:
+    case DEBUG_EXPR_DECL:
       return NULL;
 
     case COMPOUND_EXPR:

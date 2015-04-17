@@ -1,3 +1,8 @@
+2015-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/65771
+	* gcc.dg/debug/pr65771.c: New test.
+
 2015-04-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/mpx/alloca-1-lbv.c (mpx_test): Replace

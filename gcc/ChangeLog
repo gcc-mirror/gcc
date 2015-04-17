@@ -1,3 +1,9 @@
+2015-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/65771
+	* dwarf2out.c (loc_list_from_tree): Return NULL
+	for DEBUG_EXPR_DECL.
+
 2015-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/65765
