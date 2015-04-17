@@ -342,13 +342,7 @@ parse_output_constraint (const char **constraint_p, int operand_num,
 	else if (insn_extra_memory_constraint (cn))
 	  *allows_mem = true;
 	else
-	  {
-	    /* Otherwise we can't assume anything about the nature of
-	       the constraint except that it isn't purely registers.
-	       Treat it like "g" and hope for the best.  */
-	    *allows_reg = true;
-	    *allows_mem = true;
-	  }
+	  insn_extra_constraint_allows_reg_mem (cn, allows_reg, allows_mem);
 	break;
       }
 
@@ -465,13 +459,7 @@ parse_input_constraint (const char **constraint_p, int input_num,
 	else if (insn_extra_memory_constraint (cn))
 	  *allows_mem = true;
 	else
-	  {
-	    /* Otherwise we can't assume anything about the nature of
-	       the constraint except that it isn't purely registers.
-	       Treat it like "g" and hope for the best.  */
-	    *allows_reg = true;
-	    *allows_mem = true;
-	  }
+	  insn_extra_constraint_allows_reg_mem (cn, allows_reg, allows_mem);
 	break;
       }
 
