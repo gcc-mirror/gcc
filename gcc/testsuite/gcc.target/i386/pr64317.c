@@ -3,7 +3,7 @@
 /* { dg-final { scan-assembler "addl\[ \\t\]+\[$\]_GLOBAL_OFFSET_TABLE_, %ebx" } } */
 /* { dg-final { scan-assembler "movl\[ \\t\]+c@GOTOFF\[(\]%ebx\[)\]" } } */
 /* { dg-final { scan-assembler-not "movl\[ \\t\]+\[0-9]+\[(\]%esp\[)\], %ebx" } } */
-long c;
+long c = 1;
 
 int bar();
 
