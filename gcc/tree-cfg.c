@@ -513,16 +513,15 @@ gimple_call_initialize_ctrl_altering (gimple stmt)
 }
 
 
-/* Build a flowgraph for the sequence of stmts SEQ.  */
+/* Insert SEQ after BB and build a flowgraph.  */
 
-static void
-make_blocks (gimple_seq seq)
+static basic_block
+make_blocks_1 (gimple_seq seq, basic_block bb)
 {
   gimple_stmt_iterator i = gsi_start (seq);
   gimple stmt = NULL;
   bool start_new_block = true;
   bool first_stmt_of_seq = true;
-  basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 
   while (!gsi_end_p (i))
     {
@@ -579,8 +578,16 @@ make_blocks (gimple_seq seq)
       gsi_next (&i);
       first_stmt_of_seq = false;
     }
+  return bb;
 }
 
+/* Build a flowgraph for the sequence of stmts SEQ.  */
+
+static void
+make_blocks (gimple_seq seq)
+{
+  make_blocks_1 (seq, ENTRY_BLOCK_PTR_FOR_FN (cfun));
+}
 
 /* Create and return a new empty basic block after bb AFTER.  */
 
@@ -807,6 +814,112 @@ handle_abnormal_edges (basic_block *dispatcher_bbs,
   make_edge (*dispatcher, for_bb, EDGE_ABNORMAL);
 }
 
+/* Creates outgoing edges for BB.  Returns 1 when it ends with an
+   computed goto, returns 2 when it ends with a statement that
+   might return to this function via an nonlocal goto, otherwise
+   return 0.  Updates *PCUR_REGION with the OMP region this BB is in.  */
+
+static int
+make_edges_bb (basic_block bb, struct omp_region **pcur_region, int *pomp_index)
+{
+  gimple last = last_stmt (bb);
+  bool fallthru = false;
+  int ret = 0;
+
+  if (!last)
+    return ret;
+
+  switch (gimple_code (last))
+    {
+    case GIMPLE_GOTO:
+      if (make_goto_expr_edges (bb))
+	ret = 1;
+      fallthru = false;
+      break;
+    case GIMPLE_RETURN:
+      {
+	edge e = make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
+	e->goto_locus = gimple_location (last);
+	fallthru = false;
+      }
+      break;
+    case GIMPLE_COND:
+      make_cond_expr_edges (bb);
+      fallthru = false;
+      break;
+    case GIMPLE_SWITCH:
+      make_gimple_switch_edges (as_a <gswitch *> (last), bb);
+      fallthru = false;
+      break;
+    case GIMPLE_RESX:
+      make_eh_edges (last);
+      fallthru = false;
+      break;
+    case GIMPLE_EH_DISPATCH:
+      fallthru = make_eh_dispatch_edges (as_a <geh_dispatch *> (last));
+      break;
+
+    case GIMPLE_CALL:
+      /* If this function receives a nonlocal goto, then we need to
+	 make edges from this call site to all the nonlocal goto
+	 handlers.  */
+      if (stmt_can_make_abnormal_goto (last))
+	ret = 2;
+
+      /* If this statement has reachable exception handlers, then
+	 create abnormal edges to them.  */
+      make_eh_edges (last);
+
+      /* BUILTIN_RETURN is really a return statement.  */
+      if (gimple_call_builtin_p (last, BUILT_IN_RETURN))
+	{
+	  make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
+	  fallthru = false;
+	}
+      /* Some calls are known not to return.  */
+      else
+	fallthru = !(gimple_call_flags (last) & ECF_NORETURN);
+      break;
+
+    case GIMPLE_ASSIGN:
+      /* A GIMPLE_ASSIGN may throw internally and thus be considered
+	 control-altering.  */
+      if (is_ctrl_altering_stmt (last))
+	make_eh_edges (last);
+      fallthru = true;
+      break;
+
+    case GIMPLE_ASM:
+      make_gimple_asm_edges (bb);
+      fallthru = true;
+      break;
+
+    CASE_GIMPLE_OMP:
+      fallthru = make_gimple_omp_edges (bb, pcur_region, pomp_index);
+      break;
+
+    case GIMPLE_TRANSACTION:
+      {
+	tree abort_label
+	  = gimple_transaction_label (as_a <gtransaction *> (last));
+	if (abort_label)
+	  make_edge (bb, label_to_block (abort_label), EDGE_TM_ABORT);
+	fallthru = true;
+      }
+      break;
+
+    default:
+      gcc_assert (!stmt_ends_bb_p (last));
+      fallthru = true;
+      break;
+    }
+
+  if (fallthru)
+    make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
+
+  return ret;
+}
+
 /* Join all the blocks in the flowgraph.  */
 
 static void
@@ -828,107 +941,19 @@ make_edges (void)
   /* Traverse the basic block array placing edges.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gimple last = last_stmt (bb);
-      bool fallthru;
+      int mer;
 
       if (bb_to_omp_idx)
 	bb_to_omp_idx[bb->index] = cur_omp_region_idx;
 
-      if (last)
-	{
-	  enum gimple_code code = gimple_code (last);
-	  switch (code)
-	    {
-	    case GIMPLE_GOTO:
-	      if (make_goto_expr_edges (bb))
-		ab_edge_goto.safe_push (bb);
-	      fallthru = false;
-	      break;
-	    case GIMPLE_RETURN:
-	      {
-		edge e = make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
-		e->goto_locus = gimple_location (last);
-		fallthru = false;
-	      }
-	      break;
-	    case GIMPLE_COND:
-	      make_cond_expr_edges (bb);
-	      fallthru = false;
-	      break;
-	    case GIMPLE_SWITCH:
-	      make_gimple_switch_edges (as_a <gswitch *> (last), bb);
-	      fallthru = false;
-	      break;
-	    case GIMPLE_RESX:
-	      make_eh_edges (last);
-	      fallthru = false;
-	      break;
-	    case GIMPLE_EH_DISPATCH:
-	      fallthru = make_eh_dispatch_edges (as_a <geh_dispatch *> (last));
-	      break;
+      mer = make_edges_bb (bb, &cur_region, &cur_omp_region_idx);
+      if (mer == 1)
+	ab_edge_goto.safe_push (bb);
+      else if (mer == 2)
+	ab_edge_call.safe_push (bb);
 
-	    case GIMPLE_CALL:
-	      /* If this function receives a nonlocal goto, then we need to
-		 make edges from this call site to all the nonlocal goto
-		 handlers.  */
-	      if (stmt_can_make_abnormal_goto (last))
-		ab_edge_call.safe_push (bb);
-
-	      /* If this statement has reachable exception handlers, then
-		 create abnormal edges to them.  */
-	      make_eh_edges (last);
-
-	      /* BUILTIN_RETURN is really a return statement.  */
-	      if (gimple_call_builtin_p (last, BUILT_IN_RETURN))
-		{
-		  make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
-		  fallthru = false;
-		}
-	      /* Some calls are known not to return.  */
-	      else
-	        fallthru = !(gimple_call_flags (last) & ECF_NORETURN);
-	      break;
-
-	    case GIMPLE_ASSIGN:
-	       /* A GIMPLE_ASSIGN may throw internally and thus be considered
-		  control-altering. */
-	      if (is_ctrl_altering_stmt (last))
-		make_eh_edges (last);
-	      fallthru = true;
-	      break;
-
-	    case GIMPLE_ASM:
-	      make_gimple_asm_edges (bb);
-	      fallthru = true;
-	      break;
-
-	    CASE_GIMPLE_OMP:
-	      fallthru = make_gimple_omp_edges (bb, &cur_region,
-						&cur_omp_region_idx);
-	      if (cur_region && bb_to_omp_idx == NULL)
-		bb_to_omp_idx = XCNEWVEC (int, n_basic_blocks_for_fn (cfun));
-	      break;
-
-	    case GIMPLE_TRANSACTION:
-	      {
-		tree abort_label
-		  = gimple_transaction_label (as_a <gtransaction *> (last));
-		if (abort_label)
-		  make_edge (bb, label_to_block (abort_label), EDGE_TM_ABORT);
-		fallthru = true;
-	      }
-	      break;
-
-	    default:
-	      gcc_assert (!stmt_ends_bb_p (last));
-	      fallthru = true;
-	    }
-	}
-      else
-	fallthru = true;
-
-      if (fallthru)
-	make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
+      if (cur_region && bb_to_omp_idx == NULL)
+	bb_to_omp_idx = XCNEWVEC (int, n_basic_blocks_for_fn (cfun));
     }
 
   /* Computed gotos are hell to deal with, especially if there are
@@ -1006,6 +1031,43 @@ make_edges (void)
 
   /* Fold COND_EXPR_COND of each COND_EXPR.  */
   fold_cond_expr_cond ();
+}
+
+/* Add SEQ after GSI.  Start new bb after GSI, and created further bbs as
+   needed.  Returns true if new bbs were created.
+   Note: This is transitional code, and should not be used for new code.  We
+   should be able to get rid of this by rewriting all target va-arg
+   gimplification hooks to use an interface gimple_build_cond_value as described
+   in https://gcc.gnu.org/ml/gcc-patches/2015-02/msg01194.html.  */
+
+bool
+gimple_find_sub_bbs (gimple_seq seq, gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  basic_block bb = gimple_bb (stmt);
+  basic_block lastbb, afterbb;
+  int old_num_bbs = n_basic_blocks_for_fn (cfun);
+  edge e;
+  lastbb = make_blocks_1 (seq, bb);
+  if (old_num_bbs == n_basic_blocks_for_fn (cfun))
+    return false;
+  e = split_block (bb, stmt);
+  /* Move e->dest to come after the new basic blocks.  */
+  afterbb = e->dest;
+  unlink_block (afterbb);
+  link_block (afterbb, lastbb);
+  redirect_edge_succ (e, bb->next_bb);
+  bb = bb->next_bb;
+  while (bb != afterbb)
+    {
+      struct omp_region *cur_region = NULL;
+      int cur_omp_region_idx = 0;
+      int mer = make_edges_bb (bb, &cur_region, &cur_omp_region_idx);
+      gcc_assert (!mer && !cur_region);
+      add_bb_to_loop (bb, afterbb->loop_father);
+      bb = bb->next_bb;
+    }
+  return true;
 }
 
 /* Find the next available discriminator value for LOCUS.  The

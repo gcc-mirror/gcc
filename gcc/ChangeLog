@@ -1,4 +1,14 @@
 2015-04-17  Tom de Vries  <tom@codesourcery.com>
+	    Michael Matz  <matz@suse.de>
+
+	* tree-cfg.c (make_blocks_1): Factor out of ...
+	(make_blocks): ... here.
+	(make_edges_bb): Factor out of ...
+	(make_edges): ... here.
+	(gimple_find_sub_bbs): New function.
+	* tree-cfg.h (gimple_find_sub_bbs): Declare.
+
+2015-04-17  Tom de Vries  <tom@codesourcery.com>
 
 	* tree.c (free_lang_data): Disable lang_hooks.gimplify_expr.
 
