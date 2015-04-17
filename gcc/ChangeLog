@@ -1,3 +1,7 @@
+2015-04-17  Tom de Vries  <tom@codesourcery.com>
+
+	* tree.c (free_lang_data): Disable lang_hooks.gimplify_expr.
+
 2015-04-17  Yury Gribov  <y.gribov@samsung.com>
 
 	* asan.c (set_sanitized_sections): New function.
