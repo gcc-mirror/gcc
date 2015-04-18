@@ -160,10 +160,10 @@ struct redirection_data : typed_free_remove<redirection_data>
   struct el *incoming_edges;
 
   /* hash_table support.  */
-  typedef redirection_data value_type;
-  typedef redirection_data compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline int equal (const value_type *, const compare_type *);
+  typedef redirection_data *value_type;
+  typedef redirection_data *compare_type;
+  static inline hashval_t hash (const redirection_data *);
+  static inline int equal (const redirection_data *, const redirection_data *);
 };
 
 /* Dump a jump threading path, including annotations about each
@@ -209,7 +209,7 @@ dump_jump_thread_path (FILE *dump_file, vec<jump_thread_edge *> path,
    path.  So hash on the block index of the final edge in the path.  */
 
 inline hashval_t
-redirection_data::hash (const value_type *p)
+redirection_data::hash (const redirection_data *p)
 {
   vec<jump_thread_edge *> *path = p->path;
   return path->last ()->e->dest->index;
@@ -218,7 +218,7 @@ redirection_data::hash (const value_type *p)
 /* Given two hash table entries, return true if they have the same
    jump threading path.  */
 inline int
-redirection_data::equal (const value_type *p1, const compare_type *p2)
+redirection_data::equal (const redirection_data *p1, const redirection_data *p2)
 {
   vec<jump_thread_edge *> *path1 = p1->path;
   vec<jump_thread_edge *> *path2 = p2->path;

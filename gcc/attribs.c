@@ -67,21 +67,21 @@ substring_hash (const char *str, int l)
 
 struct attribute_hasher : typed_noop_remove <attribute_spec>
 {
-  typedef attribute_spec value_type;
-  typedef substring compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef attribute_spec *value_type;
+  typedef substring *compare_type;
+  static inline hashval_t hash (const attribute_spec *);
+  static inline bool equal (const attribute_spec *, const substring *);
 };
 
 inline hashval_t
-attribute_hasher::hash (const value_type *spec)
+attribute_hasher::hash (const attribute_spec *spec)
 {
   const int l = strlen (spec->name);
   return substring_hash (spec->name, l);
 }
 
 inline bool
-attribute_hasher::equal (const value_type *spec, const compare_type *str)
+attribute_hasher::equal (const attribute_spec *spec, const substring *str)
 {
   return (strncmp (spec->name, str->str, str->length) == 0
 	  && !spec->name[str->length]);

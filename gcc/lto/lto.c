@@ -1143,20 +1143,20 @@ struct tree_scc
 
 struct tree_scc_hasher : typed_noop_remove <tree_scc>
 {
-  typedef tree_scc value_type;
-  typedef tree_scc compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef tree_scc *value_type;
+  typedef tree_scc *compare_type;
+  static inline hashval_t hash (const tree_scc *);
+  static inline bool equal (const tree_scc *, const tree_scc *);
 };
 
 hashval_t
-tree_scc_hasher::hash (const value_type *scc)
+tree_scc_hasher::hash (const tree_scc *scc)
 {
   return scc->hash;
 }
 
 bool
-tree_scc_hasher::equal (const value_type *scc1, const compare_type *scc2)
+tree_scc_hasher::equal (const tree_scc *scc1, const tree_scc *scc2)
 {
   if (scc1->hash != scc2->hash
       || scc1->len != scc2->len

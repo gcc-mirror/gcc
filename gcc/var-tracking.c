@@ -494,18 +494,18 @@ static void variable_htab_free (void *);
 
 struct variable_hasher
 {
-  typedef variable_def value_type;
-  typedef void compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
-  static inline void remove (value_type *);
+  typedef variable_def *value_type;
+  typedef void *compare_type;
+  static inline hashval_t hash (const variable_def *);
+  static inline bool equal (const variable_def *, const void *);
+  static inline void remove (variable_def *);
 };
 
 /* The hash function for variable_htab, computes the hash value
    from the declaration of variable X.  */
 
 inline hashval_t
-variable_hasher::hash (const value_type *v)
+variable_hasher::hash (const variable_def *v)
 {
   return dv_htab_hash (v->dv);
 }
@@ -513,7 +513,7 @@ variable_hasher::hash (const value_type *v)
 /* Compare the declaration of variable X with declaration Y.  */
 
 inline bool
-variable_hasher::equal (const value_type *v, const compare_type *y)
+variable_hasher::equal (const variable_def *v, const void *y)
 {
   decl_or_value dv = CONST_CAST2 (decl_or_value, const void *, y);
 
@@ -523,7 +523,7 @@ variable_hasher::equal (const value_type *v, const compare_type *y)
 /* Free the element of VARIABLE_HTAB (its type is struct variable_def).  */
 
 inline void
-variable_hasher::remove (value_type *var)
+variable_hasher::remove (variable_def *var)
 {
   variable_htab_free (var);
 }

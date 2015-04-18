@@ -667,21 +667,21 @@ clear_alias_set_lookup (alias_set_type alias_set)
 
 struct invariant_group_base_hasher : typed_noop_remove <group_info>
 {
-  typedef group_info value_type;
-  typedef group_info compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef group_info *value_type;
+  typedef group_info *compare_type;
+  static inline hashval_t hash (const group_info *);
+  static inline bool equal (const group_info *, const group_info *);
 };
 
 inline bool
-invariant_group_base_hasher::equal (const value_type *gi1,
-				    const compare_type *gi2)
+invariant_group_base_hasher::equal (const group_info *gi1,
+				    const group_info *gi2)
 {
   return rtx_equal_p (gi1->rtx_base, gi2->rtx_base);
 }
 
 inline hashval_t
-invariant_group_base_hasher::hash (const value_type *gi)
+invariant_group_base_hasher::hash (const group_info *gi)
 {
   int do_not_record;
   return hash_rtx (gi->rtx_base, Pmode, &do_not_record, NULL, false);

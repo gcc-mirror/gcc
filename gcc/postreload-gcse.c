@@ -134,10 +134,10 @@ struct expr
 
 struct expr_hasher : typed_noop_remove <expr>
 {
-  typedef expr value_type;
-  typedef expr compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef expr *value_type;
+  typedef expr *compare_type;
+  static inline hashval_t hash (const expr *);
+  static inline bool equal (const expr *, const expr *);
 };
 
 
@@ -159,7 +159,7 @@ hash_expr (rtx x, int *do_not_record_p)
    here, we just return the cached hash value.  */
 
 inline hashval_t
-expr_hasher::hash (const value_type *exp)
+expr_hasher::hash (const expr *exp)
 {
   return exp->hash;
 }
@@ -168,7 +168,7 @@ expr_hasher::hash (const value_type *exp)
    Return nonzero if exp1 is equivalent to exp2.  */
 
 inline bool
-expr_hasher::equal (const value_type *exp1, const compare_type *exp2)
+expr_hasher::equal (const expr *exp1, const expr *exp2)
 {
   int equiv_p = exp_equiv_p (exp1->expr, exp2->expr, 0, true);
 

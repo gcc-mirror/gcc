@@ -455,16 +455,17 @@ invariant_expr_equal_p (rtx_insn *insn1, rtx e1, rtx_insn *insn2, rtx e2)
 
 struct invariant_expr_hasher : typed_free_remove <invariant_expr_entry>
 {
-  typedef invariant_expr_entry value_type;
-  typedef invariant_expr_entry compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef invariant_expr_entry *value_type;
+  typedef invariant_expr_entry *compare_type;
+  static inline hashval_t hash (const invariant_expr_entry *);
+  static inline bool equal (const invariant_expr_entry *,
+			    const invariant_expr_entry *);
 };
 
 /* Returns hash value for invariant expression entry ENTRY.  */
 
 inline hashval_t
-invariant_expr_hasher::hash (const value_type *entry)
+invariant_expr_hasher::hash (const invariant_expr_entry *entry)
 {
   return entry->hash;
 }
@@ -472,8 +473,8 @@ invariant_expr_hasher::hash (const value_type *entry)
 /* Compares invariant expression entries ENTRY1 and ENTRY2.  */
 
 inline bool
-invariant_expr_hasher::equal (const value_type *entry1,
-			      const compare_type *entry2)
+invariant_expr_hasher::equal (const invariant_expr_entry *entry1,
+			      const invariant_expr_entry *entry2)
 {
   if (entry1->mode != entry2->mode)
     return 0;

@@ -1061,7 +1061,6 @@ struct oecount_hasher
 {
   typedef int value_type;
   typedef int compare_type;
-  typedef int store_values_directly;
   static inline hashval_t hash (const value_type &);
   static inline bool equal (const value_type &, const compare_type &);
   static bool is_deleted (int &v) { return v == 1; }

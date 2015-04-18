@@ -148,16 +148,16 @@ along with GCC; see the file COPYING3.  If not see
 
 struct vn_nary_op_hasher : typed_noop_remove <vn_nary_op_s>
 {
-  typedef vn_nary_op_s value_type;
-  typedef vn_nary_op_s compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef vn_nary_op_s *value_type;
+  typedef vn_nary_op_s *compare_type;
+  static inline hashval_t hash (const vn_nary_op_s *);
+  static inline bool equal (const vn_nary_op_s *, const vn_nary_op_s *);
 };
 
 /* Return the computed hashcode for nary operation P1.  */
 
 inline hashval_t
-vn_nary_op_hasher::hash (const value_type *vno1)
+vn_nary_op_hasher::hash (const vn_nary_op_s *vno1)
 {
   return vno1->hashcode;
 }
@@ -166,7 +166,7 @@ vn_nary_op_hasher::hash (const value_type *vno1)
    equivalent.  */
 
 inline bool
-vn_nary_op_hasher::equal (const value_type *vno1, const compare_type *vno2)
+vn_nary_op_hasher::equal (const vn_nary_op_s *vno1, const vn_nary_op_s *vno2)
 {
   return vn_nary_op_eq (vno1, vno2);
 }
@@ -182,17 +182,17 @@ vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2);
 
 struct vn_phi_hasher
 { 
-  typedef vn_phi_s value_type;
-  typedef vn_phi_s compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
-  static inline void remove (value_type *);
+  typedef vn_phi_s *value_type;
+  typedef vn_phi_s *compare_type;
+  static inline hashval_t hash (const vn_phi_s *);
+  static inline bool equal (const vn_phi_s *, const vn_phi_s *);
+  static inline void remove (vn_phi_s *);
 };
 
 /* Return the computed hashcode for phi operation P1.  */
 
 inline hashval_t
-vn_phi_hasher::hash (const value_type *vp1)
+vn_phi_hasher::hash (const vn_phi_s *vp1)
 {
   return vp1->hashcode;
 }
@@ -200,7 +200,7 @@ vn_phi_hasher::hash (const value_type *vp1)
 /* Compare two phi entries for equality, ignoring VN_TOP arguments.  */
 
 inline bool
-vn_phi_hasher::equal (const value_type *vp1, const compare_type *vp2)
+vn_phi_hasher::equal (const vn_phi_s *vp1, const vn_phi_s *vp2)
 {
   return vn_phi_eq (vp1, vp2);
 }
@@ -208,7 +208,7 @@ vn_phi_hasher::equal (const value_type *vp1, const compare_type *vp2)
 /* Free a phi operation structure VP.  */
 
 inline void
-vn_phi_hasher::remove (value_type *phi)
+vn_phi_hasher::remove (vn_phi_s *phi)
 {
   phi->phiargs.release ();
 }
@@ -250,29 +250,29 @@ free_reference (vn_reference_s *vr)
 
 struct vn_reference_hasher
 {
-  typedef vn_reference_s value_type;
-  typedef vn_reference_s compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
-  static inline void remove (value_type *);
+  typedef vn_reference_s *value_type;
+  typedef vn_reference_s *compare_type;
+  static inline hashval_t hash (const vn_reference_s *);
+  static inline bool equal (const vn_reference_s *, const vn_reference_s *);
+  static inline void remove (vn_reference_s *);
 };
 
 /* Return the hashcode for a given reference operation P1.  */
 
 inline hashval_t
-vn_reference_hasher::hash (const value_type *vr1)
+vn_reference_hasher::hash (const vn_reference_s *vr1)
 {
   return vr1->hashcode;
 }
 
 inline bool
-vn_reference_hasher::equal (const value_type *v, const compare_type *c)
+vn_reference_hasher::equal (const vn_reference_s *v, const vn_reference_s *c)
 {
   return vn_reference_eq (v, c);
 }
 
 inline void
-vn_reference_hasher::remove (value_type *v)
+vn_reference_hasher::remove (vn_reference_s *v)
 {
   free_reference (v);
 }
@@ -298,16 +298,16 @@ typedef struct vn_tables_s
 
 struct vn_constant_hasher : typed_free_remove <vn_constant_s>
 { 
-  typedef vn_constant_s value_type;
-  typedef vn_constant_s compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef vn_constant_s *value_type;
+  typedef vn_constant_s *compare_type;
+  static inline hashval_t hash (const vn_constant_s *);
+  static inline bool equal (const vn_constant_s *, const vn_constant_s *);
 };
 
 /* Hash table hash function for vn_constant_t.  */
 
 inline hashval_t
-vn_constant_hasher::hash (const value_type *vc1)
+vn_constant_hasher::hash (const vn_constant_s *vc1)
 {
   return vc1->hashcode;
 }
@@ -315,7 +315,7 @@ vn_constant_hasher::hash (const value_type *vc1)
 /* Hash table equality function for vn_constant_t.  */
 
 inline bool
-vn_constant_hasher::equal (const value_type *vc1, const compare_type *vc2)
+vn_constant_hasher::equal (const vn_constant_s *vc1, const vn_constant_s *vc2)
 {
   if (vc1->hashcode != vc2->hashcode)
     return false;

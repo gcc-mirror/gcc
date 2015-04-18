@@ -388,15 +388,15 @@ static struct ls_expr * pre_ldst_mems = NULL;
 
 struct pre_ldst_expr_hasher : typed_noop_remove <ls_expr>
 {
-  typedef ls_expr value_type;
+  typedef ls_expr *value_type;
   typedef value_type compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  static inline hashval_t hash (const ls_expr *);
+  static inline bool equal (const ls_expr *, const ls_expr *);
 };
 
 /* Hashtable helpers.  */
 inline hashval_t
-pre_ldst_expr_hasher::hash (const value_type *x)
+pre_ldst_expr_hasher::hash (const ls_expr *x)
 {
   int do_not_record_p = 0;
   return
@@ -406,8 +406,8 @@ pre_ldst_expr_hasher::hash (const value_type *x)
 static int expr_equiv_p (const_rtx, const_rtx);
 
 inline bool
-pre_ldst_expr_hasher::equal (const value_type *ptr1,
-			     const compare_type *ptr2)
+pre_ldst_expr_hasher::equal (const ls_expr *ptr1,
+			     const ls_expr *ptr2)
 {
   return expr_equiv_p (ptr1->pattern, ptr2->pattern);
 }

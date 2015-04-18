@@ -182,20 +182,20 @@ typedef dw_trace_info *dw_trace_info_ref;
 
 struct trace_info_hasher : typed_noop_remove <dw_trace_info>
 {
-  typedef dw_trace_info value_type;
-  typedef dw_trace_info compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef dw_trace_info *value_type;
+  typedef dw_trace_info *compare_type;
+  static inline hashval_t hash (const dw_trace_info *);
+  static inline bool equal (const dw_trace_info *, const dw_trace_info *);
 };
 
 inline hashval_t
-trace_info_hasher::hash (const value_type *ti)
+trace_info_hasher::hash (const dw_trace_info *ti)
 {
   return INSN_UID (ti->head);
 }
 
 inline bool
-trace_info_hasher::equal (const value_type *a, const compare_type *b)
+trace_info_hasher::equal (const dw_trace_info *a, const dw_trace_info *b)
 {
   return a->head == b->head;
 }

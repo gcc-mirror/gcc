@@ -61,20 +61,20 @@ struct loc
 
 struct bitmap_desc_hasher : typed_noop_remove <bitmap_descriptor_d>
 {
-  typedef bitmap_descriptor_d value_type;
-  typedef loc compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef bitmap_descriptor_d *value_type;
+  typedef loc *compare_type;
+  static inline hashval_t hash (const bitmap_descriptor_d *);
+  static inline bool equal (const bitmap_descriptor_d *, const loc *);
 };
 
 inline hashval_t
-bitmap_desc_hasher::hash (const value_type *d)
+bitmap_desc_hasher::hash (const bitmap_descriptor_d *d)
 {
   return htab_hash_pointer (d->file) + d->line;
 }
 
 inline bool
-bitmap_desc_hasher::equal (const value_type *d, const compare_type *l)
+bitmap_desc_hasher::equal (const bitmap_descriptor_d *d, const loc *l)
 {
   return d->file == l->file && d->function == l->function && d->line == l->line;
 }

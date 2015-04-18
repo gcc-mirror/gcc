@@ -1872,7 +1872,6 @@ struct asmname_hasher
 {
   typedef symtab_node *value_type;
   typedef const_tree compare_type;
-  typedef int store_values_directly;
 
   static hashval_t hash (symtab_node *n);
   static bool equal (symtab_node *n, const_tree t);

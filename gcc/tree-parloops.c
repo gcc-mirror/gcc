@@ -228,22 +228,22 @@ struct reduction_info
 
 struct reduction_hasher : typed_free_remove <reduction_info>
 {
-  typedef reduction_info value_type;
-  typedef reduction_info compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef reduction_info *value_type;
+  typedef reduction_info *compare_type;
+  static inline hashval_t hash (const reduction_info *);
+  static inline bool equal (const reduction_info *, const reduction_info *);
 };
 
 /* Equality and hash functions for hashtab code.  */
 
 inline bool
-reduction_hasher::equal (const value_type *a, const compare_type *b)
+reduction_hasher::equal (const reduction_info *a, const reduction_info *b)
 {
   return (a->reduc_phi == b->reduc_phi);
 }
 
 inline hashval_t
-reduction_hasher::hash (const value_type *a)
+reduction_hasher::hash (const reduction_info *a)
 {
   return a->reduc_version;
 }
@@ -280,22 +280,22 @@ struct name_to_copy_elt
 
 struct name_to_copy_hasher : typed_free_remove <name_to_copy_elt>
 {
-  typedef name_to_copy_elt value_type;
-  typedef name_to_copy_elt compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef name_to_copy_elt *value_type;
+  typedef name_to_copy_elt *compare_type;
+  static inline hashval_t hash (const name_to_copy_elt *);
+  static inline bool equal (const name_to_copy_elt *, const name_to_copy_elt *);
 };
 
 /* Equality and hash functions for hashtab code.  */
 
 inline bool
-name_to_copy_hasher::equal (const value_type *a, const compare_type *b)
+name_to_copy_hasher::equal (const name_to_copy_elt *a, const name_to_copy_elt *b)
 {
   return a->version == b->version;
 }
 
 inline hashval_t
-name_to_copy_hasher::hash (const value_type *a)
+name_to_copy_hasher::hash (const name_to_copy_elt *a)
 {
   return (hashval_t) a->version;
 }
