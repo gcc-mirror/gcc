@@ -11,6 +11,15 @@ if (c(1) /= "     ") call abort()
 c = (/ c0(1)(1:5) /)
 do i=1,5
    if (c(1)(i:i) /= c1(i)) call abort()
+
+   ! Make NULs visible (and avoid corrupting text output).
+   if (c(1)(i:i) == ACHAR(0)) then
+    print "(a,$)", "<NUL>"
+  else
+    print "(a,$)", c(1)(i:i)
+  end if
 end do
-print *, c(1)
+
+print *, ""
+
 end

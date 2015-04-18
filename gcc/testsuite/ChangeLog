@@ -1,3 +1,9 @@
+2015-04-18  Martin Sebor  <msebor@redhat.com>
+
+	* gfortran.dg/pr32627.f03 (strptr): Change size to match the number
+	of non-nul characters.
+	* gfortran.dg/substr_6.f90: Make the NUL character visible on stdout
+
 2015-04-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/65787
