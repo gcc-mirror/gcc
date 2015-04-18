@@ -85,15 +85,6 @@ struct simplifiable_subreg
   subreg_shape shape;
   HARD_REG_SET simplifiable_regs;
 };
-
-struct simplifiable_subregs_hasher : typed_noop_remove <simplifiable_subreg>
-{
-  typedef simplifiable_subreg value_type;
-  typedef subreg_shape compare_type;
-
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
-};
 
 struct target_hard_regs default_target_hard_regs;
 struct target_regs default_target_regs;
@@ -1234,14 +1225,14 @@ reg_classes_intersect_p (reg_class_t c1, reg_class_t c2)
 
 
 inline hashval_t
-simplifiable_subregs_hasher::hash (const value_type *value)
+simplifiable_subregs_hasher::hash (const simplifiable_subreg *value)
 {
   return value->shape.unique_id ();
 }
 
 inline bool
-simplifiable_subregs_hasher::equal (const value_type *value,
-				    const compare_type *compare)
+simplifiable_subregs_hasher::equal (const simplifiable_subreg *value,
+				    const subreg_shape *compare)
 {
   return value->shape == *compare;
 }

@@ -16381,23 +16381,23 @@ mips_hash_base (rtx base)
 
 struct mips_lo_sum_offset_hasher : typed_free_remove <mips_lo_sum_offset>
 {
-  typedef mips_lo_sum_offset value_type;
-  typedef rtx_def compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef mips_lo_sum_offset *value_type;
+  typedef rtx_def *compare_type;
+  static inline hashval_t hash (const mips_lo_sum_offset *);
+  static inline bool equal (const mips_lo_sum_offset *, const rtx_def *);
 };
 
 /* Hash-table callbacks for mips_lo_sum_offsets.  */
 
 inline hashval_t
-mips_lo_sum_offset_hasher::hash (const value_type *entry)
+mips_lo_sum_offset_hasher::hash (const mips_lo_sum_offset *entry)
 {
   return mips_hash_base (entry->base);
 }
 
 inline bool
-mips_lo_sum_offset_hasher::equal (const value_type *entry,
-				  const compare_type *value)
+mips_lo_sum_offset_hasher::equal (const mips_lo_sum_offset *entry,
+				  const rtx_def *value)
 {
   return rtx_equal_p (entry->base, value);
 }

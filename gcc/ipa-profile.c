@@ -113,10 +113,10 @@ static alloc_pool histogram_pool;
 
 struct histogram_hash : typed_noop_remove <histogram_entry>
 {
-  typedef histogram_entry value_type;
-  typedef histogram_entry compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline int equal (const value_type *, const compare_type *);
+  typedef histogram_entry *value_type;
+  typedef histogram_entry *compare_type;
+  static inline hashval_t hash (const histogram_entry *);
+  static inline int equal (const histogram_entry *, const histogram_entry *);
 };
 
 inline hashval_t

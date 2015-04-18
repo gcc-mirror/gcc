@@ -1,3 +1,7 @@
+2015-04-18  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* 	lto.c: Adjust for hash_table changes.
+
 2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (lto_read_decls): Move code registering odr types out

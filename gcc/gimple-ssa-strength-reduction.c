@@ -438,21 +438,21 @@ lookup_cand (cand_idx idx)
 
 struct cand_chain_hasher : typed_noop_remove <cand_chain>
 {
-  typedef cand_chain value_type;
-  typedef cand_chain compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef cand_chain *value_type;
+  typedef cand_chain *compare_type;
+  static inline hashval_t hash (const cand_chain *);
+  static inline bool equal (const cand_chain *, const cand_chain *);
 };
 
 inline hashval_t
-cand_chain_hasher::hash (const value_type *p)
+cand_chain_hasher::hash (const cand_chain *p)
 {
   tree base_expr = p->base_expr;
   return iterative_hash_expr (base_expr, 0);
 }
 
 inline bool
-cand_chain_hasher::equal (const value_type *chain1, const compare_type *chain2)
+cand_chain_hasher::equal (const cand_chain *chain1, const cand_chain *chain2)
 {
   return operand_equal_p (chain1->base_expr, chain2->base_expr, 0);
 }

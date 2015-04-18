@@ -81,16 +81,16 @@ typedef const struct coalesce_pair *const_coalesce_pair_p;
 
 struct coalesce_pair_hasher : typed_noop_remove <coalesce_pair>
 {
-  typedef coalesce_pair value_type;
-  typedef coalesce_pair compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef coalesce_pair *value_type;
+  typedef coalesce_pair *compare_type;
+  static inline hashval_t hash (const coalesce_pair *);
+  static inline bool equal (const coalesce_pair *, const coalesce_pair *);
 };
 
 /* Hash function for coalesce list.  Calculate hash for PAIR.   */
 
 inline hashval_t
-coalesce_pair_hasher::hash (const value_type *pair)
+coalesce_pair_hasher::hash (const coalesce_pair *pair)
 {
   hashval_t a = (hashval_t)(pair->first_element);
   hashval_t b = (hashval_t)(pair->second_element);
@@ -102,7 +102,7 @@ coalesce_pair_hasher::hash (const value_type *pair)
    returning TRUE if the two pairs are equivalent.  */
 
 inline bool
-coalesce_pair_hasher::equal (const value_type *p1, const compare_type *p2)
+coalesce_pair_hasher::equal (const coalesce_pair *p1, const coalesce_pair *p2)
 {
   return (p1->first_element == p2->first_element
 	  && p1->second_element == p2->second_element);
@@ -1253,10 +1253,10 @@ coalesce_partitions (var_map map, ssa_conflicts_p graph, coalesce_list_p cl,
 
 struct ssa_name_var_hash : typed_noop_remove <tree_node>
 {
-  typedef union tree_node value_type;
-  typedef union tree_node compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline int equal (const value_type *, const compare_type *);
+  typedef union tree_node *value_type;
+  typedef union tree_node *compare_type;
+  static inline hashval_t hash (const tree_node *);
+  static inline int equal (const tree_node *, const tree_node *);
 };
 
 inline hashval_t
@@ -1266,7 +1266,7 @@ ssa_name_var_hash::hash (const_tree n)
 }
 
 inline int
-ssa_name_var_hash::equal (const value_type *n1, const compare_type *n2)
+ssa_name_var_hash::equal (const tree_node *n1, const tree_node *n2)
 {
   return SSA_NAME_VAR (n1) == SSA_NAME_VAR (n2);
 }

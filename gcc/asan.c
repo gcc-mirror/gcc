@@ -435,11 +435,11 @@ asan_mem_ref_get_end (const asan_mem_ref *ref, tree len)
 struct asan_mem_ref_hasher
   : typed_noop_remove <asan_mem_ref>
 {
-  typedef asan_mem_ref value_type;
-  typedef asan_mem_ref compare_type;
+  typedef asan_mem_ref *value_type;
+  typedef asan_mem_ref *compare_type;
 
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  static inline hashval_t hash (const asan_mem_ref *);
+  static inline bool equal (const asan_mem_ref *, const asan_mem_ref *);
 };
 
 /* Hash a memory reference.  */

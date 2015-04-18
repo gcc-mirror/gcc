@@ -429,15 +429,16 @@ struct congruence_class_group
 /* Congruence class set structure.  */
 struct congruence_class_group_hash: typed_noop_remove <congruence_class_group>
 {
-  typedef congruence_class_group value_type;
-  typedef congruence_class_group compare_type;
+  typedef congruence_class_group *value_type;
+  typedef congruence_class_group *compare_type;
 
-  static inline hashval_t hash (const value_type *item)
+  static inline hashval_t hash (const congruence_class_group *item)
   {
     return item->hash;
   }
 
-  static inline int equal (const value_type *item1, const compare_type *item2)
+  static inline int equal (const congruence_class_group *item1,
+			   const congruence_class_group *item2)
   {
     return item1->hash == item2->hash && item1->type == item2->type;
   }

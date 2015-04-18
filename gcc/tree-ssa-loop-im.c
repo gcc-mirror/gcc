@@ -172,16 +172,16 @@ typedef struct im_mem_ref
 
 struct mem_ref_hasher : typed_noop_remove <im_mem_ref>
 {
-  typedef im_mem_ref value_type;
-  typedef tree_node compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef im_mem_ref *value_type;
+  typedef tree_node *compare_type;
+  static inline hashval_t hash (const im_mem_ref *);
+  static inline bool equal (const im_mem_ref *, const tree_node *);
 };
 
 /* A hash function for struct im_mem_ref object OBJ.  */
 
 inline hashval_t
-mem_ref_hasher::hash (const value_type *mem)
+mem_ref_hasher::hash (const im_mem_ref *mem)
 {
   return mem->hash;
 }
@@ -190,7 +190,7 @@ mem_ref_hasher::hash (const value_type *mem)
    memory reference OBJ2.  */
 
 inline bool
-mem_ref_hasher::equal (const value_type *mem1, const compare_type *obj2)
+mem_ref_hasher::equal (const im_mem_ref *mem1, const tree_node *obj2)
 {
   return operand_equal_p (mem1->mem.ref, (const_tree) obj2, 0);
 }

@@ -183,7 +183,6 @@ struct expr_elt_hasher
 {
   typedef expr_hash_elt *value_type;
   typedef expr_hash_elt *compare_type;
-  typedef int store_values_directly;
   static inline hashval_t hash (const value_type &);
   static inline bool equal (const value_type &, const compare_type &);
   static inline void remove (value_type &);

@@ -112,7 +112,6 @@ class hash_set
 
     typedef hash_entry value_type;
     typedef Key compare_type;
-    typedef int store_values_directly;
 
     static hashval_t hash (const hash_entry &e)
       {

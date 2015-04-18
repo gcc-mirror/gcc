@@ -242,20 +242,20 @@ struct ptr_data
 
 struct saving_hasher : typed_free_remove <ptr_data>
 {
-  typedef ptr_data value_type;
-  typedef void compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef ptr_data *value_type;
+  typedef void *compare_type;
+  static inline hashval_t hash (const ptr_data *);
+  static inline bool equal (const ptr_data *, const void *);
 };
 
 inline hashval_t
-saving_hasher::hash (const value_type *p)
+saving_hasher::hash (const ptr_data *p)
 {
   return POINTER_HASH (p->obj);
 }
 
 inline bool
-saving_hasher::equal (const value_type *p1, const compare_type *p2)
+saving_hasher::equal (const ptr_data *p1, const void *p2)
 {
   return p1->obj == p2;
 }
@@ -847,20 +847,22 @@ struct ggc_loc_descriptor
 
 struct ggc_loc_desc_hasher : typed_noop_remove <ggc_loc_descriptor>
 {
-  typedef ggc_loc_descriptor value_type;
-  typedef ggc_loc_descriptor compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef ggc_loc_descriptor *value_type;
+  typedef ggc_loc_descriptor *compare_type;
+  static inline hashval_t hash (const ggc_loc_descriptor *);
+  static inline bool equal (const ggc_loc_descriptor *,
+			    const ggc_loc_descriptor *);
 };
 
 inline hashval_t
-ggc_loc_desc_hasher::hash (const value_type *d)
+ggc_loc_desc_hasher::hash (const ggc_loc_descriptor *d)
 {
   return htab_hash_pointer (d->function) | d->line;
 }
 
 inline bool
-ggc_loc_desc_hasher::equal (const value_type *d, const compare_type *d2)
+ggc_loc_desc_hasher::equal (const ggc_loc_descriptor *d,
+			    const ggc_loc_descriptor *d2)
 {
   return (d->file == d2->file && d->line == d2->line
 	  && d->function == d2->function);
@@ -880,20 +882,20 @@ struct ggc_ptr_hash_entry
 
 struct ptr_hash_hasher : typed_noop_remove <ggc_ptr_hash_entry>
 {
-  typedef ggc_ptr_hash_entry value_type;
-  typedef void compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef ggc_ptr_hash_entry *value_type;
+  typedef void *compare_type;
+  static inline hashval_t hash (const ggc_ptr_hash_entry *);
+  static inline bool equal (const ggc_ptr_hash_entry *, const void *);
 };
 
 inline hashval_t
-ptr_hash_hasher::hash (const value_type *d)
+ptr_hash_hasher::hash (const ggc_ptr_hash_entry *d)
 {
   return htab_hash_pointer (d->ptr);
 }
 
 inline bool
-ptr_hash_hasher::equal (const value_type *p, const compare_type *p2)
+ptr_hash_hasher::equal (const ggc_ptr_hash_entry *p, const void *p2)
 {
   return (p->ptr == p2);
 }

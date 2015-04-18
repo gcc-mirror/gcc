@@ -58,10 +58,11 @@ struct vtable_registration
 
 struct registration_hasher : typed_noop_remove <struct vtable_registration>
 {
-  typedef struct vtable_registration value_type;
-  typedef struct vtable_registration compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef struct vtable_registration *value_type;
+  typedef struct vtable_registration *compare_type;
+  static inline hashval_t hash (const vtable_registration *);
+  static inline bool equal (const vtable_registration *,
+			    const vtable_registration *);
 };
 
 typedef hash_table<registration_hasher> register_table_type;

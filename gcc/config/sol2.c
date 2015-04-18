@@ -183,22 +183,22 @@ typedef struct comdat_entry
 
 struct comdat_entry_hasher : typed_noop_remove <comdat_entry>
 {
-  typedef comdat_entry value_type;
-  typedef comdat_entry compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
-  static inline void remove (value_type *);
+  typedef comdat_entry *value_type;
+  typedef comdat_entry *compare_type;
+  static inline hashval_t hash (const comdat_entry *);
+  static inline bool equal (const comdat_entry *, const comdat_entry *);
+  static inline void remove (comdat_entry *);
 };
 
 inline hashval_t
-comdat_entry_hasher::hash (const value_type *entry)
+comdat_entry_hasher::hash (const comdat_entry *entry)
 {
   return htab_hash_string (entry->sig);
 }
 
 inline bool
-comdat_entry_hasher::equal (const value_type *entry1,
-			    const compare_type *entry2)
+comdat_entry_hasher::equal (const comdat_entry *entry1,
+			    const comdat_entry *entry2)
 {
   return strcmp (entry1->sig, entry2->sig) == 0;
 }

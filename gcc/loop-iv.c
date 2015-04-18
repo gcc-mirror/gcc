@@ -138,16 +138,16 @@ static struct loop *current_loop;
 
 struct biv_entry_hasher : typed_free_remove <biv_entry>
 {
-  typedef biv_entry value_type;
-  typedef rtx_def compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef biv_entry *value_type;
+  typedef rtx_def *compare_type;
+  static inline hashval_t hash (const biv_entry *);
+  static inline bool equal (const biv_entry *, const rtx_def *);
 };
 
 /* Returns hash value for biv B.  */
 
 inline hashval_t
-biv_entry_hasher::hash (const value_type *b)
+biv_entry_hasher::hash (const biv_entry *b)
 {
   return b->regno;
 }
@@ -155,7 +155,7 @@ biv_entry_hasher::hash (const value_type *b)
 /* Compares biv B and register R.  */
 
 inline bool
-biv_entry_hasher::equal (const value_type *b, const compare_type *r)
+biv_entry_hasher::equal (const biv_entry *b, const rtx_def *r)
 {
   return b->regno == REGNO (r);
 }

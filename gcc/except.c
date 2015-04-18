@@ -227,20 +227,21 @@ struct action_record
 
 struct action_record_hasher : typed_free_remove <action_record>
 {
-  typedef action_record value_type;
-  typedef action_record compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef action_record *value_type;
+  typedef action_record *compare_type;
+  static inline hashval_t hash (const action_record *);
+  static inline bool equal (const action_record *, const action_record *);
 };
 
 inline hashval_t
-action_record_hasher::hash (const value_type *entry)
+action_record_hasher::hash (const action_record *entry)
 {
   return entry->next * 1009 + entry->filter;
 }
 
 inline bool
-action_record_hasher::equal (const value_type *entry, const compare_type *data)
+action_record_hasher::equal (const action_record *entry,
+			     const action_record *data)
 {
   return entry->filter == data->filter && entry->next == data->next;
 }
@@ -742,23 +743,23 @@ struct ttypes_filter {
 
 struct ttypes_filter_hasher : typed_free_remove <ttypes_filter>
 {
-  typedef ttypes_filter value_type;
-  typedef tree_node compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef ttypes_filter *value_type;
+  typedef tree_node *compare_type;
+  static inline hashval_t hash (const ttypes_filter *);
+  static inline bool equal (const ttypes_filter *, const tree_node *);
 };
 
 /* Compare ENTRY (a ttypes_filter entry in the hash table) with DATA
    (a tree) for a @TTypes type node we are thinking about adding.  */
 
 inline bool
-ttypes_filter_hasher::equal (const value_type *entry, const compare_type *data)
+ttypes_filter_hasher::equal (const ttypes_filter *entry, const tree_node *data)
 {
   return entry->t == data;
 }
 
 inline hashval_t
-ttypes_filter_hasher::hash (const value_type *entry)
+ttypes_filter_hasher::hash (const ttypes_filter *entry)
 {
   return TREE_HASH (entry->t);
 }
@@ -770,10 +771,10 @@ typedef hash_table<ttypes_filter_hasher> ttypes_hash_type;
 
 struct ehspec_hasher : typed_free_remove <ttypes_filter>
 {
-  typedef ttypes_filter value_type;
-  typedef ttypes_filter compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef ttypes_filter *value_type;
+  typedef ttypes_filter *compare_type;
+  static inline hashval_t hash (const ttypes_filter *);
+  static inline bool equal (const ttypes_filter *, const ttypes_filter *);
 };
 
 /* Compare ENTRY with DATA (both struct ttypes_filter) for a @TTypes
@@ -782,7 +783,7 @@ struct ehspec_hasher : typed_free_remove <ttypes_filter>
    should put these in some canonical order.  */
 
 inline bool
-ehspec_hasher::equal (const value_type *entry, const compare_type *data)
+ehspec_hasher::equal (const ttypes_filter *entry, const ttypes_filter *data)
 {
   return type_list_equal (entry->t, data->t);
 }
@@ -790,7 +791,7 @@ ehspec_hasher::equal (const value_type *entry, const compare_type *data)
 /* Hash function for exception specification lists.  */
 
 inline hashval_t
-ehspec_hasher::hash (const value_type *entry)
+ehspec_hasher::hash (const ttypes_filter *entry)
 {
   hashval_t h = 0;
   tree list;

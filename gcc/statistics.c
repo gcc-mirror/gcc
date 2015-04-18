@@ -55,17 +55,18 @@ typedef struct statistics_counter_s {
 
 struct stats_counter_hasher
 {
-  typedef statistics_counter_t value_type;
-  typedef statistics_counter_t compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
-  static inline void remove (value_type *);
+  typedef statistics_counter_t *value_type;
+  typedef statistics_counter_t *compare_type;
+  static inline hashval_t hash (const statistics_counter_t *);
+  static inline bool equal (const statistics_counter_t *,
+			    const statistics_counter_t *);
+  static inline void remove (statistics_counter_t *);
 };
 
 /* Hash a statistic counter by its string ID.  */
 
 inline hashval_t
-stats_counter_hasher::hash (const value_type *c)
+stats_counter_hasher::hash (const statistics_counter_t *c)
 {
   return htab_hash_string (c->id) + c->val;
 }
@@ -73,7 +74,8 @@ stats_counter_hasher::hash (const value_type *c)
 /* Compare two statistic counters by their string IDs.  */
 
 inline bool
-stats_counter_hasher::equal (const value_type *c1, const compare_type *c2)
+stats_counter_hasher::equal (const statistics_counter_t *c1,
+			     const statistics_counter_t *c2)
 {
   return c1->val == c2->val && strcmp (c1->id, c2->id) == 0;
 }
@@ -81,7 +83,7 @@ stats_counter_hasher::equal (const value_type *c1, const compare_type *c2)
 /* Free a statistics entry.  */
 
 inline void
-stats_counter_hasher::remove (value_type *v)
+stats_counter_hasher::remove (statistics_counter_t *v)
 {
   free (CONST_CAST (char *, v->id));
   free (v);

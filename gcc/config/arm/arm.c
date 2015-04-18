@@ -4897,21 +4897,21 @@ arm_function_value(const_tree type, const_tree func,
 
 struct libcall_hasher : typed_noop_remove <rtx_def>
 {
-  typedef rtx_def value_type;
-  typedef rtx_def compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
-  static inline void remove (value_type *);
+  typedef const rtx_def *value_type;
+  typedef const rtx_def *compare_type;
+  static inline hashval_t hash (const rtx_def *);
+  static inline bool equal (const rtx_def *, const rtx_def *);
+  static inline void remove (rtx_def *);
 };
 
 inline bool
-libcall_hasher::equal (const value_type *p1, const compare_type *p2)
+libcall_hasher::equal (const rtx_def *p1, const rtx_def *p2)
 {
   return rtx_equal_p (p1, p2);
 }
 
 inline hashval_t
-libcall_hasher::hash (const value_type *p1)
+libcall_hasher::hash (const rtx_def *p1)
 {
   return hash_rtx (p1, VOIDmode, NULL, NULL, FALSE);
 }

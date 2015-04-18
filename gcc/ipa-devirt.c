@@ -308,11 +308,11 @@ type_possibly_instantiated_p (tree t)
 
 struct odr_name_hasher
 {
-  typedef odr_type_d value_type;
-  typedef union tree_node compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
-  static inline void remove (value_type *);
+  typedef odr_type_d *value_type;
+  typedef union tree_node *compare_type;
+  static inline hashval_t hash (const odr_type_d *);
+  static inline bool equal (const odr_type_d *, const tree_node *);
+  static inline void remove (odr_type_d *);
 };
 
 /* Has used to unify ODR types based on their associated virtual table.
@@ -321,8 +321,8 @@ struct odr_name_hasher
 
 struct odr_vtable_hasher:odr_name_hasher
 {
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  static inline hashval_t hash (const odr_type_d *);
+  static inline bool equal (const odr_type_d *, const tree_node *);
 };
 
 /* Return type that was declared with T's name so that T is an
@@ -369,7 +369,7 @@ hash_odr_name (const_tree t)
 /* Return the computed hashcode for ODR_TYPE.  */
 
 inline hashval_t
-odr_name_hasher::hash (const value_type *odr_type)
+odr_name_hasher::hash (const odr_type_d *odr_type)
 {
   return hash_odr_name (odr_type->type);
 }
@@ -414,7 +414,7 @@ hash_odr_vtable (const_tree t)
 /* Return the computed hashcode for ODR_TYPE.  */
 
 inline hashval_t
-odr_vtable_hasher::hash (const value_type *odr_type)
+odr_vtable_hasher::hash (const odr_type_d *odr_type)
 {
   return hash_odr_vtable (odr_type->type);
 }
@@ -553,7 +553,7 @@ types_must_be_same_for_odr (tree t1, tree t2)
    equivalent.  */
 
 inline bool
-odr_name_hasher::equal (const value_type *o1, const compare_type *t2)
+odr_name_hasher::equal (const odr_type_d *o1, const tree_node *t2)
 {
   tree t1 = o1->type;
 
@@ -578,7 +578,7 @@ odr_name_hasher::equal (const value_type *o1, const compare_type *t2)
    equivalent.  */
 
 inline bool
-odr_vtable_hasher::equal (const value_type *o1, const compare_type *t2)
+odr_vtable_hasher::equal (const odr_type_d *o1, const tree_node *t2)
 {
   tree t1 = o1->type;
 
@@ -602,7 +602,7 @@ odr_vtable_hasher::equal (const value_type *o1, const compare_type *t2)
 /* Free ODR type V.  */
 
 inline void
-odr_name_hasher::remove (value_type *v)
+odr_name_hasher::remove (odr_type_d *v)
 {
   v->bases.release ();
   v->derived_types.release ();
@@ -2507,17 +2507,18 @@ struct polymorphic_call_target_d
 
 struct polymorphic_call_target_hasher 
 {
-  typedef polymorphic_call_target_d value_type;
-  typedef polymorphic_call_target_d compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
-  static inline void remove (value_type *);
+  typedef polymorphic_call_target_d *value_type;
+  typedef polymorphic_call_target_d *compare_type;
+  static inline hashval_t hash (const polymorphic_call_target_d *);
+  static inline bool equal (const polymorphic_call_target_d *,
+			    const polymorphic_call_target_d *);
+  static inline void remove (polymorphic_call_target_d *);
 };
 
 /* Return the computed hashcode for ODR_QUERY.  */
 
 inline hashval_t
-polymorphic_call_target_hasher::hash (const value_type *odr_query)
+polymorphic_call_target_hasher::hash (const polymorphic_call_target_d *odr_query)
 {
   inchash::hash hstate (odr_query->otr_token);
 
@@ -2541,8 +2542,8 @@ polymorphic_call_target_hasher::hash (const value_type *odr_query)
 /* Compare cache entries T1 and T2.  */
 
 inline bool
-polymorphic_call_target_hasher::equal (const value_type *t1,
-				       const compare_type *t2)
+polymorphic_call_target_hasher::equal (const polymorphic_call_target_d *t1,
+				       const polymorphic_call_target_d *t2)
 {
   return (t1->type == t2->type && t1->otr_token == t2->otr_token
 	  && t1->speculative == t2->speculative
@@ -2560,7 +2561,7 @@ polymorphic_call_target_hasher::equal (const value_type *t1,
 /* Remove entry in polymorphic call target cache hash.  */
 
 inline void
-polymorphic_call_target_hasher::remove (value_type *v)
+polymorphic_call_target_hasher::remove (polymorphic_call_target_d *v)
 {
   v->targets.release ();
   free (v);

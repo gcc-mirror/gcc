@@ -126,17 +126,17 @@ struct var_to_expand
 
 struct iv_split_hasher : typed_free_remove <iv_to_split>
 {
-  typedef iv_to_split value_type;
-  typedef iv_to_split compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef iv_to_split *value_type;
+  typedef iv_to_split *compare_type;
+  static inline hashval_t hash (const iv_to_split *);
+  static inline bool equal (const iv_to_split *, const iv_to_split *);
 };
 
 
 /* A hash function for information about insns to split.  */
 
 inline hashval_t
-iv_split_hasher::hash (const value_type *ivts)
+iv_split_hasher::hash (const iv_to_split *ivts)
 {
   return (hashval_t) INSN_UID (ivts->insn);
 }
@@ -144,7 +144,7 @@ iv_split_hasher::hash (const value_type *ivts)
 /* An equality functions for information about insns to split.  */
 
 inline bool
-iv_split_hasher::equal (const value_type *i1, const compare_type *i2)
+iv_split_hasher::equal (const iv_to_split *i1, const iv_to_split *i2)
 {
   return i1->insn == i2->insn;
 }
@@ -153,16 +153,16 @@ iv_split_hasher::equal (const value_type *i1, const compare_type *i2)
 
 struct var_expand_hasher : typed_free_remove <var_to_expand>
 {
-  typedef var_to_expand value_type;
-  typedef var_to_expand compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef var_to_expand *value_type;
+  typedef var_to_expand *compare_type;
+  static inline hashval_t hash (const var_to_expand *);
+  static inline bool equal (const var_to_expand *, const var_to_expand *);
 };
 
 /* Return a hash for VES.  */
 
 inline hashval_t
-var_expand_hasher::hash (const value_type *ves)
+var_expand_hasher::hash (const var_to_expand *ves)
 {
   return (hashval_t) INSN_UID (ves->insn);
 }
@@ -170,7 +170,7 @@ var_expand_hasher::hash (const value_type *ves)
 /* Return true if I1 and I2 refer to the same instruction.  */
 
 inline bool
-var_expand_hasher::equal (const value_type *i1, const compare_type *i2)
+var_expand_hasher::equal (const var_to_expand *i1, const var_to_expand *i2)
 {
   return i1->insn == i2->insn;
 }

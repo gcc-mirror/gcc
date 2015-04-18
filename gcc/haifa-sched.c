@@ -621,16 +621,16 @@ struct delay_pair
 
 struct delay_i1_hasher : typed_noop_remove <delay_pair>
 {
-  typedef delay_pair value_type;
-  typedef void compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef delay_pair *value_type;
+  typedef void *compare_type;
+  static inline hashval_t hash (const delay_pair *);
+  static inline bool equal (const delay_pair *, const void *);
 };
 
 /* Returns a hash value for X, based on hashing just I1.  */
 
 inline hashval_t
-delay_i1_hasher::hash (const value_type *x)
+delay_i1_hasher::hash (const delay_pair *x)
 {
   return htab_hash_pointer (x->i1);
 }
@@ -638,23 +638,23 @@ delay_i1_hasher::hash (const value_type *x)
 /* Return true if I1 of pair X is the same as that of pair Y.  */
 
 inline bool
-delay_i1_hasher::equal (const value_type *x, const compare_type *y)
+delay_i1_hasher::equal (const delay_pair *x, const void *y)
 {
   return x->i1 == y;
 }
 
 struct delay_i2_hasher : typed_free_remove <delay_pair>
 {
-  typedef delay_pair value_type;
-  typedef void compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef delay_pair *value_type;
+  typedef void *compare_type;
+  static inline hashval_t hash (const delay_pair *);
+  static inline bool equal (const delay_pair *, const void *);
 };
 
 /* Returns a hash value for X, based on hashing just I2.  */
 
 inline hashval_t
-delay_i2_hasher::hash (const value_type *x)
+delay_i2_hasher::hash (const delay_pair *x)
 {
   return htab_hash_pointer (x->i2);
 }
@@ -662,7 +662,7 @@ delay_i2_hasher::hash (const value_type *x)
 /* Return true if I2 of pair X is the same as that of pair Y.  */
 
 inline bool
-delay_i2_hasher::equal (const value_type *x, const compare_type *y)
+delay_i2_hasher::equal (const delay_pair *x, const void *y)
 {
   return x->i2 == y;
 }

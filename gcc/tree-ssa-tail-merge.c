@@ -260,11 +260,11 @@ struct same_succ_def
   hashval_t hashval;
 
   /* hash_table support.  */
-  typedef same_succ_def value_type;
-  typedef same_succ_def compare_type;
-  static inline hashval_t hash (const value_type *);
-  static int equal (const value_type *, const compare_type *);
-  static void remove (value_type *);
+  typedef same_succ_def *value_type;
+  typedef same_succ_def *compare_type;
+  static inline hashval_t hash (const same_succ_def *);
+  static int equal (const same_succ_def *, const same_succ_def *);
+  static void remove (same_succ_def *);
 };
 typedef struct same_succ_def *same_succ;
 typedef const struct same_succ_def *const_same_succ;
@@ -272,7 +272,7 @@ typedef const struct same_succ_def *const_same_succ;
 /* hash routine for hash_table support, returns hashval of E.  */
 
 inline hashval_t
-same_succ_def::hash (const value_type *e)
+same_succ_def::hash (const same_succ_def *e)
 {
   return e->hashval;
 }
@@ -568,7 +568,7 @@ inverse_flags (const_same_succ e1, const_same_succ e2)
 /* Compares SAME_SUCCs E1 and E2.  */
 
 int
-same_succ_def::equal (const value_type *e1, const compare_type *e2)
+same_succ_def::equal (const same_succ_def *e1, const same_succ_def *e2)
 {
   unsigned int i, first1, first2;
   gimple_stmt_iterator gsi1, gsi2;

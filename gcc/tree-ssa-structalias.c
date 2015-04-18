@@ -1940,16 +1940,17 @@ typedef const struct equiv_class_label *const_equiv_class_label_t;
 
 struct equiv_class_hasher : typed_free_remove <equiv_class_label>
 {
-  typedef equiv_class_label value_type;
-  typedef equiv_class_label compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef equiv_class_label *value_type;
+  typedef equiv_class_label *compare_type;
+  static inline hashval_t hash (const equiv_class_label *);
+  static inline bool equal (const equiv_class_label *,
+			    const equiv_class_label *);
 };
 
 /* Hash function for a equiv_class_label_t */
 
 inline hashval_t
-equiv_class_hasher::hash (const value_type *ecl)
+equiv_class_hasher::hash (const equiv_class_label *ecl)
 {
   return ecl->hashcode;
 }
@@ -1957,7 +1958,8 @@ equiv_class_hasher::hash (const value_type *ecl)
 /* Equality function for two equiv_class_label_t's.  */
 
 inline bool
-equiv_class_hasher::equal (const value_type *eql1, const compare_type *eql2)
+equiv_class_hasher::equal (const equiv_class_label *eql1,
+			   const equiv_class_label *eql2)
 {
   return (eql1->hashcode == eql2->hashcode
 	  && bitmap_equal_p (eql1->labels, eql2->labels));
@@ -5963,16 +5965,17 @@ typedef const struct shared_bitmap_info *const_shared_bitmap_info_t;
 
 struct shared_bitmap_hasher : typed_free_remove <shared_bitmap_info>
 {
-  typedef shared_bitmap_info value_type;
-  typedef shared_bitmap_info compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef shared_bitmap_info *value_type;
+  typedef shared_bitmap_info *compare_type;
+  static inline hashval_t hash (const shared_bitmap_info *);
+  static inline bool equal (const shared_bitmap_info *,
+			    const shared_bitmap_info *);
 };
 
 /* Hash function for a shared_bitmap_info_t */
 
 inline hashval_t
-shared_bitmap_hasher::hash (const value_type *bi)
+shared_bitmap_hasher::hash (const shared_bitmap_info *bi)
 {
   return bi->hashcode;
 }
@@ -5980,7 +5983,8 @@ shared_bitmap_hasher::hash (const value_type *bi)
 /* Equality function for two shared_bitmap_info_t's. */
 
 inline bool
-shared_bitmap_hasher::equal (const value_type *sbi1, const compare_type *sbi2)
+shared_bitmap_hasher::equal (const shared_bitmap_info *sbi1,
+			     const shared_bitmap_info *sbi2)
 {
   return bitmap_equal_p (sbi1->pt_vars, sbi2->pt_vars);
 }

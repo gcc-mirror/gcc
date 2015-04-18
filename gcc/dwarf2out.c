@@ -6865,28 +6865,28 @@ struct cu_hash_table_entry
 
 struct cu_hash_table_entry_hasher
 {
-  typedef cu_hash_table_entry value_type;
-  typedef die_struct compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
-  static inline void remove (value_type *);
+  typedef cu_hash_table_entry *value_type;
+  typedef die_struct *compare_type;
+  static inline hashval_t hash (const cu_hash_table_entry *);
+  static inline bool equal (const cu_hash_table_entry *, const die_struct *);
+  static inline void remove (cu_hash_table_entry *);
 };
 
 inline hashval_t
-cu_hash_table_entry_hasher::hash (const value_type *entry)
+cu_hash_table_entry_hasher::hash (const cu_hash_table_entry *entry)
 {
   return htab_hash_string (entry->cu->die_id.die_symbol);
 }
 
 inline bool
-cu_hash_table_entry_hasher::equal (const value_type *entry1,
-				   const compare_type *entry2)
+cu_hash_table_entry_hasher::equal (const cu_hash_table_entry *entry1,
+				   const die_struct *entry2)
 {
   return !strcmp (entry1->cu->die_id.die_symbol, entry2->die_id.die_symbol);
 }
 
 inline void
-cu_hash_table_entry_hasher::remove (value_type *entry)
+cu_hash_table_entry_hasher::remove (cu_hash_table_entry *entry)
 {
   struct cu_hash_table_entry *next;
 
@@ -7202,21 +7202,21 @@ struct decl_table_entry
 
 struct decl_table_entry_hasher : typed_free_remove <decl_table_entry>
 {
-  typedef decl_table_entry value_type;
-  typedef die_struct compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef decl_table_entry *value_type;
+  typedef die_struct *compare_type;
+  static inline hashval_t hash (const decl_table_entry *);
+  static inline bool equal (const decl_table_entry *, const die_struct *);
 };
 
 inline hashval_t
-decl_table_entry_hasher::hash (const value_type *entry)
+decl_table_entry_hasher::hash (const decl_table_entry *entry)
 {
   return htab_hash_pointer (entry->orig);
 }
 
 inline bool
-decl_table_entry_hasher::equal (const value_type *entry1,
-				const compare_type *entry2)
+decl_table_entry_hasher::equal (const decl_table_entry *entry1,
+				const die_struct *entry2)
 {
   return entry1->orig == entry2;
 }
@@ -7744,14 +7744,14 @@ struct external_ref
 
 struct external_ref_hasher : typed_free_remove <external_ref>
 {
-  typedef external_ref value_type;
-  typedef external_ref compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef external_ref *value_type;
+  typedef external_ref *compare_type;
+  static inline hashval_t hash (const external_ref *);
+  static inline bool equal (const external_ref *, const external_ref *);
 };
 
 inline hashval_t
-external_ref_hasher::hash (const value_type *r)
+external_ref_hasher::hash (const external_ref *r)
 {
   dw_die_ref die = r->type;
   hashval_t h = 0;
@@ -7772,7 +7772,7 @@ external_ref_hasher::hash (const value_type *r)
 }
 
 inline bool
-external_ref_hasher::equal (const value_type *r1, const compare_type *r2)
+external_ref_hasher::equal (const external_ref *r1, const external_ref *r2)
 {
   return r1->type == r2->type;
 }
@@ -22230,21 +22230,21 @@ dwarf2out_undef (unsigned int lineno ATTRIBUTE_UNUSED,
 
 struct macinfo_entry_hasher : typed_noop_remove <macinfo_entry>
 {
-  typedef macinfo_entry value_type;
-  typedef macinfo_entry compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef macinfo_entry *value_type;
+  typedef macinfo_entry *compare_type;
+  static inline hashval_t hash (const macinfo_entry *);
+  static inline bool equal (const macinfo_entry *, const macinfo_entry *);
 };
 
 inline hashval_t
-macinfo_entry_hasher::hash (const value_type *entry)
+macinfo_entry_hasher::hash (const macinfo_entry *entry)
 {
   return htab_hash_string (entry->info);
 }
 
 inline bool
-macinfo_entry_hasher::equal (const value_type *entry1,
-			     const compare_type *entry2)
+macinfo_entry_hasher::equal (const macinfo_entry *entry1,
+			     const macinfo_entry *entry2)
 {
   return !strcmp (entry1->info, entry2->info);
 }
@@ -23308,14 +23308,14 @@ file_table_relative_p (dwarf_file_data **slot, bool *p)
 
 struct comdat_type_hasher : typed_noop_remove <comdat_type_node>
 {
-  typedef comdat_type_node value_type;
-  typedef comdat_type_node compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef comdat_type_node *value_type;
+  typedef comdat_type_node *compare_type;
+  static inline hashval_t hash (const comdat_type_node *);
+  static inline bool equal (const comdat_type_node *, const comdat_type_node *);
 };
 
 inline hashval_t
-comdat_type_hasher::hash (const value_type *type_node)
+comdat_type_hasher::hash (const comdat_type_node *type_node)
 {
   hashval_t h;
   memcpy (&h, type_node->signature, sizeof (h));
@@ -23323,8 +23323,8 @@ comdat_type_hasher::hash (const value_type *type_node)
 }
 
 inline bool
-comdat_type_hasher::equal (const value_type *type_node_1,
-			   const compare_type *type_node_2)
+comdat_type_hasher::equal (const comdat_type_node *type_node_1,
+			   const comdat_type_node *type_node_2)
 {
   return (! memcmp (type_node_1->signature, type_node_2->signature,
                     DWARF_TYPE_SIGNATURE_SIZE));
@@ -24411,16 +24411,17 @@ compare_locs (dw_loc_descr_ref x, dw_loc_descr_ref y)
 
 struct loc_list_hasher : typed_noop_remove <dw_loc_list_struct>
 {
-  typedef dw_loc_list_struct value_type;
-  typedef dw_loc_list_struct compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef dw_loc_list_struct *value_type;
+  typedef dw_loc_list_struct *compare_type;
+  static inline hashval_t hash (const dw_loc_list_struct *);
+  static inline bool equal (const dw_loc_list_struct *,
+			    const dw_loc_list_struct *);
 };
 
 /* Return precomputed hash of location list X.  */
 
 inline hashval_t
-loc_list_hasher::hash (const value_type *x)
+loc_list_hasher::hash (const dw_loc_list_struct *x)
 {
   return x->hash;
 }
@@ -24428,7 +24429,8 @@ loc_list_hasher::hash (const value_type *x)
 /* Return true if location lists A and B are the same.  */
 
 inline bool
-loc_list_hasher::equal (const value_type *a, const compare_type *b)
+loc_list_hasher::equal (const dw_loc_list_struct *a,
+			const dw_loc_list_struct *b)
 {
   if (a == b)
     return 1;

@@ -104,20 +104,20 @@ static void  verify_live_on_entry (tree_live_info_p);
 
 struct tree_int_map_hasher : typed_noop_remove <tree_int_map>
 {
-  typedef tree_int_map value_type;
-  typedef tree_int_map compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef tree_int_map *value_type;
+  typedef tree_int_map *compare_type;
+  static inline hashval_t hash (const tree_int_map *);
+  static inline bool equal (const tree_int_map *, const tree_int_map *);
 };
 
 inline hashval_t
-tree_int_map_hasher::hash (const value_type *v)
+tree_int_map_hasher::hash (const tree_int_map *v)
 {
   return tree_map_base_hash (v);
 }
 
 inline bool
-tree_int_map_hasher::equal (const value_type *v, const compare_type *c)
+tree_int_map_hasher::equal (const tree_int_map *v, const tree_int_map *c)
 {
   return tree_int_map_eq (v, c);
 }

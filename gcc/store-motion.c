@@ -137,21 +137,21 @@ static struct edge_list *edge_list;
 
 struct st_expr_hasher : typed_noop_remove <st_expr>
 {
-  typedef st_expr value_type;
-  typedef st_expr compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef st_expr *value_type;
+  typedef st_expr *compare_type;
+  static inline hashval_t hash (const st_expr *);
+  static inline bool equal (const st_expr *, const st_expr *);
 };
 
 inline hashval_t
-st_expr_hasher::hash (const value_type *x)
+st_expr_hasher::hash (const st_expr *x)
 {
   int do_not_record_p = 0;
   return hash_rtx (x->pattern, GET_MODE (x->pattern), &do_not_record_p, NULL, false);
 }
 
 inline bool
-st_expr_hasher::equal (const value_type *ptr1, const compare_type *ptr2)
+st_expr_hasher::equal (const st_expr *ptr1, const st_expr *ptr2)
 {
   return exp_equiv_p (ptr1->pattern, ptr2->pattern, 0, true);
 }

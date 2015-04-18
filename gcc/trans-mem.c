@@ -974,23 +974,23 @@ typedef struct tm_log_entry
 
 struct log_entry_hasher
 {
-  typedef tm_log_entry value_type;
-  typedef tm_log_entry compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
-  static inline void remove (value_type *);
+  typedef tm_log_entry *value_type;
+  typedef tm_log_entry *compare_type;
+  static inline hashval_t hash (const tm_log_entry *);
+  static inline bool equal (const tm_log_entry *, const tm_log_entry *);
+  static inline void remove (tm_log_entry *);
 };
 
 /* Htab support.  Return hash value for a `tm_log_entry'.  */
 inline hashval_t
-log_entry_hasher::hash (const value_type *log)
+log_entry_hasher::hash (const tm_log_entry *log)
 {
   return iterative_hash_expr (log->addr, 0);
 }
 
 /* Htab support.  Return true if two log entries are the same.  */
 inline bool
-log_entry_hasher::equal (const value_type *log1, const compare_type *log2)
+log_entry_hasher::equal (const tm_log_entry *log1, const tm_log_entry *log2)
 {
   /* FIXME:
 
@@ -1016,7 +1016,7 @@ log_entry_hasher::equal (const value_type *log1, const compare_type *log2)
 
 /* Htab support.  Free one tm_log_entry.  */
 inline void
-log_entry_hasher::remove (value_type *lp)
+log_entry_hasher::remove (tm_log_entry *lp)
 {
   lp->stmts.release ();
   free (lp);
@@ -1049,20 +1049,20 @@ typedef struct tm_new_mem_map
 
 struct tm_mem_map_hasher : typed_free_remove <tm_new_mem_map_t>
 {
-  typedef tm_new_mem_map_t value_type;
-  typedef tm_new_mem_map_t compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef tm_new_mem_map_t *value_type;
+  typedef tm_new_mem_map_t *compare_type;
+  static inline hashval_t hash (const tm_new_mem_map_t *);
+  static inline bool equal (const tm_new_mem_map_t *, const tm_new_mem_map_t *);
 };
 
 inline hashval_t
-tm_mem_map_hasher::hash (const value_type *v)
+tm_mem_map_hasher::hash (const tm_new_mem_map_t *v)
 {
   return (intptr_t)v->val >> 4;
 }
 
 inline bool
-tm_mem_map_hasher::equal (const value_type *v, const compare_type *c)
+tm_mem_map_hasher::equal (const tm_new_mem_map_t *v, const tm_new_mem_map_t *c)
 {
   return v->val == c->val;
 }
@@ -3350,15 +3350,15 @@ typedef struct tm_memop
 
 struct tm_memop_hasher : typed_free_remove <tm_memop>
 {
-  typedef tm_memop value_type;
-  typedef tm_memop compare_type;
-  static inline hashval_t hash (const value_type *);
-  static inline bool equal (const value_type *, const compare_type *);
+  typedef tm_memop *value_type;
+  typedef tm_memop *compare_type;
+  static inline hashval_t hash (const tm_memop *);
+  static inline bool equal (const tm_memop *, const tm_memop *);
 };
 
 /* Htab support.  Return a hash value for a `tm_memop'.  */
 inline hashval_t
-tm_memop_hasher::hash (const value_type *mem)
+tm_memop_hasher::hash (const tm_memop *mem)
 {
   tree addr = mem->addr;
   /* We drill down to the SSA_NAME/DECL for the hash, but equality is
@@ -3370,7 +3370,7 @@ tm_memop_hasher::hash (const value_type *mem)
 
 /* Htab support.  Return true if two tm_memop's are the same.  */
 inline bool
-tm_memop_hasher::equal (const value_type *mem1, const compare_type *mem2)
+tm_memop_hasher::equal (const tm_memop *mem1, const tm_memop *mem2)
 {
   return operand_equal_p (mem1->addr, mem2->addr, 0);
 }
