@@ -533,7 +533,7 @@ get_equiv_with_elimination (rtx x, rtx_insn *insn)
   if (x == res || CONSTANT_P (res))
     return res;
   return lra_eliminate_regs_1 (insn, res, GET_MODE (res),
-			       0, false, false, true);
+			       false, false, 0, true);
 }
 
 /* Set up curr_operand_mode.  */
