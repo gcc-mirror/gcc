@@ -9,6 +9,7 @@
 	TARGET_MACHO and TARGET_DLLIMPORT_DECL_ATTRIBUTES are false.
 
 2015-04-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/65787
 	* config/rs6000/rs6000.c (rtx_is_swappable_p): Remove previous
