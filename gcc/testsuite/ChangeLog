@@ -1,3 +1,11 @@
+2015-04-18  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline r222205
+	2015-04-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/65787
+	* gcc.target/powerpc/pr65787.c: New.
+
 2015-04-16  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/65676
