@@ -1,3 +1,8 @@
+2015-04-20  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/64134
+	* gcc.target/aarch64/vec_init_1.c: New test.
+
 2015-04-20  Yvan Roux  <yvan.roux@linaro.org>
 
 	* gcc.target/arm/pr65729.c: Restrict to hard float ABI compliant
