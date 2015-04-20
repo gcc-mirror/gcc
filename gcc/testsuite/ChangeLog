@@ -1,3 +1,8 @@
+2015-04-20  Yvan Roux  <yvan.roux@linaro.org>
+
+	* gcc.target/arm/pr65729.c: Restrict to hard float ABI compliant
+	targets.
+
 2015-04-18  Martin Sebor  <msebor@redhat.com>
 
 	* gfortran.dg/pr32627.f03 (strptr): Change size to match the number
