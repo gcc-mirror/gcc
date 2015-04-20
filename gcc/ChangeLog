@@ -1,3 +1,9 @@
+2015-04-20  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/65658
+	* tree-ssa-threadupdate.c (redirection_block_p): Remove
+	redundant test for GIMPLE_ASSIGN in last change.
+
 2015-04-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (set_pic_reg_ever_live): Remove.
