@@ -3886,6 +3886,7 @@ add_AT_wide (dw_die_ref die, enum dwarf_attribute attr_kind,
 
   attr.dw_attr = attr_kind;
   attr.dw_attr_val.val_class = dw_val_class_wide_int;
+  attr.dw_attr_val.val_entry = NULL;
   attr.dw_attr_val.v.val_wide = ggc_alloc<wide_int> ();
   *attr.dw_attr_val.v.val_wide = w;
   add_dwarf_attr (die, &attr);
