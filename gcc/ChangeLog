@@ -1,3 +1,9 @@
+2015-04-20  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/65658
+	* tree-ssa-threadupdate.c (redirection_block_p): Ignore clobber
+	statements too.
+
 2015-04-20  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_simd_emit_pair_result_insn): Delete.
