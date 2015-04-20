@@ -1,3 +1,8 @@
+2015-04-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* MAINTAINERS (Various Maintainers): Add myself as instruction
+	combiner maintainer.
+
 2015-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/62077
