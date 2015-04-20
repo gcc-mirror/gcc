@@ -12153,7 +12153,7 @@ c_parser_oacc_enter_exit_data (c_parser *parser, bool enter)
       return;
     }
 
-  stmt = enter ? make_node (OACC_ENTER_DATA) : make_node (OACC_EXIT_DATA);;
+  stmt = enter ? make_node (OACC_ENTER_DATA) : make_node (OACC_EXIT_DATA);
   TREE_TYPE (stmt) = void_type_node;
   if (enter)
     OACC_ENTER_DATA_CLAUSES (stmt) = clauses;
@@ -13851,7 +13851,7 @@ c_parser_omp_target_update (location_t loc, c_parser *parser,
       && find_omp_clause (clauses, OMP_CLAUSE_FROM) == NULL_TREE)
     {
       error_at (loc,
-		"%<#pragma omp target update must contain at least one "
+		"%<#pragma omp target update%> must contain at least one "
 		"%<from%> or %<to%> clauses");
       return false;
     }
