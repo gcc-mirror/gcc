@@ -1,3 +1,8 @@
+2015-04-20  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/65658
+	* gcc.dg/pr65658.c: New test.
+
 2015-04-20  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/64134

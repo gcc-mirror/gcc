@@ -1449,7 +1449,9 @@ redirection_block_p (basic_block bb)
   while (!gsi_end_p (gsi)
 	 && (gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL
 	     || is_gimple_debug (gsi_stmt (gsi))
-	     || gimple_nop_p (gsi_stmt (gsi))))
+	     || gimple_nop_p (gsi_stmt (gsi))
+	     || (gimple_code (gsi_stmt (gsi)) == GIMPLE_ASSIGN
+		 && gimple_clobber_p (gsi_stmt (gsi)))))
     gsi_next (&gsi);
 
   /* Check if this is an empty block.  */
