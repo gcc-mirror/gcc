@@ -264,12 +264,6 @@ void init_aarch64_simd_builtins (void);
 
 void aarch64_simd_emit_reg_reg_move (rtx *, enum machine_mode, unsigned int);
 
-/* Emit code to place a AdvSIMD pair result in memory locations (with equal
-   registers).  */
-void aarch64_simd_emit_pair_result_insn (machine_mode,
-					 rtx (*intfn) (rtx, rtx, rtx), rtx,
-					 rtx);
-
 /* Expand builtins for SIMD intrinsics.  */
 rtx aarch64_simd_expand_builtin (int, tree, rtx);
 
