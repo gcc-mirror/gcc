@@ -1,3 +1,9 @@
+2015-04-20  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.h (gimple_build): Remove optional valueize arguments.
+	* gimple-fold.c (gimple_build_valueize): New function.
+	(gimple_build): Always use gimple_build_valueize as valueize hook.
+
 2015-04-20  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/64134
