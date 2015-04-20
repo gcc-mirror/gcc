@@ -9782,7 +9782,7 @@ grokdeclarator (const cp_declarator *declarator,
 			    virtualp = false;
 			  }
 		      }
-		    else if (!is_auto (type))
+		    else if (!is_auto (type) && sfk != sfk_conversion)
 		      {
 			error ("%qs function with trailing return type has"
 			       " %qT as its type rather than plain %<auto%>",
@@ -9790,7 +9790,8 @@ grokdeclarator (const cp_declarator *declarator,
 			return error_mark_node;
 		      }
 		  }
-		else if (declarator->u.function.late_return_type)
+		else if (declarator->u.function.late_return_type
+			 && sfk != sfk_conversion)
 		  {
 		    if (cxx_dialect < cxx11)
 		      /* Not using maybe_warn_cpp0x because this should
@@ -9899,6 +9900,8 @@ grokdeclarator (const cp_declarator *declarator,
 		    maybe_warn_cpp0x (CPP0X_EXPLICIT_CONVERSION);
 		    explicitp = 2;
 		  }
+		if (late_return_type_p)
+		  error ("a conversion function cannot have a trailing return type");
 	      }
 
 	    arg_types = grokparms (declarator->u.function.parameters,

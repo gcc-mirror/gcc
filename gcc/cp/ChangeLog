@@ -1,3 +1,10 @@
+2015-04-20  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Reject trailing return type for an operator auto().
+	* decl.c (grokdeclarator): Reject trailing return types for
+	all conversion operators, don't handle conversion operators
+	in the previous checks that deal with auto.
+
 2015-04-20  Ilya Verbin  <ilya.verbin@intel.com>
 
 	* parser.c (cp_parser_omp_target_update): Add missed %> to error_at ().
