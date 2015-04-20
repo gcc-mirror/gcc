@@ -1,3 +1,8 @@
+2015-04-20  Selim Belbachir  <selim.belbachir@fr.thalesgroup.com>
+
+	* reorg.c (try_merge_delay_insns): Improve correctness checking
+	for targets with multiple delay slots.
+
 2015-04-20  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/65658

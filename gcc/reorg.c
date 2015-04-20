@@ -1338,9 +1338,9 @@ try_merge_delay_insns (rtx insn, rtx_insn *thread)
   int slot_number = 1;
   int num_slots = XVECLEN (PATTERN (insn), 0);
   rtx next_to_match = XVECEXP (PATTERN (insn), 0, slot_number);
-  struct resources set, needed;
+  struct resources set, needed, modified;
   rtx_insn_list *merged_insns = 0;
-  int i;
+  int i, j;
   int flags;
 
   flags = get_jump_flags (delay_insn, JUMP_LABEL (delay_insn));
@@ -1432,6 +1432,17 @@ try_merge_delay_insns (rtx insn, rtx_insn *thread)
 	{
 	  rtx_insn *dtrial = pat->insn (i);
 
+	  CLEAR_RESOURCE (&modified);
+	  /* Account for resources set by the the insn following NEXT_TO_MATCH
+	     inside INSN's delay list. */
+	  for (j = 1; slot_number + j < num_slots; j++)
+	    mark_set_resources (XVECEXP (PATTERN (insn), 0, slot_number + j),
+				&modified, 0, MARK_SRC_DEST_CALL);
+	  /* Account for resources set by the the insn before DTRIAL and inside
+	     TRIAL's delay list. */
+	  for (j = 1; j < i; j++)
+	    mark_set_resources (XVECEXP (pat, 0, j),
+				&modified, 0, MARK_SRC_DEST_CALL); 
 	  if (! insn_references_resource_p (dtrial, &set, true)
 	      && ! insn_sets_resource_p (dtrial, &set, true)
 	      && ! insn_sets_resource_p (dtrial, &needed, true)
@@ -1439,6 +1450,11 @@ try_merge_delay_insns (rtx insn, rtx_insn *thread)
 	      && ! sets_cc0_p (PATTERN (dtrial))
 #endif
 	      && rtx_equal_p (PATTERN (next_to_match), PATTERN (dtrial))
+	      /* Check that DTRIAL and NEXT_TO_MATCH does not reference a 
+	         resource modified between them (only dtrial is checked because
+	         next_to_match and dtrial shall to be equal in order to hit
+	         this line) */
+	      && ! insn_references_resource_p (dtrial, &modified, true)
 	      && eligible_for_delay (delay_insn, slot_number - 1, dtrial, flags))
 	    {
 	      if (! annul_p)
