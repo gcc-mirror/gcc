@@ -577,7 +577,7 @@
 {
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
-  if (reload_in_progress || reload_completed)
+  if (reload_completed)
     return REG_OK_FOR_INDEX_STRICT_P (op);
   else
     return REG_OK_FOR_INDEX_NONSTRICT_P (op);
