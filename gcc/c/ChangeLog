@@ -1,3 +1,8 @@
+2015-04-20  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* c-parser.c (c_parser_oacc_enter_exit_data): Remove excess semicolon.
+	(c_parser_omp_target_update): Add missed %> to error_at ().
+
 2015-04-10  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	PR target/55143

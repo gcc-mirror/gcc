@@ -1,3 +1,7 @@
+2015-04-20  Ilya Verbin  <ilya.verbin@intel.com>
+
+	* parser.c (cp_parser_omp_target_update): Add missed %> to error_at ().
+
 2015-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/65736

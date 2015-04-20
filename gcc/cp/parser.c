@@ -31395,7 +31395,7 @@ cp_parser_omp_target_update (cp_parser *parser, cp_token *pragma_tok,
       && find_omp_clause (clauses, OMP_CLAUSE_FROM) == NULL_TREE)
     {
       error_at (pragma_tok->location,
-		"%<#pragma omp target update must contain at least one "
+		"%<#pragma omp target update%> must contain at least one "
 		"%<from%> or %<to%> clauses");
       return false;
     }
