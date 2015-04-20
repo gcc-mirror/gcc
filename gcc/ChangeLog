@@ -1,3 +1,8 @@
+2015-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/65807
+	* dwarf2out.c (add_AT_wide): Clear attr.dw_attr_val.val_entry.
+
 2015-04-18  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/plugins.texi: Rewrite first introductory paragraph.
