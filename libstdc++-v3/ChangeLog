@@ -1,3 +1,10 @@
+2015-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/concurrency_extensions.xml: Update documentation
+	on atomics.
+	* doc/xml/manual/using.xml: Likewise. Improve markup.
+	* doc/html/*: Regenerate.
+
 2015-04-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* scripts/extract_symvers.pl: Ignore elfdump error output.
