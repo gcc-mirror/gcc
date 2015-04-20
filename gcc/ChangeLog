@@ -1,3 +1,9 @@
+2015-04-20  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_simd_emit_pair_result_insn): Delete.
+	* config/aarch64/aarch64-protos.h (aarch64_simd_emit_pair_result_insn):
+	Delete.
+
 2015-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/65807

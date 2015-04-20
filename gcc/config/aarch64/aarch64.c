@@ -8569,24 +8569,6 @@ aarch64_simd_lane_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high,
   }
 }
 
-/* Emit code to place a AdvSIMD pair result in memory locations (with equal
-   registers).  */
-void
-aarch64_simd_emit_pair_result_insn (machine_mode mode,
-			    rtx (*intfn) (rtx, rtx, rtx), rtx destaddr,
-                            rtx op1)
-{
-  rtx mem = gen_rtx_MEM (mode, destaddr);
-  rtx tmp1 = gen_reg_rtx (mode);
-  rtx tmp2 = gen_reg_rtx (mode);
-
-  emit_insn (intfn (tmp1, op1, tmp2));
-
-  emit_move_insn (mem, tmp1);
-  mem = adjust_address (mem, mode, GET_MODE_SIZE (mode));
-  emit_move_insn (mem, tmp2);
-}
-
 /* Return TRUE if OP is a valid vector addressing mode.  */
 bool
 aarch64_simd_mem_operand_p (rtx op)
