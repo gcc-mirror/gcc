@@ -21,8 +21,8 @@ struct A
 
 struct A2
 {
-  operator auto () -> int;			// { dg-error "invalid use of" "" { target { ! c++14 } } }
-  operator auto *() -> int;			// { dg-error "auto" }
+  operator auto () -> int;			// { dg-error "invalid use of|trailing return type" }
+  operator auto*() -> int;			// { dg-error "invalid use of|trailing return type" }
 };
 
 template <typename> struct B
