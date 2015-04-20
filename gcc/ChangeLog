@@ -1,3 +1,13 @@
+2015-04-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (set_pic_reg_ever_live): Remove.
+	(legitimize_pic_address): Do not call set_pic_reg_ever_live.
+	(legitimize_tls_address): Ditto.
+	(ix86_expand_move): Ditto.
+	(ix86_expand_binary_operator): Remove reload_in_progress checks.
+	(ix86_expand_unary_operator): Ditto.
+	* config/i386/predicates.md (index_register_operand): Ditto.
+
 2015-04-20  Selim Belbachir  <selim.belbachir@fr.thalesgroup.com>
 
 	* reorg.c (try_merge_delay_insns): Improve correctness checking
