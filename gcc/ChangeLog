@@ -1,3 +1,9 @@
+2015-04-20  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/64134
+	* config/aarch64/aarch64.c (aarch64_expand_vector_init): Load constant
+	and overwrite variable parts if <= 1/2 the elements are variable.
+
 2015-04-19  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/65805

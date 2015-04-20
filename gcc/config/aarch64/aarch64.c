@@ -8769,22 +8769,19 @@ aarch64_expand_vector_init (rtx target, rtx vals)
   machine_mode mode = GET_MODE (target);
   machine_mode inner_mode = GET_MODE_INNER (mode);
   int n_elts = GET_MODE_NUNITS (mode);
-  int n_var = 0, one_var = -1;
+  int n_var = 0;
+  rtx any_const = NULL_RTX;
   bool all_same = true;
-  rtx x, mem;
-  int i;
 
-  x = XVECEXP (vals, 0, 0);
-  if (!CONST_INT_P (x) && !CONST_DOUBLE_P (x))
-    n_var = 1, one_var = 0;
-  
-  for (i = 1; i < n_elts; ++i)
+  for (int i = 0; i < n_elts; ++i)
     {
-      x = XVECEXP (vals, 0, i);
+      rtx x = XVECEXP (vals, 0, i);
       if (!CONST_INT_P (x) && !CONST_DOUBLE_P (x))
-	++n_var, one_var = i;
+	++n_var;
+      else
+	any_const = x;
 
-      if (!rtx_equal_p (x, XVECEXP (vals, 0, 0)))
+      if (i > 0 && !rtx_equal_p (x, XVECEXP (vals, 0, 0)))
 	all_same = false;
     }
 
@@ -8801,36 +8798,60 @@ aarch64_expand_vector_init (rtx target, rtx vals)
   /* Splat a single non-constant element if we can.  */
   if (all_same)
     {
-      x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, 0));
+      rtx x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, 0));
       aarch64_emit_move (target, gen_rtx_VEC_DUPLICATE (mode, x));
       return;
     }
 
-  /* One field is non-constant.  Load constant then overwrite varying
-     field.  This is more efficient than using the stack.  */
-  if (n_var == 1)
+  /* Half the fields (or less) are non-constant.  Load constant then overwrite
+     varying fields.  Hope that this is more efficient than using the stack.  */
+  if (n_var <= n_elts/2)
     {
       rtx copy = copy_rtx (vals);
-      rtx index = GEN_INT (one_var);
-      enum insn_code icode;
 
-      /* Load constant part of vector, substitute neighboring value for
-	 varying element.  */
-      XVECEXP (copy, 0, one_var) = XVECEXP (vals, 0, one_var ^ 1);
+      /* Load constant part of vector.  We really don't care what goes into the
+	 parts we will overwrite, but we're more likely to be able to load the
+	 constant efficiently if it has fewer, larger, repeating parts
+	 (see aarch64_simd_valid_immediate).  */
+      for (int i = 0; i < n_elts; i++)
+	{
+	  rtx x = XVECEXP (vals, 0, i);
+	  if (CONST_INT_P (x) || CONST_DOUBLE_P (x))
+	    continue;
+	  rtx subst = any_const;
+	  for (int bit = n_elts / 2; bit > 0; bit /= 2)
+	    {
+	      /* Look in the copied vector, as more elements are const.  */
+	      rtx test = XVECEXP (copy, 0, i ^ bit);
+	      if (CONST_INT_P (test) || CONST_DOUBLE_P (test))
+		{
+		  subst = test;
+		  break;
+		}
+	    }
+	  XVECEXP (copy, 0, i) = subst;
+	}
       aarch64_expand_vector_init (target, copy);
 
-      /* Insert variable.  */
-      x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, one_var));
-      icode = optab_handler (vec_set_optab, mode);
+      /* Insert variables.  */
+      enum insn_code icode = optab_handler (vec_set_optab, mode);
       gcc_assert (icode != CODE_FOR_nothing);
-      emit_insn (GEN_FCN (icode) (target, x, index));
+
+      for (int i = 0; i < n_elts; i++)
+	{
+	  rtx x = XVECEXP (vals, 0, i);
+	  if (CONST_INT_P (x) || CONST_DOUBLE_P (x))
+	    continue;
+	  x = copy_to_mode_reg (inner_mode, x);
+	  emit_insn (GEN_FCN (icode) (target, x, GEN_INT (i)));
+	}
       return;
     }
 
   /* Construct the vector in memory one field at a time
      and load the whole vector.  */
-  mem = assign_stack_temp (mode, GET_MODE_SIZE (mode));
-  for (i = 0; i < n_elts; i++)
+  rtx mem = assign_stack_temp (mode, GET_MODE_SIZE (mode));
+  for (int i = 0; i < n_elts; i++)
     emit_move_insn (adjust_address_nv (mem, inner_mode,
 				    i * GET_MODE_SIZE (inner_mode)),
 		    XVECEXP (vals, 0, i));
