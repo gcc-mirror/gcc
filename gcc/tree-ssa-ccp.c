@@ -1756,6 +1756,14 @@ evaluate_stmt (gimple stmt)
 	  val.mask = 0;
 	}
     }
+  /* If the statement result is likely UNDEFINED, make it so.  */
+  else if (likelyvalue == UNDEFINED)
+    {
+      val.lattice_val = UNDEFINED;
+      val.value = NULL_TREE;
+      val.mask = 0;
+      return val;
+    }
 
   /* Resort to simplification for bitwise tracking.  */
   if (flag_tree_bit_ccp
@@ -1890,7 +1898,7 @@ evaluate_stmt (gimple stmt)
 
   if (flag_tree_bit_ccp
       && ((is_constant && TREE_CODE (val.value) == INTEGER_CST)
-	  || (!is_constant && likelyvalue != UNDEFINED))
+	  || !is_constant)
       && gimple_get_lhs (stmt)
       && TREE_CODE (gimple_get_lhs (stmt)) == SSA_NAME)
     {
@@ -1918,22 +1926,11 @@ evaluate_stmt (gimple stmt)
 	}
     }
 
+  /* The statement produced a nonconstant value.  */
   if (!is_constant)
     {
-      /* The statement produced a nonconstant value.  If the statement
-	 had UNDEFINED operands, then the result of the statement
-	 should be UNDEFINED.  Otherwise, the statement is VARYING.  */
-      if (likelyvalue == UNDEFINED)
-	{
-	  val.lattice_val = likelyvalue;
-	  val.mask = 0;
-	}
-      else
-	{
-	  val.lattice_val = VARYING;
-	  val.mask = -1;
-	}
-
+      val.lattice_val = VARYING;
+      val.mask = -1;
       val.value = NULL_TREE;
     }
 
