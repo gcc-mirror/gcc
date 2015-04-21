@@ -1,5 +1,11 @@
 2015-04-21 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libgfortran/65234
+	* io/format.c (parse_format_list): Set the seen_dd flag in all
+	cases where a data descriptor has been seen.
+
+2015-04-21 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR libgfortran/56743
 	* io/list_read.c (CASE_SEPARATORS): Add case for '!'.
 	(is_separator): Add condition for '!'.
