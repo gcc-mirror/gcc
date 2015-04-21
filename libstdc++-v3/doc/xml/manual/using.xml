@@ -13,7 +13,10 @@
     </para>
 
     <para>
-      By default, <command>g++</command> is equivalent to  <command>g++ -std=gnu++98</command>. The standard library also defaults to this dialect.
+      The standard library conforms to the dialect of C++ specified by the
+      <option>-std</option> option passed to the compiler.
+      By default, <command>g++</command> is equivalent to
+      <command>g++ -std=gnu++98</command>.
     </para>
 
  <table frame="all" xml:id="table.cmd_options">
@@ -32,12 +35,14 @@
 
   <tbody>
     <row>
-      <entry><literal>-std=c++98</literal></entry>
+      <entry><literal>-std=c++98</literal> or <literal>-std=c++03</literal>
+      </entry>
       <entry>Use the 1998 ISO C++ standard plus amendments.</entry>
     </row>
 
     <row>
-      <entry><literal>-std=gnu++98</literal></entry>
+      <entry><literal>-std=gnu++98</literal> or <literal>-std=gnu++03</literal>
+      </entry>
       <entry>As directly above, with GNU extensions.</entry>
     </row>
 
@@ -48,6 +53,16 @@
 
     <row>
       <entry><literal>-std=gnu++11</literal></entry>
+      <entry>As directly above, with GNU extensions.</entry>
+    </row>
+
+    <row>
+      <entry><literal>-std=c++14</literal></entry>
+      <entry>Use the 2014 ISO C++ standard.</entry>
+    </row>
+
+    <row>
+      <entry><literal>-std=gnu++14</literal></entry>
       <entry>As directly above, with GNU extensions.</entry>
     </row>
 
@@ -923,8 +938,8 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
   <listitem><para>std</para>
 <para>The ISO C++ standards specify that "all library entities are defined
 within namespace std." This includes namespaces nested
-within <code>namespace std</code>, such as <code>namespace
-std::tr1</code>.
+within namespace <code>std</code>, such as namespace
+<code>std::chrono</code>.
 </para>
 </listitem>
 <listitem><para>abi</para>

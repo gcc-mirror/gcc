@@ -1,3 +1,9 @@
+2015-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml: Use uppercase for C++ Standard Library.
+	* doc/xml/manual/using.xml: Document newer -std options. Use better
+	examples of nested namespaces.
+
 2015-04-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/concurrency_extensions.xml: Update documentation
