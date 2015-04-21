@@ -46705,7 +46705,7 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case vec_construct:
 	elements = TYPE_VECTOR_SUBPARTS (vectype);
-	return elements / 2 + 1;
+	return ix86_cost->vec_stmt_cost * (elements / 2 + 1);
 
       default:
         gcc_unreachable ();
