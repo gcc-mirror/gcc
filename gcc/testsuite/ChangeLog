@@ -1,3 +1,9 @@
+2015-04-21  Bin Cheng  <bin.cheng@arm.com>
+
+	PR testsuite/65767
+	* g++.dg/lto/pr65276_0.C: Change namespace std to std2.
+	* g++.dg/lto/pr65276_1.C: Change namespace std to std2.
+
 2015-04-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65801
