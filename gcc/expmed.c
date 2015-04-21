@@ -2664,14 +2664,28 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
       m = exact_log2 (-orig_t + 1);
       if (m >= 0 && m < maxm)
 	{
-	  op_cost = shiftsub1_cost (speed, mode, m);
+	  op_cost = add_cost (speed, mode) + shift_cost (speed, mode, m);
+	  /* If the target has a cheap shift-and-subtract insn use
+	     that in preference to a shift insn followed by a sub insn.
+	     Assume that the shift-and-sub is "atomic" with a latency
+	     equal to it's cost, otherwise assume that on superscalar
+	     hardware the shift may be executed concurrently with the
+	     earlier steps in the algorithm.  */
+	  if (shiftsub1_cost (speed, mode, m) <= op_cost)
+	    {
+	      op_cost = shiftsub1_cost (speed, mode, m);
+	      op_latency = op_cost;
+	    }
+	  else
+	    op_latency = add_cost (speed, mode);
+
 	  new_limit.cost = best_cost.cost - op_cost;
-	  new_limit.latency = best_cost.latency - op_cost;
+	  new_limit.latency = best_cost.latency - op_latency;
 	  synth_mult (alg_in, (unsigned HOST_WIDE_INT) (-orig_t + 1) >> m,
 		      &new_limit, mode);
 
 	  alg_in->cost.cost += op_cost;
-	  alg_in->cost.latency += op_cost;
+	  alg_in->cost.latency += op_latency;
 	  if (CHEAPER_MULT_COST (&alg_in->cost, &best_cost))
 	    {
 	      best_cost = alg_in->cost;
@@ -2704,20 +2718,12 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
       if (t % d == 0 && t > d && m < maxm
 	  && (!cache_hit || cache_alg == alg_add_factor))
 	{
-	  /* If the target has a cheap shift-and-add instruction use
-	     that in preference to a shift insn followed by an add insn.
-	     Assume that the shift-and-add is "atomic" with a latency
-	     equal to its cost, otherwise assume that on superscalar
-	     hardware the shift may be executed concurrently with the
-	     earlier steps in the algorithm.  */
 	  op_cost = add_cost (speed, mode) + shift_cost (speed, mode, m);
-	  if (shiftadd_cost (speed, mode, m) < op_cost)
-	    {
-	      op_cost = shiftadd_cost (speed, mode, m);
-	      op_latency = op_cost;
-	    }
-	  else
-	    op_latency = add_cost (speed, mode);
+	  if (shiftadd_cost (speed, mode, m) <= op_cost)
+	    op_cost = shiftadd_cost (speed, mode, m);
+
+	  op_latency = op_cost;
+
 
 	  new_limit.cost = best_cost.cost - op_cost;
 	  new_limit.latency = best_cost.latency - op_latency;
@@ -2742,20 +2748,11 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
       if (t % d == 0 && t > d && m < maxm
 	  && (!cache_hit || cache_alg == alg_sub_factor))
 	{
-	  /* If the target has a cheap shift-and-subtract insn use
-	     that in preference to a shift insn followed by a sub insn.
-	     Assume that the shift-and-sub is "atomic" with a latency
-	     equal to it's cost, otherwise assume that on superscalar
-	     hardware the shift may be executed concurrently with the
-	     earlier steps in the algorithm.  */
 	  op_cost = add_cost (speed, mode) + shift_cost (speed, mode, m);
-	  if (shiftsub0_cost (speed, mode, m) < op_cost)
-	    {
-	      op_cost = shiftsub0_cost (speed, mode, m);
-	      op_latency = op_cost;
-	    }
-	  else
-	    op_latency = add_cost (speed, mode);
+	  if (shiftsub0_cost (speed, mode, m) <= op_cost)
+	    op_cost = shiftsub0_cost (speed, mode, m);
+
+	  op_latency = op_cost;
 
 	  new_limit.cost = best_cost.cost - op_cost;
 	  new_limit.latency = best_cost.latency - op_latency;
