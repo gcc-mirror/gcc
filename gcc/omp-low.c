@@ -4937,7 +4937,7 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
 	      tmp_join = tmp_var;
 	    }
 
-	  e = split_block (bb, NULL);
+	  e = split_block_after_labels (bb);
 	  cond_bb = e->src;
 	  bb = e->dest;
 	  remove_edge (e);
@@ -9052,7 +9052,7 @@ expand_omp_target (struct omp_region *region)
 
       tmp_var = create_tmp_var (TREE_TYPE (device));
       if (offloaded)
-	e = split_block (new_bb, NULL);
+	e = split_block_after_labels (new_bb);
       else
 	{
 	  gsi = gsi_last_bb (new_bb);
@@ -13339,7 +13339,7 @@ simd_clone_adjust (struct cgraph_node *node)
   e = split_block (incr_bb, gsi_stmt (gsi));
   basic_block latch_bb = e->dest;
   basic_block new_exit_bb;
-  new_exit_bb = split_block (latch_bb, NULL)->dest;
+  new_exit_bb = split_block_after_labels (latch_bb)->dest;
   loop->latch = latch_bb;
 
   redirect_edge_succ (FALLTHRU_EDGE (latch_bb), body_bb);

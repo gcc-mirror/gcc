@@ -1373,7 +1373,7 @@ init_lowered_empty_function (tree decl, bool in_ssa, gcov_type count)
   ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency = REG_BR_PROB_BASE;
   EXIT_BLOCK_PTR_FOR_FN (cfun)->count = count;
   EXIT_BLOCK_PTR_FOR_FN (cfun)->frequency = REG_BR_PROB_BASE;
-  bb = create_basic_block (NULL, (void *) 0, ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  bb = create_basic_block (NULL, ENTRY_BLOCK_PTR_FOR_FN (cfun));
   bb->count = count;
   bb->frequency = BB_FREQ_MAX;
   e = make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), bb, EDGE_FALLTHRU);
@@ -1726,13 +1726,13 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 		     protect against NULL.  We know there will be an
 		     adjustment, because that's why we're emitting a
 		     thunk.  */
-		  then_bb = create_basic_block (NULL, (void *) 0, bb);
+		  then_bb = create_basic_block (NULL, bb);
 		  then_bb->count = count - count / 16;
 		  then_bb->frequency = BB_FREQ_MAX - BB_FREQ_MAX / 16;
-		  return_bb = create_basic_block (NULL, (void *) 0, then_bb);
+		  return_bb = create_basic_block (NULL, then_bb);
 		  return_bb->count = count;
 		  return_bb->frequency = BB_FREQ_MAX;
-		  else_bb = create_basic_block (NULL, (void *) 0, else_bb);
+		  else_bb = create_basic_block (NULL, else_bb);
 		  then_bb->count = count / 16;
 		  then_bb->frequency = BB_FREQ_MAX / 16;
 		  add_bb_to_loop (then_bb, bb->loop_father);

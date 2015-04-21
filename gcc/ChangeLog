@@ -1,3 +1,29 @@
+2015-04-21  Richard Biener  <rguenther@suse.de>
+
+	* cfghooks.h (create_basic_block): Replace with two overloads
+	for RTL and GIMPLE.
+	(split_block): Likewise.
+	* cfghooks.c (split_block): Rename to ...
+	(split_block_1): ... this.
+	(split_block): Add two type-safe overloads for RTL and GIMPLE.
+	(split_block_after_labels): Call split_block_1.
+	(create_basic_block): Rename to ...
+	(create_basic_block_1): ... this.
+	(create_basic_block): Add two type-safe overloads for RTL and GIMPLE.
+	(create_empty_bb): Call create_basic_block_1.
+	* cfgrtl.c (fixup_fallthru_exit_predecessor): Use
+	split_block_after_labels.
+	* omp-low.c (expand_parallel_call): Likewise.
+	(expand_omp_target): Likewise.
+	(simd_clone_adjust): Likewise.
+	* tree-chkp.c (chkp_get_entry_block): Likewise.
+	* cgraphunit.c (init_lowered_empty_function): Use the GIMPLE
+	create_basic_block overload.
+	(cgraph_node::expand_thunk): Likewise.
+	* tree-cfg.c (make_blocks): Likewise.
+	(handle_abnormal_edges): Likewise.
+	* tree-inline.c (copy_bb): Likewise.
+
 2015-04-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.md (*<NLOGICAL:optab>_one_cmplsidi3_ze):
