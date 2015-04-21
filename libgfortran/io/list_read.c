@@ -53,12 +53,12 @@ typedef unsigned char uchar;
                       case '5': case '6': case '7': case '8': case '9'
 
 #define CASE_SEPARATORS  case ' ': case ',': case '/': case '\n': case '\t': \
-                         case '\r': case ';'
+                         case '\r': case ';': case '!'
 
 /* This macro assumes that we're operating on a variable.  */
 
 #define is_separator(c) (c == '/' ||  c == ',' || c == '\n' || c == ' ' \
-                         || c == '\t' || c == '\r' || c == ';')
+                         || c == '\t' || c == '\r' || c == ';' || c == '!')
 
 /* Maximum repeat count.  Less than ten times the maximum signed int32.  */
 
@@ -523,6 +523,9 @@ eat_separator (st_parameter_dt *dtp)
     case '!':
       if (dtp->u.p.namelist_mode)
 	{			/* Eat a namelist comment.  */
+	  notify_std (&dtp->common, GFC_STD_GNU,
+		      "'!' in namelist is not a valid separator,"
+		      " try inserting a space");
 	  err = eat_line (dtp);
 	  if (err)
 	    return err;
