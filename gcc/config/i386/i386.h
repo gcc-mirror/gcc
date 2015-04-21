@@ -957,7 +957,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    eliminated during reloading in favor of either the stack or frame
    pointer.  */
 
-#define FIRST_PSEUDO_REGISTER 81
+#define FIRST_PSEUDO_REGISTER FIRST_PSEUDO_REG
 
 /* Number of hardware registers that go into the DWARF-2 unwind info.
    If not defined, equals FIRST_PSEUDO_REGISTER.  */
@@ -1100,7 +1100,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == V16SImode || (MODE) == V16SFmode || (MODE) == V32HImode \
    || (MODE) == V4TImode)
 
-#define VALID_AVX512VL_128_REG_MODE(MODE)					\
+#define VALID_AVX512VL_128_REG_MODE(MODE)				\
   ((MODE) == V2DImode || (MODE) == V2DFmode || (MODE) == V16QImode	\
    || (MODE) == V4SImode || (MODE) == V4SFmode || (MODE) == V8HImode)
 
@@ -1120,6 +1120,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   ((MODE == V1DImode) || (MODE) == DImode				\
    || (MODE) == V2SImode || (MODE) == SImode				\
    || (MODE) == V4HImode || (MODE) == V8QImode)
+
+#define VALID_MASK_REG_MODE(MODE) ((MODE) == HImode || (MODE) == QImode)
+
+#define VALID_MASK_AVX512BW_MODE(MODE) ((MODE) == SImode || (MODE) == DImode)
 
 #define VALID_BND_REG_MODE(MODE) \
   (TARGET_64BIT ? (MODE) == BND64mode : (MODE) == BND32mode)
@@ -1150,9 +1154,15 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == V16SImode || (MODE) == V32HImode || (MODE) == V8DFmode	\
    || (MODE) == V16SFmode)
 
-#define VALID_MASK_REG_MODE(MODE) ((MODE) == HImode || (MODE) == QImode)
+#define X87_FLOAT_MODE_P(MODE)	\
+  (TARGET_80387 && ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode))
 
-#define VALID_MASK_AVX512BW_MODE(MODE) ((MODE) == SImode || (MODE) == DImode)
+#define SSE_FLOAT_MODE_P(MODE) \
+  ((TARGET_SSE && (MODE) == SFmode) || (TARGET_SSE2 && (MODE) == DFmode))
+
+#define FMA4_VEC_FLOAT_MODE_P(MODE) \
+  (TARGET_FMA4 && ((MODE) == V4SFmode || (MODE) == V2DFmode \
+		  || (MODE) == V8SFmode || (MODE) == V4DFmode))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
 
@@ -1198,42 +1208,46 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    register.  The ordinary mov instructions won't work */
 /* #define PC_REGNUM  */
 
+/* Base register for access to arguments of the function.  */
+#define ARG_POINTER_REGNUM ARGP_REG
+
 /* Register to use for pushing function arguments.  */
-#define STACK_POINTER_REGNUM 7
+#define STACK_POINTER_REGNUM SP_REG
 
 /* Base register for access to local variables of the function.  */
-#define HARD_FRAME_POINTER_REGNUM 6
+#define FRAME_POINTER_REGNUM FRAME_REG
+#define HARD_FRAME_POINTER_REGNUM BP_REG
 
-/* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM 20
+#define FIRST_INT_REG AX_REG
+#define LAST_INT_REG  SP_REG
 
-/* First floating point reg */
-#define FIRST_FLOAT_REG 8
+#define FIRST_QI_REG AX_REG
+#define LAST_QI_REG  BX_REG
 
 /* First & last stack-like regs */
-#define FIRST_STACK_REG FIRST_FLOAT_REG
-#define LAST_STACK_REG (FIRST_FLOAT_REG + 7)
+#define FIRST_STACK_REG ST0_REG
+#define LAST_STACK_REG  ST7_REG
 
-#define FIRST_SSE_REG (FRAME_POINTER_REGNUM + 1)
-#define LAST_SSE_REG  (FIRST_SSE_REG + 7)
+#define FIRST_SSE_REG XMM0_REG
+#define LAST_SSE_REG  XMM7_REG
 
-#define FIRST_MMX_REG  (LAST_SSE_REG + 1)   /*29*/
-#define LAST_MMX_REG   (FIRST_MMX_REG + 7)
+#define FIRST_MMX_REG  MM0_REG
+#define LAST_MMX_REG   MM7_REG
 
-#define FIRST_REX_INT_REG  (LAST_MMX_REG + 1) /*37*/
-#define LAST_REX_INT_REG   (FIRST_REX_INT_REG + 7)
+#define FIRST_REX_INT_REG  R8_REG
+#define LAST_REX_INT_REG   R15_REG
 
-#define FIRST_REX_SSE_REG  (LAST_REX_INT_REG + 1) /*45*/
-#define LAST_REX_SSE_REG   (FIRST_REX_SSE_REG + 7)
+#define FIRST_REX_SSE_REG  XMM8_REG
+#define LAST_REX_SSE_REG   XMM15_REG
 
-#define FIRST_EXT_REX_SSE_REG  (LAST_REX_SSE_REG + 1) /*53*/
-#define LAST_EXT_REX_SSE_REG   (FIRST_EXT_REX_SSE_REG + 15) /*68*/
+#define FIRST_EXT_REX_SSE_REG  XMM16_REG
+#define LAST_EXT_REX_SSE_REG   XMM31_REG
 
-#define FIRST_MASK_REG  (LAST_EXT_REX_SSE_REG + 1) /*69*/
-#define LAST_MASK_REG   (FIRST_MASK_REG + 7) /*76*/
+#define FIRST_MASK_REG  MASK0_REG
+#define LAST_MASK_REG   MASK7_REG
 
-#define FIRST_BND_REG  (LAST_MASK_REG + 1) /*77*/
-#define LAST_BND_REG   (FIRST_BND_REG + 3) /*80*/
+#define FIRST_BND_REG  BND0_REG
+#define LAST_BND_REG   BND3_REG
 
 /* Override this in other tm.h files to cope with various OS lossage
    requiring a frame pointer.  */
@@ -1243,9 +1257,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 /* Make sure we can access arbitrary call frames.  */
 #define SETUP_FRAME_ADDRESSES()  ix86_setup_frame_addresses ()
-
-/* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM 16
 
 /* Register to hold the addressing base for position independent
    code access to data items.  We don't use PIC pointer for 64bit
@@ -1444,7 +1455,14 @@ enum reg_class
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
 #define QI_REG_P(X) (REG_P (X) && QI_REGNO_P (REGNO (X)))
-#define QI_REGNO_P(N) IN_RANGE ((N), AX_REG, BX_REG)
+#define QI_REGNO_P(N) IN_RANGE ((N), FIRST_QI_REG, LAST_QI_REG)
+
+#define LEGACY_INT_REG_P(X) (REG_P (X) && LEGACY_INT_REGNO_P (REGNO (X)))
+#define LEGACY_INT_REGNO_P(N) (IN_RANGE ((N), FIRST_INT_REG, LAST_INT_REG))
+
+#define REX_INT_REG_P(X) (REG_P (X) && REX_INT_REGNO_P (REGNO (X)))
+#define REX_INT_REGNO_P(N) \
+  IN_RANGE ((N), FIRST_REX_INT_REG, LAST_REX_INT_REG)
 
 #define GENERAL_REG_P(X) (REG_P (X) && GENERAL_REGNO_P (REGNO (X)))
 #define GENERAL_REGNO_P(N) \
@@ -1454,21 +1472,8 @@ enum reg_class
 #define ANY_QI_REGNO_P(N) \
   (TARGET_64BIT ? GENERAL_REGNO_P (N) : QI_REGNO_P (N))
 
-#define LEGACY_INT_REG_P(X) (REG_P (X) && LEGACY_INT_REGNO_P (REGNO (X)))
-#define LEGACY_INT_REGNO_P(N) (IN_RANGE ((N), AX_REG, SP_REG))
-
-#define REX_INT_REG_P(X) (REG_P (X) && REX_INT_REGNO_P (REGNO (X)))
-#define REX_INT_REGNO_P(N) \
-  IN_RANGE ((N), FIRST_REX_INT_REG, LAST_REX_INT_REG)
-
 #define STACK_REG_P(X) (REG_P (X) && STACK_REGNO_P (REGNO (X)))
 #define STACK_REGNO_P(N) IN_RANGE ((N), FIRST_STACK_REG, LAST_STACK_REG)
-
-#define ANY_FP_REG_P(X) (REG_P (X) && ANY_FP_REGNO_P (REGNO (X)))
-#define ANY_FP_REGNO_P(N) (STACK_REGNO_P (N) || SSE_REGNO_P (N))
-
-#define X87_FLOAT_MODE_P(MODE)	\
-  (TARGET_80387 && ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode))
 
 #define SSE_REG_P(X) (REG_P (X) && SSE_REGNO_P (REGNO (X)))
 #define SSE_REGNO_P(N)						\
@@ -1482,31 +1487,29 @@ enum reg_class
 #define EXT_REX_SSE_REGNO_P(N) \
   IN_RANGE ((N), FIRST_EXT_REX_SSE_REG, LAST_EXT_REX_SSE_REG)
 
-#define SSE_REGNO(N) \
-  ((N) < 8 ? FIRST_SSE_REG + (N) \
-         : (N) <= LAST_REX_SSE_REG ? (FIRST_REX_SSE_REG + (N) - 8) \
-                                   : (FIRST_EXT_REX_SSE_REG + (N) - 16))
+#define ANY_FP_REG_P(X) (REG_P (X) && ANY_FP_REGNO_P (REGNO (X)))
+#define ANY_FP_REGNO_P(N) (STACK_REGNO_P (N) || SSE_REGNO_P (N))
 
 #define MASK_REG_P(X) (REG_P (X) && MASK_REGNO_P (REGNO (X)))
 #define MASK_REGNO_P(N) IN_RANGE ((N), FIRST_MASK_REG, LAST_MASK_REG)
 
-#define SSE_FLOAT_MODE_P(MODE) \
-  ((TARGET_SSE && (MODE) == SFmode) || (TARGET_SSE2 && (MODE) == DFmode))
-
-#define FMA4_VEC_FLOAT_MODE_P(MODE) \
-  (TARGET_FMA4 && ((MODE) == V4SFmode || (MODE) == V2DFmode \
-		  || (MODE) == V8SFmode || (MODE) == V4DFmode))
-
 #define MMX_REG_P(X) (REG_P (X) && MMX_REGNO_P (REGNO (X)))
 #define MMX_REGNO_P(N) IN_RANGE ((N), FIRST_MMX_REG, LAST_MMX_REG)
-
-#define STACK_TOP_P(X) (REG_P (X) && REGNO (X) == FIRST_STACK_REG)
 
 #define CC_REG_P(X) (REG_P (X) && CC_REGNO_P (REGNO (X)))
 #define CC_REGNO_P(X) ((X) == FLAGS_REG || (X) == FPSR_REG)
 
 #define BND_REG_P(X) (REG_P (X) && BND_REGNO_P (REGNO (X)))
 #define BND_REGNO_P(N) IN_RANGE ((N), FIRST_BND_REG, LAST_BND_REG)
+
+/* First floating point reg */
+#define FIRST_FLOAT_REG FIRST_STACK_REG
+#define STACK_TOP_P(X) (REG_P (X) && REGNO (X) == FIRST_FLOAT_REG)
+
+#define SSE_REGNO(N) \
+  ((N) < 8 ? FIRST_SSE_REG + (N) \
+         : (N) <= LAST_REX_SSE_REG ? (FIRST_REX_SSE_REG + (N) - 8) \
+                                   : (FIRST_EXT_REX_SSE_REG + (N) - 16))
 
 /* The class value for index registers, and the one for base regs.  */
 

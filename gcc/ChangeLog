@@ -1,3 +1,20 @@
+2015-04-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (ARGP_REG, FRAME_REG, BND2_REG, BND3_REG,
+	FIRST_PSEUDO_REG): New.
+	* config/i386/i386.h (STACK_POINTER_REGNUM): Define to SP_REG.
+	(ARG_POINTER_REGNUM): Define to ARGP_REG.
+	(FRAME_POINTER_REGNUM): Define to FRAME_REG.
+	(HARD_FRAME_POINTER_REGNUM): Define to BP_REG.
+	(FIRST_PSEUDO_REGISTER): Define to FIRST_PSEUDO_REG.
+	(FIRST_INT_REG): New.
+	(LAST_INT_REG): New.
+	(FIRST_*_REG): Define using *_REG.
+	(LAST_*_REG): Ditto.
+	(QI_REGNO_P): Define using FIRST_QU_REG and LAST_QI_REG.
+	(LEGACY_INT_REGNO_P): Define using FIRST_INT_REG and LAST_INT_REG.
+	(FIRST_FLOAT_REG): Define to FIRST_STACK_REG.
+
 2015-04-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* expmed.c: (synth_mult): Only assume overlapping
