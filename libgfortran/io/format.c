@@ -624,6 +624,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
       get_fnode (fmt, &head, &tail, FMT_LPAREN);
       tail->repeat = -2;  /* Signifies unlimited format.  */
       tail->u.child = parse_format_list (dtp, &seen_data_desc);
+      *seen_dd = seen_data_desc;
       if (fmt->error != NULL)
 	goto finished;
       if (!seen_data_desc)
@@ -851,6 +852,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
   switch (t)
     {
     case FMT_L:
+      *seen_dd = true;
       t = format_lex (fmt);
       if (t != FMT_POSINT)
 	{
@@ -873,6 +875,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
       break;
 
     case FMT_A:
+      *seen_dd = true;
       t = format_lex (fmt);
       if (t == FMT_ZERO)
 	{
@@ -897,12 +900,14 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
     case FMT_G:
     case FMT_EN:
     case FMT_ES:
+      *seen_dd = true;
       get_fnode (fmt, &head, &tail, t);
       tail->repeat = repeat;
 
       u = format_lex (fmt);
       if (t == FMT_G && u == FMT_ZERO)
 	{
+	  *seen_dd = true;
 	  if (notification_std (GFC_STD_F2008) == NOTIFICATION_ERROR
 	      || dtp->u.p.mode == READING)
 	    {
@@ -928,6 +933,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	}
       if (t == FMT_F && dtp->u.p.mode == WRITING)
 	{
+	  *seen_dd = true;
 	  if (u != FMT_POSINT && u != FMT_ZERO)
 	    {
 	      fmt->error = nonneg_required;
@@ -969,8 +975,10 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
       tail->u.real.e = -1;
 
       if (t2 == FMT_D || t2 == FMT_F)
-	break;
-
+	{
+	  *seen_dd = true;
+	  break;
+	}
 
       /* Look for optional exponent */
       t = format_lex (fmt);
@@ -1011,6 +1019,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
     case FMT_B:
     case FMT_O:
     case FMT_Z:
+      *seen_dd = true;
       get_fnode (fmt, &head, &tail, t);
       tail->repeat = repeat;
 
