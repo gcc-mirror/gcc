@@ -228,13 +228,17 @@
      when standard error is not available.  This option disables those
      messages.  This option does not change the library ABI.
    </p></dd><dt><span class="term"><code class="code">--disable-libstdcxx-dual-abi</code></span></dt><dd><p>
-     Disable support for the new, C++11-conforming <code class="code">std::string</code>
-     implementation.  This option changes the library ABI.
-   </p></dd><dt><span class="term"><code class="code">--with-default-libstdcxx-abi</code></span></dt><dd><p>
-     By default, the new <code class="code">std::string</code> implementation will be
-     declared and a macro must be defined to declare the old implementation
-     instead. That default can be reversed by configuring the library with
-     <code class="code">--with-default-libstdcxx-abi=c++98</code>.
+     Disable support for the new, C++11-conforming implementations of
+     <code class="code">std::string</code>, <code class="code">std::list</code> etc. so that the
+     library only provides definitions of types using the old ABI
+     (see <a class="xref" href="using_dual_abi.html" title="Dual ABI">Dual ABI</a>).
+     This option changes the library ABI.
+   </p></dd><dt><span class="term"><code class="code">--with-default-libstdcxx-abi=</code><em class="replaceable"><code>OPTION</code></em></span></dt><dd><p>
+     Set the default value for the <span class="symbol">_GLIBCXX_USE_CXX11_ABI</span>
+     macro (see <a class="xref" href="using_macros.html" title="Macros">Macros</a>).
+     The default is <code class="option">OPTION=c++11</code> which sets the macro to
+     <code class="literal">1</code>,
+     use <code class="option">OPTION=c++98</code> to set it to <code class="literal">0</code>.
      This option does not change the library ABI.
    </p></dd><dt><span class="term"><code class="code">--enable-vtable-verify</code>[default]</span></dt><dd><p>Use <code class="code">-fvtable-verify=std</code> to compile the C++
     runtime with instrumentation for vtable verification. All virtual

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Dual ABI</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_macros.html" title="Macros" /><link rel="next" href="using_namespaces.html" title="Namespaces" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Dual ABI</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_macros.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="using_namespaces.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.abi"></a>Dual ABI</h2></div></div></div><p> In the GCC 5.1 release libstdc++ introduced a new library ABI that
+  includes new implementations of <code class="classname">std::string</code> and
+  <code class="classname">std::list</code>. These changes were necessary to conform
+  to the 2011 C++ standard which forbids Copy-On-Write strings and requires
+  lists to keep track of their size.
+</p><p> In order to maintain backwards compatibility for existing code linked
+  to libstdc++ the library's soname has not changed and the old
+  implementations are still supported in parallel with the new ones.
+  This is achieved by defining the new implementations in an inline namespace
+  so they have different names for linkage purposes, e.g. the new version of
+  <code class="classname">std::list&lt;int&gt;</code> is actually defined as
+  <code class="classname">std::__cxx11::list&lt;int&gt;</code>. Because the symbols
+  for the new implementations have different names the definitions for both
+  versions can be present in the same library.
+</p><p> The <span class="symbol">_GLIBCXX_USE_CXX11_ABI</span> macro (see
+<a class="xref" href="using_macros.html" title="Macros">Macros</a>) controls whether
+  the declarations in the library headers use the old or new ABI.
+  So the decision of which ABI to use can be made separately for each
+  source file being compiled.
+  Using the default configuration options for GCC the default value
+  of the macro is <code class="literal">1</code> which causes the new ABI to be active,
+  so to use the old ABI you must explicitly define the macro to
+  <code class="literal">0</code> before including any library headers.
+  (Be aware that some GNU/Linux distributions configure GCC 5 differently so
+  that the default value of the macro is <code class="literal">0</code> and users must
+  define it to <code class="literal">1</code> to enable the new ABI.)
+</p><p> Although the changes were made for C++11 conformance, the choice of ABI
+  to use is independent of the <code class="option">-std</code> option used to compile
+  your code, i.e. for a given GCC build the default value of the
+  <span class="symbol">_GLIBCXX_USE_CXX11_ABI</span> macro is the same for all dialects.
+  This ensures that the <code class="option">-std</code> does not change the ABI, so
+  that it is straightforward to link C++03 and C++11 code together.
+</p><p> Because <code class="classname">std::string</code> is used extensively
+  throughout the library a number of other types are also defined twice,
+  including the stringstream classes and several facets used by
+  <code class="classname">std::locale</code>. The standard facets which are always
+  installed in a locale may be present twice, with both ABIs, to ensure that
+  code like
+  <code class="code">std::use_facet&lt;std::time_get&lt;char&gt;&gt;(locale);</code>
+  will work correctly for both <code class="classname">std::time_get</code> and
+  <code class="classname">std::__cxx11::time_get</code> (even if a user-defined
+  facet that derives from one or other version of
+  <code class="classname">time_get</code> is installed in the locale).
+</p><p> Although the standard exception types defined in
+  <code class="filename">&lt;stdexcept&gt;</code> use strings, they
+  are not defined twice, so that a <code class="classname">std::out_of_range</code>
+  exception thrown in one file can always be caught by a suitable handler in
+  another file, even if the two files are compiled with different ABIs.
+</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.abi.trouble"></a>Troubleshooting</h3></div></div></div><p> If you get linker errors about undefined references to symbols
+  that involve types in the <code class="code">std::__cxx11</code> namespace or the tag
+  <code class="code">[abi:cxx11]</code> then it probably indicates that you are trying to
+  link together object files that were compiled with different values for the
+  <span class="symbol">_GLIBCXX_USE_CXX11_ABI</span> macro. This commonly happens when
+  linking to a third-party library that was compiled with an older version
+  of GCC. If the third-party library cannot be rebuilt with the new ABI then
+  you will need to recompile your code with the old ABI.
+</p><p> Not all uses of the new ABI will cause changes in symbol names, for
+  example a class with a <code class="classname">std::string</code> member variable
+  will have the same mangled name whether compiled with the old or new ABI.
+  In order to detect such problems the new types and functions are
+  annotated with the <span class="property">abi_tag</span> attribute, allowing the
+  compiler to warn about potential ABI incompatibilities in code using them.
+  Those warnings can be enabled with the <code class="option">-Wabi-tag</code> option.
+</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="using_macros.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="using_namespaces.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Macros </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Namespaces</td></tr></table></div></body></html>

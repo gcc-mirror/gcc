@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Macros</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_headers.html" title="Headers" /><link rel="next" href="using_namespaces.html" title="Namespaces" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Macros</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_headers.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="using_namespaces.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.macros"></a>Macros</h2></div></div></div><p>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Macros</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_headers.html" title="Headers" /><link rel="next" href="using_dual_abi.html" title="Dual ABI" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Macros</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_headers.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="using_dual_abi.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.macros"></a>Macros</h2></div></div></div><p>
      All library macros begin with <code class="code">_GLIBCXX_</code>.
    </p><p>
      Furthermore, all pre-processor macros, switches, and
@@ -50,6 +50,17 @@
 	be useful in updating old C++ code which no longer meet the
 	requirements of the language, or for checking current code
 	against new language standards.
+    </p></dd><dt><span class="term"><code class="code">_GLIBCXX_USE_CXX11_ABI</code></span></dt><dd><p>
+        Defined to the value <code class="literal">1</code> by default.
+        Configurable via  <code class="code">--disable-libstdcxx-dual-abi</code>
+        and/or <code class="code">--with-default-libstdcxx-abi</code>.
+        ABI-changing.
+        When defined to a non-zero value the library headers will use the
+        new C++11-conforming ABI introduced in GCC 5, rather than the older
+        ABI introduced in GCC 3.4. This changes the definition of several
+        class templates, including <code class="classname">std:string</code>,
+        <code class="classname">std::list</code> and some locale facets.
+        For more details see <a class="xref" href="using_dual_abi.html" title="Dual ABI">Dual ABI</a>.
     </p></dd><dt><span class="term"><code class="code">_GLIBCXX_CONCEPT_CHECKS</code></span></dt><dd><p>
 	Undefined by default.  Configurable via
 	<code class="code">--enable-concept-checks</code>.  When defined, performs
@@ -71,4 +82,4 @@
       </p></dd><dt><span class="term"><code class="code">_GLIBCXX_PROFILE</code></span></dt><dd><p>Undefined by default. When defined, compiles user code
 	using the <a class="link" href="profile_mode.html" title="Chapter 19. Profile Mode">profile
 	mode</a>.
-      </p></dd></dl></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="using_headers.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="using_namespaces.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Headers </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Namespaces</td></tr></table></div></body></html>
+      </p></dd></dl></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="using_headers.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="using_dual_abi.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Headers </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Dual ABI</td></tr></table></div></body></html>
