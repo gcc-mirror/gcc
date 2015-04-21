@@ -1,5 +1,27 @@
 2015-04-21  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/65650
+	* tree-ssa-ccp.c (valid_lattice_transition): Allow lattice
+	transitions involving copies.
+	(set_lattice_value): Adjust for copy lattice state.
+	(ccp_lattice_meet): Do not merge UNDEFINED and a copy to the copy
+	if that doesn't dominate the merge point.
+	(bit_value_unop): Adjust what we treat as varying mask.
+	(bit_value_binop): Likewise.
+	(bit_value_assume_aligned): Likewise.
+	(evaluate_stmt): When we simplified to a SSA name record a copy
+	instead of dropping to varying.
+	(visit_assignment): Simplify.
+
+	* gimple-match.h (gimple_simplify): Add another callback.
+	* gimple-fold.c (fold_stmt_1): Adjust caller.
+	(gimple_fold_stmt_to_constant_1): Likewise - pass valueize
+	for the 2nd callback.
+	* gimple-match-head.c (gimple_simplify): Add a callback that is
+	used to valueize the stmt operands and use it that way.
+
+2015-04-21  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/65788
 	* tree-ssa-ccp.c (evaluate_stmt): Evaluate to UNDEFINED early.
 

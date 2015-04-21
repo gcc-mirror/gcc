@@ -1,7 +1,7 @@
 /* If the target returns false for TARGET_PROMOTE_PROTOTYPES, then there
    will be no casts for FRE to eliminate and the test will fail.  */
 /* { dg-do compile { target i?86-*-* x86_64-*-* hppa*-*-* mips*-*-* m68k*-*-* } } */
-/* { dg-options "-O -fno-tree-forwprop -fdump-tree-fre1-details" } */
+/* { dg-options "-O -fno-tree-ccp -fno-tree-forwprop -fdump-tree-fre1-details" } */
 
 /* From PR21608.  */
 

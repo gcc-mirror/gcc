@@ -1,3 +1,13 @@
+2015-04-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65650
+	* gcc.dg/tree-ssa/ssa-ccp-37.c: New testcase.
+	* gcc.dg/tree-ssa/forwprop-11.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-fre-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-4.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-5.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-32.c: Likewise.
+
 2015-04-21  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/65802

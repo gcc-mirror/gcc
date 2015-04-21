@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-tree-forwprop -fdump-tree-fre1-details" } */
+/* { dg-options "-O -fno-tree-ccp -fno-tree-forwprop -fdump-tree-fre1-details" } */
 
 /* From PR19792.  */
 
