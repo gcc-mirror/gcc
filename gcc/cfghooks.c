@@ -505,8 +505,8 @@ redirect_edge_and_branch_force (edge e, basic_block dest)
    the labels).  If I is NULL, splits just after labels.  The newly created edge
    is returned.  The new basic block is created just after the old one.  */
 
-edge
-split_block (basic_block bb, void *i)
+static edge
+split_block_1 (basic_block bb, void *i)
 {
   basic_block new_bb;
   edge res;
@@ -550,12 +550,24 @@ split_block (basic_block bb, void *i)
   return res;
 }
 
+edge
+split_block (basic_block bb, gimple i)
+{
+  return split_block_1 (bb, i);
+}
+
+edge
+split_block (basic_block bb, rtx i)
+{
+  return split_block_1 (bb, i);
+}
+
 /* Splits block BB just after labels.  The newly created edge is returned.  */
 
 edge
 split_block_after_labels (basic_block bb)
 {
-  return split_block (bb, NULL);
+  return split_block_1 (bb, NULL);
 }
 
 /* Moves block BB immediately after block AFTER.  Returns false if the
@@ -696,8 +708,8 @@ split_edge (edge e)
    HEAD and END are the first and the last statement belonging
    to the block.  If both are NULL, an empty block is created.  */
 
-basic_block
-create_basic_block (void *head, void *end, basic_block after)
+static basic_block
+create_basic_block_1 (void *head, void *end, basic_block after)
 {
   basic_block ret;
 
@@ -714,12 +726,25 @@ create_basic_block (void *head, void *end, basic_block after)
   return ret;
 }
 
+basic_block
+create_basic_block (gimple_seq seq, basic_block after)
+{
+  return create_basic_block_1 (seq, NULL, after);
+}
+
+basic_block
+create_basic_block (rtx head, rtx end, basic_block after)
+{
+  return create_basic_block_1 (head, end, after);
+}
+
+
 /* Creates an empty basic block just after basic block AFTER.  */
 
 basic_block
 create_empty_bb (basic_block after)
 {
-  return create_basic_block (NULL, NULL, after);
+  return create_basic_block_1 (NULL, NULL, after);
 }
 
 /* Checks whether we may merge blocks BB1 and BB2.  */

@@ -1071,7 +1071,8 @@ static basic_block
 chkp_get_entry_block (void)
 {
   if (!entry_block)
-    entry_block = split_block (ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL)->dest;
+    entry_block
+      = split_block_after_labels (ENTRY_BLOCK_PTR_FOR_FN (cfun))->dest;
 
   return entry_block;
 }
