@@ -1,3 +1,9 @@
+2015-04-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (*<NLOGICAL:optab>_one_cmplsidi3_ze):
+	New pattern.
+	(*xor_one_cmplsidi3_ze): Likewise.
+
 2015-04-21  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* df-core.c (df_finish_pass): Iterate over df->problems_by_index[] and
