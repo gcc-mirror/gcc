@@ -1,3 +1,9 @@
+2015-04-21  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* df-core.c (df_finish_pass): Iterate over df->problems_by_index[] and
+	use df_remove_problem rather than manually removing problems, leaving
+	holes in df->problems_in_order[].
+
 2015-04-21  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/65802
