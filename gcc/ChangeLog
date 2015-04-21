@@ -1,3 +1,13 @@
+2015-04-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/64950
+	Revert:
+	2010-08-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/41089
+	* config/alpha/alpha.c (alpha_build_builtin_va_list): Mark __offset
+	as volatile.
+
 2015-04-20  Shiva Chen  <shiva0217@gmail.com>
 
 	PR rtl-optimization/64916
@@ -15,7 +25,7 @@
 	* tree-ssa-threadupdate.c (redirection_block_p): Remove
 	redundant test for GIMPLE_ASSIGN in last change.
 
-2015-04-19  Uros Bizjak  <ubizjak@gmail.com>
+2015-04-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (set_pic_reg_ever_live): Remove.
 	(legitimize_pic_address): Do not call set_pic_reg_ever_live.
