@@ -875,6 +875,22 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
     </para>
     </listitem></varlistentry>
 
+    <varlistentry><term><code>_GLIBCXX_USE_CXX11_ABI</code></term>
+    <listitem>
+      <para>
+        Defined to the value <literal>1</literal> by default.
+        Configurable via  <code>--disable-libstdcxx-dual-abi</code>
+        and/or <code>--with-default-libstdcxx-abi</code>.
+        ABI-changing.
+        When defined to a non-zero value the library headers will use the
+        new C++11-conforming ABI introduced in GCC 5, rather than the older
+        ABI introduced in GCC 3.4. This changes the definition of several
+        class templates, including <classname>std:string</classname>,
+        <classname>std::list</classname> and some locale facets.
+        For more details see <xref linkend="manual.intro.using.abi"/>.
+    </para>
+    </listitem></varlistentry>
+
     <varlistentry><term><code>_GLIBCXX_CONCEPT_CHECKS</code></term>
     <listitem>
       <para>
@@ -922,6 +938,94 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 
   </section>
 
+<section xml:id="manual.intro.using.abi" xreflabel="Dual ABI">
+  <info><title>Dual ABI</title></info>
+  <?dbhtml filename="using_dual_abi.html"?>
+
+<para> In the GCC 5.1 release libstdc++ introduced a new library ABI that
+  includes new implementations of <classname>std::string</classname> and
+  <classname>std::list</classname>. These changes were necessary to conform
+  to the 2011 C++ standard which forbids Copy-On-Write strings and requires
+  lists to keep track of their size.
+</para>
+
+<para> In order to maintain backwards compatibility for existing code linked
+  to libstdc++ the library's soname has not changed and the old
+  implementations are still supported in parallel with the new ones.
+  This is achieved by defining the new implementations in an inline namespace
+  so they have different names for linkage purposes, e.g. the new version of
+  <classname>std::list&lt;int&gt;</classname> is actually defined as
+  <classname>std::__cxx11::list&lt;int&gt;</classname>. Because the symbols
+  for the new implementations have different names the definitions for both
+  versions can be present in the same library.
+</para>
+
+<para> The <symbol>_GLIBCXX_USE_CXX11_ABI</symbol> macro (see
+<xref linkend="manual.intro.using.macros"/>) controls whether
+  the declarations in the library headers use the old or new ABI.
+  So the decision of which ABI to use can be made separately for each
+  source file being compiled.
+  Using the default configuration options for GCC the default value
+  of the macro is <literal>1</literal> which causes the new ABI to be active,
+  so to use the old ABI you must explicitly define the macro to
+  <literal>0</literal> before including any library headers.
+  (Be aware that some GNU/Linux distributions configure GCC 5 differently so
+  that the default value of the macro is <literal>0</literal> and users must
+  define it to <literal>1</literal> to enable the new ABI.)
+</para>
+
+<para> Although the changes were made for C++11 conformance, the choice of ABI
+  to use is independent of the <option>-std</option> option used to compile
+  your code, i.e. for a given GCC build the default value of the
+  <symbol>_GLIBCXX_USE_CXX11_ABI</symbol> macro is the same for all dialects.
+  This ensures that the <option>-std</option> does not change the ABI, so
+  that it is straightforward to link C++03 and C++11 code together.
+</para>
+
+<para> Because <classname>std::string</classname> is used extensively
+  throughout the library a number of other types are also defined twice,
+  including the stringstream classes and several facets used by
+  <classname>std::locale</classname>. The standard facets which are always
+  installed in a locale may be present twice, with both ABIs, to ensure that
+  code like
+  <code>std::use_facet&lt;std::time_get&lt;char&gt;&gt;(locale);</code>
+  will work correctly for both <classname>std::time_get</classname> and
+  <classname>std::__cxx11::time_get</classname> (even if a user-defined
+  facet that derives from one or other version of
+  <classname>time_get</classname> is installed in the locale).
+</para>
+
+<para> Although the standard exception types defined in
+  <filename clas="headerfile">&lt;stdexcept&gt;</filename> use strings, they
+  are not defined twice, so that a <classname>std::out_of_range</classname>
+  exception thrown in one file can always be caught by a suitable handler in
+  another file, even if the two files are compiled with different ABIs.
+</para>
+
+<section xml:id="manual.intro.using.abi.trouble" xreflabel="Dual ABI Troubleshooting"><info><title>Troubleshooting</title></info>
+
+<para> If you get linker errors about undefined references to symbols
+  that involve types in the <code>std::__cxx11</code> namespace or the tag
+  <code>[abi:cxx11]</code> then it probably indicates that you are trying to
+  link together object files that were compiled with different values for the
+  <symbol>_GLIBCXX_USE_CXX11_ABI</symbol> macro. This commonly happens when
+  linking to a third-party library that was compiled with an older version
+  of GCC. If the third-party library cannot be rebuilt with the new ABI then
+  you will need to recompile your code with the old ABI.
+</para>
+
+<para> Not all uses of the new ABI will cause changes in symbol names, for
+  example a class with a <classname>std::string</classname> member variable
+  will have the same mangled name whether compiled with the old or new ABI.
+  In order to detect such problems the new types and functions are
+  annotated with the <property>abi_tag</property> attribute, allowing the
+  compiler to warn about potential ABI incompatibilities in code using them.
+  Those warnings can be enabled with the <option>-Wabi-tag</option> option.
+</para>
+
+</section>
+</section>
+
   <section xml:id="manual.intro.using.namespaces" xreflabel="Namespaces"><info><title>Namespaces</title></info>
     <?dbhtml filename="using_namespaces.html"?>
     
@@ -955,6 +1059,11 @@ include <code>__gnu_cxx</code>, <code>__gnu_debug</code>, <code>__gnu_parallel</
 and <code>__gnu_pbds</code>.
 </para></listitem>
 </itemizedlist>
+
+<para> The library uses a number of inline namespaces as implementation
+details that are not intended for users to refer to directly, these include
+<code>std::__detail</code>, <code>std::__cxx11</code> and <code>std::_V2</code>.
+</para>
 
 <para> A complete list of implementation namespaces (including namespace contents) is available in the generated source <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/namespaces.html">documentation</link>.
 </para>
