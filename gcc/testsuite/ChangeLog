@@ -1,3 +1,8 @@
+2015-04-21 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/65234
+	* gfortran.dg/fmt_unlimited.f90: New test.
+
 2015-04-21  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* gcc.target/i386/avx512bw-vpermi2w-2.c: Fix includes to use actual
