@@ -1,3 +1,8 @@
+2015-04-21  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/65802
+	* g++.dg/pr65802.C: New test.
+
 2015-04-21  Bin Cheng  <bin.cheng@arm.com>
 
 	PR testsuite/65767
