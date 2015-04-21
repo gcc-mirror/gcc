@@ -1,3 +1,9 @@
+2015-04-20  Shiva Chen  <shiva0217@gmail.com>
+
+	PR rtl-optimization/64916
+	* cfgcleanup.c (values_equal_p): New function.
+	(can_replace_by): Use it.
+
 2015-04-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65801
