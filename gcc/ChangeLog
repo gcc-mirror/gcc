@@ -1,5 +1,10 @@
 2015-04-21  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/65788
+	* tree-ssa-ccp.c (evaluate_stmt): Evaluate to UNDEFINED early.
+
+2015-04-21  Richard Biener  <rguenther@suse.de>
+
 	* config/i386/i386.c (ix86_builtin_vectorization_cost): Scale
 	vec_construct cost by vec_stmt_cost.
 
