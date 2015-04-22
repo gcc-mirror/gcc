@@ -2,6 +2,11 @@
 
 	* GCC 5.1.0 released.
 
+2015-04-22  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/65429
+	* decl.c (add_init_expr_to_sym): Set the length type parameter.
+
 2015-04-10  Tobias Burnus  <burnus@net-b.de>
 
 	* trans-stmt.c (gfc_trans_lock_unlock): Implement -fcoarray=lib

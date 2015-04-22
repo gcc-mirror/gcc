@@ -1404,9 +1404,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 		    }
 		  else if (init->expr_type == EXPR_ARRAY)
 		    {
-		      gfc_constructor *c;
-		      c = gfc_constructor_first (init->value.constructor);
-		      clen = c->expr->value.character.length;
+		      clen = mpz_get_si (init->ts.u.cl->length->value.integer);
 		      sym->ts.u.cl->length
 				= gfc_get_int_expr (gfc_default_integer_kind,
 						    NULL, clen);
