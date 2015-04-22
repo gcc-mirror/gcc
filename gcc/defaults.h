@@ -383,6 +383,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define EH_RETURN_DATA_REGNO(N) INVALID_REGNUM
 #endif
 
+/* Offset between the eh handler address and entry in eh tables.  */
+#ifndef RETURN_ADDR_OFFSET
+#define RETURN_ADDR_OFFSET 0
+#endif
+
 /* If we have named section and we support weak symbols, then use the
    .jcr section for recording java classes which need to be registered
    at program start-up time.  */

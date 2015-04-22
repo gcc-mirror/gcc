@@ -1,5 +1,12 @@
 2015-04-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* defaults.h (RETURN_ADDR_OFFSET): New definition.
+	* except.c (expand_builtin_extract_return_addr): Remove ifdef
+	RETURN_ADDR_OFFSET.
+	(expand_builtin_frob_return_addr): Likewise.
+
+2015-04-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* cfgrtl.c (rtl_merge_blocks): Change #if HAVE_cc0 to if (HAVE_cc0)
 	(try_redirect_by_replacing_jump): Likewise.
 	(rtl_tidy_fallthru_edge): Likewise.
