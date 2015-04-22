@@ -1,5 +1,11 @@
 2015-04-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* defaults.h (INSN_SETS_ARE_DELAYED): New definition.
+	* reorg.c (redundant_insn): Remove ifdef INSN_SETS_ARE_DELAYED.
+	* resource.c (mark_set_resources): Likewise.
+
+2015-04-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* caller-save.c (insert_one_insn): Remove ifdef HAVE_cc0.
 	* cfgcleanup.c (flow_find_cross_jump): Likewise.
 	(flow_find_head_matching_sequence): Likewise.

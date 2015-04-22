@@ -696,11 +696,9 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 	/* An insn consisting of just a CLOBBER (or USE) is just for flow
 	   and doesn't actually do anything, so we ignore it.  */
 
-#ifdef INSN_SETS_ARE_DELAYED
       if (mark_type != MARK_SRC_DEST_CALL
 	  && INSN_SETS_ARE_DELAYED (as_a <rtx_insn *> (x)))
 	return;
-#endif
 
       x = PATTERN (x);
       if (GET_CODE (x) != USE && GET_CODE (x) != CLOBBER)

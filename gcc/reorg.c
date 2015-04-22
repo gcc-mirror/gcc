@@ -1571,10 +1571,8 @@ redundant_insn (rtx insn, rtx_insn *target, rtx delay_list)
 	     slots because it is difficult to track its resource needs
 	     correctly.  */
 
-#ifdef INSN_SETS_ARE_DELAYED
 	  if (INSN_SETS_ARE_DELAYED (seq->insn (0)))
 	    return 0;
-#endif
 
 #ifdef INSN_REFERENCES_ARE_DELAYED
 	  if (INSN_REFERENCES_ARE_DELAYED (seq->insn (0)))
@@ -1673,10 +1671,8 @@ redundant_insn (rtx insn, rtx_insn *target, rtx delay_list)
 	  /* If this is an INSN or JUMP_INSN with delayed effects, it
 	     is hard to track the resource needs properly, so give up.  */
 
-#ifdef INSN_SETS_ARE_DELAYED
 	  if (INSN_SETS_ARE_DELAYED (control))
 	    return 0;
-#endif
 
 #ifdef INSN_REFERENCES_ARE_DELAYED
 	  if (INSN_REFERENCES_ARE_DELAYED (control))
