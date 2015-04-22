@@ -1,5 +1,8 @@
 2015-04-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/65695
+	* cvt.c (cp_fold_convert): Avoid wrapping PTRMEM_CST in NOP_EXPR.
+
 	PR c++/65721
 	* name-lookup.c (do_class_using_decl): Complain about specifying
 	the current class even if there are dependent bases.
