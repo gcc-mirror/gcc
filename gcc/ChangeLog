@@ -1,5 +1,23 @@
 2015-04-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* alias.c (init_alias_target): Remove ifdef
+	* HARD_FRAME_POINTER_IS_FRAME_POINTER.
+	* df-scan.c (df_insn_refs_collect): Likewise.
+	(df_get_regular_block_artificial_uses): Likewise.
+	(df_get_eh_block_artificial_uses): Likewise.
+	(df_get_entry_block_def_set): Likewise.
+	(df_get_exit_block_use_set): Likewise.
+	* emit-rtl.c (gen_rtx_REG): Likewise.
+	* ira.c (ira_setup_eliminable_regset): Likewise.
+	* reginfo.c (init_reg_sets_1): Likewise.
+	* regrename.c (rename_chains): Likewise.
+	* reload1.c (reload): Likewise.
+	(eliminate_regs_in_insn): Likewise.
+	* resource.c (mark_referenced_resources): Likewise.
+	(init_resource_info): Likewise.
+
+2015-04-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* defaults.h (MASK_RETURN_ADDR): New definition.
 	* except.c (expand_builtin_extract_return_addr): Remove ifdef
 	MASK_RETURN_ADDR.

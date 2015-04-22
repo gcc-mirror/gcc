@@ -461,10 +461,9 @@ init_reg_sets_1 (void)
 	}
       else if (i == FRAME_POINTER_REGNUM)
 	;
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-      else if (i == HARD_FRAME_POINTER_REGNUM)
+      else if (!HARD_FRAME_POINTER_IS_FRAME_POINTER
+	       && i == HARD_FRAME_POINTER_REGNUM)
 	;
-#endif
 #if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
       else if (i == ARG_POINTER_REGNUM && fixed_regs[i])
 	;

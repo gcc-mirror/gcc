@@ -2765,10 +2765,9 @@ init_alias_target (void)
     = unique_base_value (UNIQUE_BASE_VALUE_ARGP);
   static_reg_base_value[FRAME_POINTER_REGNUM]
     = unique_base_value (UNIQUE_BASE_VALUE_FP);
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-  static_reg_base_value[HARD_FRAME_POINTER_REGNUM]
-    = unique_base_value (UNIQUE_BASE_VALUE_HFP);
-#endif
+  if (!HARD_FRAME_POINTER_IS_FRAME_POINTER)
+    static_reg_base_value[HARD_FRAME_POINTER_REGNUM]
+      = unique_base_value (UNIQUE_BASE_VALUE_HFP);
 }
 
 /* Set MEMORY_MODIFIED when X modifies DATA (that is assumed
