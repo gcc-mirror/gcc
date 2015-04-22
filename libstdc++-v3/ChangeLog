@@ -1,3 +1,8 @@
+2015-04-22  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/os/generic/os_defines.h (_GLIBCXX_GTHREAD_USE_WEAK): Define.
+	* configure.host (os_include_dir): Set to "os/generic" for linux-musl*.
+
 2015-04-22  Renlin Li  <renlin.li@arm.com>
 
 	* testsuite/lib/dg-options.exp (dg-require-thread-fence): New.

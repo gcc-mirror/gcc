@@ -1,3 +1,8 @@
+2015-04-22  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* acinclude.m4 (GTHREAD_USE_WEAK): Define as 0 for *-*-musl*.
+	* configure: Regenerate.
+
 2015-04-21 Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/65234

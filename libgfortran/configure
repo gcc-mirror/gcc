@@ -26447,7 +26447,7 @@ $as_echo "#define SUPPORTS_WEAK 1" >>confdefs.h
 
   fi
   case "$host" in
-    *-*-darwin* | *-*-hpux* | *-*-cygwin* | *-*-mingw* )
+    *-*-darwin* | *-*-hpux* | *-*-cygwin* | *-*-mingw* | *-*-musl* )
 
 $as_echo "#define GTHREAD_USE_WEAK 0" >>confdefs.h
 
