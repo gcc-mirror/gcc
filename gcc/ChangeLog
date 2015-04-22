@@ -1,3 +1,9 @@
+2015-04-22  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/65823
+	* gimplify.c (gimplify_modify_expr): Use operand_equal_p to test for
+	equality between ap_copy and ap.
+
 2015-04-22  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	PR target/47098
