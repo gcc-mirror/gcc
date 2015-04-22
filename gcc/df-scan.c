@@ -3589,10 +3589,6 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
   /* These registers are live everywhere.  */
   if (!reload_completed)
     {
-#ifdef PIC_OFFSET_TABLE_REGNUM
-      unsigned int picreg = PIC_OFFSET_TABLE_REGNUM;
-#endif
-
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
       /* Pseudos with argument area equivalences may require
 	 reloading via the argument pointer.  */
@@ -3600,13 +3596,12 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
 	bitmap_set_bit (entry_block_defs, ARG_POINTER_REGNUM);
 #endif
 
-#ifdef PIC_OFFSET_TABLE_REGNUM
       /* Any constant, or pseudo with constant equivalences, may
 	 require reloading from memory using the pic register.  */
+      unsigned int picreg = PIC_OFFSET_TABLE_REGNUM;
       if (picreg != INVALID_REGNUM
 	  && fixed_regs[picreg])
 	bitmap_set_bit (entry_block_defs, picreg);
-#endif
     }
 
 #ifdef INCOMING_RETURN_ADDR_RTX
