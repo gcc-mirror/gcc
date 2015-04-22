@@ -1,3 +1,7 @@
+2015-04-22  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Add BFIN_CPU_UNKNOWN.
+
 2015-04-22  Hale Wang  <hale.wang@arm.com>
 	    Terry Guo  <terry.guo@arm.com>
 
