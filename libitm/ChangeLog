@@ -1,3 +1,8 @@
+2015-04-22  Gregor Richards  <gregor.richards@uwaterloo.ca>
+
+	* config/arm/hwcap.cc: Use fcntl.h instead of sys/fcntl.h.
+	* config/linux/x86/tls.h: Only use __GLIBC_PREREQ if defined.
+
 2015-01-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libitm/64360
