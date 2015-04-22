@@ -271,6 +271,9 @@ case "${host_os}" in
   freebsd*)
     os_include_dir="os/bsd/freebsd"
     ;;
+  linux-musl*)
+    os_include_dir="os/generic"
+    ;;
   gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
     if [ "$uclibc" = "yes" ]; then
       os_include_dir="os/uclibc"
