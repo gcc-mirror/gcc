@@ -2048,7 +2048,7 @@ insert_insn_end_basic_block (struct gcse_expr *expr, basic_block bb)
 	  && (!single_succ_p (bb)
 	      || single_succ_edge (bb)->flags & EDGE_ABNORMAL)))
     {
-#ifdef HAVE_cc0
+#if HAVE_cc0
       /* FIXME: 'twould be nice to call prev_cc0_setter here but it aborts
 	 if cc0 isn't set.  */
       rtx note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);

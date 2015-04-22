@@ -2487,7 +2487,7 @@ add_branch_dependences (rtx_insn *head, rtx_insn *tail)
 	     && (GET_CODE (PATTERN (insn)) == USE
 		 || GET_CODE (PATTERN (insn)) == CLOBBER
 		 || can_throw_internal (insn)
-#ifdef HAVE_cc0
+#if HAVE_cc0
 		 || sets_cc0_p (PATTERN (insn))
 #endif
 		 || (!reload_completed

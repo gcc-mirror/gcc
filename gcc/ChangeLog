@@ -1,5 +1,53 @@
 2015-04-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* genconfig.c (main): Always define HAVE_cc0.
+	* caller-save.c (insert_one_insn): Change ifdef HAVE_cc0 to #if
+	HAVE_cc0.
+	* cfgcleanup.c (flow_find_cross_jump): Likewise.
+	(flow_find_head_matching_sequence): Likewise.
+	(try_head_merge_bb): Likewise.
+	* cfgrtl.c (rtl_merge_blocks): Likewise.
+	(try_redirect_by_replacing_jump): Likewise.
+	(rtl_tidy_fallthru_edge): Likewise.
+	* combine.c (do_SUBST_MODE): Likewise.
+	(insn_a_feeds_b): Likewise.
+	(combine_instructions): Likewise.
+	(can_combine_p): Likewise.
+	(try_combine): Likewise.
+	(find_split_point): Likewise.
+	(subst): Likewise.
+	(simplify_set): Likewise.
+	(distribute_notes): Likewise.
+	* cprop.c (cprop_jump): Likewise.
+	* cse.c (cse_extended_basic_block): Likewise.
+	* df-problems.c (can_move_insns_across): Likewise.
+	* final.c (final): Likewise.
+	(final_scan_insn): Likewise.
+	* function.c (emit_use_return_register_into_block): Likewise.
+	* gcse.c (insert_insn_end_basic_block): Likewise.
+	* haifa-sched.c (sched_init): Likewise.
+	* ira.c (find_moveable_pseudos): Likewise.
+	* loop-invariant.c (find_invariant_insn): Likewise.
+	* lra-constraints.c (curr_insn_transform): Likewise.
+	* optabs.c (prepare_cmp_insn): Likewise.
+	* postreload.c (reload_combine_recognize_const_pattern):
+	* Likewise.
+	* reload.c (find_reloads): Likewise.
+	(find_reloads_address_1): Likewise.
+	* reorg.c (delete_scheduled_jump): Likewise.
+	(steal_delay_list_from_target): Likewise.
+	(steal_delay_list_from_fallthrough): Likewise.
+	(try_merge_delay_insns): Likewise.
+	(redundant_insn): Likewise.
+	(fill_simple_delay_slots): Likewise.
+	(fill_slots_from_thread): Likewise.
+	(delete_computation): Likewise.
+	(relax_delay_slots): Likewise.
+	* sched-deps.c (sched_analyze_2): Likewise.
+	* sched-rgn.c (add_branch_dependences): Likewise.
+
+2015-04-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* combine.c (find_single_use): Remove HAVE_cc0 ifdef for code
 	that is trivially ded on non cc0 targets.
 	(simplify_set): Likewise.

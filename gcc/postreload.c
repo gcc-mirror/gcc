@@ -1032,7 +1032,7 @@ reload_combine_recognize_const_pattern (rtx_insn *insn)
 	      && reg_state[clobbered_regno].real_store_ruid >= use_ruid)
 	    break;
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
 	  /* Do not separate cc0 setter and cc0 user on HAVE_cc0 targets.  */
 	  if (must_move_add && sets_cc0_p (PATTERN (use_insn)))
 	    break;

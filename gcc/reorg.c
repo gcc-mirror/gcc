@@ -182,7 +182,7 @@ skip_consecutive_labels (rtx label_or_return)
   return label;
 }
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
 /* INSN uses CC0 and is being moved into a delay slot.  Set up REG_CC_SETTER
    and REG_CC_USER notes so we can find it.  */
 
@@ -699,7 +699,7 @@ delete_scheduled_jump (rtx_insn *insn)
      be other insns that became dead anyway, which we wouldn't know to
      delete.  */
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
   if (reg_mentioned_p (cc0_rtx, insn))
     {
       rtx note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
@@ -1171,7 +1171,7 @@ steal_delay_list_from_target (rtx_insn *insn, rtx condition, rtx_sequence *seq,
       if (insn_references_resource_p (trial, sets, false)
 	  || insn_sets_resource_p (trial, needed, false)
 	  || insn_sets_resource_p (trial, sets, false)
-#ifdef HAVE_cc0
+#if HAVE_cc0
 	  /* If TRIAL sets CC0, we can't copy it, so we can't steal this
 	     delay list.  */
 	  || find_reg_note (trial, REG_CC_USER, NULL_RTX)
@@ -1279,7 +1279,7 @@ steal_delay_list_from_fallthrough (rtx_insn *insn, rtx condition,
       if (insn_references_resource_p (trial, sets, false)
 	  || insn_sets_resource_p (trial, needed, false)
 	  || insn_sets_resource_p (trial, sets, false)
-#ifdef HAVE_cc0
+#if HAVE_cc0
 	  || sets_cc0_p (PATTERN (trial))
 #endif
 	  )
@@ -1373,7 +1373,7 @@ try_merge_delay_insns (rtx insn, rtx_insn *thread)
 	continue;
 
       if (GET_CODE (next_to_match) == GET_CODE (trial)
-#ifdef HAVE_cc0
+#if HAVE_cc0
 	  /* We can't share an insn that sets cc0.  */
 	  && ! sets_cc0_p (pat)
 #endif
@@ -1446,7 +1446,7 @@ try_merge_delay_insns (rtx insn, rtx_insn *thread)
 	  if (! insn_references_resource_p (dtrial, &set, true)
 	      && ! insn_sets_resource_p (dtrial, &set, true)
 	      && ! insn_sets_resource_p (dtrial, &needed, true)
-#ifdef HAVE_cc0
+#if HAVE_cc0
 	      && ! sets_cc0_p (PATTERN (dtrial))
 #endif
 	      && rtx_equal_p (PATTERN (next_to_match), PATTERN (dtrial))
@@ -1629,7 +1629,7 @@ redundant_insn (rtx insn, rtx_insn *target, rtx delay_list)
     target_main = XVECEXP (PATTERN (target), 0, 0);
 
   if (resource_conflicts_p (&needed, &set)
-#ifdef HAVE_cc0
+#if HAVE_cc0
       || reg_mentioned_p (cc0_rtx, ipat)
 #endif
       /* The insn requiring the delay may not set anything needed or set by
@@ -2125,7 +2125,7 @@ fill_simple_delay_slots (int non_jumps_p)
 					     filter_flags ? &fset : &set,
 					     true)
 		  && ! insn_sets_resource_p (trial, &needed, true)
-#ifdef HAVE_cc0
+#if HAVE_cc0
 		  /* Can't separate set of cc0 from its use.  */
 		  && ! (reg_mentioned_p (cc0_rtx, pat) && ! sets_cc0_p (pat))
 #endif
@@ -2260,7 +2260,7 @@ fill_simple_delay_slots (int non_jumps_p)
 		  && ! insn_references_resource_p (trial, &set, true)
 		  && ! insn_sets_resource_p (trial, &set, true)
 		  && ! insn_sets_resource_p (trial, &needed, true)
-#ifdef HAVE_cc0
+#if HAVE_cc0
 		  && ! (reg_mentioned_p (cc0_rtx, pat) && ! sets_cc0_p (pat))
 #endif
 		  && ! (maybe_never && may_trap_or_fault_p (pat))
@@ -2270,7 +2270,7 @@ fill_simple_delay_slots (int non_jumps_p)
 		{
 		  next_trial = next_nonnote_insn (trial);
 		  delay_list = add_to_delay_list (trial, delay_list);
-#ifdef HAVE_cc0
+#if HAVE_cc0
 		  if (reg_mentioned_p (cc0_rtx, pat))
 		    link_cc0_insns (trial);
 #endif
@@ -2309,7 +2309,7 @@ fill_simple_delay_slots (int non_jumps_p)
 	      && ! insn_references_resource_p (next_trial, &set, true)
 	      && ! insn_sets_resource_p (next_trial, &set, true)
 	      && ! insn_sets_resource_p (next_trial, &needed, true)
-#ifdef HAVE_cc0
+#if HAVE_cc0
 	      && ! reg_mentioned_p (cc0_rtx, PATTERN (next_trial))
 #endif
 	      && ! (maybe_never && may_trap_or_fault_p (PATTERN (next_trial)))
@@ -2522,7 +2522,7 @@ fill_slots_from_thread (rtx_insn *insn, rtx condition, rtx thread_or_return,
       if (! insn_references_resource_p (trial, &set, true)
 	  && ! insn_sets_resource_p (trial, &set, true)
 	  && ! insn_sets_resource_p (trial, &needed, true)
-#ifdef HAVE_cc0
+#if HAVE_cc0
 	  && ! (reg_mentioned_p (cc0_rtx, pat)
 		&& (! own_thread || ! sets_cc0_p (pat)))
 #endif
@@ -2605,7 +2605,7 @@ fill_slots_from_thread (rtx_insn *insn, rtx condition, rtx thread_or_return,
 		  must_annul = 1;
 		winner:
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
 		  if (reg_mentioned_p (cc0_rtx, pat))
 		    link_cc0_insns (trial);
 #endif
@@ -3161,7 +3161,7 @@ delete_computation (rtx insn)
 {
   rtx note, next;
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
   if (reg_referenced_p (cc0_rtx, PATTERN (insn)))
     {
       rtx prev = prev_nonnote_insn (insn);
@@ -3498,7 +3498,7 @@ relax_delay_slots (rtx_insn *first)
 	  && ! condjump_in_parallel_p (delay_insn)
 	  && prev_active_insn (target_label) == insn
 	  && ! BARRIER_P (prev_nonnote_insn (target_label))
-#ifdef HAVE_cc0
+#if HAVE_cc0
 	  /* If the last insn in the delay slot sets CC0 for some insn,
 	     various code assumes that it is in a delay slot.  We could
 	     put it back where it belonged and delete the register notes,

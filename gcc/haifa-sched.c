@@ -7184,7 +7184,7 @@ void
 sched_init (void)
 {
   /* Disable speculative loads in their presence if cc0 defined.  */
-#ifdef HAVE_cc0
+#if HAVE_cc0
   flag_schedule_speculative_load = 0;
 #endif
 

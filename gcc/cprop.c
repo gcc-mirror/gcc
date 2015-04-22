@@ -965,7 +965,7 @@ cprop_jump (basic_block bb, rtx_insn *setcc, rtx_insn *jump, rtx from, rtx src)
 	remove_note (jump, note);
      }
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
   /* Delete the cc0 setter.  */
   if (setcc != NULL && CC0_P (SET_DEST (single_set (setcc))))
     delete_insn (setcc);

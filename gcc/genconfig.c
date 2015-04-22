@@ -346,6 +346,7 @@ main (int argc, char **argv)
     {
       /* We output CC0_P this way to make sure that X is declared
 	 somewhere.  */
+      printf ("#define HAVE_cc0 0\n");
       printf ("#define CC0_P(X) ((X) ? 0 : 0)\n");
     }
 

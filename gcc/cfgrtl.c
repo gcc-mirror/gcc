@@ -893,7 +893,7 @@ rtl_merge_blocks (basic_block a, basic_block b)
 
       del_first = a_end;
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
       /* If this was a conditional jump, we need to also delete
 	 the insn that set cc0.  */
       if (only_sets_cc0_p (prev))
@@ -1064,7 +1064,7 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
   /* In case we zap a conditional jump, we'll need to kill
      the cc0 setter too.  */
   kill_from = insn;
-#ifdef HAVE_cc0
+#if HAVE_cc0
   if (reg_mentioned_p (cc0_rtx, PATTERN (insn))
       && only_sets_cc0_p (PREV_INSN (insn)))
     kill_from = PREV_INSN (insn);
@@ -1825,7 +1825,7 @@ rtl_tidy_fallthru_edge (edge e)
 	  delete_insn (table);
 	}
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
       /* If this was a conditional jump, we need to also delete
 	 the insn that set cc0.  */
       if (any_condjump_p (q) && only_sets_cc0_p (PREV_INSN (q)))
