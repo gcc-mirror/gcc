@@ -1319,7 +1319,6 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  curr_point++;
 	}
 
-#ifdef EH_RETURN_DATA_REGNO
       if (bb_has_eh_pred (bb))
 	for (j = 0; ; ++j)
 	  {
@@ -1328,7 +1327,6 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	      break;
 	    make_hard_regno_born (regno);
 	  }
-#endif
 
       /* Allocnos can't go in stack regs at the start of a basic block
 	 that is reached by an abnormal edge. Likewise for call

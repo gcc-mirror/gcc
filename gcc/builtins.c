@@ -6510,10 +6510,8 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       expand_builtin_eh_return (CALL_EXPR_ARG (exp, 0),
 				CALL_EXPR_ARG (exp, 1));
       return const0_rtx;
-#ifdef EH_RETURN_DATA_REGNO
     case BUILT_IN_EH_RETURN_DATA_REGNO:
       return expand_builtin_eh_return_data_regno (exp);
-#endif
     case BUILT_IN_EXTEND_POINTER:
       return expand_builtin_extend_pointer (CALL_EXPR_ARG (exp, 0));
     case BUILT_IN_EH_POINTER:

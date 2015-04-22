@@ -1,3 +1,15 @@
+2015-04-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* defaults.h: New definition of EH_RETURN_DATA_REGNO.
+	* except.c: Remove definition of EH_RETURN_DATA_REGNO.
+	* builtins.c (expand_builtin): Remove check if
+	EH_RETURN_DATA_REGNO is defined.
+	* df-scan.c (df_bb_refs_collect): Likewise.
+	(df_get_exit_block_use_set): Likewise.
+	* haifa-sched.c (initiate_bb_reg_pressure_info): Likewise.
+	* ira-lives.c (process_bb_node_lives): Likewise.
+	* lra-lives.c (process_bb_lives): Likewise.
+
 2015-04-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (ARGP_REG, FRAME_REG, BND2_REG, BND3_REG,
