@@ -5035,7 +5035,6 @@ canonicalize_condition (rtx_insn *insn, rtx cond, int reverse,
       /* Set nonzero when we find something of interest.  */
       rtx x = 0;
 
-#ifdef HAVE_cc0
       /* If comparison with cc0, import actual comparison from compare
 	 insn.  */
       if (op0 == cc0_rtx)
@@ -5051,7 +5050,6 @@ canonicalize_condition (rtx_insn *insn, rtx cond, int reverse,
 	  if (earliest)
 	    *earliest = prev;
 	}
-#endif
 
       /* If this is a COMPARE, pick up the two things being compared.  */
       if (GET_CODE (op0) == COMPARE)

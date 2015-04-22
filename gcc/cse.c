@@ -281,7 +281,6 @@ struct qty_table_elem
 /* The table of all qtys, indexed by qty number.  */
 static struct qty_table_elem *qty_table;
 
-#ifdef HAVE_cc0
 /* For machines that have a CC0, we do not record its value in the hash
    table since its use is guaranteed to be the insn immediately following
    its definition and any other insn is presumed to invalidate it.
@@ -293,7 +292,6 @@ static struct qty_table_elem *qty_table;
 
 static rtx this_insn_cc0, prev_insn_cc0;
 static machine_mode this_insn_cc0_mode, prev_insn_cc0_mode;
-#endif
 
 /* Insn being scanned.  */
 
@@ -884,9 +882,7 @@ new_basic_block (void)
 	}
     }
 
-#ifdef HAVE_cc0
   prev_insn_cc0 = 0;
-#endif
 }
 
 /* Say that register REG contains a quantity in mode MODE not in any
@@ -3175,10 +3171,8 @@ fold_rtx (rtx x, rtx_insn *insn)
     case EXPR_LIST:
       return x;
 
-#ifdef HAVE_cc0
     case CC0:
       return prev_insn_cc0;
-#endif
 
     case ASM_OPERANDS:
       if (insn)
@@ -3232,7 +3226,6 @@ fold_rtx (rtx x, rtx_insn *insn)
 	    const_arg = folded_arg;
 	    break;
 
-#ifdef HAVE_cc0
 	  case CC0:
 	    /* The cc0-user and cc0-setter may be in different blocks if
 	       the cc0-setter potentially traps.  In that case PREV_INSN_CC0
@@ -3256,7 +3249,6 @@ fold_rtx (rtx x, rtx_insn *insn)
 		const_arg = equiv_constant (folded_arg);
 	      }
 	    break;
-#endif
 
 	  default:
 	    folded_arg = fold_rtx (folded_arg, insn);
@@ -4531,11 +4523,9 @@ cse_insn (rtx_insn *insn)
     sets = XALLOCAVEC (struct set, XVECLEN (x, 0));
 
   this_insn = insn;
-#ifdef HAVE_cc0
   /* Records what this insn does to set CC0.  */
   this_insn_cc0 = 0;
   this_insn_cc0_mode = VOIDmode;
-#endif
 
   /* Find all regs explicitly clobbered in this insn,
      to ensure they are not replaced with any other regs
@@ -5550,7 +5540,6 @@ cse_insn (rtx_insn *insn)
 	    }
 	}
 
-#ifdef HAVE_cc0
       /* If setting CC0, record what it was set to, or a constant, if it
 	 is equivalent to a constant.  If it is being set to a floating-point
 	 value, make a COMPARE with the appropriate constant of 0.  If we
@@ -5565,7 +5554,6 @@ cse_insn (rtx_insn *insn)
 	    this_insn_cc0 = gen_rtx_COMPARE (VOIDmode, this_insn_cc0,
 					     CONST0_RTX (mode));
 	}
-#endif
     }
 
   /* Now enter all non-volatile source expressions in the hash table
@@ -6613,11 +6601,9 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 	  record_jump_equiv (insn, taken);
 	}
 
-#ifdef HAVE_cc0
       /* Clear the CC0-tracking related insns, they can't provide
 	 useful information across basic block boundaries.  */
       prev_insn_cc0 = 0;
-#endif
     }
 
   gcc_assert (next_qty <= max_qty);
@@ -6868,21 +6854,17 @@ static bool
 set_live_p (rtx set, rtx_insn *insn ATTRIBUTE_UNUSED, /* Only used with HAVE_cc0.  */
 	    int *counts)
 {
-#ifdef HAVE_cc0
   rtx tem;
-#endif
 
   if (set_noop_p (set))
     ;
 
-#ifdef HAVE_cc0
   else if (GET_CODE (SET_DEST (set)) == CC0
 	   && !side_effects_p (SET_SRC (set))
 	   && ((tem = next_nonnote_nondebug_insn (insn)) == NULL_RTX
 	       || !INSN_P (tem)
 	       || !reg_referenced_p (cc0_rtx, PATTERN (tem))))
     return false;
-#endif
   else if (!is_dead_reg (SET_DEST (set), counts)
 	   || side_effects_p (SET_SRC (set)))
     return true;
