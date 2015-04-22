@@ -1,5 +1,19 @@
 2015-04-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* combine.c (find_single_use): Remove HAVE_cc0 ifdef for code
+	that is trivially ded on non cc0 targets.
+	(simplify_set): Likewise.
+	(mark_used_regs_combine): Likewise.
+	* cse.c (new_basic_block): Likewise.
+	(fold_rtx): Likewise.
+	(cse_insn): Likewise.
+	(cse_extended_basic_block): Likewise.
+	(set_live_p): Likewise.
+	* rtlanal.c (canonicalize_condition): Likewise.
+	* simplify-rtx.c (simplify_binary_operation_1): Likewise.
+
+2015-04-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* conditions.h: Define macros even if HAVE_cc0 is undefined.
 	* emit-rtl.c: Define functions even if HAVE_cc0 is undefined.
 	* final.c: Likewise.

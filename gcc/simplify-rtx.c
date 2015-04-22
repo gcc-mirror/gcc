@@ -2180,15 +2180,14 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  rtx xop00 = XEXP (op0, 0);
 	  rtx xop10 = XEXP (op1, 0);
 
-#ifdef HAVE_cc0
 	  if (GET_CODE (xop00) == CC0 && GET_CODE (xop10) == CC0)
-#else
+	      return xop00;
+
 	    if (REG_P (xop00) && REG_P (xop10)
 		&& GET_MODE (xop00) == GET_MODE (xop10)
 		&& REGNO (xop00) == REGNO (xop10)
 		&& GET_MODE_CLASS (GET_MODE (xop00)) == MODE_CC
 		&& GET_MODE_CLASS (GET_MODE (xop10)) == MODE_CC)
-#endif
 	      return xop00;
 	}
       break;

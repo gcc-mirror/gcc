@@ -686,7 +686,6 @@ find_single_use (rtx dest, rtx_insn *insn, rtx_insn **ploc)
   rtx *result;
   struct insn_link *link;
 
-#ifdef HAVE_cc0
   if (dest == cc0_rtx)
     {
       next = NEXT_INSN (insn);
@@ -699,7 +698,6 @@ find_single_use (rtx dest, rtx_insn *insn, rtx_insn **ploc)
 	*ploc = next;
       return result;
     }
-#endif
 
   if (!REG_P (dest))
     return 0;
@@ -6724,7 +6722,6 @@ simplify_set (rtx x)
       src = SET_SRC (x), dest = SET_DEST (x);
     }
 
-#ifdef HAVE_cc0
   /* If we have (set (cc0) (subreg ...)), we try to remove the subreg
      in SRC.  */
   if (dest == cc0_rtx
@@ -6744,7 +6741,6 @@ simplify_set (rtx x)
 	  src = SET_SRC (x);
 	}
     }
-#endif
 
 #ifdef LOAD_EXTEND_OP
   /* If we have (set FOO (subreg:M (mem:N BAR) 0)) with M wider than N, this
@@ -13193,11 +13189,9 @@ mark_used_regs_combine (rtx x)
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
     case ASM_INPUT:
-#ifdef HAVE_cc0
     /* CC0 must die in the insn after it is set, so we don't need to take
        special note of it here.  */
     case CC0:
-#endif
       return;
 
     case CLOBBER:
