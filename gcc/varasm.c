@@ -1957,11 +1957,9 @@ emit_bss (tree decl ATTRIBUTE_UNUSED,
 	  unsigned HOST_WIDE_INT size ATTRIBUTE_UNUSED,
 	  unsigned HOST_WIDE_INT rounded ATTRIBUTE_UNUSED)
 {
-#if defined ASM_OUTPUT_ALIGNED_BSS
   ASM_OUTPUT_ALIGNED_BSS (asm_out_file, decl, name, size,
 			  get_variable_align (decl));
   return true;
-#endif
 }
 #endif
 
