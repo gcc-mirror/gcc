@@ -5806,7 +5806,8 @@ Kernel AddressSanitizer.
 
 @item -fsanitize-sections=@var{s1,s2,...}
 @opindex fsanitize-sections
-Sanitize global variables in selected user-defined sections.
+Sanitize global variables in selected user-defined sections.  @var{si} may
+contain wildcards.
 
 @item -fsanitize-recover@r{[}=@var{opts}@r{]}
 @opindex fsanitize-recover

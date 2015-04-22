@@ -1,3 +1,9 @@
+2015-04-22  Yury Gribov  <y.gribov@samsung.com>
+
+	* doc/invoke.texi (-fsanitize-sections): Update description.
+	* asan.c (set_sanitized_sections): Parse incoming arg.
+	(section_sanitized_p): Support wildcards.
+
 2015-04-22  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/65823

@@ -88,6 +88,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ubsan.h"
 #include "params.h"
 #include "builtins.h"
+#include "fnmatch.h"
 
 /* AddressSanitizer finds out-of-bounds and use-after-free bugs
    with <2x slowdown on average.
@@ -272,7 +273,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static unsigned HOST_WIDE_INT asan_shadow_offset_value;
 static bool asan_shadow_offset_computed;
-static const char *sanitized_sections;
+static vec<char *> sanitized_sections;
 
 /* Sets shadow offset to value in string VAL.  */
 
@@ -298,9 +299,22 @@ set_asan_shadow_offset (const char *val)
 /* Set list of user-defined sections that need to be sanitized.  */
 
 void
-set_sanitized_sections (const char *secs)
+set_sanitized_sections (const char *sections)
 {
-  sanitized_sections = secs;
+  char *pat;
+  unsigned i;
+  FOR_EACH_VEC_ELT (sanitized_sections, i, pat)
+    free (pat);
+  sanitized_sections.truncate (0);
+
+  for (const char *s = sections; *s; )
+    {
+      const char *end;
+      for (end = s; *end && *end != ','; ++end);
+      size_t len = end - s;
+      sanitized_sections.safe_push (xstrndup (s, len));
+      s = *end ? end + 1 : end;
+    }
 }
 
 /* Checks whether section SEC should be sanitized.  */
@@ -308,17 +322,11 @@ set_sanitized_sections (const char *secs)
 static bool
 section_sanitized_p (const char *sec)
 {
-  if (!sanitized_sections)
-    return false;
-  size_t len = strlen (sec);
-  const char *p = sanitized_sections;
-  while ((p = strstr (p, sec)))
-    {
-      if ((p == sanitized_sections || p[-1] == ',')
-	  && (p[len] == 0 || p[len] == ','))
-	return true;
-      ++p;
-    }
+  char *pat;
+  unsigned i;
+  FOR_EACH_VEC_ELT (sanitized_sections, i, pat)
+    if (fnmatch (pat, sec, FNM_PERIOD) == 0)
+      return true;
   return false;
 }
 
