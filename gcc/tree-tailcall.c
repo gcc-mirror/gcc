@@ -165,10 +165,8 @@ struct tailcall
    accumulator.  */
 static tree m_acc, a_acc;
 
-static bool suitable_for_tail_opt_p (void);
 static bool optimize_tail_call (struct tailcall *, bool);
 static void eliminate_tail_call (struct tailcall *);
-static void find_tail_calls (basic_block, struct tailcall **);
 
 /* Returns false when the function is not suitable for tail call optimization
    from some reason (e.g. if it takes variable number of arguments).  */
@@ -182,7 +180,7 @@ suitable_for_tail_opt_p (void)
   return true;
 }
 /* Returns false when the function is not suitable for tail call optimization
-   from some reason (e.g. if it takes variable number of arguments).
+   for some reason (e.g. if it takes variable number of arguments).
    This test must pass in addition to suitable_for_tail_opt_p in order to make
    tail call discovery happen.  */
 
