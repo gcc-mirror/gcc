@@ -1,5 +1,10 @@
 2015-04-22  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
+	PR target/47098
+	* config/openbsd-oldgas.h (OBSD_LIB_SPEC): Add.
+
+2015-04-22  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
 	PR target/47122
 	* config.gcc (vax-*-openbsd*): Fix name of pthread spec header.
 

@@ -20,3 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 
 #define OBSD_OLD_GAS
+
+/* OpenBSD3.0 had no libpthread, pthreads lived in -lc_r */
+#define OBSD_LIB_SPEC "%{!shared:-lc%{pthread:_r}}"
+
