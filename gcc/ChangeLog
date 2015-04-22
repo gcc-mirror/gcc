@@ -1,5 +1,23 @@
 2015-04-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* caller-save.c (insert_one_insn): Remove ifdef HAVE_cc0.
+	* cfgcleanup.c (flow_find_cross_jump): Likewise.
+	(flow_find_head_matching_sequence): Likewise.
+	(try_head_merge_bb): Likewise.
+	* combine.c (can_combine_p): Likewise.
+	(try_combine): Likewise.
+	(distribute_notes): Likewise.
+	* df-problems.c (can_move_insns_across): Likewise.
+	* final.c (final): Likewise.
+	* gcse.c (insert_insn_end_basic_block): Likewise.
+	* ira.c (find_moveable_pseudos): Likewise.
+	* reorg.c (try_merge_delay_insns): Likewise.
+	(fill_simple_delay_slots): Likewise.
+	(fill_slots_from_thread): Likewise.
+	* sched-deps.c (sched_analyze_2): Likewise.
+
+2015-04-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* df-scan.c (df_get_entry_block_def_set): Remove #ifdef
 	PIC_OFFSET_TABLE_REGNUM.
 

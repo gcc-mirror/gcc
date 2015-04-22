@@ -3859,10 +3859,7 @@ can_move_insns_across (rtx_insn *from, rtx_insn *to,
       if (NONDEBUG_INSN_P (insn))
 	{
 	  if (!bitmap_intersect_p (test_set, local_merge_live)
-#if HAVE_cc0
-	      && !sets_cc0_p (insn)
-#endif
-	      )
+	      && (!HAVE_cc0 || !sets_cc0_p (insn)))
 	    {
 	      max_to = insn;
 	      break;
