@@ -1,3 +1,8 @@
+2015-04-22  David Krauss  <david_work@me.com>
+
+	PR c++/59766
+	* decl.c (grokdeclarator): Do not flag friends with deduced return.
+
 2015-04-22  Release Manager
 
 	* GCC 5.1.0 released.
