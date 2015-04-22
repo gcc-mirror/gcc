@@ -1,3 +1,9 @@
+2015-04-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65721
+	* name-lookup.c (do_class_using_decl): Complain about specifying
+	the current class even if there are dependent bases.
+
 2015-04-22  David Krauss  <david_work@me.com>
 
 	PR c++/59766
