@@ -954,7 +954,6 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	add_reg_note (curr_insn, REG_UNUSED, regno_reg_rtx[j]);
     }
 
-#ifdef EH_RETURN_DATA_REGNO
   if (bb_has_eh_pred (bb))
     for (j = 0; ; ++j)
       {
@@ -964,7 +963,6 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	  break;
 	make_hard_regno_born (regno, false);
       }
-#endif
 
   /* Pseudos can't go in stack regs at the start of a basic block that
      is reached by an abnormal edge. Likewise for call clobbered regs,

@@ -3332,7 +3332,6 @@ df_bb_refs_collect (struct df_collection_rec *collection_rec, basic_block bb)
       return;
     }
 
-#ifdef EH_RETURN_DATA_REGNO
   if (bb_has_eh_pred (bb))
     {
       unsigned int i;
@@ -3346,7 +3345,6 @@ df_bb_refs_collect (struct df_collection_rec *collection_rec, basic_block bb)
 			 bb, NULL, DF_REF_REG_DEF, DF_REF_AT_TOP);
 	}
     }
-#endif
 
   /* Add the hard_frame_pointer if this block is the target of a
      non-local goto.  */
@@ -3751,7 +3749,6 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
 	  bitmap_set_bit (exit_block_uses, i);
     }
 
-#ifdef EH_RETURN_DATA_REGNO
   /* Mark the registers that will contain data for the handler.  */
   if (reload_completed && crtl->calls_eh_return)
     for (i = 0; ; ++i)
@@ -3761,7 +3758,6 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
 	  break;
 	bitmap_set_bit (exit_block_uses, regno);
       }
-#endif
 
 #ifdef EH_RETURN_STACKADJ_RTX
   if ((!HAVE_epilogue || ! epilogue_completed)
