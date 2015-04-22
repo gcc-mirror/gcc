@@ -1044,8 +1044,6 @@ jump_to_label_p (const rtx_insn *insn)
 	  && JUMP_LABEL (insn) != NULL && !ANY_RETURN_P (JUMP_LABEL (insn)));
 }
 
-#ifdef HAVE_cc0
-
 /* Return nonzero if X is an RTX that only sets the condition codes
    and has no side effects.  */
 
@@ -1094,7 +1092,6 @@ sets_cc0_p (const_rtx x)
     }
   return 0;
 }
-#endif
 
 /* Find all CODE_LABELs referred to in X, and increment their use
    counts.  If INSN is a JUMP_INSN and there is at least one

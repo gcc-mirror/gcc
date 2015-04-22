@@ -1,5 +1,15 @@
 2015-04-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* conditions.h: Define macros even if HAVE_cc0 is undefined.
+	* emit-rtl.c: Define functions even if HAVE_cc0 is undefined.
+	* final.c: Likewise.
+	* jump.c: Likewise.
+	* recog.c: Likewise.
+	* recog.h: Declare functions even when HAVE_cc0 is undefined.
+	* sched-deps.c (sched_analyze_2): Always compile case for cc0.
+
+2015-04-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* defaults.h: New definition of EH_RETURN_DATA_REGNO.
 	* except.c: Remove definition of EH_RETURN_DATA_REGNO.
 	* builtins.c (expand_builtin): Remove check if
