@@ -4641,15 +4641,14 @@ find_moveable_pseudos (void)
 			   ? " (no unique first use)" : "");
 		continue;
 	      }
-#if HAVE_cc0
-	    if (reg_referenced_p (cc0_rtx, PATTERN (closest_use)))
+	    if (HAVE_cc0 && reg_referenced_p (cc0_rtx, PATTERN (closest_use)))
 	      {
 		if (dump_file)
 		  fprintf (dump_file, "Reg %d: closest user uses cc0\n",
 			   regno);
 		continue;
 	      }
-#endif
+
 	    bitmap_set_bit (&interesting, regno);
 	    /* If we get here, we know closest_use is a non-NULL insn
 	       (as opposed to const_0_rtx).  */

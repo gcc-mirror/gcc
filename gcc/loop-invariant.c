@@ -923,11 +923,9 @@ find_invariant_insn (rtx_insn *insn, bool always_reached, bool always_executed)
   bool simple = true;
   struct invariant *inv;
 
-#if HAVE_cc0
   /* We can't move a CC0 setter without the user.  */
-  if (sets_cc0_p (insn))
+  if (HAVE_cc0 && sets_cc0_p (insn))
     return;
-#endif
 
   set = single_set (insn);
   if (!set)

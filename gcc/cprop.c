@@ -965,11 +965,9 @@ cprop_jump (basic_block bb, rtx_insn *setcc, rtx_insn *jump, rtx from, rtx src)
 	remove_note (jump, note);
      }
 
-#if HAVE_cc0
   /* Delete the cc0 setter.  */
-  if (setcc != NULL && CC0_P (SET_DEST (single_set (setcc))))
+  if (HAVE_cc0 && setcc != NULL && CC0_P (SET_DEST (single_set (setcc))))
     delete_insn (setcc);
-#endif
 
   global_const_prop_count++;
   if (dump_file != NULL)

@@ -5661,10 +5661,9 @@ emit_use_return_register_into_block (basic_block bb)
   seq = get_insns ();
   end_sequence ();
   insn = BB_END (bb);
-#if HAVE_cc0
-  if (reg_mentioned_p (cc0_rtx, PATTERN (insn)))
+  if (HAVE_cc0 && reg_mentioned_p (cc0_rtx, PATTERN (insn)))
     insn = prev_cc0_setter (insn);
-#endif
+
   emit_insn_before (seq, insn);
 }
 
