@@ -1,3 +1,8 @@
+2015-04-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/65076
+	* passes.def (early_optimizations): Add pass_dse.
+
 2015-04-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* defaults.h (INSN_REFERENCES_ARE_DELAYED): New definition.
