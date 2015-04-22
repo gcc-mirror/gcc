@@ -1910,6 +1910,15 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
   set = expand_field_assignment (set);
   src = SET_SRC (set), dest = SET_DEST (set);
 
+  /* Do not eliminate user-specified register if it is in an
+     asm input because we may break the register asm usage defined
+     in GCC manual if allow to do so.
+     Be aware that this may cover more cases than we expect but this
+     should be harmless.  */
+  if (REG_P (dest) && REG_USERVAR_P (dest) && HARD_REGISTER_P (dest)
+      && extract_asm_operands (PATTERN (i3)))
+    return 0;
+
   /* Don't eliminate a store in the stack pointer.  */
   if (dest == stack_pointer_rtx
       /* Don't combine with an insn that sets a register to itself if it has
