@@ -1,5 +1,9 @@
 2015-04-22  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
+	* varasm.c (emit_bss): Remove redundant guard.
+
+2015-04-22  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
 	* config/c6x/c6x.h (TARGET_CPU_CPP_BUILTINS): Add unk_isa.
 
 2015-04-22  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
