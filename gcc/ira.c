@@ -2341,19 +2341,20 @@ ira_setup_eliminable_regset (void)
       else
 	df_set_regs_ever_live (eliminables[i].from, true);
     }
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-  if (!TEST_HARD_REG_BIT (crtl->asm_clobbers, HARD_FRAME_POINTER_REGNUM))
+  if (!HARD_FRAME_POINTER_IS_FRAME_POINTER)
     {
-      SET_HARD_REG_BIT (eliminable_regset, HARD_FRAME_POINTER_REGNUM);
-      if (frame_pointer_needed)
-	SET_HARD_REG_BIT (ira_no_alloc_regs, HARD_FRAME_POINTER_REGNUM);
+      if (!TEST_HARD_REG_BIT (crtl->asm_clobbers, HARD_FRAME_POINTER_REGNUM))
+	{
+	  SET_HARD_REG_BIT (eliminable_regset, HARD_FRAME_POINTER_REGNUM);
+	  if (frame_pointer_needed)
+	    SET_HARD_REG_BIT (ira_no_alloc_regs, HARD_FRAME_POINTER_REGNUM);
+	}
+      else if (frame_pointer_needed)
+	error ("%s cannot be used in asm here",
+	       reg_names[HARD_FRAME_POINTER_REGNUM]);
+      else
+	df_set_regs_ever_live (HARD_FRAME_POINTER_REGNUM, true);
     }
-  else if (frame_pointer_needed)
-    error ("%s cannot be used in asm here",
-	   reg_names[HARD_FRAME_POINTER_REGNUM]);
-  else
-    df_set_regs_ever_live (HARD_FRAME_POINTER_REGNUM, true);
-#endif
 
 #else
   if (!TEST_HARD_REG_BIT (crtl->asm_clobbers, HARD_FRAME_POINTER_REGNUM))

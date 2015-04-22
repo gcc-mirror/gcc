@@ -335,9 +335,8 @@ mark_referenced_resources (rtx x, struct resources *res,
 	  if (frame_pointer_needed)
 	    {
 	      SET_HARD_REG_BIT (res->regs, FRAME_POINTER_REGNUM);
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-	      SET_HARD_REG_BIT (res->regs, HARD_FRAME_POINTER_REGNUM);
-#endif
+	      if (!HARD_FRAME_POINTER_IS_FRAME_POINTER)
+		SET_HARD_REG_BIT (res->regs, HARD_FRAME_POINTER_REGNUM);
 	    }
 
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -1190,9 +1189,9 @@ init_resource_info (rtx_insn *epilogue_insn)
   if (frame_pointer_needed)
     {
       SET_HARD_REG_BIT (end_of_function_needs.regs, FRAME_POINTER_REGNUM);
-#if !HARD_FRAME_POINTER_IS_FRAME_POINTER
-      SET_HARD_REG_BIT (end_of_function_needs.regs, HARD_FRAME_POINTER_REGNUM);
-#endif
+      if (!HARD_FRAME_POINTER_IS_FRAME_POINTER)
+	SET_HARD_REG_BIT (end_of_function_needs.regs,
+			  HARD_FRAME_POINTER_REGNUM);
     }
   if (!(frame_pointer_needed
 	&& EXIT_IGNORE_STACK
