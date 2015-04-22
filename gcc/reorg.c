@@ -182,7 +182,6 @@ skip_consecutive_labels (rtx label_or_return)
   return label;
 }
 
-#if HAVE_cc0
 /* INSN uses CC0 and is being moved into a delay slot.  Set up REG_CC_SETTER
    and REG_CC_USER notes so we can find it.  */
 
@@ -197,7 +196,6 @@ link_cc0_insns (rtx insn)
   add_reg_note (user, REG_CC_SETTER, insn);
   add_reg_note (insn, REG_CC_USER, user);
 }
-#endif
 
 /* Insns which have delay slots that have not yet been filled.  */
 
@@ -699,8 +697,7 @@ delete_scheduled_jump (rtx_insn *insn)
      be other insns that became dead anyway, which we wouldn't know to
      delete.  */
 
-#if HAVE_cc0
-  if (reg_mentioned_p (cc0_rtx, insn))
+  if (HAVE_cc0 && reg_mentioned_p (cc0_rtx, insn))
     {
       rtx note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
 
@@ -730,7 +727,6 @@ delete_scheduled_jump (rtx_insn *insn)
 	    delete_from_delay_slot (trial);
 	}
     }
-#endif
 
   delete_related_insns (insn);
 }
@@ -1171,11 +1167,9 @@ steal_delay_list_from_target (rtx_insn *insn, rtx condition, rtx_sequence *seq,
       if (insn_references_resource_p (trial, sets, false)
 	  || insn_sets_resource_p (trial, needed, false)
 	  || insn_sets_resource_p (trial, sets, false)
-#if HAVE_cc0
 	  /* If TRIAL sets CC0, we can't copy it, so we can't steal this
 	     delay list.  */
-	  || find_reg_note (trial, REG_CC_USER, NULL_RTX)
-#endif
+	  || (HAVE_cc0 && find_reg_note (trial, REG_CC_USER, NULL_RTX))
 	  /* If TRIAL is from the fallthrough code of an annulled branch insn
 	     in SEQ, we cannot use it.  */
 	  || (INSN_ANNULLED_BRANCH_P (seq->insn (0))
@@ -1279,10 +1273,7 @@ steal_delay_list_from_fallthrough (rtx_insn *insn, rtx condition,
       if (insn_references_resource_p (trial, sets, false)
 	  || insn_sets_resource_p (trial, needed, false)
 	  || insn_sets_resource_p (trial, sets, false)
-#if HAVE_cc0
-	  || sets_cc0_p (PATTERN (trial))
-#endif
-	  )
+	  || (HAVE_cc0 && sets_cc0_p (PATTERN (trial))))
 
 	break;
 
@@ -1629,9 +1620,7 @@ redundant_insn (rtx insn, rtx_insn *target, rtx delay_list)
     target_main = XVECEXP (PATTERN (target), 0, 0);
 
   if (resource_conflicts_p (&needed, &set)
-#if HAVE_cc0
-      || reg_mentioned_p (cc0_rtx, ipat)
-#endif
+      || (HAVE_cc0 && reg_mentioned_p (cc0_rtx, ipat))
       /* The insn requiring the delay may not set anything needed or set by
 	 INSN.  */
       || insn_sets_resource_p (target_main, &needed, true)
@@ -2270,10 +2259,9 @@ fill_simple_delay_slots (int non_jumps_p)
 		{
 		  next_trial = next_nonnote_insn (trial);
 		  delay_list = add_to_delay_list (trial, delay_list);
-#if HAVE_cc0
-		  if (reg_mentioned_p (cc0_rtx, pat))
+		  if (HAVE_cc0 && reg_mentioned_p (cc0_rtx, pat))
 		    link_cc0_insns (trial);
-#endif
+
 		  delete_related_insns (trial);
 		  if (slots_to_fill == ++slots_filled)
 		    break;
@@ -2605,10 +2593,8 @@ fill_slots_from_thread (rtx_insn *insn, rtx condition, rtx thread_or_return,
 		  must_annul = 1;
 		winner:
 
-#if HAVE_cc0
-		  if (reg_mentioned_p (cc0_rtx, pat))
+		  if (HAVE_cc0 && reg_mentioned_p (cc0_rtx, pat))
 		    link_cc0_insns (trial);
-#endif
 
 		  /* If we own this thread, delete the insn.  If this is the
 		     destination of a branch, show that a basic block status
@@ -3161,8 +3147,7 @@ delete_computation (rtx insn)
 {
   rtx note, next;
 
-#if HAVE_cc0
-  if (reg_referenced_p (cc0_rtx, PATTERN (insn)))
+  if (HAVE_cc0 && reg_referenced_p (cc0_rtx, PATTERN (insn)))
     {
       rtx prev = prev_nonnote_insn (insn);
       /* We assume that at this stage
@@ -3182,7 +3167,6 @@ delete_computation (rtx insn)
 	    add_reg_note (prev, REG_UNUSED, cc0_rtx);
 	}
     }
-#endif
 
   for (note = REG_NOTES (insn); note; note = next)
     {

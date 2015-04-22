@@ -3820,9 +3820,7 @@ can_move_insns_across (rtx_insn *from, rtx_insn *to,
 	  if (bitmap_intersect_p (merge_set, test_use)
 	      || bitmap_intersect_p (merge_use, test_set))
 	    break;
-#if HAVE_cc0
-	  if (!sets_cc0_p (insn))
-#endif
+	  if (!HAVE_cc0 || !sets_cc0_p (insn))
 	    max_to = insn;
 	}
       next = NEXT_INSN (insn);

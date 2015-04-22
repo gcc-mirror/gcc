@@ -6524,8 +6524,7 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 		  && check_for_label_ref (insn))
 		recorded_label_ref = true;
 
-#if HAVE_cc0
-	      if (NONDEBUG_INSN_P (insn))
+	      if (HAVE_cc0 && NONDEBUG_INSN_P (insn))
 		{
 		  /* If the previous insn sets CC0 and this insn no
 		     longer references CC0, delete the previous insn.
@@ -6552,7 +6551,6 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 		      prev_insn_cc0_mode = this_insn_cc0_mode;
 		    }
 		}
-#endif
 	    }
 	}
 
