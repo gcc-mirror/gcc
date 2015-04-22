@@ -1,3 +1,10 @@
+2015-04-22  Hale Wang  <hale.wang@arm.com>
+	    Terry Guo  <terry.guo@arm.com>
+
+	PR rtl-optimization/64818
+	* combine.c (can_combine_p): Don't combine user-specified
+	register if it is in an asm input.
+
 2015-04-21  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65076
