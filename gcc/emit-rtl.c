@@ -3539,7 +3539,6 @@ prev_active_insn (rtx uncast_insn)
   return insn;
 }
 
-#ifdef HAVE_cc0
 /* Return the next insn that uses CC0 after INSN, which is assumed to
    set it.  This is the inverse of prev_cc0_setter (i.e., prev_cc0_setter
    applied to the result of this function should yield INSN).
@@ -3587,7 +3586,6 @@ prev_cc0_setter (rtx uncast_insn)
 
   return insn;
 }
-#endif
 
 #ifdef AUTO_INC_DEC
 /* Find a RTX_AUTOINC class rtx which matches DATA.  */

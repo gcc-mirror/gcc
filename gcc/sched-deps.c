@@ -2608,8 +2608,10 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 
       return;
 
-#ifdef HAVE_cc0
     case CC0:
+#ifndef HAVE_cc0
+      gcc_unreachable ();
+#endif
       /* User of CC0 depends on immediately preceding insn.  */
       SCHED_GROUP_P (insn) = 1;
        /* Don't move CC0 setter to another block (it can set up the
@@ -2620,7 +2622,6 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	sched_deps_info->finish_rhs ();
 
       return;
-#endif
 
     case REG:
       {

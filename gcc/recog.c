@@ -971,7 +971,6 @@ validate_simplify_insn (rtx insn)
   return ((num_changes_pending () > 0) && (apply_change_group () > 0));
 }
 
-#ifdef HAVE_cc0
 /* Return 1 if the insn using CC0 set by INSN does not contain
    any ordered tests applied to the condition codes.
    EQ and NE tests do not count.  */
@@ -988,7 +987,6 @@ next_insn_tests_no_inequality (rtx insn)
   return (INSN_P (next)
 	  && ! inequality_comparisons_p (PATTERN (next)));
 }
-#endif
 
 /* Return 1 if OP is a valid general operand for machine mode MODE.
    This is either a register reference, a memory reference,
