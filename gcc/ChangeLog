@@ -1,5 +1,11 @@
 2015-04-22  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
+	PR target/55144
+	* config.gcc (bfin*-linux-uclibc*): Prepend tmake_file and
+	remove already contained t-files.
+
+2015-04-22  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
 	* tree-tailcall.c (suitable_for_tail_opt_p, find_tail_calls):
 	Remove unneeded forward declarations.
 	(suitable_for_tail_call_opt_p): Commentary typo fix.
