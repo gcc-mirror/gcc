@@ -1,3 +1,7 @@
+2015-04-22  Gregor Richards  <gregor.richards@uwaterloo.ca>
+
+	* mkfixinc.sh: Add *-musl* with no fixes.
+
 2015-03-28  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR libstdc++/65500
