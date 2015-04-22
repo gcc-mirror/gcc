@@ -6,7 +6,8 @@
 #include "avx512f-helper.h"
 
 #include <math.h>
-#include <values.h>
+#include <limits.h>
+#include <float.h>
 #define SIZE (AVX512F_LEN / 32)
 #include "avx512f-mask-type.h"
 
