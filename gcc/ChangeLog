@@ -1,3 +1,16 @@
+2015-04-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from trunk r222179.
+
+	2015-04-17  Sivanupandi Pitchumani <Pitchumani.Sivanupandi@atmel.com>
+
+	PR target/65296
+	* config/avr/gen-avr-mmcu-specs.c (*avrlibc_startfile): Adjust
+	to new AVR-LibC file layout (bug #44574).
+	(*avrlibc_devicelib): Same.
+	* config/avr/avr-mcus.def: Adjust comments.
+	* config/avr/avr.opt (nodevicelib): Adjust help.
+
 2015-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Set to 5.1.1.
