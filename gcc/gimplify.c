@@ -4792,7 +4792,7 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   if (ap != NULL_TREE
       && TREE_CODE (ap) == ADDR_EXPR
       && TREE_CODE (ap_copy) == ADDR_EXPR
-      && TREE_OPERAND (ap, 0) != TREE_OPERAND (ap_copy, 0))
+      && !operand_equal_p (TREE_OPERAND (ap, 0), TREE_OPERAND (ap_copy, 0), 0))
     gimplify_assign (TREE_OPERAND (ap, 0), TREE_OPERAND (ap_copy, 0), pre_p);
 
   if (want_value)
