@@ -1,3 +1,8 @@
+2015-04-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65727
+	* lambda.c (maybe_resolve_dummy): Handle null return.
+
 2015-04-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65695

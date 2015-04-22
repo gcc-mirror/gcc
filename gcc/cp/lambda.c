@@ -787,7 +787,7 @@ maybe_resolve_dummy (tree object, bool add_capture_p)
       /* In a lambda, need to go through 'this' capture.  */
       tree lam = CLASSTYPE_LAMBDA_EXPR (current_class_type);
       tree cap = lambda_expr_this_capture (lam, add_capture_p);
-      if (cap != error_mark_node)
+      if (cap && cap != error_mark_node)
 	object = build_x_indirect_ref (EXPR_LOCATION (object), cap,
 				       RO_NULL, tf_warning_or_error);
     }
