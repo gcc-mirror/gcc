@@ -40,7 +40,7 @@ int GTM_hwcap HIDDEN = 0
 
 #ifdef __linux__
 #include <unistd.h>
-#include <sys/fcntl.h>
+#include <fcntl.h>
 #include <elf.h>
 
 static void __attribute__((constructor))
