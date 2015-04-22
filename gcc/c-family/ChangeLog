@@ -1,3 +1,7 @@
+2015-04-22  Release Manager
+
+	* GCC 5.1.0 released.
+
 2015-04-10  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	PR target/55143

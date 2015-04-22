@@ -1,3 +1,7 @@
+2015-04-22  Release Manager
+
+	* GCC 5.1.0 released.
+
 2015-04-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* scripts/extract_symvers.pl: Ignore elfdump error output.
