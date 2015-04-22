@@ -1,3 +1,9 @@
+2015-04-22  Gregor Richards  <gregor.richards@uwaterloo.ca>
+	    Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* unwind-dw2-fde-dip.c (USE_PT_GNU_EH_FRAME): Define it on
+	Linux if target provides dl_iterate_phdr.
+
 2015-04-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/65612
