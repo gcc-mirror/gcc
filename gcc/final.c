@@ -242,7 +242,7 @@ static void output_asm_operand_names (rtx *, int *, int);
 #ifdef LEAF_REGISTERS
 static void leaf_renumber_regs (rtx_insn *);
 #endif
-#ifdef HAVE_cc0
+#if HAVE_cc0
 static int alter_cond (rtx);
 #endif
 #ifndef ADDR_VEC_ALIGN
@@ -2029,7 +2029,7 @@ final (rtx_insn *first, FILE *file, int optimize_p)
 
   last_ignored_compare = 0;
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
       /* If CC tracking across branches is enabled, record the insn which
@@ -2198,7 +2198,7 @@ rtx_insn *
 final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		 int nopeepholes ATTRIBUTE_UNUSED, int *seen)
 {
-#ifdef HAVE_cc0
+#if HAVE_cc0
   rtx set;
 #endif
   rtx_insn *next;
@@ -2505,7 +2505,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	    || GET_CODE (body) == CLOBBER)
 	  break;
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
 	{
 	  /* If there is a REG_CC_SETTER note on this insn, it means that
 	     the setting of the condition code was done in the delay slot
@@ -2722,7 +2722,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
 	body = PATTERN (insn);
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
 	set = single_set (insn);
 
 	/* Check for redundant test and compare instructions
@@ -2967,7 +2967,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	    && GET_CODE (PATTERN (insn)) == COND_EXEC)
 	  current_insn_predicate = COND_EXEC_TEST (PATTERN (insn));
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
 	cc_prev_status = cc_status;
 
 	/* Update `cc_status' for this instruction.
@@ -3256,7 +3256,7 @@ walk_alter_subreg (rtx *xp, bool *changed)
   return *xp;
 }
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
 
 /* Given BODY, the body of a jump instruction, alter the jump condition
    as required by the bits that are set in cc_status.flags.

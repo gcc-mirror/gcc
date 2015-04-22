@@ -4641,7 +4641,7 @@ find_moveable_pseudos (void)
 			   ? " (no unique first use)" : "");
 		continue;
 	      }
-#ifdef HAVE_cc0
+#if HAVE_cc0
 	    if (reg_referenced_p (cc0_rtx, PATTERN (closest_use)))
 	      {
 		if (dump_file)
@@ -4724,7 +4724,7 @@ find_moveable_pseudos (void)
 	    {
 	      if (bitmap_bit_p (def_bb_moveable, regno)
 		  && !control_flow_insn_p (use_insn)
-#ifdef HAVE_cc0
+#if HAVE_cc0
 		  && !sets_cc0_p (use_insn)
 #endif
 		  )

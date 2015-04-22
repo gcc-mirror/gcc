@@ -836,7 +836,7 @@ do_SUBST_MODE (rtx *into, machine_mode newval)
 
 #define SUBST_MODE(INTO, NEWVAL)  do_SUBST_MODE (&(INTO), (NEWVAL))
 
-#ifndef HAVE_cc0
+#if !HAVE_cc0
 /* Similar to SUBST, but NEWVAL is a LOG_LINKS expression.  */
 
 static void
@@ -1141,7 +1141,7 @@ insn_a_feeds_b (rtx_insn *a, rtx_insn *b)
   FOR_EACH_LOG_LINK (links, b)
     if (links->insn == a)
       return true;
-#ifdef HAVE_cc0
+#if HAVE_cc0
   if (sets_cc0_p (a))
     return true;
 #endif
@@ -1157,7 +1157,7 @@ static int
 combine_instructions (rtx_insn *f, unsigned int nregs)
 {
   rtx_insn *insn, *next;
-#ifdef HAVE_cc0
+#if HAVE_cc0
   rtx_insn *prev;
 #endif
   struct insn_link *links, *nextlinks;
@@ -1334,7 +1334,7 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 		    }
 	      }
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
 	  /* Try to combine a jump insn that uses CC0
 	     with a preceding insn that sets CC0, and maybe with its
 	     logical predecessor as well.
@@ -2068,7 +2068,7 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
       return 0;
 #endif
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
   /* Don't combine an insn that follows a CC0-setting insn.
      An insn that uses CC0 must not be separated from the one that sets it.
      We do, however, allow I2 to follow a CC0-setting insn if that insn
@@ -2514,7 +2514,7 @@ is_parallel_of_n_reg_sets (rtx pat, int n)
   return true;
 }
 
-#ifndef HAVE_cc0
+#if !HAVE_cc0
 /* Return whether INSN, a PARALLEL of N register SETs (and maybe some
    CLOBBERs), can be split into individual SETs in that order, without
    changing semantics.  */
@@ -2888,7 +2888,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	}
     }
 
-#ifndef HAVE_cc0
+#if !HAVE_cc0
   /* If we have no I1 and I2 looks like:
 	(parallel [(set (reg:CC X) (compare:CC OP (const_int 0)))
 		   (set Y OP)])
@@ -3116,7 +3116,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
   subst_insn = i3;
 
-#ifndef HAVE_cc0
+#if !HAVE_cc0
   /* Many machines that don't use CC0 have insns that can both perform an
      arithmetic operation and set the condition code.  These operations will
      be represented as a PARALLEL with the first element of the vector
@@ -3646,7 +3646,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	 are set between I2 and I3.  */
       if (insn_code_number < 0
           && (split = find_split_point (&newpat, i3, false)) != 0
-#ifdef HAVE_cc0
+#if HAVE_cc0
 	  && REG_P (i2dest)
 #endif
 	  /* We need I2DEST in the proper mode.  If it is a hard register
@@ -3918,7 +3918,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	  && !(GET_CODE (SET_DEST (set1)) == SUBREG
 	       && find_reg_note (i2, REG_DEAD,
 				 SUBREG_REG (SET_DEST (set1))))
-#ifdef HAVE_cc0
+#if HAVE_cc0
 	  && !reg_referenced_p (cc0_rtx, set0)
 #endif
 	  /* If I3 is a jump, ensure that set0 is a jump so that
@@ -3935,7 +3935,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	       && !(GET_CODE (SET_DEST (set0)) == SUBREG
 		    && find_reg_note (i2, REG_DEAD,
 				      SUBREG_REG (SET_DEST (set0))))
-#ifdef HAVE_cc0
+#if HAVE_cc0
 	       && !reg_referenced_p (cc0_rtx, set1)
 #endif
 	       /* If I3 is a jump, ensure that set1 is a jump so that
@@ -4002,7 +4002,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	}
     }
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
   /* If I2 is the CC0 setter and I3 is the CC0 user then check whether
      they are adjacent to each other or not.  */
   {
@@ -4816,7 +4816,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
       break;
 
     case SET:
-#ifdef HAVE_cc0
+#if HAVE_cc0
       /* If SET_DEST is CC0 and SET_SRC is not an operand, a COMPARE, or a
 	 ZERO_EXTRACT, the most likely reason why this doesn't match is that
 	 we need to put the operand into a register.  So split at that
@@ -5331,7 +5331,7 @@ subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
 		      && ! (code == SUBREG
 			    && MODES_TIEABLE_P (GET_MODE (x),
 						GET_MODE (SUBREG_REG (to))))
-#ifdef HAVE_cc0
+#if HAVE_cc0
 		      && ! (code == SET && i == 1 && XEXP (x, 0) == cc0_rtx)
 #endif
 		      )
@@ -6582,7 +6582,7 @@ simplify_set (rtx x)
       else
 	compare_mode = SELECT_CC_MODE (new_code, op0, op1);
 
-#ifndef HAVE_cc0
+#if !HAVE_cc0
       /* If the mode changed, we have to change SET_DEST, the mode in the
 	 compare, and the mode in the place SET_DEST is used.  If SET_DEST is
 	 a hard register, just build new versions with the proper mode.  If it
@@ -13802,7 +13802,7 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 		    {
 		      rtx set = single_set (tem_insn);
 		      rtx inner_dest = 0;
-#ifdef HAVE_cc0
+#if HAVE_cc0
 		      rtx_insn *cc0_setter = NULL;
 #endif
 
@@ -13824,7 +13824,7 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 
 		      if (set != 0 && ! side_effects_p (SET_SRC (set))
 			  && rtx_equal_p (XEXP (note, 0), inner_dest)
-#ifdef HAVE_cc0
+#if HAVE_cc0
 			  && (! reg_mentioned_p (cc0_rtx, SET_SRC (set))
 			      || ((cc0_setter = prev_cc0_setter (tem_insn)) != NULL
 				  && sets_cc0_p (PATTERN (cc0_setter)) > 0))
@@ -13848,7 +13848,7 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 			  if (tem_insn == i2)
 			    i2 = NULL;
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
 			  /* Delete the setter too.  */
 			  if (cc0_setter)
 			    {

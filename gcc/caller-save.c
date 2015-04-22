@@ -1400,7 +1400,7 @@ insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
   rtx_insn *insn = chain->insn;
   struct insn_chain *new_chain;
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
   /* If INSN references CC0, put our insns in front of the insn that sets
      CC0.  This is always safe, since the only way we could be passed an
      insn that references CC0 is for a restore, and doing a restore earlier

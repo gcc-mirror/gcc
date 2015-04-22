@@ -3354,7 +3354,7 @@ curr_insn_transform (bool check_only_p)
   if (JUMP_P (curr_insn) || CALL_P (curr_insn))
     no_output_reloads_p = true;
 
-#ifdef HAVE_cc0
+#if HAVE_cc0
   if (reg_referenced_p (cc0_rtx, PATTERN (curr_insn)))
     no_input_reloads_p = true;
   if (reg_set_p (cc0_rtx, PATTERN (curr_insn)))
