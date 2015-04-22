@@ -84,6 +84,8 @@ extern c6x_cpu_t c6x_arch;
 						\
       switch (c6x_arch)				\
 	{					\
+	case unk_isa:				\
+	  break;				\
 	case C6X_CPU_C62X:			\
 	  builtin_define ("_TMS320C6200");	\
 	  break;				\
