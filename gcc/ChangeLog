@@ -1,5 +1,10 @@
 2015-04-22  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
+	PR target/47122
+	* config.gcc (vax-*-openbsd*): Fix name of pthread spec header.
+
+2015-04-22  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
 	PR target/55144
 	* config.gcc (bfin*-linux-uclibc*): Prepend tmake_file and
 	remove already contained t-files.
