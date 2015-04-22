@@ -2029,21 +2029,20 @@ final (rtx_insn *first, FILE *file, int optimize_p)
 
   last_ignored_compare = 0;
 
-#if HAVE_cc0
-  for (insn = first; insn; insn = NEXT_INSN (insn))
-    {
-      /* If CC tracking across branches is enabled, record the insn which
-	 jumps to each branch only reached from one place.  */
-      if (optimize_p && JUMP_P (insn))
-	{
-	  rtx lab = JUMP_LABEL (insn);
-	  if (lab && LABEL_P (lab) && LABEL_NUSES (lab) == 1)
-	    {
-	      LABEL_REFS (lab) = insn;
-	    }
-	}
-    }
-#endif
+  if (HAVE_cc0)
+    for (insn = first; insn; insn = NEXT_INSN (insn))
+      {
+	/* If CC tracking across branches is enabled, record the insn which
+	   jumps to each branch only reached from one place.  */
+	if (optimize_p && JUMP_P (insn))
+	  {
+	    rtx lab = JUMP_LABEL (insn);
+	    if (lab && LABEL_P (lab) && LABEL_NUSES (lab) == 1)
+	      {
+		LABEL_REFS (lab) = insn;
+	      }
+	  }
+      }
 
   init_recog ();
 

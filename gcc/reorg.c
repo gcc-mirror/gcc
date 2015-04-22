@@ -1364,10 +1364,8 @@ try_merge_delay_insns (rtx insn, rtx_insn *thread)
 	continue;
 
       if (GET_CODE (next_to_match) == GET_CODE (trial)
-#if HAVE_cc0
 	  /* We can't share an insn that sets cc0.  */
-	  && ! sets_cc0_p (pat)
-#endif
+	  && (!HAVE_cc0 || ! sets_cc0_p (pat))
 	  && ! insn_references_resource_p (trial, &set, true)
 	  && ! insn_sets_resource_p (trial, &set, true)
 	  && ! insn_sets_resource_p (trial, &needed, true)
@@ -1437,9 +1435,7 @@ try_merge_delay_insns (rtx insn, rtx_insn *thread)
 	  if (! insn_references_resource_p (dtrial, &set, true)
 	      && ! insn_sets_resource_p (dtrial, &set, true)
 	      && ! insn_sets_resource_p (dtrial, &needed, true)
-#if HAVE_cc0
-	      && ! sets_cc0_p (PATTERN (dtrial))
-#endif
+	      && (!HAVE_cc0 || ! sets_cc0_p (PATTERN (dtrial)))
 	      && rtx_equal_p (PATTERN (next_to_match), PATTERN (dtrial))
 	      /* Check that DTRIAL and NEXT_TO_MATCH does not reference a 
 	         resource modified between them (only dtrial is checked because
@@ -2114,10 +2110,8 @@ fill_simple_delay_slots (int non_jumps_p)
 					     filter_flags ? &fset : &set,
 					     true)
 		  && ! insn_sets_resource_p (trial, &needed, true)
-#if HAVE_cc0
 		  /* Can't separate set of cc0 from its use.  */
-		  && ! (reg_mentioned_p (cc0_rtx, pat) && ! sets_cc0_p (pat))
-#endif
+		  && (!HAVE_cc0 || ! (reg_mentioned_p (cc0_rtx, pat) && ! sets_cc0_p (pat)))
 		  && ! can_throw_internal (trial))
 		{
 		  trial = try_split (pat, trial, 1);
@@ -2249,9 +2243,7 @@ fill_simple_delay_slots (int non_jumps_p)
 		  && ! insn_references_resource_p (trial, &set, true)
 		  && ! insn_sets_resource_p (trial, &set, true)
 		  && ! insn_sets_resource_p (trial, &needed, true)
-#if HAVE_cc0
-		  && ! (reg_mentioned_p (cc0_rtx, pat) && ! sets_cc0_p (pat))
-#endif
+		  && (!HAVE_cc0 && ! (reg_mentioned_p (cc0_rtx, pat) && ! sets_cc0_p (pat)))
 		  && ! (maybe_never && may_trap_or_fault_p (pat))
 		  && (trial = try_split (pat, trial, 0))
 		  && eligible_for_delay (insn, slots_filled, trial, flags)
@@ -2297,9 +2289,7 @@ fill_simple_delay_slots (int non_jumps_p)
 	      && ! insn_references_resource_p (next_trial, &set, true)
 	      && ! insn_sets_resource_p (next_trial, &set, true)
 	      && ! insn_sets_resource_p (next_trial, &needed, true)
-#if HAVE_cc0
-	      && ! reg_mentioned_p (cc0_rtx, PATTERN (next_trial))
-#endif
+	      && (!HAVE_cc0 || ! reg_mentioned_p (cc0_rtx, PATTERN (next_trial)))
 	      && ! (maybe_never && may_trap_or_fault_p (PATTERN (next_trial)))
 	      && (next_trial = try_split (PATTERN (next_trial), next_trial, 0))
 	      && eligible_for_delay (insn, slots_filled, next_trial, flags)
@@ -2510,10 +2500,8 @@ fill_slots_from_thread (rtx_insn *insn, rtx condition, rtx thread_or_return,
       if (! insn_references_resource_p (trial, &set, true)
 	  && ! insn_sets_resource_p (trial, &set, true)
 	  && ! insn_sets_resource_p (trial, &needed, true)
-#if HAVE_cc0
-	  && ! (reg_mentioned_p (cc0_rtx, pat)
-		&& (! own_thread || ! sets_cc0_p (pat)))
-#endif
+	  && (!HAVE_cc0 || (! (reg_mentioned_p (cc0_rtx, pat)
+			      && (! own_thread || ! sets_cc0_p (pat)))))
 	  && ! can_throw_internal (trial))
 	{
 	  rtx prior_insn;

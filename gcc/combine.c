@@ -2066,7 +2066,6 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
       return 0;
 #endif
 
-#if HAVE_cc0
   /* Don't combine an insn that follows a CC0-setting insn.
      An insn that uses CC0 must not be separated from the one that sets it.
      We do, however, allow I2 to follow a CC0-setting insn if that insn
@@ -2076,11 +2075,13 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
      It would be more logical to test whether CC0 occurs inside I1 or I2,
      but that would be much slower, and this ought to be equivalent.  */
 
-  p = prev_nonnote_insn (insn);
-  if (p && p != pred && NONJUMP_INSN_P (p) && sets_cc0_p (PATTERN (p))
-      && ! all_adjacent)
-    return 0;
-#endif
+  if (HAVE_cc0)
+    {
+      p = prev_nonnote_insn (insn);
+      if (p && p != pred && NONJUMP_INSN_P (p) && sets_cc0_p (PATTERN (p))
+	  && ! all_adjacent)
+	return 0;
+    }
 
   /* If we get here, we have passed all the tests and the combination is
      to be allowed.  */
@@ -3114,7 +3115,6 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
   subst_insn = i3;
 
-#if !HAVE_cc0
   /* Many machines that don't use CC0 have insns that can both perform an
      arithmetic operation and set the condition code.  These operations will
      be represented as a PARALLEL with the first element of the vector
@@ -3126,7 +3126,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
      needed, and make the PARALLEL by just replacing I2DEST in I3SRC with
      I2SRC.  Later we will make the PARALLEL that contains I2.  */
 
-  if (i1 == 0 && added_sets_2 && GET_CODE (PATTERN (i3)) == SET
+  if (!HAVE_cc0 && i1 == 0 && added_sets_2 && GET_CODE (PATTERN (i3)) == SET
       && GET_CODE (SET_SRC (PATTERN (i3))) == COMPARE
       && CONST_INT_P (XEXP (SET_SRC (PATTERN (i3)), 1))
       && rtx_equal_p (XEXP (SET_SRC (PATTERN (i3)), 0), i2dest))
@@ -3216,7 +3216,6 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	  i2_is_used = 1;
 	}
     }
-#endif
 
   if (i2_is_used == 0)
     {
@@ -3644,9 +3643,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	 are set between I2 and I3.  */
       if (insn_code_number < 0
           && (split = find_split_point (&newpat, i3, false)) != 0
-#if HAVE_cc0
-	  && REG_P (i2dest)
-#endif
+	  && (!HAVE_cc0 || REG_P (i2dest))
 	  /* We need I2DEST in the proper mode.  If it is a hard register
 	     or the only use of a pseudo, we can change its mode.
 	     Make sure we don't change a hard register to have a mode that
@@ -3916,9 +3913,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	  && !(GET_CODE (SET_DEST (set1)) == SUBREG
 	       && find_reg_note (i2, REG_DEAD,
 				 SUBREG_REG (SET_DEST (set1))))
-#if HAVE_cc0
-	  && !reg_referenced_p (cc0_rtx, set0)
-#endif
+	  && (!HAVE_cc0 || !reg_referenced_p (cc0_rtx, set0))
 	  /* If I3 is a jump, ensure that set0 is a jump so that
 	     we do not create invalid RTL.  */
 	  && (!JUMP_P (i3) || SET_DEST (set0) == pc_rtx)
@@ -3933,9 +3928,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	       && !(GET_CODE (SET_DEST (set0)) == SUBREG
 		    && find_reg_note (i2, REG_DEAD,
 				      SUBREG_REG (SET_DEST (set0))))
-#if HAVE_cc0
-	       && !reg_referenced_p (cc0_rtx, set1)
-#endif
+	       && (!HAVE_cc0 || !reg_referenced_p (cc0_rtx, set1))
 	       /* If I3 is a jump, ensure that set1 is a jump so that
 		  we do not create invalid RTL.  */
 	       && (!JUMP_P (i3) || SET_DEST (set1) == pc_rtx)
@@ -4000,19 +3993,18 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	}
     }
 
-#if HAVE_cc0
   /* If I2 is the CC0 setter and I3 is the CC0 user then check whether
      they are adjacent to each other or not.  */
-  {
-    rtx_insn *p = prev_nonnote_insn (i3);
-    if (p && p != i2 && NONJUMP_INSN_P (p) && newi2pat
-	&& sets_cc0_p (newi2pat))
-      {
-	undo_all ();
-	return 0;
-      }
-  }
-#endif
+  if (HAVE_cc0)
+    {
+      rtx_insn *p = prev_nonnote_insn (i3);
+      if (p && p != i2 && NONJUMP_INSN_P (p) && newi2pat
+	  && sets_cc0_p (newi2pat))
+	{
+	  undo_all ();
+	  return 0;
+	}
+    }
 
   /* Only allow this combination if insn_rtx_costs reports that the
      replacement instructions are cheaper than the originals.  */
@@ -13796,9 +13788,7 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 		    {
 		      rtx set = single_set (tem_insn);
 		      rtx inner_dest = 0;
-#if HAVE_cc0
 		      rtx_insn *cc0_setter = NULL;
-#endif
 
 		      if (set != 0)
 			for (inner_dest = SET_DEST (set);
@@ -13842,7 +13832,6 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 			  if (tem_insn == i2)
 			    i2 = NULL;
 
-#if HAVE_cc0
 			  /* Delete the setter too.  */
 			  if (cc0_setter)
 			    {
@@ -13859,7 +13848,6 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 			      if (cc0_setter == i2)
 				i2 = NULL;
 			    }
-#endif
 			}
 		      else
 			{

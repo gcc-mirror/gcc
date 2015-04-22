@@ -4724,10 +4724,7 @@ find_moveable_pseudos (void)
 	    {
 	      if (bitmap_bit_p (def_bb_moveable, regno)
 		  && !control_flow_insn_p (use_insn)
-#if HAVE_cc0
-		  && !sets_cc0_p (use_insn)
-#endif
-		  )
+		  && (!HAVE_cc0 || !sets_cc0_p (use_insn)))
 		{
 		  if (modified_between_p (DF_REF_REG (use), def_insn, use_insn))
 		    {

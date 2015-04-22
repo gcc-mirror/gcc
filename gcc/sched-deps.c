@@ -2609,9 +2609,9 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
       return;
 
     case CC0:
-#if !HAVE_cc0
-      gcc_unreachable ();
-#endif
+      if (!HAVE_cc0)
+	gcc_unreachable ();
+
       /* User of CC0 depends on immediately preceding insn.  */
       SCHED_GROUP_P (insn) = 1;
        /* Don't move CC0 setter to another block (it can set up the
