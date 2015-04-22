@@ -1,3 +1,7 @@
+2015-04-22  Eli Zaretskii  <eliz@gnu.org>
+
+	* setenv.c <environ>: Declare only if not a macro.
+
 2015-04-14  Max Ostapenko  <m.ostapenko@partner.samsung.com>
 
 	* testsuite/Makefile.in (LIBCFLAGS): Add LDFLAGS.
