@@ -1,3 +1,8 @@
+2015-04-22  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* Makefile.tpl: Remove surplus whitespace throughout.
+	* Makefile.in: Regenerate.
+
 2015-04-20  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* MAINTAINERS (Various Maintainers): Add myself as instruction
