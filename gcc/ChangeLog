@@ -1,5 +1,12 @@
 2015-04-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* defaults.h (INSN_REFERENCES_ARE_DELAYED): New definition.
+	* reorg.c (redundant_insn): Remove ifdef
+	INSN_REFERENCES_ARE_DELAYED.
+	* resource.c (mark_referenced_resources): Likewise.
+
+2015-04-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* defaults.h (INSN_SETS_ARE_DELAYED): New definition.
 	* reorg.c (redundant_insn): Remove ifdef INSN_SETS_ARE_DELAYED.
 	* resource.c (mark_set_resources): Likewise.

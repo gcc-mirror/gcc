@@ -1574,10 +1574,8 @@ redundant_insn (rtx insn, rtx_insn *target, rtx delay_list)
 	  if (INSN_SETS_ARE_DELAYED (seq->insn (0)))
 	    return 0;
 
-#ifdef INSN_REFERENCES_ARE_DELAYED
 	  if (INSN_REFERENCES_ARE_DELAYED (seq->insn (0)))
 	    return 0;
-#endif
 
 	  /* See if any of the insns in the delay slot match, updating
 	     resource requirements as we go.  */
@@ -1674,10 +1672,8 @@ redundant_insn (rtx insn, rtx_insn *target, rtx delay_list)
 	  if (INSN_SETS_ARE_DELAYED (control))
 	    return 0;
 
-#ifdef INSN_REFERENCES_ARE_DELAYED
 	  if (INSN_REFERENCES_ARE_DELAYED (control))
 	    return 0;
-#endif
 
 	  if (JUMP_P (control))
 	    annul_p = INSN_ANNULLED_BRANCH_P (control);

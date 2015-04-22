@@ -392,11 +392,9 @@ mark_referenced_resources (rtx x, struct resources *res,
 			  include_delayed_effects
 			  ? MARK_SRC_DEST_CALL : MARK_SRC_DEST);
 
-#ifdef INSN_REFERENCES_ARE_DELAYED
       if (! include_delayed_effects
 	  && INSN_REFERENCES_ARE_DELAYED (as_a <rtx_insn *> (x)))
 	return;
-#endif
 
       /* No special processing, just speed up.  */
       mark_referenced_resources (PATTERN (x), res, include_delayed_effects);
