@@ -575,7 +575,7 @@ case ${target} in
 esac
 
 # Common C libraries.
-tm_defines="$tm_defines LIBC_GLIBC=1 LIBC_UCLIBC=2 LIBC_BIONIC=3 LIBC_MUSL=4"
+tm_defines="$tm_defines LIBC_GLIBC=1 LIBC_UCLIBC=2 LIBC_BIONIC=3"
 
 # 32-bit x86 processors supported by --with-arch=.  Each processor
 # MUST be separated by exactly one space.
@@ -724,9 +724,6 @@ case ${target} in
       ;;
     *-*-*uclibc*)
       tm_defines="$tm_defines DEFAULT_LIBC=LIBC_UCLIBC"
-      ;;
-    *-*-*musl*)
-      tm_defines="$tm_defines DEFAULT_LIBC=LIBC_MUSL"
       ;;
     *)
       tm_defines="$tm_defines DEFAULT_LIBC=LIBC_GLIBC"
