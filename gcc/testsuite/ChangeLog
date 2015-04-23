@@ -1,3 +1,8 @@
+2015-04-23  Kyok Cheung Yeung  <kck@codesourcery.com>
+
+	PR target/26702
+	* gcc.target/arm/pr26702.c: New test.
+
 2015-04-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c/65345
