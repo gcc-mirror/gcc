@@ -6066,8 +6066,8 @@ extern bool class_tmpl_impl_spec_p		(const_tree);
 extern int zero_init_p				(const_tree);
 extern bool check_abi_tag_redeclaration		(const_tree, const_tree, const_tree);
 extern bool check_abi_tag_args			(tree, tree);
-extern tree strip_typedefs			(tree);
-extern tree strip_typedefs_expr			(tree);
+extern tree strip_typedefs			(tree, bool * = NULL);
+extern tree strip_typedefs_expr			(tree, bool * = NULL);
 extern tree copy_binfo				(tree, tree, tree,
 						 tree *, int);
 extern int member_p				(const_tree);
