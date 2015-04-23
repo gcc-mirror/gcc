@@ -1,3 +1,8 @@
+2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.opt (mcrypto): Change option description to
+	match category changes in ISA 2.07B.
+
 2015-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/iterators.md (GTGE, GTUGEU, COMPARISONS): New code
