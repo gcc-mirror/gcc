@@ -1,3 +1,9 @@
+2015-04-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65345
+	* gcc.dg/pr65345-1.c: New test.
+	* gcc.dg/pr65345-2.c: New test.
+
 2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/crypto-builtin-2.c: New.
