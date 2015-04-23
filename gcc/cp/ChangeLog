@@ -1,5 +1,13 @@
 2015-04-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50800
+	* tree.c (strip_typedefs): Add remove_attributes parm.
+	(strip_typedefs_expr): Likewise.
+	(apply_identity_attributes): New subroutine of strip_typedefs.
+	* pt.c (canonicalize_type_argument): Let strip_typedefs handle attrs.
+	(convert_nontype_argument, unify): Likewise.
+	* cp-tree.h: Adjust.
+
 	PR c++/65646
 	* pt.c (check_explicit_specialization): Don't
 	SET_DECL_TEMPLATE_SPECIALIZATION for a variable with no template
