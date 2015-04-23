@@ -1,3 +1,14 @@
+2015-04-23  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* config/arm/arm.h (LEGITIMIZE_RELOAD_ADDRESS): Remove.
+	(ARM_LEGITIMIZE_RELOAD_ADDRESS): Remove.
+	(THUMB_LEGITIMIZE_RELOAD_ADDRESS): Remove.
+	* config/arm/arm.c (arm_legimitimize_reload_address): Remove.
+	(thumb_legimitimize_reload_address): Remove.
+	* config/arm/arm-protos.h (arm_legimitimize_reload_address):
+	Remove.
+	(thumb_legimitimize_reload_address): Remove.
+
 2015-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* conditions.h (CC_STATUS_INIT): Gate on #ifndef CC_STATUS_INIT.
