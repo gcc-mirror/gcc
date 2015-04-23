@@ -256,6 +256,9 @@ protected:
 					            symtab_node *n2,
 					            bool address);
 
+  /* Compare two attribute lists.  */
+  static bool compare_attributes (const_tree list1, const_tree list2);
+
   /* Hash properties compared by compare_referenced_symbol_properties.  */
   void hash_referenced_symbol_properties (symtab_node *ref,
 					  inchash::hash &hstate,
@@ -355,6 +358,9 @@ public:
 
   /* Array of structures for all basic blocks.  */
   vec <ipa_icf_gimple::sem_bb *> bb_sorted;
+
+  /* Return true if parameter I may be used.  */
+  bool param_used_p (unsigned int i);
 
 private:
   /* Calculates hash value based on a BASIC_BLOCK.  */
