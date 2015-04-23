@@ -1,3 +1,18 @@
+2015-04-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	Backport from trunk r222223.
+
+	2015-04-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/65805
+	* lra-eliminations.c (lra_eliminate_regs_1): Add new assert.
+	Don't use difference of offset and previous offset if
+	update_sp_offset is non-zero.
+	(eliminate_regs_in_insn): Ditto.
+	* lra-spills.c (remove_pseudos): Exchange 4th and 6th args in
+	lra_eliminate_regs_1 call.
+	* lra-constraints.c (get_equiv_with_elimination): Ditto.
+
 2015-04-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from trunk r222179.

@@ -318,7 +318,9 @@ get_elimination (rtx reg)
    substitution if UPDATE_P, or the full offset if FULL_P, or
    otherwise zero.  If FULL_P, we also use the SP offsets for
    elimination to SP.  If UPDATE_P, use UPDATE_SP_OFFSET for updating
-   offsets of register elimnable to SP.
+   offsets of register elimnable to SP.  If UPDATE_SP_OFFSET is
+   non-zero, don't use difference of the offset and the previous
+   offset.
 
    MEM_MODE is the mode of an enclosing MEM.  We need this to know how
    much to adjust a register for, e.g., PRE_DEC.  Also, if we are
@@ -341,7 +343,8 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
   const char *fmt;
   int copied = 0;
 
-  gcc_assert (!update_p || !full_p);
+  lra_assert (!update_p || !full_p);
+  lra_assert (update_sp_offset == 0 || (!subst_p && update_p && !full_p));
   if (! current_function_decl)
     return x;
 
@@ -366,11 +369,14 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
 	{
 	  rtx to = subst_p ? ep->to_rtx : ep->from_rtx;
 
-	  if (update_p)
-	    return plus_constant (Pmode, to,
-				  ep->offset - ep->previous_offset
-				  + (ep->to_rtx == stack_pointer_rtx
-				     ? update_sp_offset : 0));
+	  if (update_sp_offset != 0)
+	    {
+	      if (ep->to_rtx == stack_pointer_rtx)
+		return plus_constant (Pmode, to, update_sp_offset);
+	      return to;
+	    }
+	  else if (update_p)
+	    return plus_constant (Pmode, to, ep->offset - ep->previous_offset);
 	  else if (full_p)
 	    return plus_constant (Pmode, to,
 				  ep->offset
@@ -395,16 +401,15 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
 
 	      if (! update_p && ! full_p)
 		return gen_rtx_PLUS (Pmode, to, XEXP (x, 1));
-
-	      offset = (update_p
-			? ep->offset - ep->previous_offset
-			+ (ep->to_rtx == stack_pointer_rtx
-			   ? update_sp_offset : 0)
-			: ep->offset);
+	      
+	      if (update_sp_offset != 0)
+		offset = ep->to_rtx == stack_pointer_rtx ? update_sp_offset : 0;
+	      else
+		offset = (update_p
+			  ? ep->offset - ep->previous_offset : ep->offset);
 	      if (full_p && insn != NULL_RTX && ep->to_rtx == stack_pointer_rtx)
 		offset -= lra_get_insn_recog_data (insn)->sp_offset;
-	      if (CONST_INT_P (XEXP (x, 1))
-		  && INTVAL (XEXP (x, 1)) == -offset)
+	      if (CONST_INT_P (XEXP (x, 1)) && INTVAL (XEXP (x, 1)) == -offset)
 		return to;
 	      else
 		return gen_rtx_PLUS (Pmode, to,
@@ -451,12 +456,18 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
 	{
 	  rtx to = subst_p ? ep->to_rtx : ep->from_rtx;
 
-	  if (update_p)
+	  if (update_sp_offset != 0)
+	    {
+	      if (ep->to_rtx == stack_pointer_rtx)
+		return plus_constant (Pmode,
+				      gen_rtx_MULT (Pmode, to, XEXP (x, 1)),
+				      update_sp_offset * INTVAL (XEXP (x, 1)));
+	      return gen_rtx_MULT (Pmode, to, XEXP (x, 1));
+	    }
+	  else if (update_p)
 	    return plus_constant (Pmode,
 				  gen_rtx_MULT (Pmode, to, XEXP (x, 1)),
-				  (ep->offset - ep->previous_offset
-				   + (ep->to_rtx == stack_pointer_rtx
-				      ? update_sp_offset : 0))
+				  (ep->offset - ep->previous_offset)
 				  * INTVAL (XEXP (x, 1)));
 	  else if (full_p)
 	    {
@@ -889,11 +900,12 @@ remove_reg_equal_offset_note (rtx insn, rtx what)
 
    If REPLACE_P is false, just update the offsets while keeping the
    base register the same.  If FIRST_P, use the sp offset for
-   elimination to sp.  Otherwise, use UPDATE_SP_OFFSET for this.
-   Attach the note about used elimination for insns setting frame
-   pointer to update elimination easy (without parsing already
-   generated elimination insns to find offset previously used) in
-   future.  */
+   elimination to sp.  Otherwise, use UPDATE_SP_OFFSET for this.  If
+   UPDATE_SP_OFFSET is non-zero, don't use difference of the offset
+   and the previous offset.  Attach the note about used elimination
+   for insns setting frame pointer to update elimination easy (without
+   parsing already generated elimination insns to find offset
+   previously used) in future.  */
 
 void
 eliminate_regs_in_insn (rtx_insn *insn, bool replace_p, bool first_p,
@@ -939,6 +951,10 @@ eliminate_regs_in_insn (rtx_insn *insn, bool replace_p, bool first_p,
 	      {
 		rtx src = SET_SRC (old_set);
 		rtx off = remove_reg_equal_offset_note (insn, ep->to_rtx);
+		
+		/* We should never process such insn with non-zero
+		   UPDATE_SP_OFFSET.  */
+		lra_assert (update_sp_offset == 0);
 		
 		if (off != NULL_RTX
 		    || src == ep->to_rtx
@@ -1026,7 +1042,8 @@ eliminate_regs_in_insn (rtx_insn *insn, bool replace_p, bool first_p,
 
 	  if (! replace_p)
 	    {
-	      offset += (ep->offset - ep->previous_offset);
+	      if (update_sp_offset == 0)
+		offset += (ep->offset - ep->previous_offset);
 	      if (ep->to_rtx == stack_pointer_rtx)
 		{
 		  if (first_p)
