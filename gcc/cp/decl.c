@@ -8210,9 +8210,7 @@ grokvardecl (tree type,
     DECL_INTERFACE_KNOWN (decl) = 1;
 
   // Handle explicit specializations and instantiations of variable templates.
-  if (orig_declarator
-      /* For GCC 5 fix 65646 this way.  */
-      && current_tmpl_spec_kind (template_count) != tsk_none)
+  if (orig_declarator)
     decl = check_explicit_specialization (orig_declarator, decl,
 					  template_count, 0);
 

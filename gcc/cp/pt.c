@@ -2424,7 +2424,7 @@ check_explicit_specialization (tree declarator,
   switch (tsk)
     {
     case tsk_none:
-      if (processing_specialization)
+      if (processing_specialization && TREE_CODE (decl) != VAR_DECL)
 	{
 	  specialization = 1;
 	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
