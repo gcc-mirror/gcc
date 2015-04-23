@@ -158,7 +158,7 @@ ARM_CORE("cortex-r7",		cortexr7, cortexr7,		7R,  FL_LDSCHED | FL_ARM_DIV, cortex
 ARM_CORE("cortex-m7",		cortexm7, cortexm7,		7EM, FL_LDSCHED | FL_NO_VOLATILE_CE, cortex_m7)
 ARM_CORE("cortex-m4",		cortexm4, cortexm4,		7EM, FL_LDSCHED, v7m)
 ARM_CORE("cortex-m3",		cortexm3, cortexm3,		7M,  FL_LDSCHED, v7m)
-ARM_CORE("marvell-pj4",		marvell_pj4, marvell_pj4,	7A,  FL_LDSCHED, 9e)
+ARM_CORE("marvell-pj4",		marvell_pj4, marvell_pj4,	7A,  FL_LDSCHED, marvell_pj4)
 
 /* V7 big.LITTLE implementations */
 ARM_CORE("cortex-a15.cortex-a7", cortexa15cortexa7, cortexa7,	7A,  FL_LDSCHED | FL_THUMB_DIV | FL_ARM_DIV, cortex_a15)

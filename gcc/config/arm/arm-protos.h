@@ -303,6 +303,8 @@ struct tune_params
   unsigned int fuseable_ops;
   /* Depth of scheduling queue to check for L2 autoprefetcher.  */
   enum arm_sched_autopref sched_autopref;
+  /* Issue rate of the processor.  */
+  unsigned int issue_rate;
 };
 
 extern const struct tune_params *current_tune;
