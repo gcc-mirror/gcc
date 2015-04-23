@@ -1699,7 +1699,8 @@ const struct tune_params arm_slowmul_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+  1						/* Issue rate.  */
 };
 
 const struct tune_params arm_fastmul_tune =
@@ -1720,7 +1721,8 @@ const struct tune_params arm_fastmul_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+  1						/* Issue rate.  */
 };
 
 /* StrongARM has early execution of branches, so a sequence that is worth
@@ -1744,7 +1746,8 @@ const struct tune_params arm_strongarm_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+  1						/* Issue rate.  */
 };
 
 const struct tune_params arm_xscale_tune =
@@ -1765,7 +1768,8 @@ const struct tune_params arm_xscale_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+  1						/* Issue rate.  */
 };
 
 const struct tune_params arm_9e_tune =
@@ -1786,7 +1790,30 @@ const struct tune_params arm_9e_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+  1						/* Issue rate.  */
+};
+
+const struct tune_params arm_marvell_pj4_tune =
+{
+  arm_9e_rtx_costs,
+  NULL,
+  NULL,						/* Sched adj cost.  */
+  1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  true,						/* Prefer constant pool.  */
+  arm_default_branch_cost,
+  false,					/* Prefer LDRD/STRD.  */
+  {true, true},					/* Prefer non short circuit.  */
+  &arm_default_vec_cost,			/* Vectorizer costs.  */
+  false,					/* Prefer Neon for 64-bits bitops.  */
+  false, false,					/* Prefer 32-bit encodings.  */
+  false,					/* Prefer Neon for stringops.  */
+  8,						/* Maximum insns to inline memset.  */
+  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+  2						/* Issue rate.  */
 };
 
 const struct tune_params arm_v6t2_tune =
@@ -1807,8 +1834,10 @@ const struct tune_params arm_v6t2_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+  1						/* Issue rate.  */
 };
+
 
 /* Generic Cortex tuning.  Use more specific tunings if appropriate.  */
 const struct tune_params arm_cortex_tune =
@@ -1829,7 +1858,8 @@ const struct tune_params arm_cortex_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+  2						/* Issue rate.  */
 };
 
 const struct tune_params arm_cortex_a8_tune =
@@ -1850,7 +1880,8 @@ const struct tune_params arm_cortex_a8_tune =
   true,						/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+   2						/* Issue rate.  */
 };
 
 const struct tune_params arm_cortex_a7_tune =
@@ -1871,7 +1902,8 @@ const struct tune_params arm_cortex_a7_tune =
   true,						/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+  2						/* Issue rate.  */
 };
 
 const struct tune_params arm_cortex_a15_tune =
@@ -1892,7 +1924,8 @@ const struct tune_params arm_cortex_a15_tune =
   true,						/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_FULL			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_FULL,			/* Sched L2 autopref.  */
+  3						/* Issue rate.  */
 };
 
 const struct tune_params arm_cortex_a53_tune =
@@ -1913,7 +1946,8 @@ const struct tune_params arm_cortex_a53_tune =
   true,						/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_MOVW_MOVT,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+  2						/* Issue rate.  */
 };
 
 const struct tune_params arm_cortex_a57_tune =
@@ -1934,7 +1968,8 @@ const struct tune_params arm_cortex_a57_tune =
   true,						/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_MOVW_MOVT,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_FULL			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_FULL,			/* Sched L2 autopref.  */
+  3						/* Issue rate.  */
 };
 
 const struct tune_params arm_xgene1_tune =
@@ -1955,7 +1990,8 @@ const struct tune_params arm_xgene1_tune =
   false,				       /* Prefer Neon for stringops.  */
   32,					       /* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+  4						/* Issue rate.  */
 };
 
 /* Branches can be dual-issued on Cortex-A5, so conditional execution is
@@ -1979,7 +2015,8 @@ const struct tune_params arm_cortex_a5_tune =
   true,						/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+  2						/* Issue rate.  */
 };
 
 const struct tune_params arm_cortex_a9_tune =
@@ -2000,7 +2037,8 @@ const struct tune_params arm_cortex_a9_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+  2						/* Issue rate.  */
 };
 
 const struct tune_params arm_cortex_a12_tune =
@@ -2021,7 +2059,8 @@ const struct tune_params arm_cortex_a12_tune =
   true,						/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_MOVW_MOVT,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+  2						/* Issue rate.  */
 };
 
 /* armv7m tuning.  On Cortex-M4 cores for example, MOVW/MOVT take a single
@@ -2049,7 +2088,8 @@ const struct tune_params arm_v7m_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+  1						/* Issue rate.  */
 };
 
 /* Cortex-M7 tuning.  */
@@ -2072,7 +2112,8 @@ const struct tune_params arm_cortex_m7_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+  2						/* Issue rate.  */
 };
 
 /* The arm_v6m_tune is duplicated from arm_cortex_tune, rather than
@@ -2095,7 +2136,8 @@ const struct tune_params arm_v6m_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+  1						/* Issue rate.  */
 };
 
 const struct tune_params arm_fa726te_tune =
@@ -2116,7 +2158,8 @@ const struct tune_params arm_fa726te_tune =
   false,					/* Prefer Neon for stringops.  */
   8,						/* Maximum insns to inline memset.  */
   ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF			/* Sched L2 autopref.  */
+  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
+  2						/* Issue rate.  */
 };
 
 
@@ -27191,40 +27234,12 @@ thumb2_output_casesi (rtx *operands)
     }
 }
 
-/* Most ARM cores are single issue, but some newer ones can dual issue.
-   The scheduler descriptions rely on this being correct.  */
+/* Implement TARGET_SCHED_ISSUE_RATE.  Lookup the issue rate in the
+   per-core tuning structs.  */
 static int
 arm_issue_rate (void)
 {
-  switch (arm_tune)
-    {
-    case xgene1:
-      return 4;
-
-    case cortexa15:
-    case cortexa57:
-    case exynosm1:
-      return 3;
-
-    case cortexm7:
-    case cortexr4:
-    case cortexr4f:
-    case cortexr5:
-    case genericv7a:
-    case cortexa5:
-    case cortexa7:
-    case cortexa8:
-    case cortexa9:
-    case cortexa12:
-    case cortexa17:
-    case cortexa53:
-    case fa726te:
-    case marvell_pj4:
-      return 2;
-
-    default:
-      return 1;
-    }
+  return current_tune->issue_rate;
 }
 
 /* Return how many instructions should scheduler lookahead to choose the
