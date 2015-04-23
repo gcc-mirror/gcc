@@ -24433,7 +24433,6 @@ rs6000_output_function_prologue (FILE *file,
       gcc_assert (!TARGET_32BIT);
 
       asm_fprintf (file, "\tmflr %s\n", reg_names[0]);
-      asm_fprintf (file, "\tstd %s,16(%s)\n", reg_names[0], reg_names[1]);
 
       /* In the ELFv2 ABI we have no compiler stack word.  It must be
 	 the resposibility of _mcount to preserve the static chain
