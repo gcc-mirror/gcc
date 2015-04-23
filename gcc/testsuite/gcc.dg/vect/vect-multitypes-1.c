@@ -81,8 +81,8 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { xfail { vect_no_align } } } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { xfail {{ vect_no_align } || {vect_sizes_32B_16B }}} } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 4 "vect" { xfail {{ vect_no_align } || {vect_sizes_32B_16B }}} } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { xfail { vect_no_align && { ! vect_hw_misalign } } } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { xfail {{ vect_no_align && { ! vect_hw_misalign } } || {vect_sizes_32B_16B }}} } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 4 "vect" { xfail {{ vect_no_align && { ! vect_hw_misalign } } || {vect_sizes_32B_16B }}} } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 
