@@ -1,3 +1,7 @@
+2015-04-23  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* ira-costs.c (record_operand_costs): Fix typo (remove redundant code).
+
 2015-04-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/65456
