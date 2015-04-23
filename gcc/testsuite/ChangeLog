@@ -3,7 +3,7 @@
 	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a.c: Replace
 	vect_no_align with vect_no_align && { ! vect_hw_misalign }.
 
-2015-04-23  Kyok Cheung Yeung  <kck@codesourcery.com>
+2015-04-23  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	PR target/26702
 	* gcc.target/arm/pr26702.c: New test.
