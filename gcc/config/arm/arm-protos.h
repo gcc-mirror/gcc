@@ -66,10 +66,6 @@ extern rtx legitimize_tls_address (rtx, rtx);
 extern bool arm_legitimate_address_p (machine_mode, rtx, bool);
 extern int arm_legitimate_address_outer_p (machine_mode, rtx, RTX_CODE, int);
 extern int thumb_legitimate_offset_p (machine_mode, HOST_WIDE_INT);
-extern bool arm_legitimize_reload_address (rtx *, machine_mode, int, int,
-					   int);
-extern rtx thumb_legitimize_reload_address (rtx *, machine_mode, int, int,
-					    int);
 extern int thumb1_legitimate_address_p (machine_mode, rtx, int);
 extern bool ldm_stm_operation_p (rtx, bool, machine_mode mode,
                                  bool, bool);
