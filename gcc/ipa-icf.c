@@ -145,9 +145,8 @@ symbol_compare_collection::symbol_compare_collection (symtab_node *node)
   if (is_a <varpool_node *> (node) && DECL_VIRTUAL_P (node->decl))
     return;
 
-  for (unsigned i = 0; i < node->num_references (); i++)
+  for (unsigned i = 0; node->iterate_reference (i, ref); i++)
     {
-      ref = node->iterate_reference (i, ref);
       if (ref->address_matters_p ())
 	m_references.safe_push (ref->referred);
 
@@ -342,9 +341,6 @@ sem_function::get_hash (void)
       if (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl))
 	 (cl_optimization_hash
 	   (TREE_OPTIMIZATION (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl))));
-      hstate.add_flag (DECL_DISREGARD_INLINE_LIMITS (decl));
-      hstate.add_flag (DECL_DECLARED_INLINE_P (decl));
-      hstate.add_flag (DECL_IS_OPERATOR_NEW (decl));
       hstate.add_flag (DECL_CXX_CONSTRUCTOR_P (decl));
       hstate.add_flag (DECL_CXX_DESTRUCTOR_P (decl));
 
@@ -354,12 +350,117 @@ sem_function::get_hash (void)
   return hash;
 }
 
+/* Compare properties of symbols N1 and N2 that does not affect semantics of
+   symbol itself but affects semantics of its references from USED_BY (which
+   may be NULL if it is unknown).  If comparsion is false, symbols
+   can still be merged but any symbols referring them can't.
+
+   If ADDRESS is true, do extra checking needed for IPA_REF_ADDR.
+
+   TODO: We can also split attributes to those that determine codegen of
+   a function body/variable constructor itself and those that are used when
+   referring to it.  */
+
+bool
+sem_item::compare_referenced_symbol_properties (symtab_node *used_by,
+						symtab_node *n1,
+						symtab_node *n2,
+						bool address)
+{
+  if (is_a <cgraph_node *> (n1))
+    {
+      /* Inline properties matters: we do now want to merge uses of inline
+	 function to uses of normal function because inline hint would be lost.
+	 We however can merge inline function to noinline because the alias
+	 will keep its DECL_DECLARED_INLINE flag.
+
+	 Also ignore inline flag when optimizing for size or when function
+	 is known to not be inlinable.
+
+	 TODO: the optimize_size checks can also be assumed to be true if
+	 unit has no !optimize_size functions. */
+
+      if ((!used_by || address || !is_a <cgraph_node *> (used_by)
+	   || !opt_for_fn (used_by->decl, optimize_size))
+	  && !opt_for_fn (n1->decl, optimize_size)
+	  && n1->get_availability () > AVAIL_INTERPOSABLE
+	  && (!DECL_UNINLINABLE (n1->decl) || !DECL_UNINLINABLE (n2->decl)))
+	{
+	  if (DECL_DISREGARD_INLINE_LIMITS (n1->decl)
+	      != DECL_DISREGARD_INLINE_LIMITS (n2->decl))
+	    return return_false_with_msg
+		     ("DECL_DISREGARD_INLINE_LIMITS are different");
+
+	  if (DECL_DECLARED_INLINE_P (n1->decl)
+	      != DECL_DECLARED_INLINE_P (n2->decl))
+	    return return_false_with_msg ("inline attributes are different");
+	}
+
+      if (DECL_IS_OPERATOR_NEW (n1->decl)
+	  != DECL_IS_OPERATOR_NEW (n2->decl))
+	return return_false_with_msg ("operator new flags are different");
+    }
+
+  /* Merging two definitions with a reference to equivalent vtables, but
+     belonging to a different type may result in ipa-polymorphic-call analysis
+     giving a wrong answer about the dynamic type of instance.  */
+  if (is_a <varpool_node *> (n1))
+    {
+      if ((DECL_VIRTUAL_P (n1->decl) || DECL_VIRTUAL_P (n2->decl))
+	  && (DECL_VIRTUAL_P (n1->decl) != DECL_VIRTUAL_P (n2->decl)
+	      || !types_must_be_same_for_odr (DECL_CONTEXT (n1->decl),
+					      DECL_CONTEXT (n2->decl)))
+	  && (!used_by || !is_a <cgraph_node *> (used_by) || address
+	      || opt_for_fn (used_by->decl, flag_devirtualize)))
+	return return_false_with_msg
+		 ("references to virtual tables can not be merged");
+    }
+
+  /* When matching virtual tables, be sure to also match information
+     relevant for polymorphic call analysis.  */
+  if (used_by && is_a <varpool_node *> (used_by)
+      && DECL_VIRTUAL_P (used_by->decl))
+    {
+      if (DECL_VIRTUAL_P (n1->decl) != DECL_VIRTUAL_P (n2->decl))
+	return return_false_with_msg ("virtual flag mismatch");
+      if (DECL_VIRTUAL_P (n1->decl) && is_a <cgraph_node *> (n1)
+	  && (DECL_FINAL_P (n1->decl) != DECL_FINAL_P (n2->decl)))
+	return return_false_with_msg ("final flag mismatch");
+    }
+  return true;
+}
+
+/* Hash properties that are compared by compare_referenced_symbol_properties. */
+
+void
+sem_item::hash_referenced_symbol_properties (symtab_node *ref,
+					     inchash::hash &hstate,
+					     bool address)
+{
+  if (is_a <cgraph_node *> (ref))
+    {
+      if ((!type == FUNC || address || !opt_for_fn (decl, optimize_size))
+	  && !opt_for_fn (ref->decl, optimize_size)
+	  && !DECL_UNINLINABLE (ref->decl))
+	{
+	  hstate.add_flag (DECL_DISREGARD_INLINE_LIMITS (ref->decl));
+	  hstate.add_flag (DECL_DECLARED_INLINE_P (ref->decl));
+	}
+      hstate.add_flag (DECL_IS_OPERATOR_NEW (ref->decl));
+    }
+  else if (is_a <varpool_node *> (ref))
+    {
+      hstate.add_flag (DECL_VIRTUAL_P (ref->decl));
+    }
+}
+
+
 /* For a given symbol table nodes N1 and N2, we check that FUNCTION_DECLs
    point to a same function. Comparison can be skipped if IGNORED_NODES
    contains these nodes.  ADDRESS indicate if address is taken.  */
 
 bool
-sem_item::compare_cgraph_references (
+sem_item::compare_symbol_references (
     hash_map <symtab_node *, sem_item *> &ignored_nodes,
     symtab_node *n1, symtab_node *n2, bool address)
 {
@@ -372,17 +473,8 @@ sem_item::compare_cgraph_references (
   if (is_a <varpool_node *> (n1) != is_a <varpool_node *> (n2))
     return false;
 
-  /* Merging two definitions with a reference to equivalent vtables, but
-     belonging to a different type may result in ipa-polymorphic-call analysis
-     giving a wrong answer about the dynamic type of instance.  */
-  if (is_a <varpool_node *> (n1)
-      && (DECL_VIRTUAL_P (n1->decl) || DECL_VIRTUAL_P (n2->decl))
-      && (DECL_VIRTUAL_P (n1->decl) != DECL_VIRTUAL_P (n2->decl)
-	  || !types_must_be_same_for_odr (DECL_CONTEXT (n1->decl),
-					  DECL_CONTEXT (n2->decl))))
-    return return_false_with_msg
-	     ("references to virtual tables can not be merged");
-
+  if (!compare_referenced_symbol_properties (node, n1, n2, address))
+    return false;
   if (address && n1->equal_address_to (n2) == 1)
     return true;
   if (!address && n1->semantically_equivalent_p (n2))
@@ -434,16 +526,6 @@ sem_function::equals_wpa (sem_item *item,
   if (DECL_FUNCTION_PERSONALITY (decl)
       != DECL_FUNCTION_PERSONALITY (item->decl))
     return return_false_with_msg ("function personalities are different");
-
-  if (DECL_DISREGARD_INLINE_LIMITS (decl)
-      != DECL_DISREGARD_INLINE_LIMITS (item->decl))
-    return return_false_with_msg ("DECL_DISREGARD_INLINE_LIMITS are different");
-
-  if (DECL_DECLARED_INLINE_P (decl) != DECL_DECLARED_INLINE_P (item->decl))
-    return return_false_with_msg ("inline attributes are different");
-
-  if (DECL_IS_OPERATOR_NEW (decl) != DECL_IS_OPERATOR_NEW (item->decl))
-    return return_false_with_msg ("operator new flags are different");
 
   if (DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl)
        != DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (item->decl))
@@ -524,6 +606,12 @@ sem_function::equals_wpa (sem_item *item,
 	  && (TYPE_RESTRICT (arg_types[i])
 	      != TYPE_RESTRICT (m_compared_func->arg_types[i])))
 	return return_false_with_msg ("argument restrict flag mismatch");
+      /* nonnull_arg_p implies non-zero range to REFERENCE types.  */
+      if (POINTER_TYPE_P (arg_types[i])
+	  && TREE_CODE (arg_types[i])
+	     != TREE_CODE (m_compared_func->arg_types[i])
+	  && opt_for_fn (decl, flag_delete_null_pointer_checks))
+	return return_false_with_msg ("pointer wrt reference mismatch");
     }
 
   if (node->num_references () != item->node->num_references ())
@@ -557,7 +645,7 @@ sem_function::equals_wpa (sem_item *item,
     {
       item->node->iterate_reference (i, ref2);
 
-      if (!compare_cgraph_references (ignored_nodes, ref->referred,
+      if (!compare_symbol_references (ignored_nodes, ref->referred,
 				      ref2->referred,
 				      ref->address_matters_p ()))
 	return false;
@@ -568,7 +656,7 @@ sem_function::equals_wpa (sem_item *item,
 
   while (e1 && e2)
     {
-      if (!compare_cgraph_references (ignored_nodes, e1->callee,
+      if (!compare_symbol_references (ignored_nodes, e1->callee,
 				      e2->callee, false))
 	return false;
 
@@ -585,7 +673,10 @@ sem_function::equals_wpa (sem_item *item,
 /* Update hash by address sensitive references. We iterate over all
    sensitive references (address_matters_p) and we hash ultime alias
    target of these nodes, which can improve a semantic item hash.
-   TODO: stronger SCC based hashing would be desirable here.  */
+
+   Also hash in referenced symbols properties.  This can be done at any time
+   (as the properties should not change), but it is convenient to do it here
+   while we walk the references anyway.  */
 
 void
 sem_item::update_hash_by_addr_refs (hash_map <symtab_node *,
@@ -593,9 +684,11 @@ sem_item::update_hash_by_addr_refs (hash_map <symtab_node *,
 {
   ipa_ref* ref;
   inchash::hash hstate (hash);
-  for (unsigned i = 0; i < node->num_references (); i++)
+
+  for (unsigned i = 0; node->iterate_reference (i, ref); i++)
     {
-      ref = node->iterate_reference (i, ref);
+      hash_referenced_symbol_properties (ref->referred, hstate,
+					 ref->use == IPA_REF_ADDR);
       if (ref->address_matters_p () || !m_symtab_node_map.get (ref->referred))
 	hstate.add_int (ref->referred->ultimate_alias_target ()->order);
     }
@@ -606,6 +699,7 @@ sem_item::update_hash_by_addr_refs (hash_map <symtab_node *,
 	   e = e->next_caller)
 	{
 	  sem_item **result = m_symtab_node_map.get (e->callee);
+	  hash_referenced_symbol_properties (e->callee, hstate, false);
 	  if (!result)
 	    hstate.add_int (e->callee->ultimate_alias_target ()->order);
 	}
@@ -615,17 +709,18 @@ sem_item::update_hash_by_addr_refs (hash_map <symtab_node *,
 }
 
 /* Update hash by computed local hash values taken from different
-   semantic items.  */
+   semantic items.
+   TODO: stronger SCC based hashing would be desirable here.  */
 
 void
 sem_item::update_hash_by_local_refs (hash_map <symtab_node *,
 				     sem_item *> &m_symtab_node_map)
 {
+  ipa_ref* ref;
   inchash::hash state (hash);
-  for (unsigned j = 0; j < node->num_references (); j++)
+
+  for (unsigned j = 0; node->iterate_reference (j, ref); j++)
     {
-      ipa_ref *ref;
-      ref = node->iterate_reference (j, ref);
       sem_item **result = m_symtab_node_map.get (ref->referring);
       if (result)
 	state.merge_hash ((*result)->hash);
@@ -967,13 +1062,25 @@ sem_function::merge (sem_item *alias_item)
     {
       /* First see if we can produce wrapper.  */
 
+      /* Symbol properties that matter for references must be preserved.
+	 TODO: We can produce wrapper, but we need to produce alias of ORIGINAL
+	 with proper properties.  */
+      if (!sem_item::compare_referenced_symbol_properties (NULL, original, alias,
+							   alias->address_taken))
+        {
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Wrapper cannot be created because referenced symbol "
+		     "properties mismatch\n");
+        }
       /* Do not turn function in one comdat group into wrapper to another
 	 comdat group. Other compiler producing the body of the
 	 another comdat group may make opossite decision and with unfortunate
 	 linker choices this may close a loop.  */
-      if (DECL_COMDAT_GROUP (original->decl) && DECL_COMDAT_GROUP (alias->decl)
-	  && (DECL_COMDAT_GROUP (alias->decl)
-	      != DECL_COMDAT_GROUP (original->decl)))
+      else if (DECL_COMDAT_GROUP (original->decl)
+	       && DECL_COMDAT_GROUP (alias->decl)
+	       && (DECL_COMDAT_GROUP (alias->decl)
+		   != DECL_COMDAT_GROUP (original->decl)))
 	{
 	  if (dump_file)
 	    fprintf (dump_file,
@@ -1017,6 +1124,11 @@ sem_function::merge (sem_item *alias_item)
 	= alias->get_availability () > AVAIL_INTERPOSABLE
 	  && original->get_availability () > AVAIL_INTERPOSABLE
 	  && !alias->instrumented_version;
+      /* TODO: We can redirect, but we need to produce alias of ORIGINAL
+	 with proper properties.  */
+      if (!sem_item::compare_referenced_symbol_properties (NULL, original, alias,
+							   alias->address_taken))
+	redirect_callers = false;
 
       if (!redirect_callers && !create_wrapper)
 	{
@@ -1663,30 +1775,14 @@ sem_variable::equals_wpa (sem_item *item,
     {
       item->node->iterate_reference (i, ref2);
 
-      if (!compare_cgraph_references (ignored_nodes,
+      if (!compare_symbol_references (ignored_nodes,
 				      ref->referred, ref2->referred,
 				      ref->address_matters_p ()))
 	return false;
-
-      /* When matching virtual tables, be sure to also match information
- 	 relevant for polymorphic call analysis.  */
-      if (DECL_VIRTUAL_P (decl) || DECL_VIRTUAL_P (item->decl))
-	{
-	  if (DECL_VIRTUAL_P (ref->referred->decl)
-	      != DECL_VIRTUAL_P (ref2->referred->decl))
-            return return_false_with_msg ("virtual flag mismatch");
-	  if (DECL_VIRTUAL_P (ref->referred->decl)
-	      && is_a <cgraph_node *> (ref->referred)
-	      && (DECL_FINAL_P (ref->referred->decl)
-		  != DECL_FINAL_P (ref2->referred->decl)))
-            return return_false_with_msg ("final flag mismatch");
-	}
     }
 
   return true;
 }
-
-/* Returns true if the item equals to ITEM given as argument.  */
 
 /* Returns true if the item equals to ITEM given as argument.  */
 
