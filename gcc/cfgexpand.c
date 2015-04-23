@@ -3413,7 +3413,7 @@ expand_gimple_stmt_1 (gimple stmt)
 
 	    ops.code = gimple_assign_rhs_code (assign_stmt);
 	    ops.type = TREE_TYPE (lhs);
-	    switch (get_gimple_rhs_class (gimple_expr_code (stmt)))
+	    switch (get_gimple_rhs_class (ops.code))
 	      {
 		case GIMPLE_TERNARY_RHS:
 		  ops.op2 = gimple_assign_rhs3 (assign_stmt);

@@ -1347,6 +1347,16 @@ verify_loop_structure (void)
   else
     verify_dominators (CDI_DOMINATORS);
 
+  /* Check the loop tree root.  */
+  if (current_loops->tree_root->header != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+      || current_loops->tree_root->latch != EXIT_BLOCK_PTR_FOR_FN (cfun)
+      || (current_loops->tree_root->num_nodes
+	  != (unsigned) n_basic_blocks_for_fn (cfun)))
+    {
+      error ("corrupt loop tree root");
+      err = 1;
+    }
+
   /* Check the headers.  */
   FOR_EACH_BB_FN (bb, cfun)
     if (bb_loop_header_p (bb))
