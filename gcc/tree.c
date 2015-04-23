@@ -4873,7 +4873,7 @@ simple_cst_list_equal (const_tree l1, const_tree l2)
    attribute values are known to be equal; otherwise return false.
 */
 
-static bool
+bool
 attribute_value_equal (const_tree attr1, const_tree attr2)
 {
   if (TREE_VALUE (attr1) == TREE_VALUE (attr2))

@@ -20,6 +20,11 @@
 
 2015-04-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree.h (attribute_value_equal): Declare.
+	* tree.c (attribute_value_equal): Export.
+
+2015-04-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-icf.c (sem_item::compare_attributes): New function.
 	(sem_item::compare_referenced_symbol_properties): Compare variable
 	attributes.
