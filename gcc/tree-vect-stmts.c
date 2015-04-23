@@ -968,10 +968,6 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
   struct data_reference *first_dr;
   gimple first_stmt;
 
-  /* The SLP costs were already calculated during SLP tree build.  */
-  if (PURE_SLP_STMT (stmt_info))
-    return;
-
   if (dt == vect_constant_def || dt == vect_external_def)
     prologue_cost += record_stmt_cost (prologue_cost_vec, 1, scalar_to_vec,
 				       stmt_info, 0, vect_prologue);
@@ -1097,10 +1093,6 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies,
   gimple first_stmt;
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info), *first_dr;
   unsigned int inside_cost = 0, prologue_cost = 0;
-
-  /* The SLP costs were already calculated during SLP tree build.  */
-  if (PURE_SLP_STMT (stmt_info))
-    return;
 
   /* Grouped accesses?  */
   first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
@@ -5181,8 +5173,10 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = store_vec_info_type;
-      vect_model_store_cost (stmt_info, ncopies, store_lanes_p, dt,
-			     NULL, NULL, NULL);
+      /* The SLP costs are calculated during SLP analysis.  */
+      if (!PURE_SLP_STMT (stmt_info))
+	vect_model_store_cost (stmt_info, ncopies, store_lanes_p, dt,
+			       NULL, NULL, NULL);
       return true;
     }
 
@@ -5901,7 +5895,10 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = load_vec_info_type;
-      vect_model_load_cost (stmt_info, ncopies, load_lanes_p, NULL, NULL, NULL);
+      /* The SLP costs are calculated during SLP analysis.  */
+      if (!PURE_SLP_STMT (stmt_info))
+	vect_model_load_cost (stmt_info, ncopies, load_lanes_p,
+			      NULL, NULL, NULL);
       return true;
     }
 
@@ -7758,6 +7755,41 @@ vect_is_simple_use (tree operand, gimple stmt, loop_vec_info loop_vinfo,
       *dt = STMT_VINFO_DEF_TYPE (stmt_vinfo);
     }
 
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location, "type of def: ");
+      switch (*dt)
+	{
+	case vect_uninitialized_def:
+	  dump_printf (MSG_NOTE, "uninitialized\n");
+	  break;
+	case vect_constant_def:
+	  dump_printf (MSG_NOTE, "constant\n");
+	  break;
+	case vect_external_def:
+	  dump_printf (MSG_NOTE, "external\n");
+	  break;
+	case vect_internal_def:
+	  dump_printf (MSG_NOTE, "internal\n");
+	  break;
+	case vect_induction_def:
+	  dump_printf (MSG_NOTE, "induction\n");
+	  break;
+	case vect_reduction_def:
+	  dump_printf (MSG_NOTE, "reduction\n");
+	  break;
+	case vect_double_reduction_def:
+	  dump_printf (MSG_NOTE, "double reduction\n");
+	  break;
+	case vect_nested_cycle:
+	  dump_printf (MSG_NOTE, "nested cycle\n");
+	  break;
+	case vect_unknown_def_type:
+	  dump_printf (MSG_NOTE, "unknown\n");
+	  break;
+	}
+    }
+
   if (*dt == vect_unknown_def_type
       || (stmt
 	  && *dt == vect_double_reduction_def
@@ -7768,9 +7800,6 @@ vect_is_simple_use (tree operand, gimple stmt, loop_vec_info loop_vinfo,
                          "Unsupported pattern.\n");
       return false;
     }
-
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location, "type of def: %d.\n", *dt);
 
   switch (gimple_code (*def_stmt))
     {

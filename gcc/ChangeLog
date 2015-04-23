@@ -1,5 +1,27 @@
 2015-04-23  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-slp.c (vect_find_first_load_in_slp_instance): Remove.
+	(vect_find_last_store_in_slp_instance): Rename to ...
+	(vect_find_last_scalar_stmt_in_slp): ... this and generalize.
+	(vect_analyze_slp_cost_1): Use vector_load for constant defs
+	and vec_construct for external defs when estimating prologue cost.
+	(vect_analyze_slp_instance): Do not init SLP_INSTANCE_FIRST_LOAD_STMT.
+	Compute costs here only when vectorizing loops.
+	(vect_slp_analyze_bb_1): Compute SLP cost here, after vector types
+	have been determined.
+	(vect_schedule_slp_instance): Simplify vectorized code placement
+	and prepare for in-BB external defs.
+	* tree-vectorizer.h (struct _slp_instance): Remove first_load member.
+	(SLP_INSTANCE_FIRST_LOAD_STMT): Remove.
+	* tree-vect-stmts.c (vect_model_store_cost): Remove PURE_SLP_STMT
+	guard.
+	(vect_model_load_cost): Likewise.
+	(vectorizable_store): Instead add it here.
+	(vectorizable_load): Likewise.
+	(vect_is_simple_use): Dump def type textually.
+
+2015-04-23  Richard Biener  <rguenther@suse.de>
+
 	* cfgexpand.c (expand_gimple_stmt_1): Use ops.code.
 	* cfgloop.c (verify_loop_structure): Verify the root loop node.
 	* except.c (duplicate_eh_regions): Call get_eh_region_from_lp_number_fn
