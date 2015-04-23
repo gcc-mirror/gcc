@@ -181,6 +181,15 @@
 ;; compare a second time.
 (define_code_iterator LTUGEU [ltu geu])
 
+;; The signed gt, ge comparisons
+(define_code_iterator GTGE [gt ge])
+
+;; The unsigned gt, ge comparisons
+(define_code_iterator GTUGEU [gtu geu])
+
+;; Comparisons for vc<cmp>
+(define_code_iterator COMPARISONS [eq gt ge le lt])
+
 ;; A list of ...
 (define_code_iterator ior_xor [ior xor])
 
@@ -214,12 +223,21 @@
 (define_code_attr arith_shift_insn
   [(plus "add") (minus "rsb") (ior "orr") (xor "eor") (and "and")])
 
+(define_code_attr cmp_op [(eq "eq") (gt "gt") (ge "ge") (lt "lt") (le "le")
+                          (gtu "gt") (geu "ge")])
+
+(define_code_attr cmp_type [(eq "i") (gt "s") (ge "s") (lt "s") (le "s")])
+
 ;;----------------------------------------------------------------------------
 ;; Int iterators
 ;;----------------------------------------------------------------------------
 
 (define_int_iterator VRINT [UNSPEC_VRINTZ UNSPEC_VRINTP UNSPEC_VRINTM
                             UNSPEC_VRINTR UNSPEC_VRINTX UNSPEC_VRINTA])
+
+(define_int_iterator NEON_VCMP [UNSPEC_VCEQ UNSPEC_VCGT UNSPEC_VCGE UNSPEC_VCLT UNSPEC_VCLE])
+
+(define_int_iterator NEON_VACMP [UNSPEC_VCAGE UNSPEC_VCAGT])
 
 (define_int_iterator VCVT [UNSPEC_VRINTP UNSPEC_VRINTM UNSPEC_VRINTA])
 
@@ -676,6 +694,11 @@
   (UNSPEC_VRSRA_S_N "s") (UNSPEC_VRSRA_U_N "u")
 
 ])
+
+(define_int_attr cmp_op_unsp [(UNSPEC_VCEQ "eq") (UNSPEC_VCGT "gt")
+                              (UNSPEC_VCGE "ge") (UNSPEC_VCLE "le")
+                              (UNSPEC_VCLT "lt") (UNSPEC_VCAGE "ge")
+                              (UNSPEC_VCAGT "gt")])
 
 (define_int_attr r [
   (UNSPEC_VRHADD_S "r") (UNSPEC_VRHADD_U "r")
