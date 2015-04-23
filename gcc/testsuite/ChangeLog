@@ -1,3 +1,7 @@
+2015-04-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr65523.c: Skip x32.
+
 2015-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/neon/pr51534.c: Update vcg* scan-assembly patterns
