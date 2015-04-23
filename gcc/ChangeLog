@@ -1,5 +1,11 @@
 2015-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.md (load_multiple): Reject operand 2 greater than
+	MAX_LDM_STM_OPS.
+	(store_multiple): Likewise.
+
+2015-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm-protos.h (struct tune_params): Add issue_rate field.
 	* config/arm/arm.c (arm_slowmul_tune, arm_fastmul_tune,
 	arm_strongarm_tune, arm_xscale_tune, arm_9e_tune, arm_v6t2_tune,

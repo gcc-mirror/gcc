@@ -6676,7 +6676,7 @@
 
   /* Support only fixed point registers.  */
   if (!CONST_INT_P (operands[2])
-      || INTVAL (operands[2]) > 14
+      || INTVAL (operands[2]) > MAX_LDM_STM_OPS
       || INTVAL (operands[2]) < 2
       || !MEM_P (operands[1])
       || !REG_P (operands[0])
@@ -6701,7 +6701,7 @@
 
   /* Support only fixed point registers.  */
   if (!CONST_INT_P (operands[2])
-      || INTVAL (operands[2]) > 14
+      || INTVAL (operands[2]) > MAX_LDM_STM_OPS
       || INTVAL (operands[2]) < 2
       || !REG_P (operands[1])
       || !MEM_P (operands[0])
