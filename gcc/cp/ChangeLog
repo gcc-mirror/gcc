@@ -1,3 +1,11 @@
+2015-04-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65646
+	* pt.c (check_explicit_specialization): Don't
+	SET_DECL_TEMPLATE_SPECIALIZATION for a variable with no template
+	headers.
+	* decl.c (grokvardecl): Revert earlier fix.
+
 2015-04-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65801
