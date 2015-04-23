@@ -1,5 +1,22 @@
 2015-04-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-icf.c (sem_item::compare_attributes): New function.
+	(sem_item::compare_referenced_symbol_properties): Compare variable
+	attributes.
+	(sem_item::hash_referenced_symbol_properties): Record DECL_ALIGN.
+	(sem_function::param_used_p): New function.
+	(sem_function::equals_wpa): Fix attribute comparsion; match
+	parameter type codes; do not compare paremter flags when
+	they are not used; compare edge flags; compare indirect calls.
+	(sem_item::update_hash_by_addr_refs): Hash reference type.
+	(sem_function::equals_private): Do not match DECL_ATTRIBUTES.
+	(sem_variable::equals_wpa): Do not match DECL_ALIGN; match
+	reference use type.
+	(sem_item_optimizer::update_hash_by_addr_refs): Use param_used_p.
+	* ipa-icf.h (compare_attributes, param_used_p): Declare.
+
+2015-04-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-icf.c (symbol_compare_collection::symbol_compare_collection):
 	cleanup.
 	(sem_function::get_hash): Do not hash DECL_DISREGARD_INLINE_LIMITS,
