@@ -1380,8 +1380,6 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
       rtx dest = SET_DEST (set);
       rtx src = SET_SRC (set);
 
-      dest = SET_DEST (set);
-      src = SET_SRC (set);
       if (GET_CODE (dest) == SUBREG
 	  && (GET_MODE_SIZE (GET_MODE (dest))
 	      == GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))))
