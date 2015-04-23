@@ -31,3 +31,6 @@ out_long (ui64 longVal)
         }
     }
 }
+
+void f(ui32 *) { }
+void f(ui32a *) { }
