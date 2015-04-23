@@ -812,8 +812,13 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
   int dim;
   int nest;
   gfc_namespace* procns;
+  symbol_attribute *array_attr;
+  gfc_array_spec *as;
+  bool is_classarray = IS_CLASS_ARRAY (sym);
 
   type = TREE_TYPE (decl);
+  array_attr = is_classarray ? &CLASS_DATA (sym)->attr : &sym->attr;
+  as = is_classarray ? CLASS_DATA (sym)->as : sym->as;
 
   /* We just use the descriptor, if there is one.  */
   if (GFC_DESCRIPTOR_TYPE_P (type))
@@ -824,8 +829,8 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
   nest = (procns->proc_name->backend_decl != current_function_decl)
 	 && !sym->attr.contained;
 
-  if (sym->attr.codimension && flag_coarray == GFC_FCOARRAY_LIB
-      && sym->as->type != AS_ASSUMED_SHAPE
+  if (array_attr->codimension && flag_coarray == GFC_FCOARRAY_LIB
+      && as->type != AS_ASSUMED_SHAPE
       && GFC_TYPE_ARRAY_CAF_TOKEN (type) == NULL_TREE)
     {
       tree token;
@@ -878,8 +883,8 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
 	}
       /* Don't try to use the unknown bound for assumed shape arrays.  */
       if (GFC_TYPE_ARRAY_UBOUND (type, dim) == NULL_TREE
-          && (sym->as->type != AS_ASSUMED_SIZE
-              || dim < GFC_TYPE_ARRAY_RANK (type) - 1))
+	  && (as->type != AS_ASSUMED_SIZE
+	      || dim < GFC_TYPE_ARRAY_RANK (type) - 1))
 	{
 	  GFC_TYPE_ARRAY_UBOUND (type, dim) = create_index_var ("ubound", nest);
 	  TREE_NO_WARNING (GFC_TYPE_ARRAY_UBOUND (type, dim)) = 1;
@@ -920,7 +925,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
     }
 
   if (GFC_TYPE_ARRAY_SIZE (type) == NULL_TREE
-      && sym->as->type != AS_ASSUMED_SIZE)
+      && as->type != AS_ASSUMED_SIZE)
     {
       GFC_TYPE_ARRAY_SIZE (type) = create_index_var ("size", nest);
       TREE_NO_WARNING (GFC_TYPE_ARRAY_SIZE (type)) = 1;
@@ -947,12 +952,12 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
     }
 
   if (TYPE_NAME (type) != NULL_TREE
-      && GFC_TYPE_ARRAY_UBOUND (type, sym->as->rank - 1) != NULL_TREE
-      && TREE_CODE (GFC_TYPE_ARRAY_UBOUND (type, sym->as->rank - 1)) == VAR_DECL)
+      && GFC_TYPE_ARRAY_UBOUND (type, as->rank - 1) != NULL_TREE
+      && TREE_CODE (GFC_TYPE_ARRAY_UBOUND (type, as->rank - 1)) == VAR_DECL)
     {
       tree gtype = DECL_ORIGINAL_TYPE (TYPE_NAME (type));
 
-      for (dim = 0; dim < sym->as->rank - 1; dim++)
+      for (dim = 0; dim < as->rank - 1; dim++)
 	{
 	  gcc_assert (TREE_CODE (gtype) == ARRAY_TYPE);
 	  gtype = TREE_TYPE (gtype);
@@ -966,7 +971,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
     {
       tree gtype = TREE_TYPE (type), rtype, type_decl;
 
-      for (dim = sym->as->rank - 1; dim >= 0; dim--)
+      for (dim = as->rank - 1; dim >= 0; dim--)
 	{
 	  tree lbound, ubound;
 	  lbound = GFC_TYPE_ARRAY_LBOUND (type, dim);
@@ -1014,41 +1019,56 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
   tree decl;
   tree type;
   gfc_array_spec *as;
+  symbol_attribute *array_attr;
   char *name;
   gfc_packed packed;
   int n;
   bool known_size;
+  bool is_classarray = IS_CLASS_ARRAY (sym);
 
-  if (sym->attr.pointer || sym->attr.allocatable
-      || (sym->as && sym->as->type == AS_ASSUMED_RANK))
+  /* Use the array as and attr.  */
+  as = is_classarray ? CLASS_DATA (sym)->as : sym->as;
+  array_attr = is_classarray ? &CLASS_DATA (sym)->attr : &sym->attr;
+
+  /* The dummy is returned for pointer, allocatable or assumed rank arrays.
+     For class arrays the information if sym is an allocatable or pointer
+     object needs to be checked explicitly (IS_CLASS_ARRAY can be false for
+     too many reasons to be of use here).  */
+  if ((sym->ts.type != BT_CLASS && sym->attr.pointer)
+      || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.class_pointer)
+      || array_attr->allocatable
+      || (as && as->type == AS_ASSUMED_RANK))
     return dummy;
 
-  /* Add to list of variables if not a fake result variable.  */
+  /* Add to list of variables if not a fake result variable.
+     These symbols are set on the symbol only, not on the class component.  */
   if (sym->attr.result || sym->attr.dummy)
     gfc_defer_symbol_init (sym);
 
-  type = TREE_TYPE (dummy);
+  /* For a class array the array descriptor is in the _data component, while
+     for a regular array the TREE_TYPE of the dummy is a pointer to the
+     descriptor.  */
+  type = TREE_TYPE (is_classarray ? gfc_class_data_get (dummy)
+				  : TREE_TYPE (dummy));
+  /* type now is the array descriptor w/o any indirection.  */
   gcc_assert (TREE_CODE (dummy) == PARM_DECL
-	  && POINTER_TYPE_P (type));
+	  && POINTER_TYPE_P (TREE_TYPE (dummy)));
 
   /* Do we know the element size?  */
   known_size = sym->ts.type != BT_CHARACTER
 	  || INTEGER_CST_P (sym->ts.u.cl->backend_decl);
 
-  if (known_size && !GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (type)))
+  if (known_size && !GFC_DESCRIPTOR_TYPE_P (type))
     {
       /* For descriptorless arrays with known element size the actual
          argument is sufficient.  */
-      gcc_assert (GFC_ARRAY_TYPE_P (type));
       gfc_build_qualified_array (dummy, sym);
       return dummy;
     }
 
-  type = TREE_TYPE (type);
   if (GFC_DESCRIPTOR_TYPE_P (type))
     {
       /* Create a descriptorless array pointer.  */
-      as = sym->as;
       packed = PACKED_NO;
 
       /* Even when -frepack-arrays is used, symbols with TARGET attribute
@@ -1079,8 +1099,11 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
 	    packed = PACKED_PARTIAL;
 	}
 
-      type = gfc_typenode_for_spec (&sym->ts);
-      type = gfc_get_nodesc_array_type (type, sym->as, packed,
+      /* For classarrays the element type is required, but
+	 gfc_typenode_for_spec () returns the array descriptor.  */
+      type = is_classarray ? gfc_get_element_type (type)
+			   : gfc_typenode_for_spec (&sym->ts);
+      type = gfc_get_nodesc_array_type (type, as, packed,
 					!sym->attr.target);
     }
   else
@@ -1110,7 +1133,7 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
 
   /* We should never get deferred shape arrays here.  We used to because of
      frontend bugs.  */
-  gcc_assert (sym->as->type != AS_DEFERRED);
+  gcc_assert (as->type != AS_DEFERRED);
 
   if (packed == PACKED_PARTIAL)
     GFC_DECL_PARTIAL_PACKED_ARRAY (decl) = 1;
@@ -1429,13 +1452,30 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	  sym->backend_decl = decl;
 	}
 
+      /* Returning the descriptor for dummy class arrays is hazardous, because
+	 some caller is expecting an expression to apply the component refs to.
+	 Therefore the descriptor is only created and stored in
+	 sym->backend_decl's GFC_DECL_SAVED_DESCRIPTOR.  The caller is then
+	 responsible to extract it from there, when the descriptor is
+	 desired.  */
+      if (IS_CLASS_ARRAY (sym)
+	  && (!DECL_LANG_SPECIFIC (sym->backend_decl)
+	      || !GFC_DECL_SAVED_DESCRIPTOR (sym->backend_decl)))
+	{
+	  decl = gfc_build_dummy_array_decl (sym, sym->backend_decl);
+	  /* Prevent the dummy from being detected as unused if it is copied.  */
+	  if (sym->backend_decl != NULL && decl != sym->backend_decl)
+	    DECL_ARTIFICIAL (sym->backend_decl) = 1;
+	  sym->backend_decl = decl;
+	}
+
       TREE_USED (sym->backend_decl) = 1;
       if (sym->attr.assign && GFC_DECL_ASSIGN (sym->backend_decl) == 0)
 	{
 	  gfc_add_assign_aux_vars (sym);
 	}
 
-      if (sym->attr.dimension
+      if ((sym->attr.dimension || IS_CLASS_ARRAY (sym))
 	  && DECL_LANG_SPECIFIC (sym->backend_decl)
 	  && GFC_DECL_SAVED_DESCRIPTOR (sym->backend_decl)
 	  && DECL_CONTEXT (sym->backend_decl) != current_function_decl)
@@ -3976,18 +4016,31 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		= gfc_class_set_static_fields (sym->backend_decl, vptr, tmp);
 	  TREE_CONSTANT (DECL_INITIAL (sym->backend_decl)) = 1;
 	}
-      else if (sym->attr.dimension || sym->attr.codimension)
+      else if (sym->attr.dimension || sym->attr.codimension
+	       || (IS_CLASS_ARRAY (sym) && !CLASS_DATA (sym)->attr.allocatable))
 	{
-          /* Assumed-size Cray pointees need to be treated as AS_EXPLICIT.  */
-          array_type tmp = sym->as->type;
-          if (tmp == AS_ASSUMED_SIZE && sym->as->cp_was_assumed)
-            tmp = AS_EXPLICIT;
-          switch (tmp)
+	  bool is_classarray = IS_CLASS_ARRAY (sym);
+	  symbol_attribute *array_attr;
+	  gfc_array_spec *as;
+	  array_type tmp;
+
+	  array_attr = is_classarray ? &CLASS_DATA (sym)->attr : &sym->attr;
+	  as = is_classarray ? CLASS_DATA (sym)->as : sym->as;
+	  /* Assumed-size Cray pointees need to be treated as AS_EXPLICIT.  */
+	  tmp = as->type;
+	  if (tmp == AS_ASSUMED_SIZE && as->cp_was_assumed)
+	    tmp = AS_EXPLICIT;
+	  switch (tmp)
 	    {
 	    case AS_EXPLICIT:
 	      if (sym->attr.dummy || sym->attr.result)
 		gfc_trans_dummy_array_bias (sym, sym->backend_decl, block);
-	      else if (sym->attr.pointer || sym->attr.allocatable)
+	      /* Allocatable and pointer arrays need to processed
+		 explicitly.  */
+	      else if ((sym->ts.type != BT_CLASS && sym->attr.pointer)
+		       || (sym->ts.type == BT_CLASS
+			   && CLASS_DATA (sym)->attr.class_pointer)
+		       || array_attr->allocatable)
 		{
 		  if (TREE_STATIC (sym->backend_decl))
 		    {
@@ -4002,7 +4055,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		      gfc_trans_deferred_array (sym, block);
 		    }
 		}
-	      else if (sym->attr.codimension && TREE_STATIC (sym->backend_decl))
+	      else if (sym->attr.codimension
+		       && TREE_STATIC (sym->backend_decl))
 		{
 		  gfc_init_block (&tmpblock);
 		  gfc_trans_array_cobounds (TREE_TYPE (sym->backend_decl),
@@ -4041,7 +4095,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 
 	    case AS_ASSUMED_SIZE:
 	      /* Must be a dummy parameter.  */
-	      gcc_assert (sym->attr.dummy || sym->as->cp_was_assumed);
+	      gcc_assert (sym->attr.dummy || as->cp_was_assumed);
 
 	      /* We should always pass assumed size arrays the g77 way.  */
 	      if (sym->attr.dummy)
@@ -4103,6 +4157,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		}
 	      else
 		{
+		  se.descriptor_only = 1;
 		  gfc_conv_expr (&se, e);
 		  descriptor = se.expr;
 		  se.expr = gfc_conv_descriptor_data_addr (se.expr);

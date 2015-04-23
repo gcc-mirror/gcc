@@ -27,8 +27,8 @@ end subroutine foo
 ! Finalize CLASS + set default init
 ! { dg-final { scan-tree-dump-times "y->_vptr->_final \\(&desc.\[0-9\]+, y->_vptr->_size, 0\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump       "__builtin_memcpy \\(\\(void .\\) y->_data, \\(void .\\) y->_vptr->_def_init, \\((unsigned long|unsigned int|character\\(kind=4\\))\\) y->_vptr->_size\\);" "original" } }
-! { dg-final { scan-tree-dump-times "x->_vptr->_final \\(&x->_data, x->_vptr->_size, 0\\);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "x->_vptr->_copy \\(x->_vptr->_def_init, &x->_data\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "x->_vptr->_final \\(&parm.\[0-9\]+, x->_vptr->_size, 0\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "x->_vptr->_copy \\(" 1 "original" } }
 
 ! FINALIZE TYPE:
 ! { dg-final { scan-tree-dump-times "parm.\[0-9\]+.data = \\(void \\*\\) &\\(\\*aa.\[0-9\]+\\)\\\[0\\\];" 1 "original" } }

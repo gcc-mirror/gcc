@@ -4052,6 +4052,7 @@ gfc_expr *
 gfc_lval_expr_from_sym (gfc_symbol *sym)
 {
   gfc_expr *lval;
+  gfc_array_spec *as;
   lval = gfc_get_expr ();
   lval->expr_type = EXPR_VARIABLE;
   lval->where = sym->declared_at;
@@ -4059,10 +4060,10 @@ gfc_lval_expr_from_sym (gfc_symbol *sym)
   lval->symtree = gfc_find_symtree (sym->ns->sym_root, sym->name);
 
   /* It will always be a full array.  */
-  lval->rank = sym->as ? sym->as->rank : 0;
+  as = IS_CLASS_ARRAY (sym) ? CLASS_DATA (sym)->as : sym->as;
+  lval->rank = as ? as->rank : 0;
   if (lval->rank)
-    gfc_add_full_array_ref (lval, sym->ts.type == BT_CLASS ?
-			    CLASS_DATA (sym)->as : sym->as);
+    gfc_add_full_array_ref (lval, as);
   return lval;
 }
 

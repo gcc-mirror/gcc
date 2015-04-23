@@ -5921,8 +5921,17 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
     }
   else if (arg->ts.type == BT_CLASS)
     {
-      if (arg->rank)
+      /* For deferred length arrays, conv_expr_descriptor returns an
+	 indirect_ref to the component.  */
+      if (arg->rank < 0
+	  || (arg->rank > 0 && !VAR_P (argse.expr)
+	      && GFC_DECL_CLASS (TREE_OPERAND (argse.expr, 0))))
 	byte_size = gfc_class_vtab_size_get (TREE_OPERAND (argse.expr, 0));
+      else if (arg->rank > 0)
+	/* The scalarizer added an additional temp.  To get the class' vptr
+	   one has to look at the original backend_decl.  */
+	byte_size = gfc_class_vtab_size_get (
+	      GFC_DECL_SAVED_DESCRIPTOR (arg->symtree->n.sym->backend_decl));
       else
 	byte_size = gfc_class_vtab_size_get (argse.expr);
     }
@@ -6053,7 +6062,11 @@ gfc_conv_intrinsic_storage_size (gfc_se *se, gfc_expr *expr)
       gfc_conv_expr_descriptor (&argse, arg);
       if (arg->ts.type == BT_CLASS)
 	{
-	  tmp = gfc_class_vtab_size_get (TREE_OPERAND (argse.expr, 0));
+	  if (arg->rank > 0)
+	    tmp = gfc_class_vtab_size_get (
+		 GFC_DECL_SAVED_DESCRIPTOR (arg->symtree->n.sym->backend_decl));
+	  else
+	    tmp = gfc_class_vtab_size_get (TREE_OPERAND (argse.expr, 0));
 	  tmp = fold_convert (result_type, tmp);
 	  goto done;
 	}
@@ -7080,7 +7093,11 @@ gfc_conv_intrinsic_loc (gfc_se * se, gfc_expr * expr)
 
   arg_expr = expr->value.function.actual->expr;
   if (arg_expr->rank == 0)
-    gfc_conv_expr_reference (se, arg_expr);
+    {
+      if (arg_expr->ts.type == BT_CLASS)
+	gfc_add_component_ref (arg_expr, "_data");
+      gfc_conv_expr_reference (se, arg_expr);
+    }
   else
     gfc_conv_array_parameter (se, arg_expr, true, NULL, NULL, NULL);
   se->expr = convert (gfc_get_int_type (gfc_index_integer_kind), se->expr);
