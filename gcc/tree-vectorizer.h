@@ -131,10 +131,6 @@ typedef struct _slp_instance {
 
   /* The group of nodes that contain loads of this SLP instance.  */
   vec<slp_tree> loads;
-
-  /* The first scalar load of the instance. The created vector loads will be
-     inserted before this statement.  */
-  gimple first_load;
 } *slp_instance;
 
 
@@ -144,7 +140,6 @@ typedef struct _slp_instance {
 #define SLP_INSTANCE_UNROLLING_FACTOR(S)         (S)->unrolling_factor
 #define SLP_INSTANCE_BODY_COST_VEC(S)            (S)->body_cost_vec
 #define SLP_INSTANCE_LOADS(S)                    (S)->loads
-#define SLP_INSTANCE_FIRST_LOAD_STMT(S)          (S)->first_load
 
 #define SLP_TREE_CHILDREN(S)                     (S)->children
 #define SLP_TREE_SCALAR_STMTS(S)                 (S)->stmts
