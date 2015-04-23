@@ -74,5 +74,5 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 2 "vect" { xfail vect_no_align } } } */
+/* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 2 "vect" { xfail { vect_no_align && { ! vect_hw_misalign } } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

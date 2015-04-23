@@ -211,6 +211,10 @@ mallow-movmisalign
 Target Undocumented Var(TARGET_ALLOW_MOVMISALIGN) Init(-1)
 ; Allow/disallow the movmisalign in DF/DI vectors
 
+mefficient-unaligned-vector
+Target Undocumented Report Var(TARGET_EFFICIENT_UNALIGNED_VSX) Init(-1)
+; Consider unaligned VSX accesses to be efficient/inefficient
+
 mallow-df-permute
 Target Undocumented Var(TARGET_ALLOW_DF_PERMUTE)
 ; Allow/disallow permutation of DF/DI vectors
