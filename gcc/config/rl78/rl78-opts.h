@@ -23,7 +23,6 @@
 enum rl78_mul_types
 {
   MUL_NONE,
-  MUL_RL78,
   MUL_G13,
   MUL_G14,
   MUL_UNINIT

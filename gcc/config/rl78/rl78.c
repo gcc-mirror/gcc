@@ -4646,7 +4646,7 @@ rl78_flags_already_set (rtx op, rtx operand)
 #define TARGET_PREFERRED_RELOAD_CLASS rl78_preferred_reload_class
 
 static reg_class_t
-rl78_preferred_reload_class (rtx x, reg_class_t rclass)
+rl78_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, reg_class_t rclass)
 {
   if (rclass == NO_REGS)
     rclass = V_REGS;
