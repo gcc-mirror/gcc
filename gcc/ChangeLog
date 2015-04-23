@@ -1,3 +1,9 @@
+2015-04-23  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c (rl78_preferred_reload_class): Add
+	ATTRIBUTE_UNUSED to x parameter.
+	* config/rl78/rl78-opts.h (enum rl78_mul_types): Remove unused MUL_RL78.
+
 2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/crypto.md (crypto_vpmsum<CR_char>): Change
