@@ -1,3 +1,23 @@
+2015-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/iterators.md (GTGE, GTUGEU, COMPARISONS): New code
+	iterators.
+	(cmp_op, cmp_type): New code attributes.
+	(NEON_VCMP, NEON_VACMP): New int iterators.
+	(cmp_op_unsp): New int attribute.
+	* config/arm/neon.md (neon_vc<cmp_op><mode>): New define_expand.
+	(neon_vceq<mode>): Delete.
+	(neon_vc<cmp_op><mode>_insn): New pattern.
+	(neon_vc<cmp_op_unsp><mode>_insn_unspec): Likewise.
+	(neon_vcgeu<mode>): Delete.
+	(neon_vcle<mode>): Likewise.
+	(neon_vclt<mode>: Likewise.
+	(neon_vcage<mode>): Likewise.
+	(neon_vcagt<mode>): Likewise.
+	(neon_vca<cmp_op><mode>): New define_expand.
+	(neon_vca<cmp_op><mode>_insn): New pattern.
+	(neon_vca<cmp_op_unsp><mode>_insn_unspec): Likewise.
+
 2015-04-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-icf.c (sem_item::compare_attributes): New function.

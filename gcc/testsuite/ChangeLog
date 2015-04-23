@@ -1,3 +1,8 @@
+2015-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/neon/pr51534.c: Update vcg* scan-assembly patterns
+	to look for vcl* where appropriate.
+
 2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a.c: Replace
