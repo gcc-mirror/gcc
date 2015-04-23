@@ -1,3 +1,11 @@
+2015-04-23  Richard Biener  <rguenther@suse.de>
+
+	* passes.def: Remove copy propagation passes run directly after CCP.
+	* tree-ssa-ccp.c (get_value_for_expr): Fall back to a COPY for
+	SSA names.
+	(ccp_visit_phi_node): Rework to handle first executable edge
+	specially.
+
 2015-04-23  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* config/arm/arm.h (LEGITIMIZE_RELOAD_ADDRESS): Remove.

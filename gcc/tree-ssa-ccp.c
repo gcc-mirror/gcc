@@ -539,9 +539,14 @@ set_lattice_value (tree var, ccp_prop_value_t new_val)
   if (old_val->lattice_val != new_val.lattice_val
       || (new_val.lattice_val == CONSTANT
 	  && (TREE_CODE (new_val.value) != TREE_CODE (old_val->value)
-	      || simple_cst_equal (new_val.value, old_val->value) != 1
 	      || (TREE_CODE (new_val.value) == INTEGER_CST
-		  && new_val.mask != old_val->mask))))
+		  && (new_val.mask != old_val->mask
+		      || (wi::bit_and_not (wi::to_widest (old_val->value),
+					   new_val.mask)
+			  != wi::bit_and_not (wi::to_widest (new_val.value),
+					      new_val.mask))))
+	      || (TREE_CODE (new_val.value) != INTEGER_CST
+		  && !operand_equal_p (new_val.value, old_val->value, 0)))))
     {
       /* ???  We would like to delay creation of INTEGER_CSTs from
 	 partially constants here.  */
@@ -623,6 +628,15 @@ get_value_for_expr (tree expr, bool for_bits_p)
 	  && val.lattice_val == CONSTANT
 	  && TREE_CODE (val.value) == ADDR_EXPR)
 	val = get_value_from_alignment (val.value);
+      /* Fall back to a copy value.  */
+      if (!for_bits_p
+	  && val.lattice_val == VARYING
+	  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (expr))
+	{
+	  val.lattice_val = CONSTANT;
+	  val.value = expr;
+	  val.mask = -1;
+	}
     }
   else if (is_gimple_min_invariant (expr)
 	   && (!for_bits_p || TREE_CODE (expr) != ADDR_EXPR))
@@ -1068,7 +1082,7 @@ static enum ssa_prop_result
 ccp_visit_phi_node (gphi *phi)
 {
   unsigned i;
-  ccp_prop_value_t *old_val, new_val;
+  ccp_prop_value_t new_val;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1076,25 +1090,11 @@ ccp_visit_phi_node (gphi *phi)
       print_gimple_stmt (dump_file, phi, 0, dump_flags);
     }
 
-  old_val = get_value (gimple_phi_result (phi));
-  switch (old_val->lattice_val)
-    {
-    case VARYING:
-      return SSA_PROP_VARYING;
+  new_val.lattice_val = UNDEFINED;
+  new_val.value = NULL_TREE;
+  new_val.mask = 0;
 
-    case CONSTANT:
-      new_val = *old_val;
-      break;
-
-    case UNDEFINED:
-      new_val.lattice_val = UNDEFINED;
-      new_val.value = NULL_TREE;
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
+  bool first = true;
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
       /* Compute the meet operator over all the PHI arguments flowing
@@ -1116,7 +1116,13 @@ ccp_visit_phi_node (gphi *phi)
 	  tree arg = gimple_phi_arg (phi, i)->def;
 	  ccp_prop_value_t arg_val = get_value_for_expr (arg, false);
 
-	  ccp_lattice_meet (gimple_bb (phi), &new_val, &arg_val);
+	  if (first)
+	    {
+	      new_val = arg_val;
+	      first = false;
+	    }
+	  else
+	    ccp_lattice_meet (gimple_bb (phi), &new_val, &arg_val);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
