@@ -649,7 +649,7 @@ duplicate_eh_regions (struct function *ifun,
   data.label_map_data = map_data;
   data.eh_map = new hash_map<void *, void *>;
 
-  outer_region = get_eh_region_from_lp_number (outer_lp);
+  outer_region = get_eh_region_from_lp_number_fn (cfun, outer_lp);
 
   /* Copy all the regions in the subtree.  */
   if (copy_region)
