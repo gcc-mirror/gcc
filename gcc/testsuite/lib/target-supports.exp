@@ -4214,6 +4214,7 @@ proc check_effective_target_vect_no_align { } {
 	     || [istarget sparc*-*-*]
 	     || [istarget ia64-*-*]
 	     || [check_effective_target_arm_vect_no_misalign]
+	     || ([istarget powerpc*-*-*] && [check_p8vector_hw_available])
 	     || ([istarget mips*-*-*]
 		 && [check_effective_target_mips_loongson]) } {
 	    set et_vect_no_align_saved 1
@@ -4235,6 +4236,7 @@ proc check_effective_target_vect_hw_misalign { } {
     } else {
         set et_vect_hw_misalign_saved 0
        if { [istarget i?86-*-*] || [istarget x86_64-*-*]
+            || ([istarget powerpc*-*-*] && [check_p8vector_hw_available])
 	    || [istarget aarch64*-*-*] } {
           set et_vect_hw_misalign_saved 1
        }
@@ -5973,7 +5975,7 @@ proc check_vect_support_and_set_flags { } {
 
         lappend DEFAULT_VECTCFLAGS "-maltivec"
         if [check_p8vector_hw_available] {
-            lappend DEFAULT_VECTCFLAGS "-mpower8-vector" "-mno-allow-movmisalign"
+            lappend DEFAULT_VECTCFLAGS "-mpower8-vector"
         } elseif [check_vsx_hw_available] {
             lappend DEFAULT_VECTCFLAGS "-mvsx" "-mno-allow-movmisalign"
         }
