@@ -248,10 +248,23 @@ protected:
   /* Accumulate to HSTATE a hash of type T.  */
   static void add_type (const_tree t, inchash::hash &hstate);
 
+  /* Compare properties of symbol that does not affect semantics of symbol
+     itself but affects semantics of its references.
+     If ADDRESS is true, do extra checking needed for IPA_REF_ADDR.  */
+  static bool compare_referenced_symbol_properties (symtab_node *used_by,
+						    symtab_node *n1,
+					            symtab_node *n2,
+					            bool address);
+
+  /* Hash properties compared by compare_referenced_symbol_properties.  */
+  void hash_referenced_symbol_properties (symtab_node *ref,
+					  inchash::hash &hstate,
+					  bool address);
+
   /* For a given symbol table nodes N1 and N2, we check that FUNCTION_DECLs
      point to a same function. Comparison can be skipped if IGNORED_NODES
      contains these nodes.  ADDRESS indicate if address is taken.  */
-  bool compare_cgraph_references (hash_map <symtab_node *, sem_item *>
+  bool compare_symbol_references (hash_map <symtab_node *, sem_item *>
 				  &ignored_nodes,
 				  symtab_node *n1, symtab_node *n2,
 				  bool address);

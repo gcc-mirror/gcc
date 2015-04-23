@@ -1,3 +1,27 @@
+2015-04-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-icf.c (symbol_compare_collection::symbol_compare_collection):
+	cleanup.
+	(sem_function::get_hash): Do not hash DECL_DISREGARD_INLINE_LIMITS,
+	DECL_DECLARED_INLINE_P and DECL_IS_OPERATOR_NEW.
+	(sem_item::compare_referenced_symbol_properties): New.
+	(sem_item::hash_referenced_symbol_properties): New.
+	(sem_item::compare_cgraph_references): Rename to ...
+	(sem_item::compare_symbol_references): ... this one; use
+	compare_referenced_symbol_properties.
+	(sem_function::equals_wpa): Do not compare
+	DECL_DISREGARD_INLINE_LIMITS, DECL_DECLARED_INLINE_P,
+	DECL_IS_OPERATOR_NEW; compare pointer sizes.
+	(sem_item::update_hash_by_addr_refs): Call
+	hash_referenced_symbol_properties.
+	(sem_item::update_hash_by_local_refs): Cleanup.
+	(sem_function::merge): Do not mix up symbol properties.
+	(sem_variable::equals_wpa): Use compare_symbol_references.
+	* ipa-icf.h (sem_item::compare_referenced_symbol_properties): New.
+	(sem_item::hash_referenced_symbol_properties): New.
+	(sem_item::compare_symbol_references): New.
+	(sem_item::compare_cgraph_references): Remove.
+
 2015-04-23  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	PR target/26702
