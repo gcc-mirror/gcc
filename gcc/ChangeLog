@@ -1,5 +1,9 @@
 2015-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* conditions.h (CC_STATUS_INIT): Gate on #ifndef CC_STATUS_INIT.
+
+2015-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm.md (load_multiple): Reject operand 2 greater than
 	MAX_LDM_STM_OPS.
 	(store_multiple): Likewise.

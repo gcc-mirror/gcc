@@ -109,8 +109,10 @@ extern CC_STATUS cc_status;
 /* This is how to initialize the variable cc_status.
    final does this at appropriate moments.  */
 
+/* FIXME: We want to get rid of these ifndefs.  */
+#ifndef CC_STATUS_INIT
 #define CC_STATUS_INIT  \
  (cc_status.flags = 0, cc_status.value1 = 0, cc_status.value2 = 0,  \
   CC_STATUS_MDEP_INIT)
-
+#endif
 #endif /* GCC_CONDITIONS_H */
