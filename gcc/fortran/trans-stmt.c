@@ -1390,12 +1390,29 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 
       gfc_init_se (&se, NULL);
       se.descriptor_only = 1;
-      gfc_conv_expr (&se, e);
+      /* In a select type the (temporary) associate variable shall point to
+	 a standard fortran array (lower bound == 1), but conv_expr ()
+	 just maps to the input array in the class object, whose lbound may
+	 be arbitrary.  conv_expr_descriptor solves this by inserting a
+	 temporary array descriptor.  */
+      gfc_conv_expr_descriptor (&se, e);
 
-      gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se.expr)));
+      gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se.expr))
+		  || GFC_ARRAY_TYPE_P (TREE_TYPE (se.expr)));
       gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (sym->backend_decl)));
 
-      gfc_add_modify (&se.pre, sym->backend_decl, se.expr);
+      if (GFC_ARRAY_TYPE_P (TREE_TYPE (se.expr)))
+	{
+	  if (INDIRECT_REF_P (se.expr))
+	    tmp = TREE_OPERAND (se.expr, 0);
+	  else
+	    tmp = se.expr;
+
+	  gfc_add_modify (&se.pre, sym->backend_decl,
+			  gfc_class_data_get (GFC_DECL_SAVED_DESCRIPTOR (tmp)));
+	}
+      else
+	gfc_add_modify (&se.pre, sym->backend_decl, se.expr);
 
       if (unlimited)
 	{
@@ -1406,7 +1423,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 			  gfc_get_dtype (TREE_TYPE (sym->backend_decl)));
 	}
 
-      gfc_add_init_cleanup (block, gfc_finish_block( &se.pre),
+      gfc_add_init_cleanup (block, gfc_finish_block (&se.pre),
 			    gfc_finish_block (&se.post));
     }
 
@@ -1449,9 +1466,18 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	    }
 	  if (need_len_assign)
 	    {
-	      /* Get the _len comp from the target expr by stripping _data
-		 from it and adding component-ref to _len.  */
-	      tmp = gfc_class_len_get (TREE_OPERAND (target_expr, 0));
+	      if (e->symtree
+		  && DECL_LANG_SPECIFIC (e->symtree->n.sym->backend_decl)
+		 && GFC_DECL_SAVED_DESCRIPTOR (e->symtree->n.sym->backend_decl))
+		/* Use the original class descriptor stored in the saved
+		   descriptor to get the target_expr.  */
+		target_expr =
+		    GFC_DECL_SAVED_DESCRIPTOR (e->symtree->n.sym->backend_decl);
+	      else
+		/* Strip the _data component from the target_expr.  */
+		target_expr = TREE_OPERAND (target_expr, 0);
+	      /* Add a reference to the _len comp to the target expr.  */
+	      tmp = gfc_class_len_get (target_expr);
 	      /* Get the component-ref for the temp structure's _len comp.  */
 	      charlen = gfc_class_len_get (se.expr);
 	      /* Add the assign to the beginning of the the block...  */

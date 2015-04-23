@@ -321,7 +321,7 @@ gfc_build_addr_expr (tree type, tree t)
 /* Build an ARRAY_REF with its natural type.  */
 
 tree
-gfc_build_array_ref (tree base, tree offset, tree decl)
+gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
 {
   tree type = TREE_TYPE (base);
   tree tmp;
@@ -353,30 +353,47 @@ gfc_build_array_ref (tree base, tree offset, tree decl)
   /* If the array reference is to a pointer, whose target contains a
      subreference, use the span that is stored with the backend decl
      and reference the element with pointer arithmetic.  */
-  if (decl && (TREE_CODE (decl) == FIELD_DECL
-		 || TREE_CODE (decl) == VAR_DECL
-		 || TREE_CODE (decl) == PARM_DECL)
-	&& ((GFC_DECL_SUBREF_ARRAY_P (decl)
-	      && !integer_zerop (GFC_DECL_SPAN(decl)))
+  if ((decl && (TREE_CODE (decl) == FIELD_DECL
+		|| TREE_CODE (decl) == VAR_DECL
+		|| TREE_CODE (decl) == PARM_DECL)
+       && ((GFC_DECL_SUBREF_ARRAY_P (decl)
+	    && !integer_zerop (GFC_DECL_SPAN (decl)))
 	   || GFC_DECL_CLASS (decl)))
+      || vptr)
     {
-      if (GFC_DECL_CLASS (decl))
+      if (decl)
 	{
-	  /* Allow for dummy arguments and other good things.  */
-	  if (POINTER_TYPE_P (TREE_TYPE (decl)))
-	    decl = build_fold_indirect_ref_loc (input_location, decl);
+	  if (GFC_DECL_CLASS (decl))
+	    {
+	      /* When a temporary is in place for the class array, then the
+		 original class' declaration is stored in the saved
+		 descriptor.  */
+	      if (DECL_LANG_SPECIFIC (decl) && GFC_DECL_SAVED_DESCRIPTOR (decl))
+		decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
+	      else
+		{
+		  /* Allow for dummy arguments and other good things.  */
+		  if (POINTER_TYPE_P (TREE_TYPE (decl)))
+		    decl = build_fold_indirect_ref_loc (input_location, decl);
 
-	  /* Check if '_data' is an array descriptor. If it is not,
-	     the array must be one of the components of the class object,
-	     so return a normal array reference.  */
-	  if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (gfc_class_data_get (decl))))
-	    return build4_loc (input_location, ARRAY_REF, type, base,
-			       offset, NULL_TREE, NULL_TREE);
+		  /* Check if '_data' is an array descriptor.  If it is not,
+		     the array must be one of the components of the class
+		     object, so return a normal array reference.  */
+		  if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (
+						gfc_class_data_get (decl))))
+		    return build4_loc (input_location, ARRAY_REF, type, base,
+				       offset, NULL_TREE, NULL_TREE);
+		}
 
-	  span = gfc_class_vtab_size_get (decl);
+	      span = gfc_class_vtab_size_get (decl);
+	    }
+	  else if (GFC_DECL_SUBREF_ARRAY_P (decl))
+	    span = GFC_DECL_SPAN (decl);
+	  else
+	    gcc_unreachable ();
 	}
-      else if (GFC_DECL_SUBREF_ARRAY_P (decl))
-	span = GFC_DECL_SPAN(decl);
+      else if (vptr)
+	span = gfc_vptr_size_get (vptr);
       else
 	gcc_unreachable ();
 

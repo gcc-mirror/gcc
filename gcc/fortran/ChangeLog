@@ -1,3 +1,61 @@
+2015-04-23  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/60322
+	* expr.c (gfc_lval_expr_from_sym): Code to select the regular
+	or class array added.
+	* gfortran.h: Add IS_CLASS_ARRAY macro.
+	* trans-array.c (gfc_add_loop_ss_code): Treat class objects
+	to be referenced always.
+	(build_class_array_ref): Adapt retrieval of array descriptor.
+	(build_array_ref): Likewise.
+	(gfc_conv_array_ref): Hand the vptr or the descriptor to 
+	build_array_ref depending whether the sym is class or not.
+	(gfc_trans_array_cobounds):  Select correct gfc_array_spec for
+	regular and class arrays.
+	(gfc_trans_array_bounds): Likewise.
+	(gfc_trans_dummy_array_bias): Likewise. 
+	(gfc_get_dataptr_offset): Correcting call of build_array_ref.
+	(gfc_conv_expr_descriptor): Set the array's offset to -1 when
+	lbound in inner most dim is 1 and symbol non-pointer/assoc.
+	* trans-decl.c (gfc_build_qualified_array): Select correct
+	gfc_array_spec for regular and class arrays.
+	(gfc_build_dummy_array_decl): Likewise.
+	(gfc_get_symbol_decl): Get a dummy array for class arrays.
+	(gfc_trans_deferred_vars): Tell conv_expr that the descriptor
+	is desired.
+	* trans-expr.c (gfc_class_vptr_get): Get the class descriptor
+	from the correct location for class arrays.
+	(gfc_class_len_get): Likewise.
+	(gfc_conv_intrinsic_to_class): Add handling of _len component.
+	(gfc_conv_class_to_class):  Prevent access to unset array data
+	when the array is an optional argument. Add handling of _len
+	component.
+	(gfc_copy_class_to_class): Check that _def_init is non-NULL
+	when used in _vptr->copy()
+	(gfc_trans_class_init_assign): Ensure that the rank of
+	_def_init is zero.
+	(gfc_conv_component_ref): Get the _vptr along with _data refs.
+	(gfc_conv_variable): Make sure the temp array descriptor is
+	returned for class arrays, too, and that class arrays are
+	dereferenced correctly.
+	(gfc_conv_procedure_call): For polymorphic type initialization
+	the initializer has to be a pointer to _def_init stored in a
+	dummy variable, which then needs to be used by value.
+	* trans-intrinsic.c (gfc_conv_intrinsic_sizeof): Use the
+	temporary array descriptor for class arrays, too.
+	(gfc_conv_intrinsic_storage_size): Likewise.
+	(gfc_conv_intrinsic_loc): Add ref to _data for BT_CLASS
+	expressions.
+	* trans-stmt.c (trans_associate_var): Use a temporary array for
+	the associate variable of class arrays, too, making the array
+	one-based (lbound == 1).
+	* trans-types.c (gfc_is_nodesc_array): Use the correct
+	array data.
+	* trans.c (gfc_build_array_ref): Use the dummy array descriptor
+	when present.
+	* trans.h: Add class_vptr to gfc_se for storing a class ref's
+	vptr.
+
 2015-04-22  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/65429

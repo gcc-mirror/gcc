@@ -1,3 +1,14 @@
+2015-04-23  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/60322
+	* gfortran.dg/class_allocate_19.f03: New test.
+	* gfortran.dg/class_array_20.f03: New test.
+	* gfortran.dg/class_array_21.f03: New test.
+	* gfortran.dg/finalize_10.f90: Corrected scan-trees.
+	* gfortran.dg/finalize_15.f90: Fixing comparision to model
+	initialization correctly.
+	* gfortran.dg/finalize_29.f08: New test.
+
 2015-04-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/swaps-p8-18.c: New test.
