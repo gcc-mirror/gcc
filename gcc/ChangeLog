@@ -1,3 +1,12 @@
+2015-04-24  Uros Bizjak  <ubizjak@gmail.com>
+	    Wei Mi  <wmi@google.com>
+
+	* config/i386/i386-protos.h (ix86_operands_ok_for_move_multiple): New.
+	* config/i386/i386.c (extract_base_offset_in_addr): New function.
+	(ix86_operands_ok_for_move_multiple): Ditto.
+	* config/i386/sse.md (movsd/movhpd to movupd peephole2): New pattern.
+	(movlpd/movhpd to movupd peephole2): Ditto.
+
 2015-04-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61534

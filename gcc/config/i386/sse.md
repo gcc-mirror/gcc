@@ -1183,6 +1183,21 @@
 	      ]
 	      (const_string "<MODE>")))])
 
+;; Merge movsd/movhpd to movupd for TARGET_SSE_UNALIGNED_LOAD_OPTIMAL targets.
+(define_peephole2
+  [(set (match_operand:V2DF 0 "register_operand")
+	(vec_concat:V2DF (match_operand:DF 1 "memory_operand")
+			 (match_operand:DF 4 "const0_operand")))
+   (set (match_operand:V2DF 2 "register_operand")
+	(vec_concat:V2DF (vec_select:DF (match_dup 2)
+					(parallel [(const_int 0)]))
+			 (match_operand:DF 3 "memory_operand")))]
+  "TARGET_SSE2 && TARGET_SSE_UNALIGNED_LOAD_OPTIMAL
+   && ix86_operands_ok_for_move_multiple (operands, true, DFmode)"
+  [(set (match_dup 2)
+	(unspec:V2DF [(match_dup 4)] UNSPEC_LOADU))]
+  "operands[4] = adjust_address (operands[1], V2DFmode, 0);")
+
 (define_insn "<sse>_storeu<ssemodesuffix><avxsizesuffix>"
   [(set (match_operand:VF 0 "memory_operand" "=m")
 	(unspec:VF
@@ -1241,6 +1256,20 @@
    (set_attr "memory" "store")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+;; Merge movlpd/movhpd to movupd for TARGET_SSE_UNALIGNED_STORE_OPTIMAL targets.
+(define_peephole2
+  [(set (match_operand:DF 0 "memory_operand")
+	(vec_select:DF (match_operand:V2DF 1 "register_operand")
+		       (parallel [(const_int 0)])))
+   (set (match_operand:DF 2 "memory_operand")
+	(vec_select:DF (match_operand:V2DF 3 "register_operand")
+		       (parallel [(const_int 1)])))]
+  "TARGET_SSE2 && TARGET_SSE_UNALIGNED_STORE_OPTIMAL
+   && ix86_operands_ok_for_move_multiple (operands, false, DFmode)"
+  [(set (match_dup 4)
+	(unspec:V2DF [(match_dup 1)] UNSPEC_STOREU))]
+  "operands[4] = adjust_address (operands[0], V2DFmode, 0);")
 
 /* For AVX, normal *mov<mode>_internal pattern will handle unaligned loads
    just fine if misaligned_operand is true, and without the UNSPEC it can

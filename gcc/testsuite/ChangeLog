@@ -1,3 +1,9 @@
+2015-04-24  Uros Bizjak  <ubizjak@gmail.com>
+	    Wei Mi  <wmi@google.com>
+
+	* gcc.target/i386/sse2-load-multi.c: New test.
+	* gcc.target/i386/sse2-store-multi.c: Ditto.
+
 2015-04-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c/65830
