@@ -1,5 +1,8 @@
 2015-04-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50800
+	* typeck.c (structural_comptypes): Don't check TYPE_REF_CAN_ALIAS_ALL.
+
 	* constexpr.c (potential_constant_expression_1) [MINUS_EXPR]:
 	Remove obsolete code.
 	[NE_EXPR]: Likewise.

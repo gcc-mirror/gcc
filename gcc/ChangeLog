@@ -1,3 +1,10 @@
+2015-04-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50800
+	* tree.c (build_reference_type_for_mode): Don't pass can_alias_all
+	down when building TYPE_CANONICAL.
+	(build_pointer_type_for_mode): Likewise.
+
 2015-04-24  Chen Gang  <gang.chen.5i5j@gmail.com>
 
 	* genrecog.c (validate_pattern): Check matching constraint refers
