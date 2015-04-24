@@ -80,9 +80,9 @@
 									\
       ASM_OUTPUT_ALIGN (FILE, floor_log2 (ALIGN / BITS_PER_UNIT));	\
       ASM_OUTPUT_LABEL (FILE, NAME);					\
-      fprintf (FILE, "\t.space\t%d\n", SIZE ? (int)(SIZE) : 1);		\
+      fprintf (FILE, "\t.space\t%d\n", SIZE ? (int) SIZE : 1);		\
       fprintf (FILE, "\t.size\t%s, %d\n",				\
-	       NAME, SIZE ? (int) SIZE, 1);				\
+	       NAME, SIZE ? (int) SIZE : 1);				\
     }									\
   while (0)
 
