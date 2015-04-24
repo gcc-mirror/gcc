@@ -380,8 +380,7 @@ private:
   bool compare_edge_flags (cgraph_edge *e1, cgraph_edge *e2);
 
   /* Processes function equality comparison.  */
-  bool equals_private (sem_item *item,
-		       hash_map <symtab_node *, sem_item *> &ignored_nodes);
+  bool equals_private (sem_item *item);
 
   /* Returns true if tree T can be compared as a handled component.  */
   static bool icf_handled_component_p (tree t);

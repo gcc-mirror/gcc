@@ -1,3 +1,14 @@
+2015-04-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-icf.c (sem_function::equals_wpa): Compare thunk info.
+	(sem_function::equals): IGNORED_NODES parameter is now unused;
+	update call of equals_private.
+	(sem_function::equals_private): Do not call equals_wpa; skip
+	gimple body matching if there is no body.
+	(sem_function::init): Add logic to hash tthunk info.
+	(sem_function::parse): Also parse thunks.
+	* ipa-icf.h (equals_private): Update declaration.
+
 2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.md (*altivec_lvx_<mode>_internal): Remove
