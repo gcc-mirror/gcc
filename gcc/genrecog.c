@@ -503,7 +503,8 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 
 	if (code == MATCH_OPERAND)
 	  {
-	    const char constraints0 = XSTR (pattern, 2)[0];
+	    const char *constraints = XSTR (pattern, 2);
+	    const char constraints0 = constraints[0];
 
 	    if (!constraints_supported_in_insn_p (insn))
 	      {
@@ -536,6 +537,33 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 		  error_with_line (pattern_lineno,
 				   "operand %d missing output reload",
 				   XINT (pattern, 0));
+	      }
+
+	    /* For matching constraint in MATCH_OPERAND, the digit must be a
+	       smaller number than the number of the operand that uses it in the
+	       constraint.  */
+	    while (1)
+	      {
+		while (constraints[0]
+		       && (constraints[0] == ' ' || constraints[0] == ','))
+		  constraints++;
+		if (!constraints[0])
+		  break;
+
+		if (constraints[0] >= '0' && constraints[0] <= '9')
+		  {
+		    int val;
+
+		    sscanf (constraints, "%d", &val);
+		    if (val >= XINT (pattern, 0))
+		      error_with_line (pattern_lineno,
+				       "constraint digit %d is not smaller than"
+				       " operand %d",
+				       val, XINT (pattern, 0));
+		  }
+
+		while (constraints[0] && constraints[0] != ',')
+		  constraints++;
 	      }
 	  }
 
