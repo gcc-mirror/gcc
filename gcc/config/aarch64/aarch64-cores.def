@@ -21,7 +21,7 @@
 
    Before using #include to read this file, define a macro:
 
-      AARCH64_CORE(CORE_NAME, CORE_IDENT, SCHEDULER_IDENT, ARCH, FLAGS, COSTS)
+      AARCH64_CORE(CORE_NAME, CORE_IDENT, SCHEDULER_IDENT, ARCH, FLAGS, COSTS, IMP, PART)
 
    The CORE_NAME is the name of the core, represented as a string constant.
    The CORE_IDENT is the name of the core, represented as an identifier.
@@ -30,18 +30,23 @@
    ARCH is the architecture revision implemented by the chip.
    FLAGS are the bitwise-or of the traits that apply to that core.
    This need not include flags implied by the architecture.
-   COSTS is the name of the rtx_costs routine to use.  */
+   COSTS is the name of the rtx_costs routine to use.
+   IMP is the implementer ID of the CPU vendor.  On a GNU/Linux system it can
+   be found in /proc/cpuinfo.
+   PART is the part number of the CPU.  On a GNU/Linux system it can be found
+   in /proc/cpuinfo.  For big.LITTLE systems this should have the form at of
+   "<big core part number>.<LITTLE core part number>".  */
 
 /* V8 Architecture Processors.  */
 
-AARCH64_CORE("cortex-a53",  cortexa53, cortexa53, 8,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa53)
-AARCH64_CORE("cortex-a57",  cortexa57, cortexa57, 8,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57)
-AARCH64_CORE("cortex-a72",  cortexa72, cortexa57, 8,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57)
-AARCH64_CORE("exynos-m1",   exynosm1,  cortexa57, 8,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, cortexa57)
-AARCH64_CORE("thunderx",    thunderx,  thunderx, 8,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx)
-AARCH64_CORE("xgene1",      xgene1,    xgene1,    8,  AARCH64_FL_FOR_ARCH8, xgene1)
+AARCH64_CORE("cortex-a53",  cortexa53, cortexa53, 8,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa53, "0x41", "0xd03")
+AARCH64_CORE("cortex-a57",  cortexa57, cortexa57, 8,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57, "0x41", "0xd07")
+AARCH64_CORE("cortex-a72",  cortexa72, cortexa57, 8,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57, "0x41", "0xd08")
+AARCH64_CORE("exynos-m1",   exynosm1,  cortexa57, 8,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, cortexa57, "0x53", "0x001")
+AARCH64_CORE("thunderx",    thunderx,  thunderx,  8,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  "0x43", "0x0a1")
+AARCH64_CORE("xgene1",      xgene1,    xgene1,    8,  AARCH64_FL_FOR_ARCH8, xgene1, "0x50", "0x000")
 
 /* V8 big.LITTLE implementations.  */
 
-AARCH64_CORE("cortex-a57.cortex-a53",  cortexa57cortexa53, cortexa53, 8,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57)
-AARCH64_CORE("cortex-a72.cortex-a53",  cortexa72cortexa53, cortexa53, 8,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57)
+AARCH64_CORE("cortex-a57.cortex-a53",  cortexa57cortexa53, cortexa53, 8,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57, "0x41", "0xd07.0xd03")
+AARCH64_CORE("cortex-a72.cortex-a53",  cortexa72cortexa53, cortexa53, 8,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57, "0x41", "0xd08.0xd03")

@@ -1,3 +1,22 @@
+2014-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config.host (case ${host}): Add aarch64*-*-linux case.
+	* config/aarch64/aarch64-cores.def: Add IMPLEMENTER_ID and PART_NUMBER
+	fields to all the cores.
+	* config/aarch64/aarch64-elf.h (DRIVER_SELF_SPECS):
+	Add MCPU_MTUNE_NATIVE_SPECS.
+	* config/aarch64/aarch64-option-extensions.def: Add FEATURE_STRING
+	field to all extensions.
+	* config/aarch64/aarch64-opts.h: Adjust definition of AARCH64_CORE.
+	* config/aarch64/aarch64.c: Adjust definition of AARCH64_CORE.
+	Adjust definition of AARCH64_OPT_EXTENSION.
+	* config/aarch64/aarch64.h: Adjust definition of AARCH64_CORE.
+	(MCPU_MTUNE_NATIVE_SPECS): Define.
+	* config/aarch64/driver-aarch64.c: New file.
+	* config/aarch64/x-arch64: New file.
+	* doc/invoke.texi (AArch64 Options): Document native value for -mcpu,
+	-mtune and -march.
+
 2015-04-24  Uros Bizjak  <ubizjak@gmail.com>
 	    Wei Mi  <wmi@google.com>
 

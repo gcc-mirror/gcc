@@ -440,7 +440,7 @@ struct processor
 /* Processor cores implementing AArch64.  */
 static const struct processor all_cores[] =
 {
-#define AARCH64_CORE(NAME, IDENT, SCHED, ARCH, FLAGS, COSTS) \
+#define AARCH64_CORE(NAME, IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART) \
   {NAME, SCHED, #ARCH, ARCH, FLAGS, &COSTS##_tunings},
 #include "aarch64-cores.def"
 #undef AARCH64_CORE
@@ -477,7 +477,7 @@ struct aarch64_option_extension
 /* ISA extensions in AArch64.  */
 static const struct aarch64_option_extension all_extensions[] =
 {
-#define AARCH64_OPT_EXTENSION(NAME, FLAGS_ON, FLAGS_OFF) \
+#define AARCH64_OPT_EXTENSION(NAME, FLAGS_ON, FLAGS_OFF, FEATURE_STRING) \
   {NAME, FLAGS_ON, FLAGS_OFF},
 #include "aarch64-option-extensions.def"
 #undef AARCH64_OPT_EXTENSION
