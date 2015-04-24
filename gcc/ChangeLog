@@ -1,3 +1,18 @@
+2015-04-24  Steve Ellcey  <sellcey@imgtec.com>
+
+	* config/mips/mips.md: (*madd4<mode>) Remove accum_in attribute.
+	(*madd3<mode>): Ditto.
+	(*msub4<mode>): Ditto.
+	(*msub3<mode>): Ditto.
+	(*nmadd4<mode>): Ditto.
+	(*nmadd3<mode>): Ditto.
+	(*nmadd4<mode>_fastmath): Ditto.
+	(*nmadd3<mode>_fastmath): Ditto.
+	(*nmsub4<mode>): Ditto.
+	(*nmsub3<mode>): Ditto.
+	(*nmsub4<mode>_fastmath): Ditto.
+	(*nmsub3<mode>_fastmath): Ditto.
+
 2015-04-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50800
