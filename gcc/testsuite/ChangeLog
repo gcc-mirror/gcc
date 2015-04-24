@@ -1,3 +1,19 @@
+2015-04-24  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	Add missing ChangeLog entry for r222341.
+
+	Backport from trunk r222273
+        2015-04-21  Andreas Tobler  <andreast@gcc.gnu.org>
+	* gcc.target/i386/avx512bw-vpermi2w-2.c: Fix includes to use actual
+	headers.
+	* gcc.target/i386/avx512bw-vpermt2w-2.c: Likewise.
+	* gcc.target/i386/avx512bw-vpmaddubsw-2.c: Likewise.
+	* gcc.target/i386/avx512bw-vpmaddwd-2.c: Likewise.
+	* gcc.target/i386/avx512dq-vfpclasspd-2.c: Likewise.
+	* gcc.target/i386/avx512dq-vfpclassps-2.c: Likewise.
+	* gcc.target/i386/avx512vbmi-vpermi2b-2.c: Likewise.
+	* gcc.target/i386/avx512vbmi-vpermt2b-2.c: Likewise.
+
 2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline r222362
