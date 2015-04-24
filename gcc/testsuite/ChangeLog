@@ -1,5 +1,12 @@
 2015-04-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	Backport from mainline r222362
+	2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/crypto-builtin-2.c: New.
+
+2015-04-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	Backport from mainline r222351
 	2015-04-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
