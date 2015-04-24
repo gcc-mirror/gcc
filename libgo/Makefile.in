@@ -130,11 +130,11 @@ LIBRARIES = $(toolexeclib_LIBRARIES)
 ARFLAGS = cru
 libgobegin_llgo_a_AR = $(AR) $(ARFLAGS)
 libgobegin_llgo_a_LIBADD =
-am_libgobegin_llgo_a_OBJECTS = go-main.$(OBJEXT)
+am_libgobegin_llgo_a_OBJECTS = libgobegin_llgo_a-go-main.$(OBJEXT)
 libgobegin_llgo_a_OBJECTS = $(am_libgobegin_llgo_a_OBJECTS)
 libgobegin_a_AR = $(AR) $(ARFLAGS)
 libgobegin_a_LIBADD =
-am_libgobegin_a_OBJECTS = go-main.$(OBJEXT)
+am_libgobegin_a_OBJECTS = libgobegin_a-go-main.$(OBJEXT)
 libgobegin_a_OBJECTS = $(am_libgobegin_a_OBJECTS)
 libnetgo_a_AR = $(AR) $(ARFLAGS)
 libnetgo_a_DEPENDENCIES = netgo.o
@@ -2098,6 +2098,10 @@ libgobegin_a_SOURCES = \
 libgobegin_llgo_a_SOURCES = \
 	runtime/go-main.c
 
+
+# Use -fPIC for libgobegin so that it can be put in a PIE.
+libgobegin_a_CFLAGS = $(AM_CFLAGS) -fPIC
+libgobegin_llgo_a_CFLAGS = $(AM_CFLAGS) -fPIC
 libnetgo_a_SOURCES = $(go_netgo_files)
 libnetgo_a_LIBADD = netgo.o
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
@@ -2497,7 +2501,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-interface-compare.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-interface-eface-compare.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-interface-val-compare.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-make-slice.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-map-delete.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-map-index.Plo@am__quote@
@@ -2541,6 +2544,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-varargs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/heapdump.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lfstack.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgobegin_a-go-main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgobegin_llgo_a-go-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lock_futex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lock_sema.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/malloc.Plo@am__quote@
@@ -2598,19 +2603,33 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
-go-main.o: runtime/go-main.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-main.o -MD -MP -MF $(DEPDIR)/go-main.Tpo -c -o go-main.o `test -f 'runtime/go-main.c' || echo '$(srcdir)/'`runtime/go-main.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-main.Tpo $(DEPDIR)/go-main.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-main.c' object='go-main.o' libtool=no @AMDEPBACKSLASH@
+libgobegin_llgo_a-go-main.o: runtime/go-main.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgobegin_llgo_a_CFLAGS) $(CFLAGS) -MT libgobegin_llgo_a-go-main.o -MD -MP -MF $(DEPDIR)/libgobegin_llgo_a-go-main.Tpo -c -o libgobegin_llgo_a-go-main.o `test -f 'runtime/go-main.c' || echo '$(srcdir)/'`runtime/go-main.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libgobegin_llgo_a-go-main.Tpo $(DEPDIR)/libgobegin_llgo_a-go-main.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-main.c' object='libgobegin_llgo_a-go-main.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-main.o `test -f 'runtime/go-main.c' || echo '$(srcdir)/'`runtime/go-main.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgobegin_llgo_a_CFLAGS) $(CFLAGS) -c -o libgobegin_llgo_a-go-main.o `test -f 'runtime/go-main.c' || echo '$(srcdir)/'`runtime/go-main.c
 
-go-main.obj: runtime/go-main.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-main.obj -MD -MP -MF $(DEPDIR)/go-main.Tpo -c -o go-main.obj `if test -f 'runtime/go-main.c'; then $(CYGPATH_W) 'runtime/go-main.c'; else $(CYGPATH_W) '$(srcdir)/runtime/go-main.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-main.Tpo $(DEPDIR)/go-main.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-main.c' object='go-main.obj' libtool=no @AMDEPBACKSLASH@
+libgobegin_llgo_a-go-main.obj: runtime/go-main.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgobegin_llgo_a_CFLAGS) $(CFLAGS) -MT libgobegin_llgo_a-go-main.obj -MD -MP -MF $(DEPDIR)/libgobegin_llgo_a-go-main.Tpo -c -o libgobegin_llgo_a-go-main.obj `if test -f 'runtime/go-main.c'; then $(CYGPATH_W) 'runtime/go-main.c'; else $(CYGPATH_W) '$(srcdir)/runtime/go-main.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libgobegin_llgo_a-go-main.Tpo $(DEPDIR)/libgobegin_llgo_a-go-main.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-main.c' object='libgobegin_llgo_a-go-main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-main.obj `if test -f 'runtime/go-main.c'; then $(CYGPATH_W) 'runtime/go-main.c'; else $(CYGPATH_W) '$(srcdir)/runtime/go-main.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgobegin_llgo_a_CFLAGS) $(CFLAGS) -c -o libgobegin_llgo_a-go-main.obj `if test -f 'runtime/go-main.c'; then $(CYGPATH_W) 'runtime/go-main.c'; else $(CYGPATH_W) '$(srcdir)/runtime/go-main.c'; fi`
+
+libgobegin_a-go-main.o: runtime/go-main.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgobegin_a_CFLAGS) $(CFLAGS) -MT libgobegin_a-go-main.o -MD -MP -MF $(DEPDIR)/libgobegin_a-go-main.Tpo -c -o libgobegin_a-go-main.o `test -f 'runtime/go-main.c' || echo '$(srcdir)/'`runtime/go-main.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libgobegin_a-go-main.Tpo $(DEPDIR)/libgobegin_a-go-main.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-main.c' object='libgobegin_a-go-main.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgobegin_a_CFLAGS) $(CFLAGS) -c -o libgobegin_a-go-main.o `test -f 'runtime/go-main.c' || echo '$(srcdir)/'`runtime/go-main.c
+
+libgobegin_a-go-main.obj: runtime/go-main.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgobegin_a_CFLAGS) $(CFLAGS) -MT libgobegin_a-go-main.obj -MD -MP -MF $(DEPDIR)/libgobegin_a-go-main.Tpo -c -o libgobegin_a-go-main.obj `if test -f 'runtime/go-main.c'; then $(CYGPATH_W) 'runtime/go-main.c'; else $(CYGPATH_W) '$(srcdir)/runtime/go-main.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libgobegin_a-go-main.Tpo $(DEPDIR)/libgobegin_a-go-main.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-main.c' object='libgobegin_a-go-main.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgobegin_a_CFLAGS) $(CFLAGS) -c -o libgobegin_a-go-main.obj `if test -f 'runtime/go-main.c'; then $(CYGPATH_W) 'runtime/go-main.c'; else $(CYGPATH_W) '$(srcdir)/runtime/go-main.c'; fi`
 
 go-append.lo: runtime/go-append.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-append.lo -MD -MP -MF $(DEPDIR)/go-append.Tpo -c -o go-append.lo `test -f 'runtime/go-append.c' || echo '$(srcdir)/'`runtime/go-append.c
