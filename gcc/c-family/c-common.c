@@ -1697,6 +1697,13 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
       && code != TRUTH_OR_EXPR)
     return;
 
+  /* We don't want to warn if either operand comes from a macro
+     expansion.  ??? This doesn't work with e.g. NEGATE_EXPR yet;
+     see PR61534.  */
+  if (from_macro_expansion_at (EXPR_LOCATION (op_left))
+      || from_macro_expansion_at (EXPR_LOCATION (op_right)))
+    return;
+
   /* Warn if &&/|| are being used in a context where it is
      likely that the bitwise equivalent was intended by the
      programmer. That is, an expression such as op && MASK

@@ -1,3 +1,8 @@
+2015-04-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c/61534
+	* input.h (from_macro_expansion_at): Define.
+
 2015-04-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/unknown-elf.h (ASM_OUTPUT_ALIGNED_DECL_LOCAL): fix
