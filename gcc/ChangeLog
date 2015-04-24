@@ -1,3 +1,20 @@
+2015-04-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+	    Steven Bosscher <steven@gcc.gnu.org>
+
+	PR rtl-optimization/34503
+	* cprop.c (cprop_reg_p): New.
+	(hash_scan_set): Use above function to check if register can be
+	propagated.
+	(find_avail_set): Return up to two sets, one whose source is a
+	register and one whose source is a constant.  Sets are returned in an
+	array passed as parameter rather than as a return value.
+	(cprop_insn): Use a do while loop rather than a goto.  Try each of the
+	sets returned by find_avail_set, starting with the one whose source is
+	a constant. Use cprop_reg_p to check if register can be propagated.
+	(do_local_cprop): Use cprop_reg_p to check if register can be
+	propagated.
+	(implicit_set_cond_p): Likewise.
+
 2015-04-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-icf.c (sem_function::equals_wpa): Compare thunk info.

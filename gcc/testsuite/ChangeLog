@@ -1,3 +1,9 @@
+2015-04-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+	    Steven Bosscher <steven@gcc.gnu.org>
+
+	PR rtl-optimization/34503
+	* gcc.target/arm/pr64616.c: New file.
+
 2015-04-24  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.target/arm/pr42172-1.c: Check str instead of ldr.
