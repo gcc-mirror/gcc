@@ -1,3 +1,20 @@
+2015-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/iterators.md (shiftable_ops): Rename to...
+	(SHIFTABLE_OPS): ... This.  Update use in comments.
+	(ior_xor): Rename to...
+	(IOR_XOR): ... This.
+	(vqh_ops): Rename to...
+	(VQH_OPS): ... This.
+	(vqhs_ops): Rename to...
+	(VQHS_OPS): ... This.
+	(rshifts): Rename to...
+	(RSHIFTS): ... This.
+	(returns): Rename to...
+	(RETURNS): ... This.
+	* config/arm/arm.md: Update uses of the above.
+	* config/arm/neon.md: Likewise.
+
 2014-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config.host (case ${host}): Add aarch64*-*-linux case.

@@ -1114,7 +1114,7 @@
 ;; lshrdi3_neon
 (define_insn_and_split "<shift>di3_neon"
   [(set (match_operand:DI 0 "s_register_operand"	     "= w, w,?&r,?r,?w,?w")
-	(rshifts:DI (match_operand:DI 1 "s_register_operand" " 0w, w, 0r, r,0w, w")
+	(RSHIFTS:DI (match_operand:DI 1 "s_register_operand" " 0w, w, 0r, r,0w, w")
 		    (match_operand:SI 2 "reg_or_int_operand" "  r, i,  r, i, r, i")))
    (clobber (match_scratch:SI 3				     "=2r, X, &r, X,2r, X"))
    (clobber (match_scratch:SI 4				     "= X, X, &r, X, X, X"))
@@ -1267,7 +1267,7 @@
 
 (define_insn "quad_halves_<code>v4si"
   [(set (match_operand:V2SI 0 "s_register_operand" "=w")
-        (vqh_ops:V2SI
+        (VQH_OPS:V2SI
           (vec_select:V2SI (match_operand:V4SI 1 "s_register_operand" "w")
                            (parallel [(const_int 0) (const_int 1)]))
           (vec_select:V2SI (match_dup 1)
@@ -1280,7 +1280,7 @@
 
 (define_insn "quad_halves_<code>v4sf"
   [(set (match_operand:V2SF 0 "s_register_operand" "=w")
-        (vqhs_ops:V2SF
+        (VQHS_OPS:V2SF
           (vec_select:V2SF (match_operand:V4SF 1 "s_register_operand" "w")
                            (parallel [(const_int 0) (const_int 1)]))
           (vec_select:V2SF (match_dup 1)
@@ -1293,7 +1293,7 @@
 
 (define_insn "quad_halves_<code>v8hi"
   [(set (match_operand:V4HI 0 "s_register_operand" "+w")
-        (vqh_ops:V4HI
+        (VQH_OPS:V4HI
           (vec_select:V4HI (match_operand:V8HI 1 "s_register_operand" "w")
                            (parallel [(const_int 0) (const_int 1)
 				      (const_int 2) (const_int 3)]))
@@ -1308,7 +1308,7 @@
 
 (define_insn "quad_halves_<code>v16qi"
   [(set (match_operand:V8QI 0 "s_register_operand" "+w")
-        (vqh_ops:V8QI
+        (VQH_OPS:V8QI
           (vec_select:V8QI (match_operand:V16QI 1 "s_register_operand" "w")
                            (parallel [(const_int 0) (const_int 1)
 				      (const_int 2) (const_int 3)
