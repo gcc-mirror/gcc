@@ -16,4 +16,4 @@ void init_A (struct A *this)
   this->f4 = 0;
 }
 
-/* { dg-final { scan-assembler-times "ldr" 1 } } */
+/* { dg-final { scan-assembler-times "str" 1 } } */
