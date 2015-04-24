@@ -1,3 +1,8 @@
+2015-04-24  Chen Gang  <gang.chen.5i5j@gmail.com>
+
+	* genrecog.c (validate_pattern): Check matching constraint refers
+	to a lower numbered operand.
+
 2015-04-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/65849
