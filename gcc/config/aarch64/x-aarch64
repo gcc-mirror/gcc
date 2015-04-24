@@ -1,0 +1,3 @@
+driver-aarch64.o: $(srcdir)/config/aarch64/driver-aarch64.c \
+  $(CONFIG_H) $(SYSTEM_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

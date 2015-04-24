@@ -21,18 +21,25 @@
 
    Before using #include to read this file, define a macro:
 
-      AARCH64_OPT_EXTENSION(EXT_NAME, FLAGS_ON, FLAGS_OFF)
+      AARCH64_OPT_EXTENSION(EXT_NAME, FLAGS_ON, FLAGS_OFF, FEATURE_STRING)
 
    EXT_NAME is the name of the extension, represented as a string constant.
    FLAGS_ON are the bitwise-or of the features that the extension adds.
-   FLAGS_OFF are the bitwise-or of the features that the extension removes.  */
+   FLAGS_OFF are the bitwise-or of the features that the extension removes.
+   FEAT_STRING is a string containing the entries in the 'Features' field of
+   /proc/cpuinfo on a GNU/Linux system that correspond to this architecture
+   extension being available.  Sometimes multiple entries are needed to enable
+   the extension (for example, the 'crypto' extension depends on four
+   entries: aes, pmull, sha1, sha2 being present).  In that case this field
+   should contain a whitespace-separated list of the strings in 'Features'
+   that are required.  Their order is not important.  */
 
 /* V8 Architecture Extensions.
    This list currently contains example extensions for CPUs that implement
    AArch64, and therefore serves as a template for adding more CPUs in the
    future.  */
 
-AARCH64_OPT_EXTENSION("fp",	AARCH64_FL_FP,	AARCH64_FL_FPSIMD | AARCH64_FL_CRYPTO)
-AARCH64_OPT_EXTENSION("simd",	AARCH64_FL_FPSIMD,	AARCH64_FL_SIMD | AARCH64_FL_CRYPTO)
-AARCH64_OPT_EXTENSION("crypto",	AARCH64_FL_CRYPTO | AARCH64_FL_FPSIMD,	AARCH64_FL_CRYPTO)
-AARCH64_OPT_EXTENSION("crc",	AARCH64_FL_CRC,	AARCH64_FL_CRC)
+AARCH64_OPT_EXTENSION("fp",	AARCH64_FL_FP,                          AARCH64_FL_FPSIMD | AARCH64_FL_CRYPTO, "fp")
+AARCH64_OPT_EXTENSION("simd",	AARCH64_FL_FPSIMD,                      AARCH64_FL_SIMD | AARCH64_FL_CRYPTO,   "asimd")
+AARCH64_OPT_EXTENSION("crypto",	AARCH64_FL_CRYPTO | AARCH64_FL_FPSIMD,  AARCH64_FL_CRYPTO,                     "aes pmull sha1 sha2")
+AARCH64_OPT_EXTENSION("crc",	AARCH64_FL_CRC,                         AARCH64_FL_CRC,                        "crc32")

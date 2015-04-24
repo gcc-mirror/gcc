@@ -12329,8 +12329,12 @@ This involves inserting a NOP instruction between memory instructions and
 Specify the name of the target architecture, optionally suffixed by one or
 more feature modifiers.  This option has the form
 @option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where the
-only permissible value for @var{arch} is @samp{armv8-a}.  The permissible
-values for @var{feature} are documented in the sub-section below.
+only permissible value for @var{arch} is @samp{armv8-a}.
+The permissible values for @var{feature} are documented in the sub-section
+below.  Additionally on native AArch64 GNU/Linux systems the value
+@samp{native} is available.  This option causes the compiler to pick the
+architecture of the host system.  If the compiler is unable to recognize the
+architecture of the host system this option has no effect.
 
 Where conflicting feature modifiers are specified, the right-most feature is
 used.
@@ -12354,6 +12358,13 @@ Additionally, this option can specify that GCC should tune the performance
 of the code for a big.LITTLE system.  Permissible values for this
 option are: @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53}.
 
+Additionally on native AArch64 GNU/Linux systems the value @samp{native}
+is available.
+This option causes the compiler to pick the architecture of and tune the
+performance of the code for the processor of the host system.
+If the compiler is unable to recognize the processor of the host system
+this option has no effect.
+
 Where none of @option{-mtune=}, @option{-mcpu=} or @option{-march=}
 are specified, the code is tuned to perform well across a range
 of target processors.
@@ -12366,7 +12377,11 @@ Specify the name of the target processor, optionally suffixed by one or more
 feature modifiers.  This option has the form
 @option{-mcpu=@var{cpu}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}, where the
 permissible values for @var{cpu} are the same as those available for
-@option{-mtune}.
+@option{-mtune}.  Additionally on native AArch64 GNU/Linux systems the
+value @samp{native} is available.
+This option causes the compiler to tune the performance of the code for the
+processor of the host system.  If the compiler is unable to recognize the
+processor of the host system this option has no effect.
 
 The permissible values for @var{feature} are documented in the sub-section
 below.
