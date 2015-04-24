@@ -1,5 +1,38 @@
 2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	Backport from mainline r222362
+	2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/crypto.md (crypto_vpmsum<CR_char>): Change
+	TARGET_CRYPTO to TARGET_P8_VECTOR>
+	(crypto_vpermxor_<mode>): Likewise.
+	* config/rs6000/rs6000-builtin.def (BU_CRYPTO_2A): New #define.
+	(BU_CRYPTO_3A): Likewise.
+	(BU_CRYPTO_OVERLOAD_2A): Rename from BU_CRYPTO_OVERLOAD_2.
+	(BU_CRYPTO_OVERLOAD_3A): New #define.
+	(VPMSUMB): Change from BU_CRYPTO_2 to BU_CRYPTO_2A.
+	(VPMSUMH): Likewise.
+	(VPMSUMW): Likewise.
+	(VPMSUMD): Likewise.
+	(VPERMXOR_V2DI): Change from BU_CRYPTO_3 to BU_CRYPTO_3A.
+	(VPERMXOR_V4SI): Likewise.
+	(VPERMXOR_V8HI): Likewise.
+	(VPERMXOR_V16QI): Likewise.
+	(VPMSUM): Change from BU_CRYPTO_OVERLOAD_2 to
+	BU_CRYPTO_OVERLOAD_2A.
+	(VPERMXOR): Change from BU_CRYPTO_OVERLOAD3 to
+	BU_CRYPTO_OVERLOAD_3A.
+	* config/rs6000/rs6000.opt (mcrypto): Change description of
+	option.
+
+	Backport from mainline r222362
+	2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.opt (mcrypto): Change option description to
+	match category changes in ISA 2.07B.
+
+2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	Backport from mainline r222351
 	2015-04-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
