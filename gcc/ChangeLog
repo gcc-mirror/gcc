@@ -1,3 +1,8 @@
+2015-04-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/unknown-elf.h (ASM_OUTPUT_ALIGNED_DECL_LOCAL): fix
+	ternary operator in fprintf and harmonize spacing.
+
 2015-04-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (*vec_concatv2sf_sse4_1): Do not allow both
