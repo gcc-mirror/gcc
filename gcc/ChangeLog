@@ -1,3 +1,15 @@
+2015-04-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*vec_concatv2sf_sse4_1): Do not allow both
+	input operands in memory.
+	(*vec_concatv2si_sse4_1): Ditto.
+	(*vec_concatv2df): Ditto, except for SSE3 and equal input operands.
+	(vec_extract_lo_<mode><mask_name>): Change operand 1 predicate to
+	register_operand.
+	(vec_extract_hi_v32hi): Ditto.
+	(vec_extract_hi_v64hi): Ditto.
+	(<mask_codefor>avx512f_unpckhpd512<mask_name>): Ditto.
+
 2015-04-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 	    Steven Bosscher <steven@gcc.gnu.org>
 

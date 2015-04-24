@@ -6322,11 +6322,14 @@
 ;; Although insertps takes register source, we prefer
 ;; unpcklps with register source since it is shorter.
 (define_insn "*vec_concatv2sf_sse4_1"
-  [(set (match_operand:V2SF 0 "register_operand"     "=Yr,*x,x,Yr,*x,x,x,*y ,*y")
+  [(set (match_operand:V2SF 0 "register_operand"
+	  "=Yr,*x,x,Yr,*x,x,x,*y ,*y")
 	(vec_concat:V2SF
-	  (match_operand:SF 1 "nonimmediate_operand" "  0, 0,x, 0,0, x,m, 0 , m")
-	  (match_operand:SF 2 "vector_move_operand"  " Yr,*x,x, m,m, m,C,*ym, C")))]
-  "TARGET_SSE4_1"
+	  (match_operand:SF 1 "nonimmediate_operand"
+	  "  0, 0,x, 0,0, x,m, 0 , m")
+	  (match_operand:SF 2 "vector_move_operand"
+	  " Yr,*x,x, m,m, m,C,*ym, C")))]
+  "TARGET_SSE4_1 && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "@
    unpcklps\t{%2, %0|%0, %2}
    unpcklps\t{%2, %0|%0, %2}
@@ -7056,7 +7059,7 @@
 (define_insn "vec_extract_lo_<mode><mask_name>"
   [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=<store_mask_constraint>")
 	(vec_select:<ssehalfvecmode>
-	  (match_operand:VI4F_256 1 "nonimmediate_operand" "v")
+	  (match_operand:VI4F_256 1 "register_operand" "v")
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 2) (const_int 3)])))]
   "TARGET_AVX && <mask_avx512vl_condition> && <mask_avx512dq_condition>"
@@ -7157,7 +7160,7 @@
 (define_insn "vec_extract_hi_v32hi"
   [(set (match_operand:V16HI 0 "nonimmediate_operand" "=v,m")
 	(vec_select:V16HI
-	  (match_operand:V32HI 1 "nonimmediate_operand" "v,v")
+	  (match_operand:V32HI 1 "register_operand" "v,v")
 	  (parallel [(const_int 16) (const_int 17)
 		     (const_int 18) (const_int 19)
 		     (const_int 20) (const_int 21)
@@ -7245,7 +7248,7 @@
 (define_insn "vec_extract_hi_v64qi"
   [(set (match_operand:V32QI 0 "nonimmediate_operand" "=v,m")
 	(vec_select:V32QI
-	  (match_operand:V64QI 1 "nonimmediate_operand" "v,v")
+	  (match_operand:V64QI 1 "register_operand" "v,v")
 	  (parallel [(const_int 32) (const_int 33)
 		     (const_int 34) (const_int 35)
 		     (const_int 36) (const_int 37)
@@ -7345,7 +7348,7 @@
   [(set (match_operand:V8DF 0 "register_operand" "=v")
 	(vec_select:V8DF
 	  (vec_concat:V16DF
-	    (match_operand:V8DF 1 "nonimmediate_operand" "v")
+	    (match_operand:V8DF 1 "register_operand" "v")
 	    (match_operand:V8DF 2 "nonimmediate_operand" "vm"))
 	  (parallel [(const_int 1) (const_int 9)
 		     (const_int 3) (const_int 11)
@@ -8507,7 +8510,9 @@
 	(vec_concat:V2DF
 	  (match_operand:DF 1 "nonimmediate_operand" " 0,v,m,0,x,m,0,0")
 	  (match_operand:DF 2 "vector_move_operand"  " x,v,1,m,m,C,x,m")))]
-  "TARGET_SSE"
+  "TARGET_SSE
+   && (!(MEM_P (operands[1]) && MEM_P (operands[2]))
+       || (TARGET_SSE3 && rtx_equal_p (operands[1], operands[2])))"
   "@
    unpcklpd\t{%2, %0|%0, %2}
    vunpcklpd\t{%2, %1, %0|%0, %1, %2}
@@ -9523,7 +9528,7 @@
 	(mult:V4DI
 	  (sign_extend:V4DI
 	    (vec_select:V4SI
-	      (match_operand:V8SI 1 "nonimmediate_operand" "v")
+	      (match_operand:V8SI 1 "nonimmediate_operand" "%v")
 	      (parallel [(const_int 0) (const_int 2)
 			 (const_int 4) (const_int 6)])))
 	  (sign_extend:V4DI
@@ -12875,11 +12880,14 @@
 })
 
 (define_insn "*vec_concatv2si_sse4_1"
-  [(set (match_operand:V2SI 0 "register_operand"     "=Yr,*x,x, Yr,*x,x, x, *y,*y")
+  [(set (match_operand:V2SI 0 "register_operand"
+	  "=Yr,*x,x, Yr,*x,x, x, *y,*y")
 	(vec_concat:V2SI
-	  (match_operand:SI 1 "nonimmediate_operand" "  0, 0,x,  0,0, x,rm,  0,rm")
-	  (match_operand:SI 2 "vector_move_operand"  " rm,rm,rm,Yr,*x,x, C,*ym, C")))]
-  "TARGET_SSE4_1"
+	  (match_operand:SI 1 "nonimmediate_operand"
+	  "  0, 0,x,  0,0, x,rm,  0,rm")
+	  (match_operand:SI 2 "vector_move_operand"
+	  " rm,rm,rm,Yr,*x,x, C,*ym, C")))]
+  "TARGET_SSE4_1 && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "@
    pinsrd\t{$1, %2, %0|%0, %2, 1}
    pinsrd\t{$1, %2, %0|%0, %2, 1}
