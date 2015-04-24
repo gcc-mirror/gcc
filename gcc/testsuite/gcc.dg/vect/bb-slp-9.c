@@ -46,6 +46,6 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized using SLP" 1 "slp"  { xfail  vect_no_align } } } */
+/* { dg-final { scan-tree-dump-times "basic block vectorized using SLP" 1 "slp"  { xfail  { vect_no_align && { ! vect_hw_misalign } } } } } */
 /* { dg-final { cleanup-tree-dump "slp" } } */
   
