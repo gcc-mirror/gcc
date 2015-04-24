@@ -5076,7 +5076,7 @@
 
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")
-	(ior_xor:SI (and:SI (ashift:SI
+	(IOR_XOR:SI (and:SI (ashift:SI
 			     (match_operand:SI 1 "s_register_operand" "")
 			     (match_operand:SI 2 "const_int_operand" ""))
 			    (match_operand:SI 3 "const_int_operand" ""))
@@ -5088,7 +5088,7 @@
        == (GET_MODE_MASK (GET_MODE (operands[5]))
            & (GET_MODE_MASK (GET_MODE (operands[5]))
 	      << (INTVAL (operands[2])))))"
-  [(set (match_dup 0) (ior_xor:SI (ashift:SI (match_dup 1) (match_dup 2))
+  [(set (match_dup 0) (IOR_XOR:SI (ashift:SI (match_dup 1) (match_dup 2))
 				  (match_dup 4)))
    (set (match_dup 0) (zero_extend:SI (match_dup 5)))]
   "operands[5] = gen_lowpart (GET_MODE (operands[5]), operands[0]);"
@@ -7848,7 +7848,7 @@
 )
 
 (define_expand "<return_str>return"
-  [(returns)]
+  [(RETURNS)]
   "(TARGET_ARM || (TARGET_THUMB2
                    && ARM_FUNC_TYPE (arm_current_func_type ()) == ARM_FT_NORMAL
                    && !IS_STACKALIGN (arm_current_func_type ())))
@@ -7886,7 +7886,7 @@
   [(set (pc)
         (if_then_else (match_operator 0 "arm_comparison_operator"
 		       [(match_operand 1 "cc_register" "") (const_int 0)])
-                      (returns)
+                      (RETURNS)
                       (pc)))]
   "TARGET_ARM  <return_cond_true>"
   "*
@@ -7909,7 +7909,7 @@
         (if_then_else (match_operator 0 "arm_comparison_operator"
 		       [(match_operand 1 "cc_register" "") (const_int 0)])
                       (pc)
-		      (returns)))]
+		      (RETURNS)))]
   "TARGET_ARM <return_cond_true>"
   "*
   {
@@ -8243,7 +8243,7 @@
 
 (define_insn "*<arith_shift_insn>_multsi"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(shiftable_ops:SI
+	(SHIFTABLE_OPS:SI
 	 (mult:SI (match_operand:SI 2 "s_register_operand" "r,r")
 		  (match_operand:SI 3 "power_of_two_operand" ""))
 	 (match_operand:SI 1 "s_register_operand" "rk,<t2_binop0>")))]
@@ -8257,7 +8257,7 @@
 
 (define_insn "*<arith_shift_insn>_shiftsi"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
-	(shiftable_ops:SI
+	(SHIFTABLE_OPS:SI
 	 (match_operator:SI 2 "shift_nomul_operator"
 	  [(match_operand:SI 3 "s_register_operand" "r,r,r")
 	   (match_operand:SI 4 "shift_amount_operand" "M,M,r")])
