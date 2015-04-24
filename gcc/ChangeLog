@@ -1,3 +1,8 @@
+2015-04-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*vec_widen_smult_even_v8si<mask_name>):
+	Mark operand1 commutative.
+
 2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline r222362

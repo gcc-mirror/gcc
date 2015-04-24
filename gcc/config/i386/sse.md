@@ -9523,7 +9523,7 @@
 	(mult:V4DI
 	  (sign_extend:V4DI
 	    (vec_select:V4SI
-	      (match_operand:V8SI 1 "nonimmediate_operand" "v")
+	      (match_operand:V8SI 1 "nonimmediate_operand" "%v")
 	      (parallel [(const_int 0) (const_int 2)
 			 (const_int 4) (const_int 6)])))
 	  (sign_extend:V4DI
