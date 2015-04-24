@@ -1,5 +1,10 @@
 2015-04-24  Marek Polacek  <polacek@redhat.com>
 
+	PR c/65830
+	* c-c++-common/pr65830.c: New test.
+
+2015-04-24  Marek Polacek  <polacek@redhat.com>
+
 	PR c/61534
 	* c-c++-common/pr61534-1.c: New test.
 
