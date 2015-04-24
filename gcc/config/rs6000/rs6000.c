@@ -8398,6 +8398,11 @@ rs6000_emit_le_vsx_store (rtx dest, rtx source, machine_mode mode)
 {
   rtx tmp, permute_src, permute_tmp;
 
+  /* This should never be called during or after reload, because it does
+     not re-permute the source register.  It is intended only for use
+     during expand.  */
+  gcc_assert (!reload_in_progress && !lra_in_progress && !reload_completed);
+
   /* Use V2DImode to do swaps of types with 128-bit scalare parts (TImode,
      V1TImode).  */
   if (mode == TImode || mode == V1TImode)
@@ -22795,7 +22800,7 @@ output_probe_stack_range (rtx reg1, rtx reg2)
 
 static rtx
 rs6000_frame_related (rtx insn, rtx reg, HOST_WIDE_INT val,
-		      rtx reg2, rtx rreg, rtx split_reg)
+		      rtx reg2, rtx rreg)
 {
   rtx real, temp;
 
@@ -22885,11 +22890,6 @@ rs6000_frame_related (rtx insn, rtx reg, HOST_WIDE_INT val,
 	    RTX_FRAME_RELATED_P (set) = 1;
 	  }
     }
-
-  /* If a store insn has been split into multiple insns, the
-     true source register is given by split_reg.  */
-  if (split_reg != NULL_RTX)
-    real = gen_rtx_SET (VOIDmode, SET_DEST (real), split_reg);
 
   RTX_FRAME_RELATED_P (insn) = 1;
   add_reg_note (insn, REG_FRAME_RELATED_EXPR, real);
@@ -22998,7 +22998,7 @@ emit_frame_save (rtx frame_reg, machine_mode mode,
   reg = gen_rtx_REG (mode, regno);
   insn = emit_insn (gen_frame_store (reg, frame_reg, offset));
   return rs6000_frame_related (insn, frame_reg, frame_reg_to_sp,
-			       NULL_RTX, NULL_RTX, NULL_RTX);
+			       NULL_RTX, NULL_RTX);
 }
 
 /* Emit an offset memory reference suitable for a frame store, while
@@ -23578,7 +23578,7 @@ rs6000_emit_prologue (void)
 
       insn = emit_insn (gen_rtx_PARALLEL (VOIDmode, p));
       rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
-			    treg, GEN_INT (-info->total_size), NULL_RTX);
+			    treg, GEN_INT (-info->total_size));
       sp_off = frame_off = info->total_size;
     }
 
@@ -23663,7 +23663,7 @@ rs6000_emit_prologue (void)
 
 	  insn = emit_move_insn (mem, reg);
 	  rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
-				NULL_RTX, NULL_RTX, NULL_RTX);
+				NULL_RTX, NULL_RTX);
 	  END_USE (0);
 	}
     }
@@ -23719,7 +23719,7 @@ rs6000_emit_prologue (void)
 				     info->lr_save_offset,
 				     DFmode, sel);
       rs6000_frame_related (insn, ptr_reg, sp_off,
-			    NULL_RTX, NULL_RTX, NULL_RTX);
+			    NULL_RTX, NULL_RTX);
       if (lr)
 	END_USE (0);
     }
@@ -23798,7 +23798,7 @@ rs6000_emit_prologue (void)
 					 SAVRES_SAVE | SAVRES_GPR);
 
 	  rs6000_frame_related (insn, spe_save_area_ptr, sp_off - save_off,
-				NULL_RTX, NULL_RTX, NULL_RTX);
+				NULL_RTX, NULL_RTX);
 	}
 
       /* Move the static chain pointer back.  */
@@ -23848,7 +23848,7 @@ rs6000_emit_prologue (void)
 				     info->lr_save_offset + ptr_off,
 				     reg_mode, sel);
       rs6000_frame_related (insn, ptr_reg, sp_off - ptr_off,
-			    NULL_RTX, NULL_RTX, NULL_RTX);
+			    NULL_RTX, NULL_RTX);
       if (lr)
 	END_USE (0);
     }
@@ -23864,7 +23864,7 @@ rs6000_emit_prologue (void)
 			     info->gp_save_offset + frame_off + reg_size * i);
       insn = emit_insn (gen_rtx_PARALLEL (VOIDmode, p));
       rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
-			    NULL_RTX, NULL_RTX, NULL_RTX);
+			    NULL_RTX, NULL_RTX);
     }
   else if (!WORLD_SAVE_P (info))
     {
@@ -24187,7 +24187,7 @@ rs6000_emit_prologue (void)
 				     info->altivec_save_offset + ptr_off,
 				     0, V4SImode, SAVRES_SAVE | SAVRES_VR);
       rs6000_frame_related (insn, scratch_reg, sp_off - ptr_off,
-			    NULL_RTX, NULL_RTX, NULL_RTX);
+			    NULL_RTX, NULL_RTX);
       if (REGNO (frame_reg_rtx) == REGNO (scratch_reg))
 	{
 	  /* The oddity mentioned above clobbered our frame reg.  */
@@ -24203,7 +24203,7 @@ rs6000_emit_prologue (void)
       for (i = info->first_altivec_reg_save; i <= LAST_ALTIVEC_REGNO; ++i)
 	if (info->vrsave_mask & ALTIVEC_REG_BIT (i))
 	  {
-	    rtx areg, savereg, mem, split_reg;
+	    rtx areg, savereg, mem;
 	    int offset;
 
 	    offset = (info->altivec_save_offset + frame_off
@@ -24219,20 +24219,13 @@ rs6000_emit_prologue (void)
 	    mem = gen_frame_mem (V4SImode,
 				 gen_rtx_PLUS (Pmode, frame_reg_rtx, areg));
 
-	    insn = emit_move_insn (mem, savereg);
-
-	    /* When we split a VSX store into two insns, we need to make
-	       sure the DWARF info knows which register we are storing.
-	       Pass it in to be used on the appropriate note.  */
-	    if (!BYTES_BIG_ENDIAN
-		&& GET_CODE (PATTERN (insn)) == SET
-		&& GET_CODE (SET_SRC (PATTERN (insn))) == VEC_SELECT)
-	      split_reg = savereg;
-	    else
-	      split_reg = NULL_RTX;
+	    /* Rather than emitting a generic move, force use of the stvx
+	       instruction, which we always want.  In particular we don't
+	       want xxpermdi/stxvd2x for little endian.  */
+	    insn = emit_insn (gen_altivec_stvx_v4si_internal (mem, savereg));
 
 	    rs6000_frame_related (insn, frame_reg_rtx, sp_off - frame_off,
-				  areg, GEN_INT (offset), split_reg);
+				  areg, GEN_INT (offset));
 	  }
     }
 
@@ -24874,7 +24867,10 @@ rs6000_emit_epilogue (int sibcall)
 		mem = gen_frame_mem (V4SImode, addr);
 
 		reg = gen_rtx_REG (V4SImode, i);
-		emit_move_insn (reg, mem);
+		/* Rather than emitting a generic move, force use of the
+		   lvx instruction, which we always want.  In particular
+		   we don't want lxvd2x/xxpermdi for little endian.  */
+		(void) emit_insn (gen_altivec_lvx_v4si_internal (reg, mem));
 	      }
 	}
 
@@ -25077,7 +25073,10 @@ rs6000_emit_epilogue (int sibcall)
 		mem = gen_frame_mem (V4SImode, addr);
 
 		reg = gen_rtx_REG (V4SImode, i);
-		emit_move_insn (reg, mem);
+		/* Rather than emitting a generic move, force use of the
+		   lvx instruction, which we always want.  In particular
+		   we don't want lxvd2x/xxpermdi for little endian.  */
+		(void) emit_insn (gen_altivec_lvx_v4si_internal (reg, mem));
 	      }
 	}
 

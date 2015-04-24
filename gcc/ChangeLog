@@ -1,3 +1,24 @@
+2015-04-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline r222385
+	2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (*altivec_lvx_<mode>_internal): Remove
+	asterisk from name so this can be generated directly.
+	(*altivec_stvx_<mode>_internal): Likewise.
+	* config/rs6000/rs6000.c (rs6000_emit_le_vsx_store): Add assert
+	that this is never called during or after reload/lra.
+	(rs6000_frame_related): Remove split_reg
+	argument and logic that references it.
+	(emit_frame_save): Remove last parameter from call to
+	rs6000_frame_related.
+	(rs6000_emit_prologue): Remove last parameter from eight calls to
+	rs6000_frame_related.  Force generation of stvx instruction for
+	Altivec register saves.  Remove split_reg handling, which is no
+	longer needed.
+	(rs6000_emit_epilogue):  Force generation of lvx instruction for
+	Altivec register restores.
+
 2015-04-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (*vec_widen_smult_even_v8si<mask_name>):
