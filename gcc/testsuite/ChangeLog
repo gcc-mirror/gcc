@@ -1,3 +1,12 @@
+2015-04-24  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/65802
+	* g++.dg/pr65802.C: Move to ...
+	* gcc.dg/pr65802.c: ... here.  Add -fexceptions to dg-options. Include
+	stdarg.h.  Rewrite for C.
+	(fn1): Use va_list and va_arg.  Make variable args function.  Add use of
+	va_start and va_end.  Remove unnecessary inline asm.
+
 2015-04-24  Uros Bizjak  <ubizjak@gmail.com>
 	    Wei Mi  <wmi@google.com>
 
