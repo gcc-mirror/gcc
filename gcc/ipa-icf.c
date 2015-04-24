@@ -601,11 +601,31 @@ sem_function::equals_wpa (sem_item *item,
 			  hash_map <symtab_node *, sem_item *> &ignored_nodes)
 {
   gcc_assert (item->type == FUNC);
+  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
+  cgraph_node *cnode2 = dyn_cast <cgraph_node *> (item->node);
 
   m_compared_func = static_cast<sem_function *> (item);
 
   if (arg_types.length () != m_compared_func->arg_types.length ())
     return return_false_with_msg ("different number of arguments");
+
+  if (cnode->thunk.thunk_p != cnode2->thunk.thunk_p)
+    return return_false_with_msg ("thunk_p mismatch");
+
+  if (cnode->thunk.thunk_p)
+    {
+      if (cnode->thunk.fixed_offset != cnode2->thunk.fixed_offset)
+        return return_false_with_msg ("thunk fixed_offset mismatch");
+      if (cnode->thunk.virtual_value != cnode2->thunk.virtual_value)
+        return return_false_with_msg ("thunk virtual_value mismatch");
+      if (cnode->thunk.this_adjusting != cnode2->thunk.this_adjusting)
+        return return_false_with_msg ("thunk this_adjusting mismatch");
+      if (cnode->thunk.virtual_offset_p != cnode2->thunk.virtual_offset_p)
+        return return_false_with_msg ("thunk virtual_offset_p mismatch");
+      if (cnode->thunk.add_pointer_bounds_args
+	  != cnode2->thunk.add_pointer_bounds_args)
+        return return_false_with_msg ("thunk add_pointer_bounds_args mismatch");
+    }
 
   /* Compare special function DECL attributes.  */
   if (DECL_FUNCTION_PERSONALITY (decl)
@@ -862,10 +882,10 @@ sem_item::update_hash_by_local_refs (hash_map <symtab_node *,
 
 bool
 sem_function::equals (sem_item *item,
-		      hash_map <symtab_node *, sem_item *> &ignored_nodes)
+		      hash_map <symtab_node *, sem_item *> &)
 {
   gcc_assert (item->type == FUNC);
-  bool eq = equals_private (item, ignored_nodes);
+  bool eq = equals_private (item);
 
   if (m_checker != NULL)
     {
@@ -890,8 +910,7 @@ sem_function::equals (sem_item *item,
 /* Processes function equality comparison.  */
 
 bool
-sem_function::equals_private (sem_item *item,
-			      hash_map <symtab_node *, sem_item *> &ignored_nodes)
+sem_function::equals_private (sem_item *item)
 {
   if (item->type != FUNC)
     return false;
@@ -911,9 +930,6 @@ sem_function::equals_private (sem_item *item,
       || cfg_checksum != m_compared_func->cfg_checksum)
     return return_false ();
 
-  if (!equals_wpa (item, ignored_nodes))
-    return false;
-
   m_checker = new func_checker (decl, m_compared_func->decl,
 				compare_polymorphic_p (),
 				false,
@@ -924,6 +940,9 @@ sem_function::equals_private (sem_item *item,
        arg1; arg1 = DECL_CHAIN (arg1), arg2 = DECL_CHAIN (arg2))
     if (!m_checker->compare_decl (arg1, arg2))
       return return_false ();
+
+  if (!dyn_cast <cgraph_node *> (node)->has_gimple_body_p ())
+    return true;
 
   /* Fill-up label dictionary.  */
   for (unsigned i = 0; i < bb_sorted.length (); ++i)
@@ -1380,44 +1399,59 @@ sem_function::init (void)
   arg_count = count_formal_params (fndecl);
 
   edge_count = n_edges_for_fn (func);
-  cfg_checksum = coverage_compute_cfg_checksum (func);
+  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
+  if (!cnode->thunk.thunk_p)
+    {
+      cfg_checksum = coverage_compute_cfg_checksum (func);
 
-  inchash::hash hstate;
+      inchash::hash hstate;
 
-  basic_block bb;
-  FOR_EACH_BB_FN (bb, func)
-  {
-    unsigned nondbg_stmt_count = 0;
-
-    edge e;
-    for (edge_iterator ei = ei_start (bb->preds); ei_cond (ei, &e);
-	 ei_next (&ei))
-      cfg_checksum = iterative_hash_host_wide_int (e->flags,
-		     cfg_checksum);
-
-    for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
-	 gsi_next (&gsi))
+      basic_block bb;
+      FOR_EACH_BB_FN (bb, func)
       {
-	gimple stmt = gsi_stmt (gsi);
+	unsigned nondbg_stmt_count = 0;
 
-	if (gimple_code (stmt) != GIMPLE_DEBUG
-	    && gimple_code (stmt) != GIMPLE_PREDICT)
+	edge e;
+	for (edge_iterator ei = ei_start (bb->preds); ei_cond (ei, &e);
+	     ei_next (&ei))
+	  cfg_checksum = iterative_hash_host_wide_int (e->flags,
+			 cfg_checksum);
+
+	for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+	     gsi_next (&gsi))
 	  {
-	    hash_stmt (stmt, hstate);
-	    nondbg_stmt_count++;
+	    gimple stmt = gsi_stmt (gsi);
+
+	    if (gimple_code (stmt) != GIMPLE_DEBUG
+		&& gimple_code (stmt) != GIMPLE_PREDICT)
+	      {
+		hash_stmt (stmt, hstate);
+		nondbg_stmt_count++;
+	      }
 	  }
+
+	gcode_hash = hstate.end ();
+	bb_sizes.safe_push (nondbg_stmt_count);
+
+	/* Inserting basic block to hash table.  */
+	sem_bb *semantic_bb = new sem_bb (bb, nondbg_stmt_count,
+					  EDGE_COUNT (bb->preds)
+					  + EDGE_COUNT (bb->succs));
+
+	bb_sorted.safe_push (semantic_bb);
       }
-
-    gcode_hash = hstate.end ();
-    bb_sizes.safe_push (nondbg_stmt_count);
-
-    /* Inserting basic block to hash table.  */
-    sem_bb *semantic_bb = new sem_bb (bb, nondbg_stmt_count,
-				      EDGE_COUNT (bb->preds)
-				      + EDGE_COUNT (bb->succs));
-
-    bb_sorted.safe_push (semantic_bb);
-  }
+    }
+  else
+    {
+      cfg_checksum = 0;
+      inchash::hash hstate;
+      hstate.add_wide_int (cnode->thunk.fixed_offset);
+      hstate.add_wide_int (cnode->thunk.virtual_value);
+      hstate.add_flag (cnode->thunk.this_adjusting);
+      hstate.add_flag (cnode->thunk.virtual_offset_p);
+      hstate.add_flag (cnode->thunk.add_pointer_bounds_args);
+      gcode_hash = hstate.end ();
+    }
 
   parse_tree_args ();
 }
@@ -1657,9 +1691,7 @@ sem_function::parse (cgraph_node *node, bitmap_obstack *stack)
   tree fndecl = node->decl;
   function *func = DECL_STRUCT_FUNCTION (fndecl);
 
-  /* TODO: add support for thunks.  */
-
-  if (!func || !node->has_gimple_body_p ())
+  if (!func || (!node->has_gimple_body_p () && !node->thunk.thunk_p))
     return NULL;
 
   if (lookup_attribute_by_prefix ("omp ", DECL_ATTRIBUTES (node->decl)) != NULL)
