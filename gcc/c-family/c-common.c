@@ -1370,15 +1370,17 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 	  && c_inhibit_evaluation_warnings == 0)
 	{
 	  if (tree_int_cst_sgn (op1) < 0)
-	    warning_at (loc, 0, (code == LSHIFT_EXPR
-				 ? G_("left shift count is negative")
-				 : G_("right shift count is negative")));
+	    warning_at (loc, OPT_Wshift_count_negative,
+			(code == LSHIFT_EXPR
+			 ? G_("left shift count is negative")
+			 : G_("right shift count is negative")));
 	  else if (compare_tree_int (op1,
 				     TYPE_PRECISION (TREE_TYPE (orig_op0)))
 		   >= 0)
-	    warning_at (loc, 0, (code == LSHIFT_EXPR
-				 ? G_("left shift count >= width of type")
-				 : G_("right shift count >= width of type")));
+	    warning_at (loc, OPT_Wshift_count_overflow,
+			(code == LSHIFT_EXPR
+			 ? G_("left shift count >= width of type")
+			 : G_("right shift count >= width of type")));
 	}
       if ((code == TRUNC_DIV_EXPR
 	   || code == CEIL_DIV_EXPR
