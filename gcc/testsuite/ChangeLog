@@ -1,3 +1,7 @@
+2015-04-24  Terry Guo  <terry.guo@arm.com>
+
+	* gcc.target/arm/pr65710.c: Update the options.
+
 2015-04-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/pr65523.c: Skip x32.
