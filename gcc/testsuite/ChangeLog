@@ -1,5 +1,10 @@
 2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	* gcc.target/powerpc/pr65456.c: Add test missed during backport of
+	r222349.
+
+2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	Backport from mainline r222351
 	2015-04-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
