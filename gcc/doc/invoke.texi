@@ -4936,7 +4936,12 @@ programmer intended to use @code{strcmp}.  This warning is enabled by
 @opindex Wno-logical-op
 Warn about suspicious uses of logical operators in expressions.
 This includes using logical operators in contexts where a
-bit-wise operator is likely to be expected.
+bit-wise operator is likely to be expected.  Also warns when
+the operands of a logical operator are the same:
+@smallexample
+extern int a;
+if (a < 0 && a < 0) @{ @dots{} @}
+@end smallexample
 
 @item -Wlogical-not-parentheses
 @opindex Wlogical-not-parentheses
