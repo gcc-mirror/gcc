@@ -1,3 +1,14 @@
+2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline r222351
+	2015-04-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rtx_is_swappable_p): Commentary
+	adjustments.
+	(insn_is_swappable_p): Return 1 for a convert from double to
+	single precision when all of its uses are splats of BE element
+	zero.
+
 2015-04-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* DEV-PHASE: Set to prerelease.

@@ -1,5 +1,12 @@
 2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	Backport from mainline r222351
+	2015-04-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/swaps-p8-18.c: New test.
+
+2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	Backport from mainline r222349
 	2015-04-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
