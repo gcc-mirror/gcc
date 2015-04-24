@@ -1,3 +1,7 @@
+2015-04-24  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.target/arm/pr42172-1.c: Check str instead of ldr.
+
 2015-04-24  Terry Guo  <terry.guo@arm.com>
 
 	* gcc.target/arm/pr65710.c: Update the options.
