@@ -2032,6 +2032,10 @@ libgobegin_a_SOURCES = \
 libgobegin_llgo_a_SOURCES = \
 	runtime/go-main.c
 
+# Use -fPIC for libgobegin so that it can be put in a PIE.
+libgobegin_a_CFLAGS = $(AM_CFLAGS) -fPIC
+libgobegin_llgo_a_CFLAGS = $(AM_CFLAGS) -fPIC
+
 libnetgo_a_SOURCES = $(go_netgo_files)
 libnetgo_a_LIBADD = netgo.o
 
