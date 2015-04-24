@@ -4,6 +4,10 @@
 	* c-common.c (c_fully_fold_internal): Use OPT_Wshift_count_negative
 	and OPT_Wshift_count_overflow.
 
+	PR c/63357
+	* c-common.c (warn_logical_operator): Warn if the operands have the
+	same expressions.
+
 2015-04-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61534

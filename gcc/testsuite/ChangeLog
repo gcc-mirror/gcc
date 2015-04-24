@@ -3,6 +3,9 @@
 	PR c/65830
 	* c-c++-common/pr65830.c: New test.
 
+	PR c/63357
+	* c-c++-common/Wlogical-op-1.c: New test.
+
 2015-04-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c/61534

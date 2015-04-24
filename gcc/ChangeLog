@@ -3,6 +3,9 @@
 	PR c/61534
 	* input.h (from_macro_expansion_at): Define.
 
+	PR c/63357
+	* doc/invoke.texi: Update description of -Wlogical-op.
+
 2015-04-24  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/unknown-elf.h (ASM_OUTPUT_ALIGNED_DECL_LOCAL): fix
