@@ -7706,7 +7706,7 @@ build_pointer_type_for_mode (tree to_type, machine_mode mode,
   else if (TYPE_CANONICAL (to_type) != to_type)
     TYPE_CANONICAL (t)
       = build_pointer_type_for_mode (TYPE_CANONICAL (to_type),
-				     mode, can_alias_all);
+				     mode, false);
 
   /* Lay out the type.  This function has many callers that are concerned
      with expression-construction, and this simplifies them all.  */
@@ -7773,7 +7773,7 @@ build_reference_type_for_mode (tree to_type, machine_mode mode,
   else if (TYPE_CANONICAL (to_type) != to_type)
     TYPE_CANONICAL (t)
       = build_reference_type_for_mode (TYPE_CANONICAL (to_type),
-				       mode, can_alias_all);
+				       mode, false);
 
   layout_type (t);
 
