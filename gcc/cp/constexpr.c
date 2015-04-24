@@ -4156,15 +4156,6 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
       }
 
     case MINUS_EXPR:
-      /* -- a subtraction where both operands are pointers.   */
-      if (TYPE_PTR_P (TREE_OPERAND (t, 0))
-          && TYPE_PTR_P (TREE_OPERAND (t, 1)))
-        {
-          if (flags & tf_error)
-            error ("difference of two pointer expressions is not "
-                   "a constant expression");
-          return false;
-        }
       want_rval = true;
       goto binary;
 
@@ -4174,16 +4165,6 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
     case GE_EXPR:
     case EQ_EXPR:
     case NE_EXPR:
-      /* -- a relational or equality operator where at least
-            one of the operands is a pointer.  */
-      if (TYPE_PTR_P (TREE_OPERAND (t, 0))
-          || TYPE_PTR_P (TREE_OPERAND (t, 1)))
-        {
-          if (flags & tf_error)
-            error ("pointer comparison expression is not a "
-                   "constant expression");
-          return false;
-        }
       want_rval = true;
       goto binary;
 
