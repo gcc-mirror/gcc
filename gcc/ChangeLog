@@ -47,10 +47,6 @@
 	single precision when all of its uses are splats of BE element
 	zero.
 
-2015-04-23  H.J. Lu  <hongjiu.lu@intel.com>
-
-	* DEV-PHASE: Set to prerelease.
-
 2015-04-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline r222349
