@@ -1,3 +1,9 @@
+2015-04-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c/52085
+	* c-decl.c (finish_enum): Copy over TYPE_ALIGN.  Also check for "mode"
+	attribute.
+
 2015-04-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c/65345
