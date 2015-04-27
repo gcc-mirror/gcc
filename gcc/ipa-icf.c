@@ -1806,9 +1806,8 @@ sem_function::icf_handled_component_p (tree t)
 {
   tree_code tc = TREE_CODE (t);
 
-  return ((handled_component_p (t))
-	  || tc == ADDR_EXPR || tc == MEM_REF || tc == REALPART_EXPR
-	  || tc == IMAGPART_EXPR || tc == OBJ_TYPE_REF);
+  return (handled_component_p (t)
+	  || tc == ADDR_EXPR || tc == MEM_REF || tc == OBJ_TYPE_REF);
 }
 
 /* Basic blocks dictionary BB_DICT returns true if SOURCE index BB
