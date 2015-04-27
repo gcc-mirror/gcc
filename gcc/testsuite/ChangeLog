@@ -1,3 +1,8 @@
+2015-04-27  Caroline Tice  <cmtice@google.com>
+
+	* gcc.dg/tree-prof/cold_partition_label.c (main): Check for cold
+	partition size.
+
 2015-04-27  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/64579
