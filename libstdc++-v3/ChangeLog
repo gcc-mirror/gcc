@@ -1,3 +1,11 @@
+2015-04-27  Federico Lenarduzzi  <federico.lenarduzzi@tallertechnologies.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/eh_catch.cc (uncaught_exception, uncaught_exceptions):
+	Return false or zero if the library is built without exceptions.
+	* libsupc++/eh_term_handler.cc: Disable verbose terminate handler if
+	the library is built without exceptions.
+
 2015-04-27  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	* config/abi/pre/gnu.ver: Fix comment.
