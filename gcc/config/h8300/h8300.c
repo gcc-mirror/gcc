@@ -406,6 +406,14 @@ h8300_option_override (void)
                - Option ignored!");
    }
 
+#ifdef H8300_LINUX 
+ if ((TARGET_NORMAL_MODE))
+   {
+      error ("-mn is not supported for linux targets");
+      target_flags ^= MASK_NORMAL_MODE;
+   }
+#endif
+
   /* Some of the shifts are optimized for speed by default.
      See http://gcc.gnu.org/ml/gcc-patches/2002-07/msg01858.html
      If optimizing for size, change shift_alg for those shift to
@@ -1006,12 +1014,12 @@ h8300_file_start (void)
 {
   default_file_start ();
 
-  if (TARGET_H8300H)
-    fputs (TARGET_NORMAL_MODE ? "\t.h8300hn\n" : "\t.h8300h\n", asm_out_file);
-  else if (TARGET_H8300SX)
+  if (TARGET_H8300SX)
     fputs (TARGET_NORMAL_MODE ? "\t.h8300sxn\n" : "\t.h8300sx\n", asm_out_file);
   else if (TARGET_H8300S)
     fputs (TARGET_NORMAL_MODE ? "\t.h8300sn\n" : "\t.h8300s\n", asm_out_file);
+  else if (TARGET_H8300H)
+    fputs (TARGET_NORMAL_MODE ? "\t.h8300hn\n" : "\t.h8300h\n", asm_out_file);
 }
 
 /* Output assembly language code for the end of file.  */
@@ -4094,10 +4102,10 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
   /* Find the target CPU.  */
   if (TARGET_H8300)
     cpu = H8_300;
-  else if (TARGET_H8300H)
-    cpu = H8_300H;
-  else
+  else if (TARGET_H8300S)
     cpu = H8_S;
+  else
+    cpu = H8_300H;
 
   /* Find the shift algorithm.  */
   info->alg = SHIFT_LOOP;
@@ -4540,10 +4548,10 @@ h8300_shift_needs_scratch_p (int count, machine_mode mode)
   /* Find out the target CPU.  */
   if (TARGET_H8300)
     cpu = H8_300;
-  else if (TARGET_H8300H)
-    cpu = H8_300H;
-  else
+  else if (TARGET_H8300S)
     cpu = H8_S;
+  else
+    cpu = H8_300H;
 
   /* Find the shift algorithm.  */
   switch (mode)

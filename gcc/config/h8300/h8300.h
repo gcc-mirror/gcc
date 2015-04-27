@@ -39,17 +39,7 @@ extern const char * const *h8_reg_names;
 #define TARGET_CPU_CPP_BUILTINS()			\
   do							\
     {							\
-      if (TARGET_H8300H)				\
-	{						\
-	  builtin_define ("__H8300H__");		\
-	  builtin_assert ("cpu=h8300h");		\
-	  builtin_assert ("machine=h8300h");		\
-	  if (TARGET_NORMAL_MODE)			\
-	    {						\
-	      builtin_define ("__NORMAL_MODE__");	\
-	    }						\
-	}						\
-      else if (TARGET_H8300SX)				\
+      if (TARGET_H8300SX)				\
 	{						\
 	  builtin_define ("__H8300SX__");		\
 	  if (TARGET_NORMAL_MODE)			\
@@ -62,6 +52,16 @@ extern const char * const *h8_reg_names;
 	  builtin_define ("__H8300S__");		\
 	  builtin_assert ("cpu=h8300s");		\
 	  builtin_assert ("machine=h8300s");		\
+	  if (TARGET_NORMAL_MODE)			\
+	    {						\
+	      builtin_define ("__NORMAL_MODE__");	\
+	    }						\
+	}						\
+      else if (TARGET_H8300H)				\
+	{						\
+	  builtin_define ("__H8300H__");		\
+	  builtin_assert ("cpu=h8300h");		\
+	  builtin_assert ("machine=h8300h");		\
 	  if (TARGET_NORMAL_MODE)			\
 	    {						\
 	      builtin_define ("__NORMAL_MODE__");	\

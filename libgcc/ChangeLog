@@ -1,3 +1,10 @@
+2015-04-27  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* config.host: Add h8300-*-linux
+	* config/h8300/t-linux: New file.
+	* config/h8300/lib1funs.s: Change symbol prefix.
+	* config/h8300/sfp-machine.h: 64bit double support.
+
 2015-04-22  Gregor Richards  <gregor.richards@uwaterloo.ca>
 	    Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
