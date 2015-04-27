@@ -1,3 +1,10 @@
+2015-04-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* combine.c (simplify_if_then_else): Use std::swap instead
+	of manually swapping.
+	(known_cond): Likewise.
+	(simplify_comparison): Likewise.
+
 2015-04-27  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/64579
