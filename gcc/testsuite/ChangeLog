@@ -1,5 +1,14 @@
 2015-04-27  Andre Vehreschild  <vehre@gmx.de>
 
+	PR fortran/60322
+	Add tests forgotten to svn-add.
+	* gfortran.dg/class_allocate_19.f03: New test.
+	* gfortran.dg/class_array_20.f03: New test.
+	* gfortran.dg/class_array_21.f03: New test.
+	* gfortran.dg/finalize_29.f08: New test.
+
+2015-04-27  Andre Vehreschild  <vehre@gmx.de>
+
 	PR fortran/59678
 	PR fortran/65841
 	* gfortran.dg/alloc_comp_deep_copy_1.f03: New test.
