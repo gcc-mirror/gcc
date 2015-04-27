@@ -483,8 +483,8 @@ public:
   bool iterate (unsigned, T *) const;
   bool iterate (unsigned, T **) const;
   vec *copy (ALONE_CXX_MEM_STAT_INFO) const;
-  void splice (vec &);
-  void splice (vec *src);
+  void splice (const vec &);
+  void splice (const vec *src);
   T *quick_push (const T &);
   T &pop (void);
   void truncate (unsigned);
@@ -705,7 +705,7 @@ vec_safe_copy (vec<T, A, vl_embed> *src CXX_MEM_STAT_INFO)
    Reallocate DST, if necessary.  */
 template<typename T, typename A>
 inline void
-vec_safe_splice (vec<T, A, vl_embed> *&dst, vec<T, A, vl_embed> *src
+vec_safe_splice (vec<T, A, vl_embed> *&dst, const vec<T, A, vl_embed> *src
 		 CXX_MEM_STAT_INFO)
 {
   unsigned src_len = vec_safe_length (src);
@@ -836,7 +836,7 @@ vec<T, A, vl_embed>::copy (ALONE_MEM_STAT_DECL) const
 
 template<typename T, typename A>
 inline void
-vec<T, A, vl_embed>::splice (vec<T, A, vl_embed> &src)
+vec<T, A, vl_embed>::splice (const vec<T, A, vl_embed> &src)
 {
   unsigned len = src.length ();
   if (len)
@@ -849,7 +849,7 @@ vec<T, A, vl_embed>::splice (vec<T, A, vl_embed> &src)
 
 template<typename T, typename A>
 inline void
-vec<T, A, vl_embed>::splice (vec<T, A, vl_embed> *src)
+vec<T, A, vl_embed>::splice (const vec<T, A, vl_embed> *src)
 {
   if (src)
     splice (*src);
@@ -1212,8 +1212,8 @@ public:
   vec copy (ALONE_CXX_MEM_STAT_INFO) const;
   bool reserve (unsigned, bool = false CXX_MEM_STAT_INFO);
   bool reserve_exact (unsigned CXX_MEM_STAT_INFO);
-  void splice (vec &);
-  void safe_splice (vec & CXX_MEM_STAT_INFO);
+  void splice (const vec &);
+  void safe_splice (const vec & CXX_MEM_STAT_INFO);
   T *quick_push (const T &);
   T *safe_push (const T &CXX_MEM_STAT_INFO);
   T &pop (void);
@@ -1489,7 +1489,7 @@ vec<T, va_heap, vl_ptr>::release (void)
 
 template<typename T>
 inline void
-vec<T, va_heap, vl_ptr>::splice (vec<T, va_heap, vl_ptr> &src)
+vec<T, va_heap, vl_ptr>::splice (const vec<T, va_heap, vl_ptr> &src)
 {
   if (src.m_vec)
     m_vec->splice (*(src.m_vec));
@@ -1503,7 +1503,7 @@ vec<T, va_heap, vl_ptr>::splice (vec<T, va_heap, vl_ptr> &src)
 
 template<typename T>
 inline void
-vec<T, va_heap, vl_ptr>::safe_splice (vec<T, va_heap, vl_ptr> &src
+vec<T, va_heap, vl_ptr>::safe_splice (const vec<T, va_heap, vl_ptr> &src
 				      MEM_STAT_DECL)
 {
   if (src.length ())
