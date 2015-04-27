@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O" } */
-/* { dg-final { scan-assembler-not "negl" } } */
-/* { dg-final { scan-assembler-not "andl" } } */
+/* { dg-final { scan-assembler-not "negl" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-not "andl" { xfail *-*-* } } } */
 
 int 
 test(int n)
