@@ -1,5 +1,13 @@
 2015-04-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* stor-layout.c (self_referential_component_ref_p): New predicate.
+	(copy_self_referential_tree_r): Use it.
+	(self_referential_size): Punt for simple operations directly involving
+	self-referential component references.
+	* tree-cfg.c (dump_function_to_file): Add missing final curly bracket.
+
+2015-04-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* ipa-icf.c (icf_handled_component_p): Remove redundant tests.
 
 2015-04-27  Richard Sandiford  <richard.sandiford@arm.com>

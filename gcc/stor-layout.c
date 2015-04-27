@@ -127,6 +127,20 @@ variable_size (tree size)
 /* An array of functions used for self-referential size computation.  */
 static GTY(()) vec<tree, va_gc> *size_functions;
 
+/* Return true if T is a self-referential component reference.  */
+
+static bool
+self_referential_component_ref_p (tree t)
+{
+  if (TREE_CODE (t) != COMPONENT_REF)
+    return false;
+
+  while (REFERENCE_CLASS_P (t))
+    t = TREE_OPERAND (t, 0);
+
+  return (TREE_CODE (t) == PLACEHOLDER_EXPR);
+}
+
 /* Similar to copy_tree_r but do not copy component references involving
    PLACEHOLDER_EXPRs.  These nodes are spotted in find_placeholder_in_expr
    and substituted in substitute_in_expr.  */
@@ -154,19 +168,10 @@ copy_self_referential_tree_r (tree *tp, int *walk_subtrees, void *data)
     }
 
   /* Default case: the component reference.  */
-  else if (code == COMPONENT_REF)
+  else if (self_referential_component_ref_p (*tp))
     {
-      tree inner;
-      for (inner = TREE_OPERAND (*tp, 0);
-	   REFERENCE_CLASS_P (inner);
-	   inner = TREE_OPERAND (inner, 0))
-	;
-
-      if (TREE_CODE (inner) == PLACEHOLDER_EXPR)
-	{
-	  *walk_subtrees = 0;
-	  return NULL_TREE;
-	}
+      *walk_subtrees = 0;
+      return NULL_TREE;
     }
 
   /* We're not supposed to have them in self-referential size trees
@@ -199,7 +204,7 @@ self_referential_size (tree size)
 
   /* Do not factor out simple operations.  */
   t = skip_simple_constant_arithmetic (size);
-  if (TREE_CODE (t) == CALL_EXPR)
+  if (TREE_CODE (t) == CALL_EXPR || self_referential_component_ref_p (t))
     return size;
 
   /* Collect the list of self-references in the expression.  */
