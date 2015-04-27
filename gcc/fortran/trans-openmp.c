@@ -391,9 +391,11 @@ gfc_walk_alloc_comps (tree decl, tree dest, tree var,
 	  if (GFC_DESCRIPTOR_TYPE_P (ftype)
 	      && GFC_TYPE_ARRAY_AKIND (ftype) == GFC_ARRAY_ALLOCATABLE)
 	    tem = gfc_duplicate_allocatable (destf, declf, ftype,
-					     GFC_TYPE_ARRAY_RANK (ftype));
+					     GFC_TYPE_ARRAY_RANK (ftype),
+					     NULL_TREE);
 	  else if (GFC_DECL_GET_SCALAR_ALLOCATABLE (field))
-	    tem = gfc_duplicate_allocatable (destf, declf, ftype, 0);
+	    tem = gfc_duplicate_allocatable (destf, declf, ftype, 0,
+					     NULL_TREE);
 	  break;
 	}
       if (tem)

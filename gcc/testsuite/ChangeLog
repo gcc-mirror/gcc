@@ -1,3 +1,10 @@
+2015-04-27  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/59678
+	PR fortran/65841
+	* gfortran.dg/alloc_comp_deep_copy_1.f03: New test.
+	* gfortran.dg/alloc_comp_deep_copy_2.f03: New test.
+
 2015-04-27  Caroline Tice  <cmtice@google.com>
 
 	* gcc.dg/tree-prof/cold_partition_label.c (main): Check for cold
