@@ -142,6 +142,7 @@ obj-c++.uninstall:
 obj-c++.mostlyclean:
 	-rm -f objcp/*$(objext)
 	-rm -f objcp/*$(coverageexts)
+	-rm -f cc1objplus$(exeext)
 obj-c++.clean: obj-c++.mostlyclean
 obj-c++.distclean:
 	-rm -f objcp/config.status objcp/Makefile

@@ -811,6 +811,7 @@ ada.mostlyclean:
 	-$(RM) ada/*$(coverageexts)
 	-$(RM) ada/sdefault.adb ada/stamp-sdefault ada/stamp-snames
 	-$(RMDIR) ada/tools
+	-$(RM) gnatbind$(exeext) gnat1$(exeext)
 ada.clean:
 ada.distclean:
 	-$(RM) ada/Makefile

@@ -1,3 +1,8 @@
+2015-04-27  Jim Wilson  <jim.wilson@linaro.org>
+
+	* Make-lang.in (fortran.mostlyclean): Remove gfortran and
+	gfortran-cross.
+
 2015-04-27  Andre Vehreschild  <vehre@gmx.de>
 
 	PR fortran/59678
