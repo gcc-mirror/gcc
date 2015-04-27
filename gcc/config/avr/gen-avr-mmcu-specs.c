@@ -48,7 +48,10 @@
 
 
 #define SPECFILE_DOC_URL                                \
-  "http://gcc.gnu.org/onlinedocs/gcc/Spec-Files.html"
+  "https://gcc.gnu.org/onlinedocs/gcc/Spec-Files.html"
+
+#define SPECFILE_USAGE_URL                              \
+  "https://gcc.gnu.org/gcc-5/changes.html"
 
 /* Return true iff STR starts with PREFIX.  */
 
@@ -81,7 +84,9 @@ static const char header[] =
 static const char help_copy_paste[] =
   "# If you intend to use an existing device specs file as a starting point\n"
   "# for a new device spec file, make sure you are copying from a specs\n"
-  "# file for a device from the same core architecture and SP width.\n";
+  "# file for a device from the same core architecture and SP width.\n"
+  "# See <" SPECFILE_USAGE_URL "> for a description\n"
+  "# of how to use such own spec files.\n";
 
 #if defined (WITH_AVRLIBC)
 static const char help_dev_lib_name[] =
@@ -264,6 +269,8 @@ print_mcu (const avr_mcu_t *mcu)
     }
 
   fprintf (f, "# End of file\n");
+
+  fclose (f);
 }
 
 
