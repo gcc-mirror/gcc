@@ -1,3 +1,10 @@
+2015-04-27  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* combine.c (sign_extend_short_imm): New.
+	(set_nonzero_bits_and_sign_copies): Use above new function for sign
+	extension of src short immediate.
+	(reg_nonzero_bits_for_combine): Likewise for tem.
+
 2015-04-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (self_referential_component_ref_p): New predicate.
