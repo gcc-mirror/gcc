@@ -1,3 +1,25 @@
+2015-04-27  Ilya Tocar  <ilya.tocar@intel.com>
+
+	* config/i386/i386.h (EXT_REX_SSE_REG_P): New.
+	* config/i386/i386.md (*cmpi<FPCMP:unord><MODEF:mode>_mixed): Use "v"
+	constraint.
+	(*movxi_internal_avx512f): Ditto.
+	(define_split): Check for xmm16+, when splitting scalar float_extend.
+	(*extendsfdf2_mixed): Use "v" constraint.
+	(define_split): Check for xmm16+, when splitting scalar float_truncate.
+	(*truncdfsf_fast_sse): Use "v" constraint.
+	(fix_trunc<MODEF:mode><SWI48:mode>_sse): Ditto.
+	(*float<SWI48:mode><MODEF:mode>2_sse): Ditto.
+	(define_peephole2): Check for xmm16+, when converting scalar
+	float_truncate.
+	(define_peephole2): Check for xmm16+, when converting scalar
+	float_extend.
+	(*fop_<mode>_comm_mixed): Use "v" constraint.
+	(*fop_<mode>_comm_sse): Ditto.
+	(*fop_<mode>_1_mixed): Ditto.
+	(*sqrt<mode>2_sse): Ditto.
+	(*ieee_s<ieee_maxmin><mode>3): Ditto.
+
 2015-04-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* combine.c (simplify_if_then_else): Use std::swap instead
