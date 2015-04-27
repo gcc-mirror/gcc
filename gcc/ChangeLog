@@ -1,3 +1,10 @@
+2015-04-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-dom.c (record_equivalences_from_phis): Valueize PHI arg.
+	(record_equivalences_from_stmt): Valueize rhs.
+	(record_equality): Canonicalize x and y order via
+	tree_swap_operands_p.  Do not swap operands for same loop depth.
+
 2015-04-27  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/65296
