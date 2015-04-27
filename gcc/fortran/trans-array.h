@@ -46,7 +46,7 @@ tree gfc_trans_dealloc_allocated (tree, bool, gfc_expr *);
 
 tree gfc_full_array_size (stmtblock_t *, tree, int);
 
-tree gfc_duplicate_allocatable (tree dest, tree src, tree type, int rank);
+tree gfc_duplicate_allocatable (tree, tree, tree, int, tree);
 
 tree gfc_copy_allocatable_data (tree dest, tree src, tree type, int rank);
 
