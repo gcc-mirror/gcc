@@ -1,3 +1,12 @@
+2015-04-27  Caroline Tice  <cmtice@google.com>
+
+	* final.c (final_scan_insn):  Output cold_function_nmae as function
+	type.
+	* varasm.c (cold_function_name):  Make gloval.
+	(assemble_start_function):  Re-set cold_function_name.
+	(assemble_end_function): Output cold partition size.
+	* varasm.h (cold_fun ction_name):  Declare global.
+
 2015-04-27  Ilya Tocar  <ilya.tocar@intel.com>
 
 	* config/i386/i386.h (EXT_REX_SSE_REG_P): New.

@@ -187,6 +187,13 @@ section *in_section;
    at the cold section.  */
 bool in_cold_section_p;
 
+/* The following global holds the "function name" for the code in the
+   cold section of a function, if hot/cold function splitting is enabled
+   and there was actually code that went into the cold section.  A
+   pseudo function name is needed for the cold section of code for some
+   debugging tools that perform symbolization. */
+tree cold_function_name = NULL_TREE;
+
 /* A linked list of all the unnamed sections.  */
 static GTY(()) section *unnamed_sections;
 
@@ -1719,6 +1726,7 @@ assemble_start_function (tree decl, const char *fnname)
       ASM_GENERATE_INTERNAL_LABEL (tmp_label, "LCOLDE", const_labelno);
       crtl->subsections.cold_section_end_label = ggc_strdup (tmp_label);
       const_labelno++;
+      cold_function_name = NULL_TREE;
     }
   else
     {
@@ -1856,6 +1864,10 @@ assemble_end_function (tree decl, const char *fnname ATTRIBUTE_UNUSED)
 
       save_text_section = in_section;
       switch_to_section (unlikely_text_section ());
+      if (cold_function_name != NULL_TREE)
+	ASM_DECLARE_FUNCTION_SIZE (asm_out_file,
+				   IDENTIFIER_POINTER (cold_function_name),
+				   decl);
       ASM_OUTPUT_LABEL (asm_out_file, crtl->subsections.cold_section_end_label);
       if (first_function_block_is_cold)
 	switch_to_section (text_section);
