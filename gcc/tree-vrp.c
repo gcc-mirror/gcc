@@ -874,13 +874,18 @@ update_value_range (const_tree var, value_range_t *new_vr)
   if (is_new)
     {
       /* Do not allow transitions up the lattice.  The following
-         is slightly more awkward than just new_vr->type < old_vr->type
+	 is slightly more awkward than just new_vr->type < old_vr->type
 	 because VR_RANGE and VR_ANTI_RANGE need to be considered
 	 the same.  We may not have is_new when transitioning to
-	 UNDEFINED or from VARYING.  */
-      if (new_vr->type == VR_UNDEFINED
-	  || old_vr->type == VR_VARYING)
-	set_value_range_to_varying (old_vr);
+	 UNDEFINED.  If old_vr->type is VARYING, we shouldn't be
+	 called.  */
+      if (new_vr->type == VR_UNDEFINED)
+	{
+	  BITMAP_FREE (new_vr->equiv);
+	  set_value_range_to_varying (old_vr);
+	  set_value_range_to_varying (new_vr);
+	  return true;
+	}
       else
 	set_value_range (old_vr, new_vr->type, new_vr->min, new_vr->max,
 			 new_vr->equiv);
@@ -8948,6 +8953,9 @@ update_range:
 	  dump_value_range (dump_file, &vr_result);
 	  fprintf (dump_file, "\n");
 	}
+
+      if (vr_result.type == VR_VARYING)
+	return SSA_PROP_VARYING;
 
       return SSA_PROP_INTERESTING;
     }

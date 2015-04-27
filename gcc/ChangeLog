@@ -1,3 +1,13 @@
+2015-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65875
+	* tree-vrp.c (update_value_range): If in is_new case setting
+	old_vr to VR_VARYING, also set new_vr to it.  Remove
+	old_vr->type == VR_VARYING test.
+	(vrp_visit_phi_node): Return SSA_PROP_VARYING instead of
+	SSA_PROP_INTERESTING if update_value_range returned true,
+	but new range is VR_VARYING.
+
 2015-04-27  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2015-04-27 trunk r222459.
