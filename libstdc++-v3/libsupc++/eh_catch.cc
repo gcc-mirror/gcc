@@ -139,3 +139,10 @@ std::uncaught_exception() throw()
   __cxa_eh_globals *globals = __cxa_get_globals ();
   return globals->uncaughtExceptions != 0;
 }
+
+int
+std::uncaught_exceptions() throw()
+{
+  __cxa_eh_globals *globals = __cxa_get_globals ();
+  return globals->uncaughtExceptions;
+}

@@ -1,3 +1,14 @@
+2015-04-27  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Add support for std::uncaught_exceptions.
+	* acinclude.m4: Bump libtool_VERSION.
+	* config/abi/pre/gnu.ver: Export the new symbol.
+	* configure: Regenerate.
+	* libsupc++/eh_catch.cc (uncaught_exceptions): New.
+	* libsupc++/exception (uncaught_exceptions): New.
+	* testsuite/18_support/uncaught_exceptions/uncaught_exceptions.cc: New.
+	* testsuite/util/testsuite_abi.cc: Add 3.4.22 as the latest version.
+
 2015-04-27  Dmitry Prokoptsev  <dprokoptsev@gmail.com>
 	    Michael Hanselmann  <public@hansmi.ch>
 
