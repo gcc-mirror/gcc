@@ -1,3 +1,10 @@
+2015-04-27  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/65296
+	PR target/65895
+	* config/avr/gen-avr-mmcu-specs.c (print_mcu): Close file.
+	Add hint how to use own spec file.
+
 2015-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65875
