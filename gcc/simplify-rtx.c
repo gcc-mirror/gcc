@@ -216,7 +216,7 @@ simplify_gen_binary (enum rtx_code code, machine_mode mode, rtx op0,
   /* Put complex operands first and constants second if commutative.  */
   if (GET_RTX_CLASS (code) == RTX_COMM_ARITH
       && swap_commutative_operands_p (op0, op1))
-    tem = op0, op0 = op1, op1 = tem;
+    std::swap (op0, op1);
 
   return gen_rtx_fmt_ee (code, mode, op0, op1);
 }
@@ -1926,9 +1926,7 @@ simplify_associative_operation (enum rtx_code code, machine_mode mode,
       if (! swap_commutative_operands_p (op1, op0))
 	return simplify_gen_binary (code, mode, op1, op0);
 
-      tem = op0;
-      op0 = op1;
-      op1 = tem;
+      std::swap (op0, op1);
     }
 
   if (GET_CODE (op0) == code)
@@ -1977,9 +1975,7 @@ simplify_binary_operation (enum rtx_code code, machine_mode mode,
   /* Make sure the constant is second.  */
   if (GET_RTX_CLASS (code) == RTX_COMM_ARITH
       && swap_commutative_operands_p (op0, op1))
-    {
-      tem = op0, op0 = op1, op1 = tem;
-    }
+    std::swap (op0, op1);
 
   trueop0 = avoid_constant_pool_reference (op0);
   trueop1 = avoid_constant_pool_reference (op1);
@@ -4265,10 +4261,10 @@ simplify_plus_minus (enum rtx_code code, machine_mode mode, rtx op0,
 		  {
 		    ncode = MINUS;
 		    if (lneg)
-		      tem = lhs, lhs = rhs, rhs = tem;
+		      std::swap (lhs, rhs);
 		  }
 		else if (swap_commutative_operands_p (lhs, rhs))
-		  tem = lhs, lhs = rhs, rhs = tem;
+		  std::swap (lhs, rhs);
 
 		if ((GET_CODE (lhs) == CONST || CONST_INT_P (lhs))
 		    && (GET_CODE (rhs) == CONST || CONST_INT_P (rhs)))
@@ -4458,7 +4454,7 @@ simplify_relational_operation (enum rtx_code code, machine_mode mode,
   /* For the following tests, ensure const0_rtx is op1.  */
   if (swap_commutative_operands_p (op0, op1)
       || (op0 == const0_rtx && op1 != const0_rtx))
-    tem = op0, op0 = op1, op1 = tem, code = swap_condition (code);
+    std::swap (op0, op1), code = swap_condition (code);
 
   /* If op0 is a compare, extract the comparison arguments from it.  */
   if (GET_CODE (op0) == COMPARE && op1 == const0_rtx)
@@ -4819,7 +4815,7 @@ simplify_const_relational_operation (enum rtx_code code,
   /* Make sure the constant is second.  */
   if (swap_commutative_operands_p (op0, op1))
     {
-      tem = op0, op0 = op1, op1 = tem;
+      std::swap (op0, op1);
       code = swap_condition (code);
     }
 
@@ -5180,7 +5176,7 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
       /* Canonicalize the two multiplication operands.  */
       /* a * -b + c  =>  -b * a + c.  */
       if (swap_commutative_operands_p (op0, op1))
-	tem = op0, op0 = op1, op1 = tem, any_change = true;
+	std::swap (op0, op1), any_change = true;
 
       if (any_change)
 	return gen_rtx_FMA (mode, op0, op1, op2);
