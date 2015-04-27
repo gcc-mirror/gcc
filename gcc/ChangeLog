@@ -1,3 +1,8 @@
+2015-04-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* vec.h (vec): Make splice arguments const.  Update definitions
+	accordingly.
+
 2015-04-27  Yvan Roux  <yvan.roux@linaro.org>
 
 	* config/arm/arm.md (*arm_subsi3_insn): Fixed redundant
