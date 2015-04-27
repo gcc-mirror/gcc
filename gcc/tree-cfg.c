@@ -7441,7 +7441,11 @@ dump_function_to_file (tree fndecl, FILE *file, int flags)
       else
 	{
 	  if (!ignore_topmost_bind)
-	    fprintf (file, "{\n");
+	    {
+	      fprintf (file, "{\n");
+	      /* No topmost bind, pretend it's ignored for later.  */
+	      ignore_topmost_bind = true;
+	    }
 	  indent = 2;
 	}
 
