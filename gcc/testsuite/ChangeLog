@@ -1,3 +1,13 @@
+2015-04-27  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/64579
+	* gcc.target/powerpc/htm-1.c: New test.
+	* gcc.target/powerpc/htm-builtin-1.c (__builtin_tabortdc): Only test
+	on 64-bit compiles.
+	(__builtin_tabortdci): Likewise.
+	(__builtin_tcheck): Remove operand.
+	* lib/target-supports.exp (check_htm_hw_available): New function.
+
 2015-04-27  Richard Biener  <rguenther@suse.de>
 
 	* gcc.target/i386/pr65217.c: XFAIL.
