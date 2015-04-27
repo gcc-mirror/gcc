@@ -185,7 +185,7 @@
 
 (define_expand "movhi"
   [(set (match_operand:HI 0 "nonimmediate_nonstack_operand" "")
-	(match_operand:HI 1 "xs_hi_general_operand" ""))]
+	(match_operand:HI 1 "general_operand" ""))]
   ""
   { xstormy16_expand_move (HImode, operands[0], operands[1]);
     DONE;
@@ -193,7 +193,7 @@
 
 (define_insn "movhi_internal"
   [(set (match_operand:HI 0 "nonimmediate_nonstack_operand" "=r,m,e,e,T,r,S,W,e")
-	(match_operand:HI 1 "xs_hi_general_operand"          "r,e,m,L,L,i,i,ie,W"))]
+	(match_operand:HI 1 "general_operand"                "r,e,m,L,L,i,i,ie,W"))]
   ""
   "@
    mov %0,%1

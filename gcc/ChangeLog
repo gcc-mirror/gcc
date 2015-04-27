@@ -1,3 +1,10 @@
+2015-04-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/stormy16/predicates.md (xs_hi_general_operand): Delete.
+	(xs_hi_nonmemory_operand): Remove error.
+	* config/stormy16/stormy16.md (movhi, movhi_internal): Use
+	general_operand rather than xs_hi_general_operand.
+
 2015-04-27  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-dom.c (record_equivalences_from_phis): Valueize PHI arg.
