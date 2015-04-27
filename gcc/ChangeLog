@@ -1,3 +1,16 @@
+2015-04-27  Yoshinori Sato <ysato@users.sourceforge.jp>
+
+	* config.gcc: Add h8300-*-linux.
+	* config/h8300/linux.h: New.
+	* config/h8300/t-linux: New.
+	* config/h8300/h8300.c (h8300_option_override): Normal mode
+	is not supported for h8300-*-linux.
+	(h8300_file_start): Target priority change.
+	(get_shift_alg): Likewise.
+	(h8300_shift_need_scratch_p): Likewise.
+	* config/h8300/h8300.h (TARGET_CPU_CPP_BUILTINS): Likewise.
+	* config/h8300/h8300.md (define_peephole2): Remove duplicate condition.
+
 2015-04-27  Caroline Tice  <cmtice@google.com>
 
 	* final.c (final_scan_insn):  Output cold_function_nmae as function
