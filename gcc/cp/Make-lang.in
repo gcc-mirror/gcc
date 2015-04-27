@@ -221,6 +221,7 @@ c++.mostlyclean:
 	-rm -f doc/g++.1
 	-rm -f cp/*$(objext)
 	-rm -f cp/*$(coverageexts)
+	-rm -f xg++$(exeext) g++-cross$(exeext) cc1plus$(exeext)
 c++.clean:
 c++.distclean:
 	-rm -f cp/config.status cp/Makefile

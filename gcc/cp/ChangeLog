@@ -1,3 +1,7 @@
+2015-04-27  Jim Wilson  <jim.wilson@linaro.org>
+
+	* Make-lang.in (c++.mostlyclean): Remove xg++, g++-cross, and cc1plus.
+
 2015-04-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50800

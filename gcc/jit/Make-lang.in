@@ -285,6 +285,10 @@ jit.uninstall:
 # We just have to delete files specific to us.
 
 jit.mostlyclean:
+	-rm -f $(LIBGCCJIT_FILENAME) $(LIBGCCJIT_SYMLINK)
+	-rm -f $(LIBGCCJIT_LINKER_NAME_SYMLINK) $(FULL_DRIVER_NAME)
+	-rm -f $(LIBGCCJIT_SONAME)
+	-rm -f $(jit_OBJS)
 
 jit.clean:
 

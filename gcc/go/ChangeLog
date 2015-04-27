@@ -1,3 +1,7 @@
+2015-04-27  Jim Wilson  <jim.wilson@linaro.org>
+
+	* Make-lang.in (go.mostlyclean): Remove gccgo, gccgo-cross, and go1.
+
 2015-04-17  Chris Manghane  <cmang@google.com>
 
 	* Make-lang.in (GO_OBJS): Add go/escape.o.

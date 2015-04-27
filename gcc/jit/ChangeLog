@@ -1,3 +1,8 @@
+2015-04-27  Jim Wilson  <jim.wilson@linaro.org>
+
+	* Make-lang.in (jit.mostlyclean): Remove shared libraries and object
+	files.
+
 2015-04-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/65691
