@@ -1,3 +1,8 @@
+2015-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/extensions.xml: Add cross-reference.
+	* doc/html/manual/ext_compile_checks.html: Regenerate.
+
 2015-04-22  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* config/os/generic/os_defines.h (_GLIBCXX_GTHREAD_USE_WEAK): Define.
