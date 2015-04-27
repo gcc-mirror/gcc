@@ -1,3 +1,11 @@
+2015-04-27  Dmitry Prokoptsev  <dprokoptsev@gmail.com>
+	    Michael Hanselmann  <public@hansmi.ch>
+
+	PR libstdc++/62258
+	* libsupc++/eh_ptr.cc (rethrow_exception): Increment count of
+	uncaught exceptions.
+	* testsuite/18_support/exception_ptr/62258.cc: New.
+
 2015-04-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/extensions.xml: Add cross-reference.
