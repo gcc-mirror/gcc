@@ -1864,7 +1864,7 @@ GLIBCXX_3.4.21 {
 
 GLIBCXX_3.4.22 {
 
-    # std::uncaught_exception()
+    # std::uncaught_exceptions()
     _ZSt19uncaught_exceptionsv;
 
 } GLIBCXX_3.4.21;

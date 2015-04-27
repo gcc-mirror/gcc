@@ -1,5 +1,7 @@
 2015-04-27  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
+	* config/abi/pre/gnu.ver: Fix comment.
+
 	Add support for std::uncaught_exceptions.
 	* acinclude.m4: Bump libtool_VERSION.
 	* config/abi/pre/gnu.ver: Export the new symbol.
