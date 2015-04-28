@@ -1,3 +1,7 @@
+2015-04-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/vect/vect-33.c: Remove spurious line.
+
 2015-04-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/tree-ssa/pr61034.C: Add temporary; fix template.
