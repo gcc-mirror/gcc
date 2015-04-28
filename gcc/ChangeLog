@@ -1,3 +1,8 @@
+2015-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/frv/frv.h (CRT_GET_RFIB_DATA): Move definition to
+	libgcc/config/frv/elf-lib.h.
+
 2015-04-28  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-call-cdce.c: Fix example in header comment.

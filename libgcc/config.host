@@ -469,13 +469,13 @@ fr30-*-elf)
 	;;
 frv-*-elf)
 	tmake_file="$tmake_file frv/t-frv t-fdpbit"
-	tm_file="$tm_file frv/frv-abi.h"
+	tm_file="$tm_file frv/elf-lib.h frv/frv-abi.h"
 	# Don't use crtbegin.o, crtend.o.
 	extra_parts="frvbegin.o frvend.o"
 	;;
 frv-*-*linux*)
 	tmake_file="$tmake_file frv/t-frv frv/t-linux t-fdpbit"
-	tm_file="$tm_file frv/frv-abi.h"
+	tm_file="$tm_file frv/elf-lib.h frv/frv-abi.h"
 	;;
 h8300-*-rtems*)
 	tmake_file="$tmake_file h8300/t-h8300 t-fpbit"
