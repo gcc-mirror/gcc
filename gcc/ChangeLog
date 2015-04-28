@@ -1,5 +1,22 @@
 2015-04-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* bb-reorder.c (HAVE_return): Don't check if its undefined.
+	* defaults.h (gen_simple_return): New function.
+	(gen_simple_return): Likewise.
+	(HAVE_return): Add default definition to false.
+	(HAVE_simple_return): Likewise.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Remove checks if
+	HAVE_return and HAVE_simple_return are defined.
+	* function.c (gen_return_pattern): Likewise.
+	(convert_jumps_to_returns): Likewise.
+	(thread_prologue_and_epilogue_insns): Likewise.
+	* reorg.c (find_end_label): Likewise.
+	(dbr_schedule): Likewise.
+	* shrink-wrap.c: Likewise.
+	* shrink-wrap.h: Likewise.
+
+2015-04-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* defaults.h (EPILOGUE_USES): Add default definition of false.
 	* df-scan.c (EPILOGUE_USES): Remove check if its undefined.
 	* resource.c (init_resource_info): Likewise.

@@ -1398,6 +1398,26 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_SUPPORTS_WIDE_INT 0
 #endif
 
+#ifndef HAVE_simple_return
+#define HAVE_simple_return 0
+static inline rtx
+gen_simple_return ()
+{
+  gcc_unreachable ();
+  return NULL;
+}
+#endif
+
+#ifndef HAVE_return
+#define HAVE_return 0
+static inline rtx
+gen_return ()
+{
+  gcc_unreachable ();
+  return NULL;
+}
+#endif
+
 #endif /* GCC_INSN_FLAGS_H  */
 
 #endif  /* ! GCC_DEFAULTS_H */

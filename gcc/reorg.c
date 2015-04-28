@@ -485,11 +485,7 @@ find_end_label (rtx kind)
       else
 	{
 #ifdef HAVE_epilogue
-	  if (HAVE_epilogue
-#ifdef HAVE_return
-	      && ! HAVE_return
-#endif
-	      )
+	  if (HAVE_epilogue && ! HAVE_return)
 	    /* The RETURN insn has its delay slot filled so we cannot
 	       emit the label just before it.  Since we already have
 	       an epilogue and cannot emit a new RETURN, we cannot
@@ -500,7 +496,6 @@ find_end_label (rtx kind)
 	  /* Otherwise, make a new label and emit a RETURN and BARRIER,
 	     if needed.  */
 	  emit_label (label);
-#ifdef HAVE_return
 	  if (HAVE_return)
 	    {
 	      /* The return we make may have delay slots too.  */
@@ -511,7 +506,6 @@ find_end_label (rtx kind)
 	      if (num_delay_slots (insn) > 0)
 		obstack_ptr_grow (&unfilled_slots_obstack, insn);
 	    }
-#endif
 	}
       *plabel = label;
     }
@@ -3825,12 +3819,8 @@ dbr_schedule (rtx_insn *first)
     delete_related_insns (function_simple_return_label);
 
   need_return_insns = false;
-#ifdef HAVE_return
   need_return_insns |= HAVE_return && function_return_label != 0;
-#endif
-#ifdef HAVE_simple_return
   need_return_insns |= HAVE_simple_return && function_simple_return_label != 0;
-#endif
   if (need_return_insns)
     make_return_insns (first);
 
