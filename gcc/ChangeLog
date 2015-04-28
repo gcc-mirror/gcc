@@ -1,3 +1,25 @@
+2015-04-28  Yvan Roux  <yvan.roux@linaro.org>
+
+	* config/arm/arm.md (*arm_movt): Fix type attribute.
+	(*cmpsi_shiftsi): Likewise.
+	(*cmpsi_shiftsi_swp): Likewise.
+	(*movsicc_insn): Likewise.
+	(*cond_move): Likewise.
+	(*if_plus_move): Likewise.
+	(*if_move_plus): Likewise.
+	(*if_arith_move): Likewise.
+	(*if_move_arith): Likewise.
+	(*if_shift_move): Likewise.
+	(*if_move_shift): Likewise.
+	(*arm_movtas_ze): Likewise.
+	* config/arm/thumb2.md (*thumb2_movsicc_insn): Fix alternative
+	redundancy and type attribute.
+	(*thumb2_movsi_insn): Fix type attribute.
+	(*thumb2_addsi_short): Likewise.
+	(thumb2_addsi3_compare0): Likewise.
+	(*thumb2_addsi3_compare0_scratch): Merge alternatives and fix
+	attributes accordingly.
+
 2015-04-28  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR other/65911
