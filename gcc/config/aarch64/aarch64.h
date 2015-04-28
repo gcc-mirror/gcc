@@ -200,6 +200,8 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_CRYPTO     (1 << 2)	/* Has crypto.  */
 #define AARCH64_FL_SLOWMUL    (1 << 3)	/* A slow multiply core.  */
 #define AARCH64_FL_CRC        (1 << 4)	/* Has CRC.  */
+/* Has static dispatch of FMA.  */
+#define AARCH64_FL_USE_FMA_STEERING_PASS (1 << 5)
 
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
@@ -220,6 +222,8 @@ extern unsigned long aarch64_isa_flags;
 /* Macros to test tuning flags.  */
 extern unsigned long aarch64_tune_flags;
 #define AARCH64_TUNE_SLOWMUL       (aarch64_tune_flags & AARCH64_FL_SLOWMUL)
+#define AARCH64_TUNE_FMA_STEERING \
+  (aarch64_tune_flags & AARCH64_FL_USE_FMA_STEERING_PASS)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)

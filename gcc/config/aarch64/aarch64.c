@@ -95,6 +95,7 @@
 #include "rtl-iter.h"
 #include "tm-constrs.h"
 #include "sched-int.h"
+#include "cortex-a57-fma-steering.h"
 
 /* Defined for convenience.  */
 #define POINTER_BYTES (POINTER_SIZE / BITS_PER_UNIT)
@@ -6883,6 +6884,9 @@ aarch64_override_options (void)
       if (align_functions <= 0)
 	align_functions = aarch64_tune_params->function_align;
     }
+
+  if (AARCH64_TUNE_FMA_STEERING)
+    aarch64_register_fma_steering ();
 
   aarch64_override_options_after_change ();
 }
