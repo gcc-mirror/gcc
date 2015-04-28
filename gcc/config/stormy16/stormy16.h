@@ -345,7 +345,7 @@ enum reg_class
 
 #define SLOW_BYTE_ACCESS 0
 
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 
 /* Dividing the output into sections.  */

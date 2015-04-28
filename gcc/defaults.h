@@ -1209,6 +1209,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define INSN_REFERENCES_ARE_DELAYED(INSN) false
 #endif
 
+#ifndef NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE false
+#endif
+
 #ifdef GCC_INSN_FLAGS_H
 /* Dependent default target macro definitions
 

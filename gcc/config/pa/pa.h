@@ -1048,7 +1048,7 @@ do {									     \
    shouldn't be put through pseudo regs where they can be cse'd.
    Desirable on machines where ordinary constants are expensive
    but a CALL with constant address is cheap.  */
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 /* Define this to be nonzero if shift instructions ignore all but the low-order
    few bits.  */

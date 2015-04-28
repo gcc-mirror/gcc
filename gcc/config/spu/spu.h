@@ -407,7 +407,7 @@ do {									\
 
 #define MOVE_RATIO(speed) ((speed)? 32 : 4)
 
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 
 /* Sections */

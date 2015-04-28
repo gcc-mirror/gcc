@@ -362,7 +362,7 @@ typedef struct avr_args
 
 #define SLOW_BYTE_ACCESS 0
 
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 #define REGISTER_TARGET_PRAGMAS()                                       \
   do {                                                                  \

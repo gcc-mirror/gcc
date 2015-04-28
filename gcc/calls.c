@@ -227,10 +227,8 @@ prepare_call_address (tree fndecl_or_type, rtx funexp, rtx static_chain_value,
 	      : memory_address (FUNCTION_MODE, funexp));
   else if (! sibcallp)
     {
-#ifndef NO_FUNCTION_CSE
-      if (optimize && ! flag_no_function_cse)
+      if (!NO_FUNCTION_CSE && optimize && ! flag_no_function_cse)
 	funexp = force_reg (Pmode, funexp);
-#endif
     }
 
   if (static_chain_value != 0

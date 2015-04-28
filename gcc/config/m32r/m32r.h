@@ -767,7 +767,7 @@ L2:     .word STATIC
 
 /* Define this macro if it is as good or better to call a constant
    function address than to call an address kept in a register.  */
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 /* Section selection.  */
 

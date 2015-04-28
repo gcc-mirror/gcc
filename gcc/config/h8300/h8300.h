@@ -136,7 +136,7 @@ extern const char * const *h8_reg_names;
    Calls through a register are cheaper than calls to named
    functions; however, the register pressure this causes makes
    CSEing of function addresses generally a lose.  */
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 /* Target machine storage layout */
 

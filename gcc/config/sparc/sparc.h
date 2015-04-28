@@ -1518,7 +1518,7 @@ do {									   \
    shouldn't be put through pseudo regs where they can be cse'd.
    Desirable on machines where ordinary constants are expensive
    but a CALL with constant address is cheap.  */
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 /* The _Q_* comparison libcalls return booleans.  */
 #define FLOAT_LIB_COMPARE_RETURNS_BOOL(MODE, COMPARISON) ((MODE) == TFmode)
