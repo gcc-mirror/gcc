@@ -3,5 +3,5 @@
 void
 foo (__builtin_va_list ap)
 {
-  __builtin_va_arg (ap, void);
+  __builtin_va_arg (ap, void);  /* { dg-error "invalid use of void expression" } */
 }

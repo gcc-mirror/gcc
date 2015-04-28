@@ -12648,6 +12648,11 @@ c_build_va_arg (location_t loc, tree expr, tree type)
   if (warn_cxx_compat && TREE_CODE (type) == ENUMERAL_TYPE)
     warning_at (loc, OPT_Wc___compat,
 		"C++ requires promoted type, not enum type, in %<va_arg%>");
+  if (type == error_mark_node || !COMPLETE_TYPE_P (type))
+    {
+      c_incomplete_type_error (NULL_TREE, type);
+      return error_mark_node;
+    }
   return build_va_arg (loc, expr, type);
 }
 
