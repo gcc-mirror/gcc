@@ -1,3 +1,8 @@
+2015-04-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65734
+	* class.c (fixup_attribute_variants): Respect TYPE_USER_ALIGN.
+
 2015-04-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* class.c (layout_class_type): Remove check if
