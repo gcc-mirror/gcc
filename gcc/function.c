@@ -3771,15 +3771,16 @@ assign_parms (tree fndecl)
   crtl->args.size = CEIL_ROUND (crtl->args.size,
 					   PARM_BOUNDARY / BITS_PER_UNIT);
 
-#if ARGS_GROW_DOWNWARD
-  crtl->args.arg_offset_rtx
-    = (all.stack_args_size.var == 0 ? GEN_INT (-all.stack_args_size.constant)
-       : expand_expr (size_diffop (all.stack_args_size.var,
-				   size_int (-all.stack_args_size.constant)),
-		      NULL_RTX, VOIDmode, EXPAND_NORMAL));
-#else
-  crtl->args.arg_offset_rtx = ARGS_SIZE_RTX (all.stack_args_size);
-#endif
+  if (ARGS_GROW_DOWNWARD)
+    {
+      crtl->args.arg_offset_rtx
+	= (all.stack_args_size.var == 0 ? GEN_INT (-all.stack_args_size.constant)
+	   : expand_expr (size_diffop (all.stack_args_size.var,
+				       size_int (-all.stack_args_size.constant)),
+			  NULL_RTX, VOIDmode, EXPAND_NORMAL));
+    }
+  else
+    crtl->args.arg_offset_rtx = ARGS_SIZE_RTX (all.stack_args_size);
 
   /* See how many bytes, if any, of its args a function should try to pop
      on return.  */
@@ -4070,68 +4071,71 @@ locate_and_pad_parm (machine_mode passed_mode, tree type, int in_regs,
   if (crtl->preferred_stack_boundary < boundary)
     crtl->preferred_stack_boundary = boundary;
 
-#if ARGS_GROW_DOWNWARD
-  locate->slot_offset.constant = -initial_offset_ptr->constant;
-  if (initial_offset_ptr->var)
-    locate->slot_offset.var = size_binop (MINUS_EXPR, ssize_int (0),
-					  initial_offset_ptr->var);
+  if (ARGS_GROW_DOWNWARD)
+    {
+      locate->slot_offset.constant = -initial_offset_ptr->constant;
+      if (initial_offset_ptr->var)
+	locate->slot_offset.var = size_binop (MINUS_EXPR, ssize_int (0),
+					      initial_offset_ptr->var);
 
-  {
-    tree s2 = sizetree;
-    if (where_pad != none
-	&& (!tree_fits_uhwi_p (sizetree)
-	    || (tree_to_uhwi (sizetree) * BITS_PER_UNIT) % round_boundary))
-      s2 = round_up (s2, round_boundary / BITS_PER_UNIT);
-    SUB_PARM_SIZE (locate->slot_offset, s2);
-  }
+	{
+	  tree s2 = sizetree;
+	  if (where_pad != none
+	      && (!tree_fits_uhwi_p (sizetree)
+		  || (tree_to_uhwi (sizetree) * BITS_PER_UNIT) % round_boundary))
+	    s2 = round_up (s2, round_boundary / BITS_PER_UNIT);
+	  SUB_PARM_SIZE (locate->slot_offset, s2);
+	}
 
-  locate->slot_offset.constant += part_size_in_regs;
+      locate->slot_offset.constant += part_size_in_regs;
 
-  if (!in_regs || reg_parm_stack_space > 0)
-    pad_to_arg_alignment (&locate->slot_offset, boundary,
-			  &locate->alignment_pad);
+      if (!in_regs || reg_parm_stack_space > 0)
+	pad_to_arg_alignment (&locate->slot_offset, boundary,
+			      &locate->alignment_pad);
 
-  locate->size.constant = (-initial_offset_ptr->constant
-			   - locate->slot_offset.constant);
-  if (initial_offset_ptr->var)
-    locate->size.var = size_binop (MINUS_EXPR,
-				   size_binop (MINUS_EXPR,
-					       ssize_int (0),
-					       initial_offset_ptr->var),
-				   locate->slot_offset.var);
+      locate->size.constant = (-initial_offset_ptr->constant
+			       - locate->slot_offset.constant);
+      if (initial_offset_ptr->var)
+	locate->size.var = size_binop (MINUS_EXPR,
+				       size_binop (MINUS_EXPR,
+						   ssize_int (0),
+						   initial_offset_ptr->var),
+				       locate->slot_offset.var);
 
-  /* Pad_below needs the pre-rounded size to know how much to pad
-     below.  */
-  locate->offset = locate->slot_offset;
-  if (where_pad == downward)
-    pad_below (&locate->offset, passed_mode, sizetree);
+      /* Pad_below needs the pre-rounded size to know how much to pad
+	 below.  */
+      locate->offset = locate->slot_offset;
+      if (where_pad == downward)
+	pad_below (&locate->offset, passed_mode, sizetree);
 
-#else /* !ARGS_GROW_DOWNWARD */
-  if (!in_regs || reg_parm_stack_space > 0)
-    pad_to_arg_alignment (initial_offset_ptr, boundary,
-			  &locate->alignment_pad);
-  locate->slot_offset = *initial_offset_ptr;
+    }
+  else
+    {
+      if (!in_regs || reg_parm_stack_space > 0)
+	pad_to_arg_alignment (initial_offset_ptr, boundary,
+			      &locate->alignment_pad);
+      locate->slot_offset = *initial_offset_ptr;
 
 #ifdef PUSH_ROUNDING
-  if (passed_mode != BLKmode)
-    sizetree = size_int (PUSH_ROUNDING (TREE_INT_CST_LOW (sizetree)));
+      if (passed_mode != BLKmode)
+	sizetree = size_int (PUSH_ROUNDING (TREE_INT_CST_LOW (sizetree)));
 #endif
 
-  /* Pad_below needs the pre-rounded size to know how much to pad below
-     so this must be done before rounding up.  */
-  locate->offset = locate->slot_offset;
-  if (where_pad == downward)
-    pad_below (&locate->offset, passed_mode, sizetree);
+      /* Pad_below needs the pre-rounded size to know how much to pad below
+	 so this must be done before rounding up.  */
+      locate->offset = locate->slot_offset;
+      if (where_pad == downward)
+	pad_below (&locate->offset, passed_mode, sizetree);
 
-  if (where_pad != none
-      && (!tree_fits_uhwi_p (sizetree)
-	  || (tree_to_uhwi (sizetree) * BITS_PER_UNIT) % round_boundary))
-    sizetree = round_up (sizetree, round_boundary / BITS_PER_UNIT);
+      if (where_pad != none
+	  && (!tree_fits_uhwi_p (sizetree)
+	      || (tree_to_uhwi (sizetree) * BITS_PER_UNIT) % round_boundary))
+	sizetree = round_up (sizetree, round_boundary / BITS_PER_UNIT);
 
-  ADD_PARM_SIZE (locate->size, sizetree);
+      ADD_PARM_SIZE (locate->size, sizetree);
 
-  locate->size.constant -= part_size_in_regs;
-#endif /* ARGS_GROW_DOWNWARD */
+      locate->size.constant -= part_size_in_regs;
+    }
 
 #ifdef FUNCTION_ARG_OFFSET
   locate->offset.constant += FUNCTION_ARG_OFFSET (passed_mode, type);
@@ -4175,11 +4179,11 @@ pad_to_arg_alignment (struct args_size *offset_ptr, int boundary,
 	  tree offset = size_binop (PLUS_EXPR,
 				    ARGS_SIZE_TREE (*offset_ptr),
 				    sp_offset_tree);
-#if ARGS_GROW_DOWNWARD
-	  tree rounded = round_down (offset, boundary / BITS_PER_UNIT);
-#else
-	  tree rounded = round_up   (offset, boundary / BITS_PER_UNIT);
-#endif
+	  tree rounded;
+	  if (ARGS_GROW_DOWNWARD)
+	    rounded = round_down (offset, boundary / BITS_PER_UNIT);
+	  else
+	    rounded = round_up   (offset, boundary / BITS_PER_UNIT);
 
 	  offset_ptr->var = size_binop (MINUS_EXPR, rounded, sp_offset_tree);
 	  /* ARGS_SIZE_TREE includes constant term.  */
@@ -4191,11 +4195,10 @@ pad_to_arg_alignment (struct args_size *offset_ptr, int boundary,
       else
 	{
 	  offset_ptr->constant = -sp_offset +
-#if ARGS_GROW_DOWNWARD
-	    FLOOR_ROUND (offset_ptr->constant + sp_offset, boundary_in_bytes);
-#else
+	    ARGS_GROW_DOWNWARD ?
+	    FLOOR_ROUND (offset_ptr->constant + sp_offset, boundary_in_bytes) :
 	    CEIL_ROUND (offset_ptr->constant + sp_offset, boundary_in_bytes);
-#endif
+
 	    if (boundary > PARM_BOUNDARY)
 	      alignment_pad->constant = offset_ptr->constant - save_constant;
 	}

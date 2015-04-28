@@ -948,9 +948,9 @@ save_fixed_argument_area (int reg_parm_stack_space, rtx argblock, int *low_to_sa
 
   /* Compute the boundary of the area that needs to be saved, if any.  */
   high = reg_parm_stack_space;
-#if ARGS_GROW_DOWNWARD
-  high += 1;
-#endif
+  if (ARGS_GROW_DOWNWARD)
+    high += 1;
+
   if (high > highest_outgoing_arg_in_use)
     high = highest_outgoing_arg_in_use;
 
@@ -979,11 +979,11 @@ save_fixed_argument_area (int reg_parm_stack_space, rtx argblock, int *low_to_sa
 			 BIGGEST_ALIGNMENT / UNITS_PER_WORD) - 1)))
 	  save_mode = BLKmode;
 
-#if ARGS_GROW_DOWNWARD
-	delta = -high;
-#else
-	delta = low;
-#endif
+	if (ARGS_GROW_DOWNWARD)
+	  delta = -high;
+	else
+	  delta = low;
+
 	addr = plus_constant (Pmode, argblock, delta);
 	stack_area = gen_rtx_MEM (save_mode, memory_address (save_mode, addr));
 
@@ -1013,11 +1013,11 @@ restore_fixed_argument_area (rtx save_area, rtx argblock, int high_to_save, int 
   int delta;
   rtx addr, stack_area;
 
-#if ARGS_GROW_DOWNWARD
-  delta = -high_to_save;
-#else
-  delta = low_to_save;
-#endif
+  if (ARGS_GROW_DOWNWARD)
+    delta = -high_to_save;
+  else
+    delta = low_to_save;
+
   addr = plus_constant (Pmode, argblock, delta);
   stack_area = gen_rtx_MEM (save_mode, memory_address (save_mode, addr));
   set_mem_align (stack_area, PARM_BOUNDARY);
@@ -1980,9 +1980,9 @@ mem_overlaps_already_clobbered_arg_p (rtx addr, unsigned HOST_WIDE_INT size)
   i += crtl->args.pretend_args_size;
 #endif
 
-#if ARGS_GROW_DOWNWARD
-  i = -i - size;
-#endif
+  if (ARGS_GROW_DOWNWARD)
+    i = -i - size;
+
   if (size > 0)
     {
       unsigned HOST_WIDE_INT k;
@@ -2286,11 +2286,10 @@ check_sibcall_argument_overlap (rtx_insn *insn, struct arg_data *arg,
 
   if (mark_stored_args_map)
     {
-#if ARGS_GROW_DOWNWARD
-      low = -arg->locate.slot_offset.constant - arg->locate.size.constant;
-#else
-      low = arg->locate.slot_offset.constant;
-#endif
+      if (ARGS_GROW_DOWNWARD)
+	low = -arg->locate.slot_offset.constant - arg->locate.size.constant;
+      else
+	low = arg->locate.slot_offset.constant;
 
       for (high = low + arg->locate.size.constant; low < high; low++)
 	bitmap_set_bit (stored_args_map, low);
@@ -2979,13 +2978,13 @@ expand_call (tree exp, rtx target, int ignore)
 		  if (! OUTGOING_REG_PARM_STACK_SPACE ((!fndecl ? fntype : TREE_TYPE (fndecl))))
 		    needed += reg_parm_stack_space;
 
-#if ARGS_GROW_DOWNWARD
-		  highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
-						     needed + 1);
-#else
-		  highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
-						     needed);
-#endif
+		  if (ARGS_GROW_DOWNWARD)
+		    highest_outgoing_arg_in_use
+		      = MAX (initial_highest_arg_in_use, needed + 1);
+		  else
+		    highest_outgoing_arg_in_use
+		      = MAX (initial_highest_arg_in_use, needed);
+
 		  free (stack_usage_map_buf);
 		  stack_usage_map_buf = XNEWVEC (char, highest_outgoing_arg_in_use);
 		  stack_usage_map = stack_usage_map_buf;
@@ -3047,9 +3046,8 @@ expand_call (tree exp, rtx target, int ignore)
 		  else
 		    {
 		      argblock = push_block (GEN_INT (needed), 0, 0);
-#if ARGS_GROW_DOWNWARD
-		      argblock = plus_constant (Pmode, argblock, needed);
-#endif
+		      if (ARGS_GROW_DOWNWARD)
+			argblock = plus_constant (Pmode, argblock, needed);
 		    }
 
 		  /* We only really need to call `copy_to_reg' in the case
@@ -4122,13 +4120,12 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       if (! OUTGOING_REG_PARM_STACK_SPACE ((!fndecl ? fntype : TREE_TYPE (fndecl))))
 	needed += reg_parm_stack_space;
 
-#if ARGS_GROW_DOWNWARD
-      highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
-					 needed + 1);
-#else
-      highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
-					 needed);
-#endif
+      if (ARGS_GROW_DOWNWARD)
+	highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
+					   needed + 1);
+      else
+	highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use, needed);
+
       stack_usage_map_buf = XNEWVEC (char, highest_outgoing_arg_in_use);
       stack_usage_map = stack_usage_map_buf;
 
@@ -4213,15 +4210,18 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	      /* If this is being stored into a pre-allocated, fixed-size,
 		 stack area, save any previous data at that location.  */
 
-#if ARGS_GROW_DOWNWARD
-	      /* stack_slot is negative, but we want to index stack_usage_map
-		 with positive values.  */
-	      upper_bound = -argvec[argnum].locate.slot_offset.constant + 1;
-	      lower_bound = upper_bound - argvec[argnum].locate.size.constant;
-#else
-	      lower_bound = argvec[argnum].locate.slot_offset.constant;
-	      upper_bound = lower_bound + argvec[argnum].locate.size.constant;
-#endif
+	      if (ARGS_GROW_DOWNWARD)
+		{
+		  /* stack_slot is negative, but we want to index stack_usage_map
+		     with positive values.  */
+		  upper_bound = -argvec[argnum].locate.slot_offset.constant + 1;
+		  lower_bound = upper_bound - argvec[argnum].locate.size.constant;
+		}
+	      else
+		{
+		  lower_bound = argvec[argnum].locate.slot_offset.constant;
+		  upper_bound = lower_bound + argvec[argnum].locate.size.constant;
+		}
 
 	      i = lower_bound;
 	      /* Don't worry about things in the fixed argument area;
@@ -4702,23 +4702,26 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	 save any previous data at that location.  */
       if (argblock && ! variable_size && arg->stack)
 	{
-#if ARGS_GROW_DOWNWARD
-	  /* stack_slot is negative, but we want to index stack_usage_map
-	     with positive values.  */
-	  if (GET_CODE (XEXP (arg->stack_slot, 0)) == PLUS)
-	    upper_bound = -INTVAL (XEXP (XEXP (arg->stack_slot, 0), 1)) + 1;
-	  else
-	    upper_bound = 0;
+	  if (ARGS_GROW_DOWNWARD)
+	    {
+	      /* stack_slot is negative, but we want to index stack_usage_map
+		 with positive values.  */
+	      if (GET_CODE (XEXP (arg->stack_slot, 0)) == PLUS)
+		upper_bound = -INTVAL (XEXP (XEXP (arg->stack_slot, 0), 1)) + 1;
+	      else
+		upper_bound = 0;
 
-	  lower_bound = upper_bound - arg->locate.size.constant;
-#else
-	  if (GET_CODE (XEXP (arg->stack_slot, 0)) == PLUS)
-	    lower_bound = INTVAL (XEXP (XEXP (arg->stack_slot, 0), 1));
+	      lower_bound = upper_bound - arg->locate.size.constant;
+	    }
 	  else
-	    lower_bound = 0;
+	    {
+	      if (GET_CODE (XEXP (arg->stack_slot, 0)) == PLUS)
+		lower_bound = INTVAL (XEXP (XEXP (arg->stack_slot, 0), 1));
+	      else
+		lower_bound = 0;
 
-	  upper_bound = lower_bound + arg->locate.size.constant;
-#endif
+	      upper_bound = lower_bound + arg->locate.size.constant;
+	    }
 
 	  i = lower_bound;
 	  /* Don't worry about things in the fixed argument area;

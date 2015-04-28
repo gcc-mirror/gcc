@@ -1786,12 +1786,11 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   unsigned HOST_WIDE_INT align, boundary;
   bool indirect;
 
-#if ARGS_GROW_DOWNWARD
   /* All of the alignment and movement below is for args-grow-up machines.
      As of 2004, there are only 3 ARGS_GROW_DOWNWARD targets, and they all
      implement their own specialized gimplify_va_arg_expr routines.  */
-  gcc_unreachable ();
-#endif
+  if (ARGS_GROW_DOWNWARD)
+    gcc_unreachable ();
 
   indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
   if (indirect)

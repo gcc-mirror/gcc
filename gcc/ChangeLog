@@ -1,5 +1,20 @@
 2015-04-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* calls.c (save_fixed_argument_area): Don't check
+	ARGS_GROW_DOWNWARD with the preprocessor.
+	(restore_fixed_argument_area): Likewise.
+	(mem_overlaps_already_clobbered_arg_p): Likewise.
+	(check_sibcall_argument_overlap): Likewise.
+	(expand_call): Likewise.
+	(emit_library_call_value_1): Likewise.
+	(store_one_arg): Likewise.
+	* function.c (assign_parms): Likewise.
+	(locate_and_pad_parm): Likewise.
+	(pad_to_arg_alignment): Likewise.
+	* targhooks.c (std_gimplify_va_arg_expr): Likewise.
+
+2015-04-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* config/pa/pa.h (ARGS_GROW_DOWNWARD): Define to 1.
 	* defaults.h (ARGS_GROW_DOWNWARD): Define it to 0 by default.
 	* calls.c (save_fixed_argument_area): Don't chekc if
