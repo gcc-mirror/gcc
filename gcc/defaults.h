@@ -1201,6 +1201,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DEFAULT_PCC_STRUCT_RETURN 1
 #endif
 
+#ifndef PCC_BITFIELD_TYPE_MATTERS
+#define PCC_BITFIELD_TYPE_MATTERS false
+#endif
+
 #ifndef INSN_SETS_ARE_DELAYED
 #define INSN_SETS_ARE_DELAYED(INSN) false
 #endif
