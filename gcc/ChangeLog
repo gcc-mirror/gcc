@@ -1,5 +1,11 @@
 2015-04-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* defaults.h (EPILOGUE_USES): Add default definition of false.
+	* df-scan.c (EPILOGUE_USES): Remove check if its undefined.
+	* resource.c (init_resource_info): Likewise.
+
+2015-04-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* defaults.h (PCC_BITFIELD_TYPE_MATTERS): Add default definition
 	to false.
 	* dwarf2out.c (field_byte_offset): REmove check if

@@ -1200,11 +1200,7 @@ init_resource_info (rtx_insn *epilogue_insn)
 			       &end_of_function_needs, true);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (global_regs[i]
-#ifdef EPILOGUE_USES
-	|| EPILOGUE_USES (i)
-#endif
-	)
+    if (global_regs[i] || EPILOGUE_USES (i))
       SET_HARD_REG_BIT (end_of_function_needs.regs, i);
 
   /* The registers required to be live at the end of the function are

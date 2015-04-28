@@ -1221,6 +1221,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define HARD_REGNO_RENAME_OK(FROM, TO) true
 #endif
 
+#ifndef EPILOGUE_USES
+#define EPILOGUE_USES(REG) false
+#endif
+
 #ifdef GCC_INSN_FLAGS_H
 /* Dependent default target macro definitions
 
