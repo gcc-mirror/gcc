@@ -6053,6 +6053,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       param(OutputIterator __dest) const
       { std::copy(_M_v.begin(), _M_v.end(), __dest); }
 
+    // no copy functions
+    seed_seq(const seed_seq&) = delete;
+    seed_seq& operator=(const seed_seq&) = delete;
+
   private:
     ///
     std::vector<result_type> _M_v;
