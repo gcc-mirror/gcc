@@ -1,3 +1,8 @@
+2015-04-28  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR other/65911
+	* function.c (pad_to_arg_alignment): Add parentheses.
+
 2015-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/frv/frv.h (CRT_GET_RFIB_DATA): Move definition to
