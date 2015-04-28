@@ -1,3 +1,7 @@
+2015-04-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-ssa/pr61034.C: Add temporary; fix template.
+
 2015-04-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c/65901
