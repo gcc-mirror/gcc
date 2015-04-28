@@ -1,5 +1,9 @@
 2015-04-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/65656
+	* constexpr.c (cxx_eval_builtin_function_call): Fix
+	__builtin_constant_p.
+
 	PR c++/50800
 	* tree.c (strip_typedefs): Add remove_attributes parm.
 	(strip_typedefs_expr): Likewise.
