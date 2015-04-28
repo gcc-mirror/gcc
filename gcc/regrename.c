@@ -333,10 +333,7 @@ check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
 	|| (crtl->is_leaf
 	    && !LEAF_REGISTERS[new_reg + i])
 #endif
-#ifdef HARD_REGNO_RENAME_OK
-	|| ! HARD_REGNO_RENAME_OK (reg + i, new_reg + i)
-#endif
-	)
+	|| ! HARD_REGNO_RENAME_OK (reg + i, new_reg + i))
       return false;
 
   /* See whether it accepts all modes that occur in

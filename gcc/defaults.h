@@ -1213,6 +1213,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define NO_FUNCTION_CSE false
 #endif
 
+#ifndef HARD_REGNO_RENAME_OK
+#define HARD_REGNO_RENAME_OK(FROM, TO) true
+#endif
+
 #ifdef GCC_INSN_FLAGS_H
 /* Dependent default target macro definitions
 

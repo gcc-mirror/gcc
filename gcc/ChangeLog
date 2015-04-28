@@ -1,5 +1,13 @@
 2015-04-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* defaults.h (HARD_REGNO_RENAME_OK): Add default definition to
+	true.
+	* regrename.c (check_new_reg_p): Remove check if
+	HARD_REGNO_RENAME_OK is defined.
+	* sel-sched.c (sel_hard_regno_rename_ok): Likewise.
+
+2015-04-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* calls.c (prepare_call_address): Remove ifdef NO_FUNCTION_CSE.
 	* cse.c (fold_rtx): Likewise.
 	* config/alpha/alpha.h (NO_FUNCTION_CSE): Define to 1.
