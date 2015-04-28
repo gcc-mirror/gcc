@@ -27531,6 +27531,40 @@ $as_echo "$gcc_cv_ld_large_toc" >&6; }
 $as_echo "#define HAVE_LD_LARGE_TOC 1" >>confdefs.h
 
     fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker toc pointer alignment" >&5
+$as_echo_n "checking linker toc pointer alignment... " >&6; }
+if test "${gcc_cv_ld_toc_align+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_nm != x; then
+      cat > conftest.s <<EOF
+	.global _start
+	.text
+_start:
+	addis 9,2,x@got@ha
+	.section .data.rel.ro,"aw",@progbits
+	.p2align 16
+	.space 32768
+x:	.quad .TOC.
+EOF
+      if $gcc_cv_as -a64 -o conftest.o conftest.s > /dev/null 2>&1 \
+         && $gcc_cv_ld $emul_name -o conftest conftest.o > /dev/null 2>&1; then
+        gcc_cv_ld_toc_align=`$gcc_cv_nm conftest | ${AWK} '/\.TOC\./ { match ($0, "0[[:xdigit:]]*", a); print strtonum ("0x" substr(a[0], length(a[0])-3)) }'`
+      fi
+      rm -f conftest conftest.o conftest.s
+    fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_toc_align" >&5
+$as_echo "$gcc_cv_ld_toc_align" >&6; }
+    if test -n "$gcc_cv_ld_toc_align" && test $gcc_cv_ld_toc_align -gt 8; then
+
+cat >>confdefs.h <<_ACEOF
+#define POWERPC64_TOC_POINTER_ALIGNMENT $gcc_cv_ld_toc_align
+_ACEOF
+
+    fi
     ;;
 esac
 

@@ -1910,6 +1910,12 @@
 #endif
 
 
+/* Define to .TOC. alignment forced by your linker. */
+#ifndef USED_FOR_TARGET
+#undef POWERPC64_TOC_POINTER_ALIGNMENT
+#endif
+
+
 /* Define to PREFIX/include if cpp should also search that directory. */
 #ifndef USED_FOR_TARGET
 #undef PREFIX_INCLUDE_DIR
