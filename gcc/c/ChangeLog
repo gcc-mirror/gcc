@@ -1,5 +1,9 @@
 2015-04-28  Marek Polacek  <polacek@redhat.com>
 
+	* c-parser.c (c_parser_binary_expression): Remove duplicate line.
+
+2015-04-28  Marek Polacek  <polacek@redhat.com>
+
 	PR c/65901
 	* c-typeck.c (c_build_va_arg): Require TYPE be a complete type.
 
