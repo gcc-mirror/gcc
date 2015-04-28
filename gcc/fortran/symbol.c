@@ -4567,7 +4567,10 @@ gfc_type_compatible (gfc_typespec *ts1, gfc_typespec *ts2)
 
   if (is_class1
       && ts1->u.derived->components
-      && ts1->u.derived->components->ts.u.derived->attr.unlimited_polymorphic)
+      && ((ts1->u.derived->attr.is_class
+	   && ts1->u.derived->components->ts.u.derived->attr
+							.unlimited_polymorphic)
+	  || ts1->u.derived->attr.unlimited_polymorphic))
     return 1;
 
   if (!is_derived1 && !is_derived2 && !is_class1 && !is_class2)
@@ -4578,13 +4581,21 @@ gfc_type_compatible (gfc_typespec *ts1, gfc_typespec *ts2)
 
   if (is_derived1 && is_class2)
     return gfc_compare_derived_types (ts1->u.derived,
-				      ts2->u.derived->components->ts.u.derived);
+				      ts2->u.derived->attr.is_class ?
+				      ts2->u.derived->components->ts.u.derived
+				      : ts2->u.derived);
   if (is_class1 && is_derived2)
-    return gfc_type_is_extension_of (ts1->u.derived->components->ts.u.derived,
+    return gfc_type_is_extension_of (ts1->u.derived->attr.is_class ?
+				       ts1->u.derived->components->ts.u.derived
+				     : ts1->u.derived,
 				     ts2->u.derived);
   else if (is_class1 && is_class2)
-    return gfc_type_is_extension_of (ts1->u.derived->components->ts.u.derived,
-				     ts2->u.derived->components->ts.u.derived);
+    return gfc_type_is_extension_of (ts1->u.derived->attr.is_class ?
+				       ts1->u.derived->components->ts.u.derived
+				     : ts1->u.derived,
+				     ts2->u.derived->attr.is_class ?
+				       ts2->u.derived->components->ts.u.derived
+				     : ts2->u.derived);
   else
     return 0;
 }

@@ -1,3 +1,11 @@
+2015-04-28  Andre Vehreschild  <vehre@gmx.de>
+
+	* interface.c (gfc_compare_types): Check for unlimited
+	polymorphism flag in the correct position indepent of the _data
+	component being present or not.  This prevents a segfault, when
+	the _data component is not present.
+	* symbol.c (gfc_type_compatible): Same.
+
 2015-04-27  Jim Wilson  <jim.wilson@linaro.org>
 
 	* Make-lang.in (fortran.mostlyclean): Remove gfortran and
