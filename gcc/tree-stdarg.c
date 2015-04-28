@@ -1078,6 +1078,8 @@ expand_ifn_va_arg_1 (function *fun)
 	       types.  */
 	    gimplify_assign (lhs, expr, &pre);
 	  }
+	else
+	  gimplify_expr (&expr, &pre, &post, is_gimple_lvalue, fb_lvalue);
 
 	pop_gimplify_context (NULL);
 

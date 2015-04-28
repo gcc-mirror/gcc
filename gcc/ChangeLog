@@ -1,3 +1,9 @@
+2015-04-28  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/65818
+	* tree-stdarg.c (expand_ifn_va_arg_1): Ensure that side-effects are
+	evaluated.
+
 2015-04-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* calls.c (save_fixed_argument_area): Don't check
