@@ -2406,6 +2406,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename...> using __void_t = void;
 
+#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
+#define __cpp_lib_void_t 201411
+  /// A metafunction that always yields void, used for detecting valid types.
+  template<typename...> using void_t = void;
+#endif
+
   /// @} group metaprogramming
 
   /**

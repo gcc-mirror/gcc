@@ -1,3 +1,8 @@
+2015-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (void_t): Add.
+	* testsuite/20_util/void_t/1.cc: New.
+
 2015-04-28  Tim Shen  <timshen@google.com>
 
 	* include/bits/regex.tcc: Handle regex_constants::__polynomial.
