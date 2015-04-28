@@ -1,5 +1,10 @@
 2015-04-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/65631
+	* include/bits/random.h (seed_seq) Define copy constructor and copy
+	assignment as deleted.
+	* testsuite/26_numerics/random/seed_seq/cons/65631.cc: New.
+
 	* libsupc++/exception (uncaught_exceptions): Add comment. Reorder #if.
 	* testsuite/18_support/uncaught_exceptions/uncaught_exceptions.cc:
 	Use -std=gnu++1z. Check feature-test macro.
