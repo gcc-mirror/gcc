@@ -1,3 +1,18 @@
+2015-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62283
+	* tree-vect-slp.c (vect_build_slp_tree): When the SLP build
+	fails fatally and we are vectorizing a basic-block simply
+	cause the child to be constructed piecewise.
+	(vect_analyze_slp_cost_1): Adjust.
+	(vect_detect_hybrid_slp_stmts): Likewise.
+	(vect_bb_slp_scalar_cost): Likewise.
+	(vect_get_constant_vectors): For piecewise constructed
+	constants place them after the last def.
+	(vect_get_slp_defs): Adjust.
+	* tree-vect-stmts.c (vect_is_simple_use): Detect in-BB
+	externals for basic-block vectorization.
+
 2015-04-28  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR target/63503
