@@ -1,5 +1,13 @@
 2015-04-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50800
+	* tree.c (strip_typedefs): Add remove_attributes parm.
+	(strip_typedefs_expr): Likewise.
+	(apply_identity_attributes): New subroutine of strip_typedefs.
+	* pt.c (canonicalize_type_argument): Let strip_typedefs handle attrs.
+	(convert_nontype_argument, unify): Likewise.
+	* cp-tree.h: Adjust.
+
 	PR c++/65734
 	* class.c (fixup_attribute_variants): Respect TYPE_USER_ALIGN.
 

@@ -24,5 +24,5 @@ void f (T t) { }		// { dg-warning "mangled name" }
 
 int main()
 {
-  f (A<__m128>::t);
+  f (A<__v4sf>::t);
 }
