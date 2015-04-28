@@ -148,6 +148,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _StateIdT
     _NFA<_TraitsT>::_M_insert_backref(size_t __index)
     {
+      if (this->_M_flags & regex_constants::__polynomial)
+	__throw_regex_error(regex_constants::error_complexity);
       // To figure out whether a backref is valid, a stack is used to store
       // unfinished sub-expressions. For example, when parsing
       // "(a(b)(c\\1(d)))" at '\\1', _M_subexpr_count is 3, indicating that 3

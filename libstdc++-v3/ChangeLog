@@ -1,3 +1,15 @@
+2015-04-28  Tim Shen  <timshen@google.com>
+
+	* include/bits/regex.tcc: Handle regex_constants::__polynomial.
+	* include/bits/regex_automaton.tcc: Throw exception when parsing
+	back-reference with flag __polynomial.
+	* include/bits/regex_constants.h: Add extension flag
+	syntax_option_type __polynomial.
+	* bits/regex_executor.tcc: Still let BFS process ECMAScript.
+	Alternative operation will be fixed in the coming refactoring.
+	* testsuite/28_regex/algorithms/regex_search/61424.cc: Turn
+	loose match_search_debug to use DFS only.
+
 2015-04-27  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR libstdc++/65909

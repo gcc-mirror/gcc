@@ -382,8 +382,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	case _S_opcode_alternative:
 	  if (_M_nfa._M_flags & regex_constants::ECMAScript)
 	    {
-	      // TODO: Let BFS support ECMAScript's alternative operation.
-	      _GLIBCXX_DEBUG_ASSERT(__dfs_mode);
+	      // TODO: Fix BFS support. It is wrong.
 	      _M_dfs(__match_mode, __state._M_alt);
 	      // Pick lhs if it matches. Only try rhs if it doesn't.
 	      if (!_M_has_sol)
