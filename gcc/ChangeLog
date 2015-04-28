@@ -1,3 +1,13 @@
+2015-04-28  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (Declaring Attributes of Functions): Split into
+	subsections by target.  Alphabetize the table of common attributes.
+	Rewrite some of the introductory text to reflect the new structure.
+	Update some cross-references to point to the new subsections.
+	(Attribute Syntax): Put paragraph about "__" naming here.  Remove
+	duplicate copies in the discussion of function, label, and type
+	attributes.
+
 2015-04-28  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR bootstrap/65910

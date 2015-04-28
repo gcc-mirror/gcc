@@ -2147,62 +2147,83 @@ the enclosing block.
 @section Declaring Attributes of Functions
 @cindex function attributes
 @cindex declaring attributes of functions
-@cindex functions that never return
-@cindex functions that return more than once
-@cindex functions that have no side effects
-@cindex functions in arbitrary sections
-@cindex functions that behave like malloc
 @cindex @code{volatile} applied to function
 @cindex @code{const} applied to function
-@cindex functions with @code{printf}, @code{scanf}, @code{strftime} or @code{strfmon} style arguments
-@cindex functions with non-null pointer arguments
-@cindex functions that are passed arguments in registers on x86-32
-@cindex functions that pop the argument stack on x86-32
-@cindex functions that do not pop the argument stack on x86-32
-@cindex functions that have different compilation options on x86-32
-@cindex functions that have different optimization options
-@cindex functions that are dynamically resolved
 
-In GNU C, you declare certain things about functions called in your program
-which help the compiler optimize function calls and check your code more
-carefully.
+In GNU C, you can use function attributes to declare certain things
+about functions called in your program which help the compiler
+optimize calls and check your code more carefully.  For example, you
+can use attributes to declare that a function never returns
+(@code{noreturn}), returns a value depending only on its arguments
+(@code{pure}), or has @code{printf}-style arguments (@code{format}).
 
-The keyword @code{__attribute__} allows you to specify special
-attributes when making a declaration.  This keyword is followed by an
-attribute specification inside double parentheses.  The following
-attributes are currently defined for functions on all targets:
-@code{aligned}, @code{alloc_size}, @code{alloc_align}, @code{assume_aligned},
-@code{noreturn}, @code{returns_twice}, @code{noinline}, @code{noclone},
-@code{no_icf},
-@code{always_inline}, @code{flatten}, @code{pure}, @code{const},
-@code{nothrow}, @code{sentinel}, @code{format}, @code{format_arg},
-@code{no_instrument_function}, @code{no_split_stack},
-@code{section}, @code{constructor},
-@code{destructor}, @code{used}, @code{unused}, @code{deprecated},
-@code{weak}, @code{malloc}, @code{alias}, @code{ifunc},
-@code{warn_unused_result}, @code{nonnull},
-@code{returns_nonnull}, @code{gnu_inline},
-@code{externally_visible}, @code{hot}, @code{cold}, @code{artificial},
-@code{no_sanitize_address}, @code{no_address_safety_analysis},
-@code{no_sanitize_thread},
-@code{no_sanitize_undefined}, @code{no_reorder}, @code{bnd_legacy},
-@code{bnd_instrument}, @code{stack_protect},
-@code{error} and @code{warning}.
-Several other attributes are defined for functions on particular
-target systems.  Other attributes, including @code{section} are
-supported for variables declarations (@pxref{Variable Attributes}),
-labels (@pxref{Label Attributes})
-and for types (@pxref{Type Attributes}).
+You can also use attributes to control memory placement, code
+generation options or call/return conventions within the function
+being annotated.  Many of these attributes are target-specific.  For
+example, many targets support attributes for defining interrupt
+handler functions, which typically must follow special register usage
+and return conventions.
 
+Function attributes are introduced by the @code{__attribute__} keyword
+on a declaration, followed by an attribute specification inside double
+parentheses.  You can specify multiple attributes in a declaration by
+separating them by commas within the double parentheses or by
+immediately following an attribute declaration with another attribute
+declaration.  @xref{Attribute Syntax}, for the exact rules on
+attribute syntax and placement.
+
+GCC also supports attributes on
+variable declarations (@pxref{Variable Attributes}),
+labels (@pxref{Label Attributes}),
+and types (@pxref{Type Attributes}).
+
+There is some overlap between the purposes of attributes and pragmas
+(@pxref{Pragmas,,Pragmas Accepted by GCC}).  It has been
+found convenient to use @code{__attribute__} to achieve a natural
+attachment of attributes to their corresponding declarations, whereas
+@code{#pragma} is of use for compatibility with other compilers
+or constructs that do not naturally form part of the grammar.
+
+In addition to the attributes documented here,
 GCC plugins may provide their own attributes.
 
-You may also specify attributes with @samp{__} preceding and following
-each keyword.  This allows you to use them in header files without
-being concerned about a possible macro of the same name.  For example,
-you may use @code{__noreturn__} instead of @code{noreturn}.
+@menu
+* Common Function Attributes::
+* ARC Function Attributes::
+* ARM Function Attributes::
+* AVR Function Attributes::
+* Blackfin Function Attributes::
+* CR16 Function Attributes::
+* Epiphany Function Attributes::
+* H8/300 Function Attributes::
+* IA-64 Function Attributes::
+* M32C Function Attributes::
+* M32R/D Function Attributes::
+* m68k Function Attributes::
+* MCORE Function Attributes::
+* MeP Function Attributes::
+* MicroBlaze Function Attributes::
+* Microsoft Windows Function Attributes::
+* MIPS Function Attributes::
+* MSP430 Function Attributes::
+* NDS32 Function Attributes::
+* Nios II Function Attributes::
+* PowerPC Function Attributes::
+* RL78 Function Attributes::
+* RX Function Attributes::
+* S/390 Function Attributes::
+* SH Function Attributes::
+* SPU Function Attributes::
+* Symbian OS Function Attributes::
+* Visium Function Attributes::
+* x86 Function Attributes::
+* Xstormy16 Function Attributes::
+@end menu
 
-@xref{Attribute Syntax}, for details of the exact syntax for using
-attributes.
+@node Common Function Attributes
+@subsection Common Function Attributes
+
+The following attributes are supported on most targets.
 
 @table @code
 @c Keep this table alphabetized by attribute name.  Treat _ as space.
@@ -2222,7 +2243,8 @@ defines @samp{f} to be a weak alias for @samp{__f}.  In C++, the
 mangled name for the target must be used.  It is an error if @samp{__f}
 is not defined in the same translation unit.
 
-Not all target machines support this attribute.
+This attribute requires assembler and object file support,
+and may not be available on all targets.
 
 @item aligned (@var{alignment})
 @cindex @code{aligned} function attribute
@@ -2244,6 +2266,27 @@ further information.
 
 The @code{aligned} attribute can also be used for variables and fields
 (@pxref{Variable Attributes}.)
+
+@item alloc_align
+@cindex @code{alloc_align} function attribute
+The @code{alloc_align} attribute is used to tell the compiler that the
+function return value points to memory, where the returned pointer minimum
+alignment is given by one of the functions parameters.  GCC uses this
+information to improve pointer alignment analysis.
+
+The function parameter denoting the allocated alignment is specified by
+one integer argument, whose number is the argument of the attribute.
+Argument numbering starts at one.
+
+For instance,
+
+@smallexample
+void* my_memalign(size_t, size_t) __attribute__((alloc_align(1)))
+@end smallexample
+
+@noindent
+declares that @code{my_memalign} returns memory with minimum alignment
+given by parameter 1.
 
 @item alloc_size
 @cindex @code{alloc_size} function attribute
@@ -2270,26 +2313,23 @@ declares that @code{my_calloc} returns memory of the size given by
 the product of parameter 1 and 2 and that @code{my_realloc} returns memory
 of the size given by parameter 2.
 
-@item alloc_align
-@cindex @code{alloc_align} function attribute
-The @code{alloc_align} attribute is used to tell the compiler that the
-function return value points to memory, where the returned pointer minimum
-alignment is given by one of the functions parameters.  GCC uses this
-information to improve pointer alignment analysis.
+@item always_inline
+@cindex @code{always_inline} function attribute
+Generally, functions are not inlined unless optimization is specified.
+For functions declared inline, this attribute inlines the function
+independent of any restrictions that otherwise apply to inlining.
+Failure to inline such a function is diagnosed as an error.
+Note that if such a function is called indirectly the compiler may
+or may not inline it depending on optimization level and a failure
+to inline an indirect call may or may not be diagnosed.
 
-The function parameter denoting the allocated alignment is specified by
-one integer argument, whose number is the argument of the attribute.
-Argument numbering starts at one.
-
-For instance,
-
-@smallexample
-void* my_memalign(size_t, size_t) __attribute__((alloc_align(1)))
-@end smallexample
-
-@noindent
-declares that @code{my_memalign} returns memory with minimum alignment
-given by parameter 1.
+@item artificial
+@cindex @code{artificial} function attribute
+This attribute is useful for small inline wrappers that if possible
+should appear during debugging as a unit.  Depending on the debug
+info format it either means marking the function as artificial
+or using the caller location for all instructions within the inlined
+body.
 
 @item assume_aligned
 @cindex @code{assume_aligned} function attribute
@@ -2310,110 +2350,37 @@ declares that @code{my_alloc1} returns 16-byte aligned pointer and
 that @code{my_alloc2} returns a pointer whose value modulo 32 is equal
 to 8.
 
-@item always_inline
-@cindex @code{always_inline} function attribute
-Generally, functions are not inlined unless optimization is specified.
-For functions declared inline, this attribute inlines the function
-independent of any restrictions that otherwise apply to inlining.
-Failure to inline such a function is diagnosed as an error.
-Note that if such a function is called indirectly the compiler may
-or may not inline it depending on optimization level and a failure
-to inline an indirect call may or may not be diagnosed.
+@item bnd_instrument
+@cindex @code{bnd_instrument} function attribute
+The @code{bnd_instrument} attribute on functions is used to inform the
+compiler that the function should be instrumented when compiled
+with the @option{-fchkp-instrument-marked-only} option.
 
-@item gnu_inline
-@cindex @code{gnu_inline} function attribute
-This attribute should be used with a function that is also declared
-with the @code{inline} keyword.  It directs GCC to treat the function
-as if it were defined in gnu90 mode even when compiling in C99 or
-gnu99 mode.
+@item bnd_legacy
+@cindex @code{bnd_legacy} function attribute
+@cindex Pointer Bounds Checker attributes
+The @code{bnd_legacy} attribute on functions is used to inform the
+compiler that the function should not be instrumented when compiled
+with the @option{-fcheck-pointer-bounds} option.
 
-If the function is declared @code{extern}, then this definition of the
-function is used only for inlining.  In no case is the function
-compiled as a standalone function, not even if you take its address
-explicitly.  Such an address becomes an external reference, as if you
-had only declared the function, and had not defined it.  This has
-almost the effect of a macro.  The way to use this is to put a
-function definition in a header file with this attribute, and put
-another copy of the function, without @code{extern}, in a library
-file.  The definition in the header file causes most calls to the
-function to be inlined.  If any uses of the function remain, they
-refer to the single copy in the library.  Note that the two
-definitions of the functions need not be precisely the same, although
-if they do not have the same effect your program may behave oddly.
+@item cold
+@cindex @code{cold} function attribute
+The @code{cold} attribute on functions is used to inform the compiler that
+the function is unlikely to be executed.  The function is optimized for
+size rather than speed and on many targets it is placed into a special
+subsection of the text section so all cold functions appear close together,
+improving code locality of non-cold parts of program.  The paths leading
+to calls of cold functions within code are marked as unlikely by the branch
+prediction mechanism.  It is thus useful to mark functions used to handle
+unlikely conditions, such as @code{perror}, as cold to improve optimization
+of hot functions that do call marked functions in rare occasions.
 
-In C, if the function is neither @code{extern} nor @code{static}, then
-the function is compiled as a standalone function, as well as being
-inlined where possible.
-
-This is how GCC traditionally handled functions declared
-@code{inline}.  Since ISO C99 specifies a different semantics for
-@code{inline}, this function attribute is provided as a transition
-measure and as a useful feature in its own right.  This attribute is
-available in GCC 4.1.3 and later.  It is available if either of the
-preprocessor macros @code{__GNUC_GNU_INLINE__} or
-@code{__GNUC_STDC_INLINE__} are defined.  @xref{Inline,,An Inline
-Function is As Fast As a Macro}.
-
-In C++, this attribute does not depend on @code{extern} in any way,
-but it still requires the @code{inline} keyword to enable its special
-behavior.
-
-@item artificial
-@cindex @code{artificial} function attribute
-This attribute is useful for small inline wrappers that if possible
-should appear during debugging as a unit.  Depending on the debug
-info format it either means marking the function as artificial
-or using the caller location for all instructions within the inlined
-body.
-
-@item bank_switch
-@cindex @code{bank_switch} function attribute, M32C
-When added to an interrupt handler with the M32C port, causes the
-prologue and epilogue to use bank switching to preserve the registers
-rather than saving them on the stack.
-
-@item flatten
-@cindex @code{flatten} function attribute
-Generally, inlining into a function is limited.  For a function marked with
-this attribute, every call inside this function is inlined, if possible.
-Whether the function itself is considered for inlining depends on its size and
-the current inlining parameters.
-
-@item error ("@var{message}")
-@cindex @code{error} function attribute
-If this attribute is used on a function declaration and a call to such a function
-is not eliminated through dead code elimination or other optimizations, an error
-that includes @var{message} is diagnosed.  This is useful
-for compile-time checking, especially together with @code{__builtin_constant_p}
-and inline functions where checking the inline function arguments is not
-possible through @code{extern char [(condition) ? 1 : -1];} tricks.
-While it is possible to leave the function undefined and thus invoke
-a link failure, when using this attribute the problem is diagnosed
-earlier and with exact location of the call even in presence of inline
-functions or when not emitting debugging information.
-
-@item warning ("@var{message}")
-@cindex @code{warning} function attribute
-If this attribute is used on a function declaration and a call to such a function
-is not eliminated through dead code elimination or other optimizations, a warning
-that includes @var{message} is diagnosed.  This is useful
-for compile-time checking, especially together with @code{__builtin_constant_p}
-and inline functions.  While it is possible to define the function with
-a message in @code{.gnu.warning*} section, when using this attribute the problem
-is diagnosed earlier and with exact location of the call even in presence
-of inline functions or when not emitting debugging information.
-
-@item cdecl
-@cindex @code{cdecl} function attribute, x86-32
-@cindex functions that do pop the argument stack on x86-32
-@opindex mrtd
-On the x86-32 targets, the @code{cdecl} attribute causes the compiler to
-assume that the calling function pops off the stack space used to
-pass arguments.  This is
-useful to override the effects of the @option{-mrtd} switch.
+When profile feedback is available, via @option{-fprofile-use}, cold functions
+are automatically detected and this attribute is ignored.
 
 @item const
 @cindex @code{const} function attribute
+@cindex functions that have no side effects
 Many functions do not examine any values except their arguments, and
 have no effects except the return value.  Basically this is just slightly
 more strict class than the @code{pure} attribute below, since function is not
@@ -2477,117 +2444,25 @@ present.
 The @code{deprecated} attribute can also be used for variables and
 types (@pxref{Variable Attributes}, @pxref{Type Attributes}.)
 
-@item disinterrupt
-@cindex @code{disinterrupt} function attribute, Epiphany
-@cindex @code{disinterrupt} function attribute, MeP
-On Epiphany and MeP targets, this attribute causes the compiler to emit
-instructions to disable interrupts for the duration of the given
-function.
+@item error ("@var{message}")
+@itemx warning ("@var{message}")
+@cindex @code{error} function attribute
+@cindex @code{warning} function attribute
+If the @code{error} or @code{warning} attribute 
+is used on a function declaration and a call to such a function
+is not eliminated through dead code elimination or other optimizations, 
+an error or warning (respectively) that includes @var{message} is diagnosed.  
+This is useful
+for compile-time checking, especially together with @code{__builtin_constant_p}
+and inline functions where checking the inline function arguments is not
+possible through @code{extern char [(condition) ? 1 : -1];} tricks.
 
-@item dllexport
-@cindex @code{dllexport} function attribute
-@cindex @code{__declspec(dllexport)}
-On Microsoft Windows targets and Symbian OS targets the
-@code{dllexport} attribute causes the compiler to provide a global
-pointer to a pointer in a DLL, so that it can be referenced with the
-@code{dllimport} attribute.  On Microsoft Windows targets, the pointer
-name is formed by combining @code{_imp__} and the function or variable
-name.
-
-You can use @code{__declspec(dllexport)} as a synonym for
-@code{__attribute__ ((dllexport))} for compatibility with other
-compilers.
-
-On systems that support the @code{visibility} attribute, this
-attribute also implies ``default'' visibility.  It is an error to
-explicitly specify any other visibility.
-
-GCC's default behavior is to emit all inline functions with the
-@code{dllexport} attribute.  Since this can cause object file-size bloat,
-you can use @option{-fno-keep-inline-dllexport}, which tells GCC to
-ignore the attribute for inlined functions unless the 
-@option{-fkeep-inline-functions} flag is used instead.
-
-The attribute is ignored for undefined symbols.
-
-When applied to C++ classes, the attribute marks defined non-inlined
-member functions and static data members as exports.  Static consts
-initialized in-class are not marked unless they are also defined
-out-of-class.
-
-For Microsoft Windows targets there are alternative methods for
-including the symbol in the DLL's export table such as using a
-@file{.def} file with an @code{EXPORTS} section or, with GNU ld, using
-the @option{--export-all} linker flag.
-
-@item dllimport
-@cindex @code{dllimport} function attribute
-@cindex @code{__declspec(dllimport)}
-On Microsoft Windows and Symbian OS targets, the @code{dllimport}
-attribute causes the compiler to reference a function or variable via
-a global pointer to a pointer that is set up by the DLL exporting the
-symbol.  The attribute implies @code{extern}.  On Microsoft Windows
-targets, the pointer name is formed by combining @code{_imp__} and the
-function or variable name.
-
-You can use @code{__declspec(dllimport)} as a synonym for
-@code{__attribute__ ((dllimport))} for compatibility with other
-compilers.
-
-On systems that support the @code{visibility} attribute, this
-attribute also implies ``default'' visibility.  It is an error to
-explicitly specify any other visibility.
-
-Currently, the attribute is ignored for inlined functions.  If the
-attribute is applied to a symbol @emph{definition}, an error is reported.
-If a symbol previously declared @code{dllimport} is later defined, the
-attribute is ignored in subsequent references, and a warning is emitted.
-The attribute is also overridden by a subsequent declaration as
-@code{dllexport}.
-
-When applied to C++ classes, the attribute marks non-inlined
-member functions and static data members as imports.  However, the
-attribute is ignored for virtual methods to allow creation of vtables
-using thunks.
-
-On the SH Symbian OS target the @code{dllimport} attribute also has
-another affect---it can cause the vtable and run-time type information
-for a class to be exported.  This happens when the class has a
-dllimported constructor or a non-inline, non-pure virtual function
-and, for either of those two conditions, the class also has an inline
-constructor or destructor and has a key function that is defined in
-the current translation unit.
-
-For Microsoft Windows targets the use of the @code{dllimport}
-attribute on functions is not necessary, but provides a small
-performance benefit by eliminating a thunk in the DLL@.  The use of the
-@code{dllimport} attribute on imported variables can be avoided by passing the
-@option{--enable-auto-import} switch to the GNU linker.  As with
-functions, using the attribute for a variable eliminates a thunk in
-the DLL@.
-
-One drawback to using this attribute is that a pointer to a
-@emph{variable} marked as @code{dllimport} cannot be used as a constant
-address. However, a pointer to a @emph{function} with the
-@code{dllimport} attribute can be used as a constant initializer; in
-this case, the address of a stub function in the import lib is
-referenced.  On Microsoft Windows targets, the attribute can be disabled
-for functions by setting the @option{-mnop-fun-dllimport} flag.
-
-@item exception
-@cindex @code{exception} function attribute
-@cindex exception handler functions, NDS32
-Use this attribute on the NDS32 target to indicate that the specified function
-is an exception handler.  The compiler will generate corresponding sections
-for use in an exception handler.
-
-@item exception_handler
-@cindex @code{exception_handler} function attribute
-@cindex exception handler functions, Blackfin
-Use this attribute on the Blackfin to indicate that the specified function
-is an exception handler.  The compiler generates function entry and
-exit sequences suitable for use in an exception handler when this
-attribute is present.
+While it is possible to leave the function undefined and thus invoke
+a link failure (to define the function with
+a message in @code{.gnu.warning*} section),
+when using these attributes the problem is diagnosed
+earlier and with exact location of the call even in presence of inline
+functions or when not emitting debugging information.
 
 @item externally_visible
 @cindex @code{externally_visible} function attribute
@@ -2604,46 +2479,16 @@ produced by @command{gold}.
 For other linkers that cannot generate resolution file,
 explicit @code{externally_visible} attributes are still necessary.
 
-@item far
-@cindex @code{far} function attribute
-
-On MeP targets this causes the compiler to use a calling convention
-that assumes the called function is too far away for the built-in
-addressing modes.
-
-@item fast_interrupt
-@cindex @code{fast_interrupt} function attribute, M32C
-@cindex @code{fast_interrupt} function attribute, RX
-Use this attribute on the M32C and RX ports to indicate that the specified
-function is a fast interrupt handler.  This is just like the
-@code{interrupt} attribute, except that @code{freit} is used to return
-instead of @code{reit}.
-
-@item fastcall
-@cindex @code{fastcall} function attribute, x86-32
-@cindex functions that pop the argument stack on x86-32
-On x86-32 targets, the @code{fastcall} attribute causes the compiler to
-pass the first argument (if of integral type) in the register ECX and
-the second argument (if of integral type) in the register EDX@.  Subsequent
-and other typed arguments are passed on the stack.  The called function
-pops the arguments off the stack.  If the number of arguments is variable all
-arguments are pushed on the stack.
-
-@item thiscall
-@cindex @code{thiscall} function attribute, x86-32
-@cindex functions that pop the argument stack on x86-32
-On x86-32 targets, the @code{thiscall} attribute causes the compiler to
-pass the first argument (if of integral type) in the register ECX.
-Subsequent and other typed arguments are passed on the stack. The called
-function pops the arguments off the stack.
-If the number of arguments is variable all arguments are pushed on the
-stack.
-The @code{thiscall} attribute is intended for C++ non-static member functions.
-As a GCC extension, this calling convention can be used for C functions
-and for static member methods.
+@item flatten
+@cindex @code{flatten} function attribute
+Generally, inlining into a function is limited.  For a function marked with
+this attribute, every call inside this function is inlined, if possible.
+Whether the function itself is considered for inlining depends on its size and
+the current inlining parameters.
 
 @item format (@var{archetype}, @var{string-index}, @var{first-to-check})
 @cindex @code{format} function attribute
+@cindex functions with @code{printf}, @code{scanf}, @code{strftime} or @code{strfmon} style arguments
 @opindex Wformat
 The @code{format} attribute specifies that a function takes @code{printf},
 @code{scanf}, @code{strftime} or @code{strfmon} style arguments that
@@ -2771,72 +2616,59 @@ The target may also allow additional types in @code{format-arg} attributes.
 @xref{Target Format Checks,,Format Checks Specific to Particular
 Target Machines}.
 
-@item function_vector
-@cindex @code{function_vector} function attribute, H8/300
-@cindex @code{function_vector} function attribute, M16C/M32C
-@cindex @code{function_vector} function attribute, SH
-@cindex calling functions through the function vector on H8/300, M16C, M32C and SH2A processors
-Use this attribute on the H8/300, H8/300H, and H8S to indicate that the specified
-function should be called through the function vector.  Calling a
-function through the function vector reduces code size, however;
-the function vector has a limited size (maximum 128 entries on the H8/300
-and 64 entries on the H8/300H and H8S) and shares space with the interrupt vector.
+@item gnu_inline
+@cindex @code{gnu_inline} function attribute
+This attribute should be used with a function that is also declared
+with the @code{inline} keyword.  It directs GCC to treat the function
+as if it were defined in gnu90 mode even when compiling in C99 or
+gnu99 mode.
 
-On SH2A targets, this attribute declares a function to be called using the
-TBR relative addressing mode.  The argument to this attribute is the entry
-number of the same function in a vector table containing all the TBR
-relative addressable functions.  For correct operation the TBR must be setup
-accordingly to point to the start of the vector table before any functions with
-this attribute are invoked.  Usually a good place to do the initialization is
-the startup routine.  The TBR relative vector table can have at max 256 function
-entries.  The jumps to these functions are generated using a SH2A specific,
-non delayed branch instruction JSR/N @@(disp8,TBR).  You must use GAS and GLD
-from GNU binutils version 2.7 or later for this attribute to work correctly.
+If the function is declared @code{extern}, then this definition of the
+function is used only for inlining.  In no case is the function
+compiled as a standalone function, not even if you take its address
+explicitly.  Such an address becomes an external reference, as if you
+had only declared the function, and had not defined it.  This has
+almost the effect of a macro.  The way to use this is to put a
+function definition in a header file with this attribute, and put
+another copy of the function, without @code{extern}, in a library
+file.  The definition in the header file causes most calls to the
+function to be inlined.  If any uses of the function remain, they
+refer to the single copy in the library.  Note that the two
+definitions of the functions need not be precisely the same, although
+if they do not have the same effect your program may behave oddly.
 
-Please refer the example of M16C target, to see the use of this
-attribute while declaring a function,
+In C, if the function is neither @code{extern} nor @code{static}, then
+the function is compiled as a standalone function, as well as being
+inlined where possible.
 
-In an application, for a function being called once, this attribute
-saves at least 8 bytes of code; and if other successive calls are being
-made to the same function, it saves 2 bytes of code per each of these
-calls.
+This is how GCC traditionally handled functions declared
+@code{inline}.  Since ISO C99 specifies a different semantics for
+@code{inline}, this function attribute is provided as a transition
+measure and as a useful feature in its own right.  This attribute is
+available in GCC 4.1.3 and later.  It is available if either of the
+preprocessor macros @code{__GNUC_GNU_INLINE__} or
+@code{__GNUC_STDC_INLINE__} are defined.  @xref{Inline,,An Inline
+Function is As Fast As a Macro}.
 
-On M16C/M32C targets, the @code{function_vector} attribute declares a
-special page subroutine call function. Use of this attribute reduces
-the code size by 2 bytes for each call generated to the
-subroutine. The argument to the attribute is the vector number entry
-from the special page vector table which contains the 16 low-order
-bits of the subroutine's entry address. Each vector table has special
-page number (18 to 255) that is used in @code{jsrs} instructions.
-Jump addresses of the routines are generated by adding 0x0F0000 (in
-case of M16C targets) or 0xFF0000 (in case of M32C targets), to the
-2-byte addresses set in the vector table. Therefore you need to ensure
-that all the special page vector routines should get mapped within the
-address range 0x0F0000 to 0x0FFFFF (for M16C) and 0xFF0000 to 0xFFFFFF
-(for M32C).
+In C++, this attribute does not depend on @code{extern} in any way,
+but it still requires the @code{inline} keyword to enable its special
+behavior.
 
-In the following example 2 bytes are saved for each call to
-function @code{foo}.
+@item hot
+@cindex @code{hot} function attribute
+The @code{hot} attribute on a function is used to inform the compiler that
+the function is a hot spot of the compiled program.  The function is
+optimized more aggressively and on many targets it is placed into a special
+subsection of the text section so all hot functions appear close together,
+improving locality.
 
-@smallexample
-void foo (void) __attribute__((function_vector(0x18)));
-void foo (void)
-@{
-@}
-
-void bar (void)
-@{
-    foo();
-@}
-@end smallexample
-
-If functions are defined in one file and are called in another file,
-then be sure to write this declaration in both files.
-
-This attribute is ignored for R8C target.
+When profile feedback is available, via @option{-fprofile-use}, hot functions
+are automatically detected and this attribute is ignored.
 
 @item ifunc ("@var{resolver}")
 @cindex @code{ifunc} function attribute
+@cindex indirect functions
+@cindex functions that are dynamically resolved
 The @code{ifunc} attribute is used to mark a function as an indirect
 function using the STT_GNU_IFUNC symbol type extension to the ELF
 standard.  This allows the resolution of the symbol value to be
@@ -2883,274 +2715,12 @@ Indirect functions cannot be weak.  Binutils version 2.20.1 or higher
 and GNU C Library version 2.11.1 are required to use this feature.
 
 @item interrupt
-@cindex @code{interrupt} function attribute, ARC
-@cindex @code{interrupt} function attribute, ARM
-@cindex @code{interrupt} function attribute, AVR
-@cindex @code{interrupt} function attribute, CR16
-@cindex @code{interrupt} function attribute, Epiphany
-@cindex @code{interrupt} function attribute, M32C
-@cindex @code{interrupt} function attribute, M32R/D
-@cindex @code{interrupt} function attribute, m68k
-@cindex @code{interrupt} function attribute, MeP
-@cindex @code{interrupt} function attribute, MIPS
-@cindex @code{interrupt} function attribute, MSP430
-@cindex @code{interrupt} function attribute, NDS32
-@cindex @code{interrupt} function attribute, RL78
-@cindex @code{interrupt} function attribute, RX
-@cindex @code{interrupt} function attribute, Visium
-@cindex @code{interrupt} function attribute, Xstormy16
-Use this attribute on the ARC, ARM, AVR, CR16, Epiphany, M32C, M32R/D,
-m68k, MeP, MIPS, MSP430, NDS32, RL78, RX, Visium and Xstormy16 ports to indicate
-that the specified function is an interrupt handler.  The compiler generates
-function entry and exit sequences suitable for use in an interrupt handler
-when this attribute is present.  With Epiphany targets it may also generate
-a special section with code to initialize the interrupt vector table.
-
-Note, interrupt handlers for the Blackfin, H8/300, H8/300H, H8S, MicroBlaze,
-and SH processors can be specified via the @code{interrupt_handler} attribute.
-
-Note, on the ARC, you must specify the kind of interrupt to be handled
-in a parameter to the interrupt attribute like this:
-
-@smallexample
-void f () __attribute__ ((interrupt ("ilink1")));
-@end smallexample
-
-Permissible values for this parameter are: @w{@code{ilink1}} and
-@w{@code{ilink2}}.
-
-Note, on the AVR, the hardware globally disables interrupts when an
-interrupt is executed.  The first instruction of an interrupt handler
-declared with this attribute is a @code{SEI} instruction to
-re-enable interrupts.  See also the @code{signal} function attribute
-that does not insert a @code{SEI} instruction.  If both @code{signal} and
-@code{interrupt} are specified for the same function, @code{signal}
-is silently ignored.
-
-Note, for the ARM, you can specify the kind of interrupt to be handled by
-adding an optional parameter to the interrupt attribute like this:
-
-@smallexample
-void f () __attribute__ ((interrupt ("IRQ")));
-@end smallexample
-
-@noindent
-Permissible values for this parameter are: @code{IRQ}, @code{FIQ},
-@code{SWI}, @code{ABORT} and @code{UNDEF}.
-
-On ARMv7-M the interrupt type is ignored, and the attribute means the function
-may be called with a word-aligned stack pointer.
-
-Note, for the MSP430 you can provide an argument to the interrupt
-attribute which specifies a name or number.  If the argument is a
-number it indicates the slot in the interrupt vector table (0 - 31) to
-which this handler should be assigned.  If the argument is a name it
-is treated as a symbolic name for the vector slot.  These names should
-match up with appropriate entries in the linker script.  By default
-the names @code{watchdog} for vector 26, @code{nmi} for vector 30 and
-@code{reset} for vector 31 are recognized.
-
-You can also use the following function attributes to modify how
-normal functions interact with interrupt functions:
-
-@table @code
-@item critical
-@cindex @code{critical} function attribute, MSP430
-Critical functions disable interrupts upon entry and restore the
-previous interrupt state upon exit.  Critical functions cannot also
-have the @code{naked} or @code{reentrant} attributes.  They can have
-the @code{interrupt} attribute.
-
-@item reentrant
-@cindex @code{reentrant} function attribute, MSP430
-Reentrant functions disable interrupts upon entry and enable them
-upon exit.  Reentrant functions cannot also have the @code{naked}
-or @code{critical} attributes.  They can have the @code{interrupt}
-attribute.
-
-@item wakeup
-@cindex @code{wakeup} function attribute, MSP430
-This attribute only applies to interrupt functions.  It is silently
-ignored if applied to a non-interrupt function.  A wakeup interrupt
-function will rouse the processor from any low-power state that it
-might be in when the function exits.
-
-@end table
-
-On Epiphany targets one or more optional parameters can be added like this:
-
-@smallexample
-void __attribute__ ((interrupt ("dma0, dma1"))) universal_dma_handler ();
-@end smallexample
-
-Permissible values for these parameters are: @w{@code{reset}},
-@w{@code{software_exception}}, @w{@code{page_miss}},
-@w{@code{timer0}}, @w{@code{timer1}}, @w{@code{message}},
-@w{@code{dma0}}, @w{@code{dma1}}, @w{@code{wand}} and @w{@code{swi}}.
-Multiple parameters indicate that multiple entries in the interrupt
-vector table should be initialized for this function, i.e.@: for each
-parameter @w{@var{name}}, a jump to the function is emitted in
-the section @w{ivt_entry_@var{name}}.  The parameter(s) may be omitted
-entirely, in which case no interrupt vector table entry is provided.
-
-Note, on Epiphany targets, interrupts are enabled inside the function
-unless the @code{disinterrupt} attribute is also specified.
-
-On Epiphany targets, you can also use the following attribute to
-modify the behavior of an interrupt handler:
-@table @code
-@item forwarder_section
-@cindex @code{forwarder_section} function attribute, Epiphany
-The interrupt handler may be in external memory which cannot be
-reached by a branch instruction, so generate a local memory trampoline
-to transfer control.  The single parameter identifies the section where
-the trampoline is placed.
-@end table
-
-The following examples are all valid uses of these attributes on
-Epiphany targets:
-@smallexample
-void __attribute__ ((interrupt)) universal_handler ();
-void __attribute__ ((interrupt ("dma1"))) dma1_handler ();
-void __attribute__ ((interrupt ("dma0, dma1"))) universal_dma_handler ();
-void __attribute__ ((interrupt ("timer0"), disinterrupt))
-  fast_timer_handler ();
-void __attribute__ ((interrupt ("dma0, dma1"), forwarder_section ("tramp")))
-  external_dma_handler ();
-@end smallexample
-
-On MIPS targets, you can use the following attributes to modify the behavior
-of an interrupt handler:
-@table @code
-@item use_shadow_register_set
-@cindex @code{use_shadow_register_set} function attribute, MIPS
-Assume that the handler uses a shadow register set, instead of
-the main general-purpose registers.
-
-@item keep_interrupts_masked
-@cindex @code{keep_interrupts_masked} function attribute, MIPS
-Keep interrupts masked for the whole function.  Without this attribute,
-GCC tries to reenable interrupts for as much of the function as it can.
-
-@item use_debug_exception_return
-@cindex @code{use_debug_exception_return} function attribute, MIPS
-Return using the @code{deret} instruction.  Interrupt handlers that don't
-have this attribute return using @code{eret} instead.
-@end table
-
-You can use any combination of these attributes, as shown below:
-@smallexample
-void __attribute__ ((interrupt)) v0 ();
-void __attribute__ ((interrupt, use_shadow_register_set)) v1 ();
-void __attribute__ ((interrupt, keep_interrupts_masked)) v2 ();
-void __attribute__ ((interrupt, use_debug_exception_return)) v3 ();
-void __attribute__ ((interrupt, use_shadow_register_set,
-                     keep_interrupts_masked)) v4 ();
-void __attribute__ ((interrupt, use_shadow_register_set,
-                     use_debug_exception_return)) v5 ();
-void __attribute__ ((interrupt, keep_interrupts_masked,
-                     use_debug_exception_return)) v6 ();
-void __attribute__ ((interrupt, use_shadow_register_set,
-                     keep_interrupts_masked,
-                     use_debug_exception_return)) v7 ();
-@end smallexample
-
-On NDS32 target, this attribute indicates that the specified function
-is an interrupt handler.  The compiler generates corresponding sections
-for use in an interrupt handler.  You can use the following attributes
-to modify the behavior:
-@table @code
-@item nested
-@cindex @code{nested} function attribute, NDS32
-This interrupt service routine is interruptible.
-@item not_nested
-@cindex @code{not_nested} function attribute, NDS32
-This interrupt service routine is not interruptible.
-@item nested_ready
-@cindex @code{nested_ready} function attribute, NDS32
-This interrupt service routine is interruptible after @code{PSW.GIE}
-(global interrupt enable) is set.  This allows interrupt service routine to
-finish some short critical code before enabling interrupts.
-@item save_all
-@cindex @code{save_all} function attribute, NDS32
-The system will help save all registers into stack before entering
-interrupt handler.
-@item partial_save
-@cindex @code{partial_save} function attribute, NDS32
-The system will help save caller registers into stack before entering
-interrupt handler.
-@end table
-
-@cindex @code{brk_interrupt} function attribute, RL78
-On RL78, use @code{brk_interrupt} instead of @code{interrupt} for
-handlers intended to be used with the @code{BRK} opcode (i.e.@: those
-that must end with @code{RETB} instead of @code{RETI}).
-
-On RX targets, you may specify one or more vector numbers as arguments
-to the attribute, as well as naming an alternate table name.
-Parameters are handled sequentially, so one handler can be assigned to
-multiple entries in multiple tables.  One may also pass the magic
-string @code{"$default"} which causes the function to be used for any
-unfilled slots in the current table.
-
-This example shows a simple assignment of a function to one vector in
-the default table (note that preprocessor macros may be used for
-chip-specific symbolic vector names):
-@smallexample
-void __attribute__ ((interrupt (5))) txd1_handler ();
-@end smallexample
-
-This example assigns a function to two slots in the default table
-(using preprocessor macros defined elsewhere) and makes it the default
-for the @code{dct} table:
-@smallexample
-void __attribute__ ((interrupt (RXD1_VECT,RXD2_VECT,"dct","$default")))
-	txd1_handler ();
-@end smallexample
-
-@item interrupt_handler
-@cindex @code{interrupt_handler} function attribute, Blackfin
-@cindex @code{interrupt_handler} function attribute, m68k
-@cindex @code{interrupt_handler} function attribute, H8/300
-@cindex @code{interrupt_handler} function attribute, SH
-Use this attribute on the Blackfin, m68k, H8/300, H8/300H, H8S, and SH to
-indicate that the specified function is an interrupt handler.  The compiler
-generates function entry and exit sequences suitable for use in an
-interrupt handler when this attribute is present.
-
-@item interrupt_thread
-@cindex @code{interrupt_thread} function attribute, fido
-Use this attribute on fido, a subarchitecture of the m68k, to indicate
-that the specified function is an interrupt handler that is designed
-to run as a thread.  The compiler omits generate prologue/epilogue
-sequences and replaces the return instruction with a @code{sleep}
-instruction.  This attribute is available only on fido.
-
-@item isr
-@cindex @code{isr} function attribute, ARM
-Use this attribute on ARM to write Interrupt Service Routines. This is an
-alias to the @code{interrupt} attribute above.
-
-@item kspisusp
-@cindex @code{kspisusp} function attribute, Blackfin
-@cindex User stack pointer in interrupts on the Blackfin
-When used together with @code{interrupt_handler}, @code{exception_handler}
-or @code{nmi_handler}, code is generated to load the stack pointer
-from the USP register in the function prologue.
-
-@item l1_text
-@cindex @code{l1_text} function attribute, Blackfin
-This attribute specifies a function to be placed into L1 Instruction
-SRAM@. The function is put into a specific section named @code{.l1.text}.
-With @option{-mfdpic}, function calls with a such function as the callee
-or caller uses inlined PLT.
-
-@item l2
-@cindex @code{l2} function attribute, Blackfin
-On the Blackfin, this attribute specifies a function to be placed into L2
-SRAM. The function is put into a specific section named
-@code{.l1.text}. With @option{-mfdpic}, callers of such functions use
-an inlined PLT.
+@itemx interrupt_handler
+Many GCC back ends support attributes to indicate that a function is
+an interrupt handler, which tells the compiler to generate function
+entry and exit sequences that differ from those from regular
+functions.  The exact syntax and behavior are target-specific;
+refer to the following subsections for details.
 
 @item leaf
 @cindex @code{leaf} function attribute
@@ -3177,79 +2747,10 @@ unit.  This is to allow easy merging of multiple compilation units into one,
 for example, by using the link-time optimization.  For this reason the
 attribute is not allowed on types to annotate indirect calls.
 
-@item long_call
-@itemx medium_call
-@itemx short_call
-@cindex @code{long_call} function attribute, ARC
-@cindex @code{long_call} function attribute, ARM
-@cindex @code{long_call} function attribute, Epiphany
-@cindex @code{medium_call} function attribute, ARC
-@cindex @code{short_call} function attribute, ARC
-@cindex @code{short_call} function attribute, ARM
-@cindex @code{short_call} function attribute, Epiphany
-@cindex indirect calls, ARC
-@cindex indirect calls, ARM
-@cindex indirect calls, Epiphany
-These attributes specify how a particular function is called on
-ARC, ARM and Epiphany - with @code{medium_call} being specific to ARC.
-These attributes override the
-@option{-mlong-calls} (@pxref{ARM Options} and @ref{ARC Options})
-and @option{-mmedium-calls} (@pxref{ARC Options})
-command-line switches and @code{#pragma long_calls} settings.  For ARM, the
-@code{long_call} attribute indicates that the function might be far
-away from the call site and require a different (more expensive)
-calling sequence.   The @code{short_call} attribute always places
-the offset to the function from the call site into the @samp{BL}
-instruction directly.
-
-For ARC, a function marked with the @code{long_call} attribute is
-always called using register-indirect jump-and-link instructions,
-thereby enabling the called function to be placed anywhere within the
-32-bit address space.  A function marked with the @code{medium_call}
-attribute will always be close enough to be called with an unconditional
-branch-and-link instruction, which has a 25-bit offset from
-the call site.  A function marked with the @code{short_call}
-attribute will always be close enough to be called with a conditional
-branch-and-link instruction, which has a 21-bit offset from
-the call site.
-
-@item longcall
-@itemx shortcall
-@cindex indirect calls, Blackfin
-@cindex indirect calls, PowerPC
-@cindex @code{longcall} function attribute, Blackfin
-@cindex @code{longcall} function attribute, PowerPC
-@cindex @code{shortcall} function attribute, Blackfin
-@cindex @code{shortcall} function attribute, PowerPC
-On Blackfin and PowerPC, the @code{longcall} attribute
-indicates that the function might be far away from the call site and
-require a different (more expensive) calling sequence.  The
-@code{shortcall} attribute indicates that the function is always close
-enough for the shorter calling sequence to be used.  These attributes
-override both the @option{-mlongcall} switch and, on the RS/6000 and
-PowerPC, the @code{#pragma longcall} setting.
-
-@xref{RS/6000 and PowerPC Options}, for more information on whether long
-calls are necessary.
-
-@item long_call
-@itemx near
-@itemx far
-@cindex indirect calls, MIPS
-@cindex @code{long_call} function attribute, MIPS
-@cindex @code{near} function attribute, MIPS
-@cindex @code{far} function attribute, MIPS
-These attributes specify how a particular function is called on MIPS@.
-The attributes override the @option{-mlong-calls} (@pxref{MIPS Options})
-command-line switch.  The @code{long_call} and @code{far} attributes are
-synonyms, and cause the compiler to always call
-the function by first loading its address into a register, and then using
-the contents of that register.  The @code{near} attribute has the opposite
-effect; it specifies that non-PIC calls should be made using the more
-efficient @code{jal} instruction.
 
 @item malloc
 @cindex @code{malloc} function attribute
+@cindex functions that behave like malloc
 This tells the compiler that a function is @code{malloc}-like, i.e.,
 that the pointer @var{P} returned by the function cannot alias any
 other pointer valid when the function returns, and moreover no
@@ -3261,166 +2762,10 @@ a pointer to uninitialized or zeroed-out storage.  However, functions
 like @code{realloc} do not have this property, as they can return a
 pointer to storage containing pointers.
 
-@item mips16
-@itemx nomips16
-@cindex @code{mips16} function attribute, MIPS
-@cindex @code{nomips16} function attribute, MIPS
-
-On MIPS targets, you can use the @code{mips16} and @code{nomips16}
-function attributes to locally select or turn off MIPS16 code generation.
-A function with the @code{mips16} attribute is emitted as MIPS16 code,
-while MIPS16 code generation is disabled for functions with the
-@code{nomips16} attribute.  These attributes override the
-@option{-mips16} and @option{-mno-mips16} options on the command line
-(@pxref{MIPS Options}).
-
-When compiling files containing mixed MIPS16 and non-MIPS16 code, the
-preprocessor symbol @code{__mips16} reflects the setting on the command line,
-not that within individual functions.  Mixed MIPS16 and non-MIPS16 code
-may interact badly with some GCC extensions such as @code{__builtin_apply}
-(@pxref{Constructing Calls}).
-
-@item micromips, MIPS
-@itemx nomicromips, MIPS
-@cindex @code{micromips} function attribute
-@cindex @code{nomicromips} function attribute
-
-On MIPS targets, you can use the @code{micromips} and @code{nomicromips}
-function attributes to locally select or turn off microMIPS code generation.
-A function with the @code{micromips} attribute is emitted as microMIPS code,
-while microMIPS code generation is disabled for functions with the
-@code{nomicromips} attribute.  These attributes override the
-@option{-mmicromips} and @option{-mno-micromips} options on the command line
-(@pxref{MIPS Options}).
-
-When compiling files containing mixed microMIPS and non-microMIPS code, the
-preprocessor symbol @code{__mips_micromips} reflects the setting on the
-command line,
-not that within individual functions.  Mixed microMIPS and non-microMIPS code
-may interact badly with some GCC extensions such as @code{__builtin_apply}
-(@pxref{Constructing Calls}).
-
-@item model (@var{model-name})
-@cindex @code{model} function attribute, M32R/D
-@cindex function addressability on the M32R/D
-
-On the M32R/D, use this attribute to set the addressability of an
-object, and of the code generated for a function.  The identifier
-@var{model-name} is one of @code{small}, @code{medium}, or
-@code{large}, representing each of the code models.
-
-Small model objects live in the lower 16MB of memory (so that their
-addresses can be loaded with the @code{ld24} instruction), and are
-callable with the @code{bl} instruction.
-
-Medium model objects may live anywhere in the 32-bit address space (the
-compiler generates @code{seth/add3} instructions to load their addresses),
-and are callable with the @code{bl} instruction.
-
-Large model objects may live anywhere in the 32-bit address space (the
-compiler generates @code{seth/add3} instructions to load their addresses),
-and may not be reachable with the @code{bl} instruction (the compiler
-generates the much slower @code{seth/add3/jl} instruction sequence).
-
-@item ms_abi
-@itemx sysv_abi
-@cindex @code{ms_abi} function attribute, x86
-@cindex @code{sysv_abi} function attribute, x86
-
-On 32-bit and 64-bit x86 targets, you can use an ABI attribute
-to indicate which calling convention should be used for a function.  The
-@code{ms_abi} attribute tells the compiler to use the Microsoft ABI,
-while the @code{sysv_abi} attribute tells the compiler to use the ABI
-used on GNU/Linux and other systems.  The default is to use the Microsoft ABI
-when targeting Windows.  On all other systems, the default is the x86/AMD ABI.
-
-Note, the @code{ms_abi} attribute for Microsoft Windows 64-bit targets currently
-requires the @option{-maccumulate-outgoing-args} option.
-
-@item callee_pop_aggregate_return (@var{number})
-@cindex @code{callee_pop_aggregate_return} function attribute, x86
-
-On x86-32 targets, you can use this attribute to control how
-aggregates are returned in memory.  If the caller is responsible for
-popping the hidden pointer together with the rest of the arguments, specify
-@var{number} equal to zero.  If callee is responsible for popping the
-hidden pointer, specify @var{number} equal to one.  
-
-The default x86-32 ABI assumes that the callee pops the
-stack for hidden pointer.  However, on x86-32 Microsoft Windows targets,
-the compiler assumes that the
-caller pops the stack for hidden pointer.
-
-@item ms_hook_prologue
-@cindex @code{ms_hook_prologue} function attribute, x86
-
-On 32-bit and 64-bit x86 targets, you can use
-this function attribute to make GCC generate the ``hot-patching'' function
-prologue used in Win32 API functions in Microsoft Windows XP Service Pack 2
-and newer.
-
-@item hotpatch (@var{halfwords-before-function-label},@var{halfwords-after-function-label})
-@cindex @code{hotpatch} function attribute, S/390
-
-On S/390 System z targets, you can use this function attribute to
-make GCC generate a ``hot-patching'' function prologue.  If the
-@option{-mhotpatch=} command-line option is used at the same time,
-the @code{hotpatch} attribute takes precedence.  The first of the
-two arguments specifies the number of halfwords to be added before
-the function label.  A second argument can be used to specify the
-number of halfwords to be added after the function label.  For
-both arguments the maximum allowed value is 1000000.
-
-If both arguments are zero, hotpatching is disabled.
-
-@item naked
-@cindex @code{naked} function attribute, ARM
-@cindex @code{naked} function attribute, AVR
-@cindex @code{naked} function attribute, MCORE
-@cindex @code{naked} function attribute, MSP430
-@cindex @code{naked} function attribute, NDS32
-@cindex @code{naked} function attribute, RL78
-@cindex @code{naked} function attribute, RX
-@cindex @code{naked} function attribute, SPU
-@cindex function without prologue/epilogue code
-This attribute is available on the ARM, AVR, MCORE, MSP430, NDS32,
-RL78, RX and SPU ports.  It allows the compiler to construct the
-requisite function declaration, while allowing the body of the
-function to be assembly code. The specified function will not have
-prologue/epilogue sequences generated by the compiler. Only basic
-@code{asm} statements can safely be included in naked functions
-(@pxref{Basic Asm}). While using extended @code{asm} or a mixture of
-basic @code{asm} and C code may appear to work, they cannot be
-depended upon to work reliably and are not supported.
-
-@item near
-@cindex @code{near} function attribute, MeP
-@cindex functions that do not handle memory bank switching on 68HC11/68HC12
-On MeP targets this attribute causes the compiler to assume the called
-function is close enough to use the normal calling convention,
-overriding the @option{-mtf} command-line option.
-
-@item nesting
-@cindex @code{nesting} function attribute, Blackfin
-@cindex Allow nesting in an interrupt handler on the Blackfin processor
-Use this attribute together with @code{interrupt_handler},
-@code{exception_handler} or @code{nmi_handler} to indicate that the function
-entry code should enable nested interrupts or exceptions.
-
-@item nmi_handler
-@cindex @code{nmi_handler} function attribute, Blackfin
-@cindex NMI handler functions on the Blackfin processor
-Use this attribute on the Blackfin to indicate that the specified function
-is an NMI handler.  The compiler generates function entry and
-exit sequences suitable for use in an NMI handler when this
-attribute is present.
-
-@item nocompression
-@cindex @code{nocompression} function attribute, MIPS
-On MIPS targets, you can use the @code{nocompression} function attribute
-to locally turn off MIPS16 and microMIPS code generation.  This attribute
-overrides the @option{-mips16} and @option{-mmicromips} options on the
-command line (@pxref{MIPS Options}).
+@item no_icf
+@cindex @code{no_icf} function attribute
+This function attribute prevents a functions from being merged with another
+semantically equivalent function.
 
 @item no_instrument_function
 @cindex @code{no_instrument_function} function attribute
@@ -3428,6 +2773,38 @@ command line (@pxref{MIPS Options}).
 If @option{-finstrument-functions} is given, profiling function calls are
 generated at entry and exit of most user-compiled functions.
 Functions with this attribute are not so instrumented.
+
+@item no_reorder
+@cindex @code{no_reorder} function attribute
+Do not reorder functions or variables marked @code{no_reorder}
+against each other or top level assembler statements the executable.
+The actual order in the program will depend on the linker command
+line. Static variables marked like this are also not removed.
+This has a similar effect
+as the @option{-fno-toplevel-reorder} option, but only applies to the
+marked symbols.
+
+@item no_sanitize_address
+@itemx no_address_safety_analysis
+@cindex @code{no_sanitize_address} function attribute
+The @code{no_sanitize_address} attribute on functions is used
+to inform the compiler that it should not instrument memory accesses
+in the function when compiling with the @option{-fsanitize=address} option.
+The @code{no_address_safety_analysis} is a deprecated alias of the
+@code{no_sanitize_address} attribute, new code should use
+@code{no_sanitize_address}.
+
+@item no_sanitize_thread
+@cindex @code{no_sanitize_thread} function attribute
+The @code{no_sanitize_thread} attribute on functions is used
+to inform the compiler that it should not instrument memory accesses
+in the function when compiling with the @option{-fsanitize=thread} option.
+
+@item no_sanitize_undefined
+@cindex @code{no_sanitize_undefined} function attribute
+The @code{no_sanitize_undefined} attribute on functions is used
+to inform the compiler that it should not check for undefined behavior
+in the function when compiling with the @option{-fsanitize=undefined} option.
 
 @item no_split_stack
 @cindex @code{no_split_stack} function attribute
@@ -3437,11 +2814,12 @@ prologue which decides whether to split the stack.  Functions with the
 @code{no_split_stack} attribute do not have that prologue, and thus
 may run with only a small amount of stack space available.
 
-@item stack_protect
-@cindex @code{stack_protect} function attribute
-This function attribute make a stack protection of the function if 
-flags @option{fstack-protector} or @option{fstack-protector-strong}
-or @option{fstack-protector-explicit} are set.
+@item noclone
+@cindex @code{noclone} function attribute
+This function attribute prevents a function from being considered for
+cloning---a mechanism that produces specialized copies of functions
+and which is (currently) performed by interprocedural constant
+propagation.
 
 @item noinline
 @cindex @code{noinline} function attribute
@@ -3461,20 +2839,9 @@ asm ("");
 (@pxref{Extended Asm}) in the called function, to serve as a special
 side-effect.
 
-@item noclone
-@cindex @code{noclone} function attribute
-This function attribute prevents a function from being considered for
-cloning---a mechanism that produces specialized copies of functions
-and which is (currently) performed by interprocedural constant
-propagation.
-
-@item no_icf
-@cindex @code{no_icf} function attribute
-This function attribute prevents a functions from being merged with another
-semantically equivalent function.
-
 @item nonnull (@var{arg-index}, @dots{})
 @cindex @code{nonnull} function attribute
+@cindex functions with non-null pointer arguments
 The @code{nonnull} attribute specifies that some function parameters should
 be non-null pointers.  For instance, the declaration:
 
@@ -3502,32 +2869,9 @@ my_memcpy (void *dest, const void *src, size_t len)
         __attribute__((nonnull));
 @end smallexample
 
-@item no_reorder
-@cindex @code{no_reorder} function attribute
-Do not reorder functions or variables marked @code{no_reorder}
-against each other or top level assembler statements the executable.
-The actual order in the program will depend on the linker command
-line. Static variables marked like this are also not removed.
-This has a similar effect
-as the @option{-fno-toplevel-reorder} option, but only applies to the
-marked symbols.
-
-@item returns_nonnull
-@cindex @code{returns_nonnull} function attribute
-The @code{returns_nonnull} attribute specifies that the function
-return value should be a non-null pointer.  For instance, the declaration:
-
-@smallexample
-extern void *
-mymalloc (size_t len) __attribute__((returns_nonnull));
-@end smallexample
-
-@noindent
-lets the compiler optimize callers based on the knowledge
-that the return value will never be null.
-
 @item noreturn
 @cindex @code{noreturn} function attribute
+@cindex functions that never return
 A few standard library functions, such as @code{abort} and @code{exit},
 cannot return.  GCC knows this automatically.  Some programs define
 their own functions that never return.  You can declare them
@@ -3570,13 +2914,6 @@ the standard C library can be guaranteed not to throw an exception
 with the notable exceptions of @code{qsort} and @code{bsearch} that
 take function pointer arguments.
 
-@item nosave_low_regs
-@cindex @code{nosave_low_regs} function attribute, SH
-Use this attribute on SH targets to indicate that an @code{interrupt_handler}
-function should not save and restore registers R0..R7.  This can be used on SH3*
-and SH4* targets that have a second R0..R7 register bank for non-reentrant
-interrupt handlers.
-
 @item optimize
 @cindex @code{optimize} function attribute
 The @code{optimize} attribute is used to specify that a function is to
@@ -3595,58 +2932,9 @@ compiled with more aggressive optimization options that produce faster
 and larger code, while other functions can be compiled with less
 aggressive options.
 
-@item OS_main
-@itemx OS_task
-@cindex @code{OS_main} function attribute, AVR
-@cindex @code{OS_task} function attribute, AVR
-On AVR, functions with the @code{OS_main} or @code{OS_task} attribute
-do not save/restore any call-saved register in their prologue/epilogue.
-
-The @code{OS_main} attribute can be used when there @emph{is
-guarantee} that interrupts are disabled at the time when the function
-is entered.  This saves resources when the stack pointer has to be
-changed to set up a frame for local variables.
-
-The @code{OS_task} attribute can be used when there is @emph{no
-guarantee} that interrupts are disabled at that time when the function
-is entered like for, e@.g@. task functions in a multi-threading operating
-system. In that case, changing the stack pointer register is
-guarded by save/clear/restore of the global interrupt enable flag.
-
-The differences to the @code{naked} function attribute are:
-@itemize @bullet
-@item @code{naked} functions do not have a return instruction whereas 
-@code{OS_main} and @code{OS_task} functions have a @code{RET} or
-@code{RETI} return instruction.
-@item @code{naked} functions do not set up a frame for local variables
-or a frame pointer whereas @code{OS_main} and @code{OS_task} do this
-as needed.
-@end itemize
-
-@item pcs
-@cindex @code{pcs} function attribute, ARM
-
-The @code{pcs} attribute can be used to control the calling convention
-used for a function on ARM.  The attribute takes an argument that specifies
-the calling convention to use.
-
-When compiling using the AAPCS ABI (or a variant of it) then valid
-values for the argument are @code{"aapcs"} and @code{"aapcs-vfp"}.  In
-order to use a variant other than @code{"aapcs"} then the compiler must
-be permitted to use the appropriate co-processor registers (i.e., the
-VFP registers must be available in order to use @code{"aapcs-vfp"}).
-For example,
-
-@smallexample
-/* Argument passed in r0, and result returned in r0+r1.  */
-double f2d (float) __attribute__((pcs("aapcs")));
-@end smallexample
-
-Variadic functions always use the @code{"aapcs"} calling convention and
-the compiler rejects attempts to specify an alternative.
-
 @item pure
 @cindex @code{pure} function attribute
+@cindex functions that have no side effects
 Many functions have no effects except the return value and their
 return value depends only on the parameters and/or global variables.
 Such a function can be subject
@@ -3667,139 +2955,23 @@ Interesting non-pure functions are functions with infinite loops or those
 depending on volatile memory or other system resource, that may change between
 two consecutive calls (such as @code{feof} in a multithreading environment).
 
-@item hot
-@cindex @code{hot} function attribute
-The @code{hot} attribute on a function is used to inform the compiler that
-the function is a hot spot of the compiled program.  The function is
-optimized more aggressively and on many targets it is placed into a special
-subsection of the text section so all hot functions appear close together,
-improving locality.
+@item returns_nonnull
+@cindex @code{returns_nonnull} function attribute
+The @code{returns_nonnull} attribute specifies that the function
+return value should be a non-null pointer.  For instance, the declaration:
 
-When profile feedback is available, via @option{-fprofile-use}, hot functions
-are automatically detected and this attribute is ignored.
+@smallexample
+extern void *
+mymalloc (size_t len) __attribute__((returns_nonnull));
+@end smallexample
 
-@item cold
-@cindex @code{cold} function attribute
-The @code{cold} attribute on functions is used to inform the compiler that
-the function is unlikely to be executed.  The function is optimized for
-size rather than speed and on many targets it is placed into a special
-subsection of the text section so all cold functions appear close together,
-improving code locality of non-cold parts of program.  The paths leading
-to calls of cold functions within code are marked as unlikely by the branch
-prediction mechanism.  It is thus useful to mark functions used to handle
-unlikely conditions, such as @code{perror}, as cold to improve optimization
-of hot functions that do call marked functions in rare occasions.
-
-When profile feedback is available, via @option{-fprofile-use}, cold functions
-are automatically detected and this attribute is ignored.
-
-@item no_sanitize_address
-@itemx no_address_safety_analysis
-@cindex @code{no_sanitize_address} function attribute
-The @code{no_sanitize_address} attribute on functions is used
-to inform the compiler that it should not instrument memory accesses
-in the function when compiling with the @option{-fsanitize=address} option.
-The @code{no_address_safety_analysis} is a deprecated alias of the
-@code{no_sanitize_address} attribute, new code should use
-@code{no_sanitize_address}.
-
-@item no_sanitize_thread
-@cindex @code{no_sanitize_thread} function attribute
-The @code{no_sanitize_thread} attribute on functions is used
-to inform the compiler that it should not instrument memory accesses
-in the function when compiling with the @option{-fsanitize=thread} option.
-
-@item no_sanitize_undefined
-@cindex @code{no_sanitize_undefined} function attribute
-The @code{no_sanitize_undefined} attribute on functions is used
-to inform the compiler that it should not check for undefined behavior
-in the function when compiling with the @option{-fsanitize=undefined} option.
-
-@item bnd_legacy
-@cindex @code{bnd_legacy} function attribute
-@cindex Pointer Bounds Checker attributes
-The @code{bnd_legacy} attribute on functions is used to inform the
-compiler that the function should not be instrumented when compiled
-with the @option{-fcheck-pointer-bounds} option.
-
-@item bnd_instrument
-@cindex @code{bnd_instrument} function attribute
-The @code{bnd_instrument} attribute on functions is used to inform the
-compiler that the function should be instrumented when compiled
-with the @option{-fchkp-instrument-marked-only} option.
-
-@item regparm (@var{number})
-@cindex @code{regparm} function attribute, x86
-@cindex functions that are passed arguments in registers on x86-32
-On x86-32 targets, the @code{regparm} attribute causes the compiler to
-pass arguments number one to @var{number} if they are of integral type
-in registers EAX, EDX, and ECX instead of on the stack.  Functions that
-take a variable number of arguments continue to be passed all of their
-arguments on the stack.
-
-Beware that on some ELF systems this attribute is unsuitable for
-global functions in shared libraries with lazy binding (which is the
-default).  Lazy binding sends the first call via resolving code in
-the loader, which might assume EAX, EDX and ECX can be clobbered, as
-per the standard calling conventions.  Solaris 8 is affected by this.
-Systems with the GNU C Library version 2.1 or higher
-and FreeBSD are believed to be
-safe since the loaders there save EAX, EDX and ECX.  (Lazy binding can be
-disabled with the linker or the loader if desired, to avoid the
-problem.)
-
-@item reset
-@cindex @code{reset} function attribute, NDS32
-@cindex reset handler functions
-Use this attribute on the NDS32 target to indicate that the specified function
-is a reset handler.  The compiler will generate corresponding sections
-for use in a reset handler.  You can use the following attributes
-to provide extra exception handling:
-@table @code
-@item nmi
-@cindex @code{nmi} function attribute, NDS32
-Provide a user-defined function to handle NMI exception.
-@item warm
-@cindex @code{warm} function attribute, NDS32
-Provide a user-defined function to handle warm reset exception.
-@end table
-
-@item sseregparm
-@cindex @code{sseregparm} function attribute, x86
-On x86-32 targets with SSE support, the @code{sseregparm} attribute
-causes the compiler to pass up to 3 floating-point arguments in
-SSE registers instead of on the stack.  Functions that take a
-variable number of arguments continue to pass all of their
-floating-point arguments on the stack.
-
-@item force_align_arg_pointer
-@cindex @code{force_align_arg_pointer} function attribute, x86
-On x86 targets, the @code{force_align_arg_pointer} attribute may be
-applied to individual function definitions, generating an alternate
-prologue and epilogue that realigns the run-time stack if necessary.
-This supports mixing legacy codes that run with a 4-byte aligned stack
-with modern codes that keep a 16-byte stack for SSE compatibility.
-
-@item renesas
-@cindex @code{renesas} function attribute, SH
-On SH targets this attribute specifies that the function or struct follows the
-Renesas ABI.
-
-@item resbank
-@cindex @code{resbank} function attribute, SH
-On the SH2A target, this attribute enables the high-speed register
-saving and restoration using a register bank for @code{interrupt_handler}
-routines.  Saving to the bank is performed automatically after the CPU
-accepts an interrupt that uses a register bank.
-
-The nineteen 32-bit registers comprising general register R0 to R14,
-control register GBR, and system registers MACH, MACL, and PR and the
-vector table address offset are saved into a register bank.  Register
-banks are stacked in first-in last-out (FILO) sequence.  Restoration
-from the bank is executed by issuing a RESBANK instruction.
+@noindent
+lets the compiler optimize callers based on the knowledge
+that the return value will never be null.
 
 @item returns_twice
 @cindex @code{returns_twice} function attribute
+@cindex functions that return more than once
 The @code{returns_twice} attribute tells the compiler that a function may
 return more than one time.  The compiler ensures that all registers
 are dead before calling such a function and emits a warning about
@@ -3808,37 +2980,9 @@ function.  Examples of such functions are @code{setjmp} and @code{vfork}.
 The @code{longjmp}-like counterpart of such function, if any, might need
 to be marked with the @code{noreturn} attribute.
 
-@item saveall
-@cindex @code{saveall} function attribute, Blackfin
-@cindex @code{saveall} function attribute, H8/300
-@cindex save all registers on the Blackfin, H8/300, H8/300H, and H8S
-Use this attribute on the Blackfin, H8/300, H8/300H, and H8S to indicate that
-all registers except the stack pointer should be saved in the prologue
-regardless of whether they are used or not.
-
-@item save_volatiles
-@cindex @code{save_volatiles} function attribute, MicroBlaze
-Use this attribute on the MicroBlaze to indicate that the function is
-an interrupt handler.  All volatile registers (in addition to non-volatile
-registers) are saved in the function prologue.  If the function is a leaf
-function, only volatiles used by the function are saved.  A normal function
-return is generated instead of a return from interrupt.
-
-@item break_handler
-@cindex @code{break_handler} function attribute, MicroBlaze
-@cindex break handler functions
-Use this attribute on the MicroBlaze ports to indicate that
-the specified function is a break handler.  The compiler generates function
-entry and exit sequences suitable for use in an break handler when this
-attribute is present. The return from @code{break_handler} is done through
-the @code{rtbd} instead of @code{rtsd}.
-
-@smallexample
-void f () __attribute__ ((break_handler));
-@end smallexample
-
 @item section ("@var{section-name}")
 @cindex @code{section} function attribute
+@cindex functions in arbitrary sections
 Normally, the compiler places the code it generates in the @code{text} section.
 Sometimes, however, you need additional sections, or you need certain
 particular functions to appear in special sections.  The @code{section}
@@ -3884,11 +3028,424 @@ with a copy that redefines NULL appropriately.
 The warnings for missing or incorrect sentinels are enabled with
 @option{-Wformat}.
 
-@item short_call
-See @code{long_call}.
+@item stack_protect
+@cindex @code{stack_protect} function attribute
+This function attribute make a stack protection of the function if 
+flags @option{fstack-protector} or @option{fstack-protector-strong}
+or @option{fstack-protector-explicit} are set.
 
-@item shortcall
-See @code{longcall}.
+@item target (@var{options})
+@cindex @code{target} function attribute
+Multiple target back ends implement the @code{target} attribute
+to specify that a function is to
+be compiled with different target options than specified on the
+command line.  This can be used for instance to have functions
+compiled with a different ISA (instruction set architecture) than the
+default.  You can also use the @samp{#pragma GCC target} pragma to set
+more than one function to be compiled with specific target options.
+@xref{Function Specific Option Pragmas}, for details about the
+@samp{#pragma GCC target} pragma.
+
+For instance, on an x86, you could declare one function with the
+@code{target("sse4.1,arch=core2")} attribute and another with
+@code{target("sse4a,arch=amdfam10")}.  This is equivalent to
+compiling the first function with @option{-msse4.1} and
+@option{-march=core2} options, and the second function with
+@option{-msse4a} and @option{-march=amdfam10} options.  It is up to you
+to make sure that a function is only invoked on a machine that
+supports the particular ISA it is compiled for (for example by using
+@code{cpuid} on x86 to determine what feature bits and architecture
+family are used).
+
+@smallexample
+int core2_func (void) __attribute__ ((__target__ ("arch=core2")));
+int sse3_func (void) __attribute__ ((__target__ ("sse3")));
+@end smallexample
+
+You can either use multiple
+strings separated by commas to specify multiple options,
+or separate the options with a comma (@samp{,}) within a single string.
+
+The options supported are specific to each target; refer to @ref{x86
+Function Attributes}, @ref{PowerPC Function Attributes}, and
+@ref{Nios II Function Attributes}, for details.
+
+@item unused
+@cindex @code{unused} function attribute
+This attribute, attached to a function, means that the function is meant
+to be possibly unused.  GCC does not produce a warning for this
+function.
+
+@item used
+@cindex @code{used} function attribute
+This attribute, attached to a function, means that code must be emitted
+for the function even if it appears that the function is not referenced.
+This is useful, for example, when the function is referenced only in
+inline assembly.
+
+When applied to a member function of a C++ class template, the
+attribute also means that the function is instantiated if the
+class itself is instantiated.
+
+@item visibility ("@var{visibility_type}")
+@cindex @code{visibility} function attribute
+This attribute affects the linkage of the declaration to which it is attached.
+There are four supported @var{visibility_type} values: default,
+hidden, protected or internal visibility.
+
+@smallexample
+void __attribute__ ((visibility ("protected")))
+f () @{ /* @r{Do something.} */; @}
+int i __attribute__ ((visibility ("hidden")));
+@end smallexample
+
+The possible values of @var{visibility_type} correspond to the
+visibility settings in the ELF gABI.
+
+@table @code
+@c keep this list of visibilities in alphabetical order.
+
+@item default
+Default visibility is the normal case for the object file format.
+This value is available for the visibility attribute to override other
+options that may change the assumed visibility of entities.
+
+On ELF, default visibility means that the declaration is visible to other
+modules and, in shared libraries, means that the declared entity may be
+overridden.
+
+On Darwin, default visibility means that the declaration is visible to
+other modules.
+
+Default visibility corresponds to ``external linkage'' in the language.
+
+@item hidden
+Hidden visibility indicates that the entity declared has a new
+form of linkage, which we call ``hidden linkage''.  Two
+declarations of an object with hidden linkage refer to the same object
+if they are in the same shared object.
+
+@item internal
+Internal visibility is like hidden visibility, but with additional
+processor specific semantics.  Unless otherwise specified by the
+psABI, GCC defines internal visibility to mean that a function is
+@emph{never} called from another module.  Compare this with hidden
+functions which, while they cannot be referenced directly by other
+modules, can be referenced indirectly via function pointers.  By
+indicating that a function cannot be called from outside the module,
+GCC may for instance omit the load of a PIC register since it is known
+that the calling function loaded the correct value.
+
+@item protected
+Protected visibility is like default visibility except that it
+indicates that references within the defining module bind to the
+definition in that module.  That is, the declared entity cannot be
+overridden by another module.
+
+@end table
+
+All visibilities are supported on many, but not all, ELF targets
+(supported when the assembler supports the @samp{.visibility}
+pseudo-op).  Default visibility is supported everywhere.  Hidden
+visibility is supported on Darwin targets.
+
+The visibility attribute should be applied only to declarations that
+would otherwise have external linkage.  The attribute should be applied
+consistently, so that the same entity should not be declared with
+different settings of the attribute.
+
+In C++, the visibility attribute applies to types as well as functions
+and objects, because in C++ types have linkage.  A class must not have
+greater visibility than its non-static data member types and bases,
+and class members default to the visibility of their class.  Also, a
+declaration without explicit visibility is limited to the visibility
+of its type.
+
+In C++, you can mark member functions and static member variables of a
+class with the visibility attribute.  This is useful if you know a
+particular method or static member variable should only be used from
+one shared object; then you can mark it hidden while the rest of the
+class has default visibility.  Care must be taken to avoid breaking
+the One Definition Rule; for example, it is usually not useful to mark
+an inline method as hidden without marking the whole class as hidden.
+
+A C++ namespace declaration can also have the visibility attribute.
+
+@smallexample
+namespace nspace1 __attribute__ ((visibility ("protected")))
+@{ /* @r{Do something.} */; @}
+@end smallexample
+
+This attribute applies only to the particular namespace body, not to
+other definitions of the same namespace; it is equivalent to using
+@samp{#pragma GCC visibility} before and after the namespace
+definition (@pxref{Visibility Pragmas}).
+
+In C++, if a template argument has limited visibility, this
+restriction is implicitly propagated to the template instantiation.
+Otherwise, template instantiations and specializations default to the
+visibility of their template.
+
+If both the template and enclosing class have explicit visibility, the
+visibility from the template is used.
+
+@item warn_unused_result
+@cindex @code{warn_unused_result} function attribute
+The @code{warn_unused_result} attribute causes a warning to be emitted
+if a caller of the function with this attribute does not use its
+return value.  This is useful for functions where not checking
+the result is either a security problem or always a bug, such as
+@code{realloc}.
+
+@smallexample
+int fn () __attribute__ ((warn_unused_result));
+int foo ()
+@{
+  if (fn () < 0) return -1;
+  fn ();
+  return 0;
+@}
+@end smallexample
+
+@noindent
+results in warning on line 5.
+
+@item weak
+@cindex @code{weak} function attribute
+The @code{weak} attribute causes the declaration to be emitted as a weak
+symbol rather than a global.  This is primarily useful in defining
+library functions that can be overridden in user code, though it can
+also be used with non-function declarations.  Weak symbols are supported
+for ELF targets, and also for a.out targets when using the GNU assembler
+and linker.
+
+@item weakref
+@itemx weakref ("@var{target}")
+@cindex @code{weakref} function attribute
+The @code{weakref} attribute marks a declaration as a weak reference.
+Without arguments, it should be accompanied by an @code{alias} attribute
+naming the target symbol.  Optionally, the @var{target} may be given as
+an argument to @code{weakref} itself.  In either case, @code{weakref}
+implicitly marks the declaration as @code{weak}.  Without a
+@var{target}, given as an argument to @code{weakref} or to @code{alias},
+@code{weakref} is equivalent to @code{weak}.
+
+@smallexample
+static int x() __attribute__ ((weakref ("y")));
+/* is equivalent to... */
+static int x() __attribute__ ((weak, weakref, alias ("y")));
+/* and to... */
+static int x() __attribute__ ((weakref));
+static int x() __attribute__ ((alias ("y")));
+@end smallexample
+
+A weak reference is an alias that does not by itself require a
+definition to be given for the target symbol.  If the target symbol is
+only referenced through weak references, then it becomes a @code{weak}
+undefined symbol.  If it is directly referenced, however, then such
+strong references prevail, and a definition is required for the
+symbol, not necessarily in the same translation unit.
+
+The effect is equivalent to moving all references to the alias to a
+separate translation unit, renaming the alias to the aliased symbol,
+declaring it as weak, compiling the two separate translation units and
+performing a reloadable link on them.
+
+At present, a declaration to which @code{weakref} is attached can
+only be @code{static}.
+
+@end table
+
+@c This is the end of the target-independent attribute table
+
+
+@node ARC Function Attributes
+@subsection ARC Function Attributes
+
+These function attributes are supported by the ARC back end:
+
+@table @code
+@item interrupt
+@cindex @code{interrupt} function attribute, ARC
+Use this attribute to indicate
+that the specified function is an interrupt handler.  The compiler generates
+function entry and exit sequences suitable for use in an interrupt handler
+when this attribute is present.
+
+On the ARC, you must specify the kind of interrupt to be handled
+in a parameter to the interrupt attribute like this:
+
+@smallexample
+void f () __attribute__ ((interrupt ("ilink1")));
+@end smallexample
+
+Permissible values for this parameter are: @w{@code{ilink1}} and
+@w{@code{ilink2}}.
+
+@item long_call
+@itemx medium_call
+@itemx short_call
+@cindex @code{long_call} function attribute, ARC
+@cindex @code{medium_call} function attribute, ARC
+@cindex @code{short_call} function attribute, ARC
+@cindex indirect calls, ARC
+These attributes specify how a particular function is called.
+These attributes override the
+@option{-mlong-calls} and @option{-mmedium-calls} (@pxref{ARC Options})
+command-line switches and @code{#pragma long_calls} settings.
+
+For ARC, a function marked with the @code{long_call} attribute is
+always called using register-indirect jump-and-link instructions,
+thereby enabling the called function to be placed anywhere within the
+32-bit address space.  A function marked with the @code{medium_call}
+attribute will always be close enough to be called with an unconditional
+branch-and-link instruction, which has a 25-bit offset from
+the call site.  A function marked with the @code{short_call}
+attribute will always be close enough to be called with a conditional
+branch-and-link instruction, which has a 21-bit offset from
+the call site.
+@end table
+
+@node ARM Function Attributes
+@subsection ARM Function Attributes
+
+These function attributes are supported for ARM targets:
+
+@table @code
+@item interrupt
+@cindex @code{interrupt} function attribute, ARM
+Use this attribute to indicate
+that the specified function is an interrupt handler.  The compiler generates
+function entry and exit sequences suitable for use in an interrupt handler
+when this attribute is present.
+
+You can specify the kind of interrupt to be handled by
+adding an optional parameter to the interrupt attribute like this:
+
+@smallexample
+void f () __attribute__ ((interrupt ("IRQ")));
+@end smallexample
+
+@noindent
+Permissible values for this parameter are: @code{IRQ}, @code{FIQ},
+@code{SWI}, @code{ABORT} and @code{UNDEF}.
+
+On ARMv7-M the interrupt type is ignored, and the attribute means the function
+may be called with a word-aligned stack pointer.
+
+@item isr
+@cindex @code{isr} function attribute, ARM
+Use this attribute on ARM to write Interrupt Service Routines. This is an
+alias to the @code{interrupt} attribute above.
+
+@item long_call
+@itemx short_call
+@cindex @code{long_call} function attribute, ARM
+@cindex @code{short_call} function attribute, ARM
+@cindex indirect calls, ARM
+These attributes specify how a particular function is called.
+These attributes override the
+@option{-mlong-calls} (@pxref{ARM Options})
+command-line switch and @code{#pragma long_calls} settings.  For ARM, the
+@code{long_call} attribute indicates that the function might be far
+away from the call site and require a different (more expensive)
+calling sequence.   The @code{short_call} attribute always places
+the offset to the function from the call site into the @samp{BL}
+instruction directly.
+
+@item naked
+@cindex @code{naked} function attribute, ARM
+This attribute allows the compiler to construct the
+requisite function declaration, while allowing the body of the
+function to be assembly code. The specified function will not have
+prologue/epilogue sequences generated by the compiler. Only basic
+@code{asm} statements can safely be included in naked functions
+(@pxref{Basic Asm}). While using extended @code{asm} or a mixture of
+basic @code{asm} and C code may appear to work, they cannot be
+depended upon to work reliably and are not supported.
+
+@item pcs
+@cindex @code{pcs} function attribute, ARM
+
+The @code{pcs} attribute can be used to control the calling convention
+used for a function on ARM.  The attribute takes an argument that specifies
+the calling convention to use.
+
+When compiling using the AAPCS ABI (or a variant of it) then valid
+values for the argument are @code{"aapcs"} and @code{"aapcs-vfp"}.  In
+order to use a variant other than @code{"aapcs"} then the compiler must
+be permitted to use the appropriate co-processor registers (i.e., the
+VFP registers must be available in order to use @code{"aapcs-vfp"}).
+For example,
+
+@smallexample
+/* Argument passed in r0, and result returned in r0+r1.  */
+double f2d (float) __attribute__((pcs("aapcs")));
+@end smallexample
+
+Variadic functions always use the @code{"aapcs"} calling convention and
+the compiler rejects attempts to specify an alternative.
+@end table
+
+@node AVR Function Attributes
+@subsection AVR Function Attributes
+
+These function attributes are supported by the AVR back end:
+
+@table @code
+@item interrupt
+@cindex @code{interrupt} function attribute, AVR
+Use this attribute to indicate
+that the specified function is an interrupt handler.  The compiler generates
+function entry and exit sequences suitable for use in an interrupt handler
+when this attribute is present.
+
+On the AVR, the hardware globally disables interrupts when an
+interrupt is executed.  The first instruction of an interrupt handler
+declared with this attribute is a @code{SEI} instruction to
+re-enable interrupts.  See also the @code{signal} function attribute
+that does not insert a @code{SEI} instruction.  If both @code{signal} and
+@code{interrupt} are specified for the same function, @code{signal}
+is silently ignored.
+
+@item naked
+@cindex @code{naked} function attribute, AVR
+This attribute allows the compiler to construct the
+requisite function declaration, while allowing the body of the
+function to be assembly code. The specified function will not have
+prologue/epilogue sequences generated by the compiler. Only basic
+@code{asm} statements can safely be included in naked functions
+(@pxref{Basic Asm}). While using extended @code{asm} or a mixture of
+basic @code{asm} and C code may appear to work, they cannot be
+depended upon to work reliably and are not supported.
+
+@item OS_main
+@itemx OS_task
+@cindex @code{OS_main} function attribute, AVR
+@cindex @code{OS_task} function attribute, AVR
+On AVR, functions with the @code{OS_main} or @code{OS_task} attribute
+do not save/restore any call-saved register in their prologue/epilogue.
+
+The @code{OS_main} attribute can be used when there @emph{is
+guarantee} that interrupts are disabled at the time when the function
+is entered.  This saves resources when the stack pointer has to be
+changed to set up a frame for local variables.
+
+The @code{OS_task} attribute can be used when there is @emph{no
+guarantee} that interrupts are disabled at that time when the function
+is entered like for, e@.g@. task functions in a multi-threading operating
+system. In that case, changing the stack pointer register is
+guarded by save/clear/restore of the global interrupt enable flag.
+
+The differences to the @code{naked} function attribute are:
+@itemize @bullet
+@item @code{naked} functions do not have a return instruction whereas 
+@code{OS_main} and @code{OS_task} functions have a @code{RET} or
+@code{RETI} return instruction.
+@item @code{naked} functions do not set up a frame for local variables
+or a frame pointer whereas @code{OS_main} and @code{OS_task} do this
+as needed.
+@end itemize
 
 @item signal
 @cindex @code{signal} function attribute, AVR
@@ -3908,27 +3465,209 @@ application which is responsibility of the application.
 
 If both @code{signal} and @code{interrupt} are specified for the same
 function, @code{signal} is silently ignored.
+@end table
 
-@item sp_switch
-@cindex @code{sp_switch} function attribute, SH
-Use this attribute on the SH to indicate an @code{interrupt_handler}
-function should switch to an alternate stack.  It expects a string
-argument that names a global variable holding the address of the
-alternate stack.
+@node Blackfin Function Attributes
+@subsection Blackfin Function Attributes
+
+These function attributes are supported by the Blackfin back end:
+
+@table @code
+
+@item exception_handler
+@cindex @code{exception_handler} function attribute
+@cindex exception handler functions, Blackfin
+Use this attribute on the Blackfin to indicate that the specified function
+is an exception handler.  The compiler generates function entry and
+exit sequences suitable for use in an exception handler when this
+attribute is present.
+
+@item interrupt_handler
+@cindex @code{interrupt_handler} function attribute, Blackfin
+Use this attribute to
+indicate that the specified function is an interrupt handler.  The compiler
+generates function entry and exit sequences suitable for use in an
+interrupt handler when this attribute is present.
+
+@item kspisusp
+@cindex @code{kspisusp} function attribute, Blackfin
+@cindex User stack pointer in interrupts on the Blackfin
+When used together with @code{interrupt_handler}, @code{exception_handler}
+or @code{nmi_handler}, code is generated to load the stack pointer
+from the USP register in the function prologue.
+
+@item l1_text
+@cindex @code{l1_text} function attribute, Blackfin
+This attribute specifies a function to be placed into L1 Instruction
+SRAM@. The function is put into a specific section named @code{.l1.text}.
+With @option{-mfdpic}, function calls with a such function as the callee
+or caller uses inlined PLT.
+
+@item l2
+@cindex @code{l2} function attribute, Blackfin
+This attribute specifies a function to be placed into L2
+SRAM. The function is put into a specific section named
+@code{.l2.text}. With @option{-mfdpic}, callers of such functions use
+an inlined PLT.
+
+@item longcall
+@itemx shortcall
+@cindex indirect calls, Blackfin
+@cindex @code{longcall} function attribute, Blackfin
+@cindex @code{shortcall} function attribute, Blackfin
+The @code{longcall} attribute
+indicates that the function might be far away from the call site and
+require a different (more expensive) calling sequence.  The
+@code{shortcall} attribute indicates that the function is always close
+enough for the shorter calling sequence to be used.  These attributes
+override the @option{-mlongcall} switch.
+
+@item nesting
+@cindex @code{nesting} function attribute, Blackfin
+@cindex Allow nesting in an interrupt handler on the Blackfin processor
+Use this attribute together with @code{interrupt_handler},
+@code{exception_handler} or @code{nmi_handler} to indicate that the function
+entry code should enable nested interrupts or exceptions.
+
+@item nmi_handler
+@cindex @code{nmi_handler} function attribute, Blackfin
+@cindex NMI handler functions on the Blackfin processor
+Use this attribute on the Blackfin to indicate that the specified function
+is an NMI handler.  The compiler generates function entry and
+exit sequences suitable for use in an NMI handler when this
+attribute is present.
+
+@item saveall
+@cindex @code{saveall} function attribute, Blackfin
+@cindex save all registers on the Blackfin
+Use this attribute to indicate that
+all registers except the stack pointer should be saved in the prologue
+regardless of whether they are used or not.
+@end table
+
+@node CR16 Function Attributes
+@subsection CR16 Function Attributes
+
+These function attributes are supported by the CR16 back end:
+
+@table @code
+@item interrupt
+@cindex @code{interrupt} function attribute, CR16
+Use this attribute to indicate
+that the specified function is an interrupt handler.  The compiler generates
+function entry and exit sequences suitable for use in an interrupt handler
+when this attribute is present.
+@end table
+
+@node Epiphany Function Attributes
+@subsection Epiphany Function Attributes
+
+These function attributes are supported by the Epiphany back end:
+
+@table @code
+@item disinterrupt
+@cindex @code{disinterrupt} function attribute, Epiphany
+This attribute causes the compiler to emit
+instructions to disable interrupts for the duration of the given
+function.
+
+@item forwarder_section
+@cindex @code{forwarder_section} function attribute, Epiphany
+This attribute modifies the behavior of an interrupt handler.
+The interrupt handler may be in external memory which cannot be
+reached by a branch instruction, so generate a local memory trampoline
+to transfer control.  The single parameter identifies the section where
+the trampoline is placed.
+
+@item interrupt
+@cindex @code{interrupt} function attribute, Epiphany
+Use this attribute to indicate
+that the specified function is an interrupt handler.  The compiler generates
+function entry and exit sequences suitable for use in an interrupt handler
+when this attribute is present.  It may also generate
+a special section with code to initialize the interrupt vector table.
+
+On Epiphany targets one or more optional parameters can be added like this:
 
 @smallexample
-void *alt_stack;
-void f () __attribute__ ((interrupt_handler,
-                          sp_switch ("alt_stack")));
+void __attribute__ ((interrupt ("dma0, dma1"))) universal_dma_handler ();
 @end smallexample
 
-@item stdcall
-@cindex @code{stdcall} function attribute, x86-32
-@cindex functions that pop the argument stack on x86-32
-On x86-32 targets, the @code{stdcall} attribute causes the compiler to
-assume that the called function pops off the stack space used to
-pass arguments, unless it takes a variable number of arguments.
+Permissible values for these parameters are: @w{@code{reset}},
+@w{@code{software_exception}}, @w{@code{page_miss}},
+@w{@code{timer0}}, @w{@code{timer1}}, @w{@code{message}},
+@w{@code{dma0}}, @w{@code{dma1}}, @w{@code{wand}} and @w{@code{swi}}.
+Multiple parameters indicate that multiple entries in the interrupt
+vector table should be initialized for this function, i.e.@: for each
+parameter @w{@var{name}}, a jump to the function is emitted in
+the section @w{ivt_entry_@var{name}}.  The parameter(s) may be omitted
+entirely, in which case no interrupt vector table entry is provided.
 
+Note that interrupts are enabled inside the function
+unless the @code{disinterrupt} attribute is also specified.
+
+The following examples are all valid uses of these attributes on
+Epiphany targets:
+@smallexample
+void __attribute__ ((interrupt)) universal_handler ();
+void __attribute__ ((interrupt ("dma1"))) dma1_handler ();
+void __attribute__ ((interrupt ("dma0, dma1"))) 
+  universal_dma_handler ();
+void __attribute__ ((interrupt ("timer0"), disinterrupt))
+  fast_timer_handler ();
+void __attribute__ ((interrupt ("dma0, dma1"), 
+                     forwarder_section ("tramp")))
+  external_dma_handler ();
+@end smallexample
+
+@item long_call
+@itemx short_call
+@cindex @code{long_call} function attribute, Epiphany
+@cindex @code{short_call} function attribute, Epiphany
+@cindex indirect calls, Epiphany
+These attributes specify how a particular function is called.
+These attributes override the
+@option{-mlong-calls} (@pxref{Adapteva Epiphany Options})
+command-line switch and @code{#pragma long_calls} settings.
+@end table
+
+
+@node H8/300 Function Attributes
+@subsection H8/300 Function Attributes
+
+These function attributes are available for H8/300 targets:
+
+@table @code
+@item function_vector
+@cindex @code{function_vector} function attribute, H8/300
+Use this attribute on the H8/300, H8/300H, and H8S to indicate 
+that the specified function should be called through the function vector.
+Calling a function through the function vector reduces code size; however,
+the function vector has a limited size (maximum 128 entries on the H8/300
+and 64 entries on the H8/300H and H8S)
+and shares space with the interrupt vector.
+
+@item interrupt_handler
+@cindex @code{interrupt_handler} function attribute, H8/300
+Use this attribute on the H8/300, H8/300H, and H8S to
+indicate that the specified function is an interrupt handler.  The compiler
+generates function entry and exit sequences suitable for use in an
+interrupt handler when this attribute is present.
+
+@item saveall
+@cindex @code{saveall} function attribute, H8/300
+@cindex save all registers on the H8/300, H8/300H, and H8S
+Use this attribute on the H8/300, H8/300H, and H8S to indicate that
+all registers except the stack pointer should be saved in the prologue
+regardless of whether they are used or not.
+@end table
+
+@node IA-64 Function Attributes
+@subsection IA-64 Function Attributes
+
+These function attributes are supported on IA-64 targets:
+
+@table @code
 @item syscall_linkage
 @cindex @code{syscall_linkage} function attribute, IA-64
 This attribute is used to modify the IA-64 calling convention by marking
@@ -3937,189 +3676,625 @@ to restart a system call after an interrupt without having to save/restore
 the input registers.  This also prevents kernel data from leaking into
 application code.
 
-@item target
-@cindex @code{target} function attribute
-The @code{target} attribute is used to specify that a function is to
-be compiled with different target options than specified on the
-command line.  This can be used for instance to have functions
-compiled with a different ISA (instruction set architecture) than the
-default.  You can also use the @samp{#pragma GCC target} pragma to set
-more than one function to be compiled with specific target options.
-@xref{Function Specific Option Pragmas}, for details about the
-@samp{#pragma GCC target} pragma.
-
-For instance on an x86, you could compile one function with
-@code{target("sse4.1,arch=core2")} and another with
-@code{target("sse4a,arch=amdfam10")}.  This is equivalent to
-compiling the first function with @option{-msse4.1} and
-@option{-march=core2} options, and the second function with
-@option{-msse4a} and @option{-march=amdfam10} options.  It is up to the
-user to make sure that a function is only invoked on a machine that
-supports the particular ISA it is compiled for (for example by using
-@code{cpuid} on x86 to determine what feature bits and architecture
-family are used).
+@item version_id
+@cindex @code{version_id} function attribute, IA-64
+This IA-64 HP-UX attribute, attached to a global variable or function, renames a
+symbol to contain a version string, thus allowing for function level
+versioning.  HP-UX system header files may use function level versioning
+for some system calls.
 
 @smallexample
-int core2_func (void) __attribute__ ((__target__ ("arch=core2")));
-int sse3_func (void) __attribute__ ((__target__ ("sse3")));
+extern int foo () __attribute__((version_id ("20040821")));
 @end smallexample
 
-You can either use multiple
-strings to specify multiple options, or separate the options
-with a comma (@samp{,}).
+@noindent
+Calls to @code{foo} are mapped to calls to @code{foo@{20040821@}}.
+@end table
 
-The @code{target} attribute is presently implemented for
-x86, PowerPC, and Nios II targets only.
-The options supported are specific to each target.
+@node M32C Function Attributes
+@subsection M32C Function Attributes
 
-On the x86, the following options are allowed:
+These function attributes are supported by the M32C back end:
+
+@table @code
+@item bank_switch
+@cindex @code{bank_switch} function attribute, M32C
+When added to an interrupt handler with the M32C port, causes the
+prologue and epilogue to use bank switching to preserve the registers
+rather than saving them on the stack.
+
+@item fast_interrupt
+@cindex @code{fast_interrupt} function attribute, M32C
+Use this attribute on the M32C port to indicate that the specified
+function is a fast interrupt handler.  This is just like the
+@code{interrupt} attribute, except that @code{freit} is used to return
+instead of @code{reit}.
+
+@item function_vector
+@cindex @code{function_vector} function attribute, M16C/M32C
+On M16C/M32C targets, the @code{function_vector} attribute declares a
+special page subroutine call function. Use of this attribute reduces
+the code size by 2 bytes for each call generated to the
+subroutine. The argument to the attribute is the vector number entry
+from the special page vector table which contains the 16 low-order
+bits of the subroutine's entry address. Each vector table has special
+page number (18 to 255) that is used in @code{jsrs} instructions.
+Jump addresses of the routines are generated by adding 0x0F0000 (in
+case of M16C targets) or 0xFF0000 (in case of M32C targets), to the
+2-byte addresses set in the vector table. Therefore you need to ensure
+that all the special page vector routines should get mapped within the
+address range 0x0F0000 to 0x0FFFFF (for M16C) and 0xFF0000 to 0xFFFFFF
+(for M32C).
+
+In the following example 2 bytes are saved for each call to
+function @code{foo}.
+
+@smallexample
+void foo (void) __attribute__((function_vector(0x18)));
+void foo (void)
+@{
+@}
+
+void bar (void)
+@{
+    foo();
+@}
+@end smallexample
+
+If functions are defined in one file and are called in another file,
+then be sure to write this declaration in both files.
+
+This attribute is ignored for R8C target.
+
+@item interrupt
+@cindex @code{interrupt} function attribute, M32C
+Use this attribute to indicate
+that the specified function is an interrupt handler.  The compiler generates
+function entry and exit sequences suitable for use in an interrupt handler
+when this attribute is present.
+@end table
+
+@node M32R/D Function Attributes
+@subsection M32R/D Function Attributes
+
+These function attributes are supported by the M32R/D back end:
+
+@table @code
+@item interrupt
+@cindex @code{interrupt} function attribute, M32R/D
+Use this attribute to indicate
+that the specified function is an interrupt handler.  The compiler generates
+function entry and exit sequences suitable for use in an interrupt handler
+when this attribute is present.
+
+@item model (@var{model-name})
+@cindex @code{model} function attribute, M32R/D
+@cindex function addressability on the M32R/D
+
+On the M32R/D, use this attribute to set the addressability of an
+object, and of the code generated for a function.  The identifier
+@var{model-name} is one of @code{small}, @code{medium}, or
+@code{large}, representing each of the code models.
+
+Small model objects live in the lower 16MB of memory (so that their
+addresses can be loaded with the @code{ld24} instruction), and are
+callable with the @code{bl} instruction.
+
+Medium model objects may live anywhere in the 32-bit address space (the
+compiler generates @code{seth/add3} instructions to load their addresses),
+and are callable with the @code{bl} instruction.
+
+Large model objects may live anywhere in the 32-bit address space (the
+compiler generates @code{seth/add3} instructions to load their addresses),
+and may not be reachable with the @code{bl} instruction (the compiler
+generates the much slower @code{seth/add3/jl} instruction sequence).
+@end table
+
+@node m68k Function Attributes
+@subsection m68k Function Attributes
+
+These function attributes are supported by the m68k back end:
+
+@table @code
+@item interrupt
+@itemx interrupt_handler
+@cindex @code{interrupt} function attribute, m68k
+@cindex @code{interrupt_handler} function attribute, m68k
+Use this attribute to
+indicate that the specified function is an interrupt handler.  The compiler
+generates function entry and exit sequences suitable for use in an
+interrupt handler when this attribute is present.  Either name may be used.
+
+@item interrupt_thread
+@cindex @code{interrupt_thread} function attribute, fido
+Use this attribute on fido, a subarchitecture of the m68k, to indicate
+that the specified function is an interrupt handler that is designed
+to run as a thread.  The compiler omits generate prologue/epilogue
+sequences and replaces the return instruction with a @code{sleep}
+instruction.  This attribute is available only on fido.
+@end table
+
+@node MCORE Function Attributes
+@subsection MCORE Function Attributes
+
+These function attributes are supported by the MCORE back end:
+
+@table @code
+@item naked
+@cindex @code{naked} function attribute, MCORE
+This attribute allows the compiler to construct the
+requisite function declaration, while allowing the body of the
+function to be assembly code. The specified function will not have
+prologue/epilogue sequences generated by the compiler. Only basic
+@code{asm} statements can safely be included in naked functions
+(@pxref{Basic Asm}). While using extended @code{asm} or a mixture of
+basic @code{asm} and C code may appear to work, they cannot be
+depended upon to work reliably and are not supported.
+@end table
+
+@node MeP Function Attributes
+@subsection MeP Function Attributes
+
+These function attributes are supported by the MeP back end:
+
+@table @code
+@item disinterrupt
+@cindex @code{disinterrupt} function attribute, MeP
+On MeP targets, this attribute causes the compiler to emit
+instructions to disable interrupts for the duration of the given
+function.
+
+@item interrupt
+@cindex @code{interrupt} function attribute, MeP
+Use this attribute to indicate
+that the specified function is an interrupt handler.  The compiler generates
+function entry and exit sequences suitable for use in an interrupt handler
+when this attribute is present.
+
+@item near
+@cindex @code{near} function attribute, MeP
+This attribute causes the compiler to assume the called
+function is close enough to use the normal calling convention,
+overriding the @option{-mtf} command-line option.
+
+@item far
+@cindex @code{far} function attribute, MeP
+On MeP targets this causes the compiler to use a calling convention
+that assumes the called function is too far away for the built-in
+addressing modes.
+
+@item vliw
+@cindex @code{vliw} function attribute, MeP
+The @code{vliw} attribute tells the compiler to emit
+instructions in VLIW mode instead of core mode.  Note that this
+attribute is not allowed unless a VLIW coprocessor has been configured
+and enabled through command-line options.
+@end table
+
+@node MicroBlaze Function Attributes
+@subsection MicroBlaze Function Attributes
+
+These function attributes are supported on MicroBlaze targets:
+
+@table @code
+@item save_volatiles
+@cindex @code{save_volatiles} function attribute, MicroBlaze
+Use this attribute to indicate that the function is
+an interrupt handler.  All volatile registers (in addition to non-volatile
+registers) are saved in the function prologue.  If the function is a leaf
+function, only volatiles used by the function are saved.  A normal function
+return is generated instead of a return from interrupt.
+
+@item break_handler
+@cindex @code{break_handler} function attribute, MicroBlaze
+@cindex break handler functions
+Use this attribute to indicate that
+the specified function is a break handler.  The compiler generates function
+entry and exit sequences suitable for use in an break handler when this
+attribute is present. The return from @code{break_handler} is done through
+the @code{rtbd} instead of @code{rtsd}.
+
+@smallexample
+void f () __attribute__ ((break_handler));
+@end smallexample
+@end table
+
+@node Microsoft Windows Function Attributes
+@subsection Microsoft Windows Function Attributes
+
+The following attributes are available on Microsoft Windows and Symbian OS
+targets.
+
+@table @code
+@item dllexport
+@cindex @code{dllexport} function attribute
+@cindex @code{__declspec(dllexport)}
+On Microsoft Windows targets and Symbian OS targets the
+@code{dllexport} attribute causes the compiler to provide a global
+pointer to a pointer in a DLL, so that it can be referenced with the
+@code{dllimport} attribute.  On Microsoft Windows targets, the pointer
+name is formed by combining @code{_imp__} and the function or variable
+name.
+
+You can use @code{__declspec(dllexport)} as a synonym for
+@code{__attribute__ ((dllexport))} for compatibility with other
+compilers.
+
+On systems that support the @code{visibility} attribute, this
+attribute also implies ``default'' visibility.  It is an error to
+explicitly specify any other visibility.
+
+GCC's default behavior is to emit all inline functions with the
+@code{dllexport} attribute.  Since this can cause object file-size bloat,
+you can use @option{-fno-keep-inline-dllexport}, which tells GCC to
+ignore the attribute for inlined functions unless the 
+@option{-fkeep-inline-functions} flag is used instead.
+
+The attribute is ignored for undefined symbols.
+
+When applied to C++ classes, the attribute marks defined non-inlined
+member functions and static data members as exports.  Static consts
+initialized in-class are not marked unless they are also defined
+out-of-class.
+
+For Microsoft Windows targets there are alternative methods for
+including the symbol in the DLL's export table such as using a
+@file{.def} file with an @code{EXPORTS} section or, with GNU ld, using
+the @option{--export-all} linker flag.
+
+@item dllimport
+@cindex @code{dllimport} function attribute
+@cindex @code{__declspec(dllimport)}
+On Microsoft Windows and Symbian OS targets, the @code{dllimport}
+attribute causes the compiler to reference a function or variable via
+a global pointer to a pointer that is set up by the DLL exporting the
+symbol.  The attribute implies @code{extern}.  On Microsoft Windows
+targets, the pointer name is formed by combining @code{_imp__} and the
+function or variable name.
+
+You can use @code{__declspec(dllimport)} as a synonym for
+@code{__attribute__ ((dllimport))} for compatibility with other
+compilers.
+
+On systems that support the @code{visibility} attribute, this
+attribute also implies ``default'' visibility.  It is an error to
+explicitly specify any other visibility.
+
+Currently, the attribute is ignored for inlined functions.  If the
+attribute is applied to a symbol @emph{definition}, an error is reported.
+If a symbol previously declared @code{dllimport} is later defined, the
+attribute is ignored in subsequent references, and a warning is emitted.
+The attribute is also overridden by a subsequent declaration as
+@code{dllexport}.
+
+When applied to C++ classes, the attribute marks non-inlined
+member functions and static data members as imports.  However, the
+attribute is ignored for virtual methods to allow creation of vtables
+using thunks.
+
+On the SH Symbian OS target the @code{dllimport} attribute also has
+another affect---it can cause the vtable and run-time type information
+for a class to be exported.  This happens when the class has a
+dllimported constructor or a non-inline, non-pure virtual function
+and, for either of those two conditions, the class also has an inline
+constructor or destructor and has a key function that is defined in
+the current translation unit.
+
+For Microsoft Windows targets the use of the @code{dllimport}
+attribute on functions is not necessary, but provides a small
+performance benefit by eliminating a thunk in the DLL@.  The use of the
+@code{dllimport} attribute on imported variables can be avoided by passing the
+@option{--enable-auto-import} switch to the GNU linker.  As with
+functions, using the attribute for a variable eliminates a thunk in
+the DLL@.
+
+One drawback to using this attribute is that a pointer to a
+@emph{variable} marked as @code{dllimport} cannot be used as a constant
+address. However, a pointer to a @emph{function} with the
+@code{dllimport} attribute can be used as a constant initializer; in
+this case, the address of a stub function in the import lib is
+referenced.  On Microsoft Windows targets, the attribute can be disabled
+for functions by setting the @option{-mnop-fun-dllimport} flag.
+@end table
+
+@node MIPS Function Attributes
+@subsection MIPS Function Attributes
+
+These function attributes are supported by the MIPS back end:
+
+@table @code
+@item interrupt
+@cindex @code{interrupt} function attribute, MIPS
+Use this attribute to indicate
+that the specified function is an interrupt handler.  The compiler generates
+function entry and exit sequences suitable for use in an interrupt handler
+when this attribute is present.
+
+You can use the following attributes to modify the behavior
+of an interrupt handler:
+@table @code
+@item use_shadow_register_set
+@cindex @code{use_shadow_register_set} function attribute, MIPS
+Assume that the handler uses a shadow register set, instead of
+the main general-purpose registers.
+
+@item keep_interrupts_masked
+@cindex @code{keep_interrupts_masked} function attribute, MIPS
+Keep interrupts masked for the whole function.  Without this attribute,
+GCC tries to reenable interrupts for as much of the function as it can.
+
+@item use_debug_exception_return
+@cindex @code{use_debug_exception_return} function attribute, MIPS
+Return using the @code{deret} instruction.  Interrupt handlers that don't
+have this attribute return using @code{eret} instead.
+@end table
+
+You can use any combination of these attributes, as shown below:
+@smallexample
+void __attribute__ ((interrupt)) v0 ();
+void __attribute__ ((interrupt, use_shadow_register_set)) v1 ();
+void __attribute__ ((interrupt, keep_interrupts_masked)) v2 ();
+void __attribute__ ((interrupt, use_debug_exception_return)) v3 ();
+void __attribute__ ((interrupt, use_shadow_register_set,
+                     keep_interrupts_masked)) v4 ();
+void __attribute__ ((interrupt, use_shadow_register_set,
+                     use_debug_exception_return)) v5 ();
+void __attribute__ ((interrupt, keep_interrupts_masked,
+                     use_debug_exception_return)) v6 ();
+void __attribute__ ((interrupt, use_shadow_register_set,
+                     keep_interrupts_masked,
+                     use_debug_exception_return)) v7 ();
+@end smallexample
+
+@item long_call
+@itemx near
+@itemx far
+@cindex indirect calls, MIPS
+@cindex @code{long_call} function attribute, MIPS
+@cindex @code{near} function attribute, MIPS
+@cindex @code{far} function attribute, MIPS
+These attributes specify how a particular function is called on MIPS@.
+The attributes override the @option{-mlong-calls} (@pxref{MIPS Options})
+command-line switch.  The @code{long_call} and @code{far} attributes are
+synonyms, and cause the compiler to always call
+the function by first loading its address into a register, and then using
+the contents of that register.  The @code{near} attribute has the opposite
+effect; it specifies that non-PIC calls should be made using the more
+efficient @code{jal} instruction.
+
+@item mips16
+@itemx nomips16
+@cindex @code{mips16} function attribute, MIPS
+@cindex @code{nomips16} function attribute, MIPS
+
+On MIPS targets, you can use the @code{mips16} and @code{nomips16}
+function attributes to locally select or turn off MIPS16 code generation.
+A function with the @code{mips16} attribute is emitted as MIPS16 code,
+while MIPS16 code generation is disabled for functions with the
+@code{nomips16} attribute.  These attributes override the
+@option{-mips16} and @option{-mno-mips16} options on the command line
+(@pxref{MIPS Options}).
+
+When compiling files containing mixed MIPS16 and non-MIPS16 code, the
+preprocessor symbol @code{__mips16} reflects the setting on the command line,
+not that within individual functions.  Mixed MIPS16 and non-MIPS16 code
+may interact badly with some GCC extensions such as @code{__builtin_apply}
+(@pxref{Constructing Calls}).
+
+@item micromips, MIPS
+@itemx nomicromips, MIPS
+@cindex @code{micromips} function attribute
+@cindex @code{nomicromips} function attribute
+
+On MIPS targets, you can use the @code{micromips} and @code{nomicromips}
+function attributes to locally select or turn off microMIPS code generation.
+A function with the @code{micromips} attribute is emitted as microMIPS code,
+while microMIPS code generation is disabled for functions with the
+@code{nomicromips} attribute.  These attributes override the
+@option{-mmicromips} and @option{-mno-micromips} options on the command line
+(@pxref{MIPS Options}).
+
+When compiling files containing mixed microMIPS and non-microMIPS code, the
+preprocessor symbol @code{__mips_micromips} reflects the setting on the
+command line,
+not that within individual functions.  Mixed microMIPS and non-microMIPS code
+may interact badly with some GCC extensions such as @code{__builtin_apply}
+(@pxref{Constructing Calls}).
+
+@item nocompression
+@cindex @code{nocompression} function attribute, MIPS
+On MIPS targets, you can use the @code{nocompression} function attribute
+to locally turn off MIPS16 and microMIPS code generation.  This attribute
+overrides the @option{-mips16} and @option{-mmicromips} options on the
+command line (@pxref{MIPS Options}).
+@end table
+
+@node MSP430 Function Attributes
+@subsection MSP430 Function Attributes
+
+These function attributes are supported by the MSP430 back end:
+
+@table @code
+@item critical
+@cindex @code{critical} function attribute, MSP430
+Critical functions disable interrupts upon entry and restore the
+previous interrupt state upon exit.  Critical functions cannot also
+have the @code{naked} or @code{reentrant} attributes.  They can have
+the @code{interrupt} attribute.
+
+@item interrupt
+@cindex @code{interrupt} function attribute, MSP430
+Use this attribute to indicate
+that the specified function is an interrupt handler.  The compiler generates
+function entry and exit sequences suitable for use in an interrupt handler
+when this attribute is present.
+
+You can provide an argument to the interrupt
+attribute which specifies a name or number.  If the argument is a
+number it indicates the slot in the interrupt vector table (0 - 31) to
+which this handler should be assigned.  If the argument is a name it
+is treated as a symbolic name for the vector slot.  These names should
+match up with appropriate entries in the linker script.  By default
+the names @code{watchdog} for vector 26, @code{nmi} for vector 30 and
+@code{reset} for vector 31 are recognized.
+
+@item naked
+@cindex @code{naked} function attribute, MSP430
+This attribute allows the compiler to construct the
+requisite function declaration, while allowing the body of the
+function to be assembly code. The specified function will not have
+prologue/epilogue sequences generated by the compiler. Only basic
+@code{asm} statements can safely be included in naked functions
+(@pxref{Basic Asm}). While using extended @code{asm} or a mixture of
+basic @code{asm} and C code may appear to work, they cannot be
+depended upon to work reliably and are not supported.
+
+@item reentrant
+@cindex @code{reentrant} function attribute, MSP430
+Reentrant functions disable interrupts upon entry and enable them
+upon exit.  Reentrant functions cannot also have the @code{naked}
+or @code{critical} attributes.  They can have the @code{interrupt}
+attribute.
+
+@item wakeup
+@cindex @code{wakeup} function attribute, MSP430
+This attribute only applies to interrupt functions.  It is silently
+ignored if applied to a non-interrupt function.  A wakeup interrupt
+function will rouse the processor from any low-power state that it
+might be in when the function exits.
+@end table
+
+@node NDS32 Function Attributes
+@subsection NDS32 Function Attributes
+
+These function attributes are supported by the NDS32 back end:
+
+@table @code
+@item exception
+@cindex @code{exception} function attribute
+@cindex exception handler functions, NDS32
+Use this attribute on the NDS32 target to indicate that the specified function
+is an exception handler.  The compiler will generate corresponding sections
+for use in an exception handler.
+
+@item interrupt
+@cindex @code{interrupt} function attribute, NDS32
+On NDS32 target, this attribute indicates that the specified function
+is an interrupt handler.  The compiler generates corresponding sections
+for use in an interrupt handler.  You can use the following attributes
+to modify the behavior:
+@table @code
+@item nested
+@cindex @code{nested} function attribute, NDS32
+This interrupt service routine is interruptible.
+@item not_nested
+@cindex @code{not_nested} function attribute, NDS32
+This interrupt service routine is not interruptible.
+@item nested_ready
+@cindex @code{nested_ready} function attribute, NDS32
+This interrupt service routine is interruptible after @code{PSW.GIE}
+(global interrupt enable) is set.  This allows interrupt service routine to
+finish some short critical code before enabling interrupts.
+@item save_all
+@cindex @code{save_all} function attribute, NDS32
+The system will help save all registers into stack before entering
+interrupt handler.
+@item partial_save
+@cindex @code{partial_save} function attribute, NDS32
+The system will help save caller registers into stack before entering
+interrupt handler.
+@end table
+
+@item naked
+@cindex @code{naked} function attribute, NDS32
+This attribute allows the compiler to construct the
+requisite function declaration, while allowing the body of the
+function to be assembly code. The specified function will not have
+prologue/epilogue sequences generated by the compiler. Only basic
+@code{asm} statements can safely be included in naked functions
+(@pxref{Basic Asm}). While using extended @code{asm} or a mixture of
+basic @code{asm} and C code may appear to work, they cannot be
+depended upon to work reliably and are not supported.
+
+@item reset
+@cindex @code{reset} function attribute, NDS32
+@cindex reset handler functions
+Use this attribute on the NDS32 target to indicate that the specified function
+is a reset handler.  The compiler will generate corresponding sections
+for use in a reset handler.  You can use the following attributes
+to provide extra exception handling:
+@table @code
+@item nmi
+@cindex @code{nmi} function attribute, NDS32
+Provide a user-defined function to handle NMI exception.
+@item warm
+@cindex @code{warm} function attribute, NDS32
+Provide a user-defined function to handle warm reset exception.
+@end table
+@end table
+
+@node Nios II Function Attributes
+@subsection Nios II Function Attributes
+
+These function attributes are supported by the Nios II back end:
+
+@table @code
+@item target (@var{options})
+@cindex @code{target} function attribute
+As discussed in @ref{Common Function Attributes}, this attribute 
+allows specification of target-specific compilation options.
+
+When compiling for Nios II, the following options are allowed:
 
 @table @samp
-@item abm
-@itemx no-abm
-@cindex @code{target("abm")} function attribute, x86
-Enable/disable the generation of the advanced bit instructions.
+@item custom-@var{insn}=@var{N}
+@itemx no-custom-@var{insn}
+@cindex @code{target("custom-@var{insn}=@var{N}")} function attribute, Nios II
+@cindex @code{target("no-custom-@var{insn}")} function attribute, Nios II
+Each @samp{custom-@var{insn}=@var{N}} attribute locally enables use of a
+custom instruction with encoding @var{N} when generating code that uses 
+@var{insn}.  Similarly, @samp{no-custom-@var{insn}} locally inhibits use of
+the custom instruction @var{insn}.
+These target attributes correspond to the
+@option{-mcustom-@var{insn}=@var{N}} and @option{-mno-custom-@var{insn}}
+command-line options, and support the same set of @var{insn} keywords.
+@xref{Nios II Options}, for more information.
 
-@item aes
-@itemx no-aes
-@cindex @code{target("aes")} function attribute, x86
-Enable/disable the generation of the AES instructions.
-
-@item default
-@cindex @code{target("default")} function attribute, x86
-@xref{Function Multiversioning}, where it is used to specify the
-default function version.
-
-@item mmx
-@itemx no-mmx
-@cindex @code{target("mmx")} function attribute, x86
-Enable/disable the generation of the MMX instructions.
-
-@item pclmul
-@itemx no-pclmul
-@cindex @code{target("pclmul")} function attribute, x86
-Enable/disable the generation of the PCLMUL instructions.
-
-@item popcnt
-@itemx no-popcnt
-@cindex @code{target("popcnt")} function attribute, x86
-Enable/disable the generation of the POPCNT instruction.
-
-@item sse
-@itemx no-sse
-@cindex @code{target("sse")} function attribute, x86
-Enable/disable the generation of the SSE instructions.
-
-@item sse2
-@itemx no-sse2
-@cindex @code{target("sse2")} function attribute, x86
-Enable/disable the generation of the SSE2 instructions.
-
-@item sse3
-@itemx no-sse3
-@cindex @code{target("sse3")} function attribute, x86
-Enable/disable the generation of the SSE3 instructions.
-
-@item sse4
-@itemx no-sse4
-@cindex @code{target("sse4")} function attribute, x86
-Enable/disable the generation of the SSE4 instructions (both SSE4.1
-and SSE4.2).
-
-@item sse4.1
-@itemx no-sse4.1
-@cindex @code{target("sse4.1")} function attribute, x86
-Enable/disable the generation of the sse4.1 instructions.
-
-@item sse4.2
-@itemx no-sse4.2
-@cindex @code{target("sse4.2")} function attribute, x86
-Enable/disable the generation of the sse4.2 instructions.
-
-@item sse4a
-@itemx no-sse4a
-@cindex @code{target("sse4a")} function attribute, x86
-Enable/disable the generation of the SSE4A instructions.
-
-@item fma4
-@itemx no-fma4
-@cindex @code{target("fma4")} function attribute, x86
-Enable/disable the generation of the FMA4 instructions.
-
-@item xop
-@itemx no-xop
-@cindex @code{target("xop")} function attribute, x86
-Enable/disable the generation of the XOP instructions.
-
-@item lwp
-@itemx no-lwp
-@cindex @code{target("lwp")} function attribute, x86
-Enable/disable the generation of the LWP instructions.
-
-@item ssse3
-@itemx no-ssse3
-@cindex @code{target("ssse3")} function attribute, x86
-Enable/disable the generation of the SSSE3 instructions.
-
-@item cld
-@itemx no-cld
-@cindex @code{target("cld")} function attribute, x86
-Enable/disable the generation of the CLD before string moves.
-
-@item fancy-math-387
-@itemx no-fancy-math-387
-@cindex @code{target("fancy-math-387")} function attribute, x86
-Enable/disable the generation of the @code{sin}, @code{cos}, and
-@code{sqrt} instructions on the 387 floating-point unit.
-
-@item fused-madd
-@itemx no-fused-madd
-@cindex @code{target("fused-madd")} function attribute, x86
-Enable/disable the generation of the fused multiply/add instructions.
-
-@item ieee-fp
-@itemx no-ieee-fp
-@cindex @code{target("ieee-fp")} function attribute, x86
-Enable/disable the generation of floating point that depends on IEEE arithmetic.
-
-@item inline-all-stringops
-@itemx no-inline-all-stringops
-@cindex @code{target("inline-all-stringops")} function attribute, x86
-Enable/disable inlining of string operations.
-
-@item inline-stringops-dynamically
-@itemx no-inline-stringops-dynamically
-@cindex @code{target("inline-stringops-dynamically")} function attribute, x86
-Enable/disable the generation of the inline code to do small string
-operations and calling the library routines for large operations.
-
-@item align-stringops
-@itemx no-align-stringops
-@cindex @code{target("align-stringops")} function attribute, x86
-Do/do not align destination of inlined string operations.
-
-@item recip
-@itemx no-recip
-@cindex @code{target("recip")} function attribute, x86
-Enable/disable the generation of RCPSS, RCPPS, RSQRTSS and RSQRTPS
-instructions followed an additional Newton-Raphson step instead of
-doing a floating-point division.
-
-@item arch=@var{ARCH}
-@cindex @code{target("arch=@var{ARCH}")} function attribute, x86
-Specify the architecture to generate code for in compiling the function.
-
-@item tune=@var{TUNE}
-@cindex @code{target("tune=@var{TUNE}")} function attribute, x86
-Specify the architecture to tune for in compiling the function.
-
-@item fpmath=@var{FPMATH}
-@cindex @code{target("fpmath=@var{FPMATH}")} function attribute, x86
-Specify which floating-point unit to use.  The
-@code{target("fpmath=sse,387")} option must be specified as
-@code{target("fpmath=sse+387")} because the comma would separate
-different options.
+@item custom-fpu-cfg=@var{name}
+@cindex @code{target("custom-fpu-cfg=@var{name}")} function attribute, Nios II
+This attribute corresponds to the @option{-mcustom-fpu-cfg=@var{name}}
+command-line option, to select a predefined set of custom instructions
+named @var{name}.
+@xref{Nios II Options}, for more information.
 @end table
+@end table
+
+@node PowerPC Function Attributes
+@subsection PowerPC Function Attributes
+
+These function attributes are supported by the PowerPC back end:
+
+@table @code
+@item longcall
+@itemx shortcall
+@cindex indirect calls, PowerPC
+@cindex @code{longcall} function attribute, PowerPC
+@cindex @code{shortcall} function attribute, PowerPC
+The @code{longcall} attribute
+indicates that the function might be far away from the call site and
+require a different (more expensive) calling sequence.  The
+@code{shortcall} attribute indicates that the function is always close
+enough for the shorter calling sequence to be used.  These attributes
+override both the @option{-mlongcall} switch and
+the @code{#pragma longcall} setting.
+
+@xref{RS/6000 and PowerPC Options}, for more information on whether long
+calls are necessary.
+
+@item target (@var{options})
+@cindex @code{target} function attribute
+As discussed in @ref{Common Function Attributes}, this attribute 
+allows specification of target-specific compilation options.
 
 On the PowerPC, the following options are allowed:
 
@@ -4293,35 +4468,193 @@ compilation tunes for the @var{CPU} architecture, and not the
 default tuning specified on the command line.
 @end table
 
-When compiling for Nios II, the following options are allowed:
-
-@table @samp
-@item custom-@var{insn}=@var{N}
-@itemx no-custom-@var{insn}
-@cindex @code{target("custom-@var{insn}=@var{N}")} function attribute, Nios II
-@cindex @code{target("no-custom-@var{insn}")} function attribute, Nios II
-Each @samp{custom-@var{insn}=@var{N}} attribute locally enables use of a
-custom instruction with encoding @var{N} when generating code that uses 
-@var{insn}.  Similarly, @samp{no-custom-@var{insn}} locally inhibits use of
-the custom instruction @var{insn}.
-These target attributes correspond to the
-@option{-mcustom-@var{insn}=@var{N}} and @option{-mno-custom-@var{insn}}
-command-line options, and support the same set of @var{insn} keywords.
-@xref{Nios II Options}, for more information.
-
-@item custom-fpu-cfg=@var{name}
-@cindex @code{target("custom-fpu-cfg=@var{name}")} function attribute, Nios II
-This attribute corresponds to the @option{-mcustom-fpu-cfg=@var{name}}
-command-line option, to select a predefined set of custom instructions
-named @var{name}.
-@xref{Nios II Options}, for more information.
+On the PowerPC, the inliner does not inline a
+function that has different target options than the caller, unless the
+callee has a subset of the target options of the caller.
 @end table
 
-On the x86 and PowerPC back ends, the inliner does not inline a
-function that has different target options than the caller, unless the
-callee has a subset of the target options of the caller.  For example
-a function declared with @code{target("sse3")} can inline a function
-with @code{target("sse2")}, since @code{-msse3} implies @code{-msse2}.
+@node RL78 Function Attributes
+@subsection RL78 Function Attributes
+
+These function attributes are supported by the RL78 back end:
+
+@table @code
+@item interrupt
+@itemx brk_interrupt
+@cindex @code{interrupt} function attribute, RL78
+@cindex @code{brk_interrupt} function attribute, RL78
+These attributes indicate
+that the specified function is an interrupt handler.  The compiler generates
+function entry and exit sequences suitable for use in an interrupt handler
+when this attribute is present.
+
+Use @code{brk_interrupt} instead of @code{interrupt} for
+handlers intended to be used with the @code{BRK} opcode (i.e.@: those
+that must end with @code{RETB} instead of @code{RETI}).
+
+@item naked
+@cindex @code{naked} function attribute, RL78
+This attribute allows the compiler to construct the
+requisite function declaration, while allowing the body of the
+function to be assembly code. The specified function will not have
+prologue/epilogue sequences generated by the compiler. Only basic
+@code{asm} statements can safely be included in naked functions
+(@pxref{Basic Asm}). While using extended @code{asm} or a mixture of
+basic @code{asm} and C code may appear to work, they cannot be
+depended upon to work reliably and are not supported.
+@end table
+
+@node RX Function Attributes
+@subsection RX Function Attributes
+
+These function attributes are supported by the RX back end:
+
+@table @code
+@item fast_interrupt
+@cindex @code{fast_interrupt} function attribute, RX
+Use this attribute on the RX port to indicate that the specified
+function is a fast interrupt handler.  This is just like the
+@code{interrupt} attribute, except that @code{freit} is used to return
+instead of @code{reit}.
+
+@item interrupt
+@cindex @code{interrupt} function attribute, RX
+Use this attribute to indicate
+that the specified function is an interrupt handler.  The compiler generates
+function entry and exit sequences suitable for use in an interrupt handler
+when this attribute is present.
+
+On RX targets, you may specify one or more vector numbers as arguments
+to the attribute, as well as naming an alternate table name.
+Parameters are handled sequentially, so one handler can be assigned to
+multiple entries in multiple tables.  One may also pass the magic
+string @code{"$default"} which causes the function to be used for any
+unfilled slots in the current table.
+
+This example shows a simple assignment of a function to one vector in
+the default table (note that preprocessor macros may be used for
+chip-specific symbolic vector names):
+@smallexample
+void __attribute__ ((interrupt (5))) txd1_handler ();
+@end smallexample
+
+This example assigns a function to two slots in the default table
+(using preprocessor macros defined elsewhere) and makes it the default
+for the @code{dct} table:
+@smallexample
+void __attribute__ ((interrupt (RXD1_VECT,RXD2_VECT,"dct","$default")))
+	txd1_handler ();
+@end smallexample
+
+@item naked
+@cindex @code{naked} function attribute, RX
+This attribute allows the compiler to construct the
+requisite function declaration, while allowing the body of the
+function to be assembly code. The specified function will not have
+prologue/epilogue sequences generated by the compiler. Only basic
+@code{asm} statements can safely be included in naked functions
+(@pxref{Basic Asm}). While using extended @code{asm} or a mixture of
+basic @code{asm} and C code may appear to work, they cannot be
+depended upon to work reliably and are not supported.
+
+@item vector
+@cindex @code{vector} function attribute, RX
+This RX attribute is similar to the @code{interrupt} attribute, including its
+parameters, but does not make the function an interrupt-handler type
+function (i.e. it retains the normal C function calling ABI).  See the
+@code{interrupt} attribute for a description of its arguments.
+@end table
+
+@node S/390 Function Attributes
+@subsection S/390 Function Attributes
+
+These function attributes are supported on the S/390:
+
+@table @code
+@item hotpatch (@var{halfwords-before-function-label},@var{halfwords-after-function-label})
+@cindex @code{hotpatch} function attribute, S/390
+
+On S/390 System z targets, you can use this function attribute to
+make GCC generate a ``hot-patching'' function prologue.  If the
+@option{-mhotpatch=} command-line option is used at the same time,
+the @code{hotpatch} attribute takes precedence.  The first of the
+two arguments specifies the number of halfwords to be added before
+the function label.  A second argument can be used to specify the
+number of halfwords to be added after the function label.  For
+both arguments the maximum allowed value is 1000000.
+
+If both arguments are zero, hotpatching is disabled.
+@end table
+
+@node SH Function Attributes
+@subsection SH Function Attributes
+
+These function attributes are supported on the SH family of processors:
+
+@table @code
+@item function_vector
+@cindex @code{function_vector} function attribute, SH
+@cindex calling functions through the function vector on SH2A
+On SH2A targets, this attribute declares a function to be called using the
+TBR relative addressing mode.  The argument to this attribute is the entry
+number of the same function in a vector table containing all the TBR
+relative addressable functions.  For correct operation the TBR must be setup
+accordingly to point to the start of the vector table before any functions with
+this attribute are invoked.  Usually a good place to do the initialization is
+the startup routine.  The TBR relative vector table can have at max 256 function
+entries.  The jumps to these functions are generated using a SH2A specific,
+non delayed branch instruction JSR/N @@(disp8,TBR).  You must use GAS and GLD
+from GNU binutils version 2.7 or later for this attribute to work correctly.
+
+In an application, for a function being called once, this attribute
+saves at least 8 bytes of code; and if other successive calls are being
+made to the same function, it saves 2 bytes of code per each of these
+calls.
+
+@item interrupt_handler
+@cindex @code{interrupt_handler} function attribute, SH
+Use this attribute to
+indicate that the specified function is an interrupt handler.  The compiler
+generates function entry and exit sequences suitable for use in an
+interrupt handler when this attribute is present.
+
+@item nosave_low_regs
+@cindex @code{nosave_low_regs} function attribute, SH
+Use this attribute on SH targets to indicate that an @code{interrupt_handler}
+function should not save and restore registers R0..R7.  This can be used on SH3*
+and SH4* targets that have a second R0..R7 register bank for non-reentrant
+interrupt handlers.
+
+@item renesas
+@cindex @code{renesas} function attribute, SH
+On SH targets this attribute specifies that the function or struct follows the
+Renesas ABI.
+
+@item resbank
+@cindex @code{resbank} function attribute, SH
+On the SH2A target, this attribute enables the high-speed register
+saving and restoration using a register bank for @code{interrupt_handler}
+routines.  Saving to the bank is performed automatically after the CPU
+accepts an interrupt that uses a register bank.
+
+The nineteen 32-bit registers comprising general register R0 to R14,
+control register GBR, and system registers MACH, MACL, and PR and the
+vector table address offset are saved into a register bank.  Register
+banks are stacked in first-in last-out (FILO) sequence.  Restoration
+from the bank is executed by issuing a RESBANK instruction.
+
+@item sp_switch
+@cindex @code{sp_switch} function attribute, SH
+Use this attribute on the SH to indicate an @code{interrupt_handler}
+function should switch to an alternate stack.  It expects a string
+argument that names a global variable holding the address of the
+alternate stack.
+
+@smallexample
+void *alt_stack;
+void f () __attribute__ ((interrupt_handler,
+                          sp_switch ("alt_stack")));
+@end smallexample
 
 @item trap_exit
 @cindex @code{trap_exit} function attribute, SH
@@ -4333,252 +4666,337 @@ argument specifying the trap number to be used.
 @cindex @code{trapa_handler} function attribute, SH
 On SH targets this function attribute is similar to @code{interrupt_handler}
 but it does not save and restore all registers.
+@end table
 
-@item unused
-@cindex @code{unused} function attribute
-This attribute, attached to a function, means that the function is meant
-to be possibly unused.  GCC does not produce a warning for this
-function.
+@node SPU Function Attributes
+@subsection SPU Function Attributes
 
-@item used
-@cindex @code{used} function attribute
-This attribute, attached to a function, means that code must be emitted
-for the function even if it appears that the function is not referenced.
-This is useful, for example, when the function is referenced only in
-inline assembly.
+These function attributes are supported by the SPU back end:
 
-When applied to a member function of a C++ class template, the
-attribute also means that the function is instantiated if the
-class itself is instantiated.
+@table @code
+@item naked
+@cindex @code{naked} function attribute, SPU
+This attribute allows the compiler to construct the
+requisite function declaration, while allowing the body of the
+function to be assembly code. The specified function will not have
+prologue/epilogue sequences generated by the compiler. Only basic
+@code{asm} statements can safely be included in naked functions
+(@pxref{Basic Asm}). While using extended @code{asm} or a mixture of
+basic @code{asm} and C code may appear to work, they cannot be
+depended upon to work reliably and are not supported.
+@end table
 
-@item vector
-@cindex @code{vector} function attribute, RX
-This RX attribute is similar to the @code{interrupt} attribute, including its
-parameters, but does not make the function an interrupt-handler type
-function (i.e. it retains the normal C function calling ABI).  See the
-@code{interrupt} attribute for a description of its arguments.
+@node Symbian OS Function Attributes
+@subsection Symbian OS Function Attributes
 
-@item version_id
-@cindex @code{version_id} function attribute, IA-64
-This IA-64 HP-UX attribute, attached to a global variable or function, renames a
-symbol to contain a version string, thus allowing for function level
-versioning.  HP-UX system header files may use function level versioning
-for some system calls.
+@xref{Microsoft Windows Function Attributes}, for discussion of the
+@code{dllexport} and @code{dllimport} attributes.
 
-@smallexample
-extern int foo () __attribute__((version_id ("20040821")));
-@end smallexample
+@node Visium Function Attributes
+@subsection Visium Function Attributes
 
-@noindent
-Calls to @var{foo} are mapped to calls to @var{foo@{20040821@}}.
+These function attributes are supported by the Visium back end:
 
-@item visibility ("@var{visibility_type}")
-@cindex @code{visibility} function attribute
-This attribute affects the linkage of the declaration to which it is attached.
-There are four supported @var{visibility_type} values: default,
-hidden, protected or internal visibility.
+@table @code
+@item interrupt
+@cindex @code{interrupt} function attribute, Visium
+Use this attribute to indicate
+that the specified function is an interrupt handler.  The compiler generates
+function entry and exit sequences suitable for use in an interrupt handler
+when this attribute is present.
+@end table
 
-@smallexample
-void __attribute__ ((visibility ("protected")))
-f () @{ /* @r{Do something.} */; @}
-int i __attribute__ ((visibility ("hidden")));
-@end smallexample
+@node x86 Function Attributes
+@subsection x86 Function Attributes
 
-The possible values of @var{visibility_type} correspond to the
-visibility settings in the ELF gABI.
+These function attributes are supported by the x86 back end:
 
-@table @dfn
-@c keep this list of visibilities in alphabetical order.
+@table @code
+@item cdecl
+@cindex @code{cdecl} function attribute, x86-32
+@cindex functions that pop the argument stack on x86-32
+@opindex mrtd
+On the x86-32 targets, the @code{cdecl} attribute causes the compiler to
+assume that the calling function pops off the stack space used to
+pass arguments.  This is
+useful to override the effects of the @option{-mrtd} switch.
+
+@item fastcall
+@cindex @code{fastcall} function attribute, x86-32
+@cindex functions that pop the argument stack on x86-32
+On x86-32 targets, the @code{fastcall} attribute causes the compiler to
+pass the first argument (if of integral type) in the register ECX and
+the second argument (if of integral type) in the register EDX@.  Subsequent
+and other typed arguments are passed on the stack.  The called function
+pops the arguments off the stack.  If the number of arguments is variable all
+arguments are pushed on the stack.
+
+@item thiscall
+@cindex @code{thiscall} function attribute, x86-32
+@cindex functions that pop the argument stack on x86-32
+On x86-32 targets, the @code{thiscall} attribute causes the compiler to
+pass the first argument (if of integral type) in the register ECX.
+Subsequent and other typed arguments are passed on the stack. The called
+function pops the arguments off the stack.
+If the number of arguments is variable all arguments are pushed on the
+stack.
+The @code{thiscall} attribute is intended for C++ non-static member functions.
+As a GCC extension, this calling convention can be used for C functions
+and for static member methods.
+
+@item ms_abi
+@itemx sysv_abi
+@cindex @code{ms_abi} function attribute, x86
+@cindex @code{sysv_abi} function attribute, x86
+
+On 32-bit and 64-bit x86 targets, you can use an ABI attribute
+to indicate which calling convention should be used for a function.  The
+@code{ms_abi} attribute tells the compiler to use the Microsoft ABI,
+while the @code{sysv_abi} attribute tells the compiler to use the ABI
+used on GNU/Linux and other systems.  The default is to use the Microsoft ABI
+when targeting Windows.  On all other systems, the default is the x86/AMD ABI.
+
+Note, the @code{ms_abi} attribute for Microsoft Windows 64-bit targets currently
+requires the @option{-maccumulate-outgoing-args} option.
+
+@item callee_pop_aggregate_return (@var{number})
+@cindex @code{callee_pop_aggregate_return} function attribute, x86
+
+On x86-32 targets, you can use this attribute to control how
+aggregates are returned in memory.  If the caller is responsible for
+popping the hidden pointer together with the rest of the arguments, specify
+@var{number} equal to zero.  If callee is responsible for popping the
+hidden pointer, specify @var{number} equal to one.  
+
+The default x86-32 ABI assumes that the callee pops the
+stack for hidden pointer.  However, on x86-32 Microsoft Windows targets,
+the compiler assumes that the
+caller pops the stack for hidden pointer.
+
+@item ms_hook_prologue
+@cindex @code{ms_hook_prologue} function attribute, x86
+
+On 32-bit and 64-bit x86 targets, you can use
+this function attribute to make GCC generate the ``hot-patching'' function
+prologue used in Win32 API functions in Microsoft Windows XP Service Pack 2
+and newer.
+
+@item regparm (@var{number})
+@cindex @code{regparm} function attribute, x86
+@cindex functions that are passed arguments in registers on x86-32
+On x86-32 targets, the @code{regparm} attribute causes the compiler to
+pass arguments number one to @var{number} if they are of integral type
+in registers EAX, EDX, and ECX instead of on the stack.  Functions that
+take a variable number of arguments continue to be passed all of their
+arguments on the stack.
+
+Beware that on some ELF systems this attribute is unsuitable for
+global functions in shared libraries with lazy binding (which is the
+default).  Lazy binding sends the first call via resolving code in
+the loader, which might assume EAX, EDX and ECX can be clobbered, as
+per the standard calling conventions.  Solaris 8 is affected by this.
+Systems with the GNU C Library version 2.1 or higher
+and FreeBSD are believed to be
+safe since the loaders there save EAX, EDX and ECX.  (Lazy binding can be
+disabled with the linker or the loader if desired, to avoid the
+problem.)
+
+@item sseregparm
+@cindex @code{sseregparm} function attribute, x86
+On x86-32 targets with SSE support, the @code{sseregparm} attribute
+causes the compiler to pass up to 3 floating-point arguments in
+SSE registers instead of on the stack.  Functions that take a
+variable number of arguments continue to pass all of their
+floating-point arguments on the stack.
+
+@item force_align_arg_pointer
+@cindex @code{force_align_arg_pointer} function attribute, x86
+On x86 targets, the @code{force_align_arg_pointer} attribute may be
+applied to individual function definitions, generating an alternate
+prologue and epilogue that realigns the run-time stack if necessary.
+This supports mixing legacy codes that run with a 4-byte aligned stack
+with modern codes that keep a 16-byte stack for SSE compatibility.
+
+@item stdcall
+@cindex @code{stdcall} function attribute, x86-32
+@cindex functions that pop the argument stack on x86-32
+On x86-32 targets, the @code{stdcall} attribute causes the compiler to
+assume that the called function pops off the stack space used to
+pass arguments, unless it takes a variable number of arguments.
+
+@item target (@var{options})
+@cindex @code{target} function attribute
+As discussed in @ref{Common Function Attributes}, this attribute 
+allows specification of target-specific compilation options.
+
+On the x86, the following options are allowed:
+@table @samp
+@item abm
+@itemx no-abm
+@cindex @code{target("abm")} function attribute, x86
+Enable/disable the generation of the advanced bit instructions.
+
+@item aes
+@itemx no-aes
+@cindex @code{target("aes")} function attribute, x86
+Enable/disable the generation of the AES instructions.
 
 @item default
-Default visibility is the normal case for the object file format.
-This value is available for the visibility attribute to override other
-options that may change the assumed visibility of entities.
+@cindex @code{target("default")} function attribute, x86
+@xref{Function Multiversioning}, where it is used to specify the
+default function version.
 
-On ELF, default visibility means that the declaration is visible to other
-modules and, in shared libraries, means that the declared entity may be
-overridden.
+@item mmx
+@itemx no-mmx
+@cindex @code{target("mmx")} function attribute, x86
+Enable/disable the generation of the MMX instructions.
 
-On Darwin, default visibility means that the declaration is visible to
-other modules.
+@item pclmul
+@itemx no-pclmul
+@cindex @code{target("pclmul")} function attribute, x86
+Enable/disable the generation of the PCLMUL instructions.
 
-Default visibility corresponds to ``external linkage'' in the language.
+@item popcnt
+@itemx no-popcnt
+@cindex @code{target("popcnt")} function attribute, x86
+Enable/disable the generation of the POPCNT instruction.
 
-@item hidden
-Hidden visibility indicates that the entity declared has a new
-form of linkage, which we call ``hidden linkage''.  Two
-declarations of an object with hidden linkage refer to the same object
-if they are in the same shared object.
+@item sse
+@itemx no-sse
+@cindex @code{target("sse")} function attribute, x86
+Enable/disable the generation of the SSE instructions.
 
-@item internal
-Internal visibility is like hidden visibility, but with additional
-processor specific semantics.  Unless otherwise specified by the
-psABI, GCC defines internal visibility to mean that a function is
-@emph{never} called from another module.  Compare this with hidden
-functions which, while they cannot be referenced directly by other
-modules, can be referenced indirectly via function pointers.  By
-indicating that a function cannot be called from outside the module,
-GCC may for instance omit the load of a PIC register since it is known
-that the calling function loaded the correct value.
+@item sse2
+@itemx no-sse2
+@cindex @code{target("sse2")} function attribute, x86
+Enable/disable the generation of the SSE2 instructions.
 
-@item protected
-Protected visibility is like default visibility except that it
-indicates that references within the defining module bind to the
-definition in that module.  That is, the declared entity cannot be
-overridden by another module.
+@item sse3
+@itemx no-sse3
+@cindex @code{target("sse3")} function attribute, x86
+Enable/disable the generation of the SSE3 instructions.
 
+@item sse4
+@itemx no-sse4
+@cindex @code{target("sse4")} function attribute, x86
+Enable/disable the generation of the SSE4 instructions (both SSE4.1
+and SSE4.2).
+
+@item sse4.1
+@itemx no-sse4.1
+@cindex @code{target("sse4.1")} function attribute, x86
+Enable/disable the generation of the sse4.1 instructions.
+
+@item sse4.2
+@itemx no-sse4.2
+@cindex @code{target("sse4.2")} function attribute, x86
+Enable/disable the generation of the sse4.2 instructions.
+
+@item sse4a
+@itemx no-sse4a
+@cindex @code{target("sse4a")} function attribute, x86
+Enable/disable the generation of the SSE4A instructions.
+
+@item fma4
+@itemx no-fma4
+@cindex @code{target("fma4")} function attribute, x86
+Enable/disable the generation of the FMA4 instructions.
+
+@item xop
+@itemx no-xop
+@cindex @code{target("xop")} function attribute, x86
+Enable/disable the generation of the XOP instructions.
+
+@item lwp
+@itemx no-lwp
+@cindex @code{target("lwp")} function attribute, x86
+Enable/disable the generation of the LWP instructions.
+
+@item ssse3
+@itemx no-ssse3
+@cindex @code{target("ssse3")} function attribute, x86
+Enable/disable the generation of the SSSE3 instructions.
+
+@item cld
+@itemx no-cld
+@cindex @code{target("cld")} function attribute, x86
+Enable/disable the generation of the CLD before string moves.
+
+@item fancy-math-387
+@itemx no-fancy-math-387
+@cindex @code{target("fancy-math-387")} function attribute, x86
+Enable/disable the generation of the @code{sin}, @code{cos}, and
+@code{sqrt} instructions on the 387 floating-point unit.
+
+@item fused-madd
+@itemx no-fused-madd
+@cindex @code{target("fused-madd")} function attribute, x86
+Enable/disable the generation of the fused multiply/add instructions.
+
+@item ieee-fp
+@itemx no-ieee-fp
+@cindex @code{target("ieee-fp")} function attribute, x86
+Enable/disable the generation of floating point that depends on IEEE arithmetic.
+
+@item inline-all-stringops
+@itemx no-inline-all-stringops
+@cindex @code{target("inline-all-stringops")} function attribute, x86
+Enable/disable inlining of string operations.
+
+@item inline-stringops-dynamically
+@itemx no-inline-stringops-dynamically
+@cindex @code{target("inline-stringops-dynamically")} function attribute, x86
+Enable/disable the generation of the inline code to do small string
+operations and calling the library routines for large operations.
+
+@item align-stringops
+@itemx no-align-stringops
+@cindex @code{target("align-stringops")} function attribute, x86
+Do/do not align destination of inlined string operations.
+
+@item recip
+@itemx no-recip
+@cindex @code{target("recip")} function attribute, x86
+Enable/disable the generation of RCPSS, RCPPS, RSQRTSS and RSQRTPS
+instructions followed an additional Newton-Raphson step instead of
+doing a floating-point division.
+
+@item arch=@var{ARCH}
+@cindex @code{target("arch=@var{ARCH}")} function attribute, x86
+Specify the architecture to generate code for in compiling the function.
+
+@item tune=@var{TUNE}
+@cindex @code{target("tune=@var{TUNE}")} function attribute, x86
+Specify the architecture to tune for in compiling the function.
+
+@item fpmath=@var{FPMATH}
+@cindex @code{target("fpmath=@var{FPMATH}")} function attribute, x86
+Specify which floating-point unit to use.  You must specify the
+@code{target("fpmath=sse,387")} option as
+@code{target("fpmath=sse+387")} because the comma would separate
+different options.
 @end table
 
-All visibilities are supported on many, but not all, ELF targets
-(supported when the assembler supports the @samp{.visibility}
-pseudo-op).  Default visibility is supported everywhere.  Hidden
-visibility is supported on Darwin targets.
-
-The visibility attribute should be applied only to declarations that
-would otherwise have external linkage.  The attribute should be applied
-consistently, so that the same entity should not be declared with
-different settings of the attribute.
-
-In C++, the visibility attribute applies to types as well as functions
-and objects, because in C++ types have linkage.  A class must not have
-greater visibility than its non-static data member types and bases,
-and class members default to the visibility of their class.  Also, a
-declaration without explicit visibility is limited to the visibility
-of its type.
-
-In C++, you can mark member functions and static member variables of a
-class with the visibility attribute.  This is useful if you know a
-particular method or static member variable should only be used from
-one shared object; then you can mark it hidden while the rest of the
-class has default visibility.  Care must be taken to avoid breaking
-the One Definition Rule; for example, it is usually not useful to mark
-an inline method as hidden without marking the whole class as hidden.
-
-A C++ namespace declaration can also have the visibility attribute.
-
-@smallexample
-namespace nspace1 __attribute__ ((visibility ("protected")))
-@{ /* @r{Do something.} */; @}
-@end smallexample
-
-This attribute applies only to the particular namespace body, not to
-other definitions of the same namespace; it is equivalent to using
-@samp{#pragma GCC visibility} before and after the namespace
-definition (@pxref{Visibility Pragmas}).
-
-In C++, if a template argument has limited visibility, this
-restriction is implicitly propagated to the template instantiation.
-Otherwise, template instantiations and specializations default to the
-visibility of their template.
-
-If both the template and enclosing class have explicit visibility, the
-visibility from the template is used.
-
-@item vliw
-@cindex @code{vliw} function attribute, MeP
-On MeP, the @code{vliw} attribute tells the compiler to emit
-instructions in VLIW mode instead of core mode.  Note that this
-attribute is not allowed unless a VLIW coprocessor has been configured
-and enabled through command-line options.
-
-@item warn_unused_result
-@cindex @code{warn_unused_result} function attribute
-The @code{warn_unused_result} attribute causes a warning to be emitted
-if a caller of the function with this attribute does not use its
-return value.  This is useful for functions where not checking
-the result is either a security problem or always a bug, such as
-@code{realloc}.
-
-@smallexample
-int fn () __attribute__ ((warn_unused_result));
-int foo ()
-@{
-  if (fn () < 0) return -1;
-  fn ();
-  return 0;
-@}
-@end smallexample
-
-@noindent
-results in warning on line 5.
-
-@item weak
-@cindex @code{weak} function attribute
-The @code{weak} attribute causes the declaration to be emitted as a weak
-symbol rather than a global.  This is primarily useful in defining
-library functions that can be overridden in user code, though it can
-also be used with non-function declarations.  Weak symbols are supported
-for ELF targets, and also for a.out targets when using the GNU assembler
-and linker.
-
-@item weakref
-@itemx weakref ("@var{target}")
-@cindex @code{weakref} function attribute
-The @code{weakref} attribute marks a declaration as a weak reference.
-Without arguments, it should be accompanied by an @code{alias} attribute
-naming the target symbol.  Optionally, the @var{target} may be given as
-an argument to @code{weakref} itself.  In either case, @code{weakref}
-implicitly marks the declaration as @code{weak}.  Without a
-@var{target}, given as an argument to @code{weakref} or to @code{alias},
-@code{weakref} is equivalent to @code{weak}.
-
-@smallexample
-static int x() __attribute__ ((weakref ("y")));
-/* is equivalent to... */
-static int x() __attribute__ ((weak, weakref, alias ("y")));
-/* and to... */
-static int x() __attribute__ ((weakref));
-static int x() __attribute__ ((alias ("y")));
-@end smallexample
-
-A weak reference is an alias that does not by itself require a
-definition to be given for the target symbol.  If the target symbol is
-only referenced through weak references, then it becomes a @code{weak}
-undefined symbol.  If it is directly referenced, however, then such
-strong references prevail, and a definition is required for the
-symbol, not necessarily in the same translation unit.
-
-The effect is equivalent to moving all references to the alias to a
-separate translation unit, renaming the alias to the aliased symbol,
-declaring it as weak, compiling the two separate translation units and
-performing a reloadable link on them.
-
-At present, a declaration to which @code{weakref} is attached can
-only be @code{static}.
-
+On the x86, the inliner does not inline a
+function that has different target options than the caller, unless the
+callee has a subset of the target options of the caller.  For example
+a function declared with @code{target("sse3")} can inline a function
+with @code{target("sse2")}, since @code{-msse3} implies @code{-msse2}.
 @end table
 
-You can specify multiple attributes in a declaration by separating them
-by commas within the double parentheses or by immediately following an
-attribute declaration with another attribute declaration.
+@node Xstormy16 Function Attributes
+@subsection Xstormy16 Function Attributes
 
-@cindex @code{#pragma}, reason for not using
-@cindex pragma, reason for not using
-Some people object to the @code{__attribute__} feature, suggesting that
-ISO C's @code{#pragma} should be used instead.  At the time
-@code{__attribute__} was designed, there were two reasons for not doing
-this.
+These function attributes are supported by the Xstormy16 back end:
 
-@enumerate
-@item
-It is impossible to generate @code{#pragma} commands from a macro.
-
-@item
-There is no telling what the same @code{#pragma} might mean in another
-compiler.
-@end enumerate
-
-These two reasons applied to almost any application that might have been
-proposed for @code{#pragma}.  It was basically a mistake to use
-@code{#pragma} for @emph{anything}.
-
-The ISO C99 standard includes @code{_Pragma}, which now allows pragmas
-to be generated from macros.  In addition, a @code{#pragma GCC}
-namespace is now in use for GCC-specific pragmas.  However, it has been
-found convenient to use @code{__attribute__} to achieve a natural
-attachment of attributes to their corresponding declarations, whereas
-@code{#pragma GCC} is of use for constructs that do not naturally form
-part of the grammar.  @xref{Pragmas,,Pragmas Accepted by GCC}.
+@table @code
+@item interrupt
+@cindex @code{interrupt} function attribute, Xstormy16
+Use this attribute to indicate
+that the specified function is an interrupt handler.  The compiler generates
+function entry and exit sequences suitable for use in an interrupt handler
+when this attribute is present.
+@end table
 
 @node Label Attributes
 @section Label Attributes
@@ -4669,11 +5087,13 @@ each attribute is one of the following:
 Empty.  Empty attributes are ignored.
 
 @item
-A word (which may be an identifier such as @code{unused}, or a reserved
+An attribute name
+(which may be an identifier such as @code{unused}, or a reserved
 word such as @code{const}).
 
 @item
-A word, followed by, in parentheses, parameters for the attribute.
+An attribute name followed by a parenthesized list of
+parameters for the attribute.
 These parameters take one of the following forms:
 
 @itemize @bullet
@@ -4694,6 +5114,13 @@ with the list being a single string constant.
 
 An @dfn{attribute specifier list} is a sequence of one or more attribute
 specifiers, not separated by any other tokens.
+
+You may optionally specify attribute names with @samp{__}
+preceding and following the name.
+This allows you to use them in header files without
+being concerned about a possible macro of the same name.  For example,
+you may use the attribute name @code{__noreturn__} instead of @code{noreturn}.
+
 
 @subsubheading Label Attributes
 
@@ -4970,11 +5397,6 @@ types (@pxref{Type Attributes}).
 Other front ends might define more attributes
 (@pxref{C++ Extensions,,Extensions to the C++ Language}).
 
-You may also specify attributes with @samp{__} preceding and following
-each keyword.  This allows you to use them in header files without
-being concerned about a possible macro of the same name.  For example,
-you may use @code{__aligned__} instead of @code{aligned}.
-
 @xref{Attribute Syntax}, for details of the exact syntax for using
 attributes.
 
@@ -5046,7 +5468,7 @@ in an @code{__attribute__} still only provides you with 8-byte
 alignment.  See your linker documentation for further information.
 
 The @code{aligned} attribute can also be used for functions
-(@pxref{Function Attributes}.)
+(@pxref{Common Function Attributes}.)
 
 @item cleanup (@var{cleanup_function})
 @cindex @code{cleanup} variable attribute
@@ -5100,7 +5522,7 @@ argument, which must be a string, is printed in the warning if
 present.
 
 The @code{deprecated} attribute can also be used for functions and
-types (@pxref{Function Attributes}, @pxref{Type Attributes}.)
+types (@pxref{Common Function Attributes}, @pxref{Type Attributes}).
 
 @item mode (@var{mode})
 @cindex @code{mode} variable attribute
@@ -5293,15 +5715,18 @@ compilers.
 
 @item weak
 @cindex @code{weak} variable attribute
-The @code{weak} attribute is described in @ref{Function Attributes}.
+The @code{weak} attribute is described in
+@ref{Common Function Attributes}.
 
 @item dllimport
 @cindex @code{dllimport} variable attribute
-The @code{dllimport} attribute is described in @ref{Function Attributes}.
+The @code{dllimport} attribute is described in
+@ref{Microsoft Windows Function Attributes}.
 
 @item dllexport
 @cindex @code{dllexport} variable attribute
-The @code{dllexport} attribute is described in @ref{Function Attributes}.
+The @code{dllexport} attribute is described in
+@ref{Microsoft Windows Function Attributes}.
 
 @end table
 
@@ -5732,12 +6157,6 @@ types: @code{aligned}, @code{packed}, @code{transparent_union},
 and @code{bnd_variable_size}.  Other attributes are defined for
 functions (@pxref{Function Attributes}), labels (@pxref{Label 
 Attributes}) and for variables (@pxref{Variable Attributes}).
-
-You may also specify any one of these attributes with @samp{__}
-preceding and following its keyword.  This allows you to use these
-attributes in header files without being concerned about a possible
-macro of the same name.  For example, you may use @code{__aligned__}
-instead of @code{aligned}.
 
 You may specify type attributes in an enum, struct or union type
 declaration or definition, or for other types in a @code{typedef}
