@@ -3771,7 +3771,7 @@ assign_parms (tree fndecl)
   crtl->args.size = CEIL_ROUND (crtl->args.size,
 					   PARM_BOUNDARY / BITS_PER_UNIT);
 
-#ifdef ARGS_GROW_DOWNWARD
+#if ARGS_GROW_DOWNWARD
   crtl->args.arg_offset_rtx
     = (all.stack_args_size.var == 0 ? GEN_INT (-all.stack_args_size.constant)
        : expand_expr (size_diffop (all.stack_args_size.var,
@@ -4070,7 +4070,7 @@ locate_and_pad_parm (machine_mode passed_mode, tree type, int in_regs,
   if (crtl->preferred_stack_boundary < boundary)
     crtl->preferred_stack_boundary = boundary;
 
-#ifdef ARGS_GROW_DOWNWARD
+#if ARGS_GROW_DOWNWARD
   locate->slot_offset.constant = -initial_offset_ptr->constant;
   if (initial_offset_ptr->var)
     locate->slot_offset.var = size_binop (MINUS_EXPR, ssize_int (0),
@@ -4175,7 +4175,7 @@ pad_to_arg_alignment (struct args_size *offset_ptr, int boundary,
 	  tree offset = size_binop (PLUS_EXPR,
 				    ARGS_SIZE_TREE (*offset_ptr),
 				    sp_offset_tree);
-#ifdef ARGS_GROW_DOWNWARD
+#if ARGS_GROW_DOWNWARD
 	  tree rounded = round_down (offset, boundary / BITS_PER_UNIT);
 #else
 	  tree rounded = round_up   (offset, boundary / BITS_PER_UNIT);
@@ -4191,7 +4191,7 @@ pad_to_arg_alignment (struct args_size *offset_ptr, int boundary,
       else
 	{
 	  offset_ptr->constant = -sp_offset +
-#ifdef ARGS_GROW_DOWNWARD
+#if ARGS_GROW_DOWNWARD
 	    FLOOR_ROUND (offset_ptr->constant + sp_offset, boundary_in_bytes);
 #else
 	    CEIL_ROUND (offset_ptr->constant + sp_offset, boundary_in_bytes);
