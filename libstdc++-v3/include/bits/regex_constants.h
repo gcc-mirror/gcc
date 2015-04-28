@@ -63,6 +63,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _S_awk,
     _S_grep,
     _S_egrep,
+    _S_polynomial,
     _S_syntax_last
   };
 
@@ -168,6 +169,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   constexpr syntax_option_type egrep =
     static_cast<syntax_option_type>(1 << _S_egrep);
+
+  /**
+   * Extension: Ensure both space complexity of compiled regex and
+   * time complexity execution are not exponential.
+   * If specified in a regex with back-references, the exception
+   * regex_constants::error_complexity will be thrown.
+   */
+  constexpr syntax_option_type __polynomial =
+    static_cast<syntax_option_type>(1 << _S_polynomial);
 
   constexpr inline syntax_option_type
   operator&(syntax_option_type __a, syntax_option_type __b)
