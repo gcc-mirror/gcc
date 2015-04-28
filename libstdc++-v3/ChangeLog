@@ -1,3 +1,10 @@
+2015-04-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR libstdc++/65909
+	* testsuite/lib/libstdc++.exp (check_v3_target_namedlocale):
+	Make the generated test program fail gracefully if the target
+	doesn't	support passing command-line arguments.
+
 2015-04-27  Federico Lenarduzzi  <federico.lenarduzzi@tallertechnologies.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
