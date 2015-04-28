@@ -4339,11 +4339,7 @@ cfg_layout_finalize (void)
 #endif
   force_one_exit_fallthru ();
   rtl_register_cfg_hooks ();
-  if (reload_completed
-#ifdef HAVE_epilogue
-      && !HAVE_epilogue
-#endif
-      )
+  if (reload_completed && !HAVE_epilogue)
     fixup_fallthru_exit_predecessor ();
   fixup_reorder_chain ();
 

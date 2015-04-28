@@ -1,5 +1,17 @@
 2015-04-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* defaults.h (gen_epilogue): New function.
+	* alias.c (init_alias_analysis): don't check if HAVE_epilogue is
+	defined.
+	* cfgrtl.c (cfg_layout_finalize): Likewise.
+	* df-scan.c: Likewise.
+	* function.c (thread_prologue_and_epilogue_insns): Likewise.
+	(reposition_prologue_and_epilogue_notes): Likewise.
+	* reorg.c (find_end_label): Likewise.
+	* toplev.c: Likewise.
+
+2015-04-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* bb-reorder.c (HAVE_return): Don't check if its undefined.
 	* defaults.h (gen_simple_return): New function.
 	(gen_simple_return): Likewise.

@@ -6066,7 +6066,6 @@ thread_prologue_and_epilogue_insns (void)
   if (exit_fallthru_edge == NULL)
     goto epilogue_done;
 
-#ifdef HAVE_epilogue
   if (HAVE_epilogue)
     {
       start_sequence ();
@@ -6090,7 +6089,6 @@ thread_prologue_and_epilogue_insns (void)
 	set_return_jump_label (returnjump);
     }
   else
-#endif
     {
       basic_block cur_bb;
 
@@ -6183,7 +6181,6 @@ epilogue_done:
     }
 #endif
 
-#ifdef HAVE_epilogue
   if (epilogue_end)
     {
       rtx_insn *insn, *next;
@@ -6201,7 +6198,6 @@ epilogue_done:
 	    reorder_insns (insn, insn, PREV_INSN (epilogue_end));
 	}
     }
-#endif
 
   bitmap_clear (&bb_flags);
 
@@ -6217,8 +6213,11 @@ epilogue_done:
 void
 reposition_prologue_and_epilogue_notes (void)
 {
-#if defined (HAVE_prologue) || defined (HAVE_epilogue) \
-    || defined (HAVE_sibcall_epilogue)
+#if ! defined (HAVE_prologue) && ! defined (HAVE_sibcall_epilogue)
+  if (!HAVE_epilogue)
+    return;
+#endif
+
   /* Since the hash table is created on demand, the fact that it is
      non-null is a signal that it is non-empty.  */
   if (prologue_insn_hash != NULL)
@@ -6315,7 +6314,6 @@ reposition_prologue_and_epilogue_notes (void)
 	    }
 	}
     }
-#endif /* HAVE_prologue or HAVE_epilogue */
 }
 
 /* Returns the name of function declared by FNDECL.  */
