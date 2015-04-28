@@ -1,3 +1,13 @@
+2015-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+            Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* c-ada-spec.c (in_function): Delete.
+	(dump_generic_ada_node): Do not change in_function and remove the
+	redundant code dealing with it.
+	(print_ada_declaration): Do not change in_function.  Use INDENT_INCR.
+	(print_ada_methods): Output the static member functions in a nested
+	package after the regular methods as well as associated renamings.
+
 2015-04-22  Release Manager
 
 	* GCC 5.1.0 released.
