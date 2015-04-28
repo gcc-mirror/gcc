@@ -1,3 +1,10 @@
+2015-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* Makefile.am (SUBDIRS): Move python to hosted_source.
+	* Makefile.in: Regenerate.
+	* acinclude.m4 (glibcxx_SUBDIRS): Reorder.
+	* configure: Regenerate.
+
 2015-04-28  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/65883

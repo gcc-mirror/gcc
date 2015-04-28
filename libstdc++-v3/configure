@@ -4951,7 +4951,7 @@ $as_echo "$ac_cv_path_EGREP" >&6; }
   # expandable list at autoconf time; the second provides an expandable list
   # (i.e., shell variable) at configure time.
 
-  SUBDIRS='include libsupc++ python src src/c++98 src/c++11 doc po testsuite'
+  SUBDIRS='include libsupc++ src src/c++98 src/c++11 doc po testsuite python'
 
   # These need to be absolute paths, yet at the same time need to
   # canonicalize only relative paths, because then amd will not unmount
@@ -78026,7 +78026,7 @@ $as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
 fi
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:21:0
+libtool_VERSION=6:22:0
 
 # Everything parsed; figure out what files and settings to use.
 case $enable_symvers in
@@ -79713,7 +79713,7 @@ ac_config_files="$ac_config_files doc/xsl/customization.xsl"
 # append it here.  Only modify Makefiles that have just been created.
 #
 # Also, get rid of this simulated-VPATH thing that automake does.
-ac_config_files="$ac_config_files include/Makefile libsupc++/Makefile python/Makefile src/Makefile src/c++98/Makefile src/c++11/Makefile doc/Makefile po/Makefile testsuite/Makefile"
+ac_config_files="$ac_config_files include/Makefile libsupc++/Makefile src/Makefile src/c++98/Makefile src/c++11/Makefile doc/Makefile po/Makefile testsuite/Makefile python/Makefile"
 
 
 ac_config_commands="$ac_config_commands generate-headers"
@@ -80930,13 +80930,13 @@ do
     "doc/xsl/customization.xsl") CONFIG_FILES="$CONFIG_FILES doc/xsl/customization.xsl" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
     "libsupc++/Makefile") CONFIG_FILES="$CONFIG_FILES libsupc++/Makefile" ;;
-    "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "src/c++98/Makefile") CONFIG_FILES="$CONFIG_FILES src/c++98/Makefile" ;;
     "src/c++11/Makefile") CONFIG_FILES="$CONFIG_FILES src/c++11/Makefile" ;;
     "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
     "po/Makefile") CONFIG_FILES="$CONFIG_FILES po/Makefile" ;;
     "testsuite/Makefile") CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
+    "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
     "generate-headers") CONFIG_COMMANDS="$CONFIG_COMMANDS generate-headers" ;;
 
   *) as_fn_error "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
@@ -82736,17 +82736,6 @@ _EOF
    . ${multi_basedir}/config-ml.in
    { ml_norecursion=; unset ml_norecursion;}
  ;;
-    "python/Makefile":F) cat > vpsed$$ << \_EOF
-s!`test -f '$<' || echo '$(srcdir)/'`!!
-_EOF
-   sed -f vpsed$$ $ac_file > tmp$$
-   mv tmp$$ $ac_file
-   rm vpsed$$
-   echo 'MULTISUBDIR =' >> $ac_file
-   ml_norecursion=yes
-   . ${multi_basedir}/config-ml.in
-   { ml_norecursion=; unset ml_norecursion;}
- ;;
     "src/Makefile":F) cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
@@ -82803,6 +82792,17 @@ _EOF
    { ml_norecursion=; unset ml_norecursion;}
  ;;
     "testsuite/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   { ml_norecursion=; unset ml_norecursion;}
+ ;;
+    "python/Makefile":F) cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
    sed -f vpsed$$ $ac_file > tmp$$
