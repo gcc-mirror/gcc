@@ -1,5 +1,10 @@
 2015-04-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_algo.h (random_shuffle): Only define for hosted
+	implementations.
+
+2015-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
 	* Makefile.am (SUBDIRS): Move python to hosted_source.
 	* Makefile.in: Regenerate.
 	* acinclude.m4 (glibcxx_SUBDIRS): Reorder.

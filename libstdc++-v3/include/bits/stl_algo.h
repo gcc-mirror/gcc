@@ -4420,6 +4420,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 				std::__iterator_category(__result));
     }
 
+#if _GLIBCXX_HOSTED
   /**
    *  @brief Randomly shuffle the elements of a sequence.
    *  @ingroup mutating_algorithms
@@ -4450,6 +4451,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	      std::iter_swap(__i, __j);
 	  }
     }
+#endif
 
   /**
    *  @brief Shuffle the elements of a sequence using a random number
