@@ -76,7 +76,7 @@ along with GCC; see the file COPYING3.  If not see
     An actual simple example is :
          log (x);   // Mostly dead call
      ==>
-         if (x < 0)
+         if (x <= 0)
              log (x);
      With this change, call to log (x) is effectively eliminated, as
      in majority of the cases, log won't be called with x out of
