@@ -2580,11 +2580,24 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 
   /* First we figure out where we're storing to.  */
   tree target = TREE_OPERAND (t, 0);
+  tree type = TREE_TYPE (target);
   target = cxx_eval_constant_expression (ctx, target,
 					 true,
 					 non_constant_p, overflow_p);
   if (*non_constant_p)
     return t;
+
+  if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (target), type))
+    {
+      /* For initialization of an empty base, the original target will be
+         *(base*)this, which the above evaluation resolves to the object
+	 argument, which has the derived type rather than the base type.  In
+	 this situation, just evaluate the initializer and return, since
+	 there's no actual data to store.  */
+      gcc_assert (is_empty_class (type));
+      return cxx_eval_constant_expression (ctx, init, false,
+					   non_constant_p, overflow_p);
+    }
 
   /* And then find the underlying variable.  */
   vec<tree,va_gc> *refs = make_tree_vector();
@@ -2622,7 +2635,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       *non_constant_p = true;
       return t;
     }
-  tree type = TREE_TYPE (object);
+  type = TREE_TYPE (object);
   while (!refs->is_empty())
     {
       if (*valp == NULL_TREE)
