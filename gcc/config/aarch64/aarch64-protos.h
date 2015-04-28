@@ -195,7 +195,7 @@ bool aarch64_uimm12_shift (HOST_WIDE_INT);
 const char *aarch64_output_casesi (rtx *);
 const char *aarch64_rewrite_selected_cpu (const char *name);
 
-enum aarch64_symbol_type aarch64_classify_symbol (rtx,
+enum aarch64_symbol_type aarch64_classify_symbol (rtx, rtx,
 						  enum aarch64_symbol_context);
 enum aarch64_symbol_type aarch64_classify_tls_symbol (rtx);
 enum reg_class aarch64_regno_regclass (unsigned);

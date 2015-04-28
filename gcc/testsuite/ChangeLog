@@ -1,3 +1,11 @@
+2015-04-28  Tejas Belagod  <tejas.belagod@arm.com>
+
+	Backport from mainline
+	2014-11-20  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/symbol-range.c: New.
+	* gcc.target/aarch64/symbol-range-tiny.c: New.
+
 2015-04-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline r222362
