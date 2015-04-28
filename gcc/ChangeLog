@@ -1,3 +1,7 @@
+2015-04-28  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-call-cdce.c: Fix example in header comment.
+
 2015-04-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/62283
