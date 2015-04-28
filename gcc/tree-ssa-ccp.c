@@ -208,6 +208,7 @@ static unsigned n_const_val;
 
 static void canonicalize_value (ccp_prop_value_t *);
 static bool ccp_fold_stmt (gimple_stmt_iterator *);
+static void ccp_lattice_meet (ccp_prop_value_t *, ccp_prop_value_t *);
 
 /* Dump constant propagation value VAL to file OUTF prefixed by PREFIX.  */
 
@@ -512,54 +513,51 @@ valid_lattice_transition (ccp_prop_value_t old_val, ccp_prop_value_t new_val)
    value is different from VAR's previous value.  */
 
 static bool
-set_lattice_value (tree var, ccp_prop_value_t new_val)
+set_lattice_value (tree var, ccp_prop_value_t *new_val)
 {
   /* We can deal with old UNINITIALIZED values just fine here.  */
   ccp_prop_value_t *old_val = &const_val[SSA_NAME_VERSION (var)];
 
-  canonicalize_value (&new_val);
+  canonicalize_value (new_val);
 
   /* We have to be careful to not go up the bitwise lattice
-     represented by the mask.
-     ???  This doesn't seem to be the best place to enforce this.  */
-  if (new_val.lattice_val == CONSTANT
+     represented by the mask.  Instead of dropping to VARYING
+     use the meet operator to retain a conservative value.
+     Missed optimizations like PR65851 makes this necessary.
+     It also ensures we converge to a stable lattice solution.  */
+  if (new_val->lattice_val == CONSTANT
       && old_val->lattice_val == CONSTANT
-      && TREE_CODE (new_val.value) == INTEGER_CST
-      && TREE_CODE (old_val->value) == INTEGER_CST)
-    {
-      widest_int diff = (wi::to_widest (new_val.value)
-			 ^ wi::to_widest (old_val->value));
-      new_val.mask = new_val.mask | old_val->mask | diff;
-    }
+      && TREE_CODE (new_val->value) != SSA_NAME)
+    ccp_lattice_meet (new_val, old_val);
 
-  gcc_checking_assert (valid_lattice_transition (*old_val, new_val));
+  gcc_checking_assert (valid_lattice_transition (*old_val, *new_val));
 
   /* If *OLD_VAL and NEW_VAL are the same, return false to inform the
      caller that this was a non-transition.  */
-  if (old_val->lattice_val != new_val.lattice_val
-      || (new_val.lattice_val == CONSTANT
-	  && (TREE_CODE (new_val.value) != TREE_CODE (old_val->value)
-	      || (TREE_CODE (new_val.value) == INTEGER_CST
-		  && (new_val.mask != old_val->mask
+  if (old_val->lattice_val != new_val->lattice_val
+      || (new_val->lattice_val == CONSTANT
+	  && (TREE_CODE (new_val->value) != TREE_CODE (old_val->value)
+	      || (TREE_CODE (new_val->value) == INTEGER_CST
+		  && (new_val->mask != old_val->mask
 		      || (wi::bit_and_not (wi::to_widest (old_val->value),
-					   new_val.mask)
-			  != wi::bit_and_not (wi::to_widest (new_val.value),
-					      new_val.mask))))
-	      || (TREE_CODE (new_val.value) != INTEGER_CST
-		  && !operand_equal_p (new_val.value, old_val->value, 0)))))
+					   new_val->mask)
+			  != wi::bit_and_not (wi::to_widest (new_val->value),
+					      new_val->mask))))
+	      || (TREE_CODE (new_val->value) != INTEGER_CST
+		  && !operand_equal_p (new_val->value, old_val->value, 0)))))
     {
       /* ???  We would like to delay creation of INTEGER_CSTs from
 	 partially constants here.  */
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  dump_lattice_value (dump_file, "Lattice value changed to ", new_val);
+	  dump_lattice_value (dump_file, "Lattice value changed to ", *new_val);
 	  fprintf (dump_file, ".  Adding SSA edges to worklist.\n");
 	}
 
-      *old_val = new_val;
+      *old_val = *new_val;
 
-      gcc_assert (new_val.lattice_val != UNINITIALIZED);
+      gcc_assert (new_val->lattice_val != UNINITIALIZED);
       return true;
     }
 
@@ -991,8 +989,7 @@ ccp_finalize (void)
    */
 
 static void
-ccp_lattice_meet (basic_block where,
-		  ccp_prop_value_t *val1, ccp_prop_value_t *val2)
+ccp_lattice_meet (ccp_prop_value_t *val1, ccp_prop_value_t *val2)
 {
   if (val1->lattice_val == UNDEFINED
       /* For UNDEFINED M SSA we can't always SSA because its definition
@@ -1042,7 +1039,7 @@ ccp_lattice_meet (basic_block where,
     }
   else if (val1->lattice_val == CONSTANT
 	   && val2->lattice_val == CONSTANT
-	   && simple_cst_equal (val1->value, val2->value) == 1)
+	   && operand_equal_p (val1->value, val2->value, 0))
     {
       /* Ci M Cj = Ci		if (i == j)
 	 Ci M Cj = VARYING	if (i != j)
@@ -1061,7 +1058,7 @@ ccp_lattice_meet (basic_block where,
 	*val1 = get_value_for_expr (val1->value, true);
       if (TREE_CODE (val2->value) == ADDR_EXPR)
 	tem = get_value_for_expr (val2->value, true);
-      ccp_lattice_meet (where, val1, &tem);
+      ccp_lattice_meet (val1, &tem);
     }
   else
     {
@@ -1122,7 +1119,7 @@ ccp_visit_phi_node (gphi *phi)
 	      first = false;
 	    }
 	  else
-	    ccp_lattice_meet (gimple_bb (phi), &new_val, &arg_val);
+	    ccp_lattice_meet (&new_val, &arg_val);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -1144,7 +1141,7 @@ ccp_visit_phi_node (gphi *phi)
     }
 
   /* Make the transition to the new value.  */
-  if (set_lattice_value (gimple_phi_result (phi), new_val))
+  if (set_lattice_value (gimple_phi_result (phi), &new_val))
     {
       if (new_val.lattice_val == VARYING)
 	return SSA_PROP_VARYING;
@@ -1745,6 +1742,15 @@ evaluate_stmt (gimple stmt)
     {
       fold_defer_overflow_warnings ();
       simplified = ccp_fold (stmt);
+      if (simplified && TREE_CODE (simplified) == SSA_NAME)
+	{
+	  val = *get_value (simplified);
+	  if (val.lattice_val != VARYING)
+	    {
+	      fold_undefer_overflow_warnings (true, stmt, 0);
+	      return val;
+	    }
+	}
       is_constant = simplified && is_gimple_min_invariant (simplified);
       fold_undefer_overflow_warnings (is_constant, stmt, 0);
       if (is_constant)
@@ -1753,6 +1759,7 @@ evaluate_stmt (gimple stmt)
 	  val.lattice_val = CONSTANT;
 	  val.value = simplified;
 	  val.mask = 0;
+	  return val;
 	}
     }
   /* If the statement is likely to have a VARYING result, then do not
@@ -2293,7 +2300,7 @@ visit_assignment (gimple stmt, tree *output_p)
 
       /* If STMT is an assignment to an SSA_NAME, we only have one
 	 value to set.  */
-      if (set_lattice_value (lhs, val))
+      if (set_lattice_value (lhs, &val))
 	{
 	  *output_p = lhs;
 	  if (val.lattice_val == VARYING)
@@ -2391,10 +2398,7 @@ ccp_visit_stmt (gimple stmt, edge *taken_edge_p, tree *output_p)
      SSA_NAMEs represent unknown modifications to their outputs.
      Mark them VARYING.  */
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_ALL_DEFS)
-    {
-      ccp_prop_value_t v = { VARYING, NULL_TREE, -1 };
-      set_lattice_value (def, v);
-    }
+    set_value_varying (def);
 
   return SSA_PROP_VARYING;
 }
