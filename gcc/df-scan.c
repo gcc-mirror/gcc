@@ -62,9 +62,6 @@ along with GCC; see the file COPYING3.  If not see
 typedef struct df_mw_hardreg *df_mw_hardreg_ptr;
 
 
-#ifndef HAVE_epilogue
-#define HAVE_epilogue 0
-#endif
 #ifndef HAVE_prologue
 #define HAVE_prologue 0
 #endif

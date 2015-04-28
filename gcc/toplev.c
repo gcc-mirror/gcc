@@ -128,9 +128,6 @@ along with GCC; see the file COPYING3.  If not see
 				   declarations for e.g. AIX 4.x.  */
 #endif
 
-#ifndef HAVE_epilogue
-#define HAVE_epilogue 0
-#endif
 #ifndef HAVE_prologue
 #define HAVE_prologue 0
 #endif

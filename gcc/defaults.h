@@ -1418,6 +1418,16 @@ gen_return ()
 }
 #endif
 
+#ifndef HAVE_epilogue
+#define HAVE_epilogue 0
+static inline rtx
+gen_epilogue ()
+{
+  gcc_unreachable ();
+  return NULL;
+}
+#endif
+
 #endif /* GCC_INSN_FLAGS_H  */
 
 #endif  /* ! GCC_DEFAULTS_H */

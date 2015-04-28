@@ -484,14 +484,12 @@ find_end_label (rtx kind)
 	}
       else
 	{
-#ifdef HAVE_epilogue
 	  if (HAVE_epilogue && ! HAVE_return)
 	    /* The RETURN insn has its delay slot filled so we cannot
 	       emit the label just before it.  Since we already have
 	       an epilogue and cannot emit a new RETURN, we cannot
 	       emit the label at all.  */
 	    return NULL;
-#endif /* HAVE_epilogue */
 
 	  /* Otherwise, make a new label and emit a RETURN and BARRIER,
 	     if needed.  */
