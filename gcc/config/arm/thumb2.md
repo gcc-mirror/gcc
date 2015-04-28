@@ -300,7 +300,7 @@
    ldr%?\\t%0, %1
    str%?\\t%1, %0
    str%?\\t%1, %0"
-  [(set_attr "type" "mov_reg,alu_imm,alu_imm,alu_imm,mov_imm,load1,load1,store1,store1")
+  [(set_attr "type" "mov_reg,mov_imm,mov_imm,mvn_imm,mov_imm,load1,load1,store1,store1")
    (set_attr "length" "2,4,2,4,4,4,4,4,4")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,no,yes,no,no,no,no,no,no")
@@ -486,12 +486,12 @@
 )
 
 (define_insn_and_split "*thumb2_movsicc_insn"
-  [(set (match_operand:SI 0 "s_register_operand" "=l,l,r,r,r,r,r,r,r,r,r")
+  [(set (match_operand:SI 0 "s_register_operand" "=l,l,r,r,r,r,r,r,r,r,r,r")
 	(if_then_else:SI
 	 (match_operator 3 "arm_comparison_operator"
 	  [(match_operand 4 "cc_register" "") (const_int 0)])
-	 (match_operand:SI 1 "arm_not_operand" "0 ,lPy,0 ,0,rI,K,rI,rI,K ,K,r")
-	 (match_operand:SI 2 "arm_not_operand" "lPy,0 ,rI,K,0 ,0,rI,K ,rI,K,r")))]
+	 (match_operand:SI 1 "arm_not_operand" "0 ,lPy,0 ,0,rI,K,I ,r,rI,K ,K,r")
+	 (match_operand:SI 2 "arm_not_operand" "lPy,0 ,rI,K,0 ,0,rI,I,K ,rI,K,r")))]
   "TARGET_THUMB2"
   "@
    it\\t%D3\;mov%D3\\t%0, %2
@@ -504,12 +504,14 @@
    #
    #
    #
+   #
    #"
    ; alt 6: ite\\t%d3\;mov%d3\\t%0, %1\;mov%D3\\t%0, %2
-   ; alt 7: ite\\t%d3\;mov%d3\\t%0, %1\;mvn%D3\\t%0, #%B2
-   ; alt 8: ite\\t%d3\;mvn%d3\\t%0, #%B1\;mov%D3\\t%0, %2
-   ; alt 9: ite\\t%d3\;mvn%d3\\t%0, #%B1\;mvn%D3\\t%0, #%B2
-   ; alt 10: ite\\t%d3\;mov%d3\\t%0, %1\;mov%D3\\t%0, %2
+   ; alt 7: ite\\t%d3\;mov%d3\\t%0, %1\;mov%D3\\t%0, %2
+   ; alt 8: ite\\t%d3\;mov%d3\\t%0, %1\;mvn%D3\\t%0, #%B2
+   ; alt 9: ite\\t%d3\;mvn%d3\\t%0, #%B1\;mov%D3\\t%0, %2
+   ; alt 10: ite\\t%d3\;mvn%d3\\t%0, #%B1\;mvn%D3\\t%0, #%B2
+   ; alt 11: ite\\t%d3\;mov%d3\\t%0, %1\;mov%D3\\t%0, %2
   "&& reload_completed"
   [(const_int 0)]
   {
@@ -540,10 +542,30 @@
                                                operands[2])));
     DONE;
   }
-  [(set_attr "length" "4,4,6,6,6,6,10,10,10,10,6")
-   (set_attr "enabled_for_depr_it" "yes,yes,no,no,no,no,no,no,no,no,yes")
+  [(set_attr "length" "4,4,6,6,6,6,10,8,10,10,10,6")
+   (set_attr "enabled_for_depr_it" "yes,yes,no,no,no,no,no,no,no,no,no,yes")
    (set_attr "conds" "use")
-   (set_attr "type" "multiple")]
+   (set_attr_alternative "type"
+                         [(if_then_else (match_operand 2 "const_int_operand" "")
+                                        (const_string "mov_imm")
+                                        (const_string "mov_reg"))
+                          (if_then_else (match_operand 1 "const_int_operand" "")
+                                        (const_string "mov_imm")
+                                        (const_string "mov_reg"))
+                          (if_then_else (match_operand 2 "const_int_operand" "")
+                                        (const_string "mov_imm")
+                                        (const_string "mov_reg"))
+                          (const_string "mvn_imm")
+                          (if_then_else (match_operand 1 "const_int_operand" "")
+                                        (const_string "mov_imm")
+                                        (const_string "mov_reg"))
+                          (const_string "mvn_imm")
+                          (const_string "multiple")
+                          (const_string "multiple")
+                          (const_string "multiple")
+                          (const_string "multiple")
+                          (const_string "multiple")
+                          (const_string "multiple")])]
 )
 
 (define_insn "*thumb2_movsfcc_soft_insn"
@@ -1182,7 +1204,11 @@
   "
   [(set_attr "predicable" "yes")
    (set_attr "length" "2")
-   (set_attr "type" "alu_sreg")]
+   (set_attr_alternative "type"
+                         [(if_then_else (match_operand 2 "const_int_operand" "")
+                                        (const_string "alu_imm")
+                                        (const_string "alu_sreg"))
+                          (const_string "alu_imm")])]
 )
 
 (define_insn "*thumb2_subsi_short"
@@ -1247,14 +1273,21 @@
   "
   [(set_attr "conds" "set")
    (set_attr "length" "2,2,4")
-   (set_attr "type" "alu_sreg")]
+   (set_attr_alternative "type"
+                         [(if_then_else (match_operand 2 "const_int_operand" "")
+                                        (const_string "alus_imm")
+                                        (const_string "alus_sreg"))
+                          (const_string "alus_imm")
+                          (if_then_else (match_operand 2 "const_int_operand" "")
+                                        (const_string "alus_imm")
+                                        (const_string "alus_sreg"))])]
 )
 
 (define_insn "*thumb2_addsi3_compare0_scratch"
   [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
-	  (plus:SI (match_operand:SI 0 "s_register_operand" "l,l,  r,r")
-		   (match_operand:SI 1 "arm_add_operand"    "Pv,l,IL,r"))
+	  (plus:SI (match_operand:SI 0 "s_register_operand" "l,  r")
+		   (match_operand:SI 1 "arm_add_operand"    "lPv,rIL"))
 	  (const_int 0)))]
   "TARGET_THUMB2"
   "*
@@ -1271,8 +1304,10 @@
       return \"cmn\\t%0, %1\";
   "
   [(set_attr "conds" "set")
-   (set_attr "length" "2,2,4,4")
-   (set_attr "type" "alus_imm,alus_sreg,alus_imm,alus_sreg")]
+   (set_attr "length" "2,4")
+   (set (attr "type") (if_then_else (match_operand 2 "const_int_operand" "")
+                                    (const_string "alus_imm")
+                                    (const_string "alus_sreg")))]
 )
 
 (define_insn "*thumb2_mulsi_short"
