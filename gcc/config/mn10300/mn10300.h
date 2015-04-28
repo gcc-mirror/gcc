@@ -579,7 +579,7 @@ do {									     \
    than accessing full words.  */
 #define SLOW_BYTE_ACCESS 1
 
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 /* According expr.c, a value of around 6 should minimize code size, and
    for the MN10300 series, that's our primary concern.  */

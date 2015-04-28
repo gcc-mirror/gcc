@@ -710,7 +710,7 @@ do {									\
 
 /* Indirect calls are expensive, never turn a direct call
    into an indirect call.  */
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 /* The four different data regions on the v850.  */
 typedef enum 

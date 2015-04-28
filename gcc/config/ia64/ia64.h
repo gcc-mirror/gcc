@@ -1178,7 +1178,7 @@ do {									\
    Indirect function calls are more expensive that direct function calls, so
    don't cse function addresses.  */
 
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 
 /* Dividing the output into sections.  */

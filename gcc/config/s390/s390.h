@@ -745,7 +745,7 @@ do {									\
 #define MAX_MOVE_MAX 16
 
 /* Don't perform CSE on function addresses.  */
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 /* This value is used in tree-sra to decide whether it might benefical
    to split a struct move into several word-size moves.  For S/390

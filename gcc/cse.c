@@ -3183,12 +3183,10 @@ fold_rtx (rtx x, rtx_insn *insn)
 	}
       return x;
 
-#ifdef NO_FUNCTION_CSE
     case CALL:
-      if (CONSTANT_P (XEXP (XEXP (x, 0), 0)))
+      if (NO_FUNCTION_CSE && CONSTANT_P (XEXP (XEXP (x, 0), 0)))
 	return x;
       break;
-#endif
 
     /* Anything else goes through the loop below.  */
     default:

@@ -933,7 +933,7 @@ do {									     \
    then copy it into a register, thus actually letting the address be
    cse'ed.  */
 
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 /* Define this to be nonzero if shift instructions ignore all but the low-order
    few bits.  */

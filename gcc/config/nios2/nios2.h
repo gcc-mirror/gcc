@@ -306,7 +306,7 @@ typedef struct nios2_args
 
 /* It is as good to call a constant function address as to call an address
    kept in a register.  */
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 /* Position independent code.  */
 

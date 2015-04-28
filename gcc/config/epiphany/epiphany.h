@@ -692,7 +692,7 @@ typedef struct GTY (()) machine_function
 /* Define this macro if it is as good or better to call a constant
    function address than to call an address kept in a register.  */
 /* On the EPIPHANY, calling through registers is slow.  */
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 /* Section selection.  */
 /* WARNING: These section names also appear in dwarf2out.c.  */

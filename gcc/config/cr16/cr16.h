@@ -467,7 +467,7 @@ struct cumulative_args
 
 /* It is as good or better to call a constant function address than to
    call an address kept in a register.  */
-#define NO_FUNCTION_CSE
+#define NO_FUNCTION_CSE 1
 
 /* Dividing the output into sections.  */
 
