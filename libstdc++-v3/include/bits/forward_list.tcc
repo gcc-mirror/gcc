@@ -253,7 +253,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     void
     forward_list<_Tp, _Alloc>::
     splice_after(const_iterator __pos, forward_list&&,
-		 const_iterator __i)
+		 const_iterator __i) noexcept
     {
       const_iterator __j = __i;
       ++__j;

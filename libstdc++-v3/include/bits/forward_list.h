@@ -1042,14 +1042,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  Requires this != @a x.
        */
       void
-      splice_after(const_iterator __pos, forward_list&& __list)
+      splice_after(const_iterator __pos, forward_list&& __list) noexcept
       {
 	if (!__list.empty())
 	  _M_splice_after(__pos, __list.before_begin(), __list.end());
       }
 
       void
-      splice_after(const_iterator __pos, forward_list& __list)
+      splice_after(const_iterator __pos, forward_list& __list) noexcept
       { splice_after(__pos, std::move(__list)); }
 
       /**
@@ -1064,11 +1064,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       void
       splice_after(const_iterator __pos, forward_list&& __list,
-                   const_iterator __i);
+                   const_iterator __i) noexcept;
 
       void
       splice_after(const_iterator __pos, forward_list& __list,
-                   const_iterator __i)
+                   const_iterator __i) noexcept
       { splice_after(__pos, std::move(__list), __i); }
 
       /**
@@ -1086,12 +1086,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       void
       splice_after(const_iterator __pos, forward_list&&,
-                   const_iterator __before, const_iterator __last)
+                   const_iterator __before, const_iterator __last) noexcept
       { _M_splice_after(__pos, __before, __last); }
 
       void
       splice_after(const_iterator __pos, forward_list&,
-                   const_iterator __before, const_iterator __last)
+                   const_iterator __before, const_iterator __last) noexcept
       { _M_splice_after(__pos, __before, __last); }
 
       /**

@@ -1,5 +1,11 @@
 2015-04-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/61645
+	* include/bits/forward_list.h (forward_list::splice_after): Add
+	noexcept.
+	* include/bits/forward_list.tcc (forward_list::splice_after):
+	Likewise.
+
 	PR libstdc++/65631
 	* include/bits/random.h (seed_seq) Define copy constructor and copy
 	assignment as deleted.
