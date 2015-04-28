@@ -6493,20 +6493,14 @@ template_template_parm_bindings_ok_p (tree tparms, tree targs)
 static tree
 canonicalize_type_argument (tree arg, tsubst_flags_t complain)
 {
-  tree mv;
   if (!arg || arg == error_mark_node || arg == TYPE_CANONICAL (arg))
     return arg;
-  mv = TYPE_MAIN_VARIANT (arg);
-  arg = strip_typedefs (arg);
-  if (TYPE_ALIGN (arg) != TYPE_ALIGN (mv)
-      || TYPE_ATTRIBUTES (arg) != TYPE_ATTRIBUTES (mv))
-    {
-      if (complain & tf_warning)
-	warning (0, "ignoring attributes on template argument %qT", arg);
-      arg = build_aligned_type (arg, TYPE_ALIGN (mv));
-      arg = cp_build_type_attribute_variant (arg, TYPE_ATTRIBUTES (mv));
-    }
-  return arg;
+  bool removed_attributes = false;
+  tree canon = strip_typedefs (arg, &removed_attributes);
+  if (removed_attributes
+      && (complain & tf_warning))
+    warning (0, "ignoring attributes on template argument %qT", arg);
+  return canon;
 }
 
 /* Convert the indicated template ARG as necessary to match the
@@ -6743,7 +6737,10 @@ convert_template_argument (tree parm,
 	   argument specification is valid.  */
 	val = convert_nontype_argument (t, orig_arg, complain);
       else
-	val = strip_typedefs_expr (orig_arg);
+	{
+	  bool removed_attr = false;
+	  val = strip_typedefs_expr (orig_arg, &removed_attr);
+	}
 
       if (val == NULL_TREE)
 	val = error_mark_node;
@@ -18202,7 +18199,10 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	  && !TEMPLATE_PARM_PARAMETER_PACK (parm))
 	return unify_parameter_pack_mismatch (explain_p, parm, arg);
 
-      arg = strip_typedefs_expr (arg);
+      {
+	bool removed_attr = false;
+	arg = strip_typedefs_expr (arg, &removed_attr);
+      }
       TREE_VEC_ELT (INNERMOST_TEMPLATE_ARGS (targs), idx) = arg;
       return unify_success (explain_p);
 
