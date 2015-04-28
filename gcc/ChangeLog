@@ -1,3 +1,17 @@
+2015-04-28  Alan Modra  <amodra@gmail.com>
+
+	PR target/65810
+	* config/rs6000/rs6000.c (POWERPC64_TOC_POINTER_ALIGNMENT): Define.
+	(offsettable_ok_by_alignment): Use minimum of decl and toc
+	pointer alignment.  Replace dead code with assertion.
+	(use_toc_relative_ref): Add mode arg.  Return false in -mcmodel=medium
+	case if size exceeds toc pointer alignment.
+	(rs6000_legitimize_reload_address): Update use_toc_relative_ref call.
+	(rs6000_emit_move): Likewise.
+	* configure.ac: Add linker toc pointer alignment check.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2015-04-27  Yoshinori Sato <ysato@users.sourceforge.jp>
 
 	* config.gcc: Add h8300-*-linux.
