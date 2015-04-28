@@ -1,5 +1,18 @@
 2015-04-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/60333
+	* include/std/type_traits (__make_unsigned_selector<_Tp, false, true>):
+	Handle enumeration types larger than sizeof(long).
+	(__make_signed_selector<_Tp, false, true>): Find unsigned type then
+	make it signed.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs-3.cc: New.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Adjust
+	dg-error.
+	* testsuite/20_util/make_unsigned/requirements/typedefs-3.cc: New.
+
 	PR libstdc++/61645
 	* include/bits/forward_list.h (forward_list::splice_after): Add
 	noexcept.
