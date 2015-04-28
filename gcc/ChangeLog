@@ -1,3 +1,7 @@
+2015-04-28  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (record_equality); Fix comment typos.
+
 2015-04-28  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/65887
