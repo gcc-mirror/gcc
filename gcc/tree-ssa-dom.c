@@ -1762,8 +1762,8 @@ record_equality (tree x, tree y)
   if (tree_swap_operands_p (x, y, false))
     std::swap (x, y);
 
-  /* Most of the time tree_swap_operands_p does what we want.  But there's
-     cases where we we know one operand is better for copy propagation than
+  /* Most of the time tree_swap_operands_p does what we want.  But there
+     are cases where we know one operand is better for copy propagation than
      the other.  Given no other code cares about ordering of equality
      comparison operators for that purpose, we just handle the special cases
      here.  */
