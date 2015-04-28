@@ -302,7 +302,7 @@ m32c*-*-*)
 aarch64*-*-*)
 	cpu_type=aarch64
 	extra_headers="arm_neon.h arm_acle.h"
-	extra_objs="aarch64-builtins.o aarch-common.o"
+	extra_objs="aarch64-builtins.o aarch-common.o cortex-a57-fma-steering.o"
 	target_gtfiles="\$(srcdir)/config/aarch64/aarch64-builtins.c"
 	target_has_targetm_common=yes
 	;;
