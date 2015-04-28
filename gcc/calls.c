@@ -948,7 +948,7 @@ save_fixed_argument_area (int reg_parm_stack_space, rtx argblock, int *low_to_sa
 
   /* Compute the boundary of the area that needs to be saved, if any.  */
   high = reg_parm_stack_space;
-#ifdef ARGS_GROW_DOWNWARD
+#if ARGS_GROW_DOWNWARD
   high += 1;
 #endif
   if (high > highest_outgoing_arg_in_use)
@@ -979,7 +979,7 @@ save_fixed_argument_area (int reg_parm_stack_space, rtx argblock, int *low_to_sa
 			 BIGGEST_ALIGNMENT / UNITS_PER_WORD) - 1)))
 	  save_mode = BLKmode;
 
-#ifdef ARGS_GROW_DOWNWARD
+#if ARGS_GROW_DOWNWARD
 	delta = -high;
 #else
 	delta = low;
@@ -1013,7 +1013,7 @@ restore_fixed_argument_area (rtx save_area, rtx argblock, int high_to_save, int 
   int delta;
   rtx addr, stack_area;
 
-#ifdef ARGS_GROW_DOWNWARD
+#if ARGS_GROW_DOWNWARD
   delta = -high_to_save;
 #else
   delta = low_to_save;
@@ -1980,7 +1980,7 @@ mem_overlaps_already_clobbered_arg_p (rtx addr, unsigned HOST_WIDE_INT size)
   i += crtl->args.pretend_args_size;
 #endif
 
-#ifdef ARGS_GROW_DOWNWARD
+#if ARGS_GROW_DOWNWARD
   i = -i - size;
 #endif
   if (size > 0)
@@ -2286,7 +2286,7 @@ check_sibcall_argument_overlap (rtx_insn *insn, struct arg_data *arg,
 
   if (mark_stored_args_map)
     {
-#ifdef ARGS_GROW_DOWNWARD
+#if ARGS_GROW_DOWNWARD
       low = -arg->locate.slot_offset.constant - arg->locate.size.constant;
 #else
       low = arg->locate.slot_offset.constant;
@@ -2979,7 +2979,7 @@ expand_call (tree exp, rtx target, int ignore)
 		  if (! OUTGOING_REG_PARM_STACK_SPACE ((!fndecl ? fntype : TREE_TYPE (fndecl))))
 		    needed += reg_parm_stack_space;
 
-#ifdef ARGS_GROW_DOWNWARD
+#if ARGS_GROW_DOWNWARD
 		  highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
 						     needed + 1);
 #else
@@ -3047,7 +3047,7 @@ expand_call (tree exp, rtx target, int ignore)
 		  else
 		    {
 		      argblock = push_block (GEN_INT (needed), 0, 0);
-#ifdef ARGS_GROW_DOWNWARD
+#if ARGS_GROW_DOWNWARD
 		      argblock = plus_constant (Pmode, argblock, needed);
 #endif
 		    }
@@ -4122,7 +4122,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       if (! OUTGOING_REG_PARM_STACK_SPACE ((!fndecl ? fntype : TREE_TYPE (fndecl))))
 	needed += reg_parm_stack_space;
 
-#ifdef ARGS_GROW_DOWNWARD
+#if ARGS_GROW_DOWNWARD
       highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
 					 needed + 1);
 #else
@@ -4213,7 +4213,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	      /* If this is being stored into a pre-allocated, fixed-size,
 		 stack area, save any previous data at that location.  */
 
-#ifdef ARGS_GROW_DOWNWARD
+#if ARGS_GROW_DOWNWARD
 	      /* stack_slot is negative, but we want to index stack_usage_map
 		 with positive values.  */
 	      upper_bound = -argvec[argnum].locate.slot_offset.constant + 1;
@@ -4702,7 +4702,7 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	 save any previous data at that location.  */
       if (argblock && ! variable_size && arg->stack)
 	{
-#ifdef ARGS_GROW_DOWNWARD
+#if ARGS_GROW_DOWNWARD
 	  /* stack_slot is negative, but we want to index stack_usage_map
 	     with positive values.  */
 	  if (GET_CODE (XEXP (arg->stack_slot, 0)) == PLUS)
