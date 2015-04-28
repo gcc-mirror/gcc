@@ -1,3 +1,8 @@
+2015-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65851
+	* g++.dg/torture/pr65851.C: New testcase.
+
 2015-04-27  Jeff Law <law@redhat.com>
 
         PR tree-optimization/65217

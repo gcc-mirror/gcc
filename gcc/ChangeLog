@@ -1,3 +1,17 @@
+2015-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65851
+	* tree-ssa-ccp.c (set_lattice_value): Perform a meet when
+	changing CONSTANT to CONSTANT non-copy.  Get new_val by reference.
+	(ccp_lattice_meet): Remove stray argument.  Use operand_equal_p
+	rather than simple_cst_equal as the latter doesn't handle COMPLEX_CST.
+	(ccp_visit_phi_node): Adjust.
+	(evaluate_stmt): For simplifications to SSA names return its
+	lattice value if that isn't VARYING.  Return immediately when
+	simplified to a constant.
+	(visit_assignment): Adjust.
+	(ccp_visit_stmt): Likewise.
+
 2015-04-28  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/65818
