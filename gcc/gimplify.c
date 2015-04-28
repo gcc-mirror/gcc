@@ -4569,7 +4569,6 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   gimple assign;
   location_t loc = EXPR_LOCATION (*expr_p);
   gimple_stmt_iterator gsi;
-  tree ap = NULL_TREE, ap_copy = NULL_TREE;
 
   gcc_assert (TREE_CODE (*expr_p) == MODIFY_EXPR
 	      || TREE_CODE (*expr_p) == INIT_EXPR);
@@ -4730,16 +4729,12 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  enum internal_fn ifn = CALL_EXPR_IFN (*from_p);
 	  auto_vec<tree> vargs (nargs);
 
-	  if (ifn == IFN_VA_ARG)
-	    ap = unshare_expr (CALL_EXPR_ARG (*from_p, 0));
 	  for (i = 0; i < nargs; i++)
 	    {
 	      gimplify_arg (&CALL_EXPR_ARG (*from_p, i), pre_p,
 			    EXPR_LOCATION (*from_p));
 	      vargs.quick_push (CALL_EXPR_ARG (*from_p, i));
 	    }
-	  if (ifn == IFN_VA_ARG)
-	    ap_copy = CALL_EXPR_ARG (*from_p, 0);
 	  call_stmt = gimple_build_call_internal_vec (ifn, vargs);
 	  gimple_set_location (call_stmt, EXPR_LOCATION (*expr_p));
 	}
@@ -4783,17 +4778,6 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   gimplify_seq_add_stmt (pre_p, assign);
   gsi = gsi_last (*pre_p);
   maybe_fold_stmt (&gsi);
-
-  /* When gimplifying the &ap argument of va_arg, we might end up with
-       ap.1 = ap
-       va_arg (&ap.1, 0B)
-     We need to assign ap.1 back to ap, otherwise va_arg has no effect on
-     ap.  */
-  if (ap != NULL_TREE
-      && TREE_CODE (ap) == ADDR_EXPR
-      && TREE_CODE (ap_copy) == ADDR_EXPR
-      && !operand_equal_p (TREE_OPERAND (ap, 0), TREE_OPERAND (ap_copy, 0), 0))
-    gimplify_assign (TREE_OPERAND (ap, 0), TREE_OPERAND (ap_copy, 0), pre_p);
 
   if (want_value)
     {
