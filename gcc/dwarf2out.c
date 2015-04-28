@@ -15120,7 +15120,6 @@ field_byte_offset (const_tree decl)
 
   bitpos_int = wi::to_offset (bit_position (decl));
 
-#ifdef PCC_BITFIELD_TYPE_MATTERS
   if (PCC_BITFIELD_TYPE_MATTERS)
     {
       tree type;
@@ -15218,7 +15217,6 @@ field_byte_offset (const_tree decl)
 	}
     }
   else
-#endif /* PCC_BITFIELD_TYPE_MATTERS */
     object_offset_in_bits = bitpos_int;
 
   object_offset_in_bytes

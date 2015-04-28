@@ -1,5 +1,15 @@
 2015-04-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* defaults.h (PCC_BITFIELD_TYPE_MATTERS): Add default definition
+	to false.
+	* dwarf2out.c (field_byte_offset): REmove check if
+	PCC_BITFIELD_TYPE_MATTERS is defined.
+	* stor-layout.c (layout_decl): Likewise.
+	(update_alignment_for_field): Likewise.
+	(place_field): Likewise.
+
+2015-04-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* defaults.h (HARD_REGNO_RENAME_OK): Add default definition to
 	true.
 	* regrename.c (check_new_reg_p): Remove check if

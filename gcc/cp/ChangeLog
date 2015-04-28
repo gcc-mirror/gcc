@@ -1,3 +1,8 @@
+2015-04-27  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* class.c (layout_class_type): Remove check if
+	PCC_BITFIELD_TYPE_MATTERS is defined.
+
 2015-04-27  Jim Wilson  <jim.wilson@linaro.org>
 
 	* Make-lang.in (c++.mostlyclean): Remove xg++, g++-cross, and cc1plus.
