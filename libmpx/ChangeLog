@@ -1,3 +1,12 @@
+2015-04-28  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	Backport from mainline r222469
+	2015-04-27  Steven Noonan <steven@uplinklabs.net>
+
+	* configure.ac: Drop AC_PROG_CXX and friends, since libmpx has no C++
+	sources.
+	* configure: Regenerate.
+
 2015-04-22  Release Manager
 
 	* GCC 5.1.0 released.
