@@ -4195,9 +4195,9 @@ pad_to_arg_alignment (struct args_size *offset_ptr, int boundary,
       else
 	{
 	  offset_ptr->constant = -sp_offset +
-	    ARGS_GROW_DOWNWARD ?
-	    FLOOR_ROUND (offset_ptr->constant + sp_offset, boundary_in_bytes) :
-	    CEIL_ROUND (offset_ptr->constant + sp_offset, boundary_in_bytes);
+	    (ARGS_GROW_DOWNWARD
+	    ? FLOOR_ROUND (offset_ptr->constant + sp_offset, boundary_in_bytes)
+	    : CEIL_ROUND (offset_ptr->constant + sp_offset, boundary_in_bytes));
 
 	    if (boundary > PARM_BOUNDARY)
 	      alignment_pad->constant = offset_ptr->constant - save_constant;
