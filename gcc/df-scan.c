@@ -72,10 +72,6 @@ typedef struct df_mw_hardreg *df_mw_hardreg_ptr;
 #define HAVE_sibcall_epilogue 0
 #endif
 
-#ifndef EPILOGUE_USES
-#define EPILOGUE_USES(REGNO)  0
-#endif
-
 /* The set of hard registers in eliminables[i].from. */
 
 static HARD_REG_SET elim_reg_set;
