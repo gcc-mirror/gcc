@@ -1017,6 +1017,29 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	  continue;
 	}
 
+      /* If the SLP build failed fatally and we analyze a basic-block
+         simply treat nodes we fail to build as externally defined
+	 (and thus build vectors from the scalar defs).
+	 The cost model will reject outright expensive cases.
+	 ???  This doesn't treat cases where permutation ultimatively
+	 fails (or we don't try permutation below).  Ideally we'd
+	 even compute a permutation that will end up with the maximum
+	 SLP tree size...  */
+      if (bb_vinfo
+	  && !matches[0]
+	  /* ???  Rejecting patterns this way doesn't work.  We'd have to
+	     do extra work to cancel the pattern so the uses see the
+	     scalar version.  */
+	  && !is_pattern_stmt_p (vinfo_for_stmt (stmt)))
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Building vector operands from scalars\n");
+	  oprnd_info->def_stmts = vNULL;
+	  vect_free_slp_tree (child);
+	  SLP_TREE_CHILDREN (*node).quick_push (NULL);
+	  continue;
+	}
+
       /* If the SLP build for operand zero failed and operand zero
 	 and one can be commutated try that for the scalar stmts
 	 that failed the match.  */
@@ -1417,9 +1440,10 @@ vect_analyze_slp_cost_1 (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 
   /* Recurse down the SLP tree.  */
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    vect_analyze_slp_cost_1 (loop_vinfo, bb_vinfo,
-			     instance, child, prologue_cost_vec,
-			     ncopies_for_cost);
+    if (child)
+      vect_analyze_slp_cost_1 (loop_vinfo, bb_vinfo,
+			       instance, child, prologue_cost_vec,
+			       ncopies_for_cost);
 
   /* Look at the first scalar stmt to determine the cost.  */
   stmt = SLP_TREE_SCALAR_STMTS (node)[0];
@@ -1885,7 +1909,8 @@ vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype)
     STMT_SLP_TYPE (stmt_vinfo) = hybrid;
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
-    vect_detect_hybrid_slp_stmts (child, i, stype);
+    if (child)
+      vect_detect_hybrid_slp_stmts (child, i, stype);
 }
 
 /* Helpers for vect_detect_hybrid_slp walking pattern stmt uses.  */
@@ -2162,7 +2187,8 @@ vect_bb_slp_scalar_cost (basic_block bb,
     }
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    scalar_cost += vect_bb_slp_scalar_cost (bb, child, life);
+    if (child)
+      scalar_cost += vect_bb_slp_scalar_cost (bb, child, life);
 
   return scalar_cost;
 }
@@ -2612,6 +2638,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 
   number_of_places_left_in_vector = nunits;
   elts = XALLOCAVEC (tree, nunits);
+  bool place_after_defs = false;
   for (j = 0; j < number_of_copies; j++)
     {
       for (i = group_size - 1; stmts.iterate (i, &stmt); i--)
@@ -2682,6 +2709,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 
           /* Create 'vect_ = {op0,op1,...,opn}'.  */
           number_of_places_left_in_vector--;
+	  tree orig_op = op;
 	  if (!types_compatible_p (TREE_TYPE (vector_type), TREE_TYPE (op)))
 	    {
 	      if (CONSTANT_CLASS_P (op))
@@ -2704,6 +2732,12 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 	  elts[number_of_places_left_in_vector] = op;
 	  if (!CONSTANT_CLASS_P (op))
 	    constant_p = false;
+	  if (TREE_CODE (orig_op) == SSA_NAME
+	      && !SSA_NAME_IS_DEFAULT_DEF (orig_op)
+	      && STMT_VINFO_BB_VINFO (stmt_vinfo)
+	      && (STMT_VINFO_BB_VINFO (stmt_vinfo)->bb
+		  == gimple_bb (SSA_NAME_DEF_STMT (orig_op))))
+	    place_after_defs = true;
 
           if (number_of_places_left_in_vector == 0)
             {
@@ -2720,16 +2754,25 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 		    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, elts[k]);
 		  vec_cst = build_constructor (vector_type, v);
 		}
-              voprnds.quick_push (vect_init_vector (stmt, vec_cst,
-						    vector_type, NULL));
+	      tree init;
+	      gimple_stmt_iterator gsi;
+	      if (place_after_defs)
+		{
+		  gsi = gsi_for_stmt
+		          (vect_find_last_scalar_stmt_in_slp (slp_node));
+		  init = vect_init_vector (stmt, vec_cst, vector_type, &gsi);
+		}
+	      else
+		init = vect_init_vector (stmt, vec_cst, vector_type, NULL);
 	      if (ctor_seq != NULL)
 		{
-		  gimple init_stmt = SSA_NAME_DEF_STMT (voprnds.last ());
-		  gimple_stmt_iterator gsi = gsi_for_stmt (init_stmt);
+		  gsi = gsi_for_stmt (SSA_NAME_DEF_STMT (init));
 		  gsi_insert_seq_before_without_update (&gsi, ctor_seq,
 							GSI_SAME_STMT);
 		  ctor_seq = NULL;
 		}
+	      voprnds.quick_push (init);
+	      place_after_defs = false;
             }
         }
     }
@@ -2825,20 +2868,26 @@ vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
           child = SLP_TREE_CHILDREN (slp_node)[child_index];
 
 	  /* We have to check both pattern and original def, if available.  */
-	  gimple first_def = SLP_TREE_SCALAR_STMTS (child)[0];
-	  gimple related = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (first_def));
-
-	  if (operand_equal_p (oprnd, gimple_get_lhs (first_def), 0)
-	      || (related
-		  && operand_equal_p (oprnd, gimple_get_lhs (related), 0)))
+	  if (child)
 	    {
-	      /* The number of vector defs is determined by the number of
-		 vector statements in the node from which we get those
-		 statements.  */
-	      number_of_vects = SLP_TREE_NUMBER_OF_VEC_STMTS (child);
-	      vectorized_defs = true;
-	      child_index++;
+	      gimple first_def = SLP_TREE_SCALAR_STMTS (child)[0];
+	      gimple related
+		= STMT_VINFO_RELATED_STMT (vinfo_for_stmt (first_def));
+
+	      if (operand_equal_p (oprnd, gimple_get_lhs (first_def), 0)
+		  || (related
+		      && operand_equal_p (oprnd, gimple_get_lhs (related), 0)))
+		{
+		  /* The number of vector defs is determined by the number of
+		     vector statements in the node from which we get those
+		     statements.  */
+		  number_of_vects = SLP_TREE_NUMBER_OF_VEC_STMTS (child);
+		  vectorized_defs = true;
+		  child_index++;
+		}
 	    }
+	  else
+	    child_index++;
         }
 
       if (!vectorized_defs)

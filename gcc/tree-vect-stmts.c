@@ -7752,7 +7752,10 @@ vect_is_simple_use (tree operand, gimple stmt, loop_vec_info loop_vinfo,
   else
     {
       stmt_vinfo = vinfo_for_stmt (*def_stmt);
-      *dt = STMT_VINFO_DEF_TYPE (stmt_vinfo);
+      if (!loop && !STMT_VINFO_VECTORIZABLE (stmt_vinfo))
+	*dt = vect_external_def;
+      else
+	*dt = STMT_VINFO_DEF_TYPE (stmt_vinfo);
     }
 
   if (dump_enabled_p ())
