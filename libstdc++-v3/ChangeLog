@@ -1,5 +1,9 @@
 2015-04-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/exception (uncaught_exceptions): Add comment. Reorder #if.
+	* testsuite/18_support/uncaught_exceptions/uncaught_exceptions.cc:
+	Use -std=gnu++1z. Check feature-test macro.
+
 	* include/std/type_traits (void_t): Add.
 	* testsuite/20_util/void_t/1.cc: New.
 

@@ -15,11 +15,17 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++11" }
+// { dg-options "-std=gnu++1z" }
 
 #include <cassert>
 #include <exception>
 #include <testsuite_hooks.h>
+
+#ifndef __cpp_lib_uncaught_exceptions
+# error "Feature-test macro for uncaught_exceptions missing"
+#elif __cpp_lib_uncaught_exceptions != 201411
+# error "Feature-test macro for uncaught_exceptions has wrong value"
+#endif
 
 struct UncaughtVerifier
 {
