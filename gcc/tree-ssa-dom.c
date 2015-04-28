@@ -1762,6 +1762,20 @@ record_equality (tree x, tree y)
   if (tree_swap_operands_p (x, y, false))
     std::swap (x, y);
 
+  /* Most of the time tree_swap_operands_p does what we want.  But there's
+     cases where we we know one operand is better for copy propagation than
+     the other.  Given no other code cares about ordering of equality
+     comparison operators for that purpose, we just handle the special cases
+     here.  */
+  if (TREE_CODE (x) == SSA_NAME && TREE_CODE (y) == SSA_NAME)
+    {
+      /* If one operand is a single use operand, then make it
+	 X.  This will preserve its single use properly and if this
+	 conditional is eliminated, the computation of X can be
+	 eliminated as well.  */
+      if (has_single_use (y) && ! has_single_use (x))
+	std::swap (x, y);
+    }
   if (TREE_CODE (x) == SSA_NAME)
     prev_x = SSA_NAME_VALUE (x);
   if (TREE_CODE (y) == SSA_NAME)

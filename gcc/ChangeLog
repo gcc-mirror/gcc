@@ -1,3 +1,10 @@
+2015-04-27  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/65217
+	* tree-ssa-dom.c (record_equality): Given two SSA_NAMEs, if just one
+	of them has a single use, make sure it is the LHS of the implied
+	copy.
+
 2015-04-28  Alan Modra  <amodra@gmail.com>
 
 	PR target/65810
