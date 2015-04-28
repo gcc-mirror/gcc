@@ -1,3 +1,15 @@
+2015-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/frv/elf-lib.h: New file.
+	(CRT_GET_RFIB_DATA): Move definition from gcc/config/frv/frv.h.
+	* libgcc/config.host (frv-*elf, frv-*-*linux*): Add frv/elf-lib.h
+	to tm_file.
+
+2015-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/frv/frvbengin.c: Do not include defaults.h
+	* config/frv/frvend.c: Ditto.
+
 2015-04-27  Yoshinori Sato  <ysato@users.sourceforge.jp>
 
 	* config.host: Add h8300-*-linux
@@ -296,7 +308,7 @@
 	(SUBWORD_BOOL_CAS): Likewise.
 	(FETCH_AND_OP_WORD): Update.
 	Consistently use signed types.
-	
+
 2014-11-13  Bernd Schmidt  <bernds@codesourcery.com>
 	    Thomas Schwinge  <thomas@codesourcery.com>
 	    Ilya Verbin  <ilya.verbin@intel.com>
@@ -964,7 +976,7 @@
 	(__gcov_delta_counter_op): Process delta profile counter values.
 	(__gcov_single_counter_op): Process single  profile counter values.
 	(fp_scale): Callback function for float-point scaling.
-	(int_scale): Callback function for integer fraction scaling. 
+	(int_scale): Callback function for integer fraction scaling.
 	(gcov_profile_scale): Scaling profile counters.
 	(gcov_profile_normalize): Normalize profile counters.
 	* libgcov.h: Add headers and functions for gcov-tool use.
@@ -1393,7 +1405,7 @@
 	(gcov_exit_merge_summary): Ditto.
 	(gcov_exit_dump_gcov): Ditto.
 
-2014-01-08  Rong Xu  <xur@google.com> 
+2014-01-08  Rong Xu  <xur@google.com>
 
 	* libgcov-driver.c: Use libgcov.h.
 	(buffer_fn_data): Use xmalloc instead of malloc.
@@ -2283,7 +2295,7 @@
 	* config/mips/crtn.S (fini, init): New labels.
 
 2012-02-19  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
-	* config/microblaze/modsi3.S (modsi3): Fix case with 0x80000000 
+	* config/microblaze/modsi3.S (modsi3): Fix case with 0x80000000
 	as dividend.
 
 2013-02-16  Alan Modra  <amodra@gmail.com>

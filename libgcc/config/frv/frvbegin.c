@@ -26,7 +26,6 @@
    This file was originally taken from the file crtstuff.c in the
    main compiler directory, and simplified.  */
 
-#include "defaults.h"
 #include <stddef.h>
 #include "../libgcc/unwind-dw2-fde.h"
 #include "gbl-ctors.h"

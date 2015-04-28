@@ -2125,9 +2125,4 @@ enum frv_builtins
 
 #define CPU_UNITS_QUERY 1
 
-#ifdef __FRV_FDPIC__
-#define CRT_GET_RFIB_DATA(dbase) \
-  ({ extern void *_GLOBAL_OFFSET_TABLE_; (dbase) = &_GLOBAL_OFFSET_TABLE_; })
-#endif
-
 #endif /* __FRV_H__ */
