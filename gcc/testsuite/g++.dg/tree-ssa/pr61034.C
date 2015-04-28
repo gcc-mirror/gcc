@@ -34,7 +34,8 @@ inline I operator- (I a, I const&b) { return a -= b; }
 inline bool operator< (I const&a, I const&b) { return a.o->num < b.o->num; }
 
 bool f(I a, I b, I c, I d) {
-    return (a * d - b * c) * (a * b - c * d) < 42;
+    I tmp = (a * d - b * c) * (a * b - c * d);
+    return tmp < 42;
 }
 
 // We should be able to CSE most references to count and thus remove
