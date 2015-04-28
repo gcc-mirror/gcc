@@ -1,3 +1,8 @@
+2015-04-28  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/65887
+	* c-common.c (build_va_arg): Mark va_arg ap argument as addressable.
+
 2015-04-28  Eric Botcazou  <ebotcazou@adacore.com>
             Pierre-Marie de Rodat  <derodat@adacore.com>
 

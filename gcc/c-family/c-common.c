@@ -5910,6 +5910,10 @@ set_compound_literal_name (tree decl)
 tree
 build_va_arg (location_t loc, tree expr, tree type)
 {
+  /* In gimplify_va_arg_expr we take the address of the ap argument, mark it
+     addressable now.  */
+  mark_addressable (expr);
+
   expr = build1 (VA_ARG_EXPR, type, expr);
   SET_EXPR_LOCATION (expr, loc);
   return expr;

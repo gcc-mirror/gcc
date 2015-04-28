@@ -1,3 +1,8 @@
+2015-04-28  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/65887
+	* gimplify.c (gimplify_modify_expr): Remove ifn_va_arg ap fixup.
+
 2015-04-28  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/extend.texi (Declaring Attributes of Functions): Split into
