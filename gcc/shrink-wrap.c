@@ -80,7 +80,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "regcprop.h"
 #include "rtl-iter.h"
 
-#ifdef HAVE_simple_return
 
 /* Return true if INSN requires the stack frame to be set up.
    PROLOGUE_USED contains the hard registers used in the function
@@ -1043,5 +1042,3 @@ convert_to_simple_return (edge entry_edge, edge orig_entry_edge,
 	  }
     }
 }
-
-#endif

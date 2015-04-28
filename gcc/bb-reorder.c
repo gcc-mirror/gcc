@@ -142,15 +142,6 @@
    the object file there will be an extra round.  */
 #define N_ROUNDS 5
 
-/* Stubs in case we don't have a return insn.
-   We have to check at run time too, not only compile time.  */
-
-#ifndef HAVE_return
-#define HAVE_return 0
-#define gen_return() NULL_RTX
-#endif
-
-
 struct target_bb_reorder default_target_bb_reorder;
 #if SWITCHABLE_TARGET
 struct target_bb_reorder *this_target_bb_reorder = &default_target_bb_reorder;
