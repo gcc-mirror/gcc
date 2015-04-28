@@ -1,3 +1,8 @@
+2015-04-28  Andre Vehreschild  <vehre@gmx.de>
+
+	* gfortran.dg/implicit_class_1.f90: Adding flag to check, if
+	segfault is fixed.
+
 2015-04-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/vect/vect-33.c: Remove spurious line.
