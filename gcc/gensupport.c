@@ -2800,7 +2800,8 @@ struct std_pred_table
 
 static const struct std_pred_table std_preds[] = {
   {"general_operand", false, true, {SUBREG, REG, MEM}},
-  {"address_operand", true, true, {SUBREG, REG, MEM, PLUS, MINUS, MULT}},
+  {"address_operand", true, true, {SUBREG, REG, MEM, PLUS, MINUS, MULT,
+				   ZERO_EXTEND, SIGN_EXTEND, AND}},
   {"register_operand", false, false, {SUBREG, REG}},
   {"pmode_register_operand", true, false, {SUBREG, REG}},
   {"scratch_operand", false, false, {SCRATCH, REG}},
