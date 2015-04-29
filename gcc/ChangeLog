@@ -1,3 +1,8 @@
+2015-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* inchash.h, inchash.c: Include bconfig.h for build objects.
+	* Makefile.in (build/inchash.o): New rule.
+
 2015-04-29  Yvan Roux  <yvan.roux@linaro.org>
 
 	PR target/65924

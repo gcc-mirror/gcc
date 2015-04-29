@@ -2434,6 +2434,8 @@ build/vec.o : vec.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(VEC_H)	\
    $(GGC_H) toplev.h $(DIAGNOSTIC_CORE_H)
 build/hash-table.o : hash-table.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h  \
    $(HASH_TABLE_H) $(GGC_H) toplev.h $(DIAGNOSTIC_CORE_H)
+build/inchash.o : inchash.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h  \
+   $(HASHTAB_H) inchash.h
 build/gencondmd.o : build/gencondmd.c $(BCONFIG_H) $(SYSTEM_H)		\
   coretypes.h $(GTM_H) insn-constants.h					\
   $(filter-out insn-flags.h, $(RTL_H) $(TM_P_H) $(FUNCTION_H) $(REGS_H) \
