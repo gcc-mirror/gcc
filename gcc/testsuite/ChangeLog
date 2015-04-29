@@ -1,3 +1,7 @@
+2015-04-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/gomp/tpl-target-update.C: New file.
+
 2015-04-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65917
