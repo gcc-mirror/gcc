@@ -1,3 +1,8 @@
+2015-04-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64667
+	* g++.dg/warn/Winit-self-3.C: New.
+
 2015-04-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gfortran.dg/namelist_87.f90: Use dg-add-options ieee.
