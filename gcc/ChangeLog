@@ -1,3 +1,11 @@
+2015-04-29  Bernhard Reuther-Fischer  <aldot@gcc.gnu.org>
+
+	* gimple-walk.c: Prune duplicate or unneeded includes.
+	(walk_gimple_asm): Only call parse_input_constraint or
+	parse_output_constraint if their findings are used.
+	Honour parse_input_constraint and parse_output_constraint
+	result.
+
 2015-04-29  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/arm/neon.md (vec_shl<mode>, vec_shr<mode>): Remove.
