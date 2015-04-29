@@ -1,3 +1,8 @@
+2015-04-29  Petar Jovanovic  <petar.jovanovic@rt-rk.com>
+
+	* config/mips/mips.h (CRT_CALL_STATIC_FUNCTION): Fix the macro to use
+	la/jalr instead of jal.
+
 2015-04-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/65871

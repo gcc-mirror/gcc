@@ -254,6 +254,7 @@ set mips_option_groups {
     madd "HAS_MADD"
     maddps "HAS_MADDPS"
     lsa "(|!)HAS_LSA"
+    section_start "-Wl,--section-start=.*"
 }
 
 for { set option 0 } { $option < 32 } { incr option } {

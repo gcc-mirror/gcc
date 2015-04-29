@@ -3034,11 +3034,11 @@ while (0)
 	nop\n\
 1:	.cpload $31\n\
 	.set reorder\n\
-	jal " USER_LABEL_PREFIX #FUNC "\n\
+	la $25, " USER_LABEL_PREFIX #FUNC "\n\
+	jalr $25\n\
 	.set pop\n\
 	" TEXT_SECTION_ASM_OP);
-#elif ((defined _ABIN32 && _MIPS_SIM == _ABIN32) \
-       || (defined _ABI64 && _MIPS_SIM == _ABI64))
+#elif (defined _ABIN32 && _MIPS_SIM == _ABIN32)
 #define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)	\
    asm (SECTION_OP "\n\
 	.set push\n\
@@ -3048,7 +3048,22 @@ while (0)
 	nop\n\
 1:	.set reorder\n\
 	.cpsetup $31, $2, 1b\n\
-	jal " USER_LABEL_PREFIX #FUNC "\n\
+	la $25, " USER_LABEL_PREFIX #FUNC "\n\
+	jalr $25\n\
+	.set pop\n\
+	" TEXT_SECTION_ASM_OP);
+#elif (defined _ABI64 && _MIPS_SIM == _ABI64)
+#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)	\
+   asm (SECTION_OP "\n\
+	.set push\n\
+	.set nomips16\n\
+	.set noreorder\n\
+	bal 1f\n\
+	nop\n\
+1:	.set reorder\n\
+	.cpsetup $31, $2, 1b\n\
+	dla $25, " USER_LABEL_PREFIX #FUNC "\n\
+	jalr $25\n\
 	.set pop\n\
 	" TEXT_SECTION_ASM_OP);
 #endif
