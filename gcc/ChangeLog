@@ -1,3 +1,10 @@
+2015-04-29  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/65770
+	* config/aarch64/aarch64-simd.md (vec_store_lanesoi_lane<mode>,
+	vec_store_lanesci_lane<mode>, vec_store_lanesxi_lane<mode>):
+	Flip lane index back at assembly time for bigendian.
+
 2015-04-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* tree.h (OMP_STANDALONE_CLAUSES): New macro.

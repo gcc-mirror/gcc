@@ -1,3 +1,8 @@
+2015-04-29  Alan Lawrence  <alan.lawrence@arm.com>
+
+	PR target/65770
+	* gcc.target/aarch64/vstN_lane_1.c: New file.
+
 2015-04-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/64667
