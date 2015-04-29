@@ -1,5 +1,12 @@
 2015-04-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* Makefile.in (build/genrecog.o): Depend on inchash.h.
+	(build/genrecog$(build_exeext): Depend on build/hash-table.o and
+	build/inchash.o
+	* genrecog.c: Rewrite most of the code except for the third page.
+
+2015-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* inchash.h, inchash.c: Include bconfig.h for build objects.
 	* Makefile.in (build/inchash.o): New rule.
 
