@@ -40,6 +40,13 @@ main ()
 // { dg-final { note-test a\[4\] 104 } }
 // { dg-final { note-test a\[9\] 109 } }
 
+// { dg-final { whatis-test a.size() std::size_t } }
+// { dg-final { whatis-test a.empty() bool } }
+// { dg-final { whatis-test a.front() int } }
+// { dg-final { whatis-test a.back() int } }
+// { dg-final { whatis-test a.at(5) int } }
+// { dg-final { whatis-test a\[0\] int } }
+
   return 0;  // Mark SPOT
 }
 

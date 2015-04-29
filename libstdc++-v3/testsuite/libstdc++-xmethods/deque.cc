@@ -61,6 +61,12 @@ main ()
 // { dg-final { note-test q3\[q3_size/2\]==(300+q3_size/2) true } }
 // { dg-final { note-test q3\[q3_size-1]==(300+q3_size-1) true } }
 
+// { dg-final { whatis-test q0.empty() bool } }
+// { dg-final { whatis-test q0.size() std::size_t } }
+// { dg-final { whatis-test q1.front() int } }
+// { dg-final { whatis-test q1.back() int } }
+// { dg-final { whatis-test q3\[0\] int } }
+
   return 0;  // Mark SPOT
 }
 
