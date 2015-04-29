@@ -1,3 +1,11 @@
+2014-04-29  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* Makefile.in (real_host_noncanonical): New variable.
+	(libsubdir): Use it.
+	* configure.ac (real_host_noncanonical): Compute.  Remove special
+	case for intelmicemul.
+	* configure: Regenerate.
+
 2015-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/frv/elf-lib.h: New file.

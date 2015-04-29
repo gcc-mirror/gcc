@@ -45,6 +45,7 @@ fixed_point = @fixed_point@
 with_aix_soname = @with_aix_soname@
 
 host_noncanonical = @host_noncanonical@
+real_host_noncanonical = @real_host_noncanonical@
 target_noncanonical = @target_noncanonical@
 
 # List of extra object files that should be compiled for this target machine.
@@ -185,7 +186,7 @@ STRIP = @STRIP@
 STRIP_FOR_TARGET = $(STRIP)
 
 # Directory in which the compiler finds libraries etc.
-libsubdir = $(libdir)/gcc/$(host_noncanonical)/$(version)@accel_dir_suffix@
+libsubdir = $(libdir)/gcc/$(real_host_noncanonical)/$(version)@accel_dir_suffix@
 # Used to install the shared libgcc.
 slibdir = @slibdir@
 # Maybe used for DLLs on Windows targets.

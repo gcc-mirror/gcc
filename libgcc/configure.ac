@@ -403,16 +403,13 @@ esac
 
 # Used for constructing correct paths for offload compilers.
 accel_dir_suffix=
+real_host_noncanonical=${host_noncanonical}
 if test x"$enable_as_accelerator_for" != x; then
   accel_dir_suffix=/accel/${target_noncanonical}
-  case "${target_noncanonical}" in
-    *-intelmicemul-*)
-      # In this case we expect offload compiler to be built as native, so we
-      # need to change install directory for driver to be able to find libgcc.
-      host_noncanonical=${enable_as_accelerator_for} ;;
-  esac
+  real_host_noncanonical=${enable_as_accelerator_for}
 fi
 AC_SUBST(accel_dir_suffix)
+AC_SUBST(real_host_noncanonical)
 
 if test x"$enable_offload_targets" != x; then
   extra_parts="${extra_parts} crtoffloadbegin.o crtoffloadend.o"
