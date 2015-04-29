@@ -1,3 +1,9 @@
+2015-04-29  Yvan Roux  <yvan.roux@linaro.org>
+
+	PR target/65924
+	* config/arm/thumb2.md (*thumb2_addsi3_compare0_scratch): Fix operand
+	number in type attribute expression.
+
 2015-04-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* loop-iv.c (canon_condition): Generalize to all types of integer

@@ -1,3 +1,8 @@
+2015-04-29  Yvan Roux  <yvan.roux@linaro.org>
+
+	PR target/65924
+	* gcc.target/arm/pr65924.c: New test.
+
 2015-04-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* g++.dg/gomp/tpl-target-update.C: New file.
