@@ -7602,58 +7602,59 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 {
   tree decl = *node;
 
-  if (targetm_common.have_named_sections)
-    {
-      user_defined_section_attribute = true;
-
-      if ((TREE_CODE (decl) == FUNCTION_DECL
-	   || TREE_CODE (decl) == VAR_DECL)
-	  && TREE_CODE (TREE_VALUE (args)) == STRING_CST)
-	{
-	  if (TREE_CODE (decl) == VAR_DECL
-	      && current_function_decl != NULL_TREE
-	      && !TREE_STATIC (decl))
-	    {
-	      error_at (DECL_SOURCE_LOCATION (decl),
-			"section attribute cannot be specified for "
-			"local variables");
-	      *no_add_attrs = true;
-	    }
-
-	  /* The decl may have already been given a section attribute
-	     from a previous declaration.  Ensure they match.  */
-	  else if (DECL_SECTION_NAME (decl) != NULL
-		   && strcmp (DECL_SECTION_NAME (decl),
-			      TREE_STRING_POINTER (TREE_VALUE (args))) != 0)
-	    {
-	      error ("section of %q+D conflicts with previous declaration",
-		     *node);
-	      *no_add_attrs = true;
-	    }
-	  else if (TREE_CODE (decl) == VAR_DECL
-		   && !targetm.have_tls && targetm.emutls.tmpl_section
-		   && DECL_THREAD_LOCAL_P (decl))
-	    {
-	      error ("section of %q+D cannot be overridden", *node);
-	      *no_add_attrs = true;
-	    }
-	  else
-	    set_decl_section_name (decl,
-				   TREE_STRING_POINTER (TREE_VALUE (args)));
-	}
-      else
-	{
-	  error ("section attribute not allowed for %q+D", *node);
-	  *no_add_attrs = true;
-	}
-    }
-  else
+  if (!targetm_common.have_named_sections)
     {
       error_at (DECL_SOURCE_LOCATION (*node),
 		"section attributes are not supported for this target");
-      *no_add_attrs = true;
+      goto fail;
     }
 
+  user_defined_section_attribute = true;
+
+  if (TREE_CODE (decl) != FUNCTION_DECL && TREE_CODE (decl) != VAR_DECL)
+    {
+      error ("section attribute not allowed for %q+D", *node);
+      goto fail;
+    }
+
+  if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
+    {
+      error ("section attribute argument not a string constant");
+      goto fail;
+    }
+
+  if (TREE_CODE (decl) == VAR_DECL
+      && current_function_decl != NULL_TREE
+      && !TREE_STATIC (decl))
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+                "section attribute cannot be specified for local variables");
+      goto fail;
+    }
+
+  /* The decl may have already been given a section attribute
+     from a previous declaration.  Ensure they match.  */
+  if (DECL_SECTION_NAME (decl) != NULL
+      && strcmp (DECL_SECTION_NAME (decl),
+                 TREE_STRING_POINTER (TREE_VALUE (args))) != 0)
+    {
+      error ("section of %q+D conflicts with previous declaration", *node);
+      goto fail;
+    }
+
+  if (TREE_CODE (decl) == VAR_DECL
+      && !targetm.have_tls && targetm.emutls.tmpl_section
+      && DECL_THREAD_LOCAL_P (decl))
+    {
+      error ("section of %q+D cannot be overridden", *node);
+      goto fail;
+    }
+
+  set_decl_section_name (decl, TREE_STRING_POINTER (TREE_VALUE (args)));
+  return NULL_TREE;
+
+fail:
+  *no_add_attrs = true;
   return NULL_TREE;
 }
 

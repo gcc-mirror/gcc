@@ -1,3 +1,8 @@
+2015-04-29  Josh Triplett  <josh@joshtriplett.org>
+
+        * c-common.c (handle_section_attribute): Refactor to reduce
+        nesting and distinguish between error cases.
+
 2015-04-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64610
