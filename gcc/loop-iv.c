@@ -1729,39 +1729,42 @@ canon_condition (rtx cond)
     mode = GET_MODE (op1);
   gcc_assert (mode != VOIDmode);
 
-  if (CONST_INT_P (op1)
-      && GET_MODE_CLASS (mode) != MODE_CC
-      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+  if (CONST_SCALAR_INT_P (op1) && GET_MODE_CLASS (mode) != MODE_CC)
     {
-      HOST_WIDE_INT const_val = INTVAL (op1);
-      unsigned HOST_WIDE_INT uconst_val = const_val;
-      unsigned HOST_WIDE_INT max_val
-	= (unsigned HOST_WIDE_INT) GET_MODE_MASK (mode);
+      rtx_mode_t const_val (op1, mode);
 
       switch (code)
 	{
 	case LE:
-	  if ((unsigned HOST_WIDE_INT) const_val != max_val >> 1)
-	    code = LT, op1 = gen_int_mode (const_val + 1, GET_MODE (op0));
+	  if (wi::ne_p (const_val, wi::max_value (mode, SIGNED)))
+	    {
+	      code = LT;
+	      op1 = immed_wide_int_const (wi::add (const_val, 1),  mode);
+	    }
 	  break;
 
-	/* When cross-compiling, const_val might be sign-extended from
-	   BITS_PER_WORD to HOST_BITS_PER_WIDE_INT */
 	case GE:
-	  if ((HOST_WIDE_INT) (const_val & max_val)
-	      != (((HOST_WIDE_INT) 1
-		   << (GET_MODE_BITSIZE (GET_MODE (op0)) - 1))))
-	    code = GT, op1 = gen_int_mode (const_val - 1, mode);
+	  if (wi::ne_p (const_val, wi::min_value (mode, SIGNED)))
+	    {
+	      code = GT;
+	      op1 = immed_wide_int_const (wi::sub (const_val, 1), mode);
+	    }
 	  break;
 
 	case LEU:
-	  if (uconst_val < max_val)
-	    code = LTU, op1 = gen_int_mode (uconst_val + 1, mode);
+	  if (wi::ne_p (const_val, -1))
+	    {
+	      code = LTU;
+	      op1 = immed_wide_int_const (wi::add (const_val, 1), mode);
+	    }
 	  break;
 
 	case GEU:
-	  if (uconst_val != 0)
-	    code = GTU, op1 = gen_int_mode (uconst_val - 1, mode);
+	  if (wi::ne_p (const_val, 0))
+	    {
+	      code = GTU;
+	      op1 = immed_wide_int_const (wi::sub (const_val, 1), mode);
+	    }
 	  break;
 
 	default:

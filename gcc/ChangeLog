@@ -1,3 +1,8 @@
+2015-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* loop-iv.c (canon_condition): Generalize to all types of integer
+	constant.
+
 2015-04-29  Bernhard Reuther-Fischer  <aldot@gcc.gnu.org>
 
 	* gimple-walk.c: Prune duplicate or unneeded includes.
