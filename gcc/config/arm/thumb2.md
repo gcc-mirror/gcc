@@ -1305,7 +1305,7 @@
   "
   [(set_attr "conds" "set")
    (set_attr "length" "2,4")
-   (set (attr "type") (if_then_else (match_operand 2 "const_int_operand" "")
+   (set (attr "type") (if_then_else (match_operand 1 "const_int_operand" "")
                                     (const_string "alus_imm")
                                     (const_string "alus_sreg")))]
 )
