@@ -1,3 +1,8 @@
+2015-04-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* parser.c (cp_parser_oacc_enter_exit_data): Use
+	OMP_STANDALONE_CLAUSES.
+
 2015-04-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/64667

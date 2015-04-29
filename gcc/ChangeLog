@@ -1,3 +1,8 @@
+2015-04-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree.h (OMP_STANDALONE_CLAUSES): New macro.
+	* gimplify.c (gimplify_omp_workshare): Use it.
+
 2015-04-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* Makefile.in (build/genrecog.o): Depend on inchash.h.

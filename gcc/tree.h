@@ -1197,10 +1197,16 @@ extern void protected_set_expr_location (tree, location_t);
 
 /* OpenMP and OpenACC directive and clause accessors.  */
 
+/* Generic accessors for OMP nodes that keep the body as operand 0, and clauses
+   as operand 1.  */
 #define OMP_BODY(NODE) \
   TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_CRITICAL), 0)
 #define OMP_CLAUSES(NODE) \
   TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_SINGLE), 1)
+
+/* Generic accessors for OMP nodes that keep clauses as operand 0.  */
+#define OMP_STANDALONE_CLAUSES(NODE) \
+  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_CACHE, OMP_TARGET_UPDATE), 0)
 
 #define OACC_PARALLEL_BODY(NODE) \
   TREE_OPERAND (OACC_PARALLEL_CHECK (NODE), 0)
