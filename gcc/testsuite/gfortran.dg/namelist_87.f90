@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-add-options ieee }
 !
 ! PR fortran/56743
 !
