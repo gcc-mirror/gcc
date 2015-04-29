@@ -1276,8 +1276,22 @@ Gogo::analyze_reachability()
       Node* m = worklist.front();
       worklist.pop_front();
 
-      for (std::set<Node*>::iterator n = m->edges().begin();
-	   n != m->edges().end();
+      std::set<Node*> reachable = m->edges();
+      if (m->object()->is_function()
+	  && m->object()->func_value()->needs_closure())
+	{
+	  // If a closure escapes everything it closes over also escapes.
+	  Function* closure = m->object()->func_value();
+	  for (size_t i = 0; i < closure->closure_field_count(); i++)
+	    {
+	      Named_object* enclosed = closure->enclosing_var(i);
+	      Node* enclosed_node = this->lookup_connection_node(enclosed);
+	      go_assert(enclosed_node != NULL);
+	      reachable.insert(enclosed_node);
+	    }
+	}
+      for (std::set<Node*>::iterator n = reachable.begin();
+	   n != reachable.end();
 	   ++n)
 	{
 	  // If an object can be reached from a node with ESCAPE_GLOBAL,
@@ -1296,7 +1310,7 @@ Gogo::analyze_reachability()
        p != this->named_connection_nodes_.end();
        ++p)
     {
-      if (p->second->connection_node()->escape_state() == Node::ESCAPE_ARG)
+      if (p->second->connection_node()->escape_state() < Node::ESCAPE_NONE)
 	worklist.push_back(p->second);
     }
 
@@ -1305,15 +1319,30 @@ Gogo::analyze_reachability()
       Node* m = worklist.front();
       worklist.pop_front();
 
-      for (std::set<Node*>::iterator n = m->edges().begin();
-	   n != m->edges().end();
+      std::set<Node*> reachable = m->edges();
+      if (m->object()->is_function()
+	  && m->object()->func_value()->needs_closure())
+	{
+	  // If a closure escapes everything it closes over also escapes.
+	  Function* closure = m->object()->func_value();
+	  for (size_t i = 0; i < closure->closure_field_count(); i++)
+	    {
+	      Named_object* enclosed = closure->enclosing_var(i);
+	      Node* enclosed_node = this->lookup_connection_node(enclosed);
+	      go_assert(enclosed_node != NULL);
+	      reachable.insert(enclosed_node);
+	    }
+	}
+      for (std::set<Node*>::iterator n = reachable.begin();
+	   n != reachable.end();
 	   ++n)
 	{
 	  // If an object can be reached from a node with ESCAPE_ARG,
 	  // it is ESCAPE_ARG or ESCAPE_GLOBAL.
-	  if ((*n)->connection_node()->escape_state() > Node::ESCAPE_ARG)
+	  Node::Escapement_lattice e = m->connection_node()->escape_state();
+	  if ((*n)->connection_node()->escape_state() > e)
 	    {
-	      (*n)->connection_node()->set_escape_state(Node::ESCAPE_ARG);
+	      (*n)->connection_node()->set_escape_state(e);
 	      worklist.push_back(*n);
 	    }
 	}
