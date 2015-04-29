@@ -31606,10 +31606,7 @@ cp_parser_oacc_enter_exit_data (cp_parser *parser, cp_token *pragma_tok,
 
   stmt = enter ? make_node (OACC_ENTER_DATA) : make_node (OACC_EXIT_DATA);
   TREE_TYPE (stmt) = void_type_node;
-  if (enter)
-    OACC_ENTER_DATA_CLAUSES (stmt) = clauses;
-  else
-    OACC_EXIT_DATA_CLAUSES (stmt) = clauses;
+  OMP_STANDALONE_CLAUSES (stmt) = clauses;
   SET_EXPR_LOCATION (stmt, pragma_tok->location);
   add_stmt (stmt);
   return stmt;

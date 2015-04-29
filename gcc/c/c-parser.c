@@ -12154,10 +12154,7 @@ c_parser_oacc_enter_exit_data (c_parser *parser, bool enter)
 
   stmt = enter ? make_node (OACC_ENTER_DATA) : make_node (OACC_EXIT_DATA);
   TREE_TYPE (stmt) = void_type_node;
-  if (enter)
-    OACC_ENTER_DATA_CLAUSES (stmt) = clauses;
-  else
-    OACC_EXIT_DATA_CLAUSES (stmt) = clauses;
+  OMP_STANDALONE_CLAUSES (stmt) = clauses;
   SET_EXPR_LOCATION (stmt, loc);
   add_stmt (stmt);
 }

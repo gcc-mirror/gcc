@@ -7411,34 +7411,31 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
 static void
 gimplify_omp_target_update (tree *expr_p, gimple_seq *pre_p)
 {
-  tree expr = *expr_p, clauses;
+  tree expr = *expr_p;
   int kind;
   gomp_target *stmt;
 
   switch (TREE_CODE (expr))
     {
     case OACC_ENTER_DATA:
-      clauses = OACC_ENTER_DATA_CLAUSES (expr);
       kind = GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA;
       break;
     case OACC_EXIT_DATA:
-      clauses = OACC_EXIT_DATA_CLAUSES (expr);
       kind = GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA;
       break;
     case OACC_UPDATE:
-      clauses = OACC_UPDATE_CLAUSES (expr);
       kind = GF_OMP_TARGET_KIND_OACC_UPDATE;
       break;
     case OMP_TARGET_UPDATE:
-      clauses = OMP_TARGET_UPDATE_CLAUSES (expr);
       kind = GF_OMP_TARGET_KIND_UPDATE;
       break;
     default:
       gcc_unreachable ();
     }
-  gimplify_scan_omp_clauses (&clauses, pre_p, ORT_WORKSHARE);
-  gimplify_adjust_omp_clauses (pre_p, &clauses);
-  stmt = gimple_build_omp_target (NULL, kind, clauses);
+  gimplify_scan_omp_clauses (&OMP_STANDALONE_CLAUSES (expr), pre_p,
+			     ORT_WORKSHARE);
+  gimplify_adjust_omp_clauses (pre_p, &OMP_STANDALONE_CLAUSES (expr));
+  stmt = gimple_build_omp_target (NULL, kind, OMP_STANDALONE_CLAUSES (expr));
 
   gimplify_seq_add_stmt (pre_p, stmt);
   *expr_p = NULL_TREE;
