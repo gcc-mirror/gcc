@@ -1,3 +1,9 @@
+2015-04-29  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/64835
+	* gcc.dg/ipa/iinline-attr.c: New test.
+	* gcc.target/i386/iinline-attr-2.c: New test.
+
 2015-04-28  Andre Vehreschild  <vehre@gmx.de>
 
 	* gfortran.dg/implicit_class_1.f90: Adding flag to check, if

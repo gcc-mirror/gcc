@@ -1,3 +1,11 @@
+2015-04-29  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/64835
+	* config/i386/i386.c (ix86_default_align): New function.
+	(ix86_override_options_after_change): Call ix86_default_align.
+	(TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE): New hook.
+	(ix86_override_options_after_change): New function.
+
 2015-04-28  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (record_equality); Fix comment typos.

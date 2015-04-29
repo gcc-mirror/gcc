@@ -3106,6 +3106,35 @@ set_ix86_tune_features (enum processor_type ix86_tune, bool dump)
 }
 
 
+/* Default align_* from the processor table.  */
+
+static void
+ix86_default_align (struct gcc_options *opts)
+{
+  if (opts->x_align_loops == 0)
+    {
+      opts->x_align_loops = processor_target_table[ix86_tune].align_loop;
+      align_loops_max_skip = processor_target_table[ix86_tune].align_loop_max_skip;
+    }
+  if (opts->x_align_jumps == 0)
+    {
+      opts->x_align_jumps = processor_target_table[ix86_tune].align_jump;
+      align_jumps_max_skip = processor_target_table[ix86_tune].align_jump_max_skip;
+    }
+  if (opts->x_align_functions == 0)
+    {
+      opts->x_align_functions = processor_target_table[ix86_tune].align_func;
+    }
+}
+
+/* Implement TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE hook.  */
+
+static void
+ix86_override_options_after_change (void)
+{
+  ix86_default_align (&global_options);
+}
+
 /* Override various settings based on options.  If MAIN_ARGS_P, the
    options are from the command line, otherwise they are from
    attributes.  */
@@ -3903,20 +3932,7 @@ ix86_option_override_internal (bool main_args_p,
     opts->x_ix86_regparm = REGPARM_MAX;
 
   /* Default align_* from the processor table.  */
-  if (opts->x_align_loops == 0)
-    {
-      opts->x_align_loops = processor_target_table[ix86_tune].align_loop;
-      align_loops_max_skip = processor_target_table[ix86_tune].align_loop_max_skip;
-    }
-  if (opts->x_align_jumps == 0)
-    {
-      opts->x_align_jumps = processor_target_table[ix86_tune].align_jump;
-      align_jumps_max_skip = processor_target_table[ix86_tune].align_jump_max_skip;
-    }
-  if (opts->x_align_functions == 0)
-    {
-      opts->x_align_functions = processor_target_table[ix86_tune].align_func;
-    }
+  ix86_default_align (opts);
 
   /* Provide default for -mbranch-cost= value.  */
   if (!opts_set->x_ix86_branch_cost)
@@ -52097,6 +52113,9 @@ ix86_operands_ok_for_move_multiple (rtx *operands, bool load,
 
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE ix86_promote_function_mode
+
+#undef  TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
+#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE ix86_override_options_after_change
 
 #undef TARGET_MEMBER_TYPE_FORCES_BLK
 #define TARGET_MEMBER_TYPE_FORCES_BLK ix86_member_type_forces_blk
