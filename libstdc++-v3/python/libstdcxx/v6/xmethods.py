@@ -29,17 +29,17 @@ class LibStdCxxXMethod(gdb.xmethod.XMethod):
 # Xmethods for std::array
 
 class ArrayWorkerBase(gdb.xmethod.XMethodWorker):
-    def __init__(self, valtype, size):
-        self._valtype = valtype
+    def __init__(self, val_type, size):
+        self._val_type = val_type
         self._size = size
 
     def null_value(self):
         nullptr = gdb.parse_and_eval('(void *) 0')
-        return nullptr.cast(self._valtype.pointer()).dereference()
+        return nullptr.cast(self._val_type.pointer()).dereference()
 
 class ArraySizeWorker(ArrayWorkerBase):
-    def __init__(self, valtype, size):
-        ArrayWorkerBase.__init__(self, valtype, size)
+    def __init__(self, val_type, size):
+        ArrayWorkerBase.__init__(self, val_type, size)
 
     def get_arg_types(self):
         return None
@@ -48,8 +48,8 @@ class ArraySizeWorker(ArrayWorkerBase):
         return self._size
 
 class ArrayEmptyWorker(ArrayWorkerBase):
-    def __init__(self, valtype, size):
-        ArrayWorkerBase.__init__(self, valtype, size)
+    def __init__(self, val_type, size):
+        ArrayWorkerBase.__init__(self, val_type, size)
 
     def get_arg_types(self):
         return None
@@ -58,8 +58,8 @@ class ArrayEmptyWorker(ArrayWorkerBase):
         return (int(self._size) == 0)
 
 class ArrayFrontWorker(ArrayWorkerBase):
-    def __init__(self, valtype, size):
-        ArrayWorkerBase.__init__(self, valtype, size)
+    def __init__(self, val_type, size):
+        ArrayWorkerBase.__init__(self, val_type, size)
 
     def get_arg_types(self):
         return None
@@ -71,8 +71,8 @@ class ArrayFrontWorker(ArrayWorkerBase):
             return self.null_value()
 
 class ArrayBackWorker(ArrayWorkerBase):
-    def __init__(self, valtype, size):
-        ArrayWorkerBase.__init__(self, valtype, size)
+    def __init__(self, val_type, size):
+        ArrayWorkerBase.__init__(self, val_type, size)
 
     def get_arg_types(self):
         return None
@@ -84,8 +84,8 @@ class ArrayBackWorker(ArrayWorkerBase):
             return self.null_value()
 
 class ArrayAtWorker(ArrayWorkerBase):
-    def __init__(self, valtype, size):
-        ArrayWorkerBase.__init__(self, valtype, size)
+    def __init__(self, val_type, size):
+        ArrayWorkerBase.__init__(self, val_type, size)
 
     def get_arg_types(self):
         return gdb.lookup_type('std::size_t')
@@ -97,8 +97,8 @@ class ArrayAtWorker(ArrayWorkerBase):
         return obj['_M_elems'][index]
 
 class ArraySubscriptWorker(ArrayWorkerBase):
-    def __init__(self, valtype, size):
-        ArrayWorkerBase.__init__(self, valtype, size)
+    def __init__(self, val_type, size):
+        ArrayWorkerBase.__init__(self, val_type, size)
 
     def get_arg_types(self):
         return gdb.lookup_type('std::size_t')
@@ -139,8 +139,8 @@ class ArrayMethodsMatcher(gdb.xmethod.XMethodMatcher):
 # Xmethods for std::deque
 
 class DequeWorkerBase(gdb.xmethod.XMethodWorker):
-    def __init__(self, elemtype):
-        self._bufsize = (512 / elemtype.sizeof) or 1
+    def __init__(self, val_type):
+        self._bufsize = (512 / val_type.sizeof) or 1
 
     def size(self, obj):
         first_node = obj['_M_impl']['_M_start']['_M_node']
@@ -232,8 +232,8 @@ class DequeMethodsMatcher(gdb.xmethod.XMethodMatcher):
 # Xmethods for std::forward_list
 
 class ForwardListWorkerBase(gdb.xmethod.XMethodMatcher):
-    def __init__(self, elem_type, node_type):
-        self._elem_type = elem_type
+    def __init__(self, val_type, node_type):
+        self._val_type = val_type
         self._node_type = node_type
 
     def get_arg_types(self):
@@ -246,8 +246,8 @@ class ForwardListEmptyWorker(ForwardListWorkerBase):
 class ForwardListFrontWorker(ForwardListWorkerBase):
     def __call__(self, obj):
         node = obj['_M_impl']['_M_head']['_M_next'].cast(self._node_type)
-        elem_address = node['_M_storage']['_M_storage'].address
-        return elem_address.cast(self._elem_type.pointer()).dereference()
+        val_address = node['_M_storage']['_M_storage'].address
+        return val_address.cast(self._val_type.pointer()).dereference()
 
 class ForwardListMethodsMatcher(gdb.xmethod.XMethodMatcher):
     def __init__(self):
@@ -265,9 +265,9 @@ class ForwardListMethodsMatcher(gdb.xmethod.XMethodMatcher):
         method = self._method_dict.get(method_name)
         if method is None or not method.enabled:
             return None
-        elem_type = class_type.template_argument(0)
+        val_type = class_type.template_argument(0)
         node_type = gdb.lookup_type(str(class_type) + '::_Node').pointer()
-        return method.worker_class(elem_type, node_type)
+        return method.worker_class(val_type, node_type)
 
 # Xmethods for std::list
 
@@ -330,11 +330,11 @@ class ListMethodsMatcher(gdb.xmethod.XMethodMatcher):
 # Xmethods for std::vector
 
 class VectorWorkerBase(gdb.xmethod.XMethodWorker):
-    def __init__(self, elemtype):
-        self._elemtype = elemtype
+    def __init__(self, val_type):
+        self._val_type = val_type
 
     def size(self, obj):
-        if self._elemtype.code == gdb.TYPE_CODE_BOOL:
+        if self._val_type.code == gdb.TYPE_CODE_BOOL:
             start = obj['_M_impl']['_M_start']['_M_p']
             finish = obj['_M_impl']['_M_finish']['_M_p']
             finish_offset = obj['_M_impl']['_M_finish']['_M_offset']
@@ -344,7 +344,7 @@ class VectorWorkerBase(gdb.xmethod.XMethodWorker):
             return obj['_M_impl']['_M_finish'] - obj['_M_impl']['_M_start']
 
     def get(self, obj, index):
-        if self._elemtype.code == gdb.TYPE_CODE_BOOL:
+        if self._val_type.code == gdb.TYPE_CODE_BOOL:
             start = obj['_M_impl']['_M_start']['_M_p']
             bit_size = start.dereference().type.sizeof * 8
             valp = start + index / bit_size
