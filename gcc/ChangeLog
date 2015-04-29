@@ -1,3 +1,8 @@
+2015-04-29  Steve Ellcey  <sellcey@imgtec.com>
+
+	* config/mips/mips-cpus.def: (mips4): Change default processor
+	from PROCESSOR_R8000 to PROCESSOR_R10000.
+
 2015-04-29  Petar Jovanovic  <petar.jovanovic@rt-rk.com>
 
 	* config/mips/mips.h (CRT_CALL_STATIC_FUNCTION): Fix the macro to use
