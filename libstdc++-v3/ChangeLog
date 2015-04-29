@@ -1,5 +1,10 @@
 2015-04-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/65760
+	* include/std/functional (__check_func_return_type): Use is_same to
+	avoid using _is_convertible on incomplete types.
+	* testsuite/20_util/function/65760.cc: New.
+
 	PR libstdc++/64657
 	* include/bits/basic_string (basic_string::_S_copy_chars): Cast
 	expression to void.
