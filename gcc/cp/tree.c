@@ -1187,6 +1187,13 @@ apply_identity_attributes (tree result, tree attribs, bool *remove_attributes)
   tree new_attribs = NULL_TREE;
   tree *p = &new_attribs;
 
+  if (OVERLOAD_TYPE_P (result))
+    {
+      /* On classes and enums all attributes are ingrained.  */
+      gcc_assert (attribs == TYPE_ATTRIBUTES (result));
+      return result;
+    }
+
   for (tree a = attribs; a; a = TREE_CHAIN (a))
     {
       const attribute_spec *as
