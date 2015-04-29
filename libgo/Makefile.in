@@ -136,6 +136,10 @@ libgobegin_a_AR = $(AR) $(ARFLAGS)
 libgobegin_a_LIBADD =
 am_libgobegin_a_OBJECTS = libgobegin_a-go-main.$(OBJEXT)
 libgobegin_a_OBJECTS = $(am_libgobegin_a_OBJECTS)
+libgolibbegin_a_AR = $(AR) $(ARFLAGS)
+libgolibbegin_a_LIBADD =
+am_libgolibbegin_a_OBJECTS = libgolibbegin_a-go-libmain.$(OBJEXT)
+libgolibbegin_a_OBJECTS = $(am_libgolibbegin_a_OBJECTS)
 libnetgo_a_AR = $(AR) $(ARFLAGS)
 libnetgo_a_DEPENDENCIES = netgo.o
 am__objects_1 =
@@ -264,8 +268,8 @@ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(libgobegin_llgo_a_SOURCES) $(libgobegin_a_SOURCES) \
-	$(libnetgo_a_SOURCES) $(libgo_llgo_la_SOURCES) \
-	$(libgo_la_SOURCES)
+	$(libgolibbegin_a_SOURCES) $(libnetgo_a_SOURCES) \
+	$(libgo_llgo_la_SOURCES) $(libgo_la_SOURCES)
 MULTISRCTOP = 
 MULTIBUILDTOP = 
 MULTIDIRS = 
@@ -532,7 +536,7 @@ AM_MAKEFLAGS = \
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @GOC_IS_LLGO_FALSE@toolexeclib_LTLIBRARIES = libgo.la
 @GOC_IS_LLGO_TRUE@toolexeclib_LTLIBRARIES = libgo-llgo.la
-@GOC_IS_LLGO_FALSE@toolexeclib_LIBRARIES = libgobegin.a libnetgo.a
+@GOC_IS_LLGO_FALSE@toolexeclib_LIBRARIES = libgobegin.a libgolibbegin.a libnetgo.a
 @GOC_IS_LLGO_TRUE@toolexeclib_LIBRARIES = libgobegin-llgo.a
 toolexeclibgo_DATA = \
 	bufio.gox \
@@ -2102,6 +2106,10 @@ libgobegin_llgo_a_SOURCES = \
 # Use -fPIC for libgobegin so that it can be put in a PIE.
 libgobegin_a_CFLAGS = $(AM_CFLAGS) -fPIC
 libgobegin_llgo_a_CFLAGS = $(AM_CFLAGS) -fPIC
+libgolibbegin_a_SOURCES = \
+	runtime/go-libmain.c
+
+libgolibbegin_a_CFLAGS = $(AM_CFLAGS) -fPIC
 libnetgo_a_SOURCES = $(go_netgo_files)
 libnetgo_a_LIBADD = netgo.o
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
@@ -2132,7 +2140,7 @@ BUILDPACKAGE = \
 BUILDNETGO = \
 	$(MKDIR_P) $(@D); \
 	files=`echo $^ | sed -e 's/[^ ]*\.gox//g'`; \
-	$(GOCOMPILE) -I . -c -fgo-pkgpath=net -o $@ $$files
+	$(GOCOMPILE) -I . -c -fPIC -fgo-pkgpath=net -o $@ $$files
 
 GOTESTFLAGS = 
 GOBENCH = 
@@ -2421,6 +2429,10 @@ libgobegin.a: $(libgobegin_a_OBJECTS) $(libgobegin_a_DEPENDENCIES)
 	-rm -f libgobegin.a
 	$(libgobegin_a_AR) libgobegin.a $(libgobegin_a_OBJECTS) $(libgobegin_a_LIBADD)
 	$(RANLIB) libgobegin.a
+libgolibbegin.a: $(libgolibbegin_a_OBJECTS) $(libgolibbegin_a_DEPENDENCIES) 
+	-rm -f libgolibbegin.a
+	$(libgolibbegin_a_AR) libgolibbegin.a $(libgolibbegin_a_OBJECTS) $(libgolibbegin_a_LIBADD)
+	$(RANLIB) libgolibbegin.a
 libnetgo.a: $(libnetgo_a_OBJECTS) $(libnetgo_a_DEPENDENCIES) 
 	-rm -f libnetgo.a
 	$(libnetgo_a_AR) libnetgo.a $(libnetgo_a_OBJECTS) $(libnetgo_a_LIBADD)
@@ -2546,6 +2558,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lfstack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgobegin_a-go-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgobegin_llgo_a-go-main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgolibbegin_a-go-libmain.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lock_futex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lock_sema.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/malloc.Plo@am__quote@
@@ -2630,6 +2643,20 @@ libgobegin_a-go-main.obj: runtime/go-main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-main.c' object='libgobegin_a-go-main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgobegin_a_CFLAGS) $(CFLAGS) -c -o libgobegin_a-go-main.obj `if test -f 'runtime/go-main.c'; then $(CYGPATH_W) 'runtime/go-main.c'; else $(CYGPATH_W) '$(srcdir)/runtime/go-main.c'; fi`
+
+libgolibbegin_a-go-libmain.o: runtime/go-libmain.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgolibbegin_a_CFLAGS) $(CFLAGS) -MT libgolibbegin_a-go-libmain.o -MD -MP -MF $(DEPDIR)/libgolibbegin_a-go-libmain.Tpo -c -o libgolibbegin_a-go-libmain.o `test -f 'runtime/go-libmain.c' || echo '$(srcdir)/'`runtime/go-libmain.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libgolibbegin_a-go-libmain.Tpo $(DEPDIR)/libgolibbegin_a-go-libmain.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-libmain.c' object='libgolibbegin_a-go-libmain.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgolibbegin_a_CFLAGS) $(CFLAGS) -c -o libgolibbegin_a-go-libmain.o `test -f 'runtime/go-libmain.c' || echo '$(srcdir)/'`runtime/go-libmain.c
+
+libgolibbegin_a-go-libmain.obj: runtime/go-libmain.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgolibbegin_a_CFLAGS) $(CFLAGS) -MT libgolibbegin_a-go-libmain.obj -MD -MP -MF $(DEPDIR)/libgolibbegin_a-go-libmain.Tpo -c -o libgolibbegin_a-go-libmain.obj `if test -f 'runtime/go-libmain.c'; then $(CYGPATH_W) 'runtime/go-libmain.c'; else $(CYGPATH_W) '$(srcdir)/runtime/go-libmain.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libgolibbegin_a-go-libmain.Tpo $(DEPDIR)/libgolibbegin_a-go-libmain.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-libmain.c' object='libgolibbegin_a-go-libmain.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgolibbegin_a_CFLAGS) $(CFLAGS) -c -o libgolibbegin_a-go-libmain.obj `if test -f 'runtime/go-libmain.c'; then $(CYGPATH_W) 'runtime/go-libmain.c'; else $(CYGPATH_W) '$(srcdir)/runtime/go-libmain.c'; fi`
 
 go-append.lo: runtime/go-append.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-append.lo -MD -MP -MF $(DEPDIR)/go-append.Tpo -c -o go-append.lo `test -f 'runtime/go-append.c' || echo '$(srcdir)/'`runtime/go-append.c

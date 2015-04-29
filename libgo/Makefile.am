@@ -105,7 +105,7 @@ toolexeclib_LTLIBRARIES = libgo-llgo.la
 toolexeclib_LIBRARIES = libgobegin-llgo.a
 else
 toolexeclib_LTLIBRARIES = libgo.la
-toolexeclib_LIBRARIES = libgobegin.a libnetgo.a
+toolexeclib_LIBRARIES = libgobegin.a libgolibbegin.a libnetgo.a
 endif
 
 toolexeclibgo_DATA = \
@@ -2036,6 +2036,11 @@ libgobegin_llgo_a_SOURCES = \
 libgobegin_a_CFLAGS = $(AM_CFLAGS) -fPIC
 libgobegin_llgo_a_CFLAGS = $(AM_CFLAGS) -fPIC
 
+libgolibbegin_a_SOURCES = \
+	runtime/go-libmain.c
+
+libgolibbegin_a_CFLAGS = $(AM_CFLAGS) -fPIC
+
 libnetgo_a_SOURCES = $(go_netgo_files)
 libnetgo_a_LIBADD = netgo.o
 
@@ -2067,7 +2072,7 @@ BUILDPACKAGE = \
 BUILDNETGO = \
 	$(MKDIR_P) $(@D); \
 	files=`echo $^ | sed -e 's/[^ ]*\.gox//g'`; \
-	$(GOCOMPILE) -I . -c -fgo-pkgpath=net -o $@ $$files
+	$(GOCOMPILE) -I . -c -fPIC -fgo-pkgpath=net -o $@ $$files
 
 GOTESTFLAGS =
 GOBENCH = 
