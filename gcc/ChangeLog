@@ -1,3 +1,11 @@
+2015-04-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/65099
+	* config/nvptx/mkoffload.c (target_ilp32): New variable.
+	(main): Set it depending on "-foffload-abi=[...]".
+	(compile_native, main): Use it to pass "-m32" or "-m64" to the
+	compiler.
+
 2015-04-29  Alan Lawrence  <alan.lawrence@arm.com>
 
 	PR target/65770
