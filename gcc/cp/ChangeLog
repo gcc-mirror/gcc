@@ -1,3 +1,12 @@
+2015-04-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backport from trunk r222564:
+
+	2015-04-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* pt.c (tsubst_expr) <OMP_TARGET_UPDATE>: Use
+	OMP_TARGET_UPDATE_CLAUSES instead of OMP_CLAUSES.
+
 2015-04-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65896

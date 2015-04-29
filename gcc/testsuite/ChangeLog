@@ -1,3 +1,11 @@
+2015-04-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backport from trunk r222564:
+
+	2015-04-29  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/gomp/tpl-target-update.C: New file.
+
 2015-04-28  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
