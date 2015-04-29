@@ -1,3 +1,7 @@
+2015-04-29  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* config/arm/neon.md (vec_shl<mode>, vec_shr<mode>): Remove.
+
 2015-04-29  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/65893
