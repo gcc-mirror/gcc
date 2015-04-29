@@ -38,6 +38,10 @@ main ()
 // { dg-final { note-test l1.front() 123 } }
 // { dg-final { note-test l1.back() 789 } }
 
+// { dg-final { whatis-test l1.empty() bool } }
+// { dg-final { whatis-test l1.size() std::size_t } }
+// { dg-final { whatis-test l1.front() int } }
+// { dg-final { whatis-test l1.back() int } }
 
   return 0;  // Mark SPOT
 }
