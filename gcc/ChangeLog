@@ -1,3 +1,13 @@
+2015-04-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_analyze_group_access): Properly
+	compute GROUP_SIZE for basic-block SLP.
+	* tree-vect-slp.c (vect_get_place_in_interleaving_chain): Properly
+	take into account gaps.
+	(vect_get_mask_element): Properly reject references to previous
+	vectors.
+	(vect_transform_slp_perm_load): Likewise.
+
 2015-04-29  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/64835
