@@ -1,3 +1,9 @@
+2015-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/65871
+	* gcc.target/i386/pr65871-1.c: New test
+	* gcc.target/i386/pr65871-2.c: Ditto.
+
 2015-04-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64610
