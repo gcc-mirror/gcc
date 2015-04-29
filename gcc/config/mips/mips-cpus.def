@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 MIPS_CPU ("mips1", PROCESSOR_R3000, 1, 0)
 MIPS_CPU ("mips2", PROCESSOR_R6000, 2, 0)
 MIPS_CPU ("mips3", PROCESSOR_R4000, 3, 0)
-MIPS_CPU ("mips4", PROCESSOR_R8000, 4, 0)
+MIPS_CPU ("mips4", PROCESSOR_R10000, 4, 0)
 /* Prefer not to use branch-likely instructions for generic MIPS32rX
    and MIPS64rX code.  The instructions were officially deprecated
    in revisions 2 and earlier, but revision 3 is likely to downgrade
