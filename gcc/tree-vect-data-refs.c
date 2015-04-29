@@ -2245,7 +2245,7 @@ vect_analyze_group_access (struct data_reference *dr)
         }
 
       if (groupsize == 0)
-        groupsize = count;
+        groupsize = count + gaps;
 
       GROUP_SIZE (vinfo_for_stmt (stmt)) = groupsize;
       if (dump_enabled_p ())

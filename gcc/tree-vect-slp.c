@@ -223,8 +223,9 @@ vect_get_place_in_interleaving_chain (gimple stmt, gimple first_stmt)
     {
       if (next_stmt == stmt)
 	return result;
-      result++;
       next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
+      if (next_stmt)
+	result += GROUP_GAP (vinfo_for_stmt (next_stmt));
     }
   while (next_stmt);
 
@@ -3008,6 +3009,18 @@ vect_get_mask_element (gimple stmt, int first_mask_element, int m,
   /* Adjust the value in case it's a mask for second and third vectors.  */
   *current_mask_element -= mask_nunits * (*number_of_mask_fixes - 1);
 
+  if (*current_mask_element < 0)
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "permutation requires past vector ");
+	  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+	  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
+	}
+      return false;
+    }
+
   if (*current_mask_element < mask_nunits)
     *needs_first_vector = true;
 
@@ -3178,7 +3191,8 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 					  &number_of_mask_fixes, &mask_fixed,
 					  &needs_first_vector))
 		return false;
-	      gcc_assert (current_mask_element < 2 * nunits);
+	      gcc_assert (current_mask_element >= 0
+			  && current_mask_element < 2 * nunits);
 	      mask[index++] = current_mask_element;
 
               if (index == nunits)
