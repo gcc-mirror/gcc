@@ -11910,8 +11910,8 @@ maybe_warn_bool_compare (location_t loc, enum tree_code code, tree op0,
 
   if (!integer_zerop (cst) && !integer_onep (cst))
     {
-      int sign = (TREE_CODE (op0) == INTEGER_CST)
-		 ? tree_int_cst_sgn (cst) : -tree_int_cst_sgn (cst);
+      int sign = (TREE_CODE (op0) == INTEGER_CST
+		 ? tree_int_cst_sgn (cst) : -tree_int_cst_sgn (cst));
       if (code == EQ_EXPR
 	  || ((code == GT_EXPR || code == GE_EXPR) && sign < 0)
 	  || ((code == LT_EXPR || code == LE_EXPR) && sign > 0))
@@ -11920,6 +11920,18 @@ maybe_warn_bool_compare (location_t loc, enum tree_code code, tree op0,
       else
 	warning_at (loc, OPT_Wbool_compare, "comparison of constant %qE "
 		    "with boolean expression is always true", cst);
+    }
+  else if (integer_zerop (cst) || integer_onep (cst))
+    {
+      /* Do some magic to get the right diagnostics.  */
+      bool flag = TREE_CODE (op0) == INTEGER_CST;
+      flag = integer_zerop (cst) ? flag : !flag;
+      if ((code == GE_EXPR && !flag) || (code == LE_EXPR && flag))
+	warning_at (loc, OPT_Wbool_compare, "comparison of constant %qE "
+		    "with boolean expression is always true", cst);
+      else if ((code == LT_EXPR && !flag) || (code == GT_EXPR && flag))
+	warning_at (loc, OPT_Wbool_compare, "comparison of constant %qE "
+		    "with boolean expression is always false", cst);
     }
 }
 

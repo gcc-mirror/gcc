@@ -72,15 +72,10 @@ fn1 (bool b)
   r = b == true;
   r = b != true;
 
-  /* Some of these don't make much sense, but we don't warn.  */
-  r = b < false;
-  r = b >= false;
   r = b <= false;
   r = b > false;
   r = b < true;
   r = b >= true;
-  r = b <= true;
-  r = b > true;
 }
 
 void
