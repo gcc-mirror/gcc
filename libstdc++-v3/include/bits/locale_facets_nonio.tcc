@@ -202,7 +202,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
 		    size_type __j = 0;
 		    for (; __beg != __end && __j < __len
 			   && *__beg == __lc->_M_curr_symbol[__j];
-			 ++__beg, ++__j);
+			 ++__beg, (void)++__j);
 		    if (__j != __len
 			&& (__j || __io.flags() & ios_base::showbase))
 		      __testvalid = false;
@@ -298,7 +298,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
 	                                         : __lc->_M_positive_sign;
 	    size_type __i = 1;
 	    for (; __beg != __end && __i < __sign_size
-		   && *__beg == __sign[__i]; ++__beg, ++__i);
+		   && *__beg == __sign[__i]; ++__beg, (void)++__i);
 	    
 	    if (__i != __sign_size)
 	      __testvalid = false;
@@ -858,7 +858,7 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
       ++__min;
       size_t __i = 0;
       int __value = 0;
-      for (; __beg != __end && __i < __len; ++__beg, ++__i)
+      for (; __beg != __end && __i < __len; ++__beg, (void)++__i)
 	{
 	  const char __c = __ctype.narrow(*__beg, '*');
 	  if (__c >= '0' && __c <= '9')
@@ -923,7 +923,8 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 	  for (size_t __i2 = 1; __i2 < __nmatches; ++__i2)
 	    __minlen = std::min(__minlen,
 			      __traits_type::length(__names[__matches[__i2]]));
-	  ++__beg, ++__pos;
+	  ++__beg;
+	  ++__pos;
 	  if (__pos < __minlen && __beg != __end)
 	    for (size_t __i3 = 0; __i3 < __nmatches;)
 	      {
@@ -940,11 +941,12 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
       if (__nmatches == 1)
 	{
 	  // Make sure found name is completely extracted.
-	  ++__beg, ++__pos;
+	  ++__beg;
+	  ++__pos;
 	  __name = __names[__matches[0]];
 	  const size_t __len = __traits_type::length(__name);
 	  while (__pos < __len && __beg != __end && __name[__pos] == *__beg)
-	    ++__beg, ++__pos;
+	    ++__beg, (void)++__pos;
 
 	  if (__len == __pos)
 	    __member = __matches[0];
@@ -987,7 +989,8 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 
       if (__nmatches)
 	{
-	  ++__beg, ++__pos;
+	  ++__beg;
+	  ++__pos;
 
 	  __matches_lengths
 	    = static_cast<size_t*>(__builtin_alloca(sizeof(size_t)
@@ -997,7 +1000,7 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 	      = __traits_type::length(__names[__matches[__i]]);
 	}
 
-      for (; __beg != __end; ++__beg, ++__pos)
+      for (; __beg != __end; ++__beg, (void)++__pos)
 	{
 	  size_t __nskipped = 0;
 	  const char_type __c = *__beg;
