@@ -3954,6 +3954,7 @@
   [(set_attr "type" "neon_store2_2reg<q>")]
 )
 
+;; RTL uses GCC vector extension indices, so flip only for assembly.
 (define_insn "vec_store_lanesoi_lane<mode>"
   [(set (match_operand:<V_TWO_ELEM> 0 "aarch64_simd_struct_operand" "=Utv")
 	(unspec:<V_TWO_ELEM> [(match_operand:OI 1 "register_operand" "w")
@@ -3961,7 +3962,10 @@
 		    (match_operand:SI 2 "immediate_operand" "i")]
                    UNSPEC_ST2_LANE))]
   "TARGET_SIMD"
-  "st2\\t{%S1.<Vetype> - %T1.<Vetype>}[%2], %0"
+  {
+    operands[2] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])));
+    return "st2\\t{%S1.<Vetype> - %T1.<Vetype>}[%2], %0";
+  }
   [(set_attr "type" "neon_store3_one_lane<q>")]
 )
 
@@ -4045,6 +4049,7 @@
   [(set_attr "type" "neon_store3_3reg<q>")]
 )
 
+;; RTL uses GCC vector extension indices, so flip only for assembly.
 (define_insn "vec_store_lanesci_lane<mode>"
   [(set (match_operand:<V_THREE_ELEM> 0 "aarch64_simd_struct_operand" "=Utv")
 	(unspec:<V_THREE_ELEM> [(match_operand:CI 1 "register_operand" "w")
@@ -4052,7 +4057,10 @@
 		    (match_operand:SI 2 "immediate_operand" "i")]
                    UNSPEC_ST3_LANE))]
   "TARGET_SIMD"
-  "st3\\t{%S1.<Vetype> - %U1.<Vetype>}[%2], %0"
+  {
+    operands[2] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])));
+    return "st3\\t{%S1.<Vetype> - %U1.<Vetype>}[%2], %0";
+  }
   [(set_attr "type" "neon_store3_one_lane<q>")]
 )
 
@@ -4136,6 +4144,7 @@
   [(set_attr "type" "neon_store4_4reg<q>")]
 )
 
+;; RTL uses GCC vector extension indices, so flip only for assembly.
 (define_insn "vec_store_lanesxi_lane<mode>"
   [(set (match_operand:<V_FOUR_ELEM> 0 "aarch64_simd_struct_operand" "=Utv")
 	(unspec:<V_FOUR_ELEM> [(match_operand:XI 1 "register_operand" "w")
@@ -4143,7 +4152,10 @@
 		    (match_operand:SI 2 "immediate_operand" "i")]
                    UNSPEC_ST4_LANE))]
   "TARGET_SIMD"
-  "st4\\t{%S1.<Vetype> - %V1.<Vetype>}[%2], %0"
+  {
+    operands[2] = GEN_INT (ENDIAN_LANE_N (<MODE>mode, INTVAL (operands[2])));
+    return "st4\\t{%S1.<Vetype> - %V1.<Vetype>}[%2], %0";
+  }
   [(set_attr "type" "neon_store4_one_lane<q>")]
 )
 
