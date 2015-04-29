@@ -172,6 +172,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_vrp);
       NEXT_PASS (pass_chkp_opt);
       NEXT_PASS (pass_dce);
+      NEXT_PASS (pass_stdarg);
       NEXT_PASS (pass_call_cdce);
       NEXT_PASS (pass_cselim);
       NEXT_PASS (pass_copy_prop);
@@ -179,7 +180,6 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_phiopt);
       NEXT_PASS (pass_tail_recursion);
       NEXT_PASS (pass_ch);
-      NEXT_PASS (pass_stdarg);
       NEXT_PASS (pass_lower_complex);
       NEXT_PASS (pass_sra);
       NEXT_PASS (pass_rename_ssa_copies);
