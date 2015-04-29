@@ -1,3 +1,9 @@
+2015-04-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64610
+	* c-common.c (maybe_warn_bool_compare): Warn when comparing a boolean
+	with 0/1.
+
 2015-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (omp_clause_mask): Unconditionally define as a class.
