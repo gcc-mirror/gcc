@@ -989,21 +989,21 @@ Build_connection_graphs::variable(Named_object* var)
 	      Named_object* lhs_no = this->resolve_var_reference(assn->lhs());
 	      Named_object* rhs_no = this->resolve_var_reference(assn->rhs());
 
-	      if (assn->rhs()->is_composite_literal()
-		  || assn->rhs()->heap_expression() != NULL)
-		this->handle_composite_literal(var, assn->rhs());
-	      else if (assn->rhs()->call_result_expression() != NULL)
+	      Expression* rhs = assn->rhs();
+	      if (rhs->is_composite_literal()
+		  || rhs->heap_expression() != NULL)
+		this->handle_composite_literal(var, rhs);
+
+	      if (rhs->call_result_expression() != NULL)
 		{
 		  // V's initialization will be a call result if
 		  // V, V1 := call(VAR).
 		  // There are no useful edges to make from V, but we want
 		  // to make sure we handle the call that references VAR.
-		  Expression* call =
-		    assn->rhs()->call_result_expression()->call();
-		  this->handle_call(var, call);
+		  rhs = rhs->call_result_expression()->call();
 		}
-	      else if (assn->rhs()->call_expression() != NULL)
-		this->handle_call(var, assn->rhs());
+	      if (rhs->call_expression() != NULL)
+		this->handle_call(var, rhs);
 
 	      // If there is no standalone variable on the rhs, this could be a
 	      // binary expression, which isn't interesting for analysis or a
@@ -1038,8 +1038,12 @@ Build_connection_graphs::variable(Named_object* var)
 	    break;
 
 	  case Statement::STATEMENT_EXPRESSION:
-	    this->handle_call(var,
-	    		      p->statement->expression_statement()->expr());
+	    {
+	      Expression* call = p->statement->expression_statement()->expr();
+	      if (call->call_result_expression() != NULL)
+		call = call->call_result_expression()->call();
+	      this->handle_call(var, call);
+	    }
 	    break;
 
 	  case Statement::STATEMENT_GO:
@@ -1064,10 +1068,17 @@ Build_connection_graphs::variable(Named_object* var)
 	      else if (cond->binary_expression() != NULL)
 		{
 		  Binary_expression* comp = cond->binary_expression();
-		  if (comp->left()->call_expression() != NULL)
-		    this->handle_call(var, comp->left());
-		  if (comp->right()->call_expression() != NULL)
-		    this->handle_call(var, comp->right());
+		  Expression* left = comp->left();
+		  Expression* right = comp->right();
+
+		  if (left->call_result_expression() != NULL)
+		    left = left->call_result_expression()->call();
+		  if (left->call_expression() != NULL)
+		    this->handle_call(var, left);
+		  if (right->call_result_expression() != NULL)
+		    right = right->call_result_expression()->call();
+		  if (right->call_expression() != NULL)
+		    this->handle_call(var, right);
 		}
 	    }
 	    break;
@@ -1092,16 +1103,10 @@ Build_connection_graphs::variable(Named_object* var)
 		  // composite literal.
 		  this->handle_composite_literal(decl_no, init);
 		}
-	      else if (init->call_result_expression() != NULL)
-		{
-		  // V's initialization will be a call result if
-		  // V, V1 := call(VAR).
-		  // There's no useful edges to make from V or V1, but we want
-		  // to make sure we handle the call that references VAR.
-		  Expression* call = init->call_result_expression()->call();
-		  this->handle_call(var, call);
-		}
-	      else if (init->call_expression() != NULL)
+
+	      if (init->call_result_expression() != NULL)
+		init = init->call_result_expression()->call();
+	      if (init->call_expression() != NULL)
 		this->handle_call(var, init);
 	    }
 	    break;
@@ -1148,18 +1153,46 @@ Build_connection_graphs::statement(Block*, size_t*, Statement* s)
       if (lhs_no == NULL)
 	break;
 
-      if (assn->rhs()->func_expression() != NULL)
+      Expression* rhs = assn->rhs();
+      if (rhs->temporary_reference_expression() != NULL)
+	rhs = rhs->temporary_reference_expression()->statement()->init();
+      if (rhs == NULL)
+	break;
+
+      if (rhs->call_result_expression() != NULL)
+	rhs = rhs->call_result_expression()->call();
+      if (rhs->call_expression() != NULL)
+	{
+	  // It's not clear what variables we are trying to find references to
+	  // so just use the arguments to this call.
+	  Expression_list* args = rhs->call_expression()->args();
+	  if (args == NULL)
+	    break;
+
+	  for (Expression_list::const_iterator p = args->begin();
+	       p != args->end();
+	       ++p)
+	    {
+	      Named_object* no = this->resolve_var_reference(*p);
+	      if (no != NULL) {
+		Node* lhs_node = this->gogo_->add_connection_node(lhs_no);
+		Node* rhs_node = this->gogo_->add_connection_node(no);
+		lhs_node->add_edge(rhs_node);
+	      }
+	    }
+
+	  this->handle_call(lhs_no, rhs);
+	}
+      else if (rhs->func_expression() != NULL)
 	{
 	  Node* lhs_node = this->gogo_->add_connection_node(lhs_no);
-	  Named_object* fn = assn->rhs()->func_expression()->named_object();
+	  Named_object* fn = rhs->func_expression()->named_object();
 	  Node* fn_node = this->gogo_->add_connection_node(fn);
 	  lhs_node->add_edge(fn_node);
 	}
-      else if (assn->rhs()->call_expression() != NULL)
-	this->handle_call(lhs_no, assn->rhs()->call_expression());
       else
 	{
-	  Named_object* rhs_no = this->resolve_var_reference(assn->rhs());
+	  Named_object* rhs_no = this->resolve_var_reference(rhs);
 	  if (rhs_no != NULL)
 	    {
 	      Node* lhs_node = this->gogo_->add_connection_node(lhs_no);
@@ -1188,6 +1221,8 @@ Build_connection_graphs::statement(Block*, size_t*, Statement* s)
   case Statement::STATEMENT_EXPRESSION:
     {
       Expression* expr = s->expression_statement()->expr();
+      if (expr->call_result_expression() != NULL)
+	expr = expr->call_result_expression()->call();
       if (expr->call_expression() != NULL)
 	{
 	  // It's not clear what variables we are trying to find references to
@@ -1203,6 +1238,73 @@ Build_connection_graphs::statement(Block*, size_t*, Statement* s)
 	      Named_object* no = this->resolve_var_reference(*p);
 	      if (no != NULL)
 		this->handle_call(no, expr);
+	    }
+	}
+    }
+    break;
+
+  case Statement::STATEMENT_GO:
+  case Statement::STATEMENT_DEFER:
+    {
+      // Any variable referenced via a go or defer statement escapes to
+      // a different goroutine.
+      Expression* call = s->thunk_statement()->call();
+      if (call->call_expression() != NULL)
+	{
+	  // It's not clear what variables we are trying to find references to
+	  // so just use the arguments to this call.
+	  Expression_list* args = call->call_expression()->args();
+	  if (args == NULL)
+	    break;
+
+	  for (Expression_list::const_iterator p = args->begin();
+	       p != args->end();
+	       ++p)
+	    {
+	      Named_object* no = this->resolve_var_reference(*p);
+	      if (no != NULL)
+		this->handle_call(no, call);
+	    }
+	}
+    }
+    break;
+
+  case Statement::STATEMENT_VARIABLE_DECLARATION:
+    {
+      Variable_declaration_statement* decl =
+	s->variable_declaration_statement();
+      Named_object* decl_no = decl->var();
+      Variable* v = decl_no->var_value();
+
+      Expression* init = v->init();
+      if (init == NULL)
+	break;
+
+      if (init->is_composite_literal()
+	  || init->heap_expression() != NULL)
+	{
+	  // Create edges between DECL_NO and each named object in the
+	  // composite literal.
+	  this->handle_composite_literal(decl_no, init);
+	}
+
+      if (init->call_result_expression() != NULL)
+	init = init->call_result_expression()->call();
+      if (init->call_expression() != NULL)
+	{
+	  // It's not clear what variables we are trying to find references to
+	  // so just use the arguments to this call.
+	  Expression_list* args = init->call_expression()->args();
+	  if (args == NULL)
+	    break;
+
+	  for (Expression_list::const_iterator p = args->begin();
+	       p != args->end();
+	       ++p)
+	    {
+	      Named_object* no = this->resolve_var_reference(*p);
+	      if (no != NULL)
+		this->handle_call(no, init);
 	    }
 	}
     }
