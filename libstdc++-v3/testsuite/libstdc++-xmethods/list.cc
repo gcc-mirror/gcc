@@ -18,6 +18,9 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// List xmethods only recognize the non cxx11 std::list for now.
+#define _GLIBCXX_USE_CXX11_ABI 0
+
 #include <list>
 
 int

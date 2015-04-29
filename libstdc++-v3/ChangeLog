@@ -1,3 +1,8 @@
+2015-04-28  Doug Evans  <dje@google.com>
+
+	* testsuite/libstdc++-xmethods/list.cc (_GLIBCXX_USE_CXX11_ABI):
+	Define to zero.
+
 2015-04-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_algo.h (random_shuffle): Only define for hosted
