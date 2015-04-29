@@ -24,31 +24,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "hash-set.h"
-#include "machmode.h"
 #include "vec.h"
 #include "double-int.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
-#include "wide-int.h"
 #include "inchash.h"
 #include "tree.h"
-#include "fold-const.h"
-#include "stmt.h"
 #include "predict.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"
-#include "basic-block.h"
-#include "tree-ssa-alias.h"
-#include "internal-fn.h"
 #include "gimple-expr.h"
 #include "is-a.h"
+#include "tree-ssa-alias.h"
+#include "basic-block.h"
+#include "fold-const.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
-#include "gimple-walk.h"
-#include "demangle.h"
+#include "stmt.h"
 
 /* Walk all the statements in the sequence *PSEQ calling walk_gimple_stmt
    on each one.  WI is as in walk_gimple_stmt.
@@ -129,10 +123,12 @@ walk_gimple_asm (gasm *stmt, walk_tree_fn callback_op,
       op = gimple_asm_output_op (stmt, i);
       constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (op)));
       oconstraints[i] = constraint;
-      parse_output_constraint (&constraint, i, 0, 0, &allows_mem, &allows_reg,
-	                       &is_inout);
       if (wi)
-	wi->val_only = (allows_reg || !allows_mem);
+	{
+	  if (parse_output_constraint (&constraint, i, 0, 0, &allows_mem,
+				       &allows_reg, &is_inout))
+	    wi->val_only = (allows_reg || !allows_mem);
+	}
       ret = walk_tree (&TREE_VALUE (op), callback_op, wi, NULL);
       if (ret)
 	return ret;
@@ -143,13 +139,16 @@ walk_gimple_asm (gasm *stmt, walk_tree_fn callback_op,
     {
       op = gimple_asm_input_op (stmt, i);
       constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (op)));
-      parse_input_constraint (&constraint, 0, 0, noutputs, 0,
-			      oconstraints, &allows_mem, &allows_reg);
+
       if (wi)
 	{
-	  wi->val_only = (allows_reg || !allows_mem);
-          /* Although input "m" is not really a LHS, we need a lvalue.  */
-	  wi->is_lhs = !wi->val_only;
+	  if (parse_input_constraint (&constraint, 0, 0, noutputs, 0,
+				      oconstraints, &allows_mem, &allows_reg))
+	    {
+	      wi->val_only = (allows_reg || !allows_mem);
+	      /* Although input "m" is not really a LHS, we need a lvalue.  */
+	      wi->is_lhs = !wi->val_only;
+	    }
 	}
       ret = walk_tree (&TREE_VALUE (op), callback_op, wi, NULL);
       if (ret)
