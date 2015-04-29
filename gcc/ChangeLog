@@ -8,6 +8,8 @@
 	PR target/65871
 	* config/i386/i386.md (*bmi_bextr_<mode>_cczonly): New pattern.
 	(*bmi2_bzhi_<mode>3_1_cczonly): Ditto.
+	(setcc+movzbl peephole2): Check also clobbered reg.
+	(setcc+andl peephole2): Ditto.
 
 2015-04-29  Thomas Schwinge  <thomas@codesourcery.com>
 
