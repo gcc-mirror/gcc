@@ -1,3 +1,8 @@
+2015-04-28  Doug Evans  <dje@google.com>
+
+	* testsuite/libstdc++-xmethods/list.cc (_GLIBCXX_USE_CXX11_ABI):
+	Define to zero.
+
 2015-04-28  Stephan Bergmann  <sbergman@redhat.com>
 
 	* include/debug/vector (_Safe_vector::operator=): Add missing returns.
