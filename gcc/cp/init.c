@@ -625,6 +625,9 @@ perform_member_init (tree member, tree init)
       && TREE_CHAIN (init) == NULL_TREE)
     {
       tree val = TREE_VALUE (init);
+      /* Handle references.  */
+      if (REFERENCE_REF_P (val))
+	val = TREE_OPERAND (val, 0);
       if (TREE_CODE (val) == COMPONENT_REF && TREE_OPERAND (val, 1) == member
 	  && TREE_OPERAND (val, 0) == current_class_ref)
 	warning_at (DECL_SOURCE_LOCATION (current_function_decl),

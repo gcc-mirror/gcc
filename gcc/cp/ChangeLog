@@ -1,3 +1,8 @@
+2015-04-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64667
+	* init.c (perform_member_init): Handle references for -Winit-self.
+
 2015-04-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* pt.c (tsubst_expr) <OMP_TARGET_UPDATE>: Use
