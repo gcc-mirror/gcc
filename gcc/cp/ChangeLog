@@ -1,3 +1,9 @@
+2015-04-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65896
+	* constexpr.c (cxx_eval_store_expression): Don't try to actually
+	store an empty class.
+
 2015-04-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/65727
