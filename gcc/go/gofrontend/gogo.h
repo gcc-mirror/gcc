@@ -1042,6 +1042,11 @@ class Function
     this->is_unnamed_type_stub_method_ = true;
   }
 
+  // Return the amount of enclosed variables in this closure.
+  size_t
+  closure_field_count() const
+  { return this->closure_fields_.size(); }
+
   // Add a new field to the closure variable.
   void
   add_closure_field(Named_object* var, Location loc)
