@@ -1,3 +1,23 @@
+2015-04-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64657
+	* include/bits/basic_string (basic_string::_S_copy_chars): Cast
+	expression to void.
+	* include/bits/locale_facets_nonio.tcc (money_get::_M_extract,
+	time_get::_M_extract_num, time_get::_M_extract_name,
+	time_get::_M_extract_wday_or_month): Likewise.
+	* include/bits/stl_algo.h (__includes, __replace_copy_if,
+	__is_sorted_until, __is_permutation, transform): Likewise.
+	* include/bits/stl_algobase.h (swap_ranges, __copy_move::__copy_m,
+	__equal::equal, __lexicographical_compare_impl, equal): Likewise.
+	* include/bits/stl_numeric.h (inner_product): Likewise.
+	* include/bits/stl_uninitialized.h (__uninitialized_copy_a): Likewise.
+	* testsuite/util/testsuite_iterators.h (output_iterator_wrapper,
+	input_iterator_wrapper): Declare unusable comma operator.
+	* testsuite/21_strings/basic_string/cons/char/64657.cc: New.
+	* testsuite/21_strings/basic_string/modifiers/assign/char/64657.cc:
+	New.
+
 2015-04-28  Doug Evans  <dje@google.com>
 
 	* testsuite/libstdc++-xmethods/list.cc (_GLIBCXX_USE_CXX11_ABI):

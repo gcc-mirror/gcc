@@ -2805,7 +2805,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	else if (__comp(__first1, __first2))
 	  ++__first1;
 	else
-	  ++__first1, ++__first2;
+	  {
+	    ++__first1;
+	    ++__first2;
+	  }
 
       return __first2 == __last2;
     }
@@ -3108,7 +3111,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _OutputIterator __result,
 		      _Predicate __pred, const _Tp& __new_value)
     {
-      for (; __first != __last; ++__first, ++__result)
+      for (; __first != __last; ++__first, (void)++__result)
 	if (__pred(__first))
 	  *__result = __new_value;
 	else
@@ -3232,7 +3235,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __last;
 
       _ForwardIterator __next = __first;
-      for (++__next; __next != __last; __first = __next, ++__next)
+      for (++__next; __next != __last; __first = __next, (void)++__next)
 	if (__comp(__next, __first))
 	  return __next;
       return __next;
@@ -3491,7 +3494,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       // Efficiently compare identical prefixes:  O(N) if sequences
       // have the same elements in the same order.
-      for (; __first1 != __last1; ++__first1, ++__first2)
+      for (; __first1 != __last1; ++__first1, (void)++__first2)
 	if (!__pred(__first1, __first2))
 	  break;
 
@@ -3607,7 +3610,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Efficiently compare identical prefixes:  O(N) if sequences
       // have the same elements in the same order.
       for (; __first1 != __last1 && __first2 != __last2;
-	  ++__first1, ++__first2)
+	  ++__first1, (void)++__first2)
 	if (!__pred(__first1, __first2))
 	  break;
 
@@ -4171,7 +4174,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
             __typeof__(__unary_op(*__first))>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      for (; __first != __last; ++__first, ++__result)
+      for (; __first != __last; ++__first, (void)++__result)
 	*__result = __unary_op(*__first);
       return __result;
     }
@@ -4210,7 +4213,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
             __typeof__(__binary_op(*__first1,*__first2))>)
       __glibcxx_requires_valid_range(__first1, __last1);
 
-      for (; __first1 != __last1; ++__first1, ++__first2, ++__result)
+      for (; __first1 != __last1; ++__first1, (void)++__first2, ++__result)
 	*__result = __binary_op(*__first1, *__first2);
       return __result;
     }
