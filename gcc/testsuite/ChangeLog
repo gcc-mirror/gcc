@@ -1,3 +1,8 @@
+2015-04-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65801
+	* g++.dg/cpp0x/Wnarrowing2.C: New.
+
 2015-04-30  Alan Modra  <amodra@gmail.com>
 
 	* gcc.dg/pr65408.c: New.

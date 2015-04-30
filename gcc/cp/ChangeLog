@@ -1,3 +1,9 @@
+2015-04-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65801
+	* typeck2.c (check_narrowing): In C++11 mode too, -Wno-narrowing
+	suppresses the diagnostic.
+
 2015-04-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65876
