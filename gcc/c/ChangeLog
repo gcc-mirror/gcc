@@ -3,6 +3,9 @@
 	* c-typeck.c (set_init_label): Call error_at instead of error and
 	pass LOC to it.
 
+	* c-typeck.c (c_incomplete_type_error): Refactor to use %qT.  Print
+	the type of a decl.
+
 2015-04-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-parser.c (c_parser_oacc_enter_exit_data): Use
