@@ -987,9 +987,7 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
       if (can_compare_p (rcode, mode, ccp_jump)
 	  || (code == ORDERED && ! can_compare_p (ORDERED, mode, ccp_jump)))
 	{
-          tem = if_true_label;
-          if_true_label = if_false_label;
-          if_false_label = tem;
+	  std::swap (if_true_label, if_false_label);
 	  code = rcode;
 	  prob = inv (prob);
 	}
@@ -1000,9 +998,7 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 
   if (swap_commutative_operands_p (op0, op1))
     {
-      tem = op0;
-      op0 = op1;
-      op1 = tem;
+      std::swap (op0, op1);
       code = swap_condition (code);
     }
 
