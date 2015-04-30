@@ -7926,7 +7926,7 @@ set_init_label (location_t loc, tree fieldname,
   field = lookup_field (constructor_type, fieldname);
 
   if (field == 0)
-    error ("unknown field %qE specified in initializer", fieldname);
+    error_at (loc, "unknown field %qE specified in initializer", fieldname);
   else
     do
       {
