@@ -2,6 +2,9 @@
 
 	* c-c++-common/Wbool-compare-3.c: New test.
 
+	* gcc.dg/pr65901.c (foo): Adjust dg-error.
+	* gcc.c-torture/compile/pr48767.c (foo): Likewise.
+
 2015-04-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57610
