@@ -1,3 +1,8 @@
+2015-04-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genrecog.c (simplify_tests): Check that CONST_INT and XWINT tests
+	are for the same position.
+
 2015-04-29  Aditya Kumar  <hiraditya@hotmail.com>
 
 	* tree-vectorizer.c (set_uid_loop_bbs): New.  Factored out of

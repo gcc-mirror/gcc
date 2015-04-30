@@ -1597,7 +1597,8 @@ simplify_tests (state *s)
 	  && d->if_statement_p (&label)
 	  && label == CONST_INT)
 	if (decision *second = d->first->to->singleton ())
-	  if (second->test.kind == test::WIDE_INT_FIELD
+	  if (d->test.pos == second->test.pos
+	      && second->test.kind == test::WIDE_INT_FIELD
 	      && second->test.u.opno == 0
 	      && second->if_statement_p (&label)
 	      && IN_RANGE (int64_t (label),
