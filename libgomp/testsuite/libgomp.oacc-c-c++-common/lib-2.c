@@ -23,4 +23,5 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-shouldfail "libgomp: no device initialized" } */
+/* { dg-output "no device initialized" } */
+/* { dg-shouldfail "" } */

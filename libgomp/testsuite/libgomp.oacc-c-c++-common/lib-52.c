@@ -25,4 +25,6 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-shouldfail "libgomp: \[(nil),+256\]->\[\h+,\+256\] is a bad map" } */
+/* { dg-output "\\\[\\\(nil\\\),\\\+256\]->\[0x\[0-9a-f\]+,\\\+256\\\] is a bad map" { target openacc_nvidia_accel_selected } } */
+/* { dg-output "cannot map data on shared-memory system" { target openacc_host_selected } } */
+/* { dg-shouldfail "" } */

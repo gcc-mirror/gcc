@@ -26,4 +26,5 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-shouldfail "libgomp: \[\h+,\+256\] already mapped to \[\h+,\+256\]" } */
+/* { dg-output "\\\[0x\[0-9a-f\]+,\\\+256\\\] already mapped to \\\[0x\[0-9a-f\]+,\\\+256\\\]" } */
+/* { dg-shouldfail "" } */

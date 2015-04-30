@@ -345,3 +345,23 @@ proc check_effective_target_openacc_nvidia_accel_selected { } {
     }
     return 0;
 }
+
+# Return 1 if the host target is selected for offloaded
+
+proc check_effective_target_openacc_host_selected { } {
+    global offload_target_openacc
+    if { $offload_target_openacc == "host" } {
+        return 1;
+    }
+    return 0;
+}
+
+# Return 1 if the host_nonshm target is selected for offloaded
+
+proc check_effective_target_openacc_host_nonshm_selected { } {
+    global offload_target_openacc
+    if { $offload_target_openacc == "host_nonshm" } {
+        return 1;
+    }
+    return 0;
+}
