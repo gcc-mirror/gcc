@@ -1,3 +1,18 @@
+2015-04-30  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2014-12-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/64153
+	* ipa-inline-analysis.c (evaluate_conditions_for_known_args): Check
+	type sizes before view_converting.
+
+	2014-12-01  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/63551
+	* ipa-inline-analysis.c (evaluate_conditions_for_known_args): Convert
+	value of the argument to the type of the value in the condition.
+
 2015-04-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline r222385
