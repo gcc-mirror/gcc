@@ -284,6 +284,22 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   while (0)
 #endif
 
+/* Write the extra assembler code needed to declare the name of a
+   cold function partition properly. Some svr4 assemblers need to also
+   have something extra said about the function's return value.  We
+   allow for that here.  */
+
+#ifndef ASM_DECLARE_COLD_FUNCTION_NAME
+#define ASM_DECLARE_COLD_FUNCTION_NAME(FILE, NAME, DECL)	\
+  do								\
+    {								\
+      ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "function");	\
+      ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));		\
+      ASM_OUTPUT_FUNCTION_LABEL (FILE, NAME, DECL);		\
+    }								\
+  while (0)
+#endif
+
 /* Write the extra assembler code needed to declare an object properly.  */
 
 #ifdef HAVE_GAS_GNU_UNIQUE_OBJECT
@@ -350,6 +366,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* This is how to declare the size of a function.  */
 #ifndef ASM_DECLARE_FUNCTION_SIZE
 #define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)		\
+  do								\
+    {								\
+      if (!flag_inhibit_size_directive)				\
+	ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME);			\
+    }								\
+  while (0)
+#endif
+
+/* This is how to declare the size of a cold function partition.  */
+#ifndef ASM_DECLARE_COLD_FUNCTION_SIZE
+#define ASM_DECLARE_COLD_FUNCTION_SIZE(FILE, FNAME, DECL)	\
   do								\
     {								\
       if (!flag_inhibit_size_directive)				\

@@ -1864,11 +1864,11 @@ assemble_end_function (tree decl, const char *fnname ATTRIBUTE_UNUSED)
 
       save_text_section = in_section;
       switch_to_section (unlikely_text_section ());
-#ifdef ASM_DECLARE_FUNCTION_SIZE
+#ifdef ASM_DECLARE_COLD_FUNCTION_SIZE
       if (cold_function_name != NULL_TREE)
-	ASM_DECLARE_FUNCTION_SIZE (asm_out_file,
-				   IDENTIFIER_POINTER (cold_function_name),
-				   decl);
+	ASM_DECLARE_COLD_FUNCTION_SIZE (asm_out_file,
+					IDENTIFIER_POINTER (cold_function_name),
+					decl);
 #endif
       ASM_OUTPUT_LABEL (asm_out_file, crtl->subsections.cold_section_end_label);
       if (first_function_block_is_cold)

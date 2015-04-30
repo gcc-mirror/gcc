@@ -2235,10 +2235,11 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	    {
 	      cold_function_name
 		= clone_function_name (current_function_decl, "cold");
-#ifdef ASM_DECLARE_FUNCTION_NAME
-	      ASM_DECLARE_FUNCTION_NAME (asm_out_file,
-					 IDENTIFIER_POINTER (cold_function_name),
-					 current_function_decl);
+#ifdef ASM_DECLARE_COLD_FUNCTION_NAME
+	      ASM_DECLARE_COLD_FUNCTION_NAME (asm_out_file,
+					      IDENTIFIER_POINTER
+					          (cold_function_name),
+					      current_function_decl);
 #else
 	      ASM_OUTPUT_LABEL (asm_out_file,
 				IDENTIFIER_POINTER (cold_function_name));

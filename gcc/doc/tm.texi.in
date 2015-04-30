@@ -5574,6 +5574,34 @@ You may wish to use @code{ASM_OUTPUT_MEASURED_SIZE} in the definition
 of this macro.
 @end defmac
 
+@defmac ASM_DECLARE_COLD_FUNCTION_NAME (@var{stream}, @var{name}, @var{decl})
+A C statement (sans semicolon) to output to the stdio stream
+@var{stream} any text necessary for declaring the name @var{name} of a
+cold function partition which is being defined.  This macro is responsible
+for outputting the label definition (perhaps using
+@code{ASM_OUTPUT_FUNCTION_LABEL}).  The argument @var{decl} is the
+@code{FUNCTION_DECL} tree node representing the function.
+
+If this macro is not defined, then the cold partition name is defined in the
+usual manner as a label (by means of @code{ASM_OUTPUT_LABEL}).
+
+You may wish to use @code{ASM_OUTPUT_TYPE_DIRECTIVE} in the definition
+of this macro.
+@end defmac
+
+@defmac ASM_DECLARE_COLD_FUNCTION_SIZE (@var{stream}, @var{name}, @var{decl})
+A C statement (sans semicolon) to output to the stdio stream
+@var{stream} any text necessary for declaring the size of a cold function
+partition which is being defined.  The argument @var{name} is the name of the
+cold partition of the function.  The argument @var{decl} is the
+@code{FUNCTION_DECL} tree node representing the function.
+
+If this macro is not defined, then the partition size is not defined.
+
+You may wish to use @code{ASM_OUTPUT_MEASURED_SIZE} in the definition
+of this macro.
+@end defmac
+
 @defmac ASM_DECLARE_OBJECT_NAME (@var{stream}, @var{name}, @var{decl})
 A C statement (sans semicolon) to output to the stdio stream
 @var{stream} any text necessary for declaring the name @var{name} of an

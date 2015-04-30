@@ -1,3 +1,15 @@
+2015-04-30  Caroline Tice  <cmtice@google.com>
+
+        PR 65929
+	* config/elfos.h (ASM_DECLARE_COLD_FUNCTION_NAME): New macro definition.
+	(ASM_DECLARE_COLD_FUNCTION_SIZE): New macro definition.
+	* doc/tm.texi.in (ASM_DECLARE_COLD_FUNCTION_NAME): Document new macro.
+	(ASM_DECLARE_COLD_FUNCTION_SIZE): Document new macro.
+	* final.c (final_scan_insn):  Use ASM_DECLARE_COLD_FUNCTION_NAME
+	instead of ASM_DECLARE_FUNCTION_NAME for cold partition name.
+	* varasm.c (assemble_end_function):  Use ASM_DECLARE_COLD_FUNCTION_SIZE
+	instead of ASM_DECLARE_FUNCTION_SIZE for cold partition size.
+
 2015-04-30  Marek Polacek  <polacek@redhat.com>
 
 	* varasm.c (handle_cache_entry): Fix logic.
