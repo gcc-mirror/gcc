@@ -11924,6 +11924,17 @@ maybe_warn_bool_compare (location_t loc, enum tree_code code, tree op0,
     }
   else if (integer_zerop (cst) || integer_onep (cst))
     {
+      /* If the non-constant operand isn't of a boolean type, we
+	 don't want to warn here.  */
+      tree noncst = TREE_CODE (op0) == INTEGER_CST ? op1 : op0;
+      /* Handle booleans promoted to integers.  */
+      if (CONVERT_EXPR_P (noncst)
+	  && TREE_TYPE (noncst) == integer_type_node
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (noncst, 0))) == BOOLEAN_TYPE)
+	/* Warn.  */;
+      else if (TREE_CODE (TREE_TYPE (noncst)) != BOOLEAN_TYPE
+	       && !truth_value_p (TREE_CODE (noncst)))
+	return;
       /* Do some magic to get the right diagnostics.  */
       bool flag = TREE_CODE (op0) == INTEGER_CST;
       flag = integer_zerop (cst) ? flag : !flag;
