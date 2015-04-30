@@ -10,4 +10,5 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-shouldfail "libgomp: device 99 is out of range" } */
+/* { dg-output "device \[0-9\]+ out of range" } */
+/* { dg-shouldfail "" } */

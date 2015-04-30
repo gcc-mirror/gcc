@@ -64,4 +64,5 @@ main (int argc, char **argv)
 
     return 0;
 }
-/* { dg-shouldfail "libgomp: \[\h+,\d+\] is not mapped" } */
+/* { dg-output "Trying to map into device \\\[0x\[0-9a-f\]+..0x\[0-9a-f\]+\\\) object when \\\[0x\[0-9a-f\]+..0x\[0-9a-f\]+\\\) is already mapped" }
+/* { dg-shouldfail "" } */

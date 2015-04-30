@@ -12,4 +12,5 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-shouldfail "libgomp: device 4(4) is initialized" } */
+/* { dg-output "device \[0-9\]+\\\(\[0-9\]+\\\) is initialized" } */
+/* { dg-shouldfail "" } */

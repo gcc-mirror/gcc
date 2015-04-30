@@ -129,4 +129,5 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-shouldfail "libgomp: identical parameters" } */
+/* { dg-output "identical parameters" } */
+/* { dg-shouldfail "" } */

@@ -45,4 +45,5 @@ main (int argc, char **argv)
 
     return 0;
 }
-/* { dg-shouldfail "libgomp: present clause: !acc_is_present" } */
+/* { dg-output "present clause: !acc_is_present" } */
+/* { dg-shouldfail "" } */

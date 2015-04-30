@@ -21,4 +21,5 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-shouldfail "libgomp: device already active" } */
+/* { dg-output "device already active" } */
+/* { dg-shouldfail "" } */

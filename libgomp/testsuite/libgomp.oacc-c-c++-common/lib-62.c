@@ -46,4 +46,5 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-shouldfail "libgomp: invalid size" } */
+/* { dg-output "invalid size" } */
+/* { dg-shouldfail "" } */
