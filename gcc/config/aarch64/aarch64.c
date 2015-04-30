@@ -6049,13 +6049,45 @@ cost_plus:
       return false;
 
     case NOT:
+      x = XEXP (x, 0);
+      op0 = aarch64_strip_shift (x);
+
+      /* MVN-shifted-reg.  */
+      if (op0 != x)
+        {
+          *cost += rtx_cost (op0, (enum rtx_code) code, 0, speed);
+
+          if (speed)
+            *cost += extra_cost->alu.log_shift;
+
+          return true;
+        }
+      /* EON can have two forms: (xor (not a) b) but also (not (xor a b)).
+         Handle the second form here taking care that 'a' in the above can
+         be a shift.  */
+      else if (GET_CODE (op0) == XOR)
+        {
+          rtx newop0 = XEXP (op0, 0);
+          rtx newop1 = XEXP (op0, 1);
+          rtx op0_stripped = aarch64_strip_shift (newop0);
+
+          *cost += rtx_cost (newop1, (enum rtx_code) code, 1, speed)
+                   + rtx_cost (op0_stripped, XOR, 0, speed);
+
+          if (speed)
+            {
+              if (op0_stripped != newop0)
+                *cost += extra_cost->alu.log_shift;
+              else
+                *cost += extra_cost->alu.logical;
+            }
+
+          return true;
+        }
       /* MVN.  */
       if (speed)
 	*cost += extra_cost->alu.logical;
 
-      /* The logical instruction could have the shifted register form,
-         but the cost is the same if the shift is processed as a separate
-         instruction, so we don't bother with it here.  */
       return false;
 
     case ZERO_EXTEND:
