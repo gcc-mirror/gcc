@@ -979,6 +979,22 @@ class StdExpStringViewPrinter:
     def display_hint (self):
         return 'string'
 
+class StdExpPathPrinter:
+    "Print a std::experimental::filesystem::path"
+
+    def __init__ (self, typename, val):
+        self.val = val
+        self.list_visualizer = gdb.default_visualizer(val['_M_cmpts'])
+
+    def to_string (self):
+        path = self.val ['_M_pathname']
+        if self.list_visualizer:
+            list_head = self.val['_M_cmpts']['_M_impl']['_M_node']
+            if list_head.address != list_head['_M_next']:
+                cmpts = self.list_visualizer.to_string()
+                path = "%s [Components %s]" % (path, cmpts)
+        return path
+
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
 class RxPrinter(object):
@@ -1364,6 +1380,11 @@ def build_libstdcxx_dictionary ():
                                   'optional', StdExpOptionalPrinter)
     libstdcxx_printer.add_version('std::experimental::fundamentals_v1::',
                                   'basic_string_view', StdExpStringViewPrinter)
+    # Filesystem TS components
+    libstdcxx_printer.add_version('std::experimental::filesystem::v1::',
+                                  'path', StdExpPathPrinter)
+    libstdcxx_printer.add_version('std::experimental::filesystem::v1::__cxx11',
+                                  'path', StdExpPathPrinter)
 
     # Extensions.
     libstdcxx_printer.add_version('__gnu_cxx::', 'slist', StdSlistPrinter)

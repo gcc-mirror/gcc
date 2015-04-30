@@ -1895,6 +1895,53 @@ proc check_v3_target_little_endian { } {
     return $et_little_endian
 }
 
+proc check_v3_target_filesystem_ts { } {
+    global et_filesystem_ts
+    global tool
+
+    if { ![info exists et_filesystem_ts_target_name] } {
+	set et_filesystem_ts_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_filesystem_ts_target_name } {
+	verbose "check_v3_target_filesystem_ts: `$et_filesystem_ts_target_name'" 2
+	set et_filesystem_ts_target_name $current_target
+	if [info exists et_filesystem_ts] {
+	    verbose "check_v3_target_filesystem_ts: removing cached result" 2
+	    unset et_filesystem_ts
+	}
+    }
+
+    if [info exists et_filesystem_ts] {
+	verbose "check_v3_target_filesystem_ts: using cached result" 2
+    } else {
+	set et_filesystem_ts 0
+
+	# Set up and preprocess a C++ test program that depends
+	# on debug mode activated.
+	set src filesystem_ts[pid].cc
+
+	set f [open $src "w"]
+	puts $f "#include <experimental/filesystem>"
+	puts $f "#if ! __cpp_lib_experimental_filesystem"
+	puts $f "#  error No Filesystem TS support"
+	puts $f "#endif"
+	close $f
+
+	set lines [v3_target_compile $src /dev/null preprocess ""]
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, preprocessing succeeded.
+	    set et_filesystem_ts 1
+	}
+    }
+    verbose "check_v3_target_filesystem_ts: $et_filesystem_ts" 2
+    return $et_filesystem_ts
+}
+
 set additional_prunes ""
 
 if { [info exists env(GCC_RUNTEST_PARALLELIZE_DIR)] \
