@@ -6387,7 +6387,19 @@ cost_plus:
     case ABS:
       if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	{
-	  /* FABS and FNEG are analogous.  */
+	  op0 = XEXP (x, 0);
+
+	  /* FABD, which is analogous to FADD.  */
+	  if (GET_CODE (op0) == MINUS)
+	    {
+	      *cost += rtx_cost (XEXP (op0, 0), MINUS, 0, speed);
+			+ rtx_cost (XEXP (op0, 1), MINUS, 1, speed);
+	      if (speed)
+		*cost += extra_cost->fp[mode == DFmode].addsub;
+
+	      return true;
+	    }
+	  /* Simple FABS is analogous to FNEG.  */
 	  if (speed)
 	    *cost += extra_cost->fp[mode == DFmode].neg;
 	}
