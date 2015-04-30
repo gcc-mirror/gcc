@@ -1355,7 +1355,14 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		     fun = DECL_CHAIN (fun))
 		  if (DECL_SAVED_TREE (fun))
 		    break;
-	      gcc_assert (DECL_SAVED_TREE (fun));
+	      if (!DECL_SAVED_TREE (fun))
+		{
+		  /* cgraph/gimplification have released the DECL_SAVED_TREE
+		     for this function.  Fail gracefully.  */
+		  gcc_assert (ctx->quiet);
+		  *non_constant_p = true;
+		  return t;
+		}
 	      tree parms, res;
 
 	      /* Unshare the whole function body.  */
