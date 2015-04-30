@@ -1,3 +1,8 @@
+2015-04-30  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/63551
+	* g++.dg/ipa/pr63551.C: New test.
+
 2015-04-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65801
