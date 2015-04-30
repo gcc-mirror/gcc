@@ -1,3 +1,8 @@
+2015-04-29  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* encoding.c (objc_layout_structure_next_member): Check the value of
+	PCC_BITFIELD_TYPE_MATTERS not if it is defined.
+
 2015-02-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libobjc/63765
