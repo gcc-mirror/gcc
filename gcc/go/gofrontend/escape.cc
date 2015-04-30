@@ -906,6 +906,8 @@ Build_connection_graphs::handle_composite_literal(Named_object* object,
 	continue;
       else if ((*p)->call_expression() != NULL)
 	this->handle_call(object, *p);
+      else if ((*p)->func_expression() != NULL)
+	composite_args.push_back((*p)->func_expression()->named_object());
       else if ((*p)->is_composite_literal()
 	       || (*p)->heap_expression() != NULL)
 	this->handle_composite_literal(object, *p);
@@ -949,21 +951,24 @@ Build_connection_graphs::variable(Named_object* var)
 	   p != defs->end();
 	   ++p)
 	{
-	  if (p->val == NULL)
+	  Expression* def = p->val;
+	  if (def == NULL)
 	    continue;
 
-	  if (p->val->func_expression() != NULL)
+	  if (def->conversion_expression() != NULL)
+	    def = def->conversion_expression()->expr();
+	  if (def->func_expression() != NULL)
 	    {
 	      // VAR is being defined as a function object.
-	      Named_object* fn = p->val->func_expression()->named_object();
+	      Named_object* fn = def->func_expression()->named_object();
 	      Node* fn_node = this->gogo_->add_connection_node(fn);
 	      var_node->add_edge(fn_node);
 	    }
-	  else if(p->val->is_composite_literal()
-		  || p->val->heap_expression() != NULL)
-	    this->handle_composite_literal(var, p->val);
+	  else if(def->is_composite_literal()
+		  || def->heap_expression() != NULL)
+	    this->handle_composite_literal(var, def);
 
-	  Named_object* ref = this->resolve_var_reference(p->val);
+	  Named_object* ref = this->resolve_var_reference(def);
 	  if (ref == NULL)
 	    continue;
 
