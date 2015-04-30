@@ -9964,7 +9964,7 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0)
     CASE_FLT_FN (BUILT_IN_CREAL):
       if (validate_arg (arg0, COMPLEX_TYPE)
 	&& TREE_CODE (TREE_TYPE (TREE_TYPE (arg0))) == REAL_TYPE)
-	return non_lvalue_loc (loc, fold_build1_loc (loc, REALPART_EXPR, type, arg0));;
+	return non_lvalue_loc (loc, fold_build1_loc (loc, REALPART_EXPR, type, arg0));
     break;
 
     CASE_FLT_FN (BUILT_IN_CIMAG):

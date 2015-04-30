@@ -2992,7 +2992,7 @@ symtab_node::get_availability (void)
   if (is_a <cgraph_node *> (this))
     return dyn_cast <cgraph_node *> (this)->get_availability ();
   else
-    return dyn_cast <varpool_node *> (this)->get_availability ();;
+    return dyn_cast <varpool_node *> (this)->get_availability ();
 }
 
 /* Call calback on symtab node and aliases associated to this node.

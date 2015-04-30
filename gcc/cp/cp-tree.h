@@ -3073,7 +3073,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
    ARGUMENT_PACK_SELECT represents. */
 #define ARGUMENT_PACK_SELECT_ARG(NODE)					\
   TREE_VEC_ELT (ARGUMENT_PACK_ARGS (ARGUMENT_PACK_SELECT_FROM_PACK (NODE)), \
-	        ARGUMENT_PACK_SELECT_INDEX (NODE));
+	        ARGUMENT_PACK_SELECT_INDEX (NODE))
 
 /* In a FUNCTION_DECL, the saved language-specific per-function data.  */
 #define DECL_SAVED_FUNCTION_DATA(NODE)			\

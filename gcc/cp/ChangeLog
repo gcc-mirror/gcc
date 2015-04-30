@@ -1,3 +1,8 @@
+2015-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-tree.h (ARGUMENT_PACK_SELECT_ARG): Remove spurious
+	trailing semicolon.
+
 2015-04-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50800

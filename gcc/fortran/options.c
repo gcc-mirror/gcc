@@ -115,7 +115,7 @@ gfc_init_options (unsigned int decoded_options_count,
      enabled by default in Fortran.  Ideally, we should express this
      in .opt, but that is not supported yet.  */
   if (!global_options_set.x_cpp_warn_missing_include_dirs)
-    global_options.x_cpp_warn_missing_include_dirs = 1;;
+    global_options.x_cpp_warn_missing_include_dirs = 1;
 
   set_default_std_flags ();
 
