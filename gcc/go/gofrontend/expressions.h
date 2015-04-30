@@ -2786,7 +2786,7 @@ class Allocation_expression : public Expression
  public:
   Allocation_expression(Type* type, Location location)
     : Expression(EXPRESSION_ALLOCATION, location),
-      type_(type), allocate_on_stack_(false), stack_temp_(NULL)
+      type_(type), allocate_on_stack_(false)
   { }
 
   void
@@ -2807,9 +2807,6 @@ class Allocation_expression : public Expression
   Expression*
   do_copy();
 
-  Expression*
-  do_flatten(Gogo*, Named_object*, Statement_inserter*);
-
   Bexpression*
   do_get_backend(Translate_context*);
 
@@ -2821,9 +2818,6 @@ class Allocation_expression : public Expression
   Type* type_;
   // Whether or not this is a stack allocation.
   bool allocate_on_stack_;
-  // If this memory is stack allocated, it will use the address of STACK_TEMP.
-  // Otherwise, STACK_TEMP is NULL.
-  Temporary_statement* stack_temp_;
 };
 
 // Construct a struct.
