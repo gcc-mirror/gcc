@@ -1,3 +1,8 @@
+2015-04-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57610
+	* g++.dg/init/ref22.C: New.
+
 2015-04-30  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/init-bad-8.c: New test.
