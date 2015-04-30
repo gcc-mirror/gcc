@@ -5445,6 +5445,51 @@ aarch64_frint_unspec_p (unsigned int u)
     }
 }
 
+/* Return true iff X is an rtx that will match an extr instruction
+   i.e. as described in the *extr<mode>5_insn family of patterns.
+   OP0 and OP1 will be set to the operands of the shifts involved
+   on success and will be NULL_RTX otherwise.  */
+
+static bool
+aarch64_extr_rtx_p (rtx x, rtx *res_op0, rtx *res_op1)
+{
+  rtx op0, op1;
+  machine_mode mode = GET_MODE (x);
+
+  *res_op0 = NULL_RTX;
+  *res_op1 = NULL_RTX;
+
+  if (GET_CODE (x) != IOR)
+    return false;
+
+  op0 = XEXP (x, 0);
+  op1 = XEXP (x, 1);
+
+  if ((GET_CODE (op0) == ASHIFT && GET_CODE (op1) == LSHIFTRT)
+      || (GET_CODE (op1) == ASHIFT && GET_CODE (op0) == LSHIFTRT))
+    {
+     /* Canonicalise locally to ashift in op0, lshiftrt in op1.  */
+      if (GET_CODE (op1) == ASHIFT)
+        std::swap (op0, op1);
+
+      if (!CONST_INT_P (XEXP (op0, 1)) || !CONST_INT_P (XEXP (op1, 1)))
+        return false;
+
+      unsigned HOST_WIDE_INT shft_amnt_0 = UINTVAL (XEXP (op0, 1));
+      unsigned HOST_WIDE_INT shft_amnt_1 = UINTVAL (XEXP (op1, 1));
+
+      if (shft_amnt_0 < GET_MODE_BITSIZE (mode)
+          && shft_amnt_0 + shft_amnt_1 == GET_MODE_BITSIZE (mode))
+        {
+          *res_op0 = XEXP (op0, 0);
+          *res_op1 = XEXP (op1, 0);
+          return true;
+        }
+    }
+
+  return false;
+}
+
 /* Calculate the cost of calculating (if_then_else (OP0) (OP1) (OP2)),
    storing it in *COST.  Result is true if the total cost of the operation
    has now been calculated.  */
@@ -5974,6 +6019,16 @@ cost_plus:
 
           if (speed)
             *cost += extra_cost->alu.rev;
+
+          return true;
+        }
+
+      if (aarch64_extr_rtx_p (x, &op0, &op1))
+        {
+          *cost += rtx_cost (op0, IOR, 0, speed)
+                   + rtx_cost (op1, IOR, 1, speed);
+          if (speed)
+            *cost += extra_cost->alu.shift;
 
           return true;
         }
