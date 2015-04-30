@@ -1,3 +1,11 @@
+2015-04-30  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_Prime_rehash_policy::_S_n_primes):
+	Delete.
+	* src/c++11/hashtable_c++0x.cc (_Prime_rehash_policy::_M_next_bkt):
+	Remove usage of latter and compute size of the prime numbers array
+	locally.
+
 2015-04-29  Doug Evans  <dje@google.com>
 
 	PR libstdc++/65839
