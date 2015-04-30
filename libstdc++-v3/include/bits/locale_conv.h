@@ -51,6 +51,105 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
+  template<typename _OutStr, typename _InChar, typename _Codecvt,
+	   typename _State, typename _Fn>
+    bool
+    __do_str_codecvt(const _InChar* __first, const _InChar* __last,
+		     _OutStr& __outstr, const _Codecvt& __cvt, _State& __state,
+		     size_t& __count, _Fn __fn)
+    {
+      size_t __outchars = 0;
+      auto __next = __first;
+      const auto __maxlen = __cvt.max_length();
+
+      codecvt_base::result __result;
+      do
+	{
+	  __outstr.resize(__outstr.size() + (__last - __next) + __maxlen);
+	  auto __outnext = &__outstr.front() + __outchars;
+	  auto const __outlast = &__outstr.back() + 1;
+	  __result = (__cvt.*__fn)(__state, __next, __last, __next,
+					__outnext, __outlast, __outnext);
+	  __outchars = __outnext - &__outstr.front();
+	}
+      while (__result == codecvt_base::partial && __next != __last
+	     && (__outstr.size() - __outchars) < __maxlen);
+
+      if (__result == codecvt_base::error)
+	return false;
+
+      if (__result == codecvt_base::noconv)
+	{
+	  __outstr.assign(__first, __last);
+	  __count = __last - __first;
+	}
+      else
+	{
+	  __outstr.resize(__outchars);
+	  __count = __next - __first;
+	}
+
+      return true;
+    }
+
+  // Convert narrow character string to wide.
+  template<typename _CharT, typename _Traits, typename _Alloc, typename _State>
+    inline bool
+    __str_codecvt_in(const char* __first, const char* __last,
+		     basic_string<_CharT, _Traits, _Alloc>& __outstr,
+		     const codecvt<_CharT, char, _State>& __cvt,
+		     _State& __state, size_t& __count)
+    {
+      using _Codecvt = codecvt<_CharT, char, _State>;
+      using _ConvFn
+	= codecvt_base::result
+	  (_Codecvt::*)(_State&, const char*, const char*, const char*&,
+			_CharT*, _CharT*, _CharT*&) const;
+      _ConvFn __fn = &codecvt<_CharT, char, _State>::in;
+      return __do_str_codecvt(__first, __last, __outstr, __cvt, __state,
+			      __count, __fn);
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc, typename _State>
+    inline bool
+    __str_codecvt_in(const char* __first, const char* __last,
+		     basic_string<_CharT, _Traits, _Alloc>& __outstr,
+		     const codecvt<_CharT, char, _State>& __cvt)
+    {
+      _State __state = {};
+      size_t __n;
+      return __str_codecvt_in(__first, __last, __outstr, __cvt, __state, __n);
+    }
+
+  // Convert wide character string to narrow.
+  template<typename _CharT, typename _Traits, typename _Alloc, typename _State>
+    inline bool
+    __str_codecvt_out(const _CharT* __first, const _CharT* __last,
+		      basic_string<char, _Traits, _Alloc>& __outstr,
+		      const codecvt<_CharT, char, _State>& __cvt,
+		      _State& __state, size_t& __count)
+    {
+      using _Codecvt = codecvt<_CharT, char, _State>;
+      using _ConvFn
+	= codecvt_base::result
+	  (_Codecvt::*)(_State&, const _CharT*, const _CharT*, const _CharT*&,
+			char*, char*, char*&) const;
+      _ConvFn __fn = &codecvt<_CharT, char, _State>::out;
+      return __do_str_codecvt(__first, __last, __outstr, __cvt, __state,
+			      __count, __fn);
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc, typename _State>
+    inline bool
+    __str_codecvt_out(const _CharT* __first, const _CharT* __last,
+		      basic_string<char, _Traits, _Alloc>& __outstr,
+		      const codecvt<_CharT, char, _State>& __cvt)
+    {
+      _State __state = {};
+      size_t __n;
+      return __str_codecvt_out(__first, __last, __outstr, __cvt, __state, __n);
+    }
+
   /// String conversions
   template<typename _Codecvt, typename _Elem = wchar_t,
 	   typename _Wide_alloc = allocator<_Elem>,
@@ -136,9 +235,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       wide_string
       from_bytes(const char* __first, const char* __last)
       {
-	auto __errstr = _M_with_strings ? &_M_wide_err_string : nullptr;
-	_ConvFn<char, _Elem> __fn = &_Codecvt::in;
-	return _M_conv(__first, __last, __errstr, __fn);
+	if (!_M_with_cvtstate)
+	  _M_state = state_type();
+	wide_string __out{ _M_wide_err_string.get_allocator() };
+	if (__str_codecvt_in(__first, __last, __out, *_M_cvt, _M_state,
+			     _M_count))
+	  return __out;
+	if (_M_with_strings)
+	  return _M_wide_err_string;
+	__throw_range_error("wstring_convert::from_bytes");
       }
       /// @}
 
@@ -166,9 +271,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       byte_string
       to_bytes(const _Elem* __first, const _Elem* __last)
       {
-	auto __errstr = _M_with_strings ? &_M_byte_err_string : nullptr;
-	_ConvFn<_Elem, char> __fn = &_Codecvt::out;
-	return _M_conv(__first, __last, __errstr, __fn);
+	if (!_M_with_cvtstate)
+	  _M_state = state_type();
+	byte_string __out{ _M_byte_err_string.get_allocator() };
+	if (__str_codecvt_out(__first, __last, __out, *_M_cvt, _M_state,
+			      _M_count))
+	  return __out;
+	if (_M_with_strings)
+	  return _M_byte_err_string;
+	__throw_range_error("wstring_convert::to_bytes");
       }
       /// @}
 
@@ -181,56 +292,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       state_type state() const { return _M_state; }
 
     private:
-      template<typename _InC, typename _OutC>
-	using _ConvFn
-	  = codecvt_base::result
-	    (_Codecvt::*)(state_type&, const _InC*, const _InC*, const _InC*&,
-			  _OutC*, _OutC*, _OutC*&) const;
-
-      template<typename _InChar, typename _OutStr, typename _MemFn>
-	_OutStr
-	_M_conv(const _InChar* __first, const _InChar* __last,
-		const _OutStr* __err, _MemFn __memfn)
-	{
-	  if (!_M_with_cvtstate)
-	    _M_state = state_type();
-
-	  auto __outstr = __err ? _OutStr(__err->get_allocator()) : _OutStr();
-	  size_t __outchars = 0;
-	  auto __next = __first;
-	  const auto __maxlen = _M_cvt->max_length();
-
-	  codecvt_base::result __result;
-	  do
-	    {
-	      __outstr.resize(__outstr.size() + (__last - __next) + __maxlen);
-	      auto __outnext = &__outstr.front() + __outchars;
-	      auto const __outlast = &__outstr.back() + 1;
-	      __result = ((*_M_cvt).*__memfn)(_M_state, __next, __last, __next,
-					    __outnext, __outlast, __outnext);
-	      __outchars = __outnext - &__outstr.front();
-	    }
-	  while (__result == codecvt_base::partial && __next != __last
-		 && (__outstr.size() - __outchars) < __maxlen);
-
-	  if (__result == codecvt_base::noconv)
-	    {
-	      __outstr.assign(__first, __last);
-	      _M_count = __outstr.size();
-	      return __outstr;
-	    }
-
-	  __outstr.resize(__outchars);
-	  _M_count = __next - __first;
-
-	  if (__result != codecvt_base::error)
-	    return __outstr;
-	  else if (__err)
-	    return *__err;
-	  else
-	    __throw_range_error("wstring_convert");
-	}
-
       unique_ptr<_Codecvt>	_M_cvt;
       byte_string		_M_byte_err_string;
       wide_string		_M_wide_err_string;
