@@ -1,3 +1,9 @@
+2015-04-30  Caroline Tice  <cmtice@google.com>
+
+	PR  65929
+	* gcc.dg/tree-prof/cold_partition_label.c:  Only check for cold
+	partition size on certain targets.
+
 2015-04-30  Renlin Li  <renlin.li@arm.com>
 
 	* gcc.target/aarch64/vect-reduc-or_1.c: New.
