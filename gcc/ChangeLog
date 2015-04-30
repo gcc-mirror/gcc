@@ -1,5 +1,10 @@
 2015-04-29  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree.c (build_common_builtin_nodes): Do not build
+	__builtin_alloca_with_align as equivalent of library alloca.
+
+2015-04-29  Jan Hubicka  <hubicka@ucw.cz>
+
 	* dwarf2out.c (gen_type_die_with_usage): Call verify_type.
 	* ipa-chkp.c (chkp_copy_function_type_adding_bounds): Do not produce
 	bugus variants.
