@@ -11428,20 +11428,6 @@ Allocation_expression::do_copy()
   return alloc;
 }
 
-Expression*
-Allocation_expression::do_flatten(Gogo*, Named_object*,
-				  Statement_inserter* inserter)
-{
-  if (this->allocate_on_stack_)
-    {
-      this->stack_temp_ = Statement::make_temporary(this->type_, NULL,
-						    this->location());
-      this->stack_temp_->set_is_address_taken();
-      inserter->insert(this->stack_temp_);
-    }
-  return this;
-}
-
 // Return the backend representation for an allocation expression.
 
 Bexpression*
@@ -11450,17 +11436,16 @@ Allocation_expression::do_get_backend(Translate_context* context)
   Gogo* gogo = context->gogo();
   Location loc = this->location();
 
-  if (this->stack_temp_ != NULL)
+  Btype* btype = this->type_->get_backend(gogo);
+  if (this->allocate_on_stack_)
     {
-      Expression* ref =
-	Expression::make_temporary_reference(this->stack_temp_, loc);
-      ref = Expression::make_unary(OPERATOR_AND, ref, loc);
-      return ref->get_backend(context);
+      int64_t size = gogo->backend()->type_size(btype);
+      return gogo->backend()->stack_allocation_expression(size, loc);
     }
 
   Bexpression* space = 
     gogo->allocate_memory(this->type_, loc)->get_backend(context);
-  Btype* pbtype = gogo->backend()->pointer_type(this->type_->get_backend(gogo));
+  Btype* pbtype = gogo->backend()->pointer_type(btype);
   return gogo->backend()->convert_expression(pbtype, space, loc);
 }
 
