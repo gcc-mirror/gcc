@@ -1,3 +1,15 @@
+2015-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/ipa/devirt-28a.C: Require LTO effective target.
+	* g++.dg/ext/sync-4.C (dg-additional-options): Use -march=pentium
+	for 32bit x86 targets.
+	* gcc.dg/pr36504.c (dg-additional-options): Use -march=i686 -msse
+	for 32bit x86 targets.
+	* gcc.dg/pr39455.c (dg-additional-options): Ditto.
+	* gcc.dg/pr45352-1.c (dg-additional-options): Ditto.
+	* gcc.dg/pr63914.c (dg-additional-options): Use -msse
+	for 32bit x86 targets.
+
 2015-04-30  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/63551
