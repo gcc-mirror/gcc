@@ -229,15 +229,13 @@ require_complete_type (tree value)
 void
 c_incomplete_type_error (const_tree value, const_tree type)
 {
-  const char *type_code_string;
-
   /* Avoid duplicate error message.  */
   if (TREE_CODE (type) == ERROR_MARK)
     return;
 
   if (value != 0 && (TREE_CODE (value) == VAR_DECL
 		     || TREE_CODE (value) == PARM_DECL))
-    error ("%qD has an incomplete type", value);
+    error ("%qD has an incomplete type %qT", value, type);
   else
     {
     retry:
@@ -246,15 +244,8 @@ c_incomplete_type_error (const_tree value, const_tree type)
       switch (TREE_CODE (type))
 	{
 	case RECORD_TYPE:
-	  type_code_string = "struct";
-	  break;
-
 	case UNION_TYPE:
-	  type_code_string = "union";
-	  break;
-
 	case ENUMERAL_TYPE:
-	  type_code_string = "enum";
 	  break;
 
 	case VOID_TYPE:
@@ -280,11 +271,10 @@ c_incomplete_type_error (const_tree value, const_tree type)
 	}
 
       if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
-	error ("invalid use of undefined type %<%s %E%>",
-	       type_code_string, TYPE_NAME (type));
+	error ("invalid use of undefined type %qT", type);
       else
 	/* If this type has a typedef-name, the TYPE_NAME is a TYPE_DECL.  */
-	error ("invalid use of incomplete typedef %qD", TYPE_NAME (type));
+	error ("invalid use of incomplete typedef %qT", type);
     }
 }
 

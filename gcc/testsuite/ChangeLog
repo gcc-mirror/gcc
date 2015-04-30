@@ -2,6 +2,8 @@
 
 	* gcc.dg/init-bad-8.c: New test.
 
+	* gcc.dg/incomplete-typedef-1.c: New test.
+
 2015-04-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59955
