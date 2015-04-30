@@ -1,3 +1,9 @@
+2015-04-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/65948
+	* ipa-devirt.c (odr_types_equivalent_p): NULLPTR_TYPE is equivalent
+	to itself.
+
 2015-04-30  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* genrecog.c (simplify_tests): Check that CONST_INT and XWINT tests
