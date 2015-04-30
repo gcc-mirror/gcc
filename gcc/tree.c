@@ -102,6 +102,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "intl.h"
 #include "builtins.h"
+#include "print-tree.h"
+#include "ipa-utils.h"
 
 /* Tree code classes.  */
 
@@ -5077,6 +5079,11 @@ free_lang_data_in_type (tree type)
       else
 	TYPE_FIELDS (type) = NULL_TREE;
 
+      /* FIXME: C FE uses TYPE_VFIELD to record C_TYPE_INCOMPLETE_VARS
+ 	 and danagle the pointer from time to time.  */
+      if (TYPE_VFIELD (type) && TREE_CODE (TYPE_VFIELD (type)) != FIELD_DECL)
+        TYPE_VFIELD (type) = NULL_TREE;
+
       TYPE_METHODS (type) = NULL_TREE;
       if (TYPE_BINFO (type))
 	{
@@ -5784,6 +5791,10 @@ free_lang_data_in_cgraph (void)
   /* Traverse every type found freeing its language data.  */
   FOR_EACH_VEC_ELT (fld.types, i, t)
     free_lang_data_in_type (t);
+#ifdef ENABLE_CHECKING
+  FOR_EACH_VEC_ELT (fld.types, i, t)
+    verify_type (t);
+#endif
 
   delete fld.pset;
   fld.worklist.release ();
@@ -12423,6 +12434,159 @@ element_mode (const_tree t)
   if (VECTOR_TYPE_P (t) || TREE_CODE (t) == COMPLEX_TYPE)
     t = TREE_TYPE (t);
   return TYPE_MODE (t);
+}
+
+/* Veirfy that basic properties of T match TV and thus T can be a variant of
+   TV.  TV should be the more specified variant (i.e. the main variant).  */
+
+static bool
+verify_type_variant (const_tree t, tree tv)
+{
+  if (TREE_CODE (t) != TREE_CODE (tv))
+    {
+      error ("type variant has different TREE_CODE");
+      debug_tree (tv);
+      return false;
+    }
+  if (COMPLETE_TYPE_P (t) && TYPE_SIZE (t) != TYPE_SIZE (tv))
+    {
+      error ("type variant has different TYPE_SIZE");
+      debug_tree (tv);
+      error ("type variant's TYPE_SIZE");
+      debug_tree (TYPE_SIZE (tv));
+      error ("type's TYPE_SIZE");
+      debug_tree (TYPE_SIZE (t));
+      return false;
+    }
+  if (COMPLETE_TYPE_P (t)
+      && TYPE_SIZE_UNIT (t) != TYPE_SIZE_UNIT (tv)
+      /* FIXME: ideally we should compare pointer equality, but java FE produce
+ 	 variants where size is INTEGER_CST of different type (int wrt size_type)
+	 during libjava biuld.  */
+      && !operand_equal_p (TYPE_SIZE_UNIT (t), TYPE_SIZE_UNIT (tv), 0))
+    {
+      error ("type variant has different TYPE_SIZE_UNIT");
+      debug_tree (tv);
+      error ("type variant's TYPE_SIZE_UNIT");
+      debug_tree (TYPE_SIZE_UNIT (tv));
+      error ("type's TYPE_SIZE_UNIT");
+      debug_tree (TYPE_SIZE_UNIT (t));
+      return false;
+    }
+  /* FIXME: C FE uses TYPE_VFIELD to record C_TYPE_INCOMPLETE_VARS
+     and danagle the pointer from time to time.  */
+  if (RECORD_OR_UNION_TYPE_P (t) && TYPE_VFIELD (t) != TYPE_VFIELD (tv)
+      && (!TYPE_VFIELD (tv) || TREE_CODE (TYPE_VFIELD (tv)) != TREE_LIST))
+    {
+      error ("type variant has different TYPE_VFIELD");
+      debug_tree (tv);
+      return false;
+    }
+  if (((TREE_CODE (t) == ENUMERAL_TYPE && COMPLETE_TYPE_P (t))
+	|| TREE_CODE (t) == INTEGER_TYPE
+	|| TREE_CODE (t) == BOOLEAN_TYPE
+	|| TREE_CODE (t) == REAL_TYPE
+	|| TREE_CODE (t) == FIXED_POINT_TYPE)
+       && (TYPE_MAX_VALUE (t) != TYPE_MAX_VALUE (tv)
+	   || TYPE_MIN_VALUE (t) != TYPE_MIN_VALUE (tv)))
+    {
+      error ("type variant has different TYPE_MAX_VALUE or TYPE_MIN_VALUE");
+      debug_tree (tv);
+      return false;
+    }
+  if (TREE_CODE (t) == METHOD_TYPE
+      && TYPE_METHOD_BASETYPE (t) != TYPE_METHOD_BASETYPE (tv))
+    {
+      error ("type variant has different TYPE_METHOD_BASETYPE");
+      debug_tree (tv);
+      return false;
+    }
+  /* FIXME: this check triggers during libstdc++ build that is a bug.
+     It affects non-LTO debug output only, because free_lang_data clears
+     this anyway.  */
+  if (RECORD_OR_UNION_TYPE_P (t) && COMPLETE_TYPE_P (t) && 0
+      && TYPE_METHODS (t) != TYPE_METHODS (tv))
+    {
+      error ("type variant has different TYPE_METHODS");
+      debug_tree (tv);
+      return false;
+    }
+  if (TREE_CODE (t) == OFFSET_TYPE
+      && TYPE_OFFSET_BASETYPE (t) != TYPE_OFFSET_BASETYPE (tv))
+    {
+      error ("type variant has different TYPE_OFFSET_BASETYPE");
+      debug_tree (tv);
+      return false;
+    }
+  if (TREE_CODE (t) == ARRAY_TYPE
+      && TYPE_ARRAY_MAX_SIZE (t) != TYPE_ARRAY_MAX_SIZE (tv))
+    {
+      error ("type variant has different TYPE_ARRAY_MAX_SIZE");
+      debug_tree (tv);
+      return false;
+    }
+  /* FIXME: Be lax and allow TYPE_BINFO to be missing in variant types
+     or even type's main variant.  This is needed to make bootstrap pass
+     and the bug seems new in GCC 5.
+     C++ FE should be updated to make this consistent and we should check
+     that TYPE_BINFO is always NULL for !COMPLETE_TYPE_P and otherwise there
+     is a match with main variant.
+
+     Also disable the check for Java for now because of parser hack that builds
+     first an dummy BINFO and then sometimes replace it by real BINFO in some
+     of the copies.  */
+  if (RECORD_OR_UNION_TYPE_P (t) && TYPE_BINFO (t) && TYPE_BINFO (tv)
+      && TYPE_BINFO (t) != TYPE_BINFO (tv)
+      /* FIXME: Java sometimes keep dump TYPE_BINFOs on variant types.
+	 Since there is no cheap way to tell C++/Java type w/o LTO, do checking
+	 at LTO time only.  */
+      && (in_lto_p && odr_type_p (t)))
+    {
+      error ("type variant has different TYPE_BINFO");
+      debug_tree (tv);
+      error ("type variant's TYPE_BINFO");
+      debug_tree (TYPE_BINFO (tv));
+      error ("type's TYPE_BINFO");
+      debug_tree (TYPE_BINFO (t));
+      return false;
+    }
+  return true;
+}
+
+/* Verify type T.  */
+
+void
+verify_type (const_tree t)
+{
+  bool error_found = false;
+  tree mv = TYPE_MAIN_VARIANT (t);
+  if (!mv)
+    {
+      error ("Main variant is not defined");
+      error_found = true;
+    }
+  else if (mv != TYPE_MAIN_VARIANT (mv))
+    {
+      error ("TYPE_MAIN_VARIANT has different TYPE_MAIN_VARIANT");
+      debug_tree (mv);
+      error_found = true;
+    }
+  else if (t != mv && !verify_type_variant (t, mv))
+    error_found = true;
+  /* FIXME: C FE uses TYPE_VFIELD to record C_TYPE_INCOMPLETE_VARS
+     and danagle the pointer from time to time.  */
+  if (RECORD_OR_UNION_TYPE_P (t) && TYPE_VFIELD (t)
+      && TREE_CODE (TYPE_VFIELD (t)) != FIELD_DECL
+      && TREE_CODE (TYPE_VFIELD (t)) != TREE_LIST)
+    {
+      error ("TYPE_VFIELD is not FIELD_DECL nor TREE_LIST");
+      debug_tree (TYPE_VFIELD (t));
+    }
+  if (error_found)
+    {
+      debug_tree (const_cast <tree> (t));
+      internal_error ("verify_type failed");
+    }
 }
 
 #include "gt-tree.h"

@@ -4501,6 +4501,7 @@ extern tree drop_tree_overflow (tree);
 extern int tree_map_base_eq (const void *, const void *);
 extern unsigned int tree_map_base_hash (const void *);
 extern int tree_map_base_marked_p (const void *);
+extern void DEBUG_FUNCTION verify_type (const_tree t);
 
 #define tree_map_eq tree_map_base_eq
 extern unsigned int tree_map_hash (const void *);

@@ -2844,6 +2844,10 @@ lto_fixup_state (struct lto_in_decl_state *state)
       for (i = 0; i < vec_safe_length (trees); i++)
 	{
 	  tree t = (*trees)[i];
+#ifdef ENABLE_CHECKING
+	  if (TYPE_P (t))
+	    verify_type (t);
+#endif
 	  if (VAR_OR_FUNCTION_DECL_P (t)
 	      && (TREE_PUBLIC (t) || DECL_EXTERNAL (t)))
 	    (*trees)[i] = lto_symtab_prevailing_decl (t);

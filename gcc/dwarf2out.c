@@ -20238,6 +20238,11 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
   if (type == NULL_TREE || type == error_mark_node)
     return;
 
+#ifdef ENABLE_CHECKING
+  if (type)
+     verify_type (type);
+#endif
+
   if (TYPE_NAME (type) != NULL_TREE
       && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
       && is_redundant_typedef (TYPE_NAME (type))

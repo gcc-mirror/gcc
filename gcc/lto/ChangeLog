@@ -1,6 +1,10 @@
+2015-04-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (lto_fixup_state): Call verify_type.
+
 2015-04-18  Trevor Saunders  <tsaunders@mozilla.com>
 
-	* 	lto.c: Adjust for hash_table changes.
+	* lto.c: Adjust for hash_table changes.
 
 2015-03-27  Jan Hubicka  <hubicka@ucw.cz>
 
