@@ -5160,6 +5160,7 @@ aarch64_strip_extend (rtx x)
 
 /* Return true iff CODE is a shift supported in combination
    with arithmetic instructions.  */
+
 static bool
 aarch64_shift_p (enum rtx_code code)
 {
