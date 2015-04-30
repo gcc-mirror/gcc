@@ -1,5 +1,15 @@
 2015-04-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_shift_p): New function.
+	(aarch64_rtx_mult_cost): Update comment to reflect that it also handles
+	combined arithmetic-shift ops.  Properly handle all shift and extend
+	operations that can occur in combination with PLUS/MINUS.
+	Rename maybe_fma to compound_p.
+	(aarch64_rtx_costs): Use aarch64_shift_p when costing compound
+	arithmetic and shift operations.
+
+2015-04-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_rtx_costs): Use extend_arith
 	rather than arith_shift cost when costing ADD/MINUS of an
 	extended value.
