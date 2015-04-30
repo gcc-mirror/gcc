@@ -1560,8 +1560,7 @@ Optimize_allocations::variable(Named_object* var)
 
   if (var->is_variable())
     {
-      if (var->var_value()->is_address_taken())
-      	var->var_value()->set_does_not_escape();
+      var->var_value()->set_does_not_escape();
       if (var->var_value()->init() != NULL
 	  && var->var_value()->init()->allocation_expression() != NULL)
 	{
@@ -1570,9 +1569,6 @@ Optimize_allocations::variable(Named_object* var)
 	  alloc->set_allocate_on_stack();
 	}
     }
-  else if (var->is_result_variable()
-	   && var->result_var_value()->is_address_taken())
-    var->result_var_value()->set_does_not_escape();
 
   return TRAVERSE_CONTINUE;
 }
