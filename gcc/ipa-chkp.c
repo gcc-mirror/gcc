@@ -244,7 +244,7 @@ tree
 chkp_copy_function_type_adding_bounds (tree orig_type)
 {
   tree type;
-  tree arg_type, attrs, t;
+  tree arg_type, attrs;
   unsigned len = list_length (TYPE_ARG_TYPES (orig_type));
   unsigned *indexes = XALLOCAVEC (unsigned, len);
   unsigned idx = 0, new_idx = 0;
@@ -326,20 +326,6 @@ chkp_copy_function_type_adding_bounds (tree orig_type)
       chkp_map_attr_arg_indexes (attrs, "format_arg", indexes, len, delta);
       TYPE_ATTRIBUTES (type) = attrs;
     }
-
-  t = TYPE_MAIN_VARIANT (orig_type);
-  if (orig_type != t)
-    {
-      TYPE_MAIN_VARIANT (type) = t;
-      TYPE_NEXT_VARIANT (type) = TYPE_NEXT_VARIANT (t);
-      TYPE_NEXT_VARIANT (t) = type;
-    }
-  else
-    {
-      TYPE_MAIN_VARIANT (type) = type;
-      TYPE_NEXT_VARIANT (type) = NULL;
-    }
-
 
   return type;
 }

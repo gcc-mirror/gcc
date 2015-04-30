@@ -1,3 +1,15 @@
+2015-04-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* dwarf2out.c (gen_type_die_with_usage): Call verify_type.
+	* ipa-chkp.c (chkp_copy_function_type_adding_bounds): Do not produce
+	bugus variants.
+	* tree.c: Include print-tree.h and ipa-utils.h
+	(free_lang_data_in_type): Clear TYPE_VFIELD leaked by C FE.
+	(free_lang_data_in_cgraph): Call verify_type.
+	(verify_type_variant): New function.
+	(verify_type): New function.
+	* tree.h (verify_type): Declare.
+
 2015-04-29  Steve Ellcey  <sellcey@imgtec.com>
 
 	* config/mips/mips-cpus.def: (mips4): Change default processor
