@@ -1167,7 +1167,7 @@ objc_layout_structure_next_member (struct objc_struct_layout *layout)
   /* Record must have at least as much alignment as any field.
      Otherwise, the alignment of the field within the record
      is meaningless.  */
-#ifndef PCC_BITFIELD_TYPE_MATTERS
+#if !PCC_BITFIELD_TYPE_MATTERS
   layout->record_align = MAX (layout->record_align, desired_align);
 #else	/* PCC_BITFIELD_TYPE_MATTERS */
   if (*type == _C_BFLD)
