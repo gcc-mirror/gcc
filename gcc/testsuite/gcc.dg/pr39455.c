@@ -1,6 +1,7 @@
 /* PR tree-optimization/39455 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fprefetch-loop-arrays -w" } */
+/* { dg-additional-options "-march=i686 -msse" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
 
 void
 foo (char *x, unsigned long y, unsigned char *z)
