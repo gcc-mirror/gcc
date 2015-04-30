@@ -439,9 +439,6 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
 	       == !opt_for_fn (callee->decl, optimize) || !always_inline))
 	  || check_match (flag_wrapv)
 	  || check_match (flag_trapv)
-	  /* Strictly speaking only when the callee contains memory
-	     accesses that are not using alias-set zero anyway.  */
-	  || check_maybe_down (flag_strict_aliasing)
 	  /* Strictly speaking only when the callee uses FP math.  */
 	  || check_maybe_up (flag_rounding_math)
 	  || check_maybe_up (flag_trapping_math)
