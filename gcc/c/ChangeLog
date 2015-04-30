@@ -6,6 +6,8 @@
 	* c-typeck.c (c_incomplete_type_error): Refactor to use %qT.  Print
 	the type of a decl.
 
+	* c-typeck.c (c_build_va_arg): Clarify the error message.
+
 2015-04-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-parser.c (c_parser_oacc_enter_exit_data): Use
