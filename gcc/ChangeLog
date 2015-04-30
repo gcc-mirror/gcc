@@ -1,3 +1,12 @@
+2015-04-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (odr_subtypes_equivalent_p): Compare TYPE_NAME only
+	for aggregate types.
+	(register_odr_type): Be ready for MAIN_VARIANT of ODR type
+	type to be non_ODR.
+	* tree.c (need_assembler_name_p): Compute mangled name for
+	non-fundamental types and integer types.
+
 2015-04-29  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* dojump.c (do_compare_rtx_and_jump): Use std::swap instead of

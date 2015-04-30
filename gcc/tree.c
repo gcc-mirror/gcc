@@ -5145,7 +5145,17 @@ need_assembler_name_p (tree decl)
       && DECL_NAME (decl)
       && decl == TYPE_NAME (TREE_TYPE (decl))
       && !is_lang_specific (TREE_TYPE (decl))
-      && AGGREGATE_TYPE_P (TREE_TYPE (decl))
+      /* Save some work. Names of builtin types are always derived from
+	 properties of its main variant.  A special case are integer types
+	 where mangling do make differences between char/signed char/unsigned
+	 char etc.  Storing name for these makes e.g.
+	 -fno-signed-char/-fsigned-char mismatches to be handled well.
+
+	 See cp/mangle.c:write_builtin_type for details.  */
+      && (TREE_CODE (TREE_TYPE (decl)) != VOID_TYPE
+	  && TREE_CODE (TREE_TYPE (decl)) != BOOLEAN_TYPE
+	  && TREE_CODE (TREE_TYPE (decl)) != REAL_TYPE
+	  && TREE_CODE (TREE_TYPE (decl)) != FIXED_POINT_TYPE)
       && !TYPE_ARTIFICIAL (TREE_TYPE (decl))
       && !variably_modified_type_p (TREE_TYPE (decl), NULL_TREE)
       && !type_in_anonymous_namespace_p (TREE_TYPE (decl)))
