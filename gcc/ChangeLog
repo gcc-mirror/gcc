@@ -1,5 +1,13 @@
 2015-04-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.md (*extr<mode>5_insn_alt): New pattern.
+	(*extrsi5_insn_uxtw_alt): Likewise.
+	* config/aarch64/aarch64.c (aarch64_extr_rtx_p): New function.
+	(aarch64_rtx_costs, IOR case): Use above to properly cost extr
+	operations.
+
+2015-04-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_rtx_costs): Handle pattern for
 	fabd in ABS case.
 

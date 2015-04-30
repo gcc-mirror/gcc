@@ -3597,6 +3597,21 @@
   [(set_attr "type" "shift_imm")]
 )
 
+;; There are no canonicalisation rules for ashift and lshiftrt inside an ior
+;; so we have to match both orderings.
+(define_insn "*extr<mode>5_insn_alt"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(ior:GPI  (lshiftrt:GPI (match_operand:GPI 2 "register_operand" "r")
+			        (match_operand 4 "const_int_operand" "n"))
+		  (ashift:GPI (match_operand:GPI 1 "register_operand" "r")
+			      (match_operand 3 "const_int_operand" "n"))))]
+  "UINTVAL (operands[3]) < GET_MODE_BITSIZE (<MODE>mode)
+   && (UINTVAL (operands[3]) + UINTVAL (operands[4])
+       == GET_MODE_BITSIZE (<MODE>mode))"
+  "extr\\t%<w>0, %<w>1, %<w>2, %4"
+  [(set_attr "type" "shift_imm")]
+)
+
 ;; zero_extend version of the above
 (define_insn "*extrsi5_insn_uxtw"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -3605,6 +3620,19 @@
 			    (match_operand 3 "const_int_operand" "n"))
 		 (lshiftrt:SI (match_operand:SI 2 "register_operand" "r")
 			      (match_operand 4 "const_int_operand" "n")))))]
+  "UINTVAL (operands[3]) < 32 &&
+   (UINTVAL (operands[3]) + UINTVAL (operands[4]) == 32)"
+  "extr\\t%w0, %w1, %w2, %4"
+  [(set_attr "type" "shift_imm")]
+)
+
+(define_insn "*extrsi5_insn_uxtw_alt"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	 (ior:SI (lshiftrt:SI (match_operand:SI 2 "register_operand" "r")
+			       (match_operand 4 "const_int_operand" "n"))
+		 (ashift:SI (match_operand:SI 1 "register_operand" "r")
+			    (match_operand 3 "const_int_operand" "n")))))]
   "UINTVAL (operands[3]) < 32 &&
    (UINTVAL (operands[3]) + UINTVAL (operands[4]) == 32)"
   "extr\\t%w0, %w1, %w2, %4"
