@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 5.1-b20150208\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2015-02-02 16:02+0000\n"
+"POT-Creation-Date: 2015-04-13 20:12+0000\n"
 "PO-Revision-Date: 2015-02-10 14:27-0300\n"
 "Last-Translator: Felipe Castro <fefcas@gmail.com>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
@@ -72,7 +72,7 @@ msgstr "nekompleta universala signo-nomo %.*s"
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s ne estas valida universala signo"
 
-#: charset.c:1064 lex.c:1217
+#: charset.c:1064 lex.c:1218
 msgid "'$' in identifier or number"
 msgstr "'$' en identiganto aŭ numero"
 
@@ -406,7 +406,7 @@ msgstr "\"%s\" estas re-asertita"
 msgid "unterminated #%s"
 msgstr "nefinigita #%s"
 
-#: directives-only.c:221 lex.c:2419 traditional.c:164
+#: directives-only.c:221 lex.c:2433 traditional.c:167
 msgid "unterminated comment"
 msgstr "nefinigita komento"
 
@@ -589,39 +589,39 @@ msgstr "la operatoro \"__has_include__\" postulas kapan ĉenon"
 msgid "missing ')' after \"__has_include__\""
 msgstr "mankas ')' post \"__has_include__\""
 
-#: files.c:511
+#: files.c:513
 msgid "NULL directory in find_file"
 msgstr "NULL-dosierujo en find_file"
 
-#: files.c:559
+#: files.c:561
 msgid "one or more PCH files were found, but they were invalid"
 msgstr "unu aŭ pli dosieroj PCH estis trovataj, sed ili estas malvalidaj"
 
-#: files.c:562
+#: files.c:564
 msgid "use -Winvalid-pch for more information"
 msgstr "uzu -Winvalid-pch por pli da informo"
 
-#: files.c:666
+#: files.c:668
 #, c-format
 msgid "%s is a block device"
 msgstr "%s estas blok-aparato"
 
-#: files.c:683
+#: files.c:685
 #, c-format
 msgid "%s is too large"
 msgstr "%s tro larĝas"
 
-#: files.c:723
+#: files.c:725
 #, c-format
 msgid "%s is shorter than expected"
 msgstr "%s estas pli mallonga ol atendite"
 
-#: files.c:959
+#: files.c:961
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr "estas neniu inkluziva vojo por serĉi %s"
 
-#: files.c:1409
+#: files.c:1411
 msgid "Multiple include guards may be useful for:\n"
 msgstr "Multoblaj inkluzivaj gardnodoj povas esti utilaj por:\n"
 
@@ -659,112 +659,112 @@ msgstr "duon-entjero de CPP estas pli mallarĝa ol la signo de CPP"
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "CPP en tiu ĉi komputilo ne povas trakti larĝ-signajn konstantoj plilarĝaj ol %lu bitoj, sed la celato postulas %lu bitojn"
 
-#: lex.c:1010
+#: lex.c:1011
 msgid "backslash and newline separated by space"
 msgstr "retroklino kaj novlinio apartitaj de spaco"
 
-#: lex.c:1015
+#: lex.c:1016
 msgid "backslash-newline at end of file"
 msgstr "retroklino-novlinio ĉe dosierfino"
 
-#: lex.c:1031
+#: lex.c:1032
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr "trigrafikaĵo ??%c konvertita al %c"
 
-#: lex.c:1039
+#: lex.c:1040
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "trigrafikaĵo ??%c preteratentita, uzu -trigraphs por ebligi"
 
-#: lex.c:1088
+#: lex.c:1089
 msgid "\"/*\" within comment"
 msgstr "\"/*\" ene de komento"
 
-#: lex.c:1146
+#: lex.c:1147
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "%s en antaŭproceza instrukcio"
 
-#: lex.c:1155
+#: lex.c:1156
 msgid "null character(s) ignored"
 msgstr "nul-signo(j) estas preteratentitaj"
 
-#: lex.c:1192
+#: lex.c:1193
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "'%.*s' ne estas en NFKC"
 
-#: lex.c:1195
+#: lex.c:1196
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "'%.*s' ne estas en NFC"
 
-#: lex.c:1264 lex.c:1353
+#: lex.c:1265 lex.c:1354
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "provo uzi venenitan \"%s\""
 
-#: lex.c:1274 lex.c:1363
+#: lex.c:1275 lex.c:1364
 msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
 msgstr "__VA_ARGS__ nur povas aperi en la etendigo de variebl-argumenta makroo de C++11"
 
-#: lex.c:1278 lex.c:1367
+#: lex.c:1279 lex.c:1368
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ nur povas aperi en la etendigo de variebl-argumenta makroo de C99"
 
-#: lex.c:1285 lex.c:1374
+#: lex.c:1286 lex.c:1375
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr "la identiganto \"%s\" estas speciala operator-nomo en C++"
 
-#: lex.c:1661
+#: lex.c:1665
 msgid "raw string delimiter longer than 16 characters"
 msgstr "kruda ĉen-apartigilo pli longas ol 16 signoj"
 
-#: lex.c:1665
+#: lex.c:1669
 msgid "invalid new-line in raw string delimiter"
 msgstr "malvalida nov-linio en kruda ĉen-apartigilo"
 
-#: lex.c:1669
+#: lex.c:1673
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "malvalida signo '%c' en kruda ĉen-apartigilo"
 
-#: lex.c:1718 lex.c:1740
+#: lex.c:1722 lex.c:1744
 msgid "unterminated raw string"
 msgstr "nefinigita kruda ĉeno"
 
-#: lex.c:1761 lex.c:1890
+#: lex.c:1765 lex.c:1894
 msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
 msgstr "malvalida sufikso en literaĵo; C++11 postulas spacon inter literaĵo kaj ĉena makroo"
 
-#: lex.c:1872
+#: lex.c:1876
 msgid "null character(s) preserved in literal"
 msgstr "nul-signo(j) tenitaj en literaĵo"
 
-#: lex.c:1875
+#: lex.c:1879
 #, c-format
 msgid "missing terminating %c character"
 msgstr "mankas finigantan signon %c"
 
-#: lex.c:2433 lex.c:2467
+#: lex.c:2447 lex.c:2481
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "Komentoj laŭ la estilo de C++ ne estas permesataj en ISO C90"
 
-#: lex.c:2435 lex.c:2446 lex.c:2469
+#: lex.c:2449 lex.c:2460 lex.c:2483
 msgid "(this will be reported only once per input file)"
 msgstr "(tio ĉi estos raportata nur po unu foje por ĉiu enigdosiero)"
 
-#: lex.c:2444
+#: lex.c:2458
 msgid "C++ style comments are incompatible with C90"
 msgstr "Komentoj laŭ estilo de C++ ne interakordas kun C90"
 
-#: lex.c:2475
+#: lex.c:2489
 msgid "multi-line comment"
 msgstr "plurlinia komento"
 
-#: lex.c:2819
+#: lex.c:2833
 #, c-format
 msgid "unspellable token %s"
 msgstr "neliterumebla ĵetono %s"
@@ -823,7 +823,7 @@ msgstr "la makroo \"%s\" postulas %u argumentojn, sed nur %u estis indikataj"
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr "la makroo \"%s\" pasis %u argumentojn, sed ĝi prenas nur %u"
 
-#: macro.c:977 traditional.c:693
+#: macro.c:977 traditional.c:819
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr "nefinigita argumentlisto alvokanta la makroon \"%s\""
@@ -833,89 +833,89 @@ msgstr "nefinigita argumentlisto alvokanta la makroon \"%s\""
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "funkci-simila makroo \"%s\" devas esti uzata kun argumentoj laŭ tradicia C"
 
-#: macro.c:1797
+#: macro.c:1814
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
 msgstr "alvoko de makroo %s, argumento %d: malplenaj makro-argumentoj estas nedifinitaj en ISO C++98"
 
-#: macro.c:1805 macro.c:1814
+#: macro.c:1822 macro.c:1831
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
 msgstr "alvoko de makroo %s, argumento %d: malplenaj makro-argumentoj estas nedifinitaj en ISO C90"
 
-#: macro.c:2775
+#: macro.c:2800
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "duobligata makro-parametro \"%s\""
 
-#: macro.c:2824
+#: macro.c:2849
 #, c-format
 msgid "\"%s\" may not appear in macro parameter list"
 msgstr "\"%s\" ne povas aperi en makroa parametro-listo"
 
-#: macro.c:2832
+#: macro.c:2857
 msgid "macro parameters must be comma-separated"
 msgstr "makro-parametroj devas esti apartitaj per komoj"
 
-#: macro.c:2850
+#: macro.c:2875
 msgid "parameter name missing"
 msgstr "mankas parametra nomo"
 
-#: macro.c:2871
+#: macro.c:2896
 msgid "anonymous variadic macros were introduced in C++11"
 msgstr "sennomaj variebl-argumentaj makrooj estis enkondukataj en C++11"
 
-#: macro.c:2875 macro.c:2880
+#: macro.c:2900 macro.c:2905
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "sennomaj variebl-argumentaj makrooj estis enkondukataj en C99"
 
-#: macro.c:2887
+#: macro.c:2912
 msgid "ISO C++ does not permit named variadic macros"
 msgstr "ISO C++ ne permesas nomitajn variebl-argumentajn makroojn"
 
-#: macro.c:2890
+#: macro.c:2915
 msgid "ISO C does not permit named variadic macros"
 msgstr "ISO C ne permesas nomitajn variebl-argumentajn makroojn"
 
-#: macro.c:2900
+#: macro.c:2925
 msgid "missing ')' in macro parameter list"
 msgstr "mankas ')' en makroa parametro-listo"
 
-#: macro.c:2951
+#: macro.c:2976
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "'##' ne povas aperi ĉe iu ajn fino de makroa etendigo"
 
-#: macro.c:2988
+#: macro.c:3013
 msgid "ISO C++11 requires whitespace after the macro name"
 msgstr "ISO C++11 postulas blankspacon post la makroa nomo"
 
-#: macro.c:2991
+#: macro.c:3016
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "ISO C99 postulas blankspacon post la makroa nomo"
 
-#: macro.c:3016
+#: macro.c:3041
 msgid "missing whitespace after the macro name"
 msgstr "mankas blankspacon post la makroa nomo"
 
-#: macro.c:3050
+#: macro.c:3075
 msgid "'#' is not followed by a macro parameter"
 msgstr "'#' ne estas sekvata de makroa parametro"
 
-#: macro.c:3211
+#: macro.c:3236
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "\"%s\" estas redifinita"
 
-#: macro.c:3216
+#: macro.c:3241
 msgid "this is the location of the previous definition"
 msgstr "tiu ĉi estas la loko de la antaŭa difino"
 
-#: macro.c:3277
+#: macro.c:3302
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr "makroa argumento \"%s\" devus esti ĉenigita laŭ tradicia C"
 
-#: macro.c:3304
+#: macro.c:3329
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr "malvalida haketa tipo %d en cpp_macro_definition"
@@ -953,12 +953,12 @@ msgstr "%s: ne uzata ĉar '__COUNTER__' estas malvalida"
 msgid "while reading precompiled header"
 msgstr "dum lego de antaŭkompilita kapo"
 
-#: traditional.c:763
+#: traditional.c:889
 #, c-format
 msgid "detected recursion whilst expanding macro \"%s\""
 msgstr "estis detektata rekursigo dum etendigo de la makroo \"%s\""
 
-#: traditional.c:982
+#: traditional.c:1108
 msgid "syntax error in macro parameter list"
 msgstr "sintaksa eraro en makroa parametro-listo"
 
