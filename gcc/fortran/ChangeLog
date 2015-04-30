@@ -1,3 +1,10 @@
+2015-04-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/37131
+	* simplify.c (simplify_bound): Get constant lower bounds of one
+	from array spec for assumed and explicit shape shape arrays if
+	the lower bounds are indeed one.
+
 2015-04-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* options.c (gfc_init_options): Remove spurious second

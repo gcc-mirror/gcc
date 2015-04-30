@@ -3445,6 +3445,39 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 
  done:
 
+  /* If the array shape is assumed shape or explicit, we can simplify lbound
+     to 1 if the given lower bound is one because this matches what lbound
+     should return for an empty array.  */
+
+  if (!upper && as && dim && dim->expr_type == EXPR_CONSTANT
+      && (as->type == AS_ASSUMED_SHAPE || as->type == AS_EXPLICIT) 
+      && ref->u.ar.type != AR_SECTION)
+    {
+      /* Watch out for allocatable or pointer dummy arrays, they can have
+	 lower bounds that are not equal to one.  */
+      if (!(array->symtree && array->symtree->n.sym
+	    && (array->symtree->n.sym->attr.allocatable
+		|| array->symtree->n.sym->attr.pointer)))
+	{
+	  unsigned long int ndim;
+	  gfc_expr *lower, *res;
+
+	  ndim = mpz_get_si (dim->value.integer) - 1;
+	  lower = as->lower[ndim];
+	  if (lower->expr_type == EXPR_CONSTANT
+	      && mpz_cmp_si (lower->value.integer, 1) == 0)
+	    {
+	      res = gfc_copy_expr (lower);
+	      if (kind)
+		{
+		  int nkind = mpz_get_si (kind->value.integer);
+		  res->ts.kind = nkind;
+		}
+	      return res;
+	    }
+	}
+    }
+
   if (as && (as->type == AS_DEFERRED || as->type == AS_ASSUMED_SHAPE
 	     || as->type == AS_ASSUMED_RANK))
     return NULL;
