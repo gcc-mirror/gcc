@@ -10099,7 +10099,8 @@ build_common_builtin_nodes (void)
   ftype = build_function_type_list (ptr_type_node, size_type_node,
 				    size_type_node, NULL_TREE);
   local_define_builtin ("__builtin_alloca_with_align", ftype,
-			BUILT_IN_ALLOCA_WITH_ALIGN, "alloca",
+			BUILT_IN_ALLOCA_WITH_ALIGN,
+			"__builtin_alloca_with_align",
 			ECF_MALLOC | ECF_NOTHROW | ECF_LEAF);
 
   /* If we're checking the stack, `alloca' can throw.  */
