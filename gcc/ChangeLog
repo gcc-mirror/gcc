@@ -1,5 +1,10 @@
 2015-04-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Handle pattern for
+	fabd in ABS case.
+
+2015-04-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.md
 	(*eor_one_cmpl_<SHIFT:optab><mode>3_alt): New pattern.
 	(*eor_one_cmpl_<SHIFT:optab>sidi3_alt_ze): Likewise.
