@@ -1,3 +1,9 @@
+2015-04-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Use extend_arith
+	rather than arith_shift cost when costing ADD/MINUS of an
+	extended value.
+
 2015-04-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/65948
