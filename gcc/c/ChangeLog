@@ -1,3 +1,8 @@
+2015-04-30  Marek Polacek  <polacek@redhat.com>
+
+	* c-typeck.c (set_init_label): Call error_at instead of error and
+	pass LOC to it.
+
 2015-04-29  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-parser.c (c_parser_oacc_enter_exit_data): Use
