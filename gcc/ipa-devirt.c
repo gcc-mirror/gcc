@@ -675,7 +675,8 @@ odr_subtypes_equivalent_p (tree t1, tree t2,
      have to be compared structurally.  */
   if (TREE_CODE (t1) != TREE_CODE (t2))
     return false;
-  if ((TYPE_NAME (t1) == NULL_TREE) != (TYPE_NAME (t2) == NULL_TREE))
+  if (AGGREGATE_TYPE_P (t1)
+      && (TYPE_NAME (t1) == NULL_TREE) != (TYPE_NAME (t2) == NULL_TREE))
     return false;
 
   type_pair pair={t1,t2};
@@ -2029,10 +2030,14 @@ register_odr_type (tree type)
       if (in_lto_p)
         odr_vtable_hash = new odr_vtable_hash_type (23);
     }
-  /* Arrange things to be nicer and insert main variants first.  */
-  if (odr_type_p (TYPE_MAIN_VARIANT (type)))
+  /* Arrange things to be nicer and insert main variants first.
+     ??? fundamental prerecorded types do not have mangled names; this
+     makes it possible that non-ODR type is main_odr_variant of ODR type.
+     Things may get smoother if LTO FE set mangled name of those types same
+     way as C++ FE does.  */
+  if (odr_type_p (main_odr_variant (TYPE_MAIN_VARIANT (type))))
     get_odr_type (TYPE_MAIN_VARIANT (type), true);
-  if (TYPE_MAIN_VARIANT (type) != type)
+  if (TYPE_MAIN_VARIANT (type) != type && odr_type_p (main_odr_variant (type)))
     get_odr_type (type, true);
 }
 
