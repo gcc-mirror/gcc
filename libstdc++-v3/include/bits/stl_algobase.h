@@ -270,19 +270,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __a;
     }
 
-  // If _Iterator is a __normal_iterator return its base (a plain pointer,
-  // normally) otherwise return it untouched.  See copy, fill, ... 
+  // Fallback implementation of the function in bits/stl_iterator.h used to
+  // remove the __normal_iterator wrapper. See copy, fill, ...
   template<typename _Iterator>
-    struct _Niter_base
-    : _Iter_base<_Iterator, __is_normal_iterator<_Iterator>::__value>
-    { };
-
-  template<typename _Iterator>
-    inline typename _Niter_base<_Iterator>::iterator_type
+    inline _Iterator
     __niter_base(_Iterator __it)
-    { return std::_Niter_base<_Iterator>::_S_base(__it); }
+    { return __it; }
 
-  // Likewise, for move_iterator.
+  // If _Iterator is a move_iterator return its base otherwise return it
+  // untouched.  See copy, fill, ...
   template<typename _Iterator>
     struct _Miter_base
     : _Iter_base<_Iterator, __is_move_iterator<_Iterator>::__value>

@@ -1,5 +1,14 @@
 2015-04-30  François Dumont  <fdumont@gcc.gnu.org>
 
+	* include/bits/cpp_type_traits.h
+	(__gnu_cxx::__is_normal_iterator): Delete.
+	* include/bits/stl_algobase.h (std::__niter_base): Adapt.
+	* include/bits/stl_iterator.h (__make_reverse_iterator): New in C++11.
+	(std::__niter_base): Overloads for std::reverse_iterator,
+	__gnu_cxx::__normal_iterator and std::move_iterator.
+
+2015-04-30  François Dumont  <fdumont@gcc.gnu.org>
+
 	* include/bits/hashtable_policy.h (_Prime_rehash_policy::_S_n_primes):
 	Delete.
 	* src/c++11/hashtable_c++0x.cc (_Prime_rehash_policy::_M_next_bkt):
