@@ -1,3 +1,29 @@
+2015-04-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Add fundamentals TR container erasure.
+	* include/Makefile.am: Add new headers.
+	* include/Makefile.in: Add new headers.
+	* include/experimental/array: New.
+	* include/experimental/deque: New.
+	* include/experimental/erase_if.tcc: New.
+	* include/experimental/forward_list: New.
+	* include/experimental/list: New.
+	* include/experimental/map: New.
+	* include/experimental/set: New.
+	* include/experimental/string: New.
+	* include/experimental/unordered_map: New.
+	* include/experimental/unordered_set: New.
+	* include/experimental/vector: New.
+	* testsuite/experimental/deque/erasure.cc: New.
+	* testsuite/experimental/forward_list/erasure.cc: New.
+	* testsuite/experimental/list/erasure.cc: New.
+	* testsuite/experimental/map/erasure.cc: New.
+	* testsuite/experimental/set/erasure.cc: New.
+	* testsuite/experimental/string/erasure.cc: New.
+	* testsuite/experimental/unordered_map/erasure.cc: New.
+	* testsuite/experimental/unordered_set/erasure.cc: New.
+	* testsuite/experimental/vector/erasure.cc: New.
+
 2015-04-30  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/cpp_type_traits.h
