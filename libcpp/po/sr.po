@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib-5.1-b20150208\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2015-02-02 16:02+0000\n"
+"POT-Creation-Date: 2015-04-13 20:12+0000\n"
 "PO-Revision-Date: 2015-04-12 10:37+0200\n"
 "Last-Translator: Мирослав Николић <miroslavnikolic@rocketmail.com>\n"
 "Language-Team: Serbian <(nothing)>\n"
@@ -71,7 +71,7 @@ msgstr "непотпун назив свеопштег знака %.*s"
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s није исправан свеопшти знак"
 
-#: charset.c:1064 lex.c:1217
+#: charset.c:1064 lex.c:1218
 msgid "'$' in identifier or number"
 msgstr "„$“ у одреднику или број"
 
@@ -405,7 +405,7 @@ msgstr "„%s“ је поново утврђен"
 msgid "unterminated #%s"
 msgstr "неокончано #%s"
 
-#: directives-only.c:221 lex.c:2419 traditional.c:164
+#: directives-only.c:221 lex.c:2433 traditional.c:167
 msgid "unterminated comment"
 msgstr "неокончана напомена"
 
@@ -588,39 +588,39 @@ msgstr "оператор „__has_include__“ захтева ниску заг�
 msgid "missing ')' after \"__has_include__\""
 msgstr "недостаје ) након „__has_include__“"
 
-#: files.c:511
+#: files.c:513
 msgid "NULL directory in find_file"
 msgstr "НИШТАВАН директоријум у пронађи_датотеку"
 
-#: files.c:559
+#: files.c:561
 msgid "one or more PCH files were found, but they were invalid"
 msgstr "једна или више ПЦХ датотека је пронађено, али су неисправне"
 
-#: files.c:562
+#: files.c:564
 msgid "use -Winvalid-pch for more information"
 msgstr "користите „-Winvalid-pch“ за више података"
 
-#: files.c:666
+#: files.c:668
 #, c-format
 msgid "%s is a block device"
 msgstr "%s је блок уређај"
 
-#: files.c:683
+#: files.c:685
 #, c-format
 msgid "%s is too large"
 msgstr "%s је превелико"
 
-#: files.c:723
+#: files.c:725
 #, c-format
 msgid "%s is shorter than expected"
 msgstr "%s је краће од очекиваног"
 
-#: files.c:959
+#: files.c:961
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr "нема путање укључивања у којој потражити „%s“"
 
-#: files.c:1409
+#: files.c:1411
 msgid "Multiple include guards may be useful for:\n"
 msgstr "Више чувара укључивања може бити корисно за:\n"
 
@@ -658,112 +658,112 @@ msgstr "ЦПП полуцео број је ужи од ЦПП знака"
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "ЦПП на овом рачунару не може да рукује дуге константе знака преко %lu бита, али мета захтева %lu бита"
 
-#: lex.c:1010
+#: lex.c:1011
 msgid "backslash and newline separated by space"
 msgstr "контра коса и нови ред су раздвојени размаком"
 
-#: lex.c:1015
+#: lex.c:1016
 msgid "backslash-newline at end of file"
 msgstr "контра коса-нови ред на крају датотеке"
 
-#: lex.c:1031
+#: lex.c:1032
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr "триграф ??%c је претворен у %c"
 
-#: lex.c:1039
+#: lex.c:1040
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "триграф ??%c је занемарен, користите „-trigraphs“ да укључите"
 
-#: lex.c:1088
+#: lex.c:1089
 msgid "\"/*\" within comment"
 msgstr "„/*“ унутар напомене"
 
-#: lex.c:1146
+#: lex.c:1147
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "%s у директиви претпроцесора"
 
-#: lex.c:1155
+#: lex.c:1156
 msgid "null character(s) ignored"
 msgstr "ништаван знак(ци) је занемарен(и)"
 
-#: lex.c:1192
+#: lex.c:1193
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "„%.*s“ није у НФКЦ-у"
 
-#: lex.c:1195
+#: lex.c:1196
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "„%.*s“ није у НФЦ-у"
 
-#: lex.c:1264 lex.c:1353
+#: lex.c:1265 lex.c:1354
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "покушај коришћења отрованог „%s“"
 
-#: lex.c:1274 lex.c:1363
+#: lex.c:1275 lex.c:1364
 msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
 msgstr "„__VA_ARGS__“ може само да се појави у ширењу вариадик макроа Ц++11"
 
-#: lex.c:1278 lex.c:1367
+#: lex.c:1279 lex.c:1368
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "„__VA_ARGS__“ може само да се појави у ширењу вариадик макроа Ц99"
 
-#: lex.c:1285 lex.c:1374
+#: lex.c:1286 lex.c:1375
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr "одредник „%s“ је назив посебног оператора у Ц++-у"
 
-#: lex.c:1661
+#: lex.c:1665
 msgid "raw string delimiter longer than 16 characters"
 msgstr "граничник сирове ниске је дужи од 16 знака"
 
-#: lex.c:1665
+#: lex.c:1669
 msgid "invalid new-line in raw string delimiter"
 msgstr "неисправан нови ред у граничнику сирове ниске"
 
-#: lex.c:1669
+#: lex.c:1673
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "неисправан знак „%c“ у граничнику сирове ниске"
 
-#: lex.c:1718 lex.c:1740
+#: lex.c:1722 lex.c:1744
 msgid "unterminated raw string"
 msgstr "неокончана сирова ниска"
 
-#: lex.c:1761 lex.c:1890
+#: lex.c:1765 lex.c:1894
 msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
 msgstr "неисправан суфикс у словности; Ц++11 захтева размак између словности и макроа ниске"
 
-#: lex.c:1872
+#: lex.c:1876
 msgid "null character(s) preserved in literal"
 msgstr "ништаван знак је причуван у словности"
 
-#: lex.c:1875
+#: lex.c:1879
 #, c-format
 msgid "missing terminating %c character"
 msgstr "недостаје завршни знак %c"
 
-#: lex.c:2433 lex.c:2467
+#: lex.c:2447 lex.c:2481
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "Напомене Ц++ стила нису допуштене у ИСО Ц90"
 
-#: lex.c:2435 lex.c:2446 lex.c:2469
+#: lex.c:2449 lex.c:2460 lex.c:2483
 msgid "(this will be reported only once per input file)"
 msgstr "(ово ће бити извештено само једном по улазној датотеци)"
 
-#: lex.c:2444
+#: lex.c:2458
 msgid "C++ style comments are incompatible with C90"
 msgstr "Напомене Ц++ стила нису сагласне са Ц90"
 
-#: lex.c:2475
+#: lex.c:2489
 msgid "multi-line comment"
 msgstr "напомена више редова"
 
-#: lex.c:2819
+#: lex.c:2833
 #, c-format
 msgid "unspellable token %s"
 msgstr "неизговорљив симбол %s"
@@ -822,7 +822,7 @@ msgstr "макро „%s“ захтева %u аргумента, али сам�
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr "макро „%s“ је проследио %u аргумента, али узима само %u"
 
-#: macro.c:977 traditional.c:693
+#: macro.c:977 traditional.c:819
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr "бесконачан списак аргумената призивајући макро „%s“"
@@ -832,89 +832,89 @@ msgstr "бесконачан списак аргумената призивај�
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "макро налик функцији „%s“ мора бити коришћен са аргументима у уобичајеном Ц-у"
 
-#: macro.c:1797
+#: macro.c:1814
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
 msgstr "призивајући макро %s аргумент %d: празни аргументи макроа нису одређени у ИСО Ц++98"
 
-#: macro.c:1805 macro.c:1814
+#: macro.c:1822 macro.c:1831
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
 msgstr "призивајући макро %s аргумент %d: празни аргументи макроа нису одређени у ИСО Ц90"
 
-#: macro.c:2775
+#: macro.c:2800
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "параметар двоструког макроа „%s“"
 
-#: macro.c:2824
+#: macro.c:2849
 #, c-format
 msgid "\"%s\" may not appear in macro parameter list"
 msgstr "„%s“ не може да се појави у списку параметара макроа"
 
-#: macro.c:2832
+#: macro.c:2857
 msgid "macro parameters must be comma-separated"
 msgstr "параметри макроа морају бити раздвојени зарезом"
 
-#: macro.c:2850
+#: macro.c:2875
 msgid "parameter name missing"
 msgstr "недостаје назив параметра"
 
-#: macro.c:2871
+#: macro.c:2896
 msgid "anonymous variadic macros were introduced in C++11"
 msgstr "безимени вариадик макрои су уведени у Ц++11"
 
-#: macro.c:2875 macro.c:2880
+#: macro.c:2900 macro.c:2905
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "безимени вариадик макрои су уведени у Ц99"
 
-#: macro.c:2887
+#: macro.c:2912
 msgid "ISO C++ does not permit named variadic macros"
 msgstr "ИСО Ц++ не дозвољава именоване вариадик макрое"
 
-#: macro.c:2890
+#: macro.c:2915
 msgid "ISO C does not permit named variadic macros"
 msgstr "ИСО Ц не дозвољава именоване вариадик макрое"
 
-#: macro.c:2900
+#: macro.c:2925
 msgid "missing ')' in macro parameter list"
 msgstr "недостаје ) у списку параметара макроа"
 
-#: macro.c:2951
+#: macro.c:2976
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "„##“ не може да се појави у или на крају макро ширења"
 
-#: macro.c:2988
+#: macro.c:3013
 msgid "ISO C++11 requires whitespace after the macro name"
 msgstr "ИСО Ц++11 захтева празнине након назива макроа"
 
-#: macro.c:2991
+#: macro.c:3016
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "ИСО Ц99 захтева празнине након назива макроа"
 
-#: macro.c:3016
+#: macro.c:3041
 msgid "missing whitespace after the macro name"
 msgstr "недостаје празнина након назива макроа"
 
-#: macro.c:3050
+#: macro.c:3075
 msgid "'#' is not followed by a macro parameter"
 msgstr "за „#“ не следи параметар макроа"
 
-#: macro.c:3211
+#: macro.c:3236
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "„%s“ је поново одређено"
 
-#: macro.c:3216
+#: macro.c:3241
 msgid "this is the location of the previous definition"
 msgstr "ово је место претходне одреднице"
 
-#: macro.c:3277
+#: macro.c:3302
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr "макро аргумент „%s“ ће бити нискован у уобичајеном Ц-у"
 
-#: macro.c:3304
+#: macro.c:3329
 #, c-format
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr "неисправна врста хеша %d у цпп_макро_одредници"
@@ -952,12 +952,12 @@ msgstr "%s: није употребљено зато што „__COUNTER__“ н
 msgid "while reading precompiled header"
 msgstr "за време читања претходно преведеног заглавља"
 
-#: traditional.c:763
+#: traditional.c:889
 #, c-format
 msgid "detected recursion whilst expanding macro \"%s\""
 msgstr "откривено је дубачење за време ширења макроа „%s“"
 
-#: traditional.c:982
+#: traditional.c:1108
 msgid "syntax error in macro parameter list"
 msgstr "садржајна грешка у списку параметара макроа"
 
