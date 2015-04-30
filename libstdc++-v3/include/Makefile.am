@@ -646,14 +646,24 @@ experimental_headers = \
 	${experimental_srcdir}/algorithm \
 	${experimental_srcdir}/any \
 	${experimental_srcdir}/chrono \
+	${experimental_srcdir}/deque \
+	${experimental_srcdir}/erase_if.h \
+	${experimental_srcdir}/forward_list \
 	${experimental_srcdir}/functional \
+	${experimental_srcdir}/list \
+	${experimental_srcdir}/map \
 	${experimental_srcdir}/optional \
 	${experimental_srcdir}/ratio \
+	${experimental_srcdir}/set \
+	${experimental_srcdir}/string \
 	${experimental_srcdir}/string_view \
-	${experimental_srcdir}/system_error \
 	${experimental_srcdir}/string_view.tcc \
+	${experimental_srcdir}/system_error \
 	${experimental_srcdir}/tuple \
-	${experimental_srcdir}/type_traits
+	${experimental_srcdir}/type_traits \
+	${experimental_srcdir}/unordered_map \
+	${experimental_srcdir}/unordered_set \
+	${experimental_srcdir}/vector
 
 # This is the common subset of C++ files that all three "C" header models use.
 c_base_srcdir = $(C_INCLUDE_DIR)
