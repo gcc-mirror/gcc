@@ -783,12 +783,13 @@
 ;; For 64-bit modes we use ushl/r, as this does not require a SIMD zero.
 (define_insn "vec_shr_<mode>"
   [(set (match_operand:VD 0 "register_operand" "=w")
-        (lshiftrt:VD (match_operand:VD 1 "register_operand" "w")
-		     (match_operand:SI 2 "immediate_operand" "i")))]
+        (unspec:VD [(match_operand:VD 1 "register_operand" "w")
+		    (match_operand:SI 2 "immediate_operand" "i")]
+		   UNSPEC_VEC_SHR))]
   "TARGET_SIMD"
   {
     if (BYTES_BIG_ENDIAN)
-      return "ushl %d0, %d1, %2";
+      return "shl %d0, %d1, %2";
     else
       return "ushr %d0, %d1, %2";
   }

@@ -1,3 +1,8 @@
+2015-04-30  Renlin Li  <renlin.li@arm.com>
+
+	* config/aarch64/aarch64-simd.md (vec_shr): Defined as an unspec.
+	* config/aarch64/iterators.md (unspec): Add UNSPEC_VEC_SHR.
+
 2015-04-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/65873
