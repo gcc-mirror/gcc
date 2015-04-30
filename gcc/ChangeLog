@@ -1,5 +1,10 @@
 2015-04-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_rtx_mult_cost): Handle MNEG
+	and [SU]MNEGL patterns.
+
+2015-04-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_shift_p): New function.
 	(aarch64_rtx_mult_cost): Update comment to reflect that it also handles
 	combined arithmetic-shift ops.  Properly handle all shift and extend
