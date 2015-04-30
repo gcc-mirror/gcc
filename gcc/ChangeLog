@@ -5561,6 +5561,7 @@
 2015-01-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 	    Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/64729
 	* gcc.c (LINK_SSP_SPEC): Handle -fstack-protector-explicit
 	for !TARGET_LIBC_PROVIDES_SSP version and
 	-fstack-protector-{all,strong,explicit} otherwise.
