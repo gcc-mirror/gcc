@@ -5819,7 +5819,7 @@ cost_minus:
         if (aarch64_rtx_arith_op_extract_p (op1, mode))
 	  {
 	    if (speed)
-	      *cost += extra_cost->alu.arith_shift;
+	      *cost += extra_cost->alu.extend_arith;
 
 	    *cost += rtx_cost (XEXP (XEXP (op1, 0), 0),
 			       (enum rtx_code) GET_CODE (op1),
@@ -5888,7 +5888,7 @@ cost_plus:
         if (aarch64_rtx_arith_op_extract_p (op0, mode))
 	  {
 	    if (speed)
-	      *cost += extra_cost->alu.arith_shift;
+	      *cost += extra_cost->alu.extend_arith;
 
 	    *cost += rtx_cost (XEXP (XEXP (op0, 0), 0),
 			       (enum rtx_code) GET_CODE (op0),
