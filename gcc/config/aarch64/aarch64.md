@@ -3151,6 +3151,32 @@
   [(set_attr "type" "logics_shift_imm")]
 )
 
+(define_insn "*eor_one_cmpl_<SHIFT:optab><mode>3_alt"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(not:GPI (xor:GPI
+		      (SHIFT:GPI
+		       (match_operand:GPI 1 "register_operand" "r")
+		       (match_operand:QI 2 "aarch64_shift_imm_<mode>" "n"))
+		     (match_operand:GPI 3 "register_operand" "r"))))]
+  ""
+  "eon\\t%<w>0, %<w>3, %<w>1, <SHIFT:shift> %2"
+  [(set_attr "type" "logic_shift_imm")]
+)
+
+;; Zero-extend version of the above.
+(define_insn "*eor_one_cmpl_<SHIFT:optab>sidi3_alt_ze"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	  (not:SI (xor:SI
+		    (SHIFT:SI
+		      (match_operand:SI 1 "register_operand" "r")
+		      (match_operand:QI 2 "aarch64_shift_imm_si" "n"))
+		    (match_operand:SI 3 "register_operand" "r")))))]
+  ""
+  "eon\\t%w0, %w3, %w1, <SHIFT:shift> %2"
+  [(set_attr "type" "logic_shift_imm")]
+)
+
 (define_insn "*and_one_cmpl_<SHIFT:optab><mode>3_compare0"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ
