@@ -398,6 +398,39 @@ fold_loop_vectorized_call (gimple g, tree value)
       update_stmt (use_stmt);
     }
 }
+/* Set the uids of all the statements in basic blocks inside loop
+   represented by LOOP_VINFO. LOOP_VECTORIZED_CALL is the internal
+   call guarding the loop which has been if converted.  */
+static void
+set_uid_loop_bbs (loop_vec_info loop_vinfo, gimple loop_vectorized_call)
+{
+  tree arg = gimple_call_arg (loop_vectorized_call, 1);
+  basic_block *bbs;
+  unsigned int i;
+  struct loop *scalar_loop = get_loop (cfun, tree_to_shwi (arg));
+
+  LOOP_VINFO_SCALAR_LOOP (loop_vinfo) = scalar_loop;
+  gcc_checking_assert (vect_loop_vectorized_call
+		       (LOOP_VINFO_SCALAR_LOOP (loop_vinfo))
+		       == loop_vectorized_call);
+  bbs = get_loop_body (scalar_loop);
+  for (i = 0; i < scalar_loop->num_nodes; i++)
+    {
+      basic_block bb = bbs[i];
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple phi = gsi_stmt (gsi);
+	  gimple_set_uid (phi, 0);
+	}
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  gimple_set_uid (stmt, 0);
+	}
+    }
+  free (bbs);
+}
 
 /* Function vectorize_loops.
 
@@ -461,37 +494,7 @@ vectorize_loops (void)
 
 	gimple loop_vectorized_call = vect_loop_vectorized_call (loop);
 	if (loop_vectorized_call)
-	  {
-	    tree arg = gimple_call_arg (loop_vectorized_call, 1);
-	    basic_block *bbs;
-	    unsigned int i;
-	    struct loop *scalar_loop = get_loop (cfun, tree_to_shwi (arg));
-
-	    LOOP_VINFO_SCALAR_LOOP (loop_vinfo) = scalar_loop;
-	    gcc_checking_assert (vect_loop_vectorized_call
-					(LOOP_VINFO_SCALAR_LOOP (loop_vinfo))
-				 == loop_vectorized_call);
-	    bbs = get_loop_body (scalar_loop);
-	    for (i = 0; i < scalar_loop->num_nodes; i++)
-	      {
-		basic_block bb = bbs[i];
-		gimple_stmt_iterator gsi;
-		for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
-		     gsi_next (&gsi))
-		  {
-		    gimple phi = gsi_stmt (gsi);
-		    gimple_set_uid (phi, 0);
-		  }
-		for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
-		     gsi_next (&gsi))
-		  {
-		    gimple stmt = gsi_stmt (gsi);
-		    gimple_set_uid (stmt, 0);
-		  }
-	      }
-	    free (bbs);
-	  }
-
+	  set_uid_loop_bbs (loop_vinfo, loop_vectorized_call);
         if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOCATION
 	    && dump_enabled_p ())
           dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,

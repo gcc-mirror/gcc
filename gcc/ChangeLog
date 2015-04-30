@@ -1,3 +1,9 @@
+2015-04-29  Aditya Kumar  <hiraditya@hotmail.com>
+
+	* tree-vectorizer.c (set_uid_loop_bbs): New.  Factored out of
+	vectorize_loops.
+	(vectorize_loops): Use it.
+
 2015-04-29  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-devirt.c (odr_subtypes_equivalent_p): Compare TYPE_NAME only
