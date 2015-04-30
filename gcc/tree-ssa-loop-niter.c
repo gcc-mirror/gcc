@@ -2565,7 +2565,7 @@ derive_constant_upper_bound_ops (tree type, tree op0,
 	  cst = -cst;
 	  /* Avoid CST == 0x80000...  */
 	  if (wi::neg_p (cst))
-	    return max;;
+	    return max;
 
 	  /* OP0 + CST.  We need to check that
 	     BND <= MAX (type) - CST.  */

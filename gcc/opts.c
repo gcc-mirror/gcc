@@ -1386,7 +1386,7 @@ common_handle_option (struct gcc_options *opts,
 	unsigned int i;
 
 	if (lang_mask == CL_DRIVER)
-	  break;;
+	  break;
 
 	undoc_mask = ((opts->x_verbose_flag | opts->x_extra_warnings)
 		      ? 0

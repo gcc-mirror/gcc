@@ -1,3 +1,9 @@
+2015-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* options.c (gfc_init_options): Remove spurious second
+	semicolon.
+	* trans-stmt.c (gfc_trans_allocate): Likewise.
+
 2015-04-28  Andre Vehreschild  <vehre@gmx.de>
 
 	* interface.c (gfc_compare_types): Check for unlimited

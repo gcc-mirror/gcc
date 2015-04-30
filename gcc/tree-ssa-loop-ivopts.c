@@ -1481,9 +1481,9 @@ extract_cond_operands (struct ivopts_data *data, gimple stmt,
 
 end:
   if (control_var)
-    *control_var = op0;;
+    *control_var = op0;
   if (iv_var)
-    *iv_var = iv0;;
+    *iv_var = iv0;
   if (bound)
     *bound = op1;
   if (iv_bound)

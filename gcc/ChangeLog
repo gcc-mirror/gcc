@@ -1,3 +1,12 @@
+2015-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* builtins.c (fold_builtin_1): Remove spurious second
+	semicolon.
+	* cgraph.h (symtab_node::get_availability): Likewise.
+	* opts.c (common_handle_option): Remove spurious second semicolon.
+	* tree-ssa-loop-ivopts.c (extract_cond_operands): Likewise.
+	* tree-ssa-loop-niter.c (derive_constant_upper_bound_ops): Likewise.
+
 2015-04-30  Caroline Tice  <cmtice@google.com>
 
         PR 65929
