@@ -1,3 +1,11 @@
+2015-04-30  Alan Modra  <amodra@gmail.com>
+
+	PR target/65408
+	PR target/58744
+	PR middle-end/36043
+	* calls.c (load_register_parameters): Don't load past end of
+	mem unless suitably aligned.
+
 2015-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65875
