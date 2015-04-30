@@ -1,3 +1,8 @@
+2015-04-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59955
+	* g++.dg/template/crash121.C: New.
+
 2015-04-29  Petar Jovanovic  <petar.jovanovic@rt-rk.com>
 
 	* gcc.target/mips/call-from-init.c: New test.
