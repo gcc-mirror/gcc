@@ -1,5 +1,12 @@
 2015-05-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/intro.xml: Link to new status_cxx2017.xml file.
+	* doc/xml/manual/status_cxx2011.xml: Update status tables.
+	* doc/xml/manual/status_cxx2014.xml: Likewise.
+	* doc/xml/manual/status_cxx2017.xml: New.
+	* doc/xml/manual/using.xml: Fix typo.
+	* doc/html/*: Regenerate.
+
 	* include/std/memory (pointer_safety, declare_reachable,
 	undeclare_reachable, declare_no_pointers, undeclare_no_pointers,
 	get_pointer_safety): Define.
