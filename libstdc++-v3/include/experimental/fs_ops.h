@@ -53,8 +53,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   path absolute(const path& __p, const path& __base = current_path());
 
   path canonical(const path& __p, const path& __base = current_path());
-  path canonical(const path& p, error_code& ec);
-  path canonical(const path& p, const path& base, error_code& ec);
+  path canonical(const path& __p, error_code& __ec);
+  path canonical(const path& __p, const path& __base, error_code& __ec);
 
   inline void
   copy(const path& __from, const path& __to)
@@ -64,8 +64,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   copy(const path& __from, const path& __to, error_code& __ec) noexcept
   { copy(__from, __to, copy_options::none, __ec); }
 
-  void copy(const path& __from, const path& __to, copy_options options);
-  void copy(const path& __from, const path& __to, copy_options options,
+  void copy(const path& __from, const path& __to, copy_options __options);
+  void copy(const path& __from, const path& __to, copy_options __options,
 	    error_code& __ec) noexcept;
 
   inline bool
@@ -239,12 +239,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   file_time_type  last_write_time(const path& __p);
   file_time_type  last_write_time(const path& __p, error_code& __ec) noexcept;
-  void last_write_time(const path& __p, file_time_type new_time);
-  void last_write_time(const path& __p, file_time_type new_time,
+  void last_write_time(const path& __p, file_time_type __new_time);
+  void last_write_time(const path& __p, file_time_type __new_time,
 		       error_code& __ec) noexcept;
 
-  void permissions(const path& __p, perms prms);
-  void permissions(const path& __p, perms prms, error_code& __ec) noexcept;
+  void permissions(const path& __p, perms __prms);
+  void permissions(const path& __p, perms __prms, error_code& __ec) noexcept;
 
   path read_symlink(const path& __p);
   path read_symlink(const path& __p, error_code& __ec);

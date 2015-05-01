@@ -1896,6 +1896,8 @@ proc check_v3_target_little_endian { } {
 }
 
 proc check_v3_target_filesystem_ts { } {
+    global cxxflags
+    global DEFAULT_CXXFLAGS
     global et_filesystem_ts
     global tool
 
@@ -1930,7 +1932,11 @@ proc check_v3_target_filesystem_ts { } {
 	puts $f "#endif"
 	close $f
 
+	set cxxflags_saved $cxxflags
+	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror -std=gnu++11"
+
 	set lines [v3_target_compile $src /dev/null preprocess ""]
+	set cxxflags $cxxflags_saved
 	file delete $src
 
 	if [string match "" $lines] {

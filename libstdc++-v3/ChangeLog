@@ -1,5 +1,11 @@
 2015-05-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/fs_dir.h: Fix use of non-reserved names.
+	* include/experimental/fs_ops.h: Likewise.
+	* include/experimental/fs_path.h: Likewise.
+	* testsuite/lib/libstdc++.exp (check_v3_target_filesystem_ts): Use
+	C++11 when checking for support.
+
 	* include/bits/locale_classes.h (locale::facet): Delete copy
 	operations in C++11 mode.
 
