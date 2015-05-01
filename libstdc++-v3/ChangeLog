@@ -1,3 +1,14 @@
+2015-05-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Inline one-line erasure dispatch functions.
+	* include/experimental/forward_list (erase_if(), erase()): Inline.
+	* include/experimental/list (erase_if(), erase()): Inline.
+	* include/experimental/map (erase_if(*)): Inline.
+	* include/experimental/set (erase_if(*)): Inline.
+	* include/experimental/string (erase_if(), erase()): Inline.
+	* include/experimental/unordered_map (erase_if(*)): Inline.
+	* include/experimental/unordered_set (erase_if(*)): Inline.
+
 2015-05-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/intro.xml: Link to new status_cxx2017.xml file.

@@ -46,12 +46,12 @@ inline namespace fundamentals_v2
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Alloc, typename _Predicate>
-    void
+    inline void
     erase_if(list<_Tp, _Alloc>& __cont, _Predicate __pred)
     { __cont.remove_if(__pred); }
 
   template<typename _Tp, typename _Alloc, typename _Up>
-    void
+    inline void
     erase(list<_Tp, _Alloc>& __cont, const _Up& __value)
     {
       using __elem_type = typename list<_Tp, _Alloc>::value_type;
