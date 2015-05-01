@@ -52,6 +52,8 @@ inline namespace fundamentals_v2
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#define __cpp_lib_experimental_not_fn 201411
+
   template <typename _Tp>
     class observer_ptr
     {
