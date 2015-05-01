@@ -3914,6 +3914,9 @@ AC_DEFUN([GLIBCXX_ENABLE_FILESYSTEM_TS], [
     [permit yes|no|auto])
 
   AC_MSG_CHECKING([whether to build Filesystem TS support])
+  if test x"$ac_cv_header_dirent_h" != x"yes"; then
+    enable_libstdcxx_filesystem_ts=no
+  fi
   if test x"$enable_libstdcxx_filesystem_ts" = x"auto"; then
     case "${target_os}" in
       freebsd*|netbsd*|openbsd*|dragonfly*|darwin*)
@@ -3992,6 +3995,22 @@ dnl
     AC_DEFINE(_GLIBCXX_USE_ST_MTIM, 1, [Define if struct stat has timespec members.])
   fi
   AC_MSG_RESULT($glibcxx_cv_st_mtim)
+dnl
+  AC_MSG_CHECKING([for fchmodat])
+  AC_CACHE_VAL(glibcxx_cv_fchmodat, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [
+        #include <fcntl.h>
+        #include <sys/stat.h>
+      ],
+      [fchmodat(AT_FDCWD, "", 0, AT_SYMLINK_NOFOLLOW);],
+      [glibcxx_cv_fchmodat=yes],
+      [glibcxx_cv_fchmodat=no])
+  ])
+  if test $glibcxx_cv_fchmodat = yes; then
+    AC_DEFINE(_GLIBCXX_USE_FCHMODAT, 1, [Define if fchmodat is available in <sys/stat.h>.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_fchmodat)
 dnl
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE

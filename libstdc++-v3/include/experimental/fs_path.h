@@ -781,7 +781,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       const value_type* __last = __first + _M_pathname.size();
 
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      using _CharAlloc = typename __alloc_rebind<_Allocator, char>;
+      using _CharAlloc = __alloc_rebind<_Allocator, char>;
       using _String = basic_string<char, char_traits<char>, _CharAlloc>;
       using _WString = basic_string<_CharT, _Traits, _Allocator>;
 

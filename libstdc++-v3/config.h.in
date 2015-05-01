@@ -475,6 +475,9 @@
 /* Defined if usleep exists. */
 #undef HAVE_USLEEP
 
+/* Define to 1 if you have the <utime.h> header file. */
+#undef HAVE_UTIME_H
+
 /* Defined if vfwscanf exists. */
 #undef HAVE_VFWSCANF
 
@@ -847,6 +850,9 @@
 /* Define if ISO/IEC TR 24733 decimal floating point types are supported on
    this host. */
 #undef _GLIBCXX_USE_DECIMAL_FLOAT
+
+/* Define if fchmodat is available in <sys/stat.h>. */
+#undef _GLIBCXX_USE_FCHMODAT
 
 /* Define if __float128 is supported on this host. */
 #undef _GLIBCXX_USE_FLOAT128
