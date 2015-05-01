@@ -920,6 +920,7 @@ experimental_headers = \
 	${experimental_srcdir}/functional \
 	${experimental_srcdir}/list \
 	${experimental_srcdir}/map \
+	${experimental_srcdir}/memory \
 	${experimental_srcdir}/optional \
 	${experimental_srcdir}/ratio \
 	${experimental_srcdir}/set \
