@@ -1,3 +1,10 @@
+2015-05-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/memory (pointer_safety, declare_reachable,
+	undeclare_reachable, declare_no_pointers, undeclare_no_pointers,
+	get_pointer_safety): Define.
+	* testsuite/20_util/pointer_safety/1.cc: New.
+
 2015-04-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	Implement N4100 File System TS
