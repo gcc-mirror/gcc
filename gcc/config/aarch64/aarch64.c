@@ -6405,6 +6405,12 @@ cost_plus:
       *cost += rtx_cost (op2, FMA, 2, speed);
       return true;
 
+    case FLOAT:
+    case UNSIGNED_FLOAT:
+      if (speed)
+	*cost += extra_cost->fp[mode == DFmode].fromint;
+      return false;
+
     case FLOAT_EXTEND:
       if (speed)
 	*cost += extra_cost->fp[mode == DFmode].widen;
