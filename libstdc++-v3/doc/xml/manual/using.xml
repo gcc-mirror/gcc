@@ -996,7 +996,7 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 </para>
 
 <para> Although the standard exception types defined in
-  <filename clas="headerfile">&lt;stdexcept&gt;</filename> use strings, they
+  <filename class="headerfile">&lt;stdexcept&gt;</filename> use strings, they
   are not defined twice, so that a <classname>std::out_of_range</classname>
   exception thrown in one file can always be caught by a suitable handler in
   another file, even if the two files are compiled with different ABIs.
