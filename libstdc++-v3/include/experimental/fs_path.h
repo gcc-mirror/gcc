@@ -36,7 +36,7 @@
 
 #include <utility>
 #include <type_traits>
-#include <list>
+#include <vector>
 #include <locale>
 #include <iosfwd>
 #include <codecvt>
@@ -430,7 +430,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     string_type _M_pathname;
 
     struct _Cmpt;
-    using _List = std::list<_Cmpt>;
+    using _List = _GLIBCXX_STD_C::vector<_Cmpt>;
     _List _M_cmpts; // empty unless _M_type == _Type::_Multi
     _Type _M_type = _Type::_Multi;
   };

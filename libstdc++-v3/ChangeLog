@@ -1,5 +1,13 @@
 2015-05-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/fs_path.h (path::_List): Use vector instead of
+	list.
+	* python/libstdcxx/v6/printers.py (StdExpPathPrinter): Adapt.
+	* src/filesystem/path.cc: Use std::prev instead of decrementing
+	rvalues. Fix whitespace.
+	* testsuite/experimental/filesystem/path/decompose/parent_path.cc:
+	Do not decrement iterators before begin.
+
 	* include/experimental/fs_dir.h: Fix use of non-reserved names.
 	* include/experimental/fs_ops.h: Likewise.
 	* include/experimental/fs_path.h: Likewise.
