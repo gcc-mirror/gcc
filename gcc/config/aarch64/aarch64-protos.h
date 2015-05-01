@@ -177,6 +177,8 @@ struct tune_params
   const int int_reassoc_width;
   const int fp_reassoc_width;
   const int vec_reassoc_width;
+  const int min_div_recip_mul_sf;
+  const int min_div_recip_mul_df;
 };
 
 HOST_WIDE_INT aarch64_initial_elimination_offset (unsigned, unsigned);

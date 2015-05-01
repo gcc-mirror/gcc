@@ -1,5 +1,17 @@
 2015-05-01  Wilco Dijkstra  <wdijkstr@arm.com>
 
+	* gcc/config/aarch64/aarch64-protos.h (tune_params):
+	Add min_div_recip_mul_sf and min_div_recip_mul_df fields.
+	* gcc/config/aarch64/aarch64.c (aarch64_min_divisions_for_recip_mul):
+	Return value depending on target.
+	(generic_tunings): Initialize new target settings.
+	(cortexa53_tunings): Likewise.
+	(cortexa57_tunings): Likewise.
+	(thunderx_tunings): Likewise.
+	(xgene1_tunings): Likewise.
+
+2015-05-01  Wilco Dijkstra  <wdijkstr@arm.com>
+
 	* gcc/config/arm/aarch-cost-tables.h (cortexa53_extra_costs):
 	Make Cortex-A53 shift costs more accurate.
 
