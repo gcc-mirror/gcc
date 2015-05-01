@@ -1,5 +1,7 @@
 2015-05-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/memory: Correct feature-test macro.
+
 	* include/experimental/memory: Add feature-test macro.
 	* include/experimental/vector: Likewise.
 	* doc/xml/manual/status_cxx2017.xml: Update status.
