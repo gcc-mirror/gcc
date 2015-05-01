@@ -2,7 +2,7 @@
 	    Prathamesh Kulharni  <prathamesh.kulkarni@linaro.org>
 
 	PR c++/65858
-	* g++.dg/cpp0x/Wnarrowing4.C: New.
+	* g++.dg/cpp0x/Wnarrowing3.C: New.
 
 2015-05-01  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
 
