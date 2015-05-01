@@ -8,18 +8,18 @@
 # Roland Illig <roland.illig@gmx.de>, 2015.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 5.1-b20150208\n"
+"Project-Id-Version: gcc 5.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-04-13 20:12+0000\n"
-"PO-Revision-Date: 2015-03-05 18:11+0100\n"
+"PO-Revision-Date: 2015-05-01 09:57+0100\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 1.7.3\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 1.7.6\n"
 
 #: cfgrtl.c:2698
 msgid "flow control insn inside a basic block"
@@ -127,8 +127,7 @@ msgid ""
 "with preprocessed source if appropriate.\n"
 msgstr ""
 "Bitte senden Sie einen vollständigen Fehlerbericht auf Englisch ein;\n"
-"bearbeiten Sie die Quellen zunächst mit einem Präprozessor, wenn es\n"
-"dienlich ist.\n"
+"inclusive vorverarbeitetem Quellcode, wenn es dienlich ist.\n"
 
 #: diagnostic.c:540
 #, c-format
@@ -534,12 +533,12 @@ msgstr "gcc-Treiberversion %s %s führt GCC-Version %s aus\n"
 #: gcc.c:6436 gcc.c:6648
 #, c-format
 msgid "The bug is not reproducible, so it is likely a hardware or OS problem.\n"
-msgstr ""
+msgstr "Der Fehler ist nicht reproduzierbar, daher handelt es sich wahrscheinlich um ein Problem mit der Hardware oder dem Betriebssystem.\n"
 
 #: gcc.c:6572
 #, c-format
 msgid "Preprocessed source stored into %s file, please attach this to your bugreport.\n"
-msgstr ""
+msgstr "Vorverarbeiteter Quellcode wurde in Datei %s gespeichert, bitte hängen Sie die an Ihren Fehlerbericht an.\n"
 
 #: gcc.c:7398
 #, c-format
@@ -633,99 +632,97 @@ msgstr ""
 #: gcov-tool.c:166
 #, c-format
 msgid "  merge [options] <dir1> <dir2>         Merge coverage file contents\n"
-msgstr ""
+msgstr "  merge [Optionen] <Ordner1> <Ordner2>  Abdeckungsdateien zusammenführen\n"
 
 #: gcov-tool.c:167 gcov-tool.c:264 gcov-tool.c:420
-#, fuzzy, c-format
-#| msgid "  -v, --version                   Print version number, then exit\n"
+#, c-format
 msgid "    -v, --verbose                       Verbose mode\n"
-msgstr "  -v, --version                   Versionsnummer anzeigen\n"
+msgstr "    -v, --verbose                       Ausführlicher Modus\n"
 
 #: gcov-tool.c:168 gcov-tool.c:265
-#, fuzzy, c-format
-#| msgid "  -n, --no-output                 Do not create an output file\n"
+#, c-format
 msgid "    -o, --output <dir>                  Output directory\n"
-msgstr "  -n, --no-output                 Keine Ausgabedatei erzeugen\n"
+msgstr "    -o, --output <Verzeichnis>          Ausgabeverzeichnis\n"
 
 #: gcov-tool.c:169
 #, c-format
 msgid "    -w, --weight <w1,w2>                Set weights (float point values)\n"
-msgstr ""
+msgstr "    -w, --weight <Gewicht1,Gewicht2>    Gewichtung festlegen (Gleitkommazahlen)\n"
 
 #: gcov-tool.c:185
 #, c-format
 msgid "Merge subcomand usage:"
-msgstr ""
+msgstr "Aufruf des Teilbefehls »merge«:"
 
 #: gcov-tool.c:263
 #, c-format
 msgid "  rewrite [options] <dir>               Rewrite coverage file contents\n"
-msgstr ""
+msgstr "  rewrite [Optionen] <Verzeichnis>      Inhalt der Abdeckungsdatei umschreiben\n"
 
 #: gcov-tool.c:266
 #, c-format
 msgid "    -s, --scale <float or simple-frac>  Scale the profile counters\n"
-msgstr ""
+msgstr "    -s, --scale <Gleitkomma oder einfacher Bruch>  Profilzähler skalieren\n"
 
 #: gcov-tool.c:267
 #, c-format
 msgid "    -n, --normalize <long long>         Normalize the profile\n"
-msgstr ""
+msgstr "    -n, --normalize <long long>         Profil normalisieren\n"
 
 #: gcov-tool.c:284
 #, c-format
 msgid "Rewrite subcommand usage:"
-msgstr ""
+msgstr "Aufruf des Teilbefehls »rewrite«:"
 
 #: gcov-tool.c:329
 #, c-format
 msgid "scaling cannot co-exist with normalization, skipping\n"
-msgstr ""
+msgstr "Skalierung und Normalisierung können nicht gleichzeitig aktiv sein; wird übersprungen\n"
 
 #: gcov-tool.c:342 gcov-tool.c:352
 #, c-format
 msgid "incorrect format in scaling, using 1/1\n"
-msgstr ""
+msgstr "Falsches Format der Skalierung; 1/1 wird benutzt\n"
 
 #: gcov-tool.c:362
 #, c-format
 msgid "normalization cannot co-exist with scaling\n"
-msgstr ""
+msgstr "Normalisierung kann nicht gleichzeitig mit Skalierung aktiv sein\n"
 
 #: gcov-tool.c:419
 #, c-format
 msgid "  overlap [options] <dir1> <dir2>       Compute the overlap of two profiles\n"
-msgstr ""
+msgstr "  overlap [Optionen] <Verz1> <Verz2>    Überlappung zwischen zwei Profilen berechnen\n"
 
 #: gcov-tool.c:421
 #, c-format
 msgid "    -h, --hotonly                       Only print info for hot objects/functions\n"
-msgstr ""
+msgstr "    -h, --hotonly                       Daten nur für heiße Objekte/Funktionen ausgeben\n"
 
 #: gcov-tool.c:422
 #, c-format
 msgid "    -f, --function                      Print function level info\n"
-msgstr ""
+msgstr "    -f, --function                      Daten über Funktionsebene ausgeben\n"
 
 #: gcov-tool.c:423
 #, c-format
 msgid "    -F, --fullname                      Print full filename\n"
-msgstr ""
+msgstr "    -F, --fullname                      Vollständigen Dateinamen ausgeben\n"
 
 #: gcov-tool.c:424
 #, c-format
 msgid "    -o, --object                        Print object level info\n"
-msgstr ""
+msgstr "    -o, --object                        Daten über Objektebene ausgeben\n"
 
 #: gcov-tool.c:425
 #, c-format
 msgid "    -t <float>, --hot_threshold <float> Set the threshold for hotness\n"
-msgstr ""
+msgstr "    -t <Gleitkomma>, --hot_threshold <Gleitkomma>  Schwellwert für Heißheit festlegen\n"
 
 #: gcov-tool.c:445
 #, c-format
 msgid "Overlap subcomand usage:"
-msgstr ""
+msgstr "Aufruf des Teilbefehls »overlap«:"
 
 #: gcov-tool.c:511
 #, c-format
@@ -733,6 +730,8 @@ msgid ""
 "Usage: %s [OPTION]... SUB_COMMAND [OPTION]...\n"
 "\n"
 msgstr ""
+"Aufruf: %s [Option]… <Teilbefehl> [Option]…\n"
+"\n"
 
 #: gcov-tool.c:512
 #, c-format
@@ -740,6 +739,8 @@ msgid ""
 "Offline tool to handle gcda counts\n"
 "\n"
 msgstr ""
+"Ausgelagertes Werkzeug, um mit gcda-Zähler zu arbeiten\n"
+"\n"
 
 #: gcov-tool.c:513
 #, c-format
@@ -814,14 +815,13 @@ msgid "  -b, --branch-probabilities      Include branch probabilities in output\
 msgstr "  -b, --branch-probabilities      Zweigwahrscheinlichkeiten in Ausgabe aufnehmen\n"
 
 #: gcov.c:477
-#, fuzzy, c-format
-#| msgid ""
-#| "  -c, --branch-counts             Given counts of branches taken\n"
-#| "                                    rather than percentages\n"
+#, c-format
 msgid ""
 "  -c, --branch-counts             Output counts of branches taken\n"
 "                                    rather than percentages\n"
-msgstr "  -c, --branch-counts             Angegebene Zweigzahlen statt Anteilen nehmen\n"
+msgstr ""
+"  -c, --branch-counts             Anzahl der Zweigdurchläufe statt\n"
+"                                    Prozentzahlen ausgeben\n"
 
 #: gcov.c:479
 #, c-format
@@ -836,7 +836,7 @@ msgstr "  -f, --function-summaries        Ausgabezusammenfassungen für jede Fun
 #: gcov.c:481
 #, c-format
 msgid "  -i, --intermediate-format       Output .gcov file in intermediate text format\n"
-msgstr ""
+msgstr "  -i, --intermediate-format       .gcov-Dateien im Textformat ausgeben\n"
 
 #: gcov.c:482
 #, c-format
@@ -844,8 +844,8 @@ msgid ""
 "  -l, --long-file-names           Use long output file names for included\n"
 "                                    source files\n"
 msgstr ""
-"  -l, --long-file-names           Lange Dateinamen für Ausgabedateien für\n"
-"                                    eingefügte Quelldateien verwenden\n"
+"  -l, --long-file-names           In eingefügten Quelldateien lange Dateinamen\n"
+"                                    für Ausgabedateien verwenden\n"
 
 #: gcov.c:484
 #, c-format
@@ -930,10 +930,9 @@ msgid "%s:source file is newer than notes file '%s'\n"
 msgstr "%s:Quelldatei ist neuer als Hinweis-Datei »%s«\n"
 
 #: gcov.c:1144
-#, fuzzy, c-format
-#| msgid "(the message is only displayed one per source file)\n"
+#, c-format
 msgid "(the message is displayed only once per source file)\n"
-msgstr "(die Meldung wird für jede Quelldatei nur einmal angezeigt)\n"
+msgstr "(die Meldung wird pro Quelldatei nur einmal angezeigt)\n"
 
 #: gcov.c:1169
 #, c-format
@@ -1225,7 +1224,7 @@ msgstr "Dieser Schalter ist undokumentiert"
 #: opts.c:1014
 #, c-format
 msgid "default %d minimum %d maximum %d"
-msgstr ""
+msgstr "Standard %d Minimum %d Maximum %d"
 
 #: opts.c:1121
 msgid "[default]"
@@ -1511,16 +1510,12 @@ msgid "function attribute mismatch"
 msgstr "Fehlzuordnung von Funktionsattributen"
 
 #: cif-code.def:129
-#, fuzzy
-#| msgid "only one -flto-partition value can be specified"
 msgid "caller function contains cilk spawn"
-msgstr "für -flto-partition kann nur ein Wert angegeben werden"
+msgstr ""
 
 #: cif-code.def:133
-#, fuzzy
-#| msgid "Unreachable statement"
 msgid "unreachable"
-msgstr "Nicht erreichbare Anweisung"
+msgstr "Nicht erreichbar"
 
 #. The remainder are real diagnostic types.
 #: diagnostic.def:33
@@ -1987,10 +1982,8 @@ msgid "The maximum number of RTL nodes that can be recorded as combiner's last v
 msgstr "Höchstzahl der RTL-Knoten, die als letzte Werte des Kombinierers aufgezeichnet werden können"
 
 #: params.def:683
-#, fuzzy
-#| msgid "The maximum number of incoming edges to consider for crossjumping"
 msgid "The maximum number of insns combine tries to combine"
-msgstr "Höchstzahl der zu betrachtenden eingehenden Kanten für Kreuzsprung"
+msgstr "Maximale Anzahl von Befehlen, die »combine« zu kombinieren versucht"
 
 #: params.def:692
 msgid "The upper bound for sharing integer constants"
@@ -38164,7 +38157,7 @@ msgstr "Verwendung der eingebauten Eigenschaft %qE in Funktionssignatur; stattde
 #: cp/mangle.c:2952
 #, gcc-internal-format, gfc-internal-format
 msgid "mangling %C"
-msgstr "%C wird vernichtet"
+msgstr "%C wird gemangelt"
 
 #: cp/mangle.c:3029
 #, gcc-internal-format
@@ -38177,22 +38170,19 @@ msgid "string literal in function template signature"
 msgstr "Zeichenkettenliteral in Signatur des Funktionstemplate"
 
 #: cp/mangle.c:3530
-#, fuzzy, gcc-internal-format
-#| msgid "-fabi-version=6 (or =0) avoids this error with a change in mangling"
+#, gcc-internal-format
 msgid "a later -fabi-version= (or =0) avoids this error with a change in mangling"
-msgstr "-fabi-version=6 (oder =0) verhindert diesen Fehler mit einer Änderung in Vernichtung"
+msgstr "Eine spätere Option -fabi-version= (oder =0) verhindert diesen Fehler mit einer Änderung im Mangeln"
 
 #: cp/mangle.c:3546
-#, fuzzy, gcc-internal-format
-#| msgid "the mangled name of %qD will change in a future version of GCC"
+#, gcc-internal-format
 msgid "the mangled name of %q+D changed between -fabi-version=%d (%D) and -fabi-version=%d (%D)"
-msgstr "der verarbeitete Name von %qD« wird sich in einer zukünftigen Version des GCC ändern"
+msgstr "der gemangelte Name von %q+D hat sich zwischen -fabi-version=%d (%D) und -fabi-version=%d (%D) geändert"
 
 #: cp/mangle.c:3551
-#, fuzzy, gcc-internal-format
-#| msgid "the mangled name of %qD will change in a future version of GCC"
+#, gcc-internal-format
 msgid "the mangled name of %q+D changes between -fabi-version=%d (%D) and -fabi-version=%d (%D)"
-msgstr "der verarbeitete Name von %qD« wird sich in einer zukünftigen Version des GCC ändern"
+msgstr "der gemangelte Name von %q+D ändert sich zwischen -fabi-version=%d (%D) und -fabi-version=%d (%D)"
 
 #: cp/method.c:713 cp/method.c:1191
 #, gcc-internal-format
@@ -38230,10 +38220,9 @@ msgid "defaulted default constructor does not initialize %q+#D"
 msgstr "Standardisierter Standardkonstruktor initialisiert nicht %q+#D"
 
 #: cp/method.c:1275
-#, fuzzy, gcc-internal-format
-#| msgid "non-static data member %qD has Java class type"
+#, gcc-internal-format
 msgid "copying non-static data member %q#D of rvalue reference type"
-msgstr "nicht-statisches Datenelement %qD hat Java-Klassentyp"
+msgstr "Kopieren von nicht-statischem Datenelement %q#D von rvalue-Referenztyp"
 
 #. A trivial constructor doesn't have any NSDMI.
 #: cp/method.c:1433
@@ -38268,7 +38257,7 @@ msgstr "%q+#D wird implizit gelöscht, da die Standarddefinition ungültig wäre
 
 #: cp/method.c:1657
 msgid "%q#F is implicitly deleted because its exception-specification does not match the implicit exception-specification %qX"
-msgstr ""
+msgstr "%q#F wird implizit gelöscht, da ihre Ausnahme-Spezifikation nicht zur impliziten Ausnahme-Spezifikation %qX passt"
 
 #: cp/method.c:1973
 #, gcc-internal-format
@@ -54785,16 +54774,14 @@ msgid "Derived type %qs at %L cannot have the SEQUENCE attribute because it is B
 msgstr "Abgeleiteter Typ »%s« bei %L kann nicht das SEQUENCE-Attribut haben, da es BIND(C) ist"
 
 #: fortran/symbol.c:4470 fortran/symbol.c:4475
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' is used before it is typed at %L"
+#, gcc-internal-format
 msgid "Symbol %qs is used before it is typed at %L"
-msgstr "Symbol »%s« wird bei %L verwendet, bevor es typisiert wird"
+msgstr "Symbol %qs wird bei %L verwendet, bevor es typisiert wird"
 
 #: fortran/target-memory.c:136
-#, fuzzy, gcc-internal-format
-#| msgid "invalid expression for min lvalue"
+#, gcc-internal-format
 msgid "Invalid expression in gfc_element_size."
-msgstr "ungültiger Ausdruck für Min-L-Wert"
+msgstr ""
 
 #: fortran/target-memory.c:356
 #, gcc-internal-format
@@ -54819,16 +54806,14 @@ msgstr "BOZ-konstante bei %L ist zu groß (%ld vs %ld Bits)"
 #. Problems occur when we get something like
 #. integer :: a(lots) = (/(i, i=1, lots)/)
 #: fortran/trans-array.c:5482
-#, fuzzy, gcc-internal-format
-#| msgid "The number of elements in the array constructor at %L requires an increase of the allowed %d upper limit.   See -fmax-array-constructor option"
+#, gcc-internal-format
 msgid "The number of elements in the array constructor at %L requires an increase of the allowed %d upper limit. See %<-fmax-array-constructor%> option"
-msgstr "Die Anzahl der Elemente im Feldkonstruktor bei %L erfordert Erhöhung der erlaubten oberen Grenze %d. Siehe Option -fmax-array-constructor"
+msgstr "Die Anzahl der Elemente im Feldkonstruktor bei %L erfordert Erhöhung der erlaubten oberen Grenze %d. Siehe Option %<-fmax-array-constructor%>"
 
 #: fortran/trans-array.c:7263
-#, fuzzy, gcc-internal-format
-#| msgid "Creating array temporary at %L for argument '%s'"
+#, gcc-internal-format
 msgid "Creating array temporary at %L for argument %qs"
-msgstr "Bei %L wird ein vorübergehendes Feld für Argument »%s« erzeugt"
+msgstr "Bei %L wird ein vorübergehendes Feld für Argument %qs erzeugt"
 
 #: fortran/trans-array.c:9170
 #, gcc-internal-format, gfc-internal-format
@@ -54836,16 +54821,14 @@ msgid "bad expression type during walk (%d)"
 msgstr "Falscher Ausdruckstyp beim Durchlaufen (%d)"
 
 #: fortran/trans-common.c:410
-#, fuzzy, gcc-internal-format
-#| msgid "Named COMMON block '%s' at %L shall be of the same size as elsewhere (%lu vs %lu bytes)"
+#, gcc-internal-format
 msgid "Named COMMON block %qs at %L shall be of the same size as elsewhere (%lu vs %lu bytes)"
-msgstr "Benannter COMMON-Block »%s« bei %L sollte die gleiche Größe wie anderwso haben (vgl. %lu Bytes u. %lu Bytes)"
+msgstr "Benannter COMMON-Block %qs bei %L sollte die gleiche Größe wie anderswo haben (vgl. %lu Bytes u. %lu Bytes)"
 
 #: fortran/trans-common.c:783
-#, fuzzy, gcc-internal-format
-#| msgid "requested position is not an integer constant"
+#, gcc-internal-format
 msgid "get_mpz(): Not an integer constant"
-msgstr "Angeforderte Position ist keine Ganzzahlkonstante"
+msgstr "get_mpz(): Keine Ganzzahl-Konstante"
 
 #: fortran/trans-common.c:811
 #, gcc-internal-format
@@ -54875,10 +54858,9 @@ msgid "The equivalence set for variable %qs declared at %L violates alignment re
 msgstr "Die Äquivalenzmenge für bei %2$L deklarierte Variable »%1$s« verletzt Ausrichtungsanforderungen"
 
 #: fortran/trans-common.c:1119
-#, fuzzy, gcc-internal-format
-#| msgid "Equivalence for '%s' does not match ordering of COMMON '%s' at %L"
+#, gcc-internal-format
 msgid "Equivalence for %qs does not match ordering of COMMON %qs at %L"
-msgstr "Äquivalenz für »%s« passt nicht zur Anordnung von COMMON »%s« bei %L"
+msgstr "Äquivalenz für %qs passt nicht zur Anordnung von COMMON %qs bei %L"
 
 #: fortran/trans-common.c:1134
 #, fuzzy, gcc-internal-format
@@ -54936,10 +54918,9 @@ msgid "intrinsic variable which isn't a procedure"
 msgstr "innere Variable, die keine Prozedur ist"
 
 #: fortran/trans-decl.c:3869 fortran/trans-decl.c:5880
-#, fuzzy, gcc-internal-format
-#| msgid "Return value of function '%s' at %L not set"
+#, gcc-internal-format
 msgid "Return value of function %qs at %L not set"
-msgstr "Rückgabewert der Funktion »%s« bei %L nicht gesetzt"
+msgstr "Rückgabewert der Funktion %qs bei %L nicht gesetzt"
 
 #: fortran/trans-decl.c:4262
 #, gcc-internal-format
@@ -54981,33 +54962,29 @@ msgid "Unused module variable %qs which has been explicitly imported at %L"
 msgstr "Ungenutzte Modulvariable »%qs«, die bei %L ausdrücklich importiert wurde"
 
 #: fortran/trans-decl.c:5105
-#, fuzzy, gcc-internal-format
-#| msgid "Unused variable '%s' declared at %L"
+#, gcc-internal-format
 msgid "Unused variable %qs declared at %L"
-msgstr "Ungenutzte Variable »%s« bei %L deklariert"
+msgstr "Ungenutzte Variable %qs, bei %L deklariert"
 
 #: fortran/trans-decl.c:5154
-#, fuzzy, gcc-internal-format
-#| msgid "Unused parameter '%s' declared at %L"
+#, gcc-internal-format
 msgid "Unused parameter %qs declared at %L"
-msgstr "Ungenutzter Parameter »%s« bei %L deklariert"
+msgstr "Ungenutzter Parameter %qs, bei %L deklariert"
 
 #: fortran/trans-decl.c:5158
-#, fuzzy, gcc-internal-format
-#| msgid "Unused parameter '%s' which has been explicitly imported at %L"
+#, gcc-internal-format
 msgid "Unused parameter %qs which has been explicitly imported at %L"
-msgstr "Ungenutzter Parameter »%s«, der bei %L ausdrücklich importiert wurde"
+msgstr "Ungenutzter Parameter %qs, der bei %L ausdrücklich importiert wurde"
 
 #: fortran/trans-decl.c:5174
-#, fuzzy, gcc-internal-format
-#| msgid "Return value '%s' of function '%s' declared at %L not set"
+#, gcc-internal-format
 msgid "Return value %qs of function %qs declared at %L not set"
-msgstr "Rückgabewert »%1$s« der bei %3$L deklarierten Funktion »%2$s« nicht gesetzt"
+msgstr "Rückgabewert %1$qs der bei %3$L deklarierten Funktion %2$qs nicht gesetzt"
 
 #: fortran/trans-expr.c:797
 #, gcc-internal-format, gfc-internal-format
 msgid "Can't compute the length of the char array at %L."
-msgstr ""
+msgstr "Länge des Arrays bei %L kann nicht berechnet werden."
 
 #: fortran/trans-expr.c:1396
 #, gcc-internal-format, gfc-internal-format
@@ -55020,10 +54997,9 @@ msgid "Code for reallocating the allocatable variable at %L will be added"
 msgstr "Code zur Neu-Reservierung der reservierbaren Variable bei %L wird hinzugefügt"
 
 #: fortran/trans-expr.c:1708
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Polymorphic array at %C not yet supported"
+#, gcc-internal-format, gfc-internal-format
 msgid "Sorry, coindexed access to a pointer or allocatable component of the coindexed coarray at %L is not yet supported"
-msgstr "Polymorphes Feld bei %C wird noch nicht unterstützt"
+msgstr ""
 
 #: fortran/trans-expr.c:1722
 #, gcc-internal-format, gfc-internal-format
@@ -55033,7 +55009,7 @@ msgstr ""
 #: fortran/trans-expr.c:1745
 #, gcc-internal-format, gfc-internal-format
 msgid "Sorry, coindexed access at %L to a scalar component with an array partref is not yet supported"
-msgstr ""
+msgstr "Sorry, der koindizierte Zugriff bei %L auf eine skalare Komponente mit einer Array-Teilreferenz wird noch nicht unterstützt"
 
 #: fortran/trans-expr.c:3109
 #, gcc-internal-format
@@ -55046,23 +55022,20 @@ msgid "Unknown argument list function at %L"
 msgstr "Unbekannte Argumentlistenfunktion bei %L"
 
 #: fortran/trans-intrinsic.c:869
-#, fuzzy, gcc-internal-format
-#| msgid "Intrinsic function %s(%d) not recognized"
+#, gcc-internal-format
 msgid "Intrinsic function %qs (%d) not recognized"
-msgstr "Innere Funktion %s(%d) nicht erkannt"
+msgstr "Intrinsische Funktion %qs (%d) nicht erkannt"
 
 #: fortran/trans-intrinsic.c:1487 fortran/trans-intrinsic.c:1873
 #: fortran/trans-intrinsic.c:2069
-#, fuzzy, gcc-internal-format
-#| msgid "'dim' argument of %s intrinsic at %L is not a valid dimension index"
+#, gcc-internal-format
 msgid "%<dim%> argument of %s intrinsic at %L is not a valid dimension index"
-msgstr "Argument »dim« des intrinsischen »%s« bei %L ist kein gültiger Dimensionsindex"
+msgstr "Argument %<dim%> des intrinsischen »%s« bei %L ist kein gültiger Dimensionsindex"
 
 #: fortran/trans-io.c:1861
-#, fuzzy, gcc-internal-format
-#| msgid "Internal file at %L with namelist"
+#, gcc-internal-format
 msgid "build_dt: format with namelist"
-msgstr "Interne Datei bei %L mit Namensliste"
+msgstr "build_dt: Format mit Namensliste"
 
 #: fortran/trans-io.c:2265
 #, gcc-internal-format, gfc-internal-format
@@ -55080,10 +55053,9 @@ msgid "An alternate return at %L without a * dummy argument"
 msgstr "Alternative Rückkehr bei %L ohne ein *-Scheinargument"
 
 #: fortran/trans-stmt.c:729
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Deferred-length character component '%s' at %L is not yet supported"
+#, gcc-internal-format, gfc-internal-format
 msgid "Sorry, the lock component of derived type at %L is not yet supported"
-msgstr "Zeichenkettenkomponente »%s« aufgeschobener Länge bei %L wird noch nicht unterstützt"
+msgstr "Sorry, die Lockkomponente des abgeleiteten Typs bei %L wird noch nicht unterstützt"
 
 #: fortran/trans-stmt.c:994
 #, gcc-internal-format, gfc-internal-format
@@ -55091,80 +55063,69 @@ msgid "Sorry, only support for integer kind %d implemented for image-set at %L"
 msgstr "Entschuldigung; für Image-Set bei %2$L ist nur Unterstützung für Ganzzahl-Art %1$d implementiert"
 
 #: fortran/trans-stmt.c:2723
-#, fuzzy, gcc-internal-format
-#| msgid "gfc_trans_code(): Bad statement code"
+#, gcc-internal-format
 msgid "gfc_trans_select(): Bad type for case expr."
-msgstr "gfc_trans_code(): Falscher Anweisungscode"
+msgstr "gfc_trans_select(): Falscher Typ für Fallausdruck."
 
 #: fortran/trans-types.c:510
-#, fuzzy, gcc-internal-format
-#| msgid "INTEGER(KIND=8) is not available for -fdefault-integer-8 option"
+#, gcc-internal-format
 msgid "INTEGER(KIND=8) is not available for %<-fdefault-integer-8%> option"
-msgstr "INTEGER(KIND=8) nicht verfügbar für Option -fdefault-integer-8"
+msgstr "INTEGER(KIND=8) nicht verfügbar für Option %<-fdefault-integer-8%>"
 
 #: fortran/trans-types.c:519
-#, fuzzy, gcc-internal-format
-#| msgid "INTEGER(KIND=8) is not available for -finteger-4-integer-8 option"
+#, gcc-internal-format
 msgid "INTEGER(KIND=8) is not available for %<-finteger-4-integer-8%> option"
-msgstr "INTEGER(KIND=8) nicht verfügbar für Option -finteger-4-integer-8"
+msgstr "INTEGER(KIND=8) nicht verfügbar für Option %<-finteger-4-integer-8%>"
 
 #: fortran/trans-types.c:538
-#, fuzzy, gcc-internal-format
-#| msgid "REAL(KIND=8) is not available for -fdefault-real-8 option"
+#, gcc-internal-format
 msgid "REAL(KIND=8) is not available for %<-fdefault-real-8%> option"
-msgstr "REAL(KIND=8) nicht verfügbar für Option -fdefault-real-8"
+msgstr "REAL(KIND=8) nicht verfügbar für Option %<-fdefault-real-8%>"
 
 #: fortran/trans-types.c:546
-#, fuzzy, gcc-internal-format
-#| msgid "REAL(KIND=8) is not available for -freal-4-real-8 option"
+#, gcc-internal-format
 msgid "REAL(KIND=8) is not available for %<-freal-4-real-8%> option"
-msgstr "REAL(KIND=8) nicht verfügbar für Option -freal-4-real-8"
+msgstr "REAL(KIND=8) nicht verfügbar für Option %<-freal-4-real-8%>"
 
 #: fortran/trans-types.c:554
-#, fuzzy, gcc-internal-format
-#| msgid "REAL(KIND=10) is not available for -freal-4-real-10 option"
+#, gcc-internal-format
 msgid "REAL(KIND=10) is not available for %<-freal-4-real-10%> option"
-msgstr "REAL(KIND=10) nicht verfügbar für Option -freal-4-real-10"
+msgstr "REAL(KIND=10) nicht verfügbar für Option %<-freal-4-real-10%>"
 
 #: fortran/trans-types.c:562
-#, fuzzy, gcc-internal-format
-#| msgid "REAL(KIND=16) is not available for -freal-4-real-16 option"
+#, gcc-internal-format
 msgid "REAL(KIND=16) is not available for %<-freal-4-real-16%> option"
-msgstr "REAL(KIND=16) nicht verfügbar für Option -freal-4-real-16"
+msgstr "REAL(KIND=16) nicht verfügbar für Option %<-freal-4-real-16%>"
 
 #: fortran/trans-types.c:577
-#, fuzzy, gcc-internal-format
-#| msgid "Use of -fdefault-double-8 requires -fdefault-real-8"
+#, gcc-internal-format
 msgid "Use of %<-fdefault-double-8%> requires %<-fdefault-real-8%>"
-msgstr "Verwendung von -fdefault-double-8 erfordert -fdefault-real-8"
+msgstr "Verwendung von %<-fdefault-double-8%> erfordert %<-fdefault-real-8%>"
 
 #: fortran/trans-types.c:587
-#, fuzzy, gcc-internal-format
-#| msgid "REAL(KIND=4) is not available for -freal-8-real-4 option"
+#, gcc-internal-format
 msgid "REAL(KIND=4) is not available for %<-freal-8-real-4%> option"
-msgstr "REAL(KIND=4) nicht verfügbar für Option -freal-8-real-4"
+msgstr "REAL(KIND=4) nicht verfügbar für Option %<-freal-8-real-4%>"
 
 #: fortran/trans-types.c:595
-#, fuzzy, gcc-internal-format
-#| msgid "REAL(KIND=10) is not available for -freal-8-real-10 option"
+#, gcc-internal-format
 msgid "REAL(KIND=10) is not available for %<-freal-8-real-10%> option"
-msgstr "REAL(KIND=10) nicht verfügbar für Option -freal-8-real-10"
+msgstr "REAL(KIND=10) nicht verfügbar für Option %<-freal-8-real-10%>"
 
 #: fortran/trans-types.c:603
-#, fuzzy, gcc-internal-format
-#| msgid "REAL(KIND=10) is not available for -freal-8-real-16 option"
+#, gcc-internal-format
 msgid "REAL(KIND=10) is not available for %<-freal-8-real-16%> option"
-msgstr "REAL(KIND=10) nicht verfügbar für Option -freal-8-real-16"
+msgstr "REAL(KIND=10) nicht verfügbar für Option %<-freal-8-real-16%>"
 
 #: fortran/trans-types.c:743
 #, gcc-internal-format
 msgid "gfc_validate_kind(): Got bad type"
-msgstr ""
+msgstr "gfc_validate_kind(): An den falschen Typen geraten"
 
 #: fortran/trans-types.c:747
 #, gcc-internal-format
 msgid "gfc_validate_kind(): Got bad kind"
-msgstr ""
+msgstr "gfc_validate_kind(): Falsche Art erwischt"
 
 #: fortran/trans-types.c:1473
 #, gcc-internal-format, gfc-internal-format
@@ -55661,12 +55622,12 @@ msgstr "waitpid gescheitert"
 #: lto/lto.c:2523
 #, gcc-internal-format
 msgid "streaming subprocess failed"
-msgstr ""
+msgstr "Streaming-Kindprozess fehlgeschlagen"
 
 #: lto/lto.c:2526
 #, gcc-internal-format
 msgid "streaming subprocess was killed by signal"
-msgstr ""
+msgstr "Der Streaming-Kindprozess wurde durch ein Signal beendet"
 
 #: lto/lto.c:2602
 #, gcc-internal-format
