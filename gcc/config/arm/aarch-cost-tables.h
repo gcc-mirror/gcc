@@ -130,12 +130,12 @@ const struct cpu_cost_table cortexa53_extra_costs =
     0,			/* arith.  */
     0,			/* logical.  */
     COSTS_N_INSNS (1),	/* shift.  */
-    COSTS_N_INSNS (2),	/* shift_reg.  */
+    0,			/* shift_reg.  */
     COSTS_N_INSNS (1),	/* arith_shift.  */
-    COSTS_N_INSNS (2),	/* arith_shift_reg.  */
+    COSTS_N_INSNS (1),	/* arith_shift_reg.  */
     COSTS_N_INSNS (1),	/* log_shift.  */
-    COSTS_N_INSNS (2),	/* log_shift_reg.  */
-    0,			/* extend.  */
+    COSTS_N_INSNS (1),	/* log_shift_reg.  */
+    COSTS_N_INSNS (1),	/* extend.  */
     COSTS_N_INSNS (1),	/* extend_arith.  */
     COSTS_N_INSNS (1),	/* bfi.  */
     COSTS_N_INSNS (1),	/* bfx.  */
