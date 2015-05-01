@@ -428,6 +428,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_CONST static const char*
     _S_get_c_name() throw();
 
+#if __cplusplus < 201103L
+  private:
+    facet(const facet&);  // Not defined.
+
+    facet&
+    operator=(const facet&);  // Not defined.
+#else
+    facet(const facet&) = delete;
+
+    facet&
+    operator=(const facet&) = delete;
+#endif
+
   private:
     void
     _M_add_reference() const throw()
@@ -447,11 +460,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    { }
 	}
     }
-
-    facet(const facet&);  // Not defined.
-
-    facet&
-    operator=(const facet&);  // Not defined.
 
     class __shim;
 
