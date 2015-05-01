@@ -423,9 +423,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     void _M_split_cmpts();
     void _M_trim();
-    void _M_add_root_name(size_t n);
-    void _M_add_root_dir(size_t pos);
-    void _M_add_filename(size_t pos, size_t n);
+    void _M_add_root_name(size_t __n);
+    void _M_add_root_dir(size_t __pos);
+    void _M_add_filename(size_t __pos, size_t __n);
 
     string_type _M_pathname;
 
@@ -681,10 +681,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     iterator  operator--(int) { auto __tmp = *this; --_M_cur; return __tmp; }
 
     friend bool operator==(const iterator& __lhs, const iterator& __rhs)
-    { return __lhs.equals(__rhs); }
+    { return __lhs._M_equals(__rhs); }
 
     friend bool operator!=(const iterator& __lhs, const iterator& __rhs)
-    { return !__lhs.equals(__rhs); }
+    { return !__lhs._M_equals(__rhs); }
 
   private:
     friend class path;
@@ -697,7 +697,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     : _M_path(__path), _M_cur(), _M_at_end(__at_end)
     { }
 
-    bool equals(iterator) const;
+    bool _M_equals(iterator) const;
 
     const path* 		_M_path;
     path::_List::const_iterator _M_cur;
@@ -749,7 +749,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     inline path::_Path<_CharT*, _CharT*>&
     path::operator+=(_CharT __x)
     {
-      auto* __addr = std::addressof(__x);
+      auto* __addr = std::__addressof(__x);
       return concat(__addr, __addr + 1);
     }
 
@@ -990,7 +990,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   }
 
   inline bool
-  path::iterator::equals(iterator __rhs) const
+  path::iterator::_M_equals(iterator __rhs) const
   {
     if (_M_path != __rhs._M_path)
       return false;

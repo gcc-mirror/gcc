@@ -180,14 +180,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       directory_options __options, error_code& __ec) noexcept
     : directory_iterator(__p, __options, &__ec) { }
 
-    directory_iterator(const directory_iterator& rhs) = default;
+    directory_iterator(const directory_iterator& __rhs) = default;
 
-    directory_iterator(directory_iterator&& rhs) noexcept = default;
+    directory_iterator(directory_iterator&& __rhs) noexcept = default;
 
     ~directory_iterator() = default;
 
-    directory_iterator& operator=(const directory_iterator& rhs) = default;
-    directory_iterator& operator=(directory_iterator&& rhs) noexcept = default;
+    directory_iterator& operator=(const directory_iterator& __rhs) = default;
+    directory_iterator& operator=(directory_iterator&& __rhs) noexcept = default;
 
     const directory_entry& operator*() const;
     const directory_entry* operator->() const { return &**this; }
@@ -269,9 +269,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     // modifiers
     recursive_directory_iterator&
-      operator=(const recursive_directory_iterator& rhs) noexcept;
+      operator=(const recursive_directory_iterator& __rhs) noexcept;
     recursive_directory_iterator&
-      operator=(recursive_directory_iterator&& rhs) noexcept;
+      operator=(recursive_directory_iterator&& __rhs) noexcept;
 
     recursive_directory_iterator& operator++();
     recursive_directory_iterator& increment(error_code& __ec) noexcept;
