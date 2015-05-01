@@ -1,3 +1,8 @@
+2015-05-01  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc/config/aarch64/aarch64.c (aarch64_rtx_costs):
+	Calculate cost of op0 and op1 in PLUS and MINUS cases.
+
 2015-05-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_rtx_costs, COMPARE case):
