@@ -1,3 +1,18 @@
+2015-05-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement observer_ptr.
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/memory: New.
+	* testsuite/experimental/memory/observer_ptr/assignment/assign.cc: New.
+	* testsuite/experimental/memory/observer_ptr/cons/cons.cc: New.
+	* testsuite/experimental/memory/observer_ptr/hash/hash.cc: New.
+	* testsuite/experimental/memory/observer_ptr/make_observer.cc: New.
+	* testsuite/experimental/memory/observer_ptr/relops/relops.cc: New.
+	* testsuite/experimental/memory/observer_ptr/requirements.cc: New.
+	* testsuite/experimental/memory/observer_ptr/swap/swap.cc: New.
+	* testsuite/experimental/memory/observer_ptr/typedefs.cc: New.
+
 2015-05-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/filesystem/path.cc (path::compare): Do not copy strings.
