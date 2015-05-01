@@ -1,3 +1,8 @@
+2015-05-01  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc/config/arm/aarch-cost-tables.h (cortexa53_extra_costs):
+	Make Cortex-A53 shift costs more accurate.
+
 2015-05-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_rtx_costs): Handle FLOAT and
