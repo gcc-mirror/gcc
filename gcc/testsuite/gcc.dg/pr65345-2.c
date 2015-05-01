@@ -1,5 +1,6 @@
 /* PR c/65345 */
 /* { dg-do run } */
+/* { dg-require-effective-target sync_int_long } */
 /* { dg-options "" } */
 
 #define CHECK(X) if (!(X)) __builtin_abort ()
