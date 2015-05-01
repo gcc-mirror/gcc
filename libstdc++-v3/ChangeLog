@@ -1,5 +1,7 @@
 2015-05-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/filesystem/path.cc (path::compare): Do not copy strings.
+
 	* acinclude.m4 (GLIBCXX_ENABLE_FILESYSTEM_TS): Disable when <dirent.h>
 	is not available.
 	(GLIBCXX_CHECK_FILESYSTEM_DEPS): Check for fchmodat.
