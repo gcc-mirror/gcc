@@ -44,6 +44,8 @@ test02()
 {
   for (const path& p : __gnu_test::test_paths)
   {
+    if (p.begin() == p.end())
+      continue;
     path pp;
     for (auto i = p.begin(), end = --p.end(); i != end; ++i)
     {

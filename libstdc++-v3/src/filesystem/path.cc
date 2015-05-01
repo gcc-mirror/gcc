@@ -35,7 +35,7 @@ path::remove_filename()
     {
       if (!_M_cmpts.empty())
 	{
-	  auto cmpt = --_M_cmpts.end();
+	  auto cmpt = std::prev(_M_cmpts.end());
 	  _M_pathname.erase(cmpt->_M_pos);
 	  _M_cmpts.erase(cmpt);
 	  _M_trim();
@@ -109,7 +109,7 @@ path::compare(const path& p) const noexcept
 {
   if (_M_type == _Type::_Multi && p._M_type == _Type::_Multi)
     return do_compare(_M_cmpts.begin(), _M_cmpts.end(),
-		   p._M_cmpts.begin(), p._M_cmpts.end());
+		      p._M_cmpts.begin(), p._M_cmpts.end());
   else if (_M_type == _Type::_Multi)
     {
       _Cmpt c[1] = { { p._M_pathname, p._M_type, 0 } };
@@ -130,8 +130,7 @@ path::root_name() const
   path __ret;
   if (_M_type == _Type::_Root_name)
     __ret = *this;
-  else if (_M_cmpts.size()
-      && _M_cmpts.begin()->_M_type == _Type::_Root_name)
+  else if (_M_cmpts.size() && _M_cmpts.begin()->_M_type == _Type::_Root_name)
     __ret = *_M_cmpts.begin();
   return __ret;
 }
@@ -203,8 +202,8 @@ path::parent_path() const
   path __ret;
   if (_M_cmpts.size() < 2)
     return __ret;
-  for (auto __it = _M_cmpts.begin(), __end = --_M_cmpts.end();
-      __it != __end; ++__it)
+  for (auto __it = _M_cmpts.begin(), __end = std::prev(_M_cmpts.end());
+       __it != __end; ++__it)
     {
       __ret /= *__it;
     }
