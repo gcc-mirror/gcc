@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: cpplib 5.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-04-13 20:12+0000\n"
-"PO-Revision-Date: 2015-04-29 13:51+0200\n"
+"PO-Revision-Date: 2015-05-01 14:05+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -67,7 +67,7 @@ msgstr "I _cpp_valid_ucn men inte en UCN"
 #: charset.c:1039
 #, c-format
 msgid "incomplete universal character name %.*s"
-msgstr "ofullständigt unversellt teckennamn %.*s"
+msgstr "ofullständigt universellt teckennamn %.*s"
 
 #: charset.c:1054
 #, c-format
