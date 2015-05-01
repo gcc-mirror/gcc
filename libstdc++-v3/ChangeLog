@@ -1,5 +1,22 @@
 2015-05-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* acinclude.m4 (GLIBCXX_ENABLE_FILESYSTEM_TS): Disable when <dirent.h>
+	is not available.
+	(GLIBCXX_CHECK_FILESYSTEM_DEPS): Check for fchmodat.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* configure.ac: Check for utime.h
+	* include/experimental/fs_path.h (path::string<>)
+	[_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Remove stray typename keyword.
+	* src/filesystem/dir.cc [!_GLIBCXX_HAVE_DIRENT_H] (DIR, opendir,
+	closedir, dirent, readdir_r): Replace dummy functions with #error.
+	(native_readdir, _Dir::advance): Use readdir when readdir_r is missing.
+	* src/filesystem/ops.cc (do_stat, is_set): Make inline.
+	(last_write_time) [!_GLIBCXX_USE_UTIMENSAT]: Use utime.
+	(permissions) [!_GLIBCXX_USE_FCHMODAT]: Use chmod.
+	(space, temp_directory_path) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Set
+	error_code.
+
 	* include/experimental/fs_path.h (path::_List): Use vector instead of
 	list.
 	* python/libstdcxx/v6/printers.py (StdExpPathPrinter): Adapt.

@@ -47,6 +47,16 @@
 # include <ext/stdio_filebuf.h>
 # include <ostream>
 #endif
+#if _GLIBCXX_HAVE_UTIME_H
+# include <utime.h>
+#endif
+
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+# undef utime
+# define utime _wutime
+# undef chmod
+# define chmod _wchmod
+#endif
 
 namespace fs = std::experimental::filesystem;
 
@@ -131,7 +141,7 @@ fs::copy(const path& from, const path& to, copy_options options)
 namespace
 {
   template<typename Bitmask>
-    bool is_set(Bitmask obj, Bitmask bits)
+    inline bool is_set(Bitmask obj, Bitmask bits)
     {
       return (obj & bits) != Bitmask::none;
     }
@@ -767,7 +777,7 @@ fs::file_size(const path& p)
 namespace
 {
   template<typename Accessor, typename T>
-    T
+    inline T
     do_stat(const fs::path& p, std::error_code& ec, Accessor f, T deflt)
     {
 #ifdef _GLIBCXX_HAVE_SYS_STAT_H
@@ -871,6 +881,14 @@ fs::last_write_time(const path& p __attribute__((__unused__)),
     ec.assign(errno, std::generic_category());
   else
     ec.clear();
+#elif _GLIBCXX_HAVE_UTIME_H
+  ::utimbuf times;
+  times.modtime = s.count();
+  times.actime = do_stat(p, ec, std::mem_fn(&stat::st_atime), times.modtime);
+  if (::utime(p.c_str(), &times))
+    ec.assign(errno, std::generic_category());
+  else
+    ec.clear();
 #else
   ec = std::make_error_code(std::errc::not_supported);
 #endif
@@ -887,7 +905,11 @@ fs::permissions(const path& p, perms prms)
 
 void fs::permissions(const path& p, perms prms, error_code& ec) noexcept
 {
+#if _GLIBCXX_USE_FCHMODAT
   if (int err = ::fchmodat(AT_FDCWD, p.c_str(), static_cast<mode_t>(prms), 0))
+#else
+  if (int err = ::chmod(p.c_str(), static_cast<mode_t>(prms)))
+#endif
     ec.assign(err, std::generic_category());
   else
     ec.clear();
@@ -1051,6 +1073,8 @@ fs::space(const path& p, error_code& ec) noexcept
       };
       ec.clear();
     }
+#else
+  ec = std::make_error_code(std::errc::not_supported);
 #endif
   return info;
 }
@@ -1157,6 +1181,7 @@ fs::path fs::temp_directory_path()
 fs::path fs::temp_directory_path(error_code& ec)
 {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  ec = std::make_error_code(std::errc::not_supported);
   return {}; // TODO
 #else
   const char* tmpdir = ::getenv("TMPDIR");

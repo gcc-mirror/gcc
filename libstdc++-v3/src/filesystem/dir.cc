@@ -25,7 +25,6 @@
 #include <experimental/filesystem>
 #include <utility>
 #include <stack>
-#include <tuple>
 #include <string.h>
 #include <errno.h>
 #ifdef _GLIBCXX_HAVE_DIRENT_H
@@ -34,17 +33,12 @@
 # endif
 # include <dirent.h>
 #else
-// TODO: replace dummy definitions with suitable Win32 code
-#ifndef EACCES
-# define EACCES static_cast<int>(std::errc::permission_denied)
+# error "the <dirent.h> header is needed to build the Filesystem TS"
 #endif
-using DIR = void;
-using P = std::experimental::filesystem::path;
-static DIR* opendir(const P::value_type*) { return nullptr; }
-static void closedir(DIR*) { }
-struct dirent { const char* d_name; };
-static inline int readdir_r(DIR*, dirent*, dirent**)
-{ return static_cast<int>(std::errc::not_supported); }
+
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+# undef opendir
+# define opendir _wopendir
 #endif
 
 namespace fs = std::experimental::filesystem;
@@ -97,7 +91,7 @@ struct fs::_Dir
 namespace
 {
   template<typename Bitmask>
-    bool is_set(Bitmask obj, Bitmask bits)
+    inline bool is_set(Bitmask obj, Bitmask bits)
     {
       return (obj & bits) != Bitmask::none;
     }
@@ -159,14 +153,27 @@ namespace
     return fs::file_type::none;
 #endif
   }
+
+  int
+  native_readdir(DIR* dirp, ::dirent*& entryp)
+  {
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+    errno = 0;
+    if ((entryp = ::readdir(dirp)))
+      return 0;
+    return errno;
+#else
+    return ::readdir_r(dirp, entryp, &entryp);
+#endif
+  }
 }
 
 bool
 fs::_Dir::advance(ErrorCode ec)
 {
   ::dirent ent;
-  ::dirent* result;
-  if (int err = readdir_r(dirp, &ent, &result))
+  ::dirent* result = &ent;
+  if (int err = native_readdir(dirp, result))
     {
       if (!ec)
 	_GLIBCXX_THROW_OR_ABORT(filesystem_error(
