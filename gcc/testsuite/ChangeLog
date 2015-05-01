@@ -1,3 +1,9 @@
+2015-05-01  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* gcc.dg/20150120-1.c: New test.
+	* gcc.dg/20150120-2.c: New test.
+	* gcc.dg/20150120-3.c: New test.
+
 2015-05-01  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/debug/pr65771.c: Add "dg-add-options tls".
