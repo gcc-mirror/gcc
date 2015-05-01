@@ -126,6 +126,26 @@ align(size_t __align, size_t __size, void*& __ptr, size_t& __space) noexcept
     }
 }
 
+// 20.7.4 [util.dynamic.safety], pointer safety
+
+enum class pointer_safety { relaxed, preferred, strict };
+
+inline void
+declare_reachable(void*) { }
+
+template <class T>
+  inline T*
+  undeclare_reachable(T* __p) { return __p; }
+
+inline void
+declare_no_pointers(char*, size_t) { }
+
+inline void
+undeclare_no_pointers(char*, size_t) { }
+
+inline pointer_safety
+get_pointer_safety() noexcept { return pointer_safety::relaxed; }
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 #endif // _GLIBCXX_USE_C99_STDINT_TR1
