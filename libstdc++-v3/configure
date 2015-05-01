@@ -79163,7 +79163,7 @@ $as_echo_n "checking whether to build Filesystem TS support... " >&6; }
         enable_libstdcxx_filesystem_ts=yes
         ;;
       solaris*)
-        enable_libstdcxx_filesystem_ts=yes
+        enable_libstdcxx_filesystem_ts=no
         ;;
       *)
         enable_libstdcxx_filesystem_ts=no

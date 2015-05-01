@@ -1,3 +1,8 @@
+2015-05-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_FILESYSTEM_TS): Disable for solaris.
+	* configure: Regenerate.
+
 2015-05-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Inline one-line erasure dispatch functions.
