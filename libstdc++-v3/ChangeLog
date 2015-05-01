@@ -1,5 +1,8 @@
 2015-05-01  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/locale_classes.h (locale::facet): Delete copy
+	operations in C++11 mode.
+
 	* include/bits/alloc_traits.h (__alloc_rebind): Change parameter name.
 
 	* acinclude.m4 (GLIBCXX_ENABLE_FILESYSTEM_TS): Disable for solaris.
