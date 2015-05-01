@@ -1,3 +1,10 @@
+2015-05-01  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Prathamesh Kulharni  <prathamesh.kulkarni@linaro.org>
+
+	PR c++/65858
+	* typeck2.c (check_narrowing): Set ok = true when pedwarn returns
+	false.
+
 2015-04-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65801
