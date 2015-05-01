@@ -1,3 +1,8 @@
+2015-05-01  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR translation/65959
+	* params.h (DEFPARAM): Rename msgid to nocmsgid.
+
 2015-05-01  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc/config/aarch64/aarch64-protos.h (tune_params):
