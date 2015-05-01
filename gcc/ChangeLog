@@ -1,3 +1,9 @@
+2015-05-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* target.def (attribute_table): Mention that struct attribute_spec
+	is defined in tree-core.h rather than tree.h
+	* doc/tm.texi: Regenerate.
+
 2015-05-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* genrecog.c (test): Rename to rtx_test.  Update rest of file

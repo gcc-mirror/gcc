@@ -1975,7 +1975,7 @@ merging.",
 DEFHOOKPOD
 (attribute_table,
  "If defined, this target hook points to an array of @samp{struct\n\
-attribute_spec} (defined in @file{tree.h}) specifying the machine\n\
+attribute_spec} (defined in @file{tree-core.h}) specifying the machine\n\
 specific attributes for this target and some of the restrictions on the\n\
 entities to which these attributes are applied and the arguments they\n\
 take.",
