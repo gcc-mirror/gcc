@@ -1,3 +1,8 @@
+2015-05-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genrecog.c (test): Rename to rtx_test.  Update rest of file
+	accordingly.
+
 2015-05-01  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR translation/65959

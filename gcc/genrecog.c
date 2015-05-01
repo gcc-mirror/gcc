@@ -1047,9 +1047,9 @@ struct pattern_use
 };
 
 /* Represents a test performed by a decision.  */
-struct test
+struct rtx_test
 {
-  test ();
+  rtx_test ();
 
   /* The types of test that can be performed.  Most of them take as input
      an rtx X.  Some also take as input a transition label LABEL; the others
@@ -1140,136 +1140,136 @@ struct test
     acceptance_type acceptance;
   } u;
 
-  static test code (position *);
-  static test mode (position *);
-  static test int_field (position *, int);
-  static test wide_int_field (position *, int);
-  static test veclen (position *);
-  static test peep2_count (int);
-  static test veclen_ge (position *, int);
-  static test predicate (position *, const pred_data *, machine_mode);
-  static test duplicate (position *, int);
-  static test pattern (position *, pattern_use *);
-  static test have_num_clobbers ();
-  static test c_test (const char *);
-  static test set_op (position *, int);
-  static test accept (const acceptance_type &);
+  static rtx_test code (position *);
+  static rtx_test mode (position *);
+  static rtx_test int_field (position *, int);
+  static rtx_test wide_int_field (position *, int);
+  static rtx_test veclen (position *);
+  static rtx_test peep2_count (int);
+  static rtx_test veclen_ge (position *, int);
+  static rtx_test predicate (position *, const pred_data *, machine_mode);
+  static rtx_test duplicate (position *, int);
+  static rtx_test pattern (position *, pattern_use *);
+  static rtx_test have_num_clobbers ();
+  static rtx_test c_test (const char *);
+  static rtx_test set_op (position *, int);
+  static rtx_test accept (const acceptance_type &);
 
   bool terminal_p () const;
   bool single_outcome_p () const;
 
 private:
-  test (position *, kind_enum);
+  rtx_test (position *, kind_enum);
 };
 
-test::test () {}
+rtx_test::rtx_test () {}
 
-test::test (position *pos_in, kind_enum kind_in)
+rtx_test::rtx_test (position *pos_in, kind_enum kind_in)
   : pos (pos_in), pos_operand (-1), kind (kind_in) {}
 
-test
-test::code (position *pos)
+rtx_test
+rtx_test::code (position *pos)
 {
-  return test (pos, test::CODE);
+  return rtx_test (pos, rtx_test::CODE);
 }
 
-test
-test::mode (position *pos)
+rtx_test
+rtx_test::mode (position *pos)
 {
-  return test (pos, test::MODE);
+  return rtx_test (pos, rtx_test::MODE);
 }
 
-test
-test::int_field (position *pos, int opno)
+rtx_test
+rtx_test::int_field (position *pos, int opno)
 {
-  test res (pos, test::INT_FIELD);
+  rtx_test res (pos, rtx_test::INT_FIELD);
   res.u.opno = opno;
   return res;
 }
 
-test
-test::wide_int_field (position *pos, int opno)
+rtx_test
+rtx_test::wide_int_field (position *pos, int opno)
 {
-  test res (pos, test::WIDE_INT_FIELD);
+  rtx_test res (pos, rtx_test::WIDE_INT_FIELD);
   res.u.opno = opno;
   return res;
 }
 
-test
-test::veclen (position *pos)
+rtx_test
+rtx_test::veclen (position *pos)
 {
-  return test (pos, test::VECLEN);
+  return rtx_test (pos, rtx_test::VECLEN);
 }
 
-test
-test::peep2_count (int min_len)
+rtx_test
+rtx_test::peep2_count (int min_len)
 {
-  test res (0, test::PEEP2_COUNT);
+  rtx_test res (0, rtx_test::PEEP2_COUNT);
   res.u.min_len = min_len;
   return res;
 }
 
-test
-test::veclen_ge (position *pos, int min_len)
+rtx_test
+rtx_test::veclen_ge (position *pos, int min_len)
 {
-  test res (pos, test::VECLEN_GE);
+  rtx_test res (pos, rtx_test::VECLEN_GE);
   res.u.min_len = min_len;
   return res;
 }
 
-test
-test::predicate (position *pos, const struct pred_data *data,
-		 machine_mode mode)
+rtx_test
+rtx_test::predicate (position *pos, const struct pred_data *data,
+		     machine_mode mode)
 {
-  test res (pos, test::PREDICATE);
+  rtx_test res (pos, rtx_test::PREDICATE);
   res.u.predicate.data = data;
   res.u.predicate.mode_is_param = false;
   res.u.predicate.mode = mode;
   return res;
 }
 
-test
-test::duplicate (position *pos, int opno)
+rtx_test
+rtx_test::duplicate (position *pos, int opno)
 {
-  test res (pos, test::DUPLICATE);
+  rtx_test res (pos, rtx_test::DUPLICATE);
   res.u.opno = opno;
   return res;
 }
 
-test
-test::pattern (position *pos, pattern_use *pattern)
+rtx_test
+rtx_test::pattern (position *pos, pattern_use *pattern)
 {
-  test res (pos, test::PATTERN);
+  rtx_test res (pos, rtx_test::PATTERN);
   res.u.pattern = pattern;
   return res;
 }
 
-test
-test::have_num_clobbers ()
+rtx_test
+rtx_test::have_num_clobbers ()
 {
-  return test (0, test::HAVE_NUM_CLOBBERS);
+  return rtx_test (0, rtx_test::HAVE_NUM_CLOBBERS);
 }
 
-test
-test::c_test (const char *string)
+rtx_test
+rtx_test::c_test (const char *string)
 {
-  test res (0, test::C_TEST);
+  rtx_test res (0, rtx_test::C_TEST);
   res.u.string = string;
   return res;
 }
 
-test
-test::set_op (position *pos, int opno)
+rtx_test
+rtx_test::set_op (position *pos, int opno)
 {
-  test res (pos, test::SET_OP);
+  rtx_test res (pos, rtx_test::SET_OP);
   res.u.opno = opno;
   return res;
 }
 
-test
-test::accept (const acceptance_type &acceptance)
+rtx_test
+rtx_test::accept (const acceptance_type &acceptance)
 {
-  test res (0, test::ACCEPT);
+  rtx_test res (0, rtx_test::ACCEPT);
   res.u.acceptance = acceptance;
   return res;
 }
@@ -1277,66 +1277,66 @@ test::accept (const acceptance_type &acceptance)
 /* Return true if the test represents an unconditionally successful match.  */
 
 bool
-test::terminal_p () const
+rtx_test::terminal_p () const
 {
-  return kind == test::ACCEPT && u.acceptance.type != PEEPHOLE2;
+  return kind == rtx_test::ACCEPT && u.acceptance.type != PEEPHOLE2;
 }
 
 /* Return true if the test is a boolean that is always true.  */
 
 bool
-test::single_outcome_p () const
+rtx_test::single_outcome_p () const
 {
-  return terminal_p () || kind == test::SET_OP;
+  return terminal_p () || kind == rtx_test::SET_OP;
 }
 
 bool
-operator == (const test &a, const test &b)
+operator == (const rtx_test &a, const rtx_test &b)
 {
   if (a.pos != b.pos || a.kind != b.kind)
     return false;
   switch (a.kind)
     {
-    case test::CODE:
-    case test::MODE:
-    case test::VECLEN:
-    case test::HAVE_NUM_CLOBBERS:
+    case rtx_test::CODE:
+    case rtx_test::MODE:
+    case rtx_test::VECLEN:
+    case rtx_test::HAVE_NUM_CLOBBERS:
       return true;
 
-    case test::PEEP2_COUNT:
-    case test::VECLEN_GE:
+    case rtx_test::PEEP2_COUNT:
+    case rtx_test::VECLEN_GE:
       return a.u.min_len == b.u.min_len;
 
-    case test::INT_FIELD:
-    case test::WIDE_INT_FIELD:
-    case test::DUPLICATE:
-    case test::SET_OP:
+    case rtx_test::INT_FIELD:
+    case rtx_test::WIDE_INT_FIELD:
+    case rtx_test::DUPLICATE:
+    case rtx_test::SET_OP:
       return a.u.opno == b.u.opno;
 
-    case test::SAVED_CONST_INT:
+    case rtx_test::SAVED_CONST_INT:
       return (a.u.integer.is_param == b.u.integer.is_param
 	      && a.u.integer.value == b.u.integer.value);
 
-    case test::PREDICATE:
+    case rtx_test::PREDICATE:
       return (a.u.predicate.data == b.u.predicate.data
 	      && a.u.predicate.mode_is_param == b.u.predicate.mode_is_param
 	      && a.u.predicate.mode == b.u.predicate.mode);
 
-    case test::PATTERN:
+    case rtx_test::PATTERN:
       return (a.u.pattern->routine == b.u.pattern->routine
 	      && a.u.pattern->params == b.u.pattern->params);
 
-    case test::C_TEST:
+    case rtx_test::C_TEST:
       return strcmp (a.u.string, b.u.string) == 0;
 
-    case test::ACCEPT:
+    case rtx_test::ACCEPT:
       return a.u.acceptance == b.u.acceptance;
     }
   gcc_unreachable ();
 }
 
 bool
-operator != (const test &a, const test &b)
+operator != (const rtx_test &a, const rtx_test &b)
 {
   return !operator == (a, b);
 }
@@ -1420,8 +1420,8 @@ struct transition
   transition *prev, *next;
 
   /* The transition should be taken when T has one of these values.
-     E.g. for test::CODE this is a set of codes, while for booleans like
-     test::PREDICATE it is always a singleton "true".  The labels are
+     E.g. for rtx_test::CODE this is a set of codes, while for booleans like
+     rtx_test::PREDICATE it is always a singleton "true".  The labels are
      sorted in ascending order.  */
   int_set labels;
 
@@ -1439,7 +1439,7 @@ struct transition
   bool optional;
 
   /* True if LABELS contains parameter numbers rather than constants.
-     E.g. if this is true for a test::CODE, the label is the number
+     E.g. if this is true for a rtx_test::CODE, the label is the number
      of an rtx_code parameter rather than an rtx_code itself.
      LABELS is always a singleton when this variable is true.  */
   bool is_param;
@@ -1452,7 +1452,7 @@ struct transition
    more decisions to try, fails the match.  */
 struct decision : list_head <transition>
 {
-  decision (const test &);
+  decision (const rtx_test &);
 
   void set_parent (list_head <decision> *s);
   bool if_statement_p (uint64_t * = 0) const;
@@ -1464,7 +1464,7 @@ struct decision : list_head <transition>
   decision *prev, *next;
 
   /* The test to perform.  */
-  struct test test;
+  rtx_test test;
 };
 
 /* Represents one machine state.  For each state the machine tries a list
@@ -1488,7 +1488,7 @@ transition::set_parent (list_head <transition> *from_in)
   from = static_cast <decision *> (from_in);
 }
 
-decision::decision (const struct test &test_in)
+decision::decision (const rtx_test &test_in)
   : prev (0), next (0), test (test_in) {}
 
 /* Set the state to which this decision belongs.  */
@@ -1518,7 +1518,7 @@ decision::if_statement_p (uint64_t *label) const
    TRANS.  */
 
 static void
-add_decision (state *from, const test &test, transition *trans)
+add_decision (state *from, const rtx_test &test, transition *trans)
 {
   decision *d = new decision (test);
   from->push_back (d);
@@ -1530,7 +1530,7 @@ add_decision (state *from, const test &test, transition *trans)
    should be optional.  Return the new state.  */
 
 static state *
-add_decision (state *from, const test &test, int_set labels, bool optional)
+add_decision (state *from, const rtx_test &test, int_set labels, bool optional)
 {
   state *to = new state;
   add_decision (from, test, new transition (labels, to, optional));
@@ -1542,7 +1542,7 @@ add_decision (state *from, const test &test, int_set labels, bool optional)
    optional.  */
 
 static decision *
-insert_decision_before (state::range r, const test &test,
+insert_decision_before (state::range r, const rtx_test &test,
 			const int_set &labels, bool optional)
 {
   decision *newd = new decision (test);
@@ -1593,18 +1593,18 @@ simplify_tests (state *s)
       uint64_t label;
       /* Convert checks for GET_CODE (x) == CONST_INT and XWINT (x, 0) == N
 	 into checks for const_int_rtx[N'], if N is suitably small.  */
-      if (d->test.kind == test::CODE
+      if (d->test.kind == rtx_test::CODE
 	  && d->if_statement_p (&label)
 	  && label == CONST_INT)
 	if (decision *second = d->first->to->singleton ())
 	  if (d->test.pos == second->test.pos
-	      && second->test.kind == test::WIDE_INT_FIELD
+	      && second->test.kind == rtx_test::WIDE_INT_FIELD
 	      && second->test.u.opno == 0
 	      && second->if_statement_p (&label)
 	      && IN_RANGE (int64_t (label),
 			   -MAX_SAVED_CONST_INT, MAX_SAVED_CONST_INT))
 	    {
-	      d->test.kind = test::SAVED_CONST_INT;
+	      d->test.kind = rtx_test::SAVED_CONST_INT;
 	      d->test.u.integer.is_param = false;
 	      d->test.u.integer.value = label;
 	      d->replace (d->first, second->release ());
@@ -1619,7 +1619,7 @@ simplify_tests (state *s)
 	 paths that reach that code test require the same predicate
 	 to be true.  cse_tests will then put the predicate test in
 	 series with the code test.  */
-      if (d->test.kind == test::CODE)
+      if (d->test.kind == rtx_test::CODE)
 	if (transition *trans = d->singleton ())
 	  {
 	    state *s = trans->to;
@@ -1630,7 +1630,7 @@ simplify_tests (state *s)
 		transition *trans2 = d2->singleton ();
 		if (!trans2)
 		  break;
-		if (d2->test.kind == test::PREDICATE)
+		if (d2->test.kind == rtx_test::PREDICATE)
 		  {
 		    d->test = d2->test;
 		    trans->labels = int_set (true);
@@ -1654,7 +1654,7 @@ simplify_tests (state *s)
 static bool
 common_test_p (decision *d, transition *common, vec <transition *> *where)
 {
-  if (d->test.kind == test::ACCEPT)
+  if (d->test.kind == rtx_test::ACCEPT)
     /* We found a successful return that didn't require COMMON.  */
     return false;
   if (d->test == common->from->test)
@@ -1702,20 +1702,20 @@ struct known_conditions
    as positive proof.  */
 
 static bool
-safe_to_hoist_p (decision *d, const test &test, known_conditions *kc)
+safe_to_hoist_p (decision *d, const rtx_test &test, known_conditions *kc)
 {
   switch (test.kind)
     {
-    case test::C_TEST:
+    case rtx_test::C_TEST:
       /* In general, C tests require everything else to have been
 	 verified and all operands to have been set up.  */
       return false;
 
-    case test::ACCEPT:
+    case rtx_test::ACCEPT:
       /* Don't accept something before all conditions have been tested.  */
       return false;
 
-    case test::PREDICATE:
+    case rtx_test::PREDICATE:
       /* Don't move a predicate over a test for VECLEN_GE, since the
 	 predicate used in a match_parallel can legitimately expect the
 	 length to be checked first.  */
@@ -1723,21 +1723,21 @@ safe_to_hoist_p (decision *d, const test &test, known_conditions *kc)
 	   subd->test != test;
 	   subd = subd->first->to->first)
 	if (subd->test.pos == test.pos
-	    && subd->test.kind == test::VECLEN_GE)
+	    && subd->test.kind == rtx_test::VECLEN_GE)
 	  return false;
       goto any_rtx;
 
-    case test::DUPLICATE:
+    case rtx_test::DUPLICATE:
       /* Don't test for a match_dup until the associated operand has
 	 been set.  */
       if (!kc->set_operands[test.u.opno])
 	return false;
       goto any_rtx;
 
-    case test::CODE:
-    case test::MODE:
-    case test::SAVED_CONST_INT:
-    case test::SET_OP:
+    case rtx_test::CODE:
+    case rtx_test::MODE:
+    case rtx_test::SAVED_CONST_INT:
+    case rtx_test::SET_OP:
     any_rtx:
       /* Check whether it is safe to access the rtx under test.  */
       switch (test.pos->type)
@@ -1753,20 +1753,20 @@ safe_to_hoist_p (decision *d, const test &test, known_conditions *kc)
 	}
       gcc_unreachable ();
 
-    case test::INT_FIELD:
-    case test::WIDE_INT_FIELD:
-    case test::VECLEN:
-    case test::VECLEN_GE:
+    case rtx_test::INT_FIELD:
+    case rtx_test::WIDE_INT_FIELD:
+    case rtx_test::VECLEN:
+    case rtx_test::VECLEN_GE:
       /* These tests access a specific part of an rtx, so are only safe
 	 once we know what the rtx is.  */
       return kc->position_tests[test.pos->id] & TESTED_CODE;
 
-    case test::PEEP2_COUNT:
-    case test::HAVE_NUM_CLOBBERS:
+    case rtx_test::PEEP2_COUNT:
+    case rtx_test::HAVE_NUM_CLOBBERS:
       /* These tests can be performed anywhere.  */
       return true;
 
-    case test::PATTERN:
+    case rtx_test::PATTERN:
       gcc_unreachable ();
     }
   gcc_unreachable ();
@@ -1887,8 +1887,8 @@ cse_tests (position *pos, state *s, known_conditions *kc)
       /* Make sure that safe_to_hoist_p isn't being overly conservative.
 	 It should realize that D's test is safe in the current
 	 environment.  */
-      gcc_assert (d->test.kind == test::C_TEST
-		  || d->test.kind == test::ACCEPT
+      gcc_assert (d->test.kind == rtx_test::C_TEST
+		  || d->test.kind == rtx_test::ACCEPT
 		  || safe_to_hoist_p (d, d->test, kc));
 
       /* D won't be changed any further by the current optimization.
@@ -1896,24 +1896,24 @@ cse_tests (position *pos, state *s, known_conditions *kc)
       int prev = 0;
       switch (d->test.kind)
 	{
-	case test::CODE:
+	case rtx_test::CODE:
 	  prev = kc->position_tests[d->test.pos->id];
 	  kc->position_tests[d->test.pos->id] |= TESTED_CODE;
 	  break;
 
-	case test::VECLEN:
-	case test::VECLEN_GE:
+	case rtx_test::VECLEN:
+	case rtx_test::VECLEN_GE:
 	  prev = kc->position_tests[d->test.pos->id];
 	  kc->position_tests[d->test.pos->id] |= TESTED_VECLEN;
 	  break;
 
-	case test::SET_OP:
+	case rtx_test::SET_OP:
 	  prev = kc->set_operands[d->test.u.opno];
 	  gcc_assert (!prev);
 	  kc->set_operands[d->test.u.opno] = true;
 	  break;
 
-	case test::PEEP2_COUNT:
+	case rtx_test::PEEP2_COUNT:
 	  prev = kc->peep2_count;
 	  kc->peep2_count = MAX (prev, d->test.u.min_len);
 	  break;
@@ -1925,17 +1925,17 @@ cse_tests (position *pos, state *s, known_conditions *kc)
 	cse_tests (d->test.pos ? d->test.pos : pos, trans->to, kc);
       switch (d->test.kind)
 	{
-	case test::CODE:
-	case test::VECLEN:
-	case test::VECLEN_GE:
+	case rtx_test::CODE:
+	case rtx_test::VECLEN:
+	case rtx_test::VECLEN_GE:
 	  kc->position_tests[d->test.pos->id] = prev;
 	  break;
 
-	case test::SET_OP:
+	case rtx_test::SET_OP:
 	  kc->set_operands[d->test.u.opno] = prev;
 	  break;
 
-	case test::PEEP2_COUNT:
+	case rtx_test::PEEP2_COUNT:
 	  kc->peep2_count = prev;
 	  break;
 
@@ -1949,33 +1949,33 @@ cse_tests (position *pos, state *s, known_conditions *kc)
    or parameter::UNSET if none.  */
 
 parameter::type_enum
-transition_parameter_type (test::kind_enum kind)
+transition_parameter_type (rtx_test::kind_enum kind)
 {
   switch (kind)
     {
-    case test::CODE:
+    case rtx_test::CODE:
       return parameter::CODE;
 
-    case test::MODE:
+    case rtx_test::MODE:
       return parameter::MODE;
 
-    case test::INT_FIELD:
-    case test::VECLEN:
-    case test::PATTERN:
+    case rtx_test::INT_FIELD:
+    case rtx_test::VECLEN:
+    case rtx_test::PATTERN:
       return parameter::INT;
 
-    case test::WIDE_INT_FIELD:
+    case rtx_test::WIDE_INT_FIELD:
       return parameter::WIDE_INT;
 
-    case test::PEEP2_COUNT:
-    case test::VECLEN_GE:
-    case test::SAVED_CONST_INT:
-    case test::PREDICATE:
-    case test::DUPLICATE:
-    case test::HAVE_NUM_CLOBBERS:
-    case test::C_TEST:
-    case test::SET_OP:
-    case test::ACCEPT:
+    case rtx_test::PEEP2_COUNT:
+    case rtx_test::VECLEN_GE:
+    case rtx_test::SAVED_CONST_INT:
+    case rtx_test::PREDICATE:
+    case rtx_test::DUPLICATE:
+    case rtx_test::HAVE_NUM_CLOBBERS:
+    case rtx_test::C_TEST:
+    case rtx_test::SET_OP:
+    case rtx_test::ACCEPT:
       return parameter::UNSET;
     }
   gcc_unreachable ();
@@ -1993,11 +1993,11 @@ find_operand_positions (state *s, vec <int> &operand_pos)
       int this_operand = (d->test.pos ? operand_pos[d->test.pos->id] : -1);
       if (this_operand >= 0)
 	d->test.pos_operand = this_operand;
-      if (d->test.kind == test::SET_OP)
+      if (d->test.kind == rtx_test::SET_OP)
 	operand_pos[d->test.pos->id] = d->test.u.opno;
       for (transition *trans = d->first; trans; trans = trans->next)
 	find_operand_positions (trans->to, operand_pos);
-      if (d->test.kind == test::SET_OP)
+      if (d->test.kind == rtx_test::SET_OP)
 	operand_pos[d->test.pos->id] = this_operand;
     }
 }
@@ -2065,7 +2065,7 @@ get_stats (state *s)
 	  for_d.num_decisions += 1;
 	  for_d.longest_path += 1;
 	}
-      if (d->test.kind == test::ACCEPT)
+      if (d->test.kind == rtx_test::ACCEPT)
 	{
 	  for_d.longest_path_code = d->test.u.acceptance.u.full.code;
 	  for_d.longest_backtrack_code = d->test.u.acceptance.u.full.code;
@@ -2379,21 +2379,21 @@ update_parameters (vec <parameter> &to, const vec <parameter> &from)
    PARAMB alone.  */
 
 static bool
-compatible_tests_p (const test &a, const test &b,
+compatible_tests_p (const rtx_test &a, const rtx_test &b,
 		    parameter *parama, parameter *paramb)
 {
   if (a.kind != b.kind)
     return false;
   switch (a.kind)
     {
-    case test::PREDICATE:
+    case rtx_test::PREDICATE:
       if (a.u.predicate.data != b.u.predicate.data)
 	return false;
       *parama = parameter (parameter::MODE, false, a.u.predicate.mode);
       *paramb = parameter (parameter::MODE, false, b.u.predicate.mode);
       return true;
 
-    case test::SAVED_CONST_INT:
+    case rtx_test::SAVED_CONST_INT:
       *parama = parameter (parameter::INT, false, a.u.integer.value);
       *paramb = parameter (parameter::INT, false, b.u.integer.value);
       return true;
@@ -2667,7 +2667,7 @@ merge_patterns (merge_state_info *sinfo1, merge_state_info *sinfo2)
 	     parameterizing the first N const_ints of the vector
 	     and then (once we reach the maximum number of parameters)
 	     we go on to match the other elements exactly.  */
-	  if (d1->test.kind == test::WIDE_INT_FIELD)
+	  if (d1->test.kind == rtx_test::WIDE_INT_FIELD)
 	    return false;
 
 	  /* See whether the label has a generalizable type.  */
@@ -2803,7 +2803,7 @@ init_pattern_use (create_pattern_info *cpi, merge_state_info *sinfo,
   pattern_use *use = new pattern_use;
   use->routine = pat->routine;
   use->params.splice (params);
-  decision *d = new decision (test::pattern (res->root, use));
+  decision *d = new decision (rtx_test::pattern (res->root, use));
 
   /* If the original decision could use an element of operands[] instead
      of an rtx variable, try to transfer it to the new decision.  */
@@ -2823,7 +2823,7 @@ add_pattern_acceptance (create_pattern_info *cpi, state *s)
   acceptance.type = SUBPATTERN;
   acceptance.partial_p = false;
   acceptance.u.full.code = cpi->next_result;
-  add_decision (s, test::accept (acceptance), true, false);
+  add_decision (s, rtx_test::accept (acceptance), true, false);
   cpi->next_result += 1;
 }
 
@@ -2860,12 +2860,12 @@ populate_pattern_routine (create_pattern_info *cpi, merge_state_info *sinfo,
       const parameter &param = params[pat->param_test];
       switch (newd->test.kind)
 	{
-	case test::PREDICATE:
+	case rtx_test::PREDICATE:
 	  newd->test.u.predicate.mode_is_param = param.is_param;
 	  newd->test.u.predicate.mode = param.value;
 	  break;
 
-	case test::SAVED_CONST_INT:
+	case rtx_test::SAVED_CONST_INT:
 	  newd->test.u.integer.is_param = param.is_param;
 	  newd->test.u.integer.value = param.value;
 	  break;
@@ -2875,9 +2875,9 @@ populate_pattern_routine (create_pattern_info *cpi, merge_state_info *sinfo,
 	  break;
 	}
     }
-  if (d->test.kind == test::C_TEST)
+  if (d->test.kind == rtx_test::C_TEST)
     routine->insn_p = true;
-  else if (d->test.kind == test::HAVE_NUM_CLOBBERS)
+  else if (d->test.kind == rtx_test::HAVE_NUM_CLOBBERS)
     routine->pnum_clobbers_p = true;
   news->push_back (newd);
 
@@ -3038,11 +3038,11 @@ split_out_patterns (vec <merge_state_info> &states)
 	 and so couldn't be shared between states).  */
       if (decision *d = sinfo->s->singleton ())
 	/* ACCEPT states are unique, so don't even try to merge them.  */
-	if (d->test.kind != test::ACCEPT
+	if (d->test.kind != rtx_test::ACCEPT
 	    && (pattern_have_num_clobbers_p
-		|| d->test.kind != test::HAVE_NUM_CLOBBERS)
+		|| d->test.kind != rtx_test::HAVE_NUM_CLOBBERS)
 	    && (pattern_c_test_p
-		|| d->test.kind != test::C_TEST))
+		|| d->test.kind != rtx_test::C_TEST))
 	  {
 	    merge_state_info **slot = hashtab.find_slot (sinfo, INSERT);
 	    sinfo->prev_same_test = *slot;
@@ -3290,7 +3290,7 @@ create_subroutine (routine_type type, state *s, vec <state *> &procs)
   acceptance.partial_p = true;
   acceptance.u.subroutine_id = procs.length ();
   state *news = new state;
-  add_decision (news, test::accept (acceptance), true, false);
+  add_decision (news, rtx_test::accept (acceptance), true, false);
   return news;
 }
 
@@ -3327,8 +3327,8 @@ find_subroutines (routine_type type, state *s, vec <state *> &procs)
 		if (!newd->test.single_outcome_p ())
 		  size.num_statements += 1;
 		trans = newd->singleton ();
-		if (newd->test.kind == test::SET_OP
-		    || newd->test.kind == test::ACCEPT)
+		if (newd->test.kind == rtx_test::SET_OP
+		    || newd->test.kind == rtx_test::ACCEPT)
 		  break;
 	      }
 	  /* The target of TRANS is a subroutine candidate.  First recurse
@@ -3866,9 +3866,9 @@ match_pattern_2 (state *s, rtx top_pattern, position *pos, rtx pattern)
 	    if (code == MATCH_PARALLEL || code == MATCH_PAR_DUP)
 	      {
 		/* Check that we have a parallel with enough elements.  */
-		s = add_decision (s, test::code (pos), PARALLEL, false);
+		s = add_decision (s, rtx_test::code (pos), PARALLEL, false);
 		int min_len = XVECLEN (pattern, 2);
-		s = add_decision (s, test::veclen_ge (pos, min_len),
+		s = add_decision (s, rtx_test::veclen_ge (pos, min_len),
 				  true, false);
 	      }
 	    else
@@ -3883,7 +3883,7 @@ match_pattern_2 (state *s, rtx top_pattern, position *pos, rtx pattern)
 		bool need_codes = (pred
 				   && (code == MATCH_OPERATOR
 				       || code == MATCH_OP_DUP));
-		s = add_decision (s, test::code (pos), codes, !need_codes);
+		s = add_decision (s, rtx_test::code (pos), codes, !need_codes);
 	      }
 
 	    /* Postpone the predicate check until we've checked the rest
@@ -3924,7 +3924,7 @@ match_pattern_2 (state *s, rtx top_pattern, position *pos, rtx pattern)
 	default:
 	  {
 	    /* Check that the rtx has the right code.  */
-	    s = add_decision (s, test::code (pos), code, false);
+	    s = add_decision (s, rtx_test::code (pos), code, false);
 
 	    /* Queue a test for the mode if one is specified.  */
 	    if (GET_MODE (pattern) != VOIDmode)
@@ -3949,7 +3949,8 @@ match_pattern_2 (state *s, rtx top_pattern, position *pos, rtx pattern)
 		      /* Make sure the vector has the right number of
 			 elements.  */
 		      int length = XVECLEN (pattern, i);
-		      s = add_decision (s, test::veclen (pos), length, false);
+		      s = add_decision (s, rtx_test::veclen (pos),
+					length, false);
 
 		      position **subpos2_ptr = &pos->xvecexp0s;
 		      for (int j = 0; j < length; j++)
@@ -3965,13 +3966,13 @@ match_pattern_2 (state *s, rtx top_pattern, position *pos, rtx pattern)
 
 		  case 'i':
 		    /* Make sure that XINT (X, I) has the right value.  */
-		    s = add_decision (s, test::int_field (pos, i),
+		    s = add_decision (s, rtx_test::int_field (pos, i),
 				      XINT (pattern, i), false);
 		    break;
 
 		  case 'w':
 		    /* Make sure that XWINT (X, I) has the right value.  */
-		    s = add_decision (s, test::wide_int_field (pos, i),
+		    s = add_decision (s, rtx_test::wide_int_field (pos, i),
 				      XWINT (pattern, 0), false);
 		    break;
 
@@ -4037,7 +4038,7 @@ match_pattern_2 (state *s, rtx top_pattern, position *pos, rtx pattern)
 		   and DImode register_operands, as described above.  */
 		machine_mode mode = GET_MODE (e->pattern);
 		if (safe_predicate_mode (pred, mode))
-		  s = add_decision (s, test::mode (e->pos), mode, true);
+		  s = add_decision (s, rtx_test::mode (e->pos), mode, true);
 
 		/* Assign to operands[] first, so that the rtx usually doesn't
 		   need to be live across the call to the predicate.
@@ -4046,19 +4047,21 @@ match_pattern_2 (state *s, rtx top_pattern, position *pos, rtx pattern)
 		   since we fully expect to assign to operands[] at some point,
 		   and since the caller usually writes to other parts of
 		   recog_data anyway.  */
-		s = add_decision (s, test::set_op (e->pos, opno), true, false);
-		s = add_decision (s, test::predicate (e->pos, pred, mode),
+		s = add_decision (s, rtx_test::set_op (e->pos, opno),
+				  true, false);
+		s = add_decision (s, rtx_test::predicate (e->pos, pred, mode),
 				  true, false);
 	      }
 	    else
 	      /* Historically we've ignored the mode when there's no
 		 predicate.  Just set up operands[] unconditionally.  */
-	      s = add_decision (s, test::set_op (e->pos, opno), true, false);
+	      s = add_decision (s, rtx_test::set_op (e->pos, opno),
+				true, false);
 	    break;
 	  }
 
 	default:
-	  s = add_decision (s, test::mode (e->pos),
+	  s = add_decision (s, rtx_test::mode (e->pos),
 			    GET_MODE (e->pattern), false);
 	  break;
 	}
@@ -4066,7 +4069,7 @@ match_pattern_2 (state *s, rtx top_pattern, position *pos, rtx pattern)
 
   /* Finally add rtx_equal_p checks for duplicated operands.  */
   FOR_EACH_VEC_ELT (dup_tests, i, e)
-    s = add_decision (s, test::duplicate (e->pos, XINT (e->pattern, 0)),
+    s = add_decision (s, rtx_test::duplicate (e->pos, XINT (e->pattern, 0)),
 		      true, false);
   return s;
 }
@@ -4098,7 +4101,7 @@ match_pattern_1 (state *s, rtx top_pattern, const char *c_test,
 	      position *subpos = next_position (subpos_ptr, &root_pos,
 						POS_PEEP2_INSN, count);
 	      if (count > 0)
-		s = add_decision (s, test::peep2_count (count + 1),
+		s = add_decision (s, rtx_test::peep2_count (count + 1),
 				  true, false);
 	      s = match_pattern_2 (s, top_pattern, subpos, x);
 	      subpos_ptr = &subpos->next;
@@ -4115,15 +4118,15 @@ match_pattern_1 (state *s, rtx top_pattern, const char *c_test,
       /* If the match is only valid when extra clobbers are added,
 	 make sure we're able to pass that information to the caller.  */
       if (acceptance.type == RECOG && acceptance.u.full.u.num_clobbers)
-	s = add_decision (s, test::have_num_clobbers (), true, false);
+	s = add_decision (s, rtx_test::have_num_clobbers (), true, false);
     }
 
   /* Make sure that the C test is true.  */
   if (maybe_eval_c_test (c_test) != 1)
-    s = add_decision (s, test::c_test (c_test), true, false);
+    s = add_decision (s, rtx_test::c_test (c_test), true, false);
 
   /* Accept the pattern.  */
-  add_decision (s, test::accept (acceptance), true, false);
+  add_decision (s, rtx_test::accept (acceptance), true, false);
 }
 
 /* Like match_pattern_1, but (if merge_states_p) try to merge the
@@ -4321,7 +4324,7 @@ static bool
 terminal_pattern_p (decision *d, unsigned int *base_out,
 		    unsigned int *count_out)
 {
-  if (d->test.kind != test::PATTERN)
+  if (d->test.kind != rtx_test::PATTERN)
     return false;
   unsigned int base = 0;
   unsigned int count = 0;
@@ -4330,7 +4333,7 @@ terminal_pattern_p (decision *d, unsigned int *base_out,
       if (trans->is_param || trans->labels.length () != 1)
 	return false;
       decision *subd = trans->to->singleton ();
-      if (!subd || subd->test.kind != test::ACCEPT)
+      if (!subd || subd->test.kind != rtx_test::ACCEPT)
 	return false;
       unsigned int this_base = (subd->test.u.acceptance.u.full.code
 				- trans->labels[0]);
@@ -4349,7 +4352,7 @@ terminal_pattern_p (decision *d, unsigned int *base_out,
    already available in state OS.  */
 
 static bool
-test_position_available_p (output_state *os, const test &test)
+test_position_available_p (output_state *os, const rtx_test &test)
 {
   return (!test.pos
 	  || test.pos_operand >= 0
@@ -4461,7 +4464,7 @@ print_parameter_value (const parameter &param)
 /* Print the C expression for the rtx tested by TEST.  */
 
 static void
-print_test_rtx (output_state *os, const test &test)
+print_test_rtx (output_state *os, const rtx_test &test)
 {
   if (test.pos_operand >= 0)
     printf ("operands[%d]", test.pos_operand);
@@ -4472,41 +4475,41 @@ print_test_rtx (output_state *os, const test &test)
 /* Print the C expression for non-boolean test TEST.  */
 
 static void
-print_nonbool_test (output_state *os, const test &test)
+print_nonbool_test (output_state *os, const rtx_test &test)
 {
   switch (test.kind)
     {
-    case test::CODE:
+    case rtx_test::CODE:
       printf ("GET_CODE (");
       print_test_rtx (os, test);
       printf (")");
       break;
 
-    case test::MODE:
+    case rtx_test::MODE:
       printf ("GET_MODE (");
       print_test_rtx (os, test);
       printf (")");
       break;
 
-    case test::VECLEN:
+    case rtx_test::VECLEN:
       printf ("XVECLEN (");
       print_test_rtx (os, test);
       printf (", 0)");
       break;
 
-    case test::INT_FIELD:
+    case rtx_test::INT_FIELD:
       printf ("XINT (");
       print_test_rtx (os, test);
       printf (", %d)", test.u.opno);
       break;
 
-    case test::WIDE_INT_FIELD:
+    case rtx_test::WIDE_INT_FIELD:
       printf ("XWINT (");
       print_test_rtx (os, test);
       printf (", %d)", test.u.opno);
       break;
 
-    case test::PATTERN:
+    case rtx_test::PATTERN:
       {
 	pattern_routine *routine = test.u.pattern->routine;
 	printf ("pattern%d (", routine->pattern_id);
@@ -4536,15 +4539,15 @@ print_nonbool_test (output_state *os, const test &test)
 	break;
       }
 
-    case test::PEEP2_COUNT:
-    case test::VECLEN_GE:
-    case test::SAVED_CONST_INT:
-    case test::DUPLICATE:
-    case test::PREDICATE:
-    case test::SET_OP:
-    case test::HAVE_NUM_CLOBBERS:
-    case test::C_TEST:
-    case test::ACCEPT:
+    case rtx_test::PEEP2_COUNT:
+    case rtx_test::VECLEN_GE:
+    case rtx_test::SAVED_CONST_INT:
+    case rtx_test::DUPLICATE:
+    case rtx_test::PREDICATE:
+    case rtx_test::SET_OP:
+    case rtx_test::HAVE_NUM_CLOBBERS:
+    case rtx_test::C_TEST:
+    case rtx_test::ACCEPT:
       gcc_unreachable ();
     }
 }
@@ -4553,7 +4556,7 @@ print_nonbool_test (output_state *os, const test &test)
    decision performs TEST.  Print the C code for the label.  */
 
 static void
-print_label_value (const test &test, bool is_param, uint64_t value)
+print_label_value (const rtx_test &test, bool is_param, uint64_t value)
 {
   print_parameter_value (parameter (transition_parameter_type (test.kind),
 				    is_param, value));
@@ -4564,24 +4567,24 @@ print_label_value (const test &test, bool is_param, uint64_t value)
    Test for inequality if INVERT_P, otherwise test for equality.  */
 
 static void
-print_test (output_state *os, const test &test, bool is_param, uint64_t value,
-	    bool invert_p)
+print_test (output_state *os, const rtx_test &test, bool is_param,
+	    uint64_t value, bool invert_p)
 {
   switch (test.kind)
     {
       /* Handle the non-boolean TESTs.  */
-    case test::CODE:
-    case test::MODE:
-    case test::VECLEN:
-    case test::INT_FIELD:
-    case test::WIDE_INT_FIELD:
-    case test::PATTERN:
+    case rtx_test::CODE:
+    case rtx_test::MODE:
+    case rtx_test::VECLEN:
+    case rtx_test::INT_FIELD:
+    case rtx_test::WIDE_INT_FIELD:
+    case rtx_test::PATTERN:
       print_nonbool_test (os, test);
       printf (" %s ", invert_p ? "!=" : "==");
       print_label_value (test, is_param, value);
       break;
 
-    case test::SAVED_CONST_INT:
+    case rtx_test::SAVED_CONST_INT:
       gcc_assert (!is_param && value == 1);
       print_test_rtx (os, test);
       printf (" %s const_int_rtx[MAX_SAVED_CONST_INT + ",
@@ -4592,20 +4595,20 @@ print_test (output_state *os, const test &test, bool is_param, uint64_t value,
       printf ("]");
       break;
 
-    case test::PEEP2_COUNT:
+    case rtx_test::PEEP2_COUNT:
       gcc_assert (!is_param && value == 1);
       printf ("peep2_current_count %s %d", invert_p ? "<" : ">=",
 	      test.u.min_len);
       break;
 
-    case test::VECLEN_GE:
+    case rtx_test::VECLEN_GE:
       gcc_assert (!is_param && value == 1);
       printf ("XVECLEN (");
       print_test_rtx (os, test);
       printf (", 0) %s %d", invert_p ? "<" : ">=", test.u.min_len);
       break;
 
-    case test::PREDICATE:
+    case rtx_test::PREDICATE:
       gcc_assert (!is_param && value == 1);
       printf ("%s%s (", invert_p ? "!" : "", test.u.predicate.data->name);
       print_test_rtx (os, test);
@@ -4616,27 +4619,27 @@ print_test (output_state *os, const test &test, bool is_param, uint64_t value,
       printf (")");
       break;
 
-    case test::DUPLICATE:
+    case rtx_test::DUPLICATE:
       gcc_assert (!is_param && value == 1);
       printf ("%srtx_equal_p (", invert_p ? "!" : "");
       print_test_rtx (os, test);
       printf (", operands[%d])", test.u.opno);
       break;
 
-    case test::HAVE_NUM_CLOBBERS:
+    case rtx_test::HAVE_NUM_CLOBBERS:
       gcc_assert (!is_param && value == 1);
       printf ("pnum_clobbers %s NULL", invert_p ? "==" : "!=");
       break;
 
-    case test::C_TEST:
+    case rtx_test::C_TEST:
       gcc_assert (!is_param && value == 1);
       if (invert_p)
 	printf ("!");
       print_c_condition (test.u.string);
       break;
 
-    case test::ACCEPT:
-    case test::SET_OP:
+    case rtx_test::ACCEPT:
+    case rtx_test::SET_OP:
       gcc_unreachable ();
     }
 }
@@ -4812,9 +4815,9 @@ print_decision (output_state *os, decision *d, unsigned int indent,
 	  return ES_FALLTHROUGH;
 	}
     }
-  else if (d->test.kind == test::ACCEPT)
+  else if (d->test.kind == rtx_test::ACCEPT)
     return print_acceptance (d->test.u.acceptance, indent, is_final);
-  else if (d->test.kind == test::SET_OP)
+  else if (d->test.kind == rtx_test::SET_OP)
     {
       printf_indent (indent, "operands[%d] = ", d->test.u.opno);
       print_test_rtx (os, d->test);
@@ -4843,8 +4846,8 @@ print_decision (output_state *os, decision *d, unsigned int indent,
 	{
 	  d = trans->to->singleton ();
 	  if (!d
-	      || d->test.kind == test::ACCEPT
-	      || d->test.kind == test::SET_OP
+	      || d->test.kind == rtx_test::ACCEPT
+	      || d->test.kind == rtx_test::SET_OP
 	      || !d->if_statement_p (&label)
 	      || !test_position_available_p (os, d->test))
 	    break;
@@ -4869,7 +4872,7 @@ print_decision (output_state *os, decision *d, unsigned int indent,
 	  return print_state (os, to, indent, is_final);
 	}
       else if (to->singleton ()
-	       && to->first->test.kind == test::ACCEPT
+	       && to->first->test.kind == rtx_test::ACCEPT
 	       && single_statement_p (to->first->test.u.acceptance))
 	{
 	  /* The target of the transition is a simple "return" statement.
