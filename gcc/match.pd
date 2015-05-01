@@ -255,6 +255,20 @@ along with GCC; see the file COPYING3.  If not see
   (bitop @0 @0)
   (non_lvalue @0)))
 
+/* x + (x & 1) -> (x + 1) & ~1 */
+(simplify
+ (plus:c @0 (bit_and@2 @0 integer_onep@1))
+ (if (TREE_CODE (@2) != SSA_NAME || has_single_use (@2))
+  (bit_and (plus @0 @1) (bit_not @1))))
+
+/* x & ~(x & y) -> x & ~y */
+/* x | ~(x | y) -> x | ~y  */
+(for bitop (bit_and bit_ior)
+  (simplify
+    (bitop:c @0 (bit_not (bitop:c@2 @0 @1)))
+      (if (TREE_CODE (@2) != SSA_NAME || has_single_use (@2))
+	(bitop @0 (bit_not @1)))))
+
 (simplify
  (abs (negate @0))
  (abs @0))

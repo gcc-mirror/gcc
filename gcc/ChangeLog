@@ -1,3 +1,10 @@
+2015-05-01  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* match.pd: New simplification patterns.
+	(x + (x & 1))  -> ((x + 1) & ~1)
+	(x & ~(x & y)) -> ((x & ~y))
+	(x | ~(x | y)) -> ((x | ~y))
+
 2015-05-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* target.def (attribute_table): Mention that struct attribute_spec
