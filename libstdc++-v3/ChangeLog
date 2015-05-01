@@ -1,3 +1,10 @@
+2015-05-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/memory: Add feature-test macro.
+	* include/experimental/vector: Likewise.
+	* doc/xml/manual/status_cxx2017.xml: Update status.
+	* doc/html/manual/status.html: Regenerate.
+
 2015-05-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement observer_ptr.
