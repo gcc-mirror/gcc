@@ -5865,6 +5865,7 @@ aarch64_rtx_costs (rtx x, int code, int outer ATTRIBUTE_UNUSED,
 
           if (CONST_DOUBLE_P (op1) && aarch64_float_const_zero_rtx_p (op1))
             {
+              *cost += rtx_cost (op0, COMPARE, 0, speed);
               /* FCMP supports constant 0.0 for no extra cost. */
               return true;
             }

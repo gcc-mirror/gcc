@@ -1,3 +1,8 @@
+2015-05-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_rtx_costs, COMPARE case):
+	Add cost of op0 in the compare-with-fpzero case.
+
 2015-04-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* builtins.c (fold_builtin_1): Remove spurious second
