@@ -48,13 +48,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc,
 	   typename _Predicate>
-    void
+    inline void
     erase_if(map<_Key, _Tp, _Compare, _Alloc>& __cont, _Predicate __pred)
     { __detail::__erase_nodes_if(__cont, __pred); }
 
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc,
 	   typename _Predicate>
-    void
+    inline void
     erase_if(multimap<_Key, _Tp, _Compare, _Alloc>& __cont, _Predicate __pred)
     { __detail::__erase_nodes_if(__cont, __pred); }
 
