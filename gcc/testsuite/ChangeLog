@@ -1,3 +1,11 @@
+2015-04-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline r222664
+	2015-04-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/crypto-builtin-2.c: Replace powerpc_vsx_ok
+	with powerpc_p8vector_ok.
+
 2015-04-30  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/63551
