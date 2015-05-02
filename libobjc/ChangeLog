@@ -1,3 +1,11 @@
+2015-05-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* acinclude.m4: Include bitfields.m4.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+	* configure.ac: Invoke gt_BITFIELD_TYPE_MATTERS.
+	* encoding.c: Check HAVE_BITFIELD_TYPE_MATTERS.
+
 2015-04-29  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* encoding.c (objc_layout_structure_next_member): Check the value of
