@@ -1,3 +1,9 @@
+2015-05-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/any (_Internal): Check for trivially-copyable
+	instead of nothrow move constructible.
+	* testsuite/experimental/any/cons/nontrivial.cc: New.
+
 2015-04-28  Doug Evans  <dje@google.com>
 
 	* testsuite/libstdc++-xmethods/list.cc (_GLIBCXX_USE_CXX11_ABI):

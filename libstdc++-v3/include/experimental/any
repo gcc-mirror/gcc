@@ -94,7 +94,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::aligned_storage<sizeof(_M_ptr), sizeof(_M_ptr)>::type _M_buffer;
     };
 
-    template<typename _Tp, typename _Safe = is_nothrow_move_constructible<_Tp>,
+    template<typename _Tp, typename _Safe = is_trivially_copyable<_Tp>,
 	     bool _Fits = (sizeof(_Tp) <= sizeof(_Storage))>
       using _Internal = std::integral_constant<bool, _Safe::value && _Fits>;
 
