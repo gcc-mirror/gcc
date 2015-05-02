@@ -614,7 +614,7 @@ advance_one_cycle (fence_t fence)
 /* Returns true when SUCC in a fallthru bb of INSN, possibly
    skipping empty basic blocks.  */
 static bool
-in_fallthru_bb_p (rtx insn, rtx succ)
+in_fallthru_bb_p (rtx_insn *insn, rtx succ)
 {
   basic_block bb = BLOCK_FOR_INSN (insn);
   edge e;
@@ -1853,7 +1853,7 @@ create_speculation_check (expr_t c_expr, ds_t check_ds, insn_t orig_insn)
 
 /* True when INSN is a "regN = regN" copy.  */
 static bool
-identical_copy_p (rtx insn)
+identical_copy_p (rtx_insn *insn)
 {
   rtx lhs, rhs, pat;
 
@@ -5830,7 +5830,7 @@ move_op_after_merge_succs (cmpd_local_params_p lp, void *sparams)
 /* Track bookkeeping copies created, insns scheduled, and blocks for
    rescheduling when INSN is found by move_op.  */
 static void
-track_scheduled_insns_and_blocks (rtx insn)
+track_scheduled_insns_and_blocks (rtx_insn *insn)
 {
   /* Even if this insn can be a copy that will be removed during current move_op,
      we still need to count it as an originator.  */
