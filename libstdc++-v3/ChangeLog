@@ -1,5 +1,10 @@
 2015-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/65978
+	* include/std/tuple (forward_as_tuple, tie): Add constexpr.
+	* testsuite/20_util/tuple/creation_functions/constexpr.cc: Uncomment
+	and fix tests for forward_as_tuple and tie.
+
 	* src/filesystem/ops.cc (last_write_time) [_GLIBCXX_USE_UTIMENSAT]:
 	Set timespec members explicitly instead of with a braced-init-list.
 	[_GLIBCXX_HAVE_UTIME_H]: Use lambda to handle st_atime being a macro.
