@@ -531,6 +531,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     : system_error(__ec, __what_arg), _M_path1(__p1), _M_path2(__p2)
     { }
 
+    ~filesystem_error();
+
     const path& path1() const noexcept { return _M_path1; }
     const path& path2() const noexcept { return _M_path2; }
     const char* what() const noexcept { return _M_what.c_str(); }

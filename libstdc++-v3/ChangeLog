@@ -1,5 +1,10 @@
 2015-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/fs_path.h (filesystem_error::~filesystem_error):
+	Declare.
+	* src/filesystem/path.cc (filesystem_error::~filesystem_error):
+	Define.
+
 	PR libstdc++/65978
 	* include/std/tuple (forward_as_tuple, tie): Add constexpr.
 	* testsuite/20_util/tuple/creation_functions/constexpr.cc: Uncomment
