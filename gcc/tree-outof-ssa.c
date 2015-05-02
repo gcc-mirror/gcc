@@ -242,11 +242,9 @@ set_location_for_edge (edge e)
    SRC/DEST might be BLKmode memory locations SIZEEXP is a tree from
    which we deduce the size to copy in that case.  */
 
-static inline rtx
+static inline rtx_insn *
 emit_partition_copy (rtx dest, rtx src, int unsignedsrcp, tree sizeexp)
 {
-  rtx seq;
-
   start_sequence ();
 
   if (GET_MODE (src) != VOIDmode && GET_MODE (src) != GET_MODE (dest))
@@ -259,7 +257,7 @@ emit_partition_copy (rtx dest, rtx src, int unsignedsrcp, tree sizeexp)
   else
     emit_move_insn (dest, src);
 
-  seq = get_insns ();
+  rtx_insn *seq = get_insns ();
   end_sequence ();
 
   return seq;
@@ -271,7 +269,6 @@ static void
 insert_partition_copy_on_edge (edge e, int dest, int src, source_location locus)
 {
   tree var;
-  rtx seq;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file,
@@ -291,10 +288,10 @@ insert_partition_copy_on_edge (edge e, int dest, int src, source_location locus)
     set_curr_insn_location (locus);
 
   var = partition_to_var (SA.map, src);
-  seq = emit_partition_copy (copy_rtx (SA.partition_to_pseudo[dest]),
-			     copy_rtx (SA.partition_to_pseudo[src]),
-			     TYPE_UNSIGNED (TREE_TYPE (var)),
-			     var);
+  rtx_insn *seq = emit_partition_copy (copy_rtx (SA.partition_to_pseudo[dest]),
+				       copy_rtx (SA.partition_to_pseudo[src]),
+				       TYPE_UNSIGNED (TREE_TYPE (var)),
+				       var);
 
   insert_insn_on_edge (seq, e);
 }
@@ -365,7 +362,6 @@ static void
 insert_rtx_to_part_on_edge (edge e, int dest, rtx src, int unsignedsrcp,
 			    source_location locus)
 {
-  rtx seq;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file,
@@ -387,9 +383,9 @@ insert_rtx_to_part_on_edge (edge e, int dest, rtx src, int unsignedsrcp,
      mems.  Usually we give the source.  As we result from SSA names
      the left and right size should be the same (and no WITH_SIZE_EXPR
      involved), so it doesn't matter.  */
-  seq = emit_partition_copy (copy_rtx (SA.partition_to_pseudo[dest]),
-			     src, unsignedsrcp,
-			     partition_to_var (SA.map, dest));
+  rtx_insn *seq = emit_partition_copy (copy_rtx (SA.partition_to_pseudo[dest]),
+				       src, unsignedsrcp,
+				       partition_to_var (SA.map, dest));
 
   insert_insn_on_edge (seq, e);
 }
@@ -401,7 +397,6 @@ static void
 insert_part_to_rtx_on_edge (edge e, rtx dest, int src, source_location locus)
 {
   tree var;
-  rtx seq;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file,
@@ -420,10 +415,10 @@ insert_part_to_rtx_on_edge (edge e, rtx dest, int src, source_location locus)
     set_curr_insn_location (locus);
 
   var = partition_to_var (SA.map, src);
-  seq = emit_partition_copy (dest,
-			     copy_rtx (SA.partition_to_pseudo[src]),
-			     TYPE_UNSIGNED (TREE_TYPE (var)),
-			     var);
+  rtx_insn *seq = emit_partition_copy (dest,
+				       copy_rtx (SA.partition_to_pseudo[src]),
+				       TYPE_UNSIGNED (TREE_TYPE (var)),
+				       var);
 
   insert_insn_on_edge (seq, e);
 }
