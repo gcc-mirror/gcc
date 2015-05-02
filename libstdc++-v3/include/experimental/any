@@ -98,11 +98,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Storage& operator=(const _Storage&) = delete;
 
       void* _M_ptr;
-      std::aligned_storage<sizeof(_M_ptr), sizeof(_M_ptr)>::type _M_buffer;
+      aligned_storage<sizeof(_M_ptr), alignof(void*)>::type _M_buffer;
     };
 
     template<typename _Tp, typename _Safe = is_nothrow_move_constructible<_Tp>,
-	     bool _Fits = (sizeof(_Tp) <= sizeof(_Storage))>
+	     bool _Fits = (sizeof(_Tp) <= sizeof(_Storage))
+			  && (alignof(_Tp) <= alignof(_Storage))>
       using _Internal = std::integral_constant<bool, _Safe::value && _Fits>;
 
     template<typename _Tp>
