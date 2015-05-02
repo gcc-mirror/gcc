@@ -1,3 +1,7 @@
+2015-05-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* bitfields.m4: New file.
+
 2015-04-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* bootstrap-mpx.mk: New file.
