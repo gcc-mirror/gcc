@@ -141,7 +141,7 @@ doloop_condition_get (rtx doloop_pat)
   if (GET_CODE (pattern) != PARALLEL)
     {
       rtx cond;
-      rtx prev_insn = prev_nondebug_insn (doloop_pat);
+      rtx_insn *prev_insn = prev_nondebug_insn (doloop_pat);
       rtx cmp_arg1, cmp_arg2;
       rtx cmp_orig;
 

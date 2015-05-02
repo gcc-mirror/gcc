@@ -4521,7 +4521,7 @@ workaround_speculation (void)
 
 		  if (delay_needed > cycles_since_jump)
 		    {
-		      rtx prev = prev_real_insn (label);
+		      rtx_insn *prev = prev_real_insn (label);
 		      delay_needed -= cycles_since_jump;
 		      if (dump_file)
 			fprintf (dump_file, "Adding %d nops after %d\n",
@@ -4587,7 +4587,7 @@ add_sched_insns_for_speculation (void)
 	  if (any_condjump_p (insn)
 	      && !cbranch_predicted_taken_p (insn))
 	    {
-	      rtx n = next_real_insn (insn);
+	      rtx_insn *n = next_real_insn (insn);
 	      emit_insn_before (gen_stall (GEN_INT (3)), n);
 	    }
 	}

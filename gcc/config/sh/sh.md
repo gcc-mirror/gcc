@@ -5964,7 +5964,7 @@ label:
    When we're here, the not:SI pattern obviously has been matched already
    and we only have to see whether the following insn is the left shift.  */
 
-  rtx i = next_nonnote_insn_bb (curr_insn);
+  rtx_insn *i = next_nonnote_insn_bb (curr_insn);
   if (i == NULL_RTX || !NONJUMP_INSN_P (i))
     FAIL;
 

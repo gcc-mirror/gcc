@@ -978,7 +978,7 @@ validate_simplify_insn (rtx insn)
 int
 next_insn_tests_no_inequality (rtx insn)
 {
-  rtx next = next_cc0_user (insn);
+  rtx_insn *next = next_cc0_user (insn);
 
   /* If there is no next insn, we have to take the conservative choice.  */
   if (next == 0)

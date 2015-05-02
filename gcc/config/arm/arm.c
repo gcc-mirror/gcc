@@ -16609,7 +16609,7 @@ arm_barrier_cost (rtx insn)
      but at the moment, the basic block information seems to be
      corrupt by this stage of the compilation.  */
   int base_cost = 50;
-  rtx next = next_nonnote_insn (insn);
+  rtx_insn *next = next_nonnote_insn (insn);
 
   if (next != NULL && LABEL_P (next))
     base_cost -= 20;

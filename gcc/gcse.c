@@ -573,7 +573,8 @@ compute_can_copy (void)
 {
   int i;
 #ifndef AVOID_CCMODE_COPIES
-  rtx reg, insn;
+  rtx reg;
+ rtx_insn *insn;
 #endif
   memset (can_copy, 0, NUM_MACHINE_MODES);
 

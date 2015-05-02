@@ -1864,7 +1864,7 @@ noce_get_alt_condition (struct noce_if_info *if_info, rtx target,
       enum rtx_code code = GET_CODE (if_info->cond);
       rtx op_a = XEXP (if_info->cond, 0);
       rtx op_b = XEXP (if_info->cond, 1);
-      rtx prev_insn;
+      rtx_insn *prev_insn;
 
       /* First, look to see if we put a constant in a register.  */
       prev_insn = prev_nonnote_insn (if_info->cond_earliest);

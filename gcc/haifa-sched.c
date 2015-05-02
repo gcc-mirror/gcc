@@ -5241,7 +5241,6 @@ ok_for_early_queue_removal (rtx insn)
 {
   if (targetm.sched.is_costly_dependence)
     {
-      rtx prev_insn;
       int n_cycles;
       int i = scheduled_insns.length ();
       for (n_cycles = flag_sched_stalled_insns_dep; n_cycles; n_cycles--)
@@ -5250,7 +5249,7 @@ ok_for_early_queue_removal (rtx insn)
 	    {
 	      int cost;
 
-	      prev_insn = scheduled_insns[i];
+	      rtx_insn *prev_insn = scheduled_insns[i];
 
 	      if (!NOTE_P (prev_insn))
 		{

@@ -4754,7 +4754,7 @@ expand_builtin_trap (void)
 #ifdef HAVE_trap
   if (HAVE_trap)
     {
-      rtx insn = emit_insn (gen_trap ());
+      rtx_insn *insn = emit_insn (gen_trap ());
       /* For trap insns when not accumulating outgoing args force
 	 REG_ARGS_SIZE note to prevent crossjumping of calls with
 	 different args sizes.  */
