@@ -285,7 +285,7 @@ kill_set_value (rtx x, const_rtx set, void *data)
    and install that register as the root of its own value list.  */
 
 static void
-kill_autoinc_value (rtx insn, struct value_data *vd)
+kill_autoinc_value (rtx_insn *insn, struct value_data *vd)
 {
   subrtx_iterator::array_type array;
   FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
