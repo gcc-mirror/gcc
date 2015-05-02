@@ -46,8 +46,6 @@ inline namespace fundamentals_v2
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#define __cpp_lib_experimental_erase_if 201411
-
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc,
 	   typename _Predicate>
     inline void
