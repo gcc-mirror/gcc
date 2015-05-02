@@ -1,5 +1,14 @@
 2015-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/iterator: New. Define ostream_joiner.
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* testsuite/experimental/iterator/make_ostream_joiner.cc: New.
+	* testsuite/experimental/iterator/ostream_joiner.cc: New.
+	* testsuite/experimental/iterator/requirements.cc: New.
+	* doc/xml/manual/status_cxx2017.xml: Update status.
+	* doc/html/manual/status.html: Regenerate.
+
 	* include/experimental/numeric: New. Define gcd and lcm.
 	* include/Makefile.am: Add new header.
 	* include/Makefile.in: Regenerate.
