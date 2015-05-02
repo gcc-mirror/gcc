@@ -2864,7 +2864,7 @@ df_remove_dead_eq_notes (rtx_insn *insn, bitmap live)
 /* Set a NOTE_TYPE note for REG in INSN.  */
 
 static inline void
-df_set_note (enum reg_note note_type, rtx insn, rtx reg)
+df_set_note (enum reg_note note_type, rtx_insn *insn, rtx reg)
 {
   gcc_checking_assert (!DEBUG_INSN_P (insn));
   add_reg_note (insn, note_type, reg);
