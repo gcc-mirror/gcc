@@ -119,7 +119,7 @@ by type.  Explanations are in the following sections.
 -fdefault-real-8 -fdollar-ok -ffixed-line-length-@var{n} @gol
 -ffixed-line-length-none -ffree-form -ffree-line-length-@var{n} @gol
 -ffree-line-length-none -fimplicit-none -finteger-4-integer-8 @gol
--fmax-identifier-length -fmodule-private -fno-fixed-form -fno-range-check @gol
+-fmax-identifier-length -fmodule-private -ffixed-form -fno-range-check @gol
 -fopenacc -fopenmp -freal-4-real-10 -freal-4-real-16 -freal-4-real-8 @gol
 -freal-8-real-10 -freal-8-real-16 -freal-8-real-4 -std=@var{std}
 }
@@ -199,7 +199,7 @@ accepted by the compiler:
 @item -ffree-form
 @itemx -ffixed-form
 @opindex @code{ffree-form}
-@opindex @code{fno-fixed-form}
+@opindex @code{ffixed-form}
 @cindex options, Fortran dialect
 @cindex file format, free
 @cindex file format, fixed

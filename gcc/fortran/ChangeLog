@@ -1,3 +1,8 @@
+2015-05-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/65976
+	* invoke.texi:  Remove 'no-' in '-fno-fixed-form'
+
 2015-05-01  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* simplify.c (simplify_bound_dim): Tighten the check for array fullness
