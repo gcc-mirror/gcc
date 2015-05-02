@@ -266,6 +266,8 @@ fi
 AC_LANG_POP(C)
 AC_MSG_RESULT($ac_exception_model_name)
 
+gt_BITFIELD_TYPE_MATTERS
+
 # ------
 # Output
 # ------

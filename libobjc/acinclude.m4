@@ -12,6 +12,7 @@ m4_include(../config/acx.m4)
 m4_include(../config/no-executables.m4)
 m4_include(../config/enable.m4)
 m4_include(../config/tls.m4)
+m4_include(../config/bitfields.m4)
 
 m4_include(../libtool.m4)
 dnl The lines below arrange for aclocal not to bring an installed

@@ -11530,6 +11530,44 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_exception_model_name" >&5
 $as_echo "$ac_exception_model_name" >&6; }
 
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if the type of bitfields matters" >&5
+$as_echo_n "checking if the type of bitfields matters... " >&6; }
+if test "${gt_cv_bitfield_type_matters+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+struct foo1 { char x; char :0; char y; };
+struct foo2 { char x; int :0; char y; };
+int foo1test[ sizeof (struct foo1) == 2 ? 1 : -1 ];
+int foo2test[ sizeof (struct foo2) == 5 ? 1 : -1];
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  gt_cv_bitfield_type_matters=yes
+else
+  gt_cv_bitfield_type_matters=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gt_cv_bitfield_type_matters" >&5
+$as_echo "$gt_cv_bitfield_type_matters" >&6; }
+  if test $gt_cv_bitfield_type_matters = yes; then
+
+$as_echo "#define HAVE_BITFIELD_TYPE_MATTERS 1" >>confdefs.h
+
+  fi
+
+
 # ------
 # Output
 # ------
