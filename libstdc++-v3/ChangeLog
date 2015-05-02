@@ -1,5 +1,8 @@
 2015-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/iterator (ostream_joiner): Simplify by using
+	the injected-class-name and the ostream_type typedef.
+
 	* include/experimental/iterator: New. Define ostream_joiner.
 	* include/Makefile.am: Add new header.
 	* include/Makefile.in: Regenerate.
