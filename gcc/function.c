@@ -5703,7 +5703,7 @@ emit_return_into_block (bool simple_p, basic_block bb)
 /* Set JUMP_LABEL for a return insn.  */
 
 void
-set_return_jump_label (rtx returnjump)
+set_return_jump_label (rtx_insn *returnjump)
 {
   rtx pat = PATTERN (returnjump);
   if (GET_CODE (pat) == PARALLEL)

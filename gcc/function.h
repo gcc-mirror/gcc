@@ -917,7 +917,7 @@ extern rtx get_arg_pointer_save_area (void);
 extern void maybe_copy_prologue_epilogue_insn (rtx, rtx);
 extern int prologue_epilogue_contains (const_rtx);
 extern void emit_return_into_block (bool simple_p, basic_block bb);
-extern void set_return_jump_label (rtx);
+extern void set_return_jump_label (rtx_insn *);
 extern bool active_insn_between (rtx_insn *head, rtx_insn *tail);
 extern vec<edge> convert_jumps_to_returns (basic_block last_bb, bool simple_p,
 					   vec<edge> unconverted);
