@@ -1,5 +1,10 @@
 2015-05-02  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* df-problems.c (df_set_note): Change type of argument to
+	rtx_insn *.
+
+2015-05-02  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* builtins.c (expand_builtin_trap): Change type of local
 	variable to rtx_insn *.
 	(add_sched_insns_for_speculation): Likewise.
