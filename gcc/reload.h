@@ -239,7 +239,7 @@ struct reg_equivs_t
 
   /* The list of insns that initialized reg N from its equivalent
      constant or memory slot.  */
-  rtx init;
+  rtx_insn_list *init;
 };
 
 #define reg_equiv_constant(ELT) \

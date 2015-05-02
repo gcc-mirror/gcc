@@ -2619,7 +2619,7 @@ eliminate_regs_1 (rtx x, machine_mode mem_mode, rtx insn,
 			             mem_mode, insn, true, for_costs);
 	  /* There exists at least one use of REGNO that cannot be
 	     eliminated.  Prevent the defining insn from being deleted.  */
-	  reg_equiv_init (regno) = NULL_RTX;
+	  reg_equiv_init (regno) = NULL;
 	  if (!for_costs)
 	    alter_reg (regno, -1, true);
 	}
@@ -4252,17 +4252,17 @@ init_eliminable_invariants (rtx_insn *first, bool do_subregs)
 		    {
 		      reg_equiv_memory_loc (i) = force_const_mem (mode, x);
 		      if (! reg_equiv_memory_loc (i))
-			reg_equiv_init (i) = NULL_RTX;
+			reg_equiv_init (i) = NULL;
 		    }
 		}
 	      else
 		{
-		  reg_equiv_init (i) = NULL_RTX;
+		  reg_equiv_init (i) = NULL;
 		  continue;
 		}
 	    }
 	  else
-	    reg_equiv_init (i) = NULL_RTX;
+	    reg_equiv_init (i) = NULL;
 	}
     }
 

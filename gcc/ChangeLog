@@ -1,5 +1,13 @@
 2015-05-02  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* reload.h (struct reg_equivs_t): Change type of init to
+	rtx_insn *.
+	* ira.c (fix_reg_equiv_init): Adjust.
+	* reload1.c (eliminate_regs_1): Likewise.
+	(init_eliminable_invariants): Likewise.
+
+2015-05-02  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* cselib.c (fp_setter_insn): Take a rtx_insn *.
 	* cselib.h (fp_setter_insn): Adjust.
 
