@@ -26,6 +26,8 @@
 
 using std::experimental::filesystem::path;
 
+std::experimental::filesystem::filesystem_error::~filesystem_error() = default;
+
 constexpr path::value_type path::preferred_separator;
 
 path&
