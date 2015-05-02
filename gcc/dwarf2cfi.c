@@ -218,7 +218,7 @@ static GTY(()) reg_saved_in_data *cie_return_save;
 static GTY(()) unsigned long dwarf2out_cfi_label_num;
 
 /* The insn after which a new CFI note should be emitted.  */
-static rtx add_cfi_insn;
+static rtx_insn *add_cfi_insn;
 
 /* When non-null, add_cfi will add the CFI to this vector.  */
 static cfi_vec *add_cfi_vec;
