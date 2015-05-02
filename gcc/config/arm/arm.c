@@ -16603,7 +16603,7 @@ dump_minipool (rtx_insn *scan)
 
 /* Return the cost of forcibly inserting a barrier after INSN.  */
 static int
-arm_barrier_cost (rtx insn)
+arm_barrier_cost (rtx_insn *insn)
 {
   /* Basing the location of the pool on the loop depth is preferable,
      but at the moment, the basic block information seems to be
