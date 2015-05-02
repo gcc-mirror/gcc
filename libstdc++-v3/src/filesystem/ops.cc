@@ -871,20 +871,22 @@ fs::last_write_time(const path& p __attribute__((__unused__)),
 {
   auto d = new_time.time_since_epoch();
   auto s = chrono::duration_cast<chrono::seconds>(d);
+#if _GLIBCXX_USE_UTIMENSAT
   auto ns = chrono::duration_cast<chrono::nanoseconds>(d - s);
-#ifdef _GLIBCXX_USE_UTIMENSAT
-  struct ::timespec ts[2] = {
-    { 0, UTIME_OMIT },
-    { static_cast<std::time_t>(s.count()), static_cast<long>(ns.count()) }
-  };
-  if (utimensat(AT_FDCWD, p.c_str(), ts, 0))
+  struct ::timespec ts[2];
+  ts[0].tv_sec = 0;
+  ts[0].tv_nsec = UTIME_OMIT;
+  ts[1].tv_sec = static_cast<std::time_t>(s.count());
+  ts[1].tv_nsec = static_cast<long>(ns.count());
+  if (::utimensat(AT_FDCWD, p.c_str(), ts, 0))
     ec.assign(errno, std::generic_category());
   else
     ec.clear();
 #elif _GLIBCXX_HAVE_UTIME_H
   ::utimbuf times;
   times.modtime = s.count();
-  times.actime = do_stat(p, ec, std::mem_fn(&stat::st_atime), times.modtime);
+  times.actime = do_stat(p, ec, [](const auto& st) { return st.st_atime; },
+			 times.modtime);
   if (::utime(p.c_str(), &times))
     ec.assign(errno, std::generic_category());
   else
