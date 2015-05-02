@@ -1,5 +1,9 @@
 2015-05-02  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* lra-constraints.c: Change type of some arguments to rtx_insn *.
+
+2015-05-02  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* regcprop.c (kill_autoinc_value): Change type of argument to
 	rtx_insn *.
 
