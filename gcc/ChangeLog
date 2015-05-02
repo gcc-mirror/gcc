@@ -1,5 +1,11 @@
 2015-05-02  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* function.c (set_return_jump_label): Change type of argument to
+	rtx_insn *.
+	* function.h (set_return_jump_label): Adjust.
+
+2015-05-02  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* reload.h (struct reg_equivs_t): Change type of init to
 	rtx_insn *.
 	* ira.c (fix_reg_equiv_init): Adjust.
