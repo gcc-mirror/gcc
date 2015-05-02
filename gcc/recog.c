@@ -905,7 +905,7 @@ struct validate_replace_src_data
 {
   rtx from;			/* Old RTX */
   rtx to;			/* New RTX */
-  rtx insn;			/* Insn in which substitution is occurring.  */
+  rtx_insn *insn;			/* Insn in which substitution is occurring.  */
 };
 
 static void
@@ -921,7 +921,7 @@ validate_replace_src_1 (rtx *x, void *data)
    SET_DESTs.  */
 
 void
-validate_replace_src_group (rtx from, rtx to, rtx insn)
+validate_replace_src_group (rtx from, rtx to, rtx_insn *insn)
 {
   struct validate_replace_src_data d;
 

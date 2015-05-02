@@ -109,7 +109,7 @@ extern int validate_replace_rtx (rtx, rtx, rtx);
 extern int validate_replace_rtx_part (rtx, rtx, rtx *, rtx);
 extern int validate_replace_rtx_part_nosimplify (rtx, rtx, rtx *, rtx);
 extern void validate_replace_rtx_group (rtx, rtx, rtx);
-extern void validate_replace_src_group (rtx, rtx, rtx);
+extern void validate_replace_src_group (rtx, rtx, rtx_insn *);
 extern bool validate_simplify_insn (rtx insn);
 extern int num_changes_pending (void);
 extern int next_insn_tests_no_inequality (rtx);

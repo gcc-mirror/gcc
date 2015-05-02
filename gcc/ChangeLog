@@ -1,5 +1,12 @@
 2015-05-02  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* recog.c (struct validate_replace_src_data): Change type of
+	insn field to rtx_insn *.
+	(validate_replace_src_group): Change type of argument to rtx_insn *.
+	* recog.h (validate_replace_src_group): Adjust.
+
+2015-05-02  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* haifa-sched.c: Change the type of some variables to rtx_insn *.
 	* sched-deps.c: Likewise.
 	* sched-int.h: Likewise.
