@@ -90,6 +90,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Holds either pointer to a heap object or the contained object itself.
     union _Storage
     {
+      // This constructor intentionally doesn't initialize anything.
+      _Storage() = default;
+
+      // Prevent trivial copies of this type, buffer might hold a non-POD.
+      _Storage(const _Storage&) = delete;
+      _Storage& operator=(const _Storage&) = delete;
+
       void* _M_ptr;
       std::aligned_storage<sizeof(_M_ptr), sizeof(_M_ptr)>::type _M_buffer;
     };
@@ -119,33 +126,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     any() noexcept : _M_manager(nullptr) { }
 
     /// Copy constructor, copies the state of @p __other
-    any(const any& __other) : _M_manager(__other._M_manager)
+    any(const any& __other)
     {
-      if (!__other.empty())
+      if (__other.empty())
+	_M_manager = nullptr;
+      else
 	{
 	  _Arg __arg;
 	  __arg._M_any = this;
-	  _M_manager(_Op_clone, &__other, &__arg);
+	  __other._M_manager(_Op_clone, &__other, &__arg);
 	}
     }
 
     /**
      * @brief Move constructor, transfer the state from @p __other
      *
-     * @post @c __other.empty() (not guaranteed for other implementations)
+     * @post @c __other.empty() (this postcondition is a GNU extension)
      */
     any(any&& __other) noexcept
-    : _M_manager(__other._M_manager),
-      _M_storage(__other._M_storage)
-    { __other._M_manager = nullptr; }
+    {
+      if (__other.empty())
+	_M_manager = nullptr;
+      else
+	{
+	  _Arg __arg;
+	  __arg._M_any = this;
+	  __other._M_manager(_Op_xfer, &__other, &__arg);
+	}
+    }
 
     /// Construct with a copy of @p __value as the contained object.
     template <typename _ValueType, typename _Tp = _Decay<_ValueType>,
 	      typename _Mgr = _Manager<_Tp>>
       any(_ValueType&& __value)
-      : _M_manager(&_Mgr::_S_manage),
-        _M_storage(_Mgr::_S_create(std::forward<_ValueType>(__value)))
+      : _M_manager(&_Mgr::_S_manage)
       {
+        _Mgr::_S_create(_M_storage, std::forward<_ValueType>(__value));
 	static_assert(is_copy_constructible<_Tp>::value,
 		      "The contained object must be CopyConstructible");
       }
@@ -155,10 +171,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // assignments
 
-    /// Copy the state of 
+    /// Copy the state of another object.
     any& operator=(const any& __rhs)
     {
-      any(__rhs).swap(*this);
+      if (__rhs.empty())
+	clear();
+      else
+	{
+	  if (!empty())
+	    _M_manager(_Op_destroy, this, nullptr);
+	  _Arg __arg;
+	  __arg._M_any = this;
+	  __rhs._M_manager(_Op_clone, &__rhs, &__arg);
+	}
       return *this;
     }
 
@@ -169,7 +194,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      */
     any& operator=(any&& __rhs) noexcept
     {
-      any(std::move(__rhs)).swap(*this);
+      if (__rhs.empty())
+	clear();
+      else
+	{
+	  if (!empty())
+	    _M_manager(_Op_destroy, this, nullptr);
+	  _Arg __arg;
+	  __arg._M_any = this;
+	  __rhs._M_manager(_Op_xfer, &__rhs, &__arg);
+	}
       return *this;
     }
 
@@ -177,7 +211,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _ValueType>
       any& operator=(_ValueType&& __rhs)
       {
-	any(std::forward<_ValueType>(__rhs)).swap(*this);
+	*this = any(std::forward<_ValueType>(__rhs));
 	return *this;
       }
 
@@ -195,10 +229,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /// Exchange state with another object.
     void swap(any& __rhs) noexcept
-    {
-      std::swap(_M_manager, __rhs._M_manager);
-      std::swap(_M_storage, __rhs._M_storage);
-    }
+      {
+	if (empty() && __rhs.empty())
+	  return;
+
+	if (!empty() && !__rhs.empty())
+	  {
+	    any __tmp;
+	    _Arg __arg;
+	    __arg._M_any = &__tmp;
+	    __rhs._M_manager(_Op_xfer, &__rhs, &__arg);
+	    __arg._M_any = &__rhs;
+	    _M_manager(_Op_xfer, this, &__arg);
+	    __arg._M_any = this;
+	    __tmp._M_manager(_Op_xfer, &__tmp, &__arg);
+	  }
+	else
+	  {
+	    any* __empty = empty() ? this : &__rhs;
+	    any* __full = empty() ? &__rhs : this;
+	    _Arg __arg;
+	    __arg._M_any = __empty;
+	    __full->_M_manager(_Op_xfer, __full, &__arg);
+	  }
+      }
 
     // observers
 
@@ -222,7 +276,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __or_<is_reference<_Tp>, is_copy_constructible<_Tp>>::value; }
 
   private:
-    enum _Op { _Op_access, _Op_get_type_info, _Op_clone, _Op_destroy };
+    enum _Op {
+	_Op_access, _Op_get_type_info, _Op_clone, _Op_destroy, _Op_xfer
+    };
 
     union _Arg
     {
@@ -252,20 +308,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_S_manage(_Op __which, const any* __anyp, _Arg* __arg);
 
 	template<typename _Up>
-	  static _Storage
-	  _S_create(_Up&& __value)
+	  static void
+	  _S_create(_Storage& __storage, _Up&& __value)
 	  {
-	    _Storage __storage;
 	    void* __addr = &__storage._M_buffer;
 	    ::new (__addr) _Tp(std::forward<_Up>(__value));
-	    return __storage;
-	  }
-
-	template<typename _Alloc, typename _Up>
-	  static _Storage
-	  _S_alloc(const _Alloc&, _Up&& __value)
-	  {
-	    return _S_create(std::forward<_Up>(__value));
 	  }
       };
 
@@ -277,12 +324,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_S_manage(_Op __which, const any* __anyp, _Arg* __arg);
 
 	template<typename _Up>
-	  static _Storage
-	  _S_create(_Up&& __value)
+	  static void
+	  _S_create(_Storage& __storage, _Up&& __value)
 	  {
-	    _Storage __storage;
 	    __storage._M_ptr = new _Tp(std::forward<_Up>(__value));
-	    return __storage;
 	  }
       };
   };
@@ -393,9 +438,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	break;
       case _Op_clone:
 	::new(&__arg->_M_any->_M_storage._M_buffer) _Tp(*__ptr);
+	__arg->_M_any->_M_manager = __any->_M_manager;
 	break;
       case _Op_destroy:
 	__ptr->~_Tp();
+	break;
+      case _Op_xfer:
+	::new(&__arg->_M_any->_M_storage._M_buffer) _Tp(*__ptr);
+	__ptr->~_Tp();
+	__arg->_M_any->_M_manager = __any->_M_manager;
+	const_cast<any*>(__any)->_M_manager = nullptr;
 	break;
       }
     }
@@ -419,9 +471,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	break;
       case _Op_clone:
 	__arg->_M_any->_M_storage._M_ptr = new _Tp(*__ptr);
+	__arg->_M_any->_M_manager = __any->_M_manager;
 	break;
       case _Op_destroy:
 	delete __ptr;
+	break;
+      case _Op_xfer:
+	__arg->_M_any->_M_storage._M_ptr = __any->_M_storage._M_ptr;
+	__arg->_M_any->_M_manager = __any->_M_manager;
+	const_cast<any*>(__any)->_M_manager = nullptr;
 	break;
       }
     }

@@ -1,5 +1,18 @@
 2015-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/any (any::_Storage): Make non-copyable.
+	(any::any): Do not copy _Storage object.
+	(any::operator=): Implement more efficiently than swapping.
+	(any::swap): Use new _Op_xfer operation.
+	(any::_Op::_Op_xfer): New enumerator.
+	(_Manager_internal::_S_alloc): Remove unused function.
+	(_Manager_internal::_S_create, _Manager_external::_S_create): Use out
+	parameter instead of returning a _Storage object.
+	(_Manager_internal::_S_manage, _Manager_external::_S_manage): Add
+	_Op_xfer operation for moving and swapping.
+	* testsuite/experimental/any/cons/nontrivial.cc: New.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: Adjust dg-error.
+
 	* include/experimental/fs_path.h (filesystem_error::~filesystem_error):
 	Declare.
 	* src/filesystem/path.cc (filesystem_error::~filesystem_error):
