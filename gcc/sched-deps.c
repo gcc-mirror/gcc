@@ -503,7 +503,7 @@ static void add_dependence_list (rtx_insn *, rtx_insn_list *, int,
 static void add_dependence_list_and_free (struct deps_desc *, rtx_insn *,
 					  rtx_insn_list **, int, enum reg_note,
 					  bool);
-static void delete_all_dependences (rtx);
+static void delete_all_dependences (rtx_insn *);
 static void chain_to_prev_insn (rtx_insn *);
 
 static void flush_pending_lists (struct deps_desc *, rtx_insn *, int, int);
@@ -1621,7 +1621,7 @@ add_dependence_list_and_free (struct deps_desc *deps, rtx_insn *insn,
    occurrences removed.  */
 
 static int
-remove_from_dependence_list (rtx insn, rtx_insn_list **listp)
+remove_from_dependence_list (rtx_insn *insn, rtx_insn_list **listp)
 {
   int removed = 0;
 
@@ -1642,7 +1642,7 @@ remove_from_dependence_list (rtx insn, rtx_insn_list **listp)
 
 /* Same as above, but process two lists at once.  */
 static int
-remove_from_both_dependence_lists (rtx insn,
+remove_from_both_dependence_lists (rtx_insn *insn,
 				   rtx_insn_list **listp,
 				   rtx_expr_list **exprp)
 {
@@ -1667,7 +1667,7 @@ remove_from_both_dependence_lists (rtx insn,
 
 /* Clear all dependencies for an insn.  */
 static void
-delete_all_dependences (rtx insn)
+delete_all_dependences (rtx_insn *insn)
 {
   sd_iterator_def sd_it;
   dep_t dep;
@@ -2211,7 +2211,7 @@ mark_insn_reg_clobber (rtx reg, const_rtx setter, void *data)
 
 /* Set up reg pressure info related to INSN.  */
 void
-init_insn_reg_pressure_info (rtx insn)
+init_insn_reg_pressure_info (rtx_insn *insn)
 {
   int i, len;
   enum reg_class cl;
@@ -3531,7 +3531,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 /* FIXME: Why can't this function just use flags_from_decl_or_type and
    test for ECF_NORETURN?  */
 static bool
-call_may_noreturn_p (rtx insn)
+call_may_noreturn_p (rtx_insn *insn)
 {
   rtx call;
 
@@ -3594,7 +3594,7 @@ call_may_noreturn_p (rtx insn)
    instruction of that group.  */
 
 static bool
-chain_to_prev_insn_p (rtx insn)
+chain_to_prev_insn_p (rtx_insn *insn)
 {
   rtx prev, x;
 
@@ -3844,7 +3844,7 @@ sched_analyze (struct deps_desc *deps, rtx_insn *head, rtx_insn *tail)
 /* Helper for sched_free_deps ().
    Delete INSN's (RESOLVED_P) backward dependencies.  */
 static void
-delete_dep_nodes_in_back_deps (rtx insn, bool resolved_p)
+delete_dep_nodes_in_back_deps (rtx_insn *insn, bool resolved_p)
 {
   sd_iterator_def sd_it;
   dep_t dep;

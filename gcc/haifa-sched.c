@@ -881,7 +881,7 @@ static int early_queue_to_ready (state_t, struct ready_list *);
 /* The following functions are used to implement multi-pass scheduling
    on the first cycle.  */
 static rtx_insn *ready_remove (struct ready_list *, int);
-static void ready_remove_insn (rtx);
+static void ready_remove_insn (rtx_insn *);
 
 static void fix_inter_tick (rtx_insn *, rtx_insn *);
 static int fix_tick_ready (rtx_insn *);
@@ -894,7 +894,7 @@ static void extend_h_i_d (void);
 static void init_h_i_d (rtx_insn *);
 static int haifa_speculate_insn (rtx_insn *, ds_t, rtx *);
 static void generate_recovery_code (rtx_insn *);
-static void process_insn_forw_deps_be_in_spec (rtx, rtx_insn *, ds_t);
+static void process_insn_forw_deps_be_in_spec (rtx_insn *, rtx_insn *, ds_t);
 static void begin_speculative_block (rtx_insn *);
 static void add_to_speculative_block (rtx_insn *);
 static void init_before_recovery (basic_block *);
@@ -1390,7 +1390,7 @@ static rtx_insn *last_scheduled_insn;
    block, or the prev_head of the scheduling block.  Used by
    rank_for_schedule, so that insns independent of the last scheduled
    insn will be preferred over dependent instructions.  */
-static rtx last_nondebug_scheduled_insn;
+static rtx_insn *last_nondebug_scheduled_insn;
 
 /* Pointer that iterates through the list of unscheduled insns if we
    have a dbg_cnt enabled.  It always points at an insn prior to the
@@ -1598,7 +1598,7 @@ contributes_to_priority_p (dep_t dep)
 /* Compute the number of nondebug deps in list LIST for INSN.  */
 
 static int
-dep_list_size (rtx insn, sd_list_types_def list)
+dep_list_size (rtx_insn *insn, sd_list_types_def list)
 {
   sd_iterator_def sd_it;
   dep_t dep;
@@ -2787,7 +2787,7 @@ rank_for_schedule (const void *x, const void *y)
     {
       dep_t dep1;
       dep_t dep2;
-      rtx last = last_nondebug_scheduled_insn;
+      rtx_insn *last = last_nondebug_scheduled_insn;
 
       /* Classify the instructions into three classes:
          1) Data dependent on last schedule insn.
@@ -3032,7 +3032,7 @@ ready_remove (struct ready_list *ready, int index)
 
 /* Remove INSN from the ready list.  */
 static void
-ready_remove_insn (rtx insn)
+ready_remove_insn (rtx_insn *insn)
 {
   int i;
 
@@ -3287,7 +3287,7 @@ sched_setup_bb_reg_pressure_info (basic_block bb, rtx_insn *after)
    only be scheduled once their control dependency is resolved.  */
 
 static void
-check_clobbered_conditions (rtx insn)
+check_clobbered_conditions (rtx_insn *insn)
 {
   HARD_REG_SET t;
   int i;
@@ -4309,7 +4309,7 @@ struct haifa_saved_data
   state_t curr_state;
 
   rtx_insn *last_scheduled_insn;
-  rtx last_nondebug_scheduled_insn;
+  rtx_insn *last_nondebug_scheduled_insn;
   rtx_insn *nonscheduled_insns_begin;
   int cycle_issued_insns;
 
@@ -4339,7 +4339,7 @@ static struct haifa_saved_data *backtrack_queue;
 /* For every dependency of INSN, set the FEEDS_BACKTRACK_INSN bit according
    to SET_P.  */
 static void
-mark_backtrack_feeds (rtx insn, int set_p)
+mark_backtrack_feeds (rtx_insn *insn, int set_p)
 {
   sd_iterator_def sd_it;
   dep_t dep;
@@ -4485,7 +4485,7 @@ undo_replacements_for_backtrack (struct haifa_saved_data *save)
    queued nowhere.  */
 
 static void
-unschedule_insns_until (rtx insn)
+unschedule_insns_until (rtx_insn *insn)
 {
   auto_vec<rtx_insn *> recompute_vec;
 
@@ -5133,7 +5133,7 @@ queue_to_ready (struct ready_list *ready)
 {
   rtx_insn *insn;
   rtx_insn_list *link;
-  rtx skip_insn;
+  rtx_insn *skip_insn;
 
   q_ptr = NEXT_Q (q_ptr);
 
@@ -5142,7 +5142,7 @@ queue_to_ready (struct ready_list *ready)
        nonscheduled insn.  */
     skip_insn = first_nonscheduled_insn ();
   else
-    skip_insn = NULL_RTX;
+    skip_insn = NULL;
 
   /* Add all pending insns that can be scheduled without stalls to the
      ready list.  */
@@ -5237,7 +5237,7 @@ queue_to_ready (struct ready_list *ready)
    addition) depending on user flags and target hooks.  */
 
 static bool
-ok_for_early_queue_removal (rtx insn)
+ok_for_early_queue_removal (rtx_insn *insn)
 {
   if (targetm.sched.is_costly_dependence)
     {
@@ -6467,7 +6467,7 @@ schedule_block (basic_block *target_bb, state_t init_state)
 
   /* We start inserting insns after PREV_HEAD.  */
   last_scheduled_insn = prev_head;
-  last_nondebug_scheduled_insn = NULL_RTX;
+  last_nondebug_scheduled_insn = NULL;
   nonscheduled_insns_begin = NULL;
 
   gcc_assert ((NOTE_P (last_scheduled_insn)
@@ -7799,7 +7799,7 @@ generate_recovery_code (rtx_insn *insn)
    Tries to add speculative dependencies of type FS between instructions
    in deps_list L and TWIN.  */
 static void
-process_insn_forw_deps_be_in_spec (rtx insn, rtx_insn *twin, ds_t fs)
+process_insn_forw_deps_be_in_spec (rtx_insn *insn, rtx_insn *twin, ds_t fs)
 {
   sd_iterator_def sd_it;
   dep_t dep;

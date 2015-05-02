@@ -1,5 +1,13 @@
 2015-05-02  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* haifa-sched.c: Change the type of some variables to rtx_insn *.
+	* sched-deps.c: Likewise.
+	* sched-int.h: Likewise.
+	* sched-rgn.c: Likewise.
+	* sel-sched.c: Likewise.
+
+2015-05-02  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	to rtx_insn *.
 	* config/i386/i386.c: Change the type of some arguments to
 	rtx_insn *.
