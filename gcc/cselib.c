@@ -2618,7 +2618,7 @@ cselib_record_sets (rtx_insn *insn)
 /* Return true if INSN in the prologue initializes hard_frame_pointer_rtx.  */
 
 bool
-fp_setter_insn (rtx insn)
+fp_setter_insn (rtx_insn *insn)
 {
   rtx expr, pat = NULL_RTX;
 
