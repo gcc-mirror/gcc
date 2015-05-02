@@ -4877,7 +4877,7 @@
     {
       /* At least four instructions are needed between the setting of LP_COUNT
 	 and the loop end - but the lp instruction qualifies as one.  */
-      rtx prev = prev_nonnote_insn (insn);
+      rtx_insn *prev = prev_nonnote_insn (insn);
 
       if (!INSN_P (prev) || dead_or_set_regno_p (prev, LP_COUNT))
 	output_asm_insn ("nop", operands);
@@ -4933,7 +4933,7 @@
   ""
   "*
 {
-  rtx prev = prev_nonnote_insn (insn);
+  rtx_insn *prev = prev_nonnote_insn (insn);
 
   /* If there is an immediately preceding label, we must output a nop,
      lest a branch to that label will fall out of the loop.

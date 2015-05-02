@@ -11094,7 +11094,7 @@ avr_reorg (void)
 	{
           /* Now we work under compare insn with difficult branch.  */
 
-          rtx next = next_real_insn (insn);
+	  rtx_insn *next = next_real_insn (insn);
           rtx pat = PATTERN (next);
 
           pattern = SET_SRC (pattern);

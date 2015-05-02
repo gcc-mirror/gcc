@@ -1,3 +1,34 @@
+2015-05-02  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* builtins.c (expand_builtin_trap): Change type of local
+	variable to rtx_insn *.
+	(add_sched_insns_for_speculation): Likewise.
+	(ix86_emit_save_regs): Likewise.
+	(get_scratch_register_on_entry): Likewise.
+	(ix86_emit_restore_reg_using_pop): Likewise.
+	(ix86_emit_leave): Likewise.
+	(ix86_emit_restore_regs_using_mov): Likewise.
+	(ix86_expand_epilogue): Likewise.
+	Likewise.
+	(rl78_alloc_physical_registers_umul): Likewise.
+	* cselib.c (discard_useless_locs): Likewise.
+	(cselib_invalidate_regno): Likewise.
+	(cselib_invalidate_mem): Likewise.
+	* function.c (expand_function_start): Likewise.
+	(emit_use_return_register_into_block): Likewise.
+	* gcse.c: Likewise.
+	* haifa-sched.c (ok_for_early_queue_removal): Likewise.
+	* ifcvt.c (noce_get_alt_condition): Likewise.
+	* loop-doloop.c (doloop_condition_get): Likewise.
+	* lra-constraints.c (inherit_in_ebb): Likewise.
+	* modulo-sched.c (sms_schedule_by_order): Likewise.
+	* recog.c (next_insn_tests_no_inequality): Likewise.
+	* reorg.c (emit_delay_sequence): Likewise.
+	(update_reg_dead_notes): Likewise.
+	(fix_reg_dead_note): Likewise.
+	(fill_slots_from_thread): Likewise.
+	(delete_computation): Likewise.
+
 2015-05-01  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/extend.texi (Variable Attributes): Add menu and proper

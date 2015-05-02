@@ -5567,7 +5567,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 			   || reg_renumber[src_regno] >= 0)
 		    {
 		      bool before_p;
-		      rtx use_insn = curr_insn;
+		      rtx_insn *use_insn = curr_insn;
 
 		      before_p = (JUMP_P (curr_insn)
 				  || (CALL_P (curr_insn) && reg->type == OP_IN));

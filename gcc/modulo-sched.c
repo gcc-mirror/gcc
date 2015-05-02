@@ -2203,7 +2203,7 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
 	{
 	  int u = nodes_order[i];
   	  ddg_node_ptr u_node = &ps->g->nodes[u];
-	  rtx insn = u_node->insn;
+	  rtx_insn *insn = u_node->insn;
 
 	  if (!NONDEBUG_INSN_P (insn))
 	    {

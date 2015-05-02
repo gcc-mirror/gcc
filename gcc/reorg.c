@@ -535,7 +535,7 @@ emit_delay_sequence (rtx_insn *insn, rtx_insn_list *list, int length)
 
   /* Unlink INSN from the insn chain, so that we can put it into
      the SEQUENCE.   Remember where we want to emit SEQUENCE in AFTER.  */
-  rtx after = PREV_INSN (insn);
+  rtx_insn *after = PREV_INSN (insn);
   remove_insn (insn);
   SET_NEXT_INSN (insn) = SET_PREV_INSN (insn) = NULL;
 
@@ -1809,7 +1809,8 @@ reorg_redirect_jump (rtx_insn *jump, rtx nlabel)
 static void
 update_reg_dead_notes (rtx insn, rtx delayed_insn)
 {
-  rtx p, link, next;
+  rtx link, next;
+  rtx_insn *p;
 
   for (p = next_nonnote_insn (insn); p != delayed_insn;
        p = next_nonnote_insn (p))
@@ -1842,7 +1843,8 @@ update_reg_dead_notes (rtx insn, rtx delayed_insn)
 static void
 fix_reg_dead_note (rtx start_insn, rtx stop_insn)
 {
-  rtx p, link, next;
+  rtx link, next;
+  rtx_insn *p;
 
   for (p = next_nonnote_insn (start_insn); p != stop_insn;
        p = next_nonnote_insn (p))
@@ -2693,7 +2695,7 @@ fill_slots_from_thread (rtx_insn *insn, rtx condition, rtx thread_or_return,
 	  && REG_P (SET_DEST (pat))
 	  && !reg_overlap_mentioned_p (SET_DEST (pat), SET_SRC (pat)))
 	{
-	  rtx next = next_nonnote_insn (trial);
+	  rtx_insn *next = next_nonnote_insn (trial);
 
 	  if (next && NONJUMP_INSN_P (next)
 	      && GET_CODE (PATTERN (next)) != USE
@@ -3121,7 +3123,7 @@ delete_computation (rtx insn)
 
   if (HAVE_cc0 && reg_referenced_p (cc0_rtx, PATTERN (insn)))
     {
-      rtx prev = prev_nonnote_insn (insn);
+      rtx_insn *prev = prev_nonnote_insn (insn);
       /* We assume that at this stage
 	 CC's are always set explicitly
 	 and always immediately before the jump that
