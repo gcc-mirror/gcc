@@ -10488,7 +10488,7 @@ static GTY(()) rtx queued_cfa_restores;
    in the register and on the stack.  */
 
 static void
-ix86_add_cfa_restore_note (rtx insn, rtx reg, HOST_WIDE_INT cfa_offset)
+ix86_add_cfa_restore_note (rtx_insn *insn, rtx reg, HOST_WIDE_INT cfa_offset)
 {
   if (!crtl->shrink_wrapped
       && cfa_offset <= cfun->machine->fs.red_zone_offset)
@@ -11931,7 +11931,7 @@ ix86_emit_restore_regs_using_mov (HOST_WIDE_INT cfa_offset,
 	    m->fs.drap_valid = true;
 	  }
 	else
-	  ix86_add_cfa_restore_note (NULL_RTX, reg, cfa_offset);
+	  ix86_add_cfa_restore_note (NULL, reg, cfa_offset);
 
 	cfa_offset -= UNITS_PER_WORD;
       }
@@ -11956,7 +11956,7 @@ ix86_emit_restore_sse_regs_using_mov (HOST_WIDE_INT cfa_offset,
 	set_mem_align (mem, 128);
 	emit_move_insn (reg, mem);
 
-	ix86_add_cfa_restore_note (NULL_RTX, reg, cfa_offset);
+	ix86_add_cfa_restore_note (NULL, reg, cfa_offset);
 
 	cfa_offset -= 16;
       }
@@ -18274,7 +18274,7 @@ increase_distance (rtx_insn *prev, rtx_insn *next, unsigned int distance)
 
 static bool
 insn_defines_reg (unsigned int regno1, unsigned int regno2,
-		  rtx insn)
+		  rtx_insn *insn)
 {
   df_ref def;
 
@@ -50505,7 +50505,7 @@ dispatch_violation (void)
 /* Return true if insn is a branch instruction.  */
 
 static bool
-is_branch (rtx insn)
+is_branch (rtx_insn *insn)
 {
   return (CALL_P (insn) || JUMP_P (insn));
 }
@@ -50513,7 +50513,7 @@ is_branch (rtx insn)
 /* Return true if insn is a prefetch instruction.  */
 
 static bool
-is_prefetch (rtx insn)
+is_prefetch (rtx_insn *insn)
 {
   return NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == PREFETCH;
 }
@@ -50679,7 +50679,7 @@ find_constant (rtx in_rtx, imm_info *imm_values)
    bit immediates.  */
 
 static int
-get_num_immediates (rtx insn, int *imm, int *imm32, int *imm64)
+get_num_immediates (rtx_insn *insn, int *imm, int *imm32, int *imm64)
 {
   imm_info imm_values = {0, 0, 0};
 
@@ -50694,7 +50694,7 @@ get_num_immediates (rtx insn, int *imm, int *imm32, int *imm64)
    immediate.  */
 
 static bool
-has_immediate (rtx insn)
+has_immediate (rtx_insn *insn)
 {
   int num_imm_operand;
   int num_imm32_operand;
