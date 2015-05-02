@@ -5118,7 +5118,7 @@ print_subroutine (output_state *os, state *s, int proc_id)
   print_subroutine_start (os, s, &root_pos);
   if (proc_id == 0)
     {
-      printf ("  recog_data.insn = NULL_RTX;\n");
+      printf ("  recog_data.insn = NULL;\n");
       printf ("  rtx_insn *insn ATTRIBUTE_UNUSED;\n");
       printf ("  insn = safe_as_a <rtx_insn *> (uncast_insn);\n");
     }

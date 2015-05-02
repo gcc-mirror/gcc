@@ -2124,7 +2124,7 @@ get_bool_attr_mask_uncached (rtx_insn *insn, bool_attr attr)
      that the insn operands are already cached.  As above, the attribute
      mustn't depend on the values of operands, so we don't provide their
      real values here.  */
-  rtx old_insn = recog_data.insn;
+  rtx_insn *old_insn = recog_data.insn;
   int old_alternative = which_alternative;
 
   recog_data.insn = insn;
