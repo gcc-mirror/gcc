@@ -1,5 +1,12 @@
 2015-05-02  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* genrecog.c (print_subroutine): Adjust.
+	* recog.c (get_bool_attr_mask_uncached): Likewise.
+	* recog.h (struct recog_data_d): Change the type of insn to
+	rtx_insn *.
+
+2015-05-02  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* dwarf2cfi.c (add_cfi_insn): Change type to rtx_insn *.
 
 2015-05-02  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>

@@ -249,7 +249,7 @@ struct recog_data_d
   bool is_asm;
 
   /* In case we are caching, hold insn data was generated for.  */
-  rtx insn;
+  rtx_insn *insn;
 };
 
 extern struct recog_data_d recog_data;
