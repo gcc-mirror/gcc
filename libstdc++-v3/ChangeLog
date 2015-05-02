@@ -1,5 +1,10 @@
 2015-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/any (any::_Storage): Fix alignment of buffer.
+	(any::_Internal): Check alignment of type.
+	* testsuite/experimental/any/cons/aligned.cc: New.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: Adjust dg-error.
+
 	* include/experimental/iterator (ostream_joiner): Simplify by using
 	the injected-class-name and the ostream_type typedef.
 
