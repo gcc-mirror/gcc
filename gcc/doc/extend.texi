@@ -5400,6 +5400,26 @@ Other front ends might define more attributes
 @xref{Attribute Syntax}, for details of the exact syntax for using
 attributes.
 
+@menu
+* Common Variable Attributes::
+* AVR Variable Attributes::
+* Blackfin Variable Attributes::
+* H8/300 Variable Attributes::
+* IA-64 Variable Attributes::
+* M32R/D Variable Attributes::
+* MeP Variable Attributes::
+* Microsoft Windows Variable Attributes::
+* PowerPC Variable Attributes::
+* SPU Variable Attributes::
+* x86 Variable Attributes::
+* Xstormy16 Variable Attributes::
+@end menu
+
+@node Common Variable Attributes
+@subsection Common Variable Attributes
+
+The following attributes are supported on most targets.
+
 @table @code
 @cindex @code{aligned} variable attribute
 @item aligned (@var{alignment})
@@ -5522,7 +5542,8 @@ argument, which must be a string, is printed in the warning if
 present.
 
 The @code{deprecated} attribute can also be used for functions and
-types (@pxref{Common Function Attributes}, @pxref{Type Attributes}).
+types (@pxref{Common Function Attributes},
+@pxref{Common Type Attributes}).
 
 @item mode (@var{mode})
 @cindex @code{mode} variable attribute
@@ -5608,33 +5629,6 @@ attribute is not available on all platforms.
 If you need to map the entire contents of a module to a particular
 section, consider using the facilities of the linker instead.
 
-@item shared
-@cindex @code{shared} variable attribute
-On Microsoft Windows, in addition to putting variable definitions in a named
-section, the section can also be shared among all running copies of an
-executable or DLL@.  For example, this small program defines shared data
-by putting it in a named section @code{shared} and marking the section
-shareable:
-
-@smallexample
-int foo __attribute__((section ("shared"), shared)) = 0;
-
-int
-main()
-@{
-  /* @r{Read and write foo.  All running
-     copies see the same value.}  */
-  return 0;
-@}
-@end smallexample
-
-@noindent
-You may only use the @code{shared} attribute along with @code{section}
-attribute with a fully-initialized global definition because of the way
-linkers work.  See @code{section} attribute for more information.
-
-The @code{shared} attribute is only available on Microsoft Windows@.
-
 @item tls_model ("@var{tls_model}")
 @cindex @code{tls_model} variable attribute
 The @code{tls_model} attribute sets thread-local storage model
@@ -5692,45 +5686,14 @@ struct S  __attribute__ ((vector_size (16))) foo;
 is invalid even if the size of the structure is the same as the size of
 the @code{int}.
 
-@item selectany
-@cindex @code{selectany} variable attribute
-The @code{selectany} attribute causes an initialized global variable to
-have link-once semantics.  When multiple definitions of the variable are
-encountered by the linker, the first is selected and the remainder are
-discarded.  Following usage by the Microsoft compiler, the linker is told
-@emph{not} to warn about size or content differences of the multiple
-definitions.
-
-Although the primary usage of this attribute is for POD types, the
-attribute can also be applied to global C++ objects that are initialized
-by a constructor.  In this case, the static initialization and destruction
-code for the object is emitted in each translation defining the object,
-but the calls to the constructor and destructor are protected by a
-link-once guard variable.
-
-The @code{selectany} attribute is only available on Microsoft Windows
-targets.  You can use @code{__declspec (selectany)} as a synonym for
-@code{__attribute__ ((selectany))} for compatibility with other
-compilers.
-
 @item weak
 @cindex @code{weak} variable attribute
 The @code{weak} attribute is described in
 @ref{Common Function Attributes}.
 
-@item dllimport
-@cindex @code{dllimport} variable attribute
-The @code{dllimport} attribute is described in
-@ref{Microsoft Windows Function Attributes}.
-
-@item dllexport
-@cindex @code{dllexport} variable attribute
-The @code{dllexport} attribute is described in
-@ref{Microsoft Windows Function Attributes}.
-
 @end table
 
-@anchor{AVR Variable Attributes}
+@node AVR Variable Attributes
 @subsection AVR Variable Attributes
 
 @table @code
@@ -5813,6 +5776,7 @@ volatile int porta __attribute__((address (0x600)));
 
 @end table
 
+@node Blackfin Variable Attributes
 @subsection Blackfin Variable Attributes
 
 Three attributes are currently defined for the Blackfin.
@@ -5837,6 +5801,7 @@ Variables with @code{l2} attribute are put into the specific section
 named @code{.l2.data}.
 @end table
 
+@node H8/300 Variable Attributes
 @subsection H8/300 Variable Attributes
 
 These variable attributes are available for H8/300 targets:
@@ -5865,6 +5830,7 @@ slightly under 32KB of data.
 
 @end table
 
+@node IA-64 Variable Attributes
 @subsection IA-64 Variable Attributes
 
 The IA-64 back end supports the following variable attribute:
@@ -5883,6 +5849,7 @@ defined by shared libraries.
 
 @end table
 
+@node M32R/D Variable Attributes
 @subsection M32R/D Variable Attributes
 
 One attribute is currently defined for the M32R/D@.
@@ -5903,7 +5870,7 @@ Medium and large model objects may live anywhere in the 32-bit address space
 addresses).
 @end table
 
-@anchor{MeP Variable Attributes}
+@node MeP Variable Attributes
 @subsection MeP Variable Attributes
 
 The MeP target has a number of addressing modes and busses.  The
@@ -5967,6 +5934,72 @@ int cpu_clock __attribute__((cb(0x123)));
 
 @end table
 
+@node Microsoft Windows Variable Attributes
+@subsection Microsoft Windows Variable Attributes
+
+You can use these attributes on Microsoft Windows targets.
+@ref{x86 Variable Attributes} for additional Windows compatibility
+attributes available on all x86 targets.
+
+@table @code
+@item dllimport
+@itemx dllexport
+@cindex @code{dllimport} variable attribute
+@cindex @code{dllexport} variable attribute
+The @code{dllimport} and @code{dllexport} attributes are described in
+@ref{Microsoft Windows Function Attributes}.
+
+@item selectany
+@cindex @code{selectany} variable attribute
+The @code{selectany} attribute causes an initialized global variable to
+have link-once semantics.  When multiple definitions of the variable are
+encountered by the linker, the first is selected and the remainder are
+discarded.  Following usage by the Microsoft compiler, the linker is told
+@emph{not} to warn about size or content differences of the multiple
+definitions.
+
+Although the primary usage of this attribute is for POD types, the
+attribute can also be applied to global C++ objects that are initialized
+by a constructor.  In this case, the static initialization and destruction
+code for the object is emitted in each translation defining the object,
+but the calls to the constructor and destructor are protected by a
+link-once guard variable.
+
+The @code{selectany} attribute is only available on Microsoft Windows
+targets.  You can use @code{__declspec (selectany)} as a synonym for
+@code{__attribute__ ((selectany))} for compatibility with other
+compilers.
+
+@item shared
+@cindex @code{shared} variable attribute
+On Microsoft Windows, in addition to putting variable definitions in a named
+section, the section can also be shared among all running copies of an
+executable or DLL@.  For example, this small program defines shared data
+by putting it in a named section @code{shared} and marking the section
+shareable:
+
+@smallexample
+int foo __attribute__((section ("shared"), shared)) = 0;
+
+int
+main()
+@{
+  /* @r{Read and write foo.  All running
+     copies see the same value.}  */
+  return 0;
+@}
+@end smallexample
+
+@noindent
+You may only use the @code{shared} attribute along with @code{section}
+attribute with a fully-initialized global definition because of the way
+linkers work.  See @code{section} attribute for more information.
+
+The @code{shared} attribute is only available on Microsoft Windows@.
+
+@end table
+
+@node PowerPC Variable Attributes
 @subsection PowerPC Variable Attributes
 
 Three attributes currently are defined for PowerPC configurations:
@@ -5981,6 +6014,7 @@ documentation in @ref{x86 Variable Attributes}.
 For documentation of @code{altivec} attribute please see the
 documentation in @ref{PowerPC Type Attributes}.
 
+@node SPU Variable Attributes
 @subsection SPU Variable Attributes
 
 @cindex @code{spu_vector} variable attribute, SPU
@@ -5988,7 +6022,7 @@ The SPU supports the @code{spu_vector} attribute for variables.  For
 documentation of this attribute please see the documentation in
 @ref{SPU Type Attributes}.
 
-@anchor{x86 Variable Attributes}
+@node x86 Variable Attributes
 @subsection x86 Variable Attributes
 
 Two attributes are currently defined for x86 configurations:
@@ -6126,6 +6160,7 @@ Here, @code{t5} takes up 2 bytes.
 @end enumerate
 @end table
 
+@node Xstormy16 Variable Attributes
 @subsection Xstormy16 Variable Attributes
 
 One attribute is currently defined for xstormy16 configurations:
@@ -6149,26 +6184,38 @@ placed in either the @code{.bss_below100} section or the
 @cindex type attributes
 
 The keyword @code{__attribute__} allows you to specify special
-attributes of @code{struct} and @code{union} types when you define
-such types.  This keyword is followed by an attribute specification
-inside double parentheses.  Eight attributes are currently defined for
-types: @code{aligned}, @code{packed}, @code{transparent_union},
-@code{unused}, @code{deprecated}, @code{visibility}, @code{may_alias}
-and @code{bnd_variable_size}.  Other attributes are defined for
+attributes of types.  Some type attributes apply only to @code{struct}
+and @code{union} types, while others can apply to any type defined
+via a @code{typedef} declaration.  Other attributes are defined for
 functions (@pxref{Function Attributes}), labels (@pxref{Label 
 Attributes}) and for variables (@pxref{Variable Attributes}).
 
+The @code{__attribute__} keyword is followed by an attribute specification
+inside double parentheses.  
+
 You may specify type attributes in an enum, struct or union type
-declaration or definition, or for other types in a @code{typedef}
-declaration.
+declaration or definition by placing them immediately after the
+@code{struct}, @code{union} or @code{enum} keyword.  A less preferred
+syntax is to place them just past the closing curly brace of the
+definition.
 
-For an enum, struct or union type, you may specify attributes either
-between the enum, struct or union tag and the name of the type, or
-just past the closing curly brace of the @emph{definition}.  The
-former syntax is preferred.
-
+You can also include type attributes in a @code{typedef} declaration.
 @xref{Attribute Syntax}, for details of the exact syntax for using
 attributes.
+
+@menu
+* Common Type Attributes::
+* ARM Type Attributes::
+* MeP Type Attributes::
+* PowerPC Type Attributes::
+* SPU Type Attributes::
+* x86 Type Attributes::
+@end menu
+
+@node Common Type Attributes
+@subsection Common Type Attributes
+
+The following type attributes are supported on most targets.
 
 @table @code
 @cindex @code{aligned} type attribute
@@ -6250,14 +6297,6 @@ up to a maximum of 8-byte alignment, then specifying @code{aligned(16)}
 in an @code{__attribute__} still only provides you with 8-byte
 alignment.  See your linker documentation for further information.
 
-@item packed
-@cindex @code{packed} type attribute
-This attribute, attached to @code{struct} or @code{union} type
-definition, specifies that each member (other than zero-width bit-fields)
-of the structure or union is placed to minimize the memory required.  When
-attached to an @code{enum} definition, it indicates that the smallest
-integral type should be used.
-
 @opindex fshort-enums
 Specifying this attribute for @code{struct} and @code{union} types is
 equivalent to specifying the @code{packed} attribute on each of the
@@ -6288,6 +6327,132 @@ struct __attribute__ ((__packed__)) my_packed_struct
 You may only specify this attribute on the definition of an @code{enum},
 @code{struct} or @code{union}, not on a @code{typedef} that does not
 also define the enumerated type, structure or union.
+
+@item bnd_variable_size
+@cindex @code{bnd_variable_size} type attribute
+@cindex Pointer Bounds Checker attributes
+When applied to a structure field, this attribute tells Pointer
+Bounds Checker that the size of this field should not be computed
+using static type information.  It may be used to mark variably-sized
+static array fields placed at the end of a structure.
+
+@smallexample
+struct S
+@{
+  int size;
+  char data[1];
+@}
+S *p = (S *)malloc (sizeof(S) + 100);
+p->data[10] = 0; //Bounds violation
+@end smallexample
+
+@noindent
+By using an attribute for the field we may avoid unwanted bound
+violation checks:
+
+@smallexample
+struct S
+@{
+  int size;
+  char data[1] __attribute__((bnd_variable_size));
+@}
+S *p = (S *)malloc (sizeof(S) + 100);
+p->data[10] = 0; //OK
+@end smallexample
+
+@item deprecated
+@itemx deprecated (@var{msg})
+@cindex @code{deprecated} type attribute
+The @code{deprecated} attribute results in a warning if the type
+is used anywhere in the source file.  This is useful when identifying
+types that are expected to be removed in a future version of a program.
+If possible, the warning also includes the location of the declaration
+of the deprecated type, to enable users to easily find further
+information about why the type is deprecated, or what they should do
+instead.  Note that the warnings only occur for uses and then only
+if the type is being applied to an identifier that itself is not being
+declared as deprecated.
+
+@smallexample
+typedef int T1 __attribute__ ((deprecated));
+T1 x;
+typedef T1 T2;
+T2 y;
+typedef T1 T3 __attribute__ ((deprecated));
+T3 z __attribute__ ((deprecated));
+@end smallexample
+
+@noindent
+results in a warning on line 2 and 3 but not lines 4, 5, or 6.  No
+warning is issued for line 4 because T2 is not explicitly
+deprecated.  Line 5 has no warning because T3 is explicitly
+deprecated.  Similarly for line 6.  The optional @var{msg}
+argument, which must be a string, is printed in the warning if
+present.
+
+The @code{deprecated} attribute can also be used for functions and
+variables (@pxref{Function Attributes}, @pxref{Variable Attributes}.)
+
+@item designated_init
+@cindex @code{designated_init} type attribute
+This attribute may only be applied to structure types.  It indicates
+that any initialization of an object of this type must use designated
+initializers rather than positional initializers.  The intent of this
+attribute is to allow the programmer to indicate that a structure's
+layout may change, and that therefore relying on positional
+initialization will result in future breakage.
+
+GCC emits warnings based on this attribute by default; use
+@option{-Wno-designated-init} to suppress them.
+
+@item may_alias
+@cindex @code{may_alias} type attribute
+Accesses through pointers to types with this attribute are not subject
+to type-based alias analysis, but are instead assumed to be able to alias
+any other type of objects.
+In the context of section 6.5 paragraph 7 of the C99 standard,
+an lvalue expression
+dereferencing such a pointer is treated like having a character type.
+See @option{-fstrict-aliasing} for more information on aliasing issues.
+This extension exists to support some vector APIs, in which pointers to
+one vector type are permitted to alias pointers to a different vector type.
+
+Note that an object of a type with this attribute does not have any
+special semantics.
+
+Example of use:
+
+@smallexample
+typedef short __attribute__((__may_alias__)) short_a;
+
+int
+main (void)
+@{
+  int a = 0x12345678;
+  short_a *b = (short_a *) &a;
+
+  b[1] = 0;
+
+  if (a == 0x12345678)
+    abort();
+
+  exit(0);
+@}
+@end smallexample
+
+@noindent
+If you replaced @code{short_a} with @code{short} in the variable
+declaration, the above program would abort when compiled with
+@option{-fstrict-aliasing}, which is on by default at @option{-O2} or
+above.
+
+@item packed
+@cindex @code{packed} type attribute
+This attribute, attached to @code{struct} or @code{union} type
+definition, specifies that each member (other than zero-width bit-fields)
+of the structure or union is placed to minimize the memory required.  When
+attached to an @code{enum} definition, it indicates that the smallest
+integral type should be used.
 
 @item transparent_union
 @cindex @code{transparent_union} type attribute
@@ -6361,80 +6526,6 @@ the case with lock or thread classes, which are usually defined and then
 not referenced, but contain constructors and destructors that have
 nontrivial bookkeeping functions.
 
-@item deprecated
-@itemx deprecated (@var{msg})
-@cindex @code{deprecated} type attribute
-The @code{deprecated} attribute results in a warning if the type
-is used anywhere in the source file.  This is useful when identifying
-types that are expected to be removed in a future version of a program.
-If possible, the warning also includes the location of the declaration
-of the deprecated type, to enable users to easily find further
-information about why the type is deprecated, or what they should do
-instead.  Note that the warnings only occur for uses and then only
-if the type is being applied to an identifier that itself is not being
-declared as deprecated.
-
-@smallexample
-typedef int T1 __attribute__ ((deprecated));
-T1 x;
-typedef T1 T2;
-T2 y;
-typedef T1 T3 __attribute__ ((deprecated));
-T3 z __attribute__ ((deprecated));
-@end smallexample
-
-@noindent
-results in a warning on line 2 and 3 but not lines 4, 5, or 6.  No
-warning is issued for line 4 because T2 is not explicitly
-deprecated.  Line 5 has no warning because T3 is explicitly
-deprecated.  Similarly for line 6.  The optional @var{msg}
-argument, which must be a string, is printed in the warning if
-present.
-
-The @code{deprecated} attribute can also be used for functions and
-variables (@pxref{Function Attributes}, @pxref{Variable Attributes}.)
-
-@item may_alias
-@cindex @code{may_alias} type attribute
-Accesses through pointers to types with this attribute are not subject
-to type-based alias analysis, but are instead assumed to be able to alias
-any other type of objects.
-In the context of section 6.5 paragraph 7 of the C99 standard,
-an lvalue expression
-dereferencing such a pointer is treated like having a character type.
-See @option{-fstrict-aliasing} for more information on aliasing issues.
-This extension exists to support some vector APIs, in which pointers to
-one vector type are permitted to alias pointers to a different vector type.
-
-Note that an object of a type with this attribute does not have any
-special semantics.
-
-Example of use:
-
-@smallexample
-typedef short __attribute__((__may_alias__)) short_a;
-
-int
-main (void)
-@{
-  int a = 0x12345678;
-  short_a *b = (short_a *) &a;
-
-  b[1] = 0;
-
-  if (a == 0x12345678)
-    abort();
-
-  exit(0);
-@}
-@end smallexample
-
-@noindent
-If you replaced @code{short_a} with @code{short} in the variable
-declaration, the above program would abort when compiled with
-@option{-fstrict-aliasing}, which is on by default at @option{-O2} or
-above.
-
 @item visibility
 @cindex @code{visibility} type attribute
 In C++, attribute visibility (@pxref{Function Attributes}) can also be
@@ -6449,56 +6540,13 @@ and caught in another, the class must have default visibility.
 Otherwise the two shared objects are unable to use the same
 typeinfo node and exception handling will break.
 
-@item designated_init
-@cindex @code{designated_init} type attribute
-This attribute may only be applied to structure types.  It indicates
-that any initialization of an object of this type must use designated
-initializers rather than positional initializers.  The intent of this
-attribute is to allow the programmer to indicate that a structure's
-layout may change, and that therefore relying on positional
-initialization will result in future breakage.
-
-GCC emits warnings based on this attribute by default; use
-@option{-Wno-designated-init} to suppress them.
-
-@item bnd_variable_size
-@cindex @code{bnd_variable_size} type attribute
-@cindex Pointer Bounds Checker attributes
-When applied to a structure field, this attribute tells Pointer
-Bounds Checker that the size of this field should not be computed
-using static type information.  It may be used to mark variably-sized
-static array fields placed at the end of a structure.
-
-@smallexample
-struct S
-@{
-  int size;
-  char data[1];
-@}
-S *p = (S *)malloc (sizeof(S) + 100);
-p->data[10] = 0; //Bounds violation
-@end smallexample
-
-@noindent
-By using an attribute for the field we may avoid unwanted bound
-violation checks:
-
-@smallexample
-struct S
-@{
-  int size;
-  char data[1] __attribute__((bnd_variable_size));
-@}
-S *p = (S *)malloc (sizeof(S) + 100);
-p->data[10] = 0; //OK
-@end smallexample
-
 @end table
 
 To specify multiple attributes, separate them by commas within the
 double parentheses: for example, @samp{__attribute__ ((aligned (16),
 packed))}.
 
+@node ARM Type Attributes
 @subsection ARM Type Attributes
 
 @cindex @code{notshared} type attribute, ARM
@@ -6524,7 +6572,7 @@ virtual table for @code{C} is not exported.  (You can use
 @code{__attribute__} instead of @code{__declspec} if you prefer, but
 most Symbian OS code uses @code{__declspec}.)
 
-@anchor{MeP Type Attributes}
+@node MeP Type Attributes
 @subsection MeP Type Attributes
 
 @cindex @code{based} type attribute, MeP
@@ -6536,7 +6584,7 @@ Specifically, the @code{based}, @code{tiny}, @code{near}, and
 @code{far} attributes may be applied to either.  The @code{io} and
 @code{cb} attributes may not be applied to types.
 
-@anchor{PowerPC Type Attributes}
+@node PowerPC Type Attributes
 @subsection PowerPC Type Attributes
 
 Three attributes currently are defined for PowerPC configurations:
@@ -6563,7 +6611,7 @@ __attribute__((altivec(bool__))) unsigned
 These attributes mainly are intended to support the @code{__vector},
 @code{__pixel}, and @code{__bool} AltiVec keywords.
 
-@anchor{SPU Type Attributes}
+@node SPU Type Attributes
 @subsection SPU Type Attributes
 
 @cindex @code{spu_vector} type attribute, SPU
@@ -6572,7 +6620,7 @@ allows one to declare vector data types supported by the Sony/Toshiba/IBM SPU
 Language Extensions Specification.  It is intended to support the
 @code{__vector} keyword.
 
-@anchor{x86 Type Attributes}
+@node x86 Type Attributes
 @subsection x86 Type Attributes
 
 Two attributes are currently defined for x86 configurations:
