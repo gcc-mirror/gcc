@@ -54,6 +54,7 @@ program main
   call foo(empty, a(2:0), n, m)
   if (n .ne. 1 .or. m .ne. 1) call abort
   allocate (x(0))
+  y => a(3:2)
   call bar (x, y, n, m)
   if (n .ne. 1 .or. m .ne. 1) call abort
 
