@@ -3,20 +3,6 @@
 #include "compute-ref-data.h"
 
 /* Expected results.  */
-VECT_VAR_DECL(expected,int,8,8) [] = { 0x33, 0x33, 0x33, 0x33,
-				       0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,int,16,4) [] = { 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected,int,32,2) [] = { 0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected,int,64,1) [] = { 0x3333333333333333 };
-VECT_VAR_DECL(expected,uint,8,8) [] = { 0x33, 0x33, 0x33, 0x33,
-					0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,uint,16,4) [] = { 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected,uint,32,2) [] = { 0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected,uint,64,1) [] = { 0x3333333333333333 };
-VECT_VAR_DECL(expected,poly,8,8) [] = { 0x33, 0x33, 0x33, 0x33,
-					0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,poly,16,4) [] = { 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0x33333333, 0x33333333 };
 VECT_VAR_DECL(expected,int,8,16) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
 					0xf4, 0xf5, 0xf6, 0xf7,
 					0x11, 0x11, 0x11, 0x11,
@@ -88,7 +74,17 @@ void exec_vcombine (void)
   TEST_VCOMBINE(poly, p, 16, 4, 8);
   TEST_VCOMBINE(float, f, 32, 2, 4);
 
-  CHECK_RESULTS (TEST_MSG, "");
+  CHECK(TEST_MSG, int, 8, 16, PRIx8, expected, "");
+  CHECK(TEST_MSG, int, 16, 8, PRIx16, expected, "");
+  CHECK(TEST_MSG, int, 32, 4, PRIx32, expected, "");
+  CHECK(TEST_MSG, int, 64, 2, PRIx64, expected, "");
+  CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected, "");
+  CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected, "");
+  CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected, "");
+  CHECK(TEST_MSG, uint, 64, 2, PRIx64, expected, "");
+  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected, "");
+  CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected, "");
+  CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected, "");
 }
 
 int main (void)

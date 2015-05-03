@@ -7,16 +7,10 @@ VECT_VAR_DECL(expected,int,8,8) [] = { 0xf6, 0xf7, 0xf8, 0xf9,
 				       0xfa, 0xfb, 0xfc, 0xfd };
 VECT_VAR_DECL(expected,int,16,4) [] = { 0x16, 0x17, 0x18, 0x19 };
 VECT_VAR_DECL(expected,int,32,2) [] = { 0x20, 0x21 };
-VECT_VAR_DECL(expected,int,64,1) [] = { 0x3333333333333333 };
 VECT_VAR_DECL(expected,uint,8,8) [] = { 0x53, 0x54, 0x55, 0x56,
 					0x57, 0x58, 0x59, 0x5a };
 VECT_VAR_DECL(expected,uint,16,4) [] = { 0x907, 0x908, 0x909, 0x90a };
 VECT_VAR_DECL(expected,uint,32,2) [] = { 0xffffffe7, 0xffffffe8 };
-VECT_VAR_DECL(expected,uint,64,1) [] = { 0x3333333333333333 };
-VECT_VAR_DECL(expected,poly,8,8) [] = { 0x33, 0x33, 0x33, 0x33,
-					0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,poly,16,4) [] = { 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0x33333333, 0x33333333 };
 VECT_VAR_DECL(expected,int,8,16) [] = { 0x5e, 0x5f, 0x60, 0x61,
 					0x62, 0x63, 0x64, 0x65,
 					0x66, 0x67, 0x68, 0x69,
@@ -24,8 +18,6 @@ VECT_VAR_DECL(expected,int,8,16) [] = { 0x5e, 0x5f, 0x60, 0x61,
 VECT_VAR_DECL(expected,int,16,8) [] = { 0xb9c, 0xb9d, 0xb9e, 0xb9f,
 					0xba0, 0xba1, 0xba2, 0xba3 };
 VECT_VAR_DECL(expected,int,32,4) [] = { 0x26e0, 0x26e1, 0x26e2, 0x26e3 };
-VECT_VAR_DECL(expected,int,64,2) [] = { 0x3333333333333333,
-					0x3333333333333333 };
 VECT_VAR_DECL(expected,uint,8,16) [] = { 0xf8, 0xf9, 0xfa, 0xfb,
 					 0xfc, 0xfd, 0xfe, 0xff,
 					 0x0, 0x1, 0x2, 0x3,
@@ -33,16 +25,6 @@ VECT_VAR_DECL(expected,uint,8,16) [] = { 0xf8, 0xf9, 0xfa, 0xfb,
 VECT_VAR_DECL(expected,uint,16,8) [] = { 0xfff9, 0xfffa, 0xfffb, 0xfffc,
 					 0xfffd, 0xfffe, 0xffff, 0x0 };
 VECT_VAR_DECL(expected,uint,32,4) [] = { 0xc, 0xd, 0xe, 0xf };
-VECT_VAR_DECL(expected,uint,64,2) [] = { 0x3333333333333333,
-					 0x3333333333333333 };
-VECT_VAR_DECL(expected,poly,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0x33333333, 0x33333333,
-					   0x33333333, 0x33333333 };
 
 #define TEST_MSG "VABA/VABAQ"
 void exec_vaba (void)
@@ -132,7 +114,18 @@ void exec_vaba (void)
   TEST_VABA(q, uint, u, 16, 8);
   TEST_VABA(q, uint, u, 32, 4);
 
-  CHECK_RESULTS (TEST_MSG, "");
+  CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, "");
+  CHECK(TEST_MSG, int, 16, 4, PRIx16, expected, "");
+  CHECK(TEST_MSG, int, 32, 2, PRIx32, expected, "");
+  CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected, "");
+  CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected, "");
+  CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected, "");
+  CHECK(TEST_MSG, int, 8, 16, PRIx8, expected, "");
+  CHECK(TEST_MSG, int, 16, 8, PRIx16, expected, "");
+  CHECK(TEST_MSG, int, 32, 4, PRIx32, expected, "");
+  CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected, "");
+  CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected, "");
+  CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected, "");
 }
 
 int main (void)

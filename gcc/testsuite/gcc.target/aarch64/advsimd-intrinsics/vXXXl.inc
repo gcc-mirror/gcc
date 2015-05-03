@@ -60,7 +60,12 @@ void FNNAME (INSN_NAME) (void)
   TEST_VADDL(INSN_NAME, uint, u, 16, 32, 4);
   TEST_VADDL(INSN_NAME, uint, u, 32, 64, 2);
 
-  CHECK_RESULTS (TEST_MSG, "");
+  CHECK(TEST_MSG, int, 16, 8, PRIx16, expected, "");
+  CHECK(TEST_MSG, int, 32, 4, PRIx32, expected, "");
+  CHECK(TEST_MSG, int, 64, 2, PRIx64, expected, "");
+  CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected, "");
+  CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected, "");
+  CHECK(TEST_MSG, uint, 64, 2, PRIx64, expected, "");
 }
 
 int main (void)

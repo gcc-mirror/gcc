@@ -6,36 +6,18 @@
 VECT_VAR_DECL(expected,int,8,8) [] = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
 VECT_VAR_DECL(expected,int,16,4) [] = { 0x3, 0x3, 0x3, 0x3 };
 VECT_VAR_DECL(expected,int,32,2) [] = { 0x11, 0x11 };
-VECT_VAR_DECL(expected,int,64,1) [] = { 0x3333333333333333 };
 VECT_VAR_DECL(expected,uint,8,8) [] = { 0x2, 0x2, 0x2, 0x2, 0x2, 0x2, 0x2, 0x2 };
 VECT_VAR_DECL(expected,uint,16,4) [] = { 0x0, 0x0, 0x0, 0x0 };
 VECT_VAR_DECL(expected,uint,32,2) [] = { 0x5, 0x5 };
-VECT_VAR_DECL(expected,uint,64,1) [] = { 0x3333333333333333 };
-VECT_VAR_DECL(expected,poly,8,8) [] = { 0x33, 0x33, 0x33, 0x33,
-					0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,poly,16,4) [] = { 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0x33333333, 0x33333333 };
 VECT_VAR_DECL(expected,int,8,16) [] = { 0x2, 0x2, 0x2, 0x2, 0x2, 0x2, 0x2, 0x2,
 					0x2, 0x2, 0x2, 0x2, 0x2, 0x2, 0x2, 0x2 };
 VECT_VAR_DECL(expected,int,16,8) [] = { 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3 };
 VECT_VAR_DECL(expected,int,32,4) [] = { 0x3, 0x3, 0x3, 0x3 };
-VECT_VAR_DECL(expected,int,64,2) [] = { 0x3333333333333333,
-					0x3333333333333333 };
 VECT_VAR_DECL(expected,uint,8,16) [] = { 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3,
 					 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3, 0x3 };
 VECT_VAR_DECL(expected,uint,16,8) [] = { 0xd, 0xd, 0xd, 0xd,
 					 0xd, 0xd, 0xd, 0xd };
 VECT_VAR_DECL(expected,uint,32,4) [] = { 0x1f, 0x1f, 0x1f, 0x1f };
-VECT_VAR_DECL(expected,uint,64,2) [] = { 0x3333333333333333,
-					 0x3333333333333333 };
-VECT_VAR_DECL(expected,poly,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0x33333333, 0x33333333,
-					   0x33333333, 0x33333333 };
 
 
 /* Expected results with input=0.  */
@@ -43,16 +25,10 @@ VECT_VAR_DECL(expected_with_0,int,8,8) [] = { 0x8, 0x8, 0x8, 0x8,
 					      0x8, 0x8, 0x8, 0x8 };
 VECT_VAR_DECL(expected_with_0,int,16,4) [] = { 0x10, 0x10, 0x10, 0x10 };
 VECT_VAR_DECL(expected_with_0,int,32,2) [] = { 0x20, 0x20 };
-VECT_VAR_DECL(expected_with_0,int,64,1) [] = { 0x3333333333333333 };
 VECT_VAR_DECL(expected_with_0,uint,8,8) [] = { 0x8, 0x8, 0x8, 0x8,
 					       0x8, 0x8, 0x8, 0x8 };
 VECT_VAR_DECL(expected_with_0,uint,16,4) [] = { 0x10, 0x10, 0x10, 0x10 };
 VECT_VAR_DECL(expected_with_0,uint,32,2) [] = { 0x20, 0x20 };
-VECT_VAR_DECL(expected_with_0,uint,64,1) [] = { 0x3333333333333333 };
-VECT_VAR_DECL(expected_with_0,poly,8,8) [] = { 0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_with_0,poly,16,4) [] = { 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_with_0,hfloat,32,2) [] = { 0x33333333, 0x33333333 };
 VECT_VAR_DECL(expected_with_0,int,8,16) [] = { 0x8, 0x8, 0x8, 0x8,
 					       0x8, 0x8, 0x8, 0x8,
 					       0x8, 0x8, 0x8, 0x8,
@@ -60,8 +36,6 @@ VECT_VAR_DECL(expected_with_0,int,8,16) [] = { 0x8, 0x8, 0x8, 0x8,
 VECT_VAR_DECL(expected_with_0,int,16,8) [] = { 0x10, 0x10, 0x10, 0x10,
 					       0x10, 0x10, 0x10, 0x10 };
 VECT_VAR_DECL(expected_with_0,int,32,4) [] = { 0x20, 0x20, 0x20, 0x20 };
-VECT_VAR_DECL(expected_with_0,int,64,2) [] = { 0x3333333333333333,
-					       0x3333333333333333 };
 VECT_VAR_DECL(expected_with_0,uint,8,16) [] = { 0x8, 0x8, 0x8, 0x8,
 						0x8, 0x8, 0x8, 0x8,
 						0x8, 0x8, 0x8, 0x8,
@@ -69,16 +43,6 @@ VECT_VAR_DECL(expected_with_0,uint,8,16) [] = { 0x8, 0x8, 0x8, 0x8,
 VECT_VAR_DECL(expected_with_0,uint,16,8) [] = { 0x10, 0x10, 0x10, 0x10,
 						0x10, 0x10, 0x10, 0x10 };
 VECT_VAR_DECL(expected_with_0,uint,32,4) [] = { 0x20, 0x20, 0x20, 0x20 };
-VECT_VAR_DECL(expected_with_0,uint,64,2) [] = { 0x3333333333333333,
-						0x3333333333333333 };
-VECT_VAR_DECL(expected_with_0,poly,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_with_0,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-						0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_with_0,hfloat,32,4) [] = { 0x33333333, 0x33333333,
-						  0x33333333, 0x33333333 };
 
 #define INSN_NAME vclz
 #define TEST_MSG "VCLZ/VCLZQ"
@@ -154,7 +118,18 @@ FNNAME (INSN_NAME)
   TEST_UNARY_OP(INSN_NAME, q, uint, u, 16, 8);
   TEST_UNARY_OP(INSN_NAME, q, uint, u, 32, 4);
 
-  CHECK_RESULTS (TEST_MSG, "");
+  CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, "");
+  CHECK(TEST_MSG, int, 16, 4, PRIx16, expected, "");
+  CHECK(TEST_MSG, int, 32, 2, PRIx32, expected, "");
+  CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected, "");
+  CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected, "");
+  CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected, "");
+  CHECK(TEST_MSG, int, 8, 16, PRIx8, expected, "");
+  CHECK(TEST_MSG, int, 16, 8, PRIx16, expected, "");
+  CHECK(TEST_MSG, int, 32, 4, PRIx32, expected, "");
+  CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected, "");
+  CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected, "");
+  CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected, "");
 
   /* Test with zero as input.  */
   VDUP(vector, , int, s, 8, 8, 0);
@@ -184,7 +159,19 @@ FNNAME (INSN_NAME)
   TEST_UNARY_OP(INSN_NAME, q, uint, u, 16, 8);
   TEST_UNARY_OP(INSN_NAME, q, uint, u, 32, 4);
 
-  CHECK_RESULTS_NAMED (TEST_MSG, expected_with_0, " (input=0)");
+#define MSG_ZERO " (input=0)"
+  CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_with_0, MSG_ZERO);
+  CHECK(TEST_MSG, int, 16, 4, PRIx16, expected_with_0, MSG_ZERO);
+  CHECK(TEST_MSG, int, 32, 2, PRIx32, expected_with_0, MSG_ZERO);
+  CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_with_0, MSG_ZERO);
+  CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected_with_0, MSG_ZERO);
+  CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected_with_0, MSG_ZERO);
+  CHECK(TEST_MSG, int, 8, 16, PRIx8, expected_with_0, MSG_ZERO);
+  CHECK(TEST_MSG, int, 16, 8, PRIx16, expected_with_0, MSG_ZERO);
+  CHECK(TEST_MSG, int, 32, 4, PRIx32, expected_with_0, MSG_ZERO);
+  CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected_with_0, MSG_ZERO);
+  CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected_with_0, MSG_ZERO);
+  CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected_with_0, MSG_ZERO);
 }
 
 int main (void)

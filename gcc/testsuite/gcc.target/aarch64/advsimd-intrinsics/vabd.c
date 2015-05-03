@@ -8,15 +8,10 @@ VECT_VAR_DECL(expected,int,8,8) [] = { 0x11, 0x10, 0xf, 0xe,
 				       0xd, 0xc, 0xb, 0xa };
 VECT_VAR_DECL(expected,int,16,4) [] = { 0x3, 0x2, 0x1, 0x0 };
 VECT_VAR_DECL(expected,int,32,2) [] = { 0x18, 0x17 };
-VECT_VAR_DECL(expected,int,64,1) [] = { 0x3333333333333333 };
 VECT_VAR_DECL(expected,uint,8,8) [] = { 0xef, 0xf0, 0xf1, 0xf2,
 					0xf3, 0xf4, 0xf5, 0xf6 };
 VECT_VAR_DECL(expected,uint,16,4) [] = { 0xffe3, 0xffe4, 0xffe5, 0xffe6 };
 VECT_VAR_DECL(expected,uint,32,2) [] = { 0xffffffe8, 0xffffffe9 };
-VECT_VAR_DECL(expected,uint,64,1) [] = { 0x3333333333333333 };
-VECT_VAR_DECL(expected,poly,8,8) [] = { 0x33, 0x33, 0x33, 0x33,
-					0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,poly,16,4) [] = { 0x3333, 0x3333, 0x3333, 0x3333 };
 VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0x41c26666, 0x41ba6666 };
 VECT_VAR_DECL(expected,int,8,16) [] = { 0x1a, 0x19, 0x18, 0x17,
 					0x16, 0x15, 0x14, 0x13,
@@ -25,8 +20,6 @@ VECT_VAR_DECL(expected,int,8,16) [] = { 0x1a, 0x19, 0x18, 0x17,
 VECT_VAR_DECL(expected,int,16,8) [] = { 0x4, 0x3, 0x2, 0x1,
 					0x0, 0x1, 0x2, 0x3 };
 VECT_VAR_DECL(expected,int,32,4) [] = { 0x30, 0x2f, 0x2e, 0x2d };
-VECT_VAR_DECL(expected,int,64,2) [] = { 0x3333333333333333,
-					0x3333333333333333 };
 VECT_VAR_DECL(expected,uint,8,16) [] = { 0xe6, 0xe7, 0xe8, 0xe9,
 					 0xea, 0xeb, 0xec, 0xed,
 					 0xee, 0xef, 0xf0, 0xf1,
@@ -35,14 +28,6 @@ VECT_VAR_DECL(expected,uint,16,8) [] = { 0xffe4, 0xffe5, 0xffe6, 0xffe7,
 					 0xffe8, 0xffe9, 0xffea, 0xffeb };
 VECT_VAR_DECL(expected,uint,32,4) [] = { 0xffffffd0, 0xffffffd1,
 					 0xffffffd2, 0xffffffd3 };
-VECT_VAR_DECL(expected,uint,64,2) [] = { 0x3333333333333333,
-					 0x3333333333333333 };
-VECT_VAR_DECL(expected,poly,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					 0x3333, 0x3333, 0x3333, 0x3333 };
 VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0x42407ae1, 0x423c7ae1,
 					   0x42387ae1, 0x42347ae1 };
 
@@ -130,7 +115,20 @@ void exec_vabd (void)
   TEST_VABD(q, uint, u, 32, 4);
   TEST_VABD(q, float, f, 32, 4);
 
-  CHECK_RESULTS (TEST_MSG, "");
+  CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, "");
+  CHECK(TEST_MSG, int, 16, 4, PRIx16, expected, "");
+  CHECK(TEST_MSG, int, 32, 2, PRIx32, expected, "");
+  CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected, "");
+  CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected, "");
+  CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected, "");
+  CHECK_FP(TEST_MSG, float, 32, 2, PRIx32, expected, "");
+  CHECK(TEST_MSG, int, 8, 16, PRIx8, expected, "");
+  CHECK(TEST_MSG, int, 16, 8, PRIx16, expected, "");
+  CHECK(TEST_MSG, int, 32, 4, PRIx32, expected, "");
+  CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected, "");
+  CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected, "");
+  CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected, "");
+  CHECK_FP(TEST_MSG, float, 32, 4, PRIx32, expected, "");
 
 
   /* Extra FP tests with special values (-0.0, ....) */
