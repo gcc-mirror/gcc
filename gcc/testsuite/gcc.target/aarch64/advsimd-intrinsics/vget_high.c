@@ -17,34 +17,6 @@ VECT_VAR_DECL(expected,poly,8,8) [] = { 0xf8, 0xf9, 0xfa, 0xfb,
 					0xfc, 0xfd, 0xfe, 0xff };
 VECT_VAR_DECL(expected,poly,16,4) [] = { 0xfff4, 0xfff5, 0xfff6, 0xfff7 };
 VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0xc1600000, 0xc1500000 };
-VECT_VAR_DECL(expected,int,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					0x33, 0x33, 0x33, 0x33,
-					0x33, 0x33, 0x33, 0x33,
-					0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,int,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected,int,32,4) [] = { 0x33333333, 0x33333333,
-					0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected,int,64,2) [] = { 0x3333333333333333,
-					0x3333333333333333 };
-VECT_VAR_DECL(expected,uint,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,uint,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected,uint,32,4) [] = { 0x33333333, 0x33333333,
-					 0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected,uint,64,2) [] = { 0x3333333333333333,
-					 0x3333333333333333 };
-VECT_VAR_DECL(expected,poly,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0x33333333, 0x33333333,
-					   0x33333333, 0x33333333 };
 
 #define TEST_MSG "VGET_HIGH"
 void exec_vget_high (void)
@@ -76,7 +48,17 @@ void exec_vget_high (void)
   TEST_VGET_HIGH(poly, p, 16, 4, 8);
   TEST_VGET_HIGH(float, f, 32, 2, 4);
 
-  CHECK_RESULTS (TEST_MSG, "");
+  CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, "");
+  CHECK(TEST_MSG, int, 16, 4, PRIx16, expected, "");
+  CHECK(TEST_MSG, int, 32, 2, PRIx32, expected, "");
+  CHECK(TEST_MSG, int, 64, 1, PRIx64, expected, "");
+  CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected, "");
+  CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected, "");
+  CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected, "");
+  CHECK(TEST_MSG, uint, 64, 1, PRIx64, expected, "");
+  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected, "");
+  CHECK(TEST_MSG, poly, 16, 4, PRIx16, expected, "");
+  CHECK_FP(TEST_MSG, float, 32, 2, PRIx32, expected, "");
 }
 
 int main (void)

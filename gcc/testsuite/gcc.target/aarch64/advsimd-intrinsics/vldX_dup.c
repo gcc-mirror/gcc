@@ -19,34 +19,6 @@ VECT_VAR_DECL(expected_vld2_0,poly,8,8) [] = { 0xf0, 0xf1, 0xf0, 0xf1,
 					0xf0, 0xf1, 0xf0, 0xf1 };
 VECT_VAR_DECL(expected_vld2_0,poly,16,4) [] = { 0xfff0, 0xfff1, 0xfff0, 0xfff1 };
 VECT_VAR_DECL(expected_vld2_0,hfloat,32,2) [] = { 0xc1800000, 0xc1700000 };
-VECT_VAR_DECL(expected_vld2_0,int,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					0x33, 0x33, 0x33, 0x33,
-					0x33, 0x33, 0x33, 0x33,
-					0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld2_0,int,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld2_0,int,32,4) [] = { 0x33333333, 0x33333333,
-					0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_vld2_0,int,64,2) [] = { 0x3333333333333333,
-					0x3333333333333333 };
-VECT_VAR_DECL(expected_vld2_0,uint,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld2_0,uint,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld2_0,uint,32,4) [] = { 0x33333333, 0x33333333,
-					 0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_vld2_0,uint,64,2) [] = { 0x3333333333333333,
-					 0x3333333333333333 };
-VECT_VAR_DECL(expected_vld2_0,poly,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33,
-					 0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld2_0,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					 0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld2_0,hfloat,32,4) [] = { 0x33333333, 0x33333333,
-					   0x33333333, 0x33333333 };
 
 /* vld2_dup/chunk 1.  */
 VECT_VAR_DECL(expected_vld2_1,int,8,8) [] = { 0xf0, 0xf1, 0xf0, 0xf1,
@@ -64,34 +36,6 @@ VECT_VAR_DECL(expected_vld2_1,poly,8,8) [] = { 0xf0, 0xf1, 0xf0, 0xf1,
 VECT_VAR_DECL(expected_vld2_1,poly,16,4) [] = { 0xfff0, 0xfff1,
 						0xfff0, 0xfff1 };
 VECT_VAR_DECL(expected_vld2_1,hfloat,32,2) [] = { 0xc1800000, 0xc1700000 };
-VECT_VAR_DECL(expected_vld2_1,int,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld2_1,int,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					       0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld2_1,int,32,4) [] = { 0x33333333, 0x33333333,
-					       0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_vld2_1,int,64,2) [] = { 0x3333333333333333,
-					       0x3333333333333333 };
-VECT_VAR_DECL(expected_vld2_1,uint,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld2_1,uint,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-						0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld2_1,uint,32,4) [] = { 0x33333333, 0x33333333,
-						0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_vld2_1,uint,64,2) [] = { 0x3333333333333333,
-						0x3333333333333333 };
-VECT_VAR_DECL(expected_vld2_1,poly,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld2_1,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-						0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld2_1,hfloat,32,4) [] = { 0x33333333, 0x33333333,
-						  0x33333333, 0x33333333 };
 
 /* vld3_dup/chunk 0.  */
 VECT_VAR_DECL(expected_vld3_0,int,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf0,
@@ -111,34 +55,6 @@ VECT_VAR_DECL(expected_vld3_0,poly,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf0,
 VECT_VAR_DECL(expected_vld3_0,poly,16,4) [] = { 0xfff0, 0xfff1,
 						0xfff2, 0xfff0 };
 VECT_VAR_DECL(expected_vld3_0,hfloat,32,2) [] = { 0xc1800000, 0xc1700000 };
-VECT_VAR_DECL(expected_vld3_0,int,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld3_0,int,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					       0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld3_0,int,32,4) [] = { 0x33333333, 0x33333333,
-					       0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_vld3_0,int,64,2) [] = { 0x3333333333333333,
-					       0x3333333333333333 };
-VECT_VAR_DECL(expected_vld3_0,uint,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld3_0,uint,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-						0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld3_0,uint,32,4) [] = { 0x33333333, 0x33333333,
-						0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_vld3_0,uint,64,2) [] = { 0x3333333333333333,
-						0x3333333333333333 };
-VECT_VAR_DECL(expected_vld3_0,poly,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld3_0,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-						0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld3_0,hfloat,32,4) [] = { 0x33333333, 0x33333333,
-						  0x33333333, 0x33333333 };
 
 /* vld3_dup/chunk 1.  */
 VECT_VAR_DECL(expected_vld3_1,int,8,8) [] = { 0xf2, 0xf0, 0xf1, 0xf2,
@@ -158,34 +74,6 @@ VECT_VAR_DECL(expected_vld3_1,poly,8,8) [] = { 0xf2, 0xf0, 0xf1, 0xf2,
 VECT_VAR_DECL(expected_vld3_1,poly,16,4) [] = { 0xfff1, 0xfff2,
 						0xfff0, 0xfff1 };
 VECT_VAR_DECL(expected_vld3_1,hfloat,32,2) [] = { 0xc1600000, 0xc1800000 };
-VECT_VAR_DECL(expected_vld3_1,int,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld3_1,int,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					       0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld3_1,int,32,4) [] = { 0x33333333, 0x33333333,
-					       0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_vld3_1,int,64,2) [] = { 0x3333333333333333,
-					       0x3333333333333333 };
-VECT_VAR_DECL(expected_vld3_1,uint,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld3_1,uint,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-						0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld3_1,uint,32,4) [] = { 0x33333333, 0x33333333,
-						0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_vld3_1,uint,64,2) [] = { 0x3333333333333333,
-						0x3333333333333333 };
-VECT_VAR_DECL(expected_vld3_1,poly,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld3_1,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-						0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld3_1,hfloat,32,4) [] = { 0x33333333, 0x33333333,
-						  0x33333333, 0x33333333 };
 
 /* vld3_dup/chunk 2.  */
 VECT_VAR_DECL(expected_vld3_2,int,8,8) [] = { 0xf1, 0xf2, 0xf0, 0xf1,
@@ -205,34 +93,6 @@ VECT_VAR_DECL(expected_vld3_2,poly,8,8) [] = { 0xf1, 0xf2, 0xf0, 0xf1,
 VECT_VAR_DECL(expected_vld3_2,poly,16,4) [] = { 0xfff2, 0xfff0,
 						0xfff1, 0xfff2 };
 VECT_VAR_DECL(expected_vld3_2,hfloat,32,2) [] = { 0xc1700000, 0xc1600000 };
-VECT_VAR_DECL(expected_vld3_2,int,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld3_2,int,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					       0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld3_2,int,32,4) [] = { 0x33333333, 0x33333333,
-					       0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_vld3_2,int,64,2) [] = { 0x3333333333333333,
-					       0x3333333333333333 };
-VECT_VAR_DECL(expected_vld3_2,uint,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld3_2,uint,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-						0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld3_2,uint,32,4) [] = { 0x33333333, 0x33333333,
-						0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_vld3_2,uint,64,2) [] = { 0x3333333333333333,
-						0x3333333333333333 };
-VECT_VAR_DECL(expected_vld3_2,poly,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld3_2,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-						0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld3_2,hfloat,32,4) [] = { 0x33333333, 0x33333333,
-						  0x33333333, 0x33333333 };
 
 /* vld4_dup/chunk 0.  */
 VECT_VAR_DECL(expected_vld4_0,int,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
@@ -250,34 +110,6 @@ VECT_VAR_DECL(expected_vld4_0,poly,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
 					       0xf0, 0xf1, 0xf2, 0xf3 };
 VECT_VAR_DECL(expected_vld4_0,poly,16,4) [] = { 0xfff0, 0xfff1, 0xfff2, 0xfff3 };
 VECT_VAR_DECL(expected_vld4_0,hfloat,32,2) [] = { 0xc1800000, 0xc1700000 };
-VECT_VAR_DECL(expected_vld4_0,int,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld4_0,int,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					       0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld4_0,int,32,4) [] = { 0x33333333, 0x33333333,
-					       0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_vld4_0,int,64,2) [] = { 0x3333333333333333,
-					       0x3333333333333333 };
-VECT_VAR_DECL(expected_vld4_0,uint,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld4_0,uint,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-						0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld4_0,uint,32,4) [] = { 0x33333333, 0x33333333,
-						0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_vld4_0,uint,64,2) [] = { 0x3333333333333333,
-						0x3333333333333333 };
-VECT_VAR_DECL(expected_vld4_0,poly,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld4_0,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-						0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld4_0,hfloat,32,4) [] = { 0x33333333, 0x33333333,
-						  0x33333333, 0x33333333 };
 
 /* vld4_dup/chunk 1.  */
 VECT_VAR_DECL(expected_vld4_1,int,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
@@ -294,34 +126,6 @@ VECT_VAR_DECL(expected_vld4_1,poly,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
 					       0xf0, 0xf1, 0xf2, 0xf3 };
 VECT_VAR_DECL(expected_vld4_1,poly,16,4) [] = { 0xfff0, 0xfff1, 0xfff2, 0xfff3 };
 VECT_VAR_DECL(expected_vld4_1,hfloat,32,2) [] = { 0xc1600000, 0xc1500000 };
-VECT_VAR_DECL(expected_vld4_1,int,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld4_1,int,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					       0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld4_1,int,32,4) [] = { 0x33333333, 0x33333333,
-					       0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_vld4_1,int,64,2) [] = { 0x3333333333333333,
-					       0x3333333333333333 };
-VECT_VAR_DECL(expected_vld4_1,uint,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld4_1,uint,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-						0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld4_1,uint,32,4) [] = { 0x33333333, 0x33333333,
-						0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_vld4_1,uint,64,2) [] = { 0x3333333333333333,
-						0x3333333333333333 };
-VECT_VAR_DECL(expected_vld4_1,poly,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld4_1,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-						0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld4_1,hfloat,32,4) [] = { 0x33333333, 0x33333333,
-						  0x33333333, 0x33333333 };
 
 /* vld4_dup/chunk 2.  */
 VECT_VAR_DECL(expected_vld4_2,int,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
@@ -338,34 +142,6 @@ VECT_VAR_DECL(expected_vld4_2,poly,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
 					       0xf0, 0xf1, 0xf2, 0xf3 };
 VECT_VAR_DECL(expected_vld4_2,poly,16,4) [] = { 0xfff0, 0xfff1, 0xfff2, 0xfff3 };
 VECT_VAR_DECL(expected_vld4_2,hfloat,32,2) [] = { 0xc1800000, 0xc1700000 };
-VECT_VAR_DECL(expected_vld4_2,int,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld4_2,int,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					       0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld4_2,int,32,4) [] = { 0x33333333, 0x33333333,
-					       0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_vld4_2,int,64,2) [] = { 0x3333333333333333,
-					       0x3333333333333333 };
-VECT_VAR_DECL(expected_vld4_2,uint,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld4_2,uint,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-						0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld4_2,uint,32,4) [] = { 0x33333333, 0x33333333,
-						0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_vld4_2,uint,64,2) [] = { 0x3333333333333333,
-						0x3333333333333333 };
-VECT_VAR_DECL(expected_vld4_2,poly,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld4_2,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-						0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld4_2,hfloat,32,4) [] = { 0x33333333, 0x33333333,
-						  0x33333333, 0x33333333 };
 
 /* vld4_dup/chunk3.  */
 VECT_VAR_DECL(expected_vld4_3,int,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
@@ -382,33 +158,6 @@ VECT_VAR_DECL(expected_vld4_3,poly,8,8) [] = { 0xf0, 0xf1, 0xf2, 0xf3,
 					       0xf0, 0xf1, 0xf2, 0xf3 };
 VECT_VAR_DECL(expected_vld4_3,poly,16,4) [] = { 0xfff0, 0xfff1, 0xfff2, 0xfff3 };
 VECT_VAR_DECL(expected_vld4_3,hfloat,32,2) [] = { 0xc1600000, 0xc1500000 };
-VECT_VAR_DECL(expected_vld4_3,int,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33,
-					       0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld4_3,int,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-					       0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld4_3,int,32,4) [] = { 0x33333333, 0x33333333,
-					       0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_vld4_3,int,64,2) [] = { 0x3333333333333333, 0x3333333333333333 };
-VECT_VAR_DECL(expected_vld4_3,uint,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld4_3,uint,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-						0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld4_3,uint,32,4) [] = { 0x33333333, 0x33333333,
-						0x33333333, 0x33333333 };
-VECT_VAR_DECL(expected_vld4_3,uint,64,2) [] = { 0x3333333333333333,
-						0x3333333333333333 };
-VECT_VAR_DECL(expected_vld4_3,poly,8,16) [] = { 0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33,
-						0x33, 0x33, 0x33, 0x33 };
-VECT_VAR_DECL(expected_vld4_3,poly,16,8) [] = { 0x3333, 0x3333, 0x3333, 0x3333,
-						0x3333, 0x3333, 0x3333, 0x3333 };
-VECT_VAR_DECL(expected_vld4_3,hfloat,32,4) [] = { 0x33333333, 0x33333333,
-						  0x33333333, 0x33333333 };
 
 void exec_vldX_dup (void)
 {
@@ -478,6 +227,21 @@ void exec_vldX_dup (void)
   TEST_EXTRA_CHUNK(poly, 16, 4, X, Y);		\
   TEST_EXTRA_CHUNK(float, 32, 2, X, Y)
 
+  /* vldX_dup supports only 64-bit inputs.  */
+#define CHECK_RESULTS_VLDX_DUP(test_name,EXPECTED,comment)		\
+  {									\
+    CHECK(test_name, int, 8, 8, PRIx8, EXPECTED, comment);		\
+    CHECK(test_name, int, 16, 4, PRIx16, EXPECTED, comment);		\
+    CHECK(test_name, int, 32, 2, PRIx32, EXPECTED, comment);		\
+    CHECK(test_name, int, 64, 1, PRIx64, EXPECTED, comment);		\
+    CHECK(test_name, uint, 8, 8, PRIx8, EXPECTED, comment);		\
+    CHECK(test_name, uint, 16, 4, PRIx16, EXPECTED, comment);		\
+    CHECK(test_name, uint, 32, 2, PRIx32, EXPECTED, comment);		\
+    CHECK(test_name, uint, 64, 1, PRIx64, EXPECTED, comment);		\
+    CHECK(test_name, poly, 8, 8, PRIx8, EXPECTED, comment);		\
+    CHECK(test_name, poly, 16, 4, PRIx16, EXPECTED, comment);		\
+    CHECK_FP(test_name, float, 32, 2, PRIx32, EXPECTED, comment);	\
+  }									\
 
   DECL_ALL_VLDX_DUP(2);
   DECL_ALL_VLDX_DUP(3);
@@ -629,39 +393,39 @@ void exec_vldX_dup (void)
   clean_results ();
 #define TEST_MSG "VLD2_DUP/VLD2Q_DUP"
   TEST_ALL_VLDX_DUP(2);
-  CHECK_RESULTS_NAMED (TEST_MSG, expected_vld2_0, "chunk 0");
+  CHECK_RESULTS_VLDX_DUP (TEST_MSG, expected_vld2_0, "chunk 0");
 
   TEST_ALL_EXTRA_CHUNKS(2, 1);
-  CHECK_RESULTS_NAMED (TEST_MSG, expected_vld2_1, "chunk 1");
+  CHECK_RESULTS_VLDX_DUP (TEST_MSG, expected_vld2_1, "chunk 1");
 
   /* Check vld3_dup/vld3q_dup.  */
   clean_results ();
 #undef TEST_MSG
 #define TEST_MSG "VLD3_DUP/VLD3Q_DUP"
   TEST_ALL_VLDX_DUP(3);
-  CHECK_RESULTS_NAMED (TEST_MSG, expected_vld3_0, "chunk 0");
+  CHECK_RESULTS_VLDX_DUP (TEST_MSG, expected_vld3_0, "chunk 0");
 
   TEST_ALL_EXTRA_CHUNKS(3, 1);
-  CHECK_RESULTS_NAMED (TEST_MSG, expected_vld3_1, "chunk 1");
+  CHECK_RESULTS_VLDX_DUP (TEST_MSG, expected_vld3_1, "chunk 1");
 
   TEST_ALL_EXTRA_CHUNKS(3, 2);
-  CHECK_RESULTS_NAMED (TEST_MSG, expected_vld3_2, "chunk 2");
+  CHECK_RESULTS_VLDX_DUP (TEST_MSG, expected_vld3_2, "chunk 2");
 
   /* Check vld4_dup/vld4q_dup */
   clean_results ();
 #undef TEST_MSG
 #define TEST_MSG "VLD4_DUP/VLD4Q_DUP"
   TEST_ALL_VLDX_DUP(4);
-  CHECK_RESULTS_NAMED (TEST_MSG, expected_vld4_0, "chunk 0");
+  CHECK_RESULTS_VLDX_DUP (TEST_MSG, expected_vld4_0, "chunk 0");
 
   TEST_ALL_EXTRA_CHUNKS(4, 1);
-  CHECK_RESULTS_NAMED (TEST_MSG, expected_vld4_1, "chunk 1");
+  CHECK_RESULTS_VLDX_DUP (TEST_MSG, expected_vld4_1, "chunk 1");
 
   TEST_ALL_EXTRA_CHUNKS(4, 2);
-  CHECK_RESULTS_NAMED (TEST_MSG, expected_vld4_2, "chunk 2");
+  CHECK_RESULTS_VLDX_DUP (TEST_MSG, expected_vld4_2, "chunk 2");
 
   TEST_ALL_EXTRA_CHUNKS(4, 3);
-  CHECK_RESULTS_NAMED (TEST_MSG, expected_vld4_3, "chunk 3");
+  CHECK_RESULTS_VLDX_DUP (TEST_MSG, expected_vld4_3, "chunk 3");
 }
 
 int main (void)

@@ -23,7 +23,6 @@ VECT_VAR_DECL(expected,uint,64,1) [] = { 0x10 };
 VECT_VAR_DECL(expected,poly,8,8) [] = { 0x50, 0x51, 0x52, 0x53,
 					0x50, 0x51, 0x52, 0x53 };
 VECT_VAR_DECL(expected,poly,16,4) [] = { 0x7bf0, 0x7bf1, 0x7bf2, 0x7bf3 };
-VECT_VAR_DECL(expected,hfloat,32,2) [] = { 0x33333333, 0x33333333 };
 VECT_VAR_DECL(expected,int,8,16) [] = { 0xd0, 0xd1, 0xd2, 0xd3,
 					0xd4, 0xd5, 0xd6, 0xd7,
 					0xd8, 0xd9, 0xda, 0xdb,
@@ -48,8 +47,6 @@ VECT_VAR_DECL(expected,poly,8,16) [] = { 0x60, 0x61, 0x62, 0x63,
 					 0x64, 0x65, 0x66, 0x67 };
 VECT_VAR_DECL(expected,poly,16,8) [] = { 0x3ff0, 0x3ff1, 0x3ff2, 0x3ff3,
 					 0x3ff4, 0x3ff5, 0x3ff6, 0x3ff7 };
-VECT_VAR_DECL(expected,hfloat,32,4) [] = { 0x33333333, 0x33333333,
-					   0x33333333, 0x33333333 };
 
 /* Expected results with max shift amount.  */
 VECT_VAR_DECL(expected_max_shift,int,8,8) [] = { 0x70, 0x71, 0x72, 0x73,
@@ -68,7 +65,6 @@ VECT_VAR_DECL(expected_max_shift,poly,8,8) [] = { 0x70, 0x71, 0x72, 0x73,
 						  0x74, 0x75, 0x76, 0x77 };
 VECT_VAR_DECL(expected_max_shift,poly,16,4) [] = { 0x7ff0, 0x7ff1,
 						   0x7ff2, 0x7ff3 };
-VECT_VAR_DECL(expected_max_shift,hfloat,32,2) [] = { 0x33333333, 0x33333333 };
 VECT_VAR_DECL(expected_max_shift,int,8,16) [] = { 0x70, 0x71, 0x72, 0x73,
 						  0x74, 0x75, 0x76, 0x77,
 						  0x78, 0x79, 0x7a, 0x7b,
@@ -95,8 +91,6 @@ VECT_VAR_DECL(expected_max_shift,poly,8,16) [] = { 0x70, 0x71, 0x72, 0x73,
 						   0x7c, 0x7d, 0x7e, 0x7f };
 VECT_VAR_DECL(expected_max_shift,poly,16,8) [] = { 0xfff0, 0xfff1, 0xfff2, 0xfff3,
 						   0xfff4, 0xfff5, 0xfff6, 0xfff7 };
-VECT_VAR_DECL(expected_max_shift,hfloat,32,4) [] = { 0x33333333, 0x33333333,
-						     0x33333333, 0x33333333 };
 
 #include "vsXi_n.inc"
 
@@ -158,5 +152,23 @@ void vsli_extra(void)
   TEST_VSXI_N(INSN_NAME, q, poly, p, 8, 16, 7);
   TEST_VSXI_N(INSN_NAME, q, poly, p, 16, 8, 15);
 
-  CHECK_RESULTS_NAMED (TEST_MSG, expected_max_shift, "(max shift amount)");
+#define COMMENT "(max shift amount)"
+  CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, int, 16, 4, PRIx16, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, int, 32, 2, PRIx32, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, int, 64, 1, PRIx64, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, uint, 8, 8, PRIx8, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, uint, 16, 4, PRIx16, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, uint, 32, 2, PRIx32, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, uint, 64, 1, PRIx64, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, poly, 8, 8, PRIx8, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, poly, 16, 4, PRIx16, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, int, 8, 16, PRIx8, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, int, 16, 8, PRIx16, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, int, 32, 4, PRIx32, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, uint, 8, 16, PRIx8, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, uint, 16, 8, PRIx16, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, uint, 32, 4, PRIx32, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, poly, 8, 16, PRIx8, expected_max_shift, COMMENT);
+  CHECK(TEST_MSG, poly, 16, 8, PRIx16, expected_max_shift, COMMENT);
 }

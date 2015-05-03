@@ -1,3 +1,64 @@
+2015-05-03  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/binary_op.inc: Call CHECK
+	for each supported variant instead of CHECK_RESULTS.
+	* gcc.target/aarch64/advsimd-intrinsics/binary_sat_op.inc: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/unary_op.inc: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vXXXl.inc: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vXXXw.inc: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vsXi_n.inc: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vshuffle.inc: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vaba.c: Remove dummy
+	expected results for unsupported variants.  Call CHECK for each
+	supported variant instead of CHECK_RESULTS.
+	* gcc.target/aarch64/advsimd-intrinsics/vabal.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vabd.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vabdl.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcls.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vclz.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcnt.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcombine.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcreate.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vget_high.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vget_low.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vldX.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vldX_dup.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vldX_lane.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vmul.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vshl.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vsli_n.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vsri_n.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vabs.c: Remove dummy
+	expected results for unsupported variants.
+	* gcc.target/aarch64/advsimd-intrinsics/vadd.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vaddl.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vaddw.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vand.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vbic.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcage.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcagt.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcale.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcalt.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vceq.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcge.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcgt.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vcle.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vclt.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/veor.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vneg.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vorn.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vorr.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqabs.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqadd.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqneg.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vqsub.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vsub.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vsubl.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vsubw.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vtrn.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vuzp.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vzip.c: Likewise.
+
 2015-05-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/37131

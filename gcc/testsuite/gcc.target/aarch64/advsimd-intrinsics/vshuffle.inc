@@ -120,15 +120,40 @@ void FNNAME (INSN_NAME) (void)
   TEST_EXTRA_CHUNK(poly, 16, 8, 1);		\
   TEST_EXTRA_CHUNK(float, 32, 4, 1)
 
+  /* vshuffle support all vector types except [u]int64x1 and
+     [u]int64x2.  */
+#define CHECK_RESULTS_VSHUFFLE(test_name,EXPECTED,comment)		\
+  {									\
+    CHECK(test_name, int, 8, 8, PRIx8, EXPECTED, comment);		\
+    CHECK(test_name, int, 16, 4, PRIx16, EXPECTED, comment);		\
+    CHECK(test_name, int, 32, 2, PRIx32, EXPECTED, comment);		\
+    CHECK(test_name, uint, 8, 8, PRIx8, EXPECTED, comment);		\
+    CHECK(test_name, uint, 16, 4, PRIx16, EXPECTED, comment);		\
+    CHECK(test_name, uint, 32, 2, PRIx32, EXPECTED, comment);		\
+    CHECK(test_name, poly, 8, 8, PRIx8, EXPECTED, comment);		\
+    CHECK(test_name, poly, 16, 4, PRIx16, EXPECTED, comment);		\
+    CHECK_FP(test_name, float, 32, 2, PRIx32, EXPECTED, comment);	\
+									\
+    CHECK(test_name, int, 8, 16, PRIx8, EXPECTED, comment);		\
+    CHECK(test_name, int, 16, 8, PRIx16, EXPECTED, comment);		\
+    CHECK(test_name, int, 32, 4, PRIx32, EXPECTED, comment);		\
+    CHECK(test_name, uint, 8, 16, PRIx8, EXPECTED, comment);		\
+    CHECK(test_name, uint, 16, 8, PRIx16, EXPECTED, comment);		\
+    CHECK(test_name, uint, 32, 4, PRIx32, EXPECTED, comment);		\
+    CHECK(test_name, poly, 8, 16, PRIx8, EXPECTED, comment);		\
+    CHECK(test_name, poly, 16, 8, PRIx16, EXPECTED, comment);		\
+    CHECK_FP(test_name, float, 32, 4, PRIx32, EXPECTED, comment);	\
+  }									\
+
   clean_results ();
 
   /* Execute the tests.  */
   TEST_ALL_VSHUFFLE(INSN_NAME);
 
-  CHECK_RESULTS_NAMED (TEST_MSG, expected0, "(chunk 0)");
+  CHECK_RESULTS_VSHUFFLE (TEST_MSG, expected0, "(chunk 0)");
 
   TEST_ALL_EXTRA_CHUNKS();
-  CHECK_RESULTS_NAMED (TEST_MSG, expected1, "(chunk 1)");
+  CHECK_RESULTS_VSHUFFLE (TEST_MSG, expected1, "(chunk 1)");
 }
 
 int main (void)
