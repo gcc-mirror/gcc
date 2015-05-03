@@ -1,3 +1,8 @@
+2015-05-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/37131
+	* gfortran.dg/bound_9.f90:  Add pointer assignment.
+
 2015-05-01  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Prathamesh Kulharni  <prathamesh.kulkarni@linaro.org>
 
