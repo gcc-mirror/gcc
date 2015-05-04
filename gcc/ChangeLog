@@ -1,3 +1,7 @@
+2015-05-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (verify_type): Check various uses of TYPE_MINVAL.
+
 2015-05-02  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* tree-outof-ssa.c (emit_partition_copy): Return rtx_insn *.
