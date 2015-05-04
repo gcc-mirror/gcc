@@ -1,3 +1,8 @@
+2015-05-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/44735
+	* gfortran.dg/pr44735.f90: New test.
+
 2015-05-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65965
