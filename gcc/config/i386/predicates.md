@@ -135,18 +135,10 @@
   switch (GET_CODE (op))
     {
     case CONST_INT:
-      /* CONST_DOUBLES never match, since HOST_BITS_PER_WIDE_INT is known
-         to be at least 32 and this all acceptable constants are
-	 represented as CONST_INT.  */
-      if (HOST_BITS_PER_WIDE_INT == 32)
-	return true;
-      else
-	{
-	  HOST_WIDE_INT val = trunc_int_for_mode (INTVAL (op), DImode);
-	  return trunc_int_for_mode (val, SImode) == val;
-	}
-      break;
-
+      {
+        HOST_WIDE_INT val = trunc_int_for_mode (INTVAL (op), DImode);
+        return trunc_int_for_mode (val, SImode) == val;
+      }
     case SYMBOL_REF:
       /* For certain code models, the symbolic references are known to fit.
 	 in CM_SMALL_PIC model we know it fits if it is local to the shared
@@ -253,21 +245,12 @@
 
 ;; Return true if VALUE can be stored in the zero extended immediate field.
 (define_predicate "x86_64_zext_immediate_operand"
-  (match_code "const_double,const_int,symbol_ref,label_ref,const")
+  (match_code "const_int,symbol_ref,label_ref,const")
 {
   switch (GET_CODE (op))
     {
-    case CONST_DOUBLE:
-      if (HOST_BITS_PER_WIDE_INT == 32)
-	return (GET_MODE (op) == VOIDmode && !CONST_DOUBLE_HIGH (op));
-      else
-	return false;
-
     case CONST_INT:
-      if (HOST_BITS_PER_WIDE_INT == 32)
-	return INTVAL (op) >= 0;
-      else
-	return !(INTVAL (op) & ~(HOST_WIDE_INT) 0xffffffff);
+      return !(INTVAL (op) & ~(HOST_WIDE_INT) 0xffffffff);
 
     case SYMBOL_REF:
       /* For certain code models, the symbolic references are known to fit.  */
@@ -625,7 +608,7 @@
 
 ;; Match exactly zero.
 (define_predicate "const0_operand"
-  (match_code "const_int,const_double,const_vector")
+  (match_code "const_int,const_wide_int,const_double,const_vector")
 {
   if (mode == VOIDmode)
     mode = GET_MODE (op);
@@ -634,7 +617,7 @@
 
 ;; Match -1.
 (define_predicate "constm1_operand"
-  (match_code "const_int,const_double,const_vector")
+  (match_code "const_int,const_wide_int,const_double,const_vector")
 {
   if (mode == VOIDmode)
     mode = GET_MODE (op);
@@ -643,7 +626,7 @@
 
 ;; Match one or vector filled with ones.
 (define_predicate "const1_operand"
-  (match_code "const_int,const_double,const_vector")
+  (match_code "const_int,const_wide_int,const_double,const_vector")
 {
   if (mode == VOIDmode)
     mode = GET_MODE (op);

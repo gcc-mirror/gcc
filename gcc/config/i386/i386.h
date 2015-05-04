@@ -2563,6 +2563,8 @@ extern void debug_dispatch_window (int);
 /* For switching between functions with different target attributes.  */
 #define SWITCHABLE_TARGET 1
 
+#define TARGET_SUPPORTS_WIDE_INT 1
+
 /*
 Local variables:
 version-control: t

@@ -13077,7 +13077,7 @@ ix86_legitimate_constant_p (machine_mode, rtx x)
 #endif
       break;
 
-    case CONST_DOUBLE:
+    case CONST_WIDE_INT:
       if (GET_MODE (x) == TImode
 	  && x != CONST0_RTX (TImode)
           && !TARGET_64BIT)
@@ -13107,6 +13107,7 @@ ix86_cannot_force_const_mem (machine_mode mode, rtx x)
   switch (GET_CODE (x))
     {
     case CONST_INT:
+    case CONST_WIDE_INT:
     case CONST_DOUBLE:
     case CONST_VECTOR:
       return false;
@@ -13133,7 +13134,7 @@ is_imported_p (rtx x)
 
 /* Nonzero if the constant value X is a legitimate general operand
    when generating PIC code.  It is given that flag_pic is on and
-   that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
+   that X satisfies CONSTANT_P.  */
 
 bool
 legitimate_pic_operand_p (rtx x)
@@ -14589,20 +14590,9 @@ output_pic_addr_const (FILE *file, rtx x, int code)
       break;
 
     case CONST_DOUBLE:
-      if (GET_MODE (x) == VOIDmode)
-	{
-	  /* We can use %d if the number is <32 bits and positive.  */
-	  if (CONST_DOUBLE_HIGH (x) || CONST_DOUBLE_LOW (x) < 0)
-	    fprintf (file, "0x%lx%08lx",
-		     (unsigned long) CONST_DOUBLE_HIGH (x),
-		     (unsigned long) CONST_DOUBLE_LOW (x));
-	  else
-	    fprintf (file, HOST_WIDE_INT_PRINT_DEC, CONST_DOUBLE_LOW (x));
-	}
-      else
-	/* We can't handle floating point constants;
-	   TARGET_PRINT_OPERAND must handle them.  */
-	output_operand_lossage ("floating constant misused");
+      /* We can't handle floating point constants;
+	 TARGET_PRINT_OPERAND must handle them.  */
+      output_operand_lossage ("floating constant misused");
       break;
 
     case PLUS:
@@ -14962,8 +14952,7 @@ ix86_find_base_term (rtx x)
 	return x;
       term = XEXP (x, 0);
       if (GET_CODE (term) == PLUS
-	  && (CONST_INT_P (XEXP (term, 1))
-	      || GET_CODE (XEXP (term, 1)) == CONST_DOUBLE))
+	  && CONST_INT_P (XEXP (term, 1)))
 	term = XEXP (term, 0);
       if (GET_CODE (term) != UNSPEC
 	  || (XINT (term, 1) != UNSPEC_GOTPCREL
@@ -15967,7 +15956,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 
       if (code != 'P' && code != 'p')
 	{
-	  if (CONST_INT_P (x) || GET_CODE (x) == CONST_DOUBLE)
+	  if (CONST_INT_P (x))
 	    {
 	      if (ASSEMBLER_DIALECT == ASM_ATT)
 		putc ('$', file);
@@ -19444,12 +19433,9 @@ rtx
 ix86_build_signbit_mask (machine_mode mode, bool vect, bool invert)
 {
   machine_mode vec_mode, imode;
-  HOST_WIDE_INT hi, lo;
-  int shift = 63;
-  rtx v;
-  rtx mask;
+  wide_int w;
+  rtx mask, v;
 
-  /* Find the sign bit, sign extended to 2*HWI.  */
   switch (mode)
     {
     case V16SImode:
@@ -19461,7 +19447,6 @@ ix86_build_signbit_mask (machine_mode mode, bool vect, bool invert)
       vec_mode = mode;
       mode = GET_MODE_INNER (mode);
       imode = SImode;
-      lo = 0x80000000, hi = lo < 0;
       break;
 
     case V8DImode:
@@ -19473,54 +19458,25 @@ ix86_build_signbit_mask (machine_mode mode, bool vect, bool invert)
       vec_mode = mode;
       mode = GET_MODE_INNER (mode);
       imode = DImode;
-      if (HOST_BITS_PER_WIDE_INT >= 64)
-	lo = (HOST_WIDE_INT)1 << shift, hi = -1;
-      else
-	lo = 0, hi = (HOST_WIDE_INT)1 << (shift - HOST_BITS_PER_WIDE_INT);
       break;
 
     case TImode:
     case TFmode:
       vec_mode = VOIDmode;
-      if (HOST_BITS_PER_WIDE_INT >= 64)
-	{
-	  imode = TImode;
-	  lo = 0, hi = (HOST_WIDE_INT)1 << shift;
-	}
-      else
-	{
-	  rtvec vec;
-
-	  imode = DImode;
-	  lo = 0, hi = (HOST_WIDE_INT)1 << (shift - HOST_BITS_PER_WIDE_INT);
-
-	  if (invert)
-	    {
-	      lo = ~lo, hi = ~hi;
-	      v = constm1_rtx;
-	    }
-	  else
-	    v = const0_rtx;
-
-	  mask = immed_double_const (lo, hi, imode);
-
-	  vec = gen_rtvec (2, v, mask);
-	  v = gen_rtx_CONST_VECTOR (V2DImode, vec);
-	  v = copy_to_mode_reg (mode, gen_lowpart (mode, v));
-
-	  return v;
-	}
-     break;
+      imode = TImode;
+      break;
 
     default:
       gcc_unreachable ();
     }
 
+  w = wi::set_bit_in_zero (GET_MODE_BITSIZE (mode) - 1,
+			   GET_MODE_BITSIZE (mode));
   if (invert)
-    lo = ~lo, hi = ~hi;
+    w = wi::bit_not (w);
 
   /* Force this value into the low part of a fp vector constant.  */
-  mask = immed_double_const (lo, hi, imode);
+  mask = immed_wide_int_const (w, imode);
   mask = gen_lowpart (mode, mask);
 
   if (vec_mode == VOIDmode)
@@ -22735,26 +22691,21 @@ ix86_split_to_parts (rtx operand, rtx *parts, machine_mode mode)
 	      REAL_VALUE_FROM_CONST_DOUBLE (r, operand);
 	      real_to_target (l, &r, mode);
 
-	      /* Do not use shift by 32 to avoid warning on 32bit systems.  */
-	      if (HOST_BITS_PER_WIDE_INT >= 64)
-	        parts[0]
-		  = gen_int_mode
-		      ((l[0] & (((HOST_WIDE_INT) 2 << 31) - 1))
-		       + ((((HOST_WIDE_INT) l[1]) << 31) << 1),
-		       DImode);
-	      else
-	        parts[0] = immed_double_const (l[0], l[1], DImode);
+	      /* real_to_target puts 32-bit pieces in each long.  */
+	      parts[0] =
+		gen_int_mode
+		  ((l[0] & (HOST_WIDE_INT) 0xffffffff)
+		   | ((l[1] & (HOST_WIDE_INT) 0xffffffff) << 32),
+		   DImode);
 
 	      if (upper_mode == SImode)
 	        parts[1] = gen_int_mode (l[2], SImode);
-	      else if (HOST_BITS_PER_WIDE_INT >= 64)
-	        parts[1]
-		  = gen_int_mode
-		      ((l[2] & (((HOST_WIDE_INT) 2 << 31) - 1))
-		       + ((((HOST_WIDE_INT) l[3]) << 31) << 1),
-		       DImode);
 	      else
-	        parts[1] = immed_double_const (l[2], l[3], DImode);
+	        parts[1] =
+		  gen_int_mode
+		    ((l[2] & (HOST_WIDE_INT) 0xffffffff)
+		     | ((l[3] & (HOST_WIDE_INT) 0xffffffff) << 32),
+		     DImode);
 	    }
 	  else
 	    gcc_unreachable ();
@@ -42021,12 +41972,11 @@ ix86_rtx_costs (rtx x, int code_i, int outer_code_i, int opno, int *total,
 	*total = 0;
       return true;
 
+    case CONST_WIDE_INT:
+      *total = 0;
+      return true;
+
     case CONST_DOUBLE:
-      if (mode == VOIDmode)
-	{
-	  *total = 0;
-	  return true;
-	}
       switch (standard_80387_constant_p (x))
 	{
 	case 1: /* 0.0 */
@@ -50654,6 +50604,7 @@ find_constant (rtx in_rtx, imm_info *imm_values)
 	  break;
 
 	case CONST_DOUBLE:
+	case CONST_WIDE_INT:
 	  (imm_values->imm)++;
 	  (imm_values->imm64)++;
 	  break;
