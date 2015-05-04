@@ -289,8 +289,7 @@ along with GCC; see the file COPYING3.  If not see
   (if (((TREE_CODE (@1) == INTEGER_CST
 	 && INTEGRAL_TYPE_P (TREE_TYPE (@0))
 	 && int_fits_type_p (@1, TREE_TYPE (@0)))
-	|| (GIMPLE && types_compatible_p (TREE_TYPE (@0), TREE_TYPE (@1)))
-	|| (GENERIC && TREE_TYPE (@0) == TREE_TYPE (@1)))
+	|| types_match (TREE_TYPE (@0), TREE_TYPE (@1)))
        /* ???  This transform conflicts with fold-const.c doing
 	  Convert (T)(x & c) into (T)x & (T)c, if c is an integer
 	  constants (if x has signed type, the sign bit cannot be set
@@ -949,8 +948,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Unordered tests if either argument is a NaN.  */
 (simplify
  (bit_ior (unordered @0 @0) (unordered @1 @1))
- (if ((GIMPLE && types_compatible_p (TREE_TYPE (@0), TREE_TYPE (@1)))
-      || (GENERIC && TREE_TYPE (@0) == TREE_TYPE (@1)))
+ (if (types_match (TREE_TYPE (@0), TREE_TYPE (@1)))
   (unordered @0 @1)))
 (simplify
  (bit_ior:c (unordered @0 @0) (unordered:c@2 @0 @1))
@@ -1054,7 +1052,7 @@ along with GCC; see the file COPYING3.  If not see
    operation and convert the result to the desired type.  */
 (for op (plus minus)
   (simplify
-    (convert (op (convert@2 @0) (convert@3 @1)))
+    (convert (op@4 (convert@2 @0) (convert@3 @1)))
     (if (INTEGRAL_TYPE_P (type)
 	 /* We check for type compatibility between @0 and @1 below,
 	    so there's no need to check that @1/@3 are integral types.  */
@@ -1070,15 +1068,45 @@ along with GCC; see the file COPYING3.  If not see
 	 && TYPE_PRECISION (type) == GET_MODE_PRECISION (TYPE_MODE (type))
 	 /* The inner conversion must be a widening conversion.  */
 	 && TYPE_PRECISION (TREE_TYPE (@2)) > TYPE_PRECISION (TREE_TYPE (@0))
-	 && ((GENERIC 
-	      && (TYPE_MAIN_VARIANT (TREE_TYPE (@0))
-		  == TYPE_MAIN_VARIANT (TREE_TYPE (@1)))
-	      && (TYPE_MAIN_VARIANT (TREE_TYPE (@0))
-		  == TYPE_MAIN_VARIANT (type)))
-	     || (GIMPLE
-		 && types_compatible_p (TREE_TYPE (@0), TREE_TYPE (@1))
-		 && types_compatible_p (TREE_TYPE (@0), type))))
+	 && types_match (TREE_TYPE (@0), TREE_TYPE (@1))
+	 && types_match (TREE_TYPE (@0), type)
+	 && single_use (@4))
       (if (TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
 	(convert (op @0 @1)))
       (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
 	(convert (op (convert:utype @0) (convert:utype @1)))))))
+
+/* This is another case of narrowing, specifically when there's an outer
+   BIT_AND_EXPR which masks off bits outside the type of the innermost
+   operands.   Like the previous case we have to convert the operands
+   to unsigned types to avoid introducing undefined behaviour for the
+   arithmetic operation.  */
+(for op (minus plus)
+  (simplify
+    (bit_and (op@5 (convert@2 @0) (convert@3 @1)) INTEGER_CST@4)
+    (if (INTEGRAL_TYPE_P (type)
+	 /* We check for type compatibility between @0 and @1 below,
+	    so there's no need to check that @1/@3 are integral types.  */
+	 && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	 && INTEGRAL_TYPE_P (TREE_TYPE (@2))
+	 /* The precision of the type of each operand must match the
+	    precision of the mode of each operand, similarly for the
+	    result.  */
+	 && (TYPE_PRECISION (TREE_TYPE (@0))
+	     == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (@0))))
+	 && (TYPE_PRECISION (TREE_TYPE (@1))
+	     == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (@1))))
+	 && TYPE_PRECISION (type) == GET_MODE_PRECISION (TYPE_MODE (type))
+	 /* The inner conversion must be a widening conversion.  */
+	 && TYPE_PRECISION (TREE_TYPE (@2)) > TYPE_PRECISION (TREE_TYPE (@0))
+	 && types_match (TREE_TYPE (@0), TREE_TYPE (@1))
+	 && (tree_int_cst_min_precision (@4, UNSIGNED)
+	     <= TYPE_PRECISION (TREE_TYPE (@0)))
+	 && single_use (@5))
+      (if (TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
+	(with { tree ntype = TREE_TYPE (@0); }
+	  (convert (bit_and (op @0 @1) (convert:ntype @4)))))
+      (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
+	(convert (bit_and (op (convert:utype @0) (convert:utype @1))
+			  (convert:utype @4)))))))
+

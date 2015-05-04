@@ -70,4 +70,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "generic-match.h"
 
+/* Routine to determine if the types T1 and T2 are effectively
+   the same for GENERIC.  */
 
+inline bool
+types_match (tree t1, tree t2)
+{
+  return TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2);
+}
+
+/* Return if T has a single use.  For GENERIC, we assume this is
+   always true.  */
+
+inline bool
+single_use (tree t)
+{
+  return true;
+}
