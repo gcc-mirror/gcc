@@ -1,6 +1,6 @@
 
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-isolate-paths" } */
+/* { dg-options "-O2 -fdump-tree-isolate-paths -fdelete-null-pointer-checks" } */
 /* { dg-skip-if "" keeps_null_pointer_checks } */
 
 

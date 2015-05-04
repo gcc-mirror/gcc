@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-vrp1-blocks-vops-details" } */
+/* { dg-options "-O2 -fdump-tree-vrp1-blocks-vops-details -fdelete-null-pointer-checks" } */
 
 void arf (void);
 

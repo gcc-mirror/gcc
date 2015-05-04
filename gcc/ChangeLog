@@ -1,3 +1,13 @@
+2015-05-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* common.opt (fdelete-null-pointer-checks): Init to -1.
+	* config/nios2/elf.h (SUBTARGET_OVERRIDE_OPTIONS): Define to
+	override flag_delete_null_pointer_checks default.
+	* doc/invoke.texi (-fdelete-null-pointer-checks): Clarify
+	behavior re address zero.  Better document target-specific behavior.
+	(-fisolate-errneous-paths-dereference): Mention relationship to
+	-fdelete-null-pointer-checks.
+
 2015-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65984
