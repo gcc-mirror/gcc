@@ -1,3 +1,13 @@
+2015-05-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c: Change GET_CODE (...) == CONST_DOUBLE check
+	to CONST_DOUBLE_P predicate.
+	(standard_sse_constant_p): Return 0 for !TARGET_SSE.
+	(ix86_legitimate_constant_p) <case CONST_WIDE_INT>: For 32bit targets,
+	allow only operands that satisfy standard_sse_constant_p predicate.
+	* config/i386/i386.md: Change GET_CODE (...) == CONST_DOUBLE check
+	to CONST_DOUBLE_P predicate.
+
 2015-05-04  Jeff Law  <law@redhat.com>
 
 	* match.pd (bit_and (plus/minus (convert @0) (convert @1) mask): New

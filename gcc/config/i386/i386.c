@@ -9368,7 +9368,7 @@ standard_80387_constant_p (rtx x)
 
   REAL_VALUE_TYPE r;
 
-  if (!(X87_FLOAT_MODE_P (mode) && (GET_CODE (x) == CONST_DOUBLE)))
+  if (!(CONST_DOUBLE_P (x) && X87_FLOAT_MODE_P (mode)))
     return -1;
 
   if (x == CONST0_RTX (mode))
@@ -9469,9 +9469,14 @@ standard_80387_constant_rtx (int idx)
 int
 standard_sse_constant_p (rtx x)
 {
-  machine_mode mode = GET_MODE (x);
+  machine_mode mode;
 
-  if (x == const0_rtx || x == CONST0_RTX (GET_MODE (x)))
+  if (!TARGET_SSE)
+    return 0;
+
+  mode = GET_MODE (x);
+  
+  if (x == const0_rtx || x == CONST0_RTX (mode))
     return 1;
   if (vector_all_ones_operand (x, mode))
     switch (mode)
@@ -13078,9 +13083,7 @@ ix86_legitimate_constant_p (machine_mode, rtx x)
       break;
 
     case CONST_WIDE_INT:
-      if (GET_MODE (x) == TImode
-	  && x != CONST0_RTX (TImode)
-          && !TARGET_64BIT)
+      if (!TARGET_64BIT && !standard_sse_constant_p (x))
 	return false;
       break;
 
@@ -15903,7 +15906,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	output_address (x);
     }
 
-  else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == SFmode)
+  else if (CONST_DOUBLE_P (x) && GET_MODE (x) == SFmode)
     {
       REAL_VALUE_TYPE r;
       long l;
@@ -15921,7 +15924,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	fprintf (file, "0x%08x", (unsigned int) l);
     }
 
-  else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == DFmode)
+  else if (CONST_DOUBLE_P (x) && GET_MODE (x) == DFmode)
     {
       REAL_VALUE_TYPE r;
       long l[2];
@@ -15935,7 +15938,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
     }
 
   /* These float cases don't actually occur as immediate operands.  */
-  else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == XFmode)
+  else if (CONST_DOUBLE_P (x) && GET_MODE (x) == XFmode)
     {
       char dstr[30];
 
@@ -17364,8 +17367,7 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 	op1 = copy_to_mode_reg (mode, op1);
 
       if (can_create_pseudo_p ()
-	  && FLOAT_MODE_P (mode)
-	  && GET_CODE (op1) == CONST_DOUBLE)
+	  && CONST_DOUBLE_P (op1))
 	{
 	  /* If we are loading a floating point constant to a register,
 	     force the value to memory now, since we'll get better code
@@ -19563,7 +19565,7 @@ ix86_expand_copysign (rtx operands[])
   else
     vmode = mode;
 
-  if (GET_CODE (op0) == CONST_DOUBLE)
+  if (CONST_DOUBLE_P (op0))
     {
       rtx (*copysign_insn)(rtx, rtx, rtx, rtx);
 
@@ -22632,7 +22634,7 @@ ix86_split_to_parts (rtx operand, rtx *parts, machine_mode mode)
 	      for (i = 1; i < size; i++)
 		parts[i] = adjust_address (operand, SImode, 4 * i);
 	    }
-	  else if (GET_CODE (operand) == CONST_DOUBLE)
+	  else if (CONST_DOUBLE_P (operand))
 	    {
 	      REAL_VALUE_TYPE r;
 	      long l[4];
@@ -22683,7 +22685,7 @@ ix86_split_to_parts (rtx operand, rtx *parts, machine_mode mode)
 	      parts[0] = operand;
 	      parts[1] = adjust_address (operand, upper_mode, 8);
 	    }
-	  else if (GET_CODE (operand) == CONST_DOUBLE)
+	  else if (CONST_DOUBLE_P (operand))
 	    {
 	      REAL_VALUE_TYPE r;
 	      long l[4];
@@ -41208,7 +41210,7 @@ ix86_preferred_reload_class (rtx x, reg_class_t regclass)
     return SSE_CLASS_P (regclass) ? regclass : NO_REGS;
 
   /* Floating-point constants need more complex checks.  */
-  if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != VOIDmode)
+  if (CONST_DOUBLE_P (x))
     {
       /* General regs can load everything.  */
       if (reg_class_subset_p (regclass, GENERAL_REGS))
@@ -44551,9 +44553,9 @@ ix86_expand_vector_init (bool mmx_ok, rtx target, rtx vals)
   for (i = 0; i < n_elts; ++i)
     {
       x = XVECEXP (vals, 0, i);
-      if (!(CONST_INT_P (x)
-	    || GET_CODE (x) == CONST_DOUBLE
-	    || GET_CODE (x) == CONST_FIXED))
+      if (!(CONST_SCALAR_INT_P (x)
+	    || CONST_DOUBLE_P (x)
+	    || CONST_FIXED_P (x)))
 	n_var++, one_var = i;
       else if (x != CONST0_RTX (inner_mode))
 	all_const_zero = false;
