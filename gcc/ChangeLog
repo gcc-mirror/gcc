@@ -1,3 +1,7 @@
+2015-05-04  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/arm/arm.c: Restore bootstrap.
+
 2015-05-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (TARGET_SUPPORTS_WIDE_INT): New define.

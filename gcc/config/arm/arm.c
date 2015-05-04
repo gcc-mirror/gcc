@@ -150,7 +150,7 @@ static Mnode *add_minipool_backward_ref (Mfix *);
 static void assign_minipool_offsets (Mfix *);
 static void arm_print_value (FILE *, rtx);
 static void dump_minipool (rtx_insn *);
-static int arm_barrier_cost (rtx);
+static int arm_barrier_cost (rtx_insn *);
 static Mfix *create_fix_barrier (Mfix *, HOST_WIDE_INT);
 static void push_minipool_barrier (rtx_insn *, HOST_WIDE_INT);
 static void push_minipool_fix (rtx_insn *, HOST_WIDE_INT, rtx *,
