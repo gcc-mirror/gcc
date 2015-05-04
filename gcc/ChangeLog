@@ -1,3 +1,13 @@
+2015-05-04  Jeff Law  <law@redhat.com>
+
+	Revert:
+	2015-05-04  Jeff Law  <law@redhat.com>
+
+        * match.pd (bit_and (plus/minus (convert @0) (convert @1) mask): New
+        simplifier to narrow arithmetic.
+        * generic-match-head.c: (types_match, single_use): New functions.
+        * gimple-match-head.c: (types_match, single_use): New functions.
+
 2015-05-04  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/65987
