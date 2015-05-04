@@ -1,3 +1,9 @@
+2015-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65935
+	* tree-vect-slp.c (vect_build_slp_tree): If we swapped operands
+	then make sure to apply that swapping to the IL.
+
 2015-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (PATCHLEVEL_c): New variable.

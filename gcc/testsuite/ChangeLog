@@ -1,3 +1,8 @@
+2015-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65935
+	* gcc.dg/vect/bb-slp-pr65935.c: New testcase.
+
 2015-05-03  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/binary_op.inc: Call CHECK
