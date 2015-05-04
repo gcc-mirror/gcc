@@ -1,3 +1,9 @@
+2015-05-03  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (Variable Attributes, Type Attributes):  Move
+	sections up in file, to immediately after the Function Attributes
+	section.
+
 2015-05-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree.c (verify_type): Check various uses of TYPE_MINVAL.
