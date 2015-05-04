@@ -1,3 +1,11 @@
+2015-05-04  Kai Tietz  <ktietz@redhat.com>
+
+	Backmerge from trunk.
+
+	PR lto/65559
+	* lto-wrapper.c (run_gcc): Open filename
+	in binary-mode.
+
 2015-04-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65801
