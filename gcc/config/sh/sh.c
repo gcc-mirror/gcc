@@ -2747,7 +2747,8 @@ output_far_jump (rtx_insn *insn, rtx op)
 
   if (TARGET_SH2
       && offset >= -32764
-      && offset - get_attr_length (insn) <= 32766)
+      && offset - get_attr_length (insn) <= 32766
+      && ! CROSSING_JUMP_P (insn))
     {
       far = 0;
       jump =   "mov.w	%O0,%1" "\n"
@@ -6753,6 +6754,13 @@ split_branches (rtx_insn *first)
 
 	    if (type == TYPE_JUMP)
 	      {
+		if (CROSSING_JUMP_P (insn))
+		  {
+		    emit_insn_before (gen_block_branch_redirect (const0_rtx),
+				      insn);
+		    continue;
+		  }
+
 		far_label = as_a <rtx_insn *> (
 			      XEXP (SET_SRC (PATTERN (insn)), 0));
 		dest_uid = get_dest_uid (far_label, max_uid);
