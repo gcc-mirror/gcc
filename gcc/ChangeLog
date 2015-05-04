@@ -2,7 +2,7 @@
 
 	PR target/65559
 	* lto-wrapper.c (run_gcc): Open filename
-	with in binary-mode.
+	in binary-mode.
 
 2015-05-03  Sandra Loosemore  <sandra@codesourcery.com>
 
