@@ -8014,10 +8014,12 @@ Enabled by @option{-Os}.
 @item -fdelete-null-pointer-checks
 @opindex fdelete-null-pointer-checks
 Assume that programs cannot safely dereference null pointers, and that
-no code or data element resides there.  This enables simple constant
+no code or data element resides at address zero.
+This option enables simple constant
 folding optimizations at all optimization levels.  In addition, other
 optimization passes in GCC use this flag to control global dataflow
 analyses that eliminate useless checks for null pointers; these assume
+that a memory access to address zero always results in a trap, so
 that if a pointer is checked after it has already been dereferenced,
 it cannot be null.
 
@@ -8025,9 +8027,10 @@ Note however that in some environments this assumption is not true.
 Use @option{-fno-delete-null-pointer-checks} to disable this optimization
 for programs that depend on that behavior.
 
-Some targets, especially embedded ones, disable this option at all levels.
-Otherwise it is enabled at all levels: @option{-O0}, @option{-O1},
-@option{-O2}, @option{-O3}, @option{-Os}.  Passes that use the information
+This option is enabled by default on most targets.  On Nios II ELF, it
+defaults to off.  On AVR and CR16, this option is completely disabled.  
+
+Passes that use the dataflow information
 are enabled independently at different optimization levels.
 
 @item -fdevirtualize
@@ -8510,7 +8513,8 @@ This flag is enabled by default at @option{-O2} and @option{-Os}.
 Detect paths that trigger erroneous or undefined behavior due to
 dereferencing a null pointer.  Isolate those paths from the main control
 flow and turn the statement with erroneous or undefined behavior into a trap.
-This flag is enabled by default at @option{-O2} and higher.
+This flag is enabled by default at @option{-O2} and higher and depends on
+@option{-fdelete-null-pointer-checks} also being enabled.
 
 @item -fisolate-erroneous-paths-attribute
 @opindex fisolate-erroneous-paths-attribute

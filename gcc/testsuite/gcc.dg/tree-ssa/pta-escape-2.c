@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O -fdump-tree-alias-details" } */
+/* { dg-options "-O -fdump-tree-alias-details -fdelete-null-pointer-checks" } */
 
 int *i;
 void __attribute__((noinline))

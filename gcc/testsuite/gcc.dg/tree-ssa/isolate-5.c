@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-isolate-paths -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdelete-null-pointer-checks -fdump-tree-isolate-paths -fdump-tree-optimized" } */
 /* { dg-skip-if "" keeps_null_pointer_checks } */
 
 struct demangle_component

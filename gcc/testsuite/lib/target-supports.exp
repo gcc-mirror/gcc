@@ -458,9 +458,11 @@ proc check_effective_target_trampolines { } {
 }
 
 # Return 1 if according to target_info struct and explicit target list
-# target is supposed to keep null pointer checks. This could be due to 
-# use of option fno-delete-null-pointer-checks or hardwired in target.
- 
+# target disables -fdelete-null-pointer-checks.  Targets should return 0
+# if they simply default to -fno-delete-null-pointer-checks but obey
+# -fdelete-null-pointer-checks when passed explicitly (and tests that 
+# depend on this option should do that).
+
 proc check_effective_target_keeps_null_pointer_checks { } {
     if [target_info exists keeps_null_pointer_checks] {
       return 1

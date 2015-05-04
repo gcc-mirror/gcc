@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-optimized" } */
+/* { dg-options "-O1 -fdump-tree-optimized -fdelete-null-pointer-checks" } */
 static void bad_boy()
 {
 }

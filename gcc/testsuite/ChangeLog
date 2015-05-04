@@ -1,3 +1,41 @@
+2015-05-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_keeps_null_pointer_checks): Clarify that
+	this is for targets that disable -fdelete-null-pointer-checks,
+	not default it to off.
+	* gcc.dg/ipa/ipa-pta-14.c: Make dependence on
+	-fdelete-null-pointer-checks explicit.
+	* gcc.dg/tree-ssa/20030730-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030730-2.c: Likewise.
+	* gcc.dg/tree-ssa/isolate-1.c: Likewise.
+	* gcc.dg/tree-ssa/isolate-2.c: Likewise.
+	* gcc.dg/tree-ssa/isolate-3.c: Likewise.
+	* gcc.dg/tree-ssa/isolate-4.c: Likewise.
+	* gcc.dg/tree-ssa/isolate-5.c: Likewise.
+	* gcc.dg/tree-ssa/nonzero-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr20318.c: Likewise.
+	* gcc.dg/tree-ssa/pr20701.c: Likewise.
+	* gcc.dg/tree-ssa/pr20702.c: Likewise.
+	* gcc.dg/tree-ssa/pr21086.c: Likewise.
+	* gcc.dg/tree-ssa/pr21090.c: Likewise.
+	* gcc.dg/tree-ssa/pr58480.c: Likewise.
+	* gcc.dg/tree-ssa/pta-escape-1.c: Likewise.
+	* gcc.dg/tree-ssa/pta-escape-2.c: Likewise.
+	* gcc.dg/tree-ssa/pta-escape-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-vrp-thread-1.c: Likewise.
+	* gcc.dg/tree-ssa/unreachable.c: Likewise.
+	* gcc.dg/tree-ssa/vrp02.c: Likewise.
+	* gcc.dg/tree-ssa/vrp07.c: Likewise.
+	* gcc.dg/tree-ssa/vrp08.c: Likewise.
+	* gcc.dg/tree-ssa/vrp55.c: Likewise.
+	* g++.dg/cpp0x/static_assert9.C: Likewise.
+	* g++.dg/tree-ssa/nonzero-1.C: Likewise.
+	* g++.dg/tree-ssa/pr19476-1.C: Likewise.
+	* g++.dg/tree-ssa/pr19476-2.C: Likewise.
+	* g++.dg/tree-ssa/pr19476-5.C: Likewise.
+	* g++.dg/tree-ssa/pr26406.C: Likewise.
+
 2015-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65984
