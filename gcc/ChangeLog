@@ -1,3 +1,26 @@
+2015-05-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (TARGET_SUPPORTS_WIDE_INT): New define.
+	* config/i386/i386.c (ix86_legitimate_constant_p): Handle TImode
+	as CONST_WIDE_INT, not CONST_DOUBLE.
+	(ix86_cannot_force_const_mem): Handle CONST_WIDE_INT.
+	(output_pic_addr_const): Do not handle VOIDmode CONST_DOUBLEs.
+	(ix86_find_base_term): Do not check for CONST_DOUBLE.
+	(ix86_print_operand): Do not handle non-FPmode CONST_DOUBLEs.
+	(ix86_build_signbit_mask): Rewrite using wide ints.
+	(ix86_split_to_parts) [HOST_BITS_PER_WIDE_INT < 64]: Remove.
+	(ix86_rtx_costs): Handle CONST_WIDE_INT.
+	(find_constant): Ditto.
+	* config/i386/i386.md (bts, btr, btc peepholes): Rewrite
+	using gen_int_mode.
+	* config/i386/predicates.md (x86_64_immediate_operand)
+	<case CONST_INT>: Remove HOST_BITS_PER_WIDE_INT == 32 code.
+	(x86_64_zext_immediate_operand): Remove CONST_DOUBLE handling.
+	<case CONST_INT>: Remove HOST_BITS_PER_WIDE_INT == 32 code.
+	(const0_operand): Also match const_wide_int.
+	(constm1_operand): Ditto.
+	(const1_operand): Ditto.
+
 2015-05-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65965
