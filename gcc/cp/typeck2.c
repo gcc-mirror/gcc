@@ -958,10 +958,12 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain)
 	}
       else if (complain & tf_error)
 	{
+	  int savederrorcount = errorcount;
 	  global_dc->pedantic_errors = 1;
-	  if (!pedwarn (EXPR_LOC_OR_LOC (init, input_location), OPT_Wnarrowing,
-			"narrowing conversion of %qE from %qT to %qT "
-			"inside { }", init, ftype, type))
+	  pedwarn (EXPR_LOC_OR_LOC (init, input_location), OPT_Wnarrowing,
+		   "narrowing conversion of %qE from %qT to %qT "
+		   "inside { }", init, ftype, type);
+	  if (errorcount == savederrorcount)
 	    ok = true;
 	  global_dc->pedantic_errors = flag_pedantic_errors;
 	}
