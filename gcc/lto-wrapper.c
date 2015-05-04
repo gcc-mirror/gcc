@@ -934,7 +934,7 @@ run_gcc (unsigned argc, char *argv[])
 	  filename[p - argv[i]] = '\0';
 	  file_offset = (off_t) loffset;
 	}
-      fd = open (argv[i], O_RDONLY);
+      fd = open (filename, O_RDONLY | O_BINARY);
       if (fd == -1)
 	{
 	  lto_argv[lto_argc++] = argv[i];
