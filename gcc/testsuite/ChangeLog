@@ -1,3 +1,9 @@
+2015-05-04  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/66007
+	* g++.dg/cpp0x/Wnarrowing4.C: New.
+
 2015-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65984
