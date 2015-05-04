@@ -1,3 +1,9 @@
+2015-05-04  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/65559
+	* lto-wrapper.c (run_gcc): Open filename
+	with in binary-mode.
+
 2015-05-03  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/extend.texi (Variable Attributes, Type Attributes):  Move
