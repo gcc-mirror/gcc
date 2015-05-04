@@ -4998,389 +4998,6 @@ function entry and exit sequences suitable for use in an interrupt handler
 when this attribute is present.
 @end table
 
-@node Label Attributes
-@section Label Attributes
-@cindex Label Attributes
-
-GCC allows attributes to be set on C labels.  @xref{Attribute Syntax}, for 
-details of the exact syntax for using attributes.  Other attributes are 
-available for functions (@pxref{Function Attributes}), variables 
-(@pxref{Variable Attributes}) and for types (@pxref{Type Attributes}).
-
-This example uses the @code{cold} label attribute to indicate the 
-@code{ErrorHandling} branch is unlikely to be taken and that the
-@code{ErrorHandling} label is unused:
-
-@smallexample
-
-   asm goto ("some asm" : : : : NoError);
-
-/* This branch (the fall-through from the asm) is less commonly used */
-ErrorHandling: 
-   __attribute__((cold, unused)); /* Semi-colon is required here */
-   printf("error\n");
-   return 0;
-
-NoError:
-   printf("no error\n");
-   return 1;
-@end smallexample
-
-@table @code
-@item unused
-@cindex @code{unused} label attribute
-This feature is intended for program-generated code that may contain 
-unused labels, but which is compiled with @option{-Wall}.  It is
-not normally appropriate to use in it human-written code, though it
-could be useful in cases where the code that jumps to the label is
-contained within an @code{#ifdef} conditional.
-
-@item hot
-@cindex @code{hot} label attribute
-The @code{hot} attribute on a label is used to inform the compiler that
-the path following the label is more likely than paths that are not so
-annotated.  This attribute is used in cases where @code{__builtin_expect}
-cannot be used, for instance with computed goto or @code{asm goto}.
-
-@item cold
-@cindex @code{cold} label attribute
-The @code{cold} attribute on labels is used to inform the compiler that
-the path following the label is unlikely to be executed.  This attribute
-is used in cases where @code{__builtin_expect} cannot be used, for instance
-with computed goto or @code{asm goto}.
-
-@end table
-
-@node Attribute Syntax
-@section Attribute Syntax
-@cindex attribute syntax
-
-This section describes the syntax with which @code{__attribute__} may be
-used, and the constructs to which attribute specifiers bind, for the C
-language.  Some details may vary for C++ and Objective-C@.  Because of
-infelicities in the grammar for attributes, some forms described here
-may not be successfully parsed in all cases.
-
-There are some problems with the semantics of attributes in C++.  For
-example, there are no manglings for attributes, although they may affect
-code generation, so problems may arise when attributed types are used in
-conjunction with templates or overloading.  Similarly, @code{typeid}
-does not distinguish between types with different attributes.  Support
-for attributes in C++ may be restricted in future to attributes on
-declarations only, but not on nested declarators.
-
-@xref{Function Attributes}, for details of the semantics of attributes
-applying to functions.  @xref{Variable Attributes}, for details of the
-semantics of attributes applying to variables.  @xref{Type Attributes},
-for details of the semantics of attributes applying to structure, union
-and enumerated types.
-@xref{Label Attributes}, for details of the semantics of attributes 
-applying to labels.
-
-An @dfn{attribute specifier} is of the form
-@code{__attribute__ ((@var{attribute-list}))}.  An @dfn{attribute list}
-is a possibly empty comma-separated sequence of @dfn{attributes}, where
-each attribute is one of the following:
-
-@itemize @bullet
-@item
-Empty.  Empty attributes are ignored.
-
-@item
-An attribute name
-(which may be an identifier such as @code{unused}, or a reserved
-word such as @code{const}).
-
-@item
-An attribute name followed by a parenthesized list of
-parameters for the attribute.
-These parameters take one of the following forms:
-
-@itemize @bullet
-@item
-An identifier.  For example, @code{mode} attributes use this form.
-
-@item
-An identifier followed by a comma and a non-empty comma-separated list
-of expressions.  For example, @code{format} attributes use this form.
-
-@item
-A possibly empty comma-separated list of expressions.  For example,
-@code{format_arg} attributes use this form with the list being a single
-integer constant expression, and @code{alias} attributes use this form
-with the list being a single string constant.
-@end itemize
-@end itemize
-
-An @dfn{attribute specifier list} is a sequence of one or more attribute
-specifiers, not separated by any other tokens.
-
-You may optionally specify attribute names with @samp{__}
-preceding and following the name.
-This allows you to use them in header files without
-being concerned about a possible macro of the same name.  For example,
-you may use the attribute name @code{__noreturn__} instead of @code{noreturn}.
-
-
-@subsubheading Label Attributes
-
-In GNU C, an attribute specifier list may appear after the colon following a
-label, other than a @code{case} or @code{default} label.  GNU C++ only permits
-attributes on labels if the attribute specifier is immediately
-followed by a semicolon (i.e., the label applies to an empty
-statement).  If the semicolon is missing, C++ label attributes are
-ambiguous, as it is permissible for a declaration, which could begin
-with an attribute list, to be labelled in C++.  Declarations cannot be
-labelled in C90 or C99, so the ambiguity does not arise there.
-
-@subsubheading Type Attributes
-
-An attribute specifier list may appear as part of a @code{struct},
-@code{union} or @code{enum} specifier.  It may go either immediately
-after the @code{struct}, @code{union} or @code{enum} keyword, or after
-the closing brace.  The former syntax is preferred.
-Where attribute specifiers follow the closing brace, they are considered
-to relate to the structure, union or enumerated type defined, not to any
-enclosing declaration the type specifier appears in, and the type
-defined is not complete until after the attribute specifiers.
-@c Otherwise, there would be the following problems: a shift/reduce
-@c conflict between attributes binding the struct/union/enum and
-@c binding to the list of specifiers/qualifiers; and "aligned"
-@c attributes could use sizeof for the structure, but the size could be
-@c changed later by "packed" attributes.
-
-
-@subsubheading All other attributes
-
-Otherwise, an attribute specifier appears as part of a declaration,
-counting declarations of unnamed parameters and type names, and relates
-to that declaration (which may be nested in another declaration, for
-example in the case of a parameter declaration), or to a particular declarator
-within a declaration.  Where an
-attribute specifier is applied to a parameter declared as a function or
-an array, it should apply to the function or array rather than the
-pointer to which the parameter is implicitly converted, but this is not
-yet correctly implemented.
-
-Any list of specifiers and qualifiers at the start of a declaration may
-contain attribute specifiers, whether or not such a list may in that
-context contain storage class specifiers.  (Some attributes, however,
-are essentially in the nature of storage class specifiers, and only make
-sense where storage class specifiers may be used; for example,
-@code{section}.)  There is one necessary limitation to this syntax: the
-first old-style parameter declaration in a function definition cannot
-begin with an attribute specifier, because such an attribute applies to
-the function instead by syntax described below (which, however, is not
-yet implemented in this case).  In some other cases, attribute
-specifiers are permitted by this grammar but not yet supported by the
-compiler.  All attribute specifiers in this place relate to the
-declaration as a whole.  In the obsolescent usage where a type of
-@code{int} is implied by the absence of type specifiers, such a list of
-specifiers and qualifiers may be an attribute specifier list with no
-other specifiers or qualifiers.
-
-At present, the first parameter in a function prototype must have some
-type specifier that is not an attribute specifier; this resolves an
-ambiguity in the interpretation of @code{void f(int
-(__attribute__((foo)) x))}, but is subject to change.  At present, if
-the parentheses of a function declarator contain only attributes then
-those attributes are ignored, rather than yielding an error or warning
-or implying a single parameter of type int, but this is subject to
-change.
-
-An attribute specifier list may appear immediately before a declarator
-(other than the first) in a comma-separated list of declarators in a
-declaration of more than one identifier using a single list of
-specifiers and qualifiers.  Such attribute specifiers apply
-only to the identifier before whose declarator they appear.  For
-example, in
-
-@smallexample
-__attribute__((noreturn)) void d0 (void),
-    __attribute__((format(printf, 1, 2))) d1 (const char *, ...),
-     d2 (void);
-@end smallexample
-
-@noindent
-the @code{noreturn} attribute applies to all the functions
-declared; the @code{format} attribute only applies to @code{d1}.
-
-An attribute specifier list may appear immediately before the comma,
-@code{=} or semicolon terminating the declaration of an identifier other
-than a function definition.  Such attribute specifiers apply
-to the declared object or function.  Where an
-assembler name for an object or function is specified (@pxref{Asm
-Labels}), the attribute must follow the @code{asm}
-specification.
-
-An attribute specifier list may, in future, be permitted to appear after
-the declarator in a function definition (before any old-style parameter
-declarations or the function body).
-
-Attribute specifiers may be mixed with type qualifiers appearing inside
-the @code{[]} of a parameter array declarator, in the C99 construct by
-which such qualifiers are applied to the pointer to which the array is
-implicitly converted.  Such attribute specifiers apply to the pointer,
-not to the array, but at present this is not implemented and they are
-ignored.
-
-An attribute specifier list may appear at the start of a nested
-declarator.  At present, there are some limitations in this usage: the
-attributes correctly apply to the declarator, but for most individual
-attributes the semantics this implies are not implemented.
-When attribute specifiers follow the @code{*} of a pointer
-declarator, they may be mixed with any type qualifiers present.
-The following describes the formal semantics of this syntax.  It makes the
-most sense if you are familiar with the formal specification of
-declarators in the ISO C standard.
-
-Consider (as in C99 subclause 6.7.5 paragraph 4) a declaration @code{T
-D1}, where @code{T} contains declaration specifiers that specify a type
-@var{Type} (such as @code{int}) and @code{D1} is a declarator that
-contains an identifier @var{ident}.  The type specified for @var{ident}
-for derived declarators whose type does not include an attribute
-specifier is as in the ISO C standard.
-
-If @code{D1} has the form @code{( @var{attribute-specifier-list} D )},
-and the declaration @code{T D} specifies the type
-``@var{derived-declarator-type-list} @var{Type}'' for @var{ident}, then
-@code{T D1} specifies the type ``@var{derived-declarator-type-list}
-@var{attribute-specifier-list} @var{Type}'' for @var{ident}.
-
-If @code{D1} has the form @code{*
-@var{type-qualifier-and-attribute-specifier-list} D}, and the
-declaration @code{T D} specifies the type
-``@var{derived-declarator-type-list} @var{Type}'' for @var{ident}, then
-@code{T D1} specifies the type ``@var{derived-declarator-type-list}
-@var{type-qualifier-and-attribute-specifier-list} pointer to @var{Type}'' for
-@var{ident}.
-
-For example,
-
-@smallexample
-void (__attribute__((noreturn)) ****f) (void);
-@end smallexample
-
-@noindent
-specifies the type ``pointer to pointer to pointer to pointer to
-non-returning function returning @code{void}''.  As another example,
-
-@smallexample
-char *__attribute__((aligned(8))) *f;
-@end smallexample
-
-@noindent
-specifies the type ``pointer to 8-byte-aligned pointer to @code{char}''.
-Note again that this does not work with most attributes; for example,
-the usage of @samp{aligned} and @samp{noreturn} attributes given above
-is not yet supported.
-
-For compatibility with existing code written for compiler versions that
-did not implement attributes on nested declarators, some laxity is
-allowed in the placing of attributes.  If an attribute that only applies
-to types is applied to a declaration, it is treated as applying to
-the type of that declaration.  If an attribute that only applies to
-declarations is applied to the type of a declaration, it is treated
-as applying to that declaration; and, for compatibility with code
-placing the attributes immediately before the identifier declared, such
-an attribute applied to a function return type is treated as
-applying to the function type, and such an attribute applied to an array
-element type is treated as applying to the array type.  If an
-attribute that only applies to function types is applied to a
-pointer-to-function type, it is treated as applying to the pointer
-target type; if such an attribute is applied to a function return type
-that is not a pointer-to-function type, it is treated as applying
-to the function type.
-
-@node Function Prototypes
-@section Prototypes and Old-Style Function Definitions
-@cindex function prototype declarations
-@cindex old-style function definitions
-@cindex promotion of formal parameters
-
-GNU C extends ISO C to allow a function prototype to override a later
-old-style non-prototype definition.  Consider the following example:
-
-@smallexample
-/* @r{Use prototypes unless the compiler is old-fashioned.}  */
-#ifdef __STDC__
-#define P(x) x
-#else
-#define P(x) ()
-#endif
-
-/* @r{Prototype function declaration.}  */
-int isroot P((uid_t));
-
-/* @r{Old-style function definition.}  */
-int
-isroot (x)   /* @r{??? lossage here ???} */
-     uid_t x;
-@{
-  return x == 0;
-@}
-@end smallexample
-
-Suppose the type @code{uid_t} happens to be @code{short}.  ISO C does
-not allow this example, because subword arguments in old-style
-non-prototype definitions are promoted.  Therefore in this example the
-function definition's argument is really an @code{int}, which does not
-match the prototype argument type of @code{short}.
-
-This restriction of ISO C makes it hard to write code that is portable
-to traditional C compilers, because the programmer does not know
-whether the @code{uid_t} type is @code{short}, @code{int}, or
-@code{long}.  Therefore, in cases like these GNU C allows a prototype
-to override a later old-style definition.  More precisely, in GNU C, a
-function prototype argument type overrides the argument type specified
-by a later old-style definition if the former type is the same as the
-latter type before promotion.  Thus in GNU C the above example is
-equivalent to the following:
-
-@smallexample
-int isroot (uid_t);
-
-int
-isroot (uid_t x)
-@{
-  return x == 0;
-@}
-@end smallexample
-
-@noindent
-GNU C++ does not support old-style function definitions, so this
-extension is irrelevant.
-
-@node C++ Comments
-@section C++ Style Comments
-@cindex @code{//}
-@cindex C++ comments
-@cindex comments, C++ style
-
-In GNU C, you may use C++ style comments, which start with @samp{//} and
-continue until the end of the line.  Many other C implementations allow
-such comments, and they are included in the 1999 C standard.  However,
-C++ style comments are not recognized if you specify an @option{-std}
-option specifying a version of ISO C before C99, or @option{-ansi}
-(equivalent to @option{-std=c90}).
-
-@node Dollar Signs
-@section Dollar Signs in Identifier Names
-@cindex $
-@cindex dollar signs in identifier names
-@cindex identifier names, dollar signs in
-
-In GNU C, you may normally use dollar signs in identifier names.
-This is because many traditional C implementations allow such identifiers.
-However, dollar signs in identifiers are not supported on a few target
-machines, typically because the target assembler does not allow them.
-
-@node Character Escapes
-@section The Character @key{ESC} in Constants
-
-You can use the sequence @samp{\e} in a string or character constant to
-stand for the ASCII character @key{ESC}.
-
 @node Variable Attributes
 @section Specifying Attributes of Variables
 @cindex attribute of variables
@@ -6643,6 +6260,389 @@ either format.
 Currently @option{-m[no-]ms-bitfields} is provided for the Microsoft Windows x86
 compilers to match the native Microsoft compiler.
 @end table
+
+@node Label Attributes
+@section Label Attributes
+@cindex Label Attributes
+
+GCC allows attributes to be set on C labels.  @xref{Attribute Syntax}, for 
+details of the exact syntax for using attributes.  Other attributes are 
+available for functions (@pxref{Function Attributes}), variables 
+(@pxref{Variable Attributes}) and for types (@pxref{Type Attributes}).
+
+This example uses the @code{cold} label attribute to indicate the 
+@code{ErrorHandling} branch is unlikely to be taken and that the
+@code{ErrorHandling} label is unused:
+
+@smallexample
+
+   asm goto ("some asm" : : : : NoError);
+
+/* This branch (the fall-through from the asm) is less commonly used */
+ErrorHandling: 
+   __attribute__((cold, unused)); /* Semi-colon is required here */
+   printf("error\n");
+   return 0;
+
+NoError:
+   printf("no error\n");
+   return 1;
+@end smallexample
+
+@table @code
+@item unused
+@cindex @code{unused} label attribute
+This feature is intended for program-generated code that may contain 
+unused labels, but which is compiled with @option{-Wall}.  It is
+not normally appropriate to use in it human-written code, though it
+could be useful in cases where the code that jumps to the label is
+contained within an @code{#ifdef} conditional.
+
+@item hot
+@cindex @code{hot} label attribute
+The @code{hot} attribute on a label is used to inform the compiler that
+the path following the label is more likely than paths that are not so
+annotated.  This attribute is used in cases where @code{__builtin_expect}
+cannot be used, for instance with computed goto or @code{asm goto}.
+
+@item cold
+@cindex @code{cold} label attribute
+The @code{cold} attribute on labels is used to inform the compiler that
+the path following the label is unlikely to be executed.  This attribute
+is used in cases where @code{__builtin_expect} cannot be used, for instance
+with computed goto or @code{asm goto}.
+
+@end table
+
+@node Attribute Syntax
+@section Attribute Syntax
+@cindex attribute syntax
+
+This section describes the syntax with which @code{__attribute__} may be
+used, and the constructs to which attribute specifiers bind, for the C
+language.  Some details may vary for C++ and Objective-C@.  Because of
+infelicities in the grammar for attributes, some forms described here
+may not be successfully parsed in all cases.
+
+There are some problems with the semantics of attributes in C++.  For
+example, there are no manglings for attributes, although they may affect
+code generation, so problems may arise when attributed types are used in
+conjunction with templates or overloading.  Similarly, @code{typeid}
+does not distinguish between types with different attributes.  Support
+for attributes in C++ may be restricted in future to attributes on
+declarations only, but not on nested declarators.
+
+@xref{Function Attributes}, for details of the semantics of attributes
+applying to functions.  @xref{Variable Attributes}, for details of the
+semantics of attributes applying to variables.  @xref{Type Attributes},
+for details of the semantics of attributes applying to structure, union
+and enumerated types.
+@xref{Label Attributes}, for details of the semantics of attributes 
+applying to labels.
+
+An @dfn{attribute specifier} is of the form
+@code{__attribute__ ((@var{attribute-list}))}.  An @dfn{attribute list}
+is a possibly empty comma-separated sequence of @dfn{attributes}, where
+each attribute is one of the following:
+
+@itemize @bullet
+@item
+Empty.  Empty attributes are ignored.
+
+@item
+An attribute name
+(which may be an identifier such as @code{unused}, or a reserved
+word such as @code{const}).
+
+@item
+An attribute name followed by a parenthesized list of
+parameters for the attribute.
+These parameters take one of the following forms:
+
+@itemize @bullet
+@item
+An identifier.  For example, @code{mode} attributes use this form.
+
+@item
+An identifier followed by a comma and a non-empty comma-separated list
+of expressions.  For example, @code{format} attributes use this form.
+
+@item
+A possibly empty comma-separated list of expressions.  For example,
+@code{format_arg} attributes use this form with the list being a single
+integer constant expression, and @code{alias} attributes use this form
+with the list being a single string constant.
+@end itemize
+@end itemize
+
+An @dfn{attribute specifier list} is a sequence of one or more attribute
+specifiers, not separated by any other tokens.
+
+You may optionally specify attribute names with @samp{__}
+preceding and following the name.
+This allows you to use them in header files without
+being concerned about a possible macro of the same name.  For example,
+you may use the attribute name @code{__noreturn__} instead of @code{noreturn}.
+
+
+@subsubheading Label Attributes
+
+In GNU C, an attribute specifier list may appear after the colon following a
+label, other than a @code{case} or @code{default} label.  GNU C++ only permits
+attributes on labels if the attribute specifier is immediately
+followed by a semicolon (i.e., the label applies to an empty
+statement).  If the semicolon is missing, C++ label attributes are
+ambiguous, as it is permissible for a declaration, which could begin
+with an attribute list, to be labelled in C++.  Declarations cannot be
+labelled in C90 or C99, so the ambiguity does not arise there.
+
+@subsubheading Type Attributes
+
+An attribute specifier list may appear as part of a @code{struct},
+@code{union} or @code{enum} specifier.  It may go either immediately
+after the @code{struct}, @code{union} or @code{enum} keyword, or after
+the closing brace.  The former syntax is preferred.
+Where attribute specifiers follow the closing brace, they are considered
+to relate to the structure, union or enumerated type defined, not to any
+enclosing declaration the type specifier appears in, and the type
+defined is not complete until after the attribute specifiers.
+@c Otherwise, there would be the following problems: a shift/reduce
+@c conflict between attributes binding the struct/union/enum and
+@c binding to the list of specifiers/qualifiers; and "aligned"
+@c attributes could use sizeof for the structure, but the size could be
+@c changed later by "packed" attributes.
+
+
+@subsubheading All other attributes
+
+Otherwise, an attribute specifier appears as part of a declaration,
+counting declarations of unnamed parameters and type names, and relates
+to that declaration (which may be nested in another declaration, for
+example in the case of a parameter declaration), or to a particular declarator
+within a declaration.  Where an
+attribute specifier is applied to a parameter declared as a function or
+an array, it should apply to the function or array rather than the
+pointer to which the parameter is implicitly converted, but this is not
+yet correctly implemented.
+
+Any list of specifiers and qualifiers at the start of a declaration may
+contain attribute specifiers, whether or not such a list may in that
+context contain storage class specifiers.  (Some attributes, however,
+are essentially in the nature of storage class specifiers, and only make
+sense where storage class specifiers may be used; for example,
+@code{section}.)  There is one necessary limitation to this syntax: the
+first old-style parameter declaration in a function definition cannot
+begin with an attribute specifier, because such an attribute applies to
+the function instead by syntax described below (which, however, is not
+yet implemented in this case).  In some other cases, attribute
+specifiers are permitted by this grammar but not yet supported by the
+compiler.  All attribute specifiers in this place relate to the
+declaration as a whole.  In the obsolescent usage where a type of
+@code{int} is implied by the absence of type specifiers, such a list of
+specifiers and qualifiers may be an attribute specifier list with no
+other specifiers or qualifiers.
+
+At present, the first parameter in a function prototype must have some
+type specifier that is not an attribute specifier; this resolves an
+ambiguity in the interpretation of @code{void f(int
+(__attribute__((foo)) x))}, but is subject to change.  At present, if
+the parentheses of a function declarator contain only attributes then
+those attributes are ignored, rather than yielding an error or warning
+or implying a single parameter of type int, but this is subject to
+change.
+
+An attribute specifier list may appear immediately before a declarator
+(other than the first) in a comma-separated list of declarators in a
+declaration of more than one identifier using a single list of
+specifiers and qualifiers.  Such attribute specifiers apply
+only to the identifier before whose declarator they appear.  For
+example, in
+
+@smallexample
+__attribute__((noreturn)) void d0 (void),
+    __attribute__((format(printf, 1, 2))) d1 (const char *, ...),
+     d2 (void);
+@end smallexample
+
+@noindent
+the @code{noreturn} attribute applies to all the functions
+declared; the @code{format} attribute only applies to @code{d1}.
+
+An attribute specifier list may appear immediately before the comma,
+@code{=} or semicolon terminating the declaration of an identifier other
+than a function definition.  Such attribute specifiers apply
+to the declared object or function.  Where an
+assembler name for an object or function is specified (@pxref{Asm
+Labels}), the attribute must follow the @code{asm}
+specification.
+
+An attribute specifier list may, in future, be permitted to appear after
+the declarator in a function definition (before any old-style parameter
+declarations or the function body).
+
+Attribute specifiers may be mixed with type qualifiers appearing inside
+the @code{[]} of a parameter array declarator, in the C99 construct by
+which such qualifiers are applied to the pointer to which the array is
+implicitly converted.  Such attribute specifiers apply to the pointer,
+not to the array, but at present this is not implemented and they are
+ignored.
+
+An attribute specifier list may appear at the start of a nested
+declarator.  At present, there are some limitations in this usage: the
+attributes correctly apply to the declarator, but for most individual
+attributes the semantics this implies are not implemented.
+When attribute specifiers follow the @code{*} of a pointer
+declarator, they may be mixed with any type qualifiers present.
+The following describes the formal semantics of this syntax.  It makes the
+most sense if you are familiar with the formal specification of
+declarators in the ISO C standard.
+
+Consider (as in C99 subclause 6.7.5 paragraph 4) a declaration @code{T
+D1}, where @code{T} contains declaration specifiers that specify a type
+@var{Type} (such as @code{int}) and @code{D1} is a declarator that
+contains an identifier @var{ident}.  The type specified for @var{ident}
+for derived declarators whose type does not include an attribute
+specifier is as in the ISO C standard.
+
+If @code{D1} has the form @code{( @var{attribute-specifier-list} D )},
+and the declaration @code{T D} specifies the type
+``@var{derived-declarator-type-list} @var{Type}'' for @var{ident}, then
+@code{T D1} specifies the type ``@var{derived-declarator-type-list}
+@var{attribute-specifier-list} @var{Type}'' for @var{ident}.
+
+If @code{D1} has the form @code{*
+@var{type-qualifier-and-attribute-specifier-list} D}, and the
+declaration @code{T D} specifies the type
+``@var{derived-declarator-type-list} @var{Type}'' for @var{ident}, then
+@code{T D1} specifies the type ``@var{derived-declarator-type-list}
+@var{type-qualifier-and-attribute-specifier-list} pointer to @var{Type}'' for
+@var{ident}.
+
+For example,
+
+@smallexample
+void (__attribute__((noreturn)) ****f) (void);
+@end smallexample
+
+@noindent
+specifies the type ``pointer to pointer to pointer to pointer to
+non-returning function returning @code{void}''.  As another example,
+
+@smallexample
+char *__attribute__((aligned(8))) *f;
+@end smallexample
+
+@noindent
+specifies the type ``pointer to 8-byte-aligned pointer to @code{char}''.
+Note again that this does not work with most attributes; for example,
+the usage of @samp{aligned} and @samp{noreturn} attributes given above
+is not yet supported.
+
+For compatibility with existing code written for compiler versions that
+did not implement attributes on nested declarators, some laxity is
+allowed in the placing of attributes.  If an attribute that only applies
+to types is applied to a declaration, it is treated as applying to
+the type of that declaration.  If an attribute that only applies to
+declarations is applied to the type of a declaration, it is treated
+as applying to that declaration; and, for compatibility with code
+placing the attributes immediately before the identifier declared, such
+an attribute applied to a function return type is treated as
+applying to the function type, and such an attribute applied to an array
+element type is treated as applying to the array type.  If an
+attribute that only applies to function types is applied to a
+pointer-to-function type, it is treated as applying to the pointer
+target type; if such an attribute is applied to a function return type
+that is not a pointer-to-function type, it is treated as applying
+to the function type.
+
+@node Function Prototypes
+@section Prototypes and Old-Style Function Definitions
+@cindex function prototype declarations
+@cindex old-style function definitions
+@cindex promotion of formal parameters
+
+GNU C extends ISO C to allow a function prototype to override a later
+old-style non-prototype definition.  Consider the following example:
+
+@smallexample
+/* @r{Use prototypes unless the compiler is old-fashioned.}  */
+#ifdef __STDC__
+#define P(x) x
+#else
+#define P(x) ()
+#endif
+
+/* @r{Prototype function declaration.}  */
+int isroot P((uid_t));
+
+/* @r{Old-style function definition.}  */
+int
+isroot (x)   /* @r{??? lossage here ???} */
+     uid_t x;
+@{
+  return x == 0;
+@}
+@end smallexample
+
+Suppose the type @code{uid_t} happens to be @code{short}.  ISO C does
+not allow this example, because subword arguments in old-style
+non-prototype definitions are promoted.  Therefore in this example the
+function definition's argument is really an @code{int}, which does not
+match the prototype argument type of @code{short}.
+
+This restriction of ISO C makes it hard to write code that is portable
+to traditional C compilers, because the programmer does not know
+whether the @code{uid_t} type is @code{short}, @code{int}, or
+@code{long}.  Therefore, in cases like these GNU C allows a prototype
+to override a later old-style definition.  More precisely, in GNU C, a
+function prototype argument type overrides the argument type specified
+by a later old-style definition if the former type is the same as the
+latter type before promotion.  Thus in GNU C the above example is
+equivalent to the following:
+
+@smallexample
+int isroot (uid_t);
+
+int
+isroot (uid_t x)
+@{
+  return x == 0;
+@}
+@end smallexample
+
+@noindent
+GNU C++ does not support old-style function definitions, so this
+extension is irrelevant.
+
+@node C++ Comments
+@section C++ Style Comments
+@cindex @code{//}
+@cindex C++ comments
+@cindex comments, C++ style
+
+In GNU C, you may use C++ style comments, which start with @samp{//} and
+continue until the end of the line.  Many other C implementations allow
+such comments, and they are included in the 1999 C standard.  However,
+C++ style comments are not recognized if you specify an @option{-std}
+option specifying a version of ISO C before C99, or @option{-ansi}
+(equivalent to @option{-std=c90}).
+
+@node Dollar Signs
+@section Dollar Signs in Identifier Names
+@cindex $
+@cindex dollar signs in identifier names
+@cindex identifier names, dollar signs in
+
+In GNU C, you may normally use dollar signs in identifier names.
+This is because many traditional C implementations allow such identifiers.
+However, dollar signs in identifiers are not supported on a few target
+machines, typically because the target assembler does not allow them.
+
+@node Character Escapes
+@section The Character @key{ESC} in Constants
+
+You can use the sequence @samp{\e} in a string or character constant to
+stand for the ASCII character @key{ESC}.
 
 @node Alignment
 @section Inquiring on Alignment of Types or Variables
