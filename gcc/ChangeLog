@@ -1,5 +1,11 @@
 2015-05-04  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/65965
+	* tree-vect-data-refs.c (vect_analyze_data_ref_accesses): Split
+	store groups at gaps.
+
+2015-05-04  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/65935
 	* tree-vect-slp.c (vect_build_slp_tree): If we swapped operands
 	then make sure to apply that swapping to the IL.

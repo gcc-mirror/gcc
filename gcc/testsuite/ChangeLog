@@ -1,5 +1,10 @@
 2015-05-04  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/65965
+	* gcc.dg/vect/bb-slp-33.c: New testcase.
+
+2015-05-04  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/65935
 	* gcc.dg/vect/bb-slp-pr65935.c: New testcase.
 
