@@ -12584,15 +12584,60 @@ verify_type (const_tree t)
     }
   else if (t != mv && !verify_type_variant (t, mv))
     error_found = true;
-  /* FIXME: C FE uses TYPE_VFIELD to record C_TYPE_INCOMPLETE_VARS
-     and danagle the pointer from time to time.  */
-  if (RECORD_OR_UNION_TYPE_P (t) && TYPE_VFIELD (t)
-      && TREE_CODE (TYPE_VFIELD (t)) != FIELD_DECL
-      && TREE_CODE (TYPE_VFIELD (t)) != TREE_LIST)
+
+  /* Check various uses of TYPE_MINVAL.  */
+  if (RECORD_OR_UNION_TYPE_P (t))
     {
-      error ("TYPE_VFIELD is not FIELD_DECL nor TREE_LIST");
-      debug_tree (TYPE_VFIELD (t));
+      /* FIXME: C FE uses TYPE_VFIELD to record C_TYPE_INCOMPLETE_VARS
+	 and danagle the pointer from time to time.  */
+      if (TYPE_VFIELD (t)
+	  && TREE_CODE (TYPE_VFIELD (t)) != FIELD_DECL
+	  && TREE_CODE (TYPE_VFIELD (t)) != TREE_LIST)
+	{
+	  error ("TYPE_VFIELD is not FIELD_DECL nor TREE_LIST");
+	  debug_tree (TYPE_VFIELD (t));
+	  error_found = true;
+	}
     }
+  else if (TREE_CODE (t) == POINTER_TYPE)
+    {
+      if (TYPE_NEXT_PTR_TO (t)
+	  && TREE_CODE (TYPE_NEXT_PTR_TO (t)) != POINTER_TYPE)
+	{
+	  error ("TYPE_NEXT_PTR_TO is not POINTER_TYPE");
+	  debug_tree (TYPE_NEXT_PTR_TO (t));
+	  error_found = true;
+	}
+    }
+  else if (TREE_CODE (t) == REFERENCE_TYPE)
+    {
+      if (TYPE_NEXT_REF_TO (t)
+	  && TREE_CODE (TYPE_NEXT_REF_TO (t)) != REFERENCE_TYPE)
+	{
+	  error ("TYPE_NEXT_REF_TO is not REFERENCE_TYPE");
+	  debug_tree (TYPE_NEXT_REF_TO (t));
+	  error_found = true;
+	}
+    }
+  else if (INTEGRAL_TYPE_P (t) || TREE_CODE (t) == REAL_TYPE || TREE_CODE (t) == FIXED_POINT_TYPE)
+    {
+      if (!TYPE_MIN_VALUE (t))
+	;
+      else if (!TREE_CONSTANT (TYPE_MIN_VALUE (t)))
+        {
+	  error ("TYPE_MIN_VALUE is not constant");
+	  debug_tree (TYPE_MIN_VALUE (t));
+	  error_found = true;
+        }
+    }
+  else if (TYPE_MINVAL (t))
+    {
+      error ("TYPE_MINVAL non-NULL");
+      debug_tree (TYPE_MINVAL (t));
+      error_found = true;
+    }
+
+
   if (error_found)
     {
       debug_tree (const_cast <tree> (t));
