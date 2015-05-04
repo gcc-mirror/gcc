@@ -1,3 +1,9 @@
+2015-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (PATCHLEVEL_c): New variable.
+	(DATESTAMP_s, REVISION_s): If PATCHLEVEL_c is not 0,
+	expand the same way as if DEVPHASE_c was non-empty.
+
 2015-05-04  Kai Tietz  <ktietz@redhat.com>
 
 	Backmerge from trunk.
