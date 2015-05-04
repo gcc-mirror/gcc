@@ -1,3 +1,9 @@
+2015-05-04  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/65987
+	* config/sh/sh.c (output_far_jump): Take into account crossing jumps.
+	(split_branches): Likewise.
+
 2015-05-04  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* common.opt (fdelete-null-pointer-checks): Init to -1.
