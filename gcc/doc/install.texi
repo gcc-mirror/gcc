@@ -3408,12 +3408,23 @@ not support option @option{-mabi=ilp32}.
 To enable a workaround for the Cortex-A53 erratum number 835769 by default
 (for all CPUs regardless of -mcpu option given) at configure time use the
 @option{--enable-fix-cortex-a53-835769} option.  This will enable the fix by
-default and can be explicitly disabled during during compilation by passing the
+default and can be explicitly disabled during compilation by passing the
 @option{-mno-fix-cortex-a53-835769} option.  Conversely,
 @option{--disable-fix-cortex-a53-835769} will disable the workaround by
 default.  The workaround is disabled by default if neither of
 @option{--enable-fix-cortex-a53-835769} or
 @option{--disable-fix-cortex-a53-835769} is given at configure time.
+
+To enable a workaround for the Cortex-A53 erratum number 843419 by default
+(for all CPUs regardless of -mcpu option given) at configure time use the
+@option{--enable-fix-cortex-a53-843419} option.  This workaround is applied at
+link time.  Enabling the workaround will cause GCC to pass the relevant option
+to the linker.  It can be explicitly disabled during compilation by passing the
+@option{-mno-fix-cortex-a53-843419} option.  Conversely,
+@option{--disable-fix-cortex-a53-843419} will disable the workaround by default.
+The workaround is disabled by default if neither of
+@option{--enable-fix-cortex-a53-843419} or
+@option{--disable-fix-cortex-a53-843419} is given at configure time.
 
 @html
 <hr />

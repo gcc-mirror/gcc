@@ -923,6 +923,7 @@ enable_gnu_indirect_function
 enable_initfini_array
 enable_comdat
 enable_fix_cortex_a53_835769
+enable_fix_cortex_a53_843419
 with_glibc_version
 enable_gnu_unique_object
 enable_linker_build_id
@@ -1647,6 +1648,14 @@ Optional Features:
   --disable-fix-cortex-a53-835769
                           disable workaround for AArch64 Cortex-A53 erratum
                           835769 by default
+
+
+  --enable-fix-cortex-a53-843419
+                          enable workaround for AArch64 Cortex-A53 erratum
+                          843419 by default
+  --disable-fix-cortex-a53-843419
+                          disable workaround for AArch64 Cortex-A53 erratum
+                          843419 by default
 
   --enable-gnu-unique-object
                           enable the use of the @gnu_unique_object ELF
@@ -18153,7 +18162,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18156 "configure"
+#line 18165 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18259,7 +18268,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18262 "configure"
+#line 18271 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -24095,6 +24104,25 @@ if test "${enable_fix_cortex_a53_835769+set}" = set; then :
             ;;
           *)
             as_fn_error "'$enableval' is an invalid value for --enable-fix-cortex-a53-835769.\
+  Valid choices are 'yes' and 'no'." "$LINENO" 5
+            ;;
+
+        esac
+
+fi
+
+    # Enable default workaround for AArch64 Cortex-A53 erratum 843419.
+    # Check whether --enable-fix-cortex-a53-843419 was given.
+if test "${enable_fix_cortex_a53_843419+set}" = set; then :
+  enableval=$enable_fix_cortex_a53_843419;
+        case $enableval in
+          yes)
+            tm_defines="${tm_defines} TARGET_FIX_ERR_A53_843419_DEFAULT=1"
+            ;;
+          no)
+            ;;
+          *)
+            as_fn_error "'$enableval' is an invalid value for --enable-fix-cortex-a53-843419.\
   Valid choices are 'yes' and 'no'." "$LINENO" 5
             ;;
 
