@@ -2180,7 +2180,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	    gfc_error ("Passing coarray at %L to allocatable, noncoarray, "
 		       "INTENT(OUT) dummy argument %qs", &actual->where,
 		       formal->name);
-	    return 0;
+	  return 0;
 	}
       else if (warn_surprising && where && formal->attr.intent != INTENT_IN)
 	gfc_warning (OPT_Wsurprising,

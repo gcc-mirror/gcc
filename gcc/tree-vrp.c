@@ -10266,12 +10266,12 @@ vrp_finalize (void)
 	  || (vr_value[i]->type == VR_UNDEFINED))
 	continue;
 
-	if ((TREE_CODE (vr_value[i]->min) == INTEGER_CST)
-	    && (TREE_CODE (vr_value[i]->max) == INTEGER_CST)
-	    && (vr_value[i]->type == VR_RANGE
-		|| vr_value[i]->type == VR_ANTI_RANGE))
-	  set_range_info (name, vr_value[i]->type, vr_value[i]->min,
-			  vr_value[i]->max);
+      if ((TREE_CODE (vr_value[i]->min) == INTEGER_CST)
+	  && (TREE_CODE (vr_value[i]->max) == INTEGER_CST)
+	  && (vr_value[i]->type == VR_RANGE
+	      || vr_value[i]->type == VR_ANTI_RANGE))
+	set_range_info (name, vr_value[i]->type, vr_value[i]->min,
+			vr_value[i]->max);
       }
 
   /* Free allocated memory.  */

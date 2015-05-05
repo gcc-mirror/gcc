@@ -5057,7 +5057,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "unsupported condition in reduction\n");
 
-            return false;
+	  return false;
         }
     }
   else

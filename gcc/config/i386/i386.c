@@ -19606,7 +19606,7 @@ ix86_expand_copysign (rtx operands[])
       else
 	copysign_insn = gen_copysigntf3_const;
 
-	emit_insn (copysign_insn (dest, op0, op1, mask));
+      emit_insn (copysign_insn (dest, op0, op1, mask));
     }
   else
     {
@@ -26110,7 +26110,7 @@ exact_dependency_1 (rtx addr, rtx insn)
 	  for (j = 0; j < XVECLEN (insn, i); j++)
 	    if (exact_dependency_1 (addr, XVECEXP (insn, i, j)))
 	      return true;
-	    break;
+	  break;
 	}
     }
   return false;

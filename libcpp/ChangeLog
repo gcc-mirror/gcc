@@ -1,5 +1,10 @@
 2015-05-05  David Malcolm  <dmalcolm@redhat.com>
 
+	* pch.c (cpp_valid_state): Fix indentation so that it reflects the
+	block structure.
+
+2015-05-05  David Malcolm  <dmalcolm@redhat.com>
+
 	* include/line-map.h: Fix comment at the top of the file.
 	(source_location): Rewrite and expand the comment for this
 	typedef, adding an ascii-art table to clarify how source_location

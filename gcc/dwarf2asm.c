@@ -931,9 +931,9 @@ dw2_output_indirect_constants (void)
        iter != indirect_pool->end (); ++iter)
     temp.quick_push (*iter);
 
-    temp.qsort (compare_strings);
+  temp.qsort (compare_strings);
 
-    for (unsigned int i = 0; i < temp.length (); i++)
+  for (unsigned int i = 0; i < temp.length (); i++)
     dw2_output_indirect_constant_1 (temp[i].first, temp[i].second);
 }
 

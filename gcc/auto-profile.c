@@ -1143,28 +1143,28 @@ afdo_find_equiv_class (bb_set *annotated_bb)
     bb->aux = bb;
     dom_bbs = get_dominated_by (CDI_DOMINATORS, bb);
     FOR_EACH_VEC_ELT (dom_bbs, i, bb1)
-    if (bb1->aux == NULL && dominated_by_p (CDI_POST_DOMINATORS, bb, bb1)
-        && bb1->loop_father == bb->loop_father)
-      {
-        bb1->aux = bb;
-        if (bb1->count > bb->count && is_bb_annotated (bb1, *annotated_bb))
-          {
-            bb->count = bb1->count;
-            set_bb_annotated (bb, annotated_bb);
-          }
-      }
+      if (bb1->aux == NULL && dominated_by_p (CDI_POST_DOMINATORS, bb, bb1)
+	  && bb1->loop_father == bb->loop_father)
+	{
+	  bb1->aux = bb;
+	  if (bb1->count > bb->count && is_bb_annotated (bb1, *annotated_bb))
+	    {
+	      bb->count = bb1->count;
+	      set_bb_annotated (bb, annotated_bb);
+	    }
+	}
     dom_bbs = get_dominated_by (CDI_POST_DOMINATORS, bb);
     FOR_EACH_VEC_ELT (dom_bbs, i, bb1)
-    if (bb1->aux == NULL && dominated_by_p (CDI_DOMINATORS, bb, bb1)
-        && bb1->loop_father == bb->loop_father)
-      {
-        bb1->aux = bb;
-        if (bb1->count > bb->count && is_bb_annotated (bb1, *annotated_bb))
-          {
-            bb->count = bb1->count;
-            set_bb_annotated (bb, annotated_bb);
-          }
-      }
+      if (bb1->aux == NULL && dominated_by_p (CDI_DOMINATORS, bb, bb1)
+	  && bb1->loop_father == bb->loop_father)
+	{
+	  bb1->aux = bb;
+	  if (bb1->count > bb->count && is_bb_annotated (bb1, *annotated_bb))
+	    {
+	      bb->count = bb1->count;
+	      set_bb_annotated (bb, annotated_bb);
+	    }
+	}
   }
 }
 
@@ -1191,10 +1191,10 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb,
     gcov_type total_known_count = 0;
 
     FOR_EACH_EDGE (e, ei, is_succ ? bb->succs : bb->preds)
-    if (!is_edge_annotated (e, *annotated_edge))
-      num_unknown_edge++, unknown_edge = e;
-    else
-      total_known_count += e->count;
+      if (!is_edge_annotated (e, *annotated_edge))
+	num_unknown_edge++, unknown_edge = e;
+      else
+	total_known_count += e->count;
 
     if (num_unknown_edge == 0)
       {
@@ -1404,7 +1404,7 @@ afdo_calculate_branch_prob (bb_set *annotated_bb, edge_set *annotated_edge)
     edge_iterator ei;
 
     FOR_EACH_EDGE (e, ei, bb->succs)
-    e->count = (double)bb->count * e->probability / REG_BR_PROB_BASE;
+      e->count = (double)bb->count * e->probability / REG_BR_PROB_BASE;
     bb->aux = NULL;
   }
 
@@ -1502,7 +1502,7 @@ afdo_annotate_cfg (const stmt_set &promoted_stmts)
 
     bb->count = 0;
     FOR_EACH_EDGE (e, ei, bb->succs)
-    e->count = 0;
+      e->count = 0;
 
     if (afdo_set_bb_count (bb, promoted_stmts))
       set_bb_annotated (bb, &annotated_bb);

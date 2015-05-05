@@ -3179,7 +3179,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
      we need the second and the third vectors: {b1,c1,a2,b2} and
      {c2,a3,b3,c3}.  */
 
-    {
+  {
       scalar_index = 0;
       index = 0;
       vect_stmts_counter = 0;

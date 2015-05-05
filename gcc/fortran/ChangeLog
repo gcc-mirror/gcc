@@ -1,3 +1,12 @@
+2015-05-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* expr.c (check_inquiry): Fix indentation so that it reflects the
+	block structure.
+	* interface.c (compare_parameter): Likewise.
+	* parse.c (parse_oacc_structured_block): Likewise.
+	* target-memory.c (expr_to_char): Likewise.
+	* trans-types.c (gfc_init_kinds): Likewise.
+
 2015-05-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/65976

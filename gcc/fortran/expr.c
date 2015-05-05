@@ -2297,8 +2297,8 @@ check_inquiry (gfc_expr *e, int not_restricted)
 	if (strcmp (functions[i], name) == 0)
 	  break;
 
-	if (functions[i] == NULL)
-	  return MATCH_ERROR;
+      if (functions[i] == NULL)
+	return MATCH_ERROR;
     }
 
   /* At this point we have an inquiry function with a variable argument.  The

@@ -379,7 +379,7 @@ gsi_advance_fw_nondebug_nonlocal (gimple_stmt_iterator *gsi)
       stmt = gsi_stmt (*gsi);
       if (!stmt_local_def (stmt))
 	return;
-	gsi_next_nondebug (gsi);
+      gsi_next_nondebug (gsi);
     }
 }
 

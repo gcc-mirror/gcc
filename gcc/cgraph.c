@@ -2955,11 +2955,11 @@ cgraph_node::verify_node (void)
 	  }
 	else
 	  ref_found = true;
-	if (!ref_found)
-	  {
-	    error ("Analyzed alias has no reference");
-	    error_found = true;
-	  }
+      if (!ref_found)
+	{
+	  error ("Analyzed alias has no reference");
+	  error_found = true;
+	}
     }
 
   /* Check instrumented version reference.  */

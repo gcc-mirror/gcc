@@ -2227,11 +2227,12 @@ process_define_subst (void)
 	if (strcmp (XSTR (elem->data, 0), XSTR (elem_attr->data, 1)) == 0)
 	    goto found;
 
-	error_with_line (elem->lineno,
-			 "%s: `define_subst' must have at least one "
-			 "corresponding `define_subst_attr'",
-			 XSTR (elem->data, 0));
-	return;
+      error_with_line (elem->lineno,
+		       "%s: `define_subst' must have at least one "
+		       "corresponding `define_subst_attr'",
+		       XSTR (elem->data, 0));
+      return;
+
       found:
 	continue;
     }

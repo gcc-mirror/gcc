@@ -368,8 +368,8 @@ find_or_create_group (struct mem_ref_group **groups, tree base, tree step)
 
       /* If step is an integer constant, keep the list of groups sorted
          by decreasing step.  */
-        if (cst_and_fits_in_hwi ((*groups)->step) && cst_and_fits_in_hwi (step)
-            && int_cst_value ((*groups)->step) < int_cst_value (step))
+      if (cst_and_fits_in_hwi ((*groups)->step) && cst_and_fits_in_hwi (step)
+	  && int_cst_value ((*groups)->step) < int_cst_value (step))
 	break;
     }
 

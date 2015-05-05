@@ -4283,7 +4283,7 @@ parse_oacc_structured_block (gfc_statement acc_st)
 	unexpected_eof ();
       else if (st != acc_end_st)
 	gfc_error ("Expecting %s at %C", gfc_ascii_statement (acc_end_st));
-	reject_statement ();
+      reject_statement ();
     }
   while (st != acc_end_st);
 

@@ -5028,7 +5028,7 @@ vect_grouped_load_supported (tree vectype, unsigned HOST_WIDE_INT count)
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				     "shuffle of 3 loads is not supported by"
 				     " target\n");
-		    return false;
+		  return false;
 		}
 	      for (i = 0, j = 0; i < nelt; i++)
 		if (3 * i + k < 2 * nelt)
