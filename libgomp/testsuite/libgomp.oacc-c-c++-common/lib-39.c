@@ -38,5 +38,5 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-output "\\\[\\\(nil\\\),\\\+256\\\] is a bad range" } */
+/* { dg-output "\\\[\[^\n\r]*,\\\+256\\\] is a bad range" } */
 /* { dg-shouldfail "" } */
