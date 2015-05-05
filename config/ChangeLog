@@ -1,3 +1,8 @@
+2015-05-04  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* bitfields.m4: Change int to long long, and use bitfields of
+	width 1 instead of 0.
+
 2015-05-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* bitfields.m4: New file.
