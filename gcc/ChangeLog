@@ -1,5 +1,15 @@
 2015-05-04  Ajit Agarwal  <ajitkum@xilinx.com>
 
+	* config/microblaze/microblaze.md (cbranchsi4): Added immediate
+	constraints.
+	(cbranchsi4_reg): New.
+	* config/microblaze/microblaze.c
+	(microblaze_expand_conditional_branch_reg): New.
+	* config/microblaze/microblaze-protos.h
+	(microblaze_expand_conditional_branch_reg): New prototype.
+
+2015-05-04  Ajit Agarwal  <ajitkum@xilinx.com>
+
 	* config/microblaze/microblaze.md (peephole2): New.
 
 2015-05-04  Jeff Law  <law@redhat.com>
