@@ -1,3 +1,8 @@
+2015-05-05  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/tree-ssa/stdarg-2.c: Undo incorrect fix in f15 scans committed
+	in r222173.
+
 2015-05-05  Yvan Roux  <yvan.roux@linaro.org>
 
 	* gcc.target/arm/pr65067.c: Require Thumb2 effective target.
