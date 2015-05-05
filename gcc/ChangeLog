@@ -1,5 +1,10 @@
 2015-05-05  Uros Bizjak  <ubizjak@gmail.com>
 
+	* doc/extend.texi (C Extensions): Update menu for moved Variable
+	Attributes and Type Attributes sections.
+
+2015-05-05  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/65990
 	* config/i386/i386.c (ix86_parse_stringop_strategy_string): Error out
 	if rep_8byte stringop strategy was specified for 32-bit target.
