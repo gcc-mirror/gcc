@@ -1,3 +1,37 @@
+2015-05-05  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430-opts.h (enum msp430_regions): New.
+	* config/msp430/msp430.c (msp430_override_options): Complain if
+	-mcode-region or -mdata-region is used on a non MSP430X.
+	(msp430_section_attr): New function.  Checks lower, upper and
+	either attributes.
+	(msp430_attribute_table): Add lower, upper and either.
+	(gen_prefix): New function.  Generates a prefix for a section
+	name.
+	(msp430_select_section): New function - handles the choice of
+	section for an object.  Takes into account memory region
+	attributes and options.
+	(msp430_function_section): Use gen_prefix.
+	(TARGET_SECTION_TYPE_FLAGS): Define.
+	(msp430_section_type_flags): New function.
+	(TARGET_ASM_UNIQUE_SECTION): Define.
+	(msp430_unique_section): New function.
+	(msp430_output_aligned_decl_common): New function.
+	(msp430_do_not_relax_short_jumps): New function.
+	* config/msp430/msp430.h (USE_SELECT_SECTION_FOR_FUNCTIONS):
+	Define.
+	(ASM_OUTPUT_ALIGNED_DECL_COMMON): Define.
+	* config/msp430/msp430-protos.h
+	(msp430_do_not_relax_short_jumps): New prototype.
+	(msp430_output_aligned_decl_common): New prototype.
+	* config/msp430/msp430.md (length): New attribute.
+	(cbranchhi4_real): If msp430_do_not_relax_short_jumps is true
+	then use a long code sequence for short jumps.
+	* config/msp430/msp430.opt (mcode-region): New.
+	(mdata-region): New.
+	* doc/invoke.texi: Document new options.
+	* doc/extend.texi: Document new attributes.
+
 2015-05-05  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* gcc/config/aarch64-protos.h (struct cpu_branch_cost): New.

@@ -3254,6 +3254,38 @@ performing a reloadable link on them.
 At present, a declaration to which @code{weakref} is attached can
 only be @code{static}.
 
+@item lower
+@itemx upper
+@itemx either
+@cindex lower memory region on the MSP430
+@cindex upper memory region on the MSP430
+@cindex either memory region on the MSP430
+On the MSP430 target these attributes can be used to specify whether
+the function or variable should be placed into low memory, high
+memory, or the placement should be left to the linker to decide.  The
+attributes are only significant if compiling for the MSP430X
+architecture.
+
+The attributes work in conjunction with a linker script that has been
+augmented to specify where to place sections with a @code{.lower} and
+a @code{.upper} prefix.  So for example as well as placing the
+@code{.data} section the script would also specify the placement of a
+@code{.lower.data} and a @code{.upper.data} section.  The intention
+being that @code{lower} sections are placed into a small but easier to
+access memory region and the upper sections are placed into a larger, but
+slower to access region.
+
+The @code{either} attribute is special.  It tells the linker to place
+the object into the corresponding @code{lower} section if there is
+room for it.  If there is insufficient room then the object is placed
+into the corresponding @code{upper} section instead.  Note - the
+placement algorithm is not very sophisticated.  It will not attempt to
+find an optimal packing of the @code{lower} sections.  It just makes
+one pass over the objects and does the best that it can.  Using the
+@option{-ffunction-sections} and @option{-fdata-sections} command line
+options can help the packing however, since they produce smaller,
+easier to pack regions.
+
 @end table
 
 @c This is the end of the target-independent attribute table

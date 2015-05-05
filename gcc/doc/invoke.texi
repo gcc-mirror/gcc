@@ -827,6 +827,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{MSP430 Options}
 @gccoptlist{-msim -masm-hex -mmcu= -mcpu= -mlarge -msmall -mrelax @gol
+-mcode-region= -mdata-region= @gol
 -mhwmult= -minrt}
 
 @emph{NDS32 Options}
@@ -18163,6 +18164,19 @@ Enable the use of a minimum runtime environment - no static
 initializers or constructors.  This is intended for memory-constrained
 devices.  The compiler includes special symbols in some objects
 that tell the linker and runtime which code fragments are required.
+
+@item -mcode-region=
+@itemx -mdata-region=
+@opindex mcode-region
+@opindex mdata-region
+These options tell the compiler where to place functions and data that
+do not have one of the @code{lower}, @code{upper}, @code{either} or
+@code{section} attributes.  Possible values are @code{lower},
+@code{upper}, @code{either} or @code{any}.  The first three behave
+like the corresponding attribute.  The fourth possible value -
+@code{any} - is the default.  It leaves placement entirely up to the
+linker script and how it assigns the standard sections (.text, .data
+etc) to the memory regions.
 
 @end table
 

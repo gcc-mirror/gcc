@@ -57,3 +57,26 @@ Enum(msp430_hwmult_types) String(32bit) Value(LARGE)
 
 EnumValue
 Enum(msp430_hwmult_types) String(f5series) Value(F5SERIES)
+
+mcode-region=
+Target Joined RejectNegative Report ToLower Var(msp430_code_region) Enum(msp430_regions) Init(ANY)
+Specify whether functions should be placed into low or high memory
+
+mdata-region=
+Target Joined RejectNegative Report ToLower Var(msp430_data_region) Enum(msp430_regions) Init(ANY)
+Specify whether variables should be placed into low or high memory
+
+Enum
+Name(msp430_regions) Type(enum msp430_regions)
+
+EnumValue
+Enum(msp430_regions) String(none) Value(ANY)
+
+EnumValue
+Enum(msp430_regions) String(either) Value(EITHER)
+
+EnumValue
+Enum(msp430_regions) String(lower) Value(LOWER)
+
+EnumValue
+Enum(msp430_regions) String(upper) Value(UPPER)
