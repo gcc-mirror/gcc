@@ -1,3 +1,9 @@
+2015-05-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (verify_type): Check various uses of TYPE_MAXVAL;
+	fix overactive TYPE_MIN_VALUE check and add FIXME for type
+	compatibility problems.
+
 2015-05-04  Ajit Agarwal  <ajitkum@xilinx.com>
 
 	* config/microblaze/microblaze.md (cbranchsi4): Added immediate
