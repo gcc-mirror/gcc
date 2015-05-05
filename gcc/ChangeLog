@@ -1,3 +1,17 @@
+2015-05-05  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* gcc/config/aarch64-protos.h (struct cpu_branch_cost): New.
+        (tune_params): Add field branch_costs.
+	(aarch64_branch_cost): Declare.
+	* gcc/config/aarch64.c (generic_branch_cost): New.
+	(generic_tunings): Set field cpu_branch_cost to generic_branch_cost.
+	(cortexa53_tunings): Likewise.
+	(cortexa57_tunings): Likewise.
+	(thunderx_tunings): Likewise.
+	(xgene1_tunings): Likewise.
+	(aarch64_branch_cost): Define.
+	* gcc/config/aarch64/aarch64.h (BRANCH_COST): Redefine.
+
 2015-05-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c: Use HOST_WIDE_INT_1 instead of (HOST_WIDE_INT) 1

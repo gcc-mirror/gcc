@@ -162,12 +162,20 @@ struct cpu_vector_cost
   const int cond_not_taken_branch_cost;  /* Cost of not taken branch.  */
 };
 
+/* Branch costs.  */
+struct cpu_branch_cost
+{
+  const int predictable;    /* Predictable branch or optimizing for size.  */
+  const int unpredictable;  /* Unpredictable branch or optimizing for speed.  */
+};
+
 struct tune_params
 {
   const struct cpu_cost_table *const insn_extra_cost;
   const struct cpu_addrcost_table *const addr_cost;
   const struct cpu_regmove_cost *const regmove_cost;
   const struct cpu_vector_cost *const vec_costs;
+  const struct cpu_branch_cost *const branch_costs;
   const int memmov_cost;
   const int issue_rate;
   const unsigned int fuseable_ops;
@@ -184,6 +192,7 @@ struct tune_params
 HOST_WIDE_INT aarch64_initial_elimination_offset (unsigned, unsigned);
 int aarch64_get_condition_code (rtx);
 bool aarch64_bitmask_imm (HOST_WIDE_INT val, machine_mode);
+int aarch64_branch_cost (bool, bool);
 enum aarch64_symbol_type
 aarch64_classify_symbolic_expression (rtx, enum aarch64_symbol_context);
 bool aarch64_const_vec_all_same_int_p (rtx, HOST_WIDE_INT);
