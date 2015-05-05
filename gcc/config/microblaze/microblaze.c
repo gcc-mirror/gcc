@@ -3471,6 +3471,51 @@ microblaze_expand_conditional_branch (machine_mode mode, rtx operands[])
     }
 }
 
+void
+microblaze_expand_conditional_branch_reg (enum machine_mode mode,
+                                          rtx operands[])
+{
+  enum rtx_code code = GET_CODE (operands[0]);
+  rtx cmp_op0 = operands[1];
+  rtx cmp_op1 = operands[2];
+  rtx label1 = operands[3];
+  rtx comp_reg = gen_reg_rtx (SImode);
+  rtx condition;
+
+  gcc_assert ((GET_CODE (cmp_op0) == REG)
+               || (GET_CODE (cmp_op0) == SUBREG));
+
+  /* If comparing against zero, just test source reg.  */
+  if (cmp_op1 == const0_rtx)
+    {
+      comp_reg = cmp_op0;
+      condition = gen_rtx_fmt_ee (signed_condition (code),
+                                  SImode, comp_reg, const0_rtx);
+      emit_jump_insn (gen_condjump (condition, label1));
+    }
+  else if (code == EQ)
+    {
+      emit_insn (gen_seq_internal_pat (comp_reg,
+                                       cmp_op0, cmp_op1));
+      condition = gen_rtx_EQ (SImode, comp_reg, const0_rtx);
+      emit_jump_insn (gen_condjump (condition, label1));
+    }
+  else if (code == NE)
+    {
+      emit_insn (gen_sne_internal_pat (comp_reg, cmp_op0,
+                                       cmp_op1));
+      condition = gen_rtx_NE (SImode, comp_reg, const0_rtx);
+      emit_jump_insn (gen_condjump (condition, label1));
+    }
+  else
+    {
+      /* Generate compare and branch in single instruction. */
+      cmp_op1 = force_reg (mode, cmp_op1);
+      condition = gen_rtx_fmt_ee (code, mode, cmp_op0, cmp_op1);
+      emit_jump_insn (gen_branch_compare (condition, cmp_op0,
+                                         cmp_op1, label1));
+    }
+}
 
 void
 microblaze_expand_conditional_branch_sf (rtx operands[])
