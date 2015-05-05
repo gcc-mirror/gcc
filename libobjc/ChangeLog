@@ -1,3 +1,7 @@
+2015-05-04  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* configure: Regenerate.
+
 2015-05-01  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* acinclude.m4: Include bitfields.m4.

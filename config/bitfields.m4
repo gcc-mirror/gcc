@@ -13,10 +13,9 @@ AC_DEFUN([gt_BITFIELD_TYPE_MATTERS],
   AC_CACHE_CHECK([if the type of bitfields matters], gt_cv_bitfield_type_matters,
   [
     AC_TRY_COMPILE(
-      [struct foo1 { char x; char :0; char y; };
-struct foo2 { char x; int :0; char y; };
-int foo1test[ sizeof (struct foo1) == 2 ? 1 : -1 ];
-int foo2test[ sizeof (struct foo2) == 5 ? 1 : -1]; ],
+      [struct foo1 { char x; char y:1; char z; };
+struct foo2 { char x; long long int y:1; char z; };
+int foo1test[ sizeof (struct foo1) < sizeof (struct foo2) ? 1 : -1 ]; ],
       [], gt_cv_bitfield_type_matters=yes, gt_cv_bitfield_type_matters=no)
   ])
   if test $gt_cv_bitfield_type_matters = yes; then

@@ -11539,10 +11539,9 @@ else
 
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-struct foo1 { char x; char :0; char y; };
-struct foo2 { char x; int :0; char y; };
-int foo1test[ sizeof (struct foo1) == 2 ? 1 : -1 ];
-int foo2test[ sizeof (struct foo2) == 5 ? 1 : -1];
+struct foo1 { char x; char y:1; char z; };
+struct foo2 { char x; long long int y:1; char z; };
+int foo1test[ sizeof (struct foo1) < sizeof (struct foo2) ? 1 : -1 ];
 int
 main ()
 {
