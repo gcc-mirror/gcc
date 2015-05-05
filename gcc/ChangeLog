@@ -1,3 +1,7 @@
+2015-05-05  Renlin Li  <renlin.li@arm.com>
+
+	* config/aarch64/aarch64.md (add<mode>3): Use mov when allowed.
+
 2015-05-05  Yvan Roux  <yvan.roux@linaro.org>
 
 	* config/aarch64/aarch64-elf-raw.h (CA53_ERR_843419_SPEC): Define.
