@@ -1,3 +1,8 @@
+2015-05-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/65871
+	* gcc.target/i386/pr65871-3.c: New test.
+
 2015-05-04  Jeff Law  <law@redhat.com>
 
 	Revert:
@@ -174,7 +179,7 @@
 	scan pattern.
 	* gfortran.dg/bound_9.f90:  New test case.
 
-2015-04-29  Uros Bizjak  <ubizjak@gmail.com>
+2015-04-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/ipa/devirt-28a.C: Require LTO effective target.
 	* g++.dg/ext/sync-4.C (dg-additional-options): Use -march=pentium
@@ -232,7 +237,7 @@
 2015-04-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/65871
-	* gcc.target/i386/pr65871-1.c: New test
+	* gcc.target/i386/pr65871-1.c: New test.
 	* gcc.target/i386/pr65871-2.c: Ditto.
 
 2015-04-29  Marek Polacek  <polacek@redhat.com>

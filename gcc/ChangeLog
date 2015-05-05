@@ -1,4 +1,9 @@
-2015-05-02  Jan Hubicka  <hubicka@ucw.cz>
+2015-05-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/65871
+	* config/i386/i386.md (*bmi_andn_<mode>_ccno): New pattern.
+
+2015-05-04  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree.c (verify_type): Check various uses of TYPE_MAXVAL;
 	fix overactive TYPE_MIN_VALUE check and add FIXME for type
@@ -438,8 +443,8 @@
 2015-04-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/65871
-	* config/i386/i386.md (*bmi_bextr_<mode>_cczonly): New pattern.
-	(*bmi2_bzhi_<mode>3_1_cczonly): Ditto.
+	* config/i386/i386.md (*bmi_bextr_<mode>_ccz): New pattern.
+	(*bmi2_bzhi_<mode>3_1_ccz): Ditto.
 	(setcc+movzbl peephole2): Check also clobbered reg.
 	(setcc+andl peephole2): Ditto.
 
