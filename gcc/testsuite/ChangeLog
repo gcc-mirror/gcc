@@ -1,3 +1,8 @@
+2015-05-05  Yvan Roux  <yvan.roux@linaro.org>
+
+	* gcc.target/arm/pr65067.c: Require Thumb2 effective target.
+	* gcc.target/arm/pr65924.c: Likewise.
+
 2015-05-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/65871

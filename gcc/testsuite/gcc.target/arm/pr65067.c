@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_thumb2_ok } */
 /* { dg-options "-mthumb -mcpu=cortex-m3 -O2" } */
 
 struct tmp {
