@@ -1,3 +1,11 @@
+2015-05-05  Jack Howarth  <howarth.at.gcc@gmail.com>
+
+	* config.gcc: Use darwin9.h, darwin10.h and darwin12.h
+	on darwin12 and later.
+	* config/darwin12.h (LINK_GCC_C_SEQUENCE_SPEC): Add
+	file to pass -rdynamic on darwin12 and later.
+	* config/darwin.opt (rdynamic): Add.
+
 2015-05-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/extend.texi (C Extensions): Update menu for moved Variable
