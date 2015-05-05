@@ -1,3 +1,11 @@
+2015-05-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h: Fix comment at the top of the file.
+	(source_location): Rewrite and expand the comment for this
+	typedef, adding an ascii-art table to clarify how source_location
+	values are allocated.
+	* line-map.c: Fix comment at the top of the file.
+
 2015-04-09  Richard Biener  <rguenther@suse.de>
 
 	PR pch/65550
