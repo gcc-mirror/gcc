@@ -1,3 +1,13 @@
+2015-05-05  Shanyao Chen  <chenshanyao@huawei.com>
+
+	Backported from mainline
+	2015-01-19  Jiong Wang  <jiong.wang@arm.com>
+		    Andrew Pinski  <apinski@cavium.com>
+
+	PR target/64304
+	* config/aarch64/aarch64.md (define_insn "*ashl<mode>3_insn"): Deleted.
+	(ashl<mode>3): Don't expand if operands[2] is not constant.
+
 2015-05-05  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline.

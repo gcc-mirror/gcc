@@ -1,3 +1,10 @@
+2015-05-05  Shanyao chen  <chenshanyao@huawei.com>
+
+	Backported from mainline
+	2015-01-19  Jiong Wang  <jiong.wang@arm.com>
+
+	* gcc.target/aarch64/pr64304.c: New testcase.
+
 2015-05-05  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline.
