@@ -1,3 +1,11 @@
+2015-05-05  Matthew Wahab  <matthew.wahab@arm.com>
+
+	* doc/extend.texi (__atomic Builtins): Move implementation details
+	to the end of the description, rewrite opening paragraphs, state
+	difference with __sync builtins, state C11/C++11 assumptions,
+	weaken itemized descriptions, add explanation of memory model
+	behaviour, expand description of compare-exchange, simplify text.
+
 2015-05-05  Renlin Li  <renlin.li@arm.com>
 
 	* config/aarch64/aarch64.md (add<mode>3): Use mov when allowed.
