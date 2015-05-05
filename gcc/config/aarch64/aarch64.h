@@ -827,7 +827,8 @@ do {									     \
 #define TRAMPOLINE_SECTION text_section
 
 /* To start with.  */
-#define BRANCH_COST(SPEED_P, PREDICTABLE_P) 2
+#define BRANCH_COST(SPEED_P, PREDICTABLE_P) \
+  (aarch64_branch_cost (SPEED_P, PREDICTABLE_P))
 
 
 /* Assembly output.  */

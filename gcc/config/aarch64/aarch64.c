@@ -340,12 +340,20 @@ static const struct cpu_vector_cost xgene1_vector_cost =
 #define AARCH64_FUSE_ADRP_LDR	(1 << 3)
 #define AARCH64_FUSE_CMP_BRANCH	(1 << 4)
 
+/* Generic costs for branch instructions.  */
+static const struct cpu_branch_cost generic_branch_cost =
+{
+  2,  /* Predictable.  */
+  2   /* Unpredictable.  */
+};
+
 static const struct tune_params generic_tunings =
 {
   &cortexa57_extra_costs,
   &generic_addrcost_table,
   &generic_regmove_cost,
   &generic_vector_cost,
+  &generic_branch_cost,
   4, /* memmov_cost  */
   2, /* issue_rate  */
   AARCH64_FUSE_NOTHING, /* fuseable_ops  */
@@ -365,6 +373,7 @@ static const struct tune_params cortexa53_tunings =
   &generic_addrcost_table,
   &cortexa53_regmove_cost,
   &generic_vector_cost,
+  &generic_branch_cost,
   4, /* memmov_cost  */
   2, /* issue_rate  */
   (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -385,6 +394,7 @@ static const struct tune_params cortexa57_tunings =
   &cortexa57_addrcost_table,
   &cortexa57_regmove_cost,
   &cortexa57_vector_cost,
+  &generic_branch_cost,
   4, /* memmov_cost  */
   3, /* issue_rate  */
   (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
@@ -405,6 +415,7 @@ static const struct tune_params thunderx_tunings =
   &generic_addrcost_table,
   &thunderx_regmove_cost,
   &generic_vector_cost,
+  &generic_branch_cost,
   6, /* memmov_cost  */
   2, /* issue_rate  */
   AARCH64_FUSE_CMP_BRANCH, /* fuseable_ops  */
@@ -424,6 +435,7 @@ static const struct tune_params xgene1_tunings =
   &xgene1_addrcost_table,
   &xgene1_regmove_cost,
   &xgene1_vector_cost,
+  &generic_branch_cost,
   6, /* memmov_cost  */
   4, /* issue_rate  */
   AARCH64_FUSE_NOTHING, /* fuseable_ops  */
@@ -5407,6 +5419,23 @@ aarch64_address_cost (rtx x,
     }
 
   return cost;
+}
+
+/* Return the cost of a branch.  If SPEED_P is true then the compiler is
+   optimizing for speed.  If PREDICTABLE_P is true then the branch is predicted
+   to be taken.  */
+
+int
+aarch64_branch_cost (bool speed_p, bool predictable_p)
+{
+  /* When optimizing for speed, use the cost of unpredictable branches.  */
+  const struct cpu_branch_cost *branch_costs =
+    aarch64_tune_params->branch_costs;
+
+  if (!speed_p || predictable_p)
+    return branch_costs->predictable;
+  else
+    return branch_costs->unpredictable;
 }
 
 /* Return true if the RTX X in mode MODE is a zero or sign extract
