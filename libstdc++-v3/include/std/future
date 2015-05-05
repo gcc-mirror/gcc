@@ -1704,7 +1704,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef typename result_of<_Fn(_Args...)>::type result_type;
       std::shared_ptr<__future_base::_State_base> __state;
-      if ((__policy & (launch::async|launch::deferred)) == launch::async)
+      if ((__policy & launch::async) == launch::async)
 	{
 	  __state = __future_base::_S_make_async_state(std::__bind_simple(
               std::forward<_Fn>(__fn), std::forward<_Args>(__args)...));
