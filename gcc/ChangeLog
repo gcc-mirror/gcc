@@ -1,3 +1,10 @@
+2015-05-05  Ilya Tocar  <ilya.tocar@intel.com>
+
+	PR target/65915
+	* config/i386/i386.md (vector convert to float spltiter): Check for
+	xmm16+, when splitting scalar float conversion.
+	* config/i386/sse.md (sse2_cvtsi2sd): Support EVEX version.
+
 2015-05-05  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430-opts.h (enum msp430_regions): New.

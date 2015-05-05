@@ -4258,11 +4258,11 @@
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_cvtsi2sd"
-  [(set (match_operand:V2DF 0 "register_operand" "=x,x,x")
+  [(set (match_operand:V2DF 0 "register_operand" "=x,x,v")
 	(vec_merge:V2DF
 	  (vec_duplicate:V2DF
 	    (float:DF (match_operand:SI 2 "nonimmediate_operand" "r,m,rm")))
-	  (match_operand:V2DF 1 "register_operand" "0,0,x")
+	  (match_operand:V2DF 1 "register_operand" "0,0,v")
 	  (const_int 1)))]
   "TARGET_SSE2"
   "@
@@ -4275,7 +4275,7 @@
    (set_attr "amdfam10_decode" "vector,double,*")
    (set_attr "bdver1_decode" "double,direct,*")
    (set_attr "btver2_decode" "double,double,double")
-   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "prefix" "orig,orig,maybe_evex")
    (set_attr "mode" "DF")])
 
 (define_insn "sse2_cvtsi2sdq<round_name>"
