@@ -255,6 +255,8 @@ String runtime_funcname_go (Func *f)
 String
 runtime_funcname_go (Func *f)
 {
+  if (f == NULL)
+    return runtime_gostringnocopy ((const byte *) "");
   return f->name;
 }
 
