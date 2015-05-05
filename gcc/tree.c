@@ -12621,19 +12621,70 @@ verify_type (const_tree t)
     }
   else if (INTEGRAL_TYPE_P (t) || TREE_CODE (t) == REAL_TYPE || TREE_CODE (t) == FIXED_POINT_TYPE)
     {
-      if (!TYPE_MIN_VALUE (t))
-	;
-      else if (!TREE_CONSTANT (TYPE_MIN_VALUE (t)))
-        {
-	  error ("TYPE_MIN_VALUE is not constant");
-	  debug_tree (TYPE_MIN_VALUE (t));
-	  error_found = true;
-        }
+      /* FIXME: The following check should pass:
+	  useless_type_conversion_p (const_cast <tree> (t), TREE_TYPE (TYPE_MIN_VALUE (t))
+	 bud does not for C sizetypes in LTO.  */
     }
   else if (TYPE_MINVAL (t))
     {
       error ("TYPE_MINVAL non-NULL");
       debug_tree (TYPE_MINVAL (t));
+      error_found = true;
+    }
+
+  /* Check various uses of TYPE_MAXVAL.  */
+  if (RECORD_OR_UNION_TYPE_P (t))
+    {
+      if (TYPE_METHODS (t) && TREE_CODE (TYPE_METHODS (t)) != FUNCTION_DECL
+	  && TREE_CODE (TYPE_METHODS (t)) != TEMPLATE_DECL)
+	{
+	  error ("TYPE_METHODS is not FUNCTION_DECL nor TEMPLATE_DECL");
+	  debug_tree (TYPE_METHODS (t));
+	  error_found = true;
+	}
+    }
+  else if (TREE_CODE (t) == FUNCTION_TYPE || TREE_CODE (t) == METHOD_TYPE)
+    {
+      if (TYPE_METHOD_BASETYPE (t)
+	  && TREE_CODE (TYPE_METHOD_BASETYPE (t)) != RECORD_TYPE
+	  && TREE_CODE (TYPE_METHOD_BASETYPE (t)) != UNION_TYPE)
+	{
+	  error ("TYPE_METHOD_BASETYPE is not record nor union");
+	  debug_tree (TYPE_METHOD_BASETYPE (t));
+	  error_found = true;
+	}
+    }
+  else if (TREE_CODE (t) == OFFSET_TYPE)
+    {
+      if (TYPE_OFFSET_BASETYPE (t)
+	  && TREE_CODE (TYPE_OFFSET_BASETYPE (t)) != RECORD_TYPE
+	  && TREE_CODE (TYPE_OFFSET_BASETYPE (t)) != UNION_TYPE)
+	{
+	  error ("TYPE_OFFSET_BASETYPE is not record nor union");
+	  debug_tree (TYPE_OFFSET_BASETYPE (t));
+	  error_found = true;
+	}
+    }
+  else if (INTEGRAL_TYPE_P (t) || TREE_CODE (t) == REAL_TYPE || TREE_CODE (t) == FIXED_POINT_TYPE)
+    {
+      /* FIXME: The following check should pass:
+	  useless_type_conversion_p (const_cast <tree> (t), TREE_TYPE (TYPE_MAX_VALUE (t))
+	 bud does not for C sizetypes in LTO.  */
+    }
+  else if (TREE_CODE (t) == ARRAY_TYPE)
+    {
+      if (TYPE_ARRAY_MAX_SIZE (t)
+	  && TREE_CODE (TYPE_ARRAY_MAX_SIZE (t)) != INTEGER_CST)
+        {
+	  error ("TYPE_ARRAY_MAX_SIZE not INTEGER_CST");
+	  debug_tree (TYPE_ARRAY_MAX_SIZE (t));
+	  error_found = true;
+        } 
+    }
+  else if (TYPE_MAXVAL (t))
+    {
+      error ("TYPE_MAXVAL non-NULL");
+      debug_tree (TYPE_MAXVAL (t));
       error_found = true;
     }
 
