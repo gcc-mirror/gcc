@@ -1,3 +1,10 @@
+2015-05-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c: Use HOST_WIDE_INT_1 instead of (HOST_WIDE_INT) 1
+	and HOST_WIDE_INT_1U instead of (unsigned HOST_WIDE_INT) 1.
+	* config/i386/i386.md: Ditto.
+	* config/i386/winnt.c: Ditto.
+
 2015-05-05  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* doc/extend.texi (__atomic Builtins): Move implementation details
