@@ -19366,7 +19366,7 @@ ix86_expand_adjust_ufix_to_sfix_si (rtx val, rtx *xorp)
 				 OPTAB_DIRECT);
   else
     {
-      rtx two31 = GEN_INT ((unsigned HOST_WIDE_INT) 1 << 31);
+      rtx two31 = GEN_INT (HOST_WIDE_INT_1U << 31);
       two31 = ix86_build_const_vector (intmode, 1, two31);
       *xorp = expand_simple_binop (intmode, AND,
 				   gen_lowpart (intmode, tmp[0]),
@@ -24772,7 +24772,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
      }
 
   /* Make sure we don't need to care about overflow later on.  */
-  if (count > ((unsigned HOST_WIDE_INT) 1 << 30))
+  if (count > (HOST_WIDE_INT_1U << 30))
     return false;
 
   /* Step 0: Decide on preferred algorithm, desired alignment and
@@ -47734,7 +47734,7 @@ expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
   /* Examine from whence the elements come.  */
   contents = 0;
   for (i = 0; i < nelt; ++i)
-    contents |= ((unsigned HOST_WIDE_INT) 1) << d->perm[i];
+    contents |= HOST_WIDE_INT_1U << d->perm[i];
 
   memset (remap, 0xff, sizeof (remap));
   dremap = *d;
@@ -47744,7 +47744,7 @@ expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
       unsigned HOST_WIDE_INT h1, h2, h3, h4;
 
       /* Split the two input vectors into 4 halves.  */
-      h1 = (((unsigned HOST_WIDE_INT) 1) << nelt2) - 1;
+      h1 = (HOST_WIDE_INT_1U << nelt2) - 1;
       h2 = h1 << nelt2;
       h3 = h2 << nelt2;
       h4 = h3 << nelt2;
@@ -47826,7 +47826,7 @@ expand_vec_perm_interleave2 (struct expand_vec_perm_d *d)
       unsigned int nonzero_halves[4];
 
       /* Split the two input vectors into 8 quarters.  */
-      q[0] = (((unsigned HOST_WIDE_INT) 1) << nelt4) - 1;
+      q[0] = (HOST_WIDE_INT_1U << nelt4) - 1;
       for (i = 1; i < 8; ++i)
 	q[i] = q[0] << (nelt4 * i);
       for (i = 0; i < 4; ++i)

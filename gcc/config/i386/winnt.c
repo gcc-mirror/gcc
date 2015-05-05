@@ -599,7 +599,7 @@ i386_pe_asm_output_aligned_decl_common (FILE *stream, tree decl,
   assemble_name (stream, name);
   if (use_pe_aligned_common)
     fprintf (stream, ", " HOST_WIDE_INT_PRINT_DEC ", %d\n",
-	   size ? size : (HOST_WIDE_INT) 1,
+	   size ? size : HOST_WIDE_INT_1,
 	   exact_log2 (align) - exact_log2 (CHAR_BIT));
   else
     fprintf (stream, ", " HOST_WIDE_INT_PRINT_DEC "\t" ASM_COMMENT_START
