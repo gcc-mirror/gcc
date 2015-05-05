@@ -5194,13 +5194,15 @@ Binary_expression::do_flatten(Gogo* gogo, Named_object*,
   if (this->left_->type()->is_string_type()
       && this->op_ == OPERATOR_PLUS)
     {
-      if (!this->left_->is_variable())
+      if (!this->left_->is_variable()
+	  && !this->left_->is_constant())
         {
           temp = Statement::make_temporary(NULL, this->left_, loc);
           inserter->insert(temp);
           this->left_ = Expression::make_temporary_reference(temp, loc);
         }
-      if (!this->right_->is_variable())
+      if (!this->right_->is_variable()
+	  && !this->right_->is_constant())
         {
           temp =
               Statement::make_temporary(this->left_->type(), this->right_, loc);
