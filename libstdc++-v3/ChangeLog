@@ -1,5 +1,8 @@
 2015-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/51617
+	* include/std/future (async): Change default policy to launch::async.
+
 	* include/experimental/any (any::_Storage): Fix alignment of buffer.
 	(any::_Internal): Check alignment of type.
 	* testsuite/experimental/any/cons/aligned.cc: New.
