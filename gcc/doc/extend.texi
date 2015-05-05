@@ -8820,45 +8820,47 @@ are not prevented from being speculated to before the barrier.
 @node __atomic Builtins
 @section Built-in Functions for Memory Model Aware Atomic Operations
 
-The following built-in functions approximately match the requirements for
-C++11 memory model. Many are similar to the @samp{__sync} prefixed built-in
-functions, but all also have a memory model parameter.  These are all
-identified by being prefixed with @samp{__atomic}, and most are overloaded
-such that they work with multiple types.
+The following built-in functions approximately match the requirements
+for C++11 concurrency and memory models.  They are all
+identified by being prefixed with @samp{__atomic} and most are
+overloaded so that they work with multiple types.
 
-GCC allows any integral scalar or pointer type that is 1, 2, 4, or 8
-bytes in length. 16-byte integral types are also allowed if
-@samp{__int128} (@pxref{__int128}) is supported by the architecture.
+These functions are intended to replace the legacy @samp{__sync}
+builtins.  The main difference is that the memory model to be used is a
+parameter to the functions.  New code should always use the
+@samp{__atomic} builtins rather than the @samp{__sync} builtins.
 
-Target architectures are encouraged to provide their own patterns for
-each of these built-in functions.  If no target is provided, the original 
-non-memory model set of @samp{__sync} atomic built-in functions are
-utilized, along with any required synchronization fences surrounding it in
-order to achieve the proper behavior.  Execution in this case is subject
-to the same restrictions as those built-in functions.
+Note that the @samp{__atomic} builtins assume that programs will
+conform to the C++11 model for concurrency.  In particular, they assume
+that programs are free of data races.  See the C++11 standard for
+detailed definitions.
 
-If there is no pattern or mechanism to provide a lock free instruction
-sequence, a call is made to an external routine with the same parameters
-to be resolved at run time.
+The @samp{__atomic} builtins can be used with any integral scalar or
+pointer type that is 1, 2, 4, or 8 bytes in length.  16-byte integral
+types are also allowed if @samp{__int128} (@pxref{__int128}) is
+supported by the architecture.
 
 The four non-arithmetic functions (load, store, exchange, and 
 compare_exchange) all have a generic version as well.  This generic
 version works on any data type.  If the data type size maps to one
 of the integral sizes that may have lock free support, the generic
-version utilizes the lock free built-in function.  Otherwise an
+version uses the lock free built-in function.  Otherwise an
 external call is left to be resolved at run time.  This external call is
 the same format with the addition of a @samp{size_t} parameter inserted
 as the first parameter indicating the size of the object being pointed to.
 All objects must be the same size.
 
 There are 6 different memory models that can be specified.  These map
-to the same names in the C++11 standard.  Refer there or to the
-@uref{http://gcc.gnu.org/wiki/Atomic/GCCMM/AtomicSync,GCC wiki on
-atomic synchronization} for more detailed definitions.  These memory
-models integrate both barriers to code motion as well as synchronization
-requirements with other threads. These are listed in approximately
-ascending order of strength. It is also possible to use target specific
-flags for memory model flags, like Hardware Lock Elision.
+to the C++11 memory models with the same names, see the C++11 standard
+or the @uref{http://gcc.gnu.org/wiki/Atomic/GCCMM/AtomicSync,GCC wiki
+on atomic synchronization} for detailed definitions.  Individual
+targets may also support additional memory models for use on specific
+architectures.  Refer to the target documentation for details of
+these.
+
+The memory models integrate both barriers to code motion as well as
+synchronization requirements with other threads.  They are listed here
+in approximately ascending order of strength.
 
 @table  @code
 @item __ATOMIC_RELAXED
@@ -8873,12 +8875,31 @@ semantic stores from another thread.
 Barrier to sinking of code and synchronizes with acquire (or stronger)
 semantic loads from another thread.
 @item __ATOMIC_ACQ_REL
-Full barrier in both directions and synchronizes with acquire loads and
+Barrier in both directions and synchronizes with acquire loads and
 release stores in another thread.
 @item __ATOMIC_SEQ_CST
-Full barrier in both directions and synchronizes with acquire loads and
+Barrier in both directions and synchronizes with acquire loads and
 release stores in all threads.
 @end table
+
+Note that the scope of a C++11 memory model depends on whether or not
+the function being called is a @emph{fence} (such as
+@samp{__atomic_thread_fence}).  In a fence, all memory accesses are
+subject to the restrictions of the memory model.  When the function is
+an operation on a location, the restrictions apply only to those
+memory accesses that could affect or that could depend on the
+location.
+
+Target architectures are encouraged to provide their own patterns for
+each of these built-in functions.  If no target is provided, the original
+non-memory model set of @samp{__sync} atomic built-in functions are
+used, along with any required synchronization fences surrounding it in
+order to achieve the proper behavior.  Execution in this case is subject
+to the same restrictions as those built-in functions.
+
+If there is no pattern or mechanism to provide a lock free instruction
+sequence, a call is made to an external routine with the same parameters
+to be resolved at run time.
 
 When implementing patterns for these built-in functions, the memory model
 parameter can be ignored as long as the pattern implements the most
@@ -8950,19 +8971,20 @@ of @code{*@var{ptr}} is copied into @code{*@var{ret}}.
 @deftypefn {Built-in Function} bool __atomic_compare_exchange_n (@var{type} *ptr, @var{type} *expected, @var{type} desired, bool weak, int success_memmodel, int failure_memmodel)
 This built-in function implements an atomic compare and exchange operation.
 This compares the contents of @code{*@var{ptr}} with the contents of
-@code{*@var{expected}} and if equal, writes @var{desired} into
-@code{*@var{ptr}}.  If they are not equal, the current contents of
+@code{*@var{expected}}. If equal, the operation is a @emph{read-modify-write}
+which writes @var{desired} into @code{*@var{ptr}}.  If they are not
+equal, the operation is a @emph{read} and the current contents of
 @code{*@var{ptr}} is written into @code{*@var{expected}}.  @var{weak} is true
 for weak compare_exchange, and false for the strong variation.  Many targets 
 only offer the strong variation and ignore the parameter.  When in doubt, use
 the strong variation.
 
 True is returned if @var{desired} is written into
-@code{*@var{ptr}} and the execution is considered to conform to the
+@code{*@var{ptr}} and the operation is considered to conform to the
 memory model specified by @var{success_memmodel}.  There are no
 restrictions on what memory model can be used here.
 
-False is returned otherwise, and the execution is considered to conform
+False is returned otherwise, and the operation is considered to conform
 to @var{failure_memmodel}. This memory model cannot be
 @code{__ATOMIC_RELEASE} nor @code{__ATOMIC_ACQ_REL}.  It also cannot be a
 stronger model than that specified by @var{success_memmodel}.
