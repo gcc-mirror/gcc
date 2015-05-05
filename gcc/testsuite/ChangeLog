@@ -1,5 +1,10 @@
 2015-05-05  Tom de Vries  <tom@codesourcery.com>
 
+	* gcc.dg/tree-ssa/stdarg-2.c: Xfail f15 scans which test for presence of
+	'va_list escapes 0'.
+
+2015-05-05  Tom de Vries  <tom@codesourcery.com>
+
 	* gcc.dg/tree-ssa/stdarg-2.c: Undo incorrect fix in f15 scans committed
 	in r222173.
 
