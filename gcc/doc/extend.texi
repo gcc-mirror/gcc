@@ -15118,10 +15118,15 @@ The following low level built-in functions are available with
 @option{-mhtm} or @option{-mcpu=CPU} where CPU is `power8' or later.
 They all generate the machine instruction that is part of the name.
 
-The HTM built-ins return true or false depending on their success and
-their arguments match exactly the type and order of the associated
-hardware instruction's operands.  Refer to the ISA manual for a
-description of each instruction's operands.
+The HTM builtins (with the exception of @code{__builtin_tbegin}) return
+the full 4-bit condition register value set by their associated hardware
+instruction.  The header file @code{htmintrin.h} defines some macros that can
+be used to decipher the return value.  The @code{__builtin_tbegin} builtin
+returns a simple true or false value depending on whether a transaction was
+successfully started or not.  The arguments of the builtins match exactly the
+type and order of the associated hardware instruction's operands, except for
+the @code{__builtin_tcheck} builtin, which does not take any input arguments.
+Refer to the ISA manual for a description of each instruction's operands.
 
 @smallexample
 unsigned int __builtin_tbegin (unsigned int)
@@ -15133,7 +15138,7 @@ unsigned int __builtin_tabortdci (unsigned int, unsigned int, int)
 unsigned int __builtin_tabortwc (unsigned int, unsigned int, unsigned int)
 unsigned int __builtin_tabortwci (unsigned int, unsigned int, int)
 
-unsigned int __builtin_tcheck (unsigned int)
+unsigned int __builtin_tcheck (void)
 unsigned int __builtin_treclaim (unsigned int)
 unsigned int __builtin_trechkpt (void)
 unsigned int __builtin_tsr (unsigned int)
@@ -15268,7 +15273,7 @@ TM_buff_type TM_buff;
 
 while (1)
   @{
-    if (__TM_begin (TM_buff))
+    if (__TM_begin (TM_buff) == _HTM_TBEGIN_STARTED)
       @{
         /* Transaction State Initiated.  */
         if (is_locked (lock))
