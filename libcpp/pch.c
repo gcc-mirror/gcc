@@ -713,7 +713,7 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
 	cpp_warning_syshdr (r, CPP_W_INVALID_PCH,
 		            "%s: not used because `__COUNTER__' is invalid",
 		            name);
-	goto fail;
+      goto fail;
     }
 
   /* We win!  */

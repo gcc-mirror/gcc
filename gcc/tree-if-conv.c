@@ -1087,7 +1087,7 @@ if_convertible_bb_p (struct loop *loop, basic_block bb, basic_block exit_bb)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "only critical predecessors\n");
-	return false;
+      return false;
     }
 
   return true;

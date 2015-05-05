@@ -1032,7 +1032,7 @@ equal_different_set_p (rtx p1, rtx s1, rtx p2, rtx s2)
           ? rtx_renumbered_equal_p (e1, e2) : rtx_equal_p (e1, e2))
         continue;
 
-        return false;
+      return false;
     }
 
   return true;
@@ -2039,7 +2039,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
      If we have tablejumps in the end of SRC1 and SRC2
      they have been already compared for equivalence in outgoing_edges_match ()
      so replace the references to TABLE1 by references to TABLE2.  */
-    {
+  {
       rtx label1, label2;
       rtx_jump_table_data *table1, *table2;
 
@@ -2059,7 +2059,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
 		replace_label_in_insn (insn, label1, label2, true);
 	    }
 	}
-    }
+  }
 
   /* Avoid splitting if possible.  We must always split when SRC2 has
      EH predecessor edges, or we may end up with basic blocks with both

@@ -438,10 +438,10 @@ gfc_init_kinds (void)
       /* Only let float, double, long double and __float128 go through.
 	 Runtime support for others is not provided, so they would be
 	 useless.  */
-	if (!targetm.libgcc_floating_mode_supported_p ((machine_mode)
+      if (!targetm.libgcc_floating_mode_supported_p ((machine_mode)
 						       mode))
-	  continue;
-	if (mode != TYPE_MODE (float_type_node)
+	continue;
+      if (mode != TYPE_MODE (float_type_node)
 	    && (mode != TYPE_MODE (double_type_node))
 	    && (mode != TYPE_MODE (long_double_type_node))
 #if defined(HAVE_TFmode) && defined(ENABLE_LIBQUADMATH_SUPPORT)
@@ -587,7 +587,7 @@ gfc_init_kinds (void)
 	gfc_fatal_error ("REAL(KIND=4) is not available for "
 			 "%<-freal-8-real-4%> option");
 
-	gfc_default_double_kind = 4;
+      gfc_default_double_kind = 4;
     }
   else if (flag_real8_kind == 10 )
     {
@@ -595,7 +595,7 @@ gfc_init_kinds (void)
 	gfc_fatal_error ("REAL(KIND=10) is not available for "
 			 "%<-freal-8-real-10%> option");
 
-	gfc_default_double_kind = 10;
+      gfc_default_double_kind = 10;
     }
   else if (flag_real8_kind == 16 )
     {
@@ -603,7 +603,7 @@ gfc_init_kinds (void)
 	gfc_fatal_error ("REAL(KIND=10) is not available for "
 			 "%<-freal-8-real-16%> option");
 
-	gfc_default_double_kind = 16;
+      gfc_default_double_kind = 16;
     }
   else if (saw_r4 && saw_r8)
     gfc_default_double_kind = 8;

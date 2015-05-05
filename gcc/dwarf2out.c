@@ -16319,12 +16319,12 @@ tree_add_const_value_attribute_for_decl (dw_die_ref var_die, tree decl)
 	  && !TREE_STATIC (decl)))
     return false;
 
-    if (TREE_READONLY (decl)
-	&& ! TREE_THIS_VOLATILE (decl)
-	&& DECL_INITIAL (decl))
-      /* OK */;
-    else
-      return false;
+  if (TREE_READONLY (decl)
+      && ! TREE_THIS_VOLATILE (decl)
+      && DECL_INITIAL (decl))
+    /* OK */;
+  else
+    return false;
 
   /* Don't add DW_AT_const_value if abstract origin already has one.  */
   if (get_AT (var_die, DW_AT_const_value))

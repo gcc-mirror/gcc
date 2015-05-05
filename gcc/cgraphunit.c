@@ -2019,14 +2019,14 @@ expand_all_functions (void)
 
       if (node->process)
 	{
-     expanded_func_count++;
-     if(node->tp_first_run)
-       profiled_func_count++;
+	  expanded_func_count++;
+	  if(node->tp_first_run)
+	    profiled_func_count++;
 
-    if (symtab->dump_file)
-	  fprintf (symtab->dump_file,
-		   "Time profile order in expand_all_functions:%s:%d\n",
-		   node->asm_name (), node->tp_first_run);
+	  if (symtab->dump_file)
+	    fprintf (symtab->dump_file,
+		     "Time profile order in expand_all_functions:%s:%d\n",
+		     node->asm_name (), node->tp_first_run);
 	  node->process = 0;
 	  node->expand ();
 	}

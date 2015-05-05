@@ -4437,7 +4437,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
                         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                                          "unusable type for last operand in"
                                          " vector/vector shift/rotate.\n");
-			return false;
+		      return false;
 		    }
 		  if (vec_stmt && !slp_node)
 		    {

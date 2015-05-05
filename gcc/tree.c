@@ -8948,7 +8948,7 @@ variably_modified_type_p (tree type, tree fn)
 	    if (TREE_CODE (type) == QUAL_UNION_TYPE)
 	      RETURN_TRUE_IF_VAR (DECL_QUALIFIER (t));
 	  }
-	break;
+      break;
 
     case ARRAY_TYPE:
       /* Do not call ourselves to avoid infinite recursion.  This is

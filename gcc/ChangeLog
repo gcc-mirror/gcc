@@ -1,3 +1,30 @@
+2015-05-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* auto-profile.c (afdo_find_equiv_class): Fix indentation so
+	that it reflects the block structure.
+	(afdo_propagate_edge): Likewise.
+	(afdo_calculate_branch_prob): Likewise.
+	(afdo_annotate_cfg): Likewise.
+	* cfgcleanup.c (equal_different_set_p): Likewise.
+	(try_crossjump_to_edge): Likewise.
+	* cgraph.c (cgraph_node::verify_node): Likewise.
+	* cgraphunit.c (expand_all_functions): Likewise.
+	* config/i386/i386.c (ix86_expand_copysign): Likewise.
+	(exact_dependency_1): Likewise.
+	* dwarf2asm.c (dw2_output_indirect_constants): Likewise.
+	* dwarf2out.c (tree_add_const_value_attribute_for_decl): Likewise.
+	* gensupport.c (process_define_subst): Likewise.
+	* lto-wrapper.c (merge_and_complain): Likewise.
+	* tree-if-conv.c (if_convertible_bb_p): Likewise.
+	* tree-ssa-loop-prefetch.c (find_or_create_group): Likewise.
+	* tree-ssa-tail-merge.c (gsi_advance_fw_nondebug_nonlocal): Likewise.
+	* tree-vect-data-refs.c (vect_grouped_load_supported): Likewise.
+	* tree-vect-loop.c (vectorizable_reduction): Likewise.
+	* tree-vect-slp.c (vect_transform_slp_perm_load): Likewise.
+	* tree-vect-stmts.c (vectorizable_shift): Likewise.
+	* tree-vrp.c (vrp_finalize): Likewise.
+	* tree.c (variably_modified_type_p): Likewise.
+
 2015-05-05  Jack Howarth  <howarth.at.gcc@gmail.com>
 
 	* config.gcc: Use darwin9.h, darwin10.h and darwin12.h
