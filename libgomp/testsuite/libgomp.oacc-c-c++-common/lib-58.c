@@ -25,6 +25,6 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-output "\\\(nil\\\) is not a mapped block" { target openacc_nvidia_accel_selected } } */
+/* { dg-output "\[^\n\r]* is not a mapped block" { target openacc_nvidia_accel_selected } } */
 /* { dg-output "cannot map data on shared-memory system" { target openacc_host_selected } } */
 /* { dg-shouldfail "" } */

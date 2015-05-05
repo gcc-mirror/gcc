@@ -25,6 +25,6 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-output "0x\[0-9a-f\]+ is not a mapped block" { target openacc_nvidia_accel_selected } } */
+/* { dg-output "\[0-9a-fA-FxX\]+ is not a mapped block" { target openacc_nvidia_accel_selected } } */
 /* { dg-output "cannot map data on shared-memory system" { target openacc_host_selected } } */
 /* { dg-shouldfail "" } */

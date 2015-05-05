@@ -1,3 +1,46 @@
+2015-05-05  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/65205
+	PR libgomp/65993
+	* testsuite/libgomp.oacc-c-c++-common/clauses-2.c: In dg-output,
+	don't expect "0x" prefix for "%p" format specifier, don't expect
+	"(nil)" for NULL pointer.
+	* testsuite/libgomp.oacc-c-c++-common/lib-16.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-17.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-18.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-20.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-21.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-22.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-23.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-25.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-26.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-27.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-28.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-29.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-30.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-34.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-35.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-36.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-39.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-40.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-42.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-43.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-44.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-47.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-48.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-52.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-53.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-54.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-57.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-58.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-1.c: More
+	accurately specify what we're looking for.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-already-8.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/data-already-8.f: Likewise.
+
 2015-04-30  James Norris  <jnorris@codesourcery.com>
 
 	PR testsuite/65205

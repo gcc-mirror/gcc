@@ -23,5 +23,5 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-output "\\\[0x\[0-9a-f\]+,256\\\] surrounds2 \\\[0x\[0-9a-f\]+,\\\+254\\\]" } */
+/* { dg-output "\\\[\[0-9a-fA-FxX\]+,256\\\] surrounds2 \\\[\[0-9a-fA-FxX\]+,\\\+254\\\]" } */
 /* { dg-shouldfail "" } */
