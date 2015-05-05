@@ -1,4 +1,4 @@
-/* Map logical line numbers to (source file, line number) pairs.
+/* Map (unsigned int) keys to (source file, line, column) triples.
    Copyright (C) 2001-2015 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
@@ -46,7 +46,74 @@ enum lc_reason
 /* The type of line numbers.  */
 typedef unsigned int linenum_type;
 
-/* A logical line/column number, i.e. an "index" into a line_map.  */
+/* The typedef "source_location" is a key within the location database,
+   identifying a source location or macro expansion.
+
+   This key only has meaning in relation to a line_maps instance.  Within
+   gcc there is a single line_maps instance: "line_table", declared in
+   gcc/input.h and defined in gcc/input.c.
+
+   The values of the keys are intended to be internal to libcpp,
+   but for ease-of-understanding the implementation, they are currently
+   assigned as follows:
+
+  Actual     | Value                         | Meaning
+  -----------+-------------------------------+-------------------------------
+  0x00000000 |                               | Reserved for use by libcpp
+  0x00000001 | RESERVED_LOCATION_COUNT - 1   | Reserved for use by libcpp
+  -----------+-------------------------------+-------------------------------
+  0x00000002 | RESERVED_LOCATION_COUNT       | The first location to be
+             | (also                         | handed out, and the
+             |  ordmap[0]->start_location)   | first line in ordmap 0
+  -----------+-------------------------------+-------------------------------
+             | ordmap[1]->start_location     | First line in ordmap 1
+             | ordmap[1]->start_location+1   | First column in that line
+             | ordmap[1]->start_location+2   | 2nd column in that line
+             |                               | Subsequent lines are offset by
+             |                               | (1 << column_bits),
+             |                               | e.g. 128 for 7 bits, with a
+             |                               | column value of 0 representing
+             |                               | "the whole line".
+             | ordmap[2]->start_location-1   | Final location in ordmap 1
+  -----------+-------------------------------+-------------------------------
+             | ordmap[2]->start_location     | First line in ordmap 2
+             | ordmap[3]->start_location-1   | Final location in ordmap 2
+  -----------+-------------------------------+-------------------------------
+             |                               | (etc)
+  -----------+-------------------------------+-------------------------------
+             | ordmap[n-1]->start_location   | First line in final ord map
+             |                               | (etc)
+             | set->highest_location - 1     | Final location in that ordmap
+  -----------+-------------------------------+-------------------------------
+             | set->highest_location         | Location of the where the next
+             |                               | ordinary linemap would start
+  -----------+-------------------------------+-------------------------------
+             |                               |
+             |                  VVVVVVVVVVVVVVVVVVVVVVVVVVV
+             |                  Ordinary maps grow this way
+             |
+             |                    (unallocated integers)
+             |
+             |                   Macro maps grow this way
+             |                   ^^^^^^^^^^^^^^^^^^^^^^^^
+             |                               |
+  -----------+-------------------------------+-------------------------------
+             | LINEMAPS_MACRO_LOWEST_LOCATION| Locations within macro maps
+             | macromap[m-1]->start_location | Start of last macro map
+             |                               |
+  -----------+-------------------------------+-------------------------------
+             | macromap[m-2]->start_location | Start of penultimate macro map
+  -----------+-------------------------------+-------------------------------
+             | macromap[1]->start_location   | Start of macro map 1
+  -----------+-------------------------------+-------------------------------
+             | macromap[0]->start_location   | Start of macro map 0
+  0x7fffffff | MAX_SOURCE_LOCATION           |
+  -----------+-------------------------------+-------------------------------
+  0x80000000 | Start of ad-hoc values        |
+  ...        |                               |
+  0xffffffff | UINT_MAX                      |
+  -----------+-------------------------------+-------------------------------
+  .  */
 typedef unsigned int source_location;
 
 /* Memory allocation function typedef.  Works like xrealloc.  */
