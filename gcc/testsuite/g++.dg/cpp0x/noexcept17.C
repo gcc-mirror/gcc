@@ -1,5 +1,6 @@
 // PR c++/50043
 // { dg-do compile { target c++11 } }
+// { dg-options "-Wno-terminate" }
 
 struct True1 {};
 struct True2 { ~True2(); };

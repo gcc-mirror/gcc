@@ -12,7 +12,7 @@ void my_terminate ()
 
 struct A {
   A(int) { }
-  ~A() { throw 1; };
+  ~A() throw(int) { throw 1; };
 };
 struct B {
   B(A) { }

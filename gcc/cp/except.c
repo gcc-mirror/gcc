@@ -579,7 +579,11 @@ expand_end_catch_block (void)
   if (in_function_try_handler
       && (DECL_CONSTRUCTOR_P (current_function_decl)
 	  || DECL_DESTRUCTOR_P (current_function_decl)))
-    finish_expr_stmt (build_throw (NULL_TREE));
+    {
+      tree rethrow = build_throw (NULL_TREE);
+      TREE_NO_WARNING (rethrow) = true;
+      finish_expr_stmt (rethrow);
+    }
 }
 
 tree

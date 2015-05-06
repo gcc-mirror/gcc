@@ -1,5 +1,13 @@
 2015-05-05  Jason Merrill  <jason@redhat.com>
 
+	* cp-gimplify.c (cp_genericize_r): Track TRY_BLOCK and
+	MUST_NOT_THROW_EXPR, warn about a THROW_EXPR directly within a
+	MUST_NOT_THROW_EXPR.
+	(cp_genericize_data): Add try_block field.
+	(cp_genericize_tree): Initialize it.
+	* except.c (expand_end_catch_block): Set TREE_NO_WARNING on
+	implicit rethrow.
+
 	* constexpr.c (potential_constant_expression_1) [AT_ENCODE_EXPR]:
 	Return false.
 

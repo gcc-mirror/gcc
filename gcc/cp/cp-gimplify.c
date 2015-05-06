@@ -905,6 +905,7 @@ struct cp_genericize_data
   hash_set<tree> *p_set;
   vec<tree> bind_expr_stack;
   struct cp_genericize_omp_taskreg *omp_ctx;
+  tree try_block;
 };
 
 /* Perform any pre-gimplification lowering of C++ front end trees to
@@ -1193,6 +1194,54 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       wtd->omp_ctx = omp_ctx.outer;
       splay_tree_delete (omp_ctx.variables);
     }
+  else if (TREE_CODE (stmt) == TRY_BLOCK)
+    {
+      *walk_subtrees = 0;
+      tree try_block = wtd->try_block;
+      wtd->try_block = stmt;
+      cp_walk_tree (&TRY_STMTS (stmt), cp_genericize_r, data, NULL);
+      wtd->try_block = try_block;
+      cp_walk_tree (&TRY_HANDLERS (stmt), cp_genericize_r, data, NULL);
+    }
+  else if (TREE_CODE (stmt) == MUST_NOT_THROW_EXPR)
+    {
+      /* MUST_NOT_THROW_COND might be something else with TM.  */
+      if (MUST_NOT_THROW_COND (stmt) == NULL_TREE)
+	{
+	  *walk_subtrees = 0;
+	  tree try_block = wtd->try_block;
+	  wtd->try_block = stmt;
+	  cp_walk_tree (&TREE_OPERAND (stmt, 0), cp_genericize_r, data, NULL);
+	  wtd->try_block = try_block;
+	}
+    }
+  else if (TREE_CODE (stmt) == THROW_EXPR)
+    {
+      location_t loc = location_of (stmt);
+      if (TREE_NO_WARNING (stmt))
+	/* Never mind.  */;
+      else if (wtd->try_block)
+	{
+	  if (TREE_CODE (wtd->try_block) == MUST_NOT_THROW_EXPR
+	      && warning_at (loc, OPT_Wterminate,
+			     "throw will always call terminate()")
+	      && cxx_dialect >= cxx11
+	      && DECL_DESTRUCTOR_P (current_function_decl))
+	    inform (loc, "in C++11 destructors default to noexcept");
+	}
+      else
+	{
+	  if (warn_cxx0x_compat && cxx_dialect < cxx11
+	      && DECL_DESTRUCTOR_P (current_function_decl)
+	      && (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl))
+		  == NULL_TREE)
+	      && (get_defaulted_eh_spec (current_function_decl)
+		  == empty_except_spec))
+	    warning_at (loc, OPT_Wc__0x_compat,
+			"in C++11 this throw will terminate because "
+			"destructors default to noexcept");
+	}
+    }
   else if (TREE_CODE (stmt) == CONVERT_EXPR)
     gcc_assert (!CONVERT_EXPR_VBASE_PATH (stmt));
   else if (TREE_CODE (stmt) == FOR_STMT)
@@ -1269,6 +1318,7 @@ cp_genericize_tree (tree* t_p)
   wtd.p_set = new hash_set<tree>;
   wtd.bind_expr_stack.create (0);
   wtd.omp_ctx = NULL;
+  wtd.try_block = NULL_TREE;
   cp_walk_tree (t_p, cp_genericize_r, &wtd, NULL);
   delete wtd.p_set;
   wtd.bind_expr_stack.release ();

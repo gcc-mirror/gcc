@@ -10,7 +10,7 @@ void my_terminate() {
 
 struct A {
   A() { }
-  ~A() {
+  ~A() throw(int) {
     std::set_terminate (my_terminate);
     throw 1;		// This throws from EH dtor, should call my_terminate
   }

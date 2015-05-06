@@ -8,18 +8,18 @@ template <class _Tp> class AutoPtr
 public:
   explicit AutoPtr(_Tp* __p = 0)  : _M_ptr(__p) {}
 
-  ~AutoPtr() { delete _M_ptr; }
+  ~AutoPtr() throw(int) { delete _M_ptr; }
 };
 
 struct A
 {
   A() { }
-  ~A() { throw 1.0; }
+  ~A() throw(int) { throw 1; }
 };
 
 struct B
 {
-  virtual ~B();
+  virtual ~B() throw(int);
 };
 
 B* f (const A &s) { throw 1; }
