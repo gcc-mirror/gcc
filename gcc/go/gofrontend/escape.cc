@@ -586,8 +586,20 @@ Build_connection_graphs::handle_call(Named_object* object, Expression* e)
   // Only call expression statements are interesting
   // e.g. 'func(var)' for which we can show var does not escape.
   Call_expression* ce = e->call_expression();
-  if (ce == NULL || ce->args() == NULL)
+  if (ce == NULL)
     return;
+  else if (ce->args() == NULL)
+    {
+      if (ce->fn()->interface_field_reference_expression() != NULL)
+	{
+	  // This is a call to an interface method with no arguments. OBJECT
+	  // must be the receiver and we assume it escapes.
+	  Connection_node* rcvr_node =
+	    this->gogo_->add_connection_node(object)->connection_node();
+	  rcvr_node->set_escape_state(Node::ESCAPE_ARG);
+	}
+      return;
+    }
   
   // If the function call that references OBJECT is unknown, we must be
   // conservative and assume every argument escapes.  A function call is unknown
@@ -606,6 +618,8 @@ Build_connection_graphs::handle_call(Named_object* object, Expression* e)
 		this->gogo_->add_connection_node(arg_no)->connection_node();
 	      arg_node->set_escape_state(Node::ESCAPE_ARG);
 	    }
+	  else if ((*arg)->call_expression() != NULL)
+	    this->handle_call(object, *arg);
 	}
       return;
     }
@@ -787,7 +801,6 @@ Build_connection_graphs::handle_call(Named_object* object, Expression* e)
        ++pos)
     {
       std::string param_name;
-      bool param_is_interface = false;
       if (*pos >= 0 && params->size() <= static_cast<size_t>(*pos))
 	{
 	  // There were more arguments than there are parameters. This must be
@@ -804,11 +817,7 @@ Build_connection_graphs::handle_call(Named_object* object, Expression* e)
 	  param_name = fntype->receiver()->name();
 	}
       else
-	{
-	  param_name = params->at(*pos).name();
-	  param_is_interface =
-	    (params->at(*pos).type()->interface_type() != NULL);
-	}
+	param_name = params->at(*pos).name();
 
       if (Gogo::is_sink_name(param_name) || param_name.empty())
 	continue;
@@ -832,11 +841,6 @@ Build_connection_graphs::handle_call(Named_object* object, Expression* e)
 
       Node* arg_node = this->gogo_->add_connection_node(object);
       Node* param_node = this->gogo_->add_connection_node(param_no);
-
-      // Act conservatively when an argument is converted into an interface
-      // value.  FIXME.
-      if (param_is_interface)
-	param_node->connection_node()->set_escape_state(Node::ESCAPE_ARG);
       param_node->add_edge(arg_node);
     }
 
