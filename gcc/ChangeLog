@@ -1,3 +1,8 @@
+2015-05-06  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c (need_to_save): Save register 22 if it is
+	used, even if it is not being used as a frame pointer.
+
 2015-05-05  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (gen_member_die): Don't emit anything for an
