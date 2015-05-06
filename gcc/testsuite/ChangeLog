@@ -1,5 +1,10 @@
 2015-05-06  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/65990
+	* gcc.target/i386/pr65990.c: New test.
+
+2015-05-06  Uros Bizjak  <ubizjak@gmail.com>
+
 	* g++.dg/cpp1y/auto-fn26.C (dg-do): Use c++1y target.
 
 2015-05-05  Shanyao chen  <chenshanyao@huawei.com>
