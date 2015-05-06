@@ -1,3 +1,15 @@
+2015-05-06  Julian Brown  <julian@codesourcery.com>
+
+	* oacc-init.c (acc_shutdown_1): Call gomp_mutex_unlock for
+	goacc_thread_lock on error paths.
+	* oacc-mem.c (lookup_host): Remove locking from function. Note
+	locking requirement for caller in function comment.
+	(lookup_dev): Likewise.
+	(acc_free, acc_deviceptr, acc_hostptr, acc_is_present)
+	(acc_map_data, acc_unmap_data, present_create_copy, delete_copyout)
+	(update_dev_host, gomp_acc_insert_pointer, gomp_acc_remove_pointer):
+	Add locking.
+
 2015-05-05  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR testsuite/65205
