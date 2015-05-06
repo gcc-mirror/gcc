@@ -1,5 +1,7 @@
 2015-05-05  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (finish_call_expr): Check complain.
+
 	* decl2.c (reset_type_linkage_2): Update the DECL_NAME of a
 	maybe-in-charge constructor.
 

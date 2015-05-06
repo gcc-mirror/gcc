@@ -2377,6 +2377,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
       if (!result)
 	{
 	  if (warn_sizeof_pointer_memaccess
+	      && (complain & tf_warning)
 	      && !vec_safe_is_empty (*args)
 	      && !processing_template_decl)
 	    {
