@@ -377,14 +377,15 @@ arm*-*-netbsdelf*)
 	tmake_file="$tmake_file arm/t-arm arm/t-netbsd t-slibgcc-gld-nover"
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
-	tmake_file="${tmake_file} arm/t-arm t-fixedpoint-gnu-prefix"
+	tmake_file="${tmake_file} arm/t-arm t-fixedpoint-gnu-prefix t-crtfm"
 	tmake_file="${tmake_file} arm/t-elf arm/t-bpabi arm/t-linux-eabi t-slibgcc-libgcc"
 	tm_file="$tm_file arm/bpabi-lib.h"
 	unwind_header=config/arm/unwind-arm.h
 	tmake_file="$tmake_file t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
+	extra_parts="$extra_parts crtfastmath.o"
 	;;
 arm*-*-uclinux*)		# ARM ucLinux
-	tmake_file="${tmake_file} t-fixedpoint-gnu-prefix"
+	tmake_file="${tmake_file} t-fixedpoint-gnu-prefix t-crtfm"
 	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	tmake_file="${tmake_file} arm/t-bpabi"
 	tm_file="$tm_file arm/bpabi-lib.h"
@@ -396,7 +397,7 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	tm_file="$tm_file arm/bpabi-lib.h"
 	case ${host} in
 	arm*-*-eabi* | arm*-*-rtems*)
-	  tmake_file="${tmake_file} arm/t-bpabi"
+	  tmake_file="${tmake_file} arm/t-bpabi t-crtfm"
 	  extra_parts="crtbegin.o crtend.o crti.o crtn.o"
 	  ;;
 	arm*-*-symbianelf*)

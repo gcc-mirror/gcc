@@ -1,3 +1,12 @@
+2015-05-06  Sandra Loosemore  <sandra@codesourcery.com>
+	    Chris Jones  <chrisj@nvidia.com>
+	    Joshua Conner  <jconner@nvidia.com>
+
+	* config.host (arm*-*-linux*): Add support for crtfastmath.o.
+	(arm*-*-uclinux*): Likewise.
+	(arm*-*-eabi* | arm*-*-rtems*): Likewise.
+	* config/arm/crtfastmath.c: New file.
+
 2014-04-29  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* Makefile.in (real_host_noncanonical): New variable.
