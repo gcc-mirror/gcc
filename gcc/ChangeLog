@@ -1,3 +1,8 @@
+2015-05-05  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (gen_member_die): Don't emit anything for an
+	anonymous class constructor.
+
 2015-05-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* auto-profile.c (afdo_find_equiv_class): Fix indentation so

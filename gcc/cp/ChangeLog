@@ -1,5 +1,8 @@
 2015-05-05  Jason Merrill  <jason@redhat.com>
 
+	* decl2.c (reset_type_linkage_2): Update the DECL_NAME of a
+	maybe-in-charge constructor.
+
 	* decl.c (start_decl): Don't push the plain VAR_DECL for a
 	variable template.
 
