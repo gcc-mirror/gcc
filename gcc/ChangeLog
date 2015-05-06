@@ -1,3 +1,9 @@
+2015-05-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_supported_load_permutation_p): Use
+	vect_transform_slp_perm_load to check if we support a permutation
+	for basic-block vectorization.
+
 2015-05-06  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78.c (need_to_save): Save register 22 if it is
