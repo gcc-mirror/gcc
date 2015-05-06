@@ -1,3 +1,8 @@
+2015-05-05  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (start_decl): Don't push the plain VAR_DECL for a
+	variable template.
+
 2015-05-04  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
