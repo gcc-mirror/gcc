@@ -1,3 +1,13 @@
+2015-05-06  Alan Modra  <amodra@gmail.com>
+
+	PR target/66033
+	* config/rs6000/rs6000.md (nop): Use an unspec pattern.
+	(UNSPEC_NOP): Define.
+	(reload_vsx_from_gpr<mode>): Add missing DONE.
+	(reload_gpr_from_vsx<mode>): Likewise.
+	* config/rs6000/vsx.md (vsx_mul_v2di): Likewise.
+	(vsx_div_v2di, vsx_udiv_v2di): Likewise.
+
 2015-05-06  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/66015
