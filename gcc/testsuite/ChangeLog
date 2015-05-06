@@ -1,3 +1,8 @@
+2015-05-06  Yvan Roux  <yvan.roux@linaro.org>
+
+	PR target/64208
+	* gcc.target/arm/pr64208.c: New test.
+
 2015-05-06  Alan Modra  <amodra@gmail.com>
 
 	PR target/66020
