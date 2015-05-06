@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O -fdump-tree-original -Warray-temporaries" }
+! { dg-options "-O -fdump-tree-original -Warray-temporaries -finline-matmul-limit=0" }
 subroutine xx(n, m, a, b, c, d, x, z, i, s_in, s_out)
   implicit none
   integer, intent(in) :: n, m

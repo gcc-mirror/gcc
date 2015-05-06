@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dependency.h"
 #include "constructor.h"
 #include "opts.h"
+#include "intrinsic.h"
 
 /* Forward declarations.  */
 
@@ -43,7 +44,11 @@ static void doloop_warn (gfc_namespace *);
 static void optimize_reduction (gfc_namespace *);
 static int callback_reduction (gfc_expr **, int *, void *);
 static void realloc_strings (gfc_namespace *);
-static gfc_expr *create_var (gfc_expr *);
+static gfc_expr *create_var (gfc_expr *, const char *vname=NULL);
+static int inline_matmul_assign (gfc_code **, int *, void *);
+static gfc_code * create_do_loop (gfc_expr *, gfc_expr *, gfc_expr *,
+				  locus *, gfc_namespace *, 
+				  char *vname=NULL);
 
 /* How deep we are inside an argument list.  */
 
@@ -92,6 +97,19 @@ struct my_struct *evec;
 /* Keep track of association lists.  */
 
 static bool in_assoc_list;
+
+/* Counter for temporary variables.  */
+
+static int var_num = 1;
+
+/* What sort of matrix we are dealing with when inlining MATMUL.  */
+
+enum matrix_case { none=0, A2B2, A2B1, A1B2 };
+
+/* Keep track of the number of expressions we have inserted so far 
+   using create_var.  */
+
+int n_vars;
 
 /* Entry point - run all passes for a namespace.  */
 
@@ -157,7 +175,7 @@ realloc_string_callback (gfc_code **c, int *walk_subtrees,
     return 0;
   
   current_code = c;
-  n = create_var (expr2);
+  n = create_var (expr2, "trim");
   co->expr2 = n;
   return 0;
 }
@@ -524,28 +542,13 @@ constant_string_length (gfc_expr *e)
 
 }
 
-/* Returns a new expression (a variable) to be used in place of the old one,
-   with an assignment statement before the current statement to set
-   the value of the variable. Creates a new BLOCK for the statement if
-   that hasn't already been done and puts the statement, plus the
-   newly created variables, in that block.  Special cases:  If the
-   expression is constant or a temporary which has already
-   been created, just copy it.  */
+/* Insert a block at the current position unless it has already
+   been inserted; in this case use the one already there.  */
 
-static gfc_expr*
-create_var (gfc_expr * e)
+static gfc_namespace*
+insert_block ()
 {
-  char name[GFC_MAX_SYMBOL_LEN +1];
-  static int num = 1;
-  gfc_symtree *symtree;
-  gfc_symbol *symbol;
-  gfc_expr *result;
-  gfc_code *n;
   gfc_namespace *ns;
-  int i;
-
-  if (e->expr_type == EXPR_CONSTANT || is_fe_temp (e))
-    return gfc_copy_expr (e);
 
   /* If the block hasn't already been created, do so.  */
   if (inserted_block == NULL)
@@ -578,7 +581,37 @@ create_var (gfc_expr * e)
   else
     ns = inserted_block->ext.block.ns;
 
-  sprintf(name, "__var_%d",num++);
+  return ns;
+}
+
+/* Returns a new expression (a variable) to be used in place of the old one,
+   with an optional assignment statement before the current statement to set
+   the value of the variable. Creates a new BLOCK for the statement if that
+   hasn't already been done and puts the statement, plus the newly created
+   variables, in that block.  Special cases: If the expression is constant or
+   a temporary which has already been created, just copy it.  */
+
+static gfc_expr*
+create_var (gfc_expr * e, const char *vname)
+{
+  char name[GFC_MAX_SYMBOL_LEN +1];
+  gfc_symtree *symtree;
+  gfc_symbol *symbol;
+  gfc_expr *result;
+  gfc_code *n;
+  gfc_namespace *ns;
+  int i;
+
+  if (e->expr_type == EXPR_CONSTANT || is_fe_temp (e))
+    return gfc_copy_expr (e);
+
+  ns = insert_block ();
+
+  if (vname)
+    snprintf (name, GFC_MAX_SYMBOL_LEN, "__var_%d_%s", var_num++, vname);
+  else
+    snprintf (name, GFC_MAX_SYMBOL_LEN, "__var_%d", var_num++);
+
   if (gfc_get_sym_tree (name, ns, &symtree, false) != 0)
     gcc_unreachable ();
 
@@ -651,6 +684,7 @@ create_var (gfc_expr * e)
       result->ref->type = REF_ARRAY;
       result->ref->u.ar.type = AR_FULL;
       result->ref->u.ar.where = e->where;
+      result->ref->u.ar.dimen = e->rank;
       result->ref->u.ar.as = symbol->ts.type == BT_CLASS
 			     ? CLASS_DATA (symbol)->as : symbol->as;
       if (warn_array_temporaries)
@@ -666,6 +700,7 @@ create_var (gfc_expr * e)
   n->expr1 = gfc_copy_expr (result);
   n->expr2 = e;
   *changed_statement = n;
+  n_vars ++;
 
   return result;
 }
@@ -724,7 +759,7 @@ cfe_expr_0 (gfc_expr **e, int *walk_subtrees,
 	  if (gfc_dep_compare_functions (*ei, *ej, true) == 0)
 	    {
 	      if (newvar == NULL)
-		newvar = create_var (*ei);
+		newvar = create_var (*ei, "fcn");
 
 	      if (warn_function_elimination)
 		do_warn_function_elimination (*ej);
@@ -931,13 +966,15 @@ convert_elseif (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   /*  Don't walk subtrees.  */
   return 0;
 }
+
 /* Optimize a namespace, including all contained namespaces.  */
 
 static void
 optimize_namespace (gfc_namespace *ns)
 {
-
+  gfc_namespace *saved_ns = gfc_current_ns;
   current_ns = ns;
+  gfc_current_ns = ns;
   forall_level = 0;
   iterator_level = 0;
   in_assoc_list = false;
@@ -947,6 +984,9 @@ optimize_namespace (gfc_namespace *ns)
   gfc_code_walker (&ns->code, convert_elseif, dummy_expr_callback, NULL);
   gfc_code_walker (&ns->code, cfe_code, cfe_expr_0, NULL);
   gfc_code_walker (&ns->code, optimize_code, optimize_expr, NULL);
+  if (flag_inline_matmul_limit != 0)
+    gfc_code_walker (&ns->code, inline_matmul_assign, dummy_expr_callback,
+		     NULL);
 
   /* BLOCKs are handled in the expression walker below.  */
   for (ns = ns->contained; ns; ns = ns->sibling)
@@ -954,6 +994,7 @@ optimize_namespace (gfc_namespace *ns)
       if (ns->code == NULL || ns->code->op != EXEC_BLOCK)
 	optimize_namespace (ns);
     }
+  gfc_current_ns = saved_ns;
 }
 
 /* Handle dependencies for allocatable strings which potentially redefine
@@ -968,10 +1009,7 @@ realloc_strings (gfc_namespace *ns)
   for (ns = ns->contained; ns; ns = ns->sibling)
     {
       if (ns->code == NULL || ns->code->op != EXEC_BLOCK)
-	{
-	  // current_ns = ns;
-	  realloc_strings (ns);
-	}
+	realloc_strings (ns);
     }
 
 }
@@ -1222,7 +1260,7 @@ combine_array_constructor (gfc_expr *e)
   if (op2->ts.type == BT_CHARACTER)
     return false;
 
-  scalar = create_var (gfc_copy_expr (op2));
+  scalar = create_var (gfc_copy_expr (op2), "constr");
 
   oldbase = op1->value.constructor;
   newbase = NULL;
@@ -1939,6 +1977,1045 @@ doloop_warn (gfc_namespace *ns)
   gfc_code_walker (&ns->code, doloop_code, do_function, NULL);
 }
 
+/* This selction deals with inlining calls to MATMUL.  */
+
+/* Auxiliary function to build and simplify an array inquiry function.
+   dim is zero-based.  */
+
+static gfc_expr *
+get_array_inq_function (gfc_isym_id id, gfc_expr *e, int dim)
+{
+  gfc_expr *fcn;
+  gfc_expr *dim_arg, *kind;
+  const char *name;
+  gfc_expr *ec;
+
+  switch (id)
+    {
+    case GFC_ISYM_LBOUND:
+      name = "_gfortran_lbound";
+      break;
+
+    case GFC_ISYM_UBOUND:
+      name = "_gfortran_ubound";
+      break;
+
+    case GFC_ISYM_SIZE:
+      name = "_gfortran_size";
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  dim_arg =  gfc_get_int_expr (gfc_default_integer_kind, &e->where, dim);
+  kind = gfc_get_int_expr (gfc_default_integer_kind, &e->where,
+			   gfc_index_integer_kind);
+
+  ec = gfc_copy_expr (e);
+  fcn = gfc_build_intrinsic_call (current_ns, id, name, e->where, 3,
+				  ec, dim_arg,  kind);
+  gfc_simplify_expr (fcn, 0);
+  return fcn;
+}
+
+/* Builds a logical expression.  */
+
+static gfc_expr*
+build_logical_expr (gfc_intrinsic_op op, gfc_expr *e1, gfc_expr *e2)
+{
+  gfc_typespec ts;
+  gfc_expr *res;
+
+  ts.type = BT_LOGICAL;
+  ts.kind = gfc_default_logical_kind;
+  res = gfc_get_expr ();
+  res->where = e1->where;
+  res->expr_type = EXPR_OP;
+  res->value.op.op = op;
+  res->value.op.op1 = e1;
+  res->value.op.op2 = e2;
+  res->ts = ts;
+
+  return res;
+}
+
+
+/* Return an operation of one two gfc_expr (one if e2 is NULL). This assumes
+   compatible typespecs.  */
+
+static gfc_expr *
+get_operand (gfc_intrinsic_op op, gfc_expr *e1, gfc_expr *e2)
+{
+  gfc_expr *res;
+
+  res = gfc_get_expr ();
+  res->ts = e1->ts;
+  res->where = e1->where;
+  res->expr_type = EXPR_OP;
+  res->value.op.op = op;
+  res->value.op.op1 = e1;
+  res->value.op.op2 = e2;
+  gfc_simplify_expr (res, 0);
+  return res;
+}
+
+/* Generate the IF statement for a runtime check if we want to do inlining or
+   not - putting in the code for both branches and putting it into the syntax
+   tree is the caller's responsibility.  For fixed array sizes, this should be
+   removed by DCE. Only called for rank-two matrices A and B.  */
+
+static gfc_code *
+inline_limit_check (gfc_expr *a, gfc_expr *b, enum matrix_case m_case)
+{
+  gfc_expr *inline_limit;
+  gfc_code *if_1, *if_2, *else_2;
+  gfc_expr *b2, *a2, *a1, *m1, *m2;
+  gfc_typespec ts;
+  gfc_expr *cond;
+
+  gcc_assert (m_case == A2B2);
+
+  /* Calculation is done in real to avoid integer overflow.  */
+
+  inline_limit = gfc_get_constant_expr (BT_REAL, gfc_default_real_kind,
+					&a->where);
+  mpfr_set_si (inline_limit->value.real, flag_inline_matmul_limit,
+	       GFC_RND_MODE);
+  mpfr_pow_ui (inline_limit->value.real, inline_limit->value.real, 3,
+	       GFC_RND_MODE);
+
+  a1 = get_array_inq_function (GFC_ISYM_SIZE, a, 1);
+  a2 = get_array_inq_function (GFC_ISYM_SIZE, a, 2);
+  b2 = get_array_inq_function (GFC_ISYM_SIZE, b, 2);
+
+  gfc_clear_ts (&ts);
+  ts.type = BT_REAL;
+  ts.kind = gfc_default_real_kind;
+  gfc_convert_type_warn (a1, &ts, 2, 0);
+  gfc_convert_type_warn (a2, &ts, 2, 0);
+  gfc_convert_type_warn (b2, &ts, 2, 0);
+
+  m1 = get_operand (INTRINSIC_TIMES, a1, a2);
+  m2 = get_operand (INTRINSIC_TIMES, m1, b2);
+
+  cond = build_logical_expr (INTRINSIC_LE, m2, inline_limit);
+  gfc_simplify_expr (cond, 0);
+
+  else_2 = XCNEW (gfc_code);
+  else_2->op = EXEC_IF;
+  else_2->loc = a->where;
+
+  if_2 = XCNEW (gfc_code);
+  if_2->op = EXEC_IF;
+  if_2->expr1 = cond;
+  if_2->loc = a->where;
+  if_2->block = else_2;
+
+  if_1 = XCNEW (gfc_code);
+  if_1->op = EXEC_IF;
+  if_1->block = if_2;
+  if_1->loc = a->where;
+
+  return if_1;
+}
+
+
+/* Insert code to issue a runtime error if the expressions are not equal.  */
+
+static gfc_code *
+runtime_error_ne (gfc_expr *e1, gfc_expr *e2, const char *msg)
+{
+  gfc_expr *cond;
+  gfc_code *if_1, *if_2;
+  gfc_code *c;
+  gfc_actual_arglist *a1, *a2, *a3;
+
+  gcc_assert (e1->where.lb);
+  /* Build the call to runtime_error.  */
+  c = XCNEW (gfc_code);
+  c->op = EXEC_CALL;
+  c->loc = e1->where;
+
+  /* Get a null-terminated message string.  */
+
+  a1 = gfc_get_actual_arglist ();
+  a1->expr = gfc_get_character_expr (gfc_default_character_kind, &e1->where,
+				     msg, strlen(msg)+1);
+  c->ext.actual = a1;
+
+  /* Pass the value of the first expression.  */
+  a2 = gfc_get_actual_arglist ();
+  a2->expr = gfc_copy_expr (e1);
+  a1->next = a2;
+
+  /* Pass the value of the second expression.  */
+  a3 = gfc_get_actual_arglist ();
+  a3->expr = gfc_copy_expr (e2);
+  a2->next = a3;
+
+  gfc_check_fe_runtime_error (c->ext.actual);
+  gfc_resolve_fe_runtime_error (c);
+
+  if_2 = XCNEW (gfc_code);
+  if_2->op = EXEC_IF;
+  if_2->loc = e1->where;
+  if_2->next = c;
+
+  if_1 = XCNEW (gfc_code);
+  if_1->op = EXEC_IF;
+  if_1->block = if_2;
+  if_1->loc = e1->where;
+
+  cond = build_logical_expr (INTRINSIC_NE, e1, e2);
+  gfc_simplify_expr (cond, 0);
+  if_2->expr1 = cond;
+
+  return if_1;
+}
+
+/* Handle matrix reallocation.  Caller is responsible to insert into
+   the code tree.
+
+   For the two-dimensional case, build 
+
+  if (allocated(c)) then
+     if (size(c,1) /= size(a,1) .or. size(c,2) /= size(b,2)) then
+        deallocate(c)
+        allocate (c(size(a,1), size(b,2)))
+     end if
+  else
+     allocate (c(size(a,1),size(b,2)))
+  end if
+
+  and for the other cases correspondingly.
+*/
+
+static gfc_code *
+matmul_lhs_realloc (gfc_expr *c, gfc_expr *a, gfc_expr *b,
+		    enum matrix_case m_case)
+{
+
+  gfc_expr *allocated, *alloc_expr;
+  gfc_code *if_alloc_1, *if_alloc_2, *if_size_1, *if_size_2;
+  gfc_code *else_alloc;
+  gfc_code *deallocate, *allocate1, *allocate_else;
+  gfc_array_ref *ar;
+  gfc_expr *cond, *ne1, *ne2;
+
+  if (warn_realloc_lhs)
+    gfc_warning (OPT_Wrealloc_lhs,
+		 "Code for reallocating the allocatable array at %L will "
+		 "be added", &c->where);
+
+  alloc_expr = gfc_copy_expr (c);
+
+  ar = gfc_find_array_ref (alloc_expr);
+  gcc_assert (ar && ar->type == AR_FULL);
+
+  /* c comes in as a full ref.  Change it into a copy and make it into an
+     element ref so it has the right form for for ALLOCATE.  In the same
+     switch statement, also generate the size comparison for the secod IF
+     statement.  */
+
+  ar->type = AR_ELEMENT;
+
+  switch (m_case)
+    {
+    case A2B2:
+      ar->start[0] = get_array_inq_function (GFC_ISYM_SIZE, a, 1);
+      ar->start[1] = get_array_inq_function (GFC_ISYM_SIZE, b, 2);
+      ne1 = build_logical_expr (INTRINSIC_NE,
+				get_array_inq_function (GFC_ISYM_SIZE, c, 1),
+				get_array_inq_function (GFC_ISYM_SIZE, a, 1));
+      ne2 = build_logical_expr (INTRINSIC_NE,
+				get_array_inq_function (GFC_ISYM_SIZE, c, 2),
+				get_array_inq_function (GFC_ISYM_SIZE, b, 2));
+      cond = build_logical_expr (INTRINSIC_OR, ne1, ne2);
+      break;
+
+    case A2B1:
+      ar->start[0] = get_array_inq_function (GFC_ISYM_SIZE, a, 1);
+      cond = build_logical_expr (INTRINSIC_NE,
+				 get_array_inq_function (GFC_ISYM_SIZE, c, 1),
+				 get_array_inq_function (GFC_ISYM_SIZE, a, 2));
+      break;
+
+    case A1B2:
+      ar->start[0] = get_array_inq_function (GFC_ISYM_SIZE, b, 1);
+      cond = build_logical_expr (INTRINSIC_NE,
+				 get_array_inq_function (GFC_ISYM_SIZE, c, 1),
+				 get_array_inq_function (GFC_ISYM_SIZE, b, 2));
+      break;
+
+    default:
+      gcc_unreachable();
+
+    }
+
+  gfc_simplify_expr (cond, 0);
+
+  /* We need two identical allocate statements in two
+     branches of the IF statement.  */
+  
+  allocate1 = XCNEW (gfc_code);
+  allocate1->op = EXEC_ALLOCATE;
+  allocate1->ext.alloc.list = gfc_get_alloc ();
+  allocate1->loc = c->where;
+  allocate1->ext.alloc.list->expr = gfc_copy_expr (alloc_expr);
+
+  allocate_else = XCNEW (gfc_code);
+  allocate_else->op = EXEC_ALLOCATE;
+  allocate_else->ext.alloc.list = gfc_get_alloc ();
+  allocate_else->loc = c->where;
+  allocate_else->ext.alloc.list->expr = alloc_expr;
+
+  allocated = gfc_build_intrinsic_call (current_ns, GFC_ISYM_ALLOCATED,
+					"_gfortran_allocated", c->where,
+					1, gfc_copy_expr (c));
+
+  deallocate = XCNEW (gfc_code);
+  deallocate->op = EXEC_DEALLOCATE;
+  deallocate->ext.alloc.list = gfc_get_alloc ();
+  deallocate->ext.alloc.list->expr = gfc_copy_expr (c);
+  deallocate->next = allocate1;
+  deallocate->loc = c->where;
+  
+  if_size_2 = XCNEW (gfc_code);
+  if_size_2->op = EXEC_IF;
+  if_size_2->expr1 = cond;
+  if_size_2->loc = c->where;
+  if_size_2->next = deallocate;
+
+  if_size_1 = XCNEW (gfc_code);
+  if_size_1->op = EXEC_IF;
+  if_size_1->block = if_size_2;
+  if_size_1->loc = c->where;
+
+  else_alloc = XCNEW (gfc_code);
+  else_alloc->op = EXEC_IF;
+  else_alloc->loc = c->where;
+  else_alloc->next = allocate_else;
+
+  if_alloc_2 = XCNEW (gfc_code);
+  if_alloc_2->op = EXEC_IF;
+  if_alloc_2->expr1 = allocated;
+  if_alloc_2->loc = c->where;
+  if_alloc_2->next = if_size_1;
+  if_alloc_2->block = else_alloc;
+
+  if_alloc_1 = XCNEW (gfc_code);
+  if_alloc_1->op = EXEC_IF;
+  if_alloc_1->block = if_alloc_2;
+  if_alloc_1->loc = c->where;
+
+  return if_alloc_1;
+}
+
+/* Callback function for has_function_or_op.  */
+
+static int
+is_function_or_op (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
+	     void *data ATTRIBUTE_UNUSED)
+{
+  if ((*e) == 0)
+    return 0;
+  else
+    return (*e)->expr_type == EXPR_FUNCTION
+      || (*e)->expr_type == EXPR_OP;
+}
+
+/* Returns true if the expression contains a function.  */
+
+static bool
+has_function_or_op (gfc_expr **e)
+{
+  if (e == NULL)
+    return false;
+  else
+    return gfc_expr_walker (e, is_function_or_op, NULL);
+}
+
+/* Freeze (assign to a temporary variable) a single expression.  */
+
+static void
+freeze_expr (gfc_expr **ep)
+{
+  gfc_expr *ne;
+  if (has_function_or_op (ep))
+    {
+      ne = create_var (*ep, "freeze");
+      *ep = ne;
+    }
+}
+
+/* Go through an expression's references and assign them to temporary
+   variables if they contain functions.  This is usually done prior to
+   front-end scalarization to avoid multiple invocations of functions.  */
+
+static void
+freeze_references (gfc_expr *e)
+{
+  gfc_ref *r;
+  gfc_array_ref *ar;
+  int i;
+
+  for (r=e->ref; r; r=r->next)
+    {
+      if (r->type == REF_SUBSTRING)
+	{
+	  if (r->u.ss.start != NULL)
+	    freeze_expr (&r->u.ss.start);
+
+	  if (r->u.ss.end != NULL)
+	    freeze_expr (&r->u.ss.end);
+	}
+      else if (r->type == REF_ARRAY)
+	{
+	  ar = &r->u.ar;
+	  switch (ar->type)
+	    {
+	    case AR_FULL:
+	      break;
+
+	    case AR_SECTION:
+	      for (i=0; i<ar->dimen; i++)
+		{
+		  if (ar->dimen_type[i] == DIMEN_RANGE)
+		    {
+		      freeze_expr (&ar->start[i]);
+		      freeze_expr (&ar->end[i]);
+		      freeze_expr (&ar->stride[i]);
+		    }
+		  else if (ar->dimen_type[i] == DIMEN_ELEMENT)
+		    {
+		      freeze_expr (&ar->start[i]);
+		    }
+		}
+	      break;
+
+	    case AR_ELEMENT:
+	      for (i=0; i<ar->dimen; i++)
+		freeze_expr (&ar->start[i]);
+	      break;
+
+	    default:
+	      break;
+	    }
+	}
+    }
+}
+
+/* Convert to gfc_index_integer_kind if needed, just do a copy otherwise.  */
+
+static gfc_expr *
+convert_to_index_kind (gfc_expr *e)
+{
+  gfc_expr *res;
+
+  gcc_assert (e != NULL);
+
+  res = gfc_copy_expr (e);
+
+  gcc_assert (e->ts.type == BT_INTEGER);
+
+  if (res->ts.kind != gfc_index_integer_kind)
+    {
+      gfc_typespec ts;
+      gfc_clear_ts (&ts);
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_index_integer_kind;
+
+      gfc_convert_type_warn (e, &ts, 2, 0);
+    }
+
+  return res;
+}
+
+/* Function to create a DO loop including creation of the
+   iteration variable.  gfc_expr are copied.*/
+
+static gfc_code *
+create_do_loop (gfc_expr *start, gfc_expr *end, gfc_expr *step, locus *where,
+		gfc_namespace *ns, char *vname)
+{
+
+  char name[GFC_MAX_SYMBOL_LEN +1];
+  gfc_symtree *symtree;
+  gfc_symbol *symbol;
+  gfc_expr *i;
+  gfc_code *n, *n2;
+
+  /* Create an expression for the iteration variable.  */
+  if (vname)
+    sprintf (name, "__var_%d_do_%s", var_num++, vname);
+  else
+    sprintf (name, "__var_%d_do", var_num++);
+
+
+  if (gfc_get_sym_tree (name, ns, &symtree, false) != 0)
+    gcc_unreachable ();
+
+  /* Create the loop variable.  */
+
+  symbol = symtree->n.sym;
+  symbol->ts.type = BT_INTEGER;
+  symbol->ts.kind = gfc_index_integer_kind;
+  symbol->attr.flavor = FL_VARIABLE;
+  symbol->attr.referenced = 1;
+  symbol->attr.dimension = 0;
+  symbol->attr.fe_temp = 1;
+  gfc_commit_symbol (symbol);
+
+  i = gfc_get_expr ();
+  i->expr_type = EXPR_VARIABLE;
+  i->ts = symbol->ts;
+  i->rank = 0;
+  i->where = *where;
+  i->symtree = symtree;
+
+  /* ... and the nested DO statements.  */
+  n = XCNEW (gfc_code);
+  n->op = EXEC_DO;
+  n->loc = *where;
+  n->ext.iterator = gfc_get_iterator ();
+  n->ext.iterator->var = i;
+  n->ext.iterator->start = convert_to_index_kind (start);
+  n->ext.iterator->end = convert_to_index_kind (end);
+  if (step)
+    n->ext.iterator->step = convert_to_index_kind (step);
+  else
+    n->ext.iterator->step = gfc_get_int_expr (gfc_index_integer_kind,
+					      where, 1);
+
+  n2 = XCNEW (gfc_code);
+  n2->op = EXEC_DO;
+  n2->loc = *where;
+  n2->next = NULL;
+  n->block = n2;
+  return n;
+}
+
+/* Get the upper bound of the DO loops for matmul along a dimension.  This
+ is one-based.  */
+
+static gfc_expr*
+get_size_m1 (gfc_expr *e, int dimen)
+{
+  mpz_t size;
+  gfc_expr *res;
+
+  if (gfc_array_dimen_size (e, dimen - 1, &size))
+    {
+      res = gfc_get_constant_expr (BT_INTEGER,
+				   gfc_index_integer_kind, &e->where);
+      mpz_sub_ui (res->value.integer, size, 1);
+      mpz_clear (size);
+    }
+  else
+    {
+      res = get_operand (INTRINSIC_MINUS,
+			 get_array_inq_function (GFC_ISYM_SIZE, e, dimen),
+			 gfc_get_int_expr (gfc_index_integer_kind,
+					   &e->where, 1));
+      gfc_simplify_expr (res, 0);
+    }
+
+  return res;
+}
+
+/* Function to return a scalarized expression. It is assumed that indices are
+ zero based to make generation of DO loops easier.  A zero as index will
+ access the first element along a dimension.  Single element references will
+ be skipped.  A NULL as an expression will be replaced by a full reference.
+ This assumes that the index loops have gfc_index_integer_kind, and that all
+ references have been frozen.  */
+
+static gfc_expr*
+scalarized_expr (gfc_expr *e_in, gfc_expr **index, int count_index)
+{
+  gfc_array_ref *ar;
+  int i;
+  int rank;
+  gfc_expr *e;
+  int i_index;
+  bool was_fullref;
+
+  e = gfc_copy_expr(e_in);
+
+  rank = e->rank;
+
+  ar = gfc_find_array_ref (e);
+
+  /* We scalarize count_index variables, reducing the rank by count_index.  */
+
+  e->rank = rank - count_index;
+
+  was_fullref = ar->type == AR_FULL;
+
+  if (e->rank == 0)
+    ar->type = AR_ELEMENT;
+  else
+    ar->type = AR_SECTION;
+
+  /* Loop over the indices.  For each index, create the expression
+     index * stride + lbound(e, dim).  */
+  
+  i_index = 0;
+  for (i=0; i < ar->dimen; i++)
+    {
+      if (was_fullref || ar->dimen_type[i] == DIMEN_RANGE)
+	{
+	  if (index[i_index] != NULL)
+	    {
+	      gfc_expr *lbound, *nindex;
+	      gfc_expr *loopvar;
+	      
+	      loopvar = gfc_copy_expr (index[i_index]); 
+	      
+	      if (ar->stride[i])
+		{
+		  gfc_expr *tmp;
+
+		  tmp = gfc_copy_expr(ar->stride[i]);
+		  if (tmp->ts.kind != gfc_index_integer_kind)
+		    {
+		      gfc_typespec ts;
+		      gfc_clear_ts (&ts);
+		      ts.type = BT_INTEGER;
+		      ts.kind = gfc_index_integer_kind;
+		      gfc_convert_type (tmp, &ts, 2);
+		    }
+		  nindex = get_operand (INTRINSIC_TIMES, loopvar, tmp);
+		}
+	      else
+		nindex = loopvar;
+	      
+	      /* Calculate the lower bound of the expression.  */
+	      if (ar->start[i])
+		{
+		  lbound = gfc_copy_expr (ar->start[i]);
+		  if (lbound->ts.kind != gfc_index_integer_kind)
+		    {
+		      gfc_typespec ts;
+		      gfc_clear_ts (&ts);
+		      ts.type = BT_INTEGER;
+		      ts.kind = gfc_index_integer_kind;
+		      gfc_convert_type (lbound, &ts, 2);
+
+		    }
+		}
+	      else
+		{
+		  if (!was_fullref)
+		    {
+		      /* Look at full individual sections, like a(:).  The first index
+			 is the lbound of a full ref.  */
+
+		      gfc_array_ref *ar;
+
+		      ar = gfc_find_array_ref (e_in);
+		      ar->type = AR_FULL;
+		    }
+		  lbound = get_array_inq_function (GFC_ISYM_LBOUND, e_in,
+						   i_index + 1);
+		}
+	      
+	      ar->dimen_type[i] = DIMEN_ELEMENT;
+
+	      gfc_free_expr (ar->start[i]);
+	      ar->start[i] = get_operand (INTRINSIC_PLUS, nindex, lbound);
+	      
+	      gfc_free_expr (ar->end[i]);
+	      ar->end[i] = NULL;
+	      gfc_free_expr (ar->stride[i]);
+	      ar->stride[i] = NULL;
+	      gfc_simplify_expr (ar->start[i], 0);
+	    }
+	  else if (was_fullref)
+	    {
+	      gfc_internal_error ("Scalarization using DIMEN_RANGE unimplemented");
+	    }
+	  i_index ++;
+	}
+    }
+  return e;
+}
+
+
+/* Inline assignments of the form c = matmul(a,b).
+   Handle only the cases currently where b and c are rank-two arrays.
+
+   This basically translates the code to
+
+   BLOCK
+     integer i,j,k
+     c = 0
+     do j=0, size(b,2)-1
+       do k=0, size(a, 2)-1
+         do i=0, size(a, 1)-1
+            c(i * stride(c,1) + lbound(c,1), j * stride(c,2) + lbound(c,2)) =
+	    c(i * stride(c,1) + lbound(c,1), j * stride(c,2) + lbound(c,2)) +
+            a(i * stride(a,1) + lbound(a,1), k * stride(a,2) + lbound(a,2)) *
+            b(k * stride(b,1) + lbound(b,1), j * stride(b,2) + lbound(b,2))
+         end do
+       end do
+     end do
+   END BLOCK
+   
+*/
+
+static int
+inline_matmul_assign (gfc_code **c, int *walk_subtrees,
+			  void *data ATTRIBUTE_UNUSED)
+{
+  gfc_code *co = *c;
+  gfc_expr *expr1, *expr2;
+  gfc_expr *matrix_a, *matrix_b;
+  gfc_actual_arglist *a, *b;
+  gfc_code *do_1, *do_2, *do_3, *assign_zero, *assign_matmul;
+  gfc_expr *zero_e;
+  gfc_expr *u1, *u2, *u3;
+  gfc_expr *list[2];
+  gfc_expr *ascalar, *bscalar, *cscalar;
+  gfc_expr *mult;
+  gfc_expr *var_1, *var_2, *var_3;
+  gfc_expr *zero;
+  gfc_namespace *ns;
+  gfc_intrinsic_op op_times, op_plus;
+  enum matrix_case m_case;
+  int i;
+  gfc_code *if_limit = NULL;
+  gfc_code **next_code_point;
+
+  if (co->op != EXEC_ASSIGN)
+    return 0;
+
+  expr1 = co->expr1;
+  expr2 = co->expr2;
+  if (expr2->expr_type != EXPR_FUNCTION
+      || expr2->value.function.isym == NULL
+      || expr2->value.function.isym->id != GFC_ISYM_MATMUL)
+    return 0;
+
+  current_code = c;
+  inserted_block = NULL;
+  changed_statement = NULL;
+
+  a = expr2->value.function.actual;
+  matrix_a = a->expr;
+  b = a->next;
+  matrix_b = b->expr;
+
+  /* Currently only handling direct variables.  Transpose etc. will come
+     later.  */
+
+  if (matrix_a->expr_type != EXPR_VARIABLE
+      || matrix_b->expr_type != EXPR_VARIABLE)
+    return 0;
+
+  if (matrix_a->rank == 2)
+    m_case = matrix_b->rank == 1 ? A2B1 : A2B2;
+  else
+    m_case = A1B2;
+
+  /* We do not handle data dependencies yet.  */
+  if (gfc_check_dependency (expr1, matrix_a, true)
+      || gfc_check_dependency (expr1, matrix_b, true))
+    return 0;
+
+  ns = insert_block ();
+
+  /* Assign the type of the zero expression for initializing the resulting
+     array, and the expression (+ and * for real, integer and complex;
+     .and. and .or for logical.  */
+
+  switch(expr1->ts.type)
+    {
+    case BT_INTEGER:
+      zero_e = gfc_get_int_expr (expr1->ts.kind, &expr1->where, 0);
+      op_times = INTRINSIC_TIMES;
+      op_plus = INTRINSIC_PLUS;
+      break;
+
+    case BT_LOGICAL:
+      op_times = INTRINSIC_AND;
+      op_plus = INTRINSIC_OR;
+      zero_e = gfc_get_logical_expr (expr1->ts.kind, &expr1->where,
+				     0);
+      break;
+    case BT_REAL:
+      zero_e = gfc_get_constant_expr (BT_REAL, expr1->ts.kind,
+				      &expr1->where);
+      mpfr_set_si (zero_e->value.real, 0, GFC_RND_MODE);
+      op_times = INTRINSIC_TIMES;
+      op_plus = INTRINSIC_PLUS;
+      break;
+
+    case BT_COMPLEX:
+      zero_e = gfc_get_constant_expr (BT_COMPLEX, expr1->ts.kind,
+				      &expr1->where);
+      mpc_set_si_si (zero_e->value.complex, 0, 0, GFC_RND_MODE);
+      op_times = INTRINSIC_TIMES;
+      op_plus = INTRINSIC_PLUS;
+
+      break;
+
+    default:
+      gcc_unreachable();
+    }
+
+  current_code = &ns->code;
+
+  /* Freeze the references, keeping track of how many temporary variables were
+     created.  */
+  n_vars = 0;
+  freeze_references (matrix_a);
+  freeze_references (matrix_b);
+  freeze_references (expr1);
+
+  if (n_vars == 0)
+    next_code_point = current_code;
+  else
+    {
+      next_code_point = &ns->code;
+      for (i=0; i<n_vars; i++)
+	next_code_point = &(*next_code_point)->next;
+    }
+
+  /* Take care of the inline flag.  If the limit check evaluates to a
+     constant, dead code elimination will eliminate the unneeded branch.  */
+
+  if (m_case == A2B2 && flag_inline_matmul_limit > 0)
+    {
+      if_limit = inline_limit_check (matrix_a, matrix_b, m_case);
+
+      /* Insert the original statement into the else branch.  */
+      if_limit->block->block->next = co;
+      co->next = NULL;
+
+      /* ... and the new ones go into the original one.  */
+      *next_code_point = if_limit;
+      next_code_point = &if_limit->block->next;
+    }
+
+  assign_zero = XCNEW (gfc_code);
+  assign_zero->op = EXEC_ASSIGN;
+  assign_zero->loc = co->loc;
+  assign_zero->expr1 = gfc_copy_expr (expr1);
+  assign_zero->expr2 = zero_e;
+
+  /* Handle the reallocation, if needed.  */
+  if (flag_realloc_lhs && gfc_is_reallocatable_lhs (expr1))
+    {
+      gfc_code *lhs_alloc;
+
+      /* Only need to check a single dimension for the A2B2 case for
+	 bounds checking, the rest will be allocated.  */
+
+      if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS && m_case == A2B2)
+	{
+	  gfc_code *test;
+	  gfc_expr *a2, *b1;
+
+	  a2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 2);
+	  b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
+	  test = runtime_error_ne (b1, a2, "Dimension of array B incorrect "
+				   "in MATMUL intrinsic: Is %ld, should be %ld");
+	  *next_code_point = test;
+	  next_code_point = &test->next;
+	}
+
+
+      lhs_alloc = matmul_lhs_realloc (expr1, matrix_a, matrix_b, m_case);
+
+      *next_code_point = lhs_alloc;
+      next_code_point = &lhs_alloc->next;
+
+    }
+  else if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
+    {
+      gfc_code *test;
+      gfc_expr *a2, *b1, *c1, *c2, *a1, *b2;
+
+      if (m_case == A2B2 || m_case == A2B1)
+	{
+	  a2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 2);
+	  b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
+	  test = runtime_error_ne (b1, a2, "Dimension of array B incorrect "
+				   "in MATMUL intrinsic: Is %ld, should be %ld");
+	  *next_code_point = test;
+	  next_code_point = &test->next;
+
+	  c1 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 1);
+	  a1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 1);
+
+	  if (m_case == A2B2)
+	    test = runtime_error_ne (c1, a1, "Incorrect extent in return array in "
+				     "MATMUL intrinsic for dimension 1: "
+				     "is %ld, should be %ld");
+	  else if (m_case == A2B1)
+	    test = runtime_error_ne (c1, a1, "Incorrect extent in return array in "
+				     "MATMUL intrinsic: "
+				     "is %ld, should be %ld");
+
+
+	  *next_code_point = test;
+	  next_code_point = &test->next;
+	}
+      else if (m_case == A1B2)
+	{
+	  a1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 1);
+	  b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
+	  test = runtime_error_ne (b1, a1, "Dimension of array B incorrect "
+				   "in MATMUL intrinsic: Is %ld, should be %ld");
+	  *next_code_point = test;
+	  next_code_point = &test->next;
+
+	  c1 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 1);
+	  b2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 2);
+
+	  test = runtime_error_ne (c1, b2, "Incorrect extent in return array in "
+				   "MATMUL intrinsic: "
+				   "is %ld, should be %ld");
+
+	  *next_code_point = test;
+	  next_code_point = &test->next;
+	}
+
+      if (m_case == A2B2)
+	{
+	  c2 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 2);
+	  b2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 2);
+	  test = runtime_error_ne (c2, b2, "Incorrect extent in return array in "
+				   "MATMUL intrinsic for dimension 2: is %ld, should be %ld");
+
+	  *next_code_point = test;
+	  next_code_point = &test->next;
+	}
+    }
+
+  *next_code_point = assign_zero;
+
+  zero = gfc_get_int_expr (gfc_index_integer_kind, &co->loc, 0);
+
+  assign_matmul = XCNEW (gfc_code);
+  assign_matmul->op = EXEC_ASSIGN;
+  assign_matmul->loc = co->loc;
+
+  /* Get the bounds for the loops, create them and create the scalarized
+     expressions.  */
+
+  switch (m_case)
+    {
+    case A2B2:
+      inline_limit_check (matrix_a, matrix_b, m_case);
+
+      u1 = get_size_m1 (matrix_b, 2);
+      u2 = get_size_m1 (matrix_a, 2);
+      u3 = get_size_m1 (matrix_a, 1);
+
+      do_1 = create_do_loop (gfc_copy_expr (zero), u1, NULL, &co->loc, ns);
+      do_2 = create_do_loop (gfc_copy_expr (zero), u2, NULL, &co->loc, ns);
+      do_3 = create_do_loop (gfc_copy_expr (zero), u3, NULL, &co->loc, ns);
+
+      do_1->block->next = do_2;
+      do_2->block->next = do_3;
+      do_3->block->next = assign_matmul;
+
+      var_1 = do_1->ext.iterator->var;
+      var_2 = do_2->ext.iterator->var;
+      var_3 = do_3->ext.iterator->var;
+
+      list[0] = var_3;
+      list[1] = var_1;
+      cscalar = scalarized_expr (gfc_copy_expr (co->expr1), list, 2);
+
+      list[0] = var_3;
+      list[1] = var_2;
+      ascalar = scalarized_expr (gfc_copy_expr (matrix_a), list, 2);
+
+      list[0] = var_2;
+      list[1] = var_1;
+      bscalar = scalarized_expr (gfc_copy_expr (matrix_b), list, 2);
+
+      break;
+
+    case A2B1:
+      u1 = get_size_m1 (matrix_b, 1);
+      u2 = get_size_m1 (matrix_a, 1);
+
+      do_1 = create_do_loop (gfc_copy_expr (zero), u1, NULL, &co->loc, ns);
+      do_2 = create_do_loop (gfc_copy_expr (zero), u2, NULL, &co->loc, ns);
+
+      do_1->block->next = do_2;
+      do_2->block->next = assign_matmul;
+
+      var_1 = do_1->ext.iterator->var;
+      var_2 = do_2->ext.iterator->var;
+
+      list[0] = var_2;
+      cscalar = scalarized_expr (gfc_copy_expr (co->expr1), list, 1);
+
+      list[0] = var_2;
+      list[1] = var_1;
+      ascalar = scalarized_expr (gfc_copy_expr (matrix_a), list, 2);
+
+      list[0] = var_1;
+      bscalar = scalarized_expr (gfc_copy_expr (matrix_b), list, 1);
+
+      break;
+
+    case A1B2:
+      u1 = get_size_m1 (matrix_b, 2);
+      u2 = get_size_m1 (matrix_a, 1);
+
+      do_1 = create_do_loop (gfc_copy_expr (zero), u1, NULL, &co->loc, ns);
+      do_2 = create_do_loop (gfc_copy_expr (zero), u2, NULL, &co->loc, ns);
+
+      do_1->block->next = do_2;
+      do_2->block->next = assign_matmul;
+
+      var_1 = do_1->ext.iterator->var;
+      var_2 = do_2->ext.iterator->var;
+
+      list[0] = var_1;
+      cscalar = scalarized_expr (gfc_copy_expr (co->expr1), list, 1);
+
+      list[0] = var_2;
+      ascalar = scalarized_expr (gfc_copy_expr (matrix_a), list, 1);
+
+      list[0] = var_2;
+      list[1] = var_1;
+      bscalar = scalarized_expr (gfc_copy_expr (matrix_b), list, 2);
+
+      break;
+
+    default:
+      gcc_unreachable();
+    }
+
+  /* First loop comes after the zero assignment.  */
+  assign_zero->next = do_1;
+
+  /* Build the assignment expression in the loop.  */
+  assign_matmul->expr1 = gfc_copy_expr (cscalar);
+
+  mult = get_operand (op_times, ascalar, bscalar);
+  assign_matmul->expr2 = get_operand (op_plus, cscalar, mult);
+
+  /* If we don't want to keep the original statement around in
+     the else branch, we can free it.  */
+
+  if (if_limit == NULL)
+    gfc_free_statements(co);
+  else
+    co->next = NULL;
+
+  gfc_free_expr (zero);
+  *walk_subtrees = 0;
+  return 0;
+}
 
 #define WALK_SUBEXPR(NODE) \
   do							\

@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O -fdump-tree-original -Warray-temporaries" }
+! { dg-options "-O -fdump-tree-original -finline-matmul-limit=0 -Warray-temporaries" }
 program main
   implicit none
   real, dimension(2,2) :: a, b, c, d

@@ -520,6 +520,29 @@ add_sym_1s (const char *name, gfc_isym_id id, enum klass cl, bt type, int kind,
 	   (void *) 0);
 }
 
+/* Add a symbol to the subroutine ilst where the subroutine takes one
+   printf-style character argument and a variable number of arguments
+   to follow.  */
+
+static void
+add_sym_1p (const char *name, gfc_isym_id id, enum klass cl, bt type, int kind,
+	    int standard, bool (*check) (gfc_actual_arglist *),
+	    gfc_expr *(*simplify) (gfc_expr*), void (*resolve) (gfc_code *),
+	    const char *a1, bt type1, int kind1, int optional1, sym_intent intent1)
+{
+  gfc_check_f cf;
+  gfc_simplify_f sf;
+  gfc_resolve_f rf;
+
+  cf.f1m = check;
+  sf.f1 = simplify;
+  rf.s1 = resolve;
+
+  add_sym (name, id, cl, ACTUAL_NO, type, kind, standard, cf, sf, rf,
+	   a1, type1, kind1, optional1, intent1,
+	   (void *) 0);
+}
+
 
 /* Add a symbol from the MAX/MIN family of intrinsic functions to the
    function.  MAX et al take 2 or more arguments.  */
@@ -1157,6 +1180,17 @@ make_from_module (void)
 {
   if (sizing == SZ_NOTHING)
     next_sym[-1].from_module = 1;
+}
+
+
+/* Mark the current subroutine as having a variable number of
+   arguments.  */
+
+static void
+make_vararg (void)
+{
+  if (sizing == SZ_NOTHING)
+    next_sym[-1].vararg = 1;
 }
 
 /* Set the attr.value of the current procedure.  */
@@ -3292,6 +3326,17 @@ add_subroutines (void)
 	      "fptr", BT_UNKNOWN, 0, REQUIRED, INTENT_OUT);
   make_from_module();
 
+  /* Internal subroutine for emitting a runtime error.  */
+
+  add_sym_1p ("fe_runtime_error", GFC_ISYM_FE_RUNTIME_ERROR, CLASS_IMPURE,
+	      BT_UNKNOWN, 0, GFC_STD_GNU,
+	      gfc_check_fe_runtime_error, NULL, gfc_resolve_fe_runtime_error,
+	      "msg", BT_CHARACTER, dc, REQUIRED, INTENT_IN);
+
+  make_noreturn ();
+  make_vararg ();
+  make_from_module ();
+
   /* Coarray collectives.  */
   add_sym_4s ("co_broadcast", GFC_ISYM_CO_BROADCAST, CLASS_IMPURE,
 	      BT_UNKNOWN, 0, GFC_STD_F2008_TS,
@@ -4501,7 +4546,7 @@ gfc_intrinsic_sub_interface (gfc_code *c, int error_flag)
 
   init_arglist (isym);
 
-  if (!sort_actual (name, &c->ext.actual, isym->formal, &c->loc))
+  if (!isym->vararg && !sort_actual (name, &c->ext.actual, isym->formal, &c->loc))
     goto fail;
 
   if (!do_ts29113_check (isym, c->ext.actual))

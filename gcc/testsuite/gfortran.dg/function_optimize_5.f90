@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-ffrontend-optimize -Wfunction-elimination" }
+! { dg-options "-ffrontend-optimize -finline-matmul-limit=0 -Wfunction-elimination" }
 ! Check the -ffrontend-optimize (in the absence of -O) and
 ! -Wfunction-elimination options.
 program main

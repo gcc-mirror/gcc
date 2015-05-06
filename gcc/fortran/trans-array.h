@@ -64,8 +64,6 @@ tree gfc_copy_only_alloc_comp (gfc_symbol *, tree, tree, int);
 
 tree gfc_alloc_allocatable_for_assignment (gfc_loopinfo*, gfc_expr*, gfc_expr*);
 
-bool gfc_is_reallocatable_lhs (gfc_expr *);
-
 /* Add initialization for deferred arrays.  */
 void gfc_trans_deferred_array (gfc_symbol *, gfc_wrapped_block *);
 /* Generate an initializer for a static pointer or allocatable array.  */

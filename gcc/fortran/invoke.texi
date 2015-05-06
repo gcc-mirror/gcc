@@ -178,6 +178,7 @@ and warnings}.
 -finit-character=@var{n} -finit-integer=@var{n} -finit-local-zero @gol
 -finit-logical=@var{<true|false>}
 -finit-real=@var{<zero|inf|-inf|nan|snan>} @gol
+-finline-matmul-limit=@var{n} @gol
 -fmax-array-constructor=@var{n} -fmax-stack-var-size=@var{n}
 -fno-align-commons @gol
 -fno-automatic -fno-protect-parens -fno-underscoring @gol
@@ -1537,6 +1538,22 @@ geometric mean of the dimensions of the argument and result matrices.
 
 The default value for @var{n} is 30.
 
+@item -finline-matmul-limit=@var{n}
+@opindex @code{finline-matmul-limit}
+When front-end optimiztion is active, some calls to the @code{MATMUL}
+intrinsic function will be inlined.  This may result in code size
+increase if the size of the matrix cannot be determined at compile
+time, as code for both cases is generated.  Setting
+@code{-finline-matmul-limit=0} will disable inlining in all cases.
+Setting this option with a value of @var{n} will produce inline code
+for matrices with size up to @var{n}. If the matrices involved are not
+square, the size comparison is performed using the geometric mean of
+the dimensions of the argument and result matrices.
+
+The default value for @var{n} is the value specified for
+@code{-fblas-matmul-limit} if this option is specified, or unlimitited
+otherwise.
+
 @item -frecursive
 @opindex @code{frecursive}
 Allow indirect recursion by forcing all local arrays to be allocated
@@ -1632,11 +1649,12 @@ if @option{-ffrontend-optimize} is in effect.
 @cindex Front-end optimization
 This option performs front-end optimization, based on manipulating
 parts the Fortran parse tree.  Enabled by default by any @option{-O}
-option.  Optimizations enabled by this option include elimination of
-identical function calls within expressions, removing unnecessary
-calls to @code{TRIM} in comparisons and assignments and replacing
-@code{TRIM(a)} with @code{a(1:LEN_TRIM(a))}. 
-It can be deselected by specifying @option{-fno-frontend-optimize}.
+option.  Optimizations enabled by this option include inlining calls
+to @code{MATMUL}, elimination of identical function calls within
+expressions, removing unnecessary calls to @code{TRIM} in comparisons
+and assignments and replacing @code{TRIM(a)} with
+@code{a(1:LEN_TRIM(a))}.  It can be deselected by specifying
+@option{-fno-frontend-optimize}.
 @end table
 
 @xref{Code Gen Options,,Options for Code Generation Conventions,

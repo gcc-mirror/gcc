@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-fdump-tree-original" }
+! { dg-options "-finline-matmul-limit=0 -fdump-tree-original" }
 !
 ! Test the fix for PR36932 and PR36933, in which unnecessary
 ! temporaries were being generated.  The module m2 tests the

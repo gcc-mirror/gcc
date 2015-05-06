@@ -2197,6 +2197,19 @@ gfc_resolve_rrspacing (gfc_expr *f, gfc_expr *x)
   f->value.function.name = gfc_get_string ("__rrspacing_%d", x->ts.kind);
 }
 
+void
+gfc_resolve_fe_runtime_error (gfc_code *c)
+{
+  const char *name;
+  gfc_actual_arglist *a;
+
+  name = gfc_get_string (PREFIX ("runtime_error"));
+
+  for (a = c->ext.actual->next; a; a = a->next)
+    a->name = "%VAL";
+
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
 
 void
 gfc_resolve_scale (gfc_expr *f, gfc_expr *x, gfc_expr *i ATTRIBUTE_UNUSED)
