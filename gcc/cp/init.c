@@ -3720,7 +3720,6 @@ build_vec_init (tree base, tree maxindex, tree init,
 	  if (cxx_dialect >= cxx11 && AGGREGATE_TYPE_P (type))
 	    {
 	      init = build_constructor (init_list_type_node, NULL);
-	      CONSTRUCTOR_IS_DIRECT_INIT (init) = true;
 	    }
 	  else
 	    {
