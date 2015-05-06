@@ -848,6 +848,8 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
       fork_execute ("ld", lto_ld_argv);
       post_ld_pass (false);
     }
+  else
+    post_ld_pass (true);
 }
 
 /* Main program.  */

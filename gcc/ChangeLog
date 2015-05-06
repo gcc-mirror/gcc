@@ -1,3 +1,11 @@
+2015-05-05  Jack Howarth  <howarth.at.gcc@gmail.com>
+
+	Backport from mainline
+	2014-05-29  Mike Stump  <mikestump@comcast.net>
+	PR debug/61352
+	* collect2.c (maybe_run_lto_and_relink): Be sure to always run
+	post ld passes when lto is used.
+
 2015-05-05  Shanyao Chen  <chenshanyao@huawei.com>
 
 	Backported from mainline
