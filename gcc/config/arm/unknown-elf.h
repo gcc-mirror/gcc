@@ -32,7 +32,9 @@
 #define UNKNOWN_ELF_STARTFILE_SPEC	" crti%O%s crtbegin%O%s crt0%O%s"
 
 #undef  STARTFILE_SPEC
-#define STARTFILE_SPEC	UNKNOWN_ELF_STARTFILE_SPEC
+#define STARTFILE_SPEC	\
+  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} "	\
+  UNKNOWN_ELF_STARTFILE_SPEC
 
 #define UNKNOWN_ELF_ENDFILE_SPEC	"crtend%O%s crtn%O%s"
 
