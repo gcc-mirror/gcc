@@ -19951,6 +19951,10 @@ gen_member_die (tree type, dw_die_ref context_die)
       /* Don't include clones in the member list.  */
       if (DECL_ABSTRACT_ORIGIN (member))
 	continue;
+      /* Nor constructors for anonymous classes.  */
+      if (DECL_ARTIFICIAL (member)
+	  && dwarf2_name (member, 0) == NULL)
+	continue;
 
       child = lookup_decl_die (member);
       if (child)

@@ -2648,7 +2648,12 @@ reset_type_linkage_2 (tree type)
 	if (TREE_CODE (m) == VAR_DECL)
 	  reset_decl_linkage (m);
       for (tree m = TYPE_METHODS (type); m; m = DECL_CHAIN (m))
-	reset_decl_linkage (m);
+	{
+	  reset_decl_linkage (m);
+	  if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (m))
+	    /* Also update its name, for cxx_dwarf_name.  */
+	    DECL_NAME (m) = TYPE_IDENTIFIER (type);
+	}
       binding_table_foreach (CLASSTYPE_NESTED_UTDS (type),
 			     bt_reset_linkage_2, NULL);
     }
