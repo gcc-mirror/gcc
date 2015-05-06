@@ -1,3 +1,16 @@
+2015-05-05  Jason Merrill  <jason@redhat.com>
+
+	DR 1518
+	DR 1630
+	PR c++/54835
+	PR c++/60417
+	* call.c (convert_like_real): Check value-initialization before
+	explicit.
+	* typeck2.c (process_init_constructor_record): Don't set
+	CONSTRUCTOR_IS_DIRECT_INIT.
+	(process_init_constructor_array): Likewise.
+	* init.c (build_vec_init): Likewise.
+
 2015-05-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* parser.c (cp_parser_asm_definition): Only test for
