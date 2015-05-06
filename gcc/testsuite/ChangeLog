@@ -1,3 +1,9 @@
+2015-05-06  Alan Modra  <amodra@gmail.com>
+
+	PR target/66020
+	* gcc.target/powerpc/ppc64-abi-2.c (my_mcount): Rewrite.
+	(gparms): Make volatile.
+
 2015-05-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/62283
