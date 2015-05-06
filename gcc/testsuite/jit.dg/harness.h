@@ -230,6 +230,7 @@ check_string_contains (const char *funcname,
 	test, funcname, name, expected_substring);
 }
 
+#ifndef TEST_ESCHEWS_SET_OPTIONS
 static void set_options (gcc_jit_context *ctxt, const char *argv0)
 {
   /* Set up options.  */
@@ -262,6 +263,7 @@ static void set_options (gcc_jit_context *ctxt, const char *argv0)
     GCC_JIT_BOOL_OPTION_DUMP_SUMMARY,
     0);
 }
+#endif /* #ifndef TEST_ESCHEWS_SET_OPTIONS */
 
 /* Concatenate two strings.  The result must be released using "free".  */
 
