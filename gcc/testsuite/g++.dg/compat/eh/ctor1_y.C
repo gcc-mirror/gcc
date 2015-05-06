@@ -7,7 +7,7 @@ Foo::~Foo()
   was_f_in_Bar_destroyed=true;
 }
 
-Bar::~Bar()
+Bar::~Bar() throw(int)
 {
   throw 1;
 }

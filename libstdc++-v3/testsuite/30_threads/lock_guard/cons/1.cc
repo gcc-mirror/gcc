@@ -27,7 +27,7 @@ struct Mutex
 {
   Mutex() : locked(false) { }
 
-  ~Mutex()
+  ~Mutex() throw(int)
   {
     if (locked)
       throw 0;

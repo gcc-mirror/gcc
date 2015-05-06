@@ -4,7 +4,7 @@
 struct Mutex
 {
   bool locked;
-  ~Mutex ()
+  ~Mutex () throw(int)
   {
     if (locked)
       throw 0;

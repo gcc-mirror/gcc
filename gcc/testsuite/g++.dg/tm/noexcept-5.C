@@ -1,5 +1,5 @@
 // { dg-do compile { target c++11 } }
-// { dg-options "-fgnu-tm -O -fdump-tree-tmmark -fdump-tree-tmlower" }
+// { dg-options "-fgnu-tm -O -fdump-tree-tmmark -fdump-tree-tmlower -Wno-terminate" }
 
 int global;
 

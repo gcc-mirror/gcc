@@ -15,7 +15,7 @@ class A<int, int>
 public:
   A(int) { ++count; if (b) throw 1; }
   A(const A&) { ++count; if (b) throw 1; }
-  ~A() { --count; if (b) throw 1; }
+  ~A() throw(int) { --count; if (b) throw 1; }
 };
 
 typedef A<int, int> B;
@@ -26,7 +26,7 @@ class A<void *, void *>
 public:
   A() { if (b) throw 1; }
   A(const B&) { if (b) throw 1; }
-  ~A() { if (b) throw 1; }
+  ~A() throw(int) { if (b) throw 1; }
 };
 
 typedef A<void *, void *> C;

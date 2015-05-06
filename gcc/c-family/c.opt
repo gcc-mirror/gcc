@@ -829,6 +829,10 @@ Wsystem-headers
 C ObjC C++ ObjC++ Warning
 ; Documented in common.opt
 
+Wterminate
+C++ ObjC++ Warning Var(warn_terminate) Init(1)
+Warn if a throw expression will always result in a call to terminate()
+
 Wtraditional
 C ObjC CPP(cpp_warn_traditional) CppReason(CPP_W_TRADITIONAL) Var(warn_traditional) Init(0) Warning
 Warn about features not present in traditional C
