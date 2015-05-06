@@ -32,14 +32,15 @@ echo "#define GCC_AARCH64_ITERATORS_H"
 # which does not have a matching brace because it contains characters we
 # don't want to or can't handle (e.g P, PTR iterators change depending on
 # Pmode and ptr_mode).
+export LC_ALL=C
 cat $1 | tr "\n" " " \
        | sed 's/(define_mode_iterator \([A-Za-z0-9_]*\) \([]\[A-Z0-9 \t]*\)/\n#define BUILTIN_\1(T, N, MAP) \\ \2\n/g' \
        | grep '#define [A-Z0-9_(), \\]* \[[A-Z0-9[:space:]]*]' \
        | sed 's/\t//g' \
-       | sed 's/  \+/ /g' \
-       | sed 's/ \[\([A-Z0-9 ]*\)]/\n\L\1/' \
+       | sed 's/  */ /g' \
+       | sed 's/ \[\([A-Z0-9 ]*\)]/\n\1/' \
        | awk ' BEGIN { FS = " " ; OFS = ", "} \
 	       /#/ { print } \
-               ! /#/ { $1 = $1 ; printf "  VAR%d (T, N, MAP, %s)\n", NF, $0 }'
+               ! /#/ { $1 = $1 ; printf "  VAR%d (T, N, MAP, %s)\n", NF, tolower($0) }'
 
 echo "#endif /* GCC_AARCH64_ITERATORS_H  */"
