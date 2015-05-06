@@ -1,3 +1,8 @@
+2015-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62283
+	* gcc.dg/vect/bb-slp-14.c: Adjust.
+
 2015-05-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/65990
