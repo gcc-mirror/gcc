@@ -35,6 +35,9 @@
 #include <stdbool.h>
 #include <string.h>
 
+/* This lock is used to protect access to cached_base_dev, dispatchers and
+   the (abstract) initialisation state of attached offloading devices.  */
+
 static gomp_mutex_t acc_device_lock;
 
 /* A cached version of the dispatcher for the global "current" accelerator type,
@@ -105,6 +108,8 @@ name_of_acc_device_t (enum acc_device_t type)
     }
 }
 
+/* ACC_DEVICE_LOCK should be held before calling this function.  */
+
 static struct gomp_device_descr *
 resolve_device (acc_device_t d)
 {
@@ -165,7 +170,8 @@ resolve_device (acc_device_t d)
 
 /* This is called when plugins have been initialized, and serves to call
    (indirectly) the target's device_init hook.  Calling multiple times without
-   an intervening acc_shutdown_1 call is an error.  */
+   an intervening acc_shutdown_1 call is an error.  ACC_DEVICE_LOCK should be
+   held before calling this function.  */
 
 static struct gomp_device_descr *
 acc_init_1 (acc_device_t d)
@@ -182,13 +188,20 @@ acc_init_1 (acc_device_t d)
 
   acc_dev = &base_dev[goacc_device_num];
 
+  gomp_mutex_lock (&acc_dev->lock);
   if (acc_dev->is_initialized)
-    gomp_fatal ("device already active");
+    {
+      gomp_mutex_unlock (&acc_dev->lock);
+      gomp_fatal ("device already active");
+    }
 
   gomp_init_device (acc_dev);
+  gomp_mutex_unlock (&acc_dev->lock);
 
   return base_dev;
 }
+
+/* ACC_DEVICE_LOCK should be held before calling this function.  */
 
 static void
 acc_shutdown_1 (acc_device_t d)
@@ -248,11 +261,13 @@ acc_shutdown_1 (acc_device_t d)
   for (i = 0; i < ndevs; i++)
     {
       struct gomp_device_descr *acc_dev = &base_dev[i];
+      gomp_mutex_lock (&acc_dev->lock);
       if (acc_dev->is_initialized)
         {
 	  devices_active = true;
 	  gomp_fini_device (acc_dev);
 	}
+      gomp_mutex_unlock (&acc_dev->lock);
     }
 
   if (!devices_active)
@@ -409,7 +424,10 @@ acc_get_num_devices (acc_device_t d)
 
   gomp_init_targets_once ();
 
+  gomp_mutex_lock (&acc_device_lock);
   acc_dev = resolve_device (d);
+  gomp_mutex_unlock (&acc_device_lock);
+
   if (!acc_dev)
     return 0;
 
@@ -440,8 +458,10 @@ acc_set_device_type (acc_device_t d)
   cached_base_dev = base_dev = resolve_device (d);
   acc_dev = &base_dev[goacc_device_num];
 
+  gomp_mutex_lock (&acc_dev->lock);
   if (!acc_dev->is_initialized)
     gomp_init_device (acc_dev);
+  gomp_mutex_unlock (&acc_dev->lock);
 
   gomp_mutex_unlock (&acc_device_lock);
 
@@ -472,7 +492,9 @@ acc_get_device_type (void)
     {
       gomp_init_targets_once ();
 
+      gomp_mutex_lock (&acc_device_lock);
       dev = resolve_device (acc_device_default);
+      gomp_mutex_unlock (&acc_device_lock);
       res = acc_device_type (dev->type);
     }
 
@@ -496,7 +518,9 @@ acc_get_device_num (acc_device_t d)
   if (!cached_base_dev)
     gomp_init_targets_once ();
 
+  gomp_mutex_lock (&acc_device_lock);
   dev = resolve_device (d);
+  gomp_mutex_unlock (&acc_device_lock);
   if (!dev)
     gomp_fatal ("device %s not supported", name_of_acc_device_t (d));
 
@@ -538,8 +562,10 @@ acc_set_device_num (int ord, acc_device_t d)
 
       acc_dev = &base_dev[ord];
 
+      gomp_mutex_lock (&acc_dev->lock);
       if (!acc_dev->is_initialized)
         gomp_init_device (acc_dev);
+      gomp_mutex_unlock (&acc_dev->lock);
 
       gomp_mutex_unlock (&acc_device_lock);
 

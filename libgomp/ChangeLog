@@ -1,5 +1,15 @@
 2015-05-06  Julian Brown  <julian@codesourcery.com>
 
+	* oacc-init.c (acc_device_lock): Add explanatory comment.
+	(resolve_device): Add comment about locking requirement.
+	(acc_init_1, acc_shutdown_1): Likewise. Add locking around
+	gomp_init_device and gomp_fini_device calls.
+	(acc_get_num_devices, acc_set_device_type, acc_get_device_type)
+	(acc_get_device_num, acc_set_device_num): Add locking around
+	resolve_device and gomp_init_device calls.
+
+2015-05-06  Julian Brown  <julian@codesourcery.com>
+
 	* oacc-init.c (acc_shutdown_1): Call gomp_mutex_unlock for
 	goacc_thread_lock on error paths.
 	* oacc-mem.c (lookup_host): Remove locking from function. Note
