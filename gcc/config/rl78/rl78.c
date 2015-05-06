@@ -687,7 +687,8 @@ need_to_save (unsigned int regno)
       return df_regs_ever_live_p (regno);
     }
 
-  if (regno == FRAME_POINTER_REGNUM && frame_pointer_needed)
+  if (regno == FRAME_POINTER_REGNUM
+      && (frame_pointer_needed || df_regs_ever_live_p (regno)))
     return true;
   if (fixed_regs[regno])
     return false;
