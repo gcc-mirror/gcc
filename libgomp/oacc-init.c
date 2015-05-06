@@ -217,11 +217,17 @@ acc_shutdown_1 (acc_device_t d)
       /* This would mean the user is shutting down OpenACC in the middle of an
          "acc data" pragma.  Likely not intentional.  */
       if (walk->mapped_data)
-	gomp_fatal ("shutdown in 'acc data' region");
+	{
+	  gomp_mutex_unlock (&goacc_thread_lock);
+	  gomp_fatal ("shutdown in 'acc data' region");
+	}
 
       /* Similarly, if this happens then user code has done something weird.  */
       if (walk->saved_bound_dev)
-        gomp_fatal ("shutdown during host fallback");
+	{
+	  gomp_mutex_unlock (&goacc_thread_lock);
+	  gomp_fatal ("shutdown during host fallback");
+	}
 
       if (walk->dev)
 	{
