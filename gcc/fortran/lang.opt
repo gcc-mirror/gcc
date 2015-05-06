@@ -542,6 +542,10 @@ Enum(gfc_init_local_real) String(inf) Value(GFC_INIT_REAL_INF)
 EnumValue
 Enum(gfc_init_local_real) String(-inf) Value(GFC_INIT_REAL_NEG_INF)
 
+finline-matmul-limit=
+Fortran RejectNegative Joined UInteger Var(flag_inline_matmul_limit) Init(-1)
+-finline-matmul-limit=<n>	Specify the size of the largest matrix for which matmul will be inlined
+
 fmax-array-constructor=
 Fortran RejectNegative Joined UInteger Var(flag_max_array_constructor) Init(65535)
 -fmax-array-constructor=<n>	Maximum number of objects in an array constructor

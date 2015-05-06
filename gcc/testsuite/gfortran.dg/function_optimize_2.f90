@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O -faggressive-function-elimination -fdump-tree-original" }
+! { dg-options "-O -finline-matmul-limit=0 -faggressive-function-elimination -fdump-tree-original" }
 program main
   implicit none
   real, dimension(2,2) :: a, b, c, d

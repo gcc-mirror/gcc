@@ -5527,6 +5527,36 @@ gfc_check_random_seed (gfc_expr *size, gfc_expr *put, gfc_expr *get)
   return true;
 }
 
+bool
+gfc_check_fe_runtime_error (gfc_actual_arglist *a)
+{
+  gfc_expr *e;
+  int len, i;
+  int num_percent, nargs;
+
+  e = a->expr;
+  if (e->expr_type != EXPR_CONSTANT)
+    return true;
+
+  len = e->value.character.length;
+  if (e->value.character.string[len-1] != '\0')
+    gfc_internal_error ("fe_runtime_error string must be null terminated");
+
+  num_percent = 0;
+  for (i=0; i<len-1; i++)
+    if (e->value.character.string[i] == '%')
+      num_percent ++;
+
+  nargs = 0;
+  for (; a; a = a->next)
+    nargs ++;
+
+  if (nargs -1 != num_percent)
+    gfc_internal_error ("fe_runtime_error: Wrong number of arguments (%d instead of %d)",
+			nargs, num_percent++);
+
+  return true;
+}
 
 bool
 gfc_check_second_sub (gfc_expr *time)
