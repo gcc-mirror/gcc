@@ -4159,6 +4159,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
     case OBJ_TYPE_REF:
     case TRANSACTION_EXPR:
     case ASM_EXPR:
+    case AT_ENCODE_EXPR:
     fail:
       if (flags & tf_error)
         error ("expression %qE is not a constant-expression", t);
