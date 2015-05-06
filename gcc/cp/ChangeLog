@@ -1,5 +1,8 @@
 2015-05-05  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (start_decl): Don't push the plain VAR_DECL for a
+	variable template.
+
 	DR 1518
 	DR 1630
 	PR c++/54835
