@@ -193,7 +193,6 @@ static int
 do_merge (int argc, char **argv)
 {
   int opt;
-  int ret;
   const char *output_dir = 0;
   int w1 = 1, w2 = 1;
 
@@ -222,12 +221,10 @@ do_merge (int argc, char **argv)
   if (output_dir == NULL)
     output_dir = "merged_profile";
 
-  if (argc - optind == 2)
-    ret = profile_merge (argv[optind], argv[optind+1], output_dir, w1, w2);
-  else
+  if (argc - optind != 2)
     merge_usage ();
 
-  return ret;
+  return profile_merge (argv[optind], argv[optind+1], output_dir, w1, w2);
 }
 
 /* If N_VAL is no-zero, normalize the profile by setting the largest counter

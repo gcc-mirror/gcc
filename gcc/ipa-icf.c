@@ -505,7 +505,7 @@ sem_item::hash_referenced_symbol_properties (symtab_node *ref,
 {
   if (is_a <cgraph_node *> (ref))
     {
-      if ((!type == FUNC || address || !opt_for_fn (decl, optimize_size))
+      if ((type != FUNC || address || !opt_for_fn (decl, optimize_size))
 	  && !opt_for_fn (ref->decl, optimize_size)
 	  && !DECL_UNINLINABLE (ref->decl))
 	{

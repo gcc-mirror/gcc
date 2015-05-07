@@ -168,7 +168,7 @@ struct target_reload {
      value indicates the level of indirect addressing supported, e.g., two
      means that (MEM (MEM (REG n))) is also valid if (REG n) does not get
      a hard register.  */
-  bool x_spill_indirect_levels;
+  unsigned char x_spill_indirect_levels;
 
   /* True if caller-save has been reinitialized.  */
   bool x_caller_save_initialized_p;
