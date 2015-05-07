@@ -1,3 +1,9 @@
+2015-05-07  Jason Merrill  <jason@redhat.com>
+
+	DR 1467
+	PR c++/51747
+	* typeck2.c (digest_init_r): Fix single element list.
+
 2015-05-05  Jason Merrill  <jason@redhat.com>
 
 	* cp-gimplify.c (cp_genericize_r): Track TRY_BLOCK and
