@@ -1224,7 +1224,7 @@
       rtx tmpreg = gen_reg_rtx (SImode);
       rtx t = gen_rtx_fmt_ee (reverse_condition (GET_CODE (operands[1])),
 			      SImode, operands[2], operands[3]);
-      emit_insn (gen_rtx_SET (VOIDmode, tmpreg, t));
+      emit_insn (gen_rtx_SET (tmpreg, t));
       emit_insn (gen_scmpsi_insn (operands[0],
 				  gen_rtx_fmt_ee (EQ, SImode, tmpreg, const0_rtx),
 				  tmpreg, const0_rtx));

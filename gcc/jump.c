@@ -1503,7 +1503,7 @@ redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx insn)
     {
       x = redirect_target (nlabel);
       if (GET_CODE (x) == LABEL_REF && loc == &PATTERN (insn))
- 	x = gen_rtx_SET (VOIDmode, pc_rtx, x);
+ 	x = gen_rtx_SET (pc_rtx, x);
       validate_change (insn, loc, x, 1);
       return;
     }

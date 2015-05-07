@@ -10417,7 +10417,7 @@ label:
 	       mach as operand 2, so let the instructions that
 	       preserve r0 be optimized away if r0 turns out to be
 	       dead.  */
-	    emit_insn_before (gen_rtx_SET (SImode, tmp, r0), insn);
+	    emit_insn_before (gen_rtx_SET (tmp, r0), insn);
 	    emit_move_insn (r0, tmp);
 	    break;
 	  }

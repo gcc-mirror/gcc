@@ -3353,7 +3353,7 @@ expand_call (tree exp, rtx target, int ignore)
 	      && GET_MODE (args[arg_nr].reg) == GET_MODE (valreg))
 	  call_fusage
 	    = gen_rtx_EXPR_LIST (TYPE_MODE (TREE_TYPE (args[arg_nr].tree_value)),
-				 gen_rtx_SET (VOIDmode, valreg, args[arg_nr].reg),
+				 gen_rtx_SET (valreg, args[arg_nr].reg),
 				 call_fusage);
 	}
       /* All arguments and registers used for the call must be set up by

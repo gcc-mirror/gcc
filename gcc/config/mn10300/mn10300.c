@@ -748,7 +748,7 @@ mn10300_gen_multiple_store (unsigned int mask)
       ++count;
       x = plus_constant (Pmode, stack_pointer_rtx, count * -4);
       x = gen_frame_mem (SImode, x);
-      x = gen_rtx_SET (VOIDmode, x, gen_rtx_REG (SImode, regno));
+      x = gen_rtx_SET (x, gen_rtx_REG (SImode, regno));
       elts[count] = F(x);
 
       /* Remove the register from the mask so that... */
@@ -761,7 +761,7 @@ mn10300_gen_multiple_store (unsigned int mask)
 
   /* Create the instruction that updates the stack pointer.  */
   x = plus_constant (Pmode, stack_pointer_rtx, count * -4);
-  x = gen_rtx_SET (VOIDmode, stack_pointer_rtx, x);
+  x = gen_rtx_SET (stack_pointer_rtx, x);
   elts[0] = F(x);
 
   /* We need one PARALLEL element to update the stack pointer and
@@ -2904,12 +2904,12 @@ mn10300_split_cbranch (machine_mode cmp_mode, rtx cmp_op, rtx label_ref)
 
   flags = gen_rtx_REG (cmp_mode, CC_REG);
   x = gen_rtx_COMPARE (cmp_mode, XEXP (cmp_op, 0), XEXP (cmp_op, 1));
-  x = gen_rtx_SET (VOIDmode, flags, x);
+  x = gen_rtx_SET (flags, x);
   emit_insn (x);
 
   x = gen_rtx_fmt_ee (GET_CODE (cmp_op), VOIDmode, flags, const0_rtx);
   x = gen_rtx_IF_THEN_ELSE (VOIDmode, x, label_ref, pc_rtx);
-  x = gen_rtx_SET (VOIDmode, pc_rtx, x);
+  x = gen_rtx_SET (pc_rtx, x);
   emit_jump_insn (x);
 }
 

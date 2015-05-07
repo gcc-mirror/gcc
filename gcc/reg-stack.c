@@ -782,7 +782,7 @@ emit_pop_insn (rtx_insn *insn, stack_ptr regstack, rtx reg, enum emit_where wher
 
   gcc_assert (hard_regno >= FIRST_STACK_REG);
 
-  pop_rtx = gen_rtx_SET (VOIDmode, FP_MODE_REG (hard_regno, DFmode),
+  pop_rtx = gen_rtx_SET (FP_MODE_REG (hard_regno, DFmode),
 			 FP_MODE_REG (FIRST_STACK_REG, DFmode));
 
   if (where == EMIT_AFTER)
@@ -1112,7 +1112,7 @@ move_nan_for_stack_reg (rtx_insn *insn, stack_ptr regstack, rtx dest)
   rtx pat;
 
   dest = FP_MODE_REG (REGNO (dest), SFmode);
-  pat = gen_rtx_SET (VOIDmode, dest, not_a_num);
+  pat = gen_rtx_SET (dest, not_a_num);
   PATTERN (insn) = pat;
   INSN_CODE (insn) = -1;
 
@@ -2437,8 +2437,8 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
       {
 	old->reg[++old->top] = i;
         SET_HARD_REG_BIT (old->reg_set, i);
-	emit_insn_before (gen_rtx_SET (VOIDmode,
-				       FP_MODE_REG (i, SFmode), not_a_num), insn);
+	emit_insn_before (gen_rtx_SET (FP_MODE_REG (i, SFmode), not_a_num),
+			  insn);
       }
 
   /* Pop any registers that are not needed in the new block.  */
@@ -2663,8 +2663,7 @@ convert_regs_entry (void)
 
 	    bi->stack_in.reg[++top] = reg;
 
-	    init = gen_rtx_SET (VOIDmode,
-				FP_MODE_REG (FIRST_STACK_REG, SFmode),
+	    init = gen_rtx_SET (FP_MODE_REG (FIRST_STACK_REG, SFmode),
 				not_a_num);
 	    insert_insn_on_edge (init, e);
 	    inserted = 1;
@@ -3032,7 +3031,7 @@ convert_regs_1 (basic_block block)
 	  if (dump_file)
 	    fprintf (dump_file, "Emitting insn initializing reg %d\n", reg);
 
-	  set = gen_rtx_SET (VOIDmode, FP_MODE_REG (reg, SFmode), not_a_num);
+	  set = gen_rtx_SET (FP_MODE_REG (reg, SFmode), not_a_num);
 	  insn = emit_insn_after (set, insn);
 	  control_flow_insn_deleted |= subst_stack_regs (insn, &regstack);
 	}

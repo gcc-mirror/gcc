@@ -1098,8 +1098,7 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
       tem = simplify_replace_fn_rtx (tem, old_rtx, adjust_mems, data);
       amd->store = store_save;
       amd->side_effects = alloc_EXPR_LIST (0,
-					   gen_rtx_SET (VOIDmode,
-							XEXP (loc, 0), tem),
+					   gen_rtx_SET (XEXP (loc, 0), tem),
 					   amd->side_effects);
       return addr;
     case PRE_MODIFY:
@@ -1115,8 +1114,7 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
 				     adjust_mems, data);
       amd->store = store_save;
       amd->side_effects = alloc_EXPR_LIST (0,
-					   gen_rtx_SET (VOIDmode,
-							XEXP (loc, 0), tem),
+					   gen_rtx_SET (XEXP (loc, 0), tem),
 					   amd->side_effects);
       return addr;
     case SUBREG:
@@ -1227,7 +1225,7 @@ adjust_insn (basic_block bb, rtx_insn *insn)
       FOR_EACH_VEC_SAFE_ELT (windowed_parm_regs, i, p)
 	{
 	  XVECEXP (rtl, 0, i * 2)
-	    = gen_rtx_SET (VOIDmode, p->incoming, p->outgoing);
+	    = gen_rtx_SET (p->incoming, p->outgoing);
 	  /* Do not clobber the attached DECL, but only the REG.  */
 	  XVECEXP (rtl, 0, i * 2 + 1)
 	    = gen_rtx_CLOBBER (GET_MODE (p->outgoing),
@@ -5883,7 +5881,7 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
 	      && find_use_val (loc, mode, cui))
 	    {
 	      gcc_checking_assert (type == MO_VAL_SET);
-	      mo.u.loc = gen_rtx_SET (VOIDmode, loc, SET_SRC (expr));
+	      mo.u.loc = gen_rtx_SET (loc, SET_SRC (expr));
 	    }
 	}
       else
@@ -5901,7 +5899,7 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
 	    }
 	  else
 	    {
-	      rtx xexpr = gen_rtx_SET (VOIDmode, loc, src);
+	      rtx xexpr = gen_rtx_SET (loc, src);
 	      if (same_variable_part_p (src, REG_EXPR (loc), REG_OFFSET (loc)))
 		{
 		  /* If this is an instruction copying (part of) a parameter
@@ -5966,7 +5964,7 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
 	    }
 	  else
 	    {
-	      rtx xexpr = gen_rtx_SET (VOIDmode, loc, src);
+	      rtx xexpr = gen_rtx_SET (loc, src);
 	      if (same_variable_part_p (SET_SRC (xexpr),
 					MEM_EXPR (loc),
 					INT_MEM_OFFSET (loc)))
@@ -6065,7 +6063,7 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
 	}
 
       if (nloc && nloc != SET_SRC (mo.u.loc))
-	oloc = gen_rtx_SET (GET_MODE (mo.u.loc), oloc, nloc);
+	oloc = gen_rtx_SET (oloc, nloc);
       else
 	{
 	  if (oloc == SET_DEST (mo.u.loc))

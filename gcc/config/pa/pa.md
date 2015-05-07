@@ -2163,7 +2163,7 @@
     DONE;
 
   /* We don't want the clobber emitted, so handle this ourselves.  */
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  emit_insn (gen_rtx_SET (operands[0], operands[1]));
   DONE;
 }")
 
@@ -2180,7 +2180,7 @@
     DONE;
 
   /* We don't want the clobber emitted, so handle this ourselves.  */
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  emit_insn (gen_rtx_SET (operands[0], operands[1]));
   DONE;
 }")
 
@@ -2197,7 +2197,7 @@
     DONE;
 
   /* We don't want the clobber emitted, so handle this ourselves.  */
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  emit_insn (gen_rtx_SET (operands[0], operands[1]));
   DONE;
 }")
 
@@ -2879,7 +2879,7 @@
     DONE;
 
   /* We don't want the clobber emitted, so handle this ourselves.  */
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  emit_insn (gen_rtx_SET (operands[0], operands[1]));
   DONE;
 }")
 
@@ -2896,7 +2896,7 @@
     DONE;
 
   /* We don't want the clobber emitted, so handle this ourselves.  */
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  emit_insn (gen_rtx_SET (operands[0], operands[1]));
   DONE;
 }")
 
@@ -3039,7 +3039,7 @@
     DONE;
 
   /* We don't want the clobber emitted, so handle this ourselves.  */
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  emit_insn (gen_rtx_SET (operands[0], operands[1]));
   DONE;
 }")
 
@@ -3056,7 +3056,7 @@
     DONE;
 
   /* We don't want the clobber emitted, so handle this ourselves.  */
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  emit_insn (gen_rtx_SET (operands[0], operands[1]));
   DONE;
 }")
 
@@ -3341,7 +3341,7 @@
     operands[7] = addr;
   else
     {
-      emit_insn (gen_rtx_SET (VOIDmode, operands[7], addr));
+      emit_insn (gen_rtx_SET (operands[7], addr));
       operands[0] = replace_equiv_address (operands[0], operands[7]);
     }
 
@@ -3350,7 +3350,7 @@
     operands[8] = addr;
   else
     {
-      emit_insn (gen_rtx_SET (VOIDmode, operands[8], addr));
+      emit_insn (gen_rtx_SET (operands[8], addr));
       operands[1] = replace_equiv_address (operands[1], operands[8]);
     }
 }")
@@ -3529,7 +3529,7 @@
     operands[7] = addr;
   else
     {
-      emit_insn (gen_rtx_SET (VOIDmode, operands[7], addr));
+      emit_insn (gen_rtx_SET (operands[7], addr));
       operands[0] = replace_equiv_address (operands[0], operands[7]);
     }
 
@@ -3538,7 +3538,7 @@
     operands[8] = addr;
   else
     {
-      emit_insn (gen_rtx_SET (VOIDmode, operands[8], addr));
+      emit_insn (gen_rtx_SET (operands[8], addr));
       operands[1] = replace_equiv_address (operands[1], operands[8]);
     }
 }")
@@ -3655,7 +3655,7 @@
     operands[4] = addr;
   else
     {
-      emit_insn (gen_rtx_SET (VOIDmode, operands[4], addr));
+      emit_insn (gen_rtx_SET (operands[4], addr));
       operands[0] = replace_equiv_address (operands[0], operands[4]);
     }
 }")
@@ -3769,7 +3769,7 @@
     operands[4] = addr;
   else
     {
-      emit_insn (gen_rtx_SET (VOIDmode, operands[4], addr));
+      emit_insn (gen_rtx_SET (operands[4], addr));
       operands[0] = replace_equiv_address (operands[0], operands[4]);
     }
 }")
@@ -3810,7 +3810,7 @@
     DONE;
 
   /* We don't want the clobber emitted, so handle this ourselves.  */
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  emit_insn (gen_rtx_SET (operands[0], operands[1]));
   DONE;
 }")
 
@@ -3827,7 +3827,7 @@
     DONE;
 
   /* We don't want the clobber emitted, so handle this ourselves.  */
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  emit_insn (gen_rtx_SET (operands[0], operands[1]));
   DONE;
 }")
 
@@ -3844,7 +3844,7 @@
     DONE;
 
   /* We don't want the clobber emitted, so handle this ourselves.  */
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  emit_insn (gen_rtx_SET (operands[0], operands[1]));
   DONE;
 }")
 
@@ -4083,7 +4083,7 @@
     DONE;
 
   /* We don't want the clobber emitted, so handle this ourselves.  */
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  emit_insn (gen_rtx_SET (operands[0], operands[1]));
   DONE;
 }")
 
@@ -4100,7 +4100,7 @@
     DONE;
 
   /* We don't want the clobber emitted, so handle this ourselves.  */
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  emit_insn (gen_rtx_SET (operands[0], operands[1]));
   DONE;
 }")
 
@@ -4117,7 +4117,7 @@
     DONE;
 
   /* We don't want the clobber emitted, so handle this ourselves.  */
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  emit_insn (gen_rtx_SET (operands[0], operands[1]));
   DONE;
 }")
 
@@ -4361,7 +4361,7 @@
     DONE;
 
   /* We don't want the clobber emitted, so handle this ourselves.  */
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  emit_insn (gen_rtx_SET (operands[0], operands[1]));
   DONE;
 }")
 
@@ -4378,7 +4378,7 @@
     DONE;
 
   /* We don't want the clobber emitted, so handle this ourselves.  */
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  emit_insn (gen_rtx_SET (operands[0], operands[1]));
   DONE;
 }")
 
@@ -4395,7 +4395,7 @@
     DONE;
 
   /* We don't want the clobber emitted, so handle this ourselves.  */
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+  emit_insn (gen_rtx_SET (operands[0], operands[1]));
   DONE;
 }")
 
@@ -5161,7 +5161,7 @@
     }
   else if (pa_cint_ok_for_move (-intval))
     {
-      emit_insn (gen_rtx_SET (VOIDmode, operands[4], GEN_INT (-intval)));
+      emit_insn (gen_rtx_SET (operands[4], GEN_INT (-intval)));
       emit_insn (gen_subsi3 (operands[0], operands[1], operands[4]));
       DONE;
     }

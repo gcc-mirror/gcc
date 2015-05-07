@@ -2076,7 +2076,7 @@ visium_expand_copysign (rtx *operands, enum machine_mode mode)
     x = force_reg (SImode, gen_rtx_IOR (SImode, op0, op1));
 
   /* And move the result to the destination.  */
-  emit_insn (gen_rtx_SET (VOIDmode, dest, gen_lowpart (SFmode, x)));
+  emit_insn (gen_rtx_SET (dest, gen_lowpart (SFmode, x)));
 }
 
 /* Expand a cstore of OPERANDS in MODE for EQ/NE/LTU/GTU/GEU/LEU.  We generate
@@ -2138,7 +2138,7 @@ visium_expand_int_cstore (rtx *operands, enum machine_mode mode)
       emit_insn (gen_add3_insn (op0, tmp, const1_rtx));
     }
   else
-    emit_insn (gen_rtx_SET (VOIDmode, op0, sltu));
+    emit_insn (gen_rtx_SET (op0, sltu));
 }
 
 /* Expand a cstore of OPERANDS in MODE for LT/GT/UNGE/UNLE.  We generate the
@@ -2186,7 +2186,7 @@ visium_expand_fp_cstore (rtx *operands,
       emit_insn (gen_add3_insn (op0, tmp, const1_rtx));
     }
   else
-    emit_insn (gen_rtx_SET (VOIDmode, op0, slt));
+    emit_insn (gen_rtx_SET (op0, slt));
 }
 
 /* Split a compare-and-store with CODE, operands OP2 and OP3, combined with
@@ -2204,7 +2204,7 @@ visium_split_cstore (enum rtx_code op_code, rtx op0, rtx op1,
 
   rtx flags = gen_rtx_REG (cc_mode, FLAGS_REGNUM);
   rtx x = gen_rtx_COMPARE (cc_mode, op2, op3);
-  x = gen_rtx_SET (VOIDmode, flags, x);
+  x = gen_rtx_SET (flags, x);
   emit_insn (x);
 
   x = gen_rtx_fmt_ee (code, SImode, flags, const0_rtx);
@@ -2224,7 +2224,7 @@ visium_split_cstore (enum rtx_code op_code, rtx op0, rtx op1,
     }
 
   rtx pat = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
-  XVECEXP (pat, 0, 0) = gen_rtx_SET (VOIDmode, op0, x);
+  XVECEXP (pat, 0, 0) = gen_rtx_SET (op0, x);
   flags = gen_rtx_REG (CCmode, FLAGS_REGNUM);
   XVECEXP (pat, 0, 1) = gen_rtx_CLOBBER (VOIDmode, flags);
   emit_insn (pat);
@@ -2253,8 +2253,7 @@ expand_block_move_4 (rtx dst, rtx dst_reg, rtx src, rtx src_reg, rtx bytes_rtx)
 
       insn = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (8));
       XVECEXP (insn, 0, 0)
-	= gen_rtx_SET (VOIDmode,
-		       replace_equiv_address_nv (dst, regno_reg_rtx[1]),
+	= gen_rtx_SET (replace_equiv_address_nv (dst, regno_reg_rtx[1]),
 		       replace_equiv_address_nv (src, regno_reg_rtx[2]));
       XVECEXP (insn, 0, 1) = gen_rtx_USE (VOIDmode, regno_reg_rtx[3]);
       for (i = 1; i <= 6; i++)
@@ -2764,13 +2763,13 @@ visium_split_cbranch (enum rtx_code code, rtx op0, rtx op1, rtx label)
   rtx flags = gen_rtx_REG (cc_mode, FLAGS_REGNUM);
 
   rtx x = gen_rtx_COMPARE (cc_mode, op0, op1);
-  x = gen_rtx_SET (VOIDmode, flags, x);
+  x = gen_rtx_SET (flags, x);
   emit_insn (x);
 
   x = gen_rtx_fmt_ee (code, VOIDmode, flags, const0_rtx);
   x = gen_rtx_IF_THEN_ELSE (VOIDmode, x, gen_rtx_LABEL_REF (Pmode, label),
 			    pc_rtx);
-  x = gen_rtx_SET (VOIDmode, pc_rtx, x);
+  x = gen_rtx_SET (pc_rtx, x);
   emit_jump_insn (x);
 
   visium_flags_exposed = true;
@@ -3600,7 +3599,7 @@ visium_save_regs (int alloc, int offset, int low_regno, int high_regno)
 		  {
 		    insn = emit_frame_insn (gen_movdi (mem, tmp));
 		    add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-				  gen_rtx_SET (VOIDmode, mem, reg));
+				  gen_rtx_SET (mem, reg));
 		  }
 	      }
 	      break;
@@ -3617,7 +3616,7 @@ visium_save_regs (int alloc, int offset, int low_regno, int high_regno)
 		emit_insn (gen_movsi (tmp, reg));
 		insn = emit_frame_insn (gen_movsi (mem, tmp));
 		add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-			      gen_rtx_SET (VOIDmode, mem, reg));
+			      gen_rtx_SET (mem, reg));
 	      }
 	      break;
 
@@ -3633,7 +3632,7 @@ visium_save_regs (int alloc, int offset, int low_regno, int high_regno)
 		emit_insn (gen_movsf (tmp, reg));
 		insn = emit_frame_insn (gen_movsf (mem, tmp));
 		add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-			      gen_rtx_SET (VOIDmode, mem, reg));
+			      gen_rtx_SET (mem, reg));
 	      }
 	      break;
 
@@ -3711,7 +3710,7 @@ visium_expand_prologue (void)
 						    stack_pointer_rtx,
 						    tmp));
 	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-			gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+			gen_rtx_SET (stack_pointer_rtx,
 				     gen_rtx_PLUS (Pmode, stack_pointer_rtx,
 						   GEN_INT (-alloc_size))));
 	}
@@ -3899,7 +3898,7 @@ visium_restore_regs (int dealloc, int offset, int high_regno, int low_regno)
   /* Deallocate the stack space.  */
   rtx insn = emit_frame_insn (gen_stack_pop (GEN_INT (dealloc)));
   add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-		gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+		gen_rtx_SET (stack_pointer_rtx,
 			     gen_rtx_PLUS (Pmode, stack_pointer_rtx,
 					   GEN_INT (dealloc))));
   visium_add_queued_cfa_restore_notes (insn);
@@ -3952,7 +3951,7 @@ visium_expand_epilogue (void)
 
       rtx insn = emit_frame_insn (gen_movsi (hard_frame_pointer_rtx, src));
       add_reg_note (insn, REG_CFA_ADJUST_CFA,
-		    gen_rtx_SET (VOIDmode, stack_pointer_rtx, 
+		    gen_rtx_SET (stack_pointer_rtx,
 				 hard_frame_pointer_rtx));
       visium_add_cfa_restore_note (hard_frame_pointer_rtx);
     }
@@ -4004,7 +4003,7 @@ visium_expand_epilogue (void)
       else
 	insn = emit_frame_insn (gen_stack_pop (GEN_INT (pop_size)));
       add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-		    gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+		    gen_rtx_SET (stack_pointer_rtx,
 				 gen_rtx_PLUS (Pmode, stack_pointer_rtx,
 					       GEN_INT (pop_size))));
       visium_add_queued_cfa_restore_notes (insn);

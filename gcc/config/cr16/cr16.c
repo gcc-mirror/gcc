@@ -1881,8 +1881,7 @@ cr16_create_dwarf_for_multi_push (rtx insn)
 		}
 	      reg = gen_rtx_REG (mode, j);
 	      offset += 2 * inc;
-	      tmp = gen_rtx_SET (VOIDmode,
-				 gen_frame_mem (mode,
+	      tmp = gen_rtx_SET (gen_frame_mem (mode,
 						plus_constant
 						(Pmode, stack_pointer_rtx,
 						 total_push_bytes - offset)),
@@ -1912,7 +1911,7 @@ cr16_create_dwarf_for_multi_push (rtx insn)
       from = i--;
     }
 
-  tmp = gen_rtx_SET (SImode, stack_pointer_rtx,
+  tmp = gen_rtx_SET (stack_pointer_rtx,
 		     gen_rtx_PLUS (SImode, stack_pointer_rtx,
 				   GEN_INT (-offset)));
   RTX_FRAME_RELATED_P (tmp) = 1;

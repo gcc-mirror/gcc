@@ -687,10 +687,10 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 
 	  gcc_assert (reg);
 
-	  emit_insn (gen_rtx_SET (Pmode, hi_sum_reg,
+	  emit_insn (gen_rtx_SET (hi_sum_reg,
 			      gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
 				       gen_rtx_HIGH (Pmode, offset))));
-	  emit_insn (gen_rtx_SET (Pmode, reg,
+	  emit_insn (gen_rtx_SET (reg,
 				  gen_rtx_LO_SUM (Pmode, hi_sum_reg,
 						  copy_rtx (offset))));
 
@@ -700,11 +700,9 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 	    {
 	  gcc_assert (reg);
 
-	  emit_insn (gen_rtx_SET (VOIDmode, reg,
-				  gen_rtx_HIGH (Pmode, offset)));
-	  emit_insn (gen_rtx_SET (VOIDmode, reg,
-				  gen_rtx_LO_SUM (Pmode, reg,
-						  copy_rtx (offset))));
+	  emit_insn (gen_rtx_SET (reg, gen_rtx_HIGH (Pmode, offset)));
+	  emit_insn (gen_rtx_SET (reg, gen_rtx_LO_SUM (Pmode, reg,
+						       copy_rtx (offset))));
 	  emit_use (pic_offset_table_rtx);
 
 	  orig = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, reg);
@@ -725,7 +723,7 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
           && reg 
           && MACHO_DYNAMIC_NO_PIC_P)
 	{
-	    emit_insn (gen_rtx_SET (Pmode, reg, ptr_ref));
+	    emit_insn (gen_rtx_SET (reg, ptr_ref));
 	    ptr_ref = reg;
 	}
 
@@ -874,7 +872,7 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 	      mem = gen_const_mem (GET_MODE (orig),
 				   gen_rtx_LO_SUM (Pmode, temp_reg,
 						   copy_rtx (asym)));
-	      emit_insn (gen_rtx_SET (VOIDmode, reg, mem));
+	      emit_insn (gen_rtx_SET (reg, mem));
 #else
 	      /* Some other CPU -- WriteMe! but right now there are no other
 		 platforms that can use dynamic-no-pic  */
@@ -901,24 +899,24 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 	      if (! MACHO_DYNAMIC_NO_PIC_P)
 		sum = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, sum);
 
-	      emit_insn (gen_rtx_SET (Pmode, hi_sum_reg, sum));
+	      emit_insn (gen_rtx_SET (hi_sum_reg, sum));
 
 	      mem = gen_const_mem (GET_MODE (orig),
 				  gen_rtx_LO_SUM (Pmode,
 						  hi_sum_reg,
 						  copy_rtx (offset)));
-	      insn = emit_insn (gen_rtx_SET (VOIDmode, reg, mem));
+	      insn = emit_insn (gen_rtx_SET (reg, mem));
 	      set_unique_reg_note (insn, REG_EQUAL, pic_ref);
 
 	      pic_ref = reg;
 #else
 	      emit_use (gen_rtx_REG (Pmode, PIC_OFFSET_TABLE_REGNUM));
 
-	      emit_insn (gen_rtx_SET (VOIDmode, reg,
+	      emit_insn (gen_rtx_SET (reg,
 				      gen_rtx_HIGH (Pmode,
 						    gen_rtx_CONST (Pmode,
 								   offset))));
-	      emit_insn (gen_rtx_SET (VOIDmode, reg,
+	      emit_insn (gen_rtx_SET (reg,
 				  gen_rtx_LO_SUM (Pmode, reg,
 					   gen_rtx_CONST (Pmode,
 						   	  copy_rtx (offset)))));
@@ -969,22 +967,21 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 
 	      hi_sum_reg = reg;
 
-	      emit_insn (gen_rtx_SET (Pmode, hi_sum_reg,
+	      emit_insn (gen_rtx_SET (hi_sum_reg,
 				      (MACHO_DYNAMIC_NO_PIC_P)
 				      ? gen_rtx_HIGH (Pmode, offset)
 				      : gen_rtx_PLUS (Pmode,
 						      pic_offset_table_rtx,
 						      gen_rtx_HIGH (Pmode,
 								    offset))));
-	      emit_insn (gen_rtx_SET (VOIDmode, reg,
+	      emit_insn (gen_rtx_SET (reg,
 				      gen_rtx_LO_SUM (Pmode,
 						      hi_sum_reg,
 						      copy_rtx (offset))));
 	      pic_ref = reg;
 #else
-	      emit_insn (gen_rtx_SET (VOIDmode, reg,
-				      gen_rtx_HIGH (Pmode, offset)));
-	      emit_insn (gen_rtx_SET (VOIDmode, reg,
+	      emit_insn (gen_rtx_SET (reg, gen_rtx_HIGH (Pmode, offset)));
+	      emit_insn (gen_rtx_SET (reg,
 				      gen_rtx_LO_SUM (Pmode, reg,
 						      copy_rtx (offset))));
 	      pic_ref = gen_rtx_PLUS (Pmode,

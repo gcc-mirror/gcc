@@ -1593,8 +1593,7 @@ frv_frame_mem (machine_mode mode, rtx base, int offset)
 static rtx
 frv_dwarf_store (rtx reg, int offset)
 {
-  rtx set = gen_rtx_SET (VOIDmode,
-			 gen_rtx_MEM (GET_MODE (reg),
+  rtx set = gen_rtx_SET (gen_rtx_MEM (GET_MODE (reg),
 				      plus_constant (Pmode, stack_pointer_rtx,
 						     offset)),
 			 reg);
@@ -1647,8 +1646,8 @@ frv_frame_access (frv_frame_accessor_t *accessor, rtx reg, int stack_offset)
       if (SPR_P (REGNO (reg)))
 	{
 	  rtx temp = gen_rtx_REG (mode, TEMP_REGNO);
-	  emit_insn (gen_rtx_SET (VOIDmode, temp, mem));
-	  emit_insn (gen_rtx_SET (VOIDmode, reg, temp));
+	  emit_insn (gen_rtx_SET (temp, mem));
+	  emit_insn (gen_rtx_SET (reg, temp));
 	}
       else
 	{
@@ -1665,7 +1664,7 @@ frv_frame_access (frv_frame_accessor_t *accessor, rtx reg, int stack_offset)
 					    XEXP (XEXP (mem, 0), 1)));
 	      mem = gen_rtx_MEM (DImode, temp);
 	    }
-	  emit_insn (gen_rtx_SET (VOIDmode, reg, mem));
+	  emit_insn (gen_rtx_SET (reg, mem));
 	}
       emit_use (reg);
     }
@@ -1674,8 +1673,8 @@ frv_frame_access (frv_frame_accessor_t *accessor, rtx reg, int stack_offset)
       if (SPR_P (REGNO (reg)))
 	{
 	  rtx temp = gen_rtx_REG (mode, TEMP_REGNO);
-	  emit_insn (gen_rtx_SET (VOIDmode, temp, reg));
-	  frv_frame_insn (gen_rtx_SET (Pmode, mem, temp),
+	  emit_insn (gen_rtx_SET (temp, reg));
+	  frv_frame_insn (gen_rtx_SET (mem, temp),
 			  frv_dwarf_store (reg, stack_offset));
 	}
       else if (mode == DImode)
@@ -1699,12 +1698,12 @@ frv_frame_access (frv_frame_accessor_t *accessor, rtx reg, int stack_offset)
 	      mem = gen_rtx_MEM (DImode, temp);
 	    }
 
-	  frv_frame_insn (gen_rtx_SET (Pmode, mem, reg),
+	  frv_frame_insn (gen_rtx_SET (mem, reg),
 			  gen_rtx_PARALLEL (VOIDmode,
 					    gen_rtvec (2, set1, set2)));
 	}
       else
-	frv_frame_insn (gen_rtx_SET (Pmode, mem, reg),
+	frv_frame_insn (gen_rtx_SET (mem, reg),
 			frv_dwarf_store (reg, stack_offset));
     }
 }
@@ -1819,9 +1818,7 @@ frv_expand_prologue (void)
     rtx dwarf_offset = GEN_INT (-info->total_size);
 
     frv_frame_insn (gen_stack_adjust (sp, sp, asm_offset),
-		    gen_rtx_SET (Pmode,
-				 sp,
-				 gen_rtx_PLUS (Pmode, sp, dwarf_offset)));
+		    gen_rtx_SET (sp, gen_rtx_PLUS (Pmode, sp, dwarf_offset)));
   }
 
   /* If the frame pointer is needed, store the old one at (sp + FP_OFFSET)
@@ -1841,8 +1838,8 @@ frv_expand_prologue (void)
       frv_frame_access (&accessor, fp, fp_offset);
 
       /* Set up the new frame pointer.  */
-      frv_frame_insn (gen_rtx_SET (VOIDmode, fp, asm_src),
-		      gen_rtx_SET (VOIDmode, fp, dwarf_src));
+      frv_frame_insn (gen_rtx_SET (fp, asm_src),
+		      gen_rtx_SET (fp, dwarf_src));
 
       /* Access region C from the frame pointer.  */
       accessor.base = fp;
@@ -1935,7 +1932,7 @@ frv_expand_epilogue (bool emit_return)
 
       /* Load the old link register into a GPR.  */
       return_addr = gen_rtx_REG (Pmode, TEMP_REGNO);
-      emit_insn (gen_rtx_SET (VOIDmode, return_addr, mem));
+      emit_insn (gen_rtx_SET (return_addr, mem));
     }
   else
     return_addr = gen_rtx_REG (Pmode, LR_REGNO);
@@ -1944,7 +1941,7 @@ frv_expand_epilogue (bool emit_return)
      the load is preserved.  */
   if (frame_pointer_needed)
     {
-      emit_insn (gen_rtx_SET (VOIDmode, fp, gen_rtx_MEM (Pmode, fp)));
+      emit_insn (gen_rtx_SET (fp, gen_rtx_MEM (Pmode, fp)));
       emit_use (fp);
     }
 
@@ -2301,8 +2298,8 @@ frv_expand_block_move (rtx operands[])
       tmp_reg = gen_reg_rtx (mode);
       src_mem = change_address (orig_src, mode, src_addr);
       dest_mem = change_address (orig_dest, mode, dest_addr);
-      emit_insn (gen_rtx_SET (VOIDmode, tmp_reg, src_mem));
-      stores[num_reg++] = gen_rtx_SET (VOIDmode, dest_mem, tmp_reg);
+      emit_insn (gen_rtx_SET (tmp_reg, src_mem));
+      stores[num_reg++] = gen_rtx_SET (dest_mem, tmp_reg);
 
       if (num_reg >= MAX_MOVE_REG)
 	{
@@ -2381,7 +2378,7 @@ frv_expand_block_clear (rtx operands[])
 
       clear_bytes = GET_MODE_SIZE (mode);
       dest_mem = change_address (orig_dest, mode, dest_addr);
-      emit_insn (gen_rtx_SET (VOIDmode, dest_mem, const0_rtx));
+      emit_insn (gen_rtx_SET (dest_mem, const0_rtx));
     }
 
   return TRUE;
@@ -3608,9 +3605,7 @@ frv_legitimize_tls_address (rtx addr, enum tls_model model)
 	  }
 
 	reg = gen_reg_rtx (Pmode);
-	emit_insn (gen_rtx_SET (VOIDmode, reg,
-				gen_rtx_PLUS (Pmode,
-					      retval, tp)));
+	emit_insn (gen_rtx_SET (reg, gen_rtx_PLUS (Pmode, retval, tp)));
 
 	dest = gen_tlsmoff (addr, reg);
 
@@ -3996,7 +3991,7 @@ frv_emit_move (machine_mode mode, rtx dest, rtx src)
       gcc_unreachable ();
     }
 
-  emit_insn (gen_rtx_SET (VOIDmode, dest, src));
+  emit_insn (gen_rtx_SET (dest, src));
 }
 
 /* Emit code to handle a MOVSI, adding in the small data register or pic
@@ -4023,7 +4018,7 @@ frv_emit_movsi (rtx dest, rtx src)
 			   FIRST_VIRTUAL_REGISTER,
 			   LAST_VIRTUAL_POINTER_REGISTER))))
     {
-      emit_insn (gen_rtx_SET (VOIDmode, dest, copy_to_mode_reg (SImode, src)));
+      emit_insn (gen_rtx_SET (dest, copy_to_mode_reg (SImode, src)));
       return TRUE;
     }
 
@@ -4756,8 +4751,7 @@ frv_emit_comparison (enum rtx_code test, rtx op0, rtx op1)
 	    : gen_rtx_REG (cc_mode,
 			   (cc_mode == CC_FPmode) ? FCC_FIRST : ICC_FIRST));
 
-  emit_insn (gen_rtx_SET (VOIDmode, cc_reg,
-			  gen_rtx_COMPARE (cc_mode, op0, op1)));
+  emit_insn (gen_rtx_SET (cc_reg, gen_rtx_COMPARE (cc_mode, op0, op1)));
 
   return cc_reg;
 }
@@ -4785,7 +4779,7 @@ frv_emit_cond_branch (rtx operands[])
   label_ref = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
   test_rtx = gen_rtx_fmt_ee (test, cc_mode, cc_reg, const0_rtx);
   if_else = gen_rtx_IF_THEN_ELSE (cc_mode, test_rtx, label_ref, pc_rtx);
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, if_else));
+  emit_jump_insn (gen_rtx_SET (pc_rtx, if_else));
   return TRUE;
 }
 
@@ -4806,7 +4800,7 @@ frv_emit_scc (rtx operands[])
 	(parallel [(set <target> (<test>, <cc_reg>, (const_int 0))
 		   (clobber (<ccr_reg>))])  */
   test_rtx = gen_rtx_fmt_ee (test, SImode, cc_reg, const0_rtx);
-  set = gen_rtx_SET (VOIDmode, operands[0], test_rtx);
+  set = gen_rtx_SET (operands[0], test_rtx);
 
   cr_reg = ((TARGET_ALLOC_CC)
 	    ? gen_reg_rtx (CC_CCRmode)
@@ -4832,8 +4826,7 @@ frv_split_scc (rtx dest, rtx test, rtx cc_reg, rtx cr_reg, HOST_WIDE_INT value)
   start_sequence ();
 
   /* Set the appropriate CCR bit.  */
-  emit_insn (gen_rtx_SET (VOIDmode,
-			  cr_reg,
+  emit_insn (gen_rtx_SET (cr_reg,
 			  gen_rtx_fmt_ee (GET_CODE (test),
 					  GET_MODE (cr_reg),
 					  cc_reg,
@@ -4847,7 +4840,7 @@ frv_split_scc (rtx dest, rtx test, rtx cc_reg, rtx cr_reg, HOST_WIDE_INT value)
 				gen_rtx_EQ (GET_MODE (cr_reg),
 					    cr_reg,
 					    const0_rtx),
-				gen_rtx_SET (VOIDmode, dest, const0_rtx)));
+				gen_rtx_SET (dest, const0_rtx)));
 
   /* Finish up, return sequence.  */
   ret = get_insns ();
@@ -4921,7 +4914,7 @@ frv_emit_cond_move (rtx dest, rtx test_rtx, rtx src1, rtx src2)
   test2 = gen_rtx_fmt_ee (test, cc_mode, cc_reg, const0_rtx);
   if_rtx = gen_rtx_IF_THEN_ELSE (GET_MODE (dest), test2, src1, src2);
 
-  set = gen_rtx_SET (VOIDmode, dest, if_rtx);
+  set = gen_rtx_SET (dest, if_rtx);
 
   cr_reg = ((TARGET_ALLOC_CC)
 	    ? gen_reg_rtx (CC_CCRmode)
@@ -4952,8 +4945,7 @@ frv_split_cond_move (rtx operands[])
   start_sequence ();
 
   /* Set the appropriate CCR bit.  */
-  emit_insn (gen_rtx_SET (VOIDmode,
-			  cr_reg,
+  emit_insn (gen_rtx_SET (cr_reg,
 			  gen_rtx_fmt_ee (GET_CODE (test),
 					  GET_MODE (cr_reg),
 					  cc_reg,
@@ -4973,7 +4965,7 @@ frv_split_cond_move (rtx operands[])
 	  emit_insn (gen_rtx_COND_EXEC (VOIDmode,
 					gen_rtx_NE (cr_mode, cr_reg,
 						    const0_rtx),
-					gen_rtx_SET (VOIDmode, dest, src1)));
+					gen_rtx_SET (dest, src1)));
 	}
 
       else if (value2 == 0)
@@ -4982,7 +4974,7 @@ frv_split_cond_move (rtx operands[])
 	  emit_insn (gen_rtx_COND_EXEC (VOIDmode,
 					gen_rtx_EQ (cr_mode, cr_reg,
 						    const0_rtx),
-					gen_rtx_SET (VOIDmode, dest, src2)));
+					gen_rtx_SET (dest, src2)));
 	}
 
       /* If the first value is within an addi range and also the difference
@@ -5000,8 +4992,7 @@ frv_split_cond_move (rtx operands[])
 	  emit_insn (gen_rtx_COND_EXEC (VOIDmode,
 					gen_rtx_NE (cr_mode, cr_reg,
 						    const0_rtx),
-					gen_rtx_SET (VOIDmode, dest_si,
-						     const0_rtx)));
+					gen_rtx_SET (dest_si, const0_rtx)));
 	  emit_insn (gen_addsi3 (dest_si, dest_si, src1));
 	}
 
@@ -5014,13 +5005,13 @@ frv_split_cond_move (rtx operands[])
       if (! rtx_equal_p (dest, src1))
 	emit_insn (gen_rtx_COND_EXEC (VOIDmode,
 				      gen_rtx_NE (cr_mode, cr_reg, const0_rtx),
-				      gen_rtx_SET (VOIDmode, dest, src1)));
+				      gen_rtx_SET (dest, src1)));
 
       /* Emit the conditional move for the test being false if needed.  */
       if (! rtx_equal_p (dest, src2))
 	emit_insn (gen_rtx_COND_EXEC (VOIDmode,
 				      gen_rtx_EQ (cr_mode, cr_reg, const0_rtx),
-				      gen_rtx_SET (VOIDmode, dest, src2)));
+				      gen_rtx_SET (dest, src2)));
     }
 
   /* Finish up, return sequence.  */
@@ -5117,18 +5108,14 @@ frv_split_minmax (rtx operands[])
     }
 
   /* Issue the compare instruction.  */
-  emit_insn (gen_rtx_SET (VOIDmode,
-			  cc_reg,
-			  gen_rtx_COMPARE (GET_MODE (cc_reg),
-					   src1, src2)));
+  emit_insn (gen_rtx_SET (cc_reg, gen_rtx_COMPARE (GET_MODE (cc_reg),
+						   src1, src2)));
 
   /* Set the appropriate CCR bit.  */
-  emit_insn (gen_rtx_SET (VOIDmode,
-			  cr_reg,
-			  gen_rtx_fmt_ee (test_code,
-					  GET_MODE (cr_reg),
-					  cc_reg,
-					  const0_rtx)));
+  emit_insn (gen_rtx_SET (cr_reg, gen_rtx_fmt_ee (test_code,
+						  GET_MODE (cr_reg),
+						  cc_reg,
+						  const0_rtx)));
 
   /* If are taking the min/max of a nonzero constant, load that first, and
      then do a conditional move of the other value.  */
@@ -5139,7 +5126,7 @@ frv_split_minmax (rtx operands[])
       emit_move_insn (dest, src2);
       emit_insn (gen_rtx_COND_EXEC (VOIDmode,
 				    gen_rtx_NE (cr_mode, cr_reg, const0_rtx),
-				    gen_rtx_SET (VOIDmode, dest, src1)));
+				    gen_rtx_SET (dest, src1)));
     }
 
   /* Otherwise, do each half of the move.  */
@@ -5149,13 +5136,13 @@ frv_split_minmax (rtx operands[])
       if (! rtx_equal_p (dest, src1))
 	emit_insn (gen_rtx_COND_EXEC (VOIDmode,
 				      gen_rtx_NE (cr_mode, cr_reg, const0_rtx),
-				      gen_rtx_SET (VOIDmode, dest, src1)));
+				      gen_rtx_SET (dest, src1)));
 
       /* Emit the conditional move for the test being false if needed.  */
       if (! rtx_equal_p (dest, src2))
 	emit_insn (gen_rtx_COND_EXEC (VOIDmode,
 				      gen_rtx_EQ (cr_mode, cr_reg, const0_rtx),
-				      gen_rtx_SET (VOIDmode, dest, src2)));
+				      gen_rtx_SET (dest, src2)));
     }
 
   /* Finish up, return sequence.  */
@@ -5180,14 +5167,11 @@ frv_split_abs (rtx operands[])
   start_sequence ();
 
   /* Issue the compare < 0 instruction.  */
-  emit_insn (gen_rtx_SET (VOIDmode,
-			  cc_reg,
-			  gen_rtx_COMPARE (CCmode, src, const0_rtx)));
+  emit_insn (gen_rtx_SET (cc_reg, gen_rtx_COMPARE (CCmode, src, const0_rtx)));
 
   /* Set the appropriate CCR bit.  */
-  emit_insn (gen_rtx_SET (VOIDmode,
-			  cr_reg,
-			  gen_rtx_fmt_ee (LT, CC_CCRmode, cc_reg, const0_rtx)));
+  emit_insn (gen_rtx_SET (cr_reg, gen_rtx_fmt_ee (LT, CC_CCRmode,
+						  cc_reg, const0_rtx)));
 
   /* Emit the conditional negate if the value is negative.  */
   emit_insn (gen_rtx_COND_EXEC (VOIDmode,
@@ -5198,7 +5182,7 @@ frv_split_abs (rtx operands[])
   if (! rtx_equal_p (dest, src))
     emit_insn (gen_rtx_COND_EXEC (VOIDmode,
 				  gen_rtx_EQ (CC_CCRmode, cr_reg, const0_rtx),
-				  gen_rtx_SET (VOIDmode, dest, src)));
+				  gen_rtx_SET (dest, src)));
 
   /* Finish up, return sequence.  */
   ret = get_insns ();
@@ -5576,8 +5560,8 @@ frv_ifcvt_modify_tests (ce_if_block *ce_info, rtx *p_true, rtx *p_false)
       code_false = EQ;
     }
 
-  check_insn = gen_rtx_SET (VOIDmode, cr,
-			    gen_rtx_fmt_ee (code, CC_CCRmode, cc, const0_rtx));
+  check_insn = gen_rtx_SET (cr, gen_rtx_fmt_ee (code, CC_CCRmode,
+						cc, const0_rtx));
 
   /* Record the check insn to be inserted later.  */
   frv_ifcvt_add_insn (check_insn, BB_END (test_bb), TRUE);
@@ -5705,7 +5689,7 @@ frv_ifcvt_modify_multiple_tests (ce_if_block *ce_info,
   compare = gen_rtx_fmt_ee (GET_CODE (test_expr), CC_CCRmode, cc, const0_rtx);
   if_else = gen_rtx_IF_THEN_ELSE (CC_CCRmode, old_test, compare, const0_rtx);
 
-  check_insn = gen_rtx_SET (VOIDmode, new_cr, if_else);
+  check_insn = gen_rtx_SET (new_cr, if_else);
 
   /* Add the new check insn to the list of check insns that need to be
      inserted.  */
@@ -5788,7 +5772,7 @@ frv_ifcvt_load_value (rtx value, rtx insn ATTRIBUTE_UNUSED)
     }
 
   frv_ifcvt.cur_scratch_regs++;
-  frv_ifcvt.scratch_regs[num_alloc] = gen_rtx_SET (VOIDmode, reg, value);
+  frv_ifcvt.scratch_regs[num_alloc] = gen_rtx_SET (reg, value);
 
   if (dump_file)
     {
@@ -5982,9 +5966,9 @@ frv_ifcvt_modify_insn (ce_if_block *ce_info,
 	      op1 = frv_ifcvt_load_value (op1, insn);
 	      if (op1)
 		COND_EXEC_CODE (pattern)
-		  = gen_rtx_SET (VOIDmode, dest, gen_rtx_fmt_ee (GET_CODE (src),
-								 GET_MODE (src),
-								 op0, op1));
+		  = gen_rtx_SET (dest, gen_rtx_fmt_ee (GET_CODE (src),
+						       GET_MODE (src),
+						       op0, op1));
 	      else
 		goto fail;
 	    }
@@ -6004,8 +5988,7 @@ frv_ifcvt_modify_insn (ce_if_block *ce_info,
 		{
 		  op1 = gen_rtx_SIGN_EXTEND (DImode, op1);
 		  COND_EXEC_CODE (pattern)
-		    = gen_rtx_SET (VOIDmode, dest,
-				   gen_rtx_MULT (DImode, op0, op1));
+		    = gen_rtx_SET (dest, gen_rtx_MULT (DImode, op0, op1));
 		}
 	      else
 		goto fail;
@@ -6095,7 +6078,7 @@ frv_ifcvt_modify_insn (ce_if_block *ce_info,
 
 	  /* If either src or destination changed, redo SET.  */
 	  if (changed_p)
-	    COND_EXEC_CODE (pattern) = gen_rtx_SET (VOIDmode, dest, src);
+	    COND_EXEC_CODE (pattern) = gen_rtx_SET (dest, src);
 	}
 
       /* Rewrite a nested set cccr in terms of IF_THEN_ELSE.  Also deal with
@@ -6117,7 +6100,7 @@ frv_ifcvt_modify_insn (ce_if_block *ce_info,
 	    }
 
 	  if_else = gen_rtx_IF_THEN_ELSE (CC_CCRmode, test, src, const0_rtx);
-	  pattern = gen_rtx_SET (VOIDmode, dest, if_else);
+	  pattern = gen_rtx_SET (dest, if_else);
 	}
 
       /* Remap a nested compare instruction to use the paired CC/CR reg.  */
@@ -6131,7 +6114,7 @@ frv_ifcvt_modify_insn (ce_if_block *ce_info,
 	{
 	  PUT_MODE (frv_ifcvt.nested_cc_reg, GET_MODE (dest));
 	  COND_EXEC_CODE (pattern)
-	    = gen_rtx_SET (VOIDmode, frv_ifcvt.nested_cc_reg, copy_rtx (src));
+	    = gen_rtx_SET (frv_ifcvt.nested_cc_reg, copy_rtx (src));
 	}
     }
 
@@ -8945,7 +8928,7 @@ frv_expand_voidbinop_builtin (enum insn_code icode, tree call)
       if (! offsettable_address_p (0, mode0, op0))
 	{
 	  reg = gen_reg_rtx (Pmode);
-	  emit_insn (gen_rtx_SET (VOIDmode, reg, op0));
+	  emit_insn (gen_rtx_SET (reg, op0));
 	}
 
       op0 = gen_rtx_MEM (SImode, reg);

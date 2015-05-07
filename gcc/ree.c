@@ -386,7 +386,7 @@ combine_set_extension (ext_cand *cand, rtx_insn *curr_insn, rtx *orig_set)
       && HOST_BITS_PER_WIDE_INT >= GET_MODE_BITSIZE (cand->mode))
     {
       if (INTVAL (orig_src) >= 0 || cand->code == SIGN_EXTEND)
-	new_set = gen_rtx_SET (VOIDmode, new_reg, orig_src);
+	new_set = gen_rtx_SET (new_reg, orig_src);
       else
 	{
 	  /* Zero-extend the negative constant by masking out the bits outside
@@ -394,7 +394,7 @@ combine_set_extension (ext_cand *cand, rtx_insn *curr_insn, rtx *orig_set)
 	  rtx new_const_int
 	    = gen_int_mode (INTVAL (orig_src) & GET_MODE_MASK (orig_mode),
 			    GET_MODE (new_reg));
-	  new_set = gen_rtx_SET (VOIDmode, new_reg, new_const_int);
+	  new_set = gen_rtx_SET (new_reg, new_const_int);
 	}
     }
   else if (GET_MODE (orig_src) == VOIDmode)
@@ -410,7 +410,7 @@ combine_set_extension (ext_cand *cand, rtx_insn *curr_insn, rtx *orig_set)
       rtx simplified_temp_extension = simplify_rtx (temp_extension);
       if (simplified_temp_extension)
         temp_extension = simplified_temp_extension;
-      new_set = gen_rtx_SET (VOIDmode, new_reg, temp_extension);
+      new_set = gen_rtx_SET (new_reg, temp_extension);
     }
   else if (GET_CODE (orig_src) == IF_THEN_ELSE)
     {
@@ -426,7 +426,7 @@ combine_set_extension (ext_cand *cand, rtx_insn *curr_insn, rtx *orig_set)
       rtx simplified_temp_extension = simplify_rtx (temp_extension);
       if (simplified_temp_extension)
         temp_extension = simplified_temp_extension;
-      new_set = gen_rtx_SET (VOIDmode, new_reg, temp_extension);
+      new_set = gen_rtx_SET (new_reg, temp_extension);
     }
 
   /* This change is a part of a group of changes.  Hence,
@@ -481,7 +481,7 @@ transform_ifelse (ext_cand *cand, rtx_insn *def_insn)
   map_srcreg2 = gen_rtx_REG (cand->mode, REGNO (srcreg2));
   map_dstreg = gen_rtx_REG (cand->mode, REGNO (dstreg));
   ifexpr = gen_rtx_IF_THEN_ELSE (cand->mode, cond, map_srcreg, map_srcreg2);
-  new_set = gen_rtx_SET (VOIDmode, map_dstreg, ifexpr);
+  new_set = gen_rtx_SET (map_dstreg, ifexpr);
 
   if (validate_change (def_insn, &PATTERN (def_insn), new_set, true)
       && update_reg_equal_equiv_notes (def_insn, cand->mode, GET_MODE (dstreg),
@@ -1232,7 +1232,7 @@ find_and_remove_re (void)
 				 REGNO (XEXP (SET_SRC (pat), 0)));
       rtx new_src = gen_rtx_REG (GET_MODE (SET_DEST (sub_rtx)),
 				 REGNO (SET_DEST (pat)));
-      rtx set = gen_rtx_SET (VOIDmode, new_dst, new_src);
+      rtx set = gen_rtx_SET (new_dst, new_src);
       emit_insn_after (set, def_insn);
     }
 

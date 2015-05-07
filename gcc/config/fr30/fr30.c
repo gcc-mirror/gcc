@@ -945,13 +945,12 @@ fr30_move_double (rtx * operands)
 	  /* We normally copy the low-numbered register first.  However, if
 	     the first register of operand 0 is the same as the second register
 	     of operand 1, we must copy in the opposite order.  */
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  operand_subword (dest, reverse, TRUE, mode),
+	  emit_insn (gen_rtx_SET (operand_subword (dest, reverse, TRUE, mode),
 				  operand_subword (src,  reverse, TRUE, mode)));
 	  
-	  emit_insn (gen_rtx_SET (VOIDmode,
-			      operand_subword (dest, !reverse, TRUE, mode),
-			      operand_subword (src,  !reverse, TRUE, mode)));
+	  emit_insn
+	    (gen_rtx_SET (operand_subword (dest, !reverse, TRUE, mode),
+			  operand_subword (src,  !reverse, TRUE, mode)));
 	}
       else if (src_code == MEM)
 	{
@@ -963,28 +962,24 @@ fr30_move_double (rtx * operands)
 	  gcc_assert (GET_CODE (addr) == REG);
 	  
 	  /* Copy the address before clobbering it.  See PR 34174.  */
-	  emit_insn (gen_rtx_SET (SImode, dest1, addr));
-	  emit_insn (gen_rtx_SET (VOIDmode, dest0,
-				  adjust_address (src, SImode, 0)));
-	  emit_insn (gen_rtx_SET (SImode, dest1,
-				  plus_constant (SImode, dest1,
-						 UNITS_PER_WORD)));
+	  emit_insn (gen_rtx_SET (dest1, addr));
+	  emit_insn (gen_rtx_SET (dest0, adjust_address (src, SImode, 0)));
+	  emit_insn (gen_rtx_SET (dest1, plus_constant (SImode, dest1,
+							UNITS_PER_WORD)));
 
 	  new_mem = gen_rtx_MEM (SImode, dest1);
 	  MEM_COPY_ATTRIBUTES (new_mem, src);
 	      
-	  emit_insn (gen_rtx_SET (VOIDmode, dest1, new_mem));
+	  emit_insn (gen_rtx_SET (dest1, new_mem));
 	}
       else if (src_code == CONST_INT || src_code == CONST_DOUBLE)
 	{
 	  rtx words[2];
 	  split_double (src, &words[0], &words[1]);
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  operand_subword (dest, 0, TRUE, mode),
+	  emit_insn (gen_rtx_SET (operand_subword (dest, 0, TRUE, mode),
 				  words[0]));
       
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  operand_subword (dest, 1, TRUE, mode),
+	  emit_insn (gen_rtx_SET (operand_subword (dest, 1, TRUE, mode),
 				  words[1]));
 	}
     }
@@ -1003,8 +998,7 @@ fr30_move_double (rtx * operands)
 
       if (REGNO (addr) == STACK_POINTER_REGNUM
 	  || REGNO (addr) == FRAME_POINTER_REGNUM)
-	emit_insn (gen_rtx_SET (VOIDmode,
-				adjust_address (dest, SImode, UNITS_PER_WORD),
+	emit_insn (gen_rtx_SET (adjust_address (dest, SImode, UNITS_PER_WORD),
 				src1));
       else
 	{

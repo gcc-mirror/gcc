@@ -1583,7 +1583,7 @@ gen_compare_reg (rtx comparison, machine_mode omode)
       }
 
       if (mode != CC_FPXmode)
-	emit_insn (gen_rtx_SET (VOIDmode, cc_reg,
+	emit_insn (gen_rtx_SET (cc_reg,
 				gen_rtx_COMPARE (mode,
 						 gen_rtx_REG (CC_FPXmode, 61),
 						 const0_rtx)));
@@ -1620,8 +1620,7 @@ gen_compare_reg (rtx comparison, machine_mode omode)
       emit_insn (gen_cmp_float (cc_reg, gen_rtx_COMPARE (mode, op0, op1)));
     }
   else
-    emit_insn (gen_rtx_SET (omode, cc_reg,
-			    gen_rtx_COMPARE (mode, x, y)));
+    emit_insn (gen_rtx_SET (cc_reg, gen_rtx_COMPARE (mode, x, y)));
   return gen_rtx_fmt_ee (code, omode, cc_reg, const0_rtx);
 }
 
@@ -1777,7 +1776,7 @@ frame_insn (rtx x)
 static rtx
 frame_move (rtx dst, rtx src)
 {
-  return frame_insn (gen_rtx_SET (VOIDmode, dst, src));
+  return frame_insn (gen_rtx_SET (dst, src));
 }
 
 /* Like frame_move, but add a REG_INC note for REG if ADDR contains an
@@ -2191,9 +2190,9 @@ arc_save_restore (rtx base_reg,
 		= gen_frame_mem (SImode, plus_constant (Pmode, base_reg, off));
 
 	      if (epilogue_p)
-		XVECEXP (insn, 0, i) = gen_rtx_SET (VOIDmode, reg, mem);
+		XVECEXP (insn, 0, i) = gen_rtx_SET (reg, mem);
 	      else
-		XVECEXP (insn, 0, i) = gen_rtx_SET (VOIDmode, mem, reg);
+		XVECEXP (insn, 0, i) = gen_rtx_SET (mem, reg);
 	      gmask = gmask & ~(1L << r);
 	    }
 	  if (epilogue_p == 2)
@@ -2235,10 +2234,10 @@ arc_save_restore (rtx base_reg,
     {
       rtx r12 = gen_rtx_REG (Pmode, 12);
 
-      frame_insn (gen_rtx_SET (VOIDmode, r12, GEN_INT (offset)));
+      frame_insn (gen_rtx_SET (r12, GEN_INT (offset)));
       XVECEXP (sibthunk_insn, 0, 0) = ret_rtx;
       XVECEXP (sibthunk_insn, 0, 1)
-	= gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+	= gen_rtx_SET (stack_pointer_rtx,
 		       gen_rtx_PLUS (Pmode, stack_pointer_rtx, r12));
       sibthunk_insn = emit_jump_insn (sibthunk_insn);
       RTX_FRAME_RELATED_P (sibthunk_insn) = 1;
@@ -2550,7 +2549,7 @@ arc_finalize_pic (void)
   pat = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, pat), ARC_UNSPEC_GOT);
   pat = gen_rtx_CONST (Pmode, pat);
 
-  pat = gen_rtx_SET (VOIDmode, baseptr_rtx, pat);
+  pat = gen_rtx_SET (baseptr_rtx, pat);
 
   emit_insn (pat);
 }
@@ -5939,8 +5938,7 @@ arc_reorg (void)
 	      if (next_active_insn (top_label) == insn)
 		{
 		  rtx lc_set
-		    = gen_rtx_SET (VOIDmode,
-				   XEXP (XVECEXP (PATTERN (lp), 0, 3), 0),
+		    = gen_rtx_SET (XEXP (XVECEXP (PATTERN (lp), 0, 3), 0),
 				   const0_rtx);
 
 		  rtx_insn *lc_set_insn = emit_insn_before (lc_set, insn);
@@ -6204,7 +6202,7 @@ arc_reorg (void)
 
 		  brcc_insn
 		    = gen_rtx_IF_THEN_ELSE (VOIDmode, op, label, pc_rtx);
-		  brcc_insn = gen_rtx_SET (VOIDmode, pc_rtx, brcc_insn);
+		  brcc_insn = gen_rtx_SET (pc_rtx, brcc_insn);
 		  cc_clob_rtx = gen_rtx_CLOBBER (VOIDmode, cc_clob_rtx);
 		  brcc_insn
 		    = gen_rtx_PARALLEL
@@ -7614,7 +7612,7 @@ prepare_move_operands (rtx *operands, machine_mode mode)
 	     variables.  */
 	  operands[1] = arc_rewrite_small_data (operands[1]);
 
-	  emit_insn (gen_rtx_SET (mode, operands[0],operands[1]));
+	  emit_insn (gen_rtx_SET (operands[0],operands[1]));
 	  /* ??? This note is useless, since it only restates the set itself.
 	     We should rather use the original SYMBOL_REF.  However, there is
 	     the problem that we are lying to the compiler about these
@@ -7686,7 +7684,7 @@ prepare_extend_operands (rtx *operands, enum rtx_code code,
 	 variables.  */
       operands[1]
 	= gen_rtx_fmt_e (code, omode, arc_rewrite_small_data (operands[1]));
-      emit_insn (gen_rtx_SET (omode, operands[0], operands[1]));
+      emit_insn (gen_rtx_SET (operands[0], operands[1]));
       set_unique_reg_note (get_last_insn (), REG_EQUAL, operands[1]);
 
       /* Take care of the REG_EQUAL note that will be attached to mark the
@@ -8223,7 +8221,7 @@ conditionalize_nonjump (rtx pat, rtx cond, rtx insn, bool annulled)
 	      /* Leave add_n alone - the canonical form is to
 		 have the complex summand first.  */
 	      && REG_P (src0))
-	    pat = gen_rtx_SET (VOIDmode, dst,
+	    pat = gen_rtx_SET (dst,
 			       gen_rtx_fmt_ee (GET_CODE (src), GET_MODE (src),
 					       src1, src0));
 	}
@@ -8365,7 +8363,7 @@ arc_ifcvt (void)
 	  else if (JUMP_P (insn) && ANY_RETURN_P (PATTERN (insn)))
 	    {
 	      pat = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, pat, pc_rtx);
-	      pat = gen_rtx_SET (VOIDmode, pc_rtx, pat);
+	      pat = gen_rtx_SET (pc_rtx, pat);
 	    }
 	  else
 	    gcc_unreachable ();
@@ -8928,7 +8926,7 @@ arc_process_double_reg_moves (rtx *operands)
       if (TARGET_DPFP_DISABLE_LRSR)
 	{
 	  /* gen *movdf_insn_nolrsr */
-	  rtx set = gen_rtx_SET (VOIDmode, dest, src);
+	  rtx set = gen_rtx_SET (dest, src);
 	  rtx use1 = gen_rtx_USE (VOIDmode, const1_rtx);
 	  emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set, use1)));
 	}
@@ -8940,12 +8938,10 @@ arc_process_double_reg_moves (rtx *operands)
 	  rtx destLow  = simplify_gen_subreg(SImode, dest, DFmode, 0);
 
 	  /* Produce the two LR insns to get the high and low parts.  */
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  destHigh,
+	  emit_insn (gen_rtx_SET (destHigh,
 				  gen_rtx_UNSPEC_VOLATILE (Pmode, gen_rtvec (1, src),
 				  VUNSPEC_LR_HIGH)));
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  destLow,
+	  emit_insn (gen_rtx_SET (destLow,
 				  gen_rtx_UNSPEC_VOLATILE (Pmode, gen_rtvec (1, src),
 				  VUNSPEC_LR)));
 	}
@@ -9042,8 +9038,8 @@ arc_split_move (rtx *operands)
   operands[5-swap] = xop[3];
 
   start_sequence ();
-  emit_insn (gen_rtx_SET (VOIDmode, operands[2], operands[3]));
-  emit_insn (gen_rtx_SET (VOIDmode, operands[4], operands[5]));
+  emit_insn (gen_rtx_SET (operands[2], operands[3]));
+  emit_insn (gen_rtx_SET (operands[4], operands[5]));
   val = get_insns ();
   end_sequence ();
 

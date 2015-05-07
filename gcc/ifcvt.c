@@ -895,7 +895,7 @@ noce_emit_store_flag (struct noce_if_info *if_info, rtx x, int reversep,
     {
       rtx src = gen_rtx_fmt_ee (code, GET_MODE (x), XEXP (cond, 0),
 			    XEXP (cond, 1));
-      rtx set = gen_rtx_SET (VOIDmode, x, src);
+      rtx set = gen_rtx_SET (x, src);
 
       start_sequence ();
       rtx_insn *insn = emit_insn (set);
@@ -945,7 +945,7 @@ noce_emit_move_insn (rtx x, rtx y)
 	 otherwise construct a suitable SET pattern ourselves.  */
       insn = (OBJECT_P (y) || CONSTANT_P (y) || GET_CODE (y) == SUBREG)
 	     ? emit_move_insn (x, y)
-	     : emit_insn (gen_rtx_SET (VOIDmode, x, y));
+	     : emit_insn (gen_rtx_SET (x, y));
       seq = get_insns ();
       end_sequence ();
 
@@ -1477,7 +1477,7 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
       rtx cond = gen_rtx_fmt_ee (code, GET_MODE (if_info->cond), cmp_a, cmp_b);
       rtx if_then_else = gen_rtx_IF_THEN_ELSE (GET_MODE (x),
 					       cond, vtrue, vfalse);
-      rtx set = gen_rtx_SET (VOIDmode, x, if_then_else);
+      rtx set = gen_rtx_SET (x, if_then_else);
 
       start_sequence ();
       rtx_insn *insn = emit_insn (set);
@@ -1724,7 +1724,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
       if (is_mem)
 	{
 	  rtx reg = gen_reg_rtx (GET_MODE (a));
-	  insn = emit_insn (gen_rtx_SET (VOIDmode, reg, a));
+	  insn = emit_insn (gen_rtx_SET (reg, a));
 	}
       else if (! insn_a)
 	goto end_seq_and_fail;
@@ -1748,7 +1748,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
       if (is_mem)
 	{
           rtx reg = gen_reg_rtx (GET_MODE (b));
-	  pat = gen_rtx_SET (VOIDmode, reg, b);
+	  pat = gen_rtx_SET (reg, b);
 	}
       else if (! insn_b)
 	goto end_seq_and_fail;

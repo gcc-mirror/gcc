@@ -586,7 +586,7 @@ compute_can_copy (void)
 	can_copy[i] = 0;
 #else
 	reg = gen_rtx_REG ((machine_mode) i, LAST_VIRTUAL_REGISTER + 1);
-	insn = emit_insn (gen_rtx_SET (VOIDmode, reg, reg));
+	insn = emit_insn (gen_rtx_SET (reg, reg));
 	if (recog (PATTERN (insn), insn, NULL) >= 0)
 	  can_copy[i] = 1;
 #endif
@@ -884,8 +884,7 @@ can_assign_to_reg_without_clobbers_p (rtx x)
   if (test_insn == 0)
     {
       test_insn
-	= make_insn_raw (gen_rtx_SET (VOIDmode,
-				      gen_rtx_REG (word_mode,
+	= make_insn_raw (gen_rtx_SET (gen_rtx_REG (word_mode,
 						   FIRST_PSEUDO_REGISTER * 2),
 				      const0_rtx));
       SET_NEXT_INSN (test_insn) = SET_PREV_INSN (test_insn) = 0;
@@ -1288,7 +1287,7 @@ hash_scan_set (rtx set, rtx_insn *insn, struct gcse_hash_table_d *table)
 	  && REG_NOTE_KIND (note) == REG_EQUAL
 	  && !REG_P (src)
 	  && want_to_gcse_p (XEXP (note, 0), NULL))
-	src = XEXP (note, 0), set = gen_rtx_SET (VOIDmode, dest, src);
+	src = XEXP (note, 0), set = gen_rtx_SET (dest, src);
 
       /* Only record sets of pseudo-regs in the hash table.  */
       if (regno >= FIRST_PSEUDO_REGISTER
@@ -2008,7 +2007,7 @@ process_insert_insn (struct gcse_expr *expr)
      insn will be recognized (this also adds any needed CLOBBERs).  */
   else
     {
-      rtx_insn *insn = emit_insn (gen_rtx_SET (VOIDmode, reg, exp));
+      rtx_insn *insn = emit_insn (gen_rtx_SET (reg, exp));
 
       if (insn_invalid_p (insn, false))
 	gcc_unreachable ();

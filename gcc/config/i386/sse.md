@@ -1146,7 +1146,7 @@
 	src = gen_rtx_VEC_MERGE (<MODE>mode, operands[1],
 				 operands[2 * <mask_applied>],
 				 operands[3 * <mask_applied>]);
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0], src));
+      emit_insn (gen_rtx_SET (operands[0], src));
       DONE;
     }
 })
@@ -1291,7 +1291,7 @@
 	src = gen_rtx_VEC_MERGE (<MODE>mode, operands[1],
 				 operands[2 * <mask_applied>],
 				 operands[3 * <mask_applied>]);
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0], src));
+      emit_insn (gen_rtx_SET (operands[0], src));
       DONE;
     }
 })
@@ -1310,7 +1310,7 @@
 	src = gen_rtx_VEC_MERGE (<MODE>mode, operands[1],
 				 operands[2 * <mask_applied>],
 				 operands[3 * <mask_applied>]);
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0], src));
+      emit_insn (gen_rtx_SET (operands[0], src));
       DONE;
     }
 })
@@ -1329,7 +1329,7 @@
 	src = gen_rtx_VEC_MERGE (<MODE>mode, operands[1],
 				 operands[2 * <mask_applied>],
 				 operands[3 * <mask_applied>]);
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0], src));
+      emit_insn (gen_rtx_SET (operands[0], src));
       DONE;
     }
 })
@@ -1621,7 +1621,7 @@
 
   absneg_op = GET_CODE (operands[3]) == NEG ? XOR : AND;
   t = gen_rtx_fmt_ee (absneg_op, <MODE>mode, op1, op2);
-  t = gen_rtx_SET (VOIDmode, operands[0], t);
+  t = gen_rtx_SET (operands[0], t);
   emit_insn (t);
   DONE;
 }
@@ -5159,7 +5159,7 @@
   rtx tmp = gen_reg_rtx (<sseunpackmode>mode);
 
   emit_insn (gen_vec_unpacks_hi_<mode> (tmp, operands[1]));
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+  emit_insn (gen_rtx_SET (operands[0],
 			  gen_rtx_FLOAT (<sseunpackfltmode>mode, tmp)));
   DONE;
 })
@@ -5172,7 +5172,7 @@
   rtx tmp = gen_reg_rtx (<sseunpackmode>mode);
 
   emit_insn (gen_vec_unpacks_lo_<mode> (tmp, operands[1]));
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+  emit_insn (gen_rtx_SET (operands[0],
 			  gen_rtx_FLOAT (<sseunpackfltmode>mode, tmp)));
   DONE;
 })
@@ -5185,7 +5185,7 @@
   rtx tmp = gen_reg_rtx (<sseunpackmode>mode);
 
   emit_insn (gen_vec_unpacku_hi_<mode> (tmp, operands[1]));
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+  emit_insn (gen_rtx_SET (operands[0],
 			  gen_rtx_FLOAT (<sseunpackfltmode>mode, tmp)));
   DONE;
 })
@@ -5198,7 +5198,7 @@
   rtx tmp = gen_reg_rtx (<sseunpackmode>mode);
 
   emit_insn (gen_vec_unpacku_lo_<mode> (tmp, operands[1]));
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+  emit_insn (gen_rtx_SET (operands[0],
 			  gen_rtx_FLOAT (<sseunpackfltmode>mode, tmp)));
   DONE;
 })
@@ -5356,8 +5356,7 @@
     tmp[i] = gen_reg_rtx (V4DFmode);
   emit_insn (gen_vec_extract_hi_v8si (tmp[5], operands[1]));
   emit_insn (gen_floatv4siv4df2 (tmp[2], tmp[5]));
-  emit_insn (gen_rtx_SET (VOIDmode, tmp[3],
-			  gen_rtx_LT (V4DFmode, tmp[2], tmp[0])));
+  emit_insn (gen_rtx_SET (tmp[3], gen_rtx_LT (V4DFmode, tmp[2], tmp[0])));
   emit_insn (gen_andv4df3 (tmp[4], tmp[3], tmp[1]));
   emit_insn (gen_addv4df3 (operands[0], tmp[2], tmp[4]));
   DONE;
@@ -5382,8 +5381,7 @@
 
   emit_insn (gen_vec_extract_hi_v16si (tmp[3], operands[1]));
   emit_insn (gen_floatv8siv8df2 (tmp[2], tmp[3]));
-  emit_insn (gen_rtx_SET (VOIDmode, k,
-			  gen_rtx_LT (QImode, tmp[2], tmp[0])));
+  emit_insn (gen_rtx_SET (k, gen_rtx_LT (QImode, tmp[2], tmp[0])));
   emit_insn (gen_addv8df3_mask (tmp[2], tmp[2], tmp[1], tmp[2], k));
   emit_move_insn (operands[0], tmp[2]);
   DONE;
@@ -5407,8 +5405,7 @@
   for (i = 2; i < 5; i++)
     tmp[i] = gen_reg_rtx (V4DFmode);
   emit_insn (gen_avx_cvtdq2pd256_2 (tmp[2], operands[1]));
-  emit_insn (gen_rtx_SET (VOIDmode, tmp[3],
-			  gen_rtx_LT (V4DFmode, tmp[2], tmp[0])));
+  emit_insn (gen_rtx_SET (tmp[3], gen_rtx_LT (V4DFmode, tmp[2], tmp[0])));
   emit_insn (gen_andv4df3 (tmp[4], tmp[3], tmp[1]));
   emit_insn (gen_addv4df3 (operands[0], tmp[2], tmp[4]));
   DONE;
@@ -5431,8 +5428,7 @@
   k = gen_reg_rtx (QImode);
 
   emit_insn (gen_avx512f_cvtdq2pd512_2 (tmp[2], operands[1]));
-  emit_insn (gen_rtx_SET (VOIDmode, k,
-			  gen_rtx_LT (QImode, tmp[2], tmp[0])));
+  emit_insn (gen_rtx_SET (k, gen_rtx_LT (QImode, tmp[2], tmp[0])));
   emit_insn (gen_addv8df3_mask (tmp[2], tmp[2], tmp[1], tmp[2], k));
   emit_move_insn (operands[0], tmp[2]);
   DONE;
@@ -9876,7 +9872,7 @@
 {
   rtx t = gen_reg_rtx (<sseunpackmode>mode);
   emit_insn (gen_<sse2_avx2>_pmaddwd<SDOT_PMADD_SUF> (t, operands[1], operands[2]));
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+  emit_insn (gen_rtx_SET (operands[0],
 			  gen_rtx_PLUS (<sseunpackmode>mode,
 					operands[3], t)));
   DONE;
@@ -16488,8 +16484,7 @@
 
   for (regno = 0; regno < nregs; regno++)
     XVECEXP (operands[0], 0, regno + 1)
-      = gen_rtx_SET (VOIDmode,
-		     gen_rtx_REG (V8SImode, SSE_REGNO (regno)),
+      = gen_rtx_SET (gen_rtx_REG (V8SImode, SSE_REGNO (regno)),
 		     CONST0_RTX (V8SImode));
 })
 
@@ -17422,7 +17417,7 @@
 			       operands[1], operands[2]);
       t1 = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (nelt, perm));
       t2 = gen_rtx_VEC_SELECT (<MODE>mode, t2, t1);
-      t2 = gen_rtx_SET (VOIDmode, operands[0], t2);
+      t2 = gen_rtx_SET (operands[0], t2);
       emit_insn (t2);
       DONE;
     }

@@ -2194,14 +2194,13 @@
    && GP_REGNUM_P (REGNO (operands[1]))"
   [(const_int 0)]
   {
-    emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+    emit_insn (gen_rtx_SET (operands[0],
 			    gen_rtx_XOR (DImode,
 					 gen_rtx_ASHIFTRT (DImode,
 							   operands[1],
 							   GEN_INT (63)),
 					 operands[1])));
-    emit_insn (gen_rtx_SET (VOIDmode,
-			    operands[0],
+    emit_insn (gen_rtx_SET (operands[0],
 			    gen_rtx_MINUS (DImode,
 					   operands[0],
 					   gen_rtx_ASHIFTRT (DImode,
@@ -2633,7 +2632,7 @@
          (match_operand 3 "const0_operand")]))]
   ""
 "{
-  emit_insn (gen_rtx_SET (SImode, operands[0], operands[1]));
+  emit_insn (gen_rtx_SET (operands[0], operands[1]));
   DONE;
 }")
 
@@ -4487,7 +4486,7 @@
   cc_reg = SET_DEST (cmp);
   bcomp = gen_rtx_NE (VOIDmode, cc_reg, const0_rtx);
   loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands [1]);
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
+  emit_jump_insn (gen_rtx_SET (pc_rtx,
 			       gen_rtx_IF_THEN_ELSE (VOIDmode, bcomp,
 						     loc_ref, pc_rtx)));
   DONE;

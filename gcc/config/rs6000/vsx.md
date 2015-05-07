@@ -2017,7 +2017,7 @@
     }
 
   x = gen_rtx_VEC_SELECT (<MODE>mode, x, gen_rtx_PARALLEL (VOIDmode, v));
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], x));
+  emit_insn (gen_rtx_SET (operands[0], x));
   DONE;
 })
 
@@ -2043,7 +2043,7 @@
     }
 
   x = gen_rtx_VEC_SELECT (<MODE>mode, x, gen_rtx_PARALLEL (VOIDmode, v));
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], x));
+  emit_insn (gen_rtx_SET (operands[0], x));
   DONE;
 })
 

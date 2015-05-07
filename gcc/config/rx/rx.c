@@ -1633,14 +1633,13 @@ gen_rx_store_vector (unsigned int low, unsigned int high)
   vector = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count));
 
   XVECEXP (vector, 0, 0) =
-    gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+    gen_rtx_SET (stack_pointer_rtx,
 		 gen_rtx_MINUS (SImode, stack_pointer_rtx,
 				GEN_INT ((count - 1) * UNITS_PER_WORD)));
 
   for (i = 0; i < count - 1; i++)
     XVECEXP (vector, 0, i + 1) =
-      gen_rtx_SET (VOIDmode,
-		   gen_rtx_MEM (SImode,
+      gen_rtx_SET (gen_rtx_MEM (SImode,
 				gen_rtx_MINUS (SImode, stack_pointer_rtx,
 					       GEN_INT ((i + 1) * UNITS_PER_WORD))),
 		   gen_rtx_REG (SImode, high - i));
@@ -1708,8 +1707,7 @@ gen_safe_add (rtx dest, rtx src, rtx val, bool is_frame_related)
 	   as the dwarf2out code cannot be expected to grok
 	   our unspec.  */
 	add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-		      gen_rtx_SET (SImode, dest,
-				   gen_rtx_PLUS (SImode, src, val)));
+		      gen_rtx_SET (dest, gen_rtx_PLUS (SImode, src, val)));
       return;
     }
 
@@ -1966,13 +1964,12 @@ gen_rx_rtsd_vector (unsigned int adjust, unsigned int low, unsigned int high)
   vector = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count));
 
   XVECEXP (vector, 0, 0) =
-    gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+    gen_rtx_SET (stack_pointer_rtx,
 		 plus_constant (Pmode, stack_pointer_rtx, adjust));
 
   for (i = 0; i < count - 2; i++)
     XVECEXP (vector, 0, i + 1) =
-      gen_rtx_SET (VOIDmode,
-		   gen_rtx_REG (SImode, low + i),
+      gen_rtx_SET (gen_rtx_REG (SImode, low + i),
 		   gen_rtx_MEM (SImode,
 				i == 0 ? stack_pointer_rtx
 				: plus_constant (Pmode, stack_pointer_rtx,
@@ -1995,14 +1992,13 @@ gen_rx_popm_vector (unsigned int low, unsigned int high)
   vector = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count));
 
   XVECEXP (vector, 0, 0) =
-    gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+    gen_rtx_SET (stack_pointer_rtx,
 		 plus_constant (Pmode, stack_pointer_rtx,
 				(count - 1) * UNITS_PER_WORD));
 
   for (i = 0; i < count - 1; i++)
     XVECEXP (vector, 0, i + 1) =
-      gen_rtx_SET (VOIDmode,
-		   gen_rtx_REG (SImode, low + i),
+      gen_rtx_SET (gen_rtx_REG (SImode, low + i),
 		   gen_rtx_MEM (SImode,
 				i == 0 ? stack_pointer_rtx
 				: plus_constant (Pmode, stack_pointer_rtx,
@@ -3188,12 +3184,12 @@ rx_split_cbranch (machine_mode cc_mode, enum rtx_code cmp1,
 
   flags = gen_rtx_REG (cc_mode, CC_REG);
   x = gen_rtx_COMPARE (cc_mode, c1, c2);
-  x = gen_rtx_SET (VOIDmode, flags, x);
+  x = gen_rtx_SET (flags, x);
   emit_insn (x);
 
   x = gen_rtx_fmt_ee (cmp1, VOIDmode, flags, const0_rtx);
   x = gen_rtx_IF_THEN_ELSE (VOIDmode, x, label, pc_rtx);
-  x = gen_rtx_SET (VOIDmode, pc_rtx, x);
+  x = gen_rtx_SET (pc_rtx, x);
   emit_jump_insn (x);
 }
 

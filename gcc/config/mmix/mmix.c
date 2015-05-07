@@ -2102,8 +2102,7 @@ mmix_expand_prologue (void)
 			     tmpreg);
       RTX_FRAME_RELATED_P (insn) = 1;
       add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-		    gen_rtx_SET (VOIDmode,
-				 gen_rtx_MEM (DImode,
+		    gen_rtx_SET (gen_rtx_MEM (DImode,
 					      plus_constant (Pmode,
 							     stack_pointer_rtx,
 							     offset)),

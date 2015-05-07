@@ -1293,8 +1293,7 @@ c6x_expand_call (rtx retval, rtx address, bool sibcall)
       if (retval == NULL_RTX)
 	call_insn = emit_call_insn (call_insn);
       else
-	call_insn = emit_call_insn (gen_rtx_SET (GET_MODE (retval), retval,
-						 call_insn));
+	call_insn = emit_call_insn (gen_rtx_SET (retval, call_insn));
     }
   if (flag_pic)
     use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), pic_offset_table_rtx);
@@ -1493,20 +1492,20 @@ c6x_expand_compare (rtx comparison, machine_mode mode)
 
       cmp1 = gen_reg_rtx (SImode);
       cmp2 = gen_reg_rtx (SImode);
-      emit_insn (gen_rtx_SET (VOIDmode, cmp1,
-			      gen_rtx_fmt_ee (code, SImode, high[0], high[1])));
+      emit_insn (gen_rtx_SET (cmp1, gen_rtx_fmt_ee (code, SImode,
+						    high[0], high[1])));
       if (code == EQ)
 	{
 	  if (c6x_force_op_for_comparison_p (code, lo[1]))
 	    lo[1] = force_reg (SImode, lo[1]);
-	  emit_insn (gen_rtx_SET (VOIDmode, cmp2,
-				  gen_rtx_fmt_ee (code, SImode, lo[0], lo[1])));
+	  emit_insn (gen_rtx_SET (cmp2, gen_rtx_fmt_ee (code, SImode,
+							lo[0], lo[1])));
 	  emit_insn (gen_andsi3 (cmp1, cmp1, cmp2));
 	}
       else
 	{
-	  emit_insn (gen_rtx_SET (VOIDmode, cmp2,
-				  gen_rtx_EQ (SImode, high[0], high[1])));
+	  emit_insn (gen_rtx_SET (cmp2, gen_rtx_EQ (SImode, high[0],
+						    high[1])));
 	  if (code == GT)
 	    code = GTU;
 	  else if (code == LT)
@@ -1564,8 +1563,7 @@ c6x_expand_compare (rtx comparison, machine_mode mode)
 	}
 
       cmp = gen_reg_rtx (SImode);
-      emit_insn (gen_rtx_SET (VOIDmode, cmp,
-			      gen_rtx_fmt_ee (code1, SImode, op0, op1)));
+      emit_insn (gen_rtx_SET (cmp, gen_rtx_fmt_ee (code1, SImode, op0, op1)));
       fn = op_mode == DFmode ? gen_cmpdf_ior : gen_cmpsf_ior;
       emit_insn (fn (cmp, gen_rtx_fmt_ee (code2, SImode, op0, op1),
 		     op0, op1, cmp));
@@ -1641,8 +1639,8 @@ c6x_expand_compare (rtx comparison, machine_mode mode)
 	  cmp = gen_reg_rtx (SImode);
 	  if (c6x_force_op_for_comparison_p (code, op1))
 	    op1 = force_reg (SImode, op1);
-	  emit_insn (gen_rtx_SET (VOIDmode, cmp,
-				  gen_rtx_fmt_ee (code, SImode, op0, op1)));
+	  emit_insn (gen_rtx_SET (cmp, gen_rtx_fmt_ee (code, SImode,
+						       op0, op1)));
 	}
     }
 
@@ -2775,7 +2773,7 @@ emit_add_sp_const (HOST_WIDE_INT offset, bool frame_related_p)
     {
       if (REG_P (to_add))
 	add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-		      gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+		      gen_rtx_SET (stack_pointer_rtx,
 				   gen_rtx_PLUS (Pmode, stack_pointer_rtx,
 						 orig_to_add)));
 
@@ -5398,7 +5396,7 @@ undo_split_delayed_nonbranch (rtx_insn *insn)
 		   && type == TYPE_LOAD_SHADOW)
 		  || (XINT (prev_pat, 1) == UNSPEC_REAL_MULT
 		      && type == TYPE_MULT_SHADOW)));
-  insn_pat = gen_rtx_SET (VOIDmode, SET_DEST (insn_pat),
+  insn_pat = gen_rtx_SET (SET_DEST (insn_pat),
 			  XVECEXP (prev_pat, 0, 1));
   insn_pat = duplicate_cond (insn_pat, prev);
   PATTERN (insn) = insn_pat;

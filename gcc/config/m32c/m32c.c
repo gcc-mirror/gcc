@@ -1215,8 +1215,7 @@ m32c_pushm_popm (Push_Pop_Type ppt)
 	    addr = gen_rtx_PLUS (GET_MODE (addr), addr, GEN_INT (byte_count));
 
 	  dwarf_set[n_dwarfs++] =
-	    gen_rtx_SET (VOIDmode,
-			 gen_rtx_MEM (mode, addr),
+	    gen_rtx_SET (gen_rtx_MEM (mode, addr),
 			 gen_rtx_REG (mode, pushm_info[i].reg1));
 	  F (dwarf_set[n_dwarfs - 1]);
 
@@ -1247,8 +1246,7 @@ m32c_pushm_popm (Push_Pop_Type ppt)
       if (reg_mask)
 	{
 	  XVECEXP (note, 0, 0)
-	    = gen_rtx_SET (VOIDmode,
-			   stack_pointer_rtx,
+	    = gen_rtx_SET (stack_pointer_rtx,
 			   gen_rtx_PLUS (GET_MODE (stack_pointer_rtx),
 					 stack_pointer_rtx,
 					 GEN_INT (-byte_count)));
@@ -1885,7 +1883,7 @@ m32c_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       /* reload FB to A_REGS */
       rtx temp = gen_reg_rtx (Pmode);
       x = copy_rtx (x);
-      emit_insn (gen_rtx_SET (VOIDmode, temp, XEXP (x, 0)));
+      emit_insn (gen_rtx_SET (temp, XEXP (x, 0)));
       XEXP (x, 0) = temp;
     }
 
@@ -3380,7 +3378,7 @@ m32c_prepare_move (rtx * operands, machine_mode mode)
       rtx dest_reg = XEXP (pmv, 0);
       rtx dest_mod = XEXP (pmv, 1);
 
-      emit_insn (gen_rtx_SET (Pmode, dest_reg, dest_mod));
+      emit_insn (gen_rtx_SET (dest_reg, dest_mod));
       operands[0] = gen_rtx_MEM (mode, dest_reg);
     }
   if (can_create_pseudo_p () && MEM_P (operands[0]) && MEM_P (operands[1]))

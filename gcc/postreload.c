@@ -1822,8 +1822,7 @@ move2add_use_add2_insn (rtx reg, rtx sym, rtx off, rtx_insn *insn)
 		  rtx narrow_src = gen_int_mode (INTVAL (off),
 						 narrow_mode);
 		  rtx new_set
-		    = gen_rtx_SET (VOIDmode,
-				   gen_rtx_STRICT_LOW_PART (VOIDmode,
+		    = gen_rtx_SET (gen_rtx_STRICT_LOW_PART (VOIDmode,
 							    narrow_reg),
 				   narrow_src);
 		  get_full_set_rtx_cost (new_set, &newcst);
@@ -2051,7 +2050,7 @@ reload_cse_move2add (rtx_insn *first)
 			  if (costs_lt_p (&newcst, &oldcst, speed)
 			      && have_add2_insn (reg, new_src))
 			    {
-			      rtx newpat = gen_rtx_SET (VOIDmode, reg, tem);
+			      rtx newpat = gen_rtx_SET (reg, tem);
 			      success
 				= validate_change (next, &PATTERN (next),
 						   newpat, 0);
@@ -2150,7 +2149,7 @@ reload_cse_move2add (rtx_insn *first)
 	      && CONST_INT_P (XEXP (cnd, 1)))
 	    {
 	      rtx implicit_set =
-		gen_rtx_SET (VOIDmode, XEXP (cnd, 0), XEXP (cnd, 1));
+		gen_rtx_SET (XEXP (cnd, 0), XEXP (cnd, 1));
 	      move2add_note_store (SET_DEST (implicit_set), implicit_set, insn);
 	    }
 	}

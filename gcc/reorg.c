@@ -2788,8 +2788,7 @@ fill_slots_from_thread (rtx_insn *insn, rtx condition, rtx thread_or_return,
 	    new_arith = gen_rtx_fmt_ee (GET_CODE (src) == PLUS ? MINUS : PLUS,
 					GET_MODE (src), dest, other);
 
-	  ninsn = emit_insn_after (gen_rtx_SET (VOIDmode, dest, new_arith),
-				   insn);
+	  ninsn = emit_insn_after (gen_rtx_SET (dest, new_arith), insn);
 
 	  if (recog_memoized (ninsn) < 0
 	      || (extract_insn (ninsn),

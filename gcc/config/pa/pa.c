@@ -806,7 +806,7 @@ legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 	 So instead we just emit the raw set, which avoids the movXX
 	 expanders completely.  */
       mark_reg_pointer (reg, BITS_PER_UNIT);
-      insn = emit_insn (gen_rtx_SET (VOIDmode, reg, orig));
+      insn = emit_insn (gen_rtx_SET (reg, orig));
 
       /* Put a REG_EQUAL note on this insn, so that it can be optimized.  */
       add_reg_note (insn, REG_EQUAL, orig);
@@ -1699,7 +1699,7 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 	}
       else
 	emit_move_insn (scratch_reg, XEXP (operand1, 0));
-      emit_insn (gen_rtx_SET (VOIDmode, operand0,
+      emit_insn (gen_rtx_SET (operand0,
 			      replace_equiv_address (operand1, scratch_reg)));
       return 1;
     }
@@ -1735,8 +1735,7 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 	}
       else
 	emit_move_insn (scratch_reg, XEXP (operand0, 0));
-      emit_insn (gen_rtx_SET (VOIDmode,
-			      replace_equiv_address (operand0, scratch_reg),
+      emit_insn (gen_rtx_SET (replace_equiv_address (operand0, scratch_reg),
 			      operand1));
       return 1;
     }
@@ -1753,7 +1752,7 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 
       if (operand1 == CONST0_RTX (mode))
 	{
-	  emit_insn (gen_rtx_SET (VOIDmode, operand0, operand1));
+	  emit_insn (gen_rtx_SET (operand0, operand1));
 	  return 1;
 	}
 
@@ -1770,7 +1769,7 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
       pa_emit_move_sequence (xoperands, Pmode, 0);
 
       /* Now load the destination register.  */
-      emit_insn (gen_rtx_SET (mode, operand0,
+      emit_insn (gen_rtx_SET (operand0,
 			      replace_equiv_address (const_mem, scratch_reg)));
       return 1;
     }
@@ -1892,7 +1891,7 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 		}
 	    }
 
-	  emit_insn (gen_rtx_SET (VOIDmode, operand0, operand1));
+	  emit_insn (gen_rtx_SET (operand0, operand1));
 	  return 1;
 	}
     }
@@ -1903,14 +1902,14 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 	{
 	  rtx temp = gen_reg_rtx (DFmode);
 
-	  emit_insn (gen_rtx_SET (VOIDmode, temp, operand1));
-	  emit_insn (gen_rtx_SET (VOIDmode, operand0, temp));
+	  emit_insn (gen_rtx_SET (temp, operand1));
+	  emit_insn (gen_rtx_SET (operand0, temp));
 	  return 1;
 	}
       if (register_operand (operand1, mode) || operand1 == CONST0_RTX (mode))
 	{
 	  /* Run this case quickly.  */
-	  emit_insn (gen_rtx_SET (VOIDmode, operand0, operand1));
+	  emit_insn (gen_rtx_SET (operand0, operand1));
 	  return 1;
 	}
       if (! (reload_in_progress || reload_completed))
@@ -2077,15 +2076,12 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 		mark_reg_pointer (temp, BITS_PER_UNIT);
 
 	      if (ishighonly)
-		set = gen_rtx_SET (mode, operand0, temp);
+		set = gen_rtx_SET (operand0, temp);
 	      else
-		set = gen_rtx_SET (VOIDmode,
-				   operand0,
+		set = gen_rtx_SET (operand0,
 				   gen_rtx_LO_SUM (mode, temp, operand1));
 
-	      emit_insn (gen_rtx_SET (VOIDmode,
-				      temp,
-				      gen_rtx_HIGH (mode, operand1)));
+	      emit_insn (gen_rtx_SET (temp, gen_rtx_HIGH (mode, operand1)));
 	      emit_insn (set);
 
 	    }
@@ -2181,13 +2177,12 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 
 	      low = value - high;
 
-	      emit_insn (gen_rtx_SET (VOIDmode, temp, GEN_INT (high)));
+	      emit_insn (gen_rtx_SET (temp, GEN_INT (high)));
 	      operands[1] = gen_rtx_PLUS (mode, temp, GEN_INT (low));
 	    }
 	  else
 	    {
-	      emit_insn (gen_rtx_SET (VOIDmode, temp,
-				      gen_rtx_HIGH (mode, operand1)));
+	      emit_insn (gen_rtx_SET (temp, gen_rtx_HIGH (mode, operand1)));
 	      operands[1] = gen_rtx_LO_SUM (mode, temp, operand1);
 	    }
 
@@ -2209,7 +2204,7 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 		{
 		  operand1 = GEN_INT (insv);
 
-		  emit_insn (gen_rtx_SET (VOIDmode, temp,
+		  emit_insn (gen_rtx_SET (temp,
 					  gen_rtx_HIGH (mode, operand1)));
 		  emit_move_insn (temp, gen_rtx_LO_SUM (mode, temp, operand1));
 		  if (mode == DImode)
@@ -3560,7 +3555,7 @@ store_reg (int reg, HOST_WIDE_INT disp, int base)
       if (DO_FRAME_NOTES)
 	{
 	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-			gen_rtx_SET (VOIDmode, tmpreg,
+			gen_rtx_SET (tmpreg,
 				     gen_rtx_PLUS (Pmode, basereg, delta)));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
@@ -3578,8 +3573,7 @@ store_reg (int reg, HOST_WIDE_INT disp, int base)
       insn = emit_move_insn (dest, src);
       if (DO_FRAME_NOTES)
 	add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-		      gen_rtx_SET (VOIDmode,
-				   gen_rtx_MEM (word_mode,
+		      gen_rtx_SET (gen_rtx_MEM (word_mode,
 						gen_rtx_PLUS (word_mode,
 							      basereg,
 							      delta)),
@@ -3646,7 +3640,7 @@ set_reg_plus_d (int reg, int base, HOST_WIDE_INT disp, int note)
 			     gen_rtx_PLUS (Pmode, tmpreg, basereg));
       if (DO_FRAME_NOTES)
 	add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-		      gen_rtx_SET (VOIDmode, tmpreg,
+		      gen_rtx_SET (tmpreg,
 				   gen_rtx_PLUS (Pmode, basereg, delta)));
     }
   else
@@ -4078,7 +4072,7 @@ pa_expand_prologue (void)
 					     plus_constant (Pmode, base,
 							    offset));
 		      add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-				    gen_rtx_SET (VOIDmode, mem, reg));
+				    gen_rtx_SET (mem, reg));
 		    }
 		  else
 		    {
@@ -4090,8 +4084,8 @@ pa_expand_prologue (void)
 							     offset + 4));
 		      rtx regl = gen_rtx_REG (SFmode, i);
 		      rtx regr = gen_rtx_REG (SFmode, i + 1);
-		      rtx setl = gen_rtx_SET (VOIDmode, meml, regl);
-		      rtx setr = gen_rtx_SET (VOIDmode, memr, regr);
+		      rtx setl = gen_rtx_SET (meml, regl);
+		      rtx setr = gen_rtx_SET (memr, regr);
 		      rtvec vec;
 
 		      RTX_FRAME_RELATED_P (setl) = 1;
@@ -4673,10 +4667,10 @@ pa_emit_bcond_fp (rtx operands[])
   rtx operand1 = operands[2];
   rtx label = operands[3];
 
-  emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_REG (CCFPmode, 0),
+  emit_insn (gen_rtx_SET (gen_rtx_REG (CCFPmode, 0),
 		          gen_rtx_fmt_ee (code, CCFPmode, operand0, operand1)));
 
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
+  emit_jump_insn (gen_rtx_SET (pc_rtx,
 			       gen_rtx_IF_THEN_ELSE (VOIDmode,
 						     gen_rtx_fmt_ee (NE,
 							      VOIDmode,
@@ -5768,7 +5762,7 @@ pa_emit_hpdiv_const (rtx *operands, int unsignedp)
       emit
 	(gen_rtx_PARALLEL
 	 (VOIDmode,
-	  gen_rtvec (6, gen_rtx_SET (VOIDmode, gen_rtx_REG (SImode, 29),
+	  gen_rtvec (6, gen_rtx_SET (gen_rtx_REG (SImode, 29),
 				     gen_rtx_fmt_ee (unsignedp ? UDIV : DIV,
 						     SImode,
 						     gen_rtx_REG (SImode, 26),

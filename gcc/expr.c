@@ -210,7 +210,7 @@ init_expr_target (void)
   reg = gen_rtx_REG (VOIDmode, -1);
 
   insn = rtx_alloc (INSN);
-  pat = gen_rtx_SET (VOIDmode, NULL_RTX, NULL_RTX);
+  pat = gen_rtx_SET (NULL_RTX, NULL_RTX);
   PATTERN (insn) = pat;
 
   for (mode = VOIDmode; (int) mode < NUM_MACHINE_MODES;

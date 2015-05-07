@@ -467,7 +467,7 @@ spu_expand_extv (rtx ops[], int unsignedp)
       gcc_assert (REG_P (r) && SCALAR_INT_MODE_P (GET_MODE (r)));
       s0 = gen_reg_rtx (TImode);
       if (GET_MODE_SIZE (GET_MODE (r)) < GET_MODE_SIZE (TImode))
-	emit_insn (gen_rtx_SET (VOIDmode, s0, gen_rtx_ZERO_EXTEND (TImode, r)));
+	emit_insn (gen_rtx_SET (s0, gen_rtx_ZERO_EXTEND (TImode, r)));
       else
 	emit_move_insn (s0, src);
     }
@@ -960,7 +960,7 @@ spu_emit_branch_or_set (int is_set, rtx cmp, rtx operands[])
 	bcomp = gen_rtx_NE (comp_mode, compare_result, const0_rtx);
 
       loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
-      emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
+      emit_jump_insn (gen_rtx_SET (pc_rtx,
 				   gen_rtx_IF_THEN_ELSE (VOIDmode, bcomp,
 							 loc_ref, pc_rtx)));
     }
@@ -1003,7 +1003,7 @@ spu_emit_branch_or_set (int is_set, rtx cmp, rtx operands[])
     {
       rtx target = operands[0];
       if (reverse_test)
-	emit_insn (gen_rtx_SET (VOIDmode, compare_result,
+	emit_insn (gen_rtx_SET (compare_result,
 				gen_rtx_NOT (comp_mode, compare_result)));
       if (GET_MODE (target) == SImode && GET_MODE (compare_result) == HImode)
 	emit_insn (gen_extendhisi2 (target, compare_result));
@@ -1552,8 +1552,7 @@ spu_split_immediate (rtx * ops)
 	hi = array_to_constant (imode, arrhi);
 	lo = array_to_constant (imode, arrlo);
 	emit_move_insn (temp, hi);
-	emit_insn (gen_rtx_SET
-		   (VOIDmode, to, gen_rtx_IOR (imode, temp, lo)));
+	emit_insn (gen_rtx_SET (to, gen_rtx_IOR (imode, temp, lo)));
 	return 1;
       }
     case IC_FSMBI2:
@@ -1582,8 +1581,7 @@ spu_split_immediate (rtx * ops)
 	reg_fsmbi = array_to_constant (imode, arr_fsmbi);
 	reg_and = array_to_constant (imode, arr_andbi);
 	emit_move_insn (to, reg_fsmbi);
-	emit_insn (gen_rtx_SET
-		   (VOIDmode, to, gen_rtx_AND (imode, to, reg_and)));
+	emit_insn (gen_rtx_SET (to, gen_rtx_AND (imode, to, reg_and)));
 	return 1;
       }
     case IC_POOL:
@@ -4381,7 +4379,7 @@ ea_load_store_inline (rtx mem, bool is_store, rtx ea_addr, rtx data_addr)
   hit_label = gen_label_rtx ();
   hit_ref = gen_rtx_LABEL_REF (VOIDmode, hit_label);
   bcomp = gen_rtx_NE (SImode, tag_eq_pack_si, const0_rtx);
-  insn = emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
+  insn = emit_jump_insn (gen_rtx_SET (pc_rtx,
 				      gen_rtx_IF_THEN_ELSE (VOIDmode, bcomp,
 							    hit_ref, pc_rtx)));
   /* Say that this branch is very likely to happen.  */
@@ -4551,7 +4549,7 @@ spu_convert_move (rtx dst, rtx src)
   rtx reg;
   gcc_assert (GET_MODE (src) == TImode);
   reg = int_mode != mode ? gen_reg_rtx (int_mode) : dst;
-  emit_insn (gen_rtx_SET (VOIDmode, reg,
+  emit_insn (gen_rtx_SET (reg,
 	       gen_rtx_TRUNCATE (int_mode,
 		 gen_rtx_LSHIFTRT (TImode, src,
 		   GEN_INT (int_mode == DImode ? 64 : 96)))));
@@ -6500,8 +6498,7 @@ spu_expand_builtin_1 (struct spu_builtin_description *d,
 
       /* negate addr */
       op = gen_reg_rtx (GET_MODE (addr));
-      emit_insn (gen_rtx_SET (VOIDmode, op,
-                 gen_rtx_NEG (GET_MODE (addr), addr)));
+      emit_insn (gen_rtx_SET (op, gen_rtx_NEG (GET_MODE (addr), addr)));
       op = gen_rtx_MEM (mode, op);
 
       pat = GEN_FCN (icode) (target, op);

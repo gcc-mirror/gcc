@@ -470,7 +470,7 @@ nds32_emit_stack_push_multiple (rtx Rb, rtx Re, rtx En4, bool vaarg_p)
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
 						  stack_pointer_rtx,
 						  offset));
-      push_rtx = gen_rtx_SET (VOIDmode, mem, reg);
+      push_rtx = gen_rtx_SET (mem, reg);
       XVECEXP (parallel_insn, 0, par_index) = push_rtx;
       RTX_FRAME_RELATED_P (push_rtx) = 1;
       offset = offset + 4;
@@ -484,7 +484,7 @@ nds32_emit_stack_push_multiple (rtx Rb, rtx Re, rtx En4, bool vaarg_p)
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
 						  stack_pointer_rtx,
 						  offset));
-      push_rtx = gen_rtx_SET (VOIDmode, mem, reg);
+      push_rtx = gen_rtx_SET (mem, reg);
       XVECEXP (parallel_insn, 0, par_index) = push_rtx;
       RTX_FRAME_RELATED_P (push_rtx) = 1;
       offset = offset + 4;
@@ -496,7 +496,7 @@ nds32_emit_stack_push_multiple (rtx Rb, rtx Re, rtx En4, bool vaarg_p)
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
 						  stack_pointer_rtx,
 						  offset));
-      push_rtx = gen_rtx_SET (VOIDmode, mem, reg);
+      push_rtx = gen_rtx_SET (mem, reg);
       XVECEXP (parallel_insn, 0, par_index) = push_rtx;
       RTX_FRAME_RELATED_P (push_rtx) = 1;
       offset = offset + 4;
@@ -508,7 +508,7 @@ nds32_emit_stack_push_multiple (rtx Rb, rtx Re, rtx En4, bool vaarg_p)
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
 						  stack_pointer_rtx,
 						  offset));
-      push_rtx = gen_rtx_SET (VOIDmode, mem, reg);
+      push_rtx = gen_rtx_SET (mem, reg);
       XVECEXP (parallel_insn, 0, par_index) = push_rtx;
       RTX_FRAME_RELATED_P (push_rtx) = 1;
       offset = offset + 4;
@@ -520,8 +520,7 @@ nds32_emit_stack_push_multiple (rtx Rb, rtx Re, rtx En4, bool vaarg_p)
   /* We need to re-calculate the offset value again for adjustment.  */
   offset = -(num_use_regs * 4);
   adjust_sp_rtx
-    = gen_rtx_SET (VOIDmode,
-		   stack_pointer_rtx,
+    = gen_rtx_SET (stack_pointer_rtx,
 		   plus_constant (Pmode, stack_pointer_rtx, offset));
   XVECEXP (parallel_insn, 0, par_index) = adjust_sp_rtx;
   RTX_FRAME_RELATED_P (adjust_sp_rtx) = 1;
@@ -624,7 +623,7 @@ nds32_emit_stack_pop_multiple (rtx Rb, rtx Re, rtx En4)
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
 						  stack_pointer_rtx,
 						  offset));
-      pop_rtx = gen_rtx_SET (VOIDmode, reg, mem);
+      pop_rtx = gen_rtx_SET (reg, mem);
       XVECEXP (parallel_insn, 0, par_index) = pop_rtx;
       RTX_FRAME_RELATED_P (pop_rtx) = 1;
       offset = offset + 4;
@@ -640,7 +639,7 @@ nds32_emit_stack_pop_multiple (rtx Rb, rtx Re, rtx En4)
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
 						  stack_pointer_rtx,
 						  offset));
-      pop_rtx = gen_rtx_SET (VOIDmode, reg, mem);
+      pop_rtx = gen_rtx_SET (reg, mem);
       XVECEXP (parallel_insn, 0, par_index) = pop_rtx;
       RTX_FRAME_RELATED_P (pop_rtx) = 1;
       offset = offset + 4;
@@ -654,7 +653,7 @@ nds32_emit_stack_pop_multiple (rtx Rb, rtx Re, rtx En4)
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
 						  stack_pointer_rtx,
 						  offset));
-      pop_rtx = gen_rtx_SET (VOIDmode, reg, mem);
+      pop_rtx = gen_rtx_SET (reg, mem);
       XVECEXP (parallel_insn, 0, par_index) = pop_rtx;
       RTX_FRAME_RELATED_P (pop_rtx) = 1;
       offset = offset + 4;
@@ -668,7 +667,7 @@ nds32_emit_stack_pop_multiple (rtx Rb, rtx Re, rtx En4)
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
 						  stack_pointer_rtx,
 						  offset));
-      pop_rtx = gen_rtx_SET (VOIDmode, reg, mem);
+      pop_rtx = gen_rtx_SET (reg, mem);
       XVECEXP (parallel_insn, 0, par_index) = pop_rtx;
       RTX_FRAME_RELATED_P (pop_rtx) = 1;
       offset = offset + 4;
@@ -681,8 +680,7 @@ nds32_emit_stack_pop_multiple (rtx Rb, rtx Re, rtx En4)
 
   /* The offset value is already in place.  No need to re-calculate it.  */
   adjust_sp_rtx
-    = gen_rtx_SET (VOIDmode,
-		   stack_pointer_rtx,
+    = gen_rtx_SET (stack_pointer_rtx,
 		   plus_constant (Pmode, stack_pointer_rtx, offset));
   XVECEXP (parallel_insn, 0, par_index) = adjust_sp_rtx;
 
@@ -766,7 +764,7 @@ nds32_emit_stack_v3push (rtx Rb,
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
 						  stack_pointer_rtx,
 						  offset));
-      push_rtx = gen_rtx_SET (VOIDmode, mem, reg);
+      push_rtx = gen_rtx_SET (mem, reg);
       XVECEXP (parallel_insn, 0, par_index) = push_rtx;
       RTX_FRAME_RELATED_P (push_rtx) = 1;
       offset = offset + 4;
@@ -778,7 +776,7 @@ nds32_emit_stack_v3push (rtx Rb,
   mem = gen_frame_mem (SImode, plus_constant (Pmode,
 					      stack_pointer_rtx,
 					      offset));
-  push_rtx = gen_rtx_SET (VOIDmode, mem, reg);
+  push_rtx = gen_rtx_SET (mem, reg);
   XVECEXP (parallel_insn, 0, par_index) = push_rtx;
   RTX_FRAME_RELATED_P (push_rtx) = 1;
   offset = offset + 4;
@@ -788,7 +786,7 @@ nds32_emit_stack_v3push (rtx Rb,
   mem = gen_frame_mem (SImode, plus_constant (Pmode,
 					      stack_pointer_rtx,
 					      offset));
-  push_rtx = gen_rtx_SET (VOIDmode, mem, reg);
+  push_rtx = gen_rtx_SET (mem, reg);
   XVECEXP (parallel_insn, 0, par_index) = push_rtx;
   RTX_FRAME_RELATED_P (push_rtx) = 1;
   offset = offset + 4;
@@ -798,7 +796,7 @@ nds32_emit_stack_v3push (rtx Rb,
   mem = gen_frame_mem (SImode, plus_constant (Pmode,
 					      stack_pointer_rtx,
 					      offset));
-  push_rtx = gen_rtx_SET (VOIDmode, mem, reg);
+  push_rtx = gen_rtx_SET (mem, reg);
   XVECEXP (parallel_insn, 0, par_index) = push_rtx;
   RTX_FRAME_RELATED_P (push_rtx) = 1;
   offset = offset + 4;
@@ -809,8 +807,7 @@ nds32_emit_stack_v3push (rtx Rb,
   /* We need to re-calculate the offset value again for adjustment.  */
   offset = -(num_use_regs * 4);
   adjust_sp_rtx
-    = gen_rtx_SET (VOIDmode,
-		   stack_pointer_rtx,
+    = gen_rtx_SET (stack_pointer_rtx,
 		   plus_constant (Pmode,
 				  stack_pointer_rtx,
 				  offset - INTVAL (imm8u)));
@@ -892,7 +889,7 @@ nds32_emit_stack_v3pop (rtx Rb,
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
 						  stack_pointer_rtx,
 						  offset));
-      pop_rtx = gen_rtx_SET (VOIDmode, reg, mem);
+      pop_rtx = gen_rtx_SET (reg, mem);
       XVECEXP (parallel_insn, 0, par_index) = pop_rtx;
       RTX_FRAME_RELATED_P (pop_rtx) = 1;
       offset = offset + 4;
@@ -906,7 +903,7 @@ nds32_emit_stack_v3pop (rtx Rb,
   mem = gen_frame_mem (SImode, plus_constant (Pmode,
 					      stack_pointer_rtx,
 					      offset));
-  pop_rtx = gen_rtx_SET (VOIDmode, reg, mem);
+  pop_rtx = gen_rtx_SET (reg, mem);
   XVECEXP (parallel_insn, 0, par_index) = pop_rtx;
   RTX_FRAME_RELATED_P (pop_rtx) = 1;
   offset = offset + 4;
@@ -918,7 +915,7 @@ nds32_emit_stack_v3pop (rtx Rb,
   mem = gen_frame_mem (SImode, plus_constant (Pmode,
 					      stack_pointer_rtx,
 					      offset));
-  pop_rtx = gen_rtx_SET (VOIDmode, reg, mem);
+  pop_rtx = gen_rtx_SET (reg, mem);
   XVECEXP (parallel_insn, 0, par_index) = pop_rtx;
   RTX_FRAME_RELATED_P (pop_rtx) = 1;
   offset = offset + 4;
@@ -930,7 +927,7 @@ nds32_emit_stack_v3pop (rtx Rb,
   mem = gen_frame_mem (SImode, plus_constant (Pmode,
 					      stack_pointer_rtx,
 					      offset));
-  pop_rtx = gen_rtx_SET (VOIDmode, reg, mem);
+  pop_rtx = gen_rtx_SET (reg, mem);
   XVECEXP (parallel_insn, 0, par_index) = pop_rtx;
   RTX_FRAME_RELATED_P (pop_rtx) = 1;
   offset = offset + 4;
@@ -941,8 +938,7 @@ nds32_emit_stack_v3pop (rtx Rb,
 
   /* The offset value is already in place.  No need to re-calculate it.  */
   adjust_sp_rtx
-    = gen_rtx_SET (VOIDmode,
-		   stack_pointer_rtx,
+    = gen_rtx_SET (stack_pointer_rtx,
 		   plus_constant (Pmode,
 				  stack_pointer_rtx,
 				  offset + INTVAL (imm8u)));
@@ -1019,7 +1015,7 @@ nds32_force_addi_stack_int (int full_value)
 	  rtx set_rtx;
 
 	  plus_rtx = plus_constant (Pmode, stack_pointer_rtx, full_value);
-	  set_rtx = gen_rtx_SET (VOIDmode, stack_pointer_rtx, plus_rtx);
+	  set_rtx = gen_rtx_SET (stack_pointer_rtx, plus_rtx);
 	  add_reg_note (sp_adjust_insn, REG_FRAME_RELATED_EXPR, set_rtx);
 
 	  RTX_FRAME_RELATED_P (sp_adjust_insn) = 1;

@@ -116,6 +116,14 @@ special_format (const char *fmt)
 	  || strchr (fmt, 'n') != 0);
 }
 
+/* Return true if CODE always has VOIDmode.  */
+
+static inline bool
+always_void_p (int idx)
+{
+  return strcmp (defs[idx].enumname, "SET") == 0;
+}
+
 /* Return nonzero if the RTL code given by index IDX is one that we should
    generate a gen_rtx_raw_FOO macro for, not gen_rtx_FOO (because gen_rtx_FOO
    is a wrapper in emit-rtl.c).  */
@@ -181,6 +189,7 @@ static void
 genmacro (int idx)
 {
   const char *p;
+  const char *sep = "";
   int i;
 
   /* We write a macro that defines gen_rtx_RTLCODE to be an equivalent to
@@ -190,15 +199,25 @@ genmacro (int idx)
     /* Don't define a macro for this code.  */
     return;
 
-  printf ("#define gen_rtx_%s%s(MODE",
+  bool has_mode_p = !always_void_p (idx);
+  printf ("#define gen_rtx_%s%s(",
 	   special_rtx (idx) ? "raw_" : "", defs[idx].enumname);
+  if (has_mode_p)
+    {
+      printf ("MODE");
+      sep = ", ";
+    }
 
   for (p = defs[idx].format, i = 0; *p != 0; p++)
     if (*p != '0')
-      printf (", ARG%d", i++);
+      {
+	printf ("%sARG%d", sep, i++);
+	sep = ", ";
+      }
 
-  printf (") \\\n  gen_rtx_fmt_%s (%s, (MODE)",
-	  defs[idx].format, defs[idx].enumname);
+  printf (") \\\n  gen_rtx_fmt_%s (%s, %s",
+	  defs[idx].format, defs[idx].enumname,
+	  has_mode_p ? "(MODE)" : "VOIDmode");
 
   for (p = defs[idx].format, i = 0; *p != 0; p++)
     if (*p != '0')

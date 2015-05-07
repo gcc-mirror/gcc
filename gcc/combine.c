@@ -3104,7 +3104,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   if (added_sets_2)
     {
       if (GET_CODE (PATTERN (i2)) == PARALLEL)
-	i2pat = gen_rtx_SET (VOIDmode, i2dest, copy_rtx (i2src));
+	i2pat = gen_rtx_SET (i2dest, copy_rtx (i2src));
       else
 	i2pat = copy_rtx (PATTERN (i2));
     }
@@ -3112,7 +3112,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   if (added_sets_1)
     {
       if (GET_CODE (PATTERN (i1)) == PARALLEL)
-	i1pat = gen_rtx_SET (VOIDmode, i1dest, copy_rtx (i1src));
+	i1pat = gen_rtx_SET (i1dest, copy_rtx (i1src));
       else
 	i1pat = copy_rtx (PATTERN (i1));
     }
@@ -3120,7 +3120,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   if (added_sets_0)
     {
       if (GET_CODE (PATTERN (i0)) == PARALLEL)
-	i0pat = gen_rtx_SET (VOIDmode, i0dest, copy_rtx (i0src));
+	i0pat = gen_rtx_SET (i0dest, copy_rtx (i0src));
       else
 	i0pat = copy_rtx (PATTERN (i0));
     }
@@ -3230,7 +3230,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	  /* Create new version of i2pat if needed; the below PARALLEL
 	     creation needs this to work correctly.  */
 	  if (! rtx_equal_p (i2src, op0))
-	    i2pat = gen_rtx_SET (VOIDmode, i2dest, op0);
+	    i2pat = gen_rtx_SET (i2dest, op0);
 	  i2_is_used = 1;
 	}
     }
@@ -3753,7 +3753,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	      /* Split "X = Y op Y" as "Z = Y; X = Z op Z".  */
 	      if (rtx_equal_p (src_op0, src_op1))
 		{
-		  newi2pat = gen_rtx_SET (VOIDmode, newdest, src_op0);
+		  newi2pat = gen_rtx_SET (newdest, src_op0);
 		  SUBST (XEXP (setsrc, 0), newdest);
 		  SUBST (XEXP (setsrc, 1), newdest);
 		  subst_done = true;
@@ -3777,8 +3777,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 		  if ((rtx_equal_p (p,r) && rtx_equal_p (q,s))
 		       || (rtx_equal_p (p,s) && rtx_equal_p (q,r)))
 		    {
-		      newi2pat = gen_rtx_SET (VOIDmode, newdest,
-					      XEXP (src_op0, 0));
+		      newi2pat = gen_rtx_SET (newdest, XEXP (src_op0, 0));
 		      SUBST (XEXP (setsrc, 0), newdest);
 		      SUBST (XEXP (setsrc, 1), newdest);
 		      subst_done = true;
@@ -3788,7 +3787,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 		  else if (rtx_equal_p (p,q) && rtx_equal_p (r,s))
 		    {
 		      rtx tmp = simplify_gen_binary (code, mode, p, r);
-		      newi2pat = gen_rtx_SET (VOIDmode, newdest, tmp);
+		      newi2pat = gen_rtx_SET (newdest, tmp);
 		      SUBST (XEXP (setsrc, 0), newdest);
 		      SUBST (XEXP (setsrc, 1), newdest);
 		      subst_done = true;
@@ -3798,7 +3797,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
 	  if (!subst_done)
 	    {
-	      newi2pat = gen_rtx_SET (VOIDmode, newdest, *split);
+	      newi2pat = gen_rtx_SET (newdest, *split);
 	      SUBST (*split, newdest);
 	    }
 
@@ -4754,8 +4753,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 					    MEM_ADDR_SPACE (x)))
 	{
 	  rtx reg = regno_reg_rtx[FIRST_PSEUDO_REGISTER];
-	  rtx_insn *seq = combine_split_insns (gen_rtx_SET (VOIDmode, reg,
-							    XEXP (x, 0)),
+	  rtx_insn *seq = combine_split_insns (gen_rtx_SET (reg, XEXP (x, 0)),
 					       subst_insn);
 
 	  /* This should have produced two insns, each of which sets our
@@ -7191,7 +7189,7 @@ expand_field_assignment (const_rtx x)
 		   == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_DEST (x))))
 			+ (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)))
 	{
-	  x = gen_rtx_SET (VOIDmode, SUBREG_REG (SET_DEST (x)),
+	  x = gen_rtx_SET (SUBREG_REG (SET_DEST (x)),
 			   gen_lowpart
 			   (GET_MODE (SUBREG_REG (SET_DEST (x))),
 			    SET_SRC (x)));
@@ -7246,7 +7244,7 @@ expand_field_assignment (const_rtx x)
 				      mask),
 				    pos);
 
-      x = gen_rtx_SET (VOIDmode, copy_rtx (inner),
+      x = gen_rtx_SET (copy_rtx (inner),
 		       simplify_gen_binary (IOR, compute_mode,
 					    cleared, masked));
     }
@@ -9255,7 +9253,7 @@ make_field_assignment (rtx x)
       assign = make_extraction (VOIDmode, dest, 0, XEXP (XEXP (src, 0), 1),
 				1, 1, 1, 0);
       if (assign != 0)
-	return gen_rtx_SET (VOIDmode, assign, const0_rtx);
+	return gen_rtx_SET (assign, const0_rtx);
       return x;
     }
 
@@ -9272,7 +9270,7 @@ make_field_assignment (rtx x)
 				XEXP (SUBREG_REG (XEXP (src, 0)), 1),
 				1, 1, 1, 0);
       if (assign != 0)
-	return gen_rtx_SET (VOIDmode, assign, const0_rtx);
+	return gen_rtx_SET (assign, const0_rtx);
       return x;
     }
 
@@ -9285,7 +9283,7 @@ make_field_assignment (rtx x)
       assign = make_extraction (VOIDmode, dest, 0, XEXP (XEXP (src, 0), 1),
 				1, 1, 1, 0);
       if (assign != 0)
-	return gen_rtx_SET (VOIDmode, assign, const1_rtx);
+	return gen_rtx_SET (assign, const1_rtx);
       return x;
     }
 
@@ -9308,7 +9306,7 @@ make_field_assignment (rtx x)
 
       /* Complete overlap.  We can remove the source AND.  */
       if ((and_mask & ze_mask) == ze_mask)
-	return gen_rtx_SET (VOIDmode, dest, XEXP (src, 0));
+	return gen_rtx_SET (dest, XEXP (src, 0));
 
       /* Partial overlap.  We can reduce the source AND.  */
       if ((and_mask & ze_mask) != and_mask)
@@ -9316,7 +9314,7 @@ make_field_assignment (rtx x)
 	  mode = GET_MODE (src);
 	  src = gen_rtx_AND (mode, XEXP (src, 0),
 			     gen_int_mode (and_mask & ze_mask, mode));
-	  return gen_rtx_SET (VOIDmode, dest, src);
+	  return gen_rtx_SET (dest, src);
 	}
     }
 
@@ -9417,7 +9415,7 @@ make_field_assignment (rtx x)
 	 == ((unsigned HOST_WIDE_INT) 1 << INTVAL (XEXP (assign, 1))) - 1)
     src = XEXP (src, 0);
 
-  return gen_rtx_SET (VOIDmode, assign, src);
+  return gen_rtx_SET (assign, src);
 }
 
 /* See if X is of the form (+ (* a c) (* b c)) and convert to (* (+ a b) c)

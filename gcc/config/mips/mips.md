@@ -3877,8 +3877,8 @@
       emit_jump_insn (gen_cbranchdf4 (test, operands[1], reg1, label1));
 
       emit_insn (gen_fix_truncdfsi2 (operands[0], operands[1]));
-      emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
-				   gen_rtx_LABEL_REF (VOIDmode, label2)));
+      emit_jump_insn (gen_rtx_SET (pc_rtx,
+                                   gen_rtx_LABEL_REF (VOIDmode, label2)));
       emit_barrier ();
 
       emit_label (label1);
@@ -3921,8 +3921,7 @@
   emit_jump_insn (gen_cbranchdf4 (test, operands[1], reg1, label1));
 
   emit_insn (gen_fix_truncdfdi2 (operands[0], operands[1]));
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
-			       gen_rtx_LABEL_REF (VOIDmode, label2)));
+  emit_jump_insn (gen_rtx_SET (pc_rtx, gen_rtx_LABEL_REF (VOIDmode, label2)));
   emit_barrier ();
 
   emit_label (label1);
@@ -3964,8 +3963,7 @@
   emit_jump_insn (gen_cbranchsf4 (test, operands[1], reg1, label1));
 
   emit_insn (gen_fix_truncsfsi2 (operands[0], operands[1]));
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
-			       gen_rtx_LABEL_REF (VOIDmode, label2)));
+  emit_jump_insn (gen_rtx_SET (pc_rtx, gen_rtx_LABEL_REF (VOIDmode, label2)));
   emit_barrier ();
 
   emit_label (label1);
@@ -4007,8 +4005,7 @@
   emit_jump_insn (gen_cbranchsf4 (test, operands[1], reg1, label1));
 
   emit_insn (gen_fix_truncsfdi2 (operands[0], operands[1]));
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
-			       gen_rtx_LABEL_REF (VOIDmode, label2)));
+  emit_jump_insn (gen_rtx_SET (pc_rtx, gen_rtx_LABEL_REF (VOIDmode, label2)));
   emit_barrier ();
 
   emit_label (label1);

@@ -94,6 +94,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
   int i;
   int len;
   const char *fmt;
+  const char *sep = "";
 
   if (x == 0)
     {
@@ -215,7 +216,12 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
 
   printf ("gen_rtx_");
   print_code (code);
-  printf (" (%smode", GET_MODE_NAME (GET_MODE (x)));
+  printf (" (");
+  if (!always_void_p (code))
+    {
+      printf ("%smode", GET_MODE_NAME (GET_MODE (x)));
+      sep = ",\n\t";
+    }
 
   fmt = GET_RTX_FORMAT (code);
   len = GET_RTX_LENGTH (code);
@@ -223,7 +229,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
     {
       if (fmt[i] == '0')
 	break;
-      printf (",\n\t");
+      fputs (sep, stdout);
       switch (fmt[i])
 	{
 	case 'e': case 'u':
@@ -254,6 +260,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
 	default:
 	  gcc_unreachable ();
 	}
+      sep = ",\n\t";
     }
   printf (")");
 }

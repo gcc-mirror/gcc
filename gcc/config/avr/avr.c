@@ -1129,7 +1129,7 @@ emit_push_byte (unsigned regno, bool frame_related_p)
   mem = gen_frame_mem (QImode, mem);
   reg = gen_rtx_REG (QImode, regno);
 
-  insn = emit_insn (gen_rtx_SET (VOIDmode, mem, reg));
+  insn = emit_insn (gen_rtx_SET (mem, reg));
   if (frame_related_p)
     RTX_FRAME_RELATED_P (insn) = 1;
 
@@ -1209,9 +1209,9 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
          is going to be permanent in the function is frame_pointer_needed.  */
 
       add_reg_note (insn, REG_CFA_ADJUST_CFA,
-                    gen_rtx_SET (VOIDmode, (frame_pointer_needed
-                                            ? frame_pointer_rtx
-                                            : stack_pointer_rtx),
+                    gen_rtx_SET ((frame_pointer_needed
+				  ? frame_pointer_rtx
+				  : stack_pointer_rtx),
                                  plus_constant (Pmode, stack_pointer_rtx,
                                                 -(size + live_seq))));
 
@@ -1229,7 +1229,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
           m = gen_rtx_MEM (QImode, plus_constant (Pmode, stack_pointer_rtx,
                                                   offset));
           r = gen_rtx_REG (QImode, reg);
-          add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (VOIDmode, m, r));
+          add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (m, r));
         }
 
       cfun->machine->stack_usage += size + live_seq;
@@ -1341,7 +1341,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
             {
               RTX_FRAME_RELATED_P (insn) = 1;
               add_reg_note (insn, REG_CFA_ADJUST_CFA,
-                            gen_rtx_SET (VOIDmode, fp, stack_pointer_rtx));
+                            gen_rtx_SET (fp, stack_pointer_rtx));
             }
 
           insn = emit_move_insn (my_fp, plus_constant (GET_MODE (my_fp),
@@ -1351,9 +1351,8 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
             {
               RTX_FRAME_RELATED_P (insn) = 1;
               add_reg_note (insn, REG_CFA_ADJUST_CFA,
-                            gen_rtx_SET (VOIDmode, fp,
-                                         plus_constant (Pmode, fp,
-                                                        -size_cfa)));
+                            gen_rtx_SET (fp, plus_constant (Pmode, fp,
+							    -size_cfa)));
             }
 
           /* Copy to stack pointer.  Note that since we've already
@@ -1379,7 +1378,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
             {
               RTX_FRAME_RELATED_P (insn) = 1;
               add_reg_note (insn, REG_CFA_ADJUST_CFA,
-                            gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+                            gen_rtx_SET (stack_pointer_rtx,
                                          plus_constant (Pmode,
                                                         stack_pointer_rtx,
                                                         -size_cfa)));
@@ -1404,7 +1403,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
                                                     -size));
               RTX_FRAME_RELATED_P (insn) = 1;
               add_reg_note (insn, REG_CFA_ADJUST_CFA,
-                            gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+                            gen_rtx_SET (stack_pointer_rtx,
                                          plus_constant (Pmode,
                                                         stack_pointer_rtx,
                                                         -size_cfa)));
@@ -1574,7 +1573,7 @@ emit_pop_byte (unsigned regno)
   mem = gen_frame_mem (QImode, mem);
   reg = gen_rtx_REG (QImode, regno);
 
-  emit_insn (gen_rtx_SET (VOIDmode, reg, mem));
+  emit_insn (gen_rtx_SET (reg, mem));
 }
 
 /*  Output RTL epilogue.  */
@@ -8473,7 +8472,7 @@ avr_out_round (rtx_insn *insn ATTRIBUTE_UNUSED, rtx *xop, int *plen)
   xsrc = SIGNED_FIXED_POINT_MODE_P (mode)
     ? gen_rtx_SS_PLUS (mode, xop[1], xadd)
     : gen_rtx_US_PLUS (mode, xop[1], xadd);
-  xpattern = gen_rtx_SET (VOIDmode, xop[0], xsrc);
+  xpattern = gen_rtx_SET (xop[0], xsrc);
 
   op[0] = xop[0];
   op[1] = xop[1];
@@ -8490,7 +8489,7 @@ avr_out_round (rtx_insn *insn ATTRIBUTE_UNUSED, rtx *xop, int *plen)
   rtx xreg = simplify_gen_subreg (imode, xop[0], mode, 0);
   rtx xmask = immed_wide_int_const (-wi_add - wi_add, imode);
 
-  xpattern = gen_rtx_SET (VOIDmode, xreg, gen_rtx_AND (imode, xreg, xmask));
+  xpattern = gen_rtx_SET (xreg, gen_rtx_AND (imode, xreg, xmask));
 
   op[0] = xreg;
   op[1] = xreg;

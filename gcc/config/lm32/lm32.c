@@ -237,9 +237,8 @@ gen_int_relational (enum rtx_code code,
       /* Generate conditional branch instruction.  */
       cond = gen_rtx_fmt_ee (code, mode, cmp0, cmp1);
       label = gen_rtx_LABEL_REF (VOIDmode, destination);
-      insn = gen_rtx_SET (VOIDmode, pc_rtx,
-			  gen_rtx_IF_THEN_ELSE (VOIDmode,
-						cond, label, pc_rtx));
+      insn = gen_rtx_SET (pc_rtx, gen_rtx_IF_THEN_ELSE (VOIDmode,
+							cond, label, pc_rtx));
       emit_jump_insn (insn);
     }
   else

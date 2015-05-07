@@ -1076,8 +1076,7 @@ eliminate_regs_in_insn (rtx_insn *insn, bool replace_p, bool first_p,
 		 constraint pass fix it up.  */
 	      if (! validate_change (insn, &SET_SRC (old_set), new_src, 0))
 		{
-		  rtx new_pat = gen_rtx_SET (VOIDmode,
-					     SET_DEST (old_set), new_src);
+		  rtx new_pat = gen_rtx_SET (SET_DEST (old_set), new_src);
 
 		  if (! validate_change (insn, &PATTERN (insn), new_pat, 0))
 		    SET_SRC (old_set) = new_src;
