@@ -1,3 +1,9 @@
+2015-05-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64918
+	* c-typeck.c (add_pending_init): Use OPT_Woverride_init_side_effects.
+	(output_init_element): Likewise.
+
 2015-05-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c/65179
