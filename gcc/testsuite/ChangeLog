@@ -1,3 +1,16 @@
+2015-05-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65179
+	* c-c++-common/Wshift-negative-value-1.c: New test.
+	* testsuite/c-c++-common/Wshift-negative-value-2.c: New test.
+	* testsuite/c-c++-common/Wshift-negative-value-3.c: New test.
+	* testsuite/c-c++-common/Wshift-negative-value-4.c: New test.
+	* testsuite/c-c++-common/Wshift-negative-value-5.c: New test.
+	* testsuite/c-c++-common/Wshift-negative-value-6.c: New test.
+	* testsuite/gcc.dg/c90-left-shift-1.c: New test.
+	* testsuite/gcc.dg/c99-const-expr-7.c: Add dg-error.
+	* testsuite/gcc.dg/c99-left-shift-1.c: New test.
+
 2015-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR middle-end/192

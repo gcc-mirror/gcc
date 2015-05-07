@@ -1,3 +1,9 @@
+2015-05-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c/65179
+	* c-typeck.c (build_binary_op): Warn when left shifting a negative
+	value.
+
 2015-04-30  Marek Polacek  <polacek@redhat.com>
 
 	* c-typeck.c (set_init_label): Call error_at instead of error and

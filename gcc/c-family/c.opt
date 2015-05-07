@@ -781,6 +781,10 @@ Wshift-count-overflow
 C ObjC C++ ObjC++ Var(warn_shift_count_overflow) Init(1) Warning
 Warn if shift count >= width of type
 
+Wshift-negative-value
+C ObjC C++ ObjC++ Var(warn_shift_negative_value) Init(-1) Warning
+Warn if left shifting a negative value
+
 Wsign-compare
 C ObjC C++ ObjC++ Var(warn_sign_compare) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about signed-unsigned comparisons

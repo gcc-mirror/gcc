@@ -271,7 +271,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
 -Wredundant-decls  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
--Wshift-count-negative -Wshift-count-overflow @gol
+-Wshift-count-negative -Wshift-count-overflow -Wshift-negative-value @gol
 -Wsign-compare  -Wsign-conversion -Wfloat-conversion @gol
 -Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
 -Wstack-protector -Wstack-usage=@var{len} -Wstrict-aliasing @gol
@@ -3489,6 +3489,7 @@ name is still supported, but the newer name is more descriptive.)
 -Wsign-compare  @gol
 -Wtype-limits  @gol
 -Wuninitialized  @gol
+-Wshift-negative-value  @gol
 -Wunused-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)} @gol
 -Wunused-but-set-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)}  @gol
 }
@@ -3921,6 +3922,12 @@ Warn if shift count is negative. This warning is enabled by default.
 @opindex Wshift-count-overflow
 @opindex Wno-shift-count-overflow
 Warn if shift count >= width of type. This warning is enabled by default.
+
+@item -Wshift-negative-value
+@opindex Wshift-negative-value
+@opindex Wno-shift-negative-value
+Warn if left shifting a negative value.  This warning is enabled by
+@option{-Wextra} in C99 and C++11 modes (and newer).
 
 @item -Wswitch
 @opindex Wswitch
