@@ -7723,9 +7723,8 @@ extract_left_shift (rtx x, int count)
    We try, as much as possible, to re-use rtl expressions to save memory.
 
    IN_CODE says what kind of expression we are processing.  Normally, it is
-   SET.  In a memory address (inside a MEM, PLUS or minus, the latter two
-   being kludges), it is MEM.  When processing the arguments of a comparison
-   or a COMPARE against zero, it is COMPARE.  */
+   SET.  In a memory address it is MEM.  When processing the arguments of
+   a comparison or a COMPARE against zero, it is COMPARE.  */
 
 rtx
 make_compound_operation (rtx x, enum rtx_code in_code)
@@ -7745,8 +7744,6 @@ make_compound_operation (rtx x, enum rtx_code in_code)
      but once inside, go back to our default of SET.  */
 
   next_code = (code == MEM ? MEM
-	       : ((code == PLUS || code == MINUS)
-		  && SCALAR_INT_MODE_P (mode)) ? MEM
 	       : ((code == COMPARE || COMPARISON_P (x))
 		  && XEXP (x, 1) == const0_rtx) ? COMPARE
 	       : in_code == COMPARE ? SET : in_code);
