@@ -1,3 +1,11 @@
+2015-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR middle-end/192
+	PR middle-end/54303
+	* varasm.c (function_mergeable_rodata_prefix): New function.
+	(mergeable_string_section): Use it.
+	(mergeable_constant_section): Use it.
+
 2015-05-07  Jeff Law  <law@redhat.com>
 
 	* match.pd (bit_and (plus/minus (convert @0) (convert @1) mask): New

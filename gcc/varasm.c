@@ -783,6 +783,18 @@ default_no_function_rodata_section (tree decl ATTRIBUTE_UNUSED)
   return readonly_data_section;
 }
 
+/* A subroutine of mergeable_string_section and mergeable_constant_section.  */
+
+static const char *
+function_mergeable_rodata_prefix (void)
+{
+  section *s = targetm.asm_out.function_rodata_section (current_function_decl);
+  if (SECTION_STYLE (s) == SECTION_NAMED)
+    return s->named.name;
+  else
+    return targetm.asm_out.mergeable_rodata_prefix;
+}
+
 /* Return the section to use for string merging.  */
 
 static section *
@@ -804,7 +816,7 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
       const char *str;
       HOST_WIDE_INT i;
       int j, unit;
-      const char *prefix = targetm.asm_out.mergeable_rodata_prefix;
+      const char *prefix = function_mergeable_rodata_prefix ();
       char *name = (char *) alloca (strlen (prefix) + 30);
 
       mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (decl)));
@@ -857,7 +869,7 @@ mergeable_constant_section (machine_mode mode ATTRIBUTE_UNUSED,
       && align <= 256
       && (align & (align - 1)) == 0)
     {
-      const char *prefix = targetm.asm_out.mergeable_rodata_prefix;
+      const char *prefix = function_mergeable_rodata_prefix ();
       char *name = (char *) alloca (strlen (prefix) + 30);
 
       sprintf (name, "%s.cst%d", prefix, (int) (align / 8));

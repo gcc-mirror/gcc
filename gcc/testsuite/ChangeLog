@@ -1,3 +1,9 @@
+2015-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR middle-end/192
+	PR middle-end/54303
+	* gcc.dg/fdata-sections-2.c: New file.
+
 2015-05-07  Marek Polacek  <polacek@redhat.com>
 
 	PR testsuite/66046
