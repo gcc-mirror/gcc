@@ -1,3 +1,11 @@
+2015-05-06  Aditya Kumar  <hiraditya@msn.com>
+
+	* gcov-tool.c (do_merge): Refactore to remove int ret.
+	* ipa-icf.c (sem_item::hash_referenced_symbol_properties): Change
+	!type == FUNC to type != FUNC.
+	* reload.h (struct target_reload): Changee to type of
+	x_spill_indirect_levels from bool to unsigned char.
+
 2015-05-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* rtl.h (always_void_p): New function.
