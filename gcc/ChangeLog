@@ -1,3 +1,11 @@
+2015-05-07  Marek Polacek  <polacek@redhat.com>
+	    Martin Uecker  <uecker@eecs.berkeley.edu>
+
+	* doc/invoke.texi: Document -fsanitize=bounds-strict.
+	* flag-types.h (enum sanitize_code): Add SANITIZE_BOUNDS_STRICT, or it
+	into SANITIZE_NONDEFAULT.
+	* opts.c (common_handle_option): Handle -fsanitize=bounds-strict.
+
 2015-05-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66015

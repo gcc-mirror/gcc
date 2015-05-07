@@ -301,9 +301,11 @@ ubsan_instrument_bounds (location_t loc, tree array, tree *index,
     bound = fold_build2 (PLUS_EXPR, TREE_TYPE (bound), bound,
 			 build_int_cst (TREE_TYPE (bound), 1));
 
-  /* Detect flexible array members and suchlike.  */
+  /* Detect flexible array members and suchlike, unless
+     -fsanitize=bounds-strict.  */
   tree base = get_base_address (array);
-  if (TREE_CODE (array) == COMPONENT_REF
+  if ((flag_sanitize & SANITIZE_BOUNDS_STRICT) == 0
+      && TREE_CODE (array) == COMPONENT_REF
       && base && (TREE_CODE (base) == INDIRECT_REF
 		  || TREE_CODE (base) == MEM_REF))
     {

@@ -1,3 +1,9 @@
+2015-05-07  Marek Polacek  <polacek@redhat.com>
+	    Martin Uecker  <uecker@eecs.berkeley.edu>
+
+	* c-ubsan.c (ubsan_instrument_bounds): Don't skip instrumenting
+	flexible member array-like members if SANITIZE_BOUNDS_STRICT.
+
 2015-05-05  Jason Merrill  <jason@redhat.com>
 
 	* c.opt (Wterminate): New.
@@ -9,8 +15,8 @@
 
 2015-04-29  Josh Triplett  <josh@joshtriplett.org>
 
-        * c-common.c (handle_section_attribute): Refactor to reduce
-        nesting and distinguish between error cases.
+	* c-common.c (handle_section_attribute): Refactor to reduce
+	nesting and distinguish between error cases.
 
 2015-04-29  Marek Polacek  <polacek@redhat.com>
 
@@ -30,7 +36,7 @@
 	* c-common.c (build_va_arg): Mark va_arg ap argument as addressable.
 
 2015-04-28  Eric Botcazou  <ebotcazou@adacore.com>
-            Pierre-Marie de Rodat  <derodat@adacore.com>
+	    Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* c-ada-spec.c (in_function): Delete.
 	(dump_generic_ada_node): Do not change in_function and remove the

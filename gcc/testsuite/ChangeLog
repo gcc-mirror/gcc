@@ -1,3 +1,8 @@
+2015-05-07  Marek Polacek  <polacek@redhat.com>
+	    Martin Uecker  <uecker@eecs.berkeley.edu>
+
+	* c-c++-common/ubsan/bounds-10.c: New test.
+
 2015-05-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/harness.h (set_options): Wrap with

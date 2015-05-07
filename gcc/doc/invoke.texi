@@ -5736,6 +5736,13 @@ This option enables instrumentation of array bounds.  Various out of bounds
 accesses are detected.  Flexible array members, flexible array member-like
 arrays, and initializers of variables with static storage are not instrumented.
 
+@item -fsanitize=bounds-strict
+@opindex fsanitize=bounds-strict
+This option enables strict instrumentation of array bounds.  Most out of bounds
+accesses are detected, including flexible array members and flexible array
+member-like arrays.  Initializers of variables with static storage are not
+instrumented.
+
 @item -fsanitize=alignment
 @opindex fsanitize=alignment
 
