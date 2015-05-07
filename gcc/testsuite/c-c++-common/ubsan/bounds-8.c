@@ -10,4 +10,4 @@ main (void)
   (*a)[2] = 1;
 }
 
-/* { dg-output "index 2 out of bounds for type 'int \\\[1\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "index 2 out of bounds for type 'int \\\[1\\\]'" } */

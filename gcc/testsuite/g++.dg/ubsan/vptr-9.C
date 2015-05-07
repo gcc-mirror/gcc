@@ -19,4 +19,4 @@ main ()
 // { dg-output "0x\[0-9a-fA-F]*: note: object is of type 'U'(\n|\r\n|\r)" }
 // { dg-output "  ?.. .. .. ..  ?.. .. .. ..  ?.. .. .. .. \[^\n\r]*(\n|\r\n|\r)" }
 // { dg-output "              ?\\^~~~~~~~~~~\[^\n\r]*(\n|\r\n|\r)" }
-// { dg-output "              ?vptr for 'U'\[^\n\r]*(\n|\r\n|\r)" }
+// { dg-output "              ?vptr for 'U'" }
