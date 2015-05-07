@@ -861,3 +861,21 @@ do_valueize (tree (*valueize)(tree), tree op)
   return op;
 }
 
+/* Routine to determine if the types T1 and T2 are effectively
+   the same for GIMPLE.  */
+
+static inline bool
+types_match (tree t1, tree t2)
+{
+  return types_compatible_p (t1, t2);
+}
+
+/* Return if T has a single use.  For GIMPLE, we also allow any
+   non-SSA_NAME (ie constants) and zero uses to cope with uses
+   that aren't linked up yet.  */
+
+static inline bool
+single_use (tree t)
+{
+  return TREE_CODE (t) != SSA_NAME || has_zero_uses (t) || has_single_use (t);
+}

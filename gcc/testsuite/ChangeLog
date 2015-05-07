@@ -1,3 +1,7 @@
+2015-05-07  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/shorten-1.c: New test.
+
 2015-05-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66002
