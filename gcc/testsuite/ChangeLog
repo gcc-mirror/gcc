@@ -1,3 +1,8 @@
+2015-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66002
+	* gcc.dg/vect/vect-125.c: New testcase.
+
 2015-05-07  Marek Polacek  <polacek@redhat.com>
 	    Martin Uecker  <uecker@eecs.berkeley.edu>
 

@@ -177,6 +177,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_cselim);
       NEXT_PASS (pass_copy_prop);
       NEXT_PASS (pass_tree_ifcombine);
+      NEXT_PASS (pass_merge_phi);
       NEXT_PASS (pass_phiopt);
       NEXT_PASS (pass_tail_recursion);
       NEXT_PASS (pass_ch);
