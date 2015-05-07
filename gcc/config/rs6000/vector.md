@@ -1049,7 +1049,7 @@
       /* We need to make a note that we clobber SPEFSCR.  */
       rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
 
-      XVECEXP (par, 0, 0) = gen_rtx_SET (VOIDmode, operands[0],
+      XVECEXP (par, 0, 0) = gen_rtx_SET (operands[0],
                                          gen_rtx_PLUS (V2SFmode, operands[1], operands[2]));
       XVECEXP (par, 0, 1) = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, SPEFSCR_REGNO));
       emit_insn (par);
@@ -1069,7 +1069,7 @@
       /* We need to make a note that we clobber SPEFSCR.  */
       rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
 
-      XVECEXP (par, 0, 0) = gen_rtx_SET (VOIDmode, operands[0],
+      XVECEXP (par, 0, 0) = gen_rtx_SET (operands[0],
                                          gen_rtx_MINUS (V2SFmode, operands[1], operands[2]));
       XVECEXP (par, 0, 1) = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, SPEFSCR_REGNO));
       emit_insn (par);
@@ -1089,7 +1089,7 @@
       /* We need to make a note that we clobber SPEFSCR.  */
       rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
 
-      XVECEXP (par, 0, 0) = gen_rtx_SET (VOIDmode, operands[0],
+      XVECEXP (par, 0, 0) = gen_rtx_SET (operands[0],
                                          gen_rtx_MULT (V2SFmode, operands[1], operands[2]));
       XVECEXP (par, 0, 1) = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, SPEFSCR_REGNO));
       emit_insn (par);
@@ -1109,7 +1109,7 @@
       /* We need to make a note that we clobber SPEFSCR.  */
       rtx par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
 
-      XVECEXP (par, 0, 0) = gen_rtx_SET (VOIDmode, operands[0],
+      XVECEXP (par, 0, 0) = gen_rtx_SET (operands[0],
                                          gen_rtx_DIV (V2SFmode, operands[1], operands[2]));
       XVECEXP (par, 0, 1) = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, SPEFSCR_REGNO));
       emit_insn (par);

@@ -2608,7 +2608,7 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn)
 		{
 		  rtx mem = gen_rtx_MEM (BLKmode, args[0]);
 		  set_mem_size (mem, INTVAL (args[2]));
-		  body = gen_rtx_SET (VOIDmode, mem, args[1]);
+		  body = gen_rtx_SET (mem, args[1]);
 		  mems_found += record_store (body, bb_info);
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "handling memset as BLKmode store\n");

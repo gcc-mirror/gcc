@@ -425,7 +425,7 @@
   x = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (4, const1_rtx, const0_rtx,
 					     GEN_INT (3), const2_rtx));
   x = gen_rtx_VEC_SELECT (V4HImode, op1h, x);
-  emit_insn (gen_rtx_SET (VOIDmode, t0, x));
+  emit_insn (gen_rtx_SET (t0, x));
 
   /* T1 = DZ.l, CY.l, BX.l, AW.l.  */
   emit_insn (gen_mulv4hi3 (t1, op1h, op2h));
@@ -1037,7 +1037,7 @@
     op2 = force_reg (SImode, op2);
 
   x = gen_rtx_VEC_CONCAT (V2SImode, op1, op2);
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], x));
+  emit_insn (gen_rtx_SET (operands[0], x));
   DONE;
 })
 
@@ -1273,10 +1273,10 @@
 
   cmp = gen_reg_rtx (V2SFmode);
   PUT_MODE (operands[3], V2SFmode);
-  emit_insn (gen_rtx_SET (VOIDmode, cmp, operands[3]));
+  emit_insn (gen_rtx_SET (cmp, operands[3]));
 
   x = gen_rtx_IF_THEN_ELSE (V2SFmode, cmp, operands[1], operands[2]);
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], x));
+  emit_insn (gen_rtx_SET (operands[0], x));
   DONE;
 })
 

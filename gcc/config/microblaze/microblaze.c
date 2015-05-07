@@ -592,7 +592,7 @@ load_tls_operand (rtx x, rtx reg)
 
   tmp = gen_rtx_CONST (Pmode, x);
 
-  emit_insn (gen_rtx_SET (VOIDmode, reg,
+  emit_insn (gen_rtx_SET (reg,
                           gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmp)));
 
   return reg;
@@ -1023,8 +1023,7 @@ microblaze_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 
 	  emit_move_insn (int_reg, GEN_INT (INTVAL (xplus1) & ~0x7fff));
 
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  ptr_reg,
+	  emit_insn (gen_rtx_SET (ptr_reg,
 				  gen_rtx_PLUS (Pmode, xplus0, int_reg)));
 
 	  result = gen_rtx_PLUS (Pmode, ptr_reg,

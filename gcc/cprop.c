@@ -326,7 +326,7 @@ hash_scan_set (rtx set, rtx_insn *insn, struct hash_table_d *table,
 	  && REG_NOTE_KIND (note) == REG_EQUAL
 	  && !REG_P (src)
 	  && cprop_constant_p (XEXP (note, 0)))
-	src = XEXP (note, 0), set = gen_rtx_SET (VOIDmode, dest, src);
+	src = XEXP (note, 0), set = gen_rtx_SET (dest, src);
 
       /* Record sets for constant/copy propagation.  */
       if ((cprop_reg_p (src)
@@ -1420,8 +1420,7 @@ find_implicit_sets (void)
 		(implicit_sets_size - old_implicit_sets_size) * sizeof (rtx));
       }
 
-      new_rtx = gen_rtx_SET (VOIDmode, XEXP (cond, 0),
-			     XEXP (cond, 1));
+      new_rtx = gen_rtx_SET (XEXP (cond, 0), XEXP (cond, 1));
       implicit_sets[dest->index] = new_rtx;
       if (dump_file)
 	{

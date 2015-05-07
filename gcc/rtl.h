@@ -1787,6 +1787,14 @@ rhs_regno (const_rtx x)
    not to use an rtx with this cost under any circumstances.  */
 #define MAX_COST INT_MAX
 
+/* Return true if CODE always has VOIDmode.  */
+
+static inline bool
+always_void_p (enum rtx_code code)
+{
+  return code == SET;
+}
+
 /* A structure to hold all available cost information about an rtl
    expression.  */
 struct full_rtx_costs
@@ -3596,6 +3604,5 @@ extern void _fatal_insn (const char *, const_rtx, const char *, int, const char 
 
 /* reginfo.c */
 extern tree GTY(()) global_regs_decl[FIRST_PSEUDO_REGISTER];
-
 
 #endif /* ! GCC_RTL_H */

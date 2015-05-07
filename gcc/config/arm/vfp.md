@@ -645,13 +645,13 @@
 
       if (REGNO (in_lo) == REGNO (out_hi))
         {
-          emit_insn (gen_rtx_SET (SImode, out_lo, in_lo));
+          emit_insn (gen_rtx_SET (out_lo, in_lo));
 	  operands[0] = out_hi;
           operands[1] = in_hi;
         }
       else
         {
-          emit_insn (gen_rtx_SET (SImode, out_hi, in_hi));
+          emit_insn (gen_rtx_SET (out_hi, in_hi));
 	  operands[0] = out_lo;
           operands[1] = in_lo;
         }

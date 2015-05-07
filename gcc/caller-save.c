@@ -289,8 +289,8 @@ init_caller_save (void)
 
   test_reg = gen_rtx_REG (VOIDmode, 0);
   test_mem = gen_rtx_MEM (VOIDmode, address);
-  savepat = gen_rtx_SET (VOIDmode, test_mem, test_reg);
-  restpat = gen_rtx_SET (VOIDmode, test_reg, test_mem);
+  savepat = gen_rtx_SET (test_mem, test_reg);
+  restpat = gen_rtx_SET (test_reg, test_mem);
 
   saveinsn = gen_rtx_INSN (VOIDmode, 0, 0, 0, savepat, 0, -1, 0);
   restinsn = gen_rtx_INSN (VOIDmode, 0, 0, 0, restpat, 0, -1, 0);
@@ -909,7 +909,7 @@ save_call_clobbered_regs (void)
 		     Currently we handle only single return value case.  */
 		  if (REG_P (dest))
 		    {
-		      newpat = gen_rtx_SET (VOIDmode, cheap, copy_rtx (dest));
+		      newpat = gen_rtx_SET (cheap, copy_rtx (dest));
 		      chain = insert_one_insn (chain, 0, -1, newpat);
 		    }
 		}
@@ -1272,9 +1272,7 @@ insert_restore (struct insn_chain *chain, int before_p, int regno,
   gcc_assert (MIN (MAX_SUPPORTED_STACK_ALIGNMENT,
 		   GET_MODE_ALIGNMENT (GET_MODE (mem))) <= MEM_ALIGN (mem));
 
-  pat = gen_rtx_SET (VOIDmode,
-		     gen_rtx_REG (GET_MODE (mem),
-				  regno), mem);
+  pat = gen_rtx_SET (gen_rtx_REG (GET_MODE (mem), regno), mem);
   code = reg_restore_code (regno, GET_MODE (mem));
   new_chain = insert_one_insn (chain, before_p, code, pat);
 
@@ -1353,9 +1351,7 @@ insert_save (struct insn_chain *chain, int before_p, int regno,
   gcc_assert (MIN (MAX_SUPPORTED_STACK_ALIGNMENT,
 		   GET_MODE_ALIGNMENT (GET_MODE (mem))) <= MEM_ALIGN (mem));
 
-  pat = gen_rtx_SET (VOIDmode, mem,
-		     gen_rtx_REG (GET_MODE (mem),
-				  regno));
+  pat = gen_rtx_SET (mem, gen_rtx_REG (GET_MODE (mem), regno));
   code = reg_save_code (regno, GET_MODE (mem));
   new_chain = insert_one_insn (chain, before_p, code, pat);
 

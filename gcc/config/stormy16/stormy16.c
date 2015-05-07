@@ -256,7 +256,7 @@ xstormy16_emit_cbranch (enum rtx_code code, rtx op0, rtx op1, rtx loc)
 
   condition_rtx = gen_rtx_fmt_ee (code, mode, op0, op1);
   loc_ref = gen_rtx_LABEL_REF (VOIDmode, loc);
-  branch = gen_rtx_SET (VOIDmode, pc_rtx,
+  branch = gen_rtx_SET (pc_rtx,
 			gen_rtx_IF_THEN_ELSE (VOIDmode, condition_rtx,
 					      loc_ref, pc_rtx));
 
@@ -270,7 +270,7 @@ xstormy16_emit_cbranch (enum rtx_code code, rtx op0, rtx op1, rtx loc)
     {
       rtx sub;
 #if 0
-      sub = gen_rtx_SET (VOIDmode, op0, gen_rtx_MINUS (SImode, op0, op1));
+      sub = gen_rtx_SET (op0, gen_rtx_MINUS (SImode, op0, op1));
 #else
       sub = gen_rtx_CLOBBER (SImode, op0);
 #endif
@@ -865,7 +865,7 @@ xstormy16_split_move (machine_mode mode, rtx dest, rtx src)
       gcc_assert (GET_CODE (w_src) != SUBREG
 		  && GET_CODE (w_dest) != SUBREG);
 
-      insn = emit_insn (gen_rtx_SET (VOIDmode, w_dest, w_src));
+      insn = emit_insn (gen_rtx_SET (w_dest, w_src));
       if (auto_inc_reg_rtx)
         REG_NOTES (insn) = alloc_EXPR_LIST (REG_INC,
                                             auto_inc_reg_rtx,
@@ -884,7 +884,7 @@ xstormy16_expand_move (machine_mode mode, rtx dest, rtx src)
       rtx pmv      = XEXP (dest, 0);
       rtx dest_reg = XEXP (pmv, 0);
       rtx dest_mod = XEXP (pmv, 1);
-      rtx set      = gen_rtx_SET (Pmode, dest_reg, dest_mod);
+      rtx set      = gen_rtx_SET (dest_reg, dest_mod);
       rtx clobber  = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, CARRY_REGNUM));
 
       dest = gen_rtx_MEM (mode, dest_reg);
@@ -895,7 +895,7 @@ xstormy16_expand_move (machine_mode mode, rtx dest, rtx src)
       rtx pmv     = XEXP (src, 0);
       rtx src_reg = XEXP (pmv, 0);
       rtx src_mod = XEXP (pmv, 1);
-      rtx set     = gen_rtx_SET (Pmode, src_reg, src_mod);
+      rtx set     = gen_rtx_SET (src_reg, src_mod);
       rtx clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, CARRY_REGNUM));
 
       src = gen_rtx_MEM (mode, src_reg);
@@ -921,7 +921,7 @@ xstormy16_expand_move (machine_mode mode, rtx dest, rtx src)
       return;
     }
 
-  emit_insn (gen_rtx_SET (VOIDmode, dest, src));
+  emit_insn (gen_rtx_SET (dest, src));
 }
 
 /* Stack Layout:
@@ -1047,7 +1047,7 @@ emit_addhi3_postreload (rtx dest, rtx src0, rtx src1)
 {
   rtx set, clobber, insn;
 
-  set = gen_rtx_SET (VOIDmode, dest, gen_rtx_PLUS (HImode, src0, src1));
+  set = gen_rtx_SET (dest, gen_rtx_PLUS (HImode, src0, src1));
   clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, CARRY_REGNUM));
   insn = emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set, clobber)));
   return insn;
@@ -1098,10 +1098,9 @@ xstormy16_expand_prologue (void)
 
 	dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (2));
 
-	XVECEXP (dwarf, 0, 0) = gen_rtx_SET (VOIDmode,
-					     gen_rtx_MEM (Pmode, stack_pointer_rtx),
+	XVECEXP (dwarf, 0, 0) = gen_rtx_SET (gen_rtx_MEM (Pmode, stack_pointer_rtx),
 					     reg);
-	XVECEXP (dwarf, 0, 1) = gen_rtx_SET (Pmode, stack_pointer_rtx,
+	XVECEXP (dwarf, 0, 1) = gen_rtx_SET (stack_pointer_rtx,
 					     plus_constant (Pmode,
 							    stack_pointer_rtx,
 							    GET_MODE_SIZE (Pmode)));
@@ -1122,10 +1121,9 @@ xstormy16_expand_prologue (void)
 
 	dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (2));
 
-	XVECEXP (dwarf, 0, 0) = gen_rtx_SET (VOIDmode,
-					     gen_rtx_MEM (Pmode, stack_pointer_rtx),
+	XVECEXP (dwarf, 0, 0) = gen_rtx_SET (gen_rtx_MEM (Pmode, stack_pointer_rtx),
 					     reg);
-	XVECEXP (dwarf, 0, 1) = gen_rtx_SET (Pmode, stack_pointer_rtx,
+	XVECEXP (dwarf, 0, 1) = gen_rtx_SET (stack_pointer_rtx,
 					     plus_constant (Pmode,
 							    stack_pointer_rtx,
 							    GET_MODE_SIZE (Pmode)));
@@ -1960,7 +1958,7 @@ xstormy16_expand_call (rtx retval, rtx dest, rtx counter)
   call = gen_rtx_CALL (mode, gen_rtx_MEM (FUNCTION_MODE, dest),
 		       counter);
   if (retval)
-    call = gen_rtx_SET (VOIDmode, retval, call);
+    call = gen_rtx_SET (retval, call);
 
   if (! CONSTANT_P (dest))
     {
@@ -2028,10 +2026,10 @@ xstormy16_expand_arith (machine_mode mode, enum rtx_code code,
 
 	      sub_1 = gen_rtx_MINUS (HImode, w_src0,
 				     gen_rtx_ZERO_EXTEND (HImode, gen_rtx_REG (BImode, CARRY_REGNUM)));
-	      sub = gen_rtx_SET (VOIDmode, w_dest,
+	      sub = gen_rtx_SET (w_dest,
 				 gen_rtx_MINUS (HImode, sub_1, w_src1));
 	      clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, CARRY_REGNUM));
-	      branch = gen_rtx_SET (VOIDmode, pc_rtx,
+	      branch = gen_rtx_SET (pc_rtx,
 				    gen_rtx_IF_THEN_ELSE (VOIDmode,
 							  gen_rtx_EQ (HImode,
 								      sub_1,
@@ -2059,12 +2057,12 @@ xstormy16_expand_arith (machine_mode mode, enum rtx_code code,
 	      && INTVAL (w_src1) == -(code == AND))
 	    continue;
 
-	  insn = gen_rtx_SET (VOIDmode, w_dest, gen_rtx_fmt_ee (code, mode,
-								w_src0, w_src1));
+	  insn = gen_rtx_SET (w_dest, gen_rtx_fmt_ee (code, mode,
+						      w_src0, w_src1));
 	  break;
 
 	case NOT:
-	  insn = gen_rtx_SET (VOIDmode, w_dest, gen_rtx_NOT (mode, w_src0));
+	  insn = gen_rtx_SET (w_dest, gen_rtx_NOT (mode, w_src0));
 	  break;
 
 	default:

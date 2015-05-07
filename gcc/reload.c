@@ -935,7 +935,7 @@ can_reload_into (rtx in, int regno, machine_mode mode)
   /* If we can make a simple SET insn that does the job, everything should
      be fine.  */
   dst =  gen_rtx_REG (mode, regno);
-  test_insn = make_insn_raw (gen_rtx_SET (VOIDmode, dst, in));
+  test_insn = make_insn_raw (gen_rtx_SET (dst, in));
   save_recog_data = recog_data;
   if (recog_memoized (test_insn) >= 0)
     {

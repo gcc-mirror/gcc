@@ -1145,9 +1145,9 @@
     else
       low = 4, high = 0;
     
-    emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_SUBREG (SImode, operands[0], low),
+    emit_insn (gen_rtx_SET (gen_rtx_SUBREG (SImode, operands[0], low),
 	      operands[1]));
-    emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_SUBREG (SImode, operands[0], high),
+    emit_insn (gen_rtx_SET (gen_rtx_SUBREG (SImode, operands[0], high),
 	      gen_rtx_ASHIFTRT (SImode,
 			       gen_rtx_SUBREG (SImode, operands[0], low),
 			       GEN_INT (31))));
@@ -1378,8 +1378,7 @@
 
   for (i = 0; i < count; i++)
     XVECEXP (operands[3], 0, i)
-      = gen_rtx_SET (VOIDmode,
-		 gen_rtx_REG (SImode, regno + i),
+      = gen_rtx_SET (gen_rtx_REG (SImode, regno + i),
 		 gen_rtx_MEM (SImode, plus_constant (Pmode, stack_pointer_rtx,
 						     i * 4)));
 }")
@@ -1417,7 +1416,7 @@
 
   for (i = 0; i < count; i++)
     XVECEXP (operands[3], 0, i)
-      = gen_rtx_SET (VOIDmode,
+      = gen_rtx_SET (
 		 gen_rtx_MEM (SImode, plus_constant (Pmode, stack_pointer_rtx,
 						     i * 4)),
 		 gen_rtx_REG (SImode, regno + i));
@@ -2336,10 +2335,10 @@
 ;        rtx lshft = GEN_INT (32 - (INTVAL (operands[2]) + INTVAL (operands[3])));
 ;        rtx rshft = GEN_INT (32 - INTVAL (operands[2]));
 ;
-;        emit_insn (gen_rtx_SET (SImode, operands[0], operands[1]));
-;        emit_insn (gen_rtx_SET (SImode, operands[0],
+;        emit_insn (gen_rtx_SET (operands[0], operands[1]));
+;        emit_insn (gen_rtx_SET (operands[0],
 ;                            gen_rtx_ASHIFT (SImode, operands[0], lshft)));
-;        emit_insn (gen_rtx_SET (SImode, operands[0],
+;        emit_insn (gen_rtx_SET (operands[0],
 ;                            gen_rtx_ASHIFTRT (SImode, operands[0], rshft)));
 ;        DONE;
 ;     }
@@ -2371,10 +2370,10 @@
       rtx tmp1 = gen_reg_rtx (SImode);
       rtx tmp2 = gen_reg_rtx (SImode);
 
-      emit_insn (gen_rtx_SET (SImode, tmp1, operands[1]));
-      emit_insn (gen_rtx_SET (SImode, tmp2,
+      emit_insn (gen_rtx_SET (tmp1, operands[1]));
+      emit_insn (gen_rtx_SET (tmp2,
                          gen_rtx_ASHIFT (SImode, tmp1, lshft)));
-      emit_insn (gen_rtx_SET (SImode, operands[0],
+      emit_insn (gen_rtx_SET (operands[0],
                          gen_rtx_ASHIFTRT (SImode, tmp2, rshft)));
       DONE;
     }
@@ -2416,10 +2415,10 @@
         {
           rtx rshft = GEN_INT (INTVAL (operands[3]));
           shifted = gen_reg_rtx (SImode);
-          emit_insn (gen_rtx_SET (SImode, shifted,
+          emit_insn (gen_rtx_SET (shifted,
                          gen_rtx_LSHIFTRT (SImode, operands[1], rshft)));
         }
-     emit_insn (gen_rtx_SET (SImode, operands[0],
+     emit_insn (gen_rtx_SET (operands[0],
                        gen_rtx_AND (SImode, shifted, mask)));
      DONE;
    }
@@ -2432,10 +2431,10 @@
      rtx tmp1 = gen_reg_rtx (SImode);
      rtx tmp2 = gen_reg_rtx (SImode);
 
-     emit_insn (gen_rtx_SET (SImode, tmp1, operands[1]));
-     emit_insn (gen_rtx_SET (SImode, tmp2,
+     emit_insn (gen_rtx_SET (tmp1, operands[1]));
+     emit_insn (gen_rtx_SET (tmp2,
                          gen_rtx_ASHIFT (SImode, tmp1, lshft)));
-     emit_insn (gen_rtx_SET (SImode, operands[0],
+     emit_insn (gen_rtx_SET (operands[0],
                        gen_rtx_LSHIFTRT (SImode, tmp2, rshft)));
      DONE;
    }

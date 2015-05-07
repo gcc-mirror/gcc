@@ -889,9 +889,8 @@
         }
       else
 	/* This emit_insn will create corresponding 'slt/slts' insturction.  */
-	emit_insn (gen_rtx_SET (VOIDmode, tmp,
-				gen_rtx_fmt_ee (new_code, SImode,
-						cmp_op0, cmp_op1)));
+	emit_insn (gen_rtx_SET (tmp, gen_rtx_fmt_ee (new_code, SImode,
+						     cmp_op0, cmp_op1)));
 
       /* Change comparison semantic into (eq X 0) or (ne X 0) behavior
          so that cmovz or cmovn will be matched later.

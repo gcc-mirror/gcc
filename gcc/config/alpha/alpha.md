@@ -2336,8 +2336,7 @@
      bit at bit 48 of the fraction, which is representable in DFmode,
      which prevents rounding error in the final conversion to SFmode.  */
 
-  emit_insn (gen_rtx_SET (VOIDmode, sticky,
-			  gen_rtx_NE (DImode, lo, const0_rtx)));
+  emit_insn (gen_rtx_SET (sticky, gen_rtx_NE (DImode, lo, const0_rtx)));
   emit_insn (gen_iordi3 (hi, hi, sticky));
   emit_insn (gen_trunctfdf2 (tmpf, arg));
   emit_insn (gen_truncdfsf2 (operands[0], tmpf));
@@ -4203,7 +4202,7 @@
       emit_insn (gen_movdi (operand_subword (target, 1, 0, TImode), out[1]));
 
       if (target != operands[0])
-	emit_insn (gen_rtx_SET (VOIDmode, operands[0], target));
+	emit_insn (gen_rtx_SET (operands[0], target));
 
       DONE;
     }

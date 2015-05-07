@@ -1478,8 +1478,8 @@ result_vector (int savep, rtx result)
 	reg = gen_rtx_REG (mode, savep ? regno : INCOMING_REGNO (regno));
 	mem = adjust_address (result, mode, size);
 	savevec[nelts++] = (savep
-			    ? gen_rtx_SET (VOIDmode, mem, reg)
-			    : gen_rtx_SET (VOIDmode, reg, mem));
+			    ? gen_rtx_SET (mem, reg)
+			    : gen_rtx_SET (reg, mem));
 	size += GET_MODE_SIZE (mode);
       }
   return gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (nelts, savevec));

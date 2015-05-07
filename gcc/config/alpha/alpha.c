@@ -1127,7 +1127,7 @@ alpha_legitimize_address_1 (rtx x, rtx scratch, machine_mode mode)
 	  if (alpha_tls_size == 64)
 	    {
 	      dest = gen_reg_rtx (Pmode);
-	      emit_insn (gen_rtx_SET (VOIDmode, dest, eqv));
+	      emit_insn (gen_rtx_SET (dest, eqv));
 	      emit_insn (gen_adddi3 (dest, dest, scratch));
 	      return dest;
 	    }
@@ -1136,7 +1136,7 @@ alpha_legitimize_address_1 (rtx x, rtx scratch, machine_mode mode)
 	      insn = gen_rtx_HIGH (Pmode, eqv);
 	      insn = gen_rtx_PLUS (Pmode, scratch, insn);
 	      scratch = gen_reg_rtx (Pmode);
-	      emit_insn (gen_rtx_SET (VOIDmode, scratch, insn));
+	      emit_insn (gen_rtx_SET (scratch, insn));
 	    }
 	  return gen_rtx_LO_SUM (Pmode, scratch, eqv);
 
@@ -1148,7 +1148,7 @@ alpha_legitimize_address_1 (rtx x, rtx scratch, machine_mode mode)
 	  dest = gen_reg_rtx (Pmode);
 
 	  emit_insn (gen_get_thread_pointerdi (tp));
-	  emit_insn (gen_rtx_SET (VOIDmode, scratch, eqv));
+	  emit_insn (gen_rtx_SET (scratch, eqv));
 	  emit_insn (gen_adddi3 (dest, tp, scratch));
 	  return dest;
 
@@ -1163,7 +1163,7 @@ alpha_legitimize_address_1 (rtx x, rtx scratch, machine_mode mode)
 	      insn = gen_rtx_HIGH (Pmode, eqv);
 	      insn = gen_rtx_PLUS (Pmode, tp, insn);
 	      tp = gen_reg_rtx (Pmode);
-	      emit_insn (gen_rtx_SET (VOIDmode, tp, insn));
+	      emit_insn (gen_rtx_SET (tp, insn));
 	    }
 	  return gen_rtx_LO_SUM (Pmode, tp, eqv);
 
@@ -1179,8 +1179,7 @@ alpha_legitimize_address_1 (rtx x, rtx scratch, machine_mode mode)
 	    {
 	      if (can_create_pseudo_p ())
 	        scratch = gen_reg_rtx (Pmode);
-	      emit_insn (gen_rtx_SET (VOIDmode, scratch,
-				      gen_rtx_HIGH (Pmode, x)));
+	      emit_insn (gen_rtx_SET (scratch, gen_rtx_HIGH (Pmode, x)));
 	      return gen_rtx_LO_SUM (Pmode, scratch, x);
 	    }
 	}
@@ -1805,7 +1804,7 @@ alpha_emit_set_const_1 (rtx target, machine_mode mode,
 	    return pc_rtx;
 	  if (target == NULL)
 	    target = gen_reg_rtx (mode);
-	  emit_insn (gen_rtx_SET (VOIDmode, target, GEN_INT (c)));
+	  emit_insn (gen_rtx_SET (target, GEN_INT (c)));
 	  return target;
 	}
       else if (n >= 2 + (extra != 0))
@@ -1814,7 +1813,7 @@ alpha_emit_set_const_1 (rtx target, machine_mode mode,
 	    return pc_rtx;
 	  if (!can_create_pseudo_p ())
 	    {
-	      emit_insn (gen_rtx_SET (VOIDmode, target, GEN_INT (high << 16)));
+	      emit_insn (gen_rtx_SET (target, GEN_INT (high << 16)));
 	      temp = target;
 	    }
 	  else
@@ -1832,7 +1831,7 @@ alpha_emit_set_const_1 (rtx target, machine_mode mode,
 	      if (! subtarget)
 		subtarget = gen_reg_rtx (mode);
 	      insn = gen_rtx_PLUS (mode, temp, GEN_INT (extra << 16));
-	      insn = gen_rtx_SET (VOIDmode, subtarget, insn);
+	      insn = gen_rtx_SET (subtarget, insn);
 	      emit_insn (insn);
 	      temp = subtarget;
 	    }
@@ -1840,7 +1839,7 @@ alpha_emit_set_const_1 (rtx target, machine_mode mode,
 	  if (target == NULL)
 	    target = gen_reg_rtx (mode);
 	  insn = gen_rtx_PLUS (mode, temp, GEN_INT (low));
-	  insn = gen_rtx_SET (VOIDmode, target, insn);
+	  insn = gen_rtx_SET (target, insn);
 	  emit_insn (insn);
 	  return target;
 	}
@@ -2517,7 +2516,7 @@ alpha_emit_floatuns (rtx operands[2])
 
   emit_cmp_and_jump_insns (in, const0_rtx, LT, const0_rtx, DImode, 0, neglab);
 
-  emit_insn (gen_rtx_SET (VOIDmode, out, gen_rtx_FLOAT (mode, in)));
+  emit_insn (gen_rtx_SET (out, gen_rtx_FLOAT (mode, in)));
   emit_jump_insn (gen_jump (donelab));
   emit_barrier ();
 
@@ -2526,8 +2525,8 @@ alpha_emit_floatuns (rtx operands[2])
   emit_insn (gen_lshrdi3 (i0, in, const1_rtx));
   emit_insn (gen_anddi3 (i1, in, const1_rtx));
   emit_insn (gen_iordi3 (i0, i0, i1));
-  emit_insn (gen_rtx_SET (VOIDmode, f0, gen_rtx_FLOAT (mode, i0)));
-  emit_insn (gen_rtx_SET (VOIDmode, out, gen_rtx_PLUS (mode, f0, f0)));
+  emit_insn (gen_rtx_SET (f0, gen_rtx_FLOAT (mode, i0)));
+  emit_insn (gen_rtx_SET (out, gen_rtx_PLUS (mode, f0, f0)));
 
   emit_label (donelab);
 }
@@ -2653,7 +2652,7 @@ alpha_emit_conditional_branch (rtx operands[], machine_mode cmp_mode)
     }
 
   /* Emit the branch instruction.  */
-  tem = gen_rtx_SET (VOIDmode, pc_rtx,
+  tem = gen_rtx_SET (pc_rtx,
 		     gen_rtx_IF_THEN_ELSE (VOIDmode,
 					   gen_rtx_fmt_ee (branch_code,
 							   branch_mode, tem,
@@ -2735,16 +2734,16 @@ alpha_emit_setcc (rtx operands[], machine_mode cmp_mode)
   if (cmp_code != UNKNOWN)
     {
       tmp = gen_reg_rtx (cmp_mode);
-      emit_insn (gen_rtx_SET (VOIDmode, tmp,
-			      gen_rtx_fmt_ee (cmp_code, cmp_mode, op0, op1)));
+      emit_insn (gen_rtx_SET (tmp, gen_rtx_fmt_ee (cmp_code, cmp_mode,
+						   op0, op1)));
 
       op0 = cmp_mode != DImode ? gen_lowpart (DImode, tmp) : tmp;
       op1 = const0_rtx;
     }
 
   /* Emit the setcc instruction.  */
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0],
-			  gen_rtx_fmt_ee (code, DImode, op0, op1)));
+  emit_insn (gen_rtx_SET (operands[0], gen_rtx_fmt_ee (code, DImode,
+						       op0, op1)));
   return true;
 }
 
@@ -2830,9 +2829,8 @@ alpha_emit_conditional_move (rtx cmp, machine_mode mode)
 	}
 
       tem = gen_reg_rtx (cmp_mode);
-      emit_insn (gen_rtx_SET (VOIDmode, tem,
-			      gen_rtx_fmt_ee (cmp_code, cmp_mode,
-					      op0, op1)));
+      emit_insn (gen_rtx_SET (tem, gen_rtx_fmt_ee (cmp_code, cmp_mode,
+						   op0, op1)));
 
       cmp_mode = cmp_mode == DImode ? DFmode : DImode;
       op0 = gen_lowpart (cmp_mode, tem);
@@ -2956,16 +2954,16 @@ alpha_split_conditional_move (enum rtx_code code, rtx dest, rtx cond,
       && (diff <= 8 || alpha_tune == PROCESSOR_EV6))
     {
       tmp = gen_rtx_fmt_ee (code, DImode, cond, const0_rtx);
-      emit_insn (gen_rtx_SET (VOIDmode, copy_rtx (subtarget), tmp));
+      emit_insn (gen_rtx_SET (copy_rtx (subtarget), tmp));
 
       tmp = gen_rtx_ASHIFT (DImode, copy_rtx (subtarget),
 			    GEN_INT (exact_log2 (t)));
-      emit_insn (gen_rtx_SET (VOIDmode, target, tmp));
+      emit_insn (gen_rtx_SET (target, tmp));
     }
   else if (f == 0 && t == -1)
     {
       tmp = gen_rtx_fmt_ee (code, DImode, cond, const0_rtx);
-      emit_insn (gen_rtx_SET (VOIDmode, copy_rtx (subtarget), tmp));
+      emit_insn (gen_rtx_SET (copy_rtx (subtarget), tmp));
 
       emit_insn (gen_negdi2 (target, copy_rtx (subtarget)));
     }
@@ -2974,7 +2972,7 @@ alpha_split_conditional_move (enum rtx_code code, rtx dest, rtx cond,
       rtx add_op;
 
       tmp = gen_rtx_fmt_ee (code, DImode, cond, const0_rtx);
-      emit_insn (gen_rtx_SET (VOIDmode, copy_rtx (subtarget), tmp));
+      emit_insn (gen_rtx_SET (copy_rtx (subtarget), tmp));
 
       if (diff == 1)
 	emit_insn (gen_adddi3 (target, copy_rtx (subtarget), GEN_INT (f)));
@@ -2986,7 +2984,7 @@ alpha_split_conditional_move (enum rtx_code code, rtx dest, rtx cond,
 	      tmp = gen_rtx_MULT (DImode, copy_rtx (subtarget),
 				  GEN_INT (diff));
 	      tmp = gen_rtx_PLUS (DImode, tmp, add_op);
-	      emit_insn (gen_rtx_SET (VOIDmode, target, tmp));
+	      emit_insn (gen_rtx_SET (target, tmp));
 	    }
 	  else
 	    return 0;
@@ -3701,7 +3699,7 @@ alpha_expand_unaligned_load_words (rtx *out_regs, rtx smem,
     {
       emit_insn (gen_extql (data_regs[i], data_regs[i], sreg));
       emit_insn (gen_extqh (ext_tmps[i], data_regs[i+1], sreg));
-      emit_insn (gen_rtx_SET (VOIDmode, ext_tmps[i],
+      emit_insn (gen_rtx_SET (ext_tmps[i],
 			      gen_rtx_IF_THEN_ELSE (DImode,
 						    gen_rtx_EQ (DImode, areg,
 								const0_rtx),
@@ -4408,7 +4406,7 @@ emit_unlikely_jump (rtx cond, rtx label)
   rtx x;
 
   x = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, label, pc_rtx);
-  x = emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, x));
+  x = emit_jump_insn (gen_rtx_SET (pc_rtx, x));
   add_int_reg_note (x, REG_BR_PROB, very_unlikely);
 }
 
@@ -4516,15 +4514,15 @@ alpha_split_atomic_op (enum rtx_code code, rtx mem, rtx val, rtx before,
   if (code == NOT)
     {
       x = gen_rtx_AND (mode, before, val);
-      emit_insn (gen_rtx_SET (VOIDmode, val, x));
+      emit_insn (gen_rtx_SET (val, x));
 
       x = gen_rtx_NOT (mode, val);
     }
   else
     x = gen_rtx_fmt_ee (code, mode, before, val);
   if (after)
-    emit_insn (gen_rtx_SET (VOIDmode, after, copy_rtx (x)));
-  emit_insn (gen_rtx_SET (VOIDmode, scratch, x));
+    emit_insn (gen_rtx_SET (after, copy_rtx (x)));
+  emit_insn (gen_rtx_SET (scratch, x));
 
   emit_store_conditional (mode, cond, mem, scratch);
 
@@ -4576,7 +4574,7 @@ alpha_split_compare_and_swap (rtx operands[])
   else
     {
       x = gen_rtx_EQ (DImode, x, oldval);
-      emit_insn (gen_rtx_SET (VOIDmode, cond, x));
+      emit_insn (gen_rtx_SET (cond, x));
       x = gen_rtx_EQ (DImode, cond, const0_rtx);
     }
   emit_unlikely_jump (x, label2);
@@ -4691,7 +4689,7 @@ alpha_split_compare_and_swap_12 (rtx operands[])
   else
     {
       x = gen_rtx_EQ (DImode, dest, oldval);
-      emit_insn (gen_rtx_SET (VOIDmode, cond, x));
+      emit_insn (gen_rtx_SET (cond, x));
       x = gen_rtx_EQ (DImode, cond, const0_rtx);
     }
   emit_unlikely_jump (x, label2);
@@ -7712,7 +7710,7 @@ emit_frame_store_1 (rtx value, rtx base_reg, HOST_WIDE_INT frame_bias,
 	}
 
       add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-		    gen_rtx_SET (VOIDmode, mem, frame_reg));
+		    gen_rtx_SET (mem, frame_reg));
     }
 }
 
@@ -7893,7 +7891,7 @@ alpha_expand_prologue (void)
          note it looks at instead.  */
       RTX_FRAME_RELATED_P (seq) = 1;
       add_reg_note (seq, REG_FRAME_RELATED_EXPR,
-		    gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+		    gen_rtx_SET (stack_pointer_rtx,
 				 plus_constant (Pmode, stack_pointer_rtx,
 						-frame_size)));
     }

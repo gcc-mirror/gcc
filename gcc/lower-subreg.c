@@ -304,7 +304,7 @@ init_lower_subreg (void)
 
   rtxes.target = gen_rtx_REG (word_mode, FIRST_PSEUDO_REGISTER);
   rtxes.source = gen_rtx_REG (word_mode, FIRST_PSEUDO_REGISTER + 1);
-  rtxes.set = gen_rtx_SET (VOIDmode, rtxes.target, rtxes.source);
+  rtxes.set = gen_rtx_SET (rtxes.target, rtxes.source);
   rtxes.zext = gen_rtx_ZERO_EXTEND (twice_word_mode, rtxes.source);
   rtxes.shift = gen_rtx_ASHIFT (twice_word_mode, rtxes.source, const0_rtx);
 

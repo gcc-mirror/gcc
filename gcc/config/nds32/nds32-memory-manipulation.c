@@ -108,7 +108,7 @@ nds32_expand_load_multiple (int base_regno, int count,
 					       new_addr, offset);
       reg      = gen_rtx_REG (SImode, base_regno + par_index);
 
-      XVECEXP (result, 0, par_index) = gen_rtx_SET (VOIDmode, reg, mem);
+      XVECEXP (result, 0, par_index) = gen_rtx_SET (reg, mem);
     }
 
   return result;
@@ -136,7 +136,7 @@ nds32_expand_store_multiple (int base_regno, int count,
 					       new_addr, offset);
       reg      = gen_rtx_REG (SImode, base_regno + par_index);
 
-      XVECEXP (result, 0, par_index) = gen_rtx_SET (VOIDmode, mem, reg);
+      XVECEXP (result, 0, par_index) = gen_rtx_SET (mem, reg);
     }
 
   return result;

@@ -669,7 +669,7 @@ gen_compare_reg (machine_mode cmode, enum rtx_code code,
   else
     x = force_reg (in_mode, x);
 
-  pat = gen_rtx_SET (VOIDmode, cc_reg, gen_rtx_COMPARE (mode, x, y));
+  pat = gen_rtx_SET (cc_reg, gen_rtx_COMPARE (mode, x, y));
   if (mode == CC_FP_EQmode || mode == CC_FP_GTEmode)
     {
       const char *name = mode == CC_FP_EQmode ? "__eqsf2" : "__gtesf2";
@@ -1570,7 +1570,7 @@ frame_subreg_note (rtx set, int offset)
   rtx src = simplify_gen_subreg (SImode, SET_SRC (set), DImode, offset);
   rtx dst = simplify_gen_subreg (SImode, SET_DEST (set), DImode, offset);
 
-  set = gen_rtx_SET (VOIDmode, dst ,src);
+  set = gen_rtx_SET (dst ,src);
   RTX_FRAME_RELATED_P (set) = 1;
   return set;
 }
@@ -1625,7 +1625,7 @@ frame_insn (rtx x)
 static rtx_insn *
 frame_move_insn (rtx to, rtx from)
 {
-  return frame_insn (gen_rtx_SET (VOIDmode, to, from));
+  return frame_insn (gen_rtx_SET (to, from));
 }
 
 /* Generate a MEM referring to a varargs argument slot.  */
@@ -1867,11 +1867,10 @@ epiphany_expand_prologue (void)
       /* Instruction scheduling can separate the instruction setting IP from
 	 INSN so that dwarf2out_frame_debug_expr becomes confused what the
 	 temporary register is.  Example: _gcov.o  */
-      note = gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+      note = gen_rtx_SET (stack_pointer_rtx,
 			  gen_rtx_PLUS (Pmode, stack_pointer_rtx, off));
       note = gen_rtx_PARALLEL (VOIDmode,
-			       gen_rtvec (2, gen_rtx_SET (VOIDmode, mem2, reg),
-					  note));
+			       gen_rtvec (2, gen_rtx_SET (mem2, reg), note));
       add_reg_note (insn, REG_FRAME_RELATED_EXPR, note);
     }
   /* If there is only one or no register to save, yet we have a large frame,

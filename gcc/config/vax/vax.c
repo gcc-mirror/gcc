@@ -172,7 +172,7 @@ vax_add_reg_cfa_offset (rtx insn, int offset, rtx src)
 
   x = plus_constant (Pmode, frame_pointer_rtx, offset);
   x = gen_rtx_MEM (SImode, x);
-  x = gen_rtx_SET (VOIDmode, x, src);
+  x = gen_rtx_SET (x, src);
   add_reg_note (insn, REG_CFA_OFFSET, x);
 }
 

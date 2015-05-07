@@ -960,8 +960,8 @@ sh_treg_combine::make_not_reg_insn (rtx dst_reg, rtx src_reg) const
 
   start_sequence ();
 
-  emit_insn (gen_rtx_SET (VOIDmode, m_ccreg,
-			  gen_rtx_fmt_ee (EQ, SImode, src_reg, const0_rtx)));
+  emit_insn (gen_rtx_SET (m_ccreg, gen_rtx_fmt_ee (EQ, SImode,
+						   src_reg, const0_rtx)));
 
   if (GET_MODE (dst_reg) == SImode)
     emit_move_insn (dst_reg, m_ccreg);
@@ -983,7 +983,7 @@ rtx_insn *
 sh_treg_combine::make_inv_ccreg_insn (void) const
 {
   start_sequence ();
-  rtx_insn *i = emit_insn (gen_rtx_SET (VOIDmode, m_ccreg,
+  rtx_insn *i = emit_insn (gen_rtx_SET (m_ccreg,
                                         gen_rtx_fmt_ee (XOR, GET_MODE (m_ccreg),
                                                         m_ccreg, const1_rtx)));
   end_sequence ();

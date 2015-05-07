@@ -167,30 +167,26 @@
       {
        rtx cc_reg = gen_rtx_REG (CCmode, CC_REGNUM);
 
-       emit_insn (gen_rtx_SET (VOIDmode,
-                               cc_reg,
-                               gen_rtx_COMPARE (CCmode, operands[0], const0_rtx)));
+       emit_insn (gen_rtx_SET (cc_reg, gen_rtx_COMPARE (CCmode, operands[0],
+       							const0_rtx)));
        emit_insn (gen_rtx_COND_EXEC (VOIDmode,
                                     (gen_rtx_LT (SImode,
                                                  cc_reg,
                                                  const0_rtx)),
-                                    (gen_rtx_SET (VOIDmode,
-                                                  operands[0],
+                                    (gen_rtx_SET (operands[0],
                                                   (gen_rtx_MINUS (SImode,
                                                                   const0_rtx,
                                                                   operands[1]))))));
       }
     else
       {
-        emit_insn (gen_rtx_SET (VOIDmode,
-                                operands[0],
+        emit_insn (gen_rtx_SET (operands[0],
                                 gen_rtx_XOR (SImode,
                                              gen_rtx_ASHIFTRT (SImode,
                                                                operands[1],
                                                                GEN_INT (31)),
                                              operands[1])));
-        emit_insn (gen_rtx_SET (VOIDmode,
-                                operands[0],
+        emit_insn (gen_rtx_SET (operands[0],
                                 gen_rtx_MINUS (SImode,
                                                operands[0],
                                                gen_rtx_ASHIFTRT (SImode,
@@ -225,30 +221,26 @@
       {
        rtx cc_reg = gen_rtx_REG (CCmode, CC_REGNUM);
 
-       emit_insn (gen_rtx_SET (VOIDmode,
-                               cc_reg,
-                               gen_rtx_COMPARE (CCmode, operands[0], const0_rtx)));
+       emit_insn (gen_rtx_SET (cc_reg, gen_rtx_COMPARE (CCmode, operands[0],
+							const0_rtx)));
        emit_insn (gen_rtx_COND_EXEC (VOIDmode,
                                     (gen_rtx_GT (SImode,
                                                  cc_reg,
                                                  const0_rtx)),
-                                    (gen_rtx_SET (VOIDmode,
-                                                  operands[0],
+                                    (gen_rtx_SET (operands[0],
                                                   (gen_rtx_MINUS (SImode,
                                                                   const0_rtx,
                                                                   operands[1]))))));
       }
     else
       {
-        emit_insn (gen_rtx_SET (VOIDmode,
-                                operands[0],
+        emit_insn (gen_rtx_SET (operands[0],
                                 gen_rtx_XOR (SImode,
                                              gen_rtx_ASHIFTRT (SImode,
                                                                operands[1],
                                                                GEN_INT (31)),
                                              operands[1])));
-        emit_insn (gen_rtx_SET (VOIDmode,
-                                operands[0],
+        emit_insn (gen_rtx_SET (operands[0],
                                 gen_rtx_MINUS (SImode,
                                                gen_rtx_ASHIFTRT (SImode,
                                                                  operands[1],
@@ -521,9 +513,7 @@
 
     emit_insn (gen_rtx_COND_EXEC (VOIDmode,
                                   operands[3],
-                                  gen_rtx_SET (VOIDmode,
-                                               operands[0],
-                                               operands[1])));
+                                  gen_rtx_SET (operands[0], operands[1])));
     rev_code = GET_CODE (operands[3]);
     mode = GET_MODE (operands[4]);
     if (mode == CCFPmode || mode == CCFPEmode)
@@ -537,9 +527,7 @@
                                const0_rtx);
     emit_insn (gen_rtx_COND_EXEC (VOIDmode,
                                   rev_cond,
-                                  gen_rtx_SET (VOIDmode,
-                                               operands[0],
-                                               operands[2])));
+                                  gen_rtx_SET (operands[0], operands[2])));
     DONE;
   }
   [(set_attr "length" "4,4,6,6,6,6,10,8,10,10,10,6")
@@ -806,14 +794,14 @@
             break;
           default: gcc_unreachable ();
           }
-        emit_insn (gen_rtx_SET (VOIDmode, operands[0], op));
+        emit_insn (gen_rtx_SET (operands[0], op));
         DONE;
       }
 
     /*  "cmp  %2, %3"  */
-    emit_insn (gen_rtx_SET (VOIDmode,
-                               gen_rtx_REG (CCmode, CC_REGNUM),
-                               gen_rtx_COMPARE (CCmode, operands[2], operands[3])));
+    emit_insn (gen_rtx_SET (gen_rtx_REG (CCmode, CC_REGNUM),
+                            gen_rtx_COMPARE (CCmode, operands[2],
+					     operands[3])));
 
     if (GET_CODE (operands[5]) == AND)
       {
@@ -821,10 +809,11 @@
             it%D4
             mov%D4  %0, #0  */
         enum rtx_code rc = reverse_condition (GET_CODE (operands[4]));
-        emit_insn (gen_rtx_SET (VOIDmode, operands[0], gen_rtx_AND (SImode, operands[1], GEN_INT (1))));
+        emit_insn (gen_rtx_SET (operands[0], gen_rtx_AND (SImode, operands[1],
+							  GEN_INT (1))));
         emit_insn (gen_rtx_COND_EXEC (VOIDmode,
                                       gen_rtx_fmt_ee (rc, VOIDmode, gen_rtx_REG (CCmode, CC_REGNUM), const0_rtx),
-                                      gen_rtx_SET (VOIDmode, operands[0], const0_rtx)));
+                                      gen_rtx_SET (operands[0], const0_rtx)));
         DONE;
       }
     else
@@ -834,7 +823,7 @@
         emit_insn (gen_rtx_COND_EXEC (VOIDmode, gen_rtx_fmt_ee (GET_CODE (operands[4]),
                                                                 VOIDmode,
                                                                 gen_rtx_REG (CCmode, CC_REGNUM), const0_rtx),
-                                                gen_rtx_SET(VOIDmode, operands[0],
+                                                gen_rtx_SET (operands[0],
                                                             gen_rtx_PLUS (SImode,
                                                                           operands[1],
                                                                           GEN_INT (1)))));
@@ -895,8 +884,7 @@
     if (GET_CODE (operands[3]) == LT && operands[2] == const0_rtx)
       {
         /* Emit asr\\t%0, %1, #31 */
-        emit_insn (gen_rtx_SET (VOIDmode,
-                                operands[0],
+        emit_insn (gen_rtx_SET (operands[0],
                                 gen_rtx_ASHIFTRT (SImode,
                                                   operands[1],
                                                   GEN_INT (31))));
@@ -915,8 +903,7 @@
                                       gen_rtx_NE (SImode,
                                                   cc_reg,
                                                   const0_rtx),
-                                      gen_rtx_SET (SImode,
-                                                   operands[0],
+                                      gen_rtx_SET (operands[0],
                                                    GEN_INT (~0))));
         DONE;
       }
@@ -927,18 +914,17 @@
        machine_mode mode = SELECT_CC_MODE (rc, operands[1], operands[2]);
        rtx tmp1 = gen_rtx_REG (mode, CC_REGNUM);
 
-       emit_insn (gen_rtx_SET (VOIDmode,
-                               cc_reg,
-                               gen_rtx_COMPARE (CCmode, operands[1], operands[2])));
+       emit_insn (gen_rtx_SET (cc_reg, gen_rtx_COMPARE (CCmode, operands[1],
+							operands[2])));
 
-       emit_insn (gen_rtx_SET (VOIDmode, operands[0], GEN_INT (~0)));
+       emit_insn (gen_rtx_SET (operands[0], GEN_INT (~0)));
 
        emit_insn (gen_rtx_COND_EXEC (VOIDmode,
                                      gen_rtx_fmt_ee (rc,
                                                      VOIDmode,
                                                      tmp1,
                                                      const0_rtx),
-                                     gen_rtx_SET (VOIDmode, operands[0], const0_rtx)));
+                                     gen_rtx_SET (operands[0], const0_rtx)));
        DONE;
       }
     FAIL;
@@ -1628,7 +1614,7 @@
      cc_reg = SET_DEST (cmp);
      bcomp = gen_rtx_NE (VOIDmode, cc_reg, const0_rtx);
      loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands [1]);
-     emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
+     emit_jump_insn (gen_rtx_SET (pc_rtx,
                                   gen_rtx_IF_THEN_ELSE (VOIDmode, bcomp,
                                                         loc_ref, pc_rtx)));
      DONE;

@@ -1,3 +1,48 @@
+2015-05-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl.h (always_void_p): New function.
+	* gengenrtl.c (always_void_p): Likewise.
+	(genmacro): Don't add a mode parameter to gen_rtx_foo if rtxes
+	with code foo are always VOIDmode.
+	* genemit.c (gen_exp): Update gen_rtx_foo calls accordingly.
+	* builtins.c, caller-save.c, calls.c, cfgexpand.c, combine.c,
+	compare-elim.c, config/aarch64/aarch64.c,
+	config/aarch64/aarch64.md, config/alpha/alpha.c,
+	config/alpha/alpha.md, config/arc/arc.c, config/arc/arc.md,
+	config/arm/arm-fixed.md, config/arm/arm.c, config/arm/arm.md,
+	config/arm/ldrdstrd.md, config/arm/thumb2.md, config/arm/vfp.md,
+	config/avr/avr.c, config/bfin/bfin.c, config/c6x/c6x.c,
+	config/c6x/c6x.md, config/cr16/cr16.c, config/cris/cris.c,
+	config/cris/cris.md, config/darwin.c, config/epiphany/epiphany.c,
+	config/epiphany/epiphany.md, config/fr30/fr30.c, config/frv/frv.c,
+	config/frv/frv.md, config/h8300/h8300.c, config/i386/i386.c,
+	config/i386/i386.md, config/i386/sse.md, config/ia64/ia64.c,
+	config/ia64/vect.md, config/iq2000/iq2000.c,
+	config/iq2000/iq2000.md, config/lm32/lm32.c, config/lm32/lm32.md,
+	config/m32c/m32c.c, config/m32r/m32r.c, config/m68k/m68k.c,
+	config/m68k/m68k.md, config/mcore/mcore.c, config/mcore/mcore.md,
+	config/mep/mep.c, config/microblaze/microblaze.c,
+	config/mips/mips.c, config/mips/mips.md, config/mmix/mmix.c,
+	config/mn10300/mn10300.c, config/msp430/msp430.c,
+	config/nds32/nds32-memory-manipulation.c, config/nds32/nds32.c,
+	config/nds32/nds32.md, config/nios2/nios2.c, config/nvptx/nvptx.c,
+	config/pa/pa.c, config/pa/pa.md, config/rl78/rl78.c,
+	config/rs6000/altivec.md, config/rs6000/rs6000.c,
+	config/rs6000/rs6000.md, config/rs6000/vector.md,
+	config/rs6000/vsx.md, config/rx/rx.c, config/rx/rx.md,
+	config/s390/s390.c, config/s390/s390.md, config/sh/sh.c,
+	config/sh/sh.md, config/sh/sh_treg_combine.cc,
+	config/sparc/sparc.c, config/sparc/sparc.md, config/spu/spu.c,
+	config/spu/spu.md, config/stormy16/stormy16.c,
+	config/tilegx/tilegx.c, config/tilegx/tilegx.md,
+	config/tilepro/tilepro.c, config/tilepro/tilepro.md,
+	config/v850/v850.c, config/v850/v850.md, config/vax/vax.c,
+	config/visium/visium.c, config/xtensa/xtensa.c, cprop.c, dse.c,
+	expr.c, gcse.c, ifcvt.c, ira.c, jump.c, lower-subreg.c,
+	lra-constraints.c, lra-eliminations.c, lra.c, postreload.c, ree.c,
+	reg-stack.c, reload.c, reload1.c, reorg.c, sel-sched.c,
+	var-tracking.c: Update calls accordingly.
+
 2015-05-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR middle-end/192

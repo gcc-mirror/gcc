@@ -713,7 +713,7 @@ aarch64_is_extend_from_extract (machine_mode mode, rtx mult_imm,
 inline static rtx
 emit_set_insn (rtx x, rtx y)
 {
-  return emit_insn (gen_rtx_SET (VOIDmode, x, y));
+  return emit_insn (gen_rtx_SET (x, y));
 }
 
 /* X and Y are two things to compare using CODE.  Emit the compare insn and
@@ -825,7 +825,7 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
       }
 
     case SYMBOL_TINY_ABSOLUTE:
-      emit_insn (gen_rtx_SET (Pmode, dest, imm));
+      emit_insn (gen_rtx_SET (dest, imm));
       return;
 
     case SYMBOL_SMALL_GOT:
@@ -894,7 +894,7 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	if (mode != Pmode)
 	  tp = gen_lowpart (mode, tp);
 
-	emit_insn (gen_rtx_SET (mode, dest, gen_rtx_PLUS (mode, tp, x0)));
+	emit_insn (gen_rtx_SET (dest, gen_rtx_PLUS (mode, tp, x0)));
 	set_unique_reg_note (get_last_insn (), REG_EQUIV, imm);
 	return;
       }
@@ -928,7 +928,7 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	    emit_insn (gen_tlsie_small_sidi (tmp_reg, imm));
 	  }
 
-	emit_insn (gen_rtx_SET (mode, dest, gen_rtx_PLUS (mode, tp, tmp_reg)));
+	emit_insn (gen_rtx_SET (dest, gen_rtx_PLUS (mode, tp, tmp_reg)));
 	set_unique_reg_note (get_last_insn (), REG_EQUIV, imm);
 	return;
       }
@@ -1186,7 +1186,7 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
   if (CONST_INT_P (imm) && aarch64_move_imm (INTVAL (imm), mode))
     {
       if (generate)
-	emit_insn (gen_rtx_SET (VOIDmode, dest, imm));
+	emit_insn (gen_rtx_SET (dest, imm));
       num_insns++;
       return num_insns;
     }
@@ -1198,8 +1198,7 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 	 us anything.  */
       if (generate)
 	{
-	  emit_insn (gen_rtx_SET (VOIDmode, dest,
-				  GEN_INT (INTVAL (imm) & 0xffff)));
+	  emit_insn (gen_rtx_SET (dest, GEN_INT (INTVAL (imm) & 0xffff)));
 	  emit_insn (gen_insv_immsi (dest, GEN_INT (16),
 				     GEN_INT ((INTVAL (imm) >> 16) & 0xffff)));
 	}
@@ -1236,7 +1235,7 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
       mask = 0xffffll << first_not_ffff_match;
       if (generate)
 	{
-	  emit_insn (gen_rtx_SET (VOIDmode, dest, GEN_INT (val | mask)));
+	  emit_insn (gen_rtx_SET (dest, GEN_INT (val | mask)));
 	  emit_insn (gen_insv_immdi (dest, GEN_INT (first_not_ffff_match),
 				     GEN_INT ((val >> first_not_ffff_match)
 					      & 0xffff)));
@@ -1258,8 +1257,7 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 	  if (generate)
 	    {
 	      subtarget = subtargets ? gen_reg_rtx (DImode) : dest;
-	      emit_insn (gen_rtx_SET (VOIDmode, subtarget,
-				      GEN_INT (val & mask)));
+	      emit_insn (gen_rtx_SET (subtarget, GEN_INT (val & mask)));
 	      emit_insn (gen_adddi3 (dest, subtarget,
 				     GEN_INT (val - (val & mask))));
 	    }
@@ -1271,7 +1269,7 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 	  if (generate)
 	    {
 	      subtarget = subtargets ? gen_reg_rtx (DImode) : dest;
-	      emit_insn (gen_rtx_SET (VOIDmode, subtarget,
+	      emit_insn (gen_rtx_SET (subtarget,
 				      GEN_INT ((val + comp) & mask)));
 	      emit_insn (gen_adddi3 (dest, subtarget,
 				     GEN_INT (val - ((val + comp) & mask))));
@@ -1284,7 +1282,7 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 	  if (generate)
 	    {
 	      subtarget = subtargets ? gen_reg_rtx (DImode) : dest;
-	      emit_insn (gen_rtx_SET (VOIDmode, subtarget,
+	      emit_insn (gen_rtx_SET (subtarget,
 				      GEN_INT ((val - comp) | ~mask)));
 	      emit_insn (gen_adddi3 (dest, subtarget,
 				     GEN_INT (val - ((val - comp) | ~mask))));
@@ -1297,8 +1295,7 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 	  if (generate)
 	    {
 	      subtarget = subtargets ? gen_reg_rtx (DImode) : dest;
-	      emit_insn (gen_rtx_SET (VOIDmode, subtarget,
-				      GEN_INT (val | ~mask)));
+	      emit_insn (gen_rtx_SET (subtarget, GEN_INT (val | ~mask)));
 	      emit_insn (gen_adddi3 (dest, subtarget,
 				     GEN_INT (val - (val | ~mask))));
 	    }
@@ -1320,7 +1317,7 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 	  if (generate)
 	    {
 	      subtarget = subtargets ? gen_reg_rtx (DImode) : dest;
-	      emit_insn (gen_rtx_SET (VOIDmode, subtarget,
+	      emit_insn (gen_rtx_SET (subtarget,
 				      GEN_INT (aarch64_bitmasks[i])));
 	      emit_insn (gen_adddi3 (dest, subtarget,
 				     GEN_INT (val - aarch64_bitmasks[i])));
@@ -1335,7 +1332,7 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 	    {
 	      if (generate)
 		{
-		  emit_insn (gen_rtx_SET (VOIDmode, dest,
+		  emit_insn (gen_rtx_SET (dest,
 					  GEN_INT (aarch64_bitmasks[i])));
 		  emit_insn (gen_insv_immdi (dest, GEN_INT (j),
 					     GEN_INT ((val >> j) & 0xffff)));
@@ -1359,7 +1356,7 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 		if (generate)
 		  {
 		    subtarget = subtargets ? gen_reg_rtx (mode) : dest;
-		    emit_insn (gen_rtx_SET (VOIDmode, subtarget,
+		    emit_insn (gen_rtx_SET (subtarget,
 					    GEN_INT (aarch64_bitmasks[i])));
 		    emit_insn (gen_iordi3 (dest, subtarget,
 					   GEN_INT (aarch64_bitmasks[j])));
@@ -1378,7 +1375,7 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 		if (generate)
 		  {
 		    subtarget = subtargets ? gen_reg_rtx (mode) : dest;
-		    emit_insn (gen_rtx_SET (VOIDmode, subtarget,
+		    emit_insn (gen_rtx_SET (subtarget,
 					    GEN_INT (aarch64_bitmasks[j])));
 		    emit_insn (gen_anddi3 (dest, subtarget,
 					   GEN_INT (aarch64_bitmasks[i])));
@@ -1394,7 +1391,7 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
       /* Set either first three quarters or all but the third.	 */
       mask = 0xffffll << (16 - first_not_ffff_match);
       if (generate)
-	emit_insn (gen_rtx_SET (VOIDmode, dest,
+	emit_insn (gen_rtx_SET (dest,
 				GEN_INT (val | mask | 0xffffffff00000000ull)));
       num_insns ++;
 
@@ -1423,8 +1420,7 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 	  if (first)
 	    {
 	      if (generate)
-		emit_insn (gen_rtx_SET (VOIDmode, dest,
-					GEN_INT (val & mask)));
+		emit_insn (gen_rtx_SET (dest, GEN_INT (val & mask)));
 	      num_insns ++;
 	      first = false;
 	    }
@@ -1478,7 +1474,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	  gcc_assert (mem);
 	  if (mode != ptr_mode)
 	    mem = gen_rtx_ZERO_EXTEND (mode, mem);
-	  emit_insn (gen_rtx_SET (VOIDmode, dest, mem));
+	  emit_insn (gen_rtx_SET (dest, mem));
 	  return;
 
         case SYMBOL_SMALL_TLSGD:
@@ -1510,12 +1506,12 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
   if (!CONST_INT_P (imm))
     {
       if (GET_CODE (imm) == HIGH)
-	emit_insn (gen_rtx_SET (VOIDmode, dest, imm));
+	emit_insn (gen_rtx_SET (dest, imm));
       else
         {
 	  rtx mem = force_const_mem (mode, imm);
 	  gcc_assert (mem);
-	  emit_insn (gen_rtx_SET (VOIDmode, dest, mem));
+	  emit_insn (gen_rtx_SET (dest, mem));
 	}
 
       return;
@@ -2463,7 +2459,7 @@ aarch64_expand_prologue (void)
 	  insn = emit_insn (gen_add2_insn (stack_pointer_rtx, op0));
 
 	  add_reg_note (insn, REG_CFA_ADJUST_CFA,
-			gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+			gen_rtx_SET (stack_pointer_rtx,
 				     plus_constant (Pmode, stack_pointer_rtx,
 						    -frame_size)));
 	  RTX_FRAME_RELATED_P (insn) = 1;
@@ -2894,19 +2890,19 @@ aarch64_add_constant (int regnum, int scratchreg, HOST_WIDE_INT delta)
     {
       if (mdelta >= 4096)
 	{
-	  emit_insn (gen_rtx_SET (Pmode, scratch_rtx, GEN_INT (mdelta / 4096)));
+	  emit_insn (gen_rtx_SET (scratch_rtx, GEN_INT (mdelta / 4096)));
 	  rtx shift = gen_rtx_ASHIFT (Pmode, scratch_rtx, GEN_INT (12));
 	  if (delta < 0)
-	    emit_insn (gen_rtx_SET (Pmode, this_rtx,
+	    emit_insn (gen_rtx_SET (this_rtx,
 				    gen_rtx_MINUS (Pmode, this_rtx, shift)));
 	  else
-	    emit_insn (gen_rtx_SET (Pmode, this_rtx,
+	    emit_insn (gen_rtx_SET (this_rtx,
 				    gen_rtx_PLUS (Pmode, this_rtx, shift)));
 	}
       if (mdelta % 4096 != 0)
 	{
 	  scratch_rtx = GEN_INT ((delta < 0 ? -1 : 1) * (mdelta % 4096));
-	  emit_insn (gen_rtx_SET (Pmode, this_rtx,
+	  emit_insn (gen_rtx_SET (this_rtx,
 				  gen_rtx_PLUS (Pmode, this_rtx, scratch_rtx)));
 	}
     }
@@ -9250,7 +9246,7 @@ aarch64_expand_compare_and_swap (rtx operands[])
 
   x = gen_rtx_REG (CCmode, CC_REGNUM);
   x = gen_rtx_EQ (SImode, x, const0_rtx);
-  emit_insn (gen_rtx_SET (VOIDmode, bval, x));
+  emit_insn (gen_rtx_SET (bval, x));
 }
 
 /* Split a compare and swap pattern.  */
@@ -9286,7 +9282,7 @@ aarch64_split_compare_and_swap (rtx operands[])
   x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
   x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
 			    gen_rtx_LABEL_REF (Pmode, label2), pc_rtx);
-  aarch64_emit_unlikely_jump (gen_rtx_SET (VOIDmode, pc_rtx, x));
+  aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
 
   aarch64_emit_store_exclusive (mode, scratch, mem, newval, operands[5]);
 
@@ -9295,13 +9291,13 @@ aarch64_split_compare_and_swap (rtx operands[])
       x = gen_rtx_NE (VOIDmode, scratch, const0_rtx);
       x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
 				gen_rtx_LABEL_REF (Pmode, label1), pc_rtx);
-      aarch64_emit_unlikely_jump (gen_rtx_SET (VOIDmode, pc_rtx, x));
+      aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
     }
   else
     {
       cond = gen_rtx_REG (CCmode, CC_REGNUM);
       x = gen_rtx_COMPARE (CCmode, scratch, const0_rtx);
-      emit_insn (gen_rtx_SET (VOIDmode, cond, x));
+      emit_insn (gen_rtx_SET (cond, x));
     }
 
   emit_label (label2);
@@ -9339,9 +9335,9 @@ aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
 
     case NOT:
       x = gen_rtx_AND (wmode, old_out, value);
-      emit_insn (gen_rtx_SET (VOIDmode, new_out, x));
+      emit_insn (gen_rtx_SET (new_out, x));
       x = gen_rtx_NOT (wmode, new_out);
-      emit_insn (gen_rtx_SET (VOIDmode, new_out, x));
+      emit_insn (gen_rtx_SET (new_out, x));
       break;
 
     case MINUS:
@@ -9354,7 +9350,7 @@ aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
 
     default:
       x = gen_rtx_fmt_ee (code, wmode, old_out, value);
-      emit_insn (gen_rtx_SET (VOIDmode, new_out, x));
+      emit_insn (gen_rtx_SET (new_out, x));
       break;
     }
 
@@ -9364,7 +9360,7 @@ aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
   x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
   x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
 			    gen_rtx_LABEL_REF (Pmode, label), pc_rtx);
-  aarch64_emit_unlikely_jump (gen_rtx_SET (VOIDmode, pc_rtx, x));
+  aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
 }
 
 static void
@@ -11359,14 +11355,13 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
     }
 
   /* Emit adjusting instruction.  */
-  emit_insn (gen_rtx_SET (VOIDmode, operands[8],
-			  plus_constant (DImode, base, adj_off)));
+  emit_insn (gen_rtx_SET (operands[8], plus_constant (DImode, base, adj_off)));
   /* Emit ldp/stp instructions.  */
-  t1 = gen_rtx_SET (VOIDmode, operands[0], operands[1]);
-  t2 = gen_rtx_SET (VOIDmode, operands[2], operands[3]);
+  t1 = gen_rtx_SET (operands[0], operands[1]);
+  t2 = gen_rtx_SET (operands[2], operands[3]);
   emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, t1, t2)));
-  t1 = gen_rtx_SET (VOIDmode, operands[4], operands[5]);
-  t2 = gen_rtx_SET (VOIDmode, operands[6], operands[7]);
+  t1 = gen_rtx_SET (operands[4], operands[5]);
+  t2 = gen_rtx_SET (operands[6], operands[7]);
   emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, t1, t2)));
   return true;
 }

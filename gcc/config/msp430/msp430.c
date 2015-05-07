@@ -1984,13 +1984,15 @@ msp430_expand_prologue (void)
       p = emit_insn (gen_grow_and_swap ());
 
       /* Document the stack decrement...  */
-      note = F (gen_rtx_SET (Pmode, stack_pointer_rtx,
+      note = F (gen_rtx_SET (stack_pointer_rtx,
 			     gen_rtx_MINUS (Pmode, stack_pointer_rtx, GEN_INT (2))));
       add_reg_note (p, REG_FRAME_RELATED_EXPR, note);
 
       /* ...and the establishment of a new location for the return address.  */
-      note = F (gen_rtx_SET (Pmode, gen_rtx_MEM (Pmode,
-						 gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (-2))),
+      note = F (gen_rtx_SET (gen_rtx_MEM (Pmode,
+					  gen_rtx_PLUS (Pmode,
+							stack_pointer_rtx,
+							GEN_INT (-2))),
 			     pc_rtx));
       add_reg_note (p, REG_CFA_OFFSET, note);
       F (p);
@@ -2015,11 +2017,10 @@ msp430_expand_prologue (void)
 	    note = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (count + 1));
 
 	    XVECEXP (note, 0, 0)
-	      = F (gen_rtx_SET (VOIDmode,
-			     stack_pointer_rtx,
-			     gen_rtx_PLUS (Pmode,
-					   stack_pointer_rtx,
-					   GEN_INT (count * (TARGET_LARGE ? -4 : -2)))));
+	      = F (gen_rtx_SET (stack_pointer_rtx,
+				gen_rtx_PLUS (Pmode,
+					      stack_pointer_rtx,
+					      GEN_INT (count * (TARGET_LARGE ? -4 : -2)))));
 
 	    /* *sp-- = R[i-j] */
 	    /* sp+N	R10
@@ -2036,8 +2037,7 @@ msp430_expand_prologue (void)
 		  addr = stack_pointer_rtx;
 
 		XVECEXP (note, 0, j + 1) =
-		  F (gen_rtx_SET (VOIDmode,
-				  gen_rtx_MEM (Pmode, addr),
+		  F (gen_rtx_SET (gen_rtx_MEM (Pmode, addr),
 				  gen_rtx_REG (Pmode, i - j)) );
 	      }
 

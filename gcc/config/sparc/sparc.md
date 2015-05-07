@@ -3681,7 +3681,7 @@
   if (! TARGET_ARCH64)
     {
       emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2,
-			  gen_rtx_SET (VOIDmode, operands[0],
+			  gen_rtx_SET (operands[0],
 				   gen_rtx_PLUS (DImode, operands[1],
 						 operands[2])),
 			  gen_rtx_CLOBBER (VOIDmode,
@@ -3871,7 +3871,7 @@
   if (! TARGET_ARCH64)
     {
       emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2,
-			  gen_rtx_SET (VOIDmode, operands[0],
+			  gen_rtx_SET (operands[0],
 				   gen_rtx_MINUS (DImode, operands[1],
 						  operands[2])),
 			  gen_rtx_CLOBBER (VOIDmode,
@@ -5152,7 +5152,7 @@
       emit_insn (gen_rtx_PARALLEL
 		 (VOIDmode,
 		  gen_rtvec (2,
-			     gen_rtx_SET (VOIDmode, operand0,
+			     gen_rtx_SET (operand0,
 					  gen_rtx_NEG (DImode, operand1)),
 			     gen_rtx_CLOBBER (VOIDmode,
 					      gen_rtx_REG (CCmode,
@@ -6209,7 +6209,7 @@
 	  (gen_rtx_PARALLEL
 	   (VOIDmode,
 	    gen_rtvec (3,
-		       gen_rtx_SET (VOIDmode, pc_rtx, XEXP (operands[0], 0)),
+		       gen_rtx_SET (pc_rtx, XEXP (operands[0], 0)),
 		       operands[3],
 		       gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 15)))));
       else
@@ -6217,7 +6217,7 @@
 	  (gen_rtx_PARALLEL
 	   (VOIDmode,
 	    gen_rtvec (2,
-		       gen_rtx_SET (VOIDmode, pc_rtx, XEXP (operands[0], 0)),
+		       gen_rtx_SET (pc_rtx, XEXP (operands[0], 0)),
 		       gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 15)))));
       goto finish_call;
     }
@@ -6361,7 +6361,7 @@
   fn_rtx = operands[1];
 
   vec = gen_rtvec (2,
-		   gen_rtx_SET (VOIDmode, operands[0],
+		   gen_rtx_SET (operands[0],
 				gen_rtx_CALL (VOIDmode, fn_rtx, const0_rtx)),
 		   gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 15)));
 

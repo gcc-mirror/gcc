@@ -2922,12 +2922,10 @@ cris_split_movdx (rtx *operands)
 	  /* We normally copy the low-numbered register first.  However, if
 	     the first register operand 0 is the same as the second register of
 	     operand 1, we must copy in the opposite order.  */
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  operand_subword (dest, reverse, TRUE, mode),
+	  emit_insn (gen_rtx_SET (operand_subword (dest, reverse, TRUE, mode),
 				  operand_subword (src, reverse, TRUE, mode)));
 
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  operand_subword (dest, !reverse, TRUE, mode),
+	  emit_insn (gen_rtx_SET (operand_subword (dest, !reverse, TRUE, mode),
 				  operand_subword (src, !reverse, TRUE, mode)));
 	}
       /* Constant-to-reg copy.  */
@@ -2935,12 +2933,10 @@ cris_split_movdx (rtx *operands)
 	{
 	  rtx words[2];
 	  split_double (src, &words[0], &words[1]);
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  operand_subword (dest, 0, TRUE, mode),
+	  emit_insn (gen_rtx_SET (operand_subword (dest, 0, TRUE, mode),
 				  words[0]));
 
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  operand_subword (dest, 1, TRUE, mode),
+	  emit_insn (gen_rtx_SET (operand_subword (dest, 1, TRUE, mode),
 				  words[1]));
 	}
       /* Mem-to-reg copy.  */
@@ -2969,8 +2965,7 @@ cris_split_movdx (rtx *operands)
 		 manually.  */
 	      mem = change_address (src, SImode, addr);
 	      insn
-		= gen_rtx_SET (VOIDmode,
-			       operand_subword (dest, 0, TRUE, mode), mem);
+		= gen_rtx_SET (operand_subword (dest, 0, TRUE, mode), mem);
 	      insn = emit_insn (insn);
 	      if (GET_CODE (XEXP (mem, 0)) == POST_INC)
 		REG_NOTES (insn)
@@ -2979,8 +2974,7 @@ cris_split_movdx (rtx *operands)
 
 	      mem = copy_rtx (mem);
 	      insn
-		= gen_rtx_SET (VOIDmode,
-			       operand_subword (dest, 1, TRUE, mode), mem);
+		= gen_rtx_SET (operand_subword (dest, 1, TRUE, mode), mem);
 	      insn = emit_insn (insn);
 	      if (GET_CODE (XEXP (mem, 0)) == POST_INC)
 		REG_NOTES (insn)
@@ -2997,15 +2991,13 @@ cris_split_movdx (rtx *operands)
 		fatal_insn ("unexpected side-effects in address", addr);
 
 	      emit_insn (gen_rtx_SET
-			 (VOIDmode,
-			  operand_subword (dest, reverse, TRUE, mode),
+			 (operand_subword (dest, reverse, TRUE, mode),
 			  change_address
 			  (src, SImode,
 			   plus_constant (Pmode, addr,
 					  reverse * UNITS_PER_WORD))));
 	      emit_insn (gen_rtx_SET
-			 (VOIDmode,
-			  operand_subword (dest, ! reverse, TRUE, mode),
+			 (operand_subword (dest, ! reverse, TRUE, mode),
 			  change_address
 			  (src, SImode,
 			   plus_constant (Pmode, addr,
@@ -3033,8 +3025,7 @@ cris_split_movdx (rtx *operands)
 	     ourselves, we must add a post-inc note manually.  */
 	  mem = change_address (dest, SImode, addr);
 	  insn
-	    = gen_rtx_SET (VOIDmode,
-			   mem, operand_subword (src, 0, TRUE, mode));
+	    = gen_rtx_SET (mem, operand_subword (src, 0, TRUE, mode));
 	  insn = emit_insn (insn);
 	  if (GET_CODE (XEXP (mem, 0)) == POST_INC)
 	    REG_NOTES (insn)
@@ -3042,10 +3033,7 @@ cris_split_movdx (rtx *operands)
 				 REG_NOTES (insn));
 
 	  mem = copy_rtx (mem);
-	  insn
-	    = gen_rtx_SET (VOIDmode,
-			   mem,
-			   operand_subword (src, 1, TRUE, mode));
+	  insn = gen_rtx_SET (mem, operand_subword (src, 1, TRUE, mode));
 	  insn = emit_insn (insn);
 	  if (GET_CODE (XEXP (mem, 0)) == POST_INC)
 	    REG_NOTES (insn)
@@ -3061,13 +3049,11 @@ cris_split_movdx (rtx *operands)
 	    fatal_insn ("unexpected side-effects in address", addr);
 
 	  emit_insn (gen_rtx_SET
-		     (VOIDmode,
-		      change_address (dest, SImode, addr),
+		     (change_address (dest, SImode, addr),
 		      operand_subword (src, 0, TRUE, mode)));
 
 	  emit_insn (gen_rtx_SET
-		     (VOIDmode,
-		      change_address (dest, SImode,
+		     (change_address (dest, SImode,
 				      plus_constant (Pmode, addr,
 						     UNITS_PER_WORD)),
 		      operand_subword (src, 1, TRUE, mode)));
@@ -3138,8 +3124,7 @@ cris_expand_prologue (void)
 	   stdarg_regs > 0;
 	   regno--, pretend -= 4, stdarg_regs--)
 	{
-	  insn = emit_insn (gen_rtx_SET (VOIDmode,
-					 stack_pointer_rtx,
+	  insn = emit_insn (gen_rtx_SET (stack_pointer_rtx,
 					 plus_constant (Pmode,
 							stack_pointer_rtx,
 							-4)));
@@ -3167,8 +3152,7 @@ cris_expand_prologue (void)
   /* Save SRP if not a leaf function.  */
   if (return_address_on_stack)
     {
-      insn = emit_insn (gen_rtx_SET (VOIDmode,
-				     stack_pointer_rtx,
+      insn = emit_insn (gen_rtx_SET (stack_pointer_rtx,
 				     plus_constant (Pmode, stack_pointer_rtx,
 						    -4 - pretend)));
       pretend = 0;
@@ -3184,8 +3168,7 @@ cris_expand_prologue (void)
   /* Set up the frame pointer, if needed.  */
   if (frame_pointer_needed)
     {
-      insn = emit_insn (gen_rtx_SET (VOIDmode,
-				     stack_pointer_rtx,
+      insn = emit_insn (gen_rtx_SET (stack_pointer_rtx,
 				     plus_constant (Pmode, stack_pointer_rtx,
 						    -4 - pretend)));
       pretend = 0;
@@ -3250,8 +3233,7 @@ cris_expand_prologue (void)
 		  else
 		    {
 		      insn
-			= gen_rtx_SET (VOIDmode,
-				       stack_pointer_rtx,
+			= gen_rtx_SET (stack_pointer_rtx,
 				       plus_constant (Pmode, stack_pointer_rtx,
 						      -(n_saved * 4 + size)));
 		      insn = emit_insn (insn);
@@ -3268,8 +3250,7 @@ cris_expand_prologue (void)
 		  size = 0;
 		}
 
-	      insn = emit_insn (gen_rtx_SET (VOIDmode,
-					     stack_pointer_rtx,
+	      insn = emit_insn (gen_rtx_SET (stack_pointer_rtx,
 					     plus_constant (Pmode,
 							    stack_pointer_rtx,
 							    -4 - size)));
@@ -3310,8 +3291,7 @@ cris_expand_prologue (void)
       else
 	{
 	  insn
-	    = gen_rtx_SET (VOIDmode,
-			   stack_pointer_rtx,
+	    = gen_rtx_SET (stack_pointer_rtx,
 			   plus_constant (Pmode, stack_pointer_rtx,
 					  -(n_saved * 4 + size)));
 	  insn = emit_insn (insn);
@@ -3326,8 +3306,7 @@ cris_expand_prologue (void)
       /* We have to put outgoing argument space after regs.  */
       if (cfoa_size)
 	{
-	  insn = emit_insn (gen_rtx_SET (VOIDmode,
-					 stack_pointer_rtx,
+	  insn = emit_insn (gen_rtx_SET (stack_pointer_rtx,
 					 plus_constant (Pmode,
 							stack_pointer_rtx,
 							-cfoa_size)));
@@ -3337,8 +3316,7 @@ cris_expand_prologue (void)
     }
   else if ((size + cfoa_size) > 0)
     {
-      insn = emit_insn (gen_rtx_SET (VOIDmode,
-				     stack_pointer_rtx,
+      insn = emit_insn (gen_rtx_SET (stack_pointer_rtx,
 				     plus_constant (Pmode,
 						    stack_pointer_rtx,
 						    -(cfoa_size + size))));
@@ -3436,8 +3414,7 @@ cris_expand_epilogue (void)
 	  {
 	    /* There is an area for outgoing parameters located before
 	       the saved registers.  We have to adjust for that.  */
-	    emit_insn (gen_rtx_SET (VOIDmode,
-				    stack_pointer_rtx,
+	    emit_insn (gen_rtx_SET (stack_pointer_rtx,
 				    plus_constant (Pmode, stack_pointer_rtx,
 						   argspace_offset)));
 	    /* Make sure we only do this once.  */
@@ -3462,8 +3439,7 @@ cris_expand_epilogue (void)
 
       if (argspace_offset)
 	{
-	  emit_insn (gen_rtx_SET (VOIDmode,
-				  stack_pointer_rtx,
+	  emit_insn (gen_rtx_SET (stack_pointer_rtx,
 				  plus_constant (Pmode, stack_pointer_rtx,
 						 argspace_offset)));
 	  argspace_offset = 0;
@@ -3521,8 +3497,7 @@ cris_expand_epilogue (void)
 	 yet.  */
       size += argspace_offset;
 
-      emit_insn (gen_rtx_SET (VOIDmode,
-			      stack_pointer_rtx,
+      emit_insn (gen_rtx_SET (stack_pointer_rtx,
 			      plus_constant (Pmode, stack_pointer_rtx, size)));
     }
 
@@ -3583,8 +3558,7 @@ cris_expand_epilogue (void)
 	    = alloc_EXPR_LIST (REG_INC, stack_pointer_rtx, REG_NOTES (insn));
 	}
 
-      emit_insn (gen_rtx_SET (VOIDmode,
-			      stack_pointer_rtx,
+      emit_insn (gen_rtx_SET (stack_pointer_rtx,
 			      plus_constant (Pmode, stack_pointer_rtx,
 					     pretend)));
     }
@@ -3634,20 +3608,19 @@ cris_gen_movem_load (rtx src, rtx nregs_rtx, int nprefix)
   if (GET_CODE (XEXP (src, 0)) == POST_INC)
     {
       RTVEC_ELT (vec, nprefix + 1)
-	= gen_rtx_SET (VOIDmode, srcreg,
-		       plus_constant (Pmode, srcreg, nregs * 4));
+	= gen_rtx_SET (srcreg, plus_constant (Pmode, srcreg, nregs * 4));
       eltno++;
     }
 
   src = replace_equiv_address (src, srcreg);
   RTVEC_ELT (vec, nprefix)
-    = gen_rtx_SET (VOIDmode, gen_rtx_REG (SImode, regno), src);
+    = gen_rtx_SET (gen_rtx_REG (SImode, regno), src);
   regno += regno_inc;
 
   for (i = 1; i < nregs; i++, eltno++)
     {
       RTVEC_ELT (vec, nprefix + eltno)
-	= gen_rtx_SET (VOIDmode, gen_rtx_REG (SImode, regno),
+	= gen_rtx_SET (gen_rtx_REG (SImode, regno),
 		       adjust_address_nv (src, SImode, i * 4));
       regno += regno_inc;
     }
@@ -3690,7 +3663,7 @@ cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
      registers so there's a three cycles penalty for use.  */
   if (nregs == 1)
     {
-      rtx mov = gen_rtx_SET (VOIDmode, dest, gen_rtx_REG (SImode, 0));
+      rtx mov = gen_rtx_SET (dest, gen_rtx_REG (SImode, 0));
 
       if (increment == 0)
 	{
@@ -3705,9 +3678,8 @@ cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
       vec = rtvec_alloc (2);
 
       RTVEC_ELT (vec, 0) = mov;
-      RTVEC_ELT (vec, 1) = gen_rtx_SET (VOIDmode, destreg,
-					plus_constant (Pmode, destreg,
-						       increment));
+      RTVEC_ELT (vec, 1) = gen_rtx_SET (destreg, plus_constant (Pmode, destreg,
+								increment));
       if (frame_related)
 	{
 	  RTX_FRAME_RELATED_P (mov) = 1;
@@ -3718,8 +3690,7 @@ cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
     {
       vec = rtvec_alloc (nregs + (increment != 0 ? 1 : 0));
       RTVEC_ELT (vec, 0)
-	= gen_rtx_SET (VOIDmode,
-		       replace_equiv_address (dest,
+	= gen_rtx_SET (replace_equiv_address (dest,
 					      plus_constant (Pmode, destreg,
 							     increment)),
 		       gen_rtx_REG (SImode, regno));
@@ -3734,10 +3705,9 @@ cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
       if (increment != 0)
 	{
 	  RTVEC_ELT (vec, 1)
-	    = gen_rtx_SET (VOIDmode, destreg,
-			   plus_constant (Pmode, destreg,
-					  increment != 0
-					  ? increment : nregs * 4));
+	    = gen_rtx_SET (destreg, plus_constant (Pmode, destreg,
+						   increment != 0
+						   ? increment : nregs * 4));
 	  eltno++;
 
 	  if (frame_related)
@@ -3752,7 +3722,7 @@ cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
       for (i = 1; i < nregs; i++, eltno++)
 	{
 	  RTVEC_ELT (vec, eltno)
-	    = gen_rtx_SET (VOIDmode, adjust_address_nv (dest, SImode, i * 4),
+	    = gen_rtx_SET (adjust_address_nv (dest, SImode, i * 4),
 			   gen_rtx_REG (SImode, regno));
 	  if (frame_related)
 	    RTX_FRAME_RELATED_P (RTVEC_ELT (vec, eltno)) = 1;
