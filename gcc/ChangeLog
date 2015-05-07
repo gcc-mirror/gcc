@@ -1,3 +1,8 @@
+2015-05-07  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	* combine.c (make_compound_operation): Remove checks for PLUS/MINUS
+	rtx type.
+
 2015-05-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66002
