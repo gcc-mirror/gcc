@@ -30,8 +30,8 @@ int f1 = (0 ? 0 << -1 : 0);
 int g1 = (0 ? 0 >> 1000 : 0);
 int h1 = (0 ? 0 >> -1: 0);
 
-/* Allowed for now, but actually undefined behavior in C99.  */
 int i = -1 << 0;
+/* { dg-error "constant" "constant" { target *-*-* } 33 } */
 
 int j[1] = { DBL_MAX }; /* { dg-warning "overflow in implicit constant conversion" } */
 /* { dg-error "overflow in constant expression" "constant" { target *-*-* } 36 } */
