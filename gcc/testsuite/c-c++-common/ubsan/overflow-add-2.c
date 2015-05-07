@@ -57,4 +57,4 @@ main (void)
 /* { dg-output "\[^\n\r]*signed integer overflow: \[^\n\r]* \\+ 1024 cannot be represented in type 'long int'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*signed integer overflow: -\[^\n\r]* \\+ -1 cannot be represented in type 'long int'\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*signed integer overflow: -1 \\+ -\[^\n\r]* cannot be represented in type 'long int'\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*signed integer overflow: -\[^\n\r]* \\+ -1024 cannot be represented in type 'long int'\[^\n\r]*" } */
+/* { dg-output "\[^\n\r]*signed integer overflow: -\[^\n\r]* \\+ -1024 cannot be represented in type 'long int'" } */

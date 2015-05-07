@@ -15,4 +15,4 @@ main ()
   foo (3, (int (*)[3]) &a);
 }
 
-/* { dg-output "index 3 out of bounds for type 'int \\\[\\\*\\\]'\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "index 3 out of bounds for type 'int \\\[\\\*\\\]'" } */

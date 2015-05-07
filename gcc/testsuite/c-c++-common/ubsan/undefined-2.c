@@ -19,4 +19,4 @@ main ()
   return 0;
 }
 
-/* { dg-output "shift exponent -\[^\n\r]* is negative\[^\n\r]*(\n|\r\n|\r)" } */
+/* { dg-output "shift exponent -\[^\n\r]* is negative" } */
