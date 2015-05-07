@@ -266,6 +266,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wmissing-field-initializers -Wmissing-include-dirs @gol
 -Wno-multichar  -Wnonnull  -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
 -Wodr  -Wno-overflow  -Wopenmp-simd @gol
+-Woverride-init-side-effects @gol
 -Woverlength-strings  -Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
 -Wparentheses  -Wpedantic-ms-format -Wno-pedantic-ms-format @gol
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
@@ -5196,6 +5197,13 @@ Initializers}).
 This warning is included in @option{-Wextra}.  To get other
 @option{-Wextra} warnings without this one, use @option{-Wextra
 -Wno-override-init}.
+
+@item -Woverride-init-side-effects @r{(C and Objective-C only)}
+@opindex Woverride-init-side-effects
+@opindex Wno-override-init-side-effects
+Warn if an initialized field with side effects is overridden when
+using designated initializers (@pxref{Designated Inits, , Designated
+Initializers}).  This warning is enabled by default.
 
 @item -Wpacked
 @opindex Wpacked

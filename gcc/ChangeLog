@@ -1,3 +1,8 @@
+2015-05-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64918
+	* doc/invoke.texi: Document -Woverride-init-side-effects.
+
 2015-05-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c/65179

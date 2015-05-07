@@ -709,6 +709,10 @@ Woverride-init
 C ObjC Var(warn_override_init) Warning EnabledBy(Wextra)
 Warn about overriding initializers without side effects
 
+Woverride-init-side-effects
+C ObjC Var(warn_override_init_side_effects) Init(1) Warning
+Warn about overriding initializers with side effects
+
 Wpacked-bitfield-compat
 C ObjC C++ ObjC++ Var(warn_packed_bitfield_compat) Init(-1) Warning
 Warn about packed bit-fields whose offset changed in GCC 4.4
