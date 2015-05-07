@@ -42,7 +42,12 @@ load_gcc_lib torture-options.exp
 load_gcc_lib fortran-modules.exp
 
 # Try to load a test support file, built during libgomp configuration.
-load_file libgomp-test-support.exp
+# Search in '..' vs. '.' to support parallel vs. sequential testing.
+if [info exists ::env(GCC_RUNTEST_PARALLELIZE_DIR)] {
+    load_file ../libgomp-test-support.exp
+} else {
+    load_file libgomp-test-support.exp
+}
 
 set dg-do-what-default run
 
