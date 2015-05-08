@@ -1,3 +1,10 @@
+2015-05-08  H.J. Lu  <hongjiu.lu@intel.com>
+	    Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR target/48904
+	* config.gcc (x86_64-*-knetbsd*-gnu): Add i386/knetbsd-gnu64.h.
+	* config/i386/knetbsd-gnu64.h: New file.
+
 2015-05-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64918

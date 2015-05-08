@@ -1524,7 +1524,7 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
 		tm_file="${tm_file} kfreebsd-gnu.h i386/kfreebsd-gnu64.h"
 		;;
 	x86_64-*-knetbsd*-gnu)
-		tm_file="${tm_file} knetbsd-gnu.h"
+		tm_file="${tm_file} knetbsd-gnu.h i386/knetbsd-gnu64.h"
 		;;
 	esac
 	tmake_file="${tmake_file} i386/t-linux64"
