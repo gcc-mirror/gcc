@@ -1,3 +1,19 @@
+2015-05-08  Gregor Richards  <gregor.richards@uwaterloo.ca>
+	    Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config.gcc (LIBC_MUSL): New tm_defines macro.
+	* config/linux.h (OPTION_MUSL): Define.
+	(MUSL_DYNAMIC_LINKER, MUSL_DYNAMIC_LINKER32,)
+	(MUSL_DYNAMIC_LINKER64, MUSL_DYNAMIC_LINKERX32,)
+	(INCLUDE_DEFAULTS_MUSL_GPP, INCLUDE_DEFAULTS_MUSL_LOCAL,)
+	(INCLUDE_DEFAULTS_MUSL_PREFIX, INCLUDE_DEFAULTS_MUSL_CROSS,)
+	(INCLUDE_DEFAULTS_MUSL_TOOL, INCLUDE_DEFAULTS_MUSL_NATIVE): Define.
+	* config/linux.opt (mmusl): New option.
+	* doc/invoke.texi (GNU/Linux Options): Document -mmusl.
+	* configure.ac (gcc_cv_libc_provides_ssp): Add *-*-musl*.
+	(gcc_cv_target_dl_iterate_phdr): Add *-linux-musl*.
+	* configure: Regenerate.
+
 2015-05-08  H.J. Lu  <hongjiu.lu@intel.com>
 	    Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 

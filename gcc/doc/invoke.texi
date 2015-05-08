@@ -669,7 +669,7 @@ Objective-C and Objective-C++ Dialects}.
 -mcpu=@var{cpu}}
 
 @emph{GNU/Linux Options}
-@gccoptlist{-mglibc -muclibc -mbionic -mandroid @gol
+@gccoptlist{-mglibc -muclibc -mmusl -mbionic -mandroid @gol
 -tno-android-cc -tno-android-ld}
 
 @emph{H8/300 Options}
@@ -15384,12 +15384,18 @@ These @samp{-m} options are defined for GNU/Linux targets:
 @item -mglibc
 @opindex mglibc
 Use the GNU C library.  This is the default except
-on @samp{*-*-linux-*uclibc*} and @samp{*-*-linux-*android*} targets.
+on @samp{*-*-linux-*uclibc*}, @samp{*-*-linux-*musl*} and
+@samp{*-*-linux-*android*} targets.
 
 @item -muclibc
 @opindex muclibc
 Use uClibc C library.  This is the default on
 @samp{*-*-linux-*uclibc*} targets.
+
+@item -mmusl
+@opindex mmusl
+Use the musl C library.  This is the default on
+@samp{*-*-linux-*musl*} targets.
 
 @item -mbionic
 @opindex mbionic
