@@ -1734,9 +1734,9 @@
 					 (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])]
   "peep2_regno_dead_p (2, REGNO (operands[0])) && (optimize < 3 || optimize_size)"
-  [(parallel [(set:SI (match_dup 2)
-		      (memex_commutative:SI (match_dup 2)
-					    (extend_types:SI (match_dup 1))))
+  [(parallel [(set (match_dup 2)
+		   (memex_commutative:SI (match_dup 2)
+					 (extend_types:SI (match_dup 1))))
 	      (clobber (reg:CC CC_REG))])]
 )
 
@@ -1748,9 +1748,9 @@
 					 (match_dup 0)))
 	      (clobber (reg:CC CC_REG))])]
   "peep2_regno_dead_p (2, REGNO (operands[0])) && (optimize < 3 || optimize_size)"
-  [(parallel [(set:SI (match_dup 2)
-		      (memex_commutative:SI (match_dup 2)
-					    (extend_types:SI (match_dup 1))))
+  [(parallel [(set (match_dup 2)
+		   (memex_commutative:SI (match_dup 2)
+					 (extend_types:SI (match_dup 1))))
 	      (clobber (reg:CC CC_REG))])]
 )
 
@@ -1762,9 +1762,9 @@
 				     (match_dup 0)))
 	      (clobber (reg:CC CC_REG))])]
   "peep2_regno_dead_p (2, REGNO (operands[0])) && (optimize < 3 || optimize_size)"
-  [(parallel [(set:SI (match_dup 2)
-		      (memex_noncomm:SI (match_dup 2)
-					(extend_types:SI (match_dup 1))))
+  [(parallel [(set (match_dup 2)
+		   (memex_noncomm:SI (match_dup 2)
+				     (extend_types:SI (match_dup 1))))
 	      (clobber (reg:CC CC_REG))])]
 )
 
@@ -1775,9 +1775,9 @@
 	(memex_nocc:SI (match_dup 0)
 		       (match_dup 2)))]
   "peep2_regno_dead_p (2, REGNO (operands[0])) && (optimize < 3 || optimize_size)"
-  [(set:SI (match_dup 2)
-	   (memex_nocc:SI (match_dup 2)
-			  (extend_types:SI (match_dup 1))))]
+  [(set (match_dup 2)
+	(memex_nocc:SI (match_dup 2)
+		       (extend_types:SI (match_dup 1))))]
 )
 
 (define_peephole2
@@ -1787,9 +1787,9 @@
 	(memex_nocc:SI (match_dup 2)
 		       (match_dup 0)))]
   "peep2_regno_dead_p (2, REGNO (operands[0])) && (optimize < 3 || optimize_size)"
-  [(set:SI (match_dup 2)
-	   (memex_nocc:SI (match_dup 2)
-			  (extend_types:SI (match_dup 1))))]
+  [(set (match_dup 2)
+	(memex_nocc:SI (match_dup 2)
+		       (extend_types:SI (match_dup 1))))]
 )
 
 (define_insn "<memex_commutative:code>si3_<extend_types:code><small_int_modes:mode>"
@@ -2623,8 +2623,8 @@
 )
 
 (define_insn "movdi"
-  [(set:DI (match_operand:DI 0 "nonimmediate_operand" "=rm")
-	   (match_operand:DI 1 "general_operand"      "rmi"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=rm")
+        (match_operand:DI 1 "general_operand"      "rmi"))]
   "TARGET_ENABLE_LRA"
   { return rx_gen_move_template (operands, false); }
   [(set_attr "length" "16")
@@ -2632,8 +2632,8 @@
 )
 
 (define_insn "movdf"
-  [(set:DF (match_operand:DF 0 "nonimmediate_operand" "=rm")
-	   (match_operand:DF 1 "general_operand"      "rmi"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=rm")
+        (match_operand:DF 1 "general_operand"      "rmi"))]
   "TARGET_ENABLE_LRA"
   { return rx_gen_move_template (operands, false); }
   [(set_attr "length" "16")
