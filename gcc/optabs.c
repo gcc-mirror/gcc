@@ -6544,18 +6544,28 @@ vector_compare_rtx (enum tree_code tcode, tree t_op0, tree t_op1,
 {
   struct expand_operand ops[2];
   rtx rtx_op0, rtx_op1;
+  machine_mode m0, m1;
   enum rtx_code rcode = get_rtx_code (tcode, unsignedp);
 
   gcc_assert (TREE_CODE_CLASS (tcode) == tcc_comparison);
 
-  /* Expand operands.  */
+  /* Expand operands.  For vector types with scalar modes, e.g. where int64x1_t
+     has mode DImode, this can produce a constant RTX of mode VOIDmode; in such
+     cases, use the original mode.  */
   rtx_op0 = expand_expr (t_op0, NULL_RTX, TYPE_MODE (TREE_TYPE (t_op0)),
 			 EXPAND_STACK_PARM);
+  m0 = GET_MODE (rtx_op0);
+  if (m0 == VOIDmode)
+    m0 = TYPE_MODE (TREE_TYPE (t_op0));
+
   rtx_op1 = expand_expr (t_op1, NULL_RTX, TYPE_MODE (TREE_TYPE (t_op1)),
 			 EXPAND_STACK_PARM);
+  m1 = GET_MODE (rtx_op1);
+  if (m1 == VOIDmode)
+    m1 = TYPE_MODE (TREE_TYPE (t_op1));
 
-  create_input_operand (&ops[0], rtx_op0, GET_MODE (rtx_op0));
-  create_input_operand (&ops[1], rtx_op1, GET_MODE (rtx_op1));
+  create_input_operand (&ops[0], rtx_op0, m0);
+  create_input_operand (&ops[1], rtx_op1, m1);
   if (!maybe_legitimize_operands (icode, 4, 2, ops))
     gcc_unreachable ();
   return gen_rtx_fmt_ee (rcode, VOIDmode, ops[0].value, ops[1].value);
