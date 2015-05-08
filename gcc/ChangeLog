@@ -1,3 +1,16 @@
+2015-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66036
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment):
+	Handle strided group loads.
+	(vect_verify_datarefs_alignment): Likewise.
+	(vect_enhance_data_refs_alignment): Likewise.
+	(vect_analyze_group_access): Likewise.
+	(vect_analyze_data_ref_access): Likewise.
+	(vect_analyze_data_ref_accesses): Likewise.
+	* tree-vect-stmts.c (vect_model_load_cost): Likewise.
+	(vectorizable_load): Likewise.
+
 2015-05-08  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md: Require operand inequality in one

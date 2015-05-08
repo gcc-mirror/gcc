@@ -1112,7 +1112,8 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies,
      equivalent to the cost of GROUP_SIZE separate loads.  If a grouped
      access is instead being provided by a load-and-permute operation,
      include the cost of the permutes.  */
-  if (!load_lanes_p && group_size > 1)
+  if (!load_lanes_p && group_size > 1
+      && !STMT_VINFO_STRIDE_LOAD_P (stmt_info))
     {
       /* Uses an even and odd extract operations or shuffle operations
 	 for each needed permute.  */
@@ -1127,15 +1128,14 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies,
     }
 
   /* The loads themselves.  */
-  if (STMT_VINFO_STRIDE_LOAD_P (stmt_info))
+  if (STMT_VINFO_STRIDE_LOAD_P (stmt_info)
+      && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
     {
       /* N scalar loads plus gathering them into a vector.  */
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
       inside_cost += record_stmt_cost (body_cost_vec,
 				       ncopies * TYPE_VECTOR_SUBPARTS (vectype),
 				       scalar_load, stmt_info, 0, vect_body);
-      inside_cost += record_stmt_cost (body_cost_vec, ncopies, vec_construct,
-				       stmt_info, 0, vect_body);
     }
   else
     vect_get_load_cost (first_dr, ncopies,
@@ -1143,6 +1143,9 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies,
 			 || group_size > 1 || slp_node),
 			&inside_cost, &prologue_cost, 
 			prologue_cost_vec, body_cost_vec, true);
+  if (STMT_VINFO_STRIDE_LOAD_P (stmt_info))
+      inside_cost += record_stmt_cost (body_cost_vec, ncopies, vec_construct,
+				       stmt_info, 0, vect_body);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -5657,7 +5660,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   gimple ptr_incr = NULL;
   int nunits = TYPE_VECTOR_SUBPARTS (vectype);
   int ncopies;
-  int i, j, group_size, group_gap;
+  int i, j, group_size = -1, group_gap;
   tree msq = NULL_TREE, lsq;
   tree offset = NULL_TREE;
   tree byte_offset = NULL_TREE;
@@ -5790,9 +5793,11 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  return false;
 	}
 
-      if (!slp && !PURE_SLP_STMT (stmt_info))
+      group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
+      if (!slp
+	  && !PURE_SLP_STMT (stmt_info)
+	  && !STMT_VINFO_STRIDE_LOAD_P (stmt_info))
 	{
-	  group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
 	  if (vect_load_lanes_supported (vectype, group_size))
 	    load_lanes_p = true;
 	  else if (!vect_grouped_load_supported (vectype, group_size))
@@ -5847,7 +5852,22 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	}
     }
   else if (STMT_VINFO_STRIDE_LOAD_P (stmt_info))
-    ;
+    {
+      if ((grouped_load
+	   && (slp || PURE_SLP_STMT (stmt_info)))
+	  && (group_size > nunits
+	      || nunits % group_size != 0
+	      /* ???  During analysis phase we are not called with the
+	         slp node/instance we are in so whether we'll end up
+		 with a permutation we don't know.  Still we don't
+		 support load permutations.  */
+	      || slp_perm))
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "unhandled strided group load\n");
+	  return false;
+	}
+    }
   else
     {
       negative = tree_int_cst_compare (nested_in_vect_loop
@@ -6136,34 +6156,65 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       prev_stmt_info = NULL;
       running_off = offvar;
       alias_off = build_int_cst (reference_alias_ptr_type (DR_REF (dr)), 0);
+      int nloads = nunits;
+      tree ltype = TREE_TYPE (vectype);
+      if (slp)
+	{
+	  nloads = nunits / group_size;
+	  if (group_size < nunits)
+	    ltype = build_vector_type (TREE_TYPE (vectype), group_size);
+	  else
+	    ltype = vectype;
+	  ltype = build_aligned_type (ltype, TYPE_ALIGN (TREE_TYPE (vectype)));
+	  ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+	  gcc_assert (!slp_perm);
+	}
       for (j = 0; j < ncopies; j++)
 	{
 	  tree vec_inv;
 
-	  vec_alloc (v, nunits);
-	  for (i = 0; i < nunits; i++)
+	  if (nloads > 1)
 	    {
-	      tree newref, newoff;
-	      gimple incr;
-	      newref = build2 (MEM_REF, TREE_TYPE (vectype),
-			       running_off, alias_off);
+	      vec_alloc (v, nloads);
+	      for (i = 0; i < nloads; i++)
+		{
+		  tree newref, newoff;
+		  gimple incr;
+		  newref = build2 (MEM_REF, ltype, running_off, alias_off);
 
-	      newref = force_gimple_operand_gsi (gsi, newref, true,
-						 NULL_TREE, true,
-						 GSI_SAME_STMT);
-	      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, newref);
-	      newoff = copy_ssa_name (running_off);
-	      incr = gimple_build_assign (newoff, POINTER_PLUS_EXPR,
+		  newref = force_gimple_operand_gsi (gsi, newref, true,
+						     NULL_TREE, true,
+						     GSI_SAME_STMT);
+		  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, newref);
+		  newoff = copy_ssa_name (running_off);
+		  incr = gimple_build_assign (newoff, POINTER_PLUS_EXPR,
+					      running_off, stride_step);
+		  vect_finish_stmt_generation (stmt, incr, gsi);
+
+		  running_off = newoff;
+		}
+
+	      vec_inv = build_constructor (vectype, v);
+	      new_temp = vect_init_vector (stmt, vec_inv, vectype, gsi);
+	      new_stmt = SSA_NAME_DEF_STMT (new_temp);
+	    }
+	  else
+	    {
+	      new_stmt = gimple_build_assign (make_ssa_name (ltype),
+					      build2 (MEM_REF, ltype,
+						      running_off, alias_off));
+	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+
+	      tree newoff = copy_ssa_name (running_off);
+	      gimple incr = gimple_build_assign (newoff, POINTER_PLUS_EXPR,
 					  running_off, stride_step);
 	      vect_finish_stmt_generation (stmt, incr, gsi);
 
 	      running_off = newoff;
 	    }
 
-	  vec_inv = build_constructor (vectype, v);
-	  new_temp = vect_init_vector (stmt, vec_inv, vectype, gsi);
-	  new_stmt = SSA_NAME_DEF_STMT (new_temp);
-
+	  if (slp)
+	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
 	  if (j == 0)
 	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
 	  else
