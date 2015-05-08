@@ -1,5 +1,10 @@
 2015-05-08  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/aarch64-simd.md (aarch64_vcond_internal<mode><mode>,
+	vcond<mode><mode>, vcondu<mode><mode>): Add DImode variant.
+
+2015-05-08  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* optabs.c (vector_compare_rtx): Handle RTL operands having VOIDmode.
 
 2015-05-08  Szabolcs Nagy  <szabolcs.nagy@arm.com>

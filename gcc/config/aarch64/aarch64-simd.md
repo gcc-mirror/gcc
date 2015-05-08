@@ -2057,13 +2057,13 @@
 })
 
 (define_expand "aarch64_vcond_internal<mode><mode>"
-  [(set (match_operand:VDQ_I 0 "register_operand")
-	(if_then_else:VDQ_I
+  [(set (match_operand:VSDQ_I_DI 0 "register_operand")
+	(if_then_else:VSDQ_I_DI
 	  (match_operator 3 "comparison_operator"
-	    [(match_operand:VDQ_I 4 "register_operand")
-	     (match_operand:VDQ_I 5 "nonmemory_operand")])
-	  (match_operand:VDQ_I 1 "nonmemory_operand")
-	  (match_operand:VDQ_I 2 "nonmemory_operand")))]
+	    [(match_operand:VSDQ_I_DI 4 "register_operand")
+	     (match_operand:VSDQ_I_DI 5 "nonmemory_operand")])
+	  (match_operand:VSDQ_I_DI 1 "nonmemory_operand")
+	  (match_operand:VSDQ_I_DI 2 "nonmemory_operand")))]
   "TARGET_SIMD"
 {
   rtx op1 = operands[1];
@@ -2365,13 +2365,13 @@
 })
 
 (define_expand "vcond<mode><mode>"
-  [(set (match_operand:VALL 0 "register_operand")
-	(if_then_else:VALL
+  [(set (match_operand:VALLDI 0 "register_operand")
+	(if_then_else:VALLDI
 	  (match_operator 3 "comparison_operator"
-	    [(match_operand:VALL 4 "register_operand")
-	     (match_operand:VALL 5 "nonmemory_operand")])
-	  (match_operand:VALL 1 "nonmemory_operand")
-	  (match_operand:VALL 2 "nonmemory_operand")))]
+	    [(match_operand:VALLDI 4 "register_operand")
+	     (match_operand:VALLDI 5 "nonmemory_operand")])
+	  (match_operand:VALLDI 1 "nonmemory_operand")
+	  (match_operand:VALLDI 2 "nonmemory_operand")))]
   "TARGET_SIMD"
 {
   emit_insn (gen_aarch64_vcond_internal<mode><mode> (operands[0], operands[1],
@@ -2398,13 +2398,13 @@
 })
 
 (define_expand "vcondu<mode><mode>"
-  [(set (match_operand:VDQ_I 0 "register_operand")
-	(if_then_else:VDQ_I
+  [(set (match_operand:VSDQ_I_DI 0 "register_operand")
+	(if_then_else:VSDQ_I_DI
 	  (match_operator 3 "comparison_operator"
-	    [(match_operand:VDQ_I 4 "register_operand")
-	     (match_operand:VDQ_I 5 "nonmemory_operand")])
-	  (match_operand:VDQ_I 1 "nonmemory_operand")
-	  (match_operand:VDQ_I 2 "nonmemory_operand")))]
+	    [(match_operand:VSDQ_I_DI 4 "register_operand")
+	     (match_operand:VSDQ_I_DI 5 "nonmemory_operand")])
+	  (match_operand:VSDQ_I_DI 1 "nonmemory_operand")
+	  (match_operand:VSDQ_I_DI 2 "nonmemory_operand")))]
   "TARGET_SIMD"
 {
   emit_insn (gen_aarch64_vcond_internal<mode><mode> (operands[0], operands[1],
