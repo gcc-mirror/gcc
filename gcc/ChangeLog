@@ -1,5 +1,12 @@
 2015-05-08  Alan Lawrence  <alan.lawrence@arm.com>
 
+	* config/aarch64/arm_neon.h (vceq_s64, vceq_u64, vceqz_s64, vceqz_u64,
+	vcge_s64, vcge_u64, vcgez_s64, vcgt_s64, vcgt_u64, vcgtz_s64, vcle_s64,
+	vcle_u64, vclez_s64, vclt_s64, vclt_u64, vcltz_s64, vtst_s64,
+	vtst_u64): Rewrite using gcc vector extensions.
+
+2015-05-08  Alan Lawrence  <alan.lawrence@arm.com>
+
 	* config/aarch64/aarch64-simd.md (aarch64_vcond_internal<mode><mode>,
 	vcond<mode><mode>, vcondu<mode><mode>): Add DImode variant.
 

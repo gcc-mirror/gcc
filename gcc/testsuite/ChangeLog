@@ -1,3 +1,8 @@
+2015-05-08  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/singleton_intrinsics_1.c: Generalize regex to
+	allow cmlt or sshr.
+
 2015-05-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64918

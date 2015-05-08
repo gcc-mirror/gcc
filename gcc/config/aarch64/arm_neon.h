@@ -11619,7 +11619,7 @@ vceq_s32 (int32x2_t __a, int32x2_t __b)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vceq_s64 (int64x1_t __a, int64x1_t __b)
 {
-  return (uint64x1_t) {__a[0] == __b[0] ? -1ll : 0ll};
+  return (uint64x1_t) (__a == __b);
 }
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
@@ -11643,7 +11643,7 @@ vceq_u32 (uint32x2_t __a, uint32x2_t __b)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vceq_u64 (uint64x1_t __a, uint64x1_t __b)
 {
-  return (uint64x1_t) {__a[0] == __b[0] ? -1ll : 0ll};
+  return (__a == __b);
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
@@ -11779,7 +11779,7 @@ vceqz_s32 (int32x2_t __a)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vceqz_s64 (int64x1_t __a)
 {
-  return (uint64x1_t) {__a[0] == 0ll ? -1ll : 0ll};
+  return (uint64x1_t) (__a == __AARCH64_INT64_C (0));
 }
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
@@ -11803,7 +11803,7 @@ vceqz_u32 (uint32x2_t __a)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vceqz_u64 (uint64x1_t __a)
 {
-  return (uint64x1_t) {__a[0] == 0ll ? -1ll : 0ll};
+  return (__a == __AARCH64_UINT64_C (0));
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
@@ -11933,7 +11933,7 @@ vcge_s32 (int32x2_t __a, int32x2_t __b)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vcge_s64 (int64x1_t __a, int64x1_t __b)
 {
-  return (uint64x1_t) {__a[0] >= __b[0] ? -1ll : 0ll};
+  return (uint64x1_t) (__a >= __b);
 }
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
@@ -11957,7 +11957,7 @@ vcge_u32 (uint32x2_t __a, uint32x2_t __b)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vcge_u64 (uint64x1_t __a, uint64x1_t __b)
 {
-  return (uint64x1_t) {__a[0] >= __b[0] ? -1ll : 0ll};
+  return (__a >= __b);
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
@@ -12081,7 +12081,7 @@ vcgez_s32 (int32x2_t __a)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vcgez_s64 (int64x1_t __a)
 {
-  return (uint64x1_t) {__a[0] >= 0ll ? -1ll : 0ll};
+  return (uint64x1_t) (__a >= __AARCH64_INT64_C (0));
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
@@ -12175,7 +12175,7 @@ vcgt_s32 (int32x2_t __a, int32x2_t __b)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vcgt_s64 (int64x1_t __a, int64x1_t __b)
 {
-  return (uint64x1_t) (__a[0] > __b[0] ? -1ll : 0ll);
+  return (uint64x1_t) (__a > __b);
 }
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
@@ -12199,7 +12199,7 @@ vcgt_u32 (uint32x2_t __a, uint32x2_t __b)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vcgt_u64 (uint64x1_t __a, uint64x1_t __b)
 {
-  return (uint64x1_t) (__a[0] > __b[0] ? -1ll : 0ll);
+  return (__a > __b);
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
@@ -12323,7 +12323,7 @@ vcgtz_s32 (int32x2_t __a)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vcgtz_s64 (int64x1_t __a)
 {
-  return (uint64x1_t) {__a[0] > 0ll ? -1ll : 0ll};
+  return (uint64x1_t) (__a > __AARCH64_INT64_C (0));
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
@@ -12417,7 +12417,7 @@ vcle_s32 (int32x2_t __a, int32x2_t __b)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vcle_s64 (int64x1_t __a, int64x1_t __b)
 {
-  return (uint64x1_t) {__a[0] <= __b[0] ? -1ll : 0ll};
+  return (uint64x1_t) (__a <= __b);
 }
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
@@ -12441,7 +12441,7 @@ vcle_u32 (uint32x2_t __a, uint32x2_t __b)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vcle_u64 (uint64x1_t __a, uint64x1_t __b)
 {
-  return (uint64x1_t) {__a[0] <= __b[0] ? -1ll : 0ll};
+  return (__a <= __b);
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
@@ -12565,7 +12565,7 @@ vclez_s32 (int32x2_t __a)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vclez_s64 (int64x1_t __a)
 {
-  return (uint64x1_t) {__a[0] <= 0ll ? -1ll : 0ll};
+  return (uint64x1_t) (__a <= __AARCH64_INT64_C (0));
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
@@ -12659,7 +12659,7 @@ vclt_s32 (int32x2_t __a, int32x2_t __b)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vclt_s64 (int64x1_t __a, int64x1_t __b)
 {
-  return (uint64x1_t) {__a[0] < __b[0] ? -1ll : 0ll};
+  return (uint64x1_t) (__a < __b);
 }
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
@@ -12683,7 +12683,7 @@ vclt_u32 (uint32x2_t __a, uint32x2_t __b)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vclt_u64 (uint64x1_t __a, uint64x1_t __b)
 {
-  return (uint64x1_t) {__a[0] < __b[0] ? -1ll : 0ll};
+  return (__a < __b);
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
@@ -12807,7 +12807,7 @@ vcltz_s32 (int32x2_t __a)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vcltz_s64 (int64x1_t __a)
 {
-  return (uint64x1_t) {__a[0] < 0ll ? -1ll : 0ll};
+  return (uint64x1_t) (__a < __AARCH64_INT64_C (0));
 }
 
 __extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
@@ -23767,7 +23767,7 @@ vtst_s32 (int32x2_t __a, int32x2_t __b)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vtst_s64 (int64x1_t __a, int64x1_t __b)
 {
-  return (uint64x1_t) {(__a[0] & __b[0]) ? -1ll : 0ll};
+  return (uint64x1_t) ((__a & __b) != __AARCH64_INT64_C (0));
 }
 
 __extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
@@ -23791,7 +23791,7 @@ vtst_u32 (uint32x2_t __a, uint32x2_t __b)
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vtst_u64 (uint64x1_t __a, uint64x1_t __b)
 {
-  return (uint64x1_t) {(__a[0] & __b[0]) ? -1ll : 0ll};
+  return ((__a & __b) != __AARCH64_UINT64_C (0));
 }
 
 __extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
