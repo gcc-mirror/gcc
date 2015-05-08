@@ -1,5 +1,12 @@
 2015-05-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/59012
+	* parser.c (cp_parser_std_attribute_list): Handle attribute expansion.
+	(cp_parser_std_attribute_spec): Handle alignas pack expansion.
+	* decl2.c (is_late_template_attribute): An attribute exp is dependent.
+	* pt.c (make_pack_expansion): Allow TREE_LIST for attribute expansion.
+	(apply_late_template_attributes): Handle attribute pack expansion.
+
 	DR 1467
 	PR c++/51747
 	* typeck2.c (digest_init_r): Fix single element list.

@@ -22500,6 +22500,13 @@ cp_parser_std_attribute_list (cp_parser *parser)
 	  attributes = attribute;
 	}
       token = cp_lexer_peek_token (parser->lexer);
+      if (token->type == CPP_ELLIPSIS)
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  TREE_VALUE (attribute)
+	    = make_pack_expansion (TREE_VALUE (attribute));
+	  token = cp_lexer_peek_token (parser->lexer);
+	}
       if (token->type != CPP_COMMA)
 	break;
       cp_lexer_consume_token (parser->lexer);
@@ -22578,20 +22585,27 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 	    return alignas_expr;
 	}
 
+      alignas_expr = cxx_alignas_expr (alignas_expr);
+      alignas_expr = build_tree_list (NULL_TREE, alignas_expr);
+
+      if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  alignas_expr = make_pack_expansion (alignas_expr);
+	}
+
       if (cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN) == NULL)
 	{
 	  cp_parser_error (parser, "expected %<)%>");
 	  return error_mark_node;
 	}
 
-      alignas_expr = cxx_alignas_expr (alignas_expr);
-
       /* Build the C++-11 representation of an 'aligned'
 	 attribute.  */
       attributes =
 	build_tree_list (build_tree_list (get_identifier ("gnu"),
 					  get_identifier ("aligned")),
-			 build_tree_list (NULL_TREE, alignas_expr));
+			 alignas_expr);
     }
 
   return attributes;
