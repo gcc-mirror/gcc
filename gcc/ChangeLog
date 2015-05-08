@@ -1,3 +1,11 @@
+2015-05-08  Jim Wilson  <jim.wilson@linaro.org>
+
+	* doc/install.texi (--enable-languages): Add missing jit and lto info.
+	Add ^ to grep command.
+	* doc/match-and-simplify.texi (GIMPLE API): Add missing fourth tree
+	arg to last gimple_simplify declaration.  Add missing gimple_build
+	declaration for built-in function case with four tree args.
+
 2015-05-08  Gregor Richards  <gregor.richards@uwaterloo.ca>
 	    Szabolcs Nagy  <szabolcs.nagy@arm.com>
 

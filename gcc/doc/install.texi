@@ -1544,15 +1544,17 @@ their runtime libraries should be built.  For a list of valid values for
 @var{langN} you can issue the following command in the
 @file{gcc} directory of your GCC source tree:@*
 @smallexample
-grep language= */config-lang.in
+grep ^language= */config-lang.in
 @end smallexample
 Currently, you can use any of the following:
 @code{all}, @code{ada}, @code{c}, @code{c++}, @code{fortran},
-@code{go}, @code{java}, @code{objc}, @code{obj-c++}.
+@code{go}, @code{java}, @code{jit}, @code{lto}, @code{objc}, @code{obj-c++}.
 Building the Ada compiler has special requirements, see below.
 If you do not pass this flag, or specify the option @code{all}, then all
 default languages available in the @file{gcc} sub-tree will be configured.
-Ada, Go and Objective-C++ are not default languages; the rest are.
+Ada, Go, Jit, and Objective-C++ are not default languages.  LTO is not a
+default language, but is built by default because @option{--enable-lto} is
+enabled by default.  The other languages are default languages.
 
 @item --enable-stage1-languages=@var{lang1},@var{lang2},@dots{}
 Specify that a particular subset of compilers and their runtime
