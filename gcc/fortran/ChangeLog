@@ -1,3 +1,9 @@
+2015-05-08  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_walk_elemental_function_args):
+	Don't skip the advance to the next dummy argument when skipping
+	absent optional args.
+
 2015-05-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* expr.c (check_inquiry): Fix indentation so that it reflects the

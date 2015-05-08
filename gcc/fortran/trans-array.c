@@ -9092,7 +9092,7 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
   for (; arg; arg = arg->next)
     {
       if (!arg->expr || arg->expr->expr_type == EXPR_NULL)
-	continue;
+	goto loop_continue;
 
       newss = gfc_walk_subexpr (head, arg->expr);
       if (newss == head)
@@ -9122,6 +9122,7 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
             tail = tail->next;
         }
 
+loop_continue:
       if (dummy_arg != NULL)
 	dummy_arg = dummy_arg->next;
     }
