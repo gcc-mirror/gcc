@@ -1,3 +1,11 @@
+2015-05-08  Richard Sandiford  <richard.sandiford@arm.com>
+	    Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* config/i386/i386.md (<mode>_ldx, *<mode>_ldx): Remove mode
+	from (set ...).
+	* config/rx/rx.md (movdi, movdf): Likewise.
+	Likewise for define_peephole2s.
+
 2015-05-08  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* config/aarch64/arm_neon.h (vceq_s64, vceq_u64, vceqz_s64, vceqz_u64,
