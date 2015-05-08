@@ -1,3 +1,7 @@
+2015-05-08  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.dg/elemental_optional_args_7.f90: New.
+
 2015-05-08  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/singleton_intrinsics_1.c: Generalize regex to
