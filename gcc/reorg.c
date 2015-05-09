@@ -225,7 +225,7 @@ static int *uid_to_ruid;
 /* Highest valid index in `uid_to_ruid'.  */
 static int max_uid;
 
-static int stop_search_p (rtx, int);
+static int stop_search_p (rtx_insn *, int);
 static int resource_conflicts_p (struct resources *, struct resources *);
 static int insn_references_resource_p (rtx, struct resources *, bool);
 static int insn_sets_resource_p (rtx, struct resources *, bool);
@@ -302,7 +302,7 @@ simplejump_or_return_p (rtx insn)
    In all cases, jumps terminate the search.  */
 
 static int
-stop_search_p (rtx insn, int labels_p)
+stop_search_p (rtx_insn *insn, int labels_p)
 {
   if (insn == 0)
     return 1;
