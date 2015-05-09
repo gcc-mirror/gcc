@@ -2890,7 +2890,7 @@ extern void replace_label (rtx *, rtx, rtx, bool);
 extern void replace_label_in_insn (rtx_insn *, rtx, rtx, bool);
 extern bool rtx_referenced_p (const_rtx, const_rtx);
 extern bool tablejump_p (const rtx_insn *, rtx *, rtx_jump_table_data **);
-extern int computed_jump_p (const_rtx);
+extern int computed_jump_p (const rtx_insn *);
 extern bool tls_referenced_p (const_rtx);
 
 /* Overload for refers_to_regno_p for checking a single register.  */

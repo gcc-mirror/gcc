@@ -1,5 +1,10 @@
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* rtlanal.c (computed_jump_p): Cange argument type to rtx_insn *.
+	* rtl.h: Adjust.
+
+2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* rtlanal.c (in_insn_list_p): Renamed from in_expr_list_p.
 	* cfgrtl.c (can_delete_label_p): Adjust.
 	* rtl.h: likewise.
