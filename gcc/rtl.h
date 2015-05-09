@@ -2686,7 +2686,7 @@ extern rtx_insn *emit_debug_insn_after_noloc (rtx, rtx);
 extern rtx_insn *emit_debug_insn_after_setloc (rtx, rtx, int);
 extern rtx_barrier *emit_barrier_after (rtx);
 extern rtx_insn *emit_label_after (rtx, rtx_insn *);
-extern rtx_note *emit_note_after (enum insn_note, rtx);
+extern rtx_note *emit_note_after (enum insn_note, rtx_insn *);
 extern rtx_insn *emit_insn (rtx);
 extern rtx_insn *emit_debug_insn (rtx);
 extern rtx_insn *emit_jump_insn (rtx);
