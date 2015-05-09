@@ -5211,7 +5211,7 @@ gnat_write_global_declarations (void)
      finalized in the right context.  */
   FOR_EACH_VEC_SAFE_ELT (global_decls, i, iter)
     if (TREE_CODE (iter) == TYPE_DECL && !DECL_IGNORED_P (iter))
-      debug_hooks->global_decl (iter);
+      debug_hooks->type_decl (iter, false);
 
   /* Proceed to optimize and emit assembly. */
   symtab->finalize_compilation_unit ();
