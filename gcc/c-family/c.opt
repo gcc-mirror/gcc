@@ -312,11 +312,10 @@ C ObjC Var(warn_cxx_compat) CPP(warn_cxx_operator_names) CppReason(CPP_W_CXX_OPE
 Warn about C constructs that are not in the common subset of C and C++
 
 Wc++0x-compat
-C++ ObjC++ Var(warn_cxx0x_compat) Warning LangEnabledBy(C++ ObjC++,Wall) Init(0) CPP(cpp_warn_cxx11_compat) CppReason(CPP_W_CXX11_COMPAT)
-Deprecated in favor of -Wc++11-compat
+C++ ObjC++ Warning Alias(Wc++11-compat) Undocumented
 
 Wc++11-compat
-C++ ObjC++ Warning Alias(Wc++0x-compat)
+C++ ObjC++ Var(warn_cxx11_compat) Warning LangEnabledBy(C++ ObjC++,Wall) Init(0) CPP(cpp_warn_cxx11_compat) CppReason(CPP_W_CXX11_COMPAT)
 Warn about C++ constructs whose meaning differs between ISO C++ 1998 and ISO C++ 2011
 
 Wc++14-compat
@@ -627,7 +626,7 @@ C ObjC C++ ObjC++ CPP(warn_multichar) CppReason(CPP_W_MULTICHAR) Var(cpp_warn_mu
 Warn about use of multi-character character constants
 
 Wnarrowing
-C ObjC C++ ObjC++ Warning Var(warn_narrowing) Init(-1) LangEnabledBy(C++ ObjC++,Wall || Wc++0x-compat)
+C ObjC C++ ObjC++ Warning Var(warn_narrowing) Init(-1) LangEnabledBy(C++ ObjC++,Wall || Wc++11-compat)
 Warn about narrowing conversions within { } that are ill-formed in C++11
 
 Wnested-externs
