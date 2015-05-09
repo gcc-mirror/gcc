@@ -1,3 +1,10 @@
+2015-05-08  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/reduction-4.c (main): Use
+	_Complex.
+
+	* openacc.h (__GOACC_NOTHROW): Fix noexcept syntax.
+
 2015-05-06  Julian Brown  <julian@codesourcery.com>
 
 	* oacc-init.c (acc_device_lock): Add explanatory comment.

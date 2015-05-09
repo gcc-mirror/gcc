@@ -39,7 +39,7 @@ extern "C" {
 #endif
 
 #if __cplusplus >= 201103
-# define __GOACC_NOTHROW noexcept ()
+# define __GOACC_NOTHROW noexcept
 #elif __cplusplus
 # define __GOACC_NOTHROW throw ()
 #else /* Not C++ */
