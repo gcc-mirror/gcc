@@ -1231,13 +1231,13 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	}
       else
 	{
-	  if (warn_cxx0x_compat && cxx_dialect < cxx11
+	  if (warn_cxx11_compat && cxx_dialect < cxx11
 	      && DECL_DESTRUCTOR_P (current_function_decl)
 	      && (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl))
 		  == NULL_TREE)
 	      && (get_defaulted_eh_spec (current_function_decl)
 		  == empty_except_spec))
-	    warning_at (loc, OPT_Wc__0x_compat,
+	    warning_at (loc, OPT_Wc__11_compat,
 			"in C++11 this throw will terminate because "
 			"destructors default to noexcept");
 	}
