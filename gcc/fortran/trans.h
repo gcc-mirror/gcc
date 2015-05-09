@@ -206,6 +206,9 @@ typedef struct gfc_ss_info
     /* If type is GFC_SS_SCALAR or GFC_SS_REFERENCE.  */
     struct
     {
+      /* If the scalar is passed as actual argument to an (elemental) procedure,
+	 this is the symbol of the corresponding dummy argument.  */
+      gfc_symbol *dummy_arg;
       tree value;
     }
     scalar;

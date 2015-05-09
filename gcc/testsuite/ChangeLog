@@ -1,3 +1,8 @@
+2015-05-09  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/65894
+	* gfortran.dg/elemental_subroutine_11.f90: New test.
+
 2015-05-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66036
