@@ -1,3 +1,12 @@
+2015-05-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* decl2.c (collect_candidates_for_java_method_aliases): Remove.
+	(build_java_method_aliases): Adapt to use create_same_body_alias
+	instead of assemble_alias.  Move variable declarations to
+	definition and tidy up.
+	(cp_write_global_declarations): Call build_java_method_aliases
+	instead of collecting candidates first.
+
 2015-05-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/59012
