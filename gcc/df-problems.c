@@ -3597,7 +3597,7 @@ df_simulate_one_insn_forwards (basic_block bb, rtx_insn *insn, bitmap live)
 /* Return an OR of MEMREF_NORMAL or MEMREF_VOLATILE for the MEMs in X.  */
 
 static int
-find_memory (rtx insn)
+find_memory (rtx_insn *insn)
 {
   int flags = 0;
   subrtx_iterator::array_type array;
