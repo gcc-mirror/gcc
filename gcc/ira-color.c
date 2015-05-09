@@ -4600,7 +4600,7 @@ ira_mark_new_stack_slot (rtx x, int regno, unsigned int total_size)
    CALL_USED_COUNT), and the first hard regno occupied by the
    pseudo-registers (through FIRST_HARD_REGNO).  */
 static int
-calculate_spill_cost (int *regnos, rtx in, rtx out, rtx insn,
+calculate_spill_cost (int *regnos, rtx in, rtx out, rtx_insn *insn,
 		      int *excess_pressure_live_length,
 		      int *nrefs, int *call_used_count, int *first_hard_regno)
 {
@@ -4661,7 +4661,7 @@ calculate_spill_cost (int *regnos, rtx in, rtx out, rtx insn,
    decisions.  */
 bool
 ira_better_spill_reload_regno_p (int *regnos, int *other_regnos,
-				 rtx in, rtx out, rtx insn)
+				 rtx in, rtx out, rtx_insn *insn)
 {
   int cost, other_cost;
   int length, other_length;

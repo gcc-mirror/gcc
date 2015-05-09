@@ -873,7 +873,7 @@ mark_not_eliminable (rtx x, machine_mode mem_mode)
    found elmination offset.  If the note is not found, return NULL.
    Remove the found note.  */
 static rtx
-remove_reg_equal_offset_note (rtx insn, rtx what)
+remove_reg_equal_offset_note (rtx_insn *insn, rtx what)
 {
   rtx link, *link_loc;
 
