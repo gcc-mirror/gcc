@@ -1,5 +1,12 @@
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* ira.c (decrease_live_ranges_number): Changetype of local
+	variable to rtx_insn *.
+	* recog.c: Change argument types to rtx_insn *.
+	* recog.h: Adjust.
+
+2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* reorg.c: Change argument types to rtx_insn *.
 
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>

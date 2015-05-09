@@ -88,7 +88,7 @@ extern int check_asm_operands (rtx);
 extern int asm_operand_ok (rtx, const char *, const char **);
 extern bool validate_change (rtx, rtx *, rtx, bool);
 extern bool validate_unshare_change (rtx, rtx *, rtx, bool);
-extern bool canonicalize_change_group (rtx insn, rtx x);
+extern bool canonicalize_change_group (rtx_insn *insn, rtx x);
 extern int insn_invalid_p (rtx_insn *, bool);
 extern int verify_changes (int);
 extern void confirm_change_group (void);
@@ -104,15 +104,15 @@ extern int strict_memory_address_addr_space_p (machine_mode, rtx,
 					       addr_space_t);
 #define strict_memory_address_p(mode,addr) \
 	strict_memory_address_addr_space_p ((mode), (addr), ADDR_SPACE_GENERIC)
-extern int validate_replace_rtx_subexp (rtx, rtx, rtx, rtx *);
-extern int validate_replace_rtx (rtx, rtx, rtx);
-extern int validate_replace_rtx_part (rtx, rtx, rtx *, rtx);
-extern int validate_replace_rtx_part_nosimplify (rtx, rtx, rtx *, rtx);
-extern void validate_replace_rtx_group (rtx, rtx, rtx);
+extern int validate_replace_rtx_subexp (rtx, rtx, rtx_insn *, rtx *);
+extern int validate_replace_rtx (rtx, rtx, rtx_insn *);
+extern int validate_replace_rtx_part (rtx, rtx, rtx *, rtx_insn *);
+extern int validate_replace_rtx_part_nosimplify (rtx, rtx, rtx *, rtx_insn *);
+extern void validate_replace_rtx_group (rtx, rtx, rtx_insn *);
 extern void validate_replace_src_group (rtx, rtx, rtx_insn *);
-extern bool validate_simplify_insn (rtx insn);
+extern bool validate_simplify_insn (rtx_insn *insn);
 extern int num_changes_pending (void);
-extern int next_insn_tests_no_inequality (rtx);
+extern int next_insn_tests_no_inequality (rtx_insn *);
 extern bool reg_fits_class_p (const_rtx, reg_class_t, int, machine_mode);
 
 extern int offsettable_memref_p (rtx);
@@ -138,7 +138,7 @@ extern void extract_insn_cached (rtx_insn *);
 extern void preprocess_constraints (int, int, const char **,
 				    operand_alternative *);
 extern const operand_alternative *preprocess_insn_constraints (int);
-extern void preprocess_constraints (rtx);
+extern void preprocess_constraints (rtx_insn *);
 extern rtx peep2_next_insn (int);
 extern int peep2_regno_dead_p (int, int);
 extern int peep2_reg_dead_p (int, rtx);
