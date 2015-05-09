@@ -4327,7 +4327,7 @@ generate_mangling_alias (tree decl, tree id2)
    implementation.  */
 
 void
-note_mangling_alias (tree decl, tree id2)
+note_mangling_alias (tree decl ATTRIBUTE_UNUSED, tree id2 ATTRIBUTE_UNUSED)
 {
 #ifdef ASM_OUTPUT_DEF
   if (at_eof)
