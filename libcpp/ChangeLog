@@ -1,3 +1,10 @@
+2015-05-08  Jason Merrill  <jason@redhat.com>
+
+	* include/cpplib.h: Add CPP_W_CXX11_COMPAT.
+	(struct cpp_options): Add cpp_warn_cxx11_compat.
+	* init.c (cpp_create_reader): Initialize it.
+	* lex.c (lex_string): Add -Wc++11-compat warning.
+
 2015-05-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* pch.c (cpp_valid_state): Fix indentation so that it reflects the

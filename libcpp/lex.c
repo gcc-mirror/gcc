@@ -1905,6 +1905,12 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	    ++cur;
 	}
     }
+  else if (CPP_OPTION (pfile, cpp_warn_cxx11_compat)
+	   && is_macro (pfile, cur)
+	   && !pfile->state.skipping)
+    cpp_warning_with_line (pfile, CPP_W_CXX11_COMPAT,
+			   token->src_loc, 0, "C++11 requires a space "
+			   "between string literal and macro");
 
   pfile->buffer->cur = cur;
   create_literal (pfile, token, base, cur - base, type);
