@@ -84,9 +84,9 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 #endif
 
-static void validate_replace_rtx_1 (rtx *, rtx, rtx, rtx, bool);
+static void validate_replace_rtx_1 (rtx *, rtx, rtx, rtx_insn *, bool);
 static void validate_replace_src_1 (rtx *, void *);
-static rtx split_insn (rtx_insn *);
+static rtx_insn *split_insn (rtx_insn *);
 
 struct target_recog default_target_recog;
 #if SWITCHABLE_TARGET
@@ -319,7 +319,7 @@ validate_unshare_change (rtx object, rtx *loc, rtx new_rtx, bool in_group)
 
    Return true if anything was changed.  */
 bool
-canonicalize_change_group (rtx insn, rtx x)
+canonicalize_change_group (rtx_insn *insn, rtx x)
 {
   if (COMMUTATIVE_P (x)
       && swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
@@ -598,7 +598,7 @@ cancel_changes (int num)
    rtx.  */
 
 static void
-simplify_while_replacing (rtx *loc, rtx to, rtx object,
+simplify_while_replacing (rtx *loc, rtx to, rtx_insn *object,
                           machine_mode op0_mode)
 {
   rtx x = *loc;
@@ -758,7 +758,7 @@ simplify_while_replacing (rtx *loc, rtx to, rtx object,
    validate_change passing OBJECT.  */
 
 static void
-validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object,
+validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx_insn *object,
                         bool simplify)
 {
   int i, j;
@@ -847,7 +847,7 @@ validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object,
    if INSN is still valid.  */
 
 int
-validate_replace_rtx_subexp (rtx from, rtx to, rtx insn, rtx *loc)
+validate_replace_rtx_subexp (rtx from, rtx to, rtx_insn *insn, rtx *loc)
 {
   validate_replace_rtx_1 (loc, from, to, insn, true);
   return apply_change_group ();
@@ -857,7 +857,7 @@ validate_replace_rtx_subexp (rtx from, rtx to, rtx insn, rtx *loc)
    changes have been made, validate by seeing if INSN is still valid.  */
 
 int
-validate_replace_rtx (rtx from, rtx to, rtx insn)
+validate_replace_rtx (rtx from, rtx to, rtx_insn *insn)
 {
   validate_replace_rtx_1 (&PATTERN (insn), from, to, insn, true);
   return apply_change_group ();
@@ -870,7 +870,7 @@ validate_replace_rtx (rtx from, rtx to, rtx insn)
    validate_replace_rtx_part (from, to, &PATTERN (insn), insn).  */
 
 int
-validate_replace_rtx_part (rtx from, rtx to, rtx *where, rtx insn)
+validate_replace_rtx_part (rtx from, rtx to, rtx *where, rtx_insn *insn)
 {
   validate_replace_rtx_1 (where, from, to, insn, true);
   return apply_change_group ();
@@ -879,7 +879,7 @@ validate_replace_rtx_part (rtx from, rtx to, rtx *where, rtx insn)
 /* Same as above, but do not simplify rtx afterwards.  */
 int
 validate_replace_rtx_part_nosimplify (rtx from, rtx to, rtx *where,
-                                      rtx insn)
+				      rtx_insn *insn)
 {
   validate_replace_rtx_1 (where, from, to, insn, false);
   return apply_change_group ();
@@ -890,7 +890,7 @@ validate_replace_rtx_part_nosimplify (rtx from, rtx to, rtx *where,
    will replace in REG_EQUAL and REG_EQUIV notes.  */
 
 void
-validate_replace_rtx_group (rtx from, rtx to, rtx insn)
+validate_replace_rtx_group (rtx from, rtx to, rtx_insn *insn)
 {
   rtx note;
   validate_replace_rtx_1 (&PATTERN (insn), from, to, insn, true);
@@ -936,7 +936,7 @@ validate_replace_src_group (rtx from, rtx to, rtx_insn *insn)
    pattern and return true if something was simplified.  */
 
 bool
-validate_simplify_insn (rtx insn)
+validate_simplify_insn (rtx_insn *insn)
 {
   int i;
   rtx pat = NULL;
@@ -976,7 +976,7 @@ validate_simplify_insn (rtx insn)
    EQ and NE tests do not count.  */
 
 int
-next_insn_tests_no_inequality (rtx insn)
+next_insn_tests_no_inequality (rtx_insn *insn)
 {
   rtx_insn *next = next_cc0_user (insn);
 
@@ -2517,7 +2517,7 @@ preprocess_insn_constraints (int icode)
    The collected data is stored in recog_op_alt.  */
 
 void
-preprocess_constraints (rtx insn)
+preprocess_constraints (rtx_insn *insn)
 {
   int icode = INSN_CODE (insn);
   if (icode >= 0)
@@ -2911,7 +2911,7 @@ reg_fits_class_p (const_rtx operand, reg_class_t cl, int offset,
    split_all_insns_noflow.  Return last insn in the sequence if successful,
    or NULL if unsuccessful.  */
 
-static rtx
+static rtx_insn *
 split_insn (rtx_insn *insn)
 {
   /* Split insns here to get max fine-grain parallelism.  */
@@ -2920,7 +2920,7 @@ split_insn (rtx_insn *insn)
   rtx insn_set, last_set, note;
 
   if (last == insn)
-    return NULL_RTX;
+    return NULL;
 
   /* If the original instruction was a single set that was known to be
      equivalent to a constant, see if we can say the same about the last
