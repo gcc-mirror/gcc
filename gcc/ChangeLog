@@ -1,5 +1,9 @@
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* gcse.c: Change argument types to rtx_insn *.
+
+2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* cse.c (cse_change_cc0_mode): Change argument type to rtx_insn *.
 
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
