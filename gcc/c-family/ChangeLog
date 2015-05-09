@@ -1,3 +1,7 @@
+2015-05-08  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (Wc++0x-compat): Also set cpp_warn_cxx11_compat.
+
 2015-05-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64918
