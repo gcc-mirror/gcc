@@ -2666,7 +2666,7 @@ extern rtx_insn *emit_jump_insn_before_setloc (rtx, rtx_insn *, int);
 extern rtx_insn *emit_call_insn_before (rtx, rtx_insn *);
 extern rtx_insn *emit_call_insn_before_noloc (rtx, rtx_insn *);
 extern rtx_insn *emit_call_insn_before_setloc (rtx, rtx_insn *, int);
-extern rtx_insn *emit_debug_insn_before (rtx, rtx);
+extern rtx_insn *emit_debug_insn_before (rtx, rtx_insn *);
 extern rtx_insn *emit_debug_insn_before_noloc (rtx, rtx);
 extern rtx_insn *emit_debug_insn_before_setloc (rtx, rtx, int);
 extern rtx_barrier *emit_barrier_before (rtx);
