@@ -1,5 +1,11 @@
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* rtlanal.c (remove_reg_equal_equiv_notes): Change argument type
+	to rtx_insn *.
+	* rtl.h: Likewise.
+
+2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* except.c (can_nonlocal_goto): Change type of argument to
 	rtx_insn *.
 	* rtl.h: Adjust.

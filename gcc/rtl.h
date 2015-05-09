@@ -2869,7 +2869,7 @@ extern void add_reg_note (rtx, enum reg_note, rtx);
 extern void add_int_reg_note (rtx, enum reg_note, int);
 extern void add_shallow_copy_of_reg_note (rtx, rtx);
 extern void remove_note (rtx, const_rtx);
-extern void remove_reg_equal_equiv_notes (rtx);
+extern void remove_reg_equal_equiv_notes (rtx_insn *);
 extern void remove_reg_equal_equiv_notes_for_regno (unsigned int);
 extern int side_effects_p (const_rtx);
 extern int volatile_refs_p (const_rtx);
