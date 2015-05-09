@@ -186,7 +186,7 @@ skip_consecutive_labels (rtx label_or_return)
    and REG_CC_USER notes so we can find it.  */
 
 static void
-link_cc0_insns (rtx insn)
+link_cc0_insns (rtx_insn *insn)
 {
   rtx user = next_nonnote_insn (insn);
 
@@ -260,12 +260,12 @@ static rtx_insn_list *steal_delay_list_from_fallthrough (rtx_insn *, rtx,
 							 struct resources *,
 							 struct resources *,
 							 int, int *, int *);
-static void try_merge_delay_insns (rtx, rtx_insn *);
+static void try_merge_delay_insns (rtx_insn *, rtx_insn *);
 static rtx redundant_insn (rtx, rtx_insn *, rtx);
 static int own_thread_p (rtx, rtx, int);
 static void update_block (rtx_insn *, rtx);
 static int reorg_redirect_jump (rtx_insn *, rtx);
-static void update_reg_dead_notes (rtx, rtx);
+static void update_reg_dead_notes (rtx_insn *, rtx_insn *);
 static void fix_reg_dead_note (rtx, rtx);
 static void update_reg_unused_notes (rtx, rtx);
 static void fill_simple_delay_slots (int);
@@ -1313,7 +1313,7 @@ steal_delay_list_from_fallthrough (rtx_insn *insn, rtx condition,
    we delete the merged insn.  */
 
 static void
-try_merge_delay_insns (rtx insn, rtx_insn *thread)
+try_merge_delay_insns (rtx_insn *insn, rtx_insn *thread)
 {
   rtx_insn *trial, *next_trial;
   rtx_insn *delay_insn = as_a <rtx_insn *> (XVECEXP (PATTERN (insn), 0, 0));
@@ -1807,7 +1807,7 @@ reorg_redirect_jump (rtx_insn *jump, rtx nlabel)
    is dead because it sees a REG_DEAD note immediately before a CODE_LABEL.  */
 
 static void
-update_reg_dead_notes (rtx insn, rtx delayed_insn)
+update_reg_dead_notes (rtx_insn *insn, rtx_insn *delayed_insn)
 {
   rtx link, next;
   rtx_insn *p;
