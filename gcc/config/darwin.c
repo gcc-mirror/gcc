@@ -2251,7 +2251,7 @@ fprintf (file, "# dadon: %s %s (%llu, %u) local %d weak %d"
 
       ASM_OUTPUT_LABEL (file, xname);
       size = 1;
-      fprintf (file, "\t.space\t"HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
+      fprintf (file, "\t.space\t" HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
 
       /* Check that we've correctly picked up the zero-sized item and placed it
          properly.  */
@@ -2392,7 +2392,7 @@ darwin_emit_local_bss (FILE *fp, tree decl, const char *name,
 	fprintf (fp, "\t.align\t%u\n", l2align);
 
       assemble_name (fp, name);        
-      fprintf (fp, ":\n\t.space\t"HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
+      fprintf (fp, ":\n\t.space\t" HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
     }
   else 
     {
@@ -2413,10 +2413,10 @@ darwin_emit_local_bss (FILE *fp, tree decl, const char *name,
 	size = 1;
 
       if (l2align)
-	fprintf (fp, ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",
+	fprintf (fp, "," HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",
 		 size, (unsigned) l2align);
       else
-	fprintf (fp, ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
+	fprintf (fp, "," HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
     }
 
   (*targetm.encode_section_info) (decl, DECL_RTL (decl), false);
@@ -2564,7 +2564,7 @@ fprintf (fp, "# albss: %s (%lld,%d) ro %d cst %d stat %d com %d"
 	fprintf (fp, "\t.align\t%u\n", l2align);
 
       assemble_name (fp, name);
-      fprintf (fp, ":\n\t.space\t"HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
+      fprintf (fp, ":\n\t.space\t" HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
     }
   else 
     {
@@ -2585,9 +2585,9 @@ fprintf (fp, "# albss: %s (%lld,%d) ro %d cst %d stat %d com %d"
 	size = 1;
 
       if (l2align)
-	fprintf (fp, ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n", size, l2align);
+	fprintf (fp, "," HOST_WIDE_INT_PRINT_UNSIGNED",%u\n", size, l2align);
       else
-	fprintf (fp, ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
+	fprintf (fp, "," HOST_WIDE_INT_PRINT_UNSIGNED"\n", size);
     }
   (* targetm.encode_section_info) (decl, DECL_RTL (decl), false);
 }

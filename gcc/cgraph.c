@@ -1325,7 +1325,7 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Expanding speculative call of %s/%i -> %s/%i count:"
-		     "%"PRId64"\n",
+		     "%" PRId64"\n",
 		     xstrdup_for_dump (e->caller->name ()),
 		     e->caller->order,
 		     xstrdup_for_dump (e->callee->name ()),
@@ -1943,7 +1943,7 @@ cgraph_edge::dump_edge_flags (FILE *f)
   if (indirect_inlining_edge)
     fprintf (f, "(indirect_inlining) ");
   if (count)
-    fprintf (f, "(%"PRId64"x) ", (int64_t)count);
+    fprintf (f, "(%" PRId64"x) ", (int64_t)count);
   if (frequency)
     fprintf (f, "(%.2f per call) ", frequency / (double)CGRAPH_FREQ_BASE);
   if (can_throw_external)
@@ -1979,7 +1979,7 @@ cgraph_node::dump (FILE *f)
   fprintf (f, "  First run: %i\n", tp_first_run);
   fprintf (f, "  Function flags:");
   if (count)
-    fprintf (f, " executed %"PRId64"x",
+    fprintf (f, " executed %" PRId64"x",
 	     (int64_t)count);
   if (origin)
     fprintf (f, " nested in: %s", origin->asm_name ());

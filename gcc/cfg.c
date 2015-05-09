@@ -508,7 +508,7 @@ dump_edge_info (FILE *file, edge e, int flags, int do_succ)
   if (e->count && do_details)
     {
       fputs (" count:", file);
-      fprintf (file, "%"PRId64, e->count);
+      fprintf (file, "%" PRId64, e->count);
     }
 
   if (e->flags && do_details)
@@ -756,7 +756,7 @@ dump_bb_info (FILE *outf, basic_block bb, int indent, int flags,
       if (flags & TDF_DETAILS)
 	{
 	  struct function *fun = DECL_STRUCT_FUNCTION (current_function_decl);
-	  fprintf (outf, ", count " "%"PRId64,
+	  fprintf (outf, ", count " "%" PRId64,
 		   (int64_t) bb->count);
 	  fprintf (outf, ", freq %i", bb->frequency);
 	  if (maybe_hot_bb_p (fun, bb))

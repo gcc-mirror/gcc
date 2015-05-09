@@ -1482,15 +1482,15 @@ sms_schedule (void)
 	      if (profile_info && flag_branch_probabilities)
 	    	{
 	      	  fprintf (dump_file, "SMS loop-count ");
-	      	  fprintf (dump_file, "%"PRId64,
+	      	  fprintf (dump_file, "%" PRId64,
 	             	   (int64_t) bb->count);
 	      	  fprintf (dump_file, "\n");
                   fprintf (dump_file, "SMS trip-count ");
-                  fprintf (dump_file, "%"PRId64,
+                  fprintf (dump_file, "%" PRId64,
                            (int64_t) trip_count);
                   fprintf (dump_file, "\n");
 	      	  fprintf (dump_file, "SMS profile-sum-max ");
-	      	  fprintf (dump_file, "%"PRId64,
+	      	  fprintf (dump_file, "%" PRId64,
 	          	   (int64_t) profile_info->sum_max);
 	      	  fprintf (dump_file, "\n");
 	    	}
@@ -1604,11 +1604,11 @@ sms_schedule (void)
 	  if (profile_info && flag_branch_probabilities)
 	    {
 	      fprintf (dump_file, "SMS loop-count ");
-	      fprintf (dump_file, "%"PRId64,
+	      fprintf (dump_file, "%" PRId64,
 	               (int64_t) bb->count);
 	      fprintf (dump_file, "\n");
 	      fprintf (dump_file, "SMS profile-sum-max ");
-	      fprintf (dump_file, "%"PRId64,
+	      fprintf (dump_file, "%" PRId64,
 	               (int64_t) profile_info->sum_max);
 	      fprintf (dump_file, "\n");
 	    }
@@ -1635,7 +1635,7 @@ sms_schedule (void)
       if (dump_file && count_init)
         {
           fprintf (dump_file, "SMS const-doloop ");
-          fprintf (dump_file, "%"PRId64,
+          fprintf (dump_file, "%" PRId64,
 		     loop_count);
           fprintf (dump_file, "\n");
         }
@@ -1696,9 +1696,9 @@ sms_schedule (void)
 		  fprintf (dump_file, "SMS failed... \n");
 		  fprintf (dump_file, "SMS sched-failed (stage-count=%d,"
 			   " loop-count=", stage_count);
-		  fprintf (dump_file, "%"PRId64, loop_count);
+		  fprintf (dump_file, "%" PRId64, loop_count);
 		  fprintf (dump_file, ", trip-count=");
-		  fprintf (dump_file, "%"PRId64, trip_count);
+		  fprintf (dump_file, "%" PRId64, trip_count);
 		  fprintf (dump_file, ")\n");
 		}
 	      break;

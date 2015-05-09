@@ -652,7 +652,7 @@ ipa_polymorphic_call_context::dump (FILE *f, bool newline) const
 	    fprintf (f, " (or a derived type)");
 	  if (maybe_in_construction)
 	    fprintf (f, " (maybe in construction)");
-	  fprintf (f, " offset "HOST_WIDE_INT_PRINT_DEC,
+	  fprintf (f, " offset " HOST_WIDE_INT_PRINT_DEC,
 		   offset);
 	}
       if (speculative_outer_type)
@@ -663,7 +663,7 @@ ipa_polymorphic_call_context::dump (FILE *f, bool newline) const
 	  print_generic_expr (f, speculative_outer_type, TDF_SLIM);
 	  if (speculative_maybe_derived_type)
 	    fprintf (f, " (or a derived type)");
-	  fprintf (f, " at offset "HOST_WIDE_INT_PRINT_DEC,
+	  fprintf (f, " at offset " HOST_WIDE_INT_PRINT_DEC,
 		   speculative_offset);
 	}
     }

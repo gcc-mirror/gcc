@@ -600,7 +600,7 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
     sz = 1;
   if (cfun->machine->has_call_with_varargs)
     fprintf (file, "\t.reg.u%d %%outargs;\n"
-	     "\t.local.align 8 .b8 %%outargs_ar["HOST_WIDE_INT_PRINT_DEC"];\n",
+	     "\t.local.align 8 .b8 %%outargs_ar[" HOST_WIDE_INT_PRINT_DEC"];\n",
 	     BITS_PER_WORD, sz);
   if (cfun->machine->punning_buffer_size > 0)
     fprintf (file, "\t.reg.u%d %%punbuffer;\n"
@@ -612,7 +612,7 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
   if (sz > 0 || cfun->machine->has_call_with_sc)
     {
       fprintf (file, "\t.reg.u%d %%frame;\n"
-	       "\t.local.align 8 .b8 %%farray["HOST_WIDE_INT_PRINT_DEC"];\n",
+	       "\t.local.align 8 .b8 %%farray[" HOST_WIDE_INT_PRINT_DEC"];\n",
 	       BITS_PER_WORD, sz == 0 ? 1 : sz);
       fprintf (file, "\tcvta.local.u%d %%frame, %%farray;\n",
 	       BITS_PER_WORD);
@@ -1472,7 +1472,7 @@ nvptx_assemble_undefined_decl (FILE *file, const char *name, const_tree decl)
   fprintf (file, ".extern %s .b8 ", section);
   assemble_name_raw (file, name);
   if (size > 0)
-    fprintf (file, "["HOST_WIDE_INT_PRINT_DEC"]", size);
+    fprintf (file, "[" HOST_WIDE_INT_PRINT_DEC"]", size);
   fprintf (file, ";\n\n");
 }
 

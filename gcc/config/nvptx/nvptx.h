@@ -317,7 +317,7 @@ struct GTY(()) machine_function
 	       (ALIGN) / BITS_PER_UNIT);				\
       assemble_name ((FILE), (NAME));					\
       if ((SIZE) > 0)							\
-	fprintf (FILE, "["HOST_WIDE_INT_PRINT_DEC"]", (SIZE));		\
+	fprintf (FILE, "[" HOST_WIDE_INT_PRINT_DEC"]", (SIZE));		\
       fprintf (FILE, ";\n");						\
     }									\
   while (0)
@@ -334,7 +334,7 @@ struct GTY(()) machine_function
 	       (ALIGN) / BITS_PER_UNIT);				\
       assemble_name ((FILE), (NAME));					\
       if ((SIZE) > 0)							\
-	fprintf (FILE, "["HOST_WIDE_INT_PRINT_DEC"]", (SIZE));		\
+	fprintf (FILE, "[" HOST_WIDE_INT_PRINT_DEC"]", (SIZE));		\
       fprintf (FILE, ";\n");						\
     }									\
   while (0)

@@ -858,7 +858,7 @@ ia64_vms_output_aligned_decl_common (FILE *file, tree decl, const char *name,
 
   /*  Code from elfos.h.  */
   assemble_name (file, name);
-  fprintf (file, ","HOST_WIDE_INT_PRINT_UNSIGNED",%u",
+  fprintf (file, "," HOST_WIDE_INT_PRINT_UNSIGNED",%u",
            size, align / BITS_PER_UNIT);
 
   fputc ('\n', file);
@@ -10018,7 +10018,7 @@ process_cfa_adjust_cfa (FILE *asm_out_file, rtx pat, rtx insn,
 	      gcc_assert (!frame_pointer_needed);
 	      if (unwind)
 		fprintf (asm_out_file,
-			 "\t.fframe "HOST_WIDE_INT_PRINT_DEC"\n",
+			 "\t.fframe " HOST_WIDE_INT_PRINT_DEC"\n",
 			 -INTVAL (op1));
 	    }
 	  else
