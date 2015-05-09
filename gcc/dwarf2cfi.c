@@ -920,7 +920,7 @@ reg_save (unsigned int reg, unsigned int sreg, HOST_WIDE_INT offset)
    and adjust data structures to match.  */
 
 static void
-notice_args_size (rtx insn)
+notice_args_size (rtx_insn *insn)
 {
   HOST_WIDE_INT args_size, delta;
   rtx note;
