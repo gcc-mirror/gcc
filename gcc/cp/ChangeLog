@@ -1,3 +1,12 @@
+2015-05-08  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (mangling_aliases): New variable.
+	(note_mangling_alias, generate_mangling_aliases): New.
+	(cp_write_global_declarations): Call generate_mangling_aliases.
+	(generate_mangling_alias): Split out from...
+	* mangle.c (mangle_decl): ...here.
+	* cp-tree.h: Declare note_mangling_alias.
+
 2015-05-08  Aldy Hernandez  <aldyh@redhat.com>
 
 	* decl2.c (collect_candidates_for_java_method_aliases): Remove.
