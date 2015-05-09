@@ -3572,10 +3572,8 @@ next_cc0_user (rtx uncast_insn)
    note, it is the previous insn.  */
 
 rtx_insn *
-prev_cc0_setter (rtx uncast_insn)
+prev_cc0_setter (rtx_insn *insn)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
-
   rtx note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
 
   if (note)
