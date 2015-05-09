@@ -1,3 +1,9 @@
+2015-05-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/64454
+	* tree-vrp.c (extract_range_from_binary_expr_1) <TRUNC_MOD_EXPR>:
+	Rewrite.
+
 2015-05-08  Jason Merrill  <jason@redhat.com>
 
 	* bitmap.c, c/c-aux-info.c, cfg.c, cfghooks.c, cgraph.c,

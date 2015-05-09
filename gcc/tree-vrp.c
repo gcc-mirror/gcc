@@ -3196,26 +3196,60 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
     }
   else if (code == TRUNC_MOD_EXPR)
     {
-      if (vr1.type != VR_RANGE
-	  || range_includes_zero_p (vr1.min, vr1.max) != 0
-	  || vrp_val_is_min (vr1.min))
+      if (range_is_null (&vr1))
 	{
-	  set_value_range_to_varying (vr);
+	  set_value_range_to_undefined (vr);
 	  return;
 	}
+      /* ABS (A % B) < ABS (B) and either
+	 0 <= A % B <= A or A <= A % B <= 0.  */
       type = VR_RANGE;
-      /* Compute MAX <|vr1.min|, |vr1.max|> - 1.  */
-      max = fold_unary_to_constant (ABS_EXPR, expr_type, vr1.min);
-      if (tree_int_cst_lt (max, vr1.max))
-	max = vr1.max;
-      max = int_const_binop (MINUS_EXPR, max, build_int_cst (TREE_TYPE (max), 1));
-      /* If the dividend is non-negative the modulus will be
-	 non-negative as well.  */
-      if (TYPE_UNSIGNED (expr_type)
-	  || value_range_nonnegative_p (&vr0))
-	min = build_int_cst (TREE_TYPE (max), 0);
+      signop sgn = TYPE_SIGN (expr_type);
+      unsigned int prec = TYPE_PRECISION (expr_type);
+      wide_int wmin, wmax, tmp;
+      wide_int zero = wi::zero (prec);
+      wide_int one = wi::one (prec);
+      if (vr1.type == VR_RANGE && !symbolic_range_p (&vr1))
+	{
+	  wmax = wi::sub (vr1.max, one);
+	  if (sgn == SIGNED)
+	    {
+	      tmp = wi::sub (wi::minus_one (prec), vr1.min);
+	      wmax = wi::smax (wmax, tmp);
+	    }
+	}
       else
-	min = fold_unary_to_constant (NEGATE_EXPR, expr_type, max);
+	{
+	  wmax = wi::max_value (prec, sgn);
+	  /* X % INT_MIN may be INT_MAX.  */
+	  if (sgn == UNSIGNED)
+	    wmax = wmax - one;
+	}
+
+      if (sgn == UNSIGNED)
+	wmin = zero;
+      else
+	{
+	  wmin = -wmax;
+	  if (vr0.type == VR_RANGE && TREE_CODE (vr0.min) == INTEGER_CST)
+	    {
+	      tmp = vr0.min;
+	      if (wi::gts_p (tmp, zero))
+		tmp = zero;
+	      wmin = wi::smax (wmin, tmp);
+	    }
+	}
+
+      if (vr0.type == VR_RANGE && TREE_CODE (vr0.max) == INTEGER_CST)
+	{
+	  tmp = vr0.max;
+	  if (sgn == SIGNED && wi::neg_p (tmp))
+	    tmp = zero;
+	  wmax = wi::min (wmax, tmp, sgn);
+	}
+
+      min = wide_int_to_tree (expr_type, wmin);
+      max = wide_int_to_tree (expr_type, wmax);
     }
   else if (code == BIT_AND_EXPR || code == BIT_IOR_EXPR || code == BIT_XOR_EXPR)
     {
