@@ -1654,7 +1654,7 @@ mmix_print_operand (FILE *stream, rtx x, int code)
 	  fatal_insn ("MMIX Internal: Bad value for 'm', not a CONST_INT",
 		      x);
 	}
-      fprintf (stream, "%"PRId64,
+      fprintf (stream, "%" PRId64,
 	       (int64_t) (mmix_intval (x) - 1));
       return;
 
@@ -2326,7 +2326,7 @@ mmix_output_register_setting (FILE *stream,
     fprintf (stream, "\t");
 
   if (insn_const_int_ok_for_constraint (value, CONSTRAINT_K))
-    fprintf (stream, "NEGU %s,0,%"PRId64, reg_names[regno], -value);
+    fprintf (stream, "NEGU %s,0,%" PRId64, reg_names[regno], -value);
   else if (mmix_shiftable_wyde_value ((uint64_t) value))
     {
       /* First, the one-insn cases.  */

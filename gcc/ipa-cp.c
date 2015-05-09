@@ -2193,7 +2193,7 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "     good_cloning_opportunity_p (time: %i, "
 		 "size: %i, count_sum: " HOST_WIDE_INT_PRINT_DEC
-		 "%s%s) -> evaluation: " "%"PRId64
+		 "%s%s) -> evaluation: " "%" PRId64
 		 ", threshold: %i\n",
 		 time_benefit, size_cost, (HOST_WIDE_INT) count_sum,
 		 info->node_within_scc ? ", scc" : "",
@@ -2211,7 +2211,7 @@ good_cloning_opportunity_p (struct cgraph_node *node, int time_benefit,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "     good_cloning_opportunity_p (time: %i, "
 		 "size: %i, freq_sum: %i%s%s) -> evaluation: "
-		 "%"PRId64 ", threshold: %i\n",
+		 "%" PRId64 ", threshold: %i\n",
 		 time_benefit, size_cost, freq_sum,
 		 info->node_within_scc ? ", scc" : "",
 		 info->node_calling_single_call ? ", single_call" : "",

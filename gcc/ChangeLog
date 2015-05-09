@@ -1,3 +1,23 @@
+2015-05-08  Jason Merrill  <jason@redhat.com>
+
+	* bitmap.c, c/c-aux-info.c, cfg.c, cfghooks.c, cgraph.c,
+	config/aarch64/aarch64.md config/alpha/vms.h, config/darwin.c,
+	config/darwin.h, config/darwin9.h, config/elfos.h,
+	config/i386/bsd.h, config/ia64/ia64.c, config/lm32/lm32.h,
+	config/microblaze/microblaze.h, config/mips/mips.h,
+	config/mmix/mmix.c, config/msp430/msp430.c, config/nios2/nios2.h,
+	config/nvptx/nvptx.c, config/nvptx/nvptx.h, config/pa/pa.c,
+	config/pa/pa.h, config/rs6000/rs6000.c, config/rs6000/sysv4.h,
+	config/rs6000/xcoff.h, config/rx/rx.h, config/s390/s390.h,
+	config/sparc/sol2.h, config/sparc/sparc.h, config/visium/visium.h,
+	cppbuiltin.c, defaults.h, doc/invoke.texi, dwarf2cfi.c,
+	dwarf2out.c, final.c, gcc.c, gcov-dump.c, gcov.c, ipa-cp.c,
+	ipa-inline.c, ipa-polymorphic-call.c, ipa-profile.c, ipa-prop.c,
+	ira-color.c, ira.c, loop-doloop.c, loop-iv.c, mcf.c,
+	modulo-sched.c, predict.c, profile.c, stor-layout.c, toplev.c,
+	tree-ssa-reassoc.c, value-prof.c, wide-int-print.cc: Add space
+	between string literal and macro name.
+
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* jump.c: Change argument types to rtx_insn *.

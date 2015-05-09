@@ -531,7 +531,7 @@
 	char buf[64];
 	uint64_t val = ((uint64_t ) 1)
 			<< (GET_MODE_SIZE (<MODE>mode) * BITS_PER_UNIT - 1);
-	sprintf (buf, "tst\t%%<w>0, %"PRId64, val);
+	sprintf (buf, "tst\t%%<w>0, %" PRId64, val);
 	output_asm_insn (buf, operands);
 	return "<bcond>\t%l1";
       }

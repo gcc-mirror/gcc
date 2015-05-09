@@ -208,7 +208,7 @@
 #define SKIP_ASM_OP "\t.space "
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "%s"HOST_WIDE_INT_PRINT_UNSIGNED"\n", SKIP_ASM_OP, (SIZE))
+  fprintf (FILE, "%s" HOST_WIDE_INT_PRINT_UNSIGNED"\n", SKIP_ASM_OP, (SIZE))
 
 /* This says how to output an assembler line
    to define a global common symbol.  */
@@ -219,12 +219,12 @@
   do { fputs (COMMON_ASM_OP, (FILE));			\
        RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
        if ((ALIGN) > 32)				\
-	 fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n", (SIZE), \
+	 fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED",%u\n", (SIZE), \
 		  floor_log2 ((ALIGN) / BITS_PER_UNIT)); \
        else if ((SIZE) > 4)				\
-         fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",3\n", (SIZE)); \
+         fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED",3\n", (SIZE)); \
        else						\
-	 fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE)); \
+	 fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE)); \
   } while (0)
 
 /* This says how to output an assembler line
@@ -241,15 +241,15 @@
   do { fputs (LOCAL_COMMON_ASM_OP, (FILE));			\
        RS6000_OUTPUT_BASENAME ((FILE), (NAME));			\
        if ((ALIGN) > 32)					\
-	 fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%s%u_,%u\n",	\
+	 fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED",%s%u_,%u\n",	\
 		  (SIZE), xcoff_bss_section_name,			\
 		  floor_log2 ((ALIGN) / BITS_PER_UNIT),			\
 		  floor_log2 ((ALIGN) / BITS_PER_UNIT));		\
        else if ((SIZE) > 4)					\
-	 fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%s3_,3\n",	\
+	 fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED",%s3_,3\n",	\
 		  (SIZE), xcoff_bss_section_name);		\
        else							\
-	 fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%s,2\n",	\
+	 fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED",%s,2\n",	\
 		  (SIZE), xcoff_bss_section_name);		\
      } while (0)
 #endif
@@ -257,7 +257,7 @@
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)	\
   do { fputs (LOCAL_COMMON_ASM_OP, (FILE));		\
        RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
-       fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%s\n", \
+       fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED",%s\n", \
 		(TARGET_32BIT ? (SIZE) : (ROUNDED)),	\
 		xcoff_bss_section_name);		\
      } while (0)
@@ -266,7 +266,7 @@
 #define ASM_OUTPUT_TLS_COMMON(FILE, DECL, NAME, SIZE)	\
   do { fputs(COMMON_ASM_OP, (FILE));			\
        RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
-       fprintf ((FILE), "[UL],"HOST_WIDE_INT_PRINT_UNSIGNED"\n", \
+       fprintf ((FILE), "[UL]," HOST_WIDE_INT_PRINT_UNSIGNED"\n", \
        (SIZE));						\
   } while (0)
 #endif

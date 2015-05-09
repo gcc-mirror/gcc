@@ -276,7 +276,7 @@ get_working_sets (void)
           ws_info = &gcov_working_sets[ws_ix];
           /* Print out the percentage using int arithmatic to avoid float.  */
           fprintf (dump_file, "\t\t%u.%02u%%: num counts=%u, min counter="
-                   "%"PRId64 "\n",
+                   "%" PRId64 "\n",
                    pct / 100, pct - (pct / 100 * 100),
                    ws_info->num_counters,
                    (int64_t)ws_info->min_counter);
@@ -357,7 +357,7 @@ is_edge_inconsistent (vec<edge, va_gc> *edges)
 	      if (dump_file)
 		{
 		  fprintf (dump_file,
-		  	   "Edge %i->%i is inconsistent, count%"PRId64,
+		  	   "Edge %i->%i is inconsistent, count%" PRId64,
 			   e->src->index, e->dest->index, e->count);
 		  dump_bb (dump_file, e->src, 0, TDF_DETAILS);
 		  dump_bb (dump_file, e->dest, 0, TDF_DETAILS);
@@ -406,7 +406,7 @@ is_inconsistent (void)
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "BB %i count is negative "
-		       "%"PRId64,
+		       "%" PRId64,
 		       bb->index,
 		       bb->count);
 	      dump_bb (dump_file, bb, 0, TDF_DETAILS);
@@ -418,7 +418,7 @@ is_inconsistent (void)
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "BB %i count does not match sum of incoming edges "
-		       "%"PRId64" should be %"PRId64,
+		       "%" PRId64" should be %" PRId64,
 		       bb->index,
 		       bb->count,
 		       sum_edge_counts (bb->preds));
@@ -433,7 +433,7 @@ is_inconsistent (void)
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "BB %i count does not match sum of outgoing edges "
-		       "%"PRId64" should be %"PRId64,
+		       "%" PRId64" should be %" PRId64,
 		       bb->index,
 		       bb->count,
 		       sum_edge_counts (bb->succs));
@@ -510,7 +510,7 @@ read_profile_edge_counts (gcov_type *exec_counts)
 	      {
 		fprintf (dump_file, "\nRead edge from %i to %i, count:",
 			 bb->index, e->dest->index);
-		fprintf (dump_file, "%"PRId64,
+		fprintf (dump_file, "%" PRId64,
 			 (int64_t) e->count);
 	      }
 	  }

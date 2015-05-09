@@ -351,7 +351,7 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
       else if (type == IPA_JF_ANCESTOR)
 	{
 	  fprintf (f, "ANCESTOR: ");
-	  fprintf (f, "%d, offset "HOST_WIDE_INT_PRINT_DEC,
+	  fprintf (f, "%d, offset " HOST_WIDE_INT_PRINT_DEC,
 		   jump_func->value.ancestor.formal_id,
 		   jump_func->value.ancestor.offset);
 	  if (jump_func->value.ancestor.agg_preserved)

@@ -5446,7 +5446,7 @@ print_dw_val (dw_val_node *val, bool recurse, FILE *outfile)
       fprintf (outfile, HOST_WIDE_INT_PRINT_UNSIGNED, val->v.val_unsigned);
       break;
     case dw_val_class_const_double:
-      fprintf (outfile, "constant ("HOST_WIDE_INT_PRINT_DEC","\
+      fprintf (outfile, "constant (" HOST_WIDE_INT_PRINT_DEC","\
 			HOST_WIDE_INT_PRINT_UNSIGNED")",
 	       val->v.val_double.high,
 	       val->v.val_double.low);

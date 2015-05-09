@@ -186,7 +186,7 @@ dump_histogram (FILE *file, vec<histogram_entry *> histogram)
     {
       cumulated_time += histogram[i]->count * histogram[i]->time;
       cumulated_size += histogram[i]->size;
-      fprintf (file, "  %"PRId64": time:%i (%2.2f) size:%i (%2.2f)\n",
+      fprintf (file, "  %" PRId64": time:%i (%2.2f) size:%i (%2.2f)\n",
 	       (int64_t) histogram[i]->count,
 	       histogram[i]->time,
 	       cumulated_time * 100.0 / overall_time,
@@ -543,7 +543,7 @@ ipa_profile (void)
 	{
 	  gcov_type min, cumulated_time = 0, cumulated_size = 0;
 
-	  fprintf (dump_file, "Overall time: %"PRId64"\n",
+	  fprintf (dump_file, "Overall time: %" PRId64"\n",
 		   (int64_t)overall_time);
 	  min = get_hot_bb_threshold ();
           for (i = 0; i < (int)histogram.length () && histogram[i]->count >= min;
@@ -552,7 +552,7 @@ ipa_profile (void)
 	      cumulated_time += histogram[i]->count * histogram[i]->time;
 	      cumulated_size += histogram[i]->size;
 	    }
-	  fprintf (dump_file, "GCOV min count: %"PRId64
+	  fprintf (dump_file, "GCOV min count: %" PRId64
 		   " Time:%3.2f%% Size:%3.2f%%\n", 
 		   (int64_t)min,
 		   cumulated_time * 100.0 / overall_time,
@@ -578,7 +578,7 @@ ipa_profile (void)
 	      cumulated_time += histogram[i]->count * histogram[i]->time;
 	      cumulated_size += histogram[i]->size;
 	    }
-	  fprintf (dump_file, "Determined min count: %"PRId64
+	  fprintf (dump_file, "Determined min count: %" PRId64
 		   " Time:%3.2f%% Size:%3.2f%%\n", 
 		   (int64_t)threshold,
 		   cumulated_time * 100.0 / overall_time,

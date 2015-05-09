@@ -1696,7 +1696,7 @@ msp430_output_aligned_decl_common (FILE *                 stream,
     {
       fprintf (stream, COMMON_ASM_OP);
       assemble_name (stream, name);
-      fprintf (stream, ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",
+      fprintf (stream, "," HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",
 	       size, align / BITS_PER_UNIT);
     }
   else

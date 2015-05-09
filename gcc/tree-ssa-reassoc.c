@@ -4549,7 +4549,7 @@ attempt_builtin_powi (gimple stmt, vec<operand_entry_t> *ops)
 		      if (elt < vec_len - 1)
 			fputs (" * ", dump_file);
 		    }
-		  fprintf (dump_file, ")^"HOST_WIDE_INT_PRINT_DEC"\n",
+		  fprintf (dump_file, ")^" HOST_WIDE_INT_PRINT_DEC"\n",
 			   power);
 		}
 	    }
@@ -4583,7 +4583,7 @@ attempt_builtin_powi (gimple stmt, vec<operand_entry_t> *ops)
 		  if (elt < vec_len - 1)
 		    fputs (" * ", dump_file);
 		}
-	      fprintf (dump_file, ")^"HOST_WIDE_INT_PRINT_DEC"\n", power);
+	      fprintf (dump_file, ")^" HOST_WIDE_INT_PRINT_DEC"\n", power);
 	    }
 
 	  reassociate_stats.pows_created++;

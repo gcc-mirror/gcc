@@ -714,10 +714,10 @@ dump_prediction (FILE *file, enum br_predictor predictor, int probability,
 
   if (bb->count)
     {
-      fprintf (file, "  exec %"PRId64, bb->count);
+      fprintf (file, "  exec %" PRId64, bb->count);
       if (e)
 	{
-	  fprintf (file, " hit %"PRId64, e->count);
+	  fprintf (file, " hit %" PRId64, e->count);
 	  fprintf (file, " (%.1f%%)", e->count * 100.0 / bb->count);
 	}
     }

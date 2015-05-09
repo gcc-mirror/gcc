@@ -2689,7 +2689,7 @@ For example:
 
 int main() @{
   int64_t i64 = 123;
-  printf("My int64: %"PRId64"\n", i64);
+  printf("My int64: %" PRId64"\n", i64);
 @}
 @end smallexample
 

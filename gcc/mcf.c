@@ -214,12 +214,12 @@ dump_fixup_edge (FILE *file, fixup_graph_type *fixup_graph, fixup_edge_p fedge)
 
   if (fedge->type)
     {
-      fprintf (file, "flow/capacity=%"PRId64 "/",
+      fprintf (file, "flow/capacity=%" PRId64 "/",
 	       fedge->flow);
       if (fedge->max_capacity == CAP_INFINITY)
 	fputs ("+oo,", file);
       else
-	fprintf (file, "%"PRId64 ",", fedge->max_capacity);
+	fprintf (file, "%" PRId64 ",", fedge->max_capacity);
     }
 
   if (fedge->is_rflow_valid)
@@ -227,10 +227,10 @@ dump_fixup_edge (FILE *file, fixup_graph_type *fixup_graph, fixup_edge_p fedge)
       if (fedge->rflow == CAP_INFINITY)
 	fputs (" rflow=+oo.", file);
       else
-	fprintf (file, " rflow=%"PRId64 ",", fedge->rflow);
+	fprintf (file, " rflow=%" PRId64 ",", fedge->rflow);
     }
 
-  fprintf (file, " cost=%"PRId64 ".", fedge->cost);
+  fprintf (file, " cost=%" PRId64 ".", fedge->cost);
 
   fprintf (file, "\t(%d->%d)", fedge->src, fedge->dest);
 
@@ -637,9 +637,9 @@ create_fixup_graph (fixup_graph_type *fixup_graph)
   if (dump_file)
     {
       fprintf (dump_file, "\nAdjust supply and demand:\n");
-      fprintf (dump_file, "supply_value=%"PRId64 "\n",
+      fprintf (dump_file, "supply_value=%" PRId64 "\n",
 	       supply_value);
-      fprintf (dump_file, "demand_value=%"PRId64 "\n",
+      fprintf (dump_file, "demand_value=%" PRId64 "\n",
 	       demand_value);
     }
 
@@ -909,10 +909,10 @@ cancel_negative_cycle (fixup_graph_type *fixup_graph,
     {
       fprintf (dump_file, "%d", cycle[k]);
       fprintf (dump_file,
-	       ": (%"PRId64 ", %"PRId64
+	       ": (%" PRId64 ", %" PRId64
 	       ")\n", sum_cost, cycle_flow);
       fprintf (dump_file,
-	       "Augment cycle with %"PRId64 "\n",
+	       "Augment cycle with %" PRId64 "\n",
 	       cycle_flow);
     }
 
@@ -1104,10 +1104,10 @@ find_max_flow (fixup_graph_type *fixup_graph, int source, int sink)
 	      fprintf (dump_file, "<-");
 	    }
 	  fprintf (dump_file,
-		   "ENTRY  (path_capacity=%"PRId64 ")\n",
+		   "ENTRY  (path_capacity=%" PRId64 ")\n",
 		   increment);
 	  fprintf (dump_file,
-		   "Network flow is %"PRId64 ".\n",
+		   "Network flow is %" PRId64 ".\n",
 		   max_flow);
 	}
     }
@@ -1144,7 +1144,7 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
       /* Fixup BB.  */
       if (dump_file)
         fprintf (dump_file,
-                 "BB%d: %"PRId64 "", bb->index, bb->count);
+                 "BB%d: %" PRId64 "", bb->index, bb->count);
 
       pfedge = find_fixup_edge (fixup_graph, i, i + 1);
       if (pfedge->flow)
@@ -1152,7 +1152,7 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
           bb->count += pfedge->flow;
 	  if (dump_file)
 	    {
-	      fprintf (dump_file, " + %"PRId64 "(",
+	      fprintf (dump_file, " + %" PRId64 "(",
 	               pfedge->flow);
 	      print_edge (dump_file, fixup_graph, i, i + 1);
 	      fprintf (dump_file, ")");
@@ -1167,7 +1167,7 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
           bb->count -= pfedge_n->flow;
 	  if (dump_file)
 	    {
-	      fprintf (dump_file, " - %"PRId64 "(",
+	      fprintf (dump_file, " - %" PRId64 "(",
 		       pfedge_n->flow);
 	      print_edge (dump_file, fixup_graph, i + 1,
 			  pfedge->norm_vertex_index);
@@ -1175,7 +1175,7 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
 	    }
         }
       if (dump_file)
-        fprintf (dump_file, " = %"PRId64 "\n", bb->count);
+        fprintf (dump_file, " = %" PRId64 "\n", bb->count);
 
       /* Fixup edge.  */
       FOR_EACH_EDGE (e, ei, bb->succs)
@@ -1186,7 +1186,7 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
 
           j = 2 * e->dest->index;
           if (dump_file)
-	    fprintf (dump_file, "%d->%d: %"PRId64 "",
+	    fprintf (dump_file, "%d->%d: %" PRId64 "",
 		     bb->index, e->dest->index, e->count);
 
           pfedge = find_fixup_edge (fixup_graph, i + 1, j);
@@ -1199,7 +1199,7 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
 	          e->count += pfedge->flow;
 	          if (dump_file)
 		    {
-		      fprintf (dump_file, " + %"PRId64 "(",
+		      fprintf (dump_file, " + %" PRId64 "(",
 			       pfedge->flow);
 		      print_edge (dump_file, fixup_graph, i + 1, j);
 		      fprintf (dump_file, ")");
@@ -1214,7 +1214,7 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
 	          e->count -= pfedge_n->flow;
 	          if (dump_file)
 		    {
-		      fprintf (dump_file, " - %"PRId64 "(",
+		      fprintf (dump_file, " - %" PRId64 "(",
 			       pfedge_n->flow);
 		      print_edge (dump_file, fixup_graph, j,
 			          pfedge->norm_vertex_index);
@@ -1234,7 +1234,7 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
 	      if (dump_file)
 	        {
 	          fprintf (dump_file, "(self edge)");
-	          fprintf (dump_file, " + %"PRId64 "(",
+	          fprintf (dump_file, " + %" PRId64 "(",
 		           pfedge_n->flow);
 	          print_edge (dump_file, fixup_graph, i + 1,
 			      pfedge->norm_vertex_index);
@@ -1245,7 +1245,7 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
           if (bb->count)
 	    e->probability = REG_BR_PROB_BASE * e->count / bb->count;
           if (dump_file)
-	    fprintf (dump_file, " = %"PRId64 "\t(%.1f%%)\n",
+	    fprintf (dump_file, " = %" PRId64 "\t(%.1f%%)\n",
 		     e->count, e->probability * 100.0 / REG_BR_PROB_BASE);
         }
     }
@@ -1298,14 +1298,14 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
                || (bb->count != sum_edge_counts (bb->succs)))
             {
               fprintf (dump_file,
-                       "BB%d(%"PRId64 ")  **INVALID**: ",
+                       "BB%d(%" PRId64 ")  **INVALID**: ",
                        bb->index, bb->count);
               fprintf (stderr,
-                       "******** BB%d(%"PRId64
+                       "******** BB%d(%" PRId64
                        ")  **INVALID**: \n", bb->index, bb->count);
-              fprintf (dump_file, "in_edges=%"PRId64 " ",
+              fprintf (dump_file, "in_edges=%" PRId64 " ",
                        sum_edge_counts (bb->preds));
-              fprintf (dump_file, "out_edges=%"PRId64 "\n",
+              fprintf (dump_file, "out_edges=%" PRId64 "\n",
                        sum_edge_counts (bb->succs));
             }
          }

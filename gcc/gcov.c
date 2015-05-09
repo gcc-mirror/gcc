@@ -1846,7 +1846,7 @@ format_gcov (gcov_type top, gcov_type bottom, int dp)
 	}
     }
   else
-    sprintf (buffer, "%"PRId64, (int64_t)top);
+    sprintf (buffer, "%" PRId64, (int64_t)top);
 
   return buffer;
 }
