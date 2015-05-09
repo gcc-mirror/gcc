@@ -1,5 +1,10 @@
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* jump.c: Change argument types to rtx_insn *.
+	* rtl.h: Adjust.
+
+2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* lra-constraints.c: Change argument type to rtx_insn *.
 
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
