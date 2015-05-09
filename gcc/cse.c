@@ -7131,7 +7131,7 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
 
 static void
 cse_change_cc_mode (subrtx_ptr_iterator::array_type &array,
-		    rtx *loc, rtx insn, rtx newreg)
+		    rtx *loc, rtx_insn *insn, rtx newreg)
 {
   FOR_EACH_SUBRTX_PTR (iter, array, loc, NONCONST)
     {
