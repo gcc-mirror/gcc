@@ -1,3 +1,9 @@
+2015-05-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/64454
+	* gcc.dg/tree-ssa/vrp97.c: New file.
+	* gcc.dg/vect/slp-perm-7.c: Update.
+
 2015-05-09  Andre Vehreschild  <vehre@gmx.de>
 
 	PR fortran/65894
