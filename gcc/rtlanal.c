@@ -2159,7 +2159,7 @@ remove_note (rtx insn, const_rtx note)
 /* Remove REG_EQUAL and/or REG_EQUIV notes if INSN has such notes.  */
 
 void
-remove_reg_equal_equiv_notes (rtx insn)
+remove_reg_equal_equiv_notes (rtx_insn *insn)
 {
   rtx *loc;
 
