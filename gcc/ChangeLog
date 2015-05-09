@@ -1,5 +1,11 @@
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* ira-color.c: Change argument types to rtx_insn *.
+	* lra-eliminations.c: Likewise.
+	* ira.h: Adjust.
+
+2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* gcse.c: Change argument types to rtx_insn *.
 
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>

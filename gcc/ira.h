@@ -201,7 +201,7 @@ extern bool ira_reassign_pseudos (int *, int, HARD_REG_SET, HARD_REG_SET *,
 				  HARD_REG_SET *, bitmap);
 extern rtx ira_reuse_stack_slot (int, unsigned int, unsigned int);
 extern void ira_mark_new_stack_slot (rtx, int, unsigned int);
-extern bool ira_better_spill_reload_regno_p (int *, int *, rtx, rtx, rtx);
+extern bool ira_better_spill_reload_regno_p (int *, int *, rtx, rtx, rtx_insn *);
 extern bool ira_bad_reload_regno (int, rtx, rtx);
 
 extern void ira_adjust_equiv_reg_cost (unsigned, int);
