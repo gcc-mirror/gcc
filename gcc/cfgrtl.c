@@ -145,7 +145,7 @@ can_delete_label_p (const rtx_code_label *label)
   return (!LABEL_PRESERVE_P (label)
 	  /* User declared labels must be preserved.  */
 	  && LABEL_NAME (label) == 0
-	  && !in_expr_list_p (forced_labels, label));
+	  && !in_insn_list_p (forced_labels, label));
 }
 
 /* Delete INSN by patching it out.  */
