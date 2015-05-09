@@ -4647,9 +4647,8 @@ emit_note_after (enum insn_note subtype, rtx_insn *after)
 /* Emit a note of subtype SUBTYPE before the insn BEFORE.  */
 
 rtx_note *
-emit_note_before (enum insn_note subtype, rtx uncast_before)
+emit_note_before (enum insn_note subtype, rtx_insn *before)
 {
-  rtx_insn *before = as_a <rtx_insn *> (uncast_before);
   rtx_note *note = make_note_raw (subtype);
   basic_block bb = BARRIER_P (before) ? NULL : BLOCK_FOR_INSN (before);
   bool on_bb_boundary_p = (bb != NULL && BB_HEAD (bb) == before);

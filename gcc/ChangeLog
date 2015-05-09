@@ -1,5 +1,10 @@
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* emit-rtl.c (emit_note_before): Change argument type to rtx_insn *.
+	* rtl.h: Adjust.
+
+2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* emit-rtl.c (emit_note_after): Change argument type to rtx_insn *.
 	* rtl.h: Adjust.
 
