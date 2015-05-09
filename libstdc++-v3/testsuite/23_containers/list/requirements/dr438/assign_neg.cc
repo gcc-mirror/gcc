@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1730 }
+// { dg-prune-output 1730 }
 
 #include <list>
 
@@ -31,5 +31,5 @@ void f()
 {
   typedef std::list<A> list_type;
   list_type l;
-  l.assign(10, 1);
+  l.assign(10, 1);		// { dg-error "here|no match" }
 }

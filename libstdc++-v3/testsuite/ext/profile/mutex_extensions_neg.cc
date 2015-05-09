@@ -26,3 +26,6 @@
 #include <vector>
 
 // { dg-error "multiple inlined namespaces" "" { target *-*-* } 322 }
+
+// "template argument 1 is invalid"
+// { dg-prune-output "tuple:993" }

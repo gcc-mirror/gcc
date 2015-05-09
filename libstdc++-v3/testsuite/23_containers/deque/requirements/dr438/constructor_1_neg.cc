@@ -18,11 +18,11 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1814 }
+// { dg-prune-output 1814 }
 
 #include <deque>
 
 void f()
 {
-  std::deque<std::deque<int> > d(10, 1);
+  std::deque<std::deque<int> > d(10, 1); // { dg-error "here|no match" }
 }

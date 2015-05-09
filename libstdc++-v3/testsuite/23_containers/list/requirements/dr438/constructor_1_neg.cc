@@ -18,12 +18,12 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1682 }
+// { dg-prune-output 1682 }
 
 #include <list>
 
 void f()
 {
   typedef std::list<std::list<int> > list_type;
-  list_type l(10, 1);
+  list_type l(10, 1);		// { dg-error "here|no match" }
 }
