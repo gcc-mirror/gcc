@@ -1,5 +1,10 @@
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* sched-deps.c: Change argument types to rtx_insn *.
+	* sched-int.h: Adjust.
+
+2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* dwarf2cfi.c: Change argument type to rtx_insn *.
 
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>

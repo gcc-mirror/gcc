@@ -814,7 +814,7 @@ sd_lists_empty_p (const_rtx insn, sd_list_types_def list_types)
 
 /* Initialize data for INSN.  */
 void
-sd_init_insn (rtx insn)
+sd_init_insn (rtx_insn *insn)
 {
   INSN_HARD_BACK_DEPS (insn) = create_deps_list ();
   INSN_SPEC_BACK_DEPS (insn) = create_deps_list ();
@@ -827,7 +827,7 @@ sd_init_insn (rtx insn)
 
 /* Free data for INSN.  */
 void
-sd_finish_insn (rtx insn)
+sd_finish_insn (rtx_insn *insn)
 {
   /* ??? It would be nice to deallocate dependency caches here.  */
 
