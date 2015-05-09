@@ -2719,7 +2719,7 @@ extern rtx_insn *prev_active_insn (rtx);
 extern rtx_insn *next_active_insn (rtx);
 extern int active_insn_p (const_rtx);
 extern rtx_insn *next_cc0_user (rtx);
-extern rtx_insn *prev_cc0_setter (rtx);
+extern rtx_insn *prev_cc0_setter (rtx_insn *);
 
 /* In emit-rtl.c  */
 extern int insn_line (const rtx_insn *);
