@@ -2881,7 +2881,7 @@ extern bool can_throw_internal (const_rtx);
 extern bool can_throw_external (const_rtx);
 extern bool insn_could_throw_p (const_rtx);
 extern bool insn_nothrow_p (const_rtx);
-extern bool can_nonlocal_goto (const_rtx);
+extern bool can_nonlocal_goto (const rtx_insn *);
 extern void copy_reg_eh_region_note_forward (rtx, rtx_insn *, rtx);
 extern void copy_reg_eh_region_note_backward (rtx, rtx_insn *, rtx);
 extern int inequality_comparisons_p (const_rtx);
