@@ -270,8 +270,8 @@ extern eh_region get_eh_region_from_lp_number (int);
 
 extern eh_region eh_region_outermost (struct function *, eh_region, eh_region);
 
-extern void make_reg_eh_region_note (rtx insn, int ecf_flags, int lp_nr);
-extern void make_reg_eh_region_note_nothrow_nononlocal (rtx);
+extern void make_reg_eh_region_note (rtx_insn *insn, int ecf_flags, int lp_nr);
+extern void make_reg_eh_region_note_nothrow_nononlocal (rtx_insn *);
 
 extern void verify_eh_tree (struct function *);
 extern void dump_eh_tree (FILE *, struct function *);
