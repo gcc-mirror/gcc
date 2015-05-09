@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1965 }
+// { dg-prune-output 1965 }
 
 #include <deque>
 
@@ -30,5 +30,5 @@ struct A
 void f()
 {
   std::deque<A> d;
-  d.insert(d.begin(), 10, 1);
+  d.insert(d.begin(), 10, 1); // { dg-error "here|no match" }
 }

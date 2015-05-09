@@ -18,12 +18,12 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1252 }
+// { dg-prune-output 1252 }
 
 #include <vector>
 #include <utility>
 
 void f()
 {
-  std::vector<std::vector<std::pair<char, char> > > v('a', 'b');
+  std::vector<std::vector<std::pair<char, char> > > v('a', 'b'); // { dg-error "here|no match" }
 }

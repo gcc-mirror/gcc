@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1682 }
+// { dg-prune-output 1682 }
 
 #include <list>
 #include <utility>
@@ -26,5 +26,5 @@
 void f()
 {
   typedef std::list<std::list<std::pair<char, char> > > list_type;
-  list_type l('a', 'b');
+  list_type l('a', 'b');	// { dg-error "here|no match" }
 }

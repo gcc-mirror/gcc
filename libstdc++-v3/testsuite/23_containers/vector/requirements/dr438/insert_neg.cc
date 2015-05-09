@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1367 }
+// { dg-prune-output 1367 }
 
 #include <vector>
 
@@ -30,5 +30,5 @@ struct A
 void f()
 {
   std::vector<A> v;
-  v.insert(v.begin(), 10, 1);
+  v.insert(v.begin(), 10, 1);	// { dg-error "here|no match" }
 }
