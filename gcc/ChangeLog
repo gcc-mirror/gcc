@@ -1,5 +1,9 @@
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* lra-constraints.c: Change argument type to rtx_insn *.
+
+2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* df-problems.c: Change argument type to rtx_insn *.
 
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>

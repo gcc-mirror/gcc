@@ -4531,7 +4531,7 @@ struct usage_insns
 static struct usage_insns *usage_insns;
 
 static void
-setup_next_usage_insn (int regno, rtx insn, int reloads_num, bool after_p)
+setup_next_usage_insn (int regno, rtx_insn *insn, int reloads_num, bool after_p)
 {
   usage_insns[regno].check = curr_usage_insns_check;
   usage_insns[regno].insns = insn;
