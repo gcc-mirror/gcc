@@ -1,5 +1,9 @@
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* combine.c: Change argument type to rtx_insn *.
+
+2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* rtl.h: Adjust.
 	* rtlanal.c: Change argument type to rtx_insn *.
 
