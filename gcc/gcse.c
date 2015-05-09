@@ -493,7 +493,7 @@ static int oprs_available_p (const_rtx, const rtx_insn *);
 static void insert_expr_in_table (rtx, machine_mode, rtx_insn *, int, int,
 				  int, struct gcse_hash_table_d *);
 static unsigned int hash_expr (const_rtx, machine_mode, int *, int);
-static void record_last_reg_set_info (rtx, int);
+static void record_last_reg_set_info (rtx_insn *, int);
 static void record_last_mem_set_info (rtx_insn *);
 static void record_last_set_info (rtx, const_rtx, void *);
 static void compute_hash_table (struct gcse_hash_table_d *);
@@ -516,7 +516,7 @@ static void pre_insert_copies (void);
 static int pre_delete (void);
 static int pre_gcse (struct edge_list *);
 static int one_pre_gcse_pass (void);
-static void add_label_notes (rtx, rtx);
+static void add_label_notes (rtx, rtx_insn *);
 static void alloc_code_hoist_mem (int, int);
 static void free_code_hoist_mem (void);
 static void compute_code_hoist_vbeinout (void);
@@ -1471,7 +1471,7 @@ dump_hash_table (FILE *file, const char *name, struct gcse_hash_table_d *table)
    valid, as a quick test to invalidate them.  */
 
 static void
-record_last_reg_set_info (rtx insn, int regno)
+record_last_reg_set_info (rtx_insn *insn, int regno)
 {
   struct reg_avail_info *info = &reg_avail_info[regno];
   int luid = DF_INSN_LUID (insn);
@@ -2665,7 +2665,7 @@ one_pre_gcse_pass (void)
    necessary REG_LABEL_OPERAND and REG_LABEL_TARGET notes.  */
 
 static void
-add_label_notes (rtx x, rtx insn)
+add_label_notes (rtx x, rtx_insn *insn)
 {
   enum rtx_code code = GET_CODE (x);
   int i, j;
