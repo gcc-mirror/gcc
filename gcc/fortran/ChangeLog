@@ -1,3 +1,19 @@
+2015-05-09  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/65894
+	* trans-array.h (gfc_scalar_elemental_arg_saved_as_reference):
+	New prototype.
+	* trans-array.c (gfc_scalar_elemental_arg_saved_as_reference):
+	New function.
+	(gfc_add_loop_ss_code): Use gfc_scalar_elemental_arg_saved_as_reference
+	as conditional.
+	(gfc_walk_elemental_function_args): Set the dummy_arg field.
+	* trans.h (gfc_ss_info): New subfield dummy_arg.
+	* trans-expr.c (gfc_conv_procedure_call): Revert the change
+	of revision 222361.
+	(gfc_conv_expr): Use gfc_scalar_elemental_arg_saved_as_reference
+	as conditional.
+
 2015-05-08  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans-array.c (gfc_walk_elemental_function_args):

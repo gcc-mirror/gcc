@@ -2427,6 +2427,41 @@ set_vector_loop_bounds (gfc_ss * ss)
 }
 
 
+/* Tells whether a scalar argument to an elemental procedure is saved out
+   of a scalarization loop as a value or as a reference.  */
+
+bool
+gfc_scalar_elemental_arg_saved_as_reference (gfc_ss_info * ss_info)
+{
+  if (ss_info->type != GFC_SS_REFERENCE)
+    return false;
+
+  /* If the actual argument can be absent (in other words, it can
+     be a NULL reference), don't try to evaluate it; pass instead
+     the reference directly.  */
+  if (ss_info->can_be_null_ref)
+    return true;
+
+  /* If the expression is of polymorphic type, it's actual size is not known,
+     so we avoid copying it anywhere.  */
+  if (ss_info->data.scalar.dummy_arg
+      && ss_info->data.scalar.dummy_arg->ts.type == BT_CLASS
+      && ss_info->expr->ts.type == BT_CLASS)
+    return true;
+
+  /* If the expression is a data reference of aggregate type,
+     avoid a copy by saving a reference to the content.  */
+  if (ss_info->expr->expr_type == EXPR_VARIABLE
+      && (ss_info->expr->ts.type == BT_DERIVED
+	  || ss_info->expr->ts.type == BT_CLASS))
+    return true;
+
+  /* Otherwise the expression is evaluated to a temporary variable before the
+     scalarization loop.  */
+  return false;
+}
+
+
 /* Add the pre and post chains for all the scalar expressions in a SS chain
    to loop.  This is called after the loop parameters have been calculated,
    but before the actual scalarizing loops.  */
@@ -2495,19 +2530,11 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	case GFC_SS_REFERENCE:
 	  /* Scalar argument to elemental procedure.  */
 	  gfc_init_se (&se, NULL);
-	  if (ss_info->can_be_null_ref || (expr->symtree
-			     && (expr->symtree->n.sym->ts.type == BT_DERIVED
-				 || expr->symtree->n.sym->ts.type == BT_CLASS)))
-	    {
-	      /* If the actual argument can be absent (in other words, it can
-		 be a NULL reference), don't try to evaluate it; pass instead
-		 the reference directly.  The reference is also needed when
-		 expr is of type class or derived.  */
-	      gfc_conv_expr_reference (&se, expr);
-	    }
+	  if (gfc_scalar_elemental_arg_saved_as_reference (ss_info))
+	    gfc_conv_expr_reference (&se, expr);
 	  else
 	    {
-	      /* Otherwise, evaluate the argument outside the loop and pass
+	      /* Evaluate the argument outside the loop and pass
 		 a reference to the value.  */
 	      gfc_conv_expr (&se, expr);
 	    }
@@ -9101,7 +9128,8 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_actual_arglist *arg,
 	  gcc_assert (type == GFC_SS_SCALAR || type == GFC_SS_REFERENCE);
 	  newss = gfc_get_scalar_ss (head, arg->expr);
 	  newss->info->type = type;
-
+	  if (dummy_arg)
+	    newss->info->data.scalar.dummy_arg = dummy_arg->sym;
 	}
       else
 	scalar = 0;

@@ -4735,19 +4735,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  gfc_init_se (&parmse, se);
 	  parm_kind = ELEMENTAL;
 
-	  /* For all value functions or polymorphic scalar non-pointer
-	     non-allocatable variables use the expression in e directly.  This
-	     ensures, that initializers of polymorphic entities are correctly
-	     copied.  */
-	  if (fsym && (fsym->attr.value
-		       || (e->expr_type == EXPR_VARIABLE
-			   && fsym->ts.type == BT_DERIVED
-			   && e->ts.type == BT_DERIVED
-			   && !e->ts.u.derived->attr.dimension
-			   && !e->rank
-			   && (!e->symtree
-			       || (!e->symtree->n.sym->attr.allocatable
-				   && !e->symtree->n.sym->attr.pointer)))))
+	  if (fsym && fsym->attr.value)
 	    gfc_conv_expr (&parmse, e);
 	  else
 	    gfc_conv_expr_reference (&parmse, e);
@@ -7310,11 +7298,9 @@ gfc_conv_expr (gfc_se * se, gfc_expr * expr)
 
       ss_info = ss->info;
       /* Substitute a scalar expression evaluated outside the scalarization
-         loop.  */
+	 loop.  */
       se->expr = ss_info->data.scalar.value;
-      /* If the reference can be NULL, the value field contains the reference,
-	 not the value the reference points to (see gfc_add_loop_ss_code).  */
-      if (ss_info->can_be_null_ref)
+      if (gfc_scalar_elemental_arg_saved_as_reference (ss_info))
 	se->expr = build_fold_indirect_ref_loc (input_location, se->expr);
 
       se->string_length = ss_info->string_length;
