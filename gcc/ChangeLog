@@ -1,5 +1,12 @@
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* except.c (make_reg_eh_region_note): Change argument to
+	rtx_insn *.
+	(make_reg_eh_region_note_nothrow_nononlocal): Likewise.
+	* except.h: Adjust.
+
+2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* mode-switching.c (commit_mode_sets): Change type of local
 	variable from rtx to rtx_insn *.
 
