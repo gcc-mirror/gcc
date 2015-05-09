@@ -2205,16 +2205,16 @@ remove_reg_equal_equiv_notes_for_regno (unsigned int regno)
    return 1 if it is found.  A simple equality test is used to determine if
    NODE matches.  */
 
-int
-in_expr_list_p (const_rtx listp, const_rtx node)
+bool
+in_insn_list_p (const rtx_insn_list *listp, const rtx_insn *node)
 {
   const_rtx x;
 
   for (x = listp; x; x = XEXP (x, 1))
     if (node == XEXP (x, 0))
-      return 1;
+      return true;
 
-  return 0;
+  return false;
 }
 
 /* Search LISTP (an EXPR_LIST) for an entry whose first operand is NODE and
