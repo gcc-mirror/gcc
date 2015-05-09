@@ -1545,7 +1545,7 @@ redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx insn)
    not see how to do that.  */
 
 int
-redirect_jump_1 (rtx jump, rtx nlabel)
+redirect_jump_1 (rtx_insn *jump, rtx nlabel)
 {
   int ochanges = num_validated_changes ();
   rtx *loc, asmop;
@@ -1580,7 +1580,7 @@ redirect_jump_1 (rtx jump, rtx nlabel)
    (this can only occur when trying to produce return insns).  */
 
 int
-redirect_jump (rtx jump, rtx nlabel, int delete_unused)
+redirect_jump (rtx_insn *jump, rtx nlabel, int delete_unused)
 {
   rtx olabel = JUMP_LABEL (jump);
 
@@ -1612,7 +1612,7 @@ redirect_jump (rtx jump, rtx nlabel, int delete_unused)
    If DELETE_UNUSED is positive, delete related insn to OLABEL if its ref
    count has dropped to zero.  */
 void
-redirect_jump_2 (rtx jump, rtx olabel, rtx nlabel, int delete_unused,
+redirect_jump_2 (rtx_insn *jump, rtx olabel, rtx nlabel, int delete_unused,
 		 int invert)
 {
   rtx note;
