@@ -1,3 +1,10 @@
+2015-05-08  Jason Merrill  <jason@redhat.com>
+
+	* src/c++98/Makefile.am (AM_CXXFLAGS): Add -std=gnu++98.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/Makefile.am (AM_CXXFLAGS): Add -std=gnu++98.
+	* src/Makefile.in: Regenerate.
+
 2015-05-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/51617
