@@ -554,7 +554,7 @@ target_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1,
    register.  */
 
 static rtx_insn *
-combine_split_insns (rtx pattern, rtx insn)
+combine_split_insns (rtx pattern, rtx_insn *insn)
 {
   rtx_insn *ret;
   unsigned int nregs;
