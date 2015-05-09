@@ -1,5 +1,10 @@
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* rtlanal.c (noop_move_p): Change argument type to rtx_insn *.
+	* rtl.h: Adjust.
+
+2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* rtlanal.c (add_shallow_copy_of_reg_note): Change argument type
 	to rtx_insn *.
 	* rtl.h: Adjust.
