@@ -131,7 +131,7 @@ commit_mode_sets (struct edge_list *edge_list, int e, struct bb_info *info)
 	  HARD_REG_SET live_at_edge;
 	  basic_block src_bb = eg->src;
 	  int cur_mode = info[src_bb->index].mode_out;
-	  rtx mode_set;
+	  rtx_insn *mode_set;
 
 	  REG_SET_TO_HARD_REG_SET (live_at_edge, df_get_live_out (src_bb));
 
@@ -145,7 +145,7 @@ commit_mode_sets (struct edge_list *edge_list, int e, struct bb_info *info)
 	  default_rtl_profile ();
 
 	  /* Do not bother to insert empty sequence.  */
-	  if (mode_set == NULL_RTX)
+	  if (mode_set == NULL)
 	    continue;
 
 	  /* We should not get an abnormal edge here.  */

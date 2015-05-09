@@ -1,3 +1,8 @@
+2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* mode-switching.c (commit_mode_sets): Change type of local
+	variable from rtx to rtx_insn *.
+
 2015-05-08  Jim Wilson  <jim.wilson@linaro.org>
 
 	* doc/install.texi (--enable-languages): Add missing jit and lto info.
