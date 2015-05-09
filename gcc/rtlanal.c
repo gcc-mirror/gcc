@@ -2990,7 +2990,7 @@ computed_jump_p_1 (const_rtx x)
    we can recognize them by a (use (label_ref)).  */
 
 int
-computed_jump_p (const_rtx insn)
+computed_jump_p (const rtx_insn *insn)
 {
   int i;
   if (JUMP_P (insn))
