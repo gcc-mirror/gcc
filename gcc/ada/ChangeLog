@@ -1,3 +1,8 @@
+2015-05-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (gnat_write_global_declarations): Use type_decl
+	method instead of global_decl for TYPE_DECLs.
+
 2015-04-27  Jim Wilson  <jim.wilson@linaro.org>
 
 	* gcc-interface/Makefile-lan.in (ada.mostlyclean): Remove gnatbind
