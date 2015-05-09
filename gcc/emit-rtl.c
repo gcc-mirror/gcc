@@ -4880,7 +4880,7 @@ emit_debug_insn_before_setloc (rtx pattern, rtx before, int loc)
 /* Like emit_debug_insn_before_noloc,
    but set insn_location according to BEFORE.  */
 rtx_insn *
-emit_debug_insn_before (rtx pattern, rtx before)
+emit_debug_insn_before (rtx pattern, rtx_insn *before)
 {
   return emit_pattern_before (pattern, before, false, false,
 			      make_debug_insn_raw);
