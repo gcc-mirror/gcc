@@ -1,5 +1,9 @@
 2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* reorg.c (stop_search_p): Change argument to rtx_insn *.
+
+2015-05-08  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* except.c (make_reg_eh_region_note): Change argument to
 	rtx_insn *.
 	(make_reg_eh_region_note_nothrow_nononlocal): Likewise.
