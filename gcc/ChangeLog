@@ -1,6 +1,7 @@
 2015-05-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree.c (verify_type): Verify TYPE_BINFO and TYPE_VALUES_RAW.
+	* tree.h (is_lang_specific): Constify.
 
 2015-05-09  Marc Glisse  <marc.glisse@inria.fr>
 

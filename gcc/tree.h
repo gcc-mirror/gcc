@@ -4621,7 +4621,7 @@ more_call_expr_args_p (const call_expr_arg_iterator *iter)
 
 /* Return true if tree node T is a language-specific node.  */
 static inline bool
-is_lang_specific (tree t)
+is_lang_specific (const_tree t)
 {
   return TREE_CODE (t) == LANG_TYPE || TREE_CODE (t) >= NUM_TREE_CODES;
 }
