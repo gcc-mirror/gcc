@@ -1028,7 +1028,9 @@ warn_types_mismatch (tree t1, tree t2)
 	  t1 = t2;
 	  t2 = tmp;
 	}
-      if (TYPE_NAME (t1) && TYPE_NAME (t2))
+      if (TYPE_NAME (t1) && TYPE_NAME (t2)
+	  && TREE_CODE (TYPE_NAME (t1)) == TYPE_DECL
+	  && TREE_CODE (TYPE_NAME (t2)) == TYPE_DECL)
 	{
 	  inform (DECL_SOURCE_LOCATION (TYPE_NAME (t1)),
 		  "type %qT defined in anonymous namespace can not match "
@@ -1079,7 +1081,7 @@ warn_types_mismatch (tree t1, tree t2)
 	  else if (TREE_CODE (t1) == METHOD_TYPE
 		   || TREE_CODE (t1) == FUNCTION_TYPE)
 	    {
-	      tree parms1, parms2;
+	      tree parms1 = NULL, parms2 = NULL;
 	      int count = 1;
 
 	      if (!odr_subtypes_equivalent_p (TREE_TYPE (t1), TREE_TYPE (t2),
@@ -1089,21 +1091,27 @@ warn_types_mismatch (tree t1, tree t2)
 		  warn_types_mismatch (TREE_TYPE (t1), TREE_TYPE (t2));
 		  return;
 		}
-	      for (parms1 = TYPE_ARG_TYPES (t1), parms2 = TYPE_ARG_TYPES (t2);
-		   parms1 && parms2;
-		   parms1 = TREE_CHAIN (parms1), parms2 = TREE_CHAIN (parms2),
-		   count++)
-		{
-		  if (!odr_subtypes_equivalent_p
-		      (TREE_VALUE (parms1), TREE_VALUE (parms2), &visited))
-		    {
-		      inform (UNKNOWN_LOCATION,
-			      "type mismatch in parameter %i", count);
-		      warn_types_mismatch (TREE_VALUE (parms1),
-					   TREE_VALUE (parms2));
-		      return;
-		    }
-		}
+	      if (prototype_p (t1) && prototype_p (t2))
+		for (parms1 = TYPE_ARG_TYPES (t1), parms2 = TYPE_ARG_TYPES (t2);
+		     parms1 && parms2;
+		     parms1 = TREE_CHAIN (parms1), parms2 = TREE_CHAIN (parms2),
+		     count++)
+		  {
+		    if (!odr_subtypes_equivalent_p
+			(TREE_VALUE (parms1), TREE_VALUE (parms2), &visited))
+		      {
+			if (count == 1 && TREE_CODE (t1) == METHOD_TYPE)
+			  inform (UNKNOWN_LOCATION,
+				  "implicit this pointer type mismatch");
+			else
+			  inform (UNKNOWN_LOCATION,
+				  "type mismatch in parameter %i",
+				  count - (TREE_CODE (t1) == METHOD_TYPE));
+			warn_types_mismatch (TREE_VALUE (parms1),
+					     TREE_VALUE (parms2));
+			return;
+		      }
+		  }
 	      if (parms1 || parms2)
 		{
 		  inform (UNKNOWN_LOCATION,
@@ -1180,7 +1188,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
   if (comp_type_attributes (t1, t2) != 1)
     {
       warn_odr (t1, t2, NULL, NULL, warn, warned,
-	        G_("a type with attributes "
+	        G_("a type with different attributes "
 		   "is defined in another translation unit"));
       return false;
     }
@@ -1348,7 +1356,8 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	  return false;
 	}
 
-      if (TYPE_ARG_TYPES (t1) == TYPE_ARG_TYPES (t2))
+      if (TYPE_ARG_TYPES (t1) == TYPE_ARG_TYPES (t2)
+	  || !prototype_p (t1) || !prototype_p (t2))
 	return true;
       else
 	{
