@@ -1,5 +1,13 @@
 2015-05-09  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-devirt.c (warn_types_mismatch): Do not ICE when warning about
+	mismatch between C and C++ type; compoare correctly ARG_TYPES
+	for non-prototypes and output correctly parameter index for METHOD_TYPE.
+	(odr_types_equivalent_p): Fix wording of warning about attributes;
+	it is OK to match prototype and non-prototype.
+
+2015-05-09  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree.c (free_lang_data_in_type): Free TREE_PURPOSE of
 	TYPE_ARG_TYPES list.
 	(verify_type): Permit non-NULL TREE_PURPOSE in non-LTO builds.
