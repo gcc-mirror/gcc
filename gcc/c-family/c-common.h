@@ -671,6 +671,7 @@ extern int flag_use_repository;
 /* The supported C++ dialects.  */
 
 enum cxx_dialect {
+  cxx_unset,
   /* C++98 with TC1  */
   cxx98,
   cxx03 = cxx98,
