@@ -245,6 +245,8 @@ DEFTREECODE (POINTER_BOUNDS_TYPE, "pointer_bounds_type", tcc_type, 0)
    TREE_TYPE		    type of value returned.
    TYPE_ARG_TYPES      list of types of arguments expected.
 	this list is made of TREE_LIST nodes.
+	In this list TREE_PURPOSE can be used to indicate the default
+	value of parameter (used by C++ frontend).
    Types of "Procedures" in languages where they are different from functions
    have code FUNCTION_TYPE also, but then TREE_TYPE is zero or void type.  */
 DEFTREECODE (FUNCTION_TYPE, "function_type", tcc_type, 0)

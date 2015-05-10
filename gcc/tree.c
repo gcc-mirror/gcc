@@ -5041,7 +5041,23 @@ free_lang_data_in_type (tree type)
 	      TREE_VALUE (p) = build_qualified_type (arg_type, quals);
 	      free_lang_data_in_type (TREE_VALUE (p));
 	    }
+	  /* C++ FE uses TREE_PURPOSE to store initial values.  */
+	  TREE_PURPOSE (p) = NULL;
 	}
+      /* Java uses TYPE_MINVAL for TYPE_ARGUMENT_SIGNATURE.  */
+      TYPE_MINVAL (type) = NULL;
+    }
+  if (TREE_CODE (type) == METHOD_TYPE)
+    {
+      tree p;
+
+      for (p = TYPE_ARG_TYPES (type); p; p = TREE_CHAIN (p))
+	{
+	  /* C++ FE uses TREE_PURPOSE to store initial values.  */
+	  TREE_PURPOSE (p) = NULL;
+	}
+      /* Java uses TYPE_MINVAL for TYPE_ARGUMENT_SIGNATURE.  */
+      TYPE_MINVAL (type) = NULL;
     }
 
   /* Remove members that are not actually FIELD_DECLs from the field
@@ -12619,13 +12635,18 @@ verify_type (const_tree t)
 	  error_found = true;
 	}
     }
-  else if (INTEGRAL_TYPE_P (t) || TREE_CODE (t) == REAL_TYPE || TREE_CODE (t) == FIXED_POINT_TYPE)
+  else if (INTEGRAL_TYPE_P (t) || TREE_CODE (t) == REAL_TYPE
+	   || TREE_CODE (t) == FIXED_POINT_TYPE)
     {
       /* FIXME: The following check should pass:
-	  useless_type_conversion_p (const_cast <tree> (t), TREE_TYPE (TYPE_MIN_VALUE (t))
+	  useless_type_conversion_p (const_cast <tree> (t),
+				     TREE_TYPE (TYPE_MIN_VALUE (t))
 	 but does not for C sizetypes in LTO.  */
     }
-  else if (TYPE_MINVAL (t))
+  /* Java uses TYPE_MINVAL for TYPE_ARGUMENT_SIGNATURE.  */
+  else if (TYPE_MINVAL (t)
+	   && ((TREE_CODE (t) != METHOD_TYPE && TREE_CODE (t) != FUNCTION_TYPE)
+	       || in_lto_p))
     {
       error ("TYPE_MINVAL non-NULL");
       debug_tree (TYPE_MINVAL (t));
@@ -12665,10 +12686,12 @@ verify_type (const_tree t)
 	  error_found = true;
 	}
     }
-  else if (INTEGRAL_TYPE_P (t) || TREE_CODE (t) == REAL_TYPE || TREE_CODE (t) == FIXED_POINT_TYPE)
+  else if (INTEGRAL_TYPE_P (t) || TREE_CODE (t) == REAL_TYPE
+	   || TREE_CODE (t) == FIXED_POINT_TYPE)
     {
       /* FIXME: The following check should pass:
-	  useless_type_conversion_p (const_cast <tree> (t), TREE_TYPE (TYPE_MAX_VALUE (t))
+	  useless_type_conversion_p (const_cast <tree> (t),
+				     TREE_TYPE (TYPE_MAX_VALUE (t))
 	 but does not for C sizetypes in LTO.  */
     }
   else if (TREE_CODE (t) == ARRAY_TYPE)
@@ -12817,7 +12840,8 @@ verify_type (const_tree t)
   else if (TREE_CODE (t) == FUNCTION_TYPE || TREE_CODE (t) == METHOD_TYPE)
     for (tree l = TYPE_ARG_TYPES (t); l; l = TREE_CHAIN (l))
       {
-	if (TREE_PURPOSE (l))
+	/* C++ FE uses TREE_PURPOSE to store initial values.  */
+	if (TREE_PURPOSE (l) && in_lto_p)
 	  {
 	    error ("TREE_PURPOSE is non-NULL in TYPE_ARG_TYPES list");
 	    debug_tree (l);

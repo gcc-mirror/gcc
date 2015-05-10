@@ -1,5 +1,12 @@
 2015-05-09  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree.c (free_lang_data_in_type): Free TREE_PURPOSE of
+	TYPE_ARG_TYPES list.
+	(verify_type): Permit non-NULL TREE_PURPOSE in non-LTO builds.
+	* tree.def (FUNCTION_TYPE): Document TREE_PURPOSE in TYPE_ARG_TYPES
+
+2015-05-09  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree.c (verify_type): Verify TYPE_BINFO and TYPE_VALUES_RAW.
 	* tree.h (is_lang_specific): Constify.
 
