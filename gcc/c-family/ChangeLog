@@ -1,3 +1,9 @@
+2015-05-09  Jason Merrill  <jason@redhat.com>
+
+	* c.opt (std=c++14): Remove Undocumented flag and experimental warning.
+	(std=gnu++0x): Mark as Undocumented.
+	(std=gnu++1y): Add deprecated message.
+
 2015-05-08  Jason Merrill  <jason@redhat.com>
 
 	* c.opt (Wc++11-compat): Make primary.  Rename var warn_cxx11_compat.

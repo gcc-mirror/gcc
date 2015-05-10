@@ -1591,8 +1591,8 @@ C++ ObjC++ Alias(std=c++14) Undocumented
 Deprecated in favor of -std=c++14
 
 std=c++14
-C++ ObjC++ Undocumented
-Conform to the ISO 2014 C++ standard (experimental and incomplete support)
+C++ ObjC++
+Conform to the ISO 2014 C++ standard
 
 std=c++1z
 C++ ObjC++
@@ -1640,11 +1640,12 @@ C++ ObjC++
 Conform to the ISO 2011 C++ standard with GNU extensions (experimental and incomplete support)
 
 std=gnu++0x
-C++ ObjC++ Alias(std=gnu++11)
+C++ ObjC++ Alias(std=gnu++11) Undocumented
 Deprecated in favor of -std=gnu++11
 
 std=gnu++1y
 C++ ObjC++ Alias(std=gnu++14) Undocumented
+Deprecated in favor of -std=gnu++14
 
 std=gnu++14
 C++ ObjC++
