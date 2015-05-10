@@ -1,3 +1,7 @@
+2015-05-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (verify_type): Verify TYPE_BINFO and TYPE_VALUES_RAW.
+
 2015-05-09  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/64454
