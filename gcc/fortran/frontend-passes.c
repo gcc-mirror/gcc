@@ -2607,18 +2607,55 @@ scalarized_expr (gfc_expr *e_in, gfc_expr **index, int count_index)
 		}
 	      else
 		{
+		  gfc_expr *lbound_e;
+		  gfc_ref *ref;
+
+		  lbound_e = gfc_copy_expr (e_in);
+
+		  for (ref = lbound_e->ref; ref; ref = ref->next)
+		    if (ref->type == REF_ARRAY
+			&& (ref->u.ar.type == AR_FULL
+			    || ref->u.ar.type == AR_SECTION))
+		      break;
+
+		  if (ref->next)
+		    {
+		      gfc_free_ref_list (ref->next);
+		      ref->next = NULL;
+		    }
+
 		  if (!was_fullref)
 		    {
 		      /* Look at full individual sections, like a(:).  The first index
 			 is the lbound of a full ref.  */
-
+		      int j;
 		      gfc_array_ref *ar;
 
-		      ar = gfc_find_array_ref (e_in);
+		      ar = &ref->u.ar;
 		      ar->type = AR_FULL;
+		      for (j = 0; j < ar->dimen; j++)
+			{
+			  gfc_free_expr (ar->start[j]);
+			  ar->start[j] = NULL;
+			  gfc_free_expr (ar->end[j]);
+			  ar->end[j] = NULL;
+			  gfc_free_expr (ar->stride[j]);
+			  ar->stride[j] = NULL;
+			}
+
+		      /* We have to get rid of the shape, if there is one.  Do
+			 so by freeing it and calling gfc_resolve to rebuild
+			 it, if necessary.  */
+
+		      if (lbound_e->shape)
+			gfc_free_shape (&(lbound_e->shape), lbound_e->rank);
+
+		      lbound_e->rank = ar->dimen;
+		      gfc_resolve_expr (lbound_e);
 		    }
-		  lbound = get_array_inq_function (GFC_ISYM_LBOUND, e_in,
-						   i_index + 1);
+		  lbound = get_array_inq_function (GFC_ISYM_LBOUND, lbound_e,
+						   i + 1);
+		  gfc_free_expr (lbound_e);
 		}
 	      
 	      ar->dimen_type[i] = DIMEN_ELEMENT;
@@ -2639,6 +2676,7 @@ scalarized_expr (gfc_expr *e_in, gfc_expr **index, int count_index)
 	  i_index ++;
 	}
     }
+
   return e;
 }
 
@@ -2929,15 +2967,15 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
 
       list[0] = var_3;
       list[1] = var_1;
-      cscalar = scalarized_expr (gfc_copy_expr (co->expr1), list, 2);
+      cscalar = scalarized_expr (co->expr1, list, 2);
 
       list[0] = var_3;
       list[1] = var_2;
-      ascalar = scalarized_expr (gfc_copy_expr (matrix_a), list, 2);
+      ascalar = scalarized_expr (matrix_a, list, 2);
 
       list[0] = var_2;
       list[1] = var_1;
-      bscalar = scalarized_expr (gfc_copy_expr (matrix_b), list, 2);
+      bscalar = scalarized_expr (matrix_b, list, 2);
 
       break;
 
@@ -2955,14 +2993,14 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
       var_2 = do_2->ext.iterator->var;
 
       list[0] = var_2;
-      cscalar = scalarized_expr (gfc_copy_expr (co->expr1), list, 1);
+      cscalar = scalarized_expr (co->expr1, list, 1);
 
       list[0] = var_2;
       list[1] = var_1;
-      ascalar = scalarized_expr (gfc_copy_expr (matrix_a), list, 2);
+      ascalar = scalarized_expr (matrix_a, list, 2);
 
       list[0] = var_1;
-      bscalar = scalarized_expr (gfc_copy_expr (matrix_b), list, 1);
+      bscalar = scalarized_expr (matrix_b, list, 1);
 
       break;
 
@@ -2980,14 +3018,14 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
       var_2 = do_2->ext.iterator->var;
 
       list[0] = var_1;
-      cscalar = scalarized_expr (gfc_copy_expr (co->expr1), list, 1);
+      cscalar = scalarized_expr (co->expr1, list, 1);
 
       list[0] = var_2;
-      ascalar = scalarized_expr (gfc_copy_expr (matrix_a), list, 1);
+      ascalar = scalarized_expr (matrix_a, list, 1);
 
       list[0] = var_2;
       list[1] = var_1;
-      bscalar = scalarized_expr (gfc_copy_expr (matrix_b), list, 2);
+      bscalar = scalarized_expr (matrix_b, list, 2);
 
       break;
 
