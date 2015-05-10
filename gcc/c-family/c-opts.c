@@ -896,6 +896,10 @@ c_common_post_options (const char **pfilename)
   if (flag_abi_version == 0)
     flag_abi_version = 8;
 
+  /* Set C++ standard to C++98 if not specified on the command line.  */
+  if (c_dialect_cxx () && cxx_dialect == cxx_unset)
+    set_std_cxx98 (/*ISO*/false);
+
   if (cxx_dialect >= cxx11)
     {
       /* If we're allowing C++0x constructs, don't warn about C++98

@@ -1,5 +1,9 @@
 2015-05-09  Jason Merrill  <jason@redhat.com>
 
+	* c-common.h (enum cxx_dialect): Add cxx_unset.
+	* c-common.c (cxx_dialect): Initialize to cxx_unset.
+	* c-opts.c (c_common_post_options): Set C++ dialect to C++98 if unset.
+
 	* c.opt (std=c++14): Remove Undocumented flag and experimental warning.
 	(std=gnu++0x): Mark as Undocumented.
 	(std=gnu++1y): Add deprecated message.
