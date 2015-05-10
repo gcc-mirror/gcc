@@ -3340,29 +3340,43 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
   /* Then, we need to know the extent of the given dimension.  */
   if (coarray || (ref->u.ar.type == AR_FULL && !ref->next))
     {
+      gfc_expr *declared_bound;
+      int empty_bound;
+      bool constant_lbound, constant_ubound;
+
       l = as->lower[d-1];
       u = as->upper[d-1];
 
-      if (l->expr_type != EXPR_CONSTANT || u == NULL
-	  || u->expr_type != EXPR_CONSTANT)
+      gcc_assert (l != NULL);
+
+      constant_lbound = l->expr_type == EXPR_CONSTANT;
+      constant_ubound = u && u->expr_type == EXPR_CONSTANT;
+
+      empty_bound = upper ? 0 : 1;
+      declared_bound = upper ? u : l;
+
+      if ((!upper && !constant_lbound)
+	  || (upper && !constant_ubound))
 	goto returnNull;
 
-      if (mpz_cmp (l->value.integer, u->value.integer) > 0)
+      if (!coarray)
 	{
-	  /* Zero extent.  */
-	  if (upper)
-	    mpz_set_si (result->value.integer, 0);
+	  /* For {L,U}BOUND, the value depends on whether the array
+	     is empty.  We can nevertheless simplify if the declared bound
+	     has the same value as that of an empty array, in which case
+	     the result isn't dependent on the array emptyness.  */
+	  if (mpz_cmp_si (declared_bound->value.integer, empty_bound) == 0)
+	    mpz_set_si (result->value.integer, empty_bound);
+	  else if (!constant_lbound || !constant_ubound)
+	    /* Array emptyness can't be determined, we can't simplify.  */
+	    goto returnNull;
+	  else if (mpz_cmp (l->value.integer, u->value.integer) > 0)
+	    mpz_set_si (result->value.integer, empty_bound);
 	  else
-	    mpz_set_si (result->value.integer, 1);
+	    mpz_set (result->value.integer, declared_bound->value.integer);
 	}
       else
-	{
-	  /* Nonzero extent.  */
-	  if (upper)
-	    mpz_set (result->value.integer, u->value.integer);
-	  else
-	    mpz_set (result->value.integer, l->value.integer);
-	}
+	mpz_set (result->value.integer, declared_bound->value.integer);
     }
   else
     {
@@ -3442,42 +3456,15 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 
  done:
 
-  /* If the array shape is assumed shape or explicit, we can simplify lbound
-     to 1 if the given lower bound is one because this matches what lbound
-     should return for an empty array.  */
-
-  if (!upper && as && dim && dim->expr_type == EXPR_CONSTANT
-      && (as->type == AS_ASSUMED_SHAPE || as->type == AS_EXPLICIT) 
-      && ref->u.ar.type != AR_SECTION)
-    {
-      /* Watch out for allocatable or pointer dummy arrays, they can have
-	 lower bounds that are not equal to one.  */
-      if (!(array->symtree && array->symtree->n.sym
-	    && (array->symtree->n.sym->attr.allocatable
-		|| array->symtree->n.sym->attr.pointer)))
-	{
-	  unsigned long int ndim;
-	  gfc_expr *lower, *res;
-
-	  ndim = mpz_get_si (dim->value.integer) - 1;
-	  lower = as->lower[ndim];
-	  if (lower->expr_type == EXPR_CONSTANT
-	      && mpz_cmp_si (lower->value.integer, 1) == 0)
-	    {
-	      res = gfc_copy_expr (lower);
-	      if (kind)
-		{
-		  int nkind = mpz_get_si (kind->value.integer);
-		  res->ts.kind = nkind;
-		}
-	      return res;
-	    }
-	}
-    }
-
-  if (as && (as->type == AS_DEFERRED || as->type == AS_ASSUMED_SHAPE
-	     || as->type == AS_ASSUMED_RANK))
+  if (as && (as->type == AS_DEFERRED || as->type == AS_ASSUMED_RANK
+	     || (as->type == AS_ASSUMED_SHAPE && upper)))
     return NULL;
+
+  gcc_assert (!as
+	      || (as->type != AS_DEFERRED
+		  && array->expr_type == EXPR_VARIABLE
+		  && !array->symtree->n.sym->attr.allocatable
+		  && !array->symtree->n.sym->attr.pointer));
 
   if (dim == NULL)
     {
