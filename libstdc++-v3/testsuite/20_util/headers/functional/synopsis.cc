@@ -50,9 +50,11 @@ namespace std {
   //  lib.negators, negators:
   template <class Predicate> struct unary_negate;
   template <class Predicate>
+  _GLIBCXX14_CONSTEXPR
   unary_negate<Predicate>  not1(const Predicate&);
   template <class Predicate> struct binary_negate;
   template <class Predicate>
+  _GLIBCXX14_CONSTEXPR
   binary_negate<Predicate> not2(const Predicate&);
 
   //  lib.binders, binders:
