@@ -12623,7 +12623,7 @@ verify_type (const_tree t)
     {
       /* FIXME: The following check should pass:
 	  useless_type_conversion_p (const_cast <tree> (t), TREE_TYPE (TYPE_MIN_VALUE (t))
-	 bud does not for C sizetypes in LTO.  */
+	 but does not for C sizetypes in LTO.  */
     }
   else if (TYPE_MINVAL (t))
     {
@@ -12669,7 +12669,7 @@ verify_type (const_tree t)
     {
       /* FIXME: The following check should pass:
 	  useless_type_conversion_p (const_cast <tree> (t), TREE_TYPE (TYPE_MAX_VALUE (t))
-	 bud does not for C sizetypes in LTO.  */
+	 but does not for C sizetypes in LTO.  */
     }
   else if (TREE_CODE (t) == ARRAY_TYPE)
     {
@@ -12685,6 +12685,166 @@ verify_type (const_tree t)
     {
       error ("TYPE_MAXVAL non-NULL");
       debug_tree (TYPE_MAXVAL (t));
+      error_found = true;
+    }
+
+  /* Check various uses of TYPE_BINFO.  */
+  if (RECORD_OR_UNION_TYPE_P (t))
+    {
+      if (!TYPE_BINFO (t))
+	;
+      else if (TREE_CODE (TYPE_BINFO (t)) != TREE_BINFO)
+	{
+	  error ("TYPE_BINFO is not TREE_BINFO");
+	  debug_tree (TYPE_BINFO (t));
+	  error_found = true;
+	}
+      /* FIXME: Java builds invalid empty binfos that do not have
+         TREE_TYPE set.  */
+      else if (TREE_TYPE (TYPE_BINFO (t)) != TYPE_MAIN_VARIANT (t) && 0)
+	{
+	  error ("TYPE_BINFO type is not TYPE_MAIN_VARIANT");
+	  debug_tree (TREE_TYPE (TYPE_BINFO (t)));
+	  error_found = true;
+	}
+    }
+  else if (TYPE_LANG_SLOT_1 (t) && in_lto_p)
+    {
+      error ("TYPE_LANG_SLOT_1 (binfo) field is non-NULL");
+      debug_tree (TYPE_LANG_SLOT_1 (t));
+      error_found = true;
+    }
+
+  /* Check various uses of TYPE_VALUES_RAW.  */
+  if (TREE_CODE (t) == ENUMERAL_TYPE)
+    for (tree l = TYPE_VALUES (t); l; l = TREE_CHAIN (l))
+      {
+	tree value = TREE_VALUE (l);
+	tree name = TREE_PURPOSE (l);
+
+	/* C FE porduce INTEGER_CST of INTEGER_TYPE, while C++ FE uses
+ 	   CONST_DECL of ENUMERAL TYPE.  */
+	if (TREE_CODE (value) != INTEGER_CST && TREE_CODE (value) != CONST_DECL)
+	  {
+	    error ("Enum value is not CONST_DECL or INTEGER_CST");
+	    debug_tree (value);
+	    debug_tree (name);
+	    error_found = true;
+	  }
+	if (TREE_CODE (TREE_TYPE (value)) != INTEGER_TYPE
+	    && !useless_type_conversion_p (const_cast <tree> (t), TREE_TYPE (value)))
+	  {
+	    error ("Enum value type is not INTEGER_TYPE nor convertible to the enum");
+	    debug_tree (value);
+	    debug_tree (name);
+	    error_found = true;
+	  }
+	if (TREE_CODE (name) != IDENTIFIER_NODE)
+	  {
+	    error ("Enum value name is not IDENTIFIER_NODE");
+	    debug_tree (value);
+	    debug_tree (name);
+	    error_found = true;
+	  }
+      }
+  else if (TREE_CODE (t) == ARRAY_TYPE)
+    {
+      if (TYPE_DOMAIN (t) && TREE_CODE (TYPE_DOMAIN (t)) != INTEGER_TYPE)
+	{
+	  error ("Array TYPE_DOMAIN is not integer type");
+	  debug_tree (TYPE_DOMAIN (t));
+	  error_found = true;
+	}
+    }
+  else if (RECORD_OR_UNION_TYPE_P (t))
+    for (tree fld = TYPE_FIELDS (t); fld; fld = TREE_CHAIN (fld))
+      {
+	/* TODO: verify properties of decls.  */
+	if (TREE_CODE (fld) == FIELD_DECL)
+	  ;
+	else if (TREE_CODE (fld) == TYPE_DECL)
+	  ;
+	else if (TREE_CODE (fld) == CONST_DECL)
+	  ;
+	else if (TREE_CODE (fld) == VAR_DECL)
+	  ;
+	else if (TREE_CODE (fld) == TEMPLATE_DECL)
+	  ;
+	else if (TREE_CODE (fld) == USING_DECL)
+	  ;
+	else
+	  {
+	    error ("Wrong tree in TYPE_FIELDS list");
+	    debug_tree (fld);
+	    error_found = true;
+	  }
+      }
+  else if (TREE_CODE (t) == INTEGER_TYPE
+	   || TREE_CODE (t) == BOOLEAN_TYPE
+	   || TREE_CODE (t) == OFFSET_TYPE
+	   || TREE_CODE (t) == REFERENCE_TYPE
+	   || TREE_CODE (t) == NULLPTR_TYPE
+	   || TREE_CODE (t) == POINTER_TYPE)
+    {
+      if (TYPE_CACHED_VALUES_P (t) != (TYPE_CACHED_VALUES (t) != NULL))
+	{
+	  error ("TYPE_CACHED_VALUES_P is %i while TYPE_CACHED_VALUES is %p",
+		 TYPE_CACHED_VALUES_P (t), (void *)TYPE_CACHED_VALUES (t));
+	  error_found = true;
+	}
+      else if (TYPE_CACHED_VALUES_P (t) && TREE_CODE (TYPE_CACHED_VALUES (t)) != TREE_VEC)
+	{
+	  error ("TYPE_CACHED_VALUES is not TREE_VEC");
+	  debug_tree (TYPE_CACHED_VALUES (t));
+	  error_found = true;
+	}
+      /* Verify just enough of cache to ensure that no one copied it to new type.
+ 	 All copying should go by copy_node that should clear it.  */
+      else if (TYPE_CACHED_VALUES_P (t))
+	{
+	  int i;
+	  for (i = 0; i < TREE_VEC_LENGTH (TYPE_CACHED_VALUES (t)); i++)
+	    if (TREE_VEC_ELT (TYPE_CACHED_VALUES (t), i)
+		&& TREE_TYPE (TREE_VEC_ELT (TYPE_CACHED_VALUES (t), i)) != t)
+	      {
+		error ("wrong TYPE_CACHED_VALUES entry");
+		debug_tree (TREE_VEC_ELT (TYPE_CACHED_VALUES (t), i));
+		error_found = true;
+		break;
+	      }
+	}
+    }
+  else if (TREE_CODE (t) == FUNCTION_TYPE || TREE_CODE (t) == METHOD_TYPE)
+    for (tree l = TYPE_ARG_TYPES (t); l; l = TREE_CHAIN (l))
+      {
+	if (TREE_PURPOSE (l))
+	  {
+	    error ("TREE_PURPOSE is non-NULL in TYPE_ARG_TYPES list");
+	    debug_tree (l);
+	    error_found = true;
+	  }
+	if (!TYPE_P (TREE_VALUE (l)))
+	  {
+	    error ("Wrong entry in TYPE_ARG_TYPES list");
+	    debug_tree (l);
+	    error_found = true;
+	  }
+      }
+  else if (!is_lang_specific (t) && TYPE_VALUES_RAW (t))
+    {
+      error ("TYPE_VALUES_RAW field is non-NULL");
+      debug_tree (TYPE_VALUES_RAW (t));
+      error_found = true;
+    }
+  if (TREE_CODE (t) != INTEGER_TYPE
+      && TREE_CODE (t) != BOOLEAN_TYPE
+      && TREE_CODE (t) != OFFSET_TYPE
+      && TREE_CODE (t) != REFERENCE_TYPE
+      && TREE_CODE (t) != NULLPTR_TYPE
+      && TREE_CODE (t) != POINTER_TYPE
+      && TYPE_CACHED_VALUES_P (t))
+    {
+      error ("TYPE_CACHED_VALUES_P is set while it should not");
       error_found = true;
     }
 
