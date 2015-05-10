@@ -905,6 +905,7 @@ c_common_post_options (const char **pfilename)
       /* If we're allowing C++0x constructs, don't warn about C++98
 	 identifiers which are keywords in C++0x.  */
       warn_cxx11_compat = 0;
+      cpp_opts->cpp_warn_cxx11_compat = 0;
 
       if (warn_narrowing == -1)
 	warn_narrowing = 1;

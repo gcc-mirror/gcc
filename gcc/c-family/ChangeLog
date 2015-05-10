@@ -1,5 +1,8 @@
 2015-05-09  Jason Merrill  <jason@redhat.com>
 
+	* c-opts.c (c_common_post_options): Also clear
+	cpp_opts->cpp_warn_cxx11_compat.
+
 	* c-common.h (enum cxx_dialect): Add cxx_unset.
 	* c-common.c (cxx_dialect): Initialize to cxx_unset.
 	* c-opts.c (c_common_post_options): Set C++ dialect to C++98 if unset.
