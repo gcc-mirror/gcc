@@ -2139,6 +2139,8 @@ lazily_declare_fn (special_function_kind sfk, tree type)
   /* Whether or not the argument has a const reference type.  */
   bool const_p = false;
 
+  type = TYPE_MAIN_VARIANT (type);
+
   switch (sfk)
     {
     case sfk_constructor:

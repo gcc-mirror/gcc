@@ -5100,7 +5100,13 @@ free_lang_data_in_type (tree type)
       if (TYPE_VFIELD (type) && TREE_CODE (TYPE_VFIELD (type)) != FIELD_DECL)
         TYPE_VFIELD (type) = NULL_TREE;
 
-      TYPE_METHODS (type) = NULL_TREE;
+      /* Remove TYPE_METHODS list.  While it would be nice to keep it
+ 	 to enable ODR warnings about different method lists, doing so
+	 seems to impractically increase size of LTO data streamed.
+	 Keep the infrmation if TYPE_METHODS was non-NULL. This is used
+	 by function.c and pretty printers.  */
+      if (TYPE_METHODS (type))
+        TYPE_METHODS (type) = error_mark_node;
       if (TYPE_BINFO (type))
 	{
 	  free_lang_data_in_binfo (TYPE_BINFO (type));
@@ -6573,6 +6579,12 @@ build_distinct_type_copy (tree type)
   /* Make it its own variant.  */
   TYPE_MAIN_VARIANT (t) = t;
   TYPE_NEXT_VARIANT (t) = 0;
+
+  /* We do not record methods in type copies nor variants
+     so we do not need to keep them up to date when new method
+     is inserted.  */
+  if (RECORD_OR_UNION_TYPE_P (t))
+    TYPE_METHODS (t) = NULL_TREE;
 
   /* Note that it is now possible for TYPE_MIN_VALUE to be a value
      whose TREE_TYPE is not t.  This can also happen in the Ada
@@ -12528,13 +12540,9 @@ verify_type_variant (const_tree t, tree tv)
       debug_tree (tv);
       return false;
     }
-  /* FIXME: this check triggers during libstdc++ build that is a bug.
-     It affects non-LTO debug output only, because free_lang_data clears
-     this anyway.  */
-  if (RECORD_OR_UNION_TYPE_P (t) && COMPLETE_TYPE_P (t) && 0
-      && TYPE_METHODS (t) != TYPE_METHODS (tv))
+  if (RECORD_OR_UNION_TYPE_P (t) && TYPE_METHODS (t))
     {
-      error ("type variant has different TYPE_METHODS");
+      error ("type variant has TYPE_METHODS");
       debug_tree (tv);
       return false;
     }
@@ -12749,9 +12757,10 @@ verify_type (const_tree t)
   if (RECORD_OR_UNION_TYPE_P (t))
     {
       if (TYPE_METHODS (t) && TREE_CODE (TYPE_METHODS (t)) != FUNCTION_DECL
-	  && TREE_CODE (TYPE_METHODS (t)) != TEMPLATE_DECL)
+	  && TREE_CODE (TYPE_METHODS (t)) != TEMPLATE_DECL
+	  && TYPE_METHODS (t) != error_mark_node)
 	{
-	  error ("TYPE_METHODS is not FUNCTION_DECL nor TEMPLATE_DECL");
+	  error ("TYPE_METHODS is not FUNCTION_DECL, TEMPLATE_DECL nor error_mark_node");
 	  debug_tree (TYPE_METHODS (t));
 	  error_found = true;
 	}
