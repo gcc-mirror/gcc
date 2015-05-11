@@ -1141,9 +1141,10 @@ coverage_obj_init (void)
   /* Build the info and fn_info types.  These are mutually recursive.  */
   gcov_info_type = lang_hooks.types.make_type (RECORD_TYPE);
   gcov_fn_info_type = lang_hooks.types.make_type (RECORD_TYPE);
+  build_fn_info_type (gcov_fn_info_type, n_counters, gcov_info_type);
+  gcov_info_type = lang_hooks.types.make_type (RECORD_TYPE);
   gcov_fn_info_ptr_type = build_pointer_type
     (build_qualified_type (gcov_fn_info_type, TYPE_QUAL_CONST));
-  build_fn_info_type (gcov_fn_info_type, n_counters, gcov_info_type);
   build_info_type (gcov_info_type, gcov_fn_info_ptr_type);
   
   /* Build the gcov info var, this is referred to in its own
