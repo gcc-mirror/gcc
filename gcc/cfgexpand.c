@@ -2554,8 +2554,6 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
   if (! check_operand_nalternatives (outputs, inputs))
     return;
 
-  string = resolve_asm_operand_names (string, outputs, inputs, labels);
-
   /* Collect constraints.  */
   i = 0;
   for (t = outputs; t ; t = TREE_CHAIN (t), i++)

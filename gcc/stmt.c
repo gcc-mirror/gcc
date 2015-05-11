@@ -562,9 +562,10 @@ check_unique_operand_names (tree outputs, tree inputs, tree labels)
   return false;
 }
 
-/* A subroutine of expand_asm_operands.  Resolve the names of the operands
-   in *POUTPUTS and *PINPUTS to numbers, and replace the name expansions in
-   STRING and in the constraints to those numbers.  */
+/* Resolve the names of the operands in *POUTPUTS and *PINPUTS to numbers,
+   and replace the name expansions in STRING and in the constraints to
+   those numbers.  This is generally done in the front end while creating
+   the ASM_EXPR generic tree that eventually becomes the GIMPLE_ASM.  */
 
 tree
 resolve_asm_operand_names (tree string, tree outputs, tree inputs, tree labels)
