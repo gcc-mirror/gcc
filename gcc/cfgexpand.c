@@ -2522,22 +2522,78 @@ tree_conflicts_with_clobbers_p (tree t, HARD_REG_SET *clobbered_regs)
    VOL nonzero means the insn is volatile; don't optimize it.  */
 
 static void
-expand_asm_operands (tree string, tree outputs, tree inputs,
-		     tree clobbers, tree labels, basic_block fallthru_bb,
-		     int vol, location_t locus)
+expand_asm_stmt (gasm *stmt)
 {
+  int noutputs, ninputs, nclobbers, nlabels, i;
+  tree string, outputs, inputs, clobbers, labels, tail, t;
+  location_t locus = gimple_location (stmt);
+  basic_block fallthru_bb = NULL;
+
+  /* Meh... convert the gimple asm operands into real tree lists.
+     Eventually we should make all routines work on the vectors instead
+     of relying on TREE_CHAIN.  */
+  outputs = NULL_TREE;
+  noutputs = gimple_asm_noutputs (stmt);
+  if (noutputs > 0)
+    {
+      t = outputs = gimple_asm_output_op (stmt, 0);
+      for (i = 1; i < noutputs; i++)
+	t = TREE_CHAIN (t) = gimple_asm_output_op (stmt, i);
+    }
+
+  inputs = NULL_TREE;
+  ninputs = gimple_asm_ninputs (stmt);
+  if (ninputs > 0)
+    {
+      t = inputs = gimple_asm_input_op (stmt, 0);
+      for (i = 1; i < ninputs; i++)
+	t = TREE_CHAIN (t) = gimple_asm_input_op (stmt, i);
+    }
+
+  clobbers = NULL_TREE;
+  nclobbers = gimple_asm_nclobbers (stmt);
+  if (nclobbers > 0)
+    {
+      t = clobbers = gimple_asm_clobber_op (stmt, 0);
+      for (i = 1; i < nclobbers; i++)
+	t = TREE_CHAIN (t) = gimple_asm_clobber_op (stmt, i);
+    }
+
+  labels = NULL_TREE;
+  nlabels = gimple_asm_nlabels (stmt);
+  if (nlabels > 0)
+    {
+      edge fallthru = find_fallthru_edge (gimple_bb (stmt)->succs);
+      if (fallthru)
+	fallthru_bb = fallthru->dest;
+      t = labels = gimple_asm_label_op (stmt, 0);
+      for (i = 1; i < nlabels; i++)
+	t = TREE_CHAIN (t) = gimple_asm_label_op (stmt, i);
+    }
+
+  {
+    const char *s = gimple_asm_string (stmt);
+    string = build_string (strlen (s), s);
+  }
+
+  if (gimple_asm_input_p (stmt))
+    {
+      expand_asm_loc (string, gimple_asm_volatile_p (stmt), locus);
+      return;
+    }
+
+  /* Record the contents of OUTPUTS before it is modified.  */
+  tree *orig_outputs = XALLOCAVEC (tree, noutputs);
+  for (i = 0; i < noutputs; ++i)
+    orig_outputs[i] = TREE_VALUE (gimple_asm_output_op (stmt, i));
+
+  bool vol = gimple_asm_volatile_p (stmt);
+
   rtvec argvec, constraintvec, labelvec;
   rtx body;
-  int ninputs = list_length (inputs);
-  int noutputs = list_length (outputs);
-  int nlabels = list_length (labels);
   int ninout;
-  int nclobbers;
   HARD_REG_SET clobbered_regs;
   int clobber_conflict_found = 0;
-  tree tail;
-  tree t;
-  int i;
   /* Vector of RTX's of evaluated output operands.  */
   rtx *output_rtx = XALLOCAVEC (rtx, noutputs);
   int *inout_opnum = XALLOCAVEC (int, noutputs);
@@ -2994,101 +3050,22 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
     if (real_output_rtx[i])
       emit_move_insn (real_output_rtx[i], output_rtx[i]);
 
-  crtl->has_asm_statement = 1;
-  free_temp_slots ();
-}
-
-
-static void
-expand_asm_stmt (gasm *stmt)
-{
-  int noutputs;
-  tree outputs, tail, t;
-  tree *o;
-  size_t i, n;
-  const char *s;
-  tree str, out, in, cl, labels;
-  location_t locus = gimple_location (stmt);
-  basic_block fallthru_bb = NULL;
-
-  /* Meh... convert the gimple asm operands into real tree lists.
-     Eventually we should make all routines work on the vectors instead
-     of relying on TREE_CHAIN.  */
-  out = NULL_TREE;
-  n = gimple_asm_noutputs (stmt);
-  if (n > 0)
-    {
-      t = out = gimple_asm_output_op (stmt, 0);
-      for (i = 1; i < n; i++)
-	t = TREE_CHAIN (t) = gimple_asm_output_op (stmt, i);
-    }
-
-  in = NULL_TREE;
-  n = gimple_asm_ninputs (stmt);
-  if (n > 0)
-    {
-      t = in = gimple_asm_input_op (stmt, 0);
-      for (i = 1; i < n; i++)
-	t = TREE_CHAIN (t) = gimple_asm_input_op (stmt, i);
-    }
-
-  cl = NULL_TREE;
-  n = gimple_asm_nclobbers (stmt);
-  if (n > 0)
-    {
-      t = cl = gimple_asm_clobber_op (stmt, 0);
-      for (i = 1; i < n; i++)
-	t = TREE_CHAIN (t) = gimple_asm_clobber_op (stmt, i);
-    }
-
-  labels = NULL_TREE;
-  n = gimple_asm_nlabels (stmt);
-  if (n > 0)
-    {
-      edge fallthru = find_fallthru_edge (gimple_bb (stmt)->succs);
-      if (fallthru)
-	fallthru_bb = fallthru->dest;
-      t = labels = gimple_asm_label_op (stmt, 0);
-      for (i = 1; i < n; i++)
-	t = TREE_CHAIN (t) = gimple_asm_label_op (stmt, i);
-    }
-
-  s = gimple_asm_string (stmt);
-  str = build_string (strlen (s), s);
-
-  if (gimple_asm_input_p (stmt))
-    {
-      expand_asm_loc (str, gimple_asm_volatile_p (stmt), locus);
-      return;
-    }
-
-  outputs = out;
-  noutputs = gimple_asm_noutputs (stmt);
-  /* o[I] is the place that output number I should be written.  */
-  o = (tree *) alloca (noutputs * sizeof (tree));
-
-  /* Record the contents of OUTPUTS before it is modified.  */
-  for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
-    o[i] = TREE_VALUE (tail);
-
-  /* Generate the ASM_OPERANDS insn; store into the TREE_VALUEs of
-     OUTPUTS some trees for where the values were actually stored.  */
-  expand_asm_operands (str, outputs, in, cl, labels, fallthru_bb,
-		       gimple_asm_volatile_p (stmt), locus);
-
   /* Copy all the intermediate outputs into the specified outputs.  */
   for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
     {
-      if (o[i] != TREE_VALUE (tail))
+      if (orig_outputs[i] != TREE_VALUE (tail))
 	{
-	  expand_assignment (o[i], TREE_VALUE (tail), false);
+	  expand_assignment (orig_outputs[i], TREE_VALUE (tail), false);
 	  free_temp_slots ();
 
 	  /* Restore the original value so that it's correct the next
 	     time we expand this function.  */
-	  TREE_VALUE (tail) = o[i];
+	  TREE_VALUE (tail) = orig_outputs[i];
 	}
     }
+
+  crtl->has_asm_statement = 1;
+  free_temp_slots ();
 }
 
 /* Emit code to jump to the address
