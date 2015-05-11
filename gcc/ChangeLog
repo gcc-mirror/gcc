@@ -1,3 +1,8 @@
+2015-05-11  Christian Bruel  <christian.bruel@st.com>
+
+	* config/arm/arm-protos.h (thumb_code, thumb1_code): Remove.
+	* config/arm/vxworks.h (thumb_code): Replace with TARGET_THUMB.
+
 2015-05-11  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/66076

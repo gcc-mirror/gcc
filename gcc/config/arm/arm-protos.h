@@ -462,12 +462,6 @@ extern int arm_tune_wbuf;
 /* Nonzero if tuning for Cortex-A9.  */
 extern int arm_tune_cortex_a9;
 
-/* Nonzero if generating Thumb instructions.  */
-extern int thumb_code;
-
-/* Nonzero if generating Thumb-1 instructions.  */
-extern int thumb1_code;
-
 /* Nonzero if we should define __THUMB_INTERWORK__ in the
    preprocessor.
    XXX This is a bit of a hack, it's intended to help work around
