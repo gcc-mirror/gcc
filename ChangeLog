@@ -1,5 +1,9 @@
 2015-05-11  Paulo Matos  <paulo@matos-sorge.com>
 
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2015-05-11  Paulo Matos  <paulo@matos-sorge.com>
+
 	* configure.ac: Fix typo.
 	* configure: Regenerate.
 
