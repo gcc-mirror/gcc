@@ -1,4 +1,4 @@
-2014-09-23  Christian Bruel  <christian.bruel@st.com>
+2015-05-11  Christian Bruel  <christian.bruel@st.com>
 
 	* config/arm/arm.c (arm_option_override): Reoganized and split into :
 	(arm_option_params_internal); New function.
