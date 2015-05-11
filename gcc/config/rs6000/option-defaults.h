@@ -39,11 +39,11 @@
 #endif
 
 #if TARGET_DEFAULT & OPTION_MASK_64BIT
-#define OPT_ARCH64 "!"OPT_32
+#define OPT_ARCH64 "!" OPT_32
 #define OPT_ARCH32 OPT_32
 #else
 #define OPT_ARCH64 OPT_64
-#define OPT_ARCH32 "!"OPT_64
+#define OPT_ARCH32 "!" OPT_64
 #endif
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
