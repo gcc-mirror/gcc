@@ -3063,7 +3063,7 @@ fi
 # multilib is not explicitly enabled.
 case "$target:$have_compiler:$host:$target:$enable_multilib" in
   x86_64-*linux*:yes:$build:$build:)
-    # Make sure we have a developement environment that handles 32-bit
+    # Make sure we have a development environment that handles 32-bit
     dev64=no
     echo "int main () { return 0; }" > conftest.c
     ${CC} -m32 -o conftest ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} conftest.c
@@ -3074,7 +3074,7 @@ case "$target:$have_compiler:$host:$target:$enable_multilib" in
     fi 
     rm -f conftest*
     if test x${dev64} != xyes ; then
-      AC_MSG_ERROR([I suspect your system does not have 32-bit developement libraries (libc and headers). If you have them, rerun configure with --enable-multilib. If you do not have them, and want to build a 64-bit-only compiler, rerun configure with --disable-multilib.])
+      AC_MSG_ERROR([I suspect your system does not have 32-bit development libraries (libc and headers). If you have them, rerun configure with --enable-multilib. If you do not have them, and want to build a 64-bit-only compiler, rerun configure with --disable-multilib.])
     fi
     ;;
 esac
