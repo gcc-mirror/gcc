@@ -1,3 +1,8 @@
+2015-05-11  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/65753
+	* gcc.target/i386/pr65753.c: New test.
+
 2015-05-11  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/66076
