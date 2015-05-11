@@ -1128,7 +1128,7 @@ See S/390 and zSeries Options.
 -finstrument-functions-exclude-function-list=@var{sym},@var{sym},@dots{} @gol
 -finstrument-functions-exclude-file-list=@var{file},@var{file},@dots{} @gol
 -fno-common  -fno-ident @gol
--fpcc-struct-return  -fpic  -fPIC -fpie -fPIE @gol
+-fpcc-struct-return  -fpic  -fPIC -fpie -fPIE -fno-plt @gol
 -fno-jump-tables @gol
 -frecord-gcc-switches @gol
 -freg-struct-return  -fshort-enums @gol
@@ -23781,6 +23781,16 @@ used during linking.
 @option{-fpie} and @option{-fPIE} both define the macros
 @code{__pie__} and @code{__PIE__}.  The macros have the value 1
 for @option{-fpie} and 2 for @option{-fPIE}.
+
+@item -fno-plt
+@opindex fno-plt
+Do not use PLT for external function calls in position-independent code.
+Instead, load callee address at call site from GOT and branch to it.
+This leads to more efficient code by eliminating PLT stubs and exposing
+GOT load to optimizations.  On architectures such as 32-bit x86 where
+PLT stubs expect GOT pointer in a specific register, this gives more
+register allocation freedom to the compiler.  Lazy binding requires PLT:
+with @option{-fno-plt} all external symbols are resolved at load time.
 
 @item -fno-jump-tables
 @opindex fno-jump-tables
