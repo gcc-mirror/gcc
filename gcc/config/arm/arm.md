@@ -69,13 +69,17 @@
 ; IS_THUMB is set to 'yes' when we are generating Thumb code, and 'no' when
 ; generating ARM code.  This is used to control the length of some insn
 ; patterns that share the same RTL in both ARM and Thumb code.
-(define_attr "is_thumb" "no,yes" (const (symbol_ref "thumb_code")))
+(define_attr "is_thumb" "yes,no"
+  (const (if_then_else (symbol_ref "TARGET_THUMB")
+		       (const_string "yes") (const_string "no"))))
 
 ; IS_ARCH6 is set to 'yes' when we are generating code form ARMv6.
 (define_attr "is_arch6" "no,yes" (const (symbol_ref "arm_arch6")))
 
 ; IS_THUMB1 is set to 'yes' iff we are generating Thumb-1 code.
-(define_attr "is_thumb1" "no,yes" (const (symbol_ref "thumb1_code")))
+(define_attr "is_thumb1" "yes,no"
+  (const (if_then_else (symbol_ref "TARGET_THUMB1")
+		       (const_string "yes") (const_string "no"))))
 
 ; We use this attribute to disable alternatives that can produce 32-bit
 ; instructions inside an IT-block in Thumb2 state.  ARMv8 deprecates IT blocks
