@@ -12577,6 +12577,98 @@ verify_type_variant (const_tree t, tree tv)
       debug_tree (TYPE_BINFO (t));
       return false;
     }
+
+  /* Check various uses of TYPE_VALUES_RAW.  */
+  if (TREE_CODE (t) == ENUMERAL_TYPE
+      && TYPE_VALUES (t) != TYPE_VALUES (tv))
+    {
+      error ("type variant has different TYPE_VALUES");
+      debug_tree (tv);
+      error ("type variant's TYPE_VALUES");
+      debug_tree (TYPE_VALUES (tv));
+      error ("type's TYPE_VALUES");
+      debug_tree (TYPE_VALUES (t));
+      return false;
+    }
+  else if (TREE_CODE (t) == ARRAY_TYPE
+	   && TYPE_DOMAIN (t) != TYPE_DOMAIN (tv))
+    {
+      error ("type variant has different TYPE_DOMAIN");
+      debug_tree (tv);
+      error ("type variant's TYPE_DOMAIN");
+      debug_tree (TYPE_DOMAIN (tv));
+      error ("type's TYPE_DOMAIN");
+      debug_tree (TYPE_DOMAIN (t));
+      return false;
+    }
+  /* Permit incomplete variants of complete type.  While FEs may complete
+     all variants, this does not happen for C++ templates in all cases.  */
+  else if (RECORD_OR_UNION_TYPE_P (t)
+	   && COMPLETE_TYPE_P (t)
+	   && TYPE_FIELDS (t) != TYPE_FIELDS (tv))
+    {
+      tree f1, f2;
+
+      /* Fortran builds qualified variants as new records with items of
+	 qualified type. Verify that they looks same.  */
+      for (f1 = TYPE_FIELDS (t), f2 = TYPE_FIELDS (tv);
+	   f1 && f2;
+	   f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
+	if (TREE_CODE (f1) != FIELD_DECL || TREE_CODE (f2) != FIELD_DECL
+	    || (TYPE_MAIN_VARIANT (TREE_TYPE (f1))
+		 != TYPE_MAIN_VARIANT (TREE_TYPE (f2))
+		/* FIXME: gfc_nonrestricted_type builds all types as variants
+		   with exception of pointer types.  It deeply copies the type
+		   which means that we may end up with a variant type
+		   referring non-variant pointer.  We may change it to
+		   produce types as variants, too, like
+		   objc_get_protocol_qualified_type does.  */
+		&& !POINTER_TYPE_P (TREE_TYPE (f1)))
+	    || DECL_FIELD_OFFSET (f1) != DECL_FIELD_OFFSET (f2)
+	    || DECL_FIELD_BIT_OFFSET (f1) != DECL_FIELD_BIT_OFFSET (f2))
+	  break;
+      if (f1 || f2)
+	{
+	  error ("type variant has different TYPE_FIELDS");
+	  debug_tree (tv);
+	  error ("first mismatch is field");
+	  debug_tree (f1);
+	  error ("and field");
+	  debug_tree (f2);
+          return false;
+	}
+    }
+  else if ((TREE_CODE (t) == FUNCTION_TYPE || TREE_CODE (t) == METHOD_TYPE)
+	   && TYPE_ARG_TYPES (t) != TYPE_ARG_TYPES (tv))
+    {
+      error ("type variant has different TYPE_ARG_TYPES");
+      debug_tree (tv);
+      return false;
+    }
+  /* For C++ the qualified variant of array type is really an array type
+     of qualified TREE_TYPE.
+     objc builds variants of pointer where pointer to type is a variant, too
+     in objc_get_protocol_qualified_type.  */
+  if (TREE_TYPE (t) != TREE_TYPE (tv)
+      && ((TREE_CODE (t) != ARRAY_TYPE
+	   && !POINTER_TYPE_P (t))
+	  || TYPE_MAIN_VARIANT (TREE_TYPE (t))
+	     != TYPE_MAIN_VARIANT (TREE_TYPE (tv))))
+    {
+      error ("type variant has different TREE_TYPE");
+      debug_tree (tv);
+      error ("type variant's TREE_TYPE");
+      debug_tree (TREE_TYPE (tv));
+      error ("type's TREE_TYPE");
+      debug_tree (TREE_TYPE (t));
+      return false;
+    }
+  if (TYPE_PRECISION (t) != TYPE_PRECISION (tv))
+    {
+      error ("type variant has different TYPE_PRECISION");
+      debug_tree (tv);
+      return false;
+    }
   return true;
 }
 
