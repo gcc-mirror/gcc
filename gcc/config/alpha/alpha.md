@@ -951,7 +951,7 @@
   [(set (match_operand:DI 0 "register_operand")
 	(and:DI (match_operand:DI 1 "register_operand")
 		(match_operand:DI 2 "const_int_operand")))]
-  "HOST_BITS_PER_WIDE_INT == 64 && ! and_operand (operands[2], DImode)"
+  "! and_operand (operands[2], DImode)"
   [(set (match_dup 0) (and:DI (match_dup 1) (match_dup 3)))
    (set (match_dup 0) (and:DI (match_dup 0) (match_dup 4)))]
 {
@@ -1508,17 +1508,14 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(and:DI (ashift:DI (match_operand:DI 1 "register_operand" "r")
 		   	   (match_operand:DI 2 "mul8_operand" "I"))
-		(match_operand:DI 3 "immediate_operand" "i")))]
-  "HOST_BITS_PER_WIDE_INT == 64
-   && CONST_INT_P (operands[3])
-   && (((unsigned HOST_WIDE_INT) 0xff << INTVAL (operands[2])
+		(match_operand:DI 3 "const_int_operand" "i")))]
+  "((unsigned HOST_WIDE_INT) 0xff << INTVAL (operands[2])
+    == (unsigned HOST_WIDE_INT) INTVAL (operands[3]))
+    || ((unsigned HOST_WIDE_INT) 0xffff << INTVAL (operands[2])
         == (unsigned HOST_WIDE_INT) INTVAL (operands[3]))
-       || ((unsigned HOST_WIDE_INT) 0xffff << INTVAL (operands[2])
-        == (unsigned HOST_WIDE_INT) INTVAL (operands[3]))
-       || ((unsigned HOST_WIDE_INT) 0xffffffff << INTVAL (operands[2])
-        == (unsigned HOST_WIDE_INT) INTVAL (operands[3])))"
+    || ((unsigned HOST_WIDE_INT) 0xffffffff << INTVAL (operands[2])
+        == (unsigned HOST_WIDE_INT) INTVAL (operands[3]))"
 {
-#if HOST_BITS_PER_WIDE_INT == 64
   if ((unsigned HOST_WIDE_INT) 0xff << INTVAL (operands[2])
       == (unsigned HOST_WIDE_INT) INTVAL (operands[3]))
     return "insbl %1,%s2,%0";
@@ -1528,7 +1525,7 @@
   if ((unsigned HOST_WIDE_INT) 0xffffffff << INTVAL (operands[2])
       == (unsigned HOST_WIDE_INT) INTVAL (operands[3]))
     return "insll %1,%s2,%0";
-#endif
+
   gcc_unreachable ();
 }
   [(set_attr "type" "shift")])
@@ -1619,13 +1616,7 @@
 		   (abs:TF (match_operand:TF 1 "reg_or_0_operand")))
 	      (use (match_dup 2))])]
   "TARGET_HAS_XFLOATING_LIBS"
-{
-#if HOST_BITS_PER_WIDE_INT >= 64
-  operands[2] = force_reg (DImode, GEN_INT ((HOST_WIDE_INT) 1 << 63));
-#else
-  operands[2] = force_reg (DImode, immed_double_const (0, 0x80000000, DImode));
-#endif
-})
+  "operands[2] = force_reg (DImode, GEN_INT (HOST_WIDE_INT_1U << 63));")
 
 (define_insn_and_split "*abstf_internal"
   [(set (match_operand:TF 0 "register_operand" "=r")
@@ -1649,13 +1640,7 @@
 		   (neg:TF (match_operand:TF 1 "reg_or_0_operand")))
 	      (use (match_dup 2))])]
   "TARGET_HAS_XFLOATING_LIBS"
-{
-#if HOST_BITS_PER_WIDE_INT >= 64
-  operands[2] = force_reg (DImode, GEN_INT ((HOST_WIDE_INT) 1 << 63));
-#else
-  operands[2] = force_reg (DImode, immed_double_const (0, 0x80000000, DImode));
-#endif
-})
+  "operands[2] = force_reg (DImode, GEN_INT (HOST_WIDE_INT_1U << 63));")
 
 (define_insn_and_split "*negtf_internal"
   [(set (match_operand:TF 0 "register_operand" "=r")
@@ -5440,7 +5425,7 @@
    (match_operand:DI 2 "reg_or_8bit_operand")]
   ""
 {
-  rtx mask = immed_double_const (0xffffffff, 0, DImode);
+  rtx mask = gen_int_mode (0xffffffff, DImode);
   emit_insn (gen_mskxl (operands[0], operands[1], mask, operands[2]));
   DONE;
 })
@@ -5542,16 +5527,8 @@
   [(const_int 0)]
 {
   rtx mask = alpha_expand_zap_mask (INTVAL (operands[2]));
-  if (HOST_BITS_PER_WIDE_INT >= 64 || CONST_INT_P (mask))
-    operands[1] = gen_int_mode (INTVAL (operands[1]) & INTVAL (mask), DImode);
-  else
-    {
-      HOST_WIDE_INT c_lo = INTVAL (operands[1]);
-      HOST_WIDE_INT c_hi = (c_lo < 0 ? -1 : 0);
-      operands[1] = immed_double_const (c_lo & CONST_DOUBLE_LOW (mask),
-					c_hi & CONST_DOUBLE_HIGH (mask),
-					DImode);
-    }
+
+  operands[1] = gen_int_mode (INTVAL (operands[1]) & INTVAL (mask), DImode);
   emit_move_insn (operands[0], operands[1]);
   DONE;
 })

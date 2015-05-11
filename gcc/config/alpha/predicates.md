@@ -110,26 +110,19 @@
 ;; Return 1 if OP is a constant that is a mask of ones of width of an
 ;; integral machine mode not larger than DImode.
 (define_predicate "mode_mask_operand"
-  (match_code "const_int,const_double")
+  (match_code "const_int")
 {
-  if (CONST_INT_P (op))
-    {
-      HOST_WIDE_INT value = INTVAL (op);
+  HOST_WIDE_INT value = INTVAL (op);
 
-      if (value == 0xff)
-	return 1;
-      if (value == 0xffff)
-	return 1;
-      if (value == 0xffffffff)
-	return 1;
-      if (value == -1)
-	return 1;
-    }
-  else if (HOST_BITS_PER_WIDE_INT == 32 && GET_CODE (op) == CONST_DOUBLE)
-    {
-      if (CONST_DOUBLE_LOW (op) == 0xffffffff && CONST_DOUBLE_HIGH (op) == 0)
-	return 1;
-    }
+  if (value == 0xff)
+    return 1;
+  if (value == 0xffff)
+    return 1;
+  if (value == 0xffffffff)
+    return 1;
+  if (value == -1)
+    return 1;
+
   return 0;
 })
 

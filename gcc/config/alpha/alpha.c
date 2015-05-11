@@ -1771,11 +1771,9 @@ alpha_emit_set_const_1 (rtx target, machine_mode mode,
   rtx temp, insn;
 
   /* If this is a sign-extended 32-bit constant, we can do this in at most
-     three insns, so do it if we have enough insns left.  We always have
-     a sign-extended 32-bit constant when compiling on a narrow machine.  */
+     three insns, so do it if we have enough insns left.  */
 
-  if (HOST_BITS_PER_WIDE_INT != 64
-      || c >> 31 == -1 || c >> 31 == 0)
+  if (c >> 31 == -1 || c >> 31 == 0)
     {
       HOST_WIDE_INT low = ((c & 0xffff) ^ 0x8000) - 0x8000;
       HOST_WIDE_INT tmp1 = c - low;
@@ -1917,11 +1915,9 @@ alpha_emit_set_const_1 (rtx target, machine_mode mode,
       /* Now try high-order zero bits.  Here we try the shifted-in bits as
 	 all zero and all ones.  Be careful to avoid shifting outside the
 	 mode and to avoid shifting outside the host wide int size.  */
-      /* On narrow hosts, don't shift a 1 into the high bit, since we'll
-	 confuse the recursive call and set all of the high 32 bits.  */
 
       bits = (MIN (HOST_BITS_PER_WIDE_INT, GET_MODE_SIZE (mode) * 8)
-	      - floor_log2 (c) - 1 - (HOST_BITS_PER_WIDE_INT < 64));
+	      - floor_log2 (c) - 1);
       if (bits > 0)
 	for (; bits > 0; bits--)
 	  {
@@ -1929,7 +1925,7 @@ alpha_emit_set_const_1 (rtx target, machine_mode mode,
 	    temp = alpha_emit_set_const (subtarget, mode, new_const, i, no_output);
 	    if (!temp)
 	      {
-		new_const = (c << bits) | (((HOST_WIDE_INT) 1 << bits) - 1);
+		new_const = (c << bits) | ((HOST_WIDE_INT_1U << bits) - 1);
 	        temp = alpha_emit_set_const (subtarget, mode, new_const,
 					     i, no_output);
 	      }
@@ -1955,7 +1951,7 @@ alpha_emit_set_const_1 (rtx target, machine_mode mode,
 	    temp = alpha_emit_set_const (subtarget, mode, new_const, i, no_output);
 	    if (!temp)
 	      {
-		new_const = (c << bits) | (((HOST_WIDE_INT) 1 << bits) - 1);
+		new_const = (c << bits) | ((HOST_WIDE_INT_1U << bits) - 1);
 	        temp = alpha_emit_set_const (subtarget, mode, new_const,
 					     i, no_output);
 	      }
@@ -1969,7 +1965,6 @@ alpha_emit_set_const_1 (rtx target, machine_mode mode,
 	  }
     }
 
-#if HOST_BITS_PER_WIDE_INT == 64
   /* Finally, see if can load a value into the target that is the same as the
      constant except that all bytes that are 0 are changed to be 0xff.  If we
      can, then we can do a ZAPNOT to obtain the desired constant.  */
@@ -1996,7 +1991,6 @@ alpha_emit_set_const_1 (rtx target, machine_mode mode,
 			       target, 0, OPTAB_WIDEN);
 	}
     }
-#endif
 
   return 0;
 }
@@ -2077,7 +2071,7 @@ alpha_emit_set_long_const (rtx target, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
   HOST_WIDE_INT d1, d2, d3, d4;
 
   /* Decompose the entire word */
-#if HOST_BITS_PER_WIDE_INT >= 64
+
   gcc_assert (c2 == -(c1 < 0));
   d1 = ((c1 & 0xffff) ^ 0x8000) - 0x8000;
   c1 -= d1;
@@ -2087,17 +2081,6 @@ alpha_emit_set_long_const (rtx target, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
   c1 -= d3;
   d4 = ((c1 & 0xffffffff) ^ 0x80000000) - 0x80000000;
   gcc_assert (c1 == d4);
-#else
-  d1 = ((c1 & 0xffff) ^ 0x8000) - 0x8000;
-  c1 -= d1;
-  d2 = ((c1 & 0xffffffff) ^ 0x80000000) - 0x80000000;
-  gcc_assert (c1 == d2);
-  c2 += (d2 < 0);
-  d3 = ((c2 & 0xffff) ^ 0x8000) - 0x8000;
-  c2 -= d3;
-  d4 = ((c2 & 0xffffffff) ^ 0x80000000) - 0x80000000;
-  gcc_assert (c2 == d4);
-#endif
 
   /* Construct the high word */
   if (d4)
@@ -2138,15 +2121,10 @@ alpha_extract_integer (rtx x, HOST_WIDE_INT *p0, HOST_WIDE_INT *p1)
       i0 = INTVAL (x);
       i1 = -(i0 < 0);
     }
-  else if (HOST_BITS_PER_WIDE_INT >= 64)
-    {
-      i0 = CONST_DOUBLE_LOW (x);
-      i1 = -(i0 < 0);
-    }
   else
     {
       i0 = CONST_DOUBLE_LOW (x);
-      i1 = CONST_DOUBLE_HIGH (x);
+      i1 = -(i0 < 0);
     }
 
   *p0 = i0;
@@ -2206,9 +2184,7 @@ alpha_legitimate_constant_p (machine_mode mode, rtx x)
       if (TARGET_BUILD_CONSTANTS)
 	return true;
       alpha_extract_integer (x, &i0, &i1);
-      if (HOST_BITS_PER_WIDE_INT >= 64 || i1 == (-i0 < 0))
-        return alpha_emit_set_const_1 (x, mode, i0, 3, true) != NULL;
-      return false;
+      return alpha_emit_set_const_1 (x, mode, i0, 3, true) != NULL;
 
     default:
       return false;
@@ -2226,8 +2202,7 @@ alpha_split_const_mov (machine_mode mode, rtx *operands)
 
   alpha_extract_integer (operands[1], &i0, &i1);
 
-  if (HOST_BITS_PER_WIDE_INT >= 64 || i1 == -(i0 < 0))
-    temp = alpha_emit_set_const (operands[0], mode, i0, 3, false);
+  temp = alpha_emit_set_const (operands[0], mode, i0, 3, false);
 
   if (!temp && TARGET_BUILD_CONSTANTS)
     temp = alpha_emit_set_long_const (operands[0], i0, i1);
@@ -4099,7 +4074,6 @@ alpha_expand_block_clear (rtx operands[])
 
   if (alignofs > 0)
     {
-#if HOST_BITS_PER_WIDE_INT >= 64
       /* Given that alignofs is bounded by align, the only time BWX could
 	 generate three stores is for a 7 byte fill.  Prefer two individual
 	 stores over a load/mask/store sequence.  */
@@ -4134,7 +4108,6 @@ alpha_expand_block_clear (rtx operands[])
 
 	  emit_move_insn (mem, tmp);
 	}
-#endif
 
       if (TARGET_BWX && (alignofs & 1) && bytes >= 1)
 	{
@@ -4246,7 +4219,6 @@ alpha_expand_block_clear (rtx operands[])
 
   /* Next clean up any trailing pieces.  */
 
-#if HOST_BITS_PER_WIDE_INT >= 64
   /* Count the number of bits in BYTES for which aligned stores could
      be emitted.  */
   words = 0;
@@ -4291,7 +4263,6 @@ alpha_expand_block_clear (rtx operands[])
 	  return 1;
 	}
     }
-#endif
 
   if (!TARGET_BWX && bytes >= 4)
     {
@@ -4336,43 +4307,16 @@ alpha_expand_zap_mask (HOST_WIDE_INT value)
 {
   rtx result;
   int i;
+  HOST_WIDE_INT mask = 0;
 
-  if (HOST_BITS_PER_WIDE_INT >= 64)
+  for (i = 7; i >= 0; --i)
     {
-      HOST_WIDE_INT mask = 0;
-
-      for (i = 7; i >= 0; --i)
-	{
-	  mask <<= 8;
-	  if (!((value >> i) & 1))
-	    mask |= 0xff;
-	}
-
-      result = gen_int_mode (mask, DImode);
-    }
-  else
-    {
-      HOST_WIDE_INT mask_lo = 0, mask_hi = 0;
-
-      gcc_assert (HOST_BITS_PER_WIDE_INT == 32);
-      
-      for (i = 7; i >= 4; --i)
-	{
-	  mask_hi <<= 8;
-	  if (!((value >> i) & 1))
-	    mask_hi |= 0xff;
-	}
-
-      for (i = 3; i >= 0; --i)
-	{
-	  mask_lo <<= 8;
-	  if (!((value >> i) & 1))
-	    mask_lo |= 0xff;
-	}
-
-      result = immed_double_const (mask_lo, mask_hi, DImode);
+      mask <<= 8;
+      if (!((value >> i) & 1))
+	mask |= 0xff;
     }
 
+  result = gen_int_mode (mask, DImode);
   return result;
 }
 
@@ -5288,7 +5232,7 @@ print_operand (FILE *file, rtx x, int code)
       if (!CONST_INT_P (x))
 	output_operand_lossage ("invalid %%P value");
 
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) 1 << INTVAL (x));
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, HOST_WIDE_INT_1 << INTVAL (x));
       break;
 
     case 'h':
@@ -5385,14 +5329,7 @@ print_operand (FILE *file, rtx x, int code)
 	      break;
 	    }
 	}
-      else if (HOST_BITS_PER_WIDE_INT == 32
-	       && GET_CODE (x) == CONST_DOUBLE
-	       && CONST_DOUBLE_LOW (x) == 0xffffffff
-	       && CONST_DOUBLE_HIGH (x) == 0)
-	{
-	  fputc ('l', file);
-	  break;
-	}
+
       output_operand_lossage ("invalid %%U value");
       break;
 
@@ -6787,13 +6724,6 @@ alpha_expand_builtin (tree exp, rtx target,
   else
     return const0_rtx;
 }
-
-
-/* Several bits below assume HWI >= 64 bits.  This should be enforced
-   by config.gcc.  */
-#if HOST_BITS_PER_WIDE_INT < 64
-# error "HOST_WIDE_INT too small"
-#endif
 
 /* Fold the builtin for the CMPBGE instruction.  This is a vector comparison
    with an 8-bit output vector.  OPINT contains the integer operands; bit N
