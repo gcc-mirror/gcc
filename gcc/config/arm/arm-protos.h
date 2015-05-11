@@ -30,6 +30,7 @@ extern void arm_load_pic_register (unsigned long);
 extern int arm_volatile_func (void);
 extern void arm_expand_prologue (void);
 extern void arm_expand_epilogue (bool);
+extern void arm_declare_function_name (FILE *, const char *, tree);
 extern void thumb2_expand_return (bool);
 extern const char *arm_strip_name_encoding (const char *);
 extern void arm_asm_output_labelref (FILE *, const char *);
@@ -181,9 +182,6 @@ extern const char *thumb1_unexpanded_epilogue (void);
 extern void thumb1_expand_prologue (void);
 extern void thumb1_expand_epilogue (void);
 extern const char *thumb1_output_interwork (void);
-#ifdef TREE_CODE
-extern int is_called_in_ARM_mode (tree);
-#endif
 extern int thumb_shiftable_const (unsigned HOST_WIDE_INT);
 #ifdef RTX_CODE
 extern enum arm_cond_code maybe_get_arm_condition_code (rtx);

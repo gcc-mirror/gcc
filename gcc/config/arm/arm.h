@@ -2183,23 +2183,7 @@ extern int making_const_table;
    ? 1 : 0)
 
 #define ARM_DECLARE_FUNCTION_NAME(STREAM, NAME, DECL) 	\
-  do							\
-    {							\
-      if (TARGET_THUMB) 				\
-        {						\
-          if (is_called_in_ARM_mode (DECL)		\
-	      || (TARGET_THUMB1 && !TARGET_THUMB1_ONLY	\
-		  && cfun->is_thunk))	\
-            fprintf (STREAM, "\t.code 32\n") ;		\
-          else if (TARGET_THUMB1)			\
-           fprintf (STREAM, "\t.code\t16\n\t.thumb_func\n") ;	\
-          else						\
-           fprintf (STREAM, "\t.thumb\n\t.thumb_func\n") ;	\
-        }						\
-      if (TARGET_POKE_FUNCTION_NAME)			\
-        arm_poke_function_name (STREAM, (const char *) NAME);	\
-    }							\
-  while (0)
+  arm_declare_function_name ((STREAM), (NAME), (DECL));
 
 /* For aliases of functions we use .thumb_set instead.  */
 #define ASM_OUTPUT_DEF_FROM_DECLS(FILE, DECL1, DECL2)		\
