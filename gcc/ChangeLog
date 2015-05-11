@@ -1,3 +1,8 @@
+2015-05-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_loop_unroll_adjust): Use PATTERN (insn)
+	when looking for memory references.
+
 2015-05-11  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR target/65753
@@ -13,7 +18,7 @@
 	([-fno-plt]): Document.
 
 2015-05-11  Markus Trippelsdorf  <markus@trippelsdorf.de>
-	
+
 	PR bootstrap/66105
 	* config/rs6000/option-defaults.h: Add space between string literal
 	and macro name.
@@ -606,7 +611,7 @@
 2015-05-05  Matthew Wahab  <matthew.wahab@arm.com>
 
 	* gcc/config/aarch64-protos.h (struct cpu_branch_cost): New.
-        (tune_params): Add field branch_costs.
+	(tune_params): Add field branch_costs.
 	(aarch64_branch_cost): Declare.
 	* gcc/config/aarch64.c (generic_branch_cost): New.
 	(generic_tunings): Set field cpu_branch_cost to generic_branch_cost.
@@ -965,7 +970,7 @@
 
 2015-04-30  Caroline Tice  <cmtice@google.com>
 
-        PR 65929
+	PR gcov-profile/65929
 	* config/elfos.h (ASM_DECLARE_COLD_FUNCTION_NAME): New macro definition.
 	(ASM_DECLARE_COLD_FUNCTION_SIZE): New macro definition.
 	* doc/tm.texi.in (ASM_DECLARE_COLD_FUNCTION_NAME): Document new macro.
