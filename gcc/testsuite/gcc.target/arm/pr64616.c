@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fdump-rtl-cprop2" } */
 
 int f (int);
 unsigned int glob;
@@ -11,4 +11,5 @@ g ()
   glob = 5;
 }
 
-/* { dg-final { scan-assembler-times "ldr" 2 } } */
+/* { dg-final { scan-rtl-dump "GLOBAL COPY-PROP" "cprop2" } } */
+/* { dg-final { cleanup-rtl-dump "cprop2" } } */

@@ -1,3 +1,8 @@
+2015-05-11  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/pr64616.c: Test dump rather than assembly to work
+	accross ARM targets.
+
 2015-05-11  Christian Bruel  <christian.bruel@st.com>
 
 	* config/arm/arm-protos.h (thumb_code, thumb1_code): Remove.
