@@ -1,3 +1,11 @@
+2015-05-11  Alexander Monakov  <amonakov@ispras.ru>
+
+	* calls.c (prepare_call_address): Transform PLT call to GOT lookup and
+	indirect call by forcing address into a pseudo with -fno-plt.
+	* common.opt (flag_plt): New option.
+	* doc/invoke.texi (Code Generation Options): Add -fno-plt.
+	([-fno-plt]): Document.
+
 2015-05-11  Markus Trippelsdorf  <markus@trippelsdorf.de>
 	
 	PR bootstrap/66105

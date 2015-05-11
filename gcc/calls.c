@@ -225,6 +225,12 @@ prepare_call_address (tree fndecl_or_type, rtx funexp, rtx static_chain_value,
 	       && targetm.small_register_classes_for_mode_p (FUNCTION_MODE))
 	      ? force_not_mem (memory_address (FUNCTION_MODE, funexp))
 	      : memory_address (FUNCTION_MODE, funexp));
+  else if (flag_pic && !flag_plt && fndecl_or_type
+	   && TREE_CODE (fndecl_or_type) == FUNCTION_DECL
+	   && !targetm.binds_local_p (fndecl_or_type))
+    {
+      funexp = force_reg (Pmode, funexp);
+    }
   else if (! sibcallp)
     {
       if (!NO_FUNCTION_CSE && optimize && ! flag_no_function_cse)
