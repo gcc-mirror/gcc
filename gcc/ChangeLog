@@ -1,3 +1,10 @@
+2015-05-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/66076
+	* rtlanal.c (generic_subrtx_iterator <T>::add_single_to_queue):
+	Don't grow the heap array if it is already big enough from a
+	previous iteration.
+
 2015-05-11  Christian Bruel  <christian.bruel@st.com>
 
 	* config/arm/arm-protos.h (arm_declare_function_name): Declare.
