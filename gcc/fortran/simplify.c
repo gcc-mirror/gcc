@@ -3463,8 +3463,8 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
   gcc_assert (!as
 	      || (as->type != AS_DEFERRED
 		  && array->expr_type == EXPR_VARIABLE
-		  && !array->symtree->n.sym->attr.allocatable
-		  && !array->symtree->n.sym->attr.pointer));
+		  && !gfc_expr_attr (array).allocatable
+		  && !gfc_expr_attr (array).pointer));
 
   if (dim == NULL)
     {
