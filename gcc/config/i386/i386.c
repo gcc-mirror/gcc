@@ -14997,21 +14997,21 @@ put_condition_code (enum rtx_code code, machine_mode mode, bool reverse,
 	case CCAmode:
 	  suffix = "a";
 	  break;
-
 	case CCCmode:
 	  suffix = "c";
 	  break;
-
 	case CCOmode:
 	  suffix = "o";
 	  break;
-
+	case CCPmode:
+	  suffix = "p";
+	  break;
 	case CCSmode:
 	  suffix = "s";
 	  break;
-
 	default:
 	  suffix = "e";
+	  break;
 	}
       break;
     case NE:
@@ -15020,21 +15020,21 @@ put_condition_code (enum rtx_code code, machine_mode mode, bool reverse,
 	case CCAmode:
 	  suffix = "na";
 	  break;
-
 	case CCCmode:
 	  suffix = "nc";
 	  break;
-
 	case CCOmode:
 	  suffix = "no";
 	  break;
-
+	case CCPmode:
+	  suffix = "np";
+	  break;
 	case CCSmode:
 	  suffix = "ns";
 	  break;
-
 	default:
 	  suffix = "ne";
+	  break;
 	}
       break;
     case GT:
@@ -19765,6 +19765,7 @@ ix86_match_ccmode (rtx insn, machine_mode req_mode)
     case CCAmode:
     case CCCmode:
     case CCOmode:
+    case CCPmode:
     case CCSmode:
       if (set_mode != req_mode)
 	return false;
@@ -19913,6 +19914,7 @@ ix86_cc_modes_compatible (machine_mode m1, machine_mode m2)
     case CCAmode:
     case CCCmode:
     case CCOmode:
+    case CCPmode:
     case CCSmode:
     case CCZmode:
       switch (m2)
@@ -19927,6 +19929,7 @@ ix86_cc_modes_compatible (machine_mode m1, machine_mode m2)
 	case CCAmode:
 	case CCCmode:
 	case CCOmode:
+	case CCPmode:
 	case CCSmode:
 	case CCZmode:
 	  return CCmode;
