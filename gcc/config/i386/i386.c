@@ -51617,7 +51617,7 @@ ix86_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
   for (i = 0; i < loop->num_nodes; i++)
     FOR_BB_INSNS (bbs[i], insn)
       if (NONDEBUG_INSN_P (insn))
-	FOR_EACH_SUBRTX (iter, array, insn, NONCONST)
+	FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
 	  if (const_rtx x = *iter)
 	    if (MEM_P (x))
 	      {

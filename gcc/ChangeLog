@@ -1,3 +1,8 @@
+2015-05-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_loop_unroll_adjust): Use PATTERN (insn)
+	when looking for memory references.
+
 2015-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/65780
