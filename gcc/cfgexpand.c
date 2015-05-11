@@ -2438,14 +2438,12 @@ n_occurrences (int c, const char *s)
    the same number of alternatives.  Return true if so.  */
 
 static bool
-check_operand_nalternatives (tree outputs, tree inputs)
+check_operand_nalternatives (const vec<const char *> &constraints)
 {
-  if (outputs || inputs)
+  unsigned len = constraints.length();
+  if (len > 0)
     {
-      tree tmp = TREE_PURPOSE (outputs ? outputs : inputs);
-      int nalternatives
-	= n_occurrences (',', TREE_STRING_POINTER (TREE_VALUE (tmp)));
-      tree next = inputs;
+      int nalternatives = n_occurrences (',', constraints[0]);
 
       if (nalternatives + 1 > MAX_RECOG_ALTERNATIVES)
 	{
@@ -2453,26 +2451,14 @@ check_operand_nalternatives (tree outputs, tree inputs)
 	  return false;
 	}
 
-      tmp = outputs;
-      while (tmp)
-	{
-	  const char *constraint
-	    = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (tmp)));
-
-	  if (n_occurrences (',', constraint) != nalternatives)
-	    {
-	      error ("operand constraints for %<asm%> differ "
-		     "in number of alternatives");
-	      return false;
-	    }
-
-	  if (TREE_CHAIN (tmp))
-	    tmp = TREE_CHAIN (tmp);
-	  else
-	    tmp = next, next = 0;
-	}
+      for (unsigned i = 1; i < len; ++i)
+	if (n_occurrences (',', constraints[i]) != nalternatives)
+	  {
+	    error ("operand constraints for %<asm%> differ "
+		   "in number of alternatives");
+	    return false;
+	  }
     }
-
   return true;
 }
 
@@ -2524,155 +2510,144 @@ tree_conflicts_with_clobbers_p (tree t, HARD_REG_SET *clobbered_regs)
 static void
 expand_asm_stmt (gasm *stmt)
 {
-  int noutputs, ninputs, nclobbers, nlabels, i;
-  tree string, outputs, inputs, clobbers, labels, tail, t;
-  location_t locus = gimple_location (stmt);
-  basic_block fallthru_bb = NULL;
-
-  /* Meh... convert the gimple asm operands into real tree lists.
-     Eventually we should make all routines work on the vectors instead
-     of relying on TREE_CHAIN.  */
-  outputs = NULL_TREE;
-  noutputs = gimple_asm_noutputs (stmt);
-  if (noutputs > 0)
-    {
-      t = outputs = gimple_asm_output_op (stmt, 0);
-      for (i = 1; i < noutputs; i++)
-	t = TREE_CHAIN (t) = gimple_asm_output_op (stmt, i);
-    }
-
-  inputs = NULL_TREE;
-  ninputs = gimple_asm_ninputs (stmt);
-  if (ninputs > 0)
-    {
-      t = inputs = gimple_asm_input_op (stmt, 0);
-      for (i = 1; i < ninputs; i++)
-	t = TREE_CHAIN (t) = gimple_asm_input_op (stmt, i);
-    }
-
-  clobbers = NULL_TREE;
-  nclobbers = gimple_asm_nclobbers (stmt);
-  if (nclobbers > 0)
-    {
-      t = clobbers = gimple_asm_clobber_op (stmt, 0);
-      for (i = 1; i < nclobbers; i++)
-	t = TREE_CHAIN (t) = gimple_asm_clobber_op (stmt, i);
-    }
-
-  labels = NULL_TREE;
-  nlabels = gimple_asm_nlabels (stmt);
-  if (nlabels > 0)
-    {
-      edge fallthru = find_fallthru_edge (gimple_bb (stmt)->succs);
-      if (fallthru)
-	fallthru_bb = fallthru->dest;
-      t = labels = gimple_asm_label_op (stmt, 0);
-      for (i = 1; i < nlabels; i++)
-	t = TREE_CHAIN (t) = gimple_asm_label_op (stmt, i);
-    }
-
+  class save_input_location
   {
-    const char *s = gimple_asm_string (stmt);
-    string = build_string (strlen (s), s);
-  }
+    location_t old;
+
+  public:
+    explicit save_input_location(location_t where)
+    {
+      old = input_location;
+      input_location = where;
+    }
+
+    ~save_input_location()
+    {
+      input_location = old;
+    }
+  };
+
+  location_t locus = gimple_location (stmt);
 
   if (gimple_asm_input_p (stmt))
     {
+      const char *s = gimple_asm_string (stmt);
+      tree string = build_string (strlen (s), s);
       expand_asm_loc (string, gimple_asm_volatile_p (stmt), locus);
       return;
     }
 
-  /* Record the contents of OUTPUTS before it is modified.  */
-  tree *orig_outputs = XALLOCAVEC (tree, noutputs);
+  /* There are some legacy diagnostics in here, and also avoids a
+     sixth parameger to targetm.md_asm_adjust.  */
+  save_input_location s_i_l(locus);
+
+  unsigned noutputs = gimple_asm_noutputs (stmt);
+  unsigned ninputs = gimple_asm_ninputs (stmt);
+  unsigned nlabels = gimple_asm_nlabels (stmt);
+  unsigned i;
+
+  /* ??? Diagnose during gimplification?  */
+  if (ninputs + noutputs + nlabels > MAX_RECOG_OPERANDS)
+    {
+      error ("more than %d operands in %<asm%>", MAX_RECOG_OPERANDS);
+      return;
+    }
+
+  auto_vec<tree, MAX_RECOG_OPERANDS> output_tvec;
+  auto_vec<tree, MAX_RECOG_OPERANDS> input_tvec;
+  auto_vec<const char *, MAX_RECOG_OPERANDS> constraints;
+
+  /* Copy the gimple vectors into new vectors that we can manipulate.  */
+
+  output_tvec.safe_grow (noutputs);
+  input_tvec.safe_grow (ninputs);
+  constraints.safe_grow (noutputs + ninputs);
+
   for (i = 0; i < noutputs; ++i)
-    orig_outputs[i] = TREE_VALUE (gimple_asm_output_op (stmt, i));
+    {
+      tree t = gimple_asm_output_op (stmt, i);
+      output_tvec[i] = TREE_VALUE (t);
+      constraints[i] = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
+    }
+  for (i = 0; i < ninputs; i++)
+    {
+      tree t = gimple_asm_input_op (stmt, i);
+      input_tvec[i] = TREE_VALUE (t);
+      constraints[i + noutputs]
+	= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
+    }
 
-  rtvec argvec, constraintvec, labelvec;
-  rtx body;
-  int ninout;
-  HARD_REG_SET clobbered_regs;
-  int clobber_conflict_found = 0;
-  /* Vector of RTX's of evaluated output operands.  */
-  rtx *output_rtx = XALLOCAVEC (rtx, noutputs);
-  int *inout_opnum = XALLOCAVEC (int, noutputs);
-  rtx *real_output_rtx = XALLOCAVEC (rtx, noutputs);
-  machine_mode *inout_mode = XALLOCAVEC (machine_mode, noutputs);
-  const char **constraints = XALLOCAVEC (const char *, noutputs + ninputs);
-  int old_generating_concat_p = generating_concat_p;
-  rtx_code_label *fallthru_label = NULL;
-
-  if (! check_operand_nalternatives (outputs, inputs))
+  /* ??? Diagnose during gimplification?  */
+  if (! check_operand_nalternatives (constraints))
     return;
-
-  /* Collect constraints.  */
-  i = 0;
-  for (t = outputs; t ; t = TREE_CHAIN (t), i++)
-    constraints[i] = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
-  for (t = inputs; t ; t = TREE_CHAIN (t), i++)
-    constraints[i] = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
-
-  /* Sometimes we wish to automatically clobber registers across an asm.
-     Case in point is when the i386 backend moved from cc0 to a hard reg --
-     maintaining source-level compatibility means automatically clobbering
-     the flags register.  */
-  clobbers = targetm.md_asm_clobbers (outputs, inputs, clobbers);
 
   /* Count the number of meaningful clobbered registers, ignoring what
      we would ignore later.  */
-  nclobbers = 0;
+  auto_vec<rtx> clobber_rvec;
+  HARD_REG_SET clobbered_regs;
   CLEAR_HARD_REG_SET (clobbered_regs);
-  for (tail = clobbers; tail; tail = TREE_CHAIN (tail))
+
+  if (unsigned n = gimple_asm_nclobbers (stmt))
     {
-      const char *regname;
-      int nregs;
+      clobber_rvec.reserve (n);
+      for (i = 0; i < n; i++)
+	{
+	  tree t = gimple_asm_clobber_op (stmt, i);
+          const char *regname = TREE_STRING_POINTER (TREE_VALUE (t));
+	  int nregs, j;
 
-      if (TREE_VALUE (tail) == error_mark_node)
-	return;
-      regname = TREE_STRING_POINTER (TREE_VALUE (tail));
-
-      i = decode_reg_name_and_count (regname, &nregs);
-      if (i == -4)
-	++nclobbers;
-      else if (i == -2)
-	error ("unknown register name %qs in %<asm%>", regname);
-
-      /* Mark clobbered registers.  */
-      if (i >= 0)
-        {
-	  int reg;
-
-	  for (reg = i; reg < i + nregs; reg++)
+	  j = decode_reg_name_and_count (regname, &nregs);
+	  if (j < 0)
 	    {
-	      ++nclobbers;
-
-	      /* Clobbering the PIC register is an error.  */
-	      if (reg == (int) PIC_OFFSET_TABLE_REGNUM)
+	      if (j == -2)
 		{
-		  error ("PIC register clobbered by %qs in %<asm%>", regname);
-		  return;
+		  /* ??? Diagnose during gimplification?  */
+		  error ("unknown register name %qs in %<asm%>", regname);
 		}
-
-	      SET_HARD_REG_BIT (clobbered_regs, reg);
+	      else if (j == -4)
+		{
+		  rtx x = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode));
+		  clobber_rvec.safe_push (x);
+		}
+	      else
+		{
+		  /* Otherwise we should have -1 == empty string
+		     or -3 == cc, which is not a register.  */
+		  gcc_assert (j == -1 || j == -3);
+		}
 	    }
+	  else
+	    for (int reg = j; reg < j + nregs; reg++)
+	      {
+		/* Clobbering the PIC register is an error.  */
+		if (reg == (int) PIC_OFFSET_TABLE_REGNUM)
+		  {
+		    /* ??? Diagnose during gimplification?  */
+		    error ("PIC register clobbered by %qs in %<asm%>",
+			   regname);
+		    return;
+		  }
+
+	        SET_HARD_REG_BIT (clobbered_regs, reg);
+	        rtx x = gen_rtx_REG (reg_raw_mode[reg], reg);
+		clobber_rvec.safe_push (x);
+	      }
 	}
     }
+  unsigned nclobbers = clobber_rvec.length();
 
   /* First pass over inputs and outputs checks validity and sets
      mark_addressable if needed.  */
+  /* ??? Diagnose during gimplification?  */
 
-  ninout = 0;
-  for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
+  for (i = 0; i < noutputs; ++i)
     {
-      tree val = TREE_VALUE (tail);
+      tree val = output_tvec[i];
       tree type = TREE_TYPE (val);
       const char *constraint;
       bool is_inout;
       bool allows_reg;
       bool allows_mem;
-
-      /* If there's an erroneous arg, emit no insn.  */
-      if (type == error_mark_node)
-	return;
 
       /* Try to parse the output constraint.  If that fails, there's
 	 no point in going further.  */
@@ -2688,35 +2663,21 @@ expand_asm_stmt (gasm *stmt)
 		  && REG_P (DECL_RTL (val))
 		  && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type))))
 	mark_addressable (val);
-
-      if (is_inout)
-	ninout++;
     }
 
-  ninputs += ninout;
-  if (ninputs + noutputs + nlabels > MAX_RECOG_OPERANDS)
-    {
-      error ("more than %d operands in %<asm%>", MAX_RECOG_OPERANDS);
-      return;
-    }
-
-  for (i = 0, tail = inputs; tail; i++, tail = TREE_CHAIN (tail))
+  for (i = 0; i < ninputs; ++i)
     {
       bool allows_reg, allows_mem;
       const char *constraint;
 
-      /* If there's an erroneous arg, emit no insn, because the ASM_INPUT
-	 would get VOIDmode and that could cause a crash in reload.  */
-      if (TREE_TYPE (TREE_VALUE (tail)) == error_mark_node)
-	return;
-
       constraint = constraints[i + noutputs];
-      if (! parse_input_constraint (&constraint, i, ninputs, noutputs, ninout,
-				    constraints, &allows_mem, &allows_reg))
+      if (! parse_input_constraint (&constraint, i, ninputs, noutputs, 0,
+				    constraints.address (),
+				    &allows_mem, &allows_reg))
 	return;
 
       if (! allows_reg && allows_mem)
-	mark_addressable (TREE_VALUE (tail));
+	mark_addressable (input_tvec[i]);
     }
 
   /* Second pass evaluates arguments.  */
@@ -2724,17 +2685,21 @@ expand_asm_stmt (gasm *stmt)
   /* Make sure stack is consistent for asm goto.  */
   if (nlabels > 0)
     do_pending_stack_adjust ();
+  int old_generating_concat_p = generating_concat_p;
 
-  ninout = 0;
-  for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
+  /* Vector of RTX's of evaluated output operands.  */
+  auto_vec<rtx, MAX_RECOG_OPERANDS> output_rvec;
+  auto_vec<int, MAX_RECOG_OPERANDS> inout_opnum;
+  rtx_insn *after_rtl_seq = NULL, *after_rtl_end = NULL;
+
+  output_rvec.safe_grow (noutputs);
+
+  for (i = 0; i < noutputs; ++i)
     {
-      tree val = TREE_VALUE (tail);
+      tree val = output_tvec[i];
       tree type = TREE_TYPE (val);
-      bool is_inout;
-      bool allows_reg;
-      bool allows_mem;
+      bool is_inout, allows_reg, allows_mem, ok;
       rtx op;
-      bool ok;
 
       ok = parse_output_constraint (&constraints[i], i, ninputs,
 				    noutputs, &allows_mem, &allows_reg,
@@ -2743,12 +2708,11 @@ expand_asm_stmt (gasm *stmt)
 
       /* If an output operand is not a decl or indirect ref and our constraint
 	 allows a register, make a temporary to act as an intermediate.
-	 Make the asm insn write into that, then our caller will copy it to
+	 Make the asm insn write into that, then we will copy it to
 	 the real output operand.  Likewise for promoted variables.  */
 
       generating_concat_p = 0;
 
-      real_output_rtx[i] = NULL_RTX;
       if ((TREE_CODE (val) == INDIRECT_REF
 	   && allows_mem)
 	  || (DECL_P (val)
@@ -2768,69 +2732,64 @@ expand_asm_stmt (gasm *stmt)
 	  if ((! allows_mem && MEM_P (op))
 	      || GET_CODE (op) == CONCAT)
 	    {
-	      real_output_rtx[i] = op;
+	      rtx old_op = op;
 	      op = gen_reg_rtx (GET_MODE (op));
+
+	      generating_concat_p = old_generating_concat_p;
+
 	      if (is_inout)
-		emit_move_insn (op, real_output_rtx[i]);
+		emit_move_insn (op, old_op);
+
+	      push_to_sequence2 (after_rtl_seq, after_rtl_end);
+	      emit_move_insn (old_op, op);
+	      after_rtl_seq = get_insns ();
+	      after_rtl_end = get_last_insn ();
+	      end_sequence ();
 	    }
 	}
       else
 	{
 	  op = assign_temp (type, 0, 1);
 	  op = validize_mem (op);
-	  if (!MEM_P (op) && TREE_CODE (TREE_VALUE (tail)) == SSA_NAME)
-	    set_reg_attrs_for_decl_rtl (SSA_NAME_VAR (TREE_VALUE (tail)), op);
-	  TREE_VALUE (tail) = make_tree (type, op);
-	}
-      output_rtx[i] = op;
+	  if (!MEM_P (op) && TREE_CODE (val) == SSA_NAME)
+	    set_reg_attrs_for_decl_rtl (SSA_NAME_VAR (val), op);
 
-      generating_concat_p = old_generating_concat_p;
+	  generating_concat_p = old_generating_concat_p;
+
+	  push_to_sequence2 (after_rtl_seq, after_rtl_end);
+	  expand_assignment (val, make_tree (type, op), false);
+	  after_rtl_seq = get_insns ();
+	  after_rtl_end = get_last_insn ();
+	  end_sequence ();
+	}
+      output_rvec[i] = op;
 
       if (is_inout)
-	{
-	  inout_mode[ninout] = TYPE_MODE (type);
-	  inout_opnum[ninout++] = i;
-	}
-
-      if (tree_conflicts_with_clobbers_p (val, &clobbered_regs))
-	clobber_conflict_found = 1;
+	inout_opnum.safe_push (i);
     }
 
-  /* Make vectors for the expression-rtx, constraint strings,
-     and named operands.  */
+  auto_vec<rtx, MAX_RECOG_OPERANDS> input_rvec;
+  auto_vec<machine_mode, MAX_RECOG_OPERANDS> input_mode;
 
-  argvec = rtvec_alloc (ninputs);
-  constraintvec = rtvec_alloc (ninputs);
-  labelvec = rtvec_alloc (nlabels);
+  input_rvec.safe_grow (ninputs);
+  input_mode.safe_grow (ninputs);
 
-  body = gen_rtx_ASM_OPERANDS ((noutputs == 0 ? VOIDmode
-				: GET_MODE (output_rtx[0])),
-			       ggc_strdup (TREE_STRING_POINTER (string)),
-			       empty_string, 0, argvec, constraintvec,
-			       labelvec, locus);
+  generating_concat_p = 0;
 
-  MEM_VOLATILE_P (body) = gimple_asm_volatile_p (stmt);
-
-  /* Eval the inputs and put them into ARGVEC.
-     Put their constraints into ASM_INPUTs and store in CONSTRAINTS.  */
-
-  for (i = 0, tail = inputs; tail; tail = TREE_CHAIN (tail), ++i)
+  for (i = 0; i < ninputs; ++i)
     {
-      bool allows_reg, allows_mem;
+      tree val = input_tvec[i];
+      tree type = TREE_TYPE (val);
+      bool allows_reg, allows_mem, ok;
       const char *constraint;
-      tree val, type;
       rtx op;
-      bool ok;
 
       constraint = constraints[i + noutputs];
-      ok = parse_input_constraint (&constraint, i, ninputs, noutputs, ninout,
-				   constraints, &allows_mem, &allows_reg);
+      ok = parse_input_constraint (&constraint, i, ninputs, noutputs, 0,
+				   constraints.address (),
+				   &allows_mem, &allows_reg);
       gcc_assert (ok);
 
-      generating_concat_p = 0;
-
-      val = TREE_VALUE (tail);
-      type = TREE_TYPE (val);
       /* EXPAND_INITIALIZER will not generate code for valid initializer
 	 constants, but will still generate code for other types of operand.
 	 This is the behavior we want for constant constraints.  */
@@ -2861,60 +2820,108 @@ expand_asm_stmt (gasm *stmt)
 	  else
 	    gcc_unreachable ();
 	}
-
-      generating_concat_p = old_generating_concat_p;
-      ASM_OPERANDS_INPUT (body, i) = op;
-
-      ASM_OPERANDS_INPUT_CONSTRAINT_EXP (body, i)
-	= gen_rtx_ASM_INPUT_loc (TYPE_MODE (type),
-				 ggc_strdup (constraints[i + noutputs]),
-				 locus);
-
-      if (tree_conflicts_with_clobbers_p (val, &clobbered_regs))
-	clobber_conflict_found = 1;
+      input_rvec[i] = op;
+      input_mode[i] = TYPE_MODE (type);
     }
 
-  /* Protect all the operands from the queue now that they have all been
-     evaluated.  */
-
-  generating_concat_p = 0;
-
   /* For in-out operands, copy output rtx to input rtx.  */
+  unsigned ninout = inout_opnum.length();
   for (i = 0; i < ninout; i++)
     {
       int j = inout_opnum[i];
+      rtx o = output_rvec[j];
+
+      input_rvec.safe_push (o);
+      input_mode.safe_push (GET_MODE (o));
+
       char buffer[16];
-
-      ASM_OPERANDS_INPUT (body, ninputs - ninout + i)
-	= output_rtx[j];
-
       sprintf (buffer, "%d", j);
-      ASM_OPERANDS_INPUT_CONSTRAINT_EXP (body, ninputs - ninout + i)
-	= gen_rtx_ASM_INPUT_loc (inout_mode[i], ggc_strdup (buffer), locus);
+      constraints.safe_push (ggc_strdup (buffer));
+    }
+  ninputs += ninout;
+
+  /* Sometimes we wish to automatically clobber registers across an asm.
+     Case in point is when the i386 backend moved from cc0 to a hard reg --
+     maintaining source-level compatibility means automatically clobbering
+     the flags register.  */
+  rtx_insn *after_md_seq = NULL;
+  if (targetm.md_asm_adjust)
+    after_md_seq = targetm.md_asm_adjust (output_rvec, input_rvec,
+					  constraints, clobber_rvec,
+					  clobbered_regs);
+
+  /* Do not allow the hook to change the output and input count,
+     lest it mess up the operand numbering.  */
+  gcc_assert (output_rvec.length() == noutputs);
+  gcc_assert (input_rvec.length() == ninputs);
+  gcc_assert (constraints.length() == noutputs + ninputs);
+
+  /* But it certainly can adjust the clobbers.  */
+  nclobbers = clobber_rvec.length();
+
+  /* Third pass checks for easy conflicts.  */
+  /* ??? Why are we doing this on trees instead of rtx.  */
+
+  bool clobber_conflict_found = 0;
+  for (i = 0; i < noutputs; ++i)
+    if (tree_conflicts_with_clobbers_p (output_tvec[i], &clobbered_regs))
+	clobber_conflict_found = 1;
+  for (i = 0; i < ninputs - ninout; ++i)
+    if (tree_conflicts_with_clobbers_p (input_tvec[i], &clobbered_regs))
+	clobber_conflict_found = 1;
+
+  /* Make vectors for the expression-rtx, constraint strings,
+     and named operands.  */
+
+  rtvec argvec = rtvec_alloc (ninputs);
+  rtvec constraintvec = rtvec_alloc (ninputs);
+  rtvec labelvec = rtvec_alloc (nlabels);
+
+  rtx body = gen_rtx_ASM_OPERANDS ((noutputs == 0 ? VOIDmode
+				    : GET_MODE (output_rvec[0])),
+				   ggc_strdup (gimple_asm_string (stmt)),
+				   empty_string, 0, argvec, constraintvec,
+				   labelvec, locus);
+  MEM_VOLATILE_P (body) = gimple_asm_volatile_p (stmt);
+
+  for (i = 0; i < ninputs; ++i)
+    {
+      ASM_OPERANDS_INPUT (body, i) = input_rvec[i];
+      ASM_OPERANDS_INPUT_CONSTRAINT_EXP (body, i)
+	= gen_rtx_ASM_INPUT_loc (input_mode[i],
+				 constraints[i + noutputs],
+				 locus);
     }
 
   /* Copy labels to the vector.  */
-  for (i = 0, tail = labels; i < nlabels; ++i, tail = TREE_CHAIN (tail))
+  rtx_code_label *fallthru_label = NULL;
+  if (nlabels > 0)
     {
-      rtx r;
-      /* If asm goto has any labels in the fallthru basic block, use
-	 a label that we emit immediately after the asm goto.  Expansion
-	 may insert further instructions into the same basic block after
-	 asm goto and if we don't do this, insertion of instructions on
-	 the fallthru edge might misbehave.  See PR58670.  */
-      if (fallthru_bb
-	  && label_to_block_fn (cfun, TREE_VALUE (tail)) == fallthru_bb)
-	{
-	  if (fallthru_label == NULL_RTX)
-	    fallthru_label = gen_label_rtx ();
-	  r = fallthru_label;
-	}
-      else
-	r = label_rtx (TREE_VALUE (tail));
-      ASM_OPERANDS_LABEL (body, i) = gen_rtx_LABEL_REF (Pmode, r);
-    }
+      basic_block fallthru_bb = NULL;
+      edge fallthru = find_fallthru_edge (gimple_bb (stmt)->succs);
+      if (fallthru)
+	fallthru_bb = fallthru->dest;
 
-  generating_concat_p = old_generating_concat_p;
+      for (i = 0; i < nlabels; ++i)
+	{
+	  tree label = TREE_VALUE (gimple_asm_label_op (stmt, i));
+	  rtx r;
+	  /* If asm goto has any labels in the fallthru basic block, use
+	     a label that we emit immediately after the asm goto.  Expansion
+	     may insert further instructions into the same basic block after
+	     asm goto and if we don't do this, insertion of instructions on
+	     the fallthru edge might misbehave.  See PR58670.  */
+	  if (fallthru_bb && label_to_block_fn (cfun, label) == fallthru_bb)
+	    {
+	      if (fallthru_label == NULL_RTX)
+	        fallthru_label = gen_label_rtx ();
+	      r = fallthru_label;
+	    }
+	  else
+	    r = label_rtx (label);
+	  ASM_OPERANDS_LABEL (body, i) = gen_rtx_LABEL_REF (Pmode, r);
+	}
+    }
 
   /* Now, for each output, construct an rtx
      (set OUTPUT (asm_operands INSN OUTPUTCONSTRAINT OUTPUTNUMBER
@@ -2933,8 +2940,8 @@ expand_asm_stmt (gasm *stmt)
     }
   else if (noutputs == 1 && nclobbers == 0)
     {
-      ASM_OPERANDS_OUTPUT_CONSTRAINT (body) = ggc_strdup (constraints[0]);
-      emit_insn (gen_rtx_SET (output_rtx[0], body));
+      ASM_OPERANDS_OUTPUT_CONSTRAINT (body) = constraints[0];
+      emit_insn (gen_rtx_SET (output_rvec[0], body));
     }
   else
     {
@@ -2947,87 +2954,52 @@ expand_asm_stmt (gasm *stmt)
       body = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (num + nclobbers));
 
       /* For each output operand, store a SET.  */
-      for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
+      for (i = 0; i < noutputs; ++i)
 	{
-	  XVECEXP (body, 0, i)
-	    = gen_rtx_SET (output_rtx[i],
-			   gen_rtx_ASM_OPERANDS
-			   (GET_MODE (output_rtx[i]),
-			    ggc_strdup (TREE_STRING_POINTER (string)),
-			    ggc_strdup (constraints[i]),
-			    i, argvec, constraintvec, labelvec, locus));
-
-	  MEM_VOLATILE_P (SET_SRC (XVECEXP (body, 0, i)))
-	    = gimple_asm_volatile_p (stmt);
+	  rtx src, o = output_rvec[i];
+	  if (i == 0)
+	    {
+	      ASM_OPERANDS_OUTPUT_CONSTRAINT (obody) = constraints[0];
+	      src = obody;
+	    }
+	  else
+	    {
+	      src = gen_rtx_ASM_OPERANDS (GET_MODE (o),
+					  ASM_OPERANDS_TEMPLATE (obody),
+					  constraints[i], i, argvec,
+					  constraintvec, labelvec, locus);
+	      MEM_VOLATILE_P (src) = gimple_asm_volatile_p (stmt);
+	    }
+	  XVECEXP (body, 0, i) = gen_rtx_SET (o, src);
 	}
 
       /* If there are no outputs (but there are some clobbers)
 	 store the bare ASM_OPERANDS into the PARALLEL.  */
-
       if (i == 0)
 	XVECEXP (body, 0, i++) = obody;
 
       /* Store (clobber REG) for each clobbered register specified.  */
-
-      for (tail = clobbers; tail; tail = TREE_CHAIN (tail))
+      for (unsigned j = 0; j < nclobbers; ++j)
 	{
-	  const char *regname = TREE_STRING_POINTER (TREE_VALUE (tail));
-	  int reg, nregs;
-	  int j = decode_reg_name_and_count (regname, &nregs);
-	  rtx clobbered_reg;
+	  rtx clobbered_reg = clobber_rvec[j];
 
-	  if (j < 0)
+	  /* Do sanity check for overlap between clobbers and respectively
+	     input and outputs that hasn't been handled.  Such overlap
+	     should have been detected and reported above.  */
+	  if (!clobber_conflict_found && REG_P (clobbered_reg))
 	    {
-	      if (j == -3)	/* `cc', which is not a register */
-		continue;
+	      /* We test the old body (obody) contents to avoid
+		 tripping over the under-construction body.  */
+	      for (unsigned k = 0; k < noutputs; ++k)
+		if (reg_overlap_mentioned_p (clobbered_reg, output_rvec[k]))
+		  internal_error ("asm clobber conflict with output operand");
 
-	      if (j == -4)	/* `memory', don't cache memory across asm */
-		{
-		  XVECEXP (body, 0, i++)
-		    = gen_rtx_CLOBBER (VOIDmode,
-				       gen_rtx_MEM
-				       (BLKmode,
-					gen_rtx_SCRATCH (VOIDmode)));
-		  continue;
-		}
-
-	      /* Ignore unknown register, error already signaled.  */
-	      continue;
+	      for (unsigned k = 0; k < ninputs - ninout; ++k)
+		if (reg_overlap_mentioned_p (clobbered_reg, input_rvec[k]))
+		  internal_error ("asm clobber conflict with input operand");
 	    }
 
-	  for (reg = j; reg < j + nregs; reg++)
-	    {
-	      /* Use QImode since that's guaranteed to clobber just
-	       * one reg.  */
-	      clobbered_reg = gen_rtx_REG (QImode, reg);
-
-	      /* Do sanity check for overlap between clobbers and
-		 respectively input and outputs that hasn't been
-		 handled.  Such overlap should have been detected and
-		 reported above.  */
-	      if (!clobber_conflict_found)
-		{
-		  int opno;
-
-		  /* We test the old body (obody) contents to avoid
-		     tripping over the under-construction body.  */
-		  for (opno = 0; opno < noutputs; opno++)
-		    if (reg_overlap_mentioned_p (clobbered_reg,
-						 output_rtx[opno]))
-		      internal_error
-			("asm clobber conflict with output operand");
-
-		  for (opno = 0; opno < ninputs - ninout; opno++)
-		    if (reg_overlap_mentioned_p (clobbered_reg,
-						 ASM_OPERANDS_INPUT (obody,
-								     opno)))
-		      internal_error
-			("asm clobber conflict with input operand");
-		}
-
-	      XVECEXP (body, 0, i++)
-		= gen_rtx_CLOBBER (VOIDmode, clobbered_reg);
-	    }
+	  XVECEXP (body, 0, i++) = gen_rtx_CLOBBER (VOIDmode, clobbered_reg);
 	}
 
       if (nlabels > 0)
@@ -3036,31 +3008,18 @@ expand_asm_stmt (gasm *stmt)
 	emit_insn (body);
     }
 
+  generating_concat_p = old_generating_concat_p;
+
   if (fallthru_label)
     emit_label (fallthru_label);
 
-  /* For any outputs that needed reloading into registers, spill them
-     back to where they belong.  */
-  for (i = 0; i < noutputs; ++i)
-    if (real_output_rtx[i])
-      emit_move_insn (real_output_rtx[i], output_rtx[i]);
+  if (after_md_seq)
+    emit_insn (after_md_seq);
+  if (after_rtl_seq)
+    emit_insn (after_rtl_seq);
 
-  /* Copy all the intermediate outputs into the specified outputs.  */
-  for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
-    {
-      if (orig_outputs[i] != TREE_VALUE (tail))
-	{
-	  expand_assignment (orig_outputs[i], TREE_VALUE (tail), false);
-	  free_temp_slots ();
-
-	  /* Restore the original value so that it's correct the next
-	     time we expand this function.  */
-	  TREE_VALUE (tail) = orig_outputs[i];
-	}
-    }
-
-  crtl->has_asm_statement = 1;
   free_temp_slots ();
+  crtl->has_asm_statement = 1;
 }
 
 /* Emit code to jump to the address

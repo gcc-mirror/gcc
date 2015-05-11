@@ -378,14 +378,6 @@ hook_uint_mode_0 (machine_mode m ATTRIBUTE_UNUSED)
   return 0;
 }
 
-/* Generic hook that takes three trees and returns the last one as is.  */
-tree
-hook_tree_tree_tree_tree_3rd_identity (tree a ATTRIBUTE_UNUSED,
-				       tree b ATTRIBUTE_UNUSED, tree c)
-{
-  return c;
-}
-
 /* Generic hook that takes no arguments and returns a NULL const string.  */
 const char *
 hook_constcharptr_void_null (void)
