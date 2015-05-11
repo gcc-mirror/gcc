@@ -1,3 +1,16 @@
+2015-05-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* dwarf2out.c (gen_member_die): Sanity check that we access
+	TYPE_MAIN_VARIANT for TYPE_METHODS.
+	* function.c (use_register_for_decl): Look for TYPE_MAIN_VARIANT when
+	checking TYPE_METHODS.
+	* tree.c (free_lang_data_in_type): See TYPE_METHODS to error_mark_node
+	if non-null.
+	(build_distinct_type_copy): Clear TYPE_METHODS.
+	(verify_type_variant): Verify that TYPE_METHODS is NULL for variants.
+	(verify_type): Allow TYPE_METHODS to be error_mark_node.
+	* tree.def: Update docs of TYPE_STUB_DECL and TYPE_METHODS.
+
 2015-05-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* emit-rtl.c (emit_pattern_after_setloc): Add missing guard.

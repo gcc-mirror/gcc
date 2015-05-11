@@ -2170,7 +2170,7 @@ use_register_for_decl (const_tree decl)
       /* When not optimizing, disregard register keyword for variables with
 	 types containing methods, otherwise the methods won't be callable
 	 from the debugger.  */
-      if (TYPE_METHODS (TREE_TYPE (decl)))
+      if (TYPE_METHODS (TYPE_MAIN_VARIANT (TREE_TYPE (decl))))
 	return false;
       break;
     default:

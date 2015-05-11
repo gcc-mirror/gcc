@@ -1,3 +1,10 @@
+2015-05-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* class.c (fixup_type_variants): Do not copy TYPE_METHODS
+	(one_inheriting_sig): Assert tat we always set TYPE_METHODS of main variant.
+	* semantics.c (finish_member_declaration): Likewise.
+	* method.c (lazily_declare_fn): Allways add method to main variant list.
+
 2015-05-09  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR bootstrap/66085
