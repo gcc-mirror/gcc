@@ -1,3 +1,10 @@
+2015-05-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genrecog.c (match_pattern_1): Expect the pattern to be a SEQUENCE
+	for define_peephole2s.
+	(get_peephole2_pattern): New function.
+	(main): Use it.  Call validate_pattern.
+
 2015-05-11  Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
 
 	* config/avr/avr.c (avr_hard_regno_call_part_clobbered): Use
