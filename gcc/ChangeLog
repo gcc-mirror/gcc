@@ -1,3 +1,20 @@
+2015-05-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_emit_set_const_1)
+	(alpha_emit_set_long_const, alpha_extract_integer)
+	(alpha_legitimate_constant_p, alpha_split_const_mov)
+	(alpha_expand_block_clear, alpha_expand_zap_mask, print_operand):
+	[HOST_BITS_PER_WIDE_INT < 64]: Remove dead code.
+	(alpha_emit_set_const_1): Change "(HOST_WIDE_INT) 1" to
+	HOST_WIDE_INT_1U.
+	* config/alpha/predicates.md (mode_mask_operand): Do not match
+	const_double RTX.
+	[HOST_BITS_PER_WIDE_INT < 64]: Remove dead code.
+	* config/alpha/alpha.md (abstf, *abstf_internal, UNSPEC_ZAP splitter):
+	Change "(HOST_WIDE_INT) 1" to HOST_WIDE_INT_1U.
+	[HOST_BITS_PER_WIDE_INT < 64]: Remove dead code.
+	(*negtf_internal): Use gen_int_mode instead of immed_double_const.
+
 2015-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/65780
