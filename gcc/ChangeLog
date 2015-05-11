@@ -1,5 +1,14 @@
 2015-05-11  Christian Bruel  <christian.bruel@st.com>
 
+	* config/arm/arm-protos.h (arm_declare_function_name): Declare.
+	(is_called_in_ARM_mode): Remove.
+	* config/arm/arm.c (is_called_in_ARM_mode): Declare static bool.
+	(arm_declare_function_name): Moved from from ARM_DECLARE_FUNCTION_NAME.
+	* config/arm/arm.h (ARM_DECLARE_FUNCTION_NAME): Call
+	 arm_declare_function_name.
+
+2015-05-11  Christian Bruel  <christian.bruel@st.com>
+
 	* config/arm/arm.c (arm_option_override): Reoganized and split into :
 	(arm_option_params_internal); New function.
 	(arm_option_check_internal): New function.
