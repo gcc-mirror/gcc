@@ -1,3 +1,9 @@
+2015-05-11  Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
+
+	* config/avr/avr.c (avr_hard_regno_call_part_clobbered): Use
+	LAST_CALLEE_SAVED_REG instead of hard-coded register number.
+	(Last callee saved reg is different for AVR_TINY architecture)
+
 2015-05-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_loop_unroll_adjust): Use PATTERN (insn)
