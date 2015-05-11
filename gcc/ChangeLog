@@ -1,5 +1,9 @@
 2015-05-09  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree.c (verify_type_variant): Check TYPE_VALUES_RAW and TYPE_PRECISION
+
+2015-05-09  Jan Hubicka  <hubicka@ucw.cz>
+
 	Patch by Richard Biener
 	* coverage.c (coverage_obj_init): Delay building of type variant
 	until the type is finished.
