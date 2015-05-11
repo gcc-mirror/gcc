@@ -4080,14 +4080,14 @@ match_pattern_2 (state *s, rtx top_pattern, position *pos, rtx pattern)
    (2) the rtx matches TOP_PATTERN and
    (3) C_TEST is true.
 
-   For peephole2, TOP_PATTERN is the DEFINE_PEEPHOLE2 itself, otherwise
-   it is the rtx pattern to match (PARALLEL, SET, etc.).  */
+   For peephole2, TOP_PATTERN is a SEQUENCE of the instruction patterns
+   to match, otherwise it is a single instruction pattern.  */
 
 static void
 match_pattern_1 (state *s, rtx top_pattern, const char *c_test,
 		 acceptance_type acceptance)
 {
-  if (GET_CODE (top_pattern) == DEFINE_PEEPHOLE2)
+  if (acceptance.type == PEEPHOLE2)
     {
       /* Match each individual instruction.  */
       position **subpos_ptr = &peep2_insn_pos_list;
@@ -4095,18 +4095,14 @@ match_pattern_1 (state *s, rtx top_pattern, const char *c_test,
       for (int i = 0; i < XVECLEN (top_pattern, 0); ++i)
 	{
 	  rtx x = XVECEXP (top_pattern, 0, i);
-	  /* Ignore scratch register requirements.  */
-	  if (GET_CODE (x) != MATCH_SCRATCH && GET_CODE (x) != MATCH_DUP)
-	    {
-	      position *subpos = next_position (subpos_ptr, &root_pos,
-						POS_PEEP2_INSN, count);
-	      if (count > 0)
-		s = add_decision (s, rtx_test::peep2_count (count + 1),
-				  true, false);
-	      s = match_pattern_2 (s, top_pattern, subpos, x);
-	      subpos_ptr = &subpos->next;
-	      count += 1;
-	    }
+	  position *subpos = next_position (subpos_ptr, &root_pos,
+					    POS_PEEP2_INSN, count);
+	  if (count > 0)
+	    s = add_decision (s, rtx_test::peep2_count (count + 1),
+			      true, false);
+	  s = match_pattern_2 (s, top_pattern, subpos, x);
+	  subpos_ptr = &subpos->next;
+	  count += 1;
 	}
       acceptance.u.full.u.match_len = count - 1;
     }
@@ -5165,6 +5161,30 @@ add_implicit_parallel (rtvec vec)
     }
 }
 
+/* Return the rtx pattern for the list of rtxes in a define_peephole2.  */
+
+static rtx
+get_peephole2_pattern (rtvec vec)
+{
+  int i, j;
+  rtx pattern = rtx_alloc (SEQUENCE);
+  XVEC (pattern, 0) = rtvec_alloc (GET_NUM_ELEM (vec));
+  for (i = j = 0; i < GET_NUM_ELEM (vec); i++)
+    {
+      rtx x = RTVEC_ELT (vec, i);
+      /* Ignore scratch register requirements.  */
+      if (GET_CODE (x) != MATCH_SCRATCH && GET_CODE (x) != MATCH_DUP)
+	{
+	  XVECEXP (pattern, 0, j) = x;
+	  j++;
+	}
+    }
+  XVECLEN (pattern, 0) = j;
+  if (j == 0)
+    error_with_line (pattern_lineno, "empty define_peephole2");
+  return pattern;
+}
+
 /* Return true if *PATTERN_PTR is a PARALLEL in which at least one trailing
    rtx can be added automatically by add_clobbers.  If so, update
    *ACCEPTANCE_PTR so that its num_clobbers field contains the number
@@ -5231,20 +5251,20 @@ main (int argc, char **argv)
       if (desc == NULL)
 	break;
 
-      rtx pattern;
-
       acceptance_type acceptance;
       acceptance.partial_p = false;
       acceptance.u.full.code = next_insn_code;
 
+      rtx pattern;
       switch (GET_CODE (desc))
 	{
 	case DEFINE_INSN:
 	  {
 	    /* Match the instruction in the original .md form.  */
-	    pattern = add_implicit_parallel (XVEC (desc, 1));
 	    acceptance.type = RECOG;
 	    acceptance.u.full.u.num_clobbers = 0;
+	    pattern = add_implicit_parallel (XVEC (desc, 1));
+	    validate_pattern (pattern, desc, NULL_RTX, 0);
 	    match_pattern (&insn_root, pattern, XSTR (desc, 2), acceptance);
 
 	    /* If the pattern is a PARALLEL with trailing CLOBBERs,
@@ -5258,6 +5278,7 @@ main (int argc, char **argv)
 	case DEFINE_SPLIT:
 	  acceptance.type = SPLIT;
 	  pattern = add_implicit_parallel (XVEC (desc, 0));
+	  validate_pattern (pattern, desc, NULL_RTX, 0);
 	  match_pattern (&split_root, pattern, XSTR (desc, 1), acceptance);
 
 	  /* Declare the gen_split routine that we'll call if the
@@ -5268,7 +5289,9 @@ main (int argc, char **argv)
 
 	case DEFINE_PEEPHOLE2:
 	  acceptance.type = PEEPHOLE2;
-	  match_pattern (&peephole2_root, desc, XSTR (desc, 1), acceptance);
+	  pattern = get_peephole2_pattern (XVEC (desc, 0));
+	  validate_pattern (pattern, desc, NULL_RTX, 0);
+	  match_pattern (&peephole2_root, pattern, XSTR (desc, 1), acceptance);
 
 	  /* Declare the gen_peephole2 routine that we'll call if the
 	     pattern matches.  The definition comes from insn-emit.c.  */
