@@ -1,3 +1,11 @@
+2015-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/65780
+	* config/s390/linux.h (TARGET_BINDS_LOCAL_P): Define to
+	default_binds_local_p_2.
+	* config/arm/linux-elf.h (TARGET_BINDS_LOCAL_P): Likewise.
+	* config/aarch64/aarch64-linux.h (TARGET_BINDS_LOCAL_P): Likewise.
+
 2015-05-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66015
