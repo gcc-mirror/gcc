@@ -252,6 +252,13 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define SUBTARGET_CPP_SPEC      ""
 #endif
 
+/* Tree Target Specification.  */
+#define TREE_TARGET_THUMB(opts)  (TARGET_THUMB_P (opts->x_target_flags))
+#define TREE_TARGET_ARM(opts)    (!TARGET_THUMB_P (opts->x_target_flags))
+#define TREE_TARGET_THUMB1(opts) (TARGET_THUMB_P (opts->x_target_flags) \
+				  && !arm_arch_thumb2)
+#define TREE_TARGET_THUMB2(opts) (TARGET_THUMB_P (opts->x_target_flags) \
+				  && arm_arch_thumb2)
 /* Run-time Target Specification.  */
 #define TARGET_SOFT_FLOAT		(arm_float_abi == ARM_FLOAT_ABI_SOFT)
 /* Use hardware floating point instructions. */
@@ -527,12 +534,6 @@ extern int arm_arch8;
 
 /* Nonzero if this chip can benefit from load scheduling.  */
 extern int arm_ld_sched;
-
-/* Nonzero if generating Thumb code, either Thumb-1 or Thumb-2.  */
-extern int thumb_code;
-
-/* Nonzero if generating Thumb-1 code.  */
-extern int thumb1_code;
 
 /* Nonzero if this chip is a StrongARM.  */
 extern int arm_tune_strongarm;

@@ -1,3 +1,15 @@
+2014-09-23  Christian Bruel  <christian.bruel@st.com>
+
+	* config/arm/arm.c (arm_option_override): Reoganized and split into :
+	(arm_option_params_internal); New function.
+	(arm_option_check_internal): New function.
+	(arm_option_override_internal): New function.
+	(thumb_code, thumb1_code): Remove.
+	* config/arm/arm.h (TREE_TARGET_THUMB, TREE_TARGET_THUMB1): New macros.
+	(TREE_TARGET_THUM2, TREE_TARGET_ARM): Likewise.
+	(thumb_code, thumb1_code): Remove.
+	* config/arm/arm.md (is_thumb, is_thumb1): Check TARGET flag.
+
 2015-05-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_emit_set_const_1)
