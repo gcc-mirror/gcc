@@ -1,3 +1,9 @@
+2015-05-11  Markus Trippelsdorf  <markus@trippelsdorf.de>
+	
+	PR bootstrap/66105
+	* config/rs6000/option-defaults.h: Add space between string literal
+	and macro name.
+
 2015-05-11  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/pr64616.c: Test dump rather than assembly to work
