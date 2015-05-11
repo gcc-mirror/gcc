@@ -1,5 +1,9 @@
 2015-05-11  Richard Henderson  <rth@redhat.com>
 
+	* gimplify.c (gimplify_asm_expr): Set gimple_asm_volatile_p
+	if noutputs is zero.
+	* cfgexpand.c (expand_asm_stmt): Use gimple_asm_volatile_p unchanged.
+
 	* cfgexpand.c (expand_asm_operands): Merge into...
 	(expand_asm_stmt): ... here.
 

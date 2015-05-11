@@ -2587,8 +2587,6 @@ expand_asm_stmt (gasm *stmt)
   for (i = 0; i < noutputs; ++i)
     orig_outputs[i] = TREE_VALUE (gimple_asm_output_op (stmt, i));
 
-  bool vol = gimple_asm_volatile_p (stmt);
-
   rtvec argvec, constraintvec, labelvec;
   rtx body;
   int ninout;
@@ -2602,10 +2600,6 @@ expand_asm_stmt (gasm *stmt)
   const char **constraints = XALLOCAVEC (const char *, noutputs + ninputs);
   int old_generating_concat_p = generating_concat_p;
   rtx_code_label *fallthru_label = NULL;
-
-  /* An ASM with no outputs needs to be treated as volatile, for now.  */
-  if (noutputs == 0)
-    vol = 1;
 
   if (! check_operand_nalternatives (outputs, inputs))
     return;
@@ -2815,7 +2809,7 @@ expand_asm_stmt (gasm *stmt)
 			       empty_string, 0, argvec, constraintvec,
 			       labelvec, locus);
 
-  MEM_VOLATILE_P (body) = vol;
+  MEM_VOLATILE_P (body) = gimple_asm_volatile_p (stmt);
 
   /* Eval the inputs and put them into ARGVEC.
      Put their constraints into ASM_INPUTs and store in CONSTRAINTS.  */
@@ -2963,7 +2957,8 @@ expand_asm_stmt (gasm *stmt)
 			    ggc_strdup (constraints[i]),
 			    i, argvec, constraintvec, labelvec, locus));
 
-	  MEM_VOLATILE_P (SET_SRC (XVECEXP (body, 0, i))) = vol;
+	  MEM_VOLATILE_P (SET_SRC (XVECEXP (body, 0, i)))
+	    = gimple_asm_volatile_p (stmt);
 	}
 
       /* If there are no outputs (but there are some clobbers)
