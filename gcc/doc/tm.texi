@@ -10835,15 +10835,15 @@ from shared libraries (DLLs).
 You need not define this macro if it would always evaluate to zero.
 @end defmac
 
-@deftypefn {Target Hook} tree TARGET_MD_ASM_CLOBBERS (tree @var{outputs}, tree @var{inputs}, tree @var{clobbers})
-This target hook should add to @var{clobbers} @code{STRING_CST} trees for
-any hard regs the port wishes to automatically clobber for an asm.
-It should return the result of the last @code{tree_cons} used to add a
-clobber.  The @var{outputs}, @var{inputs} and @var{clobber} lists are the
-corresponding parameters to the asm and may be inspected to avoid
-clobbering a register that is an input or output of the asm.  You can use
-@code{tree_overlaps_hard_reg_set}, declared in @file{tree.h}, to test
-for overlap with regards to asm-declared registers.
+@deftypefn {Target Hook} {rtx_insn *} TARGET_MD_ASM_ADJUST (vec<rtx>& @var{outputs}, vec<rtx>& @var{inputs}, vec<const char *>& @var{constraints}, vec<rtx>& @var{clobbers}, HARD_REG_SET& @var{clobbered_regs})
+This target hook may add @dfn{clobbers} to @var{clobbers} and
+@var{clobbered_regs} for any hard regs the port wishes to automatically
+clobber for an asm.  The @var{outputs} and @var{inputs} may be inspected
+to avoid clobbering a register that is already used by the asm.
+
+It may modify the @var{outputs}, @var{inputs}, and @var{constraints}
+as necessary for other pre-processing.  In this case the return value is
+a sequence of insns to emit after the asm.
 @end deftypefn
 
 @defmac MATH_LIBRARY

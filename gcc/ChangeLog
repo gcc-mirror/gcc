@@ -1,5 +1,49 @@
 2015-05-11  Richard Henderson  <rth@redhat.com>
 
+	* target.def (md_asm_clobbers): Replace with...
+	(md_asm_adjust): this.
+	* tm.texi.in (TARGET_MD_ASM_CLOBBERS): Remove.
+	(TARGET_MD_ASM_ADJUST): New.
+	* tm.texi: Rebuild.
+	* hooks.c (hook_tree_tree_tree_tree_3rd_identity): Remove.
+	* hooks.h (hook_tree_tree_tree_tree_3rd_identity): Remove.
+	* system.h (TARGET_MD_ASM_CLOBBERS): Poison.
+
+	* cfgexpand.c (check_operand_nalternatives): Accept vector of
+	constraints instead of lists of outputs and inputs.
+	(expand_asm_stmt): Save and restore input_location around the
+	body of the function.  Move asm data into vectors instead of
+	building tree lists.  Generate cleanup sequences as needed,
+	rather than waiting til the end.  Use new md_asm_adjust hook.
+
+	* config/vxworks.c: Include vec.h before target.h.
+	* gimple.c: Likewise.
+	* incpath.c: Likewise.
+	* mode-switching.c: Likewise.
+
+	* config/cris/cris.c (cris_md_asm_clobbers): Convert to...
+	(cris_md_asm_adjust): this.
+	(TARGET_MD_ASM_CLOBBERS): Remove.
+	(TARGET_MD_ASM_ADJUST): New.
+	* config/i386/i386.c (ix86_md_asm_clobbers): Convert to...
+	(ix86_md_asm_adjust): this.
+	(TARGET_MD_ASM_CLOBBERS): Remove.
+	(TARGET_MD_ASM_ADJUST): New.
+	* config/mn10300/mn10300.c (mn10300_md_asm_clobbers): Convert to...
+	(mn10300_md_asm_adjust): this.
+	(TARGET_MD_ASM_CLOBBERS): Remove.
+	(TARGET_MD_ASM_ADJUST): New.
+	* config/rs6000/rs6000.c (rs6000_md_asm_clobbers): Convert to...
+	(rs6000_md_asm_adjust): this.
+	(TARGET_MD_ASM_CLOBBERS): Remove.
+	(TARGET_MD_ASM_ADJUST): New.
+	* config/visium/visium.c (visium_md_asm_clobbers): Convert to...
+	(visium_md_asm_adjust): this.
+	(TARGET_MD_ASM_CLOBBERS): Remove.
+	(TARGET_MD_ASM_ADJUST): New.
+
+2015-05-11  Richard Henderson  <rth@redhat.com>
+
 	* gimplify.c (gimplify_asm_expr): Set gimple_asm_volatile_p
 	if noutputs is zero.
 	* cfgexpand.c (expand_asm_stmt): Use gimple_asm_volatile_p unchanged.

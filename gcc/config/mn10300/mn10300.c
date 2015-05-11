@@ -2881,18 +2881,18 @@ mn10300_conditional_register_usage (void)
     call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
 }
 
-/* Worker function for TARGET_MD_ASM_CLOBBERS.
+/* Worker function for TARGET_MD_ASM_ADJUST.
    We do this in the mn10300 backend to maintain source compatibility
    with the old cc0-based compiler.  */
 
-static tree
-mn10300_md_asm_clobbers (tree outputs ATTRIBUTE_UNUSED,
-                         tree inputs ATTRIBUTE_UNUSED,
-                         tree clobbers)
+static rtx_insn *
+mn10300_md_asm_adjust (vec<rtx> &/*outputs*/, vec<rtx> &/*inputs*/,
+		       vec<const char *> &/*constraints*/,
+		       vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
 {
-  clobbers = tree_cons (NULL_TREE, build_string (5, "EPSW"),
-                        clobbers);
-  return clobbers;
+  clobbers.safe_push (gen_rtx_REG (CCmode, CC_REG));
+  SET_HARD_REG_BIT (clobbered_regs, CC_REG);
+  return NULL;
 }
 
 /* A helper function for splitting cbranch patterns after reload.  */
@@ -3442,8 +3442,8 @@ mn10300_reorg (void)
 #undef  TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE mn10300_conditional_register_usage
 
-#undef TARGET_MD_ASM_CLOBBERS
-#define TARGET_MD_ASM_CLOBBERS  mn10300_md_asm_clobbers
+#undef TARGET_MD_ASM_ADJUST
+#define TARGET_MD_ASM_ADJUST mn10300_md_asm_adjust
 
 #undef  TARGET_FLAGS_REGNUM
 #define TARGET_FLAGS_REGNUM  CC_REG

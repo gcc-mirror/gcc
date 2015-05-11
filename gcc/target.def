@@ -3742,20 +3742,22 @@ machines.  One reason you may need to define this target hook is if\n\
  rtx, (void),
  default_builtin_setjmp_frame_value)
 
-/* This target hook should add STRING_CST trees for any hard regs
-   the port wishes to automatically clobber for an asm.  */
+/* This target hook should manipulate the outputs, inputs, constraints,
+   and clobbers the port wishes for pre-processing the asm.  */
 DEFHOOK
-(md_asm_clobbers,
- "This target hook should add to @var{clobbers} @code{STRING_CST} trees for\n\
-any hard regs the port wishes to automatically clobber for an asm.\n\
-It should return the result of the last @code{tree_cons} used to add a\n\
-clobber.  The @var{outputs}, @var{inputs} and @var{clobber} lists are the\n\
-corresponding parameters to the asm and may be inspected to avoid\n\
-clobbering a register that is an input or output of the asm.  You can use\n\
-@code{tree_overlaps_hard_reg_set}, declared in @file{tree.h}, to test\n\
-for overlap with regards to asm-declared registers.",
- tree, (tree outputs, tree inputs, tree clobbers),
- hook_tree_tree_tree_tree_3rd_identity)
+(md_asm_adjust,
+ "This target hook may add @dfn{clobbers} to @var{clobbers} and\n\
+@var{clobbered_regs} for any hard regs the port wishes to automatically\n\
+clobber for an asm.  The @var{outputs} and @var{inputs} may be inspected\n\
+to avoid clobbering a register that is already used by the asm.\n\
+\n\
+It may modify the @var{outputs}, @var{inputs}, and @var{constraints}\n\
+as necessary for other pre-processing.  In this case the return value is\n\
+a sequence of insns to emit after the asm.",
+ rtx_insn *,
+ (vec<rtx>& outputs, vec<rtx>& inputs, vec<const char *>& constraints,
+  vec<rtx>& clobbers, HARD_REG_SET& clobbered_regs),
+ NULL)
 
 /* This target hook allows the backend to specify a calling convention
    in the debug information.  This function actually returns an
