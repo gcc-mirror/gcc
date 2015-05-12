@@ -1,3 +1,9 @@
+2015-05-12 Sandra Loosemore <sandra@codesourcery.com>
+
+	* gcc.target/nios2/nios2-trap-insn.c: Expect "trap" instead of
+	"break".
+	* gcc.target/nios2/nios2-stack-check-1.c: Likewise.
+
 2015-05-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66101
