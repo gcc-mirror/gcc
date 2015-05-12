@@ -1,3 +1,8 @@
+2015-05-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/66111
+	* gfortran.dg/inline_matmul_10.f90:  New test.
+
 2015-05-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-c++-common/Wmisleading-indentation.c: New testcase.
