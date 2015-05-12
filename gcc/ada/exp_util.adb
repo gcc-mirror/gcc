@@ -8133,7 +8133,7 @@ package body Exp_Util is
 
    begin
       --  If the expression is the RHS of an assignment or object declaration
-      --   we are always OK because there will always be a target.
+      --  we are always OK because there will always be a target.
 
       --  Object renaming declarations, (generated for view conversions of
       --  actuals in inlined calls), like object declarations, provide an
@@ -8174,8 +8174,8 @@ package body Exp_Util is
          Otyp := Entity (Subtype_Mark (Exp));
       end if;
 
-      --  The input type always comes from the expression, and we assume
-      --  this is indeed always analyzed, so we can simply get the Etype.
+      --  The input type always comes from the expression, and we assume this
+      --  is indeed always analyzed, so we can simply get the Etype.
 
       Ityp := Etype (Expression (Exp));
 
@@ -8246,8 +8246,8 @@ package body Exp_Util is
       then
          return True;
 
-      --  If either type is tagged, then we know the alignment is OK so
-      --  Gigi will be able to use pointer punning.
+      --  If either type is tagged, then we know the alignment is OK so Gigi
+      --  will be able to use pointer punning.
 
       elsif Is_Tagged_Type (Otyp) or else Is_Tagged_Type (Ityp) then
          return True;
