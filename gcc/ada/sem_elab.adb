@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -618,6 +618,18 @@ package body Sem_Elab is
       then
          return;
       end if;
+
+      --  If this is a rewrite of a Valid_Scalars attribute, then nothing to
+      --  check, we don't mind in this case if the call occurs before the body
+      --  since this is all generated code.
+
+      if Nkind (Original_Node (N)) = N_Attribute_Reference
+        and then Attribute_Name (Original_Node (N)) = Name_Valid_Scalars
+      then
+         return;
+      end if;
+
+      --  Proceed with check
 
       Ent := E;
 

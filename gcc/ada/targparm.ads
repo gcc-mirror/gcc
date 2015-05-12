@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -362,13 +362,13 @@ package Targparm is
    ---------------------
 
    --  By default, type Duration is a 64-bit fixed-point type with a delta
-   --  and small of 10**(-9) (i.e. it is a count in nanoseconds. This flag
+   --  and small of 10**(-9) (i.e. it is a count in nanoseconds). This flag
    --  allows that standard format to be modified.
 
    Duration_32_Bits_On_Target : Boolean := False;
    --  If True, then Duration is represented in 32 bits and the delta and
    --  small values are set to 20.0*(10**(-3)) (i.e. it is a count in units
-   --  of 20 milliseconds.
+   --  of 20 milliseconds).
 
    ------------------------------------
    -- Back-End Code Generation Flags --

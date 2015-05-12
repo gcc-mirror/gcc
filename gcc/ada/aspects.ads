@@ -201,7 +201,8 @@ package Aspects is
       Aspect_Unreferenced,                  -- GNAT
       Aspect_Unreferenced_Objects,          -- GNAT
       Aspect_Volatile,
-      Aspect_Volatile_Components);
+      Aspect_Volatile_Components,
+      Aspect_Volatile_Full_Access);         -- GNAT
 
    subtype Aspect_Id_Exclude_No_Aspect is
      Aspect_Id range Aspect_Id'Succ (No_Aspect) .. Aspect_Id'Last;
@@ -503,6 +504,7 @@ package Aspects is
       Aspect_Variable_Indexing            => Name_Variable_Indexing,
       Aspect_Volatile                     => Name_Volatile,
       Aspect_Volatile_Components          => Name_Volatile_Components,
+      Aspect_Volatile_Full_Access         => Name_Volatile_Full_Access,
       Aspect_Warnings                     => Name_Warnings,
       Aspect_Write                        => Name_Write);
 
@@ -737,7 +739,8 @@ package Aspects is
       Aspect_Storage_Size                 => Rep_Aspect,
       Aspect_Value_Size                   => Rep_Aspect,
       Aspect_Volatile                     => Rep_Aspect,
-      Aspect_Volatile_Components          => Rep_Aspect);
+      Aspect_Volatile_Components          => Rep_Aspect,
+      Aspect_Volatile_Full_Access         => Rep_Aspect);
 
    ------------------------------------------------
    -- Handling of Aspect Specifications on Stubs --

@@ -1713,6 +1713,16 @@ package body Sem_Ch10 is
                return;
             end if;
 
+            --  Collect SCO information for loaded subunit if we are in the
+            --  extended main unit.
+
+            if Generate_SCO
+              and then In_Extended_Main_Source_Unit
+                         (Cunit_Entity (Current_Sem_Unit))
+            then
+               SCO_Record_Raw (Get_Cunit_Unit_Number (Library_Unit (N)));
+            end if;
+
             Analyze_Subunit (Library_Unit (N));
 
          --  Otherwise we must load the subunit and link to it
@@ -1873,7 +1883,7 @@ package body Sem_Ch10 is
                   Version_Update (Cunit (Main_Unit), Comp_Unit);
 
                   --  Collect SCO information for loaded subunit if we are in
-                  --  the main unit.
+                  --  the extended main unit.
 
                   if Generate_SCO
                     and then

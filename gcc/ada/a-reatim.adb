@@ -228,6 +228,28 @@ package body Ada.Real_Time is
 
    function Time_Of (SC : Seconds_Count; TS : Time_Span) return Time is
    begin
+      --  Simple case first, TS = 0.0, we need to make sure SC is in range
+
+      if TS = 0.0 then
+         if SC >= Seconds_Count (Duration (Time_Span_First) + Duration'(0.5))
+               and then
+            SC <= Seconds_Count (Duration (Time_Span_Last)  - Duration'(0.5))
+         then
+            --  Don't need any further checks after that manual check
+
+            declare
+               pragma Suppress (All_Checks);
+            begin
+               return Time (SC);
+            end;
+
+         --  Here we have a Seconds_Count value that is out of range
+
+         else
+            raise Constraint_Error;
+         end if;
+      end if;
+
       --  We want to return Time (SC) + TS. To avoid spurious overflows in
       --  the intermediate result Time (SC) we take advantage of the different
       --  signs in SC and TS (when that is the case).

@@ -9882,6 +9882,7 @@ package body Sem_Ch6 is
      (T           : List_Id;
       Related_Nod : Node_Id)
    is
+      Context     : constant Node_Id := Parent (Parent (T));
       Param_Spec  : Node_Id;
       Formal      : Entity_Id;
       Formal_Type : Entity_Id;
@@ -10027,6 +10028,8 @@ package body Sem_Ch6 is
 
                   --  Incomplete formal untagged types are not allowed in
                   --  subprogram bodies (but are legal in their declarations).
+                  --  This excludes bodies created for null procedures, which
+                  --  are basic declarations.
 
                   if Is_Generic_Type (Formal_Type)
                     and then not Is_Tagged_Type (Formal_Type)
@@ -10042,13 +10045,14 @@ package body Sem_Ch6 is
                      then
                         null;
 
-                     elsif Nkind_In (Parent (Parent (T)), N_Accept_Statement,
-                                                          N_Accept_Alternative,
-                                                          N_Entry_Body,
-                                                          N_Subprogram_Body)
+                     elsif Nkind_In (Context, N_Accept_Statement,
+                                              N_Accept_Alternative,
+                                              N_Entry_Body)
+                       or else (Nkind (Context) = N_Subprogram_Body
+                                 and then Comes_From_Source (Context))
                      then
                         Error_Msg_NE
-                          ("invalid use of untagged incomplete type&",
+                          ("invalid use of untagged incomplete type &",
                            Ptype, Formal_Type);
                      end if;
 

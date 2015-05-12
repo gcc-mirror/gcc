@@ -1,3 +1,44 @@
+2015-05-12  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* sem_ch10.adb (Sem_Ch10.Analyze_Proper_Body): Generate SCOs
+	for subunit in generic units.
+
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
+	* sem_elab.adb (Check_A_Call): Avoid checking internal call
+	from Valid_Scalars
+
+2015-05-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Process_Formals): An untagged incomplete type
+	is legal in the profile of a null procedure.
+
+2015-05-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Validate_Derived_Type_Instance): Handle properly
+	the checks on a derived formal whose parent type is a previous
+	formal that is not a derived type.
+
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads, aspects.adb: Add entries for aspect Volatile_Full_Access
+	* einfo.adb (Has_Volatile_Full_Access): New flag.
+	(Has_Volatile_Full_Access): New flag.
+	* einfo.ads (Has_Volatile_Full_Access): New flag.
+	* par-prag.adb: Add dummy entry for Volatile_Full_Access.
+	* sem_prag.adb (Analyze_Pragma, case Volatile_Full_Access):
+	Implement new pragma.
+	* snames.ads-tmpl: Add entries for pragma Volatile_Full_Access.
+
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
+	* targparm.ads: Minor reformatting.
+
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
+	* a-reatim.adb (Time_Of): Properly detect overflow when TS = 0.0.
+	* a-reatim.ads: Minor reformatting.
+
 2015-05-12  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.ads: Update the documentation of flags
