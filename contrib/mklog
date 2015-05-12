@@ -131,7 +131,6 @@ sub is_unified_hunk_start {
 }
 
 # Check if line is a top-level declaration.
-# TODO: ignore preprocessor directives except maybe #define ?
 sub is_top_level {
 	my ($function, $is_context_diff) = (@_);
 	if (is_unified_hunk_start ($function)
@@ -143,7 +142,7 @@ sub is_top_level {
 	} else {
 		$function =~ s/^.//;
 	}
-	return $function && $function !~ /^[\s{]/;
+	return $function && $function !~ /^[\s{#]/;
 }
 
 # Read contents of .diff file

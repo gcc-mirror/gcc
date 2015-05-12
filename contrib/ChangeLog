@@ -1,3 +1,7 @@
+2015-05-12  Yury Gribov  <y.gribov@samsung.com>
+
+	* mklog: Ignore preprocessor directives.
+
 2015-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* gennews (files): Add files for GCC 5.
