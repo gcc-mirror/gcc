@@ -221,14 +221,13 @@ package Exp_Ch7 is
      (Typ : Entity_Id;
       Nam : Entity_Id) return Node_Id;
    --  Create a special version of Deep_Finalize with identifier Nam. The
-   --  routine has state information and can parform partial finalization.
+   --  routine has state information and can perform partial finalization.
 
    function Make_Set_Finalize_Address_Call
      (Loc     : Source_Ptr;
       Ptr_Typ : Entity_Id) return Node_Id;
    --  Associate the Finalize_Address primitive of the designated type with the
    --  finalization master of access type Ptr_Typ. The returned call is:
-   --  Generate the following call:
    --
    --    Set_Finalize_Address
    --      (<Ptr_Typ>FM, <Desig_Typ>FD'Unrestricted_Access);
@@ -265,7 +264,7 @@ package Exp_Ch7 is
    --  Check whether composite type contains a simple protected component
 
    function Is_Simple_Protected_Type (T : Entity_Id) return Boolean;
-   --  Determine whether T denotes a protected type without entires whose
+   --  Determine whether T denotes a protected type without entries whose
    --  _object field is of type System.Tasking.Protected_Objects.Protection.
    --  Something wrong here, implementation was changed to test Lock_Free
    --  but this spec does not mention that ???

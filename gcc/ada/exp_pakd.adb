@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -764,7 +764,8 @@ package body Exp_Pakd is
 
       elsif not Is_Constrained (Typ) then
 
-         --  When generating standard DWARF, the ___XP suffix will be stripped
+         --  When generating standard DWARF (i.e when GNAT_Encodings is
+         --  DWARF_GNAT_Encodings_Minimal), the ___XP suffix will be stripped
          --  by the back-end but generate it anyway to ease compiler debugging.
          --  This will help to distinguish implementation types from original
          --  packed arrays.

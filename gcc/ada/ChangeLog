@@ -1,3 +1,28 @@
+2015-05-12  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* exp_pakd.adb: Make clearer the comment in exp_pakd.adb about
+	___XP suffixes.
+
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_util.adb, sem_ch6.adb: Minor reformatting.
+
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
+	* exp_unst.adb (Visit_Node): Deal with subprogram and package stubs.
+
+2015-05-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_intr.adb (Expand_Dispatching_Constructor_Call): The
+	tag to be retrieved for the generated call is the first entry
+	in the dispatch table for the return type of the instantiated
+	constructor.
+
+2015-05-12  Bob Duff  <duff@adacore.com>
+
+	* exp_ch7.adb, exp_ch7.ads, exp_intr.adb, exp_util.adb,
+	exp_util.ads: Update comments.
+
 2015-05-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Add_Internal_Interface_Entities): Do no generate
