@@ -1,3 +1,22 @@
+2015-05-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): New function
+	Has_Delayed_Aspect, used to defer resolution of an aggregate
+	expression when the object declaration carries aspects Address
+	and/or Alignment.
+	* freeze.adb (Freeze_Object_Declaration): New subsidiary procedure
+	to Freeze_Entity.  In addition to the previous processing steps
+	at the freeze point of an object, this procedure also handles
+	aggregates in object declarations, when the declaration carries
+	delayed aspects that require that the initialization of the
+	object be attached to its freeze actions.
+
+2015-05-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Declaration): Following
+	AI12-0147, null procedures and expression functions are allowed
+	in protected bodies.
+
 2015-05-12  Tristan Gingold  <gingold@adacore.com>
 
 	* i-cpoint.adb (Copy_Terminated_Array): Copy nothing if Length is 0.

@@ -3336,6 +3336,18 @@ package body Sem_Ch3 is
       --  or a variant record type is encountered, Check_Restrictions is called
       --  indicating the count is unknown.
 
+      function Delayed_Aspect_Present return Boolean;
+      --  If the declaration has an expression that is an aggregate, and it
+      --  has aspects that require delayed analysis, the resolution of the
+      --  aggregate must be deferred to the freeze point of the objet. This
+      --  special processing was created for address clauses, but it must
+      --  also apply to Alignment.
+      --  This must be done before the aspect specifications are analyzed
+      --  because we must handle the aggregate before the analysis of the
+      --  object declaration is complete.
+
+      --  any other relevant delayed aspects on object declarations ???
+
       -----------------
       -- Count_Tasks --
       -----------------
@@ -3389,6 +3401,32 @@ package body Sem_Ch3 is
             return Uint_0;
          end if;
       end Count_Tasks;
+
+      ----------------------------
+      -- Delayed_Aspect_Present --
+      ----------------------------
+
+      function Delayed_Aspect_Present return Boolean is
+         A : Node_Id;
+         A_Id : Aspect_Id;
+
+      begin
+         if Present (Aspect_Specifications (N)) then
+            A    := First (Aspect_Specifications (N));
+            A_Id :=   Get_Aspect_Id (Chars (Identifier (A)));
+            while Present (A) loop
+               if
+                 A_Id = Aspect_Alignment or else A_Id = Aspect_Address
+               then
+                  return True;
+               end if;
+
+               Next (A);
+            end loop;
+         end if;
+
+         return False;
+      end Delayed_Aspect_Present;
 
    --  Start of processing for Analyze_Object_Declaration
 
@@ -3705,7 +3743,8 @@ package body Sem_Ch3 is
          if Comes_From_Source (N)
            and then Expander_Active
            and then Nkind (E) = N_Aggregate
-           and then Present (Following_Address_Clause (N))
+           and then (Present (Following_Address_Clause (N))
+                      or else Delayed_Aspect_Present)
          then
             Set_Etype (E, T);
 
