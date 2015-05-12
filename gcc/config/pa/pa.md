@@ -707,12 +707,12 @@
    (match_operand:SI 2 "const_int_operand")]            ;; model
   "!TARGET_64BIT && !TARGET_SOFT_FLOAT"
 {
-  enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+  enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
   operands[1] = force_reg (SImode, XEXP (operands[1], 0));
   operands[2] = gen_reg_rtx (DImode);
   expand_mem_thread_fence (model);
   emit_insn (gen_atomic_loaddi_1 (operands[0], operands[1], operands[2]));
-  if ((model & MEMMODEL_MASK) == MEMMODEL_SEQ_CST)
+  if (is_mm_seq_cst (model))
     expand_mem_thread_fence (model);
   DONE;
 })
@@ -734,12 +734,12 @@
    (match_operand:SI 2 "const_int_operand")]            ;; model
   "!TARGET_64BIT && !TARGET_SOFT_FLOAT"
 {
-  enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+  enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
   operands[0] = force_reg (SImode, XEXP (operands[0], 0));
   operands[2] = gen_reg_rtx (DImode);
   expand_mem_thread_fence (model);
   emit_insn (gen_atomic_storedi_1 (operands[0], operands[1], operands[2]));
-  if ((model & MEMMODEL_MASK) == MEMMODEL_SEQ_CST)
+  if (is_mm_seq_cst (model))
     expand_mem_thread_fence (model);
   DONE;
 })
