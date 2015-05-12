@@ -3668,7 +3668,12 @@ Unary_expression::do_flatten(Gogo* gogo, Named_object*,
 
   if (this->op_ == OPERATOR_AND)
     {
-      if (this->expr_->var_expression() != NULL)
+      // If this->escapes_ is false at this point, then it was set to
+      // false by an explicit call to set_does_not_escape, and the
+      // value does not escape.  If this->escapes_ is true, we may be
+      // able to set it to false if taking the address of a variable
+      // that does not escape.
+      if (this->escapes_ && this->expr_->var_expression() != NULL)
 	{
 	  Named_object* var = this->expr_->var_expression()->named_object();
 	  if (var->is_variable())
