@@ -173,6 +173,7 @@ enum reg_class
 {
   NO_REGS,
   SIB_REGS,
+  IJMP_REGS,
   GP_REGS,
   ALL_REGS,
   LIM_REG_CLASSES
@@ -183,6 +184,7 @@ enum reg_class
 #define REG_CLASS_NAMES   \
   {  "NO_REGS",		  \
      "SIB_REGS",	  \
+     "IJMP_REGS",	  \
      "GP_REGS",           \
      "ALL_REGS" }
 
@@ -190,10 +192,11 @@ enum reg_class
 
 #define REG_CLASS_CONTENTS			\
   {						\
-    /* NO_REGS  */ { 0, 0},			\
-    /* SIB_REGS */ { 0xfe0c, 0},		\
-    /* GP_REGS  */ {~0, 0},			\
-    /* ALL_REGS */ {~0,~0}			\
+    /* NO_REGS    */ { 0, 0},			\
+    /* SIB_REGS   */ { 0xfe0c, 0},		\
+    /* IJMP_REGS  */ { 0x7fffffff, 0},		\
+    /* GP_REGS    */ {~0, 0},			\
+    /* ALL_REGS   */ {~0,~0}			\
   }
 
 
