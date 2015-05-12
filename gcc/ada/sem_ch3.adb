@@ -11625,7 +11625,8 @@ package body Sem_Ch3 is
       --  Freeze the private subtype entity if its parent is delayed, and not
       --  already frozen. We skip this processing if the type is an anonymous
       --  subtype of a record component, or is the corresponding record of a
-      --  protected type, since ???
+      --  protected type, since these are processed when the enclosing type
+      --  is frozen.
 
       if not Is_Type (Scope (Full)) then
          Set_Has_Delayed_Freeze (Full,
@@ -11804,10 +11805,18 @@ package body Sem_Ch3 is
 
       --  Make sure Has_Predicates is set on full type if it is set on the
       --  private type. Note that it may already be set on the full type and
-      --  if so, we don't want to unset it.
+      --  if so, we don't want to unset it. Similarly, propagate information
+      --  about delayed aspects, because the corresponding pragmas must be
+      --  analyzed when one of the views is frozen. This last step is needed
+      --  in particular when the full type is a scalar type for which an
+      --  anonymous base type is constructed.
 
       if Has_Predicates (Priv) then
          Set_Has_Predicates (Full);
+      end if;
+
+      if Has_Delayed_Aspects (Priv) then
+         Set_Has_Delayed_Aspects (Full);
       end if;
    end Complete_Private_Subtype;
 

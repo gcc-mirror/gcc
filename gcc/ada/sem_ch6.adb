@@ -10206,7 +10206,9 @@ package body Sem_Ch6 is
                --  it is still the case that untagged incomplete types cannot
                --  be Taft-amendment types and must be completed in private
                --  part, so the subprogram must appear in the list of private
-               --  dependents of the type.
+               --  dependents of the type. If the type is class-wide, it is
+               --  not a primitive, but the freezing of the subprogram must
+               --  also be delayed to force the creation of a freeze node.
 
                if Is_Tagged_Type (Formal_Type)
                  or else (Ada_Version >= Ada_2012
@@ -10215,15 +10217,15 @@ package body Sem_Ch6 is
                then
                   if Ekind (Scope (Current_Scope)) = E_Package
                     and then not Is_Generic_Type (Formal_Type)
-                    and then not Is_Class_Wide_Type (Formal_Type)
                   then
                      if not Nkind_In
                        (Parent (T), N_Access_Function_Definition,
                                     N_Access_Procedure_Definition)
                      then
-                        Append_Elmt
-                          (Current_Scope,
-                           To => Private_Dependents (Base_Type (Formal_Type)));
+                        if not Is_Class_Wide_Type (Formal_Type) then
+                           Append_Elmt (Current_Scope,
+                               Private_Dependents (Base_Type (Formal_Type)));
+                        end if;
 
                         --  Freezing is delayed to ensure that Register_Prim
                         --  will get called for this operation, which is needed
