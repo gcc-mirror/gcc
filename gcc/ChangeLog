@@ -1,5 +1,10 @@
 2015-05-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (define_split for bswaphi): Don't use
+	zero_extract.
+
+2015-05-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* combine.c (recog_for_combine_1): New function, factored out
 	from recog_for_combine.
 	(change_zero_ext): New function.
