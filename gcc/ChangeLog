@@ -1,3 +1,7 @@
+2015-05-12  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* call.c (print_z_candidates): Remove dead code.
+
 2015-05-12  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/2827.md: Split zEC12_simple into zEC12_simple_int

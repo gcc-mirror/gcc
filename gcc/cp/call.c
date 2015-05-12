@@ -3436,7 +3436,6 @@ print_z_candidates (location_t loc, struct z_candidate *candidates)
 {
   struct z_candidate *cand1;
   struct z_candidate **cand2;
-  int n_candidates;
 
   if (!candidates)
     return;
@@ -3477,9 +3476,6 @@ print_z_candidates (location_t loc, struct z_candidate *candidates)
 	    cand2 = &(*cand2)->next;
 	}
     }
-
-  for (n_candidates = 0, cand1 = candidates; cand1; cand1 = cand1->next)
-    n_candidates++;
 
   for (; candidates; candidates = candidates->next)
     print_z_candidate (loc, "candidate:", candidates);
