@@ -1746,16 +1746,32 @@ package body Sem_Ch5 is
    begin
       Enter_Name (Def_Id);
 
+      --  AI12-0151 specifies that when the subtype indication is present, it
+      --  must statically match the type of the array or container element.
+      --  To simplify this check, we introduce a subtype declaration with the
+      --  given subtype indication when it carries a constraint, and rewrite
+      --  the original as a reference to the created subtype entity.
+
       if Present (Subt) then
-         Analyze (Subt);
-
-         --  Save type of subtype indication for subsequent check
-
          if Nkind (Subt) = N_Subtype_Indication then
-            Bas := Entity (Subtype_Mark (Subt));
+            declare
+               S    : constant Entity_Id := Make_Temporary (Sloc (Subt), 'S');
+               Decl : constant Node_Id :=
+                        Make_Subtype_Declaration (Loc,
+                          Defining_Identifier => S,
+                          Subtype_Indication  => New_Copy_Tree (Subt));
+            begin
+               Insert_Before (Parent (Parent (N)), Decl);
+               Analyze (Decl);
+               Rewrite (Subt, New_Occurrence_Of (S, Sloc (Subt)));
+            end;
          else
-            Bas := Entity (Subt);
+            Analyze (Subt);
          end if;
+
+         --  Save entity of subtype indication for subsequent check
+
+         Bas := Entity (Subt);
       end if;
 
       Preanalyze_Range (Iter_Name);
@@ -1771,7 +1787,7 @@ package body Sem_Ch5 is
       if Of_Present (N) then
          Set_Related_Expression (Def_Id, Iter_Name);
 
-         --  For a container, the iterator is specified through the aspect.
+         --  For a container, the iterator is specified through the aspect
 
          if not Is_Array_Type (Etype (Iter_Name)) then
             declare
@@ -1961,8 +1977,26 @@ package body Sem_Ch5 is
          if Of_Present (N) then
             Set_Etype (Def_Id, Component_Type (Typ));
 
+            --  AI12-0151 stipulates that the container cannot be a component
+            --  that depends on a discriminant if the enclosing object is
+            --  mutable, to prevent a modification of the container in the
+            --  course of an iteration.
+
+            if Is_Entity_Name (Iter_Name)
+              and then Nkind (Original_Node (Iter_Name)) = N_Selected_Component
+              and then Is_Dependent_Component_Of_Mutable_Object
+                         (Renamed_Object (Entity (Iter_Name)))
+            then
+               Error_Msg_N
+                 ("container cannot be a discriminant-dependent "
+                  & "component of a mutable object", N);
+            end if;
+
             if Present (Subt)
-              and then Base_Type (Bas) /= Base_Type (Component_Type (Typ))
+              and then
+                (Base_Type (Bas) /= Base_Type (Component_Type (Typ))
+                  or else
+                    not Subtypes_Statically_Match (Bas, Component_Type (Typ)))
             then
                Error_Msg_N
                  ("subtype indication does not match component type", Subt);
@@ -1979,7 +2013,7 @@ package body Sem_Ch5 is
             if Ada_Version >= Ada_2012 then
                Error_Msg_NE
                  ("\if& is meant to designate an element of the array, use OF",
-                    N, Def_Id);
+                  N, Def_Id);
             end if;
 
             --  Prevent cascaded errors
@@ -2035,7 +2069,9 @@ package body Sem_Ch5 is
                      --  the element type of the container.
 
                      if Present (Subt)
-                       and then not Covers (Bas, Etype (Def_Id))
+                       and then (not Covers (Bas, Etype (Def_Id))
+                                  or else not Subtypes_Statically_Match
+                                                (Bas, Etype (Def_Id)))
                      then
                         Error_Msg_N
                           ("subtype indication does not match element type",

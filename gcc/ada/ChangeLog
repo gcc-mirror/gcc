@@ -1,3 +1,13 @@
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Process_Atomic_Independent_Shared_Volatile):
+	Don't allow Atomic and Volatile_Full_Access for the same entity.
+
+2015-05-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Implement new
+	semantics and safety checks specified in AI12-0151.
+
 2015-05-12  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* sem_ch10.adb (Sem_Ch10.Analyze_Proper_Body): Generate SCOs
