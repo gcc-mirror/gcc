@@ -32,7 +32,6 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Disp; use Exp_Disp;
-with Exp_Unst; use Exp_Unst;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
@@ -1547,9 +1546,9 @@ package body Sem_Util is
 
          Insert_Action (N, Decl);
 
-         --  If the context is a component declaration the subtype
-         --  declaration will be analyzed when the enclosing type is
-         --  frozen, otherwise do it now.
+         --  If the context is a component declaration the subtype declaration
+         --  will be analyzed when the enclosing type is frozen, otherwise do
+         --  it now.
 
          if Ekind (Current_Scope) /= E_Record_Type then
             Analyze (Decl);
@@ -2872,18 +2871,16 @@ package body Sem_Util is
    -- Check_Nested_Access --
    -------------------------
 
-   procedure Check_Nested_Access (N : Node_Id; Ent : Entity_Id) is
+   procedure Check_Nested_Access (Ent : Entity_Id) is
       Scop         : constant Entity_Id := Current_Scope;
       Current_Subp : Entity_Id;
       Enclosing    : Entity_Id;
 
    begin
-      --  Currently only enabled for VM back-ends for efficiency, should we
-      --  enable it more systematically? Probably not unless someone actually
-      --  needs it. It will be needed for C generation and is activated if the
-      --  Opt.Unnest_Subprogram_Mode flag is set True.
+      --  Currently only enabled for VM back-ends for efficiency
 
-      if (VM_Target /= No_VM or else Unnest_Subprogram_Mode)
+      if VM_Target /= No_VM
+        and then Ekind_In (Ent, E_Variable, E_Constant, E_Loop_Parameter)
         and then Scope (Ent) /= Empty
         and then not Is_Library_Level_Entity (Ent)
 
@@ -2891,25 +2888,6 @@ package body Sem_Util is
 
         and then not Is_Imported (Ent)
       then
-         --  In both the VM case and in Unnest_Subprogram_Mode, we mark
-         --  variables, constants, and loop parameters.
-
-         if Ekind_In (Ent, E_Variable, E_Constant, E_Loop_Parameter) then
-            null;
-
-         --  In Unnest_Subprogram_Mode, we also mark types and formals
-
-         elsif Unnest_Subprogram_Mode
-           and then (Is_Type (Ent) or else Is_Formal (Ent))
-         then
-            null;
-
-            --  All other cases, do not mark
-
-         else
-            return;
-         end if;
-
          --  Get current subprogram that is relevant
 
          if Is_Subprogram (Scop)
@@ -2926,16 +2904,7 @@ package body Sem_Util is
          --  Set flag if uplevel reference
 
          if Enclosing /= Empty and then Enclosing /= Current_Subp then
-            if Is_Type (Ent) then
-               Check_Uplevel_Reference_To_Type (Ent);
-            else
-               Set_Has_Uplevel_Reference (Ent, True);
-
-               if Unnest_Subprogram_Mode then
-                  Set_Has_Uplevel_Reference (Current_Subp, True);
-                  Note_Uplevel_Reference (N, Enclosing);
-               end if;
-            end if;
+            Set_Has_Uplevel_Reference (Ent, True);
          end if;
       end if;
    end Check_Nested_Access;
@@ -4949,7 +4918,7 @@ package body Sem_Util is
 
       --  Both names are selected_components, their prefixes are known to
       --  denote the same object, and their selector_names denote the same
-      --  component (RM 6.4.1(6.6/3))
+      --  component (RM 6.4.1(6.6/3)).
 
       elsif Nkind (Obj1) = N_Selected_Component then
          return Denotes_Same_Object (Prefix (Obj1), Prefix (Obj2))
@@ -15223,7 +15192,7 @@ package body Sem_Util is
                   end if;
                end if;
 
-               Check_Nested_Access (N, Ent);
+               Check_Nested_Access (Ent);
             end if;
 
             Kill_Checks (Ent);

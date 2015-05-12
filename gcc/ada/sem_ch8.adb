@@ -5633,7 +5633,7 @@ package body Sem_Ch8 is
                   end if;
                end if;
 
-               Check_Nested_Access (N, E);
+               Check_Nested_Access (E);
             end if;
 
             Set_Entity_Or_Discriminal (N, E);

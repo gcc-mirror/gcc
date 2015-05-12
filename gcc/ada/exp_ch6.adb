@@ -71,12 +71,40 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
+with Table;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Validsw;  use Validsw;
 
 package body Exp_Ch6 is
+
+   -------------------------------------
+   -- Table for Unnesting Subprograms --
+   -------------------------------------
+
+   --  When we expand a subprogram body, if it has nested subprograms and if
+   --  we are in Unnest_Subprogram_Mode, then we record the subprogram entity
+   --  and the body in this table, to later be passed to Unnest_Subprogram.
+
+   --  We need this delaying mechanism, because we have to wait untiil all
+   --  instantiated bodies have been inserted before doing the unnesting.
+
+   type Unest_Entry is record
+      Ent : Entity_Id;
+      --  Entity for subprogram to be unnested
+
+      Bod : Node_Id;
+      --  Subprogram body to be unnested
+   end record;
+
+   package Unest_Bodies is new Table.Table (
+     Table_Component_Type => Unest_Entry,
+     Table_Index_Type     => Nat,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 100,
+     Table_Increment      => 200,
+     Table_Name           => "Unest_Bodies");
 
    -----------------------
    -- Local Subprograms --
@@ -5360,7 +5388,7 @@ package body Exp_Ch6 is
 
         and then Has_Nested_Subprogram (Spec_Id)
       then
-         Unnest_Subprogram (Spec_Id, N);
+         Unest_Bodies.Append ((Spec_Id, N));
       end if;
    end Expand_N_Subprogram_Body;
 
@@ -5787,32 +5815,6 @@ package body Exp_Ch6 is
          Resolve (N, Etype (Subp));
       end if;
    end Expand_Protected_Subprogram_Call;
-
-   --------------------------------------------
-   -- Has_Unconstrained_Access_Discriminants --
-   --------------------------------------------
-
-   function Has_Unconstrained_Access_Discriminants
-     (Subtyp : Entity_Id) return Boolean
-   is
-      Discr : Entity_Id;
-
-   begin
-      if Has_Discriminants (Subtyp)
-        and then not Is_Constrained (Subtyp)
-      then
-         Discr := First_Discriminant (Subtyp);
-         while Present (Discr) loop
-            if Ekind (Etype (Discr)) = E_Anonymous_Access_Type then
-               return True;
-            end if;
-
-            Next_Discriminant (Discr);
-         end loop;
-      end if;
-
-      return False;
-   end Has_Unconstrained_Access_Discriminants;
 
    -----------------------------------
    -- Expand_Simple_Function_Return --
@@ -7999,6 +8001,41 @@ package body Exp_Ch6 is
       end if;
    end Expand_Subprogram_Contract;
 
+   --------------------------------------------
+   -- Has_Unconstrained_Access_Discriminants --
+   --------------------------------------------
+
+   function Has_Unconstrained_Access_Discriminants
+     (Subtyp : Entity_Id) return Boolean
+   is
+      Discr : Entity_Id;
+
+   begin
+      if Has_Discriminants (Subtyp)
+        and then not Is_Constrained (Subtyp)
+      then
+         Discr := First_Discriminant (Subtyp);
+         while Present (Discr) loop
+            if Ekind (Etype (Discr)) = E_Anonymous_Access_Type then
+               return True;
+            end if;
+
+            Next_Discriminant (Discr);
+         end loop;
+      end if;
+
+      return False;
+   end Has_Unconstrained_Access_Discriminants;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize is
+   begin
+      Unest_Bodies.Init;
+   end Initialize;
+
    --------------------------------
    -- Is_Build_In_Place_Function --
    --------------------------------
@@ -9488,5 +9525,20 @@ package body Exp_Ch6 is
          return False;
       end if;
    end Needs_Result_Accessibility_Level;
+
+   ------------------------
+   -- Unnest_Subprograms --
+   ------------------------
+
+   procedure Unnest_Subprograms is
+   begin
+      for J in Unest_Bodies.First .. Unest_Bodies.Last loop
+         declare
+            UBJ : Unest_Entry renames Unest_Bodies.Table (J);
+         begin
+            Unnest_Subprogram (UBJ.Ent, UBJ.Bod);
+         end;
+      end loop;
+   end Unnest_Subprograms;
 
 end Exp_Ch6;
