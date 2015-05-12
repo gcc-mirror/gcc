@@ -607,6 +607,7 @@ LIBOBJS
 TSAN_TARGET_DEPENDENT_OBJECTS
 LIBBACKTRACE_SUPPORTED_FALSE
 LIBBACKTRACE_SUPPORTED_TRUE
+RPC_DEFS
 BACKTRACE_SUPPORTS_THREADS
 BACKTRACE_USES_MALLOC
 ALLOC_FILE
@@ -12021,7 +12022,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12024 "configure"
+#line 12025 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12127,7 +12128,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12130 "configure"
+#line 12131 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16340,6 +16341,47 @@ if test "$have_getexecname" = "yes"; then
 $as_echo "#define HAVE_GETEXECNAME 1" >>confdefs.h
 
 fi
+
+# Check for rpc/xdr.h
+for ac_header in rpc/xdr.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "rpc/xdr.h" "ac_cv_header_rpc_xdr_h" "$ac_includes_default"
+if test "x$ac_cv_header_rpc_xdr_h" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_RPC_XDR_H 1
+_ACEOF
+
+fi
+
+done
+
+if test x"$ac_cv_header_rpc_xdr_h" = xyes; then
+  rpc_defs="$rpc_defs -DHAVE_RPC_XDR_H=1"
+else
+  rpc_defs="$rpc_defs -DHAVE_RPC_XDR_H=0"
+fi
+
+# Check for tirpc/rpc/xdr.h
+for ac_header in tirpc/rpc/xdr.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "tirpc/rpc/xdr.h" "ac_cv_header_tirpc_rpc_xdr_h" "$ac_includes_default"
+if test "x$ac_cv_header_tirpc_rpc_xdr_h" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_TIRPC_RPC_XDR_H 1
+_ACEOF
+
+fi
+
+done
+
+if test x"$ac_cv_header_tirpc_rpc_xdr_h" = xyes; then
+  rpc_defs="$rpc_defs -DHAVE_TIRPC_RPC_XDR_H=1"
+else
+  rpc_defs="$rpc_defs -DHAVE_TIRPC_RPC_XDR_H=0"
+fi
+
+RPC_DEFS=$rpc_defs
+
 
  if test "x${BACKTRACE_SUPPORTED}x${BACKTRACE_USES_MALLOC}" = "x1x0"; then
   LIBBACKTRACE_SUPPORTED_TRUE=
