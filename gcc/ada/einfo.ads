@@ -765,11 +765,13 @@ package Einfo is
 
 --    Default_Aspect_Component_Value (Node19) [base type only]
 --       Defined in array types. Holds the static value specified in a
---       Default_Component_Value aspect specification for the array type.
+--       Default_Component_Value aspect specification for the array type,
+--       or inherited on derivation.
 
 --    Default_Aspect_Value (Node19) [base type only]
 --       Defined in scalar types. Holds the static value specified in a
---       Default_Value aspect specification for the type.
+--       Default_Value aspect specification for the type, or inherited
+--       on derivation.
 
 --    Default_Expr_Function (Node21)
 --       Defined in parameters. It holds the entity of the parameterless
@@ -880,6 +882,9 @@ package Einfo is
 --       primitives that come from source must be stored in this list in the
 --       order of their occurrence in the sources. For incomplete types the
 --       list is always empty.
+--       When expansion is disabled the corresponding record type of a
+--       synchronized type is not constructed. In that case, such types
+--       carry this attribute directly, for ASIS use.
 
 --    Directly_Designated_Type (Node20)
 --       Defined in access types. This field points to the type that is
@@ -1501,8 +1506,11 @@ package Einfo is
 --    Has_Default_Aspect (Flag39) [base type only]
 --       Defined in entities for types and subtypes, set for scalar types with
 --       a Default_Value aspect and array types with a Default_Component_Value
---       apsect. If this flag is set, then a corresponding aspect specification
---       node will be present on the rep item chain for the entity.
+--       aspect. If this flag is set, then a corresponding aspect specification
+--       node will be present on the rep item chain for the entity. For a
+--       derived type that inherits a default from its ancestor, the default
+--       value is set, but it may be overridden by an aspect declaration on
+--       type type derivation.
 
 --    Has_Default_Init_Cond (Flag3)
 --       Defined in type and subtype entities. Set if pragma Default_Initial_
