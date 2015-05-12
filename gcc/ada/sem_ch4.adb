@@ -210,12 +210,12 @@ package body Sem_Ch4 is
      (T1, T2 : Entity_Id;
       Op_Id  : Entity_Id;
       N      : Node_Id);
-   --  Subsidiary procedure to Find_Arithmetic_Types. T1 and T2 are valid
-   --  types for left and right operand. Determine whether they constitute
-   --  a valid pair for the given operator, and record the corresponding
-   --  interpretation of the operator node. The node N may be an operator
-   --  node (the usual case) or a function call whose prefix is an operator
-   --  designator. In both cases Op_Id is the operator name itself.
+   --  Subsidiary procedure to Find_Arithmetic_Types. T1 and T2 are valid types
+   --  for left and right operand. Determine whether they constitute a valid
+   --  pair for the given operator, and record the corresponding interpretation
+   --  of the operator node. The node N may be an operator node (the usual
+   --  case) or a function call whose prefix is an operator designator. In
+   --  both cases Op_Id is the operator name itself.
 
    procedure Diagnose_Call (N : Node_Id; Nam : Node_Id);
    --  Give detailed information on overloaded call where none of the
@@ -242,6 +242,7 @@ package body Sem_Ch4 is
    --  object E. The function returns the designated type of the prefix, taking
    --  into account that the designated type of an anonymous access type may be
    --  a limited view, when the non-limited view is visible.
+   --
    --  If in semantics only mode (-gnatc or generic), the function also records
    --  that the prefix is a reference to E, if any. Normally, such a reference
    --  is generated only when the implicit dereference is expanded into an
@@ -285,7 +286,7 @@ package body Sem_Ch4 is
    --  Ada 2005 (AI-252): Support the object.operation notation. If node N
    --  is a call in this notation, it is transformed into a normal subprogram
    --  call where the prefix is a parameter, and True is returned. If node
-   --  N is not of this form, it is unchanged, and False is returned. if
+   --  N is not of this form, it is unchanged, and False is returned. If
    --  CW_Test_Only is true then N is an N_Selected_Component node which
    --  is part of a call to an entry or procedure of a tagged concurrent
    --  type and this routine is invoked to search for class-wide subprograms
@@ -315,8 +316,10 @@ package body Sem_Ch4 is
          if Is_Overloaded (Opnd) then
             if Nkind (Opnd) in N_Op then
                Nam := Opnd;
+
             elsif Nkind (Opnd) = N_Function_Call then
                Nam := Name (Opnd);
+
             elsif Ada_Version >= Ada_2012 then
                declare
                   It : Interp;
@@ -343,7 +346,8 @@ package body Sem_Ch4 is
          end if;
 
          if Opnd = Left_Opnd (N) then
-            Error_Msg_N ("\left operand has the following interpretations", N);
+            Error_Msg_N
+              ("\left operand has the following interpretations", N);
          else
             Error_Msg_N
               ("\right operand has the following interpretations", N);
@@ -606,7 +610,7 @@ package body Sem_Ch4 is
 
             Type_Id := Process_Subtype (E, N);
             Acc_Type := Create_Itype (E_Allocator_Type, N);
-            Set_Etype                    (Acc_Type, Acc_Type);
+            Set_Etype (Acc_Type, Acc_Type);
             Set_Directly_Designated_Type (Acc_Type, Type_Id);
             Check_Fully_Declared (Type_Id, N);
 
@@ -681,21 +685,21 @@ package body Sem_Ch4 is
 
                   else
                      Error_Msg_N
-                       ("uninitialized unconstrained allocation not allowed",
-                        N);
+                       ("uninitialized unconstrained allocation not "
+                        & "allowed", N);
 
                      if Is_Array_Type (Type_Id) then
                         Error_Msg_N
-                          ("\qualified expression or constraint with " &
-                           "array bounds required", N);
+                          ("\qualified expression or constraint with "
+                           & "array bounds required", N);
 
                      elsif Has_Unknown_Discriminants (Type_Id) then
                         Error_Msg_N ("\qualified expression required", N);
 
                      else pragma Assert (Has_Discriminants (Type_Id));
                         Error_Msg_N
-                          ("\qualified expression or constraint with " &
-                           "discriminant values required", N);
+                          ("\qualified expression or constraint with "
+                           & "discriminant values required", N);
                      end if;
                   end if;
                end if;
@@ -804,9 +808,9 @@ package body Sem_Ch4 is
       --  Entity is not already set, so we do need to collect interpretations
 
       else
-         Op_Id := Get_Name_Entity_Id (Chars (N));
          Set_Etype (N, Any_Type);
 
+         Op_Id := Get_Name_Entity_Id (Chars (N));
          while Present (Op_Id) loop
             if Ekind (Op_Id) = E_Operator
               and then Present (Next_Entity (First_Entity (Op_Id)))
@@ -889,6 +893,7 @@ package body Sem_Ch4 is
                         Actual);
                      exit;
                   end if;
+
                when others =>
                   Named_Seen := True;
             end case;
@@ -905,10 +910,8 @@ package body Sem_Ch4 is
       begin
          if Is_Entity_Name (Nam) then
             return Ekind (Entity (Nam)) = E_Function;
-
          elsif Nkind (Nam) = N_Selected_Component then
             return Ekind (Entity (Selector_Name (Nam))) = E_Function;
-
          else
             return False;
          end if;
@@ -932,8 +935,7 @@ package body Sem_Ch4 is
                  ("must instantiate generic procedure& before call",
                   Nam, Entity (Nam));
             else
-               Error_Msg_N
-                 ("procedure or entry name expected", Nam);
+               Error_Msg_N ("procedure or entry name expected", Nam);
             end if;
 
          --  Check for tasking cases where only an entry call will do
@@ -1101,7 +1103,6 @@ package body Sem_Ch4 is
          end if;
 
          Get_First_Interp (Nam, X, It);
-
          while Present (It.Nam) loop
             Nam_Ent := It.Nam;
             Deref   := False;
@@ -1359,7 +1360,6 @@ package body Sem_Ch4 is
 
                if No (Alt) then
                   Add_One_Interp (N, It.Typ, It.Typ);
-
                else
                   Wrong_Alt := Alt;
                end if;
@@ -1685,11 +1685,11 @@ package body Sem_Ch4 is
          end loop;
       end if;
 
-      --  If there was no match, and the operator is inequality, this may
-      --  be a case where inequality has not been made explicit, as for
-      --  tagged types. Analyze the node as the negation of an equality
-      --  operation. This cannot be done earlier, because before analysis
-      --  we cannot rule out the presence of an explicit inequality.
+      --  If there was no match, and the operator is inequality, this may be
+      --  a case where inequality has not been made explicit, as for tagged
+      --  types. Analyze the node as the negation of an equality operation.
+      --  This cannot be done earlier, because before analysis we cannot rule
+      --  out the presence of an explicit inequality.
 
       if Etype (N) = Any_Type
         and then Nkind (N) = N_Op_Ne
@@ -8060,6 +8060,15 @@ package body Sem_Ch4 is
          --  subprogram because that list starts with the subprogram formals.
          --  We retrieve the candidate operations from the generic declaration.
 
+         function Extended_Primitive_Ops (T : Entity_Id) return Elist_Id;
+         --  Prefix notation can also be used on operations that are not
+         --  primitives of the type, but are declared in the same immediate
+         --  declarative part, which can only mean the corresponding package
+         --  body (See RM 4.1.3 (9.2/3)). If we are in that body we extend the
+         --  list of primitives with body operations with the same name that
+         --  may be candidates, so that Try_Primitive_Operations can examine
+         --  them if no real primitive is found.
+
          function Is_Private_Overriding (Op : Entity_Id) return Boolean;
          --  An operation that overrides an inherited operation in the private
          --  part of its package may be hidden, but if the inherited operation
@@ -8166,6 +8175,61 @@ package body Sem_Ch4 is
             end if;
          end Collect_Generic_Type_Ops;
 
+         ----------------------------
+         -- Extended_Primitive_Ops --
+         ----------------------------
+
+         function Extended_Primitive_Ops (T : Entity_Id) return Elist_Id is
+            Type_Scope : constant Entity_Id := Scope (T);
+
+            Body_Decls : List_Id;
+            Op_Found   : Boolean;
+            Op         : Entity_Id;
+            Op_List    : Elist_Id;
+
+         begin
+            Op_List := Primitive_Operations (T);
+
+            if Ekind (Type_Scope) = E_Package
+              and then In_Package_Body (Type_Scope)
+              and then In_Open_Scopes (Type_Scope)
+            then
+               --  Retrieve list of declarations of package body.
+
+               Body_Decls :=
+                 Declarations
+                   (Unit_Declaration_Node
+                     (Corresponding_Body
+                       (Unit_Declaration_Node (Type_Scope))));
+
+               Op       := Current_Entity (Subprog);
+               Op_Found := False;
+               while Present (Op) loop
+                  if Comes_From_Source (Op)
+                    and then Is_Overloadable (Op)
+                    and then Is_List_Member (Unit_Declaration_Node (Op))
+                    and then List_Containing (Unit_Declaration_Node (Op)) =
+                                                                   Body_Decls
+                  then
+                     if not Op_Found then
+
+                        --  Copy list of primitives so it is not affected for
+                        --  other uses.
+
+                        Op_List  := New_Copy_Elist (Op_List);
+                        Op_Found := True;
+                     end if;
+
+                     Append_Elmt (Op, Op_List);
+                  end if;
+
+                  Op := Homonym (Op);
+               end loop;
+            end if;
+
+            return Op_List;
+         end Extended_Primitive_Ops;
+
          ---------------------------
          -- Is_Private_Overriding --
          ---------------------------
@@ -8237,7 +8301,7 @@ package body Sem_Ch4 is
 
          elsif not Is_Generic_Type (Obj_Type) then
             Corr_Type := Obj_Type;
-            Elmt := First_Elmt (Primitive_Operations (Obj_Type));
+            Elmt := First_Elmt (Extended_Primitive_Ops (Obj_Type));
 
          else
             Corr_Type := Obj_Type;
