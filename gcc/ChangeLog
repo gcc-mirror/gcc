@@ -1,3 +1,23 @@
+2015-05-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (type_with_linkage_p): New function.
+	(type_in_anonymous_namespace_p): Move here from tree.c; assert that
+	type has linkage.
+	(odr_type_p): Move here from ipa-utils.h; use type_with_linkage_p.
+	(can_be_name_hashed_p): Simplify.
+	(hash_odr_name): Check that type has linkage before checking if it is
+	anonymous.
+	(types_same_for_odr): Likewise.
+	(odr_name_hasher::equal): Likewise.
+	(odr_subtypes_equivalent_p): Likewise.
+	(warn_types_mismatch): Likewise.
+	(get_odr_type): Likewise.
+	(odr_types_equivalent_p): Fix checking of TYPE_MAIN_VARIANT.
+	* ipa-utils.h (odr_type_p): Move offline.
+	* tree.c (need_assembler_name_p): Fix handling of types
+	without linkages.
+	(type_in_anonymous_namespace_p): Move to ipa-devirt.c
+
 2015-05-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* timevar.c (timevar_enable): Delete in favor of...
