@@ -1412,6 +1412,7 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
       /* FALLTHRU */
 
     case CONST_DOUBLE:
+    case CONST_WIDE_INT:
       if (x == CONST0_RTX (mode))
 	*total = 0;
       else if ((outer_code == PLUS && add_operand (x, VOIDmode))
@@ -1647,6 +1648,7 @@ alpha_preferred_reload_class(rtx x, enum reg_class rclass)
 
   /* These sorts of constants we can easily drop to memory.  */
   if (CONST_INT_P (x)
+      || GET_CODE (x) == CONST_WIDE_INT
       || GET_CODE (x) == CONST_DOUBLE
       || GET_CODE (x) == CONST_VECTOR)
     {
@@ -2104,8 +2106,8 @@ alpha_emit_set_long_const (rtx target, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
   return target;
 }
 
-/* Given an integral CONST_INT, CONST_DOUBLE, or CONST_VECTOR, return 
-   the low 64 bits.  */
+/* Given an integral CONST_INT, CONST_WIDE_INT, CONST_DOUBLE,
+   or CONST_VECTOR, return the low 64 bits.  */
 
 static void
 alpha_extract_integer (rtx x, HOST_WIDE_INT *p0, HOST_WIDE_INT *p1)
@@ -2115,18 +2117,15 @@ alpha_extract_integer (rtx x, HOST_WIDE_INT *p0, HOST_WIDE_INT *p1)
   if (GET_CODE (x) == CONST_VECTOR)
     x = simplify_subreg (DImode, x, GET_MODE (x), 0);
 
-
   if (CONST_INT_P (x))
-    {
-      i0 = INTVAL (x);
-      i1 = -(i0 < 0);
-    }
+    i0 = INTVAL (x);
+  else if (CONST_WIDE_INT_P (x))
+    i0 = CONST_WIDE_INT_ELT (x, 0);
   else
-    {
-      i0 = CONST_DOUBLE_LOW (x);
-      i1 = -(i0 < 0);
-    }
+    i0 = CONST_DOUBLE_LOW (x);
 
+  i1 = -(i0 < 0);
+      
   *p0 = i0;
   *p1 = i1;
 }
@@ -2163,12 +2162,15 @@ alpha_legitimate_constant_p (machine_mode mode, rtx x)
       /* TLS symbols are never valid.  */
       return SYMBOL_REF_TLS_MODEL (x) == 0;
 
+    case CONST_WIDE_INT:
+      if (x == CONST0_RTX (mode))
+	return true;
+      goto do_integer;
+
     case CONST_DOUBLE:
       if (x == CONST0_RTX (mode))
 	return true;
-      if (FLOAT_MODE_P (mode))
-	return false;
-      goto do_integer;
+      return false;
 
     case CONST_VECTOR:
       if (x == CONST0_RTX (mode))
@@ -2249,6 +2251,7 @@ alpha_expand_mov (machine_mode mode, rtx *operands)
 
   /* Split large integers.  */
   if (CONST_INT_P (operands[1])
+      || GET_CODE (operands[1]) == CONST_WIDE_INT
       || GET_CODE (operands[1]) == CONST_DOUBLE
       || GET_CODE (operands[1]) == CONST_VECTOR)
     {
@@ -3291,6 +3294,7 @@ alpha_split_tmode_pair (rtx operands[4], machine_mode mode,
       break;
 
     case CONST_INT:
+    case CONST_WIDE_INT:
     case CONST_DOUBLE:
       gcc_assert (operands[1] == CONST0_RTX (mode));
       operands[2] = operands[3] = const0_rtx;
@@ -5151,13 +5155,6 @@ print_operand (FILE *file, rtx x, int code)
       fprintf (file, "%d", alpha_this_gpdisp_sequence_number);
       break;
 
-    case 'H':
-      if (GET_CODE (x) == HIGH)
-	output_addr_const (file, XEXP (x, 0));
-      else
-	output_operand_lossage ("invalid %%H value");
-      break;
-
     case 'J':
       {
 	const char *lituse;
@@ -5254,27 +5251,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'm':
       /* Write mask for ZAP insn.  */
-      if (GET_CODE (x) == CONST_DOUBLE)
-	{
-	  HOST_WIDE_INT mask = 0;
-	  HOST_WIDE_INT value;
-
-	  value = CONST_DOUBLE_LOW (x);
-	  for (i = 0; i < HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR;
-	       i++, value >>= 8)
-	    if (value & 0xff)
-	      mask |= (1 << i);
-
-	  value = CONST_DOUBLE_HIGH (x);
-	  for (i = 0; i < HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR;
-	       i++, value >>= 8)
-	    if (value & 0xff)
-	      mask |= (1 << (i + sizeof (int)));
-
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, mask & 0xff);
-	}
-
-      else if (CONST_INT_P (x))
+      if (CONST_INT_P (x))
 	{
 	  HOST_WIDE_INT mask = 0, value = INTVAL (x);
 
@@ -8602,8 +8579,8 @@ summarize_insn (rtx x, struct shadow_summary *sum, int set)
       summarize_insn (XEXP (x, 0), sum, 0);
       break;
 
-    case CONST_INT:   case CONST_DOUBLE:
-    case SYMBOL_REF:  case LABEL_REF:     case CONST:
+    case CONST_INT:   case CONST_WIDE_INT:  case CONST_DOUBLE:
+    case SYMBOL_REF:  case LABEL_REF:       case CONST:
     case SCRATCH:     case ASM_INPUT:
       break;
 

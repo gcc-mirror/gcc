@@ -1066,3 +1066,5 @@ extern long alpha_auto_offset;
 
 /* The system headers under Alpha systems are generally C++-aware.  */
 #define NO_IMPLICIT_EXTERN_C
+
+#define TARGET_SUPPORTS_WIDE_INT 1

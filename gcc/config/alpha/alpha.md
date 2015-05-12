@@ -922,7 +922,7 @@
 (define_insn "*andsi_internal"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r")
 	(and:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ,rJ,rJ")
-		(match_operand:SI 2 "and_operand" "rI,N,MH")))]
+		(match_operand:SI 2 "and_operand" "rI,N,M")))]
   ""
   "@
    and %r1,%2,%0
@@ -933,7 +933,7 @@
 (define_insn "anddi3"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r")
 	(and:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ,rJ,rJ")
-		(match_operand:DI 2 "and_operand" "rI,N,MH")))]
+		(match_operand:DI 2 "and_operand" "rI,N,M")))]
   ""
   "@
    and %r1,%2,%0
@@ -4154,6 +4154,7 @@
      32-bit constants in TImode and rely on the splitter, but
      this doesn't seem to be worth the pain.  */
   else if (CONST_INT_P (operands[1])
+	   || GET_CODE (operands[1]) == CONST_WIDE_INT
 	   || GET_CODE (operands[1]) == CONST_DOUBLE)
     {
       rtx in[2], out[2], target;

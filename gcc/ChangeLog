@@ -1,3 +1,29 @@
+2015-05-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.h (TARGET_SUPPORTS_WIDE_INT): New define.
+	* config/alpha/alpha.c (alpha_rtx_costs): Handle CONST_WIDE_INT.
+	(alpha_extract_integer): Ditto.
+	(alpha_legitimate_constant_p): Ditto.
+	(alpha_split_tmode_pair): Ditto.
+	(alpha_preferred_reload_class): Add CONST_WIDE_INT.
+	(alpha_expand_mov): Ditto.
+	(print_operand): Remove handling of 'H' modifier.
+	<case 'm'>: Remove CONST_DOUBLE handling.
+	(summarize_insn): Handle CONST_WIDE_INT.
+	* config/alpha/alpha.md (*andsi_internal): Remove H constraint.
+	(anddi3): Ditto.
+	(movti): Handle CONST_WIDE_INT.
+	* config/alpha/constraints.md ('H'): Remove constraint definition.
+	('G'): Do not match MODE_FLOAT class.
+	* config/alpha/predicates.md (const0_operand): Also match
+	const_wide_int.
+	(non_add_const_operand): Ditto.
+	(non_zero_const_operand): Ditto.
+	(some_operand): Ditto.
+	(input_operand): Ditto.  Handle CONST_WIDE_INT.
+	(and_operand): Do not match const_double.
+	* config/alpha/sync.md (fetchop_constr): Remove H constraint.
+
 2015-05-12  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR target/65697
