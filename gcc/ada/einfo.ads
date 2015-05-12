@@ -882,6 +882,7 @@ package Einfo is
 --       primitives that come from source must be stored in this list in the
 --       order of their occurrence in the sources. For incomplete types the
 --       list is always empty.
+--
 --       When expansion is disabled the corresponding record type of a
 --       synchronized type is not constructed. In that case, such types
 --       carry this attribute directly, for ASIS use.
@@ -2017,7 +2018,7 @@ package Einfo is
 --       Defined in all entities. Indicates that the entity is locally defined
 --       within a subprogram P, and there is a reference to the entity within
 --       a subprogram nested within P (at any depth). Set only for the VM case
---       (where it is set for variables, constants and loop parameters). Note
+--       (where it is set for variables, constants, and loop parameters). Note
 --       that this is similar in usage to Is_Uplevel_Referenced_Entity (which
 --       is used when we are unnesting subprograms), but the usages are a bit
 --       different and it is cleaner to leave the old VM usage unchanged.

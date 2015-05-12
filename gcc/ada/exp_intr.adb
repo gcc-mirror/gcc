@@ -359,8 +359,8 @@ package body Exp_Intr is
                        Parameter_Associations => New_List (
                          Relocate_Node (Tag_Arg),
                          New_Occurrence_Of
-                           (Node (First_Elmt (Access_Disp_Table
-                                               (Etype (Act_Constr)))),
+                           (Node (First_Elmt
+                                    (Access_Disp_Table (Etype (Act_Constr)))),
                             Loc))));
                Insert_Action (N, Iface_Tag);
             end;

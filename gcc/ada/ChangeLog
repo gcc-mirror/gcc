@@ -1,3 +1,15 @@
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch9.adb, einfo.ads, exp_intr.adb: Minor reformatting.
+	* sem_disp.adb: Minor code reorganization (remove junk redundant
+	null statement).
+	* exp_unst.adb (Unnest_Subprogram.Uplev_Refs): Ignore uplevel
+	references to bounds of types coming from original type reference.
+	* checks.ads: Minor reformatting.
+	* checks.adb: Minor reformatting.
+	* sem_prag.adb (Analyze_Pragma, case Check): If in ignored
+	assertion, then make sure we do not drag in bignum stuff.
+
 2015-05-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch9.adb (Collect_Interfaces): Initialize
