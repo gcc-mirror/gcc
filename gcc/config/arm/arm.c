@@ -935,11 +935,13 @@ struct processors
 };
 
 
-#define ARM_PREFETCH_NOT_BENEFICIAL 0, -1, -1
-#define ARM_PREFETCH_BENEFICIAL(prefetch_slots,l1_size,l1_line_size) \
-  prefetch_slots, \
-  l1_size, \
-  l1_line_size
+#define ARM_PREFETCH_NOT_BENEFICIAL { 0, -1, -1 }
+#define ARM_PREFETCH_BENEFICIAL(num_slots,l1_size,l1_line_size) \
+  {								\
+    num_slots,							\
+    l1_size,							\
+    l1_line_size						\
+  }
 
 /* arm generic vectorizer costs.  */
 static const
@@ -1673,51 +1675,50 @@ const struct cpu_cost_table v7m_extra_costs =
   }
 };
 
-#define ARM_FUSE_NOTHING	(0)
-#define ARM_FUSE_MOVW_MOVT	(1 << 0)
-
 const struct tune_params arm_slowmul_tune =
 {
   arm_slowmul_rtx_costs,
-  NULL,
-  NULL,						/* Sched adj cost.  */
+  NULL,					/* Insn extra costs.  */
+  NULL,					/* Sched adj cost.  */
+  arm_default_branch_cost,
+  &arm_default_vec_cost,
   3,						/* Constant limit.  */
   5,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  1,						/* Issue rate.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  true,						/* Prefer constant pool.  */
-  arm_default_branch_cost,
-  false,					/* Prefer LDRD/STRD.  */
-  {true, true},					/* Prefer non short circuit.  */
-  &arm_default_vec_cost,                        /* Vectorizer costs.  */
-  false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false,                                 /* Prefer 32-bit encodings.  */
-  false,					/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-  1						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_TRUE,
+  tune_params::PREF_LDRD_FALSE,
+  tune_params::LOG_OP_NON_SC_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_NEITHER,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_FALSE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 const struct tune_params arm_fastmul_tune =
 {
   arm_fastmul_rtx_costs,
-  NULL,
-  NULL,						/* Sched adj cost.  */
+  NULL,					/* Insn extra costs.  */
+  NULL,					/* Sched adj cost.  */
+  arm_default_branch_cost,
+  &arm_default_vec_cost,
   1,						/* Constant limit.  */
   5,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  1,						/* Issue rate.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  true,						/* Prefer constant pool.  */
-  arm_default_branch_cost,
-  false,					/* Prefer LDRD/STRD.  */
-  {true, true},					/* Prefer non short circuit.  */
-  &arm_default_vec_cost,                        /* Vectorizer costs.  */
-  false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false,                                 /* Prefer 32-bit encodings.  */
-  false,					/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-  1						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_TRUE,
+  tune_params::PREF_LDRD_FALSE,
+  tune_params::LOG_OP_NON_SC_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_NEITHER,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_FALSE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 /* StrongARM has early execution of branches, so a sequence that is worth
@@ -1726,111 +1727,116 @@ const struct tune_params arm_fastmul_tune =
 const struct tune_params arm_strongarm_tune =
 {
   arm_fastmul_rtx_costs,
-  NULL,
-  NULL,						/* Sched adj cost.  */
+  NULL,					/* Insn extra costs.  */
+  NULL,					/* Sched adj cost.  */
+  arm_default_branch_cost,
+  &arm_default_vec_cost,
   1,						/* Constant limit.  */
   3,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  1,						/* Issue rate.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  true,						/* Prefer constant pool.  */
-  arm_default_branch_cost,
-  false,					/* Prefer LDRD/STRD.  */
-  {true, true},					/* Prefer non short circuit.  */
-  &arm_default_vec_cost,                        /* Vectorizer costs.  */
-  false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false,                                 /* Prefer 32-bit encodings.  */
-  false,					/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-  1						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_TRUE,
+  tune_params::PREF_LDRD_FALSE,
+  tune_params::LOG_OP_NON_SC_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_NEITHER,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_FALSE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 const struct tune_params arm_xscale_tune =
 {
   arm_xscale_rtx_costs,
-  NULL,
+  NULL,					/* Insn extra costs.  */
   xscale_sched_adjust_cost,
+  arm_default_branch_cost,
+  &arm_default_vec_cost,
   2,						/* Constant limit.  */
   3,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  1,						/* Issue rate.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  true,						/* Prefer constant pool.  */
-  arm_default_branch_cost,
-  false,					/* Prefer LDRD/STRD.  */
-  {true, true},					/* Prefer non short circuit.  */
-  &arm_default_vec_cost,                        /* Vectorizer costs.  */
-  false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false,                                 /* Prefer 32-bit encodings.  */
-  false,					/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-  1						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_TRUE,
+  tune_params::PREF_LDRD_FALSE,
+  tune_params::LOG_OP_NON_SC_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_NEITHER,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_FALSE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 const struct tune_params arm_9e_tune =
 {
   arm_9e_rtx_costs,
-  NULL,
-  NULL,						/* Sched adj cost.  */
+  NULL,					/* Insn extra costs.  */
+  NULL,					/* Sched adj cost.  */
+  arm_default_branch_cost,
+  &arm_default_vec_cost,
   1,						/* Constant limit.  */
   5,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  1,						/* Issue rate.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  true,						/* Prefer constant pool.  */
-  arm_default_branch_cost,
-  false,					/* Prefer LDRD/STRD.  */
-  {true, true},					/* Prefer non short circuit.  */
-  &arm_default_vec_cost,                        /* Vectorizer costs.  */
-  false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false,                                 /* Prefer 32-bit encodings.  */
-  false,					/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-  1						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_TRUE,
+  tune_params::PREF_LDRD_FALSE,
+  tune_params::LOG_OP_NON_SC_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_NEITHER,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_FALSE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 const struct tune_params arm_marvell_pj4_tune =
 {
   arm_9e_rtx_costs,
-  NULL,
-  NULL,						/* Sched adj cost.  */
+  NULL,					/* Insn extra costs.  */
+  NULL,					/* Sched adj cost.  */
+  arm_default_branch_cost,
+  &arm_default_vec_cost,
   1,						/* Constant limit.  */
   5,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  2,						/* Issue rate.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  true,						/* Prefer constant pool.  */
-  arm_default_branch_cost,
-  false,					/* Prefer LDRD/STRD.  */
-  {true, true},					/* Prefer non short circuit.  */
-  &arm_default_vec_cost,			/* Vectorizer costs.  */
-  false,					/* Prefer Neon for 64-bits bitops.  */
-  false, false,					/* Prefer 32-bit encodings.  */
-  false,					/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-  2						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_TRUE,
+  tune_params::PREF_LDRD_FALSE,
+  tune_params::LOG_OP_NON_SC_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_NEITHER,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_FALSE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 const struct tune_params arm_v6t2_tune =
 {
   arm_9e_rtx_costs,
-  NULL,
-  NULL,						/* Sched adj cost.  */
+  NULL,					/* Insn extra costs.  */
+  NULL,					/* Sched adj cost.  */
+  arm_default_branch_cost,
+  &arm_default_vec_cost,
   1,						/* Constant limit.  */
   5,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  1,						/* Issue rate.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  false,					/* Prefer constant pool.  */
-  arm_default_branch_cost,
-  false,					/* Prefer LDRD/STRD.  */
-  {true, true},					/* Prefer non short circuit.  */
-  &arm_default_vec_cost,                        /* Vectorizer costs.  */
-  false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false,                                 /* Prefer 32-bit encodings.  */
-  false,					/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-  1						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_FALSE,
+  tune_params::PREF_LDRD_FALSE,
+  tune_params::LOG_OP_NON_SC_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_NEITHER,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_FALSE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 
@@ -1839,154 +1845,161 @@ const struct tune_params arm_cortex_tune =
 {
   arm_9e_rtx_costs,
   &generic_extra_costs,
-  NULL,						/* Sched adj cost.  */
+  NULL,					/* Sched adj cost.  */
+  arm_default_branch_cost,
+  &arm_default_vec_cost,
   1,						/* Constant limit.  */
   5,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  2,						/* Issue rate.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  false,					/* Prefer constant pool.  */
-  arm_default_branch_cost,
-  false,					/* Prefer LDRD/STRD.  */
-  {true, true},					/* Prefer non short circuit.  */
-  &arm_default_vec_cost,                        /* Vectorizer costs.  */
-  false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false,                                 /* Prefer 32-bit encodings.  */
-  false,					/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-  2						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_FALSE,
+  tune_params::PREF_LDRD_FALSE,
+  tune_params::LOG_OP_NON_SC_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_NEITHER,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_FALSE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 const struct tune_params arm_cortex_a8_tune =
 {
   arm_9e_rtx_costs,
   &cortexa8_extra_costs,
-  NULL,						/* Sched adj cost.  */
+  NULL,					/* Sched adj cost.  */
+  arm_default_branch_cost,
+  &arm_default_vec_cost,
   1,						/* Constant limit.  */
   5,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  2,						/* Issue rate.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  false,					/* Prefer constant pool.  */
-  arm_default_branch_cost,
-  false,					/* Prefer LDRD/STRD.  */
-  {true, true},					/* Prefer non short circuit.  */
-  &arm_default_vec_cost,                        /* Vectorizer costs.  */
-  false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false,                                 /* Prefer 32-bit encodings.  */
-  true,						/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-   2						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_FALSE,
+  tune_params::PREF_LDRD_FALSE,
+  tune_params::LOG_OP_NON_SC_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_NEITHER,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_TRUE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 const struct tune_params arm_cortex_a7_tune =
 {
   arm_9e_rtx_costs,
   &cortexa7_extra_costs,
-  NULL,
+  NULL,					/* Sched adj cost.  */
+  arm_default_branch_cost,
+  &arm_default_vec_cost,
   1,						/* Constant limit.  */
   5,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  2,						/* Issue rate.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  false,					/* Prefer constant pool.  */
-  arm_default_branch_cost,
-  false,					/* Prefer LDRD/STRD.  */
-  {true, true},					/* Prefer non short circuit.  */
-  &arm_default_vec_cost,			/* Vectorizer costs.  */
-  false,					/* Prefer Neon for 64-bits bitops.  */
-  false, false,                                 /* Prefer 32-bit encodings.  */
-  true,						/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-  2						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_FALSE,
+  tune_params::PREF_LDRD_FALSE,
+  tune_params::LOG_OP_NON_SC_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_NEITHER,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_TRUE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 const struct tune_params arm_cortex_a15_tune =
 {
   arm_9e_rtx_costs,
   &cortexa15_extra_costs,
-  NULL,						/* Sched adj cost.  */
+  NULL,					/* Sched adj cost.  */
+  arm_default_branch_cost,
+  &arm_default_vec_cost,
   1,						/* Constant limit.  */
   2,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  3,						/* Issue rate.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  false,					/* Prefer constant pool.  */
-  arm_default_branch_cost,
-  true,						/* Prefer LDRD/STRD.  */
-  {true, true},					/* Prefer non short circuit.  */
-  &arm_default_vec_cost,                        /* Vectorizer costs.  */
-  false,                                        /* Prefer Neon for 64-bits bitops.  */
-  true, true,                                   /* Prefer 32-bit encodings.  */
-  true,						/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_FULL,			/* Sched L2 autopref.  */
-  3						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_FALSE,
+  tune_params::PREF_LDRD_TRUE,
+  tune_params::LOG_OP_NON_SC_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_ALL,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_TRUE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_FULL
 };
 
 const struct tune_params arm_cortex_a53_tune =
 {
   arm_9e_rtx_costs,
   &cortexa53_extra_costs,
-  NULL,						/* Scheduler cost adjustment.  */
+  NULL,					/* Sched adj cost.  */
+  arm_default_branch_cost,
+  &arm_default_vec_cost,
   1,						/* Constant limit.  */
   5,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  2,						/* Issue rate.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  false,					/* Prefer constant pool.  */
-  arm_default_branch_cost,
-  false,					/* Prefer LDRD/STRD.  */
-  {true, true},					/* Prefer non short circuit.  */
-  &arm_default_vec_cost,			/* Vectorizer costs.  */
-  false,					/* Prefer Neon for 64-bits bitops.  */
-  false, false,                                 /* Prefer 32-bit encodings.  */
-  true,						/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_MOVW_MOVT,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-  2						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_FALSE,
+  tune_params::PREF_LDRD_FALSE,
+  tune_params::LOG_OP_NON_SC_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_NEITHER,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_TRUE,
+  FUSE_OPS (tune_params::FUSE_MOVW_MOVT),
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 const struct tune_params arm_cortex_a57_tune =
 {
   arm_9e_rtx_costs,
   &cortexa57_extra_costs,
-  NULL,                                         /* Scheduler cost adjustment.  */
-  1,                                           /* Constant limit.  */
-  2,                                           /* Max cond insns.  */
-  ARM_PREFETCH_NOT_BENEFICIAL,
-  false,                                       /* Prefer constant pool.  */
+  NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
-  true,                                       /* Prefer LDRD/STRD.  */
-  {true, true},                                /* Prefer non short circuit.  */
-  &arm_default_vec_cost,                       /* Vectorizer costs.  */
-  false,                                       /* Prefer Neon for 64-bits bitops.  */
-  true, true,                                  /* Prefer 32-bit encodings.  */
-  true,						/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_MOVW_MOVT,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_FULL,			/* Sched L2 autopref.  */
-  3						/* Issue rate.  */
+  &arm_default_vec_cost,
+  1,						/* Constant limit.  */
+  2,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  3,						/* Issue rate.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  tune_params::PREF_CONST_POOL_FALSE,
+  tune_params::PREF_LDRD_TRUE,
+  tune_params::LOG_OP_NON_SC_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_ALL,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_TRUE,
+  FUSE_OPS (tune_params::FUSE_MOVW_MOVT),
+  tune_params::SCHED_AUTOPREF_FULL
 };
 
 const struct tune_params arm_xgene1_tune =
 {
   arm_9e_rtx_costs,
   &xgene1_extra_costs,
-  NULL,                                        /* Scheduler cost adjustment.  */
-  1,                                           /* Constant limit.  */
-  2,                                           /* Max cond insns.  */
-  ARM_PREFETCH_NOT_BENEFICIAL,
-  false,                                       /* Prefer constant pool.  */
+  NULL,					/* Sched adj cost.  */
   arm_default_branch_cost,
-  true,                                        /* Prefer LDRD/STRD.  */
-  {true, true},                                /* Prefer non short circuit.  */
-  &arm_default_vec_cost,                       /* Vectorizer costs.  */
-  false,                                       /* Prefer Neon for 64-bits bitops.  */
-  true, true,                                  /* Prefer 32-bit encodings.  */
-  false,				       /* Prefer Neon for stringops.  */
-  32,					       /* Maximum insns to inline memset.  */
-  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-  4						/* Issue rate.  */
+  &arm_default_vec_cost,
+  1,						/* Constant limit.  */
+  2,						/* Max cond insns.  */
+  32,						/* Memset max inline.  */
+  4,						/* Issue rate.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  tune_params::PREF_CONST_POOL_FALSE,
+  tune_params::PREF_LDRD_TRUE,
+  tune_params::LOG_OP_NON_SC_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_ALL,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_FALSE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 /* Branches can be dual-issued on Cortex-A5, so conditional execution is
@@ -1996,22 +2009,23 @@ const struct tune_params arm_cortex_a5_tune =
 {
   arm_9e_rtx_costs,
   &cortexa5_extra_costs,
-  NULL,						/* Sched adj cost.  */
+  NULL,					/* Sched adj cost.  */
+  arm_cortex_a5_branch_cost,
+  &arm_default_vec_cost,
   1,						/* Constant limit.  */
   1,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  2,						/* Issue rate.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  false,					/* Prefer constant pool.  */
-  arm_cortex_a5_branch_cost,
-  false,					/* Prefer LDRD/STRD.  */
-  {false, false},				/* Prefer non short circuit.  */
-  &arm_default_vec_cost,                        /* Vectorizer costs.  */
-  false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false,                                 /* Prefer 32-bit encodings.  */
-  true,						/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-  2						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_FALSE,
+  tune_params::PREF_LDRD_FALSE,
+  tune_params::LOG_OP_NON_SC_FALSE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_FALSE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_NEITHER,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_TRUE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 const struct tune_params arm_cortex_a9_tune =
@@ -2019,43 +2033,45 @@ const struct tune_params arm_cortex_a9_tune =
   arm_9e_rtx_costs,
   &cortexa9_extra_costs,
   cortex_a9_sched_adjust_cost,
+  arm_default_branch_cost,
+  &arm_default_vec_cost,
   1,						/* Constant limit.  */
   5,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  2,						/* Issue rate.  */
   ARM_PREFETCH_BENEFICIAL(4,32,32),
-  false,					/* Prefer constant pool.  */
-  arm_default_branch_cost,
-  false,					/* Prefer LDRD/STRD.  */
-  {true, true},					/* Prefer non short circuit.  */
-  &arm_default_vec_cost,                        /* Vectorizer costs.  */
-  false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false,                                 /* Prefer 32-bit encodings.  */
-  false,					/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-  2						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_FALSE,
+  tune_params::PREF_LDRD_FALSE,
+  tune_params::LOG_OP_NON_SC_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_NEITHER,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_FALSE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 const struct tune_params arm_cortex_a12_tune =
 {
   arm_9e_rtx_costs,
   &cortexa12_extra_costs,
-  NULL,						/* Sched adj cost.  */
+  NULL,					/* Sched adj cost.  */
+  arm_default_branch_cost,
+  &arm_default_vec_cost,                        /* Vectorizer costs.  */
   1,						/* Constant limit.  */
   2,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  2,						/* Issue rate.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  false,					/* Prefer constant pool.  */
-  arm_default_branch_cost,
-  true,						/* Prefer LDRD/STRD.  */
-  {true, true},					/* Prefer non short circuit.  */
-  &arm_default_vec_cost,                        /* Vectorizer costs.  */
-  false,                                        /* Prefer Neon for 64-bits bitops.  */
-  true, true,                                   /* Prefer 32-bit encodings.  */
-  true,						/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_MOVW_MOVT,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-  2						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_FALSE,
+  tune_params::PREF_LDRD_TRUE,
+  tune_params::LOG_OP_NON_SC_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_ALL,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_TRUE,
+  FUSE_OPS (tune_params::FUSE_MOVW_MOVT),
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 /* armv7m tuning.  On Cortex-M4 cores for example, MOVW/MOVT take a single
@@ -2069,22 +2085,23 @@ const struct tune_params arm_v7m_tune =
 {
   arm_9e_rtx_costs,
   &v7m_extra_costs,
-  NULL,						/* Sched adj cost.  */
+  NULL,					/* Sched adj cost.  */
+  arm_cortex_m_branch_cost,
+  &arm_default_vec_cost,
   1,						/* Constant limit.  */
   2,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  1,						/* Issue rate.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  true,						/* Prefer constant pool.  */
-  arm_cortex_m_branch_cost,
-  false,					/* Prefer LDRD/STRD.  */
-  {false, false},				/* Prefer non short circuit.  */
-  &arm_default_vec_cost,                        /* Vectorizer costs.  */
-  false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false,                                 /* Prefer 32-bit encodings.  */
-  false,					/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-  1						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_TRUE,
+  tune_params::PREF_LDRD_FALSE,
+  tune_params::LOG_OP_NON_SC_FALSE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_FALSE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_NEITHER,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_FALSE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 /* Cortex-M7 tuning.  */
@@ -2093,22 +2110,23 @@ const struct tune_params arm_cortex_m7_tune =
 {
   arm_9e_rtx_costs,
   &v7m_extra_costs,
-  NULL,						/* Sched adj cost.  */
+  NULL,					/* Sched adj cost.  */
+  arm_cortex_m7_branch_cost,
+  &arm_default_vec_cost,
   0,						/* Constant limit.  */
   1,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  2,						/* Issue rate.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  true,						/* Prefer constant pool.  */
-  arm_cortex_m7_branch_cost,
-  false,					/* Prefer LDRD/STRD.  */
-  {true, true},					/* Prefer non short circuit.  */
-  &arm_default_vec_cost,                        /* Vectorizer costs.  */
-  false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false,                                 /* Prefer 32-bit encodings.  */
-  false,					/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-  2						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_TRUE,
+  tune_params::PREF_LDRD_FALSE,
+  tune_params::LOG_OP_NON_SC_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_NEITHER,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_FALSE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 /* The arm_v6m_tune is duplicated from arm_cortex_tune, rather than
@@ -2116,45 +2134,47 @@ const struct tune_params arm_cortex_m7_tune =
 const struct tune_params arm_v6m_tune =
 {
   arm_9e_rtx_costs,
-  NULL,
-  NULL,						/* Sched adj cost.  */
+  NULL,					/* Insn extra costs.  */
+  NULL,					/* Sched adj cost.  */
+  arm_default_branch_cost,
+  &arm_default_vec_cost,                        /* Vectorizer costs.  */
   1,						/* Constant limit.  */
   5,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  1,						/* Issue rate.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  false,					/* Prefer constant pool.  */
-  arm_default_branch_cost,
-  false,					/* Prefer LDRD/STRD.  */
-  {false, false},				/* Prefer non short circuit.  */
-  &arm_default_vec_cost,                        /* Vectorizer costs.  */
-  false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false,                                 /* Prefer 32-bit encodings.  */
-  false,					/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-  1						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_FALSE,
+  tune_params::PREF_LDRD_FALSE,
+  tune_params::LOG_OP_NON_SC_FALSE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_FALSE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_NEITHER,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_FALSE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 const struct tune_params arm_fa726te_tune =
 {
   arm_9e_rtx_costs,
-  NULL,
+  NULL,					/* Insn extra costs.  */
   fa726te_sched_adjust_cost,
+  arm_default_branch_cost,
+  &arm_default_vec_cost,
   1,						/* Constant limit.  */
   5,						/* Max cond insns.  */
+  8,						/* Memset max inline.  */
+  2,						/* Issue rate.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
-  true,						/* Prefer constant pool.  */
-  arm_default_branch_cost,
-  false,					/* Prefer LDRD/STRD.  */
-  {true, true},					/* Prefer non short circuit.  */
-  &arm_default_vec_cost,                        /* Vectorizer costs.  */
-  false,                                        /* Prefer Neon for 64-bits bitops.  */
-  false, false,                                 /* Prefer 32-bit encodings.  */
-  false,					/* Prefer Neon for stringops.  */
-  8,						/* Maximum insns to inline memset.  */
-  ARM_FUSE_NOTHING,				/* Fuseable pairs of instructions.  */
-  ARM_SCHED_AUTOPREF_OFF,			/* Sched L2 autopref.  */
-  2						/* Issue rate.  */
+  tune_params::PREF_CONST_POOL_TRUE,
+  tune_params::PREF_LDRD_FALSE,
+  tune_params::LOG_OP_NON_SC_TRUE,		/* Thumb.  */
+  tune_params::LOG_OP_NON_SC_TRUE,		/* ARM.  */
+  tune_params::DISPARAGE_FLAGS_NEITHER,
+  tune_params::PREF_NEON_64_FALSE,
+  tune_params::PREF_NEON_STRINGOPS_FALSE,
+  tune_params::FUSE_NOTHING,
+  tune_params::SCHED_AUTOPREF_OFF
 };
 
 
@@ -3228,31 +3248,33 @@ arm_option_override (void)
       && abi_version_at_least(2))
     flag_strict_volatile_bitfields = 1;
 
-  /* Enable sw prefetching at -O3 for CPUS that have prefetch, and we have deemed
-     it beneficial (signified by setting num_prefetch_slots to 1 or more.)  */
+  /* Enable sw prefetching at -O3 for CPUS that have prefetch, and we
+     have deemed it beneficial (signified by setting
+     prefetch.num_slots to 1 or more).  */
   if (flag_prefetch_loop_arrays < 0
       && HAVE_prefetch
       && optimize >= 3
-      && current_tune->num_prefetch_slots > 0)
+      && current_tune->prefetch.num_slots > 0)
     flag_prefetch_loop_arrays = 1;
 
-  /* Set up parameters to be used in prefetching algorithm.  Do not override the
-     defaults unless we are tuning for a core we have researched values for.  */
-  if (current_tune->num_prefetch_slots > 0)
+  /* Set up parameters to be used in prefetching algorithm.  Do not
+     override the defaults unless we are tuning for a core we have
+     researched values for.  */
+  if (current_tune->prefetch.num_slots > 0)
     maybe_set_param_value (PARAM_SIMULTANEOUS_PREFETCHES,
-                           current_tune->num_prefetch_slots,
-                           global_options.x_param_values,
-                           global_options_set.x_param_values);
-  if (current_tune->l1_cache_line_size >= 0)
+			   current_tune->prefetch.num_slots,
+			   global_options.x_param_values,
+			   global_options_set.x_param_values);
+  if (current_tune->prefetch.l1_cache_line_size >= 0)
     maybe_set_param_value (PARAM_L1_CACHE_LINE_SIZE,
-                           current_tune->l1_cache_line_size,
-                           global_options.x_param_values,
-                           global_options_set.x_param_values);
-  if (current_tune->l1_cache_size >= 0)
+			   current_tune->prefetch.l1_cache_line_size,
+			   global_options.x_param_values,
+			   global_options_set.x_param_values);
+  if (current_tune->prefetch.l1_cache_size >= 0)
     maybe_set_param_value (PARAM_L1_CACHE_SIZE,
-                           current_tune->l1_cache_size,
-                           global_options.x_param_values,
-                           global_options_set.x_param_values);
+			   current_tune->prefetch.l1_cache_size,
+			   global_options.x_param_values,
+			   global_options_set.x_param_values);
 
   /* Use Neon to perform 64-bits operations rather than core
      registers.  */
@@ -3262,24 +3284,35 @@ arm_option_override (void)
 
   /* Use the alternative scheduling-pressure algorithm by default.  */
   maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, SCHED_PRESSURE_MODEL,
-                         global_options.x_param_values,
-                         global_options_set.x_param_values);
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
 
   /* Look through ready list and all of queue for instructions
      relevant for L2 auto-prefetcher.  */
   int param_sched_autopref_queue_depth;
-  if (current_tune->sched_autopref == ARM_SCHED_AUTOPREF_OFF)
-    param_sched_autopref_queue_depth = -1;
-  else if (current_tune->sched_autopref == ARM_SCHED_AUTOPREF_RANK)
-    param_sched_autopref_queue_depth = 0;
-  else if (current_tune->sched_autopref == ARM_SCHED_AUTOPREF_FULL)
-    param_sched_autopref_queue_depth = max_insn_queue_index + 1;
-  else
-    gcc_unreachable ();
+
+  switch (current_tune->sched_autopref)
+    {
+    case tune_params::SCHED_AUTOPREF_OFF:
+      param_sched_autopref_queue_depth = -1;
+      break;
+
+    case tune_params::SCHED_AUTOPREF_RANK:
+      param_sched_autopref_queue_depth = 0;
+      break;
+
+    case tune_params::SCHED_AUTOPREF_FULL:
+      param_sched_autopref_queue_depth = max_insn_queue_index + 1;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
   maybe_set_param_value (PARAM_SCHED_AUTOPREF_QUEUE_DEPTH,
 			 param_sched_autopref_queue_depth,
-                         global_options.x_param_values,
-                         global_options_set.x_param_values);
+			 global_options.x_param_values,
+			 global_options_set.x_param_values);
 
   /* Currently, for slow flash data, we just disable literal pools.  */
   if (target_slow_flash_data)
@@ -17084,14 +17117,16 @@ thumb2_reorg (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      if (current_tune->disparage_flag_setting_t16_encodings
+      if ((current_tune->disparage_flag_setting_t16_encodings
+	   == tune_params::DISPARAGE_FLAGS_ALL)
 	  && optimize_bb_for_speed_p (bb))
 	continue;
 
       rtx_insn *insn;
       Convert_Action action = SKIP;
       Convert_Action action_for_partial_flag_setting
-	= (current_tune->disparage_partial_flag_setting_t16_encodings
+	= ((current_tune->disparage_flag_setting_t16_encodings
+	    != tune_params::DISPARAGE_FLAGS_NEITHER)
 	   && optimize_bb_for_speed_p (bb))
 	  ? SKIP : CONV;
 
@@ -25434,12 +25469,12 @@ arm_print_tune_info (void)
 	       current_tune->constant_limit);
   asm_fprintf (asm_out_file, "\t\t@max_insns_skipped:\t%d\n",
 	       current_tune->max_insns_skipped);
-  asm_fprintf (asm_out_file, "\t\t@num_prefetch_slots:\t%d\n",
-	       current_tune->num_prefetch_slots);
-  asm_fprintf (asm_out_file, "\t\t@l1_cache_size:\t%d\n",
-	       current_tune->l1_cache_size);
-  asm_fprintf (asm_out_file, "\t\t@l1_cache_line_size:\t%d\n",
-	       current_tune->l1_cache_line_size);
+  asm_fprintf (asm_out_file, "\t\t@prefetch.num_slots:\t%d\n",
+	       current_tune->prefetch.num_slots);
+  asm_fprintf (asm_out_file, "\t\t@prefetch.l1_cache_size:\t%d\n",
+	       current_tune->prefetch.l1_cache_size);
+  asm_fprintf (asm_out_file, "\t\t@prefetch.l1_cache_line_size:\t%d\n",
+	       current_tune->prefetch.l1_cache_line_size);
   asm_fprintf (asm_out_file, "\t\t@prefer_constant_pool:\t%d\n",
 	       (int) current_tune->prefer_constant_pool);
   asm_fprintf (asm_out_file, "\t\t@branch_cost:\t(s:speed, p:predictable)\n");
@@ -25455,17 +25490,13 @@ arm_print_tune_info (void)
   asm_fprintf (asm_out_file, "\t\t@prefer_ldrd_strd:\t%d\n",
 	       (int) current_tune->prefer_ldrd_strd);
   asm_fprintf (asm_out_file, "\t\t@logical_op_non_short_circuit:\t[%d,%d]\n",
-	       (int) current_tune->logical_op_non_short_circuit[0],
-	       (int) current_tune->logical_op_non_short_circuit[1]);
+	       (int) current_tune->logical_op_non_short_circuit_thumb,
+	       (int) current_tune->logical_op_non_short_circuit_arm);
   asm_fprintf (asm_out_file, "\t\t@prefer_neon_for_64bits:\t%d\n",
 	       (int) current_tune->prefer_neon_for_64bits);
   asm_fprintf (asm_out_file,
 	       "\t\t@disparage_flag_setting_t16_encodings:\t%d\n",
 	       (int) current_tune->disparage_flag_setting_t16_encodings);
-  asm_fprintf (asm_out_file,
-	       "\t\t@disparage_partial_flag_setting_t16_encodings:\t%d\n",
-	       (int) current_tune
-	               ->disparage_partial_flag_setting_t16_encodings);
   asm_fprintf (asm_out_file, "\t\t@string_ops_prefer_neon:\t%d\n",
 	       (int) current_tune->string_ops_prefer_neon);
   asm_fprintf (asm_out_file, "\t\t@max_insns_inline_memset:\t%d\n",
@@ -29112,7 +29143,7 @@ arm_gen_setmem (rtx *operands)
 static bool
 arm_macro_fusion_p (void)
 {
-  return current_tune->fuseable_ops != ARM_FUSE_NOTHING;
+  return current_tune->fuseable_ops != tune_params::FUSE_NOTHING;
 }
 
 
@@ -29133,44 +29164,44 @@ aarch_macro_fusion_pair_p (rtx_insn* prev, rtx_insn* curr)
   if (!arm_macro_fusion_p ())
     return false;
 
-  if (current_tune->fuseable_ops & ARM_FUSE_MOVW_MOVT)
+  if (current_tune->fuseable_ops & tune_params::FUSE_MOVW_MOVT)
     {
       /* We are trying to fuse
-         movw imm / movt imm
-         instructions as a group that gets scheduled together.  */
+	 movw imm / movt imm
+	 instructions as a group that gets scheduled together.  */
 
       set_dest = SET_DEST (curr_set);
 
       if (GET_MODE (set_dest) != SImode)
-        return false;
+	return false;
 
       /* We are trying to match:
-         prev (movw)  == (set (reg r0) (const_int imm16))
-         curr (movt) == (set (zero_extract (reg r0)
-                                           (const_int 16)
-                                           (const_int 16))
-                             (const_int imm16_1))
-         or
-         prev (movw) == (set (reg r1)
-                              (high (symbol_ref ("SYM"))))
-         curr (movt) == (set (reg r0)
-                             (lo_sum (reg r1)
-                                     (symbol_ref ("SYM"))))  */
+	 prev (movw)  == (set (reg r0) (const_int imm16))
+	 curr (movt) == (set (zero_extract (reg r0)
+					  (const_int 16)
+					   (const_int 16))
+			     (const_int imm16_1))
+	 or
+	 prev (movw) == (set (reg r1)
+			      (high (symbol_ref ("SYM"))))
+	 curr (movt) == (set (reg r0)
+			     (lo_sum (reg r1)
+				     (symbol_ref ("SYM"))))  */
       if (GET_CODE (set_dest) == ZERO_EXTRACT)
-        {
-          if (CONST_INT_P (SET_SRC (curr_set))
-              && CONST_INT_P (SET_SRC (prev_set))
-              && REG_P (XEXP (set_dest, 0))
-              && REG_P (SET_DEST (prev_set))
-              && REGNO (XEXP (set_dest, 0)) == REGNO (SET_DEST (prev_set)))
-            return true;
-        }
+	{
+	  if (CONST_INT_P (SET_SRC (curr_set))
+	      && CONST_INT_P (SET_SRC (prev_set))
+	      && REG_P (XEXP (set_dest, 0))
+	      && REG_P (SET_DEST (prev_set))
+	      && REGNO (XEXP (set_dest, 0)) == REGNO (SET_DEST (prev_set)))
+	    return true;
+	}
       else if (GET_CODE (SET_SRC (curr_set)) == LO_SUM
-               && REG_P (SET_DEST (curr_set))
-               && REG_P (SET_DEST (prev_set))
-               && GET_CODE (SET_SRC (prev_set)) == HIGH
-               && REGNO (SET_DEST (curr_set)) == REGNO (SET_DEST (prev_set)))
-             return true;
+	       && REG_P (SET_DEST (curr_set))
+	       && REG_P (SET_DEST (prev_set))
+	       && GET_CODE (SET_SRC (prev_set)) == HIGH
+	       && REGNO (SET_DEST (curr_set)) == REGNO (SET_DEST (prev_set)))
+	     return true;
     }
   return false;
 }
