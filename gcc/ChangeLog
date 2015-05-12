@@ -1,5 +1,15 @@
 2015-05-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (*rotlsi3_internal4, *rotlsi3_internal5,
+	*rotlsi3_internal6, rlwinm, 5 unnamed define_insns, and 6
+	define_splits): Delete, revamp, transmogrify into ...
+	(*rotlsi3_mask, *rotlsi3_mask_dot, *rotlsi3_mask_dot2,
+	*ashlsi3_imm_mask, *ashlsi3_imm_mask_dot, *ashlsi3_imm_mask_dot2,
+	*lshrsi3_imm_mask, *lshrsi3_imm_mask_dot, *lshrsi3_imm_mask_dot2):
+	New.
+
+2015-05-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (rs6000_adjust_atomic_subword): Use
 	gen_ashlsi3 and gen_andsi3 instead of gen_rlwinm.
 
