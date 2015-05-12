@@ -5866,6 +5866,18 @@ package body Sem_Prag is
 
          Check_Duplicate_Pragma (E);
 
+         --  Check Atomic and VFA used together
+
+         if (Is_Atomic (E) and then Prag_Id = Pragma_Volatile_Full_Access)
+           or else (Has_Volatile_Full_Access (E)
+                     and then (Prag_Id = Pragma_Atomic
+                                 or else
+                               Prag_Id = Pragma_Shared))
+         then
+            Error_Pragma
+              ("cannot have Volatile_Full_Access and Atomic for same entity");
+         end if;
+
          --  Now check appropriateness of the entity
 
          if Is_Type (E) then
