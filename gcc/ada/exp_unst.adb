@@ -1428,6 +1428,16 @@ package body Exp_Unst is
                goto Continue;
             end if;
 
+            --  Also ignore uplevel references to bounds of types that come
+            --  from the original type reference.
+
+            if Is_Entity_Name (UPJ.Ref)
+              and then Present (Entity (UPJ.Ref))
+              and then Is_Type (Entity (UPJ.Ref))
+            then
+               goto Continue;
+            end if;
+
             --  Rewrite one reference
 
             Rewrite_One_Ref : declare

@@ -7789,9 +7789,9 @@ package body Checks is
 
          Analyze_And_Resolve (N, Typ);
 
-         Scope_Suppress.Suppress (Overflow_Check)  := Svo;
-         Scope_Suppress.Overflow_Mode_General    := Svg;
-         Scope_Suppress.Overflow_Mode_Assertions := Sva;
+         Scope_Suppress.Suppress (Overflow_Check) := Svo;
+         Scope_Suppress.Overflow_Mode_General     := Svg;
+         Scope_Suppress.Overflow_Mode_Assertions  := Sva;
       end Reanalyze;
 
       --------------
@@ -7817,9 +7817,9 @@ package body Checks is
 
          Expand (N);
 
-         Scope_Suppress.Suppress (Overflow_Check)  := Svo;
-         Scope_Suppress.Overflow_Mode_General    := Svg;
-         Scope_Suppress.Overflow_Mode_Assertions := Sva;
+         Scope_Suppress.Suppress (Overflow_Check) := Svo;
+         Scope_Suppress.Overflow_Mode_General     := Svg;
+         Scope_Suppress.Overflow_Mode_Assertions  := Sva;
       end Reexpand;
 
    --  Start of processing for Minimize_Eliminate_Overflows

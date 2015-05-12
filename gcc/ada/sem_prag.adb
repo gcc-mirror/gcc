@@ -11373,7 +11373,7 @@ package body Sem_Prag is
             end case;
 
             --  Check applicable policy. We skip this if Checked/Ignored status
-            --  is already set (e.g. in the casse of a pragma from an aspect).
+            --  is already set (e.g. in the case of a pragma from an aspect).
 
             if Is_Checked (N) or else Is_Ignored (N) then
                null;
@@ -11441,7 +11441,7 @@ package body Sem_Prag is
                   end if;
             end case;
 
-            --  Deal with analyzing the string argument.
+            --  Deal with analyzing the string argument
 
             if Arg_Count = 3 then
 
@@ -11495,10 +11495,38 @@ package body Sem_Prag is
                        Left_Opnd  => Make_Identifier (Eloc, Name_False),
                        Right_Opnd => Expr),
                    Then_Statements => New_List (
-                     Make_Null_Statement (Eloc))));
+                            Make_Null_Statement (Eloc))));
+
+               --  Now go ahead and analyze the if statement
 
                In_Assertion_Expr := In_Assertion_Expr + 1;
-               Analyze (N);
+
+               --  One rather special treatment. If we are now in Eliminated
+               --  overflow mode, then suppress overflow checking since we do
+               --  not want to drag in the bignum stuff if we are in Ignore
+               --  mode anyway. This is particularly important if we are using
+               --  a configurable run time that does not support bignum ops.
+
+               if Scope_Suppress.Overflow_Mode_Assertions = Eliminated then
+                  declare
+                     Svo : constant Boolean :=
+                             Scope_Suppress.Suppress (Overflow_Check);
+                  begin
+                     Scope_Suppress.Overflow_Mode_Assertions  := Strict;
+                     Scope_Suppress.Suppress (Overflow_Check) := True;
+                     Analyze (N);
+                     Scope_Suppress.Suppress (Overflow_Check) := Svo;
+                     Scope_Suppress.Overflow_Mode_Assertions  := Eliminated;
+                  end;
+
+               --  Not that special case!
+
+               else
+                  Analyze (N);
+               end if;
+
+               --  All done with this check
+
                In_Assertion_Expr := In_Assertion_Expr - 1;
 
             --  Check is active or expansion not active. In these cases we can
