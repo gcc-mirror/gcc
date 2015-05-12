@@ -565,6 +565,14 @@ procedure Gnat1drv is
       Suppress_Options.Suppress (Atomic_Synchronization) :=
         not Atomic_Sync_Default_On_Target;
 
+      --  Set default for Alignment_Check, if we are on a machine with non-
+      --  strict alignment, then we suppress this check, since it is over-
+      --  zealous for such machines.
+
+      if not Ttypes.Target_Strict_Alignment then
+         Suppress_Options.Suppress (Alignment_Check) := True;
+      end if;
+
       --  Set switch indicating if back end can handle limited types, and
       --  guarantee that no incorrect copies are made (e.g. in the context
       --  of an if or case expression).
