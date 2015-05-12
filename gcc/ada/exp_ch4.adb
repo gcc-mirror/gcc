@@ -5090,7 +5090,6 @@ package body Exp_Ch4 is
    --------------------------------------
 
    procedure Expand_N_Expression_With_Actions (N : Node_Id) is
-
       function Process_Action (Act : Node_Id) return Traverse_Result;
       --  Inspect and process a single action of an expression_with_actions for
       --  transient controlled objects. If such objects are found, the routine
@@ -5129,14 +5128,57 @@ package body Exp_Ch4 is
 
       --  Local variables
 
-      Act : Node_Id;
+      Acts : constant List_Id := Actions (N);
+      Expr : constant Node_Id := Expression (N);
+      Act  : Node_Id;
 
    --  Start of processing for Expand_N_Expression_With_Actions
 
    begin
-      --  Process the actions as described above
+      --  Do not evaluate the expression when it denotes an entity because the
+      --  expression_with_actions node will be replaced by the reference.
 
-      Act := First (Actions (N));
+      if Is_Entity_Name (Expr) then
+         null;
+
+      --  Do not evaluate the expression when there are no actions because the
+      --  expression_with_actions node will be replaced by the expression.
+
+      elsif No (Acts) or else Is_Empty_List (Acts) then
+         null;
+
+      --  Force the evaluation of the expression by capturing its value in a
+      --  temporary. This ensures that aliases of transient controlled objects
+      --  do not leak to the expression of the expression_with_actions node:
+
+      --    do
+      --       Trans_Id : Ctrl_Typ : ...;
+      --       Alias : ... := Trans_Id;
+      --    in ... Alias ... end;
+
+      --  In the example above, Trans_Id cannot be finalized at the end of the
+      --  actions list because this may affect the alias and the final value of
+      --  the expression_with_actions. Forcing the evaluation encapsulates the
+      --  reference to the Alias within the actions list:
+
+      --    do
+      --       Trans_Id : Ctrl_Typ : ...;
+      --       Alias : ... := Trans_Id;
+      --       Val : constant Boolean := ... Alias ...;
+      --       <finalize Trans_Id>
+      --    in Val end;
+
+      --  It is now safe to finalize the transient controlled object at the end
+      --  of the actions list.
+
+      else
+         Force_Evaluation (Expr);
+      end if;
+
+      --  Process all transient controlled objects found within the actions of
+      --  the EWA node.
+
+      Act := First (Acts);
       while Present (Act) loop
          Process_Single_Action (Act);
          Next (Act);
@@ -5151,7 +5193,7 @@ package body Exp_Ch4 is
       --  tree in cases like this. This raises a whole lot of issues of whether
       --  we have problems elsewhere, which will be addressed in the future???
 
-      if Is_Empty_List (Actions (N)) then
+      if Is_Empty_List (Acts) then
          Rewrite (N, Relocate_Node (Expression (N)));
       end if;
    end Expand_N_Expression_With_Actions;
@@ -11406,9 +11448,10 @@ package body Exp_Ch4 is
          --  problems for coverage analysis.
 
          Rewrite (Right,
-                  Make_Expression_With_Actions (LocR,
-                    Expression => Relocate_Node (Right),
-                    Actions    => Actlist));
+           Make_Expression_With_Actions (LocR,
+             Expression => Relocate_Node (Right),
+             Actions    => Actlist));
+
          Set_Actions (N, No_List);
          Analyze_And_Resolve (Right, Standard_Boolean);
 
@@ -12620,72 +12663,28 @@ package body Exp_Ch4 is
      (Decl     : Node_Id;
       Rel_Node : Node_Id)
    is
-      Loc       : constant Source_Ptr := Sloc (Decl);
-      Obj_Id    : constant Entity_Id  := Defining_Identifier (Decl);
-      Obj_Typ   : constant Node_Id    := Etype (Obj_Id);
-      Desig_Typ : Entity_Id;
-      Expr      : Node_Id;
-      Fin_Stmts : List_Id;
-      Ptr_Id    : Entity_Id;
-      Temp_Id   : Entity_Id;
-      Temp_Ins  : Node_Id;
+      Loc         : constant Source_Ptr := Sloc (Decl);
+      Obj_Id      : constant Entity_Id  := Defining_Identifier (Decl);
+      Obj_Typ     : constant Node_Id    := Etype (Obj_Id);
+      Desig_Typ   : Entity_Id;
+      Expr        : Node_Id;
+      Hook_Id     : Entity_Id;
+      Hook_Insert : Node_Id;
+      Ptr_Id      : Entity_Id;
 
       Hook_Context : constant Node_Id := Find_Hook_Context (Rel_Node);
-      --  Node on which to insert the hook pointer (as an action): the
-      --  innermost enclosing non-transient scope.
+      --  The node on which to insert the hook as an action. This is usually
+      --  the innermost enclosing non-transient construct.
 
-      Finalization_Context : Node_Id;
-      --  Node after which to insert finalization actions
-
-      Finalize_Always : Boolean;
-      --  If False, call to finalizer includes a test of whether the hook
-      --  pointer is null.
+      Fin_Context : Node_Id;
+      --  The node after which to insert the finalization actions of the
+      --  transient controlled object.
 
    begin
-      --  Step 0: determine where to attach finalization actions in the tree
-
-      --  Special case for Boolean EWAs: capture expression in a temporary,
-      --  whose declaration will serve as the context around which to insert
-      --  finalization code. The finalization thus remains local to the
-      --  specific condition being evaluated.
-
       if Is_Boolean_Type (Etype (Rel_Node)) then
-
-         --  In this case, the finalization context is chosen so that we know
-         --  at finalization point that the hook pointer is never null, so no
-         --  need for a test, we can call the finalizer unconditionally, except
-         --  in the case where the object is created in a specific branch of a
-         --  conditional expression.
-
-         Finalize_Always :=
-           not Within_Case_Or_If_Expression (Rel_Node)
-             and then not Nkind_In
-                            (Original_Node (Rel_Node), N_Case_Expression,
-                                                       N_If_Expression);
-
-         declare
-            Loc  : constant Source_Ptr := Sloc (Rel_Node);
-            Temp : constant Entity_Id := Make_Temporary (Loc, 'E', Rel_Node);
-
-         begin
-            Append_To (Actions (Rel_Node),
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Temp,
-                Constant_Present    => True,
-                Object_Definition   =>
-                  New_Occurrence_Of (Etype (Rel_Node), Loc),
-                Expression          => Expression (Rel_Node)));
-            Finalization_Context := Last (Actions (Rel_Node));
-
-            Analyze (Last (Actions (Rel_Node)));
-
-            Set_Expression (Rel_Node, New_Occurrence_Of (Temp, Loc));
-            Analyze (Expression (Rel_Node));
-         end;
-
+         Fin_Context := Last (Actions (Rel_Node));
       else
-         Finalize_Always := False;
-         Finalization_Context := Hook_Context;
+         Fin_Context := Hook_Context;
       end if;
 
       --  Step 1: Create the access type which provides a reference to the
@@ -12715,23 +12714,23 @@ package body Exp_Ch4 is
       --  Step 2: Create a temporary which acts as a hook to the transient
       --  controlled object. Generate:
 
-      --    Temp : Ptr_Id := null;
+      --    Hook : Ptr_Id := null;
 
-      Temp_Id := Make_Temporary (Loc, 'T');
+      Hook_Id := Make_Temporary (Loc, 'T');
 
       Insert_Action (Hook_Context,
         Make_Object_Declaration (Loc,
-          Defining_Identifier => Temp_Id,
+          Defining_Identifier => Hook_Id,
           Object_Definition   => New_Occurrence_Of (Ptr_Id, Loc)));
 
-      --  Mark the temporary as created for the purposes of exporting the
-      --  transient controlled object out of the expression_with_action or if
-      --  expression. This signals the machinery in Build_Finalizer to treat
-      --  this case specially.
+      --  Mark the hook as created for the purposes of exporting the transient
+      --  controlled object out of the expression_with_action or if expression.
+      --  This signals the machinery in Build_Finalizer to treat this case in
+      --  a special manner.
 
-      Set_Status_Flag_Or_Transient_Decl (Temp_Id, Decl);
+      Set_Status_Flag_Or_Transient_Decl (Hook_Id, Decl);
 
-      --  Step 3: Hook the transient object to the temporary
+      --  Step 3: Associate the transient object to the hook
 
       --  This must be inserted right after the object declaration, so that
       --  the assignment is executed if, and only if, the object is actually
@@ -12747,7 +12746,9 @@ package body Exp_Ch4 is
 
       if Is_Access_Type (Obj_Typ) then
          Expr :=
-           Unchecked_Convert_To (Ptr_Id, New_Occurrence_Of (Obj_Id, Loc));
+           Unchecked_Convert_To
+             (Typ  => Ptr_Id,
+              Expr => New_Occurrence_Of (Obj_Id, Loc));
       else
          Expr :=
            Make_Attribute_Reference (Loc,
@@ -12756,9 +12757,9 @@ package body Exp_Ch4 is
       end if;
 
       --  Generate:
-      --    Temp := Ptr_Id (Obj_Id);
+      --    Hook := Ptr_Id (Obj_Id);
       --      <or>
-      --    Temp := Obj_Id'Unrestricted_Access;
+      --    Hook := Obj_Id'Unrestricted_Access;
 
       --  When the transient object is initialized by an aggregate, the hook
       --  must capture the object after the last component assignment takes
@@ -12767,25 +12768,25 @@ package body Exp_Ch4 is
       if Ekind (Obj_Id) = E_Variable
         and then Present (Last_Aggregate_Assignment (Obj_Id))
       then
-         Temp_Ins := Last_Aggregate_Assignment (Obj_Id);
+         Hook_Insert := Last_Aggregate_Assignment (Obj_Id);
 
       --  Otherwise the hook seizes the related object immediately
 
       else
-         Temp_Ins := Decl;
+         Hook_Insert := Decl;
       end if;
 
-      Insert_After_And_Analyze (Temp_Ins,
+      Insert_After_And_Analyze (Hook_Insert,
         Make_Assignment_Statement (Loc,
-          Name       => New_Occurrence_Of (Temp_Id, Loc),
+          Name       => New_Occurrence_Of (Hook_Id, Loc),
           Expression => Expr));
 
-      --  Step 4: Finalize the transient controlled object after the context
-      --  has been evaluated/elaborated. Generate:
+      --  Step 4: Finalize the hook after the context has been evaluated or
+      --  elaborated. Generate:
 
-      --    if Temp /= null then
-      --       [Deep_]Finalize (Temp.all);
-      --       Temp := null;
+      --    if Hook /= null then
+      --       [Deep_]Finalize (Hook.all);
+      --       Hook := null;
       --    end if;
 
       --  When the node is part of a return statement, there is no need to
@@ -12795,29 +12796,29 @@ package body Exp_Ch4 is
       --  insert the finalization code after the return statement as this will
       --  render it unreachable.
 
-      if Nkind (Finalization_Context) /= N_Simple_Return_Statement then
-         Fin_Stmts := New_List (
-           Make_Final_Call
-             (Obj_Ref =>
-                Make_Explicit_Dereference (Loc,
-                  Prefix => New_Occurrence_Of (Temp_Id, Loc)),
-              Typ     => Desig_Typ),
+      if Nkind (Fin_Context) = N_Simple_Return_Statement then
+         null;
 
-           Make_Assignment_Statement (Loc,
-             Name       => New_Occurrence_Of (Temp_Id, Loc),
-             Expression => Make_Null (Loc)));
+      --  Otherwise finalize the hook
 
-         if not Finalize_Always then
-            Fin_Stmts := New_List (
-              Make_Implicit_If_Statement (Decl,
-                Condition =>
-                  Make_Op_Ne (Loc,
-                    Left_Opnd  => New_Occurrence_Of (Temp_Id, Loc),
-                    Right_Opnd => Make_Null (Loc)),
-                Then_Statements => Fin_Stmts));
-         end if;
+      else
+         Insert_Action_After (Fin_Context,
+           Make_Implicit_If_Statement (Decl,
+             Condition =>
+               Make_Op_Ne (Loc,
+                 Left_Opnd  => New_Occurrence_Of (Hook_Id, Loc),
+                 Right_Opnd => Make_Null (Loc)),
 
-         Insert_Actions_After (Finalization_Context, Fin_Stmts);
+             Then_Statements => New_List (
+               Make_Final_Call
+                 (Obj_Ref =>
+                    Make_Explicit_Dereference (Loc,
+                      Prefix => New_Occurrence_Of (Hook_Id, Loc)),
+                  Typ     => Desig_Typ),
+
+               Make_Assignment_Statement (Loc,
+                 Name       => New_Occurrence_Of (Hook_Id, Loc),
+                 Expression => Make_Null (Loc)))));
       end if;
    end Process_Transient_Object;
 

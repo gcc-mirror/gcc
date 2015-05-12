@@ -1,3 +1,20 @@
+2015-05-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-coormu.ads, a-coormu.adb: Add Indexing aspect, Reference_Type,
+	and Reference_Control_Type to support element iterators over
+	ordered multisets.
+	* a-ciormu.ads, a-ciormu.adb: Ditto for
+	indefinite_ordered_multisets.
+
+2015-05-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Expression_With_Actions): Force
+	the evaluation of the EWA expression.  Code cleanup.
+	(Process_Transient_Object): Code cleanup.
+	* exp_util.adb (Is_Aliased): Controlled transient objects found
+	within EWA nodes are not aliased.
+	(Is_Finalizable_Transient): Iterators are not finalizable transients.
+
 2015-05-12  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb (Process_Atomic_Independent_Shared_Volatile):
