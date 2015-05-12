@@ -1002,6 +1002,8 @@ typedef struct
   bool cp_was_assumed; /* AS_ASSUMED_SIZE cp arrays are converted to
 			AS_EXPLICIT, but we want to remember that we
 			did this.  */
+
+  bool resolved;
 }
 gfc_array_spec;
 

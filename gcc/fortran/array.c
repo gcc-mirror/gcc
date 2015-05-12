@@ -338,6 +338,9 @@ gfc_resolve_array_spec (gfc_array_spec *as, int check_constant)
   if (as == NULL)
     return true;
 
+  if (as->resolved)
+    return true;
+
   for (i = 0; i < as->rank + as->corank; i++)
     {
       e = as->lower[i];
@@ -363,6 +366,8 @@ gfc_resolve_array_spec (gfc_array_spec *as, int check_constant)
 		      as->upper[i]->value.integer, 1);
 	}
     }
+
+  as->resolved = true;
 
   return true;
 }

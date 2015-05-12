@@ -1,3 +1,11 @@
+2015-05-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/66041
+	PR fortran/37131
+	* gfortran.h (gfc_array_spec):  Add field resolved.
+	* array.c (gfc_resolve_array_spec):  Resolve array spec
+	only once.
+
 2015-05-11  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/66100
