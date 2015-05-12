@@ -4983,5 +4983,6 @@ Alternatively, you may run the script using the following command line:
 
   * generic tests for nested generic packages and their instantiations
   * tests for protected subprograms and entries
+  * pragma No_Run_Time
   * if pragmas for C and C++ interaction are used, manual adjustments might be
     necessary to make the test driver compilable

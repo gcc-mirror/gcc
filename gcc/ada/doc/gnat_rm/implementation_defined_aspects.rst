@@ -201,6 +201,16 @@ characters in this context).
 See section 'Performing Dimensionality Analysis in GNAT' in the GNAT Users
 Guide for detailed examples of use of the dimension system.
 
+Aspect Disable_Controlled
+=========================
+.. index:: Disable_Controlled
+
+The aspect  `Disable_Controlled` is defined for controlled record types. If
+active, this aspect causes suppression of all related calls to `Initialize`,
+`Adjust`, and `Finalize`. The intended use is for conditional compilation,
+where for example you might want a record to be controlled or not depending on
+whether some run-time check is enabled or suppressed.
+
 Aspect Effective_Reads
 ======================
 .. index:: Effective_Reads
@@ -510,6 +520,12 @@ Aspect Value_Size
 
 This aspect is equivalent to a `Value_Size`
 attribute definition clause.
+
+Aspect Volatile_Full_Access
+===========================
+.. index:: Volatile_Full_Access
+
+This boolean aspect is equivalent to pragma `Volatile_Full_Access`.
 
 Aspect Warnings
 ===============

@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , March 24, 2015
+GNAT User's Guide for Native Platforms , May 12, 2015
 
 AdaCore
 
@@ -17021,10 +17021,7 @@ the default naming convention.
 However, when compiling a multi-language application, or a pure C
 application, the project manager must be told which languages are of
 interest, which is done by setting the @strong{Languages} attribute to a list of
-strings, each of which is the name of a language. Tools like
-@emph{gnatmake} only know about Ada, while other tools like
-@emph{gprbuild} know about many more languages such as C, C++, Fortran,
-assembly and others can be added dynamically.
+strings, each of which is the name of a language.
 
 @geindex Naming scheme (GNAT Project Manager)
 
@@ -17143,8 +17140,7 @@ Its value is the path to the object directory, either absolute or
 relative to the directory containing the project file. This
 directory must already exist and be readable and writable, although
 some tools have a switch to create the directory if needed (See
-the switch @cite{-p} for @emph{gnatmake}
-and @emph{gprbuild}).
+the switch @cite{-p} for @emph{gprbuild}).
 
 If the attribute @cite{Object_Dir} is not specified, it defaults to
 the project directory, that is the directory containing the project file.
@@ -17293,7 +17289,7 @@ packages would be involved in the build process.
 @c    for Exec_Dir use ".";
 @c    for Main use ("proc.adb");
 @c 
-@c    package Builder is  --<<<  for gnatmake and gprbuild
+@c    package Builder is  --<<<  for gprbuild
 @c    end Builder;
 @c 
 @c    package Compiler is --<<<  for the compiler
@@ -17397,7 +17393,7 @@ used for all the sources of the project.
 
 The switches for the other tools are defined in a similar manner through the
 @strong{Default_Switches} and @strong{Switches} attributes, respectively in the
-@emph{Builder} package (for @emph{gnatmake} and @emph{gprbuild}),
+@emph{Builder} package (for @emph{gprbuild}),
 the @emph{Binder} package (binding Ada executables) and the @emph{Linker}
 package (for linking executables).
 
@@ -17410,7 +17406,7 @@ Now that our project files are written, let's build our executable.
 Here is the command we would use from the command line:
 
 @example
-gnatmake -Pbuild
+gprbuild -Pbuild
 @end example
 
 This will automatically build the executables specified through the
@@ -17419,10 +17415,9 @@ sources for which the object file does not exist or is not up-to-date; it
 will then run the binder; and finally run the linker to create the
 executable itself.
 
-@emph{gnatmake} only knows how to handle Ada files. By using
-@emph{gprbuild} as a builder, you could automatically manage C files the
+The @emph{gprbuild} builder, can automatically manage C files the
 same way: create the file @code{utils.c} in the @code{common} directory,
-set the attribute @emph{Languages} to @cite{"(Ada@comma{} C)"}, and run
+set the attribute @emph{Languages} to @cite{"(Ada@comma{} C)"}, and re-run
 
 @example
 gprbuild -Pbuild
@@ -18034,22 +18029,16 @@ specified order are:
 @itemize *
 
 @item 
-@code{<prefix>/<target>/lib/gnat}
-(for @emph{gnatmake} in all cases, and for @emph{gprbuild} if option
-@emph{--target} is specified)
+@code{<prefix>/<target>/lib/gnat} if option @emph{--target} is specified
 
 @item 
-@code{<prefix>/<target>/share/gpr}
-(for @emph{gnatmake} in all cases, and for @emph{gprbuild} if option
-@emph{--target} is specified)
+@code{<prefix>/<target>/share/gpr} if option @emph{--target} is specified
 
 @item 
 @code{<prefix>/share/gpr/}
-(for @emph{gnatmake} and @emph{gprbuild})
 
 @item 
 @code{<prefix>/lib/gnat/}
-(for @emph{gnatmake} and @emph{gprbuild})
 @end itemize
 
 In our example, @code{gtkada.gpr} is found in the predefined directory if
@@ -18318,18 +18307,12 @@ order of priority):
 
 @item @strong{Command line}:
 
-When launching @emph{gnatmake} or @emph{gprbuild}, the user can pass
+When launching @emph{gprbuild}, the user can pass
 extra @emph{-X} switches to define the external value. In
 our case, the command line might look like
 
 @example
-gnatmake -Pbuild.gpr -Xmode=debug
-@end example
-
-or
-
-@example
-gnatmake -Pbuild.gpr -Xmode=release
+gprbuild -Pbuild.gpr -Xmode=release
 @end example
 
 @item @strong{Environment variables}:
@@ -18639,14 +18622,8 @@ of shard libraries reduces the size of the final executable and can also reduce
 the memory footprint at execution time when the library is shared among several
 executables.
 
-It is also possible to build @strong{multi-language libraries}. When using
-@emph{gprbuild} as a builder, multi-language library projects allow naturally
-the creation of multi-language libraries . @emph{gnatmake}, does not try to
-compile non Ada sources. However, when the project is multi-language, it will
-automatically link all object files found in the object directory, whether or
-not they were compiled from an Ada source file. This specific behavior does not
-apply to Ada-only projects which only take into account the objects
-corresponding to the sources of the project.
+@emph{gprbuild also allows to build **multi-language libraries*} when specifying
+sources from multiple languages.
 
 A non-library project can import a library project. When the builder is invoked
 on the former, the library of the latter is only rebuilt when absolutely
@@ -18664,12 +18641,12 @@ up to date, and that all the sources of @cite{Build} are also up to date,
 the following two commands need to be used:
 
 @example
-gnatmake -Plogging.gpr
-gnatmake -Pbuild.gpr
+gprbuild -Plogging.gpr
+gprbuild -Pbuild.gpr
 @end example
 
 All @code{ALI} files will also be copied from the object directory to the
-library directory. To build executables, @emph{gnatmake} will use the
+library directory. To build executables, @emph{gprbuild} will use the
 library rather than the individual object files.
 
 Library projects can also be useful to describe a library that needs to be used
@@ -19210,8 +19187,7 @@ Very often, modules will build their own executables (for testing
 purposes for instance), or libraries (for easier reuse in various
 contexts).
 
-However, if you build your project through @emph{gnatmake} or
-@emph{gprbuild}, using a syntax similar to
+However, if you build your project through @emph{gprbuild}, using a syntax similar to
 
 @example
 gprbuild -PA.gpr
@@ -19219,9 +19195,9 @@ gprbuild -PA.gpr
 
 this will only rebuild the main programs of project A, not those of the
 imported projects B and C. Therefore you have to spawn several
-@emph{gnatmake} commands, one per project, to build all executables.
+@emph{gprbuild} commands, one per project, to build all executables.
 This is a little inconvenient, but more importantly is inefficient
-because @emph{gnatmake} needs to do duplicate work to ensure that sources are
+because @emph{gprbuild} needs to do duplicate work to ensure that sources are
 up-to-date, and cannot easily compile things in parallel when using
 the -j switch.
 
@@ -19251,9 +19227,6 @@ If you add a main to a project P not already explicitly referenced in the
 aggregate project, you will need to add "p.gpr" in the list of project
 files for the aggregate project, or the main will not be built when
 building the aggregate project.
-
-Aggregate projects are supported only with @emph{gprbuild}, not with
-@emph{gnatmake}.
 
 @node Building a set of projects with a single command,Define a build environment,Building all main programs from a single project tree,Aggregate Projects
 @anchor{gnat_ugn/gnat_project_manager building-a-set-of-projects-with-a-single-command}@anchor{184}@anchor{gnat_ugn/gnat_project_manager id29}@anchor{185}
@@ -19363,7 +19336,7 @@ once.
 Since there is no ambiguity as to which switches should be used, files
 can be compiled in parallel (through the usual -j switch) and this can
 be done while maximizing the use of CPUs (compared to launching
-multiple @emph{gprbuild} and @emph{gnatmake} commands in parallel).
+multiple @emph{gprbuild} commands in parallel).
 
 @node Syntax of aggregate projects,package Builder in aggregate projects,Performance improvements in builder,Aggregate Projects
 @anchor{gnat_ugn/gnat_project_manager id32}@anchor{18a}@anchor{gnat_ugn/gnat_project_manager syntax-of-aggregate-projects}@anchor{18b}
@@ -20141,8 +20114,8 @@ The following packages are currently supported in project files
 @item @emph{Binder}
 
 This package specifies characteristics useful when invoking the binder either
-directly via the @emph{gnat} driver or when using a builder such as
-@emph{gnatmake} or @emph{gprbuild}. See @ref{15d,,Main Subprograms}.
+directly via the @emph{gnat} driver or when using @emph{gprbuild}.
+See @ref{15d,,Main Subprograms}.
 
 @item @emph{Builder}
 
@@ -20402,7 +20375,7 @@ Illegal := "gnat.adc" & List2;  --  Illegal, must start with list
 
 An external value is an expression whose value is obtained from the command
 that invoked the processing of the current project file (typically a
-@emph{gnatmake} or @emph{gprbuild} command).
+@emph{gprbuild} command).
 
 There are two kinds of external values, one that returns a single string, and
 one that returns a string list.
@@ -21882,9 +21855,9 @@ in a cross-compilation environment, for example @cite{"wtx"} or
 @strong{Compiler_Command}: single, indexed, case-insensitive index
 
 Index is a language Name. Value is a string that denotes the command to be
-used to invoke the compiler. The value of @cite{Compiler_Command ("Ada")} is
-expected to be compatible with @emph{gnatmake}, in particular in
-the handling of switches.
+used to invoke the compiler. For historical reasons, the value of
+@cite{Compiler_Command ("Ada")} is expected to be a reference to @emph{gnatmake} or
+@emph{cross-gnatmake}.
 
 @item 
 @strong{Debugger_Command}: single
