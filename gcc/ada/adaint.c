@@ -38,6 +38,12 @@
 #define _REENTRANT
 #define _THREAD_SAFE
 
+/* Use 64 bit Large File API */
+#ifndef _LARGEFILE_SOURCE
+#define _LARGEFILE_SOURCE
+#endif
+#define _FILE_OFFSET_BITS 64
+
 #ifdef __vxworks
 
 /* No need to redefine exit here.  */

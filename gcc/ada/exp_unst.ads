@@ -187,15 +187,18 @@ package Exp_Unst is
    --   outer level of nesting. As we will see later, deeper levels of nesting
    --   will use AREC2, AREC3, ...
 
+   --   Note: normally the field names in the activation record match the
+   --   name of the entity. An exception is when the entity is declared in
+   --   a declare block, in which case we append the entity number, to avoid
+   --   clashes between the same name declared in different declare blocks.
+
    --   For all subprograms nested immediately within the corresponding scope,
    --   a parameter AREC1F is passed, and all calls to these routines have
    --   AREC1P added as an additional formal.
 
    --   Now within the nested procedures, any reference to an uplevel entity
-   --   xxx is replaced by Tnn!(AREC1.xxx).all (where ! represents a call
-   --   to unchecked conversion to convert the address to the access type
-   --   and Tnn is a locally declared type that is "access all t", where t
-   --   is the type of the reference).
+   --   xxx is replaced by typ'Deref(AREC1.xxx) where typ is the type of the
+   --   reference.
 
    --   Note: the reason that we use Address as the component type in the
    --   declaration of AREC1T is that we may create this type before we see
@@ -233,11 +236,8 @@ package Exp_Unst is
    --
    --          procedure inner (bb : integer; AREC1F : AREC1PT) is
    --          begin
-   --             type Tnn1 is access all Integer;
-   --             type Tnn2 is access all Integer;
-   --             type Tnn3 is access all Integer;
-   --             Tnn1!(AREC1F.x).all :=
-   --               Tnn2!(AREC1F.rv).all + y + b + Tnn3!(AREC1F.b).all;
+   --             Integer'Deref(AREC1F.x) :=
+   --               Integer'Deref(AREC1F.rv) + y + b + Integer_Deref(AREC1F.b);
    --          end;
    --
    --       begin
@@ -388,8 +388,7 @@ package Exp_Unst is
    --
    --          function inner (b : integer; AREC1F : AREC1PT) return boolean is
    --          begin
-   --             type Tnn is access all Integer
-   --             return b in x .. Tnn!(AREC1F.dynam_LAST).all
+   --             return b in x .. Integer'Deref(AREC1F.dynam_LAST)
    --               and then darecv.b in 42 .. 73;
    --          end inner;
    --
@@ -440,23 +439,20 @@ package Exp_Unst is
    --           type AREC2PT is access all AREC2T;
    --           AREC2P : constant AREC2PT := AREC2'Access;
    --
-   --           type Tnn1 is access all Integer;
-   --           v2 : integer := Tnn1!(AREC1F.v1).all {+} 1;
+   --           v2 : integer := Integer'Deref (AREC1F.v1) {+} 1;
    --           AREC2.v2 := v2'Address;
    --
    --           function inner2
    --              (z : integer; AREC2F : AREC2PT) return integer
    --           is
    --           begin
-   --              type Tnn1 is access all Integer;
-   --              type Tnn2 is access all Integer;
    --              return integer(z {+}
-   --                             Tnn1!(AREC2F.AREC1U.v1).all {+}
-   --                             Tnn2!(AREC2F.v2).all);
+   --                             Integer'Deref (AREC2F.AREC1U.v1) {+}
+   --                             Integer'Deref (AREC2F.v2).all);
    --           end inner2;
    --        begin
-   --           type Tnn is access all Integer;
-   --           return integer(y {+} inner2 (Tnn!(AREC1F.v1).all, AREC2P));
+   --           return integer(y {+}
+   --                            inner2 (Integer'Deref (AREC1F.v1), AREC2P));
    --        end inner1;
    --     begin
    --        return inner1 (x, AREC1P);

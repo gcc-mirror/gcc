@@ -26,7 +26,6 @@
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
-with Exp_Util; use Exp_Util;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -358,6 +357,14 @@ package body Exp_Unst is
       function Subp_Index (Sub : Entity_Id) return SI_Type;
       --  Given the entity for a subprogram, return corresponding Subps index
 
+      function Upref_Name (Ent : Entity_Id) return Name_Id;
+      --  This function returns the name to be used in the activation record to
+      --  reference the variable uplevel. Normally this is just a copy of the
+      --  Chars field of the entity. The exception is when the scope of Ent
+      --  is a declare block, in which case we append the entity number to
+      --  make sure that no confusion occurs between use of the same name
+      --  in different declare blocks.
+
       ----------------
       -- Actual_Ref --
       ----------------
@@ -444,6 +451,23 @@ package body Exp_Unst is
          pragma Assert (Is_Subprogram (Sub));
          return SI_Type (UI_To_Int (Subps_Index (Sub)));
       end Subp_Index;
+
+      ----------------
+      -- Upref_Name --
+      ----------------
+
+      function Upref_Name (Ent : Entity_Id) return Name_Id is
+      begin
+         if Ekind (Scope (Ent)) /= E_Block then
+            return Chars (Ent);
+
+         else
+            Get_Name_String (Chars (Ent));
+            Add_Str_To_Name_Buffer ("__");
+            Add_Nat_To_Name_Buffer (Nat (Ent));
+            return Name_Enter;
+         end if;
+      end Upref_Name;
 
    --  Start of processing for Unnest_Subprogram
 
@@ -913,7 +937,7 @@ package body Exp_Unst is
                      for J in 1 .. Num_Uplevel_Entities loop
                         Comp :=
                           Make_Defining_Identifier (Loc,
-                            Chars => Chars (Uplevel_Entities (J)));
+                            Chars => Upref_Name (Uplevel_Entities (J)));
 
                         Set_Activation_Record_Component
                           (Uplevel_Entities (J), Comp);
@@ -1029,7 +1053,7 @@ package body Exp_Unst is
                            end if;
 
                            --  Build and insert the assignment:
-                           --    ARECn.nam := nam
+                           --    ARECn.nam := nam'Address
 
                            Asn :=
                              Make_Assignment_Statement (Loc,
@@ -1038,7 +1062,9 @@ package body Exp_Unst is
                                    Prefix        =>
                                      New_Occurrence_Of (STJ.ARECn, Loc),
                                    Selector_Name =>
-                                     Make_Identifier (Loc, Chars (Ent))),
+                                     New_Occurrence_Of
+                                       (Activation_Record_Component (Ent),
+                                        Loc)),
 
                                Expression =>
                                  Make_Attribute_Reference (Loc,
@@ -1124,11 +1150,6 @@ package body Exp_Unst is
                         STJR : Subp_Entry renames Subps.Table (RSX);
                         --  Subp_Entry for enclosing subprogram for ref
 
-                        Tnn : constant Entity_Id :=
-                                Make_Temporary
-                                  (Loc, 'T', Related_Node => Ref);
-                        --  Local pointer type for reference
-
                         Pfx  : Node_Id;
                         Comp : Entity_Id;
                         SI   : SI_Type;
@@ -1141,28 +1162,15 @@ package body Exp_Unst is
 
                         Push_Scope (STJR.Ent);
 
-                        --  First insert declaration for pointer type
-
-                        --    type Tnn is access all typ;
-
-                        Insert_Action (Node (Elmt),
-                          Make_Full_Type_Declaration (Loc,
-                            Defining_Identifier => Tnn,
-                            Type_Definition     =>
-                              Make_Access_To_Object_Definition (Loc,
-                                All_Present        => True,
-                                Subtype_Indication =>
-                                  New_Occurrence_Of (Typ, Loc))));
-
                         --  Now we need to rewrite the reference. We have a
                         --  reference is from level STJE.Lev to level STJ.Lev.
                         --  The general form of the rewritten reference for
                         --  entity X is:
 
-                        --    Tnn!(ARECaF.ARECbU.ARECcU.ARECdU....ARECm.X).all
+                        --   Typ'Deref (ARECaF.ARECbU.ARECcU.ARECdU....ARECm.X)
 
                         --  where a,b,c,d .. m =
-                        --         STJR.Lev - 1,  STJ.Lev - 2, .. STJ.Lev
+                        --    STJR.Lev - 1,  STJ.Lev - 2, .. STJ.Lev
 
                         pragma Assert (STJR.Lev > STJ.Lev);
 
@@ -1206,13 +1214,14 @@ package body Exp_Unst is
                         --  Do the replacement
 
                         Rewrite (Ref,
-                          Make_Explicit_Dereference (Loc,
-                            Prefix =>
-                              Unchecked_Convert_To (Tnn,
-                                Make_Selected_Component (Loc,
-                                  Prefix        => Pfx,
-                                  Selector_Name =>
-                                    New_Occurrence_Of (Comp, Loc)))));
+                          Make_Attribute_Reference (Loc,
+                            Prefix         => New_Occurrence_Of (Typ, Loc),
+                            Attribute_Name => Name_Deref,
+                            Expressions    => New_List (
+                              Make_Selected_Component (Loc,
+                                Prefix        => Pfx,
+                                Selector_Name =>
+                                  New_Occurrence_Of (Comp, Loc)))));
 
                         --  Analyze and resolve the new expression. We do not
                         --  need to establish the relevant scope stack entries
