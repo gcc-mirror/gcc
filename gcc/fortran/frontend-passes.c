@@ -2680,6 +2680,25 @@ scalarized_expr (gfc_expr *e_in, gfc_expr **index, int count_index)
   return e;
 }
 
+/* Helper function to check for a dimen vector as subscript.  */
+
+static bool
+has_dimen_vector_ref (gfc_expr *e)
+{
+  gfc_array_ref *ar;
+  int i;
+
+  ar = gfc_find_array_ref (e);
+  gcc_assert (ar);
+  if (ar->type == AR_FULL)
+    return false;
+
+  for (i=0; i<ar->dimen; i++)
+    if (ar->dimen_type[i] == DIMEN_VECTOR)
+      return true;
+
+  return false;
+}
 
 /* Inline assignments of the form c = matmul(a,b).
    Handle only the cases currently where b and c are rank-two arrays.
@@ -2750,6 +2769,10 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
 
   if (matrix_a->expr_type != EXPR_VARIABLE
       || matrix_b->expr_type != EXPR_VARIABLE)
+    return 0;
+
+  if (has_dimen_vector_ref (expr1) || has_dimen_vector_ref (matrix_a)
+      || has_dimen_vector_ref (matrix_b))
     return 0;
 
   if (matrix_a->rank == 2)
