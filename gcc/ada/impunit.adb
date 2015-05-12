@@ -514,6 +514,7 @@ package body Impunit is
       --  harmless (and useful) to make then available in Ada 2005 mode.
 
     ("a-cogeso", T),  -- Ada.Containers.Generic_Sort
+    ("a-dhfina", T),  -- Ada.Directories.Hierarchical_File_Names
     ("a-secain", T),  -- Ada.Strings.Equal_Case_Insensitive
     ("a-shcain", T),  -- Ada.Strings.Hash_Case_Insensitive
     ("a-slcain", T),  -- Ada.Strings.Less_Case_Insensitive

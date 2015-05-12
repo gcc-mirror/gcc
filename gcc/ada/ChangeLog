@@ -1,10 +1,25 @@
 2015-05-12  Hristian Kirtchev  <kirtchev@adacore.com>
 
-	* einfo.adb Node32 is now used as Encapsulating_State.
+	* einfo.ads: Update the documentation of flags
+	Has_Inherited_Default_Init_Cond and Has_Default_Init_Cond.
+
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
+	* impunit.adb: Add entry for a-dhfina.ads
+	* a-dhfina.ads: New file.
+
+2015-05-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop_Over_Array): if the array
+	type has convention Fortran, a multidimensional iterator varies
+	the first dimension fastest.
+
+2015-05-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Node32 is now used as Encapsulating_State.
 	Node37 is now used as Associated_Entity.
 	(Associated_Entity): New routine.
-	(Encapsulating_State): Update the assertion guard
-	to include constants.
+	(Encapsulating_State): Update the assertion guard to include constants.
 	(Set_Associated_Entity): New routine.
 	(Set_Encapsulating_State): Update the assertion guard to
 	include constants.
