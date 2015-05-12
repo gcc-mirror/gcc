@@ -1,3 +1,8 @@
+2015-05-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_build_slp_tree_1): For BB vectorization
+	do not allow unrolling.
+
 2015-05-11  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386-modes.def (CCP): New.

@@ -568,6 +568,19 @@ vect_build_slp_tree_1 (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
           return false;
         }
 
+      /* If populating the vector type requires unrolling then fail
+         before adjusting *max_nunits for basic-block vectorization.  */
+      if (bb_vinfo
+	  && TYPE_VECTOR_SUBPARTS (vectype) > group_size)
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+			   "Build SLP failed: unrolling required "
+			   "in basic block SLP\n");
+	  /* Fatal mismatch.  */
+	  matches[0] = false;
+	  return false;
+	}
+
       /* In case of multiple types we need to detect the smallest type.  */
       if (*max_nunits < TYPE_VECTOR_SUBPARTS (vectype))
         {
