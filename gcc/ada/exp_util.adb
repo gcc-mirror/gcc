@@ -3366,6 +3366,13 @@ package body Exp_Util is
 
             Stm := Parent (CV);
 
+            --  If the tree has been otherwise rewritten there is nothing
+            --  else to be done either.
+
+            if Nkind (Stm) /= N_If_Statement then
+               return;
+            end if;
+
             --  Before start of ELSIF part
 
             if Loc < Sloc (CV) then

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -151,11 +151,12 @@ package body Interfaces.C.Pointers is
          raise Dereference_Error;
       end if;
 
-      --  Compute array length (including the terminator)
+      --  Compute array limited length (including the terminator)
 
-      L := 1;
-      while S.all /= Terminator and then L < Limit loop
+      L := 0;
+      while L < Limit loop
          L := L + 1;
+         exit when S.all = Terminator;
          Increment (S);
       end loop;
 
