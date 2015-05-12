@@ -40,8 +40,15 @@ nfiles=$#
 files="$*"
 
 stdin=false
+stdin_tmp=""
 if [ $nfiles -eq 1 ] && [ "$files" = "-" ]; then
     stdin=true
+
+    # By putting stdin into a temp file, we can handle it just like any other
+    # file.  F.i., we can cat it twice, which we can't do with stdin.
+    stdin_tmp=check_GNU_style.stdin
+    cat - > $stdin_tmp
+    files=$stdin_tmp
 else
     for f in $files; do
 	if [ "$f" = "-" ]; then
@@ -60,8 +67,8 @@ inp=check_GNU_style.inp
 tmp=check_GNU_style.tmp
 
 # Remove $tmp on exit and various signals.
-trap "rm -f $inp $tmp" 0
-trap "rm -f $inp $tmp ; exit 1" 1 2 3 5 9 13 15
+trap "rm -f $inp $tmp $stdin_tmp" 0
+trap "rm -f $inp $tmp $stdin_tmp; exit 1" 1 2 3 5 9 13 15
 
 if [ $nfiles -eq 1 ]; then
     # There's no need for the file prefix if we're dealing only with one file.
