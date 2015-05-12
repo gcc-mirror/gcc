@@ -87,7 +87,7 @@ package body Exp_Ch6 is
    --  we are in Unnest_Subprogram_Mode, then we record the subprogram entity
    --  and the body in this table, to later be passed to Unnest_Subprogram.
 
-   --  We need this delaying mechanism, because we have to wait untiil all
+   --  We need this delaying mechanism, because we have to wait until all
    --  instantiated bodies have been inserted before doing the unnesting.
 
    type Unest_Entry is record

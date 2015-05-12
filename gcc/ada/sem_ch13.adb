@@ -1130,7 +1130,20 @@ package body Sem_Ch13 is
 
                   when Aspect_Default_Value           |
                        Aspect_Default_Component_Value =>
-                     Analyze_Aspect_Default_Value (ASN);
+
+                     --  Do not inherit aspect for anonymous base type of a
+                     --  scalar or array type, because they apply to the first
+                     --  subtype of the type, and will be processed when that
+                     --  first subtype is frozen.
+
+                     if Is_Derived_Type (E)
+                       and then not Comes_From_Source (E)
+                       and then E /= First_Subtype (E)
+                     then
+                        null;
+                     else
+                        Analyze_Aspect_Default_Value (ASN);
+                     end if;
 
                   --  Ditto for iterator aspects, because the corresponding
                   --  attributes may not have been analyzed yet.
@@ -10910,9 +10923,12 @@ package body Sem_Ch13 is
 
       --  Default_Component_Value
 
+      --  Verify that there is no rep_item declared for the type, and there
+      --  is one coming from an ancestor.
+
       if Is_Array_Type (Typ)
         and then Is_Base_Type (Typ)
-        and then Has_Rep_Item (Typ, Name_Default_Component_Value, False)
+        and then not Has_Rep_Item (Typ, Name_Default_Component_Value, False)
         and then Has_Rep_Item (Typ, Name_Default_Component_Value)
       then
          Set_Default_Aspect_Component_Value (Typ,
@@ -10924,9 +10940,10 @@ package body Sem_Ch13 is
 
       if Is_Scalar_Type (Typ)
         and then Is_Base_Type (Typ)
-        and then Has_Rep_Item (Typ, Name_Default_Value, False)
+        and then not Has_Rep_Item (Typ, Name_Default_Value, False)
         and then Has_Rep_Item (Typ, Name_Default_Value)
       then
+         Set_Has_Default_Aspect (Typ);
          Set_Default_Aspect_Value (Typ,
            Default_Aspect_Value
              (Entity (Get_Rep_Item (Typ, Name_Default_Value))));

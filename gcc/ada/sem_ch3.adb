@@ -6553,6 +6553,11 @@ package body Sem_Ch3 is
          Insert_Before (N, Type_Decl);
          Analyze (Type_Decl);
 
+         --  The anonymous base now has a full declaration, but this base
+         --  is not a first subtype.
+
+         Set_Is_First_Subtype (Implicit_Base, False);
+
          --  After the implicit base is analyzed its Etype needs to be changed
          --  to reflect the fact that it is derived from the parent type which
          --  was ignored during analysis. We also set the size at this point.

@@ -95,7 +95,7 @@ package body Exp_Unst is
       --  This flag is set True if there is a call path from the outer level
       --  subprogram to this subprogram. If Reachable is False, it means that
       --  the subprogram is declared but not actually referenced. We remove
-      --  such suprograms from the tree, which simplifies our task, because
+      --  such subprograms from the tree, which simplifies our task, because
       --  we don't have to worry about e.g. uplevel references from such an
       --  unreferenced subpogram, which might require (useless) activation
       --  records to be created. This is computed by setting the outer level
@@ -118,7 +118,7 @@ package body Exp_Unst is
 
       Declares_AREC : Boolean;
       --  This is set True for a subprogram which include the declarations
-      --  for a local activation record to bew passed on downward calls. It
+      --  for a local activation record to be passed on downward calls. It
       --  is set True for the target level of an uplevel reference, and for
       --  all intervening nested subprograms. For example, if a subprogram X
       --  at level 5 makes an uplevel reference to an entity declared in a
@@ -225,7 +225,7 @@ package body Exp_Unst is
       Callee : Entity_Id;
       --  The entity for the subprogram containing the referenced entity. Note
       --  that the level of Callee must be less than the level of Caller, since
-      --  this is uplevel reference.
+      --  this is an uplevel reference.
    end record;
 
    package Urefs is new Table.Table (

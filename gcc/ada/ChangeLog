@@ -1,3 +1,20 @@
+2015-05-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Enumeration_Type): The anonymous base
+	created for a derived enumeration type is not a first subtype,
+	even though it is defined through a full type declaration.
+	* sem_ch13.adb (Analyze_Aspects_At_Freeze_Point): Do not process
+	aspects for the anonymous base type constructed for a derived
+	scalar type, because they will be set when the first subtype
+	is frozen.
+	(Inherit_Aspects_At_Freeze_Point): Fix typos on handling of
+	Default_Value and Default_Component_Value, that prevented the
+	proper inheritance of these aspects.
+
+2015-05-12  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.adb, exp_unst.adb: Minor typo fixes.
+
 2015-05-12  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb: Minor reformatting.
