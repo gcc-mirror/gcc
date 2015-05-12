@@ -5528,11 +5528,11 @@
 
 (define_insn "<GPR:d>lsa"
  [(set (match_operand:GPR 0 "register_operand" "=d")
-       (plus:GPR (mult:GPR (match_operand:GPR 1 "register_operand" "d")
-			   (match_operand 2 "const_immlsa_operand" ""))
+       (plus:GPR (ashift:GPR (match_operand:GPR 1 "register_operand" "d")
+			     (match_operand 2 "const_immlsa_operand" ""))
 		(match_operand:GPR 3 "register_operand" "d")))]
  "ISA_HAS_<GPR:D>LSA"
- "<GPR:d>lsa\t%0,%1,%3,%y2"
+ "<GPR:d>lsa\t%0,%1,%3,%2"
  [(set_attr "type" "arith")
   (set_attr "mode" "<GPR:MODE>")])
 

@@ -8440,7 +8440,6 @@ mips_print_operand_punct_valid_p (unsigned char code)
    'x'	Print the low 16 bits of CONST_INT OP in hexadecimal format.
    'd'	Print CONST_INT OP in decimal.
    'm'	Print one less than CONST_INT OP in decimal.
-   'y'	Print exact log2 of CONST_INT OP in decimal.
    'h'	Print the high-part relocation associated with OP, after stripping
 	  any outermost HIGH.
    'R'	Print the low-part relocation associated with OP.
@@ -8500,19 +8499,6 @@ mips_print_operand (FILE *file, rtx op, int letter)
     case 'm':
       if (CONST_INT_P (op))
 	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (op) - 1);
-      else
-	output_operand_lossage ("invalid use of '%%%c'", letter);
-      break;
-
-    case 'y':
-      if (CONST_INT_P (op))
-	{
-	  int val = exact_log2 (INTVAL (op));
-	  if (val != -1)
-	    fprintf (file, "%d", val);
-	  else
-	    output_operand_lossage ("invalid use of '%%%c'", letter);
-	}
       else
 	output_operand_lossage ("invalid use of '%%%c'", letter);
       break;
