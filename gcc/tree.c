@@ -5160,27 +5160,33 @@ free_lang_data_in_type (tree type)
 static inline bool
 need_assembler_name_p (tree decl)
 {
-  /* We use DECL_ASSEMBLER_NAME to hold mangled type names for One Definition Rule
-     merging.  */
+  /* We use DECL_ASSEMBLER_NAME to hold mangled type names for One Definition
+     Rule merging.  This makes type_odr_p to return true on those types during
+     LTO and by comparing the mangled name, we can say what types are intended
+     to be equivalent across compilation unit.
+
+     We do not store names of type_in_anonymous_namespace_p.
+
+     Record, union and enumeration type have linkage that allows use
+     to check type_in_anonymous_namespace_p. We do not mangle compound types
+     that always can be compared structurally.
+
+     Similarly for builtin types, we compare properties of their main variant.
+     A special case are integer types where mangling do make differences
+     between char/signed char/unsigned char etc.  Storing name for these makes
+     e.g.  -fno-signed-char/-fsigned-char mismatches to be handled well.
+     See cp/mangle.c:write_builtin_type for details.  */
+
   if (flag_lto_odr_type_mering
       && TREE_CODE (decl) == TYPE_DECL
       && DECL_NAME (decl)
       && decl == TYPE_NAME (TREE_TYPE (decl))
-      && !is_lang_specific (TREE_TYPE (decl))
-      /* Save some work. Names of builtin types are always derived from
-	 properties of its main variant.  A special case are integer types
-	 where mangling do make differences between char/signed char/unsigned
-	 char etc.  Storing name for these makes e.g.
-	 -fno-signed-char/-fsigned-char mismatches to be handled well.
-
-	 See cp/mangle.c:write_builtin_type for details.  */
-      && (TREE_CODE (TREE_TYPE (decl)) != VOID_TYPE
-	  && TREE_CODE (TREE_TYPE (decl)) != BOOLEAN_TYPE
-	  && TREE_CODE (TREE_TYPE (decl)) != REAL_TYPE
-	  && TREE_CODE (TREE_TYPE (decl)) != FIXED_POINT_TYPE)
       && !TYPE_ARTIFICIAL (TREE_TYPE (decl))
-      && !variably_modified_type_p (TREE_TYPE (decl), NULL_TREE)
-      && !type_in_anonymous_namespace_p (TREE_TYPE (decl)))
+      && (((RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl))
+	   || TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
+	   && !type_in_anonymous_namespace_p (TREE_TYPE (decl)))
+	  || TREE_CODE (TREE_TYPE (decl)) == INTEGER_TYPE)
+      && !variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
     return !DECL_ASSEMBLER_NAME_SET_P (decl);
   /* Only FUNCTION_DECLs and VAR_DECLs are considered.  */
   if (TREE_CODE (decl) != FUNCTION_DECL
@@ -12035,18 +12041,6 @@ obj_type_ref_class (tree ref)
   ref = TREE_VALUE (TYPE_ARG_TYPES (ref));
   gcc_checking_assert (TREE_CODE (ref) == POINTER_TYPE);
   return TREE_TYPE (ref);
-}
-
-/* Return true if T is in anonymous namespace.  */
-
-bool
-type_in_anonymous_namespace_p (const_tree t)
-{
-  /* TREE_PUBLIC of TYPE_STUB_DECL may not be properly set for
-     bulitin types; those have CONTEXT NULL.  */
-  if (!TYPE_CONTEXT (t))
-    return false;
-  return (TYPE_STUB_DECL (t) && !TREE_PUBLIC (TYPE_STUB_DECL (t)));
 }
 
 /* Lookup sub-BINFO of BINFO of TYPE at offset POS.  */

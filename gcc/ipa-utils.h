@@ -63,6 +63,7 @@ possible_polymorphic_call_targets (tree, HOST_WIDE_INT,
 				   void **cache_token = NULL,
 				   bool speuclative = false);
 odr_type get_odr_type (tree, bool insert = false);
+bool odr_type_p (const_tree t);
 bool possible_polymorphic_call_target_p (tree ref, gimple stmt, struct cgraph_node *n);
 void dump_possible_polymorphic_call_targets (FILE *, tree, HOST_WIDE_INT,
 					     const ipa_polymorphic_call_context &);
@@ -151,23 +152,6 @@ possible_polymorphic_call_target_p (struct cgraph_edge *e,
   return possible_polymorphic_call_target_p (e->indirect_info->otr_type,
 					     e->indirect_info->otr_token,
 					     context, n);
-}
-
-/* Return true of T is type with One Definition Rule info attached. 
-   It means that either it is anonymous type or it has assembler name
-   set.  */
-
-static inline bool
-odr_type_p (const_tree t)
-{
-  if (type_in_anonymous_namespace_p (t))
-    return true;
-  /* We do not have this information when not in LTO, but we do not need
-     to care, since it is used only for type merging.  */
-  gcc_assert (in_lto_p || flag_lto);
-
-  return (TYPE_NAME (t)
-          && (DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t))));
 }
 
 /* Return true if BINFO corresponds to a type with virtual methods. 
