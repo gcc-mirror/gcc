@@ -1,5 +1,33 @@
 2015-05-12  Robert Dewar  <dewar@adacore.com>
 
+	* sem_type.adb, sem_ch10.adb, freeze.adb, sem_ch6.adb, exp_disp.adb:
+	Minor reformatting.
+
+2015-05-12  Bob Duff  <duff@adacore.com>
+
+	* exp_attr.adb (Size): Remove unnecessary check for types with
+	unknown discriminants.	That was causing the compiler to build
+	a function call _size(T), where T is a type, not an object.
+
+2015-05-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Extended_Primitive_Ops): Exclude overriding
+	primitive operations of a type extension declared in the package
+	body, to prevent duplicates in extended list.
+
+2015-05-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Component_Declaration): If the component is
+	an unconstrained synchronized type with discriminants, create a
+	constrained default subtype for it, so that the enclosing record
+	can be given the proper size.
+	* sem_util.adb (Build_Default_Subtype): If the subtype is created
+	for a record discriminant, do not analyze the declarztion at
+	once because it is added to the freezing actions of the enclosing
+	record type.
+
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
 	* exp_prag.adb (Expand_N_Pragma): Rewrite ignored pragma as
 	Null statements.
 	* namet.ads (Boolean3): Document this flag used for Ignore_Pragma.

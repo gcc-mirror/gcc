@@ -1612,8 +1612,8 @@ package body Exp_Disp is
                         Set_Scope (Anon, Current_Scope);
                      end if;
 
-                     Set_Directly_Designated_Type (Anon,
-                       Non_Limited_View (Actual_DDT));
+                     Set_Directly_Designated_Type
+                       (Anon, Non_Limited_View (Actual_DDT));
                      Set_Etype (Actual_Dup, Anon);
                   end if;
                end if;

@@ -2921,11 +2921,8 @@ package body Sem_Ch6 is
 
          procedure Detect_And_Exchange (Id : Entity_Id) is
             Typ : constant Entity_Id := Etype (Id);
-
          begin
-            if From_Limited_With (Typ)
-              and then Has_Non_Limited_View (Typ)
-            then
+            if From_Limited_With (Typ) and then Has_Non_Limited_View (Typ) then
                Set_Etype (Id, Non_Limited_View (Typ));
             end if;
          end Detect_And_Exchange;

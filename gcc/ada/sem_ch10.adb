@@ -5605,8 +5605,8 @@ package body Sem_Ch10 is
             Set_Non_Limited_View (Shadow, Ent);
 
             if Is_Tagged then
-               Set_Non_Limited_View (Class_Wide_Type (Shadow),
-                 Class_Wide_Type (Ent));
+               Set_Non_Limited_View
+                 (Class_Wide_Type (Shadow), Class_Wide_Type (Ent));
             end if;
 
             if Is_Incomplete_Or_Private_Type (Ent) then

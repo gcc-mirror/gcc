@@ -8196,6 +8196,12 @@ package body Sem_Ch4 is
                while Present (Op) loop
                   if Comes_From_Source (Op)
                     and then Is_Overloadable (Op)
+
+                    --  Exclude overriding primitive operations of a type
+                    --  extension declared in the package body, to prevent
+                    --  duplicates in extended list.
+
+                    and then not Is_Primitive (Op)
                     and then Is_List_Member (Unit_Declaration_Node (Op))
                     and then List_Containing (Unit_Declaration_Node (Op)) =
                                                                    Body_Decls
