@@ -4346,8 +4346,8 @@ package body Sem_Ch6 is
       then
          Check_SPARK_05_Restriction ("null procedure is not allowed", N);
 
-         --  Null procedures are allowed in protected types, following
-         --  the recent AI12-0147.
+         --  Null procedures are allowed in protected types, following the
+         --  recent AI12-0147.
 
          if Is_Protected_Type (Current_Scope)
            and then Ada_Version < Ada_2012
@@ -4359,7 +4359,7 @@ package body Sem_Ch6 is
 
          if Is_Completion then
 
-            --  The null procedure acts as a body, nothing further is needed.
+            --  The null procedure acts as a body, nothing further is needed
 
             return;
          end if;
