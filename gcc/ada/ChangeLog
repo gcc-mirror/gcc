@@ -1,3 +1,15 @@
+2015-05-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch9.adb (Collect_Interfaces): Initialize
+	Direct_Primitive_Operations for a tagged synchronized type,
+	so it can used in ASIS mode.
+	* sem_disp.adb (Check_Dispatching_Operation): If expansion is
+	disabled, attach subprogram to list of Direct_Primitive_Operations
+	of synchronized type itself, for ASIS use, because in this case
+	Corresponding_Record_Type is not built.
+	* einfo.ads: Indicate use of Direct_Primitive_Operations on
+	synchronized type.
+
 2015-05-12  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* exp_pakd.adb: Make clearer the comment in exp_pakd.adb about

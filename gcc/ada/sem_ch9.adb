@@ -3225,6 +3225,13 @@ package body Sem_Ch9 is
       if Present (Interface_List (N)) then
          Set_Is_Tagged_Type (T);
 
+         --  The primitive operations of a tagged synchronized type are
+         --  placed on the Corresponding_Record for proper dispatching,
+         --  but are attached to the synchronized type itself when
+         --  expansion is disabled, for ASIS use.
+
+         Set_Direct_Primitive_Operations (T, New_Elmt_List);
+
          Iface := First (Interface_List (N));
          while Present (Iface) loop
             Iface_Typ := Find_Type_Of_Subtype_Indic (Iface);
