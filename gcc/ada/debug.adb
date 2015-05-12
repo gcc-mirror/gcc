@@ -157,7 +157,7 @@ package body Debug is
 
    --  d.1  Enable unnesting of nested procedures
    --  d.2  Allow statements in declarative part
-   --  d.3
+   --  d.3  Output debugging information from Exp_Unst
    --  d.4
    --  d.5
    --  d.6
@@ -754,6 +754,9 @@ package body Debug is
    --  d.2  Allow statements within declarative parts. This is not usually
    --       allowed, but in some debugging contexts (e.g. testing the circuit
    --       for unnesting of procedures), it is useful to allow this.
+
+   --  d.3  Output debugging information from Exp_Unst, including the name of
+   --       any unreachable subprograms that get deleted.
 
    ------------------------------------------
    -- Documentation for Binder Debug Flags --

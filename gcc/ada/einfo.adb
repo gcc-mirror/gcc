@@ -213,7 +213,6 @@ package body Einfo is
    --    Stored_Constraint               Elist23
 
    --    Related_Expression              Node24
-   --    Uplevel_References              Elist24
    --    Subps_Index                     Uint24
 
    --    Interface_Alias                 Node25
@@ -590,7 +589,7 @@ package body Einfo is
 
    --    Is_Static_Type                  Flag281
    --    Has_Nested_Subprogram           Flag282
-   --    Uplevel_Reference_Noted         Flag283
+   --    Is_Uplevel_Referenced_Entity    Flag283
    --    Is_Unimplemented                Flag284
 
    --    (unused)                        Flag285
@@ -2418,7 +2417,6 @@ package body Einfo is
 
    function Is_Static_Type (Id : E) return B is
    begin
-      pragma Assert (Is_Type (Id));
       return Flag281 (Id);
    end Is_Static_Type;
 
@@ -2473,6 +2471,11 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       return Flag144 (Id);
    end Is_Unsigned_Type;
+
+   function Is_Uplevel_Referenced_Entity (Id : E) return B is
+   begin
+      return Flag283 (Id);
+   end Is_Uplevel_Referenced_Entity;
 
    function Is_Valued_Procedure (Id : E) return B is
    begin
@@ -2684,8 +2687,10 @@ package body Einfo is
    begin
       pragma Assert
         (Ekind (Id) in Incomplete_Kind
-           or else Ekind (Id) in Class_Wide_Kind
-           or else Ekind (Id) = E_Abstract_State);
+           or else
+         Ekind (Id) in Class_Wide_Kind
+           or else
+         Ekind (Id) = E_Abstract_State);
       return Node19 (Id);
    end Non_Limited_View;
 
@@ -3246,17 +3251,6 @@ package body Einfo is
    begin
       return Node16 (Id);
    end Unset_Reference;
-
-   function Uplevel_Reference_Noted (Id : E) return B is
-   begin
-      return Flag283 (Id);
-   end Uplevel_Reference_Noted;
-
-   function Uplevel_References (Id : E) return L is
-   begin
-      pragma Assert (Is_Subprogram (Id));
-      return Elist24 (Id);
-   end Uplevel_References;
 
    function Used_As_Generic_Actual (Id : E) return B is
    begin
@@ -4458,11 +4452,6 @@ package body Einfo is
       Set_Flag282 (Id, V);
    end Set_Has_Nested_Subprogram;
 
-   procedure Set_Has_Uplevel_Reference (Id : E; V : B := True) is
-   begin
-      Set_Flag215 (Id, V);
-   end Set_Has_Uplevel_Reference;
-
    procedure Set_Has_Non_Standard_Rep (Id : E; V : B := True) is
    begin
       pragma Assert (Id = Base_Type (Id));
@@ -4712,6 +4701,11 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       Set_Flag72 (Id, V);
    end Set_Has_Unknown_Discriminants;
+
+   procedure Set_Has_Uplevel_Reference (Id : E; V : B := True) is
+   begin
+      Set_Flag215 (Id, V);
+   end Set_Has_Uplevel_Reference;
 
    procedure Set_Has_Visible_Refinement (Id : E; V : B := True) is
    begin
@@ -5423,6 +5417,15 @@ package body Einfo is
       Set_Flag144 (Id, V);
    end Set_Is_Unsigned_Type;
 
+   procedure Set_Is_Uplevel_Referenced_Entity (Id : E; V : B := True) is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Constant, E_Variable)
+          or else Is_Formal (Id)
+          or else Is_Type (Id));
+      Set_Flag283 (Id, V);
+   end Set_Is_Uplevel_Referenced_Entity;
+
    procedure Set_Is_Valued_Procedure (Id : E; V : B := True) is
    begin
       pragma Assert (Ekind (Id) = E_Procedure);
@@ -5632,8 +5635,7 @@ package body Einfo is
    begin
       pragma Assert
         (Ekind (Id) in Incomplete_Kind
-           or else Ekind (Id) = E_Abstract_State
-           or else Ekind (Id) = E_Class_Wide_Type);
+          or else Ekind_In (Id, E_Abstract_State, E_Class_Wide_Type));
       Set_Node19 (Id, V);
    end Set_Non_Limited_View;
 
@@ -6223,17 +6225,6 @@ package body Einfo is
    begin
       Set_Node16 (Id, V);
    end Set_Unset_Reference;
-
-   procedure Set_Uplevel_Reference_Noted (Id : E; V : B := True) is
-   begin
-      Set_Flag283 (Id, V);
-   end Set_Uplevel_Reference_Noted;
-
-   procedure Set_Uplevel_References (Id : E; V : L) is
-   begin
-      pragma Assert (Is_Subprogram (Id));
-      Set_Elist24 (Id, V);
-   end Set_Uplevel_References;
 
    procedure Set_Used_As_Generic_Actual (Id : E; V : B := True) is
    begin
@@ -7116,8 +7107,8 @@ package body Einfo is
    function Has_Non_Limited_View (Id : E) return B is
    begin
       return (Ekind (Id) in Incomplete_Kind
-          or else Ekind (Id) in Class_Wide_Kind
-          or else Ekind (Id) = E_Abstract_State)
+               or else Ekind (Id) in Class_Wide_Kind
+               or else Ekind (Id) = E_Abstract_State)
         and then Present (Non_Limited_View (Id));
    end Has_Non_Limited_View;
 
@@ -8802,6 +8793,7 @@ package body Einfo is
       W ("Is_Underlying_Record_View",       Flag246 (Id));
       W ("Is_Unimplemented",                Flag284 (Id));
       W ("Is_Unsigned_Type",                Flag144 (Id));
+      W ("Is_Uplevel_Referenced_Entity",    Flag283 (Id));
       W ("Is_Valued_Procedure",             Flag127 (Id));
       W ("Is_Visible_Formal",               Flag206 (Id));
       W ("Is_Visible_Lib_Unit",             Flag116 (Id));
@@ -8859,7 +8851,6 @@ package body Einfo is
       W ("Suppress_Value_Tracking_On_Call", Flag217 (Id));
       W ("Treat_As_Volatile",               Flag41  (Id));
       W ("Universal_Aliasing",              Flag216 (Id));
-      W ("Uplevel_Reference_Noted",         Flag283 (Id));
       W ("Used_As_Generic_Actual",          Flag222 (Id));
       W ("Uses_Sec_Stack",                  Flag95  (Id));
       W ("Warnings_Off",                    Flag96  (Id));
@@ -9774,11 +9765,7 @@ package body Einfo is
          when E_Function                                   |
               E_Operator                                   |
               E_Procedure                                  =>
-            if Field24 (Id) in Uint_Range then
-               Write_Str ("Subps_Index");
-            else
-               Write_Str ("Uplevel_References");
-            end if;
+            Write_Str ("Subps_Index");
 
          when others                                       =>
             Write_Str ("Field24???");

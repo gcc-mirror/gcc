@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Lib;      use Lib;
@@ -31,14 +32,15 @@ with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
+with Output;   use Output;
 with Rtsfind;  use Rtsfind;
-with Sinput;   use Sinput;
 with Sem;      use Sem;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Mech; use Sem_Mech;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
+with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Table;
 with Tbuild;   use Tbuild;
@@ -46,7 +48,37 @@ with Uintp;    use Uintp;
 
 package body Exp_Unst is
 
-   --  Tables used by Unnest_Subprogram
+   ---------------------------
+   -- Terminology for Calls --
+   ---------------------------
+
+   --  The level of a subprogram in the nest being analyzed is defined to be
+   --  the level of nesting, so the outer level subprogram (the one passed to
+   --  Unnest_Subprogram) is 1, subprograms immediately nested within this
+   --  outer level subprogram have a level of 2, etc.
+
+   --  Calls within the nest being analyzed are of three types:
+
+   --    Downward call: this is a call from a subprogram to a subprogram that
+   --    is immediately nested with in the caller, and thus has a level that
+   --    is one greater than the caller. It is a fundamental property of the
+   --    nesting structure and visibility that it is not possible to make a
+   --    call from level N to level M, where M is greater than N + 1.
+
+   --    Parallel call: this is a call from a nested subprogram to another
+   --    nested subprogram that is at the same level.
+
+   --    Upward call: this is a call from a subprogram to a subprogram that
+   --    encloses the caller. The level of the callee is less than the level
+   --    of the caller, and there is no limit on the difference, e.g. for an
+   --    uplevel call, a subprogram at level 5 can call one at level 2 or even
+   --    the outer level subprogram at level 1.
+
+   -----------
+   -- Subps --
+   -----------
+
+   --  Table to record subprograms within the nest being currently analyzed
 
    type Subp_Entry is record
       Ent : Entity_Id;
@@ -59,31 +91,69 @@ package body Exp_Unst is
       --  Subprogram level (1 = outer subprogram (Subp argument), 2 = nested
       --  immediately within this outer subprogram etc.)
 
-      Urefs : Elist_Id;
-      --  This is a copy of the Uplevel_References field from the entity for
-      --  the subprogram. Copy this to reuse the field for Subps_Index.
+      Reachable : Boolean;
+      --  This flag is set True if there is a call path from the outer level
+      --  subprogram to this subprogram. If Reachable is False, it means that
+      --  the subprogram is declared but not actually referenced. We remove
+      --  such suprograms from the tree, which simplifies our task, because
+      --  we don't have to worry about e.g. uplevel references from such an
+      --  unreferenced subpogram, which might require (useless) activation
+      --  records to be created. This is computed by setting the outer level
+      --  subprogram (Subp itself) as reachable, and then doing a transitive
+      --  closure following all calls.
+
+      Uplevel_Ref : Nat;
+      --  The outermost level which defines entities which this subprogram
+      --  references either directly or indirectly via a call. This cannot
+      --  be greater than Lev. If it is equal to Lev, then it means that the
+      --  subprogram does not make any uplevel references and that thus it
+      --  does not need an activation record pointer passed. If it is less than
+      --  Lev, then an activation record pointer is needed, since there is at
+      --  least one uplevel reference. This is computed by initially setting
+      --  Uplevel_Ref to Lev for all subprograms. Then on the initial tree
+      --  traversal, decreasing Uplevel_Ref for an explicit uplevel reference,
+      --  and finally by doing a transitive closure that follows calls (if A
+      --  calls B and B has an uplevel reference to level X, then A references
+      --  level X indirectly).
+
+      Declares_AREC : Boolean;
+      --  This is set True for a subprogram which include the declarations
+      --  for a local activation record to bew passed on downward calls. It
+      --  is set True for the target level of an uplevel reference, and for
+      --  all intervening nested subprograms. For example, if a subprogram X
+      --  at level 5 makes an uplevel reference to an entity declared in a
+      --  level 2 subprogram, then the subprograms at levels 4,3,2 enclosing
+      --  the level 5 subprogram will have this flag set True.
+
+      Uents : Elist_Id;
+      --  This is a list of entities declared in this subprogram which are
+      --  uplevel referenced. It contains both objects (which will be put in
+      --  the corresponding AREC activation record), and types. The types are
+      --  not put in the AREC activation record, but referenced bounds (i.e.
+      --  generated _FIRST and _LAST entites, and formal parameters) will be
+      --  in the list in their own right.
 
       ARECnF : Entity_Id;
-      --  This entity is defined for all subprograms with uplevel references
-      --  except for the top-level subprogram (Subp itself). It is the entity
-      --  for the formal which is added to the parameter list to pass the
-      --  pointer to the activation record. Note that for this entity, n is
-      --  one less than the current level.
+      --  This entity is defined for all subprograms which need an extra formal
+      --  that contains a pointer to the activation record needed for uplevel
+      --  references. ARECnF must be defined for any subprogram which has a
+      --  direct or indirect uplevel reference (i.e. Reference_Level < Lev).
 
       ARECn   : Entity_Id;
       ARECnT  : Entity_Id;
       ARECnPT : Entity_Id;
       ARECnP  : Entity_Id;
       --  These AREC entities are defined only for subprograms for which we
-      --  generate an activation record declaration, i.e. for subprograms
-      --  with at least one nested subprogram that have uplevel referennces.
-      --  They are set to Empty for all other cases.
+      --  generate an activation record declaration, i.e. for subprograms for
+      --  which the Declares_AREC flag is set True.
 
       ARECnU : Entity_Id;
       --  This AREC entity is the uplink component. It is other than Empty only
-      --  for nested subprograms that themselves have nested subprograms and
-      --  have uplevel references. Note that the n here is one less than the
-      --  level of the subprogram defining the activation record.
+      --  for nested subprograms that declare an activation record as indicated
+      --  by Declares_AREC being Ture, and which have uplevel references (Lev
+      --  greater than Uplevel_Ref). It is the additional component in the
+      --  activation record that references the ARECnF pointer (which points
+      --  the activation record one level higher, thus forming the chain).
 
    end record;
 
@@ -98,15 +168,24 @@ package body Exp_Unst is
      Table_Name           => "Unnest_Subps");
    --  Records the subprograms in the nest whose outer subprogram is Subp
 
+   -----------
+   -- Calls --
+   -----------
+
+   --  Table to record calls within the nest being analyzed. These are the
+   --  calls which may need to have an AREC actual added.
+
    type Call_Entry is record
       N : Node_Id;
       --  The actual call
 
-      From : Entity_Id;
-      --  Entity of the subprogram containing the call
+      Caller : Entity_Id;
+      --  Entity of the subprogram containing the call (can be at any level)
 
-      To : Entity_Id;
-      --  Entity of the subprogram called
+      Callee : Entity_Id;
+      --  Entity of the subprogram called (always at level 2 or higher). Note
+      --  that in accordance with the basic rules of nesting, the level of To
+      --  is either less than or equal to the level of From, or one greater.
    end record;
 
    package Calls is new Table.Table (
@@ -120,227 +199,48 @@ package body Exp_Unst is
    --  that are to other subprograms nested within the outer subprogram. These
    --  are the calls that may need an additional parameter.
 
-   -------------------------------------
-   -- Check_Uplevel_Reference_To_Type --
-   -------------------------------------
+   -----------
+   -- Urefs --
+   -----------
 
-   procedure Check_Uplevel_Reference_To_Type (Typ : Entity_Id) is
-      function Check_Dynamic_Type (T : Entity_Id) return Boolean;
-      --  This is an internal recursive routine that checks if T or any of
-      --  its subsdidiary types are dynamic. If so, then the original Typ is
-      --  marked as having an uplevel reference, as is the subsidiary type in
-      --  question, and any referenced dynamic bounds are also marked as having
-      --  an uplevel reference, and True is returned. If the type is a static
-      --  type, then False is returned;
+   --  Table to record explicit uplevel references to objects (variables,
+   --  constants, formal parameters). These are the references that will
+   --  need rewriting to use the activation table (AREC) pointers. Also
+   --  included are implicit and explicit uplevel references to types, but
+   --  these do not get rewritten by the front end.
 
-      ------------------------
-      -- Check_Dynamic_Type --
-      ------------------------
+   type Uref_Entry is record
+      Ref : Node_Id;
+      --  The reference itself. For objects this is always an entity reference
+      --  and the referenced entity will have its Is_Uplevel_Referenced_Entity
+      --  flag set and will appear in the Uplevel_Referenced_Entities list of
+      --  the subprogram declaring this entity.
 
-      function Check_Dynamic_Type (T : Entity_Id) return Boolean is
-         DT : Boolean := False;
+      Ent : Entity_Id;
+      --  The Entity_Id of the uplevel referenced object or type
 
-      begin
-         --  If it's a static type, nothing to do
+      Caller : Entity_Id;
+      --  The entity for the subprogram immediately containing this entity
 
-         if Is_Static_Type (T) then
-            return False;
+      Callee : Entity_Id;
+      --  The entity for the subprogram containing the referenced entity. Note
+      --  that the level of Callee must be less than the level of Caller, since
+      --  this is uplevel reference.
+   end record;
 
-         --  If the type is uplevel referenced, then it must be dynamic
-
-         elsif Has_Uplevel_Reference (T) then
-            Set_Has_Uplevel_Reference (Typ);
-            return True;
-
-         --  If the type is at library level, always consider it static, since
-         --  uplevel references do not matter in this case.
-
-         elsif Is_Library_Level_Entity (T) then
-            Set_Is_Static_Type (T);
-            return False;
-
-         --  Otherwise we need to figure out what the story is with this type
-
-         else
-            DT := False;
-
-            --  For a scalar type, check bounds
-
-            if Is_Scalar_Type (T) then
-
-               --  If both bounds static, then this is a static type
-
-               declare
-                  LB : constant Node_Id := Type_Low_Bound (T);
-                  UB : constant Node_Id := Type_High_Bound (T);
-
-               begin
-                  if not Is_Static_Expression (LB) then
-                     Set_Has_Uplevel_Reference (Entity (LB));
-                     DT := True;
-                  end if;
-
-                  if not Is_Static_Expression (UB) then
-                     Set_Has_Uplevel_Reference (Entity (UB));
-                     DT := True;
-                  end if;
-               end;
-
-            --  For record type, check all components
-
-            elsif Is_Record_Type (T) then
-               declare
-                  C : Entity_Id;
-
-               begin
-                  C := First_Component_Or_Discriminant (T);
-                  while Present (C) loop
-                     if Check_Dynamic_Type (Etype (C)) then
-                        DT := True;
-                     end if;
-
-                     Next_Component_Or_Discriminant (C);
-                  end loop;
-               end;
-
-            --  For array type, check index types and component type
-
-            elsif Is_Array_Type (T) then
-               declare
-                  IX : Node_Id;
-
-               begin
-                  if Check_Dynamic_Type (Component_Type (T)) then
-                     DT := True;
-                  end if;
-
-                  IX := First_Index (T);
-                  while Present (IX) loop
-                     if Check_Dynamic_Type (Etype (IX)) then
-                        DT := True;
-                     end if;
-
-                     Next_Index (IX);
-                  end loop;
-               end;
-
-            --  For now, ignore other types
-
-            else
-               return False;
-            end if;
-
-            --  See if we marked that type as dynamic
-
-            if DT then
-               Set_Has_Uplevel_Reference (T);
-               Set_Has_Uplevel_Reference (Typ);
-               return True;
-
-            --  If not mark it as static
-
-            else
-               Set_Is_Static_Type (T);
-               return False;
-            end if;
-         end if;
-      end Check_Dynamic_Type;
-
-   --  Start of processing for Check_Uplevel_Reference_To_Type
-
-   begin
-      --  Nothing to do inside a generic (all processing is for instance)
-
-      if Inside_A_Generic then
-         return;
-
-      --  Nothing to do if we know this is a static type
-
-      elsif Is_Static_Type (Typ) then
-         return;
-
-      --  Nothing to do if already marked as uplevel referenced
-
-      elsif Has_Uplevel_Reference (Typ) then
-         return;
-
-      --  Otherwise check if we have a dynamic type
-
-      else
-         if Check_Dynamic_Type (Typ) then
-            Set_Has_Uplevel_Reference (Typ);
-         end if;
-      end if;
-
-      null;
-   end Check_Uplevel_Reference_To_Type;
-
-   ----------------------------
-   -- Note_Uplevel_Reference --
-   ----------------------------
-
-   procedure Note_Uplevel_Reference (N : Node_Id; Subp : Entity_Id) is
-      Elmt : Elmt_Id;
-
-   begin
-      --  Nothing to do inside a generic (all processing is for instance)
-
-      if Inside_A_Generic then
-         return;
-      end if;
-
-      --  Nothing to do if reference has no entity field
-
-      if Nkind (N) not in N_Has_Entity then
-         return;
-      end if;
-
-      --  Establish list if first call for Uplevel_References
-
-      if No (Uplevel_References (Subp)) then
-         Set_Uplevel_References (Subp, New_Elmt_List);
-      end if;
-
-      --  Ignore if node is already in the list. This is a bit inefficient,
-      --  but we can definitely get duplicates that cause trouble!
-
-      Elmt := First_Elmt (Uplevel_References (Subp));
-      while Present (Elmt) loop
-         if N = Node (Elmt) then
-            return;
-         else
-            Next_Elmt (Elmt);
-         end if;
-      end loop;
-
-      --  Add new entry to Uplevel_References. Each entry is two elements of
-      --  the list. The first is the actual reference, the second is the
-      --  enclosing subprogram at the point of reference
-
-      Append_Elmt (N, Uplevel_References (Subp));
-
-      if Is_Subprogram (Current_Scope) then
-         Append_Elmt (Current_Scope, Uplevel_References (Subp));
-      else
-         Append_Elmt
-           (Enclosing_Subprogram (Current_Scope), Uplevel_References (Subp));
-      end if;
-
-      Set_Has_Uplevel_Reference (Entity (N));
-      Set_Has_Uplevel_Reference (Subp);
-   end Note_Uplevel_Reference;
+   package Urefs is new Table.Table (
+     Table_Component_Type => Uref_Entry,
+     Table_Index_Type     => Nat,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 100,
+     Table_Increment      => 200,
+     Table_Name           => "Unnest_Urefs");
 
    -----------------------
    -- Unnest_Subprogram --
    -----------------------
 
    procedure Unnest_Subprogram (Subp : Entity_Id; Subp_Body : Node_Id) is
-      function Actual_Ref (N : Node_Id) return Node_Id;
-      --  This function is applied to an element in the Uplevel_References
-      --  list, and it finds the actual reference. Often this is just N itself,
-      --  but in some cases it gets rewritten, e.g. as a Type_Conversion, and
-      --  this function digs out the actual reference
-
       function AREC_String (Lev : Pos) return String;
       --  Given a level value, 1, 2, ... returns the string AREC, AREC2, ...
 
@@ -357,43 +257,14 @@ package body Exp_Unst is
       function Subp_Index (Sub : Entity_Id) return SI_Type;
       --  Given the entity for a subprogram, return corresponding Subps index
 
-      function Upref_Name (Ent : Entity_Id) return Name_Id;
+      function Upref_Name (Ent : Entity_Id; Clist : List_Id) return Name_Id;
       --  This function returns the name to be used in the activation record to
-      --  reference the variable uplevel. Normally this is just a copy of the
-      --  Chars field of the entity. The exception is when the scope of Ent
-      --  is a declare block, in which case we append the entity number to
-      --  make sure that no confusion occurs between use of the same name
-      --  in different declare blocks.
-
-      ----------------
-      -- Actual_Ref --
-      ----------------
-
-      function Actual_Ref (N : Node_Id) return Node_Id is
-      begin
-         case Nkind (N) is
-
-            --  If we have an entity reference, then this is the actual ref
-
-            when N_Has_Entity =>
-               return N;
-
-            --  For a type conversion, go get the expression
-
-            when N_Type_Conversion =>
-               return Expression (N);
-
-            --  For an explicit dereference, get the prefix
-
-            when N_Explicit_Dereference =>
-               return Prefix (N);
-
-            --  No other possibilities should exist
-
-            when others =>
-               raise Program_Error;
-         end case;
-      end Actual_Ref;
+      --  reference the variable uplevel. Clist is the list of components that
+      --  have been created in the activation record so far. Normally this is
+      --  just a copy of the Chars field of the entity. The exception is when
+      --  the name has already been used, in which case we suffix the name with
+      --  the entity number to avoid duplication. This happens with declare
+      --  blocks and generic parameters at least.
 
       -----------------
       -- AREC_String --
@@ -456,17 +327,25 @@ package body Exp_Unst is
       -- Upref_Name --
       ----------------
 
-      function Upref_Name (Ent : Entity_Id) return Name_Id is
-      begin
-         if Ekind (Scope (Ent)) /= E_Block then
-            return Chars (Ent);
+      function Upref_Name (Ent : Entity_Id; Clist : List_Id) return Name_Id is
+         C : Node_Id;
 
-         else
-            Get_Name_String (Chars (Ent));
-            Add_Str_To_Name_Buffer ("__");
-            Add_Nat_To_Name_Buffer (Nat (Ent));
-            return Name_Enter;
-         end if;
+      begin
+         C := First (Clist);
+         loop
+            if No (C) then
+               return Chars (Ent);
+
+            elsif Chars (Defining_Identifier (C)) = Chars (Ent) then
+               Get_Name_String (Chars (Ent));
+               Add_Str_To_Name_Buffer ("__");
+               Add_Nat_To_Name_Buffer (Nat (Ent));
+               return Name_Enter;
+
+            else
+               Next (C);
+            end if;
+         end loop;
       end Upref_Name;
 
    --  Start of processing for Unnest_Subprogram
@@ -477,15 +356,22 @@ package body Exp_Unst is
       if Inside_A_Generic then
          return;
       end if;
+
       --  At least for now, do not unnest anything but main source unit
 
       if not In_Extended_Main_Source_Unit (Subp_Body) then
          return;
       end if;
 
+      --  This routine is called late, after the scope stack is gone. The
+      --  following creates a suitable dummy scope stack to be used for the
+      --  analyze/expand calls made from this routine.
+
+      Push_Scope (Subp);
+
       --  First step, we must mark all nested subprograms that require a static
       --  link (activation record) because either they contain explicit uplevel
-      --  references (as indicated by Has_Uplevel_Reference being set at this
+      --  references (as indicated by ??? being set at this
       --  point), or they make calls to other subprograms in the same nest that
       --  require a static link (in which case we set this flag).
 
@@ -499,43 +385,194 @@ package body Exp_Unst is
 
       Subps.Init;
       Calls.Init;
+      Urefs.Init;
 
       Build_Tables : declare
+         Current_Subprogram : Entity_Id;
+         --  When we scan a subprogram body, we set Current_Subprogram to the
+         --  corresponding entity. This gets recursively saved and restored.
+
          function Visit_Node (N : Node_Id) return Traverse_Result;
          --  Visit a single node in Subp
+
+         -----------
+         -- Visit --
+         -----------
+
+         procedure Visit is new Traverse_Proc (Visit_Node);
+         --  Used to traverse the body of Subp, populating the tables
 
          ----------------
          -- Visit_Node --
          ----------------
 
          function Visit_Node (N : Node_Id) return Traverse_Result is
-            Ent  : Entity_Id;
-            Csub : Entity_Id;
+            Ent    : Entity_Id;
+            Caller : Entity_Id;
+            Callee : Entity_Id;
 
-            function Find_Current_Subprogram return Entity_Id;
-            --  Finds the current subprogram containing the call N
+            procedure Check_Static_Type (T : Entity_Id; DT : in out Boolean);
+               --  Given a type T, checks if it is a static type defined as a
+               --  type with no dynamic bounds in sight. If so, the only action
+               --  is to set Is_Static_Type True for T. If T is not a static
+               --  type, then all types with dynamic bounds associated with
+               --  T are detected, and their bounds are marked as uplevel
+               --  referenced if not at the library level, and DT is set True.
 
-            -----------------------------
-            -- Find_Current_Subprogram --
-            -----------------------------
+            procedure Note_Uplevel_Ref
+              (E      : Entity_Id;
+               Caller : Entity_Id;
+               Callee : Entity_Id);
+            --  Called when we detect an explicit or implicit uplevel reference
+            --  from within Caller to entity E declared in Callee. E can be a
+            --  an object or a type.
 
-            function Find_Current_Subprogram return Entity_Id is
-               Nod : Node_Id;
+            -----------------------
+            -- Check_Static_Type --
+            -----------------------
+
+            procedure Check_Static_Type (T : Entity_Id; DT : in out Boolean) is
+               procedure Note_Uplevel_Bound (N : Node_Id);
+               --  N is the bound of a dynamic type. This procedure notes that
+               --  this bound is uplevel referenced, it can handle references
+               --  to entities (typically _FIRST and _LAST entities), and also
+               --  attribute references of the form T'name (name is typically
+               --  FIRST or LAST) where T is the uplevel referenced bound.
+
+               ------------------------
+               -- Note_Uplevel_Bound --
+               ------------------------
+
+               procedure Note_Uplevel_Bound (N : Node_Id) is
+               begin
+                  --  Entity name case
+
+                  if Is_Entity_Name (N) then
+                     if Present (Entity (N)) then
+                        Note_Uplevel_Ref
+                          (E      => Entity (N),
+                           Caller => Current_Subprogram,
+                           Callee => Enclosing_Subprogram (Entity (N)));
+                     end if;
+
+                  --  Attribute case
+
+                  elsif Nkind (N) = N_Attribute_Reference then
+                     Note_Uplevel_Bound (Prefix (N));
+                  end if;
+               end Note_Uplevel_Bound;
+
+            --  Start of processing for Check_Static_Type
 
             begin
-               Nod := N;
-               loop
-                  Nod := Parent (Nod);
+               --  If already marked static, immediate return
 
-                  if Nkind (Nod) = N_Subprogram_Body then
-                     if Acts_As_Spec (Nod) then
-                        return Defining_Entity (Specification (Nod));
-                     else
-                        return Corresponding_Spec (Nod);
+               if Is_Static_Type (T) then
+                  return;
+               end if;
+
+               --  If the type is at library level, always consider it static,
+               --  since such uplevel references are irrelevant.
+
+               if Is_Library_Level_Entity (T) then
+                  Set_Is_Static_Type (T);
+                  return;
+               end if;
+
+               --  Otherwise figure out what the story is with this type
+
+               --  For a scalar type, check bounds
+
+               if Is_Scalar_Type (T) then
+
+                  --  If both bounds static, then this is a static type
+
+                  declare
+                     LB : constant Node_Id := Type_Low_Bound (T);
+                     UB : constant Node_Id := Type_High_Bound (T);
+
+                  begin
+                     if not Is_Static_Expression (LB) then
+                        Note_Uplevel_Bound (LB);
+                        DT := True;
                      end if;
-                  end if;
-               end loop;
-            end Find_Current_Subprogram;
+
+                     if not Is_Static_Expression (UB) then
+                        Note_Uplevel_Bound (UB);
+                        DT := True;
+                     end if;
+                  end;
+
+                  --  For record type, check all components
+
+               elsif Is_Record_Type (T) then
+                  declare
+                     C : Entity_Id;
+                  begin
+                     C := First_Component_Or_Discriminant (T);
+                     while Present (C) loop
+                        Check_Static_Type (Etype (C), DT);
+                        Next_Component_Or_Discriminant (C);
+                     end loop;
+                  end;
+
+                  --  For array type, check index types and component type
+
+               elsif Is_Array_Type (T) then
+                  declare
+                     IX : Node_Id;
+                  begin
+                     Check_Static_Type (Component_Type (T), DT);
+
+                     IX := First_Index (T);
+                     while Present (IX) loop
+                        Check_Static_Type (Etype (IX), DT);
+                        Next_Index (IX);
+                     end loop;
+                  end;
+
+               --  For now, ignore other types
+
+               else
+                  return;
+               end if;
+
+               if not DT then
+                  Set_Is_Static_Type (T);
+               end if;
+            end Check_Static_Type;
+
+            ----------------------
+            -- Note_Uplevel_Ref --
+            ----------------------
+
+            procedure Note_Uplevel_Ref
+              (E      : Entity_Id;
+               Caller : Entity_Id;
+               Callee : Entity_Id)
+            is
+            begin
+               --  Nothing to do for static type
+
+               if Is_Static_Type (E) then
+                  return;
+               end if;
+
+               --  Nothing to do if Caller and Callee are the same
+
+               if Caller = Callee then
+                  return;
+               end if;
+
+               --  We have a new uplevel referenced entity
+
+               --  All we do at this stage is to add the uplevel reference to
+               --  the table. It's too earch to do anything else, since this
+               --  uplevel reference may come from an unreachable subprogram
+               --  in which case the entry will be deleted.
+
+               Urefs.Append ((N, E, Caller, Callee));
+            end Note_Uplevel_Ref;
 
          --  Start of processing for Visit_Node
 
@@ -557,29 +594,18 @@ package body Exp_Unst is
 
                if Scope_Within (Ent, Subp) then
 
-                  --  For now, ignore calls to generic instances. Seems to be
-                  --  some problem there which we will investigate later ???
-
-                  if Original_Location (Sloc (Ent)) /= Sloc (Ent)
-                    or else Is_Generic_Instance (Ent)
-                  then
-                     null;
-
                   --  Ignore calls to imported routines
 
-                  elsif Is_Imported (Ent) then
+                  if Is_Imported (Ent) then
                      null;
 
                   --  Here we have a call to keep and analyze
 
                   else
-                     Csub := Find_Current_Subprogram;
+                     --  Both caller and callee must be subprograms
 
-                     --  Both caller and callee must be subprograms (we ignore
-                     --  generic subprograms).
-
-                     if Is_Subprogram (Csub) and then Is_Subprogram (Ent) then
-                        Calls.Append ((N, Find_Current_Subprogram, Ent));
+                     if Is_Subprogram (Ent) then
+                        Calls.Append ((N, Current_Subprogram, Ent));
                      end if;
                   end if;
                end if;
@@ -589,75 +615,347 @@ package body Exp_Unst is
             --  that it has a corresponding body we can get hold of. The case
             --  of no corresponding body being available is ignored for now.
 
-            elsif (Nkind (N) = N_Subprogram_Body and then Acts_As_Spec (N))
-              or else (Nkind (N) = N_Subprogram_Declaration
-                        and then Present (Corresponding_Body (N)))
-            then
-               Subps.Increment_Last;
+            elsif Nkind (N) = N_Subprogram_Body then
+               Ent := Corresponding_Spec_Of (N);
+
+               --  Ignore generic subprogram
+
+               if Is_Generic_Subprogram (Ent) then
+                  return Skip;
+               end if;
+
+               --  Make new entry in subprogram table if not already made
 
                declare
-                  STJ : Subp_Entry renames Subps.Table (Subps.Last);
+                  L : constant Nat := Get_Level (Ent);
+               begin
+                  Subps.Append
+                    ((Ent           => Ent,
+                      Bod           => N,
+                      Lev           => L,
+                      Reachable     => False,
+                      Uplevel_Ref   => L,
+                      Declares_AREC => False,
+                      Uents         => No_Elist,
+                      ARECnF        => Empty,
+                      ARECn         => Empty,
+                      ARECnT        => Empty,
+                      ARECnPT       => Empty,
+                      ARECnP        => Empty,
+                      ARECnU        => Empty));
+                  Set_Subps_Index (Ent, UI_From_Int (Subps.Last));
+               end;
+
+               --  We make a recursive call to scan the subprogram body, so
+               --  that we can save and restore Current_Subprogram.
+
+               declare
+                  Save_CS : constant Entity_Id := Current_Subprogram;
+                  Decl    : Node_Id;
 
                begin
-                  --  Set fields of Subp_Entry for new subprogram
+                  Current_Subprogram := Ent;
 
-                  STJ.Ent := Defining_Entity (Specification (N));
-                  STJ.Lev := Get_Level (STJ.Ent);
+                  --  Scan declarations
 
-                  if Nkind (N) = N_Subprogram_Body then
-                     STJ.Bod := N;
-                  else
-                     STJ.Bod :=
-                       Parent (Declaration_Node (Corresponding_Body (N)));
-                     pragma Assert (Nkind (STJ.Bod) = N_Subprogram_Body);
+                  Decl := First (Declarations (N));
+                  while Present (Decl) loop
+                     Visit (Decl);
+                     Next (Decl);
+                  end loop;
+
+                  --  Scan statements
+
+                  Visit (Handled_Statement_Sequence (N));
+
+                  --  Restore current subprogram setting
+
+                  Current_Subprogram := Save_CS;
+               end;
+
+               --  Now at this level, return skipping the subprogram body
+               --  descendents, since we already took care of them!
+
+               return Skip;
+
+            --  Record an uplevel reference
+
+            elsif Nkind (N) in N_Has_Entity and then Present (Entity (N)) then
+               Ent := Entity (N);
+
+               --  Only interested in entities declared within our nest
+
+               if not Is_Library_Level_Entity (Ent)
+                 and then Scope_Within_Or_Same (Scope (Ent), Subp)
+                 and then
+
+                   --  Constants and variables are interesting
+
+                   (Ekind_In (Ent, E_Constant, E_Variable)
+
+                     --  Formals are interesting, but not if being used as mere
+                     --  names of parameters for name notation calls.
+
+                     or else
+                       (Is_Formal (Ent)
+                         and then not
+                          (Nkind (Parent (N)) = N_Parameter_Association
+                            and then Selector_Name (Parent (N)) = N))
+
+                     --  Types other than known Is_Static types are interesting
+
+                     or else (Is_Type (Ent)
+                               and then not Is_Static_Type (Ent)))
+               then
+                  --  Here we have a possible interesting uplevel reference
+
+                  if Is_Type (Ent) then
+                     declare
+                        DT : Boolean := False;
+
+                     begin
+                        Check_Static_Type (Ent, DT);
+
+                        if Is_Static_Type (Ent) then
+                           return OK;
+                        end if;
+                     end;
                   end if;
 
-                  --  Capture Uplevel_References, and then set (uses the same
-                  --  field), the Subps_Index value for this subprogram.
+                  Caller := Current_Subprogram;
+                  Callee := Enclosing_Subprogram (Ent);
 
-                  STJ.Urefs := Uplevel_References (STJ.Ent);
-                  Set_Subps_Index (STJ.Ent, UI_From_Int (Int (Subps.Last)));
-               end;
+                  if Callee /= Caller and then not Is_Static_Type (Ent) then
+                     Note_Uplevel_Ref (Ent, Caller, Callee);
+                  end if;
+               end if;
+
+            --  Skip generic declarations
+
+            elsif Nkind (N) in N_Generic_Declaration then
+               return Skip;
+
+            --  Skip generic package body
+
+            elsif Nkind (N) = N_Package_Body
+              and then Present (Corresponding_Spec (N))
+              and then Ekind (Corresponding_Spec (N)) = E_Generic_Package
+            then
+               return Skip;
             end if;
+
+            --  Fall through to continue scanning children of this node
 
             return OK;
          end Visit_Node;
 
-         -----------
-         -- Visit --
-         -----------
-
-         procedure Visit is new Traverse_Proc (Visit_Node);
-         --  Used to traverse the body of Subp, populating the tables
-
       --  Start of processing for Build_Tables
 
       begin
-         --  A special case, if the outer level subprogram has a separate spec
-         --  then we won't catch it in the traversal of the body. But we do
-         --  want to visit the declaration in this case!
-
-         if not Acts_As_Spec (Subp_Body) then
-            declare
-               Dummy : Traverse_Result;
-               Decl  : constant Node_Id :=
-                 Parent (Declaration_Node (Corresponding_Spec (Subp_Body)));
-               pragma Assert (Nkind (Decl) = N_Subprogram_Declaration);
-            begin
-               Dummy := Visit_Node (Decl);
-            end;
-         end if;
-
-         --  Traverse the body to get the rest of the subprograms and calls
+         --  Traverse the body to get subprograms, calls and uplevel references
 
          Visit (Subp_Body);
       end Build_Tables;
 
-      --  Second step is to do the transitive closure, if any subprogram has
-      --  a call to a subprogram for which Has_Uplevel_Reference is set, then
-      --  we set Has_Uplevel_Reference for the calling routine.
+      --  Now do the first transitive closure which determines which
+      --  subprograms in the nest are actually reachable.
 
-      Closure : declare
+      Reachable_Closure : declare
+         Modified : Boolean;
+
+      begin
+         Subps.Table (1).Reachable := True;
+
+         --  We use a simple minded algorithm as follows (obviously this can
+         --  be done more efficiently, using one of the standard algorithms
+         --  for efficient transitive closure computation, but this is simple
+         --  and most likely fast enough that its speed does not matter).
+
+         --  Repeatedly scan the list of calls. Any time we find a call from
+         --  A to B, where A is reachable, but B is not, then B is reachable,
+         --  and note that we have made a change by setting Modified True. We
+         --  repeat this until we make a pass with no modifications.
+
+         Outer : loop
+            Modified := False;
+            Inner : for J in Calls.First .. Calls.Last loop
+               declare
+                  CTJ : Call_Entry renames Calls.Table (J);
+
+                  SINF : constant SI_Type := Subp_Index (CTJ.Caller);
+                  SINT : constant SI_Type := Subp_Index (CTJ.Callee);
+
+                  SUBF : Subp_Entry renames Subps.Table (SINF);
+                  SUBT : Subp_Entry renames Subps.Table (SINT);
+
+               begin
+                  if SUBF.Reachable and then not SUBT.Reachable then
+                     SUBT.Reachable := True;
+                     Modified := True;
+                  end if;
+               end;
+            end loop Inner;
+
+            exit Outer when not Modified;
+         end loop Outer;
+      end Reachable_Closure;
+
+      --  Remove calls from unreachable subprograms
+
+      declare
+         New_Index : Nat;
+
+      begin
+         New_Index := 0;
+         for J in Calls.First .. Calls.Last loop
+            declare
+               CTJ : Call_Entry renames Calls.Table (J);
+
+               SINF : constant SI_Type := Subp_Index (CTJ.Caller);
+               SINT : constant SI_Type := Subp_Index (CTJ.Callee);
+
+               SUBF : Subp_Entry renames Subps.Table (SINF);
+               SUBT : Subp_Entry renames Subps.Table (SINT);
+
+            begin
+               if SUBF.Reachable then
+                  pragma Assert (SUBT.Reachable);
+                  New_Index := New_Index + 1;
+                  Calls.Table (New_Index) := Calls.Table (J);
+               end if;
+            end;
+         end loop;
+
+         Calls.Set_Last (New_Index);
+      end;
+
+      --  Remove uplevel references from unreachable subprograms
+
+      declare
+         New_Index : Nat;
+
+      begin
+         New_Index := 0;
+         for J in Urefs.First .. Urefs.Last loop
+            declare
+               URJ : Uref_Entry renames Urefs.Table (J);
+
+               SINF : constant SI_Type := Subp_Index (URJ.Caller);
+               SINT : constant SI_Type := Subp_Index (URJ.Callee);
+
+               SUBF : Subp_Entry renames Subps.Table (SINF);
+               SUBT : Subp_Entry renames Subps.Table (SINT);
+
+               S : Entity_Id;
+
+            begin
+               --  Keep reachable reference
+
+               if SUBF.Reachable then
+                  New_Index := New_Index + 1;
+                  Urefs.Table (New_Index) := Urefs.Table (J);
+
+                  --  And since we know we are keeping this one, this is a good
+                  --  place to fill in information for a good reference.
+
+                  --  Mark all enclosing subprograms need to declare AREC
+
+                  S := URJ.Caller;
+                  loop
+                     S := Enclosing_Subprogram (S);
+                     Subps.Table (Subp_Index (S)).Declares_AREC := True;
+                     exit when S = URJ.Callee;
+                  end loop;
+
+                  --  Add to list of uplevel referenced entities for Callee.
+                  --  We do not add types to this list, only actual references
+                  --  to objects that will be referenced uplevel, and we use
+                  --  the flag Is_Uplevel_Referenced_Entity to avoid making
+                  --  duplicate entries in the list.
+
+                  if not Is_Uplevel_Referenced_Entity (URJ.Ent) then
+                     Set_Is_Uplevel_Referenced_Entity (URJ.Ent);
+
+                     if not Is_Type (URJ.Ent) then
+                        Append_New_Elmt (URJ.Ent, SUBT.Uents);
+                     end if;
+                  end if;
+
+                  --  And set uplevel indication for caller
+
+                  if SUBT.Lev < SUBF.Uplevel_Ref then
+                     SUBF.Uplevel_Ref := SUBT.Lev;
+                  end if;
+               end if;
+            end;
+         end loop;
+
+         Urefs.Set_Last (New_Index);
+      end;
+
+      --  Remove unreachable subprograms from Subps table. Note that we do
+      --  this after eliminating entries from the other two tables, since
+      --  thos elimination steps depend on referencing the Subps table.
+
+      declare
+         New_SI : SI_Type;
+
+      begin
+         New_SI := 0;
+         for J in Subps.First .. Subps.Last loop
+            declare
+               STJ  : Subp_Entry renames Subps.Table (J);
+               Spec : Node_Id;
+               Decl : Node_Id;
+
+            begin
+               --  Subprogram is reachable, copy and reset index
+
+               if STJ.Reachable then
+                  New_SI := New_SI + 1;
+                  Subps.Table (New_SI) := STJ;
+                  Set_Subps_Index (STJ.Ent, UI_From_Int (New_SI));
+
+               --  Subprogram is not reachable
+
+               else
+                  --  Clear index, since no longer active
+
+                  Set_Subps_Index (Subps.Table (J).Ent, Uint_0);
+
+                  --  Output debug information if -gnatd.3 set
+
+                  if Debug_Flag_Dot_3 then
+                     Write_Str ("Eliminate ");
+                     Write_Name (Chars (Subps.Table (J).Ent));
+                     Write_Str (" at ");
+                     Write_Location (Sloc (Subps.Table (J).Ent));
+                     Write_Str (" (not referenced)");
+                     Write_Eol;
+                  end if;
+
+                  --  Rewrite declaration and body to null statements
+
+                  Spec := Corresponding_Spec (STJ.Bod);
+
+                  if Present (Spec) then
+                     Decl := Parent (Declaration_Node (Spec));
+                     Rewrite (Decl, Make_Null_Statement (Sloc (Decl)));
+                  end if;
+
+                  Rewrite (STJ.Bod, Make_Null_Statement (Sloc (STJ.Bod)));
+               end if;
+            end;
+         end loop;
+
+         Subps.Set_Last (New_SI);
+      end;
+
+      --  Now it is time for the second transitive closure, which follows calls
+      --  and makes sure that A calls B, and B has uplevel references, then A
+      --  is also marked as having uplevel references.
+
+      Closure_Uplevel : declare
          Modified : Boolean;
 
       begin
@@ -667,25 +965,75 @@ package body Exp_Unst is
          --  and most likely fast enough that its speed does not matter).
 
          --  Repeatedly scan the list of calls. Any time we find a call from
-         --  A to B, where A does not have Has_Uplevel_Reference, and B does
-         --  have this flag set, then set the flag for A, and note that we
-         --  have made a change by setting Modified True. We repeat this until
-         --  we make a pass with no modifications.
+         --  A to B, where B has uplevel references, make sure that A is marked
+         --  as having at least the same level of uplevel referencing.
 
-         Outer : loop
+         Outer2 : loop
             Modified := False;
-            Inner : for J in Calls.First .. Calls.Last loop
-               if not Has_Uplevel_Reference (Calls.Table (J).From)
-                 and then Has_Uplevel_Reference (Calls.Table (J).To)
-               then
-                  Set_Has_Uplevel_Reference (Calls.Table (J).From);
-                  Modified := True;
-               end if;
-            end loop Inner;
+            Inner2 : for J in Calls.First .. Calls.Last loop
+               declare
+                  CTJ  : Call_Entry renames Calls.Table (J);
+                  SINF : constant SI_Type := Subp_Index (CTJ.Caller);
+                  SINT : constant SI_Type := Subp_Index (CTJ.Callee);
+                  SUBF : Subp_Entry renames Subps.Table (SINF);
+                  SUBT : Subp_Entry renames Subps.Table (SINT);
+               begin
+                  if SUBT.Lev > SUBT.Uplevel_Ref
+                    and then SUBF.Uplevel_Ref > SUBT.Uplevel_Ref
+                  then
+                     SUBF.Uplevel_Ref := SUBT.Uplevel_Ref;
+                     Modified := True;
+                  end if;
+               end;
+            end loop Inner2;
 
-            exit Outer when not Modified;
-         end loop Outer;
-      end Closure;
+            exit Outer2 when not Modified;
+         end loop Outer2;
+      end Closure_Uplevel;
+
+      --  We have one more step before the tables are complete. An uplevel
+      --  call from subprogram A to subprogram B where subprogram B has uplevel
+      --  references is in effect an uplevel reference, and must arrange for
+      --  the proper activation link to be passed.
+
+      for J in Calls.First .. Calls.Last loop
+         declare
+            CTJ : Call_Entry renames Calls.Table (J);
+
+            SINF : constant SI_Type := Subp_Index (CTJ.Caller);
+            SINT : constant SI_Type := Subp_Index (CTJ.Callee);
+
+            SUBF : Subp_Entry renames Subps.Table (SINF);
+            SUBT : Subp_Entry renames Subps.Table (SINT);
+
+            A : Entity_Id;
+
+         begin
+            --  If callee has uplevel references
+
+            if SUBT.Uplevel_Ref < SUBT.Lev
+
+              --  And this is an uplevel call
+
+              and then SUBT.Lev < SUBF.Lev
+            then
+               --  We need to arrange for finding the uplink
+
+               A := CTJ.Caller;
+               loop
+                  A := Enclosing_Subprogram (A);
+                  Subps.Table (Subp_Index (A)).Declares_AREC := True;
+                  exit when A = CTJ.Callee;
+
+                  --  In any case exit when we get to the outer level. This
+                  --  happens in some odd cases with generics (in particular
+                  --  sem_ch3.adb does not compile without this kludge ???).
+
+                  exit when A = Subp;
+               end loop;
+            end if;
+         end;
+      end loop;
 
       --  Next step, create the entities for code we will insert. We do this
       --  at the start so that all the entities are defined, regardless of the
@@ -698,30 +1046,18 @@ package body Exp_Unst is
             ARS : constant String     := AREC_String (STJ.Lev);
 
          begin
-            --  First we create the ARECnF entity for the additional formal
-            --  for all subprograms requiring that an activation record pointer
-            --  be passed. This is true of all subprograms that have uplevel
-            --  references, and whose enclosing subprogram also has uplevel
-            --  references.
+            --  First we create the ARECnF entity for the additional formal for
+            --  all subprograms which need an activation record passed.
 
-            if Has_Uplevel_Reference (STJ.Ent)
-              and then STJ.Ent /= Subp
-              and then Has_Uplevel_Reference (Enclosing_Subprogram (STJ.Ent))
-            then
+            if STJ.Uplevel_Ref < STJ.Lev then
                STJ.ARECnF :=
                  Make_Defining_Identifier (Loc,
                    Chars => Name_Find_Str (AREC_String (STJ.Lev - 1) & "F"));
-            else
-               STJ.ARECnF := Empty;
             end if;
 
-            --  Now define the AREC entities for the activation record. This
-            --  is needed for any subprogram that has nested subprograms and
-            --  has uplevel references.
+            --  Define the AREC entities for the activation record if needed
 
-            if Has_Nested_Subprogram (STJ.Ent)
-              and then Has_Uplevel_Reference (STJ.Ent)
-            then
+            if STJ.Declares_AREC then
                STJ.ARECn   :=
                  Make_Defining_Identifier (Loc, Name_Find_Str (ARS));
                STJ.ARECnT  :=
@@ -731,27 +1067,17 @@ package body Exp_Unst is
                STJ.ARECnP  :=
                  Make_Defining_Identifier (Loc, Name_Find_Str (ARS & "P"));
 
-            else
-               STJ.ARECn   := Empty;
-               STJ.ARECnT  := Empty;
-               STJ.ARECnPT := Empty;
-               STJ.ARECnP  := Empty;
-               STJ.ARECnU  := Empty;
-            end if;
+               --  Define uplink component entity if inner nesting case
 
-            --  Define uplink component entity if inner nesting case
-
-            if Has_Uplevel_Reference (STJ.Ent) and then STJ.Lev > 1 then
-               declare
-                  ARS1 : constant String := AREC_String (STJ.Lev - 1);
-               begin
-                  STJ.ARECnU :=
-                    Make_Defining_Identifier (Loc,
-                      Chars => Name_Find_Str (ARS1 & "U"));
-               end;
-
-            else
-               STJ.ARECnU := Empty;
+               if Present (STJ.ARECnF) then
+                  declare
+                     ARS1 : constant String := AREC_String (STJ.Lev - 1);
+                  begin
+                     STJ.ARECnU :=
+                       Make_Defining_Identifier (Loc,
+                         Chars => Name_Find_Str (ARS1 & "U"));
+                  end;
+               end if;
             end if;
          end;
       end loop Create_Entities;
@@ -850,19 +1176,14 @@ package body Exp_Unst is
                   end Add_Extra_Formal;
                end if;
 
-               --  Processing for subprograms that have at least one nested
-               --  subprogram, and have uplevel references.
+               --  Processing for subprograms that declare an activation record
 
-               if Has_Nested_Subprogram (STJ.Ent)
-                 and then Has_Uplevel_Reference (STJ.Ent)
-               then
+               if Present (STJ.ARECn) then
+
                   --  Local declarations for one such subprogram
 
                   declare
                      Loc   : constant Source_Ptr := Sloc (STJ.Bod);
-                     Elmt  : Elmt_Id;
-                     Nod   : Node_Id;
-                     Ent   : Entity_Id;
                      Clist : List_Id;
                      Comp  : Entity_Id;
 
@@ -872,44 +1193,13 @@ package body Exp_Unst is
                      Decl_ARECnP  : Node_Id;
                      --  Declaration nodes for the AREC entities we build
 
-                     Uplevel_Entities :
-                       array (1 .. List_Length (STJ.Urefs)) of Entity_Id;
-                     Num_Uplevel_Entities : Nat;
-                     --  Uplevel_Entities (1 .. Num_Uplevel_Entities) contains
-                     --  a list (with no duplicates) of the entities for this
-                     --  subprogram that are referenced uplevel. The maximum
-                     --  number of entries cannot exceed the total number of
-                     --  uplevel references.
-
                   begin
-                     --  Populate the Uplevel_Entities array, using the flag
-                     --  Uplevel_Reference_Noted to avoid duplicates.
-
-                     Num_Uplevel_Entities := 0;
-
-                     if Present (STJ.Urefs) then
-                        Elmt := First_Elmt (STJ.Urefs);
-                        while Present (Elmt) loop
-                           Nod := Actual_Ref (Node (Elmt));
-                           Ent := Entity (Nod);
-
-                           if not Uplevel_Reference_Noted (Ent) then
-                              Set_Uplevel_Reference_Noted (Ent, True);
-                              Num_Uplevel_Entities := Num_Uplevel_Entities + 1;
-                              Uplevel_Entities (Num_Uplevel_Entities) := Ent;
-                           end if;
-
-                           Next_Elmt (Elmt);
-                           Next_Elmt (Elmt);
-                        end loop;
-                     end if;
-
                      --  Build list of component declarations for ARECnT
 
                      Clist := Empty_List;
 
                      --  If we are in a subprogram that has a static link that
-                     --  ias passed in (as indicated by ARECnF being deinfed),
+                     --  is passed in (as indicated by ARECnF being defined),
                      --  then include ARECnU : ARECnPT := ARECnF where n is
                      --  one less than the current level and the entity ARECnPT
                      --  comes from the enclosing subprogram.
@@ -934,22 +1224,35 @@ package body Exp_Unst is
 
                      --  Add components for uplevel referenced entities
 
-                     for J in 1 .. Num_Uplevel_Entities loop
-                        Comp :=
-                          Make_Defining_Identifier (Loc,
-                            Chars => Upref_Name (Uplevel_Entities (J)));
+                     if Present (STJ.Uents) then
+                        declare
+                           Elmt : Elmt_Id;
+                           Uent : Entity_Id;
 
-                        Set_Activation_Record_Component
-                          (Uplevel_Entities (J), Comp);
+                        begin
+                           Elmt := First_Elmt (STJ.Uents);
+                           while Present (Elmt) loop
+                              Uent := Node (Elmt);
 
-                        Append_To (Clist,
-                          Make_Component_Declaration (Loc,
-                            Defining_Identifier  => Comp,
-                            Component_Definition =>
-                              Make_Component_Definition (Loc,
-                                Subtype_Indication =>
-                                  New_Occurrence_Of (Addr, Loc))));
-                     end loop;
+                              Comp :=
+                                Make_Defining_Identifier (Loc,
+                                  Chars => Upref_Name (Uent, Clist));
+
+                              Set_Activation_Record_Component
+                                (Uent, Comp);
+
+                              Append_To (Clist,
+                                Make_Component_Declaration (Loc,
+                                  Defining_Identifier  => Comp,
+                                  Component_Definition =>
+                                    Make_Component_Definition (Loc,
+                                      Subtype_Indication =>
+                                        New_Occurrence_Of (Addr, Loc))));
+
+                              Next_Elmt (Elmt);
+                           end loop;
+                        end;
+                     end if;
 
                      --  Now we can insert the AREC declarations into the body
 
@@ -1010,89 +1313,93 @@ package body Exp_Unst is
                      --  newly created entities go in the right entity chain.
 
                      --  We analyze with all checks suppressed (since we do
-                     --  not expect any exceptions, and also we temporarily
-                     --  turn off Unested_Subprogram_Mode to avoid trying to
-                     --  mark uplevel references (not needed at this stage,
-                     --  and in fact causes a bit of recursive chaos).
+                     --  not expect any exceptions).
 
                      Push_Scope (STJ.Ent);
-                     Opt.Unnest_Subprogram_Mode := False;
                      Analyze (Decl_ARECnT,  Suppress => All_Checks);
                      Analyze (Decl_ARECn,   Suppress => All_Checks);
                      Analyze (Decl_ARECnPT, Suppress => All_Checks);
                      Analyze (Decl_ARECnP,  Suppress => All_Checks);
-                     Opt.Unnest_Subprogram_Mode := True;
                      Pop_Scope;
 
                      --  Next step, for each uplevel referenced entity, add
-                     --  assignment operations to set the comoponent in the
+                     --  assignment operations to set the component in the
                      --  activation record.
 
-                     for J in 1 .. Num_Uplevel_Entities loop
+                     if Present (STJ.Uents) then
                         declare
-                           Ent : constant Entity_Id  := Uplevel_Entities (J);
-                           Loc : constant Source_Ptr := Sloc (Ent);
-                           Dec : constant Node_Id    := Declaration_Node (Ent);
-                           Ins : Node_Id;
-                           Asn : Node_Id;
+                           Elmt : Elmt_Id;
 
                         begin
-                           --  For parameters, we insert the assignment right
-                           --  after the declaration of ARECnP. For all other
-                           --  entities, we insert the assignment immediately
-                           --  after the declaration of the entity.
+                           Elmt := First_Elmt (STJ.Uents);
+                           while Present (Elmt) loop
+                              declare
+                                 Ent : constant Entity_Id  := Node (Elmt);
+                                 Loc : constant Source_Ptr := Sloc (Ent);
+                                 Dec : constant Node_Id    :=
+                                         Declaration_Node (Ent);
+                                 Ins : Node_Id;
+                                 Asn : Node_Id;
 
-                           --  Note: we don't need to mark the entity as being
-                           --  aliased, because the address attribute will mark
-                           --  it as Address_Taken, and that is good enough.
+                              begin
+                                 --  For parameters, we insert the assignment
+                                 --  right after the declaration of ARECnP.
+                                 --  For all other entities, we insert
+                                 --  the assignment immediately after
+                                 --  the declaration of the entity.
 
-                           if Is_Formal (Ent) then
-                              Ins := Decl_ARECnP;
-                           else
-                              Ins := Dec;
-                           end if;
+                                 --  Note: we don't need to mark the entity
+                                 --  as being aliased, because the address
+                                 --  attribute will mark it as Address_Taken,
+                                 --  and that is good enough.
 
-                           --  Build and insert the assignment:
-                           --    ARECn.nam := nam'Address
+                                 if Is_Formal (Ent) then
+                                    Ins := Decl_ARECnP;
+                                 else
+                                    Ins := Dec;
+                                 end if;
 
-                           Asn :=
-                             Make_Assignment_Statement (Loc,
-                               Name       =>
-                                 Make_Selected_Component (Loc,
-                                   Prefix        =>
-                                     New_Occurrence_Of (STJ.ARECn, Loc),
-                                   Selector_Name =>
-                                     New_Occurrence_Of
-                                       (Activation_Record_Component (Ent),
-                                        Loc)),
+                                 --  Build and insert the assignment:
+                                 --    ARECn.nam := nam'Address
 
-                               Expression =>
-                                 Make_Attribute_Reference (Loc,
-                                   Prefix         =>
-                                     New_Occurrence_Of (Ent, Loc),
-                                   Attribute_Name => Name_Address));
+                                 Asn :=
+                                   Make_Assignment_Statement (Loc,
+                                     Name       =>
+                                       Make_Selected_Component (Loc,
+                                         Prefix        =>
+                                           New_Occurrence_Of (STJ.ARECn, Loc),
+                                         Selector_Name =>
+                                           New_Occurrence_Of
+                                             (Activation_Record_Component
+                                                (Ent),
+                                              Loc)),
 
-                           Insert_After (Ins, Asn);
+                                     Expression =>
+                                       Make_Attribute_Reference (Loc,
+                                         Prefix         =>
+                                           New_Occurrence_Of (Ent, Loc),
+                                         Attribute_Name => Name_Address));
 
-                           --  Analyze the assignment statement. We do not need
-                           --  to establish the relevant scope stack entries
-                           --  here, because we have already set the correct
-                           --  entity references, so no name resolution is
-                           --  required, and no new entities are created, so
-                           --  we don't even need to set the current scope.
+                                 Insert_After (Ins, Asn);
 
-                           --  We analyze with all checks suppressed (since
-                           --  we do not expect any exceptions, and also we
-                           --  temporarily turn off Unested_Subprogram_Mode
-                           --  to avoid trying to mark uplevel references (not
-                           --  needed at this stage, and in fact causes a bit
-                           --  of recursive chaos).
+                                 --  Analyze the assignment statement. We do
+                                 --  not need to establish the relevant scope
+                                 --  stack entries here, because we have
+                                 --  already set the correct entity references,
+                                 --  so no name resolution is required, and no
+                                 --  new entities are created, so we don't even
+                                 --  need to set the current scope.
 
-                           Opt.Unnest_Subprogram_Mode := False;
-                           Analyze (Asn, Suppress => All_Checks);
-                           Opt.Unnest_Subprogram_Mode := True;
+                                 --  We analyze with all checks suppressed
+                                 --  (since we do not expect any exceptions).
+
+                                 Analyze (Asn, Suppress => All_Checks);
+                              end;
+
+                              Next_Elmt (Elmt);
+                           end loop;
                         end;
-                     end loop;
+                     end if;
                   end;
                end if;
             end;
@@ -1104,204 +1411,141 @@ package body Exp_Unst is
       --  need all the AREC declarations generated, inserted, and analyzed so
       --  that the uplevel references can be successfully analyzed.
 
-      Uplev_Refs : for J in Subps.First .. Subps.Last loop
+      Uplev_Refs : for J in Urefs.First .. Urefs.Last loop
          declare
-            STJ : Subp_Entry renames Subps.Table (J);
+            UPJ : Uref_Entry renames Urefs.Table (J);
 
          begin
-            --  We are only interested in entries which have uplevel references
-            --  to deal with, as indicated by the Urefs list being present
+            --  Ignore type references, these are implicit references that do
+            --  not need rewriting (e.g. the appearence in a conversion).
 
-            if Present (STJ.Urefs) then
-
-               --  Process uplevel references for one subprogram
-
-               Uplev_Refs_For_One_Subp : declare
-                  Elmt : Elmt_Id;
-
-                  function Get_Real_Subp (Ent : Entity_Id) return Entity_Id;
-                  --  The entity recorded as the enclosing subprogram for the
-                  --  reference sometimes turns out to be a subprogram body.
-                  --  This function gets the proper subprogram spec if needed.
-
-                  -------------------
-                  -- Get_Real_Subp --
-                  -------------------
-
-                  function Get_Real_Subp (Ent : Entity_Id) return Entity_Id is
-                     Nod : Node_Id;
-
-                  begin
-                     --  If we have a subprogram, return it
-
-                     if Is_Subprogram (Ent) then
-                        return Ent;
-
-                     --  If we have a subprogram body, go to the body
-
-                     elsif Ekind (Ent) = E_Subprogram_Body then
-                        Nod := Parent (Parent (Ent));
-                        pragma Assert (Nkind (Nod) = N_Subprogram_Body);
-
-                        if Acts_As_Spec (Nod) then
-                           return Ent;
-                        else
-                           return Corresponding_Spec (Nod);
-                        end if;
-
-                     --  Should not be any other possibilities
-
-                     else
-                        raise Program_Error;
-                     end if;
-                  end Get_Real_Subp;
-
-               --  Start of processing for Uplevel_References_For_One_Subp
-
-               begin
-                  --  Loop through uplevel references
-
-                  Elmt := First_Elmt (STJ.Urefs);
-                  while Present (Elmt) loop
-
-                     --  Rewrite one reference
-
-                     Rewrite_One_Ref : declare
-                        Ref : constant Node_Id := Actual_Ref (Node (Elmt));
-                        --  The reference to be rewritten
-
-                        Loc : constant Source_Ptr := Sloc (Ref);
-                        --  Source location for the reference
-
-                        Ent : constant Entity_Id := Entity (Ref);
-                        --  The referenced entity
-
-                        Typ : constant Entity_Id := Etype (Ent);
-                        --  The type of the referenced entity
-
-                        Atyp : constant Entity_Id := Get_Actual_Subtype (Ref);
-                        --  The actual subtype of the reference
-
-                        Rsub : constant Entity_Id :=
-                                 Get_Real_Subp (Node (Next_Elmt (Elmt)));
-                        --  The enclosing subprogram for the reference
-
-                        RSX : constant SI_Type := Subp_Index (Rsub);
-                        --  Subp_Index for enclosing subprogram for ref
-
-                        STJR : Subp_Entry renames Subps.Table (RSX);
-                        --  Subp_Entry for enclosing subprogram for ref
-
-                        Pfx  : Node_Id;
-                        Comp : Entity_Id;
-                        SI   : SI_Type;
-
-                     begin
-                        --  Ignore if no ARECnF entity for enclosing subprogram
-                        --  which probably happens as a result of not properly
-                        --  treating instance bodies. To be examined ???
-
-                        --  If this test is omitted, then the compilation of
-                        --  freeze.adb and inline.adb fail in unnesting mode.
-
-                        if No (STJR.ARECnF) then
-                           goto Continue;
-                        end if;
-
-                        --  Push the current scope, so that the pointer type
-                        --  Tnn, and any subsidiary entities resulting from
-                        --  the analysis of the rewritten reference, go in the
-                        --  right entity chain.
-
-                        Push_Scope (STJR.Ent);
-
-                        --  Now we need to rewrite the reference. We have a
-                        --  reference is from level STJE.Lev to level STJ.Lev.
-                        --  The general form of the rewritten reference for
-                        --  entity X is:
-
-                        --   Typ'Deref (ARECaF.ARECbU.ARECcU.ARECdU....ARECm.X)
-
-                        --  where a,b,c,d .. m =
-                        --    STJR.Lev - 1,  STJ.Lev - 2, .. STJ.Lev
-
-                        pragma Assert (STJR.Lev > STJ.Lev);
-
-                        --  Compute the prefix of X. Here are examples to make
-                        --  things clear (with parens to show groupings, the
-                        --  prefix is everything except the .X at the end).
-
-                        --   level 2 to level 1
-
-                        --     AREC1F.X
-
-                        --   level 3 to level 1
-
-                        --     (AREC2F.AREC1U).X
-
-                        --   level 4 to level 1
-
-                        --     ((AREC3F.AREC2U).AREC1U).X
-
-                        --   level 6 to level 2
-
-                        --     (((AREC5F.AREC4U).AREC3U).AREC2U).X
-
-                        Pfx := New_Occurrence_Of (STJR.ARECnF, Loc);
-                        SI := RSX;
-                        for L in STJ.Lev .. STJR.Lev - 2 loop
-                           SI := Enclosing_Subp (SI);
-                           Pfx :=
-                             Make_Selected_Component (Loc,
-                               Prefix        => Pfx,
-                               Selector_Name =>
-                                 New_Occurrence_Of
-                                   (Subps.Table (SI).ARECnU, Loc));
-                        end loop;
-
-                        --  Get activation record component (must exist)
-
-                        Comp := Activation_Record_Component (Ent);
-                        pragma Assert (Present (Comp));
-
-                        --  Do the replacement
-
-                        Rewrite (Ref,
-                          Make_Attribute_Reference (Loc,
-                            Prefix         => New_Occurrence_Of (Atyp, Loc),
-                            Attribute_Name => Name_Deref,
-                            Expressions    => New_List (
-                              Make_Selected_Component (Loc,
-                                Prefix        => Pfx,
-                                Selector_Name =>
-                                  New_Occurrence_Of (Comp, Loc)))));
-
-                        --  Analyze and resolve the new expression. We do not
-                        --  need to establish the relevant scope stack entries
-                        --  here, because we have already set all the correct
-                        --  entity references, so no name resolution is needed.
-                        --  We have already set the current scope, so that any
-                        --  new entities created will be in the right scope.
-
-                        --  We analyze with all checks suppressed (since we do
-                        --  not expect any exceptions, and also we temporarily
-                        --  turn off Unested_Subprogram_Mode to avoid trying to
-                        --  mark uplevel references (not needed at this stage,
-                        --  and in fact causes a bit of recursive chaos).
-
-                        Opt.Unnest_Subprogram_Mode := False;
-                        Analyze_And_Resolve (Ref, Typ, Suppress => All_Checks);
-                        Opt.Unnest_Subprogram_Mode := True;
-                        Pop_Scope;
-                     end Rewrite_One_Ref;
-
-                  <<Continue>>
-                     Next_Elmt (Elmt);
-                     Next_Elmt (Elmt);
-                  end loop;
-               end Uplev_Refs_For_One_Subp;
+            if Is_Type (UPJ.Ent) then
+               goto Continue;
             end if;
+
+            --  Rewrite one reference
+
+            Rewrite_One_Ref : declare
+               Loc : constant Source_Ptr := Sloc (UPJ.Ref);
+               --  Source location for the reference
+
+               Typ : constant Entity_Id := Etype (UPJ.Ent);
+               --  The type of the referenced entity
+
+               Atyp : constant Entity_Id := Get_Actual_Subtype (UPJ.Ref);
+               --  The actual subtype of the reference
+
+               RS_Caller : constant SI_Type := Subp_Index (UPJ.Caller);
+               --  Subp_Index for caller containing reference
+
+               STJR : Subp_Entry renames Subps.Table (RS_Caller);
+               --  Subp_Entry for subprogram containing reference
+
+               RS_Callee : constant SI_Type := Subp_Index (UPJ.Callee);
+               --  Subp_Index for subprogram containing referenced entity
+
+               STJE : Subp_Entry renames Subps.Table (RS_Callee);
+               --  Subp_Entry for subprogram containing referenced entity
+
+               Pfx  : Node_Id;
+               Comp : Entity_Id;
+               SI   : SI_Type;
+
+            begin
+               --  Ignore if no ARECnF entity for enclosing subprogram which
+               --  probably happens as a result of not properly treating
+               --  instance bodies. To be examined ???
+
+               --  If this test is omitted, then the compilation of
+               --  freeze.adb and inline.adb fail in unnesting mode.
+
+               if No (STJR.ARECnF) then
+                  goto Continue;
+               end if;
+
+               --  Push the current scope, so that the pointer type Tnn, and
+               --  any subsidiary entities resulting from the analysis of the
+               --  rewritten reference, go in the right entity chain.
+
+               Push_Scope (STJR.Ent);
+
+               --  Now we need to rewrite the reference. We have a
+               --  reference is from level STJR.Lev to level STJE.Lev.
+               --  The general form of the rewritten reference for
+               --  entity X is:
+
+               --   Typ'Deref (ARECaF.ARECbU.ARECcU.ARECdU....ARECm.X)
+
+               --  where a,b,c,d .. m =
+               --    STJR.Lev - 1,  STJR.Lev - 2, .. STJE.Lev
+
+               pragma Assert (STJR.Lev > STJE.Lev);
+
+               --  Compute the prefix of X. Here are examples to make things
+               --  clear (with parens to show groupings, the prefix is
+               --  everything except the .X at the end).
+
+               --   level 2 to level 1
+
+               --     AREC1F.X
+
+               --   level 3 to level 1
+
+               --     (AREC2F.AREC1U).X
+
+               --   level 4 to level 1
+
+               --     ((AREC3F.AREC2U).AREC1U).X
+
+               --   level 6 to level 2
+
+               --     (((AREC5F.AREC4U).AREC3U).AREC2U).X
+
+               Pfx := New_Occurrence_Of (STJR.ARECnF, Loc);
+               SI := RS_Caller;
+               for L in STJE.Lev .. STJR.Lev - 2 loop
+                  SI := Enclosing_Subp (SI);
+                  Pfx :=
+                    Make_Selected_Component (Loc,
+                      Prefix        => Pfx,
+                      Selector_Name =>
+                        New_Occurrence_Of (Subps.Table (SI).ARECnU, Loc));
+               end loop;
+
+               --  Get activation record component (must exist)
+
+               Comp := Activation_Record_Component (UPJ.Ent);
+               pragma Assert (Present (Comp));
+
+               --  Do the replacement
+
+               Rewrite (UPJ.Ref,
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Occurrence_Of (Atyp, Loc),
+                   Attribute_Name => Name_Deref,
+                   Expressions    => New_List (
+                     Make_Selected_Component (Loc,
+                       Prefix        => Pfx,
+                       Selector_Name =>
+                         New_Occurrence_Of (Comp, Loc)))));
+
+               --  Analyze and resolve the new expression. We do not need to
+               --  establish the relevant scope stack entries here, because we
+               --  have already set all the correct entity references, so no
+               --  name resolution is needed. We have already set the current
+               --  scope, so that any new entities created will be in the right
+               --  scope.
+
+               --  We analyze with all checks suppressed (since we do not
+               --  expect any exceptions)
+
+               Analyze_And_Resolve (UPJ.Ref, Typ, Suppress => All_Checks);
+               Pop_Scope;
+            end Rewrite_One_Ref;
          end;
+
+      <<Continue>>
+         null;
       end loop Uplev_Refs;
 
       --  Finally, loop through all calls adding extra actual for the
@@ -1316,8 +1560,8 @@ package body Exp_Unst is
 
          Adjust_One_Call : declare
             CTJ : Call_Entry renames Calls.Table (J);
-            STF : Subp_Entry renames Subps.Table (Subp_Index (CTJ.From));
-            STT : Subp_Entry renames Subps.Table (Subp_Index (CTJ.To));
+            STF : Subp_Entry renames Subps.Table (Subp_Index (CTJ.Caller));
+            STT : Subp_Entry renames Subps.Table (Subp_Index (CTJ.Callee));
 
             Loc : constant Source_Ptr := Sloc (CTJ.N);
 
@@ -1344,7 +1588,7 @@ package body Exp_Unst is
                   Extra := New_Occurrence_Of (STF.ARECnF, Loc);
 
                --  For a call that goes down a level, we pass a pointer
-               --  to the activation record constructed wtihin the caller
+               --  to the activation record constructed within the caller
                --  (which may be the outer level subprogram, but also may
                --  be a more deeply nested caller).
 
@@ -1368,7 +1612,7 @@ package body Exp_Unst is
                   pragma Assert (STT.Lev < STF.Lev);
 
                   Extra := New_Occurrence_Of (STF.ARECnF, Loc);
-                  SubX := Subp_Index (CTJ.From);
+                  SubX := Subp_Index (CTJ.Caller);
                   for K in reverse STT.Lev .. STF.Lev - 1 loop
                      SubX := Enclosing_Subp (SubX);
                      Extra :=

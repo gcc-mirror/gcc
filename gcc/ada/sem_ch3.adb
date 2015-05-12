@@ -1160,7 +1160,7 @@ package body Sem_Ch3 is
                if Is_Access_Type (Typ)
                  and then Null_Exclusion_In_Return_Present (T_Def)
                then
-                  Set_Etype  (Desig_Type,
+                  Set_Etype (Desig_Type,
                     Create_Null_Excluding_Itype
                       (T           => Typ,
                        Related_Nod => T_Def,

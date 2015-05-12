@@ -2009,11 +2009,10 @@ package Einfo is
 --       Defined in all entities. Indicates that the entity is locally defined
 --       within a subprogram P, and there is a reference to the entity within
 --       a subprogram nested within P (at any depth). Set only for the VM case
---       (where it is set for variables, constants and loop parameters), and in
---       the case where we are unnesting nested subprograms (in which case it
---       is also set for types and subtypes which are not static types, and
---       that are referenced uplevel, as well as for subprograms that contain
---       uplevel references or call other subprograms (Exp_Unst has details).
+--       (where it is set for variables, constants and loop parameters). Note
+--       that this is similar in usage to Is_Uplevel_Referenced_Entity (which
+--       is used when we are unnesting subprograms), but the usages are a bit
+--       different and it is cleaner to leave the old VM usage unchanged.
 
 --    Has_Visible_Refinement (Flag263)
 --       Defined in E_Abstract_State entities. Set when a state has at least
@@ -2988,8 +2987,8 @@ package Einfo is
 --       Wide_Wide_String).
 
 --    Is_Static_Type (Flag281)
---       Defined in all type and subtype entities. If set, indicates that the
---       type is known to be a static type (defined as a discrete type with
+--       Defined in entities. Only set for (sub)types. If set, indicates that
+--       the type is known to be a static type (defined as a discrete type with
 --       static bounds, a record all of whose component types are static types,
 --       or an array, all of whose bounds are of a static type, and also have
 --       a component type that is a static type). See Set_Uplevel_Type for more
@@ -3110,6 +3109,20 @@ package Einfo is
 --       a further subtype is obtained using variable bounds. This further
 --       subtype is still unsigned, but this cannot be determined by looking
 --       at its bounds or the bounds of the corresponding base type.
+
+--    Is_Uplevel_Referenced_Entity (Flag283)
+--       Defined in all entities. Used when unnesting subprograms to indicate
+--       that an entity is locally defined within a subprogram P, and there is
+--       a reference to the entity within a subprogram nested within P (at any
+--       depth). Set for uplevel referenced objects (variables, constants and
+--       loop parameters), and also for upreferenced dynamic types, including
+--       the cases where the reference is implicit (e.g. the type of an array
+--       used for computing the location of an element in an array. This is
+--       used internally in Exp_Unst, see this package for further details.
+--       Note that this is similar to the Has_Uplevel_Reference flag which
+--       is used in the VM case but we prefer to keep the two cases entirely
+--       separated, so that the VM usage is not disturbed by work on the
+--       Unnesting_Subprograms mode.
 
 --    Is_Valued_Procedure (Flag127)
 --       Defined in procedure entities. Set if an Import_Valued_Procedure
@@ -4142,8 +4155,6 @@ package Einfo is
 --    Subps_Index (Uint24)
 --       Used during Exp_Inst.Unnest_Subprogram to hold the index in the Subps
 --       table for a subprogram. See processing in this procedure for details.
---       Note that this overlaps Uplevel_References, it is only set after the
---       latter field has been acquired.
 
 --    Suppress_Elaboration_Warnings (Flag148)
 --       Defined in all entities, can be set only for subprogram entities and
@@ -4277,19 +4288,6 @@ package Einfo is
 --       entity before any value has been set. Only the first such reference
 --       is identified. This field is used to generate a warning message if
 --       necessary (see Sem_Warn.Check_Unset_Reference).
-
---    Uplevel_Reference_Noted (Flag283)
---       Defined in all entities, used in Exp_Unst processing to note that an
---       uplevel reference to the entity has been noted (to avoid processing a
---       given entity more than once).
-
---    Uplevel_References (Elist24)
---       Defined in subprogram entities. Set only if Has_Uplevel_Reference is
---       set and if we are Unnest_Subprogram_Mode, otherwise undefined. Points
---       to a list of explicit uplevel references to entities declared in
---       the subprogram which need rewriting. Each entry uses two elements of
---       the list, the first is the node that is the actual reference, the
---       second is the entity of the enclosing subprogram for the reference.
 
 --    Used_As_Generic_Actual (Flag222)
 --       Defined in all entities, set if the entity is used as an argument to
@@ -5255,6 +5253,7 @@ package Einfo is
    --    Has_Qualified_Name                  (Flag161)
    --    Has_Stream_Size_Clause              (Flag184)
    --    Has_Unknown_Discriminants           (Flag72)
+   --    Has_Uplevel_Reference               (Flag215)
    --    Has_Xref_Entry                      (Flag182)
    --    In_Private_Part                     (Flag45)
    --    Is_Ada_2005_Only                    (Flag185)
@@ -5304,6 +5303,7 @@ package Einfo is
    --    Is_Renaming_Of_Object               (Flag112)
    --    Is_Shared_Passive                   (Flag60)
    --    Is_Statically_Allocated             (Flag28)
+   --    Is_Static_Type                      (Flag281)
    --    Is_Tagged_Type                      (Flag55)
    --    Is_Thunk                            (Flag225)
    --    Is_Trivial_Subprogram               (Flag235)
@@ -5324,7 +5324,6 @@ package Einfo is
    --    Suppress_Elaboration_Warnings       (Flag148)
    --    Suppress_Style_Checks               (Flag165)
    --    Suppress_Value_Tracking_On_Call     (Flag217)
-   --    Uplevel_Reference_Noted             (Flag283)
    --    Used_As_Generic_Actual              (Flag222)
    --    Warnings_Off                        (Flag96)
    --    Warnings_Off_Used                   (Flag236)
@@ -5395,7 +5394,6 @@ package Einfo is
    --    Has_Static_Predicate_Aspect         (Flag259)
    --    Has_Task                            (Flag30)   (base type only)
    --    Has_Unchecked_Union                 (Flag123)  (base type only)
-   --    Has_Uplevel_Reference               (Flag215)
    --    Has_Volatile_Components             (Flag87)   (base type only)
    --    In_Use                              (Flag8)
    --    Is_Abstract_Type                    (Flag146)
@@ -5412,7 +5410,6 @@ package Einfo is
    --    Is_Non_Static_Subtype               (Flag109)
    --    Is_Packed                           (Flag51)   (base type only)
    --    Is_Private_Composite                (Flag107)
-   --    Is_Static_Type                      (Flag281)
    --    Is_Unsigned_Type                    (Flag144)
    --    Is_Volatile                         (Flag16)
    --    Itype_Printed                       (Flag202)  (itypes only)
@@ -5617,7 +5614,6 @@ package Einfo is
    --    Has_Independent_Components          (Flag34)
    --    Has_Size_Clause                     (Flag29)
    --    Has_Thunks                          (Flag228)  (constants only)
-   --    Has_Uplevel_Reference               (Flag215)
    --    Has_Volatile_Components             (Flag87)
    --    Is_Atomic                           (Flag85)
    --    Is_Eliminated                       (Flag124)
@@ -5625,6 +5621,7 @@ package Einfo is
    --    Is_Processed_Transient              (Flag252)  (constants only)
    --    Is_Return_Object                    (Flag209)
    --    Is_True_Constant                    (Flag163)
+   --    Is_Uplevel_Referenced_Entity        (Flag283)
    --    Is_Volatile                         (Flag16)
    --    Stores_Attribute_Old_Prefix         (Flag270)  (constants only)
    --    Optimize_Alignment_Space            (Flag241)  (constants only)
@@ -5785,7 +5782,6 @@ package Einfo is
    --    Generic_Renamings                   (Elist23)  (for an instance)
    --    Inner_Instances                     (Elist23)  (generic case only)
    --    Protection_Object                   (Node23)   (for concurrent kind)
-   --    Uplevel_References                  (Elist24)  (non-generic case only)
    --    Subps_Index                         (Uint24)   (non-generic case only)
    --    Interface_Alias                     (Node25)
    --    Overridden_Operation                (Node26)
@@ -5960,7 +5956,6 @@ package Einfo is
    --    Extra_Accessibility_Of_Result       (Node19)
    --    Last_Entity                         (Node20)
    --    Has_Nested_Subprogram               (Flag282)
-   --    Uplevel_References                  (Elist24)
    --    Subps_Index                         (Uint24)
    --    Overridden_Operation                (Node26)
    --    Subprograms_For_Type                (Node29)
@@ -6094,7 +6089,6 @@ package Einfo is
    --    Generic_Renamings                   (Elist23)  (for an instance)
    --    Inner_Instances                     (Elist23)  (generic case only)
    --    Protection_Object                   (Node23)   (for concurrent kind)
-   --    Uplevel_References                  (Elist24)  (non-generic case only)
    --    Subps_Index                         (Uint24)   (non-generic case only)
    --    Interface_Alias                     (Node25)
    --    Overridden_Operation                (Node26)   (never for init proc)
@@ -6351,7 +6345,6 @@ package Einfo is
    --    Has_Independent_Components          (Flag34)
    --    Has_Initial_Value                   (Flag219)
    --    Has_Size_Clause                     (Flag29)
-   --    Has_Uplevel_Reference               (Flag215)
    --    Has_Volatile_Components             (Flag87)
    --    Is_Atomic                           (Flag85)
    --    Is_Eliminated                       (Flag124)
@@ -6362,6 +6355,7 @@ package Einfo is
    --    Is_True_Constant                    (Flag163)
    --    Is_Volatile                         (Flag16)
    --    Is_Return_Object                    (Flag209)
+   --    Is_Uplevel_Referenced_Entity        (Flag283)
    --    OK_To_Rename                        (Flag247)
    --    Optimize_Alignment_Space            (Flag241)
    --    Optimize_Alignment_Time             (Flag242)
@@ -6913,6 +6907,7 @@ package Einfo is
    function Is_Underlying_Record_View           (Id : E) return B;
    function Is_Unimplemented                    (Id : E) return B;
    function Is_Unsigned_Type                    (Id : E) return B;
+   function Is_Uplevel_Referenced_Entity        (Id : E) return B;
    function Is_Valued_Procedure                 (Id : E) return B;
    function Is_Visible_Formal                   (Id : E) return B;
    function Is_Visible_Lib_Unit                 (Id : E) return B;
@@ -7041,8 +7036,6 @@ package Einfo is
    function Underlying_Record_View              (Id : E) return E;
    function Universal_Aliasing                  (Id : E) return B;
    function Unset_Reference                     (Id : E) return N;
-   function Uplevel_Reference_Noted             (Id : E) return B;
-   function Uplevel_References                  (Id : E) return L;
    function Used_As_Generic_Actual              (Id : E) return B;
    function Uses_Lock_Free                      (Id : E) return B;
    function Uses_Sec_Stack                      (Id : E) return B;
@@ -7569,6 +7562,7 @@ package Einfo is
    procedure Set_Is_Underlying_Record_View       (Id : E; V : B := True);
    procedure Set_Is_Unimplemented                (Id : E; V : B := True);
    procedure Set_Is_Unsigned_Type                (Id : E; V : B := True);
+   procedure Set_Is_Uplevel_Referenced_Entity    (Id : E; V : B := True);
    procedure Set_Is_Valued_Procedure             (Id : E; V : B := True);
    procedure Set_Is_Visible_Formal               (Id : E; V : B := True);
    procedure Set_Is_Visible_Lib_Unit             (Id : E; V : B := True);
@@ -7697,8 +7691,6 @@ package Einfo is
    procedure Set_Underlying_Record_View          (Id : E; V : E);
    procedure Set_Universal_Aliasing              (Id : E; V : B := True);
    procedure Set_Unset_Reference                 (Id : E; V : N);
-   procedure Set_Uplevel_Reference_Noted         (Id : E; V : B := True);
-   procedure Set_Uplevel_References              (Id : E; V : L);
    procedure Set_Used_As_Generic_Actual          (Id : E; V : B := True);
    procedure Set_Uses_Lock_Free                  (Id : E; V : B := True);
    procedure Set_Uses_Sec_Stack                  (Id : E; V : B := True);
@@ -8380,6 +8372,7 @@ package Einfo is
    pragma Inline (Is_Underlying_Record_View);
    pragma Inline (Is_Unimplemented);
    pragma Inline (Is_Unsigned_Type);
+   pragma Inline (Is_Uplevel_Referenced_Entity);
    pragma Inline (Is_Valued_Procedure);
    pragma Inline (Is_Visible_Formal);
    pragma Inline (Is_Visible_Lib_Unit);
@@ -8510,8 +8503,6 @@ package Einfo is
    pragma Inline (Underlying_Record_View);
    pragma Inline (Universal_Aliasing);
    pragma Inline (Unset_Reference);
-   pragma Inline (Uplevel_Reference_Noted);
-   pragma Inline (Uplevel_References);
    pragma Inline (Used_As_Generic_Actual);
    pragma Inline (Uses_Lock_Free);
    pragma Inline (Uses_Sec_Stack);
@@ -8717,7 +8708,6 @@ package Einfo is
    pragma Inline (Set_Has_Thunks);
    pragma Inline (Set_Has_Unchecked_Union);
    pragma Inline (Set_Has_Unknown_Discriminants);
-   pragma Inline (Set_Has_Uplevel_Reference);
    pragma Inline (Set_Has_Visible_Refinement);
    pragma Inline (Set_Has_Volatile_Components);
    pragma Inline (Set_Has_Xref_Entry);
@@ -8836,6 +8826,7 @@ package Einfo is
    pragma Inline (Set_Is_Underlying_Record_View);
    pragma Inline (Set_Is_Unimplemented);
    pragma Inline (Set_Is_Unsigned_Type);
+   pragma Inline (Set_Is_Uplevel_Referenced_Entity);
    pragma Inline (Set_Is_Valued_Procedure);
    pragma Inline (Set_Is_Visible_Formal);
    pragma Inline (Set_Is_Visible_Lib_Unit);
@@ -8963,8 +8954,6 @@ package Einfo is
    pragma Inline (Set_Underlying_Full_View);
    pragma Inline (Set_Underlying_Record_View);
    pragma Inline (Set_Universal_Aliasing);
-   pragma Inline (Set_Uplevel_Reference_Noted);
-   pragma Inline (Set_Uplevel_References);
    pragma Inline (Set_Unset_Reference);
    pragma Inline (Set_Used_As_Generic_Actual);
    pragma Inline (Set_Uses_Lock_Free);

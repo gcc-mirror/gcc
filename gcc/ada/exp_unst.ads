@@ -529,23 +529,6 @@ package Exp_Unst is
    -- Subprograms --
    -----------------
 
-   procedure Check_Uplevel_Reference_To_Type (Typ : Entity_Id);
-   --  This procedure is called if Sem_Util.Check_Nested_Access detects an
-   --  uplevel reference to a type or subtype entity Typ. On return there are
-   --  two cases, if Typ is a static type (defined as a discrete type with
-   --  static bounds, or a record all of whose components are of a static type,
-   --  or an array whose index and component types are all static types), then
-   --  the flag Is_Static_Type (Typ) will be set True, and in this case the
-   --  flag Has_Uplevel_Reference is not set since we don't need to worry about
-   --  uplevel references to static types. If on the other hand Typ is not a
-   --  static type, then the flag Has_Uplevel_Reference will be set, and any
-   --  non-static bounds referenced by the type will also be marked as having
-   --  uplevel references (by setting Has_Uplevel_Reference for these bounds).
-
-   procedure Note_Uplevel_Reference (N : Node_Id; Subp : Entity_Id);
-   --  Called in Unnest_Subprogram_Mode when we detect an explicit uplevel
-   --  reference (node N) to an enclosing subprogram Subp.
-
    procedure Unnest_Subprogram (Subp : Entity_Id; Subp_Body : Node_Id);
    --  Subp is a library level subprogram which has nested subprograms, and
    --  Subp_Body is the corresponding N_Subprogram_Body node. This procedure

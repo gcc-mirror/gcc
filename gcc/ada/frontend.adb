@@ -30,6 +30,7 @@ with Checks;
 with CStand;
 with Debug;    use Debug;
 with Elists;
+with Exp_Ch6;
 with Exp_Dbug;
 with Fmap;
 with Fname.UF;
@@ -90,6 +91,7 @@ begin
    Checks.Initialize;
    Sem_Warn.Initialize;
    Prep.Initialize;
+   Exp_Ch6.Initialize;
 
    if Generate_SCIL then
       SCIL_LL.Initialize;
@@ -408,13 +410,6 @@ begin
 
          --  Cleanup processing after completing main analysis
 
-         --  Turn off unnesting of subprograms mode. This is not right
-         --  with respect to instantiations. What needs to happen is that
-         --  we do the unnesting AFTER the call to Instantiate_Bodies. We
-         --  will take care of that later ???
-
-         Opt.Unnest_Subprogram_Mode := False;
-
          --  Comment needed for ASIS mode test and GNATprove mode test???
 
          if Operating_Mode = Generate_Code
@@ -443,6 +438,10 @@ begin
 
             Remove_Ignored_Ghost_Code;
          end if;
+
+         --  At this stage we can unnest subprogram bodies if required
+
+         Exp_Ch6.Unnest_Subprograms;
 
          --  List library units if requested
 

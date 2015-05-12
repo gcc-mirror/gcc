@@ -1,5 +1,50 @@
 2015-05-12  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch3.adb: Minor reformatting.
+
+2015-05-12  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: If we want to invoke gnatmake (gnatclean) with
+	-P, then check if gprbuild (gprclean) is available; if it is,
+	use gprbuild (gprclean) instead of gnatmake (gnatclean).
+
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Add flag -gnatd.3 to output diagnostic info from
+	Exp_Unst.
+	* einfo.ad, einfo.adb: Reorganize (and remove most of) flags used by
+	Exp_Unst.
+	* exp_ch6.adb (Unest_Bodies): Table for delayed calls to
+	Unnest_Subprogram (Expand_N_Subprogram_Body): Add entry to table
+	for later call instead of calling Unnest_Subprogram directly
+	(Initialize): New procedure (Unnest_Subprograms): New procedure
+	* exp_ch6.ads (Add_Extra_Actual_To_Call): Move into proper
+	alpha order.
+	(Initialize): New procedure.
+	(Unnest_Subprograms): New procedure.
+	* exp_unst.adb (Unnest_Subprogram): Major rewrite, moving
+	all processing to this routine which is now called late
+	after instantiating bodies. Fully handles the case of generic
+	instantiations now.
+	* exp_unst.ads: Major rewrite, moving all processing to
+	Unnest_Subprogram.
+	* frontend.adb (Frontend): Add call to Exp_Ch6.Initialize.
+	(Frontend): Add call to Unnest_Subprograms.
+	* sem_ch8.adb (Find_Direct_Name): Back to old calling sequence
+	for Check_Nested_Access.
+	* sem_util.adb (Build_Default_Subtype): Minor reformatting
+	(Check_Nested_Access): Back to original VM-only form (we
+	now do all the processing for Unnest_Subprogram at the time
+	it is called.
+	(Denotes_Same_Object): Minor reformatting
+	(Note_Possible_Modification): Old calling sequence for
+	Check_Nested_Access.
+	* sem_util.ads (Check_Nested_Access): Back to original VM-only
+	form (we now do all the processing for Unnest_Subprogram at the
+	time it is called.
+
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb, freeze.adb, sem_ch6.adb: Minor reformatting.
 
 2015-05-12  Ed Schonberg  <schonberg@adacore.com>
