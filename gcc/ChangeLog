@@ -1,3 +1,8 @@
+2015-05-12 Sandra Loosemore <sandra@codesourcery.com>
+
+	* config/nios2/nios2.md (trap, ctrapsi4): Use "trap" instead of
+	"break".
+
 2015-05-12  Chung-Lin Tang  <cltang@codesourcery.com>
 	    Sandra Loosemore <sandra@codesourcery.com>
 
