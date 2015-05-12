@@ -19,7 +19,7 @@
 
 ;; Return 1 if OP is the zero constant for MODE.
 (define_predicate "const0_operand"
-  (and (match_code "const_int,const_double,const_vector")
+  (and (match_code "const_int,const_wide_int,const_double,const_vector")
        (match_test "op == CONST0_RTX (mode)")))
 
 ;; Returns true if OP is either the constant zero or a register.
@@ -66,12 +66,12 @@
 ;; Return 1 if the operand is a non-symbolic constant operand that
 ;; does not satisfy add_operand.
 (define_predicate "non_add_const_operand"
-  (and (match_code "const_int,const_double,const_vector")
+  (and (match_code "const_int,const_wide_int,const_double,const_vector")
        (not (match_operand 0 "add_operand"))))
 
 ;; Return 1 if the operand is a non-symbolic, nonzero constant operand.
 (define_predicate "non_zero_const_operand"
-  (and (match_code "const_int,const_double,const_vector")
+  (and (match_code "const_int,const_wide_int,const_double,const_vector")
        (match_test "op != CONST0_RTX (mode)")))
 
 ;; Return 1 if OP is the constant 4 or 8.
@@ -85,11 +85,7 @@
     (match_test "(unsigned HOST_WIDE_INT) INTVAL (op) < 0x100
 		 || (unsigned HOST_WIDE_INT) ~ INTVAL (op) < 0x100
 		 || zap_mask (INTVAL (op))")
-    (if_then_else (match_code "const_double")
-      (match_test "GET_MODE (op) == VOIDmode
-		   && zap_mask (CONST_DOUBLE_LOW (op))
-		   && zap_mask (CONST_DOUBLE_HIGH (op))")
-      (match_operand 0 "register_operand"))))
+    (match_operand 0 "register_operand")))
 
 ;; Return 1 if OP is a valid first operand to an IOR or XOR insn.
 (define_predicate "or_operand"
@@ -155,7 +151,7 @@
 ;; Return 1 if OP is something that can be reloaded into a register;
 ;; if it is a MEM, it need not be valid.
 (define_predicate "some_operand"
-  (ior (match_code "reg,mem,const_int,const_double,const_vector,
+  (ior (match_code "reg,mem,const_int,const_wide_int,const_double,const_vector,
 		    label_ref,symbol_ref,const,high")
        (and (match_code "subreg")
 	    (match_test "some_operand (SUBREG_REG (op), VOIDmode)"))))
@@ -169,7 +165,7 @@
 ;; Return 1 if OP is a valid operand for the source of a move insn.
 (define_predicate "input_operand"
   (match_code "label_ref,symbol_ref,const,high,reg,subreg,mem,
-	       const_double,const_vector,const_int")
+	       const_double,const_vector,const_int,const_wide_int")
 {
   switch (GET_CODE (op))
     {
@@ -205,6 +201,7 @@
       return ((TARGET_BWX || (mode != HImode && mode != QImode))
 	      && general_operand (op, mode));
 
+    case CONST_WIDE_INT:
     case CONST_DOUBLE:
       return op == CONST0_RTX (mode);
 
