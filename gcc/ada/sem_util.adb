@@ -4412,21 +4412,19 @@ package body Sem_Util is
       if No (First_Formal (Subp_Id)) then
          return No_List;
       else
-         Plist := New_List;
+         Plist  := New_List;
          Formal := First_Formal (Subp_Id);
          while Present (Formal) loop
-            Append
-              (Make_Parameter_Specification (Loc,
+            Append_To (Plist,
+              Make_Parameter_Specification (Loc,
                 Defining_Identifier =>
-                  Make_Defining_Identifier (Sloc (Formal),
-                    Chars => Chars (Formal)),
-                In_Present  => In_Present (Parent (Formal)),
-                Out_Present => Out_Present (Parent (Formal)),
-             Parameter_Type =>
+                  Make_Defining_Identifier (Sloc (Formal), Chars (Formal)),
+                In_Present          => In_Present (Parent (Formal)),
+                Out_Present         => Out_Present (Parent (Formal)),
+                Parameter_Type      =>
                   New_Occurrence_Of (Etype (Formal), Loc),
-                Expression =>
-                  New_Copy_Tree (Expression (Parent (Formal)))),
-              Plist);
+                Expression          =>
+                  New_Copy_Tree (Expression (Parent (Formal)))));
 
             Next_Formal (Formal);
          end loop;
@@ -4434,6 +4432,43 @@ package body Sem_Util is
 
       return Plist;
    end Copy_Parameter_List;
+
+   --------------------------
+   -- Copy_Subprogram_Spec --
+   --------------------------
+
+   function Copy_Subprogram_Spec (Spec : Node_Id) return Node_Id is
+      Def_Id      : Node_Id;
+      Formal_Spec : Node_Id;
+      Result      : Node_Id;
+
+   begin
+      --  The structure of the original tree must be replicated without any
+      --  alterations. Use New_Copy_Tree for this purpose.
+
+      Result := New_Copy_Tree (Spec);
+
+      --  Create a new entity for the defining unit name
+
+      Def_Id := Defining_Unit_Name (Result);
+      Set_Defining_Unit_Name (Result,
+        Make_Defining_Identifier (Sloc (Def_Id), Chars (Def_Id)));
+
+      --  Create new entities for the formal parameters
+
+      if Present (Parameter_Specifications (Result)) then
+         Formal_Spec := First (Parameter_Specifications (Result));
+         while Present (Formal_Spec) loop
+            Def_Id := Defining_Identifier (Formal_Spec);
+            Set_Defining_Identifier (Formal_Spec,
+              Make_Defining_Identifier (Sloc (Def_Id), Chars (Def_Id)));
+
+            Next (Formal_Spec);
+         end loop;
+      end if;
+
+      return Result;
+   end Copy_Subprogram_Spec;
 
    --------------------------------
    -- Corresponding_Generic_Type --
@@ -10299,6 +10334,29 @@ package body Sem_Util is
             or else Is_Task_Interface (T));
    end Is_Concurrent_Interface;
 
+   -----------------------
+   -- Is_Constant_Bound --
+   -----------------------
+
+   function Is_Constant_Bound (Exp : Node_Id) return Boolean is
+   begin
+      if Compile_Time_Known_Value (Exp) then
+         return True;
+
+      elsif Is_Entity_Name (Exp) and then Present (Entity (Exp)) then
+         return Is_Constant_Object (Entity (Exp))
+           or else Ekind (Entity (Exp)) = E_Enumeration_Literal;
+
+      elsif Nkind (Exp) in N_Binary_Op then
+         return Is_Constant_Bound (Left_Opnd (Exp))
+           and then Is_Constant_Bound (Right_Opnd (Exp))
+           and then Scope (Entity (Exp)) = Standard_Standard;
+
+      else
+         return False;
+      end if;
+   end Is_Constant_Bound;
+
    ---------------------------
    --  Is_Container_Element --
    ---------------------------
@@ -10478,28 +10536,40 @@ package body Sem_Util is
       end;
    end Is_Container_Element;
 
-   -----------------------
-   -- Is_Constant_Bound --
-   -----------------------
+   ----------------------------
+   -- Is_Contract_Annotation --
+   ----------------------------
 
-   function Is_Constant_Bound (Exp : Node_Id) return Boolean is
+   function Is_Contract_Annotation (Item : Node_Id) return Boolean is
+      Nam : Name_Id;
+
    begin
-      if Compile_Time_Known_Value (Exp) then
-         return True;
+      if Nkind (Item) = N_Aspect_Specification then
+         Nam := Chars (Identifier (Item));
 
-      elsif Is_Entity_Name (Exp) and then Present (Entity (Exp)) then
-         return Is_Constant_Object (Entity (Exp))
-           or else Ekind (Entity (Exp)) = E_Enumeration_Literal;
-
-      elsif Nkind (Exp) in N_Binary_Op then
-         return Is_Constant_Bound (Left_Opnd (Exp))
-           and then Is_Constant_Bound (Right_Opnd (Exp))
-           and then Scope (Entity (Exp)) = Standard_Standard;
-
-      else
-         return False;
+      else pragma Assert (Nkind (Item) = N_Pragma);
+         Nam := Pragma_Name (Item);
       end if;
-   end Is_Constant_Bound;
+
+      return
+        Nam = Name_Abstract_State
+          or else Nam = Name_Contract_Cases
+          or else Nam = Name_Depends
+          or else Nam = Name_Extensions_Visible
+          or else Nam = Name_Global
+          or else Nam = Name_Initial_Condition
+          or else Nam = Name_Initializes
+          or else Nam = Name_Post
+          or else Nam = Name_Post_Class
+          or else Nam = Name_Postcondition
+          or else Nam = Name_Pre
+          or else Nam = Name_Pre_Class
+          or else Nam = Name_Precondition
+          or else Nam = Name_Refined_Depends
+          or else Nam = Name_Refined_Global
+          or else Nam = Name_Refined_State
+          or else Nam = Name_Test_Case;
+   end Is_Contract_Annotation;
 
    --------------------------------------
    -- Is_Controlling_Limited_Procedure --
