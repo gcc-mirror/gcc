@@ -425,8 +425,8 @@ package body Freeze is
             Ret_Type : constant Entity_Id := Etype (Result_Definition (Spec));
          begin
             if Has_Non_Limited_View (Ret_Type) then
-               Set_Result_Definition (Spec,
-                  New_Occurrence_Of (Non_Limited_View (Ret_Type), Loc));
+               Set_Result_Definition
+                 (Spec, New_Occurrence_Of (Non_Limited_View (Ret_Type), Loc));
             end if;
          end;
       end if;
@@ -456,10 +456,11 @@ package body Freeze is
             elsif Is_Access_Type (Form_Type)
               and then not Is_Access_Type (Pref)
             then
-               Actuals := New_List
-                 (Make_Attribute_Reference (Loc,
-                   Attribute_Name => Name_Access,
-                   Prefix => Relocate_Node (Pref)));
+               Actuals :=
+                 New_List (
+                   Make_Attribute_Reference (Loc,
+                     Attribute_Name => Name_Access,
+                     Prefix         => Relocate_Node (Pref)));
             else
                Actuals := New_List (Pref);
             end if;
@@ -530,7 +531,7 @@ package body Freeze is
            Make_Simple_Return_Statement (Loc,
               Expression =>
                 Make_Function_Call (Loc,
-                  Name => Call_Name,
+                  Name                   => Call_Name,
                   Parameter_Associations => Actuals));
 
       elsif Ekind (Old_S) = E_Enumeration_Literal then
@@ -540,13 +541,12 @@ package body Freeze is
 
       elsif Nkind (Nam) = N_Character_Literal then
          Call_Node :=
-           Make_Simple_Return_Statement (Loc,
-             Expression => Call_Name);
+           Make_Simple_Return_Statement (Loc, Expression => Call_Name);
 
       else
          Call_Node :=
            Make_Procedure_Call_Statement (Loc,
-             Name => Call_Name,
+             Name                   => Call_Name,
              Parameter_Associations => Actuals);
       end if;
 

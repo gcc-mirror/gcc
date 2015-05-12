@@ -1546,7 +1546,15 @@ package body Sem_Util is
                      Constraints => Constraints)));
 
          Insert_Action (N, Decl);
-         Analyze (Decl);
+
+         --  If the context is a component declaration the subtype
+         --  declaration will be analyzed when the enclosing type is
+         --  frozen, otherwise do it now.
+
+         if Ekind (Current_Scope) /= E_Record_Type then
+            Analyze (Decl);
+         end if;
+
          return Act;
       end;
    end Build_Default_Subtype;
