@@ -2088,7 +2088,7 @@ package body Sem_Ch5 is
                end;
             end if;
 
-         --  OF not present
+         --  IN iterator, domain is a range, or a call to Iterate function
 
          else
             --  For an iteration of the form IN, the name must denote an
@@ -2125,6 +2125,35 @@ package body Sem_Ch5 is
                end if;
             end if;
 
+            --  If the name is a call (typically prefixed) to some Iterate
+            --  function, it has been rewritten as an object declaration.
+            --  If that object is a selected component, verify that it is not
+            --  a component of an unconstrained mutable object.
+
+            if Nkind (Iter_Name) = N_Identifier then
+               declare
+                  Iter_Kind : constant Node_Kind :=
+                                Nkind (Original_Node (Iter_Name));
+                  Obj       : Node_Id;
+
+               begin
+                  if Iter_Kind = N_Selected_Component then
+                     Obj := Prefix (Original_Node (Iter_Name));
+
+                  elsif Iter_Kind = N_Function_Call then
+                     Obj := First_Actual (Original_Node (Iter_Name));
+                  end if;
+
+                  if Nkind (Obj) = N_Selected_Component
+                    and then Is_Dependent_Component_Of_Mutable_Object (Obj)
+                  then
+                     Error_Msg_N
+                       ("container cannot be a discriminant-dependent " &
+                          "component of a mutable object", N);
+                  end if;
+               end;
+            end if;
+
             --  The result type of Iterate function is the classwide type of
             --  the interface parent. We need the specific Cursor type defined
             --  in the container package. We obtain it by name for a predefined
@@ -2147,6 +2176,13 @@ package body Sem_Ch5 is
 
                   Next_Entity (Ent);
                end loop;
+            end if;
+
+            --  The cursor is the target of generated assignments in the
+            --  loop, and cannot have a limited type.
+
+            if Is_Limited_Type (Etype (Def_Id)) then
+               Error_Msg_N ("cursor type cannot be limited", N);
             end if;
          end if;
       end if;

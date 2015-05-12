@@ -4288,6 +4288,22 @@ package body Freeze is
             end if;
          end if;
 
+         --  Make sure that if we have aspect Iterator_Element, then we have
+         --  either Constant_Indexing or Variable_Indexing.
+
+         if Has_Aspect (Rec, Aspect_Iterator_Element) then
+            if Has_Aspect (Rec, Aspect_Constant_Indexing)
+                 or else
+               Has_Aspect (Rec, Aspect_Variable_Indexing)
+            then
+               null;
+            else
+               Error_Msg_N
+                 ("Iterator_Element requires indexing aspect",
+                  Find_Aspect (Rec, Aspect_Iterator_Element));
+            end if;
+         end if;
+
          --  All done if not a full record definition
 
          if Ekind (Rec) /= E_Record_Type then
