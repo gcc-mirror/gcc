@@ -49,6 +49,7 @@ with Sem_Aux;  use Sem_Aux;
 with Sem_Attr; use Sem_Attr;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch12; use Sem_Ch12;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
@@ -4523,22 +4524,163 @@ package body Sem_Util is
    -- Corresponding_Spec_Of --
    ---------------------------
 
-   function Corresponding_Spec_Of (Subp_Decl : Node_Id) return Entity_Id is
+   function Corresponding_Spec_Of (Decl : Node_Id) return Entity_Id is
    begin
-      if Nkind (Subp_Decl) = N_Subprogram_Body
-        and then Present (Corresponding_Spec (Subp_Decl))
+      if Nkind_In (Decl, N_Package_Body, N_Subprogram_Body)
+        and then Present (Corresponding_Spec (Decl))
       then
-         return Corresponding_Spec (Subp_Decl);
+         return Corresponding_Spec (Decl);
 
-      elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
-        and then Present (Corresponding_Spec_Of_Stub (Subp_Decl))
+      elsif Nkind_In (Decl, N_Package_Body_Stub, N_Subprogram_Body_Stub)
+        and then Present (Corresponding_Spec_Of_Stub (Decl))
       then
-         return Corresponding_Spec_Of_Stub (Subp_Decl);
+         return Corresponding_Spec_Of_Stub (Decl);
 
       else
-         return Defining_Entity (Subp_Decl);
+         return Defining_Entity (Decl);
       end if;
    end Corresponding_Spec_Of;
+
+   -----------------------------
+   -- Create_Generic_Contract --
+   -----------------------------
+
+   procedure Create_Generic_Contract (Unit : Node_Id) is
+      Templ    : constant Node_Id   := Original_Node (Unit);
+      Templ_Id : constant Entity_Id := Defining_Entity (Templ);
+
+      procedure Add_Generic_Contract_Pragma (Prag : Node_Id);
+      --  Add a single contract-related source pragma Prag to the contract of
+      --  generic template Templ_Id.
+
+      ---------------------------------
+      -- Add_Generic_Contract_Pragma --
+      ---------------------------------
+
+      procedure Add_Generic_Contract_Pragma (Prag : Node_Id) is
+         Prag_Templ : Node_Id;
+
+      begin
+         --  Mark the pragma to prevent the premature capture of global
+         --  references when capturing global references of the context
+         --  (see Save_References_In_Pragma).
+
+         Set_Is_Generic_Contract_Pragma (Prag);
+
+         --  Pragmas that apply to a generic subprogram declaration are not
+         --  part of the semantic structure of the generic template:
+
+         --    generic
+         --    procedure Example (Formal : Integer);
+         --    pragma Precondition (Formal > 0);
+
+         --  Create a generic template for such pragmas and link the template
+         --  of the pragma with the generic template.
+
+         if Nkind (Templ) = N_Generic_Subprogram_Declaration then
+            Rewrite
+              (Prag, Copy_Generic_Node (Prag, Empty, Instantiating => False));
+            Prag_Templ := Original_Node (Prag);
+
+            Set_Is_Generic_Contract_Pragma (Prag_Templ);
+            Add_Contract_Item (Prag_Templ, Templ_Id);
+
+         --  Otherwise link the pragma with the generic template
+
+         else
+            Add_Contract_Item (Prag, Templ_Id);
+         end if;
+      end Add_Generic_Contract_Pragma;
+
+      --  Local variables
+
+      Context : constant Node_Id   := Parent (Unit);
+      Decl    : Node_Id := Empty;
+
+   --  Start of processing for Create_Generic_Contract
+
+   begin
+      --  A generic package declaration carries contract-related source pragmas
+      --  in its visible declarations.
+
+      if Nkind (Templ) = N_Generic_Package_Declaration then
+         Set_Ekind (Templ_Id, E_Generic_Package);
+
+         if Present (Visible_Declarations (Specification (Templ))) then
+            Decl := First (Visible_Declarations (Specification (Templ)));
+         end if;
+
+      --  A generic package body carries contract-related source pragmas in its
+      --  declarations.
+
+      elsif Nkind (Templ) = N_Package_Body then
+         Set_Ekind (Templ_Id, E_Package_Body);
+
+         if Present (Declarations (Templ)) then
+            Decl := First (Declarations (Templ));
+         end if;
+
+      --  Generic subprogram declaration
+
+      elsif Nkind (Templ) = N_Generic_Subprogram_Declaration then
+         if Nkind (Specification (Templ)) = N_Function_Specification then
+            Set_Ekind (Templ_Id, E_Generic_Function);
+         else
+            Set_Ekind (Templ_Id, E_Generic_Procedure);
+         end if;
+
+         --  When the generic subprogram acts as a compilation unit, inspect
+         --  the Pragmas_After list for contract-related source pragmas.
+
+         if Nkind (Context) = N_Compilation_Unit then
+            if Present (Aux_Decls_Node (Context))
+              and then Present (Pragmas_After (Aux_Decls_Node (Context)))
+            then
+               Decl := First (Pragmas_After (Aux_Decls_Node (Context)));
+            end if;
+
+         --  Otherwise inspect the successive declarations for contract-related
+         --  source pragmas.
+
+         else
+            Decl := Next (Unit);
+         end if;
+
+      --  A generic subprogram body carries contract-related source pragmas in
+      --  its declarations.
+
+      elsif Nkind (Templ) = N_Subprogram_Body then
+         Set_Ekind (Templ_Id, E_Subprogram_Body);
+
+         if Present (Declarations (Templ)) then
+            Decl := First (Declarations (Templ));
+         end if;
+      end if;
+
+      --  Inspect the relevant declarations looking for contract-related source
+      --  pragmas and add them to the contract of the generic unit.
+
+      while Present (Decl) loop
+         if Comes_From_Source (Decl) then
+            if Nkind (Decl) = N_Pragma then
+
+               --  The source pragma is a contract annotation
+
+               if Is_Contract_Annotation (Decl) then
+                  Add_Generic_Contract_Pragma (Decl);
+               end if;
+
+            --  The region where a contract-related source pragma may appear
+            --  ends with the first source non-pragma declaration or statement.
+
+            else
+               exit;
+            end if;
+         end if;
+
+         Next (Decl);
+      end loop;
+   end Create_Generic_Contract;
 
    --------------------
    -- Current_Entity --
@@ -10541,33 +10683,10 @@ package body Sem_Util is
    ----------------------------
 
    function Is_Contract_Annotation (Item : Node_Id) return Boolean is
-      Nam : Name_Id;
-
    begin
-      if Nkind (Item) = N_Aspect_Specification then
-         Nam := Chars (Identifier (Item));
-
-      else pragma Assert (Nkind (Item) = N_Pragma);
-         Nam := Pragma_Name (Item);
-      end if;
-
-      return      Nam = Name_Abstract_State
-          or else Nam = Name_Contract_Cases
-          or else Nam = Name_Depends
-          or else Nam = Name_Extensions_Visible
-          or else Nam = Name_Global
-          or else Nam = Name_Initial_Condition
-          or else Nam = Name_Initializes
-          or else Nam = Name_Post
-          or else Nam = Name_Post_Class
-          or else Nam = Name_Postcondition
-          or else Nam = Name_Pre
-          or else Nam = Name_Pre_Class
-          or else Nam = Name_Precondition
-          or else Nam = Name_Refined_Depends
-          or else Nam = Name_Refined_Global
-          or else Nam = Name_Refined_State
-          or else Nam = Name_Test_Case;
+      return Is_Package_Contract_Annotation (Item)
+               or else
+             Is_Subprogram_Contract_Annotation (Item);
    end Is_Contract_Annotation;
 
    --------------------------------------
@@ -11426,6 +11545,45 @@ package body Sem_Util is
       end if;
    end Is_Fully_Initialized_Variant;
 
+   ------------------------------------
+   -- Is_Generic_Declaration_Or_Body --
+   ------------------------------------
+
+   function Is_Generic_Declaration_Or_Body (Decl : Node_Id) return Boolean is
+      Spec_Decl : Node_Id;
+
+   begin
+      --  Package/subprogram body
+
+      if Nkind_In (Decl, N_Package_Body, N_Subprogram_Body)
+        and then Present (Corresponding_Spec (Decl))
+      then
+         Spec_Decl := Unit_Declaration_Node (Corresponding_Spec (Decl));
+
+      --  Package/subprogram body stub
+
+      elsif Nkind_In (Decl, N_Package_Body_Stub, N_Subprogram_Body_Stub)
+        and then Present (Corresponding_Spec_Of_Stub (Decl))
+      then
+         Spec_Decl :=
+           Unit_Declaration_Node (Corresponding_Spec_Of_Stub (Decl));
+
+      --  All other cases
+
+      else
+         Spec_Decl := Decl;
+      end if;
+
+      --  Rather than inspecting the defining entity of the spec declaration,
+      --  look at its Nkind. This takes care of the case where the analysis of
+      --  a generic body modifies the Ekind of its spec to allow for recursive
+      --  calls.
+
+      return
+        Nkind_In (Spec_Decl, N_Generic_Package_Declaration,
+                             N_Generic_Subprogram_Declaration);
+   end Is_Generic_Declaration_Or_Body;
+
    ----------------------------
    -- Is_Inherited_Operation --
    ----------------------------
@@ -11826,6 +11984,27 @@ package body Sem_Util is
          return False;
       end if;
    end Is_OK_Variable_For_Out_Formal;
+
+   ------------------------------------
+   -- Is_Package_Contract_Annotation --
+   ------------------------------------
+
+   function Is_Package_Contract_Annotation (Item : Node_Id) return Boolean is
+      Nam : Name_Id;
+
+   begin
+      if Nkind (Item) = N_Aspect_Specification then
+         Nam := Chars (Identifier (Item));
+
+      else pragma Assert (Nkind (Item) = N_Pragma);
+         Nam := Pragma_Name (Item);
+      end if;
+
+      return    Nam = Name_Abstract_State
+        or else Nam = Name_Initial_Condition
+        or else Nam = Name_Initializes
+        or else Nam = Name_Refined_State;
+   end Is_Package_Contract_Annotation;
 
    -----------------------------------
    -- Is_Partially_Initialized_Type --
@@ -12529,6 +12708,39 @@ package body Sem_Util is
         Nkind (N) in N_Statement_Other_Than_Procedure_Call
           or else Nkind (N) = N_Procedure_Call_Statement;
    end Is_Statement;
+
+   ---------------------------------------
+   -- Is_Subprogram_Contract_Annotation --
+   ---------------------------------------
+
+   function Is_Subprogram_Contract_Annotation
+     (Item : Node_Id) return Boolean
+   is
+      Nam : Name_Id;
+
+   begin
+      if Nkind (Item) = N_Aspect_Specification then
+         Nam := Chars (Identifier (Item));
+
+      else pragma Assert (Nkind (Item) = N_Pragma);
+         Nam := Pragma_Name (Item);
+      end if;
+
+      return    Nam = Name_Contract_Cases
+        or else Nam = Name_Depends
+        or else Nam = Name_Extensions_Visible
+        or else Nam = Name_Global
+        or else Nam = Name_Post
+        or else Nam = Name_Post_Class
+        or else Nam = Name_Postcondition
+        or else Nam = Name_Pre
+        or else Nam = Name_Pre_Class
+        or else Nam = Name_Precondition
+        or else Nam = Name_Refined_Depends
+        or else Nam = Name_Refined_Global
+        or else Nam = Name_Refined_Post
+        or else Nam = Name_Test_Case;
+   end Is_Subprogram_Contract_Annotation;
 
    --------------------------------------------------
    -- Is_Subprogram_Stub_Without_Prior_Declaration --

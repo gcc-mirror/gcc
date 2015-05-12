@@ -169,6 +169,16 @@ package Inline is
    --  enabled and the subprogram contains a construct that cannot be inlined,
    --  the problematic construct is flagged accordingly.
 
+   function Can_Be_Inlined_In_GNATprove_Mode
+     (Spec_Id : Entity_Id;
+      Body_Id : Entity_Id) return Boolean;
+   --  Returns True if the subprogram identified by Spec_Id and Body_Id can
+   --  be inlined in GNATprove mode. One but not both of Spec_Id and Body_Id
+   --  can be Empty. Body_Id is Empty when doing a partial check on a call
+   --  to a subprogram whose body has not been seen yet, to know whether this
+   --  subprogram could possibly be inlined. GNATprove relies on this to adapt
+   --  its treatment of the subprogram.
+
    procedure Cannot_Inline
      (Msg        : String;
       N          : Node_Id;
@@ -250,15 +260,5 @@ package Inline is
    procedure Remove_Dead_Instance (N : Node_Id);
    --  If an instantiation appears in unreachable code, delete the pending
    --  body instance.
-
-   function Can_Be_Inlined_In_GNATprove_Mode
-     (Spec_Id : Entity_Id;
-      Body_Id : Entity_Id) return Boolean;
-   --  Returns True if the subprogram identified by Spec_Id and Body_Id can
-   --  be inlined in GNATprove mode. One but not both of Spec_Id and Body_Id
-   --  can be Empty. Body_Id is Empty when doing a partial check on a call
-   --  to a subprogram whose body has not been seen yet, to know whether this
-   --  subprogram could possibly be inlined. GNATprove relies on this to adapt
-   --  its treatment of the subprogram.
 
 end Inline;

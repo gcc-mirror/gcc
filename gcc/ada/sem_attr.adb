@@ -1295,6 +1295,14 @@ package body Sem_Attr is
             elsif Prag_Nam = Name_Contract_Cases then
                Check_Placement_In_Contract_Cases (Prag);
 
+            --  Attribute 'Result is allowed to appear in aspect or pragma
+            --  [Refined_]Depends (SPARK RM 6.1.5(11)).
+
+            elsif Nam_In (Prag_Nam, Name_Depends, Name_Refined_Depends)
+              and then Aname = Name_Result
+            then
+               null;
+
             elsif Nam_In (Prag_Nam, Name_Post,
                                     Name_Post_Class,
                                     Name_Postcondition,
@@ -5123,17 +5131,21 @@ package body Sem_Attr is
 
             elsif Nkind (Subp_Spec) = N_Function_Specification
               and then Present (Generic_Parent (Subp_Spec))
-              and then Ekind (Pref_Id) = E_Function
-              and then Present (Alias (Pref_Id))
-              and then Alias (Pref_Id) = Spec_Id
+              and then Ekind_In (Pref_Id, E_Generic_Function, E_Function)
             then
-               return True;
+               if Generic_Parent (Subp_Spec) = Pref_Id then
+                  return True;
+
+               elsif Present (Alias (Pref_Id))
+                 and then Alias (Pref_Id) = Spec_Id
+               then
+                  return True;
+               end if;
+            end if;
 
             --  Otherwise the prefix does not denote the related subprogram
 
-            else
-               return False;
-            end if;
+            return False;
          end Denote_Same_Function;
 
          --  Local variables
@@ -5199,6 +5211,15 @@ package body Sem_Attr is
 
                if Ekind_In (Pref_Id, E_Function, E_Generic_Function) then
                   if Denote_Same_Function (Pref_Id, Spec_Id) then
+
+                     --  Correct the prefix of the attribute when the context
+                     --  is a generic function.
+
+                     if Pref_Id /= Spec_Id then
+                        Rewrite (P, New_Occurrence_Of (Spec_Id, Loc));
+                        Analyze (P);
+                     end if;
+
                      Set_Etype (N, Etype (Spec_Id));
 
                   --  Otherwise the prefix denotes some unrelated function

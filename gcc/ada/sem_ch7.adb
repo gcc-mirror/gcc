@@ -187,9 +187,9 @@ package body Sem_Ch7 is
    -----------------------------------
 
    procedure Analyze_Package_Body_Contract (Body_Id : Entity_Id) is
-      Spec_Id : constant Entity_Id := Spec_Entity (Body_Id);
-      Mode    : SPARK_Mode_Type;
-      Prag    : Node_Id;
+      Spec_Id   : constant Entity_Id := Spec_Entity (Body_Id);
+      Mode      : SPARK_Mode_Type;
+      Ref_State : Node_Id;
 
    begin
       --  Due to the timing of contract analysis, delayed pragmas may be
@@ -199,13 +199,13 @@ package body Sem_Ch7 is
 
       Save_SPARK_Mode_And_Set (Body_Id, Mode);
 
-      Prag := Get_Pragma (Body_Id, Pragma_Refined_State);
+      Ref_State := Get_Pragma (Body_Id, Pragma_Refined_State);
 
       --  The analysis of pragma Refined_State detects whether the spec has
       --  abstract states available for refinement.
 
-      if Present (Prag) then
-         Analyze_Refined_State_In_Decl_Part (Prag);
+      if Present (Ref_State) then
+         Analyze_Refined_State_In_Decl_Part (Ref_State);
 
       --  State refinement is required when the package declaration defines at
       --  least one abstract state. Null states are not considered. Refinement
@@ -677,6 +677,13 @@ package body Sem_Ch7 is
 
          Exchange_Aspects (N, New_N);
 
+         --  Collect all contract-related source pragmas found within the
+         --  template and attach them to the contract of the package body.
+         --  This contract is used in the capture of global references within
+         --  annotations.
+
+         Create_Generic_Contract (N);
+
          --  Update Body_Id to point to the copied node for the remainder of
          --  the processing.
 
@@ -940,8 +947,12 @@ package body Sem_Ch7 is
    ------------------------------
 
    procedure Analyze_Package_Contract (Pack_Id : Entity_Id) is
-      Mode : SPARK_Mode_Type;
-      Prag : Node_Id;
+      Items     : constant Node_Id := Contract (Pack_Id);
+      Init      : Node_Id := Empty;
+      Init_Cond : Node_Id := Empty;
+      Mode      : SPARK_Mode_Type;
+      Prag      : Node_Id;
+      Prag_Nam  : Name_Id;
 
    begin
       --  Due to the timing of contract analysis, delayed pragmas may be
@@ -951,19 +962,35 @@ package body Sem_Ch7 is
 
       Save_SPARK_Mode_And_Set (Pack_Id, Mode);
 
-      --  Analyze the initialization related pragmas. Initializes must come
-      --  before Initial_Condition due to item dependencies.
+      if Present (Items) then
 
-      Prag := Get_Pragma (Pack_Id, Pragma_Initializes);
+         --  Locate and store pragmas Initial_Condition and Initializes since
+         --  their order of analysis matters.
 
-      if Present (Prag) then
-         Analyze_Initializes_In_Decl_Part (Prag);
-      end if;
+         Prag := Classifications (Items);
+         while Present (Prag) loop
+            Prag_Nam := Pragma_Name (Prag);
 
-      Prag := Get_Pragma (Pack_Id, Pragma_Initial_Condition);
+            if Prag_Nam = Name_Initial_Condition then
+               Init_Cond := Prag;
 
-      if Present (Prag) then
-         Analyze_Initial_Condition_In_Decl_Part (Prag);
+            elsif Prag_Nam = Name_Initializes then
+               Init := Prag;
+            end if;
+
+            Prag := Next_Pragma (Prag);
+         end loop;
+
+         --  Analyze the initialization related pragmas. Initializes must come
+         --  before Initial_Condition due to item dependencies.
+
+         if Present (Init) then
+            Analyze_Initializes_In_Decl_Part (Init);
+         end if;
+
+         if Present (Init_Cond) then
+            Analyze_Initial_Condition_In_Decl_Part (Init_Cond);
+         end if;
       end if;
 
       --  Check whether the lack of indicator Part_Of agrees with the placement

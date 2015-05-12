@@ -3416,6 +3416,147 @@ package body Sem_Ch13 is
       end if;
    end Analyze_Aspect_Specifications;
 
+   ---------------------------------------------------
+   -- Analyze_Aspect_Specifications_On_Body_Or_Stub --
+   ---------------------------------------------------
+
+   procedure Analyze_Aspect_Specifications_On_Body_Or_Stub (N : Node_Id) is
+      Body_Id : constant Entity_Id := Defining_Entity (N);
+
+      procedure Diagnose_Misplaced_Aspects (Spec_Id : Entity_Id);
+      --  Subprogram body [stub] N has aspects, but they are not properly
+      --  placed. Emit an error message depending on the aspects involved.
+      --  Spec_Id is the entity of the corresponding spec.
+
+      --------------------------------
+      -- Diagnose_Misplaced_Aspects --
+      --------------------------------
+
+      procedure Diagnose_Misplaced_Aspects (Spec_Id : Entity_Id) is
+         procedure Misplaced_Aspect_Error
+           (Asp     : Node_Id;
+            Ref_Nam : Name_Id);
+         --  Emit an error message concerning misplaced aspect Asp. Ref_Nam is
+         --  the name of the refined version of the aspect.
+
+         ----------------------------
+         -- Misplaced_Aspect_Error --
+         ----------------------------
+
+         procedure Misplaced_Aspect_Error
+           (Asp     : Node_Id;
+            Ref_Nam : Name_Id)
+         is
+            Asp_Nam : constant Name_Id   := Chars (Identifier (Asp));
+            Asp_Id  : constant Aspect_Id := Get_Aspect_Id (Asp_Nam);
+
+         begin
+            --  The corresponding spec already contains the aspect in question
+            --  and the one appearing on the body must be the refined form:
+
+            --    procedure P with Global ...;
+            --    procedure P with Global ... is ... end P;
+            --                     ^
+            --                     Refined_Global
+
+            if Has_Aspect (Spec_Id, Asp_Id) then
+               Error_Msg_Name_1 := Asp_Nam;
+
+               --  Subunits cannot carry aspects that apply to a subprogram
+               --  declaration.
+
+               if Nkind (Parent (N)) = N_Subunit then
+                  Error_Msg_N ("aspect % cannot apply to a subunit", Asp);
+
+               --  Otherwise suggest the refined form
+
+               else
+                  Error_Msg_Name_2 := Ref_Nam;
+                  Error_Msg_N ("aspect % should be %", Asp);
+               end if;
+
+            --  Otherwise the aspect must appear on the spec, not on the body
+
+            --    procedure P;
+            --    procedure P with Global ... is ... end P;
+
+            else
+               Error_Msg_N
+                 ("aspect specification must appear in subprogram declaration",
+                  Asp);
+            end if;
+         end Misplaced_Aspect_Error;
+
+         --  Local variables
+
+         Asp     : Node_Id;
+         Asp_Nam : Name_Id;
+
+      --  Start of processing for Diagnose_Misplaced_Aspects
+
+      begin
+         --  Iterate over the aspect specifications and emit specific errors
+         --  where applicable.
+
+         Asp := First (Aspect_Specifications (N));
+         while Present (Asp) loop
+            Asp_Nam := Chars (Identifier (Asp));
+
+            --  Do not emit errors on aspects that can appear on a subprogram
+            --  body. This scenario occurs when the aspect specification list
+            --  contains both misplaced and properly placed aspects.
+
+            if Aspect_On_Body_Or_Stub_OK (Get_Aspect_Id (Asp_Nam)) then
+               null;
+
+            --  Special diagnostics for SPARK aspects
+
+            elsif Asp_Nam = Name_Depends then
+               Misplaced_Aspect_Error (Asp, Name_Refined_Depends);
+
+            elsif Asp_Nam = Name_Global then
+               Misplaced_Aspect_Error (Asp, Name_Refined_Global);
+
+            elsif Asp_Nam = Name_Post then
+               Misplaced_Aspect_Error (Asp, Name_Refined_Post);
+
+            --  Otherwise a language-defined aspect is misplaced
+
+            else
+               Error_Msg_N
+                 ("aspect specification must appear in subprogram declaration",
+                  Asp);
+            end if;
+
+            Next (Asp);
+         end loop;
+      end Diagnose_Misplaced_Aspects;
+
+      --  Local variables
+
+      Spec_Id : Entity_Id;
+
+   --  Start of processing for Analyze_Aspects_On_Body_Or_Stub
+
+   begin
+      if Nkind (N) = N_Subprogram_Body_Stub then
+         Spec_Id := Corresponding_Spec_Of_Stub (N);
+      else
+         Spec_Id := Corresponding_Spec (N);
+      end if;
+
+      --  Language-defined aspects cannot be associated with a subprogram body
+      --  [stub] if the subprogram has a spec. Certain implementation defined
+      --  aspects are allowed to break this rule (for all applicable cases, see
+      --  table Aspects.Aspect_On_Body_Or_Stub_OK).
+
+      if Present (Spec_Id) and then not Aspects_On_Body_Or_Stub_OK (N) then
+         Diagnose_Misplaced_Aspects (Spec_Id);
+      else
+         Analyze_Aspect_Specifications (N, Body_Id);
+      end if;
+   end Analyze_Aspect_Specifications_On_Body_Or_Stub;
+
    -----------------------
    -- Analyze_At_Clause --
    -----------------------

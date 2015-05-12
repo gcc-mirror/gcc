@@ -70,6 +70,7 @@ package body Einfo is
    --    Homonym                         Node4
    --    First_Rep_Item                  Node6
    --    Freeze_Node                     Node7
+   --    Associated_Entity               Node37
 
    --  The usage of other fields (and the entity kinds to which it applies)
    --  depends on the particular field (see Einfo spec for details).
@@ -88,7 +89,6 @@ package body Einfo is
    --    Part_Of_Constituents            Elist9
    --    Renaming_Map                    Uint9
 
-   --    Encapsulating_State             Node10
    --    Direct_Primitive_Operations     Elist10
    --    Discriminal_Link                Node10
    --    Float_Rep                       Uint10 (but returns Float_Rep_Kind)
@@ -215,10 +215,10 @@ package body Einfo is
    --    Related_Expression              Node24
    --    Subps_Index                     Uint24
 
-   --    Interface_Alias                 Node25
-   --    Interfaces                      Elist25
    --    Debug_Renaming_Link             Node25
    --    DT_Offset_To_Top_Func           Node25
+   --    Interface_Alias                 Node25
+   --    Interfaces                      Elist25
    --    PPC_Wrapper                     Node25
    --    Related_Array_Object            Node25
    --    Static_Discrete_Predicate       List25
@@ -253,6 +253,7 @@ package body Einfo is
    --    Thunk_Entity                    Node31
    --    Activation_Record_Component     Node31
 
+   --    Encapsulating_State             Node32
    --    SPARK_Pragma                    Node32
    --    No_Tagged_Streams_Pragma        Node32
 
@@ -264,7 +265,6 @@ package body Einfo is
    --    Import_Pragma                   Node35
 
    --    (unused)                        Node36
-   --    (unused)                        Node37
    --    (unused)                        Node38
    --    (unused)                        Node39
    --    (unused)                        Node40
@@ -753,6 +753,11 @@ package body Einfo is
       return Uint14 (Id);
    end Alignment;
 
+   function Associated_Entity (Id : E) return E is
+   begin
+      return Node37 (Id);
+   end Associated_Entity;
+
    function Associated_Formal_Package (Id : E) return E is
    begin
       pragma Assert (Ekind (Id) = E_Package);
@@ -1111,8 +1116,8 @@ package body Einfo is
 
    function Encapsulating_State (Id : E) return N is
    begin
-      pragma Assert (Ekind_In (Id, E_Abstract_State, E_Variable));
-      return Node10 (Id);
+      pragma Assert (Ekind_In (Id, E_Abstract_State, E_Constant, E_Variable));
+      return Node32 (Id);
    end Encapsulating_State;
 
    function Enclosing_Scope (Id : E) return E is
@@ -1176,7 +1181,8 @@ package body Einfo is
                        E_Package,
                        E_Package_Body,
                        E_Subprogram_Body,
-                       E_Variable)
+                       E_Variable,
+                       E_Void)
           or else Is_Subprogram_Or_Generic_Subprogram (Id));
       return Node34 (Id);
    end Contract;
@@ -3558,6 +3564,11 @@ package body Einfo is
       Set_Elist16 (Id, V);
    end Set_Access_Disp_Table;
 
+   procedure Set_Associated_Entity (Id : E; V : E) is
+   begin
+      Set_Node37 (Id, V);
+   end Set_Associated_Entity;
+
    procedure Set_Associated_Formal_Package (Id : E; V : E) is
    begin
       Set_Node12 (Id, V);
@@ -3733,13 +3744,13 @@ package body Einfo is
    begin
       pragma Assert
         (Ekind_In (Id, E_Entry,
-                         E_Entry_Family,
-                         E_Generic_Package,
-                         E_Package,
-                         E_Package_Body,
-                         E_Subprogram_Body,
-                         E_Variable,
-                         E_Void)
+                       E_Entry_Family,
+                       E_Generic_Package,
+                       E_Package,
+                       E_Package_Body,
+                       E_Subprogram_Body,
+                       E_Variable,
+                       E_Void)
           or else Is_Subprogram_Or_Generic_Subprogram (Id));
       Set_Node34 (Id, V);
    end Set_Contract;
@@ -3993,8 +4004,8 @@ package body Einfo is
 
    procedure Set_Encapsulating_State (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Abstract_State, E_Variable));
-      Set_Node10 (Id, V);
+      pragma Assert (Ekind_In (Id, E_Abstract_State, E_Constant, E_Variable));
+      Set_Node32 (Id, V);
    end Set_Encapsulating_State;
 
    procedure Set_Enclosing_Scope (Id : E; V : E) is
@@ -8993,7 +9004,7 @@ package body Einfo is
    -----------------------
 
    procedure Write_Field6_Name (Id : Entity_Id) is
-      pragma Warnings (Off, Id);
+      pragma Unreferenced (Id);
    begin
       Write_Str ("First_Rep_Item");
    end Write_Field6_Name;
@@ -9003,7 +9014,7 @@ package body Einfo is
    -----------------------
 
    procedure Write_Field7_Name (Id : Entity_Id) is
-      pragma Warnings (Off, Id);
+      pragma Unreferenced (Id);
    begin
       Write_Str ("Freeze_Node");
    end Write_Field7_Name;
@@ -9083,10 +9094,6 @@ package body Einfo is
    procedure Write_Field10_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Abstract_State                             |
-              E_Variable                                   =>
-            Write_Str ("Encapsulating_State");
-
          when Class_Wide_Kind                              |
               Incomplete_Kind                              |
               E_Record_Type                                |
@@ -9095,12 +9102,12 @@ package body Einfo is
               Concurrent_Kind                              =>
             Write_Str ("Direct_Primitive_Operations");
 
-         when Float_Kind                                   =>
-            Write_Str ("Float_Rep");
-
          when E_In_Parameter                               |
               E_Constant                                   =>
             Write_Str ("Discriminal_Link");
+
+         when Float_Kind                                   =>
+            Write_Str ("Float_Rep");
 
          when E_Function                                   |
               E_Package                                    |
@@ -9995,6 +10002,11 @@ package body Einfo is
    procedure Write_Field32_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Abstract_State                             |
+              E_Constant                                   |
+              E_Variable                                   =>
+            Write_Str ("Encapsulating_State");
+
          when E_Function                                   |
               E_Generic_Function                           |
               E_Generic_Package                            |
@@ -10050,6 +10062,7 @@ package body Einfo is
               E_Package_Body                               |
               E_Subprogram_Body                            |
               E_Variable                                   |
+              E_Void                                       |
               Generic_Subprogram_Kind                      |
               Subprogram_Kind                              =>
             Write_Str ("Contract");
@@ -10091,11 +10104,9 @@ package body Einfo is
    ------------------------
 
    procedure Write_Field37_Name (Id : Entity_Id) is
+      pragma Unreferenced (Id);
    begin
-      case Ekind (Id) is
-         when others                                       =>
-            Write_Str ("Field37??");
-      end case;
+      Write_Str ("Associated_Entity");
    end Write_Field37_Name;
 
    ------------------------
