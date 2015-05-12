@@ -39,12 +39,22 @@ test $# -eq 0 && usage
 nfiles=$#
 files="$*"
 
-for f in $files; do
-    if [ "$f" != "-" ] && [ ! -f "$f" ]; then
-	echo "error: could not read file: $f"
-	exit 1
-    fi
-done
+stdin=false
+if [ $nfiles -eq 1 ] && [ "$files" = "-" ]; then
+    stdin=true
+else
+    for f in $files; do
+	if [ "$f" = "-" ]; then
+	    # Let's keep things simple.  Either we read from stdin, or we read
+	    # from files specified on the command line, not both.
+	    usage
+	fi
+	if [ ! -f "$f" ]; then
+	    echo "error: could not read file: $f"
+	    exit 1
+	fi
+    done
+fi
 
 inp=check_GNU_style.inp
 tmp=check_GNU_style.tmp
