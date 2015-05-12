@@ -116,13 +116,37 @@ vg (){
 
 col (){
     msg="$1"
-    cat $inp \
-	| awk -F':\\+' '{ if (length($2) > 80) print $0}' \
-	> $tmp
-    if [ -s $tmp ]; then
-	printf "\n$msg\n"
-	cat $tmp
-    fi
+    local first=true
+    local f
+    for f in $files; do
+	local prefix=""
+	if [ $nfiles -ne 1 ]; then
+	    prefix="$f:"
+	fi
+
+	# Don't reuse $inp, which may be generated using -H and thus contain a
+	# file prefix.
+	grep -n '^+' $f \
+	    | grep -v ':+++' \
+	    > $tmp
+
+	cat $tmp | while IFS= read -r line; do
+	    local longline
+	    # Filter out the line number prefix and the patch line modifier '+'
+	    # to obtain the bare line, before we use expand.
+	    longline=$(echo "$line" \
+		| sed 's/^[0-9]*:+//' \
+		| expand \
+		| awk '{ if (length($0) > 80) print $0}')
+	    if [ "$longline" != "" ]; then
+		if $first; then
+		    printf "\n$msg\n"
+		    first=false
+		fi
+		echo "$prefix$line"
+	    fi
+	done
+    done
 }
 
 col 'Lines should not exceed 80 characters.'
