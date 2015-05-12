@@ -1,3 +1,13 @@
+2015-05-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2015-04-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* common/config/aarch64/aarch64-common.c (AARCH64_CPU_NAME_LENGTH):
+	Increase to 128.
+	(aarch64_rewrite_selected_cpu): Do not chop off extensions starting
+	at '.'.  Assert that there's enough space for everything.
+
 2015-05-12  Yvan Roux  <yvan.roux@linaro.org>
 
 	Backport from mainline.
