@@ -1,3 +1,16 @@
+2015-05-12  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/66010
+	* gimplify.c (gimplify_modify_expr): Handle new do_deref argument of
+	ifn_va_arg.
+	* gimplify.h (gimplify_va_arg_internal): Remove loc parameter.
+	(gimplify_va_arg_internal): Remove loc parameter.  Assert no array-typed
+	va_lists are passed, and remove corresponding handling.
+	(gimplify_va_arg_expr): Only take address of ap if necessary.  Add
+	do_deref argument to ifn_va_arg.
+	* tree-stdarg.c (expand_ifn_va_arg_1): Handle new do_deref argument of
+	ifn_va_arg.
+
 2015-05-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/65955

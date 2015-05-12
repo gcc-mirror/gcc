@@ -5918,9 +5918,25 @@ set_compound_literal_name (tree decl)
 tree
 build_va_arg (location_t loc, tree expr, tree type)
 {
-  /* In gimplify_va_arg_expr we take the address of the ap argument, mark it
-     addressable now.  */
-  mark_addressable (expr);
+  tree va_type = TREE_TYPE (expr);
+  tree canon_va_type = (va_type == error_mark_node
+			? NULL_TREE
+			: targetm.canonical_va_list_type (va_type));
+
+  if (canon_va_type != NULL)
+    {
+      /* When the va_arg ap argument is a parm decl with declared type va_list,
+	 and the va_list type is an array, then grokdeclarator changes the type
+	 of the parm decl to the corresponding pointer type.  We know that that
+	 pointer is constant, so there's no need to modify it, so there's no
+	 need to pass it around using an address operator, so there's no need to
+	 mark it addressable.  */
+      if (!(TREE_CODE (canon_va_type) == ARRAY_TYPE
+	    && TREE_CODE (va_type) != ARRAY_TYPE))
+	/* In gimplify_va_arg_expr we take the address of the ap argument, mark
+	   it addressable now.  */
+	mark_addressable (expr);
+    }
 
   expr = build1 (VA_ARG_EXPR, type, expr);
   SET_EXPR_LOCATION (expr, loc);

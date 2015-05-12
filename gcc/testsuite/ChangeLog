@@ -1,3 +1,8 @@
+2015-05-12  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/66010
+	* gcc.dg/tree-ssa/stdarg-2.c: Undo scan xfails for f15.
+
 2015-05-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65133
