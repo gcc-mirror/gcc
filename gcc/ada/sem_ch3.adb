@@ -3341,12 +3341,11 @@ package body Sem_Ch3 is
       --  has aspects that require delayed analysis, the resolution of the
       --  aggregate must be deferred to the freeze point of the objet. This
       --  special processing was created for address clauses, but it must
-      --  also apply to Alignment.
-      --  This must be done before the aspect specifications are analyzed
-      --  because we must handle the aggregate before the analysis of the
-      --  object declaration is complete.
+      --  also apply to Alignment. This must be done before the aspect
+      --  specifications are analyzed because we must handle the aggregate
+      --  before the analysis of the object declaration is complete.
 
-      --  any other relevant delayed aspects on object declarations ???
+      --  Any other relevant delayed aspects on object declarations ???
 
       -----------------
       -- Count_Tasks --
@@ -3407,17 +3406,15 @@ package body Sem_Ch3 is
       ----------------------------
 
       function Delayed_Aspect_Present return Boolean is
-         A : Node_Id;
+         A    : Node_Id;
          A_Id : Aspect_Id;
 
       begin
          if Present (Aspect_Specifications (N)) then
             A    := First (Aspect_Specifications (N));
-            A_Id :=   Get_Aspect_Id (Chars (Identifier (A)));
+            A_Id := Get_Aspect_Id (Chars (Identifier (A)));
             while Present (A) loop
-               if
-                 A_Id = Aspect_Alignment or else A_Id = Aspect_Address
-               then
+               if A_Id = Aspect_Alignment or else A_Id = Aspect_Address then
                   return True;
                end if;
 

@@ -1895,8 +1895,8 @@ package body Freeze is
       --  Freeze array type, including freezing index and component types
 
       procedure Freeze_Object_Declaration (E : Entity_Id);
-      --  Perfom checks and generate freeze node if needed for a constant
-      --  or variable declared by an object declaration.
+      --  Perform checks and generate freeze node if needed for a constant or
+      --  variable declared by an object declaration.
 
       function Freeze_Generic_Entities (Pack : Entity_Id) return List_Id;
       --  Create Freeze_Generic_Entity nodes for types declared in a generic
@@ -2792,23 +2792,23 @@ package body Freeze is
 
       procedure Freeze_Object_Declaration (E : Entity_Id) is
       begin
-         --  Abstract type allowed only for C++ imported variables or
-         --  constants.
+         --  Abstract type allowed only for C++ imported variables or constants
 
-         --  Note: we inhibit this check for objects that do not come
-         --  from source because there is at least one case (the
-         --  expansion of x'Class'Input where x is abstract) where we
-         --  legitimately generate an abstract object.
+         --  Note: we inhibit this check for objects that do not come from
+         --  source because there is at least one case (the expansion of
+         --  x'Class'Input where x is abstract) where we legitimately
+         --  generate an abstract object.
 
          if Is_Abstract_Type (Etype (E))
            and then Comes_From_Source (Parent (E))
            and then not (Is_Imported (E) and then Is_CPP_Class (Etype (E)))
          then
             Error_Msg_N ("type of object cannot be abstract",
-                           Object_Definition (Parent (E)));
+                         Object_Definition (Parent (E)));
 
             if Is_CPP_Class (Etype (E)) then
-               Error_Msg_NE ("\} may need a cpp_constructor",
+               Error_Msg_NE
+                 ("\} may need a cpp_constructor",
                   Object_Definition (Parent (E)), Etype (E));
 
             elsif Present (Expression (Parent (E))) then
@@ -2841,12 +2841,13 @@ package body Freeze is
          then
             declare
                Decl : constant Node_Id := Parent (E);
-               Lhs  : constant Node_Id :=  New_Occurrence_Of (E, Loc);
+               Lhs  : constant Node_Id := New_Occurrence_Of (E, Loc);
+
             begin
 
-               --  Capture initialization value at point of declaration,
-               --  and make explicit assignment legal, because object may
-               --  be a constant.
+               --  Capture initialization value at point of declaration, and
+               --  make explicit assignment legal, because object may be a
+               --  constant.
 
                Remove_Side_Effects (Expression (Decl));
                Set_Assignment_OK (Lhs);
@@ -2864,22 +2865,23 @@ package body Freeze is
          end if;
 
          --  Reset Is_True_Constant for non-constant aliased object. We
-         --  consider that the fact that a non-constant object is aliased
-         --  may indicate that some funny business is going on, e.g. an
-         --  aliased object is passed by reference to a procedure which
-         --  captures the address of the object, which is later used to
-         --  assign a new value, even though the compiler thinks that it
-         --  is not modified. Such code is highly dubious, but we choose
-         --  to make it "work" for non-constant aliased objects.
-         --  Note that we used to do this for all aliased objects, whether
-         --  or not constant, but this caused anomalies down the line
-         --  because we ended up with static objects that were not
-         --  Is_True_Constant. Not resetting Is_True_Constant for (aliased)
-         --  constant objects ensures that this anomaly never occurs.
+         --  consider that the fact that a non-constant object is aliased may
+         --  indicate that some funny business is going on, e.g. an aliased
+         --  object is passed by reference to a procedure which captures the
+         --  address of the object, which is later used to assign a new value,
+         --  even though the compiler thinks that it is not modified. Such
+         --  code is highly dubious, but we choose to make it "work" for
+         --  non-constant aliased objects.
 
-         --  However, we don't do that for internal entities. We figure
-         --  that if we deliberately set Is_True_Constant for an internal
-         --  entity, e.g. a dispatch table entry, then we mean it.
+         --  Note that we used to do this for all aliased objects, whether or
+         --  not constant, but this caused anomalies down the line because we
+         --  ended up with static objects that were not Is_True_Constant. Not
+         --  resetting Is_True_Constant for (aliased) constant objects ensures
+         --  that this anomaly never occurs.
+
+         --  However, we don't do that for internal entities. We figure that if
+         --  we deliberately set Is_True_Constant for an internal entity, e.g.
+         --  a dispatch table entry, then we mean it.
 
          if Ekind (E) /= E_Constant
            and then (Is_Aliased (E) or else Is_Aliased (Etype (E)))
@@ -2888,17 +2890,15 @@ package body Freeze is
             Set_Is_True_Constant (E, False);
          end if;
 
-         --  If the object needs any kind of default initialization, an
-         --  error must be issued if No_Default_Initialization applies.
-         --  The check doesn't apply to imported objects, which are not
-         --  ever default initialized, and is why the check is deferred
-         --  until freezing, at which point we know if Import applies.
-         --  Deferred constants are also exempted from this test because
-         --  their completion is explicit, or through an import pragma.
+         --  If the object needs any kind of default initialization, an error
+         --  must be issued if No_Default_Initialization applies. The check
+         --  doesn't apply to imported objects, which are not ever default
+         --  initialized, and is why the check is deferred until freezing, at
+         --  which point we know if Import applies. Deferred constants are also
+         --  exempted from this test because their completion is explicit, or
+         --  through an import pragma.
 
-         if Ekind (E) = E_Constant
-           and then Present (Full_View (E))
-         then
+         if Ekind (E) = E_Constant and then Present (Full_View (E)) then
             null;
 
          elsif Comes_From_Source (E)
@@ -2977,7 +2977,8 @@ package body Freeze is
          --  8-bit sizes for these cases.
 
          if (Convention (E) = Convention_C
-               or else Convention (E) = Convention_CPP)
+               or else
+             Convention (E) = Convention_CPP)
            and then Is_Enumeration_Type (Etype (E))
            and then not Is_Character_Type (Etype (E))
            and then not Is_Boolean_Type (Etype (E))
