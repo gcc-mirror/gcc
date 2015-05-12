@@ -160,6 +160,7 @@ vect_create_new_slp_node (vec<gimple> scalar_stmts)
   SLP_TREE_VEC_STMTS (node).create (0);
   SLP_TREE_CHILDREN (node).create (nops);
   SLP_TREE_LOAD_PERMUTATION (node) = vNULL;
+  SLP_TREE_TWO_OPERATORS (node) = false;
 
   return node;
 }
@@ -472,11 +473,14 @@ static bool
 vect_build_slp_tree_1 (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 		       vec<gimple> stmts, unsigned int group_size,
 		       unsigned nops, unsigned int *max_nunits,
-		       unsigned int vectorization_factor, bool *matches)
+		       unsigned int vectorization_factor, bool *matches,
+		       bool *two_operators)
 {
   unsigned int i;
-  gimple stmt = stmts[0];
-  enum tree_code first_stmt_code = ERROR_MARK, rhs_code = ERROR_MARK;
+  gimple first_stmt = stmts[0], stmt = stmts[0];
+  enum tree_code first_stmt_code = ERROR_MARK;
+  enum tree_code alt_stmt_code = ERROR_MARK;
+  enum tree_code rhs_code = ERROR_MARK;
   enum tree_code first_cond_code = ERROR_MARK;
   tree lhs;
   bool need_same_oprnds = false;
@@ -675,10 +679,20 @@ vect_build_slp_tree_1 (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
       else
 	{
 	  if (first_stmt_code != rhs_code
+	      && alt_stmt_code == ERROR_MARK)
+	    alt_stmt_code = rhs_code;
+	  if (first_stmt_code != rhs_code
 	      && (first_stmt_code != IMAGPART_EXPR
 		  || rhs_code != REALPART_EXPR)
 	      && (first_stmt_code != REALPART_EXPR
 		  || rhs_code != IMAGPART_EXPR)
+	      /* Handle mismatches in plus/minus by computing both
+		 and merging the results.  */
+	      && !((first_stmt_code == PLUS_EXPR
+		    || first_stmt_code == MINUS_EXPR)
+		   && (alt_stmt_code == PLUS_EXPR
+		       || alt_stmt_code == MINUS_EXPR)
+		   && rhs_code == alt_stmt_code)
               && !(STMT_VINFO_GROUPED_ACCESS (vinfo_for_stmt (stmt))
                    && (first_stmt_code == ARRAY_REF
                        || first_stmt_code == BIT_FIELD_REF
@@ -692,7 +706,10 @@ vect_build_slp_tree_1 (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 				   "Build SLP failed: different operation "
 				   "in stmt ");
 		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-                  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				   "original stmt ");
+		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+				    first_stmt, 0);
 		}
 	      /* Mismatch.  */
 	      continue;
@@ -921,6 +938,43 @@ vect_build_slp_tree_1 (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
     if (!matches[i])
       return false;
 
+  /* If we allowed a two-operation SLP node verify the target can cope
+     with the permute we are going to use.  */
+  if (alt_stmt_code != ERROR_MARK
+      && TREE_CODE_CLASS (alt_stmt_code) != tcc_reference)
+    {
+      unsigned char *sel
+	= XALLOCAVEC (unsigned char, TYPE_VECTOR_SUBPARTS (vectype));
+      for (i = 0; i < TYPE_VECTOR_SUBPARTS (vectype); ++i)
+	{
+	  sel[i] = i;
+	  if (gimple_assign_rhs_code (stmts[i % group_size]) == alt_stmt_code)
+	    sel[i] += TYPE_VECTOR_SUBPARTS (vectype);
+	}
+      if (!can_vec_perm_p (TYPE_MODE (vectype), false, sel))
+	{
+	  for (i = 0; i < group_size; ++i)
+	    if (gimple_assign_rhs_code (stmts[i]) == alt_stmt_code)
+	      {
+		matches[i] = false;
+		if (dump_enabled_p ())
+		  {
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "Build SLP failed: different operation "
+				     "in stmt ");
+		    dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+				      stmts[i], 0);
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "original stmt ");
+		    dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+				      first_stmt, 0);
+		  }
+	      }
+	  return false;
+	}
+      *two_operators = true;
+    }
+
   return true;
 }
 
@@ -957,10 +1011,13 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   else
     return false;
 
+  bool two_operators = false;
   if (!vect_build_slp_tree_1 (loop_vinfo, bb_vinfo,
 			      SLP_TREE_SCALAR_STMTS (*node), group_size, nops,
-			      max_nunits, vectorization_factor, matches))
+			      max_nunits, vectorization_factor, matches,
+			      &two_operators))
     return false;
+  SLP_TREE_TWO_OPERATORS (*node) = two_operators;
 
   /* If the SLP node is a load, terminate the recursion.  */
   if (STMT_VINFO_GROUPED_ACCESS (vinfo_for_stmt (stmt))
@@ -1519,8 +1576,17 @@ vect_analyze_slp_cost_1 (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	}
     }
   else
-    record_stmt_cost (body_cost_vec, ncopies_for_cost, vector_stmt,
-		      stmt_info, 0, vect_body);
+    {
+      record_stmt_cost (body_cost_vec, ncopies_for_cost, vector_stmt,
+			stmt_info, 0, vect_body);
+      if (SLP_TREE_TWO_OPERATORS (node))
+	{
+	  record_stmt_cost (body_cost_vec, ncopies_for_cost, vector_stmt,
+			    stmt_info, 0, vect_body);
+	  record_stmt_cost (body_cost_vec, ncopies_for_cost, vec_perm,
+			    stmt_info, 0, vect_body);
+	}
+    }
 
   /* Scan operands and account for prologue cost of constants/externals.
      ???  This over-estimates cost for multiple uses and should be
@@ -3352,6 +3418,74 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
       STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
     }
 
+  /* Handle two-operation SLP nodes by vectorizing the group with
+     both operations and then performing a merge.  */
+  if (SLP_TREE_TWO_OPERATORS (node))
+    {
+      enum tree_code code0 = gimple_assign_rhs_code (stmt);
+      enum tree_code ocode;
+      gimple ostmt;
+      unsigned char *mask = XALLOCAVEC (unsigned char, group_size);
+      bool allsame = true;
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, ostmt)
+	if (gimple_assign_rhs_code (ostmt) != code0)
+	  {
+	    mask[i] = 1;
+	    allsame = false;
+	    ocode = gimple_assign_rhs_code (ostmt);
+	  }
+	else
+	  mask[i] = 0;
+      if (!allsame)
+	{
+	  vec<gimple> v0;
+	  vec<gimple> v1;
+	  unsigned j;
+	  tree tmask = NULL_TREE;
+	  vect_transform_stmt (stmt, &si, &grouped_store, node, instance);
+	  v0 = SLP_TREE_VEC_STMTS (node).copy ();
+	  SLP_TREE_VEC_STMTS (node).truncate (0);
+	  gimple_assign_set_rhs_code (stmt, ocode);
+	  vect_transform_stmt (stmt, &si, &grouped_store, node, instance);
+	  gimple_assign_set_rhs_code (stmt, code0);
+	  v1 = SLP_TREE_VEC_STMTS (node).copy ();
+	  SLP_TREE_VEC_STMTS (node).truncate (0);
+	  tree meltype = build_nonstandard_integer_type
+	      (GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (vectype))), 1);
+	  tree mvectype = get_same_sized_vectype (meltype, vectype);
+	  unsigned k = 0, l;
+	  for (j = 0; j < v0.length (); ++j)
+	    {
+	      tree *melts = XALLOCAVEC (tree, TYPE_VECTOR_SUBPARTS (vectype));
+	      for (l = 0; l < TYPE_VECTOR_SUBPARTS (vectype); ++l)
+		{
+		  if (k > group_size)
+		    k = 0;
+		  melts[l] = build_int_cst
+		      (meltype, mask[k++] * TYPE_VECTOR_SUBPARTS (vectype) + l);
+		}
+	      tmask = build_vector (mvectype, melts);
+
+	      /* ???  Not all targets support a VEC_PERM_EXPR with a
+	         constant mask that would translate to a vec_merge RTX
+		 (with their vec_perm_const_ok).  We can either not
+		 vectorize in that case or let veclower do its job.
+		 Unfortunately that isn't too great and at least for
+		 plus/minus we'd eventually like to match targets
+		 vector addsub instructions.  */
+	      gimple vstmt;
+	      vstmt = gimple_build_assign (make_ssa_name (vectype),
+					   VEC_PERM_EXPR,
+					   gimple_assign_lhs (v0[j]),
+					   gimple_assign_lhs (v1[j]), tmask);
+	      vect_finish_stmt_generation (stmt, vstmt, &si);
+	      SLP_TREE_VEC_STMTS (node).quick_push (vstmt);
+	    }
+	  v0.release ();
+	  v1.release ();
+	  return false;
+	}
+    }
   is_store = vect_transform_stmt (stmt, &si, &grouped_store, node, instance);
   return is_store;
 }
