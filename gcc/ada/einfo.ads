@@ -436,6 +436,13 @@ package Einfo is
 --       definition clause with an (obsolescent) mod clause is converted
 --       into an attribute definition clause for this purpose.
 
+--    Associated_Entity (Node37)
+--       Defined in all entities. This field is similar to Associated_Node, but
+--       applied to entities. The attribute links an entity from the generic
+--       template with its corresponding entity in the analyzed generic copy.
+--       The global references mechanism relies on the Associated_Entity to
+--       infer the context.
+
 --    Associated_Formal_Package (Node12)
 --       Defined in packages that are the actuals of formal_packages. Points
 --       to the entity in the declaration for the formal package.
@@ -882,7 +889,6 @@ package Einfo is
 --       primitives that come from source must be stored in this list in the
 --       order of their occurrence in the sources. For incomplete types the
 --       list is always empty.
---
 --       When expansion is disabled the corresponding record type of a
 --       synchronized type is not constructed. In that case, such types
 --       carry this attribute directly, for ASIS use.
@@ -1033,9 +1039,10 @@ package Einfo is
 --       then if there is no other elaboration code, obviously there is no
 --       need to set the flag.
 
---    Encapsulating_State (Node10)
---       Defined in abstract states and variables. Contains the entity of an
---       ancestor state whose refinement utilizes this item as a constituent.
+--    Encapsulating_State (Node32)
+--       Defined in abstract states, constants and variables. Contains the
+--       entity of an ancestor state whose refinement utilizes this item as
+--       a constituent.
 
 --    Enclosing_Scope (Node18)
 --       Defined in labels. Denotes the innermost enclosing construct that
@@ -1089,10 +1096,10 @@ package Einfo is
 --       'COUNT when it applies to a family member.
 
 --    Contract (Node34)
---       Defined in entry, entry family, package, package body, subprogram and
---       subprogram body entities as well as their respective generic forms. A
---       contract is also applicable to a variable. Points to the contract of
---       the entity, holding various assertion items and data classifiers.
+--       Defined in entry, entry family, [generic] package, package body,
+--       [generic] subprogram, subprogram body and variable entities. Points
+--       to the contract of the entity, holding various assertion items and
+--       data classifiers.
 
 --    Entry_Parameters_Type (Node15)
 --       Defined in entries. Points to the access-to-record type that is
@@ -1657,7 +1664,7 @@ package Einfo is
 --    Has_Inherited_Default_Init_Cond (Flag133)
 --       Defined in type and subtype entities. Set if a derived type inherits
 --       pragma Default_Initial_Condition from its parent type. This flag must
---       be mutually exclusive with Had_Default_Init_Cond.
+--       be mutually exclusive with Has_Default_Init_Cond.
 
 --    Has_Initial_Value (Flag219)
 --       Defined in entities for variables and out parameters. Set if there
@@ -5238,6 +5245,7 @@ package Einfo is
    --    Etype                               (Node5)
    --    First_Rep_Item                      (Node6)
    --    Freeze_Node                         (Node7)
+   --    Associated_Entity                   (Node37)
 
    --    Address_Taken                       (Flag104)
    --    Can_Never_Be_Null                   (Flag38)
@@ -5454,9 +5462,9 @@ package Einfo is
    --  E_Abstract_State
    --    Refinement_Constituents             (Elist8)
    --    Part_Of_Constituents                (Elist9)
-   --    Encapsulating_State                 (Node10)
    --    Body_References                     (Elist16)
    --    Non_Limited_View                    (Node19)
+   --    Encapsulating_State                 (Node32)
    --    From_Limited_With                   (Flag159)
    --    Has_Visible_Refinement              (Flag263)
    --    Has_Non_Limited_View                (synth)
@@ -5615,6 +5623,7 @@ package Einfo is
    --    BIP_Initialization_Call             (Node29)
    --    Last_Aggregate_Assignment           (Node30)
    --    Activation_Record_Component         (Node31)
+   --    Encapsulating_State                 (Node32)   (constants only)
    --    Linker_Section_Pragma               (Node33)
    --    Has_Alignment_Clause                (Flag46)
    --    Has_Atomic_Components               (Flag86)
@@ -5964,7 +5973,6 @@ package Einfo is
    --    Alias                               (Node18)
    --    Extra_Accessibility_Of_Result       (Node19)
    --    Last_Entity                         (Node20)
-   --    Has_Nested_Subprogram               (Flag282)
    --    Subps_Index                         (Uint24)
    --    Overridden_Operation                (Node26)
    --    Subprograms_For_Type                (Node29)
@@ -5972,6 +5980,7 @@ package Einfo is
    --    Contract                            (Node34)
    --    Import_Pragma                       (Node35)
    --    Has_Invariants                      (Flag232)
+   --    Has_Nested_Subprogram               (Flag282)
    --    Is_Machine_Code_Subprogram          (Flag137)
    --    Is_Pure                             (Flag44)
    --    Is_Intrinsic_Subprogram             (Flag64)
@@ -6017,8 +6026,8 @@ package Einfo is
    --    Package_Instantiation               (Node26)
    --    Current_Use_Clause                  (Node27)
    --    Finalizer                           (Node28)   (non-generic case only)
-   --    SPARK_Aux_Pragma                    (Node33)
    --    SPARK_Pragma                        (Node32)
+   --    SPARK_Aux_Pragma                    (Node33)
    --    Contract                            (Node34)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Body_Needed_For_SAL                 (Flag40)
@@ -6054,8 +6063,8 @@ package Einfo is
    --    Last_Entity                         (Node20)
    --    Scope_Depth_Value                   (Uint22)
    --    Finalizer                           (Node28)   (non-generic case only)
-   --    SPARK_Aux_Pragma                    (Node33)
    --    SPARK_Pragma                        (Node32)
+   --    SPARK_Aux_Pragma                    (Node33)
    --    Contract                            (Node34)
    --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Delay_Subprogram_Descriptors        (Flag50)
@@ -6325,7 +6334,6 @@ package Einfo is
    --  E_Variable
    --    Hiding_Loop_Variable                (Node8)
    --    Current_Value                       (Node9)
-   --    Encapsulating_State                 (Node10)
    --    Esize                               (Uint12)
    --    Extra_Accessibility                 (Node13)
    --    Alignment                           (Uint14)
@@ -6346,6 +6354,7 @@ package Einfo is
    --    BIP_Initialization_Call             (Node29)
    --    Last_Aggregate_Assignment           (Node30)
    --    Activation_Record_Component         (Node31)
+   --    Encapsulating_State                 (Node32)
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
    --    Has_Alignment_Clause                (Flag46)
@@ -6616,6 +6625,7 @@ package Einfo is
    function Address_Taken                       (Id : E) return B;
    function Alias                               (Id : E) return E;
    function Alignment                           (Id : E) return U;
+   function Associated_Entity                   (Id : E) return E;
    function Associated_Formal_Package           (Id : E) return E;
    function Associated_Node_For_Itype           (Id : E) return N;
    function Associated_Storage_Pool             (Id : E) return E;
@@ -7267,6 +7277,7 @@ package Einfo is
    procedure Set_Address_Taken                   (Id : E; V : B := True);
    procedure Set_Alias                           (Id : E; V : E);
    procedure Set_Alignment                       (Id : E; V : U);
+   procedure Set_Associated_Entity               (Id : E; V : E);
    procedure Set_Associated_Formal_Package       (Id : E; V : E);
    procedure Set_Associated_Node_For_Itype       (Id : E; V : N);
    procedure Set_Associated_Storage_Pool         (Id : E; V : E);
@@ -8039,6 +8050,7 @@ package Einfo is
    pragma Inline (Address_Taken);
    pragma Inline (Alias);
    pragma Inline (Alignment);
+   pragma Inline (Associated_Entity);
    pragma Inline (Associated_Formal_Package);
    pragma Inline (Associated_Node_For_Itype);
    pragma Inline (Associated_Storage_Pool);
@@ -8537,6 +8549,7 @@ package Einfo is
    pragma Inline (Set_Address_Taken);
    pragma Inline (Set_Alias);
    pragma Inline (Set_Alignment);
+   pragma Inline (Set_Associated_Entity);
    pragma Inline (Set_Associated_Formal_Package);
    pragma Inline (Set_Associated_Node_For_Itype);
    pragma Inline (Set_Associated_Storage_Pool);

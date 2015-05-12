@@ -53,6 +53,7 @@ with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Ch12; use Sem_Ch12;
 with Sem_Dist; use Sem_Dist;
 with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
@@ -939,6 +940,15 @@ package body Sem_Ch10 is
                               N_Subprogram_Declaration)
       then
          Analyze_Subprogram_Contract (Defining_Entity (Unit_Node));
+
+         --  Capture all global references in a generic subprogram that acts as
+         --  a compilation unit now that the contract has been analyzed.
+
+         if Is_Generic_Declaration_Or_Body (Unit_Node) then
+            Save_Global_References_In_Contract
+              (Templ  => Original_Node (Unit_Node),
+               Gen_Id => Defining_Entity (Unit_Node));
+         end if;
       end if;
 
       --  Generate distribution stubs if requested and no error

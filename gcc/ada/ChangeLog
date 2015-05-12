@@ -1,3 +1,160 @@
+2015-05-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb Node32 is now used as Encapsulating_State.
+	Node37 is now used as Associated_Entity.
+	(Associated_Entity): New routine.
+	(Encapsulating_State): Update the assertion guard
+	to include constants.
+	(Set_Associated_Entity): New routine.
+	(Set_Encapsulating_State): Update the assertion guard to
+	include constants.
+	(Write_Field10_Name): Remove the output for Encapsulating_State.
+	(Write_Field32_Name): Add output for Encapsulating_State.
+	(Write_Field37_Name): Add output for Associated_Entity.
+	* einfo.ads New attribute Associated_Entity along with placement
+	in entities. Attribute Encapsulating_State now uses Node32.
+	(Associated_Entity): New routine along with pragma Inline.
+	(Set_Associated_Entity): New routine along with pragma Inline.
+	* inline.ads Code reformatting.
+	* sem_attr.adb (Analyze_Attribute): Correct the prefix of
+	attribute 'Result when the context is a generic instantiation.
+	(Analyze_Attribute_Old_Result): Pragmas Depends and
+	Refined_Depends are a valid context for attribute 'Result.
+	(Denote_Same_Function): Allow attribute 'Result to denote
+	generic functions.
+	* sem_ch3.adb Add with and use clauses for Sem_Ch12.
+	(Analyze_Declarations): Capture global references within the
+	contracts of packages, subprograms and their respective bodies.
+	* sem_ch6.adb (Analyze_Aspects_On_Body_Or_Stub): Removed.
+	(Analyze_Completion_Contract): Removed.
+	(Analyze_Generic_Subprogram_Body): Enchange the aspects after
+	creating the generic copy. Create a generic contract for the
+	template. Analyze the aspects of the generic body. Analyze the
+	contract of the generic body when it is a compilation unit and
+	capture global references.
+	(Analyze_Subprogram_Body_Contract): Code cleanup.
+	(Analyze_Subprogram_Contract): Do not save global references here.
+	(Save_Global_References_In_List): Removed.
+	* sem_ch7.adb (Analyze_Package_Body_Contract): Code cleanup.
+	(Analyze_Package_Body_Helper): Create a generic contract for
+	the template.
+	(Analyze_Package_Contract): Code cleanup.
+	* sem_ch10.adb Add with and use clauses for Sem_Ch12.
+	(Analyze_Compilation_Unit): Capture global references in a
+	generic subprogram declaration that acts as a compilation unit.
+	* sem_ch12.adb Add with and use clauses for Sem_Prag. Illustrate
+	the implementation of generic contracts. Alphabetize various
+	subprograms.
+	(Analyze_Generic_Package_Declaration):
+	Create a generic contract for the template.
+	(Analyze_Generic_Subprogram_Declaration): Create a generic
+	contract for the template.
+	(Analyze_Subprogram_Instantiation): Instantiate the contract of the
+	subprogram.
+	(Copy_Generic_Node): Link defining entities of the generic template
+	with the corresponding defining entities of the generic copy. Update
+	the processing of pragmas.
+	(Instantiate_Contract): Removed.
+	(Instantiate_Subprogram_Contract): New routine.
+	(Requires_Delayed_Save): New routine.
+	(Save_Global_References): Rename formal parameter N to Templ. Various
+	cleanups.
+	(Save_Global_References_In_Aspects): Moved from the spec.
+	(Save_Global_References_In_Contract): New routine.
+	(Save_References_In_Aggregate): New routine.
+	(Save_References_In_Char_Lit_Or_Op_Symbol): New routine.
+	(Save_References_In_Descendants): New routine.
+	(Save_References_In_Identifier): New routine.
+	(Save_References_In_Operator): New routine.
+	(Save_References_In_Pragma): New routine.
+	* sem_ch12.ads (Save_Global_References): Rename formal
+	parameter N to Templ. Update the comment on usage.
+	(Save_Global_References_In_Aspects): Moved to the body.
+	(Save_Global_References_In_Contract): New routine.
+	* sem_ch13.adb (Analyze_Aspect_Specifications_On_Body_Or_Stub):
+	New routine.
+	* sem_ch13.ads (Analyze_Aspect_Specifications_On_Body_Or_Stub):
+	New routine.
+	* sem_prag.adb (Add_Item_To_Name_Buffer): Add support for
+	generic parameters.
+	(Analyze_Contract_Cases_In_Decl_Part): Code cleanup.
+	(Analyze_Depends_Global): New routine.
+	(Analyze_Depends_In_Decl_Part): Code cleanup.
+	(Analyze_Global_In_Decl_Part): Code cleanup.
+	(Analyze_Global_Item): Constants are now valid global items. Do
+	not perform state-related checks in an instance. Change the way
+	renamings are handled.	(Analyze_Initial_Condition_In_Decl_Part):
+	Code cleanup.
+	(Analyze_Initializes_In_Decl_Part): Code cleanup.
+	(Analyze_Input_Output): The analysis of attribute 'Result in
+	the context of pragmas Depends or Refined_Depends now reuses
+	the existing attribute analysis machinery. Constants and
+	generic parameters are now valid dependency items. Do not
+	perform state-related checks in an instance. Change the way
+	renamings are handled.	(Analyze_Pragma): Add a "characteristics"
+	section for pragmas Abstract_State, Contract_Cases, Depends,
+	Extensions_Visible, Global, Initial_Condition, Initializes,
+	Post, Post_Class, Postcondition, Pre, Pre_Class, Precondition,
+	Refined_Depends, Refined_Global, Refined_Post, Refined_State, Test_Case.
+	(Analyze_Pre_Post_Condition): Do not create a generic
+	template here.
+	(Analyze_Pre_Post_Condition_In_Decl_Part): Code cleanup.
+	(Analyze_Refined_Depends_Global_Post): New routine.
+	(Analyze_Refined_Depends_In_Decl_Part): Code cleanup.
+	(Analyze_Refined_Global_In_Decl_Part): Code cleanup.
+	(Analyze_Refined_Pragma): Removed.
+	(Analyze_Refined_State_In_Decl_Part): Code cleanup.
+	(Analyze_Test_Case_In_Decl_Part): Code cleanup.
+	(Check_Dependency_Clause): Do not perform this check in an instance.
+	(Check_Function_Return): Add support for generic functions.
+	(Check_In_Out_States): Do not perform this check in an instance.
+	(Check_Input_States): Do not perform this check in an instance.
+	(Check_Mode_Restriction_In_Function): Add support for generic functions.
+	(Check_Output_States): Do not perform this check in an instance.
+	(Check_Postcondition_Use_In_Inlined_Subprogram): Rename
+	parameter Subp_Id to Spec_Id and update comment on usage.
+	(Check_Proof_In_States): Do not perform this check in an instance.
+	(Check_Refined_Global_Item): Add support for constants.
+	(Check_Refined_Global_List): Do not perform this check in an instance.
+	(Collect_Global_Items): Reimplemented.
+	(Collect_Subprogram_Inputs_Outputs): Add support for generic parameters.
+	(Create_Generic_Template): Removed.
+	(Find_Related_Package_Or_Body): Moved to spec.
+	(Find_Role): Add support for generic parameters and constants.
+	(Get_Argument): Moved to spec. Rename parameter Spec_Id to Context_Id.
+	(Match_Item): Add support for constants.
+	(Preanalyze_Test_Case_Arg): Reimplemented.
+	(Report_Extra_Clauses): Do not perform this check in an instance.
+	(Report_Extra_Constituents): Do not perform this check in an instance.
+	* sem_prag.ads (Collect_Subprogram_Inputs_Outputs): Update
+	the comment on usage.
+	(Find_Related_Package_Or_Body): Moved from body.
+	(Get_Argument): Moved from body.
+	* sem_util.adb Add with and use clauses for Sem_Ch12.
+	(Corresponding_Spec_Of): Add support for packages and package bodies.
+	(Create_Generic_Contract): New routine.
+	(Is_Contract_Annotation): Reimplemented.
+	(Is_Generic_Declaration_Or_Body): New routine.
+	(Is_Package_Contract_Annotation): New routine.
+	(Is_Subprogram_Contract_Annotation): New routine.
+	* sem_util.ads (Corresponding_Spec_Of): Update the comment on usage.
+	(Create_Generic_Contract): New routine.
+	(Is_Generic_Declaration_Or_Body): New routine.
+	(Is_Package_Contract_Annotation): New routine.
+	(Is_Subprogram_Contract_Annotation): New routine.
+	* sinfo.adb (Is_Generic_Contract_Pragma): New routine.
+	(Set_Is_Generic_Contract_Pragma): New routine.
+	* sinfo.ads Add new attribute Is_Generic_Contract_Pragma along
+	with occurrences in nodes.
+	(Is_Generic_Contract_Pragma): New routine along with pragma Inline.
+	(Set_Is_Generic_Contract_Pragma): New routine along with pragma Inline.
+	* treepr.adb (Print_Entity_Info): Output fields 36 to 41.
+
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
+	* a-taster.ads: Minor comment fix: fix bad header, this is a
+	pure RM unit.
+
 2015-05-12  Robert Dewar  <dewar@adacore.com>
 
 	* sem_intr.adb: (Check_Shift): Diagnose bad modulus value.

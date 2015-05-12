@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -728,6 +728,54 @@ package body Treepr is
          Write_Field35_Name (Ent);
          Write_Str (" = ");
          Print_Field (Field35 (Ent));
+         Print_Eol;
+      end if;
+
+      if Field_Present (Field36 (Ent)) then
+         Print_Str (Prefix);
+         Write_Field36_Name (Ent);
+         Write_Str (" = ");
+         Print_Field (Field36 (Ent));
+         Print_Eol;
+      end if;
+
+      if Field_Present (Field37 (Ent)) then
+         Print_Str (Prefix);
+         Write_Field37_Name (Ent);
+         Write_Str (" = ");
+         Print_Field (Field37 (Ent));
+         Print_Eol;
+      end if;
+
+      if Field_Present (Field38 (Ent)) then
+         Print_Str (Prefix);
+         Write_Field38_Name (Ent);
+         Write_Str (" = ");
+         Print_Field (Field38 (Ent));
+         Print_Eol;
+      end if;
+
+      if Field_Present (Field39 (Ent)) then
+         Print_Str (Prefix);
+         Write_Field39_Name (Ent);
+         Write_Str (" = ");
+         Print_Field (Field39 (Ent));
+         Print_Eol;
+      end if;
+
+      if Field_Present (Field40 (Ent)) then
+         Print_Str (Prefix);
+         Write_Field40_Name (Ent);
+         Write_Str (" = ");
+         Print_Field (Field40 (Ent));
+         Print_Eol;
+      end if;
+
+      if Field_Present (Field41 (Ent)) then
+         Print_Str (Prefix);
+         Write_Field41_Name (Ent);
+         Write_Str (" = ");
+         Print_Field (Field41 (Ent));
          Print_Eol;
       end if;
 

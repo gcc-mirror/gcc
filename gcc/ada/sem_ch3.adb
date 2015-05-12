@@ -58,6 +58,7 @@ with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch7;  use Sem_Ch7;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch10; use Sem_Ch10;
+with Sem_Ch12; use Sem_Ch12;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Dim;  use Sem_Dim;
 with Sem_Disp; use Sem_Disp;
@@ -2302,16 +2303,13 @@ package body Sem_Ch3 is
 
       --  Local variables
 
-      Context     : Node_Id;
+      Context     : Node_Id   := Empty;
       Freeze_From : Entity_Id := Empty;
       Next_Decl   : Node_Id;
-      Spec_Id     : Entity_Id;
+      Pack_Decl   : Node_Id   := Empty;
 
       Body_Seen : Boolean := False;
       --  Flag set when the first body [stub] is encountered
-
-      In_Package_Body : Boolean := False;
-      --  Flag set when the current declaration list belongs to a package body
 
    --  Start of processing for Analyze_Declarations
 
@@ -2456,6 +2454,7 @@ package body Sem_Ch3 is
          Context := Parent (L);
 
          if Nkind (Context) = N_Package_Specification then
+            Pack_Decl := Parent (Context);
 
             --  When a package has private declarations, its contract must be
             --  analyzed at the end of the said declarations. This way both the
@@ -2484,44 +2483,71 @@ package body Sem_Ch3 is
             end if;
 
          elsif Nkind (Context) = N_Package_Body then
-            In_Package_Body := True;
-            Spec_Id := Corresponding_Spec (Context);
-
+            Pack_Decl := Context;
             Analyze_Package_Body_Contract (Defining_Entity (Context));
          end if;
-      end if;
 
-      --  Analyze the contracts of subprogram declarations, subprogram bodies
-      --  and variables now due to the delayed visibility requirements of their
-      --  aspects.
+         --  Analyze the contracts of all subprogram declarations, subprogram
+         --  bodies and variables now due to the delayed visibility needs of
+         --  of their aspects and pragmas. Capture global references in generic
+         --  subprograms or bodies.
 
-      Decl := First (L);
-      while Present (Decl) loop
-         if Nkind (Decl) = N_Object_Declaration then
-            Analyze_Object_Contract (Defining_Entity (Decl));
+         Decl := First (L);
+         while Present (Decl) loop
+            if Nkind (Decl) = N_Object_Declaration then
+               Analyze_Object_Contract (Defining_Entity (Decl));
 
-         elsif Nkind_In (Decl, N_Abstract_Subprogram_Declaration,
-                               N_Generic_Subprogram_Declaration,
-                               N_Subprogram_Declaration)
-         then
-            Analyze_Subprogram_Contract (Defining_Entity (Decl));
+            elsif Nkind_In (Decl, N_Abstract_Subprogram_Declaration,
+                                  N_Generic_Subprogram_Declaration,
+                                  N_Subprogram_Declaration)
+            then
+               Analyze_Subprogram_Contract (Defining_Entity (Decl));
 
-         elsif Nkind (Decl) = N_Subprogram_Body then
-            Analyze_Subprogram_Body_Contract (Defining_Entity (Decl));
+            elsif Nkind (Decl) = N_Subprogram_Body then
+               Analyze_Subprogram_Body_Contract (Defining_Entity (Decl));
 
-         elsif Nkind (Decl) = N_Subprogram_Body_Stub then
-            Analyze_Subprogram_Body_Stub_Contract (Defining_Entity (Decl));
+            elsif Nkind (Decl) = N_Subprogram_Body_Stub then
+               Analyze_Subprogram_Body_Stub_Contract (Defining_Entity (Decl));
+            end if;
+
+            --  Capture all global references in a generic subprogram or a body
+            --  [stub] now that the contract has been analyzed.
+
+            if Nkind_In (Decl, N_Generic_Subprogram_Declaration,
+                               N_Subprogram_Body,
+                               N_Subprogram_Body_Stub)
+              and then Is_Generic_Declaration_Or_Body (Decl)
+            then
+               Save_Global_References_In_Contract
+                 (Templ  => Original_Node (Decl),
+                  Gen_Id => Corresponding_Spec_Of (Decl));
+            end if;
+
+            Next (Decl);
+         end loop;
+
+         --  The owner of the declarations is a package [body]
+
+         if Present (Pack_Decl) then
+
+            --  Capture all global references in a generic package or a body
+            --  after all nested generic subprograms and bodies were subjected
+            --  to the same processing.
+
+            if Is_Generic_Declaration_Or_Body (Pack_Decl) then
+               Save_Global_References_In_Contract
+                 (Templ  => Original_Node (Pack_Decl),
+                  Gen_Id => Corresponding_Spec_Of (Pack_Decl));
+            end if;
+
+            --  State refinements are visible upto the end the of the package
+            --  body declarations. Hide the state refinements from visibility
+            --  to restore the original state conditions.
+
+            if Nkind (Pack_Decl) = N_Package_Body then
+               Remove_Visible_Refinements (Corresponding_Spec (Pack_Decl));
+            end if;
          end if;
-
-         Next (Decl);
-      end loop;
-
-      --  State refinements are visible upto the end the of the package body
-      --  declarations. Hide the refinements from visibility to restore the
-      --  original state conditions.
-
-      if In_Package_Body then
-         Remove_Visible_Refinements (Spec_Id);
       end if;
    end Analyze_Declarations;
 

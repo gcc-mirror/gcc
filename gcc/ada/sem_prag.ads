@@ -172,9 +172,10 @@ package Sem_Prag is
    --  inputs and outputs of subprogram Subp_Id in lists Subp_Inputs (inputs)
    --  and Subp_Outputs (outputs). The inputs and outputs are gathered from:
    --    1) The formal parameters of the subprogram
-   --    2) The items of pragma [Refined_]Global
+   --    2) The generic formal parameters of the generic subprogram
+   --    3) The items of pragma [Refined_]Global
    --         or
-   --    3) The items of pragma [Refined_]Depends if there is no pragma
+   --    4) The items of pragma [Refined_]Depends if there is no pragma
    --       [Refined_]Global present and flag Synthesize is set to True.
    --  If the subprogram has no inputs and/or outputs, then the returned list
    --  is No_Elist. Flag Global_Seen is set when the related subprogram has
@@ -189,6 +190,16 @@ package Sem_Prag is
    --  function and in Frontend pragmas where Delay_Config_Pragma_Analyze is
    --  True have their analysis delayed until after the main program is parsed
    --  and analyzed.
+
+   function Find_Related_Package_Or_Body
+     (Prag      : Node_Id;
+      Do_Checks : Boolean := False) return Node_Id;
+   --  Subsidiary to the analysis of pragmas Abstract_State, Initial_Condition,
+   --  Initializes and Refined_State. Find the declaration of the related
+   --  package [body] subject to pragma Prag. The return value is either
+   --  N_Package_Declaration, N_Package_Body or Empty if the placement of
+   --  the pragma is illegal. If flag Do_Checks is set, the routine reports
+   --  duplicate pragmas.
 
    function Find_Related_Subprogram_Or_Body
      (Prag      : Node_Id;
@@ -206,6 +217,20 @@ package Sem_Prag is
    --    2) Pragmas Refined_Depends, Refined_Global and Refined_Post yield
    --       N_Subprogram_Body or N_Subprogram_Body_Stub nodes or Empty if
    --       illegal.
+
+   function Get_Argument
+     (Prag       : Node_Id;
+      Context_Id : Node_Id := Empty) return Node_Id;
+   --  Obtain the argument of pragma Prag depending on context and the nature
+   --  of the pragma. The argument is extracted in the following manner:
+   --
+   --    When the pragma is generated from an aspect, return the corresponding
+   --    aspect for ASIS or when Context_Id denotes a generic unit.
+   --
+   --    Otherwise return the first argument of Prag
+   --
+   --  Context denotes the entity of the function, package or procedure where
+   --  Prag resides.
 
    function Get_SPARK_Mode_From_Pragma (N : Node_Id) return SPARK_Mode_Type;
    --  Given a pragma SPARK_Mode node, return corresponding mode id

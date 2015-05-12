@@ -136,24 +136,28 @@ package Sem_Ch12 is
    --  pragma, or because a pragma appears for the instance in the scope.
    --  of the instance.
 
-   procedure Save_Global_References (N : Node_Id);
+   procedure Save_Global_References (Templ : Node_Id);
    --  Traverse the original generic unit, and capture all references to
-   --  entities that are defined outside of the generic in the analyzed
-   --  tree for the template. These references are copied into the original
-   --  tree, so that they appear automatically in every instantiation.
-   --  A critical invariant in this approach is that if an id in the generic
-   --  resolves to a local entity, the corresponding id in the instance
-   --  will resolve to the homologous entity in the instance, even though
-   --  the enclosing context for resolution is different, as long as the
-   --  global references have been captured as described here.
+   --  entities that are defined outside of the generic in the analyzed tree
+   --  for the template. These references are copied into the original tree,
+   --  so that they appear automatically in every instantiation. A critical
+   --  invariant in this approach is that if an id in the generic resolves to
+   --  a local entity, the corresponding id in the instance will resolve to
+   --  the homologous entity in the instance, even though the enclosing context
+   --  for resolution is different, as long as the global references have been
+   --  captured as described here.
 
    --  Because instantiations can be nested, the environment of the instance,
    --  involving the actuals and other data-structures, must be saved and
    --  restored in stack-like fashion. Front-end inlining also uses these
    --  structures for the management of private/full views.
 
-   procedure Save_Global_References_In_Aspects (N : Node_Id);
-   --  Save all global references in the aspect specifications of node N
+   procedure Save_Global_References_In_Contract
+     (Templ  : Node_Id;
+      Gen_Id : Entity_Id);
+   --  Save all global references found within the aspect specifications and
+   --  the contract-related source pragmas assocated with generic template
+   --  Templ. Gen_Id denotes the entity of the analyzed generic copy.
 
    procedure Set_Copied_Sloc_For_Inlined_Body (N : Node_Id; E : Entity_Id);
    --  This procedure is used when a subprogram body is inlined. This process
