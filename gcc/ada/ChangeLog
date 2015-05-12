@@ -1,3 +1,14 @@
+2015-05-12  Thomas Quinot  <quinot@adacore.com>
+
+	* g-sercom.ads, g-sercom-linux.adb (GNAT.Serial_Communications.
+	Data_Rate): New literals B75, B110, B150, B300, B600.
+
+2015-05-12  Doug Rupp  <rupp@adacore.com>
+
+	* init.c (__gnat_init_float) [vxworks]: For e500v2,
+	do nothing and leave the responsibility to install the handler
+	and enable the exceptions to the BSP.
+
 2015-05-12  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch9.adb, einfo.ads, exp_intr.adb: Minor reformatting.

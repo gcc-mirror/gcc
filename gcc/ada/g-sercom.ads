@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2007-2014, AdaCore                      --
+--                    Copyright (C) 2007-2015, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,7 +50,8 @@ package GNAT.Serial_Communications is
    --  cases, an explicit port name can be passed directly to Open.
 
    type Data_Rate is
-     (B1200, B2400, B4800, B9600, B19200, B38400, B57600, B115200);
+     (B75, B110, B150, B300, B600, B1200, B2400, B4800, B9600,
+      B19200, B38400, B57600, B115200);
    --  Speed of the communication
 
    type Data_Bits is (CS8, CS7);
@@ -122,7 +123,12 @@ private
    end record;
 
    Data_Rate_Value : constant array (Data_Rate) of Interfaces.C.unsigned :=
-                       (B1200   =>   1_200,
+                       (B75     =>      75,
+                        B110    =>     110,
+                        B150    =>     150,
+                        B300    =>     300,
+                        B600    =>     600,
+                        B1200   =>   1_200,
                         B2400   =>   2_400,
                         B4800   =>   4_800,
                         B9600   =>   9_600,

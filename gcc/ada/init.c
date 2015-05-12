@@ -2017,11 +2017,8 @@ __gnat_init_float (void)
 #if defined (_ARCH_PPC) && !defined (_SOFT_FLOAT) && (!defined (VTHREADS) || defined (__VXWORKSMILS__))
 #if defined (__SPE__)
   {
-     const unsigned long spefscr_mask = 0xfffffff3;
-     unsigned long spefscr;
-     asm ("mfspr  %0, 512" : "=r" (spefscr));
-     spefscr = spefscr & spefscr_mask;
-     asm ("mtspr 512, %0\n\tisync" : : "r" (spefscr));
+    /* For e500v2, do nothing and leave the responsibility to install the
+       handler and enable the exceptions to the BSP.  */
   }
 #else
   asm ("mtfsb0 25");
