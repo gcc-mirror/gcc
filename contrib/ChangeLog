@@ -1,5 +1,9 @@
 2015-05-12  Tom de Vries  <tom@codesourcery.com>
 
+	* check_GNU_style.sh: Check if files exists.
+
+2015-05-12  Tom de Vries  <tom@codesourcery.com>
+
 	* check_GNU_style.sh: Don't use a filename prefix if we're only
 	processing one patch file.
 

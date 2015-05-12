@@ -39,6 +39,13 @@ test $# -eq 0 && usage
 nfiles=$#
 files="$*"
 
+for f in $files; do
+    if [ "$f" != "-" ] && [ ! -f "$f" ]; then
+	echo "error: could not read file: $f"
+	exit 1
+    fi
+done
+
 inp=check_GNU_style.inp
 tmp=check_GNU_style.tmp
 
