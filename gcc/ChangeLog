@@ -1,3 +1,15 @@
+2015-05-12  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Sandra Loosemore <sandra@codesourcery.com>
+
+	* config/nios2/nios2.h (enum reg_class): Add IJMP_REGS enum
+	value.
+	(REG_CLASS_NAMES): Add "IJMP_REGS".
+	(REG_CLASS_CONTENTS): Add new entry for IJMP_REGS.
+	* config/nios2/nios2.md (indirect_jump,*tablejump): Adjust to
+	use new "c" register constraint.
+	* config/nios2/constraint.md (c): New register constraint
+	corresponding to IJMP_REGS.
+
 2015-05-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (*rotlsi3_internal4, *rotlsi3_internal5,

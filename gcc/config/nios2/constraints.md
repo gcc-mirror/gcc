@@ -39,6 +39,9 @@
 
 ;; Register constraints
 
+(define_register_constraint "c" "IJMP_REGS"
+  "A register suitable for an indirect jump.")
+
 (define_register_constraint "j" "SIB_REGS"
   "A register suitable for an indirect sibcall.")
 

@@ -697,7 +697,7 @@
 ; check or adjust for overflow.
 
 (define_insn "indirect_jump"
-  [(set (pc) (match_operand:SI 0 "register_operand" "r"))]
+  [(set (pc) (match_operand:SI 0 "register_operand" "c"))]
   ""
   "jmp\\t%0"
   [(set_attr "type" "control")])
@@ -811,7 +811,7 @@
 
 (define_insn "*tablejump"
   [(set (pc)
-        (match_operand:SI 0 "register_operand" "r"))
+        (match_operand:SI 0 "register_operand" "c"))
    (use (label_ref (match_operand 1 "" "")))]
   ""
   "jmp\\t%0"
