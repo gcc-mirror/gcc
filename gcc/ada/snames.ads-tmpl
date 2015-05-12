@@ -632,6 +632,7 @@ package Snames is
    Name_Unreserve_All_Interrupts       : constant Name_Id := N + $; -- GNAT
    Name_Volatile                       : constant Name_Id := N + $;
    Name_Volatile_Components            : constant Name_Id := N + $;
+   Name_Volatile_Full_Access           : constant Name_Id := N + $; -- GNAT
    Name_Weak_External                  : constant Name_Id := N + $; -- GNAT
    Last_Pragma_Name                    : constant Name_Id := N + $;
 
@@ -1939,6 +1940,7 @@ package Snames is
       Pragma_Unreserve_All_Interrupts,
       Pragma_Volatile,
       Pragma_Volatile_Components,
+      Pragma_Volatile_Full_Access,
       Pragma_Weak_External,
 
       --  The following pragmas are on their own, out of order, because of the

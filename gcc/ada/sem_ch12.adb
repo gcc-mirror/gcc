@@ -11698,6 +11698,14 @@ package body Sem_Ch12 is
                  Get_Instance_Of (Base_Type (Get_Instance_Of (A_Gen_T)));
             end if;
 
+         --  Check whether parent is a previous formal of the current generic
+
+         elsif Is_Derived_Type (A_Gen_T)
+           and then Is_Generic_Type (Etype (A_Gen_T))
+           and then Scope (A_Gen_T) = Scope (Etype (A_Gen_T))
+         then
+            Ancestor := Get_Instance_Of (First_Subtype (Etype (A_Gen_T)));
+
          --  An unusual case: the actual is a type declared in a parent unit,
          --  but is not a formal type so there is no instance_of for it.
          --  Retrieve it by analyzing the record extension.
@@ -11732,6 +11740,9 @@ package body Sem_Ch12 is
                  ("(Ada 2005) expected type implementing & in instantiation",
                   Actual, Ancestor);
             end if;
+
+         --  Finally verify that the (instance of) the ancestor is an ancestor
+         --  of the actual.
 
          elsif not Is_Ancestor (Base_Type (Ancestor), Act_T) then
             Error_Msg_NE

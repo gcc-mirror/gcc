@@ -3058,9 +3058,9 @@ package body Sem_Prag is
       --  Issue fatal error message for misplaced pragma
 
       procedure Process_Atomic_Independent_Shared_Volatile;
-      --  Common processing for pragmas Atomic, Independent, Shared, Volatile.
-      --  Note that Shared is an obsolete Ada 83 pragma and treated as being
-      --  identical in effect to pragma Atomic.
+      --  Common processing for pragmas Atomic, Independent, Shared, Volatile,
+      --  Volatile_Full_Access. Note that Shared is an obsolete Ada 83 pragma
+      --  and treated as being identical in effect to pragma Atomic.
 
       procedure Process_Compile_Time_Warning_Or_Error;
       --  Common processing for Compile_Time_Error and Compile_Time_Warning
@@ -5822,24 +5822,28 @@ package body Sem_Prag is
          K    : Node_Kind;
          Utyp : Entity_Id;
 
-         procedure Set_Atomic (E : Entity_Id);
-         --  Set given type as atomic, and if no explicit alignment was given,
-         --  set alignment to unknown, since back end knows what the alignment
-         --  requirements are for atomic arrays. Note: this step is necessary
-         --  for derived types.
+         procedure Set_Atomic_Full (E : Entity_Id);
+         --  Set given type as Is_Atomic or Has_Volatile_Full_Access. Also, if
+         --  no explicit alignment was given, set alignment to unknown, since
+         --  back end knows what the alignment requirements are for atomic and
+         --  full access arrays. Note: this is necessary for derived types.
 
-         ----------------
-         -- Set_Atomic --
-         ----------------
+         ---------------------
+         -- Set_Atomic_Full --
+         ---------------------
 
-         procedure Set_Atomic (E : Entity_Id) is
+         procedure Set_Atomic_Full (E : Entity_Id) is
          begin
-            Set_Is_Atomic (E);
+            if Prag_Id = Pragma_Volatile_Full_Access then
+               Set_Has_Volatile_Full_Access (E);
+            else
+               Set_Is_Atomic (E);
+            end if;
 
             if not Has_Alignment_Clause (E) then
                Set_Alignment (E, Uint_0);
             end if;
-         end Set_Atomic;
+         end Set_Atomic_Full;
 
       --  Start of processing for Process_Atomic_Independent_Shared_Volatile
 
@@ -5874,13 +5878,18 @@ package body Sem_Prag is
                Check_First_Subtype (Arg1);
             end if;
 
-            if Prag_Id = Pragma_Atomic or else Prag_Id = Pragma_Shared then
-               Set_Atomic (E);
-               Set_Atomic (Underlying_Type (E));
-               Set_Atomic (Base_Type (E));
+            if Prag_Id = Pragma_Atomic
+                 or else
+               Prag_Id = Pragma_Shared
+                 or else
+               Prag_Id = Pragma_Volatile_Full_Access
+            then
+               Set_Atomic_Full (E);
+               Set_Atomic_Full (Underlying_Type (E));
+               Set_Atomic_Full (Base_Type (E));
             end if;
 
-            --  Atomic/Shared imply both Independent and Volatile
+            --  Atomic/Shared/Volatile_Full_Access imply Independent
 
             if Prag_Id /= Pragma_Volatile then
                Set_Is_Independent (E);
@@ -5896,6 +5905,11 @@ package body Sem_Prag is
             --  currently private, it also belongs on the underlying type.
 
             if Prag_Id /= Pragma_Independent then
+               if Prag_Id = Pragma_Volatile_Full_Access then
+                  Set_Has_Volatile_Full_Access (Base_Type (E));
+                  Set_Has_Volatile_Full_Access (Underlying_Type (E));
+               end if;
+
                Set_Is_Volatile (Base_Type (E));
                Set_Is_Volatile (Underlying_Type (E));
 
@@ -5911,8 +5925,17 @@ package body Sem_Prag is
                return;
             end if;
 
-            if Prag_Id = Pragma_Atomic or else Prag_Id = Pragma_Shared then
-               Set_Is_Atomic (E);
+            if Prag_Id = Pragma_Atomic
+                 or else
+               Prag_Id = Pragma_Shared
+                 or else
+               Prag_Id = Pragma_Volatile_Full_Access
+            then
+               if Prag_Id = Pragma_Volatile_Full_Access then
+                  Set_Has_Volatile_Full_Access (E);
+               else
+                  Set_Is_Atomic (E);
+               end if;
 
                --  If the object declaration has an explicit initialization, a
                --  temporary may have to be created to hold the expression, to
@@ -5939,6 +5962,9 @@ package body Sem_Prag is
                --  treated as atomic, thus incurring a potentially costly
                --  synchronization operation for every access.
 
+               --  For Volatile_Full_Access we can do this for elementary
+               --  types too, since there is no issue of atomic sync.
+
                --  Of course it would be best if the back end could just adjust
                --  the alignment etc for the specific object, but that's not
                --  something we are capable of doing at this point.
@@ -5946,14 +5972,21 @@ package body Sem_Prag is
                Utyp := Underlying_Type (Etype (E));
 
                if Present (Utyp)
-                 and then Is_Composite_Type (Utyp)
+                 and then (Is_Composite_Type (Utyp)
+                            or else Prag_Id = Pragma_Volatile_Full_Access)
                  and then Sloc (E) > No_Location
                  and then Sloc (Utyp) > No_Location
                  and then
                    Get_Source_File_Index (Sloc (E)) =
                    Get_Source_File_Index (Sloc (Underlying_Type (Etype (E))))
                then
-                  Set_Is_Atomic (Underlying_Type (Etype (E)));
+                  if Prag_Id = Pragma_Volatile_Full_Access then
+                     Set_Has_Volatile_Full_Access
+                       (Underlying_Type (Etype (E)));
+                  else
+                     Set_Is_Atomic
+                       (Underlying_Type (Etype (E)));
+                  end if;
                end if;
             end if;
 
@@ -21220,7 +21253,17 @@ package body Sem_Prag is
          when Pragma_Volatile =>
             Process_Atomic_Independent_Shared_Volatile;
 
-         -------------------------
+         --------------------------
+         -- Volatile_Full_Access --
+         --------------------------
+
+         --  pragma Volatile_Full_Access (LOCAL_NAME);
+
+         when Pragma_Volatile_Full_Access =>
+            GNAT_Pragma;
+            Process_Atomic_Independent_Shared_Volatile;
+
+            -------------------------
          -- Volatile_Components --
          -------------------------
 
@@ -26148,6 +26191,7 @@ package body Sem_Prag is
       Pragma_Validity_Checks                =>  0,
       Pragma_Volatile                       =>  0,
       Pragma_Volatile_Components            =>  0,
+      Pragma_Volatile_Full_Access           =>  0,
       Pragma_Warning_As_Error               =>  0,
       Pragma_Warnings                       =>  0,
       Pragma_Weak_External                  =>  0,

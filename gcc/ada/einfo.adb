@@ -591,8 +591,8 @@ package body Einfo is
    --    Has_Nested_Subprogram           Flag282
    --    Is_Uplevel_Referenced_Entity    Flag283
    --    Is_Unimplemented                Flag284
+   --    Has_Volatile_Full_Access        Flag285
 
-   --    (unused)                        Flag285
    --    (unused)                        Flag286
    --    (unused)                        Flag287
    --    (unused)                        Flag288
@@ -1848,6 +1848,11 @@ package body Einfo is
    begin
       return Flag87 (Implementation_Base_Type (Id));
    end Has_Volatile_Components;
+
+   function Has_Volatile_Full_Access (Id : E) return B is
+   begin
+      return Flag285 (Id);
+   end Has_Volatile_Full_Access;
 
    function Has_Xref_Entry (Id : E) return B is
    begin
@@ -4729,6 +4734,11 @@ package body Einfo is
       pragma Assert (not Is_Type (Id) or else Is_Base_Type (Id));
       Set_Flag87 (Id, V);
    end Set_Has_Volatile_Components;
+
+   procedure Set_Has_Volatile_Full_Access (Id : E; V : B := True) is
+   begin
+      Set_Flag285 (Id, V);
+   end Set_Has_Volatile_Full_Access;
 
    procedure Set_Has_Xref_Entry (Id : E; V : B := True) is
    begin
@@ -8695,6 +8705,7 @@ package body Einfo is
       W ("Has_Uplevel_Reference",           Flag215 (Id));
       W ("Has_Visible_Refinement",          Flag263 (Id));
       W ("Has_Volatile_Components",         Flag87  (Id));
+      W ("Has_Volatile_Full_Access",        Flag285 (Id));
       W ("Has_Xref_Entry",                  Flag182 (Id));
       W ("In_Package_Body",                 Flag48  (Id));
       W ("In_Private_Part",                 Flag45  (Id));
