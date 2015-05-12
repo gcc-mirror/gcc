@@ -1,3 +1,10 @@
+2015-05-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* directives.c (do_line): Set seen_line_directive on line_table.
+	(do_linemarker): Likewise.
+	* include/line-map.h (struct line_maps): Add new field
+	"seen_line_directive".
+
 2015-05-08  Jason Merrill  <jason@redhat.com>
 
 	* include/cpplib.h: Add CPP_W_CXX11_COMPAT.

@@ -911,7 +911,7 @@ strtolinenum (const uchar *str, size_t len, linenum_type *nump, bool *wrapped)
 static void
 do_line (cpp_reader *pfile)
 {
-  const struct line_maps *line_table = pfile->line_table;
+  struct line_maps *line_table = pfile->line_table;
   const struct line_map *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
 
   /* skip_rest_of_line() may cause line table to be realloc()ed so note down
@@ -965,6 +965,7 @@ do_line (cpp_reader *pfile)
   skip_rest_of_line (pfile);
   _cpp_do_file_change (pfile, LC_RENAME_VERBATIM, new_file, new_lineno,
 		       map_sysp);
+  line_table->seen_line_directive = true;
 }
 
 /* Interpret the # 44 "file" [flags] notation, which has slightly
@@ -973,7 +974,7 @@ do_line (cpp_reader *pfile)
 static void
 do_linemarker (cpp_reader *pfile)
 {
-  const struct line_maps *line_table = pfile->line_table;
+  struct line_maps *line_table = pfile->line_table;
   const struct line_map *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
   const cpp_token *token;
   const char *new_file = ORDINARY_MAP_FILE_NAME (map);
@@ -1052,6 +1053,7 @@ do_linemarker (cpp_reader *pfile)
   pfile->line_table->highest_location--;
 
   _cpp_do_file_change (pfile, reason, new_file, new_lineno, new_sysp);
+  line_table->seen_line_directive = true;
 }
 
 /* Arrange the file_change callback.  pfile->line has changed to

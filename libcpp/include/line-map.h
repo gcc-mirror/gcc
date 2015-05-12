@@ -386,6 +386,9 @@ struct GTY(()) line_maps {
   /* The special location value that is used as spelling location for
      built-in tokens.  */
   source_location builtin_location;
+
+  /* True if we've seen a #line or # 44 "file" directive.  */
+  bool seen_line_directive;
 };
 
 /* Returns the pointer to the memory region where information about

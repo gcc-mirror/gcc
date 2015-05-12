@@ -1,3 +1,9 @@
+2015-05-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/Wmisleading-indentation.c: New testcase.
+	* c-c++-common/Wmisleading-indentation-2.c: New testcase.
+	* c-c++-common/Wmisleading-indentation-2.md: New file.
+
 2015-05-12 Sandra Loosemore <sandra@codesourcery.com>
 
 	* gcc.target/nios2/nios2-trap-insn.c: Expect "trap" instead of

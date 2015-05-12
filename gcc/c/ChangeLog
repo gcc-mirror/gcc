@@ -1,3 +1,12 @@
+2015-05-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-parser.c (c_parser_if_body): Add param "if_loc", use it
+	to add a call to warn_for_misleading_indentation.
+	(c_parser_else_body): Likewise, adding param "else_loc".
+	(c_parser_if_statement): Check for misleading indentation.
+	(c_parser_while_statement): Likewise.
+	(c_parser_for_statement): Likewise.
+
 2015-05-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c/64918

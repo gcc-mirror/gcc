@@ -1145,8 +1145,8 @@ c-family-warn = $(STRICT_WARN)
 
 # Language-specific object files shared by all C-family front ends.
 C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
-  c-family/c-format.o c-family/c-gimplify.o c-family/c-lex.o \
-  c-family/c-omp.o c-family/c-opts.o c-family/c-pch.o \
+  c-family/c-format.o c-family/c-gimplify.o c-family/c-indentation.o \
+  c-family/c-lex.o c-family/c-omp.o c-family/c-opts.o c-family/c-pch.o \
   c-family/c-ppoutput.o c-family/c-pragma.o c-family/c-pretty-print.o \
   c-family/c-semantics.o c-family/c-ada-spec.o \
   c-family/c-cilkplus.o \
