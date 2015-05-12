@@ -1,3 +1,7 @@
+2015-05-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* libgcov-util.c: Add space between string literal and macro name.
+
 2015-05-06  Sandra Loosemore  <sandra@codesourcery.com>
 	    Chris Jones  <chrisj@nvidia.com>
 	    Joshua Conner  <jconner@nvidia.com>

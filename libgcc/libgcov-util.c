@@ -879,7 +879,7 @@ gcov_profile_normalize (struct gcov_info *profile, gcov_type max_val)
 
   scale_factor = (float)max_val / curr_max_val;
   if (verbose)
-    fnotice (stdout, "max_val is %"PRId64"\n", curr_max_val);
+    fnotice (stdout, "max_val is %" PRId64 "\n", curr_max_val);
 
   return gcov_profile_scale (profile, scale_factor, 0, 0);
 }
@@ -1374,17 +1374,19 @@ calculate_overlap (struct gcov_info *gcov_list1,
   printf ("  Statistics:\n"
           "                    profile1_#     profile2_#       overlap_#\n");
   printf ("    gcda files:  %12u\t%12u\t%12u\n", gcda_files[0], gcda_files[1],
-                                          gcda_files[0]-unique_gcda_files[0]);
+	  gcda_files[0]-unique_gcda_files[0]);
   printf ("  unique files:  %12u\t%12u\n", unique_gcda_files[0],
-                                        unique_gcda_files[1]);
+	  unique_gcda_files[1]);
   printf ("     hot files:  %12u\t%12u\t%12u\n", hot_gcda_files[0],
-                                            hot_gcda_files[1], both_hot_cnt);
+	  hot_gcda_files[1], both_hot_cnt);
   printf ("    cold files:  %12u\t%12u\t%12u\n", cold_gcda_files[0],
-                                            cold_gcda_files[1], both_cold_cnt);
+	  cold_gcda_files[1], both_cold_cnt);
   printf ("    zero files:  %12u\t%12u\t%12u\n", zero_gcda_files[0],
-                                            zero_gcda_files[1], both_zero_cnt);
-  printf ("       sum_all:  %12"PRId64"\t%12"PRId64"\n", p1_sum_all, p2_sum_all);
-  printf ("       run_max:  %12"PRId64"\t%12"PRId64"\n", p1_run_max, p2_run_max);
+	  zero_gcda_files[1], both_zero_cnt);
+  printf ("       sum_all:  %12" PRId64 "\t%12" PRId64 "\n",
+	  p1_sum_all, p2_sum_all);
+  printf ("       run_max:  %12" PRId64 "\t%12" PRId64 "\n",
+	  p1_run_max, p2_run_max);
 
   return prg_val;
 }
