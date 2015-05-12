@@ -1894,6 +1894,10 @@ package body Freeze is
       procedure Freeze_Array_Type (Arr : Entity_Id);
       --  Freeze array type, including freezing index and component types
 
+      procedure Freeze_Object_Declaration (E : Entity_Id);
+      --  Perfom checks and generate freeze node if needed for a constant
+      --  or variable declared by an object declaration.
+
       function Freeze_Generic_Entities (Pack : Entity_Id) return List_Id;
       --  Create Freeze_Generic_Entity nodes for types declared in a generic
       --  package. Recurse on inner generic packages.
@@ -2781,6 +2785,211 @@ package body Freeze is
             Set_Alignment (Arr, Alignment (Component_Type (Arr)));
          end if;
       end Freeze_Array_Type;
+
+      -------------------------------
+      -- Freeze_Object_Declaration --
+      -------------------------------
+
+      procedure Freeze_Object_Declaration (E : Entity_Id) is
+      begin
+         --  Abstract type allowed only for C++ imported variables or
+         --  constants.
+
+         --  Note: we inhibit this check for objects that do not come
+         --  from source because there is at least one case (the
+         --  expansion of x'Class'Input where x is abstract) where we
+         --  legitimately generate an abstract object.
+
+         if Is_Abstract_Type (Etype (E))
+           and then Comes_From_Source (Parent (E))
+           and then not (Is_Imported (E) and then Is_CPP_Class (Etype (E)))
+         then
+            Error_Msg_N ("type of object cannot be abstract",
+                           Object_Definition (Parent (E)));
+
+            if Is_CPP_Class (Etype (E)) then
+               Error_Msg_NE ("\} may need a cpp_constructor",
+                  Object_Definition (Parent (E)), Etype (E));
+
+            elsif Present (Expression (Parent (E))) then
+               Error_Msg_N --  CODEFIX
+                 ("\maybe a class-wide type was meant",
+                  Object_Definition (Parent (E)));
+            end if;
+         end if;
+
+         --  For object created by object declaration, perform required
+         --  categorization (preelaborate and pure) checks. Defer these
+         --  checks to freeze time since pragma Import inhibits default
+         --  initialization and thus pragma Import affects these checks.
+
+         Validate_Object_Declaration (Declaration_Node (E));
+
+         --  If there is an address clause, check that it is valid
+         --  and if need be move initialization to the freeze node.
+
+         Check_Address_Clause (E);
+
+         --  Similar processing is needed for aspects that may affect
+         --  object layout, like Alignment, if there is an initialization
+         --  expression.
+
+         if Has_Delayed_Aspects (E)
+           and then Expander_Active
+           and then Is_Array_Type (Etype (E))
+           and then Present (Expression (Parent (E)))
+         then
+            declare
+               Decl : constant Node_Id := Parent (E);
+               Lhs  : constant Node_Id :=  New_Occurrence_Of (E, Loc);
+            begin
+
+               --  Capture initialization value at point of declaration,
+               --  and make explicit assignment legal, because object may
+               --  be a constant.
+
+               Remove_Side_Effects (Expression (Decl));
+               Set_Assignment_OK (Lhs);
+
+               --  Move initialization to freeze actions.
+
+               Append_Freeze_Action (E,
+                 Make_Assignment_Statement (Loc,
+                   Name       => Lhs,
+                   Expression => Expression (Decl)));
+
+               Set_No_Initialization (Decl);
+               --  Set_Is_Frozen (E, False);
+            end;
+         end if;
+
+         --  Reset Is_True_Constant for non-constant aliased object. We
+         --  consider that the fact that a non-constant object is aliased
+         --  may indicate that some funny business is going on, e.g. an
+         --  aliased object is passed by reference to a procedure which
+         --  captures the address of the object, which is later used to
+         --  assign a new value, even though the compiler thinks that it
+         --  is not modified. Such code is highly dubious, but we choose
+         --  to make it "work" for non-constant aliased objects.
+         --  Note that we used to do this for all aliased objects, whether
+         --  or not constant, but this caused anomalies down the line
+         --  because we ended up with static objects that were not
+         --  Is_True_Constant. Not resetting Is_True_Constant for (aliased)
+         --  constant objects ensures that this anomaly never occurs.
+
+         --  However, we don't do that for internal entities. We figure
+         --  that if we deliberately set Is_True_Constant for an internal
+         --  entity, e.g. a dispatch table entry, then we mean it.
+
+         if Ekind (E) /= E_Constant
+           and then (Is_Aliased (E) or else Is_Aliased (Etype (E)))
+           and then not Is_Internal_Name (Chars (E))
+         then
+            Set_Is_True_Constant (E, False);
+         end if;
+
+         --  If the object needs any kind of default initialization, an
+         --  error must be issued if No_Default_Initialization applies.
+         --  The check doesn't apply to imported objects, which are not
+         --  ever default initialized, and is why the check is deferred
+         --  until freezing, at which point we know if Import applies.
+         --  Deferred constants are also exempted from this test because
+         --  their completion is explicit, or through an import pragma.
+
+         if Ekind (E) = E_Constant
+           and then Present (Full_View (E))
+         then
+            null;
+
+         elsif Comes_From_Source (E)
+           and then not Is_Imported (E)
+           and then not Has_Init_Expression (Declaration_Node (E))
+           and then
+             ((Has_Non_Null_Base_Init_Proc (Etype (E))
+                and then not No_Initialization (Declaration_Node (E))
+                and then not Is_Value_Type (Etype (E))
+                and then not Initialization_Suppressed (Etype (E)))
+              or else
+                (Needs_Simple_Initialization (Etype (E))
+                  and then not Is_Internal (E)))
+         then
+            Has_Default_Initialization := True;
+            Check_Restriction
+              (No_Default_Initialization, Declaration_Node (E));
+         end if;
+
+         --  Check that a Thread_Local_Storage variable does not have
+         --  default initialization, and any explicit initialization must
+         --  either be the null constant or a static constant.
+
+         if Has_Pragma_Thread_Local_Storage (E) then
+            declare
+               Decl : constant Node_Id := Declaration_Node (E);
+            begin
+               if Has_Default_Initialization
+                 or else
+                   (Has_Init_Expression (Decl)
+                     and then
+                      (No (Expression (Decl))
+                        or else not
+                          (Is_OK_Static_Expression (Expression (Decl))
+                            or else Nkind (Expression (Decl)) = N_Null)))
+               then
+                  Error_Msg_NE
+                    ("Thread_Local_Storage variable& is "
+                     & "improperly initialized", Decl, E);
+                  Error_Msg_NE
+                    ("\only allowed initialization is explicit "
+                     & "NULL or static expression", Decl, E);
+               end if;
+            end;
+         end if;
+
+         --  For imported objects, set Is_Public unless there is also an
+         --  address clause, which means that there is no external symbol
+         --  needed for the Import (Is_Public may still be set for other
+         --  unrelated reasons). Note that we delayed this processing
+         --  till freeze time so that we can be sure not to set the flag
+         --  if there is an address clause. If there is such a clause,
+         --  then the only purpose of the Import pragma is to suppress
+         --  implicit initialization.
+
+         if Is_Imported (E) and then No (Address_Clause (E)) then
+            Set_Is_Public (E);
+         end if;
+
+         --  For source objects that are not Imported and are library
+         --  level, if no linker section pragma was given inherit the
+         --  appropriate linker section from the corresponding type.
+
+         if Comes_From_Source (E)
+           and then not Is_Imported (E)
+           and then Is_Library_Level_Entity (E)
+           and then No (Linker_Section_Pragma (E))
+         then
+            Set_Linker_Section_Pragma
+              (E, Linker_Section_Pragma (Etype (E)));
+         end if;
+
+         --  For convention C objects of an enumeration type, warn if the
+         --  size is not integer size and no explicit size given. Skip
+         --  warning for Boolean, and Character, assume programmer expects
+         --  8-bit sizes for these cases.
+
+         if (Convention (E) = Convention_C
+               or else Convention (E) = Convention_CPP)
+           and then Is_Enumeration_Type (Etype (E))
+           and then not Is_Character_Type (Etype (E))
+           and then not Is_Boolean_Type (Etype (E))
+           and then Esize (Etype (E)) < Standard_Integer_Size
+           and then not Has_Size_Clause (E)
+         then
+            Error_Msg_Uint_1 := UI_From_Int (Standard_Integer_Size);
+            Error_Msg_N
+              ("??convention C enumeration object has size less than ^", E);
+            Error_Msg_N ("\??use explicit size clause to set size", E);
+         end if;
+      end Freeze_Object_Declaration;
 
       -----------------------------
       -- Freeze_Generic_Entities --
@@ -4690,176 +4899,7 @@ package body Freeze is
             --  Special processing for objects created by object declaration
 
             if Nkind (Declaration_Node (E)) = N_Object_Declaration then
-
-               --  Abstract type allowed only for C++ imported variables or
-               --  constants.
-
-               --  Note: we inhibit this check for objects that do not come
-               --  from source because there is at least one case (the
-               --  expansion of x'Class'Input where x is abstract) where we
-               --  legitimately generate an abstract object.
-
-               if Is_Abstract_Type (Etype (E))
-                 and then Comes_From_Source (Parent (E))
-                 and then not (Is_Imported (E)
-                                 and then Is_CPP_Class (Etype (E)))
-               then
-                  Error_Msg_N ("type of object cannot be abstract",
-                               Object_Definition (Parent (E)));
-
-                  if Is_CPP_Class (Etype (E)) then
-                     Error_Msg_NE
-                       ("\} may need a cpp_constructor",
-                        Object_Definition (Parent (E)), Etype (E));
-
-                  elsif Present (Expression (Parent (E))) then
-                     Error_Msg_N --  CODEFIX
-                       ("\maybe a class-wide type was meant",
-                        Object_Definition (Parent (E)));
-                  end if;
-               end if;
-
-               --  For object created by object declaration, perform required
-               --  categorization (preelaborate and pure) checks. Defer these
-               --  checks to freeze time since pragma Import inhibits default
-               --  initialization and thus pragma Import affects these checks.
-
-               Validate_Object_Declaration (Declaration_Node (E));
-
-               --  If there is an address clause, check that it is valid
-
-               Check_Address_Clause (E);
-
-               --  Reset Is_True_Constant for non-constant aliased object. We
-               --  consider that the fact that a non-constant object is aliased
-               --  may indicate that some funny business is going on, e.g. an
-               --  aliased object is passed by reference to a procedure which
-               --  captures the address of the object, which is later used to
-               --  assign a new value, even though the compiler thinks that
-               --  it is not modified. Such code is highly dubious, but we
-               --  choose to make it "work" for non-constant aliased objects.
-               --  Note that we used to do this for all aliased objects,
-               --  whether or not constant, but this caused anomalies down
-               --  the line because we ended up with static objects that
-               --  were not Is_True_Constant. Not resetting Is_True_Constant
-               --  for (aliased) constant objects ensures that this anomaly
-               --  never occurs.
-
-               --  However, we don't do that for internal entities. We figure
-               --  that if we deliberately set Is_True_Constant for an internal
-               --  entity, e.g. a dispatch table entry, then we mean it.
-
-               if Ekind (E) /= E_Constant
-                 and then (Is_Aliased (E) or else Is_Aliased (Etype (E)))
-                 and then not Is_Internal_Name (Chars (E))
-               then
-                  Set_Is_True_Constant (E, False);
-               end if;
-
-               --  If the object needs any kind of default initialization, an
-               --  error must be issued if No_Default_Initialization applies.
-               --  The check doesn't apply to imported objects, which are not
-               --  ever default initialized, and is why the check is deferred
-               --  until freezing, at which point we know if Import applies.
-               --  Deferred constants are also exempted from this test because
-               --  their completion is explicit, or through an import pragma.
-
-               if Ekind (E) = E_Constant
-                 and then Present (Full_View (E))
-               then
-                  null;
-
-               elsif Comes_From_Source (E)
-                 and then not Is_Imported (E)
-                 and then not Has_Init_Expression (Declaration_Node (E))
-                 and then
-                   ((Has_Non_Null_Base_Init_Proc (Etype (E))
-                      and then not No_Initialization (Declaration_Node (E))
-                      and then not Is_Value_Type (Etype (E))
-                      and then not Initialization_Suppressed (Etype (E)))
-                    or else
-                      (Needs_Simple_Initialization (Etype (E))
-                        and then not Is_Internal (E)))
-               then
-                  Has_Default_Initialization := True;
-                  Check_Restriction
-                    (No_Default_Initialization, Declaration_Node (E));
-               end if;
-
-               --  Check that a Thread_Local_Storage variable does not have
-               --  default initialization, and any explicit initialization must
-               --  either be the null constant or a static constant.
-
-               if Has_Pragma_Thread_Local_Storage (E) then
-                  declare
-                     Decl : constant Node_Id := Declaration_Node (E);
-                  begin
-                     if Has_Default_Initialization
-                       or else
-                         (Has_Init_Expression (Decl)
-                           and then
-                            (No (Expression (Decl))
-                              or else not
-                                (Is_OK_Static_Expression (Expression (Decl))
-                                  or else
-                                    Nkind (Expression (Decl)) = N_Null)))
-                     then
-                        Error_Msg_NE
-                          ("Thread_Local_Storage variable& is "
-                           & "improperly initialized", Decl, E);
-                        Error_Msg_NE
-                          ("\only allowed initialization is explicit "
-                           & "NULL or static expression", Decl, E);
-                     end if;
-                  end;
-               end if;
-
-               --  For imported objects, set Is_Public unless there is also an
-               --  address clause, which means that there is no external symbol
-               --  needed for the Import (Is_Public may still be set for other
-               --  unrelated reasons). Note that we delayed this processing
-               --  till freeze time so that we can be sure not to set the flag
-               --  if there is an address clause. If there is such a clause,
-               --  then the only purpose of the Import pragma is to suppress
-               --  implicit initialization.
-
-               if Is_Imported (E) and then No (Address_Clause (E)) then
-                  Set_Is_Public (E);
-               end if;
-
-               --  For source objects that are not Imported and are library
-               --  level, if no linker section pragma was given inherit the
-               --  appropriate linker section from the corresponding type.
-
-               if Comes_From_Source (E)
-                 and then not Is_Imported (E)
-                 and then Is_Library_Level_Entity (E)
-                 and then No (Linker_Section_Pragma (E))
-               then
-                  Set_Linker_Section_Pragma
-                    (E, Linker_Section_Pragma (Etype (E)));
-               end if;
-
-               --  For convention C objects of an enumeration type, warn if
-               --  the size is not integer size and no explicit size given.
-               --  Skip warning for Boolean, and Character, assume programmer
-               --  expects 8-bit sizes for these cases.
-
-               if (Convention (E) = Convention_C
-                     or else
-                   Convention (E) = Convention_CPP)
-                 and then Is_Enumeration_Type (Etype (E))
-                 and then not Is_Character_Type (Etype (E))
-                 and then not Is_Boolean_Type (Etype (E))
-                 and then Esize (Etype (E)) < Standard_Integer_Size
-                 and then not Has_Size_Clause (E)
-               then
-                  Error_Msg_Uint_1 := UI_From_Int (Standard_Integer_Size);
-                  Error_Msg_N
-                    ("??convention C enumeration object has size less than ^",
-                     E);
-                  Error_Msg_N ("\??use explicit size clause to set size", E);
-               end if;
+               Freeze_Object_Declaration (E);
             end if;
 
             --  Check that a constant which has a pragma Volatile[_Components]
