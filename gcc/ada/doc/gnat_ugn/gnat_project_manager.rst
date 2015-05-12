@@ -300,10 +300,7 @@ locating the specified source files in the specified source directories.
   However, when compiling a multi-language application, or a pure C
   application, the project manager must be told which languages are of
   interest, which is done by setting the **Languages** attribute to a list of
-  strings, each of which is the name of a language. Tools like
-  *gnatmake* only know about Ada, while other tools like
-  *gprbuild* know about many more languages such as C, C++, Fortran,
-  assembly and others can be added dynamically.
+  strings, each of which is the name of a language.
 
   .. index:: Naming scheme (GNAT Project Manager)
 
@@ -416,8 +413,7 @@ Its value is the path to the object directory, either absolute or
 relative to the directory containing the project file. This
 directory must already exist and be readable and writable, although
 some tools have a switch to create the directory if needed (See
-the switch `-p` for *gnatmake*
-and *gprbuild*).
+the switch `-p` for *gprbuild*).
 
 If the attribute `Object_Dir` is not specified, it defaults to
 the project directory, that is the directory containing the project file.
@@ -569,7 +565,7 @@ packages would be involved in the build process.
           for Exec_Dir use ".";
           for Main use ("proc.adb");
   
-          package Builder is  --<<<  for gnatmake and gprbuild
+          package Builder is  --<<<  for gprbuild
           end Builder;
 
           package Compiler is --<<<  for the compiler
@@ -667,7 +663,7 @@ Several attributes can be used to specify the switches:
 
 The switches for the other tools are defined in a similar manner through the
 **Default_Switches** and **Switches** attributes, respectively in the
-*Builder* package (for *gnatmake* and *gprbuild*),
+*Builder* package (for *gprbuild*),
 the *Binder* package (binding Ada executables) and the *Linker*
 package (for linking executables).
 
@@ -682,7 +678,7 @@ Here is the command we would use from the command line:
 
 .. code-block:: sh
 
-     gnatmake -Pbuild
+     gprbuild -Pbuild
   
 This will automatically build the executables specified through the
 *Main* attribute: for each, it will compile or recompile the
@@ -690,10 +686,9 @@ sources for which the object file does not exist or is not up-to-date; it
 will then run the binder; and finally run the linker to create the
 executable itself.
 
-*gnatmake* only knows how to handle Ada files. By using
-*gprbuild* as a builder, you could automatically manage C files the
+The *gprbuild* builder, can automatically manage C files the
 same way: create the file :file:`utils.c` in the :file:`common` directory,
-set the attribute *Languages* to `"(Ada, C)"`, and run
+set the attribute *Languages* to `"(Ada, C)"`, and re-run
 
 .. code-block:: sh
 
@@ -1226,16 +1221,10 @@ following algorithm, in this order; the first matching file is used:
   Such directories depend on the tool used. The locations searched in the
   specified order are:
 
-  * :file:`<prefix>/<target>/lib/gnat`
-    (for *gnatmake* in all cases, and for *gprbuild* if option
-    *--target* is specified)
-  * :file:`<prefix>/<target>/share/gpr`
-    (for *gnatmake* in all cases, and for *gprbuild* if option
-    *--target* is specified)
+  * :file:`<prefix>/<target>/lib/gnat` if option *--target* is specified
+  * :file:`<prefix>/<target>/share/gpr` if option *--target* is specified
   * :file:`<prefix>/share/gpr/`
-    (for *gnatmake* and *gprbuild*)
   * :file:`<prefix>/lib/gnat/`
-    (for *gnatmake* and *gprbuild*)
 
   In our example, :file:`gtkada.gpr` is found in the predefined directory if
   it was installed at the same root as GNAT.
@@ -1486,19 +1475,13 @@ order of priority):
 .. index:: -X (usage with GNAT Project Manager)
 
 **Command line**:
-  When launching *gnatmake* or *gprbuild*, the user can pass
+  When launching *gprbuild*, the user can pass
   extra *-X* switches to define the external value. In
   our case, the command line might look like
 
-  ::
+  .. code-block:: sh
 
-           gnatmake -Pbuild.gpr -Xmode=debug
-           
-  or
-
-  ::
-
-         gnatmake -Pbuild.gpr -Xmode=release
+         gprbuild -Pbuild.gpr -Xmode=release
     
 
 **Environment variables**:
@@ -1776,14 +1759,8 @@ of shard libraries reduces the size of the final executable and can also reduce
 the memory footprint at execution time when the library is shared among several
 executables.
 
-It is also possible to build **multi-language libraries**. When using
-*gprbuild* as a builder, multi-language library projects allow naturally
-the creation of multi-language libraries . *gnatmake*, does not try to
-compile non Ada sources. However, when the project is multi-language, it will
-automatically link all object files found in the object directory, whether or
-not they were compiled from an Ada source file. This specific behavior does not
-apply to Ada-only projects which only take into account the objects
-corresponding to the sources of the project.
+*gprbuild also allows to build **multi-language libraries** when specifying
+sources from multiple languages.
 
 A non-library project can import a library project. When the builder is invoked
 on the former, the library of the latter is only rebuilt when absolutely
@@ -1802,11 +1779,11 @@ the following two commands need to be used:
 
 .. code-block:: sh
 
-     gnatmake -Plogging.gpr
-     gnatmake -Pbuild.gpr
+     gprbuild -Plogging.gpr
+     gprbuild -Pbuild.gpr
   
 All :file:`ALI` files will also be copied from the object directory to the
-library directory. To build executables, *gnatmake* will use the
+library directory. To build executables, *gprbuild* will use the
 library rather than the individual object files.
 
 Library projects can also be useful to describe a library that needs to be used
@@ -2307,8 +2284,7 @@ Very often, modules will build their own executables (for testing
 purposes for instance), or libraries (for easier reuse in various
 contexts).
 
-However, if you build your project through *gnatmake* or
-*gprbuild*, using a syntax similar to
+However, if you build your project through *gprbuild*, using a syntax similar to
 
 ::
 
@@ -2316,9 +2292,9 @@ However, if you build your project through *gnatmake* or
   
 this will only rebuild the main programs of project A, not those of the
 imported projects B and C. Therefore you have to spawn several
-*gnatmake* commands, one per project, to build all executables.
+*gprbuild* commands, one per project, to build all executables.
 This is a little inconvenient, but more importantly is inefficient
-because *gnatmake* needs to do duplicate work to ensure that sources are
+because *gprbuild* needs to do duplicate work to ensure that sources are
 up-to-date, and cannot easily compile things in parallel when using
 the -j switch.
 
@@ -2348,10 +2324,6 @@ If you add a main to a project P not already explicitly referenced in the
 aggregate project, you will need to add "p.gpr" in the list of project
 files for the aggregate project, or the main will not be built when
 building the aggregate project.
-
-Aggregate projects are supported only with *gprbuild*, not with
-*gnatmake*.
-
 
 .. _Building_a_set_of_projects_with_a_single_command:
 
@@ -2463,7 +2435,7 @@ once.
 Since there is no ambiguity as to which switches should be used, files
 can be compiled in parallel (through the usual -j switch) and this can
 be done while maximizing the use of CPUs (compared to launching
-multiple *gprbuild* and *gnatmake* commands in parallel).
+multiple *gprbuild* commands in parallel).
 
 
 .. _Syntax_of_aggregate_projects:
@@ -3118,8 +3090,8 @@ The following packages are currently supported in project files
 
 *Binder*
   This package specifies characteristics useful when invoking the binder either
-  directly via the *gnat* driver or when using a builder such as
-  *gnatmake* or *gprbuild*. See :ref:`Main_Subprograms`.
+  directly via the *gnat* driver or when using *gprbuild*.
+  See :ref:`Main_Subprograms`.
 
 *Builder*
   This package specifies the compilation options used when building an
@@ -3353,7 +3325,7 @@ External Values
 
 An external value is an expression whose value is obtained from the command
 that invoked the processing of the current project file (typically a
-*gnatmake* or *gprbuild* command).
+*gprbuild* command).
 
 There are two kinds of external values, one that returns a single string, and
 one that returns a string list.
@@ -4576,9 +4548,9 @@ Package IDE Attributes
 * **Compiler_Command**: single, indexed, case-insensitive index
 
   Index is a language Name. Value is a string that denotes the command to be
-  used to invoke the compiler. The value of `Compiler_Command ("Ada")` is
-  expected to be compatible with *gnatmake*, in particular in
-  the handling of switches.
+  used to invoke the compiler. For historical reasons, the value of
+  `Compiler_Command ("Ada")` is expected to be a reference to *gnatmake* or
+  *cross-gnatmake*.
 
 * **Debugger_Command**: single
 

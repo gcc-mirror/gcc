@@ -371,10 +371,10 @@ Consider the following modified version of the above program:
 
   begin
      Put_Line (Integer'Image (V2'Size));
-     Put_Line (Integer'IMage (Size (V2)));
+     Put_Line (Integer'Image (Size (V2)));
      V2 := (True, 'x');
      Put_Line (Integer'Image (V2'Size));
-     Put_Line (Integer'IMage (Size (V2)));
+     Put_Line (Integer'Image (Size (V2)));
   end q;
 
 The output from this program is
@@ -553,11 +553,6 @@ is illegal to convert from one access subtype to the other. For a more
 complete description of this additional legality rule, see the
 description of the `Object_Size` attribute.
 
-At the implementation level, Esize stores the Object_Size and the
-RM_Size field stores the `Value_Size` (and hence the value of the
-`Size` attribute,
-which, as noted above, is equivalent to `Value_Size`).
-
 To get a feel for the difference, consider the following examples (note
 that in each case the base is `Short_Short_Integer` with a size of 8):
 
@@ -573,15 +568,17 @@ that in each case the base is `Short_Short_Integer` with a size of 8):
 +---------------------------------------------+-------------+-------------+
 |``subtype x4 is x2'base range 0 .. 10;``     |  8          |    4        |
 +---------------------------------------------+-------------+-------------+
+|``dynamic : x2'Base range -64 .. +63;``      |             |             |
++---------------------------------------------+-------------+-------------+
 |``subtype x5 is x2 range 0 .. dynamic;``     | 16          |    3*       |
 +---------------------------------------------+-------------+-------------+
-|``subtype x6 is x2'base range 0 .. dynamic;``|  8          |    3*       |
+|``subtype x6 is x2'base range 0 .. dynamic;``|  8          |    7*       |
 +---------------------------------------------+-------------+-------------+
 
-Note: the entries marked '3*' are not actually specified by the Ada
-Reference Manual, but it seems in the spirit of the RM rules to allocate
-the minimum number of bits (here 3, given the range for `x2`)
-known to be large enough to hold the given range of values.
+Note: the entries marked '*' are not actually specified by the Ada
+Reference Manual, which has nothing to say about size in the dynamic
+case. What GNAT does is to allocate sufficient bits to accomodate any
+possible dynamic values for the bounds at run-time.
 
 So far, so good, but GNAT has to obey the RM rules, so the question is
 under what conditions must the RM `Size` be used.
@@ -620,7 +617,7 @@ since it must be rounded up so that this value is a multiple of the
 alignment (4 bytes = 32 bits).
 
 For all other types, the `Object_Size`
-and Value_Size are the same (and equivalent to the RM attribute `Size`).
+and `Value_Size` are the same (and equivalent to the RM attribute `Size`).
 Only `Size` may be specified for such types.
 
 Note that `Value_Size` can be used to force biased representation
@@ -822,7 +819,7 @@ definition clause on byte ordering.  Briefly, it has no effect at all, but
 a detailed example will be helpful.  Before giving this
 example, let us review the precise
 definition of the effect of defining `Bit_Order`.  The effect of a
-non-standard bit order is described in section 15.5.3 of the Ada
+non-standard bit order is described in section 13.5.3 of the Ada
 Reference Manual:
 
    "2   A bit ordering is a method of interpreting the meaning of
@@ -840,7 +837,7 @@ this context, we visit section 13.5.1 of the manual:
 The critical point here is that storage places are taken from
 the values after normalization, not before.  So the `Bit_Order`
 interpretation applies to normalized values.  The interpretation
-is described in the later part of the 15.5.3 paragraph:
+is described in the later part of the 13.5.3 paragraph:
 
    "2   A bit ordering is a method of interpreting the meaning of
    the storage place attributes.  High_Order_First (known in the

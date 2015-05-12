@@ -6583,6 +6583,38 @@ in some Ada 83 compilers, including DEC Ada 83.  The Ada 95 / Ada 2005
 implementation of pragma Volatile is upwards compatible with the
 implementation in DEC Ada 83.
 
+Pragma Volatile_Full_Access
+===========================
+
+Syntax:
+
+
+.. code-block:: ada
+
+  pragma Volatile_Full_Access (LOCAL_NAME);
+
+
+This is similar in effect to pragma Volatile, except that any reference to the
+object is guaranteed to be done only with instructions that read or write all
+the bits of the object. Furthermore, if the object is of a composite type,
+then any reference to a component of the object is guaranteed to read and/or
+write all the bits of the object.
+
+The intention is that this be suitable for use with memory-mapped I/O devices
+on some machines. Note that there are two important respects in which this is
+different from `pragma Atomic`. First a reference to a `Volatile_Full_Access`
+object is not a sequential action in the RM 9.10 sense and, therefore, does
+not create a synchronization point. Second, in the case of `pragma Atomic`,
+there is no guarantee that all the bits will be accessed if the reference
+is not to the whole object; the compiler is allowed (and generally will)
+access only part of the object in this case.
+
+It is not permissible to specify `Atomic` and `Volatile_Full_Access` for
+the same object.
+
+It is not permissible to specify `Volatile_Full_Access` for a composite
+(record or array) type or object that has at least one `Aliased` component.
+
 Pragma Warning_As_Error
 =======================
 
