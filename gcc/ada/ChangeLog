@@ -1,5 +1,22 @@
 2015-05-12  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch5.adb (Analyze_Iterator_Specifications): Additional
+	legality checks for array and container iterators:
+	a) The domain of iteration cannot be a component that depends
+	on discriminants of a mutable object. The check was recently
+	added for element iterators.
+	b) The cursor type cannot be a limited type at the point of the
+	iteration, because the cursor will be assigned to in the body
+	of the loop.
+
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Make sure that if we have
+	aspect Iterator_Element, then we have either Constant_Indexing
+	or Variable_Indexing.
+
+2015-05-12  Ed Schonberg  <schonberg@adacore.com>
+
 	* a-coormu.ads, a-coormu.adb: Add Indexing aspect, Reference_Type,
 	and Reference_Control_Type to support element iterators over
 	ordered multisets.
