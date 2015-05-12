@@ -1,5 +1,9 @@
 2015-05-12  Tom de Vries  <tom@codesourcery.com>
 
+	* check_GNU_style.sh: Read either from stdin, or from files.
+
+2015-05-12  Tom de Vries  <tom@codesourcery.com>
+
 	* check_GNU_style.sh: Check if files exists.
 
 2015-05-12  Tom de Vries  <tom@codesourcery.com>
