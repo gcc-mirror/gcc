@@ -36,6 +36,8 @@ EOF
 }
 
 test $# -eq 0 && usage
+nfiles=$#
+files="$*"
 
 inp=check_GNU_style.inp
 tmp=check_GNU_style.tmp
@@ -44,9 +46,15 @@ tmp=check_GNU_style.tmp
 trap "rm -f $inp $tmp" 0
 trap "rm -f $inp $tmp ; exit 1" 1 2 3 5 9 13 15
 
-grep -nH '^+' $* \
-	| grep -v ':+++' \
-	> $inp
+if [ $nfiles -eq 1 ]; then
+    # There's no need for the file prefix if we're dealing only with one file.
+    format="-n"
+else
+    format="-nH"
+fi
+grep $format '^+' $files \
+    | grep -v ':+++' \
+    > $inp
 
 # Grep
 g (){
