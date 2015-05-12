@@ -1668,6 +1668,51 @@ sign_extend_short_imm (rtx src, machine_mode mode, unsigned int prec)
 }
 #endif
 
+/* Update RSP for pseudo-register X from INSN's REG_EQUAL note (if one exists)
+   and SET.  */
+
+static void
+update_rsp_from_reg_equal (reg_stat_type *rsp, rtx_insn *insn, const_rtx set,
+			   rtx x)
+{
+  rtx reg_equal_note = insn ? find_reg_equal_equiv_note (insn) : NULL_RTX;
+  unsigned HOST_WIDE_INT bits = 0;
+  rtx reg_equal = NULL, src = SET_SRC (set);
+  unsigned int num = 0;
+
+  if (reg_equal_note)
+    reg_equal = XEXP (reg_equal_note, 0);
+
+#ifdef SHORT_IMMEDIATES_SIGN_EXTEND
+  src = sign_extend_short_imm (src, GET_MODE (x), BITS_PER_WORD);
+  if (reg_equal)
+    reg_equal = sign_extend_short_imm (reg_equal, GET_MODE (x), BITS_PER_WORD);
+#endif
+
+  /* Don't call nonzero_bits if it cannot change anything.  */
+  if (rsp->nonzero_bits != ~(unsigned HOST_WIDE_INT) 0)
+    {
+      bits = nonzero_bits (src, nonzero_bits_mode);
+      if (reg_equal && bits)
+	bits &= nonzero_bits (reg_equal, nonzero_bits_mode);
+      rsp->nonzero_bits |= bits;
+    }
+
+  /* Don't call num_sign_bit_copies if it cannot change anything.  */
+  if (rsp->sign_bit_copies != 1)
+    {
+      num = num_sign_bit_copies (SET_SRC (set), GET_MODE (x));
+      if (reg_equal && num != GET_MODE_PRECISION (GET_MODE (x)))
+	{
+	  unsigned int numeq = num_sign_bit_copies (reg_equal, GET_MODE (x));
+	  if (num == 0 || numeq > num)
+	    num = numeq;
+	}
+      if (rsp->sign_bit_copies == 0 || num < rsp->sign_bit_copies)
+	rsp->sign_bit_copies = num;
+    }
+}
+
 /* Called via note_stores.  If X is a pseudo that is narrower than
    HOST_BITS_PER_WIDE_INT and is being set, record what bits are known zero.
 
@@ -1683,7 +1728,6 @@ static void
 set_nonzero_bits_and_sign_copies (rtx x, const_rtx set, void *data)
 {
   rtx_insn *insn = (rtx_insn *) data;
-  unsigned int num;
 
   if (REG_P (x)
       && REGNO (x) >= FIRST_PSEUDO_REGISTER
@@ -1743,21 +1787,7 @@ set_nonzero_bits_and_sign_copies (rtx x, const_rtx set, void *data)
       if (SET_DEST (set) == x
 	  || (paradoxical_subreg_p (SET_DEST (set))
 	      && SUBREG_REG (SET_DEST (set)) == x))
-	{
-	  rtx src = SET_SRC (set);
-
-#ifdef SHORT_IMMEDIATES_SIGN_EXTEND
-	  src = sign_extend_short_imm (src, GET_MODE (x), BITS_PER_WORD);
-#endif
-
-	  /* Don't call nonzero_bits if it cannot change anything.  */
-	  if (rsp->nonzero_bits != ~(unsigned HOST_WIDE_INT) 0)
-	    rsp->nonzero_bits |= nonzero_bits (src, nonzero_bits_mode);
-	  num = num_sign_bit_copies (SET_SRC (set), GET_MODE (x));
-	  if (rsp->sign_bit_copies == 0
-	      || rsp->sign_bit_copies > num)
-	    rsp->sign_bit_copies = num;
-	}
+	update_rsp_from_reg_equal (rsp, insn, set, x);
       else
 	{
 	  rsp->nonzero_bits = GET_MODE_MASK (GET_MODE (x));

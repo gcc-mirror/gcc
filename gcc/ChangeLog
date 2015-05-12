@@ -1,3 +1,11 @@
+2015-05-12  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* combine.c i(set_nonzero_bits_and_sign_copies): Split code updating
+	rsp->sign_bit_copies and rsp->nonzero_bits into ...
+	(update_rsp_from_reg_equal): This.  Also use REG_EQUAL note on src if
+	present to get more accurate information about the number of sign bit
+	copies and non zero bits.
+
 2015-05-12  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_build_slp_tree_1): For BB vectorization
