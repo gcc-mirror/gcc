@@ -1706,7 +1706,12 @@ package Einfo is
 --      Defined in subprogram entities. Set for a subprogram which contains at
 --      least one nested subprogram.
 
-   --    Has_Non_Null_Refinement (synth)
+--    Has_Non_Limited_View (synth)
+--       Defined in E_Incomplete_Type, E_Incomplete_Subtype, E_Class_Wide_Type,
+--       E_Abstract_State entities. True if their Non_Limited_View attribute
+--       is present.
+
+--    Has_Non_Null_Refinement (synth)
 --       Defined in E_Abstract_State entities. True if the state has at least
 --       one variable or state constituent in aspect/pragma Refined_State.
 
@@ -3449,7 +3454,7 @@ package Einfo is
 --       Defined in all subtype and type entities. Set for modular integer
 --       types if the modulus value is other than a power of 2.
 
---    Non_Limited_View (Node17)
+--    Non_Limited_View (Node19)
 --       Defined in abstract states and incomplete types that act as shadow
 --       entities created when analysing a limited with clause (Ada 2005:
 --       AI-50217). Points to the defining entity of the original declaration.
@@ -5445,9 +5450,10 @@ package Einfo is
    --    Part_Of_Constituents                (Elist9)
    --    Encapsulating_State                 (Node10)
    --    Body_References                     (Elist16)
-   --    Non_Limited_View                    (Node17)
+   --    Non_Limited_View                    (Node19)
    --    From_Limited_With                   (Flag159)
    --    Has_Visible_Refinement              (Flag263)
+   --    Has_Non_Limited_View                (synth)
    --    Has_Non_Null_Refinement             (synth)
    --    Has_Null_Refinement                 (synth)
    --    Is_External_State                   (synth)
@@ -5548,10 +5554,12 @@ package Einfo is
    --    First_Entity                        (Node17)
    --    Equivalent_Type                     (Node18)   (always Empty for type)
    --    Last_Entity                         (Node20)
+   --    Non_Limited_View                    (Node19)
    --    SSO_Set_High_By_Default             (Flag273)  (base type only)
    --    SSO_Set_Low_By_Default              (Flag272)  (base type only)
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
+   --    Has_Non_Limited_View                (synth)
    --    (plus type attributes)
 
    --  E_Component
@@ -5867,10 +5875,11 @@ package Einfo is
    --  E_Incomplete_Type
    --  E_Incomplete_Subtype
    --    Direct_Primitive_Operations         (Elist10)
-   --    Non_Limited_View                    (Node17)
+   --    Non_Limited_View                    (Node19)
    --    Private_Dependents                  (Elist18)
    --    Discriminant_Constraint             (Elist21)
    --    Stored_Constraint                   (Elist23)
+   --    Has_Non_Limited_View                (synth)
    --    (plus type attributes)
 
    --  E_In_Parameter
@@ -7123,6 +7132,7 @@ package Einfo is
    function Has_Attach_Handler                  (Id : E) return B;
    function Has_Entries                         (Id : E) return B;
    function Has_Foreign_Convention              (Id : E) return B;
+   function Has_Non_Limited_View                (Id : E) return B;
    function Has_Non_Null_Refinement             (Id : E) return B;
    function Has_Null_Abstract_State             (Id : E) return B;
    function Has_Null_Refinement                 (Id : E) return B;

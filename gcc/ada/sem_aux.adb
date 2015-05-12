@@ -78,30 +78,10 @@ package body Sem_Aux is
 
    function Available_View (Ent : Entity_Id) return Entity_Id is
    begin
-      --  Obtain the non-limited (non-abstract) view of a state or variable
+      --  Obtain the non-limited view (if available)
 
-      if Ekind (Ent) = E_Abstract_State
-        and then Present (Non_Limited_View (Ent))
-      then
-         return Non_Limited_View (Ent);
-
-      --  The non-limited view of an incomplete type may itself be incomplete
-      --  in which case obtain its full view.
-
-      elsif Is_Incomplete_Type (Ent)
-        and then Present (Non_Limited_View (Ent))
-      then
+      if Has_Non_Limited_View (Ent) then
          return Get_Full_View (Non_Limited_View (Ent));
-
-      --  If it is class_wide, check whether the specific type comes from a
-      --  limited_with.
-
-      elsif Is_Class_Wide_Type (Ent)
-        and then Is_Incomplete_Type (Etype (Ent))
-        and then From_Limited_With (Etype (Ent))
-        and then Present (Non_Limited_View (Etype (Ent)))
-      then
-         return Class_Wide_Type (Non_Limited_View (Etype (Ent)));
 
       --  In all other cases, return entity unchanged
 

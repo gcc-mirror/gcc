@@ -1,5 +1,40 @@
 2015-05-12  Robert Dewar  <dewar@adacore.com>
 
+	* exp_prag.adb (Expand_N_Pragma): Rewrite ignored pragma as
+	Null statements.
+	* namet.ads (Boolean3): Document this flag used for Ignore_Pragma.
+	* par-prag.adb (Prag): Implement Ignore_Pragma.
+	* sem_prag.adb: Implement Ignore_Pragma.
+	* snames.ads-tmpl: Add entries for pragma Ignore_Pragma.
+
+2015-05-12  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch10.adb (Build_Shadow_Entity): Link the class-wide shadow
+	entity with its corresponding real entity.
+	(Decorate_Type): Unconditionally build the class-wide shadow entity of
+	tagged types.
+	* einfo.ads, einfo.adb (Has_Non_Limited_View): New synthesized
+	attribute.
+	(Non_Limited_View): Moved from field 17 to field 19 be available
+	in class-wide entities.
+	* exp_attr.adb (Access_Cases): Code cleanup.
+	* exp_disp.adb (Expand_Interface_Actuals): Ditto.
+	* exp_util.adb (Non_Limited_Designated_Type): Ditto.
+	* freeze.adb (Build_Renamed_Bdody): Ditto.
+	* sem_aux.adb (Available_View): Ditto.
+	* sem_ch4.adb (Analyze_Selected_Component): Ditto.
+	(Try_One_Prefix_Interpretation): Ditto.
+	* sem_ch5.adb (Analyze_Assignment): Ditto.
+	* sem_ch6.adb (Detect_And_Exchange): Ditto.
+	* sem_ch8.adb (Find_Expanded_Name): Ditto.
+	* sem_disp.adb (Check_Controlling_Type): Ditto.
+	* sem_res.adb (Resolve_Type_Conversion): Ditto.
+	(Full_Designated_Type): Ditto.
+	* sem_type.adb (Covers): Ditto.
+	* sem_util.adb: Fix typo in comment.
+
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
 	* exp_unst.adb (Get_Real_Subp): New subprogram.
 	(Unnest_Subprogram): Use Get_Real_Subp.
 	(Uplev_Refs_For_One_Subp): Skip if no ARECnU entity.

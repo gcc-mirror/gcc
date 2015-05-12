@@ -424,9 +424,7 @@ package body Freeze is
          declare
             Ret_Type : constant Entity_Id := Etype (Result_Definition (Spec));
          begin
-            if Ekind (Ret_Type) = E_Incomplete_Type
-              and then Present (Non_Limited_View (Ret_Type))
-            then
+            if Has_Non_Limited_View (Ret_Type) then
                Set_Result_Definition (Spec,
                   New_Occurrence_Of (Non_Limited_View (Ret_Type), Loc));
             end if;

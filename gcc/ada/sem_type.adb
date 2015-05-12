@@ -1227,15 +1227,8 @@ package body Sem_Type is
          --  expression may have the limited view. If that one in turn is
          --  incomplete, get full view if available.
 
-         if Is_Incomplete_Type (T1) then
-            return Covers (Get_Full_View (Non_Limited_View (T1)), T2);
-
-         elsif Ekind (T1) = E_Class_Wide_Type then
-            return
-              Covers (Class_Wide_Type (Non_Limited_View (Etype (T1))), T2);
-         else
-            return False;
-         end if;
+         return Has_Non_Limited_View (T1)
+            and then Covers (Get_Full_View (Non_Limited_View (T1)), T2);
 
       elsif From_Limited_With (T2) then
 
@@ -1243,17 +1236,8 @@ package body Sem_Type is
          --  either type might have a limited view. Checks performed elsewhere
          --  verify that the context type is the nonlimited view.
 
-         if Is_Incomplete_Type (T2) then
-            return Covers (T1, Get_Full_View (Non_Limited_View (T2)));
-
-         elsif Ekind (T2) = E_Class_Wide_Type then
-            return
-              Present (Non_Limited_View (Etype (T2)))
-                and then
-                  Covers (T1, Class_Wide_Type (Non_Limited_View (Etype (T2))));
-         else
-            return False;
-         end if;
+         return Has_Non_Limited_View (T2)
+            and then Covers (T1, Get_Full_View (Non_Limited_View (T2)));
 
       --  Ada 2005 (AI-412): Coverage for regular incomplete subtypes
 

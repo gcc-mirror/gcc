@@ -5604,6 +5604,11 @@ package body Sem_Ch10 is
             Decorate_Type        (Shadow, Scop, Is_Tagged);
             Set_Non_Limited_View (Shadow, Ent);
 
+            if Is_Tagged then
+               Set_Non_Limited_View (Class_Wide_Type (Shadow),
+                 Class_Wide_Type (Ent));
+            end if;
+
             if Is_Incomplete_Or_Private_Type (Ent) then
                Set_Private_Dependents (Shadow, New_Elmt_List);
             end if;
@@ -5671,35 +5676,33 @@ package body Sem_Ch10 is
             Set_Is_Tagged_Type (Ent);
             Set_Direct_Primitive_Operations (Ent, New_Elmt_List);
 
-            if No (Class_Wide_Type (Ent)) then
-               CW_Typ :=
-                 New_External_Entity
-                   (E_Void, Scope (Ent), Sloc (Ent), Ent, 'C', 0, 'T');
+            CW_Typ :=
+              New_External_Entity
+                (E_Void, Scope (Ent), Sloc (Ent), Ent, 'C', 0, 'T');
 
-               Set_Class_Wide_Type (Ent, CW_Typ);
+            Set_Class_Wide_Type (Ent, CW_Typ);
 
-               --  Set parent to be the same as the parent of the tagged type.
-               --  We need a parent field set, and it is supposed to point to
-               --  the declaration of the type. The tagged type declaration
-               --  essentially declares two separate types, the tagged type
-               --  itself and the corresponding class-wide type, so it is
-               --  reasonable for the parent fields to point to the declaration
-               --  in both cases.
+            --  Set parent to be the same as the parent of the tagged type.
+            --  We need a parent field set, and it is supposed to point to
+            --  the declaration of the type. The tagged type declaration
+            --  essentially declares two separate types, the tagged type
+            --  itself and the corresponding class-wide type, so it is
+            --  reasonable for the parent fields to point to the declaration
+            --  in both cases.
 
-               Set_Parent (CW_Typ, Parent (Ent));
+            Set_Parent (CW_Typ, Parent (Ent));
 
-               Set_Ekind                     (CW_Typ, E_Class_Wide_Type);
-               Set_Etype                     (CW_Typ, Ent);
-               Set_Scope                     (CW_Typ, Scop);
-               Set_Is_Tagged_Type            (CW_Typ);
-               Set_Is_First_Subtype          (CW_Typ);
-               Init_Size_Align               (CW_Typ);
-               Set_Has_Unknown_Discriminants (CW_Typ);
-               Set_Class_Wide_Type           (CW_Typ, CW_Typ);
-               Set_Equivalent_Type           (CW_Typ, Empty);
-               Set_From_Limited_With         (CW_Typ, From_Limited_With (Ent));
-               Set_Materialize_Entity        (CW_Typ, Materialize);
-            end if;
+            Set_Ekind                     (CW_Typ, E_Class_Wide_Type);
+            Set_Etype                     (CW_Typ, Ent);
+            Set_Scope                     (CW_Typ, Scop);
+            Set_Is_Tagged_Type            (CW_Typ);
+            Set_Is_First_Subtype          (CW_Typ);
+            Init_Size_Align               (CW_Typ);
+            Set_Has_Unknown_Discriminants (CW_Typ);
+            Set_Class_Wide_Type           (CW_Typ, CW_Typ);
+            Set_Equivalent_Type           (CW_Typ, Empty);
+            Set_From_Limited_With         (CW_Typ, From_Limited_With (Ent));
+            Set_Materialize_Entity        (CW_Typ, Materialize);
          end if;
       end Decorate_Type;
 

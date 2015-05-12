@@ -6874,9 +6874,7 @@ package body Exp_Util is
    function Non_Limited_Designated_Type (T : Entity_Id) return Entity_Id is
       Desig : constant Entity_Id := Designated_Type (T);
    begin
-      if Ekind (Desig) = E_Incomplete_Type
-        and then Present (Non_Limited_View (Desig))
-      then
+      if Has_Non_Limited_View (Desig) then
          return Non_Limited_View (Desig);
       else
          return Desig;

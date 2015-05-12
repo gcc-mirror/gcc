@@ -135,7 +135,8 @@ package Namet is
 --      Restriction[_Warning]s pragmas for No_Use_Of_Entity. This avoids most
 --      unnecessary searches of the No_Use_Of_Entity table.
 
---      The Boolean3 field is not used
+--      The Boolean3 field is set for names of pragmas that are to be ignored
+--      because of the occurrence of a corresponding pragma Ignore_Pragma.
 
 --    In the binder, we have the following uses:
 

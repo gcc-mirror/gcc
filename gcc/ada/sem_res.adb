@@ -10744,19 +10744,11 @@ package body Sem_Res is
             --  view when available. If it is a class-wide type, recover the
             --  class-wide type of the nonlimited view.
 
-            if From_Limited_With (Opnd) then
-               if Ekind (Opnd) in Incomplete_Kind
-                 and then Present (Non_Limited_View (Opnd))
-               then
-                  Opnd := Non_Limited_View (Opnd);
-                  Set_Etype (Expression (N), Opnd);
-
-               elsif Is_Class_Wide_Type (Opnd)
-                 and then Present (Non_Limited_View (Etype (Opnd)))
-               then
-                  Opnd := Class_Wide_Type (Non_Limited_View (Etype (Opnd)));
-                  Set_Etype (Expression (N), Opnd);
-               end if;
+            if From_Limited_With (Opnd)
+              and then Has_Non_Limited_View (Opnd)
+            then
+               Opnd := Non_Limited_View (Opnd);
+               Set_Etype (Expression (N), Opnd);
             end if;
 
             if Is_Access_Type (Opnd) then
@@ -12342,9 +12334,8 @@ package body Sem_Res is
             begin
                --  Handle the limited view of a type
 
-               if Is_Incomplete_Type (Desig)
-                 and then From_Limited_With (Desig)
-                 and then Present (Non_Limited_View (Desig))
+               if From_Limited_With (Desig)
+                 and then Has_Non_Limited_View (Desig)
                then
                   return Available_View (Desig);
                else
