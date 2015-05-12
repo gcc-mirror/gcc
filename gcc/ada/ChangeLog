@@ -1,3 +1,26 @@
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb (Is_Variable): Allow X'Deref(Y) as a variable.
+
+2015-05-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Expanded_Name): Handle properly a fully
+	qualified name for an instance of a generic grand-child unit in
+	the body its parent.
+
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
+	* exp_unst.adb (Upref_Name): New subprogram.
+	(Unnest_Subprogram): Use Upref_Name.
+	(Unnest_Subprogram): Use new Deref attribute.
+	* exp_unst.ads: Doc updates.
+
+2015-05-12  Thomas Quinot  <quinot@adacore.com>
+
+	* adaint.c: Enable Large File Support in adaint so that __gnat_readdir
+	can access files on filesystems mounted from servers that use large
+	NFS file handles.
+
 2015-05-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (gnat_write_global_declarations): Use type_decl
