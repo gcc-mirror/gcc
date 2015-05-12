@@ -1,3 +1,23 @@
+2015-05-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm-protos.h (arm_sched_autopref): Delete.
+	(tune_params): Re-organize, use enums for flag values.
+	(FUSE_OPS): New macro.
+	* arm.c (ARM_PREFETCH_NOT_BENEFICIAL): Update.
+	(ARM_PREFETCH_BENEFICIAL): Likewise.
+	(ARM_FUSE_NOTHING, ARM_FUSE_MOVW_MOVT): Delete.
+	(arm_slowmul_tune, arm_fastmul_tune, arm_strongarm_tune)
+	(arm_xscale_tune, arm_9e_tune, arm_marvell_pj4_tune)
+	(arm_v6t2_tune, arm_cortex_tune, arm_cortex_a8_tune)
+	(arm_cortex_a7_tune, arm_cortex_a15_tune, arm_cortex_a53_tune)
+	(arm_cortex_a57_tune,  arm_xgene1_tune, arm_cortex_a5_tune)
+	(arm_cortex_a9_tune, arm_cortex_a12_tune, arm_v7m_tune)
+	(arm_cortex_m7_tune, arm_v6m_tune, arm_fa726te_tune): Use new
+	format.
+	(arm_option_override, thumb2_reorg, arm_print_tune_info)
+	(aarch_macro_fusion_pair_p): Update uses of current_tune.
+	* arm.h (LOGCIAL_OP_NON_SHORT_CIRCUIT): Likewise.
+
 2015-05-12 Sandra Loosemore <sandra@codesourcery.com>
 
 	* config/nios2/nios2.md (trap, ctrapsi4): Use "trap" instead of
