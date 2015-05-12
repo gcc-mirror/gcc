@@ -3747,8 +3747,8 @@ package body Sem_Ch6 is
         and then Full_Analysis
         and then not Inside_A_Generic
         and then Present (Spec_Id)
-        and then Nkind (Unit_Declaration_Node (Spec_Id)) =
-                   N_Subprogram_Declaration
+        and then
+          Nkind (Unit_Declaration_Node (Spec_Id)) = N_Subprogram_Declaration
         and then Can_Be_Inlined_In_GNATprove_Mode (Spec_Id, Body_Id)
         and then not Body_Has_Contract
       then
@@ -3933,8 +3933,7 @@ package body Sem_Ch6 is
             --  from precondition and postcondition pragmas).
 
             if No (Last_Entity (Body_Id)) then
-               Set_First_Entity
-                 (Body_Id, Next_Entity (Last_Real_Spec_Entity));
+               Set_First_Entity (Body_Id, Next_Entity (Last_Real_Spec_Entity));
 
             --  Body entities present (formals), so chain stuff past them
 

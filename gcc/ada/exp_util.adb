@@ -5067,7 +5067,7 @@ package body Exp_Util is
           and then not Is_Allocated (Obj_Id)
 
           --  If the transient object is a pointer, check that it is not
-          --  initialized by a function which returns a pointer or acts as a
+          --  initialized by a function that returns a pointer or acts as a
           --  renaming of another pointer.
 
           and then

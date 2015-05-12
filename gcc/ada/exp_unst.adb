@@ -730,6 +730,11 @@ package body Exp_Unst is
                   end if;
                end if;
 
+            --  If we have a body stub, visit the associated subunit
+
+            elsif Nkind (N) in N_Body_Stub then
+               Visit (Library_Unit (N));
+
             --  Skip generic declarations
 
             elsif Nkind (N) in N_Generic_Declaration then

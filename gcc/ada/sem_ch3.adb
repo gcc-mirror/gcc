@@ -1759,22 +1759,22 @@ package body Sem_Ch3 is
                   Set_Etype (New_Subp, Etype (Iface_Prim));
                end if;
 
-               --  Internal entities associated with interface types are
-               --  only registered in the list of primitives of the tagged
-               --  type. They are only used to fill the contents of the
-               --  secondary dispatch tables. Therefore they are not needed
-               --  in the homonym chains.
+               --  Internal entities associated with interface types are only
+               --  registered in the list of primitives of the tagged type.
+               --  They are only used to fill the contents of the secondary
+               --  dispatch tables. Therefore they are not needed in the
+               --  homonym chains.
 
                Remove_Homonym (New_Subp);
 
                --  Hidden entities associated with interfaces must have set
-               --  the Has_Delay_Freeze attribute to ensure that, in case of
-               --  locally defined tagged types (or compiling with static
+               --  the Has_Delay_Freeze attribute to ensure that, in case
+               --  of locally defined tagged types (or compiling with static
                --  dispatch tables generation disabled) the corresponding
-               --  entry of the secondary dispatch table is filled when
-               --  such an entity is frozen. This is an expansion activity
-               --  that must be suppressed for ASIS because it leads to
-               --  gigi elaboration issues in annotate mode.
+               --  entry of the secondary dispatch table is filled when such
+               --  an entity is frozen. This is an expansion activity that must
+               --  be suppressed for ASIS because it leads to gigi elaboration
+               --  issues in annotate mode.
 
                if not ASIS_Mode then
                   Set_Has_Delayed_Freeze (New_Subp);
@@ -2145,8 +2145,7 @@ package body Sem_Ch3 is
          begin
             Set_Etype (Id, Act_T);
 
-            --  Rewrite the component definition to use the constrained
-            --  subtype.
+            --  Rewrite component definition to use the constrained subtype
 
             Rewrite (Component_Definition (N),
               Make_Component_Definition (Loc,

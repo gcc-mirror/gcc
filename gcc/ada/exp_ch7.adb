@@ -6999,7 +6999,7 @@ package body Exp_Ch7 is
          --       end if;
          --       ...
 
-         --  When Deep_Finalize is invokes for field _parent, a value of False
+         --  When Deep_Finalize is invoked for field _parent, a value of False
          --  is provided for the flag:
 
          --    Deep_Finalize (Obj._parent, False);
