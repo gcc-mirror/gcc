@@ -281,7 +281,7 @@ package body Ada.Real_Time is
             Dist_To_Boundary : constant Time_Span :=
               TS - Time_Span (Closest_Boundary);
             --  Distance between TS and Closest_Boundary expressed in Time_Span
-            --  Both operands in the substraction have the same sign, hence
+            --  Both operands in the subtraction have the same sign, hence
             --  avoiding overflow.
 
          begin
