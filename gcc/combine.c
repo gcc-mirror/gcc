@@ -10879,21 +10879,11 @@ simplify_shift_const (rtx x, enum rtx_code code, machine_mode result_mode,
 }
 
 
-/* Like recog, but we receive the address of a pointer to a new pattern.
-   We try to match the rtx that the pointer points to.
-   If that fails, we may try to modify or replace the pattern,
-   storing the replacement into the same pointer object.
-
-   Modifications include deletion or addition of CLOBBERs.
-
-   PNOTES is a pointer to a location where any REG_UNUSED notes added for
-   the CLOBBERs are placed.
-
-   The value is the final insn code from the pattern ultimately matched,
-   or -1.  */
+/* A subroutine of recog_for_combine.  See there for arguments and
+   return value.  */
 
 static int
-recog_for_combine (rtx *pnewpat, rtx_insn *insn, rtx *pnotes)
+recog_for_combine_1 (rtx *pnewpat, rtx_insn *insn, rtx *pnotes)
 {
   rtx pat = *pnewpat;
   rtx pat_without_clobbers;
@@ -11037,6 +11027,110 @@ recog_for_combine (rtx *pnewpat, rtx_insn *insn, rtx *pnotes)
 
   *pnewpat = pat;
   *pnotes = notes;
+
+  return insn_code_number;
+}
+
+/* Change every ZERO_EXTRACT and ZERO_EXTEND of a SUBREG that can be
+   expressed as an AND and maybe an LSHIFTRT, to that formulation.
+   Return whether anything was so changed.  */
+
+static bool
+change_zero_ext (rtx *src)
+{
+  bool changed = false;
+
+  subrtx_ptr_iterator::array_type array;
+  FOR_EACH_SUBRTX_PTR (iter, array, src, NONCONST)
+    {
+      rtx x = **iter;
+      machine_mode mode = GET_MODE (x);
+      int size;
+
+      if (GET_CODE (x) == ZERO_EXTRACT
+	  && CONST_INT_P (XEXP (x, 1))
+	  && CONST_INT_P (XEXP (x, 2))
+	  && GET_MODE (XEXP (x, 0)) == mode)
+	{
+	  size = INTVAL (XEXP (x, 1));
+
+	  int start = INTVAL (XEXP (x, 2));
+	  if (BITS_BIG_ENDIAN)
+	    start = GET_MODE_PRECISION (mode) - size - start;
+
+	  x = gen_rtx_LSHIFTRT (mode, XEXP (x, 0), GEN_INT (start));
+	}
+      else if (GET_CODE (x) == ZERO_EXTEND
+	       && GET_CODE (XEXP (x, 0)) == SUBREG
+	       && GET_MODE (SUBREG_REG (XEXP (x, 0))) == mode
+	       && subreg_lowpart_p (XEXP (x, 0)))
+	{
+	  size = GET_MODE_PRECISION (GET_MODE (XEXP (x, 0)));
+	  x = SUBREG_REG (XEXP (x, 0));
+	}
+      else
+	continue;
+
+      unsigned HOST_WIDE_INT mask = 1;
+      mask <<= size;
+      mask--;
+
+      x = gen_rtx_AND (mode, x, GEN_INT (mask));
+
+      SUBST (**iter, x);
+      changed = true;
+    }
+
+  return changed;
+}
+
+/* Like recog, but we receive the address of a pointer to a new pattern.
+   We try to match the rtx that the pointer points to.
+   If that fails, we may try to modify or replace the pattern,
+   storing the replacement into the same pointer object.
+
+   Modifications include deletion or addition of CLOBBERs.  If the
+   instruction will still not match, we change ZERO_EXTEND and ZERO_EXTRACT
+   to the equivalent AND and perhaps LSHIFTRT patterns, and try with that
+   (and undo if that fails).
+
+   PNOTES is a pointer to a location where any REG_UNUSED notes added for
+   the CLOBBERs are placed.
+
+   The value is the final insn code from the pattern ultimately matched,
+   or -1.  */
+
+static int
+recog_for_combine (rtx *pnewpat, rtx_insn *insn, rtx *pnotes)
+{
+  rtx pat = PATTERN (insn);
+  int insn_code_number = recog_for_combine_1 (pnewpat, insn, pnotes);
+  if (insn_code_number >= 0 || check_asm_operands (pat))
+    return insn_code_number;
+
+  void *marker = get_undo_marker ();
+  bool changed = false;
+
+  if (GET_CODE (pat) == SET)
+    changed = change_zero_ext (&SET_SRC (pat));
+  else if (GET_CODE (pat) == PARALLEL)
+    {
+      int i;
+      for (i = 0; i < XVECLEN (pat, 0); i++)
+	{
+	  rtx set = XVECEXP (pat, 0, i);
+	  if (GET_CODE (set) == SET)
+	    changed |= change_zero_ext (&SET_SRC (set));
+	}
+    }
+
+  if (changed)
+    {
+      insn_code_number = recog_for_combine_1 (pnewpat, insn, pnotes);
+
+      if (insn_code_number < 0)
+	undo_to_marker (marker);
+    }
 
   return insn_code_number;
 }

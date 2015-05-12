@@ -1,5 +1,14 @@
 2015-05-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* combine.c (recog_for_combine_1): New function, factored out
+	from recog_for_combine.
+	(change_zero_ext): New function.
+	(recog_for_combine): If recog fails, try again with the pattern
+	modified by change_zero_ext; if that still fails, restore the
+	pattern.
+
+2015-05-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* combine.c (get_undo_marker): New function.
 	(undo_to_marker): New function, largely factored out from ...
 	(undo_all): ... this.  Adjust.
