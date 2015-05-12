@@ -1,5 +1,10 @@
 2015-05-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (rs6000_adjust_atomic_subword): Use
+	gen_ashlsi3 and gen_andsi3 instead of gen_rlwinm.
+
+2015-05-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (extzv): FAIL for SImode.
 	(extzvsi_internal, *extzvsi_internal1, *extzvsi_internal2,
 	*rotlsi3_internal7le, *rotlsi3_internal7be, *rotlsi3_internal8le,
