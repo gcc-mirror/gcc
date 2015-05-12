@@ -1042,7 +1042,7 @@ expand_ifn_va_arg_1 (function *fun)
     for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
       {
 	gimple stmt = gsi_stmt (i);
-	tree ap, expr, lhs, type;
+	tree ap, expr, lhs, type, do_deref;
 	gimple_seq pre = NULL, post = NULL;
 
 	if (!gimple_call_ifn_va_arg_p (stmt))
@@ -1052,24 +1052,27 @@ expand_ifn_va_arg_1 (function *fun)
 
 	type = TREE_TYPE (TREE_TYPE (gimple_call_arg (stmt, 1)));
 	ap = gimple_call_arg (stmt, 0);
-	ap = build_fold_indirect_ref (ap);
+	do_deref = gimple_call_arg (stmt, 2);
+
+	if (do_deref == integer_one_node)
+	  ap = build_fold_indirect_ref (ap);
 
 	push_gimplify_context (false);
 
-	expr = gimplify_va_arg_internal (ap, type, gimple_location (stmt),
-					 &pre, &post);
+	expr = gimplify_va_arg_internal (ap, type, &pre, &post);
 
 	lhs = gimple_call_lhs (stmt);
 	if (lhs != NULL_TREE)
 	  {
+	    unsigned int nargs = gimple_call_num_args (stmt);
 	    gcc_assert (useless_type_conversion_p (TREE_TYPE (lhs), type));
 
-	    if (gimple_call_num_args (stmt) == 3)
+	    if (nargs == 4)
 	      {
 		/* We've transported the size of with WITH_SIZE_EXPR here as
-		   the 3rd argument of the internal fn call.  Now reinstate
+		   the last argument of the internal fn call.  Now reinstate
 		   it.  */
-		tree size = gimple_call_arg (stmt, 2);
+		tree size = gimple_call_arg (stmt, nargs - 1);
 		expr = build2 (WITH_SIZE_EXPR, TREE_TYPE (expr), expr, size);
 	      }
 
