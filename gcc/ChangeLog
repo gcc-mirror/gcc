@@ -1,3 +1,9 @@
+2015-05-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/65955
+	* config/arm/arm.md (movcond_addsi): Check that operands[2] is a
+	REG before taking its REGNO.
+
 2015-05-12  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* combine.c i(set_nonzero_bits_and_sign_copies): Split code updating
