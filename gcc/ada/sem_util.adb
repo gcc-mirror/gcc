@@ -4941,7 +4941,7 @@ package body Sem_Util is
 
       --  Both names are selected_components, their prefixes are known to
       --  denote the same object, and their selector_names denote the same
-      --  component (RM 6.4.1(6.6/3)
+      --  component (RM 6.4.1(6.6/3))
 
       elsif Nkind (Obj1) = N_Selected_Component then
          return Denotes_Same_Object (Prefix (Obj1), Prefix (Obj2))

@@ -401,6 +401,7 @@ package Snames is
    --  Fast_Math.
 
    Name_Favor_Top_Level                : constant Name_Id := N + $; -- GNAT
+   Name_Ignore_Pragma                  : constant Name_Id := N + $; -- GNAT
    Name_Implicit_Packing               : constant Name_Id := N + $; -- GNAT
    Name_Initialize_Scalars             : constant Name_Id := N + $; -- GNAT
    Name_Interrupt_State                : constant Name_Id := N + $; -- GNAT
@@ -1749,6 +1750,7 @@ package Snames is
       Pragma_Extensions_Allowed,
       Pragma_External_Name_Casing,
       Pragma_Favor_Top_Level,
+      Pragma_Ignore_Pragma,
       Pragma_Implicit_Packing,
       Pragma_Initialize_Scalars,
       Pragma_Interrupt_State,

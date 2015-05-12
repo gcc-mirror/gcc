@@ -2923,9 +2923,8 @@ package body Sem_Ch6 is
             Typ : constant Entity_Id := Etype (Id);
 
          begin
-            if Ekind (Typ) = E_Incomplete_Type
-              and then From_Limited_With (Typ)
-              and then Present (Non_Limited_View (Typ))
+            if From_Limited_With (Typ)
+              and then Has_Non_Limited_View (Typ)
             then
                Set_Etype (Id, Non_Limited_View (Typ));
             end if;

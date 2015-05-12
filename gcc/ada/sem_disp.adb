@@ -336,7 +336,7 @@ package body Sem_Disp is
          --  Ada 2005 (AI-50217)
 
          elsif From_Limited_With (Designated_Type (T))
-           and then Present (Non_Limited_View (Designated_Type (T)))
+           and then Has_Non_Limited_View (Designated_Type (T))
            and then Scope (Designated_Type (T)) = Scope (Subp)
          then
             if Is_First_Subtype (Non_Limited_View (Designated_Type (T))) then

@@ -843,6 +843,15 @@ package body Exp_Prag is
       Pname : constant Name_Id := Pragma_Name (N);
 
    begin
+      --  Rewrite pragma ignored by Ignore_Pragma to null statement, so that/
+      --  back end or the expander here does not get over-enthusiastic and
+      --  start processing such a pragma!
+
+      if Get_Name_Table_Boolean3 (Pname) then
+         Rewrite (N, Make_Null_Statement (Sloc (N)));
+         return;
+      end if;
+
       --  Note: we may have a pragma whose Pragma_Identifier field is not a
       --  recognized pragma, and we must ignore it at this stage.
 

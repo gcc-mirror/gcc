@@ -9373,6 +9373,12 @@ package body Sem_Prag is
          return;
       end if;
 
+      --  Ignore pragma if Ignore_Pragma applies
+
+      if Get_Name_Table_Boolean3 (Pname) then
+         return;
+      end if;
+
       --  Here to start processing for recognized pragma
 
       Prag_Id := Get_Pragma_Id (Pname);
@@ -14238,6 +14244,17 @@ package body Sem_Prag is
                end if;
             end;
          end Ident;
+
+         -------------------
+         -- Ignore_Pragma --
+         -------------------
+
+         --  pragma Ignore_Pragma (pragma_IDENTIFIER);
+
+         --  Entirely handled in the parser, nothing to do here
+
+         when Pragma_Ignore_Pragma =>
+            null;
 
          ----------------------------
          -- Implementation_Defined --
@@ -25690,6 +25707,7 @@ package body Sem_Prag is
       Pragma_Ghost                          =>  0,
       Pragma_Global                         => -1,
       Pragma_Ident                          => -1,
+      Pragma_Ignore_Pragma                  =>  0,
       Pragma_Implementation_Defined         => -1,
       Pragma_Implemented                    => -1,
       Pragma_Implicit_Packing               =>  0,

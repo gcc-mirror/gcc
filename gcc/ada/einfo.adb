@@ -146,7 +146,6 @@ package body Einfo is
    --    First_Literal                   Node17
    --    Master_Id                       Node17
    --    Modulus                         Uint17
-   --    Non_Limited_View                Node17
    --    Prival                          Node17
 
    --    Alias                           Node18
@@ -168,6 +167,7 @@ package body Einfo is
    --    Default_Aspect_Value            Node19
    --    Entry_Bodies_Array              Node19
    --    Extra_Accessibility_Of_Result   Node19
+   --    Non_Limited_View                Node19
    --    Parent_Subtype                  Node19
    --    Size_Check_Code                 Node19
    --    Spec_Entity                     Node19
@@ -2683,8 +2683,10 @@ package body Einfo is
    function Non_Limited_View (Id : E) return E is
    begin
       pragma Assert
-        (Ekind (Id) in Incomplete_Kind or else Ekind (Id) = E_Abstract_State);
-      return Node17 (Id);
+        (Ekind (Id) in Incomplete_Kind
+           or else Ekind (Id) in Class_Wide_Kind
+           or else Ekind (Id) = E_Abstract_State);
+      return Node19 (Id);
    end Non_Limited_View;
 
    function Nonzero_Is_True (Id : E) return B is
@@ -5629,8 +5631,10 @@ package body Einfo is
    procedure Set_Non_Limited_View (Id : E; V : E) is
    begin
       pragma Assert
-        (Ekind (Id) in Incomplete_Kind or else Ekind (Id) = E_Abstract_State);
-      Set_Node17 (Id, V);
+        (Ekind (Id) in Incomplete_Kind
+           or else Ekind (Id) = E_Abstract_State
+           or else Ekind (Id) = E_Class_Wide_Type);
+      Set_Node19 (Id, V);
    end Set_Non_Limited_View;
 
    procedure Set_Nonzero_Is_True (Id : E; V : B := True) is
@@ -7104,6 +7108,18 @@ package body Einfo is
 
       return False;
    end Has_Interrupt_Handler;
+
+   --------------------------
+   -- Has_Non_Limited_View --
+   --------------------------
+
+   function Has_Non_Limited_View (Id : E) return B is
+   begin
+      return (Ekind (Id) in Incomplete_Kind
+          or else Ekind (Id) in Class_Wide_Kind
+          or else Ekind (Id) = E_Abstract_State)
+        and then Present (Non_Limited_View (Id));
+   end Has_Non_Limited_View;
 
    -----------------------------
    -- Has_Non_Null_Refinement --
@@ -9390,10 +9406,6 @@ package body Einfo is
          when Modular_Integer_Kind                         =>
             Write_Str ("Modulus");
 
-         when E_Abstract_State                             |
-              E_Incomplete_Type                            =>
-            Write_Str ("Non_Limited_View");
-
          when E_Incomplete_Subtype                         =>
             if From_Limited_With (Id) then
                Write_Str ("Non_Limited_View");
@@ -9488,6 +9500,11 @@ package body Einfo is
 
          when Scalar_Kind                                  =>
             Write_Str ("Default_Aspect_Value");
+
+         when E_Abstract_State                             |
+              E_Class_Wide_Type                            |
+              E_Incomplete_Type                            =>
+            Write_Str ("Non_Limited_View");
 
          when E_Array_Type                                 =>
             Write_Str ("Default_Component_Value");

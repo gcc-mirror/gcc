@@ -1605,9 +1605,7 @@ package body Exp_Disp is
                   --  a duplicate declaration whose designated type is the
                   --  non-limited view.
 
-                  if Ekind (Actual_DDT) = E_Incomplete_Type
-                    and then Present (Non_Limited_View (Actual_DDT))
-                  then
+                  if Has_Non_Limited_View (Actual_DDT) then
                      Anon := New_Copy (Actual_Typ);
 
                      if Is_Itype (Anon) then
@@ -1616,27 +1614,6 @@ package body Exp_Disp is
 
                      Set_Directly_Designated_Type (Anon,
                        Non_Limited_View (Actual_DDT));
-                     Set_Etype (Actual_Dup, Anon);
-
-                  elsif Is_Class_Wide_Type (Actual_DDT)
-                    and then Ekind (Etype (Actual_DDT)) = E_Incomplete_Type
-                    and then Present (Non_Limited_View (Etype (Actual_DDT)))
-                  then
-                     Anon := New_Copy (Actual_Typ);
-
-                     if Is_Itype (Anon) then
-                        Set_Scope (Anon, Current_Scope);
-                     end if;
-
-                     Set_Directly_Designated_Type (Anon,
-                       New_Copy (Actual_DDT));
-                     Set_Class_Wide_Type (Directly_Designated_Type (Anon),
-                       New_Copy (Class_Wide_Type (Actual_DDT)));
-                     Set_Etype (Directly_Designated_Type (Anon),
-                       Non_Limited_View (Etype (Actual_DDT)));
-                     Set_Etype (
-                       Class_Wide_Type (Directly_Designated_Type (Anon)),
-                       Non_Limited_View (Etype (Actual_DDT)));
                      Set_Etype (Actual_Dup, Anon);
                   end if;
                end if;

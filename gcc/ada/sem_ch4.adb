@@ -4116,22 +4116,10 @@ package body Sem_Ch4 is
       --  If the non-limited view is itself an incomplete type, get the
       --  full view if available.
 
-      if Is_Incomplete_Type (Prefix_Type)
-        and then From_Limited_With (Prefix_Type)
-        and then Present (Non_Limited_View (Prefix_Type))
+      if From_Limited_With (Prefix_Type)
+        and then Has_Non_Limited_View (Prefix_Type)
       then
          Prefix_Type := Get_Full_View (Non_Limited_View (Prefix_Type));
-
-         if Nkind (N) = N_Explicit_Dereference then
-            Set_Etype (Prefix (N), Prefix_Type);
-         end if;
-
-      elsif Ekind (Prefix_Type) = E_Class_Wide_Type
-        and then From_Limited_With (Prefix_Type)
-        and then Present (Non_Limited_View (Etype (Prefix_Type)))
-      then
-         Prefix_Type :=
-           Class_Wide_Type (Non_Limited_View (Etype (Prefix_Type)));
 
          if Nkind (N) = N_Explicit_Dereference then
             Set_Etype (Prefix (N), Prefix_Type);
@@ -7976,6 +7964,7 @@ package body Sem_Ch4 is
 
          if Ekind (Obj_Type) = E_Incomplete_Type
            and then From_Limited_With (Obj_Type)
+           and then Has_Non_Limited_View (Obj_Type)
          then
             Obj_Type := Get_Full_View (Non_Limited_View (Obj_Type));
          end if;

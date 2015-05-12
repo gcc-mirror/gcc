@@ -290,6 +290,12 @@ begin
       return Pragma_Node;
    end if;
 
+   --  Ignore pragma previously flagged by Ignore_Pragma
+
+   if Get_Name_Table_Boolean3 (Prag_Name) then
+      return Pragma_Node;
+   end if;
+
    --  Count number of arguments. This loop also checks if any of the arguments
    --  are Error, indicating a syntax error as they were parsed. If so, we
    --  simply return, because we get into trouble with cascaded errors if we
@@ -424,6 +430,28 @@ begin
             Extensions_Allowed := False;
             Ada_Version := Ada_Version_Explicit;
          end if;
+
+      -------------------
+      -- Ignore_Pragma --
+      -------------------
+
+      --  Processing for this pragma must be done at parse time, since we want
+      --  be able to ignore pragmas that are otherwise processed at parse time.
+
+      when Pragma_Ignore_Pragma => Ignore_Pragma : declare
+         A : Node_Id;
+
+      begin
+         Check_Arg_Count (1);
+         Check_No_Identifier (Arg1);
+         A := Expression (Arg1);
+
+         if Nkind (A) /= N_Identifier then
+            Error_Msg ("incorrect argument for pragma %", Sloc (A));
+         else
+            Set_Name_Table_Boolean3 (Chars (A), True);
+         end if;
+      end Ignore_Pragma;
 
       ----------------
       -- List (2.8) --
