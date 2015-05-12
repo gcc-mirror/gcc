@@ -1,3 +1,9 @@
+2015-05-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* combine.c (get_undo_marker): New function.
+	(undo_to_marker): New function, largely factored out from ...
+	(undo_all): ... this.  Adjust.
+
 2015-05-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66101
