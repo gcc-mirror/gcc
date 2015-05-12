@@ -1,3 +1,50 @@
+2015-05-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* timevar.c (timevar_enable): Delete in favor of...
+	(g_timer): New global.
+	(struct timevar_def): Move to timevar.h inside class timer.
+	(struct timevar_stack_def): Likewise.
+	(timevars): Delete global in favor of field "m_timevars" within
+	class timer in timevar.h
+	(stack): Likewise, in favor of field "m_stack".
+	(unused_stack_instances): Likewise, in favor of field
+	"m_unused_stack_instances".
+	(start_time): Likewise, in favor of field "m_start_time".
+	(get_time): Eliminate check for timevar_enable.
+	(timer::timer): New function, built from part of timevar_init.
+	(timevar_init): Rewrite idempotency test from using
+	"timevar_enable" bool to using dynamic allocation of "g_timer".
+	Move rest of implementation into timer's constructor.
+	(timevar_push_1): Rename to...
+	(timer::push): ...this, adding "m_" prefixes to variables that
+	are now fields of timer.
+	(timevar_pop_1): Likewise, rename to...
+	(timer::pop): ...this, and add "m_" prefixes.
+	(timevar_start): Replace test for "timevar_enable" with one for
+	"g_timer", and move bulk of implementation to...
+	(timer::start): ...here, adding "m_" prefixes.
+	(timevar_stop): Likewise, from here...
+	(timer::stop): ...to here.
+	(timevar_cond_start): Likewise, from here...
+	(timer::cond_start): ...to here.
+	(timevar_cond_stop): Likewise, from here...
+	(timer::cond_stop): ...to here.
+	(validate_phases): Rename to...
+	(timer::validate_phases): ...this, and add "m_" prefixes.  Make
+	locals "total" and "tv" const.
+	(timevar_print): Rename to...
+	(timer::print): ...this, and add "m_" prefixes.  Make locals
+	"total" and "tv" const.  Eliminate test for timevar_enable.
+	* timevar.h (timevar_enable): Eliminate.
+	(g_timer): New declaration.
+	(timevar_push_1): Eliminate.
+	(timevar_pop_1): Eliminate.
+	(timevar_print): Eliminate.
+	(class timer): New class.
+	(timevar_push): Rewrite to use g_timer.
+	(timevar_pop): Likewise.
+	* toplev.c (toplev::~toplev): Likewise.
+
 2015-05-12  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm-protos.h (arm_sched_autopref): Delete.

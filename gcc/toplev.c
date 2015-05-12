@@ -2095,8 +2095,11 @@ toplev::toplev (bool use_TV_TOTAL, bool init_signals)
 
 toplev::~toplev ()
 {
-  timevar_stop (TV_TOTAL);
-  timevar_print (stderr);
+  if (g_timer)
+    {
+      g_timer->stop (TV_TOTAL);
+      g_timer->print (stderr);
+    }
 }
 
 void
