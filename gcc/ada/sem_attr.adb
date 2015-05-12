@@ -10675,13 +10675,31 @@ package body Sem_Attr is
                      Subp_Body :=
                        Unit_Declaration_Node (Corresponding_Body (Subp_Decl));
 
-                     --  Analyze the body of the expression function to freeze
-                     --  the expression. This takes care of the case where the
-                     --  'Access is part of dispatch table initialization and
-                     --  the generated body of the expression function has not
-                     --  been analyzed yet.
+                     --  The body has already been analyzed when the expression
+                     --  function acts as a completion.
 
-                     if not Analyzed (Subp_Body) then
+                     if Analyzed (Subp_Body) then
+                        null;
+
+                     --  Attribute 'Access may appear within the generated body
+                     --  of the expression function subject to the attribute:
+
+                     --    function F is (... F'Access ...);
+
+                     --  If the expression function is on the scope stack, then
+                     --  the body is currently being analyzed. Do not reanalyze
+                     --  it because this will lead to infinite recursion.
+
+                     elsif In_Open_Scopes (Subp_Id) then
+                        null;
+
+                      --  Analyze the body of the expression function to freeze
+                      --  the expression. This takes care of the case where the
+                      --  'Access is part of dispatch table initialization and
+                      --  the generated body of the expression function has not
+                      --  been analyzed yet.
+
+                     else
                         Analyze (Subp_Body);
                      end if;
                   end if;

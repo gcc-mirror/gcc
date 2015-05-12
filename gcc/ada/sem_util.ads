@@ -397,18 +397,23 @@ package Sem_Util is
    --    Depends
    --    Global
 
-   function Copy_Parameter_List (Subp_Id : Entity_Id) return List_Id;
-   --  Utility to create a parameter profile for a new subprogram spec, when
-   --  the subprogram has a body that acts as spec. This is done for some cases
-   --  of inlining, and for private protected ops. Also used to create bodies
-   --  for stubbed subprograms.
-
    function Copy_Component_List
      (R_Typ : Entity_Id;
       Loc   : Source_Ptr) return List_Id;
    --  Copy components from record type R_Typ that come from source. Used to
    --  create a new compatible record type. Loc is the source location assigned
    --  to the created nodes.
+
+   function Copy_Parameter_List (Subp_Id : Entity_Id) return List_Id;
+   --  Utility to create a parameter profile for a new subprogram spec, when
+   --  the subprogram has a body that acts as spec. This is done for some cases
+   --  of inlining, and for private protected ops. Also used to create bodies
+   --  for stubbed subprograms.
+
+   function Copy_Subprogram_Spec (Spec : Node_Id) return Node_Id;
+   --  Replicate a function or a procedure specification denoted by Spec. The
+   --  resulting tree is an exact duplicate of the original tree. New entities
+   --  are created for the unit name and the formal parameters.
 
    function Corresponding_Generic_Type (T : Entity_Id) return Entity_Id;
    --  If a type is a generic actual type, return the corresponding formal in
@@ -1185,6 +1190,10 @@ package Sem_Util is
    --  do not check the tampering bit (e.g. C.Include (X, C (Y)). Exp is an
    --  explicit dereference. The transformation applies when it has the form
    --  F (X).Discr.all.
+
+   function Is_Contract_Annotation (Item : Node_Id) return Boolean;
+   --  Determine whether aspect specification or pragma Item is a contract
+   --  annotation.
 
    function Is_Controlling_Limited_Procedure
      (Proc_Nam : Entity_Id) return Boolean;

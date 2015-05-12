@@ -1772,9 +1772,13 @@ package body Sem_Ch3 is
                --  locally defined tagged types (or compiling with static
                --  dispatch tables generation disabled) the corresponding
                --  entry of the secondary dispatch table is filled when
-               --  such an entity is frozen.
+               --  such an entity is frozen. This is an expansion activity
+               --  that must be suppressed for ASIS because it leads to
+               --  gigi elaboration issues in annotate mode.
 
-               Set_Has_Delayed_Freeze (New_Subp);
+               if not ASIS_Mode then
+                  Set_Has_Delayed_Freeze (New_Subp);
+               end if;
             end if;
 
             <<Continue>>
@@ -1794,7 +1798,7 @@ package body Sem_Ch3 is
    -----------------------------------
 
    procedure Analyze_Component_Declaration (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
+      Loc : constant Source_Ptr := Sloc (Component_Definition (N));
       Id  : constant Entity_Id  := Defining_Identifier (N);
       E   : constant Node_Id    := Expression (N);
       Typ : constant Node_Id    :=
@@ -2137,9 +2141,14 @@ package body Sem_Ch3 is
       then
          declare
             Act_T : constant Entity_Id := Build_Default_Subtype (T, N);
+
          begin
             Set_Etype (Id, Act_T);
-            Set_Component_Definition (N,
+
+            --  Rewrite the component definition to use the constrained
+            --  subtype.
+
+            Rewrite (Component_Definition (N),
               Make_Component_Definition (Loc,
                 Subtype_Indication => New_Occurrence_Of (Act_T, Loc)));
          end;

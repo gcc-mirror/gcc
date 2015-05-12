@@ -1,5 +1,33 @@
 2015-05-12  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch3.adb (Add_Internal_Interface_Entities): Do no generate
+	freeze nodes for these in ASIS mode, because they lead to
+	elaoration order issues in gigi.
+
+2015-05-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Code
+	cleanup. Use Copy_Subprogram_Spec to create a proper spec.
+	(Analyze_Subprogram_Body_Helper): Code cleanup. Do not
+	prepare a stand alone body for inlining in GNATprove mode
+	when inside a generic.	(Body_Has_Contract): Reimplemented.
+	(Build_Subprogram_Declaration): New routine.
+	* sem_ch10.adb (Analyze_Compilation_Unit): Capture global
+	references within generic bodies by loading them.
+	* sem_util.adb (Copy_Parameter_List): Code cleanup.
+	(Copy_Subprogram_Spec): New routine.
+	(Is_Contract_Annotation): New routine.
+	* sem_util.ads (Copy_Subprogram_Spec): New routine.
+	(Is_Contract_Annotation): New routine.
+
+2015-05-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute): Do not analyze the generated
+	body of an expression function when the prefix of attribute
+	'Access is the body.
+
+2015-05-12  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch3.adb (Build_Derived_Enumeration_Type): The anonymous base
 	created for a derived enumeration type is not a first subtype,
 	even though it is defined through a full type declaration.

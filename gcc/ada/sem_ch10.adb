@@ -1020,16 +1020,18 @@ package body Sem_Ch10 is
 
       Remove_Context (N);
 
-      --  If this is the main unit and we are generating code, we must check
-      --  that all generic units in the context have a body if they need it,
-      --  even if they have not been instantiated. In the absence of .ali files
-      --  for generic units, we must force the load of the body, just to
-      --  produce the proper error if the body is absent. We skip this
-      --  verification if the main unit itself is generic.
+      --  When generating code for a non-generic main unit, check that withed
+      --  generic units have a body if they need it, even if the units have not
+      --  been instantiated. Force the load of the bodies to produce the proper
+      --  error if the body is absent. The same applies to GNATprove mode, with
+      --  the added benefit of capturing global references within the generic.
+      --  This in turn allows for proper inlining of subprogram bodies without
+      --  a previous declaration.
 
       if Get_Cunit_Unit_Number (N) = Main_Unit
-        and then Operating_Mode = Generate_Code
-        and then Expander_Active
+        and then ((Operating_Mode = Generate_Code and then Expander_Active)
+                     or else
+                  (Operating_Mode = Check_Semantics and then GNATprove_Mode))
       then
          --  Check whether the source for the body of the unit must be included
          --  in a standalone library.
@@ -1066,7 +1068,7 @@ package body Sem_Ch10 is
                then
                   Nam := Entity (Name (Item));
 
-                  --  Compile generic subprogram, unless it is intrinsic or
+                  --  Compile the generic subprogram, unless it is intrinsic or
                   --  imported so no body is required, or generic package body
                   --  if the package spec requires a body.
 
@@ -1080,20 +1082,21 @@ package body Sem_Ch10 is
 
                      if Present (Renamed_Object (Nam)) then
                         Un :=
-                           Load_Unit
-                             (Load_Name  => Get_Body_Name
-                                              (Get_Unit_Name
-                                                (Unit_Declaration_Node
-                                                  (Renamed_Object (Nam)))),
-                              Required   => False,
-                              Subunit    => False,
-                              Error_Node => N,
-                              Renamings  => True);
+                          Load_Unit
+                            (Load_Name  =>
+                               Get_Body_Name
+                                 (Get_Unit_Name
+                                   (Unit_Declaration_Node
+                                     (Renamed_Object (Nam)))),
+                             Required   => False,
+                             Subunit    => False,
+                             Error_Node => N,
+                             Renamings  => True);
                      else
                         Un :=
                           Load_Unit
-                            (Load_Name  => Get_Body_Name
-                                             (Get_Unit_Name (Item)),
+                            (Load_Name  =>
+                               Get_Body_Name (Get_Unit_Name (Item)),
                              Required   => False,
                              Subunit    => False,
                              Error_Node => N,
