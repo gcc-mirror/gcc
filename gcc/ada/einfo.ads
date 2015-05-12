@@ -1520,10 +1520,10 @@ package Einfo is
 --       value is set, but it may be overridden by an aspect declaration on
 --       type type derivation.
 
---    Has_Default_Init_Cond (Flag3)
---       Defined in type and subtype entities. Set if pragma Default_Initial_
---       Condition applies to the type or subtype. This flag must be mutually
---       exclusive with Has_Inherited_Default_Init_Cond.
+--    Has_Default_Init_Cond (Flag3) [base type only]
+--       Defined in all type entities. Set if pragma Default_Initial_Condition
+--       applies to a private type and by extension to its full view. This flag
+--       is mutually exclusive with flag Has_Inherited_Default_Init_Cond.
 
 --    Has_Delayed_Aspects (Flag200)
 --      Defined in all entities. Set if the Rep_Item chain for the entity has
@@ -1538,7 +1538,7 @@ package Einfo is
 --       separate section ("Delayed Freezing and Elaboration") for details.
 
 --    Has_Delayed_Rep_Aspects (Flag261)
---       Defined in all type and subtypes. This flag is set if there is at
+--       Defined in all types and subtypes. This flag is set if there is at
 --       least one aspect for a representation characteristic that has to be
 --       delayed and is one of the characteristics that may be inherited by
 --       types derived from this type if not overridden. If this flag is set,
@@ -1661,10 +1661,10 @@ package Einfo is
 --       type which has inheritable invariants, and in this case the flag will
 --       also be set in the private type.
 
---    Has_Inherited_Default_Init_Cond (Flag133)
---       Defined in type and subtype entities. Set if a derived type inherits
---       pragma Default_Initial_Condition from its parent type. This flag must
---       be mutually exclusive with Has_Default_Init_Cond.
+--    Has_Inherited_Default_Init_Cond (Flag133) [base type only]
+--       Defined in all type entities. Set when a derived type inherits pragma
+--       Default_Initial_Condition from its parent type. This flag is mutually
+--       exclusive with flag Has_Default_Init_Cond.
 
 --    Has_Initial_Value (Flag219)
 --       Defined in entities for variables and out parameters. Set if there
@@ -5386,13 +5386,13 @@ package Einfo is
    --    Has_Constrained_Partial_View        (Flag187)
    --    Has_Controlled_Component            (Flag43)   (base type only)
    --    Has_Default_Aspect                  (Flag39)   (base type only)
-   --    Has_Default_Init_Cond               (Flag3)
+   --    Has_Default_Init_Cond               (Flag3)    (base type only)
    --    Has_Delayed_Rep_Aspects             (Flag261)
    --    Has_Discriminants                   (Flag5)
    --    Has_Dynamic_Predicate_Aspect        (Flag258)
    --    Has_Independent_Components          (Flag34)   (base type only)
    --    Has_Inheritable_Invariants          (Flag248)
-   --    Has_Inherited_Default_Init_Cond     (Flag133)
+   --    Has_Inherited_Default_Init_Cond     (Flag133)  (base type only)
    --    Has_Invariants                      (Flag232)
    --    Has_Non_Standard_Rep                (Flag75)   (base type only)
    --    Has_Object_Size_Clause              (Flag172)

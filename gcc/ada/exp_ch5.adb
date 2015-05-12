@@ -3668,6 +3668,7 @@ package body Exp_Ch5 is
       Loc        : constant Source_Ptr := Sloc (N);
       Stats      : constant List_Id    := Statements (N);
       Core_Loop  : Node_Id;
+      Dim1       : Int;
       Ind_Comp   : Node_Id;
       Iterator   : Entity_Id;
 
@@ -3684,6 +3685,8 @@ package body Exp_Ch5 is
 
          --  Generate:
          --    Element : Component_Type renames Array (Iterator);
+         --    Iterator is the index value, or a list of index values
+         --    in the case of a multidimensional array.
 
          Ind_Comp :=
            Make_Indexed_Component (Loc,
@@ -3720,6 +3723,16 @@ package body Exp_Ch5 is
       --       <original loop statements>
       --    end loop;
 
+      --  If this is an iteration over a multidimensional array, the
+      --  innermost loop is over the last dimension in Ada, and over
+      --  the first dimension in Fortran.
+
+      if Convention (Array_Typ) = Convention_Fortran then
+         Dim1 := 1;
+      else
+         Dim1 := Array_Dim;
+      end if;
+
       Core_Loop :=
         Make_Loop_Statement (Loc,
           Iteration_Scheme =>
@@ -3732,15 +3745,23 @@ package body Exp_Ch5 is
                       Prefix         => Relocate_Node (Array_Node),
                       Attribute_Name => Name_Range,
                       Expressions    => New_List (
-                        Make_Integer_Literal (Loc, Array_Dim))),
+                        Make_Integer_Literal (Loc, Dim1))),
                   Reverse_Present             => Reverse_Present (I_Spec))),
            Statements      => Stats,
            End_Label       => Empty);
 
-      --  Processing for multidimensional array
+      --  Processing for multidimensional array. The body of each loop is
+      --  a loop over a previous dimension, going in decreasing order in Ada
+      --  and in increasing order in Fortran.
 
       if Array_Dim > 1 then
          for Dim in 1 .. Array_Dim - 1 loop
+            if Convention (Array_Typ) = Convention_Fortran then
+               Dim1 := Dim + 1;
+            else
+               Dim1 := Array_Dim - Dim;
+            end if;
+
             Iterator := Make_Temporary (Loc, 'C');
 
             --  Generate the dimension loops starting from the innermost one
@@ -3761,16 +3782,23 @@ package body Exp_Ch5 is
                             Prefix         => Relocate_Node (Array_Node),
                             Attribute_Name => Name_Range,
                             Expressions    => New_List (
-                              Make_Integer_Literal (Loc, Array_Dim - Dim))),
+                              Make_Integer_Literal (Loc, Dim1))),
                     Reverse_Present              => Reverse_Present (I_Spec))),
                 Statements       => New_List (Core_Loop),
                 End_Label        => Empty);
 
             --  Update the previously created object renaming declaration with
-            --  the new iterator.
+            --  the new iterator, by adding the index of the next loop to the
+            --  indexed component, in the order that corresponds to the
+            --  convention.
 
-            Prepend_To (Expressions (Ind_Comp),
-              New_Occurrence_Of (Iterator, Loc));
+            if Convention (Array_Typ) = Convention_Fortran then
+               Append_To (Expressions (Ind_Comp),
+                 New_Occurrence_Of (Iterator, Loc));
+            else
+               Prepend_To (Expressions (Ind_Comp),
+                 New_Occurrence_Of (Iterator, Loc));
+            end if;
          end loop;
       end if;
 
