@@ -1116,8 +1116,47 @@ package body Exp_Unst is
 
                --  Process uplevel references for one subprogram
 
-               declare
+               Uplev_Refs_For_One_Subp : declare
                   Elmt : Elmt_Id;
+
+                  function Get_Real_Subp (Ent : Entity_Id) return Entity_Id;
+                  --  The entity recorded as the enclosing subprogram for the
+                  --  reference sometimes turns out to be a subprogram body.
+                  --  This function gets the proper subprogram spec if needed.
+
+                  -------------------
+                  -- Get_Real_Subp --
+                  -------------------
+
+                  function Get_Real_Subp (Ent : Entity_Id) return Entity_Id is
+                     Nod : Node_Id;
+
+                  begin
+                     --  If we have a subprogram, return it
+
+                     if Is_Subprogram (Ent) then
+                        return Ent;
+
+                     --  If we have a subprogram body, go to the body
+
+                     elsif Ekind (Ent) = E_Subprogram_Body then
+                        Nod := Parent (Parent (Ent));
+                        pragma Assert (Nkind (Nod) = N_Subprogram_Body);
+
+                        if Acts_As_Spec (Nod) then
+                           return Ent;
+                        else
+                           return Corresponding_Spec (Nod);
+                        end if;
+
+                     --  Should not be any other possibilities
+
+                     else
+                        raise Program_Error;
+                     end if;
+                  end Get_Real_Subp;
+
+               --  Start of processing for Uplevel_References_For_One_Subp
 
                begin
                   --  Loop through uplevel references
@@ -1127,7 +1166,7 @@ package body Exp_Unst is
 
                      --  Rewrite one reference
 
-                     declare
+                     Rewrite_One_Ref : declare
                         Ref : constant Node_Id := Actual_Ref (Node (Elmt));
                         --  The reference to be rewritten
 
@@ -1140,8 +1179,11 @@ package body Exp_Unst is
                         Typ : constant Entity_Id := Etype (Ent);
                         --  The type of the referenced entity
 
+                        Atyp : constant Entity_Id := Get_Actual_Subtype (Ref);
+                        --  The actual subtype of the reference
+
                         Rsub : constant Entity_Id :=
-                                 Node (Next_Elmt (Elmt));
+                                 Get_Real_Subp (Node (Next_Elmt (Elmt)));
                         --  The enclosing subprogram for the reference
 
                         RSX : constant SI_Type := Subp_Index (Rsub);
@@ -1155,6 +1197,17 @@ package body Exp_Unst is
                         SI   : SI_Type;
 
                      begin
+                        --  Ignore if no ARECnF entity for enclosing subprogram
+                        --  which probably happens as a result of not properly
+                        --  treating instance bodies. To be examined ???
+
+                        --  If this test is omitted, then the compilation of
+                        --  freeze.adb and inline.adb fail in unnesting mode.
+
+                        if No (STJR.ARECnF) then
+                           goto Continue;
+                        end if;
+
                         --  Push the current scope, so that the pointer type
                         --  Tnn, and any subsidiary entities resulting from
                         --  the analysis of the rewritten reference, go in the
@@ -1215,7 +1268,7 @@ package body Exp_Unst is
 
                         Rewrite (Ref,
                           Make_Attribute_Reference (Loc,
-                            Prefix         => New_Occurrence_Of (Typ, Loc),
+                            Prefix         => New_Occurrence_Of (Atyp, Loc),
                             Attribute_Name => Name_Deref,
                             Expressions    => New_List (
                               Make_Selected_Component (Loc,
@@ -1240,12 +1293,13 @@ package body Exp_Unst is
                         Analyze_And_Resolve (Ref, Typ, Suppress => All_Checks);
                         Opt.Unnest_Subprogram_Mode := True;
                         Pop_Scope;
-                     end;
+                     end Rewrite_One_Ref;
 
+                  <<Continue>>
                      Next_Elmt (Elmt);
                      Next_Elmt (Elmt);
                   end loop;
-               end;
+               end Uplev_Refs_For_One_Subp;
             end if;
          end;
       end loop Uplev_Refs;

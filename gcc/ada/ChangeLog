@@ -1,5 +1,24 @@
 2015-05-12  Robert Dewar  <dewar@adacore.com>
 
+	* exp_unst.adb (Get_Real_Subp): New subprogram.
+	(Unnest_Subprogram): Use Get_Real_Subp.
+	(Uplev_Refs_For_One_Subp): Skip if no ARECnU entity.
+	(Uplev_Refs_For_One_Subp): Use actual subtype in unconstrained case.
+
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
+	* a-reatim.adb ("/"): Add explicit check for Time_Span_First / -1.
+
+2015-05-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Extended_Primitive_Ops): New subprogram,
+	auxiliary to Try_Primitive_Operation to handle properly prefixed
+	calls where the operation is not a primitive of the type, but
+	is declared in the package body that is in the immediate scope
+	of the type.
+
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
 	* sem_util.adb (Is_Variable): Allow X'Deref(Y) as a variable.
 
 2015-05-12  Ed Schonberg  <schonberg@adacore.com>

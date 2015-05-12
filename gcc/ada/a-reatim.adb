@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2014, AdaCore                     --
+--                     Copyright (C) 1995-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -123,6 +123,16 @@ package body Ada.Real_Time is
       pragma Unsuppress (Overflow_Check);
       pragma Unsuppress (Division_Check);
    begin
+      --  Even though checks are unsuppressed, we need an explicit check for
+      --  the case of largest negative integer divided by minus one, since
+      --  some library routines we use fail to catch this case. This will be
+      --  fixed at the compiler level in the future, at which point this test
+      --  can be removed.
+
+      if Left = Time_Span_First and then Right = -1 then
+         raise Constraint_Error with "overflow";
+      end if;
+
       return Time_Span (Duration (Left) / Right);
    end "/";
 
