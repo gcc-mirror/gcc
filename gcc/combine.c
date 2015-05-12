@@ -4673,15 +4673,25 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
     return newi2pat ? i2 : i3;
 }
 
-/* Undo all the modifications recorded in undobuf.  */
+/* Get a marker for undoing to the current state.  */
+
+static void *
+get_undo_marker (void)
+{
+  return undobuf.undos;
+}
+
+/* Undo the modifications up to the marker.  */
 
 static void
-undo_all (void)
+undo_to_marker (void *marker)
 {
   struct undo *undo, *next;
 
-  for (undo = undobuf.undos; undo; undo = next)
+  for (undo = undobuf.undos; undo != marker; undo = next)
     {
+      gcc_assert (undo);
+
       next = undo->next;
       switch (undo->kind)
 	{
@@ -4705,7 +4715,15 @@ undo_all (void)
       undobuf.frees = undo;
     }
 
-  undobuf.undos = 0;
+  undobuf.undos = (struct undo *) marker;
+}
+
+/* Undo all the modifications recorded in undobuf.  */
+
+static void
+undo_all (void)
+{
+  undo_to_marker (0);
 }
 
 /* We've committed to accepting the changes we made.  Move all
