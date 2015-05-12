@@ -79,35 +79,118 @@ typedef enum
 timevar_id_t;
 #undef DEFTIMEVAR
 
-/* True if timevars should be used.  In GCC, this happens with
-   the -ftime-report flag.  */
-extern bool timevar_enable;
+/* A class to hold all state relating to timing.  */
+
+class timer;
+
+/* The singleton instance of timing state.
+
+   This is non-NULL if timevars should be used.  In GCC, this happens with
+   the -ftime-report flag.  Hence this is NULL for the common,
+   needs-to-be-fast case, with an early reject happening for this being
+   NULL.  */
+extern timer *g_timer;
 
 /* Total amount of memory allocated by garbage collector.  */
 extern size_t timevar_ggc_mem_total;
 
 extern void timevar_init (void);
-extern void timevar_push_1 (timevar_id_t);
-extern void timevar_pop_1 (timevar_id_t);
 extern void timevar_start (timevar_id_t);
 extern void timevar_stop (timevar_id_t);
 extern bool timevar_cond_start (timevar_id_t);
 extern void timevar_cond_stop (timevar_id_t, bool);
-extern void timevar_print (FILE *);
+
+/* The public (within GCC) interface for timing.  */
+
+class timer
+{
+ public:
+  timer ();
+  ~timer ();
+
+  void start (timevar_id_t tv);
+  void stop (timevar_id_t tv);
+  void push (timevar_id_t tv);
+  void pop (timevar_id_t tv);
+  bool cond_start (timevar_id_t tv);
+  void cond_stop (timevar_id_t tv);
+
+  void print (FILE *fp);
+
+ private:
+  /* Private member functions.  */
+  void validate_phases (FILE *fp) const;
+
+ private:
+
+  /* Private type: a timing variable.  */
+  struct timevar_def
+  {
+    /* Elapsed time for this variable.  */
+    struct timevar_time_def elapsed;
+
+    /* If this variable is timed independently of the timing stack,
+       using timevar_start, this contains the start time.  */
+    struct timevar_time_def start_time;
+
+    /* The name of this timing variable.  */
+    const char *name;
+
+    /* Nonzero if this timing variable is running as a standalone
+       timer.  */
+    unsigned standalone : 1;
+
+    /* Nonzero if this timing variable was ever started or pushed onto
+       the timing stack.  */
+    unsigned used : 1;
+  };
+
+  /* Private type: an element on the timing stack
+     Elapsed time is attributed to the topmost timing variable on the
+     stack.  */
+  struct timevar_stack_def
+  {
+    /* The timing variable at this stack level.  */
+    struct timevar_def *timevar;
+
+    /* The next lower timing variable context in the stack.  */
+    struct timevar_stack_def *next;
+  };
+
+ private:
+
+  /* Data members (all private).  */
+
+  /* Declared timing variables.  Constructed from the contents of
+     timevar.def.  */
+  timevar_def m_timevars[TIMEVAR_LAST];
+
+  /* The top of the timing stack.  */
+  timevar_stack_def *m_stack;
+
+  /* A list of unused (i.e. allocated and subsequently popped)
+     timevar_stack_def instances.  */
+  timevar_stack_def *m_unused_stack_instances;
+
+  /* The time at which the topmost element on the timing stack was
+     pushed.  Time elapsed since then is attributed to the topmost
+     element.  */
+  timevar_time_def m_start_time;
+};
 
 /* Provided for backward compatibility.  */
 static inline void
 timevar_push (timevar_id_t tv)
 {
-  if (timevar_enable)
-    timevar_push_1 (tv);
+  if (g_timer)
+    g_timer->push (tv);
 }
 
 static inline void
 timevar_pop (timevar_id_t tv)
 {
-  if (timevar_enable)
-    timevar_pop_1 (tv);
+  if (g_timer)
+    g_timer->pop (tv);
 }
 
 // This is a simple timevar wrapper class that pushes a timevar in its
