@@ -1,3 +1,15 @@
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
+	* sem_intr.adb: (Check_Shift): Diagnose bad modulus value.
+
+2015-05-12  Robert Dewar  <dewar@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Default to suppressing
+	Alignment_Checks on non-strict alignment machine.
+	* sem_ch13.adb (Validate_Address_Clauses): Don't give
+	compile-time alignment warnings if run time Alignment_Check
+	is suppressed.
+
 2015-05-12  Thomas Quinot  <quinot@adacore.com>
 
 	* g-sercom.ads, g-sercom-linux.adb (GNAT.Serial_Communications.

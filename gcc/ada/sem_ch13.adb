@@ -12646,12 +12646,16 @@ package body Sem_Ch13 is
                     ("\??size of & is ^", ACCR.N, ACCR.Y);
 
                --  Check for inadequate alignment, both of the base object
-               --  and of the offset, if any.
+               --  and of the offset, if any. We only do this check if the
+               --  run-time Alignment_Check is active. No point in warning
+               --  if this check has been suppressed (or is suppressed by
+               --  default in the non-strict alignment machine case).
 
                --  Note: we do not check the alignment if we gave a size
                --  warning, since it would likely be redundant.
 
-               elsif Y_Alignment /= Uint_0
+               elsif not Alignment_Checks_Suppressed (ACCR.Y)
+                 and then Y_Alignment /= Uint_0
                  and then (Y_Alignment < X_Alignment
                              or else (ACCR.Off
                                         and then
