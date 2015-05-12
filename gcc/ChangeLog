@@ -1,3 +1,17 @@
+2015-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/37021
+	* tree-vectorizer.h (struct _slp_tree): Add two_operators flag.
+	(SLP_TREE_TWO_OPERATORS): New define.
+	* tree-vect-slp.c (vect_create_new_slp_node): Initialize
+	SLP_TREE_TWO_OPERATORS.
+	(vect_build_slp_tree_1): Allow two mixing plus/minus in an
+	SLP node.
+	(vect_build_slp_tree): Adjust.
+	(vect_analyze_slp_cost_1): Likewise.
+	(vect_schedule_slp_instance): Vectorize mixing plus/minus by
+	emitting two vector stmts and mixing the results.
+
 2015-05-12  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* call.c (print_z_candidates): Remove dead code.

@@ -1,3 +1,8 @@
+2015-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/37021
+	* gcc.target/i386/vect-addsub.c: New testcase.
+
 2015-05-11  Alexander Monakov  <amonakov@ispras.ru>
 
 	* gcc.target/i386/pr65753.c: Use -O2 instead of -O.
