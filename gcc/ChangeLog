@@ -1,5 +1,11 @@
 2015-05-12  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/66101
+	* tree-ssa-dce.c (remove_dead_stmt): Properly mark loops for
+	fixup if we turn a loop exit edge to a fallthru edge.
+
+2015-05-12  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/37021
 	* tree-vectorizer.h (struct _slp_tree): Add two_operators flag.
 	(SLP_TREE_TWO_OPERATORS): New define.
