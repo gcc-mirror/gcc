@@ -7188,7 +7188,7 @@ expand_compare_and_swap_loop (rtx mem, rtx old_reg, rtx new_reg, rtx seq)
   success = NULL_RTX;
   oldval = cmp_reg;
   if (!expand_atomic_compare_and_swap (&success, &oldval, mem, old_reg,
-				       new_reg, false, MEMMODEL_SEQ_CST,
+				       new_reg, false, MEMMODEL_SYNC_SEQ_CST,
 				       MEMMODEL_RELAXED))
     return false;
 
@@ -7249,9 +7249,7 @@ maybe_emit_sync_lock_test_and_set (rtx target, rtx mem, rtx val,
      exists, and the memory model is stronger than acquire, add a release 
      barrier before the instruction.  */
 
-  if ((model & MEMMODEL_MASK) == MEMMODEL_SEQ_CST
-      || (model & MEMMODEL_MASK) == MEMMODEL_RELEASE
-      || (model & MEMMODEL_MASK) == MEMMODEL_ACQ_REL)
+  if (is_mm_seq_cst (model) || is_mm_release (model) || is_mm_acq_rel (model))
     expand_mem_thread_fence (model);
 
   if (icode != CODE_FOR_nothing)
@@ -7358,11 +7356,12 @@ expand_sync_lock_test_and_set (rtx target, rtx mem, rtx val)
   rtx ret;
 
   /* Try an atomic_exchange first.  */
-  ret = maybe_emit_atomic_exchange (target, mem, val, MEMMODEL_ACQUIRE);
+  ret = maybe_emit_atomic_exchange (target, mem, val, MEMMODEL_SYNC_ACQUIRE);
   if (ret)
     return ret;
 
-  ret = maybe_emit_sync_lock_test_and_set (target, mem, val, MEMMODEL_ACQUIRE);
+  ret = maybe_emit_sync_lock_test_and_set (target, mem, val,
+					   MEMMODEL_SYNC_ACQUIRE);
   if (ret)
     return ret;
 
@@ -7373,7 +7372,7 @@ expand_sync_lock_test_and_set (rtx target, rtx mem, rtx val)
   /* If there are no other options, try atomic_test_and_set if the value
      being stored is 1.  */
   if (val == const1_rtx)
-    ret = maybe_emit_atomic_test_and_set (target, mem, MEMMODEL_ACQUIRE);
+    ret = maybe_emit_atomic_test_and_set (target, mem, MEMMODEL_SYNC_ACQUIRE);
 
   return ret;
 }
@@ -7630,7 +7629,7 @@ expand_mem_thread_fence (enum memmodel model)
 {
   if (HAVE_mem_thread_fence)
     emit_insn (gen_mem_thread_fence (GEN_INT (model)));
-  else if ((model & MEMMODEL_MASK) != MEMMODEL_RELAXED)
+  else if (!is_mm_relaxed (model))
     {
       if (HAVE_memory_barrier)
 	emit_insn (gen_memory_barrier ());
@@ -7654,7 +7653,7 @@ expand_mem_signal_fence (enum memmodel model)
 {
   if (HAVE_mem_signal_fence)
     emit_insn (gen_mem_signal_fence (GEN_INT (model)));
-  else if ((model & MEMMODEL_MASK) != MEMMODEL_RELAXED)
+  else if (!is_mm_relaxed (model))
     {
       /* By default targets are coherent between a thread and the signal
 	 handler running on the same thread.  Thus this really becomes a
@@ -7709,7 +7708,7 @@ expand_atomic_load (rtx target, rtx mem, enum memmodel model)
     target = gen_reg_rtx (mode);
 
   /* For SEQ_CST, emit a barrier before the load.  */
-  if ((model & MEMMODEL_MASK) == MEMMODEL_SEQ_CST)
+  if (is_mm_seq_cst (model))
     expand_mem_thread_fence (model);
 
   emit_move_insn (target, mem);
@@ -7755,7 +7754,7 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
 	  if (maybe_expand_insn (icode, 2, ops))
 	    {
 	      /* lock_release is only a release barrier.  */
-	      if ((model & MEMMODEL_MASK) == MEMMODEL_SEQ_CST)
+	      if (is_mm_seq_cst (model))
 		expand_mem_thread_fence (model);
 	      return const0_rtx;
 	    }
@@ -7782,7 +7781,7 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
   emit_move_insn (mem, val);
 
   /* For SEQ_CST, also emit a barrier after the store.  */
-  if ((model & MEMMODEL_MASK) == MEMMODEL_SEQ_CST)
+  if (is_mm_seq_cst (model))
     expand_mem_thread_fence (model);
 
   return const0_rtx;

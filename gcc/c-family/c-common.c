@@ -10792,7 +10792,7 @@ get_atomic_generic_size (location_t loc, tree function,
       if (TREE_CODE (p) == INTEGER_CST)
         {
 	  int i = tree_to_uhwi (p);
-	  if (i < 0 || (i & MEMMODEL_MASK) >= MEMMODEL_LAST)
+	  if (i < 0 || (memmodel_base (i) >= MEMMODEL_LAST))
 	    {
 	      warning_at (loc, OPT_Winvalid_memory_model,
 			  "invalid memory model argument %d of %qE", x + 1,

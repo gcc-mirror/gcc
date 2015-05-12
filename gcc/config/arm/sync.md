@@ -73,10 +73,8 @@
       VUNSPEC_LDA))]
   "TARGET_HAVE_LDACQ"
   {
-    enum memmodel model = (enum memmodel) INTVAL (operands[2]);
-    if (model == MEMMODEL_RELAXED
-        || model == MEMMODEL_CONSUME
-        || model == MEMMODEL_RELEASE)
+    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_release (model))
       return \"ldr<sync_sfx>\\t%0, %1\";
     else
       return \"lda<sync_sfx>\\t%0, %1\";
@@ -91,10 +89,8 @@
       VUNSPEC_STL))]
   "TARGET_HAVE_LDACQ"
   {
-    enum memmodel model = (enum memmodel) INTVAL (operands[2]);
-    if (model == MEMMODEL_RELAXED
-        || model == MEMMODEL_CONSUME
-        || model == MEMMODEL_ACQUIRE)
+    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_acquire (model))
       return \"str<sync_sfx>\t%1, %0\";
     else
       return \"stl<sync_sfx>\t%1, %0\";
@@ -110,10 +106,10 @@
    (match_operand:SI 2 "const_int_operand")]		;; model
   "TARGET_HAVE_LDREXD && ARM_DOUBLEWORD_ALIGN"
 {
-  enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+  enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
   expand_mem_thread_fence (model);
   emit_insn (gen_atomic_loaddi_1 (operands[0], operands[1]));
-  if (model == MEMMODEL_SEQ_CST)
+  if (is_mm_seq_cst (model))
     expand_mem_thread_fence (model);
   DONE;
 })
