@@ -1,3 +1,15 @@
+2015-05-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* parser.c (cp_parser_selection_statement): Add location and
+	guard_kind arguments to calls to
+	cp_parser_implicitly_scoped_statement.
+	(cp_parser_iteration_statement): Likewise for calls to
+	cp_parser_already_scoped_statement.
+	(cp_parser_implicitly_scoped_statement): Add "guard_loc" and
+	"guard_kind" params; use them to warn for misleading
+	indentation.
+	(cp_parser_already_scoped_statement): Likewise.
+
 2015-05-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* class.c (fixup_type_variants): Do not copy TYPE_METHODS

@@ -1,0 +1,431 @@
+/* { dg-options "-Wmisleading-indentation -Wall" } */
+/* { dg-do compile } */
+
+extern int foo (int);
+extern int bar (int, int);
+extern int flagA;
+extern int flagB;
+extern int flagC;
+extern int flagD;
+
+int
+fn_1 (int flag)
+{
+  int x = 4, y = 5;
+  if (flag) /* { dg-message "3: ...this 'if' clause, but it is not" } */
+    x = 3;
+    y = 2; /* { dg-warning "statement is indented as if it were guarded by..." } */
+  return x * y;
+}
+
+int
+fn_2 (int flag, int x, int y)
+{
+  if (flag) /* { dg-message "3: ...this 'if' clause, but it is not" } */
+    x++; y++; /* { dg-warning "statement is indented as if it were guarded by..." } */
+
+  return x * y;
+}
+
+int
+fn_3 (int flag)
+{
+  int x = 4, y = 5;
+  if (flag)
+    x = 3;
+  else /* { dg-message "3: ...this 'else' clause, but it is not" } */
+    x = 2;
+    y = 2; /* { dg-warning "statement is indented as if it were guarded by..." } */
+  return x * y;
+}
+
+void
+fn_4 (double *a, double *b, double *c)
+{
+  int i = 0;
+  while (i < 10) /* { dg-message "3: ...this 'while' clause, but it is not" } */
+    a[i] = b[i] * c[i];
+    i++; /* { dg-warning "statement is indented as if it were guarded by..." } */
+}
+
+void
+fn_5 (double *a, double *b, double *sum, double *prod)
+{
+  int i = 0;
+  for (i = 0; i < 10; i++) /* { dg-output "3: ...this 'for' clause, but it is not" } */
+    sum[i] = a[i] * b[i];
+    prod[i] = a[i] * b[i]; /* { dg-warning "statement is indented as if it were guarded by..." } */
+}
+
+/* Based on CVE-2014-1266 aka "goto fail" */
+int fn_6 (int a, int b, int c)
+{
+	int err;
+
+	/* ... */
+	if ((err = foo (a)) != 0)
+		goto fail;
+	if ((err = foo (b)) != 0) /* { dg-message "2: ...this 'if' clause, but it is not" } */
+		goto fail;
+		goto fail; /* { dg-warning "statement is indented as if it were guarded by..." } */
+	if ((err = foo (c)) != 0)
+		goto fail;
+	/* ... */
+
+fail:
+	return err;
+}
+
+int fn_7 (int p, int q, int r, int s, int t)
+{
+  if (bar (p, q))
+    {
+      if (p) /* { dg-message "7: ...this 'if' clause, but it is not" } */
+        q++; r++; /* { dg-warning "statement is indented as if it were guarded by..." } */
+      t++;
+    }
+  return p + q + r + s + t;
+}
+
+int fn_8 (int a, int b, int c)
+{
+  /* This should *not* be flagged as misleading indentation.  */
+  if (a) return b; else return c;
+}
+
+void fn_9 (int flag)
+{
+  if (flag) /* { dg-message "3: ...this 'if' clause, but it is not" } */
+    foo (0);
+    foo (1); /* { dg-warning "statement is indented as if it were guarded by..." } */
+}
+
+void fn_10 (int flag)
+{
+  if (flag) /* { dg-message "3: ...this 'if' clause, but it is not" } */
+    if (flag / 2)
+      {
+        foo (0);
+        foo (1);
+      }
+    foo (2); /* { dg-warning "statement is indented as if it were guarded by..." } */
+  foo (3);
+}
+
+void fn_11 (void)
+{
+  if (flagA)
+    if (flagB)
+      if (flagC) /* { dg-message "7: ...this 'if' clause, but it is not" } */
+        foo (0);
+        bar (1, 2); /* { dg-warning "statement is indented as if it were guarded by..." } */
+}
+
+void fn_12 (void)
+{
+  if (flagA)
+    if (flagB) /* { dg-message "5: ...this 'if' clause, but it is not" } */
+      if (flagC)
+        foo (0);
+      bar (1, 2); /* { dg-warning "statement is indented as if it were guarded by..." } */
+}
+
+void fn_13 (void)
+{
+  if (flagA) /* { dg-message "3: ...this 'if' clause, but it is not" } */
+    if (flagB)
+      if (flagC)
+        foo (0);
+    bar (1, 2); /* { dg-warning "statement is indented as if it were guarded by..." } */
+}
+
+#define FOR_EACH(VAR, START, STOP) \
+  for ((VAR) = (START); (VAR) < (STOP); (VAR++)) /* { dg-message "3: ...this 'for' clause, but it is not" } */
+
+void fn_14 (void)
+{
+  int i;
+  FOR_EACH (i, 0, 10) /* { dg-message "3: in expansion of macro" } */
+    foo (i);
+    bar (i, i); /* { dg-warning "statement is indented as if it were guarded by..." } */
+}
+#undef FOR_EACH
+
+#define FOR_EACH(VAR, START, STOP) for ((VAR) = (START); (VAR) < (STOP); (VAR++)) /* { dg-message "36: ...this 'for' clause, but it is not" } */
+void fn_15 (void)
+{
+  int i;
+  FOR_EACH (i, 0, 10) /* { dg-message "3: in expansion of macro" } */
+    foo (i);
+    bar (i, i); /* { dg-warning "statement is indented as if it were guarded by..." } */
+}
+#undef FOR_EACH
+
+void fn_16_spaces (void)
+{
+  int i;
+  for (i = 0; i < 10; i++)
+    while (flagA)
+      if (flagB) /* { dg-message "7: ...this 'if' clause, but it is not" } */
+        foo (0);
+        foo (1); /* { dg-warning "statement is indented as if it were guarded by..." } */
+}
+
+void fn_16_tabs (void)
+{
+  int i;
+  for (i = 0; i < 10; i++)
+    while (flagA)
+      if (flagB) /* { dg-message "7: ...this 'if' clause, but it is not" } */
+	foo (0);
+	foo (1);/* { dg-warning "statement is indented as if it were guarded by..." } */
+}
+
+void fn_17_spaces (void)
+{
+  int i;
+  for (i = 0; i < 10; i++) /* { dg-message "3: ...this 'for' clause, but it is not" } */
+    while (flagA)
+      if (flagB)
+        foo (0);
+    foo (1);/* { dg-warning "statement is indented as if it were guarded by..." } */
+}
+
+void fn_17_tabs (void)
+{
+  int i;
+  for (i = 0; i < 10; i++) /* { dg-message "3: ...this 'for' clause, but it is not" } */
+    while (flagA)
+      if (flagB)
+	foo (0);
+    foo (1);/* { dg-warning "statement is indented as if it were guarded by..." } */
+}
+
+void fn_18_spaces (void)
+{
+  int i;
+  for (i = 0; i < 10; i++)
+    while (flagA) /* { dg-message "5: ...this 'while' clause, but it is not" } */
+      if (flagB)
+        foo (0);
+      foo (1);/* { dg-warning "statement is indented as if it were guarded by..." } */
+}
+
+void fn_18_tabs (void)
+{
+  int i;
+  for (i = 0; i < 10; i++)
+    while (flagA) /* { dg-message "5: ...this 'while' clause, but it is not" } */
+      if (flagB)
+	foo (0);
+      foo (1);/* { dg-warning "statement is indented as if it were guarded by..." } */
+}
+
+/* This shouldn't lead to a warning.  */
+int fn_19 (void) { if (flagA) return 1; else return 0; }
+
+/* A deeply-nested mixture of spaces and tabs, adapted from
+   c-c++-common/pr60101.c.
+   This should not lead to a warning.  */
+void
+fn_20 (unsigned int l)
+{
+  unsigned int i;
+
+  for (i = 0; i < 10; i++)
+    {
+      unsigned int n0, n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11;
+
+      for (n0 = 0; n0 < l; n0++)
+	for (n1 = 0; n1 < l; n1++)
+	  for (n2 = 0; n2 < l; n2++)
+	    for (n3 = 0; n3 < l; n3++)
+	      for (n4 = 0; n4 < l; n4++)
+		for (n5 = 0; n5 < l; n5++)
+		  for (n6 = 0; n6 < l; n6++)
+		    for (n7 = 0; n7 < l; n7++)
+		      for (n8 = 0; n8 < l; n8++)
+			for (n9 = 0; n9 < l; n9++)
+			  for (n10 = 0; n10 < l; n10++)
+			    for (n11 = 0; n11 < l; n11++)
+			      {
+				if (flagA)
+				  foo (0);
+				foo (1);
+			      }
+      foo (2);
+    }
+}
+
+/* Another nested mix of tabs and spaces that shouldn't lead to a warning,
+   with a preprocessor directive thrown in for good measure
+   (adapted from libgomp/loop.c: gomp_loop_init).  */
+void fn_21 (void)
+{
+  foo (0);
+  if (flagA)
+    {
+      foo (1);
+
+#if 1
+      {
+	foo (2);
+	if (flagB)
+	  {
+	    if (flagC)
+	      foo (3);
+	    else
+	      foo (4);
+	  }
+	else if (flagD)
+	  foo (5);
+	else
+	  foo (6);
+      }
+#endif
+    }
+}
+
+/* The conditionals within the following macros shouldn't be warned about.
+   Adapted from libgomp/driver.c: gomp_load_plugin_for_device.  */
+int fn_22 (void)
+{
+  int err = 0;
+
+#define DLSYM()							\
+  do									\
+    {									\
+      err = foo (0);							\
+      if (err)								\
+	goto out;							\
+    }									\
+  while (0)
+#define DLSYM_OPT()							\
+  do									\
+    {									\
+      err = foo (1);							\
+      if (err)								\
+        foo (2);							\
+      else								\
+        foo (3);							\
+      foo (4);								\
+    }									\
+  while (0)
+  DLSYM ();
+  DLSYM_OPT ();
+#undef DLSYM
+#undef DLSYM_OPT
+
+ out:
+  return err;
+}
+
+/* This shouldn't be warned about.  */
+void fn_23 (void) { foo (0); foo (1); if (flagA) foo (2); foo (3); foo (4); }
+
+/* Code that simply doesn't bother indenting anywhere (e.g. autogenerated
+   code) shouldn't be warned about.  */
+void fn_24 (void)
+{
+  foo (0);
+  if (flagA)
+  foo (1);
+  foo (2);
+}
+
+/* Adapted from libiberty/regex.c; an example of a conditional in a
+   macro where the successor statement begins with a macro arg:
+
+	    if (num < 0)
+	      num = 0;
+	    num = num * 10 + c - '0';
+	    ^ this successor statement
+
+   and hence "num" has a spelling location at the argument of the
+   macro usage site ("lower_bound"), we want the definition of the
+   parameter ("num") for the indentation comparison to be meaninful.
+
+   This should not generate a misleading indentation warning.  */
+
+# define GET_UNSIGNED_NUMBER(num) \
+  {									\
+    while (flagA)							\
+      {									\
+	if (flagB)						\
+	  {								\
+	    if (num < 0)						\
+	      num = 0;							\
+	    num = num * 10 + c - '0';					\
+	  }								\
+      }									\
+  }
+void fn_25 (int c, int lower_bound, int upper_bound)
+{
+  GET_UNSIGNED_NUMBER (lower_bound);
+}
+#undef GET_UNSIGNED_NUMBER
+
+/* Example adapted from libdecnumber/decNumber.c:decExpOp that shouldn't
+   trigger a warning.  */
+void fn_26 (void)
+{
+  if (flagA) {
+    if (flagB) foo (0); }
+  foo (1);
+}
+
+/* Ensure that we don't get confused by mixed tabs and spaces; the line
+   "foo (1);" has leading spaces before a tab, but this should not
+   lead to a warning from -Wmisleading-indentation.  */
+void fn_27 (void)
+{
+	      if (flagA)
+		foo (0);
+  	      foo (1);
+}
+
+/* Example adapted from gcc/cgraph.h:symtab_node::get_availability of
+   a spurious trailing semicolon that shouldn't generate a warning.  */
+void fn_28 (void)
+{
+  if (flagA)
+    foo (0);
+  else
+    foo (1);;
+}
+
+/* However, other kinds of spurious semicolons can be a problem.  Sadly
+   we don't yet report for the misleading-indented "foo (1);" in the
+   following, due to the spurious semicolon.  */
+void fn_29 (void)
+{
+  if (flagA)
+    if (flagB)
+      foo (0);;
+    foo (1);
+}
+
+/* Adapted from usage site of #ifdef HAVE_cc0.  This should not lead
+   to a warning from -Wmisleading-indentation.  */
+void fn_30 (void)
+{
+  if (flagA)
+    foo (0);
+#if SOME_CONDITION_THAT_DOES_NOT_HOLD
+  if (flagB)
+#endif
+    foo (1);
+}
+
+/* This shouldn't lead to a warning.  */
+void fn_31 (void)
+{
+  if (flagA)
+    foo (0);
+  else if (flagB)
+    foo (1);
+  else if (flagC)
+    foo (2);
+  else
+    foo (3);
+}

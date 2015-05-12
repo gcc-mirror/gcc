@@ -1429,4 +1429,12 @@ extern bool contains_cilk_spawn_stmt (tree);
 extern tree cilk_for_number_of_iterations (tree);
 extern bool check_no_cilk (tree, const char *, const char *,
 		           location_t loc = UNKNOWN_LOCATION);
+/* In c-indentation.c.  */
+extern void
+warn_for_misleading_indentation (location_t guard_loc,
+				 location_t body_loc,
+				 location_t next_stmt_loc,
+				 enum cpp_ttype next_tok_type,
+				 const char *guard_kind);
+
 #endif /* ! GCC_C_COMMON_H */
