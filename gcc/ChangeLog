@@ -1,3 +1,10 @@
+2015-05-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66129
+	* tree-vect-slp.c (vect_build_slp_tree): Make sure all ops are
+	commutative.
+	(vect_schedule_slp_instance): Fix typo.
+
 2015-05-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* common.opt (fdump-internal-locations): New option.

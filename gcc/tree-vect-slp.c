@@ -1123,6 +1123,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	  && oprnds_info[1]->first_dt == vect_internal_def
 	  && is_gimple_assign (stmt)
 	  && commutative_tree_code (gimple_assign_rhs_code (stmt))
+	  && !SLP_TREE_TWO_OPERATORS (*node)
 	  /* Do so only if the number of not successful permutes was nor more
 	     than a cut-ff as re-trying the recursive match on
 	     possibly each level of the tree would expose exponential
@@ -3459,7 +3460,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 	      tree *melts = XALLOCAVEC (tree, TYPE_VECTOR_SUBPARTS (vectype));
 	      for (l = 0; l < TYPE_VECTOR_SUBPARTS (vectype); ++l)
 		{
-		  if (k > group_size)
+		  if (k >= group_size)
 		    k = 0;
 		  melts[l] = build_int_cst
 		      (meltype, mask[k++] * TYPE_VECTOR_SUBPARTS (vectype) + l);
