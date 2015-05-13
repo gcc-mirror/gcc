@@ -1,3 +1,7 @@
+2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
+
+	* aclocal.m4: Regenerated with automake-1.11.6.
+
 2010-06-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR bootstrap/44621
