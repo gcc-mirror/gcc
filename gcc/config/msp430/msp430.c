@@ -2248,7 +2248,7 @@ static struct
 }
   const_shift_helpers[] =
 {
-#define CSH(N,C,X,G) { "__mspabi_"N, C, X, gen_##G }
+#define CSH(N,C,X,G) { "__mspabi_" N, C, X, gen_##G }
 
   CSH ("slli", 1, 1, slli_1),
   CSH ("slll", 1, 1, slll_1),
