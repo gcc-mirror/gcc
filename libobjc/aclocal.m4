@@ -1,7 +1,8 @@
-# generated automatically by aclocal 1.11.1 -*- Autoconf -*-
+# generated automatically by aclocal 1.11.6 -*- Autoconf -*-
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-# 2005, 2006, 2007, 2008, 2009  Free Software Foundation, Inc.
+# 2005, 2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation,
+# Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -13,11 +14,13 @@
 
 # AM_AUX_DIR_EXPAND                                         -*- Autoconf -*-
 
-# Copyright (C) 2001, 2003, 2005  Free Software Foundation, Inc.
+# Copyright (C) 2001, 2003, 2005, 2011 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
+
+# serial 1
 
 # For projects using AC_CONFIG_AUX_DIR([foo]), Autoconf sets
 # $ac_aux_dir to `$srcdir/foo'.  In other projects, it is set to
@@ -103,8 +106,8 @@ fi])])
 # Add --enable-maintainer-mode option to configure.         -*- Autoconf -*-
 # From Jim Meyering
 
-# Copyright (C) 1996, 1998, 2000, 2001, 2002, 2003, 2004, 2005, 2008
-# Free Software Foundation, Inc.
+# Copyright (C) 1996, 1998, 2000, 2001, 2002, 2003, 2004, 2005, 2008,
+# 2011 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -124,7 +127,7 @@ AC_DEFUN([AM_MAINTAINER_MODE],
        [disable], [m4_define([am_maintainer_other], [enable])],
        [m4_define([am_maintainer_other], [enable])
         m4_warn([syntax], [unexpected argument to AM@&t@_MAINTAINER_MODE: $1])])
-AC_MSG_CHECKING([whether to am_maintainer_other maintainer-specific portions of Makefiles])
+AC_MSG_CHECKING([whether to enable maintainer-specific portions of Makefiles])
   dnl maintainer-mode's default is 'disable' unless 'enable' is passed
   AC_ARG_ENABLE([maintainer-mode],
 [  --][am_maintainer_other][-maintainer-mode  am_maintainer_other make rules and dependencies not useful
@@ -175,13 +178,13 @@ m4_define([AC_PROG_CC],
           [m4_fatal([AC_PROG_CC cannot be called after AM_PROG_CC_C_O])])
 ])
 
-# Copyright (C) 2006, 2008  Free Software Foundation, Inc.
+# Copyright (C) 2006, 2008, 2010 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
 
-# serial 2
+# serial 3
 
 # _AM_SUBST_NOTMAKE(VARIABLE)
 # ---------------------------
@@ -190,7 +193,7 @@ m4_define([AC_PROG_CC],
 AC_DEFUN([_AM_SUBST_NOTMAKE])
 
 # AM_SUBST_NOTMAKE(VARIABLE)
-# ---------------------------
+# --------------------------
 # Public sister of _AM_SUBST_NOTMAKE.
 AC_DEFUN([AM_SUBST_NOTMAKE], [_AM_SUBST_NOTMAKE($@)])
 
