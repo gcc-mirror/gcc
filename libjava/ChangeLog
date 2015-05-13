@@ -1,3 +1,12 @@
+2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
+
+	* Makefile.in: Regenerated with automake-1.11.6.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* gcj/Makefile.in: Likewise.
+	* include/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 2015-01-29  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* libtool-version: Add a comment about cygwin.
