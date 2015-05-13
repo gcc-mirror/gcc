@@ -191,7 +191,7 @@ linemap_init (struct line_maps *set,
 void
 linemap_check_files_exited (struct line_maps *set)
 {
-  struct line_map *map;
+  const struct line_map *map;
   /* Depending upon whether we are handling preprocessed input or
      not, this can be a user error or an ICE.  */
   for (map = LINEMAPS_LAST_ORDINARY_MAP (set);
@@ -371,7 +371,7 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
   ORDINARY_MAP_FILE_NAME (map) = to_file;
   ORDINARY_MAP_STARTING_LINE_NUMBER (map) = to_line;
   LINEMAPS_ORDINARY_CACHE (set) = LINEMAPS_ORDINARY_USED (set) - 1;
-  ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map) = 0;
+  SET_ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map, 0);
   set->highest_location = start_location;
   set->highest_line = start_location;
   set->max_column_hint = 0;
@@ -564,7 +564,7 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
 					       (map),
 					       ORDINARY_MAP_FILE_NAME (map),
 					       to_line);
-      ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map) = column_bits;
+      SET_ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map, column_bits);
       r = (MAP_START_LOCATION (map)
 	   + ((to_line - ORDINARY_MAP_STARTING_LINE_NUMBER (map))
 	      << column_bits));

@@ -155,7 +155,7 @@ struct GTY(()) line_map_ordinary {
 
 /* This is the highest possible source location encoded within an
    ordinary or macro map.  */
-#define MAX_SOURCE_LOCATION 0x7FFFFFFF
+const source_location MAX_SOURCE_LOCATION = 0x7FFFFFFF;
 
 struct cpp_hashnode;
 
@@ -298,16 +298,10 @@ struct GTY(()) line_map {
 #define linemap_assert_fails(EXPR) __extension__ \
   ({linemap_assert (EXPR); false;})
 
-/* Assert that MAP encodes locations of tokens that are not part of
-   the replacement-list of a macro expansion.  */
-#define linemap_check_ordinary(LINE_MAP) __extension__		\
-  ({linemap_assert (!linemap_macro_expansion_map_p (LINE_MAP)); \
-    (LINE_MAP);})
 #else
 /* Include EXPR, so that unused variable warnings do not occur.  */
 #define linemap_assert(EXPR) ((void)(0 && (EXPR)))
 #define linemap_assert_fails(EXPR) (! (EXPR))
-#define linemap_check_ordinary(LINE_MAP) (LINE_MAP)
 #endif
 
 /* Return TRUE if MAP encodes locations coming from a macro
@@ -315,30 +309,196 @@ struct GTY(()) line_map {
 bool
 linemap_macro_expansion_map_p (const struct line_map *);
 
-#define MAP_START_LOCATION(MAP) (MAP)->start_location
+/* Assert that MAP encodes locations of tokens that are not part of
+   the replacement-list of a macro expansion.  */
+inline struct line_map *
+linemap_check_ordinary (struct line_map *map)
+{
+  linemap_assert (!linemap_macro_expansion_map_p (map));
+  return map;
+}
 
-#define ORDINARY_MAP_FILE_NAME(MAP) \
-  linemap_check_ordinary (MAP)->d.ordinary.to_file
+/* Assert that MAP encodes locations of tokens that are not part of
+   the replacement-list of a macro expansion.  */
 
-#define ORDINARY_MAP_STARTING_LINE_NUMBER(MAP) \
-  linemap_check_ordinary (MAP)->d.ordinary.to_line
+inline const struct line_map *
+linemap_check_ordinary (const struct line_map *map)
+{
+  linemap_assert (!linemap_macro_expansion_map_p (map));
+  return map;
+}
 
-#define ORDINARY_MAP_INCLUDER_FILE_INDEX(MAP) \
-  linemap_check_ordinary (MAP)->d.ordinary.included_from
+/* Read the start location of MAP, as an rvalue.  */
 
-#define ORDINARY_MAP_IN_SYSTEM_HEADER_P(MAP) \
-  linemap_check_ordinary (MAP)->d.ordinary.sysp
+inline source_location
+MAP_START_LOCATION (const line_map *map)
+{
+  return map->start_location;
+}
 
-#define ORDINARY_MAP_NUMBER_OF_COLUMN_BITS(MAP) \
-  linemap_check_ordinary (MAP)->d.ordinary.column_bits
+/* Access the start location of MAP as a reference
+   (e.g. as an lvalue).  */
 
-#define MACRO_MAP_MACRO(MAP) (MAP)->d.macro.macro
+inline source_location&
+MAP_START_LOCATION (line_map *map)
+{
+  return map->start_location;
+}
 
-#define MACRO_MAP_NUM_MACRO_TOKENS(MAP) (MAP)->d.macro.n_tokens
+/* Get the starting line number of ordinary map MAP.  */
 
-#define MACRO_MAP_LOCATIONS(MAP) (MAP)->d.macro.macro_locations
+inline linenum_type
+ORDINARY_MAP_STARTING_LINE_NUMBER (const line_map *map)
+{
+  return linemap_check_ordinary (map)->d.ordinary.to_line;
+}
 
-#define MACRO_MAP_EXPANSION_POINT_LOCATION(MAP) (MAP)->d.macro.expansion
+/* Access the starting line number of ordinary map MAP by
+   reference (e.g. as an lvalue).  */
+
+inline linenum_type&
+ORDINARY_MAP_STARTING_LINE_NUMBER (line_map *map)
+{
+  return linemap_check_ordinary (map)->d.ordinary.to_line;
+}
+
+/* Get the index of the ordinary map at whose end
+   ordinary map MAP was included.
+
+   File(s) at the bottom of the include stack have this set.  */
+
+inline int
+ORDINARY_MAP_INCLUDER_FILE_INDEX (const line_map *map)
+{
+  return linemap_check_ordinary (map)->d.ordinary.included_from;
+}
+
+/* As above, but by reference (e.g. as an lvalue).  */
+
+inline int&
+ORDINARY_MAP_INCLUDER_FILE_INDEX (line_map *map)
+{
+  return linemap_check_ordinary (map)->d.ordinary.included_from;
+}
+
+/* Return a positive value if map encodes locations from a system
+   header, 0 otherwise. Returns 1 if ordinary map MAP encodes locations
+   in a system header and 2 if it encodes locations in a C system header
+   that therefore needs to be extern "C" protected in C++.  */
+
+inline unsigned char
+ORDINARY_MAP_IN_SYSTEM_HEADER_P (const line_map *map)
+{
+  return linemap_check_ordinary (map)->d.ordinary.sysp;
+}
+
+/* As above, but by reference (e.g. as an lvalue).  */
+
+inline unsigned char &
+ORDINARY_MAP_IN_SYSTEM_HEADER_P (line_map *map)
+{
+  return linemap_check_ordinary (map)->d.ordinary.sysp;
+}
+
+/* Get the number of the low-order source_location bits used for a
+   column number within ordinary map MAP.  */
+
+inline unsigned char
+ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (const line_map *map)
+{
+  return linemap_check_ordinary (map)->d.ordinary.column_bits;
+}
+
+/* Set the number of the low-order source_location bits used for a
+   column number within ordinary map MAP.  */
+
+inline void
+SET_ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (line_map *map, int col_bits)
+{
+  linemap_check_ordinary (map)->d.ordinary.column_bits = col_bits;
+}
+
+/* Get the filename of ordinary map MAP.  */
+
+inline const char *
+ORDINARY_MAP_FILE_NAME (const line_map *map)
+{
+  return linemap_check_ordinary (map)->d.ordinary.to_file;
+}
+
+/* As above, but by reference (e.g. as an lvalue).  */
+
+inline const char * &
+ORDINARY_MAP_FILE_NAME (line_map *map)
+{
+  return linemap_check_ordinary (map)->d.ordinary.to_file;
+}
+
+/* Get the cpp macro whose expansion gave birth to macro map MAP.  */
+
+inline cpp_hashnode *
+MACRO_MAP_MACRO (const line_map *map)
+{
+  return map->d.macro.macro;
+}
+
+/* As above, but by reference (e.g. as an lvalue).  */
+
+inline cpp_hashnode * &
+MACRO_MAP_MACRO (line_map *map)
+{
+  return map->d.macro.macro;
+}
+
+/* Get the number of tokens inside the replacement-list of the macro
+   that led to macro map MAP.  */
+
+inline unsigned int
+MACRO_MAP_NUM_MACRO_TOKENS (const line_map *map)
+{
+  return map->d.macro.n_tokens;
+}
+
+/* As above, but by reference (e.g. as an lvalue).  */
+
+inline unsigned int &
+MACRO_MAP_NUM_MACRO_TOKENS (line_map *map)
+{
+  return map->d.macro.n_tokens;
+}
+
+/* Get the array of pairs of locations within macro map MAP.
+   See the declaration of line_map_macro for more information.  */
+
+inline source_location *
+MACRO_MAP_LOCATIONS (const line_map *map)
+{
+  return map->d.macro.macro_locations;
+}
+
+/* As above, but by reference (e.g. as an lvalue).  */
+
+inline source_location * &
+MACRO_MAP_LOCATIONS (line_map *map)
+{
+  return map->d.macro.macro_locations;
+}
+
+/* Get the location of the expansion point of the macro map MAP.  */
+
+inline source_location
+MACRO_MAP_EXPANSION_POINT_LOCATION (const line_map *map)
+{
+  return map->d.macro.expansion;
+}
+
+/* As above, but by reference (e.g. as an lvalue).  */
+
+inline source_location &
+MACRO_MAP_EXPANSION_POINT_LOCATION (line_map *map)
+{
+  return map->d.macro.expansion;
+}
 
 /* The abstraction of a set of location maps. There can be several
    types of location maps. This abstraction contains the attributes
@@ -430,119 +590,248 @@ struct GTY(()) line_maps {
 /* Returns the pointer to the memory region where information about
    maps are stored in the line table SET. MACRO_MAP_P is a flag
    telling if we want macro or ordinary maps.  */
-#define LINEMAPS_MAP_INFO(SET, MACRO_MAP_P)				\
-  ((MACRO_MAP_P)							\
-   ? &((SET)->info_macro)						\
-   : &((SET)->info_ordinary))
+inline struct maps_info *
+LINEMAPS_MAP_INFO (line_maps *set, bool macro_map_p)
+{
+  return (macro_map_p
+	  ? &(set->info_macro)
+	  : &(set->info_ordinary));
+}
+
+/* As above, but preserving constness.  */
+
+inline const struct maps_info *
+LINEMAPS_MAP_INFO (const line_maps *set, bool macro_map_p)
+{
+  return (macro_map_p
+	  ? &(set->info_macro)
+	  : &(set->info_ordinary));
+}
 
 /* Returns the pointer to the memory region where maps are stored in
    the line table SET. MAP_KIND shall be TRUE if we are interested in
    macro maps false otherwise.  */
-#define LINEMAPS_MAPS(SET, MAP_KIND) \
-  (LINEMAPS_MAP_INFO (SET, MAP_KIND))->maps
+inline line_map *
+LINEMAPS_MAPS (const line_maps *set, bool map_kind)
+{
+  return LINEMAPS_MAP_INFO (set, map_kind)->maps;
+}
+
+/* As above, but by reference (e.g. as an lvalue).  */
+
+inline line_map * &
+LINEMAPS_MAPS (line_maps *set, bool map_kind)
+{
+  return LINEMAPS_MAP_INFO (set, map_kind)->maps;
+}
 
 /* Returns the number of allocated maps so far. MAP_KIND shall be TRUE
    if we are interested in macro maps, FALSE otherwise.  */
-#define LINEMAPS_ALLOCATED(SET, MAP_KIND) \
-  (LINEMAPS_MAP_INFO (SET, MAP_KIND))->allocated
+inline unsigned int
+LINEMAPS_ALLOCATED (const line_maps *set, bool map_kind)
+{
+  return LINEMAPS_MAP_INFO (set, map_kind)->allocated;
+}
+
+/* As above, but by reference (e.g. as an lvalue).  */
+
+inline unsigned int &
+LINEMAPS_ALLOCATED (line_maps *set, bool map_kind)
+{
+  return LINEMAPS_MAP_INFO (set, map_kind)->allocated;
+}
 
 /* Returns the number of used maps so far. MAP_KIND shall be TRUE if
    we are interested in macro maps, FALSE otherwise.*/
-#define LINEMAPS_USED(SET, MAP_KIND) \
-  (LINEMAPS_MAP_INFO (SET, MAP_KIND))->used
+inline unsigned int
+LINEMAPS_USED (const line_maps *set, bool map_kind)
+{
+  return LINEMAPS_MAP_INFO (set, map_kind)->used;
+}
+
+/* As above, but by reference (e.g. as an lvalue).  */
+
+inline unsigned int &
+LINEMAPS_USED (line_maps *set, bool map_kind)
+{
+  return LINEMAPS_MAP_INFO (set, map_kind)->used;
+}
 
 /* Returns the index of the last map that was looked up with
    linemap_lookup. MAP_KIND shall be TRUE if we are interested in
    macro maps, FALSE otherwise.  */
-#define LINEMAPS_CACHE(SET, MAP_KIND) \
-  (LINEMAPS_MAP_INFO (SET, MAP_KIND))->cache
+inline unsigned int
+LINEMAPS_CACHE (const line_maps *set, bool map_kind)
+{
+  return LINEMAPS_MAP_INFO (set, map_kind)->cache;
+}
+
+/* As above, but by reference (e.g. as an lvalue).  */
+
+inline unsigned int &
+LINEMAPS_CACHE (line_maps *set, bool map_kind)
+{
+  return LINEMAPS_MAP_INFO (set, map_kind)->cache;
+}
 
 /* Return the map at a given index.  */
-#define LINEMAPS_MAP_AT(SET, MAP_KIND, INDEX)	\
-  (&((LINEMAPS_MAPS (SET, MAP_KIND))[(INDEX)]))
+inline line_map *
+LINEMAPS_MAP_AT (const line_maps *set, bool map_kind, int index)
+{
+  return &(LINEMAPS_MAPS (set, map_kind)[index]);
+}
 
 /* Returns the last map used in the line table SET. MAP_KIND
    shall be TRUE if we are interested in macro maps, FALSE
    otherwise.*/
-#define LINEMAPS_LAST_MAP(SET, MAP_KIND) \
-  LINEMAPS_MAP_AT (SET, MAP_KIND, (LINEMAPS_USED (SET, MAP_KIND) - 1))
+inline line_map *
+LINEMAPS_LAST_MAP (const line_maps *set, bool map_kind)
+{
+  return LINEMAPS_MAP_AT (set, map_kind,
+			  LINEMAPS_USED (set, map_kind) - 1);
+}
 
 /* Returns the last map that was allocated in the line table SET.
    MAP_KIND shall be TRUE if we are interested in macro maps, FALSE
    otherwise.*/
-#define LINEMAPS_LAST_ALLOCATED_MAP(SET, MAP_KIND) \
-  LINEMAPS_MAP_AT (SET, MAP_KIND, LINEMAPS_ALLOCATED (SET, MAP_KIND) - 1)
+inline line_map *
+LINEMAPS_LAST_ALLOCATED_MAP (const line_maps *set, bool map_kind)
+{
+  return LINEMAPS_MAP_AT (set, map_kind,
+			  LINEMAPS_ALLOCATED (set, map_kind) - 1);
+}
 
 /* Returns a pointer to the memory region where ordinary maps are
    allocated in the line table SET.  */
-#define LINEMAPS_ORDINARY_MAPS(SET) \
-  LINEMAPS_MAPS (SET, false)
+inline line_map *
+LINEMAPS_ORDINARY_MAPS (const line_maps *set)
+{
+  return LINEMAPS_MAPS (set, false);
+}
 
 /* Returns the INDEXth ordinary map.  */
-#define LINEMAPS_ORDINARY_MAP_AT(SET, INDEX)	\
-  LINEMAPS_MAP_AT (SET, false, INDEX)
+inline line_map *
+LINEMAPS_ORDINARY_MAP_AT (const line_maps *set, int index)
+{
+  return LINEMAPS_MAP_AT (set, false, index);
+}
 
 /* Return the number of ordinary maps allocated in the line table
    SET.  */
-#define LINEMAPS_ORDINARY_ALLOCATED(SET) \
-  LINEMAPS_ALLOCATED(SET, false)
+inline unsigned int
+LINEMAPS_ORDINARY_ALLOCATED (const line_maps *set)
+{
+  return LINEMAPS_ALLOCATED (set, false);
+}
 
 /* Return the number of ordinary maps used in the line table SET.  */
-#define LINEMAPS_ORDINARY_USED(SET) \
-  LINEMAPS_USED(SET, false)
+inline unsigned int
+LINEMAPS_ORDINARY_USED (const line_maps *set)
+{
+  return LINEMAPS_USED (set, false);
+}
 
 /* Return the index of the last ordinary map that was looked up with
    linemap_lookup.  */
-#define LINEMAPS_ORDINARY_CACHE(SET) \
-  LINEMAPS_CACHE(SET, false)
+inline unsigned int
+LINEMAPS_ORDINARY_CACHE (const line_maps *set)
+{
+  return LINEMAPS_CACHE (set, false);
+}
+
+/* As above, but by reference (e.g. as an lvalue).  */
+
+inline unsigned int &
+LINEMAPS_ORDINARY_CACHE (line_maps *set)
+{
+  return LINEMAPS_CACHE (set, false);
+}
 
 /* Returns a pointer to the last ordinary map used in the line table
    SET.  */
-#define LINEMAPS_LAST_ORDINARY_MAP(SET) \
-  LINEMAPS_LAST_MAP(SET, false)
+inline line_map *
+LINEMAPS_LAST_ORDINARY_MAP (const line_maps *set)
+{
+  return LINEMAPS_LAST_MAP (set, false);
+}
 
 /* Returns a pointer to the last ordinary map allocated the line table
    SET.  */
-#define LINEMAPS_LAST_ALLOCATED_ORDINARY_MAP(SET) \
-  LINEMAPS_LAST_ALLOCATED_MAP(SET, false)
+inline line_map *
+LINEMAPS_LAST_ALLOCATED_ORDINARY_MAP (const line_maps *set)
+{
+  return LINEMAPS_LAST_ALLOCATED_MAP (set, false);
+}
 
 /* Returns a pointer to the beginning of the region where macro maps
    are allcoated.  */
-#define LINEMAPS_MACRO_MAPS(SET) \
-  LINEMAPS_MAPS(SET, true)
+inline line_map *
+LINEMAPS_MACRO_MAPS (const line_maps *set)
+{
+  return LINEMAPS_MAPS (set, true);
+}
 
 /* Returns the INDEXth macro map.  */
-#define LINEMAPS_MACRO_MAP_AT(SET, INDEX)	\
-  LINEMAPS_MAP_AT (SET, true, INDEX)
+inline line_map *
+LINEMAPS_MACRO_MAP_AT (const line_maps *set, int index)
+{
+  return LINEMAPS_MAP_AT (set, true, index);
+}
 
 /* Returns the number of macro maps that were allocated in the line
    table SET.  */
-#define LINEMAPS_MACRO_ALLOCATED(SET) \
-  LINEMAPS_ALLOCATED(SET, true)
+inline unsigned int
+LINEMAPS_MACRO_ALLOCATED (const line_maps *set)
+{
+  return LINEMAPS_ALLOCATED (set, true);
+}
 
 /* Returns the number of macro maps used in the line table SET.  */
-#define LINEMAPS_MACRO_USED(SET) \
-  LINEMAPS_USED(SET, true)
+inline unsigned int
+LINEMAPS_MACRO_USED (const line_maps *set)
+{
+  return LINEMAPS_USED (set, true);
+}
 
 /* Returns the index of the last macro map looked up with
    linemap_lookup.  */
-#define LINEMAPS_MACRO_CACHE(SET) \
-  LINEMAPS_CACHE(SET, true)
+inline unsigned int
+LINEMAPS_MACRO_CACHE (const line_maps *set)
+{
+  return LINEMAPS_CACHE (set, true);
+}
+
+/* As above, but by reference (e.g. as an lvalue).  */
+
+inline unsigned int &
+LINEMAPS_MACRO_CACHE (line_maps *set)
+{
+  return LINEMAPS_CACHE (set, true);
+}
+
+/* Returns the last macro map used in the line table SET.  */
+inline line_map *
+LINEMAPS_LAST_MACRO_MAP (const line_maps *set)
+{
+  return LINEMAPS_LAST_MAP (set, true);
+}
 
 /* Returns the lowest location [of a token resulting from macro
    expansion] encoded in this line table.  */
-#define LINEMAPS_MACRO_LOWEST_LOCATION(SET)			\
-  (LINEMAPS_MACRO_USED (set)					\
-   ? MAP_START_LOCATION (LINEMAPS_LAST_MACRO_MAP (set))		\
-   : MAX_SOURCE_LOCATION)
-
-/* Returns the last macro map used in the line table SET.  */
-#define LINEMAPS_LAST_MACRO_MAP(SET) \
-  LINEMAPS_LAST_MAP (SET, true)
+inline source_location
+LINEMAPS_MACRO_LOWEST_LOCATION (const line_maps *set)
+{
+  return LINEMAPS_MACRO_USED (set)
+         ? MAP_START_LOCATION (LINEMAPS_LAST_MACRO_MAP (set))
+         : MAX_SOURCE_LOCATION;
+}
 
 /* Returns the last macro map allocated in the line table SET.  */
-#define LINEMAPS_LAST_ALLOCATED_MACRO_MAP(SET) \
-  LINEMAPS_LAST_ALLOCATED_MAP (SET, true)
+inline line_map *
+LINEMAPS_LAST_ALLOCATED_MACRO_MAP (const line_maps *set)
+{
+  return LINEMAPS_LAST_ALLOCATED_MAP (set, true);
+}
 
 extern void location_adhoc_data_fini (struct line_maps *);
 extern source_location get_combined_adhoc_loc (struct line_maps *,
@@ -551,9 +840,23 @@ extern void *get_data_from_adhoc_loc (struct line_maps *, source_location);
 extern source_location get_location_from_adhoc_loc (struct line_maps *,
 						    source_location);
 
-#define IS_ADHOC_LOC(LOC) (((LOC) & MAX_SOURCE_LOCATION) != (LOC))
-#define COMBINE_LOCATION_DATA(SET, LOC, BLOCK) \
-  get_combined_adhoc_loc ((SET), (LOC), (BLOCK))
+/* Get whether location LOC is an ad-hoc location.  */
+
+inline bool
+IS_ADHOC_LOC (source_location loc)
+{
+  return (loc & MAX_SOURCE_LOCATION) != loc;
+}
+
+/* Combine LOC and BLOCK, giving a combined adhoc location.  */
+
+inline source_location
+COMBINE_LOCATION_DATA (struct line_maps *set,
+		       source_location loc,
+		       void *block)
+{
+  return get_combined_adhoc_loc (set, loc, block);
+}
 
 extern void rebuild_location_adhoc_htab (struct line_maps *);
 
@@ -631,47 +934,72 @@ bool linemap_location_from_macro_expansion_p (const struct line_maps *,
 /* source_location values from 0 to RESERVED_LOCATION_COUNT-1 will
    be reserved for libcpp user as special values, no token from libcpp
    will contain any of those locations.  */
-#define RESERVED_LOCATION_COUNT	2
+const int RESERVED_LOCATION_COUNT = 2;
 
 /* Converts a map and a source_location to source line.  */
-#define SOURCE_LINE(MAP, LOC)						\
-  (((((LOC) - linemap_check_ordinary (MAP)->start_location)		\
-     >> (MAP)->d.ordinary.column_bits) + (MAP)->d.ordinary.to_line))
+inline linenum_type
+SOURCE_LINE (const struct line_map *map, source_location loc)
+{
+  return ((loc - linemap_check_ordinary (map)->start_location)
+	  >> map->d.ordinary.column_bits) + map->d.ordinary.to_line;
+}
 
 /* Convert a map and source_location to source column number.  */
-#define SOURCE_COLUMN(MAP, LOC)						\
-  ((((LOC) - linemap_check_ordinary (MAP)->start_location)		\
-    & ((1 << (MAP)->d.ordinary.column_bits) - 1)))
+inline linenum_type
+SOURCE_COLUMN (const struct line_map *map, source_location loc)
+{
+  return ((loc - linemap_check_ordinary (map)->start_location)
+	  & ((1 << map->d.ordinary.column_bits) - 1));
+}
+
+/* Return the location of the last source line within an ordinary
+   map.  */
+inline source_location
+LAST_SOURCE_LINE_LOCATION (const struct line_map *map)
+{
+  return (((linemap_check_ordinary (map)[1].start_location - 1
+	    - map->start_location)
+	   & ~((1 << map->d.ordinary.column_bits) - 1))
+	  + map->start_location);
+}
 
 /* Returns the last source line number within an ordinary map.  This
    is the (last) line of the #include, or other directive, that caused
    a map change.  */
-#define LAST_SOURCE_LINE(MAP) \
-  SOURCE_LINE (MAP, LAST_SOURCE_LINE_LOCATION (MAP))
+
+inline linenum_type
+LAST_SOURCE_LINE (const struct line_map *map)
+{
+  return SOURCE_LINE (map, LAST_SOURCE_LINE_LOCATION (map));
+}
 
 /* Return the last column number within an ordinary map.  */
-#define LAST_SOURCE_COLUMN(MAP) \
-  SOURCE_COLUMN (MAP, LAST_SOURCE_LINE_LOCATION (MAP))
 
-/* Return the location of the last source line within an ordinary
-   map.  */
-#define LAST_SOURCE_LINE_LOCATION(MAP)					\
-  ((((linemap_check_ordinary (MAP)[1].start_location - 1		\
-      - (MAP)->start_location)						\
-     & ~((1 << (MAP)->d.ordinary.column_bits) - 1))			\
-    + (MAP)->start_location))
+inline linenum_type
+LAST_SOURCE_COLUMN (const struct line_map *map)
+{
+  return SOURCE_COLUMN (map, LAST_SOURCE_LINE_LOCATION (map));
+}
 
 /* Returns the map a given map was included from, or NULL if the map
    belongs to the main file, i.e, a file that wasn't included by
    another one.  */
-#define INCLUDED_FROM(SET, MAP)						\
-  ((linemap_check_ordinary (MAP)->d.ordinary.included_from == -1)	\
-   ? NULL								\
-   : (&LINEMAPS_ORDINARY_MAPS (SET)[(MAP)->d.ordinary.included_from]))
 
-/* Nonzero if the map is at the bottom of the include stack.  */
-#define MAIN_FILE_P(MAP)						\
-  ((linemap_check_ordinary (MAP)->d.ordinary.included_from < 0))
+inline struct line_map *
+INCLUDED_FROM (struct line_maps *set, const struct line_map *map)
+{
+  return ((linemap_check_ordinary (map)->d.ordinary.included_from == -1)
+	  ? NULL
+	  : (&LINEMAPS_ORDINARY_MAPS (set)[(map)->d.ordinary.included_from]));
+}
+
+/* True if the map is at the bottom of the include stack.  */
+
+inline bool
+MAIN_FILE_P (const struct line_map *map)
+{
+  return linemap_check_ordinary (map)->d.ordinary.included_from < 0;
+}
 
 /* Encode and return a source_location from a column number. The
    source line considered is the last source line used to call
@@ -695,19 +1023,28 @@ linemap_position_for_loc_and_offset (struct line_maps *set,
 				     unsigned int offset);
 
 /* Return the file this map is for.  */
-#define LINEMAP_FILE(MAP)					\
-  (linemap_check_ordinary (MAP)->d.ordinary.to_file)
+inline const char *
+LINEMAP_FILE (const struct line_map *map)
+{
+  return linemap_check_ordinary (map)->d.ordinary.to_file;
+}
 
 /* Return the line number this map started encoding location from.  */
-#define LINEMAP_LINE(MAP)					\
-  (linemap_check_ordinary (MAP)->d.ordinary.to_line)
+inline linenum_type
+LINEMAP_LINE (const struct line_map *map)
+{
+  return linemap_check_ordinary (map)->d.ordinary.to_line;
+}
 
 /* Return a positive value if map encodes locations from a system
    header, 0 otherwise. Returns 1 if MAP encodes locations in a
    system header and 2 if it encodes locations in a C system header
    that therefore needs to be extern "C" protected in C++.  */
-#define LINEMAP_SYSP(MAP)					\
-  (linemap_check_ordinary (MAP)->d.ordinary.sysp)
+inline unsigned char
+LINEMAP_SYSP (const struct line_map *map)
+{
+  return linemap_check_ordinary (map)->d.ordinary.sysp;
+}
 
 /* Return a positive value if PRE denotes the location of a token that
    comes before the token of POST, 0 if PRE denotes the location of
@@ -720,8 +1057,13 @@ int linemap_compare_locations (struct line_maps *set,
 /* Return TRUE if LOC_A denotes the location a token that comes
    topogically before the token denoted by location LOC_B, or if they
    are equal.  */
-#define linemap_location_before_p(SET, LOC_A, LOC_B)	\
-  (linemap_compare_locations ((SET), (LOC_A), (LOC_B)) >= 0)
+inline bool
+linemap_location_before_p (struct line_maps *set,
+			   source_location loc_a,
+			   source_location loc_b)
+{
+  return linemap_compare_locations (set, loc_a, loc_b) >= 0;
+}
 
 typedef struct
 {
