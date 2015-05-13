@@ -1,3 +1,7 @@
+2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
+
+	* aclocal.m4: Regenerated with automake-1.11.6.
+
 2015-04-22  Gregor Richards  <gregor.richards@uwaterloo.ca>
 
 	* mkfixinc.sh: Add *-musl* with no fixes.
