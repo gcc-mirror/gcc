@@ -36,6 +36,7 @@
 #else
 
 #include <tuple>
+#include <functional>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -54,7 +55,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Fn, typename _Tuple, std::size_t... _Idx>
     constexpr decltype(auto)
     __apply_impl(_Fn&& f, _Tuple&& t, std::index_sequence<_Idx...>)
-    { return std::forward<_Fn>(f)(get<_Idx>(forward<_Tuple>(t))...); }
+    {
+      using _Wrap = _Maybe_wrap_member_pointer<decay_t<_Fn>>;
+      return _Wrap::__do_wrap(std::forward<_Fn>(f))(
+	  get<_Idx>(forward<_Tuple>(t))...);
+    }
 
   template <typename _Fn, typename _Tuple>
     constexpr decltype(auto)

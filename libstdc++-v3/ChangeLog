@@ -1,5 +1,11 @@
 2015-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/tuple (apply): Handle pointers to member (LWG
+	2418).
+	* include/std/functional (_Mem_fn_base): Make constructors constexpr.
+	(_Maybe_wrap_member_pointer::__do_wrap): Make constexpr.
+	* testsuite/experimental/tuple/apply.cc: Test pointer to member.
+
 	* include/bits/random.h (seed_seq): More noexcept (LWG 2440).
 
 	* include/bits/alloc_traits.h (_S_max_size): Implement LWG 2466.

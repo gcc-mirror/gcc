@@ -572,7 +572,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     public:
       using result_type = typename _Traits::__result_type;
 
-      explicit _Mem_fn_base(_Pmf __pmf) : _M_pmf(__pmf) { }
+      explicit constexpr _Mem_fn_base(_Pmf __pmf) : _M_pmf(__pmf) { }
 
       // Handle objects
       template<typename... _Args, typename _Req
@@ -671,7 +671,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
 	friend struct _Bind_check_arity;
 
     public:
-      explicit
+      explicit constexpr
       _Mem_fn_base(_Res _Class::*__pm) noexcept : _M_pm(__pm) { }
 
       // Handle objects
@@ -1002,11 +1002,11 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     {
       typedef _Tp type;
 
-      static const _Tp&
+      static constexpr const _Tp&
       __do_wrap(const _Tp& __x)
       { return __x; }
 
-      static _Tp&&
+      static constexpr _Tp&&
       __do_wrap(_Tp&& __x)
       { return static_cast<_Tp&&>(__x); }
     };
@@ -1021,7 +1021,7 @@ _GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
     {
       typedef _Mem_fn<_Tp _Class::*> type;
 
-      static type
+      static constexpr type
       __do_wrap(_Tp _Class::* __pm)
       { return type(__pm); }
     };
