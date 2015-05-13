@@ -248,7 +248,7 @@ std::rethrow_exception(std::exception_ptr ep)
   __cxa_eh_globals *globals = __cxa_get_globals ();
   globals->uncaughtExceptions += 1;
 
-#ifdef _GLIBCXX_SJLJ_EXCEPTIONS
+#ifdef __USING_SJLJ_EXCEPTIONS__
   _Unwind_SjLj_RaiseException (&dep->unwindHeader);
 #else
   _Unwind_RaiseException (&dep->unwindHeader);

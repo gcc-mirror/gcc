@@ -112,7 +112,7 @@ _Jv_Throw (jthrowable value)
 
   /* We're happy with setjmp/longjmp exceptions or region-based
      exception handlers: entry points are provided here for both.  */
-#ifdef SJLJ_EXCEPTIONS
+#ifdef __USING_SJLJ_EXCEPTIONS__
   _Unwind_SjLj_RaiseException (&xh->unwindHeader);
 #else
   _Unwind_RaiseException (&xh->unwindHeader);
@@ -194,7 +194,7 @@ get_ttype_entry (_Unwind_Context *context, lsda_header_info *info, long i)
 
 // Using a different personality function name causes link failures
 // when trying to mix code using different exception handling models.
-#ifdef SJLJ_EXCEPTIONS
+#ifdef __USING_SJLJ_EXCEPTIONS__
 #define PERSONALITY_FUNCTION	__gcj_personality_sj0
 #define __builtin_eh_return_data_regno(x) x
 #elif defined (__SEH__)
@@ -331,7 +331,7 @@ PERSONALITY_FUNCTION (int version,
   action_record = 0;
   handler_switch_value = 0;
 
-#ifdef SJLJ_EXCEPTIONS
+#ifdef __USING_SJLJ_EXCEPTIONS__
   // The given "IP" is an index into the call-site table, with two
   // exceptions -- -1 means no-action, and 0 means terminate.  But
   // since we're using uleb128 values, we've not got random access
@@ -380,7 +380,7 @@ PERSONALITY_FUNCTION (int version,
 	  goto found_something;
 	}
     }
-#endif // SJLJ_EXCEPTIONS
+#endif // __USING_SJLJ_EXCEPTIONS__
 
   // If ip is not present in the table, C++ would call terminate.
   // ??? It is perhaps better to tweek the LSDA so that no-action

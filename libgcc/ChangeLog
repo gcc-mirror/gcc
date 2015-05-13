@@ -1,3 +1,11 @@
+2015-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac: Include config/sjlj.m4.
+	Remove manual SJLJ check, add GCC_CHECK_SJLJ_EXCEPTIONS and adjust.
+	* config.in: Regenerate.
+	* configure: Likewise.
+	* config.host: Replace enable_sjlj_exceptions by ac_cv_sjlj_exceptions.
+
 2015-05-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* libgcov-util.c: Add space between string literal and macro name.

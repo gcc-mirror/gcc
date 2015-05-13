@@ -76,7 +76,7 @@ __cxxabiv1::__cxa_throw (void *obj, std::type_info *tinfo,
   __GXX_INIT_PRIMARY_EXCEPTION_CLASS(header->exc.unwindHeader.exception_class);
   header->exc.unwindHeader.exception_cleanup = __gxx_exception_cleanup;
 
-#ifdef _GLIBCXX_SJLJ_EXCEPTIONS
+#ifdef __USING_SJLJ_EXCEPTIONS__
   _Unwind_SjLj_RaiseException (&header->exc.unwindHeader);
 #else
   _Unwind_RaiseException (&header->exc.unwindHeader);
@@ -109,7 +109,7 @@ __cxxabiv1::__cxa_rethrow ()
 		  header->exceptionType);
 	}
 
-#ifdef _GLIBCXX_SJLJ_EXCEPTIONS
+#ifdef __USING_SJLJ_EXCEPTIONS__
       _Unwind_SjLj_Resume_or_Rethrow (&header->unwindHeader);
 #else
 #if defined(_LIBUNWIND_STD_ABI)

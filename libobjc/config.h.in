@@ -67,8 +67,5 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* Define if the compiler is configured for setjmp/longjmp exceptions. */
-#undef SJLJ_EXCEPTIONS
-
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS

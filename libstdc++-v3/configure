@@ -862,7 +862,6 @@ with_gnu_ld
 enable_libtool_lock
 enable_hosted_libstdcxx
 enable_libstdcxx_verbose
-enable_sjlj_exceptions
 enable_libstdcxx_pch
 enable_cstdio
 enable_clocale
@@ -1542,9 +1541,6 @@ Optional Features:
                           only build freestanding C++ runtime support
   --disable-libstdcxx-verbose
                           disable termination messages to standard error
-  --enable-sjlj-exceptions
-                          force use of builtin_setjmp for exceptions
-                          [default=auto]
   --enable-libstdcxx-pch  build pre-compiled libstdc++ headers
                           [default=$is_hosted]
   --enable-cstdio[=PACKAGE]
@@ -11655,7 +11651,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11658 "configure"
+#line 11654 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11761,7 +11757,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11764 "configure"
+#line 11760 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15151,92 +15147,6 @@ _ACEOF
 
 # Enable compiler support that doesn't require linking.
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for exception model to use" >&5
-$as_echo_n "checking for exception model to use... " >&6; }
-
-  ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-   # Check whether --enable-sjlj-exceptions was given.
-if test "${enable_sjlj_exceptions+set}" = set; then :
-  enableval=$enable_sjlj_exceptions;
-      case "$enableval" in
-       yes|no|auto) ;;
-       *) as_fn_error "Unknown argument to enable/disable sjlj-exceptions" "$LINENO" 5 ;;
-	  	        esac
-
-else
-  enable_sjlj_exceptions=auto
-fi
-
-
-
-  if test $enable_sjlj_exceptions = auto; then
-    # Botheration.  Now we've got to detect the exception model.  Link tests
-    # against libgcc.a are problematic since we've not been given proper -L
-    # bits for single-tree newlib and libgloss.
-    #
-    # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
-    cat > conftest.$ac_ext << EOF
-#line 15184 "configure"
-struct S { ~S(); };
-void bar();
-void foo()
-{
-  S s;
-  bar();
-}
-EOF
-    old_CXXFLAGS="$CXXFLAGS"
-    CXXFLAGS=-S
-    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
-  (eval $ac_compile) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-      if grep _Unwind_SjLj_Resume conftest.s >/dev/null 2>&1 ; then
-	enable_sjlj_exceptions=yes
-      elif grep _Unwind_SjLj_Register conftest.s >/dev/null 2>&1 ; then
-	enable_sjlj_exceptions=yes
-      elif grep _Unwind_Resume conftest.s >/dev/null 2>&1 ; then
-	enable_sjlj_exceptions=no
-      elif grep __cxa_end_cleanup conftest.s >/dev/null 2>&1 ; then
-	enable_sjlj_exceptions=no
-      fi
-    fi
-    CXXFLAGS="$old_CXXFLAGS"
-    rm -f conftest*
-  fi
-
-  # This is a tad weird, for hysterical raisins.  We have to map
-  # enable/disable to two different models.
-  case $enable_sjlj_exceptions in
-    yes)
-
-$as_echo "#define _GLIBCXX_SJLJ_EXCEPTIONS 1" >>confdefs.h
-
-      ac_exception_model_name=sjlj
-      ;;
-    no)
-      ac_exception_model_name="call frame"
-      ;;
-    *)
-      as_fn_error "unable to detect exception model" "$LINENO" 5
-      ;;
-  esac
- ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
- { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_exception_model_name" >&5
-$as_echo "$ac_exception_model_name" >&6; }
-
-
    # Check whether --enable-libstdcxx-pch was given.
 if test "${enable_libstdcxx_pch+set}" = set; then :
   enableval=$enable_libstdcxx_pch;
@@ -15533,7 +15443,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15536 "configure"
+#line 15446 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15568,7 +15478,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15571 "configure"
+#line 15481 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15603,7 +15513,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15606 "configure"
+#line 15516 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15639,7 +15549,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15642 "configure"
+#line 15552 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15718,7 +15628,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15721 "configure"
+#line 15631 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15760,7 +15670,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15763 "configure"
+#line 15673 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15794,7 +15704,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15797 "configure"
+#line 15707 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
