@@ -1,5 +1,12 @@
 2015-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/shared_ptr_base.h (__shared_count(unique_ptr&&)): Check
+	for nullptr (LWG 2415).
+	* testsuite/20_util/shared_ptr/cons/unique_ptr_deleter.cc: Test
+	construction from empty unique_ptr.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust dg-error.
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Likewise.
+
 	* include/bits/stl_raw_storage_iter.h (raw_storage_iterator::base()):
 	Define (LWG 2454).
 	* testsuite/20_util/raw_storage_iterator/base.cc: New.

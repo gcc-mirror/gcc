@@ -632,6 +632,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         explicit
 	__shared_count(std::unique_ptr<_Tp, _Del>&& __r) : _M_pi(0)
 	{
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 2415. Inconsistency between unique_ptr and shared_ptr
+	  if (__r.get() == nullptr)
+	    return;
+
 	  using _Ptr = typename unique_ptr<_Tp, _Del>::pointer;
 	  using _Del2 = typename conditional<is_reference<_Del>::value,
 	      reference_wrapper<typename remove_reference<_Del>::type>,
