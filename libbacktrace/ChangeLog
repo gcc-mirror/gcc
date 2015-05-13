@@ -1,3 +1,9 @@
+2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
+
+	* Makefile.in: Regenerated with automake-1.11.6.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+
 2015-01-24  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: Move AM_ENABLE_MULTILIB before AC_PROG_CC.
