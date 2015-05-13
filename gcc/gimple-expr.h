@@ -136,9 +136,9 @@ is_gimple_constant (const_tree t)
     case INTEGER_CST:
     case REAL_CST:
     case FIXED_CST:
-    case STRING_CST:
     case COMPLEX_CST:
     case VECTOR_CST:
+    case STRING_CST:
       return true;
 
     default:

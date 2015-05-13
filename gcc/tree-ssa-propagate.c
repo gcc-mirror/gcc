@@ -1246,9 +1246,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 	      && gimple_call_noreturn_p (stmt))
 	    stmts_to_fixup.safe_push (stmt);
 
-	  if (is_gimple_assign (stmt)
-	      && (get_gimple_rhs_class (gimple_assign_rhs_code (stmt))
-		  == GIMPLE_SINGLE_RHS))
+	  if (gimple_assign_single_p (stmt))
 	    {
 	      tree rhs = gimple_assign_rhs1 (stmt);
 
