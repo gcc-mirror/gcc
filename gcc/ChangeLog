@@ -1,3 +1,16 @@
+2015-05-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_emit_set_long_const): Remove c1 argument.
+	(alpha_extract_integer): Redeclare as static HOST_WIDE_INT.
+	Remove *p0 and *p1 arguments.  Rewrite function.
+	(alpha_legitimate_constant_p): Update call to alpha_extract_integer.
+	(alpha_split_const_mov): Update calls to alpha_extract_integer and
+	alpha_emit_set_long_const.
+	(alpha_expand_epilogue): Update calls to alpha_emit_set_long_const.
+	(alpha_output_mi_thunk_osf): Ditto.
+	* config/alpha/alpha.md (movti): Do not check operands[1]
+	for CONST_DOUBLE.
+
 2015-05-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66129
