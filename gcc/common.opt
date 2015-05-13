@@ -1166,6 +1166,10 @@ Common Driver Var(flag_report_bug)
 Collect and dump debug information into temporary file if ICE in C/C++
 compiler occured.
 
+fdump-internal-locations
+Common Var(flag_dump_locations) Init(0)
+Dump detailed information on GCC's internal representation of source code locations
+
 fdump-passes
 Common Var(flag_dump_passes) Init(0)
 Dump optimization passes

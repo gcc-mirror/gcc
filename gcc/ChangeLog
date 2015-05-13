@@ -1,3 +1,16 @@
+2015-05-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt (fdump-internal-locations): New option.
+	* input.c: Include diagnostic-core.h.
+	(get_end_location): New function.
+	(write_digit): New function.
+	(write_digit_row): New function.
+	(dump_location_range): New function.
+	(dump_labelled_location_range): New function.
+	(dump_location_info): New function.
+	* input.h (dump_location_info): New prototype.
+	* toplev.c (compile_file): Handle flag_dump_locations.
+
 2015-05-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-expr.h (is_gimple_constant): Reorder.

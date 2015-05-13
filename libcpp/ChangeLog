@@ -1,5 +1,11 @@
 2015-05-13  David Malcolm  <dmalcolm@redhat.com>
 
+	* include/line-map.h (source_location): Add a reference to
+	location-example.txt to the descriptive comment.
+	* location-example.txt: New file.
+
+2015-05-13  David Malcolm  <dmalcolm@redhat.com>
+
 	* include/line-map.h (MAX_SOURCE_LOCATION): Convert from a macro
 	to a const source_location.
 	(RESERVED_LOCATION_COUNT): Likewise.
