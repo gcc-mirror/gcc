@@ -41,9 +41,23 @@ test02()
   VERIFY( i == 3 );
 }
 
+struct F
+{
+  int f(int i, int j) const { return i + j; }
+};
+
+void
+test03()
+{
+  auto t = std::make_tuple(F{}, 1, 2);
+  int r = std::experimental::apply(&F::f, t);
+  VERIFY( r == 3 );
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }
