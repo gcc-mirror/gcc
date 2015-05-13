@@ -491,7 +491,7 @@ namespace __gnu_test
       SimpleAllocator() noexcept { }
 
       template <class T>
-        SimpleAllocator(const SimpleAllocator<T>& other) { }
+        SimpleAllocator(const SimpleAllocator<T>&) { }
 
       Tp *allocate(std::size_t n)
       { return std::allocator<Tp>().allocate(n); }

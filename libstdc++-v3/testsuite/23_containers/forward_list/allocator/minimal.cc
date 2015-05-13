@@ -38,7 +38,7 @@ void test01()
   typedef std::forward_list<T, alloc_type> test_type;
   test_type v(alloc_type{});
   v.push_front(T());
-  VERIFY( v.max_size() == traits_type::max_size(v.get_allocator()) );
+  VERIFY( v.max_size() < traits_type::max_size(v.get_allocator()) );
 }
 
 int main()

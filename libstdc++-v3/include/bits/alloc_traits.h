@@ -315,7 +315,12 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
 	       typename = _Require<__not_<__has_max_size<_Alloc2>>>>
 	static size_type
 	_S_max_size(_Alloc2&, ...)
-	{ return __gnu_cxx::__numeric_traits<size_type>::__max; }
+	{
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 2466. allocator_traits::max_size() default behavior is incorrect
+	  return __gnu_cxx::__numeric_traits<size_type>::__max
+	    / sizeof(value_type);
+	}
 
       template<typename _Alloc2>
 	struct __select_helper
