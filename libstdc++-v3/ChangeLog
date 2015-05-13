@@ -1,5 +1,8 @@
 2015-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/future (packaged_task(allocator_arg_t, const A&, F&&):
+	Remove explicit (LWG 2407).
+
 	* include/bits/basic_string.h (basic_string::basic_string()): Make
 	noexcept conditional on allocator (LWG 2455).
 
