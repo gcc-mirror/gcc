@@ -1,4 +1,4 @@
-# Makefile.am is used by automake 1.11 to generate Makefile.in.
+## Process this file with automake to produce Makefile.in.
 
 ACLOCAL_AMFLAGS = -I .. -I ../config
 AUTOMAKE_OPTIONS = no-dependencies
