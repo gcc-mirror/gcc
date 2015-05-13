@@ -1,6 +1,9 @@
 2015-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/66112
+	* gcc.target/i386/pr66112-2.c: New test.
+
+	PR target/66112
 	* gcc.target/i386/pr66112-1.c: New test.
 
 2015-05-13  Ilya Enkovich  <ilya.enkovich@intel.com>
