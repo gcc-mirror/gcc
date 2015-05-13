@@ -42006,7 +42006,9 @@ ix86_rtx_costs (rtx x, int code_i, int outer_code_i, int opno, int *total,
 	       && !(TARGET_64BIT
 		    && (GET_CODE (x) == LABEL_REF
 			|| (GET_CODE (x) == SYMBOL_REF
-			    && SYMBOL_REF_LOCAL_P (x)))))
+			    && SYMBOL_REF_LOCAL_P (x))))
+	       /* Use 0 cost for CONST to improve its propagation.  */
+	       && (TARGET_64BIT || GET_CODE (x) != CONST))
 	*total = 1;
       else
 	*total = 0;

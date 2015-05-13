@@ -1,3 +1,10 @@
+2015-05-13  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65103
+	* config/i386/i386.c (ix86_rtx_costs): We want to propagate
+	link time constants into adress expressions and therefore set
+	their cost to 0.
+
 2015-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/66112
