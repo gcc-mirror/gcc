@@ -3926,7 +3926,7 @@ AC_DEFUN([GLIBCXX_ENABLE_FILESYSTEM_TS], [
         enable_libstdcxx_filesystem_ts=yes
         ;;
       solaris*)
-        enable_libstdcxx_filesystem_ts=no
+        enable_libstdcxx_filesystem_ts=yes
         ;;
       *)
         enable_libstdcxx_filesystem_ts=no
