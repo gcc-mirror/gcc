@@ -1,3 +1,12 @@
+2015-05-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*mul<mode>3_1): Merge with *mulhi3_1
+	using SWIM248 mode iterator.
+	(*mulv<mode>4): Use x86_64_sext_operand for operand[2] constraint.
+	(*mulvhi4): mark operand[1] as commutative.  Use nonimmediate_operand
+	for operand[2] constraint.
+	(*mulv<mode>4_1): Merge with *mulvhi4_1 using SWI248 mode iterator.
+
 2015-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/66133
