@@ -22,11 +22,6 @@
 	libstdc++ built many different ways:  "-msoft-float"
 	and not, etc.  A different libstdc++ will be built for each of
 	the different multilib versions.  This option is on by default.
-     </p></dd><dt><span class="term"><code class="code">--enable-sjlj-exceptions</code></span></dt><dd><p>Forces old, set-jump/long-jump exception handling model.  If
-	at all possible, the new, frame unwinding exception handling routines
-	should be used instead, as they significantly reduce both
-	runtime memory usage and executable size. This option can
-	change the library ABI.
      </p></dd><dt><span class="term"><code class="code">--enable-version-specific-runtime-libs</code></span></dt><dd><p>Specify that run-time libraries should be installed in the
 	compiler-specific subdirectory (i.e.,
 	<code class="code">${libdir}/gcc-lib/${target_alias}/${gcc_version}</code>)

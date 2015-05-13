@@ -423,9 +423,6 @@
 /* The size of `void *', as computed by sizeof. */
 #undef SIZEOF_VOID_P
 
-/* Define if the compiler is configured for setjmp/longjmp exceptions. */
-#undef SJLJ_EXCEPTIONS
-
 /* Define if if the synchronization code should try to avoid pthread_self
    calls by caching thread IDs in a hashtable. */
 #undef SLOW_PTHREAD_SELF

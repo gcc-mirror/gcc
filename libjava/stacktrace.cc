@@ -325,7 +325,7 @@ _Jv_StackTrace::GetStackTraceElements (_Jv_StackTrace *trace,
 {
   ArrayList *list = new ArrayList ();
 
-#if defined (SJLJ_EXCEPTIONS) && ! defined (WIN32)
+#if defined (__USING_SJLJ_EXCEPTIONS__) && ! defined (WIN32)
   // We can't use the nCodeMap without unwinder support. Instead,
   // fake the method name by giving the IP in hex - better than nothing.  
   jstring hex = JvNewStringUTF ("0x");
@@ -344,7 +344,7 @@ _Jv_StackTrace::GetStackTraceElements (_Jv_StackTrace *trace,
       list->add (element);
     }
 
-#else /* SJLJ_EXCEPTIONS && !WIN32 */
+#else /* __USING_SJLJ_EXCEPTIONS__ && !WIN32 */
 
   //JvSynchronized (ncodeMap);
   UpdateNCodeMap ();
@@ -412,7 +412,7 @@ _Jv_StackTrace::GetStackTraceElements (_Jv_StackTrace *trace,
     }
   
   finder->close();
-#endif /* SJLJ_EXCEPTIONS && !WIN32 */
+#endif /* __USING_SJLJ_EXCEPTIONS__ && !WIN32 */
 
   JArray<Object *> *array = JvNewObjectArray (list->size (), 
     &StackTraceElement::class$, NULL);

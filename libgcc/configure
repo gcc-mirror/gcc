@@ -670,7 +670,6 @@ enable_maintainer_mode
 with_build_libsubdir
 enable_decimal_float
 with_system_libunwind
-enable_sjlj_exceptions
 enable_explicit_exception_frame_registration
 with_glibc_version
 enable_tls
@@ -1308,8 +1307,6 @@ Optional Features:
 			enable decimal float extension to C.  Selecting 'bid'
 			or 'dpd' choses which decimal floating point format
 			to use
-  --enable-sjlj-exceptions
-                          force use of builtin_setjmp for exceptions
   --enable-explicit-exception-frame-registration
                           register exception tables explicitly at module
                           start, for use e.g. for compatibility with
@@ -4539,80 +4536,43 @@ $as_echo "#define HAVE_GETIPINFO 1" >>confdefs.h
   fi
 
 
-# The sjlj test is almost duplicated here and in libgo/configure.ac (for C),
-# libstdc++-v3/acinclude.m4 and libjava/configure.ac (for C++), and
-# libobjc/configure.ac (for Objective-C).
-# FIXME: This should be centralized in config/sjlj.m4.
-# Check whether --enable-sjlj-exceptions was given.
-if test "${enable_sjlj_exceptions+set}" = set; then :
-  enableval=$enable_sjlj_exceptions; case "$enableval" in
-   yes|no|auto) ;;
-   *) as_fn_error "unknown argument to --enable-sjlj-exceptions" "$LINENO" 5 ;;
-   esac
-else
-  enable_sjlj_exceptions=auto
-fi
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to use setjmp/longjmp exceptions" >&5
-$as_echo_n "checking whether to use setjmp/longjmp exceptions... " >&6; }
-if test "${libgcc_cv_lib_sjlj_exceptions+set}" = set; then :
+# Check if the compiler is configured for setjmp/longjmp exceptions.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the compiler is configured for setjmp/longjmp exceptions" >&5
+$as_echo_n "checking whether the compiler is configured for setjmp/longjmp exceptions... " >&6; }
+if test "${ac_cv_sjlj_exceptions+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
-void bar ();
-void clean (int *);
-void foo ()
+#ifdef __USING_SJLJ_EXCEPTIONS__
+          this will fail
+          #endif
+int
+main ()
 {
-  int i __attribute__ ((cleanup (clean)));
-  bar();
+int i;
+  ;
+  return 0;
 }
-
 _ACEOF
-CFLAGS_hold=$CFLAGS
-CFLAGS="--save-temps -fexceptions"
-libgcc_cv_lib_sjlj_exceptions=unknown
-if ac_fn_c_try_compile; then :
-  if grep _Unwind_SjLj_Resume conftest.s >/dev/null 2>&1; then
-    libgcc_cv_lib_sjlj_exceptions=yes
-  elif grep _Unwind_Resume conftest.s >/dev/null 2>&1; then
-    libgcc_cv_lib_sjlj_exceptions=no
-  fi
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_sjlj_exceptions=no
+else
+  ac_cv_sjlj_exceptions=yes
 fi
-CFLAGS=$CFLAGS_hold
-rm -f conftest*
-
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_lib_sjlj_exceptions" >&5
-$as_echo "$libgcc_cv_lib_sjlj_exceptions" >&6; }
-
-if test "$enable_sjlj_exceptions" = "auto"; then
-  enable_sjlj_exceptions=$libgcc_cv_lib_sjlj_exceptions
-fi
-
-case $enable_sjlj_exceptions in
-yes)
-
-$as_echo "#define LIBGCC_SJLJ_EXCEPTIONS 1" >>confdefs.h
-
-  ;;
-no)
-  ;;
-*)
-  as_fn_error "unable to detect exception model" "$LINENO" 5
-  ;;
-esac
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sjlj_exceptions" >&5
+$as_echo "$ac_cv_sjlj_exceptions" >&6; }
 
 # Check whether --enable-explicit-exception-frame-registration was given.
 if test "${enable_explicit_exception_frame_registration+set}" = set; then :
   enableval=$enable_explicit_exception_frame_registration;
 force_explicit_eh_registry=
 if test "$enable_explicit_exception_frame_registration" = yes; then
-  if test "$enable_sjlj_exceptions" = yes; then
-    as_fn_error "Can't enable both of --enable-sjlj-exceptions
-                  and --enable-explicit-exception-frame-registration" "$LINENO" 5
+  if test $ac_cv_sjlj_exceptions = yes; then
+    as_fn_error "Can't --enable-explicit-exception-frame-registration
+                  with setjmp/longjmp exceptions" "$LINENO" 5
   fi
   force_explicit_eh_registry=-DUSE_EH_FRAME_REGISTRY_ALWAYS
 fi

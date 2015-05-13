@@ -768,9 +768,6 @@
 /* Define if size_t is unsigned int. */
 #undef _GLIBCXX_SIZE_T_IS_UINT
 
-/* Define if the compiler is configured for setjmp/longjmp exceptions. */
-#undef _GLIBCXX_SJLJ_EXCEPTIONS
-
 /* Define to the value of the EOF integer constant. */
 #undef _GLIBCXX_STDIO_EOF
 

@@ -212,60 +212,6 @@ AC_CHECK_HEADERS(sched.h)
 # Check if we have thread-local storage
 GCC_CHECK_TLS
 
-AC_MSG_CHECKING([for exception model to use])
-AC_LANG_PUSH(C)
-AC_ARG_ENABLE(sjlj-exceptions,
-  AS_HELP_STRING([--enable-sjlj-exceptions],
-                 [force use of builtin_setjmp for exceptions]),
-[:],
-[dnl Botheration.  Now we've got to detect the exception model.
-dnl Link tests against libgcc.a are problematic since -- at least
-dnl as of this writing -- we've not been given proper -L bits for
-dnl single-tree newlib and libgloss.
-dnl
-dnl This is what AC_TRY_COMPILE would do if it didn't delete the
-dnl conftest files before we got a change to grep them first.
-cat > conftest.$ac_ext << EOF
-[#]line __oline__ "configure"
-@interface Frob
-@end
-@implementation Frob
-@end
-int proc();
-int foo()
-{
-  @try {
-   return proc();
-  }
-  @catch (Frob* ex) {
-    return 0;
-  }
-}
-EOF
-old_CFLAGS="$CFLAGS" 
-dnl work around that we don't have Objective-C support in autoconf
-CFLAGS="-x objective-c -fgnu-runtime -fobjc-exceptions -S"
-if AC_TRY_EVAL(ac_compile); then
-  if grep _Unwind_SjLj_Resume conftest.s >/dev/null 2>&1 ; then
-    enable_sjlj_exceptions=yes
-  elif grep _Unwind_Resume conftest.s >/dev/null 2>&1 ; then
-    enable_sjlj_exceptions=no
-  fi
-fi
-CFLAGS="$old_CFLAGS"
-rm -f conftest*])
-if test x$enable_sjlj_exceptions = xyes; then
-  AC_DEFINE(SJLJ_EXCEPTIONS, 1,
-	[Define if the compiler is configured for setjmp/longjmp exceptions.])
-  ac_exception_model_name=sjlj
-elif test x$enable_sjlj_exceptions = xno; then
-  ac_exception_model_name="call frame"
-else
-  AC_MSG_ERROR([unable to detect exception model])
-fi
-AC_LANG_POP(C)
-AC_MSG_RESULT($ac_exception_model_name)
-
 gt_BITFIELD_TYPE_MATTERS
 
 # ------

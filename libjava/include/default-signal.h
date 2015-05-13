@@ -11,7 +11,7 @@ details.  */
 #ifndef JAVA_SIGNAL_H
 #define JAVA_SIGNAL_H 1
 
-#ifdef SJLJ_EXCEPTIONS
+#ifdef __USING_SJLJ_EXCEPTIONS__
 
 #define HANDLE_SEGV 1
 #define HANDLE_FPE 1
@@ -37,7 +37,7 @@ while (0)
 
 #define MAKE_THROW_FRAME(_exception)  do {} while (0)
 
-#else /* SJLJ_EXCEPTIONS */
+#else /* __USING_SJLJ_EXCEPTIONS__ */
 
 #undef HANDLE_SEGV
 #undef HANDLE_FPE
@@ -45,7 +45,7 @@ while (0)
 #define INIT_SEGV   do {} while (0)
 #define INIT_FPE   do {} while (0)
 
-#endif /* SJLJ_EXCEPTIONS */
+#endif /* __USING_SJLJ_EXCEPTIONS__ */
 
 #endif /* JAVA_SIGNAL_H */
   

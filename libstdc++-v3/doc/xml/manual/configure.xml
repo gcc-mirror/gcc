@@ -45,15 +45,6 @@
      </para>
  </listitem></varlistentry>
 
- <varlistentry><term><code>--enable-sjlj-exceptions</code></term>
- <listitem><para>Forces old, set-jump/long-jump exception handling model.  If
-	at all possible, the new, frame unwinding exception handling routines
-	should be used instead, as they significantly reduce both
-	runtime memory usage and executable size. This option can
-	change the library ABI.
-     </para>
- </listitem></varlistentry>
-
  <varlistentry><term><code>--enable-version-specific-runtime-libs</code></term>
  <listitem><para>Specify that run-time libraries should be installed in the
 	compiler-specific subdirectory (i.e.,

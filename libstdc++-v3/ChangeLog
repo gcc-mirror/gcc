@@ -1,3 +1,19 @@
+2015-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_SJLJ_EXCEPTIONS): Delete.
+	* configure.ac: Remove GLIBCXX_ENABLE_SJLJ_EXCEPTIONS.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+	* libsupc++/eh_personality.cc: Replace _GLIBCXX_SJLJ_EXCEPTIONS by
+	__USING_SJLJ_EXCEPTIONS__.
+	* libsupc++/eh_throw.cc: Likewise.
+	* libsupc++/eh_ptr.cc: Likewise.
+	* doc/html/manual/appendix_porting.html: Remove
+	GLIBCXX_ENABLE_SJLJ_EXCEPTIONS
+	* doc/xml/manual/build_hacking.xml: Likewise.
+	* doc/html/manual/configure.html: Remove --enable-sjlj-exceptions.
+	* doc/xml/manual/configure.xml: Likewise.
+
 2015-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/shared_ptr_base.h (__shared_count(unique_ptr&&)): Check

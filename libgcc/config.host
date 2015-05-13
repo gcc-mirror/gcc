@@ -499,7 +499,7 @@ hppa*64*-*-linux*)
 hppa*-*-linux*)
 	tmake_file="$tmake_file pa/t-linux t-slibgcc-libgcc"
 	# Set the libgcc version number
-	if test x$enable_sjlj_exceptions = xyes; then
+	if test x$ac_cv_sjlj_exceptions = xyes; then
 	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
 	else
 	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
@@ -510,7 +510,7 @@ hppa*-*-linux*)
 hppa[12]*-*-hpux10*)
 	tmake_file="$tmake_file pa/t-hpux pa/t-hpux10 t-libgcc-pic t-slibgcc"
 	# Set the libgcc version number
-	if test x$enable_sjlj_exceptions = xyes; then
+	if test x$ac_cv_sjlj_exceptions = xyes; then
 	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
 	else
 	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
@@ -521,7 +521,7 @@ hppa[12]*-*-hpux10*)
 hppa*64*-*-hpux11*)
 	tmake_file="$tmake_file pa/t-hpux pa/t-pa64 pa/t-stublib t-libgcc-pic t-slibgcc"
 	# Set the libgcc version number
-	if test x$enable_sjlj_exceptions = xyes; then
+	if test x$ac_cv_sjlj_exceptions = xyes; then
 	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
 	else
 	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
@@ -534,7 +534,7 @@ hppa*64*-*-hpux11*)
 hppa[12]*-*-hpux11*)
 	tmake_file="$tmake_file pa/t-hpux pa/t-stublib t-libgcc-pic t-slibgcc"
 	# Set the libgcc version number
-	if test x$enable_sjlj_exceptions = xyes; then
+	if test x$ac_cv_sjlj_exceptions = xyes; then
 	    tmake_file="$tmake_file pa/t-slibgcc-sjlj-ver"
 	else
 	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
@@ -635,7 +635,7 @@ i[34567]86-*-cygwin*)
 		extra_parts="$extra_parts vtv_start.o vtv_end.o vtv_start_preinit.o vtv_end_preinit.o"
 	fi
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
-	if test x$enable_sjlj_exceptions = xyes; then
+	if test x$ac_cv_sjlj_exceptions = xyes; then
 		tmake_eh_file="i386/t-sjlj-eh"
 	else
 		tmake_eh_file="i386/t-dw2-eh"
@@ -654,7 +654,7 @@ x86_64-*-cygwin*)
 		extra_parts="$extra_parts vtv_start.o vtv_end.o vtv_start_preinit.o vtv_end_preinit.o"
 	fi
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
-	if test x$enable_sjlj_exceptions = xyes; then
+	if test x$ac_cv_sjlj_exceptions = xyes; then
 		tmake_eh_file="i386/t-sjlj-eh"
 	else
 		tmake_eh_file="i386/t-seh-eh"
@@ -682,7 +682,7 @@ i[34567]86-*-mingw*)
 	    ;;
 	esac
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
-	if test x$enable_sjlj_exceptions = xyes; then
+	if test x$ac_cv_sjlj_exceptions = xyes; then
 		tmake_eh_file="i386/t-sjlj-eh"
 	else
 		tmake_eh_file="i386/t-dw2-eh"
@@ -706,7 +706,7 @@ x86_64-*-mingw*)
 	    ;;
 	esac
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
-	if test x$enable_sjlj_exceptions = xyes; then
+	if test x$ac_cv_sjlj_exceptions = xyes; then
 		tmake_eh_file="i386/t-sjlj-eh"
 	else
 		tmake_eh_file="i386/t-seh-eh"
@@ -799,9 +799,9 @@ m68k-*-linux*)			# Motorola m68k's running GNU/Linux
 				# with ELF format using glibc 2
 				# aka the GNU/Linux C library 6.
 	tmake_file="$tmake_file m68k/t-floatlib m68k/t-linux"
-	# If not configured with --enable-sjlj-exceptions, bump the
+	# If not configured with setjmp/longjmp exceptions, bump the
 	# libgcc version number.
-	if test x$enable_sjlj_exceptions != xyes; then
+	if test x$ac_cv_sjlj_exceptions != xyes; then
 	    tmake_file="$tmake_file m68k/t-slibgcc-elf-ver"
 	fi
 	md_unwind_header=m68k/linux-unwind.h
