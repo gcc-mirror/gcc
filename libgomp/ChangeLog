@@ -1,3 +1,8 @@
+2015-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/66133
+	* testsuite/libgomp.c/pr66133.c: New test.
+
 2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	* Makefile.in: Regenerated with automake-1.11.6.
