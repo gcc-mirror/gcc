@@ -1,3 +1,8 @@
+2015-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-expr.h (is_gimple_constant): Reorder.
+	* tree-ssa-propagate.c (before_dom_children): Use inline accessor.
+
 2015-05-13  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* combine.c (simplify_set): When generating a CC set, if the
