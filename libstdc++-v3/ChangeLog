@@ -1,5 +1,23 @@
 2015-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/alloc_traits.h (_S_max_size): Implement LWG 2466.
+	* testsuite/20_util/allocator_traits/members/max_size.cc: Adjust.
+	* testsuite/23_containers/forward_list/allocator/minimal.cc:
+	Likewise.
+	* testsuite/23_containers/map/allocator/minimal.cc: Likewise.
+	* testsuite/23_containers/multimap/allocator/minimal.cc: Likewise.
+	* testsuite/23_containers/multiset/allocator/minimal.cc: Likewise.
+	* testsuite/23_containers/set/allocator/minimal.cc: Likewise.
+	* testsuite/23_containers/unordered_map/allocator/minimal.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/minimal.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/allocator/minimal.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/allocator/minimal.cc:
+	Likewise.
+	* testsuite/util/testsuite_allocator.h: Remove unused parameter.
+
 	* acinclude.m4 (GLIBCXX_ENABLE_FILESYSTEM_TS): Re-enable on solaris.
 	* configure: Regenerate.
 
