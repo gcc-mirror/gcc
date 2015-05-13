@@ -1,6 +1,14 @@
 2015-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/66112
+	* config/i386/i386.md (mulv<mode>4, umulv<mode>4, *umulv<mode>4):
+	Use SWI248 iterator instead of SWI.
+	(*mulv<mode>4_1): Use SWI48 instead of SWI.  Simplify output template.
+	Use eq_attr "alternative" "0" instead of match_test in
+	length_immediate attribute computation.
+	(*mulvhi4, *mulvhi4_1): New define_insns.
+
+	PR target/66112
 	* internal-fn.c (get_min_precision): Use UNSIGNED instead of
 	SIGNED to get precision of non-negative value.
 
