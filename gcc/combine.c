@@ -6705,20 +6705,16 @@ simplify_set (rtx x)
       if (other_changed)
 	undobuf.other_insn = other_insn;
 
-      /* Otherwise, if we didn't previously have a COMPARE in the
-	 correct mode, we need one.  */
-      if (GET_CODE (src) != COMPARE || GET_MODE (src) != compare_mode)
-	{
-	  SUBST (SET_SRC (x), gen_rtx_COMPARE (compare_mode, op0, op1));
-	  src = SET_SRC (x);
-	}
-      else if (GET_MODE (op0) == compare_mode && op1 == const0_rtx)
+      /* Don't generate a compare of a CC with 0, just use that CC.  */
+      if (GET_MODE (op0) == compare_mode && op1 == const0_rtx)
 	{
 	  SUBST (SET_SRC (x), op0);
 	  src = SET_SRC (x);
 	}
-      /* Otherwise, update the COMPARE if needed.  */
-      else if (XEXP (src, 0) != op0 || XEXP (src, 1) != op1)
+      /* Otherwise, if we didn't previously have the same COMPARE we
+	 want, create it from scratch.  */
+      else if (GET_CODE (src) != COMPARE || GET_MODE (src) != compare_mode
+	       || XEXP (src, 0) != op0 || XEXP (src, 1) != op1)
 	{
 	  SUBST (SET_SRC (x), gen_rtx_COMPARE (compare_mode, op0, op1));
 	  src = SET_SRC (x);
