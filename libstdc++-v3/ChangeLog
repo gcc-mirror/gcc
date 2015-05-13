@@ -1,5 +1,8 @@
 2015-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/basic_string.h (basic_string::basic_string()): Make
+	noexcept conditional on allocator (LWG 2455).
+
 	* include/std/complex (polar): Check for negative rho (LWG 2459).
 
 	* include/experimental/tuple (apply): Handle pointers to member (LWG
