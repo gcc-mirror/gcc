@@ -3867,7 +3867,7 @@
     operands[1] = force_reg (TFmode, operands[1]);
 })
 
-(define_insn_and_split "*movtf"
+(define_insn_and_split "*movtf_internal"
   [(set (match_operand:TF 0 "nonimmediate_operand" "=r,o")
 	(match_operand:TF 1 "input_operand" "roG,rG"))]
   "register_operand (operands[0], TFmode)
@@ -4154,8 +4154,7 @@
      32-bit constants in TImode and rely on the splitter, but
      this doesn't seem to be worth the pain.  */
   else if (CONST_INT_P (operands[1])
-	   || GET_CODE (operands[1]) == CONST_WIDE_INT
-	   || GET_CODE (operands[1]) == CONST_DOUBLE)
+	   || GET_CODE (operands[1]) == CONST_WIDE_INT)
     {
       rtx in[2], out[2], target;
 

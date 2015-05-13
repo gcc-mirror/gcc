@@ -2068,13 +2068,12 @@ alpha_emit_set_const (rtx target, machine_mode mode,
    with alpha_emit_set_const.  */
 
 static rtx
-alpha_emit_set_long_const (rtx target, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
+alpha_emit_set_long_const (rtx target, HOST_WIDE_INT c1)
 {
   HOST_WIDE_INT d1, d2, d3, d4;
 
   /* Decompose the entire word */
 
-  gcc_assert (c2 == -(c1 < 0));
   d1 = ((c1 & 0xffff) ^ 0x8000) - 0x8000;
   c1 -= d1;
   d2 = ((c1 & 0xffffffff) ^ 0x80000000) - 0x80000000;
@@ -2109,25 +2108,23 @@ alpha_emit_set_long_const (rtx target, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
 /* Given an integral CONST_INT, CONST_WIDE_INT, CONST_DOUBLE,
    or CONST_VECTOR, return the low 64 bits.  */
 
-static void
-alpha_extract_integer (rtx x, HOST_WIDE_INT *p0, HOST_WIDE_INT *p1)
+static HOST_WIDE_INT
+alpha_extract_integer (rtx x)
 {
-  HOST_WIDE_INT i0, i1;
-
   if (GET_CODE (x) == CONST_VECTOR)
     x = simplify_subreg (DImode, x, GET_MODE (x), 0);
 
-  if (CONST_INT_P (x))
-    i0 = INTVAL (x);
-  else if (CONST_WIDE_INT_P (x))
-    i0 = CONST_WIDE_INT_ELT (x, 0);
-  else
-    i0 = CONST_DOUBLE_LOW (x);
-
-  i1 = -(i0 < 0);
-      
-  *p0 = i0;
-  *p1 = i1;
+  switch (GET_CODE (x))
+    {
+    case CONST_INT:
+      return INTVAL (x);
+    case CONST_WIDE_INT:
+      return CONST_WIDE_INT_ELT (x, 0);
+    case CONST_DOUBLE:
+      return CONST_DOUBLE_LOW (x);
+    default:
+      gcc_unreachable ();
+    }
 }
 
 /* Implement TARGET_LEGITIMATE_CONSTANT_P.  This is all constants for which
@@ -2138,7 +2135,7 @@ alpha_extract_integer (rtx x, HOST_WIDE_INT *p0, HOST_WIDE_INT *p1)
 bool
 alpha_legitimate_constant_p (machine_mode mode, rtx x)
 {
-  HOST_WIDE_INT i0, i1;
+  HOST_WIDE_INT i0;
 
   switch (GET_CODE (x))
     {
@@ -2185,7 +2182,7 @@ alpha_legitimate_constant_p (machine_mode mode, rtx x)
     do_integer:
       if (TARGET_BUILD_CONSTANTS)
 	return true;
-      alpha_extract_integer (x, &i0, &i1);
+      i0 = alpha_extract_integer (x);
       return alpha_emit_set_const_1 (x, mode, i0, 3, true) != NULL;
 
     default:
@@ -2199,15 +2196,15 @@ alpha_legitimate_constant_p (machine_mode mode, rtx x)
 bool
 alpha_split_const_mov (machine_mode mode, rtx *operands)
 {
-  HOST_WIDE_INT i0, i1;
+  HOST_WIDE_INT i0;
   rtx temp = NULL_RTX;
 
-  alpha_extract_integer (operands[1], &i0, &i1);
+  i0 = alpha_extract_integer (operands[1]);
 
   temp = alpha_emit_set_const (operands[0], mode, i0, 3, false);
 
   if (!temp && TARGET_BUILD_CONSTANTS)
-    temp = alpha_emit_set_long_const (operands[0], i0, i1);
+    temp = alpha_emit_set_long_const (operands[0], i0);
 
   if (temp)
     {
@@ -8260,8 +8257,7 @@ alpha_expand_epilogue (void)
 	    {
 	      /* We can't drop new things to memory this late, afaik,
 		 so build it up by pieces.  */
-	      sp_adj2 = alpha_emit_set_long_const (tmp, frame_size,
-						   -(frame_size < 0));
+	      sp_adj2 = alpha_emit_set_long_const (tmp, frame_size);
 	      gcc_assert (sp_adj2);
 	    }
 	}
@@ -8388,8 +8384,7 @@ alpha_output_mi_thunk_osf (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
     }
   else
     {
-      rtx tmp = alpha_emit_set_long_const (gen_rtx_REG (Pmode, 0),
-					   delta, -(delta < 0));
+      rtx tmp = alpha_emit_set_long_const (gen_rtx_REG (Pmode, 0), delta);
       emit_insn (gen_adddi3 (this_rtx, this_rtx, tmp));
     }
 
@@ -8411,7 +8406,7 @@ alpha_output_mi_thunk_osf (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
       else
 	{
 	  tmp2 = alpha_emit_set_long_const (gen_rtx_REG (Pmode, 1),
-					    vcall_offset, -(vcall_offset < 0));
+					    vcall_offset);
           emit_insn (gen_adddi3 (tmp, tmp, tmp2));
 	  lo = 0;
 	}
