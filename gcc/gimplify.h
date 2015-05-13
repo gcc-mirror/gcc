@@ -82,7 +82,6 @@ extern void gimplify_function_tree (tree);
 extern enum gimplify_status gimplify_va_arg_expr (tree *, gimple_seq *,
 						  gimple_seq *);
 gimple gimplify_assign (tree, tree, gimple_seq *);
-extern tree gimplify_va_arg_internal (tree, tree, gimple_seq *, gimple_seq *);
 
 /* Return true if gimplify_one_sizepos doesn't need to gimplify
    expr (when in TYPE_SIZE{,_UNIT} and similar type/decl size/bitsize
