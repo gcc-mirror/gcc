@@ -1,3 +1,10 @@
+2015-05-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66110
+	* alias.c (alias_sets_conflict_p): Do not treat has_zero_child
+	specially.
+	* Makefile.in (dfp.o-warn): Add -Wno-strict-aliasing.
+
 2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	* doc/install.texi: Bump latest automake 1.11 version to 1.11.6.
