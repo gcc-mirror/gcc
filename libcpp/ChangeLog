@@ -1,3 +1,65 @@
+2015-05-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (MAX_SOURCE_LOCATION): Convert from a macro
+	to a const source_location.
+	(RESERVED_LOCATION_COUNT): Likewise.
+	(linemap_check_ordinary): Convert from a macro to a pair of inline
+	functions, for const/non-const arguments.
+	(MAP_START_LOCATION): Likewise.
+	(ORDINARY_MAP_STARTING_LINE_NUMBER): Likewise.
+	(ORDINARY_MAP_INCLUDER_FILE_INDEX): Likewise.
+	(ORDINARY_MAP_IN_SYSTEM_HEADER_P): Likewise.
+	(ORDINARY_MAP_NUMBER_OF_COLUMN_BITS): Convert from a macro to a
+	pair of inline functions, for const/non-const arguments, where the
+	latter is named...
+	(SET_ORDINARY_MAP_NUMBER_OF_COLUMN_BITS): New function.
+	(ORDINARY_MAP_FILE_NAME): Convert from a macro to a pair of inline
+	functions, for const/non-const arguments.
+	(MACRO_MAP_MACRO): Likewise.
+	(MACRO_MAP_NUM_MACRO_TOKENS): Likewise.
+	(MACRO_MAP_LOCATIONS): Likewise.
+	(MACRO_MAP_EXPANSION_POINT_LOCATION): Likewise.
+	(LINEMAPS_MAP_INFO): Likewise.
+	(LINEMAPS_MAPS): Likewise.
+	(LINEMAPS_ALLOCATED): Likewise.
+	(LINEMAPS_USED): Likewise.
+	(LINEMAPS_CACHE): Likewise.
+	(LINEMAPS_ORDINARY_CACHE): Likewise.
+	(LINEMAPS_MACRO_CACHE): Likewise.
+	(LINEMAPS_MAP_AT): Convert from a macro to an inline function.
+	(LINEMAPS_LAST_MAP): Likewise.
+	(LINEMAPS_LAST_ALLOCATED_MAP): Likewise.
+	(LINEMAPS_ORDINARY_MAPS): Likewise.
+	(LINEMAPS_ORDINARY_MAP_AT): Likewise.
+	(LINEMAPS_ORDINARY_ALLOCATED): Likewise.
+	(LINEMAPS_ORDINARY_USED): Likewise.
+	(LINEMAPS_LAST_ORDINARY_MAP): Likewise.
+	(LINEMAPS_LAST_ALLOCATED_ORDINARY_MAP): Likewise.
+	(LINEMAPS_MACRO_MAPS): Likewise.
+	(LINEMAPS_MACRO_MAP_AT): Likewise.
+	(LINEMAPS_MACRO_ALLOCATED): Likewise.
+	(LINEMAPS_MACRO_USED): Likewise.
+	(LINEMAPS_MACRO_LOWEST_LOCATION): Likewise.
+	(LINEMAPS_LAST_MACRO_MAP): Likewise.
+	(LINEMAPS_LAST_ALLOCATED_MACRO_MAP): Likewise.
+	(IS_ADHOC_LOC): Likewise.
+	(COMBINE_LOCATION_DATA): Likewise.
+	(SOURCE_LINE): Likewise.
+	(SOURCE_COLUMN): Likewise.
+	(LAST_SOURCE_LINE_LOCATION): Likewise.
+	(LAST_SOURCE_LINE): Likewise.
+	(LAST_SOURCE_COLUMN): Likewise.
+	(LAST_SOURCE_LINE_LOCATION)
+	(INCLUDED_FROM): Likewise.
+	(MAIN_FILE_P): Likewise.
+	(LINEMAP_FILE): Likewise.
+	(LINEMAP_LINE): Likewise.
+	(LINEMAP_SYSP): Likewise.
+	(linemap_location_before_p): Likewise.
+	* line-map.c (linemap_check_files_exited): Make local "map" const.
+	(linemap_add): Use SET_ORDINARY_MAP_NUMBER_OF_COLUMN_BITS.
+	(linemap_line_start): Likewise.
+
 2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	* aclocal.m4: Regenerated with automake-1.11.6.
