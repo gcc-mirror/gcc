@@ -6023,13 +6023,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   class seed_seq
   {
-
   public:
     /** The type of the seed vales. */
     typedef uint_least32_t result_type;
 
     /** Default constructor. */
-    seed_seq()
+    seed_seq() noexcept
     : _M_v()
     { }
 
@@ -6045,7 +6044,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       generate(_RandomAccessIterator __begin, _RandomAccessIterator __end);
 
     // property functions
-    size_t size() const
+    size_t size() const noexcept
     { return _M_v.size(); }
 
     template<typename OutputIterator>
@@ -6058,7 +6057,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     seed_seq& operator=(const seed_seq&) = delete;
 
   private:
-    ///
     std::vector<result_type> _M_v;
   };
 

@@ -1,5 +1,7 @@
 2015-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/random.h (seed_seq): More noexcept (LWG 2440).
+
 	* include/bits/alloc_traits.h (_S_max_size): Implement LWG 2466.
 	* testsuite/20_util/allocator_traits/members/max_size.cc: Adjust.
 	* testsuite/23_containers/forward_list/allocator/minimal.cc:
