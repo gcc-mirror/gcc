@@ -1,3 +1,8 @@
+2015-05-12  Jason Merrill  <jason@redhat.com>
+
+	* config/mmix/mmix.c, config/msp430/msp430.c: Add space between
+	string literal and macro name.
+
 2015-05-12  Steve Ellcey  <sellcey@imgtec.com>
 
 	* config/mips/mips.c (mips_print_operand): Remove 'y' operand code.

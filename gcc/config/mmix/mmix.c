@@ -2520,7 +2520,7 @@ mmix_output_shiftvalue_op_from_str (FILE *stream,
   if (! mmix_shiftable_wyde_value (value))
     {
       char s[sizeof ("0xffffffffffffffff")];
-      sprintf (s, "%#"PRIx64, value);
+      sprintf (s, "%#" PRIx64, value);
       internal_error ("MMIX Internal: %s is not a shiftable int", s);
     }
 
@@ -2562,7 +2562,7 @@ mmix_output_octa (FILE *stream, int64_t value, int do_begin_end)
     fprintf (stream, "#" HOST_WIDE_INT_PRINT_HEX_PURE,
 	     (HOST_WIDE_INT) value);
   else /* Need to avoid the hex output; there's no ...WIDEST...HEX_PURE.  */
-    fprintf (stream, "%"PRIu64, value);
+    fprintf (stream, "%" PRIu64, value);
 
   if (do_begin_end)
     fprintf (stream, "\n");
@@ -2579,7 +2579,7 @@ mmix_output_shifted_value (FILE *stream, int64_t value)
   if (! mmix_shiftable_wyde_value (value))
     {
       char s[16+2+1];
-      sprintf (s, "%#"PRIx64, value);
+      sprintf (s, "%#" PRIx64, value);
       internal_error ("MMIX Internal: %s is not a shiftable int", s);
     }
 

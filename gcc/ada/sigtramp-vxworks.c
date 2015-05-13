@@ -342,16 +342,16 @@ CR("") \
 TCR("# Allocate frame and save the non-volatile") \
 TCR("# registers we're going to modify") \
 TCR("mov	ip, sp") \
-TCR("stmfd	sp!, {r"S(CFA_REG)", fp, ip, lr, pc}") \
+TCR("stmfd	sp!, {r" S(CFA_REG)", fp, ip, lr, pc}") \
 TCR("# Setup CFA_REG = context, which we'll retrieve as our CFA value") \
-TCR("ldr	r"S(CFA_REG)", [ip]") \
+TCR("ldr	r" S(CFA_REG)", [ip]") \
 TCR("")                 \
 TCR("# Call the real handler. The signo, siginfo and sigcontext") \
 TCR("# arguments are the same as those we received in r0, r1 and r2") \
 TCR("sub	fp, ip, #4") \
 TCR("blx	r3") \
 TCR("# Restore our callee-saved items, release our frame and return") \
-TCR("ldmfd	sp, {r"S(CFA_REG)", fp, sp, pc}")
+TCR("ldmfd	sp, {r" S(CFA_REG)", fp, sp, pc}")
 
 #else
 Not_implemented;

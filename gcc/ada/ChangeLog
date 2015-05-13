@@ -1,3 +1,8 @@
+2015-05-12  Jason Merrill  <jason@redhat.com>
+
+	* sigtramp-vxworks.c: Add space between string literal and macro
+	name.
+
 2015-05-12  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat_rm.texi, gnat_ugn.texi, doc: Documentation updates and clean ups
