@@ -1,3 +1,42 @@
+2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
+
+	 * Makefile.in: Regenerated with automake-1.11.6.
+	 * aclocal.m4: Likewise.
+	 * configure: Likewise.
+	 * doc/Makefile.in: Likewise.
+	 * doc/api/Makefile.in: Likewise.
+	 * examples/Makefile.in: Likewise.
+	 * external/Makefile.in: Likewise.
+	 * external/jsr166/Makefile.in: Likewise.
+	 * external/relaxngDatatype/Makefile.in: Likewise.
+	 * external/sax/Makefile.in: Likewise.
+	 * external/w3c_dom/Makefile.in: Likewise.
+	 * include/Makefile.in: Likewise.
+	 * lib/Makefile.in: Likewise.
+	 * native/Makefile.in: Likewise.
+	 * native/fdlibm/Makefile.in: Likewise.
+	 * native/jawt/Makefile.in: Likewise.
+	 * native/jni/Makefile.in: Likewise.
+	 * native/jni/classpath/Makefile.in: Likewise.
+	 * native/jni/gconf-peer/Makefile.in: Likewise.
+	 * native/jni/gstreamer-peer/Makefile.in: Likewise.
+	 * native/jni/gtk-peer/Makefile.in: Likewise.
+	 * native/jni/java-io/Makefile.in: Likewise.
+	 * native/jni/java-lang/Makefile.in: Likewise.
+	 * native/jni/java-math/Makefile.in: Likewise.
+	 * native/jni/java-net/Makefile.in: Likewise.
+	 * native/jni/java-nio/Makefile.in: Likewise.
+	 * native/jni/java-util/Makefile.in: Likewise.
+	 * native/jni/midi-alsa/Makefile.in: Likewise.
+	 * native/jni/midi-dssi/Makefile.in: Likewise.
+	 * native/jni/native-lib/Makefile.in: Likewise.
+	 * native/jni/qt-peer/Makefile.in: Likewise.
+	 * native/jni/xmlj/Makefile.in: Likewise.
+	 * native/plugin/Makefile.in: Likewise.
+	 * resource/Makefile.in: Likewise.
+	 * scripts/Makefile.in: Likewise.
+	 * tools/Makefile.in: Likewise.
+
 2014-11-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/63784
