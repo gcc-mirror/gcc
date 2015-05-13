@@ -1,5 +1,11 @@
 2015-05-13  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/66123
+	* tree-ssa-dom.c (propagate_rhs_into_lhs): Check if we found
+	a taken edge.
+
+2015-05-13  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/66110
 	* alias.c (alias_sets_conflict_p): Do not treat has_zero_child
 	specially.
