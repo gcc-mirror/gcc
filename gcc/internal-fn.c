@@ -399,7 +399,7 @@ get_min_precision (tree arg, signop sign)
     }
   else if (sign == UNSIGNED && !wi::neg_p (arg_min, SIGNED))
     {
-      int p = wi::min_precision (arg_max, SIGNED);
+      int p = wi::min_precision (arg_max, UNSIGNED);
       prec = MIN (prec, p);
     }
   return prec + (orig_sign != sign);
