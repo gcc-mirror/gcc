@@ -1,3 +1,11 @@
+2015-05-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (linemap_assert): Move up within the file to
+	before all of the map accessor macros.
+	(linemap_assert_fails): Likewise.
+	(linemap_check_ordinary): Likewise.
+	(linemap_macro_expansion_map_p): Likewise.
+
 2015-05-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* directives.c (do_line): Set seen_line_directive on line_table.

@@ -279,6 +279,42 @@ struct GTY(()) line_map {
   } GTY((desc ("%1.reason == LC_ENTER_MACRO"))) d;
 };
 
+#if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
+
+/* Assertion macro to be used in line-map code.  */
+#define linemap_assert(EXPR)                  \
+  do {                                                \
+    if (! (EXPR))                             \
+      abort ();                                       \
+  } while (0)
+
+/* Assert that becomes a conditional expression when checking is disabled at
+   compilation time.  Use this for conditions that should not happen but if
+   they happen, it is better to handle them gracefully rather than crash
+   randomly later.
+   Usage:
+
+   if (linemap_assert_fails(EXPR)) handle_error(); */
+#define linemap_assert_fails(EXPR) __extension__ \
+  ({linemap_assert (EXPR); false;})
+
+/* Assert that MAP encodes locations of tokens that are not part of
+   the replacement-list of a macro expansion.  */
+#define linemap_check_ordinary(LINE_MAP) __extension__		\
+  ({linemap_assert (!linemap_macro_expansion_map_p (LINE_MAP)); \
+    (LINE_MAP);})
+#else
+/* Include EXPR, so that unused variable warnings do not occur.  */
+#define linemap_assert(EXPR) ((void)(0 && (EXPR)))
+#define linemap_assert_fails(EXPR) (! (EXPR))
+#define linemap_check_ordinary(LINE_MAP) (LINE_MAP)
+#endif
+
+/* Return TRUE if MAP encodes locations coming from a macro
+   replacement-list at macro expansion point.  */
+bool
+linemap_macro_expansion_map_p (const struct line_map *);
+
 #define MAP_START_LOCATION(MAP) (MAP)->start_location
 
 #define ORDINARY_MAP_FILE_NAME(MAP) \
@@ -571,10 +607,6 @@ extern const struct line_map *linemap_lookup
    macro expansion, FALSE otherwise.  */
 bool linemap_tracks_macro_expansion_locs_p (struct line_maps *);
 
-/* Return TRUE if MAP encodes locations coming from a macro
-   replacement-list at macro expansion point.  */
-bool linemap_macro_expansion_map_p (const struct line_map *);
-
 /* Return the name of the macro associated to MACRO_MAP.  */
 const char* linemap_map_get_macro_name (const struct line_map*);
 
@@ -640,37 +672,6 @@ bool linemap_location_from_macro_expansion_p (const struct line_maps *,
 /* Nonzero if the map is at the bottom of the include stack.  */
 #define MAIN_FILE_P(MAP)						\
   ((linemap_check_ordinary (MAP)->d.ordinary.included_from < 0))
-
-#if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
-
-/* Assertion macro to be used in line-map code.  */
-#define linemap_assert(EXPR)			\
-  do {						\
-    if (! (EXPR))				\
-      abort ();					\
-  } while (0)
- 
-/* Assert that becomes a conditional expression when checking is disabled at
-   compilation time.  Use this for conditions that should not happen but if
-   they happen, it is better to handle them gracefully rather than crash
-   randomly later. 
-   Usage:
-
-   if (linemap_assert_fails(EXPR)) handle_error(); */
-#define linemap_assert_fails(EXPR) __extension__ \
-  ({linemap_assert (EXPR); false;}) 
-
-/* Assert that MAP encodes locations of tokens that are not part of
-   the replacement-list of a macro expansion.  */
-#define linemap_check_ordinary(LINE_MAP) __extension__		\
-  ({linemap_assert (!linemap_macro_expansion_map_p (LINE_MAP)); \
-    (LINE_MAP);})
-#else
-/* Include EXPR, so that unused variable warnings do not occur.  */
-#define linemap_assert(EXPR) ((void)(0 && (EXPR)))
-#define linemap_assert_fails(EXPR) (! (EXPR))
-#define linemap_check_ordinary(LINE_MAP) (LINE_MAP)
-#endif
 
 /* Encode and return a source_location from a column number. The
    source line considered is the last source line used to call
