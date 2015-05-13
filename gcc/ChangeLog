@@ -1,3 +1,11 @@
+2015-05-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR rtl-optimization/64616
+	* loop-invariant.c (can_move_invariant_reg): New.
+	(move_invariant_reg): Call above new function to decide whether
+	instruction can just be moved, skipping creation of temporary
+	register.
+
 2015-05-12  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR target/pr66047.c
