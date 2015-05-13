@@ -1059,7 +1059,14 @@ expand_ifn_va_arg_1 (function *fun)
 
 	push_gimplify_context (false);
 
-	expr = gimplify_va_arg_internal (ap, type, &pre, &post);
+	/* Make it easier for the backends by protecting the valist argument
+	   from multiple evaluations.  */
+	if (do_deref == integer_one_node)
+	  gimplify_expr (&ap, &pre, &post, is_gimple_min_lval, fb_lvalue);
+	else
+	  gimplify_expr (&ap, &pre, &post, is_gimple_val, fb_rvalue);
+
+	expr = targetm.gimplify_va_arg_expr (ap, type, &pre, &post);
 
 	lhs = gimple_call_lhs (stmt);
 	if (lhs != NULL_TREE)

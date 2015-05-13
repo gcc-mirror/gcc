@@ -9302,32 +9302,6 @@ dummy_object (tree type)
   return build2 (MEM_REF, type, t, t);
 }
 
-/* Call the target expander for evaluating a va_arg call of VALIST
-   and TYPE.  */
-
-tree
-gimplify_va_arg_internal (tree valist, tree type, gimple_seq *pre_p,
-			  gimple_seq *post_p)
-{
-  tree have_va_type = TREE_TYPE (valist);
-  tree cano_type = targetm.canonical_va_list_type (have_va_type);
-
-  if (cano_type != NULL_TREE)
-    have_va_type = cano_type;
-
-  /* Make it easier for the backends by protecting the valist argument
-     from multiple evaluations.  */
-  if (TREE_CODE (have_va_type) == ARRAY_TYPE)
-    {
-      gcc_assert (TREE_CODE (TREE_TYPE (valist)) != ARRAY_TYPE);
-      gimplify_expr (&valist, pre_p, post_p, is_gimple_val, fb_rvalue);
-    }
-  else
-    gimplify_expr (&valist, pre_p, post_p, is_gimple_min_lval, fb_lvalue);
-
-  return targetm.gimplify_va_arg_expr (valist, type, pre_p, post_p);
-}
-
 /* Gimplify __builtin_va_arg, aka VA_ARG_EXPR, which is not really a
    builtin function, but a very special sort of operator.  */
 
