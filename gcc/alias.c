@@ -470,15 +470,13 @@ alias_sets_conflict_p (alias_set_type set1, alias_set_type set2)
   /* See if the first alias set is a subset of the second.  */
   ase = get_alias_set_entry (set1);
   if (ase != 0
-      && (ase->has_zero_child
-	  || ase->children->get (set2)))
+      && ase->children->get (set2))
     return 1;
 
   /* Now do the same, but with the alias sets reversed.  */
   ase = get_alias_set_entry (set2);
   if (ase != 0
-      && (ase->has_zero_child
-	  || ase->children->get (set1)))
+      && ase->children->get (set1))
     return 1;
 
   /* The two alias sets are distinct and neither one is the

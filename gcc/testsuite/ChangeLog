@@ -1,3 +1,9 @@
+2015-05-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66110
+	* gcc.dg/alias-2.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-dse-17.c: New testcase.
+
 2015-05-13  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR target/65103
