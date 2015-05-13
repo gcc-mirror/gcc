@@ -1,5 +1,10 @@
 2015-05-12  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR target/pr66047.c
+	* gcc.target/i386/pr66047.c: New testcase.
+
+2015-05-12  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/65873
 	* gcc.c-torture/compile/pr65873.c: New testcase.
 
