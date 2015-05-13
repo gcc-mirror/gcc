@@ -113,7 +113,9 @@ typedef unsigned int linenum_type;
   ...        |                               |
   0xffffffff | UINT_MAX                      |
   -----------+-------------------------------+-------------------------------
-  .  */
+
+  To see how this works in practice, see the worked example in
+  libcpp/location-example.txt.  */
 typedef unsigned int source_location;
 
 /* Memory allocation function typedef.  Works like xrealloc.  */

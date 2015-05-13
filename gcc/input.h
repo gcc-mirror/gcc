@@ -77,6 +77,8 @@ extern location_t input_location;
 
 void dump_line_table_statistics (void);
 
+void dump_location_info (FILE *stream);
+
 void diagnostics_file_cache_fini (void);
 
 #endif
