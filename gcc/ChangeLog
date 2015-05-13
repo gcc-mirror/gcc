@@ -1,5 +1,16 @@
 2015-05-12  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR target/pr66047.c
+	* i386.c (ix86_function_sseregparm): Only return -1 if local function
+	with implied regparm is called from -mno-sse function.
+	(init_cumulative_args): Output error if ix86_function_sseregparm
+	return -1 and SSE register would be needed.
+	(function_arg_advance_32): Likewise.
+	(function_arg_32): Likewise.
+	* i386.h (ix86_args): Add decl field.
+
+2015-05-12  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/65873
 	* ipa-inline.c (can_inline_edge_p): Allow early inlining of always
 	inlines across optimization boundary.
