@@ -1,3 +1,12 @@
+2015-05-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2015-05-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/65955
+	* config/arm/arm.md (movcond_addsi): Check that operands[2] is a
+	REG before taking its REGNO.
+
 2015-05-12  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/2827.md: Split zEC12_simple into zEC12_simple_int

@@ -9331,7 +9331,7 @@
     enum rtx_code rc = GET_CODE (operands[5]);
     operands[6] = gen_rtx_REG (mode, CC_REGNUM);
     gcc_assert (!(mode == CCFPmode || mode == CCFPEmode));
-    if (REGNO (operands[2]) != REGNO (operands[0]))
+    if (!REG_P (operands[2]) || REGNO (operands[2]) != REGNO (operands[0]))
       rc = reverse_condition (rc);
     else
       std::swap (operands[1], operands[2]);
