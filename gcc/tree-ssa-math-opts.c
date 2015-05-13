@@ -143,6 +143,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "gimple-pretty-print.h"
 #include "builtins.h"
+#include "params.h"
 
 /* FIXME: RTL headers have to be included here for optabs.  */
 #include "rtl.h"		/* Because optabs.h wants enum rtx_code.  */
@@ -1148,6 +1149,357 @@ build_and_insert_cast (gimple_stmt_iterator *gsi, location_t loc,
   return result;
 }
 
+struct pow_synth_sqrt_info
+{
+  bool *factors;
+  unsigned int deepest;
+  unsigned int num_mults;
+};
+
+/* Return true iff the real value C can be represented as a
+   sum of powers of 0.5 up to N.  That is:
+   C == SUM<i from 1..N> (a[i]*(0.5**i)) where a[i] is either 0 or 1.
+   Record in INFO the various parameters of the synthesis algorithm such
+   as the factors a[i], the maximum 0.5 power and the number of
+   multiplications that will be required.  */
+
+bool
+representable_as_half_series_p (REAL_VALUE_TYPE c, unsigned n,
+				 struct pow_synth_sqrt_info *info)
+{
+  REAL_VALUE_TYPE factor = dconsthalf;
+  REAL_VALUE_TYPE remainder = c;
+
+  info->deepest = 0;
+  info->num_mults = 0;
+  memset (info->factors, 0, n * sizeof (bool));
+
+  for (unsigned i = 0; i < n; i++)
+    {
+      REAL_VALUE_TYPE res;
+
+      /* If something inexact happened bail out now.  */
+      if (REAL_ARITHMETIC (res, MINUS_EXPR, remainder, factor))
+	return false;
+
+      /* We have hit zero.  The number is representable as a sum
+         of powers of 0.5.  */
+      if (REAL_VALUES_EQUAL (res, dconst0))
+	{
+	  info->factors[i] = true;
+	  info->deepest = i + 1;
+	  return true;
+	}
+      else if (!REAL_VALUE_NEGATIVE (res))
+	{
+	  remainder = res;
+	  info->factors[i] = true;
+	  info->num_mults++;
+	}
+      else
+	info->factors[i] = false;
+
+      REAL_ARITHMETIC (factor, MULT_EXPR, factor, dconsthalf);
+    }
+  return false;
+}
+
+/* Return the tree corresponding to FN being applied
+   to ARG N times at GSI and LOC.
+   Look up previous results from CACHE if need be.
+   cache[0] should contain just plain ARG i.e. FN applied to ARG 0 times.  */
+
+static tree
+get_fn_chain (tree arg, unsigned int n, gimple_stmt_iterator *gsi,
+	      tree fn, location_t loc, tree *cache)
+{
+  tree res = cache[n];
+  if (!res)
+    {
+      tree prev = get_fn_chain (arg, n - 1, gsi, fn, loc, cache);
+      res = build_and_insert_call (gsi, loc, fn, prev);
+      cache[n] = res;
+    }
+
+  return res;
+}
+
+/* Print to STREAM the repeated application of function FNAME to ARG
+   N times.  So, for FNAME = "foo", ARG = "x", N = 2 it would print:
+   "foo (foo (x))".  */
+
+static void
+print_nested_fn (FILE* stream, const char *fname, const char* arg,
+		 unsigned int n)
+{
+  if (n == 0)
+    fprintf (stream, "%s", arg);
+  else
+    {
+      fprintf (stream, "%s (", fname);
+      print_nested_fn (stream, fname, arg, n - 1);
+      fprintf (stream, ")");
+    }
+}
+
+/* Print to STREAM the fractional sequence of sqrt chains
+   applied to ARG, described by INFO.  Used for the dump file.  */
+
+static void
+dump_fractional_sqrt_sequence (FILE *stream, const char *arg,
+			        struct pow_synth_sqrt_info *info)
+{
+  for (unsigned int i = 0; i < info->deepest; i++)
+    {
+      bool is_set = info->factors[i];
+      if (is_set)
+	{
+	  print_nested_fn (stream, "sqrt", arg, i + 1);
+	  if (i != info->deepest - 1)
+	    fprintf (stream, " * ");
+	}
+    }
+}
+
+/* Print to STREAM a representation of raising ARG to an integer
+   power N.  Used for the dump file.  */
+
+static void
+dump_integer_part (FILE *stream, const char* arg, HOST_WIDE_INT n)
+{
+  if (n > 1)
+    fprintf (stream, "powi (%s, " HOST_WIDE_INT_PRINT_DEC ")", arg, n);
+  else if (n == 1)
+    fprintf (stream, "%s", arg);
+}
+
+/* Attempt to synthesize a POW[F] (ARG0, ARG1) call using chains of
+   square roots.  Place at GSI and LOC.  Limit the maximum depth
+   of the sqrt chains to MAX_DEPTH.  Return the tree holding the
+   result of the expanded sequence or NULL_TREE if the expansion failed.
+
+   This routine assumes that ARG1 is a real number with a fractional part
+   (the integer exponent case will have been handled earlier in
+   gimple_expand_builtin_pow).
+
+   For ARG1 > 0.0:
+   * For ARG1 composed of a whole part WHOLE_PART and a fractional part
+     FRAC_PART i.e. WHOLE_PART == floor (ARG1) and
+                    FRAC_PART == ARG1 - WHOLE_PART:
+     Produce POWI (ARG0, WHOLE_PART) * POW (ARG0, FRAC_PART) where
+     POW (ARG0, FRAC_PART) is expanded as a product of square root chains
+     if it can be expressed as such, that is if FRAC_PART satisfies:
+     FRAC_PART == <SUM from i = 1 until MAX_DEPTH> (a[i] * (0.5**i))
+     where integer a[i] is either 0 or 1.
+
+     Example:
+     POW (x, 3.625) == POWI (x, 3) * POW (x, 0.625)
+       --> POWI (x, 3) * SQRT (x) * SQRT (SQRT (SQRT (x)))
+
+   For ARG1 < 0.0 there are two approaches:
+   * (A) Expand to 1.0 / POW (ARG0, -ARG1) where POW (ARG0, -ARG1)
+         is calculated as above.
+
+     Example:
+     POW (x, -5.625) == 1.0 / POW (x, 5.625)
+       -->  1.0 / (POWI (x, 5) * SQRT (x) * SQRT (SQRT (SQRT (x))))
+
+   * (B) : WHOLE_PART := - ceil (abs (ARG1))
+           FRAC_PART  := ARG1 - WHOLE_PART
+     and expand to POW (x, FRAC_PART) / POWI (x, WHOLE_PART).
+     Example:
+     POW (x, -5.875) == POW (x, 0.125) / POWI (X, 6)
+       --> SQRT (SQRT (SQRT (x))) / (POWI (x, 6))
+
+   For ARG1 < 0.0 we choose between (A) and (B) depending on
+   how many multiplications we'd have to do.
+   So, for the example in (B): POW (x, -5.875), if we were to
+   follow algorithm (A) we would produce:
+   1.0 / POWI (X, 5) * SQRT (X) * SQRT (SQRT (X)) * SQRT (SQRT (SQRT (X)))
+   which contains more multiplications than approach (B).
+
+   Hopefully, this approach will eliminate potentially expensive POW library
+   calls when unsafe floating point math is enabled and allow the compiler to
+   further optimise the multiplies, square roots and divides produced by this
+   function.  */
+
+static tree
+expand_pow_as_sqrts (gimple_stmt_iterator *gsi, location_t loc,
+		     tree arg0, tree arg1, HOST_WIDE_INT max_depth)
+{
+  tree type = TREE_TYPE (arg0);
+  machine_mode mode = TYPE_MODE (type);
+  tree sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
+  bool one_over = true;
+
+  if (!sqrtfn)
+    return NULL_TREE;
+
+  if (TREE_CODE (arg1) != REAL_CST)
+    return NULL_TREE;
+
+  REAL_VALUE_TYPE exp_init = TREE_REAL_CST (arg1);
+
+  gcc_assert (max_depth > 0);
+  tree *cache = XALLOCAVEC (tree, max_depth + 1);
+
+  struct pow_synth_sqrt_info synth_info;
+  synth_info.factors = XALLOCAVEC (bool, max_depth + 1);
+  synth_info.deepest = 0;
+  synth_info.num_mults = 0;
+
+  bool neg_exp = REAL_VALUE_NEGATIVE (exp_init);
+  REAL_VALUE_TYPE exp = real_value_abs (&exp_init);
+
+  /* The whole and fractional parts of exp.  */
+  REAL_VALUE_TYPE whole_part;
+  REAL_VALUE_TYPE frac_part;
+
+  real_floor (&whole_part, mode, &exp);
+  REAL_ARITHMETIC (frac_part, MINUS_EXPR, exp, whole_part);
+
+
+  REAL_VALUE_TYPE ceil_whole = dconst0;
+  REAL_VALUE_TYPE ceil_fract = dconst0;
+
+  if (neg_exp)
+    {
+      real_ceil (&ceil_whole, mode, &exp);
+      REAL_ARITHMETIC (ceil_fract, MINUS_EXPR, ceil_whole, exp);
+    }
+
+  if (!representable_as_half_series_p (frac_part, max_depth, &synth_info))
+    return NULL_TREE;
+
+  /* Check whether it's more profitable to not use 1.0 / ...  */
+  if (neg_exp)
+    {
+      struct pow_synth_sqrt_info alt_synth_info;
+      alt_synth_info.factors = XALLOCAVEC (bool, max_depth + 1);
+      alt_synth_info.deepest = 0;
+      alt_synth_info.num_mults = 0;
+
+      if (representable_as_half_series_p (ceil_fract, max_depth,
+					   &alt_synth_info)
+	  && alt_synth_info.deepest <= synth_info.deepest
+	  && alt_synth_info.num_mults < synth_info.num_mults)
+	{
+	  whole_part = ceil_whole;
+	  frac_part = ceil_fract;
+	  synth_info.deepest = alt_synth_info.deepest;
+	  synth_info.num_mults = alt_synth_info.num_mults;
+	  memcpy (synth_info.factors, alt_synth_info.factors,
+		  (max_depth + 1) * sizeof (bool));
+	  one_over = false;
+	}
+    }
+
+  HOST_WIDE_INT n = real_to_integer (&whole_part);
+  REAL_VALUE_TYPE cint;
+  real_from_integer (&cint, VOIDmode, n, SIGNED);
+
+  if (!real_identical (&whole_part, &cint))
+    return NULL_TREE;
+
+  if (powi_cost (n) + synth_info.num_mults > POWI_MAX_MULTS)
+    return NULL_TREE;
+
+  memset (cache, 0, (max_depth + 1) * sizeof (tree));
+
+  tree integer_res = n == 0 ? build_real (type, dconst1) : arg0;
+
+  /* Calculate the integer part of the exponent.  */
+  if (n > 1)
+    {
+      integer_res = gimple_expand_builtin_powi (gsi, loc, arg0, n);
+      if (!integer_res)
+	return NULL_TREE;
+    }
+
+  if (dump_file)
+    {
+      char string[64];
+
+      real_to_decimal (string, &exp_init, sizeof (string), 0, 1);
+      fprintf (dump_file, "synthesizing pow (x, %s) as:\n", string);
+
+      if (neg_exp)
+	{
+	  if (one_over)
+	    {
+	      fprintf (dump_file, "1.0 / (");
+	      dump_integer_part (dump_file, "x", n);
+	      if (n > 0)
+	        fprintf (dump_file, " * ");
+	      dump_fractional_sqrt_sequence (dump_file, "x", &synth_info);
+	      fprintf (dump_file, ")");
+	    }
+	  else
+	    {
+	      dump_fractional_sqrt_sequence (dump_file, "x", &synth_info);
+	      fprintf (dump_file, " / (");
+	      dump_integer_part (dump_file, "x", n);
+	      fprintf (dump_file, ")");
+	    }
+	}
+      else
+	{
+	  dump_fractional_sqrt_sequence (dump_file, "x", &synth_info);
+	  if (n > 0)
+	    fprintf (dump_file, " * ");
+	  dump_integer_part (dump_file, "x", n);
+	}
+
+      fprintf (dump_file, "\ndeepest sqrt chain: %d\n", synth_info.deepest);
+    }
+
+
+  tree fract_res = NULL_TREE;
+  cache[0] = arg0;
+
+  /* Calculate the fractional part of the exponent.  */
+  for (unsigned i = 0; i < synth_info.deepest; i++)
+    {
+      if (synth_info.factors[i])
+	{
+	  tree sqrt_chain = get_fn_chain (arg0, i + 1, gsi, sqrtfn, loc, cache);
+
+	  if (!fract_res)
+	      fract_res = sqrt_chain;
+
+	  else
+	    fract_res = build_and_insert_binop (gsi, loc, "powroot", MULT_EXPR,
+					   fract_res, sqrt_chain);
+	}
+    }
+
+  tree res = NULL_TREE;
+
+  if (neg_exp)
+    {
+      if (one_over)
+	{
+	  if (n > 0)
+	    res = build_and_insert_binop (gsi, loc, "powroot", MULT_EXPR,
+					   fract_res, integer_res);
+	  else
+	    res = fract_res;
+
+	  res = build_and_insert_binop (gsi, loc, "powrootrecip", RDIV_EXPR,
+					  build_real (type, dconst1), res);
+	}
+      else
+	{
+	  res = build_and_insert_binop (gsi, loc, "powroot", RDIV_EXPR,
+					 fract_res, integer_res);
+	}
+    }
+  else
+    res = build_and_insert_binop (gsi, loc, "powroot", MULT_EXPR,
+				   fract_res, integer_res);
+  return res;
+}
+
 /* ARG0 and ARG1 are the two arguments to a pow builtin call in GSI
    with location info LOC.  If possible, create an equivalent and
    less expensive sequence of statements prior to GSI, and return an
@@ -1157,12 +1509,16 @@ static tree
 gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc, 
 			   tree arg0, tree arg1)
 {
-  REAL_VALUE_TYPE c, cint, dconst1_4, dconst3_4, dconst1_3, dconst1_6;
+  REAL_VALUE_TYPE c, cint, dconst1_3, dconst1_4, dconst1_6;
   REAL_VALUE_TYPE c2, dconst3;
   HOST_WIDE_INT n;
-  tree type, sqrtfn, cbrtfn, sqrt_arg0, sqrt_sqrt, result, cbrt_x, powi_cbrt_x;
+  tree type, sqrtfn, cbrtfn, sqrt_arg0, result, cbrt_x, powi_cbrt_x;
   machine_mode mode;
+  bool speed_p = optimize_bb_for_speed_p (gsi_bb (*gsi));
   bool hw_sqrt_exists, c_is_int, c2_is_int;
+
+  dconst1_4 = dconst1;
+  SET_REAL_EXP (&dconst1_4, REAL_EXP (&dconst1_4) - 2);
 
   /* If the exponent isn't a constant, there's nothing of interest
      to be done.  */
@@ -1179,7 +1535,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
   if (c_is_int
       && ((n >= -1 && n <= 2)
 	  || (flag_unsafe_math_optimizations
-	      && optimize_bb_for_speed_p (gsi_bb (*gsi))
+	      && speed_p
 	      && powi_cost (n) <= POWI_MAX_MULTS)))
     return gimple_expand_builtin_powi (gsi, loc, arg0, n);
 
@@ -1196,48 +1552,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
       && !HONOR_SIGNED_ZEROS (mode))
     return build_and_insert_call (gsi, loc, sqrtfn, arg0);
 
-  /* Optimize pow(x,0.25) = sqrt(sqrt(x)).  Assume on most machines that
-     a builtin sqrt instruction is smaller than a call to pow with 0.25,
-     so do this optimization even if -Os.  Don't do this optimization
-     if we don't have a hardware sqrt insn.  */
-  dconst1_4 = dconst1;
-  SET_REAL_EXP (&dconst1_4, REAL_EXP (&dconst1_4) - 2);
   hw_sqrt_exists = optab_handler (sqrt_optab, mode) != CODE_FOR_nothing;
-
-  if (flag_unsafe_math_optimizations
-      && sqrtfn
-      && REAL_VALUES_EQUAL (c, dconst1_4)
-      && hw_sqrt_exists)
-    {
-      /* sqrt(x)  */
-      sqrt_arg0 = build_and_insert_call (gsi, loc, sqrtfn, arg0);
-
-      /* sqrt(sqrt(x))  */
-      return build_and_insert_call (gsi, loc, sqrtfn, sqrt_arg0);
-    }
-      
-  /* Optimize pow(x,0.75) = sqrt(x) * sqrt(sqrt(x)) unless we are
-     optimizing for space.  Don't do this optimization if we don't have
-     a hardware sqrt insn.  */
-  real_from_integer (&dconst3_4, VOIDmode, 3, SIGNED);
-  SET_REAL_EXP (&dconst3_4, REAL_EXP (&dconst3_4) - 2);
-
-  if (flag_unsafe_math_optimizations
-      && sqrtfn
-      && optimize_function_for_speed_p (cfun)
-      && REAL_VALUES_EQUAL (c, dconst3_4)
-      && hw_sqrt_exists)
-    {
-      /* sqrt(x)  */
-      sqrt_arg0 = build_and_insert_call (gsi, loc, sqrtfn, arg0);
-
-      /* sqrt(sqrt(x))  */
-      sqrt_sqrt = build_and_insert_call (gsi, loc, sqrtfn, sqrt_arg0);
-
-      /* sqrt(x) * sqrt(sqrt(x))  */
-      return build_and_insert_binop (gsi, loc, "powroot", MULT_EXPR,
-				     sqrt_arg0, sqrt_sqrt);
-    }
 
   /* Optimize pow(x,1./3.) = cbrt(x).  This requires unsafe math
      optimizations since 1./3. is not exactly representable.  If x
@@ -1263,7 +1578,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
       && sqrtfn
       && cbrtfn
       && (gimple_val_nonnegative_real_p (arg0) || !HONOR_NANS (mode))
-      && optimize_function_for_speed_p (cfun)
+      && speed_p
       && hw_sqrt_exists
       && REAL_VALUES_EQUAL (c, dconst1_6))
     {
@@ -1274,53 +1589,30 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
       return build_and_insert_call (gsi, loc, cbrtfn, sqrt_arg0);
     }
 
-  /* Optimize pow(x,c), where n = 2c for some nonzero integer n
-     and c not an integer, into
 
-       sqrt(x) * powi(x, n/2),                n > 0;
-       1.0 / (sqrt(x) * powi(x, abs(n/2))),   n < 0.
+  /* Attempt to expand the POW as a product of square root chains.
+     Expand the 0.25 case even when otpimising for size.  */
+  if (flag_unsafe_math_optimizations
+      && sqrtfn
+      && hw_sqrt_exists
+      && (speed_p || REAL_VALUES_EQUAL (c, dconst1_4))
+      && !HONOR_SIGNED_ZEROS (mode))
+    {
+      unsigned int max_depth = speed_p
+				? PARAM_VALUE (PARAM_MAX_POW_SQRT_DEPTH)
+				: 2;
 
-     Do not calculate the powi factor when n/2 = 0.  */
+      tree expand_with_sqrts
+	= expand_pow_as_sqrts (gsi, loc, arg0, arg1, max_depth);
+
+      if (expand_with_sqrts)
+	return expand_with_sqrts;
+    }
+
   real_arithmetic (&c2, MULT_EXPR, &c, &dconst2);
   n = real_to_integer (&c2);
   real_from_integer (&cint, VOIDmode, n, SIGNED);
   c2_is_int = real_identical (&c2, &cint);
-
-  if (flag_unsafe_math_optimizations
-      && sqrtfn
-      && c2_is_int
-      && !c_is_int
-      && optimize_function_for_speed_p (cfun))
-    {
-      tree powi_x_ndiv2 = NULL_TREE;
-
-      /* Attempt to fold powi(arg0, abs(n/2)) into multiplies.  If not
-         possible or profitable, give up.  Skip the degenerate case when
-         n is 1 or -1, where the result is always 1.  */
-      if (absu_hwi (n) != 1)
-	{
-	  powi_x_ndiv2 = gimple_expand_builtin_powi (gsi, loc, arg0,
-						     abs_hwi (n / 2));
-	  if (!powi_x_ndiv2)
-	    return NULL_TREE;
-	}
-
-      /* Calculate sqrt(x).  When n is not 1 or -1, multiply it by the
-	 result of the optimal multiply sequence just calculated.  */
-      sqrt_arg0 = build_and_insert_call (gsi, loc, sqrtfn, arg0);
-
-      if (absu_hwi (n) == 1)
-	result = sqrt_arg0;
-      else
-	result = build_and_insert_binop (gsi, loc, "powroot", MULT_EXPR,
-					 sqrt_arg0, powi_x_ndiv2);
-
-      /* If n is negative, reciprocate the result.  */
-      if (n < 0)
-	result = build_and_insert_binop (gsi, loc, "powroot", RDIV_EXPR,
-					 build_real (type, dconst1), result);
-      return result;
-    }
 
   /* Optimize pow(x,c), where 3c = n for some nonzero integer n, into
 

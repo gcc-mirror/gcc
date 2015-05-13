@@ -1,3 +1,17 @@
+2015-05-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* params.def (PARAM_MAX_POW_SQRT_DEPTH): New param.
+	* tree-ssa-math-opts.c: Include params.h
+	(pow_synth_sqrt_info): New struct.
+	(representable_as_half_series_p): New function.
+	(get_fn_chain): Likewise.
+	(print_nested_fn): Likewise.
+	(dump_fractional_sqrt_sequence): Likewise.
+	(dump_integer_part): Likewise.
+	(expand_pow_as_sqrts): Likewise.
+	(gimple_expand_builtin_pow): Use above to attempt to expand
+	pow as series of square roots.  Removed now unused variables.
+
 2015-05-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_emit_set_long_const): Remove c1 argument.

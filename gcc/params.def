@@ -262,6 +262,14 @@ DEFPARAM(PARAM_MAX_HOIST_DEPTH,
 	 "Maximum depth of search in the dominator tree for expressions to hoist",
 	 30, 0, 0)
 
+
+/* When synthesizing expnonentiation by a real constant operations using square
+   roots, this controls how deep sqrt chains we are willing to generate.  */
+DEFPARAM(PARAM_MAX_POW_SQRT_DEPTH,
+	 "max-pow-sqrt-depth",
+	 "Maximum depth of sqrt chains to use when synthesizing exponentiation by a real constant",
+	 5, 1, 32)
+
 /* This parameter limits the number of insns in a loop that will be unrolled,
    and by how much the loop is unrolled.
 
