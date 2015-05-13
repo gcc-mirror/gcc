@@ -1,5 +1,9 @@
 2015-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_raw_storage_iter.h (raw_storage_iterator::base()):
+	Define (LWG 2454).
+	* testsuite/20_util/raw_storage_iterator/base.cc: New.
+
 	* include/std/future (packaged_task(allocator_arg_t, const A&, F&&):
 	Remove explicit (LWG 2407).
 
