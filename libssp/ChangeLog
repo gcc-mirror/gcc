@@ -1,3 +1,9 @@
+2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
+
+	* Makefile.in: Regenerated with automake-1.11.6.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+
 2015-02-09  Georg Koppen  <gk@torproject.org>
 
 	* ssp.c: Conditionally include <windows.h>
