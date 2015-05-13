@@ -1,5 +1,7 @@
 2015-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/complex (polar): Check for negative rho (LWG 2459).
+
 	* include/experimental/tuple (apply): Handle pointers to member (LWG
 	2418).
 	* include/std/functional (_Mem_fn_base): Make constructors constexpr.
