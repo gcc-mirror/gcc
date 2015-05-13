@@ -1,3 +1,9 @@
+2015-05-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* combine.c (simplify_set): When generating a CC set, if the
+	source already is in the correct mode, do not wrap it in a
+	compare.  Simplify the rest of that code.
+
 2015-05-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66123
