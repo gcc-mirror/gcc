@@ -71,11 +71,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "generic-match.h"
 
 /* Routine to determine if the types T1 and T2 are effectively
-   the same for GENERIC.  */
+   the same for GENERIC.  If T1 or T2 is not a type, the test
+   applies to their TREE_TYPE.  */
 
 static inline bool
 types_match (tree t1, tree t2)
 {
+  if (!TYPE_P (t1))
+    t1 = TREE_TYPE (t1);
+  if (!TYPE_P (t2))
+    t2 = TREE_TYPE (t2);
+
   return TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2);
 }
 
