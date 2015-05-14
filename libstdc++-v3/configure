@@ -2553,63 +2553,6 @@ $as_echo "$ac_res" >&6; }
   eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
 
 } # ac_fn_cxx_check_type
-
-# ac_fn_c_check_member LINENO AGGR MEMBER VAR INCLUDES
-# ----------------------------------------------------
-# Tries to find if the field MEMBER exists in type AGGR, after including
-# INCLUDES, setting cache variable VAR accordingly.
-ac_fn_c_check_member ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2.$3" >&5
-$as_echo_n "checking for $2.$3... " >&6; }
-if { as_var=$4; eval "test \"\${$as_var+set}\" = set"; }; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$5
-int
-main ()
-{
-static $2 ac_aggr;
-if (ac_aggr.$3)
-return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  eval "$4=yes"
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$5
-int
-main ()
-{
-static $2 ac_aggr;
-if (sizeof ac_aggr.$3)
-return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  eval "$4=yes"
-else
-  eval "$4=no"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-eval ac_res=\$$4
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-  eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
-
-} # ac_fn_c_check_member
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -11651,7 +11594,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11654 "configure"
+#line 11597 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11757,7 +11700,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11760 "configure"
+#line 11703 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15443,7 +15386,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15446 "configure"
+#line 15389 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15478,7 +15421,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15481 "configure"
+#line 15424 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15513,7 +15456,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15516 "configure"
+#line 15459 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15549,7 +15492,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15552 "configure"
+#line 15495 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15628,7 +15571,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15631 "configure"
+#line 15574 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15670,7 +15613,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15673 "configure"
+#line 15616 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15704,7 +15647,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15707 "configure"
+#line 15650 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -78852,201 +78795,6 @@ fi
 
 done
 
-ac_header_dirent=no
-for ac_hdr in dirent.h sys/ndir.h sys/dir.h ndir.h; do
-  as_ac_Header=`$as_echo "ac_cv_header_dirent_$ac_hdr" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_hdr that defines DIR" >&5
-$as_echo_n "checking for $ac_hdr that defines DIR... " >&6; }
-if { as_var=$as_ac_Header; eval "test \"\${$as_var+set}\" = set"; }; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <sys/types.h>
-#include <$ac_hdr>
-
-int
-main ()
-{
-if ((DIR *) 0)
-return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  eval "$as_ac_Header=yes"
-else
-  eval "$as_ac_Header=no"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-eval ac_res=\$$as_ac_Header
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-eval as_val=\$$as_ac_Header
-   if test "x$as_val" = x""yes; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_hdr" | $as_tr_cpp` 1
-_ACEOF
-
-ac_header_dirent=$ac_hdr; break
-fi
-
-done
-# Two versions of opendir et al. are in -ldir and -lx on SCO Xenix.
-if test $ac_header_dirent = dirent.h; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing opendir" >&5
-$as_echo_n "checking for library containing opendir... " >&6; }
-if test "${ac_cv_search_opendir+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char opendir ();
-int
-main ()
-{
-return opendir ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' dir; do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_search_opendir=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext
-  if test "${ac_cv_search_opendir+set}" = set; then :
-  break
-fi
-done
-if test "${ac_cv_search_opendir+set}" = set; then :
-
-else
-  ac_cv_search_opendir=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_opendir" >&5
-$as_echo "$ac_cv_search_opendir" >&6; }
-ac_res=$ac_cv_search_opendir
-if test "$ac_res" != no; then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
-fi
-
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing opendir" >&5
-$as_echo_n "checking for library containing opendir... " >&6; }
-if test "${ac_cv_search_opendir+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char opendir ();
-int
-main ()
-{
-return opendir ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' x; do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_search_opendir=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext
-  if test "${ac_cv_search_opendir+set}" = set; then :
-  break
-fi
-done
-if test "${ac_cv_search_opendir+set}" = set; then :
-
-else
-  ac_cv_search_opendir=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_opendir" >&5
-$as_echo "$ac_cv_search_opendir" >&6; }
-ac_res=$ac_cv_search_opendir
-if test "$ac_res" != no; then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
-fi
-
-fi
-
-
-
-  ac_fn_c_check_member "$LINENO" "struct dirent" "d_type" "ac_cv_member_struct_dirent_d_type" "
-#include <sys/types.h>
-#ifdef HAVE_DIRENT_H
-# include <dirent.h>
-#else
-# define dirent direct
-# ifdef HAVE_SYS_NDIR_H
-#  include <sys/ndir.h>
-# endif
-# ifdef HAVE_SYS_DIR_H
-#  include <sys/dir.h>
-# endif
-# ifdef HAVE_NDIR_H
-#  include <ndir.h>
-# endif
-#endif
-
-"
-if test "x$ac_cv_member_struct_dirent_d_type" = x""yes; then :
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_STRUCT_DIRENT_D_TYPE 1
-_ACEOF
-
-
-fi
-
-
 
    # Check whether --enable-libstdcxx-filesystem-ts was given.
 if test "${enable_libstdcxx_filesystem_ts+set}" = set; then :
@@ -79096,6 +78844,68 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for struct dirent.d_type" >&5
+$as_echo_n "checking for struct dirent.d_type... " >&6; }
+  if test "${glibcxx_cv_dirent_d_type+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+      if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <dirent.h>
+int
+main ()
+{
+
+       struct dirent d;
+       if (sizeof d.d_type) return 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_dirent_d_type=yes
+else
+  glibcxx_cv_dirent_d_type=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <dirent.h>
+int
+main ()
+{
+
+       struct dirent d;
+       if (sizeof d.d_type) return 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_dirent_d_type=yes
+else
+  glibcxx_cv_dirent_d_type=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+
+fi
+
+  if test $glibcxx_cv_dirent_d_type = yes; then
+
+$as_echo "#define _GLIBCXX_HAVE_STRUCT_DIRENT_D_TYPE 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_dirent_d_type" >&5
+$as_echo "$glibcxx_cv_dirent_d_type" >&6; }
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for realpath" >&5
 $as_echo_n "checking for realpath... " >&6; }
   if test "${glibcxx_cv_realpath+set}" = set; then :

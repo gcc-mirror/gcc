@@ -3875,6 +3875,22 @@ dnl
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions"
 dnl
+  AC_MSG_CHECKING([for struct dirent.d_type])
+  AC_CACHE_VAL(glibcxx_cv_dirent_d_type, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <dirent.h>],
+      [
+       struct dirent d;
+       if (sizeof d.d_type) return 0;
+      ],
+      [glibcxx_cv_dirent_d_type=yes],
+      [glibcxx_cv_dirent_d_type=no])
+  ])
+  if test $glibcxx_cv_dirent_d_type = yes; then
+    AC_DEFINE(_GLIBCXX_HAVE_STRUCT_DIRENT_D_TYPE, 1, [Define to 1 if `d_type' is a member of `struct dirent'.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_dirent_d_type)
+dnl
   AC_MSG_CHECKING([for realpath])
   AC_CACHE_VAL(glibcxx_cv_realpath, [dnl
     GCC_TRY_COMPILE_OR_LINK(
