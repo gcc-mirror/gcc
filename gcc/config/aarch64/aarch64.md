@@ -2182,34 +2182,16 @@
   [(set_attr "type" "alu_ext")]
 )
 
-(define_insn_and_split "absdi2"
-  [(set (match_operand:DI 0 "register_operand" "=&r,w")
-	(abs:DI (match_operand:DI 1 "register_operand" "r,w")))]
+(define_expand "abs<mode>2"
+  [(match_operand:GPI 0 "register_operand" "")
+   (match_operand:GPI 1 "register_operand" "")]
   ""
-  "@
-   #
-   abs\\t%d0, %d1"
-  "reload_completed
-   && GP_REGNUM_P (REGNO (operands[0]))
-   && GP_REGNUM_P (REGNO (operands[1]))"
-  [(const_int 0)]
   {
-    emit_insn (gen_rtx_SET (operands[0],
-			    gen_rtx_XOR (DImode,
-					 gen_rtx_ASHIFTRT (DImode,
-							   operands[1],
-							   GEN_INT (63)),
-					 operands[1])));
-    emit_insn (gen_rtx_SET (operands[0],
-			    gen_rtx_MINUS (DImode,
-					   operands[0],
-					   gen_rtx_ASHIFTRT (DImode,
-							     operands[1],
-							     GEN_INT (63)))));
+    rtx ccreg = aarch64_gen_compare_reg (LT, operands[1], const0_rtx);
+    rtx x = gen_rtx_LT (VOIDmode, ccreg, const0_rtx);
+    emit_insn (gen_csneg3<mode>_insn (operands[0], x, operands[1], operands[1]));
     DONE;
   }
-  [(set_attr "type" "alu_sreg")
-   (set_attr "simd" "no,yes")]
 )
 
 (define_insn "neg<mode>2"
@@ -2888,7 +2870,7 @@
   [(set_attr "type" "csel")]
 )
 
-(define_insn "*csneg3<mode>_insn"
+(define_insn "csneg3<mode>_insn"
   [(set (match_operand:GPI 0 "register_operand" "=r")
         (if_then_else:GPI
 	  (match_operand 1 "aarch64_comparison_operation" "")
