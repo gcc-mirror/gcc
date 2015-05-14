@@ -1,3 +1,17 @@
+2015-05-14  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/65862
+	* target.def (ira_change_pseudo_allocno_class): New hook.
+	* targhooks.c (default_ira_change_pseudo_allocno_class): Default
+	value of the hook.
+	* targhooks.h (default_ira_change_pseudo_allocno_class): New
+	extern
+	* doc/tm.texi.in (TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS): Add the
+	hook.
+	* ira-costs.c (find_costs_and_classes): Call the hook and change
+	classes when it is necessary.
+	* doc/tm.texi: Update.
+
 2015-05-14  Alexander Monakov  <amonakov@ispras.ru>
 
 	* config/i386/i386.md (sibcall_memory): Check that register with

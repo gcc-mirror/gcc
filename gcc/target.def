@@ -4763,6 +4763,16 @@ This is currently used only by the C and C++ front ends.",
  tree, (tree type, tree expr),
  hook_tree_tree_tree_null)
 
+/* Change pseudo allocno class calculated by IRA.  */
+DEFHOOK
+(ira_change_pseudo_allocno_class,
+ "A target hook which can change allocno class for given pseudo from\n\
+  allocno class calculated by IRA.\n\
+  \n\
+  The default version of this target hook always returns given class.",
+ reg_class_t, (int, reg_class_t),
+ default_ira_change_pseudo_allocno_class)
+
 /* Return true if we use LRA instead of reload.  */
 DEFHOOK
 (lra_p,
