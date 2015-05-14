@@ -1,3 +1,12 @@
+2015-05-14  Alexander Monakov  <amonakov@ispras.ru>
+
+	* config/i386/i386.md (sibcall_memory): Check that register with
+	callee address is not also used as one of the arguments, instead
+	of checking that it is not live after the sibcall.
+	(sibcall_pop_memory): Ditto.
+	(sibcall_value_memory): Ditto.
+	(sibcall_value_pop_memory): Ditto. 
+
 2015-05-14  Marc Glisse  <marc.glisse@inria.fr>
 
 	* generic-match-head.c (types_match): Handle non-types.
