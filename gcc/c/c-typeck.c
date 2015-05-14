@@ -6864,7 +6864,7 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	  inside_init = error_mark_node;
 	}
       else if (require_constant && !maybe_const)
-	pedwarn_init (init_loc, 0,
+	pedwarn_init (init_loc, OPT_Wpedantic,
 		      "initializer element is not a constant expression");
 
       /* Added to enable additional -Wsuggest-attribute=format warnings.  */

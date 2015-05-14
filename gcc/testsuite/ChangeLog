@@ -1,3 +1,13 @@
+2015-05-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c/66066
+	PR c/66127
+	* gcc.dg/pr14649-1.c: Add -Wpedantic.
+	* gcc.dg/pr19984.c: Likewise.
+	* gcc.dg/pr66066-1.c: New test.
+	* gcc.dg/pr66066-2.c: New test.
+	* gcc.dg/pr66066-3.c: New test.
+
 2015-05-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/pow-sqrt-synth-1.c: New test.
