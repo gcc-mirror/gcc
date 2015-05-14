@@ -4383,8 +4383,8 @@ rl78_asm_init_sections (void)
 
 static section *
 rl78_select_section (tree decl,
-		     int reloc ATTRIBUTE_UNUSED,
-		     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
+		     int reloc,
+		     unsigned HOST_WIDE_INT align)
 {
   int readonly = 1;
 
@@ -4428,7 +4428,15 @@ rl78_select_section (tree decl,
   if (readonly)
     return readonly_data_section;
 
-  return data_section;
+  switch (categorize_decl_for_section (decl, reloc))
+    {
+    case SECCAT_TEXT:   return text_section;
+    case SECCAT_DATA:   return data_section;
+    case SECCAT_BSS:    return bss_section;
+    case SECCAT_RODATA: return readonly_data_section;
+    default:
+      return default_select_section (decl, reloc, align);
+    }
 }
 
 void
