@@ -1,3 +1,9 @@
+2015-05-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	* generic-match-head.c (types_match): Handle non-types.
+	* gimple-match-head.c (types_match): Likewise.
+	* match.pd: Remove unnecessary TREE_TYPE for types_match.
+
 2015-05-14  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.md (absdi2): Optimize abs expansion.

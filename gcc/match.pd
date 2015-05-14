@@ -289,7 +289,7 @@ along with GCC; see the file COPYING3.  If not see
   (if (((TREE_CODE (@1) == INTEGER_CST
 	 && INTEGRAL_TYPE_P (TREE_TYPE (@0))
 	 && int_fits_type_p (@1, TREE_TYPE (@0)))
-	|| types_match (TREE_TYPE (@0), TREE_TYPE (@1)))
+	|| types_match (@0, @1))
        /* ???  This transform conflicts with fold-const.c doing
 	  Convert (T)(x & c) into (T)x & (T)c, if c is an integer
 	  constants (if x has signed type, the sign bit cannot be set
@@ -948,7 +948,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Unordered tests if either argument is a NaN.  */
 (simplify
  (bit_ior (unordered @0 @0) (unordered @1 @1))
- (if (types_match (TREE_TYPE (@0), TREE_TYPE (@1)))
+ (if (types_match (@0, @1))
   (unordered @0 @1)))
 (simplify
  (bit_ior:c (unordered @0 @0) (unordered:c@2 @0 @1))
@@ -1068,8 +1068,8 @@ along with GCC; see the file COPYING3.  If not see
 	 && TYPE_PRECISION (type) == GET_MODE_PRECISION (TYPE_MODE (type))
 	 /* The inner conversion must be a widening conversion.  */
 	 && TYPE_PRECISION (TREE_TYPE (@2)) > TYPE_PRECISION (TREE_TYPE (@0))
-	 && types_match (TREE_TYPE (@0), TREE_TYPE (@1))
-	 && types_match (TREE_TYPE (@0), type)
+	 && types_match (@0, @1)
+	 && types_match (@0, type)
 	 && single_use (@4))
       (if (TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
 	(convert (op @0 @1)))
@@ -1099,7 +1099,7 @@ along with GCC; see the file COPYING3.  If not see
 	 && TYPE_PRECISION (type) == GET_MODE_PRECISION (TYPE_MODE (type))
 	 /* The inner conversion must be a widening conversion.  */
 	 && TYPE_PRECISION (TREE_TYPE (@2)) > TYPE_PRECISION (TREE_TYPE (@0))
-	 && types_match (TREE_TYPE (@0), TREE_TYPE (@1))
+	 && types_match (@0, @1)
 	 && (tree_int_cst_min_precision (@4, UNSIGNED)
 	     <= TYPE_PRECISION (TREE_TYPE (@0)))
 	 && single_use (@5))
