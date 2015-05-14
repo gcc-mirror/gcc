@@ -1,3 +1,8 @@
+2015-05-14  Alexander Monakov  <amonakov@ispras.ru>
+
+	* gcc.target/i386/sibcall-7.c: New test.
+	* gcc.target/i386/sibcall-8.c: New test.
+
 2015-05-14  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/aarch64/abs_1.c (abs64): Update test for new abs expansion.
@@ -97,7 +102,7 @@
 	PR tree-optimization/37021
 	* gcc.target/i386/vect-addsub.c: New testcase.
 
-2015-05-11  Alexander Monakov  <amonakov@ispras.ru>
+2015-05-12  Alexander Monakov  <amonakov@ispras.ru>
 
 	* gcc.target/i386/pr65753.c: Use -O2 instead of -O.
 
