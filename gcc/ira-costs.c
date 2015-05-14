@@ -1636,7 +1636,7 @@ find_costs_and_classes (FILE *dump_file)
   int i, k, start, max_cost_classes_num;
   int pass;
   basic_block bb;
-  enum reg_class *regno_best_class;
+  enum reg_class *regno_best_class, new_class;
 
   init_recog ();
   regno_best_class
@@ -1877,6 +1877,18 @@ find_costs_and_classes (FILE *dump_file)
 		= ira_reg_class_superunion[best][alt_class];
 	      ira_assert (regno_aclass[i] != NO_REGS
 			  && ira_reg_allocno_class_p[regno_aclass[i]]);
+	    }
+	  if ((new_class
+	       = (reg_class) (targetm.ira_change_pseudo_allocno_class
+			      (i, regno_aclass[i]))) != regno_aclass[i])
+	    {
+	      regno_aclass[i] = new_class;
+	      if (hard_reg_set_subset_p (reg_class_contents[new_class],
+					 reg_class_contents[best]))
+		best = new_class;
+	      if (hard_reg_set_subset_p (reg_class_contents[new_class],
+					 reg_class_contents[alt_class]))
+		alt_class = new_class;
 	    }
 	  if (pass == flag_expensive_optimizations)
 	    {

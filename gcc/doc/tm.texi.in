@@ -2475,6 +2475,8 @@ as below:
 @end smallexample
 @end defmac
 
+@hook TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS
+
 @hook TARGET_LRA_P
 
 @hook TARGET_REGISTER_PRIORITY
