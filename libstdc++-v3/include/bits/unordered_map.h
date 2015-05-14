@@ -146,6 +146,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       : _M_h(__n, __hf, __eql, __a)
       { }
 
+      unordered_map(size_type __n, const allocator_type& __a)
+      : _M_h(__n, hasher(), key_equal(), __a)
+      { }
+
+      explicit
+      unordered_map(size_type __n,
+		    const hasher& __hf,
+		    const allocator_type& __a)
+      : _M_h(__n, __hf, key_equal(), __a)
+      { }
+
       /**
        *  @brief  Builds an %unordered_map from a range.
        *  @param  __first  An input iterator.
@@ -859,6 +870,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())
       : _M_h(__n, __hf, __eql, __a)
+      { }
+
+      unordered_multimap(size_type __n, const allocator_type& __a)
+      : _M_h(__n, hasher(), key_equal(), __a)
+      { }
+
+      unordered_multimap(size_type __n,
+			 const hasher& __hf,
+			 const allocator_type& __a)
+      : _M_h(__n, __hf, key_equal(), __a)
       { }
 
       /**
