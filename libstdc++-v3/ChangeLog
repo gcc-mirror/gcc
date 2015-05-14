@@ -1,5 +1,15 @@
 2015-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/66011
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Check for fchmod and
+	sendfile.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* src/filesystem/ops.cc (do_copy_file): Fix arguments to open(). Do
+	not return after copying contents. Use fchmod, fchmodat, and sendfile
+	when available.
+	(current_path, permissions, space): Use errno not return value.
+
 	PR libstdc++/66018
 	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Check for struct
 	dirent.d_type.
