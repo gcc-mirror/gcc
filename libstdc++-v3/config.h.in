@@ -836,6 +836,9 @@
    this host. */
 #undef _GLIBCXX_USE_DECIMAL_FLOAT
 
+/* Define if fchmod is available in <sys/stat.h>. */
+#undef _GLIBCXX_USE_FCHMOD
+
 /* Define if fchmodat is available in <sys/stat.h>. */
 #undef _GLIBCXX_USE_FCHMODAT
 
@@ -884,6 +887,9 @@
 
 /* Define if _SC_NPROC_ONLN is available in <unistd.h>. */
 #undef _GLIBCXX_USE_SC_NPROC_ONLN
+
+/* Define if sendfile is available in <sys/stat.h>. */
+#undef _GLIBCXX_USE_SENDFILE
 
 /* Define if struct stat has timespec members. */
 #undef _GLIBCXX_USE_ST_MTIM

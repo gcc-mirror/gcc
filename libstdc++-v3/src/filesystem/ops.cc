@@ -41,7 +41,7 @@
 #ifdef _GLIBCXX_HAVE_SYS_STATVFS_H
 # include <sys/statvfs.h>
 #endif
-#ifdef _GLIBCXX_HAVE_GNU_SENDFILE
+#ifdef _GLIBCXX_USE_SENDFILE
 # include <sys/sendfile.h>
 #else
 # include <ext/stdio_filebuf.h>
@@ -241,6 +241,8 @@ namespace
       }
     f = make_file_status(*from_st);
 
+    using opts = fs::copy_options;
+
     if (exists(t))
       {
 	if (!is_other(t) && !is_other(f)
@@ -251,12 +253,12 @@ namespace
 	    return false;
 	  }
 
-	if (is_set(option, fs::copy_options::skip_existing))
+	if (is_set(option, opts::skip_existing))
 	  {
 	    ec.clear();
 	    return false;
 	  }
-	else if (is_set(option, fs::copy_options::update_existing))
+	else if (is_set(option, opts::update_existing))
 	  {
 	    if (file_time(*from_st) <= file_time(*to_st))
 	      {
@@ -264,7 +266,7 @@ namespace
 		return false;
 	      }
 	  }
-	else if (!is_set(option, fs::copy_options::overwrite_existing))
+	else if (!is_set(option, opts::overwrite_existing))
 	  {
 	    ec = std::make_error_code(std::errc::file_exists);
 	    return false;
@@ -282,14 +284,22 @@ namespace
 	ec.assign(errno, std::generic_category());
 	return false;
       }
-    CloseFD out = { ::open(to.c_str(), O_WRONLY|O_CREAT) };
+    int oflag = O_WRONLY|O_CREAT;
+    if (is_set(option, opts::overwrite_existing|opts::update_existing))
+      oflag |= O_TRUNC;
+    else
+      oflag |= O_EXCL;
+    CloseFD out = { ::open(to.c_str(), oflag, S_IWUSR) };
     if (out.fd == -1)
       {
-	ec.assign(errno, std::generic_category());
+	if (errno == EEXIST && is_set(option, opts::skip_existing))
+	  ec.clear();
+	else
+	  ec.assign(errno, std::generic_category());
 	return false;
       }
 
-#ifdef _GLIBCXX_HAVE_GNU_SENDFILE
+#ifdef _GLIBCXX_USE_SENDFILE
     auto n = ::sendfile(out.fd, in.fd, nullptr, from_st->st_size);
     if (n != from_st->st_size)
       {
@@ -299,20 +309,17 @@ namespace
 #else
     __gnu_cxx::stdio_filebuf<char> sbin(in.fd, std::ios::in);
     __gnu_cxx::stdio_filebuf<char> sbout(out.fd, std::ios::out);
-    if (std::ostream(&sbout) << &sbin)
-      {
-	ec.clear();
-	return true;
-      }
-    else
+    if ( !(std::ostream(&sbout) << &sbin) )
       {
 	ec = std::make_error_code(std::errc::io_error);
 	return false;
       }
 #endif
 
-#ifdef _GLIBCXX_HAVE_FCHMOD
+#ifdef _GLIBCXX_USE_FCHMOD
     if (::fchmod(out.fd, from_st->st_mode))
+#elif _GLIBCXX_USE_FCHMODAT
+    if (::fchmodat(AT_FDCWD, to.c_str(), from_st->st_mode, 0))
 #else
     if (::chmod(to.c_str(), from_st->st_mode))
 #endif
@@ -320,6 +327,7 @@ namespace
 	ec.assign(errno, std::generic_category());
 	return false;
       }
+    ec.clear();
     return true;
   }
 }
@@ -715,8 +723,8 @@ void
 fs::current_path(const path& p, error_code& ec) noexcept
 {
 #ifdef _GLIBCXX_HAVE_UNISTD_H
-  if (int err = ::chdir(p.c_str()))
-    ec.assign(err, std::generic_category());
+  if (::chdir(p.c_str()))
+    ec.assign(errno, std::generic_category());
   else
     ec.clear();
 #else
@@ -908,11 +916,11 @@ fs::permissions(const path& p, perms prms)
 void fs::permissions(const path& p, perms prms, error_code& ec) noexcept
 {
 #if _GLIBCXX_USE_FCHMODAT
-  if (int err = ::fchmodat(AT_FDCWD, p.c_str(), static_cast<mode_t>(prms), 0))
+  if (::fchmodat(AT_FDCWD, p.c_str(), static_cast<mode_t>(prms), 0))
 #else
-  if (int err = ::chmod(p.c_str(), static_cast<mode_t>(prms)))
+  if (::chmod(p.c_str(), static_cast<mode_t>(prms)))
 #endif
-    ec.assign(err, std::generic_category());
+    ec.assign(errno, std::generic_category());
   else
     ec.clear();
 }
@@ -1064,8 +1072,8 @@ fs::space(const path& p, error_code& ec) noexcept
   };
 #ifdef _GLIBCXX_HAVE_SYS_STATVFS_H
   struct ::statvfs f;
-  if (int err = ::statvfs(p.c_str(), &f))
-      ec.assign(err, std::generic_category());
+  if (::statvfs(p.c_str(), &f))
+      ec.assign(errno, std::generic_category());
   else
     {
       info = space_info{

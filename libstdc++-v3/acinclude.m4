@@ -3939,6 +3939,19 @@ dnl
   fi
   AC_MSG_RESULT($glibcxx_cv_st_mtim)
 dnl
+  AC_MSG_CHECKING([for fchmod])
+  AC_CACHE_VAL(glibcxx_cv_fchmod, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <sys/stat.h>],
+      [fchmod(1, S_IWUSR);],
+      [glibcxx_cv_fchmod=yes],
+      [glibcxx_cv_fchmod=no])
+  ])
+  if test $glibcxx_cv_fchmod = yes; then
+    AC_DEFINE(_GLIBCXX_USE_FCHMOD, 1, [Define if fchmod is available in <sys/stat.h>.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_fchmod)
+dnl
   AC_MSG_CHECKING([for fchmodat])
   AC_CACHE_VAL(glibcxx_cv_fchmodat, [dnl
     GCC_TRY_COMPILE_OR_LINK(
@@ -3954,6 +3967,26 @@ dnl
     AC_DEFINE(_GLIBCXX_USE_FCHMODAT, 1, [Define if fchmodat is available in <sys/stat.h>.])
   fi
   AC_MSG_RESULT($glibcxx_cv_fchmodat)
+dnl
+  AC_MSG_CHECKING([for sendfile that can copy files])
+  AC_CACHE_VAL(glibcxx_cv_sendfile, [dnl
+    case "${target_os}" in
+      gnu* | linux* | solaris*)
+        GCC_TRY_COMPILE_OR_LINK(
+          [#include <sys/sendfile.h>],
+          [sendfile(1, 2, (off_t*)NULL, sizeof 1);],
+          [glibcxx_cv_sendfile=yes],
+          [glibcxx_cv_sendfile=no])
+        ;;
+      *)
+        glibcxx_cv_sendfile=no
+        ;;
+    esac
+  ])
+  if test $glibcxx_cv_sendfile = yes; then
+    AC_DEFINE(_GLIBCXX_USE_SENDFILE, 1, [Define if sendfile is available in <sys/stat.h>.])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_sendfile)
 dnl
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
