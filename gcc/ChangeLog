@@ -1,3 +1,8 @@
+2015-05-14  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md (absdi2): Optimize abs expansion.
+	(csneg3<mode>_insn): Enable expansion of pattern.
+
 2015-05-14  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78.c (rl78_select_section): Select the correct
