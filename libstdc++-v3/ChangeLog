@@ -1,3 +1,12 @@
+2015-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66018
+	* acinclude.m4 (GLIBCXX_CHECK_FILESYSTEM_DEPS): Check for struct
+	dirent.d_type.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (AC_STRUCT_DIRENT_D_TYPE): Remove.
+
 2015-05-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_SJLJ_EXCEPTIONS): Delete.
