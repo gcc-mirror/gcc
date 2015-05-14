@@ -1,3 +1,10 @@
+2015-05-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c/66066
+	PR c/66127
+	* c-typeck.c (digest_init): Call pedwarn_init with OPT_Wpedantic
+	rather than with 0.
+
 2015-05-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-parser.c (c_parser_if_body): Add param "if_loc", use it
