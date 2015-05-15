@@ -1,3 +1,7 @@
+2015-05-14  Rohit Arul Raj  <rohitrulraj@freescale.com>
+
+	* gcc.target/powerpc/pr60158.c: New test.
+
 2015-05-14  Alexander Monakov  <amonakov@ispras.ru>
 
 	* gcc.target/i386/sibcall-7.c: New test.

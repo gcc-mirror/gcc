@@ -1,3 +1,10 @@
+2015-05-14  Rohit Arul Raj  <rohitrulraj@freescale.com>
+
+	* varasm.c (output_constant_pool_1): Pass down alignment from
+	constant pool entry's descriptor to output_constant_pool_2.
+	(output_object_block): Add comment prior to call to
+	output_constant_pool_1.
+
 2015-05-14  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/65862
