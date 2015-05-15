@@ -80,6 +80,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "ipa-utils.h"
 #include "omp-low.h"
+#include "ipa-chkp.h"
 
 /* True when asm nodes has been output.  */
 bool asm_nodes_output = false;
@@ -1616,10 +1617,13 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
 		    cnode->instrumented_version->instrumented_version = cnode;
 		}
 
-	      /* Restore decl names reference.  */
-	      IDENTIFIER_TRANSPARENT_ALIAS (DECL_ASSEMBLER_NAME (cnode->decl)) = 1;
-	      TREE_CHAIN (DECL_ASSEMBLER_NAME (cnode->decl))
-		  = DECL_ASSEMBLER_NAME (cnode->orig_decl);
+	      /* Restore decl names reference except for wrapper functions.  */
+	      if (!chkp_wrap_function (cnode->orig_decl))
+		{
+		  tree name = DECL_ASSEMBLER_NAME (cnode->decl);
+		  IDENTIFIER_TRANSPARENT_ALIAS (name) = 1;
+		  TREE_CHAIN (name) = DECL_ASSEMBLER_NAME (cnode->orig_decl);
+		}
 	    }
 	}
 
