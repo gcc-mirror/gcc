@@ -1,3 +1,11 @@
+2015-05-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_extract_integer): Do not handle
+	CONST_WIDE_INT and CONST_DOUBLE.  Assert CONST_INT_P (x).
+	(alpha_legitimate_constant_p) <case CONST_WIDE_INT>: Check high and
+	low part of the constant using alpha_emit_set_const_1.
+	(alpha_expand_mov): Do not handle CONST_WIDE_INT and CONST_DOUBLE.
+
 2015-05-14  Rohit Arul Raj  <rohitrulraj@freescale.com>
 
 	* varasm.c (output_constant_pool_1): Pass down alignment from
@@ -11,8 +19,7 @@
 	* target.def (ira_change_pseudo_allocno_class): New hook.
 	* targhooks.c (default_ira_change_pseudo_allocno_class): Default
 	value of the hook.
-	* targhooks.h (default_ira_change_pseudo_allocno_class): New
-	extern
+	* targhooks.h (default_ira_change_pseudo_allocno_class): New extern.
 	* doc/tm.texi.in (TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS): Add the
 	hook.
 	* ira-costs.c (find_costs_and_classes): Call the hook and change
@@ -26,7 +33,7 @@
 	of checking that it is not live after the sibcall.
 	(sibcall_pop_memory): Ditto.
 	(sibcall_value_memory): Ditto.
-	(sibcall_value_pop_memory): Ditto. 
+	(sibcall_value_pop_memory): Ditto.
 
 2015-05-14  Marc Glisse  <marc.glisse@inria.fr>
 
