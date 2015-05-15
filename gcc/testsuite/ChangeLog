@@ -1,3 +1,9 @@
+2015-05-15  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR c/48956
+	* gcc.dg/Wconversion-complex-c99.c: New test.
+	* gcc.dg/Wconversion-complex-gnu.c: New test.
+
 2015-05-15  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/64454
