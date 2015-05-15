@@ -1235,7 +1235,7 @@
 
 (define_expand "extendqidi2"
   [(set (match_operand:DI 0 "register_operand")
-	(sign_extend:DI (match_operand:QI 1 "some_operand")))]
+	(sign_extend:DI (match_operand:QI 1 "general_operand")))]
   ""
 {
   if (TARGET_BWX)
@@ -1280,7 +1280,7 @@
 
 (define_expand "extendhidi2"
   [(set (match_operand:DI 0 "register_operand")
-	(sign_extend:DI (match_operand:HI 1 "some_operand")))]
+	(sign_extend:DI (match_operand:HI 1 "general_operand")))]
   ""
 {
   if (TARGET_BWX)
@@ -2902,8 +2902,8 @@
 
 (define_expand "cbranchdi4"
   [(use (match_operator 0 "alpha_cbranch_operator"
-         [(match_operand:DI 1 "some_operand")
-          (match_operand:DI 2 "some_operand")]))
+         [(match_operand:DI 1 "general_operand")
+          (match_operand:DI 2 "general_operand")]))
    (use (match_operand 3))]
   ""
   "alpha_emit_conditional_branch (operands, DImode); DONE;")
@@ -2936,8 +2936,8 @@
 
 (define_expand "cstoredi4"
   [(use (match_operator:DI 1 "alpha_cbranch_operator"
-         [(match_operand:DI 2 "some_operand")
-          (match_operand:DI 3 "some_operand")]))
+         [(match_operand:DI 2 "general_operand")
+          (match_operand:DI 3 "general_operand")]))
    (clobber (match_operand:DI 0 "register_operand"))]
   ""
 {

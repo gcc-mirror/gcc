@@ -1,5 +1,16 @@
 2015-05-15  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/alpha/alpha.md (extendqidi2): Use general_operand
+	instead of some_operand for operand[1] predicate.
+	(extendhidi2): Ditto.
+	(cbranchdi4): Use general_operand instead of some_operand
+	for operand[1] and operands[2] predicates.
+	(cstoredi4): Ditto.
+	* config/alpha/predicates.md (some_operand): Remove unused predicate.
+	(some_ni_operand): Ditto.
+
+2015-05-15  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/alpha/alpha.c (alpha_extract_integer): Do not handle
 	CONST_WIDE_INT and CONST_DOUBLE.  Assert CONST_INT_P (x).
 	(alpha_legitimate_constant_p) <case CONST_WIDE_INT>: Check high and
