@@ -1,3 +1,8 @@
+2015-05-15  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/64454
+	* gcc.dg/modmod.c: New testcase.
+
 2015-05-15  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* gcc.dg/lto/chkp-wrap-asm-name_0.c: New.

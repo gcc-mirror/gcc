@@ -1,3 +1,9 @@
+2015-05-15  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/64454
+	* match.pd ((X % Y) % Y, (X % Y) < Y): New patterns.
+	(-1 - A -> ~A): Remove unnecessary condition.
+
 2015-05-15  Gregor Richards  <gregor.richards@uwaterloo.ca>
 
 	* config/i386/linux.h (MUSL_DYNAMIC_LINKER): Define.

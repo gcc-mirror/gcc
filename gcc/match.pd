@@ -211,7 +211,11 @@ along with GCC; see the file COPYING3.  If not see
  (simplify
   (mod @0 integer_minus_onep@1)
   (if (!TYPE_UNSIGNED (type))
-   { build_zero_cst (type); })))
+   { build_zero_cst (type); }))
+ /* (X % Y) % Y is just X % Y.  */
+ (simplify
+  (mod (mod@2 @0 @1) @1)
+  @2))
 
 /* X % -C is the same as X % C.  */
 (simplify
@@ -223,6 +227,18 @@ along with GCC; see the file COPYING3.  If not see
        /* Avoid this transformation if C is INT_MIN, i.e. C == -C.  */
        && !sign_bit_p (@1, @1))
    (trunc_mod @0 (negate @1))))
+
+/* X % Y is smaller than Y.  */
+(for cmp (lt ge)
+ (simplify
+  (cmp (trunc_mod @0 @1) @1)
+  (if (TYPE_UNSIGNED (TREE_TYPE (@0)))
+   { constant_boolean_node (cmp == LT_EXPR, type); })))
+(for cmp (gt le)
+ (simplify
+  (cmp @1 (trunc_mod @0 @1))
+  (if (TYPE_UNSIGNED (TREE_TYPE (@0)))
+   { constant_boolean_node (cmp == GT_EXPR, type); })))
 
 /* x | ~0 -> ~0  */
 (simplify
@@ -533,8 +549,7 @@ along with GCC; see the file COPYING3.  If not see
   /* -1 - A -> ~A */
   (simplify
    (minus integer_all_onesp @0)
-   (if (TREE_CODE (type) != COMPLEX_TYPE)
-    (bit_not @0)))
+   (bit_not @0))
 
   /* (T)(P + A) - (T)P -> (T) A */
   (for add (plus pointer_plus)
