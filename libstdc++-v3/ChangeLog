@@ -1,3 +1,19 @@
+2015-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/filesystem/ops.cc (stat_type): Define alias for struct stat and
+	use throughout the file.
+	(make_file_type): New function.
+	(file_size(const path&, error_code&)): Report an error for anything
+	that isn't a regular file.
+	(status(const path&), symlink_status(const path&)): Do not throw for
+	file_type::not_found.
+	(temp_directory_path()): Check additional environment variables.
+	* testsuite/experimental/filesystem/operations/exists.cc: New.
+	* testsuite/experimental/filesystem/operations/file_size.cc: New.
+	* testsuite/experimental/filesystem/operations/status.cc: New.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	New.
+
 2015-05-14  Nathan Myers  <ncm@cantrip.org>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
