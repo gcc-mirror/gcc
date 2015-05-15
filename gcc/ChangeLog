@@ -1,3 +1,8 @@
+2015-05-15  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.h (LOGICAL_OP_NON_SHORT_CIRCUIT): Add appropriate
+	casting.
+
 2015-05-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md (extendqidi2): Use general_operand
@@ -412,7 +417,7 @@
 	format.
 	(arm_option_override, thumb2_reorg, arm_print_tune_info)
 	(aarch_macro_fusion_pair_p): Update uses of current_tune.
-	* arm.h (LOGCIAL_OP_NON_SHORT_CIRCUIT): Likewise.
+	* arm.h (LOGICAL_OP_NON_SHORT_CIRCUIT): Likewise.
 
 2015-05-12 Sandra Loosemore <sandra@codesourcery.com>
 
