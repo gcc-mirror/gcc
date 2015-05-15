@@ -1965,6 +1965,16 @@ LSYM(Lchange_\register):
 
 #endif /* Arch supports thumb.  */
 
+.macro CFI_START_FUNCTION
+	.cfi_startproc
+	.cfi_remember_state
+.endm
+
+.macro CFI_END_FUNCTION
+	.cfi_restore_state
+	.cfi_endproc
+.endm
+
 #ifndef __symbian__
 #ifndef __ARM_ARCH_6M__
 #include "ieee754-df.S"
