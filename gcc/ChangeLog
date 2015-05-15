@@ -1,3 +1,9 @@
+2015-05-15  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR middle-end/66134
+	* tree-chkp.c (chkp_get_orginal_bounds_for_abnormal_copy): New.
+	(chkp_maybe_copy_and_register_bounds): Don't copy abnormal copy.
+
 2015-05-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.h (AARCH64_TUNE_SLOWMUL): Delete.

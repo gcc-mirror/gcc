@@ -1097,7 +1097,20 @@ chkp_get_bounds_var (tree ptr_var)
   return bnd_var;
 }
 
+/* If BND is an abnormal bounds copy, return a copied value.
+   Otherwise return BND.  */
+static tree
+chkp_get_orginal_bounds_for_abnormal_copy (tree bnd)
+{
+  if (bitmap_bit_p (chkp_abnormal_copies, SSA_NAME_VERSION (bnd)))
+    {
+      gimple bnd_def = SSA_NAME_DEF_STMT (bnd);
+      gcc_checking_assert (gimple_code (bnd_def) == GIMPLE_ASSIGN);
+      bnd = gimple_assign_rhs1 (bnd_def);
+    }
 
+  return bnd;
+}
 
 /* Register bounds BND for object PTR in global bounds table.
    A copy of bounds may be created for abnormal ssa names.
@@ -1141,11 +1154,7 @@ chkp_maybe_copy_and_register_bounds (tree ptr, tree bnd)
       /* For abnormal copies we may just find original
 	 bounds and use them.  */
       if (!abnormal_ptr && !SSA_NAME_IS_DEFAULT_DEF (bnd))
-	{
-	  gimple bnd_def = SSA_NAME_DEF_STMT (bnd);
-	  gcc_checking_assert (gimple_code (bnd_def) == GIMPLE_ASSIGN);
-	  bnd = gimple_assign_rhs1 (bnd_def);
-	}
+	bnd = chkp_get_orginal_bounds_for_abnormal_copy (bnd);
       /* For undefined values we usually use none bounds
 	 value but in case of abnormal edge it may cause
 	 coalescing failures.  Use default definition of
@@ -1177,6 +1186,7 @@ chkp_maybe_copy_and_register_bounds (tree ptr, tree bnd)
 	    copy = make_temp_ssa_name (pointer_bounds_type_node,
 				       gimple_build_nop (),
 				       CHKP_BOUND_TMP_NAME);
+	  bnd = chkp_get_orginal_bounds_for_abnormal_copy (bnd);
 	  assign = gimple_build_assign (copy, bnd);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
