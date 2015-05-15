@@ -2060,8 +2060,8 @@ enum arm_auto_incmodes
 #define LOGICAL_OP_NON_SHORT_CIRCUIT					\
   ((optimize_size)							\
    ? (TARGET_THUMB ? false : true)					\
-   : TARGET_THUMB ? current_tune->logical_op_non_short_circuit_thumb	\
-   : current_tune->logical_op_non_short_circuit_arm)
+   : TARGET_THUMB ? static_cast<bool> (current_tune->logical_op_non_short_circuit_thumb) \
+   : static_cast<bool> (current_tune->logical_op_non_short_circuit_arm))
 
 
 /* Position Independent Code.  */
