@@ -1,3 +1,10 @@
+2015-05-15  Martin Galvan  <martin.galvan@tallertechnologies.com>
+
+        * config/arm/lib1funcs.S (CFI_START_FUNCTION, CFI_END_FUNCTION):
+        New macros.
+        * config/arm/ieee754-df.S: Add CFI directives.
+        * config/arm/ieee754-sf.S: Add CFI directives.
+
 2015-05-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac: Include config/sjlj.m4.
