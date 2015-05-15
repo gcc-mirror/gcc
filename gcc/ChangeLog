@@ -1,3 +1,9 @@
+2015-05-15  Gregor Richards  <gregor.richards@uwaterloo.ca>
+
+	* config/i386/linux.h (MUSL_DYNAMIC_LINKER): Define.
+	* config/i386/linux64.h (MUSL_DYNAMIC_LINKER32): Define.
+	(MUSL_DYNAMIC_LINKER64, MUSL_DYNAMIC_LINKERX32): Define.
+
 2015-05-15  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* ipa-chkp.h (chkp_wrap_function): New.
