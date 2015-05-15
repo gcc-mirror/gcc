@@ -148,20 +148,6 @@
   return REGNO_REG_CLASS (REGNO (op)) == GENERAL_REGS;
 })
 
-;; Return 1 if OP is something that can be reloaded into a register;
-;; if it is a MEM, it need not be valid.
-(define_predicate "some_operand"
-  (ior (match_code "reg,mem,const_int,const_wide_int,const_double,const_vector,
-		    label_ref,symbol_ref,const,high")
-       (and (match_code "subreg")
-	    (match_test "some_operand (SUBREG_REG (op), VOIDmode)"))))
-
-;; Likewise, but don't accept constants.
-(define_predicate "some_ni_operand"
-  (ior (match_code "reg,mem")
-       (and (match_code "subreg")
-	    (match_test "some_ni_operand (SUBREG_REG (op), VOIDmode)"))))
-
 ;; Return 1 if OP is a valid operand for the source of a move insn.
 (define_predicate "input_operand"
   (match_code "label_ref,symbol_ref,const,high,reg,subreg,mem,
