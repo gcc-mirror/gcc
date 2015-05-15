@@ -2105,8 +2105,7 @@ alpha_emit_set_long_const (rtx target, HOST_WIDE_INT c1)
   return target;
 }
 
-/* Given an integral CONST_INT, CONST_WIDE_INT, CONST_DOUBLE,
-   or CONST_VECTOR, return the low 64 bits.  */
+/* Given an integral CONST_INT or CONST_VECTOR, return the low 64 bits.  */
 
 static HOST_WIDE_INT
 alpha_extract_integer (rtx x)
@@ -2114,17 +2113,9 @@ alpha_extract_integer (rtx x)
   if (GET_CODE (x) == CONST_VECTOR)
     x = simplify_subreg (DImode, x, GET_MODE (x), 0);
 
-  switch (GET_CODE (x))
-    {
-    case CONST_INT:
-      return INTVAL (x);
-    case CONST_WIDE_INT:
-      return CONST_WIDE_INT_ELT (x, 0);
-    case CONST_DOUBLE:
-      return CONST_DOUBLE_LOW (x);
-    default:
-      gcc_unreachable ();
-    }
+  gcc_assert (CONST_INT_P (x));
+
+  return INTVAL (x);
 }
 
 /* Implement TARGET_LEGITIMATE_CONSTANT_P.  This is all constants for which
@@ -2152,7 +2143,6 @@ alpha_legitimate_constant_p (machine_mode mode, rtx x)
 
       if (GET_CODE (x) != SYMBOL_REF)
 	return true;
-
       /* FALLTHRU */
 
     case SYMBOL_REF:
@@ -2160,8 +2150,16 @@ alpha_legitimate_constant_p (machine_mode mode, rtx x)
       return SYMBOL_REF_TLS_MODEL (x) == 0;
 
     case CONST_WIDE_INT:
+      if (TARGET_BUILD_CONSTANTS)
+	return true;
       if (x == CONST0_RTX (mode))
 	return true;
+      mode = DImode;
+      gcc_assert (CONST_WIDE_INT_NUNITS (x) == 2);
+      i0 = CONST_WIDE_INT_ELT (x, 1);
+      if (alpha_emit_set_const_1 (NULL_RTX, mode, i0, 3, true) == NULL)
+	return false;
+      i0 = CONST_WIDE_INT_ELT (x, 0);
       goto do_integer;
 
     case CONST_DOUBLE:
@@ -2176,14 +2174,14 @@ alpha_legitimate_constant_p (machine_mode mode, rtx x)
 	return false;
       if (GET_MODE_SIZE (mode) != 8)
 	return false;
-      goto do_integer;
+      /* FALLTHRU */
 
     case CONST_INT:
-    do_integer:
       if (TARGET_BUILD_CONSTANTS)
 	return true;
       i0 = alpha_extract_integer (x);
-      return alpha_emit_set_const_1 (x, mode, i0, 3, true) != NULL;
+    do_integer:
+      return alpha_emit_set_const_1 (NULL_RTX, mode, i0, 3, true) != NULL;
 
     default:
       return false;
@@ -2248,8 +2246,6 @@ alpha_expand_mov (machine_mode mode, rtx *operands)
 
   /* Split large integers.  */
   if (CONST_INT_P (operands[1])
-      || GET_CODE (operands[1]) == CONST_WIDE_INT
-      || GET_CODE (operands[1]) == CONST_DOUBLE
       || GET_CODE (operands[1]) == CONST_VECTOR)
     {
       if (alpha_split_const_mov (mode, operands))
