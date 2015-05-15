@@ -1,3 +1,13 @@
+2015-05-15  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR c/48956
+	* c-common.c (int_safely_convertible_to_real_p): Define.
+	(unsafe_conversion_p): Check conversions involving complex types.
+	(conversion_warning): Add new warning message for conversions which
+	discard imaginary component.
+	* c-common.h: (enum conversion_safety): Add new enumerator for such
+	conversions.
+
 2015-05-14  Marek Polacek  <polacek@redhat.com>
 
 	PR c/66066
