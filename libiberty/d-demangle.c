@@ -653,6 +653,20 @@ dlang_type (string *decl, const char *mangled)
       mangled++;
       string_append (decl, "dchar");
       return mangled;
+    case 'z':
+      mangled++;
+      switch (*mangled)
+	{
+	case 'i':
+	  mangled++;
+	  string_append (decl, "cent");
+	  return mangled;
+	case 'k':
+	  mangled++;
+	  string_append (decl, "ucent");
+	  return mangled;
+	}
+      return NULL;
 
     default: /* unhandled */
       return NULL;

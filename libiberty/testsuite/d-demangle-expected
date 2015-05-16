@@ -114,6 +114,14 @@ _D8demangle4testFwZv
 demangle.test(dchar)
 #
 --format=dlang
+_D8demangle4testFziZv
+demangle.test(cent)
+#
+--format=dlang
+_D8demangle4testFzkZv
+demangle.test(ucent)
+#
+--format=dlang
 _D8demangle4testFOaZv
 demangle.test(shared(char))
 #
