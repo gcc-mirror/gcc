@@ -672,65 +672,82 @@ dlang_identifier (string *decl, const char *mangled)
 	  return NULL;
 	}
 
-      if (strncmp (mangled, "__ctor", i) == 0)
+      switch (i)
 	{
-	  /* Constructor symbol for a class/struct.  */
-	  string_append (decl, "this");
-	  mangled += i;
-	  return mangled;
-	}
-      else if (strncmp (mangled, "__dtor", i) == 0)
-	{
-	  /* Destructor symbol for a class/struct.  */
-	  string_append (decl, "~this");
-	  mangled += i;
-	  return mangled;
-	}
-      else if (strncmp (mangled, "__postblit", i) == 0)
-	{
-	  /* Postblit symbol for a struct.  */
-	  string_append (decl, "this(this)");
-	  mangled += i;
-	  return mangled;
-	}
-      else if (strncmp (mangled, "__initZ", i+1) == 0)
-	{
-	  /* The static initialiser for a given symbol.  */
-	  string_append (decl, "init$");
-	  mangled += i + 1;
-	  return mangled;
-	}
-      else if (strncmp (mangled, "__ClassZ", i+1) == 0)
-	{
-	  /* The classinfo symbol for a given class.  */
-	  string_prepend (decl, "ClassInfo for ");
-	  string_setlength (decl, string_length (decl) - 1);
-	  mangled += i + 1;
-	  return mangled;
-	}
-      else if (strncmp (mangled, "__vtblZ", i+1) == 0)
-	{
-	  /* The vtable symbol for a given class.  */
-	  string_prepend (decl, "vtable for ");
-	  string_setlength (decl, string_length (decl) - 1);
-	  mangled += i + 1;
-	  return mangled;
-	}
-      else if (strncmp (mangled, "__InterfaceZ", i+1) == 0)
-	{
-	  /* The interface symbol for a given class.  */
-	  string_prepend (decl, "Interface for ");
-	  string_setlength (decl, string_length (decl) - 1);
-	  mangled += i + 1;
-	  return mangled;
-	}
-      else if (strncmp (mangled, "__ModuleInfoZ", i+1) == 0)
-	{
-	  /* The ModuleInfo symbol for a given module.  */
-	  string_prepend (decl, "ModuleInfo for ");
-	  string_setlength (decl, string_length (decl) - 1);
-	  mangled += i + 1;
-	  return mangled;
+	case 6:
+	  if (strncmp (mangled, "__ctor", i) == 0)
+	    {
+	      /* Constructor symbol for a class/struct.  */
+	      string_append (decl, "this");
+	      mangled += i;
+	      return mangled;
+	    }
+	  else if (strncmp (mangled, "__dtor", i) == 0)
+	    {
+	      /* Destructor symbol for a class/struct.  */
+	      string_append (decl, "~this");
+	      mangled += i;
+	      return mangled;
+	    }
+	  else if (strncmp (mangled, "__initZ", i+1) == 0)
+	    {
+	      /* The static initialiser for a given symbol.  */
+	      string_append (decl, "init$");
+	      mangled += i;
+	      return mangled;
+	    }
+	  else if (strncmp (mangled, "__vtblZ", i+1) == 0)
+	    {
+	      /* The vtable symbol for a given class.  */
+	      string_prepend (decl, "vtable for ");
+	      string_setlength (decl, string_length (decl) - 1);
+	      mangled += i;
+	      return mangled;
+	    }
+	  break;
+
+	case 7:
+	  if (strncmp (mangled, "__ClassZ", i+1) == 0)
+	    {
+	      /* The classinfo symbol for a given class.  */
+	      string_prepend (decl, "ClassInfo for ");
+	      string_setlength (decl, string_length (decl) - 1);
+	      mangled += i;
+	      return mangled;
+	    }
+	  break;
+
+	case 10:
+	  if (strncmp (mangled, "__postblitMFZ", i+3) == 0)
+	    {
+	      /* Postblit symbol for a struct.  */
+	      string_append (decl, "this(this)");
+	      mangled += i + 3;
+	      return mangled;
+	    }
+	  break;
+
+	case 11:
+	  if (strncmp (mangled, "__InterfaceZ", i+1) == 0)
+	    {
+	      /* The interface symbol for a given class.  */
+	      string_prepend (decl, "Interface for ");
+	      string_setlength (decl, string_length (decl) - 1);
+	      mangled += i;
+	      return mangled;
+	    }
+	  break;
+
+	case 12:
+	  if (strncmp (mangled, "__ModuleInfoZ", i+1) == 0)
+	    {
+	      /* The ModuleInfo symbol for a given module.  */
+	      string_prepend (decl, "ModuleInfo for ");
+	      string_setlength (decl, string_length (decl) - 1);
+	      mangled += i;
+	      return mangled;
+	    }
+	  break;
 	}
 
       string_appendn (decl, mangled, i);

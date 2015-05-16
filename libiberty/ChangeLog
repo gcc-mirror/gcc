@@ -1,5 +1,11 @@
 2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	* d-demangle.c (dlang_identifier): Check encoded length of identifier
+	to verify strncmp matches entire string.
+	* testsuite/d-demangle-expected: Fix wrong test for postblit symbol.
+
+2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	* d-demangle.c (dlang_type_modifiers): New function.
 	(dlang_type_modifier_p): New function.
 	(dlang_call_convention_p): Ignore any kind of type modifier.
