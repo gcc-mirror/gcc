@@ -292,8 +292,10 @@ dlang_attributes (string *decl, const char *mangled)
 	  continue;
 	case 'g':
 	case 'h':
+	case 'k':
 	  /* inout parameter is represented as 'Ng'.
 	     vector parameter is represented as 'Nh'.
+	     return paramenter is represented as 'Nk'.
 	     If we see this, then we know we're really in the
 	     parameter list.  Rewind and break.  */
 	  mangled--;
@@ -302,6 +304,13 @@ dlang_attributes (string *decl, const char *mangled)
 	  mangled++;
 	  string_append (decl, "@nogc ");
 	  continue;
+	case 'j': /* return */
+	  mangled++;
+	  string_append (decl, "return ");
+	  continue;
+
+	default: /* unknown attribute */
+	  return NULL;
 	}
       break;
     }
@@ -389,6 +398,12 @@ dlang_function_args (string *decl, const char *mangled)
 	{
 	  mangled++;
 	  string_append (decl, "scope ");
+	}
+
+      if (mangled[0] == 'N' && mangled[1] == 'k') /* return(T) */
+	{
+	  mangled += 2;
+	  string_append (decl, "return ");
 	}
 
       switch (*mangled)
