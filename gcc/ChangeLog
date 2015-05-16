@@ -1,5 +1,10 @@
 2015-05-16  Jan HUbicka  <hubicka@ucw.cz>
 
+	* toplev.c (emit_debug_global_declarations): Do not output debug info
+	when doing slim LTO objects.
+
+2015-05-16  Jan HUbicka  <hubicka@ucw.cz>
+
 	* ipa-utils.h (warn_types_mismatch, odr_or_derived_type_p,
 	odr_types_equivalent_p): Declare.
 	(odr_type_p): Use gcc_checking_assert.
