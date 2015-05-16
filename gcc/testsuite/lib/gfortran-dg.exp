@@ -51,6 +51,9 @@ proc gfortran-dg-test { prog do_what extra_tool_flags } {
     #
     # or
     #     [name]:[locus]: Error: Some error
+    # or
+    #     [name]:[locus]: Error: (1)
+    #     [name]:[locus2]: Error: Some error at (1) and (2)
     #
     # Where [locus] is either [line] or [line].[column] or
     # [line].[column]-[column] .
@@ -80,14 +83,19 @@ proc gfortran-dg-test { prog do_what extra_tool_flags } {
     regsub -all $two_loci $comp_output "\\1\\2:\\3: \\8\n\\5\:\\6: \\8\n" comp_output
     verbose "comput_output1:\n$comp_output"
 
+    set locus_prefix "(\[^:\n\]+:\[0-9\]+:\[0-9\]+: )(Warning: |Error: )"
+    set two_loci2 "(^|\n)$locus_prefix\\(1\\)\n$locus_prefix$diag_regexp"
+    regsub -all $two_loci2 $comp_output "\\1\\2\\3\\6\n\\4\\5\\6\n" comp_output
+    verbose "comput_output2:\n$comp_output"
+
     # 3. then with the form with only one locus line.
     set single_locus "(^|\n)$locus_regexp$diag_regexp"
     regsub -all $single_locus $comp_output "\\1\\2:\\3: \\5\n" comp_output
-    verbose "comput_output2:\n$comp_output"
+    verbose "comput_output3:\n$comp_output"
 
     # 4. Add a line number if none exists
     regsub -all "(^|\n)(Warning: |Error: )" $comp_output "\\1:0:0: \\2" comp_output
-    verbose "comput_output3:\n$comp_output"
+    verbose "comput_output4:\n$comp_output"
     return [list $comp_output $output_file]
 }
 
