@@ -1,5 +1,15 @@
 2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	* d-demangle.c (dlang_type_modifiers): New function.
+	(dlang_type_modifier_p): New function.
+	(dlang_call_convention_p): Ignore any kind of type modifier.
+	(dlang_type): Handle and emit the type modifier after delegate types.
+	(dlang_parse_symbol): Handle and emit the type modifier after the symbol.
+	* testsuite/d-demangle-expected: Add coverage tests for all valid
+	usages of function symbols with type modifiers.
+
+2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	* d-demangle.c (dlang_call_convention): Return NULL if have reached the
 	end of the symbol, but expected something to read.
 	(dlang_attributes): Likewise.
