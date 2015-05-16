@@ -1,3 +1,8 @@
+2015-05-16  Jan HUbicka  <hubicka@ucw.cz>
+
+	* tree.c (verify_type_variant): Verify tree_base and type_common flags.
+	(verify_type): Verify STRING_FLAG.
+
 2015-05-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/44054
