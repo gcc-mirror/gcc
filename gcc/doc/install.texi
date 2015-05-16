@@ -3665,6 +3665,14 @@ the FreeBSD 7.0 release with GNU binutils after 2.16.1.
 @html
 <hr />
 @end html
+@anchor{ft32-x-elf}
+@heading ft32-*-elf
+The FT32 processor.
+This configuration is intended for embedded systems.
+
+@html
+<hr />
+@end html
 @anchor{h8300-hms}
 @heading h8300-hms
 Renesas H8/300 series of processors.
