@@ -1,5 +1,10 @@
 2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	* d-demangle.c (dlang_type): Handle cent and ucent types.
+	* testsuite/d-demangle-expected: Add coverage tests for cent and ucent.
+
+2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	* d-demangle.c (dlang_attributes): Handle return attributes, ignoring
 	return parameters in the mangled string.  Return NULL if have encountered
 	an unknown attribute.
