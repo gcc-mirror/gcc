@@ -1,3 +1,33 @@
+2015-05-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+
+	Replace all calls to gfc_notify_std_1 with gfc_notify_std and
+	gfc_warning_1 with gfc_warning.
+	* decl.c (gfc_verify_c_interop_param): Here.
+	* resolve.c (resolve_branch): Here.
+	(resolve_fl_derived): Here.
+	* dependency.c (gfc_check_argument_var_dependency):
+	* scanner.c (preprocessor_line): Use gfc_warning_now_at. Fix line
+	counter and locations before and after warning.
+	* gfortran.h (gfc_warning_1, gfc_warning_now_1, gfc_notify_std_1):
+	Delete.
+	(gfc_warning_now_at): Declare.
+	* error.c (gfc_warning_1): Delete.
+	(gfc_notify_std_1): Delete.
+	(gfc_warning_now_1): Delete.
+	(gfc_format_decoder): Handle two locations.
+	(gfc_diagnostic_build_prefix): Rename as
+	gfc_diagnostic_build_kind_prefix.
+	(gfc_diagnostic_build_locus_prefix): Take an expanded_location
+	instead of diagnostic_info.
+	(gfc_diagnostic_build_locus_prefix): Add overload that takes two
+	expanded_location.
+	(gfc_diagnostic_starter): Handle two locations.
+	(gfc_warning_now_at): New.
+	(gfc_diagnostics_init): Initialize caret_chars array.
+	(gfc_diagnostics_finish): Reset caret_chars array to default.
+
 2015-05-16  Mikael Morin  <mikael@gcc.gnu.org
 	    Paul Thomas  <pault@gcc.gnu.org>
 

@@ -1,3 +1,35 @@
+2015-05-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* tree-pretty-print.c (percent_K_format): Replace locus pointer
+	with accessor function.
+	* tree-diagnostic.c (diagnostic_report_current_function): Use
+	diagnostic_location function.
+	(maybe_unwind_expanded_macro_loc): Likewise.
+	(virt_loc_aware_diagnostic_finalizer): Likewise.
+	(default_tree_printer): Replace locus pointer with accessor function.
+	* diagnostic.c (diagnostic_initialize): Initialize caret_chars array.
+	(diagnostic_set_info_translated): Initialize second location.
+	(diagnostic_build_prefix): Use CARET_LINE_MARGIN.
+	(diagnostic_show_locus): Handle two locations. Call
+	diagnostic_print_caret_line.
+	(diagnostic_print_caret_line): New.
+	(default_diagnostic_starter): Use diagnostic_location function.
+	(diagnostic_report_diagnostic): Use diagnostic_location function.
+	(verbatim): Do not set text.locus.
+	* diagnostic.h (struct diagnostic_info): Remove location field.
+	(struct diagnostic_context): Make caret_chars an array of two.
+	(diagnostic_location): New inline.
+	(diagnostic_expand_location): Handle two locations.
+	(diagnostic_same_line): New inline.
+	(diagnostic_print_caret_line): Declare.
+	(CARET_LINE_MARGIN): New constant.
+	* pretty-print.c (pp_printf): Do not set text.locus.
+	(pp_verbatim): Do not set text.locus.
+	* pretty-print.h (MAX_LOCATIONS_PER_MESSAGE): New constant.
+	(struct text_info): Replace locus pointer with locations
+	array. Add accessor functions.
+
 2015-05-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
 	    Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 

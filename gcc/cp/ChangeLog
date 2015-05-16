@@ -1,3 +1,11 @@
+2015-05-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* error.c (cp_diagnostic_starter): Use diagnostic_location
+	function.
+	(cp_print_error_function): Likewise.
+	(cp_printer): Replace locus pointer with accessor function.
+
 2015-05-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* parser.c (cp_parser_selection_statement): Add location and
