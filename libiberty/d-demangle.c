@@ -215,6 +215,44 @@ dlang_call_convention (string *decl, const char *mangled)
   return mangled;
 }
 
+/* Extract the type modifiers from MANGLED and append them to DECL.
+   Returns the remaining signature on success or NULL on failure.  */
+static const char *
+dlang_type_modifiers (string *decl, const char *mangled)
+{
+  if (mangled == NULL || *mangled == '\0')
+    return NULL;
+
+  switch (*mangled)
+    {
+    case 'x': /* const */
+      mangled++;
+      string_append (decl, " const");
+      return mangled;
+    case 'y': /* immutable */
+      mangled++;
+      string_append (decl, " immutable");
+      return mangled;
+    case 'O': /* shared */
+      mangled++;
+      string_append (decl, " shared");
+      return dlang_type_modifiers (decl, mangled);
+    case 'N':
+      mangled++;
+      if (*mangled == 'g') /* wild */
+	{
+	  mangled++;
+	  string_append (decl, " inout");
+	  return dlang_type_modifiers (decl, mangled);
+	}
+      else
+	return NULL;
+
+    default:
+      return mangled;
+    }
+}
+
 /* Demangle the D function attributes from MANGLED and append it to DECL.
    Return the remaining string on success or NULL on failure.  */
 static const char *
@@ -476,10 +514,22 @@ dlang_type (string *decl, const char *mangled)
       mangled++;
       return dlang_parse_symbol (decl, mangled);
     case 'D': /* delegate T */
+    {
+      string mods;
+      size_t szmods;
       mangled++;
+
+      string_init (&mods);
+      mangled = dlang_type_modifiers (&mods, mangled);
+      szmods = string_length (&mods);
+
       mangled = dlang_function_type (decl, mangled);
       string_append (decl, "delegate");
+      string_appendn (decl, mods.b, szmods);
+
+      string_delete (&mods);
       return mangled;
+    }
     case 'B': /* tuple T */
       mangled++;
       return dlang_parse_tuple (decl, mangled);
@@ -1135,28 +1185,54 @@ dlang_value (string *decl, const char *mangled, const char *name, char type)
   return mangled;
 }
 
+/* Extract the type modifiers from MANGLED and return the string
+   length that it consumes in MANGLED on success or 0 on failure.  */
+static int
+dlang_type_modifier_p (const char *mangled)
+{
+  int i;
+
+  switch (*mangled)
+    {
+    case 'x': case 'y':
+      return 1;
+
+    case 'O':
+      mangled++;
+      i = dlang_type_modifier_p (mangled);
+      return i + 1;
+
+    case 'N':
+      mangled++;
+      if (*mangled == 'g')
+	{
+	  mangled++;
+	  i = dlang_type_modifier_p (mangled);
+	  return i + 2;
+	}
+    }
+
+  return 0;
+}
+
+/* Extract the function calling convention from MANGLED and
+   return 1 on success or 0 on failure.  */
 static int
 dlang_call_convention_p (const char *mangled)
 {
-  size_t i;
+  /* Prefix for functions needing 'this' */
+  if (*mangled == 'M')
+    {
+      mangled++;
+      /* Also skip over any type modifiers.  */
+      mangled += dlang_type_modifier_p (mangled);
+    }
 
   switch (*mangled)
     {
     case 'F': case 'U': case 'V':
     case 'W': case 'R':
       return 1;
-
-    case 'M': /* Prefix for functions needing 'this' */
-      i = 1;
-      if (mangled[i] == 'x')
-	i++;
-
-      switch (mangled[i])
-	{
-	case 'F': case 'U': case 'V':
-	case 'W': case 'R':
-	  return 1;
-	}
 
     default:
       return 0;
@@ -1178,11 +1254,16 @@ dlang_parse_symbol (string *decl, const char *mangled)
 
       if (mangled && dlang_call_convention_p (mangled))
 	{
+	  string mods;
 	  int saved;
 
 	  /* Skip over 'this' parameter.  */
 	  if (*mangled == 'M')
-	    mangled += (mangled[1] == 'x') ? 2 : 1;
+	    mangled++;
+
+	  /* Save the type modifiers for appending at the end.  */
+	  string_init (&mods);
+	  mangled = dlang_type_modifiers (&mods, mangled);
 
 	  /* Skip over calling convention and attributes in qualified name.  */
 	  saved = string_length (decl);
@@ -1201,6 +1282,10 @@ dlang_parse_symbol (string *decl, const char *mangled)
 	      mangled = dlang_type (decl, mangled);
 	      string_setlength (decl, saved);
 	    }
+
+	  /* Add any const/immutable/shared modifier. */
+	  string_appendn (decl, mods.b, string_length (&mods));
+	  string_delete (&mods);
 	}
     }
   while (mangled && ISDIGIT (*mangled));
