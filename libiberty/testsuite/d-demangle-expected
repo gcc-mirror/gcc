@@ -502,7 +502,7 @@ _D8demangle4test6__dtorMFZv
 demangle.test.~this()
 #
 --format=dlang
-_D8demangle4test6__postblitMFZv
+_D8demangle4test10__postblitMFZv
 demangle.test.this(this)
 #
 --format=dlang
