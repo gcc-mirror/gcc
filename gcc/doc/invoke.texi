@@ -651,6 +651,9 @@ Objective-C and Objective-C++ Dialects}.
 @emph{FR30 Options}
 @gccoptlist{-msmall-model -mno-lsim}
 
+@emph{FT32 Options}
+@gccoptlist{-msim -mlra}
+
 @emph{FRV Options}
 @gccoptlist{-mgpr-32  -mgpr-64  -mfpr-32  -mfpr-64 @gol
 -mhard-float  -msoft-float @gol
@@ -12278,6 +12281,7 @@ platform.
 * Darwin Options::
 * DEC Alpha Options::
 * FR30 Options::
+* FT32 Options::
 * FRV Options::
 * GNU/Linux Options::
 * H8/300 Options::
@@ -15108,6 +15112,29 @@ it does assume that all symbolic values and addresses fit into a
 Assume that runtime support has been provided and so there is no need
 to include the simulator library (@file{libsim.a}) on the linker
 command line.
+
+@end table
+
+@node FT32 Options
+@subsection FT32 Options
+@cindex FT32 Options
+
+These options are defined specifically for the FT32 port.
+
+@table @gcctabopt
+
+@item -msim
+@opindex msim
+Specifies that the program will be run on the simulator.  This causes
+an alternate runtime startup and library to be linked.
+You must not use this option when generating programs that will run on
+real hardware; you must provide your own runtime library for whatever
+I/O functions are needed.
+
+@item -mlra
+@opindex mlra
+Enable Local Register Allocation.  This is still experimental for FT32,
+so by default the compiler uses standard reload.
 
 @end table
 

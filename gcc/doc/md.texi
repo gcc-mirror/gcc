@@ -2247,6 +2247,49 @@ range of 1 to 2047.
 
 @end table
 
+@item FT32---@file{config/ft32/constraints.md}
+@table @code
+@item A
+An absolute address
+
+@item B
+An offset address
+
+@item W
+A register indirect memory operand
+
+@item e
+An offset address.
+
+@item f
+An offset address.
+
+@item O
+The constant zero or one
+
+@item I
+A 16-bit signed constant (@minus{}32768 @dots{} 32767)
+
+@item w
+A bitfield mask suitable for bext or bins
+
+@item x
+An inverted bitfield mask suitable for bext or bins
+
+@item L
+A 16-bit unsigned constant, multiple of 4 (0 @dots{} 65532)
+
+@item S
+A 20-bit signed constant (@minus{}524288 @dots{} 524287)
+
+@item b
+A constant for a bitfield width (1 @dots{} 16)
+
+@item KA
+A 10-bit signed constant (@minus{}512 @dots{} 511)
+
+@end table
+
 @item Hewlett-Packard PA-RISC---@file{config/pa/pa.h}
 @table @code
 @item a

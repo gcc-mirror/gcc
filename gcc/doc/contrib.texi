@@ -113,6 +113,9 @@ Devon Bowen helped port GCC to the Tahoe.
 Don Bowman for mips-vxworks contributions.
 
 @item
+James Bowman for the FT32 port.
+
+@item
 Dave Brolley for work on cpplib and Chill.
 
 @item

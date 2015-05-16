@@ -340,6 +340,9 @@ crisv32-*)
 frv*)	cpu_type=frv
 	extra_options="${extra_options} g.opt"
 	;;
+ft32*)	cpu_type=ft32
+	target_has_targetm_common=no
+	;;
 moxie*)	cpu_type=moxie
 	target_has_targetm_common=no
 	;;
@@ -1193,6 +1196,12 @@ frv-*-*linux*)
 	tm_file="dbxelf.h elfos.h ${tm_file} \
 	         gnu-user.h linux.h glibc-stdint.h frv/linux.h"
 	tmake_file="${tmake_file} frv/t-frv frv/t-linux"
+	;;
+ft32-*-elf)
+	gas=yes
+	gnu_ld=yes
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	tmake_file="${tmake_file} ft32/t-ft32"
 	;;
 moxie-*-elf)
 	gas=yes
