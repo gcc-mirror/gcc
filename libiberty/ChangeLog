@@ -1,5 +1,21 @@
 2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	* d-demangle.c (dlang_symbol_kinds): New enum.
+	(dlang_parse_symbol): Update signature.  Handle an ambiguity between
+	pascal functions and template value arguments.  Only check for a type
+	if parsing a function, or at the top level.  Return failure if the
+	entire symbol was not successfully demangled.
+	(dlang_identifier): Update signature.  Handle an ambiguity between two
+	adjacent digits in a mangled symbol string.
+	(dlang_type): Update call to dlang_parse_symbol.
+	(dlang_template_args): Likewise.
+	(dlang_parse_template): Likewise.
+	(dlang_demangle): Likewise.
+	* testsuite/d-demangle-expected: Fix bad tests found, and add problematic
+	examples to the unittests.
+
+2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	* d-demangle.c (dlang_template_args): Skip over specialized template
 	parameters in mangled symbol.
 	* testsuite/d-demangle-expected: Add coverage and unittest for specialized
