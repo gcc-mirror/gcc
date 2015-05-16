@@ -630,6 +630,10 @@ _D8demangle19__T4testS6symbolTaZv
 demangle.test!(symbol, char)
 #
 --format=dlang
+_D8demangle12__T4testHTaZv
+demangle.test!(char)
+#
+--format=dlang
 _D8demangle13__T4testVPinZv
 demangle.test!(null)
 #
@@ -1050,3 +1054,7 @@ test.main().local()
 --format=dlang
 _D3std6socket12InternetHost221__T13getHostNoSyncVAyaa96_0a09202020206175746f2078203d2068746f6e6c28706172616d293b0a09202020206175746f206865203d20676574686f73746279616464722826782c20342c206361737428696e74294164647265737346616d696c792e494e4554293b0a09TkZ13getHostNoSyncMFkZb
 std.socket.InternetHost.getHostNoSync!("\n\t    auto x = htonl(param);\n\t    auto he = gethostbyaddr(&x, 4, cast(int)AddressFamily.INET);\n\t", uint).getHostNoSync(uint)
+#
+--format=dlang
+_D2gc6config13__T5parseHTfZ5parseFNbNiAxaKAxaKfZb
+gc.config.parse!(float).parse(const(char)[], ref const(char)[], ref float)
