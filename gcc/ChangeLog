@@ -1,5 +1,23 @@
 2015-05-16  Jan HUbicka  <hubicka@ucw.cz>
 
+	* ipa-utils.h (warn_types_mismatch, odr_or_derived_type_p,
+	odr_types_equivalent_p): Declare.
+	(odr_type_p): Use gcc_checking_assert.
+	(type_in_anonymous_namespace_p) Declare.
+	(type_with_linkage_p): Declare.
+	* common.opt (Wlto-type-mismatch): New warning.
+	* ipa-devirt.c (compound_type_base): New function.
+	(odr_or_derived_type_p): New function.
+	(odr_types_equivalent_p): New function.
+	(add_type_duplicate): Simplify.
+	(type_with_linkage_p): Add hack to prevent false positives on C types
+	(type_in_anonymous_namespace_p): Likewise.
+	* tree.c (need_assembler_name_p): Use type_with_linkage.
+	* tree.h (type_in_anonymous_namespace_p): Remove.
+	* doc/invoke.texi (-Wlto-type-mismatch): Document
+
+2015-05-16  Jan HUbicka  <hubicka@ucw.cz>
+
 	* tree.c (verify_type_variant): Verify tree_base and type_common flags.
 	(verify_type): Verify STRING_FLAG.
 
