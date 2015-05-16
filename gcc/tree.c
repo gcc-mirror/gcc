@@ -12468,6 +12468,7 @@ element_mode (const_tree t)
     t = TREE_TYPE (t);
   return TYPE_MODE (t);
 }
+ 
 
 /* Veirfy that basic properties of T match TV and thus T can be a variant of
    TV.  TV should be the more specified variant (i.e. the main variant).  */
@@ -12475,85 +12476,129 @@ element_mode (const_tree t)
 static bool
 verify_type_variant (const_tree t, tree tv)
 {
-  if (TREE_CODE (t) != TREE_CODE (tv))
+  /* Type variant can differ by:
+
+     - TYPE_QUALS: TYPE_READONLY, TYPE_VOLATILE, TYPE_ATOMIC, TYPE_RESTRICT,
+                   ENCODE_QUAL_ADDR_SPACE. 
+     - main variant may be TYPE_COMPLETE_P and variant types !TYPE_COMPLETE_P
+       in this case some values may not be set in the variant types
+       (see TYPE_COMPLETE_P checks).
+     - it is possible to have TYPE_ARTIFICIAL variant of non-artifical type
+     - by TYPE_NAME and attributes (i.e. when variant originate by typedef)
+     - TYPE_CANONICAL (TYPE_ALIAS_SET is the same among variants)
+     - by the alignment: TYPE_ALIGN and TYPE_USER_ALIGN
+     - during LTO by TYPE_CONTEXT if type is TYPE_FILE_SCOPE_P
+       this is necessary to make it possible to merge types form different TUs
+     - arrays, pointers and references may have TREE_TYPE that is a variant
+       of TREE_TYPE of their main variants.
+     - aggregates may have new TYPE_FIELDS list that list variants of
+       the main variant TYPE_FIELDS.
+     - vector types may differ by TYPE_VECTOR_OPAQUE
+     - TYPE_METHODS is always NULL for vairant types and maintained for
+       main variant only.
+   */
+
+  /* Convenience macro for matching individual fields.  */
+#define verify_variant_match(flag)					    \
+  do {									    \
+    if (flag (tv) != flag (t))						    \
+      {									    \
+	error ("type variant differs by " #flag ".");			    \
+	debug_tree (tv);						    \
+	return false;							    \
+      }									    \
+  } while (false)
+
+  /* tree_base checks.  */
+
+  verify_variant_match (TREE_CODE);
+  /* FIXME: Ada builds non-artificial variants of artificial types.  */
+  if (TYPE_ARTIFICIAL (tv) && 0)
+    verify_variant_match (TYPE_ARTIFICIAL);
+  if (POINTER_TYPE_P (tv))
+    verify_variant_match (TYPE_REF_CAN_ALIAS_ALL);
+  /* FIXME: TYPE_SIZES_GIMPLIFIED may differs for Ada build.  */
+  verify_variant_match (TYPE_UNSIGNED);
+  verify_variant_match (TYPE_ALIGN_OK);
+  verify_variant_match (TYPE_PACKED);
+  if (TREE_CODE (t) == REFERENCE_TYPE)
+    verify_variant_match (TYPE_REF_IS_RVALUE);
+  verify_variant_match (TYPE_SATURATING);
+  /* FIXME: This check trigger during libstdc++ build.  */
+  if (RECORD_OR_UNION_TYPE_P (t) && COMPLETE_TYPE_P (t) && 0)
+    verify_variant_match (TYPE_FINAL_P);
+
+  /* tree_type_common checks.  */
+
+  if (COMPLETE_TYPE_P (t))
     {
-      error ("type variant has different TREE_CODE");
-      debug_tree (tv);
-      return false;
+      verify_variant_match (TYPE_SIZE);
+      verify_variant_match (TYPE_MODE);
+      if (TYPE_SIZE_UNIT (t) != TYPE_SIZE_UNIT (tv)
+	  /* FIXME: ideally we should compare pointer equality, but java FE
+	     produce variants where size is INTEGER_CST of different type (int
+	     wrt size_type) during libjava biuld.  */
+	  && !operand_equal_p (TYPE_SIZE_UNIT (t), TYPE_SIZE_UNIT (tv), 0))
+	{
+	  error ("type variant has different TYPE_SIZE_UNIT");
+	  debug_tree (tv);
+	  error ("type variant's TYPE_SIZE_UNIT");
+	  debug_tree (TYPE_SIZE_UNIT (tv));
+	  error ("type's TYPE_SIZE_UNIT");
+	  debug_tree (TYPE_SIZE_UNIT (t));
+	  return false;
+	}
     }
-  if (COMPLETE_TYPE_P (t) && TYPE_SIZE (t) != TYPE_SIZE (tv))
-    {
-      error ("type variant has different TYPE_SIZE");
-      debug_tree (tv);
-      error ("type variant's TYPE_SIZE");
-      debug_tree (TYPE_SIZE (tv));
-      error ("type's TYPE_SIZE");
-      debug_tree (TYPE_SIZE (t));
-      return false;
-    }
-  if (COMPLETE_TYPE_P (t)
-      && TYPE_SIZE_UNIT (t) != TYPE_SIZE_UNIT (tv)
-      /* FIXME: ideally we should compare pointer equality, but java FE produce
- 	 variants where size is INTEGER_CST of different type (int wrt size_type)
-	 during libjava biuld.  */
-      && !operand_equal_p (TYPE_SIZE_UNIT (t), TYPE_SIZE_UNIT (tv), 0))
-    {
-      error ("type variant has different TYPE_SIZE_UNIT");
-      debug_tree (tv);
-      error ("type variant's TYPE_SIZE_UNIT");
-      debug_tree (TYPE_SIZE_UNIT (tv));
-      error ("type's TYPE_SIZE_UNIT");
-      debug_tree (TYPE_SIZE_UNIT (t));
-      return false;
-    }
+  verify_variant_match (TYPE_PRECISION);
+  verify_variant_match (TYPE_NO_FORCE_BLK);
+  verify_variant_match (TYPE_NEEDS_CONSTRUCTING);
+  if (RECORD_OR_UNION_TYPE_P (t))
+    verify_variant_match (TYPE_TRANSPARENT_AGGR);
+  else if (TREE_CODE (t) == ARRAY_TYPE)
+    verify_variant_match (TYPE_NONALIASED_COMPONENT);
+  /* During LTO we merge variant lists from diferent translation units
+     that may differ BY TYPE_CONTEXT that in turn may point 
+     to TRANSLATION_UNIT_DECL.
+     Ada also builds variants of types with different TYPE_CONTEXT.   */
+  if ((!in_lto_p || !TYPE_FILE_SCOPE_P (t)) && 0)
+    verify_variant_match (TYPE_CONTEXT);
+  verify_variant_match (TYPE_STRING_FLAG);
+  if (TYPE_ALIAS_SET_KNOWN_P (t) && TYPE_ALIAS_SET_KNOWN_P (tv))
+    verify_variant_match (TYPE_ALIAS_SET);
+
+  /* tree_type_non_common checks.  */
+
   /* FIXME: C FE uses TYPE_VFIELD to record C_TYPE_INCOMPLETE_VARS
-     and danagle the pointer from time to time.  */
+     and dangle the pointer from time to time.  */
   if (RECORD_OR_UNION_TYPE_P (t) && TYPE_VFIELD (t) != TYPE_VFIELD (tv)
-      && (!TYPE_VFIELD (tv) || TREE_CODE (TYPE_VFIELD (tv)) != TREE_LIST))
+      && (in_lto_p || !TYPE_VFIELD (tv)
+	  || TREE_CODE (TYPE_VFIELD (tv)) != TREE_LIST))
     {
       error ("type variant has different TYPE_VFIELD");
       debug_tree (tv);
       return false;
     }
-  if (((TREE_CODE (t) == ENUMERAL_TYPE && COMPLETE_TYPE_P (t))
-	|| TREE_CODE (t) == INTEGER_TYPE
-	|| TREE_CODE (t) == BOOLEAN_TYPE
-	|| TREE_CODE (t) == REAL_TYPE
-	|| TREE_CODE (t) == FIXED_POINT_TYPE)
-       && (TYPE_MAX_VALUE (t) != TYPE_MAX_VALUE (tv)
-	   || TYPE_MIN_VALUE (t) != TYPE_MIN_VALUE (tv)))
+  if ((TREE_CODE (t) == ENUMERAL_TYPE && COMPLETE_TYPE_P (t))
+       || TREE_CODE (t) == INTEGER_TYPE
+       || TREE_CODE (t) == BOOLEAN_TYPE
+       || TREE_CODE (t) == REAL_TYPE
+       || TREE_CODE (t) == FIXED_POINT_TYPE)
     {
-      error ("type variant has different TYPE_MAX_VALUE or TYPE_MIN_VALUE");
-      debug_tree (tv);
-      return false;
+      verify_variant_match (TYPE_MAX_VALUE);
+      verify_variant_match (TYPE_MIN_VALUE);
     }
-  if (TREE_CODE (t) == METHOD_TYPE
-      && TYPE_METHOD_BASETYPE (t) != TYPE_METHOD_BASETYPE (tv))
-    {
-      error ("type variant has different TYPE_METHOD_BASETYPE");
-      debug_tree (tv);
-      return false;
-    }
+  if (TREE_CODE (t) == METHOD_TYPE)
+    verify_variant_match (TYPE_METHOD_BASETYPE);
   if (RECORD_OR_UNION_TYPE_P (t) && TYPE_METHODS (t))
     {
       error ("type variant has TYPE_METHODS");
       debug_tree (tv);
       return false;
     }
-  if (TREE_CODE (t) == OFFSET_TYPE
-      && TYPE_OFFSET_BASETYPE (t) != TYPE_OFFSET_BASETYPE (tv))
-    {
-      error ("type variant has different TYPE_OFFSET_BASETYPE");
-      debug_tree (tv);
-      return false;
-    }
-  if (TREE_CODE (t) == ARRAY_TYPE
-      && TYPE_ARRAY_MAX_SIZE (t) != TYPE_ARRAY_MAX_SIZE (tv))
-    {
-      error ("type variant has different TYPE_ARRAY_MAX_SIZE");
-      debug_tree (tv);
-      return false;
-    }
+  if (TREE_CODE (t) == OFFSET_TYPE)
+    verify_variant_match (TYPE_OFFSET_BASETYPE);
+  if (TREE_CODE (t) == ARRAY_TYPE)
+    verify_variant_match (TYPE_ARRAY_MAX_SIZE);
   /* FIXME: Be lax and allow TYPE_BINFO to be missing in variant types
      or even type's main variant.  This is needed to make bootstrap pass
      and the bug seems new in GCC 5.
@@ -12581,28 +12626,10 @@ verify_type_variant (const_tree t, tree tv)
     }
 
   /* Check various uses of TYPE_VALUES_RAW.  */
-  if (TREE_CODE (t) == ENUMERAL_TYPE
-      && TYPE_VALUES (t) != TYPE_VALUES (tv))
-    {
-      error ("type variant has different TYPE_VALUES");
-      debug_tree (tv);
-      error ("type variant's TYPE_VALUES");
-      debug_tree (TYPE_VALUES (tv));
-      error ("type's TYPE_VALUES");
-      debug_tree (TYPE_VALUES (t));
-      return false;
-    }
-  else if (TREE_CODE (t) == ARRAY_TYPE
-	   && TYPE_DOMAIN (t) != TYPE_DOMAIN (tv))
-    {
-      error ("type variant has different TYPE_DOMAIN");
-      debug_tree (tv);
-      error ("type variant's TYPE_DOMAIN");
-      debug_tree (TYPE_DOMAIN (tv));
-      error ("type's TYPE_DOMAIN");
-      debug_tree (TYPE_DOMAIN (t));
-      return false;
-    }
+  if (TREE_CODE (t) == ENUMERAL_TYPE)
+    verify_variant_match (TYPE_VALUES);
+  else if (TREE_CODE (t) == ARRAY_TYPE)
+    verify_variant_match (TYPE_DOMAIN);
   /* Permit incomplete variants of complete type.  While FEs may complete
      all variants, this does not happen for C++ templates in all cases.  */
   else if (RECORD_OR_UNION_TYPE_P (t)
@@ -12640,13 +12667,8 @@ verify_type_variant (const_tree t, tree tv)
           return false;
 	}
     }
-  else if ((TREE_CODE (t) == FUNCTION_TYPE || TREE_CODE (t) == METHOD_TYPE)
-	   && TYPE_ARG_TYPES (t) != TYPE_ARG_TYPES (tv))
-    {
-      error ("type variant has different TYPE_ARG_TYPES");
-      debug_tree (tv);
-      return false;
-    }
+  else if ((TREE_CODE (t) == FUNCTION_TYPE || TREE_CODE (t) == METHOD_TYPE))
+    verify_variant_match (TYPE_ARG_TYPES);
   /* For C++ the qualified variant of array type is really an array type
      of qualified TREE_TYPE.
      objc builds variants of pointer where pointer to type is a variant, too
@@ -12665,14 +12687,10 @@ verify_type_variant (const_tree t, tree tv)
       debug_tree (TREE_TYPE (t));
       return false;
     }
-  if (TYPE_PRECISION (t) != TYPE_PRECISION (tv))
-    {
-      error ("type variant has different TYPE_PRECISION");
-      debug_tree (tv);
-      return false;
-    }
   return true;
+#undef verify_type_variant
 }
+
 
 /* Verify type T.  */
 
@@ -12966,6 +12984,27 @@ verify_type (const_tree t)
       error ("TYPE_CACHED_VALUES_P is set while it should not");
       error_found = true;
     }
+  if (TYPE_STRING_FLAG (t)
+      && TREE_CODE (t) != ARRAY_TYPE && TREE_CODE (t) != INTEGER_TYPE)
+    {
+      error ("TYPE_STRING_FLAG is set on wrong type code");
+      error_found = true;
+    }
+  else if (TYPE_STRING_FLAG (t))
+    {
+      const_tree b = t;
+      if (TREE_CODE (b) == ARRAY_TYPE)
+	b = TREE_TYPE (t);
+      /* Java builds arrays with TYPE_STRING_FLAG of promoted_char_type
+	 that is 32bits.  */
+      if (TREE_CODE (b) != INTEGER_TYPE)
+	{
+	  error ("TYPE_STRING_FLAG is set on type that does not look like "
+		 "char nor array of chars");
+	  error_found = true;
+	}
+    }
+  
 
 
   if (error_found)
