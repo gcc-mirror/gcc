@@ -1,3 +1,9 @@
+2015-05-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* c-objc-common.c (c_tree_printer): Replace locus pointer with
+	accessor function.
+
 2015-05-14  Marek Polacek  <polacek@redhat.com>
 
 	PR c/66066
