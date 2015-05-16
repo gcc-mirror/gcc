@@ -185,7 +185,7 @@ static const char *
 dlang_call_convention (string *decl, const char *mangled)
 {
   if (mangled == NULL || *mangled == '\0')
-    return mangled;
+    return NULL;
 
   switch (*mangled)
     {
@@ -221,7 +221,7 @@ static const char *
 dlang_attributes (string *decl, const char *mangled)
 {
   if (mangled == NULL || *mangled == '\0')
-    return mangled;
+    return NULL;
 
   while (*mangled == 'N')
     {
@@ -280,7 +280,7 @@ dlang_function_type (string *decl, const char *mangled)
   size_t szattr, szargs, sztype;
 
   if (mangled == NULL || *mangled == '\0')
-    return mangled;
+    return NULL;
 
   /* The order of the mangled string is:
 	CallConvention FuncAttrs Arguments ArgClose Type
@@ -380,7 +380,7 @@ static const char *
 dlang_type (string *decl, const char *mangled)
 {
   if (mangled == NULL || *mangled == '\0')
-    return mangled;
+    return NULL;
 
   switch (*mangled)
     {
@@ -600,7 +600,7 @@ static const char *
 dlang_identifier (string *decl, const char *mangled)
 {
   if (mangled == NULL || *mangled == '\0')
-    return mangled;
+    return NULL;
 
   if (ISDIGIT (*mangled))
     {
@@ -1061,7 +1061,7 @@ static const char *
 dlang_value (string *decl, const char *mangled, const char *name, char type)
 {
   if (mangled == NULL || *mangled == '\0')
-    return mangled;
+    return NULL;
 
   switch (*mangled)
     {

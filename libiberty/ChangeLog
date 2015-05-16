@@ -1,5 +1,15 @@
 2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	* d-demangle.c (dlang_call_convention): Return NULL if have reached the
+	end of the symbol, but expected something to read.
+	(dlang_attributes): Likewise.
+	(dlang_function_type): Likewise.
+	(dlang_type): Likewise.
+	(dlang_identifier): Likewise.
+	(dlang_value): Likewise.
+
+2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	* d-demangle.c (dlang_parse_string): Represent embedded whitespace or
 	non-printable characters as hex or escape sequences.
 	* testsuite/d-demangle-expected: Add test for templates with tabs and
