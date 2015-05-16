@@ -3620,8 +3620,7 @@ void
 percent_K_format (text_info *text)
 {
   tree t = va_arg (*text->args_ptr, tree), block;
-  gcc_assert (text->locus != NULL);
-  *text->locus = EXPR_LOCATION (t);
+  text->set_location (0, EXPR_LOCATION (t));
   gcc_assert (pp_ti_abstract_origin (text) != NULL);
   block = TREE_BLOCK (t);
   *pp_ti_abstract_origin (text) = NULL;

@@ -3104,7 +3104,7 @@ static void
 cp_diagnostic_starter (diagnostic_context *context,
 		       diagnostic_info *diagnostic)
 {
-  diagnostic_report_current_module (context, diagnostic->location);
+  diagnostic_report_current_module (context, diagnostic_location (diagnostic));
   cp_print_error_function (context, diagnostic);
   maybe_print_instantiation_context (context);
   maybe_print_constexpr_context (context);
@@ -3125,7 +3125,7 @@ cp_print_error_function (diagnostic_context *context,
   if (diagnostic_last_function_changed (context, diagnostic))
     {
       const char *old_prefix = context->printer->prefix;
-      const char *file = LOCATION_FILE (diagnostic->location);
+      const char *file = LOCATION_FILE (diagnostic_location (diagnostic));
       tree abstract_origin = diagnostic_abstract_origin (diagnostic);
       char *new_prefix = (file && abstract_origin == NULL)
 			 ? file_name_as_prefix (context, file) : NULL;
@@ -3471,9 +3471,6 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
   if (precision != 0 || wide)
     return false;
 
-  if (text->locus == NULL)
-    set_locus = false;
-
   switch (*spec)
     {
     case 'A': result = args_to_string (next_tree, verbose);	break;
@@ -3515,7 +3512,7 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
 
   pp_string (pp, result);
   if (set_locus && t != NULL)
-    *text->locus = location_of (t);
+    text->set_location (0, location_of (t));
   return true;
 #undef next_tree
 #undef next_tcode

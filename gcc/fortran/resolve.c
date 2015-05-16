@@ -8779,7 +8779,7 @@ resolve_branch (gfc_st_label *label, gfc_code *code)
   /* The label is not in an enclosing block, so illegal.  This was
      allowed in Fortran 66, so we allow it as extension.  No
      further checks are necessary in this case.  */
-  gfc_notify_std_1 (GFC_STD_LEGACY, "Label at %L is not in the same block "
+  gfc_notify_std (GFC_STD_LEGACY, "Label at %L is not in the same block "
 		  "as the GOTO statement at %L", &label->where,
 		  &code->loc);
   return;
@@ -12920,8 +12920,8 @@ resolve_fl_derived (gfc_symbol *sym)
   if (gen_dt && gen_dt->generic && gen_dt->generic->next
       && (!gen_dt->generic->sym->attr.use_assoc
 	  || gen_dt->generic->sym->module != gen_dt->generic->next->sym->module)
-      && !gfc_notify_std_1 (GFC_STD_F2003, "Generic name '%s' of function "
-			  "'%s' at %L being the same name as derived "
+      && !gfc_notify_std (GFC_STD_F2003, "Generic name %qs of function "
+			  "%qs at %L being the same name as derived "
 			  "type at %L", sym->name,
 			  gen_dt->generic->sym == sym
 			  ? gen_dt->generic->next->sym->name

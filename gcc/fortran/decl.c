@@ -1126,7 +1126,7 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	     either assumed size or explicit shape. Deferred shape is already
 	     covered by the pointer/allocatable attribute.  */
 	  if (sym->as != NULL && sym->as->type == AS_ASSUMED_SHAPE
-	      && !gfc_notify_std_1 (GFC_STD_F2008_TS, "Assumed-shape array '%s' "
+	      && !gfc_notify_std (GFC_STD_F2008_TS, "Assumed-shape array %qs "
 				  "at %L as dummy argument to the BIND(C) "
 				  "procedure '%s' at %L", sym->name, 
 				  &(sym->declared_at), 

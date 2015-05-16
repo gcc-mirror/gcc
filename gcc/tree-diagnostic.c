@@ -48,7 +48,7 @@ void
 diagnostic_report_current_function (diagnostic_context *context,
 				    diagnostic_info *diagnostic)
 {
-  diagnostic_report_current_module (context, diagnostic->location);
+  diagnostic_report_current_module (context, diagnostic_location (diagnostic));
   lang_hooks.print_error_function (context, LOCATION_FILE (input_location),
 				   diagnostic);
 }
@@ -153,7 +153,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
      first macro which expansion triggered this trace was expanded
      inside a system header.  */
   int saved_location_line =
-    expand_location_to_spelling_point (diagnostic->location).line;
+    expand_location_to_spelling_point (diagnostic_location (diagnostic)).line;
 
   if (!LINEMAP_SYSP (map))
     FOR_EACH_VEC_ELT (loc_vec, ix, iter)
@@ -252,7 +252,7 @@ virt_loc_aware_diagnostic_finalizer (diagnostic_context *context,
 				     diagnostic_info *diagnostic)
 {
   maybe_unwind_expanded_macro_loc (context, diagnostic,
-				   diagnostic->location);
+				   diagnostic_location (diagnostic));
 }
 
 /* Default tree printer.   Handles declarations only.  */
@@ -296,8 +296,8 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
       return false;
     }
 
-  if (set_locus && text->locus)
-    *text->locus = DECL_SOURCE_LOCATION (t);
+  if (set_locus)
+    text->set_location (0, DECL_SOURCE_LOCATION (t));
 
   if (DECL_P (t))
     {
