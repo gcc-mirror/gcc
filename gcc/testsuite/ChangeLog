@@ -1,3 +1,8 @@
+2015-05-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66140
+	* gcc.target/alpha/pr66140.c: New test.
+
 2015-05-13  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/ipa/pr65557.C: Remove unnecessary dump flag.
