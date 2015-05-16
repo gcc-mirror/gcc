@@ -1,3 +1,11 @@
+2015-05-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
+	    Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	PR target/65768
+	* config/arm/arm.h (DONT_EARLY_SPLIT_CONSTANT): New macro.
+	* config/arm/arm.md (subsi3, andsi3, iorsi3, xorsi3, movsi): Keep some
+	 large constants in register instead of splitting them.
+
 2015-05-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66140

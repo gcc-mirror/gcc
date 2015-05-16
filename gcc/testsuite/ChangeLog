@@ -1,3 +1,9 @@
+2015-05-16  Kugan Vivekanandarajah  <kuganv@linaro.org>
+	    Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	PR target/65768
+	* gcc.target/arm/maskdata.c: New test.
+
 2015-05-16  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/65792
