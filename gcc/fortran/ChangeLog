@@ -1,3 +1,9 @@
+2015-05-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/66113
+	* expr.c (is_parent_of_current_ns):  New function.
+	(check_restricted):  Use it.
+
 2015-05-16  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR fortran/44054
@@ -28,7 +34,7 @@
 	(gfc_diagnostics_init): Initialize caret_chars array.
 	(gfc_diagnostics_finish): Reset caret_chars array to default.
 
-2015-05-16  Mikael Morin  <mikael@gcc.gnu.org
+2015-05-16  Mikael Morin  <mikael@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/65792
