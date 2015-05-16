@@ -385,7 +385,7 @@ format_lex (void)
 
 	  if (c == delim)
 	    {
-	      c = next_char (INSTRING_NOWARN);
+	      c = next_char (NONSTRING);
 
 	      if (c == '\0')
 		{
