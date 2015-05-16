@@ -1,5 +1,5 @@
 /* Demangler for the D programming language
-   Copyright 2014 Free Software Foundation, Inc.
+   Copyright 2014, 2015 Free Software Foundation, Inc.
    Written by Iain Buclaw (ibuclaw@gdcproject.org)
 
 This file is part of the libiberty library.
@@ -931,7 +931,38 @@ dlang_parse_string (string *decl, const char *mangled)
 	  char a = ascii2hex (mangled[0]);
 	  char b = ascii2hex (mangled[1]);
 	  char val = (a << 4) | b;
-	  string_appendn (decl, &val, 1);
+
+	  /* Sanitize white and non-printable characters.  */
+	  switch (val)
+	    {
+	    case ' ':
+	      string_append (decl, " ");
+	      break;
+	    case '\t':
+	      string_append (decl, "\\t");
+	      break;
+	    case '\n':
+	      string_append (decl, "\\n");
+	      break;
+	    case '\r':
+	      string_append (decl, "\\r");
+	      break;
+	    case '\f':
+	      string_append (decl, "\\f");
+	      break;
+	    case '\v':
+	      string_append (decl, "\\v");
+	      break;
+
+	    default:
+	      if (ISPRINT (val))
+		string_appendn (decl, &val, 1);
+	      else
+		{
+		  string_append (decl, "\\x");
+		  string_appendn (decl, mangled, 2);
+		}
+	    }
 	}
       else
 	return NULL;
