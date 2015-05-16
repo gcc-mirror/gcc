@@ -1168,10 +1168,16 @@
     {
       if (TARGET_32BIT)
         {
-          arm_split_constant (MINUS, SImode, NULL_RTX,
-	                      INTVAL (operands[1]), operands[0],
-	  		      operands[2], optimize && can_create_pseudo_p ());
-          DONE;
+	  if (DONT_EARLY_SPLIT_CONSTANT (INTVAL (operands[1]), MINUS))
+	    operands[1] = force_reg (SImode, operands[1]);
+	  else
+	    {
+	      arm_split_constant (MINUS, SImode, NULL_RTX,
+				  INTVAL (operands[1]), operands[0],
+				  operands[2],
+				  optimize && can_create_pseudo_p ());
+	      DONE;
+	    }
 	}
       else /* TARGET_THUMB1 */
         operands[1] = force_reg (SImode, operands[1]);
@@ -2082,14 +2088,19 @@
 	      operands[1] = convert_to_mode (QImode, operands[1], 1);
 	      emit_insn (gen_thumb2_zero_extendqisi2_v6 (operands[0],
 							 operands[1]));
+	      DONE;
 	    }
+	  else if (DONT_EARLY_SPLIT_CONSTANT (INTVAL (operands[2]), AND))
+	    operands[2] = force_reg (SImode, operands[2]);
 	  else
-	    arm_split_constant (AND, SImode, NULL_RTX,
-				INTVAL (operands[2]), operands[0],
-				operands[1],
-				optimize && can_create_pseudo_p ());
+	    {
+	      arm_split_constant (AND, SImode, NULL_RTX,
+				  INTVAL (operands[2]), operands[0],
+				  operands[1],
+				  optimize && can_create_pseudo_p ());
 
-          DONE;
+	      DONE;
+	    }
         }
     }
   else /* TARGET_THUMB1 */
@@ -2888,10 +2899,16 @@
     {
       if (TARGET_32BIT)
         {
-          arm_split_constant (IOR, SImode, NULL_RTX,
-	                      INTVAL (operands[2]), operands[0], operands[1],
-			      optimize && can_create_pseudo_p ());
-          DONE;
+	  if (DONT_EARLY_SPLIT_CONSTANT (INTVAL (operands[2]), IOR))
+	    operands[2] = force_reg (SImode, operands[2]);
+	  else
+	    {
+	      arm_split_constant (IOR, SImode, NULL_RTX,
+				  INTVAL (operands[2]), operands[0],
+				  operands[1],
+				  optimize && can_create_pseudo_p ());
+	      DONE;
+	    }
 	}
       else /* TARGET_THUMB1 */
         {
@@ -3058,10 +3075,16 @@
     {
       if (TARGET_32BIT)
         {
-          arm_split_constant (XOR, SImode, NULL_RTX,
-	                      INTVAL (operands[2]), operands[0], operands[1],
-			      optimize && can_create_pseudo_p ());
-          DONE;
+	  if (DONT_EARLY_SPLIT_CONSTANT (INTVAL (operands[2]), XOR))
+	    operands[2] = force_reg (SImode, operands[2]);
+	  else
+	    {
+	      arm_split_constant (XOR, SImode, NULL_RTX,
+				  INTVAL (operands[2]), operands[0],
+				  operands[1],
+				  optimize && can_create_pseudo_p ());
+	      DONE;
+	    }
 	}
       else /* TARGET_THUMB1 */
         {
@@ -5548,10 +5571,18 @@
           && !(const_ok_for_arm (INTVAL (operands[1]))
                || const_ok_for_arm (~INTVAL (operands[1]))))
         {
-           arm_split_constant (SET, SImode, NULL_RTX,
-	                       INTVAL (operands[1]), operands[0], NULL_RTX,
-			       optimize && can_create_pseudo_p ());
-          DONE;
+	   if (DONT_EARLY_SPLIT_CONSTANT (INTVAL (operands[1]), SET))
+	     {
+		emit_insn (gen_rtx_SET (operands[0], operands[1]));
+		DONE;
+	     }
+	  else
+	     {
+		arm_split_constant (SET, SImode, NULL_RTX,
+	                            INTVAL (operands[1]), operands[0], NULL_RTX,
+			            optimize && can_create_pseudo_p ());
+		DONE;
+	     }
         }
     }
   else /* TARGET_THUMB1...  */
