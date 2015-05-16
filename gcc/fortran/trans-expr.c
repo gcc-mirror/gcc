@@ -7050,19 +7050,31 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr,
     {
       if (expr->expr_type != EXPR_STRUCTURE)
 	{
+	  tree dealloc = NULL_TREE;
 	  gfc_init_se (&se, NULL);
 	  gfc_conv_expr (&se, expr);
 	  gfc_add_block_to_block (&block, &se.pre);
+	  /* Prevent repeat evaluations in gfc_copy_alloc_comp by fixing the
+	     expression in  a temporary variable and deallocate the allocatable
+	     components. Then we can the copy the expression to the result.  */
 	  if (cm->ts.u.derived->attr.alloc_comp
-	      && expr->expr_type == EXPR_VARIABLE)
+	      && expr->expr_type != EXPR_VARIABLE)
+	    {
+	      se.expr = gfc_evaluate_now (se.expr, &block);
+	      dealloc = gfc_deallocate_alloc_comp (cm->ts.u.derived, se.expr,
+						   expr->rank);
+	    }
+	  gfc_add_modify (&block, dest,
+			  fold_convert (TREE_TYPE (dest), se.expr));
+	  if (cm->ts.u.derived->attr.alloc_comp
+	      && expr->expr_type != EXPR_NULL)
 	    {
 	      tmp = gfc_copy_alloc_comp (cm->ts.u.derived, se.expr,
 					 dest, expr->rank);
 	      gfc_add_expr_to_block (&block, tmp);
+	      if (dealloc != NULL_TREE)
+		gfc_add_expr_to_block (&block, dealloc);
 	    }
-	  else
-	    gfc_add_modify (&block, dest,
-			    fold_convert (TREE_TYPE (dest), se.expr));
 	  gfc_add_block_to_block (&block, &se.post);
 	}
       else

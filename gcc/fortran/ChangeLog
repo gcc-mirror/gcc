@@ -1,3 +1,14 @@
+2015-05-16  Mikael Morin  <mikael@gcc.gnu.org
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/65792
+	* trans-expr.c (gfc_trans_subcomponent_assign): Always assign
+	the expression component to the destination. In addition, if
+	the component has allocatable components, copy them and
+	deallocate those of the expression, if it is not a variable.
+	The expression is fixed if not a variable to prevent multiple
+	evaluations.
+
 2015-05-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/66111
@@ -133,12 +144,12 @@
 	to be referenced always.
 	(build_class_array_ref): Adapt retrieval of array descriptor.
 	(build_array_ref): Likewise.
-	(gfc_conv_array_ref): Hand the vptr or the descriptor to 
+	(gfc_conv_array_ref): Hand the vptr or the descriptor to
 	build_array_ref depending whether the sym is class or not.
 	(gfc_trans_array_cobounds):  Select correct gfc_array_spec for
 	regular and class arrays.
 	(gfc_trans_array_bounds): Likewise.
-	(gfc_trans_dummy_array_bias): Likewise. 
+	(gfc_trans_dummy_array_bias): Likewise.
 	(gfc_get_dataptr_offset): Correcting call of build_array_ref.
 	(gfc_conv_expr_descriptor): Set the array's offset to -1 when
 	lbound in inner most dim is 1 and symbol non-pointer/assoc.
