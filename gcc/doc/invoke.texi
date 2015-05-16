@@ -2698,6 +2698,14 @@ In this case, @code{PRId64} is treated as a separate preprocessing token.
 
 This warning is enabled by default.
 
+@item -Wlto-type-mismatch
+@opindex Wlto-type-mismatch
+@opindex Wno-lto-type-mistmach
+
+During the link-time optimization warn about type mismatches in between
+global declarations from different compilation units.
+Requires @option{-flto} to be enabled.  Enabled by default.
+
 @item -Wnarrowing @r{(C++ and Objective-C++ only)}
 @opindex Wnarrowing
 @opindex Wno-narrowing

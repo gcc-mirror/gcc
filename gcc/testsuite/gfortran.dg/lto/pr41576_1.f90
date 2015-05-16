@@ -5,3 +5,8 @@ program test
   if (c/=1 .or. d/=2) call abort
 end program test
 
+interface
+  subroutine foo()
+  end subroutine
+end interface
+

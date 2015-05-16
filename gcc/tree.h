@@ -4544,7 +4544,6 @@ extern tree obj_type_ref_class (tree ref);
 extern bool types_same_for_odr (const_tree type1, const_tree type2,
 				bool strict=false);
 extern bool contains_bitfld_component_ref_p (const_tree);
-extern bool type_in_anonymous_namespace_p (const_tree);
 extern bool block_may_fallthru (const_tree);
 extern void using_eh_for_cleanups (void);
 extern bool using_eh_for_cleanups_p (void);

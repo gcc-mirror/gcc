@@ -1,5 +1,5 @@
 ! { dg-lto-do run }
-! { dg-lto-options { { -O2 -flto -Werror } } }
+! { dg-lto-options { { -O2 -flto -Werror -Wno-lto-type-mismatch } } }
 
 subroutine foo
   common /bar/ a, b

@@ -3,7 +3,7 @@
    ??? This testcase is invalid C and can only pass on specific platforms.  */
 /* { dg-lto-do run } */
 /* { dg-skip-if "" { { sparc*-*-* } && ilp32 } { "*" } { "" } } */
-/* { dg-lto-options { {-O3 -fno-early-inlining -flto}} } */
+/* { dg-lto-options { {-O3 -fno-early-inlining -flto -Wno-lto-type-mismatch}} } */
 
 extern void abort (void);
 
