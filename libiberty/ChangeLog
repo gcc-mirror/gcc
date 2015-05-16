@@ -1,5 +1,12 @@
 2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	* d-demangle.c (dlang_template_args): Skip over specialized template
+	parameters in mangled symbol.
+	* testsuite/d-demangle-expected: Add coverage and unittest for specialized
+	template parameters.
+
+2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	* d-demangle.c (dlang_type): Handle cent and ucent types.
 	* testsuite/d-demangle-expected: Add coverage tests for cent and ucent.
 

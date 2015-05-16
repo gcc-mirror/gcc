@@ -1383,6 +1383,10 @@ dlang_template_args (string *decl, const char *mangled)
       if (n++)
 	string_append (decl, ", ");
 
+      /* Skip over specialised template prefix.  */
+      if (*mangled == 'H')
+	mangled++;
+
       switch (*mangled)
 	{
 	case 'S': /* Symbol parameter.  */
