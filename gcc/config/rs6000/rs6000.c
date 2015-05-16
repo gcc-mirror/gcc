@@ -30662,7 +30662,7 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 		*total = COSTS_N_INSNS (2);
 	      return true;
 	    }
-	  else if (mode == Pmode)
+	  else
 	    {
 	      *total = COSTS_N_INSNS (3);
 	      return false;
