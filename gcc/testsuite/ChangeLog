@@ -1,3 +1,12 @@
+2015-05-16  Jan Hubica  <hubicka@ucw.cz>
+
+	* gfortran.dg/lto/20091028-2_1.c: Fix return value.
+	* gfortran.dg/lto/pr41576_1.f90: Add interface.
+	* gfortran.dg/lto/pr41521_0.f90: Disable lto-type-mismatch
+	* gfortran.dg/lto/pr60635_0.f90: Disable lto-type-mismatch.
+	* gfortran.dg/lto/20091028-1_1.c: Fix return type.
+	* gcc.dg/lto/20120723_0.c: Disbale lto-type-mismatch.
+
 2015-05-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/65903

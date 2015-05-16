@@ -607,6 +607,10 @@ Woverflow
 Common Var(warn_overflow) Init(1) Warning
 Warn about overflow in arithmetic expressions
 
+Wlto-type-mismatch
+Common Var(warn_lto_type_mismatch) Init(1) Warning
+During link time optimization warn about mismatched types of global declarations
+
 Wpacked
 Common Var(warn_packed) Warning
 Warn when the packed attribute has no effect on struct layout

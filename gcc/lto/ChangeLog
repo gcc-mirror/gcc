@@ -1,3 +1,10 @@
+2015-05-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-symtab.c (warn_type_compatibility_p): Break out from ...;
+	compare ODR types (if available) and function types.
+	(lto_symtab_merge): ... here; output ODR violation warnings
+	and call warn_types_mismatch.
+
 2015-04-29  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (lto_fixup_state): Call verify_type.
