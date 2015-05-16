@@ -1,3 +1,10 @@
+2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-demangle.c (dlang_parse_string): Represent embedded whitespace or
+	non-printable characters as hex or escape sequences.
+	* testsuite/d-demangle-expected: Add test for templates with tabs and
+	newlines embedded into the signature.
+
 2015-05-08  Joel Brobecker  <brobecker@adacore.com>
 
 	* mkstemps.c: #include <time.h> if HAVE_TIME_H is defined

@@ -934,3 +934,7 @@ serenity.persister.Sqlite.SqlitePersister!(serenity.persister.Sqlite.__unittest6
 --format=dlang
 _D4test4mainFZv5localMFZi
 test.main().local()
+#
+--format=dlang
+_D3std6socket12InternetHost221__T13getHostNoSyncVAyaa96_0a09202020206175746f2078203d2068746f6e6c28706172616d293b0a09202020206175746f206865203d20676574686f73746279616464722826782c20342c206361737428696e74294164647265737346616d696c792e494e4554293b0a09TkZ13getHostNoSyncMFkZb
+std.socket.InternetHost.getHostNoSync!("\n\t    auto x = htonl(param);\n\t    auto he = gethostbyaddr(&x, 4, cast(int)AddressFamily.INET);\n\t", uint).getHostNoSync(uint)
