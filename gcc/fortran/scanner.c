@@ -1272,21 +1272,11 @@ restart:
 	 are still in a string and we are looking for a possible
 	 doubled quote and we end up here. See PR64506.  */
 
-      if (in_string)
+      if (in_string && c != '\n')
 	{
 	  gfc_current_locus = old_loc;
-
-	  if (c == '!')
-	    {
-	      skip_comment_line ();
-	      goto restart;
-	    }
-
-	  if (c != '\n')
-	    {
-	      c = '&';
-	      goto done;
-	    }
+	  c = '&';
+	  goto done;
 	}
 
       if (c != '!' && c != '\n')
@@ -1392,6 +1382,8 @@ restart:
 			     "Missing %<&%> in continued character "
 			     "constant at %C");
 	    }
+	  else if (!in_string && (c == '\'' || c == '"'))
+	      goto done;
 	  /* Both !$omp and !$ -fopenmp continuation lines have & on the
 	     continuation line only optionally.  */
 	  else if (openmp_flag || openacc_flag || openmp_cond_flag)
