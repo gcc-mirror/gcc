@@ -2040,8 +2040,8 @@
 (define_insn_and_split "*addc_2r_t"
   [(set (match_operand:SI 0 "arith_reg_dest")
 	(plus:SI (match_operand 1 "treg_set_expr")
-		 (mult:SI (match_operand:SI 2 "arith_reg_operand")
-			  (const_int 2))))
+		 (ashift:SI (match_operand:SI 2 "arith_reg_operand")
+			    (const_int 1))))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1 && can_create_pseudo_p ()"
   "#"
@@ -2052,8 +2052,8 @@
 
 (define_insn_and_split "*addc_2r_t"
   [(set (match_operand:SI 0 "arith_reg_dest")
-	(plus:SI (mult:SI (match_operand:SI 1 "arith_reg_operand")
-			  (const_int 2))
+	(plus:SI (ashift:SI (match_operand:SI 1 "arith_reg_operand")
+			    (const_int 1))
 		 (match_operand 2 "treg_set_expr")))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1 && can_create_pseudo_p ()"
