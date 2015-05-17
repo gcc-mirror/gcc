@@ -1,5 +1,12 @@
 2015-05-17  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.dg/20150120-1.c (dg-final): Cleanup original tree dump.
+	* gcc.dg/20150120-2.c (dg-final): Ditto.
+	* gcc.dg/20150120-2.c (dg-final): Ditto.
+	* gfortran.dg/inline_matmul_1.f90 (dg-final): Ditto.
+
+2015-05-17  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/66174
 	* gcc.target/i386/pr66174.c: New test.
 
