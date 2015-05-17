@@ -1,10 +1,15 @@
+2015-05-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66174
+	* gcc.target/i386/pr66174.c: New test.
+
 2015-05-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/37131
 	* gfortran.dg/matmul_bounds_6.f90:  New test.
 	* gfortran.dg/matmul_bounds_7.f90:  New test.
 
-2015-05-16  Jan Hubica  <hubicka@ucw.cz>
+2015-05-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gfortran.dg/lto/20091028-2_1.c: Fix return value.
 	* gfortran.dg/lto/pr41576_1.f90: Add interface.

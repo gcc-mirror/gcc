@@ -1,9 +1,16 @@
-2015-05-16  Jan HUbicka  <hubicka@ucw.cz>
+2015-05-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66174
+	* config/i386/i386.c (expand_vec_perm_blend): Enable HImode and
+	QImode inner modes for TARGET_AVX512BW.  Force mask operand
+	to a register for AVX512F modes.
+
+2015-05-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* toplev.c (emit_debug_global_declarations): Do not output debug info
 	when doing slim LTO objects.
 
-2015-05-16  Jan HUbicka  <hubicka@ucw.cz>
+2015-05-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-utils.h (warn_types_mismatch, odr_or_derived_type_p,
 	odr_types_equivalent_p): Declare.
@@ -21,7 +28,7 @@
 	* tree.h (type_in_anonymous_namespace_p): Remove.
 	* doc/invoke.texi (-Wlto-type-mismatch): Document
 
-2015-05-16  Jan HUbicka  <hubicka@ucw.cz>
+2015-05-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree.c (verify_type_variant): Verify tree_base and type_common flags.
 	(verify_type): Verify STRING_FLAG.
