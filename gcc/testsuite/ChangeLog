@@ -1,3 +1,8 @@
+2015-05-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66140
+	* gcc.target/alpha/pr66140.c: New test.
+
 2015-05-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/65990
