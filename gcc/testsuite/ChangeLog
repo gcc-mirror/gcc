@@ -1,3 +1,8 @@
+2015-04-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/66047
+	* gcc.target/i386/pr66047.c: New testcase.
+
 2015-05-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66140
