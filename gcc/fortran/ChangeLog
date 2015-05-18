@@ -1,5 +1,10 @@
 2015-05-18  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/66057
+	* decl.c(gfc_match_generic):  Detected a malformed GENERIC statement.
+
+2015-05-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/66043
 	* gfortran.dg/storage_size_6.f90: New tests.
 
