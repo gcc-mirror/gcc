@@ -2382,9 +2382,7 @@ match_filepos (gfc_statement st, gfc_exec_op op)
   if (m == MATCH_NO)
     {
       m = gfc_match_expr (&fp->unit);
-      if (m == MATCH_ERROR)
-	goto done;
-      if (m == MATCH_NO)
+      if (m == MATCH_ERROR || m == MATCH_NO)
 	goto syntax;
     }
 
