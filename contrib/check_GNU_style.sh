@@ -84,10 +84,16 @@ grep $format '^+' $files \
 g (){
     local msg="$1"
     local arg="$2"
+
+    local found=false
     cat $inp \
 	| egrep --color=always -- "$arg" \
-	> $tmp && printf "\n$msg\n"
-    cat $tmp
+	> "$tmp" && found=true
+
+    if $found; then
+	printf "\n$msg\n"
+	cat "$tmp"
+    fi
 }
 
 # And Grep
@@ -95,11 +101,17 @@ ag (){
     local msg="$1"
     local arg1="$2"
     local arg2="$3"
+
+    local found=false
     cat $inp \
 	| egrep --color=always -- "$arg1" \
 	| egrep --color=always -- "$arg2" \
-	> $tmp && printf "\n$msg\n"
-    cat $tmp
+	> "$tmp" && found=true
+
+    if $found; then
+	printf "\n$msg\n"
+	cat "$tmp"
+    fi
 }
 
 # reVerse Grep
@@ -107,11 +119,17 @@ vg (){
     local msg="$1"
     local varg="$2"
     local arg="$3"
+
+    local found=false
     cat $inp \
 	| egrep -v -- "$varg" \
 	| egrep --color=always -- "$arg" \
-	> $tmp && printf "\n$msg\n"
-    cat $tmp
+	> "$tmp" && found=true
+
+    if $found; then
+	printf "\n$msg\n"
+	cat "$tmp"
+    fi
 }
 
 col (){
