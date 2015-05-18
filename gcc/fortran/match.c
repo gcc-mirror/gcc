@@ -110,6 +110,9 @@ gfc_op2string (gfc_intrinsic_op op)
     case INTRINSIC_PARENTHESES:
       return "parens";
 
+    case INTRINSIC_NONE:
+      return "none";
+
     default:
       break;
     }
