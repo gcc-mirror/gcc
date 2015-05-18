@@ -1265,6 +1265,7 @@ strip_typedefs (tree t, bool *remove_attributes)
     {
       bool changed = false;
       vec<tree,va_gc> *vec = make_tree_vector ();
+      tree r = t;
       for (; t; t = TREE_CHAIN (t))
 	{
 	  gcc_assert (!TREE_PURPOSE (t));
@@ -1273,7 +1274,6 @@ strip_typedefs (tree t, bool *remove_attributes)
 	    changed = true;
 	  vec_safe_push (vec, elt);
 	}
-      tree r = t;
       if (changed)
 	r = build_tree_list_vec (vec);
       release_tree_vector (vec);
@@ -1411,7 +1411,7 @@ strip_typedefs (tree t, bool *remove_attributes)
       result = strip_typedefs_expr (DECLTYPE_TYPE_EXPR (t),
 				    remove_attributes);
       if (result == DECLTYPE_TYPE_EXPR (t))
-	return t;
+	result = NULL_TREE;
       else
 	result = (finish_decltype_type
 		  (result,
@@ -1496,8 +1496,8 @@ strip_typedefs_expr (tree t, bool *remove_attributes)
 	    && type2 == TRAIT_EXPR_TYPE2 (t))
 	  return t;
 	r = copy_node (t);
-	TRAIT_EXPR_TYPE1 (t) = type1;
-	TRAIT_EXPR_TYPE2 (t) = type2;
+	TRAIT_EXPR_TYPE1 (r) = type1;
+	TRAIT_EXPR_TYPE2 (r) = type2;
 	return r;
       }
 
