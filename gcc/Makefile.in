@@ -199,7 +199,7 @@ VALGRIND_DRIVER_DEFINES = @valgrind_path_defines@
 .-warn = $(STRICT_WARN)
 build-warn = $(STRICT_WARN)
 GCC_WARN_CFLAGS = $(LOOSE_WARN) $(C_LOOSE_WARN) $($(@D)-warn) $(if $(filter-out $(STRICT_WARN),$($(@D)-warn)),,$(C_STRICT_WARN)) $(NOCOMMON_FLAG) $($@-warn)
-GCC_WARN_CXXFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn) -std=c++98
+GCC_WARN_CXXFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
 
 # These files are to have specific diagnostics suppressed, or are not to
 # be subject to -Werror:
