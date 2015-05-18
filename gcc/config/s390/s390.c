@@ -9747,7 +9747,6 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   f_ovf = DECL_CHAIN (f_fpr);
   f_sav = DECL_CHAIN (f_ovf);
 
-  valist = build_va_arg_indirect_ref (valist);
   gpr = build3 (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
   fpr = build3 (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
   sav = build3 (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);

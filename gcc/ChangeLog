@@ -1,5 +1,18 @@
 2015-05-18  Tom de Vries  <tom@codesourcery.com>
 
+	* gimplify.c (gimplify_modify_expr): Remove do_deref handling.
+	(gimplify_va_arg_expr): Remove do_deref handling.  Remove adding of
+	address operator to va_list operand.
+	* tree-stdarg.c (expand_ifn_va_arg_1): Do deref of va_list operand
+	unconditionally.
+	* config/i386/i386.c (ix86_gimplify_va_arg): Remove deref on va_list
+	operand.
+	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): Same.
+	* config/s390/s390.c (s390_gimplify_va_arg): Same.
+	* config/spu/spu.c (spu_gimplify_va_arg_expr): Same.
+
+2015-05-18  Tom de Vries  <tom@codesourcery.com>
+
 	* tree-ssa-tail-merge.c: Fix whitespace.
 
 2015-05-17  Jim Wilson  <jim.wilson@linaro.org>

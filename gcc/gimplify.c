@@ -4655,13 +4655,13 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       if (TREE_CODE (call) == CALL_EXPR
 	  && CALL_EXPR_IFN (call) == IFN_VA_ARG)
 	{
+	  int nargs = call_expr_nargs (call);
 	  tree type = TREE_TYPE (call);
 	  tree ap = CALL_EXPR_ARG (call, 0);
 	  tree tag = CALL_EXPR_ARG (call, 1);
-	  tree do_deref = CALL_EXPR_ARG (call, 2);
 	  tree newcall = build_call_expr_internal_loc (EXPR_LOCATION (call),
-						       IFN_VA_ARG, type, 4, ap,
-						       tag, do_deref,
+						       IFN_VA_ARG, type,
+						       nargs + 1, ap, tag,
 						       vlasize);
 	  tree *call_p = &(TREE_OPERAND (*from_p, 0));
 	  *call_p = newcall;
@@ -9312,7 +9312,7 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p,
   tree promoted_type, have_va_type;
   tree valist = TREE_OPERAND (*expr_p, 0);
   tree type = TREE_TYPE (*expr_p);
-  tree t, tag, ap, do_deref;
+  tree t, tag;
   location_t loc = EXPR_LOCATION (*expr_p);
 
   /* Verify that valist is of the proper type.  */
@@ -9365,35 +9365,8 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p,
       return GS_ALL_DONE;
     }
 
-  /* Transform a VA_ARG_EXPR into an VA_ARG internal function.  */
-  if (TREE_CODE (have_va_type) == ARRAY_TYPE)
-    {
-      if (TREE_CODE (TREE_TYPE (valist)) == ARRAY_TYPE)
-	{
-	  /* Take the address, but don't strip it.  Gimplify_va_arg_internal
-	     expects a pointer to array element type.  */
-	  ap = build_fold_addr_expr_loc (loc, valist);
-	  do_deref = integer_zero_node;
-	}
-      else
-	{
-	  /* Don't take the address.  Gimplify_va_arg_internal expects a pointer
-	     to array element type, and we already have that.
-	     See also comment in build_va_arg.  */
-	  ap = valist;
-	  do_deref = integer_zero_node;
-	}
-    }
-  else
-    {
-      /* No special handling.  Take the address here, note that it needs to be
-	 stripped before calling gimplify_va_arg_internal. */
-      ap = build_fold_addr_expr_loc (loc, valist);
-      do_deref = integer_one_node;
-    }
   tag = build_int_cst (build_pointer_type (type), 0);
-  *expr_p = build_call_expr_internal_loc (loc, IFN_VA_ARG, type, 3, ap, tag,
-					  do_deref);
+  *expr_p = build_call_expr_internal_loc (loc, IFN_VA_ARG, type, 2, valist, tag);
 
   /* Clear the tentatively set PROP_gimple_lva, to indicate that IFN_VA_ARG
      needs to be expanded.  */
