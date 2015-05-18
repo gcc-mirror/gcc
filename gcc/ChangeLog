@@ -1,3 +1,8 @@
+2015-05-18  Alex Velenko  <Alex.Velenko@arm.com>
+
+	* config/arm/arm.md (andsi_not_shiftsi_si_scc): New pattern.
+	(andsi_not_shiftsi_si_scc_no_reuse): New pattern.
+
 2015-05-18  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* config/mips/mips.c (micromips_globals): New variable.

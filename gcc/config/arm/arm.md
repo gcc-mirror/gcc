@@ -2783,6 +2783,55 @@
 		      (const_string "logic_shift_reg")))]
 )
 
+;; Shifted bics pattern used to set up CC status register and not reusing
+;; bics output.  Pattern restricts Thumb2 shift operand as bics for Thumb2
+;; does not support shift by register.
+(define_insn "andsi_not_shiftsi_si_scc_no_reuse"
+  [(set (reg:CC_NOOV CC_REGNUM)
+	(compare:CC_NOOV
+		(and:SI (not:SI (match_operator:SI 0 "shift_operator"
+			[(match_operand:SI 1 "s_register_operand" "r")
+			 (match_operand:SI 2 "arm_rhs_operand" "rM")]))
+			(match_operand:SI 3 "s_register_operand" "r"))
+		(const_int 0)))
+   (clobber (match_scratch:SI 4 "=r"))]
+  "TARGET_ARM || (TARGET_THUMB2 && CONST_INT_P (operands[2]))"
+  "bic%.%?\\t%4, %3, %1%S0"
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
+   (set_attr "conds" "set")
+   (set_attr "shift" "1")
+   (set (attr "type") (if_then_else (match_operand 2 "const_int_operand" "")
+		      (const_string "logic_shift_imm")
+		      (const_string "logic_shift_reg")))]
+)
+
+;; Same as andsi_not_shiftsi_si_scc_no_reuse, but the bics result is also
+;; getting reused later.
+(define_insn "andsi_not_shiftsi_si_scc"
+  [(parallel [(set (reg:CC_NOOV CC_REGNUM)
+	(compare:CC_NOOV
+		(and:SI (not:SI (match_operator:SI 0 "shift_operator"
+			[(match_operand:SI 1 "s_register_operand" "r")
+			 (match_operand:SI 2 "arm_rhs_operand" "rM")]))
+			(match_operand:SI 3 "s_register_operand" "r"))
+		(const_int 0)))
+	(set (match_operand:SI 4 "s_register_operand" "=r")
+	     (and:SI (not:SI (match_op_dup 0
+		     [(match_dup 1)
+		      (match_dup 2)]))
+		     (match_dup 3)))])]
+  "TARGET_ARM || (TARGET_THUMB2 && CONST_INT_P (operands[2]))"
+  "bic%.%?\\t%4, %3, %1%S0"
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
+   (set_attr "conds" "set")
+   (set_attr "shift" "1")
+   (set (attr "type") (if_then_else (match_operand 2 "const_int_operand" "")
+		      (const_string "logic_shift_imm")
+		      (const_string "logic_shift_reg")))]
+)
+
 (define_insn "*andsi_notsi_si_compare0"
   [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
