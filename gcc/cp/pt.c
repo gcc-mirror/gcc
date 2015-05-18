@@ -16678,7 +16678,7 @@ uses_deducible_template_parms (tree type)
 
 static int
 unify_one_argument (tree tparms, tree targs, tree parm, tree arg,
-		    int subr, unification_kind_t strict, int flags,
+		    int subr, unification_kind_t strict,
 		    bool explain_p)
 {
   tree arg_expr = NULL_TREE;
@@ -16695,16 +16695,10 @@ unify_one_argument (tree tparms, tree targs, tree parm, tree arg,
      argument to convert it to the type of the corresponding function
      parameter if the parameter type contains no template-parameters that
      participate in template argument deduction.  */
-  if (TYPE_P (parm) && !uses_template_parms (parm))
-    /* For function parameters that contain no template-parameters at all,
-       we have historically checked for convertibility in order to shortcut
-       consideration of this candidate.  */
-    return check_non_deducible_conversion (parm, arg, strict, flags,
-					   explain_p);
-  else if (strict == DEDUCE_CALL
-	   && TYPE_P (parm) && !uses_deducible_template_parms (parm))
-    /* For function parameters with only non-deducible template parameters,
-       just return.  */
+  if (strict != DEDUCE_EXACT
+      && TYPE_P (parm) && !uses_deducible_template_parms (parm))
+    /* For function parameters with no deducible template parameters,
+       just return.  We'll check non-dependent conversions later.  */
     return unify_success (explain_p);
 
   switch (strict)
@@ -16843,7 +16837,7 @@ type_unification_real (tree tparms,
       ++ia;
 
       if (unify_one_argument (tparms, targs, parm, arg, subr, strict,
-			      flags, explain_p))
+			      explain_p))
 	return 1;
     }
 
@@ -16925,8 +16919,11 @@ type_unification_real (tree tparms,
 	     this parameter can be deduced.  */
 	  if (TREE_CODE (tparm) == PARM_DECL
 	      && uses_template_parms (TREE_TYPE (tparm))
-	      && !saw_undeduced++)
-	    goto again;
+	      && saw_undeduced < 2)
+	    {
+	      saw_undeduced = 1;
+	      continue;
+	    }
 
 	  /* Core issue #226 (C++0x) [temp.deduct]:
 
@@ -16937,32 +16934,9 @@ type_unification_real (tree tparms,
 	     be NULL_TREE or ERROR_MARK_NODE, so we do not need
 	     to explicitly check cxx_dialect here.  */
 	  if (TREE_PURPOSE (TREE_VEC_ELT (tparms, i)))
-	    {
-	      tree parm = TREE_VALUE (TREE_VEC_ELT (tparms, i));
-	      tree arg = TREE_PURPOSE (TREE_VEC_ELT (tparms, i));
-	      reopen_deferring_access_checks (*checks);
-	      location_t save_loc = input_location;
-	      if (DECL_P (parm))
-		input_location = DECL_SOURCE_LOCATION (parm);
-	      arg = tsubst_template_arg (arg, targs, complain, NULL_TREE);
-	      arg = convert_template_argument (parm, arg, targs, complain,
-					       i, NULL_TREE);
-	      input_location = save_loc;
-	      *checks = get_deferred_access_checks ();
-	      pop_deferring_access_checks ();
-	      if (arg == error_mark_node)
-		return 1;
-	      else
-		{
-		  TREE_VEC_ELT (targs, i) = arg;
-		  /* The position of the first default template argument,
-		     is also the number of non-defaulted arguments in TARGS.
-		     Record that.  */
-		  if (!NON_DEFAULT_TEMPLATE_ARGS_COUNT (targs))
-		    SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (targs, i);
-		  continue;
-		}
-	    }
+	    /* OK, there is a default argument.  Wait until after the
+	       conversion check to do substitution.  */
+	    continue;
 
 	  /* If the type parameter is a parameter pack, then it will
 	     be deduced to an empty parameter pack.  */
@@ -16987,6 +16961,84 @@ type_unification_real (tree tparms,
 
 	  return unify_parameter_deduction_failure (explain_p, tparm);
 	}
+
+      /* DR 1391: All parameters have args, now check non-dependent parms for
+	 convertibility.  */
+      if (saw_undeduced < 2)
+	for (ia = 0, parms = xparms, args = xargs, nargs = xnargs;
+	     parms && parms != void_list_node && ia < nargs; )
+	  {
+	    parm = TREE_VALUE (parms);
+
+	    if (TREE_CODE (parm) == TYPE_PACK_EXPANSION
+		&& (!TREE_CHAIN (parms)
+		    || TREE_CHAIN (parms) == void_list_node))
+	      /* For a function parameter pack that occurs at the end of the
+		 parameter-declaration-list, the type A of each remaining
+		 argument of the call is compared with the type P of the
+		 declarator-id of the function parameter pack.  */
+	      break;
+
+	    parms = TREE_CHAIN (parms);
+
+	    if (TREE_CODE (parm) == TYPE_PACK_EXPANSION)
+	      /* For a function parameter pack that does not occur at the
+		 end of the parameter-declaration-list, the type of the
+		 parameter pack is a non-deduced context.  */
+	      continue;
+
+	    arg = args[ia];
+	    ++ia;
+
+	    if (uses_template_parms (parm))
+	      continue;
+	    if (check_non_deducible_conversion (parm, arg, strict, flags,
+						explain_p))
+	      return 1;
+	  }
+
+      /* Now substitute into the default template arguments.  */
+      for (i = 0; i < ntparms; i++)
+	{
+	  tree targ = TREE_VEC_ELT (targs, i);
+	  tree tparm = TREE_VEC_ELT (tparms, i);
+
+	  if (targ || tparm == error_mark_node)
+	    continue;
+	  tree parm = TREE_VALUE (tparm);
+
+	  if (TREE_CODE (parm) == PARM_DECL
+	      && uses_template_parms (TREE_TYPE (parm))
+	      && saw_undeduced < 2)
+	    continue;
+
+	  tree arg = TREE_PURPOSE (tparm);
+	  reopen_deferring_access_checks (*checks);
+	  location_t save_loc = input_location;
+	  if (DECL_P (parm))
+	    input_location = DECL_SOURCE_LOCATION (parm);
+	  arg = tsubst_template_arg (arg, targs, complain, NULL_TREE);
+	  arg = convert_template_argument (parm, arg, targs, complain,
+					   i, NULL_TREE);
+	  input_location = save_loc;
+	  *checks = get_deferred_access_checks ();
+	  pop_deferring_access_checks ();
+	  if (arg == error_mark_node)
+	    return 1;
+	  else
+	    {
+	      TREE_VEC_ELT (targs, i) = arg;
+	      /* The position of the first default template argument,
+		 is also the number of non-defaulted arguments in TARGS.
+		 Record that.  */
+	      if (!NON_DEFAULT_TEMPLATE_ARGS_COUNT (targs))
+		SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT (targs, i);
+	      continue;
+	    }
+	}
+
+      if (saw_undeduced++ == 1)
+	goto again;
     }
 #ifdef ENABLE_CHECKING
   if (!NON_DEFAULT_TEMPLATE_ARGS_COUNT (targs))
@@ -17601,7 +17653,7 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
 
       /* Unify the pattern with the current argument.  */
       if (unify_one_argument (tparms, targs, parm, arg, subr, strict,
-			      LOOKUP_IMPLICIT, explain_p))
+			      explain_p))
 	return 1;
 
       /* For each parameter pack, collect the deduced value.  */

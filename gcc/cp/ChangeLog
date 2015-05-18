@@ -1,5 +1,9 @@
 2015-05-18  Jason Merrill  <jason@redhat.com>
 
+	DR 1391
+	* pt.c (type_unification_real): Check convertibility here.
+	(unify_one_argument): Not here.
+
 	* tree.c (strip_typedefs_expr) [TRAIT_EXPR]: Fix typo.
 	(strip_typedefs) [DECLTYPE_TYPE]: Fix typedef of decltype.
 	[TREE_LIST]: Fix no-change case.
