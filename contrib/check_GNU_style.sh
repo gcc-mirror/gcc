@@ -82,8 +82,8 @@ grep $format '^+' $files \
 
 # Grep
 g (){
-    msg="$1"
-    arg="$2"
+    local msg="$1"
+    local arg="$2"
     cat $inp \
 	| egrep --color=always -- "$arg" \
 	> $tmp && printf "\n$msg\n"
@@ -92,9 +92,9 @@ g (){
 
 # And Grep
 ag (){
-    msg="$1"
-    arg1="$2"
-    arg2="$3"
+    local msg="$1"
+    local arg1="$2"
+    local arg2="$3"
     cat $inp \
 	| egrep --color=always -- "$arg1" \
 	| egrep --color=always -- "$arg2" \
@@ -104,9 +104,9 @@ ag (){
 
 # reVerse Grep
 vg (){
-    msg="$1"
-    varg="$2"
-    arg="$3"
+    local msg="$1"
+    local varg="$2"
+    local arg="$3"
     cat $inp \
 	| egrep -v -- "$varg" \
 	| egrep --color=always -- "$arg" \
@@ -115,7 +115,7 @@ vg (){
 }
 
 col (){
-    msg="$1"
+    local msg="$1"
     local first=true
     local f
     for f in $files; do

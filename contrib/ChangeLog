@@ -1,5 +1,9 @@
 2015-05-18  Tom de Vries  <tom@codesourcery.com>
 
+	* check_GNU_style.sh (g, ag, vg, col): Declare local vars with local.
+
+2015-05-18  Tom de Vries  <tom@codesourcery.com>
+
 	* check_GNU_style.sh: Improve readability function calls.
 
 2015-05-12  Tom de Vries  <tom@codesourcery.com>
