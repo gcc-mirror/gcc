@@ -1,3 +1,9 @@
+2015-05-18  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* config/mips/mips.c (micromips_globals): New variable.
+	(mips_set_compression_mode): Save and reinitialize target-dependent
+	state for microMIPS.
+
 2015-05-18  Martin Liska  <mliska@suse.cz>
 
 	* dbgcnt.def: Add new counter.

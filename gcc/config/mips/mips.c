@@ -676,6 +676,9 @@ const char *mips_hi_relocs[NUM_SYMBOL_TYPES];
 /* Target state for MIPS16.  */
 struct target_globals *mips16_globals;
 
+/* Target state for MICROMIPS.  */
+struct target_globals *micromips_globals;
+
 /* Cached value of can_issue_more. This is cached in mips_variable_issue hook
    and returned from mips_sched_reorder2.  */
 static int cached_can_issue_more;
@@ -17161,6 +17164,13 @@ mips_set_compression_mode (unsigned int compression_mode)
 	mips16_globals = save_target_globals_default_opts ();
       else
 	restore_target_globals (mips16_globals);
+    }
+  else if (compression_mode & MASK_MICROMIPS)
+    {
+      if (!micromips_globals)
+	micromips_globals = save_target_globals_default_opts ();
+      else
+	restore_target_globals (micromips_globals);
     }
   else
     restore_target_globals (&default_target_globals);
