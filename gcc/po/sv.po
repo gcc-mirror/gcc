@@ -17,7 +17,7 @@ msgstr ""
 "Project-Id-Version: gcc 5.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-04-13 20:12+0000\n"
-"PO-Revision-Date: 2015-05-10 20:12+0200\n"
+"PO-Revision-Date: 2015-05-17 12:37+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -5887,7 +5887,7 @@ msgstr "Generera låtsasmål för alla huvuden"
 #: c-family/c.opt:240 c-family/c.opt:244
 #, c-format
 msgid "missing makefile target after %qs"
-msgstr "makefile-mål saknar efter %qs"
+msgstr "makefile-mål saknas efter %qs"
 
 #: c-family/c.opt:241
 msgid "-MQ <target>\tAdd a MAKE-quoted target"
@@ -8587,16 +8587,12 @@ msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512
 msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2- och AVX512F- och AVX512VL-funktioner och -kodgenerering"
 
 #: config/i386/i386.opt:679
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512PF built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512IFMA built-in functions and code generation"
-msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2- och AVX512F- och AVX512PF-funktioner och -kodgenerering"
+msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2- och AVX512F- och AVX512IFMA-funktioner och -kodgenerering"
 
 #: config/i386/i386.opt:683
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512PF built-in functions and code generation"
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation"
-msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2- och AVX512F- och AVX512PF-funktioner och -kodgenerering"
+msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2- och AVX512F- och AVX512VBMI-funktioner och -kodgenerering"
 
 #: config/i386/i386.opt:687
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation"
@@ -8655,22 +8651,16 @@ msgid "Support flag-preserving add-carry instructions"
 msgstr "Stöd flaggbevarande add-carry-instruktioner"
 
 #: config/i386/i386.opt:743
-#, fuzzy
-#| msgid "Support XSAVEOPT instruction"
 msgid "Support CLFLUSHOPT instructions"
-msgstr "Stöd instruktionen XSAVEOPT"
+msgstr "Stöd instruktionerna CLFLUSHOPT"
 
 #: config/i386/i386.opt:747
-#, fuzzy
-#| msgid "Support PREFETCHW instruction"
 msgid "Support CLWB instruction"
-msgstr "Stöd instruktionen PREFETCHW"
+msgstr "Stöd instruktionen CLWB"
 
 #: config/i386/i386.opt:751
-#, fuzzy
-#| msgid "Support XSAVEOPT instruction"
 msgid "Support PCOMMIT instruction"
-msgstr "Stöd instruktionen XSAVEOPT"
+msgstr "Stöd instruktionen PCOMMIT"
 
 #: config/i386/i386.opt:755
 msgid "Support FXSAVE and FXRSTOR instructions"
@@ -8685,16 +8675,12 @@ msgid "Support XSAVEOPT instruction"
 msgstr "Stöd instruktionen XSAVEOPT"
 
 #: config/i386/i386.opt:767
-#, fuzzy
-#| msgid "Support XSAVEOPT instruction"
 msgid "Support XSAVEC instructions"
-msgstr "Stöd instruktionen XSAVEOPT"
+msgstr "Stöd instruktionerna XSAVEC"
 
 #: config/i386/i386.opt:771
-#, fuzzy
-#| msgid "Support XSAVE and XRSTOR instructions"
 msgid "Support XSAVES and XRSTORS instructions"
-msgstr "Stöd instruktionerna XSAVE och XRSTOR"
+msgstr "Stöd instruktionerna XSAVES och XRSTORS"
 
 #: config/i386/i386.opt:775
 msgid "Support TBM built-in functions and code generation"
@@ -8745,10 +8731,8 @@ msgid "Support F16C built-in functions and code generation"
 msgstr "Stöd inbyggda F16C-funktioner och -kodgenerering "
 
 #: config/i386/i386.opt:823
-#, fuzzy
-#| msgid "Support RTM built-in functions and code generation"
 msgid "Support PREFETCHWT1 built-in functions and code generation"
-msgstr "Stöd inbyggda RTM-funktioner och -kodgenerering "
+msgstr "Stöd inbyggda PREFETCHWT1-funktioner och -kodgenerering "
 
 #: config/i386/i386.opt:827
 msgid "Emit profiling counter call at function entry before prologue."
@@ -8783,10 +8767,8 @@ msgid "Support RTM built-in functions and code generation"
 msgstr "Stöd inbyggda RTM-funktioner och -kodgenerering "
 
 #: config/i386/i386.opt:860
-#, fuzzy
-#| msgid "Support BMI built-in functions and code generation"
 msgid "Support MPX code generation"
-msgstr "Stöd inbyggda BMI-funktioner och -kodgenerering "
+msgstr "Stöd MPX-kodgenerering "
 
 #: config/i386/i386.opt:864
 msgid "Use given stack-protector guard"
@@ -9022,16 +9004,12 @@ msgid "Support multi-threading"
 msgstr "Stöd multitrådning"
 
 #: config/nvptx/nvptx.opt:22
-#, fuzzy
-#| msgid "Generate code for a Fido A"
 msgid "Generate code for a 32-bit ABI"
-msgstr "Generera kod för en Fido A"
+msgstr "Generera kod för ett 32-bitars ABI"
 
 #: config/nvptx/nvptx.opt:26
-#, fuzzy
-#| msgid "Generate code for a Fido A"
 msgid "Generate code for a 64-bit ABI"
-msgstr "Generera kod för en Fido A"
+msgstr "Generera kod för ett 64-bitars ABI"
 
 #: config/nvptx/nvptx.opt:30
 msgid "Link in code for a __main kernel."
@@ -9078,10 +9056,9 @@ msgid "Use subroutines for function prologues and epilogues"
 msgstr "Använd subrutiner för funktionprologer och -epiloger"
 
 #: config/avr/avr.opt:26
-#, fuzzy, c-format
-#| msgid "missing makefile target after %qs"
+#, c-format
 msgid "missing device or architecture after %qs"
-msgstr "makefile-mål saknar efter %qs"
+msgstr "enhet eller arkitektur saknas efter %qs"
 
 #: config/avr/avr.opt:27
 msgid "-mmcu=MCU\tSelect the target MCU"
@@ -9591,10 +9568,8 @@ msgid "Optimize tail call instructions in assembler and linker"
 msgstr "Optimera svansanropsinstruktioner i assembler och länkare"
 
 #: config/sparc/sparc.opt:118
-#, fuzzy
-#| msgid "Do not generate millicode thunks (needed only with -Os)"
 msgid "Do not generate code that can only run in supervisor mode"
-msgstr "Generera inte millikodsnutt (behövs endast med -Os)"
+msgstr "Generera inte kod som endast kan köra i övervakarläge"
 
 #: config/sparc/sparc.opt:122 config/visium/visium.opt:45
 msgid "Use features of and schedule code for given CPU"
@@ -10021,16 +9996,12 @@ msgid "Allow double variables in upper registers with -mcpu=power7 or -mvsx"
 msgstr "Tillåt double-variabler i övre register med -mcpu=power7 eller -mvsx"
 
 #: config/rs6000/rs6000.opt:590
-#, fuzzy
-#| msgid "Allow float variables in upper registers with -mcpu=power8 or -mp8-vector"
 msgid "Allow float variables in upper registers with -mcpu=power8 or -mpower8-vector"
-msgstr "Tillåt flyttalsvariabler i övre register med -mcpu=power8 eller mp8-vector"
+msgstr "Tillåt flyttalsvariabler i övre register med -mcpu=power8 eller mpower8-vector"
 
 #: config/rs6000/rs6000.opt:594
-#, fuzzy
-#| msgid "Allow double variables in upper registers with -mcpu=power7 or -mvsx"
 msgid "Allow float/double variables in upper registers if cpu allows it"
-msgstr "Tillåt double-variabler i övre register med -mcpu=power7 eller -mvsx"
+msgstr "Tillåt float/double-variabler i övre register om cpu:n tillåter det"
 
 #: config/rs6000/rs6000.opt:598
 msgid "Analyze and remove doubleword swaps from VSX computations."
@@ -10279,10 +10250,8 @@ msgid "Volatile memory accesses do not use I/O load/store instructions"
 msgstr "Volatila minnesåtkomster använder inte I/O ladda-/lagrainstruktioner"
 
 #: config/nios2/nios2.opt:63
-#, fuzzy
-#| msgid "unusual TP-relative address"
 msgid "Enable/disable GP-relative addressing."
-msgstr "ovanlig TP-relativ adress"
+msgstr "Aktivera/avaktivera GP-relativ adressering."
 
 #: config/nios2/nios2.opt:67
 msgid "Valid options for GP-relative addressing (for -mgpopt):"
@@ -10767,16 +10736,12 @@ msgid "Integer id (N) of fwrx custom instruction"
 msgstr "Heltals-id (N) för anpassad instruktion fwrx"
 
 #: config/nios2/nios2.opt:562
-#, fuzzy
-#| msgid "Do not use the ftruncds custom instruction"
 msgid "Do not use the round custom instruction"
-msgstr "Använd inte den anpassade instruktionen ftruncds"
+msgstr "Använd inte den anpassade instruktionen round"
 
 #: config/nios2/nios2.opt:566
-#, fuzzy
-#| msgid "Integer id (N) of ftruncds custom instruction"
 msgid "Integer id (N) of round custom instruction"
-msgstr "Heltals-id (N) för anpassad instruktion ftruncds"
+msgstr "Heltals-id (N) för anpassad instruktion round"
 
 #: config/rx/rx.opt:29
 msgid "Store doubles in 64 bits."
@@ -10851,41 +10816,29 @@ msgid "Enable the use of the LRA register allocator."
 msgstr "Aktivera användningen av LRA-registerallokeraren."
 
 #: config/visium/visium.opt:25
-#, fuzzy
-#| msgid "Link with libyk.a, libc.a and crt0.o"
 msgid "Link with libc.a and libdebug.a"
-msgstr "Länka med libyk.a, libc.a och crt0.o"
+msgstr "Länka med libc.a och libdebug.a"
 
 #: config/visium/visium.opt:29
-#, fuzzy
-#| msgid "Link with libsim.a, libc.a and sim-crt0.o"
 msgid "Link with libc.a and libsim.a"
-msgstr "Länka med libsim.a, libc.a och sim-crt0.o"
+msgstr "Länka med libc.a och libsim.a"
 
 # fixme: fp = flyttal, men hur skall man skriva det. Förkortat eller FPU?
 #: config/visium/visium.opt:33
-#, fuzzy
-#| msgid "Use hardware FP"
 msgid "Use hardware FP (default)"
-msgstr "Använd hårdvaru-fp"
+msgstr "Använd hårdvaru-fp (standard)"
 
 #: config/visium/visium.opt:65
-#, fuzzy
-#| msgid "Generate code for CR16C+ architecture (Default)"
 msgid "Generate code for the supervisor mode (default)"
-msgstr "Generera kod för arkitekturen CRC16C+ (Standard)"
+msgstr "Generera kod för övervakarläget (standard)"
 
 #: config/visium/visium.opt:69
-#, fuzzy
-#| msgid "Generate code for the Boehm GC"
 msgid "Generate code for the user mode"
-msgstr "Generera kod för Boehm GC"
+msgstr "Generera kod för användarläget"
 
 #: config/visium/visium.opt:73
-#, fuzzy
-#| msgid "Does nothing. Preserved for backward compatibility."
 msgid "Only retained for backward compatibility."
-msgstr "Gör ingenting.  Bevarad för bakåtkompatibilitet."
+msgstr "Endast bevarad för bakåtkompatibilitet."
 
 #: config/fused-madd.opt:22
 msgid "%<-mfused-madd%> is deprecated; use %<-ffp-contract=%> instead"
@@ -10900,10 +10853,8 @@ msgid "Pass -z text to linker"
 msgstr "Skicka -z text till länkaren"
 
 #: config/moxie/moxie.opt:31
-#, fuzzy
-#| msgid "Enable MUL instructions"
 msgid "Enable MUL.X and UMUL.X instructions"
-msgstr "Använd MUL-instruktioner"
+msgstr "Använd MUL.X- och UMUL.X-instruktioner"
 
 #: config/microblaze/microblaze.opt:40
 msgid "Use software emulation for floating point (default)"
@@ -11248,20 +11199,16 @@ msgid "Specify the name of the target architecture."
 msgstr "Ange namnet på målarkitekturen."
 
 #: config/nds32/nds32.opt:70
-#, fuzzy
-#| msgid "Known ARM architectures (for use with the -march= option):"
 msgid "Known arch types (for use with the -march= option):"
-msgstr "Kända ARM-arkitekturer (att användas med flaggan -march=):"
+msgstr "Kända arkitekturtyper (att användas med flaggan -march=):"
 
 #: config/nds32/nds32.opt:83
 msgid "Specify the address generation strategy for code model."
 msgstr "Ange adressgenereringsstrategin för kodmodellen."
 
 #: config/nds32/nds32.opt:87
-#, fuzzy
-#| msgid "Known code models (for use with the -mcmodel= option):"
 msgid "Known cmodel types (for use with the -mcmodel= option):"
-msgstr "Kända kodmodeller (att användas med flaggan -mcmodel=):"
+msgstr "Kända cmodel-typer (att användas med flaggan -mcmodel=):"
 
 #: config/nds32/nds32.opt:100
 msgid "Enable constructor/destructor feature."
@@ -12125,16 +12072,12 @@ msgid "-mtune=PROCESSOR\tOptimize the output for PROCESSOR"
 msgstr "-mtune=PROCESSOR\tOptimera utmatningen för PROCESSOR"
 
 #: config/mips/mips.opt:401
-#, fuzzy
-#| msgid "Use decimal floating point instructions"
 msgid "Use Virtualization Application Specific instructions"
-msgstr "Använd decimala flyttalsinstruktioner"
+msgstr "Använd instruktioner specifika för virtualiseringstillämpningar"
 
 #: config/mips/mips.opt:405
-#, fuzzy
-#| msgid "Use Enhanced Virtual Addressing instructions"
 msgid "Use eXtended Physical Address (XPA) instructions"
-msgstr "Använd instruktioner för förbättrad virtuell adressering"
+msgstr "Använd instruktioner för utökad fysisk adress (XPA)"
 
 #: config/mips/mips.opt:409
 msgid "Perform VR4130-specific alignment optimizations"
@@ -12145,10 +12088,8 @@ msgid "Lift restrictions on GOT size"
 msgstr "Lyft restriktioner på GOT-storlek"
 
 #: config/mips/mips.opt:417
-#, fuzzy
-#| msgid "Don't allocate floats and doubles in extended-precision registers"
 msgid "Enable use of odd-numbered single-precision registers"
-msgstr "Allokera inte float och double i register med utökad precision"
+msgstr "Aktivera användningen av udda enkelprecisionsregister"
 
 #: config/mips/mips-tables.opt:24
 msgid "Known MIPS CPUs (for use with the -march= and -mtune= options):"
@@ -12171,16 +12112,12 @@ msgid "Compile with 64 bit longs and pointers."
 msgstr "Kompilera för 64-bitars långa och pekare."
 
 #: config/tilegx/tilegx.opt:45
-#, fuzzy
-#| msgid "Use big-endian byte order"
 msgid "Use big-endian byte order."
-msgstr "Använd rak byteordning"
+msgstr "Använd rak byteordning."
 
 #: config/tilegx/tilegx.opt:49
-#, fuzzy
-#| msgid "Use little-endian byte order"
 msgid "Use little-endian byte order."
-msgstr "Använd omvänd byteordning"
+msgstr "Använd omvänd byteordning."
 
 #: config/tilegx/tilegx.opt:53
 msgid "Use given TILE-Gx code model"
@@ -12451,10 +12388,8 @@ msgid "Pass -marclinux_prof option through to linker."
 msgstr "Skicka vidare flaggan -marclinux_prof till länkaren."
 
 #: config/arc/arc.opt:347
-#, fuzzy
-#| msgid "Enable linker relaxing"
 msgid "Enable lra"
-msgstr "Aktivera länkaravslappning"
+msgstr "Aktivera lra"
 
 #: config/arc/arc.opt:351
 msgid "Don't indicate any priority with TARGET_REGISTER_PRIORITY"
@@ -12885,10 +12820,8 @@ msgid "After diagnosing undefined behavior attempt to continue execution"
 msgstr "Efter att diagnosticera odefinierat beteende, försök fortsätta körningen"
 
 #: common.opt:906
-#, fuzzy
-#| msgid "This switch is deprecated; use -Wextra instead"
 msgid "This switch is deprecated; use -fsanitize-recover= instead"
-msgstr "Denna flagga bör undvikas, använd -Wextra istället"
+msgstr "Denna flagga bör undvikas, använd -fsanitize-recover= istället"
 
 #: common.opt:910
 msgid "Use trap instead of a library function for undefined behavior sanitization"
@@ -12907,10 +12840,8 @@ msgid "Use sample profile information for call graph node weights. The default"
 msgstr "Använd samplingprofilinformation till anropsgrafers nodvikter.  Standard profilfil är fbdata.afdo i ”pwd”."
 
 #: common.opt:927
-#, fuzzy
-#| msgid "Use profiling information for branch probabilities"
 msgid "Use sample profile information for call graph node weights. The profile"
-msgstr "Använd profileringsinformation för grensannolikheter"
+msgstr "Använd samplingsprofilinformation till anropsgrafers nodvikter.  Profilen"
 
 #: common.opt:936
 msgid "Generate code to check bounds before indexing arrays"
@@ -13121,10 +13052,8 @@ msgid "Perform interprocedural reduction of aggregates"
 msgstr "Utför interprocedurell reduktion av aggregat"
 
 #: common.opt:1194
-#, fuzzy
-#| msgid "Perform unused type elimination in debug info"
 msgid "Perform unused symbol elimination in debug info"
-msgstr "Utför eliminering av oanvända typer i felsökningsinformation"
+msgstr "Utför eliminering av oanvända symboler i felsökningsinformation"
 
 #: common.opt:1198
 msgid "Perform unused type elimination in debug info"
@@ -13237,10 +13166,8 @@ msgid "Enable Loop Blocking transformation"
 msgstr "Aktivera slingblockeringstransformation"
 
 #: common.opt:1334
-#, fuzzy
-#| msgid "Enable Loop Interchange transformation"
 msgid "Enable Loop Unroll Jam transformation"
-msgstr "Aktivera transformationen utbyte (interchange) i slingor"
+msgstr "Aktivera transformationen av utrullningsstockningar i slingor"
 
 #: common.opt:1338
 msgid "Enable support for GNU transactional memory"
@@ -13344,10 +13271,8 @@ msgid "Perform cloning to make Interprocedural constant propagation stronger"
 msgstr "Utför kloning för att göra konstantpropagering mellan procedurer starkare"
 
 #: common.opt:1463
-#, fuzzy
-#| msgid "Perform cloning to make Interprocedural constant propagation stronger"
 msgid "Perform alignment discovery and propagation to make Interprocedural constant propagation stronger"
-msgstr "Utför kloning för att göra konstantpropagering mellan procedurer starkare"
+msgstr "Utför upptäckt och propagering av justering för att göra konstantpropagering mellan procedurer starkare"
 
 #: common.opt:1467
 msgid "Perform interprocedural profile propagation"
@@ -13370,10 +13295,8 @@ msgid "Perform Identical Code Folding for functions"
 msgstr "Fäll ihop identisk kod för funktioner"
 
 #: common.opt:1487
-#, fuzzy
-#| msgid "Perform loop unrolling for all loops"
 msgid "Perform Identical Code Folding for variables"
-msgstr "Utför slingutrullning för alla slingor"
+msgstr "Utför ihopfällning av identiskt kod för variabler"
 
 #: common.opt:1491
 msgid "Discover readonly and non addressable static variables"
@@ -13446,10 +13369,9 @@ msgid "Link-time optimization with number of parallel jobs or jobserver."
 msgstr "Optimeringar vid länktillfället med flera parallella jobb eller jobbserver."
 
 #: common.opt:1589
-#, fuzzy, c-format
-#| msgid "unknown TLS model %qs"
+#, c-format
 msgid "unknown LTO partitioning model %qs"
-msgstr "okänd TLS-modell %qs"
+msgstr "okänd LTO-partitioneringsmodell %qs"
 
 #: common.opt:1608
 msgid "Specify the algorithm to partition symbols and vars at linktime"
@@ -13532,10 +13454,9 @@ msgid "Support synchronous non-call exceptions"
 msgstr "Stöd synkrona icke-anropsundantag"
 
 #: common.opt:1691
-#, fuzzy, c-format
-#| msgid "assertion missing after %qs"
+#, c-format
 msgid "options or targets missing after %qs"
-msgstr "försäkran saknas efter %qs"
+msgstr "flaggor eller mål saknas efter %qs"
 
 #: common.opt:1692
 msgid "-foffload=<targets>=<options>  Specify offloading targets and options for them"
@@ -13546,10 +13467,9 @@ msgid "-foffload-abi=[lp64|ilp32]     Set the ABI to use in an offload compiler"
 msgstr "-foffload-abi=[lp64|ilp32]     Ange ABI:et att använda i en avlastningskompilator"
 
 #: common.opt:1699
-#, fuzzy, c-format
-#| msgid "unknown TLS model %qs"
+#, c-format
 msgid "unknown offload ABI %qs"
-msgstr "okänd TLS-modell %qs"
+msgstr "okänd avlastnings-ABI %qs"
 
 #: common.opt:1709
 msgid "When possible do not generate stack frames"
@@ -13676,10 +13596,8 @@ msgid "Enable function reordering that improves code placement"
 msgstr "Aktivera omflyttning av funktioner för att förbättra kodplacering"
 
 #: common.opt:1845
-#, fuzzy
-#| msgid "-frandom-seed=<string>\tMake compile reproducible using <string>"
 msgid "-frandom-seed=<number>\tMake compile reproducible using <number>"
-msgstr "-frandom-seed=<sträng>\tGör kompileringen reproducerbar med <sträng>"
+msgstr "-frandom-seed=<tal>\tGör kompileringen reproducerbar med <tal>"
 
 #: common.opt:1855
 msgid "Record gcc command line switches in the object file."
@@ -13702,10 +13620,8 @@ msgid "Perform a register renaming optimization pass"
 msgstr "Utför ett optimeringspass med registernamnbyten"
 
 #: common.opt:1880
-#, fuzzy
-#| msgid "Perform a register renaming optimization pass"
 msgid "Perform a target dependent instruction fusion optimization pass"
-msgstr "Utför ett optimeringspass med registernamnbyten"
+msgstr "Utför ett optimeringspass med målberoende instruktionssammanslagning"
 
 #: common.opt:1884
 msgid "Reorder basic blocks to improve code placement"
@@ -13908,10 +13824,8 @@ msgid "Use a smart stack protection method for certain functions"
 msgstr "Använd en smart metod att skydda stacken för vissa funktioner"
 
 #: common.opt:2113
-#, fuzzy
-#| msgid "Use a stack protection method for every function"
 msgid "Use stack protection method only for functions with the stack_protect attribute"
-msgstr "Använd en metod att skydda stacken för varje funktion"
+msgstr "Använd en metod att skydda stacken endast för funktioner med attributet stack_protect"
 
 #: common.opt:2117
 msgid "Output stack usage information on a per-function basis"
@@ -14035,16 +13949,12 @@ msgid "Enable string length optimizations on trees"
 msgstr "Aktivera stränglängdsoptimering av träd"
 
 #: common.opt:2267
-#, fuzzy
-#| msgid "Detect paths which trigger erroneous or undefined behaviour due to"
 msgid "Detect paths that trigger erroneous or undefined behavior due to"
 msgstr "Detektera sökvägar som orsakar felaktigt eller odefinierat beteenden på grund av"
 
 #: common.opt:2273
-#, fuzzy
-#| msgid "Detect paths which trigger erroneous or undefined behaviour due a NULL value"
 msgid "Detect paths that trigger erroneous or undefined behavior due a null value"
-msgstr "Detektera vägar som orsakar felaktigt eller odefinerat beteende på grund av ett NULL-värde"
+msgstr "Detektera vägar som orsakar felaktigt eller odefinerat beteende på grund av ett null-värde"
 
 #: common.opt:2280
 msgid "Enable loop distribution on trees"
@@ -14352,16 +14262,12 @@ msgid "Generate debug information in extended XCOFF format"
 msgstr "Generera felsökningsinformation i utökat XCOFF-format"
 
 #: common.opt:2665
-#, fuzzy
-#| msgid "Generate isel instructions"
 msgid "Generate compressed debug sections"
-msgstr "Generera isel-instruktioner"
+msgstr "Generera komprimerade felsökningssektioner"
 
 #: common.opt:2669
-#, fuzzy
-#| msgid "Generate debug information in default format"
 msgid "-gz=<format>\tGenerate compressed debug sections in format <format>"
-msgstr "Generera felsökningsinformation i standardformat"
+msgstr "-gz=<format>\tGenerera komprimerade felsökningssektioner i formatet <format>"
 
 #: common.opt:2676
 msgid "-iplugindir=<dir>\tSet <dir> to be the default plugin directory"
@@ -14585,10 +14491,8 @@ msgid "expected function"
 msgstr "en funktion förväntades"
 
 #: go/gofrontend/expressions.cc:8645
-#, fuzzy
-#| msgid "multiple-value function call in single-value context"
 msgid "multiple-value argument in single-value context"
-msgstr "flervärt funktionsanrop i sammanhang för enstaka värde"
+msgstr "flervärt argument i sammanhang för enstaka värde"
 
 #: go/gofrontend/expressions.cc:8810
 msgid "invalid use of %<...%> with non-slice"
@@ -14893,10 +14797,9 @@ msgid "Not expected TAG."
 msgstr "Ej förväntades TAGG."
 
 #: auto-profile.c:924
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Cannot open source file %s\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot open profile file %s."
-msgstr "Kan inte öppna källkodsfilen %s\n"
+msgstr "Kan inte öppna profileringssfilen %s."
 
 #: auto-profile.c:927
 #, gcc-internal-format
@@ -14909,22 +14812,19 @@ msgid "AutoFDO profile version %u does match %u."
 msgstr "AutoFDO-profilens version %u stämmer inte med %u."
 
 #: auto-profile.c:941
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot read LTO decls from %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot read string table from %s."
-msgstr "det går inte att läsa LTO-deklarationer från %s"
+msgstr "Det går inte att läsa strängtabellen från %s."
 
 #: auto-profile.c:946
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot read LTO decls from %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot read function profile from %s."
-msgstr "det går inte att läsa LTO-deklarationer från %s"
+msgstr "Det går inte att läsa profilen från %s."
 
 #: auto-profile.c:953
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot read LTO decls from %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot read working set from %s."
-msgstr "det går inte att läsa LTO-deklarationer från %s"
+msgstr "Det går inte arbetsmängden från %s."
 
 #: bt-load.c:1593
 #, gcc-internal-format
@@ -15068,10 +14968,9 @@ msgstr "andra argumentet till %<__builtin_longjmp%> måste vara 1"
 #. Software implementation of Pointer Bounds Checker is NYI.
 #. Target support is required.
 #: builtins.c:7086
-#, fuzzy, gcc-internal-format
-#| msgid "target format does not support infinity"
+#, gcc-internal-format
 msgid "Your target platform does not support -fcheck-pointer-bounds"
-msgstr "målformatet stödjer inte oändligheten"
+msgstr "Din målplattform stödjer inte -fcheck-pointer-bounds"
 
 #: builtins.c:7408
 #, gcc-internal-format
@@ -15789,10 +15688,9 @@ msgid "caller edge frequency %i does not match BB frequency %i"
 msgstr "anropsbåges frekvens %i stämmer inte med GB-frekvens %i"
 
 #: cgraph.c:2874
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "caller edge frequency %i does not match BB frequency %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "indirect call frequency %i does not match BB frequency %i"
-msgstr "anropsbåges frekvens %i stämmer inte med GB-frekvens %i"
+msgstr "indirekt anrops frekvens %i stämmer inte med GB-frekvens %i"
 
 #: cgraph.c:2883
 #, gcc-internal-format
@@ -15805,28 +15703,24 @@ msgid "inlined_to pointer refers to itself"
 msgstr "inlined_to-pekare refererar till sig själv"
 
 #: cgraph.c:2900
-#, fuzzy, gcc-internal-format
-#| msgid "node has wrong clone_of"
+#, gcc-internal-format
 msgid "cgraph_node has wrong clone_of"
-msgstr "noden har fel clone_of"
+msgstr "cgraph_node har fel clone_of"
 
 #: cgraph.c:2912
-#, fuzzy, gcc-internal-format
-#| msgid "node has wrong clone list"
+#, gcc-internal-format
 msgid "cgraph_node has wrong clone list"
-msgstr "noden har fel klonlista"
+msgstr "cgraph_node har fel klonlista"
 
 #: cgraph.c:2918
-#, fuzzy, gcc-internal-format
-#| msgid "node is in clone list but it is not clone"
+#, gcc-internal-format
 msgid "cgraph_node is in clone list but it is not clone"
-msgstr "noden är i klonlistan men den är inte en klon"
+msgstr "cgraph_node är i klonlistan men den är inte en klon"
 
 #: cgraph.c:2923
-#, fuzzy, gcc-internal-format
-#| msgid "node has wrong prev_clone pointer"
+#, gcc-internal-format
 msgid "cgraph_node has wrong prev_clone pointer"
-msgstr "noden har fel prev_clone-pekare"
+msgstr "cgraph_node har fel prev_clone-pekare"
 
 #: cgraph.c:2928
 #, gcc-internal-format
@@ -15869,10 +15763,9 @@ msgid "Instrumented node has wrong original declaration"
 msgstr "Instrumenterad not har felaktig originaldeklaration"
 
 #: cgraph.c:3004
-#, fuzzy, gcc-internal-format
-#| msgid "Alias has more than one alias reference"
+#, gcc-internal-format
 msgid "Node has more than one chkp reference"
-msgstr "Alias har mer än en aliasreferens"
+msgstr "Noden har mer än en chkp-referens"
 
 #: cgraph.c:3009
 #, gcc-internal-format
@@ -15880,10 +15773,9 @@ msgid "Wrong node is referenced with chkp reference"
 msgstr "Fel nod refereras med en chkp-referens"
 
 #: cgraph.c:3017
-#, fuzzy, gcc-internal-format
-#| msgid "Analyzed alias has no reference"
+#, gcc-internal-format
 msgid "Analyzed node has no reference to instrumented version"
-msgstr "Analyserat alias har ingen referens"
+msgstr "Analyserad nod har ingen referens till en instrumenterad version"
 
 #: cgraph.c:3026
 #, gcc-internal-format
@@ -16006,10 +15898,9 @@ msgid "failed to reclaim unneeded function in same comdat group"
 msgstr "misslyckades att återta funktion som inte behövs i samma comdat-grupp"
 
 #: cgraphunit.c:1572
-#, fuzzy, gcc-internal-format
-#| msgid "generic thunk code fails for method %q#D which uses %<...%>"
+#, gcc-internal-format
 msgid "generic thunk code fails for method %qD which uses %<...%>"
-msgstr "generell snuttkod misslyckas för metod %q#D som använder %<...%>"
+msgstr "generell snuttkod misslyckas för metod %qD som använder %<...%>"
 
 #: cgraphunit.c:1921
 #, gcc-internal-format
@@ -16548,16 +16439,14 @@ msgid "assuming signed overflow does not occur when reducing constant in compari
 msgstr "antar att teckenspill inte förekommer vid reduktion av konstant i jämförelse"
 
 #: fold-const.c:8811
-#, fuzzy, gcc-internal-format
-#| msgid "assuming signed overflow does not occur when changing X +- C1 cmp C2 to X cmp C1 +- C2"
+#, gcc-internal-format
 msgid "assuming signed overflow does not occur when changing X +- C1 cmp C2 to X cmp C2 -+ C1"
-msgstr "antar att teckenspill inte förekommer vid förenkling av X ± K1 jmf K2 till X jmf K1 ± K2"
+msgstr "antar att teckenspill inte förekommer vid ändring av X ± K1 jmf K2 till X jmf K2 ± K1"
 
 #: fold-const.c:8829
-#, fuzzy, gcc-internal-format
-#| msgid "assuming signed overflow does not occur when changing X +- C1 cmp C2 to X cmp C1 +- C2"
+#, gcc-internal-format
 msgid "assuming signed overflow does not occur when changing X - Y cmp 0 to X cmp Y"
-msgstr "antar att teckenspill inte förekommer vid förenkling av X ± K1 jmf K2 till X jmf K1 ± K2"
+msgstr "antar att teckenspill inte förekommer vid ändring av av X - Y jmf 0 till X jmf Y ± K2"
 
 #: fold-const.c:9087
 #, gcc-internal-format
@@ -16954,16 +16843,14 @@ msgid "too few arguments to %%:replace-extension"
 msgstr "för få argument till %%:replace-extension"
 
 #: gcov-tool.c:72
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "error writing %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "error in removing %s\n"
-msgstr "fel när %qs skrevs"
+msgstr "fel när %s togs bort\n"
 
 #: gcov-tool.c:103
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot take address of %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot make directory %s"
-msgstr "kan inte ta adressen till %qs"
+msgstr "Kan inte skapa katalogen %s"
 
 #: gcov-tool.c:111
 #, gcc-internal-format
@@ -17207,10 +17094,9 @@ msgid "can%'t open %s: %m"
 msgstr "det går inte att öppna %s: %m"
 
 #: graphite.c:326
-#, fuzzy, gcc-internal-format
-#| msgid "Graphite loop optimizations cannot be used"
+#, gcc-internal-format
 msgid "Graphite loop optimizations cannot be used (ISL is not available)."
-msgstr "Graphite-slingoptimeringar kan inte användas"
+msgstr "Graphite-slingoptimeringar kan inte användas (ISL är inte tillgängligt)."
 
 #: ipa-chkp.c:666
 #, gcc-internal-format
@@ -17218,16 +17104,14 @@ msgid "function cannot be instrumented"
 msgstr "funktionen kan inte instrumenteras"
 
 #: ipa-devirt.c:712 ipa-devirt.c:865
-#, fuzzy, gcc-internal-format
-#| msgid "type %qD violates one definition rule  "
+#, gcc-internal-format
 msgid "virtual table of type %qD violates one definition rule"
-msgstr "typen %qD bryter mot endefinitionsregeln  "
+msgstr "den virtuella tabellen för typen %qD bryter mot endefinitionsregeln"
 
 #: ipa-devirt.c:715
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "variable of same assembler name as the virtual table is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en variabel med samma assemblernamn som den virtuella tabellen är definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:754
 #, gcc-internal-format
@@ -17245,46 +17129,39 @@ msgid "RTTI will not work on this type"
 msgstr "RTTI kommer inte att fungera för denna typ"
 
 #: ipa-devirt.c:795 ipa-devirt.c:824 ipa-devirt.c:895
-#, fuzzy, gcc-internal-format
-#| msgid "type %qD violates one definition rule  "
+#, gcc-internal-format
 msgid "virtual table of type %qD violates one definition rule  "
-msgstr "typen %qD bryter mot endefinitionsregeln  "
+msgstr "den virtuella tabellen för typen %qD bryter mot endefinitionsregeln  "
 
 #: ipa-devirt.c:801
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "the conflicting type defined in another translation unit has virtual table of different size"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "typen som står i konflikt och är definerad i en annan översättningsenhet har en virtuell tabell med annan storlek"
 
 #: ipa-devirt.c:830
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "the conflicting type defined in another translation unit with different RTTI information"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "typen som står i konflikt och är definerad i en annan översättningsenhet med annan RTTI-information"
 
 #: ipa-devirt.c:873 ipa-devirt.c:903
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "the conflicting type defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "typen som står i konflikt är definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:877
-#, fuzzy, gcc-internal-format
-#| msgid "initializer specified for non-virtual method %q+D"
+#, gcc-internal-format
 msgid "contains additional virtual method %qD"
-msgstr "initierare angiven för icke-virtuell metod %q+D"
+msgstr "innehåller den ytterligare virtuella metoden %qD"
 
 #: ipa-devirt.c:884
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "the conflicting type defined in another translation unit has virtual table table with more entries"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "typen som står i konflikt är definerad i en annan översättningsenhet och har en virtuell tabell med fler poster"
 
 #: ipa-devirt.c:908
-#, fuzzy, gcc-internal-format
-#| msgid "virtual function %q+D"
+#, gcc-internal-format
 msgid "virtual method %qD"
-msgstr "virtuell funktion %q+D"
+msgstr "virtuell metod %qD"
 
 #: ipa-devirt.c:910
 #, gcc-internal-format
@@ -17292,23 +17169,20 @@ msgid "ought to match virtual method %qD but does not"
 msgstr "borde matcha den virtuella metoden %qD men gör det inte"
 
 #: ipa-devirt.c:916
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "the conflicting type defined in another translation unit has virtual table table with different contents"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "typen som står i konflikt är definerad i en annan översättningsenhet och har en virtuell tabell med annat innehåll"
 
 #: ipa-devirt.c:946
-#, fuzzy, gcc-internal-format
-#| msgid "type %qD violates one definition rule  "
+#, gcc-internal-format
 msgid "type %qT violates one definition rule"
-msgstr "typen %qD bryter mot endefinitionsregeln  "
+msgstr "typen %qT bryter mot endefinitionsregeln  "
 
 #: ipa-devirt.c:957 ipa-devirt.c:972 ipa-devirt.c:1167 ipa-devirt.c:1249
 #: ipa-devirt.c:1285 ipa-devirt.c:1302
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "a different type is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en annan typ är definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:964
 #, gcc-internal-format
@@ -17326,10 +17200,9 @@ msgid "type name %<%s%> should match type name %<%s%>"
 msgstr "typnamnet %<%s%> skall matcha typnamnet %<%s%>"
 
 #: ipa-devirt.c:1013 ipa-devirt.c:1145
-#, fuzzy, gcc-internal-format
-#| msgid "compatible type is here"
+#, gcc-internal-format
 msgid "the incompatible type is defined here"
-msgstr "kompatibla typen finns här"
+msgstr "den inkompatibla typen är definierad här"
 
 #: ipa-devirt.c:1033
 #, gcc-internal-format
@@ -17337,10 +17210,9 @@ msgid "type %qT defined in anonymous namespace can not match type %qT"
 msgstr "typen %qT är definierad i en anonym namnrymd och kan inte matcha typen %qT"
 
 #: ipa-devirt.c:1037
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "the incompatible type defined in anonymous namespace in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "den inkompatibla typen är definerad i en anonym namnrymd i en annan översättningsenhet"
 
 #: ipa-devirt.c:1042
 #, gcc-internal-format
@@ -17348,16 +17220,14 @@ msgid "types in anonymous namespace does not match across translation unit bound
 msgstr "typer i anonyma namnrymder matchar inte över gränser för översättningsenheter"
 
 #: ipa-devirt.c:1069
-#, fuzzy, gcc-internal-format
-#| msgid "Array reference out of bounds"
+#, gcc-internal-format
 msgid "array types have different bounds"
-msgstr "Vektorreferens utanför gränserna"
+msgstr "vektortyper har olika gränser"
 
 #: ipa-devirt.c:1087
-#, fuzzy, gcc-internal-format
-#| msgid "<return value> "
+#, gcc-internal-format
 msgid "return value type mismatch"
-msgstr "<returvärde>"
+msgstr "returvärdets typ stämmer inte"
 
 #: ipa-devirt.c:1100
 #, gcc-internal-format, gfc-internal-format
@@ -17365,87 +17235,74 @@ msgid "type mismatch in parameter %i"
 msgstr "typer stämmer inte i parameter %i"
 
 #: ipa-devirt.c:1109
-#, fuzzy, gcc-internal-format
-#| msgid "different parameter types"
+#, gcc-internal-format
 msgid "types have different parameter counts"
-msgstr "olika parametertyper"
+msgstr "typer har olika parameterantal"
 
 #: ipa-devirt.c:1130
 #, gcc-internal-format
 msgid "type %qT should match type %qT but is defined in different namespace  "
-msgstr "Typen %qT borde matcha typen %qT men är definierad i en annan namnrymd "
+msgstr "typen %qT borde matcha typen %qT men är definierad i en annan namnrymd "
 
 #: ipa-devirt.c:1136
-#, fuzzy, gcc-internal-format
-#| msgid "type %qT should match type %qT but is defined in different namespace  "
+#, gcc-internal-format
 msgid "type %qT should match type %qT that itself violate one definition rule"
-msgstr "Typen %qT borde matcha typen %qT men är definierad i en annan namnrymd "
+msgstr "typen %qT borde matcha typen %qT som själv bryter mot endefinitionsregeln"
 
 #: ipa-devirt.c:1141
-#, fuzzy, gcc-internal-format
-#| msgid "type %qT is not a base type for type %qT"
+#, gcc-internal-format
 msgid "type %qT should match type %qT"
-msgstr "typen %qT är inte en bastyp för typen %qT"
+msgstr "typen %qT borde matcha typen %qT"
 
 #: ipa-devirt.c:1174
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "a type with different qualifiers is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en typ med andra kvalificerare är definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:1182
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "a type with attributes is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en typ med attribut är definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:1197
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "an enum with different value name is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en uppräkningstyp andra värdenamn definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:1206
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "an enum with different values is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en uppräkningstyptyp med andra värden är definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:1214
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "an enum with mismatching number of values is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en uppräkningstyp ett inte matchande antal värden är definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:1232
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "a type with different precision is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en typ med annan precision är definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:1239
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "a type with different signedness is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en typ med annan teckenhet är definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:1264
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "it is defined as a pointer in different address space in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "den är definierad som en pekare i en annan adressrymd i en annan översättningsenhet"
 
 #: ipa-devirt.c:1272
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different layout is defined in another translation unit"
+#, gcc-internal-format
 msgid "it is defined as a pointer to different type in another translation unit"
-msgstr "en typ med samma namn men annan layout är definierad i en annan översättningsenhet"
+msgstr "den är definierad som en pekare till en annan typ i en annan översättningsenhet"
 
 #: ipa-devirt.c:1329
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "an array of different size is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en vektor med annan storlek är definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:1343
 #, gcc-internal-format
@@ -17458,100 +17315,84 @@ msgid "has different parameters in another translation unit"
 msgstr "har andra parametrar i en annan översättningsenhet"
 
 #: ipa-devirt.c:1399
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "a type defined in another translation unit is not polymorphic"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en typ definierad i en annan översättningsenhet är inte polymorf"
 
 #: ipa-devirt.c:1403
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "a type defined in another translation unit is polymorphic"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en typ definerad i en annan översättningsenhet är polymorf"
 
 #: ipa-devirt.c:1421 ipa-devirt.c:1476
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "a type with different virtual table pointers is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en typ en annan virtuell tabellpekare är definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:1428 ipa-devirt.c:1481
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "a type with different bases is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en typ andra baser är definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:1436
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "a field with different name is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "ett fält med ett annat namn är definerat i en annan översättningsenhet"
 
 #: ipa-devirt.c:1449
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "a field of same name but different type is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "ett fält med samma namn men annan typ är definerat i en annan översättningsenhet"
 
 #: ipa-devirt.c:1462
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different layout is defined in another translation unit"
+#, gcc-internal-format
 msgid "fields has different layout in another translation unit"
-msgstr "en typ med samma namn men annan layout är definierad i en annan översättningsenhet"
+msgstr "fält har en annan layout i en annan översättningsenhet"
 
 #: ipa-devirt.c:1485
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "a type with different number of fields is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en typ med ett annat antal fält är definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:1501
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "a different method of same type is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en annan metod med samma typ är definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:1508
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "s definition that differs by virtual keyword in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en definition som skiljer i virtuella nyckelord i en annan översättningsenhet"
 
 #: ipa-devirt.c:1515
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "virtual table layout differs in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "layouten av den virtuella tabellen skiljer i en annan översättningsenhet"
 
 #: ipa-devirt.c:1522
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "method with incompatible type is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en metod med inkompatibel typ definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:1530
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "a type with different number of methods is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en typ med ett annat antal metoder definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:1551
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "a type with different size is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en typ med en annan storlek är definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:1559
-#, fuzzy, gcc-internal-format
-#| msgid "a type with the same name but different bases is defined in another translation unit"
+#, gcc-internal-format
 msgid "a type with different alignment is defined in another translation unit"
-msgstr "en typ med samma namn men andra baser är definerad i en annan översättningsenhet"
+msgstr "en typ med annan justering är definerad i en annan översättningsenhet"
 
 #: ipa-devirt.c:1674
-#, fuzzy, gcc-internal-format
-#| msgid "other clause defined here"
+#, gcc-internal-format
 msgid "the extra base is defined here"
-msgstr "den andra klausulen är definierad här"
+msgstr "den andra basen är definierad här"
 
 #: ipa-devirt.c:3629
 #, gcc-internal-format
@@ -17631,10 +17472,9 @@ msgid "unable to find a register to spill"
 msgstr "kan inte hitta ett register att spilla"
 
 #: lra-assigns.c:1638
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Maximum number of LRA constraint passes is achieved (%d)\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "Maximum number of LRA assignment passes is achieved (%d)\n"
-msgstr "Maximalt antal LRA-begränsningspass uppnått (%d)\n"
+msgstr "Maximalt antal LRA-tilldelningspass uppnått (%d)\n"
 
 #: lra-constraints.c:3497 reload.c:3863 reload.c:4118
 #, gcc-internal-format
@@ -17687,10 +17527,9 @@ msgid "cannot find LTO section refs in %s"
 msgstr "det går inte att hitta LTO-avsnittsreferenser i %s"
 
 #: lto-cgraph.c:1937
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid operation (%s)"
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid offload table in %s"
-msgstr "ogiltig operation (%s)"
+msgstr "ogiltig avlastningstabell i %s"
 
 #: lto-compress.c:215 lto-compress.c:223 lto-compress.c:244 lto-compress.c:305
 #: lto-compress.c:313 lto-compress.c:334
@@ -17734,16 +17573,14 @@ msgid "Reference statement index not found"
 msgstr "Referenssatsindex finns inte"
 
 #: lto-streamer-in.c:1547
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot read LTO decls from %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot read LTO mode table from %s"
-msgstr "det går inte att läsa LTO-deklarationer från %s"
+msgstr "det går inte att läsa LTO-lägestabellen från %s"
 
 #: lto-streamer-in.c:1643
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "unsupported simdlen %d"
+#, gcc-internal-format, gfc-internal-format
 msgid "unsupported mode %s\n"
-msgstr "ej stödd simdlen: %d"
+msgstr "ej stött läge: %s\n"
 
 #: lto-streamer-out.c:414 lto-streamer-out.c:670
 #, gcc-internal-format
@@ -17781,10 +17618,9 @@ msgid "problem with building target image for %s\n"
 msgstr "problem med att bygga målavbild för %s\n"
 
 #: lto-wrapper.c:755
-#, fuzzy, gcc-internal-format
-#| msgid "no input files"
+#, gcc-internal-format
 msgid "reading input file"
-msgstr "inga indatafiler"
+msgstr "läser indatafiler"
 
 #: lto-wrapper.c:760
 #, gcc-internal-format
@@ -17812,22 +17648,19 @@ msgid "environment variable COLLECT_GCC_OPTIONS must be set"
 msgstr "miljövariabeln COLLECT_GCC_OPTIONS måste vara satt"
 
 #: lto-wrapper.c:1172
-#, fuzzy, gcc-internal-format
-#| msgid "fopen %s: %m"
+#, gcc-internal-format
 msgid "fopen: %s: %m"
-msgstr "fopen %s: %m"
+msgstr "fopen: %s: %m"
 
 #: omp-low.c:1731 omp-low.c:1955
-#, fuzzy, gcc-internal-format
-#| msgid "-pipe not supported"
+#, gcc-internal-format
 msgid "clause not supported yet"
-msgstr "-pipe stödjs inte"
+msgstr "klausulen stödjs inte än"
 
 #: omp-low.c:1931 omp-low.c:2058
-#, fuzzy, gcc-internal-format
-#| msgid "-pipe not supported"
+#, gcc-internal-format
 msgid "Clause not supported yet"
-msgstr "-pipe stödjs inte"
+msgstr "Klausulen stödjs inte än"
 
 #: omp-low.c:2589
 #, gcc-internal-format
@@ -18112,34 +17945,29 @@ msgid "%<-fsplit-stack%> is not supported by this compiler configuration"
 msgstr "%<-fsplit-stack%> stödjs inte av denna kompilatorkonfiguration"
 
 #: opts.c:894
-#, fuzzy, gcc-internal-format
-#| msgid "-fsanitize=address is incompatible with -fsanitize=thread"
+#, gcc-internal-format
 msgid "-fsanitize=address is incompatible with -fsanitize=kernel-address"
-msgstr "-fsanitize=address är inkompatibel med -fsanitize=thread"
+msgstr "-fsanitize=address är inkompatibel med -fsanitize=kernel-address"
 
 #: opts.c:902
-#, fuzzy, gcc-internal-format
-#| msgid "-fsanitize=address is incompatible with -fsanitize=thread"
+#, gcc-internal-format
 msgid "-fsanitize=address and -fsanitize=kernel-address are incompatible with -fsanitize=thread"
-msgstr "-fsanitize=address är inkompatibel med -fsanitize=thread"
+msgstr "-fsanitize=address och -fsanitize=kernel-address är inkompatibel med -fsanitize=thread"
 
 #: opts.c:908
-#, fuzzy, gcc-internal-format
-#| msgid "-fsanitize=address not supported for this target"
+#, gcc-internal-format
 msgid "-fsanitize-recover=address is not supported"
-msgstr "-fsanitize=address stödjs inte för denna målarkitektur"
+msgstr "-fsanitize-recover=address stödjs inte"
 
 #: opts.c:911
-#, fuzzy, gcc-internal-format
-#| msgid "shared is not supported"
+#, gcc-internal-format
 msgid "-fsanitize-recover=thread is not supported"
-msgstr "shared stödjs inte"
+msgstr "-fsanitize-recover=thread stödjs inte"
 
 #: opts.c:914
-#, fuzzy, gcc-internal-format
-#| msgid "-fpic is not supported"
+#, gcc-internal-format
 msgid "-fsanitize-recover=leak is not supported"
-msgstr "-fpic stödjs inte"
+msgstr "-fsanitize-recover=leak stödjs inte"
 
 #: opts.c:1289
 #, gcc-internal-format
@@ -18177,10 +18005,9 @@ msgid "structure alignment must be a small power of two, not %d"
 msgstr "postjustering måste vara två upphöjt till ett litet tal, inte %d"
 
 #: opts.c:1955
-#, fuzzy, gcc-internal-format
-#| msgid "unknown stack check parameter \"%s\""
+#, gcc-internal-format
 msgid "unknown stack check parameter %qs"
-msgstr "okänd stackkontrollparameter ”%s”"
+msgstr "okänd stackkontrollparameter %qs"
 
 #: opts.c:1987
 #, gcc-internal-format
@@ -18208,22 +18035,19 @@ msgid "target system does not support debug output"
 msgstr "målsystemet stödjer inte felsökningsutdata"
 
 #: opts.c:2231
-#, fuzzy, gcc-internal-format
-#| msgid "debug format \"%s\" conflicts with prior selection"
+#, gcc-internal-format
 msgid "debug format %qs conflicts with prior selection"
-msgstr "felsökningsformatet ”%s” står i konflikt med tidigare val"
+msgstr "felsökningsformatet %qs står i konflikt med tidigare val"
 
 #: opts.c:2249
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognised debug output level \"%s\""
+#, gcc-internal-format
 msgid "unrecognised debug output level %qs"
-msgstr "okänd felsökningsnivå ”%s”"
+msgstr "okänd felsökningsnivå %qs"
 
 #: opts.c:2251
-#, fuzzy, gcc-internal-format
-#| msgid "debug output level %s is too high"
+#, gcc-internal-format
 msgid "debug output level %qs is too high"
-msgstr "felsökningsnivå %s är för hög"
+msgstr "felsökningsnivå %qs är för hög"
 
 #: opts.c:2271
 #, gcc-internal-format
@@ -18612,10 +18436,9 @@ msgid "RTL check: attempt to treat non-block symbol as a block symbol in %s, at 
 msgstr "RTL-kontroll: försök att hantera icke-block-symbol som en blocksymbol i %s, vid %s:%d"
 
 #: rtl.c:776
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "RTL check: access of elt %d of vector with last elt %d in %s, at %s:%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "RTL check: access of hwi elt %d of vector with last elt %d in %s, at %s:%d"
-msgstr "RTL-kontroll: åtkomst av elt %d i vektor med sista elt %d i %s, vid %s:%d"
+msgstr "RTL-kontroll: åtkomst av hwi elt %d i vektor med sista elt %d i %s, vid %s:%d"
 
 #: rtl.c:786
 #, gcc-internal-format, gfc-internal-format
@@ -18793,10 +18616,9 @@ msgid "double linked list of assembler names corrupted"
 msgstr "dubbellänkad lista av assemblernamn är trasig"
 
 #: symtab.c:983
-#, fuzzy, gcc-internal-format
-#| msgid "node is analyzed byt it is not a definition"
+#, gcc-internal-format
 msgid "node has body_removed but is definition"
-msgstr "noden är analyserad men den är inte en definition"
+msgstr "noden har body_removed men är en definition"
 
 #: symtab.c:988
 #, gcc-internal-format
@@ -18819,16 +18641,14 @@ msgid "node is weakref but not an alias"
 msgstr "noden är weakref men inte ett alias"
 
 #: symtab.c:1012
-#, fuzzy, gcc-internal-format
-#| msgid "node is in clone list but it is not clone"
+#, gcc-internal-format
 msgid "node is in same_comdat_group list but has no comdat_group"
-msgstr "noden är i klonlistan men den är inte en klon"
+msgstr "noden är i same_comdat_group-listan men denhar ingen comdat_group"
 
 #: symtab.c:1017
-#, fuzzy, gcc-internal-format
-#| msgid "same_comdat_group is not a circular list"
+#, gcc-internal-format
 msgid "same_comdat_group list across different groups"
-msgstr "same_comdat_group är inte en cirkulär lista"
+msgstr "same_comdat_group-lista över olika grupper"
 
 #: symtab.c:1022
 #, gcc-internal-format
@@ -18856,10 +18676,9 @@ msgid "implicit_section flag is set but section isn't"
 msgstr "flaggan implicit_section är satt men sektionen är inte det"
 
 #: symtab.c:1066
-#, fuzzy, gcc-internal-format
-#| msgid "node is alone in a comdat group"
+#, gcc-internal-format
 msgid "Both section and comdat group is set"
-msgstr "noden är ensam i en comdat-grupp"
+msgstr "både sektion och comdat-grupp är satt"
 
 #: symtab.c:1078
 #, gcc-internal-format
@@ -18872,10 +18691,9 @@ msgid "Alias and target's comdat groups differs"
 msgstr "Aliasets och målets comdat-grupper skiljer"
 
 #: symtab.c:1108 symtab.c:1145
-#, fuzzy, gcc-internal-format
-#| msgid "verify_symtab_node failed"
+#, gcc-internal-format
 msgid "symtab_node::verify failed"
-msgstr "verify_symtab_node misslyckades"
+msgstr "symtab_node::verify misslyckades"
 
 #: symtab.c:1141
 #, gcc-internal-format
@@ -18963,10 +18781,9 @@ msgid "%q+D defined but not used"
 msgstr "%q+D är definierad men inte använd"
 
 #: toplev.c:996
-#, fuzzy, gcc-internal-format
-#| msgid "can%'t open %s for writing: %m"
+#, gcc-internal-format
 msgid "can%'t open %qs for writing: %m"
-msgstr "det går inte att öppna %s för skrivning: %m"
+msgstr "det går inte att öppna %qs för skrivning: %m"
 
 #: toplev.c:1017
 #, gcc-internal-format
@@ -19004,22 +18821,19 @@ msgid "this target does not support %qs"
 msgstr "denna målarkitektur stödjer inte %s"
 
 #: toplev.c:1369
-#, fuzzy, gcc-internal-format
-#| msgid "Graphite loop optimizations cannot be used (-fgraphite, -fgraphite-identity, -floop-block, -floop-interchange, -floop-strip-mine, -floop-parallelize-all, and -ftree-loop-linear)"
+#, gcc-internal-format
 msgid "Graphite loop optimizations cannot be used (ISL is not available)(-fgraphite, -fgraphite-identity, -floop-block, -floop-interchange, -floop-strip-mine, -floop-parallelize-all, -floop-unroll-and-jam, and -ftree-loop-linear)"
-msgstr "Graphite-slingoptimeringar kan inte användas (-fgraphite, -fgraphite-identity, -floop-block, -floop-interchange, -floop-strip-mine, -floop-parallelize-all och -ftree-loop-linear)"
+msgstr "Graphite-slingoptimeringar kan inte användas (ISL är inte tillgängligt) (-fgraphite, -fgraphite-identity, -floop-block, -floop-interchange, -floop-strip-mine, -floop-parallelize-all, -floop-unroll-and-jam och -ftree-loop-linear)"
 
 #: toplev.c:1379
-#, fuzzy, gcc-internal-format
-#| msgid "fixed-point types not supported for this target"
+#, gcc-internal-format
 msgid "-fcheck-pointer-bounds is not supported for this target"
-msgstr "fixdecimaltyper stödjs inte för denna målarkitektur"
+msgstr "-fcheck-pointer-bounds stödjs inte för denna målarkitektur"
 
 #: toplev.c:1385
-#, fuzzy, gcc-internal-format
-#| msgid "fixed-point types not supported for this target"
+#, gcc-internal-format
 msgid "-fcheck-pointer-bounds is not supported with Address Sanitizer"
-msgstr "fixdecimaltyper stödjs inte för denna målarkitektur"
+msgstr "-fcheck-pointer-bounds stödjs inte med adressrengöring"
 
 #. -fabi-version=1 support was removed after GCC 4.9.
 #: toplev.c:1399
@@ -19048,10 +18862,9 @@ msgid "could not close zeroed insn dump file %qs: %m"
 msgstr "det gick inte att stänga nollställd instruktionsdumpfil %qs: %m"
 
 #: toplev.c:1521
-#, fuzzy, gcc-internal-format
-#| msgid "target system does not support the \"%s\" debug format"
+#, gcc-internal-format
 msgid "target system does not support the %qs debug format"
-msgstr "målsystemet stödjer inte felsökningsformatet ”%s”"
+msgstr "målsystemet stödjer inte felsökningsformatet %qs"
 
 #: toplev.c:1533
 #, gcc-internal-format
@@ -19104,10 +18917,9 @@ msgid "-fstack-protector not supported for this target"
 msgstr "-fstack-protector stödjs inte av denna målarkitektur"
 
 #: toplev.c:1663
-#, fuzzy, gcc-internal-format
-#| msgid "-fsanitize=address not supported for this target"
+#, gcc-internal-format
 msgid "-fsanitize=address and -fsanitize=kernel-address are not supported for this target"
-msgstr "-fsanitize=address stödjs inte för denna målarkitektur"
+msgstr "-fsanitize=address och -fsanitize=kernel stödjs inte för denna målarkitektur"
 
 #: toplev.c:1671
 #, gcc-internal-format
@@ -19610,16 +19422,14 @@ msgid "invalid mask type in vector permute expression"
 msgstr "ogiltig masktyp i vektorpermuteringsuttryck"
 
 #: tree-cfg.c:4031
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in address expression"
+#, gcc-internal-format
 msgid "type mismatch in sad expression"
-msgstr "typfel i adressuttryck"
+msgstr "typfel i sad-uttryck"
 
 #: tree-cfg.c:4043
-#, fuzzy, gcc-internal-format
-#| msgid "vector types expected in vector permute expression"
+#, gcc-internal-format
 msgid "vector types expected in sad expression"
-msgstr "vektortyper förväntades i vektorpermuteringsuttryck"
+msgstr "vektortyper förväntades i sad-uttryck"
 
 #: tree-cfg.c:4079
 #, gcc-internal-format
@@ -19662,16 +19472,14 @@ msgid "vector CONSTRUCTOR with non-NULL element index"
 msgstr "vektor-CONSTRUCTOR med elementindex som inte är NULL "
 
 #: tree-cfg.c:4253
-#, fuzzy, gcc-internal-format
-#| msgid "vector CONSTRUCTOR with non-NULL element index"
+#, gcc-internal-format
 msgid "vector CONSTRUCTOR element is not a GIMPLE value"
-msgstr "vektor-CONSTRUCTOR med elementindex som inte är NULL "
+msgstr "vektor-CONSTRUCTOR-element är inte ett GIMPLE-värde"
 
 #: tree-cfg.c:4261
-#, fuzzy, gcc-internal-format
-#| msgid "vector CONSTRUCTOR with non-NULL element index"
+#, gcc-internal-format
 msgid "non-vector CONSTRUCTOR with elements"
-msgstr "vektor-CONSTRUCTOR med elementindex som inte är NULL "
+msgstr "CONSTRUCTOR för annat en en vektor med element"
 
 #: tree-cfg.c:4320
 #, gcc-internal-format
@@ -20509,10 +20317,9 @@ msgid "tree check: expected tree that contains %qs structure, have %qs in %s, at
 msgstr "trädkontroll: förväntade träd som innehåller posten %qs, har %qs i %s, vid %s:%d"
 
 #: tree.c:9481
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "tree check: accessed elt %d of tree_int_cst with %d elts in %s, at %s:%d"
-msgstr "trädkontroll: använde element %d av tree_vec med %d element i %s, vid %s:%d"
+msgstr "trädkontroll: använde element %d av tree_int_cst med %d element i %s, vid %s:%d"
 
 #: tree.c:9493
 #, gcc-internal-format, gfc-internal-format
