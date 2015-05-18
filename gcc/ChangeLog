@@ -1,3 +1,7 @@
+2015-05-18  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-ssa-tail-merge.c: Fix whitespace.
+
 2015-05-17  Jim Wilson  <jim.wilson@linaro.org>
 
 	* doc/invoke.texi (ARM Options, mtune): Add generic-armv7-a,
