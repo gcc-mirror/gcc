@@ -91,9 +91,13 @@
        (match_test "op == CONST0_RTX (mode)")))
 
 ;; "Extra" constraints.
-(define_constraint "Q"
+
+;; A memory location that is not a reference
+;; (using an AND) to an unaligned location.
+(define_memory_constraint "Q"
   "@internal A normal_memory_operand"
-  (match_operand 0 "normal_memory_operand"))
+  (and (match_code "mem")
+       (not (match_test "GET_CODE (XEXP (op, 0)) == AND"))))
 
 (define_constraint "R"
   "@internal A direct_call_operand"

@@ -525,14 +525,6 @@
   return false;
 })
 
-;; Return 1 is OP is a memory location that is not a reference
-;; (using an AND) to an unaligned location.  Take into account
-;; what reload will do.
-(define_special_predicate "normal_memory_operand"
-  (ior (match_test "op = resolve_reload_operand (op), 0")
-       (and (match_code "mem")
-	    (match_test "GET_CODE (XEXP (op, 0)) != AND"))))
-
 ;; Returns 1 if OP is not an eliminable register.
 ;;
 ;; This exists to cure a pathological failure in the s8addq (et al) patterns,
