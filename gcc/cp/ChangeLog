@@ -1,5 +1,8 @@
 2015-05-18  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (retrieve_specialization): Make sure our arguments have
+	gone through strip_typedefs.
+
 	* pt.c (tsubst_decl) [VAR_DECL]: Call coerce_innermost_template_parms.
 	(determine_specialization): Call coerce_template_parms.
 

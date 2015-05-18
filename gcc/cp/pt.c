@@ -1058,6 +1058,14 @@ retrieve_specialization (tree tmpl, tree args, hashval_t hash)
 		  ? TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (tmpl))
 		  : template_class_depth (DECL_CONTEXT (tmpl))));
 
+#ifdef ENABLE_CHECKING
+  /* We should have gone through coerce_template_parms by now.  */
+  ++processing_template_decl;
+  if (!any_dependent_template_arguments_p (args))
+    gcc_assert (strip_typedefs_expr (args, NULL) == args);
+  --processing_template_decl;
+#endif
+
   if (optimize_specialization_lookup_p (tmpl))
     {
       tree class_template;
