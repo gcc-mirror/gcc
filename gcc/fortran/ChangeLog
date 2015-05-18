@@ -1,5 +1,10 @@
 2015-05-18  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/66043
+	* gfortran.dg/storage_size_6.f90: New tests.
+
+2015-05-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/66040
 	* parse.c(verify_st_order): Replace a gfc_internal_error with your
 	generic gfc_error.
