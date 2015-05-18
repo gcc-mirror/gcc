@@ -1,3 +1,10 @@
+2015-05-18  Alex Velenko <Alex.Velenko@arm.com>
+
+	* gcc.target/arm/bics_1.c : New testcase.
+	* gcc.target/arm/bics_2.c : New testcase.
+	* gcc.target/arm/bics_3.c : New testcase.
+	* gcc.target/arm/bics_4.c : New testcase.
+
 2015-05-18  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* gcc.target/mips/umips-attr.c: New test.
