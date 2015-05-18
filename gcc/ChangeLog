@@ -1,3 +1,8 @@
+2015-05-17  Jim Wilson  <jim.wilson@linaro.org>
+
+	* doc/invoke.texi (ARM Options, mtune): Add generic-armv7-a,
+	cortex-a17, and cortex-a17.cortex-a7.
+
 2015-05-17  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54236
