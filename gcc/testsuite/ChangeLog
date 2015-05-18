@@ -1,3 +1,9 @@
+2015-05-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/lto/pr41521_0.f90: Move INTERFACE statement in program
+	unit.
+	* gfortran.dg/lto/pr41576_1.f90: Ditto.
+
 2015-05-12  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* lib/target-supports.exp (check_effective_target_pie): Add *-*-freebsd*
