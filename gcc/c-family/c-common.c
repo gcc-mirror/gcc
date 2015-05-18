@@ -6084,6 +6084,20 @@ set_compound_literal_name (tree decl)
   DECL_NAME (decl) = get_identifier (name);
 }
 
+/* build_va_arg helper function.  Return a VA_ARG_EXPR with location LOC, type
+   TYPE and operand OP.  */
+
+static tree
+build_va_arg_1 (location_t loc, tree type, tree op)
+{
+  tree expr = build1 (VA_ARG_EXPR, type, op);
+  SET_EXPR_LOCATION (expr, loc);
+  return expr;
+}
+
+/* Return a VA_ARG_EXPR corresponding to a source-level expression
+   va_arg (EXPR, TYPE) at source location LOC.  */
+
 tree
 build_va_arg (location_t loc, tree expr, tree type)
 {
@@ -6092,24 +6106,107 @@ build_va_arg (location_t loc, tree expr, tree type)
 			? NULL_TREE
 			: targetm.canonical_va_list_type (va_type));
 
-  if (canon_va_type != NULL)
+  if (va_type == error_mark_node
+      || canon_va_type == NULL_TREE)
     {
-      /* When the va_arg ap argument is a parm decl with declared type va_list,
-	 and the va_list type is an array, then grokdeclarator changes the type
-	 of the parm decl to the corresponding pointer type.  We know that that
-	 pointer is constant, so there's no need to modify it, so there's no
-	 need to pass it around using an address operator, so there's no need to
-	 mark it addressable.  */
-      if (!(TREE_CODE (canon_va_type) == ARRAY_TYPE
-	    && TREE_CODE (va_type) != ARRAY_TYPE))
-	/* In gimplify_va_arg_expr we take the address of the ap argument, mark
-	   it addressable now.  */
-	mark_addressable (expr);
+      /* Let's handle things neutrallly, if expr:
+	 - has undeclared type, or
+	 - is not an va_list type.  */
+      return build_va_arg_1 (loc, type, expr);
     }
 
-  expr = build1 (VA_ARG_EXPR, type, expr);
-  SET_EXPR_LOCATION (expr, loc);
-  return expr;
+  if (TREE_CODE (canon_va_type) != ARRAY_TYPE)
+    {
+      /* Case 1: Not an array type.  */
+
+      /* Take the address, to get '&ap'.  */
+      mark_addressable (expr);
+      expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (expr)), expr);
+
+      /* Verify that &ap is still recognized as having va_list type.  */
+      tree canon_expr_type
+	= targetm.canonical_va_list_type (TREE_TYPE (expr));
+      gcc_assert (canon_expr_type != NULL_TREE);
+
+      return build_va_arg_1 (loc, type, expr);
+    }
+
+  /* Case 2: Array type.
+
+     Background:
+
+     For contrast, let's start with the simple case (case 1).  If
+     canon_va_type is not an array type, but say a char *, then when
+     passing-by-value a va_list, the type of the va_list param decl is
+     the same as for another va_list decl (all ap's are char *):
+
+     f2_1 (char * ap)
+       D.1815 = VA_ARG (&ap, 0B, 1);
+       return D.1815;
+
+     f2 (int i)
+       char * ap.0;
+       char * ap;
+       __builtin_va_start (&ap, 0);
+       ap.0 = ap;
+       res = f2_1 (ap.0);
+       __builtin_va_end (&ap);
+       D.1812 = res;
+       return D.1812;
+
+     However, if canon_va_type is ARRAY_TYPE, then when passing-by-value a
+     va_list the type of the va_list param decl (case 2b, struct * ap) is not
+     the same as for another va_list decl (case 2a, struct ap[1]).
+
+     f2_1 (struct  * ap)
+       D.1844 = VA_ARG (ap, 0B, 0);
+       return D.1844;
+
+     f2 (int i)
+       struct  ap[1];
+       __builtin_va_start (&ap, 0);
+       res = f2_1 (&ap);
+       __builtin_va_end (&ap);
+       D.1841 = res;
+       return D.1841;
+
+     Case 2b is different because:
+     - on the callee side, the parm decl has declared type va_list, but
+       grokdeclarator changes the type of the parm decl to a pointer to the
+       array elem type.
+     - on the caller side, the pass-by-value uses &ap.
+
+     We unify these two cases (case 2a: va_list is array type,
+     case 2b: va_list is pointer to array elem type), by adding '&' for the
+     array type case, such that we have a pointer to array elem in both
+     cases.  */
+
+  if (TREE_CODE (va_type) == ARRAY_TYPE)
+    {
+      /* Case 2a: va_list is array type.  */
+
+      /* Take the address, to get '&ap'.  Make sure it's a pointer to array
+	 elem type.  */
+      mark_addressable (expr);
+      expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (canon_va_type)),
+		     expr);
+
+      /* Verify that &ap is still recognized as having va_list type.  */
+      tree canon_expr_type
+	= targetm.canonical_va_list_type (TREE_TYPE (expr));
+      gcc_assert (canon_expr_type != NULL_TREE);
+    }
+  else
+    {
+      /* Case 2b: va_list is pointer to array elem type.  */
+      gcc_assert (POINTER_TYPE_P (va_type));
+      gcc_assert (TREE_TYPE (va_type) == TREE_TYPE (canon_va_type));
+
+      /* Don't take the address.  We've already got '&ap'.  */
+      ;
+    }
+
+  return build_va_arg_1 (loc, type, expr);
 }
 
 
