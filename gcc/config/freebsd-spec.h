@@ -66,8 +66,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   "%{!shared: \
      %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} \
 		       %{!p:%{profile:gcrt1.o%s} \
-			 %{!profile:crt1.o%s}}}} \
-   crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+			 %{!profile: \
+                            %{pie: Scrt1.o%s;:crt1.o%s}}}}} \
+   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
 
 /* Provide a ENDFILE_SPEC appropriate for FreeBSD.  Here we tack on
    the magical crtend.o file (see crtstuff.c) which provides part of 
@@ -76,7 +77,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	`crtn.o'.  */
 
 #define FBSD_ENDFILE_SPEC \
-  "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
+  "%{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
 
 /* Provide a LIB_SPEC appropriate for FreeBSD as configured and as
    required by the user-land thread model.  Before __FreeBSD_version
