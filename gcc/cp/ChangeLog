@@ -1,5 +1,8 @@
 2015-05-18  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (tsubst_decl) [VAR_DECL]: Call coerce_innermost_template_parms.
+	(determine_specialization): Call coerce_template_parms.
+
 	DR 1391
 	* pt.c (type_unification_real): Check convertibility here.
 	(unify_one_argument): Not here.
