@@ -123,6 +123,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-icf-gimple.h"
 #include "ipa-icf.h"
 #include "stor-layout.h"
+#include "dbgcnt.h"
 
 using namespace ipa_icf_gimple;
 
@@ -3453,7 +3454,8 @@ sem_item_optimizer::merge_classes (unsigned int prev_class_count)
 		alias->dump_to_file (dump_file);
 	      }
 
-	    merged_p |= source->merge (alias);
+	    if (dbg_cnt (merged_ipa_icf))
+	      merged_p |= source->merge (alias);
 	  }
       }
 

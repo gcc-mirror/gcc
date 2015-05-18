@@ -1,5 +1,11 @@
 2015-05-18  Martin Liska  <mliska@suse.cz>
 
+	* dbgcnt.def: Add new counter.
+	* ipa-icf.c (sem_item_optimizer::merge_classes): Use the
+	counter.
+
+2015-05-18  Martin Liska  <mliska@suse.cz>
+
 	* dbgcnt.def: Sort counters.
 	* opts.c (common_handle_option): Do not compile if
 	-fdbg-cnt-list is enabled.
