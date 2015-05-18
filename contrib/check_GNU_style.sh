@@ -65,10 +65,12 @@ fi
 
 inp=check_GNU_style.inp
 tmp=check_GNU_style.tmp
+tmp2=check_GNU_style.2.tmp
+tmp3=check_GNU_style.3.tmp
 
 # Remove $tmp on exit and various signals.
-trap "rm -f $inp $tmp $stdin_tmp" 0
-trap "rm -f $inp $tmp $stdin_tmp; exit 1" 1 2 3 5 9 13 15
+trap "rm -f $inp $tmp $tmp2 $tmp3 $stdin_tmp" 0
+trap "rm -f $inp $tmp $tmp2 $tmp3 $stdin_tmp; exit 1" 1 2 3 5 9 13 15
 
 if [ $nfiles -eq 1 ]; then
     # There's no need for the file prefix if we're dealing only with one file.
@@ -79,6 +81,17 @@ fi
 grep $format '^+' $files \
     | grep -v ':+++' \
     > $inp
+
+cat_with_prefix ()
+{
+    local f="$1"
+
+    if [ "$prefix" = "" ]; then
+	cat "$f"
+    else
+	awk "{printf "%s%s\n", $prefix, \$0}" $f
+    fi
+}
 
 # Grep
 g (){
@@ -134,10 +147,11 @@ vg (){
 
 col (){
     local msg="$1"
+
     local first=true
     local f
     for f in $files; do
-	local prefix=""
+	prefix=""
 	if [ $nfiles -ne 1 ]; then
 	    prefix="$f:"
 	fi
@@ -148,22 +162,42 @@ col (){
 	    | grep -v ':+++' \
 	    > $tmp
 
-	cat $tmp | while IFS= read -r line; do
-	    local longline
-	    # Filter out the line number prefix and the patch line modifier '+'
-	    # to obtain the bare line, before we use expand.
-	    longline=$(echo "$line" \
-		| sed 's/^[0-9]*:+//' \
-		| expand \
-		| awk '{ if (length($0) > 80) print $0}')
-	    if [ "$longline" != "" ]; then
-		if $first; then
-		    printf "\n$msg\n"
-		    first=false
-		fi
-		echo "$prefix$line"
+	# Keep only line number prefix and patch modifier '+'.
+	cat "$tmp" \
+	    | sed 's/\(^[0-9][0-9]*:+\).*/\1/' \
+	    > "$tmp2"
+
+	# Remove line number prefix and patch modifier '+'.
+	# Expand tabs to spaces according to tab positions.
+	# Keep long lines, make short lines empty.  Print the part past 80 chars
+	# in red.
+	cat "$tmp" \
+	    | sed 's/^[0-9]*:+//' \
+	    | expand \
+	    | awk '{ \
+		     if (length($0) > 80) \
+		       printf "%s\033[1;31m%s\033[0m\n", \
+			      substr($0,1,80), \
+			      substr($0,81); \
+		     else \
+		       print "" \
+		   }' \
+	    > "$tmp3"
+
+	# Combine prefix back with long lines.
+	# Filter out empty lines.
+	local found=false
+	paste -d '' "$tmp2" "$tmp3" \
+	    | grep -v '^[0-9][0-9]*:+$' \
+	    > "$tmp" && found=true
+
+	if $found; then
+	    if $first; then
+		printf "\n$msg\n"
+		first=false
 	    fi
-	done
+	    cat_with_prefix "$tmp"
+	fi
     done
 }
 

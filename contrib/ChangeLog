@@ -1,5 +1,12 @@
 2015-05-18  Tom de Vries  <tom@codesourcery.com>
 
+	* check_GNU_style.sh: Add temp files tmp2 and tmp3.
+	(cat_with_prefix): New function, using global variable prefix.
+	(col): Make prefix a global variable. Rewrite to process file at a time
+	rather than line at a time.  Print part longer than 80 chars in red.
+
+2015-05-18  Tom de Vries  <tom@codesourcery.com>
+
 	* check_GNU_style.sh (g, ag, vg): Don't cat empty file.
 
 2015-05-18  Tom de Vries  <tom@codesourcery.com>
