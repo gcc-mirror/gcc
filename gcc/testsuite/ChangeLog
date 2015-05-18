@@ -1,5 +1,10 @@
 2015-05-18  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/64925
+	* gfortran.dg/pr64925.f90: New test.
+
+2015-05-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	* gfortran.dg/lto/pr41521_0.f90: Move INTERFACE statement in program
 	unit.
 	* gfortran.dg/lto/pr41576_1.f90: Ditto.
