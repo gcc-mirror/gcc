@@ -1,5 +1,11 @@
 2015-05-18  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/66044
+	* decl.c(gfc_match_entry):  Change a gfc_internal_error() into
+	a gfc_error() 
+
+2015-05-18  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/66043
 	* gfortran.dg/storage_size_6.f90: New tests.
 
