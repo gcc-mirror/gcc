@@ -1,5 +1,8 @@
 2015-05-18  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (tsubst_decl) [VAR_DECL]: Call coerce_innermost_template_parms.
+	(determine_specialization): Call coerce_template_parms.
+
 	* tree.c (strip_typedefs_expr) [TRAIT_EXPR]: Fix typo.
 	(strip_typedefs) [DECLTYPE_TYPE]: Fix typedef of decltype.
 	[TREE_LIST]: Fix no-change case.

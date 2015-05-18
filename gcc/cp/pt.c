@@ -1919,7 +1919,13 @@ determine_specialization (tree template_id,
     ++header_count;
 
   if (variable_template_p (fns))
-    templates = tree_cons (explicit_targs, fns, templates);
+    {
+      tree parms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (fns));
+      targs = coerce_template_parms (parms, explicit_targs, fns,
+				     tf_warning_or_error,
+				     /*req_all*/true, /*use_defarg*/true);
+      templates = tree_cons (targs, fns, templates);
+    }
   else for (; fns; fns = OVL_NEXT (fns))
     {
       tree fn = OVL_CURRENT (fns);
@@ -11317,6 +11323,11 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		tmpl = DECL_TI_TEMPLATE (t);
 		gen_tmpl = most_general_template (tmpl);
 		argvec = tsubst (DECL_TI_ARGS (t), args, complain, in_decl);
+		if (argvec != error_mark_node)
+		  argvec = (coerce_innermost_template_parms
+			    (DECL_TEMPLATE_PARMS (gen_tmpl),
+			     argvec, t, complain,
+			     /*all*/true, /*defarg*/true));
 		if (argvec == error_mark_node)
 		  RETURN (error_mark_node);
 		hash = hash_tmpl_and_args (gen_tmpl, argvec);
