@@ -1,3 +1,12 @@
+2015-05-18  Uros Bizjak  <ubizjak@gmail.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	PR target/57032
+	* config/alpha/constraints.md (Q): Rewrite as define_memory_constraint.
+	Check for a memory location that is not a reference (using an AND)
+	to an unaligned location here.
+	* config/alpha/predicates.md (normal_memory_operand): Remove.
+
 2015-05-18  Alex Velenko  <Alex.Velenko@arm.com>
 
 	* config/arm/arm.md (andsi_not_shiftsi_si_scc): New pattern.
