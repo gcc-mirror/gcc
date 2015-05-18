@@ -1,3 +1,9 @@
+2015-05-18  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (strip_typedefs_expr) [TRAIT_EXPR]: Fix typo.
+	(strip_typedefs) [DECLTYPE_TYPE]: Fix typedef of decltype.
+	[TREE_LIST]: Fix no-change case.
+
 2015-05-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/59012
