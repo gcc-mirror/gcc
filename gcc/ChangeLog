@@ -1,3 +1,9 @@
+2015-05-18  Martin Liska  <mliska@suse.cz>
+
+	* dbgcnt.def: Sort counters.
+	* opts.c (common_handle_option): Do not compile if
+	-fdbg-cnt-list is enabled.
+
 2015-05-18  Tom de Vries  <tom@codesourcery.com>
 
 	* gimplify.c (gimplify_modify_expr): Remove do_deref handling.

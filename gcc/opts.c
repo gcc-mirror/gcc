@@ -1759,8 +1759,12 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdbg_cnt_:
+      /* Deferred.  */
+      break;
+
     case OPT_fdbg_cnt_list:
       /* Deferred.  */
+      opts->x_exit_after_options = true;
       break;
 
     case OPT_fdebug_prefix_map_:
