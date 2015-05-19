@@ -30493,11 +30493,9 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 	    else if (OMP_CLAUSE_CODE (*c) == OMP_CLAUSE_LASTPRIVATE
 		     && OMP_CLAUSE_DECL (*c) == real_decl)
 	      {
-		/* Add lastprivate (decl) clause to OMP_FOR_CLAUSES,
-		   change it to shared (decl) in OMP_PARALLEL_CLAUSES.  */
-		tree l = build_omp_clause (loc, OMP_CLAUSE_LASTPRIVATE);
-		OMP_CLAUSE_DECL (l) = real_decl;
-		CP_OMP_CLAUSE_INFO (l) = CP_OMP_CLAUSE_INFO (*c);
+		/* Move lastprivate (decl) clause to OMP_FOR_CLAUSES.  */
+		tree l = *c;
+		*c = OMP_CLAUSE_CHAIN (*c);
 		if (code == OMP_SIMD)
 		  {
 		    OMP_CLAUSE_CHAIN (l) = cclauses[C_OMP_CLAUSE_SPLIT_FOR];
@@ -30508,8 +30506,6 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 		    OMP_CLAUSE_CHAIN (l) = clauses;
 		    clauses = l;
 		  }
-		OMP_CLAUSE_SET_CODE (*c, OMP_CLAUSE_SHARED);
-		CP_OMP_CLAUSE_INFO (*c) = NULL;
 		add_private_clause = false;
 	      }
 	    else
@@ -31343,6 +31339,7 @@ cp_parser_omp_teams (cp_parser *parser, cp_token *pragma_tok,
 	  TREE_TYPE (ret) = void_type_node;
 	  OMP_TEAMS_CLAUSES (ret) = clauses;
 	  OMP_TEAMS_BODY (ret) = body;
+	  OMP_TEAMS_COMBINED (ret) = 1;
 	  return add_stmt (ret);
 	}
     }
