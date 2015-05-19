@@ -8511,6 +8511,11 @@ gfc_match_generic (void)
 		gfc_op2string (op));
       break;
 
+    case INTERFACE_NAMELESS:
+      gfc_error ("Malformed GENERIC statement at %C");
+      goto error;
+      break;
+
     default:
       gcc_unreachable ();
     }

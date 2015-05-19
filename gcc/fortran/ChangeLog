@@ -1,5 +1,10 @@
 2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/66057
+	* decl.c(gfc_match_generic):  Detected a malformed GENERIC statement.
+
+2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/66052
 	* decl.c(gfc_match_protected): Prevent dereference of NULL pointer. 
 
