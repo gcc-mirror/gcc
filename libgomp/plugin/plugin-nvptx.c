@@ -782,7 +782,13 @@ nvptx_get_num_devices (void)
      until cuInit has been called.  Just call it now (but don't yet do any
      further initialization).  */
   if (instantiated_devices == 0)
-    cuInit (0);
+    {
+      r = cuInit (0);
+      /* This is not an error: e.g. we may have CUDA libraries installed but
+         no devices available.  */
+      if (r != CUDA_SUCCESS)
+        return 0;
+    }
 
   r = cuDeviceGetCount (&n);
   if (r!= CUDA_SUCCESS)
