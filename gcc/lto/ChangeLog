@@ -1,3 +1,7 @@
+2015-05-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (gimple_canonical_types_compatible_p): Move to tree.c
+
 2015-05-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-symtab.c (warn_type_compatibility_p): Break out from ...;
