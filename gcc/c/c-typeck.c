@@ -7126,10 +7126,7 @@ start_init (tree decl, tree asmspec_tree ATTRIBUTE_UNUSED, int top_level)
 	= ((TREE_STATIC (decl) || (pedantic && !flag_isoc99))
 	   /* For a scalar, you can always use any value to initialize,
 	      even within braces.  */
-	   && (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
-	       || TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
-	       || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE
-	       || TREE_CODE (TREE_TYPE (decl)) == QUAL_UNION_TYPE));
+	   && AGGREGATE_TYPE_P (TREE_TYPE (decl)));
       locus = identifier_to_locale (IDENTIFIER_POINTER (DECL_NAME (decl)));
     }
   else
