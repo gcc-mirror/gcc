@@ -1778,10 +1778,8 @@ setup_prohibited_mode_move_regs (void)
 	{
 	  if (! HARD_REGNO_MODE_OK (j, (machine_mode) i))
 	    continue;
-	  SET_REGNO_RAW (test_reg1, j);
-	  PUT_MODE (test_reg1, (machine_mode) i);
-	  SET_REGNO_RAW (test_reg2, j);
-	  PUT_MODE (test_reg2, (machine_mode) i);
+	  set_mode_and_regno (test_reg1, (machine_mode) i, j);
+	  set_mode_and_regno (test_reg2, (machine_mode) i, j);
 	  INSN_CODE (move_insn) = -1;
 	  recog_memoized (move_insn);
 	  if (INSN_CODE (move_insn) < 0)

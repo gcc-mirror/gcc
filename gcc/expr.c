@@ -221,7 +221,6 @@ init_expr_target (void)
       direct_load[(int) mode] = direct_store[(int) mode] = 0;
       PUT_MODE (mem, mode);
       PUT_MODE (mem1, mode);
-      PUT_MODE (reg, mode);
 
       /* See if there is some register that can be used in this mode and
 	 directly loaded or stored from memory.  */
@@ -234,7 +233,7 @@ init_expr_target (void)
 	    if (! HARD_REGNO_MODE_OK (regno, mode))
 	      continue;
 
-	    SET_REGNO (reg, regno);
+	    set_mode_and_regno (reg, mode, regno);
 
 	    SET_SRC (pat) = mem;
 	    SET_DEST (pat) = reg;

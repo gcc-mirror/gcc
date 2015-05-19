@@ -150,8 +150,7 @@ reg_save_code (int reg, machine_mode mode)
 
   /* Update the register number and modes of the register
      and memory operand.  */
-  SET_REGNO_RAW (test_reg, reg);
-  PUT_MODE (test_reg, mode);
+  set_mode_and_regno (test_reg, mode, reg);
   PUT_MODE (test_mem, mode);
 
   /* Force re-recognition of the modified insns.  */
