@@ -1,3 +1,30 @@
+2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/s390.exp
+	(check_effective_target_vector): New check.
+	* gcc.target/s390/vector/vec-abi-1.c: New test.
+	* gcc.target/s390/vector/vec-abi-2.c: New test.
+	* gcc.target/s390/vector/vec-abi-3.c: New test.
+	* gcc.target/s390/vector/vec-abi-4.c: New test.
+	* gcc.target/s390/vector/vec-abi-align-1.c: New test.
+	* gcc.target/s390/vector/vec-abi-single-1.c: New test.
+	* gcc.target/s390/vector/vec-abi-single-2.c: New test.
+	* gcc.target/s390/vector/vec-abi-struct-1.c: New test.
+	* gcc.target/s390/vector/vec-abi-vararg-1.c: New test.
+	* gcc.target/s390/vector/vec-abi-vararg-2.c: New test.
+	* gcc.target/s390/vector/vec-clobber-1.c: New test.
+	* gcc.target/s390/vector/vec-cmp-1.c: New test.
+	* gcc.target/s390/vector/vec-cmp-2.c: New test.
+	* gcc.target/s390/vector/vec-dbl-math-compile-1.c: New test.
+	* gcc.target/s390/vector/vec-genbytemask-1.c: New test.
+	* gcc.target/s390/vector/vec-genbytemask-2.c: New test.
+	* gcc.target/s390/vector/vec-genmask-1.c: New test.
+	* gcc.target/s390/vector/vec-genmask-2.c: New test.
+	* gcc.target/s390/vector/vec-init-1.c: New test.
+	* gcc.target/s390/vector/vec-int-math-compile-1.c: New test.
+	* gcc.target/s390/vector/vec-shift-1.c: New test.
+	* gcc.target/s390/vector/vec-sub-1.c: New test.
+
 2015-05-19  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vqshrun_n.c: New file.
