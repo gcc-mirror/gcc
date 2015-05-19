@@ -418,3 +418,7 @@ Enable use of odd-numbered single-precision registers
 
 noasmopt
 Driver
+
+mload-store-pairs
+Target Report Var(TARGET_LOAD_STORE_PAIRS) Init(1)
+Enable load/store bonding.

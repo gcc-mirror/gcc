@@ -1,3 +1,16 @@
+2015-05-19  Sameera Deshpande  <Sameera.Deshpande@imgtec.com>
+
+	* config/mips/mips.md (JOIN_MODE): New mode iterator.
+	(join2_load_Store<JOIN_MODE:mode>): New pattern.
+	(join2_loadhi): Likewise.
+	(define_peehole2): Add peephole2 patterns to join 2 HI/SI/SF/DF-mode
+	load-load and store-stores.
+	* config/mips/mips.opt (mload-store-pairs): New option.
+	(TARGET_LOAD_STORE_PAIRS): New macro.
+	* config/mips/mips.h (ENABLE_LD_ST_PAIRS): Likewise.
+	* config/mips/mips-protos.h (mips_load_store_bonding_p): New prototype.
+	* config/mips/mips.c (mips_load_store_bonding_p): New function.
+
 2015-05-19  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* bb-reorder.c (fix_up_fall_thru_edges): Use std::swap instead of

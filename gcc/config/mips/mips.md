@@ -754,6 +754,11 @@
 
 (define_mode_iterator MOVEP1 [SI SF])
 (define_mode_iterator MOVEP2 [SI SF])
+(define_mode_iterator JOIN_MODE [HI
+				 SI
+				 (SF "TARGET_HARD_FLOAT")
+				 (DF "TARGET_HARD_FLOAT
+				      && TARGET_DOUBLE_FLOAT")])
 
 ;; This mode iterator allows :HILO to be used as the mode of the
 ;; concatenated HI and LO registers.
@@ -7404,6 +7409,112 @@
   { return MIPS_CALL ("jal", operands, 0, -1); }
   [(set_attr "type" "call")
    (set_attr "insn_count" "3")])
+
+;; Match paired HI/SI/SF/DFmode load/stores.
+(define_insn "*join2_load_store<JOIN_MODE:mode>"
+  [(set (match_operand:JOIN_MODE 0 "nonimmediate_operand" "=d,f,m,m")
+	(match_operand:JOIN_MODE 1 "nonimmediate_operand" "m,m,d,f"))
+   (set (match_operand:JOIN_MODE 2 "nonimmediate_operand" "=d,f,m,m")
+	(match_operand:JOIN_MODE 3 "nonimmediate_operand" "m,m,d,f"))]
+  "ENABLE_LD_ST_PAIRS && reload_completed"
+  {
+    bool load_p = (which_alternative == 0 || which_alternative == 1);
+    /* Reg-renaming pass reuses base register if it is dead after bonded loads.
+       Hardware does not bond those loads, even when they are consecutive.
+       However, order of the loads need to be checked for correctness.  */
+    if (!load_p || !reg_overlap_mentioned_p (operands[0], operands[1]))
+      {
+	output_asm_insn (mips_output_move (operands[0], operands[1]),
+			 operands);
+	output_asm_insn (mips_output_move (operands[2], operands[3]),
+			 &operands[2]);
+      }
+    else
+      {
+	output_asm_insn (mips_output_move (operands[2], operands[3]),
+			 &operands[2]);
+	output_asm_insn (mips_output_move (operands[0], operands[1]),
+			 operands);
+      }
+    return "";
+  }
+  [(set_attr "move_type" "load,fpload,store,fpstore")
+   (set_attr "insn_count" "2,2,2,2")])
+
+;; 2 HI/SI/SF/DF loads are joined.
+;; P5600 does not support bonding of two LBs, hence QI mode is not included.
+;; The loads must be non-volatile as they might be reordered at the time of asm
+;; generation.
+(define_peephole2
+  [(set (match_operand:JOIN_MODE 0 "register_operand")
+	(match_operand:JOIN_MODE 1 "non_volatile_mem_operand"))
+   (set (match_operand:JOIN_MODE 2 "register_operand")
+	(match_operand:JOIN_MODE 3 "non_volatile_mem_operand"))]
+  "ENABLE_LD_ST_PAIRS
+   && mips_load_store_bonding_p (operands, <JOIN_MODE:MODE>mode, true)"
+  [(parallel [(set (match_dup 0)
+		   (match_dup 1))
+	      (set (match_dup 2)
+		   (match_dup 3))])]
+  "")
+
+;; 2 HI/SI/SF/DF stores are joined.
+;; P5600 does not support bonding of two SBs, hence QI mode is not included.
+(define_peephole2
+  [(set (match_operand:JOIN_MODE 0 "memory_operand")
+	(match_operand:JOIN_MODE 1 "register_operand"))
+   (set (match_operand:JOIN_MODE 2 "memory_operand")
+	(match_operand:JOIN_MODE 3 "register_operand"))]
+  "ENABLE_LD_ST_PAIRS
+   && mips_load_store_bonding_p (operands, <JOIN_MODE:MODE>mode, false)"
+  [(parallel [(set (match_dup 0)
+		   (match_dup 1))
+	      (set (match_dup 2)
+		   (match_dup 3))])]
+  "")
+
+;; Match paired HImode loads.
+(define_insn "*join2_loadhi"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(any_extend:SI (match_operand:HI 1 "non_volatile_mem_operand" "m")))
+   (set (match_operand:SI 2 "register_operand" "=r")
+	(any_extend:SI (match_operand:HI 3 "non_volatile_mem_operand" "m")))]
+  "ENABLE_LD_ST_PAIRS && reload_completed"
+  {
+    /* Reg-renaming pass reuses base register if it is dead after bonded loads.
+       Hardware does not bond those loads, even when they are consecutive.
+       However, order of the loads need to be checked for correctness.  */
+    if (!reg_overlap_mentioned_p (operands[0], operands[1]))
+      {
+	output_asm_insn ("lh<u>\t%0,%1", operands);
+	output_asm_insn ("lh<u>\t%2,%3", operands);
+      }
+    else
+      {
+	output_asm_insn ("lh<u>\t%2,%3", operands);
+	output_asm_insn ("lh<u>\t%0,%1", operands);
+      }
+
+    return "";
+  }
+  [(set_attr "move_type" "load")
+   (set_attr "insn_count" "2")])
+
+
+;; 2 HI loads are joined.
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand")
+	(any_extend:SI (match_operand:HI 1 "non_volatile_mem_operand")))
+   (set (match_operand:SI 2 "register_operand")
+	(any_extend:SI (match_operand:HI 3 "non_volatile_mem_operand")))]
+  "ENABLE_LD_ST_PAIRS
+   && mips_load_store_bonding_p (operands, HImode, true)"
+  [(parallel [(set (match_dup 0)
+		   (any_extend:SI (match_dup 1)))
+	      (set (match_dup 2)
+		   (any_extend:SI (match_dup 3)))])]
+  "")
+
 
 ;; Synchronization instructions.
 
