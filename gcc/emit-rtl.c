@@ -430,16 +430,24 @@ gen_blockage (void)
 #endif
 
 
+/* Set the mode and register number of X to MODE and REGNO.  */
+
+void
+set_mode_and_regno (rtx x, machine_mode mode, unsigned int regno)
+{
+  PUT_MODE_RAW (x, mode);
+  SET_REGNO_RAW (x, regno);
+}
+
 /* Generate a new REG rtx.  Make sure ORIGINAL_REGNO is set properly, and
    don't attempt to share with the various global pieces of rtl (such as
    frame_pointer_rtx).  */
 
 rtx
-gen_raw_REG (machine_mode mode, int regno)
+gen_raw_REG (machine_mode mode, unsigned int regno)
 {
   rtx x = rtx_alloc_stat (REG PASS_MEM_STAT);
-  PUT_MODE (x, mode);
-  SET_REGNO_RAW (x, regno);
+  set_mode_and_regno (x, mode, regno);
   REG_ATTRS (x) = NULL;
   ORIGINAL_REGNO (x) = regno;
   return x;

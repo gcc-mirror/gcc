@@ -1,5 +1,22 @@
 2015-05-19  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* rtl.h (PUT_MODE_RAW): New macro.
+	(PUT_REG_NOTE_KIND): Use it.
+	(set_mode_and_regno): Declare.
+	(gen_raw_REG): Change regno to "unsigned int".
+	(gen_rtx_REG): Change "unsigned" to "unsigned int".
+	(PUT_MODE): Forward to PUT_MODE_RAW for generators, otherwise
+	use set_mode_and_regno to change the mode of registers.
+	* gengenrtl.c (gendef): Use PUT_MODE_RAW.
+	* emit-rtl.c (set_mode_and_regno): New function.
+	(gen_raw_REG): Change regno to unsigned int.  Use set_mode_and_regno.
+	* caller-save.c (reg_save_code): Use set_mode_and_regno.
+	* expr.c (init_expr_target): Likewise.
+	* ira.c (setup_prohibited_mode_move_regs): Likewise.
+	* postreload.c (reload_cse_simplify_operands): Likewise.
+
+2015-05-19  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* caller-save.c (init_caller_save): Use word_mode and
 	FIRST_PSEUDO_REGISTER when creating temporary rtxes.
 	* expr.c (init_expr_target): Likewise.

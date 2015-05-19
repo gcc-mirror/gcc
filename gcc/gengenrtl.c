@@ -252,7 +252,7 @@ gendef (const char *format)
   puts ("  rtx rt;");
   puts ("  rt = rtx_alloc_stat (code PASS_MEM_STAT);\n");
 
-  puts ("  PUT_MODE (rt, mode);");
+  puts ("  PUT_MODE_RAW (rt, mode);");
 
   for (p = format, i = j = 0; *p ; ++p, ++i)
     if (*p != '0')

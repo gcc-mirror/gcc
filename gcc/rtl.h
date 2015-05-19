@@ -668,8 +668,8 @@ class GTY(()) rtx_note : public rtx_insn
 #define GET_CODE(RTX)	    ((enum rtx_code) (RTX)->code)
 #define PUT_CODE(RTX, CODE) ((RTX)->code = (CODE))
 
-#define GET_MODE(RTX)	    ((machine_mode) (RTX)->mode)
-#define PUT_MODE(RTX, MODE) ((RTX)->mode = (MODE))
+#define GET_MODE(RTX)		((machine_mode) (RTX)->mode)
+#define PUT_MODE_RAW(RTX, MODE)	((RTX)->mode = (MODE))
 
 /* RTL vector.  These appear inside RTX's when there is a need
    for a variable number of things.  The principle use is inside
@@ -1509,7 +1509,7 @@ enum reg_note
 /* Define macros to extract and insert the reg-note kind in an EXPR_LIST.  */
 #define REG_NOTE_KIND(LINK) ((enum reg_note) GET_MODE (LINK))
 #define PUT_REG_NOTE_KIND(LINK, KIND) \
-  PUT_MODE (LINK, (machine_mode) (KIND))
+  PUT_MODE_RAW (LINK, (machine_mode) (KIND))
 
 /* Names for REG_NOTE's in EXPR_LIST insn's.  */
 
@@ -3216,12 +3216,26 @@ gen_rtx_INSN (machine_mode mode, rtx_insn *prev_insn, rtx_insn *next_insn,
 	      rtx reg_notes);
 extern rtx gen_rtx_CONST_INT (machine_mode, HOST_WIDE_INT);
 extern rtx gen_rtx_CONST_VECTOR (machine_mode, rtvec);
-extern rtx gen_raw_REG (machine_mode, int);
-extern rtx gen_rtx_REG (machine_mode, unsigned);
+extern void set_mode_and_regno (rtx, machine_mode, unsigned int);
+extern rtx gen_raw_REG (machine_mode, unsigned int);
+extern rtx gen_rtx_REG (machine_mode, unsigned int);
 extern rtx gen_rtx_SUBREG (machine_mode, rtx, int);
 extern rtx gen_rtx_MEM (machine_mode, rtx);
 extern rtx gen_rtx_VAR_LOCATION (machine_mode, tree, rtx,
 				 enum var_init_status);
+
+#ifdef GENERATOR_FILE
+#define PUT_MODE(RTX, MODE) PUT_MODE_RAW (RTX, MODE)
+#else
+static inline void
+PUT_MODE (rtx x, machine_mode mode)
+{
+  if (REG_P (x))
+    set_mode_and_regno (x, mode, REGNO (x));
+  else
+    PUT_MODE_RAW (x, mode);
+}
+#endif
 
 #define GEN_INT(N)  gen_rtx_CONST_INT (VOIDmode, (N))
 
