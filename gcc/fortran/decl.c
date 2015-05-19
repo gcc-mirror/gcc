@@ -5592,7 +5592,7 @@ gfc_match_entry (void)
 		       "a contained subprogram");
 	    break;
 	  default:
-	    gfc_internal_error ("gfc_match_entry(): Bad state");
+	    gfc_error ("Unexpected ENTRY statement at %C");
 	}
       return MATCH_ERROR;
     }
