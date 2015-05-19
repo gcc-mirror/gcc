@@ -1,3 +1,11 @@
+2015-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_list.h (_M_resize_pos(size_type&)): Declare.
+	(operator==(const list&, const list&)): If size() is O(1) compare
+	sizes before comparing each element.
+	* include/bits/list.tcc (list::_M_resize_pos(size_type&)): Define.
+	(list::resize): Use _M_resize_pos.
+
 2015-05-19  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/23_containers/unordered_map/cons/66055.cc: Add constructor
