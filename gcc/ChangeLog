@@ -1,3 +1,15 @@
+2015-05-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* cfgcleanup.c (mentions_nonequal_regs): Use END_REGNO.
+	* dse.c (note_add_store): Likewise.
+	* ira-lives.c (mark_hard_reg_dead): Likewise.
+	* loop-invariant.c (mark_reg_store): Likewise.
+	(mark_reg_death): Likewise.
+	* postreload.c (reload_combine): Likewise.
+	(reload_combine_note_store): Likewise.
+	(reload_combine_note_use): Likewise.
+	* recog.c (peep2_reg_dead_p): Likewise.
+
 2015-05-19  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/predicates.md (gpc_reg_operand): Don't allow all

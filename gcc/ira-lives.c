@@ -478,7 +478,7 @@ mark_hard_reg_dead (rtx reg)
 
   if (! TEST_HARD_REG_BIT (ira_no_alloc_regs, regno))
     {
-      int last = regno + hard_regno_nregs[regno][GET_MODE (reg)];
+      int last = END_REGNO (reg);
       enum reg_class aclass, pclass;
 
       while (regno < last)

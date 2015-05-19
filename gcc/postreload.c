@@ -1374,12 +1374,8 @@ reload_combine (void)
 	      if ((GET_CODE (setuse) == USE || GET_CODE (setuse) == CLOBBER)
 		  && REG_P (usage_rtx))
 	        {
-		  unsigned int i;
-		  unsigned int start_reg = REGNO (usage_rtx);
-		  unsigned int num_regs
-		    = hard_regno_nregs[start_reg][GET_MODE (usage_rtx)];
-		  unsigned int end_reg = start_reg + num_regs - 1;
-		  for (i = start_reg; i <= end_reg; i++)
+		  unsigned int end_regno = END_REGNO (usage_rtx);
+		  for (unsigned int i = REGNO (usage_rtx); i < end_regno; ++i)
 		    if (GET_CODE (XEXP (link, 0)) == CLOBBER)
 		      {
 		        reg_state[i].use_index = RELOAD_COMBINE_MAX_USES;
@@ -1461,9 +1457,8 @@ reload_combine_note_store (rtx dst, const_rtx set, void *data ATTRIBUTE_UNUSED)
 	  || GET_CODE (dst) == PRE_DEC || GET_CODE (dst) == POST_DEC
 	  || GET_CODE (dst) == PRE_MODIFY || GET_CODE (dst) == POST_MODIFY)
 	{
-	  regno = REGNO (XEXP (dst, 0));
-	  mode = GET_MODE (XEXP (dst, 0));
-	  for (i = hard_regno_nregs[regno][mode] - 1 + regno; i >= regno; i--)
+	  unsigned int end_regno = END_REGNO (XEXP (dst, 0));
+	  for (unsigned int i = REGNO (XEXP (dst, 0)); i < end_regno; ++i)
 	    {
 	      /* We could probably do better, but for now mark the register
 		 as used in an unknown fashion and set/clobbered at this
@@ -1533,13 +1528,11 @@ reload_combine_note_use (rtx *xp, rtx_insn *insn, int ruid, rtx containing_mem)
       /* If this is the USE of a return value, we can't change it.  */
       if (REG_P (XEXP (x, 0)) && REG_FUNCTION_VALUE_P (XEXP (x, 0)))
 	{
-	/* Mark the return register as used in an unknown fashion.  */
+	  /* Mark the return register as used in an unknown fashion.  */
 	  rtx reg = XEXP (x, 0);
-	  int regno = REGNO (reg);
-	  int nregs = hard_regno_nregs[regno][GET_MODE (reg)];
-
-	  while (--nregs >= 0)
-	    reg_state[regno + nregs].use_index = -1;
+	  unsigned int end_regno = END_REGNO (reg);
+	  for (unsigned int regno = REGNO (reg); regno < end_regno; ++regno)
+	    reg_state[regno].use_index = -1;
 	  return;
 	}
       break;
