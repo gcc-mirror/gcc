@@ -13649,6 +13649,64 @@ s390_vector_alignment (const_tree type)
 }
 
 
+/* Return true if TYPE is a vector bool type.  */
+static inline bool
+s390_vector_bool_type_p (const_tree type)
+{
+  return TYPE_VECTOR_OPAQUE (type);
+}
+
+/* Return the diagnostic message string if the binary operation OP is
+   not permitted on TYPE1 and TYPE2, NULL otherwise.  */
+static const char*
+s390_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1, const_tree type2)
+{
+  bool bool1_p, bool2_p;
+  bool plusminus_p;
+  bool muldiv_p;
+  bool compare_p;
+  machine_mode mode1, mode2;
+
+  if (!TARGET_ZVECTOR)
+    return NULL;
+
+  if (!VECTOR_TYPE_P (type1) || !VECTOR_TYPE_P (type2))
+    return NULL;
+
+  bool1_p = s390_vector_bool_type_p (type1);
+  bool2_p = s390_vector_bool_type_p (type2);
+
+  /* Mixing signed and unsigned types is forbidden for all
+     operators.  */
+  if (!bool1_p && !bool2_p
+      && TYPE_UNSIGNED (type1) != TYPE_UNSIGNED (type2))
+    return N_("types differ in signess");
+
+  plusminus_p = (op == PLUS_EXPR || op == MINUS_EXPR);
+  muldiv_p = (op == MULT_EXPR || op == RDIV_EXPR || op == TRUNC_DIV_EXPR
+	      || op == CEIL_DIV_EXPR || op == FLOOR_DIV_EXPR
+	      || op == ROUND_DIV_EXPR);
+  compare_p = (op == LT_EXPR || op == LE_EXPR || op == GT_EXPR || op == GE_EXPR
+	       || op == EQ_EXPR || op == NE_EXPR);
+
+  if (bool1_p && bool2_p && (plusminus_p || muldiv_p))
+    return N_("binary operator does not support two vector bool operands");
+
+  if (bool1_p != bool2_p && (muldiv_p || compare_p))
+    return N_("binary operator does not support vector bool operand");
+
+  mode1 = TYPE_MODE (type1);
+  mode2 = TYPE_MODE (type2);
+
+  if (bool1_p != bool2_p && plusminus_p
+      && (GET_MODE_CLASS (mode1) == MODE_VECTOR_FLOAT
+	  || GET_MODE_CLASS (mode2) == MODE_VECTOR_FLOAT))
+    return N_("binary operator does not support mixing vector "
+	      "bool with floating point vector operands");
+
+  return NULL;
+}
+
 /* Initialize GCC target structure.  */
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -13862,6 +13920,9 @@ s390_vector_alignment (const_tree type)
 
 #undef TARGET_VECTOR_ALIGNMENT
 #define TARGET_VECTOR_ALIGNMENT s390_vector_alignment
+
+#undef TARGET_INVALID_BINARY_OP
+#define TARGET_INVALID_BINARY_OP s390_invalid_binary_op
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
