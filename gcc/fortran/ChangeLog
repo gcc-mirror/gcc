@@ -1,5 +1,11 @@
 2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/66043
+	* check.c (gfc_check_storage_size): Prevent the direct use of NULL()
+	in STORAGE_SIZE() reference.
+
+2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/66040
 	* parse.c(verify_st_order): Replace a gfc_internal_error with your
 	generic gfc_error.
