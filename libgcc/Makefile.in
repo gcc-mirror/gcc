@@ -910,17 +910,14 @@ all: libgcc.a libgcov.a
 
 ifneq ($(LIBUNWIND),)
 all: libunwind.a
-libgcc_s$(SHLIB_EXT): libunwind$(SHLIB_EXT)
 endif
 
 ifeq ($(enable_shared),yes)
 all: libgcc_eh.a libgcc_s$(SHLIB_EXT)
 ifneq ($(LIBUNWIND),)
 all: libunwind$(SHLIB_EXT)
+libgcc_s$(SHLIB_EXT): libunwind$(SHLIB_EXT)
 endif
-endif
-
-ifeq ($(enable_shared),yes)
 
 # Map-file generation.
 ifneq ($(SHLIB_MKMAP),)

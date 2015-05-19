@@ -1,3 +1,8 @@
+2015-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.in (LIBUNWIND): Move dependency for shared libgcc.
+	Remove useless endif/ifneq ($(enable_shared),yes) pair.
+
 2015-05-15  Martin Galvan  <martin.galvan@tallertechnologies.com>
 
         * config/arm/lib1funcs.S (CFI_START_FUNCTION, CFI_END_FUNCTION):
