@@ -4209,6 +4209,7 @@ duplicate_insn_chain (rtx_insn *from, rtx_insn *to)
 	      break;
 
 	    case NOTE_INSN_EPILOGUE_BEG:
+	    case NOTE_INSN_UPDATE_SJLJ_CONTEXT:
 	      emit_note_copy (as_a <rtx_note *> (insn));
 	      break;
 

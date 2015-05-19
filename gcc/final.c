@@ -2215,6 +2215,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
       switch (NOTE_KIND (insn))
 	{
 	case NOTE_INSN_DELETED:
+	case NOTE_INSN_UPDATE_SJLJ_CONTEXT:
 	  break;
 
 	case NOTE_INSN_SWITCH_TEXT_SECTIONS:

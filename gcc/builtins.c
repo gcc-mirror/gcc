@@ -120,7 +120,6 @@ static int apply_result_size (void);
 #if defined (HAVE_untyped_call) || defined (HAVE_untyped_return)
 static rtx result_vector (int, rtx);
 #endif
-static void expand_builtin_update_setjmp_buf (rtx);
 static void expand_builtin_prefetch (tree);
 static rtx expand_builtin_apply_args (void);
 static rtx expand_builtin_apply_args_1 (void);
@@ -1213,10 +1212,10 @@ expand_builtin_nonlocal_goto (tree exp)
 
 /* __builtin_update_setjmp_buf is passed a pointer to an array of five words
    (not all will be used on all machines) that was passed to __builtin_setjmp.
-   It updates the stack pointer in that block to correspond to the current
-   stack pointer.  */
+   It updates the stack pointer in that block to the current value.  This is
+   also called directly by the SJLJ exception handling code.  */
 
-static void
+void
 expand_builtin_update_setjmp_buf (rtx buf_addr)
 {
   machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
@@ -5887,9 +5886,11 @@ expand_stack_restore (tree var)
 
   prev = get_last_insn ();
   emit_stack_restore (SAVE_BLOCK, sa);
+
+  record_new_stack_level ();
+
   fixup_args_size_notes (prev, get_last_insn (), 0);
 }
-
 
 /* Emit code to save the current value of stack.  */
 
@@ -5898,7 +5899,6 @@ expand_stack_save (void)
 {
   rtx ret = NULL_RTX;
 
-  do_pending_stack_adjust ();
   emit_stack_save (SAVE_BLOCK, &ret);
   return ret;
 }

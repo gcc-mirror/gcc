@@ -3649,12 +3649,9 @@ expand_call (tree exp, rtx target, int ignore)
 	  stack_usage_map = initial_stack_usage_map;
 	}
 
-      /* If this was alloca, record the new stack level for nonlocal gotos.
-	 Check for the handler slots since we might not have a save area
-	 for non-local gotos.  */
-
-      if ((flags & ECF_MAY_BE_ALLOCA) && cfun->nonlocal_goto_save_area != 0)
-	update_nonlocal_goto_save_area ();
+      /* If this was alloca, record the new stack level.  */
+      if (flags & ECF_MAY_BE_ALLOCA)
+	record_new_stack_level ();
 
       /* Free up storage we no longer need.  */
       for (i = 0; i < num_actuals; ++i)

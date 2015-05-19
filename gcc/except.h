@@ -252,6 +252,7 @@ extern hash_map<void *, void *> *duplicate_eh_regions
   (struct function *, eh_region, int, duplicate_eh_regions_map, void *);
 
 extern void sjlj_emit_function_exit_after (rtx_insn *);
+extern void update_sjlj_context (void);
 
 extern eh_region gen_eh_region_cleanup (eh_region);
 extern eh_region gen_eh_region_try (eh_region);

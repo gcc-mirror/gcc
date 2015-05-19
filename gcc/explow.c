@@ -1096,8 +1096,8 @@ emit_stack_restore (enum save_level save_level, rtx sa)
 }
 
 /* Invoke emit_stack_save on the nonlocal_goto_save_area for the current
-   function.  This function should be called whenever we allocate or
-   deallocate dynamic stack space.  */
+   function.  This should be called whenever we allocate or deallocate
+   dynamic stack space.  */
 
 void
 update_nonlocal_goto_save_area (void)
@@ -1116,6 +1116,21 @@ update_nonlocal_goto_save_area (void)
   r_save = expand_expr (t_save, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
   emit_stack_save (SAVE_NONLOCAL, &r_save);
+}
+
+/* Record a new stack level for the current function.  This should be called
+   whenever we allocate or deallocate dynamic stack space.  */
+
+void
+record_new_stack_level (void)
+{
+  /* Record the new stack level for nonlocal gotos.  */
+  if (cfun->nonlocal_goto_save_area)
+    update_nonlocal_goto_save_area ();
+ 
+  /* Record the new stack level for SJLJ exceptions.  */
+  if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ)
+    update_sjlj_context ();
 }
 
 /* Return an rtx representing the address of an area of memory dynamically
@@ -1479,9 +1494,8 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
   /* Now that we've committed to a return value, mark its alignment.  */
   mark_reg_pointer (target, required_align);
 
-  /* Record the new stack level for nonlocal gotos.  */
-  if (cfun->nonlocal_goto_save_area != 0)
-    update_nonlocal_goto_save_area ();
+  /* Record the new stack level.  */
+  record_new_stack_level ();
 
   return target;
 }
