@@ -1349,7 +1349,7 @@ read_rtx_code (const char *code_name)
       case 'r':
 	read_name (&name);
 	validate_const_int (name.string);
-	SET_REGNO_RAW (return_rtx, atoi (name.string));
+	set_regno_raw (return_rtx, atoi (name.string), 1);
 	REG_ATTRS (return_rtx) = NULL;
 	break;
 

@@ -1,5 +1,19 @@
 2015-05-19  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* rtl.h (reg_info): Add an nregs field.
+	(REG_NREGS): Use it.
+	(SET_REGNO_RAW): Delete.
+	(set_regno_raw): New function.
+	* regs.h (END_HARD_REGNO): Make equivalent to END_REGNO.
+	(END_REGNO): Redefine in terms of REG_NREGS.
+	* read-rtl.c (read_rtx_code): Call set_regno_raw instead of
+	SET_REGNO_RAW.
+	* emit-rtl.c (set_mode_and_regno): Likewise.
+	* df-scan.c (df_ref_change_reg_with_loc): Use set_mode_and_regno
+	instead of SET_REGNO_RAW.
+
+2015-05-19  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* rtl.h (PUT_MODE_RAW): New macro.
 	(PUT_REG_NOTE_KIND): Use it.
 	(set_mode_and_regno): Declare.

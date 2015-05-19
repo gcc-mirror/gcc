@@ -210,7 +210,9 @@ struct GTY(()) reg_info {
   /* The value of REGNO.  */
   unsigned int regno;
 
-  unsigned int unused : 32;
+  /* The value of REG_NREGS.  */
+  unsigned int nregs : 8;
+  unsigned int unused : 24;
 
   /* The value of REG_ATTRS.  */
   reg_attrs *attrs;
@@ -1712,15 +1714,11 @@ inline rtx_insn *JUMP_LABEL_AS_INSN (const rtx_insn *insn)
    be used on RHS.  Use SET_REGNO to change the value.  */
 #define REGNO(RTX) (rhs_regno(RTX))
 #define SET_REGNO(RTX, N) (df_ref_change_reg_with_loc (RTX, N))
-#define SET_REGNO_RAW(RTX, N) (REG_CHECK (RTX)->regno = N)
 
 /* Return the number of consecutive registers in a REG.  This is always
    1 for pseudo registers and is determined by HARD_REGNO_NREGS for
    hard registers.  */
-#define REG_NREGS(RTX) \
-  (REGNO (RTX) < FIRST_PSEUDO_REGISTER \
-   ? (unsigned int) hard_regno_nregs[REGNO (RTX)][GET_MODE (RTX)] \
-   : 1)
+#define REG_NREGS(RTX) (REG_CHECK (RTX)->nregs)
 
 /* ORIGINAL_REGNO holds the number the register originally had; for a
    pseudo register turned into a hard reg this will hold the old pseudo
@@ -1735,6 +1733,15 @@ rhs_regno (const_rtx x)
   return REG_CHECK (x)->regno;
 }
 
+/* Change the REGNO and REG_NREGS of REG X to the specified values,
+   bypassing the df machinery.  */
+static inline void
+set_regno_raw (rtx x, unsigned int regno, unsigned int nregs)
+{
+  reg_info *reg = REG_CHECK (x);
+  reg->regno = regno;
+  reg->nregs = nregs;
+}
 
 /* 1 if RTX is a reg or parallel that is the current function's return
    value.  */
