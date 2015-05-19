@@ -1,5 +1,16 @@
 2015-05-19  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* df.h (df_ref_change_reg_with_loc): Remove old_regno parameter.
+	Change type of new_regno to unsigned int.
+	* df-scan.c (df_ref_change_reg_with_loc_1): Change type of
+	new_regno to unsigned int.
+	(df_ref_change_reg_with_loc): Remove old_regno parameter.
+	Change type of new_regno to unsigned int.  Use SET_REGNO_RAW.
+	* rtl.h (SET_REGNO): Update call to df_ref_change_reg_with_loc.
+	(SET_REGNO_RAW): Add space after ",".
+
+2015-05-19  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* rtl.h (REG_NREGS): New macro
 	* alias.c (record_set): Use it.
 	* cfgcleanup.c (mark_effect): Likewise.
