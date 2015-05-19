@@ -1470,8 +1470,7 @@ subst_stack_regs_pat (rtx_insn *insn, stack_ptr regstack, rtx pat)
 	  case CALL:
 	    {
 	      int count;
-	      for (count = hard_regno_nregs[REGNO (*dest)][GET_MODE (*dest)];
-		   --count >= 0;)
+	      for (count = REG_NREGS (*dest); --count >= 0;)
 		{
 		  regstack->reg[++regstack->top] = REGNO (*dest) + count;
 		  SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest) + count);

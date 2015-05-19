@@ -1298,12 +1298,7 @@ record_set (rtx dest, const_rtx set, void *data ATTRIBUTE_UNUSED)
 
   gcc_checking_assert (regno < reg_base_value->length ());
 
-  /* If this spans multiple hard registers, then we must indicate that every
-     register has an unusable value.  */
-  if (regno < FIRST_PSEUDO_REGISTER)
-    n = hard_regno_nregs[regno][GET_MODE (dest)];
-  else
-    n = 1;
+  n = REG_NREGS (dest);
   if (n != 1)
     {
       while (--n >= 0)

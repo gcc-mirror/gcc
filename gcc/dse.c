@@ -1876,11 +1876,7 @@ look_for_hardregs (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 
   if (REG_P (x)
       && HARD_REGISTER_P (x))
-    {
-      unsigned int regno = REGNO (x);
-      bitmap_set_range (regs_set, regno,
-			hard_regno_nregs[regno][GET_MODE (x)]);
-    }
+    bitmap_set_range (regs_set, REGNO (x), REG_NREGS (x));
 }
 
 /* Helper function for replace_read and record_store.

@@ -671,9 +671,7 @@ dead_debug_insert_temp (struct dead_debug_local *debug, unsigned int uregno,
 	     the debug temp to.  ??? We could bind the debug_expr to a
 	     CONCAT or PARALLEL with the split multi-registers, and
 	     replace them as we found the corresponding sets.  */
-	  else if (REGNO (reg) < FIRST_PSEUDO_REGISTER
-		   && (hard_regno_nregs[REGNO (reg)][GET_MODE (reg)]
-		       != hard_regno_nregs[REGNO (reg)][GET_MODE (dest)]))
+	  else if (REG_NREGS (reg) != REG_NREGS (dest))
 	    breg = NULL;
 	  /* Ok, it's the same (hardware) REG, but with a different
 	     mode, so SUBREG it.  */
@@ -695,7 +693,7 @@ dead_debug_insert_temp (struct dead_debug_local *debug, unsigned int uregno,
 	     setting REG in its mode would, we won't know what to bind
 	     the debug temp to.  */
 	  else if (REGNO (reg) < FIRST_PSEUDO_REGISTER
-		   && (hard_regno_nregs[REGNO (reg)][GET_MODE (reg)]
+		   && (REG_NREGS (reg)
 		       != hard_regno_nregs[REGNO (reg)][GET_MODE (dest)]))
 	    breg = NULL;
 	  /* Yay, we can use SRC, just adjust its mode.  */

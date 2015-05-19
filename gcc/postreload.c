@@ -971,7 +971,7 @@ reload_combine_recognize_const_pattern (rtx_insn *insn)
   reg = SET_DEST (set);
   src = SET_SRC (set);
   if (!REG_P (reg)
-      || hard_regno_nregs[REGNO (reg)][GET_MODE (reg)] != 1
+      || REG_NREGS (reg) != 1
       || GET_MODE (reg) != Pmode
       || reg == stack_pointer_rtx)
     return false;
@@ -1106,8 +1106,7 @@ reload_combine_recognize_pattern (rtx_insn *insn)
 
   reg = SET_DEST (set);
   src = SET_SRC (set);
-  if (!REG_P (reg)
-      || hard_regno_nregs[REGNO (reg)][GET_MODE (reg)] != 1)
+  if (!REG_P (reg) || REG_NREGS (reg) != 1)
     return false;
 
   regno = REGNO (reg);
@@ -1563,7 +1562,7 @@ reload_combine_note_use (rtx *xp, rtx_insn *insn, int ruid, rtx containing_mem)
 	/* No spurious USEs of pseudo registers may remain.  */
 	gcc_assert (regno < FIRST_PSEUDO_REGISTER);
 
-	nregs = hard_regno_nregs[regno][GET_MODE (x)];
+	nregs = REG_NREGS (x);
 
 	/* We can't substitute into multi-hard-reg uses.  */
 	if (nregs > 1)
@@ -1695,7 +1694,7 @@ move2add_record_mode (rtx reg)
   else if (REG_P (reg))
     {
       regno = REGNO (reg);
-      nregs = hard_regno_nregs[regno][mode];
+      nregs = REG_NREGS (reg);
     }
   else
     gcc_unreachable ();
@@ -2135,7 +2134,7 @@ reload_cse_move2add (rtx_insn *first)
 		 number of calls to gen_rtx_SET to avoid memory
 		 allocation if possible.  */
 	      && SCALAR_INT_MODE_P (GET_MODE (XEXP (cnd, 0)))
-	      && hard_regno_nregs[REGNO (XEXP (cnd, 0))][GET_MODE (XEXP (cnd, 0))] == 1
+	      && REG_NREGS (XEXP (cnd, 0)) == 1
 	      && CONST_INT_P (XEXP (cnd, 1)))
 	    {
 	      rtx implicit_set =

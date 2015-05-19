@@ -2125,8 +2125,7 @@ mark_insn_reg_birth (rtx insn, rtx reg, bool clobber_p, bool unused_p)
 
   regno = REGNO (reg);
   if (regno < FIRST_PSEUDO_REGISTER)
-    mark_insn_hard_regno_birth (insn, regno,
-				hard_regno_nregs[regno][GET_MODE (reg)],
+    mark_insn_hard_regno_birth (insn, regno, REG_NREGS (reg),
 				clobber_p, unused_p);
   else
     mark_insn_pseudo_birth (insn, regno, clobber_p, unused_p);
@@ -2185,7 +2184,7 @@ mark_reg_death (rtx reg)
 
   regno = REGNO (reg);
   if (regno < FIRST_PSEUDO_REGISTER)
-    mark_hard_regno_death (regno, hard_regno_nregs[regno][GET_MODE (reg)]);
+    mark_hard_regno_death (regno, REG_NREGS (reg));
   else
     mark_pseudo_death (regno);
 }
@@ -3645,7 +3644,7 @@ deps_analyze_insn (struct deps_desc *deps, rtx_insn *insn)
 	  rtx_insn_list *cond_deps = NULL;
 	  t = XEXP (t, 0);
 	  regno = REGNO (t);
-	  nregs = hard_regno_nregs[regno][GET_MODE (t)];
+	  nregs = REG_NREGS (t);
 	  while (nregs-- > 0)
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[regno + nregs];

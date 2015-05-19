@@ -825,9 +825,7 @@ count_occurrences_equiv (const_rtx what, const_rtx where)
 	{
 	  /* Bail out if mode is different or more than one register is
 	     used.  */
-	  if (GET_MODE (x) != GET_MODE (what)
-	      || (HARD_REGISTER_P (x)
-		  && hard_regno_nregs[REGNO (x)][GET_MODE (x)] > 1))
+	  if (GET_MODE (x) != GET_MODE (what) || REG_NREGS (x) > 1)
 	    return 0;
 	  count += 1;
 	}

@@ -1697,6 +1697,14 @@ inline rtx_insn *JUMP_LABEL_AS_INSN (const rtx_insn *insn)
   (df_ref_change_reg_with_loc (REGNO (RTX), N, RTX), XCUINT (RTX, 0, REG) = N)
 #define SET_REGNO_RAW(RTX,N) (XCUINT (RTX, 0, REG) = N)
 
+/* Return the number of consecutive registers in a REG.  This is always
+   1 for pseudo registers and is determined by HARD_REGNO_NREGS for
+   hard registers.  */
+#define REG_NREGS(RTX) \
+  (REGNO (RTX) < FIRST_PSEUDO_REGISTER \
+   ? (unsigned int) hard_regno_nregs[REGNO (RTX)][GET_MODE (RTX)] \
+   : 1)
+
 /* ORIGINAL_REGNO holds the number the register originally had; for a
    pseudo register turned into a hard reg this will hold the old pseudo
    register number.  */

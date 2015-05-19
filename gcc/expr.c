@@ -3051,7 +3051,7 @@ write_complex_part (rtx cplx, rtx val, bool imag_p)
 	 where the natural size of floating-point regs is 32-bit.  */
       || (REG_P (cplx)
 	  && REGNO (cplx) < FIRST_PSEUDO_REGISTER
-	  && hard_regno_nregs[REGNO (cplx)][cmode] % 2 == 0))
+	  && REG_NREGS (cplx) % 2 == 0))
     {
       rtx part = simplify_gen_subreg (imode, cplx, cmode,
 				      imag_p ? GET_MODE_SIZE (imode) : 0);
@@ -3116,7 +3116,7 @@ read_complex_part (rtx cplx, bool imag_p)
 	 where the natural size of floating-point regs is 32-bit.  */
       || (REG_P (cplx)
 	  && REGNO (cplx) < FIRST_PSEUDO_REGISTER
-	  && hard_regno_nregs[REGNO (cplx)][cmode] % 2 == 0))
+	  && REG_NREGS (cplx) % 2 == 0))
     {
       rtx ret = simplify_gen_subreg (imode, cplx, cmode,
 				     imag_p ? GET_MODE_SIZE (imode) : 0);
@@ -3346,10 +3346,10 @@ emit_move_complex (machine_mode mode, rtx x, rtx y)
       && optab_handler (mov_optab, GET_MODE_INNER (mode)) != CODE_FOR_nothing
       && !(REG_P (x)
 	   && HARD_REGISTER_P (x)
-	   && hard_regno_nregs[REGNO (x)][mode] == 1)
+	   && REG_NREGS (x) == 1)
       && !(REG_P (y)
 	   && HARD_REGISTER_P (y)
-	   && hard_regno_nregs[REGNO (y)][mode] == 1))
+	   && REG_NREGS (y) == 1))
     try_int = false;
   /* Not possible if the values are inherently not adjacent.  */
   else if (GET_CODE (x) == CONCAT || GET_CODE (y) == CONCAT)
