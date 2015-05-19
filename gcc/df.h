@@ -1049,7 +1049,7 @@ extern void df_recompute_luids (basic_block);
 extern void df_insn_change_bb (rtx_insn *, basic_block);
 extern void df_maybe_reorganize_use_refs (enum df_ref_order);
 extern void df_maybe_reorganize_def_refs (enum df_ref_order);
-extern void df_ref_change_reg_with_loc (int, int, rtx);
+extern void df_ref_change_reg_with_loc (rtx, unsigned int);
 extern void df_notes_rescan (rtx_insn *);
 extern void df_hard_reg_init (void);
 extern void df_update_entry_block_defs (void);
