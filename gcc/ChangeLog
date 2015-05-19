@@ -1,3 +1,10 @@
+2015-05-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (verify_type_variant): Fix #undef.
+	(gimple_canonical_types_compatible_p): Move here from lto.c
+	(verify_type): Verify TYPE_CANONICAL compatibility.
+	* tree.h (gimple_canonical_types_compatible_p): Declare.
+
 2015-05-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/66199

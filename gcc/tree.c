@@ -12687,9 +12687,224 @@ verify_type_variant (const_tree t, tree tv)
       return false;
     }
   return true;
-#undef verify_type_variant
+#undef verify_variant_match
 }
 
+
+/* The TYPE_CANONICAL merging machinery.  It should closely resemble
+   the middle-end types_compatible_p function.  It needs to avoid
+   claiming types are different for types that should be treated
+   the same with respect to TBAA.  Canonical types are also used
+   for IL consistency checks via the useless_type_conversion_p
+   predicate which does not handle all type kinds itself but falls
+   back to pointer-comparison of TYPE_CANONICAL for aggregates
+   for example.  */
+
+/* Return true iff T1 and T2 are structurally identical for what
+   TBAA is concerned.  
+   This function is used both by lto.c canonical type merging and by the
+   verifier.  If TRUST_TYPE_CANONICAL we do not look into structure of types
+   that have TYPE_CANONICAL defined and assume them equivalent.  */
+
+bool
+gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
+				     bool trust_type_canonical)
+{
+  /* Before starting to set up the SCC machinery handle simple cases.  */
+
+  /* Check first for the obvious case of pointer identity.  */
+  if (t1 == t2)
+    return true;
+
+  /* Check that we have two types to compare.  */
+  if (t1 == NULL_TREE || t2 == NULL_TREE)
+    return false;
+
+  /* If the types have been previously registered and found equal
+     they still are.  */
+  if (TYPE_CANONICAL (t1) && TYPE_CANONICAL (t2)
+      && trust_type_canonical)
+    return TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2);
+
+  /* Can't be the same type if the types don't have the same code.  */
+  if (TREE_CODE (t1) != TREE_CODE (t2))
+    return false;
+
+  /* Qualifiers do not matter for canonical type comparison purposes.  */
+
+  /* Void types and nullptr types are always the same.  */
+  if (TREE_CODE (t1) == VOID_TYPE
+      || TREE_CODE (t1) == NULLPTR_TYPE)
+    return true;
+
+  /* Can't be the same type if they have different mode.  */
+  if (TYPE_MODE (t1) != TYPE_MODE (t2))
+    return false;
+
+  /* Non-aggregate types can be handled cheaply.  */
+  if (INTEGRAL_TYPE_P (t1)
+      || SCALAR_FLOAT_TYPE_P (t1)
+      || FIXED_POINT_TYPE_P (t1)
+      || TREE_CODE (t1) == VECTOR_TYPE
+      || TREE_CODE (t1) == COMPLEX_TYPE
+      || TREE_CODE (t1) == OFFSET_TYPE
+      || POINTER_TYPE_P (t1))
+    {
+      /* Can't be the same type if they have different sign or precision.  */
+      if (TYPE_PRECISION (t1) != TYPE_PRECISION (t2)
+	  || TYPE_UNSIGNED (t1) != TYPE_UNSIGNED (t2))
+	return false;
+
+      if (TREE_CODE (t1) == INTEGER_TYPE
+	  && TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2))
+	return false;
+
+      /* For canonical type comparisons we do not want to build SCCs
+	 so we cannot compare pointed-to types.  But we can, for now,
+	 require the same pointed-to type kind and match what
+	 useless_type_conversion_p would do.  */
+      if (POINTER_TYPE_P (t1))
+	{
+	  if (TYPE_ADDR_SPACE (TREE_TYPE (t1))
+	      != TYPE_ADDR_SPACE (TREE_TYPE (t2)))
+	    return false;
+
+	  if (TREE_CODE (TREE_TYPE (t1)) != TREE_CODE (TREE_TYPE (t2)))
+	    return false;
+	}
+
+      /* Tail-recurse to components.  */
+      if (TREE_CODE (t1) == VECTOR_TYPE
+	  || TREE_CODE (t1) == COMPLEX_TYPE)
+	return gimple_canonical_types_compatible_p (TREE_TYPE (t1),
+						    TREE_TYPE (t2),
+						    trust_type_canonical);
+
+      return true;
+    }
+
+  /* Do type-specific comparisons.  */
+  switch (TREE_CODE (t1))
+    {
+    case ARRAY_TYPE:
+      /* Array types are the same if the element types are the same and
+	 the number of elements are the same.  */
+      if (!gimple_canonical_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2),
+						trust_type_canonical)
+	  || TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2)
+	  || TYPE_NONALIASED_COMPONENT (t1) != TYPE_NONALIASED_COMPONENT (t2))
+	return false;
+      else
+	{
+	  tree i1 = TYPE_DOMAIN (t1);
+	  tree i2 = TYPE_DOMAIN (t2);
+
+	  /* For an incomplete external array, the type domain can be
+ 	     NULL_TREE.  Check this condition also.  */
+	  if (i1 == NULL_TREE && i2 == NULL_TREE)
+	    return true;
+	  else if (i1 == NULL_TREE || i2 == NULL_TREE)
+	    return false;
+	  else
+	    {
+	      tree min1 = TYPE_MIN_VALUE (i1);
+	      tree min2 = TYPE_MIN_VALUE (i2);
+	      tree max1 = TYPE_MAX_VALUE (i1);
+	      tree max2 = TYPE_MAX_VALUE (i2);
+
+	      /* The minimum/maximum values have to be the same.  */
+	      if ((min1 == min2
+		   || (min1 && min2
+		       && ((TREE_CODE (min1) == PLACEHOLDER_EXPR
+			    && TREE_CODE (min2) == PLACEHOLDER_EXPR)
+		           || operand_equal_p (min1, min2, 0))))
+		  && (max1 == max2
+		      || (max1 && max2
+			  && ((TREE_CODE (max1) == PLACEHOLDER_EXPR
+			       && TREE_CODE (max2) == PLACEHOLDER_EXPR)
+			      || operand_equal_p (max1, max2, 0)))))
+		return true;
+	      else
+		return false;
+	    }
+	}
+
+    case METHOD_TYPE:
+    case FUNCTION_TYPE:
+      /* Function types are the same if the return type and arguments types
+	 are the same.  */
+      if (!gimple_canonical_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2),
+						trust_type_canonical))
+	return false;
+
+      if (!comp_type_attributes (t1, t2))
+	return false;
+
+      if (TYPE_ARG_TYPES (t1) == TYPE_ARG_TYPES (t2))
+	return true;
+      else
+	{
+	  tree parms1, parms2;
+
+	  for (parms1 = TYPE_ARG_TYPES (t1), parms2 = TYPE_ARG_TYPES (t2);
+	       parms1 && parms2;
+	       parms1 = TREE_CHAIN (parms1), parms2 = TREE_CHAIN (parms2))
+	    {
+	      if (!gimple_canonical_types_compatible_p
+		     (TREE_VALUE (parms1), TREE_VALUE (parms2),
+		      trust_type_canonical))
+		return false;
+	    }
+
+	  if (parms1 || parms2)
+	    return false;
+
+	  return true;
+	}
+
+    case RECORD_TYPE:
+    case UNION_TYPE:
+    case QUAL_UNION_TYPE:
+      {
+	tree f1, f2;
+
+	/* For aggregate types, all the fields must be the same.  */
+	for (f1 = TYPE_FIELDS (t1), f2 = TYPE_FIELDS (t2);
+	     f1 || f2;
+	     f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
+	  {
+	    /* Skip non-fields.  */
+	    while (f1 && TREE_CODE (f1) != FIELD_DECL)
+	      f1 = TREE_CHAIN (f1);
+	    while (f2 && TREE_CODE (f2) != FIELD_DECL)
+	      f2 = TREE_CHAIN (f2);
+	    if (!f1 || !f2)
+	      break;
+	    /* The fields must have the same name, offset and type.  */
+	    if (DECL_NONADDRESSABLE_P (f1) != DECL_NONADDRESSABLE_P (f2)
+		|| !gimple_compare_field_offset (f1, f2)
+		|| !gimple_canonical_types_compatible_p
+		      (TREE_TYPE (f1), TREE_TYPE (f2),
+		       trust_type_canonical))
+	      return false;
+	  }
+
+	/* If one aggregate has more fields than the other, they
+	   are not the same.  */
+	if (f1 || f2)
+	  return false;
+
+	return true;
+      }
+
+    default:
+      /* Consider all types with language specific trees in them mutually
+	 compatible.  This is executed only from verify_type and false
+         positives can be tolerated.  */
+      gcc_assert (!in_lto_p);
+      return true;
+    }
+}
 
 /* Verify type T.  */
 
@@ -12711,6 +12926,36 @@ verify_type (const_tree t)
     }
   else if (t != mv && !verify_type_variant (t, mv))
     error_found = true;
+
+  tree ct = TYPE_CANONICAL (t);
+  if (!ct)
+    ;
+  else if (TYPE_CANONICAL (t) != ct)
+    {
+      error ("TYPE_CANONICAL has different TYPE_CANONICAL");
+      debug_tree (ct);
+      error_found = true;
+    }
+  /* Method and function types can not be used to address memory and thus
+     TYPE_CANONICAL really matters only for determining useless conversions.
+
+     FIXME: C++ FE does not agree with gimple_canonical_types_compatible_p
+     here.  gimple_canonical_types_compatible_p calls comp_type_attributes
+     while for C++ FE the attributes does not make difference.  */
+  else if (TREE_CODE (t) == FUNCTION_TYPE || TREE_CODE (t) == METHOD_TYPE)
+    ;
+  else if (t != ct
+	   /* FIXME: gimple_canonical_types_compatible_p can not compare types
+	      with variably sized arrays because their sizes possibly
+	      gimplified to different variables.  */
+	   && !variably_modified_type_p (ct, NULL)
+	   && !gimple_canonical_types_compatible_p (t, ct, false))
+    {
+      error ("TYPE_CANONICAL is not compatible");
+      debug_tree (ct);
+      error_found = true;
+    }
+
 
   /* Check various uses of TYPE_MINVAL.  */
   if (RECORD_OR_UNION_TYPE_P (t))
