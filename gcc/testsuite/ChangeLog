@@ -1,6 +1,16 @@
+2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* lib/target-supports.exp: Vector do not always have natural
+	alignment on s390*.
+
 2015-05-19  David Sherwood  <david.sherwood@arm.com>
 
 	* gcc.dg/loop-invariant.c: New testcase.
+
+2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* lib/target-supports.exp: Vector do not always have natural
+	alignment on s390*.
 
 2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
