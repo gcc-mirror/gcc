@@ -9,5 +9,5 @@ void foo (int * __restrict__ p, short * __restrict__ q)
   p[3] = q[3] + 1;
 }
 
-/* { dg-final { scan-tree-dump "basic block vectorized" "slp2" } } */
+/* { dg-final { scan-tree-dump "basic block vectorized" "slp2" { target vect_hw_misalign } } } */
 /* { dg-final { cleanup-tree-dump "slp2" } } */

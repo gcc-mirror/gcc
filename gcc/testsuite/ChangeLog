@@ -1,3 +1,7 @@
+2015-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/vect/bb-slp-35.c: Adjust.
+
 2015-05-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66165
