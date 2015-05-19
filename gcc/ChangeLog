@@ -1,3 +1,8 @@
+2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* doc/invoke.texi: Add missing cpu types for march option: z196
+	and zEC12.
+
 2015-05-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66140
