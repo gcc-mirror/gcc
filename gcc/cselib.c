@@ -2371,16 +2371,15 @@ cselib_invalidate_rtx_note_stores (rtx dest, const_rtx ignore ATTRIBUTE_UNUSED,
 static void
 cselib_record_set (rtx dest, cselib_val *src_elt, cselib_val *dest_addr_elt)
 {
-  int dreg = REG_P (dest) ? (int) REGNO (dest) : -1;
-
   if (src_elt == 0 || side_effects_p (dest))
     return;
 
-  if (dreg >= 0)
+  if (REG_P (dest))
     {
+      unsigned int dreg = REGNO (dest);
       if (dreg < FIRST_PSEUDO_REGISTER)
 	{
-	  unsigned int n = hard_regno_nregs[dreg][GET_MODE (dest)];
+	  unsigned int n = REG_NREGS (dest);
 
 	  if (n > max_value_regs)
 	    max_value_regs = n;

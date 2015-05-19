@@ -1,5 +1,40 @@
 2015-05-19  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* rtl.h (REG_NREGS): New macro
+	* alias.c (record_set): Use it.
+	* cfgcleanup.c (mark_effect): Likewise.
+	* combine.c (likely_spilled_retval_1): Likewise.
+	(likely_spilled_retval_p, can_change_dest_mode): Likewise.
+	(move_deaths, distribute_notes): Likewise.
+	* cselib.c (cselib_record_set): Likewise.
+	* df-problems.c (df_simulate_one_insn_forwards): Likewise.
+	* df-scan.c (df_mark_reg): Likewise.
+	* dse.c (look_for_hardregs): Likewise.
+	* dwarf2out.c (reg_loc_descriptor): Likewise.
+	(multiple_reg_loc_descriptor): Likewise.
+	* expr.c (write_complex_part, read_complex_part): Likewise.
+	(emit_move_complex): Likewise.
+	* haifa-sched.c (setup_ref_regs): Likewise.
+	* ira-lives.c (mark_hard_reg_live): Likewise.
+	* lra.c (lra_set_insn_recog_data): Likewise.
+	* mode-switching.c (create_pre_exit): Likewise.
+	* postreload.c (reload_combine_recognize_const_pattern): Likewise.
+	(reload_combine_recognize_pattern): Likewise.
+	(reload_combine_note_use, move2add_record_mode): Likewise.
+	(reload_cse_move2add): Likewise.
+	* reg-stack.c (subst_stack_regs_pat): Likewise.
+	* regcprop.c (kill_value, copy_value): Likewise.
+	(copyprop_hardreg_forward_1): Likewise.
+	* regrename.c (verify_reg_in_set, scan_rtx_reg): Likewise.
+	(build_def_use): Likewise.
+	* sched-deps.c (mark_insn_reg_birth, mark_reg_death): Likewise.
+	(deps_analyze_insn): Likewise.
+	* sched-rgn.c (check_live_1, update_live_1): Likewise.
+	* sel-sched.c (count_occurrences_equiv): Likewise.
+	* valtrack.c (dead_debug_insert_temp): Likewise.
+
+2015-05-19  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* cfgcleanup.c (mentions_nonequal_regs): Use END_REGNO.
 	* dse.c (note_add_store): Likewise.
 	* ira-lives.c (mark_hard_reg_dead): Likewise.

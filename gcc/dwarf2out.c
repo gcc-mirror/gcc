@@ -11147,7 +11147,7 @@ reg_loc_descriptor (rtx rtl, enum var_init_status initialized)
 
   regs = targetm.dwarf_register_span (rtl);
 
-  if (hard_regno_nregs[REGNO (rtl)][GET_MODE (rtl)] > 1 || regs)
+  if (REG_NREGS (rtl) > 1 || regs)
     return multiple_reg_loc_descriptor (rtl, regs, initialized);
   else
     {
@@ -11204,7 +11204,7 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs,
 #endif
 
       gcc_assert ((unsigned) DBX_REGISTER_NUMBER (reg) == dbx_reg_number (rtl));
-      nregs = hard_regno_nregs[REGNO (rtl)][GET_MODE (rtl)];
+      nregs = REG_NREGS (rtl);
 
       size = GET_MODE_SIZE (GET_MODE (rtl)) / nregs;
 

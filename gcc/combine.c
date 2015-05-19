@@ -2364,7 +2364,7 @@ likely_spilled_retval_1 (rtx x, const_rtx set, void *data)
   regno = REGNO (x);
   if (regno >= info->regno + info->nregs)
     return;
-  nregs = hard_regno_nregs[regno][GET_MODE (x)];
+  nregs = REG_NREGS (x);
   if (regno + nregs <= info->regno)
     return;
   new_mask = (2U << (nregs - 1)) - 1;
@@ -2399,7 +2399,7 @@ likely_spilled_retval_p (rtx_insn *insn)
   if (!REG_P (reg) || !targetm.calls.function_value_regno_p (REGNO (reg)))
     return 0;
   regno = REGNO (reg);
-  nregs = hard_regno_nregs[regno][GET_MODE (reg)];
+  nregs = REG_NREGS (reg);
   if (nregs == 1)
     return 0;
   mask = (2U << (nregs - 1)) - 1;
@@ -2471,8 +2471,7 @@ can_change_dest_mode (rtx x, int added_sets, machine_mode mode)
      registers than the old mode.  */
   if (regno < FIRST_PSEUDO_REGISTER)
     return (HARD_REGNO_MODE_OK (regno, mode)
-	    && (hard_regno_nregs[regno][GET_MODE (x)]
-		>= hard_regno_nregs[regno][mode]));
+	    && REG_NREGS (x) >= hard_regno_nregs[regno][mode]);
 
   /* Or a pseudo that is only used once.  */
   return (regno < reg_n_sets_max
@@ -13474,7 +13473,7 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx_insn *to_insn,
 			&& (GET_MODE_SIZE (GET_MODE (XEXP (note, 0)))
 			    < GET_MODE_SIZE (GET_MODE (x)))))
 		   && regno < FIRST_PSEUDO_REGISTER
-		   && hard_regno_nregs[regno][GET_MODE (x)] > 1)
+		   && REG_NREGS (x) > 1)
 	    {
 	      unsigned int ourend = END_HARD_REGNO (x);
 	      unsigned int i, offset;
@@ -14069,8 +14068,7 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 		 be dead; so we recourse, and the recursive call then finds
 		 the previous insn that used this register.  */
 
-	      if (place && regno < FIRST_PSEUDO_REGISTER
-		  && hard_regno_nregs[regno][GET_MODE (XEXP (note, 0))] > 1)
+	      if (place && REG_NREGS (XEXP (note, 0)) > 1)
 		{
 		  unsigned int endregno = END_HARD_REGNO (XEXP (note, 0));
 		  bool all_used = true;
