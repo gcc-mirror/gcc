@@ -2677,7 +2677,7 @@ convert_regs_exit (void)
   if (retvalue)
     {
       value_reg_low = REGNO (retvalue);
-      value_reg_high = END_HARD_REGNO (retvalue) - 1;
+      value_reg_high = END_REGNO (retvalue) - 1;
     }
 
   output_stack = &BLOCK_INFO (EXIT_BLOCK_PTR_FOR_FN (cfun))->stack_in;

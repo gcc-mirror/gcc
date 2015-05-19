@@ -2624,7 +2624,7 @@ df_ref_record (enum df_ref_class cl,
 	  endregno = regno + subreg_nregs (reg);
 	}
       else
-	endregno = END_HARD_REGNO (reg);
+	endregno = END_REGNO (reg);
 
       /*  If this is a multiword hardreg, we create some extra
 	  datastructures that will enable us to easily build REG_DEAD

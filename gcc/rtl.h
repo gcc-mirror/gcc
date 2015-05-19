@@ -1733,6 +1733,13 @@ rhs_regno (const_rtx x)
   return REG_CHECK (x)->regno;
 }
 
+/* Return the final register in REG X plus one.  */
+static inline unsigned int
+END_REGNO (const_rtx x)
+{
+  return REGNO (x) + REG_NREGS (x);
+}
+
 /* Change the REGNO and REG_NREGS of REG X to the specified values,
    bypassing the df machinery.  */
 static inline void

@@ -443,7 +443,7 @@ note_btr_set (rtx dest, const_rtx set ATTRIBUTE_UNUSED, void *data)
   if (!REG_P (dest))
     return;
   regno = REGNO (dest);
-  end_regno = END_HARD_REGNO (dest);
+  end_regno = END_REGNO (dest);
   for (; regno < end_regno; regno++)
     if (TEST_HARD_REG_BIT (all_btrs, regno))
       {

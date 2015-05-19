@@ -6590,7 +6590,7 @@ reg_overlap_mentioned_for_reload_p (rtx x, rtx in)
 	  return 0;
 	}
 
-      endregno = END_HARD_REGNO (x);
+      endregno = END_REGNO (x);
 
       return refers_to_regno_for_reload_p (regno, endregno, in, (rtx*) 0);
     }
