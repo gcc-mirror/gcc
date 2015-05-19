@@ -1,3 +1,8 @@
+2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* recog.h: Increase MAX_RECOG_ALTERNATIVES.  Change type of
+	alternative_mask to uint64_t.
+
 2015-05-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/66187
