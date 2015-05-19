@@ -1,5 +1,11 @@
 2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* gcc.dg/tree-ssa/gen-vect-11b.c: Disable vector instructions on
+	s390*.
+	* gcc.dg/tree-ssa/gen-vect-11c.c: Likewise.
+
+2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.target/s390/zvector/vec-dbl-math-compile-1.c: New test.
 	* gcc.target/s390/zvector/vec-genbytemask-1.c: New test.
 	* gcc.target/s390/zvector/vec-genmask-1.c: New test.
