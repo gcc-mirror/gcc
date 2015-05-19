@@ -1,5 +1,11 @@
 2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/66040
+	* parse.c(verify_st_order): Replace a gfc_internal_error with your
+	generic gfc_error.
+
+2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/66039
 	* io.c (match_filepos): Check for incomplete/mangled REWIND, FLUSH,
 	BACKSPACE, and ENDFILE statements

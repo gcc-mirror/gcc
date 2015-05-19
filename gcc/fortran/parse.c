@@ -2425,8 +2425,7 @@ verify_st_order (st_state *p, gfc_statement st, bool silent)
       break;
 
     default:
-      gfc_internal_error ("Unexpected %s statement in verify_st_order() at %C",
-			  gfc_ascii_statement (st));
+      return false;
     }
 
   /* All is well, record the statement in case we need it next time.  */
