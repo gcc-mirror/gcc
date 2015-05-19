@@ -111,22 +111,7 @@ enum processor_flags
 #define TARGET_TPF 0
 
 /* Target CPU builtins.  */
-#define TARGET_CPU_CPP_BUILTINS()					\
-  do									\
-    {									\
-      builtin_assert ("cpu=s390");					\
-      builtin_assert ("machine=s390");					\
-      builtin_define ("__s390__");					\
-      if (TARGET_ZARCH)							\
-	builtin_define ("__zarch__");					\
-      if (TARGET_64BIT)							\
-        builtin_define ("__s390x__");					\
-      if (TARGET_LONG_DOUBLE_128)					\
-        builtin_define ("__LONG_DOUBLE_128__");				\
-      if (TARGET_HTM)							\
-	builtin_define ("__HTM__");					\
-    }									\
-  while (0)
+#define TARGET_CPU_CPP_BUILTINS() s390_cpu_cpp_builtins (pfile)
 
 #ifdef DEFAULT_TARGET_64BIT
 #define TARGET_DEFAULT     (MASK_64BIT | MASK_ZARCH | MASK_HARD_DFP	\
@@ -988,5 +973,15 @@ extern const int processor_flags_table[];
 /* The truth element value for vector comparisons.  Our instructions
    always generate -1 in that case.  */
 #define VECTOR_STORE_FLAG_VALUE(MODE) CONSTM1_RTX (GET_MODE_INNER (MODE))
+
+/* Target pragma.  */
+
+/* resolve_overloaded_builtin can not be defined the normal way since
+   it is defined in code which technically belongs to the
+   front-end.  */
+#define REGISTER_TARGET_PRAGMAS()		\
+  do {						\
+    s390_register_target_pragmas ();		\
+  } while (0)
 
 #endif /* S390_H */
