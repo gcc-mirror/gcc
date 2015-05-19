@@ -6139,12 +6139,8 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	  /* If OP1 was not easily negatable, the constant may be OP0.  */
 	  if (TREE_CODE (op0) == INTEGER_CST)
 	    {
-	      tree tem = op0;
-	      op0 = op1;
-	      op1 = tem;
-	      tem = t1;
-	      t1 = t2;
-	      t2 = tem;
+	      std::swap (op0, op1);
+	      std::swap (t1, t2);
 	    }
 	}
 

@@ -2474,7 +2474,6 @@ build_array_ref (location_t loc, tree array, tree index)
       /* Allow vector[index] but not index[vector].  */
       && TREE_CODE (TREE_TYPE (array)) != VECTOR_TYPE)
     {
-      tree temp;
       if (TREE_CODE (TREE_TYPE (index)) != ARRAY_TYPE
 	  && TREE_CODE (TREE_TYPE (index)) != POINTER_TYPE)
 	{
@@ -2483,9 +2482,7 @@ build_array_ref (location_t loc, tree array, tree index)
 
 	  return error_mark_node;
 	}
-      temp = array;
-      array = index;
-      index = temp;
+      std::swap (array, index);
       swapped = true;
     }
 

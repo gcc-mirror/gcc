@@ -1808,7 +1808,6 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
   int nop, nalt;
   bool curr_swapped;
   const char *p;
-  rtx op;
   int commutative = -1;
 
   extract_insn (insn);
@@ -1850,7 +1849,7 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 	    {
 	      int c, len;
 
-	      op = recog_data.operand[nop];
+	      rtx op = recog_data.operand[nop];
 	      p = insn_constraints[nop * recog_data.n_alternatives + nalt];
 	      if (*p == 0 || *p == ',')
 		continue;
@@ -1923,10 +1922,8 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 	break;
       if (curr_swapped)
 	break;
-      op = recog_data.operand[commutative];
-      recog_data.operand[commutative] = recog_data.operand[commutative + 1];
-      recog_data.operand[commutative + 1] = op;
-
+      std::swap (recog_data.operand[commutative],
+		 recog_data.operand[commutative + 1]);
     }
 }
 

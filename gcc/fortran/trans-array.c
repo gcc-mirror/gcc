@@ -3644,11 +3644,7 @@ gfc_trans_scalarized_loop_end (gfc_loopinfo * loop, int n,
       loopbody = gfc_finish_block (pbody);
 
       if (reverse_loop)
-	{
-	  tmp = loop->from[n];
-	  loop->from[n] = loop->to[n];
-	  loop->to[n] = tmp;
-	}
+	std::swap (loop->from[n], loop->to[n]);
 
       /* Initialize the loopvar.  */
       if (loop->loopvar[n] != loop->from[n])

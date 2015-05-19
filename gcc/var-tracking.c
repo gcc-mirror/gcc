@@ -6509,13 +6509,7 @@ add_with_sets (rtx_insn *insn, struct cselib_set *sets, int n_sets)
       while (n1 < n2 && mos[n2].type != MO_USE)
 	n2--;
       if (n1 < n2)
-	{
-	  micro_operation sw;
-
-	  sw = mos[n1];
-	  mos[n1] = mos[n2];
-	  mos[n2] = sw;
-	}
+	std::swap (mos[n1], mos[n2]);
     }
 
   n2 = VTI (bb)->mos.length () - 1;
@@ -6526,13 +6520,7 @@ add_with_sets (rtx_insn *insn, struct cselib_set *sets, int n_sets)
       while (n1 < n2 && mos[n2].type == MO_VAL_LOC)
 	n2--;
       if (n1 < n2)
-	{
-	  micro_operation sw;
-
-	  sw = mos[n1];
-	  mos[n1] = mos[n2];
-	  mos[n2] = sw;
-	}
+	std::swap (mos[n1], mos[n2]);
     }
 
   if (CALL_P (insn))
@@ -6568,13 +6556,7 @@ add_with_sets (rtx_insn *insn, struct cselib_set *sets, int n_sets)
       while (n1 < n2 && mos[n2].type != MO_VAL_USE)
 	n2--;
       if (n1 < n2)
-	{
-	  micro_operation sw;
-
-	  sw = mos[n1];
-	  mos[n1] = mos[n2];
-	  mos[n2] = sw;
-	}
+	std::swap (mos[n1], mos[n2]);
     }
 
   n2 = VTI (bb)->mos.length () - 1;
@@ -6585,13 +6567,7 @@ add_with_sets (rtx_insn *insn, struct cselib_set *sets, int n_sets)
       while (n1 < n2 && mos[n2].type != MO_CLOBBER)
 	n2--;
       if (n1 < n2)
-	{
-	  micro_operation sw;
-
-	  sw = mos[n1];
-	  mos[n1] = mos[n2];
-	  mos[n2] = sw;
-	}
+	std::swap (mos[n1], mos[n2]);
     }
 }
 
@@ -6982,8 +6958,7 @@ vt_find_locations (void)
 {
   bb_heap_t *worklist = new bb_heap_t (LONG_MIN);
   bb_heap_t *pending = new bb_heap_t (LONG_MIN);
-  bb_heap_t *fibheap_swap = NULL;
-  sbitmap visited, in_worklist, in_pending, sbitmap_swap;
+  sbitmap visited, in_worklist, in_pending;
   basic_block bb;
   edge e;
   int *bb_order;
@@ -7014,12 +6989,8 @@ vt_find_locations (void)
 
   while (success && !pending->empty ())
     {
-      fibheap_swap = pending;
-      pending = worklist;
-      worklist = fibheap_swap;
-      sbitmap_swap = in_pending;
-      in_pending = in_worklist;
-      in_worklist = sbitmap_swap;
+      std::swap (worklist, pending);
+      std::swap (in_worklist, in_pending);
 
       bitmap_clear (visited);
 

@@ -4142,16 +4142,12 @@ invoke_reorder_hooks (fence_t fence)
       for (i = 0, n = ready.n_ready; i < n; i++)
         if (EXPR_INSN_RTX (vec[i]) != arr[i])
           {
-            expr_t tmp;
-
             for (j = i; j < n; j++)
               if (EXPR_INSN_RTX (vec[j]) == arr[i])
                 break;
             gcc_assert (j < n);
 
-            tmp = vec[i];
-            vec[i] = vec[j];
-            vec[j] = tmp;
+	    std::swap (vec[i], vec[j]);
           }
     }
 
@@ -4610,15 +4606,12 @@ create_block_for_bookkeeping (edge e1, edge e2)
 	    {
 	      sel_global_bb_info_def gbi;
 	      sel_region_bb_info_def rbi;
-	      int i;
 
 	      if (sched_verbose >= 2)
 		sel_print ("Swapping block ids %i and %i\n",
 			   new_bb->index, succ->index);
 
-	      i = new_bb->index;
-	      new_bb->index = succ->index;
-	      succ->index = i;
+	      std::swap (new_bb->index, succ->index);
 
 	      SET_BASIC_BLOCK_FOR_FN (cfun, new_bb->index, new_bb);
 	      SET_BASIC_BLOCK_FOR_FN (cfun, succ->index, succ);
@@ -4633,15 +4626,13 @@ create_block_for_bookkeeping (edge e1, edge e2)
 		      sizeof (rbi));
 	      memcpy (SEL_REGION_BB_INFO (succ), &rbi, sizeof (rbi));
 
-	      i = BLOCK_TO_BB (new_bb->index);
-	      BLOCK_TO_BB (new_bb->index) = BLOCK_TO_BB (succ->index);
-	      BLOCK_TO_BB (succ->index) = i;
+	      std::swap (BLOCK_TO_BB (new_bb->index),
+			 BLOCK_TO_BB (succ->index));
 
-	      i = CONTAINING_RGN (new_bb->index);
-	      CONTAINING_RGN (new_bb->index) = CONTAINING_RGN (succ->index);
-	      CONTAINING_RGN (succ->index) = i;
+	      std::swap (CONTAINING_RGN (new_bb->index),
+			 CONTAINING_RGN (succ->index));
 
-	      for (i = 0; i < current_nr_blocks; i++)
+	      for (int i = 0; i < current_nr_blocks; i++)
 		if (BB_TO_BLOCK (i) == succ->index)
 		  BB_TO_BLOCK (i) = new_bb->index;
 		else if (BB_TO_BLOCK (i) == new_bb->index)
@@ -4666,10 +4657,8 @@ create_block_for_bookkeeping (edge e1, edge e2)
 			   CODE_LABEL_NUMBER (BB_HEAD (new_bb)),
 			   CODE_LABEL_NUMBER (BB_HEAD (succ)));
 
-	      i = CODE_LABEL_NUMBER (BB_HEAD (new_bb));
-	      CODE_LABEL_NUMBER (BB_HEAD (new_bb))
-		= CODE_LABEL_NUMBER (BB_HEAD (succ));
-	      CODE_LABEL_NUMBER (BB_HEAD (succ)) = i;
+	      std::swap (CODE_LABEL_NUMBER (BB_HEAD (new_bb)),
+			 CODE_LABEL_NUMBER (BB_HEAD (succ)));
 	    }
 	}
     }

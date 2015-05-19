@@ -544,11 +544,8 @@ simplify_control_stmt_condition (edge e,
 	 miss threading opportunities.  */
       if (tree_swap_operands_p (op0, op1, false))
 	{
-	  tree tmp;
 	  cond_code = swap_tree_comparison (cond_code);
-	  tmp = op0;
-	  op0 = op1;
-	  op1 = tmp;
+	  std::swap (op0, op1);
 	}
 
       /* Stuff the operator and operands into our dummy conditional

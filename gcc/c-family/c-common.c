@@ -4372,20 +4372,12 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
       && !integer_zerop (primop1) && !real_zerop (primop1)
       && !fixed_zerop (primop1))
     {
-      tree tem = primop0;
-      int temi = unsignedp0;
-      primop0 = primop1;
-      primop1 = tem;
-      tem = op0;
-      op0 = op1;
-      op1 = tem;
+      std::swap (primop0, primop1);
+      std::swap (op0, op1);
       *op0_ptr = op0;
       *op1_ptr = op1;
-      unsignedp0 = unsignedp1;
-      unsignedp1 = temi;
-      temi = real1;
-      real1 = real2;
-      real2 = temi;
+      std::swap (unsignedp0, unsignedp1);
+      std::swap (real1, real2);
 
       switch (code)
 	{

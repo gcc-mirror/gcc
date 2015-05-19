@@ -1812,7 +1812,6 @@ fix_up_fall_thru_edges (void)
   edge succ2;
   edge fall_thru;
   edge cond_jump = NULL;
-  edge e;
   bool cond_jump_crosses;
   int invert_worked;
   rtx_insn *old_jump;
@@ -1901,9 +1900,7 @@ fix_up_fall_thru_edges (void)
 			  fall_thru->flags &= ~EDGE_FALLTHRU;
 			  cond_jump->flags |= EDGE_FALLTHRU;
 			  update_br_prob_note (cur_bb);
-			  e = fall_thru;
-			  fall_thru = cond_jump;
-			  cond_jump = e;
+			  std::swap (fall_thru, cond_jump);
 			  cond_jump->flags |= EDGE_CROSSING;
 			  fall_thru->flags &= ~EDGE_CROSSING;
 			}
