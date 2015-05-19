@@ -1,3 +1,8 @@
+2015-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stor-layout.c (finalize_type_size): Use AGGREGATE_TYPE_P.
+	(layout_type): Use RECORD_OR_UNION_TYPE_P.
+
 2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390.c (s390_vector_bool_type_p): New function.
