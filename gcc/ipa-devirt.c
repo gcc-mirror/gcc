@@ -269,6 +269,8 @@ type_in_anonymous_namespace_p (const_tree t)
 
   if (TYPE_STUB_DECL (t) && !TREE_PUBLIC (TYPE_STUB_DECL (t)))
     {
+      if (DECL_ARTIFICIAL (TYPE_NAME (t)))
+	return true;
       tree ctx = DECL_CONTEXT (TYPE_NAME (t));
       while (ctx)
 	{
@@ -296,7 +298,7 @@ odr_type_p (const_tree t)
      to care, since it is used only for type merging.  */
   gcc_checking_assert (in_lto_p || flag_lto);
 
-  return (TYPE_NAME (t)
+  return (TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
           && (DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t))));
 }
 
@@ -2124,6 +2126,7 @@ get_odr_type (tree type, bool insert)
     }
 
   if (build_bases && TREE_CODE (type) == RECORD_TYPE && TYPE_BINFO (type)
+      && type_with_linkage_p (type)
       && type == TYPE_MAIN_VARIANT (type))
     {
       tree binfo = TYPE_BINFO (type);
@@ -2183,7 +2186,8 @@ register_odr_type (tree type)
      makes it possible that non-ODR type is main_odr_variant of ODR type.
      Things may get smoother if LTO FE set mangled name of those types same
      way as C++ FE does.  */
-  if (odr_type_p (main_odr_variant (TYPE_MAIN_VARIANT (type))))
+  if (odr_type_p (main_odr_variant (TYPE_MAIN_VARIANT (type)))
+      && odr_type_p (TYPE_MAIN_VARIANT (type)))
     get_odr_type (TYPE_MAIN_VARIANT (type), true);
   if (TYPE_MAIN_VARIANT (type) != type && odr_type_p (main_odr_variant (type)))
     get_odr_type (type, true);
@@ -2192,7 +2196,7 @@ register_odr_type (tree type)
 /* Return true if type is known to have no derivations.  */
 
 bool
-type_known_to_have_no_deriavations_p (tree t)
+type_known_to_have_no_derivations_p (tree t)
 {
   return (type_all_derivations_known_p (t)
 	  && (TYPE_FINAL_P (t)

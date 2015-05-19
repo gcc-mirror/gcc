@@ -80,7 +80,7 @@ bool vtable_pointer_value_to_vtable (const_tree, tree *, unsigned HOST_WIDE_INT 
 tree subbinfo_with_vtable_at_offset (tree, unsigned HOST_WIDE_INT, tree);
 void compare_virtual_tables (varpool_node *, varpool_node *);
 bool type_all_derivations_known_p (const_tree);
-bool type_known_to_have_no_deriavations_p (tree);
+bool type_known_to_have_no_derivations_p (tree);
 bool contains_polymorphic_type_p (const_tree);
 void register_odr_type (tree);
 bool types_must_be_same_for_odr (tree, tree);

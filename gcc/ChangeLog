@@ -1,3 +1,19 @@
+2015-05-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (type_in_anonymous_namespace_p): Return true
+	or implicit declarations.
+	(odr_type_p): Check that TYPE_NAME is TYPE_DECL before looking
+	into it.
+	(get_odr_type): Check type has linkage before adding bases.
+	(register_odr_type): Check that type has linkage before adding it.
+	(type_known_to_have_no_deriavations_p): Rename to ..
+	(type_known_to_have_no_derivations_p): This one.
+	* ipa-utils.h (type_known_to_have_no_deriavations_p): Rename to ..
+	(type_known_to_have_no_derivations_p): This one.
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::restrict_to_inner_type): Check that
+	type has linkage.
+
 2015-05-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (finalize_type_size): Use AGGREGATE_TYPE_P.
