@@ -1,5 +1,9 @@
 2015-05-19  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vqmovun.c: New file.
+
+2015-05-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vqmovn.c: New file.
 
 2015-05-19  Jakub Jelinek  <jakub@redhat.com>
