@@ -1,6 +1,12 @@
 2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/66057
+	* interface.c(gfc_match_end_interface): Enforce F2008 C1202 (R1201).
+	* match.c(gfc_op2string): Return 'none' for INTRINSIC_NONE.
+
+2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/66057
 	* decl.c(gfc_match_generic):  Detected a malformed GENERIC statement.
 
 2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>

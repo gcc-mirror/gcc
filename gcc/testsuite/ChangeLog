@@ -1,6 +1,11 @@
 2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/66057
+	* gfortran.dg/interface_operator_1.f90: New tests.
+
+2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/66057
 	* gfortran.dg/generic_29.f90: New tests.
 
 2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
