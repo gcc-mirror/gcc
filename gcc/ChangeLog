@@ -1,3 +1,14 @@
+2015-05-19  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/predicates.md (gpc_reg_operand): Don't allow all
+	hard registers numbered greater or equal to ARG_POINTER_REGNUM.
+	(reg_or_neg_short_operand, fix_trunc_dest_operand): Delete
+	unused predicates.
+	* config/rs6000/altivec.md (save_vregs_*, restore_vregs_*):
+	Use altivec_register_operand.  Make insn predicate TARGET_ALTIVEC.
+	* config/rs6000/rs6000.md (extzvdi_internal2): Use cc_reg_operand.
+	* config/rs6000/vsx.md (vsx_float<VSi><mode>2): Expand comment.
+
 2015-05-19  Sameera Deshpande  <Sameera.Deshpande@imgtec.com>
 
 	* config/mips/mips.md (JOIN_MODE): New mode iterator.

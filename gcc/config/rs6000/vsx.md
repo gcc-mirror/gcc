@@ -1199,7 +1199,8 @@
 ;; the fprs because we don't want to add the altivec registers to movdi/movsi.
 ;; For the unsigned tests, there isn't a generic double -> unsigned conversion
 ;; in rs6000.md so don't test VECTOR_UNIT_VSX_P, just test against VSX.
-;; Don't use vsx_register_operand here, use gpc_reg_operand to match rs6000.md.
+;; Don't use vsx_register_operand here, use gpc_reg_operand to match rs6000.md
+;; in allowing virtual registers.
 (define_insn "vsx_float<VSi><mode>2"
   [(set (match_operand:VSX_F 0 "gpc_reg_operand" "=<VSr>,?<VSa>")
 	(float:VSX_F (match_operand:<VSI> 1 "gpc_reg_operand" "<VSr2>,<VSr3>")))]

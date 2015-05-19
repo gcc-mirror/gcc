@@ -353,8 +353,8 @@
       (use (reg:P 0))
       (set (mem:V4SI (plus:P (match_operand:P 2 "gpc_reg_operand" "b")
 			     (match_operand:P 3 "short_cint_operand" "I")))
-	   (match_operand:V4SI 4 "gpc_reg_operand" "v"))])]
-  ""
+	   (match_operand:V4SI 4 "altivec_register_operand" "v"))])]
+  "TARGET_ALTIVEC"
   "bl %1"
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
@@ -367,8 +367,8 @@
       (use (reg:P 0))
       (set (mem:V4SI (plus:P (match_operand:P 2 "gpc_reg_operand" "b")
 			     (match_operand:P 3 "short_cint_operand" "I")))
-	   (match_operand:V4SI 4 "gpc_reg_operand" "v"))])]
-  ""
+	   (match_operand:V4SI 4 "altivec_register_operand" "v"))])]
+  "TARGET_ALTIVEC"
   "bl %1"
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
@@ -379,10 +379,10 @@
       (use (match_operand:P 1 "symbol_ref_operand" "s"))
       (clobber (reg:P 11))
       (use (reg:P 0))
-      (set (match_operand:V4SI 2 "gpc_reg_operand" "=v")
+      (set (match_operand:V4SI 2 "altivec_register_operand" "=v")
 	   (mem:V4SI (plus:P (match_operand:P 3 "gpc_reg_operand" "b")
 			     (match_operand:P 4 "short_cint_operand" "I"))))])]
-  ""
+  "TARGET_ALTIVEC"
   "bl %1"
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
@@ -393,10 +393,10 @@
       (use (match_operand:P 1 "symbol_ref_operand" "s"))
       (clobber (reg:P 12))
       (use (reg:P 0))
-      (set (match_operand:V4SI 2 "gpc_reg_operand" "=v")
+      (set (match_operand:V4SI 2 "altivec_register_operand" "=v")
 	   (mem:V4SI (plus:P (match_operand:P 3 "gpc_reg_operand" "b")
 			     (match_operand:P 4 "short_cint_operand" "I"))))])]
-  ""
+  "TARGET_ALTIVEC"
   "bl %1"
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
