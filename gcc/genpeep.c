@@ -276,6 +276,12 @@ match_rtx (rtx x, struct link *path, int fail_label)
 	  printf ("  if (XINT (x, %d) != %d) goto L%d;\n",
 		  i, XINT (x, i), fail_label);
 	}
+      else if (fmt[i] == 'r')
+	{
+	  gcc_assert (i == 0);
+	  printf ("  if (REGNO (x) != %d) goto L%d;\n",
+		  REGNO (x), fail_label);
+	}
       else if (fmt[i] == 'w')
 	{
 	  /* Make sure that at run time `x' is the RTX we want to test.  */

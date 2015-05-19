@@ -396,7 +396,7 @@ find_operand (rtx pattern, int n, rtx stop)
 	      return r;
 	  break;
 
-	case 'i': case 'w': case '0': case 's':
+	case 'i': case 'r': case 'w': case '0': case 's':
 	  break;
 
 	default:
@@ -447,7 +447,7 @@ find_matching_operand (rtx pattern, int n)
 	      return r;
 	  break;
 
-	case 'i': case 'w': case '0': case 's':
+	case 'i': case 'r': case 'w': case '0': case 's':
 	  break;
 
 	default:
@@ -747,7 +747,7 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 	    validate_pattern (XVECEXP (pattern, i, j), insn, NULL_RTX, 0);
 	  break;
 
-	case 'i': case 'w': case '0': case 's':
+	case 'i': case 'r': case 'w': case '0': case 's':
 	  break;
 
 	default:
@@ -967,6 +967,9 @@ struct parameter
     /* An int parameter.  */
     INT,
 
+    /* An unsigned int parameter.  */
+    UINT,
+
     /* A HOST_WIDE_INT parameter.  */
     WIDE_INT
   };
@@ -1063,6 +1066,9 @@ struct rtx_test
     /* Check GET_MODE (X) == LABEL.  */
     MODE,
 
+    /* Check REGNO (X) == LABEL.  */
+    REGNO_FIELD,
+
     /* Check XINT (X, u.opno) == LABEL.  */
     INT_FIELD,
 
@@ -1142,6 +1148,7 @@ struct rtx_test
 
   static rtx_test code (position *);
   static rtx_test mode (position *);
+  static rtx_test regno_field (position *);
   static rtx_test int_field (position *, int);
   static rtx_test wide_int_field (position *, int);
   static rtx_test veclen (position *);
@@ -1177,6 +1184,13 @@ rtx_test
 rtx_test::mode (position *pos)
 {
   return rtx_test (pos, rtx_test::MODE);
+}
+
+rtx_test
+rtx_test::regno_field (position *pos)
+{
+  rtx_test res (pos, rtx_test::REGNO_FIELD);
+  return res;
 }
 
 rtx_test
@@ -1299,6 +1313,7 @@ operator == (const rtx_test &a, const rtx_test &b)
     {
     case rtx_test::CODE:
     case rtx_test::MODE:
+    case rtx_test::REGNO_FIELD:
     case rtx_test::VECLEN:
     case rtx_test::HAVE_NUM_CLOBBERS:
       return true;
@@ -1753,6 +1768,7 @@ safe_to_hoist_p (decision *d, const rtx_test &test, known_conditions *kc)
 	}
       gcc_unreachable ();
 
+    case rtx_test::REGNO_FIELD:
     case rtx_test::INT_FIELD:
     case rtx_test::WIDE_INT_FIELD:
     case rtx_test::VECLEN:
@@ -1958,6 +1974,9 @@ transition_parameter_type (rtx_test::kind_enum kind)
 
     case rtx_test::MODE:
       return parameter::MODE;
+
+    case rtx_test::REGNO_FIELD:
+      return parameter::UINT;
 
     case rtx_test::INT_FIELD:
     case rtx_test::VECLEN:
@@ -3970,6 +3989,13 @@ match_pattern_2 (state *s, rtx top_pattern, position *pos, rtx pattern)
 				      XINT (pattern, i), false);
 		    break;
 
+		  case 'r':
+		    /* Make sure that REGNO (X) has the right value.  */
+		    gcc_assert (i == 0);
+		    s = add_decision (s, rtx_test::regno_field (pos),
+				      REGNO (pattern), false);
+		    break;
+
 		  case 'w':
 		    /* Make sure that XWINT (X, I) has the right value.  */
 		    s = add_decision (s, rtx_test::wide_int_field (pos, i),
@@ -4232,6 +4258,9 @@ parameter_type_string (parameter::type_enum type)
     case parameter::INT:
       return "int";
 
+    case parameter::UINT:
+      return "unsigned int";
+
     case parameter::WIDE_INT:
       return "HOST_WIDE_INT";
     }
@@ -4451,6 +4480,10 @@ print_parameter_value (const parameter &param)
 	printf ("%d", (int) param.value);
 	break;
 
+      case parameter::UINT:
+	printf ("%u", (unsigned int) param.value);
+	break;
+
       case parameter::WIDE_INT:
 	print_host_wide_int (param.value);
 	break;
@@ -4497,6 +4530,12 @@ print_nonbool_test (output_state *os, const rtx_test &test)
       printf ("XINT (");
       print_test_rtx (os, test);
       printf (", %d)", test.u.opno);
+      break;
+
+    case rtx_test::REGNO_FIELD:
+      printf ("REGNO (");
+      print_test_rtx (os, test);
+      printf (")");
       break;
 
     case rtx_test::WIDE_INT_FIELD:
@@ -4572,6 +4611,7 @@ print_test (output_state *os, const rtx_test &test, bool is_param,
     case rtx_test::CODE:
     case rtx_test::MODE:
     case rtx_test::VECLEN:
+    case rtx_test::REGNO_FIELD:
     case rtx_test::INT_FIELD:
     case rtx_test::WIDE_INT_FIELD:
     case rtx_test::PATTERN:

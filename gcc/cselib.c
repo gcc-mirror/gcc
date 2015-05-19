@@ -976,6 +976,9 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, machine_mode memmode)
     case LABEL_REF:
       return LABEL_REF_LABEL (x) == LABEL_REF_LABEL (y);
 
+    case REG:
+      return REGNO (x) == REGNO (y);
+
     case MEM:
       /* We have to compare any autoinc operations in the addresses
 	 using this MEM's mode.  */

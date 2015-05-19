@@ -749,6 +749,9 @@ operands_match_p (rtx x, rtx y, int y_hard_regno)
 
  slow:
 
+  if (code == REG && REG_P (y))
+    return REGNO (x) == REGNO (y);
+
   if (code == REG && GET_CODE (y) == SUBREG && REG_P (SUBREG_REG (y))
       && x == SUBREG_REG (y))
     return true;

@@ -89,7 +89,8 @@ const char * const rtx_format[NUM_RTX_CODE] = {
          prints the uid of the insn.
      "b" is a pointer to a bitmap header.
      "B" is a basic block pointer.
-     "t" is a tree pointer.  */
+     "t" is a tree pointer.
+     "r" a register.  */
 
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)   FORMAT ,
 #include "rtl.def"		/* rtl expressions are defined here */
@@ -112,6 +113,8 @@ const unsigned char rtx_code_size[NUM_RTX_CODE] = {
   (((ENUM) == CONST_INT || (ENUM) == CONST_DOUBLE			\
     || (ENUM) == CONST_FIXED || (ENUM) == CONST_WIDE_INT)		\
    ? RTX_HDR_SIZE + (sizeof FORMAT - 1) * sizeof (HOST_WIDE_INT)	\
+   : (ENUM) == REG							\
+   ? RTX_HDR_SIZE + sizeof (reg_info)					\
    : RTX_HDR_SIZE + (sizeof FORMAT - 1) * sizeof (rtunion)),
 
 #include "rtl.def"

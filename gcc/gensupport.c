@@ -880,7 +880,7 @@ subst_pattern_match (rtx x, rtx pt, int lineno)
 
       switch (fmt[i])
 	{
-	case 'i': case 'w': case 's':
+	case 'i': case 'r': case 'w': case 's':
 	  continue;
 
 	case 'e': case 'u':
@@ -1045,7 +1045,7 @@ get_alternatives_number (rtx pattern, int *n_alt, int lineno)
 		return 0;
 	  break;
 
-	case 'i': case 'w': case '0': case 's': case 'S': case 'T':
+	case 'i': case 'r': case 'w': case '0': case 's': case 'S': case 'T':
 	  break;
 
 	default:
@@ -1104,7 +1104,7 @@ collect_insn_data (rtx pattern, int *palt, int *pmax)
 	    collect_insn_data (XVECEXP (pattern, i, j), palt, pmax);
 	  break;
 
-	case 'i': case 'w': case '0': case 's': case 'S': case 'T':
+	case 'i': case 'r': case 'w': case '0': case 's': case 'S': case 'T':
 	  break;
 
 	default:
@@ -1188,7 +1188,7 @@ alter_predicate_for_insn (rtx pattern, int alt, int max_op, int lineno)
 	    }
 	  break;
 
-	case 'i': case 'w': case '0': case 's':
+	case 'i': case 'r': case 'w': case '0': case 's':
 	  break;
 
 	default:
@@ -1246,7 +1246,7 @@ alter_constraints (rtx pattern, int n_dup, constraints_handler_t alter)
 	    }
 	  break;
 
-	case 'i': case 'w': case '0': case 's':
+	case 'i': case 'r': case 'w': case '0': case 's':
 	  break;
 
 	default:
@@ -2184,7 +2184,7 @@ subst_dup (rtx pattern, int n_alt, int n_subst_alt)
 						   n_alt, n_subst_alt);
 	  break;
 
-	case 'i': case 'w': case '0': case 's': case 'S': case 'T':
+	case 'i': case 'r': case 'w': case '0': case 's': case 'S': case 'T':
 	  break;
 
 	default:
