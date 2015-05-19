@@ -1,3 +1,9 @@
+2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/64925
+	* symbol.c(check_conflict):  Check for a conflict between a dummy
+	argument and an internal procedure name.
+
 2015-05-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/65976

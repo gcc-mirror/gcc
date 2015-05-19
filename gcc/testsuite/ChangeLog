@@ -1,3 +1,8 @@
+2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/64925
+	* gfortran.dg/pr64925.f90: New test.
+
 2015-05-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66174
