@@ -75,13 +75,17 @@
        (and (match_test "mode == Pmode")
 	    (match_test "!legitimate_la_operand_p (op)"))))
 
-;; Return true if OP is a valid operand as shift count or setmem.
+;; Return true if OP is a valid operand as scalar shift count or setmem.
 
 (define_predicate "shift_count_or_setmem_operand"
   (match_code "reg, subreg, plus, const_int")
 {
   HOST_WIDE_INT offset;
   rtx base;
+
+  if (GET_MODE (op) != VOIDmode
+      && GET_MODE_CLASS (GET_MODE (op)) != MODE_INT)
+    return false;
 
   /* Extract base register and offset.  */
   if (!s390_decompose_shift_count (op, &base, &offset))
