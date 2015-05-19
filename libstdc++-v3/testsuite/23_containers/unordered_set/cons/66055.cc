@@ -28,3 +28,7 @@ using alloc_type = test_type::allocator_type;
 
 test_type h1(10, alloc_type());
 test_type h2(10, hasher_type(), alloc_type());
+test_type h3(h1.begin(), h1.end(), 10, alloc_type());
+test_type h4(h1.begin(), h1.end(), 10, hasher_type(), alloc_type());
+test_type h5({ 1, 1 }, 10, alloc_type());
+test_type h6({ 1, 1 }, 10, hasher_type(), alloc_type());
