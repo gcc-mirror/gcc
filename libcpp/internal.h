@@ -68,7 +68,7 @@ struct cset_converter
 
 #define CPP_INCREMENT_LINE(PFILE, COLS_HINT) do { \
     const struct line_maps *line_table = PFILE->line_table; \
-    const struct line_map *map = \
+    const struct line_map_ordinary *map = \
       LINEMAPS_LAST_ORDINARY_MAP (line_table); \
     linenum_type line = SOURCE_LINE (map, line_table->highest_line); \
     linemap_line_start (PFILE->line_table, line + 1, COLS_HINT); \
@@ -833,10 +833,10 @@ ufputs (const unsigned char *s, FILE *f)
    of the macro, rather than the the location of the first character
    of the macro.  NUM_TOKENS is the number of tokens that are part of
    the replacement-list of MACRO.  */
-const struct line_map *linemap_enter_macro (struct line_maps *,
-					    struct cpp_hashnode*,
-					    source_location,
-					    unsigned int);
+const line_map_macro *linemap_enter_macro (struct line_maps *,
+					   struct cpp_hashnode*,
+					   source_location,
+					   unsigned int);
 
 /* Create and return a virtual location for a token that is part of a
    macro expansion-list at a macro expansion point.  See the comment
@@ -860,7 +860,7 @@ const struct line_map *linemap_enter_macro (struct line_maps *,
    MACRO_DEFINITION_LOC is the location in the macro definition,
    either of the token itself or of a macro parameter that it
    replaces.  */
-source_location linemap_add_macro_token (const struct line_map *,
+source_location linemap_add_macro_token (const line_map_macro *,
 					 unsigned int,
 					 source_location,
 					 source_location);

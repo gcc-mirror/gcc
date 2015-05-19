@@ -1326,7 +1326,7 @@ cpp_make_system_header (cpp_reader *pfile, int syshdr, int externc)
 {
   int flags = 0;
   const struct line_maps *line_table = pfile->line_table;
-  const struct line_map *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
+  const line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
   /* 1 = system header, 2 = system header to be treated as C.  */
   if (syshdr)
     flags = 1 + (externc != 0);

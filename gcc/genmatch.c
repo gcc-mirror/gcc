@@ -58,7 +58,7 @@ __attribute__((format (printf, 6, 0)))
 error_cb (cpp_reader *, int errtype, int, source_location location,
 	  unsigned int, const char *msg, va_list *ap)
 {
-  const line_map *map;
+  const line_map_ordinary *map;
   linemap_resolve_location (line_table, location, LRK_SPELLING_LOCATION, &map);
   expanded_location loc = linemap_expand_location (line_table, map, location);
   fprintf (stderr, "%s:%d:%d %s: ", loc.file, loc.line, loc.column,
@@ -134,7 +134,7 @@ static void
 output_line_directive (FILE *f, source_location location,
 		       bool dumpfile = false)
 {
-  const line_map *map;
+  const line_map_ordinary *map;
   linemap_resolve_location (line_table, location, LRK_SPELLING_LOCATION, &map);
   expanded_location loc = linemap_expand_location (line_table, map, location);
   if (dumpfile)

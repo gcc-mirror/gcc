@@ -1093,13 +1093,13 @@ extern const unsigned char executable_checksum[16];
 extern void builtin_define_std (const char *macro);
 extern void builtin_define_with_value (const char *, const char *, int);
 extern void c_stddef_cpp_builtins (void);
-extern void fe_file_change (const struct line_map *);
+extern void fe_file_change (const line_map_ordinary *);
 extern void c_parse_error (const char *, enum cpp_ttype, tree, unsigned char);
 
 /* In c-ppoutput.c  */
 extern void init_pp_output (FILE *);
 extern void preprocess_file (cpp_reader *);
-extern void pp_file_change (const struct line_map *);
+extern void pp_file_change (const line_map_ordinary *);
 extern void pp_dir_change (cpp_reader *, const char *);
 extern bool check_missing_format_attribute (tree, tree);
 

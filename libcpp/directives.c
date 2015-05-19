@@ -912,7 +912,7 @@ static void
 do_line (cpp_reader *pfile)
 {
   struct line_maps *line_table = pfile->line_table;
-  const struct line_map *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
+  const line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
 
   /* skip_rest_of_line() may cause line table to be realloc()ed so note down
      sysp right now.  */
@@ -975,7 +975,7 @@ static void
 do_linemarker (cpp_reader *pfile)
 {
   struct line_maps *line_table = pfile->line_table;
-  const struct line_map *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
+  const line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
   const cpp_token *token;
   const char *new_file = ORDINARY_MAP_FILE_NAME (map);
   linenum_type new_lineno;
@@ -1065,15 +1065,20 @@ _cpp_do_file_change (cpp_reader *pfile, enum lc_reason reason,
 		     const char *to_file, linenum_type file_line,
 		     unsigned int sysp)
 {
+  linemap_assert (reason != LC_ENTER_MACRO);
   const struct line_map *map = linemap_add (pfile->line_table, reason, sysp,
 					    to_file, file_line);
+  const line_map_ordinary *ord_map = NULL;
   if (map != NULL)
-    linemap_line_start (pfile->line_table,
-			ORDINARY_MAP_STARTING_LINE_NUMBER (map),
-			127);
+    {
+      ord_map = linemap_check_ordinary (map);
+      linemap_line_start (pfile->line_table,
+			  ORDINARY_MAP_STARTING_LINE_NUMBER (ord_map),
+			  127);
+    }
 
   if (pfile->cb.file_change)
-    pfile->cb.file_change (pfile, map);
+    pfile->cb.file_change (pfile, ord_map);
 }
 
 /* Report a warning or error detected by the program we are

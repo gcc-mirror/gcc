@@ -1,3 +1,8 @@
+2015-05-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc-interface/trans.c (Sloc_to_locus1): Strenghthen local "map"
+	from line_map * to line_map_ordinary *.
+
 2015-05-12  Jason Merrill  <jason@redhat.com>
 
 	* sigtramp-vxworks.c: Add space between string literal and macro

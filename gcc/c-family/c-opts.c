@@ -135,7 +135,7 @@ static void handle_deferred_opts (void);
 static void sanitize_cpp_opts (void);
 static void add_prefixed_path (const char *, size_t);
 static void push_command_line_include (void);
-static void cb_file_change (cpp_reader *, const struct line_map *);
+static void cb_file_change (cpp_reader *, const line_map_ordinary *);
 static void cb_dir_change (cpp_reader *, const char *);
 static void c_finish_options (void);
 
@@ -1306,8 +1306,10 @@ c_finish_options (void)
       size_t i;
 
       cb_file_change (parse_in,
-		      linemap_add (line_table, LC_RENAME, 0,
-				   _("<built-in>"), 0));
+		      linemap_check_ordinary (linemap_add (line_table,
+							   LC_RENAME, 0,
+							   _("<built-in>"),
+							   0)));
       /* Make sure all of the builtins about to be declared have
 	 BUILTINS_LOCATION has their source_location.  */
       source_location builtins_loc = BUILTINS_LOCATION;
@@ -1330,8 +1332,8 @@ c_finish_options (void)
       cpp_opts->warn_dollars = (cpp_opts->cpp_pedantic && !cpp_opts->c99);
 
       cb_file_change (parse_in,
-		      linemap_add (line_table, LC_RENAME, 0,
-				   _("<command-line>"), 0));
+		      linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
+							   _("<command-line>"), 0)));
 
       for (i = 0; i < deferred_count; i++)
 	{
@@ -1434,7 +1436,7 @@ push_command_line_include (void)
 /* File change callback.  Has to handle -include files.  */
 static void
 cb_file_change (cpp_reader * ARG_UNUSED (pfile),
-		const struct line_map *new_map)
+		const line_map_ordinary *new_map)
 {
   if (flag_preprocess_only)
     pp_file_change (new_map);
