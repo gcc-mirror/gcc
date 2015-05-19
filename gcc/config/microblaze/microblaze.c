@@ -866,7 +866,7 @@ microblaze_classify_address (struct microblaze_address_info *info, rtx x,
       }
     case CONST_INT:
       {
-	info->regA = gen_rtx_raw_REG (mode, 0);
+	info->regA = gen_raw_REG (mode, 0);
 	info->type = ADDRESS_CONST_INT;
 	info->offset = x;
 	return true;
@@ -878,13 +878,13 @@ microblaze_classify_address (struct microblaze_address_info *info, rtx x,
 	info->type = ADDRESS_SYMBOLIC;
 	info->symbol_type = SYMBOL_TYPE_GENERAL;
 	info->symbol = x;
-	info->regA = gen_rtx_raw_REG (mode, get_base_reg (x));
+	info->regA = gen_raw_REG (mode, get_base_reg (x));
 
 	if (GET_CODE (x) == CONST)
 	  {
 	    if (GET_CODE (XEXP (x, 0)) == UNSPEC)
 	     {
-		info->regA = gen_rtx_raw_REG (mode,
+		info->regA = gen_raw_REG (mode,
 				  get_base_reg (XVECEXP (XEXP (x,0), 0, 0)));
 		return microblaze_classify_unspec (info, XEXP (x, 0));
 	     }
