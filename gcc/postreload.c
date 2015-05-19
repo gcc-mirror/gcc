@@ -632,7 +632,6 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
       int best = i;
       int best_reject = alternative_reject[alternative_order[i]];
       int best_nregs = alternative_nregs[alternative_order[i]];
-      int tmp;
 
       for (j = i + 1; j < recog_data.n_alternatives; j++)
 	{
@@ -648,9 +647,7 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
 	    }
 	}
 
-      tmp = alternative_order[best];
-      alternative_order[best] = alternative_order[i];
-      alternative_order[i] = tmp;
+      std::swap (alternative_order[best], alternative_order[i]);
     }
 
   /* Substitute the operands as determined by op_alt_regno for the best

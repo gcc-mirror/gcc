@@ -433,15 +433,13 @@ sort_coalesce_list (coalesce_list_p cl)
   if (num == 2)
     {
       if (cl->sorted[0]->cost > cl->sorted[1]->cost)
-        {
-	  p = cl->sorted[0];
-	  cl->sorted[0] = cl->sorted[1];
-	  cl->sorted[1] = p;
-	}
+	std::swap (cl->sorted[0], cl->sorted[1]);
       return;
     }
 
-  /* Only call qsort if there are more than 2 items.  */
+  /* Only call qsort if there are more than 2 items.
+     ??? Maybe std::sort will do better, provided that compare_pairs
+     can be inlined.  */
   if (num > 2)
       qsort (cl->sorted, num, sizeof (coalesce_pair_p), compare_pairs);
 }

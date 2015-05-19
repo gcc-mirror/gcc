@@ -1,3 +1,10 @@
+2015-05-19  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* interface.c (compare_actual_formal): Use std::swap instead of
+	explicit swaps.
+	* trans-array.c (gfc_trans_scalarized_loop_end): Likewise.
+	* trans-intrinsic.c (walk_inline_intrinsic_transpose): Likewise.
+
 2015-05-18  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/66106

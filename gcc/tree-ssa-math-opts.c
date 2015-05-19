@@ -3013,13 +3013,8 @@ is_widening_mult_p (gimple stmt,
   /* Ensure that the larger of the two operands comes first. */
   if (TYPE_PRECISION (*type1_out) < TYPE_PRECISION (*type2_out))
     {
-      tree tmp;
-      tmp = *type1_out;
-      *type1_out = *type2_out;
-      *type2_out = tmp;
-      tmp = *rhs1_out;
-      *rhs1_out = *rhs2_out;
-      *rhs2_out = tmp;
+      std::swap (*type1_out, *type2_out);
+      std::swap (*rhs1_out, *rhs2_out);
     }
 
   return true;

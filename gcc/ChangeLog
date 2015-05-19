@@ -1,3 +1,52 @@
+2015-05-19  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* bb-reorder.c (fix_up_fall_thru_edges): Use std::swap instead of
+	explicit swaps.
+	* dojump.c (do_compare_rtx_and_jump): Likewise.
+	* expmed.c (emit_store_flag_1): Likewise.
+	* fibonacci_heap.h (fibonacci_heap::union_with): Likewise.
+	* final.c (sprint_ul): Use std::reverse for reversing a string.
+	* fold-const.c (extract_muldiv_1): Use std::swap.
+	* genmodes.c (emit_mode_int_n): Likewise.
+	* ifcvt.c (dead_or_predicable): Likewise.
+	* ira-build.c (ira_merge_live_ranges): Likewise.
+	(swap_allocno_copy_ends_if_necessary): Likewise.
+	* ira.c (ira_setup_alts): Likewise.
+	* loop-iv.c (iv_analyze_expr): Likewise.
+	(implies_p): Likewise.
+	(canon_condition): Likewise.
+	* lra-constraints.c (swap_operands): Likewise.
+	* lra-lives.c (lra_merge_live_ranges): Likewise.
+	* omega.c (swap): Remove.
+	(bswap): Remove.
+	(omega_unprotect_1): Use std::swap.
+	(omega_solve_geq): Likewise.
+	* optabs.c (expand_binop_directly): Likewise.
+	(expand_binop): Likewise.
+	(emit_conditional_move): Likewise.
+	(emit_conditional_add): Likewise.
+	* postreload.c (reload_cse_simplify_operands): Likewise.
+	* reg-stack.c (emit_swap_insn): Likewise.
+	(swap_to_top): Likewise.
+	(compare_for_stack_reg): Likewise.
+	(subst_asm_stack_regs): Likewise.
+	* reload.c (find_reloads): Likewise.
+	* reload1.c (gen_reload_chain_without_interm_reg_p): Likewise.
+	* sel-sched.c (invoke_reorder_hooks): Likewise.
+	(create_block_for_bookkeeping): Likewise.
+	* tree-data-ref.c (lambda_matrix_row_exchange): Remove.
+	(lambda_matrix_right_hermite): Use std::swap.
+	* tree-ssa-coalesce.c (sort_coalesce_list): Likewise.
+	* tree-ssa-ifcombine.c (ifcombine_ifandif): Likewise.
+	* tree-ssa-loop-ivopts.c (iv_ca_delta_reverse): Likewise.
+	* tree-ssa-math-opts.c (is_widening_mult_p): Likewise.
+	* tree-ssa-phiopt.c (hoist_adjacent_loads): Likewise.
+	* tree-ssa-reassoc.c (linearize_expr_tree): Likewise.
+	* tree-ssa-threadedge.c (simplify_control_stmt_condition): Likewise.
+	* tree-vrp.c (compare_ranges): Likewise.
+	* var-tracking.c (add_with_sets): Likewise.
+	(vt_find_locations): Likewise.
+
 2015-05-18  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/freebsd-spec.h (FBSD_STARTFILE_SPEC): Add the bits to build

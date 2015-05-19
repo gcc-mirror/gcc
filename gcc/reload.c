@@ -3064,9 +3064,6 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 
 	  if (swapped)
 	    {
-	      enum reg_class tclass;
-	      int t;
-
 	      recog_data.operand[commutative] = substed_operand[commutative + 1];
 	      recog_data.operand[commutative + 1] = substed_operand[commutative];
 	      /* Swap the duplicates too.  */
@@ -3076,17 +3073,12 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 		  *recog_data.dup_loc[i]
 		    = recog_data.operand[(int) recog_data.dup_num[i]];
 
-	      tclass = preferred_class[commutative];
-	      preferred_class[commutative] = preferred_class[commutative + 1];
-	      preferred_class[commutative + 1] = tclass;
-
-	      t = pref_or_nothing[commutative];
-	      pref_or_nothing[commutative] = pref_or_nothing[commutative + 1];
-	      pref_or_nothing[commutative + 1] = t;
-
-	      t = address_reloaded[commutative];
-	      address_reloaded[commutative] = address_reloaded[commutative + 1];
-	      address_reloaded[commutative + 1] = t;
+	      std::swap (preferred_class[commutative],
+			 preferred_class[commutative + 1]);
+	      std::swap (pref_or_nothing[commutative],
+			 pref_or_nothing[commutative + 1]);
+	      std::swap (address_reloaded[commutative],
+			 address_reloaded[commutative + 1]);
 	    }
 
 	  this_earlyclobber = 0;
@@ -3818,9 +3810,6 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 
 	  if (swapped)
 	    {
-	      enum reg_class tclass;
-	      int t;
-
 	      /* If the commutative operands have been swapped, swap
 		 them back in order to check the next alternative.  */
 	      recog_data.operand[commutative] = substed_operand[commutative];
@@ -3833,17 +3822,12 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 		    = recog_data.operand[(int) recog_data.dup_num[i]];
 
 	      /* Unswap the operand related information as well.  */
-	      tclass = preferred_class[commutative];
-	      preferred_class[commutative] = preferred_class[commutative + 1];
-	      preferred_class[commutative + 1] = tclass;
-
-	      t = pref_or_nothing[commutative];
-	      pref_or_nothing[commutative] = pref_or_nothing[commutative + 1];
-	      pref_or_nothing[commutative + 1] = t;
-
-	      t = address_reloaded[commutative];
-	      address_reloaded[commutative] = address_reloaded[commutative + 1];
-	      address_reloaded[commutative + 1] = t;
+	      std::swap (preferred_class[commutative],
+			 preferred_class[commutative + 1]);
+	      std::swap (pref_or_nothing[commutative],
+			 pref_or_nothing[commutative + 1]);
+	      std::swap (address_reloaded[commutative],
+			 address_reloaded[commutative + 1]);
 	    }
 	}
     }
@@ -3892,18 +3876,12 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 
   if (goal_alternative_swapped)
     {
-      rtx tem;
-
-      tem = substed_operand[commutative];
-      substed_operand[commutative] = substed_operand[commutative + 1];
-      substed_operand[commutative + 1] = tem;
-      tem = recog_data.operand[commutative];
-      recog_data.operand[commutative] = recog_data.operand[commutative + 1];
-      recog_data.operand[commutative + 1] = tem;
-      tem = *recog_data.operand_loc[commutative];
-      *recog_data.operand_loc[commutative]
-	= *recog_data.operand_loc[commutative + 1];
-      *recog_data.operand_loc[commutative + 1] = tem;
+      std::swap (substed_operand[commutative],
+		 substed_operand[commutative + 1]);
+      std::swap (recog_data.operand[commutative],
+		 recog_data.operand[commutative + 1]);
+      std::swap (*recog_data.operand_loc[commutative],
+		 *recog_data.operand_loc[commutative + 1]);
 
       for (i = 0; i < n_reloads; i++)
 	{

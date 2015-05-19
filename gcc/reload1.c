@@ -5707,18 +5707,15 @@ gen_reload_chain_without_interm_reg_p (int r1, int r2)
   /* Assume other cases in gen_reload are not possible for
      chain reloads or do need an intermediate hard registers.  */
   bool result = true;
-  int regno, n, code;
+  int regno, code;
   rtx out, in;
   rtx_insn *insn;
   rtx_insn *last = get_last_insn ();
 
   /* Make r2 a component of r1.  */
   if (reg_mentioned_p (rld[r1].in, rld[r2].in))
-    {
-      n = r1;
-      r1 = r2;
-      r2 = n;
-    }
+    std::swap (r1, r2);
+
   gcc_assert (reg_mentioned_p (rld[r2].in, rld[r1].in));
   regno = rld[r1].regno >= 0 ? rld[r1].regno : rld[r2].regno;
   gcc_assert (regno >= 0);

@@ -606,12 +606,7 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
 
     If either type is a pointer to void, make sure it is T1.  */
   if (TYPE_PTR_P (t2) && VOID_TYPE_P (TREE_TYPE (t2)))
-    {
-      tree t;
-      t = t1;
-      t1 = t2;
-      t2 = t;
-    }
+    std::swap (t1, t2);
 
   /* Now, if T1 is a pointer to void, merge the qualifiers.  */
   if (TYPE_PTR_P (t1) && VOID_TYPE_P (TREE_TYPE (t1)))

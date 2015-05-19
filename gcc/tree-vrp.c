@@ -4556,11 +4556,8 @@ compare_ranges (enum tree_code comp, value_range_t *vr0, value_range_t *vr1,
      operands around and change the comparison code.  */
   if (comp == GT_EXPR || comp == GE_EXPR)
     {
-      value_range_t *tmp;
       comp = (comp == GT_EXPR) ? LT_EXPR : LE_EXPR;
-      tmp = vr0;
-      vr0 = vr1;
-      vr1 = tmp;
+      std::swap (vr0, vr1);
     }
 
   if (comp == EQ_EXPR)

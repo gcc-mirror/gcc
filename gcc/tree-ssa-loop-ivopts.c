@@ -5587,7 +5587,6 @@ static struct iv_ca_delta *
 iv_ca_delta_reverse (struct iv_ca_delta *delta)
 {
   struct iv_ca_delta *act, *next, *prev = NULL;
-  struct cost_pair *tmp;
 
   for (act = delta; act; act = next)
     {
@@ -5595,9 +5594,7 @@ iv_ca_delta_reverse (struct iv_ca_delta *delta)
       act->next_change = prev;
       prev = act;
 
-      tmp = act->old_cp;
-      act->old_cp = act->new_cp;
-      act->new_cp = tmp;
+      std::swap (act->old_cp, act->new_cp);
     }
 
   return prev;

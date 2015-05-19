@@ -192,7 +192,7 @@ lra_copy_live_range_list (lra_live_range_t r)
 lra_live_range_t
 lra_merge_live_ranges (lra_live_range_t r1, lra_live_range_t r2)
 {
-  lra_live_range_t first, last, temp;
+  lra_live_range_t first, last;
 
   if (r1 == NULL)
     return r2;
@@ -201,16 +201,13 @@ lra_merge_live_ranges (lra_live_range_t r1, lra_live_range_t r2)
   for (first = last = NULL; r1 != NULL && r2 != NULL;)
     {
       if (r1->start < r2->start)
-	{
-	  temp = r1;
-	  r1 = r2;
-	  r2 = temp;
-	}
+	std::swap (r1, r2);
+
       if (r1->start == r2->finish + 1)
 	{
 	  /* Joint ranges: merge r1 and r2 into r1.  */
 	  r1->start = r2->start;
-	  temp = r2;
+	  lra_live_range_t temp = r2;
 	  r2 = r2->next;
 	  pool_free (live_range_pool, temp);
 	}

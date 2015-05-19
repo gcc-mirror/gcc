@@ -812,7 +812,7 @@ emit_swap_insn (rtx_insn *insn, stack_ptr regstack, rtx reg)
 {
   int hard_regno;
   rtx swap_rtx;
-  int tmp, other_reg;		/* swap regno temps */
+  int other_reg;		/* swap regno temps */
   rtx_insn *i1;			/* the stack-reg insn prior to INSN */
   rtx i1set = NULL_RTX;		/* the SET rtx within I1 */
 
@@ -833,10 +833,7 @@ emit_swap_insn (rtx_insn *insn, stack_ptr regstack, rtx reg)
   gcc_assert (hard_regno >= FIRST_STACK_REG);
 
   other_reg = regstack->top - (hard_regno - FIRST_STACK_REG);
-
-  tmp = regstack->reg[other_reg];
-  regstack->reg[other_reg] = regstack->reg[regstack->top];
-  regstack->reg[regstack->top] = tmp;
+  std::swap (regstack->reg[regstack->top], regstack->reg[other_reg]);
 
   /* Find the previous insn involving stack regs, but don't pass a
      block boundary.  */
@@ -918,7 +915,7 @@ static void
 swap_to_top (rtx_insn *insn, stack_ptr regstack, rtx src1, rtx src2)
 {
   struct stack_def temp_stack;
-  int regno, j, k, temp;
+  int regno, j, k;
 
   temp_stack = *regstack;
 
@@ -930,9 +927,7 @@ swap_to_top (rtx_insn *insn, stack_ptr regstack, rtx src1, rtx src2)
       k = temp_stack.top - (regno - FIRST_STACK_REG);
       j = temp_stack.top;
 
-      temp = temp_stack.reg[k];
-      temp_stack.reg[k] = temp_stack.reg[j];
-      temp_stack.reg[j] = temp;
+      std::swap (temp_stack.reg[j], temp_stack.reg[k]);
     }
 
   /* Place operand 2 next on the stack.  */
@@ -943,9 +938,7 @@ swap_to_top (rtx_insn *insn, stack_ptr regstack, rtx src1, rtx src2)
       k = temp_stack.top - (regno - FIRST_STACK_REG);
       j = temp_stack.top - 1;
 
-      temp = temp_stack.reg[k];
-      temp_stack.reg[k] = temp_stack.reg[j];
-      temp_stack.reg[j] = temp;
+      std::swap (temp_stack.reg[j], temp_stack.reg[k]);
     }
 
   change_stack (insn, regstack, &temp_stack, EMIT_BEFORE);
@@ -1261,10 +1254,7 @@ compare_for_stack_reg (rtx_insn *insn, stack_ptr regstack, rtx pat_src)
 	   && get_hard_regnum (regstack, *src2) == FIRST_STACK_REG))
       && swap_rtx_condition (insn))
     {
-      rtx temp;
-      temp = XEXP (pat_src, 0);
-      XEXP (pat_src, 0) = XEXP (pat_src, 1);
-      XEXP (pat_src, 1) = temp;
+      std::swap (XEXP (pat_src, 0), XEXP (pat_src, 1));
 
       src1 = get_true_reg (&XEXP (pat_src, 0));
       src2 = get_true_reg (&XEXP (pat_src, 1));
@@ -2139,15 +2129,13 @@ subst_asm_stack_regs (rtx_insn *insn, stack_ptr regstack)
 	       it and swap it with whatever is already in I's place.
 	       K is where recog_data.operand[i] is now.  J is where it
 	       should be.  */
-	    int j, k, temp;
+	    int j, k;
 
 	    k = temp_stack.top - (regno - FIRST_STACK_REG);
 	    j = (temp_stack.top
 		 - (REGNO (recog_data.operand[i]) - FIRST_STACK_REG));
 
-	    temp = temp_stack.reg[k];
-	    temp_stack.reg[k] = temp_stack.reg[j];
-	    temp_stack.reg[j] = temp;
+	    std::swap (temp_stack.reg[j], temp_stack.reg[k]);
 	  }
       }
 

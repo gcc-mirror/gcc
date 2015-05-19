@@ -2411,18 +2411,6 @@ lambda_matrix_row_add (lambda_matrix mat, int n, int r1, int r2, int const1)
     mat[r2][i] += const1 * mat[r1][i];
 }
 
-/* Swap rows R1 and R2 in matrix MAT.  */
-
-static void
-lambda_matrix_row_exchange (lambda_matrix mat, int r1, int r2)
-{
-  lambda_vector row;
-
-  row = mat[r1];
-  mat[r1] = mat[r2];
-  mat[r2] = row;
-}
-
 /* Multiply vector VEC1 of length SIZE by a constant CONST1,
    and store the result in VEC2.  */
 
@@ -2503,10 +2491,10 @@ lambda_matrix_right_hermite (lambda_matrix A, int m, int n,
 		  factor = sigma * (a / b);
 
 		  lambda_matrix_row_add (S, n, i, i-1, -factor);
-		  lambda_matrix_row_exchange (S, i, i-1);
+		  std::swap (S[i], S[i-1]);
 
 		  lambda_matrix_row_add (U, m, i, i-1, -factor);
-		  lambda_matrix_row_exchange (U, i, i-1);
+		  std::swap (U[i], U[i-1]);
 		}
 	    }
 	}

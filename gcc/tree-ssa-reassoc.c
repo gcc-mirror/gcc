@@ -4117,8 +4117,6 @@ linearize_expr_tree (vec<operand_entry_t> *ops, gimple stmt,
 
   if (!binlhsisreassoc)
     {
-      tree temp;
-
       /* If this is not a associative operation like division, give up.  */
       if (!is_associative)
 	{
@@ -4170,9 +4168,7 @@ linearize_expr_tree (vec<operand_entry_t> *ops, gimple stmt,
 
       /* We want to make it so the lhs is always the reassociative op,
 	 so swap.  */
-      temp = binlhs;
-      binlhs = binrhs;
-      binrhs = temp;
+      std::swap (binlhs, binrhs);
     }
   else if (binrhsisreassoc)
     {

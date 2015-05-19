@@ -5256,7 +5256,6 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
   machine_mode compare_mode;
   enum mode_class mclass;
   enum rtx_code scode;
-  rtx tem;
 
   if (unsignedp)
     code = unsigned_condition (code);
@@ -5267,9 +5266,7 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
   if (swap_commutative_operands_p (op0, op1))
     {
-      tem = op0;
-      op0 = op1;
-      op1 = tem;
+      std::swap (op0, op1);
       code = swap_condition (code);
     }
 
@@ -5316,6 +5313,7 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
       && GET_MODE_CLASS (mode) == MODE_INT
       && (!MEM_P (op0) || ! MEM_VOLATILE_P (op0)))
     {
+      rtx tem;
       if ((code == EQ || code == NE)
 	  && (op1 == const0_rtx || op1 == constm1_rtx))
 	{
@@ -5415,8 +5413,8 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
      if (icode != CODE_FOR_nothing)
 	{
 	  do_pending_stack_adjust ();
-	  tem = emit_cstore (target, icode, code, mode, compare_mode,
-			     unsignedp, op0, op1, normalizep, target_mode);
+	  rtx tem = emit_cstore (target, icode, code, mode, compare_mode,
+				 unsignedp, op0, op1, normalizep, target_mode);
 	  if (tem)
 	    return tem;
 

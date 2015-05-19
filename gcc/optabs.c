@@ -1418,7 +1418,6 @@ expand_binop_directly (machine_mode mode, optab binoptab,
   bool commutative_p;
   rtx pat;
   rtx xop0 = op0, xop1 = op1;
-  rtx swap;
 
   /* If it is a commutative operator and the modes would match
      if we would swap the operands, we can save the conversions.  */
@@ -1426,11 +1425,7 @@ expand_binop_directly (machine_mode mode, optab binoptab,
   if (commutative_p
       && GET_MODE (xop0) != xmode0 && GET_MODE (xop1) != xmode1
       && GET_MODE (xop0) == xmode1 && GET_MODE (xop1) == xmode1)
-    {
-      swap = xop0;
-      xop0 = xop1;
-      xop1 = swap;
-    }
+    std::swap (xop0, xop1);
 
   /* If we are optimizing, force expensive constants into a register.  */
   xop0 = avoid_expensive_constant (xmode0, binoptab, 0, xop0, unsignedp);
@@ -1463,11 +1458,7 @@ expand_binop_directly (machine_mode mode, optab binoptab,
      Also try to make the last operand a constant.  */
   if (commutative_p
       && swap_commutative_operands_with_target (target, xop0, xop1))
-    {
-      swap = xop1;
-      xop1 = xop0;
-      xop0 = swap;
-    }
+    std::swap (xop0, xop1);
 
   /* Now, if insn's predicates don't allow our operands, put them into
      pseudo regs.  */
@@ -1722,11 +1713,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
      Also try to make the last operand a constant.  */
   if (commutative_optab_p (binoptab)
       && swap_commutative_operands_with_target (target, op0, op1))
-    {
-      temp = op1;
-      op1 = op0;
-      op0 = temp;
-    }
+    std::swap (op0, op1);
 
   /* These can be done a word at a time.  */
   if ((binoptab == and_optab || binoptab == ior_optab || binoptab == xor_optab)
@@ -4553,7 +4540,7 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
 		       machine_mode cmode, rtx op2, rtx op3,
 		       machine_mode mode, int unsignedp)
 {
-  rtx tem, comparison;
+  rtx comparison;
   rtx_insn *last;
   enum insn_code icode;
   enum rtx_code reversed;
@@ -4563,9 +4550,7 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
   if (swap_commutative_operands_p (op0, op1))
     {
-      tem = op0;
-      op0 = op1;
-      op1 = tem;
+      std::swap (op0, op1);
       code = swap_condition (code);
     }
 
@@ -4584,9 +4569,7 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
       && ((reversed = reversed_comparison_code_parts (code, op0, op1, NULL))
           != UNKNOWN))
     {
-      tem = op2;
-      op2 = op3;
-      op3 = tem;
+      std::swap (op2, op3);
       code = reversed;
     }
 
@@ -4675,7 +4658,7 @@ emit_conditional_add (rtx target, enum rtx_code code, rtx op0, rtx op1,
 		      machine_mode cmode, rtx op2, rtx op3,
 		      machine_mode mode, int unsignedp)
 {
-  rtx tem, comparison;
+  rtx comparison;
   rtx_insn *last;
   enum insn_code icode;
 
@@ -4684,9 +4667,7 @@ emit_conditional_add (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
   if (swap_commutative_operands_p (op0, op1))
     {
-      tem = op0;
-      op0 = op1;
-      op1 = tem;
+      std::swap (op0, op1);
       code = swap_condition (code);
     }
 

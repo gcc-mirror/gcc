@@ -1882,28 +1882,6 @@ cleanout_wildcards (omega_pb pb)
     normalize_omega_problem (pb);
 }
 
-/* Swap values contained in I and J.  */
-
-static inline void
-swap (int *i, int *j)
-{
-  int tmp;
-  tmp = *i;
-  *i = *j;
-  *j = tmp;
-}
-
-/* Swap values contained in I and J.  */
-
-static inline void
-bswap (bool *i, bool *j)
-{
-  bool tmp;
-  tmp = *i;
-  *i = *j;
-  *j = tmp;
-}
-
 /* Make variable IDX unprotected in PB, by swapping its index at the
    PB->safe_vars rank.  */
 
@@ -1920,19 +1898,19 @@ omega_unprotect_1 (omega_pb pb, int *idx, bool *unprotect)
       for (e = pb->num_geqs - 1; e >= 0; e--)
 	{
 	  pb->geqs[e].touched = 1;
-	  swap (&pb->geqs[e].coef[*idx], &pb->geqs[e].coef[j]);
+	  std::swap (pb->geqs[e].coef[*idx], pb->geqs[e].coef[j]);
 	}
 
       for (e = pb->num_eqs - 1; e >= 0; e--)
-	swap (&pb->eqs[e].coef[*idx], &pb->eqs[e].coef[j]);
+	std::swap (pb->eqs[e].coef[*idx], pb->eqs[e].coef[j]);
 
       for (e = pb->num_subs - 1; e >= 0; e--)
-	swap (&pb->subs[e].coef[*idx], &pb->subs[e].coef[j]);
+	std::swap (pb->subs[e].coef[*idx], pb->subs[e].coef[j]);
 
       if (unprotect)
-	bswap (&unprotect[*idx], &unprotect[j]);
+	std::swap (unprotect[*idx], unprotect[j]);
 
-      swap (&pb->var[*idx], &pb->var[j]);
+      std::swap (pb->var[*idx], pb->var[j]);
       pb->forwarding_address[pb->var[*idx]] = *idx;
       pb->forwarding_address[pb->var[j]] = j;
       (*idx)--;
@@ -3999,7 +3977,6 @@ omega_solve_geq (omega_pb pb, enum omega_result desired_res)
 
       if (i != n_vars)
 	{
-	  int t;
 	  int j = pb->num_vars;
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -4008,24 +3985,18 @@ omega_solve_geq (omega_pb pb, enum omega_result desired_res)
 	      omega_print_problem (dump_file, pb);
 	    }
 
-	  swap (&pb->var[i], &pb->var[j]);
+	  std::swap (pb->var[i], pb->var[j]);
 
 	  for (e = pb->num_geqs - 1; e >= 0; e--)
 	    if (pb->geqs[e].coef[i] != pb->geqs[e].coef[j])
 	      {
 		pb->geqs[e].touched = 1;
-		t = pb->geqs[e].coef[i];
-		pb->geqs[e].coef[i] = pb->geqs[e].coef[j];
-		pb->geqs[e].coef[j] = t;
+		std::swap (pb->geqs[e].coef[i], pb->geqs[e].coef[j]);
 	      }
 
 	  for (e = pb->num_subs - 1; e >= 0; e--)
 	    if (pb->subs[e].coef[i] != pb->subs[e].coef[j])
-	      {
-		t = pb->subs[e].coef[i];
-		pb->subs[e].coef[i] = pb->subs[e].coef[j];
-		pb->subs[e].coef[j] = t;
-	      }
+	      std::swap (pb->subs[e].coef[i], pb->subs[e].coef[j]);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -4624,16 +4595,14 @@ omega_solve_geq (omega_pb pb, enum omega_result desired_res)
 	      /* Sort array LOWER_BOUND.  */
 	      for (j = 0; j < lower_bounds; j++)
 		{
-		  int k, smallest = j;
+		  int smallest = j;
 
-		  for (k = j + 1; k < lower_bounds; k++)
+		  for (int k = j + 1; k < lower_bounds; k++)
 		    if (pb->geqs[lower_bound[smallest]].coef[i] >
 			pb->geqs[lower_bound[k]].coef[i])
 		      smallest = k;
 
-		  k = lower_bound[smallest];
-		  lower_bound[smallest] = lower_bound[j];
-		  lower_bound[j] = k;
+		  std::swap (lower_bound[smallest], lower_bound[j]);
 		}
 
 	      if (dump_file && (dump_flags & TDF_DETAILS))

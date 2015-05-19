@@ -457,7 +457,7 @@ fibonacci_heap<K,V>::union_with (fibonacci_heap<K,V> *heapb)
 {
   fibonacci_heap<K,V> *heapa = this;
 
-  fibonacci_node<K,V> *a_root, *b_root, *temp;
+  fibonacci_node<K,V> *a_root, *b_root;
 
   /* If one of the heaps is empty, the union is just the other heap.  */
   if ((a_root = heapa->m_root) == NULL)
@@ -474,9 +474,7 @@ fibonacci_heap<K,V>::union_with (fibonacci_heap<K,V> *heapb)
   /* Merge them to the next nodes on the opposite chain.  */
   a_root->m_left->m_right = b_root;
   b_root->m_left->m_right = a_root;
-  temp = a_root->m_left;
-  a_root->m_left = b_root->m_left;
-  b_root->m_left = temp;
+  std::swap (a_root->m_left, b_root->m_left);
   heapa->m_nodes += heapb->m_nodes;
 
   /* And set the new minimum, if it's changed.  */

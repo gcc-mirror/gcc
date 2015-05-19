@@ -1000,7 +1000,7 @@ ira_copy_live_range_list (live_range_t r)
 live_range_t
 ira_merge_live_ranges (live_range_t r1, live_range_t r2)
 {
-  live_range_t first, last, temp;
+  live_range_t first, last;
 
   if (r1 == NULL)
     return r2;
@@ -1009,18 +1009,14 @@ ira_merge_live_ranges (live_range_t r1, live_range_t r2)
   for (first = last = NULL; r1 != NULL && r2 != NULL;)
     {
       if (r1->start < r2->start)
-	{
-	  temp = r1;
-	  r1 = r2;
-	  r2 = temp;
-	}
+	std::swap (r1, r2);
       if (r1->start <= r2->finish + 1)
 	{
 	  /* Intersected ranges: merge r1 and r2 into r1.  */
 	  r1->start = r2->start;
 	  if (r1->finish < r2->finish)
 	    r1->finish = r2->finish;
-	  temp = r2;
+	  live_range_t temp = r2;
 	  r2 = r2->next;
 	  ira_finish_live_range (temp);
 	  if (r2 == NULL)
@@ -1479,23 +1475,12 @@ add_allocno_copy_to_list (ira_copy_t cp)
 static void
 swap_allocno_copy_ends_if_necessary (ira_copy_t cp)
 {
-  ira_allocno_t temp;
-  ira_copy_t temp_cp;
-
   if (ALLOCNO_NUM (cp->first) <= ALLOCNO_NUM (cp->second))
     return;
 
-  temp = cp->first;
-  cp->first = cp->second;
-  cp->second = temp;
-
-  temp_cp = cp->prev_first_allocno_copy;
-  cp->prev_first_allocno_copy = cp->prev_second_allocno_copy;
-  cp->prev_second_allocno_copy = temp_cp;
-
-  temp_cp = cp->next_first_allocno_copy;
-  cp->next_first_allocno_copy = cp->next_second_allocno_copy;
-  cp->next_second_allocno_copy = temp_cp;
+  std::swap (cp->first, cp->second);
+  std::swap (cp->prev_first_allocno_copy, cp->prev_second_allocno_copy);
+  std::swap (cp->next_first_allocno_copy, cp->next_second_allocno_copy);
 }
 
 /* Create (or update frequency if the copy already exists) and return

@@ -3293,15 +3293,9 @@ simple_move_p (void)
 static inline void
 swap_operands (int nop)
 {
-  machine_mode mode = curr_operand_mode[nop];
-  curr_operand_mode[nop] = curr_operand_mode[nop + 1];
-  curr_operand_mode[nop + 1] = mode;
-  mode = original_subreg_reg_mode[nop];
-  original_subreg_reg_mode[nop] = original_subreg_reg_mode[nop + 1];
-  original_subreg_reg_mode[nop + 1] = mode;
-  rtx x = *curr_id->operand_loc[nop];
-  *curr_id->operand_loc[nop] = *curr_id->operand_loc[nop + 1];
-  *curr_id->operand_loc[nop + 1] = x;
+  std::swap (curr_operand_mode[nop], curr_operand_mode[nop + 1]);
+  std::swap (original_subreg_reg_mode[nop], original_subreg_reg_mode[nop + 1]);
+  std::swap (*curr_id->operand_loc[nop], *curr_id->operand_loc[nop + 1]);
   /* Swap the duplicates too.  */
   lra_update_dup (curr_id, nop);
   lra_update_dup (curr_id, nop + 1);
