@@ -607,7 +607,7 @@ diagnostic_action_after_output (diagnostic_context *context,
 void
 diagnostic_report_current_module (diagnostic_context *context, location_t where)
 {
-  const struct line_map *map = NULL;
+  const line_map_ordinary *map = NULL;
 
   if (pp_needs_newline (context->printer))
     {

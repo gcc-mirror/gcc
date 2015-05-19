@@ -67,7 +67,7 @@ default_tree_diagnostic_starter (diagnostic_context *context,
    below.  */
 typedef struct
 {
-  const struct line_map *map;
+  const line_map_macro *map;
   source_location where;
 } loc_map_pair;
 
@@ -133,7 +133,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
   do
     {
       loc.where = where;
-      loc.map = map;
+      loc.map = linemap_check_macro (map);
 
       loc_vec.safe_push (loc);
 
@@ -148,6 +148,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
 
   /* Now map is set to the map of the location in the source that
      first triggered the macro expansion.  This must be an ordinary map.  */
+  const line_map_ordinary *ord_map = linemap_check_ordinary (map);
 
   /* Walk LOC_VEC and print the macro expansion trace, unless the
      first macro which expansion triggered this trace was expanded
@@ -155,7 +156,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
   int saved_location_line =
     expand_location_to_spelling_point (diagnostic_location (diagnostic)).line;
 
-  if (!LINEMAP_SYSP (map))
+  if (!LINEMAP_SYSP (ord_map))
     FOR_EACH_VEC_ELT (loc_vec, ix, iter)
       {
 	/* Sometimes, in the unwound macro expansion trace, we want to
@@ -195,7 +196,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
 
 	/* Don't print trace for locations that are reserved or from
 	   within a system header.  */
-        const struct line_map *m = NULL;
+        const line_map_ordinary *m = NULL;
         source_location l = 
           linemap_resolve_location (line_table, resolved_def_loc,
                                     LRK_SPELLING_LOCATION,  &m);

@@ -134,7 +134,7 @@ expand_location_1 (source_location loc,
 		   bool expansion_point_p)
 {
   expanded_location xloc;
-  const struct line_map *map;
+  const line_map_ordinary *map;
   enum location_resolution_kind lrk = LRK_MACRO_EXPANSION_POINT;
   tree block = NULL;
 
@@ -158,7 +158,7 @@ expand_location_1 (source_location loc,
 	     location (toward the expansion point) that is not reserved;
 	     that is, the first location that is in real source code.  */
 	  loc = linemap_unwind_to_first_non_reserved_loc (line_table,
-							  loc, &map);
+							  loc, NULL);
 	  lrk = LRK_SPELLING_LOCATION;
 	}
       loc = linemap_resolve_location (line_table, loc,
@@ -724,7 +724,7 @@ location_get_source_line (expanded_location xloc,
 bool
 is_location_from_builtin_token (source_location loc)
 {
-  const line_map *map = NULL;
+  const line_map_ordinary *map = NULL;
   loc = linemap_resolve_location (line_table, loc,
 				  LRK_SPELLING_LOCATION, &map);
   return loc == BUILTINS_LOCATION;
@@ -949,7 +949,8 @@ dump_location_info (FILE *stream)
       source_location end_location = get_end_location (line_table, idx);
       /* half-closed: doesn't include this one. */
 
-      struct line_map *map = LINEMAPS_ORDINARY_MAP_AT (line_table, idx);
+      const line_map_ordinary *map
+	= LINEMAPS_ORDINARY_MAP_AT (line_table, idx);
       fprintf (stream, "ORDINARY MAP: %i\n", idx);
       dump_location_range (stream,
 			   MAP_START_LOCATION (map), end_location);
@@ -1026,7 +1027,7 @@ dump_location_info (FILE *stream)
       unsigned int idx = (ascending_source_locations
 			  ? (LINEMAPS_MACRO_USED (line_table) - (i + 1))
 			  : i);
-      struct line_map *map = LINEMAPS_MACRO_MAP_AT (line_table, idx);
+      const line_map_macro *map = LINEMAPS_MACRO_MAP_AT (line_table, idx);
       fprintf (stream, "MACRO %i: %s (%u tokens)\n",
 	       idx,
 	       linemap_map_get_macro_name (map),

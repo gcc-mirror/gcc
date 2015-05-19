@@ -1,3 +1,29 @@
+2015-05-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.c (diagnostic_report_current_module): Strengthen
+	local "new_map" from const line_map * to
+	const line_map_ordinary *.
+	* genmatch.c (error_cb): Likewise for local "map".
+	(output_line_directive): Likewise for local "map".
+	* input.c (expand_location_1): Likewise for local "map".
+	Pass NULL rather than &map to
+	linemap_unwind_to_first_non_reserved_loc, since the value is never
+	read from there, and the value written back not read from here.
+	(is_location_from_builtin_token): Strengthen local "map" from
+	const line_map * to const line_map_ordinary *.
+	(dump_location_info): Strengthen locals "map" from
+	line_map *, one to const line_map_ordinary *, the other
+	to const line_map_macro *.
+	* tree-diagnostic.c (loc_map_pair): Strengthen field "map" from
+	const line_map * to const line_map_macro *.
+	(maybe_unwind_expanded_macro_loc): Add a call to
+	linemap_check_macro when writing to the "map" field of the
+	loc_map_pair.
+	Introduce local const line_map_ordinary * "ord_map", using it in
+	place of "map" in the part of the function where we know we have
+	an ordinary map.  Strengthen local "m" from const line_map * to
+	const line_map_ordinary *.
+
 2015-05-19  Nick Clifton  <nickc@redhat.com>
 
 	PR target/66156

@@ -549,7 +549,7 @@ struct cpp_callbacks
      The line_map is for the new file.  It is NULL if there is no new file.
      (In C this happens when done with <built-in>+<command line> and also
      when done with a main file.)  This can be used for resource cleanup.  */
-  void (*file_change) (cpp_reader *, const struct line_map *);
+  void (*file_change) (cpp_reader *, const line_map_ordinary *);
 
   void (*dir_change) (cpp_reader *, const char *);
   void (*include) (cpp_reader *, source_location, const unsigned char *,

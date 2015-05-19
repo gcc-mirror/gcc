@@ -1,3 +1,10 @@
+2015-05-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* cpp.c (maybe_print_line): Strengthen local "map" from
+	const line_map * to const line_map_ordinary *.
+	(cb_file_change): Likewise for param "map" and local "from".
+	(cb_line_change): Likewise for local "map".
+
 2015-05-19  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* interface.c (compare_actual_formal): Use std::swap instead of

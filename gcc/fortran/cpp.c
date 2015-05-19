@@ -147,7 +147,7 @@ static void scan_translation_unit_trad (cpp_reader *);
 
 /* Callback routines for the parser. Most of these are active only
    in specific modes.  */
-static void cb_file_change (cpp_reader *, const struct line_map *);
+static void cb_file_change (cpp_reader *, const line_map_ordinary *);
 static void cb_line_change (cpp_reader *, const cpp_token *, int);
 static void cb_define (cpp_reader *, source_location, cpp_hashnode *);
 static void cb_undef (cpp_reader *, source_location, cpp_hashnode *);
@@ -807,7 +807,8 @@ scan_translation_unit_trad (cpp_reader *pfile)
 static void
 maybe_print_line (source_location src_loc)
 {
-  const struct line_map *map = linemap_lookup (line_table, src_loc);
+  const line_map_ordinary *map
+    = linemap_check_ordinary (linemap_lookup (line_table, src_loc));
   int src_line = SOURCE_LINE (map, src_loc);
 
   /* End the previous line of text.  */
@@ -874,7 +875,7 @@ print_line (source_location src_loc, const char *special_flags)
 }
 
 static void
-cb_file_change (cpp_reader * ARG_UNUSED (pfile), const struct line_map *map)
+cb_file_change (cpp_reader * ARG_UNUSED (pfile), const line_map_ordinary *map)
 {
   const char *flags = "";
 
@@ -896,7 +897,7 @@ cb_file_change (cpp_reader * ARG_UNUSED (pfile), const struct line_map *map)
 	  /* Bring current file to correct line when entering a new file.  */
 	  if (map->reason == LC_ENTER)
 	    {
-	      const struct line_map *from = INCLUDED_FROM (line_table, map);
+	      const line_map_ordinary *from = INCLUDED_FROM (line_table, map);
 	      maybe_print_line (LAST_SOURCE_LINE_LOCATION (from));
 	    }
 	  if (map->reason == LC_ENTER)
@@ -930,7 +931,8 @@ cb_line_change (cpp_reader *pfile, const cpp_token *token,
      ought to care.  Some things do care; the fault lies with them.  */
   if (!CPP_OPTION (pfile, traditional))
     {
-      const struct line_map *map = linemap_lookup (line_table, src_loc);
+      const line_map_ordinary *map
+	= linemap_check_ordinary (linemap_lookup (line_table, src_loc));
       int spaces = SOURCE_COLUMN (map, src_loc) - 2;
       print.printed = 1;
 

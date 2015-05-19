@@ -1,3 +1,161 @@
+2015-05-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* directives.c (do_line): Strengthen local "map" from
+	const line_map * to const line_map_ordinary *.
+	(do_linemarker): Likewise.
+	(_cpp_do_file_change): Assert that we're not dealing with
+	a macro map.  Introduce local "ord_map" via a call to
+	linemap_check_ordinary, guarded within the check for
+	non-NULL.  Use it for typesafety.
+	* files.c (cpp_make_system_header): Strengthen local "map" from
+	const line_map * to const line_map_ordinary *.
+	* include/cpplib.h (struct cpp_callbacks): Likewise for second
+	parameter of "file_change" callback.
+	* include/line-map.h (struct line_map): Convert from a struct
+	containing a union to a base class.
+	(struct line_map_ordinary): Convert to a subclass of line_map.
+	(struct line_map_macro): Likewise.
+	(linemap_check_ordinary): Strengthen return type from line_map *
+	to line_map_ordinary *, and add a const-variant.
+	(linemap_check_macro): New pair of functions.
+	(ORDINARY_MAP_STARTING_LINE_NUMBER): Strengthen param from
+	const line_map * to const line_map_ordinary *, eliminating call
+	to linemap_check_ordinary.  Likewise for the non-const variant.
+	(ORDINARY_MAP_INCLUDER_FILE_INDEX): Likewise.
+	(ORDINARY_MAP_IN_SYSTEM_HEADER_P): Likewise.
+	(ORDINARY_MAP_NUMBER_OF_COLUMN_BITS): Likewise.
+	(ORDINARY_MAP_FILE_NAME): Likewise.
+	(MACRO_MAP_MACRO): Strengthen param from const line_map * to
+	const line_map_macro *.  Likewise for the non-const variant.
+	(MACRO_MAP_NUM_MACRO_TOKENS): Likewise.
+	(MACRO_MAP_LOCATIONS): Likewise.
+	(MACRO_MAP_EXPANSION_POINT_LOCATION): Likewise.
+	(struct maps_info): Replace with...
+	(struct maps_info_ordinary):...this and...
+	(struct maps_info_macro): ...this.
+	(struct line_maps): Convert fields "info_ordinary" and
+	"info_macro" to the above new structs.
+	(LINEMAPS_MAP_INFO): Delete both functions.
+	(LINEMAPS_MAPS): Likewise.
+	(LINEMAPS_ALLOCATED): Rewrite both variants to avoid using
+	LINEMAPS_MAP_INFO.
+	(LINEMAPS_USED): Likewise.
+	(LINEMAPS_CACHE): Likewise.
+	(LINEMAPS_MAP_AT): Likewise.
+	(LINEMAPS_ORDINARY_MAPS): Strengthen return type from line_map *
+	to line_map_ordinary *.
+	(LINEMAPS_ORDINARY_MAP_AT): Likewise.
+	(LINEMAPS_LAST_ORDINARY_MAP): Likewise.
+	(LINEMAPS_LAST_ALLOCATED_ORDINARY_MAP): Likewise.
+	(LINEMAPS_MACRO_MAPS): Strengthen return type from line_map * to
+	line_map_macro *.
+	(LINEMAPS_MACRO_MAP_AT): Likewise.
+	(LINEMAPS_LAST_MACRO_MAP): Likewise.
+	(LINEMAPS_LAST_ALLOCATED_MACRO_MAP): Likewise.
+	(linemap_map_get_macro_name): Strengthen param from
+	const line_map * to const line_map_macro *.
+	(SOURCE_LINE): Strengthen first param from const line_map * to
+	const line_map_ordinary *, removing call to
+	linemap_check_ordinary.
+	(SOURCE_COLUMN): Likewise.
+	(LAST_SOURCE_LINE_LOCATION): Likewise.
+	(LAST_SOURCE_LINE): Strengthen first param from const line_map *
+	to const line_map_ordinary *.
+	(LAST_SOURCE_COLUMN): Likewise.
+	(INCLUDED_FROM): Strengthen return type from line_map * to
+	line_map_ordinary *., and second param from const line_map *
+	to const line_map_ordinary *, removing call to
+	linemap_check_ordinary.
+	(MAIN_FILE_P): Strengthen param from const line_map * to
+	const line_map_ordinary *, removing call to
+	linemap_check_ordinary.
+	(linemap_position_for_line_and_column): Strengthen param from
+	const line_map * to const line_map_ordinary *.
+	(LINEMAP_FILE): Strengthen param from const line_map * to
+	const line_map_ordinary *, removing call to
+	linemap_check_ordinary.
+	(LINEMAP_LINE): Likewise.
+	(LINEMAP_SYSP): Likewise.
+	(linemap_resolve_location): Strengthen final param from
+	const line_map ** to const line_map_ordinary **.
+	* internal.h (CPP_INCREMENT_LINE): Likewise for local "map".
+	(linemap_enter_macro): Strengthen return type from
+	const line_map * to const line_map_macro *.
+	(linemap_add_macro_token): Likewise for first param.
+	* line-map.c (linemap_check_files_exited): Strengthen local "map"
+	from const line_map * to const line_map_ordinary *.
+	(new_linemap): Introduce local "map_size" and use it when
+	calculating how large the buffer should be.  Rewrite based
+	on change of info_macro and info_ordinary into distinct types.
+	(linemap_add): Strengthen locals "map" and "from" from line_map *
+	to line_map_ordinary *.
+	(linemap_enter_macro): Strengthen return type from
+	const line_map * to const line_map_macro *, and local "map" from
+	line_map * to line_map_macro *.
+	(linemap_add_macro_token): Strengthen param "map" from
+	const line_map * to const line_map_macro *.
+	(linemap_line_start): Strengthen local "map" from line_map * to
+	line_map_ordinary *.
+	(linemap_position_for_column): Likewise.
+	(linemap_position_for_line_and_column): Strengthen first param
+	from const line_map * to const line_map_ordinary *.
+	(linemap_position_for_loc_and_offset): Strengthen local "map" from
+	const line_map * to const line_map_ordinary *.
+	(linemap_ordinary_map_lookup): Likewise for return type and locals
+	"cached" and "result".
+	(linemap_macro_map_lookup): Strengthen return type and locals
+	"cached" and "result" from const line_map * to
+	const line_map_macro *.
+	(linemap_macro_map_loc_to_exp_point): Likewise for param "map".
+	(linemap_macro_map_loc_to_def_point): Likewise.
+	(linemap_macro_map_loc_unwind_toward_spelling): Likewise.
+	(linemap_get_expansion_line): Strengthen local "map" from
+	const line_map * to const line_map_ordinary *.
+	(linemap_get_expansion_filename): Likewise.
+	(linemap_map_get_macro_name): Strengthen param from
+	const line_map * to const line_map_macro *.
+	(linemap_location_in_system_header_p): Add call to
+	linemap_check_ordinary in region guarded by
+	!linemap_macro_expansion_map_p.  Introduce local "macro_map" via
+	linemap_check_macro in other region, using it in place of "map"
+	for typesafety.
+	(first_map_in_common_1): Add calls to linemap_check_macro.
+	(trace_include): Strengthen param "map" from const line_map * to
+	const line_map_ordinary *.
+	(linemap_macro_loc_to_spelling_point): Strengthen final param from
+	const line_map ** to const line_map_ordinary **.  Replace a
+	C-style cast with a const_cast, and add calls to
+	linemap_check_macro and linemap_check_ordinary.
+	(linemap_macro_loc_to_def_point): Likewise.
+	(linemap_macro_loc_to_exp_point): Likewise.
+	(linemap_resolve_location): Strengthen final param from
+	const line_map ** to const line_map_ordinary **.
+	(linemap_unwind_toward_expansion): Introduce local "macro_map" via
+	a checked cast and use it in place of *map.
+	(linemap_unwind_to_first_non_reserved_loc): Strengthen local
+	"map1" from const line_map * to const line_map_ordinary *.
+	(linemap_expand_location): Introduce local "ord_map" via a checked
+	cast and use it in place of map.
+	(linemap_dump): Make local "map" const.  Strengthen local
+	"includer_map" from line_map * to const line_map_ordinary *.
+	Introduce locals "ord_map" and "macro_map" via checked casts and
+	use them in place of "map" for typesafety.
+	(linemap_dump_location): Strengthen local "map" from
+	const line_map * to const line_map_ordinary *.
+	(linemap_get_file_highest_location): Update for elimination of
+	union.
+	(linemap_get_statistics): Strengthen local "cur_map" from
+	line_map * to const line_map_macro *.  Update uses of sizeof to
+	use the appropriate line_map subclasses.
+	* macro.c (_cpp_warn_if_unused_macro): Add call to
+	linemap_check_ordinary.
+	(builtin_macro): Strengthen local "map" from const line_map * to
+	const line_map_macro *.
+	(enter_macro_context): Likewise.
+	(replace_args): Likewise.
+	(tokens_buff_put_token_to): Likewise for param "map".
+	(tokens_buff_add_token): Likewise.
+
 2015-05-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (source_location): Add a reference to

@@ -1,3 +1,21 @@
+2015-05-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.h (fe_file_change): Strengthen param from
+	const line_map * to const line_map_ordinary *.
+	(pp_file_change): Likewise.
+	* c-lex.c (fe_file_change): Likewise.
+	(cb_define): Use linemap_check_ordinary when invoking
+	SOURCE_LINE.
+	(cb_undef): Likewise.
+	* c-opts.c (c_finish_options): Use linemap_check_ordinary when
+	invoking cb_file_change.
+	(c_finish_options): Likewise.
+	(push_command_line_include): Likewise.
+	(cb_file_change): Strengthen param "new_map" from
+	const line_map * to const line_map_ordinary *.
+	* c-ppoutput.c (cb_define): Likewise for local "map".
+	(pp_file_change): Likewise for param "map" and local "from".
+
 2015-05-19  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* c-common.c (shorten_compare): Use std::swap instead of explicit swaps.
