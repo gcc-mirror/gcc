@@ -1,5 +1,9 @@
 2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* optabs.c (expand_vec_perm): Don't re-use SEL as target operand.
+
+2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.c (s390_secondary_reload): Fix check for
 	load/store relative.
 
