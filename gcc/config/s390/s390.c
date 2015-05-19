@@ -3141,17 +3141,15 @@ s390_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 	sri->icode = ((mode == DImode) ? CODE_FOR_reloaddi_larl_odd_addend_z10
 		      : CODE_FOR_reloadsi_larl_odd_addend_z10);
 
-      /* On z10 we need a scratch register when moving QI, TI or floating
-	 point mode values from or to a memory location with a SYMBOL_REF
-	 or if the symref addend of a SI or DI move is not aligned to the
-	 width of the access.  */
+      /* Handle all the (mem (symref)) accesses we cannot use the z10
+	 instructions for.  */
       if (MEM_P (x)
 	  && s390_loadrelative_operand_p (XEXP (x, 0), NULL, NULL)
-	  && (mode == QImode || mode == TImode || FLOAT_MODE_P (mode)
-	      || (!TARGET_ZARCH && mode == DImode)
-	      || ((mode == HImode || mode == SImode || mode == DImode)
-		  && (!s390_check_symref_alignment (XEXP (x, 0),
-						    GET_MODE_SIZE (mode))))))
+	  && (mode == QImode
+	      || !reg_classes_intersect_p (GENERAL_REGS, rclass)
+	      || GET_MODE_SIZE (mode) > UNITS_PER_WORD
+	      || !s390_check_symref_alignment (XEXP (x, 0),
+					       GET_MODE_SIZE (mode))))
 	{
 #define __SECONDARY_RELOAD_CASE(M,m)					\
 	  case M##mode:							\
