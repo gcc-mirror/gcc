@@ -1,3 +1,7 @@
+2015-05-20  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* gcc.target/sh/pr64366.c: Remove -m4 -ml from dg-options.
+
 2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* lib/target-supports.exp: Vector do not always have natural
