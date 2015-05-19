@@ -269,7 +269,8 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
 		 types.  Testing it here may help us to avoid speculation.  */
 	      if (otr_type && TREE_CODE (outer_type) == RECORD_TYPE
 		  && (!in_lto_p || odr_type_p (outer_type))
-		  && type_known_to_have_no_deriavations_p (outer_type))
+		  && type_with_linkage_p (outer_type)
+		  && type_known_to_have_no_derivations_p (outer_type))
 		maybe_derived_type = false;
 
 	      /* Type can not contain itself on an non-zero offset.  In that case
@@ -393,7 +394,7 @@ ipa_polymorphic_call_context::restrict_to_inner_class (tree otr_type,
 	    goto no_useful_type_info;
 
 	  cur_offset = new_offset;
-	  type = subtype;
+	  type = TYPE_MAIN_VARIANT (subtype);
 	  if (!speculative)
 	    {
 	      outer_type = type;
