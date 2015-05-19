@@ -202,12 +202,12 @@ init_expr_target (void)
   /* Try indexing by frame ptr and try by stack ptr.
      It is known that on the Convex the stack ptr isn't a valid index.
      With luck, one or the other is valid on any machine.  */
-  mem = gen_rtx_MEM (VOIDmode, stack_pointer_rtx);
-  mem1 = gen_rtx_MEM (VOIDmode, frame_pointer_rtx);
+  mem = gen_rtx_MEM (word_mode, stack_pointer_rtx);
+  mem1 = gen_rtx_MEM (word_mode, frame_pointer_rtx);
 
   /* A scratch register we can modify in-place below to avoid
      useless RTL allocations.  */
-  reg = gen_rtx_REG (VOIDmode, -1);
+  reg = gen_rtx_REG (word_mode, FIRST_PSEUDO_REGISTER);
 
   insn = rtx_alloc (INSN);
   pat = gen_rtx_SET (NULL_RTX, NULL_RTX);
