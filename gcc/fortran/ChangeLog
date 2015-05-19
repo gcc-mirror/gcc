@@ -1,5 +1,10 @@
 2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/66052
+	* decl.c(gfc_match_protected): Prevent dereference of NULL pointer. 
+
+2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/66045
 	* expr.c (gfc_check_assign):  Check for assignment of NULL() instead
 	of the (intended) pointer assignment.

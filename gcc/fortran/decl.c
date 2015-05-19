@@ -6968,7 +6968,8 @@ gfc_match_protected (void)
   gfc_symbol *sym;
   match m;
 
-  if (gfc_current_ns->proc_name->attr.flavor != FL_MODULE)
+  if (!gfc_current_ns->proc_name
+      || gfc_current_ns->proc_name->attr.flavor != FL_MODULE)
     {
        gfc_error ("PROTECTED at %C only allowed in specification "
 		  "part of a module");
