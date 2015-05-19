@@ -1,3 +1,9 @@
+2015-05-19  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54236
+	* config/sh/sh.md (*round_int_even): New insn_and_split and
+	accompanying new unnamed split.
+
 2015-05-19  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* bitmap.c (bitmap_set_range): Handle count==1 specially.

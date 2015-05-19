@@ -1998,6 +1998,44 @@
   [(set (match_dup 0) (minus:SI (match_dup 1) (match_dup 2)))
    (set (match_dup 0) (plus:SI (match_dup 0) (const_int 1)))])
 
+
+;; The tree optimiziers canonicalize 
+;;    reg + (reg & 1)
+;; into
+;;    (reg + 1) & -2
+;;
+;; On SH2A an add-bclr sequence will be used to handle this.
+;; On non-SH2A re-emit the add-and sequence to improve register utilization.
+(define_insn_and_split "*round_int_even"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(and:SI (plus:SI (match_operand:SI 1 "arith_reg_operand")
+			 (const_int 1))
+		(const_int -2)))]
+  "TARGET_SH1 && !TARGET_SH2A && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0) (const_int -2))
+   (set (match_dup 2) (plus:SI (match_dup 1) (const_int 1)))
+   (set (match_dup 0) (and:SI (match_dup 0) (match_dup 2)))]
+{
+  operands[2] = gen_reg_rtx (SImode);
+})
+
+;; If the *round_int_even pattern is combined with another plus,
+;; convert it into an addc pattern to emit an shlr-addc sequence.
+;; This split is taken by combine on non-SH2A and SH2A.
+(define_split
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(plus:SI (and:SI (plus:SI (match_operand:SI 1 "arith_reg_operand")
+				  (const_int 1))
+			 (const_int -2))
+		 (match_operand:SI 2 "arith_reg_operand")))]
+  "TARGET_SH1 && can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0)
+		   (plus:SI (plus:SI (match_dup 1) (match_dup 2))
+			    (and:SI (match_dup 1) (const_int 1))))
+	      (clobber (reg:SI T_REG))])])
+
 ;; Split 'reg + T' into 'reg + 0 + T' to utilize the addc insn.
 ;; If the 0 constant can be CSE-ed, this becomes a one instruction
 ;; operation, as opposed to sequences such as
