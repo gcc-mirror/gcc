@@ -1,3 +1,9 @@
+2015-05-19  David Sherwood  <david.sherwood@arm.com>
+
+	* loop-invariant.c (create_new_invariant): Don't calculate address cost
+	if mode is not a scalar integer.
+	(get_inv_cost): Increase computational cost for unused invariants.
+
 2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config.gcc: Add vecintrin.h to extra_headers.  Add s390-c.o to

@@ -1,3 +1,7 @@
+2015-05-19  David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.dg/loop-invariant.c: New testcase.
+
 2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.dg/tree-ssa/gen-vect-11b.c: Disable vector instructions on
