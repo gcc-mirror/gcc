@@ -1,3 +1,11 @@
+2015-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66165
+	* gcc.dg/torture/pr66165.c: New testcase.
+
+	PR tree-optimization/66185
+	* gcc.dg/torture/pr66185.c: New testcase.
+
 2015-05-19  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54236

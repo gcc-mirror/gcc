@@ -1,3 +1,13 @@
+2015-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66165
+	* tree-vect-slp.c (vect_supported_load_permutation_p): Add guard
+	for no load permutation.
+
+	PR tree-optimization/66185
+	* tree-vect-slp.c (vect_build_slp_tree): Properly roll back
+	when building the SLP node from scalars.
+
 2015-05-19  Eric Botcazou  <ebotcazou@adacore.com>
 	    Tristan Gingold  <gingold@adacore.com>
 

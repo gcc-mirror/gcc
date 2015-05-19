@@ -1103,6 +1103,16 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	     scalar version.  */
 	  && !is_pattern_stmt_p (vinfo_for_stmt (stmt)))
 	{
+	  unsigned int j;
+	  slp_tree grandchild;
+
+	  /* Roll back.  */
+	  *max_nunits = old_max_nunits;
+	  loads->truncate (old_nloads);
+	  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (child), j, grandchild)
+	    vect_free_slp_tree (grandchild);
+	  SLP_TREE_CHILDREN (child).truncate (0);
+
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "Building vector operands from scalars\n");
 	  oprnd_info->def_stmts = vNULL;
@@ -1400,6 +1410,8 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
          no permutation is necessary.  */
       FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (slp_instn), i, node)
         {
+	  if (!SLP_TREE_LOAD_PERMUTATION (node).exists ())
+	    continue;
 	  bool subchain_p = true;
           next_load = NULL;
           FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), j, load)
