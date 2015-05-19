@@ -1,3 +1,10 @@
+2015-05-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* calls.c: Always define STACK_GROWS_DOWNWARD as 0 or 1.
+	(mem_overlaps_already_clobbered_arg_p): Rewrite ifdef
+	STACK_GROWS_DOWNWARD as normal if.
+	(expand_call): Likewise. 
+
 2015-05-19  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54236
