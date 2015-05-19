@@ -1,5 +1,10 @@
 2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/66039
+	* gfortran.dg/filepos1.f90: New test
+
+2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/64925
 	* gfortran.dg/pr64925.f90: New test.
 
