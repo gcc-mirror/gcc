@@ -1,5 +1,104 @@
 2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/constraints.md (j00, jm1, jxx, jyy, v): New
+	constraints.
+	* config/s390/predicates.md (const0_operand, constm1_operand)
+	(constable_operand): Accept vector operands.
+	* config/s390/s390-modes.def: Add supported vector modes.
+	* config/s390/s390-protos.h (s390_cannot_change_mode_class)
+	(s390_function_arg_vector, s390_contiguous_bitmask_vector_p)
+	(s390_bytemask_vector_p, s390_expand_vec_strlen)
+	(s390_expand_vec_compare, s390_expand_vcond)
+	(s390_expand_vec_init): Add prototypes.
+	* config/s390/s390.c (VEC_ARG_NUM_REG): New macro.
+	(s390_vector_mode_supported_p): New function.
+	(s390_contiguous_bitmask_p): Mask out the irrelevant bits.
+	(s390_contiguous_bitmask_vector_p): New function.
+	(s390_bytemask_vector_p): New function.
+	(s390_split_ok_p): Vector regs don't work either.
+	(regclass_map): Add VEC_REGS.
+	(s390_legitimate_constant_p): Handle vector constants.
+	(s390_cannot_force_const_mem): Handle CONST_VECTOR.
+	(legitimate_reload_vector_constant_p): New function.
+	(s390_preferred_reload_class): Handle CONST_VECTOR.
+	(s390_reload_symref_address):  Likewise.
+	(s390_secondary_reload): Vector memory instructions only support
+	short displacements.  Rename reload*_nonoffmem* to reload*_la*.
+	(s390_emit_ccraw_jump): New function.
+	(s390_expand_vec_strlen): New function.
+	(s390_expand_vec_compare): New function.
+	(s390_expand_vcond): New function.
+	(s390_expand_vec_init): New function.
+	(s390_dwarf_frame_reg_mode): New function.
+	(print_operand): Handle addresses with 'O' and 'R' constraints.
+	(NR_C_MODES, constant_modes): Add vector modes.
+	(s390_output_pool_entry): Handle vector constants.
+	(s390_hard_regno_mode_ok): Handle vector registers.
+	(s390_class_max_nregs): Likewise.
+	(s390_cannot_change_mode_class): New function.
+	(s390_invalid_arg_for_unprototyped_fn): New function.
+	(s390_function_arg_vector): New function.
+	(s390_function_arg_float): Remove size variable.
+	(s390_pass_by_reference): Handle vector arguments.
+	(s390_function_arg_advance): Likewise.
+	(s390_function_arg): Likewise.
+	(s390_return_in_memory): Vector values are returned in a VR if
+	possible.
+	(s390_function_and_libcall_value): Handle vector arguments.
+	(s390_gimplify_va_arg): Likewise.
+	(s390_call_saved_register_used): Consider the arguments named.
+	(s390_conditional_register_usage): Disable v16-v31 for non-vec
+	targets.
+	(s390_preferred_simd_mode): New function.
+	(s390_support_vector_misalignment): New function.
+	(s390_vector_alignment): New function.
+	(TARGET_STRICT_ARGUMENT_NAMING, TARGET_DWARF_FRAME_REG_MODE)
+	(TARGET_VECTOR_MODE_SUPPORTED_P)
+	(TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN)
+	(TARGET_VECTORIZE_PREFERRED_SIMD_MODE)
+	(TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT)
+	(TARGET_VECTOR_ALIGNMENT): Define target macro.
+	* config/s390/s390.h (FUNCTION_ARG_PADDING): Define macro.
+	(FIRST_PSEUDO_REGISTER): Increase value.
+	(VECTOR_NOFP_REGNO_P, VECTOR_REGNO_P, VECTOR_NOFP_REG_P)
+	(VECTOR_REG_P): Define macros.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS)
+	(CALL_REALLY_USED_REGISTERS, REG_ALLOC_ORDER)
+	(HARD_REGNO_CALL_PART_CLOBBERED, REG_CLASS_NAMES)
+	(FUNCTION_ARG_REGNO_P, FUNCTION_VALUE_REGNO_P, REGISTER_NAMES):
+	Add vector registers.
+	(CANNOT_CHANGE_MODE_CLASS): Call C function.
+	(enum reg_class): Add VEC_REGS, ADDR_VEC_REGS, GENERAL_VEC_REGS.
+	(SECONDARY_MEMORY_NEEDED): Allow SF<->SI mode moves without
+	memory.
+	(DBX_REGISTER_NUMBER, FIRST_VEC_ARG_REGNO, LAST_VEC_ARG_REGNO)
+	(SHORT_DISP_IN_RANGE, VECTOR_STORE_FLAG_VALUE): Define macro.
+	* config/s390/s390.md (UNSPEC_VEC_*): New constants.
+	(VR*_REGNUM): New constants.
+	(ALL): New mode iterator.
+	(INTALL): Remove mode iterator.
+	Include vector.md.
+	(movti): Implement TImode moves for VRs.
+	Disable TImode splitter for VR targets.
+	Implement splitting TImode GPR<->VR moves.
+	(reload*_tomem_z10, reload*_toreg_z10): Replace INTALL with ALL.
+	(reload<mode>_nonoffmem_in, reload<mode>_nonoffmem_out): Rename to
+	reload<mode>_la_in, reload<mode>_la_out.
+	(*movdi_64, *movsi_zarch, *movhi, *movqi, *mov<mode>_64dfp)
+	(*mov<mode>_64, *mov<mode>_31): Add vector instructions.
+	(TD/TF mode splitter): Enable for GPRs only (formerly !FP).
+	(mov<mode> SF SD): Prefer lder, lde for loading.
+	Add lrl and strl instructions.
+	Add vector instructions.
+	(strlen<mode>): Rename old strlen<mode> to strlen_srst<mode>.
+	Call s390_expand_vec_strlen on z13.
+	(*cc_to_int): Change predicate to nonimmediate_operand.
+	(addti3): Rename to *addti3.  New expander.
+	(subti3): Rename to *subti3.  New expander.
+	* config/s390/vector.md: New file.
+
+2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* common/config/s390/s390-common.c (processor_flags_table): Add
 	z13.
 	* config.gcc: Add z13.

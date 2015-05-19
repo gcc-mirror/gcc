@@ -97,6 +97,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+#include "intl.h"
+#include "plugin-api.h"
+#include "ipa-ref.h"
+#include "cgraph.h"
 
 /* Define the specific costs for a given cpu.  */
 
@@ -440,6 +444,7 @@ struct GTY(()) machine_function
 /* Number of GPRs and FPRs used for argument passing.  */
 #define GP_ARG_NUM_REG 5
 #define FP_ARG_NUM_REG (TARGET_64BIT? 4 : 2)
+#define VEC_ARG_NUM_REG 8
 
 /* A couple of shortcuts.  */
 #define CONST_OK_FOR_J(x) \
@@ -574,6 +579,35 @@ s390_scalar_mode_supported_p (machine_mode mode)
     return default_decimal_float_supported_p ();
 
   return default_scalar_mode_supported_p (mode);
+}
+
+/* Return true if the back end supports vector mode MODE.  */
+static bool
+s390_vector_mode_supported_p (machine_mode mode)
+{
+  machine_mode inner;
+
+  if (!VECTOR_MODE_P (mode)
+      || !TARGET_VX
+      || GET_MODE_SIZE (mode) > 16)
+    return false;
+
+  inner = GET_MODE_INNER (mode);
+
+  switch (inner)
+    {
+    case QImode:
+    case HImode:
+    case SImode:
+    case DImode:
+    case TImode:
+    case SFmode:
+    case DFmode:
+    case TFmode:
+      return true;
+    default:
+      return false;
+    }
 }
 
 /* Set the has_landing_pad_p flag in struct machine_function to VALUE.  */
@@ -1473,6 +1507,9 @@ s390_contiguous_bitmask_p (unsigned HOST_WIDE_INT in, int size,
   /* Calculate a mask for all bits beyond the contiguous bits.  */
   mask = (-1LL & ~(((1ULL << (tmp_length + tmp_pos - 1)) << 1) - 1));
 
+  if ((unsigned)size < sizeof (HOST_WIDE_INT) * BITS_PER_UNIT)
+    mask &= (HOST_WIDE_INT_1U << size) - 1;
+
   if (mask & in)
     return false;
 
@@ -1484,6 +1521,101 @@ s390_contiguous_bitmask_p (unsigned HOST_WIDE_INT in, int size,
 
   if (pos)
     *pos = tmp_pos;
+
+  return true;
+}
+
+/* Return true if OP contains the same contiguous bitfield in *all*
+   its elements.  START and END can be used to obtain the start and
+   end position of the bitfield.
+
+   START/STOP give the position of the first/last bit of the bitfield
+   counting from the lowest order bit starting with zero.  In order to
+   use these values for S/390 instructions this has to be converted to
+   "bits big endian" style.  */
+
+bool
+s390_contiguous_bitmask_vector_p (rtx op, int *start, int *end)
+{
+  unsigned HOST_WIDE_INT mask;
+  int length, size;
+
+  if (!VECTOR_MODE_P (GET_MODE (op))
+      || GET_CODE (op) != CONST_VECTOR
+      || !CONST_INT_P (XVECEXP (op, 0, 0)))
+    return false;
+
+  if (GET_MODE_NUNITS (GET_MODE (op)) > 1)
+    {
+      int i;
+
+      for (i = 1; i < GET_MODE_NUNITS (GET_MODE (op)); ++i)
+	if (!rtx_equal_p (XVECEXP (op, 0, i), XVECEXP (op, 0, 0)))
+	  return false;
+    }
+
+  size = GET_MODE_UNIT_BITSIZE (GET_MODE (op));
+  mask = UINTVAL (XVECEXP (op, 0, 0));
+  if (s390_contiguous_bitmask_p (mask, size, start,
+				 end != NULL ? &length : NULL))
+    {
+      if (end != NULL)
+	*end = *start + length - 1;
+      return true;
+    }
+  /* 0xff00000f style immediates can be covered by swapping start and
+     end indices in vgm.  */
+  if (s390_contiguous_bitmask_p (~mask, size, start,
+				 end != NULL ? &length : NULL))
+    {
+      if (end != NULL)
+	*end = *start - 1;
+      if (start != NULL)
+	*start = *start + length;
+      return true;
+    }
+  return false;
+}
+
+/* Return true if C consists only of byte chunks being either 0 or
+   0xff.  If MASK is !=NULL a byte mask is generated which is
+   appropriate for the vector generate byte mask instruction.  */
+
+bool
+s390_bytemask_vector_p (rtx op, unsigned *mask)
+{
+  int i;
+  unsigned tmp_mask = 0;
+  int nunit, unit_size;
+
+  if (!VECTOR_MODE_P (GET_MODE (op))
+      || GET_CODE (op) != CONST_VECTOR
+      || !CONST_INT_P (XVECEXP (op, 0, 0)))
+    return false;
+
+  nunit = GET_MODE_NUNITS (GET_MODE (op));
+  unit_size = GET_MODE_UNIT_SIZE (GET_MODE (op));
+
+  for (i = 0; i < nunit; i++)
+    {
+      unsigned HOST_WIDE_INT c;
+      int j;
+
+      if (!CONST_INT_P (XVECEXP (op, 0, i)))
+	return false;
+
+      c = UINTVAL (XVECEXP (op, 0, i));
+      for (j = 0; j < unit_size; j++)
+	{
+	  if ((c & 0xff) != 0 && (c & 0xff) != 0xff)
+	    return false;
+	  tmp_mask |= (c & 1) << ((nunit - 1 - i) * unit_size + j);
+	  c = c >> BITS_PER_UNIT;
+	}
+    }
+
+  if (mask != NULL)
+    *mask = tmp_mask;
 
   return true;
 }
@@ -1513,8 +1645,8 @@ s390_extzv_shift_ok (int bitsize, int rotl, unsigned HOST_WIDE_INT contig)
 bool
 s390_split_ok_p (rtx dst, rtx src, machine_mode mode, int first_subword)
 {
-  /* Floating point registers cannot be split.  */
-  if (FP_REG_P (src) || FP_REG_P (dst))
+  /* Floating point and vector registers cannot be split.  */
+  if (FP_REG_P (src) || FP_REG_P (dst) || VECTOR_REG_P (src) || VECTOR_REG_P (dst))
     return false;
 
   /* We don't need to split if operands are directly accessible.  */
@@ -1705,16 +1837,20 @@ s390_init_machine_status (void)
 /* Map for smallest class containing reg regno.  */
 
 const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
-{ GENERAL_REGS, ADDR_REGS, ADDR_REGS, ADDR_REGS,
-  ADDR_REGS,    ADDR_REGS, ADDR_REGS, ADDR_REGS,
-  ADDR_REGS,    ADDR_REGS, ADDR_REGS, ADDR_REGS,
-  ADDR_REGS,    ADDR_REGS, ADDR_REGS, ADDR_REGS,
-  FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,
-  FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,
-  FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,
-  FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,
-  ADDR_REGS,    CC_REGS,   ADDR_REGS, ADDR_REGS,
-  ACCESS_REGS,	ACCESS_REGS
+{ GENERAL_REGS, ADDR_REGS, ADDR_REGS, ADDR_REGS,  /*  0 */
+  ADDR_REGS,    ADDR_REGS, ADDR_REGS, ADDR_REGS,  /*  4 */
+  ADDR_REGS,    ADDR_REGS, ADDR_REGS, ADDR_REGS,  /*  8 */
+  ADDR_REGS,    ADDR_REGS, ADDR_REGS, ADDR_REGS,  /* 12 */
+  FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,    /* 16 */
+  FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,    /* 20 */
+  FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,    /* 24 */
+  FP_REGS,      FP_REGS,   FP_REGS,   FP_REGS,    /* 28 */
+  ADDR_REGS,    CC_REGS,   ADDR_REGS, ADDR_REGS,  /* 32 */
+  ACCESS_REGS,	ACCESS_REGS, VEC_REGS, VEC_REGS,  /* 36 */
+  VEC_REGS, VEC_REGS, VEC_REGS, VEC_REGS,         /* 40 */
+  VEC_REGS, VEC_REGS, VEC_REGS, VEC_REGS,         /* 44 */
+  VEC_REGS, VEC_REGS, VEC_REGS, VEC_REGS,         /* 48 */
+  VEC_REGS, VEC_REGS                              /* 52 */
 };
 
 /* Return attribute type of insn.  */
@@ -2775,6 +2911,17 @@ legitimate_pic_operand_p (rtx op)
 static bool
 s390_legitimate_constant_p (machine_mode mode, rtx op)
 {
+  if (VECTOR_MODE_P (mode) && GET_CODE (op) == CONST_VECTOR)
+    {
+      if (GET_MODE_SIZE (mode) != 16)
+	return 0;
+
+      if (!const0_operand (op, mode)
+	  && !s390_contiguous_bitmask_vector_p (op, NULL, NULL)
+	  && !s390_bytemask_vector_p (op, NULL))
+	return 0;
+    }
+
   /* Accept all non-symbolic constants.  */
   if (!SYMBOLIC_CONST (op))
     return 1;
@@ -2811,6 +2958,7 @@ s390_cannot_force_const_mem (machine_mode mode, rtx x)
     {
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_VECTOR:
       /* Accept all non-symbolic constants.  */
       return false;
 
@@ -2943,6 +3091,27 @@ legitimate_reload_fp_constant_p (rtx op)
   return false;
 }
 
+/* Returns true if the constant value OP is a legitimate vector operand
+   during and after reload.
+   This function accepts all constants which can be loaded directly
+   into an VR.  */
+
+static bool
+legitimate_reload_vector_constant_p (rtx op)
+{
+  /* FIXME: Support constant vectors with all the same 16 bit unsigned
+     operands.  These can be loaded with vrepi.  */
+
+  if (TARGET_VX && GET_MODE_SIZE (GET_MODE (op)) == 16
+      && (const0_operand (op, GET_MODE (op))
+	  || constm1_operand (op, GET_MODE (op))
+	  || s390_contiguous_bitmask_vector_p (op, NULL, NULL)
+	  || s390_bytemask_vector_p (op, NULL)))
+    return true;
+
+  return false;
+}
+
 /* Given an rtx OP being reloaded into a reg required to be in class RCLASS,
    return the class of reg to actually use.  */
 
@@ -2953,6 +3122,7 @@ s390_preferred_reload_class (rtx op, reg_class_t rclass)
     {
       /* Constants we cannot reload into general registers
 	 must be forced into the literal pool.  */
+      case CONST_VECTOR:
       case CONST_DOUBLE:
       case CONST_INT:
 	if (reg_class_subset_p (GENERAL_REGS, rclass)
@@ -2964,6 +3134,10 @@ s390_preferred_reload_class (rtx op, reg_class_t rclass)
 	else if (reg_class_subset_p (FP_REGS, rclass)
 		 && legitimate_reload_fp_constant_p (op))
 	  return FP_REGS;
+	else if (reg_class_subset_p (VEC_REGS, rclass)
+		 && legitimate_reload_vector_constant_p (op))
+	  return VEC_REGS;
+
 	return NO_REGS;
 
       /* If a symbolic constant or a PLUS is reloaded,
@@ -3087,6 +3261,7 @@ s390_reload_symref_address (rtx reg, rtx mem, rtx scratch, bool tomem)
   /* Reload might have pulled a constant out of the literal pool.
      Force it back in.  */
   if (CONST_INT_P (mem) || GET_CODE (mem) == CONST_DOUBLE
+      || GET_CODE (mem) == CONST_VECTOR
       || GET_CODE (mem) == CONST)
     mem = force_const_mem (GET_MODE (reg), mem);
 
@@ -3125,6 +3300,30 @@ s390_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
   /* Intermediate register needed.  */
   if (reg_classes_intersect_p (CC_REGS, rclass))
     return GENERAL_REGS;
+
+  if (TARGET_VX)
+    {
+      /* The vst/vl vector move instructions allow only for short
+	 displacements.  */
+      if (MEM_P (x)
+	  && GET_CODE (XEXP (x, 0)) == PLUS
+	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+	  && !SHORT_DISP_IN_RANGE(INTVAL (XEXP (XEXP (x, 0), 1)))
+	  && reg_class_subset_p (rclass, VEC_REGS)
+	  && (!reg_class_subset_p (rclass, FP_REGS)
+	      || (GET_MODE_SIZE (mode) > 8
+		  && s390_class_max_nregs (FP_REGS, mode) == 1)))
+	{
+	  if (in_p)
+	    sri->icode = (TARGET_64BIT ?
+			  CODE_FOR_reloaddi_la_in :
+			  CODE_FOR_reloadsi_la_in);
+	  else
+	    sri->icode = (TARGET_64BIT ?
+			  CODE_FOR_reloaddi_la_out :
+			  CODE_FOR_reloadsi_la_out);
+	}
+    }
 
   if (TARGET_Z10)
     {
@@ -3174,7 +3373,27 @@ s390_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 	      __SECONDARY_RELOAD_CASE (SD, sd);
 	      __SECONDARY_RELOAD_CASE (DD, dd);
 	      __SECONDARY_RELOAD_CASE (TD, td);
-
+	      __SECONDARY_RELOAD_CASE (V1QI, v1qi);
+	      __SECONDARY_RELOAD_CASE (V2QI, v2qi);
+	      __SECONDARY_RELOAD_CASE (V4QI, v4qi);
+	      __SECONDARY_RELOAD_CASE (V8QI, v8qi);
+	      __SECONDARY_RELOAD_CASE (V16QI, v16qi);
+	      __SECONDARY_RELOAD_CASE (V1HI, v1hi);
+	      __SECONDARY_RELOAD_CASE (V2HI, v2hi);
+	      __SECONDARY_RELOAD_CASE (V4HI, v4hi);
+	      __SECONDARY_RELOAD_CASE (V8HI, v8hi);
+	      __SECONDARY_RELOAD_CASE (V1SI, v1si);
+	      __SECONDARY_RELOAD_CASE (V2SI, v2si);
+	      __SECONDARY_RELOAD_CASE (V4SI, v4si);
+	      __SECONDARY_RELOAD_CASE (V1DI, v1di);
+	      __SECONDARY_RELOAD_CASE (V2DI, v2di);
+	      __SECONDARY_RELOAD_CASE (V1TI, v1ti);
+	      __SECONDARY_RELOAD_CASE (V1SF, v1sf);
+	      __SECONDARY_RELOAD_CASE (V2SF, v2sf);
+	      __SECONDARY_RELOAD_CASE (V4SF, v4sf);
+	      __SECONDARY_RELOAD_CASE (V1DF, v1df);
+	      __SECONDARY_RELOAD_CASE (V2DF, v2df);
+	      __SECONDARY_RELOAD_CASE (V1TF, v1tf);
 	    default:
 	      gcc_unreachable ();
 	    }
@@ -3213,12 +3432,12 @@ s390_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 	{
 	  if (in_p)
 	    sri->icode = (TARGET_64BIT ?
-			  CODE_FOR_reloaddi_nonoffmem_in :
-			  CODE_FOR_reloadsi_nonoffmem_in);
+			  CODE_FOR_reloaddi_la_in :
+			  CODE_FOR_reloadsi_la_in);
 	  else
 	    sri->icode = (TARGET_64BIT ?
-			  CODE_FOR_reloaddi_nonoffmem_out :
-			  CODE_FOR_reloadsi_nonoffmem_out);
+			  CODE_FOR_reloaddi_la_out :
+			  CODE_FOR_reloadsi_la_out);
 	}
     }
 
@@ -4452,6 +4671,138 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
   return true;
 }
 
+/* Emit a conditional jump to LABEL for condition code mask MASK using
+   comparsion operator COMPARISON.  Return the emitted jump insn.  */
+
+static rtx
+s390_emit_ccraw_jump (HOST_WIDE_INT mask, enum rtx_code comparison, rtx label)
+{
+  rtx temp;
+
+  gcc_assert (comparison == EQ || comparison == NE);
+  gcc_assert (mask > 0 && mask < 15);
+
+  temp = gen_rtx_fmt_ee (comparison, VOIDmode,
+			 gen_rtx_REG (CCRAWmode, CC_REGNUM), GEN_INT (mask));
+  temp = gen_rtx_IF_THEN_ELSE (VOIDmode, temp,
+			       gen_rtx_LABEL_REF (VOIDmode, label), pc_rtx);
+  temp = gen_rtx_SET (pc_rtx, temp);
+  return emit_jump_insn (temp);
+}
+
+/* Emit the instructions to implement strlen of STRING and store the
+   result in TARGET.  The string has the known ALIGNMENT.  This
+   version uses vector instructions and is therefore not appropriate
+   for targets prior to z13.  */
+
+void
+s390_expand_vec_strlen (rtx target, rtx string, rtx alignment)
+{
+  int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
+  int very_likely = REG_BR_PROB_BASE - 1;
+  rtx highest_index_to_load_reg = gen_reg_rtx (Pmode);
+  rtx str_reg = gen_reg_rtx (V16QImode);
+  rtx str_addr_base_reg = gen_reg_rtx (Pmode);
+  rtx str_idx_reg = gen_reg_rtx (Pmode);
+  rtx result_reg = gen_reg_rtx (V16QImode);
+  rtx is_aligned_label = gen_label_rtx ();
+  rtx into_loop_label = NULL_RTX;
+  rtx loop_start_label = gen_label_rtx ();
+  rtx temp;
+  rtx len = gen_reg_rtx (QImode);
+  rtx cond;
+
+  s390_load_address (str_addr_base_reg, XEXP (string, 0));
+  emit_move_insn (str_idx_reg, const0_rtx);
+
+  if (INTVAL (alignment) < 16)
+    {
+      /* Check whether the address happens to be aligned properly so
+	 jump directly to the aligned loop.  */
+      emit_cmp_and_jump_insns (gen_rtx_AND (Pmode,
+					    str_addr_base_reg, GEN_INT (15)),
+			       const0_rtx, EQ, NULL_RTX,
+			       Pmode, 1, is_aligned_label);
+
+      temp = gen_reg_rtx (Pmode);
+      temp = expand_binop (Pmode, and_optab, str_addr_base_reg,
+			   GEN_INT (15), temp, 1, OPTAB_DIRECT);
+      gcc_assert (REG_P (temp));
+      highest_index_to_load_reg =
+	expand_binop (Pmode, sub_optab, GEN_INT (15), temp,
+		      highest_index_to_load_reg, 1, OPTAB_DIRECT);
+      gcc_assert (REG_P (highest_index_to_load_reg));
+      emit_insn (gen_vllv16qi (str_reg,
+		   convert_to_mode (SImode, highest_index_to_load_reg, 1),
+		   gen_rtx_MEM (BLKmode, str_addr_base_reg)));
+
+      into_loop_label = gen_label_rtx ();
+      s390_emit_jump (into_loop_label, NULL_RTX);
+      emit_barrier ();
+    }
+
+  emit_label (is_aligned_label);
+  LABEL_NUSES (is_aligned_label) = INTVAL (alignment) < 16 ? 2 : 1;
+
+  /* Reaching this point we are only performing 16 bytes aligned
+     loads.  */
+  emit_move_insn (highest_index_to_load_reg, GEN_INT (15));
+
+  emit_label (loop_start_label);
+  LABEL_NUSES (loop_start_label) = 1;
+
+  /* Load 16 bytes of the string into VR.  */
+  emit_move_insn (str_reg,
+		  gen_rtx_MEM (V16QImode,
+			       gen_rtx_PLUS (Pmode, str_idx_reg,
+					     str_addr_base_reg)));
+  if (into_loop_label != NULL_RTX)
+    {
+      emit_label (into_loop_label);
+      LABEL_NUSES (into_loop_label) = 1;
+    }
+
+  /* Increment string index by 16 bytes.  */
+  expand_binop (Pmode, add_optab, str_idx_reg, GEN_INT (16),
+		str_idx_reg, 1, OPTAB_DIRECT);
+
+  emit_insn (gen_vec_vfenesv16qi (result_reg, str_reg, str_reg,
+				  GEN_INT (VSTRING_FLAG_ZS | VSTRING_FLAG_CS)));
+
+  add_int_reg_note (s390_emit_ccraw_jump (8, NE, loop_start_label),
+		    REG_BR_PROB, very_likely);
+  emit_insn (gen_vec_extractv16qi (len, result_reg, GEN_INT (7)));
+
+  /* If the string pointer wasn't aligned we have loaded less then 16
+     bytes and the remaining bytes got filled with zeros (by vll).
+     Now we have to check whether the resulting index lies within the
+     bytes actually part of the string.  */
+
+  cond = s390_emit_compare (GT, convert_to_mode (Pmode, len, 1),
+			    highest_index_to_load_reg);
+  s390_load_address (highest_index_to_load_reg,
+		     gen_rtx_PLUS (Pmode, highest_index_to_load_reg,
+				   const1_rtx));
+  if (TARGET_64BIT)
+    emit_insn (gen_movdicc (str_idx_reg, cond,
+			    highest_index_to_load_reg, str_idx_reg));
+  else
+    emit_insn (gen_movsicc (str_idx_reg, cond,
+			    highest_index_to_load_reg, str_idx_reg));
+
+  add_int_reg_note (s390_emit_jump (is_aligned_label, cond), REG_BR_PROB,
+		    very_unlikely);
+
+  expand_binop (Pmode, add_optab, str_idx_reg,
+		GEN_INT (-16), str_idx_reg, 1, OPTAB_DIRECT);
+  /* FIXME: len is already zero extended - so avoid the llgcr emitted
+     here.  */
+  temp = expand_binop (Pmode, add_optab, str_idx_reg,
+		       convert_to_mode (Pmode, len, 1),
+		       target, 1, OPTAB_DIRECT);
+  if (temp != target)
+    emit_move_insn (target, temp);
+}
 
 /* Expand conditional increment or decrement using alc/slb instructions.
    Should generate code setting DST to either SRC or SRC + INCREMENT,
@@ -4806,6 +5157,215 @@ s390_expand_mask_and_shift (rtx val, machine_mode mode, rtx count)
 			      NULL_RTX, 1, OPTAB_DIRECT);
 }
 
+/* Generate a vector comparison COND of CMP_OP1 and CMP_OP2 and store
+   the result in TARGET.  */
+
+void
+s390_expand_vec_compare (rtx target, enum rtx_code cond,
+			 rtx cmp_op1, rtx cmp_op2)
+{
+  machine_mode mode = GET_MODE (target);
+  bool neg_p = false, swap_p = false;
+  rtx tmp;
+
+  if (GET_MODE (cmp_op1) == V2DFmode)
+    {
+      switch (cond)
+	{
+	  /* NE a != b -> !(a == b) */
+	case NE:   cond = EQ; neg_p = true;                break;
+	  /* UNGT a u> b -> !(b >= a) */
+	case UNGT: cond = GE; neg_p = true; swap_p = true; break;
+	  /* UNGE a u>= b -> !(b > a) */
+	case UNGE: cond = GT; neg_p = true; swap_p = true; break;
+	  /* LE: a <= b -> b >= a */
+	case LE:   cond = GE;               swap_p = true; break;
+	  /* UNLE: a u<= b -> !(a > b) */
+	case UNLE: cond = GT; neg_p = true;                break;
+	  /* LT: a < b -> b > a */
+	case LT:   cond = GT;               swap_p = true; break;
+	  /* UNLT: a u< b -> !(a >= b) */
+	case UNLT: cond = GE; neg_p = true;                break;
+	case UNEQ:
+	  emit_insn (gen_vec_cmpuneqv2df (target, cmp_op1, cmp_op2));
+	  return;
+	case LTGT:
+	  emit_insn (gen_vec_cmpltgtv2df (target, cmp_op1, cmp_op2));
+	  return;
+	case ORDERED:
+	  emit_insn (gen_vec_orderedv2df (target, cmp_op1, cmp_op2));
+	  return;
+	case UNORDERED:
+	  emit_insn (gen_vec_unorderedv2df (target, cmp_op1, cmp_op2));
+	  return;
+	default: break;
+	}
+    }
+  else
+    {
+      switch (cond)
+	{
+	  /* NE: a != b -> !(a == b) */
+	case NE:  cond = EQ;  neg_p = true;                break;
+	  /* GE: a >= b -> !(b > a) */
+	case GE:  cond = GT;  neg_p = true; swap_p = true; break;
+	  /* GEU: a >= b -> !(b > a) */
+	case GEU: cond = GTU; neg_p = true; swap_p = true; break;
+	  /* LE: a <= b -> !(a > b) */
+	case LE:  cond = GT;  neg_p = true;                break;
+	  /* LEU: a <= b -> !(a > b) */
+	case LEU: cond = GTU; neg_p = true;                break;
+	  /* LT: a < b -> b > a */
+	case LT:  cond = GT;                swap_p = true; break;
+	  /* LTU: a < b -> b > a */
+	case LTU: cond = GTU;               swap_p = true; break;
+	default: break;
+	}
+    }
+
+  if (swap_p)
+    {
+      tmp = cmp_op1; cmp_op1 = cmp_op2; cmp_op2 = tmp;
+    }
+
+  emit_insn (gen_rtx_SET (target, gen_rtx_fmt_ee (cond,
+						  mode,
+						  cmp_op1, cmp_op2)));
+  if (neg_p)
+    emit_insn (gen_rtx_SET (target, gen_rtx_NOT (mode, target)));
+}
+
+/* Generate a vector comparison expression loading either elements of
+   THEN or ELS into TARGET depending on the comparison COND of CMP_OP1
+   and CMP_OP2.  */
+
+void
+s390_expand_vcond (rtx target, rtx then, rtx els,
+		   enum rtx_code cond, rtx cmp_op1, rtx cmp_op2)
+{
+  rtx tmp;
+  machine_mode result_mode;
+  rtx result_target;
+
+  /* We always use an integral type vector to hold the comparison
+     result.  */
+  result_mode = GET_MODE (cmp_op1) == V2DFmode ? V2DImode : GET_MODE (cmp_op1);
+  result_target = gen_reg_rtx (result_mode);
+
+  /* Alternatively this could be done by reload by lowering the cmp*
+     predicates.  But it appears to be better for scheduling etc. to
+     have that in early.  */
+  if (!REG_P (cmp_op1))
+    cmp_op1 = force_reg (GET_MODE (target), cmp_op1);
+
+  if (!REG_P (cmp_op2))
+    cmp_op2 = force_reg (GET_MODE (target), cmp_op2);
+
+  s390_expand_vec_compare (result_target, cond,
+			   cmp_op1, cmp_op2);
+
+  /* If the results are supposed to be either -1 or 0 we are done
+     since this is what our compare instructions generate anyway.  */
+  if (constm1_operand (then, GET_MODE (then))
+      && const0_operand (els, GET_MODE (els)))
+    {
+      emit_move_insn (target, gen_rtx_SUBREG (GET_MODE (target),
+					      result_target, 0));
+      return;
+    }
+
+  /* Otherwise we will do a vsel afterwards.  */
+  /* This gets triggered e.g.
+     with gcc.c-torture/compile/pr53410-1.c */
+  if (!REG_P (then))
+    then = force_reg (GET_MODE (target), then);
+
+  if (!REG_P (els))
+    els = force_reg (GET_MODE (target), els);
+
+  tmp = gen_rtx_fmt_ee (EQ, VOIDmode,
+			result_target,
+			CONST0_RTX (result_mode));
+
+  /* We compared the result against zero above so we have to swap then
+     and els here.  */
+  tmp = gen_rtx_IF_THEN_ELSE (GET_MODE (target), tmp, els, then);
+
+  gcc_assert (GET_MODE (target) == GET_MODE (then));
+  emit_insn (gen_rtx_SET (target, tmp));
+}
+
+/* Emit the RTX necessary to initialize the vector TARGET with values
+   in VALS.  */
+void
+s390_expand_vec_init (rtx target, rtx vals)
+{
+  machine_mode mode = GET_MODE (target);
+  machine_mode inner_mode = GET_MODE_INNER (mode);
+  int n_elts = GET_MODE_NUNITS (mode);
+  bool all_same = true, all_regs = true, all_const_int = true;
+  rtx x;
+  int i;
+
+  for (i = 0; i < n_elts; ++i)
+    {
+      x = XVECEXP (vals, 0, i);
+
+      if (!CONST_INT_P (x))
+	all_const_int = false;
+
+      if (i > 0 && !rtx_equal_p (x, XVECEXP (vals, 0, 0)))
+	all_same = false;
+
+      if (!REG_P (x))
+	all_regs = false;
+    }
+
+  /* Use vector gen mask or vector gen byte mask if possible.  */
+  if (all_same && all_const_int
+      && (XVECEXP (vals, 0, 0) == const0_rtx
+	  || s390_contiguous_bitmask_vector_p (XVECEXP (vals, 0, 0),
+					       NULL, NULL)
+	  || s390_bytemask_vector_p (XVECEXP (vals, 0, 0), NULL)))
+    {
+      emit_insn (gen_rtx_SET (target,
+			      gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0))));
+      return;
+    }
+
+  if (all_same)
+    {
+      emit_insn (gen_rtx_SET (target,
+			      gen_rtx_VEC_DUPLICATE (mode,
+						     XVECEXP (vals, 0, 0))));
+      return;
+    }
+
+  if (all_regs && REG_P (target) && n_elts == 2 && inner_mode == DImode)
+    {
+      /* Use vector load pair.  */
+      emit_insn (gen_rtx_SET (target,
+			      gen_rtx_VEC_CONCAT (mode,
+						  XVECEXP (vals, 0, 0),
+						  XVECEXP (vals, 0, 1))));
+      return;
+    }
+
+  /* We are about to set the vector elements one by one.  Zero out the
+     full register first in order to help the data flow framework to
+     detect it as full VR set.  */
+  emit_insn (gen_rtx_SET (target, CONST0_RTX (mode)));
+
+  /* Unfortunately the vec_init expander is not allowed to fail.  So
+     we have to implement the fallback ourselves.  */
+  for (i = 0; i < n_elts; i++)
+    emit_insn (gen_rtx_SET (target,
+			    gen_rtx_UNSPEC (mode,
+					    gen_rtvec (3, XVECEXP (vals, 0, i),
+						       GEN_INT (i), target),
+					    UNSPEC_VEC_SET)));
+}
+
 /* Structure to hold the initial parameters for a compare_and_swap operation
    in HImode and QImode.  */
 
@@ -5099,6 +5659,20 @@ s390_output_dwarf_dtprel (FILE *file, int size, rtx x)
     }
   output_addr_const (file, x);
   fputs ("@DTPOFF", file);
+}
+
+/* Return the proper mode for REGNO being represented in the dwarf
+   unwind table.  */
+machine_mode
+s390_dwarf_frame_reg_mode (int regno)
+{
+  machine_mode save_mode = default_dwarf_frame_reg_mode (regno);
+
+  /* The rightmost 64 bits of vector registers are call-clobbered.  */
+  if (GET_MODE_SIZE (save_mode) > 8)
+    save_mode = DImode;
+
+  return save_mode;
 }
 
 #ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
@@ -5427,24 +6001,26 @@ print_operand_address (FILE *file, rtx addr)
     'J': print tls_load/tls_gdcall/tls_ldcall suffix
     'M': print the second word of a TImode operand.
     'N': print the second word of a DImode operand.
-    'O': print only the displacement of a memory reference.
-    'R': print only the base register of a memory reference.
+    'O': print only the displacement of a memory reference or address.
+    'R': print only the base register of a memory reference or address.
     'S': print S-type memory reference (base+displacement).
     'Y': print shift count operand.
 
     'b': print integer X as if it's an unsigned byte.
     'c': print integer X as if it's an signed byte.
-    'e': "end" of DImode contiguous bitmask X.
-    'f': "end" of SImode contiguous bitmask X.
+    'e': "end" contiguous bitmask X in either DImode or vector inner mode.
+    'f': "end" contiguous bitmask X in SImode.
     'h': print integer X as if it's a signed halfword.
     'i': print the first nonzero HImode part of X.
     'j': print the first HImode part unequal to -1 of X.
     'k': print the first nonzero SImode part of X.
     'm': print the first SImode part unequal to -1 of X.
     'o': print integer X as if it's an unsigned 32bit word.
-    's': "start" of DImode contiguous bitmask X.
-    't': "start" of SImode contiguous bitmask X.
+    's': "start" of contiguous bitmask X in either DImode or vector inner mode.
+    't': CONST_INT: "start" of contiguous bitmask X in SImode.
+         CONST_VECTOR: Generate a bitmask for vgbm instruction.
     'x': print integer X as if it's an unsigned halfword.
+    'v': print register number as vector register (v1 instead of f1).
 */
 
 void
@@ -5503,14 +6079,7 @@ print_operand (FILE *file, rtx x, int code)
         struct s390_address ad;
 	int ret;
 
-	if (!MEM_P (x))
-	  {
-	    output_operand_lossage ("memory reference expected for "
-				    "'O' output modifier");
-	    return;
-	  }
-
-	ret = s390_decompose_address (XEXP (x, 0), &ad);
+	ret = s390_decompose_address (MEM_P (x) ? XEXP (x, 0) : x, &ad);
 
 	if (!ret
 	    || (ad.base && !REGNO_OK_FOR_BASE_P (REGNO (ad.base)))
@@ -5532,14 +6101,7 @@ print_operand (FILE *file, rtx x, int code)
         struct s390_address ad;
 	int ret;
 
-	if (!MEM_P (x))
-	  {
-	    output_operand_lossage ("memory reference expected for "
-				    "'R' output modifier");
-	    return;
-	  }
-
-	ret = s390_decompose_address (XEXP (x, 0), &ad);
+	ret = s390_decompose_address (MEM_P (x) ? XEXP (x, 0) : x, &ad);
 
 	if (!ret
 	    || (ad.base && !REGNO_OK_FOR_BASE_P (REGNO (ad.base)))
@@ -5617,7 +6179,17 @@ print_operand (FILE *file, rtx x, int code)
   switch (GET_CODE (x))
     {
     case REG:
-      fprintf (file, "%s", reg_names[REGNO (x)]);
+      /* Print FP regs as fx instead of vx when they are accessed
+	 through non-vector mode.  */
+      if (code == 'v'
+	  || VECTOR_NOFP_REG_P (x)
+	  || (FP_REG_P (x) && VECTOR_MODE_P (GET_MODE (x)))
+	  || (VECTOR_REG_P (x)
+	      && (GET_MODE_SIZE (GET_MODE (x)) /
+		  s390_class_max_nregs (FP_REGS, GET_MODE (x))) > 8))
+	fprintf (file, "%%v%s", reg_names[REGNO (x)] + 2);
+      else
+	fprintf (file, "%s", reg_names[REGNO (x)]);
       break;
 
     case MEM:
@@ -5702,6 +6274,39 @@ print_operand (FILE *file, rtx x, int code)
 	  else
 	    output_operand_lossage ("invalid constant for output modifier '%c'",
 				    code);
+	}
+      break;
+    case CONST_VECTOR:
+      switch (code)
+	{
+	case 'e':
+	case 's':
+	  {
+	    int start, stop, inner_len;
+	    bool ok;
+
+	    inner_len = GET_MODE_UNIT_BITSIZE (GET_MODE (x));
+	    ok = s390_contiguous_bitmask_vector_p (x, &start, &stop);
+	    gcc_assert (ok);
+	    if (code == 's' || code == 't')
+	      ival = inner_len - stop - 1;
+	    else
+	      ival = inner_len - start - 1;
+	    fprintf (file, HOST_WIDE_INT_PRINT_DEC, ival);
+	  }
+	  break;
+	case 't':
+	  {
+	    unsigned mask;
+	    bool ok = s390_bytemask_vector_p (x, &mask);
+	    gcc_assert (ok);
+	    fprintf (file, "%u", mask);
+	  }
+	  break;
+
+	default:
+	  output_operand_lossage ("invalid constant vector for output "
+				  "modifier '%c'", code);
 	}
       break;
 
@@ -6263,14 +6868,19 @@ replace_ltrel_base (rtx *x)
 /* We keep a list of constants which we have to add to internal
    constant tables in the middle of large functions.  */
 
-#define NR_C_MODES 11
+#define NR_C_MODES 31
 machine_mode constant_modes[NR_C_MODES] =
 {
   TFmode, TImode, TDmode,
+  V16QImode, V8HImode, V4SImode, V2DImode, V4SFmode, V2DFmode, V1TFmode,
   DFmode, DImode, DDmode,
+  V8QImode, V4HImode, V2SImode, V1DImode, V2SFmode, V1DFmode,
   SFmode, SImode, SDmode,
+  V4QImode, V2HImode, V1SImode,  V1SFmode,
   HImode,
-  QImode
+  V2QImode, V1HImode,
+  QImode,
+  V1QImode
 };
 
 struct constant
@@ -7285,6 +7895,23 @@ s390_output_pool_entry (rtx exp, machine_mode mode, unsigned int align)
       mark_symbol_refs_as_used (exp);
       break;
 
+    case MODE_VECTOR_INT:
+    case MODE_VECTOR_FLOAT:
+      {
+	int i;
+	machine_mode inner_mode;
+	gcc_assert (GET_CODE (exp) == CONST_VECTOR);
+
+	inner_mode = GET_MODE_INNER (GET_MODE (exp));
+	for (i = 0; i < XVECLEN (exp, 0); i++)
+	  s390_output_pool_entry (XVECEXP (exp, 0, i),
+				  inner_mode,
+				  i == 0
+				  ? align
+				  : GET_MODE_BITSIZE (inner_mode));
+      }
+      break;
+
     default:
       gcc_unreachable ();
     }
@@ -8096,9 +8723,25 @@ s390_optimize_nonescaping_tx (void)
 bool
 s390_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
+  if (!TARGET_VX && VECTOR_NOFP_REGNO_P (regno))
+    return false;
+
   switch (REGNO_REG_CLASS (regno))
     {
+    case VEC_REGS:
+      return ((GET_MODE_CLASS (mode) == MODE_INT
+	       && s390_class_max_nregs (VEC_REGS, mode) == 1)
+	      || mode == DFmode
+	      || s390_vector_mode_supported_p (mode));
+      break;
     case FP_REGS:
+      if (TARGET_VX
+	  && ((GET_MODE_CLASS (mode) == MODE_INT
+	       && s390_class_max_nregs (FP_REGS, mode) == 1)
+	      || mode == DFmode
+	      || s390_vector_mode_supported_p (mode)))
+	return true;
+
       if (REGNO_PAIR_OK (regno, mode))
 	{
 	  if (mode == SImode || mode == DImode)
@@ -8185,19 +8828,86 @@ s390_hard_regno_scratch_ok (unsigned int regno)
 int
 s390_class_max_nregs (enum reg_class rclass, machine_mode mode)
 {
+  int reg_size;
+  bool reg_pair_required_p = false;
+
   switch (rclass)
     {
     case FP_REGS:
+    case VEC_REGS:
+      reg_size = TARGET_VX ? 16 : 8;
+
+      /* TF and TD modes would fit into a VR but we put them into a
+	 register pair since we do not have 128bit FP instructions on
+	 full VRs.  */
+      if (TARGET_VX
+	  && SCALAR_FLOAT_MODE_P (mode)
+	  && GET_MODE_SIZE (mode) >= 16)
+	reg_pair_required_p = true;
+
+      /* Even if complex types would fit into a single FPR/VR we force
+	 them into a register pair to deal with the parts more easily.
+	 (FIXME: What about complex ints?)  */
       if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
-	return 2 * ((GET_MODE_SIZE (mode) / 2 + 8 - 1) / 8);
-      else
-	return (GET_MODE_SIZE (mode) + 8 - 1) / 8;
+	reg_pair_required_p = true;
+      break;
     case ACCESS_REGS:
-      return (GET_MODE_SIZE (mode) + 4 - 1) / 4;
+      reg_size = 4;
+      break;
     default:
+      reg_size = UNITS_PER_WORD;
       break;
     }
-  return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+
+  if (reg_pair_required_p)
+    return 2 * ((GET_MODE_SIZE (mode) / 2 + reg_size - 1) / reg_size);
+
+  return (GET_MODE_SIZE (mode) + reg_size - 1) / reg_size;
+}
+
+/* Return TRUE if changing mode from FROM to TO should not be allowed
+   for register class CLASS.  */
+
+int
+s390_cannot_change_mode_class (machine_mode from_mode,
+			       machine_mode to_mode,
+			       enum reg_class rclass)
+{
+  machine_mode small_mode;
+  machine_mode big_mode;
+
+  if (GET_MODE_SIZE (from_mode) == GET_MODE_SIZE (to_mode))
+    return 0;
+
+  if (GET_MODE_SIZE (from_mode) < GET_MODE_SIZE (to_mode))
+    {
+      small_mode = from_mode;
+      big_mode = to_mode;
+    }
+  else
+    {
+      small_mode = to_mode;
+      big_mode = from_mode;
+    }
+
+  /* Values residing in VRs are little-endian style.  All modes are
+     placed left-aligned in an VR.  This means that we cannot allow
+     switching between modes with differing sizes.  Also if the vector
+     facility is available we still place TFmode values in VR register
+     pairs, since the only instructions we have operating on TFmodes
+     only deal with register pairs.  Therefore we have to allow DFmode
+     subregs of TFmodes to enable the TFmode splitters.  */
+  if (reg_classes_intersect_p (VEC_REGS, rclass)
+      && (GET_MODE_SIZE (small_mode) < 8
+	  || s390_class_max_nregs (VEC_REGS, big_mode) == 1))
+    return 1;
+
+  /* Likewise for access registers, since they have only half the
+     word size on 64-bit.  */
+  if (reg_classes_intersect_p (ACCESS_REGS, rclass))
+    return 1;
+
+  return 0;
 }
 
 /* Return true if we use LRA instead of reload pass.  */
@@ -9228,6 +9938,23 @@ s390_can_use_return_insn (void)
   return cfun_frame_layout.frame_size == 0;
 }
 
+/* The VX ABI differs for vararg functions.  Therefore we need the
+   prototype of the callee to be available when passing vector type
+   values.  */
+static const char *
+s390_invalid_arg_for_unprototyped_fn (const_tree typelist, const_tree funcdecl, const_tree val)
+{
+  return ((TARGET_VX_ABI
+	   && typelist == 0
+	   && VECTOR_TYPE_P (TREE_TYPE (val))
+	   && (funcdecl == NULL_TREE
+	       || (TREE_CODE (funcdecl) == FUNCTION_DECL
+		   && DECL_BUILT_IN_CLASS (funcdecl) != BUILT_IN_MD)))
+	  ? N_("Vector argument passed to unprototyped function")
+	  : NULL);
+}
+
+
 /* Return the size in bytes of a function argument of
    type TYPE and/or mode MODE.  At least one of TYPE or
    MODE must be specified.  */
@@ -9247,13 +9974,61 @@ s390_function_arg_size (machine_mode mode, const_tree type)
 }
 
 /* Return true if a function argument of type TYPE and mode MODE
+   is to be passed in a vector register, if available.  */
+
+bool
+s390_function_arg_vector (machine_mode mode, const_tree type)
+{
+  if (!TARGET_VX_ABI)
+    return false;
+
+  if (s390_function_arg_size (mode, type) > 16)
+    return false;
+
+  /* No type info available for some library calls ...  */
+  if (!type)
+    return VECTOR_MODE_P (mode);
+
+  /* The ABI says that record types with a single member are treated
+     just like that member would be.  */
+  while (TREE_CODE (type) == RECORD_TYPE)
+    {
+      tree field, single = NULL_TREE;
+
+      for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+	{
+	  if (TREE_CODE (field) != FIELD_DECL)
+	    continue;
+
+	  if (single == NULL_TREE)
+	    single = TREE_TYPE (field);
+	  else
+	    return false;
+	}
+
+      if (single == NULL_TREE)
+	return false;
+      else
+	{
+	  /* If the field declaration adds extra byte due to
+	     e.g. padding this is not accepted as vector type.  */
+	  if (int_size_in_bytes (single) <= 0
+	      || int_size_in_bytes (single) != int_size_in_bytes (type))
+	    return false;
+	  type = single;
+	}
+    }
+
+  return VECTOR_TYPE_P (type);
+}
+
+/* Return true if a function argument of type TYPE and mode MODE
    is to be passed in a floating-point register, if available.  */
 
 static bool
 s390_function_arg_float (machine_mode mode, const_tree type)
 {
-  int size = s390_function_arg_size (mode, type);
-  if (size > 8)
+  if (s390_function_arg_size (mode, type) > 8)
     return false;
 
   /* Soft-float changes the ABI: no floating-point registers are used.  */
@@ -9336,20 +10111,24 @@ s390_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
 			bool named ATTRIBUTE_UNUSED)
 {
   int size = s390_function_arg_size (mode, type);
+
+  if (s390_function_arg_vector (mode, type))
+    return false;
+
   if (size > 8)
     return true;
 
   if (type)
     {
       if (AGGREGATE_TYPE_P (type) && exact_log2 (size) < 0)
-        return 1;
+        return true;
 
       if (TREE_CODE (type) == COMPLEX_TYPE
 	  || TREE_CODE (type) == VECTOR_TYPE)
-        return 1;
+	return true;
     }
 
-  return 0;
+  return false;
 }
 
 /* Update the data in CUM to advance over an argument of mode MODE and
@@ -9360,11 +10139,21 @@ s390_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
 
 static void
 s390_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
-			   const_tree type, bool named ATTRIBUTE_UNUSED)
+			   const_tree type, bool named)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if (s390_function_arg_float (mode, type))
+  if (s390_function_arg_vector (mode, type))
+    {
+      /* We are called for unnamed vector stdarg arguments which are
+	 passed on the stack.  In this case this hook does not have to
+	 do anything since stack arguments are tracked by common
+	 code.  */
+      if (!named)
+	return;
+      cum->vrs += 1;
+    }
+  else if (s390_function_arg_float (mode, type))
     {
       cum->fprs += 1;
     }
@@ -9398,14 +10187,24 @@ s390_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 
 static rtx
 s390_function_arg (cumulative_args_t cum_v, machine_mode mode,
-		   const_tree type, bool named ATTRIBUTE_UNUSED)
+		   const_tree type, bool named)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
 
-  if (s390_function_arg_float (mode, type))
+
+  if (s390_function_arg_vector (mode, type))
+    {
+      /* Vector arguments being part of the ellipsis are passed on the
+	 stack.  */
+      if (!named || (cum->vrs + 1 > VEC_ARG_NUM_REG))
+	return NULL_RTX;
+
+      return gen_rtx_REG (mode, cum->vrs + FIRST_VEC_ARG_REGNO);
+    }
+  else if (s390_function_arg_float (mode, type))
     {
       if (cum->fprs + 1 > FP_ARG_NUM_REG)
-	return 0;
+	return NULL_RTX;
       else
 	return gen_rtx_REG (mode, cum->fprs + 16);
     }
@@ -9415,7 +10214,7 @@ s390_function_arg (cumulative_args_t cum_v, machine_mode mode,
       int n_gprs = (size + UNITS_PER_LONG - 1) / UNITS_PER_LONG;
 
       if (cum->gprs + n_gprs > GP_ARG_NUM_REG)
-	return 0;
+	return NULL_RTX;
       else if (n_gprs == 1 || UNITS_PER_WORD == UNITS_PER_LONG)
 	return gen_rtx_REG (mode, cum->gprs + 2);
       else if (n_gprs == 2)
@@ -9458,11 +10257,17 @@ s390_return_in_memory (const_tree type, const_tree fundecl ATTRIBUTE_UNUSED)
       || TREE_CODE (type) == REAL_TYPE)
     return int_size_in_bytes (type) > 8;
 
+  /* vector types which fit into a VR.  */
+  if (TARGET_VX_ABI
+      && VECTOR_TYPE_P (type)
+      && int_size_in_bytes (type) <= 16)
+    return false;
+
   /* Aggregates and similar constructs are always returned
      in memory.  */
   if (AGGREGATE_TYPE_P (type)
       || TREE_CODE (type) == COMPLEX_TYPE
-      || TREE_CODE (type) == VECTOR_TYPE)
+      || VECTOR_TYPE_P (type))
     return true;
 
   /* ??? We get called on all sorts of random stuff from
@@ -9500,6 +10305,12 @@ s390_function_and_libcall_value (machine_mode mode,
 				 const_tree fntype_or_decl,
 				 bool outgoing ATTRIBUTE_UNUSED)
 {
+  /* For vector return types it is important to use the RET_TYPE
+     argument whenever available since the middle-end might have
+     changed the mode to a scalar mode.  */
+  bool vector_ret_type_p = ((ret_type && VECTOR_TYPE_P (ret_type))
+			    || (!ret_type && VECTOR_MODE_P (mode)));
+
   /* For normal functions perform the promotion as
      promote_function_mode would do.  */
   if (ret_type)
@@ -9509,10 +10320,14 @@ s390_function_and_libcall_value (machine_mode mode,
 				    fntype_or_decl, 1);
     }
 
-  gcc_assert (GET_MODE_CLASS (mode) == MODE_INT || SCALAR_FLOAT_MODE_P (mode));
-  gcc_assert (GET_MODE_SIZE (mode) <= 8);
+  gcc_assert (GET_MODE_CLASS (mode) == MODE_INT
+	      || SCALAR_FLOAT_MODE_P (mode)
+	      || (TARGET_VX_ABI && vector_ret_type_p));
+  gcc_assert (GET_MODE_SIZE (mode) <= (TARGET_VX_ABI ? 16 : 8));
 
-  if (TARGET_HARD_FLOAT && SCALAR_FLOAT_MODE_P (mode))
+  if (TARGET_VX_ABI && vector_ret_type_p)
+    return gen_rtx_REG (mode, FIRST_VEC_ARG_REGNO);
+  else if (TARGET_HARD_FLOAT && SCALAR_FLOAT_MODE_P (mode))
     return gen_rtx_REG (mode, 16);
   else if (GET_MODE_SIZE (mode) <= UNITS_PER_LONG
 	   || UNITS_PER_LONG == UNITS_PER_WORD)
@@ -9676,9 +10491,13 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
 
-  /* Find the overflow area.  */
+  /* Find the overflow area.
+     FIXME: This currently is too pessimistic when the vector ABI is
+     enabled.  In that case we *always* set up the overflow area
+     pointer.  */
   if (n_gpr + cfun->va_list_gpr_size > GP_ARG_NUM_REG
-      || n_fpr + cfun->va_list_fpr_size > FP_ARG_NUM_REG)
+      || n_fpr + cfun->va_list_fpr_size > FP_ARG_NUM_REG
+      || TARGET_VX_ABI)
     {
       t = make_tree (TREE_TYPE (ovf), virtual_incoming_args_rtx);
 
@@ -9720,6 +10539,9 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
        ret = args.reg_save_area[args.gpr+8]
      else
        ret = *args.overflow_arg_area++;
+   } else if (vector value) {
+       ret = *args.overflow_arg_area;
+       args.overflow_arg_area += size / 8;
    } else if (float value) {
      if (args.fgpr < 2)
        ret = args.reg_save_area[args.fpr+64]
@@ -9739,7 +10561,10 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   tree f_gpr, f_fpr, f_ovf, f_sav;
   tree gpr, fpr, ovf, sav, reg, t, u;
   int indirect_p, size, n_reg, sav_ofs, sav_scale, max_reg;
-  tree lab_false, lab_over, addr;
+  tree lab_false, lab_over;
+  tree addr = create_tmp_var (ptr_type_node, "addr");
+  bool left_align_p; /* How a value < UNITS_PER_LONG is aligned within
+			a stack slot.  */
 
   f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
   f_fpr = DECL_CHAIN (f_gpr);
@@ -9777,6 +10602,23 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       sav_scale = UNITS_PER_LONG;
       size = UNITS_PER_LONG;
       max_reg = GP_ARG_NUM_REG - n_reg;
+      left_align_p = false;
+    }
+  else if (s390_function_arg_vector (TYPE_MODE (type), type))
+    {
+      if (TARGET_DEBUG_ARG)
+	{
+	  fprintf (stderr, "va_arg: vector type");
+	  debug_tree (type);
+	}
+
+      indirect_p = 0;
+      reg = NULL_TREE;
+      n_reg = 0;
+      sav_ofs = 0;
+      sav_scale = 8;
+      max_reg = 0;
+      left_align_p = true;
     }
   else if (s390_function_arg_float (TYPE_MODE (type), type))
     {
@@ -9793,6 +10635,7 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       sav_ofs = 16 * UNITS_PER_LONG;
       sav_scale = 8;
       max_reg = FP_ARG_NUM_REG - n_reg;
+      left_align_p = false;
     }
   else
     {
@@ -9817,53 +10660,74 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 
       sav_scale = UNITS_PER_LONG;
       max_reg = GP_ARG_NUM_REG - n_reg;
+      left_align_p = false;
     }
 
   /* Pull the value out of the saved registers ...  */
 
-  lab_false = create_artificial_label (UNKNOWN_LOCATION);
-  lab_over = create_artificial_label (UNKNOWN_LOCATION);
-  addr = create_tmp_var (ptr_type_node, "addr");
+  if (reg != NULL_TREE)
+    {
+      /*
+	if (reg > ((typeof (reg))max_reg))
+          goto lab_false;
 
-  t = fold_convert (TREE_TYPE (reg), size_int (max_reg));
-  t = build2 (GT_EXPR, boolean_type_node, reg, t);
-  u = build1 (GOTO_EXPR, void_type_node, lab_false);
-  t = build3 (COND_EXPR, void_type_node, t, u, NULL_TREE);
-  gimplify_and_add (t, pre_p);
+        addr = sav + sav_ofs + reg * save_scale;
 
-  t = fold_build_pointer_plus_hwi (sav, sav_ofs);
-  u = build2 (MULT_EXPR, TREE_TYPE (reg), reg,
-	      fold_convert (TREE_TYPE (reg), size_int (sav_scale)));
-  t = fold_build_pointer_plus (t, u);
+	goto lab_over;
 
-  gimplify_assign (addr, t, pre_p);
+        lab_false:
+      */
 
-  gimple_seq_add_stmt (pre_p, gimple_build_goto (lab_over));
+      lab_false = create_artificial_label (UNKNOWN_LOCATION);
+      lab_over = create_artificial_label (UNKNOWN_LOCATION);
 
-  gimple_seq_add_stmt (pre_p, gimple_build_label (lab_false));
+      t = fold_convert (TREE_TYPE (reg), size_int (max_reg));
+      t = build2 (GT_EXPR, boolean_type_node, reg, t);
+      u = build1 (GOTO_EXPR, void_type_node, lab_false);
+      t = build3 (COND_EXPR, void_type_node, t, u, NULL_TREE);
+      gimplify_and_add (t, pre_p);
 
+      t = fold_build_pointer_plus_hwi (sav, sav_ofs);
+      u = build2 (MULT_EXPR, TREE_TYPE (reg), reg,
+		  fold_convert (TREE_TYPE (reg), size_int (sav_scale)));
+      t = fold_build_pointer_plus (t, u);
+
+      gimplify_assign (addr, t, pre_p);
+
+      gimple_seq_add_stmt (pre_p, gimple_build_goto (lab_over));
+
+      gimple_seq_add_stmt (pre_p, gimple_build_label (lab_false));
+    }
 
   /* ... Otherwise out of the overflow area.  */
 
   t = ovf;
-  if (size < UNITS_PER_LONG)
+  if (size < UNITS_PER_LONG && !left_align_p)
     t = fold_build_pointer_plus_hwi (t, UNITS_PER_LONG - size);
 
   gimplify_expr (&t, pre_p, NULL, is_gimple_val, fb_rvalue);
 
   gimplify_assign (addr, t, pre_p);
 
-  t = fold_build_pointer_plus_hwi (t, size);
+  if (size < UNITS_PER_LONG && left_align_p)
+    t = fold_build_pointer_plus_hwi (t, UNITS_PER_LONG);
+  else
+    t = fold_build_pointer_plus_hwi (t, size);
+
   gimplify_assign (ovf, t, pre_p);
 
-  gimple_seq_add_stmt (pre_p, gimple_build_label (lab_over));
+  if (reg != NULL_TREE)
+    gimple_seq_add_stmt (pre_p, gimple_build_label (lab_over));
 
 
   /* Increment register save count.  */
 
-  u = build2 (PREINCREMENT_EXPR, TREE_TYPE (reg), reg,
-	      fold_convert (TREE_TYPE (reg), size_int (n_reg)));
-  gimplify_and_add (u, pre_p);
+  if (n_reg > 0)
+    {
+      u = build2 (PREINCREMENT_EXPR, TREE_TYPE (reg), reg,
+		  fold_convert (TREE_TYPE (reg), size_int (n_reg)));
+      gimplify_and_add (u, pre_p);
+    }
 
   if (indirect_p)
     {
@@ -10664,15 +11528,18 @@ s390_call_saved_register_used (tree call_expr)
       mode = TYPE_MODE (type);
       gcc_assert (mode);
 
+      /* We assume that in the target function all parameters are
+	 named.  This only has an impact on vector argument register
+	 usage none of which is call-saved.  */
       if (pass_by_reference (&cum_v, mode, type, true))
  	{
  	  mode = Pmode;
  	  type = build_pointer_type (type);
  	}
 
-       parm_rtx = s390_function_arg (cum, mode, type, 0);
+       parm_rtx = s390_function_arg (cum, mode, type, true);
 
-       s390_function_arg_advance (cum, mode, type, 0);
+       s390_function_arg_advance (cum, mode, type, true);
 
        if (!parm_rtx)
 	 continue;
@@ -10878,6 +11745,13 @@ s390_conditional_register_usage (void)
     {
       for (i = FPR0_REGNUM; i <= FPR15_REGNUM; i++)
 	call_used_regs[i] = fixed_regs[i] = 1;
+    }
+
+  /* Disable v16 - v31 for non-vector target.  */
+  if (!TARGET_VX)
+    {
+      for (i = VR16_REGNUM; i <= VR31_REGNUM; i++)
+	fixed_regs[i] = call_used_regs[i] = call_really_used_regs[i] = 1;
     }
 }
 
@@ -12249,6 +13123,55 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 #undef FPC_DXC_SHIFT
 }
 
+/* Return the vector mode to be used for inner mode MODE when doing
+   vectorization.  */
+static machine_mode
+s390_preferred_simd_mode (machine_mode mode)
+{
+  if (TARGET_VX)
+    switch (mode)
+      {
+      case DFmode:
+	return V2DFmode;
+      case DImode:
+	return V2DImode;
+      case SImode:
+	return V4SImode;
+      case HImode:
+	return V8HImode;
+      case QImode:
+	return V16QImode;
+      default:;
+      }
+  return word_mode;
+}
+
+/* Our hardware does not require vectors to be strictly aligned.  */
+static bool
+s390_support_vector_misalignment (machine_mode mode ATTRIBUTE_UNUSED,
+				  const_tree type ATTRIBUTE_UNUSED,
+				  int misalignment ATTRIBUTE_UNUSED,
+				  bool is_packed ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
+/* The vector ABI requires vector types to be aligned on an 8 byte
+   boundary (our stack alignment).  However, we allow this to be
+   overriden by the user, while this definitely breaks the ABI.  */
+static HOST_WIDE_INT
+s390_vector_alignment (const_tree type)
+{
+  if (!TARGET_VX_ABI)
+    return default_vector_alignment (type);
+
+  if (TYPE_USER_ALIGN (type))
+    return TYPE_ALIGN (type);
+
+  return MIN (64, tree_to_shwi (TYPE_SIZE (type)));
+}
+
+
 /* Initialize GCC target structure.  */
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -12357,6 +13280,8 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 #define TARGET_FUNCTION_VALUE s390_function_value
 #undef TARGET_LIBCALL_VALUE
 #define TARGET_LIBCALL_VALUE s390_libcall_value
+#undef TARGET_STRICT_ARGUMENT_NAMING
+#define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
 
 #undef TARGET_KEEP_LEAF_WHEN_PROFILED
 #define TARGET_KEEP_LEAF_WHEN_PROFILED s390_keep_leaf_when_profiled
@@ -12375,6 +13300,9 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 #define TARGET_ASM_OUTPUT_DWARF_DTPREL s390_output_dwarf_dtprel
 #endif
 
+#undef TARGET_DWARF_FRAME_REG_MODE
+#define TARGET_DWARF_FRAME_REG_MODE s390_dwarf_frame_reg_mode
+
 #ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE s390_mangle_type
@@ -12382,6 +13310,9 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P s390_scalar_mode_supported_p
+
+#undef TARGET_VECTOR_MODE_SUPPORTED_P
+#define TARGET_VECTOR_MODE_SUPPORTED_P s390_vector_mode_supported_p
 
 #undef  TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS s390_preferred_reload_class
@@ -12442,6 +13373,18 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
 #undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 #define TARGET_ATOMIC_ASSIGN_EXPAND_FENV s390_atomic_assign_expand_fenv
+
+#undef TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN
+#define TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN s390_invalid_arg_for_unprototyped_fn
+
+#undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
+#define TARGET_VECTORIZE_PREFERRED_SIMD_MODE s390_preferred_simd_mode
+
+#undef TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT
+#define TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT s390_support_vector_misalignment
+
+#undef TARGET_VECTOR_ALIGNMENT
+#define TARGET_VECTOR_ALIGNMENT s390_vector_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
