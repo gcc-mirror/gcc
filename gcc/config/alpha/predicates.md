@@ -72,7 +72,7 @@
 ;; Return 1 if the operand is a non-symbolic, nonzero constant operand.
 (define_predicate "non_zero_const_operand"
   (and (match_code "const_int,const_wide_int,const_double,const_vector")
-       (match_test "op != CONST0_RTX (mode)")))
+       (not (match_test "op == CONST0_RTX (mode)"))))
 
 ;; Return 1 if OP is the constant 4 or 8.
 (define_predicate "const48_operand"
@@ -150,8 +150,7 @@
 
 ;; Return 1 if OP is a valid operand for the source of a move insn.
 (define_predicate "input_operand"
-  (match_code "label_ref,symbol_ref,const,high,reg,subreg,mem,
-	       const_double,const_vector,const_int,const_wide_int")
+  (match_operand 0 "general_operand")
 {
   switch (GET_CODE (op))
     {
@@ -273,8 +272,8 @@
 (define_predicate "call_operand"
   (ior (match_code "symbol_ref")
        (and (match_code "reg")
-	    (ior (match_test "!TARGET_ABI_OSF")
-		 (match_test "!HARD_REGISTER_P (op)")
+	    (ior (not (match_test "TARGET_ABI_OSF"))
+		 (not (match_test "HARD_REGISTER_P (op)"))
 		 (match_test "REGNO (op) == R27_REG")))))
 
 ;; Return true if OP is a LABEL_REF, or SYMBOL_REF or CONST referencing
@@ -371,10 +370,9 @@
 (define_predicate "symbolic_operand"
   (ior (match_code "symbol_ref,label_ref")
        (and (match_code "const")
-	    (match_test "GET_CODE (XEXP (op,0)) == PLUS
-			 && (GET_CODE (XEXP (XEXP (op,0), 0)) == SYMBOL_REF
-			     || GET_CODE (XEXP (XEXP (op,0), 0)) == LABEL_REF)
-			 && CONST_INT_P (XEXP (XEXP (op,0), 1))"))))
+	    (match_code "plus" "0")
+	    (match_code "symbol_ref,label_ref" "00")
+	    (match_code "const_int" "01"))))
 
 ;; Return true if OP is valid for 16-bit DTP relative relocations.
 (define_predicate "dtp16_symbolic_operand"

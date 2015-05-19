@@ -97,7 +97,7 @@
 (define_memory_constraint "Q"
   "@internal A normal_memory_operand"
   (and (match_code "mem")
-       (not (match_test "GET_CODE (XEXP (op, 0)) == AND"))))
+       (not (match_code "and" "0"))))
 
 (define_constraint "R"
   "@internal A direct_call_operand"
