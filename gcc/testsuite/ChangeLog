@@ -1,5 +1,9 @@
 2015-05-19  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* gcc.target/aarch64/advsimd-intrinsics/vqshl_n.c: New file.
+
+2015-05-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* gcc.target/aarch64/advsimd-intrinsics/vqshl.c: New file.
 
 2015-05-19  Christophe Lyon  <christophe.lyon@linaro.org>
