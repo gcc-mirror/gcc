@@ -288,11 +288,11 @@ end_hard_regno (machine_mode mode, unsigned int regno)
 
 /* Likewise for hard register X.  */
 
-#define END_HARD_REGNO(X) end_hard_regno (GET_MODE (X), REGNO (X))
+#define END_HARD_REGNO(X) END_REGNO (X)
 
 /* Likewise for hard or pseudo register X.  */
 
-#define END_REGNO(X) (HARD_REGISTER_P (X) ? END_HARD_REGNO (X) : REGNO (X) + 1)
+#define END_REGNO(X) (REGNO (X) + REG_NREGS (X))
 
 /* Add to REGS all the registers required to store a value of mode MODE
    in register REGNO.  */

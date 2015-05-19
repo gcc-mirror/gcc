@@ -435,8 +435,11 @@ gen_blockage (void)
 void
 set_mode_and_regno (rtx x, machine_mode mode, unsigned int regno)
 {
+  unsigned int nregs = (HARD_REGISTER_NUM_P (regno)
+			? hard_regno_nregs[regno][mode]
+			: 1);
   PUT_MODE_RAW (x, mode);
-  SET_REGNO_RAW (x, regno);
+  set_regno_raw (x, regno, nregs);
 }
 
 /* Generate a new REG rtx.  Make sure ORIGINAL_REGNO is set properly, and

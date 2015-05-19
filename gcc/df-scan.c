@@ -1930,7 +1930,7 @@ df_ref_change_reg_with_loc (rtx loc, unsigned int new_regno)
 				    DF_REG_EQ_USE_GET (new_regno),
 				    new_regno, loc);
     }
-  SET_REGNO_RAW (loc, new_regno);
+  set_mode_and_regno (loc, GET_MODE (loc), new_regno);
 }
 
 
