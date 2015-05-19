@@ -741,8 +741,11 @@ create_new_invariant (struct def *def, rtx_insn *insn, bitmap depends_on,
 	 enough to not regress 410.bwaves either (by still moving reg+reg
 	 invariants).
 	 See http://gcc.gnu.org/ml/gcc-patches/2009-10/msg01210.html .  */
-      inv->cheap_address = address_cost (SET_SRC (set), word_mode,
-					 ADDR_SPACE_GENERIC, speed) < 3;
+      if (SCALAR_INT_MODE_P (GET_MODE (SET_DEST (set))))
+	inv->cheap_address = address_cost (SET_SRC (set), word_mode,
+					   ADDR_SPACE_GENERIC, speed) < 3;
+      else
+	inv->cheap_address = false;
     }
   else
     {
@@ -1173,6 +1176,7 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed,
     }
 
   if (!inv->cheap_address
+      || inv->def->n_uses == 0
       || inv->def->n_addr_uses < inv->def->n_uses)
     (*comp_cost) += inv->cost * inv->eqno;
 
