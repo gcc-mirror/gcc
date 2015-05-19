@@ -1,3 +1,8 @@
+2015-05-19  Julian Brown  <julian@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (nvptx_get_num_devices): Return zero
+	on cuInit failure.
+
 2015-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/66133
