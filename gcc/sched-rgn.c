@@ -1801,11 +1801,7 @@ update_live_1 (int src, rtx x)
       for (i = 0; i < candidate_table[src].update_bbs.nr_members; i++)
 	{
 	  basic_block b = candidate_table[src].update_bbs.first_member[i];
-
-	  if (HARD_REGISTER_NUM_P (regno))
-	    bitmap_set_range (df_get_live_in (b), regno, REG_NREGS (reg));
-	  else
-	    bitmap_set_bit (df_get_live_in (b), regno);
+	  bitmap_set_range (df_get_live_in (b), regno, REG_NREGS (reg));
 	}
     }
 }

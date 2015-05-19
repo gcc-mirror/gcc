@@ -1,5 +1,16 @@
 2015-05-19  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* bitmap.c (bitmap_set_range): Handle count==1 specially.
+	(bitmap_clear_range): Likewise.
+	* cfgcleanup.c (mark_effect): Use bitmap_clear_range and
+	bitmap_set_range unconditionally.
+	* df-problems.c (df_simulate_one_insn_forwards): Likewise.
+	* df-scan.c (df_mark_reg): Likewise.
+	* haifa-sched.c (setup_ref_regs): Likewise.
+	* sched-rgn.c (update_live_1): Likewise.
+
+2015-05-19  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* regs.h (END_HARD_REGNO): Delete.
 	(END_REGNO): Move to...
 	* rtl.h: ...here.
