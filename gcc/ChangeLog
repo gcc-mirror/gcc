@@ -1,3 +1,10 @@
+2015-05-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66174
+	* config/i386/i386.c (expand_vec_perm_blend): Enable HImode and
+	QImode inner modes for TARGET_AVX512BW.  Force mask operand
+	to a register for AVX512F modes.
+
 2015-04-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR target/66047
