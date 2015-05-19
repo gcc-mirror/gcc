@@ -1352,7 +1352,7 @@ alpha_legitimize_reload_address (rtx x,
       && REG_P (XEXP (x, 0))
       && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
       && REGNO_OK_FOR_BASE_P (REGNO (XEXP (x, 0)))
-      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+      && CONST_INT_P (XEXP (x, 1)))
     {
       HOST_WIDE_INT val = INTVAL (XEXP (x, 1));
       HOST_WIDE_INT low = ((val & 0xffff) ^ 0x8000) - 0x8000;
@@ -1644,9 +1644,8 @@ alpha_preferred_reload_class(rtx x, enum reg_class rclass)
     return rclass;
 
   /* These sorts of constants we can easily drop to memory.  */
-  if (CONST_INT_P (x)
-      || GET_CODE (x) == CONST_WIDE_INT
-      || GET_CODE (x) == CONST_DOUBLE
+  if (CONST_SCALAR_INT_P (x)
+      || CONST_DOUBLE_P (x)
       || GET_CODE (x) == CONST_VECTOR)
     {
       if (rclass == FLOAT_REGS)
@@ -2133,7 +2132,7 @@ alpha_legitimate_constant_p (machine_mode mode, rtx x)
 
     case CONST:
       if (GET_CODE (XEXP (x, 0)) == PLUS
-	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
+	  && CONST_INT_P (XEXP (XEXP (x, 0), 1)))
 	x = XEXP (XEXP (x, 0), 0);
       else
 	return true;
@@ -3283,8 +3282,7 @@ alpha_split_tmode_pair (rtx operands[4], machine_mode mode,
       operands[2] = adjust_address (operands[1], DImode, 0);
       break;
 
-    case CONST_INT:
-    case CONST_WIDE_INT:
+    CASE_CONST_SCALAR_INT:
     case CONST_DOUBLE:
       gcc_assert (operands[1] == CONST0_RTX (mode));
       operands[2] = operands[3] = const0_rtx;
@@ -5257,9 +5255,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'M':
       /* 'b', 'w', 'l', or 'q' as the value of the constant.  */
-      if (!CONST_INT_P (x)
-	  || (INTVAL (x) != 8 && INTVAL (x) != 16
-	      && INTVAL (x) != 32 && INTVAL (x) != 64))
+      if (!mode_width_operand (x, VOIDmode))
 	output_operand_lossage ("invalid %%M value");
 
       fprintf (file, "%s",

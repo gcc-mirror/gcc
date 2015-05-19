@@ -4153,8 +4153,7 @@
   /* We must put 64-bit constants in memory.  We could keep the
      32-bit constants in TImode and rely on the splitter, but
      this doesn't seem to be worth the pain.  */
-  else if (CONST_INT_P (operands[1])
-	   || GET_CODE (operands[1]) == CONST_WIDE_INT)
+  else if (CONST_SCALAR_INT_P (operands[1]))
     {
       rtx in[2], out[2], target;
 

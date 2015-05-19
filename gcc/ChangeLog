@@ -1,3 +1,18 @@
+2015-05-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_legitimize_reload_address)
+	(alpha_preferred_reload_class, alpha_legitimate_constant_p): Use
+	CONST_INT_P, CONST_SCALAR_INT_P and CONST_DOUBLE_P predicates.
+	(alpha_split_reload_pair) <case CONST_INT, case CONST_WIDE_INT>:
+	Use CASE_CONST_SCALAR_INT.
+	(print_operand) <case 'M'>: Use mode_width_operand to check the
+	value of the constant.
+	* config/alpha/alpha.md (movti): Use CONST_SCALAR_INT_P predicate.
+	* config/alpha/predicates.md (input_operand): Use general_operand
+	instead of match_code as operand check.
+	(symbolic_operand): Use match_code with subexpression digits.
+	* config/alpha/constraints.md (Q): Ditto.
+
 2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* optabs.c (expand_vec_perm): Don't re-use SEL as target operand.
@@ -363,8 +378,7 @@
 2015-05-18  Martin Liska  <mliska@suse.cz>
 
 	* dbgcnt.def: Add new counter.
-	* ipa-icf.c (sem_item_optimizer::merge_classes): Use the
-	counter.
+	* ipa-icf.c (sem_item_optimizer::merge_classes): Use the counter.
 
 2015-05-18  Martin Liska  <mliska@suse.cz>
 
