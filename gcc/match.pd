@@ -1115,8 +1115,10 @@ along with GCC; see the file COPYING3.  If not see
 	 /* The inner conversion must be a widening conversion.  */
 	 && TYPE_PRECISION (TREE_TYPE (@2)) > TYPE_PRECISION (TREE_TYPE (@0))
 	 && types_match (@0, @1)
-	 && (tree_int_cst_min_precision (@4, UNSIGNED)
+	 && (tree_int_cst_min_precision (@4, TYPE_SIGN (TREE_TYPE (@0)))
 	     <= TYPE_PRECISION (TREE_TYPE (@0)))
+	 && (TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))
+	     || tree_int_cst_sgn (@4) >= 0)
 	 && single_use (@5))
       (if (TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
 	(with { tree ntype = TREE_TYPE (@0); }

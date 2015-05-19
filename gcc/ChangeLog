@@ -1,3 +1,10 @@
+2015-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/66187
+	* match.pd ((bit_and (plus/minus (convert @0) (convert @1)) mask)):
+	Pass TYPE_SIGN to tree_int_cst_min_precision.  If
+	!TYPE_OVERFLOW_WRAPS, ensure @4 is non-negative.
+
 2015-05-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic.c (diagnostic_report_current_module): Strengthen

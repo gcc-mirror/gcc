@@ -1,3 +1,10 @@
+2015-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/66187
+	* gcc.c-torture/execute/pr66187.c: New test.
+	* gcc.dg/pr66187-1.c: New test.
+	* gcc.dg/pr66187-2.c: New test.
+
 2015-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/vect/bb-slp-35.c: Adjust.
