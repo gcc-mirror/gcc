@@ -1032,17 +1032,13 @@ initiate_reg_pressure_info (bitmap live)
 static void
 setup_ref_regs (rtx x)
 {
-  int i, j, regno;
+  int i, j;
   const RTX_CODE code = GET_CODE (x);
   const char *fmt;
 
   if (REG_P (x))
     {
-      regno = REGNO (x);
-      if (HARD_REGISTER_NUM_P (regno))
-	bitmap_set_range (region_ref_regs, regno, REG_NREGS (x));
-      else
-	bitmap_set_bit (region_ref_regs, REGNO (x));
+      bitmap_set_range (region_ref_regs, REGNO (x), REG_NREGS (x));
       return;
     }
   fmt = GET_RTX_FORMAT (code);

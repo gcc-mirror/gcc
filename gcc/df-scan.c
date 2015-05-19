@@ -3518,15 +3518,7 @@ df_get_eh_block_artificial_uses (bitmap eh_block_artificial_uses)
 static void
 df_mark_reg (rtx reg, void *vset)
 {
-  bitmap set = (bitmap) vset;
-  int regno = REGNO (reg);
-
-  gcc_assert (GET_MODE (reg) != BLKmode);
-
-  if (regno < FIRST_PSEUDO_REGISTER)
-    bitmap_set_range (set, regno, REG_NREGS (reg));
-  else
-    bitmap_set_bit (set, regno);
+  bitmap_set_range ((bitmap) vset, REGNO (reg), REG_NREGS (reg));
 }
 
 

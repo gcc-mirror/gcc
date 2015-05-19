@@ -1212,6 +1212,12 @@ bitmap_set_range (bitmap head, unsigned int start, unsigned int count)
   if (!count)
     return;
 
+  if (count == 1)
+    {
+      bitmap_set_bit (head, start);
+      return;
+    }
+
   first_index = start / BITMAP_ELEMENT_ALL_BITS;
   end_bit_plus1 = start + count;
   last_index = (end_bit_plus1 - 1) / BITMAP_ELEMENT_ALL_BITS;
@@ -1310,6 +1316,12 @@ bitmap_clear_range (bitmap head, unsigned int start, unsigned int count)
 
   if (!count)
     return;
+
+  if (count == 1)
+    {
+      bitmap_clear_bit (head, start);
+      return;
+    }
 
   first_index = start / BITMAP_ELEMENT_ALL_BITS;
   end_bit_plus1 = start + count;

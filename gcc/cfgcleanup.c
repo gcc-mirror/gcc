@@ -222,22 +222,15 @@ try_simplify_condjump (basic_block cbranch_block)
 static bool
 mark_effect (rtx exp, regset nonequal)
 {
-  int regno;
   rtx dest;
   switch (GET_CODE (exp))
     {
       /* In case we do clobber the register, mark it as equal, as we know the
 	 value is dead so it don't have to match.  */
     case CLOBBER:
-      if (REG_P (XEXP (exp, 0)))
-	{
-	  dest = XEXP (exp, 0);
-	  regno = REGNO (dest);
-	  if (HARD_REGISTER_NUM_P (regno))
-	    bitmap_clear_range (nonequal, regno, REG_NREGS (dest));
-	  else
-	    bitmap_clear_bit (nonequal, regno);
-	}
+      dest = XEXP (exp, 0);
+      if (REG_P (dest))
+	bitmap_clear_range (nonequal, REGNO (dest), REG_NREGS (dest));
       return false;
 
     case SET:
@@ -248,11 +241,7 @@ mark_effect (rtx exp, regset nonequal)
 	return false;
       if (!REG_P (dest))
 	return true;
-      regno = REGNO (dest);
-      if (HARD_REGISTER_NUM_P (regno))
-	bitmap_set_range (nonequal, regno, REG_NREGS (dest));
-      else
-	bitmap_set_bit (nonequal, regno);
+      bitmap_set_range (nonequal, REGNO (dest), REG_NREGS (dest));
       return false;
 
     default:
