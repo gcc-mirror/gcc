@@ -1,3 +1,9 @@
+2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390.c (s390_vector_bool_type_p): New function.
+	(s390_invalid_binary_op): New function.
+	(TARGET_INVALID_BINARY_OP): Define macro.
+
 2015-05-19  David Sherwood  <david.sherwood@arm.com>
 
 	* loop-invariant.c (create_new_invariant): Don't calculate address cost
