@@ -855,7 +855,6 @@ note_add_store (rtx loc, const_rtx expr ATTRIBUTE_UNUSED, void *data)
 {
   rtx_insn *insn;
   note_add_store_info *info = (note_add_store_info *) data;
-  int r, n;
 
   if (!REG_P (loc))
     return;
@@ -874,15 +873,14 @@ note_add_store (rtx loc, const_rtx expr ATTRIBUTE_UNUSED, void *data)
      available, fail now.  */
   if (!info->fixed_regs_live)
     {
-      info->failure =  true;
+      info->failure = true;
       return;
     }
   /* Now check if this is a live fixed register.  */
-  r = REGNO (loc);
-  n = hard_regno_nregs[r][GET_MODE (loc)];
-  while (--n >=  0)
-    if (REGNO_REG_SET_P (info->fixed_regs_live, r+n))
-      info->failure =  true;
+  unsigned int end_regno = END_REGNO (loc);
+  for (unsigned int regno = REGNO (loc); regno < end_regno; ++regno)
+    if (REGNO_REG_SET_P (info->fixed_regs_live, regno))
+      info->failure = true;
 }
 
 /* Callback for for_each_inc_dec that emits an INSN that sets DEST to

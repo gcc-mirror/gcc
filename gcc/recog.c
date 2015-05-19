@@ -3128,18 +3128,15 @@ peep2_regno_dead_p (int ofs, int regno)
 int
 peep2_reg_dead_p (int ofs, rtx reg)
 {
-  int regno, n;
-
   gcc_assert (ofs < MAX_INSNS_PER_PEEP2 + 1);
 
   ofs = peep2_buf_position (peep2_current + ofs);
 
   gcc_assert (peep2_insn_data[ofs].insn != NULL_RTX);
 
-  regno = REGNO (reg);
-  n = hard_regno_nregs[regno][GET_MODE (reg)];
-  while (--n >= 0)
-    if (REGNO_REG_SET_P (peep2_insn_data[ofs].live_before, regno + n))
+  unsigned int end_regno = END_REGNO (reg);
+  for (unsigned int regno = REGNO (reg); regno < end_regno; ++regno)
+    if (REGNO_REG_SET_P (peep2_insn_data[ofs].live_before, regno))
       return 0;
   return 1;
 }

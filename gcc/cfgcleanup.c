@@ -272,16 +272,10 @@ mentions_nonequal_regs (const_rtx x, regset nonequal)
       const_rtx x = *iter;
       if (REG_P (x))
 	{
-	  unsigned int regno = REGNO (x);
-	  if (REGNO_REG_SET_P (nonequal, regno))
-	    return true;
-	  if (regno < FIRST_PSEUDO_REGISTER)
-	    {
-	      int n = hard_regno_nregs[regno][GET_MODE (x)];
-	      while (--n > 0)
-		if (REGNO_REG_SET_P (nonequal, regno + n))
-		  return true;
-	    }
+	  unsigned int end_regno = END_REGNO (x);
+	  for (unsigned int regno = REGNO (x); regno < end_regno; ++regno)
+	    if (REGNO_REG_SET_P (nonequal, regno))
+	      return true;
 	}
     }
   return false;
