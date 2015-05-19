@@ -1,3 +1,12 @@
+2015-05-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/cris/cris.c (cris_expand_prologue): Use gen_raw_REG
+	instead of gen_rtx_raw_REG.
+	(cris_expand_epilogue): Likewise.
+	* config/microblaze/microblaze.c (microblaze_classify_address):
+	Likewise.
+	* config/sparc/sparc.md: Likewise.
+
 2015-05-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_legitimize_reload_address)

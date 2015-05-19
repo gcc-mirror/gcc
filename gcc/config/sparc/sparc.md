@@ -2364,7 +2364,7 @@
    && reload_completed"
   [(clobber (const_int 0))]
 {
-  operands[0] = gen_rtx_raw_REG (DImode, REGNO (operands[0]));
+  operands[0] = gen_raw_REG (DImode, REGNO (operands[0]));
 
   if (TARGET_ARCH64)
     {
