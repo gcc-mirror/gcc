@@ -465,6 +465,398 @@ struct GTY(()) machine_function
    bytes on a z10 (or higher) CPU.  */
 #define PREDICT_DISTANCE (TARGET_Z10 ? 384 : 2048)
 
+
+/* System z builtins.  */
+
+#include "s390-builtins.h"
+
+const unsigned int flags_builtin[S390_BUILTIN_MAX + 1] =
+  {
+#undef B_DEF
+#undef OB_DEF
+#undef OB_DEF_VAR
+#define B_DEF(NAME, PATTERN, ATTRS, FLAGS, FNTYPE) FLAGS,
+#define OB_DEF(...)
+#define OB_DEF_VAR(...)
+#include "s390-builtins.def"
+    0
+  };
+
+const unsigned int flags_overloaded_builtin_var[S390_OVERLOADED_BUILTIN_VAR_MAX + 1] =
+  {
+#undef B_DEF
+#undef OB_DEF
+#undef OB_DEF_VAR
+#define B_DEF(...)
+#define OB_DEF(...)
+#define OB_DEF_VAR(NAME, PATTERN, FLAGS, FNTYPE) FLAGS,
+#include "s390-builtins.def"
+    0
+  };
+
+tree s390_builtin_types[BT_MAX];
+tree s390_builtin_fn_types[BT_FN_MAX];
+tree s390_builtin_decls[S390_BUILTIN_MAX +
+			S390_OVERLOADED_BUILTIN_MAX +
+			S390_OVERLOADED_BUILTIN_VAR_MAX];
+
+static enum insn_code const code_for_builtin[S390_BUILTIN_MAX + 1] = {
+#undef B_DEF
+#undef OB_DEF
+#undef OB_DEF_VAR
+#define B_DEF(NAME, PATTERN, ...) CODE_FOR_##PATTERN,
+#define OB_DEF(...)
+#define OB_DEF_VAR(...)
+
+#include "s390-builtins.def"
+  CODE_FOR_nothing
+};
+
+static void
+s390_init_builtins (void)
+{
+  /* These definitions are being used in s390-builtins.def.  */
+  tree returns_twice_attr = tree_cons (get_identifier ("returns_twice"),
+				       NULL, NULL);
+  tree noreturn_attr = tree_cons (get_identifier ("noreturn"), NULL, NULL);
+  tree c_uint64_type_node;
+
+  /* The uint64_type_node from tree.c is not compatible to the C99
+     uint64_t data type.  What we want is c_uint64_type_node from
+     c-common.c.  But since backend code is not supposed to interface
+     with the frontend we recreate it here.  */
+  if (TARGET_64BIT)
+    c_uint64_type_node = long_unsigned_type_node;
+  else
+    c_uint64_type_node = long_long_unsigned_type_node;
+
+#undef DEF_TYPE
+#define DEF_TYPE(INDEX, NODE, CONST_P)			\
+  s390_builtin_types[INDEX] = (!CONST_P) ?		\
+    (NODE) : build_type_variant ((NODE), 1, 0);
+
+#undef DEF_POINTER_TYPE
+#define DEF_POINTER_TYPE(INDEX, INDEX_BASE)				\
+  s390_builtin_types[INDEX] =						\
+    build_pointer_type (s390_builtin_types[INDEX_BASE]);
+
+#undef DEF_DISTINCT_TYPE
+#define DEF_DISTINCT_TYPE(INDEX, INDEX_BASE)				\
+  s390_builtin_types[INDEX] =						\
+    build_distinct_type_copy (s390_builtin_types[INDEX_BASE]);
+
+#undef DEF_VECTOR_TYPE
+#define DEF_VECTOR_TYPE(INDEX, INDEX_BASE, ELEMENTS)			\
+  s390_builtin_types[INDEX] =						\
+    build_vector_type (s390_builtin_types[INDEX_BASE], ELEMENTS);
+
+#undef DEF_OPAQUE_VECTOR_TYPE
+#define DEF_OPAQUE_VECTOR_TYPE(INDEX, INDEX_BASE, ELEMENTS)		\
+  s390_builtin_types[INDEX] =						\
+    build_opaque_vector_type (s390_builtin_types[INDEX_BASE], ELEMENTS);
+
+#undef DEF_FN_TYPE
+#define DEF_FN_TYPE(INDEX, args...)				\
+  s390_builtin_fn_types[INDEX] =				\
+    build_function_type_list (args, NULL_TREE);
+#undef DEF_OV_TYPE
+#define DEF_OV_TYPE(...)
+#include "s390-builtin-types.def"
+
+#undef B_DEF
+#define B_DEF(NAME, PATTERN, ATTRS, FLAGS, FNTYPE)			\
+  s390_builtin_decls[S390_BUILTIN_##NAME] =				\
+  add_builtin_function ("__builtin_" #NAME,				\
+			s390_builtin_fn_types[FNTYPE],			\
+			S390_BUILTIN_##NAME,				\
+			BUILT_IN_MD,					\
+			NULL,						\
+			ATTRS);
+#undef OB_DEF
+#define OB_DEF(NAME, FIRST_VAR_NAME, LAST_VAR_NAME, FNTYPE)		\
+  s390_builtin_decls[S390_OVERLOADED_BUILTIN_##NAME + S390_BUILTIN_MAX] = \
+  add_builtin_function ("__builtin_" #NAME,				\
+			s390_builtin_fn_types[FNTYPE],			\
+			S390_OVERLOADED_BUILTIN_##NAME + S390_BUILTIN_MAX, \
+			BUILT_IN_MD,					\
+			NULL,						\
+			0);
+#undef OB_DEF_VAR
+#define OB_DEF_VAR(...)
+#include "s390-builtins.def"
+
+}
+
+/* Return true if ARG is appropriate as argument number ARGNUM of
+   builtin DECL.  The operand flags from s390-builtins.def have to
+   passed as OP_FLAGS.  */
+bool
+s390_const_operand_ok (tree arg, int argnum, int op_flags, tree decl)
+{
+  if (O_UIMM_P (op_flags))
+    {
+      int bitwidths[] = { 1, 2, 3, 4, 5, 8, 12, 16, 32 };
+      int bitwidth = bitwidths[op_flags - O_U1];
+
+      if (!tree_fits_uhwi_p (arg)
+	  || tree_to_uhwi (arg) > ((unsigned HOST_WIDE_INT)1 << bitwidth) - 1)
+	{
+	  error("constant argument %d for builtin %qF is out of range (0.."
+		HOST_WIDE_INT_PRINT_UNSIGNED ")",
+		argnum, decl,
+		((unsigned HOST_WIDE_INT)1 << bitwidth) - 1);
+	  return false;
+	}
+    }
+
+  if (O_SIMM_P (op_flags))
+    {
+      int bitwidths[] = { 2, 3, 4, 5, 8, 12, 16, 32 };
+      int bitwidth = bitwidths[op_flags - O_S2];
+
+      if (!tree_fits_shwi_p (arg)
+	  || tree_to_shwi (arg) < -((HOST_WIDE_INT)1 << (bitwidth - 1))
+	  || tree_to_shwi (arg) > (((HOST_WIDE_INT)1 << (bitwidth - 1)) - 1))
+	{
+	  error("constant argument %d for builtin %qF is out of range ("
+		HOST_WIDE_INT_PRINT_DEC ".."
+		HOST_WIDE_INT_PRINT_DEC ")",
+		argnum, decl,
+		-(HOST_WIDE_INT)1 << (bitwidth - 1),
+		((HOST_WIDE_INT)1 << (bitwidth - 1)) - 1);
+	  return false;
+	}
+    }
+  return true;
+}
+
+/* Expand an expression EXP that calls a built-in function,
+   with result going to TARGET if that's convenient
+   (and in mode MODE if that's convenient).
+   SUBTARGET may be used as the target for computing one of EXP's operands.
+   IGNORE is nonzero if the value is to be ignored.  */
+
+static rtx
+s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
+		     machine_mode mode ATTRIBUTE_UNUSED,
+		     int ignore ATTRIBUTE_UNUSED)
+{
+#define MAX_ARGS 5
+
+  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  enum insn_code icode;
+  rtx op[MAX_ARGS], pat;
+  int arity;
+  bool nonvoid;
+  tree arg;
+  call_expr_arg_iterator iter;
+  unsigned int all_op_flags = flags_for_builtin (fcode);
+  machine_mode last_vec_mode = VOIDmode;
+
+  if (TARGET_DEBUG_ARG)
+    {
+      fprintf (stderr,
+	       "s390_expand_builtin, code = %4d, %s\n",
+	       (int)fcode, IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+    }
+
+
+  if (fcode >= S390_OVERLOADED_BUILTIN_VAR_OFFSET
+      && fcode < S390_ALL_BUILTIN_MAX)
+    {
+      gcc_unreachable ();
+    }
+  else if (fcode < S390_OVERLOADED_BUILTIN_OFFSET)
+    {
+      icode = code_for_builtin[fcode];
+      /* Set a flag in the machine specific cfun part in order to support
+	 saving/restoring of FPRs.  */
+      if (fcode == S390_BUILTIN_tbegin || fcode == S390_BUILTIN_tbegin_retry)
+	cfun->machine->tbegin_p = true;
+    }
+  else if (fcode < S390_OVERLOADED_BUILTIN_VAR_OFFSET)
+    {
+      error ("Unresolved overloaded builtin");
+      return const0_rtx;
+    }
+  else
+    internal_error ("bad builtin fcode");
+
+  if (icode == 0)
+    internal_error ("bad builtin icode");
+
+  nonvoid = TREE_TYPE (TREE_TYPE (fndecl)) != void_type_node;
+
+  if (nonvoid)
+    {
+      machine_mode tmode = insn_data[icode].operand[0].mode;
+      if (!target
+	  || GET_MODE (target) != tmode
+	  || !(*insn_data[icode].operand[0].predicate) (target, tmode))
+	target = gen_reg_rtx (tmode);
+
+      /* There are builtins (e.g. vec_promote) with no vector
+	 arguments but an element selector.  So we have to also look
+	 at the vector return type when emitting the modulo
+	 operation.  */
+      if (VECTOR_MODE_P (insn_data[icode].operand[0].mode))
+	last_vec_mode = insn_data[icode].operand[0].mode;
+    }
+
+  arity = 0;
+  FOR_EACH_CALL_EXPR_ARG (arg, iter, exp)
+    {
+      const struct insn_operand_data *insn_op;
+      unsigned int op_flags = all_op_flags & ((1 << O_SHIFT) - 1);
+
+      all_op_flags = all_op_flags >> O_SHIFT;
+
+      if (arg == error_mark_node)
+	return NULL_RTX;
+      if (arity >= MAX_ARGS)
+	return NULL_RTX;
+
+      if (O_IMM_P (op_flags)
+	  && TREE_CODE (arg) != INTEGER_CST)
+	{
+	  error ("constant value required for builtin %qF argument %d",
+		 fndecl, arity + 1);
+	  return const0_rtx;
+	}
+
+      if (!s390_const_operand_ok (arg, arity + 1, op_flags, fndecl))
+	return const0_rtx;
+
+      insn_op = &insn_data[icode].operand[arity + nonvoid];
+      op[arity] = expand_expr (arg, NULL_RTX, insn_op->mode, EXPAND_NORMAL);
+
+      /* Wrap the expanded RTX for pointer types into a MEM expr with
+	 the proper mode.  This allows us to use e.g. (match_operand
+	 "memory_operand"..) in the insn patterns instead of (mem
+	 (match_operand "address_operand)).  This is helpful for
+	 patterns not just accepting MEMs.  */
+      if (POINTER_TYPE_P (TREE_TYPE (arg))
+	  && insn_op->predicate != address_operand)
+	op[arity] = gen_rtx_MEM (insn_op->mode, op[arity]);
+
+      /* Expand the module operation required on element selectors.  */
+      if (op_flags == O_ELEM)
+	{
+	  gcc_assert (last_vec_mode != VOIDmode);
+	  op[arity] = simplify_expand_binop (SImode, code_to_optab (AND),
+					     op[arity],
+					     GEN_INT (GET_MODE_NUNITS (last_vec_mode) - 1),
+					     NULL_RTX, 1, OPTAB_DIRECT);
+	}
+
+      /* Record the vector mode used for an element selector.  This assumes:
+	 1. There is no builtin with two different vector modes and an element selector
+         2. The element selector comes after the vector type it is referring to.
+	 This currently the true for all the builtins but FIXME we
+	 should better check for that.  */
+      if (VECTOR_MODE_P (insn_op->mode))
+	last_vec_mode = insn_op->mode;
+
+      if (insn_op->predicate (op[arity], insn_op->mode))
+	{
+	  arity++;
+	  continue;
+	}
+
+      if (MEM_P (op[arity])
+	  && insn_op->predicate == memory_operand
+	  && (GET_MODE (XEXP (op[arity], 0)) == Pmode
+	      || GET_MODE (XEXP (op[arity], 0)) == VOIDmode))
+	{
+	  op[arity] = replace_equiv_address (op[arity],
+					     copy_to_mode_reg (Pmode,
+					       XEXP (op[arity], 0)));
+	}
+      else if (GET_MODE (op[arity]) == insn_op->mode
+	       || GET_MODE (op[arity]) == VOIDmode
+	       || (insn_op->predicate == address_operand
+		   && GET_MODE (op[arity]) == Pmode))
+	{
+	  /* An address_operand usually has VOIDmode in the expander
+	     so we cannot use this.  */
+	  machine_mode target_mode =
+	    (insn_op->predicate == address_operand
+	     ? Pmode : insn_op->mode);
+	  op[arity] = copy_to_mode_reg (target_mode, op[arity]);
+	}
+
+      if (!insn_op->predicate (op[arity], insn_op->mode))
+	{
+	  error ("Invalid argument %d for builtin %qF", arity + 1, fndecl);
+	  return const0_rtx;
+	}
+      arity++;
+    }
+
+  if (last_vec_mode != VOIDmode && !TARGET_VX)
+    {
+      error ("Vector type builtin %qF is not supported without -mvx "
+	     "(default with -march=z13).",
+	     fndecl);
+      return const0_rtx;
+    }
+
+  switch (arity)
+    {
+    case 0:
+      pat = GEN_FCN (icode) (target);
+      break;
+    case 1:
+      if (nonvoid)
+        pat = GEN_FCN (icode) (target, op[0]);
+      else
+	pat = GEN_FCN (icode) (op[0]);
+      break;
+    case 2:
+      if (nonvoid)
+	pat = GEN_FCN (icode) (target, op[0], op[1]);
+      else
+	pat = GEN_FCN (icode) (op[0], op[1]);
+      break;
+    case 3:
+      if (nonvoid)
+	pat = GEN_FCN (icode) (target, op[0], op[1], op[2]);
+      else
+	pat = GEN_FCN (icode) (op[0], op[1], op[2]);
+      break;
+    case 4:
+      if (nonvoid)
+	pat = GEN_FCN (icode) (target, op[0], op[1], op[2], op[3]);
+      else
+	pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3]);
+      break;
+    case 5:
+      if (nonvoid)
+	pat = GEN_FCN (icode) (target, op[0], op[1], op[2], op[3], op[4]);
+      else
+	pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3], op[4]);
+      break;
+    case 6:
+      if (nonvoid)
+	pat = GEN_FCN (icode) (target, op[0], op[1], op[2], op[3], op[4], op[5]);
+      else
+	pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3], op[4], op[5]);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  if (!pat)
+    return NULL_RTX;
+  emit_insn (pat);
+
+  if (nonvoid)
+    return target;
+  else
+    return const0_rtx;
+}
+
+
 static const int s390_hotpatch_hw_max = 1000000;
 static int s390_hotpatch_hw_before_label = 0;
 static int s390_hotpatch_hw_after_label = 0;
@@ -514,9 +906,43 @@ s390_handle_hotpatch_attribute (tree *node, tree name, tree args,
   return NULL_TREE;
 }
 
+/* Expand the s390_vector_bool type attribute.  */
+
+static tree
+s390_handle_vectorbool_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
+				  tree args ATTRIBUTE_UNUSED,
+				  int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
+{
+  tree type = *node, result = NULL_TREE;
+  machine_mode mode;
+
+  while (POINTER_TYPE_P (type)
+	 || TREE_CODE (type) == FUNCTION_TYPE
+	 || TREE_CODE (type) == METHOD_TYPE
+	 || TREE_CODE (type) == ARRAY_TYPE)
+    type = TREE_TYPE (type);
+
+  mode = TYPE_MODE (type);
+  switch (mode)
+    {
+    case DImode: case V2DImode: result = s390_builtin_types[BT_BV2DI]; break;
+    case SImode: case V4SImode: result = s390_builtin_types[BT_BV4SI]; break;
+    case HImode: case V8HImode: result = s390_builtin_types[BT_BV8HI]; break;
+    case QImode: case V16QImode: result = s390_builtin_types[BT_BV16QI];
+    default: break;
+    }
+
+  *no_add_attrs = true;  /* No need to hang on to the attribute.  */
+
+  if (result)
+    *node = lang_hooks.types.reconstruct_complex_type (*node, result);
+
+  return NULL_TREE;
+}
+
 static const struct attribute_spec s390_attribute_table[] = {
-  { "hotpatch", 2, 2, true, false, false, s390_handle_hotpatch_attribute, false
-  },
+  { "hotpatch", 2, 2, true, false, false, s390_handle_hotpatch_attribute, false },
+  { "s390_vector_bool", 0, 0, false, true, false, s390_handle_vectorbool_attribute, true },
   /* End element.  */
   { NULL,        0, 0, false, false, false, NULL, false }
 };
@@ -682,6 +1108,8 @@ s390_match_ccmode_set (rtx set, machine_mode req_mode)
     case CCT2mode:
     case CCT3mode:
     case CCVEQmode:
+    case CCVHmode:
+    case CCVHUmode:
     case CCVFHmode:
     case CCVFHEmode:
       if (req_mode != set_mode)
@@ -1416,6 +1844,49 @@ s390_branch_condition_mask (rtx code)
 	case NE:        return CC3;
 	default:        return -1;
 	}
+
+    case CCVEQANYmode:
+      switch (GET_CODE (code))
+	{
+	case EQ:        return CC0 | CC1;
+	case NE:        return CC3 | CC1;
+	default:        return -1;
+	}
+
+      /* Integer vector compare modes.  */
+
+    case CCVHmode:
+      switch (GET_CODE (code))
+	{
+	case GT:        return CC0;
+	case LE:        return CC3;
+	default:        return -1;
+	}
+
+    case CCVHANYmode:
+      switch (GET_CODE (code))
+	{
+	case GT:        return CC0 | CC1;
+	case LE:        return CC3 | CC1;
+	default:        return -1;
+	}
+
+    case CCVHUmode:
+      switch (GET_CODE (code))
+	{
+	case GTU:       return CC0;
+	case LEU:       return CC3;
+	default:        return -1;
+	}
+
+    case CCVHUANYmode:
+      switch (GET_CODE (code))
+	{
+	case GTU:       return CC0 | CC1;
+	case LEU:       return CC3 | CC1;
+	default:        return -1;
+	}
+
       /* FP vector compare modes.  */
 
     case CCVFHmode:
@@ -1425,6 +1896,15 @@ s390_branch_condition_mask (rtx code)
 	case UNLE:      return CC3;
 	default:        return -1;
 	}
+
+    case CCVFHANYmode:
+      switch (GET_CODE (code))
+	{
+	case GT:        return CC0 | CC1;
+	case UNLE:      return CC3 | CC1;
+	default:        return -1;
+	}
+
     case CCVFHEmode:
       switch (GET_CODE (code))
 	{
@@ -1432,6 +1912,16 @@ s390_branch_condition_mask (rtx code)
 	case UNLT:      return CC3;
 	default:        return -1;
 	}
+
+    case CCVFHEANYmode:
+      switch (GET_CODE (code))
+	{
+	case GE:        return CC0 | CC1;
+	case UNLT:      return CC3 | CC1;
+	default:        return -1;
+	}
+
+
     case CCRAWmode:
       switch (GET_CODE (code))
 	{
@@ -5359,6 +5849,93 @@ s390_expand_vec_compare (rtx target, enum rtx_code cond,
     emit_insn (gen_rtx_SET (target, gen_rtx_NOT (mode, target)));
 }
 
+/* Expand the comparison CODE of CMP1 and CMP2 and copy 1 or 0 into
+   TARGET if either all (ALL_P is true) or any (ALL_P is false) of the
+   elements in CMP1 and CMP2 fulfill the comparison.  */
+void
+s390_expand_vec_compare_cc (rtx target, enum rtx_code code,
+			    rtx cmp1, rtx cmp2, bool all_p)
+{
+  enum rtx_code new_code = code;
+  machine_mode cmp_mode, full_cmp_mode, scratch_mode;
+  rtx tmp_reg = gen_reg_rtx (SImode);
+  bool swap_p = false;
+
+  if (GET_MODE_CLASS (GET_MODE (cmp1)) == MODE_VECTOR_INT)
+    {
+      switch (code)
+	{
+	case EQ:  cmp_mode = CCVEQmode; break;
+	case NE:  cmp_mode = CCVEQmode; break;
+	case GT:  cmp_mode = CCVHmode;  break;
+	case GE:  cmp_mode = CCVHmode;  new_code = LE; swap_p = true; break;
+	case LT:  cmp_mode = CCVHmode;  new_code = GT; swap_p = true; break;
+	case LE:  cmp_mode = CCVHmode;  new_code = LE; break;
+	case GTU: cmp_mode = CCVHUmode; break;
+	case GEU: cmp_mode = CCVHUmode; new_code = LEU; swap_p = true; break;
+	case LTU: cmp_mode = CCVHUmode; new_code = GTU; swap_p = true; break;
+	case LEU: cmp_mode = CCVHUmode; new_code = LEU; break;
+	default: gcc_unreachable ();
+	}
+      scratch_mode = GET_MODE (cmp1);
+    }
+  else if (GET_MODE (cmp1) == V2DFmode)
+    {
+      switch (code)
+	{
+	case EQ:   cmp_mode = CCVEQmode;  break;
+	case NE:   cmp_mode = CCVEQmode;  break;
+	case GT:   cmp_mode = CCVFHmode;  break;
+	case GE:   cmp_mode = CCVFHEmode; break;
+	case UNLE: cmp_mode = CCVFHmode;  break;
+	case UNLT: cmp_mode = CCVFHEmode; break;
+	case LT:   cmp_mode = CCVFHmode;  new_code = GT; swap_p = true; break;
+	case LE:   cmp_mode = CCVFHEmode; new_code = GE; swap_p = true; break;
+	default: gcc_unreachable ();
+	}
+      scratch_mode = V2DImode;
+    }
+  else
+    gcc_unreachable ();
+
+  if (!all_p)
+    switch (cmp_mode)
+      {
+      case CCVEQmode:  full_cmp_mode = CCVEQANYmode;  break;
+      case CCVHmode:   full_cmp_mode = CCVHANYmode;   break;
+      case CCVHUmode:  full_cmp_mode = CCVHUANYmode;  break;
+      case CCVFHmode:  full_cmp_mode = CCVFHANYmode;  break;
+      case CCVFHEmode: full_cmp_mode = CCVFHEANYmode; break;
+      default: gcc_unreachable ();
+      }
+  else
+    /* The modes without ANY match the ALL modes.  */
+    full_cmp_mode = cmp_mode;
+
+  if (swap_p)
+    {
+      rtx tmp = cmp2;
+      cmp2 = cmp1;
+      cmp1 = tmp;
+    }
+
+  emit_insn (gen_rtx_PARALLEL (VOIDmode,
+	       gen_rtvec (2, gen_rtx_SET (
+			       gen_rtx_REG (cmp_mode, CC_REGNUM),
+			       gen_rtx_COMPARE (cmp_mode, cmp1, cmp2)),
+			  gen_rtx_CLOBBER (VOIDmode,
+					   gen_rtx_SCRATCH (scratch_mode)))));
+  emit_move_insn (target, const0_rtx);
+  emit_move_insn (tmp_reg, const1_rtx);
+
+  emit_move_insn (target,
+		  gen_rtx_IF_THEN_ELSE (SImode,
+		    gen_rtx_fmt_ee (new_code, VOIDmode,
+				    gen_rtx_REG (full_cmp_mode, CC_REGNUM),
+				    const0_rtx),
+		      target, tmp_reg));
+}
+
 /* Generate a vector comparison expression loading either elements of
    THEN or ELS into TARGET depending on the comparison COND of CMP_OP1
    and CMP_OP2.  */
@@ -5805,6 +6382,17 @@ s390_dwarf_frame_reg_mode (int regno)
 static const char *
 s390_mangle_type (const_tree type)
 {
+  type = TYPE_MAIN_VARIANT (type);
+
+  if (TREE_CODE (type) != VOID_TYPE && TREE_CODE (type) != BOOLEAN_TYPE
+      && TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != REAL_TYPE)
+    return NULL;
+
+  if (type == s390_builtin_types[BT_BV16QI]) return "U6__boolc";
+  if (type == s390_builtin_types[BT_BV8HI]) return "U6__bools";
+  if (type == s390_builtin_types[BT_BV4SI]) return "U6__booli";
+  if (type == s390_builtin_types[BT_BV2DI]) return "U6__booll";
+
   if (TYPE_MAIN_VARIANT (type) == long_double_type_node
       && TARGET_LONG_DOUBLE_128)
     return "g";
@@ -10934,241 +11522,6 @@ s390_expand_tbegin (rtx dest, rtx tdb, rtx retry, bool clobber_fprs_p)
     }
 }
 
-/* Builtins.  */
-
-enum s390_builtin
-{
-  S390_BUILTIN_TBEGIN,
-  S390_BUILTIN_TBEGIN_NOFLOAT,
-  S390_BUILTIN_TBEGIN_RETRY,
-  S390_BUILTIN_TBEGIN_RETRY_NOFLOAT,
-  S390_BUILTIN_TBEGINC,
-  S390_BUILTIN_TEND,
-  S390_BUILTIN_TABORT,
-  S390_BUILTIN_NON_TX_STORE,
-  S390_BUILTIN_TX_NESTING_DEPTH,
-  S390_BUILTIN_TX_ASSIST,
-
-  S390_BUILTIN_S390_SFPC,
-  S390_BUILTIN_S390_EFPC,
-
-  S390_BUILTIN_MAX
-};
-
-tree s390_builtin_decls[S390_BUILTIN_MAX];
-
-static enum insn_code const code_for_builtin[S390_BUILTIN_MAX] = {
-  CODE_FOR_tbegin,
-  CODE_FOR_tbegin_nofloat,
-  CODE_FOR_tbegin_retry,
-  CODE_FOR_tbegin_retry_nofloat,
-  CODE_FOR_tbeginc,
-  CODE_FOR_tend,
-  CODE_FOR_tabort,
-  CODE_FOR_ntstg,
-  CODE_FOR_etnd,
-  CODE_FOR_tx_assist,
-
-  CODE_FOR_s390_sfpc,
-  CODE_FOR_s390_efpc
-};
-
-static void
-s390_init_builtins (void)
-{
-  tree ftype, uint64_type;
-  tree returns_twice_attr = tree_cons (get_identifier ("returns_twice"),
-				       NULL, NULL);
-  tree noreturn_attr = tree_cons (get_identifier ("noreturn"), NULL, NULL);
-
-  /* void foo (void) */
-  ftype = build_function_type_list (void_type_node, NULL_TREE);
-  s390_builtin_decls[S390_BUILTIN_TBEGINC] =
-    add_builtin_function ("__builtin_tbeginc", ftype, S390_BUILTIN_TBEGINC,
-			  BUILT_IN_MD, NULL, NULL_TREE);
-
-  /* void foo (int) */
-  ftype = build_function_type_list (void_type_node, integer_type_node,
-				    NULL_TREE);
-  s390_builtin_decls[S390_BUILTIN_TABORT] =
-    add_builtin_function ("__builtin_tabort", ftype,
-			  S390_BUILTIN_TABORT, BUILT_IN_MD, NULL,
-			  noreturn_attr);
-  s390_builtin_decls[S390_BUILTIN_TX_ASSIST] =
-    add_builtin_function ("__builtin_tx_assist", ftype,
-			  S390_BUILTIN_TX_ASSIST, BUILT_IN_MD, NULL, NULL_TREE);
-
-  /* void foo (unsigned) */
-  ftype = build_function_type_list (void_type_node, unsigned_type_node,
-				    NULL_TREE);
-  s390_builtin_decls[S390_BUILTIN_S390_SFPC] =
-    add_builtin_function ("__builtin_s390_sfpc", ftype,
-			  S390_BUILTIN_S390_SFPC, BUILT_IN_MD, NULL, NULL_TREE);
-
-  /* int foo (void *) */
-  ftype = build_function_type_list (integer_type_node, ptr_type_node,
-				    NULL_TREE);
-  s390_builtin_decls[S390_BUILTIN_TBEGIN] =
-    add_builtin_function ("__builtin_tbegin", ftype, S390_BUILTIN_TBEGIN,
-			  BUILT_IN_MD, NULL, returns_twice_attr);
-  s390_builtin_decls[S390_BUILTIN_TBEGIN_NOFLOAT] =
-    add_builtin_function ("__builtin_tbegin_nofloat", ftype,
-			  S390_BUILTIN_TBEGIN_NOFLOAT,
-			  BUILT_IN_MD, NULL, returns_twice_attr);
-
-  /* int foo (void *, int) */
-  ftype = build_function_type_list (integer_type_node, ptr_type_node,
-				    integer_type_node, NULL_TREE);
-  s390_builtin_decls[S390_BUILTIN_TBEGIN_RETRY] =
-    add_builtin_function ("__builtin_tbegin_retry", ftype,
-			  S390_BUILTIN_TBEGIN_RETRY,
-			  BUILT_IN_MD,
-			  NULL, returns_twice_attr);
-  s390_builtin_decls[S390_BUILTIN_TBEGIN_RETRY_NOFLOAT] =
-    add_builtin_function ("__builtin_tbegin_retry_nofloat", ftype,
-			  S390_BUILTIN_TBEGIN_RETRY_NOFLOAT,
-			  BUILT_IN_MD,
-			  NULL, returns_twice_attr);
-
-  /* int foo (void) */
-  ftype = build_function_type_list (integer_type_node, NULL_TREE);
-  s390_builtin_decls[S390_BUILTIN_TX_NESTING_DEPTH] =
-    add_builtin_function ("__builtin_tx_nesting_depth", ftype,
-			  S390_BUILTIN_TX_NESTING_DEPTH,
-			  BUILT_IN_MD, NULL, NULL_TREE);
-  s390_builtin_decls[S390_BUILTIN_TEND] =
-    add_builtin_function ("__builtin_tend", ftype,
-			  S390_BUILTIN_TEND, BUILT_IN_MD, NULL, NULL_TREE);
-
-  /* unsigned foo (void) */
-  ftype = build_function_type_list (unsigned_type_node, NULL_TREE);
-  s390_builtin_decls[S390_BUILTIN_S390_EFPC] =
-    add_builtin_function ("__builtin_s390_efpc", ftype,
-			  S390_BUILTIN_S390_EFPC, BUILT_IN_MD, NULL, NULL_TREE);
-
-  /* void foo (uint64_t *, uint64_t) */
-  if (TARGET_64BIT)
-    uint64_type = long_unsigned_type_node;
-  else
-    uint64_type = long_long_unsigned_type_node;
-
-  ftype = build_function_type_list (void_type_node,
- 				    build_pointer_type (uint64_type),
-				    uint64_type, NULL_TREE);
-  s390_builtin_decls[S390_BUILTIN_NON_TX_STORE] =
-    add_builtin_function ("__builtin_non_tx_store", ftype,
-			  S390_BUILTIN_NON_TX_STORE,
-			  BUILT_IN_MD, NULL, NULL_TREE);
-}
-
-/* Expand an expression EXP that calls a built-in function,
-   with result going to TARGET if that's convenient
-   (and in mode MODE if that's convenient).
-   SUBTARGET may be used as the target for computing one of EXP's operands.
-   IGNORE is nonzero if the value is to be ignored.  */
-
-static rtx
-s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
-		     machine_mode mode ATTRIBUTE_UNUSED,
-		     int ignore ATTRIBUTE_UNUSED)
-{
-#define MAX_ARGS 2
-
-  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
-  enum insn_code icode;
-  rtx op[MAX_ARGS], pat;
-  int arity;
-  bool nonvoid;
-  tree arg;
-  call_expr_arg_iterator iter;
-
-  if (fcode >= S390_BUILTIN_MAX)
-    internal_error ("bad builtin fcode");
-  icode = code_for_builtin[fcode];
-  if (icode == 0)
-    internal_error ("bad builtin fcode");
-
-  if (!TARGET_HTM && fcode <= S390_BUILTIN_TX_ASSIST)
-    error ("Transactional execution builtins not enabled (-mhtm)\n");
-
-  /* Set a flag in the machine specific cfun part in order to support
-     saving/restoring of FPRs.  */
-  if (fcode == S390_BUILTIN_TBEGIN || fcode == S390_BUILTIN_TBEGIN_RETRY)
-    cfun->machine->tbegin_p = true;
-
-  nonvoid = TREE_TYPE (TREE_TYPE (fndecl)) != void_type_node;
-
-  arity = 0;
-  FOR_EACH_CALL_EXPR_ARG (arg, iter, exp)
-    {
-      const struct insn_operand_data *insn_op;
-
-      if (arg == error_mark_node)
-	return NULL_RTX;
-      if (arity >= MAX_ARGS)
-	return NULL_RTX;
-
-      insn_op = &insn_data[icode].operand[arity + nonvoid];
-
-      op[arity] = expand_expr (arg, NULL_RTX, insn_op->mode, EXPAND_NORMAL);
-
-      if (!(*insn_op->predicate) (op[arity], insn_op->mode))
-	{
-	  if (insn_op->predicate == memory_operand)
-	    {
-	      /* Don't move a NULL pointer into a register. Otherwise
-		 we have to rely on combine being able to move it back
-		 in order to get an immediate 0 in the instruction.  */
-	      if (op[arity] != const0_rtx)
-		op[arity] = copy_to_mode_reg (Pmode, op[arity]);
-	      op[arity] = gen_rtx_MEM (insn_op->mode, op[arity]);
-	    }
-	  else
-	    op[arity] = copy_to_mode_reg (insn_op->mode, op[arity]);
-	}
-
-      arity++;
-    }
-
-  if (nonvoid)
-    {
-      machine_mode tmode = insn_data[icode].operand[0].mode;
-      if (!target
-	  || GET_MODE (target) != tmode
-	  || !(*insn_data[icode].operand[0].predicate) (target, tmode))
-	target = gen_reg_rtx (tmode);
-    }
-
-  switch (arity)
-    {
-    case 0:
-      pat = GEN_FCN (icode) (target);
-      break;
-    case 1:
-      if (nonvoid)
-        pat = GEN_FCN (icode) (target, op[0]);
-      else
-	pat = GEN_FCN (icode) (op[0]);
-      break;
-    case 2:
-      if (nonvoid)
-	pat = GEN_FCN (icode) (target, op[0], op[1]);
-      else
-	pat = GEN_FCN (icode) (op[0], op[1]);
-      break;
-    default:
-      gcc_unreachable ();
-    }
-  if (!pat)
-    return NULL_RTX;
-  emit_insn (pat);
-
-  if (nonvoid)
-    return target;
-  else
-    return const0_rtx;
-}
 
 /* Return the decl for the target specific builtin with the function
    code FCODE.  */
@@ -13178,8 +13531,8 @@ s390_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 static void
 s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 {
-  tree sfpc = s390_builtin_decls[S390_BUILTIN_S390_SFPC];
-  tree efpc = s390_builtin_decls[S390_BUILTIN_S390_EFPC];
+  tree sfpc = s390_builtin_decls[S390_BUILTIN_s390_sfpc];
+  tree efpc = s390_builtin_decls[S390_BUILTIN_s390_efpc];
   tree call_efpc = build_call_expr (efpc, 0);
   tree fenv_var = create_tmp_var (unsigned_type_node);
 

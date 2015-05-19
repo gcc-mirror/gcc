@@ -97,6 +97,7 @@ extern void s390_expand_atomic (machine_mode, enum rtx_code,
 				rtx, rtx, rtx, bool);
 extern void s390_expand_tbegin (rtx, rtx, rtx, bool);
 extern void s390_expand_vec_compare (rtx, enum rtx_code, rtx, rtx);
+extern void s390_expand_vec_compare_cc (rtx, enum rtx_code, rtx, rtx, bool);
 extern void s390_expand_vcond (rtx, rtx, rtx, enum rtx_code, rtx, rtx);
 extern void s390_expand_vec_init (rtx, rtx);
 extern rtx s390_return_addr_rtx (int, rtx);
@@ -124,3 +125,10 @@ extern bool s390_extzv_shift_ok (int, int, unsigned HOST_WIDE_INT);
 extern void s390_asm_output_function_label (FILE *, const char *, tree);
 
 #endif /* RTX_CODE */
+
+/* s390-c.c routines */
+extern void s390_cpu_cpp_builtins (struct cpp_reader *);
+extern void s390_register_target_pragmas (void);
+
+/* Routines for s390-c.c */
+extern bool s390_const_operand_ok (tree, int, int, tree);

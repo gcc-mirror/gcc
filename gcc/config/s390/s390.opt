@@ -153,6 +153,10 @@ mmvcle
 Target Report Mask(MVCLE)
 mvcle use
 
+mzvector
+Target Report Mask(ZVECTOR)
+Enable the z vector language extension providing the context-sensitive vector macro.
+
 mwarn-dynamicstack
 Target RejectNegative Var(s390_warn_dynamicstack_p)
 Warn if a function uses alloca or creates an array with dynamic size
