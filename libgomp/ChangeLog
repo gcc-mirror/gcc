@@ -1,3 +1,13 @@
+2015-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/66199
+	* testsuite/libgomp.c/pr66199-1.c: New test.
+	* testsuite/libgomp.c/pr66199-2.c: New test.
+	* testsuite/libgomp.c++/pr66199-1.C: New test.
+	* testsuite/libgomp.c++/pr66199-2.C: New test.
+	* testsuite/libgomp.fortran/pr66199-1.f90: New test.
+	* testsuite/libgomp.fortran/pr66199-2.f90: New test.
+
 2015-05-19  Julian Brown  <julian@codesourcery.com>
 
 	* plugin/plugin-nvptx.c (nvptx_get_num_devices): Return zero

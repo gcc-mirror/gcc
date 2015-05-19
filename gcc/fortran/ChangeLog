@@ -1,3 +1,11 @@
+2015-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/66199
+	* trans-openmp.c (gfc_trans_omp_teams): Set OMP_TEAMS_COMBINED for
+	combined constructs.
+	(gfc_trans_omp_target): Make sure BIND_EXPR has non-NULL
+	BIND_EXPR_BLOCK.
+
 2015-05-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* cpp.c (maybe_print_line): Strengthen local "map" from
