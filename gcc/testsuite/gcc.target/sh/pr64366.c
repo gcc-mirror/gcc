@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -m4 -ml -mlra" } */
+/* { dg-options "-O2 -mlra" } */
 
 typedef int int8_t __attribute__ ((__mode__ (__QI__)));
 typedef int int16_t __attribute__ ((__mode__ (__HI__)));
