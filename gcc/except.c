@@ -1126,6 +1126,21 @@ sjlj_mark_call_sites (void)
       if (LABEL_P (insn))
 	last_call_site = -2;
 
+      /* If the function allocates dynamic stack space, the context must
+	 be updated after every allocation/deallocation accordingly.  */
+      if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_UPDATE_SJLJ_CONTEXT)
+	{
+	  rtx buf_addr;
+
+	  start_sequence ();
+	  buf_addr = plus_constant (Pmode, XEXP (crtl->eh.sjlj_fc, 0),
+				    sjlj_fc_jbuf_ofs);
+	  expand_builtin_update_setjmp_buf (buf_addr);
+	  p = get_insns ();
+	  end_sequence ();
+	  emit_insn_before (p, insn);
+	}
+
       if (! INSN_P (insn))
 	continue;
 
@@ -1493,6 +1508,18 @@ sjlj_build_landing_pads (void)
     }
 
   sjlj_lp_call_site_index.release ();
+}
+
+/* Update the sjlj function context.  This function should be called
+   whenever we allocate or deallocate dynamic stack space.  */
+
+void
+update_sjlj_context (void)
+{
+  if (!flag_exceptions)
+    return;
+
+  emit_note (NOTE_INSN_UPDATE_SJLJ_CONTEXT);
 }
 
 /* After initial rtl generation, call back to finish generating

@@ -1,3 +1,22 @@
+2015-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+	    Tristan Gingold  <gingold@adacore.com>
+
+	* insn-notes.def (UPDATE_SJLJ_CONTEXT): New note.
+	* builtins.c (expand_builtin_update_setjmp_buf): Make global.
+	(expand_stack_restore): Call record_new_stack_level.
+	(expand_stack_save): Do not call do_pending_stack_adjust.
+	* builtins.h (expand_builtin_update_setjmp_buf): Declare.
+	* calls.c (expand_call): Call record_new_stack_level for alloca.
+	* except.c (sjlj_mark_call_sites): Expand builtin_update_setjmp_buf
+	wherever a NOTE_INSN_UPDATE_SJLJ_CONTEXT note is present.
+	(update_sjlj_context): New global function.
+	* except.h (update_sjlj_context): Declare.
+	* explow.c (record_new_stack_level): New global function.
+	(allocate_dynamic_stack_space): Call record_new_stack_level.
+	* explow.h (record_new_stack_level): Declare.
+	* final.c (final_scan_insn): Deal with NOTE_INSN_UPDATE_SJLJ_CONTEXT.
+	* cfgrtl.c (duplicate_insn_chain): Likewise.
+
 2015-05-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* calls.c: Always define STACK_GROWS_DOWNWARD as 0 or 1.
