@@ -1,5 +1,30 @@
 2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* common/config/s390/s390-common.c (processor_flags_table): Add
+	z13.
+	* config.gcc: Add z13.
+	* config/s390/s390-opts.h (enum processor_type): Add
+	PROCESSOR_2964_Z13.
+	* config/s390/s390.c (s390_adjust_priority): Check for
+	PROCESSOR_2964_Z13.
+	(s390_reorg): Likewise.
+	(s390_sched_reorder): Likewise.
+	(s390_sched_variable_issue): Likewise.
+	(s390_loop_unroll_adjust): Likewise.
+	(s390_option_override): Likewise. Default to -mvx when available.
+	* config/s390/s390.h (enum processor_flags): Add PF_Z13 and PF_VX.
+	(TARGET_CPU_Z13, TARGET_CPU_VX, TARGET_Z13, TARGET_VX)
+	(TARGET_VX_ABI): Define macros.
+	macros.
+	(TARGET_DEFAULT): Add MASK_OPT_VX.
+	* config/s390/s390.md ("cpu" attribute): Add z13.
+	("cpu_facility" attribute): Add vec.
+	* config/s390/s390.opt (processor_type): Add z13.
+	(mvx): New options.
+	* doc/invoke.texi: Add z13 option for -march.
+
+2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/predicates.md (shift_count_or_setmem_operand): Add
 	mode check to make sure that only scalar integer values are
 	accepted.

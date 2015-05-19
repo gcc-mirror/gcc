@@ -76,6 +76,9 @@ Enum(processor_type) String(z196) Value(PROCESSOR_2817_Z196)
 EnumValue
 Enum(processor_type) String(zEC12) Value(PROCESSOR_2827_ZEC12)
 
+EnumValue
+Enum(processor_type) String(z13) Value(PROCESSOR_2964_Z13)
+
 mbackchain
 Target Report Mask(BACKCHAIN)
 Maintain backchain pointer
@@ -117,6 +120,10 @@ Use 64-bit long double
 mhtm
 Target Report Mask(OPT_HTM)
 Use hardware transactional execution instructions
+
+mvx
+Target Report Mask(OPT_VX)
+Use hardware vector facility instructions and enable the vector ABI
 
 mpacked-stack
 Target Report Mask(PACKED_STACK)
