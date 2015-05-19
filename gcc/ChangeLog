@@ -1,5 +1,49 @@
 2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config.gcc: Add vecintrin.h to extra_headers.  Add s390-c.o to
+	c_target_objs and cxx_target_objs.  Add t-s390 to tmake_file.
+	* config/s390/s390-builtin-types.def: New file.
+	* config/s390/s390-builtins.def: New file.
+	* config/s390/s390-builtins.h: New file.
+	* config/s390/s390-c.c: New file.
+	* config/s390/s390-modes.def: Add modes CCVEQANY, CCVH,
+	CCVHANY, CCVHU, CCVHUANY, CCVFHANY, CCVFHEANY.
+	* config/s390/s390-protos.h (s390_expand_vec_compare_cc)
+	(s390_cpu_cpp_builtins, s390_register_target_pragmas): Add
+	prototypes.
+	* config/s390/s390.c (s390-builtins.h, s390-builtins.def):
+	Include.
+	(flags_builtin, flags_overloaded_builtin_var, s390_builtin_types)
+	(s390_builtin_fn_types, s390_builtin_decls, code_for_builtin): New
+	variable definitions.
+	(s390_const_operand_ok): New function.
+	(s390_expand_builtin): Rewrite.
+	(s390_init_builtins): New function.
+	(s390_handle_vectorbool_attribute): New function.
+	(s390_attribute_table): Add s390_vector_bool attribute.
+	(s390_match_ccmode_set): Handle new cc modes CCVH, CCVHU.
+	(s390_branch_condition_mask): Generate masks for new modes.
+	(s390_expand_vec_compare_cc): New function.
+	(s390_mangle_type): Add mangling for vector bool types.
+	(enum s390_builtin): Remove.
+	(s390_atomic_assign_expand_fenv): Rename constants for sfpc and
+	efpc builtins.
+	* config/s390/s390.h (TARGET_CPU_CPP_BUILTINS): Call
+	s390_cpu_cpp_builtins.
+	(REGISTER_TARGET_PRAGMAS): New macro.
+	* config/s390/s390.md: Define more UNSPEC_VEC_* constants.
+	(insn_cmp mode attribute): Add new CC modes.
+	(s390_sfpc, s390_efpc): Rename patterns to sfpc and efpc.
+	(lcbb): New pattern definition.
+	* config/s390/s390intrin.h: Include vecintrin.h.
+	* config/s390/t-s390: New file.
+	* config/s390/vecintrin.h: New file.
+	* config/s390/vector.md: Include vx-builtins.md.
+	* config/s390/vx-builtins.md: New file.S/390 zvector builtin
+	support.
+
+2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390-modes.def: Add new modes CCVEQ, CCVFH, and
 	CCVFHE.
 	* config/s390/s390.c (s390_match_ccmode_set): Handle new modes.
