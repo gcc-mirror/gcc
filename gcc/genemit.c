@@ -240,6 +240,10 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
 	  printf ("%u", XINT (x, i));
 	  break;
 
+	case 'r':
+	  printf ("%u", REGNO (x));
+	  break;
+
 	case 's':
 	  printf ("\"%s\"", XSTR (x, i));
 	  break;

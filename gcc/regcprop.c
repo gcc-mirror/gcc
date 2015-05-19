@@ -410,7 +410,7 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
     return NULL_RTX;
 
   if (orig_mode == new_mode)
-    return gen_rtx_raw_REG (new_mode, regno);
+    return gen_raw_REG (new_mode, regno);
   else if (mode_change_ok (orig_mode, new_mode, regno))
     {
       int copy_nregs = hard_regno_nregs[copy_regno][copy_mode];
@@ -426,7 +426,7 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
 		+ (BYTES_BIG_ENDIAN ? byteoffset : 0));
       regno += subreg_regno_offset (regno, orig_mode, offset, new_mode);
       if (HARD_REGNO_MODE_OK (regno, new_mode))
-	return gen_rtx_raw_REG (new_mode, regno);
+	return gen_raw_REG (new_mode, regno);
     }
   return NULL_RTX;
 }

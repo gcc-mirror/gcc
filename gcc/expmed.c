@@ -260,7 +260,7 @@ init_expmed (void)
     }
 
   /* Avoid using hard regs in ways which may be unsupported.  */
-  all.reg = gen_rtx_raw_REG (mode, LAST_VIRTUAL_REGISTER + 1);
+  all.reg = gen_raw_REG (mode, LAST_VIRTUAL_REGISTER + 1);
   all.plus = gen_rtx_PLUS (mode, all.reg, all.reg);
   all.neg = gen_rtx_NEG (mode, all.reg);
   all.mult = gen_rtx_MULT (mode, all.reg, all.reg);

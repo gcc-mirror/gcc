@@ -437,7 +437,10 @@ gen_blockage (void)
 rtx
 gen_raw_REG (machine_mode mode, int regno)
 {
-  rtx x = gen_rtx_raw_REG (mode, regno);
+  rtx x = rtx_alloc_stat (REG PASS_MEM_STAT);
+  PUT_MODE (x, mode);
+  SET_REGNO_RAW (x, regno);
+  REG_ATTRS (x) = NULL;
   ORIGINAL_REGNO (x) = regno;
   return x;
 }

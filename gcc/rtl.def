@@ -381,7 +381,7 @@ DEF_RTL_EXPR(PC, "pc", "", RTX_OBJ)
    points to a reg_attrs structure.
    This rtx needs to have as many (or more) fields as a MEM, since we
    can change REG rtx's into MEMs during reload.  */
-DEF_RTL_EXPR(REG, "reg", "i0", RTX_OBJ)
+DEF_RTL_EXPR(REG, "reg", "r", RTX_OBJ)
 
 /* A scratch register.  This represents a register used only within a
    single insn.  It will be replaced by a REG during register allocation

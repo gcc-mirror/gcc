@@ -258,7 +258,7 @@ init_expr_target (void)
 	  }
     }
 
-  mem = gen_rtx_MEM (VOIDmode, gen_rtx_raw_REG (Pmode, 10000));
+  mem = gen_rtx_MEM (VOIDmode, gen_raw_REG (Pmode, FIRST_PSEUDO_REGISTER));
 
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))

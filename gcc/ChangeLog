@@ -1,5 +1,45 @@
 2015-05-19  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* rtl.def (REG): Change format to "r".
+	* rtl.h (rtunion): Remove rt_reg.
+	(reg_info): New structure.
+	(rtx_def): Add reg field to main union.
+	(X0REGATTR): Delete.
+	(REG_CHECK): New macro.
+	(SET_REGNO_RAW, rhs_regno, REG_ATTRS): Use it.
+	* rtl.c (rtx_format): Document "r".
+	(rtx_code_size): Handle REG specially.
+	* gengenrtl.c (special_format): Return true for formats
+	that include 'r'.
+	* gengtype.c (adjust_field_rtx_def): Handle 'r' fields.
+	Deal with REG_ATTRS after the field loop.
+	* emit-rtl.c (gen_raw_REG): Call rtx_alloc_stat directly.
+	* expmed.c (init_expmed): Call gen_raw_REG instead of
+	gen_rtx_raw_REG.
+	* expr.c (init_expr_target): Likewise.
+	* regcprop.c (maybe_mode_change): Likewise.
+	* varasm.c (make_decl_rtl): Likewise.
+	* final.c (leaf_renumber_regs_insn): Return early after
+	handling REGs.
+	* genemit.c (gen_exp): Handle 'r' fields.
+	* genpeep.c (match_rtx): Likewise.
+	* gensupport.c (subst_pattern_match): Likewise.
+	(get_alternatives_number, collect_insn_data, alter_predicate_for_insn)
+	(alter_constraints, subst_dup): Likewise.
+	* read-rtl.c (read_rtx_code): Likewise.
+	* print-rtl.c (print_rtx): Likewise.
+	* genrecog.c (find_operand, find_matching_operand): Likewise.
+	(validate_pattern, match_pattern_2): Likewise.
+	(parameter::UINT, rtx_test::REGNO_FIELD): New enum values.
+	(rtx_test::regno_field): New function.
+	(operator ==, safe_to_hoist_p, transition_parameter_type)
+	(parameter_type_string, print_parameter_value)
+	(print_nonbool_test, print_test): Handle new enum values.
+	* cselib.c (rtx_equal_for_cselib_1): Handle REG specially.
+	* lra-constraints.c (operands_match_p): Likewise.
+
+2015-05-19  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* df.h (df_ref_change_reg_with_loc): Remove old_regno parameter.
 	Change type of new_regno to unsigned int.
 	* df-scan.c (df_ref_change_reg_with_loc_1): Change type of

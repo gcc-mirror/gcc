@@ -1241,6 +1241,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	    case 'i':
 	    case 'n':
 	    case 'w':
+	    case 'r':
 	      t = scalar_tp;
 	      subname = "rt_int";
 	      break;
@@ -1268,8 +1269,6 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 		t = scalar_tp, subname = "rt_int";
 	      else if (i == DEBUG_EXPR && aindex == 0)
 		t = tree_tp, subname = "rt_tree";
-	      else if (i == REG && aindex == 1)
-		t = reg_attrs_tp, subname = "rt_reg";
 	      else if (i == SYMBOL_REF && aindex == 1)
 		t = symbol_union_tp, subname = "";
 	      else if (i == JUMP_TABLE_DATA && aindex >= 4)
@@ -1343,6 +1342,9 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	      create_string_option (subfields->opt, "desc",
 				    "CONSTANT_POOL_ADDRESS_P (&%0)");
 	}
+
+      if (i == REG)
+	subfields = create_field (subfields, reg_attrs_tp, "reg.attrs");
 
       if (i == SYMBOL_REF)
 	{

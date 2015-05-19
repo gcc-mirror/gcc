@@ -1346,6 +1346,13 @@ read_rtx_code (const char *code_name)
 				       name.string);
 	break;
 
+      case 'r':
+	read_name (&name);
+	validate_const_int (name.string);
+	SET_REGNO_RAW (return_rtx, atoi (name.string));
+	REG_ATTRS (return_rtx) = NULL;
+	break;
+
       default:
 	gcc_unreachable ();
       }
