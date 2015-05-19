@@ -115,7 +115,7 @@ update_live_status (rtx dest, const_rtx x, void *data ATTRIBUTE_UNUSED)
   else
     {
       first_regno = REGNO (dest);
-      last_regno = END_HARD_REGNO (dest);
+      last_regno = END_REGNO (dest);
     }
 
   if (GET_CODE (x) == CLOBBER)

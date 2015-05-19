@@ -13454,8 +13454,8 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx_insn *to_insn,
 		  > GET_MODE_SIZE (GET_MODE (x))))
 	    {
 	      unsigned int deadregno = REGNO (XEXP (note, 0));
-	      unsigned int deadend = END_HARD_REGNO (XEXP (note, 0));
-	      unsigned int ourend = END_HARD_REGNO (x);
+	      unsigned int deadend = END_REGNO (XEXP (note, 0));
+	      unsigned int ourend = END_REGNO (x);
 	      unsigned int i;
 
 	      for (i = deadregno; i < deadend; i++)
@@ -13475,7 +13475,7 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx_insn *to_insn,
 		   && regno < FIRST_PSEUDO_REGISTER
 		   && REG_NREGS (x) > 1)
 	    {
-	      unsigned int ourend = END_HARD_REGNO (x);
+	      unsigned int ourend = END_REGNO (x);
 	      unsigned int i, offset;
 	      rtx oldnotes = 0;
 
@@ -14070,7 +14070,7 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 
 	      if (place && REG_NREGS (XEXP (note, 0)) > 1)
 		{
-		  unsigned int endregno = END_HARD_REGNO (XEXP (note, 0));
+		  unsigned int endregno = END_REGNO (XEXP (note, 0));
 		  bool all_used = true;
 		  unsigned int i;
 

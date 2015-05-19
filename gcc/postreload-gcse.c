@@ -551,7 +551,7 @@ reg_changed_after_insn_p (rtx x, int cuid)
   unsigned int regno, end_regno;
 
   regno = REGNO (x);
-  end_regno = END_HARD_REGNO (x);
+  end_regno = END_REGNO (x);
   do
     if (reg_avail_info[regno] > cuid)
       return true;
@@ -720,7 +720,7 @@ record_last_reg_set_info (rtx_insn *insn, rtx reg)
   unsigned int regno, end_regno;
 
   regno = REGNO (reg);
-  end_regno = END_HARD_REGNO (reg);
+  end_regno = END_REGNO (reg);
   do
     reg_avail_info[regno] = INSN_CUID (insn);
   while (++regno < end_regno);

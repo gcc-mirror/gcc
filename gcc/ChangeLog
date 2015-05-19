@@ -1,5 +1,22 @@
 2015-05-19  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* regs.h (END_HARD_REGNO): Delete.
+	(END_REGNO): Move to...
+	* rtl.h: ...here.
+	* bt-load.c (note_btr_set): Use END_REGNO instead of END_HARD_REGNO.
+	* caller-save.c (mark_set_regs): Likewise.
+	* combine.c (move_deaths, distribute_notes): Likewise.
+	* cse.c (invalidate, invalidate_for_call): Likewise.
+	* df-scan.c (df_ref_record): Likewise.
+	* postreload-gcse.c (reg_changed_after_insn_p): Likewise.
+	(record_last_reg_set_info): Likewise.
+	* reg-stack.c (convert_regs_exit): Likewise.
+	* reload.c (reg_overlap_mentioned_for_reload_p): Likewise.
+	* resource.c (update_live_status): Likewise.
+	* rtlanal.c (find_reg_fusage, find_regno_fusage): Likewise.
+
+2015-05-19  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* rtl.h (reg_info): Add an nregs field.
 	(REG_NREGS): Use it.
 	(SET_REGNO_RAW): Delete.
