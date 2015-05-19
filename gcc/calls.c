@@ -81,6 +81,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chkp.h"
 #include "rtl-chkp.h"
 
+
+/* Redefine STACK_GROWS_DOWNWARD in terms of 0 or 1.  */
+#ifdef STACK_GROWS_DOWNWARD
+# undef STACK_GROWS_DOWNWARD
+# define STACK_GROWS_DOWNWARD 1
+#else
+# define STACK_GROWS_DOWNWARD 0
+#endif
+
 /* Like PREFERRED_STACK_BOUNDARY but in units of bytes, not bits.  */
 #define STACK_BYTES (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)
 
@@ -1980,11 +1989,12 @@ mem_overlaps_already_clobbered_arg_p (rtx addr, unsigned HOST_WIDE_INT size)
     return true;
   else
     i = INTVAL (val);
-#ifdef STACK_GROWS_DOWNWARD
-  i -= crtl->args.pretend_args_size;
-#else
-  i += crtl->args.pretend_args_size;
-#endif
+
+  if (STACK_GROWS_DOWNWARD)
+    i -= crtl->args.pretend_args_size;
+  else
+    i += crtl->args.pretend_args_size;
+
 
   if (ARGS_GROW_DOWNWARD)
     i = -i - size;
@@ -2914,12 +2924,13 @@ expand_call (tree exp, rtx target, int ignore)
       if (pass == 0)
 	{
 	  argblock = crtl->args.internal_arg_pointer;
-	  argblock
-#ifdef STACK_GROWS_DOWNWARD
-	    = plus_constant (Pmode, argblock, crtl->args.pretend_args_size);
-#else
-	    = plus_constant (Pmode, argblock, -crtl->args.pretend_args_size);
-#endif
+	  if (STACK_GROWS_DOWNWARD)
+	    argblock
+	      = plus_constant (Pmode, argblock, crtl->args.pretend_args_size);
+	  else
+	    argblock
+	      = plus_constant (Pmode, argblock, -crtl->args.pretend_args_size);
+
 	  stored_args_map = sbitmap_alloc (args_size.constant);
 	  bitmap_clear (stored_args_map);
 	}
