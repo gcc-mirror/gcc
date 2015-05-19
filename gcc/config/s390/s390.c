@@ -5851,7 +5851,8 @@ s390_adjust_priority (rtx_insn *insn, int priority)
       && s390_tune != PROCESSOR_2094_Z9_109
       && s390_tune != PROCESSOR_2097_Z10
       && s390_tune != PROCESSOR_2817_Z196
-      && s390_tune != PROCESSOR_2827_ZEC12)
+      && s390_tune != PROCESSOR_2827_ZEC12
+      && s390_tune != PROCESSOR_2964_Z13)
     return priority;
 
   switch (s390_safe_attr_type (insn))
@@ -11455,7 +11456,8 @@ s390_reorg (void)
   /* Walk over the insns and do some >=z10 specific changes.  */
   if (s390_tune == PROCESSOR_2097_Z10
       || s390_tune == PROCESSOR_2817_Z196
-      || s390_tune == PROCESSOR_2827_ZEC12)
+      || s390_tune == PROCESSOR_2827_ZEC12
+      || s390_tune == PROCESSOR_2964_Z13)
     {
       rtx_insn *insn;
       bool insn_added_p = false;
@@ -11704,7 +11706,8 @@ s390_sched_reorder (FILE *file, int verbose,
     if (reload_completed && *nreadyp > 1)
       s390_z10_prevent_earlyload_conflicts (ready, nreadyp);
 
-  if (s390_tune == PROCESSOR_2827_ZEC12
+  if ((s390_tune == PROCESSOR_2827_ZEC12
+       || s390_tune == PROCESSOR_2964_Z13)
       && reload_completed
       && *nreadyp > 1)
     {
@@ -11787,7 +11790,8 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
 {
   last_scheduled_insn = insn;
 
-  if (s390_tune == PROCESSOR_2827_ZEC12
+  if ((s390_tune == PROCESSOR_2827_ZEC12
+       || s390_tune == PROCESSOR_2964_Z13)
       && reload_completed
       && recog_memoized (insn) >= 0)
     {
@@ -11867,7 +11871,8 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
   if (s390_tune != PROCESSOR_2097_Z10
       && s390_tune != PROCESSOR_2817_Z196
-      && s390_tune != PROCESSOR_2827_ZEC12)
+      && s390_tune != PROCESSOR_2827_ZEC12
+      && s390_tune != PROCESSOR_2964_Z13)
     return nunroll;
 
   /* Count the number of memory references within the loop body.  */
@@ -11998,6 +12003,22 @@ s390_option_override (void)
   if (!(target_flags_explicit & MASK_OPT_HTM) && TARGET_CPU_HTM && TARGET_ZARCH)
     target_flags |= MASK_OPT_HTM;
 
+  if (target_flags_explicit & MASK_OPT_VX)
+    {
+      if (TARGET_OPT_VX)
+	{
+	  if (!TARGET_CPU_VX)
+	    error ("hardware vector support not available on %s",
+		   s390_arch_string);
+	  if (TARGET_SOFT_FLOAT)
+	    error ("hardware vector support not available with -msoft-float");
+	}
+    }
+  else if (TARGET_CPU_VX)
+    /* Enable vector support if available and not explicitly disabled
+       by user.  E.g. with -m31 -march=z13 -mzarch */
+    target_flags |= MASK_OPT_VX;
+
   if (TARGET_HARD_DFP && !TARGET_DFP)
     {
       if (target_flags_explicit & MASK_HARD_DFP)
@@ -12037,6 +12058,7 @@ s390_option_override (void)
       s390_cost = &z196_cost;
       break;
     case PROCESSOR_2827_ZEC12:
+    case PROCESSOR_2964_Z13:
       s390_cost = &zEC12_cost;
       break;
     default:
@@ -12064,7 +12086,8 @@ s390_option_override (void)
 
   if (s390_tune == PROCESSOR_2097_Z10
       || s390_tune == PROCESSOR_2817_Z196
-      || s390_tune == PROCESSOR_2827_ZEC12)
+      || s390_tune == PROCESSOR_2827_ZEC12
+      || s390_tune == PROCESSOR_2964_Z13)
     {
       maybe_set_param_value (PARAM_MAX_UNROLLED_INSNS, 100,
 			     global_options.x_param_values,

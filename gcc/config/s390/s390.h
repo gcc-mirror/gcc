@@ -35,7 +35,9 @@ enum processor_flags
   PF_Z10 = 32,
   PF_Z196 = 64,
   PF_ZEC12 = 128,
-  PF_TX = 256
+  PF_TX = 256,
+  PF_Z13 = 512,
+  PF_VX = 1024
 };
 
 /* This is necessary to avoid a warning about comparing different enum
@@ -64,6 +66,10 @@ enum processor_flags
  	(s390_arch_flags & PF_ZEC12)
 #define TARGET_CPU_HTM \
  	(s390_arch_flags & PF_TX)
+#define TARGET_CPU_Z13 \
+        (s390_arch_flags & PF_Z13)
+#define TARGET_CPU_VX \
+        (s390_arch_flags & PF_VX)
 
 /* These flags indicate that the generated code should run on a cpu
    providing the respective hardware facility when run in
@@ -82,7 +88,15 @@ enum processor_flags
 #define TARGET_ZEC12 \
        (TARGET_ZARCH && TARGET_CPU_ZEC12)
 #define TARGET_HTM (TARGET_OPT_HTM)
+#define TARGET_Z13 \
+       (TARGET_ZARCH && TARGET_CPU_Z13)
+#define TARGET_VX \
+       (TARGET_ZARCH && TARGET_CPU_VX && TARGET_OPT_VX && TARGET_HARD_FLOAT)
 
+/* Use the ABI introduced with IBM z13:
+   - pass vector arguments <= 16 bytes in VRs
+   - align *all* vector types to 8 bytes  */
+#define TARGET_VX_ABI TARGET_VX
 
 #define TARGET_AVOID_CMP_AND_BRANCH (s390_tune == PROCESSOR_2817_Z196)
 
@@ -115,7 +129,8 @@ enum processor_flags
   while (0)
 
 #ifdef DEFAULT_TARGET_64BIT
-#define TARGET_DEFAULT             (MASK_64BIT | MASK_ZARCH | MASK_HARD_DFP | MASK_OPT_HTM)
+#define TARGET_DEFAULT     (MASK_64BIT | MASK_ZARCH | MASK_HARD_DFP	\
+                            | MASK_OPT_HTM | MASK_OPT_VX)
 #else
 #define TARGET_DEFAULT             0
 #endif
