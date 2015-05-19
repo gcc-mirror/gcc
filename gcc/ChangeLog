@@ -1,5 +1,28 @@
 2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390-modes.def: Add new modes CCVEQ, CCVFH, and
+	CCVFHE.
+	* config/s390/s390.c (s390_match_ccmode_set): Handle new modes.
+	(s390_select_ccmode): Likewise.
+	(s390_canonicalize_comparison): Swap operands if necessary.
+	(s390_expand_vec_compare_scalar): Expand DFmode compare using
+	single element vector instructions.
+	(s390_emit_compare): Call s390_expand_vec_compare_scalar.
+	(s390_branch_condition_mask): Generate CC masks for the new modes.
+	* config/s390/s390.md (v0, vf, vd): New mode attributes.
+	(VFCMP, asm_fcmp, insn_cmp): New mode iterator and attributes.
+	(*vec_cmp<insn_cmp>df_cconly, *fixuns_truncdfdi2_z13)
+	(*fix_trunc<BFP:mode><GPR:mode>2_bfp, *floatunsdidf2_z13)
+	(*floatuns<GPR:mode><FP:mode>2, *extendsfdf2_z13)
+	(*extend<DSF:mode><BFP:mode>2): New insn definition.
+	(fix_trunc<BFP:mode><GPR:mode>2_bfp, loatuns<GPR:mode><FP:mode>2)
+	(extend<DSF:mode><BFP:mode>2): Turn into expander.
+	(floatdi<mode>2, truncdfsf2, add<mode>3, sub<mode>3, mul<mode>3)
+	(div<mode>3, *neg<mode>2, *abs<mode>2, *negabs<mode>2)
+	(sqrt<mode>2): Add vector instruction.
+
+2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/constraints.md (j00, jm1, jxx, jyy, v): New
 	constraints.
 	* config/s390/predicates.md (const0_operand, constm1_operand)
