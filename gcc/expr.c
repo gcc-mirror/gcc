@@ -8073,7 +8073,7 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
       unsignedp = TYPE_UNSIGNED (type);
       comparison_code = convert_tree_comp_to_rtx (cmpcode, unsignedp);
     }
-  else if (TREE_CODE_CLASS (TREE_CODE (treeop0)) == tcc_comparison)
+  else if (COMPARISON_CLASS_P (treeop0))
     {
       tree type = TREE_TYPE (TREE_OPERAND (treeop0, 0));
       enum tree_code cmpcode = TREE_CODE (treeop0);

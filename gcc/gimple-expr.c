@@ -607,7 +607,7 @@ void
 gimple_cond_get_ops_from_tree (tree cond, enum tree_code *code_p,
                                tree *lhs_p, tree *rhs_p)
 {
-  gcc_assert (TREE_CODE_CLASS (TREE_CODE (cond)) == tcc_comparison
+  gcc_assert (COMPARISON_CLASS_P (cond)
 	      || TREE_CODE (cond) == TRUTH_NOT_EXPR
 	      || is_gimple_min_invariant (cond)
 	      || SSA_VAR_P (cond));
