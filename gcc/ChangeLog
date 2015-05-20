@@ -1,3 +1,9 @@
+2015-05-19  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	PR c++/65835
+	* config/i386/winnt.c (struct wrapped_symbol_hasher): Change
+	value_type to const char *.
+
 2015-05-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config.gcc [powerpc*-*-linux*]: Allow --enable-targets=all
