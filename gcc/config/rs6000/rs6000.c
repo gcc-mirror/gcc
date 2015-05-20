@@ -22013,31 +22013,6 @@ rs6000_stack_info (void)
   else
     info_ptr->push_p = non_fixed_size > (TARGET_32BIT ? 220 : 288);
 
-  /* Zero offsets if we're not saving those registers.  */
-  if (info_ptr->fp_size == 0)
-    info_ptr->fp_save_offset = 0;
-
-  if (info_ptr->gp_size == 0)
-    info_ptr->gp_save_offset = 0;
-
-  if (! TARGET_ALTIVEC_ABI || info_ptr->altivec_size == 0)
-    info_ptr->altivec_save_offset = 0;
-
-  /* Zero VRSAVE offset if not saved and restored.  */
-  if (! TARGET_ALTIVEC_VRSAVE || info_ptr->vrsave_mask == 0)
-    info_ptr->vrsave_save_offset = 0;
-
-  if (! TARGET_SPE_ABI
-      || info_ptr->spe_64bit_regs_used == 0
-      || info_ptr->spe_gp_size == 0)
-    info_ptr->spe_gp_save_offset = 0;
-
-  if (! info_ptr->lr_save_p)
-    info_ptr->lr_save_offset = 0;
-
-  if (! info_ptr->cr_save_p)
-    info_ptr->cr_save_offset = 0;
-
   return info_ptr;
 }
 
@@ -22143,28 +22118,28 @@ debug_stack_info (rs6000_stack_t *info)
   if (info->calls_p)
     fprintf (stderr, "\tcalls_p             = %5d\n", info->calls_p);
 
-  if (info->gp_save_offset)
+  if (info->gp_size)
     fprintf (stderr, "\tgp_save_offset      = %5d\n", info->gp_save_offset);
 
-  if (info->fp_save_offset)
+  if (info->fp_size)
     fprintf (stderr, "\tfp_save_offset      = %5d\n", info->fp_save_offset);
 
-  if (info->altivec_save_offset)
+  if (info->altivec_size)
     fprintf (stderr, "\taltivec_save_offset = %5d\n",
 	     info->altivec_save_offset);
 
-  if (info->spe_gp_save_offset)
+  if (info->spe_gp_size == 0)
     fprintf (stderr, "\tspe_gp_save_offset  = %5d\n",
 	     info->spe_gp_save_offset);
 
-  if (info->vrsave_save_offset)
+  if (info->vrsave_size)
     fprintf (stderr, "\tvrsave_save_offset  = %5d\n",
 	     info->vrsave_save_offset);
 
-  if (info->lr_save_offset)
+  if (info->lr_save_p)
     fprintf (stderr, "\tlr_save_offset      = %5d\n", info->lr_save_offset);
 
-  if (info->cr_save_offset)
+  if (info->cr_save_p)
     fprintf (stderr, "\tcr_save_offset      = %5d\n", info->cr_save_offset);
 
   if (info->varargs_save_offset)
@@ -24735,7 +24710,9 @@ rs6000_emit_epilogue (int sibcall)
      here will not trigger at the moment;  We don't actually need a
      frame pointer for alloca, but the generic parts of the compiler
      give us one anyway.  */
-  use_backchain_to_restore_sp = (info->total_size > 32767 - info->lr_save_offset
+  use_backchain_to_restore_sp = (info->total_size + (info->lr_save_p
+						     ? info->lr_save_offset
+						     : 0) > 32767
 				 || (cfun->calls_alloca
 				     && !frame_pointer_needed));
   restore_lr = (info->lr_save_p
