@@ -13,7 +13,7 @@ struct A
 {
   A();
   void* operator new (size_t, size_t);
-  void operator delete (void *, size_t); // { dg-error "non-placement" }
+  void operator delete (void *, size_t); // { dg-message "non-placement" }
 };
 
 struct B
@@ -27,6 +27,6 @@ struct B
 
 int main()
 {
-  A* ap = new (24) A;		// { dg-error "placement delete" }
+  A* ap = new (24) A;		// { dg-error "placement" }
   B* bp = new (24) B;
 }

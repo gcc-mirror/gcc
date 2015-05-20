@@ -1,3 +1,12 @@
+2015-05-20  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (grok_op_properties): Don't complain about size_t
+	placement delete here.
+	* call.c (second_parm_is_size_t): Split out from...
+	(non_placement_deallocation_fn_p): ...here.
+	(build_op_delete_call): Warn about size_t placement delete with
+	-Wc++14-compat.
+
 2015-05-19  Nathan sidwell  <nathan@acm.org>
 
 	PR c++/65954
