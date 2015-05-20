@@ -1461,8 +1461,9 @@ init_alignment_context (struct alignment_context *ac, rtx mem)
   if (ac->shift != NULL_RTX)
     {
       /* Shift is the byte count, but we need the bitcount.  */
-      ac->shift = expand_simple_binop (SImode, MULT, ac->shift,
-				       GEN_INT (BITS_PER_UNIT),
+      gcc_assert (exact_log2 (BITS_PER_UNIT) >= 0);
+      ac->shift = expand_simple_binop (SImode, ASHIFT, ac->shift,
+				       GEN_INT (exact_log2 (BITS_PER_UNIT)),
 				       NULL_RTX, 1, OPTAB_DIRECT);
       ac->modemask = expand_simple_binop (SImode, ASHIFT,
 					  GEN_INT (GET_MODE_MASK (mode)),

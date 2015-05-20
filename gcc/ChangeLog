@@ -1,3 +1,8 @@
+2015-05-20  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (init_alignment_context): Replace MULT
+	by BITS_PER_UNIT with ASHIFT by exact_log2 (BITS_PER_UNIT).
+
 2015-05-20  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c (mark_threaded_blocks): Properly
