@@ -395,7 +395,7 @@ check_omp_for_incr_expr (location_t loc, tree exp, tree decl)
 	  {
 	    tree op1 = TREE_OPERAND (exp, 1);
 	    tree temp = TARGET_EXPR_SLOT (op0);
-	    if (TREE_CODE_CLASS (TREE_CODE (op1)) == tcc_binary
+	    if (BINARY_CLASS_P (op1)
 		&& TREE_OPERAND (op1, 1) == temp)
 	      {
 		op1 = copy_node (op1);

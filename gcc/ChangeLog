@@ -1,5 +1,9 @@
 2015-05-20  Marek Polacek  <polacek@redhat.com>
 
+	* cfgexpand.c (expand_debug_expr): Use UNARY_CLASS_P.
+
+2015-05-20  Marek Polacek  <polacek@redhat.com>
+
 	* expr.c (expand_cond_expr_using_cmove): Use COMPARISON_CLASS_P.
 	* gimple-expr.c (gimple_cond_get_ops_from_tree): Likewise.
 	* gimple-fold.c (canonicalize_bool): Likewise.
