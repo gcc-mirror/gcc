@@ -1,3 +1,9 @@
+2015-05-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* timevar.def (TV_INITIALIZE_RTL): New.
+	* toplev.c (initialize_rtl): Use an auto_timevar to account this
+	function's time to TV_INITIALIZE_RTL.
+
 2015-05-20  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	* tree-chkp.c (chkp_maybe_copy_and_register_bounds): Remove useless

@@ -1821,6 +1821,8 @@ static int rtl_initialized;
 void
 initialize_rtl (void)
 {
+  auto_timevar tv (TV_INITIALIZE_RTL);
+
   /* Initialization done just once per compilation, but delayed
      till code generation.  */
   if (!rtl_initialized)
