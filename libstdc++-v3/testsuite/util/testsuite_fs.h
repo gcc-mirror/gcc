@@ -26,10 +26,8 @@
 #include <iostream>
 #include <string>
 #include <cstdio>
-#if defined(_GNU_SOURCE) || _XOPEN_SOURCE >= 500 || _POSIX_C_SOURCE >= 200112L
-# include <stdlib.h>
-# include <unistd.h>
-#endif
+#include <stdlib.h>
+#include <unistd.h>
 
 namespace __gnu_test
 {
@@ -84,12 +82,9 @@ namespace __gnu_test
     ::close(fd);
     p = tmp;
 #else
-    char* tmp = tempnam(".", "test.");
-    if (!tmp)
-      throw std::experimental::filesystem::filesystem_error("tempnam failed",
-	  std::error_code(errno, std::generic_category()));
-    p = tmp;
-    ::free(tmp);
+    char buf[64];
+    std::sprintf(buf, "test.%lu", (unsigned long)::getpid());
+    p = buf;
 #endif
     return p;
   }
