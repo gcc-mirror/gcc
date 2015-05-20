@@ -1,3 +1,7 @@
+2015-05-20  Alex Velenko  <Alex.Velenko@arm.com>
+
+        * gcc.target/arm/thumb1-far-jump-2.c (r4): Added int in definition.
+
 2015-05-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-c++-common/Wmisleading-indentation.c (fn_32): New.

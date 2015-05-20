@@ -5,7 +5,7 @@
 /* { dg-options "-Os" } */
 /* { dg-skip-if "" { ! { arm_thumb1 } } } */
 
-volatile register r4 asm("r4");
+volatile register int r4 asm ("r4");
 void f3(int i)
 {
 #define GO(n) \
