@@ -1,5 +1,9 @@
 2015-05-20  Marek Polacek  <polacek@redhat.com>
 
+	* c-omp.c (check_omp_for_incr_expr): Use BINARY_CLASS_P.
+
+2015-05-20  Marek Polacek  <polacek@redhat.com>
+
 	* c-ada-spec.c (dump_sloc): Use DECL_P.
 
 2015-05-20  Marek Polacek  <polacek@redhat.com>
