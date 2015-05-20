@@ -1,3 +1,11 @@
+2015-05-20  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/morestack.S: New.
+	* config/rs6000/t-stack-rs6000: New.
+	* config.host (powerpc*-*-linux*): Add t-stack and t-stack-rs6000
+	to tmake_file.
+	* generic-morestack.c: Don't build for powerpc 32-bit.
+
 2015-05-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* Makefile.in (LIBUNWIND): Move dependency for shared libgcc.

@@ -1,5 +1,32 @@
 2015-05-20  Alan Modra  <amodra@gmail.com>
 
+	* common/config/rs6000/rs6000-common.c (TARGET_SUPPORTS_SPLIT_STACK):
+	Define.
+	(rs6000_supports_split_stack): New function.
+	* gcc/config/rs6000/rs6000.c (machine_function): Add
+	split_stack_arg_pointer.
+	(TARGET_EXTRA_LIVE_ON_ENTRY, TARGET_INTERNAL_ARG_POINTER): Define.
+	(setup_incoming_varargs): Use crtl->args.internal_arg_pointer
+	rather than virtual_incoming_args_rtx.
+	(rs6000_va_start): Likewise.
+	(split_stack_arg_pointer_used_p): New function.
+	(rs6000_emit_prologue): Set up arg pointer for -fsplit-stack.
+	(morestack_ref): New var.
+	(gen_add3_const, rs6000_expand_split_stack_prologue,
+	rs6000_internal_arg_pointer, rs6000_live_on_entry,
+	rs6000_split_stack_space_check): New functions.
+	(rs6000_elf_file_end): Call file_end_indicate_split_stack.
+	* gcc/config/rs6000/rs6000.md (UNSPEC_STACK_CHECK): Define.
+	(UNSPECV_SPLIT_STACK_RETURN): Define.
+	(split_stack_prologue, load_split_stack_limit,
+	load_split_stack_limit_di, load_split_stack_limit_si,
+	split_stack_return, split_stack_space_check): New expands and insns.
+	* gcc/config/rs6000/rs6000-protos.h
+	(rs6000_expand_split_stack_prologue): Declare.
+	(rs6000_split_stack_space_check): Declare.
+
+2015-05-20  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000.c (struct rs6000_stack): Correct comments.
 	(rs6000_stack_info): Don't zero offsets when not saving registers.
 	(debug_stack_info): Adjust to omit printing unused offsets,
