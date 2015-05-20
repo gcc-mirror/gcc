@@ -1,5 +1,13 @@
 2015-05-20  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000.c (rs6000_emit_allocate_stack): Return
+	stack adjusting insn.  Formatting.
+	(rs6000_emit_prologue): Track stack adjusting insn, and use of
+	r12.  If possible, emit first -fsplit-stack arg pointer insn
+	before stack adjust.  Don't use r12 to save cr if split-stack.
+
+2015-05-20  Alan Modra  <amodra@gmail.com>
+
 	* common/config/rs6000/rs6000-common.c (TARGET_SUPPORTS_SPLIT_STACK):
 	Define.
 	(rs6000_supports_split_stack): New function.

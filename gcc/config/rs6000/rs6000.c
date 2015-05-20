@@ -22607,7 +22607,7 @@ rs6000_emit_stack_tie (rtx fp, bool hard_frame_needed)
    If COPY_REG, make sure a copy of the old frame is left there.
    The generated code may use hard register 0 as a temporary.  */
 
-static void
+static rtx_insn *
 rs6000_emit_allocate_stack (HOST_WIDE_INT size, rtx copy_reg, int copy_off)
 {
   rtx_insn *insn;
@@ -22620,7 +22620,7 @@ rs6000_emit_allocate_stack (HOST_WIDE_INT size, rtx copy_reg, int copy_off)
     {
       warning (0, "stack frame too large");
       emit_insn (gen_trap ());
-      return;
+      return 0;
     }
 
   if (crtl->limit_stack)
@@ -22671,9 +22671,9 @@ rs6000_emit_allocate_stack (HOST_WIDE_INT size, rtx copy_reg, int copy_off)
   
   insn = emit_insn (TARGET_32BIT
 		    ? gen_movsi_update_stack (stack_reg, stack_reg,
-					todec, stack_reg)
+					      todec, stack_reg)
 		    : gen_movdi_di_update_stack (stack_reg, stack_reg,
-					   todec, stack_reg));
+						 todec, stack_reg));
   /* Since we didn't use gen_frame_mem to generate the MEM, grab
      it now and set the alias set/attributes. The above gen_*_update
      calls will generate a PARALLEL with the MEM set being the first
@@ -22691,6 +22691,7 @@ rs6000_emit_allocate_stack (HOST_WIDE_INT size, rtx copy_reg, int copy_off)
   add_reg_note (insn, REG_FRAME_RELATED_EXPR,
 		gen_rtx_SET (stack_reg, gen_rtx_PLUS (Pmode, stack_reg,
 						      GEN_INT (-size))));
+  return insn;
 }
 
 #define PROBE_INTERVAL (1 << STACK_CHECK_PROBE_INTERVAL_EXP)
@@ -23495,6 +23496,10 @@ rs6000_emit_prologue (void)
   /* Offset to top of frame for frame_reg and sp respectively.  */
   HOST_WIDE_INT frame_off = 0;
   HOST_WIDE_INT sp_off = 0;
+  /* sp_adjust is the stack adjusting instruction, tracked so that the
+     insn setting up the split-stack arg pointer can be emitted just
+     prior to it, when r12 is not used here for other purposes.  */
+  rtx_insn *sp_adjust = 0;
 
 #ifdef ENABLE_CHECKING
   /* Track and check usage of r0, r11, r12.  */
@@ -23713,7 +23718,10 @@ rs6000_emit_prologue (void)
 	    ptr_off = info->altivec_save_offset + info->altivec_size;
 	  frame_off = -ptr_off;
 	}
-      rs6000_emit_allocate_stack (info->total_size, ptr_reg, ptr_off);
+      sp_adjust = rs6000_emit_allocate_stack (info->total_size,
+					      ptr_reg, ptr_off);
+      if (REGNO (frame_reg_rtx) == 12)
+	sp_adjust = 0;
       sp_off = info->total_size;
       if (frame_reg_rtx != sp_reg_rtx)
 	rs6000_emit_stack_tie (frame_reg_rtx, false);
@@ -23754,7 +23762,8 @@ rs6000_emit_prologue (void)
   if (!WORLD_SAVE_P (info)
       && info->cr_save_p
       && REGNO (frame_reg_rtx) != cr_save_regno
-      && !(using_static_chain_p && cr_save_regno == 11))
+      && !(using_static_chain_p && cr_save_regno == 11)
+      && !(flag_split_stack && cr_save_regno == 12 && sp_adjust))
     {
       cr_save_rtx = gen_rtx_REG (SImode, cr_save_regno);
       START_USE (cr_save_regno);
@@ -23900,6 +23909,8 @@ rs6000_emit_prologue (void)
       int end_save = info->gp_save_offset + info->gp_size;
       int ptr_off;
 
+      if (ptr_regno == 12)
+	sp_adjust = 0;
       if (!ptr_set_up)
 	ptr_reg = gen_rtx_REG (Pmode, ptr_regno);
 
@@ -24218,7 +24229,10 @@ rs6000_emit_prologue (void)
 	}
       else if (REGNO (frame_reg_rtx) == 1)
 	frame_off = info->total_size;
-      rs6000_emit_allocate_stack (info->total_size, ptr_reg, ptr_off);
+      sp_adjust = rs6000_emit_allocate_stack (info->total_size,
+					      ptr_reg, ptr_off);
+      if (REGNO (frame_reg_rtx) == 12)
+	sp_adjust = 0;
       sp_off = info->total_size;
       if (frame_reg_rtx != sp_reg_rtx)
 	rs6000_emit_stack_tie (frame_reg_rtx, false);
@@ -24248,6 +24262,8 @@ rs6000_emit_prologue (void)
 
       gcc_checking_assert (scratch_regno == 11 || scratch_regno == 12);
       NOT_INUSE (0);
+      if (scratch_regno == 12)
+	sp_adjust = 0;
       if (end_save + frame_off != 0)
 	{
 	  rtx offset = GEN_INT (end_save + frame_off);
@@ -24325,7 +24341,7 @@ rs6000_emit_prologue (void)
       if ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
 	  && !using_static_chain_p)
 	save_regno = 11;
-      else if (REGNO (frame_reg_rtx) == 12)
+      else if (flag_split_stack || REGNO (frame_reg_rtx) == 12)
 	{
 	  save_regno = 11;
 	  if (using_static_chain_p)
@@ -24371,6 +24387,7 @@ rs6000_emit_prologue (void)
 	  rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
 	  rtx tmp = gen_rtx_REG (Pmode, 12);
 
+	  sp_adjust = 0;
 	  insn = emit_move_insn (tmp, lr);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 
@@ -24433,7 +24450,13 @@ rs6000_emit_prologue (void)
 	 __morestack was called, it left the arg pointer to the old
 	 stack in r29.  Otherwise, the arg pointer is the top of the
 	 current frame.  */
-      if (frame_off != 0 || REGNO (frame_reg_rtx) != 12)
+      if (sp_adjust)
+	{
+	  rtx r12 = gen_rtx_REG (Pmode, 12);
+	  rtx set_r12 = gen_rtx_SET (r12, sp_reg_rtx);
+	  emit_insn_before (set_r12, sp_adjust);
+	}
+      else if (frame_off != 0 || REGNO (frame_reg_rtx) != 12)
 	{
 	  rtx r12 = gen_rtx_REG (Pmode, 12);
 	  if (frame_off == 0)
