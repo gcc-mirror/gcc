@@ -399,18 +399,6 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
       typedef __false_type __type;
     };
 
-#if __cplusplus >= 201103L
-  template<typename _Iterator>
-    class move_iterator;
-
-  template<typename _Iterator>
-    struct __is_move_iterator< move_iterator<_Iterator> >
-    {
-      enum { __value = 1 };
-      typedef __true_type __type;
-    };
-#endif
-
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

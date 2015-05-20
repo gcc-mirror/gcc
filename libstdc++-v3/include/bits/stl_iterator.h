@@ -414,6 +414,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __niter_base(reverse_iterator<_Iterator> __it)
     -> decltype(__make_reverse_iterator(__niter_base(__it.base())))
     { return __make_reverse_iterator(__niter_base(__it.base())); }
+
+  template<typename _Iterator>
+    struct __is_move_iterator<reverse_iterator<_Iterator> >
+      : __is_move_iterator<_Iterator>
+    { };
+
+  template<typename _Iterator>
+    auto
+    __miter_base(reverse_iterator<_Iterator> __it)
+    -> decltype(__make_reverse_iterator(__miter_base(__it.base())))
+    { return __make_reverse_iterator(__miter_base(__it.base())); }
 #endif
 
   // 24.4.2.2.1 back_insert_iterator
@@ -1210,6 +1221,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __niter_base(move_iterator<_Iterator> __it)
     -> decltype(make_move_iterator(__niter_base(__it.base())))
     { return make_move_iterator(__niter_base(__it.base())); }
+
+  template<typename _Iterator>
+    struct __is_move_iterator<move_iterator<_Iterator> >
+    {
+      enum { __value = 1 };
+      typedef __true_type __type;
+    };
+
+  template<typename _Iterator>
+    auto
+    __miter_base(move_iterator<_Iterator> __it)
+    -> decltype(__miter_base(__it.base()))
+    { return __miter_base(__it.base()); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
