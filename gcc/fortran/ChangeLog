@@ -1,3 +1,13 @@
+2015-05-20  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/65548
+	* trans-stmt.c (gfc_trans_allocate): Always retrieve the
+	descriptor or a reference to a source= expression for
+	arrays and non-arrays, respectively.  Use a temporary
+	symbol and gfc_trans_assignment for all source=
+	assignments to allocated objects besides for class and
+	derived types.
+
 2015-05-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/66199
