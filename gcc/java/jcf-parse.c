@@ -374,7 +374,7 @@ set_source_filename (JCF *jcf, int index)
     }
       
   sfname = find_sourcefile (sfname);
-  ORDINARY_MAP_FILE_NAME (LINEMAPS_LAST_ORDINARY_MAP (line_table)) = sfname;
+  LINEMAPS_LAST_ORDINARY_MAP (line_table)->to_file = sfname;
   if (current_class == main_class) main_input_filename = sfname;
 }
 

@@ -381,31 +381,30 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
 	}
     }
 
-  ORDINARY_MAP_IN_SYSTEM_HEADER_P (map) = sysp;
-  MAP_START_LOCATION (map) = start_location;
-  ORDINARY_MAP_FILE_NAME (map) = to_file;
-  ORDINARY_MAP_STARTING_LINE_NUMBER (map) = to_line;
+  map->sysp = sysp;
+  map->start_location = start_location;
+  map->to_file = to_file;
+  map->to_line = to_line;
   LINEMAPS_ORDINARY_CACHE (set) = LINEMAPS_ORDINARY_USED (set) - 1;
-  SET_ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map, 0);
+  map->column_bits = 0;
   set->highest_location = start_location;
   set->highest_line = start_location;
   set->max_column_hint = 0;
 
   if (reason == LC_ENTER)
     {
-      ORDINARY_MAP_INCLUDER_FILE_INDEX (map) = 
+      map->included_from =
 	set->depth == 0 ? -1 : (int) (LINEMAPS_ORDINARY_USED (set) - 2);
       set->depth++;
       if (set->trace_includes)
 	trace_include (set, map);
     }
   else if (reason == LC_RENAME)
-    ORDINARY_MAP_INCLUDER_FILE_INDEX (map) =
-      ORDINARY_MAP_INCLUDER_FILE_INDEX (&map[-1]);
+    map->included_from = ORDINARY_MAP_INCLUDER_FILE_INDEX (&map[-1]);
   else if (reason == LC_LEAVE)
     {
       set->depth--;
-      ORDINARY_MAP_INCLUDER_FILE_INDEX (map) =
+      map->included_from =
 	ORDINARY_MAP_INCLUDER_FILE_INDEX (INCLUDED_FROM (set, map - 1));
     }
 
@@ -464,14 +463,14 @@ linemap_enter_macro (struct line_maps *set, struct cpp_hashnode *macro_node,
 
   map = linemap_check_macro (new_linemap (set, LC_ENTER_MACRO));
 
-  MAP_START_LOCATION (map) = start_location;
-  MACRO_MAP_MACRO (map) = macro_node;
-  MACRO_MAP_NUM_MACRO_TOKENS (map) = num_tokens;
-  MACRO_MAP_LOCATIONS (map)
+  map->start_location = start_location;
+  map->macro = macro_node;
+  map->n_tokens = num_tokens;
+  map->macro_locations
     = (source_location*) reallocator (NULL,
 				      2 * num_tokens
 				      * sizeof (source_location));
-  MACRO_MAP_EXPANSION_POINT_LOCATION (map) = expansion;
+  map->expansion = expansion;
   memset (MACRO_MAP_LOCATIONS (map), 0,
 	  num_tokens * sizeof (source_location));
 
@@ -580,7 +579,7 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
 				ORDINARY_MAP_IN_SYSTEM_HEADER_P (map),
 				ORDINARY_MAP_FILE_NAME (map),
 				to_line)));
-      SET_ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map, column_bits);
+      map->column_bits = column_bits;
       r = (MAP_START_LOCATION (map)
 	   + ((to_line - ORDINARY_MAP_STARTING_LINE_NUMBER (map))
 	      << column_bits));
