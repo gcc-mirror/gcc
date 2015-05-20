@@ -1,3 +1,12 @@
+2015-05-20  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_stack_info): Don't zero offsets
+	when not saving registers.
+	(debug_stack_info): Adjust to omit printing unused offsets,
+	as before.
+	(rs6000_emit_epilogue): Adjust use_backchain_to_restore_sp
+	expression.
+
 2015-05-19  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	PR c++/65835
