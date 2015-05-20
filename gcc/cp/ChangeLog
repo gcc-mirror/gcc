@@ -1,5 +1,8 @@
 2015-05-20  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (tsubst_decl) [VAR_DECL]: SET_DECL_IMPLICIT_INSTANTIATION
+	before register_specialization.
+
 	* decl.c (grok_op_properties): Don't complain about size_t
 	placement delete here.
 	* call.c (second_parm_is_size_t): Split out from...
