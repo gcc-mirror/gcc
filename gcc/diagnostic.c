@@ -420,7 +420,8 @@ diagnostic_print_caret_line (diagnostic_context * context,
   int caret_min = cmin == xloc1.column ? caret1 : caret2;
   int caret_max = cmin == xloc1.column ? caret2 : caret1;
 
-  pp_space (context->printer);
+  /* cmin is >= 1, but we indent with an extra space at the start like
+     we did above.  */
   int i;
   for (i = 0; i < cmin; i++)
     pp_space (context->printer);

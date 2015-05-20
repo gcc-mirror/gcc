@@ -1,3 +1,8 @@
+2015-05-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* diagnostic.c (diagnostic_print_caret_line): Fix off-by-one error
+	when printing the caret character.
+
 2015-05-20  Marek Polacek  <polacek@redhat.com>
 
 	* cfgexpand.c (expand_debug_expr): Use UNARY_CLASS_P.
