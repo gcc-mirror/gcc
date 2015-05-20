@@ -1,3 +1,8 @@
+2015-05-20  Marek Polacek  <polacek@redhat.com>
+
+	* c-pragma.c: Use VAR_OR_FUNCTION_DECL_P throughout.
+	* c-common.c: Likewise.
+
 2015-05-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.h (fe_file_change): Strengthen param from

@@ -306,7 +306,7 @@ maybe_apply_pragma_weak (tree decl)
   /* If it's not a function or a variable, it can't be weak.
      FIXME: what kinds of things are visible outside this file but
      aren't functions or variables?   Should this be an assert instead?  */
-  if (TREE_CODE (decl) != FUNCTION_DECL && TREE_CODE (decl) != VAR_DECL)
+  if (!VAR_OR_FUNCTION_DECL_P (decl))
     return;
 
   if (DECL_ASSEMBLER_NAME_SET_P (decl))
@@ -486,8 +486,7 @@ handle_pragma_redefine_extname (cpp_reader * ARG_UNUSED (dummy))
 	}
 
       if ((TREE_PUBLIC (decl) || DECL_EXTERNAL (decl))
-	  && (TREE_CODE (decl) == FUNCTION_DECL
-	      || TREE_CODE (decl) == VAR_DECL))
+	  && VAR_OR_FUNCTION_DECL_P (decl))
 	{
 	  found = true;
 	  if (DECL_ASSEMBLER_NAME_SET_P (decl))
@@ -547,7 +546,7 @@ maybe_apply_renaming_pragma (tree decl, tree asmname)
 
   /* The renaming pragmas are only applied to declarations with
      external linkage.  */
-  if ((TREE_CODE (decl) != FUNCTION_DECL && TREE_CODE (decl) != VAR_DECL)
+  if (!VAR_OR_FUNCTION_DECL_P (decl)
       || (!TREE_PUBLIC (decl) && !DECL_EXTERNAL (decl))
       || !has_c_linkage (decl))
     return asmname;

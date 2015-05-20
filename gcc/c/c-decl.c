@@ -2735,8 +2735,7 @@ duplicate_decls (tree newdecl, tree olddecl)
      structure is shared in between NEWDECL and OLDECL.  */
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     DECL_STRUCT_FUNCTION (newdecl) = NULL;
-  if (TREE_CODE (newdecl) == FUNCTION_DECL
-      || TREE_CODE (newdecl) == VAR_DECL)
+  if (VAR_OR_FUNCTION_DECL_P (newdecl))
     {
       struct symtab_node *snode = symtab_node::get (newdecl);
       if (snode)
@@ -2835,7 +2834,7 @@ pushdecl (tree x)
      DECL_FILE_SCOPE_P won't work.  Local externs don't count
      unless they have initializers (which generate code).  */
   if (current_function_decl
-      && ((TREE_CODE (x) != FUNCTION_DECL && TREE_CODE (x) != VAR_DECL)
+      && (!VAR_OR_FUNCTION_DECL_P (x)
 	  || DECL_INITIAL (x) || !DECL_EXTERNAL (x)))
     DECL_CONTEXT (x) = current_function_decl;
 
@@ -2926,8 +2925,7 @@ pushdecl (tree x)
       tree visdecl = 0;
       bool type_saved = false;
       if (b && !B_IN_EXTERNAL_SCOPE (b)
-	  && (TREE_CODE (b->decl) == FUNCTION_DECL
-	      || TREE_CODE (b->decl) == VAR_DECL)
+	  && VAR_OR_FUNCTION_DECL_P (b->decl)
 	  && DECL_FILE_SCOPE_P (b->decl))
 	{
 	  visdecl = b->decl;
@@ -4613,9 +4611,8 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
     record_inline_static (input_location, current_function_decl,
 			  decl, csi_modifiable);
 
-  if (c_dialect_objc () 
-      && (TREE_CODE (decl) == VAR_DECL
-          || TREE_CODE (decl) == FUNCTION_DECL))
+  if (c_dialect_objc ()
+      && VAR_OR_FUNCTION_DECL_P (decl))
       objc_check_global_decl (decl);
 
   /* Add this decl to the current scope.
@@ -4670,14 +4667,14 @@ diagnose_uninitialized_cst_member (tree decl, tree type)
 
 void
 finish_decl (tree decl, location_t init_loc, tree init,
-    	     tree origtype, tree asmspec_tree)
+	     tree origtype, tree asmspec_tree)
 {
   tree type;
   bool was_incomplete = (DECL_SIZE (decl) == 0);
   const char *asmspec = 0;
 
   /* If a name was specified, get the string.  */
-  if ((TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
+  if (VAR_OR_FUNCTION_DECL_P (decl)
       && DECL_FILE_SCOPE_P (decl))
     asmspec_tree = maybe_apply_renaming_pragma (decl, asmspec_tree);
   if (asmspec_tree)
@@ -4701,8 +4698,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
   if (init)
     store_init_value (init_loc, decl, init, origtype);
 
-  if (c_dialect_objc () && (TREE_CODE (decl) == VAR_DECL
-			    || TREE_CODE (decl) == FUNCTION_DECL
+  if (c_dialect_objc () && (VAR_OR_FUNCTION_DECL_P (decl)
 			    || TREE_CODE (decl) == FIELD_DECL))
     objc_check_decl (decl);
 
@@ -4841,7 +4837,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
      unless the type is an undefined structure or union.
      If not, it will get done when the type is completed.  */
 
-  if (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == FUNCTION_DECL)
+  if (VAR_OR_FUNCTION_DECL_P (decl))
     {
       /* Determine the ELF visibility.  */
       if (TREE_PUBLIC (decl))

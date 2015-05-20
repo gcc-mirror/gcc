@@ -2672,9 +2672,8 @@ build_external_ref (location_t loc, tree id, int fun, tree *type)
     }
   else if (current_function_decl != 0
 	   && !DECL_FILE_SCOPE_P (current_function_decl)
-	   && (TREE_CODE (ref) == VAR_DECL
-	       || TREE_CODE (ref) == PARM_DECL
-	       || TREE_CODE (ref) == FUNCTION_DECL))
+	   && (VAR_OR_FUNCTION_DECL_P (ref)
+	       || TREE_CODE (ref) == PARM_DECL))
     {
       tree context = decl_function_context (ref);
 
