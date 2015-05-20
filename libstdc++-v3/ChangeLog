@@ -1,3 +1,14 @@
+2015-05-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/cpp_type_traits.h
+	(std::move_iterator): Delete declaration.
+	(std::__is_move_iterator<move_iterator>): Move partial specialization...
+	* include/bits/stl_iterator.h: ... here.
+	(std::__miter_base): Overloads for std::reverse_iterator and
+	std::move_iterator.
+	* include/bits/stl_algobase.h (std::__miter_base): Provide default
+	implementation.
+
 2015-05-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/util/testsuite_fs.h (nonexistent_path): Don't use tempnam.
