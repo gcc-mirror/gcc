@@ -2159,9 +2159,16 @@ mark_threaded_blocks (bitmap threaded_blocks)
         {
 	  /* Attach the path to the starting edge if none is yet recorded.  */
           if ((*path)[0]->e->aux == NULL)
-            (*path)[0]->e->aux = path;
-	  else if (dump_file && (dump_flags & TDF_DETAILS))
-	    dump_jump_thread_path (dump_file, *path, false);
+	    {
+              (*path)[0]->e->aux = path;
+	    }
+	  else
+	    {
+	      paths.unordered_remove (i);
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+	        dump_jump_thread_path (dump_file, *path, false);
+	      delete_jump_thread_path (path);
+	    }
         }
     }
   /* Second, look for paths that have any other jump thread attached to
@@ -2185,8 +2192,10 @@ mark_threaded_blocks (bitmap threaded_blocks)
 	  else
 	    {
 	      e->aux = NULL;
+	      paths.unordered_remove (i);
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 	        dump_jump_thread_path (dump_file, *path, false);
+	      delete_jump_thread_path (path);
 	    }
 	}
     }

@@ -1,3 +1,9 @@
+2015-05-20  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c (mark_threaded_blocks): Properly
+	dispose of the jump thread path when the jump threading
+	opportunity is cancelled.
+
 2015-05-20  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* diagnostic.c (diagnostic_print_caret_line): Fix off-by-one error
