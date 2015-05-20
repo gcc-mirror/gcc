@@ -226,6 +226,7 @@ struct cost_pair
 struct iv_use
 {
   unsigned id;		/* The id of the use.  */
+  unsigned sub_id;	/* The id of the sub use.  */
   enum use_type type;	/* Type of the use.  */
   struct iv *iv;	/* The induction variable it is based on.  */
   gimple stmt;		/* Statement in that it occurs.  */
@@ -239,6 +240,11 @@ struct iv_use
 
   struct iv_cand *selected;
 			/* The selected candidate.  */
+
+  struct iv_use *next;	/* The next sub use.  */
+  tree addr_base;	/* Base address with const offset stripped.  */
+  unsigned HOST_WIDE_INT addr_offset;
+			/* Const offset stripped from base address.  */
 };
 
 /* The position where the iv is computed.  */
@@ -556,7 +562,11 @@ dump_iv (FILE *file, struct iv *iv)
 void
 dump_use (FILE *file, struct iv_use *use)
 {
-  fprintf (file, "use %d\n", use->id);
+  fprintf (file, "use %d", use->id);
+  if (use->sub_id)
+    fprintf (file, ".%d", use->sub_id);
+
+  fprintf (file, "\n");
 
   switch (use->type)
     {
@@ -605,8 +615,12 @@ dump_uses (FILE *file, struct ivopts_data *data)
   for (i = 0; i < n_iv_uses (data); i++)
     {
       use = iv_use (data, i);
-
-      dump_use (file, use);
+      do
+	{
+	  dump_use (file, use);
+	  use = use->next;
+	}
+      while (use);
       fprintf (file, "\n");
     }
 }
@@ -1327,29 +1341,84 @@ find_induction_variables (struct ivopts_data *data)
   return true;
 }
 
-/* Records a use of type USE_TYPE at *USE_P in STMT whose value is IV.  */
+/* Records a use of type USE_TYPE at *USE_P in STMT whose value is IV.
+   For address type use, ADDR_BASE is the stripped IV base, ADDR_OFFSET
+   is the const offset stripped from IV base.  For uses of other types,
+   ADDR_BASE and ADDR_OFFSET are zero by default.  */
 
 static struct iv_use *
 record_use (struct ivopts_data *data, tree *use_p, struct iv *iv,
-	    gimple stmt, enum use_type use_type)
+	    gimple stmt, enum use_type use_type, tree addr_base = NULL,
+	    unsigned HOST_WIDE_INT addr_offset = 0)
 {
   struct iv_use *use = XCNEW (struct iv_use);
 
   use->id = n_iv_uses (data);
+  use->sub_id = 0;
   use->type = use_type;
   use->iv = iv;
   use->stmt = stmt;
   use->op_p = use_p;
   use->related_cands = BITMAP_ALLOC (NULL);
+  use->next = NULL;
+  use->addr_base = addr_base;
+  use->addr_offset = addr_offset;
 
   /* To avoid showing ssa name in the dumps, if it was not reset by the
      caller.  */
   iv->ssa_name = NULL_TREE;
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    dump_use (dump_file, use);
-
   data->iv_uses.safe_push (use);
+
+  return use;
+}
+
+/* Records a sub use of type USE_TYPE at *USE_P in STMT whose value is IV.
+   The sub use is recorded under the one whose use id is ID_GROUP.  */
+
+static struct iv_use *
+record_sub_use (struct ivopts_data *data, tree *use_p,
+		    struct iv *iv, gimple stmt, enum use_type use_type,
+		    tree addr_base, unsigned HOST_WIDE_INT addr_offset,
+		    unsigned int id_group)
+{
+  struct iv_use *use = XCNEW (struct iv_use);
+  struct iv_use *group = iv_use (data, id_group);
+
+  use->id = group->id;
+  use->sub_id = 0;
+  use->type = use_type;
+  use->iv = iv;
+  use->stmt = stmt;
+  use->op_p = use_p;
+  use->related_cands = NULL;
+  use->addr_base = addr_base;
+  use->addr_offset = addr_offset;
+
+  /* Sub use list is maintained in offset ascending order.  */
+  if (addr_offset <= group->addr_offset)
+    {
+      use->related_cands = group->related_cands;
+      group->related_cands = NULL;
+      use->next = group;
+      data->iv_uses[id_group] = use;
+    }
+  else
+    {
+      struct iv_use *pre;
+      do
+	{
+	  pre = group;
+	  group = group->next;
+	}
+      while (group && addr_offset > group->addr_offset);
+      use->next = pre->next;
+      pre->next = use;
+    }
+
+  /* To avoid showing ssa name in the dumps, if it was not reset by the
+     caller.  */
+  iv->ssa_name = NULL_TREE;
 
   return use;
 }
@@ -1838,6 +1907,50 @@ may_be_nonaddressable_p (tree expr)
   return false;
 }
 
+static tree
+strip_offset (tree expr, unsigned HOST_WIDE_INT *offset);
+
+/* Record a use of type USE_TYPE at *USE_P in STMT whose value is IV.
+   If there is an existing use which has same stripped iv base and step,
+   this function records this one as a sub use to that; otherwise records
+   it as a normal one.  */
+
+static struct iv_use *
+record_group_use (struct ivopts_data *data, tree *use_p,
+		  struct iv *iv, gimple stmt, enum use_type use_type)
+{
+  unsigned int i;
+  struct iv_use *use;
+  tree addr_base;
+  unsigned HOST_WIDE_INT addr_offset;
+
+  /* Only support sub use for address type uses, that is, with base
+     object.  */
+  if (!iv->base_object)
+    return record_use (data, use_p, iv, stmt, use_type);
+
+  addr_base = strip_offset (iv->base, &addr_offset);
+  for (i = 0; i < n_iv_uses (data); i++)
+    {
+      use = iv_use (data, i);
+      if (use->type != USE_ADDRESS || !use->iv->base_object)
+	continue;
+
+      /* Check if it has the same stripped base and step.  */
+      if (operand_equal_p (iv->base_object, use->iv->base_object, 0)
+	  && operand_equal_p (iv->step, use->iv->step, 0)
+	  && operand_equal_p (addr_base, use->addr_base, 0))
+	break;
+    }
+
+  if (i == n_iv_uses (data))
+    return record_use (data, use_p, iv, stmt,
+		       use_type, addr_base, addr_offset);
+  else
+    return record_sub_use (data, use_p, iv, stmt,
+			   use_type, addr_base, addr_offset, i);
+}
+
 /* Finds addresses in *OP_P inside STMT.  */
 
 static void
@@ -1948,7 +2061,7 @@ find_interesting_uses_address (struct ivopts_data *data, gimple stmt, tree *op_p
     }
 
   civ = alloc_iv (base, step);
-  record_use (data, op_p, civ, stmt, USE_ADDRESS);
+  record_group_use (data, op_p, civ, stmt, USE_ADDRESS);
   return;
 
 fail:
@@ -2132,6 +2245,172 @@ find_interesting_uses (struct ivopts_data *data)
     }
 
   free (body);
+}
+
+/* Compute maximum offset of [base + offset] addressing mode
+   for memory reference represented by USE.  */
+
+static HOST_WIDE_INT
+compute_max_addr_offset (struct iv_use *use)
+{
+  int width;
+  rtx reg, addr;
+  HOST_WIDE_INT i, off;
+  unsigned list_index, num;
+  addr_space_t as;
+  machine_mode mem_mode, addr_mode;
+  static vec<HOST_WIDE_INT> max_offset_list;
+
+  as = TYPE_ADDR_SPACE (TREE_TYPE (use->iv->base));
+  mem_mode = TYPE_MODE (TREE_TYPE (*use->op_p));
+
+  num = max_offset_list.length ();
+  list_index = (unsigned) as * MAX_MACHINE_MODE + (unsigned) mem_mode;
+  if (list_index >= num)
+    {
+      max_offset_list.safe_grow (list_index + MAX_MACHINE_MODE);
+      for (; num < max_offset_list.length (); num++)
+	max_offset_list[num] = -1;
+    }
+
+  off = max_offset_list[list_index];
+  if (off != -1)
+    return off;
+
+  addr_mode = targetm.addr_space.address_mode (as);
+  reg = gen_raw_REG (addr_mode, LAST_VIRTUAL_REGISTER + 1);
+  addr = gen_rtx_fmt_ee (PLUS, addr_mode, reg, NULL_RTX);
+
+  width = GET_MODE_BITSIZE (addr_mode) - 1;
+  if (width > (HOST_BITS_PER_WIDE_INT - 1))
+    width = HOST_BITS_PER_WIDE_INT - 1;
+
+  for (i = width; i > 0; i--)
+    {
+      off = ((unsigned HOST_WIDE_INT) 1 << i) - 1;
+      XEXP (addr, 1) = gen_int_mode (off, addr_mode);
+      if (memory_address_addr_space_p (mem_mode, addr, as))
+	break;
+
+      /* For some strict-alignment targets, the offset must be naturally
+	 aligned.  Try an aligned offset if mem_mode is not QImode.  */
+      off = ((unsigned HOST_WIDE_INT) 1 << i);
+      if (off > GET_MODE_SIZE (mem_mode) && mem_mode != QImode)
+	{
+	  off -= GET_MODE_SIZE (mem_mode);
+	  XEXP (addr, 1) = gen_int_mode (off, addr_mode);
+	  if (memory_address_addr_space_p (mem_mode, addr, as))
+	    break;
+	}
+    }
+  if (i == 0)
+    off = 0;
+
+  max_offset_list[list_index] = off;
+  return off;
+}
+
+/* Check if all small groups should be split.  Return true if and
+   only if:
+
+     1) At least one groups contain two uses with different offsets.
+     2) No group contains more than two uses with different offsets.
+
+   Return false otherwise.  We want to split such groups because:
+
+     1) Small groups don't have much benefit and may interfer with
+	general candidate selection.
+     2) Size for problem with only small groups is usually small and
+	general algorithm can handle it well.
+
+   TODO -- Above claim may not hold when auto increment is supported.  */
+
+static bool
+split_all_small_groups (struct ivopts_data *data)
+{
+  bool split_p = false;
+  unsigned int i, n, distinct;
+  struct iv_use *pre, *use;
+
+  n = n_iv_uses (data);
+  for (i = 0; i < n; i++)
+    {
+      use = iv_use (data, i);
+      if (!use->next)
+	continue;
+
+      distinct = 1;
+      gcc_assert (use->type == USE_ADDRESS);
+      for (pre = use, use = use->next; use; pre = use, use = use->next)
+	{
+	  if (pre->addr_offset != use->addr_offset)
+	    distinct++;
+
+	  if (distinct > 2)
+	    return false;
+	}
+      if (distinct == 2)
+	split_p = true;
+    }
+
+  return split_p;
+}
+
+/* For each group of address type uses, this function further groups
+   these uses according to the maximum offset supported by target's
+   [base + offset] addressing mode.  */
+
+static void
+group_address_uses (struct ivopts_data *data)
+{
+  HOST_WIDE_INT max_offset = -1;
+  unsigned int i, n, sub_id;
+  struct iv_use *pre, *use;
+  unsigned HOST_WIDE_INT addr_offset_first;
+
+  /* Reset max offset to split all small groups.  */
+  if (split_all_small_groups (data))
+    max_offset = 0;
+
+  n = n_iv_uses (data);
+  for (i = 0; i < n; i++)
+    {
+      use = iv_use (data, i);
+      if (!use->next)
+	continue;
+
+      gcc_assert (use->type == USE_ADDRESS);
+      if (max_offset != 0)
+	max_offset = compute_max_addr_offset (use);
+
+      while (use)
+	{
+	  sub_id = 0;
+	  addr_offset_first = use->addr_offset;
+	  /* Only uses with offset that can fit in offset part against
+	     the first use can be grouped together.  */
+	  for (pre = use, use = use->next;
+	       use && (use->addr_offset - addr_offset_first
+		       <= (unsigned HOST_WIDE_INT) max_offset);
+	       pre = use, use = use->next)
+	    {
+	      use->id = pre->id;
+	      use->sub_id = ++sub_id;
+	    }
+
+	  /* Break the list and create new group.  */
+	  if (use)
+	    {
+	      pre->next = NULL;
+	      use->id = n_iv_uses (data);
+	      use->related_cands = BITMAP_ALLOC (NULL);
+	      data->iv_uses.safe_push (use);
+	    }
+	}
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    dump_uses (dump_file, data);
 }
 
 /* Strips constant offsets from EXPR and stores them to OFFSET.  If INSIDE_ADDR
@@ -2557,6 +2836,8 @@ static void
 add_candidate (struct ivopts_data *data,
 	       tree base, tree step, bool important, struct iv_use *use)
 {
+  gcc_assert (use == NULL || use->sub_id == 0);
+
   if (ip_normal_pos (data->current_loop))
     add_candidate_1 (data, base, step, important, IP_NORMAL, use, NULL);
   if (ip_end_pos (data->current_loop)
@@ -2786,11 +3067,22 @@ new_cost (unsigned runtime, unsigned complexity)
   return cost;
 }
 
+/* Returns true if COST is infinite.  */
+
+static bool
+infinite_cost_p (comp_cost cost)
+{
+  return cost.cost == INFTY;
+}
+
 /* Adds costs COST1 and COST2.  */
 
 static comp_cost
 add_costs (comp_cost cost1, comp_cost cost2)
 {
+  if (infinite_cost_p (cost1) || infinite_cost_p (cost2))
+    return infinite_cost;
+
   cost1.cost += cost2.cost;
   cost1.complexity += cost2.complexity;
 
@@ -2817,14 +3109,6 @@ compare_costs (comp_cost cost1, comp_cost cost2)
     return cost1.complexity - cost2.complexity;
 
   return cost1.cost - cost2.cost;
-}
-
-/* Returns true if COST is infinite.  */
-
-static bool
-infinite_cost_p (comp_cost cost)
-{
-  return cost.cost == INFTY;
 }
 
 /* Sets cost of (USE, CANDIDATE) pair to COST and record that it depends
@@ -4301,7 +4585,15 @@ get_computation_cost_at (struct ivopts_data *data,
       cost.cost += add_cost (data->speed, TYPE_MODE (ctype));
     }
 
-  if (inv_expr_id)
+  /* Set of invariants depended on by sub use has already been computed
+     for the first use in the group.  */
+  if (use->sub_id)
+    {
+      cost.cost = 0;
+      if (depends_on && *depends_on)
+	bitmap_clear (*depends_on);
+    }
+  else if (inv_expr_id)
     {
       *inv_expr_id =
           get_loop_invariant_expr_id (data, ubase, cbase, ratio, address_p);
@@ -4430,6 +4722,8 @@ determine_use_iv_cost_address (struct ivopts_data *data,
   bitmap depends_on;
   bool can_autoinc;
   int inv_expr_id = -1;
+  struct iv_use *sub_use;
+  comp_cost sub_cost;
   comp_cost cost = get_computation_cost (data, use, cand, true, &depends_on,
 					 &can_autoinc, &inv_expr_id);
 
@@ -4443,6 +4737,15 @@ determine_use_iv_cost_address (struct ivopts_data *data,
       else if (cand->pos == IP_AFTER_USE || cand->pos == IP_BEFORE_USE)
 	cost = infinite_cost;
     }
+  for (sub_use = use->next;
+       sub_use && !infinite_cost_p (cost);
+       sub_use = sub_use->next)
+    {
+       sub_cost = get_computation_cost (data, sub_use, cand, true, &depends_on,
+					&can_autoinc, &inv_expr_id);
+       cost = add_costs (cost, sub_cost);
+    }
+
   set_use_iv_cost (data, use, cand, cost, depends_on, NULL_TREE, ERROR_MARK,
                    inv_expr_id);
 
@@ -6586,8 +6889,8 @@ adjust_iv_update_pos (struct iv_cand *cand, struct iv_use *use)
 /* Rewrites USE (address that is an iv) using candidate CAND.  */
 
 static void
-rewrite_use_address (struct ivopts_data *data,
-		     struct iv_use *use, struct iv_cand *cand)
+rewrite_use_address_1 (struct ivopts_data *data,
+		       struct iv_use *use, struct iv_cand *cand)
 {
   aff_tree aff;
   gimple_stmt_iterator bsi = gsi_for_stmt (use->stmt);
@@ -6620,6 +6923,28 @@ rewrite_use_address (struct ivopts_data *data,
 			iv, base_hint, data->speed);
   copy_ref_info (ref, *use->op_p);
   *use->op_p = ref;
+}
+
+/* Rewrites USE (address that is an iv) using candidate CAND.  If it's the
+   first use of a group, rewrites sub uses in the group too.  */
+
+static void
+rewrite_use_address (struct ivopts_data *data,
+		      struct iv_use *use, struct iv_cand *cand)
+{
+  struct iv_use *next;
+
+  gcc_assert (use->sub_id == 0);
+  rewrite_use_address_1 (data, use, cand);
+  update_stmt (use->stmt);
+
+  for (next = use->next; next != NULL; next = next->next)
+    {
+      rewrite_use_address_1 (data, next, cand);
+      update_stmt (next->stmt);
+    }
+
+  return;
 }
 
 /* Rewrites USE (the condition such that one of the arguments is an iv) using
@@ -6897,6 +7222,18 @@ free_loop_data (struct ivopts_data *data)
   for (i = 0; i < n_iv_uses (data); i++)
     {
       struct iv_use *use = iv_use (data, i);
+      struct iv_use *pre = use, *sub = use->next;
+
+      while (sub)
+	{
+	  gcc_assert (sub->related_cands == NULL);
+	  gcc_assert (sub->n_map_members == 0 && sub->cost_map == NULL);
+
+	  free (sub->iv);
+	  pre = sub;
+	  sub = sub->next;
+	  free (pre);
+	}
 
       free (use->iv);
       BITMAP_FREE (use->related_cands);
@@ -7023,6 +7360,7 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
 
   /* Finds interesting uses (item 1).  */
   find_interesting_uses (data);
+  group_address_uses (data);
   if (n_iv_uses (data) > MAX_CONSIDERED_USES)
     goto finish;
 

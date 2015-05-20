@@ -1,3 +1,25 @@
+2015-05-20  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/65447
+	* tree-ssa-loop-ivopts.c (struct iv_use): New fields.
+	(dump_use, dump_uses): Support to dump sub use.
+	(record_use): New parameters to support sub use.  Remove call to
+	dump_use.
+	(record_sub_use, record_group_use): New functions.
+	(compute_max_addr_offset, split_all_small_groups): New functions.
+	(group_address_uses, rewrite_use_address): New functions.
+	(strip_offset): New declaration.
+	(find_interesting_uses_address): Call record_group_use.
+	(add_candidate): New assertion.
+	(infinite_cost_p): Move definition forward.
+	(add_costs): Check INFTY cost and return immediately.
+	(get_computation_cost_at): Clear setup cost and dependent bitmap
+	for sub uses.
+	(determine_use_iv_cost_address): Compute cost for sub uses.
+	(rewrite_use_address_1): Rename from old rewrite_use_address.
+	(free_loop_data): Free sub uses.
+	(tree_ssa_iv_optimize_loop): Call group_address_uses.
+
 2015-05-20  Kugan Vivekanandarajah  <kuganv@linaro.org>
 	    Jim Wilson  <jim.wilson@linaro.org>
 
