@@ -1,3 +1,7 @@
+2015-05-19  Nathan sidwell  <nathan@acm.org>
+
+	* g++.dg/cpp0x/pr65954.C: New.
+
 2015-05-20  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* gcc.target/sh/pr64366.c: Remove -m4 -ml from dg-options.

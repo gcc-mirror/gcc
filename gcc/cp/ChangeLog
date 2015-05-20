@@ -1,3 +1,9 @@
+2015-05-19  Nathan sidwell  <nathan@acm.org>
+
+	PR c++/65954
+	* typeck.c (finish_class_member_access_expr): Diagnose failed
+	lookup of enum class member.
+
 2015-05-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/66199
