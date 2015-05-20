@@ -1,3 +1,21 @@
+2015-05-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (MAP_START_LOCATION): Eliminate the non-const
+	variant, and tweak comment for the const variant.
+	(ORDINARY_MAP_STARTING_LINE_NUMBER): Drop the non-const variant.
+	(ORDINARY_MAP_INCLUDER_FILE_INDEX): Likewise.
+	(ORDINARY_MAP_IN_SYSTEM_HEADER_P): Likewise.
+	(SET_ORDINARY_MAP_NUMBER_OF_COLUMN_BITS): Delete.
+	(ORDINARY_MAP_FILE_NAME): Drop the non-const variant.
+	(MACRO_MAP_MACRO): Likewise.
+	(MACRO_MAP_NUM_MACRO_TOKENS): Likewise.
+	(MACRO_MAP_LOCATIONS): Likewise.
+	(MACRO_MAP_EXPANSION_POINT_LOCATION): Likewise.
+	* line-map.c (linemap_add): Replace writes through macros with
+	direct field accesses.
+	(linemap_enter_macro): Likewise.
+	(linemap_line_start): Likewise.
+
 2015-05-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* directives.c (do_line): Strengthen local "map" from

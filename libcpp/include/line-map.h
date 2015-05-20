@@ -343,19 +343,10 @@ linemap_check_macro (const line_map *map)
   return (const line_map_macro *)map;
 }
 
-/* Read the start location of MAP, as an rvalue.  */
+/* Read the start location of MAP.  */
 
 inline source_location
 MAP_START_LOCATION (const line_map *map)
-{
-  return map->start_location;
-}
-
-/* Access the start location of MAP as a reference
-   (e.g. as an lvalue).  */
-
-inline source_location&
-MAP_START_LOCATION (line_map *map)
 {
   return map->start_location;
 }
@@ -364,15 +355,6 @@ MAP_START_LOCATION (line_map *map)
 
 inline linenum_type
 ORDINARY_MAP_STARTING_LINE_NUMBER (const line_map_ordinary *ord_map)
-{
-  return ord_map->to_line;
-}
-
-/* Access the starting line number of ordinary map MAP by
-   reference (e.g. as an lvalue).  */
-
-inline linenum_type&
-ORDINARY_MAP_STARTING_LINE_NUMBER (line_map_ordinary *ord_map)
 {
   return ord_map->to_line;
 }
@@ -388,14 +370,6 @@ ORDINARY_MAP_INCLUDER_FILE_INDEX (const line_map_ordinary *ord_map)
   return ord_map->included_from;
 }
 
-/* As above, but by reference (e.g. as an lvalue).  */
-
-inline int&
-ORDINARY_MAP_INCLUDER_FILE_INDEX (line_map_ordinary *ord_map)
-{
-  return ord_map->included_from;
-}
-
 /* Return a positive value if map encodes locations from a system
    header, 0 otherwise. Returns 1 if ordinary map MAP encodes locations
    in a system header and 2 if it encodes locations in a C system header
@@ -403,14 +377,6 @@ ORDINARY_MAP_INCLUDER_FILE_INDEX (line_map_ordinary *ord_map)
 
 inline unsigned char
 ORDINARY_MAP_IN_SYSTEM_HEADER_P (const line_map_ordinary *ord_map)
-{
-  return ord_map->sysp;
-}
-
-/* As above, but by reference (e.g. as an lvalue).  */
-
-inline unsigned char &
-ORDINARY_MAP_IN_SYSTEM_HEADER_P (line_map_ordinary *ord_map)
 {
   return ord_map->sysp;
 }
@@ -424,16 +390,6 @@ ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (const line_map_ordinary *ord_map)
   return ord_map->column_bits;
 }
 
-/* Set the number of the low-order source_location bits used for a
-   column number within ordinary map MAP.  */
-
-inline void
-SET_ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (line_map_ordinary *ord_map,
-					int col_bits)
-{
-  ord_map->column_bits = col_bits;
-}
-
 /* Get the filename of ordinary map MAP.  */
 
 inline const char *
@@ -442,26 +398,10 @@ ORDINARY_MAP_FILE_NAME (const line_map_ordinary *ord_map)
   return ord_map->to_file;
 }
 
-/* As above, but by reference (e.g. as an lvalue).  */
-
-inline const char * &
-ORDINARY_MAP_FILE_NAME (line_map_ordinary *ord_map)
-{
-  return ord_map->to_file;
-}
-
 /* Get the cpp macro whose expansion gave birth to macro map MAP.  */
 
 inline cpp_hashnode *
 MACRO_MAP_MACRO (const line_map_macro *macro_map)
-{
-  return macro_map->macro;
-}
-
-/* As above, but by reference (e.g. as an lvalue).  */
-
-inline cpp_hashnode * &
-MACRO_MAP_MACRO (line_map_macro *macro_map)
 {
   return macro_map->macro;
 }
@@ -475,14 +415,6 @@ MACRO_MAP_NUM_MACRO_TOKENS (const line_map_macro *macro_map)
   return macro_map->n_tokens;
 }
 
-/* As above, but by reference (e.g. as an lvalue).  */
-
-inline unsigned int &
-MACRO_MAP_NUM_MACRO_TOKENS (line_map_macro *macro_map)
-{
-  return macro_map->n_tokens;
-}
-
 /* Get the array of pairs of locations within macro map MAP.
    See the declaration of line_map_macro for more information.  */
 
@@ -492,26 +424,10 @@ MACRO_MAP_LOCATIONS (const line_map_macro *macro_map)
   return macro_map->macro_locations;
 }
 
-/* As above, but by reference (e.g. as an lvalue).  */
-
-inline source_location * &
-MACRO_MAP_LOCATIONS (line_map_macro *macro_map)
-{
-  return macro_map->macro_locations;
-}
-
 /* Get the location of the expansion point of the macro map MAP.  */
 
 inline source_location
 MACRO_MAP_EXPANSION_POINT_LOCATION (const line_map_macro *macro_map)
-{
-  return macro_map->expansion;
-}
-
-/* As above, but by reference (e.g. as an lvalue).  */
-
-inline source_location &
-MACRO_MAP_EXPANSION_POINT_LOCATION (line_map_macro *macro_map)
 {
   return macro_map->expansion;
 }
