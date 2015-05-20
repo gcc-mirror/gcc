@@ -2229,7 +2229,8 @@ pre_insert_copy_insn (struct gcse_expr *expr, rtx_insn *insn)
   int regno = REGNO (reg);
   int indx = expr->bitmap_index;
   rtx pat = PATTERN (insn);
-  rtx set, first_set, new_insn;
+  rtx set, first_set;
+  rtx_insn *new_insn;
   rtx old_reg;
   int i;
 

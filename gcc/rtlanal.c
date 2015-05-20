@@ -2917,7 +2917,8 @@ rtx_referenced_p (const_rtx x, const_rtx body)
 bool
 tablejump_p (const rtx_insn *insn, rtx *labelp, rtx_jump_table_data **tablep)
 {
-  rtx label, table;
+  rtx label;
+  rtx_insn *table;
 
   if (!JUMP_P (insn))
     return false;

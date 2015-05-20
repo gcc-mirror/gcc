@@ -2051,7 +2051,7 @@ static hash_map<basic_block, rtx_code_label *> *lab_rtx_for_bb;
 
 /* Returns the label_rtx expression for a label starting basic block BB.  */
 
-static rtx
+static rtx_code_label *
 label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
 {
   gimple_stmt_iterator gsi;
@@ -2078,7 +2078,7 @@ label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
       if (DECL_NONLOCAL (lab))
 	break;
 
-      return label_rtx (lab);
+      return jump_target_rtx (lab);
     }
 
   rtx_code_label *l = gen_label_rtx ();
@@ -3048,7 +3048,7 @@ expand_goto (tree label)
   gcc_assert (!context || context == current_function_decl);
 #endif
 
-  emit_jump (label_rtx (label));
+  emit_jump (jump_target_rtx (label));
 }
 
 /* Output a return with no value.  */
@@ -5507,7 +5507,7 @@ construct_init_block (void)
     {
       tree label = gimple_block_label (e->dest);
 
-      emit_jump (label_rtx (label));
+      emit_jump (jump_target_rtx (label));
       flags = 0;
     }
   else

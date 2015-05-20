@@ -4444,9 +4444,10 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
       else
 	new_dest_label = block_label (new_dest);
 
+      rtx_jump_insn *jump_insn = as_a <rtx_jump_insn *> (jump);
       if (reversep
-	  ? ! invert_jump_1 (jump, new_dest_label)
-	  : ! redirect_jump_1 (jump, new_dest_label))
+	  ? ! invert_jump_1 (jump_insn, new_dest_label)
+	  : ! redirect_jump_1 (jump_insn, new_dest_label))
 	goto cancel;
     }
 
@@ -4457,7 +4458,8 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 
   if (other_bb != new_dest)
     {
-      redirect_jump_2 (jump, old_dest, new_dest_label, 0, reversep);
+      redirect_jump_2 (as_a <rtx_jump_insn *> (jump), old_dest, new_dest_label,
+		       0, reversep);
 
       redirect_edge_succ (BRANCH_EDGE (test_bb), new_dest);
       if (reversep)

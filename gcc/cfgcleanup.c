@@ -190,7 +190,8 @@ try_simplify_condjump (basic_block cbranch_block)
     return false;
 
   /* Invert the conditional branch.  */
-  if (!invert_jump (cbranch_insn, block_label (jump_dest_block), 0))
+  if (!invert_jump (as_a <rtx_jump_insn *> (cbranch_insn),
+		    block_label (jump_dest_block), 0))
     return false;
 
   if (dump_file)

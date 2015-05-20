@@ -5786,7 +5786,7 @@ convert_jumps_to_returns (basic_block last_bb, bool simple_p,
 	    dest = simple_return_rtx;
 	  else
 	    dest = ret_rtx;
-	  if (!redirect_jump (jump, dest, 0))
+	  if (!redirect_jump (as_a <rtx_jump_insn *> (jump), dest, 0))
 	    {
 	      if (HAVE_simple_return && simple_p)
 		{

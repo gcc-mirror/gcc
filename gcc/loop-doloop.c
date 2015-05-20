@@ -365,7 +365,7 @@ static bool
 add_test (rtx cond, edge *e, basic_block dest)
 {
   rtx_insn *seq, *jump;
-  rtx label;
+  rtx_code_label *label;
   machine_mode mode;
   rtx op0 = XEXP (cond, 0), op1 = XEXP (cond, 1);
   enum rtx_code code = GET_CODE (cond);
@@ -379,8 +379,7 @@ add_test (rtx cond, edge *e, basic_block dest)
   op0 = force_operand (op0, NULL_RTX);
   op1 = force_operand (op1, NULL_RTX);
   label = block_label (dest);
-  do_compare_rtx_and_jump (op0, op1, code, 0, mode, NULL_RTX,
-			   NULL_RTX, label, -1);
+  do_compare_rtx_and_jump (op0, op1, code, 0, mode, NULL_RTX, NULL, label, -1);
 
   jump = get_last_insn ();
   if (!jump || !JUMP_P (jump))
@@ -432,7 +431,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   rtx tmp, noloop = NULL_RTX;
   rtx_insn *sequence;
   rtx_insn *jump_insn;
-  rtx jump_label;
+  rtx_code_label *jump_label;
   int nonneg = 0;
   bool increment_count;
   basic_block loop_end = desc->out_edge->src;
@@ -627,7 +626,7 @@ doloop_optimize (struct loop *loop)
   rtx doloop_seq, doloop_pat, doloop_reg;
   rtx count;
   widest_int iterations, iterations_max;
-  rtx start_label;
+  rtx_code_label *start_label;
   rtx condition;
   unsigned level, est_niter;
   int max_cost;

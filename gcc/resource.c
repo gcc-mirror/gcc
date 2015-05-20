@@ -439,7 +439,7 @@ find_dead_or_set_registers (rtx_insn *target, struct resources *res,
 
   for (insn = target; insn; insn = next_insn)
     {
-      rtx_insn *this_jump_insn = insn;
+      rtx_insn *this_insn = insn;
 
       next_insn = NEXT_INSN (insn);
 
@@ -487,8 +487,8 @@ find_dead_or_set_registers (rtx_insn *target, struct resources *res,
 		 of a call, so search for a JUMP_INSN in any position.  */
 	      for (i = 0; i < seq->len (); i++)
 		{
-		  this_jump_insn = seq->insn (i);
-		  if (JUMP_P (this_jump_insn))
+		  this_insn = seq->insn (i);
+		  if (JUMP_P (this_insn))
 		    break;
 		}
 	    }
@@ -497,14 +497,15 @@ find_dead_or_set_registers (rtx_insn *target, struct resources *res,
 	  break;
 	}
 
-      if (JUMP_P (this_jump_insn))
+      if (rtx_jump_insn *this_jump_insn =
+	    dyn_cast <rtx_jump_insn *> (this_insn))
 	{
 	  if (jump_count++ < 10)
 	    {
 	      if (any_uncondjump_p (this_jump_insn)
 		  || ANY_RETURN_P (PATTERN (this_jump_insn)))
 		{
-		  rtx lab_or_return = JUMP_LABEL (this_jump_insn);
+		  rtx lab_or_return = this_jump_insn->jump_label ();
 		  if (ANY_RETURN_P (lab_or_return))
 		    next_insn = NULL;
 		  else
@@ -577,10 +578,10 @@ find_dead_or_set_registers (rtx_insn *target, struct resources *res,
 		  AND_COMPL_HARD_REG_SET (scratch, needed.regs);
 		  AND_COMPL_HARD_REG_SET (fallthrough_res.regs, scratch);
 
-		  if (!ANY_RETURN_P (JUMP_LABEL (this_jump_insn)))
-		    find_dead_or_set_registers (JUMP_LABEL_AS_INSN (this_jump_insn),
-						&target_res, 0, jump_count,
-						target_set, needed);
+		  if (!ANY_RETURN_P (this_jump_insn->jump_label ()))
+		    find_dead_or_set_registers
+			  (this_jump_insn->jump_target (),
+			   &target_res, 0, jump_count, target_set, needed);
 		  find_dead_or_set_registers (next_insn,
 					      &fallthrough_res, 0, jump_count,
 					      set, needed);

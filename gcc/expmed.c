@@ -5805,8 +5805,8 @@ emit_store_flag_force (rtx target, enum rtx_code code, rtx op0, rtx op1,
       && op1 == const0_rtx)
     {
       label = gen_label_rtx ();
-      do_compare_rtx_and_jump (target, const0_rtx, EQ, unsignedp,
-			       mode, NULL_RTX, NULL_RTX, label, -1);
+      do_compare_rtx_and_jump (target, const0_rtx, EQ, unsignedp, mode,
+			       NULL_RTX, NULL, label, -1);
       emit_move_insn (target, trueval);
       emit_label (label);
       return target;
@@ -5843,8 +5843,8 @@ emit_store_flag_force (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
   emit_move_insn (target, trueval);
   label = gen_label_rtx ();
-  do_compare_rtx_and_jump (op0, op1, code, unsignedp, mode, NULL_RTX,
-			   NULL_RTX, label, -1);
+  do_compare_rtx_and_jump (op0, op1, code, unsignedp, mode, NULL_RTX, NULL,
+			   label, -1);
 
   emit_move_insn (target, falseval);
   emit_label (label);
@@ -5861,6 +5861,6 @@ do_cmp_and_jump (rtx arg1, rtx arg2, enum rtx_code op, machine_mode mode,
 		 rtx_code_label *label)
 {
   int unsignedp = (op == LTU || op == LEU || op == GTU || op == GEU);
-  do_compare_rtx_and_jump (arg1, arg2, op, unsignedp, mode,
-			   NULL_RTX, NULL_RTX, label, -1);
+  do_compare_rtx_and_jump (arg1, arg2, op, unsignedp, mode, NULL_RTX,
+			   NULL, label, -1);
 }

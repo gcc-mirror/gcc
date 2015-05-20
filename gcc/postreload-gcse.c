@@ -1115,8 +1115,8 @@ eliminate_partially_redundant_load (basic_block bb, rtx_insn *insn,
 
 	  /* Make sure we can generate a move from register avail_reg to
 	     dest.  */
-	  rtx_insn *move = as_a <rtx_insn *>
-	    (gen_move_insn (copy_rtx (dest), copy_rtx (avail_reg)));
+	  rtx_insn *move = gen_move_insn (copy_rtx (dest),
+					  copy_rtx (avail_reg));
 	  extract_insn (move);
 	  if (! constrain_operands (1, get_preferred_alternatives (insn,
 								   pred_bb))

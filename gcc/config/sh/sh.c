@@ -5876,7 +5876,7 @@ static void
 gen_far_branch (struct far_branch *bp)
 {
   rtx_insn *insn = bp->insert_place;
-  rtx_insn *jump;
+  rtx_jump_insn *jump;
   rtx_code_label *label = gen_label_rtx ();
   int ok;
 
@@ -5907,7 +5907,7 @@ gen_far_branch (struct far_branch *bp)
       JUMP_LABEL (jump) = pat;
     }
 
-  ok = invert_jump (insn, label, 1);
+  ok = invert_jump (as_a <rtx_jump_insn *> (insn), label, 1);
   gcc_assert (ok);
 
   /* If we are branching around a jump (rather than a return), prevent
@@ -6700,7 +6700,7 @@ split_branches (rtx_insn *first)
 		    bp->insert_place = insn;
 		    bp->address = addr;
 		  }
-		ok = redirect_jump (insn, label, 0);
+		ok = redirect_jump (as_a <rtx_jump_insn *> (insn), label, 0);
 		gcc_assert (ok);
 	      }
 	    else
@@ -6775,7 +6775,7 @@ split_branches (rtx_insn *first)
 			JUMP_LABEL (insn) = far_label;
 			LABEL_NUSES (far_label)++;
 		      }
-		    redirect_jump (insn, ret_rtx, 1);
+		    redirect_jump (as_a <rtx_jump_insn *> (insn), ret_rtx, 1);
 		    far_label = 0;
 		  }
 	      }

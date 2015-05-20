@@ -236,7 +236,7 @@ static rtx_insn *delete_from_delay_slot (rtx_insn *);
 static void delete_scheduled_jump (rtx_insn *);
 static void note_delay_statistics (int, int);
 #if defined(ANNUL_IFFALSE_SLOTS) || defined(ANNUL_IFTRUE_SLOTS)
-static rtx_insn_list *optimize_skip (rtx_insn *);
+static rtx_insn_list *optimize_skip (rtx_jump_insn *);
 #endif
 static int get_jump_flags (const rtx_insn *, rtx);
 static int mostly_true_jump (rtx);
@@ -264,12 +264,12 @@ static void try_merge_delay_insns (rtx_insn *, rtx_insn *);
 static rtx redundant_insn (rtx, rtx_insn *, rtx);
 static int own_thread_p (rtx, rtx, int);
 static void update_block (rtx_insn *, rtx);
-static int reorg_redirect_jump (rtx_insn *, rtx);
+static int reorg_redirect_jump (rtx_jump_insn *, rtx);
 static void update_reg_dead_notes (rtx_insn *, rtx_insn *);
 static void fix_reg_dead_note (rtx, rtx);
 static void update_reg_unused_notes (rtx, rtx);
 static void fill_simple_delay_slots (int);
-static rtx_insn_list *fill_slots_from_thread (rtx_insn *, rtx, rtx, rtx,
+static rtx_insn_list *fill_slots_from_thread (rtx_jump_insn *, rtx, rtx, rtx,
 					      int, int, int, int,
 					      int *, rtx_insn_list *);
 static void fill_eager_delay_slots (void);
@@ -779,7 +779,7 @@ note_delay_statistics (int slots_filled, int index)
    of delay slots required.  */
 
 static rtx_insn_list *
-optimize_skip (rtx_insn *insn)
+optimize_skip (rtx_jump_insn *insn)
 {
   rtx_insn *trial = next_nonnote_insn (insn);
   rtx_insn *next_trial = next_active_insn (trial);
@@ -1789,7 +1789,7 @@ update_block (rtx_insn *insn, rtx where)
    the basic block containing the jump.  */
 
 static int
-reorg_redirect_jump (rtx_insn *jump, rtx nlabel)
+reorg_redirect_jump (rtx_jump_insn *jump, rtx nlabel)
 {
   incr_ticks_for_insn (jump);
   return redirect_jump (jump, nlabel, 1);
@@ -2147,7 +2147,7 @@ fill_simple_delay_slots (int non_jumps_p)
 	  && (condjump_p (insn) || condjump_in_parallel_p (insn))
 	  && !ANY_RETURN_P (JUMP_LABEL (insn)))
 	{
-	  delay_list = optimize_skip (insn);
+	  delay_list = optimize_skip (as_a <rtx_jump_insn *> (insn));
 	  if (delay_list)
 	    slots_filled += 1;
 	}
@@ -2296,18 +2296,20 @@ fill_simple_delay_slots (int non_jumps_p)
 		    = add_to_delay_list (copy_delay_slot_insn (next_trial),
 					 delay_list);
 		  slots_filled++;
-		  reorg_redirect_jump (trial, new_label);
+		  reorg_redirect_jump (as_a <rtx_jump_insn *> (trial),
+				       new_label);
 		}
 	    }
 	}
 
       /* If this is an unconditional jump, then try to get insns from the
 	 target of the jump.  */
-      if (JUMP_P (insn)
-	  && simplejump_p (insn)
+      rtx_jump_insn *jump_insn;
+      if ((jump_insn = dyn_cast <rtx_jump_insn *> (insn))
+	  && simplejump_p (jump_insn)
 	  && slots_filled != slots_to_fill)
 	delay_list
-	  = fill_slots_from_thread (insn, const_true_rtx,
+	  = fill_slots_from_thread (jump_insn, const_true_rtx,
 				    next_active_insn (JUMP_LABEL (insn)),
 				    NULL, 1, 1,
 				    own_thread_p (JUMP_LABEL (insn),
@@ -2411,10 +2413,9 @@ follow_jumps (rtx label, rtx_insn *jump, bool *crossing)
    slot.  We then adjust the jump to point after the insns we have taken.  */
 
 static rtx_insn_list *
-fill_slots_from_thread (rtx_insn *insn, rtx condition, rtx thread_or_return,
-			rtx opposite_thread, int likely,
-			int thread_if_true,
-			int own_thread, int slots_to_fill,
+fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
+			rtx thread_or_return, rtx opposite_thread, int likely,
+			int thread_if_true, int own_thread, int slots_to_fill,
 			int *pslots_filled, rtx_insn_list *delay_list)
 {
   rtx new_thread;
@@ -2883,6 +2884,7 @@ fill_eager_delay_slots (void)
       rtx target_label, insn_at_target;
       rtx_insn *fallthrough_insn;
       rtx_insn_list *delay_list = 0;
+      rtx_jump_insn *jump_insn;
       int own_target;
       int own_fallthrough;
       int prediction, slots_to_fill, slots_filled;
@@ -2890,11 +2892,11 @@ fill_eager_delay_slots (void)
       insn = unfilled_slots_base[i];
       if (insn == 0
 	  || insn->deleted ()
-	  || !JUMP_P (insn)
-	  || ! (condjump_p (insn) || condjump_in_parallel_p (insn)))
+	  || ! (jump_insn = dyn_cast <rtx_jump_insn *> (insn))
+	  || ! (condjump_p (jump_insn) || condjump_in_parallel_p (jump_insn)))
 	continue;
 
-      slots_to_fill = num_delay_slots (insn);
+      slots_to_fill = num_delay_slots (jump_insn);
       /* Some machine description have defined instructions to have
 	 delay slots only in certain circumstances which may depend on
 	 nearby insns (which change due to reorg's actions).
@@ -2910,8 +2912,8 @@ fill_eager_delay_slots (void)
 	continue;
 
       slots_filled = 0;
-      target_label = JUMP_LABEL (insn);
-      condition = get_branch_condition (insn, target_label);
+      target_label = JUMP_LABEL (jump_insn);
+      condition = get_branch_condition (jump_insn, target_label);
 
       if (condition == 0)
 	continue;
@@ -2931,9 +2933,9 @@ fill_eager_delay_slots (void)
 	}
       else
 	{
-	  fallthrough_insn = next_active_insn (insn);
-	  own_fallthrough = own_thread_p (NEXT_INSN (insn), NULL_RTX, 1);
-	  prediction = mostly_true_jump (insn);
+	  fallthrough_insn = next_active_insn (jump_insn);
+	  own_fallthrough = own_thread_p (NEXT_INSN (jump_insn), NULL_RTX, 1);
+	  prediction = mostly_true_jump (jump_insn);
 	}
 
       /* If this insn is expected to branch, first try to get insns from our
@@ -2943,7 +2945,7 @@ fill_eager_delay_slots (void)
       if (prediction > 0)
 	{
 	  delay_list
-	    = fill_slots_from_thread (insn, condition, insn_at_target,
+	    = fill_slots_from_thread (jump_insn, condition, insn_at_target,
 				      fallthrough_insn, prediction == 2, 1,
 				      own_target,
 				      slots_to_fill, &slots_filled, delay_list);
@@ -2954,11 +2956,12 @@ fill_eager_delay_slots (void)
 		 we might have found a redundant insn which we deleted
 		 from the thread that was filled.  So we have to recompute
 		 the next insn at the target.  */
-	      target_label = JUMP_LABEL (insn);
+	      target_label = JUMP_LABEL (jump_insn);
 	      insn_at_target = first_active_target_insn (target_label);
 
 	      delay_list
-		= fill_slots_from_thread (insn, condition, fallthrough_insn,
+		= fill_slots_from_thread (jump_insn, condition,
+					  fallthrough_insn,
 					  insn_at_target, 0, 0,
 					  own_fallthrough,
 					  slots_to_fill, &slots_filled,
@@ -2969,7 +2972,7 @@ fill_eager_delay_slots (void)
 	{
 	  if (own_fallthrough)
 	    delay_list
-	      = fill_slots_from_thread (insn, condition, fallthrough_insn,
+	      = fill_slots_from_thread (jump_insn, condition, fallthrough_insn,
 					insn_at_target, 0, 0,
 					own_fallthrough,
 					slots_to_fill, &slots_filled,
@@ -2977,7 +2980,7 @@ fill_eager_delay_slots (void)
 
 	  if (delay_list == 0)
 	    delay_list
-	      = fill_slots_from_thread (insn, condition, insn_at_target,
+	      = fill_slots_from_thread (jump_insn, condition, insn_at_target,
 					next_active_insn (insn), 0, 1,
 					own_target,
 					slots_to_fill, &slots_filled,
@@ -2986,7 +2989,7 @@ fill_eager_delay_slots (void)
 
       if (delay_list)
 	unfilled_slots_base[i]
-	  = emit_delay_sequence (insn, delay_list, slots_filled);
+	  = emit_delay_sequence (jump_insn, delay_list, slots_filled);
 
       if (slots_to_fill == slots_filled)
 	unfilled_slots_base[i] = 0;
@@ -3222,40 +3225,41 @@ relax_delay_slots (rtx_insn *first)
       /* If this is a jump insn, see if it now jumps to a jump, jumps to
 	 the next insn, or jumps to a label that is not the last of a
 	 group of consecutive labels.  */
-      if (JUMP_P (insn)
+      if (is_a <rtx_jump_insn *> (insn)
 	  && (condjump_p (insn) || condjump_in_parallel_p (insn))
 	  && !ANY_RETURN_P (target_label = JUMP_LABEL (insn)))
 	{
+	  rtx_jump_insn *jump_insn = as_a <rtx_jump_insn *> (insn);
 	  target_label
-	    = skip_consecutive_labels (follow_jumps (target_label, insn,
+	    = skip_consecutive_labels (follow_jumps (target_label, jump_insn,
 						     &crossing));
 	  if (ANY_RETURN_P (target_label))
 	    target_label = find_end_label (target_label);
 
 	  if (target_label && next_active_insn (target_label) == next
-	      && ! condjump_in_parallel_p (insn)
-	      && ! (next && switch_text_sections_between_p (insn, next)))
+	      && ! condjump_in_parallel_p (jump_insn)
+	      && ! (next && switch_text_sections_between_p (jump_insn, next)))
 	    {
-	      delete_jump (insn);
+	      delete_jump (jump_insn);
 	      continue;
 	    }
 
-	  if (target_label && target_label != JUMP_LABEL (insn))
+	  if (target_label && target_label != JUMP_LABEL (jump_insn))
 	    {
-	      reorg_redirect_jump (insn, target_label);
+	      reorg_redirect_jump (jump_insn, target_label);
 	      if (crossing)
-		CROSSING_JUMP_P (insn) = 1;
+		CROSSING_JUMP_P (jump_insn) = 1;
 	    }
 
 	  /* See if this jump conditionally branches around an unconditional
 	     jump.  If so, invert this jump and point it to the target of the
 	     second jump.  Check if it's possible on the target.  */
 	  if (next && simplejump_or_return_p (next)
-	      && any_condjump_p (insn)
+	      && any_condjump_p (jump_insn)
 	      && target_label
 	      && next_active_insn (target_label) == next_active_insn (next)
-	      && no_labels_between_p (insn, next)
-	      && targetm.can_follow_jump (insn, next))
+	      && no_labels_between_p (jump_insn, next)
+	      && targetm.can_follow_jump (jump_insn, next))
 	    {
 	      rtx label = JUMP_LABEL (next);
 
@@ -3270,10 +3274,10 @@ relax_delay_slots (rtx_insn *first)
 	      if (!ANY_RETURN_P (label))
 		++LABEL_NUSES (label);
 
-	      if (invert_jump (insn, label, 1))
+	      if (invert_jump (jump_insn, label, 1))
 		{
 		  delete_related_insns (next);
-		  next = insn;
+		  next = jump_insn;
 		}
 
 	      if (!ANY_RETURN_P (label))
@@ -3303,8 +3307,8 @@ relax_delay_slots (rtx_insn *first)
 	  rtx other_target = JUMP_LABEL (other);
 	  target_label = JUMP_LABEL (insn);
 
-	  if (invert_jump (other, target_label, 0))
-	    reorg_redirect_jump (insn, other_target);
+	  if (invert_jump (as_a <rtx_jump_insn *> (other), target_label, 0))
+	    reorg_redirect_jump (as_a <rtx_jump_insn *> (insn), other_target);
 	}
 
       /* Now look only at cases where we have a filled delay slot.  */
@@ -3369,25 +3373,28 @@ relax_delay_slots (rtx_insn *first)
 	}
 
       /* Now look only at the cases where we have a filled JUMP_INSN.  */
-      if (!JUMP_P (delay_insn)
-	  || !(condjump_p (delay_insn) || condjump_in_parallel_p (delay_insn)))
+      rtx_jump_insn *delay_jump_insn =
+		dyn_cast <rtx_jump_insn *> (delay_insn);
+      if (! delay_jump_insn || !(condjump_p (delay_jump_insn)
+	  || condjump_in_parallel_p (delay_jump_insn)))
 	continue;
 
-      target_label = JUMP_LABEL (delay_insn);
+      target_label = JUMP_LABEL (delay_jump_insn);
       if (target_label && ANY_RETURN_P (target_label))
 	continue;
 
       /* If this jump goes to another unconditional jump, thread it, but
 	 don't convert a jump into a RETURN here.  */
-      trial = skip_consecutive_labels (follow_jumps (target_label, delay_insn,
+      trial = skip_consecutive_labels (follow_jumps (target_label,
+						     delay_jump_insn,
 						     &crossing));
       if (ANY_RETURN_P (trial))
 	trial = find_end_label (trial);
 
       if (trial && trial != target_label
-	  && redirect_with_delay_slots_safe_p (delay_insn, trial, insn))
+	  && redirect_with_delay_slots_safe_p (delay_jump_insn, trial, insn))
 	{
-	  reorg_redirect_jump (delay_insn, trial);
+	  reorg_redirect_jump (delay_jump_insn, trial);
 	  target_label = trial;
 	  if (crossing)
 	    CROSSING_JUMP_P (insn) = 1;
@@ -3419,7 +3426,7 @@ relax_delay_slots (rtx_insn *first)
 	      /* Now emit a label before the special USE insn, and
 		 redirect our jump to the new label.  */
 	      target_label = get_label_before (PREV_INSN (tmp), target_label);
-	      reorg_redirect_jump (delay_insn, target_label);
+	      reorg_redirect_jump (delay_jump_insn, target_label);
 	      next = insn;
 	      continue;
 	    }
@@ -3440,19 +3447,19 @@ relax_delay_slots (rtx_insn *first)
 	    target_label = find_end_label (target_label);
 	  
 	  if (target_label
-	      && redirect_with_delay_slots_safe_p (delay_insn, target_label,
-						   insn))
+	      && redirect_with_delay_slots_safe_p (delay_jump_insn,
+						   target_label, insn))
 	    {
 	      update_block (trial_seq->insn (1), insn);
-	      reorg_redirect_jump (delay_insn, target_label);
+	      reorg_redirect_jump (delay_jump_insn, target_label);
 	      next = insn;
 	      continue;
 	    }
 	}
 
       /* See if we have a simple (conditional) jump that is useless.  */
-      if (! INSN_ANNULLED_BRANCH_P (delay_insn)
-	  && ! condjump_in_parallel_p (delay_insn)
+      if (! INSN_ANNULLED_BRANCH_P (delay_jump_insn)
+	  && ! condjump_in_parallel_p (delay_jump_insn)
 	  && prev_active_insn (target_label) == insn
 	  && ! BARRIER_P (prev_nonnote_insn (target_label))
 #if HAVE_cc0
@@ -3489,11 +3496,11 @@ relax_delay_slots (rtx_insn *first)
 	  trial = PREV_INSN (insn);
 	  delete_related_insns (insn);
 	  gcc_assert (GET_CODE (pat) == SEQUENCE);
-	  add_insn_after (delay_insn, trial, NULL);
-	  after = delay_insn;
+	  add_insn_after (delay_jump_insn, trial, NULL);
+	  after = delay_jump_insn;
 	  for (i = 1; i < pat->len (); i++)
 	    after = emit_copy_of_insn_after (pat->insn (i), after);
-	  delete_scheduled_jump (delay_insn);
+	  delete_scheduled_jump (delay_jump_insn);
 	  continue;
 	}
 
@@ -3515,14 +3522,14 @@ relax_delay_slots (rtx_insn *first)
 	 this jump and point it to the target of the second jump.  We cannot
 	 do this for annulled jumps, though.  Again, don't convert a jump to
 	 a RETURN here.  */
-      if (! INSN_ANNULLED_BRANCH_P (delay_insn)
-	  && any_condjump_p (delay_insn)
+      if (! INSN_ANNULLED_BRANCH_P (delay_jump_insn)
+	  && any_condjump_p (delay_jump_insn)
 	  && next && simplejump_or_return_p (next)
 	  && next_active_insn (target_label) == next_active_insn (next)
 	  && no_labels_between_p (insn, next))
 	{
 	  rtx label = JUMP_LABEL (next);
-	  rtx old_label = JUMP_LABEL (delay_insn);
+	  rtx old_label = JUMP_LABEL (delay_jump_insn);
 
 	  if (ANY_RETURN_P (label))
 	    label = find_end_label (label);
@@ -3530,7 +3537,8 @@ relax_delay_slots (rtx_insn *first)
 	  /* find_end_label can generate a new label. Check this first.  */
 	  if (label
 	      && no_labels_between_p (insn, next)
-	      && redirect_with_delay_slots_safe_p (delay_insn, label, insn))
+	      && redirect_with_delay_slots_safe_p (delay_jump_insn,
+						   label, insn))
 	    {
 	      /* Be careful how we do this to avoid deleting code or labels
 		 that are momentarily dead.  See similar optimization in
@@ -3538,7 +3546,7 @@ relax_delay_slots (rtx_insn *first)
 	      if (old_label)
 		++LABEL_NUSES (old_label);
 
-	      if (invert_jump (delay_insn, label, 1))
+	      if (invert_jump (delay_jump_insn, label, 1))
 		{
 		  int i;
 
@@ -3585,7 +3593,7 @@ static void
 make_return_insns (rtx_insn *first)
 {
   rtx_insn *insn;
-  rtx_insn *jump_insn;
+  rtx_jump_insn *jump_insn;
   rtx real_return_label = function_return_label;
   rtx real_simple_return_label = function_simple_return_label;
   int slots, i;
@@ -3645,7 +3653,7 @@ make_return_insns (rtx_insn *first)
       else
 	continue;
 
-      jump_insn = pat->insn (0);
+      jump_insn = as_a <rtx_jump_insn *> (pat->insn (0));
 
       /* If we can't make the jump into a RETURN, try to redirect it to the best
 	 RETURN and go on to the next insn.  */
@@ -3783,7 +3791,7 @@ dbr_schedule (rtx_insn *first)
 	  && !ANY_RETURN_P (JUMP_LABEL (insn))
 	  && ((target = skip_consecutive_labels (JUMP_LABEL (insn)))
 	      != JUMP_LABEL (insn)))
-	redirect_jump (insn, target, 1);
+	redirect_jump (as_a <rtx_jump_insn *> (insn), target, 1);
     }
 
   init_resource_info (epilogue_insn);

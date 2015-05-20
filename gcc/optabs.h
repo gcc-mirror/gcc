@@ -541,8 +541,8 @@ extern void create_convert_operand_from_type (struct expand_operand *op,
 extern bool maybe_legitimize_operands (enum insn_code icode,
 				       unsigned int opno, unsigned int nops,
 				       struct expand_operand *ops);
-extern rtx maybe_gen_insn (enum insn_code icode, unsigned int nops,
-			   struct expand_operand *ops);
+extern rtx_insn *maybe_gen_insn (enum insn_code icode, unsigned int nops,
+				 struct expand_operand *ops);
 extern bool maybe_expand_insn (enum insn_code icode, unsigned int nops,
 			       struct expand_operand *ops);
 extern bool maybe_expand_jump_insn (enum insn_code icode, unsigned int nops,

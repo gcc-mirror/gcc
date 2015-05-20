@@ -794,10 +794,11 @@ split_edge_and_insert (edge e, rtx_insn *insns)
    in order to create a jump.  */
 
 static rtx_insn *
-compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp, rtx label, int prob,
-		      rtx_insn *cinsn)
+compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp,
+		      rtx_code_label *label, int prob, rtx_insn *cinsn)
 {
-  rtx_insn *seq, *jump;
+  rtx_insn *seq;
+  rtx_jump_insn *jump;
   rtx cond;
   machine_mode mode;
 
@@ -816,8 +817,7 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp, rtx label, int prob,
       gcc_assert (rtx_equal_p (op0, XEXP (cond, 0)));
       gcc_assert (rtx_equal_p (op1, XEXP (cond, 1)));
       emit_jump_insn (copy_insn (PATTERN (cinsn)));
-      jump = get_last_insn ();
-      gcc_assert (JUMP_P (jump));
+      jump = as_a <rtx_jump_insn *> (get_last_insn ());
       JUMP_LABEL (jump) = JUMP_LABEL (cinsn);
       LABEL_NUSES (JUMP_LABEL (jump))++;
       redirect_jump (jump, label, 0);
@@ -829,10 +829,9 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp, rtx label, int prob,
       op0 = force_operand (op0, NULL_RTX);
       op1 = force_operand (op1, NULL_RTX);
       do_compare_rtx_and_jump (op0, op1, comp, 0,
-			       mode, NULL_RTX, NULL_RTX, label, -1);
-      jump = get_last_insn ();
-      gcc_assert (JUMP_P (jump));
-      JUMP_LABEL (jump) = label;
+			       mode, NULL_RTX, NULL, label, -1);
+      jump = as_a <rtx_jump_insn *> (get_last_insn ());
+      jump->set_jump_target (label);
       LABEL_NUSES (label)++;
     }
   add_int_reg_note (jump, REG_BR_PROB, prob);

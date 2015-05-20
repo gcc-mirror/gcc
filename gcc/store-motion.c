@@ -813,7 +813,7 @@ insert_store (struct st_expr * expr, edge e)
     return 0;
 
   reg = expr->reaching_reg;
-  insn = as_a <rtx_insn *> (gen_move_insn (copy_rtx (expr->pattern), reg));
+  insn = gen_move_insn (copy_rtx (expr->pattern), reg);
 
   /* If we are inserting this expression on ALL predecessor edges of a BB,
      insert it at the start of the BB, and reset the insert bits on the other
@@ -954,7 +954,7 @@ replace_store_insn (rtx reg, rtx_insn *del, basic_block bb,
   rtx mem, note, set, ptr;
 
   mem = smexpr->pattern;
-  insn = as_a <rtx_insn *> (gen_move_insn (reg, SET_SRC (single_set (del))));
+  insn = gen_move_insn (reg, SET_SRC (single_set (del)));
 
   for (ptr = smexpr->antic_stores; ptr; ptr = XEXP (ptr, 1))
     if (XEXP (ptr, 0) == del)
