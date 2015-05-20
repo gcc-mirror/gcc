@@ -38399,7 +38399,7 @@ ix86_emit_cmove (rtx dst, rtx src, enum rtx_code code, rtx op1, rtx op2)
     }
   else
     {
-      rtx nomove = gen_label_rtx ();
+      rtx_code_label *nomove = gen_label_rtx ();
       emit_cmp_and_jump_insns (op1, op2, reverse_condition (code),
 			       const0_rtx, GET_MODE (op1), 1, nomove);
       emit_move_insn (dst, src);

@@ -559,6 +559,7 @@ class GTY(()) rtx_nonjump_insn : public rtx_insn
 
 class GTY(()) rtx_jump_insn : public rtx_insn
 {
+public:
   /* No extra fields, but adds the invariant:
        JUMP_P (X) aka (GET_CODE (X) == JUMP_INSN)
      i.e. an instruction that can possibly jump.
@@ -566,6 +567,21 @@ class GTY(()) rtx_jump_insn : public rtx_insn
      This is an instance of:
        DEF_RTL_EXPR(JUMP_INSN, "jump_insn", "uuBeiie0", RTX_INSN)
      from rtl.def.  */
+
+  /* Returns jump target of this instruction.  The returned value is not
+     necessarily a code label: it may also be a RETURN or SIMPLE_RETURN
+     expression.  Also, when the code label is marked "deleted", it is
+     replaced by a NOTE.  In some cases the value is NULL_RTX.  */
+
+  inline rtx jump_label () const;
+
+  /* Returns jump target cast to rtx_code_label *.  */
+
+  inline rtx_code_label *jump_target () const;
+
+  /* Set jump target.  */
+
+  inline void set_jump_target (rtx_code_label *);
 };
 
 class GTY(()) rtx_call_insn : public rtx_insn
@@ -851,6 +867,14 @@ inline bool
 is_a_helper <rtx_jump_insn *>::test (rtx rt)
 {
   return JUMP_P (rt);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <rtx_jump_insn *>::test (rtx_insn *insn)
+{
+  return JUMP_P (insn);
 }
 
 template <>
@@ -1699,6 +1723,23 @@ enum label_kind
 inline rtx_insn *JUMP_LABEL_AS_INSN (const rtx_insn *insn)
 {
   return safe_as_a <rtx_insn *> (JUMP_LABEL (insn));
+}
+
+/* Methods of rtx_jump_insn.  */
+
+inline rtx rtx_jump_insn::jump_label () const
+{
+  return JUMP_LABEL (this);
+}
+
+inline rtx_code_label *rtx_jump_insn::jump_target () const
+{
+  return safe_as_a <rtx_code_label *> (JUMP_LABEL (this));
+}
+
+inline void rtx_jump_insn::set_jump_target (rtx_code_label *target)
+{
+  JUMP_LABEL (this) = target;
 }
 
 /* Once basic blocks are found, each CODE_LABEL starts a chain that
@@ -2699,9 +2740,9 @@ extern void decide_function_section (tree);
 extern rtx_insn *emit_insn_before (rtx, rtx);
 extern rtx_insn *emit_insn_before_noloc (rtx, rtx_insn *, basic_block);
 extern rtx_insn *emit_insn_before_setloc (rtx, rtx_insn *, int);
-extern rtx_insn *emit_jump_insn_before (rtx, rtx);
-extern rtx_insn *emit_jump_insn_before_noloc (rtx, rtx_insn *);
-extern rtx_insn *emit_jump_insn_before_setloc (rtx, rtx_insn *, int);
+extern rtx_jump_insn *emit_jump_insn_before (rtx, rtx);
+extern rtx_jump_insn *emit_jump_insn_before_noloc (rtx, rtx_insn *);
+extern rtx_jump_insn *emit_jump_insn_before_setloc (rtx, rtx_insn *, int);
 extern rtx_insn *emit_call_insn_before (rtx, rtx_insn *);
 extern rtx_insn *emit_call_insn_before_noloc (rtx, rtx_insn *);
 extern rtx_insn *emit_call_insn_before_setloc (rtx, rtx_insn *, int);
@@ -2709,14 +2750,14 @@ extern rtx_insn *emit_debug_insn_before (rtx, rtx_insn *);
 extern rtx_insn *emit_debug_insn_before_noloc (rtx, rtx);
 extern rtx_insn *emit_debug_insn_before_setloc (rtx, rtx, int);
 extern rtx_barrier *emit_barrier_before (rtx);
-extern rtx_insn *emit_label_before (rtx, rtx_insn *);
+extern rtx_code_label *emit_label_before (rtx, rtx_insn *);
 extern rtx_note *emit_note_before (enum insn_note, rtx_insn *);
 extern rtx_insn *emit_insn_after (rtx, rtx);
 extern rtx_insn *emit_insn_after_noloc (rtx, rtx, basic_block);
 extern rtx_insn *emit_insn_after_setloc (rtx, rtx, int);
-extern rtx_insn *emit_jump_insn_after (rtx, rtx);
-extern rtx_insn *emit_jump_insn_after_noloc (rtx, rtx);
-extern rtx_insn *emit_jump_insn_after_setloc (rtx, rtx, int);
+extern rtx_jump_insn *emit_jump_insn_after (rtx, rtx);
+extern rtx_jump_insn *emit_jump_insn_after_noloc (rtx, rtx);
+extern rtx_jump_insn *emit_jump_insn_after_setloc (rtx, rtx, int);
 extern rtx_insn *emit_call_insn_after (rtx, rtx);
 extern rtx_insn *emit_call_insn_after_noloc (rtx, rtx);
 extern rtx_insn *emit_call_insn_after_setloc (rtx, rtx, int);
@@ -2730,7 +2771,7 @@ extern rtx_insn *emit_insn (rtx);
 extern rtx_insn *emit_debug_insn (rtx);
 extern rtx_insn *emit_jump_insn (rtx);
 extern rtx_insn *emit_call_insn (rtx);
-extern rtx_insn *emit_label (rtx);
+extern rtx_code_label *emit_label (rtx);
 extern rtx_jump_table_data *emit_jump_table_data (rtx);
 extern rtx_barrier *emit_barrier (void);
 extern rtx_note *emit_note (enum insn_note);
@@ -3066,6 +3107,7 @@ extern GTY(()) rtx pc_rtx;
 extern GTY(()) rtx cc0_rtx;
 extern GTY(()) rtx ret_rtx;
 extern GTY(()) rtx simple_return_rtx;
+extern GTY(()) rtx_insn *invalid_insn_rtx;
 
 /* If HARD_FRAME_POINTER_REGNUM is defined, then a special dummy reg
    is used to represent the frame pointer.  This is because the
@@ -3397,14 +3439,14 @@ extern int eh_returnjump_p (rtx_insn *);
 extern int onlyjump_p (const rtx_insn *);
 extern int only_sets_cc0_p (const_rtx);
 extern int sets_cc0_p (const_rtx);
-extern int invert_jump_1 (rtx_insn *, rtx);
-extern int invert_jump (rtx_insn *, rtx, int);
+extern int invert_jump_1 (rtx_jump_insn *, rtx);
+extern int invert_jump (rtx_jump_insn *, rtx, int);
 extern int rtx_renumbered_equal_p (const_rtx, const_rtx);
 extern int true_regnum (const_rtx);
 extern unsigned int reg_or_subregno (const_rtx);
 extern int redirect_jump_1 (rtx_insn *, rtx);
-extern void redirect_jump_2 (rtx_insn *, rtx, rtx, int, int);
-extern int redirect_jump (rtx_insn *, rtx, int);
+extern void redirect_jump_2 (rtx_jump_insn *, rtx, rtx, int, int);
+extern int redirect_jump (rtx_jump_insn *, rtx, int);
 extern void rebuild_jump_labels (rtx_insn *);
 extern void rebuild_jump_labels_chain (rtx_insn *);
 extern rtx reversed_comparison (const_rtx, machine_mode);
@@ -3487,7 +3529,7 @@ extern void print_inline_rtx (FILE *, const_rtx, int);
    not be in sched-vis.c but in rtl.c, because they are not only used
    by the scheduler anymore but for all "slim" RTL dumping.  */
 extern void dump_value_slim (FILE *, const_rtx, int);
-extern void dump_insn_slim (FILE *, const_rtx);
+extern void dump_insn_slim (FILE *, const rtx_insn *);
 extern void dump_rtl_slim (FILE *, const rtx_insn *, const rtx_insn *,
 			   int, int);
 extern void print_value (pretty_printer *, const_rtx, int);

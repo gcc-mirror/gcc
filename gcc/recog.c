@@ -3066,7 +3066,7 @@ split_all_insns_noflow (void)
 #ifdef HAVE_peephole2
 struct peep2_insn_data
 {
-  rtx insn;
+  rtx_insn *insn;
   regset live_before;
 };
 
@@ -3079,10 +3079,9 @@ static bool peep2_do_cleanup_cfg;
 /* The number of instructions available to match a peep2.  */
 int peep2_current_count;
 
-/* A non-insn marker indicating the last insn of the block.
-   The live_before regset for this element is correct, indicating
-   DF_LIVE_OUT for the block.  */
-#define PEEP2_EOB	pc_rtx
+/* A marker indicating the last insn of the block.  The live_before regset
+   for this element is correct, indicating DF_LIVE_OUT for the block.  */
+#define PEEP2_EOB invalid_insn_rtx
 
 /* Wrap N to fit into the peep2_insn_data buffer.  */
 
@@ -3282,7 +3281,7 @@ peep2_reinit_state (regset live)
 
   /* Indicate that all slots except the last holds invalid data.  */
   for (i = 0; i < MAX_INSNS_PER_PEEP2; ++i)
-    peep2_insn_data[i].insn = NULL_RTX;
+    peep2_insn_data[i].insn = NULL;
   peep2_current_count = 0;
 
   /* Indicate that the last slot contains live_after data.  */
@@ -3298,9 +3297,8 @@ peep2_reinit_state (regset live)
    if the replacement is rejected.  */
 
 static rtx_insn *
-peep2_attempt (basic_block bb, rtx uncast_insn, int match_len, rtx_insn *attempt)
+peep2_attempt (basic_block bb, rtx_insn *insn, int match_len, rtx_insn *attempt)
 {
-  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
   int i;
   rtx_insn *last, *before_try, *x;
   rtx eh_note, as_note;
@@ -3310,7 +3308,7 @@ peep2_attempt (basic_block bb, rtx uncast_insn, int match_len, rtx_insn *attempt
 
   /* If we are splitting an RTX_FRAME_RELATED_P insn, do not allow it to
      match more than one insn, or to be split into more than one insn.  */
-  old_insn = as_a <rtx_insn *> (peep2_insn_data[peep2_current].insn);
+  old_insn = peep2_insn_data[peep2_current].insn;
   if (RTX_FRAME_RELATED_P (old_insn))
     {
       bool any_note = false;
@@ -3398,7 +3396,7 @@ peep2_attempt (basic_block bb, rtx uncast_insn, int match_len, rtx_insn *attempt
       rtx note;
 
       j = peep2_buf_position (peep2_current + i);
-      old_insn = as_a <rtx_insn *> (peep2_insn_data[j].insn);
+      old_insn = peep2_insn_data[j].insn;
       if (!CALL_P (old_insn))
 	continue;
       was_call = true;
@@ -3437,7 +3435,7 @@ peep2_attempt (basic_block bb, rtx uncast_insn, int match_len, rtx_insn *attempt
       while (++i <= match_len)
 	{
 	  j = peep2_buf_position (peep2_current + i);
-	  old_insn = as_a <rtx_insn *> (peep2_insn_data[j].insn);
+	  old_insn = peep2_insn_data[j].insn;
 	  gcc_assert (!CALL_P (old_insn));
 	}
       break;
@@ -3449,7 +3447,7 @@ peep2_attempt (basic_block bb, rtx uncast_insn, int match_len, rtx_insn *attempt
   for (i = match_len; i >= 0; --i)
     {
       int j = peep2_buf_position (peep2_current + i);
-      old_insn = as_a <rtx_insn *> (peep2_insn_data[j].insn);
+      old_insn = peep2_insn_data[j].insn;
 
       as_note = find_reg_note (old_insn, REG_ARGS_SIZE, NULL);
       if (as_note)
@@ -3460,7 +3458,7 @@ peep2_attempt (basic_block bb, rtx uncast_insn, int match_len, rtx_insn *attempt
   eh_note = find_reg_note (peep2_insn_data[i].insn, REG_EH_REGION, NULL_RTX);
 
   /* Replace the old sequence with the new.  */
-  rtx_insn *peepinsn = as_a <rtx_insn *> (peep2_insn_data[i].insn);
+  rtx_insn *peepinsn = peep2_insn_data[i].insn;
   last = emit_insn_after_setloc (attempt,
 				 peep2_insn_data[i].insn,
 				 INSN_LOCATION (peepinsn));
@@ -3577,7 +3575,7 @@ peep2_update_life (basic_block bb, int match_len, rtx_insn *last,
    add more instructions to the buffer.  */
 
 static bool
-peep2_fill_buffer (basic_block bb, rtx insn, regset live)
+peep2_fill_buffer (basic_block bb, rtx_insn *insn, regset live)
 {
   int pos;
 
@@ -3603,7 +3601,7 @@ peep2_fill_buffer (basic_block bb, rtx insn, regset live)
   COPY_REG_SET (peep2_insn_data[pos].live_before, live);
   peep2_current_count++;
 
-  df_simulate_one_insn_forwards (bb, as_a <rtx_insn *> (insn), live);
+  df_simulate_one_insn_forwards (bb, insn, live);
   return true;
 }
 
@@ -3645,8 +3643,7 @@ peephole2_optimize (void)
       insn = BB_HEAD (bb);
       for (;;)
 	{
-	  rtx_insn *attempt;
-	  rtx head;
+	  rtx_insn *attempt, *head;
 	  int match_len;
 
 	  if (!past_end && !NONDEBUG_INSN_P (insn))

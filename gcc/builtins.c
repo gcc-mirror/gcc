@@ -2000,7 +2000,7 @@ expand_errno_check (tree exp, rtx target)
   /* Test the result; if it is NaN, set errno=EDOM because
      the argument was not in the domain.  */
   do_compare_rtx_and_jump (target, target, EQ, 0, GET_MODE (target),
-			   NULL_RTX, NULL_RTX, lab,
+			   NULL_RTX, NULL, lab,
 			   /* The jump is very likely.  */
 			   REG_BR_PROB_BASE - (REG_BR_PROB_BASE / 2000 - 1));
 
@@ -5934,9 +5934,9 @@ expand_builtin_acc_on_device (tree exp, rtx target)
   emit_move_insn (target, const1_rtx);
   rtx_code_label *done_label = gen_label_rtx ();
   do_compare_rtx_and_jump (v, v1, EQ, false, v_mode, NULL_RTX,
-			   NULL_RTX, done_label, PROB_EVEN);
+			   NULL, done_label, PROB_EVEN);
   do_compare_rtx_and_jump (v, v2, EQ, false, v_mode, NULL_RTX,
-			   NULL_RTX, done_label, PROB_EVEN);
+			   NULL, done_label, PROB_EVEN);
   emit_move_insn (target, const0_rtx);
   emit_label (done_label);
 

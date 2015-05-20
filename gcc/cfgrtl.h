@@ -33,7 +33,7 @@ extern bool contains_no_active_insn_p (const_basic_block);
 extern bool forwarder_block_p (const_basic_block);
 extern bool can_fallthru (basic_block, basic_block);
 extern rtx_note *bb_note (basic_block);
-extern rtx block_label (basic_block);
+extern rtx_code_label *block_label (basic_block);
 extern edge try_redirect_by_replacing_jump (edge, basic_block, bool);
 extern void emit_barrier_after_bb (basic_block bb);
 extern basic_block force_nonfallthru_and_redirect (edge, basic_block, rtx);

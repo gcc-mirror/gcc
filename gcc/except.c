@@ -1364,7 +1364,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
     if (lp && lp->post_landing_pad)
       {
 	rtx_insn *seq2;
-	rtx label;
+	rtx_code_label *label;
 
 	start_sequence ();
 
@@ -1378,7 +1378,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
 	    t = build_int_cst (integer_type_node, disp_index);
 	    case_elt = build_case_label (t, NULL, t_label);
 	    dispatch_labels.quick_push (case_elt);
-	    label = label_rtx (t_label);
+	    label = jump_target_rtx (t_label);
 	  }
 	else
 	  label = gen_label_rtx ();

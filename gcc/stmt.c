@@ -135,12 +135,12 @@ static void balance_case_nodes (case_node_ptr *, case_node_ptr);
 static int node_has_low_bound (case_node_ptr, tree);
 static int node_has_high_bound (case_node_ptr, tree);
 static int node_is_bounded (case_node_ptr, tree);
-static void emit_case_nodes (rtx, case_node_ptr, rtx, int, tree);
+static void emit_case_nodes (rtx, case_node_ptr, rtx_code_label *, int, tree);
 
 /* Return the rtx-label that corresponds to a LABEL_DECL,
    creating it if necessary.  */
 
-rtx
+rtx_insn *
 label_rtx (tree label)
 {
   gcc_assert (TREE_CODE (label) == LABEL_DECL);
@@ -153,21 +153,29 @@ label_rtx (tree label)
 	LABEL_PRESERVE_P (r) = 1;
     }
 
-  return DECL_RTL (label);
+  return as_a <rtx_insn *> (DECL_RTL (label));
 }
 
 /* As above, but also put it on the forced-reference list of the
    function that contains it.  */
-rtx
+rtx_insn *
 force_label_rtx (tree label)
 {
-  rtx_insn *ref = as_a <rtx_insn *> (label_rtx (label));
+  rtx_insn *ref = label_rtx (label);
   tree function = decl_function_context (label);
 
   gcc_assert (function);
 
   forced_labels = gen_rtx_INSN_LIST (VOIDmode, ref, forced_labels);
   return ref;
+}
+
+/* As label_rtx, but ensures (in check build), that returned value is
+   an existing label (i.e. rtx with code CODE_LABEL).  */
+rtx_code_label *
+jump_target_rtx (tree label)
+{
+  return as_a <rtx_code_label *> (label_rtx (label));
 }
 
 /* Add an unconditional jump to LABEL as the next sequential instruction.  */
@@ -196,7 +204,7 @@ emit_jump (rtx label)
 void
 expand_label (tree label)
 {
-  rtx_insn *label_r = as_a <rtx_insn *> (label_rtx (label));
+  rtx_code_label *label_r = jump_target_rtx (label);
 
   do_pending_stack_adjust ();
   emit_label (label_r);
@@ -706,7 +714,7 @@ resolve_operand_name_1 (char *p, tree outputs, tree inputs, tree labels)
 void
 expand_naked_return (void)
 {
-  rtx end_label;
+  rtx_code_label *end_label;
 
   clear_pending_stack_adjust ();
   do_pending_stack_adjust ();
@@ -721,12 +729,12 @@ expand_naked_return (void)
 /* Generate code to jump to LABEL if OP0 and OP1 are equal in mode MODE. PROB
    is the probability of jumping to LABEL.  */
 static void
-do_jump_if_equal (machine_mode mode, rtx op0, rtx op1, rtx label,
+do_jump_if_equal (machine_mode mode, rtx op0, rtx op1, rtx_code_label *label,
 		  int unsignedp, int prob)
 {
   gcc_assert (prob <= REG_BR_PROB_BASE);
   do_compare_rtx_and_jump (op0, op1, EQ, unsignedp, mode,
-			   NULL_RTX, NULL_RTX, label, prob);
+			   NULL_RTX, NULL, label, prob);
 }
 
 /* Do the insertion of a case label into case_list.  The labels are
@@ -883,8 +891,8 @@ expand_switch_as_decision_tree_p (tree range,
 
 static void
 emit_case_decision_tree (tree index_expr, tree index_type,
-			 struct case_node *case_list, rtx default_label,
-                         int default_prob)
+			 case_node_ptr case_list, rtx_code_label *default_label,
+			 int default_prob)
 {
   rtx index = expand_normal (index_expr);
 
@@ -1142,7 +1150,7 @@ void
 expand_case (gswitch *stmt)
 {
   tree minval = NULL_TREE, maxval = NULL_TREE, range = NULL_TREE;
-  rtx default_label = NULL_RTX;
+  rtx_code_label *default_label = NULL;
   unsigned int count, uniq;
   int i;
   int ncases = gimple_switch_num_labels (stmt);
@@ -1174,7 +1182,8 @@ expand_case (gswitch *stmt)
   do_pending_stack_adjust ();
 
   /* Find the default case target label.  */
-  default_label = label_rtx (CASE_LABEL (gimple_switch_default_label (stmt)));
+  default_label = jump_target_rtx
+      (CASE_LABEL (gimple_switch_default_label (stmt)));
   edge default_edge = EDGE_SUCC (bb, 0);
   int default_prob = default_edge->probability;
 
@@ -1324,7 +1333,7 @@ expand_sjlj_dispatch_table (rtx dispatch_index,
       for (int i = 0; i < ncases; i++)
         {
 	  tree elt = dispatch_table[i];
-	  rtx lab = label_rtx (CASE_LABEL (elt));
+	  rtx_code_label *lab = jump_target_rtx (CASE_LABEL (elt));
 	  do_jump_if_equal (index_mode, index, zero, lab, 0, -1);
 	  force_expand_binop (index_mode, sub_optab,
 			      index, CONST1_RTX (index_mode),
@@ -1593,7 +1602,7 @@ node_is_bounded (case_node_ptr node, tree index_type)
    tests for the value 50, then this node need not test anything.  */
 
 static void
-emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
+emit_case_nodes (rtx index, case_node_ptr node, rtx_code_label *default_label,
 		 int default_prob, tree index_type)
 {
   /* If INDEX has an unsigned type, we must make unsigned branches.  */
@@ -1621,7 +1630,8 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 			convert_modes (mode, imode,
 				       expand_normal (node->low),
 				       unsignedp),
-			label_rtx (node->code_label), unsignedp, probability);
+			jump_target_rtx (node->code_label),
+			unsignedp, probability);
       /* Since this case is taken at this point, reduce its weight from
          subtree_weight.  */
       subtree_prob -= prob;
@@ -1663,7 +1673,8 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 				       LT, NULL_RTX, mode, unsignedp,
 				       label_rtx (node->left->code_label),
                                        probability);
-	      emit_case_nodes (index, node->right, default_label, default_prob, index_type);
+	      emit_case_nodes (index, node->right, default_label, default_prob,
+			       index_type);
 	    }
 
 	  /* If both children are single-valued cases with no
@@ -1688,7 +1699,7 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 				convert_modes (mode, imode,
 					       expand_normal (node->right->low),
 					       unsignedp),
-				label_rtx (node->right->code_label),
+				jump_target_rtx (node->right->code_label),
 				unsignedp, probability);
 
 	      /* See if the value matches what the left hand side
@@ -1700,7 +1711,7 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 				convert_modes (mode, imode,
 					       expand_normal (node->left->low),
 					       unsignedp),
-				label_rtx (node->left->code_label),
+				jump_target_rtx (node->left->code_label),
 				unsignedp, probability);
 	    }
 
@@ -1787,7 +1798,8 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 			        (mode, imode,
 			         expand_normal (node->right->low),
 			         unsignedp),
-			        label_rtx (node->right->code_label), unsignedp, probability);
+				jump_target_rtx (node->right->code_label),
+				unsignedp, probability);
             }
 	  }
 
@@ -1829,7 +1841,8 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 			        (mode, imode,
 			         expand_normal (node->left->low),
 			         unsignedp),
-			        label_rtx (node->left->code_label), unsignedp, probability);
+				jump_target_rtx (node->left->code_label),
+				unsignedp, probability);
             }
 	}
     }
@@ -2052,7 +2065,7 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 				       mode, 1, default_label, probability);
 	    }
 
-	  emit_jump (label_rtx (node->code_label));
+	  emit_jump (jump_target_rtx (node->code_label));
 	}
     }
 }

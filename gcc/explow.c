@@ -984,7 +984,7 @@ emit_stack_save (enum save_level save_level, rtx *psave)
 {
   rtx sa = *psave;
   /* The default is that we use a move insn and save in a Pmode object.  */
-  rtx (*fcn) (rtx, rtx) = gen_move_insn;
+  rtx (*fcn) (rtx, rtx) = gen_move_insn_uncast;
   machine_mode mode = STACK_SAVEAREA_MODE (save_level);
 
   /* See if this machine has anything special to do for this kind of save.  */
@@ -1039,7 +1039,7 @@ void
 emit_stack_restore (enum save_level save_level, rtx sa)
 {
   /* The default is that we use a move insn.  */
-  rtx (*fcn) (rtx, rtx) = gen_move_insn;
+  rtx (*fcn) (rtx, rtx) = gen_move_insn_uncast;
 
   /* If stack_realign_drap, the x86 backend emits a prologue that aligns both
      STACK_POINTER and HARD_FRAME_POINTER.

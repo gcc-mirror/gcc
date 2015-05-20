@@ -790,8 +790,7 @@ schedule_reg_moves (partial_schedule_ptr ps)
 	  move->old_reg = old_reg;
 	  move->new_reg = gen_reg_rtx (GET_MODE (prev_reg));
 	  move->num_consecutive_stages = distances[0] && distances[1] ? 2 : 1;
-	  move->insn = as_a <rtx_insn *> (gen_move_insn (move->new_reg,
-							 copy_rtx (prev_reg)));
+	  move->insn = gen_move_insn (move->new_reg, copy_rtx (prev_reg));
 	  bitmap_clear (move->uses);
 
 	  prev_reg = move->new_reg;

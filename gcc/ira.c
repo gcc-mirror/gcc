@@ -4988,7 +4988,7 @@ split_live_ranges_for_shrink_wrap (void)
 
       if (newreg)
 	{
-	  rtx new_move = gen_move_insn (newreg, dest);
+	  rtx_insn *new_move = gen_move_insn (newreg, dest);
 	  emit_insn_after (new_move, bb_note (call_dom));
 	  if (dump_file)
 	    {

@@ -1063,9 +1063,8 @@ emit_spill_move (bool to_p, rtx mem_pseudo, rtx val)
 	  LRA_SUBREG_P (mem_pseudo) = 1;
 	}
     }
-  return as_a <rtx_insn *> (to_p
-			    ? gen_move_insn (mem_pseudo, val)
-			    : gen_move_insn (val, mem_pseudo));
+  return to_p ? gen_move_insn (mem_pseudo, val)
+	      : gen_move_insn (val, mem_pseudo);
 }
 
 /* Process a special case insn (register move), return true if we
@@ -4528,7 +4527,7 @@ struct usage_insns
 static struct usage_insns *usage_insns;
 
 static void
-setup_next_usage_insn (int regno, rtx_insn *insn, int reloads_num, bool after_p)
+setup_next_usage_insn (int regno, rtx insn, int reloads_num, bool after_p)
 {
   usage_insns[regno].check = curr_usage_insns_check;
   usage_insns[regno].insns = insn;
@@ -4541,7 +4540,7 @@ setup_next_usage_insn (int regno, rtx_insn *insn, int reloads_num, bool after_p)
    optional debug insns finished by a non-debug insn using REGNO.
    RELOADS_NUM is current number of reload insns processed so far.  */
 static void
-add_next_usage_insn (int regno, rtx_insn *insn, int reloads_num)
+add_next_usage_insn (int regno, rtx insn, int reloads_num)
 {
   rtx next_usage_insns;
 
@@ -4763,7 +4762,7 @@ inherit_reload_reg (bool def_p, int original_regno,
 		   "    Inheritance reuse change %d->%d (bb%d):\n",
 		   original_regno, REGNO (new_reg),
 		   BLOCK_FOR_INSN (usage_insn)->index);
-	  dump_insn_slim (lra_dump_file, usage_insn);
+	  dump_insn_slim (lra_dump_file, as_a <rtx_insn *> (usage_insn));
 	}
     }
   if (lra_dump_file != NULL)
@@ -5023,7 +5022,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
 	{
 	  fprintf (lra_dump_file, "    Split reuse change %d->%d:\n",
 		   original_regno, REGNO (new_reg));
-	  dump_insn_slim (lra_dump_file, usage_insn);
+	  dump_insn_slim (lra_dump_file, as_a <rtx_insn *> (usage_insn));
 	}
     }
   lra_assert (NOTE_P (usage_insn) || NONDEBUG_INSN_P (usage_insn));
@@ -5564,7 +5563,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 			   || reg_renumber[src_regno] >= 0)
 		    {
 		      bool before_p;
-		      rtx_insn *use_insn = curr_insn;
+		      rtx use_insn = curr_insn;
 
 		      before_p = (JUMP_P (curr_insn)
 				  || (CALL_P (curr_insn) && reg->type == OP_IN));

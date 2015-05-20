@@ -16788,13 +16788,14 @@ mips16_split_long_branches (void)
   do
     {
       rtx_insn *insn;
+      rtx_jump_insn *jump_insn;
 
       shorten_branches (get_insns ());
       something_changed = false;
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-	if (JUMP_P (insn)
-	    && get_attr_length (insn) > 4
-	    && (any_condjump_p (insn) || any_uncondjump_p (insn)))
+	if ((jump_insn = dyn_cast <rtx_jump_insn *> (insn))
+	    && get_attr_length (jump_insn) > 4
+	    && (any_condjump_p (jump_insn) || any_uncondjump_p (jump_insn)))
 	  {
 	    rtx old_label, temp, saved_temp;
 	    rtx_code_label *new_label;
@@ -16809,7 +16810,7 @@ mips16_split_long_branches (void)
 	    emit_move_insn (saved_temp, temp);
 
 	    /* Load the branch target into TEMP.  */
-	    old_label = JUMP_LABEL (insn);
+	    old_label = JUMP_LABEL (jump_insn);
 	    target = gen_rtx_LABEL_REF (Pmode, old_label);
 	    mips16_load_branch_target (temp, target);
 
@@ -16824,7 +16825,7 @@ mips16_split_long_branches (void)
 	       a PC-relative constant pool.  */
 	    mips16_lay_out_constants (false);
 
-	    if (simplejump_p (insn))
+	    if (simplejump_p (jump_insn))
 	      /* We're going to replace INSN with a longer form.  */
 	      new_label = NULL;
 	    else
@@ -16838,11 +16839,11 @@ mips16_split_long_branches (void)
 	    jump_sequence = get_insns ();
 	    end_sequence ();
 
-	    emit_insn_after (jump_sequence, insn);
+	    emit_insn_after (jump_sequence, jump_insn);
 	    if (new_label)
-	      invert_jump (insn, new_label, false);
+	      invert_jump (jump_insn, new_label, false);
 	    else
-	      delete_insn (insn);
+	      delete_insn (jump_insn);
 	    something_changed = true;
 	  }
     }

@@ -2649,7 +2649,7 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
     case MEM:
       {
 	/* Reading memory.  */
-	rtx u;
+	rtx_insn_list *u;
 	rtx_insn_list *pending;
 	rtx_expr_list *pending_mem;
 	rtx t = x;
@@ -2700,11 +2700,10 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 		pending_mem = pending_mem->next ();
 	      }
 
-	    for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
-	      add_dependence (insn, as_a <rtx_insn *> (XEXP (u, 0)),
-			      REG_DEP_ANTI);
+	    for (u = deps->last_pending_memory_flush; u; u = u->next ())
+	      add_dependence (insn, u->insn (), REG_DEP_ANTI);
 
-	    for (u = deps->pending_jump_insns; u; u = XEXP (u, 1))
+	    for (u = deps->pending_jump_insns; u; u = u->next ())
 	      if (deps_may_trap_p (x))
 		{
 		  if ((sched_deps_info->generate_spec_deps)
@@ -2713,11 +2712,10 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
 		      ds_t ds = set_dep_weak (DEP_ANTI, BEGIN_CONTROL,
 					      MAX_DEP_WEAK);
 		      
-		      note_dep (as_a <rtx_insn *> (XEXP (u, 0)), ds);
+		      note_dep (u->insn (), ds);
 		    }
 		  else
-		    add_dependence (insn, as_a <rtx_insn *> (XEXP (u, 0)),
-				    REG_DEP_CONTROL);
+		    add_dependence (insn, u->insn (), REG_DEP_CONTROL);
 		}
 	  }
 
@@ -3088,7 +3086,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
   if (DEBUG_INSN_P (insn))
     {
       rtx_insn *prev = deps->last_debug_insn;
-      rtx u;
+      rtx_insn_list *u;
 
       if (!deps->readonly)
 	deps->last_debug_insn = insn;
@@ -3100,8 +3098,8 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 			   REG_DEP_ANTI, false);
 
       if (!sel_sched_p ())
-	for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
-	  add_dependence (insn, as_a <rtx_insn *> (XEXP (u, 0)), REG_DEP_ANTI);
+	for (u = deps->last_pending_memory_flush; u; u = u->next ())
+	  add_dependence (insn, u->insn (), REG_DEP_ANTI);
 
       EXECUTE_IF_SET_IN_REG_SET (reg_pending_uses, 0, i, rsi)
 	{

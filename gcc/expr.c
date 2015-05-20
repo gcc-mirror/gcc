@@ -3651,7 +3651,7 @@ emit_move_insn (rtx x, rtx y)
 /* Generate the body of an instruction to copy Y into X.
    It may be a list of insns, if one insn isn't enough.  */
 
-rtx
+rtx_insn *
 gen_move_insn (rtx x, rtx y)
 {
   rtx_insn *seq;
@@ -3661,6 +3661,15 @@ gen_move_insn (rtx x, rtx y)
   seq = get_insns ();
   end_sequence ();
   return seq;
+}
+
+/* Same as above, but return rtx (used as a callback, which must have
+   prototype compatible with other functions returning rtx).  */
+
+rtx
+gen_move_insn_uncast (rtx x, rtx y)
+{
+  return gen_move_insn (x, y);
 }
 
 /* If Y is representable exactly in a narrower mode, and the target can
@@ -8127,6 +8136,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		    enum expand_modifier modifier)
 {
   rtx op0, op1, op2, temp;
+  rtx_code_label *lab;
   tree type;
   int unsignedp;
   machine_mode mode;
@@ -8936,13 +8946,13 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	if (target != op0)
 	  emit_move_insn (target, op0);
 
-	temp = gen_label_rtx ();
+	lab = gen_label_rtx ();
 	do_compare_rtx_and_jump (target, cmpop1, comparison_code,
-				 unsignedp, mode, NULL_RTX, NULL_RTX, temp,
+				 unsignedp, mode, NULL_RTX, NULL, lab,
 				 -1);
       }
       emit_move_insn (target, op1);
-      emit_label (temp);
+      emit_label (lab);
       return target;
 
     case BIT_NOT_EXPR:
@@ -9020,38 +9030,39 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
     case UNGE_EXPR:
     case UNEQ_EXPR:
     case LTGT_EXPR:
-      temp = do_store_flag (ops,
-			    modifier != EXPAND_STACK_PARM ? target : NULL_RTX,
-			    tmode != VOIDmode ? tmode : mode);
-      if (temp)
-	return temp;
+      {
+	temp = do_store_flag (ops,
+			      modifier != EXPAND_STACK_PARM ? target : NULL_RTX,
+			      tmode != VOIDmode ? tmode : mode);
+	if (temp)
+	  return temp;
 
-      /* Use a compare and a jump for BLKmode comparisons, or for function
-	 type comparisons is HAVE_canonicalize_funcptr_for_compare.  */
+	/* Use a compare and a jump for BLKmode comparisons, or for function
+	   type comparisons is HAVE_canonicalize_funcptr_for_compare.  */
 
-      if ((target == 0
-	   || modifier == EXPAND_STACK_PARM
-	   || ! safe_from_p (target, treeop0, 1)
-	   || ! safe_from_p (target, treeop1, 1)
-	   /* Make sure we don't have a hard reg (such as function's return
-	      value) live across basic blocks, if not optimizing.  */
-	   || (!optimize && REG_P (target)
-	       && REGNO (target) < FIRST_PSEUDO_REGISTER)))
-	target = gen_reg_rtx (tmode != VOIDmode ? tmode : mode);
+	if ((target == 0
+	     || modifier == EXPAND_STACK_PARM
+	     || ! safe_from_p (target, treeop0, 1)
+	     || ! safe_from_p (target, treeop1, 1)
+	     /* Make sure we don't have a hard reg (such as function's return
+		value) live across basic blocks, if not optimizing.  */
+	     || (!optimize && REG_P (target)
+		 && REGNO (target) < FIRST_PSEUDO_REGISTER)))
+	  target = gen_reg_rtx (tmode != VOIDmode ? tmode : mode);
 
-      emit_move_insn (target, const0_rtx);
+	emit_move_insn (target, const0_rtx);
 
-      op1 = gen_label_rtx ();
-      jumpifnot_1 (code, treeop0, treeop1, op1, -1);
+	rtx_code_label *lab1 = gen_label_rtx ();
+	jumpifnot_1 (code, treeop0, treeop1, lab1, -1);
 
-      if (TYPE_PRECISION (type) == 1 && !TYPE_UNSIGNED (type))
-	emit_move_insn (target, constm1_rtx);
-      else
-	emit_move_insn (target, const1_rtx);
+	if (TYPE_PRECISION (type) == 1 && !TYPE_UNSIGNED (type))
+	  emit_move_insn (target, constm1_rtx);
+	else
+	  emit_move_insn (target, const1_rtx);
 
-      emit_label (op1);
-      return target;
-
+	emit_label (lab1);
+	return target;
+      }
     case COMPLEX_EXPR:
       /* Get the rtx code of the operands.  */
       op0 = expand_normal (treeop0);
@@ -9274,58 +9285,60 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
       }
 
     case COND_EXPR:
-      /* A COND_EXPR with its type being VOID_TYPE represents a
-	 conditional jump and is handled in
-	 expand_gimple_cond_expr.  */
-      gcc_assert (!VOID_TYPE_P (type));
+      {
+	/* A COND_EXPR with its type being VOID_TYPE represents a
+	   conditional jump and is handled in
+	   expand_gimple_cond_expr.  */
+	gcc_assert (!VOID_TYPE_P (type));
 
-      /* Note that COND_EXPRs whose type is a structure or union
-	 are required to be constructed to contain assignments of
-	 a temporary variable, so that we can evaluate them here
-	 for side effect only.  If type is void, we must do likewise.  */
+	/* Note that COND_EXPRs whose type is a structure or union
+	   are required to be constructed to contain assignments of
+	   a temporary variable, so that we can evaluate them here
+	   for side effect only.  If type is void, we must do likewise.  */
 
-      gcc_assert (!TREE_ADDRESSABLE (type)
-		  && !ignore
-		  && TREE_TYPE (treeop1) != void_type_node
-		  && TREE_TYPE (treeop2) != void_type_node);
+	gcc_assert (!TREE_ADDRESSABLE (type)
+		    && !ignore
+		    && TREE_TYPE (treeop1) != void_type_node
+		    && TREE_TYPE (treeop2) != void_type_node);
 
-      temp = expand_cond_expr_using_cmove (treeop0, treeop1, treeop2);
-      if (temp)
+	temp = expand_cond_expr_using_cmove (treeop0, treeop1, treeop2);
+	if (temp)
+	  return temp;
+
+	/* If we are not to produce a result, we have no target.  Otherwise,
+	   if a target was specified use it; it will not be used as an
+	   intermediate target unless it is safe.  If no target, use a
+	   temporary.  */
+
+	if (modifier != EXPAND_STACK_PARM
+	    && original_target
+	    && safe_from_p (original_target, treeop0, 1)
+	    && GET_MODE (original_target) == mode
+	    && !MEM_P (original_target))
+	  temp = original_target;
+	else
+	  temp = assign_temp (type, 0, 1);
+
+	do_pending_stack_adjust ();
+	NO_DEFER_POP;
+	rtx_code_label *lab0 = gen_label_rtx ();
+	rtx_code_label *lab1 = gen_label_rtx ();
+	jumpifnot (treeop0, lab0, -1);
+	store_expr (treeop1, temp,
+		    modifier == EXPAND_STACK_PARM,
+		    false);
+
+	emit_jump_insn (gen_jump (lab1));
+	emit_barrier ();
+	emit_label (lab0);
+	store_expr (treeop2, temp,
+		    modifier == EXPAND_STACK_PARM,
+		    false);
+
+	emit_label (lab1);
+	OK_DEFER_POP;
 	return temp;
-
-      /* If we are not to produce a result, we have no target.  Otherwise,
-	 if a target was specified use it; it will not be used as an
-	 intermediate target unless it is safe.  If no target, use a
-	 temporary.  */
-
-      if (modifier != EXPAND_STACK_PARM
-	  && original_target
-	  && safe_from_p (original_target, treeop0, 1)
-	  && GET_MODE (original_target) == mode
-	  && !MEM_P (original_target))
-	temp = original_target;
-      else
-	temp = assign_temp (type, 0, 1);
-
-      do_pending_stack_adjust ();
-      NO_DEFER_POP;
-      op0 = gen_label_rtx ();
-      op1 = gen_label_rtx ();
-      jumpifnot (treeop0, op0, -1);
-      store_expr (treeop1, temp,
-		  modifier == EXPAND_STACK_PARM,
-		  false);
-
-      emit_jump_insn (gen_jump (op1));
-      emit_barrier ();
-      emit_label (op0);
-      store_expr (treeop2, temp,
-		  modifier == EXPAND_STACK_PARM,
-		  false);
-
-      emit_label (op1);
-      OK_DEFER_POP;
-      return temp;
+      }
 
     case VEC_COND_EXPR:
       target = expand_vec_cond_expr (type, treeop0, treeop1, treeop2, target);

@@ -1,3 +1,140 @@
+2015-05-20  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* bb-reorder.c (set_edge_can_fallthru_flag): Use rtx_jump_insn where
+	feasible.
+	(fix_up_fall_thru_edges): Likewise.
+	(fix_crossing_conditional_branches): Likewise. Promote jump targets
+	from to rtx_insn to rtx_code_label where feasible.
+	* bt-load.c (move_btr_def): Remove as-a cast of the value returned by
+	gen_move_insn (returned type changed to rtx_insn).
+	* builtins.c (expand_errno_check): Fix arguments of
+	do_compare_rtx_and_jump (now expects rtx_code_label).
+	(expand_builtin_acc_on_device): Likewise.
+	* cfgcleanup.c (try_simplify_condjump): Add cast when calling
+	invert_jump (now exprects rtx_jump_insn).
+	* cfgexpand.c (label_rtx_for_bb): Promote return type to rtx_code_label.
+	(construct_init_block): Use rtx_code_label.
+	* cfgrtl.c (block_label): Promote return type to rtx_code_label.
+	(try_redirect_by_replacing_jump): Use cast to rtx_jump_insn when
+	calling redirect_jump.
+	(patch_jump_insn): Likewise.
+	(redirect_branch_edge): Likewise.
+	(force_nonfallthru_and_redirect): Likewise.
+	(fixup_reorder_chain): Explicitly use rtx_jump_insn instead of rtx_insn
+	when suitable.
+	(rtl_lv_add_condition_to_bb): Update call of do_compare_rtx_and_jump.
+	* cfgrtl.h: Promote return type of block_label to rtx_code_label.
+	* config/bfin/bfin.c (hwloop_optimize): Fix call of emit_label_before.
+	* config/i386/i386.c (ix86_emit_cmove): Explicitly use rtx_code_label
+	to store the value retured by gen_label_rtx.
+	* config/mips/mips.c (mips16_split_long_branches): Promote rtx_insn to
+	rtx_jump_insn.
+	* config/sh/sh.c (gen_far_branch): Likewise. Fix call of invert_jump.
+	(split_branches): Fix calls of redirect_jump.
+	* dojump.c (jumpifnot): Promote argument type from rtx to rtx_code_label.
+	(jumpifnot_1): Likewise.
+	(jumpif): Likewise.
+	(jumpif_1): Likewise.
+	(do_jump_1): Likewise.
+	(do_jump): Likewise. Use rtx_code_label when feasible.
+	(do_jump_by_parts_greater_rtx): Likewise.
+	(do_jump_by_parts_zero_rtx): Likewise.
+	(do_jump_by_parts_equality_rtx): Likewise.
+	(do_compare_rtx_and_jump): Likewise.
+	* dojump.h: Update function prototypes.
+	* dse.c (emit_inc_dec_insn_before): Remove case (gen_move_insn now
+	returns rtx_insn).
+	* emit-rtl.c (emit_jump_insn_before_noloc): Promote return type to
+	rtx_jump_insn.
+	(emit_label_before): Likewise.
+	(emit_jump_insn_after_noloc): Likewise.
+	(emit_jump_insn_after_setloc): Likewise.
+	(emit_jump_insn_after): Likewise
+	(emit_jump_insn_before_setloc): Likewise.
+	(emit_jump_insn_before): Likewise.
+	(emit_label_before): Promote return type to rtx_code_label.
+	(emit_label): Likewise.
+	* except.c (sjlj_emit_dispatch_table): Use jump_target_rtx.
+	* explow.c (emit_stack_save): Use gen_move_insn_uncast instead of
+	gen_move_insn.
+	(emit_stack_restore): Likewise.
+	* expmed.c (emit_store_flag_force): Fix calls of do_compare_rtx_and_jump.
+	(do_cmp_and_jump): Likewise.
+	* expr.c (expand_expr_real_2): Likewise. Promote some local variables
+	from rtx to rtx_code_label.
+	(gen_move_insn_uncast): New function.
+	* expr.h: Update return type of gen_move_insn (promote to rtx_insn).
+	* function.c (convert_jumps_to_returns): Fix call of redirect_jump.
+	* gcse.c (pre_insert_copy_insn): Use rtx_insn instead of rtx.
+	* ifcvt.c (dead_or_predicable): Use rtx_jump_insn when calling
+	invert_jump_1 and redirect_jump_1.
+	* internal-fn.c (expand_arith_overflow_result_store): Fix call of
+	do_compare_rtx_and_jump.
+	(expand_addsub_overflow): Likewise.
+	(expand_neg_overflow): Likewise.
+	(expand_mul_overflow): Likewise.
+	* ira.c (split_live_ranges_for_shrink_wrap): Use rtx_insn for
+	return value of gen_move_insn.
+	* jump.c (redirect_jump): Promote argument from rtx to rtx_jump_insn.
+	* loop-doloop.c (add_test): Use rtx_code_label.
+	(doloop_modify): Likewise.
+	(doloop_optimize): Likewise.
+	* loop-unroll.c (compare_and_jump_seq): Promote rtx to rtx_code_label.
+	* lra-constraints.c (emit_spill_move): Remove cast of value returned
+	by gen_move_insn.
+	(inherit_reload_reg): Add cast when calling dump_insn_slim.
+	(split_reg): Likewise.
+	* modulo-sched.c (schedule_reg_moves): Remove cast of value returned by
+	gen_move_insn.
+	* optabs.c (expand_binop_directly): Remove casts of values returned by
+	maybe_gen_insn.
+	(expand_unop_direct): Likewise.
+	(expand_abs): Likewise.
+	(maybe_emit_unop_insn): Likewise.
+	(maybe_gen_insn): Promote return type to rtx_insn.
+	* optabs.h: Update prototype of maybe_gen_insn.
+	* postreload-gcse.c (eliminate_partially_redundant_load): Remove
+	redundant cast.
+	* recog.c (struct peep2_insn_data): Promote type of insn field to
+	rtx_insn.
+	(peep2_reinit_state): Use NULL instead of NULL_RTX.
+	(peep2_attempt): Remove casts of insn in peep2_insn_data.
+	(peep2_fill_buffer): Promote argument from rtx to rtx_insn
+	* recog.h (struct insn_gen_fn): Promote return types of function
+	pointers and operator ().from rtx to rtx_insn.
+	* reorg.c (fill_simple_delay_slots): Promote rtx_insn to rtx_jump_insn.
+	(fill_eager_delay_slots): Likewise.
+	(relax_delay_slots): Likewise.
+	(make_return_insns): Likewise.
+	(dbr_schedule): Likewise.
+	(optimize_skips): Likewise.
+	(reorg_redirect_jump): Likewise.
+	(fill_slots_from_thread): Likewise.
+	* reorg.h: Update prototypes.
+	* resource.c (find_dead_or_set_registers): Use dyn_cast to
+	rtx_jump_insn instead of check.  Use it's jump_target method.
+	* rtl.h (rtx_jump_insn::jump_label): Define new method.
+	(rtx_jump_insn::jump_target): Define new method.
+	(rtx_jump_insn::set_jump_target): Define new method.
+	* rtlanal.c (tablejump_p): Promote type of one local variable.
+	* sched-deps.c (sched_analyze_2): Promote rtx to rtx_insn_list.
+	(sched_analyze_insn): Likewise.
+	* sched-vis.c (print_insn_with_notes): Promote rtx to rtx_insn.
+	(print_insn): Likewise.
+	* stmt.c (label_rtx): Promote return type to rtx_insn.
+	(force_label_rtx): Likewise.
+	(jump_target_rtx): Define new function.
+	(expand_label): Use it, get rid of one cast.
+	(expand_naked_return): Promote rtx to rtx_code_label.
+	(do_jump_if_equal): Fix do_compare_rtx_and_jump call.
+	(expand_case): Use rtx_code_label instread of rtx where feasible.
+	(expand_sjlj_dispatch_table): Likewise.
+	(emit_case_nodes): Likewise.
+	* stmt.h: Declare jump_target_rtx.  Update prototypes.  Fix comments.
+	* store-motion.c (insert_store): Make use of new return type of
+	gen_move_insn and remove a cast.
+	(replace_store_insn): Likewise.
+
 2015-05-20  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa.c (init_alignment_context): Replace MULT

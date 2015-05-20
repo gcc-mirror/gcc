@@ -3844,7 +3844,8 @@ hwloop_optimize (hwloop_info loop)
 
   delete_insn (loop->loop_end);
   /* Insert the loop end label before the last instruction of the loop.  */
-  emit_label_before (loop->end_label, loop->last_insn);
+  emit_label_before (as_a <rtx_code_label *> (loop->end_label),
+		     loop->last_insn);
 
   return true;
 }

@@ -905,7 +905,7 @@ emit_inc_dec_insn_before (rtx mem ATTRIBUTE_UNUSED,
       end_sequence ();
     }
   else
-    new_insn = as_a <rtx_insn *> (gen_move_insn (dest, src));
+    new_insn = gen_move_insn (dest, src);
   info.first = new_insn;
   info.fixed_regs_live = insn_info->fixed_regs_live;
   info.failure = false;

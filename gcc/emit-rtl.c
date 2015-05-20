@@ -143,6 +143,11 @@ rtx ret_rtx;
 rtx simple_return_rtx;
 rtx cc0_rtx;
 
+/* Marker used for denoting an INSN, which should never be accessed (i.e.,
+   this pointer should normally never be dereferenced), but is required to be
+   distinct from NULL_RTX.  Currently used by peephole2 pass.  */
+rtx_insn *invalid_insn_rtx;
+
 /* A hash table storing CONST_INTs whose absolute value is greater
    than MAX_SAVED_CONST_INT.  */
 
@@ -4410,11 +4415,12 @@ emit_insn_before_noloc (rtx x, rtx_insn *before, basic_block bb)
 /* Make an instruction with body X and code JUMP_INSN
    and output it before the instruction BEFORE.  */
 
-rtx_insn *
+rtx_jump_insn *
 emit_jump_insn_before_noloc (rtx x, rtx_insn *before)
 {
-  return emit_pattern_before_noloc (x, before, NULL_RTX, NULL,
-				    make_jump_insn_raw);
+  return as_a <rtx_jump_insn *> (
+		emit_pattern_before_noloc (x, before, NULL_RTX, NULL,
+					   make_jump_insn_raw));
 }
 
 /* Make an instruction with body X and code CALL_INSN
@@ -4453,13 +4459,13 @@ emit_barrier_before (rtx before)
 
 /* Emit the label LABEL before the insn BEFORE.  */
 
-rtx_insn *
+rtx_code_label *
 emit_label_before (rtx label, rtx_insn *before)
 {
   gcc_checking_assert (INSN_UID (label) == 0);
   INSN_UID (label) = cur_insn_uid++;
   add_insn_before (label, before, NULL);
-  return as_a <rtx_insn *> (label);
+  return as_a <rtx_code_label *> (label);
 }
 
 /* Helper for emit_insn_after, handles lists of instructions
@@ -4561,10 +4567,11 @@ emit_insn_after_noloc (rtx x, rtx after, basic_block bb)
 /* Make an insn of code JUMP_INSN with body X
    and output it after the insn AFTER.  */
 
-rtx_insn *
+rtx_jump_insn *
 emit_jump_insn_after_noloc (rtx x, rtx after)
 {
-  return emit_pattern_after_noloc (x, after, NULL, make_jump_insn_raw);
+  return as_a <rtx_jump_insn *> (
+		emit_pattern_after_noloc (x, after, NULL, make_jump_insn_raw));
 }
 
 /* Make an instruction with body X and code CALL_INSN
@@ -4738,17 +4745,19 @@ emit_insn_after (rtx pattern, rtx after)
 }
 
 /* Like emit_jump_insn_after_noloc, but set INSN_LOCATION according to LOC.  */
-rtx_insn *
+rtx_jump_insn *
 emit_jump_insn_after_setloc (rtx pattern, rtx after, int loc)
 {
-  return emit_pattern_after_setloc (pattern, after, loc, make_jump_insn_raw);
+  return as_a <rtx_jump_insn *> (
+	emit_pattern_after_setloc (pattern, after, loc, make_jump_insn_raw));
 }
 
 /* Like emit_jump_insn_after_noloc, but set INSN_LOCATION according to AFTER.  */
-rtx_insn *
+rtx_jump_insn *
 emit_jump_insn_after (rtx pattern, rtx after)
 {
-  return emit_pattern_after (pattern, after, true, make_jump_insn_raw);
+  return as_a <rtx_jump_insn *> (
+	emit_pattern_after (pattern, after, true, make_jump_insn_raw));
 }
 
 /* Like emit_call_insn_after_noloc, but set INSN_LOCATION according to LOC.  */
@@ -4855,19 +4864,21 @@ emit_insn_before (rtx pattern, rtx before)
 }
 
 /* like emit_insn_before_noloc, but set INSN_LOCATION according to LOC.  */
-rtx_insn *
+rtx_jump_insn *
 emit_jump_insn_before_setloc (rtx pattern, rtx_insn *before, int loc)
 {
-  return emit_pattern_before_setloc (pattern, before, loc, false,
-				     make_jump_insn_raw);
+  return as_a <rtx_jump_insn *> (
+	emit_pattern_before_setloc (pattern, before, loc, false,
+				    make_jump_insn_raw));
 }
 
 /* Like emit_jump_insn_before_noloc, but set INSN_LOCATION according to BEFORE.  */
-rtx_insn *
+rtx_jump_insn *
 emit_jump_insn_before (rtx pattern, rtx before)
 {
-  return emit_pattern_before (pattern, before, true, false,
-			      make_jump_insn_raw);
+  return as_a <rtx_jump_insn *> (
+	emit_pattern_before (pattern, before, true, false,
+			     make_jump_insn_raw));
 }
 
 /* Like emit_insn_before_noloc, but set INSN_LOCATION according to LOC.  */
@@ -5082,13 +5093,15 @@ emit_call_insn (rtx x)
 
 /* Add the label LABEL to the end of the doubly-linked list.  */
 
-rtx_insn *
-emit_label (rtx label)
+rtx_code_label *
+emit_label (rtx uncast_label)
 {
+  rtx_code_label *label = as_a <rtx_code_label *> (uncast_label);
+
   gcc_checking_assert (INSN_UID (label) == 0);
   INSN_UID (label) = cur_insn_uid++;
-  add_insn (as_a <rtx_insn *> (label));
-  return as_a <rtx_insn *> (label);
+  add_insn (label);
+  return label;
 }
 
 /* Make an insn of code JUMP_TABLE_DATA
@@ -6151,6 +6164,14 @@ init_emit_once (void)
   ret_rtx = gen_rtx_fmt_ (RETURN, VOIDmode);
   simple_return_rtx = gen_rtx_fmt_ (SIMPLE_RETURN, VOIDmode);
   cc0_rtx = gen_rtx_fmt_ (CC0, VOIDmode);
+  invalid_insn_rtx = gen_rtx_INSN (VOIDmode,
+				   /*prev_insn=*/NULL,
+				   /*next_insn=*/NULL,
+				   /*bb=*/NULL,
+				   /*pattern=*/NULL_RTX,
+				   /*location=*/-1,
+				   CODE_FOR_nothing,
+				   /*reg_notes=*/NULL_RTX);
 }
 
 /* Produce exact duplicate of insn INSN after AFTER.
