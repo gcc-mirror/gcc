@@ -3846,7 +3846,7 @@ canonicalize_bool (tree expr, bool invert)
       else if (TREE_CODE (expr) == SSA_NAME)
 	return fold_build2 (EQ_EXPR, boolean_type_node, expr,
 			    build_int_cst (TREE_TYPE (expr), 0));
-      else if (TREE_CODE_CLASS (TREE_CODE (expr)) == tcc_comparison)
+      else if (COMPARISON_CLASS_P (expr))
 	return fold_build2 (invert_tree_comparison (TREE_CODE (expr), false),
 			    boolean_type_node,
 			    TREE_OPERAND (expr, 0),
@@ -3865,7 +3865,7 @@ canonicalize_bool (tree expr, bool invert)
       else if (TREE_CODE (expr) == SSA_NAME)
 	return fold_build2 (NE_EXPR, boolean_type_node, expr,
 			    build_int_cst (TREE_TYPE (expr), 0));
-      else if (TREE_CODE_CLASS (TREE_CODE (expr)) == tcc_comparison)
+      else if (COMPARISON_CLASS_P (expr))
 	return fold_build2 (TREE_CODE (expr),
 			    boolean_type_node,
 			    TREE_OPERAND (expr, 0),
@@ -3946,12 +3946,12 @@ same_bool_result_p (const_tree op1, const_tree op2)
   /* Check the cases where at least one of the operands is a comparison.
      These are a bit smarter than operand_equal_p in that they apply some
      identifies on SSA_NAMEs.  */
-  if (TREE_CODE_CLASS (TREE_CODE (op2)) == tcc_comparison
+  if (COMPARISON_CLASS_P (op2)
       && same_bool_comparison_p (op1, TREE_CODE (op2),
 				 TREE_OPERAND (op2, 0),
 				 TREE_OPERAND (op2, 1)))
     return true;
-  if (TREE_CODE_CLASS (TREE_CODE (op1)) == tcc_comparison
+  if (COMPARISON_CLASS_P (op1)
       && same_bool_comparison_p (op2, TREE_CODE (op1),
 				 TREE_OPERAND (op1, 0),
 				 TREE_OPERAND (op1, 1)))

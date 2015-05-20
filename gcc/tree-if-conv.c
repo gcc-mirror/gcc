@@ -339,7 +339,7 @@ parse_predicate (tree cond, tree *op0, tree *op1)
       return ERROR_MARK;
     }
 
-  if (TREE_CODE_CLASS (TREE_CODE (cond)) == tcc_comparison)
+  if (COMPARISON_CLASS_P (cond))
     {
       *op0 = TREE_OPERAND (cond, 0);
       *op1 = TREE_OPERAND (cond, 1);
