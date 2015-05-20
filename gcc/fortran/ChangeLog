@@ -1,3 +1,11 @@
+2015-05-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/65903
+	* io.c (format_lex): Change to NONSTRING when checking for
+	possible doubled quote.
+	* scanner.c (gfc_next_char_literal): Revert change from 64506
+	and add a check for quotes and return.
+
 2015-05-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/66106
