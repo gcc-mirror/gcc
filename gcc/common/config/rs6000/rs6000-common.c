@@ -288,6 +288,31 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
   return true;
 }
 
+/* -fsplit-stack uses a field in the TCB, available with glibc-2.19.
+   We also allow 2.18 because alignment padding guarantees that the
+   space is available there too.  */
+
+static bool
+rs6000_supports_split_stack (bool report,
+			     struct gcc_options *opts ATTRIBUTE_UNUSED)
+{
+#ifndef TARGET_GLIBC_MAJOR
+#define TARGET_GLIBC_MAJOR 0
+#endif
+#ifndef TARGET_GLIBC_MINOR
+#define TARGET_GLIBC_MINOR 0
+#endif
+  /* Note: Can't test DEFAULT_ABI here, it isn't set until later.  */
+  if (TARGET_GLIBC_MAJOR * 1000 + TARGET_GLIBC_MINOR >= 2018
+      && TARGET_64BIT
+      && TARGET_ELF)
+    return true;
+
+  if (report)
+    error ("%<-fsplit-stack%> currently only supported on PowerPC64 GNU/Linux with glibc-2.18 or later");
+  return false;
+}
+
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION rs6000_handle_option
 
@@ -299,5 +324,8 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 
 #undef TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE rs6000_option_optimization_table
+
+#undef TARGET_SUPPORTS_SPLIT_STACK
+#define TARGET_SUPPORTS_SPLIT_STACK rs6000_supports_split_stack
 
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;

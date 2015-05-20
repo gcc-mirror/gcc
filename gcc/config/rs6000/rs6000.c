@@ -187,6 +187,8 @@ typedef struct GTY(()) machine_function
      64-bits wide and is allocated early enough so that the offset
      does not overflow the 16-bit load/store offset field.  */
   rtx sdmode_stack_slot;
+  /* Alternative internal arg pointer for -fsplit-stack.  */
+  rtx split_stack_arg_pointer;
   /* Flag if r2 setup is needed with ELFv2 ABI.  */
   bool r2_setup_needed;
 } machine_function;
@@ -1190,6 +1192,7 @@ static bool rs6000_debug_cannot_change_mode_class (machine_mode,
 						   machine_mode,
 						   enum reg_class);
 static bool rs6000_save_toc_in_prologue_p (void);
+static rtx rs6000_internal_arg_pointer (void);
 
 rtx (*rs6000_legitimize_reload_address_ptr) (rtx, machine_mode, int, int,
 					     int, int *)
@@ -1410,6 +1413,12 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_SET_UP_BY_PROLOGUE
 #define TARGET_SET_UP_BY_PROLOGUE rs6000_set_up_by_prologue
+
+#undef TARGET_EXTRA_LIVE_ON_ENTRY
+#define TARGET_EXTRA_LIVE_ON_ENTRY rs6000_live_on_entry
+
+#undef TARGET_INTERNAL_ARG_POINTER
+#define TARGET_INTERNAL_ARG_POINTER rs6000_internal_arg_pointer
 
 #undef TARGET_HAVE_TLS
 #define TARGET_HAVE_TLS HAVE_AS_TLS
@@ -11150,7 +11159,7 @@ setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
   else
     {
       first_reg_offset = next_cum.words;
-      save_area = virtual_incoming_args_rtx;
+      save_area = crtl->args.internal_arg_pointer;
 
       if (targetm.calls.must_pass_in_stack (mode, type))
 	first_reg_offset += rs6000_arg_size (TYPE_MODE (type), type);
@@ -11344,7 +11353,7 @@ rs6000_va_start (tree valist, rtx nextarg)
     }
 
   /* Find the overflow area.  */
-  t = make_tree (TREE_TYPE (ovf), virtual_incoming_args_rtx);
+  t = make_tree (TREE_TYPE (ovf), crtl->args.internal_arg_pointer);
   if (words != 0)
     t = fold_build_pointer_plus_hwi (t, words * MIN_UNITS_PER_WORD);
   t = build2 (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
@@ -23424,6 +23433,48 @@ rs6000_reg_live_or_pic_offset_p (int reg)
                   || (DEFAULT_ABI == ABI_DARWIN && flag_pic))));
 }
 
+/* Return whether the split-stack arg pointer (r12) is used.  */
+
+static bool
+split_stack_arg_pointer_used_p (void)
+{
+  /* If the pseudo holding the arg pointer is no longer a pseudo,
+     then the arg pointer is used.  */
+  if (cfun->machine->split_stack_arg_pointer != NULL_RTX
+      && (!REG_P (cfun->machine->split_stack_arg_pointer)
+	  || (REGNO (cfun->machine->split_stack_arg_pointer)
+	      < FIRST_PSEUDO_REGISTER)))
+    return true;
+
+  /* Unfortunately we also need to do some code scanning, since
+     r12 may have been substituted for the pseudo.  */
+  rtx_insn *insn;
+  basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+  FOR_BB_INSNS (bb, insn)
+    if (NONDEBUG_INSN_P (insn))
+      {
+	/* A call destroys r12.  */
+	if (CALL_P (insn))
+	  return false;
+
+	df_ref use;
+	FOR_EACH_INSN_USE (use, insn)
+	  {
+	    rtx x = DF_REF_REG (use);
+	    if (REG_P (x) && REGNO (x) == 12)
+	      return true;
+	  }
+	df_ref def;
+	FOR_EACH_INSN_DEF (def, insn)
+	  {
+	    rtx x = DF_REF_REG (def);
+	    if (REG_P (x) && REGNO (x) == 12)
+	      return false;
+	  }
+      }
+  return bitmap_bit_p (DF_LR_OUT (bb), 12);
+}
+
 /* Emit function prologue as insns.  */
 
 void
@@ -24374,6 +24425,40 @@ rs6000_emit_prologue (void)
     {
       rtx reg = gen_rtx_REG (reg_mode, TOC_REGNUM);
       emit_insn (gen_frame_store (reg, sp_reg_rtx, RS6000_TOC_SAVE_SLOT));
+    }
+
+  if (flag_split_stack && split_stack_arg_pointer_used_p ())
+    {
+      /* Set up the arg pointer (r12) for -fsplit-stack code.  If
+	 __morestack was called, it left the arg pointer to the old
+	 stack in r29.  Otherwise, the arg pointer is the top of the
+	 current frame.  */
+      if (frame_off != 0 || REGNO (frame_reg_rtx) != 12)
+	{
+	  rtx r12 = gen_rtx_REG (Pmode, 12);
+	  if (frame_off == 0)
+	    emit_move_insn (r12, frame_reg_rtx);
+	  else
+	    emit_insn (gen_add3_insn (r12, frame_reg_rtx, GEN_INT (frame_off)));
+	}
+      if (info->push_p)
+	{
+	  rtx r12 = gen_rtx_REG (Pmode, 12);
+	  rtx r29 = gen_rtx_REG (Pmode, 29);
+	  rtx cr7 = gen_rtx_REG (CCUNSmode, CR7_REGNO);
+	  rtx not_more = gen_label_rtx ();
+	  rtx jump;
+
+	  jump = gen_rtx_IF_THEN_ELSE (VOIDmode,
+				       gen_rtx_GEU (VOIDmode, cr7, const0_rtx),
+				       gen_rtx_LABEL_REF (VOIDmode, not_more),
+				       pc_rtx);
+	  jump = emit_jump_insn (gen_rtx_SET (pc_rtx, jump));
+	  JUMP_LABEL (jump) = not_more;
+	  LABEL_NUSES (not_more) += 1;
+	  emit_move_insn (r12, r29);
+	  emit_label (not_more);
+	}
     }
 }
 
@@ -25801,6 +25886,178 @@ rs6000_output_function_epilogue (FILE *file,
 
       fputs ("\t.align 2\n", file);
     }
+}
+
+/* -fsplit-stack support.  */
+
+/* A SYMBOL_REF for __morestack.  */
+static GTY(()) rtx morestack_ref;
+
+static rtx
+gen_add3_const (rtx rt, rtx ra, long c)
+{
+  if (TARGET_64BIT)
+    return gen_adddi3 (rt, ra, GEN_INT (c));
+ else
+    return gen_addsi3 (rt, ra, GEN_INT (c));
+}
+
+/* Emit -fsplit-stack prologue, which goes before the regular function
+   prologue (at local entry point in the case of ELFv2).  */
+
+void
+rs6000_expand_split_stack_prologue (void)
+{
+  rs6000_stack_t *info = rs6000_stack_info ();
+  unsigned HOST_WIDE_INT allocate;
+  long alloc_hi, alloc_lo;
+  rtx r0, r1, r12, lr, ok_label, compare, jump, call_fusage;
+  rtx_insn *insn;
+
+  gcc_assert (flag_split_stack && reload_completed);
+
+  if (!info->push_p)
+    return;
+
+  allocate = info->total_size;
+  if (allocate > (unsigned HOST_WIDE_INT) 1 << 31)
+    {
+      sorry ("Stack frame larger than 2G is not supported for -fsplit-stack");
+      return;
+    }
+  if (morestack_ref == NULL_RTX)
+    {
+      morestack_ref = gen_rtx_SYMBOL_REF (Pmode, "__morestack");
+      SYMBOL_REF_FLAGS (morestack_ref) |= (SYMBOL_FLAG_LOCAL
+					   | SYMBOL_FLAG_FUNCTION);
+    }
+
+  r0 = gen_rtx_REG (Pmode, 0);
+  r1 = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
+  r12 = gen_rtx_REG (Pmode, 12);
+  emit_insn (gen_load_split_stack_limit (r0));
+  /* Always emit two insns here to calculate the requested stack,
+     so that the linker can edit them when adjusting size for calling
+     non-split-stack code.  */
+  alloc_hi = (-allocate + 0x8000) & ~0xffffL;
+  alloc_lo = -allocate - alloc_hi;
+  if (alloc_hi != 0)
+    {
+      emit_insn (gen_add3_const (r12, r1, alloc_hi));
+      if (alloc_lo != 0)
+	emit_insn (gen_add3_const (r12, r12, alloc_lo));
+      else
+	emit_insn (gen_nop ());
+    }
+  else
+    {
+      emit_insn (gen_add3_const (r12, r1, alloc_lo));
+      emit_insn (gen_nop ());
+    }
+
+  compare = gen_rtx_REG (CCUNSmode, CR7_REGNO);
+  emit_insn (gen_rtx_SET (compare, gen_rtx_COMPARE (CCUNSmode, r12, r0)));
+  ok_label = gen_label_rtx ();
+  jump = gen_rtx_IF_THEN_ELSE (VOIDmode,
+			       gen_rtx_GEU (VOIDmode, compare, const0_rtx),
+			       gen_rtx_LABEL_REF (VOIDmode, ok_label),
+			       pc_rtx);
+  jump = emit_jump_insn (gen_rtx_SET (pc_rtx, jump));
+  JUMP_LABEL (jump) = ok_label;
+  /* Mark the jump as very likely to be taken.  */
+  add_int_reg_note (jump, REG_BR_PROB,
+		    REG_BR_PROB_BASE - REG_BR_PROB_BASE / 100);
+
+  lr = gen_rtx_REG (Pmode, LR_REGNO);
+  insn = emit_move_insn (r0, lr);
+  RTX_FRAME_RELATED_P (insn) = 1;
+  insn = emit_insn (gen_frame_store (r0, r1, info->lr_save_offset));
+  RTX_FRAME_RELATED_P (insn) = 1;
+
+  insn = emit_call_insn (gen_call (gen_rtx_MEM (SImode, morestack_ref),
+				   const0_rtx, const0_rtx));
+  call_fusage = NULL_RTX;
+  use_reg (&call_fusage, r12);
+  add_function_usage_to (insn, call_fusage);
+  emit_insn (gen_frame_load (r0, r1, info->lr_save_offset));
+  insn = emit_move_insn (lr, r0);
+  add_reg_note (insn, REG_CFA_RESTORE, lr);
+  RTX_FRAME_RELATED_P (insn) = 1;
+  emit_insn (gen_split_stack_return ());
+
+  emit_label (ok_label);
+  LABEL_NUSES (ok_label) = 1;
+}
+
+/* Return the internal arg pointer used for function incoming
+   arguments.  When -fsplit-stack, the arg pointer is r12 so we need
+   to copy it to a pseudo in order for it to be preserved over calls
+   and suchlike.  We'd really like to use a pseudo here for the
+   internal arg pointer but data-flow analysis is not prepared to
+   accept pseudos as live at the beginning of a function.  */
+
+static rtx
+rs6000_internal_arg_pointer (void)
+{
+  if (flag_split_stack)
+    {
+      if (cfun->machine->split_stack_arg_pointer == NULL_RTX)
+	{
+	  rtx pat;
+
+	  cfun->machine->split_stack_arg_pointer = gen_reg_rtx (Pmode);
+	  REG_POINTER (cfun->machine->split_stack_arg_pointer) = 1;
+
+	  /* Put the pseudo initialization right after the note at the
+	     beginning of the function.  */
+	  pat = gen_rtx_SET (cfun->machine->split_stack_arg_pointer,
+			     gen_rtx_REG (Pmode, 12));
+	  push_topmost_sequence ();
+	  emit_insn_after (pat, get_insns ());
+	  pop_topmost_sequence ();
+	}
+      return plus_constant (Pmode, cfun->machine->split_stack_arg_pointer,
+			    FIRST_PARM_OFFSET (current_function_decl));
+    }
+  return virtual_incoming_args_rtx;
+}
+
+/* We may have to tell the dataflow pass that the split stack prologue
+   is initializing a register.  */
+
+static void
+rs6000_live_on_entry (bitmap regs)
+{
+  if (flag_split_stack)
+    bitmap_set_bit (regs, 12);
+}
+
+/* Emit -fsplit-stack dynamic stack allocation space check.  */
+
+void
+rs6000_split_stack_space_check (rtx size, rtx label)
+{
+  rtx sp = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
+  rtx limit = gen_reg_rtx (Pmode);
+  rtx requested = gen_reg_rtx (Pmode);
+  rtx cmp = gen_reg_rtx (CCUNSmode);
+  rtx jump;
+
+  emit_insn (gen_load_split_stack_limit (limit));
+  if (CONST_INT_P (size))
+    emit_insn (gen_add3_insn (requested, sp, GEN_INT (-INTVAL (size))));
+  else
+    {
+      size = force_reg (Pmode, size);
+      emit_move_insn (requested, gen_rtx_MINUS (Pmode, sp, size));
+    }
+  emit_insn (gen_rtx_SET (cmp, gen_rtx_COMPARE (CCUNSmode, requested, limit)));
+  jump = gen_rtx_IF_THEN_ELSE (VOIDmode,
+			       gen_rtx_GEU (VOIDmode, cmp, const0_rtx),
+			       gen_rtx_LABEL_REF (VOIDmode, label),
+			       pc_rtx);
+  jump = emit_jump_insn (gen_rtx_SET (pc_rtx, jump));
+  JUMP_LABEL (jump) = label;
 }
 
 /* A C compound statement that outputs the assembler code for a thunk
@@ -29810,6 +30067,9 @@ rs6000_elf_file_end (void)
   if (TARGET_32BIT || DEFAULT_ABI == ABI_ELFv2)
     file_end_indicate_exec_stack ();
 #endif
+
+  if (flag_split_stack)
+    file_end_indicate_split_stack ();
 }
 #endif
 

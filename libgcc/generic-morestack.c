@@ -23,6 +23,9 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+/* powerpc 32-bit not supported.  */
+#if !defined __powerpc__ || defined __powerpc64__
+
 #include "tconfig.h"
 #include "tsystem.h"
 #include "coretypes.h"
@@ -935,6 +938,7 @@ __splitstack_find (void *segment_arg, void *sp, size_t *len,
       nsp -= 12 * sizeof (void *);
 #elif defined (__i386__)
       nsp -= 6 * sizeof (void *);
+#elif defined __powerpc64__
 #else
 #error "unrecognized target"
 #endif
@@ -1170,3 +1174,4 @@ __splitstack_find_context (void *context[NUMBER_OFFSETS], size_t *stack_size,
 }
 
 #endif /* !defined (inhibit_libc) */
+#endif /* not powerpc 32-bit */
