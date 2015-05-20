@@ -3108,6 +3108,7 @@ extern const struct mips_cpu_info *mips_arch_info;
 extern const struct mips_cpu_info *mips_tune_info;
 extern unsigned int mips_base_compression_flags;
 extern GTY(()) struct target_globals *mips16_globals;
+extern GTY(()) struct target_globals *micromips_globals;
 #endif
 
 /* Enable querying of DFA units.  */

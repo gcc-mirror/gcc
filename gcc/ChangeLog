@@ -1,3 +1,7 @@
+2015-05-20  Robert Suchanek  <robert.suchanek@imgtec.com>
+
+	* config/mips/mips.h (micromips_globals): Declare.
+
 2015-05-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* timevar.def (TV_INITIALIZE_RTL): New.
