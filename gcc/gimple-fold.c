@@ -5518,7 +5518,7 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
   if (TREE_THIS_VOLATILE (t))
     return NULL_TREE;
 
-  if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration)
+  if (DECL_P (t))
     return get_symbol_constant_value (t);
 
   tem = fold_read_from_constant_string (t);

@@ -1,5 +1,9 @@
 2015-05-20  Marek Polacek  <polacek@redhat.com>
 
+	* c-ada-spec.c (dump_sloc): Use DECL_P.
+
+2015-05-20  Marek Polacek  <polacek@redhat.com>
+
 	* c-pragma.c: Use VAR_OR_FUNCTION_DECL_P throughout.
 	* c-common.c: Likewise.
 

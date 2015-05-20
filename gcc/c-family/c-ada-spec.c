@@ -1629,7 +1629,7 @@ dump_sloc (pretty_printer *buffer, tree node)
 
   xloc.file = NULL;
 
-  if (TREE_CODE_CLASS (TREE_CODE (node)) == tcc_declaration)
+  if (DECL_P (node))
     xloc = expand_location (DECL_SOURCE_LOCATION (node));
   else if (EXPR_HAS_LOCATION (node))
     xloc = expand_location (EXPR_LOCATION (node));

@@ -4222,7 +4222,7 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	      {
 		if (TREE_THIS_VOLATILE (t) != volatile_p)
 		  {
-		    if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration)
+		    if (DECL_P (t))
 		      t = build_simple_mem_ref_loc (EXPR_LOCATION (*from_p),
 						    build_fold_addr_expr (t));
 		    if (REFERENCE_CLASS_P (t))
