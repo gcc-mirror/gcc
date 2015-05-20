@@ -1,3 +1,28 @@
+2015-05-20  Kugan Vivekanandarajah  <kuganv@linaro.org>
+	    Jim Wilson  <jim.wilson@linaro.org>
+
+	* config/arm/aarch-common-protos.h (struct mem_cost_table): Added
+	new  fields loadv and storev.
+	* config/aarch64/aarch64-cost-tables.h (thunderx_extra_costs):
+	Initialize loadv and storev.
+	* config/arm/aarch-cost-tables.h (generic_extra_costs): Likewise.
+	(cortexa53_extra_costs): Likewise.
+	(cortexa57_extra_costs): Likewise.
+	(xgene1_extra_costs): Likewise.
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Update vector
+	rtx_costs.
+
+2015-05-20  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* config/arm/arm.c (cortexa9_extra_costs): Initialize loadv and
+	 storev.
+	(cortexa8_extra_costs): Likewise.
+	(cortexa5_extra_costs): Likewise.
+	(cortexa7_extra_costs): Likewise.
+	(cortexa12_extra_costs): Likewise.
+	(cortexa15_extra_costs): Likewise.
+	(v7m_extra_costs): Likewise.
+
 2015-05-20  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadupdate.c (thread_single_edge): Use delete_jump_thread
