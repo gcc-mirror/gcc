@@ -1,3 +1,9 @@
+2015-05-20  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c (thread_single_edge): Use delete_jump_thread
+	instead of open-coded version.  Also delete the jump thread created
+	within this function.
+
 2015-05-20  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_allocate_stack): Return

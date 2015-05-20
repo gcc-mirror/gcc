@@ -1647,9 +1647,7 @@ thread_single_edge (edge e)
   vec<jump_thread_edge *> *path = THREAD_PATH (e);
   edge eto = (*path)[1]->e;
 
-  for (unsigned int i = 0; i < path->length (); i++)
-    delete (*path)[i];
-  delete path;
+  delete_jump_thread_path (path);
   e->aux = NULL;
 
   thread_stats.num_threaded_edges++;
@@ -1693,6 +1691,7 @@ thread_single_edge (edge e)
   redirect_edge_and_branch (e, rd.dup_blocks[0]);
   flush_pending_stmts (e);
 
+  delete_jump_thread_path (npath);
   return rd.dup_blocks[0];
 }
 
