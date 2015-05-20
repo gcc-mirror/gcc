@@ -1,3 +1,9 @@
+2015-05-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_class_max_nregs):
+	Use UNITS_PER_VREG and UNITS_PER_WORD instead of their direct
+	values.
+
 2015-05-20  Robert Suchanek  <robert.suchanek@imgtec.com>
 
 	* config/mips/mips.h (micromips_globals): Declare.
