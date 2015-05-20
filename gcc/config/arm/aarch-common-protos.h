@@ -102,6 +102,8 @@ struct mem_cost_table
   const int storef;		/* SFmode.  */
   const int stored;		/* DFmode.  */
   const int store_unaligned;	/* Extra for unaligned stores.  */
+  const int loadv;		/* Vector load.  */
+  const int storev;		/* Vector store.  */
 };
 
 struct fp_cost_table
