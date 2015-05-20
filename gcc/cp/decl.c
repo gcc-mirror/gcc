@@ -11767,16 +11767,6 @@ grok_op_properties (tree decl, bool complain)
 	      error ("%qD may not be declared as static", decl);
 	      return false;
 	    }
-	  if (!flag_sized_deallocation && warn_cxx14_compat)
-	    {
-	      tree parm = FUNCTION_ARG_CHAIN (decl);
-	      if (parm && same_type_p (TREE_VALUE (parm), size_type_node)
-		  && TREE_CHAIN (parm) == void_list_node)
-		warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc__14_compat,
-			    "%qD is a usual (non-placement) deallocation "
-			    "function in C++14 (or with -fsized-deallocation)",
-			    decl);
-	    }
 	}
     }
 
