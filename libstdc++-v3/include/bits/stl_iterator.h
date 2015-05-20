@@ -1194,6 +1194,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __make_move_if_noexcept_iterator(_Iterator __i)
     { return _ReturnType(__i); }
 
+  // Overload for pointers that matches std::move_if_noexcept more closely,
+  // returning a constant iterator when we don't want to move.
+  template<typename _Tp, typename _ReturnType
+    = typename conditional<__move_if_noexcept_cond<_Tp>::value,
+			   const _Tp*, move_iterator<_Tp*>>::type>
+    inline _ReturnType
+    __make_move_if_noexcept_iterator(_Tp* __i)
+    { return _ReturnType(__i); }
+
   // @} group iterators
 
   template<typename _Iterator>

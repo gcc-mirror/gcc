@@ -1,3 +1,15 @@
+2015-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66078
+	* include/bits/stl_iterator.h (__make_move_if_noexcept_iterator): Add
+	overload for pointers.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/
+	808590.cc: Add -std=gnu++03 switch.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/
+	808590-cxx11.cc: Copy of 808590.cc to test with -std=gnu++11.
+	* testsuite/23_containers/vector/modifiers/push_back/
+	strong_guarantee.cc: New.
+
 2015-05-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_list.h (_M_resize_pos(size_type&)): Declare.

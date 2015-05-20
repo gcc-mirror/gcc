@@ -15,7 +15,10 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++03" }
+// { dg-options "-std=gnu++11" }
+
+// This is identical to ./808590.cc but using -std=gnu++11
+// See https://gcc.gnu.org/ml/libstdc++/2014-05/msg00027.html
 
 #include <vector>
 #include <stdexcept>
