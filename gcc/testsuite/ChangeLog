@@ -1,3 +1,18 @@
+2015-05-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/Wmisleading-indentation.c (fn_32): New.
+	(fn_33_k_and_r_style): New.
+	(fn_33_stroustrup_style): New.
+	(fn_33_allman_style): New.
+	(fn_33_whitesmiths_style): New.
+	(fn_33_horstmann_style): New.
+	(fn_33_ratliff_banner_style): New.
+	(fn_33_lisp_style): New.
+	(fn_34_indent_dash_gnu): New.
+	(fn_34_indent_dash_kr): New.
+	(fn_34_indent_dash_orig): New.
+	(fn_34_indent_linux_style): New.
+
 2015-05-20  Andre Vehreschild  <vehre@gmx.de>
 
 	PR fortran/65548

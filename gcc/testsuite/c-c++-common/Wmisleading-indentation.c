@@ -429,3 +429,227 @@ void fn_31 (void)
   else
     foo (3);
 }
+
+/* Ensure that we can disable the warning.  */
+int
+fn_32 (int flag)
+{
+  int x = 4, y = 5;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmisleading-indentation"
+  if (flag)
+    x = 3;
+    y = 2;
+#pragma GCC diagnostic pop
+
+  return x * y;
+}
+
+/* Verify that a variety of different indentation styles are supported
+   without leading to warnings.  */
+void
+fn_33_k_and_r_style (void)
+{
+  int i;
+  for (i = 0; i < 10; i++) {
+    if (flagB) {
+      foo(0);
+      foo(1);
+    } else {
+      foo(2);
+      foo(3);
+    }
+    foo(4);
+  }
+}
+
+void
+fn_33_stroustrup_style (void)
+{
+  int i;
+  for (i = 0; i < 10; i++) {
+    if (flagA) {
+      foo(0);
+      foo(1);
+    }
+    else {
+      foo(2);
+      foo(3);
+    }
+    foo(4);
+  }
+}
+
+void
+fn_33_allman_style (void)
+{
+  int i;
+  for (i = 0; i < 10; i++)
+  {
+    if (flagA)
+    {
+      foo(0);
+      foo(1);
+    }
+    else
+    {
+      foo(2);
+      foo(3);
+    }
+    foo(4);
+  }
+}
+
+void
+fn_33_whitesmiths_style (void)
+{
+    int i;
+    for (i = 0; i < 10; i++)
+        {
+        if (flagA)
+            {
+            foo(0);
+            foo(1);
+            }
+        else
+            {
+            foo(2);
+            foo(3);
+            }
+        foo(4);
+        }
+}
+
+void
+fn_33_horstmann_style (void)
+{
+    int i;
+    for (i = 0; i < 10; i++)
+    {   if (flagA)
+        {   foo(0);
+            foo(1);
+        }
+        else
+        {   foo(2);
+            foo(3);
+        }
+        foo(4);
+    }
+}
+
+void
+fn_33_ratliff_banner_style (void)
+{
+    int i;
+    for (i = 0; i < 10; i++) {
+       if (flagA) {
+           foo(0);
+           foo(1);
+           }
+       else {
+            foo(2);
+            foo(3);
+            }
+       foo(4);
+       }
+}
+
+void
+fn_33_lisp_style (void)
+{
+  int i;
+  for (i = 0; i < 10; i++) {
+    if (flagA) {
+        foo(0);
+        foo(1); }
+    else {
+        foo(2);
+        foo(3); }
+    foo(4); }
+}
+
+/* A function run through GNU "indent" with various options.
+   None of these should lead to warnings.  */
+
+/* "indent -gnu".  */
+void
+fn_34_indent_dash_gnu (void)
+{
+  int i;
+  while (flagA)
+    for (i = 0; i < 10; i++)
+      {
+	if (flagB)
+	  {
+	    foo (0);
+	    foo (1);
+	  }
+	else
+	  {
+	    foo (2);
+	    foo (3);
+	  }
+	foo (4);
+      }
+  foo (5);
+}
+
+/* "indent -kr".  */
+void fn_34_indent_dash_kr(void)
+{
+    int i;
+    while (flagA)
+	for (i = 0; i < 10; i++) {
+	    if (flagB) {
+		foo(0);
+		foo(1);
+	    } else {
+		foo(2);
+		foo(3);
+	    }
+	    foo(4);
+	}
+    foo(5);
+}
+
+/* "indent -orig".  */
+void
+fn_34_indent_dash_orig(void)
+{
+    int             i;
+    while (flagA)
+	for (i = 0; i < 10; i++) {
+	    if (flagB) {
+		foo(0);
+		foo(1);
+	    } else {
+		foo(2);
+		foo(3);
+	    }
+	    foo(4);
+	}
+    foo(5);
+}
+
+/* Linux style:
+   "indent \
+      -nbad -bap -nbc -bbo -hnl -br -brs -c33 -cd33 -ncdb -ce -ci4  \
+      -cli0 -d0 -di1 -nfc1 -i8 -ip0 -l80 -lp -npcs -nprs -npsl -sai \
+      -saf -saw -ncs -nsc -sob -nfca -cp33 -ss -ts8 -il1".  */
+
+void fn_34_indent_linux_style(void)
+{
+	int i;
+	while (flagA)
+		for (i = 0; i < 10; i++) {
+			if (flagB) {
+				foo(0);
+				foo(1);
+			} else {
+				foo(2);
+				foo(3);
+			}
+			foo(4);
+		}
+	foo(5);
+}
