@@ -1,3 +1,8 @@
+2015-05-21  Alan Modra  <amodra@gmail.com>
+
+	PR libgcc/66225
+	* config/rs6000/morestack.S: Remove ".abiversion 1".
+
 2015-05-20  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/morestack.S: New.

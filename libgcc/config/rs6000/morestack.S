@@ -28,7 +28,6 @@
 	.abiversion 2
 #define PARAMS 32
 #else
-	.abiversion 1
 #define PARAMS 48
 #endif
 #define MORESTACK_FRAMESIZE	(PARAMS+96)
