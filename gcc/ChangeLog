@@ -1,3 +1,15 @@
+2015-05-20  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	* tree-chkp.c (chkp_maybe_copy_and_register_bounds): Remove useless
+	gimple_build_nop calls.
+	(chkp_find_bounds_for_elem): Likewise.
+	(chkp_get_zero_bounds): Likewise.
+	(chkp_get_none_bounds): Likewise.
+	(chkp_get_bounds_by_definition): Likewise.
+	(chkp_generate_extern_var_bounds): Likewise.
+	(chkp_get_bounds_for_decl_addr): Likewise.
+	(chkp_get_bounds_for_string_cst): Likewise.
+
 2015-05-20  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/65447
