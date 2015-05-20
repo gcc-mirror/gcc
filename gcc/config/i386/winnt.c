@@ -738,11 +738,11 @@ i386_pe_record_stub (const char *name)
 
 struct wrapped_symbol_hasher : typed_noop_remove <char>
 {
-  typedef char *value_type;
-  typedef char *compare_type;
+  typedef const char *value_type;
+  typedef const char *compare_type;
   static inline hashval_t hash (const char *);
   static inline bool equal (const char *, const char *);
-  static inline void remove (char *);
+  static inline void remove (const char *);
 };
 
 inline hashval_t
