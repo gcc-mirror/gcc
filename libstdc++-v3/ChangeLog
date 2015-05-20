@@ -1,5 +1,13 @@
 2015-05-20  François Dumont  <fdumont@gcc.gnu.org>
 
+	* include/debug/formatter.h (_GLIBCXX_TYPEID): New macro to simplify
+	usage of typeid.
+	(_Error_formatter::_M_print_type): New.
+	* src/c++11/debug.cc
+	(_Error_formatter::_Parameter::_M_print_field): Use latter.
+	(_Error_formatter::_M_print_type): Implement latter using
+	__cxaabiv1::__cxa_demangle to print demangled type name.
+
 	* include/bits/cpp_type_traits.h
 	(std::move_iterator): Delete declaration.
 	(std::__is_move_iterator<move_iterator>): Move partial specialization...
