@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-additional-options "-O3" } */
 
 #include "tree-vect.h"

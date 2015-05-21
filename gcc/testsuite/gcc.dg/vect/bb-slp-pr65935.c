@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-additional-options "-O3" } */
 /* { dg-require-effective-target vect_double } */
 

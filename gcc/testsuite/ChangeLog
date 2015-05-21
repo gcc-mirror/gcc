@@ -1,3 +1,15 @@
+2015-05-21  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.dg/vect/bb-slp-pr65935.c: Remove explicit "dg-do run".
+	* gcc.dg/vect/pr59354.c: Likewise.
+	* gcc.dg/vect/pr64252.c: Likewise.
+	* gcc.dg/vect/pr64404.c: Likewise.
+	* gcc.dg/vect/pr64493.c: Likewise.
+	* gcc.dg/vect/pr64495.c: Likewise.
+	* gcc.dg/vect/pr64844.c: Likewise.
+	* gcc.dg/vect/pr65518.c: Likewise.
+	* gcc.dg/vect/vect-aggressive-1.c: Likewise.
+
 2015-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/66210

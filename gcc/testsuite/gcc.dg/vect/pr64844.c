@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-require-effective-target vect_double } */
 /* { dg-additional-options "-ffast-math" } */
 
