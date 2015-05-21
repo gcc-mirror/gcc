@@ -1,3 +1,9 @@
+2015-05-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_sqrt_insn): New check.
+	* gcc.dg/pow-sqrt-synth-1.c: New test.
+	* gcc.target/aarch64/pow-sqrt-synth-1.c: Delete.
+
 2015-05-21  Richard Biener  <rguenther@suse.de>
 
 	PR c++/66211

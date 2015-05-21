@@ -1,3 +1,8 @@
+2015-05-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* doc/sourcebuild.texi (7.2.3.9 Other hardware attributes):
+	Document sqrt_insn.
+
 2015-05-21  Richard Biener  <rguenther@suse.de>
 
 	PR c++/66211
