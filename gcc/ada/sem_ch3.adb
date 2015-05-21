@@ -5834,7 +5834,11 @@ package body Sem_Ch3 is
             Set_Scope  (Typ, Current_Scope);
             Push_Scope (Typ);
 
-            Process_Formals (Parameter_Specifications (Spec), Spec);
+            --  Nothing to do if procedure is parameterless
+
+            if Present (Parameter_Specifications (Spec)) then
+               Process_Formals (Parameter_Specifications (Spec), Spec);
+            end if;
 
             if Nkind (Spec) = N_Access_Function_Definition then
                declare

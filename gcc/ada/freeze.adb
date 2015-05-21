@@ -4290,7 +4290,7 @@ package body Freeze is
             end if;
          end if;
 
-         --  Make sure that if we have terator aspect, then we have
+         --  Make sure that if we have an iterator aspect, then we have
          --  either Constant_Indexing or Variable_Indexing.
 
          declare
@@ -4305,14 +4305,14 @@ package body Freeze is
 
             if Present (Iterator_Aspect) then
                if Has_Aspect (Rec, Aspect_Constant_Indexing)
-                 or else
+                    or else
                   Has_Aspect (Rec, Aspect_Variable_Indexing)
                then
                   null;
                else
                   Error_Msg_N
                     ("Iterator_Element requires indexing aspect",
-                       Iterator_Aspect);
+                     Iterator_Aspect);
                end if;
             end if;
          end;
