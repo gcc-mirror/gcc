@@ -1,6 +1,6 @@
-/* { dg-do compile } */
+/* { dg-do compile { target sqrt_insn } } */
 /* { dg-options "-fdump-tree-sincos -Ofast --param max-pow-sqrt-depth=8" } */
-
+/* { dg-additional-options "-mfloat-abi=softfp -mfpu=neon-vfpv4" { target arm*-*-* } } */
 
 double
 foo (double a)

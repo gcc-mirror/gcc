@@ -1695,6 +1695,9 @@ Target supports FPU instructions.
 @item non_strict_align
 Target does not require strict alignment.
 
+@item sqrt_insn
+Target has a square root instruction that the compiler can generate.
+
 @item sse
 Target supports compiling @code{sse} instructions.
 
