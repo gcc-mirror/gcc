@@ -1,3 +1,18 @@
+2015-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb: Minor reformatting.
+	* cstand.adb (Print_Standard): Fix bad printing of Duration
+	low bound.
+	* a-reatim.adb (Time_Of): Complete rewrite to properly detect
+	out of range args.
+
+2015-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb: add (useless) initial value.
+	* sem_ch3.adb (Replace_Anonymous_Access_To_Protected_Subprogram):
+	Check whether the procedure has parameters before processing
+	formals in ASIS mode.
+
 2015-05-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Check_Iterator_Functions): Emit error on Iterator

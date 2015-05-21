@@ -1726,6 +1726,11 @@ package body Sem_Ch5 is
       --  indicator, verify that the container type has an Iterate aspect that
       --  implements the reversible iterator interface.
 
+      function Get_Cursor_Type (Typ : Entity_Id) return Entity_Id;
+      --  For containers with Iterator and related aspects, the cursor the
+      --  is obtained by locating an entity with the proper name in the
+      --  scope of the type.
+
       -----------------------------
       -- Check_Reverse_Iteration --
       -----------------------------
@@ -1740,6 +1745,34 @@ package body Sem_Ch5 is
               ("container type does not support reverse iteration", N, Typ);
          end if;
       end Check_Reverse_Iteration;
+
+      ---------------------
+      -- Get_Cursor_Type --
+      ---------------------
+
+      function Get_Cursor_Type (Typ : Entity_Id) return Entity_Id is
+         Ent : Entity_Id;
+
+      begin
+         Ent := First_Entity (Scope (Typ));
+         while Present (Ent) loop
+            exit when Chars (Ent) = Name_Cursor;
+            Next_Entity (Ent);
+         end loop;
+
+         if No (Ent) then
+            return Any_Type;
+         end if;
+
+         --  The cursor is the target of generated assignments in the
+         --  loop, and cannot have a limited type.
+
+         if Is_Limited_Type (Etype (Ent)) then
+            Error_Msg_N ("cursor type cannot be limited", N);
+         end if;
+
+         return Etype (Ent);
+      end Get_Cursor_Type;
 
    --   Start of processing for  Analyze_iterator_Specification
 
@@ -2054,8 +2087,9 @@ package body Sem_Ch5 is
 
             else
                declare
-                  Element : constant Entity_Id :=
+                  Element     : constant Entity_Id :=
                     Find_Value_Of_Aspect (Typ, Aspect_Iterator_Element);
+                  Cursor_Type : Entity_Id;
 
                begin
                   if No (Element) then
@@ -2064,6 +2098,8 @@ package body Sem_Ch5 is
 
                   else
                      Set_Etype (Def_Id, Entity (Element));
+                     Cursor_Type := Get_Cursor_Type (Typ);
+                     pragma Assert (Present (Cursor_Type));
 
                      --  If subtype indication was given, verify that it covers
                      --  the element type of the container.
@@ -2139,8 +2175,15 @@ package body Sem_Ch5 is
                begin
                   if Iter_Kind = N_Selected_Component then
                      Obj := Prefix (Original_Node (Iter_Name));
+
                   elsif Iter_Kind = N_Function_Call then
                      Obj := First_Actual (Original_Node (Iter_Name));
+
+                  --  If neither, likely previous error, make sure Obj has some
+                  --  reasonable value in such a case.
+
+                  else
+                     Obj := Iter_Name;
                   end if;
 
                   if Nkind (Obj) = N_Selected_Component
@@ -2166,23 +2209,9 @@ package body Sem_Ch5 is
                Ent := Etype (Def_Id);
 
             else
-               Ent := First_Entity (Scope (Typ));
-               while Present (Ent) loop
-                  if Chars (Ent) = Name_Cursor then
-                     Set_Etype (Def_Id, Etype (Ent));
-                     exit;
-                  end if;
-
-                  Next_Entity (Ent);
-               end loop;
+               Set_Etype (Def_Id, Get_Cursor_Type (Typ));
             end if;
 
-            --  The cursor is the target of generated assignments in the
-            --  loop, and cannot have a limited type.
-
-            if Is_Limited_Type (Etype (Def_Id)) then
-               Error_Msg_N ("cursor type cannot be limited", N);
-            end if;
          end if;
       end if;
 
