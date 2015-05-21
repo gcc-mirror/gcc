@@ -5256,22 +5256,24 @@ package body Freeze is
                   if Sloc (SC) > Sloc (AC) then
                      Loc := SC;
                      Error_Msg_NE
-                       ("??size is not a multiple of alignment for &", Loc, E);
+                       ("?Z?size is not a multiple of alignment for &",
+                        Loc, E);
                      Error_Msg_Sloc := Sloc (AC);
                      Error_Msg_Uint_1 := Alignment (E);
-                     Error_Msg_N ("\??alignment of ^ specified #", Loc);
+                     Error_Msg_N ("\?Z?alignment of ^ specified #", Loc);
 
                   else
                      Loc := AC;
                      Error_Msg_NE
-                       ("??size is not a multiple of alignment for &", Loc, E);
+                       ("?Z?size is not a multiple of alignment for &",
+                        Loc, E);
                      Error_Msg_Sloc := Sloc (SC);
                      Error_Msg_Uint_1 := RM_Size (E);
-                     Error_Msg_N ("\??size of ^ specified #", Loc);
+                     Error_Msg_N ("\?Z?size of ^ specified #", Loc);
                   end if;
 
                   Error_Msg_Uint_1 := ((RM_Size (E) / Abits) + 1) * Abits;
-                  Error_Msg_N ("\??Object_Size will be increased to ^", Loc);
+                  Error_Msg_N ("\?Z?Object_Size will be increased to ^", Loc);
                end if;
             end;
          end if;

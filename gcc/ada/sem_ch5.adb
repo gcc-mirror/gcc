@@ -1727,9 +1727,9 @@ package body Sem_Ch5 is
       --  implements the reversible iterator interface.
 
       function Get_Cursor_Type (Typ : Entity_Id) return Entity_Id;
-      --  For containers with Iterator and related aspects, the cursor the
-      --  is obtained by locating an entity with the proper name in the
-      --  scope of the type.
+      --  For containers with Iterator and related aspects, the cursor is
+      --  obtained by locating an entity with the proper name in the scope
+      --  of the type.
 
       -----------------------------
       -- Check_Reverse_Iteration --
@@ -2179,8 +2179,7 @@ package body Sem_Ch5 is
                   elsif Iter_Kind = N_Function_Call then
                      Obj := First_Actual (Original_Node (Iter_Name));
 
-                  --  If neither, likely previous error, make sure Obj has some
-                  --  reasonable value in such a case.
+                  --  If neither, the name comes from source
 
                   else
                      Obj := Iter_Name;
