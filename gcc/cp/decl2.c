@@ -195,6 +195,8 @@ change_return_type (tree new_ret, tree fntype)
   else
     newtype = build_method_type_directly
       (class_of_this_parm (fntype), new_ret, TREE_CHAIN (args));
+  if (FUNCTION_REF_QUALIFIED (fntype))
+    newtype = build_ref_qualified_type (newtype, type_memfn_rqual (fntype));
   if (raises)
     newtype = build_exception_variant (newtype, raises);
   if (attrs)
