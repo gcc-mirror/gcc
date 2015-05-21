@@ -1,3 +1,9 @@
+2015-05-21  Richard Biener  <rguenther@suse.de>
+
+	PR c++/66211
+	* match.pd: Guard pattern optimzing (int)(float)int
+	conversions to apply only on GIMPLE.
+
 2015-05-21  Jeff Law  <law@redhat.com>
 
 	* combine.c (find_split_point): Handle ASHIFT like MULT to encourage
