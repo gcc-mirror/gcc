@@ -1,3 +1,17 @@
+2015-05-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/52952
+	* gcc.dg/redecl-4.c: Update column numbers.
+	* gcc.dg/format/bitfld-1.c: Likewise.
+	* gcc.dg/format/attr-2.c: Likewise.
+	* gcc.dg/format/attr-6.c: Likewise.
+	* gcc.dg/format/attr-7.c (baz): Likewise.
+	* gcc.dg/format/asm_fprintf-1.c: Likewise.
+	* gcc.dg/format/attr-4.c: Likewise.
+	* gcc.dg/format/branch-1.c: Likewise.
+	* gcc.dg/format/c90-printf-1.c: Likewise. Add tests for column
+	locations within strings with embedded escape sequences.
+
 2015-05-20  Alex Velenko  <Alex.Velenko@arm.com>
 
         * gcc.target/arm/thumb1-far-jump-2.c (r4): Added int in definition.

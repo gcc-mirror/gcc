@@ -15,7 +15,7 @@ f (void)
     /* Should get format warnings even though the built-in declaration
        isn't "visible".  */
     printf (
-	    "%s", 1); /* { dg-warning "6:format" } */
+	    "%s", 1); /* { dg-warning "8:format" } */
     /* The type of strcmp here should have no prototype.  */
     if (0)
       strcmp (1);
