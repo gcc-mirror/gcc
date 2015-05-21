@@ -2700,6 +2700,45 @@ has_dimen_vector_ref (gfc_expr *e)
   return false;
 }
 
+/* If handed an expression of the form
+
+   CONJG(A)
+
+   check if A can be handled by matmul and return if there is an uneven number
+   of CONJG calls.  Return a pointer to the array when everything is OK, NULL
+   otherwise. The caller has to check for the correct rank.  */
+
+static gfc_expr*
+check_conjg_variable (gfc_expr *e, bool *conjg)
+{
+  *conjg = false;
+
+  do
+    {
+      if (e->expr_type == EXPR_VARIABLE)
+	{
+	  gcc_assert (e->rank == 1 || e->rank == 2);
+	  return e;
+	}
+      else if (e->expr_type == EXPR_FUNCTION)
+	{
+	  if (e->value.function.isym == NULL)
+	    return NULL;
+
+	  if (e->value.function.isym->id == GFC_ISYM_CONJG)
+	    *conjg = !*conjg;
+	  else return NULL;
+	}
+      else
+	return NULL;
+
+      e = e->value.function.actual->expr;
+    }
+  while(1);
+
+  return NULL;
+}
+
 /* Inline assignments of the form c = matmul(a,b).
    Handle only the cases currently where b and c are rank-two arrays.
 
@@ -2744,6 +2783,7 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
   int i;
   gfc_code *if_limit = NULL;
   gfc_code **next_code_point;
+  bool conjg_a, conjg_b;
 
   if (co->op != EXEC_ASSIGN)
     return 0;
@@ -2760,19 +2800,22 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
   changed_statement = NULL;
 
   a = expr2->value.function.actual;
-  matrix_a = a->expr;
+  matrix_a = check_conjg_variable (a->expr, &conjg_a);
+  if (matrix_a == NULL)
+    return 0;
+
   b = a->next;
-  matrix_b = b->expr;
-
-  /* Currently only handling direct variables.  Transpose etc. will come
-     later.  */
-
-  if (matrix_a->expr_type != EXPR_VARIABLE
-      || matrix_b->expr_type != EXPR_VARIABLE)
+  matrix_b = check_conjg_variable (b->expr, &conjg_b);
+  if (matrix_b == NULL)
     return 0;
 
   if (has_dimen_vector_ref (expr1) || has_dimen_vector_ref (matrix_a)
       || has_dimen_vector_ref (matrix_b))
+    return 0;
+
+  /* We do not handle data dependencies yet.  */
+  if (gfc_check_dependency (expr1, matrix_a, true)
+      || gfc_check_dependency (expr1, matrix_b, true))
     return 0;
 
   if (matrix_a->rank == 2)
@@ -2780,10 +2823,6 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
   else
     m_case = A1B2;
 
-  /* We do not handle data dependencies yet.  */
-  if (gfc_check_dependency (expr1, matrix_a, true)
-      || gfc_check_dependency (expr1, matrix_b, true))
-    return 0;
 
   ns = insert_block ();
 
@@ -3055,6 +3094,14 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
     default:
       gcc_unreachable();
     }
+
+  if (conjg_a)
+    ascalar = gfc_build_intrinsic_call (ns, GFC_ISYM_CONJG, "conjg",
+					matrix_a->where, 1, ascalar);
+
+  if (conjg_b)
+    bscalar = gfc_build_intrinsic_call (ns, GFC_ISYM_CONJG, "conjg", 
+					matrix_b->where, 1, bscalar);
 
   /* First loop comes after the zero assignment.  */
   assign_zero->next = do_1;
