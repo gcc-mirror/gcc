@@ -40,6 +40,9 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #include "new"
 
+// The sized deletes are defined in other files.
+#pragma GCC diagnostic ignored "-Wsized-deallocation"
+
 _GLIBCXX_WEAK_DEFINITION void
 operator delete(void* ptr) _GLIBCXX_USE_NOEXCEPT
 {

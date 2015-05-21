@@ -1,3 +1,8 @@
+2015-05-21  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/del_opv.cc: Suppress -Wsized-deallocation.
+	* libsupc++/del_op.cc: Likewise.
+
 2015-05-20  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/formatter.h (_GLIBCXX_TYPEID): New macro to simplify
