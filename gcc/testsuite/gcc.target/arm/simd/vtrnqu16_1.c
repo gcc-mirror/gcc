@@ -1,7 +1,5 @@
 /* Test the `vtrnQu16' ARM Neon intrinsic.  */
 
-/* { dg-do run } */
-/* { dg-require-effective-target arm_neon_ok } */
 /* { dg-options "-save-temps -O1 -fno-inline" } */
 /* { dg-add-options arm_neon } */
 
