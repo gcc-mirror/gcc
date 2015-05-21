@@ -1,3 +1,20 @@
+2015-05-08  Michael Matz  <matz@suse.de>
+
+	* tree-vectorizer.h (struct _stmt_vec_info): Rename stride_load_p
+	to strided_p.
+	(STMT_VINFO_STRIDE_LOAD_P): Rename to ...
+	(STMT_VINFO_STRIDED_P): ... this.
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Adjust.
+	(vect_verify_datarefs_alignment): Likewise.
+	(vect_enhance_data_refs_alignment): Likewise.
+	(vect_analyze_data_ref_access): Likewise.
+	(vect_analyze_data_refs): Accept strided stores.
+	* tree-vect-stmts.c (vect_model_store_cost): Count strided stores.
+	(vect_model_load_cost): Adjust for macro rename.
+	(vectorizable_mask_load_store): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_store): Open code strided stores.
+
 2015-05-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* doc/sourcebuild.texi (7.2.3.9 Other hardware attributes):
