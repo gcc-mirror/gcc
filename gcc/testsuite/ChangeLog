@@ -1,3 +1,7 @@
+2015-05-21  Jeff Law  <law@redhat.com>
+
+	* gcc.target/hppa/shadd-4.c: New test.
+
 2015-05-08  Michael Matz  <matz@suse.de>
 
 	* gcc.dg/vect/vect-strided-store.c: New test.
