@@ -5145,7 +5145,9 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
       /* Split at a multiply-accumulate instruction.  However if this is
          the SET_SRC, we likely do not have such an instruction and it's
          worthless to try this split.  */
-      if (!set_src && GET_CODE (XEXP (x, 0)) == MULT)
+      if (!set_src
+	  && (GET_CODE (XEXP (x, 0)) == MULT
+	      || GET_CODE (XEXP (x, 0)) == ASHIFT))
         return loc;
 
     default:
