@@ -1,3 +1,16 @@
+2015-05-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	
+	PR c/52952
+	* c-format.c (location_column_from_byte_offset): New.
+	(location_from_offset): New.
+	(struct format_wanted_type): Add offset_loc field.
+	(check_format_info): Move handling of location for extra arguments
+	closer to the point of warning.
+	(check_format_info_main): Pass the result of location_from_offset
+	to warning_at.
+	(format_type_warning): Pass the result of location_from_offset
+	to warning_at.
+
 2015-05-20  Marek Polacek  <polacek@redhat.com>
 
 	* c-omp.c (check_omp_for_incr_expr): Use BINARY_CLASS_P.
