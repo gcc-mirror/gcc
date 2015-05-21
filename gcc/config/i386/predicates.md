@@ -606,6 +606,16 @@
        (and (not (match_test "TARGET_X32"))
 	    (match_operand 0 "sibcall_memory_operand"))))
 
+;; Return true if OP is a GOT memory operand.
+(define_predicate "GOT_memory_operand"
+  (match_operand 0 "memory_operand")
+{
+  op = XEXP (op, 0);
+  return (GET_CODE (op) == CONST
+	  && GET_CODE (XEXP (op, 0)) == UNSPEC
+	  && XINT (XEXP (op, 0), 1) == UNSPEC_GOTPCREL);
+})
+
 ;; Match exactly zero.
 (define_predicate "const0_operand"
   (match_code "const_int,const_wide_int,const_double,const_vector")

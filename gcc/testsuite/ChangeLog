@@ -1,3 +1,12 @@
+2015-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/66232
+	* gcc.target/i386/pr66232-1.c: New test.
+	* gcc.target/i386/pr66232-2.c: Likewise.
+	* gcc.target/i386/pr66232-3.c: Likewise.
+	* gcc.target/i386/pr66232-4.c: Likewise.
+	* gcc.target/i386/pr66232-5.c: Likewise.
+
 2015-05-21  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/cpp1y/pr60943.C: New.
