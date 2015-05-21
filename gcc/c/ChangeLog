@@ -1,3 +1,8 @@
+2015-05-21  Marek Polacek  <polacek@redhat.com>
+
+	* c-typeck.c (inform_declaration): Use DECL_IS_BUILTIN instead of
+	DECL_BUILT_IN.
+
 2015-05-20  Marek Polacek  <polacek@redhat.com>
 
 	* c-decl.c: Use VAR_OR_FUNCTION_DECL_P throughout.
