@@ -133,7 +133,7 @@ int
 test_016 (int a, int b, int c, int d)
 {
   // non-SH2A: 1x add #1, 1x mov #-2, 1x and
-  // SH2A: 1x add #1, 1x blcr #0
+  // SH2A: 1x add #1, 1x bclr #0
   return a + (a & 1);
 }
 

@@ -2011,7 +2011,8 @@
 	(and:SI (plus:SI (match_operand:SI 1 "arith_reg_operand")
 			 (const_int 1))
 		(const_int -2)))]
-  "TARGET_SH1 && !TARGET_SH2A && can_create_pseudo_p ()"
+  "TARGET_SH1 && !TARGET_SH2A && can_create_pseudo_p ()
+   && !reg_overlap_mentioned_p (operands[0], operands[1])"
   "#"
   "&& 1"
   [(set (match_dup 0) (const_int -2))
