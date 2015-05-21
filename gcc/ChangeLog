@@ -1,3 +1,9 @@
+2015-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/66233
+	* match.pd (ocvt (icvt@1 @0)): Don't handle vector types.
+	Simplify.
+
 2015-05-21  Jeff Law  <law@redhat.com>
 
 	* config/pa/pa.md (add-with-constant splitter): Use ASHIFT rather
