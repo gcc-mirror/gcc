@@ -1,3 +1,12 @@
+2015-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/66232
+	* config/i386/constraints.md (Bg): New constraint for GOT memory
+	operand.
+	* config/i386/i386.md (*call_got_x32): New pattern.
+	(*call_value_got_x32): Likewise.
+	* config/i386/predicates.md (GOT_memory_operand): New predicate.
+
 2015-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/66233
