@@ -663,9 +663,9 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   /* Initialize misalignment to unknown.  */
   SET_DR_MISALIGNMENT (dr, -1);
 
-  /* Strided loads perform only component accesses, misalignment information
+  /* Strided accesses perform only component accesses, misalignment information
      is irrelevant for them.  */
-  if (STMT_VINFO_STRIDE_LOAD_P (stmt_info)
+  if (STMT_VINFO_STRIDED_P (stmt_info)
       && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
     return true;
 
@@ -942,9 +942,9 @@ vect_verify_datarefs_alignment (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
           || !STMT_VINFO_VECTORIZABLE (stmt_info))
         continue;
 
-      /* Strided loads perform only component accesses, alignment is
+      /* Strided accesses perform only component accesses, alignment is
 	 irrelevant for them.  */
-      if (STMT_VINFO_STRIDE_LOAD_P (stmt_info)
+      if (STMT_VINFO_STRIDED_P (stmt_info)
 	  && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
 	continue;
 
@@ -1410,9 +1410,9 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       if (integer_zerop (DR_STEP (dr)))
 	continue;
 
-      /* Strided loads perform only component accesses, alignment is
+      /* Strided accesses perform only component accesses, alignment is
 	 irrelevant for them.  */
-      if (STMT_VINFO_STRIDE_LOAD_P (stmt_info)
+      if (STMT_VINFO_STRIDED_P (stmt_info)
 	  && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
 	continue;
 
@@ -1703,9 +1703,9 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	      && GROUP_FIRST_ELEMENT (stmt_info) != stmt)
 	    continue;
 
-	  /* Strided loads perform only component accesses, alignment is
+	  /* Strided accesses perform only component accesses, alignment is
 	     irrelevant for them.  */
-	  if (STMT_VINFO_STRIDE_LOAD_P (stmt_info)
+	  if (STMT_VINFO_STRIDED_P (stmt_info)
 	      && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
 	    continue;
 
@@ -1824,7 +1824,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 		  && GROUP_FIRST_ELEMENT (stmt_info) != stmt))
 	    continue;
 
-	  if (STMT_VINFO_STRIDE_LOAD_P (stmt_info))
+	  if (STMT_VINFO_STRIDED_P (stmt_info))
 	    {
 	      /* Strided loads perform only component accesses, alignment is
 		 irrelevant for them.  */
@@ -2346,7 +2346,7 @@ vect_analyze_data_ref_access (struct data_reference *dr)
 
   /* Assume this is a DR handled by non-constant strided load case.  */
   if (TREE_CODE (step) != INTEGER_CST)
-    return (STMT_VINFO_STRIDE_LOAD_P (stmt_info)
+    return (STMT_VINFO_STRIDED_P (stmt_info)
 	    && (!STMT_VINFO_GROUPED_ACCESS (stmt_info)
 		|| vect_analyze_group_access (dr)));
 
@@ -3758,8 +3758,7 @@ again:
       else if (loop_vinfo
 	       && TREE_CODE (DR_STEP (dr)) != INTEGER_CST)
 	{
-	  if (nested_in_vect_loop_p (loop, stmt)
-	      || !DR_IS_READ (dr))
+	  if (nested_in_vect_loop_p (loop, stmt))
 	    {
 	      if (dump_enabled_p ())
 		{
@@ -3771,7 +3770,7 @@ again:
 		}
 	      return false;
 	    }
-	  STMT_VINFO_STRIDE_LOAD_P (stmt_info) = true;
+	  STMT_VINFO_STRIDED_P (stmt_info) = true;
 	}
     }
 

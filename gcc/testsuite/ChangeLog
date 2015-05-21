@@ -1,3 +1,9 @@
+2015-05-08  Michael Matz  <matz@suse.de>
+
+	* gcc.dg/vect/vect-strided-store.c: New test.
+	* gfortran.dg/vect/fast-math-pr37021.f90: Adjust.
+	* gfortran.dg/vect/fast-math-rnflow-trs2a2.f90: Adjust.
+
 2015-05-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_sqrt_insn): New check.
@@ -51,7 +57,7 @@
 
 2015-05-20  Alex Velenko  <Alex.Velenko@arm.com>
 
-        * gcc.target/arm/thumb1-far-jump-2.c (r4): Added int in definition.
+	* gcc.target/arm/thumb1-far-jump-2.c (r4): Added int in definition.
 
 2015-05-20  David Malcolm  <dmalcolm@redhat.com>
 
