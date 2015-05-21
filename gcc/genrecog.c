@@ -172,17 +172,17 @@ static const bool force_unique_params_p = true;
 /* The maximum (approximate) depth of block nesting that an individual
    routine or subroutine should have.  This limit is about keeping the
    output readable rather than reducing compile time.  */
-static const int MAX_DEPTH = 6;
+static const unsigned int MAX_DEPTH = 6;
 
 /* The minimum number of pseudo-statements that a state must have before
    we split it out into a subroutine.  */
-static const int MIN_NUM_STATEMENTS = 5;
+static const unsigned int MIN_NUM_STATEMENTS = 5;
 
 /* The number of pseudo-statements a state can have before we consider
    splitting out substates into subroutines.  This limit is about avoiding
    compile-time problems with very big functions (and also about keeping
    functions within --param optimization limits, etc.).  */
-static const int MAX_NUM_STATEMENTS = 200;
+static const unsigned int MAX_NUM_STATEMENTS = 200;
 
 /* The minimum number of pseudo-statements that can be used in a pattern
    routine.  */
