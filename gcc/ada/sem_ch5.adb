@@ -2139,7 +2139,6 @@ package body Sem_Ch5 is
                begin
                   if Iter_Kind = N_Selected_Component then
                      Obj := Prefix (Original_Node (Iter_Name));
-
                   elsif Iter_Kind = N_Function_Call then
                      Obj := First_Actual (Original_Node (Iter_Name));
                   end if;
@@ -2148,8 +2147,8 @@ package body Sem_Ch5 is
                     and then Is_Dependent_Component_Of_Mutable_Object (Obj)
                   then
                      Error_Msg_N
-                       ("container cannot be a discriminant-dependent " &
-                          "component of a mutable object", N);
+                       ("container cannot be a discriminant-dependent "
+                        & "component of a mutable object", N);
                   end if;
                end;
             end if;
