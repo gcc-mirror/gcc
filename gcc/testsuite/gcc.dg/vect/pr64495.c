@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 #include <assert.h>
 #include "tree-vect.h"
 

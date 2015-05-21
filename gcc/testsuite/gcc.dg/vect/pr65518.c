@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 extern void abort (void);
 
 typedef struct giga
