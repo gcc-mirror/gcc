@@ -1,3 +1,11 @@
+2015-05-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* alias.c (alias_stats): New static var.	
+	(alias_sets_conflict_p, alias_sets_must_conflict_p): Update stats.
+	(dump_alias_stats_in_alias_c): New function.
+	* alias.h (dump_alias_stats_in_alias_c): Declare.
+	* tree-ssa-alias.c (dump_alias_stats): Call it.
+
 2015-05-08  Michael Matz  <matz@suse.de>
 
 	* tree-vectorizer.h (struct _stmt_vec_info): Rename stride_load_p
