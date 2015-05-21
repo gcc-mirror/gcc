@@ -1,3 +1,8 @@
+2015-05-21  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/65937
+	* gcc.target/arm/pr26702.c: Adjust target selector.
+
 2015-05-21  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	PR middle-end/66221
