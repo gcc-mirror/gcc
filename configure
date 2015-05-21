@@ -559,7 +559,6 @@ compare_exclusions
 host_shared
 stage2_werror_flag
 stage1_checking
-stage1_cxxflags
 stage1_cflags
 MAINT
 MAINTAINER_MODE_FALSE
@@ -14756,13 +14755,6 @@ case $build in
       *) stage1_cflags="-g -J" ;;
     esac ;;
 esac
-stage1_cxxflags='$(STAGE1_CFLAGS)'
-if test "$GCC" = yes; then
-  # Build stage 1 in C++98 mode to ensure that a C++98 compiler can still
-  # start the bootstrap.
-  stage1_cxxflags="$stage1_cxxflags -std=c++98"
-fi
-
 
 
 

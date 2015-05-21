@@ -3476,15 +3476,8 @@ case $build in
       *) stage1_cflags="-g -J" ;;
     esac ;;
 esac
-stage1_cxxflags='$(STAGE1_CFLAGS)'
-if test "$GCC" = yes; then
-  # Build stage 1 in C++98 mode to ensure that a C++98 compiler can still
-  # start the bootstrap.
-  stage1_cxxflags="$stage1_cxxflags -std=c++98"
-fi
 
 AC_SUBST(stage1_cflags)
-AC_SUBST(stage1_cxxflags)
 
 # Enable --enable-checking in stage1 of the compiler.
 AC_ARG_ENABLE(stage1-checking,
