@@ -1,3 +1,8 @@
+2015-05-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* genrecog.c (MAX_DEPTH, MIN_NUM_STATEMENTS, MAX_NUM_STATEMENTS):
+	Change to unsigned int.
+
 2015-05-20  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* bb-reorder.c (set_edge_can_fallthru_flag): Use rtx_jump_insn where
