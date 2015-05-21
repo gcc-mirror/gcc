@@ -1,3 +1,8 @@
+2015-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/66210
+	* g++.dg/cpp1y/var-templ28.C: New.
+
 2015-05-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/66232
@@ -10,7 +15,7 @@
 2015-05-21  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/cpp1y/pr60943.C: New.
-					 
+
 2015-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/66233
@@ -40,7 +45,7 @@
 
 	* gcc.target/hppa/shadd-4.c: New test.
 
-2015-05-08  Michael Matz  <matz@suse.de>
+2015-05-21  Michael Matz  <matz@suse.de>
 
 	* gcc.dg/vect/vect-strided-store.c: New test.
 	* gfortran.dg/vect/fast-math-pr37021.f90: Adjust.
