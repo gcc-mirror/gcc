@@ -1,3 +1,7 @@
+2015-05-21  Marek Polacek  <polacek@redhat.com>
+
+	* typeck.c (warn_args_num): Don't print "declare here" for builtins.
+
 2015-05-20  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tsubst_decl) [VAR_DECL]: SET_DECL_IMPLICIT_INSTANTIATION
