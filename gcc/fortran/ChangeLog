@@ -1,3 +1,10 @@
+2015-05-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/66176
+	* frontend-passes.c (check_conjg_variable):  New function.
+	(inline_matmul_assign):  Use it to keep track of conjugated
+	variables.
+
 2015-05-20  Andre Vehreschild  <vehre@gmx.de>
 
 	PR fortran/65548
