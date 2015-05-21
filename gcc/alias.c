@@ -213,6 +213,19 @@ static int write_dependence_p (const_rtx,
 
 static void memory_modified_1 (rtx, const_rtx, void *);
 
+/* Query statistics for the different low-level disambiguators.
+   A high-level query may trigger multiple of them.  */
+
+static struct {
+  unsigned long long num_alias_zero;
+  unsigned long long num_same_alias_set;
+  unsigned long long num_same_objects;
+  unsigned long long num_volatile;
+  unsigned long long num_dag;
+  unsigned long long num_disambiguated;
+} alias_stats;
+
+
 /* Set up all info needed to perform alias analysis on memory references.  */
 
 /* Returns the size in bytes of the mode of X.  */
@@ -471,13 +484,20 @@ alias_sets_conflict_p (alias_set_type set1, alias_set_type set2)
   ase = get_alias_set_entry (set1);
   if (ase != 0
       && ase->children->get (set2))
-    return 1;
+    {
+      ++alias_stats.num_dag;
+      return 1;
+    }
 
   /* Now do the same, but with the alias sets reversed.  */
   ase = get_alias_set_entry (set2);
   if (ase != 0
       && ase->children->get (set1))
-    return 1;
+    {
+      ++alias_stats.num_dag;
+      return 1;
+    }
+  ++alias_stats.num_disambiguated;
 
   /* The two alias sets are distinct and neither one is the
      child of the other.  Therefore, they cannot conflict.  */
@@ -489,8 +509,16 @@ alias_sets_conflict_p (alias_set_type set1, alias_set_type set2)
 int
 alias_sets_must_conflict_p (alias_set_type set1, alias_set_type set2)
 {
-  if (set1 == 0 || set2 == 0 || set1 == set2)
-    return 1;
+  if (set1 == 0 || set2 == 0)
+    {
+      ++alias_stats.num_alias_zero;
+      return 1;
+    }
+  if (set1 == set2)
+    {
+      ++alias_stats.num_same_alias_set;
+      return 1;
+    }
 
   return 0;
 }
@@ -512,10 +540,17 @@ objects_must_conflict_p (tree t1, tree t2)
     return 0;
 
   /* If they are the same type, they must conflict.  */
-  if (t1 == t2
-      /* Likewise if both are volatile.  */
-      || (t1 != 0 && TYPE_VOLATILE (t1) && t2 != 0 && TYPE_VOLATILE (t2)))
-    return 1;
+  if (t1 == t2)
+    {
+      ++alias_stats.num_same_objects;
+      return 1;
+    }
+  /* Likewise if both are volatile.  */
+  if (t1 != 0 && TYPE_VOLATILE (t1) && t2 != 0 && TYPE_VOLATILE (t2))
+    {
+      ++alias_stats.num_volatile;
+      return 1;
+    }
 
   set1 = t1 ? get_alias_set (t1) : 0;
   set2 = t2 ? get_alias_set (t2) : 0;
@@ -3043,4 +3078,21 @@ end_alias_analysis (void)
   sbitmap_free (reg_known_equiv_p);
 }
 
+void
+dump_alias_stats_in_alias_c (FILE *s)
+{
+  fprintf (s, "  TBAA oracle: %llu disambiguations %llu queries\n"
+	      "               %llu are in alias set 0\n"
+	      "               %llu queries asked about the same object\n"
+	      "               %llu queries asked about the same alias set\n"
+	      "               %llu access volatile\n"
+	      "               %llu are dependent in the DAG\n",
+	   alias_stats.num_disambiguated,
+	   alias_stats.num_alias_zero + alias_stats.num_same_alias_set
+	   + alias_stats.num_same_objects + alias_stats.num_volatile
+	   + alias_stats.num_dag,
+	   alias_stats.num_alias_zero, alias_stats.num_same_alias_set,
+	   + alias_stats.num_same_objects, alias_stats.num_volatile,
+	   + alias_stats.num_dag);
+}
 #include "gt-alias.h"
