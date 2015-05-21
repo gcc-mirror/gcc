@@ -1,7 +1,5 @@
 /* Test the `vrev64q_f32' ARM Neon intrinsic.  */
 
-/* { dg-do run } */
-/* { dg-require-effective-target arm_neon_ok } */
 /* { dg-options "-save-temps -fno-inline" } */
 /* { dg-add-options arm_neon } */
 

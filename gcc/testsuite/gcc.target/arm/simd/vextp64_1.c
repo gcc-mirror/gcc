@@ -1,6 +1,5 @@
 /* Test the `vextp64' ARM Neon intrinsic.  */
 
-/* { dg-do run } */
 /* { dg-require-effective-target arm_crypto_ok } */
 /* { dg-options "-save-temps -O3 -fno-inline" } */
 /* { dg-add-options arm_crypto } */
