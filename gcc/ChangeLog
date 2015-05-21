@@ -1,3 +1,8 @@
+2015-05-21  Jeff Law  <law@redhat.com>
+
+	* combine.c (find_split_point): Handle ASHIFT like MULT to encourage
+	multiply-accumulate/shift-add insn generation.
+
 2015-05-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54236
