@@ -1,4 +1,4 @@
-/* { dg-do compile { target { *-*-linux* && ia32 } } } */
+/* { dg-do compile { target { { *-*-freebsd* *-*-linux* } && ia32 } } } */
 /* { dg-options "-O2 -fpie" } */
 /* { dg-final { scan-assembler "addl\[ \\t\]+\[$\]_GLOBAL_OFFSET_TABLE_, %ebx" } } */
 /* { dg-final { scan-assembler "movl\[ \\t\]+c@GOTOFF\[(\]%ebx\[)\]" } } */

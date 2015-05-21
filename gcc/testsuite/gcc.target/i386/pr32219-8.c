@@ -1,4 +1,5 @@
-/* { dg-do compile { target *-*-linux* } } */
+/* { dg-do compile } */
+/* { dg-require-effective-target pie } */
 /* { dg-options "-O2 -fpic" } */
 
 /* Weak initialized symbol with -fpic.  */
