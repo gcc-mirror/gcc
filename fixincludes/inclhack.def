@@ -597,6 +597,56 @@ fix = {
 };
 
 /*
+ *  On AIX some headers are not properly guarded by 'extern "C"'.
+ */
+fix = {
+  hackname  = aix_externc;
+  mach      = "*-*-aix*";
+  files     = ctype.h;
+  files     = fcntl.h;
+  files     = langinfo.h;
+  files     = ldfcn.h;
+  files     = sys/localedef.h;
+  files     = sys/times.h;
+  bypass    = "extern \"C\"";
+  c_fix     = wrap;
+  c_fix_arg = "#ifdef __cplusplus\n"
+              "extern \"C\" {\n"
+              "#endif\n";
+  c_fix_arg = "#ifdef __cplusplus\n"
+              "}\n"
+              "#endif\n";
+  test_text = "extern int __n_pthreads;\n";
+};
+
+/*
+ *  On AIX sys/socket.h assumes C++.
+ */
+fix = {
+  hackname  = aix_externcpp1;
+  mach      = "*-*-aix*";
+  files     = "sys/socket.h";
+  select    = "#ifdef __cplusplus";
+  c_fix     = format;
+  c_fix_arg = "#ifdef __cplusplus\n"
+              "extern \"C++\" {";
+  test_text = "#ifdef __cplusplus";
+
+};
+
+fix = {
+  hackname  = aix_externcpp2;
+  mach      = "*-*-aix*";
+  files     = "sys/socket.h";
+  select    = "#else  /\\* __cplusplus \\*/";
+  c_fix     = format;
+  c_fix_arg = "} /* extern \"C++\" */\n"
+              "#else  /* __cplusplus */";
+  test_text = "#else  /* __cplusplus */";
+
+};
+
+/*
  *  malloc.h on AIX6 uses XLC++ specific builtin syntax
  */
 fix = {
