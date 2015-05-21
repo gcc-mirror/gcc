@@ -5242,6 +5242,11 @@ pa_print_operand (FILE *file, rtx x, int code)
       gcc_assert (GET_CODE (x) == CONST_INT);
       fprintf (file, HOST_WIDE_INT_PRINT_DEC, 32 - (INTVAL (x) & 31));
       return;
+    case 'o':
+      gcc_assert (GET_CODE (x) == CONST_INT
+		  && (INTVAL (x) == 1 || INTVAL (x) == 2 || INTVAL (x) == 3));
+      fprintf (file, "%d", INTVAL (x));
+      return;
     case 'O':
       gcc_assert (GET_CODE (x) == CONST_INT && exact_log2 (INTVAL (x)) >= 0);
       fprintf (file, "%d", exact_log2 (INTVAL (x)));
@@ -8729,11 +8734,22 @@ pa_fmpysuboperands (rtx *operands)
 }
 
 /* Return 1 if the given constant is 2, 4, or 8.  These are the valid
+   constants for a MULT embedded inside a memory address.  */
+int
+pa_mem_shadd_constant_p (int val)
+{
+  if (val == 2 || val == 4 || val == 8)
+    return 1;
+  else
+    return 0;
+}
+
+/* Return 1 if the given constant is 1, 2, or 3.  These are the valid
    constants for shadd instructions.  */
 int
 pa_shadd_constant_p (int val)
 {
-  if (val == 2 || val == 4 || val == 8)
+  if (val == 1 || val == 2 || val == 3)
     return 1;
   else
     return 0;

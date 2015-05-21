@@ -15,6 +15,17 @@
 	* genrecog.c (MAX_DEPTH, MIN_NUM_STATEMENTS, MAX_NUM_STATEMENTS):
 	Change to unsigned int.
 
+2015-05-20  Jeff Law  <law@redhat.com>
+
+	* config/pa/pa.c (pa_print_operand): New 'o' output modifier.
+	(pa_mem_shadd_constant_p): Renamed from pa_shadd_constant_p.
+	(pa_shadd_constant_p): Allow constants for shadd insns rather
+	than valid scaling constants for memory addresses.
+	* config/pa/pa-protos.h (pa_mem_shadd_constant_p): Add prototype.
+	* config/pa/predicates.md (mem_shadd_operand): New predicate.
+	* config/pa/pa.md (shift-add insns using MULT): Use mem_shadd_operand.
+	(shift-add insns using ASHIFT): New patterns.
+
 2015-05-20  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* bb-reorder.c (set_edge_can_fallthru_flag): Use rtx_jump_insn where
