@@ -1,3 +1,9 @@
+2015-05-21  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backport from mainline r223418:
+	* config.gcc [powerpc*-*-linux*]: Allow --enable-targets=all
+	to build a biarch toolchain again.
+
 2015-05-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* doc/invoke.texi: Add missing cpu types for march option: z196
