@@ -1,3 +1,12 @@
+2015-05-21  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	Backport from mainline r223471
+	2015-05-21  Ilya Enkovich  <enkovich.gnu@gmail.com>
+
+	PR middle-end/66221
+	* ipa-chkp.c (chkp_copy_function_type_adding_bounds): Use
+	build_distinct_type_copy to copy bounds.
+
 2015-05-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66174

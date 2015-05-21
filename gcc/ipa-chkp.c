@@ -264,7 +264,7 @@ chkp_copy_function_type_adding_bounds (tree orig_type)
   if (!arg_type)
     return orig_type;
 
-  type = copy_node (orig_type);
+  type = build_distinct_type_copy (orig_type);
   TYPE_ARG_TYPES (type) = copy_list (TYPE_ARG_TYPES (type));
 
   for (arg_type = TYPE_ARG_TYPES (type);
