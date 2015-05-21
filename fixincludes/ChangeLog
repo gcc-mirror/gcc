@@ -1,3 +1,12 @@
+2015-05-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_externc): New fix.
+	(aix_externcpp[12]): New fix.
+	* fixincl.x: Regenerate.
+	* test/base/ctype.h [AIX_EXTERNC_CHECK]: New test.
+	* test/base/sys/socket.h [AIX_EXTERNCPP[12]_CHECK]: New test.
+	* test/base/fcntl.h: New file.
+
 2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	* aclocal.m4: Regenerated with automake-1.11.6.
