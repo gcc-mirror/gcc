@@ -440,7 +440,6 @@ STAGE[+id+]_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
 # only ones useful for building stage2.
 
 STAGE1_CFLAGS = @stage1_cflags@
-STAGE1_CXXFLAGS = @stage1_cxxflags@
 STAGE1_CHECKING = @stage1_checking@
 STAGE1_LANGUAGES = @stage1_languages@
 # * We force-disable intermodule optimizations, even if
