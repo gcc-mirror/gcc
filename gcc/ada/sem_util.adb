@@ -312,6 +312,19 @@ package body Sem_Util is
          Set_Contract (Id, Items);
       end if;
 
+      --  Contract items related to constants. Applicable pragmas are:
+      --    Part_Of
+
+      if Ekind (Id) = E_Constant then
+         if Prag_Nam = Name_Part_Of then
+            Add_Classification;
+
+         --  The pragma is not a proper contract item
+
+         else
+            raise Program_Error;
+         end if;
+
       --  Contract items related to [generic] packages or instantiations. The
       --  applicable pragmas are:
       --    Abstract_States
@@ -319,7 +332,7 @@ package body Sem_Util is
       --    Initializes
       --    Part_Of (instantiation only)
 
-      if Ekind_In (Id, E_Generic_Package, E_Package) then
+      elsif Ekind_In (Id, E_Generic_Package, E_Package) then
          if Nam_In (Prag_Nam, Name_Abstract_State,
                               Name_Initial_Condition,
                               Name_Initializes)
