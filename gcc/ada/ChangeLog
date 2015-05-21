@@ -1,3 +1,39 @@
+2015-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Contract): This attribute now applies to constants.
+	(Set_Contract): This attribute now applies to constants.
+	(Write_Field34_Name): Add output for constants.
+	* einfo.ads Attribute Contract now applies to constants.
+	* sem_ch3.adb (Analyze_Object_Contract): Constants now have
+	their Part_Of indicator verified.
+	* sem_prag.adb (Analyze_Constituent): A constant is now a valid
+	constituent.
+	(Analyze_Global_Item): A constant cannot act as an output.
+	(Analyze_Initialization_Item): Constants are now a valid
+	initialization item.
+	(Analyze_Initializes_In_Decl_Part): Rename
+	global variable States_And_Vars to States_And_Objs and update
+	all its occurrences.
+	(Analyze_Input_Item): Constants are now a
+	valid initialization item. Remove SPARM RM references from error
+	messages.
+	(Analyze_Pragma): Indicator Part_Of can now apply to a constant.
+	(Collect_Body_States): Collect both source constants
+	and variables.
+	(Collect_States_And_Objects): Collect both source constants and
+	variables.
+	(Collect_States_And_Variables): Rename
+	to Collect_States_And_Objects and update all its occurrences.
+	(Collect_Visible_States): Do not collect constants and variables
+	used to map generic formals to actuals.
+	(Find_Role): The role of a constant is that of an input. Separate the
+	role of a variable from that of a constant.
+	(Report_Unused_Constituents): Add specialized wording for constants.
+	(Report_Unused_States): Add specialized wording for constants.
+	* sem_util.adb (Add_Contract_Item): Add processing for constants.
+	* sem_util.ads (Add_Contract_Item): Update the comment on usage.
+	(Find_Placement_In_State_Space): Update the comment on usage.
+
 2015-05-21  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb: minor reformatting.

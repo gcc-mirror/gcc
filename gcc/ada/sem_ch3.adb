@@ -3205,6 +3205,8 @@ package body Sem_Ch3 is
          return;
       end if;
 
+      --  Constant related checks
+
       if Ekind (Obj_Id) = E_Constant then
 
          --  A constant cannot be effectively volatile. This check is only
@@ -3223,6 +3225,8 @@ package body Sem_Ch3 is
          then
             Error_Msg_N ("constant cannot be volatile", Obj_Id);
          end if;
+
+      --  Variable related checks
 
       else pragma Assert (Ekind (Obj_Id) = E_Variable);
 
@@ -3323,15 +3327,15 @@ package body Sem_Ch3 is
          if Seen then
             Check_External_Properties (Obj_Id, AR_Val, AW_Val, ER_Val, EW_Val);
          end if;
+      end if;
 
-         --  Check whether the lack of indicator Part_Of agrees with the
-         --  placement of the variable with respect to the state space.
+      --  Check whether the lack of indicator Part_Of agrees with the placement
+      --  of the object with respect to the state space.
 
-         Prag := Get_Pragma (Obj_Id, Pragma_Part_Of);
+      Prag := Get_Pragma (Obj_Id, Pragma_Part_Of);
 
-         if No (Prag) then
-            Check_Missing_Part_Of (Obj_Id);
-         end if;
+      if No (Prag) then
+         Check_Missing_Part_Of (Obj_Id);
       end if;
 
       --  A ghost object cannot be imported or exported (SPARK RM 6.9(8))

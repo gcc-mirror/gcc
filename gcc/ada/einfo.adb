@@ -1175,7 +1175,8 @@ package body Einfo is
    function Contract (Id : E) return N is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Entry,
+        (Ekind_In (Id, E_Constant,
+                       E_Entry,
                        E_Entry_Family,
                        E_Generic_Package,
                        E_Package,
@@ -3748,7 +3749,8 @@ package body Einfo is
    procedure Set_Contract (Id : E; V : N) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Entry,
+        (Ekind_In (Id, E_Constant,
+                       E_Entry,
                        E_Entry_Family,
                        E_Generic_Package,
                        E_Package,
@@ -10066,7 +10068,8 @@ package body Einfo is
    procedure Write_Field34_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Entry                                      |
+         when E_Constant                                   |
+              E_Entry                                      |
               E_Entry_Family                               |
               E_Generic_Package                            |
               E_Package                                    |

@@ -1096,10 +1096,10 @@ package Einfo is
 --       'COUNT when it applies to a family member.
 
 --    Contract (Node34)
---       Defined in entry, entry family, [generic] package, package body,
---       [generic] subprogram, subprogram body and variable entities. Points
---       to the contract of the entity, holding various assertion items and
---       data classifiers.
+--       Defined in constant, entry, entry family, [generic] package, package
+--       body, [generic] subprogram, subprogram body, and variable entities.
+--       Points to the contract of the entity, holding various assertion items
+--       and data classifiers.
 
 --    Entry_Parameters_Type (Node15)
 --       Defined in entries. Points to the access-to-record type that is
@@ -5633,6 +5633,7 @@ package Einfo is
    --    Activation_Record_Component         (Node31)
    --    Encapsulating_State                 (Node32)   (constants only)
    --    Linker_Section_Pragma               (Node33)
+   --    Contract                            (Node34)   (constants only)
    --    Has_Alignment_Clause                (Flag46)
    --    Has_Atomic_Components               (Flag86)
    --    Has_Biased_Representation           (Flag139)
