@@ -3048,7 +3048,9 @@ package body Freeze is
                Set_Etype (Formal, F_Type);
             end if;
 
-            Freeze_And_Append (F_Type, N, Result);
+            if not From_Limited_With (F_Type) then
+               Freeze_And_Append (F_Type, N, Result);
+            end if;
 
             if Is_Private_Type (F_Type)
               and then Is_Private_Type (Base_Type (F_Type))
@@ -4288,21 +4290,32 @@ package body Freeze is
             end if;
          end if;
 
-         --  Make sure that if we have aspect Iterator_Element, then we have
+         --  Make sure that if we have terator aspect, then we have
          --  either Constant_Indexing or Variable_Indexing.
 
-         if Has_Aspect (Rec, Aspect_Iterator_Element) then
-            if Has_Aspect (Rec, Aspect_Constant_Indexing)
-                 or else
-               Has_Aspect (Rec, Aspect_Variable_Indexing)
-            then
-               null;
-            else
-               Error_Msg_N
-                 ("Iterator_Element requires indexing aspect",
-                  Find_Aspect (Rec, Aspect_Iterator_Element));
+         declare
+            Iterator_Aspect : Node_Id;
+
+         begin
+            Iterator_Aspect := Find_Aspect (Rec, Aspect_Iterator_Element);
+
+            if No (Iterator_Aspect) then
+               Iterator_Aspect := Find_Aspect (Rec, Aspect_Default_Iterator);
             end if;
-         end if;
+
+            if Present (Iterator_Aspect) then
+               if Has_Aspect (Rec, Aspect_Constant_Indexing)
+                 or else
+                  Has_Aspect (Rec, Aspect_Variable_Indexing)
+               then
+                  null;
+               else
+                  Error_Msg_N
+                    ("Iterator_Element requires indexing aspect",
+                       Iterator_Aspect);
+               end if;
+            end if;
+         end;
 
          --  All done if not a full record definition
 

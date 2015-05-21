@@ -1,3 +1,14 @@
+2015-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Check_Iterator_Functions): Emit error on Iterator
+	aspect as well when indexing function is illegal.
+	(Valid_Default_Iterator): Handle properly somme illegal cases
+	to prevent compilation abandoned messages.
+	(Check_Primitive_Function): Verify that type and indexing function
+	are in the same scope.
+	* freeze.adb (Freeze_Record): Extend patch on the presence of
+	indexing aspects to aspect Default_Iterator.
+
 2015-05-19  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc-interface/trans.c (Sloc_to_locus1): Strenghthen local "map"

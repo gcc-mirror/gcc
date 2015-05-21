@@ -4124,8 +4124,10 @@ package body Sem_Ch13 is
                    Entity (Expr), Ent);
             end if;
 
+            --  Flag the default_iterator as well as the denoted function.
+
             if not Valid_Default_Iterator (Entity (Expr)) then
-               Error_Msg_N ("improper function for default iterator", Expr);
+               Error_Msg_N ("improper function for default iterator!", Expr);
             end if;
 
          else
@@ -4176,6 +4178,12 @@ package body Sem_Ch13 is
             return False;
          else
             Ctrl := Etype (First_Formal (Subp));
+         end if;
+
+         --  To be a primitive operation subprogram has to be in same scope.
+
+         if Scope (Ctrl) /= Scope (Subp) then
+            return False;
          end if;
 
          --  Type of formal may be the class-wide type, an access to such,
@@ -4972,9 +4980,12 @@ package body Sem_Ch13 is
             Typ  : Entity_Id;
 
          begin
+            --  If target type is untagged, further checks are irrelevant
+
             if not Is_Tagged_Type (U_Ent) then
                Error_Msg_N
-                 ("aspect Default_Iterator applies to  tagged type", Nam);
+                 ("aspect Default_Iterator applies to tagged type", Nam);
+               return;
             end if;
 
             Check_Iterator_Functions;
@@ -4985,15 +4996,17 @@ package body Sem_Ch13 is
               or else Ekind (Entity (Expr)) /= E_Function
             then
                Error_Msg_N ("aspect Iterator must be a function", Expr);
+               return;
             else
                Func := Entity (Expr);
             end if;
 
             --  The type of the first parameter must be T, T'class, or a
-            --  corresponding access type (5.5.1 (8/3)
+            --  corresponding access type (5.5.1 (8/3). If function is
+            --  parameterless label type accordingly.
 
             if No (First_Formal (Func)) then
-               Typ := Empty;
+               Typ := Any_Type;
             else
                Typ := Etype (First_Formal (Func));
             end if;
