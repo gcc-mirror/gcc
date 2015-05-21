@@ -28,6 +28,11 @@
 	* gcc.dg/format/c90-printf-1.c: Likewise. Add tests for column
 	locations within strings with embedded escape sequences.
 
+2015-05-20  Jeff Law  <law@redhat.com>
+
+	* gcc.target/hppa/hppa.exp: New target test driver.
+	* gcc.target/hppa/shadd-1.c: New test.
+
 2015-05-20  Alex Velenko  <Alex.Velenko@arm.com>
 
         * gcc.target/arm/thumb1-far-jump-2.c (r4): Added int in definition.
