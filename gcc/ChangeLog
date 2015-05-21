@@ -1,3 +1,9 @@
+2015-05-21  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Backport from mainline r223418:
+	* config.gcc [powerpc*-*-linux*]: Allow --enable-targets=all
+	to build a biarch toolchain again.
+
 2015-05-21  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	Backport from mainline r223471

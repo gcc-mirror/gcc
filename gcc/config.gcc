@@ -2351,6 +2351,7 @@ powerpc*-*-linux*)
 	maybe_biarch=${cpu_is_64bit}
 	case ${enable_targets} in
 	    *powerpc64*) maybe_biarch=yes ;;
+	    all) maybe_biarch=yes ;;
 	esac
 	case ${target} in
 	    powerpc64*-*-linux*spe* | powerpc64*-*-linux*paired*)
