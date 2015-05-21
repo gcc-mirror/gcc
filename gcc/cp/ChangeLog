@@ -1,3 +1,8 @@
+2015-05-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/60943
+	* decl2.c (change_return_type): Propagate FUNCTION_REF_QUALIFIED.
+
 2015-05-21  Marek Polacek  <polacek@redhat.com>
 
 	* typeck.c (warn_args_num): Don't print "declare here" for builtins.
@@ -14,7 +19,7 @@
 	(build_op_delete_call): Warn about size_t placement delete with
 	-Wc++14-compat.
 
-2015-05-19  Nathan sidwell  <nathan@acm.org>
+2015-05-19  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/65954
 	* typeck.c (finish_class_member_access_expr): Diagnose failed

@@ -1,3 +1,7 @@
+2015-05-21  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/cpp1y/pr60943.C: New.
+					 
 2015-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/66233
