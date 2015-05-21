@@ -5132,7 +5132,7 @@
    (clobber (match_operand:SI 4 "register_operand" ""))]
   "! pa_cint_ok_for_move (INTVAL (operands[2]))"
   [(set (match_dup 4) (match_dup 2))
-   (set (match_dup 0) (plus:SI (mult:SI (match_dup 4) (match_dup 3))
+   (set (match_dup 0) (plus:SI (ashift:SI (match_dup 4) (match_dup 3))
 			       (match_dup 1)))]
   "
 {
@@ -5147,17 +5147,17 @@
   if (intval % 2 == 0 && pa_cint_ok_for_move (intval / 2))
     {
       operands[2] = GEN_INT (intval / 2);
-      operands[3] = const2_rtx;
+      operands[3] = const1_rtx;
     }
   else if (intval % 4 == 0 && pa_cint_ok_for_move (intval / 4))
     {
       operands[2] = GEN_INT (intval / 4);
-      operands[3] = GEN_INT (4);
+      operands[3] = const2_rtx;
     }
   else if (intval % 8 == 0 && pa_cint_ok_for_move (intval / 8))
     {
       operands[2] = GEN_INT (intval / 8);
-      operands[3] = GEN_INT (8);
+      operands[3] = GEN_INT (3);
     }
   else if (pa_cint_ok_for_move (-intval))
     {

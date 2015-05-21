@@ -1,3 +1,8 @@
+2015-05-21  Jeff Law  <law@redhat.com>
+
+	* config/pa/pa.md (add-with-constant splitter): Use ASHIFT rather
+	than MULT for shadd sequences.
+
 2015-05-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* alias.c (alias_stats): New static var.	
