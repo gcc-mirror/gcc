@@ -1,3 +1,11 @@
+2015-05-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/65491
+	* config/aarch64/aarch64.c (aarch64_short_vector_p): Move above
+	aarch64_composite_type_p.  Remove check for aarch64_composite_type_p.
+	(aarch64_composite_type_p): Return false if given type and mode are
+	for a short vector.
+
 2015-05-22  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (struct _slp_oprnd_info): Add second_pattern

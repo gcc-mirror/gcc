@@ -1,3 +1,10 @@
+2015-05-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/65491
+	* gcc.target/aarch64/pr65491_1.c: New test.
+	* gcc.target/aarch64/aapcs64/type-def.h (vlf1_t): New typedef.
+	* gcc.target/aarch64/aapcs64/func-ret-1.c: Add test for vlf1_t.
+
 2015-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65598

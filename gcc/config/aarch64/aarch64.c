@@ -8156,6 +8156,26 @@ aapcs_vfp_sub_candidate (const_tree type, machine_mode *modep)
   return -1;
 }
 
+/* Return TRUE if the type, as described by TYPE and MODE, is a short vector
+   type as described in AAPCS64 \S 4.1.2.
+
+   See the comment above aarch64_composite_type_p for the notes on MODE.  */
+
+static bool
+aarch64_short_vector_p (const_tree type,
+			machine_mode mode)
+{
+  HOST_WIDE_INT size = -1;
+
+  if (type && TREE_CODE (type) == VECTOR_TYPE)
+    size = int_size_in_bytes (type);
+  else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+	    || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+    size = GET_MODE_SIZE (mode);
+
+  return (size == 8 || size == 16);
+}
+
 /* Return TRUE if the type, as described by TYPE and MODE, is a composite
    type as described in AAPCS64 \S 4.3.  This includes aggregate, union and
    array types.  The C99 floating-point complex types are also considered
@@ -8177,6 +8197,9 @@ static bool
 aarch64_composite_type_p (const_tree type,
 			  machine_mode mode)
 {
+  if (aarch64_short_vector_p (type, mode))
+    return false;
+
   if (type && (AGGREGATE_TYPE_P (type) || TREE_CODE (type) == COMPLEX_TYPE))
     return true;
 
@@ -8186,27 +8209,6 @@ aarch64_composite_type_p (const_tree type,
     return true;
 
   return false;
-}
-
-/* Return TRUE if the type, as described by TYPE and MODE, is a short vector
-   type as described in AAPCS64 \S 4.1.2.
-
-   See the comment above aarch64_composite_type_p for the notes on MODE.  */
-
-static bool
-aarch64_short_vector_p (const_tree type,
-			machine_mode mode)
-{
-  HOST_WIDE_INT size = -1;
-
-  if (type && TREE_CODE (type) == VECTOR_TYPE)
-    size = int_size_in_bytes (type);
-  else if (!aarch64_composite_type_p (type, mode)
-	   && (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-	       || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT))
-    size = GET_MODE_SIZE (mode);
-
-  return (size == 8 || size == 16) ? true : false;
 }
 
 /* Return TRUE if an argument, whose type is described by TYPE and MODE,

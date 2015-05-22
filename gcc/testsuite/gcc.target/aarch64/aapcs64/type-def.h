@@ -10,6 +10,9 @@ typedef float vf4_t __attribute__((vector_size (16)));
 /* 128-bit vector of 4 ints.  */
 typedef int vi4_t __attribute__((vector_size (16)));
 
+/* 128-bit vector of 1 quad precision float.  */
+typedef long double vlf1_t __attribute__((vector_size (16)));
+
 /* signed quad-word (in an union for the convenience of initialization).  */
 union int128_t
 {
