@@ -929,7 +929,7 @@ expand_subword_shift (machine_mode op1_mode, optab binoptab,
 }
 
 
-#ifdef HAVE_conditional_move
+#if HAVE_conditional_move
 /* Try implementing expand_doubleword_shift using conditional moves.
    The shift is by < BITS_PER_WORD if (CMP_CODE CMP1 CMP2) is true,
    otherwise it is by >= BITS_PER_WORD.  SUBWORD_OP1 and SUPERWORD_OP1
@@ -1096,7 +1096,7 @@ expand_doubleword_shift (machine_mode op1_mode, optab binoptab,
 				     unsignedp, methods, shift_mask);
     }
 
-#ifdef HAVE_conditional_move
+#if HAVE_conditional_move
   /* Try using conditional moves to generate straight-line code.  */
   {
     rtx_insn *start = get_last_insn ();
@@ -4518,7 +4518,7 @@ emit_indirect_jump (rtx loc ATTRIBUTE_UNUSED)
 #endif
 }
 
-#ifdef HAVE_conditional_move
+#if HAVE_conditional_move
 
 /* Emit a conditional move instruction if the machine supports one for that
    condition and machine mode.

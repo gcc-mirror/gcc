@@ -364,7 +364,7 @@ extern void emit_indirect_jump (rtx);
 #error "insn-config.h must be included before optabs.h"
 #endif
 
-#ifdef HAVE_conditional_move
+#if HAVE_conditional_move
 /* Emit a conditional move operation.  */
 rtx emit_conditional_move (rtx, enum rtx_code, rtx, rtx, machine_mode,
 			   rtx, rtx, machine_mode, int);

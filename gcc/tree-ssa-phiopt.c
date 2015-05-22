@@ -83,10 +83,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-inline.h"
 
-#ifndef HAVE_conditional_move
-#define HAVE_conditional_move (0)
-#endif
-
 static unsigned int tree_ssa_phiopt_worker (bool, bool);
 static bool conditional_replacement (basic_block, basic_block,
 				     edge, edge, gphi *, tree, tree);

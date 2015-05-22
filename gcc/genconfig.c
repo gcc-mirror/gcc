@@ -352,6 +352,8 @@ main (int argc, char **argv)
 
   if (have_cmove_flag)
     printf ("#define HAVE_conditional_move 1\n");
+  else
+    printf ("#define HAVE_conditional_move 0\n");
 
   if (have_cond_exec_flag)
     printf ("#define HAVE_conditional_execution 1\n");

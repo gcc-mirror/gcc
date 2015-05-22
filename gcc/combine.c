@@ -6818,7 +6818,7 @@ simplify_set (rtx x)
       && (GET_CODE (XEXP (src, 0)) == EQ || GET_CODE (XEXP (src, 0)) == NE)
       && XEXP (XEXP (src, 0), 1) == const0_rtx
       && GET_MODE (src) == GET_MODE (XEXP (XEXP (src, 0), 0))
-#ifdef HAVE_conditional_move
+#if HAVE_conditional_move
       && ! can_conditionally_move_p (GET_MODE (src))
 #endif
       && (num_sign_bit_copies (XEXP (XEXP (src, 0), 0),

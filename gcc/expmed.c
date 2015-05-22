@@ -3797,7 +3797,7 @@ expand_sdiv_pow2 (machine_mode mode, rtx op0, HOST_WIDE_INT d)
       return expand_shift (RSHIFT_EXPR, mode, temp, logd, NULL_RTX, 0);
     }
 
-#ifdef HAVE_conditional_move
+#if HAVE_conditional_move
   if (BRANCH_COST (optimize_insn_for_speed_p (), false)
       >= 2)
     {
@@ -5555,7 +5555,7 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 				    target_mode);
 	}
 
-#ifdef HAVE_conditional_move
+#if HAVE_conditional_move
       /* Try using a setcc instruction for ORDERED/UNORDERED, followed by a
 	 conditional move.  */
       tem = emit_store_flag_1 (subtarget, first_code, op0, op1, mode, 0,

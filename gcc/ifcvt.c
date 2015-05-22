@@ -72,9 +72,6 @@
 #include "shrink-wrap.h"
 #include "ifcvt.h"
 
-#ifndef HAVE_conditional_move
-#define HAVE_conditional_move 0
-#endif
 #ifndef HAVE_incscc
 #define HAVE_incscc 0
 #endif
@@ -1505,7 +1502,6 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
 	return NULL_RTX;
     }
 
-#if HAVE_conditional_move
   unsignedp = (code == LTU || code == GEU
 	       || code == LEU || code == GTU);
 
@@ -1562,13 +1558,6 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
     }
   else
     return NULL_RTX;
-#else
-  /* We'll never get here, as noce_process_if_block doesn't call the
-     functions involved.  Ifdef code, however, should be discouraged
-     because it leads to typos in the code not selected.  However,
-     emit_conditional_move won't exist either.  */
-  return NULL_RTX;
-#endif
 }
 
 /* Try only simple constants and registers here.  More complex cases
