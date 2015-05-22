@@ -2044,7 +2044,7 @@ fix_crossing_conditional_branches (void)
 
       if (crossing_edge)
 	{
-	  rtx_jump_insn *old_jump = as_a <rtx_jump_insn *> (BB_END (cur_bb));
+	  rtx_insn *old_jump = BB_END (cur_bb);
 
 	  /* Check to make sure the jump instruction is a
 	     conditional jump.  */
@@ -2067,6 +2067,9 @@ fix_crossing_conditional_branches (void)
 
 	  if (set_src && (GET_CODE (set_src) == IF_THEN_ELSE))
 	    {
+	      rtx_jump_insn *old_jump_insn =
+			as_a <rtx_jump_insn *> (old_jump);
+
 	      if (GET_CODE (XEXP (set_src, 1)) == PC)
 		old_label = XEXP (set_src, 2);
 	      else if (GET_CODE (XEXP (set_src, 2)) == PC)
@@ -2095,7 +2098,7 @@ fix_crossing_conditional_branches (void)
 		  emit_label (new_label);
 
 		  gcc_assert (GET_CODE (old_label) == LABEL_REF);
-		  old_jump_target = old_jump->jump_target ();
+		  old_jump_target = old_jump_insn->jump_target ();
 		  new_jump = as_a <rtx_jump_insn *>
 				(emit_jump_insn (gen_jump (old_jump_target)));
 		  new_jump->set_jump_target (old_jump_target);
@@ -2114,7 +2117,7 @@ fix_crossing_conditional_branches (void)
 
 	      /* Make old jump branch to new bb.  */
 
-	      redirect_jump (old_jump, new_label, 0);
+	      redirect_jump (old_jump_insn, new_label, 0);
 
 	      /* Remove crossing_edge as predecessor of 'dest'.  */
 

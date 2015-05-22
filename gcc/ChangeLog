@@ -1,3 +1,9 @@
+2015-05-22  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	PR rtl-optimization/66237
+	* bb-reorder.c (fix_crossing_conditional_branches): Fix wrong
+	location of an "as_a" cast.
+
 2015-05-22  Jeff Law  <law@redhat.com>
 
 	* config/pa/pa.md (non-canonical shift-add insns): Remove.
