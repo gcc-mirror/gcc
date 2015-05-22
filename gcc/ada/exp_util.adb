@@ -2658,7 +2658,10 @@ package body Exp_Util is
 
          Next_Elmt (Prim);
 
-         --  Raise Program_Error if no primitive found
+         --  Raise Program_Error if no primitive found. ???This doesn't work as
+         --  advertised if there are no primitives. But fixing that breaks
+         --  Is_Init_Proc_Of in Exp_Ch7, which is expecting Empty in some
+         --  cases.
 
          if No (Prim) then
             raise Program_Error;

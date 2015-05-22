@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 --  The implementation here is portable to any IEEE implementation. It does
---  not handle non-binary radix, and also assumes that model numbers and
+--  not handle nonbinary radix, and also assumes that model numbers and
 --  machine numbers are basically identical, which is not true of all possible
 --  floating-point implementations. On a non-IEEE machine, this body must be
 --  specialized appropriately, or better still, its generic instantiations

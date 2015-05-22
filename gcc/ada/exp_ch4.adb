@@ -7674,7 +7674,7 @@ package body Exp_Ch4 is
         and then Esize (Root_Type (Exptyp)) <= Esize (Standard_Integer)
 
         --  This transformation is not applicable for a modular type with a
-        --  non-binary modulus because we do not handle modular reduction in
+        --  nonbinary modulus because we do not handle modular reduction in
         --  a correct manner if we attempt this transformation in this case.
 
         and then not Non_Binary_Modulus (Typ)
@@ -7826,8 +7826,8 @@ package body Exp_Ch4 is
 
       if Is_Modular_Integer_Type (Rtyp) then
 
-         --  Non-binary case, we call the special exponentiation routine for
-         --  the non-binary case, converting the argument to Long_Long_Integer
+         --  Nonbinary case, we call the special exponentiation routine for
+         --  the nonbinary case, converting the argument to Long_Long_Integer
          --  and passing the modulus value. Then the result is converted back
          --  to the base type.
 
@@ -9078,7 +9078,7 @@ package body Exp_Ch4 is
       --  where Bits is the shift count mod Esize (the mod operation here
       --  deals with ludicrous large shift counts, which are apparently OK).
 
-      --  What about non-binary modulus ???
+      --  What about nonbinary modulus ???
 
       declare
          Loc : constant Source_Ptr := Sloc (N);
@@ -9131,7 +9131,7 @@ package body Exp_Ch4 is
       --  where Bits is the shift count mod Esize (the mod operation here
       --  deals with ludicrous large shift counts, which are apparently OK).
 
-      --  What about non-binary modulus ???
+      --  What about nonbinary modulus ???
 
       declare
          Loc : constant Source_Ptr := Sloc (N);
@@ -9268,7 +9268,7 @@ package body Exp_Ch4 is
       --  to the word size, since in this case (not (Shift_Right (Mask, bits)))
       --  generates all 1'bits.
 
-      --  What about non-binary modulus ???
+      --  What about nonbinary modulus ???
 
       declare
          Loc   : constant Source_Ptr := Sloc (N);

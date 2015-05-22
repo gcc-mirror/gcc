@@ -434,8 +434,7 @@ package body Sem_Intr is
          return;
 
       elsif Non_Binary_Modulus (Typ1) then
-         Errint
-           ("shifts not allowed for non-binary modular types", Ptyp1, N);
+         Errint ("shifts not allowed for nonbinary modular types", Ptyp1, N);
 
       --  For modular type, modulus must be 2**8, 2**16, 2**32, or 2**64.
       --  Don't apply to generic types, since we may not have a modulus value.

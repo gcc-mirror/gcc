@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1992-2014, Free Software Foundation, Inc.        --
+--           Copyright (C) 1992-2015, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This function performs exponentiation of a modular type with non-binary
+--  This function performs exponentiation of a modular type with nonbinary
 --  modulus values. Arithmetic is done in Long_Long_Unsigned, with explicit
 --  accounting for the modulus value which is passed as the second argument.
 --  Note that 1 is a binary modulus (2**0), so the compiler should not (and
