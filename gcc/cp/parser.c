@@ -16083,7 +16083,13 @@ cp_parser_enumerator_list (cp_parser* parser, tree type)
      enumerator = constant-expression
 
    enumerator:
-     identifier  */
+     identifier
+
+   GNU Extensions:
+
+   enumerator-definition:
+     enumerator attributes [opt]
+     enumerator attributes [opt] = constant-expression  */
 
 static void
 cp_parser_enumerator_definition (cp_parser* parser, tree type)
@@ -16100,6 +16106,9 @@ cp_parser_enumerator_definition (cp_parser* parser, tree type)
   identifier = cp_parser_identifier (parser);
   if (identifier == error_mark_node)
     return;
+
+  /* Parse any specified attributes.  */
+  tree attrs = cp_parser_attributes_opt (parser);
 
   /* If the next token is an '=', then there is an explicit value.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_EQ))
@@ -16118,7 +16127,7 @@ cp_parser_enumerator_definition (cp_parser* parser, tree type)
     value = error_mark_node;
 
   /* Create the enumerator.  */
-  build_enumerator (identifier, value, type, loc);
+  build_enumerator (identifier, value, type, attrs, loc);
 }
 
 /* Parse a namespace-name.

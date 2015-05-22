@@ -59,6 +59,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Variable Attributes:: Specifying attributes of variables.
 * Type Attributes::     Specifying attributes of types.
 * Label Attributes::    Specifying attributes on labels.
+* Enumerator Attributes:: Specifying attributes on enumerators.
 * Attribute Syntax::    Formal syntax for attributes.
 * Function Prototypes:: Prototype declarations and old-style definitions.
 * C++ Comments::        C++ comments are recognized.
@@ -2175,6 +2176,7 @@ attribute syntax and placement.
 GCC also supports attributes on
 variable declarations (@pxref{Variable Attributes}),
 labels (@pxref{Label Attributes}),
+enumerators (@pxref{Enumerator Attributes}),
 and types (@pxref{Type Attributes}).
 
 There is some overlap between the purposes of attributes and pragmas
@@ -5041,8 +5043,9 @@ by an attribute specification inside double parentheses.  Some
 attributes are currently defined generically for variables.
 Other attributes are defined for variables on particular target
 systems.  Other attributes are available for functions
-(@pxref{Function Attributes}), labels (@pxref{Label Attributes}) and for 
-types (@pxref{Type Attributes}).
+(@pxref{Function Attributes}), labels (@pxref{Label Attributes}),
+enumerators (@pxref{Enumerator Attributes}), and for types
+(@pxref{Type Attributes}).
 Other front ends might define more attributes
 (@pxref{C++ Extensions,,Extensions to the C++ Language}).
 
@@ -5837,7 +5840,8 @@ attributes of types.  Some type attributes apply only to @code{struct}
 and @code{union} types, while others can apply to any type defined
 via a @code{typedef} declaration.  Other attributes are defined for
 functions (@pxref{Function Attributes}), labels (@pxref{Label 
-Attributes}) and for variables (@pxref{Variable Attributes}).
+Attributes}), enumerators (@pxref{Enumerator Attributes}), and for
+variables (@pxref{Variable Attributes}).
 
 The @code{__attribute__} keyword is followed by an attribute specification
 inside double parentheses.  
@@ -6300,7 +6304,8 @@ compilers to match the native Microsoft compiler.
 GCC allows attributes to be set on C labels.  @xref{Attribute Syntax}, for 
 details of the exact syntax for using attributes.  Other attributes are 
 available for functions (@pxref{Function Attributes}), variables 
-(@pxref{Variable Attributes}) and for types (@pxref{Type Attributes}).
+(@pxref{Variable Attributes}), enumerators (@xref{Enumerator Attributes}),
+and for types (@pxref{Type Attributes}).
 
 This example uses the @code{cold} label attribute to indicate the 
 @code{ErrorHandling} branch is unlikely to be taken and that the
@@ -6346,6 +6351,45 @@ with computed goto or @code{asm goto}.
 
 @end table
 
+@node Enumerator Attributes
+@section Enumerator Attributes
+@cindex Enumerator Attributes
+
+GCC allows attributes to be set on enumerators.  @xref{Attribute Syntax}, for
+details of the exact syntax for using attributes.  Other attributes are
+available for functions (@pxref{Function Attributes}), variables
+(@pxref{Variable Attributes}), labels (@xref{Label Attributes}),
+and for types (@pxref{Type Attributes}).
+
+This example uses the @code{deprecated} enumerator attribute to indicate the
+@code{oldval} enumerator is deprecated:
+
+@smallexample
+enum E @{
+  oldval __attribute__((deprecated)),
+  newval
+@};
+
+int
+fn (void)
+@{
+  return oldval;
+@}
+@end smallexample
+
+@table @code
+@item deprecated
+@cindex @code{deprecated} enumerator attribute
+The @code{deprecated} attribute results in a warning if the enumerator
+is used anywhere in the source file.  This is useful when identifying
+enumerators that are expected to be removed in a future version of a
+program.  The warning also includes the location of the declaration
+of the deprecated enumerator, to enable users to easily find further
+information about why the enumerator is deprecated, or what they should
+do instead.  Note that the warnings only occurs for uses.
+
+@end table
+
 @node Attribute Syntax
 @section Attribute Syntax
 @cindex attribute syntax
@@ -6371,6 +6415,8 @@ for details of the semantics of attributes applying to structure, union
 and enumerated types.
 @xref{Label Attributes}, for details of the semantics of attributes 
 applying to labels.
+@xref{Enumerator Attributes}, for details of the semantics of attributes
+applying to enumerators.
 
 An @dfn{attribute specifier} is of the form
 @code{__attribute__ ((@var{attribute-list}))}.  An @dfn{attribute list}
@@ -6427,6 +6473,14 @@ statement).  If the semicolon is missing, C++ label attributes are
 ambiguous, as it is permissible for a declaration, which could begin
 with an attribute list, to be labelled in C++.  Declarations cannot be
 labelled in C90 or C99, so the ambiguity does not arise there.
+
+@subsubheading Enumerator Attributes
+
+In GNU C, an attribute specifier list may appear as part of an enumerator.
+The attribute goes after the enumeration constant, before @code{=}, if
+present.  The optional attribute in the enumerator appertains to the
+enumeration constant.  It is not possible to place the attribute after
+the constant expression, if present.
 
 @subsubheading Type Attributes
 

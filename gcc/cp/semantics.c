@@ -3652,11 +3652,6 @@ finish_id_expression (tree id_expression,
 	}
     }
 
-  /* Handle references (c++/56130).  */
-  tree t = REFERENCE_REF_P (decl) ? TREE_OPERAND (decl, 0) : decl;
-  if (TREE_DEPRECATED (t))
-    warn_deprecated_use (t, NULL_TREE);
-
   return decl;
 }
 

@@ -9088,6 +9088,7 @@ handle_deprecated_attribute (tree *node, tree name,
 	  || TREE_CODE (decl) == PARM_DECL
 	  || VAR_OR_FUNCTION_DECL_P (decl)
 	  || TREE_CODE (decl) == FIELD_DECL
+	  || TREE_CODE (decl) == CONST_DECL
 	  || objc_method_decl (TREE_CODE (decl)))
 	TREE_DEPRECATED (decl) = 1;
       else

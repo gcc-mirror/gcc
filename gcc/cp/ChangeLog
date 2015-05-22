@@ -1,3 +1,16 @@
+2015-05-22  Marek Polacek  <polacek@redhat.com>
+	    Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c/47043
+	* cp-tree.h (build_enumerator): Update declaration.
+	* decl.c (build_enumerator): Add attributes parameter.  Call
+	cplus_decl_attributes.
+	* init.c (constant_value_1): Pass tf_none to mark_used.
+	* parser.c (cp_parser_enumerator_definition): Parse attributes and
+	pass them down to build_enumerator.
+	* pt.c (tsubst_enum): Pass decl attributes to build_enumerator.
+	* semantics.c (finish_id_expression): Don't warn_deprecated_use here.
+
 2015-05-21  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/60943

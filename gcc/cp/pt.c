@@ -20771,9 +20771,10 @@ tsubst_enum (tree tag, tree newtag, tree args)
       /* Give this enumeration constant the correct access.  */
       set_current_access_from_decl (decl);
 
-      /* Actually build the enumerator itself.  */
-      build_enumerator
-	(DECL_NAME (decl), value, newtag, DECL_SOURCE_LOCATION (decl));
+      /* Actually build the enumerator itself.  Here we're assuming that
+	 enumerators can't have dependent attributes.  */
+      build_enumerator (DECL_NAME (decl), value, newtag,
+			DECL_ATTRIBUTES (decl), DECL_SOURCE_LOCATION (decl));
     }
 
   if (SCOPED_ENUM_P (newtag))

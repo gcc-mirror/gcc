@@ -2035,7 +2035,7 @@ constant_value_1 (tree decl, bool strict_p, bool return_aggregate_cst_ok_p)
 	 specialization, we must instantiate it here.  The
 	 initializer for the static data member is not processed
 	 until needed; we need it now.  */
-      mark_used (decl);
+      mark_used (decl, tf_none);
       mark_rvalue_use (decl);
       init = DECL_INITIAL (decl);
       if (init == error_mark_node)
