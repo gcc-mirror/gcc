@@ -2270,8 +2270,8 @@
 ; computes the address to be deleted if the register it sets is dead.
 (define_peephole2
   [(set (match_operand:SI 0 "register_operand" "")
-	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "")
-			  (const_int 4))
+	(plus:SI (ashift:SI (match_operand:SI 1 "register_operand" "")
+			    (const_int 2))
 		 (match_operand:SI 2 "register_operand" "")))
    (set (mem:SI (match_dup 0))
         (match_operand:SI 3 "register_operand" ""))]
@@ -2281,31 +2281,14 @@
    && FP_REGNO_P (REGNO (operands[3]))"
   [(set (mem:SI (plus:SI (mult:SI (match_dup 1) (const_int 4)) (match_dup 2)))
 	(match_dup 3))
-   (set (match_dup 0) (plus:SI (mult:SI (match_dup 1) (const_int 4))
-			       (match_dup 2)))]
-  "")
-
-(define_peephole2
-  [(set (match_operand:SI 0 "register_operand" "")
-	(plus:SI (match_operand:SI 2 "register_operand" "")
-		 (mult:SI (match_operand:SI 1 "register_operand" "")
-			  (const_int 4))))
-   (set (mem:SI (match_dup 0))
-        (match_operand:SI 3 "register_operand" ""))]
-  "!TARGET_SOFT_FLOAT
-   && !TARGET_DISABLE_INDEXING
-   && REG_OK_FOR_BASE_P (operands[2])
-   && FP_REGNO_P (REGNO (operands[3]))"
-  [(set (mem:SI (plus:SI (mult:SI (match_dup 1) (const_int 4)) (match_dup 2)))
-	(match_dup 3))
-   (set (match_dup 0) (plus:SI (mult:SI (match_dup 1) (const_int 4))
+   (set (match_dup 0) (plus:SI (ashift:SI (match_dup 1) (const_int 2))
 			       (match_dup 2)))]
   "")
 
 (define_peephole2
   [(set (match_operand:DI 0 "register_operand" "")
-	(plus:DI (mult:DI (match_operand:DI 1 "register_operand" "")
-			  (const_int 4))
+	(plus:DI (ashift:DI (match_operand:DI 1 "register_operand" "")
+			    (const_int 2))
 		 (match_operand:DI 2 "register_operand" "")))
    (set (mem:SI (match_dup 0))
         (match_operand:SI 3 "register_operand" ""))]
@@ -2316,25 +2299,7 @@
    && FP_REGNO_P (REGNO (operands[3]))"
   [(set (mem:SI (plus:DI (mult:DI (match_dup 1) (const_int 4)) (match_dup 2)))
 	(match_dup 3))
-   (set (match_dup 0) (plus:DI (mult:DI (match_dup 1) (const_int 4))
-			       (match_dup 2)))]
-  "")
-
-(define_peephole2
-  [(set (match_operand:DI 0 "register_operand" "")
-	(plus:DI (match_operand:DI 2 "register_operand" "")
-		 (mult:DI (match_operand:DI 1 "register_operand" "")
-			  (const_int 4))))
-   (set (mem:SI (match_dup 0))
-        (match_operand:SI 3 "register_operand" ""))]
-  "!TARGET_SOFT_FLOAT
-   && !TARGET_DISABLE_INDEXING
-   && TARGET_64BIT
-   && REG_OK_FOR_BASE_P (operands[2])
-   && FP_REGNO_P (REGNO (operands[3]))"
-  [(set (mem:SI (plus:DI (mult:DI (match_dup 1) (const_int 4)) (match_dup 2)))
-	(match_dup 3))
-   (set (match_dup 0) (plus:DI (mult:DI (match_dup 1) (const_int 4))
+   (set (match_dup 0) (plus:DI (ashift:DI (match_dup 1) (const_int 2))
 			       (match_dup 2)))]
   "")
 
@@ -3896,8 +3861,8 @@
 
 (define_peephole2
   [(set (match_operand:SI 0 "register_operand" "")
-	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "")
-			  (const_int 8))
+	(plus:SI (ashift:SI (match_operand:SI 1 "register_operand" "")
+			    (const_int 3))
 		 (match_operand:SI 2 "register_operand" "")))
    (set (mem:DF (match_dup 0))
         (match_operand:DF 3 "register_operand" ""))]
@@ -3907,15 +3872,15 @@
    && FP_REGNO_P (REGNO (operands[3]))"
   [(set (mem:DF (plus:SI (mult:SI (match_dup 1) (const_int 8)) (match_dup 2)))
 	(match_dup 3))
-   (set (match_dup 0) (plus:SI (mult:SI (match_dup 1) (const_int 8))
+   (set (match_dup 0) (plus:SI (ashift:SI (match_dup 1) (const_int 3))
 			       (match_dup 2)))]
   "")
 
 (define_peephole2
   [(set (match_operand:SI 0 "register_operand" "")
 	(plus:SI (match_operand:SI 2 "register_operand" "")
-		 (mult:SI (match_operand:SI 1 "register_operand" "")
-			  (const_int 8))))
+		 (ashift:SI (match_operand:SI 1 "register_operand" "")
+			    (const_int 3))))
    (set (mem:DF (match_dup 0))
         (match_operand:DF 3 "register_operand" ""))]
   "!TARGET_SOFT_FLOAT
@@ -3924,14 +3889,14 @@
    && FP_REGNO_P (REGNO (operands[3]))"
   [(set (mem:DF (plus:SI (mult:SI (match_dup 1) (const_int 8)) (match_dup 2)))
 	(match_dup 3))
-   (set (match_dup 0) (plus:SI (mult:SI (match_dup 1) (const_int 8))
+   (set (match_dup 0) (plus:SI (ashift:SI (match_dup 1) (const_int 3))
 			       (match_dup 2)))]
   "")
 
 (define_peephole2
   [(set (match_operand:DI 0 "register_operand" "")
-	(plus:DI (mult:DI (match_operand:DI 1 "register_operand" "")
-			  (const_int 8))
+	(plus:DI (ashift:DI (match_operand:DI 1 "register_operand" "")
+			    (const_int 3))
 		 (match_operand:DI 2 "register_operand" "")))
    (set (mem:DF (match_dup 0))
         (match_operand:DF 3 "register_operand" ""))]
@@ -3942,15 +3907,15 @@
    && FP_REGNO_P (REGNO (operands[3]))"
   [(set (mem:DF (plus:DI (mult:DI (match_dup 1) (const_int 8)) (match_dup 2)))
 	(match_dup 3))
-   (set (match_dup 0) (plus:DI (mult:DI (match_dup 1) (const_int 8))
+   (set (match_dup 0) (plus:DI (ashift:DI (match_dup 1) (const_int 3))
 			       (match_dup 2)))]
   "")
 
 (define_peephole2
   [(set (match_operand:DI 0 "register_operand" "")
 	(plus:DI (match_operand:DI 2 "register_operand" "")
-		 (mult:DI (match_operand:DI 1 "register_operand" "")
-			  (const_int 8))))
+		 (ashift:DI (match_operand:DI 1 "register_operand" "")
+			    (const_int 3))))
    (set (mem:DF (match_dup 0))
         (match_operand:DF 3 "register_operand" ""))]
   "!TARGET_SOFT_FLOAT
@@ -3960,7 +3925,7 @@
    && FP_REGNO_P (REGNO (operands[3]))"
   [(set (mem:DF (plus:DI (mult:DI (match_dup 1) (const_int 8)) (match_dup 2)))
 	(match_dup 3))
-   (set (match_dup 0) (plus:DI (mult:DI (match_dup 1) (const_int 8))
+   (set (match_dup 0) (plus:DI (ashift:DI (match_dup 1) (const_int 3))
 			       (match_dup 2)))]
   "")
 
@@ -4244,8 +4209,8 @@
 
 (define_peephole2
   [(set (match_operand:DI 0 "register_operand" "")
-	(plus:DI (mult:DI (match_operand:DI 1 "register_operand" "")
-			  (const_int 8))
+	(plus:DI (ashift:DI (match_operand:DI 1 "register_operand" "")
+			    (const_int 3))
 		 (match_operand:DI 2 "register_operand" "")))
    (set (mem:DI (match_dup 0))
         (match_operand:DI 3 "register_operand" ""))]
@@ -4256,25 +4221,7 @@
    && FP_REGNO_P (REGNO (operands[3]))"
   [(set (mem:DI (plus:DI (mult:DI (match_dup 1) (const_int 8)) (match_dup 2)))
 	(match_dup 3))
-   (set (match_dup 0) (plus:DI (mult:DI (match_dup 1) (const_int 8))
-			       (match_dup 2)))]
-  "")
-
-(define_peephole2
-  [(set (match_operand:DI 0 "register_operand" "")
-	(plus:DI (match_operand:DI 2 "register_operand" "")
-		 (mult:DI (match_operand:DI 1 "register_operand" "")
-			  (const_int 8))))
-   (set (mem:DI (match_dup 0))
-        (match_operand:DI 3 "register_operand" ""))]
-  "!TARGET_SOFT_FLOAT
-   && !TARGET_DISABLE_INDEXING
-   && TARGET_64BIT
-   && REG_OK_FOR_BASE_P (operands[2])
-   && FP_REGNO_P (REGNO (operands[3]))"
-  [(set (mem:DI (plus:DI (mult:DI (match_dup 1) (const_int 8)) (match_dup 2)))
-	(match_dup 3))
-   (set (match_dup 0) (plus:DI (mult:DI (match_dup 1) (const_int 8))
+   (set (match_dup 0) (plus:DI (ashift:DI (match_dup 1) (const_int 3))
 			       (match_dup 2)))]
   "")
 
@@ -4466,8 +4413,8 @@
 
 (define_peephole2
   [(set (match_operand:SI 0 "register_operand" "")
-	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "")
-			  (const_int 4))
+	(plus:SI (ashift:SI (match_operand:SI 1 "register_operand" "")
+			    (const_int 2))
 		 (match_operand:SI 2 "register_operand" "")))
    (set (mem:SF (match_dup 0))
         (match_operand:SF 3 "register_operand" ""))]
@@ -4477,31 +4424,14 @@
    && FP_REGNO_P (REGNO (operands[3]))"
   [(set (mem:SF (plus:SI (mult:SI (match_dup 1) (const_int 4)) (match_dup 2)))
 	(match_dup 3))
-   (set (match_dup 0) (plus:SI (mult:SI (match_dup 1) (const_int 4))
-			       (match_dup 2)))]
-  "")
-
-(define_peephole2
-  [(set (match_operand:SI 0 "register_operand" "")
-	(plus:SI (match_operand:SI 2 "register_operand" "")
-		 (mult:SI (match_operand:SI 1 "register_operand" "")
-			  (const_int 4))))
-   (set (mem:SF (match_dup 0))
-        (match_operand:SF 3 "register_operand" ""))]
-  "!TARGET_SOFT_FLOAT
-   && !TARGET_DISABLE_INDEXING
-   && REG_OK_FOR_BASE_P (operands[2])
-   && FP_REGNO_P (REGNO (operands[3]))"
-  [(set (mem:SF (plus:SI (mult:SI (match_dup 1) (const_int 4)) (match_dup 2)))
-	(match_dup 3))
-   (set (match_dup 0) (plus:SI (mult:SI (match_dup 1) (const_int 4))
+   (set (match_dup 0) (plus:SI (ashift:SI (match_dup 1) (const_int 2))
 			       (match_dup 2)))]
   "")
 
 (define_peephole2
   [(set (match_operand:DI 0 "register_operand" "")
-	(plus:DI (mult:DI (match_operand:DI 1 "register_operand" "")
-			  (const_int 4))
+	(plus:DI (ashift:DI (match_operand:DI 1 "register_operand" "")
+			    (const_int 2))
 		 (match_operand:DI 2 "register_operand" "")))
    (set (mem:SF (match_dup 0))
         (match_operand:SF 3 "register_operand" ""))]
@@ -4512,25 +4442,7 @@
    && FP_REGNO_P (REGNO (operands[3]))"
   [(set (mem:SF (plus:DI (mult:DI (match_dup 1) (const_int 4)) (match_dup 2)))
 	(match_dup 3))
-   (set (match_dup 0) (plus:DI (mult:DI (match_dup 1) (const_int 4))
-			       (match_dup 2)))]
-  "")
-
-(define_peephole2
-  [(set (match_operand:DI 0 "register_operand" "")
-	(plus:DI (match_operand:DI 2 "register_operand" "")
-		 (mult:DI (match_operand:DI 1 "register_operand" "")
-			  (const_int 4))))
-   (set (mem:SF (match_dup 0))
-        (match_operand:SF 3 "register_operand" ""))]
-  "!TARGET_SOFT_FLOAT
-   && !TARGET_DISABLE_INDEXING
-   && TARGET_64BIT
-   && REG_OK_FOR_BASE_P (operands[2])
-   && FP_REGNO_P (REGNO (operands[3]))"
-  [(set (mem:SF (plus:DI (mult:DI (match_dup 1) (const_int 4)) (match_dup 2)))
-	(match_dup 3))
-   (set (match_dup 0) (plus:DI (mult:DI (match_dup 1) (const_int 4))
+   (set (match_dup 0) (plus:DI (ashift:DI (match_dup 1) (const_int 2))
 			       (match_dup 2)))]
   "")
 
@@ -6344,26 +6256,6 @@
   ""
   "ldh%M1 %1,%0"
   [(set_attr "type" "load")
-   (set_attr "length" "4")])
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
-			  (match_operand:SI 3 "mem_shadd_operand" ""))
-		 (match_operand:SI 1 "register_operand" "r")))]
-  ""
-  "{sh%O3addl %2,%1,%0|shladd,l %2,%O3,%1,%0} "
-  [(set_attr "type" "binary")
-   (set_attr "length" "4")])
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(plus:DI (mult:DI (match_operand:DI 2 "register_operand" "r")
-			  (match_operand:DI 3 "mem_shadd_operand" ""))
-		 (match_operand:DI 1 "register_operand" "r")))]
-  "TARGET_64BIT"
-  "shladd,l %2,%O3,%1,%0"
-  [(set_attr "type" "binary")
    (set_attr "length" "4")])
 
 (define_insn ""

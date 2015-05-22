@@ -1,3 +1,10 @@
+2015-05-22  Jeff Law  <law@redhat.com>
+
+	* config/pa/pa.md (non-canonical shift-add insns): Remove.
+	(peepholes with non-canonical RTL sources): Remove.
+	(peepholes for indexed stores of FP regs in integer modes): Match and
+	generate canonical RTL.
+
 2015-05-22  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/63387
@@ -26,8 +33,8 @@
 	* combine.c (try_combine): Canonicalize (plus (mult X pow2) Y) into
 	(plus (ashift X log2) Y) if it is a split point.
 
-	* pa.c (mem_shadd_or_shadd_rtx_p): New function factored out
-	of hppa_legitimize_address to handle both forms of a multiply
+	* config/pa/pa.c (mem_shadd_or_shadd_rtx_p): New function factoredx
+	out of hppa_legitimize_address to handle both forms of a multiply
 	by 2, 4 or 8.
 	(hppa_legitimize_address): Use mem_shadd_or_shadd_rtx_p. 
 	Always generate the ASHIFT variant as the result is not directly
