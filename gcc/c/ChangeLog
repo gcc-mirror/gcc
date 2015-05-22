@@ -1,3 +1,9 @@
+2015-05-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/47043
+	* c-parser.c (c_parser_enum_specifier): Parse and apply enumerator
+	attributes.
+
 2015-05-21  Marek Polacek  <polacek@redhat.com>
 
 	* c-typeck.c (inform_declaration): Use DECL_IS_BUILTIN instead of

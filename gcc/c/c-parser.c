@@ -2516,6 +2516,13 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
    enumerator:
      enumeration-constant
      enumeration-constant = constant-expression
+
+   GNU Extensions:
+
+   enumerator:
+     enumeration-constant attributes[opt]
+     enumeration-constant attributes[opt] = constant-expression
+
 */
 
 static struct c_typespec
@@ -2575,6 +2582,8 @@ c_parser_enum_specifier (c_parser *parser)
 	  c_parser_set_source_position_from_token (token);
 	  decl_loc = value_loc = token->location;
 	  c_parser_consume_token (parser);
+	  /* Parse any specified attributes.  */
+	  tree enum_attrs = c_parser_attributes (parser);
 	  if (c_parser_next_token_is (parser, CPP_EQ))
 	    {
 	      c_parser_consume_token (parser);
@@ -2584,7 +2593,9 @@ c_parser_enum_specifier (c_parser *parser)
 	  else
 	    enum_value = NULL_TREE;
 	  enum_decl = build_enumerator (decl_loc, value_loc,
-	      				&the_enum, enum_id, enum_value);
+					&the_enum, enum_id, enum_value);
+	  if (enum_attrs)
+	    decl_attributes (&TREE_PURPOSE (enum_decl), enum_attrs, 0);
 	  TREE_CHAIN (enum_decl) = values;
 	  values = enum_decl;
 	  seen_comma = false;
