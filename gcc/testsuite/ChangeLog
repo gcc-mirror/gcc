@@ -1,5 +1,9 @@
 2015-05-22  Marc Glisse  <marc.glisse@inria.fr>
 
+	* gcc.dg/simd-1.c: Update to the new message.
+
+2015-05-22  Marc Glisse  <marc.glisse@inria.fr>
+
 	* gcc.dg/nand.c: New testcase.
 
 2015-05-22  Sandra Loosemore  <sandra@codesourcery.com>

@@ -1,5 +1,10 @@
 2015-05-22  Marc Glisse  <marc.glisse@inria.fr>
 
+	* convert.c (convert_to_integer, convert_to_vector): Include the
+	types in the error message.
+
+2015-05-22  Marc Glisse  <marc.glisse@inria.fr>
+
 	* match.pd ((x | y) & ~x -> y & ~x, (x & y) | ~x -> y | ~x): New
 	simplifications.
 
