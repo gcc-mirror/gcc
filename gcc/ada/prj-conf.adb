@@ -973,7 +973,7 @@ package body Prj.Conf is
                Add_Str_To_Name_Buffer (Build_Tree_Dir.all);
 
                if Get_Name_String (Conf_Project.Directory.Display_Name)'Length
-                 < Root_Dir'Length
+                                                         < Root_Dir'Length
                then
                   Raise_Invalid_Config
                     ("cannot relocate deeper than object directory");
@@ -994,8 +994,8 @@ package body Prj.Conf is
             else
                if Build_Tree_Dir /= null then
                   if Get_Name_String
-                    (Conf_Project.Directory.Display_Name)'Length
-                    < Root_Dir'Length
+                    (Conf_Project.Directory.Display_Name)'Length <
+                                                          Root_Dir'Length
                   then
                      Raise_Invalid_Config
                        ("cannot relocate deeper than object directory");

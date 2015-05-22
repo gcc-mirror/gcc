@@ -830,6 +830,7 @@ package body Sem_Ch12 is
    --  later, when the expected types are known, but names have to be captured
    --  before installing parents of generics, that are not visible for the
    --  actuals themselves.
+   --
    --  If Inst is present, it is the entity of the package instance. This
    --  entity is marked as having a limited_view actual when some actual is
    --  a limited view. This is used to place the instance body properly..
@@ -3601,7 +3602,8 @@ package body Sem_Ch12 is
       Generate_Definition (Act_Decl_Id);
       Set_Ekind (Act_Decl_Id, E_Package);
 
-      --  Initialize list of incomplete actuals before analysis.
+      --  Initialize list of incomplete actuals before analysis
+
       Set_Incomplete_Actuals (Act_Decl_Id, New_Elmt_List);
 
       Preanalyze_Actuals (N, Act_Decl_Id);
@@ -8883,17 +8885,19 @@ package body Sem_Ch12 is
             --  the instance body.
 
             declare
-               Elmt    : Elmt_Id;
-               F_T     : Node_Id;
-               Typ     : Entity_Id;
+               Elmt : Elmt_Id;
+               F_T  : Node_Id;
+               Typ  : Entity_Id;
 
             begin
                Elmt := First_Elmt (Incomplete_Actuals (Act_Id));
                while Present (Elmt) loop
                   Typ := Node (Elmt);
+
                   if From_Limited_With (Typ) then
                      Typ := Non_Limited_View (Typ);
                   end if;
+
                   Ensure_Freeze_Node (Typ);
                   F_T := Freeze_Node (Typ);
 
@@ -13356,7 +13360,7 @@ package body Sem_Ch12 is
                Analyze (Act);
 
                if Is_Entity_Name (Act)
-                 and then  Is_Type (Entity (Act))
+                 and then Is_Type (Entity (Act))
                  and then From_Limited_With (Entity (Act))
                then
                   Append_Elmt (Entity (Act), Incomplete_Actuals (Inst));

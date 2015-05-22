@@ -13483,9 +13483,22 @@ package body Sem_Ch13 is
                         end if;
 
                      else pragma Assert (Source_Siz > Target_Siz);
-                        Error_Msg
-                          ("\?z?^ trailing bits of source will be ignored!",
-                           Eloc);
+                        if Is_Discrete_Type (Source) then
+                           if Bytes_Big_Endian then
+                              Error_Msg
+                                ("\?z?^ low order bits of source will be "
+                                 & "ignored!", Eloc);
+                           else
+                              Error_Msg
+                                ("\?z?^ high order bits of source will be "
+                                 & "ignored!", Eloc);
+                           end if;
+
+                        else
+                           Error_Msg
+                             ("\?z?^ trailing bits of source will be "
+                              & "ignored!", Eloc);
+                        end if;
                      end if;
                   end if;
                end if;
