@@ -1,5 +1,19 @@
 2015-05-22  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-loop.c (get_reduction_op): New function.
+	(vect_model_reduction_cost): Use it, add reduc_index parameter.
+	Make ready for BB reductions.
+	(vect_create_epilog_for_reduction): Use get_reduction_op.
+	(vectorizable_reduction): Init reduc_index to a valid value.
+	Adjust vect_model_reduction_cost call.
+	* tree-vect-slp.c (vect_get_constant_vectors): Use the proper
+	operand for reduction defaults.  Add SAD_EXPR support.
+	Assert we have a neutral op for SLP reductions.
+	* tree-vect-stmts.c (vect_mark_stmts_to_be_vectorized): When
+	walking pattern stmt ops only recurse to SSA names.
+
+2015-05-22  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Replace
 	assert with guard, remove check on detected reduction.
 	(vect_recog_sad_pattern): Likewise.

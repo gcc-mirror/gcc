@@ -2664,11 +2664,14 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
   struct loop *loop;
   gimple_seq ctor_seq = NULL;
 
+  vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
+  nunits = TYPE_VECTOR_SUBPARTS (vector_type);
+
   if (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
       && reduc_index != -1)
     {
-      op_num = reduc_index - 1;
-      op = gimple_op (stmt, reduc_index);
+      op_num = reduc_index;
+      op = gimple_op (stmt, op_num + 1);
       /* For additional copies (see the explanation of NUMBER_OF_COPIES below)
          we need either neutral operands or the original operands.  See
          get_initial_def_for_reduction() for details.  */
@@ -2676,6 +2679,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
         {
           case WIDEN_SUM_EXPR:
           case DOT_PROD_EXPR:
+	  case SAD_EXPR:
           case PLUS_EXPR:
           case MINUS_EXPR:
           case BIT_IOR_EXPR:
@@ -2716,6 +2720,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 	    break;
 
           default:
+	    gcc_assert (!GROUP_FIRST_ELEMENT (stmt_vinfo));
             neutral_op = NULL;
         }
     }
@@ -2734,10 +2739,6 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
     constant_p = true;
   else
     constant_p = false;
-
-  vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
-  gcc_assert (vector_type);
-  nunits = TYPE_VECTOR_SUBPARTS (vector_type);
 
   /* NUMBER_OF_COPIES is the number of times we need to use the same values in
      created vectors. It is greater than 1 if unrolling is performed.
