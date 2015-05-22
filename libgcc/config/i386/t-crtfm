@@ -1,4 +1,0 @@
-# This is an endfile, Use -minline-all-stringops to ensure
-# that __builtin_memset doesn't refer to the lib function memset().
-crtfastmath.o: $(srcdir)/config/i386/crtfastmath.c
-	$(gcc_compile) -mfxsr -msse -c $<

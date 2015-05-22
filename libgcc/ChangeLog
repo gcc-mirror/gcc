@@ -1,3 +1,11 @@
+2015-05-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config.host (i[34567]-*-*, x86_64-*-*): Add t-crtfm instead of
+	i386/t-crtfm to tmake_file.
+	* config/i386/crtfastmath.c (set_fast_math_sse): New function.
+	(set_fast_math): Use set_fast_math_sse for SSE targets.
+	* config/i386/t-crtfm: Remove.
+
 2015-05-21  Alan Modra  <amodra@gmail.com>
 
 	PR libgcc/66225
