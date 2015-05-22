@@ -2085,11 +2085,11 @@ package Einfo is
 --       to multiple subprogram entities).
 
 --    Incomplete_Actuals (Elist24)
---       Defined on package entities that are instances. Indicates the actusl
---       types in the instantiation that are limited views. IF this list is
+--       Defined on package entities that are instances. Indicates the actuals
+--       types in the instantiation that are limited views. If this list is
 --       not empty, the instantiation, which appears in a package declaration,
 --       is relocated to the corresponding package body, which must have a
---       corresponding non-limited with_clause.
+--       corresponding nonlimited with_clause.
 
 --    In_Package_Body (Flag48)
 --       Defined in package entities. Set on the entity that denotes the
@@ -2207,7 +2207,7 @@ package Einfo is
 --       keyword. For Ada 2012, also applies to formal parameters.
 
 --    Is_Atomic (Flag85)
---       Defined in all type entities, and also in constants, components and
+--       Defined in all type entities, and also in constants, components, and
 --       variables. Set if a pragma Atomic or Shared applies to the entity.
 --       In the case of private and incomplete types, this flag is set in
 --       both the partial view and the full view.
@@ -3187,7 +3187,7 @@ package Einfo is
 --       rather than testing this flag.
 
 --    Is_Volatile_Full_Access (Flag285)
---       Defined in all type entities, and also in constants, components and
+--       Defined in all type entities, and also in constants, components, and
 --       variables. Set if a pragma Volatile_Full_Access applies to the entity.
 --       In the case of private and incomplete types, this flag is set in
 --       both the partial view and the full view.

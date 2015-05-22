@@ -944,7 +944,7 @@ package body Freeze is
 
                   --  We do not know the packed size for an atomic/VFA type
                   --  or component, or an independent type or component, or a
-                  --  by reference type or aliased component (because packing
+                  --  by-reference type or aliased component (because packing
                   --  does not touch these).
 
                   if        Is_Atomic_Or_VFA (Ctyp)
@@ -1037,7 +1037,7 @@ package body Freeze is
                                             (Packed_Array_Impl_Type (Ctyp)))
                      then
                         --  Packed size unknown if we have an atomic/VFA type
-                        --  or a by reference type, since the back end knows
+                        --  or a by-reference type, since the back end knows
                         --  how these are layed out.
 
                         if Is_Atomic_Or_VFA (Ctyp)

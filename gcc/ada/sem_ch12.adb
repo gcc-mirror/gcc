@@ -833,7 +833,7 @@ package body Sem_Ch12 is
    --
    --  If Inst is present, it is the entity of the package instance. This
    --  entity is marked as having a limited_view actual when some actual is
-   --  a limited view. This is used to place the instance body properly..
+   --  a limited view. This is used to place the instance body properly.
 
    procedure Remove_Parent (In_Body : Boolean := False);
    --  Reverse effect after instantiation of child is complete

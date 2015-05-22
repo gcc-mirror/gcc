@@ -6521,7 +6521,7 @@ package body Sem_Ch6 is
          return Ctype <= Mode_Conformant
            or else Subtypes_Statically_Match (Type_1, Full_View (Type_2));
 
-      --  In Ada2012, incomplete types (including limited views) can appear
+      --  In Ada 2012, incomplete types (including limited views) can appear
       --  as actuals in instantiations.
 
       elsif Is_Incomplete_Type (Type_1)
