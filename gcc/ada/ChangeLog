@@ -1,3 +1,8 @@
+2015-05-22  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq): Introduce 'Machine for 'Result
+	comparison.
+
 2015-05-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sprint.adb (Source_Dump): When generating debug files, deal
