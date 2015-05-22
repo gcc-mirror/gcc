@@ -3163,7 +3163,7 @@ package body Errout is
 
       elsif Msg = "volatile full access to & cannot be guaranteed" then
          if Is_Type (E)
-           and then Has_Volatile_Full_Access (E)
+           and then Is_Volatile_Full_Access (E)
            and then No (Get_Rep_Pragma (E, Name_Volatile_Full_Access))
          then
             return True;

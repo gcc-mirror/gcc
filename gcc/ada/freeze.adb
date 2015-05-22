@@ -2503,7 +2503,7 @@ package body Freeze is
                   then
                      Complain_CS ("atomic");
 
-                  elsif Has_Volatile_Full_Access (Ctyp) then
+                  elsif Is_Volatile_Full_Access (Ctyp) then
                      Complain_CS ("volatile full access");
                   end if;
                end Alias_Atomic_Check;

@@ -5843,7 +5843,7 @@ package body Sem_Prag is
          Utyp : Entity_Id;
 
          procedure Set_Atomic_VFA (E : Entity_Id);
-         --  Set given type as Is_Atomic or Has_Volatile_Full_Access. Also, if
+         --  Set given type as Is_Atomic or Is_Volatile_Full_Access. Also, if
          --  no explicit alignment was given, set alignment to unknown, since
          --  back end knows what the alignment requirements are for atomic and
          --  full access arrays. Note: this is necessary for derived types.
@@ -5855,7 +5855,7 @@ package body Sem_Prag is
          procedure Set_Atomic_VFA (E : Entity_Id) is
          begin
             if Prag_Id = Pragma_Volatile_Full_Access then
-               Set_Has_Volatile_Full_Access (E);
+               Set_Is_Volatile_Full_Access (E);
             else
                Set_Is_Atomic (E);
             end if;
@@ -5889,7 +5889,7 @@ package body Sem_Prag is
          --  Check Atomic and VFA used together
 
          if (Is_Atomic (E) and then Prag_Id = Pragma_Volatile_Full_Access)
-           or else (Has_Volatile_Full_Access (E)
+           or else (Is_Volatile_Full_Access (E)
                      and then (Prag_Id = Pragma_Atomic
                                  or else
                                Prag_Id = Pragma_Shared))
@@ -5999,7 +5999,7 @@ package body Sem_Prag is
                Prag_Id = Pragma_Volatile_Full_Access
             then
                if Prag_Id = Pragma_Volatile_Full_Access then
-                  Set_Has_Volatile_Full_Access (E);
+                  Set_Is_Volatile_Full_Access (E);
                else
                   Set_Is_Atomic (E);
                end if;
@@ -6048,7 +6048,7 @@ package body Sem_Prag is
                                             Get_Source_File_Index (Sloc (Utyp))
                then
                   if Prag_Id = Pragma_Volatile_Full_Access then
-                     Set_Has_Volatile_Full_Access (Utyp);
+                     Set_Is_Volatile_Full_Access (Utyp);
                   else
                      Set_Is_Atomic (Utyp);
                   end if;

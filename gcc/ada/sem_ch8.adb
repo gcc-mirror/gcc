@@ -919,9 +919,9 @@ package body Sem_Ch8 is
                P : constant Node_Id := Prefix (Nam);
             begin
                if Is_Entity_Name (P) then
-                  if Has_Volatile_Full_Access (Entity (P))
+                  if Is_Volatile_Full_Access (Entity (P))
                        or else
-                     Has_Volatile_Full_Access (Etype (P))
+                     Is_Volatile_Full_Access (Etype (P))
                   then
                      Error_Msg_N
                        ("cannot rename component of Volatile_Full_Access "
@@ -1366,10 +1366,10 @@ package body Sem_Ch8 is
       --  Also copy settings of Atomic/Independent/Volatile_Full_Access
 
       if Is_Entity_Name (Nam) then
-         Set_Is_Atomic                (Id, Is_Atomic      (Entity (Nam)));
-         Set_Is_Independent           (Id, Is_Independent (Entity (Nam)));
-         Set_Has_Volatile_Full_Access (Id,
-           Has_Volatile_Full_Access (Entity (Nam)));
+         Set_Is_Atomic               (Id, Is_Atomic      (Entity (Nam)));
+         Set_Is_Independent          (Id, Is_Independent (Entity (Nam)));
+         Set_Is_Volatile_Full_Access (Id,
+           Is_Volatile_Full_Access (Entity (Nam)));
       end if;
 
       --  Treat as volatile if we just set the Volatile flag

@@ -592,7 +592,7 @@ package body Einfo is
    --    Has_Nested_Subprogram           Flag282
    --    Is_Uplevel_Referenced_Entity    Flag283
    --    Is_Unimplemented                Flag284
-   --    Has_Volatile_Full_Access        Flag285
+   --    Is_Volatile_Full_Access         Flag285
    --    Needs_Typedef                   Flag286
 
    --    (unused)                        Flag253
@@ -1856,11 +1856,6 @@ package body Einfo is
       return Flag87 (Implementation_Base_Type (Id));
    end Has_Volatile_Components;
 
-   function Has_Volatile_Full_Access (Id : E) return B is
-   begin
-      return Flag285 (Id);
-   end Has_Volatile_Full_Access;
-
    function Has_Xref_Entry (Id : E) return B is
    begin
       return Flag182 (Id);
@@ -2527,6 +2522,11 @@ package body Einfo is
          return Flag16 (Id);
       end if;
    end Is_Volatile;
+
+   function Is_Volatile_Full_Access (Id : E) return B is
+   begin
+      return Flag285 (Id);
+   end Is_Volatile_Full_Access;
 
    function Itype_Printed (Id : E) return B is
    begin
@@ -4758,11 +4758,6 @@ package body Einfo is
       Set_Flag87 (Id, V);
    end Set_Has_Volatile_Components;
 
-   procedure Set_Has_Volatile_Full_Access (Id : E; V : B := True) is
-   begin
-      Set_Flag285 (Id, V);
-   end Set_Has_Volatile_Full_Access;
-
    procedure Set_Has_Xref_Entry (Id : E; V : B := True) is
    begin
       Set_Flag182 (Id, V);
@@ -5497,6 +5492,11 @@ package body Einfo is
       pragma Assert (Nkind (Id) in N_Entity);
       Set_Flag16 (Id, V);
    end Set_Is_Volatile;
+
+   procedure Set_Is_Volatile_Full_Access (Id : E; V : B := True) is
+   begin
+      Set_Flag285 (Id, V);
+   end Set_Is_Volatile_Full_Access;
 
    procedure Set_Itype_Printed (Id : E; V : B := True) is
    begin
@@ -7335,7 +7335,7 @@ package body Einfo is
 
    function Is_Atomic_Or_VFA (Id : E) return B is
    begin
-      return Is_Atomic (Id) or else Has_Volatile_Full_Access (Id);
+      return Is_Atomic (Id) or else Is_Volatile_Full_Access (Id);
    end Is_Atomic_Or_VFA;
 
    ------------------
@@ -8750,7 +8750,6 @@ package body Einfo is
       W ("Has_Uplevel_Reference",           Flag215 (Id));
       W ("Has_Visible_Refinement",          Flag263 (Id));
       W ("Has_Volatile_Components",         Flag87  (Id));
-      W ("Has_Volatile_Full_Access",        Flag285 (Id));
       W ("Has_Xref_Entry",                  Flag182 (Id));
       W ("In_Package_Body",                 Flag48  (Id));
       W ("In_Private_Part",                 Flag45  (Id));
@@ -8865,6 +8864,7 @@ package body Einfo is
       W ("Is_Visible_Formal",               Flag206 (Id));
       W ("Is_Visible_Lib_Unit",             Flag116 (Id));
       W ("Is_Volatile",                     Flag16  (Id));
+      W ("Is_Volatile_Full_Access",         Flag285 (Id));
       W ("Itype_Printed",                   Flag202 (Id));
       W ("Kill_Elaboration_Checks",         Flag32  (Id));
       W ("Kill_Range_Checks",               Flag33  (Id));

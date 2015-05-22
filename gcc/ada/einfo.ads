@@ -2047,12 +2047,6 @@ package Einfo is
 --       type the pragma will be chained to the rep item chain of the first
 --       subtype in the usual manner.
 
---    Has_Volatile_Full_Access (Flag285)
---       Defined in all type entities, and also in constants, components and
---       variables. Set if a pragma Volatile_Full_Access applies to the entity.
---       In the case of private and incomplete types, this flag is set in
---       both the partial view and the full view.
-
 --    Has_Xref_Entry (Flag182)
 --       Defined in all entities. Set if an entity has an entry in the Xref
 --       information generated in ali files. This is true for all source
@@ -3191,6 +3185,12 @@ package Einfo is
 --       Similarly, any front end test which is concerned with suppressing
 --       optimizations on volatile objects should test Treat_As_Volatile
 --       rather than testing this flag.
+
+--    Is_Volatile_Full_Access (Flag285)
+--       Defined in all type entities, and also in constants, components and
+--       variables. Set if a pragma Volatile_Full_Access applies to the entity.
+--       In the case of private and incomplete types, this flag is set in
+--       both the partial view and the full view.
 
 --    Is_Wrapper_Package (synthesized)
 --       Defined in package entities. Indicates that the package has been
@@ -5444,7 +5444,6 @@ package Einfo is
    --    Has_Task                            (Flag30)   (base type only)
    --    Has_Unchecked_Union                 (Flag123)  (base type only)
    --    Has_Volatile_Components             (Flag87)   (base type only)
-   --    Has_Volatile_Full_Access            (Flag285)
    --    In_Use                              (Flag8)
    --    Is_Abstract_Type                    (Flag146)
    --    Is_Asynchronous                     (Flag81)
@@ -5462,6 +5461,7 @@ package Einfo is
    --    Is_RACW_Stub_Type                   (Flag244)
    --    Is_Unsigned_Type                    (Flag144)
    --    Is_Volatile                         (Flag16)
+   --    Is_Volatile_Full_Access             (Flag285)
    --    Itype_Printed                       (Flag202)  (itypes only)
    --    Known_To_Have_Preelab_Init          (Flag207)
    --    May_Inherit_Delayed_Rep_Aspects     (Flag262)
@@ -5630,12 +5630,12 @@ package Einfo is
    --    Related_Type                        (Node27)
    --    Has_Biased_Representation           (Flag139)
    --    Has_Per_Object_Constraint           (Flag154)
-   --    Has_Volatile_Full_Access            (Flag285)
    --    Is_Atomic                           (Flag85)
    --    Is_Independent                      (Flag268)
    --    Is_Return_Object                    (Flag209)
    --    Is_Tag                              (Flag78)
    --    Is_Volatile                         (Flag16)
+   --    Is_Volatile_Full_Access             (Flag285)
    --    Treat_As_Volatile                   (Flag41)
    --    Is_Atomic_Or_VFA                    (synth)
    --    Next_Component                      (synth)
@@ -5671,7 +5671,6 @@ package Einfo is
    --    Has_Size_Clause                     (Flag29)
    --    Has_Thunks                          (Flag228)  (constants only)
    --    Has_Volatile_Components             (Flag87)
-   --    Has_Volatile_Full_Access            (Flag285)
    --    Is_Atomic                           (Flag85)
    --    Is_Eliminated                       (Flag124)
    --    Is_Independent                      (Flag268)
@@ -5680,6 +5679,7 @@ package Einfo is
    --    Is_True_Constant                    (Flag163)
    --    Is_Uplevel_Referenced_Entity        (Flag283)
    --    Is_Volatile                         (Flag16)
+   --    Is_Volatile_Full_Access             (Flag285)
    --    Optimize_Alignment_Space            (Flag241)  (constants only)
    --    Optimize_Alignment_Time             (Flag242)  (constants only)
    --    Stores_Attribute_Old_Prefix         (Flag270)  (constants only)
@@ -6406,7 +6406,6 @@ package Einfo is
    --    Has_Initial_Value                   (Flag219)
    --    Has_Size_Clause                     (Flag29)
    --    Has_Volatile_Components             (Flag87)
-   --    Has_Volatile_Full_Access            (Flag285)
    --    Is_Atomic                           (Flag85)
    --    Is_Eliminated                       (Flag124)
    --    Is_Independent                      (Flag268)
@@ -6417,6 +6416,7 @@ package Einfo is
    --    Is_True_Constant                    (Flag163)
    --    Is_Uplevel_Referenced_Entity        (Flag283)
    --    Is_Volatile                         (Flag16)
+   --    Is_Volatile_Full_Access             (Flag285)
    --    OK_To_Rename                        (Flag247)
    --    Optimize_Alignment_Space            (Flag241)
    --    Optimize_Alignment_Time             (Flag242)
@@ -6859,7 +6859,6 @@ package Einfo is
    function Has_Uplevel_Reference               (Id : E) return B;
    function Has_Visible_Refinement              (Id : E) return B;
    function Has_Volatile_Components             (Id : E) return B;
-   function Has_Volatile_Full_Access            (Id : E) return B;
    function Has_Xref_Entry                      (Id : E) return B;
    function Hiding_Loop_Variable                (Id : E) return E;
    function Homonym                             (Id : E) return E;
@@ -6978,6 +6977,7 @@ package Einfo is
    function Is_Visible_Formal                   (Id : E) return B;
    function Is_Visible_Lib_Unit                 (Id : E) return B;
    function Is_Volatile                         (Id : E) return B;
+   function Is_Volatile_Full_Access             (Id : E) return B;
    function Itype_Printed                       (Id : E) return B;
    function Kill_Elaboration_Checks             (Id : E) return B;
    function Kill_Range_Checks                   (Id : E) return B;
@@ -7513,7 +7513,6 @@ package Einfo is
    procedure Set_Has_Uplevel_Reference           (Id : E; V : B := True);
    procedure Set_Has_Visible_Refinement          (Id : E; V : B := True);
    procedure Set_Has_Volatile_Components         (Id : E; V : B := True);
-   procedure Set_Has_Volatile_Full_Access        (Id : E; V : B := True);
    procedure Set_Has_Xref_Entry                  (Id : E; V : B := True);
    procedure Set_Hiding_Loop_Variable            (Id : E; V : E);
    procedure Set_Homonym                         (Id : E; V : E);
@@ -7637,6 +7636,7 @@ package Einfo is
    procedure Set_Is_Visible_Formal               (Id : E; V : B := True);
    procedure Set_Is_Visible_Lib_Unit             (Id : E; V : B := True);
    procedure Set_Is_Volatile                     (Id : E; V : B := True);
+   procedure Set_Is_Volatile_Full_Access         (Id : E; V : B := True);
    procedure Set_Itype_Printed                   (Id : E; V : B := True);
    procedure Set_Kill_Elaboration_Checks         (Id : E; V : B := True);
    procedure Set_Kill_Range_Checks               (Id : E; V : B := True);
@@ -8287,7 +8287,6 @@ package Einfo is
    pragma Inline (Has_Uplevel_Reference);
    pragma Inline (Has_Visible_Refinement);
    pragma Inline (Has_Volatile_Components);
-   pragma Inline (Has_Volatile_Full_Access);
    pragma Inline (Has_Xref_Entry);
    pragma Inline (Hiding_Loop_Variable);
    pragma Inline (Homonym);
@@ -8450,6 +8449,7 @@ package Einfo is
    pragma Inline (Is_Valued_Procedure);
    pragma Inline (Is_Visible_Formal);
    pragma Inline (Is_Visible_Lib_Unit);
+   pragma Inline (Is_Volatile_Full_Access);
    pragma Inline (Itype_Printed);
    pragma Inline (Kill_Elaboration_Checks);
    pragma Inline (Kill_Range_Checks);
@@ -8786,7 +8786,6 @@ package Einfo is
    pragma Inline (Set_Has_Unknown_Discriminants);
    pragma Inline (Set_Has_Visible_Refinement);
    pragma Inline (Set_Has_Volatile_Components);
-   pragma Inline (Set_Has_Volatile_Full_Access);
    pragma Inline (Set_Has_Xref_Entry);
    pragma Inline (Set_Hiding_Loop_Variable);
    pragma Inline (Set_Homonym);
@@ -8909,6 +8908,7 @@ package Einfo is
    pragma Inline (Set_Is_Visible_Formal);
    pragma Inline (Set_Is_Visible_Lib_Unit);
    pragma Inline (Set_Is_Volatile);
+   pragma Inline (Set_Is_Volatile_Full_Access);
    pragma Inline (Set_Itype_Printed);
    pragma Inline (Set_Kill_Elaboration_Checks);
    pragma Inline (Set_Kill_Range_Checks);
