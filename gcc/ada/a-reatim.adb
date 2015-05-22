@@ -330,7 +330,7 @@ package body Ada.Real_Time is
             Out_Of_Range;
          end if;
 
-      --  Same for negative values of seconds, fundge up and check low bound
+      --  Same for negative values of seconds, fudge up and check low bound
 
       else
          Fudged_Result := Duration (Result_SC + Fudge) + TS_Fraction;
