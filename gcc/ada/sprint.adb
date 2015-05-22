@@ -624,11 +624,16 @@ package body Sprint is
          for U in Main_Unit .. Last_Unit loop
             Current_Source_File := Source_Index (U);
 
-            --  Dump all units if -gnatdf set, otherwise we dump only
-            --  the source files that are in the extended main source.
+            --  Dump all units if -gnatdf set, otherwise dump only the source
+            --  files that are in the extended main source. Note that, if we
+            --  are generating debug files, generating that of the main unit
+            --  has an effect on the outcome of In_Extended_Main_Source_Unit
+            --  because slocs are rewritten, so we also test for equality of
+            --  Cunit_Entity to work around this effect.
 
             if Debug_Flag_F
               or else In_Extended_Main_Source_Unit (Cunit_Entity (U))
+              or else Cunit_Entity (U) = Cunit_Entity (Main_Unit)
             then
                --  If we are generating debug files, setup to write them
 
@@ -638,6 +643,20 @@ package body Sprint is
                   First_Debug_Sloc := Debug_Sloc;
                   Write_Source_Line (1);
                   Last_Line_Printed := 1;
+
+                  --  If this unit has the same entity as the main unit, for
+                  --  example is the spec of a stand-alone instantiation of
+                  --  a package and the main unit is the body, its debug file
+                  --  will also be the same. Therefore, we need to print again
+                  --  the main unit to have both units in the debug file.
+
+                  if U /= Main_Unit
+                    and then Cunit_Entity (U) = Cunit_Entity (Main_Unit)
+                  then
+                     Sprint_Node (Cunit (Main_Unit));
+                     Write_Eol;
+                  end if;
+
                   Sprint_Node (Cunit (U));
                   Write_Source_Lines (Last_Source_Line (Current_Source_File));
                   Write_Eol;

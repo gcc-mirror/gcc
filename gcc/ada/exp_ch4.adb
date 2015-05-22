@@ -416,81 +416,133 @@ package body Exp_Ch4 is
 
    function Current_Anonymous_Master return Entity_Id is
       function Create_Anonymous_Master
-        (Unit_Id : Entity_Id;
-         Decls   : List_Id) return Entity_Id;
-      --  Create a new anonymous finalization master for a unit denoted by
-      --  Unit_Id. The declaration of the master along with any specialized
-      --  initialization is inserted at the top of declarative list Decls.
-      --  Return the entity of the anonymous master.
+        (Unit_Id   : Entity_Id;
+         Unit_Decl : Node_Id) return Entity_Id;
+      --  Create a new anonymous master for a compilation unit denoted by its
+      --  entity Unit_Id and declaration Unit_Decl. The declaration of the new
+      --  master along with any specialized initialization is inserted at the
+      --  top of the unit's declarations (see body for special cases). Return
+      --  the entity of the anonymous master.
 
       -----------------------------
       -- Create_Anonymous_Master --
       -----------------------------
 
       function Create_Anonymous_Master
-        (Unit_Id : Entity_Id;
-         Decls   : List_Id) return Entity_Id
+        (Unit_Id   : Entity_Id;
+         Unit_Decl : Node_Id) return Entity_Id
       is
-         First_Decl : Node_Id := Empty;
-         --  The first declaration of list Decls. This variable is used when
-         --  inserting various actions.
+         Insert_Nod : Node_Id := Empty;
+         --  The point of insertion into the declarative list of the unit. All
+         --  nodes are inserted before Insert_Nod.
 
-         procedure Insert_And_Analyze (Action : Node_Id);
-         --  Insert arbitrary node Action in declarative list Decl and analyze
-         --  it.
+         procedure Insert_And_Analyze (Decls : List_Id; N : Node_Id);
+         --  Insert arbitrary node N in declarative list Decls and analyze it
 
          ------------------------
          -- Insert_And_Analyze --
          ------------------------
 
-         procedure Insert_And_Analyze (Action : Node_Id) is
+         procedure Insert_And_Analyze (Decls : List_Id; N : Node_Id) is
          begin
-            --  The list is already populated, the actions are inserted at the
-            --  top of the list, preserving their order.
+            --  The declarative list is already populated, the nodes are
+            --  inserted at the top of the list, preserving their order.
 
-            if Present (First_Decl) then
-               Insert_Before_And_Analyze (First_Decl, Action);
+            if Present (Insert_Nod) then
+               Insert_Before (Insert_Nod, N);
 
             --  Otherwise append to the declarations to preserve order
 
             else
-               Append_To (Decls, Action);
-               Analyze (Action);
+               Append_To (Decls, N);
             end if;
+
+            Analyze (N);
          end Insert_And_Analyze;
 
          --  Local variables
 
-         Loc   : constant Source_Ptr := Sloc (Unit_Id);
-         FM_Id : Entity_Id;
+         Loc       : constant Source_Ptr := Sloc (Unit_Id);
+         Spec_Id   : constant Entity_Id  := Corresponding_Spec_Of (Unit_Decl);
+         Decls     : List_Id;
+         FM_Id     : Entity_Id;
+         Pref      : Character;
+         Unit_Spec : Node_Id;
 
       --  Start of processing for Create_Anonymous_Master
 
       begin
-         if Present (Decls) then
-            First_Decl := First (Decls);
+         --  Find the declarative list of the unit
+
+         if Nkind (Unit_Decl) = N_Package_Declaration then
+            Unit_Spec := Specification (Unit_Decl);
+            Decls := Visible_Declarations (Unit_Spec);
+
+            if No (Decls) then
+               Decls := New_List (Make_Null_Statement (Loc));
+               Set_Visible_Declarations (Unit_Spec, Decls);
+            end if;
+
+         --  Package or subprogram body
+
+         --  ??? A subprogram declaration that acts as a compilation unit may
+         --  contain a formal parameter of an anonymous access-to-controlled
+         --  type initialized by an allocator.
+
+         --    procedure Comp_Unit_Proc (Param : access Ctrl := new Ctrl);
+
+         --  There is no suitable place to create the anonymous master as the
+         --  subprogram is not in a declarative list.
+
+         else
+            Decls := Declarations (Unit_Decl);
+
+            if No (Decls) then
+               Decls := New_List (Make_Null_Statement (Loc));
+               Set_Declarations (Unit_Decl, Decls);
+            end if;
          end if;
+
+         --  The anonymous master and all initialization actions are inserted
+         --  before the first declaration (if any).
+
+         Insert_Nod := First (Decls);
 
          --  Since the anonymous master and all its initialization actions are
          --  inserted at top level, use the scope of the unit when analyzing.
 
-         Push_Scope (Unit_Id);
+         Push_Scope (Spec_Id);
 
-         --  Create the anonymous master
+         --  Step 1: Anonymous master creation
+
+         --  Use a unique prefix in case the same unit requires two anonymous
+         --  masters, one for the spec (S) and one for the body (B).
+
+         if Ekind_In (Unit_Id, E_Function, E_Package, E_Procedure) then
+            Pref := 'S';
+         else
+            Pref := 'B';
+         end if;
 
          FM_Id :=
            Make_Defining_Identifier (Loc,
-             Chars => New_External_Name (Chars (Unit_Id), "AM"));
+             New_External_Name
+               (Related_Id => Chars (Unit_Id),
+                Suffix     => "AM",
+                Prefix     => Pref));
+
          Set_Anonymous_Master (Unit_Id, FM_Id);
 
          --  Generate:
          --    <FM_Id> : Finalization_Master;
 
-         Insert_And_Analyze
-           (Make_Object_Declaration (Loc,
+         Insert_And_Analyze (Decls,
+           Make_Object_Declaration (Loc,
              Defining_Identifier => FM_Id,
              Object_Definition   =>
                New_Occurrence_Of (RTE (RE_Finalization_Master), Loc)));
+
+         --  Step 2: Initialization actions
 
          --  Do not set the base pool and mode of operation on .NET/JVM since
          --  those targets do not support pools and all VM masters defaulted to
@@ -502,8 +554,8 @@ package body Exp_Ch4 is
             --    Set_Base_Pool
             --      (<FM_Id>, Global_Pool_Object'Unrestricted_Access);
 
-            Insert_And_Analyze
-              (Make_Procedure_Call_Statement (Loc,
+            Insert_And_Analyze (Decls,
+              Make_Procedure_Call_Statement (Loc,
                 Name                   =>
                   New_Occurrence_Of (RTE (RE_Set_Base_Pool), Loc),
                 Parameter_Associations => New_List (
@@ -516,8 +568,8 @@ package body Exp_Ch4 is
             --  Generate:
             --    Set_Is_Heterogeneous (<FM_Id>);
 
-            Insert_And_Analyze
-              (Make_Procedure_Call_Statement (Loc,
+            Insert_And_Analyze (Decls,
+              Make_Procedure_Call_Statement (Loc,
                 Name                   =>
                   New_Occurrence_Of (RTE (RE_Set_Is_Heterogeneous), Loc),
                 Parameter_Associations => New_List (
@@ -530,48 +582,35 @@ package body Exp_Ch4 is
 
       --  Local declarations
 
-      Unit_Decl : constant Node_Id   := Unit (Cunit (Current_Sem_Unit));
-      Unit_Id   : constant Entity_Id := Corresponding_Spec_Of (Unit_Decl);
-      Decls     : List_Id;
-      FM_Id     : Entity_Id;
-      Unit_Spec : Node_Id;
+      Unit_Decl : Node_Id;
+      Unit_Id   : Entity_Id;
 
    --  Start of processing for Current_Anonymous_Master
 
    begin
-      FM_Id := Anonymous_Master (Unit_Id);
+      Unit_Decl := Unit (Cunit (Current_Sem_Unit));
+      Unit_Id   := Defining_Entity (Unit_Decl);
+
+      --  The compilation unit is a package instantiation. In this case the
+      --  anonymous master is associated with the package spec as both the
+      --  spec and body appear at the same level.
+
+      if Nkind (Unit_Decl) = N_Package_Body
+        and then Nkind (Original_Node (Unit_Decl)) = N_Package_Instantiation
+      then
+         Unit_Id   := Corresponding_Spec (Unit_Decl);
+         Unit_Decl := Unit_Declaration_Node (Unit_Id);
+      end if;
+
+      if Present (Anonymous_Master (Unit_Id)) then
+         return Anonymous_Master (Unit_Id);
 
       --  Create a new anonymous master when allocating an object of anonymous
       --  access-to-controlled type for the first time.
 
-      if No (FM_Id) then
-
-         --  Find the declarative list of the current unit
-
-         if Nkind (Unit_Decl) = N_Package_Declaration then
-            Unit_Spec := Specification (Unit_Decl);
-            Decls := Visible_Declarations (Unit_Spec);
-
-            if No (Decls) then
-               Decls := New_List;
-               Set_Visible_Declarations (Unit_Spec, Decls);
-            end if;
-
-         --  Package or subprogram body
-
-         else
-            Decls := Declarations (Unit_Decl);
-
-            if No (Decls) then
-               Decls := New_List;
-               Set_Declarations (Unit_Decl, Decls);
-            end if;
-         end if;
-
-         FM_Id := Create_Anonymous_Master (Unit_Id, Decls);
+      else
+         return Create_Anonymous_Master (Unit_Id, Unit_Decl);
       end if;
-
-      return FM_Id;
    end Current_Anonymous_Master;
 
    --------------------------------
