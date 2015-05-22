@@ -7653,34 +7653,40 @@ package body Exp_Ch4 is
          end if;
       end if;
 
-      --  Case of (2 ** expression) appearing as an argument of an integer
-      --  multiplication, or as the right argument of a division of a non-
-      --  negative integer. In such cases we leave the node untouched, setting
-      --  the flag Is_Natural_Power_Of_2_for_Shift set, then the expansion
-      --  of the higher level node converts it into a shift.
-
-      --  Another case is 2 ** N in any other context. We simply convert
-      --  this to 1 * 2 ** N, and then the above transformation applies.
-
-      --  Note: this transformation is not applicable for a modular type with
-      --  a non-binary modulus in the multiplication case, since we get a wrong
-      --  result if the shift causes an overflow before the modular reduction.
+      --  Deal with optimizing 2 ** expression to shift where possible
 
       --  Note: we used to check that Exptyp was an unsigned type. But that is
       --  an unnecessary check, since if Exp is negative, we have a run-time
       --  error that is either caught (so we get the right result) or we have
       --  suppressed the check, in which case the code is erroneous anyway.
 
-      if Nkind (Base) = N_Integer_Literal
+      if Is_Integer_Type (Rtyp)
+
+        --  The base value must be safe, compile-time known, and exactly 2
+
+        and then Nkind (Base) = N_Integer_Literal
         and then CRT_Safe_Compile_Time_Known_Value (Base)
         and then Expr_Value (Base) = Uint_2
+
+        --  We only handle cases where the right type is a integer
+
         and then Is_Integer_Type (Root_Type (Exptyp))
         and then Esize (Root_Type (Exptyp)) <= Esize (Standard_Integer)
-        and then not Ovflo
-      then
-         --  First the multiply and divide cases
 
-         if Nkind_In (Parent (N), N_Op_Divide, N_Op_Multiply) then
+        --  This transformation is not applicable for a modular type with a
+        --  nonbinary modulus because we do not handle modular reduction in
+        --  a correct manner if we attempt this transformation in this case.
+
+        and then not Non_Binary_Modulus (Typ)
+      then
+         --  Handle the cases where our parent is a division or multiplication
+         --  specially. In these cases we can convert to using a shift at the
+         --  parent level if we are not doing overflow checking, since it is
+         --  too tricky to combine the overflow check at the parent level.
+
+         if not Ovflo
+           and then Nkind_In (Parent (N), N_Op_Divide, N_Op_Multiply)
+         then
             declare
                P : constant Node_Id := Parent (N);
                L : constant Node_Id := Left_Opnd (P);
@@ -7688,7 +7694,6 @@ package body Exp_Ch4 is
 
             begin
                if (Nkind (P) = N_Op_Multiply
-                    and then not Non_Binary_Modulus (Typ)
                     and then
                       ((Is_Integer_Type (Etype (L)) and then R = N)
                           or else
@@ -7707,15 +7712,111 @@ package body Exp_Ch4 is
                end if;
             end;
 
-         --  Now the other cases where we convert to 1 * (2 ** K)
+         --  Here we just have 2 ** N on its own, so we can convert this to a
+         --  shift node. We are prepared to deal with overflow here, and we
+         --  also have to handle proper modular reduction for binary modular.
 
-         elsif not Non_Binary_Modulus (Typ) then
-            Rewrite (N,
-              Make_Op_Multiply (Loc,
-                Left_Opnd  => Make_Integer_Literal (Loc, 1),
-                Right_Opnd => Relocate_Node (N)));
-            Analyze_And_Resolve (N, Typ);
-            return;
+         else
+            declare
+               OK : Boolean;
+               Lo : Uint;
+               Hi : Uint;
+
+               MaxS : Uint;
+               --  Maximum shift count with no overflow
+
+               TestS : Boolean;
+               --  Set True if we must test the shift count
+
+            begin
+               --  Compute maximum shift based on the underlying size. For a
+               --  modular type this is one less than the size.
+
+               if Is_Modular_Integer_Type (Typ) then
+
+                  --  For modular integer types, this is the size of the value
+                  --  being shifted minus one. Any larger values will cause
+                  --  modular reduction to a result of zero. Note that we do
+                  --  want the RM_Size here (e.g. mod 2 ** 7, we want a result
+                  --  of 6, since 2**7 should be reduced to zero).
+
+                  MaxS := RM_Size (Rtyp) - 1;
+
+                  --  For signed integer types, we use the size of the value
+                  --  being shifted minus 2. Larger values cause overflow.
+
+               else
+                  MaxS := Esize (Rtyp) - 2;
+               end if;
+
+               --  Determine range to see if it can be larger than MaxS
+
+               Determine_Range
+                 (Right_Opnd (N), OK, Lo, Hi, Assume_Valid => True);
+               TestS := (not OK) or else Hi > MaxS;
+
+               --  Signed integer case
+
+               if Is_Signed_Integer_Type (Typ) then
+
+                  --  Generate overflow check if overflow is active. Note that
+                  --  we can simply ignore the possibility of overflow if the
+                  --  flag is not set (means that overflow cannot happen or
+                  --  that overflow checks are suppressed).
+
+                  if Ovflo and TestS then
+                     Insert_Action (N,
+                       Make_Raise_Constraint_Error (Loc,
+                         Condition =>
+                           Make_Op_Gt (Loc,
+                             Left_Opnd  => Duplicate_Subexpr (Right_Opnd (N)),
+                             Right_Opnd => Make_Integer_Literal (Loc, MaxS)),
+                         Reason    => CE_Overflow_Check_Failed));
+                  end if;
+
+                  --  Now rewrite node as Shift_Left (1, right-operand)
+
+                  Rewrite (N,
+                    Make_Op_Shift_Left (Loc,
+                      Left_Opnd  => Make_Integer_Literal (Loc, Uint_1),
+                      Right_Opnd => Right_Opnd (N)));
+
+               --  Modular integer case
+
+               else pragma Assert (Is_Modular_Integer_Type (Typ));
+
+                  --  If shift count can be greater than MaxS, we need to wrap
+                  --  the shift in a test that will reduce the result value to
+                  --  zero if this shift count is exceeded.
+
+                  if TestS then
+                     Rewrite (N,
+                       Make_If_Expression (Loc,
+                         Expressions => New_List (
+                           Make_Op_Gt (Loc,
+                             Left_Opnd  => Duplicate_Subexpr (Right_Opnd (N)),
+                             Right_Opnd => Make_Integer_Literal (Loc, MaxS)),
+
+                           Make_Integer_Literal (Loc, Uint_0),
+
+                           Make_Op_Shift_Left (Loc,
+                             Left_Opnd  => Make_Integer_Literal (Loc, Uint_1),
+                             Right_Opnd => Right_Opnd (N)))));
+
+                  --  If we know shift count cannot be greater than MaxS, then
+                  --  it is safe to just rewrite as a shift with no test.
+
+                  else
+                     Rewrite (N,
+                       Make_Op_Shift_Left (Loc,
+                         Left_Opnd  => Make_Integer_Literal (Loc, Uint_1),
+                         Right_Opnd => Right_Opnd (N)));
+                  end if;
+               end if;
+
+               Analyze_And_Resolve (N, Typ);
+               return;
+            end;
          end if;
       end if;
 

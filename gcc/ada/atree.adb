@@ -594,9 +594,9 @@ package body Atree is
          Set_Is_Ignored_Ghost_Node (New_Id);
       end if;
 
-      --  Clear Needs_Actual_Check to False
+      --  Clear Check_Actuals to False
 
-      Set_Needs_Actuals_Check (New_Id, False);
+      Set_Check_Actuals (New_Id, False);
 
       --  Specifically copy Paren_Count to deal with creating new table entry
       --  if the parentheses count is at the maximum possible value already.
@@ -654,6 +654,15 @@ package body Atree is
         (Union_Id_Ptr'
           (Nodes.Table (E + 2).Field12'Unrestricted_Access)).Convention := Val;
    end Basic_Set_Convention;
+
+   -------------------
+   -- Check_Actuals --
+   -------------------
+
+   function Check_Actuals (N : Node_Id) return Boolean is
+   begin
+      return Flags.Table (N).Check_Actuals;
+   end Check_Actuals;
 
    --------------------------
    -- Check_Error_Detected --
@@ -1493,15 +1502,6 @@ package body Atree is
       Nodes.Table (New_Node).Rewrite_Ins := True;
    end Mark_Rewrite_Insertion;
 
-   -------------------------
-   -- Needs_Actuals_Check --
-   -------------------------
-
-   function Needs_Actuals_Check (N : Node_Id) return Boolean is
-   begin
-      return Flags.Table (N).Needs_Actuals_Check;
-   end Needs_Actuals_Check;
-
    --------------
    -- New_Copy --
    --------------
@@ -2053,6 +2053,15 @@ package body Atree is
       Nodes.Table (N).Analyzed := Val;
    end Set_Analyzed;
 
+   -----------------------
+   -- Set_Check_Actuals --
+   -----------------------
+
+   procedure Set_Check_Actuals (N : Node_Id; Val : Boolean := True) is
+   begin
+      Flags.Table (N).Check_Actuals := Val;
+   end Set_Check_Actuals;
+
    ---------------------------
    -- Set_Comes_From_Source --
    ---------------------------
@@ -2109,15 +2118,6 @@ package body Atree is
    begin
       Flags.Table (N).Is_Ignored_Ghost_Node := Val;
    end Set_Is_Ignored_Ghost_Node;
-
-   -----------------------------
-   -- Set_Needs_Actuals_Check --
-   -----------------------------
-
-   procedure Set_Needs_Actuals_Check (N : Node_Id; Val : Boolean := True) is
-   begin
-      Flags.Table (N).Needs_Actuals_Check := Val;
-   end Set_Needs_Actuals_Check;
 
    -----------------------
    -- Set_Original_Node --

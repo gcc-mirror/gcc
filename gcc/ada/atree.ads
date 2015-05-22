@@ -608,6 +608,9 @@ package Atree is
    function Analyzed                     (N : Node_Id) return Boolean;
    pragma Inline (Analyzed);
 
+   function Check_Actuals                (N : Node_Id) return Boolean;
+   pragma Inline (Check_Actuals);
+
    function Comes_From_Source            (N : Node_Id) return Boolean;
    pragma Inline (Comes_From_Source);
 
@@ -619,9 +622,6 @@ package Atree is
 
    function Is_Ignored_Ghost_Node        (N : Node_Id) return Boolean;
    pragma Inline (Is_Ignored_Ghost_Node);
-
-   function Needs_Actuals_Check          (N : Node_Id) return Boolean;
-   pragma Inline (Needs_Actuals_Check);
 
    function Nkind                        (N : Node_Id) return Node_Kind;
    pragma Inline (Nkind);
@@ -898,6 +898,9 @@ package Atree is
    procedure Set_Analyzed              (N : Node_Id; Val : Boolean := True);
    pragma Inline (Set_Analyzed);
 
+   procedure Set_Check_Actuals         (N : Node_Id; Val : Boolean := True);
+   pragma Inline (Set_Check_Actuals);
+
    procedure Set_Comes_From_Source     (N : Node_Id; Val : Boolean);
    pragma Inline (Set_Comes_From_Source);
    --  Note that this routine is very rarely used, since usually the default
@@ -913,9 +916,6 @@ package Atree is
 
    procedure Set_Is_Ignored_Ghost_Node (N : Node_Id; Val : Boolean := True);
    pragma Inline (Set_Is_Ignored_Ghost_Node);
-
-   procedure Set_Needs_Actuals_Check   (N : Node_Id; Val : Boolean := True);
-   pragma Inline (Set_Needs_Actuals_Check);
 
    procedure Set_Original_Node         (N : Node_Id; Val : Node_Id);
    pragma Inline (Set_Original_Node);
@@ -4142,7 +4142,7 @@ package Atree is
          --  policy Ignore. The name of the flag should be Flag4, however this
          --  requires changing the names of all remaining 300+ flags.
 
-         Needs_Actuals_Check : Boolean;
+         Check_Actuals : Boolean;
          --  Flag set to indicate that the marked node is subject to the check
          --  for writable actuals. See xxx for more details. Again it would be
          --  more uniform to use some Flagx here, but that would be disruptive.
