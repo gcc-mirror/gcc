@@ -468,13 +468,12 @@ package Exp_Util is
    --  return the record component containing the tag of Iface.
 
    function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id;
-   --  Find the first primitive operation of type T whose name is 'Name'.
+   --  Find the first primitive operation of a tagged type T with name Name.
    --  This function allows the use of a primitive operation which is not
-   --  directly visible. If T is a class wide type, then the reference is
-   --  to an operation of the corresponding root type. Raises Program_Error
-   --  exception if no primitive operation is found. This is normally an
-   --  internal error, but in some cases is an expected consequence of
-   --  illegalities elsewhere.
+   --  directly visible. If T is a class wide type, then the reference is to an
+   --  operation of the corresponding root type. Raises Program_Error exception
+   --  if no primitive operation is found. This is normally an internal error,
+   --  but in some cases is an expected consequence of illegalities elsewhere.
 
    function Find_Prim_Op
      (T    : Entity_Id;

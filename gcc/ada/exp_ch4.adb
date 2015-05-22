@@ -7662,7 +7662,7 @@ package body Exp_Ch4 is
 
       if Is_Integer_Type (Rtyp)
 
-        --  The base value must be safe, compile-time known, and exactly 2
+        --  The base value must be "safe compile-time known", and exactly 2
 
         and then Nkind (Base) = N_Integer_Literal
         and then CRT_Safe_Compile_Time_Known_Value (Base)
@@ -7674,7 +7674,7 @@ package body Exp_Ch4 is
         and then Esize (Root_Type (Exptyp)) <= Esize (Standard_Integer)
 
         --  This transformation is not applicable for a modular type with a
-        --  nonbinary modulus because we do not handle modular reduction in
+        --  non-binary modulus because we do not handle modular reduction in
         --  a correct manner if we attempt this transformation in this case.
 
         and then not Non_Binary_Modulus (Typ)

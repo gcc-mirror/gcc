@@ -1,5 +1,11 @@
 2015-05-22  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch4.adb: Minor rewording.
+	* exp_util.ads: Clarify that Find_Prim_Op is only for
+	tagged types.
+
+2015-05-22  Robert Dewar  <dewar@adacore.com>
+
 	* atree.adb, atree.ads, treepr.adb: Change name Needs_Actuals_Check to
 	Check_Actuals.
 	* exp_ch4.adb (Expand_N_Op_Expon): Optimize 2**x in modular
