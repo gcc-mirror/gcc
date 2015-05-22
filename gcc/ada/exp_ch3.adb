@@ -6147,14 +6147,14 @@ package body Exp_Ch3 is
       --  Note that the check is generated for source objects only
 
       if Comes_From_Source (Def_Id)
-        and then (Has_Default_Init_Cond           (Base_Typ)
+        and then (Has_Default_Init_Cond (Typ)
                     or else
-                  Has_Inherited_Default_Init_Cond (Base_Typ))
+                  Has_Inherited_Default_Init_Cond (Typ))
         and then not Has_Init_Expression (N)
       then
          declare
             DIC_Call : constant Node_Id :=
-                         Build_Default_Init_Cond_Call (Loc, Def_Id, Base_Typ);
+                         Build_Default_Init_Cond_Call (Loc, Def_Id, Typ);
          begin
             if Present (Next_N) then
                Insert_Before_And_Analyze (Next_N, DIC_Call);

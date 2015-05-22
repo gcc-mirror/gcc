@@ -1448,7 +1448,8 @@ package body Einfo is
 
    function Has_Default_Init_Cond (Id : E) return B is
    begin
-      return Flag3 (Id);
+      pragma Assert (Is_Type (Id));
+      return Flag3 (Base_Type (Id));
    end Has_Default_Init_Cond;
 
    function Has_Delayed_Aspects (Id : E) return B is
@@ -1543,7 +1544,7 @@ package body Einfo is
    function Has_Inherited_Default_Init_Cond (Id : E) return B is
    begin
       pragma Assert (Is_Type (Id));
-      return Flag133 (Id);
+      return Flag133 (Base_Type (Id));
    end Has_Inherited_Default_Init_Cond;
 
    function Has_Initial_Value (Id : E) return B is
@@ -4326,7 +4327,7 @@ package body Einfo is
    procedure Set_Has_Default_Init_Cond (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Type (Id));
-      Set_Flag3 (Id, V);
+      Set_Flag3 (Base_Type (Id), V);
    end Set_Has_Default_Init_Cond;
 
    procedure Set_Has_Delayed_Aspects (Id : E; V : B := True) is
@@ -4426,7 +4427,7 @@ package body Einfo is
    procedure Set_Has_Inherited_Default_Init_Cond (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Type (Id));
-      Set_Flag133 (Id, V);
+      Set_Flag133 (Base_Type (Id), V);
    end Set_Has_Inherited_Default_Init_Cond;
 
    procedure Set_Has_Initial_Value (Id : E; V : B := True) is
@@ -6727,21 +6728,21 @@ package body Einfo is
    ---------------------------------
 
    function Default_Init_Cond_Procedure (Id : E) return E is
-      S : Entity_Id;
+      Subp_Id : Entity_Id;
 
    begin
       pragma Assert
         (Is_Type (Id)
-           and then (Has_Default_Init_Cond (Id)
-                       or Has_Inherited_Default_Init_Cond (Id)));
+          and then (Has_Default_Init_Cond (Id)
+                     or Has_Inherited_Default_Init_Cond (Id)));
 
-      S := Subprograms_For_Type (Id);
-      while Present (S) loop
-         if Is_Default_Init_Cond_Procedure (S) then
-            return S;
+      Subp_Id := Subprograms_For_Type (Base_Type (Id));
+      while Present (Subp_Id) loop
+         if Is_Default_Init_Cond_Procedure (Subp_Id) then
+            return Subp_Id;
          end if;
 
-         S := Subprograms_For_Type (S);
+         Subp_Id := Subprograms_For_Type (Subp_Id);
       end loop;
 
       return Empty;
@@ -8282,26 +8283,28 @@ package body Einfo is
    -------------------------------------
 
    procedure Set_Default_Init_Cond_Procedure (Id : E; V : E) is
-      S : Entity_Id;
+      Base_Typ : Entity_Id;
+      Subp_Id  : Entity_Id;
 
    begin
       pragma Assert
-        (Is_Type (Id) and then (Has_Default_Init_Cond           (Id)
-                                  or
-                                Has_Inherited_Default_Init_Cond (Id)));
+        (Is_Type (Id)
+          and then (Has_Default_Init_Cond (Id)
+                     or Has_Inherited_Default_Init_Cond (Id)));
+      Base_Typ := Base_Type (Id);
 
-      S := Subprograms_For_Type (Id);
-      Set_Subprograms_For_Type (Id, V);
-      Set_Subprograms_For_Type (V, S);
+      Subp_Id := Subprograms_For_Type (Base_Typ);
+      Set_Subprograms_For_Type (Base_Typ, V);
+      Set_Subprograms_For_Type (V, Subp_Id);
 
       --  Check for a duplicate procedure
 
-      while Present (S) loop
-         if Is_Default_Init_Cond_Procedure (S) then
+      while Present (Subp_Id) loop
+         if Is_Default_Init_Cond_Procedure (Subp_Id) then
             raise Program_Error;
          end if;
 
-         S := Subprograms_For_Type (S);
+         Subp_Id := Subprograms_For_Type (Subp_Id);
       end loop;
    end Set_Default_Init_Cond_Procedure;
 
