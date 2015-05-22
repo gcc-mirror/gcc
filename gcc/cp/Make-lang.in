@@ -155,7 +155,7 @@ check-c++-subtargets : check-g++-subtargets
 # List of targets that can use the generic check- rule and its // variant.
 lang_checks += check-g++
 lang_checks_parallelized += check-g++
-# For description see comment above check_gcc_parallelize in gcc/Makefile.in.
+# For description see the check_$lang_parallelize comment in gcc/Makefile.in.
 check_g++_parallelize = 10000
 #
 # Install hooks:
