@@ -1,3 +1,21 @@
+2015-05-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (struct _slp_oprnd_info): Add second_pattern
+	member.
+	* tree-vect-loop.c (vect_analyze_loop_operations): Look at
+	patterns when determining whether SLP is pure.
+	(vect_is_slp_reduction): Remove check for pattern stmts.
+	(vect_is_simple_reduction_1): Remove dead code.
+	* tree-vect-slp.c (vect_create_oprnd_info): Initialize second_pattern.
+	(vect_get_and_check_slp_defs): Pass in the stmt number.
+	Allow the first def in a reduction to be not a pattern stmt when
+	the rest of the stmts def are patterns.
+	(vect_build_slp_tree_1): Allow tcc_expression codes like
+	SAD_EXPR and DOT_PROD_EXPR.
+	(vect_build_slp_tree): Adjust.
+	(vect_analyze_slp): Refactor and move BB vect error message ...
+	(vect_slp_analyze_bb_1): ... here.
+
 2015-05-22  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-switch-conversion.c (build_one_array): Set DECL_IGNORED_P

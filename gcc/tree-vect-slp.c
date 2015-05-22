@@ -183,6 +183,7 @@ vect_create_oprnd_info (int nops, int group_size)
       oprnd_info->first_dt = vect_uninitialized_def;
       oprnd_info->first_op_type = NULL_TREE;
       oprnd_info->first_pattern = false;
+      oprnd_info->second_pattern = false;
       oprnds_info.quick_push (oprnd_info);
     }
 
@@ -242,7 +243,7 @@ vect_get_place_in_interleaving_chain (gimple stmt, gimple first_stmt)
 
 static int 
 vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
-                             gimple stmt, bool first,
+                             gimple stmt, unsigned stmt_num,
                              vec<slp_oprnd_info> *oprnds_info)
 {
   tree oprnd;
@@ -256,6 +257,8 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   int first_op_idx = 1;
   bool commutative = false;
   bool first_op_cond = false;
+  bool first = stmt_num == 0;
+  bool second = stmt_num == 1;
 
   if (loop_vinfo)
     loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -326,7 +329,11 @@ again:
 	  && !STMT_VINFO_LIVE_P (vinfo_for_stmt (def_stmt)))
         {
           pattern = true;
-          if (!first && !oprnd_info->first_pattern)
+          if (!first && !oprnd_info->first_pattern
+	      /* Allow different pattern state for the defs of the
+		 first stmt in reduction chains.  */
+	      && (oprnd_info->first_dt != vect_reduction_def
+		  || (!second && !oprnd_info->second_pattern)))
 	    {
 	      if (i == 0
 		  && !swapped
@@ -376,6 +383,9 @@ again:
                 return -1;
             }
         }
+
+      if (second)
+	oprnd_info->second_pattern = pattern;
 
       if (first)
 	{
@@ -892,7 +902,7 @@ vect_build_slp_tree_1 (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	  /* Not memory operation.  */
 	  if (TREE_CODE_CLASS (rhs_code) != tcc_binary
 	      && TREE_CODE_CLASS (rhs_code) != tcc_unary
-	      && rhs_code != COND_EXPR
+	      && TREE_CODE_CLASS (rhs_code) != tcc_expression
 	      && rhs_code != CALL_EXPR)
 	    {
 	      if (dump_enabled_p ())
@@ -1033,7 +1043,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (*node), i, stmt)
     {
       switch (vect_get_and_check_slp_defs (loop_vinfo, bb_vinfo,
-					   stmt, (i == 0), &oprnds_info))
+					   stmt, i, &oprnds_info))
 	{
 	case 0:
 	  break;
@@ -1910,17 +1920,7 @@ vect_analyze_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 				   max_tree_size))
       ok = true;
 
-  if (bb_vinfo && !ok)
-    {
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "Failed to SLP the basic block.\n");
-
-      return false;
-    }
-
-  if (loop_vinfo
-      && LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo).length () > 0)
+  if (reduc_chains.length () > 0)
     {
       /* Find SLP sequences starting from reduction chains.  */
       FOR_EACH_VEC_ELT (reduc_chains, i, first_element)
@@ -1936,7 +1936,7 @@ vect_analyze_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
     }
 
   /* Find SLP sequences starting from groups of reductions.  */
-  if (loop_vinfo && LOOP_VINFO_REDUCTIONS (loop_vinfo).length () > 1
+  if (reductions.length () > 1
       && vect_analyze_slp_instance (loop_vinfo, bb_vinfo, reductions[0],
 				    max_tree_size))
     ok = true;
@@ -2443,9 +2443,13 @@ vect_slp_analyze_bb_1 (basic_block bb)
   if (!vect_analyze_slp (NULL, bb_vinfo, n_stmts))
     {
       if (dump_enabled_p ())
-        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
-			 "not vectorized: failed to find SLP opportunities "
-			 "in basic block.\n");
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "Failed to SLP the basic block.\n");
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+			   "not vectorized: failed to find SLP opportunities "
+			   "in basic block.\n");
+	}
 
       destroy_bb_vec_info (bb_vinfo);
       return NULL;

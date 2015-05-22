@@ -1399,7 +1399,12 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo, bool slp)
 	    {
 	      gimple stmt = gsi_stmt (si);
 	      stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-	      gcc_assert (stmt_info);
+	      if (STMT_VINFO_IN_PATTERN_P (stmt_info)
+		  && STMT_VINFO_RELATED_STMT (stmt_info))
+		{
+		  stmt = STMT_VINFO_RELATED_STMT (stmt_info);
+		  stmt_info = vinfo_for_stmt (stmt);
+		}
 	      if ((STMT_VINFO_RELEVANT_P (stmt_info)
 		   || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)))
 		  && !PURE_SLP_STMT (stmt_info))
@@ -2031,12 +2036,8 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
 
           if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
             {
-              if (vinfo_for_stmt (use_stmt)
-                  && !STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (use_stmt)))
-                {
-                  loop_use_stmt = use_stmt;
-                  nloop_uses++;
-                }
+	      loop_use_stmt = use_stmt;
+	      nloop_uses++;
             }
            else
              n_out_of_loop_uses++;
@@ -2265,9 +2266,7 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
           return NULL;
         }
 
-      if (vinfo_for_stmt (use_stmt)
-	  && !is_pattern_stmt_p (vinfo_for_stmt (use_stmt)))
-        nloop_uses++;
+      nloop_uses++;
       if (nloop_uses > 1)
         {
           if (dump_enabled_p ())
@@ -2325,9 +2324,7 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
       gimple use_stmt = USE_STMT (use_p);
       if (is_gimple_debug (use_stmt))
 	continue;
-      if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt))
-	  && vinfo_for_stmt (use_stmt)
-	  && !is_pattern_stmt_p (vinfo_for_stmt (use_stmt)))
+      if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
 	nloop_uses++;
       if (nloop_uses > 1)
 	{
