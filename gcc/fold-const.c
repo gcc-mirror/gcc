@@ -14688,7 +14688,7 @@ tree_unary_nonnegative_warnv_p (enum tree_code code, tree type, tree op0,
     case ABS_EXPR:
       /* We can't return 1 if flag_wrapv is set because
 	 ABS_EXPR<INT_MIN> = INT_MIN.  */
-      if (!INTEGRAL_TYPE_P (type))
+      if (!ANY_INTEGRAL_TYPE_P (type))
 	return true;
       if (TYPE_OVERFLOW_UNDEFINED (type))
 	{

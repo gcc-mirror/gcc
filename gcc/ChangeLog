@@ -1,5 +1,14 @@
 2015-05-22  Marc Glisse  <marc.glisse@inria.fr>
 
+	PR tree-optimization/63387
+	* match.pd ((X /[ex] A) * A -> X): Remove unnecessary condition.
+	((x ord x) & (y ord y) -> (x ord y),
+	(x ord x) & (x ord y) -> (x ord y)): New simplifications.
+	* fold-const.c (tree_unary_nonnegative_warnv_p) <ABS_EXPR>: Handle
+	vectors like scalars.
+
+2015-05-22  Marc Glisse  <marc.glisse@inria.fr>
+
 	* convert.c (convert_to_integer, convert_to_vector): Include the
 	types in the error message.
 

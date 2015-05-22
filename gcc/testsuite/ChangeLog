@@ -1,5 +1,10 @@
 2015-05-22  Marc Glisse  <marc.glisse@inria.fr>
 
+	PR tree-optimization/63387
+	* gcc.dg/pr63387-2.c: New testcase.
+
+2015-05-22  Marc Glisse  <marc.glisse@inria.fr>
+
 	* gcc.dg/simd-1.c: Update to the new message.
 
 2015-05-22  Marc Glisse  <marc.glisse@inria.fr>
