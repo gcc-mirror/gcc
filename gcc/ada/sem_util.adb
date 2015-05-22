@@ -9323,7 +9323,6 @@ package body Sem_Util is
 
    function Has_Variable_Input (Const_Id : Entity_Id) return Boolean is
       Expr : constant Node_Id := Expression (Declaration_Node (Const_Id));
-
    begin
       return
         Present (Expr) and then not Compile_Time_Known_Value_Or_Aggr (Expr);

@@ -3893,6 +3893,9 @@ package body Sem_Ch13 is
                  ("indexing function must have at least two parameters");
                return;
 
+            --  For a derived type, check that no indexing aspect is
+            --  specified for the type if it is also inherited
+
             elsif Is_Derived_Type (Ent) then
                declare
                   Inherited : Node_Id;
@@ -3901,12 +3904,11 @@ package body Sem_Ch13 is
                   if Attr = Name_Constant_Indexing then
                      Inherited :=
                        Find_Aspect (Etype (Ent), Aspect_Constant_Indexing);
+
                   elsif Attr = Name_Variable_Indexing then
                      Inherited :=
                         Find_Aspect (Etype (Ent), Aspect_Variable_Indexing);
                   end if;
-
-                  --  What if neither branch taken above ???
 
                   if Present (Inherited) then
                      if Debug_Flag_Dot_XX then
