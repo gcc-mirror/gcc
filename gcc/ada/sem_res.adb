@@ -3050,6 +3050,14 @@ package body Sem_Res is
       F_Typ  : Entity_Id;
       Prev   : Node_Id := Empty;
       Orig_A : Node_Id;
+      Real_F : Entity_Id;
+
+      Real_Subp : Entity_Id;
+      --  If the subprogram being called is an overridden operation,
+      --  Real_Subp is the subprogram that will be called. It may have
+      --  different formal names than the overridden operation, so after
+      --  actual is resolved, the name of the actual in a named association
+      --  must carry the name of the actual of the subprogram being called.
 
       procedure Check_Aliased_Parameter;
       --  Check rules on aliased parameters and related accessibility rules
@@ -3560,12 +3568,27 @@ package body Sem_Res is
       Check_Argument_Order;
       Check_Function_Writable_Actuals (N);
 
+      if Is_Overloadable (Nam)
+        and then Is_Inherited_Operation (Nam)
+        and then Present (Alias (Nam))
+        and then Present (Overridden_Operation (Alias (Nam)))
+      then
+         Real_Subp := Alias (Nam);
+      else
+         Real_Subp := Empty;
+      end if;
+
       if Present (First_Actual (N)) then
          Check_Prefixed_Call;
       end if;
 
       A := First_Actual (N);
       F := First_Formal (Nam);
+
+      if Present (Real_Subp) then
+         Real_F := First_Formal (Real_Subp);
+      end if;
+
       while Present (F) loop
          if No (A) and then Needs_No_Actuals (Nam) then
             null;
@@ -4400,10 +4423,19 @@ package body Sem_Res is
 
               and then not GNATprove_Mode
             then
-               Set_Entity (Selector_Name (Parent (A)), F);
-               Generate_Reference (F, Selector_Name (Parent (A)));
-               Set_Etype (Selector_Name (Parent (A)), F_Typ);
-               Generate_Reference (F_Typ, N, ' ');
+               --  If subprogram is overridden, use name of formal that
+               --  is being called.
+
+               if Present (Real_Subp) then
+                  Set_Entity (Selector_Name (Parent (A)), Real_F);
+                  Set_Etype (Selector_Name (Parent (A)), Etype (Real_F));
+
+               else
+                  Set_Entity (Selector_Name (Parent (A)), F);
+                  Generate_Reference (F, Selector_Name (Parent (A)));
+                  Set_Etype (Selector_Name (Parent (A)), F_Typ);
+                  Generate_Reference (F_Typ, N, ' ');
+               end if;
             end if;
 
             Prev := A;
@@ -4502,6 +4534,10 @@ package body Sem_Res is
             end if;
 
             Next_Actual (A);
+
+            if Present (Real_Subp) then
+               Next_Formal (Real_F);
+            end if;
 
          --  Case where actual is not present
 
