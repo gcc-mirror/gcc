@@ -812,8 +812,9 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	      for (; i < gimple_num_ops (stmt); i++)
                 {
 		  op = gimple_op (stmt, i);
-                  if (!process_use (stmt, op, loop_vinfo, live_p, relevant,
-				    &worklist, false))
+                  if (TREE_CODE (op) == SSA_NAME
+		      && !process_use (stmt, op, loop_vinfo, live_p, relevant,
+				       &worklist, false))
                     return false;
                  }
             }
