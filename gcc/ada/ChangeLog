@@ -1,3 +1,12 @@
+2015-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_pakd.adb (Install_PAT): Propagate representation aspects
+	from the original array type to the PAT.
+
+2015-05-22  Robert Dewar  <dewar@adacore.com>
+
+	* treepr.adb (Print_Node_Header): Add output of Needs_Actuals_Check.
+
 2015-05-22  Robert Dewar  <dewar@adacore.com>
 
 	* atree.adb, atree.ads (Needs_Actuals_Check): New flag.

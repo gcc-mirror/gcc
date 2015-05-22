@@ -532,8 +532,16 @@ package body Exp_Pakd is
          Init_Alignment                (PAT);
          Set_Parent                    (PAT, Empty);
          Set_Associated_Node_For_Itype (PAT, Typ);
-         Set_Is_Packed_Array_Impl_Type      (PAT, True);
+         Set_Is_Packed_Array_Impl_Type (PAT, True);
          Set_Original_Array_Type       (PAT, Typ);
+
+         --  Propagate representation aspects
+
+         Set_Is_Atomic                (PAT, Is_Atomic                (Typ));
+         Set_Is_Independent           (PAT, Is_Independent           (Typ));
+         Set_Has_Volatile_Full_Access (PAT, Has_Volatile_Full_Access (Typ));
+         Set_Is_Volatile              (PAT, Is_Volatile              (Typ));
+         Set_Treat_As_Volatile        (PAT, Treat_As_Volatile        (Typ));
 
          --  For a non-bit-packed array, propagate reverse storage order
          --  flag from original base type to packed array base type.
