@@ -1,3 +1,10 @@
+2015-05-22  Robert Dewar  <dewar@adacore.com>
+
+	* atree.adb, atree.ads, treepr.adb: Change name Needs_Actuals_Check to
+	Check_Actuals.
+	* exp_ch4.adb (Expand_N_Op_Expon): Optimize 2**x in modular
+	and overflow cases.
+
 2015-05-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_pakd.adb (Install_PAT): Propagate representation aspects
