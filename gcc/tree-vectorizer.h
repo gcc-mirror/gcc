@@ -163,6 +163,7 @@ typedef struct _slp_oprnd_info
   enum vect_def_type first_dt;
   tree first_op_type;
   bool first_pattern;
+  bool second_pattern;
 } *slp_oprnd_info;
 
 
