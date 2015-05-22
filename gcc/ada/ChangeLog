@@ -1,3 +1,25 @@
+2015-05-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Analyze_With_Clause): In ASIS_Mode, a
+	limited_with clause on a predefined unit is not transformed into
+	a regular with_clause, to preserve the original tree structure.
+	* sinfo.ads (N_With_Clause): Add comment on handling of
+	Limited_With.
+	* sem_ch10.adb: Minor reformatting.
+
+2015-05-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Freeze_Profile): A limited view of a type in
+	the profile of a subprogram renaming does not require freezing,
+	because it is declared in a different unit.
+
+2015-05-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Get_Constraint_Association): If type (of ancestor
+	composite type) is private, go to full view. This was previously
+	done only in an instance context, but is happen whenever a chain
+	of private extensions includes one inherited discriminant.
+
 2015-05-22  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.ads: Minor comment updates.

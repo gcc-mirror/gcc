@@ -2065,19 +2065,18 @@ package body Exp_Aggr is
       begin
          Typ := T;
 
-         --  Handle private types in instances
+         --  If type is private, get constraint from full view. This was
+         --  previously done in an instance context, but is needed whenever
+         --  the ancestor part has a discriminant, possibly inherited through
+         --  multiple derivations.
 
-         if In_Instance
-           and then Is_Private_Type (Typ)
-           and then Present (Full_View (Typ))
-         then
+         if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
             Typ := Full_View (Typ);
          end if;
 
          Indic := Subtype_Indication (Type_Definition (Parent (Typ)));
 
-         --  ??? Also need to cover case of a type mark denoting a subtype
-         --  with constraint.
+         --  Verify that the subtype indication carries a constraint
 
          if Nkind (Indic) = N_Subtype_Indication
            and then Present (Constraint (Indic))
