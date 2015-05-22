@@ -818,8 +818,7 @@ along with GCC; see the file COPYING3.  If not see
 (simplify
   (mult (convert? (exact_div @0 @1)) @1)
   /* Look through a sign-changing conversion.  */
-  (if (TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (type))
-   (convert @0)))
+  (convert @0))
 
 /* Canonicalization of binary operations.  */
 
@@ -971,7 +970,14 @@ along with GCC; see the file COPYING3.  If not see
  (if (types_match (@0, @1))
   (unordered @0 @1)))
 (simplify
+ (bit_and (ordered @0 @0) (ordered @1 @1))
+ (if (types_match (@0, @1))
+  (ordered @0 @1)))
+(simplify
  (bit_ior:c (unordered @0 @0) (unordered:c@2 @0 @1))
+ @2)
+(simplify
+ (bit_and:c (ordered @0 @0) (ordered:c@2 @0 @1))
  @2)
 
 /* Simplification of math builtins.  */
