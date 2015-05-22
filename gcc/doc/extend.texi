@@ -6304,7 +6304,7 @@ compilers to match the native Microsoft compiler.
 GCC allows attributes to be set on C labels.  @xref{Attribute Syntax}, for 
 details of the exact syntax for using attributes.  Other attributes are 
 available for functions (@pxref{Function Attributes}), variables 
-(@pxref{Variable Attributes}), enumerators (@xref{Enumerator Attributes}),
+(@pxref{Variable Attributes}), enumerators (@pxref{Enumerator Attributes}),
 and for types (@pxref{Type Attributes}).
 
 This example uses the @code{cold} label attribute to indicate the 
@@ -6358,7 +6358,7 @@ with computed goto or @code{asm goto}.
 GCC allows attributes to be set on enumerators.  @xref{Attribute Syntax}, for
 details of the exact syntax for using attributes.  Other attributes are
 available for functions (@pxref{Function Attributes}), variables
-(@pxref{Variable Attributes}), labels (@xref{Label Attributes}),
+(@pxref{Variable Attributes}), labels (@pxref{Label Attributes}),
 and for types (@pxref{Type Attributes}).
 
 This example uses the @code{deprecated} enumerator attribute to indicate the
