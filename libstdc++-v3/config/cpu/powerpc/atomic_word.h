@@ -1,6 +1,6 @@
 // Low-level type for atomic operations -*- C++ -*-
 
-// Copyright (C) 2004-2014 Free Software Foundation, Inc.
+// Copyright (C) 2004-2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,10 +27,11 @@
 
 typedef int _Atomic_word;
 
-#define _GLIBCXX_READ_MEM_BARRIER __asm __volatile ("isync":::"memory")
 #ifdef __NO_LWSYNC__
+#define _GLIBCXX_READ_MEM_BARRIER __asm __volatile ("sync":::"memory")
 #define _GLIBCXX_WRITE_MEM_BARRIER __asm __volatile ("sync":::"memory")
 #else
+#define _GLIBCXX_READ_MEM_BARRIER __asm __volatile ("lwsync":::"memory")
 #define _GLIBCXX_WRITE_MEM_BARRIER __asm __volatile ("lwsync":::"memory")
 #endif
 
