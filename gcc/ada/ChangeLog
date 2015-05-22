@@ -1,3 +1,16 @@
+2015-05-22  Bob Duff  <duff@adacore.com>
+
+	* a-convec.ads, a-convec.adb (Append): Check for fast path. Split
+	out slow path into separate procedure. Inline Append. Fast path
+	now avoids calling Insert.
+	(Finalize): Do the busy checking last, so the container gets emptied.
+	(Insert, Insert_Space): Remove redundancy.
+
+2015-05-22  Robert Dewar  <dewar@adacore.com>
+
+	* switch-c.adb (Scan_Front_End_Switches): Insist on -gnatc
+	for -gnatd.V.
+
 2015-05-22  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnatvsn.ads: Minor code reorg to remember more easily to update
