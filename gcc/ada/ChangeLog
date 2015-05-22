@@ -1,5 +1,11 @@
 2015-05-22  Robert Dewar  <dewar@adacore.com>
 
+	* sem_util.ads: Minor addition of ??? comment.
+	* sem_prag.adb, sem_util.adb: Minor reformatting.
+	* sem_ch13.adb: minor reformatting.
+
+2015-05-22  Robert Dewar  <dewar@adacore.com>
+
 	* a-reatim.ads: Add Compile_Time_Error to ensure Duration
 	is 64-bits.
 	* sem_ch13.adb: Improve error message.

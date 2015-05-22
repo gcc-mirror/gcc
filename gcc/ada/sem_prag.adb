@@ -2710,7 +2710,7 @@ package body Sem_Prag is
          Legal   : out Boolean);
       --  Subsidiary to the analysis of pragmas Abstract_State and Part_Of.
       --  Perform full analysis of indicator Part_Of. Item_Id is the entity of
-      --  an abstract state, object or package instantiation. State is the
+      --  an abstract state, object, or package instantiation. State is the
       --  encapsulating state. Indic is the Part_Of indicator. Flag Legal is
       --  set when the indicator is legal.
 
