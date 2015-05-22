@@ -464,10 +464,9 @@ init_reg_sets_1 (void)
       else if (!HARD_FRAME_POINTER_IS_FRAME_POINTER
 	       && i == HARD_FRAME_POINTER_REGNUM)
 	;
-#if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
-      else if (i == ARG_POINTER_REGNUM && fixed_regs[i])
+      else if (FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	       && i == ARG_POINTER_REGNUM && fixed_regs[i])
 	;
-#endif
       else if (!PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
 	       && i == (unsigned) PIC_OFFSET_TABLE_REGNUM && fixed_regs[i])
 	;
