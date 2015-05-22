@@ -804,9 +804,9 @@ package body Prj.Util is
    -- Relative_Path --
    -------------------
 
-   function Relative_Path (Pathname, To : String) return String is
-
+   function Relative_Path (Pathname : String; To : String) return String is
       function Ensure_Directory (Path : String) return String;
+      --  Function spec must be commented ???
 
       ----------------------
       -- Ensure_Directory --
@@ -824,6 +824,8 @@ package body Prj.Util is
          end if;
       end Ensure_Directory;
 
+      --  Local variables
+
       Dir_Sep_Map : constant Character_Mapping := To_Mapping ("\", "/");
 
       P  : String (1 .. Pathname'Length) := Pathname;
@@ -831,6 +833,8 @@ package body Prj.Util is
 
       Pi : Natural; -- common prefix ending
       N  : Natural := 0;
+
+   --  Start of processing for Relative_Path
 
    begin
       pragma Assert (Is_Absolute_Path (Pathname));
@@ -858,6 +862,7 @@ package body Prj.Util is
       --  corresponding number of "..".
 
       N := Count (T (Pi + 1 .. T'Last), "/");
+
       if T (T'Last) /= '/' then
          N := N + 1;
       end if;
@@ -1405,8 +1410,7 @@ package body Prj.Util is
                Last := Last - 1;
             end loop;
 
-            --  If we do not find a separator, we output the maximum length
-            --  possible.
+            --  If we do not find a separator, output maximum length possible
 
             if Last < First then
                Last := First + Max_Length - Positive (Column);

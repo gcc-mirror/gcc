@@ -245,7 +245,7 @@ package Prj.Util is
    --  are handled. This routine must be called only when the project has
    --  been built successfully.
 
-   function Relative_Path (Pathname, To : String) return String;
+   function Relative_Path (Pathname : String; To : String) return String;
    --  Returns the relative pathname which corresponds to Pathname when
    --  starting from directory to. Both Pathname and To must be absolute paths.
 
