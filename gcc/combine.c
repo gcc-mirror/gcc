@@ -3746,6 +3746,21 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	      split_code = GET_CODE (*split);
 	    }
 
+	  /* Similarly for (plus (mult FOO (const_int pow2))).  */
+	  if (split_code == PLUS
+	      && GET_CODE (XEXP (*split, 0)) == MULT
+	      && CONST_INT_P (XEXP (XEXP (*split, 0), 1))
+	      && INTVAL (XEXP (XEXP (*split, 0), 1)) > 0
+	      && (i = exact_log2 (UINTVAL (XEXP (XEXP (*split, 0), 1)))) >= 0)
+	    {
+	      rtx nsplit = XEXP (*split, 0);
+	      SUBST (XEXP (*split, 0), gen_rtx_ASHIFT (GET_MODE (nsplit),
+					     XEXP (nsplit, 0), GEN_INT (i)));
+	      /* Update split_code because we may not have a multiply
+		 anymore.  */
+	      split_code = GET_CODE (*split);
+	    }
+
 #ifdef INSN_SCHEDULING
 	  /* If *SPLIT is a paradoxical SUBREG, when we split it, it should
 	     be written as a ZERO_EXTEND.  */
