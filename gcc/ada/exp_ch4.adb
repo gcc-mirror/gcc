@@ -415,174 +415,164 @@ package body Exp_Ch4 is
    ------------------------------
 
    function Current_Anonymous_Master return Entity_Id is
-      Decls     : List_Id;
-      Loc       : Source_Ptr;
-      Subp_Body : Node_Id;
-      Unit_Decl : Node_Id;
-      Unit_Id   : Entity_Id;
+      function Create_Anonymous_Master
+        (Unit_Id : Entity_Id;
+         Decls   : List_Id) return Entity_Id;
+      --  Create a new anonymous finalization master for a unit denoted by
+      --  Unit_Id. The declaration of the master along with any specialized
+      --  initialization is inserted at the top of declarative list Decls.
+      --  Return the entity of the anonymous master.
 
-   begin
-      Unit_Id := Cunit_Entity (Current_Sem_Unit);
+      -----------------------------
+      -- Create_Anonymous_Master --
+      -----------------------------
 
-      --  Find the entity of the current unit
+      function Create_Anonymous_Master
+        (Unit_Id : Entity_Id;
+         Decls   : List_Id) return Entity_Id
+      is
+         First_Decl : Node_Id := Empty;
+         --  The first declaration of list Decls. This variable is used when
+         --  inserting various actions.
 
-      if Ekind (Unit_Id) = E_Subprogram_Body then
+         procedure Insert_And_Analyze (Action : Node_Id);
+         --  Insert arbitrary node Action in declarative list Decl and analyze
+         --  it.
 
-         --  When processing subprogram bodies, the proper scope is always that
-         --  of the spec.
+         ------------------------
+         -- Insert_And_Analyze --
+         ------------------------
 
-         Subp_Body := Unit_Id;
-         while Present (Subp_Body)
-           and then Nkind (Subp_Body) /= N_Subprogram_Body
-         loop
-            Subp_Body := Parent (Subp_Body);
-         end loop;
+         procedure Insert_And_Analyze (Action : Node_Id) is
+         begin
+            --  The list is already populated, the actions are inserted at the
+            --  top of the list, preserving their order.
 
-         Unit_Id := Corresponding_Spec (Subp_Body);
-      end if;
+            if Present (First_Decl) then
+               Insert_Before_And_Analyze (First_Decl, Action);
 
-      Loc := Sloc (Unit_Id);
-      Unit_Decl := Unit (Cunit (Current_Sem_Unit));
+            --  Otherwise append to the declarations to preserve order
 
-      --  Find the declarations list of the current unit
+            else
+               Append_To (Decls, Action);
+               Analyze (Action);
+            end if;
+         end Insert_And_Analyze;
 
-      if Nkind (Unit_Decl) = N_Package_Declaration then
-         Unit_Decl := Specification (Unit_Decl);
-         Decls := Visible_Declarations (Unit_Decl);
+         --  Local variables
 
-         if No (Decls) then
-            Decls := New_List (Make_Null_Statement (Loc));
-            Set_Visible_Declarations (Unit_Decl, Decls);
+         Loc   : constant Source_Ptr := Sloc (Unit_Id);
+         FM_Id : Entity_Id;
 
-         elsif Is_Empty_List (Decls) then
-            Append_To (Decls, Make_Null_Statement (Loc));
+      --  Start of processing for Create_Anonymous_Master
+
+      begin
+         if Present (Decls) then
+            First_Decl := First (Decls);
          end if;
 
-      else
-         Decls := Declarations (Unit_Decl);
+         --  Since the anonymous master and all its initialization actions are
+         --  inserted at top level, use the scope of the unit when analyzing.
 
-         if No (Decls) then
-            Decls := New_List (Make_Null_Statement (Loc));
-            Set_Declarations (Unit_Decl, Decls);
+         Push_Scope (Unit_Id);
 
-         elsif Is_Empty_List (Decls) then
-            Append_To (Decls, Make_Null_Statement (Loc));
-         end if;
-      end if;
+         --  Create the anonymous master
 
-      --  The current unit has an existing anonymous master, traverse its
-      --  declarations and locate the entity.
+         FM_Id :=
+           Make_Defining_Identifier (Loc,
+             Chars => New_External_Name (Chars (Unit_Id), "AM"));
+         Set_Anonymous_Master (Unit_Id, FM_Id);
 
-      if Has_Anonymous_Master (Unit_Id) then
-         declare
-            Decl       : Node_Id;
-            Fin_Mas_Id : Entity_Id;
+         --  Generate:
+         --    <FM_Id> : Finalization_Master;
 
-         begin
-            Decl := First (Decls);
-            while Present (Decl) loop
+         Insert_And_Analyze
+           (Make_Object_Declaration (Loc,
+             Defining_Identifier => FM_Id,
+             Object_Definition   =>
+               New_Occurrence_Of (RTE (RE_Finalization_Master), Loc)));
 
-               --  Look for the first variable in the declarations whole type
-               --  is Finalization_Master.
+         --  Do not set the base pool and mode of operation on .NET/JVM since
+         --  those targets do not support pools and all VM masters defaulted to
+         --  heterogeneous.
 
-               if Nkind (Decl) = N_Object_Declaration then
-                  Fin_Mas_Id := Defining_Identifier (Decl);
-
-                  if Ekind (Fin_Mas_Id) = E_Variable
-                    and then Etype (Fin_Mas_Id) = RTE (RE_Finalization_Master)
-                  then
-                     return Fin_Mas_Id;
-                  end if;
-               end if;
-
-               Next (Decl);
-            end loop;
-
-            --  The master was not found even though the unit was labeled as
-            --  having one.
-
-            raise Program_Error;
-         end;
-
-      --  Create a new anonymous master
-
-      else
-         declare
-            First_Decl : constant Node_Id := First (Decls);
-            Action     : Node_Id;
-            Fin_Mas_Id : Entity_Id;
-
-         begin
-            --  Since the master and its associated initialization is inserted
-            --  at top level, use the scope of the unit when analyzing.
-
-            Push_Scope (Unit_Id);
-
-            --  Create the finalization master
-
-            Fin_Mas_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_External_Name (Chars (Unit_Id), "AM"));
+         if VM_Target = No_VM then
 
             --  Generate:
-            --    <Fin_Mas_Id> : Finalization_Master;
+            --    Set_Base_Pool
+            --      (<FM_Id>, Global_Pool_Object'Unrestricted_Access);
 
-            Action :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Fin_Mas_Id,
-                Object_Definition =>
-                  New_Occurrence_Of (RTE (RE_Finalization_Master), Loc));
+            Insert_And_Analyze
+              (Make_Procedure_Call_Statement (Loc,
+                Name                   =>
+                  New_Occurrence_Of (RTE (RE_Set_Base_Pool), Loc),
+                Parameter_Associations => New_List (
+                  New_Occurrence_Of (FM_Id, Loc),
+                  Make_Attribute_Reference (Loc,
+                    Prefix         =>
+                      New_Occurrence_Of (RTE (RE_Global_Pool_Object), Loc),
+                    Attribute_Name => Name_Unrestricted_Access))));
 
-            Insert_Before_And_Analyze (First_Decl, Action);
+            --  Generate:
+            --    Set_Is_Heterogeneous (<FM_Id>);
 
-            --  Mark the unit to prevent the generation of multiple masters
+            Insert_And_Analyze
+              (Make_Procedure_Call_Statement (Loc,
+                Name                   =>
+                  New_Occurrence_Of (RTE (RE_Set_Is_Heterogeneous), Loc),
+                Parameter_Associations => New_List (
+                  New_Occurrence_Of (FM_Id, Loc))));
+         end if;
 
-            Set_Has_Anonymous_Master (Unit_Id);
+         Pop_Scope;
 
-            --  Do not set the base pool and mode of operation on .NET/JVM
-            --  since those targets do not support pools and all VM masters
-            --  are heterogeneous by default.
+         return FM_Id;
+      end Create_Anonymous_Master;
 
-            if VM_Target = No_VM then
+      --  Local declarations
 
-               --  Generate:
-               --    Set_Base_Pool
-               --      (<Fin_Mas_Id>, Global_Pool_Object'Unrestricted_Access);
+      Unit_Decl : constant Node_Id   := Unit (Cunit (Current_Sem_Unit));
+      Unit_Id   : constant Entity_Id := Corresponding_Spec_Of (Unit_Decl);
+      Decls     : List_Id;
+      FM_Id     : Entity_Id;
+      Unit_Spec : Node_Id;
 
-               Action :=
-                 Make_Procedure_Call_Statement (Loc,
-                   Name =>
-                     New_Occurrence_Of (RTE (RE_Set_Base_Pool), Loc),
+   --  Start of processing for Current_Anonymous_Master
 
-                   Parameter_Associations => New_List (
-                     New_Occurrence_Of (Fin_Mas_Id, Loc),
-                     Make_Attribute_Reference (Loc,
-                       Prefix =>
-                         New_Occurrence_Of (RTE (RE_Global_Pool_Object), Loc),
-                       Attribute_Name => Name_Unrestricted_Access)));
+   begin
+      FM_Id := Anonymous_Master (Unit_Id);
 
-               Insert_Before_And_Analyze (First_Decl, Action);
+      --  Create a new anonymous master when allocating an object of anonymous
+      --  access-to-controlled type for the first time.
 
-               --  Generate:
-               --    Set_Is_Heterogeneous (<Fin_Mas_Id>);
+      if No (FM_Id) then
 
-               Action :=
-                 Make_Procedure_Call_Statement (Loc,
-                   Name =>
-                     New_Occurrence_Of (RTE (RE_Set_Is_Heterogeneous), Loc),
-                   Parameter_Associations => New_List (
-                     New_Occurrence_Of (Fin_Mas_Id, Loc)));
+         --  Find the declarative list of the current unit
 
-               Insert_Before_And_Analyze (First_Decl, Action);
+         if Nkind (Unit_Decl) = N_Package_Declaration then
+            Unit_Spec := Specification (Unit_Decl);
+            Decls := Visible_Declarations (Unit_Spec);
+
+            if No (Decls) then
+               Decls := New_List;
+               Set_Visible_Declarations (Unit_Spec, Decls);
             end if;
 
-            --  Restore the original state of the scope stack
+         --  Package or subprogram body
 
-            Pop_Scope;
+         else
+            Decls := Declarations (Unit_Decl);
 
-            return Fin_Mas_Id;
-         end;
+            if No (Decls) then
+               Decls := New_List;
+               Set_Declarations (Unit_Decl, Decls);
+            end if;
+         end if;
+
+         FM_Id := Create_Anonymous_Master (Unit_Id, Decls);
       end if;
+
+      return FM_Id;
    end Current_Anonymous_Master;
 
    --------------------------------

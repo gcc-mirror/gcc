@@ -264,7 +264,8 @@ package body Einfo is
 
    --    Import_Pragma                   Node35
 
-   --    (unused)                        Node36
+   --    Anonymous_Master                Node36
+
    --    (unused)                        Node38
    --    (unused)                        Node39
    --    (unused)                        Node40
@@ -556,7 +557,6 @@ package body Einfo is
 
    --    Has_Implicit_Dereference        Flag251
    --    Is_Processed_Transient          Flag252
-   --    Has_Anonymous_Master            Flag253
    --    Is_Implementation_Defined       Flag254
    --    Is_Predicate_Function           Flag255
    --    Is_Predicate_Function_M         Flag256
@@ -594,6 +594,7 @@ package body Einfo is
    --    Has_Volatile_Full_Access        Flag285
    --    Needs_Typedef                   Flag286
 
+   --    (unused)                        Flag253
    --    (unused)                        Flag287
    --    (unused)                        Flag288
    --    (unused)                        Flag289
@@ -752,6 +753,12 @@ package body Einfo is
                                              E_Variable));
       return Uint14 (Id);
    end Alignment;
+
+   function Anonymous_Master (Id : E) return E is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function, E_Package, E_Procedure));
+      return Node36 (Id);
+   end Anonymous_Master;
 
    function Associated_Entity (Id : E) return E is
    begin
@@ -1374,13 +1381,6 @@ package body Einfo is
    begin
       return Flag79 (Id);
    end Has_All_Calls_Remote;
-
-   function Has_Anonymous_Master (Id : E) return B is
-   begin
-      pragma Assert
-        (Ekind_In (Id, E_Function, E_Package, E_Package_Body, E_Procedure));
-      return Flag253 (Id);
-   end Has_Anonymous_Master;
 
    function Has_Atomic_Components (Id : E) return B is
    begin
@@ -3576,6 +3576,12 @@ package body Einfo is
       Set_Elist16 (Id, V);
    end Set_Access_Disp_Table;
 
+   procedure Set_Anonymous_Master (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind_In (Id, E_Function, E_Package, E_Procedure));
+      Set_Node36 (Id, V);
+   end Set_Anonymous_Master;
+
    procedure Set_Associated_Entity (Id : E; V : E) is
    begin
       Set_Node37 (Id, V);
@@ -4245,13 +4251,6 @@ package body Einfo is
    begin
       Set_Flag79 (Id, V);
    end Set_Has_All_Calls_Remote;
-
-   procedure Set_Has_Anonymous_Master (Id : E; V : B := True) is
-   begin
-      pragma Assert
-        (Ekind_In (Id, E_Function, E_Package, E_Package_Body, E_Procedure));
-      Set_Flag253 (Id, V);
-   end Set_Has_Anonymous_Master;
 
    procedure Set_Has_Atomic_Components (Id : E; V : B := True) is
    begin
@@ -8634,7 +8633,6 @@ package body Einfo is
       W ("Has_Aliased_Components",          Flag135 (Id));
       W ("Has_Alignment_Clause",            Flag46  (Id));
       W ("Has_All_Calls_Remote",            Flag79  (Id));
-      W ("Has_Anonymous_Master",            Flag253 (Id));
       W ("Has_Atomic_Components",           Flag86  (Id));
       W ("Has_Biased_Representation",       Flag139 (Id));
       W ("Has_Completion",                  Flag26  (Id));
@@ -10121,6 +10119,12 @@ package body Einfo is
    procedure Write_Field36_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Function                                   |
+              E_Operator                                   |
+              E_Package                                    |
+              E_Procedure                                  =>
+            Write_Str ("Anonymous_Master");
+
          when others                                       =>
             Write_Str ("Field36??");
       end case;
