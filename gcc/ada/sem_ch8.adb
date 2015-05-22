@@ -912,6 +912,25 @@ package body Sem_Ch8 is
               ("renaming of conversion only allowed for tagged types", Nam);
          end if;
 
+         --  Reject renaming of component of Volatile_Full_Access object
+
+         if Nkind_In (Nam, N_Selected_Component, N_Indexed_Component) then
+            declare
+               P : constant Node_Id := Prefix (Nam);
+            begin
+               if Is_Entity_Name (P) then
+                  if Has_Volatile_Full_Access (Entity (P))
+                       or else
+                     Has_Volatile_Full_Access (Etype (P))
+                  then
+                     Error_Msg_N
+                       ("cannot rename component of Volatile_Full_Access "
+                        & "object", Nam);
+                  end if;
+               end if;
+            end;
+         end if;
+
          Resolve (Nam, T);
 
          --  If the renamed object is a function call of a limited type,

@@ -5898,7 +5898,7 @@ package body Sem_Prag is
               ("cannot have Volatile_Full_Access and Atomic for same entity");
          end if;
 
-         --  Check for applying VFA to an entity which has volatile component
+         --  Check for applying VFA to an entity which has aliased component
 
          if Prag_Id = Pragma_Volatile_Full_Access then
             declare
