@@ -3865,13 +3865,13 @@ package body Sem_Ch4 is
    begin
       Analyze (P);
 
-      --  An interesting error check, if we take the 'Reference of an object
-      --  for which a pragma Atomic or Volatile has been given, and the type
-      --  of the object is not Atomic or Volatile, then we are in trouble. The
-      --  problem is that no trace of the atomic/volatile status will remain
-      --  for the backend to respect when it deals with the resulting pointer,
-      --  since the pointer type will not be marked atomic (it is a pointer to
-      --  the base type of the object).
+      --  An interesting error check, if we take the 'Ref of an object for
+      --  which a pragma Atomic or Volatile has been given, and the type of the
+      --  object is not Atomic or Volatile, then we are in trouble. The problem
+      --  is that no trace of the atomic/volatile status will remain for the
+      --  backend to respect when it deals with the resulting pointer, since
+      --  the pointer type will not be marked atomic (it is a pointer to the
+      --  base type of the object).
 
       --  It is not clear if that can ever occur, but in case it does, we will
       --  generate an error message. Not clear if this message can ever be
@@ -3889,10 +3889,10 @@ package body Sem_Ch4 is
          T := Etype (P);
 
          if (Has_Atomic_Components   (E)
-               and then not Has_Atomic_Components   (T))
+              and then not Has_Atomic_Components   (T))
            or else
             (Has_Volatile_Components (E)
-               and then not Has_Volatile_Components (T))
+              and then not Has_Volatile_Components (T))
            or else (Is_Atomic   (E) and then not Is_Atomic   (T))
            or else (Is_Volatile (E) and then not Is_Volatile (T))
          then
