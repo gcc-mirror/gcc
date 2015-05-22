@@ -1,3 +1,15 @@
+2015-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/66199
+	* c-parser.c (c_parser_omp_for_loop): Don't add
+	OMP_CLAUSE_SHARED to OMP_PARALLEL_CLAUSES when moving
+	OMP_CLAUSE_LASTPRIVATE clause to OMP_FOR_CLAUSES.
+	(c_parser_omp_teams): Set OMP_TEAMS_COMBINED for combined
+	constructs.
+
 2015-04-22  Release Manager
 
 	* GCC 5.1.0 released.

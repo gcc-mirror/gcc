@@ -10538,7 +10538,21 @@ lower_omp_for_lastprivate (struct omp_for_data *fd, gimple_seq *body_p,
 	cond_code = EQ_EXPR;
     }
 
-  cond = build2 (cond_code, boolean_type_node, fd->loop.v, fd->loop.n2);
+  tree n2 = fd->loop.n2;
+  if (fd->collapse > 1
+      && TREE_CODE (n2) != INTEGER_CST
+      && gimple_omp_for_combined_into_p (fd->for_stmt)
+      && gimple_code (ctx->outer->stmt) == GIMPLE_OMP_FOR)
+    {
+      gomp_for *gfor = as_a <gomp_for *> (ctx->outer->stmt);
+      if (gimple_omp_for_kind (gfor) == GF_OMP_FOR_KIND_FOR)
+	{
+	  struct omp_for_data outer_fd;
+	  extract_omp_for_data (gfor, &outer_fd, NULL);
+	  n2 = fold_convert (TREE_TYPE (n2), outer_fd.loop.n2);
+	}
+    }
+  cond = build2 (cond_code, boolean_type_node, fd->loop.v, n2);
 
   clauses = gimple_omp_for_clauses (fd->for_stmt);
   stmts = NULL;

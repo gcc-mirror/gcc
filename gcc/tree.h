@@ -1320,6 +1320,11 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_PARALLEL_COMBINED(NODE) \
   (OMP_PARALLEL_CHECK (NODE)->base.private_flag)
 
+/* True on an OMP_TEAMS statement if it represents an explicit
+   combined teams distribute constructs.  */
+#define OMP_TEAMS_COMBINED(NODE) \
+  (OMP_TEAMS_CHECK (NODE)->base.private_flag)
+
 /* True if OMP_ATOMIC* is supposed to be sequentially consistent
    as opposed to relaxed.  */
 #define OMP_ATOMIC_SEQ_CST(NODE) \
