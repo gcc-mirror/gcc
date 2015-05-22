@@ -621,7 +621,7 @@ extern int pexecute (const char *, char * const *, const char *,
 
 extern int pwait (int, int *, int);
 
-#if !HAVE_DECL_ASPRINTF
+#if defined(HAVE_DECL_ASPRINTF) && !HAVE_DECL_ASPRINTF
 /* Like sprintf but provides a pointer to malloc'd storage, which must
    be freed by the caller.  */
 

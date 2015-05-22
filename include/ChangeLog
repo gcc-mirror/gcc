@@ -1,3 +1,8 @@
+2015-05-22  Yunlian Jiang  <yunlian@google.com>
+
+	* libiberty.h (asprintf): Don't declare if HAVE_DECL_ASPRINTF is
+	not defined.
+
 2015-03-19  Richard Biener  <rguenther@suse.de>
 
 	* partition.h (struct partition_elem): Re-order elements to
