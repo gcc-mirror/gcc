@@ -1,3 +1,12 @@
+2015-05-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): If the call is to an overridden
+	operation, replace the names of the actuals in named associations
+	with the names of the actuals of the subprogram that is eventually
+	executed. The names of the formals and the defaults can differ
+	between the two operations when they are operations of a formal
+	derived type.
+
 2015-05-22  Bob Duff  <duff@adacore.com>
 
 	* a-convec.ads, a-convec.adb (Append): Check for fast path. Split
