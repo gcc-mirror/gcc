@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -923,6 +923,16 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
    end Generic_Sorting;
 
+   ------------------------
+   -- Get_Element_Access --
+   ------------------------
+
+   function Get_Element_Access
+     (Position : Cursor) return not null Element_Access is
+   begin
+      return Position.Node.Element'Access;
+   end Get_Element_Access;
+
    -----------------
    -- Has_Element --
    -----------------
@@ -1383,6 +1393,25 @@ package body Ada.Containers.Doubly_Linked_Lists is
          return Previous (Position);
       end if;
    end Previous;
+
+   ----------------------
+   -- Pseudo_Reference --
+   ----------------------
+
+   function Pseudo_Reference
+     (Container : aliased List'Class) return Reference_Control_Type
+   is
+      C : constant List_Access := Container'Unrestricted_Access;
+      B : Natural renames C.Busy;
+      L : Natural renames C.Lock;
+   begin
+      return R : constant Reference_Control_Type :=
+        (Controlled with C)
+      do
+         B := B + 1;
+         L := L + 1;
+      end return;
+   end Pseudo_Reference;
 
    -------------------
    -- Query_Element --

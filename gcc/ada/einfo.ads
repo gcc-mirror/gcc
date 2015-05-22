@@ -4201,8 +4201,11 @@ package Einfo is
 --       names to access entries in this list.
 
 --    Subps_Index (Uint24)
---       Used during Exp_Inst.Unnest_Subprogram to hold the index in the Subps
---       table for a subprogram. See processing in this procedure for details.
+--       Present in subprogram entries. Set if the subprogram contains nested
+--       subprograms, or is a subprogram nested within such a subprogram. Holds
+--       the index in the Exp_Unst.Subps table for the subprogram. Note that
+--       for the outer level subprogram, this is the starting index in the Subp
+--       table for the entries for this subprogram.
 
 --    Suppress_Elaboration_Warnings (Flag148)
 --       Defined in all entities, can be set only for subprogram entities and

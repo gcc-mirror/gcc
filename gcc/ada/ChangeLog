@@ -1,3 +1,27 @@
+2015-05-22  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads: Minor comment updates.
+	* exp_unst.adb: Move Subps table to spec Don't remove old entries
+	from table Add Last field to record last entry used.
+	* exp_unst.ads: Move Subps table here from body So that Cprint
+	can access saved values.
+
+2015-05-22  Bob Duff  <duff@adacore.com>
+
+	* a-cdlili.adb, a-cdlili.ads, a-cohama.adb, a-cohama.ads,
+	* a-cohase.adb, a-cohase.ads, a-convec.adb, a-convec.ads,
+	* a-coorma.adb, a-coorma.ads, a-coorse.adb, a-coorse.ads:
+	(Pseudo_Reference, Element_Access, Get_Element_Access): New
+	declarations added for use by performance improvements in exp_ch5.adb.
+	* snames.ads-tmpl: New names referenced by exp_ch5.adb.
+	* exp_ch5.adb: Speed up "for ... of" loops for predefined containers.
+	Instead of doing literally what the RM calls for, we do something
+	equivalent that avoids expensive operations inside the loop. If the
+	container package has appropriate Next, Pseudo_Reference,
+	Element_Access, Get_Element_Access declarations, we invoke the
+	optimization.
+	* snames.ads-tmpl: Note speed improvement.
+
 2015-05-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* einfo.ads (Is_Atomic_Or_VFA): Move to XEINFO INLINES section.
