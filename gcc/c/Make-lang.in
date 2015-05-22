@@ -95,6 +95,8 @@ c.srcman:
 # List of targets that can use the generic check- rule and its // variant.
 lang_checks += check-gcc
 lang_checks_parallelized += check-gcc
+# For description see the check_$lang_parallelize comment in gcc/Makefile.in.
+check_gcc_parallelize=10000
 
 # 'make check' in gcc/ looks for check-c.  Redirect it to check-gcc.
 check-c : check-gcc

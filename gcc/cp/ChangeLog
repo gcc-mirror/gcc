@@ -1,3 +1,7 @@
+2015-05-22  Jim Wilson  <jim.wilson@linaro.org>
+
+	* Make-lang.in (check_g++_parallelize): Update comment.
+
 2015-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65598

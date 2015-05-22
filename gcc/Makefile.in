@@ -528,10 +528,6 @@ xm_include_list=@xm_include_list@
 xm_defines=@xm_defines@
 lang_checks=
 lang_checks_parallelized=
-# Upper limit to which it is useful to parallelize this lang target.
-# It doesn't make sense to try e.g. 128 goals for small testsuites
-# like objc or go.
-check_gcc_parallelize=10000
 lang_opt_files=@lang_opt_files@ $(srcdir)/c-family/c.opt $(srcdir)/common.opt
 lang_specs_files=@lang_specs_files@
 lang_tree_files=@lang_tree_files@
@@ -3743,7 +3739,9 @@ check_p_subdirs=$(wordlist 1,$(check_p_count),$(wordlist 1, \
 #
 # To parallelize some language check, add the corresponding check-$lang
 # to lang_checks_parallelized variable and define check_$lang_parallelize
-# variable (see above check_gcc_parallelize description).
+# variable.  This is the upper limit to which it is useful to parallelize the
+# check-$lang target.  It doesn't make sense to try e.g. 128 goals for small
+# testsuites like objc or go.
 $(lang_checks_parallelized): check-% : site.exp
 	-rm -rf $(TESTSUITEDIR)/$*-parallel
 	@if [ "$(filter -j, $(MFLAGS))" = "-j" ]; then \
