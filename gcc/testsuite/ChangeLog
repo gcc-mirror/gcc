@@ -1,3 +1,10 @@
+2015-05-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/advsimd-intrinsics.exp:
+	Set dg-do-what-default to compile only on ARM targets without
+	arm_neon_hw execution support.  Remove redundant c-torture-execute
+	in loop over test cases.
+
 2015-05-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/65491
