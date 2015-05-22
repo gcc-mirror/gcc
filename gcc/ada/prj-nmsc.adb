@@ -5589,8 +5589,8 @@ package body Prj.Nmsc is
             end if;
          end if;
 
-      elsif not No_Sources and then
-        (Subdirs /= null or else Build_Tree_Dir /= null)
+      elsif not No_Sources
+        and then (Subdirs /= null or else Build_Tree_Dir /= null)
       then
          Name_Len := 1;
          Name_Buffer (1) := '.';
@@ -6232,6 +6232,7 @@ package body Prj.Nmsc is
 
       else
          if Build_Tree_Dir /= null and then Create /= "" then
+
             --  Issue a warning that we cannot relocate absolute obj dir
 
             Err_Vars.Error_Msg_File_1 := Name;

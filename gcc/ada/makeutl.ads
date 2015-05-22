@@ -74,7 +74,7 @@ package Makeutl is
    Root_Dir_Option : constant String := "--root-dir";
    --  The root directory under which all artifacts (objects, library, ali)
    --  directory are to be found for the current compilation. This directory
-   --  will be use to relocate artifacts based on this directory. If this
+   --  will be used to relocate artifacts based on this directory. If this
    --  option is not specificed the default value is the directory of the
    --  main project.
 

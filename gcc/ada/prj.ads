@@ -68,7 +68,7 @@ package Prj is
    Root_Dir : String_Ptr := null;
    --  When using out-of-tree build we need to keep information about the root
    --  directory of artifacts to properly relocate them. Note that the root
-   --  directory is not necessary the directory of the main project.
+   --  directory is not necessarily the directory of the main project.
 
    type Library_Support is (None, Static_Only, Full);
    --  Support for Library Project File.

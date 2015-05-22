@@ -818,15 +818,13 @@ package body Sem_Disp is
                   --  (the only current case of a tag-indeterminate attribute
                   --  is the stream Input attribute).
 
-                  elsif
-                    Nkind (Original_Node (Actual)) = N_Attribute_Reference
+                  elsif Nkind (Original_Node (Actual)) = N_Attribute_Reference
                   then
                      Func := Empty;
 
                   --  Ditto if it is an explicit dereference.
 
-                  elsif
-                    Nkind (Original_Node (Actual)) = N_Explicit_Dereference
+                  elsif Nkind (Original_Node (Actual)) = N_Explicit_Dereference
                   then
                      Func := Empty;
 
@@ -835,9 +833,8 @@ package body Sem_Disp is
 
                   else
                      Func :=
-                       Entity (Name
-                         (Original_Node
-                           (Expression (Original_Node (Actual)))));
+                       Entity (Name (Original_Node
+                                       (Expression (Original_Node (Actual)))));
                   end if;
 
                   if Present (Func) and then Is_Abstract_Subprogram (Func) then

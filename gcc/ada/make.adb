@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6441,6 +6441,55 @@ package body Make is
 
       --  Scan again the switch and arguments, now that we are sure that they
       --  do not include --version or --help.
+
+      --  First, for native gnatmake, check for switch -P and, if found and
+      --  gprbuild is available, silently invoke gprbuild.
+
+      Find_Program_Name;
+
+      if Name_Buffer (1 .. Name_Len) = "gnatmake" then
+         declare
+            Call_Gprbuild : Boolean := False;
+
+         begin
+            for J in 1 .. Argument_Count loop
+               declare
+                  Arg : constant String := Argument (J);
+               begin
+                  if Arg'Length >= 2
+                    and then Arg (Arg'First .. Arg'First + 1) = "-P"
+                  then
+                     Call_Gprbuild := True;
+                     exit;
+                  end if;
+               end;
+            end loop;
+
+            if Call_Gprbuild then
+               declare
+                  Gprbuild : String_Access :=
+                               Locate_Exec_On_Path (Exec_Name => "gprbuild");
+                  Args     : Argument_List (1 .. Argument_Count);
+                  Success  : Boolean;
+
+               begin
+                  if Gprbuild /= null then
+                     for J in 1 .. Argument_Count loop
+                        Args (J) := new String'(Argument (J));
+                     end loop;
+
+                     Spawn (Gprbuild.all, Args, Success);
+
+                     Free (Gprbuild);
+
+                     if Success then
+                        Exit_Program (E_Success);
+                     end if;
+                  end if;
+               end;
+            end if;
+         end;
+      end if;
 
       Scan_Args : for Next_Arg in 1 .. Argument_Count loop
          Scan_Make_Arg (Env, Argument (Next_Arg), And_Save => True);

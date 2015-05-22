@@ -1,3 +1,22 @@
+2015-05-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch12.adb, prj.ads, makeutl.ads, sem_ch6.adb, prj-nmsc.adb,
+	prj-conf.adb, sem_disp.adb: Minor reformatting.
+
+2015-05-22  Vincent Celier  <celier@adacore.com>
+
+	* clean.adb (Parse_Cmd_Line): For native gnatclean, check
+	for switch -P and, if found and gprclean is available, invoke
+	silently gprclean.
+	* make.adb (Initialize): For native gnatmake, check for switch -P
+	and, if found and gprbuild is available, invoke silently gprbuild.
+
+2015-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Validate_Unchecked_Conversions): Also issue
+	specific warning for discrete types when the source is larger
+	than the target.
+
 2015-05-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* einfo.ads, einfo.adb (Incomplete_Actuals): New attribute of
