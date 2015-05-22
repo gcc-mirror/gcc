@@ -1521,7 +1521,7 @@ expand_builtin_apply_args_1 (void)
 
   /* Save the arg pointer to the block.  */
   tem = copy_to_reg (crtl->args.internal_arg_pointer);
-#ifdef STACK_GROWS_DOWNWARD
+#if STACK_GROWS_DOWNWARD
   /* We need the pointer as the caller actually passed them to us, not
      as we might have pretended they were passed.  Make sure it's a valid
      operand, as emit_move_insn isn't expected to handle a PLUS.  */
@@ -1613,7 +1613,7 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
   /* Fetch the arg pointer from the ARGUMENTS block.  */
   incoming_args = gen_reg_rtx (Pmode);
   emit_move_insn (incoming_args, gen_rtx_MEM (Pmode, arguments));
-#ifndef STACK_GROWS_DOWNWARD
+#if !STACK_GROWS_DOWNWARD
   incoming_args = expand_simple_binop (Pmode, MINUS, incoming_args, argsize,
 				       incoming_args, 0, OPTAB_LIB_WIDEN);
 #endif
@@ -1646,7 +1646,7 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
     crtl->need_drap = true;
 
   dest = virtual_outgoing_args_rtx;
-#ifndef STACK_GROWS_DOWNWARD
+#if !STACK_GROWS_DOWNWARD
   if (CONST_INT_P (argsize))
     dest = plus_constant (Pmode, dest, -INTVAL (argsize));
   else

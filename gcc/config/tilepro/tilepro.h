@@ -221,7 +221,7 @@ enum reg_class
 
 /* Stack layout; function entry, exit and calling.  */
 
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 #define FRAME_GROWS_DOWNWARD 1
 #define STARTING_FRAME_OFFSET 0
 

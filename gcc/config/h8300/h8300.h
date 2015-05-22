@@ -360,7 +360,7 @@ enum reg_class {
 /* Define this if pushing a word on the stack
    makes the stack pointer a smaller address.  */
 
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 
 /* Define this to nonzero if the nominal address of the stack frame
    is at the high-address end of the local variables;

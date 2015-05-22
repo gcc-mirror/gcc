@@ -68,13 +68,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "lower-subreg.h"
 #include "rtl-iter.h"
 
-#ifdef STACK_GROWS_DOWNWARD
-# undef STACK_GROWS_DOWNWARD
-# define STACK_GROWS_DOWNWARD 1
-#else
-# define STACK_GROWS_DOWNWARD 0
-#endif
-
 
 /* Decompose multi-word pseudo-registers into individual
    pseudo-registers when possible and profitable.  This is possible

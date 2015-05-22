@@ -696,7 +696,7 @@ enum reg_class
 
 /* Stack Layout and Calling Conventions.  */
 
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 
 #define FRAME_GROWS_DOWNWARD 1
 

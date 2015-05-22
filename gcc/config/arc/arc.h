@@ -765,7 +765,7 @@ extern enum reg_class arc_regno_reg_class[];
 
 /* Define this macro if pushing a word onto the stack moves the stack
    pointer to a smaller address.  */
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 
 /* Define this if the nominal address of the stack frame
    is at the high-address end of the local variables;

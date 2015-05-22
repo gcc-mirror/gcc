@@ -415,7 +415,7 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 /* Define this if pushing a word on the stack
    makes the stack pointer a smaller address.  */
-#define STACK_GROWS_DOWNWARD  
+#define STACK_GROWS_DOWNWARD 1
 
 /* Offset within stack frame to start allocating local variables at.
    If FRAME_GROWS_DOWNWARD, this is the offset to the END of the

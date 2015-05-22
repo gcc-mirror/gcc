@@ -230,7 +230,7 @@ enum reg_class
 #define TRAMPOLINE_SIZE 20
 
 /* Stack layout.  */
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 #define STARTING_FRAME_OFFSET 0
 #define FIRST_PARM_OFFSET(FUNDECL) 0
 

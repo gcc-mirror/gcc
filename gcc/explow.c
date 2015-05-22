@@ -866,7 +866,7 @@ adjust_stack_1 (rtx adjust, bool anti_p)
   rtx temp;
   rtx_insn *insn;
 
-#ifndef STACK_GROWS_DOWNWARD
+#if !STACK_GROWS_DOWNWARD
   /* Hereafter anti_p means subtract_p.  */
   anti_p = !anti_p;
 #endif
@@ -1414,7 +1414,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
     {
       int saved_stack_pointer_delta;
 
-#ifndef STACK_GROWS_DOWNWARD
+#if !STACK_GROWS_DOWNWARD
       emit_move_insn (target, virtual_stack_dynamic_rtx);
 #endif
 
@@ -1423,7 +1423,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	{
 	  rtx available;
 	  rtx_code_label *space_available = gen_label_rtx ();
-#ifdef STACK_GROWS_DOWNWARD
+#if STACK_GROWS_DOWNWARD
 	  available = expand_binop (Pmode, sub_optab,
 				    stack_pointer_rtx, stack_limit_rtx,
 				    NULL_RTX, 1, OPTAB_WIDEN);
@@ -1456,7 +1456,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	 crtl->preferred_stack_boundary alignment.  */
       stack_pointer_delta = saved_stack_pointer_delta;
 
-#ifdef STACK_GROWS_DOWNWARD
+#if STACK_GROWS_DOWNWARD
       emit_move_insn (target, virtual_stack_dynamic_rtx);
 #endif
     }
@@ -1545,7 +1545,7 @@ emit_stack_probe (rtx address)
 
 #define PROBE_INTERVAL (1 << STACK_CHECK_PROBE_INTERVAL_EXP)
 
-#ifdef STACK_GROWS_DOWNWARD
+#if STACK_GROWS_DOWNWARD
 #define STACK_GROW_OP MINUS
 #define STACK_GROW_OPTAB sub_optab
 #define STACK_GROW_OFF(off) -(off)

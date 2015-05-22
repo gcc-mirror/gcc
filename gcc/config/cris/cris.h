@@ -620,7 +620,7 @@ enum reg_class
 
 /* Node: Frame Layout */
 
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 #define FRAME_GROWS_DOWNWARD 1
 
 /* It seems to be indicated in the code (at least 2.1) that this is

@@ -290,7 +290,7 @@ enum reg_class {
 
 #define STACK_PUSH_CODE POST_DEC
 
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 
 #define STARTING_FRAME_OFFSET avr_starting_frame_offset()
 
