@@ -1344,6 +1344,13 @@ package body Sem_Ch8 is
 
       Set_Is_Volatile (Id, Is_Volatile_Object (Nam));
 
+      --  Also copy settings of Is_Atomic and Is_Independent
+
+      if Is_Entity_Name (Nam) then
+         Set_Is_Atomic      (Id, Is_Atomic      (Entity (Nam)));
+         Set_Is_Independent (Id, Is_Independent (Entity (Nam)));
+      end if;
+
       --  Treat as volatile if we just set the Volatile flag
 
       if Is_Volatile (Id)

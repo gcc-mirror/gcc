@@ -2015,10 +2015,11 @@ package body Sem_Ch5 is
             --  mutable, to prevent a modification of the container in the
             --  course of an iteration.
 
-            if Is_Entity_Name (Iter_Name)
-              and then Nkind (Original_Node (Iter_Name)) = N_Selected_Component
+            --  Should comment on need to go to Original_Node ???
+
+            if Nkind (Original_Node (Iter_Name)) = N_Selected_Component
               and then Is_Dependent_Component_Of_Mutable_Object
-                         (Renamed_Object (Entity (Iter_Name)))
+                         (Original_Node (Iter_Name))
             then
                Error_Msg_N
                  ("container cannot be a discriminant-dependent "
@@ -2089,6 +2090,8 @@ package body Sem_Ch5 is
                declare
                   Element     : constant Entity_Id :=
                     Find_Value_Of_Aspect (Typ, Aspect_Iterator_Element);
+                  Iterator    : constant Entity_Id :=
+                    Find_Value_Of_Aspect (Typ, Aspect_Default_Iterator);
                   Cursor_Type : Entity_Id;
 
                begin
@@ -2119,6 +2122,39 @@ package body Sem_Ch5 is
 
                      if Has_Aspect (Typ, Aspect_Variable_Indexing) then
                         Set_Ekind (Def_Id, E_Variable);
+                     end if;
+
+                     --  If the container is a constant, iterating over it
+                     --  requires a Constant_Indexing operation.
+
+                     if not Is_Variable (Iter_Name)
+                       and then not Has_Aspect (Typ, Aspect_Constant_Indexing)
+                     then
+                        Error_Msg_N ("iteration over constant container "
+                          & "require constant_indexing aspect", N);
+
+                     --  The Iterate function may have an in_out parameter,
+                     --  and a constant container is thus illegal.
+
+                     elsif Present (Iterator)
+                       and then Ekind (Entity (Iterator)) = E_Function
+                       and then Ekind (First_Formal (Entity (Iterator))) /=
+                                  E_In_Parameter
+                       and then not Is_Variable (Iter_Name)
+                     then
+                        Error_Msg_N
+                          ("variable container expected", N);
+                     end if;
+
+                     if Nkind (Original_Node (Iter_Name))
+                        = N_Selected_Component
+                       and then
+                         Is_Dependent_Component_Of_Mutable_Object
+                           (Original_Node (Iter_Name))
+                     then
+                        Error_Msg_N
+                          ("container cannot be a discriminant-dependent "
+                           & "component of a mutable object", N);
                      end if;
                   end if;
                end;
@@ -2168,16 +2204,16 @@ package body Sem_Ch5 is
 
             if Nkind (Iter_Name) = N_Identifier then
                declare
-                  Iter_Kind : constant Node_Kind :=
-                                Nkind (Original_Node (Iter_Name));
+                  Orig_Node : constant Node_Id := Original_Node (Iter_Name);
+                  Iter_Kind : constant Node_Kind := Nkind (Orig_Node);
                   Obj       : Node_Id;
 
                begin
                   if Iter_Kind = N_Selected_Component then
-                     Obj := Prefix (Original_Node (Iter_Name));
+                     Obj  := Prefix (Orig_Node);
 
                   elsif Iter_Kind = N_Function_Call then
-                     Obj := First_Actual (Original_Node (Iter_Name));
+                     Obj  := First_Actual (Orig_Node);
 
                   --  If neither, the name comes from source
 

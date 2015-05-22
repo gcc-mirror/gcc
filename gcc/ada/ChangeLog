@@ -1,3 +1,23 @@
+2015-05-21  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb (Activate_Atomic_Synchronization): Do not set
+	Atomic_Sync_Required for an object renaming declaration.
+	* sem_ch8.adb (Analyze_Object_Renaming): Copy Is_Atomic and
+	Is_Independent to renaming object.
+
+2015-05-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Diagnose
+	various illegalities in iterators over arrays and containers:
+	a) New function Get_Cursor_Type, to verify that the cursor is
+	not a limited type at the point of iteration.
+	b) If the container is a constant, an element_iterator is illegal
+	if the container type does not have a Constant_Indexing aspect.
+	c) If the iterate function has an in-out controlling parameter,
+	the container cannot be a constant object.
+	d) Reject additional cases of iterators over a
+	discriminant-dependent component of a mutable object.
+
 2015-05-21  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb (Contract): This attribute now applies to constants.
