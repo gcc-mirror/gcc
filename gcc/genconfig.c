@@ -369,6 +369,8 @@ main (int argc, char **argv)
 
   if (have_peephole_flag)
     printf ("#define HAVE_peephole 1\n");
+  else
+    printf ("#define HAVE_peephole 0\n");
 
   if (have_peephole2_flag)
     {

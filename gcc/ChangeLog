@@ -1,5 +1,13 @@
 2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* final.c (final_scan_insn): Don't check HAVE_peephole with the
+	preprocessor.
+	* output.h: Likewise.
+	* genconfig.c (main): Alwways define HAVE_peephole.
+	* genpeep.c: Don't emit checks of HAVE_peephole.
+
+2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* combine.c, expmed.c, expr.c, optabs.c optabs.h, toplev.c: DOn't
 	check HAVE_conditional_move with the preprocessor.
 
