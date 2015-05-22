@@ -1,5 +1,11 @@
 2015-05-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* einfo.ads (Is_Atomic_Or_VFA): Move to XEINFO INLINES section.
+	* xeinfo.adb: Replace a-einfo.h with einfo.h throughout.
+	Add pattern to translate "or else" into "||".
+
+2015-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* einfo.ads (Has_Volatile_Full_Access): Rename into...
 	(Is_Volatile_Full_Access): ...this.
 	(Set_Has_Volatile_Full_Access): Rename into...

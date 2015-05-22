@@ -8313,6 +8313,7 @@ package Einfo is
    pragma Inline (Is_Assignable);
    pragma Inline (Is_Asynchronous);
    pragma Inline (Is_Atomic);
+   pragma Inline (Is_Atomic_Or_VFA);
    pragma Inline (Is_Bit_Packed_Array);
    pragma Inline (Is_Called);
    pragma Inline (Is_Character_Type);
@@ -9054,7 +9055,6 @@ package Einfo is
    --  be handled by xeinfo.
 
    pragma Inline (Base_Type);
-   pragma Inline (Is_Atomic_Or_VFA);
    pragma Inline (Is_Base_Type);
    pragma Inline (Is_Package_Or_Generic_Package);
    pragma Inline (Is_Packed_Array);
