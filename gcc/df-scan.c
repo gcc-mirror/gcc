@@ -3446,12 +3446,11 @@ df_get_regular_block_artificial_uses (bitmap regular_block_artificial_uses)
 	bitmap_set_bit (regular_block_artificial_uses,
 			HARD_FRAME_POINTER_REGNUM);
 
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
       /* Pseudos with argument area equivalences may require
 	 reloading via the argument pointer.  */
-      if (fixed_regs[ARG_POINTER_REGNUM])
+      if (FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	  && fixed_regs[ARG_POINTER_REGNUM])
 	bitmap_set_bit (regular_block_artificial_uses, ARG_POINTER_REGNUM);
-#endif
 
       /* Any constant, or pseudo with constant equivalences, may
 	 require reloading from memory using the pic register.  */
@@ -3498,10 +3497,9 @@ df_get_eh_block_artificial_uses (bitmap eh_block_artificial_uses)
 	    bitmap_set_bit (eh_block_artificial_uses,
 			    HARD_FRAME_POINTER_REGNUM);
 	}
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-      if (fixed_regs[ARG_POINTER_REGNUM])
+      if (FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	  && fixed_regs[ARG_POINTER_REGNUM])
 	bitmap_set_bit (eh_block_artificial_uses, ARG_POINTER_REGNUM);
-#endif
     }
 }
 
@@ -3579,12 +3577,11 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
   /* These registers are live everywhere.  */
   if (!reload_completed)
     {
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
       /* Pseudos with argument area equivalences may require
 	 reloading via the argument pointer.  */
-      if (fixed_regs[ARG_POINTER_REGNUM])
+      if (FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	  && fixed_regs[ARG_POINTER_REGNUM])
 	bitmap_set_bit (entry_block_defs, ARG_POINTER_REGNUM);
-#endif
 
       /* Any constant, or pseudo with constant equivalences, may
 	 require reloading from memory using the pic register.  */
@@ -3781,16 +3778,15 @@ df_exit_block_uses_collect (struct df_collection_rec *collection_rec, bitmap exi
     df_ref_record (DF_REF_ARTIFICIAL, collection_rec, regno_reg_rtx[i], NULL,
 		   EXIT_BLOCK_PTR_FOR_FN (cfun), NULL, DF_REF_REG_USE, 0);
 
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
   /* It is deliberate that this is not put in the exit block uses but
      I do not know why.  */
-  if (reload_completed
+  if (FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+      && reload_completed
       && !bitmap_bit_p (exit_block_uses, ARG_POINTER_REGNUM)
       && bb_has_eh_pred (EXIT_BLOCK_PTR_FOR_FN (cfun))
       && fixed_regs[ARG_POINTER_REGNUM])
     df_ref_record (DF_REF_ARTIFICIAL, collection_rec, regno_reg_rtx[ARG_POINTER_REGNUM], NULL,
 		   EXIT_BLOCK_PTR_FOR_FN (cfun), NULL, DF_REF_REG_USE, 0);
-#endif
 
   df_canonize_collection_rec (collection_rec);
 }

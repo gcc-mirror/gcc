@@ -5184,9 +5184,8 @@ find_reloads_address (machine_mode mode, rtx *memrefloc, rtx ad,
 #if !HARD_FRAME_POINTER_IS_FRAME_POINTER
 	   || operand == hard_frame_pointer_rtx
 #endif
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-	   || operand == arg_pointer_rtx
-#endif
+	   || (FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	       && operand == arg_pointer_rtx)
 	   || operand == stack_pointer_rtx)
 	  && ! maybe_memory_address_addr_space_p
 		(mode, ad, as, &XEXP (XEXP (ad, 0), 1 - op_index)))

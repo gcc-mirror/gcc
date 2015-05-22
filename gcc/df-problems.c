@@ -933,12 +933,11 @@ df_lr_local_compute (bitmap all_blocks ATTRIBUTE_UNUSED)
 	 reference of the frame pointer.  */
       bitmap_set_bit (&df->hardware_regs_used, FRAME_POINTER_REGNUM);
 
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
       /* Pseudos with argument area equivalences may require
 	 reloading via the argument pointer.  */
-      if (fixed_regs[ARG_POINTER_REGNUM])
+      if (FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	  && fixed_regs[ARG_POINTER_REGNUM])
 	bitmap_set_bit (&df->hardware_regs_used, ARG_POINTER_REGNUM);
-#endif
 
       /* Any constant, or pseudo with constant equivalences, may
 	 require reloading from memory using the pic register.  */

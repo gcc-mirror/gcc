@@ -739,8 +739,9 @@ gen_rtx_REG (machine_mode mode, unsigned int regno)
 	  && regno == HARD_FRAME_POINTER_REGNUM
 	  && (!reload_completed || frame_pointer_needed))
 	return hard_frame_pointer_rtx;
-#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM && !HARD_FRAME_POINTER_IS_ARG_POINTER
-      if (regno == ARG_POINTER_REGNUM)
+#if !HARD_FRAME_POINTER_IS_ARG_POINTER
+      if (FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	  && regno == ARG_POINTER_REGNUM)
 	return arg_pointer_rtx;
 #endif
 #ifdef RETURN_ADDRESS_POINTER_REGNUM

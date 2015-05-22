@@ -1,5 +1,11 @@
 2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* combine.c, df-problems.c, df-scan.c, emit-rtl.c, reginfo.c,
+	reload.c, rtlanal.c: Remove comparison of ARG_FRAME_POINTER_REGNUM
+	and FRAME_POINTER_REGNUM with the preprocessor.
+
+2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* defaults.h: Add default for STACK_PUSH_CODE.
 	* expr.c: Don't redefine STACK_PUSH_CODE.
 	* recog.c: Likewise.
