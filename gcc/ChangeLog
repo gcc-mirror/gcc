@@ -1,3 +1,9 @@
+2015-05-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_new_rtx_costs): Handle UNSPEC_VOLATILE.
+	(arm_unspec_cost): Allow UNSPEC_VOLATILE.  Do not recurse inside
+	unknown unspecs.
+
 2015-05-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66251

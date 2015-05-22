@@ -9253,7 +9253,8 @@ static bool
 arm_unspec_cost (rtx x, enum rtx_code /* outer_code */, bool speed_p, int *cost)
 {
   const struct cpu_cost_table *extra_cost = current_tune->insn_extra_cost;
-  gcc_assert (GET_CODE (x) == UNSPEC);
+  rtx_code code = GET_CODE (x);
+  gcc_assert (code == UNSPEC || code == UNSPEC_VOLATILE);
 
   switch (XINT (x, 1))
     {
@@ -9299,7 +9300,7 @@ arm_unspec_cost (rtx x, enum rtx_code /* outer_code */, bool speed_p, int *cost)
       *cost = COSTS_N_INSNS (2);
       break;
     }
-  return false;
+  return true;
 }
 
 /* Cost of a libcall.  We assume one insn per argument, an amount for the
@@ -10855,6 +10856,7 @@ arm_new_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
       *cost = LIBCALL_COST (1);
       return false;
 
+    case UNSPEC_VOLATILE:
     case UNSPEC:
       return arm_unspec_cost (x, outer_code, speed_p, cost);
 
