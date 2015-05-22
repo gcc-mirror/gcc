@@ -2406,7 +2406,7 @@ package body Exp_Ch7 is
                   --  Primitive Initialize
 
                   if Is_Controlled (Typ) then
-                     Prim_Init := Find_Prim_Op (Typ, Name_Initialize);
+                     Prim_Init := Find_Optional_Prim_Op (Typ, Name_Initialize);
 
                      if Present (Prim_Init) then
                         Prim_Init := Ultimate_Alias (Prim_Init);
@@ -3671,7 +3671,7 @@ package body Exp_Ch7 is
          --  is from a private type that is not visibly controlled.
 
          Parent_Type := Etype (Typ);
-         Op := Find_Prim_Op (Parent_Type, Name_Of (Prim));
+         Op := Find_Optional_Prim_Op (Parent_Type, Name_Of (Prim));
 
          if Present (Op) then
             E := Op;
@@ -5104,7 +5104,7 @@ package body Exp_Ch7 is
       if Skip_Self then
          if Has_Controlled_Component (Utyp) then
             if Is_Tagged_Type (Utyp) then
-               Adj_Id := Find_Prim_Op (Utyp, TSS_Deep_Adjust);
+               Adj_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Adjust);
             else
                Adj_Id := TSS (Utyp, TSS_Deep_Adjust);
             end if;
@@ -5117,7 +5117,7 @@ package body Exp_Ch7 is
         or else Has_Controlled_Component (Utyp)
       then
          if Is_Tagged_Type (Utyp) then
-            Adj_Id := Find_Prim_Op (Utyp, TSS_Deep_Adjust);
+            Adj_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Adjust);
          else
             Adj_Id := TSS (Utyp, TSS_Deep_Adjust);
          end if;
@@ -5126,15 +5126,15 @@ package body Exp_Ch7 is
 
       elsif Is_Controlled (Utyp) then
          if Has_Controlled_Component (Utyp) then
-            Adj_Id := Find_Prim_Op (Utyp, TSS_Deep_Adjust);
+            Adj_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Adjust);
          else
-            Adj_Id := Find_Prim_Op (Utyp, Name_Of (Adjust_Case));
+            Adj_Id := Find_Optional_Prim_Op (Utyp, Name_Of (Adjust_Case));
          end if;
 
       --  Tagged types
 
       elsif Is_Tagged_Type (Utyp) then
-         Adj_Id := Find_Prim_Op (Utyp, TSS_Deep_Adjust);
+         Adj_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Adjust);
 
       else
          raise Program_Error;
@@ -6491,7 +6491,7 @@ package body Exp_Ch7 is
                Proc     : Entity_Id;
 
             begin
-               Proc := Find_Prim_Op (Typ, Name_Adjust);
+               Proc := Find_Optional_Prim_Op (Typ, Name_Adjust);
 
                --  Generate:
                --    if F then
@@ -7065,7 +7065,7 @@ package body Exp_Ch7 is
                Proc     : Entity_Id;
 
             begin
-               Proc := Find_Prim_Op (Typ, Name_Finalize);
+               Proc := Find_Optional_Prim_Op (Typ, Name_Finalize);
 
                --  Generate:
                --    if F then
@@ -7336,7 +7336,7 @@ package body Exp_Ch7 is
       if Skip_Self then
          if Has_Controlled_Component (Utyp) then
             if Is_Tagged_Type (Utyp) then
-               Fin_Id := Find_Prim_Op (Utyp, TSS_Deep_Finalize);
+               Fin_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Finalize);
             else
                Fin_Id := TSS (Utyp, TSS_Deep_Finalize);
             end if;
@@ -7349,7 +7349,7 @@ package body Exp_Ch7 is
         or else Has_Controlled_Component (Utyp)
       then
          if Is_Tagged_Type (Utyp) then
-            Fin_Id := Find_Prim_Op (Utyp, TSS_Deep_Finalize);
+            Fin_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Finalize);
          else
             Fin_Id := TSS (Utyp, TSS_Deep_Finalize);
          end if;
@@ -7358,15 +7358,15 @@ package body Exp_Ch7 is
 
       elsif Is_Controlled (Utyp) then
          if Has_Controlled_Component (Utyp) then
-            Fin_Id := Find_Prim_Op (Utyp, TSS_Deep_Finalize);
+            Fin_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Finalize);
          else
-            Fin_Id := Find_Prim_Op (Utyp, Name_Of (Finalize_Case));
+            Fin_Id := Find_Optional_Prim_Op (Utyp, Name_Of (Finalize_Case));
          end if;
 
       --  Tagged types
 
       elsif Is_Tagged_Type (Utyp) then
-         Fin_Id := Find_Prim_Op (Utyp, TSS_Deep_Finalize);
+         Fin_Id := Find_Optional_Prim_Op (Utyp, TSS_Deep_Finalize);
 
       else
          raise Program_Error;

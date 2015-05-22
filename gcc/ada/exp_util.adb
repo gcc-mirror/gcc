@@ -2624,11 +2624,13 @@ package body Exp_Util is
       end if;
    end Find_Interface_Tag;
 
-   ------------------
-   -- Find_Prim_Op --
-   ------------------
+   ---------------------------
+   -- Find_Optional_Prim_Op --
+   ---------------------------
 
-   function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id is
+   function Find_Optional_Prim_Op
+     (T : Entity_Id; Name : Name_Id) return Entity_Id
+   is
       Prim : Elmt_Id;
       Typ  : Entity_Id := T;
       Op   : Entity_Id;
@@ -2657,25 +2659,16 @@ package body Exp_Util is
                or else Etype (First_Formal (Op)) = Etype (Last_Formal (Op)));
 
          Next_Elmt (Prim);
-
-         --  Raise Program_Error if no primitive found. ???This doesn't work as
-         --  advertised if there are no primitives. But fixing that breaks
-         --  Is_Init_Proc_Of in Exp_Ch7, which is expecting Empty in some
-         --  cases.
-
-         if No (Prim) then
-            raise Program_Error;
-         end if;
       end loop;
 
-      return Node (Prim);
-   end Find_Prim_Op;
+      return Node (Prim); -- Empty if not found
+   end Find_Optional_Prim_Op;
 
-   ------------------
-   -- Find_Prim_Op --
-   ------------------
+   ---------------------------
+   -- Find_Optional_Prim_Op --
+   ---------------------------
 
-   function Find_Prim_Op
+   function Find_Optional_Prim_Op
      (T    : Entity_Id;
       Name : TSS_Name_Type) return Entity_Id
    is
@@ -2715,8 +2708,41 @@ package body Exp_Util is
       elsif Present (Inher_Op) then
          return Inher_Op;
       else
+         return Empty;
+      end if;
+   end Find_Optional_Prim_Op;
+
+   ------------------
+   -- Find_Prim_Op --
+   ------------------
+
+   function Find_Prim_Op
+     (T : Entity_Id; Name : Name_Id) return Entity_Id
+   is
+      Result : constant Entity_Id := Find_Optional_Prim_Op (T, Name);
+   begin
+      if No (Result) then
          raise Program_Error;
       end if;
+
+      return Result;
+   end Find_Prim_Op;
+
+   ------------------
+   -- Find_Prim_Op --
+   ------------------
+
+   function Find_Prim_Op
+     (T    : Entity_Id;
+      Name : TSS_Name_Type) return Entity_Id
+   is
+      Result : constant Entity_Id := Find_Optional_Prim_Op (T, Name);
+   begin
+      if No (Result) then
+         raise Program_Error;
+      end if;
+
+      return Result;
    end Find_Prim_Op;
 
    ----------------------------

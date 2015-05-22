@@ -11388,7 +11388,7 @@ package body Sem_Util is
                if Present (Utyp) then
                   declare
                      Init : constant Entity_Id :=
-                              (Find_Prim_Op
+                              (Find_Optional_Prim_Op
                                  (Underlying_Type (Typ), Name_Initialize));
 
                   begin

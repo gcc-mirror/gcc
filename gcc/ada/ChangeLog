@@ -1,3 +1,15 @@
+2015-05-22  Bob Duff  <duff@adacore.com>
+
+	* exp_utils.ads, exp_utils.adb (Find_Optional_Prim_Op): New
+	interface to return Empty when not found, so we can avoid handling
+	Program_Error in that case.
+	(Find_Prim_Op): Fix latent bug: raise Program_Error when there are no
+	primitives.
+	* exp_ch7.adb, sem_util.adb: Use Find_Optional_Prim_Op when the
+	code is expecting Empty.
+	* sem_ch8.adb: Use Find_Optional_Prim_Op to avoid handling
+	Program_Error.
+
 2015-05-22  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, sem_intr.adb, exp_ch4.adb, s-rannum.adb,
