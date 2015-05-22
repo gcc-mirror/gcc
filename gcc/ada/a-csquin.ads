@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2011, Free Software Foundation, Inc.            --
+--          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -41,25 +41,13 @@ package Ada.Containers.Synchronized_Queue_Interfaces is
 
    procedure Enqueue
      (Container : in out Queue;
-      New_Item  : Element_Type) is abstract;
-
-   --  ???
-   --  This is the official Ada 2012 syntax:
-   --  with Synchronization => By_Entry;
-
-   --  This is the temporary work-around:
-   pragma Implemented (Enqueue, By_Entry);
+      New_Item  : Element_Type) is abstract
+   with Synchronization => By_Entry;
 
    procedure Dequeue
      (Container : in out Queue;
-      Element   : out Element_Type) is abstract;
-
-   --  ???
-   --  This is the official Ada 2012 syntax:
-   --  with Synchronization => By_Entry;
-
-   --  This is the temporary work-around:
-   pragma Implemented (Dequeue, By_Entry);
+      Element   : out Element_Type) is abstract
+   with Synchronization => By_Entry;
 
    function Current_Use (Container : Queue) return Count_Type is abstract;
 

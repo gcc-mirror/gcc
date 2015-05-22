@@ -1,3 +1,38 @@
+2015-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Copy
+	Has_Volatile_Full_Access from renamed to renaming entities.
+	* sem_prag.adb (Process_Atomic_Independent_Shared_Volatile):
+	Tidy up and remove redundant setting of Has_Volatile_Full_Access.
+
+2015-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* ghost.adb (Check_Ghost_Completion): Update references to SPARK
+	RM 6.9 rules.
+	(Check_Ghost_Policy): Update references to SPARK RM 6.9 rules.
+	* sem_ch3.adb (Analyze_Object_Declaration): Update references
+	to SPARK RM 6.9 rules.
+	(Check_Completion): Ghost entities do not require a special form of
+	completion.
+	* sem_ch6.adb (Analyze_Generic_Subprogram_Body): Update references
+	to SPARK RM 6.9 rules.
+	(Analyze_Subprogram_Body_Helper): Update references to SPARK RM 6.9
+	rules.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Update references
+	to SPARK RM 6.9 rules.
+	(Requires_Completion_In_Body): Ghost entities do not require a special
+	form of completion.
+
+2015-05-22  Robert Dewar  <dewar@adacore.com>
+
+	* a-csquin.ads: Use Ada 2012 notation.
+	* sem_ch8.adb: Minor reformatting.
+
+2015-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Aspect Import
+	acts as a completion.
+
 2015-05-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb: Minor reformatting.

@@ -5910,6 +5910,9 @@ package body Sem_Prag is
                Check_First_Subtype (Arg1);
             end if;
 
+            --  Attribute belongs on the base type. If the view of the type is
+            --  currently private, it also belongs on the underlying type.
+
             if Prag_Id = Pragma_Atomic
                  or else
                Prag_Id = Pragma_Shared
@@ -5917,31 +5920,26 @@ package body Sem_Prag is
                Prag_Id = Pragma_Volatile_Full_Access
             then
                Set_Atomic_Full (E);
-               Set_Atomic_Full (Underlying_Type (E));
                Set_Atomic_Full (Base_Type (E));
+               Set_Atomic_Full (Underlying_Type (E));
             end if;
 
             --  Atomic/Shared/Volatile_Full_Access imply Independent
 
             if Prag_Id /= Pragma_Volatile then
                Set_Is_Independent (E);
-               Set_Is_Independent (Underlying_Type (E));
                Set_Is_Independent (Base_Type (E));
+               Set_Is_Independent (Underlying_Type (E));
 
                if Prag_Id = Pragma_Independent then
                   Record_Independence_Check (N, Base_Type (E));
                end if;
             end if;
 
-            --  Attribute belongs on the base type. If the view of the type is
-            --  currently private, it also belongs on the underlying type.
+            --  Atomic/Shared/Volatile_Full_Access imply Volatile
 
             if Prag_Id /= Pragma_Independent then
-               if Prag_Id = Pragma_Volatile_Full_Access then
-                  Set_Has_Volatile_Full_Access (Base_Type (E));
-                  Set_Has_Volatile_Full_Access (Underlying_Type (E));
-               end if;
-
+               Set_Is_Volatile (E);
                Set_Is_Volatile (Base_Type (E));
                Set_Is_Volatile (Underlying_Type (E));
 
@@ -5994,8 +5992,8 @@ package body Sem_Prag is
                --  treated as atomic, thus incurring a potentially costly
                --  synchronization operation for every access.
 
-               --  For Volatile_Full_Access we can do this for elementary
-               --  types too, since there is no issue of atomic sync.
+               --  For Volatile_Full_Access we can do this for elementary types
+               --  too, since there is no issue of atomic synchronization.
 
                --  Of course it would be best if the back end could just adjust
                --  the alignment etc for the specific object, but that's not
@@ -6010,19 +6008,17 @@ package body Sem_Prag is
                  and then Sloc (Utyp) > No_Location
                  and then
                    Get_Source_File_Index (Sloc (E)) =
-                   Get_Source_File_Index (Sloc (Underlying_Type (Etype (E))))
+                                            Get_Source_File_Index (Sloc (Utyp))
                then
                   if Prag_Id = Pragma_Volatile_Full_Access then
-                     Set_Has_Volatile_Full_Access
-                       (Underlying_Type (Etype (E)));
+                     Set_Has_Volatile_Full_Access (Utyp);
                   else
-                     Set_Is_Atomic
-                       (Underlying_Type (Etype (E)));
+                     Set_Is_Atomic (Utyp);
                   end if;
                end if;
             end if;
 
-            --  Atomic/Shared imply both Independent and Volatile
+            --  Atomic/Shared/Volatile_Full_Access imply Independent
 
             if Prag_Id /= Pragma_Volatile then
                Set_Is_Independent (E);
@@ -6031,6 +6027,8 @@ package body Sem_Prag is
                   Record_Independence_Check (N, E);
                end if;
             end if;
+
+            --  Atomic/Shared/Volatile_Full_Access imply Volatile
 
             if Prag_Id /= Pragma_Independent then
                Set_Is_Volatile (E);
