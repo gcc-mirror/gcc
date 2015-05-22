@@ -3893,8 +3893,8 @@ package body Sem_Ch13 is
                  ("indexing function must have at least two parameters");
                return;
 
-            --  For a derived type, check that no indexing aspect is
-            --  specified for the type if it is also inherited
+            --  For a derived type, check that no indexing aspect is specified
+            --  for the type if it is also inherited
 
             elsif Is_Derived_Type (Ent) then
                declare
@@ -3904,8 +3904,7 @@ package body Sem_Ch13 is
                   if Attr = Name_Constant_Indexing then
                      Inherited :=
                        Find_Aspect (Etype (Ent), Aspect_Constant_Indexing);
-
-                  elsif Attr = Name_Variable_Indexing then
+                  else pragma Assert (Attr = Name_Variable_Indexing);
                      Inherited :=
                         Find_Aspect (Etype (Ent), Aspect_Variable_Indexing);
                   end if;
@@ -3914,15 +3913,15 @@ package body Sem_Ch13 is
                      if Debug_Flag_Dot_XX then
                         null;
 
-                     --  Indicate the operation that must be overridden,
-                     --  rather than redefining the indexing aspect
+                     --  Indicate the operation that must be overridden, rather
+                     --  than redefining the indexing aspect
 
                      else
                         Illegal_Indexing
                           ("indexing function already inherited "
                            & "from parent type");
                         Error_Msg_NE
-                          ("!override& instead",
+                          ("!override & instead",
                            N, Entity (Expression (Inherited)));
                         return;
                      end if;
