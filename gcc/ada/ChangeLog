@@ -1,3 +1,8 @@
+2015-05-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnatvsn.ads: Minor code reorg to remember more easily to update
+	variables.
+
 2015-05-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch10.adb (Analyze_With_Clause): In ASIS_Mode, a
