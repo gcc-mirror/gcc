@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -116,12 +116,6 @@ package Osint.C is
    --  information file for the main source file being compiled. See section
    --  above for a discussion of how library information files are stored.
 
-   procedure Set_Library_Info_Name;
-   --  Sets a default ALI file name from the main compiler source name. Used by
-   --  Create_Output_Library_Info, and by the version of Read_Library_Info that
-   --  takes a default file name. The name is in Name_Buffer (with length in
-   --  Name_Len) on return from the call.
-
    procedure Create_Output_Library_Info;
    --  Creates the output library information file for the source file which
    --  is currently being compiled (i.e. the file which was most recently
@@ -154,6 +148,34 @@ package Osint.C is
    --  ALI file exists, then its file name is returned in Name, and its
    --  text is returned in Text. If the file does not exist, then Text is
    --  set to null.
+
+   --------------------------
+   -- C Translation Output --
+   --------------------------
+
+   --  These routines are used by the compiler when the C translation option
+   --  is activated to write *.c and *.h files to the current object directory.
+   --  Each routine exists in a C and an H form for the two kinds of files.
+   --  Only one of these files can be written at a time.
+
+   procedure Create_C_File;
+   procedure Create_H_File;
+   --  Creates the *.c or *.h file for the source file which is currently
+   --  being compiled (i.e. the file which was most recently returned by
+   --  Next_Main_Source).
+
+   procedure Write_C_File_Info (Info : String);
+   procedure Write_H_File_Info (Info : String);
+   --  Writes the contents of the referenced string to the *.c or *.h file for
+   --  the main source file currently being compiled (i.e. the file which was
+   --  most recently opened with a call to Read_Next_File). Info represents
+   --  a line in the file with a line termination character at the end (which
+   --  is not present in the info string).
+
+   procedure Close_C_File;
+   procedure Close_H_File;
+   --  Closes the file created by Create_C_File or Create_H file, flushing any
+   --  buffers etc. from writes by Write_C_File and Write_H_File;
 
    ----------------------
    -- List File Output --

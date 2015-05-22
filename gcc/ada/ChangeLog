@@ -1,5 +1,19 @@
 2015-05-22  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch3.adb, sem_intr.adb, exp_ch4.adb, s-rannum.adb,
+	sem_eval.adb, s-fatgen.adb, s-expmod.ads: Remove incorrect hyphen in
+	non-binary.
+	* exp_util.adb: Add comment.
+	* osint-c.ads, osint-c.adb (Set_Library_Info_Name): Move from spec to
+	body.
+	(Set_File_Name): New name for the above.
+	(Create_C_File, Create_H_File, Write_C_File_Info, Write_H_File_Info,
+	Close_C_File, Close_H_File): New procedure.
+	* osint.adb: Minor reformatting.
+	* osint.ads: Minor comment updates.
+
+2015-05-22  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch4.adb: Minor rewording.
 	* exp_util.ads: Clarify that Find_Prim_Op is only for
 	tagged types.

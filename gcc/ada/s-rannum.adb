@@ -241,7 +241,7 @@ is
       --  integers. Assuming that Real'Machine_Radix = 2, it can deliver all
       --  machine values of type Real (as implied by Real'Machine_Mantissa and
       --  Real'Machine_Emin), which is not true of the standard method (to
-      --  which we fall back for non-binary radix): computing Real(<random
+      --  which we fall back for nonbinary radix): computing Real(<random
       --  integer>) / (<max random integer>+1). To do so, we first extract an
       --  (M-1)-bit significand (where M is Real'Machine_Mantissa), and then
       --  decide on a normalized exponent by repeated coin flips, decrementing

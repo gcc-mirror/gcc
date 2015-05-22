@@ -18490,7 +18490,7 @@ package body Sem_Ch3 is
             Set_Modular_Size (Bits);
             return;
 
-         --  Non-binary case
+         --  Nonbinary case
 
          elsif M_Val < 2 ** Bits then
             Check_SPARK_05_Restriction ("modulus should be a power of 2", T);
@@ -18505,7 +18505,7 @@ package body Sem_Ch3 is
                return;
 
             else
-               --  In the non-binary case, set size as per RM 13.3(55)
+               --  In the nonbinary case, set size as per RM 13.3(55)
 
                Set_Modular_Size (Bits);
                return;

@@ -177,7 +177,7 @@ package body Sem_Eval is
    function From_Bits (B : Bits; T : Entity_Id) return Uint;
    --  Converts a bit string of length B'Length to a Uint value to be used for
    --  a target of type T, which is a modular type. This procedure includes the
-   --  necessary reduction by the modulus in the case of a non-binary modulus
+   --  necessary reduction by the modulus in the case of a nonbinary modulus
    --  (for a binary modulus, the bit string is the right length any way so all
    --  is well).
 
@@ -2936,7 +2936,7 @@ package body Sem_Eval is
       begin
          --  Negation is equivalent to subtracting from the modulus minus one.
          --  For a binary modulus this is equivalent to the ones-complement of
-         --  the original value. For non-binary modulus this is an arbitrary
+         --  the original value. For a nonbinary modulus this is an arbitrary
          --  but consistent definition.
 
          if Is_Modular_Integer_Type (Typ) then
