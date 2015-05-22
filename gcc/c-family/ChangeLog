@@ -3,12 +3,12 @@
 	PR c/47043
 	* c-common.c (handle_deprecated_attribute): Allow CONST_DECL.
 
-2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+2015-05-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Use if instead of #if with
 	STACK_GROWS_DOWNWARD.
 
-2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+2015-05-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Check the value of
 	STACK_GROWS_DOWNWARD rather than if it is defined.

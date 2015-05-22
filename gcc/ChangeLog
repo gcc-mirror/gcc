@@ -62,7 +62,7 @@
 	(vmull_p64): Likewise.
 	(vmull_high_p64): Likewise.
 
-2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+2015-05-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* final.c (final_scan_insn): Don't check HAVE_peephole with the
 	preprocessor.
@@ -70,37 +70,37 @@
 	* genconfig.c (main): Alwways define HAVE_peephole.
 	* genpeep.c: Don't emit checks of HAVE_peephole.
 
-2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+2015-05-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* combine.c, expmed.c, expr.c, optabs.c optabs.h, toplev.c: DOn't
 	check HAVE_conditional_move with the preprocessor.
 
-2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+2015-05-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* genconfig.c (main): Always define HAVE_conditional_move.
 	* combine.c, expmed.c, expr.c, ifcvt.c, optabs.c, optabs.h,
 	toplev.c, tree-ssa-phiopt.c: Don't check if HAVE_conditional_move
 	is defined.
 
-2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+2015-05-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* combine.c, df-problems.c, df-scan.c, emit-rtl.c, reginfo.c,
 	reload.c, rtlanal.c: Remove comparison of ARG_FRAME_POINTER_REGNUM
 	and FRAME_POINTER_REGNUM with the preprocessor.
 
-2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+2015-05-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* defaults.h: Add default for STACK_PUSH_CODE.
 	* expr.c: Don't redefine STACK_PUSH_CODE.
 	* recog.c: Likewise.
 
-2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+2015-05-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* builtins.c, dwarf2cfi.c, explow.c, expr.c, recog.c,
 	sched-deps.c: Use if instead of preprocessor checks with
 	STACK_GROWS_DOWNWARD.
 
-2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+2015-05-21  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* *.c: Check the value of STACK_GROWS_DOWNWARD rather than if it
 	is defined.
