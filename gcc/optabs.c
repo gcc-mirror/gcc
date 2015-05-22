@@ -929,7 +929,6 @@ expand_subword_shift (machine_mode op1_mode, optab binoptab,
 }
 
 
-#if HAVE_conditional_move
 /* Try implementing expand_doubleword_shift using conditional moves.
    The shift is by < BITS_PER_WORD if (CMP_CODE CMP1 CMP2) is true,
    otherwise it is by >= BITS_PER_WORD.  SUBWORD_OP1 and SUPERWORD_OP1
@@ -989,7 +988,6 @@ expand_doubleword_shift_condmove (machine_mode op1_mode, optab binoptab,
 
   return true;
 }
-#endif
 
 /* Expand a doubleword shift (ashl, ashr or lshr) using word-mode shifts.
    OUTOF_INPUT and INTO_INPUT are the two word-sized halves of the first
@@ -1096,20 +1094,19 @@ expand_doubleword_shift (machine_mode op1_mode, optab binoptab,
 				     unsignedp, methods, shift_mask);
     }
 
-#if HAVE_conditional_move
   /* Try using conditional moves to generate straight-line code.  */
-  {
-    rtx_insn *start = get_last_insn ();
-    if (expand_doubleword_shift_condmove (op1_mode, binoptab,
-					  cmp_code, cmp1, cmp2,
-					  outof_input, into_input,
-					  op1, superword_op1,
-					  outof_target, into_target,
-					  unsignedp, methods, shift_mask))
-      return true;
-    delete_insns_since (start);
-  }
-#endif
+  if (HAVE_conditional_move)
+    {
+      rtx_insn *start = get_last_insn ();
+      if (expand_doubleword_shift_condmove (op1_mode, binoptab,
+					    cmp_code, cmp1, cmp2,
+					    outof_input, into_input,
+					    op1, superword_op1,
+					    outof_target, into_target,
+					    unsignedp, methods, shift_mask))
+	return true;
+      delete_insns_since (start);
+    }
 
   /* As a last resort, use branches to select the correct alternative.  */
   rtx_code_label *subword_label = gen_label_rtx ();
@@ -4518,7 +4515,6 @@ emit_indirect_jump (rtx loc ATTRIBUTE_UNUSED)
 #endif
 }
 
-#if HAVE_conditional_move
 
 /* Emit a conditional move instruction if the machine supports one for that
    condition and machine mode.
@@ -4635,8 +4631,6 @@ can_conditionally_move_p (machine_mode mode)
 
   return 0;
 }
-
-#endif /* HAVE_conditional_move */
 
 /* Emit a conditional addition instruction if the machine supports one for that
    condition and machine mode.
