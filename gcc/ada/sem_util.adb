@@ -9317,6 +9317,18 @@ package body Sem_Util is
       end if;
    end Has_Tagged_Component;
 
+   ------------------------
+   -- Has_Variable_Input --
+   ------------------------
+
+   function Has_Variable_Input (Const_Id : Entity_Id) return Boolean is
+      Expr : constant Node_Id := Expression (Declaration_Node (Const_Id));
+
+   begin
+      return
+        Present (Expr) and then not Compile_Time_Known_Value_Or_Aggr (Expr);
+   end Has_Variable_Input;
+
    ----------------------------
    -- Has_Volatile_Component --
    ----------------------------

@@ -1,11 +1,28 @@
-2015-05-21  Robert Dewar  <dewar@adacore.com>
+2015-05-22  Robert Dewar  <dewar@adacore.com>
+
+	* a-reatim.ads: Add Compile_Time_Error to ensure Duration
+	is 64-bits.
+	* sem_ch13.adb: Improve error message.
+	* exp_ch4.adb: Minor reformatting.
+
+2015-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Constants without variable
+	input do not require indicator Part_Of.
+	(Check_Missing_Part_Of): Constants without variable input do not
+	requrie indicator Part_Of.
+	(Collect_Visible_States): Constants without variable input are
+	not part of the hidden state of a package.
+	* sem_util.ads, sem_util.adb (Has_Variable_Input): New routine.
+
+2015-05-22  Robert Dewar  <dewar@adacore.com>
 
 	* exp_util.adb (Activate_Atomic_Synchronization): Do not set
 	Atomic_Sync_Required for an object renaming declaration.
 	* sem_ch8.adb (Analyze_Object_Renaming): Copy Is_Atomic and
 	Is_Independent to renaming object.
 
-2015-05-21  Ed Schonberg  <schonberg@adacore.com>
+2015-05-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch5.adb (Analyze_Iterator_Specification): Diagnose
 	various illegalities in iterators over arrays and containers:

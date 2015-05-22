@@ -7688,12 +7688,13 @@ package body Exp_Ch4 is
 
             begin
                if (Nkind (P) = N_Op_Multiply
-                   and then not Non_Binary_Modulus (Typ)
-                   and then
-                     ((Is_Integer_Type (Etype (L)) and then R = N)
-                         or else
-                      (Is_Integer_Type (Etype (R)) and then L = N))
-                   and then not Do_Overflow_Check (P))
+                    and then not Non_Binary_Modulus (Typ)
+                    and then
+                      ((Is_Integer_Type (Etype (L)) and then R = N)
+                          or else
+                       (Is_Integer_Type (Etype (R)) and then L = N))
+                    and then not Do_Overflow_Check (P))
+
                  or else
                   (Nkind (P) = N_Op_Divide
                     and then Is_Integer_Type (Etype (L))
@@ -7706,7 +7707,7 @@ package body Exp_Ch4 is
                end if;
             end;
 
-         --  Now the other cases
+         --  Now the other cases where we convert to 1 * (2 ** K)
 
          elsif not Non_Binary_Modulus (Typ) then
             Rewrite (N,

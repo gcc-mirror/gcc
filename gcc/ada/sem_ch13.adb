@@ -3890,28 +3890,42 @@ package body Sem_Ch13 is
 
             elsif No (Next_Formal (First_Formal (Subp))) then
                Illegal_Indexing
-                  ("indexing function must have at least two parameters");
+                 ("indexing function must have at least two parameters");
                return;
 
             elsif Is_Derived_Type (Ent) then
-               if (Attr = Name_Constant_Indexing
-                    and then Present
-                      (Find_Aspect (Etype (Ent), Aspect_Constant_Indexing)))
-                 or else
-                   (Attr = Name_Variable_Indexing
-                     and then Present
-                       (Find_Aspect (Etype (Ent), Aspect_Variable_Indexing)))
-               then
-                  if Debug_Flag_Dot_XX then
-                     null;
+               declare
+                  Inherited : Node_Id;
 
-                  else
-                     Illegal_Indexing
-                        ("indexing function already inherited "
-                          & "from parent type");
-                     return;
+               begin
+                  if Attr = Name_Constant_Indexing then
+                     Inherited :=
+                       Find_Aspect (Etype (Ent), Aspect_Constant_Indexing);
+                  elsif Attr = Name_Variable_Indexing then
+                     Inherited :=
+                        Find_Aspect (Etype (Ent), Aspect_Variable_Indexing);
                   end if;
-               end if;
+
+                  --  What if neither branch taken above ???
+
+                  if Present (Inherited) then
+                     if Debug_Flag_Dot_XX then
+                        null;
+
+                     --  Indicate the operation that must be overridden,
+                     --  rather than redefining the indexing aspect
+
+                     else
+                        Illegal_Indexing
+                          ("indexing function already inherited "
+                           & "from parent type");
+                        Error_Msg_NE
+                          ("!override& instead",
+                           N, Entity (Expression (Inherited)));
+                        return;
+                     end if;
+                  end if;
+               end;
             end if;
 
             if not Check_Primitive_Function (Subp) then
