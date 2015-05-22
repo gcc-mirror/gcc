@@ -10,7 +10,7 @@ void Foo (A &a)
   a.f();
 }
 
-void Bar (A &&a)
+void Bar ()
 {
-  a.f ();
+  A{}.f ();
 }
