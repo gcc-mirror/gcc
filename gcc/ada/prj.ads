@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,6 +60,17 @@ package Prj is
    Subdirs : String_Ptr := null;
    --  The value after the equal sign in switch --subdirs=...
    --  Contains the relative subdirectory.
+
+   Obj_Root_Dir : String_Ptr := null;
+   --  A root directory for building out-of-tree projects. All relative object
+   --  directories will be rooted at this location. If Subdirs is also set it
+   --  will be added at the end too.
+
+   Root_Src_Tree : String_Ptr := null;
+   --  When using out-of-tree build we need to keep information about the root
+   --  directory source tree to properly relocate all projects to this root
+   --  directory. Note that the root source directory is not necessary the
+   --  directory of the main project.
 
    type Library_Support is (None, Static_Only, Full);
    --  Support for Library Project File.

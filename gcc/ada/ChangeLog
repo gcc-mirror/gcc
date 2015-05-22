@@ -1,5 +1,17 @@
 2015-05-22  Pascal Obry  <obry@adacore.com>
 
+	* makeutl.ads (In_Place_Option): New constant.
+	* prj.ads (Obj_Root_Dir): New variable (absolute path to relocate
+	objects).
+	(Root_Src_Tree): New variable (absolute path of root source tree).
+	* prj-conf.adb (Do_Autoconf): Take into account the object root
+	directory (if defined) to generate configuration project.
+	* prj-nmsc.adb (Get_Directories): Handle case where Obj_Root_Dir
+	is defined.
+	(Locate_Directory): Likewise.
+
+2015-05-22  Pascal Obry  <obry@adacore.com>
+
 	* prj-util.ads, prj-util.adb (Relative_Path): New routine.
 
 2015-05-22  Bob Duff  <duff@adacore.com>

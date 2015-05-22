@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,6 +65,10 @@ package Makeutl is
    Subdirs_Option : constant String := "--subdirs=";
    --  Switch used to indicate that the real directories (object, exec,
    --  library, ...) are subdirectories of those in the project file.
+
+   In_Place_Option : constant String := "--in-place";
+   --  Switch to build out-of-tree. In this context the object, exec and
+   --  library directories are relocated to the current working directory.
 
    Unchecked_Shared_Lib_Imports : constant String :=
                                     "--unchecked-shared-lib-imports";

@@ -5589,7 +5589,9 @@ package body Prj.Nmsc is
             end if;
          end if;
 
-      elsif not No_Sources and then Subdirs /= null then
+      elsif not No_Sources
+        and then (Subdirs /= null or else Obj_Root_Dir /= null)
+      then
          Name_Len := 1;
          Name_Buffer (1) := '.';
          Locate_Directory
@@ -6204,7 +6206,35 @@ package body Prj.Nmsc is
       The_Name        : File_Name_Type;
 
    begin
-      Get_Name_String (Name);
+      --  Check if we have a root-object dir specified, if so relocate all
+      --  artefact directories to it.
+
+      if Obj_Root_Dir /= null
+        and then Create /= ""
+        and then not Is_Absolute_Path (Get_Name_String (Name))
+      then
+         Name_Len := 0;
+         Add_Str_To_Name_Buffer (Obj_Root_Dir.all);
+         Add_Str_To_Name_Buffer
+           (Relative_Path
+              (The_Parent (The_Parent'First .. The_Parent_Last),
+               Root_Src_Tree.all));
+         Add_Str_To_Name_Buffer (Get_Name_String (Name));
+
+      else
+         if Obj_Root_Dir /= null and then Create /= "" then
+
+            --  Issue a warning that we cannot relocate absolute obj dir
+
+            Err_Vars.Error_Msg_File_1 := Name;
+            Error_Or_Warning
+              (Data.Flags, Warning,
+               "{ cannot relocate absolute object directory",
+               No_Location, Project);
+         end if;
+
+         Get_Name_String (Name);
+      end if;
 
       --  Add Subdirs.all if it is a directory that may be created and
       --  Subdirs is not null;

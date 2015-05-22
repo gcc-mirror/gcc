@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2006-2014, Free Software Foundation, Inc.       --
+--            Copyright (C) 2006-2015, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -962,17 +962,39 @@ package body Prj.Conf is
 
          --  First, find the object directory of the Conf_Project
 
+         --  If the object directory is a relative one and Obj_Root_Dir is set,
+         --  first add it.
+
+         Name_Len := 0;
+
          if Obj_Dir = Nil_Variable_Value or else Obj_Dir.Default then
-            Get_Name_String (Conf_Project.Directory.Display_Name);
+
+            if Obj_Root_Dir /= null then
+               Add_Str_To_Name_Buffer (Obj_Root_Dir.all);
+               Add_Str_To_Name_Buffer
+                 (Relative_Path
+                    (Get_Name_String (Conf_Project.Directory.Display_Name),
+                     Root_Src_Tree.all));
+            else
+               Get_Name_String (Conf_Project.Directory.Display_Name);
+            end if;
 
          else
             if Is_Absolute_Path (Get_Name_String (Obj_Dir.Value)) then
                Get_Name_String (Obj_Dir.Value);
 
             else
-               Name_Len := 0;
-               Add_Str_To_Name_Buffer
-                 (Get_Name_String (Conf_Project.Directory.Display_Name));
+               if Obj_Root_Dir /= null then
+                  Add_Str_To_Name_Buffer (Obj_Root_Dir.all);
+                  Add_Str_To_Name_Buffer
+                    (Relative_Path
+                       (Get_Name_String (Conf_Project.Directory.Display_Name),
+                        Root_Src_Tree.all));
+               else
+                  Add_Str_To_Name_Buffer
+                    (Get_Name_String (Conf_Project.Directory.Display_Name));
+               end if;
+
                Add_Str_To_Name_Buffer (Get_Name_String (Obj_Dir.Value));
             end if;
          end if;
