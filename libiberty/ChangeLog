@@ -1,3 +1,10 @@
+2015-05-22  Yunlian Jiang  <yunlian@google.com>
+
+	* configure.ac: Add AC_GNU_SOURCE.
+	* Makefile.in (COMPILE.c): Add -D_GNU_SOURCE.
+	* configure, config.in: Rebuild.
+	* floatformat.c (_GNU_SOURCE): Don't define if already defined.
+
 2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-demangle.c (dlang_symbol_kinds): New enum.
