@@ -9,6 +9,18 @@
 
 
 
+#if defined( AIX_EXTERNCPP1_CHECK )
+#ifdef __cplusplus
+extern "C++" {
+#endif  /* AIX_EXTERNCPP1_CHECK */
+
+
+#if defined( AIX_EXTERNCPP2_CHECK )
+} /* extern "C++" */
+#else  /* __cplusplus */
+#endif  /* AIX_EXTERNCPP2_CHECK */
+
+
 #if defined( HPUX11_EXTERN_SENDFILE_CHECK )
 #ifndef _APP32_64BIT_OFF_T
    extern sbsize_t sendfile __((int, int, off_t, bsize_t,
