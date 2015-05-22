@@ -1046,14 +1046,6 @@ package Sem_Util is
    --  component is present. This function is used to check if "=" has to be
    --  expanded into a bunch component comparisons.
 
-   function Has_Variable_Input (Const_Id : Entity_Id) return Boolean;
-   --  Determine whether the initialization expression of constant Const_Id has
-   --  "variable input" (SPARK RM 7.1.1(2)). This roughly maps to the semantic
-   --  concept of a compile-time known value.
-   --  How can a defined concept in SPARK mapped to an undefined predicate in
-   --  the compiler (which can change at any moment if the compiler feels like
-   --  getting more clever about what is compile-time known) ???
-
    function Has_Volatile_Component (Typ : Entity_Id) return Boolean;
    --  Given an arbitrary type, determine whether it contains at least one
    --  volatile component.

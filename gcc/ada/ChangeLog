@@ -1,3 +1,15 @@
+2015-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Remove the detection
+	of a useless Part_Of indicator when the related item is a constant.
+	(Check_Matching_Constituent): Do not emit an error on a constant.
+	(Check_Missing_Part_Of): Do not check for a missing Part_Of indicator
+	when the related item is a constant.
+	(Collect_Body_States): Code cleanup.
+	(Collect_Visible_States): Code cleanup.
+	(Report_Unused_States): Do not emit an error on a constant.
+	* sem_util.ads, sem_util.adb (Has_Variable_Input): Removed.
+
 2015-05-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch8.adb (Analyze_Object_Renaming): Copy

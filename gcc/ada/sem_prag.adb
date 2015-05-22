@@ -17555,20 +17555,6 @@ package body Sem_Prag is
                Legal   => Legal);
 
             if Legal then
-
-               --  Constants without "variable input" are not considered part
-               --  of the hidden state of a package (SPARK RM 7.1.1(2)). As a
-               --  result such constants do not require a Part_Of indicator.
-
-               if Ekind (Item_Id) = E_Constant
-                 and then not Has_Variable_Input (Item_Id)
-               then
-                  SPARK_Msg_NE
-                    ("useless Part_Of indicator, constant & does not have "
-                     & "variable input", N, Item_Id);
-                  return;
-               end if;
-
                State_Id := Entity (State);
 
                --  The Part_Of indicator turns an object into a constituent of
@@ -23983,14 +23969,25 @@ package body Sem_Prag is
                      end loop;
                   end if;
 
+                  --  Constants are part of the hidden state of a package, but
+                  --  the compiler cannot determine whether they have variable
+                  --  input (SPARK RM 7.1.1(2)) and cannot classify them as a
+                  --  hidden state. Accept the constant quietly even if it is
+                  --  a visible state or lacks a Part_Of indicator.
+
+                  if Ekind (Constit_Id) = E_Constant then
+                     null;
+
                   --  If we get here, then the constituent is not a hidden
                   --  state of the related package and may not be used in a
                   --  refinement (SPARK RM 7.2.2(9)).
 
-                  Error_Msg_Name_1 := Chars (Spec_Id);
-                  SPARK_Msg_NE
-                    ("cannot use & in refinement, constituent is not a hidden "
-                     & "state of package %", Constit, Constit_Id);
+                  else
+                     Error_Msg_Name_1 := Chars (Spec_Id);
+                     SPARK_Msg_NE
+                       ("cannot use & in refinement, constituent is not a "
+                        & "hidden state of package %", Constit, Constit_Id);
+                  end if;
                end if;
             end Check_Matching_Constituent;
 
@@ -24434,7 +24431,6 @@ package body Sem_Prag is
          ----------------------------
 
          procedure Collect_Visible_States (Pack_Id : Entity_Id) is
-            Decl    : Node_Id;
             Item_Id : Entity_Id;
 
          begin
@@ -24453,27 +24449,15 @@ package body Sem_Prag is
                elsif Ekind (Item_Id) = E_Abstract_State then
                   Add_Item (Item_Id, Result);
 
-               elsif Ekind_In (Item_Id, E_Constant, E_Variable) then
-                  Decl := Declaration_Node (Item_Id);
+               --  Do not consider constants or variables that map generic
+               --  formals to their actuals, as the formals cannot be named
+               --  from the outside and participate in refinement.
 
-                  --  Do not consider constants or variables that map generic
-                  --  formals to their actuals as the formals cannot be named
-                  --  from the outside and participate in refinement.
-
-                  if Present (Corresponding_Generic_Association (Decl)) then
-                     null;
-
-                  --  Constants without "variable input" are not considered a
-                  --  hidden state of a package (SPARK RM 7.1.1(2)).
-
-                  elsif Ekind (Item_Id) = E_Constant
-                    and then not Has_Variable_Input (Item_Id)
-                  then
-                     null;
-
-                  else
-                     Add_Item (Item_Id, Result);
-                  end if;
+               elsif Ekind_In (Item_Id, E_Constant, E_Variable)
+                 and then No (Corresponding_Generic_Association
+                                (Declaration_Node (Item_Id)))
+               then
+                  Add_Item (Item_Id, Result);
 
                --  Recursively gather the visible states of a nested package
 
@@ -24562,31 +24546,39 @@ package body Sem_Prag is
             while Present (State_Elmt) loop
                State_Id := Node (State_Elmt);
 
+               --  Constants are part of the hidden state of a package, but the
+               --  compiler cannot determine whether they have variable input
+               --  (SPARK RM 7.1.1(2)) and cannot classify them properly as a
+               --  hidden state. Do not emit an error when a constant does not
+               --  participate in a state refinement, even though it acts as a
+               --  hidden state.
+
+               if Ekind (State_Id) = E_Constant then
+                  null;
+
                --  Generate an error message of the form:
 
                --    body of package ... has unused hidden states
                --      abstract state ... defined at ...
-               --      constant ... defined at ...
                --      variable ... defined at ...
 
-               if not Posted then
-                  Posted := True;
-                  SPARK_Msg_N
-                    ("body of package & has unused hidden states", Body_Id);
-               end if;
-
-               Error_Msg_Sloc := Sloc (State_Id);
-
-               if Ekind (State_Id) = E_Abstract_State then
-                  SPARK_Msg_NE
-                    ("\abstract state & defined #", Body_Id, State_Id);
-
-               elsif Ekind (State_Id) = E_Constant then
-                  SPARK_Msg_NE ("\constant & defined #", Body_Id, State_Id);
-
                else
-                  pragma Assert (Ekind (State_Id) = E_Variable);
-                  SPARK_Msg_NE ("\variable & defined #", Body_Id, State_Id);
+                  if not Posted then
+                     Posted := True;
+                     SPARK_Msg_N
+                       ("body of package & has unused hidden states", Body_Id);
+                  end if;
+
+                  Error_Msg_Sloc := Sloc (State_Id);
+
+                  if Ekind (State_Id) = E_Abstract_State then
+                     SPARK_Msg_NE
+                       ("\abstract state & defined #", Body_Id, State_Id);
+
+                  else
+                     pragma Assert (Ekind (State_Id) = E_Variable);
+                     SPARK_Msg_NE ("\variable & defined #", Body_Id, State_Id);
+                  end if;
                end if;
 
                Next_Elmt (State_Elmt);
@@ -25017,12 +25009,11 @@ package body Sem_Prag is
       elsif SPARK_Mode /= On then
          return;
 
-      --  Do not consider constants without variable input because those are
-      --  not part of the hidden state of a package (SPARK RM 7.1.1(2)).
+      --  Do not consider constants, because the compiler cannot accurately
+      --  determine whether they have variable input (SPARK RM 7.1.1(2)) and
+      --  act as a hidden state of a package.
 
-      elsif Ekind (Item_Id) = E_Constant
-        and then not Has_Variable_Input (Item_Id)
-      then
+      elsif Ekind (Item_Id) = E_Constant then
          return;
       end if;
 
