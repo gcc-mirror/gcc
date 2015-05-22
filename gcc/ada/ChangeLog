@@ -1,3 +1,23 @@
+2015-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb Node36 is now used as Anonymous_Master. Flag253
+	is now unused.
+	(Anonymous_Master): New routine.
+	(Has_Anonymous_Master): Removed.
+	(Set_Anonymous_Master): New routine.
+	(Set_Has_Anonymous_Master): Removed.
+	(Write_Entity_Flags): Remove the output for Has_Anonymous_Maser.
+	(Write_Field36_Name): Add output for Anonymous_Master.
+	* einfo.ads Add new attribute Anonymous_Master along with
+	occurrences in nodes. Remove attribute Has_Anonymous_Master along
+	with occurrences in nodes.
+	(Anonymous_Master): New routine along with pragma Inline.
+	(Has_Anonymous_Master): Removed along with pragma Inline.
+	(Set_Anonymous_Master): New routine along with pragma Inline.
+	(Set_Has_Anonymous_Master): Removed along with pragma Inline.
+	* exp_ch4.adb (Create_Anonymous_Master): New routine.
+	(Current_Anonymous_Master): Reimplemented.
+
 2015-05-22  Bob Duff  <duff@adacore.com>
 
 	* freeze.adb (Freeze_Profile): Suppress warning if imported

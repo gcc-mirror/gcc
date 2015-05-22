@@ -436,6 +436,12 @@ package Einfo is
 --       definition clause with an (obsolescent) mod clause is converted
 --       into an attribute definition clause for this purpose.
 
+--    Anonymous_Master (Node36)
+--       Defined in the entities of non-generic subprogram and package units.
+--       Contains the entity of a special heterogeneous finalization master
+--       that services most anonymous access-to-controlled allocations that
+--       occur within the unit.
+
 --    Associated_Entity (Node37)
 --       Defined in all entities. This field is similar to Associated_Node, but
 --       applied to entities. The attribute links an entity from the generic
@@ -1422,13 +1428,6 @@ package Einfo is
 --       All_Calls_Remote pragma. Note that such entities must also be RCI
 --       entities, so the flag Is_Remote_Call_Interface will always be set if
 --       this flag is set.
-
---    Has_Anonymous_Master (Flag253)
---       Defined in units (top-level functions and procedures, library-level
---       packages). Set if the associated unit contains a heterogeneous
---       finalization master. The master's name is of the form <unit>AM and it
---       services anonymous access-to-controlled types with an undetermined
---       lifetime.
 
 --    Has_Atomic_Components (Flag86) [implementation base type only]
 --       Defined in all types and objects. Set only for an array type or
@@ -5833,6 +5832,7 @@ package Einfo is
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
    --    Import_Pragma                       (Node35)   (non-generic case only)
+   --    Anonymous_Master                    (Node36)   (non-generic case only)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Default_Expressions_Processed       (Flag108)
@@ -5840,7 +5840,6 @@ package Einfo is
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Discard_Names                       (Flag88)
    --    Elaboration_Entity_Required         (Flag174)
-   --    Has_Anonymous_Master                (Flag253)
    --    Has_Completion                      (Flag26)
    --    Has_Controlling_Result              (Flag98)
    --    Has_Expanded_Contract               (Flag240)  (non-generic case only)
@@ -6050,6 +6049,7 @@ package Einfo is
    --    SPARK_Pragma                        (Node32)
    --    SPARK_Aux_Pragma                    (Node33)
    --    Contract                            (Node34)
+   --    Anonymous_Master                    (Node36)   (non-generic case only)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Contains_Ignored_Ghost_Code         (Flag279)
@@ -6058,7 +6058,6 @@ package Einfo is
    --    Elaborate_Body_Desirable            (Flag210)  (non-generic case only)
    --    From_Limited_With                   (Flag159)
    --    Has_All_Calls_Remote                (Flag79)
-   --    Has_Anonymous_Master                (Flag253)
    --    Has_Completion                      (Flag26)
    --    Has_Forward_Instantiation           (Flag175)
    --    Has_Master_Entity                   (Flag21)
@@ -6089,7 +6088,6 @@ package Einfo is
    --    Contract                            (Node34)
    --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Delay_Subprogram_Descriptors        (Flag50)
-   --    Has_Anonymous_Master                (Flag253)
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
    --    SPARK_Pragma_Inherited              (Flag265)
    --    Scope_Depth                         (synth)
@@ -6139,6 +6137,7 @@ package Einfo is
    --    Linker_Section_Pragma               (Node33)
    --    Contract                            (Node34)
    --    Import_Pragma                       (Node35)   (non-generic case only)
+   --    Anonymous_Master                    (Node36)   (non-generic case only)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Delay_Cleanups                      (Flag114)
@@ -6148,7 +6147,6 @@ package Einfo is
    --    Delay_Cleanups                      (Flag114)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Discard_Names                       (Flag88)
-   --    Has_Anonymous_Master                (Flag253)
    --    Has_Completion                      (Flag26)
    --    Has_Expanded_Contract               (Flag240)  (non-generic case only)
    --    Has_Invariants                      (Flag232)
@@ -6647,6 +6645,7 @@ package Einfo is
    function Address_Taken                       (Id : E) return B;
    function Alias                               (Id : E) return E;
    function Alignment                           (Id : E) return U;
+   function Anonymous_Master                    (Id : E) return E;
    function Associated_Entity                   (Id : E) return E;
    function Associated_Formal_Package           (Id : E) return E;
    function Associated_Node_For_Itype           (Id : E) return N;
@@ -6750,7 +6749,6 @@ package Einfo is
    function Has_Aliased_Components              (Id : E) return B;
    function Has_Alignment_Clause                (Id : E) return B;
    function Has_All_Calls_Remote                (Id : E) return B;
-   function Has_Anonymous_Master                (Id : E) return B;
    function Has_Atomic_Components               (Id : E) return B;
    function Has_Biased_Representation           (Id : E) return B;
    function Has_Completion                      (Id : E) return B;
@@ -7301,6 +7299,7 @@ package Einfo is
    procedure Set_Address_Taken                   (Id : E; V : B := True);
    procedure Set_Alias                           (Id : E; V : E);
    procedure Set_Alignment                       (Id : E; V : U);
+   procedure Set_Anonymous_Master                (Id : E; V : E);
    procedure Set_Associated_Entity               (Id : E; V : E);
    procedure Set_Associated_Formal_Package       (Id : E; V : E);
    procedure Set_Associated_Node_For_Itype       (Id : E; V : N);
@@ -7403,7 +7402,6 @@ package Einfo is
    procedure Set_Has_Aliased_Components          (Id : E; V : B := True);
    procedure Set_Has_Alignment_Clause            (Id : E; V : B := True);
    procedure Set_Has_All_Calls_Remote            (Id : E; V : B := True);
-   procedure Set_Has_Anonymous_Master            (Id : E; V : B := True);
    procedure Set_Has_Atomic_Components           (Id : E; V : B := True);
    procedure Set_Has_Biased_Representation       (Id : E; V : B := True);
    procedure Set_Has_Completion                  (Id : E; V : B := True);
@@ -8076,6 +8074,7 @@ package Einfo is
    pragma Inline (Address_Taken);
    pragma Inline (Alias);
    pragma Inline (Alignment);
+   pragma Inline (Anonymous_Master);
    pragma Inline (Associated_Entity);
    pragma Inline (Associated_Formal_Package);
    pragma Inline (Associated_Node_For_Itype);
@@ -8176,7 +8175,6 @@ package Einfo is
    pragma Inline (Has_Aliased_Components);
    pragma Inline (Has_Alignment_Clause);
    pragma Inline (Has_All_Calls_Remote);
-   pragma Inline (Has_Anonymous_Master);
    pragma Inline (Has_Atomic_Components);
    pragma Inline (Has_Biased_Representation);
    pragma Inline (Has_Completion);
@@ -8577,6 +8575,7 @@ package Einfo is
    pragma Inline (Set_Address_Taken);
    pragma Inline (Set_Alias);
    pragma Inline (Set_Alignment);
+   pragma Inline (Set_Anonymous_Master);
    pragma Inline (Set_Associated_Entity);
    pragma Inline (Set_Associated_Formal_Package);
    pragma Inline (Set_Associated_Node_For_Itype);
@@ -8675,7 +8674,6 @@ package Einfo is
    pragma Inline (Set_Has_Aliased_Components);
    pragma Inline (Set_Has_Alignment_Clause);
    pragma Inline (Set_Has_All_Calls_Remote);
-   pragma Inline (Set_Has_Anonymous_Master);
    pragma Inline (Set_Has_Atomic_Components);
    pragma Inline (Set_Has_Biased_Representation);
    pragma Inline (Set_Has_Completion);
