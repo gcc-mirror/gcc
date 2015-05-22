@@ -1,3 +1,18 @@
+2015-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/66133
+	* omp-low.c (expand_omp_taskreg): For GIMPLE_OMP_TASK expansion,
+	make sure it is never noreturn, even when the task body does not
+	return.
+	(lower_omp_taskreg): For GIMPLE_OMP_TASK, emit GIMPLE_OMP_CONTINUE
+	right before GIMPLE_OMP_RETURN.
+	(make_gimple_omp_edges): Accept GIMPLE_OMP_CONTINUE as ->cont
+	for GIMPLE_OMP_TASK.  For GIMPLE_OMP_RETURN corresponding to
+	GIMPLE_OMP_TASK add an EDGE_ABNORMAL edge from entry to exit.
+
 2015-05-21  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Backport from mainline r223418:

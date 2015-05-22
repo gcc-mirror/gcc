@@ -1,3 +1,11 @@
+2015-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/66133
+	* testsuite/libgomp.c/pr66133.c: New test.
+
 2015-04-22  Release Manager
 
 	* GCC 5.1.0 released.
