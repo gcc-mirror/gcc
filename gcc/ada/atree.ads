@@ -4138,7 +4138,7 @@ package Atree is
          --  These flags are used in the usual manner in Sinfo and Einfo
 
          Is_Ignored_Ghost_Node : Boolean;
-         --  Flag denothing whether the node is subject to pragma Ghost with
+         --  Flag denoting whether the node is subject to pragma Ghost with
          --  policy Ignore. The name of the flag should be Flag4, however this
          --  requires changing the names of all remaining 300+ flags.
 

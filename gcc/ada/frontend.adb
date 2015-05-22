@@ -482,8 +482,8 @@ begin
 
    Sprint.Source_Dump;
 
-   --  Check again for configuration pragmas that appear in the context of
-   --  the main unit. These pragmas only affect the main unit, and the
+   --  Check again for configuration pragmas that appear in the context
+   --  of the main unit. These pragmas only affect the main unit, and the
    --  corresponding flag is reset after each call to Semantics, but they
    --  may affect the generated ali for the unit, and therefore the flag
    --  must be set properly after compilation. Currently we only check for

@@ -1,3 +1,25 @@
+2015-05-22  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb: Update documentation.
+	* einfo.ads, einfo.adb (Needs_Typedef): New flag
+	* exp_unst.adb (Unnest_Subprogram): Mark AREC types as needing
+	typedef's in C.
+	* frontend.adb: Update comments.
+	* gnat1drv.adb (Adjust_Global_Switches): Set all needed flags
+	for -gnatd.V
+	* opt.ads (Generate_C_Code): New switch.
+	* osint-c.adb (Write_C_File_Info): Removed, not used
+	(Write_H_File_Info): Removed, not used
+	* osint-c.ads (Write_C_File_Info): Removed, not used
+	(Write_H_File_Info): Removed, not used
+	* osint.ads (Write_Info): Minor comment updates.
+	(Output_FD): Moved from private part to public part of spec.
+	* sem.adb (Semantics): Force expansion on if in Generate_C_Code
+	mode.
+	* atree.ads: minor typo in comment.
+	* sem_prag.adb (Process_Atomic_Independent_Shared_Volatile):
+	Do not allow VFA on composite object with aliased component.
+
 2015-05-22  Arnaud Charlet  <charlet@adacore.com>
 
 	* osint-c.adb, osint-c.ads (Set_File_Name): Move back to spec.
