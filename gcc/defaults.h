@@ -1233,6 +1233,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define STACK_GROWS_DOWNWARD 0
 #endif
 
+#ifndef STACK_PUSH_CODE
+#if STACK_GROWS_DOWNWARD
+#define STACK_PUSH_CODE PRE_DEC
+#else
+#define STACK_PUSH_CODE PRE_INC
+#endif
+#endif
+
 #ifdef GCC_INSN_FLAGS_H
 /* Dependent default target macro definitions
 

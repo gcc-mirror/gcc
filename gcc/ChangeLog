@@ -1,5 +1,11 @@
 2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* defaults.h: Add default for STACK_PUSH_CODE.
+	* expr.c: Don't redefine STACK_PUSH_CODE.
+	* recog.c: Likewise.
+
+2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* builtins.c, dwarf2cfi.c, explow.c, expr.c, recog.c,
 	sched-deps.c: Use if instead of preprocessor checks with
 	STACK_GROWS_DOWNWARD.

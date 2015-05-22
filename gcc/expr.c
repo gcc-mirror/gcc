@@ -98,14 +98,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-chkp.h"
 #include "ccmp.h"
 
-#ifndef STACK_PUSH_CODE
-#if STACK_GROWS_DOWNWARD
-#define STACK_PUSH_CODE PRE_DEC
-#else
-#define STACK_PUSH_CODE PRE_INC
-#endif
-#endif
-
 
 /* If this is nonzero, we do not bother generating VOLATILE
    around volatile memory references, and we are willing to

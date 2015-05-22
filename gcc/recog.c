@@ -68,14 +68,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "insn-codes.h"
 
-#ifndef STACK_PUSH_CODE
-#if STACK_GROWS_DOWNWARD
-#define STACK_PUSH_CODE PRE_DEC
-#else
-#define STACK_PUSH_CODE PRE_INC
-#endif
-#endif
-
 #ifndef STACK_POP_CODE
 #if STACK_GROWS_DOWNWARD
 #define STACK_POP_CODE POST_INC
