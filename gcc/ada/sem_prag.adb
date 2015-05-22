@@ -2710,7 +2710,7 @@ package body Sem_Prag is
          Legal   : out Boolean);
       --  Subsidiary to the analysis of pragmas Abstract_State and Part_Of.
       --  Perform full analysis of indicator Part_Of. Item_Id is the entity of
-      --  an abstract state, variable or package instantiation. State is the
+      --  an abstract state, object or package instantiation. State is the
       --  encapsulating state. Indic is the Part_Of indicator. Flag Legal is
       --  set when the indicator is legal.
 
@@ -17557,6 +17557,20 @@ package body Sem_Prag is
                Legal   => Legal);
 
             if Legal then
+
+               --  Constants without "variable input" are not considered part
+               --  of the hidden state of a package (SPARK RM 7.1.1(2)). As a
+               --  result such constants do not require a Part_Of indicator.
+
+               if Ekind (Item_Id) = E_Constant
+                 and then not Has_Variable_Input (Item_Id)
+               then
+                  SPARK_Msg_NE
+                    ("useless Part_Of indicator, constant & does not have "
+                     & "variable input", N, Item_Id);
+                  return;
+               end if;
+
                State_Id := Entity (State);
 
                --  The Part_Of indicator turns an object into a constituent of
@@ -24448,7 +24462,18 @@ package body Sem_Prag is
                   --  formals to their actuals as the formals cannot be named
                   --  from the outside and participate in refinement.
 
-                  if No (Corresponding_Generic_Association (Decl)) then
+                  if Present (Corresponding_Generic_Association (Decl)) then
+                     null;
+
+                  --  Constants without "variable input" are not considered a
+                  --  hidden state of a package (SPARK RM 7.1.1(2)).
+
+                  elsif Ekind (Item_Id) = E_Constant
+                    and then not Has_Variable_Input (Item_Id)
+                  then
+                     null;
+
+                  else
                      Add_Item (Item_Id, Result);
                   end if;
 
@@ -24992,6 +25017,14 @@ package body Sem_Prag is
       --  interfere with standard Ada rules and produce false positives.
 
       elsif SPARK_Mode /= On then
+         return;
+
+      --  Do not consider constants without variable input because those are
+      --  not part of the hidden state of a package (SPARK RM 7.1.1(2)).
+
+      elsif Ekind (Item_Id) = E_Constant
+        and then not Has_Variable_Input (Item_Id)
+      then
          return;
       end if;
 

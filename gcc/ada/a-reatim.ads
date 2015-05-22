@@ -38,6 +38,10 @@ pragma Elaborate_All (System.Task_Primitives.Operations);
 
 package Ada.Real_Time is
 
+   pragma Compile_Time_Error
+     (Duration'Size /= 64,
+      "this version of Ada.Real_Time requires 64-bit Duration");
+
    type Time is private;
    Time_First : constant Time;
    Time_Last  : constant Time;
