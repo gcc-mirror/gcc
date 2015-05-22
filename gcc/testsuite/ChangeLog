@@ -1,3 +1,11 @@
+2015-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/66233
+	* gcc.c-torture/execute/pr66233.c: New test.
+
 2015-05-21  Ilya Enkovich  <enkovich.gnu@gmail.com>
 
 	Backport from mainline r223471

@@ -1,6 +1,12 @@
 2015-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2015-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/66233
+	* match.pd (ocvt (icvt@1 @0)): Don't handle vector types.
+	Simplify.
+
 	2015-05-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/66199
