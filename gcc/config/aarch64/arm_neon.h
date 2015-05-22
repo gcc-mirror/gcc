@@ -11400,25 +11400,25 @@ vbslq_u64 (uint64x2_t __a, uint64x2_t __b, uint64x2_t __c)
 
 /* vaes  */
 
-static __inline uint8x16_t
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vaeseq_u8 (uint8x16_t data, uint8x16_t key)
 {
   return __builtin_aarch64_crypto_aesev16qi_uuu (data, key);
 }
 
-static __inline uint8x16_t
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vaesdq_u8 (uint8x16_t data, uint8x16_t key)
 {
   return __builtin_aarch64_crypto_aesdv16qi_uuu (data, key);
 }
 
-static __inline uint8x16_t
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vaesmcq_u8 (uint8x16_t data)
 {
   return __builtin_aarch64_crypto_aesmcv16qi_uu (data);
 }
 
-static __inline uint8x16_t
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
 vaesimcq_u8 (uint8x16_t data)
 {
   return __builtin_aarch64_crypto_aesimcv16qi_uu (data);
@@ -21053,72 +21053,74 @@ vrsrad_n_u64 (uint64_t __a, uint64_t __b, const int __c)
 
 /* vsha1  */
 
-static __inline uint32x4_t
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vsha1cq_u32 (uint32x4_t hash_abcd, uint32_t hash_e, uint32x4_t wk)
 {
   return __builtin_aarch64_crypto_sha1cv4si_uuuu (hash_abcd, hash_e, wk);
 }
-static __inline uint32x4_t
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vsha1mq_u32 (uint32x4_t hash_abcd, uint32_t hash_e, uint32x4_t wk)
 {
   return __builtin_aarch64_crypto_sha1mv4si_uuuu (hash_abcd, hash_e, wk);
 }
-static __inline uint32x4_t
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vsha1pq_u32 (uint32x4_t hash_abcd, uint32_t hash_e, uint32x4_t wk)
 {
   return __builtin_aarch64_crypto_sha1pv4si_uuuu (hash_abcd, hash_e, wk);
 }
 
-static __inline uint32_t
+__extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 vsha1h_u32 (uint32_t hash_e)
 {
   return __builtin_aarch64_crypto_sha1hsi_uu (hash_e);
 }
 
-static __inline uint32x4_t
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vsha1su0q_u32 (uint32x4_t w0_3, uint32x4_t w4_7, uint32x4_t w8_11)
 {
   return __builtin_aarch64_crypto_sha1su0v4si_uuuu (w0_3, w4_7, w8_11);
 }
 
-static __inline uint32x4_t
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vsha1su1q_u32 (uint32x4_t tw0_3, uint32x4_t w12_15)
 {
   return __builtin_aarch64_crypto_sha1su1v4si_uuu (tw0_3, w12_15);
 }
 
-static __inline uint32x4_t
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vsha256hq_u32 (uint32x4_t hash_abcd, uint32x4_t hash_efgh, uint32x4_t wk)
 {
   return __builtin_aarch64_crypto_sha256hv4si_uuuu (hash_abcd, hash_efgh, wk);
 }
 
-static __inline uint32x4_t
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vsha256h2q_u32 (uint32x4_t hash_efgh, uint32x4_t hash_abcd, uint32x4_t wk)
 {
   return __builtin_aarch64_crypto_sha256h2v4si_uuuu (hash_efgh, hash_abcd, wk);
 }
 
-static __inline uint32x4_t
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vsha256su0q_u32 (uint32x4_t w0_3, uint32x4_t w4_7)
 {
   return __builtin_aarch64_crypto_sha256su0v4si_uuu (w0_3, w4_7);
 }
 
-static __inline uint32x4_t
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
 vsha256su1q_u32 (uint32x4_t tw0_3, uint32x4_t w8_11, uint32x4_t w12_15)
 {
   return __builtin_aarch64_crypto_sha256su1v4si_uuuu (tw0_3, w8_11, w12_15);
 }
 
-static __inline poly128_t
+__extension__ static __inline poly128_t __attribute__ ((__always_inline__))
 vmull_p64 (poly64_t a, poly64_t b)
 {
   return
     __builtin_aarch64_crypto_pmulldi_ppp (a, b);
 }
 
-static __inline poly128_t
+__extension__ static __inline poly128_t __attribute__ ((__always_inline__))
 vmull_high_p64 (poly64x2_t a, poly64x2_t b)
 {
   return __builtin_aarch64_crypto_pmullv2di_ppp (a, b);

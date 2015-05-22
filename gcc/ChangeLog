@@ -1,3 +1,23 @@
+2015-05-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/arm_neon.h (vaeseq_u8): Add __extension__ and
+	__always_inline__ attribute.
+	(vaesdq_u8): Likewise.
+	(vaesmcq_u8): Likewise.
+	(vaesimcq_u8): Likewise.
+	(vsha1cq_u32): Likewise.
+	(vsha1mq_u32): Likewise.
+	(vsha1pq_u32): Likewise.
+	(vsha1h_u32): Likewise.
+	(vsha1su0q_u32): Likewise.
+	(vsha1su1q_u32): Likewise.
+	(vsha256hq_u32): Likewise.
+	(vsha256h2q_u32): Likewise.
+	(vsha256su0q_u32): Likewise.
+	(vsha256su1q_u32): Likewise.
+	(vmull_p64): Likewise.
+	(vmull_high_p64): Likewise.
+
 2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* final.c (final_scan_insn): Don't check HAVE_peephole with the
