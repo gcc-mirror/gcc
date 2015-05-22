@@ -920,7 +920,9 @@ convert_to_integer (tree type, tree expr)
     case VECTOR_TYPE:
       if (!tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (TREE_TYPE (expr))))
 	{
-	  error ("can%'t convert between vector values of different size");
+	  error ("can%'t convert a vector of type %qT"
+		 " to type %qT which has different size",
+		 TREE_TYPE (expr), type);
 	  return error_mark_node;
 	}
       return build1 (VIEW_CONVERT_EXPR, type, expr);
@@ -1004,7 +1006,9 @@ convert_to_vector (tree type, tree expr)
     case VECTOR_TYPE:
       if (!tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (TREE_TYPE (expr))))
 	{
-	  error ("can%'t convert between vector values of different size");
+	  error ("can%'t convert a value of type %qT"
+		 " to vector type %qT which has different size",
+		 TREE_TYPE (expr), type);
 	  return error_mark_node;
 	}
       return build1 (VIEW_CONVERT_EXPR, type, expr);
