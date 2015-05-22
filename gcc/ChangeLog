@@ -1,3 +1,10 @@
+2015-05-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Replace
+	assert with guard, remove check on detected reduction.
+	(vect_recog_sad_pattern): Likewise.
+	(vect_recog_widen_sum_pattern): Likewise.
+
 2015-05-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/arm_neon.h (vaeseq_u8): Add __extension__ and
