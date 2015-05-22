@@ -2423,7 +2423,7 @@ get_def_for_expr (tree name, enum tree_code code)
   return def_stmt;
 }
 
-#ifdef HAVE_conditional_move
+#if HAVE_conditional_move
 /* Return the defining gimple statement for SSA_NAME NAME if it is an
    assigment and the class of the expresion on the RHS is CLASS.  Return
    NULL otherwise.  */
@@ -7517,7 +7517,7 @@ highest_pow2_factor_for_target (const_tree target, const_tree exp)
   return MAX (factor, talign);
 }
 
-#ifdef HAVE_conditional_move
+#if HAVE_conditional_move
 /* Convert the tree comparison code TCODE to the rtl one where the
    signedness is UNSIGNEDP.  */
 
@@ -8021,7 +8021,7 @@ expand_cond_expr_using_cmove (tree treeop0 ATTRIBUTE_UNUSED,
 			      tree treeop1 ATTRIBUTE_UNUSED,
 			      tree treeop2 ATTRIBUTE_UNUSED)
 {
-#ifdef HAVE_conditional_move
+#if HAVE_conditional_move
   rtx insn;
   rtx op00, op01, op1, op2;
   enum rtx_code comparison_code;
@@ -8892,7 +8892,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	    if (code == MIN_EXPR)
 	      comparison_code = LT;
 	  }
-#ifdef HAVE_conditional_move
+#if HAVE_conditional_move
 	/* Use a conditional move if possible.  */
 	if (can_conditionally_move_p (mode))
 	  {

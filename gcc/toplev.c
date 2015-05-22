@@ -1576,7 +1576,7 @@ process_options (void)
     warning (0, "var-tracking-assignments changes selective scheduling");
 
   if (flag_tree_cselim == AUTODETECT_VALUE)
-#ifdef HAVE_conditional_move
+#if HAVE_conditional_move
     flag_tree_cselim = 1;
 #else
     flag_tree_cselim = 0;

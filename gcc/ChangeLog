@@ -1,5 +1,12 @@
 2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* genconfig.c (main): Always define HAVE_conditional_move.
+	* combine.c, expmed.c, expr.c, ifcvt.c, optabs.c, optabs.h,
+	toplev.c, tree-ssa-phiopt.c: Don't check if HAVE_conditional_move
+	is defined.
+
+2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* combine.c, df-problems.c, df-scan.c, emit-rtl.c, reginfo.c,
 	reload.c, rtlanal.c: Remove comparison of ARG_FRAME_POINTER_REGNUM
 	and FRAME_POINTER_REGNUM with the preprocessor.
