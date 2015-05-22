@@ -120,7 +120,7 @@ package Snames is
    Name_uY : constant Name_Id := First_Name_Id + Character'Pos ('Y');
    Name_uZ : constant Name_Id := First_Name_Id + Character'Pos ('Z');
 
-   --  Note: the following table is read by the utility program XSNAMES, and
+   --  Note: the following table is read by the utility program 'xsnamest', and
    --  its format should not be changed without coordinating with this program.
 
    N : constant Name_Id := First_Name_Id + 256;
@@ -1411,6 +1411,9 @@ package Snames is
    Name_Forward_Iterator                 : constant Name_Id := N + $;
    Name_Reversible_Iterator              : constant Name_Id := N + $;
    Name_Previous                         : constant Name_Id := N + $;
+   Name_Pseudo_Reference                 : constant Name_Id := N + $;
+   Name_Reference_Control_Type           : constant Name_Id := N + $;
+   Name_Get_Element_Access               : constant Name_Id := N + $;
 
    --  Ada 2005 reserved words
 
