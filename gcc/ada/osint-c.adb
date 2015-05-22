@@ -45,13 +45,6 @@ package body Osint.C is
    --  output file and Suffix is the desired suffix (dg/rep/xxx for debug/
    --  repinfo/list file where xxx is specified extension.
 
-   procedure Set_File_Name (Ext : String);
-   --  Sets a default file name from the main compiler source name. Ext is
-   --  the extension, e.g. "ali" for a library information file. Used by
-   --  Create_Output_Library_Info, and by the version of Read_Library_Info that
-   --  takes a default file name, and also by Create_C_File and Create_H_File.
-   --  The name is in Name_Buffer (with length in Name_Len) on return.
-
    ------------------
    -- Close_C_File --
    ------------------

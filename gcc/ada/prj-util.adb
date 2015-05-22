@@ -806,7 +806,7 @@ package body Prj.Util is
 
    function Relative_Path (Pathname : String; To : String) return String is
       function Ensure_Directory (Path : String) return String;
-      --  Function spec must be commented ???
+      --  Returns Path with an added directory separator if needed
 
       ----------------------
       -- Ensure_Directory --
