@@ -1,3 +1,8 @@
+2015-05-22  hiraditya  <hiraditya@msn.com>
+
+	* gimple.h (gimple_expr_type): Refactor to make it concise. Remove
+	redundant if.
+
 2015-05-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65701
