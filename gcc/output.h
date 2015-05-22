@@ -289,9 +289,7 @@ extern void assemble_addr_to_section (rtx, section *);
 /* Return the size of the constant pool.  */
 extern int get_pool_size (void);
 
-#ifdef HAVE_peephole
 extern rtx_insn *peephole (rtx_insn *);
-#endif
 
 extern void output_shared_constant_pool (void);
 
