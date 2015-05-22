@@ -10276,6 +10276,20 @@ package body Sem_Util is
       end if;
    end Is_Atomic_Object;
 
+   -----------------------------
+   -- Is_Atomic_Or_VFA_Object --
+   -----------------------------
+
+   function Is_Atomic_Or_VFA_Object (N : Node_Id) return Boolean is
+   begin
+      return Is_Atomic_Object (N)
+        or else (Is_Object_Reference (N)
+                   and then Is_Entity_Name (N)
+                   and then (Has_Volatile_Full_Access (Entity (N))
+                                or else
+                             Has_Volatile_Full_Access (Etype (Entity (N)))));
+   end Is_Atomic_Or_VFA_Object;
+
    -------------------------
    -- Is_Attribute_Result --
    -------------------------

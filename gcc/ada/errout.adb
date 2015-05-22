@@ -3159,6 +3159,16 @@ package body Errout is
             return True;
          end if;
 
+      --  Similar processing for "volatile full access cannot be guaranteed"
+
+      elsif Msg = "volatile full access to & cannot be guaranteed" then
+         if Is_Type (E)
+           and then Has_Volatile_Full_Access (E)
+           and then No (Get_Rep_Pragma (E, Name_Volatile_Full_Access))
+         then
+            return True;
+         end if;
+
       --  Processing for "Size too small" messages
 
       elsif Msg = "size for& too small, minimum allowed is ^" then

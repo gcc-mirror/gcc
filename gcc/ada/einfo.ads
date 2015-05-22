@@ -2218,6 +2218,14 @@ package Einfo is
 --       In the case of private and incomplete types, this flag is set in
 --       both the partial view and the full view.
 
+--    Is_Atomic_Or_VFA (synth)
+--       Defined in all type entities, and also in constants, components and
+--       variables. Set if a pragma Atomic or Shared or Volatile_Full_Access
+--       applies to the entity. For many purposes VFA objects should be treated
+--       the same as Atomic objects, and this predicate is intended for that
+--       usage. In the case of private and incomplete types, the predicate
+--       applies to both the partial view and the full view.
+
 --    Is_Array_Type (synthesized)
 --       Applies to all entities, true for array types and subtypes
 
@@ -5476,6 +5484,7 @@ package Einfo is
    --    Implementation_Base_Type            (synth)
    --    Invariant_Procedure                 (synth)
    --    Is_Access_Protected_Subprogram_Type (synth)
+   --    Is_Atomic_Or_VFA                    (synth)
    --    Predicate_Function                  (synth)
    --    Predicate_Function_M                (synth)
    --    Root_Type                           (synth)
@@ -5628,6 +5637,7 @@ package Einfo is
    --    Is_Tag                              (Flag78)
    --    Is_Volatile                         (Flag16)
    --    Treat_As_Volatile                   (Flag41)
+   --    Is_Atomic_Or_VFA                    (synth)
    --    Next_Component                      (synth)
    --    Next_Component_Or_Discriminant      (synth)
 
@@ -5676,6 +5686,7 @@ package Einfo is
    --    Treat_As_Volatile                   (Flag41)
    --    Address_Clause                      (synth)
    --    Alignment_Clause                    (synth)
+   --    Is_Atomic_Or_VFA                    (synth)
    --    Size_Clause                         (synth)
 
    --  E_Decimal_Fixed_Point_Type
@@ -6413,6 +6424,7 @@ package Einfo is
    --    Treat_As_Volatile                   (Flag41)
    --    Address_Clause                      (synth)
    --    Alignment_Clause                    (synth)
+   --    Is_Atomic_Or_VFA                    (synth)
    --    Size_Clause                         (synth)
 
    --  E_Void
@@ -6869,6 +6881,7 @@ package Einfo is
    function Is_Aliased                          (Id : E) return B;
    function Is_Asynchronous                     (Id : E) return B;
    function Is_Atomic                           (Id : E) return B;
+   function Is_Atomic_Or_VFA                    (Id : E) return B;
    function Is_Bit_Packed_Array                 (Id : E) return B;
    function Is_Called                           (Id : E) return B;
    function Is_Character_Type                   (Id : E) return B;
@@ -9041,6 +9054,7 @@ package Einfo is
    --  be handled by xeinfo.
 
    pragma Inline (Base_Type);
+   pragma Inline (Is_Atomic_Or_VFA);
    pragma Inline (Is_Base_Type);
    pragma Inline (Is_Package_Or_Generic_Package);
    pragma Inline (Is_Packed_Array);
