@@ -2560,6 +2560,12 @@ package body Sem_Ch10 is
 
          if Sloc (U) /= No_Location then
             if Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (U)))
+
+              --  In ASIS mode the rtsfind mechanism plays no role, and
+              --  we need to maintain the original tree structure, so
+              --  this transformation is not performed in this case.
+
+              and then not ASIS_Mode
             then
                Set_Limited_Present (N, False);
                Analyze_With_Clause (N);

@@ -2493,8 +2493,7 @@ package body Sem_Ch8 is
             end loop;
 
             if Ekind (Formal_Spec) = E_Function
-              and then Ekind (Etype (Formal_Spec)) = E_Incomplete_Type
-              and then not Is_Tagged_Type (Etype (F))
+              and then not Is_Tagged_Type (Etype (Formal_Spec))
             then
                Has_Untagged_Inc := True;
             end if;
@@ -2514,6 +2513,13 @@ package body Sem_Ch8 is
                        or else Is_Generic_Type (Root_Type (Etype (F)))
                      then
                         null;
+
+                     --  A limited view of a type declared elsewhere needs no
+                     --  freezing actions.
+
+                     elsif From_Limited_With (Etype (F)) then
+                        null;
+
                      else
                         Error_Msg_NE
                           ("type& must be frozen before this point",

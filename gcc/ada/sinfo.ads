@@ -521,6 +521,9 @@ package Sinfo is
    --      simply ignore these nodes, since they are not relevant to the task
    --      of back annotating representation information.
 
+   --  Some other ASIS-specific issues are covered in specific comments in
+   --  sections for particular nodes or flags.
+
    ----------------
    -- Ghost Mode --
    ----------------
@@ -6383,6 +6386,13 @@ package Sinfo is
 
       --  Similarly, Private_Present is used to support the implementation of
       --  Ada 2005 (AI-50262).
+
+      --  Note: if the WITH clause refers to a standard library unit, then a
+      --  limited with clause is changed into a normal with clause, because we
+      --  are not prepared to deal with limited with in the context of Rtsfind.
+      --  So in this case, the Limited_Present flag will be False in the final
+      --  tree. However, we do NOT do this transformation in ASIS mode, so for
+      --  ASIS the flag will remain set in this situation.
 
       ----------------------
       -- With_Type clause --
