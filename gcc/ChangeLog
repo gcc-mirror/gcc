@@ -1,3 +1,8 @@
+2015-05-22  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd ((x | y) & ~x -> y & ~x, (x & y) | ~x -> y | ~x): New
+	simplifications.
+
 2015-05-22  Jeff Law  <law@redhat.com>
 
 	* config/pa/pa.md (integer_indexed_store splitters): Use

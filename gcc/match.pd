@@ -280,10 +280,18 @@ along with GCC; see the file COPYING3.  If not see
 /* x & ~(x & y) -> x & ~y */
 /* x | ~(x | y) -> x | ~y  */
 (for bitop (bit_and bit_ior)
-  (simplify
-    (bitop:c @0 (bit_not (bitop:c@2 @0 @1)))
-      (if (TREE_CODE (@2) != SSA_NAME || has_single_use (@2))
-	(bitop @0 (bit_not @1)))))
+ (simplify
+  (bitop:c @0 (bit_not (bitop:c@2 @0 @1)))
+   (if (TREE_CODE (@2) != SSA_NAME || has_single_use (@2))
+    (bitop @0 (bit_not @1)))))
+
+/* (x | y) & ~x -> y & ~x */
+/* (x & y) | ~x -> y | ~x */
+(for bitop (bit_and bit_ior)
+     rbitop (bit_ior bit_and)
+ (simplify
+  (bitop:c (rbitop:c @0 @1) (bit_not@2 @0))
+  (bitop @1 @2)))
 
 (simplify
  (abs (negate @0))
