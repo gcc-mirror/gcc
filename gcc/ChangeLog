@@ -1,3 +1,13 @@
+2015-05-22  Jeff Law  <law@redhat.com>
+
+	* pa.c (mem_shadd_or_shadd_rtx_p): New function factored out
+	of hppa_legitimize_address to handle both forms of a multiply
+	by 2, 4 or 8.
+	(hppa_legitimize_address): Use mem_shadd_or_shadd_rtx_p. 
+	Always generate the ASHIFT variant as the result is not directly
+	used in a MEM.  Update comments and refactor slightly to improve
+	readability.
+
 2015-05-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/65491
