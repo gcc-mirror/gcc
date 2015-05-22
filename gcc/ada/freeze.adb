@@ -3357,9 +3357,20 @@ package body Freeze is
             end if;
          end if;
 
-         --  Check suspicious use of Import in pure unit
+         --  Check suspicious use of Import in pure unit (cases where the RM
+         --  allows calls to be omitted).
 
-         if Is_Imported (E) and then Is_Pure (Cunit_Entity (Current_Sem_Unit))
+         if Is_Imported (E)
+
+           --  It might be suspicious if the compilation unit has the Pure
+           --  aspect/pragma.
+
+           and then Has_Pragma_Pure (Cunit_Entity (Current_Sem_Unit))
+
+           --  The RM allows omission of calls only in the case of
+           --  library-level subprograms (see RM-10.2.1(18)).
+
+           and then Is_Library_Level_Entity (E)
 
            --  Ignore internally generated entity. This happens in some cases
            --  of subprograms in specs, where we generate an implied body.
