@@ -2551,8 +2551,21 @@ package body Sem_Ch10 is
          --  Ada 2005 (AI-50217): Build visibility structures but do not
          --  analyze the unit.
 
+         --  If the designated unit is a predefined unit, which might be used
+         --  implicitly through the rtsfind machinery, a limited with clause
+         --  on such a unit is usually pointless, because run-time units are
+         --  unlikely to appear in mutually dependent units, and because this
+         --  disables the rtsfind mechanism. We transform such limited with
+         --  clauses into regular with clauses.
+
          if Sloc (U) /= No_Location then
-            Build_Limited_Views (N);
+            if Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (U)))
+            then
+               Set_Limited_Present (N, False);
+               Analyze_With_Clause (N);
+            else
+               Build_Limited_Views (N);
+            end if;
          end if;
 
          return;

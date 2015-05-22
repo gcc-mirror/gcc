@@ -11718,11 +11718,20 @@ package body Sem_Ch13 is
          Lo := Uint_0;
       end if;
 
+      --  Null range case, size is always zero. We only do this in the discrete
+      --  type case, since that's the odd case that came up. Probably we should
+      --  also do this in the fixed-point case, but doing so causes peculiar
+      --  gigi failures, and it is not worth worrying about this incredibly
+      --  marginal case (explicit null-range fixed-point type declarations)???
+
+      if Lo > Hi and then Is_Discrete_Type (T) then
+         S := 0;
+
       --  Signed case. Note that we consider types like range 1 .. -1 to be
       --  signed for the purpose of computing the size, since the bounds have
       --  to be accommodated in the base type.
 
-      if Lo < 0 or else Hi < 0 then
+      elsif Lo < 0 or else Hi < 0 then
          S := 1;
          B := Uint_1;
 

@@ -437,10 +437,10 @@ package Einfo is
 --       into an attribute definition clause for this purpose.
 
 --    Anonymous_Master (Node36)
---       Defined in the entities of non-generic subprogram and package units.
---       Contains the entity of a special heterogeneous finalization master
---       that services most anonymous access-to-controlled allocations that
---       occur within the unit.
+--       Defined in the entities of non-generic packages, subprograms and their
+--       corresponding bodies. Contains the entity of a special heterogeneous
+--       finalization master that services most anonymous access-to-controlled
+--       allocations that occur within the unit.
 
 --    Associated_Entity (Node37)
 --       Defined in all entities. This field is similar to Associated_Node, but
@@ -6096,6 +6096,7 @@ package Einfo is
    --    SPARK_Pragma                        (Node32)
    --    SPARK_Aux_Pragma                    (Node33)
    --    Contract                            (Node34)
+   --    Anonymous_Master                    (Node36)
    --    Contains_Ignored_Ghost_Code         (Flag279)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    SPARK_Aux_Pragma_Inherited          (Flag266)
@@ -6320,6 +6321,7 @@ package Einfo is
    --    Extra_Formals                       (Node28)
    --    SPARK_Pragma                        (Node32)
    --    Contract                            (Node34)
+   --    Anonymous_Master                    (Node36)
    --    Contains_Ignored_Ghost_Code         (Flag279)
    --    SPARK_Pragma_Inherited              (Flag265)
    --    Scope_Depth                         (synth)

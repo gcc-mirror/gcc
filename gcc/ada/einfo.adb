@@ -757,7 +757,11 @@ package body Einfo is
 
    function Anonymous_Master (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Package, E_Procedure));
+      pragma Assert (Ekind_In (Id, E_Function,
+                                   E_Package,
+                                   E_Package_Body,
+                                   E_Procedure,
+                                   E_Subprogram_Body));
       return Node36 (Id);
    end Anonymous_Master;
 
@@ -3586,7 +3590,11 @@ package body Einfo is
 
    procedure Set_Anonymous_Master (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Function, E_Package, E_Procedure));
+      pragma Assert (Ekind_In (Id, E_Function,
+                                   E_Package,
+                                   E_Package_Body,
+                                   E_Procedure,
+                                   E_Subprogram_Body));
       Set_Node36 (Id, V);
    end Set_Anonymous_Master;
 
@@ -10141,7 +10149,9 @@ package body Einfo is
          when E_Function                                   |
               E_Operator                                   |
               E_Package                                    |
-              E_Procedure                                  =>
+              E_Package_Body                               |
+              E_Procedure                                  |
+              E_Subprogram_Body                            =>
             Write_Str ("Anonymous_Master");
 
          when others                                       =>
