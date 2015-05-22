@@ -429,11 +429,11 @@ package body Exp_Ch5 is
       elsif Has_Controlled_Component (L_Type) then
          Loop_Required := True;
 
-      --  If object is atomic, we cannot tolerate a loop
+      --  If object is atomic/VFA, we cannot tolerate a loop
 
-      elsif Is_Atomic_Object (Act_Lhs)
+      elsif Is_Atomic_Or_VFA_Object (Act_Lhs)
               or else
-            Is_Atomic_Object (Act_Rhs)
+            Is_Atomic_Or_VFA_Object (Act_Rhs)
       then
          return;
 
@@ -442,8 +442,8 @@ package body Exp_Ch5 is
 
       elsif Has_Atomic_Components (L_Type)
         or else Has_Atomic_Components (R_Type)
-        or else Is_Atomic (Component_Type (L_Type))
-        or else Is_Atomic (Component_Type (R_Type))
+        or else Is_Atomic_Or_VFA (Component_Type (L_Type))
+        or else Is_Atomic_Or_VFA (Component_Type (R_Type))
       then
          Loop_Required := True;
 
@@ -3395,7 +3395,7 @@ package body Exp_Ch5 is
                         Next_Elmt (Prim);
                      end loop;
 
-                     --  default iterator must exist.
+                     --  Default iterator must exist
 
                      pragma Assert (False);
 

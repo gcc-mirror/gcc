@@ -965,6 +965,13 @@ package body Sem_Ch13 is
                            Set_Is_Volatile (E);
                         end if;
 
+                     --  Volatile_Full_Access
+
+                     when Aspect_Volatile_Full_Access =>
+                        if Has_Volatile_Full_Access (P) then
+                           Set_Has_Volatile_Full_Access (E);
+                        end if;
+
                      --  Volatile_Components
 
                      when Aspect_Volatile_Components =>
@@ -1057,6 +1064,11 @@ package body Sem_Ch13 is
                      return;
                   end if;
 
+               when Aspect_Volatile_Full_Access =>
+                  if not Has_Volatile_Full_Access (Par) then
+                     return;
+                  end if;
+
                when others =>
                   return;
             end case;
@@ -1066,7 +1078,6 @@ package body Sem_Ch13 is
             Error_Msg_Name_1 := A_Name;
             Error_Msg_NE
               ("derived type& inherits aspect%, cannot cancel", Expr, E);
-
          end Check_False_Aspect_For_Derived_Type;
 
       --  Start of processing for Make_Pragma_From_Boolean_Aspect
@@ -11160,6 +11171,18 @@ package body Sem_Ch13 is
         and then Is_Pragma_Or_Corr_Pragma_Present_In_Rep_Item
                    (Get_Rep_Item (Typ, Name_Volatile))
       then
+         Set_Treat_As_Volatile (Typ);
+         Set_Is_Volatile (Typ);
+      end if;
+
+      --  Volatile_Full_Access
+
+      if not Has_Rep_Item (Typ, Name_Volatile_Full_Access, False)
+        and then Has_Rep_Pragma (Typ, Name_Volatile_Full_Access)
+        and then Is_Pragma_Or_Corr_Pragma_Present_In_Rep_Item
+                   (Get_Rep_Item (Typ, Name_Volatile_Full_Access))
+      then
+         Set_Has_Volatile_Full_Access (Typ);
          Set_Treat_As_Volatile (Typ);
          Set_Is_Volatile (Typ);
       end if;

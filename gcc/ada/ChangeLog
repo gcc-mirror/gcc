@@ -1,5 +1,15 @@
 2015-05-22  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch5.adb, layout.adb, einfo.adb, einfo.ads, sem_prag.adb,
+	freeze.adb, freeze.ads, sem_util.adb, sem_util.ads, exp_ch2.adb,
+	exp_ch4.adb, errout.adb, exp_aggr.adb, sem_ch13.adb: This is a general
+	change that deals with the fact that most of the special coding for
+	Atomic should also apply to the case of Volatile_Full_Access.
+	A new attribute Is_Atomic_Or_VFA is introduced, and many of the
+	references to Is_Atomic now use this new attribute.
+
+2015-05-22  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch4.adb (Expand_N_Op_Eq): Introduce 'Machine for 'Result
 	comparison.
 

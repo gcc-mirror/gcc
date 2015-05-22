@@ -4175,7 +4175,7 @@ package body Exp_Aggr is
 
             Ctyp := Component_Type (Ctyp);
 
-            if Is_Atomic (Ctyp) then
+            if Is_Atomic_Or_VFA (Ctyp) then
                return False;
             end if;
          end loop;
@@ -5935,15 +5935,15 @@ package body Exp_Aggr is
    --  Start of processing for Expand_Record_Aggregate
 
    begin
-      --  If the aggregate is to be assigned to an atomic variable, we have
+      --  If the aggregate is to be assigned to an atomic/VFA variable, we have
       --  to prevent a piecemeal assignment even if the aggregate is to be
       --  expanded. We create a temporary for the aggregate, and assign the
       --  temporary instead, so that the back end can generate an atomic move
       --  for it.
 
-      if Is_Atomic (Typ)
+      if Is_Atomic_Or_VFA (Typ)
         and then Comes_From_Source (Parent (N))
-        and then Is_Atomic_Aggregate (N, Typ)
+        and then Is_Atomic_VFA_Aggregate (N, Typ)
       then
          return;
 

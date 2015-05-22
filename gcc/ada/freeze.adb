@@ -942,13 +942,13 @@ package body Freeze is
                      Packed_Size_Known := False;
                   end if;
 
-                  --  We do not know the packed size if we have an atomic type
+                  --  We do not know the packed size for an atomic/VFA type
                   --  or component, or an independent type or component, or a
                   --  by reference type or aliased component (because packing
                   --  does not touch these).
 
-                  if Is_Atomic (Ctyp)
-                    or else Is_Atomic (Comp)
+                  if        Is_Atomic_Or_VFA (Ctyp)
+                    or else Is_Atomic_Or_VFA (Comp)
                     or else Is_Independent (Ctyp)
                     or else Is_Independent (Comp)
                     or else Is_By_Reference_Type (Ctyp)
@@ -1036,11 +1036,11 @@ package body Freeze is
                                  and then Is_Modular_Integer_Type
                                             (Packed_Array_Impl_Type (Ctyp)))
                      then
-                        --  Packed size unknown if we have an atomic type
-                        --  or a by reference type, since the back end
-                        --  knows how these are layed out.
+                        --  Packed size unknown if we have an atomic/VFA type
+                        --  or a by reference type, since the back end knows
+                        --  how these are layed out.
 
-                        if Is_Atomic (Ctyp)
+                        if Is_Atomic_Or_VFA (Ctyp)
                           or else Is_By_Reference_Type (Ctyp)
                         then
                            Packed_Size_Known := False;
@@ -1455,11 +1455,11 @@ package body Freeze is
       end loop;
    end Check_Unsigned_Type;
 
-   -------------------------
-   -- Is_Atomic_Aggregate --
-   -------------------------
+   -----------------------------
+   -- Is_Atomic_VFA_Aggregate --
+   -----------------------------
 
-   function  Is_Atomic_Aggregate
+   function Is_Atomic_VFA_Aggregate
      (E   : Entity_Id;
       Typ : Entity_Id) return Boolean
    is
@@ -1495,7 +1495,7 @@ package body Freeze is
       else
          return False;
       end if;
-   end Is_Atomic_Aggregate;
+   end Is_Atomic_VFA_Aggregate;
 
    -----------------------------------------------
    -- Explode_Initialization_Compound_Statement --
@@ -2423,12 +2423,12 @@ package body Freeze is
                end if;
             end;
 
-            --  Check for Aliased or Atomic_Components/Atomic with unsuitable
-            --  packing or explicit component size clause given.
+            --  Check for Aliased or Atomic_Components/Atomic/VFA with
+            --  unsuitable packing or explicit component size clause given.
 
             if (Has_Aliased_Components (Arr)
                  or else Has_Atomic_Components (Arr)
-                 or else Is_Atomic (Ctyp))
+                 or else Is_Atomic_Or_VFA (Ctyp))
               and then
                 (Has_Component_Size_Clause (Arr) or else Is_Packed (Arr))
             then
@@ -2436,8 +2436,8 @@ package body Freeze is
 
                   procedure Complain_CS (T : String);
                   --  Outputs error messages for incorrect CS clause or pragma
-                  --  Pack for aliased or atomic components (T is "aliased" or
-                  --  "atomic");
+                  --  Pack for aliased or atomic/VFA components (T is "aliased"
+                  --  or "atomic/vfa");
 
                   -----------------
                   -- Complain_CS --
@@ -2498,9 +2498,13 @@ package body Freeze is
                   elsif Has_Aliased_Components (Arr) then
                      Complain_CS ("aliased");
 
-                  elsif Has_Atomic_Components (Arr) or else Is_Atomic (Ctyp)
+                  elsif Has_Atomic_Components (Arr)
+                    or else Is_Atomic (Ctyp)
                   then
                      Complain_CS ("atomic");
+
+                  elsif Has_Volatile_Full_Access (Ctyp) then
+                     Complain_CS ("volatile full access");
                   end if;
                end Alias_Atomic_Check;
             end if;
@@ -2509,8 +2513,8 @@ package body Freeze is
             --  packing or explicit component size clause given.
 
             if (Has_Independent_Components (Arr) or else Is_Independent (Ctyp))
-              and then
-                (Has_Component_Size_Clause (Arr) or else Is_Packed (Arr))
+                  and then
+               (Has_Component_Size_Clause  (Arr) or else Is_Packed (Arr))
             then
                begin
                   --  If object size of component type isn't known, we cannot
@@ -2772,7 +2776,7 @@ package body Freeze is
 
          --  For non-packed arrays set the alignment of the array to the
          --  alignment of the component type if it is unknown. Skip this
-         --  in atomic case (atomic arrays may need larger alignments).
+         --  in atomic/VFA case (atomic/VFA arrays may need larger alignments).
 
          if not Is_Packed (Arr)
            and then Unknown_Alignment (Arr)
@@ -2780,7 +2784,7 @@ package body Freeze is
            and then Known_Static_Component_Size (Arr)
            and then Known_Static_Esize (Ctyp)
            and then Esize (Ctyp) = Component_Size (Arr)
-           and then not Is_Atomic (Arr)
+           and then not Is_Atomic_Or_VFA (Arr)
          then
             Set_Alignment (Arr, Alignment (Component_Type (Arr)));
          end if;
@@ -4813,11 +4817,12 @@ package body Freeze is
          --  than component-wise (the assignment to the temp may be done
          --  component-wise, but that is harmless).
 
-         elsif Is_Atomic (E)
+         elsif Is_Atomic_Or_VFA (E)
            and then Nkind (Parent (E)) = N_Object_Declaration
            and then Present (Expression (Parent (E)))
            and then Nkind (Expression (Parent (E))) = N_Aggregate
-           and then Is_Atomic_Aggregate (Expression (Parent (E)), Etype (E))
+           and then
+             Is_Atomic_VFA_Aggregate (Expression (Parent (E)), Etype (E))
          then
             null;
          end if;

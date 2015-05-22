@@ -5842,17 +5842,17 @@ package body Sem_Prag is
          K    : Node_Kind;
          Utyp : Entity_Id;
 
-         procedure Set_Atomic_Full (E : Entity_Id);
+         procedure Set_Atomic_VFA (E : Entity_Id);
          --  Set given type as Is_Atomic or Has_Volatile_Full_Access. Also, if
          --  no explicit alignment was given, set alignment to unknown, since
          --  back end knows what the alignment requirements are for atomic and
          --  full access arrays. Note: this is necessary for derived types.
 
-         ---------------------
-         -- Set_Atomic_Full --
-         ---------------------
+         --------------------
+         -- Set_Atomic_VFA --
+         --------------------
 
-         procedure Set_Atomic_Full (E : Entity_Id) is
+         procedure Set_Atomic_VFA (E : Entity_Id) is
          begin
             if Prag_Id = Pragma_Volatile_Full_Access then
                Set_Has_Volatile_Full_Access (E);
@@ -5863,7 +5863,7 @@ package body Sem_Prag is
             if not Has_Alignment_Clause (E) then
                Set_Alignment (E, Uint_0);
             end if;
-         end Set_Atomic_Full;
+         end Set_Atomic_VFA;
 
       --  Start of processing for Process_Atomic_Independent_Shared_Volatile
 
@@ -5956,9 +5956,9 @@ package body Sem_Prag is
                  or else
                Prag_Id = Pragma_Volatile_Full_Access
             then
-               Set_Atomic_Full (E);
-               Set_Atomic_Full (Base_Type (E));
-               Set_Atomic_Full (Underlying_Type (E));
+               Set_Atomic_VFA (E);
+               Set_Atomic_VFA (Base_Type (E));
+               Set_Atomic_VFA (Underlying_Type (E));
             end if;
 
             --  Atomic/Shared/Volatile_Full_Access imply Independent
