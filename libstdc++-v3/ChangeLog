@@ -1,3 +1,14 @@
+2015-05-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backported from mainline
+	2015-05-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/66224
+	* config/cpu/powerpc/atomic_word.h (_GLIBCXX_READ_MEM_BARRIER):
+	Don't use isync. Use lwsync if available.
+	* configure.host (atomic_word_dir) [aix[56789]*]: Delete to use
+	powerpc cpu definition.
+
 2015-05-07  Renlin Li  <renlin.li@arm.com>
 
 	Backported from mainline
