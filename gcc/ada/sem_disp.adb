@@ -823,6 +823,13 @@ package body Sem_Disp is
                   then
                      Func := Empty;
 
+                  --  Ditto if it is an explicit dereference.
+
+                  elsif
+                    Nkind (Original_Node (Actual)) = N_Explicit_Dereference
+                  then
+                     Func := Empty;
+
                   --  Only other possibility is a qualified expression whose
                   --  constituent expression is itself a call.
 
@@ -2124,6 +2131,14 @@ package body Sem_Disp is
 
             begin
                Tag_Typ := Find_Dispatching_Type (S);
+
+               --  In the presence of limited views there may be no visible
+               --  dispatching type. Primitives will be inherited when non-
+               --  limited view is frozen.
+
+               if No (Tag_Typ) then
+                  return Result (1 .. 0);
+               end if;
 
                if Is_Concurrent_Type (Tag_Typ) then
                   Tag_Typ := Corresponding_Record_Type (Tag_Typ);

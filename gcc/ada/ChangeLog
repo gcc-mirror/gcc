@@ -1,3 +1,43 @@
+2015-05-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb (Incomplete_Actuals): New attribute of
+	package instantiations. Holds the list of actuals in the instance
+	that are incomplete types, to determine where the corresponding
+	instance body must be placed.
+	* sem_ch6.adb (Conforming_Types): An incomplete type used as an
+	actual in an instance matches an incomplete formal.
+	* sem_disp.adb (Check_Dispatching_Call): Handle missing case of
+	explicit dereference.
+	(Inherited_Subprograms): In the presence of a limited view there
+	are no subprograms to inherit.
+	* sem_ch12.adb (Preanalyze_Actuals): Build list of incomplete
+	actuals of instance, for later placement of instance body and
+	freeze nodes for actuals.
+	(Install_Body): In the presence of actuals that incomplete types
+	from a limited view, the instance body cannot be placed after
+	the declaration because full views have not been seen yet. Any
+	use of the non-limited views in the instance body requires
+	the presence of a regular with_clause in the enclosing unit,
+	and will fail if this with_clause is missing.  We place the
+	instance body at the beginning of the enclosing body, which is
+	the unit being compiled, and ensure that freeze nodes for the
+	full views of the incomplete types appear before the instance.
+
+2015-05-22  Pascal Obry  <obry@adacore.com>
+
+	* makeutl.ads, prj-conf.adb, prj-nmsc.adb, prj.ads
+	(In_Place_Option): Removed.
+	(Relocate_Build_Tree_Option): New constant.
+	(Root_Dir_Option): New constant.
+	(Obj_Root_Dir): Removed.
+	(Build_Tree_Dir): New variable.
+	(Root_Src_Tree): Removed.
+	(Root_Dir): New variable.
+	* prj-conf.adb (Get_Or_Create_Configuration_File): Add check
+	for improper relocation.
+	* prj-nmsc.adb (Locate_Directory): Add check for improper
+	relocation.
+
 2015-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb (Default_Init_Cond_Procedure): Code cleanup. The
