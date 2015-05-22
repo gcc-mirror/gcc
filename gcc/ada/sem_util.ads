@@ -1170,7 +1170,7 @@ package Sem_Util is
 
    function Is_Atomic_Or_VFA_Object (N : Node_Id) return Boolean;
    --  Determines if the given node is an atomic object (Is_Atomic_Object true)
-   --  or else is an object for which  VFA is present.
+   --  or else is an object for which VFA is present.
 
    function Is_Attribute_Result (N : Node_Id) return Boolean;
    --  Determine whether node N denotes attribute 'Result

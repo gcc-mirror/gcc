@@ -7523,9 +7523,9 @@ package body Exp_Ch4 is
 
       Optimize_Length_Comparison (N);
 
-      --  One more special case, if we have a comparison of X'Result = expr
+      --  One more special case: if we have a comparison of X'Result = expr
       --  in floating-point, then if not already there, change expr to be
-      --  f'Machine (expr) to eliminate suprise from extra precision.
+      --  f'Machine (expr) to eliminate surprise from extra precision.
 
       if Is_Floating_Point_Type (Typl)
         and then Nkind (Original_Node (Lhs)) = N_Attribute_Reference

@@ -2928,7 +2928,7 @@ package body Layout is
             return;
          end if;
 
-         --  No effect if any component is atomic/VFA or is a by reference type
+         --  No effect if any component is atomic/VFA or is a by-reference type
 
          declare
             Ent : Entity_Id;

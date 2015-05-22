@@ -12901,6 +12901,13 @@ package body Sem_Ch3 is
 
          if No (Def_Id) then
             Def_Id := Create_Itype (E_Void, Related_Nod, Related_Id, Suffix);
+
+            --  Elaborate itype now, as it may be used in a subsequent
+            --  synchronized operation in another scope.
+
+            if Nkind (Related_Nod) = N_Full_Type_Declaration then
+               Build_Itype_Reference (Def_Id, Related_Nod);
+            end if;
          end if;
 
          Constrain_Discriminated_Type (Def_Id, SI, Related_Nod);

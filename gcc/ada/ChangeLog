@@ -1,5 +1,16 @@
 2015-05-22  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch3.adb (Constrain_Concurrent): If the context is a
+	type declaration, generate an Itype_Reference for the anonymous
+	subtype, to force elaboration at this point in gigi.
+
+2015-05-22  Gary Dismukes  <dismukes@adacore.com>
+
+	* layout.adb, einfo.ads, sem_ch12.adb, freeze.adb, sem_util.ads,
+	exp_ch4.adb, sem_ch6.adb: Minor reformatting and typo fixes.
+
+2015-05-22  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_res.adb (Resolve_Actuals): If the call is to an overridden
 	operation, replace the names of the actuals in named associations
 	with the names of the actuals of the subprogram that is eventually
