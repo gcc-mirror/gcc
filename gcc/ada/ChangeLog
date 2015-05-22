@@ -1,3 +1,7 @@
+2015-05-22  Pascal Obry  <obry@adacore.com>
+
+	* prj-util.ads, prj-util.adb (Relative_Path): New routine.
+
 2015-05-22  Bob Duff  <duff@adacore.com>
 
 	* exp_utils.ads, exp_utils.adb (Find_Optional_Prim_Op): New
