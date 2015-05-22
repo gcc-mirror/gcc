@@ -2090,6 +2090,13 @@ package Einfo is
 --       Rep_Item chain mechanism, because a single pragma Import can apply
 --       to multiple subprogram entities).
 
+--    Incomplete_Actuals (Elist24)
+--       Defined on package entities that are instances. Indicates the actusl
+--       types in the instantiation that are limited views. IF this list is
+--       not empty, the instantiation, which appears in a package declaration,
+--       is relocated to the corresponding package body, which must have a
+--       corresponding non-limited with_clause.
+
 --    In_Package_Body (Flag48)
 --       Defined in package entities. Set on the entity that denotes the
 --       package (the defining occurrence of the package declaration) while
@@ -4028,7 +4035,9 @@ package Einfo is
 --       length objects). It is set conservatively (i.e. if it is True, the
 --       size is certainly known at compile time, if it is False, then the
 --       size may or may not be known at compile time, but the code will
---       assume that it is not known).
+--       assume that it is not known). Note that the value may be known only
+--       to the back end, so the fact that this flag is set does not mean that
+--       the front end can access the value.
 
 --    Small_Value (Ureal21)
 --       Defined in fixed point types. Points to the universal real for the
@@ -6042,6 +6051,7 @@ package Einfo is
    --    Generic_Renamings                   (Elist23)  (for an instance)
    --    Inner_Instances                     (Elist23)  (generic case only)
    --    Limited_View                        (Node23)   (non-generic/instance)
+   --    Incomplete_Actuals                  (Elist24)  (for an instance)
    --    Abstract_States                     (Elist25)
    --    Package_Instantiation               (Node26)
    --    Current_Use_Clause                  (Node27)
@@ -6840,6 +6850,7 @@ package Einfo is
    function Hiding_Loop_Variable                (Id : E) return E;
    function Homonym                             (Id : E) return E;
    function Import_Pragma                       (Id : E) return E;
+   function Incomplete_Actuals                  (Id : E) return L;
    function In_Package_Body                     (Id : E) return B;
    function In_Private_Part                     (Id : E) return B;
    function In_Use                              (Id : E) return B;
@@ -7492,6 +7503,7 @@ package Einfo is
    procedure Set_Hiding_Loop_Variable            (Id : E; V : E);
    procedure Set_Homonym                         (Id : E; V : E);
    procedure Set_Import_Pragma                   (Id : E; V : E);
+   procedure Set_Incomplete_Actuals              (Id : E; V : L);
    procedure Set_In_Package_Body                 (Id : E; V : B := True);
    procedure Set_In_Private_Part                 (Id : E; V : B := True);
    procedure Set_In_Use                          (Id : E; V : B := True);
@@ -8265,6 +8277,7 @@ package Einfo is
    pragma Inline (Hiding_Loop_Variable);
    pragma Inline (Homonym);
    pragma Inline (Import_Pragma);
+   pragma Inline (Incomplete_Actuals);
    pragma Inline (In_Package_Body);
    pragma Inline (In_Private_Part);
    pragma Inline (In_Use);
@@ -8763,6 +8776,7 @@ package Einfo is
    pragma Inline (Set_Hiding_Loop_Variable);
    pragma Inline (Set_Homonym);
    pragma Inline (Set_Import_Pragma);
+   pragma Inline (Set_Incomplete_Actuals);
    pragma Inline (Set_In_Package_Body);
    pragma Inline (Set_In_Private_Part);
    pragma Inline (Set_In_Use);

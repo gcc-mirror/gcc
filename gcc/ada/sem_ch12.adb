@@ -825,11 +825,14 @@ package body Sem_Ch12 is
    --  at the end of the enclosing generic package, which is semantically
    --  neutral.
 
-   procedure Preanalyze_Actuals (N : Node_Id);
+   procedure Preanalyze_Actuals (N : Node_Id; Inst : Entity_Id := Empty);
    --  Analyze actuals to perform name resolution. Full resolution is done
    --  later, when the expected types are known, but names have to be captured
    --  before installing parents of generics, that are not visible for the
    --  actuals themselves.
+   --  If Inst is present, it is the entity of the package instance. This
+   --  entity is marked as having a limited_view actual when some actual is
+   --  a limited view. This is used to place the instance body properly..
 
    procedure Remove_Parent (In_Body : Boolean := False);
    --  Reverse effect after instantiation of child is complete
@@ -3596,7 +3599,12 @@ package body Sem_Ch12 is
       end if;
 
       Generate_Definition (Act_Decl_Id);
-      Preanalyze_Actuals (N);
+      Set_Ekind (Act_Decl_Id, E_Package);
+
+      --  Initialize list of incomplete actuals before analysis.
+      Set_Incomplete_Actuals (Act_Decl_Id, New_Elmt_List);
+
+      Preanalyze_Actuals (N, Act_Decl_Id);
 
       Init_Env;
       Env_Installed := True;
@@ -8845,6 +8853,66 @@ package body Sem_Ch12 is
    --  Start of processing for Install_Body
 
    begin
+      --  Handle first the case of an instance with incomplete actual types.
+      --  The instance body cannot be placed after the declaration because
+      --  full views have not been seen yet. Any use of the non-limited views
+      --  in the instance body requires the presence of a regular with_clause
+      --  in the enclosing unit, and will fail if this with_clause is missing.
+      --  We place the instance body at the beginning of the enclosing body,
+      --  which is the unit being compiled, and ensure that freeze nodes for
+      --  the full views of the incomplete types appear before the instance.
+
+      if not Is_Empty_Elmt_List (Incomplete_Actuals (Act_Id))
+        and then Expander_Active
+        and then Ekind (Scope (Act_Id)) = E_Package
+      then
+         declare
+            Scop    : constant Entity_Id := Scope (Act_Id);
+            Body_Id : constant Node_Id :=
+                         Corresponding_Body (Unit_Declaration_Node (Scop));
+
+         begin
+            Ensure_Freeze_Node (Act_Id);
+            F_Node := Freeze_Node (Act_Id);
+            if Present (Body_Id) then
+               Set_Is_Frozen (Act_Id);
+               Prepend (Act_Body, Declarations (Parent (Body_Id)));
+            end if;
+
+            --  Add freeze nodes of formerly incomplete types ahead of
+            --  the instance body.
+
+            declare
+               Elmt    : Elmt_Id;
+               F_T     : Node_Id;
+               Typ     : Entity_Id;
+
+            begin
+               Elmt := First_Elmt (Incomplete_Actuals (Act_Id));
+               while Present (Elmt) loop
+                  Typ := Node (Elmt);
+                  if From_Limited_With (Typ) then
+                     Typ := Non_Limited_View (Typ);
+                  end if;
+                  Ensure_Freeze_Node (Typ);
+                  F_T := Freeze_Node (Typ);
+
+                  --  If freeze node is already in the tree, remove it
+                  --  and place ahead of instance body.
+
+                  if Is_List_Member (F_T) then
+                     Remove (F_T);
+                  end if;
+
+                  Prepend (F_T, Declarations (Parent (Body_Id)));
+                  Next_Elmt (Elmt);
+               end loop;
+            end;
+         end;
+
+         return;
+      end if;
+
       --  If the body is a subunit, the freeze point is the corresponding stub
       --  in the current compilation, not the subunit itself.
 
@@ -13195,7 +13263,7 @@ package body Sem_Ch12 is
    -- Preanalyze_Actuals --
    ------------------------
 
-   procedure Preanalyze_Actuals (N : Node_Id) is
+   procedure Preanalyze_Actuals (N : Node_Id; Inst : Entity_Id := Empty) is
       Assoc : Node_Id;
       Act   : Node_Id;
       Errs  : constant Int := Serious_Errors_Detected;
@@ -13286,6 +13354,13 @@ package body Sem_Ch12 is
 
             elsif Nkind (Act) /= N_Operator_Symbol then
                Analyze (Act);
+
+               if Is_Entity_Name (Act)
+                 and then  Is_Type (Entity (Act))
+                 and then From_Limited_With (Entity (Act))
+               then
+                  Append_Elmt (Entity (Act), Incomplete_Actuals (Inst));
+               end if;
             end if;
 
             if Errs /= Serious_Errors_Detected then

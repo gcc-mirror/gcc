@@ -212,6 +212,7 @@ package body Einfo is
    --    Protection_Object               Node23
    --    Stored_Constraint               Elist23
 
+   --    Incomplete_Actuals              Elist24
    --    Related_Expression              Node24
    --    Subps_Index                     Uint24
 
@@ -1877,6 +1878,12 @@ package body Einfo is
       pragma Assert (Is_Subprogram (Id));
       return Node35 (Id);
    end Import_Pragma;
+
+   function Incomplete_Actuals (Id : E) return L is
+   begin
+      pragma Assert (Ekind (Id) = E_Package);
+      return Elist24 (Id);
+   end Incomplete_Actuals;
 
    function Interface_Alias (Id : E) return E is
    begin
@@ -4764,6 +4771,12 @@ package body Einfo is
       pragma Assert (Id /= V);
       Set_Node4 (Id, V);
    end Set_Homonym;
+
+   procedure Set_Incomplete_Actuals (Id : E; V : L) is
+   begin
+      pragma Assert (Ekind (Id) = E_Package);
+      Set_Elist24 (Id, V);
+   end Set_Incomplete_Actuals;
 
    procedure Set_Import_Pragma (Id : E; V : E) is
    begin
@@ -9800,6 +9813,9 @@ package body Einfo is
               E_Operator                                   |
               E_Procedure                                  =>
             Write_Str ("Subps_Index");
+
+         when E_Package                                    =>
+            Write_Str ("Incomplete_Actuals");
 
          when others                                       =>
             Write_Str ("Field24???");
