@@ -525,7 +525,6 @@ package body Exp_Ch4 is
          end if;
 
          Pop_Scope;
-
          return FM_Id;
       end Create_Anonymous_Master;
 
@@ -820,7 +819,6 @@ package body Exp_Ch4 is
                           Make_Exception_Handler (Loc,
                             Exception_Choices => New_List (
                               Make_Others_Choice (Loc)),
-
                             Statements        => New_List (
                               New_Copy_Tree (Free_Stmt),
                               Make_Raise_Statement (Loc))))));
