@@ -489,7 +489,11 @@ private
 
    type Constant_Reference_Type
      (Element : not null access constant Element_Type) is record
-      Control : Reference_Control_Type;
+      Control : Reference_Control_Type :=
+        raise Program_Error with "uninitialized reference";
+      --  The RM says, "The default initialization of an object of
+      --  type Constant_Reference_Type or Reference_Type propagates
+      --  Program_Error."
    end record;
 
    type Cursor is record

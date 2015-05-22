@@ -166,7 +166,7 @@ package Einfo is
 --    the Value_Size values differ generate a warning, and are potentially
 --    target dependent).
 
---    The default rule for the value of Value_Size are as follows:
+--    The default rules for the value of Value_Size are as follows:
 
 --       The Value_Size for a base subtype is the minimum number of bits
 --       required to store all values of the type (including the sign bit
@@ -180,9 +180,9 @@ package Einfo is
 --       All other subtypes have a Value_Size corresponding to the minimum
 --       number of bits required to store all values of the subtype. For
 --       dynamic bounds, it is assumed that the value can range down or up
---       to the corresponding bound of the ancestor
+--       to the corresponding bound of the ancestor.
 
---    The RM defined attribute Size corresponds to the Value_Size attribute
+--    The RM defined attribute Size corresponds to the Value_Size attribute.
 
 --    The Size attribute may be defined for a first-named subtype. This sets
 --    the Value_Size of the first-named subtype to the given value, and the

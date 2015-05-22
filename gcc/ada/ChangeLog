@@ -1,5 +1,31 @@
 2015-05-22  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch8.adb (Analyze_Object_Renaming): Check for renaming
+	component of an object to which Volatile_Full_Access applies.
+
+2015-05-22  Jerome Guitton  <guitton@adacore.com>
+
+	* exp_dbug.ads: Add note about non bit-packed arrays.
+
+2015-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_prag.adb: Fix typo.
+	* einfo.ads: Grammar fixes in comments.
+
+2015-05-22  Bob Duff  <duff@adacore.com>
+
+	* a-cborma.ads, a-cidlli.ads, a-cimutr.ads, a-ciormu.ads,
+	* a-cihase.ads, a-cohama.ads, a-coorse.ads, a-cbhama.ads,
+	* a-cborse.ads, a-comutr.ads, a-ciorma.ads, a-cobove.ads,
+	* a-coormu.ads, a-convec.ads, a-cohase.ads, a-coinho.ads,
+	* a-cbdlli.ads, a-cbmutr.ads, a-cbhase.ads, a-cdlili.ads,
+	* a-cihama.ads, a-coinve.ads, a-ciorse.ads, a-coorma.ads,
+	* a-coinho-shared.ads (Constant_Reference_Type, Reference_Type):
+	Add an initialization expression "raise Program_Error". See,
+	for example, RM-A.18.2(148.4).
+
+2015-05-22  Robert Dewar  <dewar@adacore.com>
+
 	* debug.adb: Update documentation.
 	* einfo.ads, einfo.adb (Needs_Typedef): New flag
 	* exp_unst.adb (Unnest_Subprogram): Mark AREC types as needing
