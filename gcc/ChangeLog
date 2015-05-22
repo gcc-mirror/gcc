@@ -1,3 +1,9 @@
+2015-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66251
+	* tree-vect-stmts.c (vectorizable_conversion): Properly
+	set STMT_VINFO_VEC_STMT even for the SLP case.
+
 2015-05-22  Marek Polacek  <polacek@redhat.com>
 
 	* doc/extend.texi: Use @pxref instead of @xref.
