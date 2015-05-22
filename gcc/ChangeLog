@@ -1,5 +1,9 @@
 2015-05-22  Jeff Law  <law@redhat.com>
 
+	* config/pa/pa.md (integer_indexed_store splitters): Use
+	mem_shadd_operand.  Use ASHIFT rather than MULT in the resulting
+	insns -- adjusting the constant 2nd operand accordingly.
+
 	* combine.c (try_combine): Canonicalize (plus (mult X pow2) Y) into
 	(plus (ashift X log2) Y) if it is a split point.
 

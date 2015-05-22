@@ -2819,42 +2819,54 @@
 ;; a 2 insn store with some creative RTL rewriting.
 (define_split
   [(set (mem:SI (plus:SI (mult:SI (match_operand:SI 0 "register_operand" "")
-			       (match_operand:SI 1 "shadd_operand" ""))
+			       (match_operand:SI 1 "mem_shadd_operand" ""))
 		   (plus:SI (match_operand:SI 2 "register_operand" "")
 			    (match_operand:SI 3 "const_int_operand" ""))))
 	(match_operand:SI 4 "register_operand" ""))
    (clobber (match_operand:SI 5 "register_operand" ""))]
   ""
-  [(set (match_dup 5) (plus:SI (mult:SI (match_dup 0) (match_dup 1))
+  [(set (match_dup 5) (plus:SI (ashift:SI (match_dup 0) (match_dup 1))
 			       (match_dup 2)))
    (set (mem:SI (plus:SI (match_dup 5) (match_dup 3))) (match_dup 4))]
-  "")
+  "
+{
+  operands[1] = GEN_INT (exact_log2 (INTVAL (operands[1])));
+
+}")
 
 (define_split
   [(set (mem:HI (plus:SI (mult:SI (match_operand:SI 0 "register_operand" "")
-			       (match_operand:SI 1 "shadd_operand" ""))
+			       (match_operand:SI 1 "mem_shadd_operand" ""))
 		   (plus:SI (match_operand:SI 2 "register_operand" "")
 			    (match_operand:SI 3 "const_int_operand" ""))))
 	(match_operand:HI 4 "register_operand" ""))
    (clobber (match_operand:SI 5 "register_operand" ""))]
   ""
-  [(set (match_dup 5) (plus:SI (mult:SI (match_dup 0) (match_dup 1))
+  [(set (match_dup 5) (plus:SI (ashift:SI (match_dup 0) (match_dup 1))
 			       (match_dup 2)))
    (set (mem:HI (plus:SI (match_dup 5) (match_dup 3))) (match_dup 4))]
-  "")
+  "
+{
+  operands[1] = GEN_INT (exact_log2 (INTVAL (operands[1])));
+
+}")
 
 (define_split
   [(set (mem:QI (plus:SI (mult:SI (match_operand:SI 0 "register_operand" "")
-			       (match_operand:SI 1 "shadd_operand" ""))
+			       (match_operand:SI 1 "mem_shadd_operand" ""))
 		   (plus:SI (match_operand:SI 2 "register_operand" "")
 			    (match_operand:SI 3 "const_int_operand" ""))))
 	(match_operand:QI 4 "register_operand" ""))
    (clobber (match_operand:SI 5 "register_operand" ""))]
   ""
-  [(set (match_dup 5) (plus:SI (mult:SI (match_dup 0) (match_dup 1))
+  [(set (match_dup 5) (plus:SI (ashift:SI (match_dup 0) (match_dup 1))
 			       (match_dup 2)))
    (set (mem:QI (plus:SI (match_dup 5) (match_dup 3))) (match_dup 4))]
-  "")
+  "
+{
+  operands[1] = GEN_INT (exact_log2 (INTVAL (operands[1])));
+
+}")
 
 (define_expand "movhi"
   [(set (match_operand:HI 0 "general_operand" "")
