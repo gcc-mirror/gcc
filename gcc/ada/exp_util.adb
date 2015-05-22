@@ -204,6 +204,13 @@ package body Exp_Util is
          when others => null;
       end case;
 
+      --  Nothing to do for the identifier in an object renaming declaration,
+      --  the renaming itself does not need atomic syncrhonization.
+
+      if Nkind (Parent (N)) = N_Object_Renaming_Declaration then
+         return;
+      end if;
+
       --  Go ahead and set the flag
 
       Set_Atomic_Sync_Required (N);
