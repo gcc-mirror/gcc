@@ -1,3 +1,9 @@
+2015-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65598
+	* g++.dg/cpp0x/explicit9.C: New.
+	* g++.dg/cpp0x/explicit8.C: Check the locations too.
+
 2015-05-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66251

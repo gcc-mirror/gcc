@@ -10266,12 +10266,15 @@ grokdeclarator (const cp_declarator *declarator,
 	 in the declaration of a constructor or conversion function within
 	 a class definition.  */
       if (!current_class_type)
-	error ("%<explicit%> outside class declaration");
+	error_at (declspecs->locations[ds_explicit],
+		  "%<explicit%> outside class declaration");
       else if (friendp)
-	error ("%<explicit%> in friend declaration");
+	error_at (declspecs->locations[ds_explicit],
+		  "%<explicit%> in friend declaration");
       else
-	error ("only declarations of constructors and conversion operators "
-	       "can be %<explicit%>");
+	error_at (declspecs->locations[ds_explicit],
+		  "only declarations of constructors and conversion operators "
+		  "can be %<explicit%>");
       explicitp = 0;
     }
 
