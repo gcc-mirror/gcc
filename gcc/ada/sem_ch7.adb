@@ -750,7 +750,7 @@ package body Sem_Ch7 is
          Set_Is_Ghost_Entity (Body_Id);
 
          --  The Ghost policy in effect at the point of declaration and at the
-         --  point of completion must match (SPARK RM 6.9(15)).
+         --  point of completion must match (SPARK RM 6.9(14)).
 
          Check_Ghost_Completion (Spec_Id, Body_Id);
       end if;
@@ -2525,12 +2525,6 @@ package body Sem_Ch7 is
         and then Nkind (Original_Node (Unit_Declaration_Node (Id))) =
                                                    N_Formal_Package_Declaration
       then
-         return False;
-
-      --  A Ghost entity declared in a non-Ghost package does not force the
-      --  need for a body (SPARK RM 6.9(11)).
-
-      elsif not Is_Ghost_Entity (Pack_Id) and then Is_Ghost_Entity (Id) then
          return False;
 
       --  Otherwise test to see if entity requires a completion. Note that

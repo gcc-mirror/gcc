@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2014-2015, Free Software Foundation, Inc.       --
+--          Copyright (C) 2014-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -106,7 +106,7 @@ package body Ghost is
 
    begin
       --  The Ghost policy in effect at the point of declaration and at the
-      --  point of completion must match (SPARK RM 6.9(15)).
+      --  point of completion must match (SPARK RM 6.9(14)).
 
       if Is_Checked_Ghost_Entity (Partial_View)
         and then Policy = Name_Ignore
@@ -411,7 +411,7 @@ package body Ghost is
 
       else
          Error_Msg_N
-           ("ghost entity cannot appear in this context (SPARK RM 6.9(12))",
+           ("ghost entity cannot appear in this context (SPARK RM 6.9(11))",
             Ghost_Ref);
       end if;
    end Check_Ghost_Context;

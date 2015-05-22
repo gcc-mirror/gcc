@@ -3115,6 +3115,7 @@ package body Sem_Ch13 is
                      then
                         if A_Id = Aspect_Import then
                            Set_Is_Imported (E);
+                           Set_Has_Completion (E);
 
                            --  An imported entity cannot have an explicit
                            --  initialization.
