@@ -1223,7 +1223,7 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 /* Define this if pushing a word on the stack
    makes the stack pointer a smaller address.  */
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 
 /*  Define this macro to nonzero if the addresses of local variable slots
     are at negative offsets from the frame pointer.  */

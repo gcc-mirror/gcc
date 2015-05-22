@@ -99,7 +99,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ccmp.h"
 
 #ifndef STACK_PUSH_CODE
-#ifdef STACK_GROWS_DOWNWARD
+#if STACK_GROWS_DOWNWARD
 #define STACK_PUSH_CODE PRE_DEC
 #else
 #define STACK_PUSH_CODE PRE_INC
@@ -869,7 +869,7 @@ move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
       to_addr = NULL_RTX;
       data.to = NULL_RTX;
       data.autinc_to = 1;
-#ifdef STACK_GROWS_DOWNWARD
+#if STACK_GROWS_DOWNWARD
       data.reverse = 1;
 #else
       data.reverse = 0;
@@ -3792,11 +3792,7 @@ push_block (rtx size, int extra, int below)
       anti_adjust_stack (temp);
     }
 
-#ifndef STACK_GROWS_DOWNWARD
-  if (0)
-#else
-  if (1)
-#endif
+  if (STACK_GROWS_DOWNWARD)
     {
       temp = virtual_outgoing_args_rtx;
       if (extra != 0 && below)
@@ -4004,7 +4000,7 @@ fixup_args_size_notes (rtx_insn *prev, rtx_insn *last, int end_args_size)
 	saw_unknown = true;
 
       add_reg_note (insn, REG_ARGS_SIZE, GEN_INT (args_size));
-#ifdef STACK_GROWS_DOWNWARD
+#if STACK_GROWS_DOWNWARD
       this_delta = -(unsigned HOST_WIDE_INT) this_delta;
 #endif
       args_size -= this_delta;
@@ -4049,7 +4045,7 @@ emit_single_push_insn_1 (machine_mode mode, rtx x, tree type)
 
       emit_move_insn (stack_pointer_rtx,
 		      expand_binop (Pmode,
-#ifdef STACK_GROWS_DOWNWARD
+#if STACK_GROWS_DOWNWARD
 				    sub_optab,
 #else
 				    add_optab,
@@ -4059,7 +4055,7 @@ emit_single_push_insn_1 (machine_mode mode, rtx x, tree type)
 				    NULL_RTX, 0, OPTAB_LIB_WIDEN));
 
       offset = (HOST_WIDE_INT) padding_size;
-#ifdef STACK_GROWS_DOWNWARD
+#if STACK_GROWS_DOWNWARD
       if (STACK_PUSH_CODE == POST_DEC)
 	/* We have already decremented the stack pointer, so get the
 	   previous value.  */
@@ -4075,7 +4071,7 @@ emit_single_push_insn_1 (machine_mode mode, rtx x, tree type)
     }
   else
     {
-#ifdef STACK_GROWS_DOWNWARD
+#if STACK_GROWS_DOWNWARD
       /* ??? This seems wrong if STACK_PUSH_CODE == POST_DEC.  */
       dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
 				gen_int_mode (-(HOST_WIDE_INT) rounded_size,
@@ -4168,7 +4164,7 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 {
   rtx xinner;
   enum direction stack_direction
-#ifdef STACK_GROWS_DOWNWARD
+#if STACK_GROWS_DOWNWARD
     = downward;
 #else
     = upward;

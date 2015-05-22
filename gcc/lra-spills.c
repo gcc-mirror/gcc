@@ -230,14 +230,6 @@ regno_freq_compare (const void *v1p, const void *v2p)
   return regno1 - regno2;
 }
 
-/* Redefine STACK_GROWS_DOWNWARD in terms of 0 or 1.  */
-#ifdef STACK_GROWS_DOWNWARD
-# undef STACK_GROWS_DOWNWARD
-# define STACK_GROWS_DOWNWARD 1
-#else
-# define STACK_GROWS_DOWNWARD 0
-#endif
-
 /* Sort pseudos according to their slots, putting the slots in the order
    that they should be allocated.  Slots with lower numbers have the highest
    priority and should get the smallest displacement from the stack or

@@ -2921,12 +2921,8 @@ This describes the stack layout and calling conventions.
 Here is the basic stack layout.
 
 @defmac STACK_GROWS_DOWNWARD
-Define this macro if pushing a word onto the stack moves the stack
-pointer to a smaller address.
-
-When we say, ``define this macro if @dots{}'', it means that the
-compiler checks this macro only with @code{#ifdef} so the precise
-definition used does not matter.
+Define this macro to be true if pushing a word onto the stack moves the stack
+pointer to a smaller address, and false otherwise.
 @end defmac
 
 @defmac STACK_PUSH_CODE
@@ -2941,7 +2937,7 @@ to the last item on the stack or whether it points to the
 space for the next item on the stack.
 
 The default is @code{PRE_DEC} when @code{STACK_GROWS_DOWNWARD} is
-defined, which is almost always right, and @code{PRE_INC} otherwise,
+true, which is almost always right, and @code{PRE_INC} otherwise,
 which is often wrong.
 @end defmac
 
@@ -9038,7 +9034,7 @@ The default size is @code{FIRST_PSEUDO_REGISTER * sizeof(void *)}.
 This macro need only be defined if the target might save registers in the
 function prologue at an offset to the stack pointer that is not aligned to
 @code{UNITS_PER_WORD}.  The definition should be the negative minimum
-alignment if @code{STACK_GROWS_DOWNWARD} is defined, and the positive
+alignment if @code{STACK_GROWS_DOWNWARD} is true, and the positive
 minimum alignment otherwise.  @xref{SDB and DWARF}.  Only applicable if
 the target supports DWARF 2 frame unwind information.
 @end defmac

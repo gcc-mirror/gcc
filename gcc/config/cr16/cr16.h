@@ -368,7 +368,7 @@ enum reg_class
        && GET_CODE (XEXP ((XEXP (OP, 0)), 1)) == CONST_INT))
 
 /* Stack layout and calling conventions.  */
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 
 #define STARTING_FRAME_OFFSET   0
 

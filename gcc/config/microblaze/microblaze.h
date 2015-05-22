@@ -413,7 +413,7 @@ extern enum reg_class microblaze_regno_to_class[];
 
 /* Stack layout; function entry, exit and calling.  */
 
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 
 /* Changed the starting frame offset to including the new link stuff */
 #define STARTING_FRAME_OFFSET						\

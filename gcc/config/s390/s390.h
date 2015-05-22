@@ -561,7 +561,7 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 /* Our stack grows from higher to lower addresses.  However, local variables
    are accessed by positive offsets, and function arguments are stored at
    increasing addresses.  */
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 #define FRAME_GROWS_DOWNWARD 1
 /* #undef ARGS_GROW_DOWNWARD */
 

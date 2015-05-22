@@ -1138,7 +1138,7 @@ c_cpp_builtins (cpp_reader *pfile)
 				     TRAMPOLINE_SIZE);
 
       /* For libgcc generic-morestack.c and unwinder code.  */
-#ifdef STACK_GROWS_DOWNWARD
+#if STACK_GROWS_DOWNWARD
       cpp_define (pfile, "__LIBGCC_STACK_GROWS_DOWNWARD__");
 #endif
 

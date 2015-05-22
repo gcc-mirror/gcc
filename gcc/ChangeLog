@@ -1,3 +1,12 @@
+2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* *.c: Check the value of STACK_GROWS_DOWNWARD rather than if it
+	is defined.
+	* config/**/*.h: Define STACK_GROWS_DOWNWARD to an integer.
+	* defaults.h: Provide default for STACK_GROWS_DOWNWARD.
+	* doc/tm.texi.in: Update references to STACK_GROWS_DOWNWARD.
+	* doc/tm.texi: Regenerate.
+
 2015-05-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/66232

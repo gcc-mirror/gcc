@@ -69,7 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-codes.h"
 
 #ifndef STACK_PUSH_CODE
-#ifdef STACK_GROWS_DOWNWARD
+#if STACK_GROWS_DOWNWARD
 #define STACK_PUSH_CODE PRE_DEC
 #else
 #define STACK_PUSH_CODE PRE_INC
@@ -77,7 +77,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #ifndef STACK_POP_CODE
-#ifdef STACK_GROWS_DOWNWARD
+#if STACK_GROWS_DOWNWARD
 #define STACK_POP_CODE POST_INC
 #else
 #define STACK_POP_CODE POST_DEC
@@ -1332,7 +1332,7 @@ push_operand (rtx op, machine_mode mode)
 	  || GET_CODE (XEXP (op, 1)) != PLUS
 	  || XEXP (XEXP (op, 1), 0) != XEXP (op, 0)
 	  || !CONST_INT_P (XEXP (XEXP (op, 1), 1))
-#ifdef STACK_GROWS_DOWNWARD
+#if STACK_GROWS_DOWNWARD
 	  || INTVAL (XEXP (XEXP (op, 1), 1)) != - (int) rounded_size
 #else
 	  || INTVAL (XEXP (XEXP (op, 1), 1)) != (int) rounded_size

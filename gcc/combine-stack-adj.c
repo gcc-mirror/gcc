@@ -84,14 +84,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 
 
-/* Turn STACK_GROWS_DOWNWARD into a boolean.  */
-#ifdef STACK_GROWS_DOWNWARD
-#undef STACK_GROWS_DOWNWARD
-#define STACK_GROWS_DOWNWARD 1
-#else
-#define STACK_GROWS_DOWNWARD 0
-#endif
-
 /* This structure records two kinds of stack references between stack
    adjusting instructions: stack references in memory addresses for
    regular insns and all stack references for debug insns.  */

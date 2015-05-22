@@ -230,7 +230,7 @@ enum reg_class
 
 /* Basic Stack Layout.  */
 
-#define STACK_GROWS_DOWNWARD
+#define STACK_GROWS_DOWNWARD 1
 
 #define FRAME_GROWS_DOWNWARD 0
 

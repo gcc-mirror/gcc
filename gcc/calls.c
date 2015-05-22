@@ -82,14 +82,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-chkp.h"
 
 
-/* Redefine STACK_GROWS_DOWNWARD in terms of 0 or 1.  */
-#ifdef STACK_GROWS_DOWNWARD
-# undef STACK_GROWS_DOWNWARD
-# define STACK_GROWS_DOWNWARD 1
-#else
-# define STACK_GROWS_DOWNWARD 0
-#endif
-
 /* Like PREFERRED_STACK_BOUNDARY but in units of bytes, not bits.  */
 #define STACK_BYTES (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)
 
