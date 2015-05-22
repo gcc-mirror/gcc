@@ -1332,12 +1332,8 @@ push_operand (rtx op, machine_mode mode)
 	  || GET_CODE (XEXP (op, 1)) != PLUS
 	  || XEXP (XEXP (op, 1), 0) != XEXP (op, 0)
 	  || !CONST_INT_P (XEXP (XEXP (op, 1), 1))
-#if STACK_GROWS_DOWNWARD
-	  || INTVAL (XEXP (XEXP (op, 1), 1)) != - (int) rounded_size
-#else
-	  || INTVAL (XEXP (XEXP (op, 1), 1)) != (int) rounded_size
-#endif
-	  )
+	  || INTVAL (XEXP (XEXP (op, 1), 1))
+	     != ((STACK_GROWS_DOWNWARD ? -1 : 1) * (int) rounded_size))
 	return 0;
     }
 

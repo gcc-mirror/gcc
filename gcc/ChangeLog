@@ -1,5 +1,11 @@
 2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* builtins.c, dwarf2cfi.c, explow.c, expr.c, recog.c,
+	sched-deps.c: Use if instead of preprocessor checks with
+	STACK_GROWS_DOWNWARD.
+
+2015-05-20  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* *.c: Check the value of STACK_GROWS_DOWNWARD rather than if it
 	is defined.
 	* config/**/*.h: Define STACK_GROWS_DOWNWARD to an integer.

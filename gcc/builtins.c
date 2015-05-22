@@ -1521,14 +1521,14 @@ expand_builtin_apply_args_1 (void)
 
   /* Save the arg pointer to the block.  */
   tem = copy_to_reg (crtl->args.internal_arg_pointer);
-#if STACK_GROWS_DOWNWARD
   /* We need the pointer as the caller actually passed them to us, not
      as we might have pretended they were passed.  Make sure it's a valid
      operand, as emit_move_insn isn't expected to handle a PLUS.  */
-  tem
-    = force_operand (plus_constant (Pmode, tem, crtl->args.pretend_args_size),
-		     NULL_RTX);
-#endif
+  if (STACK_GROWS_DOWNWARD)
+    tem
+      = force_operand (plus_constant (Pmode, tem,
+				      crtl->args.pretend_args_size),
+		       NULL_RTX);
   emit_move_insn (adjust_address (registers, Pmode, 0), tem);
 
   size = GET_MODE_SIZE (Pmode);
@@ -1613,10 +1613,9 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
   /* Fetch the arg pointer from the ARGUMENTS block.  */
   incoming_args = gen_reg_rtx (Pmode);
   emit_move_insn (incoming_args, gen_rtx_MEM (Pmode, arguments));
-#if !STACK_GROWS_DOWNWARD
-  incoming_args = expand_simple_binop (Pmode, MINUS, incoming_args, argsize,
-				       incoming_args, 0, OPTAB_LIB_WIDEN);
-#endif
+  if (!STACK_GROWS_DOWNWARD)
+    incoming_args = expand_simple_binop (Pmode, MINUS, incoming_args, argsize,
+					 incoming_args, 0, OPTAB_LIB_WIDEN);
 
   /* Push a new argument block and copy the arguments.  Do not allow
      the (potential) memcpy call below to interfere with our stack
@@ -1646,12 +1645,13 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
     crtl->need_drap = true;
 
   dest = virtual_outgoing_args_rtx;
-#if !STACK_GROWS_DOWNWARD
-  if (CONST_INT_P (argsize))
-    dest = plus_constant (Pmode, dest, -INTVAL (argsize));
-  else
-    dest = gen_rtx_PLUS (Pmode, dest, negate_rtx (Pmode, argsize));
-#endif
+  if (!STACK_GROWS_DOWNWARD)
+    {
+      if (CONST_INT_P (argsize))
+	dest = plus_constant (Pmode, dest, -INTVAL (argsize));
+      else
+	dest = gen_rtx_PLUS (Pmode, dest, negate_rtx (Pmode, argsize));
+    }
   dest = gen_rtx_MEM (BLKmode, dest);
   set_mem_align (dest, PARM_BOUNDARY);
   src = gen_rtx_MEM (BLKmode, incoming_args);

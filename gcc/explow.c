@@ -866,10 +866,9 @@ adjust_stack_1 (rtx adjust, bool anti_p)
   rtx temp;
   rtx_insn *insn;
 
-#if !STACK_GROWS_DOWNWARD
   /* Hereafter anti_p means subtract_p.  */
-  anti_p = !anti_p;
-#endif
+  if (!STACK_GROWS_DOWNWARD)
+    anti_p = !anti_p;
 
   temp = expand_binop (Pmode,
 		       anti_p ? sub_optab : add_optab,
@@ -1414,24 +1413,23 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
     {
       int saved_stack_pointer_delta;
 
-#if !STACK_GROWS_DOWNWARD
-      emit_move_insn (target, virtual_stack_dynamic_rtx);
-#endif
+      if (!STACK_GROWS_DOWNWARD)
+	emit_move_insn (target, virtual_stack_dynamic_rtx);
 
       /* Check stack bounds if necessary.  */
       if (crtl->limit_stack)
 	{
 	  rtx available;
 	  rtx_code_label *space_available = gen_label_rtx ();
-#if STACK_GROWS_DOWNWARD
-	  available = expand_binop (Pmode, sub_optab,
-				    stack_pointer_rtx, stack_limit_rtx,
-				    NULL_RTX, 1, OPTAB_WIDEN);
-#else
-	  available = expand_binop (Pmode, sub_optab,
-				    stack_limit_rtx, stack_pointer_rtx,
-				    NULL_RTX, 1, OPTAB_WIDEN);
-#endif
+	  if (STACK_GROWS_DOWNWARD)
+	    available = expand_binop (Pmode, sub_optab,
+				      stack_pointer_rtx, stack_limit_rtx,
+				      NULL_RTX, 1, OPTAB_WIDEN);
+	  else
+	    available = expand_binop (Pmode, sub_optab,
+				      stack_limit_rtx, stack_pointer_rtx,
+				      NULL_RTX, 1, OPTAB_WIDEN);
+
 	  emit_cmp_and_jump_insns (available, size, GEU, NULL_RTX, Pmode, 1,
 				   space_available);
 #ifdef HAVE_trap
@@ -1456,9 +1454,8 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	 crtl->preferred_stack_boundary alignment.  */
       stack_pointer_delta = saved_stack_pointer_delta;
 
-#if STACK_GROWS_DOWNWARD
-      emit_move_insn (target, virtual_stack_dynamic_rtx);
-#endif
+      if (STACK_GROWS_DOWNWARD)
+	emit_move_insn (target, virtual_stack_dynamic_rtx);
     }
 
   suppress_reg_args_size = false;
