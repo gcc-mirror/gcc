@@ -1,3 +1,11 @@
+2015-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65701
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Move peeling cost models into one place.  Peel for alignment
+	for single loads only if an aligned load is cheaper than
+	an unaligned load.
+
 2015-05-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c/47043
