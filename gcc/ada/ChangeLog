@@ -1,3 +1,24 @@
+2015-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Has_Volatile_Full_Access): Rename into...
+	(Is_Volatile_Full_Access): ...this.
+	(Set_Has_Volatile_Full_Access): Rename into...
+	(Set_Is_Volatile_Full_Access): ...this.
+	* einfo.adb (Has_Volatile_Full_Access): Rename into...
+	(Is_Volatile_Full_Access): ...this.
+	(Set_Has_Volatile_Full_Access): Rename into...
+	(Set_Is_Volatile_Full_Access): ...this.
+	(Is_Atomic_Or_VFA): Adjust to above renaming.
+	* errout.adb (Special_Msg_Delete): Likewise.
+	* exp_pakd.adb (Install_PAT): Likewise.
+	* freeze.adb (Freeze_Array_Type): Likewise.
+	* sem_ch8.adb (Analyze_Object_Renaming): Likewise.
+	* sem_ch13.adb (Inherit_Delayed_Rep_Aspects): Likewise.
+	(Inherit_Aspects_At_Freeze_Point): Likewise.
+	* sem_prag.adb (Set_Atomic_VFA): Likewise.
+	(Process_Atomic_Independent_Shared_Volatile): Likewise.
+	* sem_util.adb (Is_Atomic_Or_VFA_Object): Likewise.
+
 2015-05-22  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb, layout.adb, einfo.adb, einfo.ads, sem_prag.adb,

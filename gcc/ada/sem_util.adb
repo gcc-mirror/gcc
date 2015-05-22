@@ -10285,9 +10285,9 @@ package body Sem_Util is
       return Is_Atomic_Object (N)
         or else (Is_Object_Reference (N)
                    and then Is_Entity_Name (N)
-                   and then (Has_Volatile_Full_Access (Entity (N))
+                   and then (Is_Volatile_Full_Access (Entity (N))
                                 or else
-                             Has_Volatile_Full_Access (Etype (Entity (N)))));
+                             Is_Volatile_Full_Access (Etype (Entity (N)))));
    end Is_Atomic_Or_VFA_Object;
 
    -------------------------

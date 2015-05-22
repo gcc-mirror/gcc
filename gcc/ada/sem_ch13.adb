@@ -968,8 +968,8 @@ package body Sem_Ch13 is
                      --  Volatile_Full_Access
 
                      when Aspect_Volatile_Full_Access =>
-                        if Has_Volatile_Full_Access (P) then
-                           Set_Has_Volatile_Full_Access (E);
+                        if Is_Volatile_Full_Access (P) then
+                           Set_Is_Volatile_Full_Access (E);
                         end if;
 
                      --  Volatile_Components
@@ -1065,7 +1065,7 @@ package body Sem_Ch13 is
                   end if;
 
                when Aspect_Volatile_Full_Access =>
-                  if not Has_Volatile_Full_Access (Par) then
+                  if not Is_Volatile_Full_Access (Par) then
                      return;
                   end if;
 
@@ -11090,8 +11090,8 @@ package body Sem_Ch13 is
                    (Get_Rep_Item (Typ, Name_Atomic, Name_Shared))
       then
          Set_Is_Atomic (Typ);
-         Set_Treat_As_Volatile (Typ);
          Set_Is_Volatile (Typ);
+         Set_Treat_As_Volatile (Typ);
       end if;
 
       --  Convention
@@ -11171,8 +11171,8 @@ package body Sem_Ch13 is
         and then Is_Pragma_Or_Corr_Pragma_Present_In_Rep_Item
                    (Get_Rep_Item (Typ, Name_Volatile))
       then
-         Set_Treat_As_Volatile (Typ);
          Set_Is_Volatile (Typ);
+         Set_Treat_As_Volatile (Typ);
       end if;
 
       --  Volatile_Full_Access
@@ -11182,9 +11182,9 @@ package body Sem_Ch13 is
         and then Is_Pragma_Or_Corr_Pragma_Present_In_Rep_Item
                    (Get_Rep_Item (Typ, Name_Volatile_Full_Access))
       then
-         Set_Has_Volatile_Full_Access (Typ);
-         Set_Treat_As_Volatile (Typ);
+         Set_Is_Volatile_Full_Access (Typ);
          Set_Is_Volatile (Typ);
+         Set_Treat_As_Volatile (Typ);
       end if;
 
       --  Inheritance for derived types only
