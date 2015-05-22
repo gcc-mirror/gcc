@@ -1095,6 +1095,7 @@ build_one_array (gswitch *swtch, int num, tree arr_index_type,
 
       DECL_NAME (decl) = create_tmp_var_name ("CSWTCH");
       DECL_ARTIFICIAL (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
       TREE_CONSTANT (decl) = 1;
       TREE_READONLY (decl) = 1;
       varpool_node::finalize_decl (decl);
