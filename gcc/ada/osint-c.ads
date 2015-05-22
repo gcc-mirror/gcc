@@ -127,6 +127,11 @@ package Osint.C is
    --  returned by Next_Main_Source) for appending. This is used to append
    --  the globals computed in flow analysis in gnatprove mode.
 
+   procedure Set_File_Name (Ext : String);
+   --  Sets a default file name from the main compiler source name. Ext is
+   --  the extension, e.g. "ali" for a library information file.
+   --  The name is in Name_Buffer (with length in Name_Len) on return.
+
    procedure Write_Library_Info (Info : String);
    --  Writes the contents of the referenced string to the library information
    --  file for the main source file currently being compiled (i.e. the file

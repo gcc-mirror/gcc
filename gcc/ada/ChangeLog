@@ -1,3 +1,11 @@
+2015-05-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* osint-c.adb, osint-c.ads (Set_File_Name): Move back to spec.
+
+2015-05-22  Pascal Obry  <obry@adacore.com>
+
+	* prj-util.adb: Minor comment editing.
+
 2015-05-22  Pascal Obry  <obry@adacore.com>
 
 	* makeutl.ads (In_Place_Option): New constant.
