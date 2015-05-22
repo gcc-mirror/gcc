@@ -1,6 +1,19 @@
 2015-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
 
-	* einfo.adb Node36 is now used as Anonymous_Master. Flag253
+	* einfo.adb (Default_Init_Cond_Procedure): Code cleanup. The
+	attribute now applies to the base type.
+	(Has_Default_Init_Cond): Now applies to the base type.
+	(Has_Inherited_Default_Init_Cond): Now applies to the base type.
+	(Set_Default_Init_Cond_Procedure): Code cleanup. The attribute now
+	applies to the base type.
+	(Set_Has_Default_Init_Cond): Now applies to the base type.
+	(Set_Has_Inherited_Default_Init_Cond): Now applies to the base type.
+	* exp_ch3.adb (Expand_N_Object_Declaration): No need to use the
+	base type when adding a call to the Default_Initial_Condition.
+
+2015-05-22  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Node36 is now used as Anonymous_Master. Flag253
 	is now unused.
 	(Anonymous_Master): New routine.
 	(Has_Anonymous_Master): Removed.
