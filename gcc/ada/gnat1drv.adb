@@ -142,6 +142,13 @@ procedure Gnat1drv is
          Modify_Tree_For_C := True;
       end if;
 
+      --  Other flags set if we are generating C code
+
+      if Debug_Flag_Dot_VV then
+         Generate_C_Code := True;
+         Unnest_Subprogram_Mode := True;
+      end if;
+
       --  -gnatd.E sets Error_To_Warning mode, causing selected error messages
       --  to be treated as warnings instead of errors.
 

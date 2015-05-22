@@ -518,22 +518,10 @@ package body Osint.C is
    end Tree_Create;
 
    -----------------------
-   -- Write_C_File_Info --
-   -----------------------
-
-   procedure Write_C_File_Info (Info : String) renames Write_Info;
-
-   -----------------------
    -- Write_Debug_Info --
    -----------------------
 
    procedure Write_Debug_Info (Info : String) renames Write_Info;
-
-   -----------------------
-   -- Write_H_File_Info --
-   -----------------------
-
-   procedure Write_H_File_Info (Info : String) renames Write_Info;
 
    ------------------------
    -- Write_Library_Info --

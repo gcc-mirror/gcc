@@ -1405,7 +1405,9 @@ package Einfo is
 
 --    Has_Aliased_Components (Flag135) [implementation base type only]
 --       Defined in array type entities. Indicates that the component type
---       of the array is aliased.
+--       of the array is aliased. Should this also be set for records to
+--       indicate that at least one component is aliased (see processing in
+--       Sem_Prag.Process_Atomic_Independent_Shared_Volatile???)
 
 --    Has_Alignment_Clause (Flag46)
 --       Defined in all type entities and objects. Indicates if an alignment
@@ -3347,6 +3349,14 @@ package Einfo is
 --       entities when the return type is an array type, and a call can be
 --       interpreted as an indexing of the result of the call. It is also
 --       used to resolve various cases of entry calls.
+
+--    Needs_Typedef (Flag286)
+--       Defined for all types and subtypes. Set if it is essential to generate
+--       a typedef when we are generating C code from Cprint. Normally we
+--       generate typedef's only for source entities, and not for internally
+--       generated types, but there are cases, notably the AREC types generated
+--       in Exp_Unst when we are unnesting subprograms where we must generate
+--       typedef's for non-source types.
 
 --    Never_Set_In_Source (Flag115)
 --       Defined in all entities, but can be set only for variables and
@@ -5441,6 +5451,7 @@ package Einfo is
    --    May_Inherit_Delayed_Rep_Aspects     (Flag262)
    --    Must_Be_On_Byte_Boundary            (Flag183)
    --    Must_Have_Preelab_Init              (Flag208)
+   --    Needs_Typedef                       (Flag286)
    --    Optimize_Alignment_Space            (Flag241)
    --    Optimize_Alignment_Time             (Flag242)
    --    Partial_View_Has_Unknown_Discr      (Flag280)
@@ -6965,6 +6976,7 @@ package Einfo is
    function Must_Have_Preelab_Init              (Id : E) return B;
    function Needs_Debug_Info                    (Id : E) return B;
    function Needs_No_Actuals                    (Id : E) return B;
+   function Needs_Typedef                       (Id : E) return B;
    function Never_Set_In_Source                 (Id : E) return B;
    function Next_Inlined_Subprogram             (Id : E) return E;
    function No_Dynamic_Predicate_On_Actual      (Id : E) return B;
@@ -7622,6 +7634,7 @@ package Einfo is
    procedure Set_Must_Have_Preelab_Init          (Id : E; V : B := True);
    procedure Set_Needs_Debug_Info                (Id : E; V : B := True);
    procedure Set_Needs_No_Actuals                (Id : E; V : B := True);
+   procedure Set_Needs_Typedef                   (Id : E; V : B := True);
    procedure Set_Never_Set_In_Source             (Id : E; V : B := True);
    procedure Set_Next_Inlined_Subprogram         (Id : E; V : E);
    procedure Set_No_Dynamic_Predicate_On_Actual  (Id : E; V : B := True);
@@ -8433,6 +8446,7 @@ package Einfo is
    pragma Inline (Must_Have_Preelab_Init);
    pragma Inline (Needs_Debug_Info);
    pragma Inline (Needs_No_Actuals);
+   pragma Inline (Needs_Typedef);
    pragma Inline (Never_Set_In_Source);
    pragma Inline (Next_Index);
    pragma Inline (Next_Inlined_Subprogram);
@@ -8890,6 +8904,7 @@ package Einfo is
    pragma Inline (Set_Must_Have_Preelab_Init);
    pragma Inline (Set_Needs_Debug_Info);
    pragma Inline (Set_Needs_No_Actuals);
+   pragma Inline (Set_Needs_Typedef);
    pragma Inline (Set_Never_Set_In_Source);
    pragma Inline (Set_Next_Inlined_Subprogram);
    pragma Inline (Set_No_Dynamic_Predicate_On_Actual);

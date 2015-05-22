@@ -1327,6 +1327,11 @@ package body Exp_Unst is
                      Analyze (Decl_ARECnP,  Suppress => All_Checks);
                      Pop_Scope;
 
+                     --  Mark the types as needing typedefs
+
+                     Set_Needs_Typedef (STJ.ARECnT);
+                     Set_Needs_Typedef (STJ.ARECnPT);
+
                      --  Next step, for each uplevel referenced entity, add
                      --  assignment operations to set the component in the
                      --  activation record.
