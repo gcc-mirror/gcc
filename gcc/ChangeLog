@@ -1,5 +1,8 @@
 2015-05-22  Jeff Law  <law@redhat.com>
 
+	* combine.c (try_combine): Canonicalize (plus (mult X pow2) Y) into
+	(plus (ashift X log2) Y) if it is a split point.
+
 	* pa.c (mem_shadd_or_shadd_rtx_p): New function factored out
 	of hppa_legitimize_address to handle both forms of a multiply
 	by 2, 4 or 8.

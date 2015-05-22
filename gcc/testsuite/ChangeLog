@@ -209,6 +209,7 @@
 
 2015-05-21  Jeff Law  <law@redhat.com>
 
+	* gcc.target/hppa/shadd-3.c: New test.
 	* gcc.target/hppa/shadd-4.c: New test.
 
 2015-05-21  Michael Matz  <matz@suse.de>
