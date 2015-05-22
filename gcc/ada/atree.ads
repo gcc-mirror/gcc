@@ -605,44 +605,46 @@ package Atree is
    --  The following functions return the contents of the indicated field of
    --  the node referenced by the argument, which is a Node_Id.
 
-   function Analyzed          (N : Node_Id) return Boolean;
+   function Analyzed                     (N : Node_Id) return Boolean;
    pragma Inline (Analyzed);
 
-   function Comes_From_Source (N : Node_Id) return Boolean;
+   function Comes_From_Source            (N : Node_Id) return Boolean;
    pragma Inline (Comes_From_Source);
 
-   function Error_Posted      (N : Node_Id) return Boolean;
+   function Error_Posted                 (N : Node_Id) return Boolean;
    pragma Inline (Error_Posted);
 
-   function Has_Aspects       (N : Node_Id) return Boolean;
+   function Has_Aspects                  (N : Node_Id) return Boolean;
    pragma Inline (Has_Aspects);
 
-   function Is_Ignored_Ghost_Node
-                              (N : Node_Id) return Boolean;
+   function Is_Ignored_Ghost_Node        (N : Node_Id) return Boolean;
    pragma Inline (Is_Ignored_Ghost_Node);
 
-   function Nkind             (N : Node_Id) return Node_Kind;
+   function Needs_Actuals_Check          (N : Node_Id) return Boolean;
+   pragma Inline (Needs_Actuals_Check);
+
+   function Nkind                        (N : Node_Id) return Node_Kind;
    pragma Inline (Nkind);
 
-   function No                (N : Node_Id) return Boolean;
+   function No                           (N : Node_Id) return Boolean;
    pragma Inline (No);
    --  Tests given Id for equality with the Empty node. This allows notations
    --  like "if No (Variant_Part)" as opposed to "if Variant_Part = Empty".
 
-   function Parent            (N : Node_Id) return Node_Id;
+   function Parent                       (N : Node_Id) return Node_Id;
    pragma Inline (Parent);
    --  Returns the parent of a node if the node is not a list member, or else
    --  the parent of the list containing the node if the node is a list member.
 
-   function Paren_Count       (N : Node_Id) return Nat;
+   function Paren_Count                  (N : Node_Id) return Nat;
    pragma Inline (Paren_Count);
 
-   function Present           (N : Node_Id) return Boolean;
+   function Present                      (N : Node_Id) return Boolean;
    pragma Inline (Present);
    --  Tests given Id for inequality with the Empty node. This allows notations
    --  like "if Present (Statement)" as opposed to "if Statement /= Empty".
 
-   function Sloc              (N : Node_Id) return Source_Ptr;
+   function Sloc                         (N : Node_Id) return Source_Ptr;
    pragma Inline (Sloc);
 
    ---------------------
@@ -893,26 +895,29 @@ package Atree is
    --  to be set in the specified field. Note that Set_Nkind is in the next
    --  section, since its use is restricted.
 
-   procedure Set_Analyzed (N : Node_Id; Val : Boolean := True);
+   procedure Set_Analyzed              (N : Node_Id; Val : Boolean := True);
    pragma Inline (Set_Analyzed);
 
-   procedure Set_Comes_From_Source (N : Node_Id; Val : Boolean);
+   procedure Set_Comes_From_Source     (N : Node_Id; Val : Boolean);
    pragma Inline (Set_Comes_From_Source);
    --  Note that this routine is very rarely used, since usually the default
    --  mechanism provided sets the right value, but in some unusual cases, the
    --  value needs to be reset (e.g. when a source node is copied, and the copy
    --  must not have Comes_From_Source set).
 
-   procedure Set_Error_Posted (N : Node_Id; Val : Boolean := True);
+   procedure Set_Error_Posted          (N : Node_Id; Val : Boolean := True);
    pragma Inline (Set_Error_Posted);
 
-   procedure Set_Has_Aspects (N : Node_Id; Val : Boolean := True);
+   procedure Set_Has_Aspects           (N : Node_Id; Val : Boolean := True);
    pragma Inline (Set_Has_Aspects);
 
    procedure Set_Is_Ignored_Ghost_Node (N : Node_Id; Val : Boolean := True);
    pragma Inline (Set_Is_Ignored_Ghost_Node);
 
-   procedure Set_Original_Node (N : Node_Id; Val : Node_Id);
+   procedure Set_Needs_Actuals_Check   (N : Node_Id; Val : Boolean := True);
+   pragma Inline (Set_Needs_Actuals_Check);
+
+   procedure Set_Original_Node         (N : Node_Id; Val : Node_Id);
    pragma Inline (Set_Original_Node);
    --  Note that this routine is used only in very peculiar cases. In normal
    --  cases, the Original_Node link is set by calls to Rewrite. We currently
@@ -920,13 +925,13 @@ package Atree is
    --  their aspect original source expressions, so that the original source
    --  expressions accessed by ASIS are also semantically analyzed.
 
-   procedure Set_Parent (N : Node_Id; Val : Node_Id);
+   procedure Set_Parent                (N : Node_Id; Val : Node_Id);
    pragma Inline (Set_Parent);
 
-   procedure Set_Paren_Count (N : Node_Id; Val : Nat);
+   procedure Set_Paren_Count           (N : Node_Id; Val : Nat);
    pragma Inline (Set_Paren_Count);
 
-   procedure Set_Sloc (N : Node_Id; Val : Source_Ptr);
+   procedure Set_Sloc                  (N : Node_Id; Val : Source_Ptr);
    pragma Inline (Set_Sloc);
 
    ------------------------------
@@ -4123,16 +4128,25 @@ package Atree is
 
       type Flags_Byte is record
          Flag0  : Boolean;
+         --  Note: we don't use Flag0 at the moment. To put Flag0 into use
+         --  requires some awkward work in Treeprs (treeprs.adt), so for the
+         --  moment we don't use it.
+
          Flag1  : Boolean;
          Flag2  : Boolean;
          Flag3  : Boolean;
+         --  These flags are used in the usual manner in Sinfo and Einfo
 
          Is_Ignored_Ghost_Node : Boolean;
          --  Flag denothing whether the node is subject to pragma Ghost with
          --  policy Ignore. The name of the flag should be Flag4, however this
          --  requires changing the names of all remaining 300+ flags.
 
-         Spare1 : Boolean;
+         Needs_Actuals_Check : Boolean;
+         --  Flag set to indicate that the marked node is subject to the check
+         --  for writable actuals. See xxx for more details. Again it would be
+         --  more uniform to use some Flagx here, but that would be disruptive.
+
          Spare2 : Boolean;
          Spare3 : Boolean;
       end record;
