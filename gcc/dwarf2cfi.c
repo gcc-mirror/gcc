@@ -944,9 +944,9 @@ notice_args_size (rtx_insn *insn)
 
       /* Convert a change in args_size (always a positive in the
 	 direction of stack growth) to a change in stack pointer.  */
-#if !STACK_GROWS_DOWNWARD
-      delta = -delta;
-#endif
+      if (!STACK_GROWS_DOWNWARD)
+	delta = -delta;
+
       cur_cfa->offset += delta;
     }
 }
@@ -2347,9 +2347,9 @@ maybe_record_trace_start_abnormal (rtx_insn *start, rtx_insn *origin)
     {
       /* Convert a change in args_size (always a positive in the
 	 direction of stack growth) to a change in stack pointer.  */
-#if !STACK_GROWS_DOWNWARD
-      delta = -delta;
-#endif
+      if (!STACK_GROWS_DOWNWARD)
+	delta = -delta;
+
       cur_row->cfa.offset += delta;
     }
   

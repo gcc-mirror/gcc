@@ -4734,11 +4734,10 @@ parse_add_or_inc (struct mem_inc_info *mii, rtx_insn *insn, bool before_mem)
   if (regs_equal && REGNO (SET_DEST (pat)) == STACK_POINTER_REGNUM)
     {
       /* Note that the sign has already been reversed for !before_mem.  */
-#if STACK_GROWS_DOWNWARD
-      return mii->inc_constant > 0;
-#else
-      return mii->inc_constant < 0;
-#endif
+      if (STACK_GROWS_DOWNWARD)
+	return mii->inc_constant > 0;
+      else
+	return mii->inc_constant < 0;
     }
   return true;
 }

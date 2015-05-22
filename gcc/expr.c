@@ -869,11 +869,10 @@ move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
       to_addr = NULL_RTX;
       data.to = NULL_RTX;
       data.autinc_to = 1;
-#if STACK_GROWS_DOWNWARD
-      data.reverse = 1;
-#else
-      data.reverse = 0;
-#endif
+      if (STACK_GROWS_DOWNWARD)
+	data.reverse = 1;
+      else
+	data.reverse = 0;
     }
   data.to_addr = to_addr;
   data.from = from;
@@ -4000,9 +3999,9 @@ fixup_args_size_notes (rtx_insn *prev, rtx_insn *last, int end_args_size)
 	saw_unknown = true;
 
       add_reg_note (insn, REG_ARGS_SIZE, GEN_INT (args_size));
-#if STACK_GROWS_DOWNWARD
-      this_delta = -(unsigned HOST_WIDE_INT) this_delta;
-#endif
+      if (STACK_GROWS_DOWNWARD)
+	this_delta = -(unsigned HOST_WIDE_INT) this_delta;
+
       args_size -= this_delta;
     }
 
@@ -4045,42 +4044,38 @@ emit_single_push_insn_1 (machine_mode mode, rtx x, tree type)
 
       emit_move_insn (stack_pointer_rtx,
 		      expand_binop (Pmode,
-#if STACK_GROWS_DOWNWARD
-				    sub_optab,
-#else
-				    add_optab,
-#endif
+				    STACK_GROWS_DOWNWARD ? sub_optab
+				    : add_optab,
 				    stack_pointer_rtx,
 				    gen_int_mode (rounded_size, Pmode),
 				    NULL_RTX, 0, OPTAB_LIB_WIDEN));
 
       offset = (HOST_WIDE_INT) padding_size;
-#if STACK_GROWS_DOWNWARD
-      if (STACK_PUSH_CODE == POST_DEC)
+      if (STACK_GROWS_DOWNWARD && STACK_PUSH_CODE == POST_DEC)
 	/* We have already decremented the stack pointer, so get the
 	   previous value.  */
 	offset += (HOST_WIDE_INT) rounded_size;
-#else
-      if (STACK_PUSH_CODE == POST_INC)
+
+      if (!STACK_GROWS_DOWNWARD && STACK_PUSH_CODE == POST_INC)
 	/* We have already incremented the stack pointer, so get the
 	   previous value.  */
 	offset -= (HOST_WIDE_INT) rounded_size;
-#endif
+
       dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
 				gen_int_mode (offset, Pmode));
     }
   else
     {
-#if STACK_GROWS_DOWNWARD
-      /* ??? This seems wrong if STACK_PUSH_CODE == POST_DEC.  */
-      dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-				gen_int_mode (-(HOST_WIDE_INT) rounded_size,
-					      Pmode));
-#else
-      /* ??? This seems wrong if STACK_PUSH_CODE == POST_INC.  */
-      dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-				gen_int_mode (rounded_size, Pmode));
-#endif
+      if (STACK_GROWS_DOWNWARD)
+	/* ??? This seems wrong if STACK_PUSH_CODE == POST_DEC.  */
+	dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+				  gen_int_mode (-(HOST_WIDE_INT) rounded_size,
+						Pmode));
+      else
+	/* ??? This seems wrong if STACK_PUSH_CODE == POST_INC.  */
+	dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+				  gen_int_mode (rounded_size, Pmode));
+
       dest_addr = gen_rtx_PRE_MODIFY (Pmode, stack_pointer_rtx, dest_addr);
     }
 
@@ -4163,12 +4158,7 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 		rtx alignment_pad)
 {
   rtx xinner;
-  enum direction stack_direction
-#if STACK_GROWS_DOWNWARD
-    = downward;
-#else
-    = upward;
-#endif
+  enum direction stack_direction = STACK_GROWS_DOWNWARD ? downward : upward;
 
   /* Decide where to pad the argument: `downward' for below,
      `upward' for above, or `none' for don't pad it.
