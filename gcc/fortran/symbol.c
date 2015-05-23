@@ -1706,7 +1706,7 @@ gfc_add_type (gfc_symbol *sym, gfc_typespec *ts, locus *where)
   if (type != BT_UNKNOWN && !(sym->attr.function && sym->attr.implicit_type))
     {
       if (sym->attr.use_assoc)
-	gfc_error_1 ("Symbol '%s' at %L conflicts with symbol from module '%s', "
+	gfc_error ("Symbol %qs at %L conflicts with symbol from module %qs, "
 		   "use-associated at %L", sym->name, where, sym->module,
 		   &sym->declared_at);
       else
@@ -1900,7 +1900,7 @@ gfc_add_component (gfc_symbol *sym, const char *name,
     {
       if (strcmp (p->name, name) == 0)
 	{
-	  gfc_error_1 ("Component '%s' at %C already declared at %L",
+	  gfc_error ("Component %qs at %C already declared at %L",
 		     name, &p->loc);
 	  return false;
 	}
@@ -1911,7 +1911,7 @@ gfc_add_component (gfc_symbol *sym, const char *name,
   if (sym->attr.extension
 	&& gfc_find_component (sym->components->ts.u.derived, name, true, true))
     {
-      gfc_error_1 ("Component '%s' at %C already in the parent type "
+      gfc_error ("Component %qs at %C already in the parent type "
 		 "at %L", name, &sym->components->ts.u.derived->declared_at);
       return false;
     }
@@ -2223,7 +2223,7 @@ gfc_define_st_label (gfc_st_label *lp, gfc_sl_type type, locus *label_locus)
   labelno = lp->value;
 
   if (lp->defined != ST_LABEL_UNKNOWN)
-    gfc_error_1 ("Duplicate statement label %d at %L and %L", labelno,
+    gfc_error ("Duplicate statement label %d at %L and %L", labelno,
 	       &lp->where, label_locus);
   else
     {
@@ -3900,9 +3900,9 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
          J3/04-007, Section 15.2.3, C1505.	*/
       if (curr_comp->attr.pointer != 0)
         {
-          gfc_error_1 ("Component '%s' at %L cannot have the "
+          gfc_error ("Component %qs at %L cannot have the "
                      "POINTER attribute because it is a member "
-                     "of the BIND(C) derived type '%s' at %L",
+                     "of the BIND(C) derived type %qs at %L",
                      curr_comp->name, &(curr_comp->loc),
                      derived_sym->name, &(derived_sym->declared_at));
           retval = false;
@@ -3910,8 +3910,8 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
 
       if (curr_comp->attr.proc_pointer != 0)
 	{
-	  gfc_error_1 ("Procedure pointer component '%s' at %L cannot be a member"
-		     " of the BIND(C) derived type '%s' at %L", curr_comp->name,
+	  gfc_error ("Procedure pointer component %qs at %L cannot be a member"
+		     " of the BIND(C) derived type %qs at %L", curr_comp->name,
 		     &curr_comp->loc, derived_sym->name,
 		     &derived_sym->declared_at);
           retval = false;
@@ -3921,9 +3921,9 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
          J3/04-007, Section 15.2.3, C1505.	*/
       if (curr_comp->attr.allocatable != 0)
         {
-          gfc_error_1 ("Component '%s' at %L cannot have the "
+          gfc_error ("Component %qs at %L cannot have the "
                      "ALLOCATABLE attribute because it is a member "
-                     "of the BIND(C) derived type '%s' at %L",
+                     "of the BIND(C) derived type %qs at %L",
                      curr_comp->name, &(curr_comp->loc),
                      derived_sym->name, &(derived_sym->declared_at));
           retval = false;

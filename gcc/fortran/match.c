@@ -3599,7 +3599,7 @@ alloc_opt_list:
 	  /* The next 2 conditionals check C631.  */
 	  if (ts.type != BT_UNKNOWN)
 	    {
-	      gfc_error_1 ("SOURCE tag at %L conflicts with the typespec at %L",
+	      gfc_error ("SOURCE tag at %L conflicts with the typespec at %L",
 			 &tmp->where, &old_locus);
 	      goto cleanup;
 	    }
@@ -3636,7 +3636,7 @@ alloc_opt_list:
 	  /* Check F08:C637.  */
 	  if (ts.type != BT_UNKNOWN)
 	    {
-	      gfc_error_1 ("MOLD tag at %L conflicts with the typespec at %L",
+	      gfc_error ("MOLD tag at %L conflicts with the typespec at %L",
 			 &tmp->where, &old_locus);
 	      goto cleanup;
 	    }
@@ -3662,8 +3662,8 @@ alloc_opt_list:
   /* Check F08:C637.  */
   if (source && mold)
     {
-      gfc_error_1 ("MOLD tag at %L conflicts with SOURCE tag at %L",
-		  &mold->where, &source->where);
+      gfc_error ("MOLD tag at %L conflicts with SOURCE tag at %L",
+		 &mold->where, &source->where);
       goto cleanup;
     }
 
@@ -4350,12 +4350,12 @@ gfc_match_common (void)
                   /* If we find an error, just print it and continue,
                      cause it's just semantic, and we can see if there
                      are more errors.  */
-                  gfc_error_now_1 ("Variable '%s' at %L in common block '%s' "
-				   "at %C must be declared with a C "
-				   "interoperable kind since common block "
-				   "'%s' is bind(c)",
-				   sym->name, &(sym->declared_at), t->name,
-				   t->name);
+                  gfc_error_now ("Variable %qs at %L in common block %qs "
+				 "at %C must be declared with a C "
+				 "interoperable kind since common block "
+				 "%qs is bind(c)",
+				 sym->name, &(sym->declared_at), t->name,
+				 t->name);
                 }
 
               if (sym->attr.is_bind_c == 1)
@@ -4889,8 +4889,7 @@ recursive_stmt_fcn (gfc_expr *e, gfc_symbol *sym)
 match
 gfc_match_st_function (void)
 {
-  gfc_error_buf old_error_1;
-  output_buffer old_error;
+  gfc_error_buffer old_error;
 
   gfc_symbol *sym;
   gfc_expr *expr;
@@ -4900,7 +4899,7 @@ gfc_match_st_function (void)
   if (m != MATCH_YES)
     return m;
 
-  gfc_push_error (&old_error, &old_error_1);
+  gfc_push_error (&old_error);
 
   if (!gfc_add_procedure (&sym->attr, PROC_ST_FUNCTION, sym->name, NULL))
     goto undo_error;
@@ -4912,7 +4911,7 @@ gfc_match_st_function (void)
   if (m == MATCH_NO)
     goto undo_error;
 
-  gfc_free_error (&old_error, &old_error_1);
+  gfc_free_error (&old_error);
 
   if (m == MATCH_ERROR)
     return m;
@@ -4931,7 +4930,7 @@ gfc_match_st_function (void)
   return MATCH_YES;
 
 undo_error:
-  gfc_pop_error (&old_error, &old_error_1);
+  gfc_pop_error (&old_error);
   return MATCH_NO;
 }
 

@@ -221,17 +221,9 @@ gfc_create_decls (void)
 static void
 gfc_be_parse_file (void)
 {
-  int errors;
-  int warnings;
-
   gfc_create_decls ();
   gfc_parse_file ();
   gfc_generate_constructors ();
-
-  /* Tell the frontend about any errors.  */
-  gfc_get_errors (&warnings, &errors);
-  errorcount += errors;
-  warningcount += warnings;
 
   /* Clear the binding level stack.  */
   while (!global_bindings_p ())

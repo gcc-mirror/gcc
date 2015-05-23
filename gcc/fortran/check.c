@@ -1031,8 +1031,8 @@ gfc_check_atomic (gfc_expr *atom, int atom_no, gfc_expr *value, int val_no,
 
   if (atom->ts.type != value->ts.type)
     {
-      gfc_error_1 ("'%s' argument of '%s' intrinsic at %L shall have the same "
-		 "type as '%s' at %L", gfc_current_intrinsic_arg[val_no]->name,
+      gfc_error ("%qs argument of %qs intrinsic at %L shall have the same "
+		 "type as %qs at %L", gfc_current_intrinsic_arg[val_no]->name,
 		 gfc_current_intrinsic, &value->where,
 		 gfc_current_intrinsic_arg[atom_no]->name, &atom->where);
       return false;
@@ -1575,7 +1575,7 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
 
   if (!gfc_compare_types (&a->ts, &sym->result->ts))
     {
-      gfc_error_1 ("A argument at %L has type %s but the function passed as "
+      gfc_error ("A argument at %L has type %s but the function passed as "
 		 "OPERATOR at %L returns %s",
 		 &a->where, gfc_typename (&a->ts), &op->where,
 		 gfc_typename (&sym->result->ts));
@@ -1655,16 +1655,16 @@ gfc_check_co_reduce (gfc_expr *a, gfc_expr *op, gfc_expr *result_image,
 	  && ((formal_size1 && actual_size != formal_size1)
 	       || (formal_size2 && actual_size != formal_size2)))
 	{
-	  gfc_error_1 ("The character length of the A argument at %L and of the "
-		       "arguments of the OPERATOR at %L shall be the same",
+	  gfc_error ("The character length of the A argument at %L and of the "
+		     "arguments of the OPERATOR at %L shall be the same",
 		     &a->where, &op->where);
 	  return false;
 	}
       if (actual_size && result_size && actual_size != result_size)
 	{
-	  gfc_error_1 ("The character length of the A argument at %L and of the "
-		       "function result of the OPERATOR at %L shall be the same",
-		       &a->where, &op->where);
+	  gfc_error ("The character length of the A argument at %L and of the "
+		     "function result of the OPERATOR at %L shall be the same",
+		     &a->where, &op->where);
 	  return false;
 	}
     }
@@ -1680,10 +1680,10 @@ gfc_check_co_minmax (gfc_expr *a, gfc_expr *result_image, gfc_expr *stat,
   if (a->ts.type != BT_INTEGER && a->ts.type != BT_REAL
       && a->ts.type != BT_CHARACTER)
     {
-       gfc_error_1 ("'%s' argument of '%s' intrinsic at %L shall be of type "
-		    "integer, real or character",
-		    gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
-		    &a->where);
+       gfc_error ("%qs argument of %qs intrinsic at %L shall be of type "
+		  "integer, real or character",
+		  gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		  &a->where);
        return false;
     }
   return check_co_collective (a, result_image, stat, errmsg, false);
@@ -1956,7 +1956,7 @@ gfc_check_dshift (gfc_expr *i, gfc_expr *j, gfc_expr *shift)
 
   if (i->is_boz && j->is_boz)
     {
-      gfc_error_1 ("'I' at %L and 'J' at %L cannot both be BOZ literal "
+      gfc_error ("%<I%> at %L and %<J%>' at %L cannot both be BOZ literal "
 		   "constants", &i->where, &j->where);
       return false;
     }
@@ -2472,9 +2472,9 @@ gfc_check_ishftc (gfc_expr *i, gfc_expr *shift, gfc_expr *size)
 
 	      if (i2 > i3)
 		{
-		  gfc_error_1 ("The absolute value of SHIFT at %L must be less "
-			       "than or equal to SIZE at %L", &shift->where,
-			       &size->where);
+		  gfc_error ("The absolute value of SHIFT at %L must be less "
+			     "than or equal to SIZE at %L", &shift->where,
+			     &size->where);
 		  return false;
 		}
 	     }

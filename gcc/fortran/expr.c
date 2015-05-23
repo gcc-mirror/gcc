@@ -4994,7 +4994,7 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
       if (!gfc_check_vardef_context (assoc->target, pointer, false, false, NULL))
 	{
 	  if (context)
-	    gfc_error_1 ("Associate-name '%s' can not appear in a variable"
+	    gfc_error ("Associate-name %qs can not appear in a variable"
 		       " definition context (%s) at %L because its target"
 		       " at %L can not, either",
 		       name, context, &e->where,
@@ -5036,12 +5036,12 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 			  if (gfc_dep_compare_expr (ec, en) == 0)
 			    {
 			      if (context)
-				gfc_error_now_1 ("Elements with the same value "
-						 "at %L and %L in vector "
-						 "subscript in a variable "
-						 "definition context (%s)",
-						 &(ec->where), &(en->where),
-						 context);
+				gfc_error_now ("Elements with the same value "
+					       "at %L and %L in vector "
+					       "subscript in a variable "
+					       "definition context (%s)",
+					       &(ec->where), &(en->where),
+					       context);
 			      return false;
 			    }
 			}

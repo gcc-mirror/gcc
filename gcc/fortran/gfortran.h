@@ -2645,14 +2645,6 @@ const char * gfc_get_string (const char *, ...) ATTRIBUTE_PRINTF_1;
 bool gfc_find_sym_in_expr (gfc_symbol *, gfc_expr *);
 
 /* error.c */
-
-typedef struct gfc_error_buf
-{
-  int flag;
-  size_t allocated, index;
-  char *message;
-} gfc_error_buf;
-
 void gfc_error_init_1 (void);
 void gfc_diagnostics_init (void);
 void gfc_diagnostics_finish (void);
@@ -2668,9 +2660,7 @@ bool gfc_warning_now_at (location_t loc, int opt, const char *gmsgid, ...)
 void gfc_clear_warning (void);
 void gfc_warning_check (void);
 
-void gfc_error_1 (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_error (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
-void gfc_error_now_1 (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_error_now (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 void gfc_fatal_error (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_GCC_GFC(1,2);
 void gfc_internal_error (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_GCC_GFC(1,2);
@@ -2685,10 +2675,17 @@ bool gfc_notify_std (int, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
 #define gfc_syntax_error(ST)	\
   gfc_error ("Syntax error in %s statement at %C", gfc_ascii_statement (ST));
 
-#include "pretty-print.h" /* For output_buffer.  */
-void gfc_push_error (output_buffer *, gfc_error_buf *);
-void gfc_pop_error (output_buffer *, gfc_error_buf *);
-void gfc_free_error (output_buffer *, gfc_error_buf *);
+#include "pretty-print.h"  /* For output_buffer.  */
+struct gfc_error_buffer
+{
+  bool flag;
+  output_buffer buffer;
+  gfc_error_buffer(void) : flag(false), buffer() {}
+};
+
+void gfc_push_error (gfc_error_buffer *);
+void gfc_pop_error (gfc_error_buffer *);
+void gfc_free_error (gfc_error_buffer *);
 
 void gfc_get_errors (int *, int *);
 void gfc_errors_to_warnings (bool);
