@@ -12837,9 +12837,6 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
 						trust_type_canonical))
 	return false;
 
-      if (!comp_type_attributes (t1, t2))
-	return false;
-
       if (TYPE_ARG_TYPES (t1) == TYPE_ARG_TYPES (t2))
 	return true;
       else
@@ -12939,10 +12936,9 @@ verify_type (const_tree t)
   /* Method and function types can not be used to address memory and thus
      TYPE_CANONICAL really matters only for determining useless conversions.
 
-     FIXME: C++ FE does not agree with gimple_canonical_types_compatible_p
-     here.  gimple_canonical_types_compatible_p calls comp_type_attributes
-     while for C++ FE the attributes does not make difference.  */
-  else if (TREE_CODE (t) == FUNCTION_TYPE || TREE_CODE (t) == METHOD_TYPE)
+     FIXME: C++ FE produce declarations of builtin functions that are not
+     compatible with main variants.  */
+  else if (TREE_CODE (t) == FUNCTION_TYPE)
     ;
   else if (t != ct
 	   /* FIXME: gimple_canonical_types_compatible_p can not compare types
