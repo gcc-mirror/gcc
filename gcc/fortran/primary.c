@@ -1274,8 +1274,7 @@ static match
 match_complex_constant (gfc_expr **result)
 {
   gfc_expr *e, *real, *imag;
-  gfc_error_buf old_error_1;
-  output_buffer old_error;
+  gfc_error_buffer old_error;
   gfc_typespec target;
   locus old_loc;
   int kind;
@@ -1288,18 +1287,18 @@ match_complex_constant (gfc_expr **result)
   if (m != MATCH_YES)
     return m;
 
-  gfc_push_error (&old_error, &old_error_1);
+  gfc_push_error (&old_error);
 
   m = match_complex_part (&real);
   if (m == MATCH_NO)
     {
-      gfc_free_error (&old_error, &old_error_1);
+      gfc_free_error (&old_error);
       goto cleanup;
     }
 
   if (gfc_match_char (',') == MATCH_NO)
     {
-      gfc_pop_error (&old_error, &old_error_1);
+      gfc_pop_error (&old_error);
       m = MATCH_NO;
       goto cleanup;
     }
@@ -1311,10 +1310,10 @@ match_complex_constant (gfc_expr **result)
 
   if (m == MATCH_ERROR)
     {
-      gfc_free_error (&old_error, &old_error_1);
+      gfc_free_error (&old_error);
       goto cleanup;
     }
-  gfc_pop_error (&old_error, &old_error_1);
+  gfc_pop_error (&old_error);
 
   m = match_complex_part (&imag);
   if (m == MATCH_NO)

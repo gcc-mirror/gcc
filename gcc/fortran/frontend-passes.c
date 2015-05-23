@@ -1879,19 +1879,19 @@ doloop_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 		  && a->expr->symtree->n.sym == do_sym)
 		{
 		  if (f->sym->attr.intent == INTENT_OUT)
-		    gfc_error_now_1 ("Variable '%s' at %L set to undefined "
-				     "value inside loop  beginning at %L as "
-				     "INTENT(OUT) argument to subroutine '%s'",
-				     do_sym->name, &a->expr->where,
-				     &doloop_list[i]->loc,
-				     co->symtree->n.sym->name);
+		    gfc_error_now ("Variable %qs at %L set to undefined "
+				   "value inside loop  beginning at %L as "
+				   "INTENT(OUT) argument to subroutine %qs",
+				   do_sym->name, &a->expr->where,
+				   &doloop_list[i]->loc,
+				   co->symtree->n.sym->name);
 		  else if (f->sym->attr.intent == INTENT_INOUT)
-		    gfc_error_now_1 ("Variable '%s' at %L not definable inside "
-				     "loop beginning at %L as INTENT(INOUT) "
-				     "argument to subroutine '%s'",
-				     do_sym->name, &a->expr->where,
-				     &doloop_list[i]->loc,
-				     co->symtree->n.sym->name);
+		    gfc_error_now ("Variable %qs at %L not definable inside "
+				   "loop beginning at %L as INTENT(INOUT) "
+				   "argument to subroutine %qs",
+				   do_sym->name, &a->expr->where,
+				   &doloop_list[i]->loc,
+				   co->symtree->n.sym->name);
 		}
 	    }
 	  a = a->next;
@@ -1951,17 +1951,17 @@ do_function (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 	      && a->expr->symtree->n.sym == do_sym)
 	    {
 	      if (f->sym->attr.intent == INTENT_OUT)
-		gfc_error_now_1 ("Variable '%s' at %L set to undefined value "
-				 "inside loop beginning at %L as INTENT(OUT) "
-				 "argument to function '%s'", do_sym->name,
-				 &a->expr->where, &doloop_list[i]->loc,
-				 expr->symtree->n.sym->name);
+		gfc_error_now ("Variable %qs at %L set to undefined value "
+			       "inside loop beginning at %L as INTENT(OUT) "
+			       "argument to function %qs", do_sym->name,
+			       &a->expr->where, &doloop_list[i]->loc,
+			       expr->symtree->n.sym->name);
 	      else if (f->sym->attr.intent == INTENT_INOUT)
-		gfc_error_now_1 ("Variable '%s' at %L not definable inside loop"
-				 " beginning at %L as INTENT(INOUT) argument to"
-				 " function '%s'", do_sym->name,
-				 &a->expr->where, &doloop_list[i]->loc,
-				 expr->symtree->n.sym->name);
+		gfc_error_now ("Variable %qs at %L not definable inside loop"
+			       " beginning at %L as INTENT(INOUT) argument to"
+			       " function %qs", do_sym->name,
+			       &a->expr->where, &doloop_list[i]->loc,
+			       expr->symtree->n.sym->name);
 	    }
 	}
       a = a->next;

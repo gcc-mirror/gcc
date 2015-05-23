@@ -1,3 +1,35 @@
+2015-05-24  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR fortran/44054
+	* gfortran.h (struct gfc_error_buf): Rename as
+	gfc_error_buffer. Move closer to push, pop and free
+	methods. Reimplement using an output_buffer.
+	* error.c (errors, warnings, warning_buffer, cur_error_buffer):
+	Delete everywhere in this file.
+	(error_char): Delete all contents.
+	(gfc_increment_error_count): Delete.
+	(gfc_error_now): Update comment. Set error_buffer.flag.
+	(gfc_warning_check): Do not handle warning_buffer.
+	(gfc_error_1): Delete.
+	(gfc_error_now_1): Delete.
+	(gfc_error_check): Simplify.
+	(gfc_move_error_buffer_from_to): Renamed from
+	gfc_move_output_buffer_from_to.
+	(gfc_push_error): Handle only gfc_error_buffer.
+	(gfc_pop_error): Likewise.
+	(gfc_free_error): Likewise.
+	(gfc_get_errors): Remove warnings and errors.
+	(gfc_diagnostics_init): Use static error_buffer.
+	(gfc_error_1,gfc_error_now_1): Delete declarations.
+	* symbol.c, decl.c, trans-common.c, data.c, expr.c, expr.c,
+	frontend-passes.c, resolve.c, match.c, parse.c: Replace
+	gfc_error_1 with gfc_error and gfc_error_now_1 with gfc_error_1
+	everywhere.
+	* f95-lang.c (gfc_be_parse_file): Do not update errorcount and
+	warningcount here.
+	* primary.c (match_complex_constant): Replace gfc_error_buf and
+	output_buffer with gfc_error_buffer.
+
 2015-05-22  Jim Wilson  <jim.wilson@linaro.org>
 
 	* Make-lang.in (check_gfortran_parallelize): Update comment.

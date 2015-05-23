@@ -108,14 +108,13 @@ match_word_omp_simd (const char *str, match (*subr) (void), locus *old_locus,
 static void
 use_modules (void)
 {
-  gfc_error_buf old_error_1;
-  output_buffer old_error;
+  gfc_error_buffer old_error;
 
-  gfc_push_error (&old_error, &old_error_1);
+  gfc_push_error (&old_error);
   gfc_buffer_error (false);
   gfc_use_modules ();
   gfc_buffer_error (true);
-  gfc_pop_error (&old_error, &old_error_1);
+  gfc_pop_error (&old_error);
   gfc_commit_symbols ();
   gfc_warning_check ();
   gfc_current_ns->old_cl_list = gfc_current_ns->cl_list;
@@ -2435,7 +2434,7 @@ verify_st_order (st_state *p, gfc_statement st, bool silent)
 
 order:
   if (!silent)
-    gfc_error_1 ("%s statement at %C cannot follow %s statement at %L",
+    gfc_error ("%s statement at %C cannot follow %s statement at %L",
 	       gfc_ascii_statement (st),
 	       gfc_ascii_statement (p->last_statement), &p->where);
 
@@ -2812,7 +2811,7 @@ endType:
 		   "subcomponent exists)", c->name, &c->loc, sym->name);
 
       if (sym->attr.lock_comp && coarray && !lock_type)
-	gfc_error_1 ("Noncoarray component %s at %L of type LOCK_TYPE or with "
+	gfc_error ("Noncoarray component %s at %L of type LOCK_TYPE or with "
 		   "subcomponent of type LOCK_TYPE must have a codimension or "
 		   "be a subcomponent of a coarray. (Variables of type %s may "
 		   "not have a codimension as %s at %L has a codimension or a "
@@ -3527,7 +3526,7 @@ parse_if_block (void)
 	case ST_ELSEIF:
 	  if (seen_else)
 	    {
-	      gfc_error_1 ("ELSE IF statement at %C cannot follow ELSE "
+	      gfc_error ("ELSE IF statement at %C cannot follow ELSE "
 			 "statement at %L", &else_locus);
 
 	      reject_statement ();
@@ -3751,8 +3750,8 @@ gfc_check_do_variable (gfc_symtree *st)
   for (s=gfc_state_stack; s; s = s->previous)
     if (s->do_variable == st)
       {
-	gfc_error_now_1 ("Variable '%s' at %C cannot be redefined inside "
-			 "loop beginning at %L", st->name, &s->head->loc);
+	gfc_error_now ("Variable %qs at %C cannot be redefined inside "
+		       "loop beginning at %L", st->name, &s->head->loc);
 	return 1;
       }
 
@@ -5070,10 +5069,10 @@ gfc_global_used (gfc_gsymbol *sym, locus *where)
     }
 
   if (sym->binding_label)
-    gfc_error_1 ("Global binding name '%s' at %L is already being used as a %s "
+    gfc_error ("Global binding name %qs at %L is already being used as a %s "
 	       "at %L", sym->binding_label, where, name, &sym->where);
   else
-    gfc_error_1 ("Global name '%s' at %L is already being used as a %s at %L",
+    gfc_error ("Global name %qs at %L is already being used as a %s at %L",
 	       sym->name, where, name, &sym->where);
 }
 
@@ -5543,7 +5542,7 @@ duplicate_main:
   /* If we see a duplicate main program, shut down.  If the second
      instance is an implied main program, i.e. data decls or executable
      statements, we're in for lots of errors.  */
-  gfc_error_1 ("Two main PROGRAMs at %L and %C", &prog_locus);
+  gfc_error ("Two main PROGRAMs at %L and %C", &prog_locus);
   reject_statement ();
   gfc_done_2 ();
   return true;
