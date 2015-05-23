@@ -336,7 +336,7 @@ namespace __gnu_debug
         return true;
 
       _ForwardIterator __next = __first;
-      for (++__next; __next != __last; __first = __next, ++__next)
+      for (++__next; __next != __last; __first = __next, (void)++__next)
         if (*__next < *__first)
           return false;
 
@@ -362,7 +362,7 @@ namespace __gnu_debug
         return true;
 
       _ForwardIterator __next = __first;
-      for (++__next; __next != __last; __first = __next, ++__next)
+      for (++__next; __next != __last; __first = __next, (void)++__next)
         if (__pred(*__next, *__first))
           return false;
 
