@@ -372,10 +372,6 @@ hash_canonical_type (tree type)
       unsigned na;
       tree p;
 
-      /* For method types also incorporate their parent class.  */
-      if (TREE_CODE (type) == METHOD_TYPE)
-	iterative_hash_canonical_type (TYPE_METHOD_BASETYPE (type), hstate);
-
       iterative_hash_canonical_type (TREE_TYPE (type), hstate);
 
       for (p = TYPE_ARG_TYPES (type), na = 0; p; p = TREE_CHAIN (p))
