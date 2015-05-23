@@ -1,5 +1,14 @@
 2015-05-22  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree.c (gimple_canonical_types_compatible_p): Sanity check that
+	we do not try to compute canonical type for type that does not need
+	alias set.
+	(verify_type): Drop FIXME for METHOD_TYPE, update FIXME for
+	FUNCITON_TYPE.
+	* tree.h (type_with_alias_set_p): New.
+
+2015-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree.c (gimple_canonical_types_compatible_p):  Do not compare
 	function attributes.
 	(verify_type): Remove METHOD_TYPE FIXME; update FUNCTION_TYPE.
