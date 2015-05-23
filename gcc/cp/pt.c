@@ -7905,15 +7905,22 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       if (OVERLOAD_TYPE_P (t)
 	  && !DECL_ALIAS_TEMPLATE_P (gen_tmpl))
 	{
-	  if (tree attributes
-	      = lookup_attribute ("abi_tag", TYPE_ATTRIBUTES (template_type)))
+	  static const char *tags[] = {"abi_tag", "may_alias"};
+
+	  for (unsigned ix = 0; ix != 2; ix++)
 	    {
-	      if (!TREE_CHAIN (attributes))
+	      tree attributes
+		= lookup_attribute (tags[ix], TYPE_ATTRIBUTES (template_type));
+
+	      if (!attributes)
+		;
+	      else if (!TREE_CHAIN (attributes) && !TYPE_ATTRIBUTES (t))
 		TYPE_ATTRIBUTES (t) = attributes;
 	      else
 		TYPE_ATTRIBUTES (t)
-		  = build_tree_list (TREE_PURPOSE (attributes),
-				     TREE_VALUE (attributes));
+		  = tree_cons (TREE_PURPOSE (attributes),
+			       TREE_VALUE (attributes),
+			       TYPE_ATTRIBUTES (t));
 	    }
 	}
 
