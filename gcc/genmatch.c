@@ -3329,8 +3329,13 @@ parser::parse_for (source_location)
 		      "others with arity %d", oper, idb->nargs, arity);
 
 	  user_id *p = dyn_cast<user_id *> (idb);
-	  if (p && p->is_oper_list)
-	    op->substitutes.safe_splice (p->substitutes);
+	  if (p)
+	    {
+	      if (p->is_oper_list)
+		op->substitutes.safe_splice (p->substitutes);
+	      else
+		fatal_at (token, "iterator cannot be used as operator-list");
+	    }
 	  else 
 	    op->substitutes.safe_push (idb);
 	}
