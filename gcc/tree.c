@@ -12720,6 +12720,23 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
   if (t1 == NULL_TREE || t2 == NULL_TREE)
     return false;
 
+  /* We consider complete types always compatible with incomplete type.
+     This does not make sense for canonical type calculation and thus we
+     need to ensure that we are never called on it.
+
+     FIXME: For more correctness the function probably should have three modes
+	1) mode assuming that types are complete mathcing their structure
+	2) mode allowing incomplete types but producing equivalence classes
+	   and thus ignoring all info from complete types
+	3) mode allowing incomplete types to match complete but checking
+	   compatibility between complete types.
+
+     1 and 2 can be used for canonical type calculation. 3 is the real
+     definition of type compatibility that can be used i.e. for warnings during
+     declaration merging.  */
+
+  gcc_assert (!trust_type_canonical
+	      || (type_with_alias_set_p (t1) && type_with_alias_set_p (t2)));
   /* If the types have been previously registered and found equal
      they still are.  */
   if (TYPE_CANONICAL (t1) && TYPE_CANONICAL (t2)

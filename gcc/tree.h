@@ -5090,6 +5090,26 @@ int_bit_position (const_tree field)
 	  + wi::to_offset (DECL_FIELD_BIT_OFFSET (field))).to_shwi ();
 }
 
+/* Return true if it makes sense to consider alias set for a type T.  */
+
+inline bool
+type_with_alias_set_p (const_tree t)
+{
+  /* Function and method types are never accessed as memory locations.  */
+  if (TREE_CODE (t) == FUNCTION_TYPE || TREE_CODE (t) == METHOD_TYPE)
+    return false;
+
+  if (COMPLETE_TYPE_P (t))
+    return true;
+
+  /* Incomplete types can not be accessed in general except for arrays
+     where we can fetch its element despite we have no array bounds.  */
+  if (TREE_CODE (t) == ARRAY_TYPE && COMPLETE_TYPE_P (TREE_TYPE (t)))
+    return true;
+
+  return false;
+}
+
 extern void gt_ggc_mx (tree &);
 extern void gt_pch_nx (tree &);
 extern void gt_pch_nx (tree &, gt_pointer_operator, void *);
