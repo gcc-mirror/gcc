@@ -1,3 +1,9 @@
+2015-05-23  François Dumont  fdumont@gcc.gnu.org>
+
+	PR libstdc++/64657
+	* include/debug/functions.h (__check_sorted_aux): Cast expression to
+	void.
+
 2015-05-21  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/66224
@@ -228,35 +234,56 @@
 	* testsuite/20_util/auto_ptr/7.cc: Add -std=c++98.
 	* testsuite/20_util/auto_ptr/3946.cc: Add -std=c++98.
 	* testsuite/20_util/auto_ptr/assign_neg.cc: Add -std=c++98.
-	* testsuite/20_util/auto_ptr/requirements/explicit_instantiation/1.cc: Likewise.
+	* testsuite/20_util/auto_ptr/requirements/explicit_instantiation/1.cc:
+	Likewise.
 	* testsuite/20_util/headers/functional/synopsis.cc: Add -Wno-deprecated.
-	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc: Adjust expected errors.
-	* testsuite/23_containers/deque/requirements/dr438/constructor_1_neg.cc: Likewise.
-	* testsuite/23_containers/deque/requirements/dr438/constructor_2_neg.cc: Likewise.
-	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc: Likewise.
-	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc: Likewise.
-	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc: Likewise.
-	* testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc: Likewise.
-	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc: Likewise.
-	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc: Likewise.
-	* testsuite/23_containers/vector/requirements/dr438/constructor_1_neg.cc: Likewise.
-	* testsuite/23_containers/vector/requirements/dr438/constructor_2_neg.cc: Likewise.
-	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:  Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust expected errors.
+	* testsuite/23_containers/deque/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438
+	/constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438
+	/constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
 	* testsuite/ext/array_allocator/1.cc: Add -Wno-deprecated.
 	* testsuite/ext/array_allocator/2.cc: Add -Wno-deprecated.
 	* testsuite/ext/array_allocator/26875.cc: Add -Wno-deprecated.
 	* testsuite/ext/array_allocator/3.cc: Add -Wno-deprecated.
-	* testsuite/ext/array_allocator/check_allocate_max_size.cc: Add -Wno-deprecated.
-	* testsuite/ext/array_allocator/check_deallocate_null.cc: Add -Wno-deprecated.
+	* testsuite/ext/array_allocator/check_allocate_max_size.cc:
+	Add -Wno-deprecated.
+	* testsuite/ext/array_allocator/check_deallocate_null.cc:
+	Add -Wno-deprecated.
 	* testsuite/ext/array_allocator/check_delete.cc: Add -Wno-deprecated.
 	* testsuite/ext/array_allocator/check_new.cc: Add -Wno-deprecated.
 	* testsuite/ext/profile/mutex_extensions_neg.cc: Prune follow-on error.
-	* testsuite/tr1/2_general_utilities/shared_ptr/assign/auto_ptr.cc: Add -std=c++98.
-	* testsuite/tr1/2_general_utilities/shared_ptr/assign/auto_ptr_neg.cc: Add -std=c++98.
-	* testsuite/tr1/2_general_utilities/shared_ptr/assign/auto_ptr_rvalue_neg.cc: Add -std=c++98.
-	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820_neg.cc: Add -std=c++98 -fno-show-column.
-	* testsuite/tr1/2_general_utilities/shared_ptr/cons/auto_ptr.cc: Add -std=c++98.
-	* testsuite/tr1/2_general_utilities/shared_ptr/cons/auto_ptr_neg.cc: Add -std=c++98.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/auto_ptr.cc:
+	Add -std=c++98.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/auto_ptr_neg.cc:
+	Add -std=c++98.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign
+	/auto_ptr_rvalue_neg.cc: Add -std=c++98.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820_neg.cc:
+	Add -std=c++98 -fno-show-column.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/auto_ptr.cc:
+	Add -std=c++98.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/auto_ptr_neg.cc:
+	Add -std=c++98.
 	* testsuite/tr1/6_containers/utility/pair.cc: Add -std=c++98.
 	* testsuite/tr1/8_c_compatibility/cmath/pow_cmath.cc: Add -std=c++98.
 
