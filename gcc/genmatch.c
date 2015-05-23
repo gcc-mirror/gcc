@@ -2913,7 +2913,12 @@ parser::parse_operation ()
 
   user_id *p = dyn_cast<user_id *> (op);
   if (p && p->is_oper_list)
-    record_operlist (id_tok->src_loc, p);
+    {
+      if (active_fors.length() == 0)
+	record_operlist (id_tok->src_loc, p);
+      else
+	fatal_at (id_tok, "operator-list %s cannot be exapnded inside 'for'", id);
+    }
   return op;
 }
 
