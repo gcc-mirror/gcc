@@ -1,4 +1,4 @@
-2015-05-20  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+2015-05-23  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* genmatch.c (parser::parse_for): Reject iterator if used as operator-list.
 
