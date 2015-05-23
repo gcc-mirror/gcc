@@ -3427,6 +3427,11 @@ parser::parse_operator_list (source_location)
 	op->substitutes.safe_push (idb);
     }
 
+  // Check that there is no junk after id-list
+  token = peek();
+  if (token->type != CPP_CLOSE_PAREN)
+    fatal_at (token, "expected identifier got %s", cpp_type2name (token->type, 0));
+
   if (op->substitutes.length () == 0)
     fatal_at (token, "operator-list cannot be empty");
 
