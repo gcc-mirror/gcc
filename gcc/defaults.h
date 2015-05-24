@@ -1444,6 +1444,16 @@ gen_epilogue ()
 }
 #endif
 
+#ifndef HAVE_mem_thread_fence
+#define HAVE_mem_thread_fence 0
+static inline rtx
+gen_mem_thread_fence (rtx)
+{
+  gcc_unreachable ();
+  return NULL;
+}
+#endif
+
 #endif /* GCC_INSN_FLAGS_H  */
 
 #endif  /* ! GCC_DEFAULTS_H */

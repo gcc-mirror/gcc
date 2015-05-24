@@ -7589,10 +7589,6 @@ expand_asm_memory_barrier (void)
 /* This routine will either emit the mem_thread_fence pattern or issue a 
    sync_synchronize to generate a fence for memory model MEMMODEL.  */
 
-#ifndef HAVE_mem_thread_fence
-# define HAVE_mem_thread_fence 0
-# define gen_mem_thread_fence(x) (gcc_unreachable (), NULL_RTX)
-#endif
 #ifndef HAVE_memory_barrier
 # define HAVE_memory_barrier 0
 # define gen_memory_barrier()  (gcc_unreachable (), NULL_RTX)
