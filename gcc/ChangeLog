@@ -13,14 +13,15 @@
 2015-05-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-utils.h (method_class_type): Remove.
-	* cgraphunit.c (walk_polymorphic_call_targets): Use TYPE_METHOD_BASETYPE.
+	* cgraphunit.c (walk_polymorphic_call_targets): Use
+	TYPE_METHOD_BASETYPE.
 	* ipa-devirt.c (type_in_anonymous_namespace_p): Check that it is called
 	on main variants only.
 	(method_class_type): Remove.
 	(update_type_inheritance_graph): Use TYPE_METHOD_BASETYPE.
 	(build_type_inheritance_graph): Likewise.
 	* ipa-icf.c (sem_function::equals_wpa): Likewise.
-	* pa-polymorphic-call.c (decl_maybe_in_construction_p, 
+	* pa-polymorphic-call.c (decl_maybe_in_construction_p,
 	check_stmt_for_type_change): Use TYPE_METHOD_BASETYPE.
 
 2015-05-22  Jan Hubicka  <hubicka@ucw.cz>
@@ -78,15 +79,18 @@
 
 2015-05-23  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
-	* genmatch.c (parser::parse_operation): Reject expanding operator-list inside 'for'.
+	* genmatch.c (parser::parse_operation): Reject expanding
+	operator-list inside 'for'.
 
 2015-05-23  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
-	* genmatch.c (parser::parse_for): Reject iterator if used as operator-list.
+	* genmatch.c (parser::parse_for): Reject iterator if used as
+	operator-list.
 
 2015-05-23  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
-	* genmatch.c (parser::parse_operator_list): Check for CPP_CLOSE_PAREN after end of id-list.
+	* genmatch.c (parser::parse_operator_list): Check for CPP_CLOSE_PAREN
+	after end of id-list.
 
 2015-05-22  Jan Hubicka  <hubicka@ucw.cz>
 
@@ -152,7 +156,7 @@
 	* config/pa/pa.c (mem_shadd_or_shadd_rtx_p): New function factoredx
 	out of hppa_legitimize_address to handle both forms of a multiply
 	by 2, 4 or 8.
-	(hppa_legitimize_address): Use mem_shadd_or_shadd_rtx_p. 
+	(hppa_legitimize_address): Use mem_shadd_or_shadd_rtx_p.
 	Always generate the ASHIFT variant as the result is not directly
 	used in a MEM.  Update comments and refactor slightly to improve
 	readability.
@@ -333,7 +337,7 @@
 
 2015-05-08  Jan Hubicka  <hubicka@ucw.cz>
 
-	* alias.c (alias_stats): New static var.	
+	* alias.c (alias_stats): New static var.
 	(alias_sets_conflict_p, alias_sets_must_conflict_p): Update stats.
 	(dump_alias_stats_in_alias_c): New function.
 	* alias.h (dump_alias_stats_in_alias_c): Declare.
@@ -433,7 +437,8 @@
 	rtx_jump_insn.
 	* config/sh/sh.c (gen_far_branch): Likewise. Fix call of invert_jump.
 	(split_branches): Fix calls of redirect_jump.
-	* dojump.c (jumpifnot): Promote argument type from rtx to rtx_code_label.
+	* dojump.c (jumpifnot): Promote argument type from rtx to
+	rtx_code_label.
 	(jumpifnot_1): Likewise.
 	(jumpif): Likewise.
 	(jumpif_1): Likewise.
