@@ -13097,7 +13097,8 @@ build_enumerator (tree name, tree value, tree enumtype, tree attributes,
 	      if (tmp_value)
 		value = tmp_value;
 	    }
-	  else if (! INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (value)))
+	  else if (! INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P
+		   (TREE_TYPE (value)))
 	    value = perform_implicit_conversion_flags
 	      (ENUM_UNDERLYING_TYPE (enumtype), value, tf_warning_or_error,
 	       LOOKUP_IMPLICIT | LOOKUP_NO_NARROWING);
