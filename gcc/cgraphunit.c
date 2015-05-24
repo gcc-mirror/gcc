@@ -866,9 +866,8 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 		  (TREE_TYPE (targets[i]->decl))
 		   == METHOD_TYPE
 	      && !type_in_anonymous_namespace_p
-		   (method_class_type
-		     (TREE_TYPE (targets[i]->decl))))
-	  enqueue_node (targets[i]);
+		   (TYPE_METHOD_BASETYPE (TREE_TYPE (targets[i]->decl))))
+	    enqueue_node (targets[i]);
 	}
     }
 

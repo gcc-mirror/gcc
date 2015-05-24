@@ -2279,18 +2279,6 @@ dump_type_inheritance_graph (FILE *f)
     }
 }
 
-/* Given method type T, return type of class it belongs to.
-   Look up this pointer and get its type.    */
-
-tree
-method_class_type (const_tree t)
-{
-  tree first_parm_type = TREE_VALUE (TYPE_ARG_TYPES (t));
-  gcc_assert (TREE_CODE (t) == METHOD_TYPE);
-
-  return TREE_TYPE (first_parm_type);
-}
-
 /* Initialize IPA devirt and build inheritance tree graph.  */
 
 void
@@ -2314,8 +2302,7 @@ build_type_inheritance_graph (void)
     if (is_a <cgraph_node *> (n)
 	&& DECL_VIRTUAL_P (n->decl)
 	&& n->real_symbol_p ())
-      get_odr_type (TYPE_MAIN_VARIANT (method_class_type (TREE_TYPE (n->decl))),
-		    true);
+      get_odr_type (TYPE_METHOD_BASETYPE (TREE_TYPE (n->decl)), true);
 
     /* Look also for virtual tables of types that do not define any methods.
  
@@ -3446,8 +3433,7 @@ update_type_inheritance_graph (void)
     if (DECL_VIRTUAL_P (n->decl)
 	&& !n->definition
 	&& n->real_symbol_p ())
-      get_odr_type (method_class_type (TYPE_MAIN_VARIANT (TREE_TYPE (n->decl))),
-				       true);
+      get_odr_type (TYPE_METHOD_BASETYPE (TREE_TYPE (n->decl)), true);
   timevar_pop (TV_IPA_INHERITANCE);
 }
 

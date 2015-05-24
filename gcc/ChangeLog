@@ -1,5 +1,18 @@
 2015-05-22  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-utils.h (method_class_type): Remove.
+	* cgraphunit.c (walk_polymorphic_call_targets): Use TYPE_METHOD_BASETYPE.
+	* ipa-devirt.c (type_in_anonymous_namespace_p): Check that it is called
+	on main variants only.
+	(method_class_type): Remove.
+	(update_type_inheritance_graph): Use TYPE_METHOD_BASETYPE.
+	(build_type_inheritance_graph): Likewise.
+	* ipa-icf.c (sem_function::equals_wpa): Likewise.
+	* pa-polymorphic-call.c (decl_maybe_in_construction_p, 
+	check_stmt_for_type_change): Use TYPE_METHOD_BASETYPE.
+
+2015-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree.c (prototype_p, virtual_method_call_p, obj_type_ref_class,
 	is_typedef_decl, typedef_variant_p): Constify.
 	* tree.h (prototype_p, virtual_method_call_p, obj_type_ref_class,
