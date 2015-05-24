@@ -1,4 +1,9 @@
-2015-05-22  Jan Hubicka  <hubicka@ucw.cz>
+2015-05-24  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/66243
+	* decl.c (build_enumerator): Don't silently convert scoped enums.
+
+2015-05-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/66180
 	* mangle.c (mangle_decl): Mangle anonymous namespace types as

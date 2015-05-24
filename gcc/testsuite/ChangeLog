@@ -1,4 +1,9 @@
-2015-05-22  Jan Hubicka  <hubicka@ucw.cz>
+2015-05-23  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/66243
+	* g++.dg/cpp0x/pr66243.C: New.
+
+2015-05-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/66180
 	* g++.dg/lto/pr66180_0.C: New testcase.
