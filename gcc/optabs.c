@@ -7608,11 +7608,6 @@ expand_mem_thread_fence (enum memmodel model)
 /* This routine will either emit the mem_signal_fence pattern or issue a 
    sync_synchronize to generate a fence for memory model MEMMODEL.  */
 
-#ifndef HAVE_mem_signal_fence
-# define HAVE_mem_signal_fence 0
-# define gen_mem_signal_fence(x) (gcc_unreachable (), NULL_RTX)
-#endif
-
 void
 expand_mem_signal_fence (enum memmodel model)
 {
