@@ -1,3 +1,12 @@
+2015-05-23  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* combine.c (find_split_point): Check the value of HAVE_lo_sum
+	instead of if it is defined.
+	(combine_simplify_rtx): Likewise.
+	* lra-constraints.c (process_address_1): Likewise.
+	* config/darwin.c: Adjust.
+	* genconfig.c (main): Always define HAVE_lo_sum.
+
 2015-05-23  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* genmatch.c (parser::parse_operation): Reject expanding operator-list inside 'for'.
