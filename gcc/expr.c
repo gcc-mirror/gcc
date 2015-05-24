@@ -1507,10 +1507,8 @@ void
 move_block_to_reg (int regno, rtx x, int nregs, machine_mode mode)
 {
   int i;
-#ifdef HAVE_load_multiple
   rtx pat;
   rtx_insn *last;
-#endif
 
   if (nregs == 0)
     return;
@@ -1519,7 +1517,6 @@ move_block_to_reg (int regno, rtx x, int nregs, machine_mode mode)
     x = validize_mem (force_const_mem (mode, x));
 
   /* See if the machine can do this with a load multiple insn.  */
-#ifdef HAVE_load_multiple
   if (HAVE_load_multiple)
     {
       last = get_last_insn ();
@@ -1533,7 +1530,6 @@ move_block_to_reg (int regno, rtx x, int nregs, machine_mode mode)
       else
 	delete_insns_since (last);
     }
-#endif
 
   for (i = 0; i < nregs; i++)
     emit_move_insn (gen_rtx_REG (word_mode, regno + i),

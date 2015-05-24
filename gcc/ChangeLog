@@ -1,5 +1,11 @@
 2015-05-23  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* defaults.h (gen_load_multiple): New function.
+	(HAVE_load_multiple): Add default value.
+	* expr.c (move_block_to_reg): Adjust.
+
+2015-05-23  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* defaults.h (gen_mem_signal_fence): New function.
 	(HAVE_mem_signal_fence): Add default value.
 	* optabs.c: Adjust.

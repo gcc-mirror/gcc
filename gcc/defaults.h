@@ -1474,6 +1474,16 @@ gen_mem_signal_fence (rtx)
 }
 #endif
 
+#ifndef HAVE_load_multiple
+#define HAVE_load_multiple 0
+static inline rtx
+gen_load_multiple (rtx, rtx, rtx)
+{
+  gcc_unreachable ();
+  return NULL;
+}
+#endif
+
 #endif /* GCC_INSN_FLAGS_H  */
 
 #endif  /* ! GCC_DEFAULTS_H */
