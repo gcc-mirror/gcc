@@ -1,5 +1,12 @@
 2015-05-23  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* defaults.h (gen_tablejump): New function.
+	(HAVE_tablejump): Add default value.
+	* expr.c: Adjust.
+	* stmt.c: Likewise.
+
+2015-05-23  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* defaults.h (gen_store_multiple): New function.
 	(HAVE_store_multiple): Add default value.
 	* expr.c (move_block_from_reg): Adjust.
