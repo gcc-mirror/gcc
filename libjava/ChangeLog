@@ -1,9 +1,12 @@
+2015-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure: Regenerate.
+
 2015-05-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac: Include config/sjlj.m4.
 	Remove manual SJLJ check, add GCC_CHECK_SJLJ_EXCEPTIONS and adjust.
 	* include/config.h.in: Regenerate.
-	* configure: Likewise.
 	* exception.cc: Replace SJLJ_EXCEPTIONS by __USING_SJLJ_EXCEPTIONS__.
 	* stacktrace.cc: Likewise.
 	* include/default-signal.h: Likewise.
