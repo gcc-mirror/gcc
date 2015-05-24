@@ -1484,6 +1484,16 @@ gen_load_multiple (rtx, rtx, rtx)
 }
 #endif
 
+#ifndef HAVE_store_multiple
+#define HAVE_store_multiple 0
+static inline rtx
+gen_store_multiple (rtx, rtx, rtx)
+{
+  gcc_unreachable ();
+  return NULL;
+}
+#endif
+
 #endif /* GCC_INSN_FLAGS_H  */
 
 #endif  /* ! GCC_DEFAULTS_H */
