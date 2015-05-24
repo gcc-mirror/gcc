@@ -11579,7 +11579,7 @@ stdarg_p (const_tree fntype)
 /* Return true if TYPE has a prototype.  */
 
 bool
-prototype_p (tree fntype)
+prototype_p (const_tree fntype)
 {
   tree t;
 
@@ -12005,7 +12005,7 @@ lhd_gcc_personality (void)
    can't apply.) */
 
 bool
-virtual_method_call_p (tree target)
+virtual_method_call_p (const_tree target)
 {
   if (TREE_CODE (target) != OBJ_TYPE_REF)
     return false;
@@ -12026,7 +12026,7 @@ virtual_method_call_p (tree target)
 /* REF is OBJ_TYPE_REF, return the class the ref corresponds to.  */
 
 tree
-obj_type_ref_class (tree ref)
+obj_type_ref_class (const_tree ref)
 {
   gcc_checking_assert (TREE_CODE (ref) == OBJ_TYPE_REF);
   ref = TREE_TYPE (ref);
@@ -12124,7 +12124,7 @@ get_binfo_at_offset (tree binfo, HOST_WIDE_INT offset, tree expected_type)
 /* Returns true if X is a typedef decl.  */
 
 bool
-is_typedef_decl (tree x)
+is_typedef_decl (const_tree x)
 {
   return (x && TREE_CODE (x) == TYPE_DECL
           && DECL_ORIGINAL_TYPE (x) != NULL_TREE);
@@ -12133,7 +12133,7 @@ is_typedef_decl (tree x)
 /* Returns true iff TYPE is a type variant created for a typedef. */
 
 bool
-typedef_variant_p (tree type)
+typedef_variant_p (const_tree type)
 {
   return is_typedef_decl (TYPE_NAME (type));
 }
