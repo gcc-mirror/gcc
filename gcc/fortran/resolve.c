@@ -1981,7 +1981,8 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	}
 
       comp = gfc_get_proc_ptr_comp(e);
-      if (comp && comp->attr.elemental)
+      if (e->expr_type == EXPR_VARIABLE
+	  && comp && comp->attr.elemental)
 	{
 	    gfc_error ("ELEMENTAL procedure pointer component %qs is not "
 		       "allowed as an actual argument at %L", comp->name,
