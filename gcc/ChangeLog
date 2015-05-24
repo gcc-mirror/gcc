@@ -1,5 +1,11 @@
 2015-05-23  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* defaults.h (gen_mem_thread_fence): New function.
+	(HAVE_mem_thread_fence): Add default definition.
+	* optabs.c: Adjust.
+
+2015-05-23  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* combine.c (find_split_point): Check the value of HAVE_lo_sum
 	instead of if it is defined.
 	(combine_simplify_rtx): Likewise.
