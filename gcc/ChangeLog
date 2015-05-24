@@ -1,5 +1,17 @@
 2015-05-22  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR lto/66180
+	* ipa-devirt.c (type_with_linkage): Check that TYPE_STUB_DECL
+	is set; check for assembler name at LTO time.
+	(type_in_anonymous_namespace): Remove hacks, check that all
+	anonymous types are called "<anon>"
+	(odr_type_p): Simplify; add check for "<anon>"
+	(odr_subtypes_equivalent): Add odr_type_p check.
+	* tree.c (need_assembler_name_p): Even anonymous namespace needs
+	assembler name.
+
+2015-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
 	* ipa-utils.h (method_class_type): Remove.
 	* cgraphunit.c (walk_polymorphic_call_targets): Use TYPE_METHOD_BASETYPE.
 	* ipa-devirt.c (type_in_anonymous_namespace_p): Check that it is called

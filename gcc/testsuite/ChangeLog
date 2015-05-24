@@ -1,3 +1,9 @@
+2015-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/66180
+	* g++.dg/lto/pr66180_0.C: New testcase.
+	* g++.dg/lto/pr66180_1.C: New testcase.
+
 2015-05-24  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/66257
