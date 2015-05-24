@@ -1,3 +1,10 @@
+2015-05-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (prototype_p, virtual_method_call_p, obj_type_ref_class,
+	is_typedef_decl, typedef_variant_p): Constify.
+	* tree.h (prototype_p, virtual_method_call_p, obj_type_ref_class,
+	is_typedef_decl, typedef_variant_p): Constify.
+
 2015-05-23  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* defaults.h (gen_tablejump): New function.
