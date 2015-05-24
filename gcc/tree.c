@@ -13262,7 +13262,15 @@ verify_type (const_tree t)
 	}
     }
   
-
+  /* ipa-devirt makes an assumption that TYPE_METHOD_BASETYPE is always
+     TYPE_MAIN_VARIANT and it would be odd to add methods only to variatns
+     of a type. */
+  if (TREE_CODE (t) == METHOD_TYPE
+      && TYPE_MAIN_VARIANT (TYPE_METHOD_BASETYPE (t)) != TYPE_METHOD_BASETYPE (t))
+    {
+	error ("TYPE_METHOD_BASETYPE is not main variant");
+	error_found = true;
+    }
 
   if (error_found)
     {

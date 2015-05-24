@@ -197,7 +197,7 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 	     unused.  */
 	  if (TREE_CODE (TREE_TYPE (n->decl)) == METHOD_TYPE
 	      && type_in_anonymous_namespace_p
-		    (method_class_type (TREE_TYPE (n->decl))))
+		    (TYPE_METHOD_BASETYPE (TREE_TYPE (n->decl))))
 	    continue;
 
 	   symtab_node *body = n->function_symbol ();
