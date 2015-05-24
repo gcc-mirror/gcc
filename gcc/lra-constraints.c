@@ -2962,42 +2962,42 @@ process_address_1 (int nop, bool check_only_p,
 	  rtx addr = *ad.inner;
 
 	  new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, "addr");
-#ifdef HAVE_lo_sum
-	  {
-	    rtx_insn *insn;
-	    rtx_insn *last = get_last_insn ();
+	  if (HAVE_lo_sum)
+	    {
+	      rtx_insn *insn;
+	      rtx_insn *last = get_last_insn ();
 
-	    /* addr => lo_sum (new_base, addr), case (2) above.  */
-	    insn = emit_insn (gen_rtx_SET
-			      (new_reg,
-			       gen_rtx_HIGH (Pmode, copy_rtx (addr))));
-	    code = recog_memoized (insn);
-	    if (code >= 0)
-	      {
-		*ad.inner = gen_rtx_LO_SUM (Pmode, new_reg, addr);
-		if (! valid_address_p (ad.mode, *ad.outer, ad.as))
-		  {
-		    /* Try to put lo_sum into register.  */
-		    insn = emit_insn (gen_rtx_SET
-				      (new_reg,
-				       gen_rtx_LO_SUM (Pmode, new_reg, addr)));
-		    code = recog_memoized (insn);
-		    if (code >= 0)
-		      {
-			*ad.inner = new_reg;
-			if (! valid_address_p (ad.mode, *ad.outer, ad.as))
-			  {
-			    *ad.inner = addr;
-			    code = -1;
-			  }
-		      }
-		    
-		  }
-	      }
-	    if (code < 0)
-	      delete_insns_since (last);
-	  }
-#endif
+	      /* addr => lo_sum (new_base, addr), case (2) above.  */
+	      insn = emit_insn (gen_rtx_SET
+				(new_reg,
+				 gen_rtx_HIGH (Pmode, copy_rtx (addr))));
+	      code = recog_memoized (insn);
+	      if (code >= 0)
+		{
+		  *ad.inner = gen_rtx_LO_SUM (Pmode, new_reg, addr);
+		  if (! valid_address_p (ad.mode, *ad.outer, ad.as))
+		    {
+		      /* Try to put lo_sum into register.  */
+		      insn = emit_insn (gen_rtx_SET
+					(new_reg,
+					 gen_rtx_LO_SUM (Pmode, new_reg, addr)));
+		      code = recog_memoized (insn);
+		      if (code >= 0)
+			{
+			  *ad.inner = new_reg;
+			  if (! valid_address_p (ad.mode, *ad.outer, ad.as))
+			    {
+			      *ad.inner = addr;
+			      code = -1;
+			    }
+			}
+
+		    }
+		}
+	      if (code < 0)
+		delete_insns_since (last);
+	    }
+
 	  if (code < 0)
 	    {
 	      /* addr => new_base, case (2) above.  */

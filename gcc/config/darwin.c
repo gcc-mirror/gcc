@@ -149,8 +149,7 @@ int generating_for_darwin_version ;
 section * darwin_sections[NUM_DARWIN_SECTIONS];
 
 /* While we transition to using in-tests instead of ifdef'd code.  */
-#ifndef HAVE_lo_sum
-#define HAVE_lo_sum 0
+#if !HAVE_lo_sum
 #define gen_macho_high(a,b) (a)
 #define gen_macho_low(a,b,c) (a)
 #endif
