@@ -3511,7 +3511,20 @@ mangle_decl (const tree decl)
   if (dep)
     return;
 
-  id = get_mangled_id (decl);
+  /* During LTO we keep mangled names of TYPE_DECLs for ODR type merging.
+     It is not needed to assign names to anonymous namespace, but we use the
+     "<anon>" marker to be able to tell if type is C++ ODR type or type
+     produced by other language.  */
+  if (TREE_CODE (decl) == TYPE_DECL
+      && TYPE_STUB_DECL (TREE_TYPE (decl))
+      && !TREE_PUBLIC (TYPE_STUB_DECL (TREE_TYPE (decl))))
+    id = get_identifier ("<anon>");
+  else
+    {
+      gcc_assert (TREE_CODE (decl) != TYPE_DECL
+		  || !no_linkage_check (TREE_TYPE (decl), true));
+      id = get_mangled_id (decl);
+    }
   SET_DECL_ASSEMBLER_NAME (decl, id);
 
   if (G.need_abi_warning
