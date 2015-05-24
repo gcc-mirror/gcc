@@ -1548,7 +1548,6 @@ move_block_from_reg (int regno, rtx x, int nregs)
     return;
 
   /* See if the machine can do this with a store multiple insn.  */
-#ifdef HAVE_store_multiple
   if (HAVE_store_multiple)
     {
       rtx_insn *last = get_last_insn ();
@@ -1562,7 +1561,6 @@ move_block_from_reg (int regno, rtx x, int nregs)
       else
 	delete_insns_since (last);
     }
-#endif
 
   for (i = 0; i < nregs; i++)
     {
