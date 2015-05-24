@@ -1454,6 +1454,16 @@ gen_mem_thread_fence (rtx)
 }
 #endif
 
+#ifndef HAVE_memory_barrier
+#define HAVE_memory_barrier 0
+static inline rtx
+gen_memory_barrier ()
+{
+  gcc_unreachable ();
+  return NULL;
+}
+#endif
+
 #endif /* GCC_INSN_FLAGS_H  */
 
 #endif  /* ! GCC_DEFAULTS_H */
