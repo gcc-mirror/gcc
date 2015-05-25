@@ -373,9 +373,6 @@ enum standard_datatypes
   /* The type of an exception.  */
   ADT_except_type,
 
-  /* Type declaration node  <==> typedef void *T */
-  ADT_ptr_void_type,
-
   /* Function type declaration -- void T() */
   ADT_void_ftype,
 
@@ -461,7 +458,6 @@ extern GTY(()) tree gnat_raise_decls_ext[(int) LAST_REASON_CODE + 1];
 
 #define longest_float_type_node gnat_std_decls[(int) ADT_longest_float_type]
 #define except_type_node gnat_std_decls[(int) ADT_except_type]
-#define ptr_void_type_node gnat_std_decls[(int) ADT_ptr_void_type]
 #define void_ftype gnat_std_decls[(int) ADT_void_ftype]
 #define ptr_void_ftype gnat_std_decls[(int) ADT_ptr_void_ftype]
 #define fdesc_type_node gnat_std_decls[(int) ADT_fdesc_type]
@@ -1035,18 +1031,15 @@ extern Pos get_target_short_size (void);
 extern Pos get_target_int_size (void);
 extern Pos get_target_long_size (void);
 extern Pos get_target_long_long_size (void);
-extern Pos get_target_float_size (void);
-extern Pos get_target_double_size (void);
-extern Pos get_target_long_double_size (void);
 extern Pos get_target_pointer_size (void);
 extern Pos get_target_maximum_default_alignment (void);
 extern Pos get_target_system_allocator_alignment (void);
 extern Pos get_target_maximum_allowed_alignment (void);
 extern Pos get_target_maximum_alignment (void);
-extern Nat get_float_words_be (void);
-extern Nat get_words_be (void);
-extern Nat get_bytes_be (void);
-extern Nat get_bits_be (void);
+extern Nat get_target_float_words_be (void);
+extern Nat get_target_words_be (void);
+extern Nat get_target_bytes_be (void);
+extern Nat get_target_bits_be (void);
 extern Nat get_target_strict_alignment (void);
 extern Nat get_target_double_float_alignment (void);
 extern Nat get_target_double_scalar_alignment (void);

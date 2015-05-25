@@ -23,7 +23,7 @@
  *                                                                          *
  ****************************************************************************/
 
-/* Functions for retrieving target types. See Ada package Get_Targ */
+/* Functions for retrieving target types.  See Ada package Get_Targ.  */
 
 #include "config.h"
 #include "system.h"
@@ -192,25 +192,25 @@ get_target_maximum_alignment (void)
 #endif
 
 Nat
-get_float_words_be (void)
+get_target_float_words_be (void)
 {
   return FLOAT_WORDS_BIG_ENDIAN;
 }
 
 Nat
-get_words_be (void)
+get_target_words_be (void)
 {
   return WORDS_BIG_ENDIAN;
 }
 
 Nat
-get_bytes_be (void)
+get_target_bytes_be (void)
 {
   return BYTES_BIG_ENDIAN;
 }
 
 Nat
-get_bits_be (void)
+get_target_bits_be (void)
 {
   return BITS_BIG_ENDIAN;
 }

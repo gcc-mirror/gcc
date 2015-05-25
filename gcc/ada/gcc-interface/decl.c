@@ -2055,7 +2055,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   a pointer to the array type since we don't have the array type
 	   yet (it will reference the fat pointer via the bounds).  */
 	tem
-	  = create_field_decl (get_identifier ("P_ARRAY"), ptr_void_type_node,
+	  = create_field_decl (get_identifier ("P_ARRAY"), ptr_type_node,
 			       gnu_fat_type, NULL_TREE, NULL_TREE, 0, 0);
 	DECL_CHAIN (tem)
 	  = create_field_decl (get_identifier ("P_BOUNDS"), gnu_ptr_template,
@@ -3889,7 +3889,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* If expansion is disabled, the equivalent type of a concurrent type
 	   is absent, so build a dummy pointer type.  */
 	else if (type_annotate_only && No (gnat_desig_equiv))
-	  gnu_type = ptr_void_type_node;
+	  gnu_type = ptr_type_node;
 
 	/* Finally, handle the default case where we can just elaborate our
 	   designated type.  */
@@ -4008,7 +4008,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
     case E_Access_Protected_Subprogram_Type:
     case E_Anonymous_Access_Protected_Subprogram_Type:
       if (type_annotate_only && No (gnat_equiv_type))
-	gnu_type = ptr_void_type_node;
+	gnu_type = ptr_type_node;
       else
 	{
 	  /* The run-time representation is the equivalent type.  */
@@ -4232,7 +4232,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       we are only annotating types, break circularities here.  */
 	    if (type_annotate_only
 	        && is_from_limited_with_of_main (gnat_return_type))
-	      gnu_return_type = ptr_void_type_node;
+	      gnu_return_type = void_type_node;
 	    else
 	      gnu_return_type = gnat_to_gnu_type (gnat_return_type);
 
@@ -4343,7 +4343,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    if (type_annotate_only
 	        && is_from_limited_with_of_main (gnat_param_type))
 	      {
-		gnu_param_type = ptr_void_type_node;
+		gnu_param_type = void_type_node;
 		fake_param_type = true;
 	      }
 	    else
@@ -5681,7 +5681,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
   if (Convention (gnat_subprog) == Convention_Intrinsic
       && Present (Interface_Name (gnat_subprog))
       && Is_Descendent_Of_Address (Etype (gnat_param)))
-    gnu_param_type = ptr_void_type_node;
+    gnu_param_type = ptr_type_node;
 
   /* Arrays are passed as pointers to element type for foreign conventions.  */
   if (foreign && mech != By_Copy && TREE_CODE (gnu_param_type) == ARRAY_TYPE)
@@ -8310,7 +8310,7 @@ intrin_return_compatible_p (intrin_binding_t * inb)
 
   /* If return type is Address (integer type), map it to void *.  */
   if (Is_Descendent_Of_Address (Etype (inb->gnat_entity)))
-    ada_return_type = ptr_void_type_node;
+    ada_return_type = ptr_type_node;
 
   /* Check return types compatibility otherwise.  Note that this
      handles void/void as well.  */
