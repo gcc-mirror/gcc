@@ -1,5 +1,11 @@
 2015-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Constant>: Move around.
+	<E_Exception>: Merge with E_Variable case.
+	<E_Variable>: Remove 'object' label.
+
+2015-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Minor tweak.
 	* gcc-interface/trans.c (finalize_nrv_unc_r): Use CONSTRUCTOR_ELT.
 	* gcc-interface/utils.c (convert): Likewise and simplify.
