@@ -448,87 +448,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
   switch (kind)
     {
-    case E_Constant:
-      /* If this is a use of a deferred constant without address clause,
-	 get its full definition.  */
-      if (!definition
-	  && No (Address_Clause (gnat_entity))
-	  && Present (Full_View (gnat_entity)))
-	{
-	  gnu_decl
-	    = gnat_to_gnu_entity (Full_View (gnat_entity), gnu_expr, 0);
-	  saved = true;
-	  break;
-	}
-
-      /* If we have an external constant that we are not defining, get the
-	 expression that is was defined to represent.  We may throw it away
-	 later if it is not a constant.  But do not retrieve the expression
-	 if it is an allocator because the designated type might be dummy
-	 at this point.  */
-      if (!definition
-	  && !No_Initialization (Declaration_Node (gnat_entity))
-	  && Present (Expression (Declaration_Node (gnat_entity)))
-	  && Nkind (Expression (Declaration_Node (gnat_entity)))
-	     != N_Allocator)
-	{
-	  bool went_into_elab_proc = false;
-	  int save_force_global = force_global;
-
-	  /* The expression may contain N_Expression_With_Actions nodes and
-	     thus object declarations from other units.  In this case, even
-	     though the expression will eventually be discarded since not a
-	     constant, the declarations would be stuck either in the global
-	     varpool or in the current scope.  Therefore we force the local
-	     context and create a fake scope that we'll zap at the end.  */
-	  if (!current_function_decl)
-	    {
-	      current_function_decl = get_elaboration_procedure ();
-	      went_into_elab_proc = true;
-	    }
-	  force_global = 0;
-	  gnat_pushlevel ();
-
-	  gnu_expr = gnat_to_gnu (Expression (Declaration_Node (gnat_entity)));
-
-	  gnat_zaplevel ();
-	  force_global = save_force_global;
-	  if (went_into_elab_proc)
-	    current_function_decl = NULL_TREE;
-	}
-
-      /* Ignore deferred constant definitions without address clause since
-	 they are processed fully in the front-end.  If No_Initialization
-	 is set, this is not a deferred constant but a constant whose value
-	 is built manually.  And constants that are renamings are handled
-	 like variables.  */
-      if (definition
-	  && !gnu_expr
-	  && No (Address_Clause (gnat_entity))
-	  && !No_Initialization (Declaration_Node (gnat_entity))
-	  && No (Renamed_Object (gnat_entity)))
-	{
-	  gnu_decl = error_mark_node;
-	  saved = true;
-	  break;
-	}
-
-      /* Ignore constant definitions already marked with the error node.  See
-	 the N_Object_Declaration case of gnat_to_gnu for the rationale.  */
-      if (definition
-	  && gnu_expr
-	  && present_gnu_tree (gnat_entity)
-	  && get_gnu_tree (gnat_entity) == error_mark_node)
-	{
-	  maybe_present = true;
-	  break;
-	}
-
-      goto object;
-
-    case E_Exception:
-      goto object;
-
     case E_Component:
     case E_Discriminant:
       {
@@ -596,12 +515,88 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  gcc_unreachable ();
       }
 
+    case E_Constant:
+      /* Ignore constant definitions already marked with the error node.  See
+	 the N_Object_Declaration case of gnat_to_gnu for the rationale.  */
+      if (definition
+	  && gnu_expr
+	  && present_gnu_tree (gnat_entity)
+	  && get_gnu_tree (gnat_entity) == error_mark_node)
+	{
+	  maybe_present = true;
+	  break;
+	}
+
+      /* Ignore deferred constant definitions without address clause since
+	 they are processed fully in the front-end.  If No_Initialization
+	 is set, this is not a deferred constant but a constant whose value
+	 is built manually.  And constants that are renamings are handled
+	 like variables.  */
+      if (definition
+	  && !gnu_expr
+	  && No (Address_Clause (gnat_entity))
+	  && !No_Initialization (Declaration_Node (gnat_entity))
+	  && No (Renamed_Object (gnat_entity)))
+	{
+	  gnu_decl = error_mark_node;
+	  saved = true;
+	  break;
+	}
+
+      /* If this is a use of a deferred constant without address clause,
+	 get its full definition.  */
+      if (!definition
+	  && No (Address_Clause (gnat_entity))
+	  && Present (Full_View (gnat_entity)))
+	{
+	  gnu_decl
+	    = gnat_to_gnu_entity (Full_View (gnat_entity), gnu_expr, 0);
+	  saved = true;
+	  break;
+	}
+
+      /* If we have an external constant that we are not defining, get the
+	 expression that is was defined to represent.  We may throw it away
+	 later if it is not a constant.  But do not retrieve the expression
+	 if it is an allocator because the designated type might be dummy
+	 at this point.  */
+      if (!definition
+	  && !No_Initialization (Declaration_Node (gnat_entity))
+	  && Present (Expression (Declaration_Node (gnat_entity)))
+	  && Nkind (Expression (Declaration_Node (gnat_entity)))
+	     != N_Allocator)
+	{
+	  bool went_into_elab_proc = false;
+	  int save_force_global = force_global;
+
+	  /* The expression may contain N_Expression_With_Actions nodes and
+	     thus object declarations from other units.  In this case, even
+	     though the expression will eventually be discarded since not a
+	     constant, the declarations would be stuck either in the global
+	     varpool or in the current scope.  Therefore we force the local
+	     context and create a fake scope that we'll zap at the end.  */
+	  if (!current_function_decl)
+	    {
+	      current_function_decl = get_elaboration_procedure ();
+	      went_into_elab_proc = true;
+	    }
+	  force_global = 0;
+	  gnat_pushlevel ();
+
+	  gnu_expr = gnat_to_gnu (Expression (Declaration_Node (gnat_entity)));
+
+	  gnat_zaplevel ();
+	  force_global = save_force_global;
+	  if (went_into_elab_proc)
+	    current_function_decl = NULL_TREE;
+	}
+
+      /* ... fall through ... */
+
+    case E_Exception:
     case E_Loop_Parameter:
     case E_Out_Parameter:
     case E_Variable:
-
-      /* Simple variables, loop variables, Out parameters and exceptions.  */
-    object:
       {
 	/* Always create a variable for volatile objects and variables seen
 	   constant but with a Linker_Section pragma.  */
