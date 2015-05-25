@@ -1,3 +1,10 @@
+2015-05-25  Alexander Monakov  <amonakov@ispras.ru>
+
+	* config/i386/i386.h (enum reg_class): Move CLOBBERED_REGS prior to
+	Q_REGS.  Expand comment.
+	(REG_CLASS_NAMES): Ditto.
+	(REG_CLASS_CONTENTS): Ditto.
+
 2015-05-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66274
