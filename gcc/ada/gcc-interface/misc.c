@@ -606,8 +606,7 @@ gnat_get_alias_set (tree type)
       get_alias_set (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (type)))));
 
   /* If the type can alias any other types, return the alias set 0.  */
-  else if (TYPE_P (type)
-	   && TYPE_UNIVERSAL_ALIASING_P (TYPE_MAIN_VARIANT (type)))
+  else if (TYPE_P (type) && TYPE_UNIVERSAL_ALIASING_P (type))
     return 0;
 
   return -1;

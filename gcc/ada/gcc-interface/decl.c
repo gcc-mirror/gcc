@@ -816,7 +816,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   constant, set the alignment to the smallest one which is not
 	   smaller than the size, with an appropriate cap.  */
 	if (!gnu_size && align == 0
-	    && (Is_Atomic (gnat_entity)
+	    && (Is_Atomic_Or_VFA (gnat_entity)
 		|| (!Optimize_Alignment_Space (gnat_entity)
 		    && kind != E_Exception
 		    && kind != E_Out_Parameter
@@ -837,7 +837,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       to support BIGGEST_ALIGNMENT if we don't really have to.
 	       So we cap to the smallest alignment that corresponds to
 	       a known efficient memory access pattern of the target.  */
-	    if (Is_Atomic (gnat_entity))
+	    if (Is_Atomic_Or_VFA (gnat_entity))
 	      {
 		size_cap = UINT_MAX;
 		align_cap = BIGGEST_ALIGNMENT;
@@ -890,7 +890,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   the padded record to assign to the object.  We could fix this by
 	   always copying via an intermediate value, but it's not clear it's
 	   worth the effort.  */
-	if (Is_Atomic (gnat_entity))
+	if (Is_Atomic_Or_VFA (gnat_entity))
 	  check_ok_for_atomic_type (gnu_type, gnat_entity, false);
 
 	/* If this is an aliased object with an unconstrained nominal subtype,
@@ -1135,7 +1135,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		     || imported_p
 		     || Present (Address_Clause (gnat_entity)))))
 	    && !TYPE_VOLATILE (gnu_type))
-	  gnu_type = change_qualified_type (gnu_type, TYPE_QUAL_VOLATILE);
+	  {
+	    const int quals
+	      = TYPE_QUAL_VOLATILE
+		| (Is_Atomic_Or_VFA (gnat_entity) ? TYPE_QUAL_ATOMIC : 0);
+	    gnu_type = change_qualified_type (gnu_type, quals);
+	  }
 
 	/* If we are defining an aliased object whose nominal subtype is
 	   unconstrained, the object is a record that contains both the
@@ -2223,15 +2228,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    TYPE_MULTI_ARRAY_P (tem) = (index > 0);
 	    if (array_type_has_nonaliased_component (tem, gnat_entity))
 	      TYPE_NONALIASED_COMPONENT (tem) = 1;
-
-	    /* If it is passed by reference, force BLKmode to ensure that
-	       objects of this type will always be put in memory.  */
-	    if (TYPE_MODE (tem) != BLKmode
-		&& Is_By_Reference_Type (gnat_entity))
-	      SET_TYPE_MODE (tem, BLKmode);
 	  }
-
-	TYPE_VOLATILE (tem) = Treat_As_Volatile (gnat_entity);
 
 	/* If an alignment is specified, use it if valid.  But ignore it
 	   for the original type of packed array types.  If the alignment
@@ -2247,6 +2244,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  }
 
 	TYPE_CONVENTION_FORTRAN_P (tem) = convention_fortran_p;
+
+	if (Treat_As_Volatile (gnat_entity))
+	  tem = change_qualified_type (tem, TYPE_QUAL_VOLATILE);
 
 	/* Adjust the type of the pointer-to-array field of the fat pointer
 	   and record the aliasing relationships if necessary.  */
@@ -2317,7 +2317,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 First check to see if this is simply a renaming of the array type.
 	 If so, the result is the array type.  */
 
-      gnu_type = gnat_to_gnu_type (Etype (gnat_entity));
+      gnu_type = TYPE_MAIN_VARIANT (gnat_to_gnu_type (Etype (gnat_entity)));
       if (!Is_Constrained (gnat_entity))
 	;
       else
@@ -2592,14 +2592,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      TYPE_MULTI_ARRAY_P (gnu_type) = (index > 0);
 	      if (array_type_has_nonaliased_component (gnu_type, gnat_entity))
 		TYPE_NONALIASED_COMPONENT (gnu_type) = 1;
-
-	      /* See the E_Array_Type case for the rationale.  */
-	      if (TYPE_MODE (gnu_type) != BLKmode
-		  && Is_By_Reference_Type (gnat_entity))
-		SET_TYPE_MODE (gnu_type, BLKmode);
 	    }
-
-	  TYPE_VOLATILE (gnu_type) = Treat_As_Volatile (gnat_entity);
 
 	  /* Attach the TYPE_STUB_DECL in case we have a parallel type.  */
 	  TYPE_STUB_DECL (gnu_type)
@@ -2727,8 +2720,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		 debugging information for it.  */
 	      process_attributes (&gnu_type, &attr_list, false, gnat_entity);
 	      if (Treat_As_Volatile (gnat_entity))
-		gnu_type
-		  = change_qualified_type (gnu_type, TYPE_QUAL_VOLATILE);
+		{
+		  const int quals
+		    = TYPE_QUAL_VOLATILE
+		      | (Is_Atomic_Or_VFA (gnat_entity) ? TYPE_QUAL_ATOMIC : 0);
+		  gnu_type = change_qualified_type (gnu_type, quals);
+		}
 	      /* Make it artificial only if the base type was artificial too.
 		 That's sort of "morally" true and will make it possible for
 		 the debugger to look it up by name in DWARF, which is needed
@@ -2978,7 +2975,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	if (Known_Alignment (gnat_entity))
 	  TYPE_ALIGN (gnu_type)
 	    = validate_alignment (Alignment (gnat_entity), gnat_entity, 0);
-	else if (Is_Atomic (gnat_entity) && Known_Esize (gnat_entity))
+	else if (Is_Atomic_Or_VFA (gnat_entity) && Known_Esize (gnat_entity))
 	  {
 	    unsigned int size = UI_To_Int (Esize (gnat_entity));
 	    TYPE_ALIGN (gnu_type)
@@ -3236,14 +3233,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			      false, OK_To_Reorder_Components (gnat_entity),
 			      all_rep ? NULL_TREE : bitsize_zero_node, NULL);
 
-	/* If it is passed by reference, force BLKmode to ensure that objects
-	   of this type will always be put in memory.  */
-	if (TYPE_MODE (gnu_type) != BLKmode
-	    && Is_By_Reference_Type (gnat_entity))
-	  SET_TYPE_MODE (gnu_type, BLKmode);
-
-	TYPE_VOLATILE (gnu_type) = Treat_As_Volatile (gnat_entity);
-
 	/* Fill in locations of fields.  */
 	annotate_rep (gnat_entity, gnu_type);
 
@@ -3320,7 +3309,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      this_deferred = true;
 	    }
 
-	  gnu_base_type = gnat_to_gnu_type (gnat_base_type);
+	  gnu_base_type
+	    = TYPE_MAIN_VARIANT (gnat_to_gnu_type (gnat_base_type));
 
 	  if (present_gnu_tree (gnat_entity))
 	    {
@@ -3636,13 +3626,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      finish_record_type (gnu_type, nreverse (gnu_field_list), 2,
 				  false);
 	      compute_record_mode (gnu_type);
-
-	      /* See the E_Record_Type case for the rationale.  */
-	      if (TYPE_MODE (gnu_type) != BLKmode
-		  && Is_By_Reference_Type (gnat_entity))
-		SET_TYPE_MODE (gnu_type, BLKmode);
-
-	      TYPE_VOLATILE (gnu_type) = Treat_As_Volatile (gnat_entity);
 
 	      /* Fill in locations of fields.  */
 	      annotate_rep (gnat_entity, gnu_type);
@@ -4188,7 +4171,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	bool const_flag
 	  = (Exception_Mechanism == Back_End_Exceptions
 	     && Is_Pure (gnat_entity));
-	bool volatile_flag = No_Return (gnat_entity);
+	bool noreturn_flag = No_Return (gnat_entity);
 	bool return_by_direct_ref_p = false;
 	bool return_by_invisi_ref_p = false;
 	bool return_unconstrained_p = false;
@@ -4605,12 +4588,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	if (TREE_CODE (gnu_return_type) == VOID_TYPE || return_unconstrained_p)
 	  const_flag = false;
 
-	if (const_flag || volatile_flag)
+	if (const_flag || noreturn_flag)
 	  {
 	    const int quals
 	      = (const_flag ? TYPE_QUAL_CONST : 0)
-		| (volatile_flag ? TYPE_QUAL_VOLATILE : 0);
-
+		| (noreturn_flag ? TYPE_QUAL_VOLATILE : 0);
 	    gnu_type = change_qualified_type (gnu_type, quals);
 	  }
 
@@ -4900,12 +4882,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			       gnat_entity);
 	    }
 	}
-      else if (Is_Atomic (gnat_entity) && !gnu_size
+      else if (Is_Atomic_Or_VFA (gnat_entity) && !gnu_size
 	       && tree_fits_uhwi_p (TYPE_SIZE (gnu_type))
 	       && integer_pow2p (TYPE_SIZE (gnu_type)))
 	align = MIN (BIGGEST_ALIGNMENT,
 		     tree_to_uhwi (TYPE_SIZE (gnu_type)));
-      else if (Is_Atomic (gnat_entity) && gnu_size
+      else if (Is_Atomic_Or_VFA (gnat_entity) && gnu_size
 	       && tree_fits_uhwi_p (gnu_size)
 	       && integer_pow2p (gnu_size))
 	align = MIN (BIGGEST_ALIGNMENT, tree_to_uhwi (gnu_size));
@@ -5052,20 +5034,32 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		}
 	    }
 
-      if (Is_Atomic (gnat_entity))
+      if (Is_Atomic_Or_VFA (gnat_entity))
 	check_ok_for_atomic_type (gnu_type, gnat_entity, false);
 
       /* If this is not an unconstrained array type, set some flags.  */
       if (TREE_CODE (gnu_type) != UNCONSTRAINED_ARRAY_TYPE)
 	{
-	  if (Treat_As_Volatile (gnat_entity))
-	    gnu_type = change_qualified_type (gnu_type, TYPE_QUAL_VOLATILE);
-
 	  if (Present (Alignment_Clause (gnat_entity)))
 	    TYPE_USER_ALIGN (gnu_type) = 1;
 
 	  if (Universal_Aliasing (gnat_entity))
-	    TYPE_UNIVERSAL_ALIASING_P (TYPE_MAIN_VARIANT (gnu_type)) = 1;
+	    TYPE_UNIVERSAL_ALIASING_P (gnu_type) = 1;
+
+	  /* If it is passed by reference, force BLKmode to ensure that
+	     objects of this type will always be put in memory.  */
+	  if (TYPE_MODE (gnu_type) != BLKmode
+	      && AGGREGATE_TYPE_P (gnu_type)
+	      && TYPE_BY_REFERENCE_P (gnu_type))
+	    SET_TYPE_MODE (gnu_type, BLKmode);
+
+	  if (Treat_As_Volatile (gnat_entity))
+	    {
+	      const int quals
+		= TYPE_QUAL_VOLATILE
+		  | (Is_Atomic_Or_VFA (gnat_entity) ? TYPE_QUAL_ATOMIC : 0);
+	      gnu_type = change_qualified_type (gnu_type, quals);
+	    }
 	}
 
       if (!gnu_decl)
@@ -5628,7 +5622,12 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
     }
 
   if (Has_Volatile_Components (gnat_array))
-    gnu_type = change_qualified_type (gnu_type, TYPE_QUAL_VOLATILE);
+    {
+      const int quals
+	= TYPE_QUAL_VOLATILE
+	  | (Has_Atomic_Components (gnat_array) ? TYPE_QUAL_ATOMIC : 0);
+      gnu_type = change_qualified_type (gnu_type, quals);
+    }
 
   return gnu_type;
 }
@@ -6450,7 +6449,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   const bool is_aliased
     = Is_Aliased (gnat_field);
   const bool is_atomic
-    = (Is_Atomic (gnat_field) || Is_Atomic (gnat_field_type));
+    = (Is_Atomic_Or_VFA (gnat_field) || Is_Atomic_Or_VFA (gnat_field_type));
   const bool is_independent
     = (Is_Independent (gnat_field) || Is_Independent (gnat_field_type));
   const bool is_volatile
@@ -6526,7 +6525,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	}
     }
 
-  if (Is_Atomic (gnat_field))
+  if (Is_Atomic_Or_VFA (gnat_field))
     check_ok_for_atomic_type (gnu_field_type, gnat_field, false);
 
   if (Present (Component_Clause (gnat_field)))
@@ -8201,6 +8200,9 @@ check_ok_for_atomic_type (tree type, Entity_Id gnat_entity, bool component_p)
 
   if (component_p)
     post_error_ne ("atomic access to component of & cannot be guaranteed",
+		   gnat_error_point, gnat_entity);
+  else if (Is_Volatile_Full_Access (gnat_entity))
+    post_error_ne ("volatile full access to & cannot be guaranteed",
 		   gnat_error_point, gnat_entity);
   else
     post_error_ne ("atomic access to & cannot be guaranteed",

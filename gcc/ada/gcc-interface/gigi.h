@@ -858,11 +858,18 @@ extern unsigned int known_alignment (tree exp);
    of 2.  */
 extern bool value_factor_p (tree value, HOST_WIDE_INT factor);
 
-/* Build an atomic load for the underlying atomic object in SRC.  */
-extern tree build_atomic_load (tree src);
+/* Build an atomic load for the underlying atomic object in SRC.  SYNC is
+   true if the load requires synchronization.  */
+extern tree build_atomic_load (tree src, bool sync);
 
-/* Build an atomic store from SRC to the underlying atomic object in DEST.  */
-extern tree build_atomic_store (tree dest, tree src);
+/* Build an atomic store from SRC to the underlying atomic object in DEST.
+   SYNC is true if the store requires synchronization.  */
+extern tree build_atomic_store (tree dest, tree src, bool sync);
+
+/* Build a load-modify-store sequence from SRC to DEST.  GNAT_NODE is used for
+   the location of the sequence.  Note that, even if the load and the store are
+   both atomic, the sequence itself is not atomic.  */
+extern tree build_load_modify_store (tree dest, tree src, Node_Id gnat_node);
 
 /* Make a binary operation of kind OP_CODE.  RESULT_TYPE is the type
    desired for the result.  Usually the operation is to be performed
@@ -1053,9 +1060,6 @@ extern void enumerate_modes (void (*f) (const char *, int, int, int, int, int,
 }
 #endif
 
-/* Convenient shortcuts.  */
-#define VECTOR_TYPE_P(TYPE) (TREE_CODE (TYPE) == VECTOR_TYPE)
-
 /* If EXP's type is a VECTOR_TYPE, return EXP converted to the associated
    TYPE_REPRESENTATIVE_ARRAY.  */
 
@@ -1069,6 +1073,8 @@ maybe_vector_array (tree exp)
 
   return exp;
 }
+
+/* Return the smallest power of 2 larger than X.  */
 
 static inline unsigned HOST_WIDE_INT
 ceil_pow2 (unsigned HOST_WIDE_INT x)

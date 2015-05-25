@@ -658,15 +658,19 @@ resolve_atomic_size (tree type)
   return 0;
 }
 
-/* Build an atomic load for the underlying atomic object in SRC.  */
+/* Build an atomic load for the underlying atomic object in SRC.  SYNC is
+   true if the load requires synchronization.  */
 
 tree
-build_atomic_load (tree src)
+build_atomic_load (tree src, bool sync)
 {
   tree ptr_type
     = build_pointer_type
-      (build_qualified_type (void_type_node, TYPE_QUAL_VOLATILE));
-  tree mem_model = build_int_cst (integer_type_node, MEMMODEL_SEQ_CST);
+      (build_qualified_type (void_type_node,
+			     TYPE_QUAL_ATOMIC | TYPE_QUAL_VOLATILE));
+  tree mem_model
+    = build_int_cst (integer_type_node,
+		     sync ? MEMMODEL_SEQ_CST : MEMMODEL_RELAXED);
   tree orig_src = src;
   tree t, addr, val;
   unsigned int size;
@@ -690,15 +694,19 @@ build_atomic_load (tree src)
   return convert (TREE_TYPE (orig_src), t);
 }
 
-/* Build an atomic store from SRC to the underlying atomic object in DEST.  */
+/* Build an atomic store from SRC to the underlying atomic object in DEST.
+   SYNC is true if the store requires synchronization.  */
 
 tree
-build_atomic_store (tree dest, tree src)
+build_atomic_store (tree dest, tree src, bool sync)
 {
   tree ptr_type
     = build_pointer_type
-      (build_qualified_type (void_type_node, TYPE_QUAL_VOLATILE));
-  tree mem_model = build_int_cst (integer_type_node, MEMMODEL_SEQ_CST);
+      (build_qualified_type (void_type_node,
+			     TYPE_QUAL_ATOMIC | TYPE_QUAL_VOLATILE));
+  tree mem_model
+    = build_int_cst (integer_type_node,
+		     sync ? MEMMODEL_SEQ_CST : MEMMODEL_RELAXED);
   tree orig_dest = dest;
   tree t, int_type, addr;
   unsigned int size;
@@ -728,6 +736,87 @@ build_atomic_store (tree dest, tree src)
   addr = build_unary_op (ADDR_EXPR, ptr_type, dest);
 
   return build_call_expr (t, 3, addr, src, mem_model);
+}
+
+/* Return true if EXP, a CALL_EXPR, is an atomic load.  */
+
+static bool
+call_is_atomic_load (tree exp)
+{
+  tree fndecl = get_callee_fndecl (exp);
+
+  if (!(fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL))
+    return false;
+
+  enum built_in_function code = DECL_FUNCTION_CODE (fndecl);
+  return BUILT_IN_ATOMIC_LOAD_N <= code && code <= BUILT_IN_ATOMIC_LOAD_16;
+}
+
+/* Build a load-modify-store sequence from SRC to DEST.  GNAT_NODE is used for
+   the location of the sequence.  Note that, even if the load and the store are
+   both atomic, the sequence itself is not atomic.  */
+
+tree
+build_load_modify_store (tree dest, tree src, Node_Id gnat_node)
+{
+  tree ref = dest;
+
+  while (handled_component_p (ref))
+    {
+      /* The load should already have been generated during the translation
+	 of the GNAT destination tree; find it out in the GNU tree.  */
+      if (TREE_CODE (TREE_OPERAND (ref, 0)) == VIEW_CONVERT_EXPR)
+	{
+	  tree op = TREE_OPERAND (TREE_OPERAND (ref, 0), 0);
+	  if (TREE_CODE (op) == CALL_EXPR && call_is_atomic_load (op))
+	    {
+	      tree type = TREE_TYPE (TREE_OPERAND (ref, 0));
+	      tree t = CALL_EXPR_ARG (op, 0);
+	      tree obj, temp, stmt;
+
+	      /* Find out the loaded object.  */
+	      if (TREE_CODE (t) == NOP_EXPR)
+		t = TREE_OPERAND (t, 0);
+	      if (TREE_CODE (t) == ADDR_EXPR)
+		obj = TREE_OPERAND (t, 0);
+	      else
+		obj = build1 (INDIRECT_REF, type, t);
+
+	      /* Drop atomic and volatile qualifiers for the temporary.  */
+	      type = TYPE_MAIN_VARIANT (type);
+
+	      /* And drop BLKmode, if need be, to put it into a register.  */
+	      if (TYPE_MODE (type) == BLKmode)
+		{
+		  unsigned int size = tree_to_uhwi (TYPE_SIZE (type));
+		  type = copy_type (type);
+		  SET_TYPE_MODE (type, mode_for_size (size, MODE_INT, 0));
+		}
+
+	      /* Create the temporary by inserting a SAVE_EXPR.  */
+	      temp = build1 (SAVE_EXPR, type,
+			     build1 (VIEW_CONVERT_EXPR, type, op));
+	      TREE_OPERAND (ref, 0) = temp;
+
+	      start_stmt_group ();
+
+	      /* Build the modify of the temporary.  */
+	      stmt = build_binary_op (MODIFY_EXPR, NULL_TREE, dest, src);
+	      add_stmt_with_node (stmt, gnat_node);
+
+	      /* Build the store to the object.  */
+	      stmt = build_atomic_store (obj, temp, false);
+	      add_stmt_with_node (stmt, gnat_node);
+
+	      return end_stmt_group ();
+	    }
+	}
+
+      ref = TREE_OPERAND (ref, 0);
+    }
+
+  /* Something went wrong earlier if we have not found the atomic load.  */
+  gcc_unreachable ();
 }
 
 /* Make a binary operation of kind OP_CODE.  RESULT_TYPE is the type
@@ -870,7 +959,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	 strip anything that get_inner_reference can handle.  Then remove any
 	 conversions between types having the same code and mode.  And mark
 	 VIEW_CONVERT_EXPRs with TREE_ADDRESSABLE.  When done, we must have
-	 either an INDIRECT_REF, a NULL_EXPR or a DECL node.  */
+	 either an INDIRECT_REF, a NULL_EXPR, a SAVE_EXPR or a DECL node.  */
       result = left_operand;
       while (true)
 	{
@@ -903,6 +992,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 
       gcc_assert (TREE_CODE (result) == INDIRECT_REF
 		  || TREE_CODE (result) == NULL_EXPR
+		  || TREE_CODE (result) == SAVE_EXPR
 		  || DECL_P (result));
 
       /* Convert the right operand to the operation type unless it is
@@ -2716,7 +2806,14 @@ gnat_stabilize_reference (tree ref, bool force, bool *success)
       break;
 
     case CALL_EXPR:
-      result = gnat_stabilize_reference_1 (ref, force);
+      if (call_is_atomic_load (ref))
+	result
+	  = build_call_expr (TREE_OPERAND (CALL_EXPR_FN (ref), 0), 2,
+			     gnat_stabilize_reference (CALL_EXPR_ARG (ref, 0),
+						       force, success),
+			     CALL_EXPR_ARG (ref, 1));
+      else
+	result = gnat_stabilize_reference_1 (ref, force);
       break;
 
     case COMPOUND_EXPR:
