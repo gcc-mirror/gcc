@@ -1,5 +1,14 @@
 2015-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Minor tweak.
+	* gcc-interface/trans.c (finalize_nrv_unc_r): Use CONSTRUCTOR_ELT.
+	* gcc-interface/utils.c (convert): Likewise and simplify.
+	(remove_conversions): Likewise.
+	* gcc-interface/utils2.c (compare_fat_pointers): Likewise.
+	(build_unary_op): Likewise and simplify.
+
+2015-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (build_atomic_load): Adjust prototype.
 	(build_atomic_store): Likewise.
 	(build_load_modify_store): Declare.

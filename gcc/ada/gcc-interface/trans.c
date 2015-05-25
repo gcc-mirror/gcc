@@ -3309,12 +3309,12 @@ finalize_nrv_unc_r (tree *tp, int *walk_subtrees, void *data)
       if (TREE_CODE (ret_val) == COMPOUND_EXPR
 	  && TREE_CODE (TREE_OPERAND (ret_val, 0)) == INIT_EXPR)
 	{
+	  tree rhs = TREE_OPERAND (TREE_OPERAND (ret_val, 0), 1);
+
 	  if (TYPE_IS_FAT_POINTER_P (TREE_TYPE (ret_val)))
-	    ret_val
-	      = (*CONSTRUCTOR_ELTS (TREE_OPERAND (TREE_OPERAND (ret_val, 0),
-						1)))[1].value;
+	    ret_val = CONSTRUCTOR_ELT (rhs, 1)->value;
 	  else
-	    ret_val = TREE_OPERAND (TREE_OPERAND (ret_val, 0), 1);
+	    ret_val = rhs;
 	}
 
       /* Strip useless conversions around the return value.  */
@@ -3365,20 +3365,21 @@ finalize_nrv_unc_r (tree *tp, int *walk_subtrees, void *data)
 
       if (TYPE_IS_FAT_POINTER_P (TREE_TYPE (alloc)))
 	{
+	  tree cst = TREE_OPERAND (alloc, 1);
+
 	  /* The new initial value is a COMPOUND_EXPR with the allocation in
 	     the first arm and the value of P_ARRAY in the second arm.  */
 	  DECL_INITIAL (new_var)
 	    = build2 (COMPOUND_EXPR, TREE_TYPE (new_var),
 		      TREE_OPERAND (alloc, 0),
-		      (*CONSTRUCTOR_ELTS (TREE_OPERAND (alloc, 1)))[0].value);
+		      CONSTRUCTOR_ELT (cst, 0)->value);
 
 	  /* Build a modified CONSTRUCTOR that references NEW_VAR.  */
 	  p_array = TYPE_FIELDS (TREE_TYPE (alloc));
 	  CONSTRUCTOR_APPEND_ELT (v, p_array,
 				  fold_convert (TREE_TYPE (p_array), new_var));
 	  CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (p_array),
-				  (*CONSTRUCTOR_ELTS (
-				      TREE_OPERAND (alloc, 1)))[1].value);
+				  CONSTRUCTOR_ELT (cst, 1)->value);
 	  new_ret = build_constructor (TREE_TYPE (alloc), v);
 	}
       else

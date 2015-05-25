@@ -1335,8 +1335,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		      = TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (gnu_alloc_type)));
 
 		    if (TREE_CODE (gnu_expr) == CONSTRUCTOR
-			&& 1 == vec_safe_length (CONSTRUCTOR_ELTS (gnu_expr)))
-		      gnu_expr = 0;
+			&& vec_safe_length (CONSTRUCTOR_ELTS (gnu_expr)) == 1)
+		      gnu_expr = NULL_TREE;
 		    else
 		      gnu_expr
 			= build_component_ref
