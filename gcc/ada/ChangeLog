@@ -1,3 +1,36 @@
+2015-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (DECL_RENAMING_GLOBAL_P): Rename into...
+	(DECL_GLOBAL_NONCONSTANT_RENAMING_P): ...this.
+	* gcc-interface/gigi.h (record_global_renaming_pointer): Delete.
+	(invalidate_global_renaming_pointers): Likewise.
+	(record_global_nonconstant_renaming): New.
+	(invalidate_global_nonconstant_renamings): Likewise.
+	(get_inner_constant_reference): Likewise.
+	(gnat_constant_reference_p): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Adjust to above
+	and register the renaming pointer only if the object is non-constant.
+	(elaborate_expression_1): Call get_inner_constant_reference instead
+	of get_inner_reference.
+	* gcc-interface/trans.c (fold_constant_decl_in_expr): Minor tweak.
+	(Identifier_to_gnu): Adjust to above and do not recheck the renamed
+	object before substituting it.
+	(Compilation_Unit_to_gnu): Adjust to above renaming.  Minor tweaks.
+	(gnat_to_gnu) <N_Object_Renaming_Declaration>: Do not return the
+	result at the global level.
+	(N_Exception_Renaming_Declaration): Likewise.
+	* gcc-interface/utils.c (global_renaming_pointers): Rename into...
+	(global_nonconstant_renamings): ...this.
+	(destroy_gnat_utils): Adjust to above renaming.
+	(record_global_renaming_pointer): Rename into...
+	(record_global_nonconstant_renaming): ...this.
+	(invalidate_global_renaming_pointers): Rename into...
+	(invalidate_global_nonconstant_renamings): ...this and do not recheck
+	the renamed object before invalidating.
+	* gcc-interface/utils2.c (gnat_stabilize_reference): Minor tweak.
+	(get_inner_constant_reference): New public function.
+	(gnat_constant_reference_p): New predicate.
+
 2015-05-25  Javier Miranda  <miranda@adacore.com>
 
 	* einfo.ads, einfo.adb (Has_Out_Or_In_Out_Parameter): This attribute

@@ -1004,9 +1004,9 @@ fold_constant_decl_in_expr (tree exp)
       return fold (build4 (code, TREE_TYPE (exp), op0, TREE_OPERAND (exp, 1),
 			   TREE_OPERAND (exp, 2), TREE_OPERAND (exp, 3)));
 
-    case VIEW_CONVERT_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
+    case VIEW_CONVERT_EXPR:
       op0 = fold_constant_decl_in_expr (TREE_OPERAND (exp, 0));
       if (op0 == TREE_OPERAND (exp, 0))
 	return exp;
@@ -1165,15 +1165,14 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 					  true, false)))
 	gnu_result = DECL_INITIAL (gnu_result);
 
-      /* If it's a renaming pointer and, either the renamed object is constant
-	 or we are at the right binding level, we can reference the renamed
-	 object directly, since it is constant or has been protected against
+      /* If it's a renaming pointer and not a global non-constant renaming or
+	 we are at the global level, the we can reference the renamed object
+	 directly, since it is either constant or has been protected against
 	 multiple evaluations.  */
       if (TREE_CODE (gnu_result) == VAR_DECL
           && !DECL_LOOP_PARM_P (gnu_result)
 	  && DECL_RENAMED_OBJECT (gnu_result)
-	  && (TREE_CONSTANT (DECL_RENAMED_OBJECT (gnu_result))
-	      || !DECL_RENAMING_GLOBAL_P (gnu_result)
+	  && (!DECL_GLOBAL_NONCONSTANT_RENAMING_P (gnu_result)
 	      || global_bindings_p ()))
 	gnu_result = DECL_RENAMED_OBJECT (gnu_result);
 
@@ -5143,28 +5142,24 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   add_stmt_list (Actions (Aux_Decls_Node (gnat_node)));
   finalize_from_limited_with ();
 
-  /* Save away what we've made so far and record this potential elaboration
-     procedure.  */
-  info = ggc_alloc<elab_info> ();
+  /* Save away what we've made so far and finish it up.  */
   set_current_block_context (gnu_elab_proc_decl);
   gnat_poplevel ();
   DECL_SAVED_TREE (gnu_elab_proc_decl) = end_stmt_group ();
-
   set_end_locus_from_node (gnu_elab_proc_decl, gnat_unit);
+  gnu_elab_proc_stack->pop ();
 
+  /* Record this potential elaboration procedure for later processing.  */
+  info = ggc_alloc<elab_info> ();
   info->next = elab_info_list;
   info->elab_proc = gnu_elab_proc_decl;
   info->gnat_node = gnat_node;
   elab_info_list = info;
 
-  /* Generate elaboration code for this unit, if necessary, and say whether
-     we did or not.  */
-  gnu_elab_proc_stack->pop ();
-
-  /* Invalidate the global renaming pointers.  This is necessary because
-     stabilization of the renamed entities may create SAVE_EXPRs which
-     have been tied to a specific elaboration routine just above.  */
-  invalidate_global_renaming_pointers ();
+  /* Invalidate the global non-constant renamings.  This is necessary because
+     stabilization of the renamed entities may create SAVE_EXPRs which have
+     been tied to a specific elaboration routine just above.  */
+  invalidate_global_nonconstant_renamings ();
 
   /* Force the processing for all nodes that remain in the queue.  */
   process_deferred_decl_context (true);
@@ -5695,31 +5690,40 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Object_Renaming_Declaration:
       gnat_temp = Defining_Entity (gnat_node);
+      gnu_result = alloc_stmt_list ();
 
       /* Don't do anything if this renaming is handled by the front end or if
 	 we are just annotating types and this object has a composite or task
-	 type, don't elaborate it.  We return the result in case it has any
-	 SAVE_EXPRs in it that need to be evaluated here.  */
+	 type, don't elaborate it.  We return the result in case it contains
+	 any SAVE_EXPRs that need to be evaluated here, but this cannot occur
+	 at the global level (see Renaming, case 2 in gnat_to_gnu_entity).  */
       if (!Is_Renaming_Of_Object (gnat_temp)
 	  && ! (type_annotate_only
 		&& (Is_Array_Type (Etype (gnat_temp))
 		    || Is_Record_Type (Etype (gnat_temp))
 		    || Is_Concurrent_Type (Etype (gnat_temp)))))
-	gnu_result
-	  = gnat_to_gnu_entity (gnat_temp,
-				gnat_to_gnu (Renamed_Object (gnat_temp)), 1);
-      else
-	gnu_result = alloc_stmt_list ();
+	{
+	  tree gnu_temp
+	    = gnat_to_gnu_entity (gnat_temp,
+				  gnat_to_gnu (Renamed_Object (gnat_temp)), 1);
+	  if (!global_bindings_p ())
+	    gnu_result = gnu_temp;
+	}
       break;
 
     case N_Exception_Renaming_Declaration:
       gnat_temp = Defining_Entity (gnat_node);
-      if (Renamed_Entity (gnat_temp) != Empty)
-        gnu_result
-          = gnat_to_gnu_entity (gnat_temp,
-                                gnat_to_gnu (Renamed_Entity (gnat_temp)), 1);
-      else
-        gnu_result = alloc_stmt_list ();
+      gnu_result = alloc_stmt_list ();
+
+      /* See the above case for the rationale.  */
+      if (Present (Renamed_Entity (gnat_temp)))
+	{
+	  tree gnu_temp
+	    = gnat_to_gnu_entity (gnat_temp,
+				  gnat_to_gnu (Renamed_Entity (gnat_temp)), 1);
+	  if (!global_bindings_p ())
+	    gnu_result = gnu_temp;
+	}
       break;
 
     case N_Implicit_Label_Declaration:

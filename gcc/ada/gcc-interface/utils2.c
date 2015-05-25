@@ -2692,10 +2692,10 @@ gnat_stabilize_reference (tree ref, bool force, bool *success)
       break;
 
     case COMPONENT_REF:
-     result = build3 (COMPONENT_REF, type,
-		      gnat_stabilize_reference (TREE_OPERAND (ref, 0), force,
-						success),
-		      TREE_OPERAND (ref, 1), NULL_TREE);
+      result = build3 (COMPONENT_REF, type,
+		       gnat_stabilize_reference (TREE_OPERAND (ref, 0), force,
+						 success),
+		       TREE_OPERAND (ref, 1), NULL_TREE);
       break;
 
     case BIT_FIELD_REF:
@@ -2780,6 +2780,75 @@ gnat_stabilize_reference (tree ref, bool force, bool *success)
     TREE_THIS_NOTRAP (result) = TREE_THIS_NOTRAP (ref);
 
   return result;
+}
+
+/* This is equivalent to get_inner_reference in expr.c but it returns the
+   ultimate containing object only if the reference (lvalue) is constant,
+   i.e. if it doesn't depend on the context in which it is evaluated.  */
+
+tree
+get_inner_constant_reference (tree exp)
+{
+  while (true)
+    {
+      switch (TREE_CODE (exp))
+	{
+	case BIT_FIELD_REF:
+	  break;
+
+	case COMPONENT_REF:
+	  if (TREE_OPERAND (exp, 2) != NULL_TREE)
+	    return NULL_TREE;
+
+	  if (!TREE_CONSTANT (DECL_FIELD_OFFSET (TREE_OPERAND (exp, 1))))
+	    return NULL_TREE;
+	  break;
+
+	case ARRAY_REF:
+	case ARRAY_RANGE_REF:
+	  {
+	    if (TREE_OPERAND (exp, 2) != NULL_TREE
+	        || TREE_OPERAND (exp, 3) != NULL_TREE)
+	      return NULL_TREE;
+
+	    tree array_type = TREE_TYPE (TREE_OPERAND (exp, 0));
+	    if (!TREE_CONSTANT (TREE_OPERAND (exp, 1))
+	        || !TREE_CONSTANT (TYPE_MIN_VALUE (TYPE_DOMAIN (array_type)))
+	        || !TREE_CONSTANT (TYPE_SIZE_UNIT (TREE_TYPE (array_type))))
+	      return NULL_TREE;
+	  }
+	  break;
+
+	case REALPART_EXPR:
+	case IMAGPART_EXPR:
+	case VIEW_CONVERT_EXPR:
+	  break;
+
+	default:
+	  goto done;
+	}
+
+      exp = TREE_OPERAND (exp, 0);
+    }
+
+done:
+  return exp;
+}
+
+/* Return true if REF is a constant reference, i.e. a reference (lvalue) that
+   doesn't depend on the context in which it is evaluated.  */
+
+bool
+gnat_constant_reference_p (tree ref)
+{
+  if (handled_component_p (ref))
+    {
+      ref = get_inner_constant_reference (ref);
+      if (!ref)
+	return false;
+    }
+
+  return DECL_P (ref);
 }
 
 /* If EXPR is an expression that is invariant in the current function, in the
