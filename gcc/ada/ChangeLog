@@ -1,5 +1,15 @@
 2015-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (elaborate_expression): Take a const string
+	suffix instead of a tree.
+	(elaborate_expression_1): Likewise.
+	(elaborate_expression_2): Likewise.
+	(gnat_to_gnu_entity): Adjust to above changes.
+	(build_subst_list): Likewise.
+	(get_entity_char): New static function.
+
+2015-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Constant>: Move around.
 	<E_Exception>: Merge with E_Variable case.
 	<E_Variable>: Remove 'object' label.
