@@ -5478,6 +5478,7 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
   if (!TARGET_MACHO
       && !TARGET_64BIT
       && flag_pic
+      && flag_plt
       && decl && !targetm.binds_local_p (decl))
     return false;
 
