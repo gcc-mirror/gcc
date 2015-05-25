@@ -3366,13 +3366,17 @@ package body Sem_Ch12 is
 
       Formals := Parameter_Specifications (Spec);
 
+      if Nkind (Spec) = N_Function_Specification then
+         Set_Ekind (Id, E_Generic_Function);
+      else
+         Set_Ekind (Id, E_Generic_Procedure);
+      end if;
+
       if Present (Formals) then
          Process_Formals (Formals, Spec);
       end if;
 
       if Nkind (Spec) = N_Function_Specification then
-         Set_Ekind (Id, E_Generic_Function);
-
          if Nkind (Result_Definition (Spec)) = N_Access_Definition then
             Result_Type := Access_Definition (Spec, Result_Definition (Spec));
             Set_Etype (Id, Result_Type);
@@ -3420,7 +3424,6 @@ package body Sem_Ch12 is
          end if;
 
       else
-         Set_Ekind (Id, E_Generic_Procedure);
          Set_Etype (Id, Standard_Void_Type);
       end if;
 

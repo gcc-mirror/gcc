@@ -830,6 +830,10 @@ package body Sem_Ch4 is
       end if;
 
       Operator_Check (N);
+
+      if Check_Actuals (N) then
+         Check_Function_Writable_Actuals (N);
+      end if;
    end Analyze_Arithmetic_Op;
 
    ------------------
@@ -861,6 +865,11 @@ package body Sem_Ch4 is
       procedure Check_Mixed_Parameter_And_Named_Associations;
       --  Check that parameter and named associations are not mixed. This is
       --  a restriction in SPARK mode.
+
+      procedure Check_Writable_Actuals (N : Node_Id);
+      --  If the call has out or in-out parameters then mark its outermost
+      --  enclosing construct as a node on which the writable actuals check
+      --  must be performed.
 
       function Name_Denotes_Function return Boolean;
       --  If the type of the name is an access to subprogram, this may be the
@@ -901,6 +910,140 @@ package body Sem_Ch4 is
             Next (Actual);
          end loop;
       end Check_Mixed_Parameter_And_Named_Associations;
+
+      ----------------------------
+      -- Check_Writable_Actuals --
+      ----------------------------
+
+      --  The identification of conflicts in calls to functions with writable
+      --  actuals is performed in the analysis phase of the frontend to ensure
+      --  that it reports exactly the same errors compiling with and without
+      --  expansion enabled. It is performed in two stages:
+
+      --    1) When a call to a function with out-mode parameters is found
+      --       we climb to the outermost enclosing construct which can be
+      --       evaluated in arbitrary order and we mark it with the flag
+      --       Check_Actuals.
+
+      --    2) When the analysis of the marked node is complete then we
+      --       traverse its decorated subtree searching for conflicts
+      --       (see function Sem_Util.Check_Function_Writable_Actuals).
+
+      --  The unique exception to this general rule are aggregates, since
+      --  their analysis is performed by the frontend in the resolution
+      --  phase. For aggregates we do not climb to its enclosing construct:
+      --  we restrict the analysis to the subexpressions initializing the
+      --  aggregate components.
+
+      --  This implies that the analysis of expressions containing aggregates
+      --  is not complete since there may be conflicts on writable actuals
+      --  involving subexpressions of the enclosing logical or arithmetic
+      --  expressions. However, we cannot wait and perform the analysis when
+      --  the whole subtree is resolved since the subtrees may be transformed
+      --  thus adding extra complexity and computation cost to identify and
+      --  report exactly the same errors compiling with and without expansion
+      --  enabled.
+
+      procedure Check_Writable_Actuals (N : Node_Id) is
+
+         function Is_Arbitrary_Evaluation_Order_Construct
+           (N : Node_Id) return Boolean;
+         --  Return True if N is an Ada construct which may evaluate in
+         --  arbitrary order. This function does not cover all the language
+         --  constructs which can be evaluated in arbitrary order but the
+         --  subset needed for AI05-0144.
+
+         ---------------------------------------------
+         -- Is_Arbitrary_Evaluation_Order_Construct --
+         ---------------------------------------------
+
+         function Is_Arbitrary_Evaluation_Order_Construct
+           (N : Node_Id) return Boolean is
+         begin
+            return Nkind (N) = N_Aggregate
+               or else Nkind (N) = N_Assignment_Statement
+               or else Nkind (N) = N_Full_Type_Declaration
+               or else Nkind (N) = N_Entry_Call_Statement
+               or else Nkind (N) = N_Extension_Aggregate
+               or else Nkind (N) = N_Indexed_Component
+               or else Nkind (N) = N_Object_Declaration
+               or else Nkind (N) = N_Pragma
+               or else Nkind (N) = N_Range
+               or else Nkind (N) = N_Slice
+
+               or else Nkind (N) in N_Array_Type_Definition
+               or else Nkind (N) in N_Membership_Test
+               or else Nkind (N) in N_Op
+               or else Nkind (N) in N_Subprogram_Call;
+         end Is_Arbitrary_Evaluation_Order_Construct;
+
+      --  Start of processing for Check_Writable_Actuals
+
+      begin
+         if Comes_From_Source (N)
+           and then Present (Get_Subprogram_Entity (N))
+           and then Has_Out_Or_In_Out_Parameter (Get_Subprogram_Entity (N))
+         then
+            --  For procedures and entries there is no need to climb since
+            --  we only need to check if the actuals of this call invoke
+            --  functions whose out-mode parameters overlap.
+
+            if Nkind (N) /= N_Function_Call then
+               Set_Check_Actuals (N);
+
+            --  For calls to functions we climb to the outermost enclosing
+            --  construct where the out-mode actuals of this function may
+            --  introduce conflicts.
+
+            else
+               declare
+                  Outermost : Node_Id;
+                  P         : Node_Id := N;
+
+               begin
+                  while Present (P) loop
+
+                     --  For object declarations we can climb to such node from
+                     --  its object definition branch or from its initializing
+                     --  expression. We prefer to mark the child node as the
+                     --  outermost construct to avoid adding further complexity
+                     --  to the routine which will take care later of
+                     --  performing the writable actuals check.
+
+                     if Is_Arbitrary_Evaluation_Order_Construct (P)
+                       and then Nkind (P) /= N_Assignment_Statement
+                       and then Nkind (P) /= N_Object_Declaration
+                     then
+                        Outermost := P;
+                     end if;
+
+                     --  Avoid climbing more than needed!
+
+                     exit when Nkind (P) = N_Aggregate
+                       or else Nkind (P) = N_Assignment_Statement
+                       or else Nkind (P) = N_Entry_Call_Statement
+                       or else Nkind (P) = N_Extended_Return_Statement
+                       or else Nkind (P) = N_Extension_Aggregate
+                       or else Nkind (P) = N_Full_Type_Declaration
+                       or else Nkind (P) = N_Object_Declaration
+                       or else Nkind (P) = N_Object_Renaming_Declaration
+                       or else Nkind (P) = N_Package_Specification
+                       or else Nkind (P) = N_Pragma
+                       or else Nkind (P) = N_Procedure_Call_Statement
+                       or else Nkind (P) = N_Simple_Return_Statement
+                       or else (Nkind (P) = N_Range
+                                 and then not
+                                   Nkind_In (Parent (P), N_In, N_Not_In))
+                       or else Nkind (P) in N_Has_Condition;
+
+                     P := Parent (P);
+                  end loop;
+
+                  Set_Check_Actuals (Outermost);
+               end;
+            end if;
+         end if;
+      end Check_Writable_Actuals;
 
       ---------------------------
       -- Name_Denotes_Function --
@@ -1257,6 +1400,21 @@ package body Sem_Ch4 is
 
          End_Interp_List;
       end if;
+
+      if Ada_Version >= Ada_2012 then
+
+         --  Check if the call contains a function with writable actuals
+
+         Check_Writable_Actuals (N);
+
+         --  If found and the outermost construct which can be evaluated in
+         --  arbitrary order is precisely this call then check all its
+         --  actuals.
+
+         if Check_Actuals (N) then
+            Check_Function_Writable_Actuals (N);
+         end if;
+      end if;
    end Analyze_Call;
 
    -----------------------------
@@ -1474,6 +1632,10 @@ package body Sem_Ch4 is
       end if;
 
       Operator_Check (N);
+
+      if Check_Actuals (N) then
+         Check_Function_Writable_Actuals (N);
+      end if;
    end Analyze_Comparison_Op;
 
    ---------------------------
@@ -1721,6 +1883,10 @@ package body Sem_Ch4 is
       end if;
 
       Operator_Check (N);
+
+      if Check_Actuals (N) then
+         Check_Function_Writable_Actuals (N);
+      end if;
    end Analyze_Equality_Op;
 
    ----------------------------------
@@ -2544,6 +2710,10 @@ package body Sem_Ch4 is
       end if;
 
       Operator_Check (N);
+
+      if Check_Actuals (N) then
+         Check_Function_Writable_Actuals (N);
+      end if;
    end Analyze_Logical_Op;
 
    ---------------------------
@@ -2699,6 +2869,11 @@ package body Sem_Ch4 is
 
       if No (R) and then Ada_Version >= Ada_2012 then
          Analyze_Set_Membership;
+
+         if Check_Actuals (N) then
+            Check_Function_Writable_Actuals (N);
+         end if;
+
          return;
       end if;
 
@@ -2769,6 +2944,10 @@ package body Sem_Ch4 is
         and then Is_CPP_Class (Etype (Etype (Right_Opnd (N))))
       then
          Error_Msg_N ("membership test not applicable to cpp-class types", N);
+      end if;
+
+      if Check_Actuals (N) then
+         Check_Function_Writable_Actuals (N);
       end if;
    end Analyze_Membership_Op;
 
@@ -3849,7 +4028,9 @@ package body Sem_Ch4 is
          Check_Universal_Expression (H);
       end if;
 
-      Check_Function_Writable_Actuals (N);
+      if Check_Actuals (N) then
+         Check_Function_Writable_Actuals (N);
+      end if;
    end Analyze_Range;
 
    -----------------------

@@ -2119,11 +2119,37 @@ package body Sem_Util is
                then
                   return Skip;
 
+               --  For now we skip aggregate discriminants since they require
+               --  performing the analysis in two phases to identify conflicts:
+               --  first one analyzing discriminants and second one analyzing
+               --  the rest of components (since at runtime discriminants are
+               --  evaluated prior to components): too much computation cost
+               --  to identify a corner case???
+
+               elsif Nkind (Parent (N)) = N_Component_Association
+                  and then Nkind_In (Parent (Parent (N)),
+                             N_Aggregate,
+                             N_Extension_Aggregate)
+               then
+                  declare
+                     Choice : constant Node_Id := First (Choices (Parent (N)));
+                  begin
+                     if Ekind (Entity (N)) = E_Discriminant then
+                        return Skip;
+
+                     elsif Expression (Parent (N)) = N
+                        and then Nkind (Choice) = N_Identifier
+                        and then Ekind (Entity (Choice)) = E_Discriminant
+                     then
+                        return Skip;
+                     end if;
+                  end;
+
                --  Analyze if N is a writable actual of a function
 
                elsif Nkind (Parent (N)) = N_Function_Call then
                   declare
-                     Call   : constant Node_Id   := Parent (N);
+                     Call   : constant Node_Id := Parent (N);
                      Actual : Node_Id;
                      Formal : Node_Id;
 
@@ -2136,32 +2162,59 @@ package body Sem_Util is
                         return Abandon;
                      end if;
 
-                     Formal := First_Formal (Id);
-                     Actual := First_Actual (Call);
-                     while Present (Actual) and then Present (Formal) loop
-                        if Actual = N then
-                           if Ekind_In (Formal, E_Out_Parameter,
-                                                E_In_Out_Parameter)
-                           then
-                              Is_Writable_Actual := True;
+                     if Ekind_In (Id, E_Function, E_Generic_Function)
+                       and then Has_Out_Or_In_Out_Parameter (Id)
+                     then
+                        Formal := First_Formal (Id);
+                        Actual := First_Actual (Call);
+                        while Present (Actual) and then Present (Formal) loop
+                           if Actual = N then
+                              if Ekind_In (Formal, E_Out_Parameter,
+                                                   E_In_Out_Parameter)
+                              then
+                                 Is_Writable_Actual := True;
+                              end if;
+
+                              exit;
                            end if;
 
-                           exit;
-                        end if;
-
-                        Next_Formal (Formal);
-                        Next_Actual (Actual);
-                     end loop;
+                           Next_Formal (Formal);
+                           Next_Actual (Actual);
+                        end loop;
+                     end if;
                   end;
                end if;
 
                if Is_Writable_Actual then
                   if Contains (Writable_Actuals_List, N) then
-                     Error_Msg_NE
-                       ("value may be affected by call to& "
-                        & "because order of evaluation is arbitrary", N, Id);
-                     Error_Node := N;
-                     return Abandon;
+
+                     --  Report the error on the second occurrence of the
+                     --  identifier. We cannot assume that N is the second
+                     --  occurrence since traverse_func walks through Field2
+                     --  last (see comment in the body of traverse_func).
+
+                     declare
+                        Elmt : Elmt_Id := First_Elmt (Writable_Actuals_List);
+
+                     begin
+                        while Present (Elmt)
+                           and then Entity (Node (Elmt)) /= Entity (N)
+                        loop
+                           Next_Elmt (Elmt);
+                        end loop;
+
+                        if Sloc (N) > Sloc (Node (Elmt)) then
+                           Error_Node := N;
+                        else
+                           Error_Node := Node (Elmt);
+                        end if;
+
+                        Error_Msg_NE
+                          ("value may be affected by call to& "
+                           & "because order of evaluation is arbitrary",
+                           Error_Node, Id);
+                        return Abandon;
+                     end;
                   end if;
 
                   Append_New_Elmt (N, To => Writable_Actuals_List);
