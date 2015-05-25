@@ -1426,7 +1426,7 @@ built:
   if (CONTAINS_PLACEHOLDER_P (orig_size))
     orig_size = max_size (orig_size, true);
 
-  if (align)
+  if (align && AGGREGATE_TYPE_P (type))
     orig_size = round_up (orig_size, align);
 
   if (!operand_equal_p (size, orig_size, 0)

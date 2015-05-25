@@ -1,5 +1,15 @@
 2015-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (maybe_pad_type): Do not apply adjustment to
+	original size for elementary types before issuing the size warning.
+
+2015-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* get_targ.adb (C_Get_Float_Words_BE): Adjust import name.
+	(C_Get_Words_BE): Likewise.
+	(C_Get_Bytes_BE): Likewise.
+	(C_Get_Bits_BE): Likewise.
+	(Width_From_Size): Remove superfluous space.
 	* gcc-interface/targtyps.c (get_float_words_be): Rename into...
 	(get_target_float_words_be): ...this.
 	(get_words_be): Rename into...

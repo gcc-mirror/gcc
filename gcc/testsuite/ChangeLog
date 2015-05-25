@@ -1,5 +1,10 @@
 2015-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/warn11.adb: New test.
+	* gnat.dg/specs/alignment2.ads: Add dg-warning directive.
+
+2015-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/vfa1_1.adb: New test.
 	* gnat.dg/vfa1_2.adb: Likewise.
 	* gnat.dg/vfa1_3.adb: Likewise.
