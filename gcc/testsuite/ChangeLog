@@ -1,3 +1,11 @@
+2015-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/vfa1_1.adb: New test.
+	* gnat.dg/vfa1_2.adb: Likewise.
+	* gnat.dg/vfa1_3.adb: Likewise.
+	* gnat.dg/vfa1_4.adb: Likewise.
+	* gnat.dg/vfa1_pkg.ads: New helper.
+
 2015-05-25  Alexander Monakov  <amonakov@ispras.ru>
 
 	* gcc.target/i386/pr66232-1.c: Adjust scan pattern.
