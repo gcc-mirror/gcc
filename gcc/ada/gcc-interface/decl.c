@@ -1517,15 +1517,18 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  DECL_LOOP_PARM_P (gnu_decl) = 1;
 
 	/* If this is a renaming pointer, attach the renamed object to it and
-	   register it if we are at the global level.  Note that an external
-	   constant is at the global level.  */
+	   register it if we are at the global level and the renamed object
+	   is a non-constant reference.  Note that an external constant is at
+	   the global level.  */
 	if (renamed_obj)
 	  {
 	    SET_DECL_RENAMED_OBJECT (gnu_decl, renamed_obj);
-	    if ((!definition && kind == E_Constant) || global_bindings_p ())
+
+	    if (((!definition && kind == E_Constant) || global_bindings_p ())
+		&& !gnat_constant_reference_p (renamed_obj))
 	      {
-		DECL_RENAMING_GLOBAL_P (gnu_decl) = 1;
-		record_global_renaming_pointer (gnu_decl);
+		DECL_GLOBAL_NONCONSTANT_RENAMING_P (gnu_decl) = 1;
+		record_global_nonconstant_renaming (gnu_decl);
 	      }
 	  }
 
@@ -6245,18 +6248,7 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
       inner = skip_simple_constant_arithmetic (inner);
 
       if (handled_component_p (inner))
-	{
-	  HOST_WIDE_INT bitsize, bitpos;
-	  tree offset;
-	  machine_mode mode;
-	  int unsignedp, volatilep;
-
-	  inner = get_inner_reference (inner, &bitsize, &bitpos, &offset,
-				       &mode, &unsignedp, &volatilep, false);
-	  /* If the offset is variable, err on the side of caution.  */
-	  if (offset)
-	    inner = NULL_TREE;
-	}
+	inner = get_inner_constant_reference (inner);
 
       expr_variable_p
 	= !(inner

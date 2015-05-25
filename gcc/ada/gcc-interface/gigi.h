@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2015, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -716,11 +716,11 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
 		     const_flag, public_flag, extern_flag,		\
 		     static_flag, false, attr_list, gnat_node)
 
-/* Record DECL as a global renaming pointer.  */
-extern void record_global_renaming_pointer (tree decl);
+/* Record DECL as a global non-constant renaming.  */
+extern void record_global_nonconstant_renaming (tree decl);
 
-/* Invalidate the global renaming pointers.  */
-extern void invalidate_global_renaming_pointers (void);
+/* Invalidate the global non-constant renamings.  */
+extern void invalidate_global_nonconstant_renamings (void);
 
 /* Return a FIELD_DECL node.  FIELD_NAME is the field's name, FIELD_TYPE is
    its type and RECORD_TYPE is the type of the enclosing record.  If SIZE is
@@ -965,6 +965,15 @@ extern tree gnat_protect_expr (tree exp);
    force evaluation of everything.  We set SUCCESS to true unless we walk
    through something we don't know how to stabilize.  */
 extern tree gnat_stabilize_reference (tree ref, bool force, bool *success);
+
+/* This is equivalent to get_inner_reference in expr.c but it returns the
+   ultimate containing object only if the reference (lvalue) is constant,
+   i.e. if it doesn't depend on the context in which it is evaluated.  */
+extern tree get_inner_constant_reference (tree exp);
+
+/* Return true if REF is a constant reference, i.e. a reference (lvalue) that
+   doesn't depend on the context in which it is evaluated.  */
+extern bool gnat_constant_reference_p (tree ref);
 
 /* If EXPR is an expression that is invariant in the current function, in the
    sense that it can be evaluated anywhere in the function and any number of

@@ -233,8 +233,8 @@ static GTY(()) vec<tree, va_gc> *global_decls;
 /* An array of builtin function declarations.  */
 static GTY(()) vec<tree, va_gc> *builtin_decls;
 
-/* An array of global renaming pointers.  */
-static GTY(()) vec<tree, va_gc> *global_renaming_pointers;
+/* An array of global non-constant renamings.  */
+static GTY(()) vec<tree, va_gc> *global_nonconstant_renamings;
 
 /* A chain of unused BLOCK nodes. */
 static GTY((deletable)) tree free_block_chain;
@@ -323,8 +323,8 @@ destroy_gnat_utils (void)
   pad_type_hash_table->empty ();
   pad_type_hash_table = NULL;
 
-  /* Invalidate the global renaming pointers.   */
-  invalidate_global_renaming_pointers ();
+  /* Invalidate the global non-constant renamings.   */
+  invalidate_global_nonconstant_renamings ();
 }
 
 /* GNAT_ENTITY is a GNAT tree node for an entity.  Associate GNU_DECL, a GCC
@@ -2718,34 +2718,31 @@ process_attributes (tree *node, struct attrib **attr_list, bool in_place,
   *attr_list = NULL;
 }
 
-/* Record DECL as a global renaming pointer.  */
+/* Record DECL as a global non-constant renaming.  */
 
 void
-record_global_renaming_pointer (tree decl)
+record_global_nonconstant_renaming (tree decl)
 {
   gcc_assert (!DECL_LOOP_PARM_P (decl) && DECL_RENAMED_OBJECT (decl));
-  vec_safe_push (global_renaming_pointers, decl);
+  vec_safe_push (global_nonconstant_renamings, decl);
 }
 
-/* Invalidate the global renaming pointers that are not constant, lest their
-   renamed object contains SAVE_EXPRs tied to an elaboration routine.  Note
-   that we should not blindly invalidate everything here because of the need
-   to propagate constant values through renaming.  */
+/* Invalidate the global non-constant renamings, lest their renamed object
+   contains SAVE_EXPRs tied to an elaboration routine.  */
 
 void
-invalidate_global_renaming_pointers (void)
+invalidate_global_nonconstant_renamings (void)
 {
   unsigned int i;
   tree iter;
 
-  if (global_renaming_pointers == NULL)
+  if (global_nonconstant_renamings == NULL)
     return;
 
-  FOR_EACH_VEC_ELT (*global_renaming_pointers, i, iter)
-    if (!TREE_CONSTANT (DECL_RENAMED_OBJECT (iter)))
-      SET_DECL_RENAMED_OBJECT (iter, NULL_TREE);
+  FOR_EACH_VEC_ELT (*global_nonconstant_renamings, i, iter)
+    SET_DECL_RENAMED_OBJECT (iter, NULL_TREE);
 
-  vec_free (global_renaming_pointers);
+  vec_free (global_nonconstant_renamings);
 }
 
 /* Return true if VALUE is a known to be a multiple of FACTOR, which must be
