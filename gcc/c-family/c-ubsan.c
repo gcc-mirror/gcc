@@ -173,7 +173,7 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
      x < 0 || ((unsigned) x >> (uprecm1 - y))
      if > 1, is undefined.  */
   if (code == LSHIFT_EXPR
-      && !TYPE_UNSIGNED (TREE_TYPE (op0))
+      && !TYPE_UNSIGNED (type0)
       && (cxx_dialect >= cxx11))
     {
       tree x = fold_build2 (MINUS_EXPR, op1_utype, uprecm1,
