@@ -4379,9 +4379,9 @@ avr_out_load_psi_reg_no_disp_tiny (rtx_insn *insn, rtx *op, int *plen)
     }
   else
     {
-      return avr_asm_len ("ld %A0,%1+"  CR_TAB
-                          "ld %B0,%1+"  CR_TAB
-                          "ld %C0,%1", op, plen, -3);
+      avr_asm_len ("ld %A0,%1+"  CR_TAB
+		   "ld %B0,%1+"  CR_TAB
+		   "ld %C0,%1", op, plen, -3);
 
       if (reg_dest != reg_base - 2 &&
           !reg_unused_after (insn, base))

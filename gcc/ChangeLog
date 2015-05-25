@@ -1,3 +1,8 @@
+2015-05-25  Pitchumani Sivanupandi  <pitchumani.s@atmel.com>
+
+	* config/avr/avr.c (avr_out_load_psi_reg_no_disp_tiny): Restore base
+	register if not marked dead/unused, before return.
+
 2015-05-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/66180
