@@ -1,3 +1,9 @@
+2015-05-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66274
+	* config/i386/i386.c (print_reg): Only print "r" for TARGET_64BIT
+	when LEGACY_INT_REGNO_P is processed.
+
 2015-05-25  Alexander Monakov  <amonakov@ispras.ru>
 
 	* config/i386/i386.c (ix86_function_ok_for_sibcall): Check flag_plt.

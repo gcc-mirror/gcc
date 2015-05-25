@@ -15230,7 +15230,7 @@ print_reg (rtx x, int code, FILE *file)
     case 8:
     case 4:
       if (LEGACY_INT_REGNO_P (regno))
-	putc (msize == 8 ? 'r' : 'e', file);
+	putc (msize == 8 && TARGET_64BIT ? 'r' : 'e', file);
     case 16:
     case 12:
     case 2:
