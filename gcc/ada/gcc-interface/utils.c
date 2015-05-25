@@ -4067,10 +4067,8 @@ convert (tree type, tree expr)
 
       /* If we have just converted to this padded type, just get the
 	 inner expression.  */
-      if (TREE_CODE (expr) == CONSTRUCTOR
-	  && !vec_safe_is_empty (CONSTRUCTOR_ELTS (expr))
-	  && (*CONSTRUCTOR_ELTS (expr))[0].index == TYPE_FIELDS (etype))
-	unpadded = (*CONSTRUCTOR_ELTS (expr))[0].value;
+      if (TREE_CODE (expr) == CONSTRUCTOR)
+	unpadded = CONSTRUCTOR_ELT (expr, 0)->value;
 
       /* Otherwise, build an explicit component reference.  */
       else
@@ -4632,7 +4630,7 @@ remove_conversions (tree exp, bool true_address)
 	  && TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
 	  && TYPE_JUSTIFIED_MODULAR_P (TREE_TYPE (exp)))
 	return
-	  remove_conversions ((*CONSTRUCTOR_ELTS (exp))[0].value, true);
+	  remove_conversions (CONSTRUCTOR_ELT (exp, 0)->value, true);
       break;
 
     case COMPONENT_REF:

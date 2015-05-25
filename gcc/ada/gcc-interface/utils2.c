@@ -461,7 +461,7 @@ compare_fat_pointers (location_t loc, tree result_type, tree p1, tree p2)
 
   /* The constant folder doesn't fold fat pointer types so we do it here.  */
   if (TREE_CODE (p1) == CONSTRUCTOR)
-    p1_array = (*CONSTRUCTOR_ELTS (p1))[0].value;
+    p1_array = CONSTRUCTOR_ELT (p1, 0)->value;
   else
     p1_array = build_component_ref (p1, NULL_TREE,
 				    TYPE_FIELDS (TREE_TYPE (p1)), true);
@@ -472,7 +472,7 @@ compare_fat_pointers (location_t loc, tree result_type, tree p1, tree p2)
 					 null_pointer_node));
 
   if (TREE_CODE (p2) == CONSTRUCTOR)
-    p2_array = (*CONSTRUCTOR_ELTS (p2))[0].value;
+    p2_array = CONSTRUCTOR_ELT (p2, 0)->value;
   else
     p2_array = build_component_ref (p2, NULL_TREE,
 				    TYPE_FIELDS (TREE_TYPE (p2)), true);
@@ -493,14 +493,14 @@ compare_fat_pointers (location_t loc, tree result_type, tree p1, tree p2)
     = fold_build2_loc (loc, EQ_EXPR, result_type, p1_array, p2_array);
 
   if (TREE_CODE (p1) == CONSTRUCTOR)
-    p1_bounds = (*CONSTRUCTOR_ELTS (p1))[1].value;
+    p1_bounds = CONSTRUCTOR_ELT (p1, 1)->value;
   else
     p1_bounds
       = build_component_ref (p1, NULL_TREE,
 			     DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (p1))), true);
 
   if (TREE_CODE (p2) == CONSTRUCTOR)
-    p2_bounds = (*CONSTRUCTOR_ELTS (p2))[1].value;
+    p2_bounds = CONSTRUCTOR_ELT (p2, 1)->value;
   else
     p2_bounds
       = build_component_ref (p2, NULL_TREE,
@@ -1445,15 +1445,13 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	      offset = size_binop (PLUS_EXPR, offset,
 				   size_int (bitpos / BITS_PER_UNIT));
 
-	      /* Take the address of INNER, convert the offset to void *, and
-		 add then.  It will later be converted to the desired result
-		 type, if any.  */
-	      inner = build_unary_op (ADDR_EXPR, NULL_TREE, inner);
-	      inner = convert (ptr_void_type_node, inner);
-	      result = build_binary_op (POINTER_PLUS_EXPR, ptr_void_type_node,
+	      /* Take the address of INNER, convert it to a pointer to our type
+		 and add the offset.  */
+	      inner = build_unary_op (ADDR_EXPR,
+				      build_pointer_type (TREE_TYPE (operand)),
+				      inner);
+	      result = build_binary_op (POINTER_PLUS_EXPR, TREE_TYPE (inner),
 					inner, offset);
-	      result = convert (build_pointer_type (TREE_TYPE (operand)),
-				result);
 	      break;
 	    }
 	  goto common;
@@ -1464,12 +1462,12 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	     a pointer to our type.  */
 	  if (TYPE_IS_PADDING_P (type))
 	    {
-	      result = (*CONSTRUCTOR_ELTS (operand))[0].value;
-	      result = convert (build_pointer_type (TREE_TYPE (operand)),
-				build_unary_op (ADDR_EXPR, NULL_TREE, result));
+	      result
+		= build_unary_op (ADDR_EXPR,
+				  build_pointer_type (TREE_TYPE (operand)),
+				  CONSTRUCTOR_ELT (operand, 0)->value);
 	      break;
 	    }
-
 	  goto common;
 
 	case NOP_EXPR:
