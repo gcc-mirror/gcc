@@ -414,7 +414,7 @@ gigi (Node_Id gnat_root,
   ptr_void_ftype = build_pointer_type (void_ftype);
 
   /* Now declare run-time functions.  */
-  ftype = build_function_type_list (ptr_void_type_node, sizetype, NULL_TREE);
+  ftype = build_function_type_list (ptr_type_node, sizetype, NULL_TREE);
 
   /* malloc is a function declaration tree for a function to allocate
      memory.  */
@@ -428,7 +428,7 @@ gigi (Node_Id gnat_root,
   free_decl
     = create_subprog_decl (get_identifier ("__gnat_free"), NULL_TREE,
 			   build_function_type_list (void_type_node,
-						     ptr_void_type_node,
+						     ptr_type_node,
 						     NULL_TREE),
 			   NULL_TREE, is_disabled, true, true, true, NULL,
 			   Empty);
@@ -494,8 +494,7 @@ gigi (Node_Id gnat_root,
   DECL_FUNCTION_CODE (update_setjmp_buf_decl) = BUILT_IN_UPDATE_SETJMP_BUF;
 
   /* Hooks to call when entering/leaving an exception handler.  */
-  ftype
-    = build_function_type_list (void_type_node, ptr_void_type_node, NULL_TREE);
+  ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
 
   begin_handler_decl
     = create_subprog_decl (get_identifier ("__gnat_begin_handler"), NULL_TREE,
@@ -576,9 +575,7 @@ gigi (Node_Id gnat_root,
   set_exception_parameter_decl
     = create_subprog_decl
       (get_identifier ("__gnat_set_exception_parameter"), NULL_TREE,
-       build_function_type_list (void_type_node,
-				 ptr_void_type_node,
-				 ptr_void_type_node,
+       build_function_type_list (void_type_node, ptr_type_node, ptr_type_node,
 				 NULL_TREE),
        NULL_TREE, is_disabled, true, true, true, NULL, Empty);
 

@@ -1351,8 +1351,8 @@ maybe_pad_type (tree type, tree size, unsigned int align,
     }
 
   /* Now create the field with the original size.  */
-  field  = create_field_decl (get_identifier ("F"), type, record, orig_size,
-			      bitsize_zero_node, 0, 1);
+  field = create_field_decl (get_identifier ("F"), type, record, orig_size,
+			     bitsize_zero_node, 0, 1);
   DECL_INTERNAL_P (field) = 1;
 
   /* Do not emit debug info until after the auxiliary record is built.  */

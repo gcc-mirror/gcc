@@ -833,7 +833,7 @@ tree
 build_binary_op (enum tree_code op_code, tree result_type,
                  tree left_operand, tree right_operand)
 {
-  tree left_type  = TREE_TYPE (left_operand);
+  tree left_type = TREE_TYPE (left_operand);
   tree right_type = TREE_TYPE (right_operand);
   tree left_base_type = get_base_type (left_type);
   tree right_base_type = get_base_type (right_type);
@@ -2289,14 +2289,14 @@ maybe_wrap_malloc (tree data_size, tree data_type, Node_Id gnat_node)
       /* Then arrange to store the allocator's return value ahead
 	 and return.  */
       tree storage_ptr_slot_addr
-	= build_binary_op (POINTER_PLUS_EXPR, ptr_void_type_node,
-			   convert (ptr_void_type_node, aligning_field_addr),
+	= build_binary_op (POINTER_PLUS_EXPR, ptr_type_node,
+			   convert (ptr_type_node, aligning_field_addr),
 			   size_int (-(HOST_WIDE_INT) POINTER_SIZE
 				     / BITS_PER_UNIT));
 
       tree storage_ptr_slot
 	= build_unary_op (INDIRECT_REF, NULL_TREE,
-			  convert (build_pointer_type (ptr_void_type_node),
+			  convert (build_pointer_type (ptr_type_node),
 				   storage_ptr_slot_addr));
 
       return
@@ -2331,15 +2331,15 @@ maybe_wrap_free (tree data_ptr, tree data_type)
 	 = (void *)DATA_PTR - (void *)sizeof (void *))  */
       tree data_front_ptr
 	= build_binary_op
-	  (POINTER_PLUS_EXPR, ptr_void_type_node,
-	   convert (ptr_void_type_node, data_ptr),
+	  (POINTER_PLUS_EXPR, ptr_type_node,
+	   convert (ptr_type_node, data_ptr),
 	   size_int (-(HOST_WIDE_INT) POINTER_SIZE / BITS_PER_UNIT));
 
       /* FREE_PTR (void *) = *(void **)DATA_FRONT_PTR  */
       free_ptr
 	= build_unary_op
 	  (INDIRECT_REF, NULL_TREE,
-	   convert (build_pointer_type (ptr_void_type_node), data_front_ptr));
+	   convert (build_pointer_type (ptr_type_node), data_front_ptr));
     }
   else
     free_ptr = data_ptr;
