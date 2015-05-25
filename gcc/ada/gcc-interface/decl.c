@@ -173,10 +173,11 @@ static void prepend_one_attribute (struct attrib **,
 				   enum attr_type, tree, tree, Node_Id);
 static void prepend_one_attribute_pragma (struct attrib **, Node_Id);
 static void prepend_attributes (struct attrib **, Entity_Id);
-static tree elaborate_expression (Node_Id, Entity_Id, tree, bool, bool, bool);
+static tree elaborate_expression (Node_Id, Entity_Id, const char *, bool, bool,
+				  bool);
 static bool type_has_variable_size (tree);
-static tree elaborate_expression_1 (tree, Entity_Id, tree, bool, bool);
-static tree elaborate_expression_2 (tree, Entity_Id, tree, bool, bool,
+static tree elaborate_expression_1 (tree, Entity_Id, const char *, bool, bool);
+static tree elaborate_expression_2 (tree, Entity_Id, const char *, bool, bool,
 				    unsigned int);
 static tree gnat_to_gnu_component_type (Entity_Id, bool, bool);
 static tree gnat_to_gnu_param (Entity_Id, Mechanism_Type, Entity_Id, bool,
@@ -211,6 +212,7 @@ static tree create_variant_part_from (tree, vec<variant_desc> , tree,
 				      tree, vec<subst_pair> );
 static void copy_and_substitute_in_size (tree, tree, vec<subst_pair> );
 static void add_parallel_type_for_packed_array (tree, Entity_Id);
+static const char *get_entity_char (Entity_Id);
 
 /* The relevant constituents of a subprogram binding to a GCC builtin.  Used
    to pass around calls performing profile compatibility checks.  */
@@ -782,8 +784,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       calculating it each time.  */
 	    if (global_bindings_p () && !TREE_CONSTANT (gnu_size))
 	      gnu_size = elaborate_expression_1 (gnu_size, gnat_entity,
-						 get_identifier ("SIZE"),
-						 definition, false);
+						 "SIZE", definition, false);
 	  }
 
 	/* If the size is zero byte, make it one byte since some linkers have
@@ -1782,14 +1783,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
       SET_TYPE_RM_MIN_VALUE
 	(gnu_type, elaborate_expression (Type_Low_Bound (gnat_entity),
-					 gnat_entity, get_identifier ("L"),
-					 definition, true,
+					 gnat_entity, "L", definition, true,
 					 Needs_Debug_Info (gnat_entity)));
 
       SET_TYPE_RM_MAX_VALUE
 	(gnu_type, elaborate_expression (Type_High_Bound (gnat_entity),
-					 gnat_entity, get_identifier ("U"),
-					 definition, true,
+					 gnat_entity, "U", definition, true,
 					 Needs_Debug_Info (gnat_entity)));
 
       TYPE_BIASED_REPRESENTATION_P (gnu_type)
@@ -1964,14 +1963,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
       SET_TYPE_RM_MIN_VALUE
 	(gnu_type, elaborate_expression (Type_Low_Bound (gnat_entity),
-					 gnat_entity, get_identifier ("L"),
-					 definition, true,
+					 gnat_entity, "L", definition, true,
 					 Needs_Debug_Info (gnat_entity)));
 
       SET_TYPE_RM_MAX_VALUE
 	(gnu_type, elaborate_expression (Type_High_Bound (gnat_entity),
-					 gnat_entity, get_identifier ("U"),
-					 definition, true,
+					 gnat_entity, "U", definition, true,
 					 Needs_Debug_Info (gnat_entity)));
 
       /* Inherit our alias set from what we're a subtype of, as for
@@ -2598,28 +2595,28 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     inner dimensions.   */
 	  if (global_bindings_p () && ndim > 1)
 	    {
-	      tree gnu_st_name = get_identifier ("ST");
 	      tree gnu_arr_type;
 
-	      for (gnu_arr_type = TREE_TYPE (gnu_type);
+	      for (gnu_arr_type = TREE_TYPE (gnu_type), index = 1;
 		   TREE_CODE (gnu_arr_type) == ARRAY_TYPE;
-		   gnu_arr_type = TREE_TYPE (gnu_arr_type),
-		   gnu_st_name = concat_name (gnu_st_name, "ST"))
+		   gnu_arr_type = TREE_TYPE (gnu_arr_type), index++)
 		{
 		  tree eltype = TREE_TYPE (gnu_arr_type);
+		  char stride_name[32];
 
+		  sprintf (stride_name, "ST%d", index);
 		  TYPE_SIZE (gnu_arr_type)
 		    = elaborate_expression_1 (TYPE_SIZE (gnu_arr_type),
-					      gnat_entity, gnu_st_name,
+					      gnat_entity, stride_name,
 					      definition, false);
 
 		  /* ??? For now, store the size as a multiple of the
 		     alignment of the element type in bytes so that we
 		     can see the alignment from the tree.  */
+		  sprintf (stride_name, "ST%d_A_UNIT", index);
 		  TYPE_SIZE_UNIT (gnu_arr_type)
 		    = elaborate_expression_2 (TYPE_SIZE_UNIT (gnu_arr_type),
-					      gnat_entity,
-					      concat_name (gnu_st_name, "A_U"),
+					      gnat_entity, stride_name,
 					      definition, false,
 					      TYPE_ALIGN (eltype));
 
@@ -4914,16 +4911,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  tree size = TYPE_SIZE (gnu_type);
 
 	  TYPE_SIZE (gnu_type)
-	    = elaborate_expression_1 (size, gnat_entity,
-				      get_identifier ("SIZE"),
-				      definition, false);
+	    = elaborate_expression_1 (size, gnat_entity, "SIZE", definition,
+				      false);
 
 	  /* ??? For now, store the size as a multiple of the alignment in
 	     bytes so that we can see the alignment from the tree.  */
 	  TYPE_SIZE_UNIT (gnu_type)
 	    = elaborate_expression_2 (TYPE_SIZE_UNIT (gnu_type), gnat_entity,
-				      get_identifier ("SIZE_A_UNIT"),
-				      definition, false,
+				      "SIZE_A_UNIT", definition, false,
 				      TYPE_ALIGN (gnu_type));
 
 	  /* ??? gnu_type may come from an existing type so the MULT_EXPR node
@@ -4957,8 +4952,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    {
 		      TYPE_SIZE (union_type)
 			= elaborate_expression_1 (TYPE_SIZE (union_type),
-						  gnat_entity,
-						  get_identifier ("VSIZE"),
+						  gnat_entity, "VSIZE",
 						  definition, false);
 
 		      /* ??? For now, store the size as a multiple of the
@@ -4966,9 +4960,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			 from the tree.  */
 		      TYPE_SIZE_UNIT (union_type)
 			= elaborate_expression_2 (TYPE_SIZE_UNIT (union_type),
-						  gnat_entity,
-						  get_identifier
-						  ("VSIZE_A_UNIT"),
+						  gnat_entity, "VSIZE_A_UNIT",
 						  definition, false,
 						  TYPE_ALIGN (union_type));
 
@@ -4976,10 +4968,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			 alignment in bytes so that we can see the alignment
 			 from the tree.  */
 		      DECL_FIELD_OFFSET (variant_part)
-			= elaborate_expression_2 (offset,
-						  gnat_entity,
-						  get_identifier ("VOFFSET"),
-						  definition, false,
+			= elaborate_expression_2 (offset, gnat_entity,
+						  "VOFFSET", definition, false,
 						  DECL_OFFSET_ALIGN
 						  (variant_part));
 		    }
@@ -4992,8 +4982,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		ada_size = TYPE_SIZE (gnu_type);
 	      else
 		ada_size
-		  = elaborate_expression_1 (ada_size, gnat_entity,
-					    get_identifier ("RM_SIZE"),
+		  = elaborate_expression_1 (ada_size, gnat_entity, "RM_SIZE",
 					    definition, false);
 	      SET_TYPE_ADA_SIZE (gnu_type, ada_size);
 	    }
@@ -5016,9 +5005,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		{
 		  DECL_FIELD_OFFSET (gnu_field)
 		    = elaborate_expression_2 (DECL_FIELD_OFFSET (gnu_field),
-					      gnat_temp,
-					      get_identifier ("OFFSET"),
-					      definition, false,
+					      gnat_temp, "OFFSET", definition,
+					      false,
 					      DECL_OFFSET_ALIGN (gnu_field));
 
 		  /* ??? The context of gnu_field is not necessarily gnu_type
@@ -5982,11 +5970,11 @@ elaborate_entity (Entity_Id gnat_entity)
 	   are needed until after the front stops generating bogus
 	   conversions on bounds of real types.  */
 	if (!Raises_Constraint_Error (gnat_lb))
-	  elaborate_expression (gnat_lb, gnat_entity, get_identifier ("L"),
-				true, false, Needs_Debug_Info (gnat_entity));
+	  elaborate_expression (gnat_lb, gnat_entity, "L", true, false,
+				Needs_Debug_Info (gnat_entity));
 	if (!Raises_Constraint_Error (gnat_hb))
-	  elaborate_expression (gnat_hb, gnat_entity, get_identifier ("U"),
-				true, false, Needs_Debug_Info (gnat_entity));
+	  elaborate_expression (gnat_hb, gnat_entity, "U", true, false,
+				Needs_Debug_Info (gnat_entity));
       break;
       }
 
@@ -6009,7 +5997,7 @@ elaborate_entity (Entity_Id gnat_entity)
 	    /* Ignore access discriminants.  */
 	    if (!Is_Access_Type (Etype (Node (gnat_discriminant_expr))))
 	      elaborate_expression (Node (gnat_discriminant_expr),
-				    gnat_entity, get_entity_name (gnat_field),
+				    gnat_entity, get_entity_char (gnat_field),
 				    true, false, false);
 	}
       break;
@@ -6157,15 +6145,15 @@ prepend_attributes (struct attrib **attr_list, Entity_Id gnat_entity)
 
 /* Given a GNAT tree GNAT_EXPR, for an expression which is a value within a
    type definition (either a bound or a discriminant value) for GNAT_ENTITY,
-   return the GCC tree to use for that expression.  GNU_NAME is the suffix
-   to use if a variable needs to be created and DEFINITION is true if this
-   is a definition of GNAT_ENTITY.  If NEED_VALUE is true, we need a result;
+   return the GCC tree to use for that expression.  S is the suffix to use
+   if a variable needs to be created and DEFINITION is true if this is made
+   for a definition of GNAT_ENTITY.  If NEED_VALUE is true, we need a result;
    otherwise, we are just elaborating the expression for side-effects.  If
    NEED_DEBUG is true, we need a variable for debugging purposes even if it
    isn't needed for code generation.  */
 
 static tree
-elaborate_expression (Node_Id gnat_expr, Entity_Id gnat_entity, tree gnu_name,
+elaborate_expression (Node_Id gnat_expr, Entity_Id gnat_entity, const char *s,
 		      bool definition, bool need_value, bool need_debug)
 {
   tree gnu_expr;
@@ -6188,8 +6176,8 @@ elaborate_expression (Node_Id gnat_expr, Entity_Id gnat_entity, tree gnu_name,
     need_debug = false;
 
   /* Otherwise, convert this tree to its GCC equivalent and elaborate it.  */
-  gnu_expr = elaborate_expression_1 (gnat_to_gnu (gnat_expr), gnat_entity,
-				     gnu_name, definition, need_debug);
+  gnu_expr = elaborate_expression_1 (gnat_to_gnu (gnat_expr), gnat_entity, s,
+				     definition, need_debug);
 
   /* Save the expression in case we try to elaborate this entity again.  Since
      it's not a DECL, don't check it.  Don't save if it's a discriminant.  */
@@ -6202,7 +6190,7 @@ elaborate_expression (Node_Id gnat_expr, Entity_Id gnat_entity, tree gnu_name,
 /* Similar, but take a GNU expression and always return a result.  */
 
 static tree
-elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
+elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, const char *s,
 			bool definition, bool need_debug)
 {
   const bool expr_public_p = Is_Public (gnat_entity);
@@ -6264,18 +6252,19 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
   /* Now create it, possibly only for debugging purposes.  */
   if (use_variable || need_debug)
     {
-      /* The following variable creation can happen when processing the body of
-	 subprograms that are defined out of the extended main unit and
-	 inlined. In this case, we are not at the global scope, and thus the
+      /* The following variable creation can happen when processing the body
+	 of subprograms that are defined out of the extended main unit and
+	 inlined.  In this case, we are not at the global scope, and thus the
 	 new variable must not be tagged "external", as we used to do here as
-	 long as definition == 0.  */
-      const bool external_flag = !definition && expr_global_p;
+	 soon as DEFINITION was false.  */
       tree gnu_decl
-	= create_var_decl_1
-	  (create_concat_name (gnat_entity, IDENTIFIER_POINTER (gnu_name)),
-	   NULL_TREE, TREE_TYPE (gnu_expr), gnu_expr, true, expr_public_p,
-	   external_flag, expr_global_p, !need_debug, NULL, gnat_entity);
+	= create_var_decl_1 (create_concat_name (gnat_entity, s), NULL_TREE,
+			     TREE_TYPE (gnu_expr), gnu_expr, true,
+			     expr_public_p, !definition && expr_global_p,
+			     expr_global_p, !need_debug, NULL, gnat_entity);
 
+      /* Whether or not gnat_entity comes from source, this variable is a
+	 compilation artifact.  */
       DECL_ARTIFICIAL (gnu_decl) = 1;
 
       /* Using this variable at debug time (if need_debug is true) requires a
@@ -6297,7 +6286,7 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
 /* Similar, but take an alignment factor and make it explicit in the tree.  */
 
 static tree
-elaborate_expression_2 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
+elaborate_expression_2 (tree gnu_expr, Entity_Id gnat_entity, const char *s,
 			bool definition, bool need_debug, unsigned int align)
 {
   tree unit_align = size_int (align / BITS_PER_UNIT);
@@ -6306,7 +6295,7 @@ elaborate_expression_2 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
 		elaborate_expression_1 (size_binop (EXACT_DIV_EXPR,
 						    gnu_expr,
 						    unit_align),
-					gnat_entity, gnu_name, definition,
+					gnat_entity, s, definition,
 					need_debug),
 		unit_align);
 }
@@ -7784,7 +7773,7 @@ build_subst_list (Entity_Id gnat_subtype, Entity_Id gnat_type, bool definition)
 	tree replacement = convert (TREE_TYPE (gnu_field),
 				    elaborate_expression
 				    (Node (gnat_constr), gnat_subtype,
-				     get_entity_name (gnat_discrim),
+				     get_entity_char (gnat_discrim),
 				     definition, true, false));
 	subst_pair s = {gnu_field, replacement};
 	gnu_list.safe_push (s);
@@ -8844,6 +8833,13 @@ rm_size (tree gnu_type)
 /* Return the name to be used for GNAT_ENTITY.  If a type, create a
    fully-qualified name, possibly with type information encoding.
    Otherwise, return the name.  */
+
+static const char *
+get_entity_char (Entity_Id gnat_entity)
+{
+  Get_Encoded_Name (gnat_entity);
+  return ggc_strdup (Name_Buffer);
+}
 
 tree
 get_entity_name (Entity_Id gnat_entity)
