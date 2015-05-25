@@ -1298,7 +1298,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
    The classes must be numbered in nondecreasing order; that is,
    a larger-numbered class must never be contained completely
-   in a smaller-numbered class.
+   in a smaller-numbered class.  This is why CLOBBERED_REGS class
+   is listed early, even though in 64-bit mode it contains more
+   registers than just %eax, %ecx, %edx.
 
    For any two classes, it is very desirable that there be another
    class that represents their union.
@@ -1314,11 +1316,11 @@ enum reg_class
   NO_REGS,
   AREG, DREG, CREG, BREG, SIREG, DIREG,
   AD_REGS,			/* %eax/%edx for DImode */
+  CLOBBERED_REGS,		/* call-clobbered integer registers */
   Q_REGS,			/* %eax %ebx %ecx %edx */
   NON_Q_REGS,			/* %esi %edi %ebp %esp */
   INDEX_REGS,			/* %eax %ebx %ecx %edx %esi %edi %ebp */
   LEGACY_REGS,			/* %eax %ebx %ecx %edx %esi %edi %ebp %esp */
-  CLOBBERED_REGS,		/* call-clobbered integer registers */
   GENERAL_REGS,			/* %eax %ebx %ecx %edx %esi %edi %ebp %esp
 				   %r8 %r9 %r10 %r11 %r12 %r13 %r14 %r15 */
   FP_TOP_REG, FP_SECOND_REG,	/* %st(0) %st(1) */
@@ -1375,10 +1377,10 @@ enum reg_class
    "AREG", "DREG", "CREG", "BREG",	\
    "SIREG", "DIREG",			\
    "AD_REGS",				\
+   "CLOBBERED_REGS",			\
    "Q_REGS", "NON_Q_REGS",		\
    "INDEX_REGS",			\
    "LEGACY_REGS",			\
-   "CLOBBERED_REGS",			\
    "GENERAL_REGS",			\
    "FP_TOP_REG", "FP_SECOND_REG",	\
    "FLOAT_REGS",			\
@@ -1414,11 +1416,11 @@ enum reg_class
       { 0x10,       0x0,    0x0 },       /* SIREG */                     \
       { 0x20,       0x0,    0x0 },       /* DIREG */                     \
       { 0x03,       0x0,    0x0 },       /* AD_REGS */                   \
+      { 0x07,       0x0,    0x0 },       /* CLOBBERED_REGS */            \
       { 0x0f,       0x0,    0x0 },       /* Q_REGS */                    \
   { 0x1100f0,    0x1fe0,    0x0 },       /* NON_Q_REGS */                \
       { 0x7f,    0x1fe0,    0x0 },       /* INDEX_REGS */                \
   { 0x1100ff,       0x0,    0x0 },       /* LEGACY_REGS */               \
-      { 0x07,       0x0,    0x0 },       /* CLOBBERED_REGS */            \
   { 0x1100ff,    0x1fe0,    0x0 },       /* GENERAL_REGS */              \
      { 0x100,       0x0,    0x0 },       /* FP_TOP_REG */                \
     { 0x0200,       0x0,    0x0 },       /* FP_SECOND_REG */             \

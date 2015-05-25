@@ -10,4 +10,4 @@ foo (void)
 }
 
 /* { dg-final { scan-assembler "jmp\[ \t\]*.bar@GOTPCREL" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler "call\[ \t\]*.bar@GOT\\(" { target ia32 } } } */
+/* { dg-final { scan-assembler "jmp\[ \t\]*.bar@GOT\\(" { target ia32 } } } */
