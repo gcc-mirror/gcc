@@ -3566,7 +3566,6 @@ package body Sem_Res is
 
    begin
       Check_Argument_Order;
-      Check_Function_Writable_Actuals (N);
 
       if Is_Overloadable (Nam)
         and then Is_Inherited_Operation (Nam)
@@ -5508,7 +5507,6 @@ package body Sem_Res is
 
       Check_Unset_Reference (L);
       Check_Unset_Reference (R);
-      Check_Function_Writable_Actuals (N);
    end Resolve_Arithmetic_Op;
 
    ------------------
@@ -8600,8 +8598,6 @@ package body Sem_Res is
             end if;
          end;
       end if;
-
-      Check_Function_Writable_Actuals (N);
    end Resolve_Logical_Op;
 
    ---------------------------
@@ -8793,7 +8789,6 @@ package body Sem_Res is
       <<SM_Exit>>
 
       Eval_Membership_Op (N);
-      Check_Function_Writable_Actuals (N);
    end Resolve_Membership_Op;
 
    ------------------

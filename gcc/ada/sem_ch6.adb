@@ -10539,6 +10539,7 @@ package body Sem_Ch6 is
 
    procedure Set_Formal_Mode (Formal_Id : Entity_Id) is
       Spec : constant Node_Id := Parent (Formal_Id);
+      Id   : constant Entity_Id := Scope (Formal_Id);
 
    begin
       --  Note: we set Is_Known_Valid for IN parameters and IN OUT parameters
@@ -10546,7 +10547,13 @@ package body Sem_Ch6 is
       --  point of the call.
 
       if Out_Present (Spec) then
-         if Ekind_In (Scope (Formal_Id), E_Function, E_Generic_Function) then
+         if Ekind_In (Id, E_Entry, E_Entry_Family)
+           or else Is_Subprogram_Or_Generic_Subprogram (Id)
+         then
+            Set_Has_Out_Or_In_Out_Parameter (Id, True);
+         end if;
+
+         if Ekind_In (Id, E_Function, E_Generic_Function) then
 
             --  [IN] OUT parameters allowed for functions in Ada 2012
 
@@ -10563,8 +10570,6 @@ package body Sem_Ch6 is
                else
                   Set_Ekind (Formal_Id, E_Out_Parameter);
                end if;
-
-               Set_Has_Out_Or_In_Out_Parameter (Scope (Formal_Id), True);
 
             --  But not in earlier versions of Ada
 

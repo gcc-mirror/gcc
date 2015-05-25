@@ -8953,7 +8953,9 @@ package body Sem_Ch3 is
            (Class_Wide_Type (Derived_Type), Last_Entity (Derived_Type));
       end if;
 
-      Check_Function_Writable_Actuals (N);
+      if Check_Actuals (N) then
+         Check_Function_Writable_Actuals (N);
+      end if;
    end Build_Derived_Record_Type;
 
    ------------------------
@@ -21116,7 +21118,9 @@ package body Sem_Ch3 is
          Derive_Progenitor_Subprograms (T, T);
       end if;
 
-      Check_Function_Writable_Actuals (N);
+      if Check_Actuals (N) then
+         Check_Function_Writable_Actuals (N);
+      end if;
    end Record_Type_Declaration;
 
    ----------------------------

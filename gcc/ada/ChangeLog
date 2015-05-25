@@ -1,3 +1,41 @@
+2015-05-25  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ads, einfo.adb (Has_Out_Or_In_Out_Parameter): This attribute
+	is now present in subprograms, generic subprograms, entries and
+	entry families.
+	* sem_ch6.adb (Set_Formal_Mode): Set As_Out_Or_In_Out_Parameter
+	on entries, entry families, subprograms and generic subprograms.
+	* sem_ch12.adb (Analyze_Generic_Subprogram_Declaration):
+	Minor code reorganization to ensure that the Ekind attribute
+	of the subprogram entity is set before its formals are
+	processed. Required to allow the use of the attribute
+	Has_Out_Or_In_Out_Parameter on the subprogram entity.
+	* sem_aggr.adb (Resolve_Aggregate, Resolve_Extension_Aggregate):
+	Perform the check on writable actuals only if the value of some
+	component of the aggregate involves calling a function with
+	out-mode parameters.
+	(Resolve_Record_Aggregate): Propagate the Check_Actuals flag to the
+	internally built aggregate.
+	* sem_ch3.adb (Build_Derived_Record_Type, Record_Type_Declaration):
+	Perform the check on writable actuals only if the initialization of
+	some component involves calling a function with out-mode parameters.
+	* sem_ch4.adb (Analyze_Arithmetic_Op, Analyze_Comparison_Op,
+	Analyze_Equality_Op, Analyze_Logical_Op, Analyze_Membership_Op,
+	Analyze_Range): Check writable actuals only if the
+	subtrees have a call to a function with out-mode parameters
+	(Analyze_Call.Check_Writable_Actuals): New subprogram. If the call
+	has out or in-out parameters then mark its outermost enclosing
+	construct as a node on which the writable actuals check must
+	be performed.
+	(Analyze_Call): Check if the flag must be set and if the outermost
+	enclosing construct.
+	* sem_util.adb (Check_Function_Writable_Actuals): Code cleanup
+	and reorganization. We skip processing aggregate discriminants
+	since their precise analysis involves two phases traversal.
+	* sem_res.adb (Resolve_Actuals, Resolve_Arithmetic_Op,
+	Resolve_Logical_Op, Resolve_Membership_Op): Remove call to
+	check_writable_actuals.
+
 2015-05-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Constrain_Concurrent): If the context is a
