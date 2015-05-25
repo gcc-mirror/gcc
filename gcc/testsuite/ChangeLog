@@ -1,3 +1,8 @@
+2015-05-25  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* gcc.target/i386/pr64317.c: Use 'dg-require-effective-target ia32'
+	and 'dg-require-effective-target pie'.
+
 2015-05-23  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/66243
