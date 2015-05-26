@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@ package Exp_Prag is
 
    procedure Expand_N_Pragma (N : Node_Id);
 
-   procedure Expand_Contract_Cases
+   procedure Expand_Pragma_Contract_Cases
      (CCs     : Node_Id;
       Subp_Id : Entity_Id;
       Decls   : List_Id;

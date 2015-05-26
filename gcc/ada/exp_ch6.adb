@@ -1856,7 +1856,7 @@ package body Exp_Ch6 is
                   and then
                     Nkind (Parent (Subp)) = N_Private_Extension_Declaration
                then
-                  if  Comes_From_Source (N) and then Is_Public_Subp then
+                  if Comes_From_Source (N) and then Is_Public_Subp then
                      Append_To (Post_Call, Make_Invariant_Call (Actual));
                   end if;
 
@@ -7292,7 +7292,7 @@ package body Exp_Ch6 is
                Prag := Contract_Test_Cases (Items);
                while Present (Prag) loop
                   if Pragma_Name (Prag) = Name_Contract_Cases then
-                     Expand_Contract_Cases
+                     Expand_Pragma_Contract_Cases
                        (CCs     => Prag,
                         Subp_Id => Subp_Id,
                         Decls   => Declarations (N),

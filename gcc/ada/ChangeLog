@@ -1,3 +1,13 @@
+2015-05-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch6.adb (Process_Contract_Cases_For): Update the call to
+	Expand_Pragma_Contract_Cases.
+	* exp_prag.ads, exp_prag.adb (Expand_Contract_Cases): Rename to
+	Expand_Pragma_Contract_Cases.
+	* sem_ch13.adb (Add_Invariants): Use the original aspect name
+	when creating the arguments of pragma Check. This ensures that
+	'Class is properly recognized and handled.
+
 2015-05-26  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat1drv.adb: Minor adjustments.
