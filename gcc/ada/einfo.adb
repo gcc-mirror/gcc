@@ -63,7 +63,7 @@ package body Einfo is
    --    Scope                           Node3
    --    Etype                           Node5
 
-   --   Remaining fields are present only in extended nodes (i.e. entities)
+   --  Remaining fields are present only in extended nodes (i.e. entities).
 
    --  The following fields are present in all entities
 

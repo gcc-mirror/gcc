@@ -1,3 +1,16 @@
+2015-05-26  Bob Duff  <duff@adacore.com>
+
+	* s-rpc.ads (Partition_ID): Increase maximum Partition_ID to
+	some huge number.
+	* a-except-2005.adb, a-except-2005.ads, a-except.adb,
+	a-except.ads, a-exexda.adb, a-exstat.adb: Minor comment fixes.
+
+2015-05-26  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.adb: Minor comment addition.
+	* einfo.adb: Minor whitespace and punctuation fix.
+	* sem_util.adb: Minor editing of comments.
+
 2015-05-26  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch7.adb (Install_Private_Declarations,

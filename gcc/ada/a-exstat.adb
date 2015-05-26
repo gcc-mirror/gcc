@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -111,7 +111,7 @@ package body Stream_Attributes is
             "bad exception occurrence in stream input");
 
          --  The following junk raise of Program_Error is required because
-         --  this is a No_Return function, and unfortunately Raise_Exception
+         --  this is a No_Return procedure, and unfortunately Raise_Exception
          --  can return (this particular call can't, but the back end is not
          --  clever enough to know that).
 
