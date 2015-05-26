@@ -916,30 +916,30 @@ package body Sem_Ch4 is
       ----------------------------
 
       --  The identification of conflicts in calls to functions with writable
-      --  actuals is performed in the analysis phase of the frontend to ensure
+      --  actuals is performed in the analysis phase of the front end to ensure
       --  that it reports exactly the same errors compiling with and without
       --  expansion enabled. It is performed in two stages:
 
-      --    1) When a call to a function with out-mode parameters is found
-      --       we climb to the outermost enclosing construct which can be
+      --    1) When a call to a function with out-mode parameters is found,
+      --       we climb to the outermost enclosing construct that can be
       --       evaluated in arbitrary order and we mark it with the flag
       --       Check_Actuals.
 
-      --    2) When the analysis of the marked node is complete then we
-      --       traverse its decorated subtree searching for conflicts
-      --       (see function Sem_Util.Check_Function_Writable_Actuals).
+      --    2) When the analysis of the marked node is complete, we traverse
+      --       its decorated subtree searching for conflicts (see function
+      --       Sem_Util.Check_Function_Writable_Actuals).
 
-      --  The unique exception to this general rule are aggregates, since
-      --  their analysis is performed by the frontend in the resolution
-      --  phase. For aggregates we do not climb to its enclosing construct:
+      --  The unique exception to this general rule is for aggregates, since
+      --  their analysis is performed by the front end in the resolution
+      --  phase. For aggregates we do not climb to their enclosing construct:
       --  we restrict the analysis to the subexpressions initializing the
       --  aggregate components.
 
       --  This implies that the analysis of expressions containing aggregates
-      --  is not complete since there may be conflicts on writable actuals
+      --  is not complete, since there may be conflicts on writable actuals
       --  involving subexpressions of the enclosing logical or arithmetic
       --  expressions. However, we cannot wait and perform the analysis when
-      --  the whole subtree is resolved since the subtrees may be transformed
+      --  the whole subtree is resolved, since the subtrees may be transformed,
       --  thus adding extra complexity and computation cost to identify and
       --  report exactly the same errors compiling with and without expansion
       --  enabled.
@@ -948,9 +948,9 @@ package body Sem_Ch4 is
 
          function Is_Arbitrary_Evaluation_Order_Construct
            (N : Node_Id) return Boolean;
-         --  Return True if N is an Ada construct which may evaluate in
-         --  arbitrary order. This function does not cover all the language
-         --  constructs which can be evaluated in arbitrary order but the
+         --  Return True if N is an Ada construct which may be evaluated in
+         --  an arbitrary order. This function does not cover all the language
+         --  constructs that can be evaluated in arbitrary order, but only the
          --  subset needed for AI05-0144.
 
          ---------------------------------------------
@@ -1003,11 +1003,11 @@ package body Sem_Ch4 is
                begin
                   while Present (P) loop
 
-                     --  For object declarations we can climb to such node from
+                     --  For object declarations we can climb to the node from
                      --  its object definition branch or from its initializing
                      --  expression. We prefer to mark the child node as the
                      --  outermost construct to avoid adding further complexity
-                     --  to the routine which will take care later of
+                     --  to the routine that will later take care of
                      --  performing the writable actuals check.
 
                      if Is_Arbitrary_Evaluation_Order_Construct (P)
@@ -1407,8 +1407,8 @@ package body Sem_Ch4 is
 
          Check_Writable_Actuals (N);
 
-         --  If found and the outermost construct which can be evaluated in
-         --  arbitrary order is precisely this call then check all its
+         --  If found and the outermost construct that can be evaluated in
+         --  an arbitrary order is precisely this call, then check all its
          --  actuals.
 
          if Check_Actuals (N) then

@@ -2119,10 +2119,10 @@ package body Sem_Util is
                then
                   return Skip;
 
-               --  For now we skip aggregate discriminants since they require
+               --  For now we skip aggregate discriminants, since they require
                --  performing the analysis in two phases to identify conflicts:
                --  first one analyzing discriminants and second one analyzing
-               --  the rest of components (since at runtime discriminants are
+               --  the rest of components (since at run time, discriminants are
                --  evaluated prior to components): too much computation cost
                --  to identify a corner case???
 
@@ -2191,8 +2191,8 @@ package body Sem_Util is
 
                      --  Report the error on the second occurrence of the
                      --  identifier. We cannot assume that N is the second
-                     --  occurrence since traverse_func walks through Field2
-                     --  last (see comment in the body of traverse_func).
+                     --  occurrence, since Traverse_Func walks through Field2
+                     --  last (see comment in the body of Traverse_Func).
 
                      declare
                         Elmt : Elmt_Id;

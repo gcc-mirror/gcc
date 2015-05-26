@@ -124,8 +124,8 @@ package body Exp_Unst is
    -----------------------
 
    procedure Unnest_Subprogram (Subp : Entity_Id; Subp_Body : Node_Id) is
-      function AREC_String (Lev : Pos) return String;
-      --  Given a level value, 1, 2, ... returns the string AREC, AREC2, ...
+      function AREC_Name (J : Pos; S : String) return Name_Id;
+      --  Returns name for string ARECjS, where j is the decimal value of j
 
       function Enclosing_Subp (Subp : SI_Type) return SI_Type;
       --  Subp is the index of a subprogram which has a Lev greater than 1.
@@ -137,34 +137,32 @@ package body Exp_Unst is
       --  function returns the level of nesting (Subp = 1, subprograms that
       --  are immediately nested within Subp = 2, etc).
 
+      function Img_Pos (N : Pos) return String;
+      --  Return image of N without leading blank
+
       function Subp_Index (Sub : Entity_Id) return SI_Type;
       --  Given the entity for a subprogram, return corresponding Subps index
 
-      function Suffixed_Name (Ent : Entity_Id) return Name_Id;
-      --  Given an entity Ent, return its name (Char (Ent)) suffixed with
-      --  two underscores and the entity number, to ensure a unique name.
-
-      function Upref_Name (Ent : Entity_Id; Clist : List_Id) return Name_Id;
+      function Upref_Name
+        (Ent   : Entity_Id;
+         Index : Pos;
+         Clist : List_Id) return Name_Id;
       --  This function returns the name to be used in the activation record to
       --  reference the variable uplevel. Clist is the list of components that
-      --  have been created in the activation record so far. Normally this is
-      --  just a copy of the Chars field of the entity. The exception is when
-      --  the name has already been used, in which case we suffix the name with
-      --  the entity number to avoid duplication. This happens with declare
-      --  blocks and generic parameters at least.
+      --  have been created in the activation record so far. Normally the name
+      --  is just a copy of the Chars field of the entity. The exception is
+      --  when the name has already been used, in which case we suffix the name
+      --  with the index value Index to avoid duplication. This happens with
+      --  declare blocks and generic parameters at least.
 
-      -----------------
-      -- AREC_String --
-      -----------------
+      ---------------
+      -- AREC_Name --
+      ---------------
 
-      function AREC_String (Lev : Pos) return String is
+      function AREC_Name (J : Pos; S : String) return Name_Id is
       begin
-         if Lev > 9 then
-            return AREC_String (Lev / 10) & Character'Val (Lev mod 10 + 48);
-         else
-            return "AREC" & Character'Val (Lev + 48);
-         end if;
-      end AREC_String;
+         return Name_Find_Str ("AREC" & Img_Pos (J) & S);
+      end AREC_Name;
 
       --------------------
       -- Enclosing_Subp --
@@ -199,6 +197,27 @@ package body Exp_Unst is
          end loop;
       end Get_Level;
 
+      -------------
+      -- Img_Pos --
+      -------------
+
+      function Img_Pos (N : Pos) return String is
+         Buf : String (1 .. 20);
+         Ptr : Natural;
+         NV  : Nat;
+
+      begin
+         Ptr := Buf'Last;
+         NV := N;
+         while NV /= 0 loop
+            Buf (Ptr) := Character'Val (48 + NV mod 10);
+            Ptr := Ptr - 1;
+            NV := NV / 10;
+         end loop;
+
+         return Buf (Ptr + 1 .. Buf'Last);
+      end Img_Pos;
+
       ----------------
       -- Subp_Index --
       ----------------
@@ -209,23 +228,15 @@ package body Exp_Unst is
          return SI_Type (UI_To_Int (Subps_Index (Sub)));
       end Subp_Index;
 
-      -------------------
-      -- Suffixed_Name --
-      -------------------
-
-      function Suffixed_Name (Ent : Entity_Id) return Name_Id is
-      begin
-         Get_Name_String (Chars (Ent));
-         Add_Str_To_Name_Buffer ("__");
-         Add_Nat_To_Name_Buffer (Nat (Ent));
-         return Name_Enter;
-      end Suffixed_Name;
-
       ----------------
       -- Upref_Name --
       ----------------
 
-      function Upref_Name (Ent : Entity_Id; Clist : List_Id) return Name_Id is
+      function Upref_Name
+        (Ent   : Entity_Id;
+         Index : Pos;
+         Clist : List_Id) return Name_Id
+      is
          C : Node_Id;
       begin
          C := First (Clist);
@@ -233,7 +244,8 @@ package body Exp_Unst is
             if No (C) then
                return Chars (Ent);
             elsif Chars (Defining_Identifier (C)) = Chars (Ent) then
-               return Suffixed_Name (Ent);
+               return Name_Find_Str
+                        (Get_Name_String (Chars (Ent)) & Img_Pos (Index));
             else
                Next (C);
             end if;
@@ -946,7 +958,6 @@ package body Exp_Unst is
          declare
             STJ : Subp_Entry renames Subps.Table (J);
             Loc : constant Source_Ptr := Sloc (STJ.Bod);
-            ARS : constant String     := AREC_String (STJ.Lev);
 
          begin
             --  First we create the ARECnF entity for the additional formal for
@@ -954,32 +965,26 @@ package body Exp_Unst is
 
             if STJ.Uplevel_Ref < STJ.Lev then
                STJ.ARECnF :=
-                 Make_Defining_Identifier (Loc,
-                   Chars => Name_Find_Str (AREC_String (STJ.Lev - 1) & "F"));
+                 Make_Defining_Identifier (Loc, Chars => AREC_Name (J, "F"));
             end if;
 
             --  Define the AREC entities for the activation record if needed
 
             if STJ.Declares_AREC then
                STJ.ARECn   :=
-                 Make_Defining_Identifier (Loc, Name_Find_Str (ARS));
+                 Make_Defining_Identifier (Loc, AREC_Name (J, ""));
                STJ.ARECnT  :=
-                 Make_Defining_Identifier (Loc, Name_Find_Str (ARS & "T"));
+                 Make_Defining_Identifier (Loc, AREC_Name (J, "T"));
                STJ.ARECnPT :=
-                 Make_Defining_Identifier (Loc, Name_Find_Str (ARS & "PT"));
+                 Make_Defining_Identifier (Loc, AREC_Name (J, "PT"));
                STJ.ARECnP  :=
-                 Make_Defining_Identifier (Loc, Name_Find_Str (ARS & "P"));
+                 Make_Defining_Identifier (Loc, AREC_Name (J, "P"));
 
                --  Define uplink component entity if inner nesting case
 
                if Present (STJ.ARECnF) then
-                  declare
-                     ARS1 : constant String := AREC_String (STJ.Lev - 1);
-                  begin
-                     STJ.ARECnU :=
-                       Make_Defining_Identifier (Loc,
-                         Chars => Name_Find_Str (ARS1 & "U"));
-                  end;
+                  STJ.ARECnU :=
+                    Make_Defining_Identifier (Loc, AREC_Name (J, "U"));
                end if;
             end if;
          end;
@@ -1103,22 +1108,15 @@ package body Exp_Unst is
                      --  List of new declarations we create
 
                   begin
-                     --  Suffix the ARECnT and ARECnPT names to make sure that
-                     --  they are unique when Cprint moves the declarations to
-                     --  the outer level.
-
-                     Set_Chars (STJ.ARECnT,  Suffixed_Name (STJ.ARECnT));
-                     Set_Chars (STJ.ARECnPT, Suffixed_Name (STJ.ARECnPT));
-
                      --  Build list of component declarations for ARECnT
 
                      Clist := Empty_List;
 
                      --  If we are in a subprogram that has a static link that
                      --  is passed in (as indicated by ARECnF being defined),
-                     --  then include ARECnU : ARECmPT where m is one less than
-                     --  the current level and the entity ARECnPT comes from
-                     --  the enclosing subprogram.
+                     --  then include ARECnU : ARECmPT where ARECmPT comes from
+                     --  the level one higher than the current level, and the
+                     --  entity ARECnPT comes from the enclosing subprogram.
 
                      if Present (STJ.ARECnF) then
                         declare
@@ -1142,14 +1140,20 @@ package body Exp_Unst is
                            Elmt : Elmt_Id;
                            Uent : Entity_Id;
 
+                           Indx : Nat;
+                           --  1's origin of index in list of elements. This is
+                           --  used to uniquify names if needed in Upref_Name.
+
                         begin
                            Elmt := First_Elmt (STJ.Uents);
+                           Indx := 0;
                            while Present (Elmt) loop
                               Uent := Node (Elmt);
+                              Indx := Indx + 1;
 
                               Comp :=
                                 Make_Defining_Identifier (Loc,
-                                  Chars => Upref_Name (Uent, Clist));
+                                  Chars => Upref_Name (Uent, Indx, Clist));
 
                               Set_Activation_Record_Component
                                 (Uent, Comp);

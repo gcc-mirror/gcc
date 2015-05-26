@@ -184,9 +184,9 @@ package Exp_Unst is
    --   The fields of AREC1 are set at the point the corresponding entity
    --   is declared (immediately for parameters).
 
-   --   Note: the 1 in all these names represents the fact that we are at the
-   --   outer level of nesting. As we will see later, deeper levels of nesting
-   --   will use AREC2, AREC3, ...
+   --   Note: the 1 in all these names is a unique index number. Different
+   --   scopes requiring different ARECnT declarations will have different
+   --   values of n to ensure uniqueness.
 
    --   Note: normally the field names in the activation record match the
    --   name of the entity. An exception is when the entity is declared in
@@ -294,8 +294,8 @@ package Exp_Unst is
 
    --    What we do is to always generate a local constant for any dynamic
    --    bound in a dynamic subtype xx with name xx_FIRST or xx_LAST. The one
-   --    case where we can skip this is where the bound is For
-   --    example in the third example above, subtype dynam is expanded as
+   --    case where we can skip this is where the bound is e.g. in the third
+   --    example above, subtype dynam is expanded as
 
    --      dynam_LAST  : constant Integer := y + 3;
    --      subtype dynam is integer range x .. dynam_LAST;
@@ -465,8 +465,8 @@ package Exp_Unst is
    --        return inner1 (x, AREC1P);
    --     end case4x;
 
-   --  As can be seen in this example, the level number following AREC in the
-   --  names avoids any confusion between AREC names at different levels.
+   --  As can be seen in this example, the index numbers following AREC in the
+   --  generated names avoid confusion between AREC names at different levels.
 
    -------------------------
    -- Name Disambiguation --
