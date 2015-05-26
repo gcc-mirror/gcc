@@ -42,6 +42,7 @@ with Exp_Prag; use Exp_Prag;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
+with Ghost;    use Ghost;
 with Lib;      use Lib;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -3951,8 +3952,9 @@ package body Exp_Ch7 is
       -----------------------
 
       procedure Wrap_HSS_In_Block is
-         Block   : Node_Id;
-         End_Lab : Node_Id;
+         Block    : Node_Id;
+         Block_Id : Entity_Id;
+         End_Lab  : Node_Id;
 
       begin
          --  Preserve end label to provide proper cross-reference information
@@ -3960,6 +3962,11 @@ package body Exp_Ch7 is
          End_Lab := End_Label (HSS);
          Block :=
            Make_Block_Statement (Loc, Handled_Statement_Sequence => HSS);
+
+         Block_Id := New_Internal_Entity (E_Block, Current_Scope, Loc, 'B');
+         Set_Identifier (Block, New_Occurrence_Of (Block_Id, Loc));
+         Set_Etype (Block_Id, Standard_Void_Type);
+         Set_Block_Node (Block_Id, Identifier (Block));
 
          --  Signal the finalization machinery that this particular block
          --  contains the original context.
@@ -4163,10 +4170,17 @@ package body Exp_Ch7 is
    --  Encode entity names in package body
 
    procedure Expand_N_Package_Body (N : Node_Id) is
+      GM       : constant Ghost_Mode_Type := Ghost_Mode;
       Spec_Ent : constant Entity_Id := Corresponding_Spec (N);
       Fin_Id   : Entity_Id;
 
    begin
+      --  The package body may be subject to pragma Ghost with policy Ignore.
+      --  Set the mode now to ensure that any nodes generated during expansion
+      --  are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
+
       --  This is done only for non-generic packages
 
       if Ekind (Spec_Ent) = E_Package then
@@ -4222,6 +4236,11 @@ package body Exp_Ch7 is
             end;
          end if;
       end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Expand_N_Package_Body;
 
    ----------------------------------
@@ -4234,6 +4253,7 @@ package body Exp_Ch7 is
    --  appear.
 
    procedure Expand_N_Package_Declaration (N : Node_Id) is
+      GM     : constant Ghost_Mode_Type := Ghost_Mode;
       Id     : constant Entity_Id := Defining_Entity (N);
       Spec   : constant Node_Id   := Specification (N);
       Decls  : List_Id;
@@ -4276,6 +4296,12 @@ package body Exp_Ch7 is
       then
          return;
       end if;
+
+      --  The package declaration may be subject to pragma Ghost with policy
+      --  Ignore. Set the mode now to ensure that any nodes generated during
+      --  expansion are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
 
       --  For a package declaration that implies no associated body, generate
       --  task activation call and RACW supporting bodies now (since we won't
@@ -4350,6 +4376,11 @@ package body Exp_Ch7 is
 
          Set_Finalizer (Id, Fin_Id);
       end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Expand_N_Package_Declaration;
 
    -----------------------------

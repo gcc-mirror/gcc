@@ -35,6 +35,7 @@ with Exp_Disp; use Exp_Disp;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
+with Ghost;    use Ghost;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
 with Namet.Sp; use Namet.Sp;
@@ -1313,6 +1314,7 @@ package body Sem_Util is
 
          --  Local variables
 
+         GM        : constant Ghost_Mode_Type := Ghost_Mode;
          Loc       : constant Source_Ptr := Sloc (Typ);
          Prag      : constant Node_Id    :=
                        Get_Pragma (Typ, Pragma_Default_Initial_Condition);
@@ -1338,6 +1340,11 @@ package body Sem_Util is
          if Present (Corresponding_Body (Spec_Decl)) then
             return;
          end if;
+
+         --  Ensure that the analysis and expansion produce Ghost nodes if the
+         --  type itself is Ghost.
+
+         Set_Ghost_Mode_From_Entity (Typ);
 
          Param_Id := First_Formal (Proc_Id);
 
@@ -1405,6 +1412,11 @@ package body Sem_Util is
          Set_Corresponding_Spec (Body_Decl, Proc_Id);
 
          Insert_After_And_Analyze (Declaration_Node (Typ), Body_Decl);
+
+         --  Restore the original Ghost mode once analysis and expansion have
+         --  taken place.
+
+         Ghost_Mode := GM;
       end Build_Default_Init_Cond_Procedure_Body;
 
       --  Local variables
@@ -1453,6 +1465,7 @@ package body Sem_Util is
    ---------------------------------------------------
 
    procedure Build_Default_Init_Cond_Procedure_Declaration (Typ : Entity_Id) is
+      GM      : constant Ghost_Mode_Type := Ghost_Mode;
       Loc     : constant Source_Ptr := Sloc (Typ);
       Prag    : constant Node_Id    :=
                   Get_Pragma (Typ, Pragma_Default_Initial_Condition);
@@ -1472,7 +1485,12 @@ package body Sem_Util is
          return;
       end if;
 
-      Proc_Id  :=
+      --  Ensure that the analysis and expansion produce Ghost nodes if the
+      --  type itself is Ghost.
+
+      Set_Ghost_Mode_From_Entity (Typ);
+
+      Proc_Id :=
         Make_Defining_Identifier (Loc,
           Chars => New_External_Name (Chars (Typ), "Default_Init_Cond"));
 
@@ -1481,6 +1499,13 @@ package body Sem_Util is
       Set_Ekind (Proc_Id, E_Procedure);
       Set_Is_Default_Init_Cond_Procedure (Proc_Id);
       Set_Default_Init_Cond_Procedure (Typ, Proc_Id);
+
+      --  Mark the default initial condition procedure explicitly as Ghost
+      --  because it does not come from source.
+
+      if Ghost_Mode > None then
+         Set_Is_Ghost_Entity (Proc_Id);
+      end if;
 
       --  Generate:
       --    procedure <Typ>Default_Init_Cond (Inn : <Typ>);
@@ -1494,6 +1519,11 @@ package body Sem_Util is
                 Make_Parameter_Specification (Loc,
                   Defining_Identifier => Make_Temporary (Loc, 'I'),
                   Parameter_Type      => New_Occurrence_Of (Typ, Loc))))));
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Build_Default_Init_Cond_Procedure_Declaration;
 
    ---------------------------
@@ -12782,6 +12812,27 @@ package body Sem_Util is
       return False;
    end Is_Renamed_Entry;
 
+   -----------------------------
+   -- Is_Renaming_Declaration --
+   -----------------------------
+
+   function Is_Renaming_Declaration (N : Node_Id) return Boolean is
+   begin
+      case Nkind (N) is
+         when N_Exception_Renaming_Declaration         |
+              N_Generic_Function_Renaming_Declaration  |
+              N_Generic_Package_Renaming_Declaration   |
+              N_Generic_Procedure_Renaming_Declaration |
+              N_Object_Renaming_Declaration            |
+              N_Package_Renaming_Declaration           |
+              N_Subprogram_Renaming_Declaration        =>
+            return True;
+
+         when others                                   =>
+            return False;
+      end case;
+   end Is_Renaming_Declaration;
+
    ----------------------------
    -- Is_Reversible_Iterator --
    ----------------------------
@@ -16256,21 +16307,24 @@ package body Sem_Util is
       --------------------
 
       function Policy_In_List (List : Node_Id) return Name_Id is
-         Arg  : Node_Id;
-         Expr : Node_Id;
+         Arg1 : Node_Id;
+         Arg2 : Node_Id;
          Prag : Node_Id;
 
       begin
          Prag := List;
          while Present (Prag) loop
-            Arg  := First (Pragma_Argument_Associations (Prag));
-            Expr := Get_Pragma_Arg (Arg);
+            Arg1 := First (Pragma_Argument_Associations (Prag));
+            Arg2 := Next (Arg1);
 
-            --  The current Check_Policy pragma matches the requested policy,
-            --  return the second argument which denotes the policy identifier.
+            Arg1 := Get_Pragma_Arg (Arg1);
+            Arg2 := Get_Pragma_Arg (Arg2);
 
-            if Chars (Expr) = Policy then
-               return Chars (Get_Pragma_Arg (Next (Arg)));
+            --  The current Check_Policy pragma matches the requested policy or
+            --  appears in the single argument form (Assertion, policy_id).
+
+            if Nam_In (Chars (Arg1), Name_Assertion, Policy) then
+               return Chars (Arg2);
             end if;
 
             Prag := Next_Pragma (Prag);
@@ -16948,13 +17002,20 @@ package body Sem_Util is
          begin
             Comp := First_Entity (Typ);
             while Present (Comp) loop
-               if Ekind (Comp) = E_Component
-                  and then Requires_Transient_Scope (Etype (Comp))
-               then
-                  return True;
-               else
-                  Next_Entity (Comp);
+               if Ekind (Comp) = E_Component then
+                  --  ???It's not cleare we need a full recursive call to
+                  --  Requires_Transient_Scope here. Note that the following
+                  --  can't happen.
+
+                  pragma Assert (Is_Definite_Subtype (Etype (Comp)));
+                  pragma Assert (not Has_Controlled_Component (Etype (Comp)));
+
+                  if Requires_Transient_Scope (Etype (Comp)) then
+                     return True;
+                  end if;
                end if;
+
+               Next_Entity (Comp);
             end loop;
          end;
 
@@ -16985,6 +17046,7 @@ package body Sem_Util is
       --  All other cases do not require a transient scope
 
       else
+         pragma Assert (Is_Protected_Type (Typ) or else Is_Task_Type (Typ));
          return False;
       end if;
    end Requires_Transient_Scope;

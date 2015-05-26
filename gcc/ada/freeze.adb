@@ -1862,8 +1862,8 @@ package body Freeze is
       Formal : Entity_Id;
       Indx   : Node_Id;
 
-      Test_E : Entity_Id := E;
-      --  This could use a comment ???
+      Has_Default_Initialization : Boolean := False;
+      --  This flag gets set to true for a variable with default initialization
 
       Late_Freezing : Boolean := False;
       --  Used to detect attempt to freeze function declared in another unit
@@ -1871,8 +1871,8 @@ package body Freeze is
       Result : List_Id := No_List;
       --  List of freezing actions, left at No_List if none
 
-      Has_Default_Initialization : Boolean := False;
-      --  This flag gets set to true for a variable with default initialization
+      Test_E : Entity_Id := E;
+      --  This could use a comment ???
 
       procedure Add_To_Result (N : Node_Id);
       --  N is a freezing action to be appended to the Result
@@ -4632,7 +4632,7 @@ package body Freeze is
       --  Ignore. Set the mode now to ensure that any nodes generated during
       --  freezing are properly flagged as ignored Ghost.
 
-      Set_Ghost_Mode_For_Freeze (E, N);
+      Set_Ghost_Mode_From_Entity (E);
 
       --  We are going to test for various reasons why this entity need not be
       --  frozen here, but in the case of an Itype that's defined within a

@@ -38,6 +38,7 @@ with Exp_Dbug; use Exp_Dbug;
 with Exp_Pakd; use Exp_Pakd;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
+with Ghost;    use Ghost;
 with Inline;   use Inline;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -1626,14 +1627,38 @@ package body Exp_Ch5 is
    --  cannot just be passed on to the back end in untransformed state.
 
    procedure Expand_N_Assignment_Statement (N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (N);
+      GM : constant Ghost_Mode_Type := Ghost_Mode;
+
+      procedure Restore_Globals;
+      --  Restore the values of all saved global variables
+
+      ---------------------
+      -- Restore_Globals --
+      ---------------------
+
+      procedure Restore_Globals is
+      begin
+         Ghost_Mode := GM;
+      end Restore_Globals;
+
+      --  Local variables
+
       Crep : constant Boolean    := Change_Of_Representation (N);
       Lhs  : constant Node_Id    := Name (N);
+      Loc  : constant Source_Ptr := Sloc (N);
       Rhs  : constant Node_Id    := Expression (N);
       Typ  : constant Entity_Id  := Underlying_Type (Etype (Lhs));
       Exp  : Node_Id;
 
+   --  Start of processing for Expand_N_Assignment_Statement
+
    begin
+      --  The assignment statement may be Ghost if the left hand side is Ghost.
+      --  Set the mode now to ensure that any nodes generated during expansion
+      --  are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
+
       --  Special case to check right away, if the Componentwise_Assignment
       --  flag is set, this is a reanalysis from the expansion of the primitive
       --  assignment procedure for a tagged type, and all we need to do is to
@@ -1643,6 +1668,7 @@ package body Exp_Ch5 is
 
       if Componentwise_Assignment (N) then
          Expand_Assign_Record (N);
+         Restore_Globals;
          return;
       end if;
 
@@ -1736,6 +1762,8 @@ package body Exp_Ch5 is
 
                Rewrite (N, Call);
                Analyze (N);
+
+               Restore_Globals;
                return;
             end if;
          end;
@@ -1885,6 +1913,8 @@ package body Exp_Ch5 is
          Convert_Aggr_In_Assignment (N);
          Rewrite (N, Make_Null_Statement (Loc));
          Analyze (N);
+
+         Restore_Globals;
          return;
       end if;
 
@@ -2104,6 +2134,7 @@ package body Exp_Ch5 is
 
          if not Crep then
             Expand_Bit_Packed_Element_Set (N);
+            Restore_Globals;
             return;
 
          --  Change of representation case
@@ -2155,6 +2186,7 @@ package body Exp_Ch5 is
          --  Nothing to do for valuetypes
          --  ??? Set_Scope_Is_Transient (False);
 
+         Restore_Globals;
          return;
 
       elsif Is_Tagged_Type (Typ)
@@ -2210,6 +2242,7 @@ package body Exp_Ch5 is
                   --  expansion, since they would be missed in -gnatc mode ???
 
                   Error_Msg_N ("assignment not available on limited type", N);
+                  Restore_Globals;
                   return;
                end if;
 
@@ -2380,6 +2413,7 @@ package body Exp_Ch5 is
             --  it with all checks suppressed.
 
             Analyze (N, Suppress => All_Checks);
+            Restore_Globals;
             return;
          end Tagged_Case;
 
@@ -2397,6 +2431,7 @@ package body Exp_Ch5 is
             end loop;
 
             Expand_Assign_Array (N, Actual_Rhs);
+            Restore_Globals;
             return;
          end;
 
@@ -2404,6 +2439,7 @@ package body Exp_Ch5 is
 
       elsif Is_Record_Type (Typ) then
          Expand_Assign_Record (N);
+         Restore_Globals;
          return;
 
       --  Scalar types. This is where we perform the processing related to the
@@ -2516,8 +2552,11 @@ package body Exp_Ch5 is
          end if;
       end if;
 
+      Restore_Globals;
+
    exception
       when RE_Not_Available =>
+         Restore_Globals;
          return;
    end Expand_N_Assignment_Statement;
 

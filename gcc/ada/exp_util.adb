@@ -34,6 +34,7 @@ with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
+with Ghost;    use Ghost;
 with Inline;   use Inline;
 with Itypes;   use Itypes;
 with Lib;      use Lib;
@@ -6423,33 +6424,63 @@ package body Exp_Util is
       Expr : Node_Id;
       Mem  : Boolean := False) return Node_Id
    is
-      Loc : constant Source_Ptr := Sloc (Expr);
+      GM : constant Ghost_Mode_Type := Ghost_Mode;
+
+      procedure Restore_Globals;
+      --  Restore the values of all saved global variables
+
+      ---------------------
+      -- Restore_Globals --
+      ---------------------
+
+      procedure Restore_Globals is
+      begin
+         Ghost_Mode := GM;
+      end Restore_Globals;
+
+      --  Local variables
+
+      Loc  : constant Source_Ptr := Sloc (Expr);
+      Call : Node_Id;
+      PFM  : Entity_Id;
+
+   --  Start of processing for Make_Predicate_Call
 
    begin
       pragma Assert (Present (Predicate_Function (Typ)));
 
+      --  The related type may be subject to pragma Ghost with policy Ignore.
+      --  Set the mode now to ensure that the call is properly flagged as
+      --  ignored Ghost.
+
+      Set_Ghost_Mode_From_Entity (Typ);
+
       --  Call special membership version if requested and available
 
       if Mem then
-         declare
-            PFM : constant Entity_Id := Predicate_Function_M (Typ);
-         begin
-            if Present (PFM) then
-               return
-                 Make_Function_Call (Loc,
-                   Name                   => New_Occurrence_Of (PFM, Loc),
-                   Parameter_Associations => New_List (Relocate_Node (Expr)));
-            end if;
-         end;
+         PFM := Predicate_Function_M (Typ);
+
+         if Present (PFM) then
+            Call :=
+              Make_Function_Call (Loc,
+                Name                   => New_Occurrence_Of (PFM, Loc),
+                Parameter_Associations => New_List (Relocate_Node (Expr)));
+
+            Restore_Globals;
+            return Call;
+         end if;
       end if;
 
       --  Case of calling normal predicate function
 
-      return
-          Make_Function_Call (Loc,
-            Name                   =>
-              New_Occurrence_Of (Predicate_Function (Typ), Loc),
-            Parameter_Associations => New_List (Relocate_Node (Expr)));
+      Call :=
+        Make_Function_Call (Loc,
+          Name                   =>
+            New_Occurrence_Of (Predicate_Function (Typ), Loc),
+          Parameter_Associations => New_List (Relocate_Node (Expr)));
+
+      Restore_Globals;
+      return Call;
    end Make_Predicate_Call;
 
    --------------------------

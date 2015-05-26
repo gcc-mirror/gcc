@@ -4477,12 +4477,11 @@ package body Exp_Disp is
    begin
       pragma Assert (Is_Frozen (Typ));
 
-      --  The tagged type for which the dispatch table is being build may be
-      --  subject to pragma Ghost with policy Ignore. Set the mode now to
-      --  ensure that any nodes generated during freezing are properly flagged
-      --  as ignored Ghost.
+      --  The tagged type being processed may be subject to pragma Ghost with
+      --  policy Ignore. Set the mode now to ensure that any nodes generated
+      --  during dispatch table creation are properly flagged as ignored Ghost.
 
-      Set_Ghost_Mode_For_Freeze (Typ, Typ);
+      Set_Ghost_Mode (Declaration_Node (Typ), Typ);
 
       --  Handle cases in which there is no need to build the dispatch table
 
@@ -5784,21 +5783,34 @@ package body Exp_Disp is
                   E        := Ultimate_Alias (Prim);
                   Prim_Pos := UI_To_Int (DT_Position (E));
 
-                  --  Do not reference predefined primitives because they are
-                  --  located in a separate dispatch table; skip entities with
-                  --  attribute Interface_Alias because they are only required
-                  --  to build secondary dispatch tables; skip abstract and
-                  --  eliminated primitives; for derivations of CPP types skip
-                  --  primitives located in the C++ part of the dispatch table
-                  --  because their slot is initialized by the IC routine.
+                  --  Skip predefined primitives because they are located in a
+                  --  separate dispatch table.
 
                   if not Is_Predefined_Dispatching_Operation (Prim)
                     and then not Is_Predefined_Dispatching_Operation (E)
+
+                    --  Skip entities with attribute Interface_Alias because
+                    --  those are only required to build secondary dispatch
+                    --  tables.
+
                     and then not Present (Interface_Alias (Prim))
+
+                    --  Skip abstract and eliminated primitives
+
                     and then not Is_Abstract_Subprogram (E)
                     and then not Is_Eliminated (E)
+
+                    --  For derivations of CPP types skip primitives located in
+                    --  the C++ part of the dispatch table because their slots
+                    --  are initialized by the IC routine.
+
                     and then (not Is_CPP_Class (Root_Type (Typ))
                                or else Prim_Pos > CPP_Nb_Prims)
+
+                    --  Skip ignored Ghost subprograms as those will be removed
+                    --  from the executable.
+
+                    and then not Is_Ignored_Ghost_Entity (E)
                   then
                      pragma Assert
                        (UI_To_Int (DT_Position (Prim)) <= Nb_Prim);

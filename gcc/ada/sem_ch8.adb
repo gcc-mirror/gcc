@@ -550,8 +550,9 @@ package body Sem_Ch8 is
    --  there is more than one element in the list.
 
    procedure Analyze_Exception_Renaming (N : Node_Id) is
-      Id  : constant Node_Id := Defining_Identifier (N);
-      Nam : constant Node_Id := Name (N);
+      GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Id  : constant Entity_Id       := Defining_Entity (N);
+      Nam : constant Node_Id         := Name (N);
 
    begin
       --  The exception renaming declaration may be subject to pragma Ghost
@@ -565,27 +566,26 @@ package body Sem_Ch8 is
       Enter_Name (Id);
       Analyze (Nam);
 
-      Set_Ekind          (Id, E_Exception);
-      Set_Etype          (Id, Standard_Exception_Type);
-      Set_Is_Pure        (Id, Is_Pure (Current_Scope));
+      Set_Ekind   (Id, E_Exception);
+      Set_Etype   (Id, Standard_Exception_Type);
+      Set_Is_Pure (Id, Is_Pure (Current_Scope));
 
-      if not Is_Entity_Name (Nam)
-        or else Ekind (Entity (Nam)) /= E_Exception
+      if Is_Entity_Name (Nam)
+        and then Present (Entity (Nam))
+        and then Ekind (Entity (Nam)) = E_Exception
       then
-         Error_Msg_N ("invalid exception name in renaming", Nam);
-      else
          if Present (Renamed_Object (Entity (Nam))) then
             Set_Renamed_Object (Id, Renamed_Object (Entity (Nam)));
          else
             Set_Renamed_Object (Id, Entity (Nam));
          end if;
 
-         --  An exception renaming is Ghost if the renamed entity is Ghost or
-         --  the construct appears within a Ghost scope.
+         --  The exception renaming declaration may become Ghost if it renames
+         --  a Ghost entity.
 
-         if Is_Ghost_Entity (Entity (Nam)) or else Ghost_Mode > None then
-            Set_Is_Ghost_Entity (Id);
-         end if;
+         Mark_Renaming_As_Ghost (N, Entity (Nam));
+      else
+         Error_Msg_N ("invalid exception name in renaming", Nam);
       end if;
 
       --  Implementation-defined aspect specifications can appear in a renaming
@@ -595,6 +595,11 @@ package body Sem_Ch8 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Analyze_Exception_Renaming;
 
    ---------------------------
@@ -664,9 +669,10 @@ package body Sem_Ch8 is
      (N : Node_Id;
       K : Entity_Kind)
    is
-      New_P : constant Entity_Id := Defining_Entity (N);
+      GM    : constant Ghost_Mode_Type := Ghost_Mode;
+      New_P : constant Entity_Id       := Defining_Entity (N);
       Old_P : Entity_Id;
-      Inst  : Boolean   := False; -- prevent junk warning
+      Inst  : Boolean := False; -- prevent junk warning
 
    begin
       if Name (N) = Error then
@@ -710,7 +716,7 @@ package body Sem_Ch8 is
 
       else
          if Present (Renamed_Object (Old_P)) then
-            Set_Renamed_Object (New_P,  Renamed_Object (Old_P));
+            Set_Renamed_Object (New_P, Renamed_Object (Old_P));
          else
             Set_Renamed_Object (New_P, Old_P);
          end if;
@@ -721,12 +727,10 @@ package body Sem_Ch8 is
          Set_Etype (New_P, Etype (Old_P));
          Set_Has_Completion (New_P);
 
-         --  An generic renaming is Ghost if the renamed entity is Ghost or the
-         --  construct appears within a Ghost scope.
+         --  The generic renaming declaration may become Ghost if it renames a
+         --  Ghost entity.
 
-         if Is_Ghost_Entity (Old_P) or else Ghost_Mode > None then
-            Set_Is_Ghost_Entity (New_P);
-         end if;
+         Mark_Renaming_As_Ghost (N, Old_P);
 
          if In_Open_Scopes (Old_P) then
             Error_Msg_N ("within its scope, generic denotes its instance", N);
@@ -750,6 +754,11 @@ package body Sem_Ch8 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, New_P);
       end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Analyze_Generic_Renaming;
 
    -----------------------------
@@ -757,10 +766,10 @@ package body Sem_Ch8 is
    -----------------------------
 
    procedure Analyze_Object_Renaming (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
       Id  : constant Entity_Id  := Defining_Identifier (N);
-      Dec : Node_Id;
+      Loc : constant Source_Ptr := Sloc (N);
       Nam : constant Node_Id    := Name (N);
+      Dec : Node_Id;
       T   : Entity_Id;
       T2  : Entity_Id;
 
@@ -855,6 +864,10 @@ package body Sem_Ch8 is
 
          return False;
       end In_Generic_Scope;
+
+      --  Local variables
+
+      GM : constant Ghost_Mode_Type := Ghost_Mode;
 
    --  Start of processing for Analyze_Object_Renaming
 
@@ -1347,14 +1360,11 @@ package body Sem_Ch8 is
          Set_Is_True_Constant    (Id, True);
       end if;
 
-      --  An object renaming is Ghost if the renamed entity is Ghost or the
-      --  construct appears within a Ghost scope.
+      --  The object renaming declaration may become Ghost if it renames a
+      --  Ghost entity.
 
-      if (Is_Entity_Name (Nam)
-           and then Is_Ghost_Entity (Entity (Nam)))
-        or else Ghost_Mode > None
-      then
-         Set_Is_Ghost_Entity (Id);
+      if Is_Entity_Name (Nam) then
+         Mark_Renaming_As_Ghost (N, Entity (Nam));
       end if;
 
       --  The entity of the renaming declaration needs to reflect whether the
@@ -1401,6 +1411,11 @@ package body Sem_Ch8 is
       --  Deal with dimensions
 
       Analyze_Dimension (N);
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Analyze_Object_Renaming;
 
    ------------------------------
@@ -1408,9 +1423,27 @@ package body Sem_Ch8 is
    ------------------------------
 
    procedure Analyze_Package_Renaming (N : Node_Id) is
+      GM : constant Ghost_Mode_Type := Ghost_Mode;
+
+      procedure Restore_Globals;
+      --  Restore the values of all saved global variables
+
+      ---------------------
+      -- Restore_Globals --
+      ---------------------
+
+      procedure Restore_Globals is
+      begin
+         Ghost_Mode := GM;
+      end Restore_Globals;
+
+      --  Local variables
+
       New_P : constant Entity_Id := Defining_Entity (N);
       Old_P : Entity_Id;
       Spec  : Node_Id;
+
+   --  Start of processing for Analyze_Package_Renaming
 
    begin
       if Name (N) = Error then
@@ -1486,12 +1519,10 @@ package body Sem_Ch8 is
          Check_Library_Unit_Renaming (N, Old_P);
          Generate_Reference (Old_P, Name (N));
 
-         --  A package renaming is Ghost if the renamed entity is Ghost or
-         --  the construct appears within a Ghost scope.
+         --  The package renaming declaration may become Ghost if it renames a
+         --  Ghost entity.
 
-         if Is_Ghost_Entity (Old_P) or else Ghost_Mode > None then
-            Set_Is_Ghost_Entity (New_P);
-         end if;
+         Mark_Renaming_As_Ghost (N, Old_P);
 
          --  If the renaming is in the visible part of a package, then we set
          --  Renamed_In_Spec for the renamed package, to prevent giving
@@ -1524,6 +1555,7 @@ package body Sem_Ch8 is
          --  subtypes again, so they are compatible with types in their class.
 
          if not Is_Generic_Instance (Old_P) then
+            Restore_Globals;
             return;
          else
             Spec := Specification (Unit_Declaration_Node (Old_P));
@@ -1565,6 +1597,8 @@ package body Sem_Ch8 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, New_P);
       end if;
+
+      Restore_Globals;
    end Analyze_Package_Renaming;
 
    -------------------------------
@@ -2611,6 +2645,7 @@ package body Sem_Ch8 is
       --  defaulted formal subprogram when the actual for a related formal
       --  type is class-wide.
 
+      GM        : constant Ghost_Mode_Type := Ghost_Mode;
       Inst_Node : Node_Id := Empty;
       New_S     : Entity_Id;
 
@@ -3094,12 +3129,10 @@ package body Sem_Ch8 is
          Set_Is_Pure          (New_S, Is_Pure          (Entity (Nam)));
          Set_Is_Preelaborated (New_S, Is_Preelaborated (Entity (Nam)));
 
-         --  A subprogram renaming is Ghost if the renamed entity is Ghost or
-         --  the construct appears within a Ghost scope.
+         --  The subprogram renaming declaration may become Ghost if it renames
+         --  a Ghost entity.
 
-         if Is_Ghost_Entity (Entity (Nam)) or else Ghost_Mode > None then
-            Set_Is_Ghost_Entity (New_S);
-         end if;
+         Mark_Renaming_As_Ghost (N, Entity (Nam));
 
          --  Ada 2005 (AI-423): Check the consistency of null exclusions
          --  between a subprogram and its correct renaming.
@@ -3417,11 +3450,10 @@ package body Sem_Ch8 is
                if Present (F1) and then Present (Default_Value (F1)) then
                   if Present (Next_Formal (F1)) then
                      Error_Msg_NE
-                       ("\missing specification for &" &
-                          " and other formals with defaults", Spec, F1);
+                       ("\missing specification for & and other formals with "
+                        & "defaults", Spec, F1);
                   else
-                     Error_Msg_NE
-                    ("\missing specification for &", Spec, F1);
+                     Error_Msg_NE ("\missing specification for &", Spec, F1);
                   end if;
                end if;
 
@@ -3507,7 +3539,7 @@ package body Sem_Ch8 is
         and then Chars (Current_Scope) /= Chars (Old_S)
       then
          Error_Msg_N
-          ("redundant renaming, entity is directly visible?r?", Name (N));
+           ("redundant renaming, entity is directly visible?r?", Name (N));
       end if;
 
       --  Implementation-defined aspect specifications can appear in a renaming
@@ -3544,6 +3576,11 @@ package body Sem_Ch8 is
             Analyze (N);
          end if;
       end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Analyze_Subprogram_Renaming;
 
    -------------------------

@@ -209,9 +209,10 @@ package body Sem_Ch6 is
    ---------------------------------------------
 
    procedure Analyze_Abstract_Subprogram_Declaration (N : Node_Id) is
-      Designator : constant Entity_Id :=
-                     Analyze_Subprogram_Specification (Specification (N));
-      Scop       : constant Entity_Id := Current_Scope;
+      GM      : constant Ghost_Mode_Type := Ghost_Mode;
+      Scop    : constant Entity_Id := Current_Scope;
+      Subp_Id : constant Entity_Id :=
+                  Analyze_Subprogram_Specification (Specification (N));
 
    begin
       --  The abstract subprogram declaration may be subject to pragma Ghost
@@ -222,45 +223,49 @@ package body Sem_Ch6 is
       Set_Ghost_Mode (N);
       Check_SPARK_05_Restriction ("abstract subprogram is not allowed", N);
 
-      Generate_Definition (Designator);
+      Generate_Definition (Subp_Id);
 
-      Set_Is_Abstract_Subprogram (Designator);
-      New_Overloaded_Entity (Designator);
-      Check_Delayed_Subprogram (Designator);
+      Set_Is_Abstract_Subprogram (Subp_Id);
+      New_Overloaded_Entity (Subp_Id);
+      Check_Delayed_Subprogram (Subp_Id);
 
-      Set_Categorization_From_Scope (Designator, Scop);
+      Set_Categorization_From_Scope (Subp_Id, Scop);
 
       --  An abstract subprogram declared within a Ghost region is rendered
       --  Ghost (SPARK RM 6.9(2)).
 
-      if Comes_From_Source (Designator) and then Ghost_Mode > None then
-         Set_Is_Ghost_Entity (Designator);
+      if Ghost_Mode > None then
+         Set_Is_Ghost_Entity (Subp_Id);
       end if;
 
-      if Ekind (Scope (Designator)) = E_Protected_Type then
-         Error_Msg_N
-           ("abstract subprogram not allowed in protected type", N);
+      if Ekind (Scope (Subp_Id)) = E_Protected_Type then
+         Error_Msg_N ("abstract subprogram not allowed in protected type", N);
 
       --  Issue a warning if the abstract subprogram is neither a dispatching
       --  operation nor an operation that overrides an inherited subprogram or
       --  predefined operator, since this most likely indicates a mistake.
 
       elsif Warn_On_Redundant_Constructs
-        and then not Is_Dispatching_Operation (Designator)
-        and then not Present (Overridden_Operation (Designator))
-        and then (not Is_Operator_Symbol_Name (Chars (Designator))
-                   or else Scop /= Scope (Etype (First_Formal (Designator))))
+        and then not Is_Dispatching_Operation (Subp_Id)
+        and then not Present (Overridden_Operation (Subp_Id))
+        and then (not Is_Operator_Symbol_Name (Chars (Subp_Id))
+                   or else Scop /= Scope (Etype (First_Formal (Subp_Id))))
       then
          Error_Msg_N
            ("abstract subprogram is not dispatching or overriding?r?", N);
       end if;
 
-      Generate_Reference_To_Formals (Designator);
-      Check_Eliminated (Designator);
+      Generate_Reference_To_Formals (Subp_Id);
+      Check_Eliminated (Subp_Id);
 
       if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Designator);
+         Analyze_Aspect_Specifications (N, Subp_Id);
       end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Analyze_Abstract_Subprogram_Declaration;
 
    ---------------------------------
@@ -1542,15 +1547,14 @@ package body Sem_Ch6 is
    ----------------------------
 
    procedure Analyze_Procedure_Call (N : Node_Id) is
-      Loc     : constant Source_Ptr := Sloc (N);
-      P       : constant Node_Id    := Name (N);
-      Actuals : constant List_Id    := Parameter_Associations (N);
-      Actual  : Node_Id;
-      New_N   : Node_Id;
+      GM : constant Ghost_Mode_Type := Ghost_Mode;
 
       procedure Analyze_Call_And_Resolve;
       --  Do Analyze and Resolve calls for procedure call
       --  At end, check illegal order dependence.
+
+      procedure Restore_Globals;
+      --  Restore the values of all saved global variables
 
       ------------------------------
       -- Analyze_Call_And_Resolve --
@@ -1565,6 +1569,23 @@ package body Sem_Ch6 is
             Analyze (N);
          end if;
       end Analyze_Call_And_Resolve;
+
+      ---------------------
+      -- Restore_Globals --
+      ---------------------
+
+      procedure Restore_Globals is
+      begin
+         Ghost_Mode := GM;
+      end Restore_Globals;
+
+      --  Local variables
+
+      Actuals : constant List_Id    := Parameter_Associations (N);
+      Loc     : constant Source_Ptr := Sloc (N);
+      P       : constant Node_Id    := Name (N);
+      Actual  : Node_Id;
+      New_N   : Node_Id;
 
    --  Start of processing for Analyze_Procedure_Call
 
@@ -1636,6 +1657,7 @@ package body Sem_Ch6 is
         and then Is_Record_Type (Etype (Entity (P)))
         and then Remote_AST_I_Dereference (P)
       then
+         Restore_Globals;
          return;
 
       elsif Is_Entity_Name (P)
@@ -1771,6 +1793,8 @@ package body Sem_Ch6 is
       else
          Error_Msg_N ("invalid procedure or entry call", N);
       end if;
+
+      Restore_Globals;
    end Analyze_Procedure_Call;
 
    ------------------------------
@@ -2251,6 +2275,7 @@ package body Sem_Ch6 is
    --  the subprogram, or to perform conformance checks.
 
    procedure Analyze_Subprogram_Body_Helper (N : Node_Id) is
+      GM           : constant Ghost_Mode_Type := Ghost_Mode;
       Loc          : constant Source_Ptr := Sloc (N);
       Body_Spec    : Node_Id             := Specification (N);
       Body_Id      : Entity_Id           := Defining_Entity (Body_Spec);
@@ -2325,6 +2350,9 @@ package body Sem_Ch6 is
         (Subp_Id : Entity_Id) return Boolean;
       --  Determine whether subprogram Subp_Id is a primitive of a concurrent
       --  type that implements an interface and has a private view.
+
+      procedure Restore_Globals;
+      --  Restore the values of all saved global variables
 
       procedure Set_Trivial_Subprogram (N : Node_Id);
       --  Sets the Is_Trivial_Subprogram flag in both spec and body of the
@@ -2902,6 +2930,15 @@ package body Sem_Ch6 is
          return False;
       end Is_Private_Concurrent_Primitive;
 
+      ---------------------
+      -- Restore_Globals --
+      ---------------------
+
+      procedure Restore_Globals is
+      begin
+         Ghost_Mode := GM;
+      end Restore_Globals;
+
       ----------------------------
       -- Set_Trivial_Subprogram --
       ----------------------------
@@ -3044,6 +3081,7 @@ package body Sem_Ch6 is
                Check_Missing_Return;
             end if;
 
+            Restore_Globals;
             return;
 
          else
@@ -3051,6 +3089,7 @@ package body Sem_Ch6 is
             --  enter name will post error.
 
             Enter_Name (Body_Id);
+            Restore_Globals;
             return;
          end if;
 
@@ -3061,6 +3100,7 @@ package body Sem_Ch6 is
       --  analysis.
 
       elsif Prev_Id = Body_Id and then Has_Completion (Body_Id) then
+         Restore_Globals;
          return;
 
       else
@@ -3139,6 +3179,7 @@ package body Sem_Ch6 is
             --  If this is a duplicate body, no point in analyzing it
 
             if Error_Posted (N) then
+               Restore_Globals;
                return;
             end if;
 
@@ -3251,6 +3292,7 @@ package body Sem_Ch6 is
 
          if Is_Abstract_Subprogram (Spec_Id) then
             Error_Msg_N ("an abstract subprogram cannot have a body", N);
+            Restore_Globals;
             return;
 
          else
@@ -3320,6 +3362,7 @@ package body Sem_Ch6 is
             if not Conformant
               and then not Mode_Conformant (Body_Id, Spec_Id)
             then
+               Restore_Globals;
                return;
             end if;
          end if;
@@ -3526,6 +3569,7 @@ package body Sem_Ch6 is
             Analyze_Aspect_Specifications_On_Body_Or_Stub (N);
          end if;
 
+         Restore_Globals;
          return;
       end if;
 
@@ -3989,6 +4033,8 @@ package body Sem_Ch6 is
             Set_Has_Nested_Subprogram (Ent);
          end if;
       end;
+
+      Restore_Globals;
    end Analyze_Subprogram_Body_Helper;
 
    ---------------------------------
@@ -4093,11 +4139,29 @@ package body Sem_Ch6 is
    ------------------------------------
 
    procedure Analyze_Subprogram_Declaration (N : Node_Id) is
+      GM : constant Ghost_Mode_Type := Ghost_Mode;
+
+      procedure Restore_Globals;
+      --  Restore the values of all saved global variables
+
+      ---------------------
+      -- Restore_Globals --
+      ---------------------
+
+      procedure Restore_Globals is
+      begin
+         Ghost_Mode := GM;
+      end Restore_Globals;
+
+      --  Local variables
+
       Scop       : constant Entity_Id := Current_Scope;
       Designator : Entity_Id;
 
       Is_Completion : Boolean;
       --  Indicates whether a null procedure declaration is a completion
+
+   --  Start of processing for Analyze_Subprogram_Declaration
 
    begin
       --  The subprogram declaration may be subject to pragma Ghost with policy
@@ -4124,10 +4188,10 @@ package body Sem_Ch6 is
 
          Analyze_Null_Procedure (N, Is_Completion);
 
+         --  The null procedure acts as a body, nothing further is needed
+
          if Is_Completion then
-
-            --  The null procedure acts as a body, nothing further is needed
-
+            Restore_Globals;
             return;
          end if;
       end if;
@@ -4308,6 +4372,8 @@ package body Sem_Ch6 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Designator);
       end if;
+
+      Restore_Globals;
    end Analyze_Subprogram_Declaration;
 
    --------------------------------------
@@ -9374,6 +9440,12 @@ package body Sem_Ch6 is
 
             Check_Overriding_Indicator
               (S, Overridden_Subp, Is_Primitive => Is_Primitive_Subp);
+
+            --  The Ghost policy in effect at the point of declaration of a
+            --  parent subprogram and an overriding subprogram must match
+            --  (SPARK RM 6.9(17)).
+
+            Check_Ghost_Overriding (S, Overridden_Subp);
          end if;
 
       --  If there is a homonym that is not overloadable, then we have an
@@ -9526,6 +9598,12 @@ package body Sem_Ch6 is
 
                   if Comes_From_Source (E) then
                      Check_Overriding_Indicator (E, S, Is_Primitive => False);
+
+                     --  The Ghost policy in effect at the point of declaration
+                     --  of a parent subprogram and an overriding subprogram
+                     --  must match (SPARK RM 6.9(17)).
+
+                     Check_Ghost_Overriding (E, S);
                   end if;
 
                   return;
@@ -9721,6 +9799,12 @@ package body Sem_Ch6 is
 
                      Check_Overriding_Indicator (S, E, Is_Primitive => True);
 
+                     --  The Ghost policy in effect at the point of declaration
+                     --  of a parent subprogram and an overriding subprogram
+                     --  must match (SPARK RM 6.9(17)).
+
+                     Check_Ghost_Overriding (S, E);
+
                      --  If S is a user-defined subprogram or a null procedure
                      --  expanded to override an inherited null procedure, or a
                      --  predefined dispatching primitive then indicate that E
@@ -9856,6 +9940,12 @@ package body Sem_Ch6 is
          Check_For_Primitive_Subprogram (Is_Primitive_Subp);
          Check_Overriding_Indicator
            (S, Overridden_Subp, Is_Primitive => Is_Primitive_Subp);
+
+         --  The Ghost policy in effect at the point of declaration of a parent
+         --  subprogram and an overriding subprogram must match
+         --  (SPARK RM 6.9(17)).
+
+         Check_Ghost_Overriding (S, Overridden_Subp);
 
          --  Overloading is not allowed in SPARK, except for operators
 

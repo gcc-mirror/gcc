@@ -1884,6 +1884,14 @@ package body Sinfo is
       return Flag2 (N);
    end Is_Generic_Contract_Pragma;
 
+   function Is_Ghost_Pragma
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      return Flag3 (N);
+   end Is_Ghost_Pragma;
+
    function Is_Ignored
       (N : Node_Id) return Boolean is
    begin
@@ -5088,6 +5096,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Pragma);
       Set_Flag2 (N, Val);
    end Set_Is_Generic_Contract_Pragma;
+
+   procedure Set_Is_Ghost_Pragma
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Pragma);
+      Set_Flag3 (N, Val);
+   end Set_Is_Ghost_Pragma;
 
    procedure Set_Is_Ignored
       (N : Node_Id; Val : Boolean := True) is
