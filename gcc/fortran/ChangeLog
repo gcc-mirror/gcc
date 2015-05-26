@@ -1,3 +1,10 @@
+2015-05-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/66082
+	* trans-array.c (gfc_conv_array_parameter): Ensure that all
+	non-variable arrays with allocatable components have the
+	components deallocated after the procedure call.
+
 2015-05-24  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/66257

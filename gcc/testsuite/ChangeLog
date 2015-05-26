@@ -1,3 +1,8 @@
+2015-05-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/66082
+	* gfortran.dg/allocatable_scalar_13.f90: New test
+
 2015-05-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/warn11.adb: New test.
