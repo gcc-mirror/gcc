@@ -1191,11 +1191,11 @@ package body Exp_Ch11 is
 
    procedure Expand_N_Exception_Declaration (N : Node_Id) is
       GM      : constant Ghost_Mode_Type := Ghost_Mode;
-      Id      : constant Entity_Id  := Defining_Identifier (N);
-      Loc     : constant Source_Ptr := Sloc (N);
+      Id      : constant Entity_Id       := Defining_Identifier (N);
+      Loc     : constant Source_Ptr      := Sloc (N);
       Ex_Id   : Entity_Id;
       Flag_Id : Entity_Id;
-      L       : List_Id := New_List;
+      L       : List_Id;
 
       procedure Force_Static_Allocation_Of_Referenced_Objects
         (Aggregate : Node_Id);
@@ -1304,6 +1304,7 @@ package body Exp_Ch11 is
       --  Create the aggregate list for type Standard.Exception_Type:
       --  Handled_By_Other component: False
 
+      L := Empty_List;
       Append_To (L, New_Occurrence_Of (Standard_False, Loc));
 
       --  Lang component: 'A'

@@ -1524,15 +1524,15 @@ package body Sem_Aux is
       N := Parent (Subprogram_Specification (E));
 
       --  If this declaration is not a subprogram body, then it must be a
-      --  subprogram declaration, from which we can retrieve the entity for
-      --  the corresponding subprogram body if any, or an abstract subprogram
-      --  declaration, for which we return Empty.
+      --  subprogram declaration or body stub, from which we can retrieve the
+      --  entity for the corresponding subprogram body if any, or an abstract
+      --  subprogram declaration, for which we return Empty.
 
       case Nkind (N) is
          when N_Subprogram_Body =>
             return E;
 
-         when N_Subprogram_Declaration =>
+         when N_Subprogram_Declaration | N_Subprogram_Body_Stub =>
             return Corresponding_Body (N);
 
          when others =>

@@ -210,8 +210,8 @@ package body Sem_Ch6 is
 
    procedure Analyze_Abstract_Subprogram_Declaration (N : Node_Id) is
       GM      : constant Ghost_Mode_Type := Ghost_Mode;
-      Scop    : constant Entity_Id := Current_Scope;
-      Subp_Id : constant Entity_Id :=
+      Scop    : constant Entity_Id       := Current_Scope;
+      Subp_Id : constant Entity_Id       :=
                   Analyze_Subprogram_Specification (Specification (N));
 
    begin
