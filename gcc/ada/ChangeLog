@@ -1,5 +1,35 @@
 2015-05-26  Robert Dewar  <dewar@adacore.com>
 
+	* aspects.ads, aspects.adb: Add aspect Disable_Controlled.
+	* einfo.ads, einfo.adb (Disable_Controlled): New flag.
+	(Is_Controlled_Active): New function.
+	* exp_ch3.adb (Expand_Freeze_Record_Type): Use
+	Is_Controlled_Active.
+	* exp_util.adb (Needs_Finalization): Finalization not needed
+	if Disable_Controlled set.
+	* freeze.adb (Freeze_Array_Type): Do not set
+	Has_Controlled_Component if the component has Disable_Controlled.
+	(Freeze_Record_Type): ditto.
+	* sem_ch13.adb (Decorate): Minor reformatting.
+	(Analyze_Aspect_Specifications): Implement Disable_Controlled.
+	* sem_ch3.adb (Analyze_Object_Declaration): Handle
+	Disable_Controlled.
+	(Array_Type_Declaration): ditto.
+	(Build_Derived_Private_Type): ditto.
+	(Build_Derived_Type): ditto.
+	(Record_Type_Definition): ditto.
+	* snames.ads-tmpl: Add Name_Disable_Controlled.
+
+2015-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): Use a constant declaration instead
+	of a renaming to capture the return value of a function call.
+	(Expand_Simple_Function_Return): Call Remove_Side_Effects
+	instead of removing side effects manually before the call to
+	_Postconditions.
+
+2015-05-26  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch4.adb (Expand_N_Op_Expon): Deal with problem of wrong
 	order in calling Duplicate_Subexpr.
 	* einfo.ads: Fix documentation of Object/Value size for scalar types.

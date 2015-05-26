@@ -517,6 +517,7 @@ package body Aspects is
     Aspect_Depends                      => Aspect_Depends,
     Aspect_Dimension                    => Aspect_Dimension,
     Aspect_Dimension_System             => Aspect_Dimension_System,
+    Aspect_Disable_Controlled           => Aspect_Disable_Controlled,
     Aspect_Discard_Names                => Aspect_Discard_Names,
     Aspect_Dispatching_Domain           => Aspect_Dispatching_Domain,
     Aspect_Dynamic_Predicate            => Aspect_Predicate,

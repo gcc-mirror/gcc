@@ -6848,12 +6848,16 @@ package body Exp_Util is
       then
          return False;
 
+      --  Never needs finalization if Disable_Controlled set
+
+      elsif Disable_Controlled (T) then
+         return False;
+
       else
          --  Class-wide types are treated as controlled because derivations
          --  from the root type can introduce controlled components.
 
-         return
-           Is_Class_Wide_Type (T)
+         return Is_Class_Wide_Type (T)
              or else Is_Controlled (T)
              or else Has_Controlled_Component (T)
              or else Has_Some_Controlled_Component (T)

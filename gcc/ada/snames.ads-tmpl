@@ -141,6 +141,7 @@ package Snames is
    Name_Default_Component_Value        : constant Name_Id := N + $;
    Name_Dimension                      : constant Name_Id := N + $;
    Name_Dimension_System               : constant Name_Id := N + $;
+   Name_Disable_Controlled             : constant Name_Id := N + $;
    Name_Dynamic_Predicate              : constant Name_Id := N + $;
    Name_Static_Predicate               : constant Name_Id := N + $;
    Name_Synchronization                : constant Name_Id := N + $;

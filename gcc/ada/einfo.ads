@@ -911,6 +911,10 @@ package Einfo is
 --       Designated_Type obtains this full type in the case of access to an
 --       incomplete type.
 
+--    Disable_Controlled (Flag253)
+--      Present in all entities. Set for controlled type (Is_Controlled flag
+--      set) if the aspect Disable_Controlled is active for the type.
+
 --    Discard_Names (Flag88)
 --       Defined in types and exception entities. Set if pragma Discard_Names
 --       applies to the entity. It is also set for declarative regions and
@@ -2336,6 +2340,10 @@ package Einfo is
 --       Defined in all type entities. Indicates that the type is controlled,
 --       i.e. is either a descendant of Ada.Finalization.Controlled or of
 --       Ada.Finalization.Limited_Controlled.
+
+--    Is_Controlled_Active (synth) [base type only]
+--       Defined in all type entities. Set if Is_Controlled is set for the
+--       type, and Disable_Controlled is not set.
 
 --    Is_Controlling_Formal (Flag97)
 --       Defined in all Formal_Kind entities. Marks the controlling parameters
@@ -5413,6 +5421,7 @@ package Einfo is
    --    Linker_Section_Pragma               (Node33)
 
    --    Depends_On_Private                  (Flag14)
+   --    Disable_Controlled                  (Flag253)
    --    Discard_Names                       (Flag88)
    --    Finalize_Storage_Only               (Flag158)  (base type only)
    --    From_Limited_With                   (Flag159)
@@ -5491,6 +5500,7 @@ package Einfo is
    --    Invariant_Procedure                 (synth)
    --    Is_Access_Protected_Subprogram_Type (synth)
    --    Is_Atomic_Or_VFA                    (synth)
+   --    Is_Controlled_Active                (synth)
    --    Predicate_Function                  (synth)
    --    Predicate_Function_M                (synth)
    --    Root_Type                           (synth)
@@ -6724,6 +6734,7 @@ package Einfo is
    function Digits_Value                        (Id : E) return U;
    function Direct_Primitive_Operations         (Id : E) return L;
    function Directly_Designated_Type            (Id : E) return E;
+   function Disable_Controlled                  (Id : E) return B;
    function Discard_Names                       (Id : E) return B;
    function Discriminal                         (Id : E) return E;
    function Discriminal_Link                    (Id : E) return E;
@@ -7206,6 +7217,7 @@ package Einfo is
    function Is_Base_Type                        (Id : E) return B;
    function Is_Boolean_Type                     (Id : E) return B;
    function Is_Constant_Object                  (Id : E) return B;
+   function Is_Controlled_Active                (Id : E) return B;
    function Is_Discriminal                      (Id : E) return B;
    function Is_Dynamic_Scope                    (Id : E) return B;
    function Is_External_State                   (Id : E) return B;
@@ -7380,6 +7392,7 @@ package Einfo is
    procedure Set_Digits_Value                    (Id : E; V : U);
    procedure Set_Direct_Primitive_Operations     (Id : E; V : L);
    procedure Set_Directly_Designated_Type        (Id : E; V : E);
+   procedure Set_Disable_Controlled              (Id : E; V : B := True);
    procedure Set_Discard_Names                   (Id : E; V : B := True);
    procedure Set_Discriminal                     (Id : E; V : E);
    procedure Set_Discriminal_Link                (Id : E; V : E);
@@ -8155,6 +8168,7 @@ package Einfo is
    pragma Inline (Digits_Value);
    pragma Inline (Direct_Primitive_Operations);
    pragma Inline (Directly_Designated_Type);
+   pragma Inline (Disable_Controlled);
    pragma Inline (Discard_Names);
    pragma Inline (Discriminal);
    pragma Inline (Discriminal_Link);
@@ -8658,6 +8672,7 @@ package Einfo is
    pragma Inline (Set_Digits_Value);
    pragma Inline (Set_Direct_Primitive_Operations);
    pragma Inline (Set_Directly_Designated_Type);
+   pragma Inline (Set_Disable_Controlled);
    pragma Inline (Set_Discard_Names);
    pragma Inline (Set_Discriminal);
    pragma Inline (Set_Discriminal_Link);
@@ -9062,6 +9077,7 @@ package Einfo is
 
    pragma Inline (Base_Type);
    pragma Inline (Is_Base_Type);
+   pragma Inline (Is_Controlled_Active);
    pragma Inline (Is_Package_Or_Generic_Package);
    pragma Inline (Is_Packed_Array);
    pragma Inline (Is_Subprogram_Or_Generic_Subprogram);

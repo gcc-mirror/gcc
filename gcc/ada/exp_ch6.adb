@@ -1979,7 +1979,7 @@ package body Exp_Ch6 is
                --  To deal with this, we replace the call by
 
                --    do
-               --       Tnnn : function-result-type renames function-call;
+               --       Tnnn : constant function-result-type := function-call;
                --       Post_Call actions
                --    in
                --       Tnnn;
@@ -1996,10 +1996,11 @@ package body Exp_Ch6 is
 
                begin
                   Prepend_To (Post_Call,
-                    Make_Object_Renaming_Declaration (Loc,
+                    Make_Object_Declaration (Loc,
                       Defining_Identifier => Tnnn,
-                      Subtype_Mark        => New_Occurrence_Of (FRTyp, Loc),
-                      Name                => Name));
+                      Object_Definition   => New_Occurrence_Of (FRTyp, Loc),
+                      Constant_Present    => True,
+                      Expression          => Name));
 
                   Rewrite (N,
                     Make_Expression_With_Actions (Loc,
@@ -6619,111 +6620,23 @@ package body Exp_Ch6 is
       if Ekind (Scope_Id) = E_Function
         and then Present (Postconditions_Proc (Scope_Id))
       then
+         --  In the case of discriminated objects, we have created a
+         --  constrained subtype above, and used the underlying type. This
+         --  transformation is post-analysis and harmless, except that now the
+         --  call to the post-condition will be analyzed and the type kinds
+         --  have to match.
+
+         if Nkind (Exp) = N_Unchecked_Type_Conversion
+           and then Is_Private_Type (R_Type) /= Is_Private_Type (Etype (Exp))
+         then
+            Rewrite (Exp, Expression (Relocate_Node (Exp)));
+         end if;
+
          --  We are going to reference the returned value twice in this case,
          --  once in the call to _Postconditions, and once in the actual return
-         --  statement, but we can't have side effects happening twice, and in
-         --  any case for efficiency we don't want to do the computation twice.
+         --  statement, but we can't have side effects happening twice.
 
-         --  If the returned expression is an entity name, we don't need to
-         --  worry since it is efficient and safe to reference it twice, that's
-         --  also true for literals other than string literals, and for the
-         --  case of X.all where X is an entity name.
-
-         if Is_Entity_Name (Exp)
-           or else Nkind_In (Exp, N_Character_Literal,
-                                  N_Integer_Literal,
-                                  N_Real_Literal)
-           or else (Nkind (Exp) = N_Explicit_Dereference
-                     and then Is_Entity_Name (Prefix (Exp)))
-         then
-            null;
-
-         --  Otherwise we are going to need a temporary to capture the value
-
-         else
-            declare
-               ExpR : Node_Id            := Relocate_Node (Exp);
-               Tnn  : constant Entity_Id := Make_Temporary (Loc, 'T', ExpR);
-
-            begin
-               --  In the case of discriminated objects, we have created a
-               --  constrained subtype above, and used the underlying type.
-               --  This transformation is post-analysis and harmless, except
-               --  that now the call to the post-condition will be analyzed and
-               --  type kinds have to match.
-
-               if Nkind (ExpR) = N_Unchecked_Type_Conversion
-                 and then
-                   Is_Private_Type (R_Type) /= Is_Private_Type (Etype (ExpR))
-               then
-                  ExpR := Expression (ExpR);
-               end if;
-
-               --  For a complex expression of an elementary type, capture
-               --  value in the temporary and use it as the reference.
-
-               if Is_Elementary_Type (R_Type) then
-                  Insert_Action (Exp,
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => Tnn,
-                      Constant_Present    => True,
-                      Object_Definition   => New_Occurrence_Of (R_Type, Loc),
-                      Expression          => ExpR),
-                    Suppress => All_Checks);
-
-                  Rewrite (Exp, New_Occurrence_Of (Tnn, Loc));
-
-               --  If we have something we can rename, generate a renaming of
-               --  the object and replace the expression with a reference
-
-               elsif Is_Object_Reference (Exp) then
-                  Insert_Action (Exp,
-                    Make_Object_Renaming_Declaration (Loc,
-                      Defining_Identifier => Tnn,
-                      Subtype_Mark        => New_Occurrence_Of (R_Type, Loc),
-                      Name                => ExpR),
-                    Suppress => All_Checks);
-
-                  Rewrite (Exp, New_Occurrence_Of (Tnn, Loc));
-
-               --  Otherwise we have something like a string literal or an
-               --  aggregate. We could copy the value, but that would be
-               --  inefficient. Instead we make a reference to the value and
-               --  capture this reference with a renaming, the expression is
-               --  then replaced by a dereference of this renaming.
-
-               else
-                  --  For now, copy the value, since the code below does not
-                  --  seem to work correctly ???
-
-                  Insert_Action (Exp,
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => Tnn,
-                      Constant_Present    => True,
-                      Object_Definition   => New_Occurrence_Of (R_Type, Loc),
-                      Expression          => Relocate_Node (Exp)),
-                    Suppress => All_Checks);
-
-                  Rewrite (Exp, New_Occurrence_Of (Tnn, Loc));
-
-                  --  Insert_Action (Exp,
-                  --    Make_Object_Renaming_Declaration (Loc,
-                  --      Defining_Identifier => Tnn,
-                  --      Access_Definition =>
-                  --        Make_Access_Definition (Loc,
-                  --          All_Present  => True,
-                  --          Subtype_Mark => New_Occurrence_Of (R_Type, Loc)),
-                  --      Name =>
-                  --        Make_Reference (Loc,
-                  --          Prefix => Relocate_Node (Exp))),
-                  --    Suppress => All_Checks);
-
-                  --  Rewrite (Exp,
-                  --    Make_Explicit_Dereference (Loc,
-                  --      Prefix => New_Occurrence_Of (Tnn, Loc)));
-               end if;
-            end;
-         end if;
+         Remove_Side_Effects (Exp);
 
          --  Generate call to _Postconditions
 
@@ -6731,7 +6644,7 @@ package body Exp_Ch6 is
            Make_Procedure_Call_Statement (Loc,
              Name                   =>
                New_Occurrence_Of (Postconditions_Proc (Scope_Id), Loc),
-             Parameter_Associations => New_List (Duplicate_Subexpr (Exp))));
+             Parameter_Associations => New_List (New_Copy_Tree (Exp))));
       end if;
 
       --  Ada 2005 (AI-251): If this return statement corresponds with an
