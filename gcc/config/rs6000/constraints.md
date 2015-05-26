@@ -211,7 +211,7 @@ to use @samp{m} or @samp{es} in @code{asm} statements)"
 (define_memory_constraint "Y"
   "memory operand for 8 byte and 16 byte gpr load/store"
   (and (match_code "mem")
-       (match_operand 0 "mem_operand_gpr")))
+       (match_test "mem_operand_gpr (op, mode)")))
 
 (define_memory_constraint "Z"
   "Memory operand that is an indexed or indirect from a register (it is
@@ -242,7 +242,7 @@ usually better to use @samp{m} or @samp{es} in @code{asm} statements)"
 (define_constraint "U"
   "V.4 small data reference"
   (and (match_test "DEFAULT_ABI == ABI_V4")
-       (match_operand 0 "small_data_operand")))
+       (match_test "small_data_operand (op, mode)")))
 
 (define_constraint "t"
   "AND masks that can be performed by two rldic{l,r} insns

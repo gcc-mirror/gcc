@@ -1,3 +1,7 @@
+2015-05-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/constraints.md (Y, U): Use match_test.
+
 2015-05-26  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/52144
