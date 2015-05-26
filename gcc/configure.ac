@@ -285,6 +285,9 @@ AC_PROG_CC
 AC_PROG_CXX
 ACX_PROG_GNAT([-I"$srcdir"/ada])
 
+# Do configure tests with the C++ compiler, since that's what we build with.
+AC_LANG(C++)
+
 # Remove the -O2: for historical reasons, unless bootstrapping we prefer
 # optimizations to be activated explicitly by the toplevel.
 case "$CC" in
@@ -321,7 +324,6 @@ if test x"$ac_cv_c_uint64_t" = x"no" -o x"$ac_cv_c_int64_t" = x"no"; then
 fi
 
 # check what underlying integer type int64_t uses
-AC_LANG_PUSH(C++)
 AC_CACHE_CHECK(for int64_t underlying type, ac_cv_int64_t_type, [
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #ifdef HAVE_STDINT_H
@@ -344,7 +346,6 @@ template <>
 struct X<long long> { typedef long long t; };
 ]], [[X<int64_t>::t x;]])],[],[AC_MSG_ERROR([error verifying int64_t uses long long])])
 fi
-AC_LANG_POP(C++)
 
 
 
@@ -1050,19 +1051,14 @@ m4_pushdef([AC_MSG_ERROR], m4_defn([AC_MSG_WARN]))[]dnl
 AC_PROG_CXXCPP
 m4_popdef([AC_MSG_ERROR])[]dnl
 
-AC_LANG_PUSH(C++)
-
 AC_CHECK_HEADERS(unordered_map)
 AC_CHECK_HEADERS(tr1/unordered_map)
 AC_CHECK_HEADERS(ext/hash_map)
-
-AC_LANG_POP(C++)
 
 # --------
 # Dependency checking.
 # --------
 
-AC_LANG_PUSH(C++)
 ZW_CREATE_DEPDIR
 AC_CONFIG_COMMANDS([gccdepdir],[
   ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs build/$DEPDIR
@@ -1072,7 +1068,6 @@ AC_CONFIG_COMMANDS([gccdepdir],[
   done], [subdirs="$subdirs" ac_aux_dir=$ac_aux_dir DEPDIR=$DEPDIR])
 
 ZW_PROG_COMPILER_DEPENDENCIES([CXX])
-AC_LANG_POP(C++)
 
 # --------
 # UNSORTED
@@ -1192,11 +1187,7 @@ case "${host}" in
 esac
 AC_FUNC_FORK
 
-# g++ on Solaris 10+ defines _XOPEN_SOURCE=600, which exposes a different
-# iconv() prototype.
-AC_LANG_PUSH([C++])
 AM_ICONV
-AC_LANG_POP([C++])
 
 # Until we have in-tree GNU iconv:
 LIBICONV_DEP=
@@ -1211,11 +1202,22 @@ saved_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -I${srcdir} -I${srcdir}/../include $GMPINC"
 saved_CXXFLAGS="$CXXFLAGS"
 CXXFLAGS="$CXXFLAGS -I${srcdir} -I${srcdir}/../include $GMPINC"
+
+# gcc_AC_CHECK_DECLS doesn't support overloaded functions, so use the
+# normal autoconf function for these.  But force definition of
+# HAVE_DECL_BASENAME like gcc_AC_CHECK_DECLS does, to suppress the bizarre
+# basename handling in libiberty.h.
+AC_CHECK_DECLS([basename(const char*), strstr(const char*,const char*)], , ,[
+#undef HAVE_DECL_BASENAME
+#define HAVE_DECL_BASENAME 1
+#include "ansidecl.h"
+#include "system.h"])
+
 gcc_AC_CHECK_DECLS(getenv atol asprintf sbrk abort atof getcwd getwd \
-	stpcpy strnlen strsignal strstr strverscmp \
+	madvise stpcpy strnlen strsignal strverscmp \
 	strtol strtoul strtoll strtoull \
 	errno snprintf vsnprintf vasprintf malloc realloc calloc \
-	free basename getopt clock getpagesize ffs gcc_UNLOCKED_FUNCS, , ,[
+	free getopt clock getpagesize ffs gcc_UNLOCKED_FUNCS, , ,[
 #include "ansidecl.h"
 #include "system.h"])
 
@@ -1263,15 +1265,6 @@ gcc_AC_CHECK_DECLS(sigaltstack, , ,[
 #include "system.h"
 #include <signal.h>
 ])
-
-# g++ on Solaris 10+ defines _XOPEN_SOURCE=600, which hides the madvise()
-# prototype.
-AC_LANG_PUSH([C++])
-gcc_AC_CHECK_DECLS(madvise, , ,[
-  #include "ansidecl.h"
-  #include "system.h"
-])
-AC_LANG_POP([C++])
 
 # More time-related stuff.
 AC_CACHE_CHECK(for struct tms, ac_cv_struct_tms, [
