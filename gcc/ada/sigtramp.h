@@ -62,7 +62,7 @@ typedef struct ucontext
      system headers so call it something unique.  */
   typedef void __sigtramphandler_t (int signo, void *siginfo, void *sigcontext);
 
-#if CPU == SIMNT || CPU == SIMPENTIUM
+#if CPU == SIMNT || CPU == SIMPENTIUM || CPU == SIMLINUX
   /* Vxsim requires a specially compiled handler.  */
   void __gnat_sigtramp_vxsim  (int signo, void *siginfo, void *sigcontext,
 			 __sigtramphandler_t * handler);

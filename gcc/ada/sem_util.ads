@@ -537,7 +537,7 @@ package Sem_Util is
    --  or indirectly (through a subunit) at the root of a subtree containing
    --  N. This may be either the same as Enclosing_Comp_Unit_Node, or if
    --  Enclosing_Comp_Unit_Node returns a subunit, then the corresponding
-   --  library unit.
+   --  library unit. If no such item is found, returns Empty???
 
    function Enclosing_CPP_Parent (Typ : Entity_Id) return Entity_Id;
    --  Returns the closest ancestor of Typ that is a CPP type.

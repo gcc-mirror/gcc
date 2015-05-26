@@ -481,6 +481,7 @@ package body Sem_Aux is
       if Ekind (E) = E_String_Literal_Subtype then
          return String_Literal_Low_Bound (E);
       else
+         --  Why is this not Type_Low_Bound (E)???
          return Low_Bound (Scalar_Range (E));
       end if;
    end Get_Low_Bound;
