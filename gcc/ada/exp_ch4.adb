@@ -7779,6 +7779,9 @@ package body Exp_Ch4 is
                TestS : Boolean;
                --  Set True if we must test the shift count
 
+               Test_Gt : Node_Id;
+               --  Node for test against TestS
+
             begin
                --  Compute maximum shift based on the underlying size. For a
                --  modular type this is one less than the size.
@@ -7841,15 +7844,21 @@ package body Exp_Ch4 is
                   --  zero if this shift count is exceeded.
 
                   if TestS then
+
+                     --  Note: build node for the comparison first, before we
+                     --  reuse the Right_Opnd, so that we have proper parents
+                     --  in place for the Duplicate_Subexpr call.
+
+                     Test_Gt :=
+                       Make_Op_Gt (Loc,
+                         Left_Opnd  => Duplicate_Subexpr (Right_Opnd (N)),
+                         Right_Opnd => Make_Integer_Literal (Loc, MaxS));
+
                      Rewrite (N,
                        Make_If_Expression (Loc,
                          Expressions => New_List (
-                           Make_Op_Gt (Loc,
-                             Left_Opnd  => Duplicate_Subexpr (Right_Opnd (N)),
-                             Right_Opnd => Make_Integer_Literal (Loc, MaxS)),
-
+                           Test_Gt,
                            Make_Integer_Literal (Loc, Uint_0),
-
                            Make_Op_Shift_Left (Loc,
                              Left_Opnd  => Make_Integer_Literal (Loc, Uint_1),
                              Right_Opnd => Right_Opnd (N)))));
