@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -33,17 +33,21 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version of Ada.Exceptions is a full Ada 95 version. It omits Ada 2005
---  features such as the additional definitions of Exception_Name returning
---  Wide_[Wide_]String. It differs from the Ada 95 version only in that it is
---  declared Preelaborate (see declaration below for why this is done).
-
---  It is used for building the compiler and the basic tools, since these
---  builds may be done with bootstrap compilers that cannot handle these
---  additions. The full version of Ada.Exceptions can be found in the files
+--  This version of Ada.Exceptions is used only for building the compiler
+--  and certain basic tools. The "real" version of Ada.Exceptions is in
 --  a-except-2005.ads/adb, and is used for all other builds where full Ada
---  2005 functionality is required. In particular, it is used for building
---  run times on all targets.
+--  functionality is required. In particular, it is used for building run
+--  times on all targets.
+
+--  This version is limited to Ada 95 features. It omits Ada 2005 features
+--  such as the additional definitions of Exception_Name returning
+--  Wide_[Wide_]String. It differs from the version specified in the Ada 95 RM
+--  only in that it is declared Preelaborate (see declaration below for why
+--  this is done).
+
+--  The reason for this splitting off of a separate version is to support
+--  older bootstrap compilers that do not support Ada 2005 features, and
+--  Ada.Exceptions is part of the compiler sources.
 
 pragma Compiler_Unit_Warning;
 

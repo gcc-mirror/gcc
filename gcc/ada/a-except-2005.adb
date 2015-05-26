@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,14 +28,6 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
-
---  This version of Ada.Exceptions fully supports both Ada 95 and Ada 2005.
---  It is used in all situations except for the build of the compiler and
---  other basic tools. For these latter builds, we use an Ada 95-only version.
-
---  The reason for this splitting off of a separate version is that bootstrap
---  compilers often will be used that do not support Ada 2005 features, and
---  Ada.Exceptions is part of the compiler sources.
 
 pragma Style_Checks (All_Checks);
 --  No subprogram ordering check, due to logical grouping
@@ -152,7 +144,7 @@ package body Ada.Exceptions is
       --
       --    Exception_Name: <exception name> (as in Exception_Name)
       --    Message: <message> (only if Exception_Message is empty)
-      --    PID=nnnn (only if != 0)
+      --    PID=nnnn (only if nonzero)
       --    Call stack traceback locations:  (only if at least one location)
       --    <0xyyyyyyyy 0xyyyyyyyy ...>      (is recorded)
       --

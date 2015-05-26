@@ -57,6 +57,10 @@ package body Sinfo is
    -- Field Access Functions --
    ----------------------------
 
+   --  Note: The use of Assert (False or else ...) is just a device to allow
+   --  uniform format of the conditions following this. Note that csinfo
+   --  expects this uniform format.
+
    function ABE_Is_Certain
       (N : Node_Id) return Boolean is
    begin

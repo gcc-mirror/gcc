@@ -2120,8 +2120,8 @@ package body Sem_Util is
                then
                   return Skip;
 
-               --  For rewriten nodes we continue the traversal in the original
-               --  subtree. Needed to handle in aggregates original expressions
+               --  For rewritten nodes, continue the traversal in the original
+               --  subtree. Needed to handle aggregates in original expressions
                --  extracted from the tree by Remove_Side_Effects.
 
                elsif Is_Rewrite_Substitution (N) then
@@ -2610,9 +2610,9 @@ package body Sem_Util is
                      end if;
                   end;
 
-               --  For an array aggregate a discrete_choice_list that has a
-               --  nonstatic range, is considered as two or more separate
-               --  occurrences of the expression (RM 6.20/3)
+               --  For an array aggregate, a discrete_choice_list that has
+               --  a nonstatic range is considered as two or more separate
+               --  occurrences of the expression (RM 6.4.1(20/3)).
 
                elsif Is_Array_Type (Etype (N))
                  and then Nkind (N) = N_Aggregate
@@ -2653,10 +2653,8 @@ package body Sem_Util is
                                  end if;
                               end if;
 
-                           --  For the purposes of this check it is enough to
-                           --  consider that we cover a single component since
-                           --  since the RM rule is violated as far as I find
-                           --  more than one component.
+                           --  The RM rule is violated if there is more than
+                           --  a single choice in a component association.
 
                            else
                               Count_Components := Count_Components + 1;
