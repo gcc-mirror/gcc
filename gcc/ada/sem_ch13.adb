@@ -8494,13 +8494,6 @@ package body Sem_Ch13 is
 
                if Present (Asp) then
 
-                  --  For ASIS use, perform semantic analysis of the original
-                  --  predicate expression, which is otherwise not utilized.
-
-                  if ASIS_Mode then
-                     Preanalyze_And_Resolve (Expression (Asp));
-                  end if;
-
                   Set_Entity (Identifier (Asp), New_Copy_Tree (Arg2));
                end if;
 

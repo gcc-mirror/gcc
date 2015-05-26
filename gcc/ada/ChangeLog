@@ -1,3 +1,16 @@
+2015-05-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb: sem_ch13.adb (Add_Predicates): Undo analysis
+	of original expression in ASIS mode: does not solve the ASIS
+	problem of a usable type information, and crashes the back-end
+	when performing type annotations.
+
+2015-05-26  Robert Dewar  <dewar@adacore.com>
+
+	* sem_disp.adb (Inherited_Subprograms): Add One_Only parameter.
+	(Is_Overriding_Subprogram): Use One_Only_Parameter.
+	* sem_disp.ads (Inherited_Subprograms): Add One_Only parameter.
+
 2015-05-26  Robert Dewar  <dewar@adacore.com>
 
 	* exp_prag.adb, sem_ch3.adb, sem_ch5.adb, exp_ch11.adb, ghost.adb,
