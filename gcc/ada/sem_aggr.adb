@@ -1161,9 +1161,7 @@ package body Sem_Aggr is
          Set_Analyzed (N);
       end if;
 
-      if Check_Actuals (N) then
-         Check_Function_Writable_Actuals (N);
-      end if;
+      Check_Function_Writable_Actuals (N);
    end Resolve_Aggregate;
 
    -----------------------------
@@ -2906,9 +2904,7 @@ package body Sem_Aggr is
          Error_Msg_N ("no unique type for this aggregate",  A);
       end if;
 
-      if Check_Actuals (N) then
-         Check_Function_Writable_Actuals (N);
-      end if;
+      Check_Function_Writable_Actuals (N);
    end Resolve_Extension_Aggregate;
 
    ------------------------------

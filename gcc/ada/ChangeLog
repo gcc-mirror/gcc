@@ -1,3 +1,33 @@
+2015-05-26  Javier Miranda  <miranda@adacore.com>
+
+	* sem_aggr.adb (Resolve_Aggregate, Resolve_Extension_Aggregate):
+	Code cleanup.
+	* sem_ch3.adb (Build_Derived_Record_Type,
+	Record_Type_Declaration): Code cleanup.
+	* sem_ch4.adb (Has_Arbitrary_Evaluation_Order,
+	Stop_Subtree_Climbind): Tables which speed up the identification
+	of dangerous calls to Ada 2012 functions with writable actuals
+	(AI05-0144).
+	(Analyze_Arithmetic_Op, Analyze_Call, Analyze_Comparison_Op,
+	Analyze_Equality_Op, Analyze_Logical_Op, Analyze_Membership_Op,
+	Analyze_Range): Code cleanup.
+	(Is_Arbitrary_Evaluation_Order_Construct): Removed.
+	(Check_Writable_Actuals): Code cleanup using the added tables.
+	* sem_util.adb (Check_Function_Writable_Actuals): Return
+	immediately if the node does not have the flag Check_Actuals
+	set to True.
+
+2015-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Add_Call_By_Copy_Code): Remove restrictive
+	condition in the detection of the effects of Remove_Side_Effects.
+	* exp_util.ads (Remove_Side_Effects): Add general and historical note.
+	* exp_util.adb (Is_Name_Reference): New predicate.
+	(Remove_Side_Effects): Use it in lieu of Is_Object_Reference
+	in order to decide whether to use the renaming to capture the
+	side effects of the subexpression.
+	(Side_Effect_Free): Remove obsolete test.
+
 2015-05-26  Robert Dewar  <dewar@adacore.com>
 
 	* aspects.ads, aspects.adb: Add aspect Disable_Controlled.

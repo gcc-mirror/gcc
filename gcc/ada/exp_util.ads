@@ -872,8 +872,8 @@ package Exp_Util is
    --  call and is analyzed and resolved on return. Name_Req may only be set to
    --  True if Exp has the form of a name, and the effect is to guarantee that
    --  any replacement maintains the form of name. If Renaming_Req is set to
-   --  TRUE, the routine produces an object renaming reclaration capturing the
-   --  expression. If Variable_Ref is set to TRUE, a variable is considered as
+   --  True, the routine produces an object renaming reclaration capturing the
+   --  expression. If Variable_Ref is set to True, a variable is considered as
    --  side effect (used in implementing Force_Evaluation). Note: after call to
    --  Remove_Side_Effects, it is safe to call New_Copy_Tree to obtain a copy
    --  of the resulting expression.
@@ -885,6 +885,26 @@ package Exp_Util is
    --  Chars (Related_Id)_FIRST/_LAST. If Related_Id is set, then exactly one
    --  of the Is_xxx_Bound flags must be set. For use of these parameters see
    --  the warning in the body of Sem_Ch3.Process_Range_Expr_In_Decl.
+   --
+   --  The side effects are captured using one of the following methods:
+   --
+   --    1) a constant initialized with the value of the subexpression
+   --    2) a renaming of the subexpression
+   --    3) a reference to the subexpression
+   --
+   --  For elementary types, methods 1) and 2) are used; for composite types,
+   --  methods 2) and 3) are used. The renaming (method 2) is used only when
+   --  the subexpression denotes a name, so that it can be elaborated by gigi
+   --  without evaluating the subexpression.
+   --
+   --  Historical note: the reference (method 3) used to be the common fallback
+   --  method but it gives rise to aliasing issues if the subexpression denotes
+   --  a name that is not aliased, since it is equivalent to taking the address
+   --  in this case. The renaming (method 2) used to be applied to any objects
+   --  in the RM sense, that is to say to the cases where a renaming is legal
+   --  in Ada. But for some of these cases, most notably functions calls, the
+   --  renaming cannot be elaborated without evaluating the subexpression, so
+   --  gigi would resort to method 1) or 3) under the hood for them.
 
    function Represented_As_Scalar (T : Entity_Id) return Boolean;
    --  Returns True iff the implementation of this type in code generation
