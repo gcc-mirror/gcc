@@ -9183,23 +9183,10 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 			    fold_convert_loc (loc, newtype, targ0),
 			    fold_convert_loc (loc, newtype, targ1));
 
-      /* (-a) CMP (-b) -> b CMP a  */
-      if (TREE_CODE (arg0) == NEGATE_EXPR
-	  && TREE_CODE (arg1) == NEGATE_EXPR)
-	return fold_build2_loc (loc, code, type, TREE_OPERAND (arg1, 0),
-			    TREE_OPERAND (arg0, 0));
-
       if (TREE_CODE (arg1) == REAL_CST)
 	{
 	  REAL_VALUE_TYPE cst;
 	  cst = TREE_REAL_CST (arg1);
-
-	  /* (-a) CMP CST -> a swap(CMP) (-CST)  */
-	  if (TREE_CODE (arg0) == NEGATE_EXPR)
-	    return fold_build2_loc (loc, swap_tree_comparison (code), type,
-				TREE_OPERAND (arg0, 0),
-				build_real (TREE_TYPE (arg1),
-					    real_value_negate (&cst)));
 
 	  /* IEEE doesn't distinguish +0 and -0 in comparisons.  */
 	  /* a CMP (-0) -> a CMP 0  */

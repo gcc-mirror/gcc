@@ -1,3 +1,9 @@
+2015-05-26  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd (swapped_tcc_comparison): New operator list.
+	(-A CMP -B): New simplification.
+	* fold-const.c (fold_comparison): Remove corresponding code.
+
 2015-05-26  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* caller-save.c (init_caller_save): Base temporary register numbers
