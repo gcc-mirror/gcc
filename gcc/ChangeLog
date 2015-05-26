@@ -1,3 +1,9 @@
+2015-05-26  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.c (fold_binary_loc): Move X % -Y -> X % Y and
+	X % C -> X & (C - 1) for C being a power-of two to ...
+	* match.pd: ... patterns.
+
 2015-05-26  Marc Glisse  <marc.glisse@inria.fr>
 
 	* match.pd (swapped_tcc_comparison): New operator list.

@@ -230,6 +230,30 @@ along with GCC; see the file COPYING3.  If not see
        && !sign_bit_p (@1, @1))
    (trunc_mod @0 (negate @1))))
 
+/* X % -Y is the same as X % Y.  */
+(simplify
+ (trunc_mod @0 (convert? (negate @1)))
+ (if (!TYPE_UNSIGNED (type)
+      && !TYPE_OVERFLOW_TRAPS (type)
+      && tree_nop_conversion_p (type, TREE_TYPE (@1)))
+  (trunc_mod @0 (convert @1))))
+
+/* Optimize TRUNC_MOD_EXPR by a power of two into a BIT_AND_EXPR,
+   i.e. "X % C" into "X & (C - 1)", if X and C are positive.
+   Also optimize A % (C << N)  where C is a power of 2,
+   to A & ((C << N) - 1).  */
+(match (power_of_two_cand @1)
+ INTEGER_CST@1)
+(match (power_of_two_cand @1)
+ (lshift INTEGER_CST@1 @2))
+(for mod (trunc_mod floor_mod)
+ (simplify
+  (mod @0 (power_of_two_cand@1 @2))
+  (if ((TYPE_UNSIGNED (type)
+	|| tree_expr_nonnegative_p (@0))
+	&& integer_pow2p (@2) && tree_int_cst_sgn (@2) > 0)
+   (bit_and @0 (minus @1 { build_int_cst (TREE_TYPE (@1), 1); })))))
+
 /* X % Y is smaller than Y.  */
 (for cmp (lt ge)
  (simplify
