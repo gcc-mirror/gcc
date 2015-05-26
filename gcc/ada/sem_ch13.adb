@@ -8045,13 +8045,10 @@ package body Sem_Ch13 is
                   end;
                end if;
 
-               --  Get name to be used for Check pragma
+               --  Get name to be used for Check pragma. Using the original
+               --  name ensures that 'Class case is properly handled.
 
-               if not From_Aspect_Specification (Ritem) then
-                  Nam := Name_Invariant;
-               else
-                  Nam := Chars (Identifier (Corresponding_Aspect (Ritem)));
-               end if;
+               Nam := Original_Aspect_Pragma_Name (Ritem);
 
                --  Build first two arguments for Check pragma
 
