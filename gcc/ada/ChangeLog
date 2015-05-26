@@ -1,5 +1,10 @@
 2015-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Min/Attr_Max>: Do not
+	bother about NaN's if Machine_Overflows is true.
+
+2015-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_to_gnu) <N_Object_Declaration>: Really
 	force evaluation of the expression, if any, when the object has its
 	elaboration delayed.  Do not create a variable at global level.
