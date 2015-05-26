@@ -14722,7 +14722,11 @@ label:
        || REGNO (operands[2]) == REGNO (operands[5]))"
   [(const_int 0)]
 {
-  sh_check_add_incdec_notes (emit_move_insn (operands[2], operands[3]));
+  if (REGNO (operands[1]) == REGNO (operands[2]))
+      operands[2] = gen_rtx_REG (SImode, REGNO (operands[0]));
+
+  sh_check_add_incdec_notes (emit_insn (gen_rtx_SET (operands[2],
+						     operands[3])));
   emit_insn (gen_tstsi_t (operands[2],
 			  gen_rtx_REG (SImode, (REGNO (operands[1])))));
 })
@@ -14749,7 +14753,8 @@ label:
        || REGNO (operands[2]) == REGNO (operands[5]))"
   [(const_int 0)]
 {
-  sh_check_add_incdec_notes (emit_move_insn (operands[2], operands[3]));
+  sh_check_add_incdec_notes (emit_insn (gen_rtx_SET (operands[2],
+						     operands[3])));
   emit_insn (gen_tstsi_t (operands[2],
 			  gen_rtx_REG (SImode, (REGNO (operands[1])))));
 })
