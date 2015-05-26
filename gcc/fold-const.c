@@ -11941,15 +11941,6 @@ fold_binary_loc (location_t loc,
     case FLOOR_MOD_EXPR:
     case ROUND_MOD_EXPR:
     case TRUNC_MOD_EXPR:
-      /* X % -Y is the same as X % Y.  */
-      if (code == TRUNC_MOD_EXPR
-	  && !TYPE_UNSIGNED (type)
-	  && TREE_CODE (arg1) == NEGATE_EXPR
-	  && !TYPE_OVERFLOW_TRAPS (type))
-	return fold_build2_loc (loc, code, type, fold_convert_loc (loc, type, arg0),
-			    fold_convert_loc (loc, type,
-					      TREE_OPERAND (arg1, 0)));
-
       strict_overflow_p = false;
       if (TREE_CODE (arg1) == INTEGER_CST
 	  && 0 != (tem = extract_muldiv (op0, arg1, code, NULL_TREE,
@@ -11960,34 +11951,6 @@ fold_binary_loc (location_t loc,
 				    "when simplifying modulus"),
 				   WARN_STRICT_OVERFLOW_MISC);
 	  return fold_convert_loc (loc, type, tem);
-	}
-
-      /* Optimize TRUNC_MOD_EXPR by a power of two into a BIT_AND_EXPR,
-         i.e. "X % C" into "X & (C - 1)", if X and C are positive.  */
-      if ((code == TRUNC_MOD_EXPR || code == FLOOR_MOD_EXPR)
-	  && (TYPE_UNSIGNED (type)
-	      || tree_expr_nonnegative_warnv_p (op0, &strict_overflow_p)))
-	{
-	  tree c = arg1;
-	  /* Also optimize A % (C << N)  where C is a power of 2,
-	     to A & ((C << N) - 1).  */
-	  if (TREE_CODE (arg1) == LSHIFT_EXPR)
-	    c = TREE_OPERAND (arg1, 0);
-
-	  if (integer_pow2p (c) && tree_int_cst_sgn (c) > 0)
-	    {
-	      tree mask
-		= fold_build2_loc (loc, MINUS_EXPR, TREE_TYPE (arg1), arg1,
-				   build_int_cst (TREE_TYPE (arg1), 1));
-	      if (strict_overflow_p)
-		fold_overflow_warning (("assuming signed overflow does not "
-					"occur when simplifying "
-					"X % (power of two)"),
-				       WARN_STRICT_OVERFLOW_MISC);
-	      return fold_build2_loc (loc, BIT_AND_EXPR, type,
-				      fold_convert_loc (loc, type, arg0),
-				      fold_convert_loc (loc, type, mask));
-	    }
 	}
 
       return NULL_TREE;
