@@ -5683,7 +5683,6 @@ package body Sem_Util is
 
    begin
       Encl_Unit := Enclosing_Comp_Unit_Node (N);
-
       while Present (Encl_Unit)
         and then Nkind (Unit (Encl_Unit)) = N_Subunit
       loop

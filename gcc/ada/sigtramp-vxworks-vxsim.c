@@ -34,12 +34,7 @@
  ********************************************************/
 
 #undef CPU
-
-#ifndef __RTP__
-#define CPU SIMNT
-#else
-#define CPU SIMPENTIUM
-#endif
+#define CPU __VXSIM_CPU__
 
 #include "sigtramp.h"
 /* See sigtramp.h for a general explanation of functionality.  */

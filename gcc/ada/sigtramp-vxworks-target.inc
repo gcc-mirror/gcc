@@ -314,7 +314,7 @@ TCR("ldmfd	sp, {r"S(CFA_REG)", fp, sp, pc}")
 
 #elif defined (i386)
 
-#if CPU == SIMNT || CPU == SIMPENTIUM
+#if CPU == SIMNT || CPU == SIMPENTIUM || CPU == SIMLINUX
 #define COMMON_CFI(REG) \
   ".cfi_offset " S(REGNO_##REG) "," S(REG_SET_##REG)
 #else

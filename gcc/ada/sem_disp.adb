@@ -2243,6 +2243,9 @@ package body Sem_Disp is
    -- Is_Overriding_Subprogram --
    ------------------------------
 
+   --  Seems inefficient, build a whole list of subprograms to see if it
+   --  is non-empty???
+
    function Is_Overriding_Subprogram (E : Entity_Id) return Boolean is
       Inherited : constant Subprogram_List := Inherited_Subprograms (E);
    begin

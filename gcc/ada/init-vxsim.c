@@ -34,12 +34,7 @@
    structure is different for vxsim vs. real hardware.  */
 
 #undef CPU
-
-#ifndef __RTP__
-#define CPU SIMNT
-#else
-#define CPU SIMPENTIUM
-#endif
+#define CPU __VXSIM_CPU__
 
 #include "vxWorks.h"
 #include "tconfig.h"
