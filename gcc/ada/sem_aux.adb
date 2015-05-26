@@ -472,6 +472,19 @@ package body Sem_Aux is
       end case;
    end Get_Binary_Nkind;
 
+   -------------------
+   -- Get_Low_Bound --
+   -------------------
+
+   function Get_Low_Bound (E : Entity_Id) return Node_Id is
+   begin
+      if Ekind (E) = E_String_Literal_Subtype then
+         return String_Literal_Low_Bound (E);
+      else
+         return Low_Bound (Scalar_Range (E));
+      end if;
+   end Get_Low_Bound;
+
    ------------------
    -- Get_Rep_Item --
    ------------------
@@ -1361,6 +1374,35 @@ package body Sem_Aux is
       return Empty;
    end Next_Tag_Component;
 
+   -----------------------
+   -- Number_Components --
+   -----------------------
+
+   function Number_Components (Typ : Entity_Id) return Pos is
+      N    : Int;
+      Comp : Entity_Id;
+
+   begin
+      N := 0;
+
+      --  We do not call Einfo.First_Component_Or_Discriminant, as this
+      --  function does not skip completely hidden discriminants, which we
+      --  want to skip here.
+
+      if Has_Discriminants (Typ) then
+         Comp := First_Discriminant (Typ);
+      else
+         Comp := First_Component (Typ);
+      end if;
+
+      while Present (Comp) loop
+         N := N + 1;
+         Comp := Next_Component_Or_Discriminant (Comp);
+      end loop;
+
+      return N;
+   end Number_Components;
+
    --------------------------
    -- Number_Discriminants --
    --------------------------
@@ -1418,6 +1460,97 @@ package body Sem_Aux is
 
       return N;
    end Package_Specification;
+
+   ---------------------
+   -- Subprogram_Body --
+   ---------------------
+
+   function Subprogram_Body (E : Entity_Id) return Node_Id is
+      Body_E : constant Entity_Id := Subprogram_Body_Entity (E);
+
+   begin
+      if No (Body_E) then
+         return Empty;
+      else
+         return Parent (Subprogram_Specification (Body_E));
+      end if;
+   end Subprogram_Body;
+
+   ----------------------------
+   -- Subprogram_Body_Entity --
+   ----------------------------
+
+   function Subprogram_Body_Entity (E : Entity_Id) return Entity_Id is
+      N : Node_Id;
+
+   begin
+      --  Retrieve the declaration for E
+
+      N := Parent (Subprogram_Specification (E));
+
+      --  If this declaration is not a subprogram body, then it must be a
+      --  subprogram declaration, from which we can retrieve the entity for
+      --  the corresponding subprogram body if any.
+
+      if Nkind (N) = N_Subprogram_Body then
+         return E;
+      else
+         return Corresponding_Body (N);
+      end if;
+   end Subprogram_Body_Entity;
+
+   ---------------------
+   -- Subprogram_Spec --
+   ---------------------
+
+   function Subprogram_Spec (E : Entity_Id) return Node_Id is
+      N : Node_Id;
+
+   begin
+      --  Retrieve the declaration for E
+
+      N := Parent (Subprogram_Specification (E));
+
+      --  This declaration is either subprogram declaration or a subprogram
+      --  body, in which case return Empty.
+
+      if Nkind (N) = N_Subprogram_Declaration then
+         return N;
+      else
+         return Empty;
+      end if;
+   end Subprogram_Spec;
+
+   ------------------------------
+   -- Subprogram_Specification --
+   ------------------------------
+
+   function Subprogram_Specification (E : Entity_Id) return Node_Id is
+      N : Node_Id;
+
+   begin
+      N := Parent (E);
+
+      if Nkind (N) = N_Defining_Program_Unit_Name then
+         N := Parent (N);
+      end if;
+
+      --  If the Parent pointer of E is not a subprogram specification node
+      --  (going through an intermediate N_Defining_Program_Unit_Name node
+      --  for subprogram units), then E is an inherited operation. Its parent
+      --  points to the type derivation that produces the inheritance: that's
+      --  the node that generates the subprogram specification. Its alias
+      --  is the parent subprogram, and that one points to a subprogram
+      --  declaration, or to another type declaration if this is a hierarchy
+      --  of derivations.
+
+      if Nkind (N) not in N_Subprogram_Specification then
+         pragma Assert (Present (Alias (E)));
+         N := Subprogram_Specification (Alias (E));
+      end if;
+
+      return N;
+   end Subprogram_Specification;
 
    ---------------
    -- Tree_Read --

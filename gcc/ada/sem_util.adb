@@ -5674,6 +5674,25 @@ package body Sem_Util is
       end if;
    end Enclosing_Comp_Unit_Node;
 
+   -----------------------------
+   -- Enclosing_Lib_Unit_Node --
+   -----------------------------
+
+   function Enclosing_Lib_Unit_Node (N : Node_Id) return Node_Id is
+      Encl_Unit : Node_Id;
+
+   begin
+      Encl_Unit := Enclosing_Comp_Unit_Node (N);
+
+      while Present (Encl_Unit)
+        and then Nkind (Unit (Encl_Unit)) = N_Subunit
+      loop
+         Encl_Unit := Library_Unit (Encl_Unit);
+      end loop;
+
+      return Encl_Unit;
+   end Enclosing_Lib_Unit_Node;
+
    --------------------------
    -- Enclosing_CPP_Parent --
    --------------------------
@@ -7417,6 +7436,11 @@ package body Sem_Util is
       return Cursor;
    end Get_Cursor_Type;
 
+   function Get_Cursor_Type (Typ : Entity_Id) return Entity_Id is
+   begin
+      return Etype (Get_Iterable_Type_Primitive (Typ, Name_First));
+   end Get_Cursor_Type;
+
    -------------------------------
    -- Get_Default_External_Name --
    -------------------------------
@@ -7771,34 +7795,24 @@ package body Sem_Util is
       return R;
    end Get_Renamed_Entity;
 
-   -------------------------
-   -- Get_Subprogram_Body --
-   -------------------------
+   -----------------------
+   -- Get_Return_Object --
+   -----------------------
 
-   function Get_Subprogram_Body (E : Entity_Id) return Node_Id is
+   function Get_Return_Object (N : Node_Id) return Entity_Id is
       Decl : Node_Id;
 
    begin
-      Decl := Unit_Declaration_Node (E);
+      Decl := First (Return_Object_Declarations (N));
+      while Present (Decl) loop
+         exit when Nkind (Decl) = N_Object_Declaration
+           and then Is_Return_Object (Defining_Identifier (Decl));
+         Next (Decl);
+      end loop;
 
-      if Nkind (Decl) = N_Subprogram_Body then
-         return Decl;
-
-      --  The below comment is bad, because it is possible for
-      --  Nkind (Decl) to be an N_Subprogram_Body_Stub ???
-
-      else           --  Nkind (Decl) = N_Subprogram_Declaration
-
-         if Present (Corresponding_Body (Decl)) then
-            return Unit_Declaration_Node (Corresponding_Body (Decl));
-
-         --  Imported subprogram case
-
-         else
-            return Empty;
-         end if;
-      end if;
-   end Get_Subprogram_Body;
+      pragma Assert (Present (Decl));
+      return Defining_Identifier (Decl);
+   end Get_Return_Object;
 
    ---------------------------
    -- Get_Subprogram_Entity --
@@ -7877,6 +7891,33 @@ package body Sem_Util is
 
       return Task_Body_Procedure (Underlying_Type (Root_Type (E)));
    end Get_Task_Body_Procedure;
+
+   -------------------------
+   -- Get_User_Defined_Eq --
+   -------------------------
+
+   function Get_User_Defined_Eq (E : Entity_Id) return Entity_Id is
+      Prim : Elmt_Id;
+      Op   : Entity_Id;
+
+   begin
+      Prim := First_Elmt (Collect_Primitive_Operations (E));
+      while Present (Prim) loop
+         Op := Node (Prim);
+
+         if Chars (Op) = Name_Op_Eq
+           and then Etype (Op) = Standard_Boolean
+           and then Etype (First_Formal (Op)) = E
+           and then Etype (Next_Formal (First_Formal (Op))) = E
+         then
+            return Op;
+         end if;
+
+         Next_Elmt (Prim);
+      end loop;
+
+      return Empty;
+   end Get_User_Defined_Eq;
 
    -----------------------
    -- Has_Access_Values --
@@ -11242,6 +11283,20 @@ package body Sem_Util is
       end if;
    end Is_Descendent_Of;
 
+   ---------------------------------------------
+   -- Is_Double_Precision_Floating_Point_Type --
+   ---------------------------------------------
+
+   function Is_Double_Precision_Floating_Point_Type
+     (E : Entity_Id) return Boolean is
+   begin
+      return Is_Floating_Point_Type (E)
+        and then Machine_Radix_Value (E) = Uint_2
+        and then Machine_Mantissa_Value (E) = UI_From_Int (53)
+        and then Machine_Emax_Value (E) = Uint_2 ** Uint_10
+        and then Machine_Emin_Value (E) = Uint_3 - (Uint_2 ** Uint_10);
+   end Is_Double_Precision_Floating_Point_Type;
+
    -----------------------------
    -- Is_Effectively_Volatile --
    -----------------------------
@@ -12702,6 +12757,20 @@ package body Sem_Util is
          end;
       end if;
    end Is_Selector_Name;
+
+   ---------------------------------------------
+   -- Is_Single_Precision_Floating_Point_Type --
+   ---------------------------------------------
+
+   function Is_Single_Precision_Floating_Point_Type
+     (E : Entity_Id) return Boolean is
+   begin
+      return Is_Floating_Point_Type (E)
+        and then Machine_Radix_Value (E) = Uint_2
+        and then Machine_Mantissa_Value (E) = Uint_24
+        and then Machine_Emax_Value (E) = Uint_2 ** Uint_7
+        and then Machine_Emin_Value (E) = Uint_3 - (Uint_2 ** Uint_7);
+   end Is_Single_Precision_Floating_Point_Type;
 
    -------------------------------------
    -- Is_SPARK_05_Initialization_Expr --

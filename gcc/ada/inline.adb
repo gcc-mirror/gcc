@@ -3639,7 +3639,7 @@ package body Inline is
    --------------------------
 
    function Has_Initialized_Type (E : Entity_Id) return Boolean is
-      E_Body : constant Node_Id := Get_Subprogram_Body (E);
+      E_Body : constant Node_Id := Subprogram_Body (E);
       Decl   : Node_Id;
 
    begin

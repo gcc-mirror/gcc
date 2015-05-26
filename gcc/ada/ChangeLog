@@ -1,3 +1,17 @@
+2015-05-26  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Has_Initialized_Type): Adapt to new names.
+	* sem_aux.adb, sem_aux.ads (Get_Low_Bound, Number_Components,
+	Subprogram_Body, Subprogram_Body_Entity, Subprogram_Spec,
+	Subprogram_Specification): New query functions used in GNATprove.
+	* sem_disp.adb, sem_disp.ads (Is_Overriding_Subprogram): New
+	query functions used in GNATprove.
+	* sem_util.adb, sem_util.adso (Enclosing_Lib_Unit_Node,
+	Get_Cursor_Type, Get_Return_Object, Get_User_Defined_Eq,
+	Is_Double_Precision_Floating_Point_Type,
+	Is_Single_Precision_Floating_Point_Type): New query functions
+	used in GNATprove.
+
 2015-05-26  Bob Duff  <duff@adacore.com>
 
 	* s-rpc.ads (Partition_ID): Increase maximum Partition_ID to
