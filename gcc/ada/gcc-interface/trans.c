@@ -5791,29 +5791,10 @@ gnat_to_gnu (Node_Id gnat_node)
 	    gnu_expr
 	      = emit_range_check (gnu_expr, Etype (gnat_temp), gnat_node);
 
-	  /* If this object has its elaboration delayed, we must force
-	     evaluation of GNU_EXPR right now and save it for when the object
-	     is frozen.  */
-	  if (Present (Freeze_Node (gnat_temp)))
-	    {
-	      if (TREE_CONSTANT (gnu_expr))
-		;
-	      else if (global_bindings_p ())
-		gnu_expr
-		  = create_var_decl (create_concat_name (gnat_temp, "init"),
-				     NULL_TREE, TREE_TYPE (gnu_expr), gnu_expr,
-				     false, false, false, false,
-				     NULL, gnat_temp);
-	      else
-		gnu_expr = gnat_save_expr (gnu_expr);
-
-	      save_gnu_tree (gnat_node, gnu_expr, true);
-	    }
+	  if (type_annotate_only && TREE_CODE (gnu_expr) == ERROR_MARK)
+	    gnu_expr = NULL_TREE;
 	}
       else
-	gnu_expr = NULL_TREE;
-
-      if (type_annotate_only && gnu_expr && TREE_CODE (gnu_expr) == ERROR_MARK)
 	gnu_expr = NULL_TREE;
 
       /* If this is a deferred constant with an address clause, we ignore the
@@ -5825,7 +5806,19 @@ gnat_to_gnu (Node_Id gnat_node)
 	  && Present (Full_View (gnat_temp)))
 	save_gnu_tree (Full_View (gnat_temp), error_mark_node, true);
 
-      if (No (Freeze_Node (gnat_temp)))
+      /* If this object has its elaboration delayed, we must force evaluation
+	 of GNU_EXPR now and save it for the freeze point.  Note that we need
+	 not do anything special at the global level since the lifetime of the
+	 temporary is fully contained within the elaboration routine.  */
+      if (Present (Freeze_Node (gnat_temp)))
+	{
+	  if (gnu_expr)
+	    {
+	      gnu_result = gnat_save_expr (gnu_expr);
+	      save_gnu_tree (gnat_node, gnu_result, true);
+	    }
+	}
+      else
 	gnat_to_gnu_entity (gnat_temp, gnu_expr, 1);
       break;
 
