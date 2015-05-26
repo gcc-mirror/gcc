@@ -1,3 +1,19 @@
+2015-05-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_update_vf_for_slp): Split out from ...
+	(vect_analyze_loop_operations): ... here.  Remove slp parameter,
+	detect whether we apply SLP.  Remove call to
+	vect_update_slp_costs_according_to_vf.
+	(vect_analyze_loop_2): Call vect_update_vf_for_slp and
+	vect_update_slp_costs_according_to_vf from here.  Dispatch
+	to vect_slp_analyze_operations to analyze SLP stmts.
+	* tree-vect-slp.c (vect_slp_analyze_node_operations): Drop
+	unused bb_vec_info parameter, adjust assert.
+	(vect_slp_analyze_operations): Pass in the slp instance tree
+	instead of bb_vec_info.
+	(vect_slp_analyze_bb_1): Adjust call to vect_slp_analyze_operations.
+	* tree-vectorizer.h (vect_slp_analyze_operations): Declare.
+
 2015-05-25  Alexander Monakov  <amonakov@ispras.ru>
 
 	* config/i386/i386.h (enum reg_class): Move CLOBBERED_REGS prior to

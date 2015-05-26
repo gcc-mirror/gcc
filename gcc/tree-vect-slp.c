@@ -2191,7 +2191,7 @@ destroy_bb_vec_info (bb_vec_info bb_vinfo)
    the subtree. Return TRUE if the operations are supported.  */
 
 static bool
-vect_slp_analyze_node_operations (bb_vec_info bb_vinfo, slp_tree node)
+vect_slp_analyze_node_operations (slp_tree node)
 {
   bool dummy;
   int i;
@@ -2202,17 +2202,17 @@ vect_slp_analyze_node_operations (bb_vec_info bb_vinfo, slp_tree node)
     return true;
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    if (!vect_slp_analyze_node_operations (bb_vinfo, child))
+    if (!vect_slp_analyze_node_operations (child))
       return false;
 
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt)
     {
       stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
       gcc_assert (stmt_info);
-      gcc_assert (PURE_SLP_STMT (stmt_info));
+      gcc_assert (STMT_SLP_TYPE (stmt_info) != loop_vect);
 
       if (!vect_analyze_stmt (stmt, &dummy, node))
-        return false;
+	return false;
     }
 
   return true;
@@ -2222,19 +2222,26 @@ vect_slp_analyze_node_operations (bb_vec_info bb_vinfo, slp_tree node)
 /* Analyze statements in SLP instances of the basic block.  Return TRUE if the
    operations are supported. */
 
-static bool
-vect_slp_analyze_operations (bb_vec_info bb_vinfo)
+bool
+vect_slp_analyze_operations (vec<slp_instance> slp_instances)
 {
-  vec<slp_instance> slp_instances = BB_VINFO_SLP_INSTANCES (bb_vinfo);
   slp_instance instance;
   int i;
 
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "=== vect_slp_analyze_operations ===\n");
+
   for (i = 0; slp_instances.iterate (i, &instance); )
     {
-      if (!vect_slp_analyze_node_operations (bb_vinfo,
-                                             SLP_INSTANCE_TREE (instance)))
+      if (!vect_slp_analyze_node_operations (SLP_INSTANCE_TREE (instance)))
         {
- 	  vect_free_slp_instance (instance);
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "removing SLP instance operations starting from: ");
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM,
+			    SLP_TREE_SCALAR_STMTS
+			      (SLP_INSTANCE_TREE (instance))[0], 0);
+	  vect_free_slp_instance (instance);
           slp_instances.ordered_remove (i);
 	}
       else
@@ -2498,7 +2505,7 @@ vect_slp_analyze_bb_1 (basic_block bb)
       return NULL;
     }
 
-  if (!vect_slp_analyze_operations (bb_vinfo))
+  if (!vect_slp_analyze_operations (BB_VINFO_SLP_INSTANCES (bb_vinfo)))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
