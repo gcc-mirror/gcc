@@ -1,3 +1,8 @@
+2015-05-26  Jason Merrill  <jason@redhat.com>
+
+	* configure.ac: When bootstrapping with GCC, add -std=c++98 to CXX.
+	* configure: Regenerate.
+
 2015-05-16  James Bowman  <james.bowman@ftdichip.com>
 
 	* configure.ac: FT32 target added.

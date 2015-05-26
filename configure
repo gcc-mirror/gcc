@@ -5407,6 +5407,12 @@ $as_echo "$as_me: WARNING: trying to bootstrap a cross compiler" >&2;}
     ;;
 esac
 
+# When bootstrapping with GCC, build stage 1 in C++98 mode to ensure that a
+# C++98 compiler can still start the bootstrap.
+if test "$enable_bootstrap:$GXX" = "yes:yes"; then
+  CXX="$CXX -std=c++98"
+fi
+
 # Used for setting $lt_cv_objdir
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for objdir" >&5
 $as_echo_n "checking for objdir... " >&6; }
