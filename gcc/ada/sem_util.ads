@@ -529,8 +529,15 @@ package Sem_Util is
    --  related expression evaluates to True.
 
    function Enclosing_Comp_Unit_Node (N : Node_Id) return Node_Id;
-   --  Returns the enclosing N_Compilation_Unit Node that is the root of a
+   --  Returns the enclosing N_Compilation_Unit node that is the root of a
    --  subtree containing N.
+
+   function Enclosing_Lib_Unit_Node (N : Node_Id) return Node_Id;
+   --  Returns the N_Compilation_Unit node of the library unit that is directly
+   --  or indirectly (through a subunit) at the root of a subtree containing
+   --  N. This may be either the same as Enclosing_Comp_Unit_Node, or if
+   --  Enclosing_Comp_Unit_Node returns a subunit, then the corresponding
+   --  library unit.
 
    function Enclosing_CPP_Parent (Typ : Entity_Id) return Entity_Id;
    --  Returns the closest ancestor of Typ that is a CPP type.
@@ -814,10 +821,15 @@ package Sem_Util is
    function Get_Cursor_Type
      (Aspect : Node_Id;
       Typ    : Entity_Id) return Entity_Id;
-   --  Find Cursor type in scope of formal container Typ, by locating primitive
-   --  operation First. For use in resolving the other primitive operations
-   --  of an Iterable type and expanding loops and quantified expressions
-   --  over formal containers.
+   --  Find Cursor type in scope of type Typ with Iterable aspect, by locating
+   --  primitive operation First. For use in resolving the other primitive
+   --  operations of an Iterable type and expanding loops and quantified
+   --  expressions over formal containers.
+
+   function Get_Cursor_Type (Typ : Entity_Id) return Entity_Id;
+   --  Find Cursor type in scope of type Typ with Iterable aspect, by locating
+   --  primitive operation First. For use after resolving the primitive
+   --  operations of an Iterable type.
 
    function Get_Default_External_Name (E : Node_Or_Entity_Id) return Node_Id;
    --  This is used to construct the string literal node representing a
@@ -906,21 +918,24 @@ package Sem_Util is
    --  not a renamed entity, returns its argument. It is an error to call this
    --  with any other kind of entity.
 
+   function Get_Return_Object (N : Node_Id) return Entity_Id;
+   --  Given an extended return statement, return the corresponding return
+   --  object, identified as the one for which Is_Return_Object = True.
+
    function Get_Subprogram_Entity (Nod : Node_Id) return Entity_Id;
    --  Nod is either a procedure call statement, or a function call, or an
    --  accept statement node. This procedure finds the Entity_Id of the related
    --  subprogram or entry and returns it, or if no subprogram can be found,
    --  returns Empty.
 
-   function Get_Subprogram_Body (E : Entity_Id) return Node_Id;
-   --  Given the entity for a subprogram (E_Function or E_Procedure), return
-   --  the corresponding N_Subprogram_Body node. If the corresponding body
-   --  is missing (as for an imported subprogram), return Empty.
-
    function Get_Task_Body_Procedure (E : Entity_Id) return Node_Id;
    pragma Inline (Get_Task_Body_Procedure);
    --  Given an entity for a task type or subtype, retrieves the
    --  Task_Body_Procedure field from the corresponding task type declaration.
+
+   function Get_User_Defined_Eq (E : Entity_Id) return Entity_Id;
+   --  For a type entity, return the entity of the primitive equality function
+   --  for the type if it exists, otherwise return Empty.
 
    function Has_Access_Values (T : Entity_Id) return Boolean;
    --  Returns true if type or subtype T is an access type, or has a component
@@ -1248,6 +1263,15 @@ package Sem_Util is
    --  This is the RM definition, a type is a descendent of another type if it
    --  is the same type or is derived from a descendent of the other type.
 
+   function Is_Double_Precision_Floating_Point_Type
+     (E : Entity_Id) return Boolean;
+   --  Return whether E is a double precision floating point type,
+   --  characterized by:
+   --  . machine_radix = 2
+   --  . machine_mantissa = 53
+   --  . machine_emax = 2**10
+   --  . machine_emin = 3 - machine_emax
+
    function Is_Effectively_Volatile (Id : Entity_Id) return Boolean;
    --  The SPARK property "effectively volatile" applies to both types and
    --  objects. To qualify as such, an entity must be either volatile or be
@@ -1409,6 +1433,15 @@ package Sem_Util is
    --  As described in Sinfo, Selector_Names are special because they
    --  represent use of the N_Identifier node for a true identifier, when
    --  normally such nodes represent a direct name.
+
+   function Is_Single_Precision_Floating_Point_Type
+     (E : Entity_Id) return Boolean;
+   --  Return whether E is a single precision floating point type,
+   --  characterized by:
+   --  . machine_radix = 2
+   --  . machine_mantissa = 24
+   --  . machine_emax = 2**7
+   --  . machine_emin = 3 - machine_emax
 
    function Is_SPARK_05_Initialization_Expr (N : Node_Id) return Boolean;
    --  Determines if the tree referenced by N represents an initialization

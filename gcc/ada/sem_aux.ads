@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -157,6 +157,9 @@ package Sem_Aux is
    --  the Nkind value that would be used to construct a binary operator node
    --  referencing this entity. It is an error to call this function if Ekind
    --  (Op) /= E_Operator.
+
+   function Get_Low_Bound (E : Entity_Id) return Node_Id;
+   --  For an index subtype or string literal subtype, return its low bound
 
    function Get_Unary_Nkind (Op : Entity_Id) return Node_Kind;
    --  Op must be an entity with an Ekind of E_Operator. This function returns
@@ -369,6 +372,10 @@ package Sem_Aux is
    --  The result returned is the next _Tag field in this record, or Empty
    --  if this is the last such field.
 
+   function Number_Components (Typ : Entity_Id) return Pos;
+   --  Typ is a record type, yields number of components (including
+   --  discriminants) in type.
+
    function Number_Discriminants (Typ : Entity_Id) return Pos;
    --  Typ is a type with discriminants, yields number of discriminants in type
 
@@ -381,6 +388,30 @@ package Sem_Aux is
    --  derived type, and the subtype is not an unconstrained array subtype
    --  (RM 3.3(23.10/3)).
 
+   function Package_Specification (Pack_Id : Entity_Id) return Node_Id;
+   --  Given an entity for a package or generic package, return corresponding
+   --  package specification. Simplifies handling of child units, and better
+   --  than the old idiom: Specification (Unit_Declaration_Node (Pack_Id)).
+
+   function Subprogram_Body (E : Entity_Id) return Node_Id;
+   --  Given an entity for a subprogram (spec or body), return the
+   --  corresponding subprogram body if any, or else Empty.
+
+   function Subprogram_Body_Entity (E : Entity_Id) return Entity_Id;
+   --  Given an entity for a subprogram (spec or body), return the entity
+   --  corresponding to the subprogram body, which may be the same as E or
+   --  Empty if no body is available.
+
+   function Subprogram_Spec (E : Entity_Id) return Node_Id;
+   --  Given an entity for a subprogram spec, return the corresponding
+   --  subprogram spec if any, or else Empty.
+
+   function Subprogram_Specification (E : Entity_Id) return Node_Id;
+   --  Given an entity for a subprogram, return the corresponding subprogram
+   --  specification. If the entity is an inherited subprogram without
+   --  specification itself, return the specification of the inherited
+   --  subprogram.
+
    function Ultimate_Alias (Prim : Entity_Id) return Entity_Id;
    pragma Inline (Ultimate_Alias);
    --  Return the last entity in the chain of aliased entities of Prim. If Prim
@@ -392,10 +423,5 @@ package Sem_Aux is
    --  body entities for subprograms, tasks and protected units, in which case
    --  it returns the subprogram, task or protected body node for it. The unit
    --  may be a child unit with any number of ancestors.
-
-   function Package_Specification (Pack_Id : Entity_Id) return Node_Id;
-   --  Given an entity for a package or generic package, return corresponding
-   --  package specification. Simplifies handling of child units, and better
-   --  than the old idiom: Specification (Unit_Declaration_Node (Pack_Id)).
 
 end Sem_Aux;

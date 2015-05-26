@@ -2239,6 +2239,16 @@ package body Sem_Disp is
       end if;
    end Is_Inherited_Public_Operation;
 
+   ------------------------------
+   -- Is_Overriding_Subprogram --
+   ------------------------------
+
+   function Is_Overriding_Subprogram (E : Entity_Id) return Boolean is
+      Inherited : constant Subprogram_List := Inherited_Subprograms (E);
+   begin
+      return Inherited'Length > 0;
+   end Is_Overriding_Subprogram;
+
    --------------------------
    -- Is_Tag_Indeterminate --
    --------------------------

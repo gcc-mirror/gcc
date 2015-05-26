@@ -129,6 +129,9 @@ package Sem_Disp is
    function Is_Null_Interface_Primitive (E : Entity_Id) return Boolean;
    --  Returns True if E is a null procedure that is an interface primitive
 
+   function Is_Overriding_Subprogram (E : Entity_Id) return Boolean;
+   --  Returns True if E is an overriding subprogram
+
    function Is_Tag_Indeterminate (N : Node_Id) return Boolean;
    --  Returns true if the expression N is tag-indeterminate. An expression
    --  is tag-indeterminate if it is a call that dispatches on result, and all
