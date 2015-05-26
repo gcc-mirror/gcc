@@ -1,3 +1,13 @@
+2015-05-26  Bob Duff  <duff@adacore.com>
+
+	* einfo.adb, einfo.ads, sprint.adb, lib-xref.ads: Minor cleanup: Remove
+	obsolete Entity_Kinds E_String_Type and E_String_Subtype. Update
+	redundant assertions.
+
+2015-05-26  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb, sem_util.ads, sem_ch13.adb: Minor typo fixes.
+
 2015-05-26  Doug Rupp  <rupp@adacore.com>
 
 	* init.c [vxworks]: Refine previous checkin.

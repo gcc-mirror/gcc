@@ -4201,7 +4201,7 @@ package body Sprint is
 
                      Write_Id (Directly_Designated_Type (Typ));
 
-                  --  Array types and string types
+                  --  Array types
 
                   when E_Array_Type =>
                      Write_Header;
@@ -4230,10 +4230,10 @@ package body Sprint is
                      Sprint_Node (X);
                      Set_Sloc (X, Old_Sloc);
 
-                     --  Array subtypes and string subtypes.
+                     --  Array subtypes.
                      --  Preserve Sloc of index subtypes, as above.
 
-                  when E_Array_Subtype | E_String_Subtype =>
+                  when E_Array_Subtype =>
                      Write_Header (False);
                      Write_Id (Etype (Typ));
                      Write_Str (" (");
