@@ -2283,7 +2283,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	   a NaN so we implement the semantics of C99 f{min,max} to make it
 	   predictable in this case: if either operand is a NaN, the other
 	   is returned; if both operands are NaN's, a NaN is returned.  */
-	if (SCALAR_FLOAT_TYPE_P (gnu_result_type))
+	if (SCALAR_FLOAT_TYPE_P (gnu_result_type)
+	    && !Machine_Overflows_On_Target)
 	  {
 	    const bool lhs_side_effects_p = TREE_SIDE_EFFECTS (gnu_lhs);
 	    const bool rhs_side_effects_p = TREE_SIDE_EFFECTS (gnu_rhs);
