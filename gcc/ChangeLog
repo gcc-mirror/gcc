@@ -1,3 +1,13 @@
+2015-05-26  Michael Matz  <matz@suse.de>
+
+	PR middle-end/66251
+
+	* tree-vect-stmts.c (vect_model_store_cost): Handled strided group
+	stores.
+	(vect_create_vectorized_demotion_stmts): Always set
+	STMT_VINFO_VEC_STMT, also with SLP.
+	(vectorizable_store): Handle strided group stores.
+
 2015-05-26  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	PR target/66049

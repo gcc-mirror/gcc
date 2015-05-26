@@ -1,3 +1,8 @@
+2015-05-26  Michael Matz  <matz@suse.de>
+
+	PR middle-end/66251
+	* gcc.dg/vect/pr66251.c: New test.
+
 2015-05-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66142
