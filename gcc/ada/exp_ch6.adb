@@ -8856,7 +8856,9 @@ package body Exp_Ch6 is
       Pass_Caller_Acc : Boolean := False;
       Res_Decl        : Node_Id;
       Result_Subt     : Entity_Id;
-      Definite        : Boolean; -- True for definite function result subtype
+
+      Definite : Boolean;
+      --  True for definite function result subtype
 
    begin
       --  Step past qualification or unchecked conversion (the latter can occur

@@ -4264,7 +4264,7 @@ package body Sem_Ch3 is
            and then not Is_Constrained (T)
            and then Has_Discriminants (T)
            and then (Ada_Version < Ada_2005
-                       or else not Is_Definite_Subtype (T))
+                      or else not Is_Definite_Subtype (T))
          then
             Set_Actual_Subtype (Id, Build_Default_Subtype (T, N));
          end if;

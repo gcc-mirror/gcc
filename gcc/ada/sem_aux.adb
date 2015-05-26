@@ -985,8 +985,7 @@ package body Sem_Aux is
       --  if any discriminant has a default, they all do.
 
       elsif Has_Discriminants (T) then
-         return Present
-                  (Discriminant_Default_Value (First_Discriminant (T)));
+         return Present (Discriminant_Default_Value (First_Discriminant (T)));
 
       else
          return True;

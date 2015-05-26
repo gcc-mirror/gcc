@@ -1,3 +1,19 @@
+2015-05-26  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sem_aux.adb, sem_aux.ads, exp_ch6.adb, sprint.adb:
+	Minor reformatting.
+
+2015-05-26  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat1drv.adb, targparm.adb, targparm.ads, restrict.adb: Minor
+	reformatting and typo fixes in comments.
+
+2015-05-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch7.adb (Swap_Private_Dependets): Set visibility of
+	the two views of a private dependent in two separate steps,
+	to ensure proper visibility in parent units analyzed for inlining.
+
 2015-05-26  Yannick Moy  <moy@adacore.com>
 
 	* sem_aux.adb, sem_aux.ads (Get_Low_Bound): Use Type_Low_Bound.

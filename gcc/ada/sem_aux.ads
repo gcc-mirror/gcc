@@ -306,6 +306,14 @@ package Sem_Aux is
    --  Ent is any entity. Returns True if Ent is a type entity where the type
    --  is required to be passed by reference, as defined in (RM 6.2(4-9)).
 
+   function Is_Definite_Subtype (T : Entity_Id) return Boolean;
+   --  T is a type entity. Returns True if T is a definite subtype.
+   --  Indefinite subtypes are unconstrained arrays, unconstrained
+   --  discriminated types without defaulted discriminants, class-wide types,
+   --  and types with unknown discriminants. Definite subtypes are all others
+   --  (elementary, constrained composites (including the case of records
+   --  without discriminants), and types with defaulted discriminants).
+
    function Is_Derived_Type (Ent : Entity_Id) return Boolean;
    --  Determines if the given entity Ent is a derived type. Result is always
    --  false if argument is not a type.
@@ -314,14 +322,6 @@ package Sem_Aux is
    --  Determine whether E is a generic formal parameter. In particular this is
    --  used to set the visibility of generic formals of a generic package
    --  declared with a box or with partial parameterization.
-
-   function Is_Definite_Subtype (T : Entity_Id) return Boolean;
-   --  T is a type entity. Returns True if T is a definite subtype.
-   --  Indefinite subtypes are unconstrained arrays, unconstrained
-   --  discriminated types without defaulted discriminants, class-wide types,
-   --  and types with unknown discriminants. Definite subtypes are all others
-   --  (elementary, constrained composites (including the case of records
-   --  without discriminants), and types with defaulted discriminants).
 
    function Is_Immutably_Limited_Type (Ent : Entity_Id) return Boolean;
    --  Implements definition in Ada 2012 RM-7.5 (8.1/3). This differs from the

@@ -110,7 +110,7 @@ package body Restrict is
    No_Use_Of_Pragma : array (Pragma_Id) of Source_Ptr :=
                         (others => No_Location);
    --  Source location of pragma No_Use_Of_Pragma for given pragma, a value
-   --  of Sysstem_Location indicates occurrence in system.ads.
+   --  of System_Location indicates occurrence in system.ads.
 
    No_Use_Of_Pragma_Warning : array (Pragma_Id) of Boolean :=
                                 (others => False);
@@ -1571,9 +1571,9 @@ package body Restrict is
 
    procedure Set_Restriction_No_Specification_Of_Aspect (A_Id : Aspect_Id) is
    begin
+      No_Specification_Of_Aspect_Set := True;
       No_Specification_Of_Aspects (A_Id) := System_Location;
       No_Specification_Of_Aspect_Warning (A_Id) := False;
-      No_Specification_Of_Aspect_Set := True;
    end Set_Restriction_No_Specification_Of_Aspect;
 
    -----------------------------------------
@@ -1624,8 +1624,8 @@ package body Restrict is
    procedure Set_Restriction_No_Use_Of_Pragma (A_Id : Pragma_Id) is
    begin
       No_Use_Of_Pragma_Set := True;
-      No_Use_Of_Pragma_Warning (A_Id) := False;
       No_Use_Of_Pragma (A_Id) := System_Location;
+      No_Use_Of_Pragma_Warning (A_Id) := False;
    end Set_Restriction_No_Use_Of_Pragma;
 
    --------------------------------
