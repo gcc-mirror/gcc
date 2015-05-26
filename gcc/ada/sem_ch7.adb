@@ -2221,9 +2221,16 @@ package body Sem_Ch7 is
                --  swap them out in End_Package_Scope.
 
                Replace_Elmt (Priv_Elmt, Full_View (Priv));
+
+               --  Ensure that both views of the dependent private subtype are
+               --  immediately visible if within some open scope.
+
+               if In_Open_Scopes (Scope (Full_View (Priv))) then
+                  Set_Is_Immediately_Visible (Priv);
+                  Set_Is_Immediately_Visible (Full_View (Priv));
+               end if;
+
                Exchange_Declarations (Priv);
-               Set_Is_Immediately_Visible
-                 (Priv, In_Open_Scopes (Scope (Priv)));
                Set_Is_Potentially_Use_Visible
                  (Priv, Is_Potentially_Use_Visible (Node (Priv_Elmt)));
 

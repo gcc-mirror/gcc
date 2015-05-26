@@ -1,3 +1,66 @@
+2015-05-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch7.adb (Install_Private_Declarations,
+	Swap_Private_Dependents): Ensure that both views of the dependent
+	subtype are immediately visible if we are within their scope. This
+	may be needed when a procedure body is both the parent of an
+	instantiated child unit, and is itself used to inline a local
+	function.
+
+2015-05-26  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_prag.adb, gnat1drv.adb: Minor reformatting.
+
+2015-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Indexed_Component): In the circuit
+	detecting exceptions to the rewriting, deal with implicit
+	dereferences in the selected component case.
+
+2015-05-26  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Analyze_One_Aspect): Do not
+	require the expression of the Disable_Controlled aspect to be
+	static in a generic template, because 'Enabled is not known
+	until the instance.
+
+2015-05-26  Doug Rupp  <rupp@adacore.com>
+
+	* init-vxsim.c: New file for vxsim ZCX
+	* sigtramp-vxworks-vxsim.c: Likewise.
+	* sigtramp-vxworks.c: Factor out target dependent bits into ...
+	* sigtramp-vxworks-target.inc: ... here.
+	* sigtramp.h: Add vxsim zcx protos.
+	* init.c [vxworks...] (sysLib.h): Include.
+	(__gnat_map_signal): Make global.
+	 [...i386] (__gnat_error_handler): Call __gnat_vxsim_error_handler if
+	on vxsim.
+	[...i386] (__gnat_install_handler): Test if on vxsim.
+
+2015-05-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): For an element
+	iterator over an array, if the component is aliased, the loop
+	variable is aliased as well.
+
+2015-05-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): For a function call with in-out
+	parameters that is rewritten as an expression_with_actions,
+	we preserve the original function call node for further use by
+	the caller (typically Expand_Call). In the presence of validity
+	checks, that function call, though it is labelled Analyzed to
+	prevent an infinite recursion, may be rewritten as a temporary
+	by Remove_Side_Effects.  Ensure that the caller has access to
+	the original function call to continue expansion.
+	* atree.ads: Minor typo in comment.
+
+2015-05-26  Javier Miranda  <miranda@adacore.com>
+
+	* sem_util.adb (Check_Function_Writable_Actuals):
+	Add missing support to check the violation of writable actuals
+	in array aggregates that have a nonstatic range.
+
 2015-05-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch6.adb (Process_Contract_Cases_For): Update the call to

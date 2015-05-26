@@ -165,7 +165,7 @@ package body Exp_Prag is
 
    begin
       --  Rewrite pragma ignored by Ignore_Pragma to null statement, so that
-      --  the back end or the expander here does not get over-enthusiastic and
+      --  the back end or the expander here does not get overenthusiastic and
       --  start processing such a pragma!
 
       if Get_Name_Table_Boolean3 (Pname) then
@@ -318,7 +318,7 @@ package body Exp_Prag is
       end if;
 
       --  Since this check is active, we rewrite the pragma into a
-      --  corresponding if statement, and then analyze the statement
+      --  corresponding if statement, and then analyze the statement.
 
       --  The normal case expansion transforms:
 

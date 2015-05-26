@@ -1702,6 +1702,7 @@ __gnat_install_handler ()
 
 #include <signal.h>
 #include <taskLib.h>
+#include <sysLib.h>
 
 #ifndef __RTP__
 #include <intLib.h>
@@ -1758,8 +1759,8 @@ __gnat_clear_exception_count (void)
 }
 
 /* Handle different SIGnal to exception mappings in different VxWorks
-   versions.   */
-static void
+   versions.  */
+void
 __gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED,
 		   void *sc ATTRIBUTE_UNUSED)
 {
@@ -1895,6 +1896,13 @@ __gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED,
   Raise_From_Signal_Handler (exception, msg);
 }
 
+#if defined (i386) || defined (__i386__)
+extern void
+__gnat_vxsim_error_handler (int sig, siginfo_t *si, void *sc);
+
+static int is_vxsim = 0;
+#endif
+
 /* Tasking and Non-tasking signal handler.  Map SIGnal to Ada exception
    propagation after the required low level adjustments.  */
 
@@ -1911,13 +1919,21 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
   sigdelset (&mask, sig);
   sigprocmask (SIG_SETMASK, &mask, NULL);
 
-#if defined (__ARMEL__) || defined (__PPC__)
-  /* On ARM and PowerPC, kernel mode, we process signals through a Call Frame
+#if defined (__ARMEL__) || defined (__PPC__) || defined (i386) || defined (__i386__)
+  /* On certain targets, kernel mode, we process signals through a Call Frame
      Info trampoline, voiding the need for myriads of fallback_frame_state
      variants in the ZCX runtime.  We have no simple way to distinguish ZCX
      from SJLJ here, so we do this for SJLJ as well even though this is not
      necessary.  This only incurs a few extra instructions and a tiny
      amount of extra stack usage.  */
+
+#if defined (i386) || defined (__i386__)
+   /* On x86, the vxsim signal context is subtly different and is processeed
+      by a handler compiled especially for vxsim.  */
+
+  if (is_vxsim)
+    __gnat_vxsim_error_handler (sig, si, sc);
+#endif
 
   #include "sigtramp.h"
 
@@ -1952,6 +1968,7 @@ void
 __gnat_install_handler (void)
 {
   struct sigaction act;
+  char *model ATTRIBUTE_UNUSED;
 
   /* Setup signal handler to map synchronous signals to appropriate
      exceptions.  Make sure that the handler isn't interrupted by another
@@ -2000,6 +2017,15 @@ __gnat_install_handler (void)
   /* rd %psr, %l0 */
 
   trap_0_entry->inst_fourth = 0xa1480000;
+#endif
+
+#if defined (i386) || defined (__i386__)
+  /*  By experiment, found that sysModel () returns the following string
+      prefix for vxsim when running on Linux and Windows.  */
+  model = sysModel ();
+  if ((strncmp (model, "Linux", 5) == 0)
+      || (strncmp (model, "Windows", 7) == 0))
+    is_vxsim = 1;
 #endif
 
   __gnat_handler_installed = 1;

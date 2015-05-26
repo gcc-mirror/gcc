@@ -6299,7 +6299,10 @@ package body Exp_Ch4 is
 
       --    The prefix of an address or bit or size attribute reference
 
-      --  The following circuit detects these exceptions
+      --  The following circuit detects these exceptions. Note that we need to
+      --  deal with implicit dereferences when climbing up the parent chain,
+      --  with the additional difficulty that the type of parents may have yet
+      --  to be resolved since prefixes are usually resolved first.
 
       declare
          Child : Node_Id := N;
@@ -6351,10 +6354,21 @@ package body Exp_Ch4 is
             then
                return;
 
-            elsif Nkind_In (Parnt, N_Indexed_Component, N_Selected_Component)
+            elsif Nkind (Parnt) = N_Indexed_Component
               and then Prefix (Parnt) = Child
             then
                null;
+
+            elsif Nkind (Parnt) = N_Selected_Component
+              and then Prefix (Parnt) = Child
+              and then not (Present (Etype (Selector_Name (Parnt)))
+                              and then
+                            Is_Access_Type (Etype (Selector_Name (Parnt))))
+            then
+               null;
+
+            --  If the parent is a dereference, either implicit or explicit,
+            --  then the packed reference needs to be expanded.
 
             else
                Expand_Packed_Element_Reference (N);

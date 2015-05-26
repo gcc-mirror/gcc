@@ -997,10 +997,6 @@ package body Exp_Ch6 is
    -- Expand_Actuals --
    --------------------
 
-   --------------------
-   -- Expand_Actuals --
-   --------------------
-
    procedure Expand_Actuals (N : in out Node_Id; Subp : Entity_Id) is
       Loc       : constant Source_Ptr := Sloc (N);
       Actual    : Node_Id;
@@ -2018,9 +2014,12 @@ package body Exp_Ch6 is
 
                   --  Reset calling argument to point to function call inside
                   --  the expression with actions so the caller can continue
-                  --  to process the call.
+                  --  to process the call. In spite of the fact that it is
+                  --  marked Analyzed above, it may be rewritten by Remove_
+                  --  Side_Effects if validity checks are present, so go back
+                  --  to original call.
 
-                  N := Name;
+                  N := Original_Node (Name);
                end;
 
             --  If not the special Ada 2012 case of a function call, then

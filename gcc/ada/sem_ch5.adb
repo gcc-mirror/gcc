@@ -2010,6 +2010,11 @@ package body Sem_Ch5 is
          if Of_Present (N) then
             Set_Etype (Def_Id, Component_Type (Typ));
 
+            --  The loop variable is aliased if the array components are
+            --  aliased.
+
+            Set_Is_Aliased (Def_Id, Has_Aliased_Components (Typ));
+
             --  AI12-0151 stipulates that the container cannot be a component
             --  that depends on a discriminant if the enclosing object is
             --  mutable, to prevent a modification of the container in the
