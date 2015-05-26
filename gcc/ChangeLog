@@ -1,3 +1,10 @@
+2015-05-26  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/65979
+	* config/sh/sh.md (tstsi_t peephole2): Use gen_rtx_SET and
+	take into account the case that operands[1] and operands[2]
+	are the same register.
+
 2015-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
