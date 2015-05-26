@@ -1,4 +1,4 @@
- 2015-05-13  Christian Bruel  <christian.bruel@st.com>
+ 2015-05-26  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/52144
 	* config/arm/arm.c (arm_option_check_internal)
@@ -14,7 +14,8 @@
 	(TARGET_HAVE_LDREX_P, TARGET_HAVE_LDREXBH_P, TARGET_HAVE_LDREXD_P)
 	(TARGET_ARM_FEATURE_LDREX_P)
 	(TARGET_DSP_MULTIPLY_P, TARGET_INT_SIMD_P): New macros.
-	(def_or_undef_macro): New function.
+	* config/arm/arm-c.c (def_or_undef_macro): New function.
+	(arm_cpu_cpp_builtins): Use def_or_undef_macro for macros definition.
 
 2015-05-26  Christian Bruel  <christian.bruel@st.com>
 
