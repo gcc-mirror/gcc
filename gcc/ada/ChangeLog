@@ -1,5 +1,41 @@
 2015-05-26  Ed Schonberg  <schonberg@adacore.com>
 
+	* sinfo.ads: Minor reformatting.
+	* sem_aux.ads: Clarify use of First_Discriminant.
+	* sem_ch4.adb (Analyze_Explicit_Dereference): The use of a limited
+	view is replaced with the non-limited view in an instance body,
+	where the enclosing unit must have a regular with_clause on the
+	relevant unit.
+	* sem_ch12.adb (Install_Body): Freeze instantation after its
+	body. Remove useless freeze nodes for incomplete actuals to
+	prevent multiple generation of internal operations.
+	(Instantiate_Package_Body): Set sloc of body appropriately when
+	there are incomplete actuals and the instance body is placed in
+	the body of the enclosing unit.
+	* errout.ads: Consistent punctuation, better alignment and trivial
+	typos in comments.
+	* err_vars.ads: Fix typo.
+
+2015-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Lift restriction on
+	components of Volatile_Full_Access objects.
+
+2015-05-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Is_Non_Overriding_Operation,
+	Get_Generic_Parent_Type): Handle properly the case of a derived
+	scalar type by using the first subtype rather than its generated
+	anonymous base type.
+
+2015-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.adb (Write_Field17_Name): Move E_Incomplete_Subtype
+	case to...
+	(Write_Field19_Name): ...here.
+
+2015-05-26  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch13.adb: sem_ch13.adb (Add_Predicates): Undo analysis
 	of original expression in ASIS mode: does not solve the ASIS
 	problem of a usable type information, and crashes the back-end

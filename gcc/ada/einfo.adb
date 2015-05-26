@@ -9484,11 +9484,6 @@ package body Einfo is
          when Modular_Integer_Kind                         =>
             Write_Str ("Modulus");
 
-         when E_Incomplete_Subtype                         =>
-            if From_Limited_With (Id) then
-               Write_Str ("Non_Limited_View");
-            end if;
-
          when E_Component                                  =>
             Write_Str ("Prival");
 
@@ -9583,6 +9578,11 @@ package body Einfo is
               E_Class_Wide_Type                            |
               E_Incomplete_Type                            =>
             Write_Str ("Non_Limited_View");
+
+         when E_Incomplete_Subtype                         =>
+            if From_Limited_With (Id) then
+               Write_Str ("Non_Limited_View");
+            end if;
 
          when E_Array_Type                                 =>
             Write_Str ("Default_Component_Value");

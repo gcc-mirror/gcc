@@ -1969,7 +1969,9 @@ package body Sem_Ch4 is
 
                --  An explicit dereference is a legal occurrence of an
                --  incomplete type imported through a limited_with clause,
-               --  if the full view is visible.
+               --  if the full view is visible, or if we are within an
+               --  instance body, where the enclosing body has a regular
+               --  with_clause on the unit.
 
                if From_Limited_With (DT)
                  and then not From_Limited_With (Scope (DT))
@@ -1977,7 +1979,8 @@ package body Sem_Ch4 is
                    (Is_Immediately_Visible (Scope (DT))
                      or else
                        (Is_Child_Unit (Scope (DT))
-                         and then Is_Visible_Lib_Unit (Scope (DT))))
+                         and then Is_Visible_Lib_Unit (Scope (DT)))
+                     or else In_Instance_Body)
                then
                   Set_Etype (N, Available_View (DT));
 
