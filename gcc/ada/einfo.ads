@@ -4729,11 +4729,6 @@ package Einfo is
       --  An array subtype, created by an explicit array subtype declaration,
       --  or the use of an anonymous array subtype.
 
-      E_String_Type,
-      E_String_Subtype,
-      --  These are obsolete and not used any more, they are retained to ease
-      --  transition in getting rid of these obsolete entries.
-
       E_String_Literal_Subtype,
       --  A special string subtype, used only to describe the type of a string
       --  literal (will always be one dimensional, with literal bounds).

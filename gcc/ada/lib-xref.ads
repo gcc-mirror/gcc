@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -507,12 +507,6 @@ package Lib.Xref is
       E_Task_Type                                  => 'T',
       E_Variable                                   => '*',
       E_Void                                       => ' ',
-
-      --  These are dummy entries which can be removed when we finally get
-      --  rid of these obsolete entries once and for all.
-
-      E_String_Type                               => ' ',
-      E_String_Subtype                            => ' ',
 
       --  The following entities are not ones to which we gather the cross-
       --  references, since it does not make sense to do so (e.g. references to

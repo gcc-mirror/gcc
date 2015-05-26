@@ -874,7 +874,7 @@ package body Einfo is
 
    function Component_Type (Id : E) return E is
    begin
-      pragma Assert (Is_Array_Type (Id) or else Is_String_Type (Id));
+      pragma Assert (Is_Array_Type (Id));
       return Node20 (Implementation_Base_Type (Id));
    end Component_Type;
 
@@ -1323,7 +1323,7 @@ package body Einfo is
 
    function First_Index (Id : E) return N is
    begin
-      pragma Assert (Is_Array_Type (Id) or else Is_String_Type (Id));
+      pragma Assert (Is_Array_Type (Id));
       return Node17 (Id);
    end First_Index;
 
@@ -4204,7 +4204,7 @@ package body Einfo is
 
    procedure Set_First_Index (Id : E; V : N) is
    begin
-      pragma Assert (Is_Array_Type (Id) or else Is_String_Type (Id));
+      pragma Assert (Is_Array_Type (Id));
       Set_Node17 (Id, V);
    end Set_First_Index;
 
@@ -7368,7 +7368,6 @@ package body Einfo is
       E_Ordinary_Fixed_Point_Subtype |
       E_Decimal_Fixed_Point_Subtype  |
       E_Array_Subtype                |
-      E_String_Subtype               |
       E_Record_Subtype               |
       E_Private_Subtype              |
       E_Record_Subtype_With_Private  |

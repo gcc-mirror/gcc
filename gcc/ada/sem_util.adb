@@ -10960,7 +10960,7 @@ package body Sem_Util is
       P   : Node_Id;
 
    begin
-      --  Simplest case : entity is a concurrent type and  we are currently
+      --  Simplest case: entity is a concurrent type and we are currently
       --  inside the body. This will eventually be expanded into a
       --  call to Self (for tasks) or _object (for protected objects).
 
@@ -10986,7 +10986,7 @@ package body Sem_Util is
          end loop;
       end if;
 
-      --  In any other context this is not a current occurence
+      --  In any other context this is not a current occurrence
 
       return False;
    end Is_Current_Instance;

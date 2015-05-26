@@ -8443,7 +8443,7 @@ package body Sem_Ch13 is
               and then Pragma_Name (Ritem) = Name_Predicate
             then
                --  Acquire arguments. The expression itself is copied for use
-               --  in the predicate function, to preserve the orignal version
+               --  in the predicate function, to preserve the original version
                --  for ASIS use.
 
                Arg1 := First (Pragma_Argument_Associations (Ritem));
