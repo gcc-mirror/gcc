@@ -786,9 +786,8 @@ package Sinfo is
 
    --  Acts_As_Spec (Flag4-Sem)
    --    A flag set in the N_Subprogram_Body node for a subprogram body which
-   --    is acting as its own spec, except in the case of a library level
-   --    subprogram, in which case the flag is set on the parent compilation
-   --    unit node instead.
+   --    is acting as its own spec. In the case of a library-level subprogram
+   --    the flag is set as well on the parent compilation unit node.
 
    --  Actual_Designated_Subtype (Node4-Sem)
    --    Present in N_Free_Statement and N_Explicit_Dereference nodes. If gigi

@@ -8288,7 +8288,19 @@ package body Sem_Ch6 is
             --  is needed for cases where a full derived type has been
             --  rewritten.)
 
-            Defn := Type_Definition (Original_Node (Parent (F_Typ)));
+            --  If the parent type is a scalar type, the derivation creates
+            --  an anonymous base type for it, and the source type is its
+            --  first subtype.
+
+            if Is_Scalar_Type (F_Typ)
+              and then not Comes_From_Source (F_Typ)
+            then
+               Defn :=
+                 Type_Definition
+                    (Original_Node (Parent (First_Subtype (F_Typ))));
+            else
+               Defn := Type_Definition (Original_Node (Parent (F_Typ)));
+            end if;
             if Nkind (Defn) = N_Derived_Type_Definition then
                Indic := Subtype_Indication (Defn);
 

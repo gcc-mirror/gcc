@@ -8876,8 +8876,8 @@ package body Sem_Ch12 is
       --  in the instance body requires the presence of a regular with_clause
       --  in the enclosing unit, and will fail if this with_clause is missing.
       --  We place the instance body at the beginning of the enclosing body,
-      --  which is the unit being compiled, and ensure that freeze nodes for
-      --  the full views of the incomplete types appear before the instance.
+      --  which is the unit being compiled. The freeze node for the instance
+      --  is then placed after the instance body.
 
       if not Is_Empty_Elmt_List (Incomplete_Actuals (Act_Id))
         and then Expander_Active
@@ -8892,43 +8892,15 @@ package body Sem_Ch12 is
             Ensure_Freeze_Node (Act_Id);
             F_Node := Freeze_Node (Act_Id);
             if Present (Body_Id) then
-               Set_Is_Frozen (Act_Id);
+               Set_Is_Frozen (Act_Id, False);
                Prepend (Act_Body, Declarations (Parent (Body_Id)));
+               if Is_List_Member (F_Node) then
+                  Remove (F_Node);
+               end if;
+
+               Insert_After (Act_Body, F_Node);
             end if;
-
-            --  Add freeze nodes of formerly incomplete types ahead of
-            --  the instance body.
-
-            declare
-               Elmt : Elmt_Id;
-               F_T  : Node_Id;
-               Typ  : Entity_Id;
-
-            begin
-               Elmt := First_Elmt (Incomplete_Actuals (Act_Id));
-               while Present (Elmt) loop
-                  Typ := Node (Elmt);
-
-                  if From_Limited_With (Typ) then
-                     Typ := Non_Limited_View (Typ);
-                  end if;
-
-                  Ensure_Freeze_Node (Typ);
-                  F_T := Freeze_Node (Typ);
-
-                  --  If freeze node is already in the tree, remove it
-                  --  and place ahead of instance body.
-
-                  if Is_List_Member (F_T) then
-                     Remove (F_T);
-                  end if;
-
-                  Prepend (F_T, Declarations (Parent (Body_Id)));
-                  Next_Elmt (Elmt);
-               end loop;
-            end;
          end;
-
          return;
       end if;
 
@@ -10794,8 +10766,23 @@ package body Sem_Ch12 is
       end if;
 
       --  Establish global variable for sloc adjustment and for error recovery
+      --  In the case of an instance body for an instantiation with actuals
+      --  from a limited view, the instance body is placed at the beginning
+      --  of the enclosing package body: use the body entity as the source
+      --  location for nodes of the instance body.
 
-      Instantiation_Node := Inst_Node;
+      if not Is_Empty_Elmt_List (Incomplete_Actuals (Act_Decl_Id)) then
+         declare
+            Scop    : constant Entity_Id := Scope (Act_Decl_Id);
+            Body_Id : constant Node_Id :=
+                         Corresponding_Body (Unit_Declaration_Node (Scop));
+
+         begin
+            Instantiation_Node := Body_Id;
+         end;
+      else
+         Instantiation_Node := Inst_Node;
+      end if;
 
       if Present (Gen_Body_Id) then
          Save_Env (Gen_Unit, Act_Decl_Id);
