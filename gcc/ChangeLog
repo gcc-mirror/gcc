@@ -1,4 +1,4 @@
- 2015-05-26  Christian Bruel  <christian.bruel@st.com>
+2015-05-26  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/52144
 	* config/arm/arm.c (arm_option_check_internal)
