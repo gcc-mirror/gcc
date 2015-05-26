@@ -12548,7 +12548,6 @@ verify_type_variant (const_tree t, tree tv)
 	}
     }
   verify_variant_match (TYPE_PRECISION);
-  verify_variant_match (TYPE_NO_FORCE_BLK);
   verify_variant_match (TYPE_NEEDS_CONSTRUCTING);
   if (RECORD_OR_UNION_TYPE_P (t))
     verify_variant_match (TYPE_TRANSPARENT_AGGR);
