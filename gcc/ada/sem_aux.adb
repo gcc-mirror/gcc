@@ -964,6 +964,36 @@ package body Sem_Aux is
       end if;
    end Is_By_Reference_Type;
 
+   ---------------------------
+   -- Is_Definite_Subtype --
+   ---------------------------
+
+   function Is_Definite_Subtype (T : Entity_Id) return Boolean is
+      pragma Assert (Is_Type (T));
+      K : constant Entity_Kind := Ekind (T);
+
+   begin
+      if Is_Constrained (T) then
+         return True;
+
+      elsif K in Array_Kind
+        or else K in Class_Wide_Kind
+        or else Has_Unknown_Discriminants (T)
+      then
+         return False;
+
+      --  Known discriminants: definite if there are default values. Note that
+      --  if any discriminant has a default, they all do.
+
+      elsif Has_Discriminants (T) then
+         return Present
+                  (Discriminant_Default_Value (First_Discriminant (T)));
+
+      else
+         return True;
+      end if;
+   end Is_Definite_Subtype;
+
    ---------------------
    -- Is_Derived_Type --
    ---------------------
@@ -1074,38 +1104,6 @@ package body Sem_Aux is
          return False;
       end if;
    end Is_Immutably_Limited_Type;
-
-   ---------------------------
-   -- Is_Indefinite_Subtype --
-   ---------------------------
-
-   function Is_Indefinite_Subtype (Ent : Entity_Id) return Boolean is
-      K : constant Entity_Kind := Ekind (Ent);
-
-   begin
-      if Is_Constrained (Ent) then
-         return False;
-
-      elsif K in Array_Kind
-        or else K in Class_Wide_Kind
-        or else Has_Unknown_Discriminants (Ent)
-      then
-         return True;
-
-      --  Known discriminants: indefinite if there are no default values
-
-      elsif K in Record_Kind
-        or else Is_Incomplete_Or_Private_Type (Ent)
-        or else Is_Concurrent_Type (Ent)
-      then
-         return (Has_Discriminants (Ent)
-           and then
-             No (Discriminant_Default_Value (First_Discriminant (Ent))));
-
-      else
-         return False;
-      end if;
-   end Is_Indefinite_Subtype;
 
    ---------------------
    -- Is_Limited_Type --

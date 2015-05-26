@@ -315,11 +315,13 @@ package Sem_Aux is
    --  used to set the visibility of generic formals of a generic package
    --  declared with a box or with partial parameterization.
 
-   function Is_Indefinite_Subtype (Ent : Entity_Id) return Boolean;
-   --  Ent is any entity. Determines if given entity is an unconstrained array
-   --  type or subtype, a discriminated record type or subtype with no initial
-   --  discriminant values or a class wide type or subtype and returns True if
-   --  so. False for other type entities, or any entities that are not types.
+   function Is_Definite_Subtype (T : Entity_Id) return Boolean;
+   --  T is a type entity. Returns True if T is a definite subtype.
+   --  Indefinite subtypes are unconstrained arrays, unconstrained
+   --  discriminated types without defaulted discriminants, class-wide types,
+   --  and types with unknown discriminants. Definite subtypes are all others
+   --  (elementary, constrained composites (including the case of records
+   --  without discriminants), and types with defaulted discriminants).
 
    function Is_Immutably_Limited_Type (Ent : Entity_Id) return Boolean;
    --  Implements definition in Ada 2012 RM-7.5 (8.1/3). This differs from the

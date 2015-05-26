@@ -688,7 +688,7 @@ package body Sem_Ch4 is
             --  had errors on analyzing the allocator, since in that case these
             --  are probably cascaded errors.
 
-            if Is_Indefinite_Subtype (Type_Id)
+            if not Is_Definite_Subtype (Type_Id)
               and then Serious_Errors_Detected = Sav_Errs
             then
                --  The build-in-place machinery may produce an allocator when
@@ -698,7 +698,7 @@ package body Sem_Ch4 is
                --  because the allocator is marked as coming from source.
 
                if Present (Underlying_Type (Type_Id))
-                 and then not Is_Indefinite_Subtype (Underlying_Type (Type_Id))
+                 and then Is_Definite_Subtype (Underlying_Type (Type_Id))
                  and then not Comes_From_Source (Parent (N))
                then
                   null;

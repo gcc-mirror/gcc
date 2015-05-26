@@ -2023,7 +2023,7 @@ package body Sem_Ch3 is
       --  The parent type may be a private view with unknown discriminants,
       --  and thus unconstrained. Regular components must be constrained.
 
-      if Is_Indefinite_Subtype (T) and then Chars (Id) /= Name_uParent then
+      if not Is_Definite_Subtype (T) and then Chars (Id) /= Name_uParent then
          if Is_Class_Wide_Type (T) then
             Error_Msg_N
                ("class-wide subtype with unknown discriminants" &
@@ -3936,7 +3936,7 @@ package body Sem_Ch3 is
 
       --  Case of unconstrained type
 
-      if Is_Indefinite_Subtype (T) then
+      if not Is_Definite_Subtype (T) then
 
          --  In SPARK, a declaration of unconstrained type is allowed
          --  only for constants of type string.
@@ -4263,7 +4263,8 @@ package body Sem_Ch3 is
            and then Is_Record_Type (T)
            and then not Is_Constrained (T)
            and then Has_Discriminants (T)
-           and then (Ada_Version < Ada_2005 or else Is_Indefinite_Subtype (T))
+           and then (Ada_Version < Ada_2005
+                       or else not Is_Definite_Subtype (T))
          then
             Set_Actual_Subtype (Id, Build_Default_Subtype (T, N));
          end if;
@@ -5730,7 +5731,7 @@ package body Sem_Ch3 is
       --  that all the indexes are unconstrained but we still need to make sure
       --  that the element type is constrained.
 
-      if Is_Indefinite_Subtype (Element_Type) then
+      if not Is_Definite_Subtype (Element_Type) then
          Error_Msg_N
            ("unconstrained element type in array declaration",
             Subtype_Indication (Component_Def));
@@ -19568,8 +19569,8 @@ package body Sem_Ch3 is
          --  not completed with an unconstrained type. A separate error message
          --  is produced if the full type has defaulted discriminants.
 
-         if not Is_Indefinite_Subtype (Priv_T)
-           and then Is_Indefinite_Subtype (Full_T)
+         if Is_Definite_Subtype (Priv_T)
+           and then not Is_Definite_Subtype (Full_T)
          then
             Error_Msg_Sloc := Sloc (Parent (Priv_T));
             Error_Msg_NE

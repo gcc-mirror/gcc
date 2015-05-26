@@ -2477,7 +2477,7 @@ package body Sem_Attr is
             null;
 
          elsif Is_Generic_Type (Entity (P)) then
-            if not Is_Indefinite_Subtype (Entity (P)) then
+            if Is_Definite_Subtype (Entity (P)) then
                Error_Attr_P
                  ("prefix of % attribute must be indefinite generic type");
             end if;
@@ -7929,7 +7929,7 @@ package body Sem_Attr is
 
       when Attribute_Definite =>
          Rewrite (N, New_Occurrence_Of (
-           Boolean_Literals (not Is_Indefinite_Subtype (P_Entity)), Loc));
+           Boolean_Literals (Is_Definite_Subtype (P_Entity)), Loc));
          Analyze_And_Resolve (N, Standard_Boolean);
 
       -----------
