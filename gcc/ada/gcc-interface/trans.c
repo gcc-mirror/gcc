@@ -4241,11 +4241,11 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 
       /* If it's possible we may need to use this expression twice, make sure
 	 that any side-effects are handled via SAVE_EXPRs; likewise if we need
-	 to force side-effects before the call.
-	 ??? This is more conservative than we need since we don't need to do
-	 this for pass-by-ref with no conversion.  */
-      if (Ekind (gnat_formal) != E_In_Parameter)
-	gnu_name = gnat_stabilize_reference (gnu_name, true, NULL);
+	 to force side-effects before the call.  */
+      if (Ekind (gnat_formal) != E_In_Parameter
+	  && !is_by_ref_formal_parm
+	  && TREE_CODE (gnu_name) != NULL_EXPR)
+	gnu_name = gnat_stabilize_reference (gnu_name, true);
 
       /* If we are passing a non-addressable parameter by reference, pass the
 	 address of a copy.  In the Out or In Out case, set up to copy back
@@ -6099,14 +6099,6 @@ gnat_to_gnu (Node_Id gnat_node)
 	  {
 	    gnu_field = gnat_to_gnu_field_decl (gnat_field);
 
-	    /* If there are discriminants, the prefix might be evaluated more
-	       than once, which is a problem if it has side-effects.  */
-	    if (Has_Discriminants (Is_Access_Type (Etype (Prefix (gnat_node)))
-				   ? Designated_Type (Etype
-						      (Prefix (gnat_node)))
-				   : Etype (Prefix (gnat_node))))
-	      gnu_prefix = gnat_stabilize_reference (gnu_prefix, false, NULL);
-
 	    gnu_result
 	      = build_component_ref (gnu_prefix, NULL_TREE, gnu_field,
 				     (Nkind (Parent (gnat_node))
@@ -7313,7 +7305,6 @@ gnat_to_gnu (Node_Id gnat_node)
 	 gets inserted there as well.  This ensures that the type elaboration
 	 code is issued past the actions computing values on which it might
 	 depend.  */
-
       start_stmt_group ();
       add_stmt_list (Actions (gnat_node));
       gnu_expr = gnat_to_gnu (Expression (gnat_node));
@@ -7498,7 +7489,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	   && TYPE_IS_PADDING_P (TREE_TYPE (gnu_result)))
       && (TREE_CODE (gnu_result_type) == UNCONSTRAINED_ARRAY_TYPE
 	  || CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_result_type))))
-    gnu_result = gnat_stabilize_reference (gnu_result, false, NULL);
+    gnu_result = gnat_protect_expr (gnu_result);
 
   /* Now convert the result to the result type, unless we are in one of the
      following cases:

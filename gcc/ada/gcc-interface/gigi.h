@@ -965,9 +965,8 @@ extern tree gnat_protect_expr (tree exp);
 
 /* This is equivalent to stabilize_reference in tree.c but we know how to
    handle our own nodes and we take extra arguments.  FORCE says whether to
-   force evaluation of everything.  We set SUCCESS to true unless we walk
-   through something we don't know how to stabilize.  */
-extern tree gnat_stabilize_reference (tree ref, bool force, bool *success);
+   force evaluation of everything.  */
+extern tree gnat_stabilize_reference (tree ref, bool force);
 
 /* This is equivalent to get_inner_reference in expr.c but it returns the
    ultimate containing object only if the reference (lvalue) is constant,

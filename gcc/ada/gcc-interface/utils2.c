@@ -2563,6 +2563,17 @@ gnat_mark_addressable (tree t)
     }
 }
 
+/* Return true if EXP is a stable expression for the purpose of the functions
+   below and, therefore, can be returned unmodified by them.  We accept things
+   that are actual constants or that have already been handled.  */
+
+static bool
+gnat_stable_expr_p (tree exp)
+{
+  enum tree_code code = TREE_CODE (exp);
+  return TREE_CONSTANT (exp) || code == NULL_EXPR || code == SAVE_EXPR;
+}
+
 /* Save EXP for later use or reuse.  This is equivalent to save_expr in tree.c
    but we know how to handle our own nodes.  */
 
@@ -2572,7 +2583,7 @@ gnat_save_expr (tree exp)
   tree type = TREE_TYPE (exp);
   enum tree_code code = TREE_CODE (exp);
 
-  if (TREE_CONSTANT (exp) || code == SAVE_EXPR || code == NULL_EXPR)
+  if (gnat_stable_expr_p (exp))
     return exp;
 
   if (code == UNCONSTRAINED_ARRAY_REF)
@@ -2603,7 +2614,7 @@ gnat_protect_expr (tree exp)
   tree type = TREE_TYPE (exp);
   enum tree_code code = TREE_CODE (exp);
 
-  if (TREE_CONSTANT (exp) || code == SAVE_EXPR || code == NULL_EXPR)
+  if (gnat_stable_expr_p (exp))
     return exp;
 
   /* If EXP has no side effects, we theoretically don't need to do anything.
@@ -2669,11 +2680,7 @@ gnat_stabilize_reference_1 (tree e, bool force)
   tree type = TREE_TYPE (e);
   tree result;
 
-  /* We cannot ignore const expressions because it might be a reference
-     to a const array but whose index contains side-effects.  But we can
-     ignore things that are actual constant or that already have been
-     handled by this function.  */
-  if (TREE_CONSTANT (e) || code == SAVE_EXPR)
+  if (gnat_stable_expr_p (e))
     return e;
 
   switch (TREE_CODE_CLASS (code))
@@ -2722,35 +2729,23 @@ gnat_stabilize_reference_1 (tree e, bool force)
       gcc_unreachable ();
     }
 
-  /* See similar handling in gnat_stabilize_reference.  */
   TREE_READONLY (result) = TREE_READONLY (e);
   TREE_SIDE_EFFECTS (result) |= TREE_SIDE_EFFECTS (e);
   TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (e);
-
-  if (code == INDIRECT_REF
-      || code == UNCONSTRAINED_ARRAY_REF
-      || code == ARRAY_REF
-      || code == ARRAY_RANGE_REF)
-    TREE_THIS_NOTRAP (result) = TREE_THIS_NOTRAP (e);
 
   return result;
 }
 
 /* This is equivalent to stabilize_reference in tree.c but we know how to
    handle our own nodes and we take extra arguments.  FORCE says whether to
-   force evaluation of everything.  We set SUCCESS to true unless we walk
-   through something we don't know how to stabilize.  */
+   force evaluation of everything.  */
 
 tree
-gnat_stabilize_reference (tree ref, bool force, bool *success)
+gnat_stabilize_reference (tree ref, bool force)
 {
   tree type = TREE_TYPE (ref);
   enum tree_code code = TREE_CODE (ref);
   tree result;
-
-  /* Assume we'll success unless proven otherwise.  */
-  if (success)
-    *success = true;
 
   switch (code)
     {
@@ -2761,15 +2756,13 @@ gnat_stabilize_reference (tree ref, bool force, bool *success)
       /* No action is needed in this case.  */
       return ref;
 
-    case ADDR_EXPR:
     CASE_CONVERT:
     case FLOAT_EXPR:
     case FIX_TRUNC_EXPR:
     case VIEW_CONVERT_EXPR:
       result
 	= build1 (code, type,
-		  gnat_stabilize_reference (TREE_OPERAND (ref, 0), force,
-					    success));
+		  gnat_stabilize_reference (TREE_OPERAND (ref, 0), force));
       break;
 
     case INDIRECT_REF:
@@ -2781,79 +2774,51 @@ gnat_stabilize_reference (tree ref, bool force, bool *success)
 
     case COMPONENT_REF:
       result = build3 (COMPONENT_REF, type,
-		       gnat_stabilize_reference (TREE_OPERAND (ref, 0), force,
-						 success),
+		       gnat_stabilize_reference (TREE_OPERAND (ref, 0), force),
 		       TREE_OPERAND (ref, 1), NULL_TREE);
       break;
 
     case BIT_FIELD_REF:
       result = build3 (BIT_FIELD_REF, type,
-		       gnat_stabilize_reference (TREE_OPERAND (ref, 0), force,
-						 success),
+		       gnat_stabilize_reference (TREE_OPERAND (ref, 0), force),
 		       TREE_OPERAND (ref, 1), TREE_OPERAND (ref, 2));
       break;
 
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
-      result = build4 (code, type,
-		       gnat_stabilize_reference (TREE_OPERAND (ref, 0), force,
-						 success),
-		       gnat_stabilize_reference_1 (TREE_OPERAND (ref, 1),
-						   force),
-		       NULL_TREE, NULL_TREE);
+      result
+	= build4 (code, type,
+		  gnat_stabilize_reference (TREE_OPERAND (ref, 0), force),
+		  gnat_stabilize_reference_1 (TREE_OPERAND (ref, 1), force),
+		  TREE_OPERAND (ref, 2), TREE_OPERAND (ref, 3));
       break;
 
     case CALL_EXPR:
-      if (call_is_atomic_load (ref))
-	result
-	  = build_call_expr (TREE_OPERAND (CALL_EXPR_FN (ref), 0), 2,
-			     gnat_stabilize_reference (CALL_EXPR_ARG (ref, 0),
-						       force, success),
-			     CALL_EXPR_ARG (ref, 1));
-      else
-	result = gnat_stabilize_reference_1 (ref, force);
-      break;
+      {
+	/* This can only be an atomic load.  */
+	gcc_assert (call_is_atomic_load (ref));
 
-    case COMPOUND_EXPR:
-      result = build2 (COMPOUND_EXPR, type,
-		       gnat_stabilize_reference (TREE_OPERAND (ref, 0), force,
-						 success),
-		       gnat_stabilize_reference (TREE_OPERAND (ref, 1), force,
-						 success));
-      break;
+	/* An atomic load is an INDIRECT_REF of its first argument.  */
+	tree t = CALL_EXPR_ARG (ref, 0);
+	if (TREE_CODE (t) == NOP_EXPR)
+	  t = TREE_OPERAND (t, 0);
+	if (TREE_CODE (t) == ADDR_EXPR)
+	  t = build1 (ADDR_EXPR, TREE_TYPE (t),
+		      gnat_stabilize_reference (TREE_OPERAND (t, 0), force));
+	else
+	  t = gnat_stabilize_reference_1 (t, force);
+	t = fold_convert (TREE_TYPE (CALL_EXPR_ARG (ref, 0)), t);
 
-    case CONSTRUCTOR:
-      /* Constructors with 1 element are used extensively to formally
-	 convert objects to special wrapping types.  */
-      if (TREE_CODE (type) == RECORD_TYPE
-	  && vec_safe_length (CONSTRUCTOR_ELTS (ref)) == 1)
-	{
-	  tree index = (*CONSTRUCTOR_ELTS (ref))[0].index;
-	  tree value = (*CONSTRUCTOR_ELTS (ref))[0].value;
-	  result
-	    = build_constructor_single (type, index,
-					gnat_stabilize_reference_1 (value,
-								    force));
-	}
-      else
-	{
-	  if (success)
-	    *success = false;
-	  return ref;
-	}
+	result = build_call_expr (TREE_OPERAND (CALL_EXPR_FN (ref), 0), 2,
+				  t, CALL_EXPR_ARG (ref, 1));
+      }
       break;
 
     case ERROR_MARK:
-      ref = error_mark_node;
+      return error_mark_node;
 
-      /* ...  fall through to failure ... */
-
-      /* If arg isn't a kind of lvalue we recognize, make no change.
-	 Caller should recognize the error for an invalid lvalue.  */
     default:
-      if (success)
-	*success = false;
-      return ref;
+      gcc_unreachable ();
     }
 
   /* TREE_THIS_VOLATILE and TREE_SIDE_EFFECTS set on the initial expression
