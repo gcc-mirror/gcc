@@ -8856,6 +8856,7 @@ package body Exp_Ch6 is
       Pass_Caller_Acc : Boolean := False;
       Res_Decl        : Node_Id;
       Result_Subt     : Entity_Id;
+      Definite        : Boolean; -- True for definite function result subtype
 
    begin
       --  Step past qualification or unchecked conversion (the latter can occur
@@ -8892,6 +8893,7 @@ package body Exp_Ch6 is
       end if;
 
       Result_Subt := Etype (Function_Id);
+      Definite    := Is_Definite_Subtype (Underlying_Type (Result_Subt));
 
       --  Create an access type designating the function's result subtype. We
       --  use the type of the original call because it may be a call to an
@@ -8912,7 +8914,7 @@ package body Exp_Ch6 is
 
       --  The access type and its accompanying object must be inserted after
       --  the object declaration in the constrained case, so that the function
-      --  call can be passed access to the object. In the unconstrained case,
+      --  call can be passed access to the object. In the indefinite case,
       --  or if the object declaration is for a return object, the access type
       --  and object must be inserted before the object, since the object
       --  declaration is rewritten to be a renaming of a dereference of the
@@ -8920,7 +8922,7 @@ package body Exp_Ch6 is
       --  the result object is in a different (transient) scope, so won't
       --  cause freezing.
 
-      if Is_Constrained (Underlying_Type (Result_Subt))
+      if Definite
         and then not Is_Return_Object (Defining_Identifier (Object_Decl))
       then
          Insert_After_And_Analyze (Object_Decl, Ptr_Typ_Decl);
@@ -8944,7 +8946,7 @@ package body Exp_Ch6 is
       --  function, then the implicit build-in-place parameters of the
       --  enclosing function are simply passed along to the called function.
       --  (Unfortunately, this won't cover the case of extension aggregates
-      --  where the ancestor part is a build-in-place unconstrained function
+      --  where the ancestor part is a build-in-place indefinite function
       --  call that should be passed along the caller's parameters. Currently
       --  those get mishandled by reassigning the result of the call to the
       --  aggregate return object, when the call result should really be
@@ -8980,7 +8982,7 @@ package body Exp_Ch6 is
                     Loc),
                Pool_Actual => Pool_Actual);
 
-         --  Otherwise, if enclosing function has a constrained result subtype,
+         --  Otherwise, if enclosing function has a definite result subtype,
          --  then caller allocation will be used.
 
          else
@@ -9010,12 +9012,12 @@ package body Exp_Ch6 is
                   (Build_In_Place_Formal (Enclosing_Func, BIP_Object_Access),
                    Loc));
 
-      --  In the constrained case, add an implicit actual to the function call
+      --  In the definite case, add an implicit actual to the function call
       --  that provides access to the declared object. An unchecked conversion
       --  to the (specific) result type of the function is inserted to handle
       --  the case where the object is declared with a class-wide type.
 
-      elsif Is_Constrained (Underlying_Type (Result_Subt)) then
+      elsif Definite then
          Caller_Object :=
             Make_Unchecked_Type_Conversion (Loc,
               Subtype_Mark => New_Occurrence_Of (Result_Subt, Loc),
@@ -9025,12 +9027,12 @@ package body Exp_Ch6 is
          --  parameter must be passed indicating that the caller is allocating
          --  the result object. This is needed because such a function can be
          --  called as a dispatching operation and must be treated similarly
-         --  to functions with unconstrained result subtypes.
+         --  to functions with indefinite result subtypes.
 
          Add_Unconstrained_Actuals_To_Build_In_Place_Call
            (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
 
-      --  In other unconstrained cases, pass an indication to do the allocation
+      --  In other indefinite cases, pass an indication to do the allocation
       --  on the secondary stack and set Caller_Object to Empty so that a null
       --  value will be passed for the caller's object address. A transient
       --  scope is established to ensure eventual cleanup of the result.
@@ -9090,11 +9092,11 @@ package body Exp_Ch6 is
 
       Insert_After_And_Analyze (Ptr_Typ_Decl, Res_Decl);
 
-      --  If the result subtype of the called function is constrained and
-      --  is not itself the return expression of an enclosing BIP function,
-      --  then mark the object as having no initialization.
+      --  If the result subtype of the called function is definite and is not
+      --  itself the return expression of an enclosing BIP function, then mark
+      --  the object as having no initialization.
 
-      if Is_Constrained (Underlying_Type (Result_Subt))
+      if Definite
         and then not Is_Return_Object (Defining_Identifier (Object_Decl))
       then
          --  The related object declaration is encased in a transient block
@@ -9118,7 +9120,7 @@ package body Exp_Ch6 is
          Set_Expression (Object_Decl, Empty);
          Set_No_Initialization (Object_Decl);
 
-      --  In case of an unconstrained result subtype, or if the call is the
+      --  In case of an indefinite result subtype, or if the call is the
       --  return expression of an enclosing BIP function, rewrite the object
       --  declaration as an object renaming where the renamed object is a
       --  dereference of <function_Call>'reference:

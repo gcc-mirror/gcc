@@ -11204,7 +11204,7 @@ package body Sem_Util is
             --  Ada 2005 (AI-363): In Ada 2005 an aliased object can be mutable
 
             if not Is_Constrained (Prefix_Type)
-              and then (not Is_Indefinite_Subtype (Prefix_Type)
+              and then (Is_Definite_Subtype (Prefix_Type)
                          or else
                            (Is_Generic_Type (Prefix_Type)
                              and then Ekind (Current_Scope) = E_Generic_Package
@@ -16871,7 +16871,7 @@ package body Sem_Util is
       --  for declaring an object. It might be possible to relax this in the
       --  future, e.g. by declaring the maximum possible space for the type.
 
-      elsif Is_Indefinite_Subtype (Typ) then
+      elsif not Is_Definite_Subtype (Typ) then
          return True;
 
       --  Functions returning tagged types may dispatch on result so their

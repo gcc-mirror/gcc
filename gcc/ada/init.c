@@ -1702,7 +1702,7 @@ __gnat_install_handler ()
 
 #include <signal.h>
 #include <taskLib.h>
-#if defined (i386) || defined (__i386__)
+#if (defined (i386) || defined (__i386__)) && !defined (VTHREADS)
 #include <sysLib.h>
 #endif
 
@@ -1898,7 +1898,7 @@ __gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED,
   Raise_From_Signal_Handler (exception, msg);
 }
 
-#if defined (i386) || defined (__i386__)
+#if (defined (i386) || defined (__i386__)) && !defined (VTHREADS)
 extern void
 __gnat_vxsim_error_handler (int sig, siginfo_t *si, void *sc);
 
@@ -1929,7 +1929,7 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
      necessary.  This only incurs a few extra instructions and a tiny
      amount of extra stack usage.  */
 
-#if defined (i386) || defined (__i386__)
+#if (defined (i386) || defined (__i386__)) && !defined (VTHREADS)
    /* On x86, the vxsim signal context is subtly different and is processeed
       by a handler compiled especially for vxsim.  */
 
@@ -2021,7 +2021,7 @@ __gnat_install_handler (void)
   trap_0_entry->inst_fourth = 0xa1480000;
 #endif
 
-#if defined (i386) || defined (__i386__)
+#if (defined (i386) || defined (__i386__)) && !defined (VTHREADS)
   /*  By experiment, found that sysModel () returns the following string
       prefix for vxsim when running on Linux and Windows.  */
   model = sysModel ();

@@ -2905,8 +2905,8 @@ package body Sem_Ch7 is
             --  The following test may be redundant, as this is already
             --  diagnosed in sem_ch3. ???
 
-            if Is_Indefinite_Subtype (Full)
-              and then not Is_Indefinite_Subtype (Id)
+            if not Is_Definite_Subtype (Full)
+              and then Is_Definite_Subtype (Id)
             then
                Error_Msg_Sloc := Sloc (Parent (Id));
                Error_Msg_NE

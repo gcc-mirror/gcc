@@ -1,3 +1,25 @@
+2015-05-26  Doug Rupp  <rupp@adacore.com>
+
+	* init.c [vxworks]: Refine previous checkin.
+
+2015-05-26  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Wrap_MA): New function.
+	(Expand_N_Op_Expon): Use Wrap_MA.
+
+2015-05-26  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Object_Declaration):
+	Do not use secondary stack to return limited records with
+	defaulted discriminants. This is an efficiency improvement.
+	* exp_ch6.adb, exp_dist.adb, sem_attr.adb, sem_aux.adb, sem_aux.ads,
+	sem_ch12.adb, sem_ch3.adb, sem_ch4.adb, sem_ch6.adb, sem_ch7.adb,
+	sem_util.adb: Change the sense of Is_Indefinite_Subtype to be
+	Is_Definite_Subtype. This is an improvement to readability (the double
+	negative in "not Is_Indefinite_Subtype" was slightly confusing). Also
+	disallow passing non-[sub]type entities, an unnecessary and slightly
+	bug-prone flexibility.
+
 2015-05-26  Robert Dewar  <dewar@adacore.com>
 
 	* sem_aggr.adb (Resolve_Array_Aggregate): Defend against

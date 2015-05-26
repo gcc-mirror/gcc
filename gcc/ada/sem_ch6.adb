@@ -6825,7 +6825,7 @@ package body Sem_Ch6 is
 
             if Has_Discriminants (Formal_Type)
               and then not Is_Constrained (Formal_Type)
-              and then not Is_Indefinite_Subtype (Formal_Type)
+              and then Is_Definite_Subtype (Formal_Type)
               and then (Ada_Version < Ada_2012
                          or else No (Underlying_Type (Formal_Type))
                          or else not

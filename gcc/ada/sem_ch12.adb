@@ -11869,12 +11869,12 @@ package body Sem_Ch12 is
 
          --  It should not be necessary to check for unknown discriminants on
          --  Formal, but for some reason Has_Unknown_Discriminants is false for
-         --  A_Gen_T, so Is_Indefinite_Subtype incorrectly returns False. This
+         --  A_Gen_T, so Is_Definite_Subtype incorrectly returns True. This
          --  needs fixing. ???
 
-         if not Is_Indefinite_Subtype (A_Gen_T)
+         if Is_Definite_Subtype (A_Gen_T)
            and then not Unknown_Discriminants_Present (Formal)
-           and then Is_Indefinite_Subtype (Act_T)
+           and then not Is_Definite_Subtype (Act_T)
          then
             Error_Msg_N ("actual subtype must be constrained", Actual);
             Abandon_Instantiation (Actual);
@@ -12371,8 +12371,8 @@ package body Sem_Ch12 is
               ("actual for & must have preelaborable initialization", Actual,
                Gen_T);
 
-         elsif Is_Indefinite_Subtype (Act_T)
-            and then not Is_Indefinite_Subtype (A_Gen_T)
+         elsif not Is_Definite_Subtype (Act_T)
+            and then Is_Definite_Subtype (A_Gen_T)
             and then Ada_Version >= Ada_95
          then
             Error_Msg_NE
