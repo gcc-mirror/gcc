@@ -1,3 +1,27 @@
+2015-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (gnat_stabilize_reference): Adjust prototype.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not rely on const_flag
+ 	to detect constant renamings.  Be prepared for specific pattern of
+	renamed object based on function calls.  Create a constant object
+	for the renaming of a NULL_EXPR or of a CONSTRUCTOR.  Adjust calls
+	to gnat_stabilize_reference and tidy up.  Remove redundant tests.
+	(elaborate_expression_1): Remove obsolete test and tidy up.
+	* gcc-interface/trans.c (Call_to_gnu): Do not stabilize In/Out or Out
+	parameters passed by reference.
+	(gnat_to_gnu) <N_Selected_Component>: Remove redundant protection again
+	side-effects.
+	Use gnat_protect_expr instead of gnat_stabilize_reference for general
+	protection against side-effects.
+	* gcc-interface/utils2.c (gnat_stable_expr_p): New predicate.
+	(gnat_save_expr): Invoke it.
+	(gnat_protect_expr): Likewise.
+	(gnat_stabilize_reference_1): Likewise.  Remove useless propagation
+	of TREE_THIS_NOTRAP.
+	(gnat_stabilize_reference): Remove parameter and adjust throughout.
+	Delete ADDR_EXDR, COMPOUND_EXPR and CONSTRUCTOR cases.
+	Restrict CALL_EXPR case to atomic loads and tweak ERROR_MARK case.
+
 2015-05-26  Ed Schonberg  <schonberg@adacore.com>
 
 	* sinfo.ads: Minor reformatting.
