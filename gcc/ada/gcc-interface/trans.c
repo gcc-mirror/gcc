@@ -2428,7 +2428,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
       gnu_result = convert (gnu_result_type, gnu_expr);
 
-      if (fp_arith_may_widen
+      if (TREE_CODE (gnu_result) != REAL_CST
+	  && fp_arith_may_widen
 	  && TYPE_PRECISION (gnu_result_type)
 	     < TYPE_PRECISION (longest_float_type_node))
 	{
@@ -2441,7 +2442,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	  finish_record_type (rec_type, field, 0, false);
 
 	  rec_val = build_constructor_single (rec_type, field, gnu_result);
-	  rec_val = save_expr (rec_val);
+	  rec_val = build1 (SAVE_EXPR, rec_type, rec_val);
 
 	  asm_expr
 	    = build5 (ASM_EXPR, void_type_node,
