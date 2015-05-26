@@ -1442,6 +1442,12 @@ case "$have_compiler:$host:$target:$enable_bootstrap" in
     ;;
 esac
 
+# When bootstrapping with GCC, build stage 1 in C++98 mode to ensure that a
+# C++98 compiler can still start the bootstrap.
+if test "$enable_bootstrap:$GXX" = "yes:yes"; then
+  CXX="$CXX -std=c++98"
+fi
+
 # Used for setting $lt_cv_objdir
 _LT_CHECK_OBJDIR
 
