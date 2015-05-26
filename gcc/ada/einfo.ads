@@ -912,7 +912,7 @@ package Einfo is
 --       incomplete type.
 
 --    Disable_Controlled (Flag253)
---      Present in all entities. Set for controlled type (Is_Controlled flag
+--      Present in all entities. Set for a controlled type (Is_Controlled flag
 --      set) if the aspect Disable_Controlled is active for the type.
 
 --    Discard_Names (Flag88)
