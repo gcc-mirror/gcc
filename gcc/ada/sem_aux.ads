@@ -390,10 +390,17 @@ package Sem_Aux is
    --  derived type, and the subtype is not an unconstrained array subtype
    --  (RM 3.3(23.10/3)).
 
-   function Package_Specification (Pack_Id : Entity_Id) return Node_Id;
-   --  Given an entity for a package or generic package, return corresponding
-   --  package specification. Simplifies handling of child units, and better
-   --  than the old idiom: Specification (Unit_Declaration_Node (Pack_Id)).
+   function Package_Body (E : Entity_Id) return Node_Id;
+   --  Given an entity for a package (spec or body), return the corresponding
+   --  package body if any, or else Empty.
+
+   function Package_Spec (E : Entity_Id) return Node_Id;
+   --  Given an entity for a package spec, return the corresponding package
+   --  spec if any, or else Empty.
+
+   function Package_Specification (E : Entity_Id) return Node_Id;
+   --  Given an entity for a package, return the corresponding package
+   --  specification.
 
    function Subprogram_Body (E : Entity_Id) return Node_Id;
    --  Given an entity for a subprogram (spec or body), return the

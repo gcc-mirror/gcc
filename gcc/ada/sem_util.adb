@@ -5674,24 +5674,6 @@ package body Sem_Util is
       end if;
    end Enclosing_Comp_Unit_Node;
 
-   -----------------------------
-   -- Enclosing_Lib_Unit_Node --
-   -----------------------------
-
-   function Enclosing_Lib_Unit_Node (N : Node_Id) return Node_Id is
-      Encl_Unit : Node_Id;
-
-   begin
-      Encl_Unit := Enclosing_Comp_Unit_Node (N);
-      while Present (Encl_Unit)
-        and then Nkind (Unit (Encl_Unit)) = N_Subunit
-      loop
-         Encl_Unit := Library_Unit (Encl_Unit);
-      end loop;
-
-      return Encl_Unit;
-   end Enclosing_Lib_Unit_Node;
-
    --------------------------
    -- Enclosing_CPP_Parent --
    --------------------------
@@ -5713,6 +5695,25 @@ package body Sem_Util is
       pragma Assert (Is_CPP_Class (Parent_Typ));
       return Parent_Typ;
    end Enclosing_CPP_Parent;
+
+   ---------------------------
+   -- Enclosing_Declaration --
+   ---------------------------
+
+   function Enclosing_Declaration (N : Node_Id) return Node_Id is
+      Decl : Node_Id := N;
+
+   begin
+      while Present (Decl)
+        and then not (Nkind (Decl) in N_Declaration
+                        or else
+                      Nkind (Decl) in N_Later_Decl_Item)
+      loop
+         Decl := Parent (Decl);
+      end loop;
+
+      return Decl;
+   end Enclosing_Declaration;
 
    ----------------------------
    -- Enclosing_Generic_Body --
@@ -5815,6 +5816,24 @@ package body Sem_Util is
       return Unit_Entity;
    end Enclosing_Lib_Unit_Entity;
 
+   -----------------------------
+   -- Enclosing_Lib_Unit_Node --
+   -----------------------------
+
+   function Enclosing_Lib_Unit_Node (N : Node_Id) return Node_Id is
+      Encl_Unit : Node_Id;
+
+   begin
+      Encl_Unit := Enclosing_Comp_Unit_Node (N);
+      while Present (Encl_Unit)
+        and then Nkind (Unit (Encl_Unit)) = N_Subunit
+      loop
+         Encl_Unit := Library_Unit (Encl_Unit);
+      end loop;
+
+      return Encl_Unit;
+   end Enclosing_Lib_Unit_Node;
+
    -----------------------
    -- Enclosing_Package --
    -----------------------
@@ -5838,6 +5857,34 @@ package body Sem_Util is
          return Enclosing_Package (Dynamic_Scope);
       end if;
    end Enclosing_Package;
+
+   -------------------------------------
+   -- Enclosing_Package_Or_Subprogram --
+   -------------------------------------
+
+   function Enclosing_Package_Or_Subprogram (E : Entity_Id) return Entity_Id is
+      S : Entity_Id;
+
+   begin
+      S := Scope (E);
+      while Present (S) loop
+         if Is_Package_Or_Generic_Package (S)
+           or else Ekind (S) = E_Package_Body
+         then
+            return S;
+
+         elsif Is_Subprogram_Or_Generic_Subprogram (S)
+           or else Ekind (S) = E_Subprogram_Body
+         then
+            return S;
+
+         else
+            S := Scope (S);
+         end if;
+      end loop;
+
+      return Empty;
+   end Enclosing_Package_Or_Subprogram;
 
    --------------------------
    -- Enclosing_Subprogram --
@@ -10483,6 +10530,16 @@ package body Sem_Util is
       return Nkind (N) = N_Attribute_Reference
         and then Attribute_Name (N) = Name_Result;
    end Is_Attribute_Result;
+
+   -------------------------
+   -- Is_Attribute_Update --
+   -------------------------
+
+   function Is_Attribute_Update (N : Node_Id) return Boolean is
+   begin
+      return Nkind (N) = N_Attribute_Reference
+        and then Attribute_Name (N) = Name_Update;
+   end Is_Attribute_Update;
 
    ------------------------------------
    -- Is_Body_Or_Package_Declaration --

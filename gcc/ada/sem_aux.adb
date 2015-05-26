@@ -481,8 +481,7 @@ package body Sem_Aux is
       if Ekind (E) = E_String_Literal_Subtype then
          return String_Literal_Low_Bound (E);
       else
-         --  Why is this not Type_Low_Bound (E)???
-         return Low_Bound (Scalar_Range (E));
+         return Type_Low_Bound (E);
       end if;
    end Get_Low_Bound;
 
@@ -964,9 +963,9 @@ package body Sem_Aux is
       end if;
    end Is_By_Reference_Type;
 
-   ---------------------------
+   -------------------------
    -- Is_Definite_Subtype --
-   ---------------------------
+   -------------------------
 
    function Is_Definite_Subtype (T : Entity_Id) return Boolean is
       pragma Assert (Is_Type (T));
@@ -1440,22 +1439,60 @@ package body Sem_Aux is
                   and then Has_Discriminants (Typ));
    end Object_Type_Has_Constrained_Partial_View;
 
+   ------------------
+   -- Package_Body --
+   ------------------
+
+   function Package_Body (E : Entity_Id) return Node_Id is
+      N : Node_Id;
+
+   begin
+      if Ekind (E) = E_Package_Body then
+         N := Parent (E);
+
+         if Nkind (N) = N_Defining_Program_Unit_Name then
+            N := Parent (N);
+         end if;
+
+      else
+         N := Package_Spec (E);
+
+         if Present (Corresponding_Body (N)) then
+            N := Parent (Corresponding_Body (N));
+
+            if Nkind (N) = N_Defining_Program_Unit_Name then
+               N := Parent (N);
+            end if;
+         else
+            N := Empty;
+         end if;
+      end if;
+
+      return N;
+   end Package_Body;
+
+   ------------------
+   -- Package_Spec --
+   ------------------
+
+   function Package_Spec (E : Entity_Id) return Node_Id is
+   begin
+      return Parent (Package_Specification (E));
+   end Package_Spec;
+
    ---------------------------
    -- Package_Specification --
    ---------------------------
 
-   function Package_Specification (Pack_Id : Entity_Id) return Node_Id is
+   function Package_Specification (E : Entity_Id) return Node_Id is
       N : Node_Id;
 
    begin
-      N := Parent (Pack_Id);
-      while Nkind (N) /= N_Package_Specification loop
-         N := Parent (N);
+      N := Parent (E);
 
-         if No (N) then
-            raise Program_Error;
-         end if;
-      end loop;
+      if Nkind (N) = N_Defining_Program_Unit_Name then
+         N := Parent (N);
+      end if;
 
       return N;
    end Package_Specification;
@@ -1489,13 +1526,19 @@ package body Sem_Aux is
 
       --  If this declaration is not a subprogram body, then it must be a
       --  subprogram declaration, from which we can retrieve the entity for
-      --  the corresponding subprogram body if any.
+      --  the corresponding subprogram body if any, or an abstract subprogram
+      --  declaration, for which we return Empty.
 
-      if Nkind (N) = N_Subprogram_Body then
-         return E;
-      else
-         return Corresponding_Body (N);
-      end if;
+      case Nkind (N) is
+         when N_Subprogram_Body =>
+            return E;
+
+         when N_Subprogram_Declaration =>
+            return Corresponding_Body (N);
+
+         when others =>
+            return Empty;
+      end case;
    end Subprogram_Body_Entity;
 
    ---------------------
