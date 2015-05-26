@@ -1,5 +1,12 @@
 2015-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Machine>: Do not apply
+	extra-precision trick to literals.  Build SAVE_EXPR manually.
+
+	* gcc-interface/misc.c (enumerate_modes): Add bypass for x86/x86-64.
+
+2015-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.h (DECL_GLOBAL_NONCONSTANT_RENAMING_P): Delete
 	(DECL_RENAMED_OBJECT): Adjust comment.
 	* gcc-interface/gigi.h (record_global_nonconstant_renaming): Delete.

@@ -847,7 +847,12 @@ enumerate_modes (void (*f) (const char *, int, int, int, int, int, int, int))
 	      || fmt == &ieee_extended_intel_96_format
 	      || fmt == &ieee_extended_intel_96_round_53_format
 	      || fmt == &ieee_extended_intel_128_format)
-	    fp_arith_may_widen = true;
+	    {
+#ifdef TARGET_FPMATH_DEFAULT
+	      if (TARGET_FPMATH_DEFAULT == FPMATH_387)
+#endif
+		fp_arith_may_widen = true;
+	    }
 
 	  if (fmt->b == 2)
 	    digs = (fmt->p - 1) * 1233 / 4096; /* scale by log (2) */
