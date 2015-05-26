@@ -1163,15 +1163,10 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 					  true, false)))
 	gnu_result = DECL_INITIAL (gnu_result);
 
-      /* If it's a renaming pointer and not a global non-constant renaming or
-	 we are at the global level, the we can reference the renamed object
-	 directly, since it is either constant or has been protected against
-	 multiple evaluations.  */
+      /* If it's a renaming pointer, get to the renamed object.  */
       if (TREE_CODE (gnu_result) == VAR_DECL
           && !DECL_LOOP_PARM_P (gnu_result)
-	  && DECL_RENAMED_OBJECT (gnu_result)
-	  && (!DECL_GLOBAL_NONCONSTANT_RENAMING_P (gnu_result)
-	      || global_bindings_p ()))
+	  && DECL_RENAMED_OBJECT (gnu_result))
 	gnu_result = DECL_RENAMED_OBJECT (gnu_result);
 
       /* Otherwise, do the final dereference.  */
@@ -3975,16 +3970,32 @@ outer_atomic_access_required_p (Node_Id gnat_node)
 {
   gnat_node = gnat_strip_type_conversion (gnat_node);
 
-  while (Nkind (gnat_node) == N_Indexed_Component
-	 || Nkind (gnat_node) == N_Selected_Component
-	 || Nkind (gnat_node) == N_Slice)
+  while (true)
     {
-      gnat_node = gnat_strip_type_conversion (Prefix (gnat_node));
-      if (node_has_volatile_full_access (gnat_node))
-	return true;
+      switch (Nkind (gnat_node))
+	{
+	case N_Identifier:
+	case N_Expanded_Name:
+	  if (No (Renamed_Object (Entity (gnat_node))))
+	    return false;
+	  gnat_node
+	    = gnat_strip_type_conversion (Renamed_Object (Entity (gnat_node)));
+	  break;
+
+	case N_Indexed_Component:
+	case N_Selected_Component:
+	case N_Slice:
+	  gnat_node = gnat_strip_type_conversion (Prefix (gnat_node));
+	  if (node_has_volatile_full_access (gnat_node))
+	    return true;
+	  break;
+
+	default:
+	  return false;
+	}
     }
 
-  return false;
+  gcc_unreachable ();
 }
 
 /* Return true if GNAT_NODE requires atomic access and set SYNC according to
@@ -5290,11 +5301,6 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   info->gnat_node = gnat_node;
   elab_info_list = info;
 
-  /* Invalidate the global non-constant renamings.  This is necessary because
-     stabilization of the renamed entities may create SAVE_EXPRs which have
-     been tied to a specific elaboration routine just above.  */
-  invalidate_global_nonconstant_renamings ();
-
   /* Force the processing for all nodes that remain in the queue.  */
   process_deferred_decl_context (true);
 }
@@ -5838,8 +5844,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  tree gnu_temp
 	    = gnat_to_gnu_entity (gnat_temp,
 				  gnat_to_gnu (Renamed_Object (gnat_temp)), 1);
-	  /* We need to make sure that the side-effects of the renamed object
-	     are evaluated at this point, so we evaluate its address.  */
+	  /* See case 2 of renaming in gnat_to_gnu_entity.  */
 	  if (TREE_SIDE_EFFECTS (gnu_temp))
 	    gnu_result = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_temp);
 	}
@@ -7932,6 +7937,26 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 	  *expr_p = fold_convert (type, addr);
 	  return GS_ALL_DONE;
 	}
+
+      /* Replace atomic loads with their first argument.  That's necessary
+	 because the gimplifier would create a temporary otherwise.  */
+      if (TREE_SIDE_EFFECTS (op))
+	while (handled_component_p (op) || CONVERT_EXPR_P (op))
+	  {
+	    tree inner = TREE_OPERAND (op, 0);
+	    if (TREE_CODE (inner) == CALL_EXPR && call_is_atomic_load (inner))
+	      {
+		tree t = CALL_EXPR_ARG (inner, 0);
+		if (TREE_CODE (t) == NOP_EXPR)
+		  t = TREE_OPERAND (t, 0);
+		if (TREE_CODE (t) == ADDR_EXPR)
+		  TREE_OPERAND (op, 0) = TREE_OPERAND (t, 0);
+		else
+		  TREE_OPERAND (op, 0) = build_fold_indirect_ref (t);
+	      }
+	    else
+	      op = inner;
+	  }
 
       return GS_UNHANDLED;
 

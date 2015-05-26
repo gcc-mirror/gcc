@@ -179,6 +179,7 @@ static bool type_has_variable_size (tree);
 static tree elaborate_expression_1 (tree, Entity_Id, const char *, bool, bool);
 static tree elaborate_expression_2 (tree, Entity_Id, const char *, bool, bool,
 				    unsigned int);
+static tree elaborate_reference (tree, Entity_Id, bool);
 static tree gnat_to_gnu_component_type (Entity_Id, bool, bool);
 static tree gnat_to_gnu_param (Entity_Id, Mechanism_Type, Entity_Id, bool,
 			       bool *);
@@ -557,11 +558,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  break;
 	}
 
-      /* If we have an external constant that we are not defining, get the
-	 expression that is was defined to represent.  We may throw it away
-	 later if it is not a constant.  But do not retrieve the expression
-	 if it is an allocator because the designated type might be dummy
-	 at this point.  */
+      /* If we have a constant that we are not defining, get the expression it
+	 was defined to represent.  This is necessary to avoid generating dumb
+	 elaboration code in simple cases, but we may throw it away later if it
+	 is not a constant.  But do not retrieve it if it is an allocator since
+	 the designated type might still be dummy at this point.  */
       if (!definition
 	  && !No_Initialization (Declaration_Node (gnat_entity))
 	  && Present (Expression (Declaration_Node (gnat_entity)))
@@ -995,32 +996,31 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       before the call to "=".  */
 	    if (TREE_CODE (inner) == TRUTH_ANDIF_EXPR)
 	      inner = TREE_OPERAND (inner, 1);
-	    if (TREE_CODE (inner) == CALL_EXPR
-	        || TREE_CODE (inner) == NULL_EXPR
-	        || TREE_CODE (inner) == CONSTRUCTOR
+	    if ((TREE_CODE (inner) == CALL_EXPR
+		 && !call_is_atomic_load (inner))
+		|| TREE_CODE (inner) == NULL_EXPR
+		|| TREE_CODE (inner) == CONSTRUCTOR
 		|| CONSTANT_CLASS_P (inner))
 	      ;
 
 	    /* Case 2: if the renaming entity need not be materialized, use
-	       the stabilized renamed expression for the renaming.  At the
-	       global level, we can do this only if we know no SAVE_EXPRs
-	       need be made, because otherwise the expression would be tied
-	       to a specific elaboration routine.  */
-	    else if (!Materialize_Entity (gnat_entity)
-		     && (!global_bindings_p ()
-			 || (staticp (gnu_expr)
-			     && !TREE_SIDE_EFFECTS (gnu_expr))))
+	       the elaborated renamed expression for the renaming.  But this
+	       means that the caller is responsible for evaluating the address
+	       of the renaming at the correct spot in the definition case to
+	       instantiate the SAVE_EXPRs.  */
+	    else if (!Materialize_Entity (gnat_entity))
 	      {
-		gnu_decl = gnat_stabilize_reference (gnu_expr, true);
+		gnu_decl
+		  = elaborate_reference (gnu_expr, gnat_entity, definition);
 
-		/* ??? No DECL_EXPR is created so we need to mark
-		   the expression manually lest it is shared.  */
+		/* No DECL_EXPR will be created so the expression needs to be
+		   marked manually because it will likely be shared.  */
 		if (global_bindings_p ())
 		  MARK_VISITED (gnu_decl);
 
-		/* This assertion will fail if the renamed object isn't
-		   aligned enough as to make it possible to honor the
-		   alignment set on the renaming.  */
+		/* This assertion will fail if the renamed object isn't aligned
+		   enough as to make it possible to honor the alignment set on
+		   the renaming.  */
 		if (align)
 		  {
 		    unsigned int ralign = DECL_P (gnu_decl)
@@ -1036,52 +1036,41 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      }
 
 	    /* Case 3: otherwise, make a constant pointer to the object we
-	       are to rename and attach the object to the pointer after it
-	       is stabilized.
-
-	       From the proper scope, attached objects will be referenced
-	       directly instead of indirectly via the pointer to avoid
-	       subtle aliasing problems with non-addressable entities.
-	       They have to be stable because we must not evaluate the
-	       variables in the expression every time the renaming is used.
-	       The pointer is called a "renaming" pointer in this case.
-
-	       Note that we need to preserve the volatility of the renamed
-	       object through the indirection.  */
+	       are renaming and attach the object to the pointer after it is
+	       elaborated.  The object will be referenced directly instead
+	       of indirectly via the pointer to avoid aliasing problems with
+	       non-addressable entities.  The pointer is called a "renaming"
+	       pointer in this case.  Note that we also need to preserve the
+	       volatility of the renamed object through the indirection.  */
 	    else
 	      {
 		if (TREE_THIS_VOLATILE (gnu_expr) && !TYPE_VOLATILE (gnu_type))
 		  gnu_type
 		    = change_qualified_type (gnu_type, TYPE_QUAL_VOLATILE);
+
 		gnu_type = build_reference_type (gnu_type);
-		inner_const_flag = TREE_READONLY (gnu_expr);
+		used_by_ref = true;
 		const_flag = true;
+		inner_const_flag = TREE_READONLY (gnu_expr);
+		gnu_size = NULL_TREE;
 
-		/* Stabilize and attach the expression to the pointer.
+		renamed_obj
+		  = elaborate_reference (gnu_expr, gnat_entity, definition);
 
-		   Note that this might introduce SAVE_EXPRs and we don't
-		   check whether we are at the global level or not.  This
-		   is fine since we are building a pointer initializer and
-		   neither the pointer nor the initializing expression can
-		   be accessed before the pointer elaboration has taken
-		   place in a correct program.
-
-		   These SAVE_EXPRs will be evaluated at the right place
-		   by either the evaluation of the initializer for the
-		   non-global case or the elaboration code for the global
-		   case, and will be attached to the elaboration procedure
-		   in the latter case.  */
-		renamed_obj = gnat_stabilize_reference (gnu_expr, true);
+		/* If we are not defining the entity, the expression will not
+		   be attached through DECL_INITIAL so it needs to be marked
+		   manually because it will likely be shared.  Likewise for a
+		   dereference as it will be folded by the ADDR_EXPR below.  */
+		if ((!definition || TREE_CODE (renamed_obj) == INDIRECT_REF)
+		    && global_bindings_p ())
+		  MARK_VISITED (renamed_obj);
 
 		if (type_annotate_only
- 		    && TREE_CODE (renamed_obj) == ERROR_MARK)
+		    && TREE_CODE (renamed_obj) == ERROR_MARK)
 		  gnu_expr = NULL_TREE;
 		else
 		  gnu_expr
 		    = build_unary_op (ADDR_EXPR, gnu_type, renamed_obj);
-
-		gnu_size = NULL_TREE;
-		used_by_ref = true;
 	      }
 	  }
 
@@ -1173,9 +1162,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	    save_gnu_tree (gnat_entity, NULL_TREE, false);
 
-	    /* Ignore the size.  It's either meaningless or was handled
-	       above.  */
-	    gnu_size = NULL_TREE;
 	    /* Convert the type of the object to a reference type that can
 	       alias everything as per 13.3(19).  */
 	    gnu_type
@@ -1185,6 +1171,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    const_flag
 	      = !Is_Public (gnat_entity)
 		|| compile_time_known_address_p (gnat_expr);
+	    gnu_size = NULL_TREE;
 
 	    /* If this is a deferred constant, the initializer is attached to
 	       the full view.  */
@@ -1221,6 +1208,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       alias everything as per 13.3(19).  */
 	    gnu_type
 	      = build_reference_type_for_mode (gnu_type, ptr_mode, true);
+	    used_by_ref = true;
 	    gnu_size = NULL_TREE;
 
 	    /* No point in taking the address of an initializing expression
@@ -1241,8 +1229,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    const_flag = true;
 		  }
 	      }
-
-	    used_by_ref = true;
 	  }
 
 	/* If we are at top level and this object is of variable size,
@@ -1269,8 +1255,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 					|| static_p)))
 	  {
 	    gnu_type = build_reference_type (gnu_type);
-	    gnu_size = NULL_TREE;
 	    used_by_ref = true;
+	    const_flag = true;
+	    gnu_size = NULL_TREE;
 
 	    /* In case this was a aliased object whose nominal subtype is
 	       unconstrained, the pointer above will be a thin pointer and
@@ -1313,13 +1300,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		gnu_expr
 		  = build_allocator (gnu_alloc_type, gnu_expr, gnu_type,
 				     Empty, Empty, gnat_entity, mutable_p);
-		const_flag = true;
 	      }
 	    else
-	      {
-		gnu_expr = NULL_TREE;
-		const_flag = false;
-	      }
+	      gnu_expr = NULL_TREE;
 	  }
 
 	/* If this object would go into the stack and has an alignment larger
@@ -1357,9 +1340,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		 build_component_ref (gnu_new_var, NULL_TREE,
 				      TYPE_FIELDS (gnu_new_type), false));
 
-	    gnu_size = NULL_TREE;
 	    used_by_ref = true;
 	    const_flag = true;
+	    gnu_size = NULL_TREE;
 	  }
 
 	/* If this is an aliased object with an unconstrained nominal subtype,
@@ -1389,10 +1372,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_unc_var);
 		TREE_CONSTANT (gnu_expr) = 1;
 
-		gnu_size = NULL_TREE;
 		used_by_ref = true;
-		inner_const_flag = TREE_READONLY (gnu_unc_var);
 		const_flag = true;
+		inner_const_flag = TREE_READONLY (gnu_unc_var);
+		gnu_size = NULL_TREE;
 	      }
 
 	    gnu_type
@@ -1481,20 +1464,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	else if (kind == E_Loop_Parameter)
 	  DECL_LOOP_PARM_P (gnu_decl) = 1;
 
-	/* If this is a renaming pointer, attach the renamed object to it and
-	   register it if we are at the global level and the renamed object
-	   is a non-constant reference.  */
+	/* If this is a renaming pointer, attach the renamed object to it.  */
 	if (renamed_obj)
-	  {
-	    SET_DECL_RENAMED_OBJECT (gnu_decl, renamed_obj);
-
-	    if (global_bindings_p ()
-		&& !gnat_constant_reference_p (renamed_obj))
-	      {
-		DECL_GLOBAL_NONCONSTANT_RENAMING_P (gnu_decl) = 1;
-		record_global_nonconstant_renaming (gnu_decl);
-	      }
-	  }
+	  SET_DECL_RENAMED_OBJECT (gnu_decl, renamed_obj);
 
 	/* If this is a constant and we are defining it or it generates a real
 	   symbol at the object level and we are referencing it, we may want
@@ -6109,7 +6081,7 @@ prepend_attributes (struct attrib **attr_list, Entity_Id gnat_entity)
 /* Given a GNAT tree GNAT_EXPR, for an expression which is a value within a
    type definition (either a bound or a discriminant value) for GNAT_ENTITY,
    return the GCC tree to use for that expression.  S is the suffix to use
-   if a variable needs to be created and DEFINITION is true if this is made
+   if a variable needs to be created and DEFINITION is true if this is done
    for a definition of GNAT_ENTITY.  If NEED_VALUE is true, we need a result;
    otherwise, we are just elaborating the expression for side-effects.  If
    NEED_DEBUG is true, we need a variable for debugging purposes even if it
@@ -6249,6 +6221,50 @@ elaborate_expression_2 (tree gnu_expr, Entity_Id gnat_entity, const char *s,
 					gnat_entity, s, definition,
 					need_debug),
 		unit_align);
+}
+
+/* Structure to hold internal data for elaborate_reference.  */
+
+struct er_data
+{
+  Entity_Id entity;
+  bool definition;
+};
+
+/* Wrapper function around elaborate_expression_1 for elaborate_reference.  */
+
+static tree
+elaborate_reference_1 (tree ref, void *data, int n)
+{
+  struct er_data *er = (struct er_data *)data;
+  char suffix[16];
+
+  /* This is what elaborate_expression_1 does if NEED_DEBUG is false.  */
+  if (TREE_CONSTANT (ref))
+    return ref;
+
+  /* If this is a COMPONENT_REF of a fat pointer, elaborate the entire fat
+     pointer.  This may be more efficient, but will also allow us to more
+     easily find the match for the PLACEHOLDER_EXPR.  */
+  if (TREE_CODE (ref) == COMPONENT_REF
+      && TYPE_IS_FAT_POINTER_P (TREE_TYPE (TREE_OPERAND (ref, 0))))
+    return build3 (COMPONENT_REF, TREE_TYPE (ref),
+		   elaborate_reference_1 (TREE_OPERAND (ref, 0), data, n),
+		   TREE_OPERAND (ref, 1), TREE_OPERAND (ref, 2));
+
+  sprintf (suffix, "EXP%d", n);
+  return
+    elaborate_expression_1 (ref, er->entity, suffix, er->definition, false);
+}
+
+/* Elaborate the reference REF to be used as renamed object for GNAT_ENTITY.
+   DEFINITION is true if this is done for a definition of GNAT_ENTITY.  */
+
+static tree
+elaborate_reference (tree ref, Entity_Id gnat_entity, bool definition)
+{
+  struct er_data er = { gnat_entity, definition };
+  return gnat_rewrite_reference (ref, elaborate_reference_1, &er);
 }
 
 /* Given a GNU tree and a GNAT list of choices, generate an expression to test
