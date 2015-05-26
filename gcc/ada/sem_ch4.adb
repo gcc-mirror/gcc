@@ -83,59 +83,10 @@ package body Sem_Ch4 is
       N_Pragma                         => True,
       N_Range                          => True,
       N_Slice                          => True,
-
-      --  N_Array_Type_Definition
-
-      --  why not
-      --  N_Array_Type_Definition      => True,
-      --  etc ???
-
-      N_Constrained_Array_Definition   => True,
-      N_Unconstrained_Array_Definition => True,
-
-      --  N_Membership_Test
-
-      N_In                             => True,
-      N_Not_In                         => True,
-
-      --  N_Binary_Op
-
-      N_Op_Add                         => True,
-      N_Op_Concat                      => True,
-      N_Op_Expon                       => True,
-      N_Op_Subtract                    => True,
-
-      N_Op_Divide                      => True,
-      N_Op_Mod                         => True,
-      N_Op_Multiply                    => True,
-      N_Op_Rem                         => True,
-
-      N_Op_And                         => True,
-
-      N_Op_Eq                          => True,
-      N_Op_Ge                          => True,
-      N_Op_Gt                          => True,
-      N_Op_Le                          => True,
-      N_Op_Lt                          => True,
-      N_Op_Ne                          => True,
-
-      N_Op_Or                          => True,
-      N_Op_Xor                         => True,
-
-      N_Op_Rotate_Left                 => True,
-      N_Op_Rotate_Right                => True,
-      N_Op_Shift_Left                  => True,
-      N_Op_Shift_Right                 => True,
-      N_Op_Shift_Right_Arithmetic      => True,
-
-      N_Op_Not                         => True,
-      N_Op_Plus                        => True,
-
-      --  N_Subprogram_Call
-
-      N_Function_Call                  => True,
-      N_Procedure_Call_Statement       => True,
-
+      N_Array_Type_Definition          => True,
+      N_Membership_Test                => True,
+      N_Binary_Op                      => True,
+      N_Subprogram_Call                => True,
       others                           => False);
 
    --  The following table enumerates the nodes on which we stop climbing when
@@ -155,18 +106,7 @@ package body Sem_Ch4 is
       N_Pragma                       => True,
       N_Procedure_Call_Statement     => True,
       N_Simple_Return_Statement      => True,
-
-      --  N_Has_Condition
-
-      N_Exit_Statement               => True,
-      N_If_Statement                 => True,
-
-      N_Accept_Alternative           => True,
-      N_Delay_Alternative            => True,
-      N_Elsif_Part                   => True,
-      N_Entry_Body_Formal_Part       => True,
-      N_Iteration_Scheme             => True,
-
+      N_Has_Condition                => True,
       others                         => False);
 
    -----------------------

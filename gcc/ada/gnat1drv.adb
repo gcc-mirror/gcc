@@ -202,6 +202,16 @@ procedure Gnat1drv is
          GNATprove_Mode := False;
          Debug_Flag_Dot_FF := False;
 
+         --  Turn off C tree generation, not compatible with CodePeer mode. We
+         --  do not expect this to happen in normal use, since both modes are
+         --  enabled by special tools, but it is useful to turn off these flags
+         --  this way when we are doing codepeer tests on existing test suites
+         --  that may have -gnatd.V set, to avoid the need for special casing.
+
+         Modify_Tree_For_C := False;
+         Generate_C_Code := False;
+         Unnest_Subprogram_Mode := False;
+
          --  Turn off inlining, confuses CodePeer output and gains nothing
 
          Front_End_Inlining := False;

@@ -1,3 +1,11 @@
+2015-05-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb: Minor adjustments.
+	(Adjust_Global_Switches): Disable some related flags in CodePeer mode.
+	* sem_ch4.adb (Has_Arbitrary_Evaluation_Order,
+	Stop_Subtree_Climbind): Code cleanup.
+	* einfo.ads: Minor comment change.
+
 2015-05-26  Javier Miranda  <miranda@adacore.com>
 
 	* sem_aggr.adb (Resolve_Aggregate, Resolve_Extension_Aggregate):
