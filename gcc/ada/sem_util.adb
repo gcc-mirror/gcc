@@ -10951,6 +10951,46 @@ package body Sem_Util is
         and then Is_Imported (Entity (Name (N)));
    end Is_CPP_Constructor_Call;
 
+   -------------------------
+   -- Is_Current_Instance --
+   -------------------------
+
+   function Is_Current_Instance (N : Node_Id) return Boolean is
+      Typ : constant Entity_Id := Entity (N);
+      P   : Node_Id;
+
+   begin
+      --  Simplest case : entity is a concurrent type and  we are currently
+      --  inside the body. This will eventually be expanded into a
+      --  call to Self (for tasks) or _object (for protected objects).
+
+      if Is_Concurrent_Type (Typ) and then In_Open_Scopes (Typ) then
+         return True;
+
+      else
+         --  Check whether the context is a (sub)type declaration for the
+         --  type entity.
+
+         P := Parent (N);
+         while Present (P) loop
+            if Nkind_In (P, N_Full_Type_Declaration,
+                            N_Private_Type_Declaration,
+                            N_Subtype_Declaration)
+              and then Comes_From_Source (P)
+              and then Defining_Entity (P) = Typ
+            then
+               return True;
+            end if;
+
+            P := Parent (P);
+         end loop;
+      end if;
+
+      --  In any other context this is not a current occurence
+
+      return False;
+   end Is_Current_Instance;
+
    --------------------
    -- Is_Declaration --
    --------------------

@@ -1237,6 +1237,12 @@ package Sem_Util is
    --  First determine whether type T is an interface and then check whether
    --  it is of protected, synchronized or task kind.
 
+   function Is_Current_Instance (N : Node_Id) return Boolean;
+   --  Predicate is true if N legally denotes a type name within its own
+   --  declaration. Prior to Ada 2012 this covered only synchronized type
+   --  declarations. In Ada2012 it also covers type and subtype declarations
+   --  with aspects: Invariant, Predicate, and Default_Initial_Condition.
+
    function Is_Declaration (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a declaration
 

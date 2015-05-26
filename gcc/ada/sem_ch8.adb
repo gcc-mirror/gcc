@@ -6950,6 +6950,13 @@ package body Sem_Ch8 is
             if P_Name = Any_Id  then
                null;
 
+            --  It is not an error if the prefix is the current instance of
+            --  type name, e.g. the expression of a type aspect, when it is
+            --  analyzed for ASIS use.
+
+            elsif Is_Entity_Name (P) and then Is_Current_Instance (P) then
+               null;
+
             elsif Ekind (P_Name) = E_Void then
                Premature_Usage (P);
 

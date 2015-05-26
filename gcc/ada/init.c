@@ -1694,15 +1694,17 @@ __gnat_install_handler ()
   __gnat_handler_installed = 1;
 }
 
-/*******************/
-/* VxWorks Section */
-/*******************/
+/*************************************/
+/* VxWorks Section (including Vx653) */
+/*************************************/
 
 #elif defined(__vxworks)
 
 #include <signal.h>
 #include <taskLib.h>
+#if defined (i386) || defined (__i386__)
 #include <sysLib.h>
+#endif
 
 #ifndef __RTP__
 #include <intLib.h>

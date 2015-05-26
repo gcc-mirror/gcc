@@ -34,6 +34,7 @@ with Casing;   use Casing;
 with Csets;    use Csets;
 with Debug;    use Debug;
 with Err_Vars; use Err_Vars;
+with Fname;    use Fname;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Output;   use Output;
@@ -1035,6 +1036,8 @@ package body Erroutc is
    procedure Set_Msg_Insertion_Line_Number (Loc, Flag : Source_Ptr) is
       Sindex_Loc  : Source_File_Index;
       Sindex_Flag : Source_File_Index;
+      Fname       : File_Name_Type;
+      Int_File    : Boolean;
 
       procedure Set_At;
       --  Outputs "at " unless last characters in buffer are " from ". Certain
@@ -1083,21 +1086,24 @@ package body Erroutc is
 
          if Full_File_Name (Sindex_Loc) /= Full_File_Name (Sindex_Flag) then
             Set_At;
-            Get_Name_String
-              (Reference_Name (Get_Source_File_Index (Loc)));
+            Fname := Reference_Name (Get_Source_File_Index (Loc));
+            Int_File := Is_Internal_File_Name (Fname);
+            Get_Name_String (Fname);
             Set_Msg_Name_Buffer;
-            Set_Msg_Char (':');
+
+            if not (Int_File and Debug_Flag_Dot_K) then
+               Set_Msg_Char (':');
+               Set_Msg_Int (Int (Get_Logical_Line_Number (Loc)));
+            end if;
 
          --  If in current file, add text "at line "
 
          else
             Set_At;
             Set_Msg_Str ("line ");
+            Int_File := False;
+            Set_Msg_Int (Int (Get_Logical_Line_Number (Loc)));
          end if;
-
-         --  Output line number for reference
-
-         Set_Msg_Int (Int (Get_Logical_Line_Number (Loc)));
 
          --  Deal with the instantiation case. We may have a reference to,
          --  e.g. a type, that is declared within a generic template, and
