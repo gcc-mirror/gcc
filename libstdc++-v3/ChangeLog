@@ -1,3 +1,21 @@
+2015-05-26  Doug Evans  <dje@google.com>
+
+	Backported from mainline
+	2015-04-29  Doug Evans  <dje@google.com>
+
+	Use consistent naming for value type attributes.
+	* python/libstdcxx/v6/xmethods.py (ArrayWorkerBase): Rename _valtype
+	to _val_type.
+	(ArraySizeWorker, ArrayEmptyWorker): Ditto.
+	(ArrayFrontWorker, ArrayBackWorker): Ditto.
+	(ArrayAtWorker, ArraySubscriptWorker): Ditto.
+	(DequeWorkerBase): Rename elemtype to val_type.
+	(ForwardListWorkerBase): Rename _elem_type to _val_type.
+	(ForwardListFrontWorker): Ditto.  And rename elem_address to
+	val_address.
+	(ForwardListMethodsMatcher): Rename elem_type to val_type.
+	(VectorWorkerBase): Rename _elemtype to _val_type.
+
 2015-05-22  David Edelsohn  <dje.gcc@gmail.com>
 
 	Backported from mainline
