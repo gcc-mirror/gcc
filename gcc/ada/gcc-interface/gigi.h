@@ -712,12 +712,6 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
 		     const_flag, public_flag, extern_flag,		\
 		     static_flag, false, attr_list, gnat_node)
 
-/* Record DECL as a global non-constant renaming.  */
-extern void record_global_nonconstant_renaming (tree decl);
-
-/* Invalidate the global non-constant renamings.  */
-extern void invalidate_global_nonconstant_renamings (void);
-
 /* Return a FIELD_DECL node.  FIELD_NAME is the field's name, FIELD_TYPE is
    its type and RECORD_TYPE is the type of the enclosing record.  If SIZE is
    nonzero, it is the specified size of the field.  If POS is nonzero, it is
@@ -968,14 +962,18 @@ extern tree gnat_protect_expr (tree exp);
    force evaluation of everything.  */
 extern tree gnat_stabilize_reference (tree ref, bool force);
 
+/* Rewrite reference REF and call FUNC on each expression within REF in the
+   process.  DATA is passed unmodified to FUNC and N is bumped each time it
+   is passed to FUNC, so FUNC is guaranteed to see a given N only once per
+   reference to be rewritten.  */
+typedef tree (*rewrite_fn) (tree, void *, int);
+extern tree gnat_rewrite_reference (tree ref, rewrite_fn func, void *data,
+				    int n = 1);
+
 /* This is equivalent to get_inner_reference in expr.c but it returns the
    ultimate containing object only if the reference (lvalue) is constant,
    i.e. if it doesn't depend on the context in which it is evaluated.  */
 extern tree get_inner_constant_reference (tree exp);
-
-/* Return true if REF is a constant reference, i.e. a reference (lvalue) that
-   doesn't depend on the context in which it is evaluated.  */
-extern bool gnat_constant_reference_p (tree ref);
 
 /* If EXPR is an expression that is invariant in the current function, in the
    sense that it can be evaluated anywhere in the function and any number of
@@ -1072,4 +1070,18 @@ static inline unsigned HOST_WIDE_INT
 ceil_pow2 (unsigned HOST_WIDE_INT x)
 {
   return (unsigned HOST_WIDE_INT) 1 << (floor_log2 (x - 1) + 1);
+}
+
+/* Return true if EXP, a CALL_EXPR, is an atomic load.  */
+
+static inline bool
+call_is_atomic_load (tree exp)
+{
+  tree fndecl = get_callee_fndecl (exp);
+
+  if (!(fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL))
+    return false;
+
+  enum built_in_function code = DECL_FUNCTION_CODE (fndecl);
+  return BUILT_IN_ATOMIC_LOAD_N <= code && code <= BUILT_IN_ATOMIC_LOAD_16;
 }
