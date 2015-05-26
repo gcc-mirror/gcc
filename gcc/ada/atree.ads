@@ -730,7 +730,7 @@ package Atree is
    -----------------------
 
    --  Utility functions to test whether an Entity_Kind value, either given
-   --  directly as the first argument, or the Ekind field of an Entity give
+   --  directly as the first argument, or the Ekind field of an Entity given
    --  as the first argument, matches any of the given list of Entity_Kind
    --  values. Return True if any match, False if no match.
 

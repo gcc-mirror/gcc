@@ -2062,6 +2062,7 @@ package body Sem_Util is
    procedure Check_Function_Writable_Actuals (N : Node_Id) is
       Writable_Actuals_List : Elist_Id := No_Elist;
       Identifiers_List      : Elist_Id := No_Elist;
+      Aggr_Error_Node       : Node_Id  := Empty;
       Error_Node            : Node_Id  := Empty;
 
       procedure Collect_Identifiers (N : Node_Id);
@@ -2117,6 +2118,14 @@ package body Sem_Util is
                                            E_Procedure,
                                            E_Entry)
                then
+                  return Skip;
+
+               --  For rewriten nodes we continue the traversal in the original
+               --  subtree. Needed to handle in aggregates original expressions
+               --  extracted from the tree by Remove_Side_Effects.
+
+               elsif Is_Rewrite_Substitution (N) then
+                  Collect_Identifiers (Original_Node (N));
                   return Skip;
 
                --  For now we skip aggregate discriminants, since they require
@@ -2600,6 +2609,75 @@ package body Sem_Util is
                         end if;
                      end if;
                   end;
+
+               --  For an array aggregate a discrete_choice_list that has a
+               --  nonstatic range, is considered as two or more separate
+               --  occurrences of the expression (RM 6.20/3)
+
+               elsif Is_Array_Type (Etype (N))
+                 and then Nkind (N) = N_Aggregate
+                 and then Present (Aggregate_Bounds (N))
+                 and then not Compile_Time_Known_Bounds (Etype (N))
+               then
+                  --  Collect identifiers found in the dynamic bounds
+
+                  declare
+                     Count_Components : Natural := 0;
+                     Low, High        : Node_Id;
+
+                  begin
+                     Assoc := First (Component_Associations (N));
+                     while Present (Assoc) loop
+                        Choice := First (Choices (Assoc));
+                        while Present (Choice) loop
+                           if Nkind_In (Choice, N_Range,
+                                                   N_Subtype_Indication)
+                             or else (Is_Entity_Name (Choice)
+                                       and then Is_Type (Entity (Choice)))
+                           then
+                              Get_Index_Bounds (Choice, Low, High);
+
+                              if not Compile_Time_Known_Value (Low) then
+                                 Collect_Identifiers (Low);
+
+                                 if No (Aggr_Error_Node) then
+                                    Aggr_Error_Node := Low;
+                                 end if;
+                              end if;
+
+                              if not Compile_Time_Known_Value (High) then
+                                 Collect_Identifiers (High);
+
+                                 if No (Aggr_Error_Node) then
+                                    Aggr_Error_Node := High;
+                                 end if;
+                              end if;
+
+                           --  For the purposes of this check it is enough to
+                           --  consider that we cover a single component since
+                           --  since the RM rule is violated as far as I find
+                           --  more than one component.
+
+                           else
+                              Count_Components := Count_Components + 1;
+
+                              if No (Aggr_Error_Node)
+                                and then Count_Components > 1
+                              then
+                                 Aggr_Error_Node := Choice;
+                              end if;
+
+                              if not Compile_Time_Known_Value (Choice) then
+                                 Collect_Identifiers (Choice);
+                              end if;
+                           end if;
+
+                           Next (Choice);
+                        end loop;
+
+                        Next (Assoc);
+                     end loop;
+                  end;
                end if;
 
                --  Handle ancestor part of extension aggregates
@@ -2676,6 +2754,18 @@ package body Sem_Util is
       --  No further action needed if we already reported an error
 
       if Present (Error_Node) then
+         return;
+      end if;
+
+      --  Check violation of RM 6.20/3 in aggregates
+
+      if Present (Aggr_Error_Node)
+        and then Writable_Actuals_List /= No_Elist
+      then
+         Error_Msg_N
+           ("value may be affected by call in other component because they "
+            & "are evaluated in unspecified order",
+            Node (First_Elmt (Writable_Actuals_List)));
          return;
       end if;
 

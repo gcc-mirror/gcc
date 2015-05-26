@@ -3156,10 +3156,20 @@ package body Sem_Ch13 is
                         goto Continue;
                      end if;
 
-                     if not Present (Expr)
-                       or else Is_True (Static_Boolean (Expr))
-                     then
-                        Set_Disable_Controlled (E);
+                     Analyze_And_Resolve (Expr, Standard_Boolean);
+
+                     --  If we're in a generic template, we don't want to try
+                     --  to disable controlled types, because typical usage is
+                     --  "Disable_Controlled => not <some_check>'Enabled", and
+                     --  the value of Enabled is not known until we see a
+                     --  particular instance.
+
+                     if Expander_Active then
+                        if not Present (Expr)
+                          or else Is_True (Static_Boolean (Expr))
+                        then
+                           Set_Disable_Controlled (E);
+                        end if;
                      end if;
 
                      goto Continue;

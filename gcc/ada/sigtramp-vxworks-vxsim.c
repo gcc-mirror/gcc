@@ -29,9 +29,17 @@
  *                                                                          *
  ****************************************************************************/
 
-/**************************************************
- * VxWorks version of the __gnat_sigtramp service *
- **************************************************/
+/********************************************************
+ * VxWorks VXSIM version of the __gnat_sigtramp service *
+ ********************************************************/
+
+#undef CPU
+
+#ifndef __RTP__
+#define CPU SIMNT
+#else
+#define CPU SIMPENTIUM
+#endif
 
 #include "sigtramp.h"
 /* See sigtramp.h for a general explanation of functionality.  */
@@ -91,7 +99,7 @@ typedef struct ucontext
 
 /* sigtramp stub providing CFI info for common registers.  */
 
-extern void __gnat_sigtramp_common
+extern void __gnat_sigtramp_vxsim_common
 (int signo, void *siginfo, void *sigcontext,
  __sigtramphandler_t * handler, void * sc_pregs);
 
@@ -102,11 +110,11 @@ extern void __gnat_sigtramp_common
 
    We enforce optimization to minimize the overhead of the extra layer.  */
 
-void __gnat_sigtramp (int signo, void *si, void *sc,
+void __gnat_sigtramp_vxsim (int signo, void *si, void *sc,
 		      __sigtramphandler_t * handler)
      __attribute__((optimize(2)));
 
-void __gnat_sigtramp (int signo, void *si, void *sc,
+void __gnat_sigtramp_vxsim (int signo, void *si, void *sc,
 		      __sigtramphandler_t * handler)
 {
 #ifdef __RTP__
@@ -114,11 +122,11 @@ void __gnat_sigtramp (int signo, void *si, void *sc,
 
   /* Pass MCONTEXT in the fifth position so that the assembly code can find
      it at the same stack location or in the same register as SC_PREGS.  */
-  __gnat_sigtramp_common (signo, si, mcontext, handler, mcontext);
+  __gnat_sigtramp_vxsim_common (signo, si, mcontext, handler, mcontext);
 #else
   struct sigcontext * sctx = (struct sigcontext *) sc;
 
-  __gnat_sigtramp_common (signo, si, sctx, handler, sctx->sc_pregs);
+  __gnat_sigtramp_vxsim_common (signo, si, sctx, handler, sctx->sc_pregs);
 #endif
 }
 
@@ -127,7 +135,7 @@ void __gnat_sigtramp (int signo, void *si, void *sc,
 
 /* sigtramp stub for common registers.  */
 
-#define TRAMP_COMMON __gnat_sigtramp_common
+#define TRAMP_COMMON __gnat_sigtramp_vxsim_common
 
 asm (SIGTRAMP_START(TRAMP_COMMON));
 asm (CFI_DEF_CFA);
