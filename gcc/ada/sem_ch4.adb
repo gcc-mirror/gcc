@@ -65,6 +65,110 @@ with Uintp;    use Uintp;
 
 package body Sem_Ch4 is
 
+   --  Tables which speed up the identification of dangerous calls to Ada 2012
+   --  functions with writable actuals (AI05-0144).
+
+   --  The following table enumerates the Ada constructs which may evaluate in
+   --  arbitrary order. It does not cover all the language constructs which can
+   --  be evaluated in arbitrary order but the subset needed for AI05-0144.
+
+   Has_Arbitrary_Evaluation_Order : constant array (Node_Kind) of Boolean :=
+     (N_Aggregate                      => True,
+      N_Assignment_Statement           => True,
+      N_Entry_Call_Statement           => True,
+      N_Extension_Aggregate            => True,
+      N_Full_Type_Declaration          => True,
+      N_Indexed_Component              => True,
+      N_Object_Declaration             => True,
+      N_Pragma                         => True,
+      N_Range                          => True,
+      N_Slice                          => True,
+
+      --  N_Array_Type_Definition
+
+      --  why not
+      --  N_Array_Type_Definition      => True,
+      --  etc ???
+
+      N_Constrained_Array_Definition   => True,
+      N_Unconstrained_Array_Definition => True,
+
+      --  N_Membership_Test
+
+      N_In                             => True,
+      N_Not_In                         => True,
+
+      --  N_Binary_Op
+
+      N_Op_Add                         => True,
+      N_Op_Concat                      => True,
+      N_Op_Expon                       => True,
+      N_Op_Subtract                    => True,
+
+      N_Op_Divide                      => True,
+      N_Op_Mod                         => True,
+      N_Op_Multiply                    => True,
+      N_Op_Rem                         => True,
+
+      N_Op_And                         => True,
+
+      N_Op_Eq                          => True,
+      N_Op_Ge                          => True,
+      N_Op_Gt                          => True,
+      N_Op_Le                          => True,
+      N_Op_Lt                          => True,
+      N_Op_Ne                          => True,
+
+      N_Op_Or                          => True,
+      N_Op_Xor                         => True,
+
+      N_Op_Rotate_Left                 => True,
+      N_Op_Rotate_Right                => True,
+      N_Op_Shift_Left                  => True,
+      N_Op_Shift_Right                 => True,
+      N_Op_Shift_Right_Arithmetic      => True,
+
+      N_Op_Not                         => True,
+      N_Op_Plus                        => True,
+
+      --  N_Subprogram_Call
+
+      N_Function_Call                  => True,
+      N_Procedure_Call_Statement       => True,
+
+      others                           => False);
+
+   --  The following table enumerates the nodes on which we stop climbing when
+   --  locating the outermost Ada construct that can be evaluated in arbitrary
+   --  order.
+
+   Stop_Subtree_Climbing : constant array (Node_Kind) of Boolean :=
+     (N_Aggregate                    => True,
+      N_Assignment_Statement         => True,
+      N_Entry_Call_Statement         => True,
+      N_Extended_Return_Statement    => True,
+      N_Extension_Aggregate          => True,
+      N_Full_Type_Declaration        => True,
+      N_Object_Declaration           => True,
+      N_Object_Renaming_Declaration  => True,
+      N_Package_Specification        => True,
+      N_Pragma                       => True,
+      N_Procedure_Call_Statement     => True,
+      N_Simple_Return_Statement      => True,
+
+      --  N_Has_Condition
+
+      N_Exit_Statement               => True,
+      N_If_Statement                 => True,
+
+      N_Accept_Alternative           => True,
+      N_Delay_Alternative            => True,
+      N_Elsif_Part                   => True,
+      N_Entry_Body_Formal_Part       => True,
+      N_Iteration_Scheme             => True,
+
+      others                         => False);
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -830,10 +934,7 @@ package body Sem_Ch4 is
       end if;
 
       Operator_Check (N);
-
-      if Check_Actuals (N) then
-         Check_Function_Writable_Actuals (N);
-      end if;
+      Check_Function_Writable_Actuals (N);
    end Analyze_Arithmetic_Op;
 
    ------------------
@@ -945,40 +1046,6 @@ package body Sem_Ch4 is
       --  enabled.
 
       procedure Check_Writable_Actuals (N : Node_Id) is
-
-         function Is_Arbitrary_Evaluation_Order_Construct
-           (N : Node_Id) return Boolean;
-         --  Return True if N is an Ada construct which may be evaluated in
-         --  an arbitrary order. This function does not cover all the language
-         --  constructs that can be evaluated in arbitrary order, but only the
-         --  subset needed for AI05-0144.
-
-         ---------------------------------------------
-         -- Is_Arbitrary_Evaluation_Order_Construct --
-         ---------------------------------------------
-
-         function Is_Arbitrary_Evaluation_Order_Construct
-           (N : Node_Id) return Boolean is
-         begin
-            return Nkind (N) = N_Aggregate
-               or else Nkind (N) = N_Assignment_Statement
-               or else Nkind (N) = N_Full_Type_Declaration
-               or else Nkind (N) = N_Entry_Call_Statement
-               or else Nkind (N) = N_Extension_Aggregate
-               or else Nkind (N) = N_Indexed_Component
-               or else Nkind (N) = N_Object_Declaration
-               or else Nkind (N) = N_Pragma
-               or else Nkind (N) = N_Range
-               or else Nkind (N) = N_Slice
-
-               or else Nkind (N) in N_Array_Type_Definition
-               or else Nkind (N) in N_Membership_Test
-               or else Nkind (N) in N_Op
-               or else Nkind (N) in N_Subprogram_Call;
-         end Is_Arbitrary_Evaluation_Order_Construct;
-
-      --  Start of processing for Check_Writable_Actuals
-
       begin
          if Comes_From_Source (N)
            and then Present (Get_Subprogram_Entity (N))
@@ -1010,31 +1077,19 @@ package body Sem_Ch4 is
                      --  to the routine that will later take care of
                      --  performing the writable actuals check.
 
-                     if Is_Arbitrary_Evaluation_Order_Construct (P)
-                       and then Nkind (P) /= N_Assignment_Statement
-                       and then Nkind (P) /= N_Object_Declaration
+                     if Has_Arbitrary_Evaluation_Order (Nkind (P))
+                       and then not Nkind_In (P, N_Assignment_Statement,
+                                                 N_Object_Declaration)
                      then
                         Outermost := P;
                      end if;
 
                      --  Avoid climbing more than needed!
 
-                     exit when Nkind (P) = N_Aggregate
-                       or else Nkind (P) = N_Assignment_Statement
-                       or else Nkind (P) = N_Entry_Call_Statement
-                       or else Nkind (P) = N_Extended_Return_Statement
-                       or else Nkind (P) = N_Extension_Aggregate
-                       or else Nkind (P) = N_Full_Type_Declaration
-                       or else Nkind (P) = N_Object_Declaration
-                       or else Nkind (P) = N_Object_Renaming_Declaration
-                       or else Nkind (P) = N_Package_Specification
-                       or else Nkind (P) = N_Pragma
-                       or else Nkind (P) = N_Procedure_Call_Statement
-                       or else Nkind (P) = N_Simple_Return_Statement
+                     exit when Stop_Subtree_Climbing (Nkind (P))
                        or else (Nkind (P) = N_Range
                                  and then not
-                                   Nkind_In (Parent (P), N_In, N_Not_In))
-                       or else Nkind (P) in N_Has_Condition;
+                                   Nkind_In (Parent (P), N_In, N_Not_In));
 
                      P := Parent (P);
                   end loop;
@@ -1411,9 +1466,7 @@ package body Sem_Ch4 is
          --  an arbitrary order is precisely this call, then check all its
          --  actuals.
 
-         if Check_Actuals (N) then
-            Check_Function_Writable_Actuals (N);
-         end if;
+         Check_Function_Writable_Actuals (N);
       end if;
    end Analyze_Call;
 
@@ -1632,10 +1685,7 @@ package body Sem_Ch4 is
       end if;
 
       Operator_Check (N);
-
-      if Check_Actuals (N) then
-         Check_Function_Writable_Actuals (N);
-      end if;
+      Check_Function_Writable_Actuals (N);
    end Analyze_Comparison_Op;
 
    ---------------------------
@@ -1883,10 +1933,7 @@ package body Sem_Ch4 is
       end if;
 
       Operator_Check (N);
-
-      if Check_Actuals (N) then
-         Check_Function_Writable_Actuals (N);
-      end if;
+      Check_Function_Writable_Actuals (N);
    end Analyze_Equality_Op;
 
    ----------------------------------
@@ -2710,10 +2757,7 @@ package body Sem_Ch4 is
       end if;
 
       Operator_Check (N);
-
-      if Check_Actuals (N) then
-         Check_Function_Writable_Actuals (N);
-      end if;
+      Check_Function_Writable_Actuals (N);
    end Analyze_Logical_Op;
 
    ---------------------------
@@ -2869,10 +2913,7 @@ package body Sem_Ch4 is
 
       if No (R) and then Ada_Version >= Ada_2012 then
          Analyze_Set_Membership;
-
-         if Check_Actuals (N) then
-            Check_Function_Writable_Actuals (N);
-         end if;
+         Check_Function_Writable_Actuals (N);
 
          return;
       end if;
@@ -2946,9 +2987,7 @@ package body Sem_Ch4 is
          Error_Msg_N ("membership test not applicable to cpp-class types", N);
       end if;
 
-      if Check_Actuals (N) then
-         Check_Function_Writable_Actuals (N);
-      end if;
+      Check_Function_Writable_Actuals (N);
    end Analyze_Membership_Op;
 
    -----------------
@@ -4028,9 +4067,7 @@ package body Sem_Ch4 is
          Check_Universal_Expression (H);
       end if;
 
-      if Check_Actuals (N) then
-         Check_Function_Writable_Actuals (N);
-      end if;
+      Check_Function_Writable_Actuals (N);
    end Analyze_Range;
 
    -----------------------

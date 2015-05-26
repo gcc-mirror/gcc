@@ -1257,7 +1257,6 @@ package body Exp_Ch6 is
             begin
                if Is_Renaming_Of_Object (Var)
                  and then Nkind (Renamed_Object (Var)) = N_Selected_Component
-                 and then Is_Entity_Name (Prefix (Renamed_Object (Var)))
                  and then Nkind (Original_Node (Prefix (Renamed_Object (Var))))
                    = N_Indexed_Component
                  and then

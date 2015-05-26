@@ -2324,11 +2324,12 @@ package body Sem_Util is
    --  Start of processing for Check_Function_Writable_Actuals
 
    begin
-      --  The check only applies to Ada 2012 code, and only to constructs that
-      --  have multiple constituents whose order of evaluation is not specified
-      --  by the language.
+      --  The check only applies to Ada 2012 code on which Check_Actuals has
+      --  been set, and only to constructs that have multiple constituents
+      --  whose order of evaluation is not specified by the language.
 
       if Ada_Version < Ada_2012
+        or else not Check_Actuals (N)
         or else (not (Nkind (N) in N_Op)
                   and then not (Nkind (N) in N_Membership_Test)
                   and then not Nkind_In (N, N_Range,
