@@ -1160,11 +1160,21 @@ package body Exp_Aggr is
                    Typ               => Ctype,
                    With_Default_Init => True));
 
+               --  If the component type has invariants, add an invariant
+               --  check after the component is default-initialized. It will
+               --  be analyzed and resolved before the code for initialization
+               --  of other components.
+
+               if Has_Invariants (Ctype) then
+                  Set_Etype (Indexed_Comp, Ctype);
+                  Append_To (L, Make_Invariant_Call (Indexed_Comp));
+               end if;
+
             elsif Is_Access_Type (Ctype) then
                Append_To (L,
-                  Make_Assignment_Statement (Loc,
-                    Name       => Indexed_Comp,
-                    Expression => Make_Null (Loc)));
+                 Make_Assignment_Statement (Loc,
+                   Name       => Indexed_Comp,
+                   Expression => Make_Null (Loc)));
             end if;
 
             if Needs_Finalization (Ctype) then
@@ -1392,7 +1402,7 @@ package body Exp_Aggr is
 
          L_Range :=
            Make_Range (Loc,
-             Low_Bound => L_L,
+             Low_Bound  => L_L,
              High_Bound => L_H);
 
          --  Construct "for L_J in Index_Base range L .. H"
@@ -1911,8 +1921,7 @@ package body Exp_Aggr is
                         return Duplicate_Subexpr (Expression (Assoc));
                      end if;
 
-                     Corresp_Disc :=
-                       Corresponding_Discriminant (Corresp_Disc);
+                     Corresp_Disc := Corresponding_Discriminant (Corresp_Disc);
                   end loop;
                end if;
 
@@ -1954,8 +1963,7 @@ package body Exp_Aggr is
                   while Present (Corresp_Disc)
                     and then Disc /= Corresp_Disc
                   loop
-                     Corresp_Disc :=
-                       Corresponding_Discriminant (Corresp_Disc);
+                     Corresp_Disc := Corresponding_Discriminant (Corresp_Disc);
                   end loop;
 
                   if Disc = Corresp_Disc then
@@ -1984,8 +1992,10 @@ package body Exp_Aggr is
 
                   if No (Assoc_Elmt) then
                      Next (Assoc);
+
                   else
                      Next_Elmt (Assoc_Elmt);
+
                      if Present (Assoc_Elmt) then
                         Assoc := Node (Assoc_Elmt);
                      else
@@ -2022,7 +2032,7 @@ package body Exp_Aggr is
 
             if Present (Disc_Value) then
                Cond := Make_Op_Ne (Loc,
-                 Left_Opnd =>
+                 Left_Opnd  =>
                    Make_Selected_Component (Loc,
                      Prefix        => New_Copy_Tree (Target),
                      Selector_Name => New_Occurrence_Of (Discr, Loc)),
@@ -2504,7 +2514,7 @@ package body Exp_Aggr is
                --  expansion, which was delayed.
 
                if Nkind_In (Unqualify (Ancestor), N_Aggregate,
-                                               N_Extension_Aggregate)
+                                                  N_Extension_Aggregate)
                then
                   Set_Analyzed (Ancestor, False);
                   Set_Analyzed (Expression (Ancestor), False);
@@ -2530,9 +2540,9 @@ package body Exp_Aggr is
                if Tagged_Type_Expansion then
                   Instr :=
                     Make_OK_Assignment_Statement (Loc,
-                      Name =>
+                      Name       =>
                         Make_Selected_Component (Loc,
-                          Prefix => New_Copy_Tree (Target),
+                          Prefix        => New_Copy_Tree (Target),
                           Selector_Name =>
                             New_Occurrence_Of
                               (First_Tag_Component (Base_Type (Typ)), Loc)),
@@ -2617,10 +2627,10 @@ package body Exp_Aggr is
                       Selector_Name => New_Occurrence_Of (Discriminant, Loc));
 
                   Discriminant_Value :=
-                    Get_Discriminant_Value (
-                      Discriminant,
-                      N_Typ,
-                      Discriminant_Constraint (N_Typ));
+                    Get_Discriminant_Value
+                      (Discriminant,
+                       N_Typ,
+                       Discriminant_Constraint (N_Typ));
 
                   Instr :=
                     Make_OK_Assignment_Statement (Loc,
@@ -2670,7 +2680,7 @@ package body Exp_Aggr is
                if Present (CPP_Init_Proc (T)) then
                   Append_To (L,
                     Make_Procedure_Call_Statement (Loc,
-                      New_Occurrence_Of (CPP_Init_Proc (T), Loc)));
+                      Name => New_Occurrence_Of (CPP_Init_Proc (T), Loc)));
                end if;
             end Invoke_IC_Proc;
 
