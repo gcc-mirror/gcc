@@ -1,3 +1,9 @@
+2015-05-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66142
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Manually compare
+	MEM_REFs for the same base address.
+
 2015-05-26  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR ipa/66181

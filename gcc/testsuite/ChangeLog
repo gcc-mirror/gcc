@@ -1,3 +1,8 @@
+2015-05-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66142
+	* gcc.dg/tree-ssa/ssa-fre-44.c: New testcase.
+
 2015-05-26  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/66082

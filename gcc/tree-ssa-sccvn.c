@@ -1894,7 +1894,12 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       size2 = lhs_ref.size;
       maxsize2 = lhs_ref.max_size;
       if (maxsize2 == -1
-	  || (base != base2 && !operand_equal_p (base, base2, 0))
+	  || (base != base2
+	      && (TREE_CODE (base) != MEM_REF
+		  || TREE_CODE (base2) != MEM_REF
+		  || TREE_OPERAND (base, 0) != TREE_OPERAND (base2, 0)
+		  || !tree_int_cst_equal (TREE_OPERAND (base, 1),
+					  TREE_OPERAND (base2, 1))))
 	  || offset2 > offset
 	  || offset2 + size2 < offset + maxsize)
 	return (void *)-1;
