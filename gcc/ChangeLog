@@ -1,3 +1,16 @@
+2015-05-26  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	PR target/66049
+	* config/aarch64/aarch64.md
+	(*adds_shift_imm_<mode>):  New pattern.
+	(*subs_shift_imm_<mode>):  Likewise.
+	(*adds_<optab><ALLX:mode>_shift_<GPI:mode>):  Likewise.
+	(*subs_<optab><ALLX:mode>_shift_<GPI:mode>): Likewise.
+	(*add_uxt<mode>_shift2): Likewise.
+	(*add_uxtsi_shift2_uxtw): Likewise.
+	(*sub_uxt<mode>_shift2): Likewise.
+	(*sub_uxtsi_shift2_uxtw): Likewise.
+
 2015-05-26  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/constraints.md (Y, U): Use match_test.
