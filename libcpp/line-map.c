@@ -26,6 +26,18 @@ along with this program; see the file COPYING3.  If not see
 #include "internal.h"
 #include "hashtab.h"
 
+/* Do not track column numbers higher than this one.  As a result, the
+   range of column_bits is [7, 18] (or 0 if column numbers are
+   disabled).  */
+const unsigned int LINE_MAP_MAX_COLUMN_NUMBER = (1U << 17);
+
+/* Do not track column numbers if locations get higher than this.  */
+const source_location LINE_MAP_MAX_LOCATION_WITH_COLS = 0x60000000;
+
+/* Highest possible source location encoded within an ordinary or
+   macro map.  */
+const source_location LINE_MAP_MAX_SOURCE_LOCATION = 0x70000000;
+
 static void trace_include (const struct line_maps *, const line_map_ordinary *);
 static const line_map_ordinary * linemap_ordinary_map_lookup (struct line_maps *,
 							      source_location);
@@ -544,22 +556,23 @@ linemap_line_start (struct line_maps *set, linenum_type to_line,
       || (max_column_hint >= (1U << ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map)))
       || (max_column_hint <= 80
 	  && ORDINARY_MAP_NUMBER_OF_COLUMN_BITS (map) >= 10)
-      || (highest > 0x60000000
-	  && (set->max_column_hint || highest > 0x70000000)))
+      || (highest > LINE_MAP_MAX_LOCATION_WITH_COLS
+	  && (set->max_column_hint || highest >= LINE_MAP_MAX_SOURCE_LOCATION)))
     add_map = true;
   else
     max_column_hint = set->max_column_hint;
   if (add_map)
     {
       int column_bits;
-      if (max_column_hint > 100000 || highest > 0x60000000)
+      if (max_column_hint > LINE_MAP_MAX_COLUMN_NUMBER
+	  || highest > LINE_MAP_MAX_LOCATION_WITH_COLS)
 	{
 	  /* If the column number is ridiculous or we've allocated a huge
 	     number of source_locations, give up on column numbers. */
 	  max_column_hint = 0;
-	  if (highest > 0x70000000)
-	    return 0;
 	  column_bits = 0;
+	  if (highest > LINE_MAP_MAX_SOURCE_LOCATION)
+	    return 0;
 	}
       else
 	{
@@ -615,7 +628,8 @@ linemap_position_for_column (struct line_maps *set, unsigned int to_column)
 
   if (to_column >= set->max_column_hint)
     {
-      if (r >= 0xC000000 || to_column > 100000)
+      if (r > LINE_MAP_MAX_LOCATION_WITH_COLS
+	  || to_column > LINE_MAP_MAX_COLUMN_NUMBER)
 	{
 	  /* Running low on source_locations - disable column numbers.  */
 	  return r;

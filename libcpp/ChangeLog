@@ -1,3 +1,11 @@
+2015-05-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* line-map.c (LINE_MAP_MAX_COLUMN_NUMBER
+	LINE_MAP_MAX_LOCATION_WITH_COLS,LINE_MAP_MAX_SOURCE_LOCATION):
+	New constants.
+	(linemap_line_start): Use them.
+	(linemap_position_for_column): Use them.
+
 2015-05-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (MAP_START_LOCATION): Eliminate the non-const
