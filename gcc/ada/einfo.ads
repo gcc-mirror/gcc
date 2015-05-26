@@ -1756,7 +1756,7 @@ package Einfo is
 --       Object_Size clauses for a given entity.
 
 --    Has_Out_Or_In_Out_Parameter (Flag110)
---       Present in subprograms, generic subprograms, entries and entry
+--       Present in subprograms, generic subprograms, entries, and entry
 --       families. Set if they have at least one OUT or IN OUT parameter
 --       (allowed for functions only in Ada 2012).
 

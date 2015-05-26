@@ -1,3 +1,22 @@
+2015-05-26  Gary Dismukes  <dismukes@adacore.com>
+
+	* einfo.ads, sem_util.adb, sem_ch4.adb: Minor reformatting.
+
+2015-05-26  Robert Dewar  <dewar@adacore.com>
+
+	* exp_unst.adb, exp_unst.ads: Change to using Subps table index for
+	making AREC entity names unique.
+
+2015-05-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_cat.adb (Has_Stream_Attribute_Definition): If the type
+	has aspect specifications, examine the corresponding list of
+	representation items to determine whether there is a visible
+	stream operation. The attribute definition clause generated from
+	the aspect will be inserted at the freeze point of the type,
+	which may be in the private part and not directly visible,
+	but the aspect makes the operation available to a client.
+
 2015-05-26  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.adb: Minor code reorganization.
