@@ -204,8 +204,8 @@ static char did_you_mean_codes[NUM_RTX_CODE];
    predicate expression EXP, writing the result to CODES.  LINENO is
    the line number on which the directive containing EXP appeared.  */
 
-static void
-compute_predicate_codes (rtx exp, int lineno, char codes[NUM_RTX_CODE])
+void
+compute_test_codes (rtx exp, int lineno, char *codes)
 {
   char op0_codes[NUM_RTX_CODE];
   char op1_codes[NUM_RTX_CODE];
@@ -215,29 +215,29 @@ compute_predicate_codes (rtx exp, int lineno, char codes[NUM_RTX_CODE])
   switch (GET_CODE (exp))
     {
     case AND:
-      compute_predicate_codes (XEXP (exp, 0), lineno, op0_codes);
-      compute_predicate_codes (XEXP (exp, 1), lineno, op1_codes);
+      compute_test_codes (XEXP (exp, 0), lineno, op0_codes);
+      compute_test_codes (XEXP (exp, 1), lineno, op1_codes);
       for (i = 0; i < NUM_RTX_CODE; i++)
 	codes[i] = TRISTATE_AND (op0_codes[i], op1_codes[i]);
       break;
 
     case IOR:
-      compute_predicate_codes (XEXP (exp, 0), lineno, op0_codes);
-      compute_predicate_codes (XEXP (exp, 1), lineno, op1_codes);
+      compute_test_codes (XEXP (exp, 0), lineno, op0_codes);
+      compute_test_codes (XEXP (exp, 1), lineno, op1_codes);
       for (i = 0; i < NUM_RTX_CODE; i++)
 	codes[i] = TRISTATE_OR (op0_codes[i], op1_codes[i]);
       break;
     case NOT:
-      compute_predicate_codes (XEXP (exp, 0), lineno, op0_codes);
+      compute_test_codes (XEXP (exp, 0), lineno, op0_codes);
       for (i = 0; i < NUM_RTX_CODE; i++)
 	codes[i] = TRISTATE_NOT (op0_codes[i]);
       break;
 
     case IF_THEN_ELSE:
       /* a ? b : c  accepts the same codes as (a & b) | (!a & c).  */
-      compute_predicate_codes (XEXP (exp, 0), lineno, op0_codes);
-      compute_predicate_codes (XEXP (exp, 1), lineno, op1_codes);
-      compute_predicate_codes (XEXP (exp, 2), lineno, op2_codes);
+      compute_test_codes (XEXP (exp, 0), lineno, op0_codes);
+      compute_test_codes (XEXP (exp, 1), lineno, op1_codes);
+      compute_test_codes (XEXP (exp, 2), lineno, op2_codes);
       for (i = 0; i < NUM_RTX_CODE; i++)
 	codes[i] = TRISTATE_OR (TRISTATE_AND (op0_codes[i], op1_codes[i]),
 				TRISTATE_AND (TRISTATE_NOT (op0_codes[i]),
@@ -321,7 +321,7 @@ compute_predicate_codes (rtx exp, int lineno, char codes[NUM_RTX_CODE])
 
     default:
       error_with_line (lineno,
-		       "'%s' cannot be used in a define_predicate expression",
+		       "'%s' cannot be used in predicates or constraints",
 		       GET_RTX_NAME (GET_CODE (exp)));
       memset (codes, I, NUM_RTX_CODE);
       break;
@@ -373,7 +373,7 @@ process_define_predicate (rtx desc, int lineno)
   if (GET_CODE (desc) == DEFINE_SPECIAL_PREDICATE)
     pred->special = true;
 
-  compute_predicate_codes (XEXP (desc, 1), lineno, codes);
+  compute_test_codes (XEXP (desc, 1), lineno, codes);
 
   for (i = 0; i < NUM_RTX_CODE; i++)
     if (codes[i] != N)
