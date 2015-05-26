@@ -121,18 +121,18 @@ package body Ghost is
 
          Error_Msg_N ("incompatible ghost policies in effect", Partial_View);
          Error_Msg_N ("\& declared with ghost policy `Check`", Partial_View);
-         Error_Msg_N
-           ("\& completed # with ghost policy `Ignore`", Partial_View);
+         Error_Msg_N ("\& completed # with ghost policy `Ignore`",
+                                                               Partial_View);
 
       elsif Is_Ignored_Ghost_Entity (Partial_View)
         and then Policy = Name_Check
       then
          Error_Msg_Sloc := Sloc (Full_View);
 
-         Error_Msg_N ("incompatible ghost policies in effect", Partial_View);
+         Error_Msg_N ("incompatible ghost policies in effect",  Partial_View);
          Error_Msg_N ("\& declared with ghost policy `Ignore`", Partial_View);
-         Error_Msg_N
-           ("\& completed # with ghost policy `Check`", Partial_View);
+         Error_Msg_N ("\& completed # with ghost policy `Check`",
+                                                                Partial_View);
       end if;
    end Check_Ghost_Completion;
 
@@ -300,7 +300,8 @@ package body Ghost is
 
                if GP = Name_Ignore and then AP /= Name_Ignore then
                   Error_Msg_N
-                    ("incompatible ghost policies in effect", Ghost_Ref);
+                    ("incompatible ghost policies in effect",
+                     Ghost_Ref);
                   Error_Msg_NE
                     ("\ghost entity & has policy `Ignore`",
                      Ghost_Ref, Ghost_Id);
@@ -494,14 +495,14 @@ package body Ghost is
 
             Error_Msg_N  ("incompatible ghost policies in effect", Err_N);
             Error_Msg_NE ("\& declared with ghost policy `Check`", Err_N, Id);
-            Error_Msg_NE ("\& used # with ghost policy `Ignore`", Err_N, Id);
+            Error_Msg_NE ("\& used # with ghost policy `Ignore`",  Err_N, Id);
 
          elsif Is_Ignored_Ghost_Entity (Id) and then Policy = Name_Check then
             Error_Msg_Sloc := Sloc (Err_N);
 
-            Error_Msg_N  ("incompatible ghost policies in effect", Err_N);
+            Error_Msg_N  ("incompatible ghost policies in effect",  Err_N);
             Error_Msg_NE ("\& declared with ghost policy `Ignore`", Err_N, Id);
-            Error_Msg_NE ("\& used # with ghost policy `Check`", Err_N, Id);
+            Error_Msg_NE ("\& used # with ghost policy `Check`",    Err_N, Id);
          end if;
       end Check_Ghost_Policy;
 
@@ -558,7 +559,7 @@ package body Ghost is
 
             if not Is_Ghost_Entity (Iface) then
                Error_Msg_N  ("type extension & cannot be ghost", Typ);
-               Error_Msg_NE ("\interface type & is not ghost", Typ, Iface);
+               Error_Msg_NE ("\interface type & is not ghost",   Typ, Iface);
                return;
             end if;
 
@@ -587,10 +588,10 @@ package body Ghost is
          if Is_Checked_Ghost_Entity (Par_Subp)
            and then Is_Ignored_Ghost_Entity (Subp)
          then
-            Error_Msg_N ("incompatible ghost policies in effect", Subp);
+            Error_Msg_N ("incompatible ghost policies in effect",    Subp);
 
             Error_Msg_Sloc := Sloc (Par_Subp);
-            Error_Msg_N ("\& declared # with ghost policy `Check`", Subp);
+            Error_Msg_N ("\& declared # with ghost policy `Check`",  Subp);
 
             Error_Msg_Sloc := Sloc (Subp);
             Error_Msg_N ("\overridden # with ghost policy `Ignore`", Subp);
@@ -598,13 +599,13 @@ package body Ghost is
          elsif Is_Ignored_Ghost_Entity (Par_Subp)
            and then Is_Checked_Ghost_Entity (Subp)
          then
-            Error_Msg_N ("incompatible ghost policies in effect", Subp);
+            Error_Msg_N ("incompatible ghost policies in effect",    Subp);
 
             Error_Msg_Sloc := Sloc (Par_Subp);
             Error_Msg_N ("\& declared # with ghost policy `Ignore`", Subp);
 
             Error_Msg_Sloc := Sloc (Subp);
-            Error_Msg_N ("\overridden # with ghost policy `Check`", Subp);
+            Error_Msg_N ("\overridden # with ghost policy `Check`",  Subp);
          end if;
       end if;
    end Check_Ghost_Overriding;
@@ -1158,7 +1159,6 @@ package body Ghost is
    begin
       if Is_Checked_Ghost_Entity (Id) then
          Ghost_Mode := Check;
-
       elsif Is_Ignored_Ghost_Entity (Id) then
          Ghost_Mode := Ignore;
       end if;

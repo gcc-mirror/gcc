@@ -1,3 +1,24 @@
+2015-05-26  Robert Dewar  <dewar@adacore.com>
+
+	* exp_prag.adb, sem_ch3.adb, sem_ch5.adb, exp_ch11.adb, ghost.adb,
+	exp_ch6.adb, sem_ch6.adb, sem_ch8.adb, sem_ch11.adb, sem_ch13.adb,
+	exp_ch3.adb: Minor reformatting.
+
+2015-05-26  Bob Duff  <duff@adacore.com>
+
+	* treepr.adb: Minor improvement to debugging routines (pp, pn)
+	robustness.  Rearrange the code so passing a nonexistent Node_Id
+	prints "No such node" rather than crashing, and causing gdb to
+	generate confusing messages.
+
+2015-05-26  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb: Minor typo fix.
+
+2015-05-26  Yannick Moy  <moy@adacore.com>
+
+	* sem_aux.adb (Subprogram_Body_Entity): Deal with subprogram stubs.
+
 2015-05-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch3.adb (Expand_N_Full_Type_Declaration): Capture, set and

@@ -5006,8 +5006,8 @@ package body Exp_Ch6 is
 
    procedure Expand_N_Subprogram_Body (N : Node_Id) is
       GM       : constant Ghost_Mode_Type := Ghost_Mode;
-      Loc      : constant Source_Ptr := Sloc (N);
-      HSS      : constant Node_Id    := Handled_Statement_Sequence (N);
+      Loc      : constant Source_Ptr      := Sloc (N);
+      HSS      : constant Node_Id         := Handled_Statement_Sequence (N);
       Body_Id  : Entity_Id;
       Except_H : Node_Id;
       L        : List_Id;
@@ -5451,10 +5451,10 @@ package body Exp_Ch6 is
    --  If the declaration is for a null procedure, emit null body
 
    procedure Expand_N_Subprogram_Declaration (N : Node_Id) is
+      Loc       : constant Source_Ptr      := Sloc (N);
       GM        : constant Ghost_Mode_Type := Ghost_Mode;
-      Loc       : constant Source_Ptr := Sloc (N);
-      Subp      : constant Entity_Id  := Defining_Entity (N);
-      Scop      : constant Entity_Id  := Scope (Subp);
+      Subp      : constant Entity_Id       := Defining_Entity (N);
+      Scop      : constant Entity_Id       := Scope (Subp);
       Prot_Bod  : Node_Id;
       Prot_Decl : Node_Id;
       Prot_Id   : Entity_Id;

@@ -91,8 +91,8 @@ package body Sem_Ch5 is
 
    procedure Analyze_Assignment (N : Node_Id) is
       GM   : constant Ghost_Mode_Type := Ghost_Mode;
-      Lhs  : constant Node_Id := Name (N);
-      Rhs  : constant Node_Id := Expression (N);
+      Lhs  : constant Node_Id         := Name (N);
+      Rhs  : constant Node_Id         := Expression (N);
       T1   : Entity_Id;
       T2   : Entity_Id;
       Decl : Node_Id;

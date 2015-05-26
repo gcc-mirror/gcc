@@ -2556,8 +2556,8 @@ package body Sem_Ch3 is
    -----------------------------------
 
    procedure Analyze_Full_Type_Declaration (N : Node_Id) is
-      Def    : constant Node_Id   := Type_Definition (N);
-      Def_Id : constant Entity_Id := Defining_Identifier (N);
+      Def    : constant Node_Id         := Type_Definition (N);
+      Def_Id : constant Entity_Id       := Defining_Identifier (N);
       GM     : constant Ghost_Mode_Type := Ghost_Mode;
       T      : Entity_Id;
       Prev   : Entity_Id;
@@ -2923,7 +2923,7 @@ package body Sem_Ch3 is
    ----------------------------------
 
    procedure Analyze_Incomplete_Type_Decl (N : Node_Id) is
-      F  : constant Boolean := Is_Pure (Current_Scope);
+      F  : constant Boolean         := Is_Pure (Current_Scope);
       GM : constant Ghost_Mode_Type := Ghost_Mode;
       T  : Entity_Id;
 
@@ -3406,9 +3406,9 @@ package body Sem_Ch3 is
    --------------------------------
 
    procedure Analyze_Object_Declaration (N : Node_Id) is
+      Loc   : constant Source_Ptr      := Sloc (N);
       GM    : constant Ghost_Mode_Type := Ghost_Mode;
-      Id    : constant Entity_Id  := Defining_Identifier (N);
-      Loc   : constant Source_Ptr := Sloc (N);
+      Id    : constant Entity_Id       := Defining_Identifier (N);
       Act_T : Entity_Id;
       T     : Entity_Id;
 
@@ -4544,8 +4544,8 @@ package body Sem_Ch3 is
 
    procedure Analyze_Private_Extension_Declaration (N : Node_Id) is
       GM          : constant Ghost_Mode_Type := Ghost_Mode;
-      Indic       : constant Node_Id   := Subtype_Indication (N);
-      T           : constant Entity_Id := Defining_Identifier (N);
+      Indic       : constant Node_Id         := Subtype_Indication (N);
+      T           : constant Entity_Id       := Defining_Identifier (N);
       Parent_Base : Entity_Id;
       Parent_Type : Entity_Id;
 

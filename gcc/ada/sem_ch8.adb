@@ -672,7 +672,9 @@ package body Sem_Ch8 is
       GM    : constant Ghost_Mode_Type := Ghost_Mode;
       New_P : constant Entity_Id       := Defining_Entity (N);
       Old_P : Entity_Id;
-      Inst  : Boolean := False; -- prevent junk warning
+
+      Inst  : Boolean := False;
+      --  Prevent junk warning
 
    begin
       if Name (N) = Error then
@@ -2646,7 +2648,7 @@ package body Sem_Ch8 is
       --  type is class-wide.
 
       GM        : constant Ghost_Mode_Type := Ghost_Mode;
-      Inst_Node : Node_Id := Empty;
+      Inst_Node : Node_Id                  := Empty;
       New_S     : Entity_Id;
 
    --  Start of processing for Analyze_Subprogram_Renaming

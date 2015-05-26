@@ -7763,14 +7763,14 @@ package body Sem_Ch13 is
    function Build_Invariant_Procedure_Declaration
      (Typ : Entity_Id) return Node_Id
    is
+      Loc    : constant Source_Ptr      := Sloc (Typ);
       GM     : constant Ghost_Mode_Type := Ghost_Mode;
-      Loc    : constant Source_Ptr := Sloc (Typ);
       Decl   : Node_Id;
       Obj_Id : Entity_Id;
       SId    : Entity_Id;
 
    begin
-      --  Check for duplicate definiations
+      --  Check for duplicate definitions
 
       if Has_Invariants (Typ) and then Present (Invariant_Procedure (Typ)) then
          return Empty;
@@ -8011,7 +8011,7 @@ package body Sem_Ch13 is
             --  analyzed at the end of the private part, but that yields the
             --  wrong visibility.
 
-            --  Historic note: we used to set N as the parent, but a package
+            --  Historical note: we used to set N as the parent, but a package
             --  specification as the parent of an expression is bizarre.
 
             Set_Parent (Expr, Parent (Arg2));

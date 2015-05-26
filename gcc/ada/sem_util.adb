@@ -17003,7 +17003,7 @@ package body Sem_Util is
             Comp := First_Entity (Typ);
             while Present (Comp) loop
                if Ekind (Comp) = E_Component then
-                  --  ???It's not cleare we need a full recursive call to
+                  --  ???It's not clear we need a full recursive call to
                   --  Requires_Transient_Scope here. Note that the following
                   --  can't happen.
 

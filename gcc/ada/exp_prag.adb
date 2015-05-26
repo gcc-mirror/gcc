@@ -294,8 +294,8 @@ package body Exp_Prag is
 
    procedure Expand_Pragma_Check (N : Node_Id) is
       GM   : constant Ghost_Mode_Type := Ghost_Mode;
-      Cond : constant Node_Id := Arg2 (N);
-      Nam  : constant Name_Id := Chars (Arg1 (N));
+      Cond : constant Node_Id         := Arg2 (N);
+      Nam  : constant Name_Id         := Chars (Arg1 (N));
       Msg  : Node_Id;
 
       Loc : constant Source_Ptr := Sloc (First_Node (Cond));
@@ -1580,8 +1580,9 @@ package body Exp_Prag is
    --     end loop;
 
    procedure Expand_Pragma_Loop_Variant (N : Node_Id) is
-      Last_Var : constant Node_Id := Last (Pragma_Argument_Associations (N));
       Loc      : constant Source_Ptr := Sloc (N);
+      Last_Var : constant Node_Id    :=
+                   Last (Pragma_Argument_Associations (N));
 
       Curr_Assign : List_Id   := No_List;
       Flag_Id     : Entity_Id := Empty;

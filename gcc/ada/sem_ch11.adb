@@ -56,8 +56,8 @@ package body Sem_Ch11 is
 
    procedure Analyze_Exception_Declaration (N : Node_Id) is
       GM : constant Ghost_Mode_Type := Ghost_Mode;
-      Id : constant Entity_Id := Defining_Identifier (N);
-      PF : constant Boolean   := Is_Pure (Current_Scope);
+      Id : constant Entity_Id       := Defining_Identifier (N);
+      PF : constant Boolean         := Is_Pure (Current_Scope);
 
    begin
       --  The exception declaration may be subject to pragma Ghost with policy

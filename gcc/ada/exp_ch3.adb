@@ -4792,8 +4792,8 @@ package body Exp_Ch3 is
 
       --  Local declarations
 
-      Def_Id : constant Entity_Id := Defining_Identifier (N);
-      B_Id   : constant Entity_Id := Base_Type (Def_Id);
+      Def_Id : constant Entity_Id       := Defining_Identifier (N);
+      B_Id   : constant Entity_Id       := Base_Type (Def_Id);
       GM     : constant Ghost_Mode_Type := Ghost_Mode;
       FN     : Node_Id;
       Par_Id : Entity_Id;
@@ -4942,13 +4942,13 @@ package body Exp_Ch3 is
    ---------------------------------
 
    procedure Expand_N_Object_Declaration (N : Node_Id) is
-      Def_Id   : constant Entity_Id  := Defining_Identifier (N);
-      Expr     : constant Node_Id    := Expression (N);
+      Loc      : constant Source_Ptr      := Sloc (N);
+      Def_Id   : constant Entity_Id       := Defining_Identifier (N);
+      Expr     : constant Node_Id         := Expression (N);
       GM       : constant Ghost_Mode_Type := Ghost_Mode;
-      Loc      : constant Source_Ptr := Sloc (N);
-      Obj_Def  : constant Node_Id    := Object_Definition (N);
-      Typ      : constant Entity_Id  := Etype (Def_Id);
-      Base_Typ : constant Entity_Id  := Base_Type (Typ);
+      Obj_Def  : constant Node_Id         := Object_Definition (N);
+      Typ      : constant Entity_Id       := Etype (Def_Id);
+      Base_Typ : constant Entity_Id       := Base_Type (Typ);
       Expr_Q   : Node_Id;
 
       function Build_Equivalent_Aggregate return Boolean;
