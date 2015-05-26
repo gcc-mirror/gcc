@@ -621,12 +621,12 @@ package Targparm is
 
    type Set_NSA_Type is access procedure (Asp : Name_Id; OK : out Boolean);
    --  Parameter type for Get_Target_Parameters that records a Restriction
-   --  No_Specificaztion_Of_Aspect. Asp is the pragma name. OK is set True
+   --  No_Specification_Of_Aspect. Asp is the aspect name. OK is set True
    --  if this is an OK aspect name, and False if it is not an aspect name.
 
    type Set_NUA_Type is access procedure (Attr : Name_Id; OK : out Boolean);
    --  Parameter type for Get_Target_Parameters that records a Restriction
-   --  No_Use_Of_Attribute. Prag is the attribute name. OK is set True if
+   --  No_Use_Of_Attribute. Attr is the attribute name. OK is set True if
    --  this is an OK attribute name, and False if it is not an attribute name.
 
    type Set_NUP_Type is access procedure (Prag : Name_Id; OK : out Boolean);
@@ -646,13 +646,13 @@ package Targparm is
       Set_NUP      : Set_NUP_Type := null);
    --  Called at the start of execution to obtain target parameters from the
    --  source of package System. The parameters provide the source text to be
-   --  scanned (in System_Text (Source_First .. Source_Last)). if the three
+   --  scanned (in System_Text (Source_First .. Source_Last)). If the three
    --  subprograms Make_Id, Make_SC, and Set_NOD are left at their default
    --  value of null, Get_Target_Parameters will ignore pragma Restrictions
-   --  No_Dependence lines, otherwise it will use these three subprograms to
-   --  record them. Similarly if Set_NUP is left at its default value of null,
+   --  (No_Dependence) lines; otherwise it will use these three subprograms to
+   --  record them. Similarly, if Set_NUP is left at its default value of null,
    --  then any occurrences of pragma Restrictions (No_Use_Of_Pragma => XXX)
-   --  will be ignored, otherwise it will use this procedure to record the
+   --  will be ignored; otherwise it will use this procedure to record the
    --  pragma. Similarly for the NSA and NUA cases.
 
    procedure Get_Target_Parameters

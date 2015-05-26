@@ -220,7 +220,7 @@ package body Targparm is
 
       procedure Collect_Name;
       --  Scan a name starting at System_Text (P), and put Name in Name_Buffer,
-      --  with Name_Len being length, folded to lower case. On return P points
+      --  with Name_Len being length, folded to lower case. On return, P points
       --  just past the last character (which should be a right paren).
 
       ------------------

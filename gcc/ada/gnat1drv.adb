@@ -955,8 +955,8 @@ begin
             end if;
 
             --  Call to get target parameters. Note that the actual interface
-            --  routines in Tbuild here. They can't be in this procedure
-            --  because of accessibility issues.
+            --  routines are in Tbuild. They can't be in this procedure because
+            --  of accessibility issues.
 
             Targparm.Get_Target_Parameters
               (System_Text  => Source_Text  (S),
