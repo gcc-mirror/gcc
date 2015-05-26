@@ -218,11 +218,13 @@ package Einfo is
 
 --     subtype x4 is x2'base range 0 .. 10;        8               4
 
---     subtype x5 is x2 range 0 .. dynamic;       16              (7)
+--     dynamic : x2'Base range -64 .. +63;
 
---     subtype x6 is x2'base range 0 .. dynamic;   8              (7)
+--     subtype x5 is x2 range 0 .. dynamic;       16               3*
 
---  Note: the entries marked (7) are not actually specified by the Ada 95 RM,
+--     subtype x6 is x2'base range 0 .. dynamic;   8               7*
+
+--  Note: the entries marked * are not actually specified by the Ada 95 RM,
 --  but it seems in the spirit of the RM rules to allocate the minimum number
 --  of bits known to be large enough to hold the given range of values.
 
