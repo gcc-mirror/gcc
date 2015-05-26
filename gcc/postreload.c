@@ -234,7 +234,7 @@ reload_cse_regs_1 (void)
   bool cfg_changed = false;
   basic_block bb;
   rtx_insn *insn;
-  rtx testreg = gen_rtx_REG (word_mode, FIRST_PSEUDO_REGISTER);
+  rtx testreg = gen_rtx_REG (word_mode, LAST_VIRTUAL_REGISTER + 1);
 
   cselib_init (CSELIB_RECORD_MEMORY);
   init_alias_analysis ();

@@ -286,7 +286,7 @@ init_caller_save (void)
      To avoid lots of unnecessary RTL allocation, we construct all the RTL
      once, then modify the memory and register operands in-place.  */
 
-  test_reg = gen_rtx_REG (word_mode, FIRST_PSEUDO_REGISTER);
+  test_reg = gen_rtx_REG (word_mode, LAST_VIRTUAL_REGISTER + 1);
   test_mem = gen_rtx_MEM (word_mode, address);
   savepat = gen_rtx_SET (test_mem, test_reg);
   restpat = gen_rtx_SET (test_reg, test_mem);

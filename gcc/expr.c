@@ -199,7 +199,7 @@ init_expr_target (void)
 
   /* A scratch register we can modify in-place below to avoid
      useless RTL allocations.  */
-  reg = gen_rtx_REG (word_mode, FIRST_PSEUDO_REGISTER);
+  reg = gen_rtx_REG (word_mode, LAST_VIRTUAL_REGISTER + 1);
 
   insn = rtx_alloc (INSN);
   pat = gen_rtx_SET (NULL_RTX, NULL_RTX);
@@ -249,7 +249,7 @@ init_expr_target (void)
 	  }
     }
 
-  mem = gen_rtx_MEM (VOIDmode, gen_raw_REG (Pmode, FIRST_PSEUDO_REGISTER));
+  mem = gen_rtx_MEM (VOIDmode, gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1));
 
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
