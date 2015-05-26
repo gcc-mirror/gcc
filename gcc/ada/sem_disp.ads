@@ -104,10 +104,11 @@ package Sem_Disp is
    function Inherited_Subprograms
      (S               : Entity_Id;
       No_Interfaces   : Boolean := False;
-      Interfaces_Only : Boolean := False) return Subprogram_List;
+      Interfaces_Only : Boolean := False;
+      One_Only        : Boolean := False) return Subprogram_List;
    --  Given the spec of a subprogram, this function gathers any inherited
-   --  subprograms from direct inheritance or via interfaces. The list is a
-   --  list of entity id's of the specs of inherited subprograms. Returns a
+   --  subprograms from direct inheritance or via interfaces. The result is an
+   --  array of Entity_Ids of the specs of inherited subprograms. Returns a
    --  null array if passed an Empty spec id. Note that the returned array
    --  only includes subprograms and generic subprograms (and excludes any
    --  other inherited entities, in particular enumeration literals). If
@@ -117,6 +118,10 @@ package Sem_Disp is
    --  come first, starting with the closest ancestors, and are followed by
    --  subprograms inherited from interfaces. At most one of No_Interfaces
    --  and Interfaces_Only should be True.
+   --
+   --  If One_Only is set, the search is discontinued as soon as one entry
+   --  is found. In this case the resulting array is either null or contains
+   --  exactly one element.
 
    function Is_Dynamically_Tagged (N : Node_Id) return Boolean;
    --  Used to determine whether a call is dispatching, i.e. if it is
