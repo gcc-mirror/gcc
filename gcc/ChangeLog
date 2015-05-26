@@ -1,3 +1,21 @@
+ 2015-05-13  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/52144
+	* config/arm/arm.c (arm_option_check_internal)
+	(arm_option_params_internal): Check opts->target_flags to set macros.
+	(TREE_TARGET_ARM, TREE_TARGET_THUMB)
+	(TREE_TARGET_THUMB1, TREE_TARGET_THUMB2) Replace with...
+	(TARGET_ARM_P, TARGET_THUMB_P, TARGET_THUMB1_P, TARGET_THUMB2_P)
+	(builtin_define): Replaced with def_or_undef_macro.
+	* config/arm/arm.h (TREE_TARGET_ARM, TREE_TARGET_THUMB)
+	TREE_TARGET_THUMB1, TREE_TARGET_THUMB2) Redefine with...
+	(TARGET_ARM_P, TARGET_THUMB_P, TARGET_THUMB1_P, TARGET_THUMB2_P)
+	(TARGET_32BIT_P, TARGET_ARM_QBIT_P, TARGET_ARM_SAT_P, TARGET_IDIV_P)
+	(TARGET_HAVE_LDREX_P, TARGET_HAVE_LDREXBH_P, TARGET_HAVE_LDREXD_P)
+	(TARGET_ARM_FEATURE_LDREX_P)
+	(TARGET_DSP_MULTIPLY_P, TARGET_INT_SIMD_P): New macros.
+	(def_or_undef_macro): New function.
+
 2015-05-26  Christian Bruel  <christian.bruel@st.com>
 
 	* c-common.h (builtin_define_with_int_value)
