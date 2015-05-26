@@ -10538,7 +10538,7 @@ package body Sem_Ch6 is
    ---------------------
 
    procedure Set_Formal_Mode (Formal_Id : Entity_Id) is
-      Spec : constant Node_Id := Parent (Formal_Id);
+      Spec : constant Node_Id   := Parent (Formal_Id);
       Id   : constant Entity_Id := Scope (Formal_Id);
 
    begin

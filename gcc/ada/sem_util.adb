@@ -2128,18 +2128,19 @@ package body Sem_Util is
 
                elsif Nkind (Parent (N)) = N_Component_Association
                   and then Nkind_In (Parent (Parent (N)),
-                             N_Aggregate,
-                             N_Extension_Aggregate)
+                                     N_Aggregate,
+                                     N_Extension_Aggregate)
                then
                   declare
                      Choice : constant Node_Id := First (Choices (Parent (N)));
+
                   begin
                      if Ekind (Entity (N)) = E_Discriminant then
                         return Skip;
 
                      elsif Expression (Parent (N)) = N
-                        and then Nkind (Choice) = N_Identifier
-                        and then Ekind (Entity (Choice)) = E_Discriminant
+                       and then Nkind (Choice) = N_Identifier
+                       and then Ekind (Entity (Choice)) = E_Discriminant
                      then
                         return Skip;
                      end if;
@@ -2194,9 +2195,10 @@ package body Sem_Util is
                      --  last (see comment in the body of traverse_func).
 
                      declare
-                        Elmt : Elmt_Id := First_Elmt (Writable_Actuals_List);
+                        Elmt : Elmt_Id;
 
                      begin
+                        Elmt := First_Elmt (Writable_Actuals_List);
                         while Present (Elmt)
                            and then Entity (Node (Elmt)) /= Entity (N)
                         loop
@@ -2210,7 +2212,7 @@ package body Sem_Util is
                         end if;
 
                         Error_Msg_NE
-                          ("value may be affected by call to& "
+                          ("value may be affected by call to & "
                            & "because order of evaluation is arbitrary",
                            Error_Node, Id);
                         return Abandon;
