@@ -1,3 +1,13 @@
+2015-05-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gensupport.h (compute_test_codes): Declare.
+	* gensupport.c (compute_predicate_codes): Rename to...
+	(compute_test_codes): ...this.  Generalize error message.
+	(process_define_predicate): Update accordingly.
+	* genpreds.c (compute_maybe_allows): Delete.
+	(add_constraint): Use compute_test_codes to determine whether
+	something can accept a SUBREG, REG or MEM.
+
 2015-05-26  Torvald Riegel  <triegel@redhat.com>
 
 	* doc/extend.texi (__atomic Builtins): Use 'memory order' instead of

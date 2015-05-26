@@ -716,34 +716,6 @@ mangle (const char *name)
   return XOBFINISH (rtl_obstack, const char *);
 }
 
-/* Return a bitmask, bit 1 if EXP maybe allows a REG/SUBREG, 2 if EXP
-   maybe allows a MEM.  Bits should be clear only when we are sure it
-   will not allow a REG/SUBREG or a MEM.  */
-static int
-compute_maybe_allows (rtx exp)
-{
-  switch (GET_CODE (exp))
-    {
-    case IF_THEN_ELSE:
-      /* Conservative answer is like IOR, of the THEN and ELSE branches.  */
-      return compute_maybe_allows (XEXP (exp, 1))
-	     | compute_maybe_allows (XEXP (exp, 2));
-    case AND:
-      return compute_maybe_allows (XEXP (exp, 0))
-	     & compute_maybe_allows (XEXP (exp, 1));
-    case IOR:
-      return compute_maybe_allows (XEXP (exp, 0))
-	     | compute_maybe_allows (XEXP (exp, 1));
-    case MATCH_CODE:
-      if (*XSTR (exp, 1) == '\0')
-	return (strstr (XSTR (exp, 0), "reg") != NULL ? 1 : 0)
-	       | (strstr (XSTR (exp, 0), "mem") != NULL ? 2 : 0);
-      /* FALLTHRU */
-    default:
-      return 3;
-    }
-}
-
 /* Add one constraint, of any sort, to the tables.  NAME is its name;
    REGCLASS is the register class, if any; EXP is the expression to
    test, if any;  IS_MEMORY and IS_ADDRESS indicate memory and address
@@ -899,12 +871,17 @@ add_constraint (const char *name, const char *regclass,
   c->is_extra = !(regclass || is_const_int || is_const_dbl);
   c->is_memory = is_memory;
   c->is_address = is_address;
-  int maybe_allows = 3;
+  c->maybe_allows_reg = true;
+  c->maybe_allows_mem = true;
   if (exp)
-    maybe_allows = compute_maybe_allows (exp);
-  c->maybe_allows_reg = (maybe_allows & 1) != 0;
-  c->maybe_allows_mem = (maybe_allows & 2) != 0;
-
+    {
+      char codes[NUM_RTX_CODE];
+      compute_test_codes (exp, lineno, codes);
+      if (!codes[REG] && !codes[SUBREG])
+	c->maybe_allows_reg = false;
+      if (!codes[MEM])
+	c->maybe_allows_mem = false;
+    }
   c->next_this_letter = *slot;
   *slot = c;
 

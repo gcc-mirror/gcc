@@ -109,5 +109,6 @@ struct pattern_stats
 };
 
 extern void get_pattern_stats (struct pattern_stats *ranges, rtvec vec);
+extern void compute_test_codes (rtx, int, char *);
 
 #endif /* GCC_GENSUPPORT_H */
