@@ -3,6 +3,33 @@
 	Backported from mainline
 	2015-04-29  Doug Evans  <dje@google.com>
 
+	PR libstdc++/65839
+	* python/libstdcxx/v6/xmethods.py (get_bool_type): New function.
+	Replace all lookups of "bool" with this.
+	(get_std_size_type): New function.  Replace all lookups of std::size_t
+	with this.
+	(*Worker): New method get_result_type.
+	(DequeWorkerBase.__init__): New arg val_type.  All callers updated.
+	(ListWorkerBase.__init__): New arg val_type.  All callers updated.
+	(UniquePtrGetWorker.__init__): New arg elem_type.  All callers updated.
+	Delete setting of name, enabled.
+	(UniquePtrDerefWorker.__init__): New arg elem_type.  All callers
+	updated.  Delete setting of name.
+	(UniquePtrMethodsMatcher): Rewrite for consistency with all other
+	libstdc++ xmethod matchers.
+	* testsuite/libstdc++-xmethods/array.cc: Add whatis tests.
+	* testsuite/libstdc++-xmethods/associative-containers.cc: Ditto.
+	* testsuite/libstdc++-xmethods/deque.cc: Ditto.
+	* testsuite/libstdc++-xmethods/forwardlist.cc: Ditto.
+	* testsuite/libstdc++-xmethods/list.cc: Ditto.
+	* testsuite/libstdc++-xmethods/unique_ptr.cc: Ditto.
+	* testsuite/libstdc++-xmethods/vector.cc: Ditto.
+
+2015-05-26  Doug Evans  <dje@google.com>
+
+	Backported from mainline
+	2015-04-29  Doug Evans  <dje@google.com>
+
 	Use consistent naming for value type attributes.
 	* python/libstdcxx/v6/xmethods.py (ArrayWorkerBase): Rename _valtype
 	to _val_type.
