@@ -584,6 +584,7 @@ class UniquePtrMethodsMatcher(gdb.xmethod.XMethodMatcher):
                                             matcher_name_prefix + 'unique_ptr')
         self._method_dict = {
             'get': LibStdCxxXMethod('get', UniquePtrGetWorker),
+            'operator->': LibStdCxxXMethod('operator->', UniquePtrGetWorker),
             'operator*': LibStdCxxXMethod('operator*', UniquePtrDerefWorker),
         }
         self.methods = [self._method_dict[m] for m in self._method_dict]

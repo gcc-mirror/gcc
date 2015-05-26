@@ -1,3 +1,10 @@
+2015-05-26  Doug Evans  <dje@google.com>
+
+	* python/libstdcxx/v6/xmethods.py (UniquePtrMethodsMatcher): Add
+	operator-> support.
+	* testsuite/libstdc++-xmethods/unique_ptr.cc: Add tests for
+	operator->.
+
 2015-05-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/locale_conv.h: Fix copyright years.
