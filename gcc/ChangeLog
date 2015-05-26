@@ -1,3 +1,15 @@
+2015-05-26  Christian Bruel  <christian.bruel@st.com>
+
+	* c-common.h (builtin_define_with_int_value)
+	(builtin_define_type_sizeof): Declare.
+	* c-cppbuiltin.c (builtin_define_with_int_value)
+	(builtin_define_type_sizeof): Externalize.
+	(builtin_define_std): Cleanup declaration.
+	* config/arm/arm-protos.h (arm_cpu_cpp_builtins): Declare.
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Move macro defines into...
+	* config/arm/arm-c.c (arm_cpu_cpp_builtins): New function.
+	(builtin_define, builtin_assert): New macros.
+
 2015-05-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66142

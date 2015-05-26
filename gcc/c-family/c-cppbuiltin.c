@@ -58,8 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 /* Non-static as some targets don't use it.  */
-void builtin_define_std (const char *) ATTRIBUTE_UNUSED;
-static void builtin_define_with_int_value (const char *, HOST_WIDE_INT);
 static void builtin_define_with_hex_fp_value (const char *, tree,
 					      int, const char *,
 					      const char *,
@@ -68,7 +66,6 @@ static void builtin_define_stdint_macros (void);
 static void builtin_define_constants (const char *, tree);
 static void builtin_define_type_max (const char *, tree);
 static void builtin_define_type_minmax (const char *, const char *, tree);
-static void builtin_define_type_sizeof (const char *, tree);
 static void builtin_define_float_constants (const char *,
 					    const char *,
 					    const char *,
@@ -113,7 +110,7 @@ mode_has_fma (machine_mode mode)
 }
 
 /* Define NAME with value TYPE size_unit.  */
-static void
+void
 builtin_define_type_sizeof (const char *name, tree type)
 {
   builtin_define_with_int_value (name,
@@ -1371,7 +1368,7 @@ builtin_define_with_value (const char *macro, const char *expansion, int is_str)
 
 
 /* Pass an object-like macro and an integer value to define it to.  */
-static void
+void
 builtin_define_with_int_value (const char *macro, HOST_WIDE_INT value)
 {
   char *buf;

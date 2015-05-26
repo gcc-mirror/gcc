@@ -216,8 +216,6 @@ extern void arm_pr_long_calls (struct cpp_reader *);
 extern void arm_pr_no_long_calls (struct cpp_reader *);
 extern void arm_pr_long_calls_off (struct cpp_reader *);
 
-extern void arm_lang_object_attributes_init(void);
-
 extern const char *arm_mangle_type (const_tree);
 extern const char *arm_mangle_builtin_type (const_tree);
 
@@ -330,6 +328,10 @@ extern void arm_emit_eabi_attribute (const char *, int, int);
 
 /* Defined in gcc/common/config/arm-common.c.  */
 extern const char *arm_rewrite_selected_cpu (const char *name);
+
+/* Defined in gcc/common/config/arm-c.c.  */
+extern void arm_lang_object_attributes_init (void);
+extern void arm_cpu_cpp_builtins (struct cpp_reader *);
 
 extern bool arm_is_constant_pool_ref (rtx);
 
