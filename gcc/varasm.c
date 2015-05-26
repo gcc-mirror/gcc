@@ -3764,8 +3764,12 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc,
   /* Output the label.  */
   targetm.asm_out.internal_label (asm_out_file, "LC", desc->labelno);
 
-  /* Output the data.  */
-  output_constant_pool_2 (desc->mode, x, align);
+  /* Output the data.
+     Pass actual alignment value while emitting string constant to asm code
+     as function 'output_constant_pool_1' explicitly passes the alignment as 1
+     assuming that the data is already aligned which prevents the generation 
+     of fix-up table entries.  */
+  output_constant_pool_2 (desc->mode, x, desc->align);
 
   /* Make sure all constants in SECTION_MERGE and not SECTION_STRINGS
      sections have proper size.  */
@@ -7119,6 +7123,8 @@ output_object_block (struct object_block *block)
       if (CONSTANT_POOL_ADDRESS_P (symbol))
 	{
 	  desc = SYMBOL_REF_CONSTANT (symbol);
+	  /* Pass 1 for align as we have already laid out everything in the block.
+	     So aligning shouldn't be necessary.  */
 	  output_constant_pool_1 (desc, 1);
 	  offset += GET_MODE_SIZE (desc->mode);
 	}
