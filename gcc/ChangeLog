@@ -1,3 +1,9 @@
+2015-05-26  Torvald Riegel  <triegel@redhat.com>
+
+	* doc/extend.texi (__atomic Builtins): Use 'memory order' instead of
+	'memory	model' to align with C++11; fix description of memory orders;
+	fix a few typos.
+
 2015-05-26  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_update_vf_for_slp): Split out from ...
