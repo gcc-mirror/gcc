@@ -6936,9 +6936,10 @@ package body Exp_Ch3 is
          --  type. See Make_CW_Equivalent_Type.
 
          if not Is_Class_Wide_Equivalent_Type (Def_Id)
-           and then (Has_Controlled_Component (Comp_Typ)
-                      or else (Chars (Comp) /= Name_uParent
-                                and then Is_Controlled (Comp_Typ)))
+           and then
+             (Has_Controlled_Component (Comp_Typ)
+               or else (Chars (Comp) /= Name_uParent
+                         and then (Is_Controlled_Active (Comp_Typ))))
          then
             Set_Has_Controlled_Component (Def_Id);
          end if;

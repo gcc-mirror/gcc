@@ -171,6 +171,7 @@ package Aspects is
       Aspect_Asynchronous,
       Aspect_Atomic,
       Aspect_Atomic_Components,
+      Aspect_Disable_Controlled,            -- GNAT
       Aspect_Discard_Names,
       Aspect_Effective_Reads,               -- GNAT
       Aspect_Effective_Writes,              -- GNAT
@@ -414,6 +415,7 @@ package Aspects is
       Aspect_Depends                      => Name_Depends,
       Aspect_Dimension                    => Name_Dimension,
       Aspect_Dimension_System             => Name_Dimension_System,
+      Aspect_Disable_Controlled           => Name_Disable_Controlled,
       Aspect_Discard_Names                => Name_Discard_Names,
       Aspect_Dispatching_Domain           => Name_Dispatching_Domain,
       Aspect_Dynamic_Predicate            => Name_Dynamic_Predicate,
@@ -704,6 +706,7 @@ package Aspects is
       Aspect_Depends                      => Never_Delay,
       Aspect_Dimension                    => Never_Delay,
       Aspect_Dimension_System             => Never_Delay,
+      Aspect_Disable_Controlled           => Never_Delay,
       Aspect_Effective_Reads              => Never_Delay,
       Aspect_Effective_Writes             => Never_Delay,
       Aspect_Extensions_Visible           => Never_Delay,

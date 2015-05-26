@@ -1205,8 +1205,7 @@ package body Sem_Ch13 is
 
    procedure Analyze_Aspect_Specifications (N : Node_Id; E : Entity_Id) is
       procedure Decorate (Asp : Node_Id; Prag : Node_Id);
-      --  Establish linkages between an aspect and its corresponding
-      --  pragma.
+      --  Establish linkages between an aspect and its corresponding pragma
 
       procedure Insert_After_SPARK_Mode
         (Prag    : Node_Id;
@@ -1235,7 +1234,7 @@ package body Sem_Ch13 is
 
       procedure Decorate (Asp : Node_Id; Prag : Node_Id) is
       begin
-         Set_Aspect_Rep_Item           (Asp,  Prag);
+         Set_Aspect_Rep_Item           (Asp, Prag);
          Set_Corresponding_Aspect      (Prag, Asp);
          Set_From_Aspect_Specification (Prag);
          Set_Parent                    (Prag, Asp);
@@ -3055,7 +3054,7 @@ package body Sem_Ch13 is
                --  Case 5: Special handling for aspects with an optional
                --  boolean argument.
 
-               --  In the general case, the corresponding pragma cannot be
+               --  In the delayed case, the corresponding pragma cannot be
                --  generated yet because the evaluation of the boolean needs
                --  to be delayed till the freeze point.
 
@@ -3142,6 +3141,25 @@ package body Sem_Ch13 is
                         elsif A_Id = Aspect_Export then
                            Set_Is_Exported (E);
                         end if;
+                     end if;
+
+                     goto Continue;
+
+                  --  Disable_Controlled
+
+                  elsif A_Id = Aspect_Disable_Controlled then
+                     if Ekind (E) /= E_Record_Type
+                       or else not Is_Controlled (E)
+                     then
+                        Error_Msg_N
+                          ("aspect % requires controlled record type", Aspect);
+                        goto Continue;
+                     end if;
+
+                     if not Present (Expr)
+                       or else Is_True (Static_Boolean (Expr))
+                     then
+                        Set_Disable_Controlled (E);
                      end if;
 
                      goto Continue;

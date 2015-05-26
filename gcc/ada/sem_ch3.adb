@@ -4386,7 +4386,7 @@ package body Sem_Ch3 is
         and then not Is_Constrained (Underlying_Type (T))
         and then not Is_Aliased (Id)
         and then not Is_Class_Wide_Type (T)
-        and then not Is_Controlled (T)
+        and then not Is_Controlled_Active (T)
         and then not Has_Controlled_Component (Base_Type (T))
         and then Expander_Active
       then
@@ -5614,7 +5614,7 @@ package body Sem_Ch3 is
          Set_Packed_Array_Impl_Type (Implicit_Base, Empty);
          Set_Has_Controlled_Component (Implicit_Base,
            Has_Controlled_Component (Element_Type)
-             or else Is_Controlled  (Element_Type));
+             or else Is_Controlled_Active  (Element_Type));
          Set_Finalize_Storage_Only (Implicit_Base,
            Finalize_Storage_Only (Element_Type));
 
@@ -5640,7 +5640,7 @@ package body Sem_Ch3 is
          Set_Has_Controlled_Component (T, Has_Controlled_Component
                                                         (Element_Type)
                                             or else
-                                          Is_Controlled (Element_Type));
+                                          Is_Controlled_Active (Element_Type));
          Set_Finalize_Storage_Only    (T, Finalize_Storage_Only
                                                         (Element_Type));
          Set_Default_SSO              (T);
@@ -7351,16 +7351,18 @@ package body Sem_Ch3 is
             Error_Msg_N ("cannot add discriminants to untagged type", N);
          end if;
 
-         Set_Stored_Constraint (Derived_Type, No_Elist);
-         Set_Is_Constrained    (Derived_Type, Is_Constrained (Parent_Type));
-         Set_Is_Controlled     (Derived_Type, Is_Controlled  (Parent_Type));
+         Set_Stored_Constraint  (Derived_Type, No_Elist);
+         Set_Is_Constrained     (Derived_Type, Is_Constrained (Parent_Type));
+         Set_Is_Controlled      (Derived_Type, Is_Controlled  (Parent_Type));
+         Set_Disable_Controlled (Derived_Type, Disable_Controlled
+                                                              (Parent_Type));
          Set_Has_Controlled_Component
-                               (Derived_Type, Has_Controlled_Component
-                                                             (Parent_Type));
+                                (Derived_Type, Has_Controlled_Component
+                                                              (Parent_Type));
 
          --  Direct controlled types do not inherit Finalize_Storage_Only flag
 
-         if not Is_Controlled  (Parent_Type) then
+         if not Is_Controlled_Active (Parent_Type) then
             Set_Finalize_Storage_Only
               (Base_Type (Derived_Type), Finalize_Storage_Only (Parent_Type));
          end if;
@@ -8974,16 +8976,18 @@ package body Sem_Ch3 is
    begin
       --  Set common attributes
 
-      Set_Scope          (Derived_Type, Current_Scope);
+      Set_Scope              (Derived_Type, Current_Scope);
 
-      Set_Etype          (Derived_Type,                Parent_Base);
-      Set_Ekind          (Derived_Type, Ekind         (Parent_Base));
-      Set_Has_Task       (Derived_Type, Has_Task      (Parent_Base));
-      Set_Has_Protected  (Derived_Type, Has_Protected (Parent_Base));
+      Set_Etype              (Derived_Type,                Parent_Base);
+      Set_Ekind              (Derived_Type, Ekind         (Parent_Base));
+      Set_Has_Task           (Derived_Type, Has_Task      (Parent_Base));
+      Set_Has_Protected      (Derived_Type, Has_Protected (Parent_Base));
 
-      Set_Size_Info      (Derived_Type,                 Parent_Type);
-      Set_RM_Size        (Derived_Type, RM_Size        (Parent_Type));
-      Set_Is_Controlled  (Derived_Type, Is_Controlled  (Parent_Type));
+      Set_Size_Info          (Derived_Type,                     Parent_Type);
+      Set_RM_Size            (Derived_Type, RM_Size            (Parent_Type));
+      Set_Is_Controlled      (Derived_Type, Is_Controlled      (Parent_Type));
+      Set_Disable_Controlled (Derived_Type, Disable_Controlled (Parent_Type));
+
       Set_Is_Tagged_Type (Derived_Type, Is_Tagged_Type (Parent_Type));
       Set_Is_Volatile    (Derived_Type, Is_Volatile    (Parent_Type));
 
@@ -21174,7 +21178,7 @@ package body Sem_Ch3 is
          end;
       end if;
 
-      Final_Storage_Only := not Is_Controlled (T);
+      Final_Storage_Only := not Is_Controlled_Active (T);
 
       --  Ada 2005: Check whether an explicit Limited is present in a derived
       --  type declaration.
@@ -21240,7 +21244,8 @@ package body Sem_Ch3 is
          elsif not Is_Class_Wide_Equivalent_Type (T)
            and then (Has_Controlled_Component (Etype (Component))
                       or else (Chars (Component) /= Name_uParent
-                                and then Is_Controlled (Etype (Component))))
+                                and then Is_Controlled_Active
+                                           (Etype (Component))))
          then
             Set_Has_Controlled_Component (T, True);
             Final_Storage_Only :=

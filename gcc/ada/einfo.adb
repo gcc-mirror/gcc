@@ -558,6 +558,7 @@ package body Einfo is
 
    --    Has_Implicit_Dereference        Flag251
    --    Is_Processed_Transient          Flag252
+   --    Disable_Controlled              Flag253
    --    Is_Implementation_Defined       Flag254
    --    Is_Predicate_Function           Flag255
    --    Is_Predicate_Function_M         Flag256
@@ -595,7 +596,6 @@ package body Einfo is
    --    Is_Volatile_Full_Access         Flag285
    --    Needs_Typedef                   Flag286
 
-   --    (unused)                        Flag253
    --    (unused)                        Flag287
    --    (unused)                        Flag288
    --    (unused)                        Flag289
@@ -1025,6 +1025,11 @@ package body Einfo is
       pragma Assert (Is_Access_Type (Id));
       return Node20 (Id);
    end Directly_Designated_Type;
+
+   function Disable_Controlled (Id : E) return B is
+   begin
+      return Flag253 (Base_Type (Id));
+   end Disable_Controlled;
 
    function Discard_Names (Id : E) return B is
    begin
@@ -3940,6 +3945,12 @@ package body Einfo is
    begin
       Set_Node20 (Id, V);
    end Set_Directly_Designated_Type;
+
+   procedure Set_Disable_Controlled (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id) and then Is_Base_Type (Id));
+      Set_Flag253 (Id, V);
+   end Set_Disable_Controlled;
 
    procedure Set_Discard_Names (Id : E; V : B := True) is
    begin
@@ -7393,6 +7404,15 @@ package body Einfo is
       return
         K = E_Constant or else K = E_In_Parameter or else K = E_Loop_Parameter;
    end Is_Constant_Object;
+
+   --------------------------
+   -- Is_Controlled_Active --
+   --------------------------
+
+   function Is_Controlled_Active (Id : E) return B is
+   begin
+      return Is_Controlled (Id) and then not Disable_Controlled (Id);
+   end Is_Controlled_Active;
 
    --------------------
    -- Is_Discriminal --
