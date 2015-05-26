@@ -28286,8 +28286,8 @@ fi
 # Check whether isl_schedule_constraints_compute_schedule is available;
 # it's new in ISL-0.13.
 if test "x${ISLLIBS}" != "x" ; then
-  saved_CFLAGS="$CFLAGS"
-  CFLAGS="$CFLAGS $ISLINC"
+  saved_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS $ISLINC"
   saved_LIBS="$LIBS"
   LIBS="$LIBS $ISLLIBS $GMPLIBS"
 
@@ -28315,7 +28315,7 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$ac_has_isl_schedule_constraints_compute_schedule" >&6; }
 
   LIBS="$saved_LIBS"
-  CFLAGS="$saved_CFLAGS"
+  CXXFLAGS="$saved_CXXFLAGS"
 
   if test x"$ac_has_isl_schedule_constraints_compute_schedule" = x"yes"; then
 

@@ -1,5 +1,8 @@
 2015-05-26  Jason Merrill  <jason@redhat.com>
 
+	* configure.ac: Set CXXFLAGS for ISL test.
+	* configure: Regenerate.
+
 	* configure.ac: Use C++ for all tests.  Use AC_CHECK_DECLS for
 	strstr and basename.
 	* configure: Regenerate.
