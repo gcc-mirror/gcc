@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,7 @@ with Exp_Ch6;  use Exp_Ch6;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
+with Ghost;    use Ghost;
 with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
@@ -49,11 +50,26 @@ package body Exp_Ch8 is
    ---------------------------------------------
 
    procedure Expand_N_Exception_Renaming_Declaration (N : Node_Id) is
-      Decl : constant Node_Id := Debug_Renaming_Declaration (N);
+      GM   : constant Ghost_Mode_Type := Ghost_Mode;
+      Decl : Node_Id;
+
    begin
+      --  The exception renaming declaration may be subject to pragma Ghost
+      --  with policy Ignore. Set the mode now to ensure that any nodes
+      --  generated during expansion are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
+
+      Decl := Debug_Renaming_Declaration (N);
+
       if Present (Decl) then
          Insert_Action (N, Decl);
       end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Expand_N_Exception_Renaming_Declaration;
 
    ------------------------------------------
@@ -141,9 +157,19 @@ package body Exp_Ch8 is
          end if;
       end Evaluation_Required;
 
+      --  Local variables
+
+      GM : constant Ghost_Mode_Type := Ghost_Mode;
+
    --  Start of processing for Expand_N_Object_Renaming_Declaration
 
    begin
+      --  The object renaming declaration may be subject to pragma Ghost with
+      --  policy Ignore. Set the mode now to ensure that any nodes generated
+      --  during expansion are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
+
       --  Perform name evaluation if required
 
       if Evaluation_Required (Nam) then
@@ -186,6 +212,11 @@ package body Exp_Ch8 is
       if Present (Decl) then
          Insert_Action (N, Decl);
       end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Expand_N_Object_Renaming_Declaration;
 
    -------------------------------------------
@@ -193,9 +224,18 @@ package body Exp_Ch8 is
    -------------------------------------------
 
    procedure Expand_N_Package_Renaming_Declaration (N : Node_Id) is
-      Decl : constant Node_Id := Debug_Renaming_Declaration (N);
+      GM   : constant Ghost_Mode_Type := Ghost_Mode;
+      Decl : Node_Id;
 
    begin
+      --  The package renaming declaration may be subject to pragma Ghost with
+      --  policy Ignore. Set the mode now to ensure that any nodes generated
+      --  during expansion are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
+
+      Decl := Debug_Renaming_Declaration (N);
+
       if Present (Decl) then
 
          --  If we are in a compilation unit, then this is an outer
@@ -232,6 +272,11 @@ package body Exp_Ch8 is
             Insert_Action (N, Decl);
          end if;
       end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Expand_N_Package_Renaming_Declaration;
 
    ----------------------------------------------
@@ -281,11 +326,18 @@ package body Exp_Ch8 is
 
       --  Local variables
 
+      GM  : constant Ghost_Mode_Type := Ghost_Mode;
       Nam : constant Node_Id := Name (N);
 
    --  Start of processing for Expand_N_Subprogram_Renaming_Declaration
 
    begin
+      --  The subprogram renaming declaration may be subject to pragma Ghost
+      --  with policy Ignore. Set the mode now to ensure that any nodes created
+      --  during expansion are properly flagged as ignored Ghost.
+
+      Set_Ghost_Mode (N);
+
       --  When the prefix of the name is a function call, we must force the
       --  call to be made by removing side effects from the call, since we
       --  must only call the function once.
@@ -349,6 +401,11 @@ package body Exp_Ch8 is
             end if;
          end;
       end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Expand_N_Subprogram_Renaming_Declaration;
 
 end Exp_Ch8;

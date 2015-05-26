@@ -3124,14 +3124,15 @@ package body Sem_Ch12 is
    ------------------------------------------
 
    procedure Analyze_Generic_Package_Declaration (N : Node_Id) is
+      GM          : constant Ghost_Mode_Type := Ghost_Mode;
       Loc         : constant Source_Ptr := Sloc (N);
-      Id          : Entity_Id;
-      New_N       : Node_Id;
-      Save_Parent : Node_Id;
-      Renaming    : Node_Id;
       Decls       : constant List_Id :=
                       Visible_Declarations (Specification (N));
       Decl        : Node_Id;
+      Id          : Entity_Id;
+      New_N       : Node_Id;
+      Renaming    : Node_Id;
+      Save_Parent : Node_Id;
 
    begin
       --  The generic package declaration may be subject to pragma Ghost with
@@ -3290,6 +3291,11 @@ package body Sem_Ch12 is
             end if;
          end;
       end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Analyze_Generic_Package_Declaration;
 
    --------------------------------------------
@@ -3297,6 +3303,7 @@ package body Sem_Ch12 is
    --------------------------------------------
 
    procedure Analyze_Generic_Subprogram_Declaration (N : Node_Id) is
+      GM          : constant Ghost_Mode_Type := Ghost_Mode;
       Formals     : List_Id;
       Id          : Entity_Id;
       New_N       : Node_Id;
@@ -3460,6 +3467,11 @@ package body Sem_Ch12 is
       Generate_Reference_To_Formals (Id);
 
       List_Inherited_Pre_Post_Aspects (Id);
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Analyze_Generic_Subprogram_Declaration;
 
    -----------------------------------

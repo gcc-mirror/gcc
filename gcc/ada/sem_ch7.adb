@@ -571,6 +571,7 @@ package body Sem_Ch7 is
 
       --  Local variables
 
+      GM               : constant Ghost_Mode_Type := Ghost_Mode;
       Body_Id          : Entity_Id;
       HSS              : Node_Id;
       Last_Spec_Entity : Entity_Id;
@@ -940,6 +941,11 @@ package body Sem_Ch7 is
             Qualify_Entity_Names (N);
          end if;
       end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Analyze_Package_Body_Helper;
 
    ------------------------------
@@ -1015,16 +1021,34 @@ package body Sem_Ch7 is
    ---------------------------------
 
    procedure Analyze_Package_Declaration (N : Node_Id) is
-      Id : constant Node_Id := Defining_Entity (N);
+      GM : constant Ghost_Mode_Type := Ghost_Mode;
 
-      PF : Boolean;
-      --  True when in the context of a declared pure library unit
+      procedure Restore_Globals;
+      --  Restore the values of all saved global variables
+
+      ---------------------
+      -- Restore_Globals --
+      ---------------------
+
+      procedure Restore_Globals is
+      begin
+         Ghost_Mode := GM;
+      end Restore_Globals;
+
+      --  Local variables
+
+      Id : constant Node_Id := Defining_Entity (N);
 
       Body_Required : Boolean;
       --  True when this package declaration requires a corresponding body
 
       Comp_Unit : Boolean;
       --  True when this package declaration is not a nested declaration
+
+      PF : Boolean;
+      --  True when in the context of a declared pure library unit
+
+   --  Start of processing for Analyze_Package_Declaration
 
    begin
       if Debug_Flag_C then
@@ -1056,6 +1080,13 @@ package body Sem_Ch7 is
          Set_SPARK_Aux_Pragma_Inherited (Id, True);
       end if;
 
+      --  A package declared within a Ghost refion is automatically Ghost
+      --  (SPARK RM 6.9(2)).
+
+      if Ghost_Mode > None then
+         Set_Is_Ghost_Entity (Id);
+      end if;
+
       --  Analyze aspect specifications immediately, since we need to recognize
       --  things like Pure early enough to diagnose violations during analysis.
 
@@ -1071,6 +1102,7 @@ package body Sem_Ch7 is
       --     package Pkg is ...
 
       if From_Limited_With (Id) then
+         Restore_Globals;
          return;
       end if;
 
@@ -1098,6 +1130,7 @@ package body Sem_Ch7 is
       end if;
 
       Comp_Unit := Nkind (Parent (N)) = N_Compilation_Unit;
+
       if Comp_Unit then
 
          --  Set Body_Required indication on the compilation unit node, and
@@ -1108,7 +1141,6 @@ package body Sem_Ch7 is
          if not Body_Required then
             Set_Suppress_Elaboration_Warnings (Id);
          end if;
-
       end if;
 
       End_Package_Scope (Id);
@@ -1131,6 +1163,8 @@ package body Sem_Ch7 is
          Write_Location (Sloc (N));
          Write_Eol;
       end if;
+
+      Restore_Globals;
    end Analyze_Package_Declaration;
 
    -----------------------------------
@@ -1817,8 +1851,9 @@ package body Sem_Ch7 is
    --------------------------------------
 
    procedure Analyze_Private_Type_Declaration (N : Node_Id) is
-      PF : constant Boolean   := Is_Pure (Enclosing_Lib_Unit_Entity);
+      GM : constant Ghost_Mode_Type := Ghost_Mode;
       Id : constant Entity_Id := Defining_Identifier (N);
+      PF : constant Boolean   := Is_Pure (Enclosing_Lib_Unit_Entity);
 
    begin
       --  The private type declaration may be subject to pragma Ghost with
@@ -1850,6 +1885,11 @@ package body Sem_Ch7 is
       if Has_Aspects (N) then
          Analyze_Aspect_Specifications (N, Id);
       end if;
+
+      --  Restore the original Ghost mode once analysis and expansion have
+      --  taken place.
+
+      Ghost_Mode := GM;
    end Analyze_Private_Type_Declaration;
 
    ----------------------------------

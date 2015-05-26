@@ -1,3 +1,181 @@
+2015-05-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Full_Type_Declaration): Capture, set and
+	restore the Ghost mode.
+	(Expand_N_Object_Declaration): Capture, set and restore the Ghost mode.
+	(Freeze_Type): Update the call to Set_Ghost_Mode.
+	(Restore_Globals): New routine.
+	* exp_ch5.adb Add with and use clauses for Ghost.
+	(Expand_N_Assignment_Statement): Capture, set and restore the
+	Ghost mode.
+	(Restore_Globals): New routine.
+	* exp_ch6.adb Add with and use clauses for Ghost.
+	(Expand_N_Procedure_Call_Statement): Capture, set and
+	restore the Ghost mode.
+	(Expand_N_Subprogram_Body):
+	Code cleanup. Capture, set and restore the Ghost mode.
+	(Expand_N_Subprogram_Declaration): Capture, set and restore the
+	Ghost mode.
+	(Restore_Globals): New routine.
+	* exp_ch7.adb Add with and use clauses for Ghost.
+	(Expand_N_Package_Body): Capture, set and restore the Ghost mode.
+	(Expand_N_Package_Declaration): Capture, set and restore the
+	Ghost mode.
+	(Wrap_HSS_In_Block): Create a proper identifier for the block.
+	* exp_ch8.adb Add with and use clauses for Ghost.
+	(Expand_N_Exception_Renaming_Declaration): Code
+	cleanup. Capture, set and restore the Ghost mode.
+	(Expand_N_Object_Renaming_Declaration): Capture, set and restore
+	the Ghost mode.
+	(Expand_N_Package_Renaming_Declaration): Capture, set and restore the
+	Ghost mode.
+	(Expand_N_Subprogram_Renaming_Declaration): Capture, set and
+	restore the Ghost mode.
+	* exp_ch11.adb (Expand_N_Exception_Declaration): Code
+	cleanup. Capture, set and restore the Ghost mode.
+	* exp_disp.adb (Make_DT): Update the call to Set_Ghost_Mode. Do
+	not initialize the dispatch table slot of a Ghost subprogram.
+	* exp_prag.adb Add with and use clauses for Ghost.
+	(Expand_Pragma_Check): Capture, set and restore the Ghost mode.
+	(Expand_Pragma_Contract_Cases): Capture, set and restore the
+	Ghost mode.
+	(Expand_Pragma_Initial_Condition): Capture, set and
+	restore the Ghost mode.
+	(Expand_Pragma_Loop_Variant): Capture,
+	set and restore the Ghost mode.
+	(Restore_Globals): New routine.
+	* exp_util.adb Add with and use clauses for Ghost.
+	(Make_Predicate_Call): Code cleanup. Capture, set and restore
+	the Ghost mode.
+	(Restore_Globals): New routine.
+	* freeze.adb (Freeze_Entity): Code cleanup. Update the call
+	to Set_Ghost_Mode.
+	* ghost.adb Add with and use clause for Sem_Prag.
+	(Check_Ghost_Completion): Code cleanup.
+	(Check_Ghost_Overriding): New routine.
+	(Check_Ghost_Policy): Code cleanup.
+	(Ghost_Entity): New routine.
+	(Is_Ghost_Declaration): Removed.
+	(Is_Ghost_Statement_Or_Pragma): Removed.
+	(Is_OK_Context): Reimplemented.
+	(Is_OK_Declaration): New routine.
+	(Is_OK_Pragma): New routine.
+	(Is_OK_Statement): New routine.
+	(Mark_Full_View_As_Ghost): New routine.
+	(Mark_Pragma_As_Ghost): New routine.
+	(Mark_Renaming_As_Ghost): New routine.
+	(Propagate_Ignored_Ghost_Code): Update the comment on usage.
+	(Set_From_Entity): New routine.
+	(Set_From_Policy): New routine.
+	(Set_Ghost_Mode): This routine now handles pragmas and freeze nodes.
+	(Set_Ghost_Mode_For_Freeze): Removed.
+	(Set_Ghost_Mode_From_Entity): New routine.
+	(Set_Ghost_Mode_From_Policy): Removed.
+	* ghost.ads (Check_Ghost_Overriding): New routine.
+	(Mark_Full_View_As_Ghost): New routine.
+	(Mark_Pragma_As_Ghost): New routine.
+	(Mark_Renaming_As_Ghost): New routine.
+	(Set_Ghost_Mode): Update the parameter profile. Update the
+	comment on usage.
+	(Set_Ghost_Mode_For_Freeze): Removed.
+	(Set_Ghost_Mode_From_Entity): New routine.
+	* sem_ch3.adb (Analyze_Full_Type_Declaration):
+	Capture and restore the Ghost mode. Mark a type
+	as Ghost regardless of whether it comes from source.
+	(Analyze_Incomplete_Type_Decl): Capture, set and restore the
+	Ghost mode.
+	(Analyze_Number_Declaration): Capture and restore the Ghost mode.
+	(Analyze_Object_Declaration): Capture and restore the Ghost mode.
+	(Analyze_Private_Extension_Declaration): Capture and
+	restore the Ghost mode.
+	(Analyze_Subtype_Declaration): Capture and restore the Ghost mode.
+	(Process_Full_View): The full view inherits all Ghost-related
+	attributes from the private view.
+	(Restore_Globals): New routine.
+	* sem_ch5.adb (Analyze_Assignment): Capture and restore the
+	Ghost mode.
+	(Restore_Globals): New routine.
+	* sem_ch6.adb (Analyze_Abstract_Subprogram_Declaration):
+	Code cleanup. Capture and restore the Ghost mode. Mark a
+	subprogram as Ghost regarless of whether it comes from source.
+	(Analyze_Procedure_Call): Capture and restore the Ghost mode.
+	(Analyze_Subprogram_Body_Helper): Capture and restore the Ghost mode.
+	(Analyze_Subprogram_Declaration): Capture and restore the Ghost mode.
+	(New_Overloaded_Entity): Ensure that a
+	parent subprogram and an overriding subprogram have compatible
+	Ghost policies.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Capture and restore
+	the Ghost mode.
+	(Analyze_Package_Declaration): Capture and
+	restore the Ghost mode. Mark a package as Ghost when it is
+	declared in a Ghost region.
+	(Analyze_Private_Type_Declaration): Capture and restore the Ghost mode.
+	(Restore_Globals): New routine.
+	* sem_ch8.adb (Analyze_Exception_Renaming): Code
+	reformatting. Capture and restore the Ghost mode. A renaming
+	becomes Ghost when its name references a Ghost entity.
+	(Analyze_Generic_Renaming): Capture and restore the Ghost mode. A
+	renaming becomes Ghost when its name references a Ghost entity.
+	(Analyze_Object_Renaming): Capture and restore the Ghost mode. A
+	renaming becomes Ghost when its name references a Ghost entity.
+	(Analyze_Package_Renaming): Capture and restore the Ghost mode. A
+	renaming becomes Ghost when its name references a Ghost entity.
+	(Analyze_Subprogram_Renaming): Capture and restore the Ghost
+	mode. A renaming becomes Ghost when its name references a
+	Ghost entity.
+	* sem_ch11.adb (Analyze_Exception_Declaration): Capture, set
+	and restore the Ghost mode.
+	* sem_ch12.adb (Analyze_Generic_Package_Declaration): Capture and
+	restore the Ghost mode.
+	(Analyze_Generic_Subprogram_Declaration):
+	Capture and restore the Ghost mode.
+	* sem_ch13.adb Add with and use clauses for Ghost.
+	(Add_Invariant): New routine.
+	(Add_Invariants): Factor out code.
+	(Add_Predicate): New routine.
+	(Add_Predicates): Factor out code.
+	(Build_Invariant_Procedure_Declaration): Code cleanup. Capture,
+	set and restore the Ghost mode.
+	(Build_Invariant_Procedure): Code cleanup.
+	(Build_Predicate_Functions): Capture, set and
+	restore the Ghost mode. Mark the generated functions as Ghost.
+	* sem_prag.adb (Analyze_Contract_Cases_In_Decl_Part):
+	Capture, set and restore the Ghost mode.
+	(Analyze_External_Property_In_Decl_Part): Capture, set and restore
+	the Ghost mode.
+	(Analyze_Initial_Condition_In_Decl_Part):
+	Capture, set and restore the Ghost mode.
+	(Analyze_Pragma):
+	Code cleanup. Capture, set and restore the Ghost mode. Flag
+	pragmas Linker_Section, No_Return, Unmodified, Unreferenced and
+	Unreferenced_Objects as illegal when it applies to both Ghost
+	and living arguments. Pragma Ghost cannot apply to synchronized
+	objects.
+	(Check_Kind): Moved to the spec of Sem_Prag.
+	(Process_Inline): Flag the pragma as illegal when it applies to
+	both Ghost and living arguments.
+	(Restore_Globals): New routine.
+	* sem_prag.ads Add pragma Default_Initial_Condition
+	to table Assertion_Expression_Pragma. Add new table
+	Is_Aspect_Specifying_Pragma.
+	(Check_Kind): Moved from body of Sem_Prag.
+	* sem_util.adb Add with and use clauses for Ghost.
+	(Build_Default_Init_Cond_Procedure_Body): Capture, set and restore
+	the Ghost mode.
+	(Build_Default_Init_Cond_Procedure_Declaration):
+	Capture, set and restore the Ghost mode. Mark the default
+	initial condition procedure as Ghost when it is declared
+	in a Ghost region.
+	(Is_Renaming_Declaration): New routine.
+	(Policy_In_List): Account for the single argument version of
+	Check_Pragma.
+	* sem_util.ads (Is_Renaming_Declaration): New routine.
+	* sinfo.adb (Is_Ghost_Pragma): New routine.
+	(Set_Is_Ghost_Pragma): New routine.
+	* sinfo.ads New attribute Is_Ghost_Pragma.
+	(Is_Ghost_Pragma): New routine along with pragma Inline.
+	(Set_Is_Ghost_Pragma): New routine along with pragma Inline.
+
 2015-05-26  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb, sem_aux.adb, sem_aux.ads, exp_ch6.adb, sprint.adb:
