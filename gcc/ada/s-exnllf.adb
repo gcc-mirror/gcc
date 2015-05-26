@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,13 +29,108 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Note: the reason for treating exponents in the range 0 .. 4 specially is
+--  to ensure identical results to the static inline expansion in the case of
+--  a compile time known exponent in this range. The use of Float'Machine and
+--  Long_Float'Machine is to avoid unwanted extra precision in the results.
+
 package body System.Exn_LLF is
+
+   function Exp
+     (Left  : Long_Long_Float;
+      Right : Integer) return Long_Long_Float;
+   --  Common routine used if Right not in 0 .. 4
+
+   ---------------
+   -- Exn_Float --
+   ---------------
+
+   function Exn_Float
+     (Left  : Float;
+      Right : Integer) return Float
+   is
+      Temp : Float;
+   begin
+      case Right is
+         when 0 =>
+            return 1.0;
+         when 1 =>
+            return Left;
+         when 2 =>
+            return Float'Machine (Left * Left);
+         when 3 =>
+            return Float'Machine (Left * Left * Left);
+         when 4 =>
+            Temp := Float'Machine (Left * Left);
+            return Float'Machine (Temp * Temp);
+         when others =>
+            return
+              Float'Machine
+                (Float (Exp (Long_Long_Float (Left), Right)));
+      end case;
+   end Exn_Float;
+
+   --------------------
+   -- Exn_Long_Float --
+   --------------------
+
+   function Exn_Long_Float
+     (Left  : Long_Float;
+      Right : Integer) return Long_Float
+   is
+      Temp : Long_Float;
+   begin
+      case Right is
+         when 0 =>
+            return 1.0;
+         when 1 =>
+            return Left;
+         when 2 =>
+            return Long_Float'Machine (Left * Left);
+         when 3 =>
+            return Long_Float'Machine (Left * Left * Left);
+         when 4 =>
+            Temp := Long_Float'Machine (Left * Left);
+            return Long_Float'Machine (Temp * Temp);
+         when others =>
+            return
+              Long_Float'Machine
+                (Long_Float (Exp (Long_Long_Float (Left), Right)));
+      end case;
+   end Exn_Long_Float;
 
    -------------------------
    -- Exn_Long_Long_Float --
    -------------------------
 
    function Exn_Long_Long_Float
+     (Left  : Long_Long_Float;
+      Right : Integer) return Long_Long_Float
+   is
+      Temp : Long_Long_Float;
+   begin
+      case Right is
+         when 0 =>
+            return 1.0;
+         when 1 =>
+            return Left;
+         when 2 =>
+            return Left * Left;
+         when 3 =>
+            return Left * Left * Left;
+         when 4 =>
+            Temp := Left * Left;
+            return Temp * Temp;
+         when others =>
+            return Exp (Left, Right);
+      end case;
+   end Exn_Long_Long_Float;
+
+   ---------
+   -- Exp --
+   ---------
+
+   function Exp
      (Left  : Long_Long_Float;
       Right : Integer) return Long_Long_Float
    is
@@ -91,6 +186,6 @@ package body System.Exn_LLF is
             return 1.0 / Result;
          end;
       end if;
-   end Exn_Long_Long_Float;
+   end Exp;
 
 end System.Exn_LLF;

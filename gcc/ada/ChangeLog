@@ -1,3 +1,73 @@
+2015-05-26  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Defend against
+	bad bounds.
+	* debug.adb: Document -gnatd.k.
+	* erroutc.adb (Set_Msg_Insertion_Line_Number): Implement -gnatd.k.
+
+2015-05-26  Robert Dewar  <dewar@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Provide new arguments for
+	Get_Target_Parameters.
+	* restrict.adb (Set_Restriction_No_Specification_Of_Aspect):
+	new procedure.
+	(Set_Restriction_No_Use_Of_Attribute): new procedure.
+	* restrict.ads (Set_Restriction_No_Specification_Of_Aspect):
+	new procedure.
+	(Set_Restriction_No_Use_Of_Attribute): new procedure.
+	* s-rident.ads (Integer_Parameter_Restrictions): New subtype.
+	* targparm.adb (Get_Target_Parameters): Allow new restriction
+	pragmas No_Specification_Of_Aspect No_Use_Of_Attribute
+	No_Use_Of_Pragma.
+	* targparm.ads: New parameters for Get_Target_Parameters.
+	* tbuild.adb (Set_NOD): New name for Set_RND.
+	(Set_NSA): New procedure.
+	(Set_NUA): New procedure.
+	(Set_NUP): New procedure.
+	* tbuild.ads (Make_SC): Minor reformatting.
+	(Set_NOD): New name for Set_RND.
+	(Set_NSA, Set_NUA, Set_NUP): New procedure.
+
+2015-05-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-stwise.adb (Find_Token): If source'first is not positive,
+	an exception must be raised, as specified by RM 2005 A.4.3
+	(68/1). This must be checked explicitly, given that run-time
+	files are normally compiled without constraint checks.
+	* a-stzsea.adb (Find_Token): Ditto.
+
+2015-05-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.ads sem_util.adb (Is_Current_Instance):  New predicate
+	to fully implement RM 8.6 (17/3). which earlier only applied
+	to synchronized types. Used to preanalyze aspects that include
+	current instances of types, such as Predicate and Invariant.
+	* sem_res.adb (Resolve_Entity_Name): Use Is_Current_Instance.
+	* sem_ch13.adb (Add_Predicates): In ASIS mode, preserve original
+	expression of aspect and analyze it to provide proper type
+	information.
+
+2015-05-26  Robert Dewar  <dewar@adacore.com>
+
+	* rtsfind.ads: Add entries for RE_Exn[_Long]_Float.
+	* s-exnllf.adb (Exn_Float): New function.
+	(Exn_Long_Float): New function.
+	(Exn_Long_Long_Float): Rewritten interface.
+	(Exp): New name for what used to be Exn_Long_Long_Float.
+	* s-exnllf.ads (Exn_Float): New function.
+	(Exn_Long_Float): New function.
+
+2015-05-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Selected_Component): Do not emit an error
+	on a selected component when the prefix is a type name that is
+	a Current_Instance.
+	* einfo.ads: Minor grammar fix.
+
+2015-05-26  Doug Rupp  <rupp@adacore.com>
+
+	* init.c [vxworks] (sysLib.h): Only for x86.
+
 2015-05-26  Doug Rupp  <rupp@adacore.com>
 
 	* init-vxsim.c (CPU): define as __VXSIM_CPU__

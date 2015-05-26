@@ -8437,17 +8437,20 @@ package body Sem_Ch13 is
 
       begin
          Ritem := First_Rep_Item (Typ);
+
          while Present (Ritem) loop
             if Nkind (Ritem) = N_Pragma
               and then Pragma_Name (Ritem) = Name_Predicate
             then
-               --  Acquire arguments
+               --  Acquire arguments. The expression itself is copied for use
+               --  in the predicate function, to preserve the orignal version
+               --  for ASIS use.
 
                Arg1 := First (Pragma_Argument_Associations (Ritem));
                Arg2 := Next (Arg1);
 
                Arg1 := Get_Pragma_Arg (Arg1);
-               Arg2 := Get_Pragma_Arg (Arg2);
+               Arg2 := New_Copy_Tree (Get_Pragma_Arg (Arg2));
 
                --  See if this predicate pragma is for the current type or for
                --  its full view. A predicate on a private completion is placed
@@ -8472,9 +8475,20 @@ package body Sem_Ch13 is
 
                   if From_Aspect_Specification (Ritem) then
                      declare
-                        Aitem : Node_Id;
+                        Aitem     : Node_Id;
+                        Orig_Expr : constant Node_Id :=
+                           Expression (Corresponding_Aspect (Ritem));
 
                      begin
+
+                        --  For ASIS use, perform semantic analysis of the
+                        --  original predicate expression, which is otherwise
+                        --  not utilized.
+
+                        if ASIS_Mode then
+                           Preanalyze_And_Resolve (Orig_Expr);
+                        end if;
+
                         --  Loop to find corresponding aspect, note that this
                         --  must be present given the pragma is marked delayed.
 

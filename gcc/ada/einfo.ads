@@ -3952,7 +3952,7 @@ package Einfo is
 --       end and zero is a legitimate value for a type with one value.
 
 --    Root_Type (synthesized)
---       Applies to all type entities. For class-wide types, return the root
+--       Applies to all type entities. For class-wide types, returns the root
 --       type of the class covered by the CW type, otherwise returns the
 --       ultimate derivation ancestor of the given type. This function
 --       preserves the view, i.e. the Root_Type of a partial view is the

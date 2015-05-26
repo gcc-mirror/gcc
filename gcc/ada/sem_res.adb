@@ -6991,18 +6991,12 @@ package body Sem_Res is
          Set_Entity_With_Checks (N, E);
          Eval_Entity_Name (N);
 
-      --  Case of subtype name appearing as an operand in expression
+      --  Case of (sub)type name appearing in a context where an expression
+      --  is expected. This is legal if occurrence is a current instance.
+      --  See RM 8.6 (17/3).
 
       elsif Is_Type (E) then
-
-         --  Allow use of subtype if it is a concurrent type where we are
-         --  currently inside the body. This will eventually be expanded into a
-         --  call to Self (for tasks) or _object (for protected objects). Any
-         --  other use of a subtype is invalid.
-
-         if Is_Concurrent_Type (E)
-           and then In_Open_Scopes (E)
-         then
+         if Is_Current_Instance (N) then
             null;
 
          --  Any other use is an error

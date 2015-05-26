@@ -954,13 +954,20 @@ begin
                System_Source_File_Index := S;
             end if;
 
+            --  Call to get target parameters. Note that the actual interface
+            --  routines in Tbuild here. They can't be in this procedure
+            --  because of accessibility issues.
+
             Targparm.Get_Target_Parameters
               (System_Text  => Source_Text  (S),
                Source_First => Source_First (S),
                Source_Last  => Source_Last  (S),
                Make_Id      => Tbuild.Make_Id'Access,
                Make_SC      => Tbuild.Make_SC'Access,
-               Set_RND      => Tbuild.Set_RND'Access);
+               Set_NOD      => Tbuild.Set_NOD'Access,
+               Set_NSA      => Tbuild.Set_NSA'Access,
+               Set_NUA      => Tbuild.Set_NUA'Access,
+               Set_NUP      => Tbuild.Set_NUP'Access);
 
             --  Acquire configuration pragma information from Targparm
 
