@@ -198,7 +198,7 @@ prefer_and_bit_test (machine_mode mode, int bitnum)
     {
       /* Set up rtxes for the two variations.  Use NULL as a placeholder
 	 for the BITNUM-based constants.  */
-      and_reg = gen_rtx_REG (mode, FIRST_PSEUDO_REGISTER);
+      and_reg = gen_rtx_REG (mode, LAST_VIRTUAL_REGISTER + 1);
       and_test = gen_rtx_AND (mode, and_reg, NULL);
       shift_test = gen_rtx_AND (mode, gen_rtx_ASHIFTRT (mode, and_reg, NULL),
 				const1_rtx);

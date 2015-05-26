@@ -1,5 +1,16 @@
 2015-05-26  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* caller-save.c (init_caller_save): Base temporary register numbers
+	on LAST_VIRTUAL_REGISTER + 1 rather than FIRST_PSEUDO_REGISTER.
+	* cfgloopanal.c (init_set_costs): Likewise.
+	* dojump.c (prefer_and_bit_test): Likewise.
+	* expr.c (init_expr_target): Likewise.
+	* ira.c (setup_prohibited_mode_move_regs): Likewise.
+	* lower-subreg.c (init_lower_subreg): Likewise.
+	* postreload.c (reload_cse_regs_1): Likewise.
+
+2015-05-26  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gensupport.h (compute_test_codes): Declare.
 	* gensupport.c (compute_predicate_codes): Rename to...
 	(compute_test_codes): ...this.  Generalize error message.
