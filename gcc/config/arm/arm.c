@@ -2702,35 +2702,37 @@ arm_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 static void
 arm_option_check_internal (struct gcc_options *opts)
 {
+  int flags = opts->x_target_flags;
+
   /* Make sure that the processor choice does not conflict with any of the
      other command line choices.  */
-  if (TREE_TARGET_ARM (opts) && !(insn_flags & FL_NOTM))
+  if (TARGET_ARM_P (flags) && !(insn_flags & FL_NOTM))
     error ("target CPU does not support ARM mode");
 
   /* TARGET_BACKTRACE calls leaf_function_p, which causes a crash if done
      from here where no function is being compiled currently.  */
-  if ((TARGET_TPCS_FRAME || TARGET_TPCS_LEAF_FRAME) && TREE_TARGET_ARM (opts))
+  if ((TARGET_TPCS_FRAME || TARGET_TPCS_LEAF_FRAME) && TARGET_ARM_P (flags))
     warning (0, "enabling backtrace support is only meaningful when compiling for the Thumb");
 
-  if (TREE_TARGET_ARM (opts) && TARGET_CALLEE_INTERWORKING)
+  if (TARGET_ARM_P (flags) && TARGET_CALLEE_INTERWORKING)
     warning (0, "enabling callee interworking support is only meaningful when compiling for the Thumb");
 
   /* If this target is normally configured to use APCS frames, warn if they
      are turned off and debugging is turned on.  */
-  if (TREE_TARGET_ARM (opts)
+  if (TARGET_ARM_P (flags)
       && write_symbols != NO_DEBUG
       && !TARGET_APCS_FRAME
       && (TARGET_DEFAULT & MASK_APCS_FRAME))
     warning (0, "-g with -mno-apcs-frame may not give sensible debugging");
 
   /* iWMMXt unsupported under Thumb mode.  */
-  if (TREE_TARGET_THUMB (opts) && TARGET_IWMMXT)
+  if (TARGET_THUMB_P (flags) && TARGET_IWMMXT)
     error ("iWMMXt unsupported under Thumb mode");
 
-  if (TARGET_HARD_TP && TREE_TARGET_THUMB1 (opts))
+  if (TARGET_HARD_TP && TARGET_THUMB1_P (flags))
     error ("can not use -mtp=cp15 with 16-bit Thumb");
 
-  if (TREE_TARGET_THUMB (opts) && TARGET_VXWORKS_RTP && flag_pic)
+  if (TARGET_THUMB_P (flags) && TARGET_VXWORKS_RTP && flag_pic)
     {
       error ("RTP PIC is incompatible with Thumb");
       flag_pic = 0;
@@ -2739,7 +2741,7 @@ arm_option_check_internal (struct gcc_options *opts)
   /* We only support -mslow-flash-data on armv7-m targets.  */
   if (target_slow_flash_data
       && ((!(arm_arch7 && !arm_arch_notm) && !arm_arch7em)
-	  || (TREE_TARGET_THUMB1 (opts) || flag_pic || TARGET_NEON)))
+	  || (TARGET_THUMB1_P (flags) || flag_pic || TARGET_NEON)))
     error ("-mslow-flash-data only supports non-pic code on armv7-m targets");
 }
 
@@ -2747,9 +2749,11 @@ arm_option_check_internal (struct gcc_options *opts)
 static void
 arm_option_params_internal (struct gcc_options *opts)
 {
+  int flags = opts->x_target_flags;
+
  /* If we are not using the default (ARM mode) section anchor offset
      ranges, then set the correct ranges now.  */
-  if (TREE_TARGET_THUMB1 (opts))
+  if (TARGET_THUMB1_P (flags))
     {
       /* Thumb-1 LDR instructions cannot have negative offsets.
          Permissible positive offset ranges are 5-bit (for byte loads),
@@ -2759,7 +2763,7 @@ arm_option_params_internal (struct gcc_options *opts)
       targetm.min_anchor_offset = 0;
       targetm.max_anchor_offset = 127;
     }
-  else if (TREE_TARGET_THUMB2 (opts))
+  else if (TARGET_THUMB2_P (flags))
     {
       /* The minimum is set such that the total size of the block
          for a particular anchor is 248 + 1 + 4095 bytes, which is
@@ -2780,7 +2784,7 @@ arm_option_params_internal (struct gcc_options *opts)
       max_insns_skipped = 6;
 
       /* For THUMB2, we limit the conditional sequence to one IT block.  */
-      if (TREE_TARGET_THUMB2 (opts))
+      if (TARGET_THUMB2_P (flags))
         max_insns_skipped = opts->x_arm_restrict_it ? 1 : 4;
     }
   else
@@ -2792,13 +2796,13 @@ static void
 arm_option_override_internal (struct gcc_options *opts,
 			      struct gcc_options *opts_set)
 {
-  if (TREE_TARGET_THUMB (opts) && !(insn_flags & FL_THUMB))
+  if (TARGET_THUMB_P (opts->x_target_flags) && !(insn_flags & FL_THUMB))
     {
       warning (0, "target CPU does not support THUMB instructions");
       opts->x_target_flags &= ~MASK_THUMB;
     }
 
-  if (TARGET_APCS_FRAME && TREE_TARGET_THUMB (opts))
+  if (TARGET_APCS_FRAME && TARGET_THUMB_P (opts->x_target_flags))
     {
       /* warning (0, "ignoring -mapcs-frame because -mthumb was used"); */
       opts->x_target_flags &= ~MASK_APCS_FRAME;
@@ -2806,16 +2810,16 @@ arm_option_override_internal (struct gcc_options *opts,
 
   /* Callee super interworking implies thumb interworking.  Adding
      this to the flags here simplifies the logic elsewhere.  */
-  if (TREE_TARGET_THUMB (opts) && TARGET_CALLEE_INTERWORKING)
+  if (TARGET_THUMB_P (opts->x_target_flags) && TARGET_CALLEE_INTERWORKING)
     opts->x_target_flags |= MASK_INTERWORK;
 
   if (! opts_set->x_arm_restrict_it)
     opts->x_arm_restrict_it = arm_arch8;
 
-  if (!TREE_TARGET_THUMB2 (opts))
+  if (!TARGET_THUMB2_P (opts->x_target_flags))
     opts->x_arm_restrict_it = 0;
 
-  if (TREE_TARGET_THUMB1 (opts))
+  if (TARGET_THUMB1_P (opts->x_target_flags))
     {
       /* Don't warn since it's on by default in -O2.  */
       opts->x_flag_schedule_insns = 0;
@@ -2823,7 +2827,8 @@ arm_option_override_internal (struct gcc_options *opts,
 
   /* Disable shrink-wrap when optimizing function for size, since it tends to
      generate additional returns.  */
-  if (optimize_function_for_size_p (cfun) && TREE_TARGET_THUMB2 (opts))
+  if (optimize_function_for_size_p (cfun)
+      && TARGET_THUMB2_P (opts->x_target_flags))
     opts->x_flag_shrink_wrap = false;
 
   /* In Thumb1 mode, we emit the epilogue in RTL, but the last insn
@@ -2834,12 +2839,12 @@ arm_option_override_internal (struct gcc_options *opts,
      finding out about it.  Therefore, disable fipa-ra in Thumb1 mode.
      TODO: Accurately model clobbers for epilogue_insns and reenable
      fipa-ra.  */
-  if (TREE_TARGET_THUMB1 (opts))
+  if (TARGET_THUMB1_P (opts->x_target_flags))
     opts->x_flag_ipa_ra = 0;
 
   /* Thumb2 inline assembly code should always use unified syntax.
      This will apply to ARM and Thumb1 eventually.  */
-  opts->x_inline_asm_unified = TREE_TARGET_THUMB2 (opts);
+  opts->x_inline_asm_unified = TARGET_THUMB2_P (opts->x_target_flags);
 }
 
 /* Fix up any incompatible options that the user has specified.  */

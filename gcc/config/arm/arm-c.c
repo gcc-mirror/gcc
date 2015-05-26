@@ -55,31 +55,49 @@ arm_lang_object_attributes_init (void)
 #define builtin_define(TXT) cpp_define (pfile, TXT)
 #define builtin_assert(TXT) cpp_assert (pfile, TXT)
 
+/* Define or undefine macros based on the current target.  If the user does
+   #pragma GCC target, we need to adjust the macros dynamically.  */
+
+static void
+def_or_undef_macro(struct cpp_reader* pfile, const char *name, bool def_p) 
+{
+  if (def_p)
+    cpp_define (pfile, name); 
+  else  
+    cpp_undef (pfile, name); 
+} 
+
 void
 arm_cpu_cpp_builtins (struct cpp_reader * pfile)
 {
-  if (TARGET_DSP_MULTIPLY)
-    builtin_define ("__ARM_FEATURE_DSP");
-  if (TARGET_ARM_QBIT)
-    builtin_define ("__ARM_FEATURE_QBIT");
-  if (TARGET_ARM_SAT)
-    builtin_define ("__ARM_FEATURE_SAT");
+  int flags = target_flags;
+
+  def_or_undef_macro (pfile, "__ARM_FEATURE_DSP",
+		      TARGET_DSP_MULTIPLY_P (flags));
+  def_or_undef_macro (pfile, "__ARM_FEATURE_QBIT",
+		      TARGET_ARM_QBIT_P (flags)); 
+  def_or_undef_macro (pfile, "__ARM_FEATURE_SAT",
+		      TARGET_ARM_SAT_P (flags));
   if (TARGET_CRYPTO)
     builtin_define ("__ARM_FEATURE_CRYPTO");
   if (unaligned_access)
     builtin_define ("__ARM_FEATURE_UNALIGNED");
   if (TARGET_CRC32)
     builtin_define ("__ARM_FEATURE_CRC32");
-  if (TARGET_32BIT)
-    builtin_define ("__ARM_32BIT_STATE");
-  if (TARGET_ARM_FEATURE_LDREX)
+
+  def_or_undef_macro (pfile, "__ARM_32BIT_STATE", TARGET_32BIT_P (flags)); 
+
+  if (TARGET_ARM_FEATURE_LDREX_P (flags))
     builtin_define_with_int_value ("__ARM_FEATURE_LDREX", 
-				   TARGET_ARM_FEATURE_LDREX);
-  if ((TARGET_ARM_ARCH >= 5 && !TARGET_THUMB)
-      || TARGET_ARM_ARCH_ISA_THUMB >=2)
-    builtin_define ("__ARM_FEATURE_CLZ");
-  if (TARGET_INT_SIMD)
-    builtin_define ("__ARM_FEATURE_SIMD32");
+				   TARGET_ARM_FEATURE_LDREX_P (flags));
+  else
+    cpp_undef (pfile, "__ARM_FEATURE_LDREX");
+
+  def_or_undef_macro (pfile, "__ARM_FEATURE_CLZ",
+		      ((TARGET_ARM_ARCH >= 5 && !TARGET_THUMB_P (flags))
+		       || TARGET_ARM_ARCH_ISA_THUMB >=2));
+
+  def_or_undef_macro (pfile, "__ARM_FEATURE_SIMD32", TARGET_INT_SIMD_P (flags));
 
   builtin_define_with_int_value ("__ARM_SIZEOF_MINIMAL_ENUM",
 				 flag_short_enums ? 1 : 4);
@@ -96,10 +114,14 @@ arm_cpu_cpp_builtins (struct cpp_reader * pfile)
   if (arm_arch_notm)
     builtin_define ("__ARM_ARCH_ISA_ARM");
   builtin_define ("__APCS_32__");
-  if (TARGET_THUMB)
-    builtin_define ("__thumb__");
-  if (TARGET_THUMB2)
-    builtin_define ("__thumb2__");
+
+  def_or_undef_macro (pfile, "__thumb__", TARGET_THUMB_P (flags));
+  def_or_undef_macro (pfile, "__thumb2__", TARGET_THUMB2_P (flags));
+  if (TARGET_BIG_END)
+    def_or_undef_macro (pfile, "__THUMBEB__", TARGET_THUMB_P (flags));
+  else
+    def_or_undef_macro (pfile, "__THUMBEL__", TARGET_THUMB_P (flags));
+
   if (TARGET_ARM_ARCH_ISA_THUMB)
     builtin_define_with_int_value ("__ARM_ARCH_ISA_THUMB",
 				   TARGET_ARM_ARCH_ISA_THUMB);
@@ -108,14 +130,10 @@ arm_cpu_cpp_builtins (struct cpp_reader * pfile)
     {
       builtin_define ("__ARMEB__");
       builtin_define ("__ARM_BIG_ENDIAN");
-      if (TARGET_THUMB)
-	builtin_define ("__THUMBEB__");
     }
   else
     {
       builtin_define ("__ARMEL__");
-      if (TARGET_THUMB)
-	builtin_define ("__THUMBEL__");
     }
 
   if (TARGET_SOFT_FLOAT)
@@ -166,11 +184,11 @@ arm_cpu_cpp_builtins (struct cpp_reader * pfile)
 	builtin_define ("__ARM_PCS");
       builtin_define ("__ARM_EABI__");
     }
-  if (TARGET_IDIV)
-    {
-      builtin_define ("__ARM_ARCH_EXT_IDIV__");
-      builtin_define ("__ARM_FEATURE_IDIV");
-    }
-  if (inline_asm_unified)
-    builtin_define ("__ARM_ASM_SYNTAX_UNIFIED__");
+
+
+
+  def_or_undef_macro (pfile, "__ARM_ARCH_EXT_IDIV__", TARGET_IDIV_P (flags));
+  def_or_undef_macro (pfile, "__ARM_FEATURE_IDIV", TARGET_IDIV_P (flags));
+
+  def_or_undef_macro (pfile, "__ARM_ASM_SYNTAX_UNIFIED__", inline_asm_unified);
 }
