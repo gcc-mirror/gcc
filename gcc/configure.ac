@@ -5712,8 +5712,8 @@ fi
 # Check whether isl_schedule_constraints_compute_schedule is available;
 # it's new in ISL-0.13.
 if test "x${ISLLIBS}" != "x" ; then
-  saved_CFLAGS="$CFLAGS"
-  CFLAGS="$CFLAGS $ISLINC"
+  saved_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS $ISLINC"
   saved_LIBS="$LIBS"
   LIBS="$LIBS $ISLLIBS $GMPLIBS"
 
@@ -5725,7 +5725,7 @@ if test "x${ISLLIBS}" != "x" ; then
   AC_MSG_RESULT($ac_has_isl_schedule_constraints_compute_schedule)
 
   LIBS="$saved_LIBS"
-  CFLAGS="$saved_CFLAGS"
+  CXXFLAGS="$saved_CXXFLAGS"
 
   if test x"$ac_has_isl_schedule_constraints_compute_schedule" = x"yes"; then
      AC_DEFINE(HAVE_ISL_SCHED_CONSTRAINTS_COMPUTE_SCHEDULE, 1,
