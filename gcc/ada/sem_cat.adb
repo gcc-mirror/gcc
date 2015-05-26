@@ -440,8 +440,9 @@ package body Sem_Cat is
       Nam          : TSS_Name_Type;
       At_Any_Place : Boolean := False) return Boolean
    is
-      Rep_Item  : Node_Id;
-      Real_Rep  : Node_Id;
+      Rep_Item : Node_Id;
+
+      Real_Rep : Node_Id;
       --  The stream operation may be specified by an attribute definition
       --  clause in the source, or by an aspect that generates such an
       --  attribute definition. For an aspect, the generated attribute
