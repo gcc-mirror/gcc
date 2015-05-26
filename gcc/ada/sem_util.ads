@@ -532,15 +532,11 @@ package Sem_Util is
    --  Returns the enclosing N_Compilation_Unit node that is the root of a
    --  subtree containing N.
 
-   function Enclosing_Lib_Unit_Node (N : Node_Id) return Node_Id;
-   --  Returns the N_Compilation_Unit node of the library unit that is directly
-   --  or indirectly (through a subunit) at the root of a subtree containing
-   --  N. This may be either the same as Enclosing_Comp_Unit_Node, or if
-   --  Enclosing_Comp_Unit_Node returns a subunit, then the corresponding
-   --  library unit. If no such item is found, returns Empty???
-
    function Enclosing_CPP_Parent (Typ : Entity_Id) return Entity_Id;
    --  Returns the closest ancestor of Typ that is a CPP type.
+
+   function Enclosing_Declaration (N : Node_Id) return Node_Id;
+   --  Returns the declaration node enclosing N, if any, or Empty otherwise
 
    function Enclosing_Generic_Body
      (N : Node_Id) return Node_Id;
@@ -559,9 +555,20 @@ package Sem_Util is
    --  caller is responsible for ensuring this condition) or other specified
    --  entity.
 
+   function Enclosing_Lib_Unit_Node (N : Node_Id) return Node_Id;
+   --  Returns the N_Compilation_Unit node of the library unit that is directly
+   --  or indirectly (through a subunit) at the root of a subtree containing
+   --  N. This may be either the same as Enclosing_Comp_Unit_Node, or if
+   --  Enclosing_Comp_Unit_Node returns a subunit, then the corresponding
+   --  library unit. If no such item is found, returns Empty.
+
    function Enclosing_Package (E : Entity_Id) return Entity_Id;
    --  Utility function to return the Ada entity of the package enclosing
    --  the entity E, if any. Returns Empty if no enclosing package.
+
+   function Enclosing_Package_Or_Subprogram (E : Entity_Id) return Entity_Id;
+   --  Returns the entity of the package or subprogram enclosing E, if any.
+   --  Returns Empty if no enclosing package or subprogram.
 
    function Enclosing_Subprogram (E : Entity_Id) return Entity_Id;
    --  Utility function to return the Ada entity of the subprogram enclosing
@@ -1189,6 +1196,9 @@ package Sem_Util is
 
    function Is_Attribute_Result (N : Node_Id) return Boolean;
    --  Determine whether node N denotes attribute 'Result
+
+   function Is_Attribute_Update (N : Node_Id) return Boolean;
+   --  Determine whether node N denotes attribute 'Update
 
    function Is_Body_Or_Package_Declaration (N : Node_Id) return Boolean;
    --  Determine whether node N denotes a body or a package declaration
