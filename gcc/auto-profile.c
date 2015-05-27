@@ -1365,8 +1365,13 @@ afdo_calculate_branch_prob (bb_set *annotated_bb, edge_set *annotated_edge)
   bool has_sample = false;
 
   FOR_EACH_BB_FN (bb, cfun)
-  if (bb->count > 0)
-    has_sample = true;
+  {
+    if (bb->count > 0)
+      {
+	has_sample = true;
+	break;
+      }
+  }
 
   if (!has_sample)
     return;
