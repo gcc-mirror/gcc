@@ -881,15 +881,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    check_ok_for_atomic_type (gnu_inner, gnat_entity, true);
 	  }
 
-	/* Now check if the type of the object allows atomic access.  Note
-	   that we must test the type, even if this object has size and
-	   alignment to allow such access, because we will be going inside
-	   the padded record to assign to the object.  We could fix this by
-	   always copying via an intermediate value, but it's not clear it's
-	   worth the effort.  */
-	if (Is_Atomic_Or_VFA (gnat_entity))
-	  check_ok_for_atomic_type (gnu_type, gnat_entity, false);
-
 	/* If this is an aliased object with an unconstrained nominal subtype,
 	   make a type that includes the template.  */
 	if (Is_Constr_Subt_For_UN_Aliased (Etype (gnat_entity))
@@ -954,6 +945,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      create_type_decl (TYPE_NAME (gnu_type), gnu_type, true,
 				debug_info_p, gnat_entity);
 	  }
+
+	/* Now check if the type of the object allows atomic access.  */
+	if (Is_Atomic_Or_VFA (gnat_entity))
+	  check_ok_for_atomic_type (gnu_type, gnat_entity, false);
 
 	/* If this is a renaming, avoid as much as possible to create a new
 	   object.  However, in some cases, creating it is required because
