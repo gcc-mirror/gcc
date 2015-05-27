@@ -119,9 +119,9 @@ package Sem_Aux is
    --  First_Entity. The exception arises for tagged types, where the tag
    --  itself is prepended to the front of the entity chain, so the
    --  First_Discriminant function steps past the tag if it is present.
-   --  The caller is responsible for checking that the type has discriminants,
-   --  so for example it is improper to call this function on a private
-   --  type with unknown discriminants.
+   --  The caller is responsible for checking that the type has discriminants.
+   --  When called on a private type with unknown discriminants, the function
+   --  always returns Empty.
 
    function First_Stored_Discriminant (Typ : Entity_Id) return Entity_Id;
    --  Typ is a type with discriminants. Gives the first discriminant stored

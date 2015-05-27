@@ -2447,6 +2447,30 @@ package body Sem_Elab is
                  ("instantiation of& may occur before body is seen<l<",
                   N, Orig_Ent);
             else
+               --  A rather specific check. For Finalize/Adjust/Initialize,
+               --  if the type has Warnings_Off set, suppress the warning.
+
+               if Nam_In (Chars (E), Name_Adjust,
+                                     Name_Finalize,
+                                     Name_Initialize)
+                 and then Present (First_Formal (E))
+               then
+                  declare
+                     T : constant Entity_Id := Etype (First_Formal (E));
+                  begin
+                     if Is_Controlled (T) then
+                        if Warnings_Off (T)
+                          or else (Ekind (T) = E_Private_Type
+                                    and then Warnings_Off (Full_View (T)))
+                        then
+                           goto Output;
+                        end if;
+                     end if;
+                  end;
+               end if;
+
+               --  Go ahead and give warning if not this special case
+
                Error_Msg_NE
                  ("call to& may occur before body is seen<l<", N, Orig_Ent);
             end if;
@@ -2457,6 +2481,8 @@ package body Sem_Elab is
             --  because the main message is an error, not a warning, therefore
             --  all the clarification messages produces by Output_Calls must be
             --  emitted unconditionally.
+
+            <<Output>>
 
             Output_Calls (N, Check_Elab_Flag => False);
          end if;

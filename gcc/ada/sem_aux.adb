@@ -246,7 +246,12 @@ package body Sem_Aux is
          Ent := Next_Entity (Ent);
       end loop;
 
-      pragma Assert (Ekind (Ent) = E_Discriminant);
+      --  Call may be on a private type with unknown discriminants, in which
+      --  case Ent is Empty, and as per the spec, we return Empty in this case.
+
+      --  Historical note: The revious assertion that Ent is a discriminant
+      --  was overly cautious and prevented application of this function in
+      --  SPARK applications.
 
       return Ent;
    end First_Discriminant;

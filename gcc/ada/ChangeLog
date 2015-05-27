@@ -1,3 +1,30 @@
+2015-05-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Process_Formals): A non-private formal type that
+	is a limited view does not have a list of private dependents.
+
+2015-05-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Case_Statement): If the expression in
+	the case statement is a compile-time known value, we look for a
+	corresponding alternative to optimize the case statement into a
+	single case. If the type has a static predicate and the expression
+	does not satisfy the predicate, there is no legal alternative and
+	this optimization is not applicable.  Excecution is erroneous,
+	or else if assertions are enabled, an exception will be raised
+	earlier, at the point the expression is elaborated.
+
+2015-05-27  Robert Dewar  <dewar@adacore.com>
+
+	* sem_elab.adb (Check_Internal_Call_Continue): Suppress
+	warning on Finalize, Adjust, or Initialize if type involved has
+	Warnings_Off set.
+
+2015-05-27  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aux.adb, sem_aux.ads (First_Discriminant): Return empty when
+	applied to a type with no known discriminants.
+
 2015-05-26  Robert Dewar  <dewar@adacore.com>
 
 	* errout.ads, sem_ch4.adb, sem_ch6.adb: Minor reformatting.
