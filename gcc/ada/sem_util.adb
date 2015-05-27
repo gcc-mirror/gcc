@@ -16300,7 +16300,7 @@ package body Sem_Util is
 
    function Policy_In_Effect (Policy : Name_Id) return Name_Id is
       function Policy_In_List (List : Node_Id) return Name_Id;
-      --  Determine the the mode of a policy in a N_Pragma list
+      --  Determine the mode of a policy in a N_Pragma list
 
       --------------------
       -- Policy_In_List --

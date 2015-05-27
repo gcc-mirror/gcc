@@ -249,9 +249,9 @@ package body Sem_Aux is
       --  Call may be on a private type with unknown discriminants, in which
       --  case Ent is Empty, and as per the spec, we return Empty in this case.
 
-      --  Historical note: The revious assertion that Ent is a discriminant
-      --  was overly cautious and prevented application of this function in
-      --  SPARK applications.
+      --  Historical note: The assertion in previous versions that Ent is a
+      --  discriminant was overly cautious and prevented convenient application
+      --  of this function in the gnatprove context.
 
       return Ent;
    end First_Discriminant;

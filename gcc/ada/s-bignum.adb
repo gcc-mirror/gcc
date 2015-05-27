@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2012-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2012-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -881,7 +881,7 @@ package body System.Bignums is
 
             --  D3 (continued). Now test if qhat >= b or v2*qhat > (rhat,uj+2):
             --  if so, decrease qhat by 1, increase rhat by v1, and repeat this
-            --  test if rhat < b. [The test on v2 determines at at high speed
+            --  test if rhat < b. [The test on v2 determines at high speed
             --  most of the cases in which the trial value qhat is one too
             --  large, and eliminates all cases where qhat is two too large.]
 

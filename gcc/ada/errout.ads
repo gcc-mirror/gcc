@@ -837,7 +837,7 @@ package Errout is
    --  pragma, or the null string if no reason is given. Config is True for the
    --  configuration pragma case (where there is no requirement for a matching
    --  OFF pragma). Used is set True to disable the check that the warning
-   --  actually has has the effect of suppressing a warning.
+   --  actually has the effect of suppressing a warning.
 
    procedure Set_Specific_Warning_On
      (Loc : Source_Ptr;

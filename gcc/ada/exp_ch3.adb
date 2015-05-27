@@ -5177,7 +5177,7 @@ package body Exp_Ch3 is
            and then not Is_Value_Type (Typ)
          then
             --  Do not initialize the components if No_Default_Initialization
-            --  applies as the the actual restriction check will occur later
+            --  applies as the actual restriction check will occur later
             --  when the object is frozen as it is not known yet whether the
             --  object is imported or not.
 

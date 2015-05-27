@@ -552,7 +552,7 @@ package Erroutc is
    --  pragma, or the null string if no reason is given. Config is True for the
    --  configuration pragma case (where there is no requirement for a matching
    --  OFF pragma). Used is set True to disable the check that the warning
-   --  actually has has the effect of suppressing a warning.
+   --  actually has the effect of suppressing a warning.
 
    procedure Set_Specific_Warning_On
      (Loc : Source_Ptr;
@@ -580,7 +580,7 @@ package Erroutc is
    --  which generates a warning range for the whole source file). This routine
    --  only deals with the general ON/OFF case, not specific warnings. The
    --  returned result is No_String if warnings are not suppressed. If warnings
-   --  are suppressed for the given location, then then corresponding Reason
+   --  are suppressed for the given location, then corresponding Reason
    --  parameter from the pragma is returned (or the null string if no Reason
    --  parameter was present).
 

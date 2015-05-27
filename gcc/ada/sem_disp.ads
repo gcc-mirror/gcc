@@ -50,7 +50,7 @@ package Sem_Disp is
    --  Empty we are in the overriding case. If the tagged type associated with
    --  Subp is a concurrent type (case that occurs when the type is declared in
    --  a generic because the analysis of generics disables generation of the
-   --  corresponding record) then this routine does does not add Subp to the
+   --  corresponding record) then this routine does not add Subp to the
    --  list of primitive operations but leaves Subp decorated as dispatching
    --  operation to enable checks associated with the Object.Operation notation
 
