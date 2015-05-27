@@ -1,3 +1,8 @@
+2015-05-27  Jeff Law  <law@redhat.com>
+
+	PR target/39726
+	* gcc.dg/target/m68k/pr39726-1.c: New test.
+
 2015-05-27  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/66270
