@@ -1,3 +1,10 @@
+2015-05-27  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* target.c (gomp_map_pointer): New function abstracting out
+	GOMP_MAP_POINTER handling.
+	(gomp_map_vars): Remove GOMP_MAP_POINTER handling code and use
+	gomp_map_pointer().
+
 2015-05-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/66199
