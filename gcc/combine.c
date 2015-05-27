@@ -5157,7 +5157,8 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
          worthless to try this split.  */
       if (!set_src
 	  && (GET_CODE (XEXP (x, 0)) == MULT
-	      || GET_CODE (XEXP (x, 0)) == ASHIFT))
+	      || (GET_CODE (XEXP (x, 0)) == ASHIFT
+		  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)))
         return loc;
 
     default:

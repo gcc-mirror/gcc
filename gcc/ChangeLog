@@ -1,5 +1,8 @@
 2015-05-26  Jeff Law  <law@redhat.com>
 
+	* combine.c (find_split_point): Verify that the shift count is a
+	constant when choosing (plus (ashift ...)) as a split point.
+
 	* tree-ssa-threadupdate.c: Replace 8 space sequences with tabs.
 	No functional changes.
 
