@@ -1,3 +1,13 @@
+2015-05-27  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (warn_extern_redeclared_static): Use the location of
+	newdecl in diagnostics, not input_location.
+	(validate_constexpr_redeclaration): Likewise.
+	(check_redeclaration_no_default_args): Likewise.
+	(duplicate_decls): Likewise.
+	(check_redeclaration_exception_specification): Likewise.
+	Change second diagnostic to inform.
+
 2015-05-24  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/66243

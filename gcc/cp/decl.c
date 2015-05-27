@@ -1181,7 +1181,7 @@ warn_extern_redeclared_static (tree newdecl, tree olddecl)
       && DECL_ARTIFICIAL (olddecl))
     return;
 
-  if (permerror (input_location,
+  if (permerror (DECL_SOURCE_LOCATION (newdecl),
 		 "%qD was declared %<extern%> and later %<static%>", newdecl))
     inform (input_location, "previous declaration of %q+D", olddecl);
 }
@@ -1218,9 +1218,9 @@ check_redeclaration_exception_specification (tree new_decl,
       && flag_exceptions
       && !comp_except_specs (new_exceptions, old_exceptions, ce_normal))
     {
-      error ("declaration of %qF has a different exception specifier",
+      error ("declaration of %q+F has a different exception specifier",
 	     new_decl);
-      error ("from previous declaration %q+F", old_decl);
+      inform (0, "from previous declaration %q+F", old_decl);
     }
 }
 
@@ -1254,7 +1254,7 @@ validate_constexpr_redeclaration (tree old_decl, tree new_decl)
 	  && DECL_TEMPLATE_SPECIALIZATION (new_decl))
 	return true;
 
-      error ("redeclaration %qD differs in %<constexpr%>", new_decl);
+      error ("redeclaration %q+D differs in %<constexpr%>", new_decl);
       error ("from previous declaration %q+D", old_decl);
       return false;
     }
@@ -1276,7 +1276,7 @@ check_redeclaration_no_default_args (tree decl)
     if (TREE_PURPOSE (t))
       {
 	permerror (input_location,
-		   "redeclaration of %q#D may not have default "
+		   "redeclaration of %q+#D may not have default "
 		   "arguments", decl);
 	return;
       }
@@ -1394,10 +1394,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  /* If the built-in is not ansi, then programs can override
 	     it even globally without an error.  */
 	  else if (! DECL_BUILT_IN (olddecl))
-	    warning (0, "library function %q#D redeclared as non-function %q#D",
+	    warning (0, "library function %q#D redeclared as non-function %q+#D",
 		     olddecl, newdecl);
 	  else
-	    error ("declaration of %q#D conflicts with built-in "
+	    error ("declaration of %q+#D conflicts with built-in "
 		   "declaration %q#D", newdecl, olddecl);
 	  return NULL_TREE;
 	}
@@ -1457,7 +1457,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	      /* A near match; override the builtin.  */
 
 	      if (TREE_PUBLIC (newdecl))
-		warning (0, "new declaration %q#D ambiguates built-in "
+		warning (0, "new declaration %q+#D ambiguates built-in "
 			 "declaration %q#D", newdecl, olddecl);
 	      else
 		warning (OPT_Wshadow, 
@@ -1571,7 +1571,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  if (TREE_CODE (DECL_TEMPLATE_RESULT (olddecl)) == TYPE_DECL
 	      || TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == TYPE_DECL)
 	    {
-	      error ("conflicting declaration of template %q#D", newdecl);
+	      error ("conflicting declaration of template %q+#D", newdecl);
 	      inform (DECL_SOURCE_LOCATION (olddecl),
 		      "previous declaration %q#D", olddecl);
 	      return error_mark_node;
@@ -1587,7 +1587,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		   && same_type_p (TREE_TYPE (TREE_TYPE (newdecl)),
 				   TREE_TYPE (TREE_TYPE (olddecl))))
 	    {
-	      error ("ambiguating new declaration %q#D", newdecl);
+	      error ("ambiguating new declaration %q+#D", newdecl);
 	      inform (DECL_SOURCE_LOCATION (olddecl),
 		      "old declaration %q#D", olddecl);
 	    }
@@ -1597,7 +1597,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	{
 	  if (DECL_EXTERN_C_P (newdecl) && DECL_EXTERN_C_P (olddecl))
 	    {
-	      error ("conflicting declaration of C function %q#D",
+	      error ("conflicting declaration of C function %q+#D",
 		     newdecl);
 	      inform (DECL_SOURCE_LOCATION (olddecl),
 		      "previous declaration %q#D", olddecl);
@@ -1610,7 +1610,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 		   && compparms (TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
 			      TYPE_ARG_TYPES (TREE_TYPE (olddecl))))
 	    {
-	      error ("ambiguating new declaration of %q#D", newdecl);
+	      error ("ambiguating new declaration of %q+#D", newdecl);
 	      inform (DECL_SOURCE_LOCATION (olddecl),
 		      "old declaration %q#D", olddecl);
               return error_mark_node;
@@ -1620,7 +1620,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	}
       else
 	{
-	  error ("conflicting declaration %q#D", newdecl);
+	  error ("conflicting declaration %q+#D", newdecl);
 	  inform (DECL_SOURCE_LOCATION (olddecl),
 		  "previous declaration as %q#D", olddecl);
 	  return error_mark_node;
@@ -1674,7 +1674,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	 A namespace-name defined at global scope shall not be
 	 declared as the name of any other entity in any global scope
 	 of the program.  */
-      error ("conflicting declaration of namespace %qD", newdecl);
+      error ("conflicting declaration of namespace %q+D", newdecl);
       inform (DECL_SOURCE_LOCATION (olddecl),
 	      "previous declaration of namespace %qD here", olddecl);
       return error_mark_node;
@@ -1699,7 +1699,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	{
 	  /* Prototype decl follows defn w/o prototype.  */
 	  if (warning_at (DECL_SOURCE_LOCATION (newdecl), 0,
-			  "prototype specified for %q#D", newdecl))
+			  "prototype specified for %q+#D", newdecl))
 	    inform (DECL_SOURCE_LOCATION (olddecl),
 		    "previous non-prototype definition here");
 	}
@@ -1740,7 +1740,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    }
 	  else
 	    {
-	      error ("conflicting declaration of %q#D with %qL linkage",
+	      error ("conflicting declaration of %q+#D with %qL linkage",
 		     newdecl, DECL_LANGUAGE (newdecl));
 	      inform (DECL_SOURCE_LOCATION (olddecl),
 		      "previous declaration with %qL linkage",
@@ -1853,7 +1853,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	      || DECL_TEMPLATE_SPECIALIZATION (olddecl)))
 	{
 	  if (warning (OPT_Wredundant_decls,
-		       "redundant redeclaration of %qD in same scope",
+		       "redundant redeclaration of %q+D in same scope",
 		       newdecl))
 	    inform (DECL_SOURCE_LOCATION (olddecl),
 		    "previous declaration of %qD", olddecl);
@@ -1864,7 +1864,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	{
 	  if (DECL_DELETED_FN (newdecl))
 	    {
-	      error ("deleted definition of %qD", newdecl);
+	      error ("deleted definition of %q+D", newdecl);
 	      inform (DECL_SOURCE_LOCATION (olddecl),
 		      "previous declaration of %qD", olddecl);
 	    }
