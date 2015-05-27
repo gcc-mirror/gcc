@@ -30,7 +30,7 @@
 
 
 static inline long
-sys_futex0(int *addr, long op, int val)
+sys_futex0(int *addr, int op, int val)
 {
   register long out0 asm ("out0") = (long) addr;
   register long out1 asm ("out1") = op;

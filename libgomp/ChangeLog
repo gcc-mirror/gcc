@@ -1,8 +1,19 @@
 2015-05-27  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/linux/x86/futex.h (sys_futex0) [!__x86_64__]:
-	Change operand "op" to long.
-	[__PIC__]: Remove sys_futex0 function.
+	* config/linux/ia64/futex.h (sys_futex0) Change operand "op" to int.
+
+2015-05-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/linux/wait.h (gomp_futex_wait, gomp_futex_wake):
+	Declare as int.
+	(FUTEX_PRIVATE_FLAG): Remove L suffix.
+	* config/linux/mutex.c (gomp_futex_wait, gomp_futex_wake):
+	Declare as int.
+
+2015-05-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/linux/x86/futex.h (sys_futex0) [__PIC__]: Remove
+	sys_futex0 function.
 
 2015-05-27  Chung-Lin Tang  <cltang@codesourcery.com>
 

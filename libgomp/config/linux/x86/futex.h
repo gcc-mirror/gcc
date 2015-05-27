@@ -82,7 +82,7 @@ futex_wake (int *addr, int count)
 # endif
 
 static inline long
-sys_futex0 (int *addr, long op, int val)
+sys_futex0 (int *addr, int op, int val)
 {
   long res;
 

@@ -35,13 +35,13 @@
 
 #define FUTEX_WAIT	0
 #define FUTEX_WAKE	1
-#define FUTEX_PRIVATE_FLAG	128L
+#define FUTEX_PRIVATE_FLAG	128
 
 #ifdef HAVE_ATTRIBUTE_VISIBILITY
 # pragma GCC visibility push(hidden)
 #endif
 
-extern long int gomp_futex_wait, gomp_futex_wake;
+extern int gomp_futex_wait, gomp_futex_wake;
 
 #include <futex.h>
 

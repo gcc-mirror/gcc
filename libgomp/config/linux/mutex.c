@@ -29,8 +29,8 @@
 
 #include "wait.h"
 
-long int gomp_futex_wake = FUTEX_WAKE | FUTEX_PRIVATE_FLAG;
-long int gomp_futex_wait = FUTEX_WAIT | FUTEX_PRIVATE_FLAG;
+int gomp_futex_wake = FUTEX_WAKE | FUTEX_PRIVATE_FLAG;
+int gomp_futex_wait = FUTEX_WAIT | FUTEX_PRIVATE_FLAG;
 
 void
 gomp_mutex_lock_slow (gomp_mutex_t *mutex, int oldval)
