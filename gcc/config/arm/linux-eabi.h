@@ -77,6 +77,23 @@
     %{mfloat-abi=soft*:" GLIBC_DYNAMIC_LINKER_SOFT_FLOAT "} \
     %{!mfloat-abi=*:" GLIBC_DYNAMIC_LINKER_DEFAULT "}"
 
+/* For ARM musl currently supports four dynamic linkers:
+   - ld-musl-arm.so.1 - for the EABI-derived soft-float ABI
+   - ld-musl-armhf.so.1 - for the EABI-derived hard-float ABI
+   - ld-musl-armeb.so.1 - for the EABI-derived soft-float ABI, EB
+   - ld-musl-armebhf.so.1 - for the EABI-derived hard-float ABI, EB
+   musl does not support the legacy OABI mode.
+   All the dynamic linkers live in /lib.
+   We default to soft-float, EL. */
+#undef  MUSL_DYNAMIC_LINKER
+#if TARGET_BIG_ENDIAN_DEFAULT
+#define MUSL_DYNAMIC_LINKER_E "%{mlittle-endian:;:eb}"
+#else
+#define MUSL_DYNAMIC_LINKER_E "%{mbig-endian:eb}"
+#endif
+#define MUSL_DYNAMIC_LINKER \
+  "/lib/ld-musl-arm" MUSL_DYNAMIC_LINKER_E "%{mfloat-abi=hard:hf}.so.1"
+
 /* At this point, bpabi.h will have clobbered LINK_SPEC.  We want to
    use the GNU/Linux version, not the generic BPABI version.  */
 #undef  LINK_SPEC
