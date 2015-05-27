@@ -81,27 +81,8 @@ futex_wake (int *addr, int count)
 #  define SYS_futex	240
 # endif
 
-# ifdef __PIC__
-
 static inline long
-sys_futex0 (int *addr, int op, int val)
-{
-  long res;
-
-  __asm volatile ("xchgl\t%%ebx, %2\n\t"
-		  "int\t$0x80\n\t"
-		  "xchgl\t%%ebx, %2"
-		  : "=a" (res)
-		  : "0"(SYS_futex), "r" (addr), "c"(op),
-		    "d"(val), "S"(0)
-		  : "memory");
-  return res;
-}
-
-# else
-
-static inline long
-sys_futex0 (int *addr, int op, int val)
+sys_futex0 (int *addr, long op, int val)
 {
   long res;
 
@@ -112,8 +93,6 @@ sys_futex0 (int *addr, int op, int val)
 		  : "memory");
   return res;
 }
-
-# endif /* __PIC__ */
 
 static inline void
 futex_wait (int *addr, int val)
