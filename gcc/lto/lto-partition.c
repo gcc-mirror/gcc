@@ -73,6 +73,7 @@ new_partition (const char *name)
   part->encoder = lto_symtab_encoder_new (false);
   part->name = name;
   part->insns = 0;
+  part->symbols = 0;
   ltrans_partitions.safe_push (part);
   return part;
 }
@@ -156,6 +157,8 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node *node)
      or add external symbol.  */
   gcc_assert (c != SYMBOL_EXTERNAL
 	      && (c == SYMBOL_DUPLICATE || !symbol_partitioned_p (node)));
+
+  part->symbols++;
 
   lto_set_symtab_encoder_in_partition (part->encoder, node);
 
@@ -274,6 +277,7 @@ undo_partition (ltrans_partition partition, unsigned int n_nodes)
     {
       symtab_node *node = lto_symtab_encoder_deref (partition->encoder,
 						   n_nodes);
+      partition->symbols--;
       cgraph_node *cnode;
 
       /* After UNDO we no longer know what was visited.  */
@@ -462,7 +466,7 @@ lto_balanced_map (int n_lto_partitions)
   auto_vec<varpool_node *> varpool_order;
   int i;
   struct cgraph_node *node;
-  int total_size = 0, best_total_size = 0;
+  int original_total_size, total_size = 0, best_total_size = 0;
   int partition_size;
   ltrans_partition partition;
   int last_visited_node = 0;
@@ -487,6 +491,8 @@ lto_balanced_map (int n_lto_partitions)
 	if (!node->alias)
 	  total_size += inline_summaries->get (node)->size;
       }
+
+  original_total_size = total_size;
 
   /* Streaming works best when the source units do not cross partition
      boundaries much.  This is because importing function from a source
@@ -782,6 +788,23 @@ lto_balanced_map (int n_lto_partitions)
   add_sorted_nodes (next_nodes, partition);
 
   free (order);
+
+  if (symtab->dump_file)
+    {
+      fprintf (symtab->dump_file, "\nPartition sizes:\n");
+      unsigned partitions = ltrans_partitions.length ();
+
+      for (unsigned i = 0; i < partitions ; i++)
+	{
+	  ltrans_partition p = ltrans_partitions[i];
+	  fprintf (symtab->dump_file, "partition %d contains %d (%2.2f%%)"
+		   " symbols and %d (%2.2f%%) insns\n", i, p->symbols,
+		   100.0 * p->symbols / n_nodes, p->insns,
+		   100.0 * p->insns / original_total_size);
+	}
+
+      fprintf (symtab->dump_file, "\n");
+    }
 }
 
 /* Return true if we must not change the name of the NODE.  The name as
