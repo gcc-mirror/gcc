@@ -1,3 +1,10 @@
+2015-05-27  Jason Merrill  <jason@redhat.com>
+
+	PR bootstrap/66304
+	* configure.ac: Use ACX_PROG_CXX_WARNING_OPTS,
+	ACX_PROG_CXX_WARNING_ALMOST_PEDANTIC, and
+	ACX_PROG_CXX_WARNINGS_ARE_ERRORS.
+
 2015-05-22 Aditya Kumar <hiraditya@msn.com>
 
 	* auto-profile.c (afdo_calculate_branch_prob): Break once has_sample
