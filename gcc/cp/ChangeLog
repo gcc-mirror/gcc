@@ -1,5 +1,8 @@
 2015-05-27  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (check_redeclaration_exception_specification): Depend on
+	-Wsystem-headers rather than -pedantic.
+
 	* decl.c (warn_extern_redeclared_static): Use the location of
 	newdecl in diagnostics, not input_location.
 	(validate_constexpr_redeclaration): Likewise.
