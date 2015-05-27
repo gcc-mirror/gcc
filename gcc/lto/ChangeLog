@@ -1,3 +1,12 @@
+2015-05-27  Martin Liska  <mliska@suse.cz>
+
+	* lto-partition.c (new_partition): Reset number of symbols.
+	(add_symbol_to_partition_1): Increment number of symbols.
+	(undo_partition): Decrement number of symbols.
+	(lto_balanced_map): Dump number of symbols and insns that
+	belong to a partition.
+	* lto-partition.h (struct ltrans_partition_def): Add symbol counter.
+
 2015-05-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (hash_canonical_type): Be sure we hash only types that
