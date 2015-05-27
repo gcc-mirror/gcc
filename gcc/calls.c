@@ -3234,6 +3234,15 @@ expand_call (tree exp, rtx target, int ignore)
 	    {
 	      rtx_insn *before_arg = get_last_insn ();
 
+	     /* On targets with weird calling conventions (e.g. PA) it's
+		hard to ensure that all cases of argument overlap between
+		stack and registers work.  Play it safe and bail out.  */
+	      if (ARGS_GROW_DOWNWARD && !STACK_GROWS_DOWNWARD)
+		{
+		  sibcall_failure = 1;
+		  break;
+		}
+
 	      if (store_one_arg (&args[i], argblock, flags,
 				 adjusted_args_size.var != 0,
 				 reg_parm_stack_space)
@@ -4276,7 +4285,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 			  partial, reg, 0, argblock,
 			  GEN_INT (argvec[argnum].locate.offset.constant),
 			  reg_parm_stack_space,
-			  ARGS_SIZE_RTX (argvec[argnum].locate.alignment_pad));
+			  ARGS_SIZE_RTX (argvec[argnum].locate.alignment_pad), false);
 
 	  /* Now mark the segment we just used.  */
 	  if (ACCUMULATE_OUTGOING_ARGS)
@@ -4886,10 +4895,11 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 
       /* This isn't already where we want it on the stack, so put it there.
 	 This can either be done with push or copy insns.  */
-      emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), NULL_RTX,
+      if (!emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), NULL_RTX,
 		      parm_align, partial, reg, used - size, argblock,
 		      ARGS_SIZE_RTX (arg->locate.offset), reg_parm_stack_space,
-		      ARGS_SIZE_RTX (arg->locate.alignment_pad));
+		      ARGS_SIZE_RTX (arg->locate.alignment_pad), true))
+	sibcall_failure = 1;
 
       /* Unless this is a partially-in-register argument, the argument is now
 	 in the stack.  */
@@ -4994,7 +5004,7 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
       emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx,
 		      parm_align, partial, reg, excess, argblock,
 		      ARGS_SIZE_RTX (arg->locate.offset), reg_parm_stack_space,
-		      ARGS_SIZE_RTX (arg->locate.alignment_pad));
+		      ARGS_SIZE_RTX (arg->locate.alignment_pad), false);
 
       /* Unless this is a partially-in-register argument, the argument is now
 	 in the stack.
