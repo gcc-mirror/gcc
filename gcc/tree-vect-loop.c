@@ -1556,11 +1556,6 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 	   gsi_next (&si))
         {
           gimple stmt = gsi_stmt (si);
-	  if (STMT_SLP_TYPE (vinfo_for_stmt (stmt)))
-	    {
-	      need_to_vectorize = true;
-	      continue;
-	    }
 	  if (!gimple_clobber_p (stmt)
 	      && !vect_analyze_stmt (stmt, &need_to_vectorize, NULL))
 	    return false;

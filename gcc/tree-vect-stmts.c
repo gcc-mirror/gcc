@@ -5940,6 +5940,9 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  return false;
 	}
 
+      if (slp && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
+	slp_perm = true;
+
       group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
       if (!slp
 	  && !PURE_SLP_STMT (stmt_info)
@@ -6004,10 +6007,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	   && (slp || PURE_SLP_STMT (stmt_info)))
 	  && (group_size > nunits
 	      || nunits % group_size != 0
-	      /* ???  During analysis phase we are not called with the
-	         slp node/instance we are in so whether we'll end up
-		 with a permutation we don't know.  Still we don't
-		 support load permutations.  */
+	      /* We don't support load permutations.  */
 	      || slp_perm))
 	{
 	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6402,8 +6402,6 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	{
 	  grouped_load = false;
 	  vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-          if (SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
-            slp_perm = true;
 	  group_gap = GROUP_GAP (vinfo_for_stmt (first_stmt));
     	}
       else
@@ -7371,33 +7369,40 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
       *need_to_vectorize = true;
     }
 
-   ok = true;
-   if (!bb_vinfo
-       && (STMT_VINFO_RELEVANT_P (stmt_info)
-           || STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def))
-      ok = (vectorizable_simd_clone_call (stmt, NULL, NULL, NULL)
-	    || vectorizable_conversion (stmt, NULL, NULL, NULL)
-            || vectorizable_shift (stmt, NULL, NULL, NULL)
-            || vectorizable_operation (stmt, NULL, NULL, NULL)
-            || vectorizable_assignment (stmt, NULL, NULL, NULL)
-            || vectorizable_load (stmt, NULL, NULL, NULL, NULL)
-	    || vectorizable_call (stmt, NULL, NULL, NULL)
-            || vectorizable_store (stmt, NULL, NULL, NULL)
-            || vectorizable_reduction (stmt, NULL, NULL, NULL)
-            || vectorizable_condition (stmt, NULL, NULL, NULL, 0, NULL));
-    else
-      {
-        if (bb_vinfo)
-	  ok = (vectorizable_simd_clone_call (stmt, NULL, NULL, node)
-		|| vectorizable_conversion (stmt, NULL, NULL, node)
-		|| vectorizable_shift (stmt, NULL, NULL, node)
-                || vectorizable_operation (stmt, NULL, NULL, node)
-                || vectorizable_assignment (stmt, NULL, NULL, node)
-                || vectorizable_load (stmt, NULL, NULL, node, NULL)
-		|| vectorizable_call (stmt, NULL, NULL, node)
-                || vectorizable_store (stmt, NULL, NULL, node)
-                || vectorizable_condition (stmt, NULL, NULL, NULL, 0, node));
-      }
+  if (PURE_SLP_STMT (stmt_info) && !node)
+    {
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "handled only by SLP analysis\n");
+      return true;
+    }
+
+  ok = true;
+  if (!bb_vinfo
+      && (STMT_VINFO_RELEVANT_P (stmt_info)
+	  || STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def))
+    ok = (vectorizable_simd_clone_call (stmt, NULL, NULL, node)
+	  || vectorizable_conversion (stmt, NULL, NULL, node)
+	  || vectorizable_shift (stmt, NULL, NULL, node)
+	  || vectorizable_operation (stmt, NULL, NULL, node)
+	  || vectorizable_assignment (stmt, NULL, NULL, node)
+	  || vectorizable_load (stmt, NULL, NULL, node, NULL)
+	  || vectorizable_call (stmt, NULL, NULL, node)
+	  || vectorizable_store (stmt, NULL, NULL, node)
+	  || vectorizable_reduction (stmt, NULL, NULL, node)
+	  || vectorizable_condition (stmt, NULL, NULL, NULL, 0, node));
+  else
+    {
+      if (bb_vinfo)
+	ok = (vectorizable_simd_clone_call (stmt, NULL, NULL, node)
+	      || vectorizable_conversion (stmt, NULL, NULL, node)
+	      || vectorizable_shift (stmt, NULL, NULL, node)
+	      || vectorizable_operation (stmt, NULL, NULL, node)
+	      || vectorizable_assignment (stmt, NULL, NULL, node)
+	      || vectorizable_load (stmt, NULL, NULL, node, NULL)
+	      || vectorizable_call (stmt, NULL, NULL, node)
+	      || vectorizable_store (stmt, NULL, NULL, node)
+	      || vectorizable_condition (stmt, NULL, NULL, NULL, 0, node));
+    }
 
   if (!ok)
     {
