@@ -2027,7 +2027,14 @@ vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype)
     }
 
   if (stype == hybrid)
-    STMT_SLP_TYPE (stmt_vinfo) = hybrid;
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location, "marking hybrid: ");
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+	}
+      STMT_SLP_TYPE (stmt_vinfo) = hybrid;
+    }
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
     if (child)
@@ -2051,7 +2058,14 @@ vect_detect_hybrid_slp_1 (tree *tp, int *, void *data)
       gimple def_stmt = SSA_NAME_DEF_STMT (*tp);
       if (flow_bb_inside_loop_p (loopp, gimple_bb (def_stmt))
 	  && PURE_SLP_STMT (vinfo_for_stmt (def_stmt)))
-	STMT_SLP_TYPE (vinfo_for_stmt (def_stmt)) = hybrid;
+	{
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location, "marking hybrid: ");
+	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, def_stmt, 0);
+	    }
+	  STMT_SLP_TYPE (vinfo_for_stmt (def_stmt)) = hybrid;
+	}
     }
 
   return NULL_TREE;
