@@ -1,3 +1,22 @@
+2015-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.h (array_at_struct_end_p): Move to...
+	(array_ref_element_size): Likewise.
+	(component_ref_field_offset): Likewise.
+	* tree.h (array_ref_element_size): ...here.
+	(array_at_struct_end_p): Likewise.
+	(component_ref_field_offset): Likewise.
+	* expr.c (array_ref_element_size): Move to...
+	(array_ref_low_bound): Likewise.
+	(array_at_struct_end_p): Likewise.
+	(array_ref_up_bound): Likewise.
+	(component_ref_field_offset): Likewise.
+	* tree.c (array_ref_element_size): ...here.
+	(array_ref_low_bound): Likewise.
+	(array_ref_up_bound): Likewise.
+	(array_at_struct_end_p): Likewise.
+	(component_ref_field_offset): Likewise.
+
 2015-05-27  Gregor Richards  <gregor.richards@uwaterloo.ca>
 	    Szabolcs Nagy  <szabolcs.nagy@arm.com>
 

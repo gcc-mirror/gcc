@@ -281,18 +281,9 @@ rtx get_personality_function (tree);
 extern int can_move_by_pieces (unsigned HOST_WIDE_INT, unsigned int);
 
 extern unsigned HOST_WIDE_INT highest_pow2_factor (const_tree);
-bool array_at_struct_end_p (tree);
-
-/* Return a tree of sizetype representing the size, in bytes, of the element
-   of EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
-extern tree array_ref_element_size (tree);
 
 extern bool categorize_ctor_elements (const_tree, HOST_WIDE_INT *,
 				      HOST_WIDE_INT *, bool *);
-
-/* Return a tree representing the offset, in bytes, of the field referenced
-   by EXP.  This does not include any offset in DECL_FIELD_BIT_OFFSET.  */
-extern tree component_ref_field_offset (tree);
 
 extern void expand_operands (tree, tree, rtx, rtx*, rtx*,
 			     enum expand_modifier);
