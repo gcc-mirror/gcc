@@ -1,3 +1,8 @@
+2015-05-27  Honggyu Kim  <hong.gyu.kim@lge.com>
+
+	PR target/65358
+	* gcc.dg/pr65358.c: New test. 
+
 2015-05-27  Andre Vehreschild  <vehre@gmx.de>
 
 	PR fortran/65548

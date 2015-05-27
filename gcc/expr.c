@@ -4104,12 +4104,35 @@ emit_single_push_insn (machine_mode mode, rtx x, tree type)
 }
 #endif
 
+/* If reading SIZE bytes from X will end up reading from
+   Y return the number of bytes that overlap.  Return -1
+   if there is no overlap or -2 if we can't determine
+   (for example when X and Y have different base registers).  */
+
+static int
+memory_load_overlap (rtx x, rtx y, HOST_WIDE_INT size)
+{
+  rtx tmp = plus_constant (Pmode, x, size);
+  rtx sub = simplify_gen_binary (MINUS, Pmode, tmp, y);
+
+  if (!CONST_INT_P (sub))
+    return -2;
+
+  HOST_WIDE_INT val = INTVAL (sub);
+
+  return IN_RANGE (val, 1, size) ? val : -1;
+}
+
 /* Generate code to push X onto the stack, assuming it has mode MODE and
    type TYPE.
    MODE is redundant except when X is a CONST_INT (since they don't
    carry mode info).
    SIZE is an rtx for the size of data to be copied (in bytes),
    needed only if X is BLKmode.
+   Return true if successful.  May return false if asked to push a
+   partial argument during a sibcall optimization (as specified by
+   SIBCALL_P) and the incoming and outgoing pointers cannot be shown
+   to not overlap.
 
    ALIGN (in bits) is maximum alignment we can assume.
 
@@ -4135,11 +4158,11 @@ emit_single_push_insn (machine_mode mode, rtx x, tree type)
    for arguments passed in registers.  If nonzero, it will be the number
    of bytes required.  */
 
-void
+bool
 emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 		unsigned int align, int partial, rtx reg, int extra,
 		rtx args_addr, rtx args_so_far, int reg_parm_stack_space,
-		rtx alignment_pad)
+		rtx alignment_pad, bool sibcall_p)
 {
   rtx xinner;
   enum direction stack_direction = STACK_GROWS_DOWNWARD ? downward : upward;
@@ -4156,6 +4179,10 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
       where_pad = (where_pad == downward ? upward : downward);
 
   xinner = x;
+
+  int nregs = partial / UNITS_PER_WORD;
+  rtx *tmp_regs = NULL;
+  int overlapping = 0;
 
   if (mode == BLKmode
       || (STRICT_ALIGNMENT && align < GET_MODE_ALIGNMENT (mode)))
@@ -4287,6 +4314,43 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 	     PARM_BOUNDARY.  Assume the caller isn't lying.  */
 	  set_mem_align (target, align);
 
+	  /* If part should go in registers and pushing to that part would
+	     overwrite some of the values that need to go into regs, load the
+	     overlapping values into temporary pseudos to be moved into the hard
+	     regs at the end after the stack pushing has completed.
+	     We cannot load them directly into the hard regs here because
+	     they can be clobbered by the block move expansions.
+	     See PR 65358.  */
+
+	  if (partial > 0 && reg != 0 && mode == BLKmode
+	      && GET_CODE (reg) != PARALLEL)
+	    {
+	      overlapping = memory_load_overlap (XEXP (x, 0), temp, partial);
+	      if (overlapping > 0)
+	        {
+		  gcc_assert (overlapping % UNITS_PER_WORD == 0);
+		  overlapping /= UNITS_PER_WORD;
+
+		  tmp_regs = XALLOCAVEC (rtx, overlapping);
+
+		  for (int i = 0; i < overlapping; i++)
+		    tmp_regs[i] = gen_reg_rtx (word_mode);
+
+		  for (int i = 0; i < overlapping; i++)
+		    emit_move_insn (tmp_regs[i],
+				    operand_subword_force (target, i, mode));
+	        }
+	      else if (overlapping == -1)
+		overlapping = 0;
+	      /* Could not determine whether there is overlap.
+	         Fail the sibcall.  */
+	      else
+		{
+		  overlapping = 0;
+		  if (sibcall_p)
+		    return false;
+		}
+	    }
 	  emit_block_move (target, xinner, size, BLOCK_OP_CALL_PARM);
 	}
     }
@@ -4341,12 +4405,13 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 	 has a size a multiple of a word.  */
       for (i = size - 1; i >= not_stack; i--)
 	if (i >= not_stack + offset)
-	  emit_push_insn (operand_subword_force (x, i, mode),
+	  if (!emit_push_insn (operand_subword_force (x, i, mode),
 			  word_mode, NULL_TREE, NULL_RTX, align, 0, NULL_RTX,
 			  0, args_addr,
 			  GEN_INT (args_offset + ((i - not_stack + skip)
 						  * UNITS_PER_WORD)),
-			  reg_parm_stack_space, alignment_pad);
+			  reg_parm_stack_space, alignment_pad, sibcall_p))
+	    return false;
     }
   else
     {
@@ -4389,9 +4454,8 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 	}
     }
 
-  /* If part should go in registers, copy that part
-     into the appropriate registers.  Do this now, at the end,
-     since mem-to-mem copies above may do function calls.  */
+  /* Move the partial arguments into the registers and any overlapping
+     values that we moved into the pseudos in tmp_regs.  */
   if (partial > 0 && reg != 0)
     {
       /* Handle calls that pass values in multiple non-contiguous locations.
@@ -4399,9 +4463,15 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
       if (GET_CODE (reg) == PARALLEL)
 	emit_group_load (reg, x, type, -1);
       else
-	{
+        {
 	  gcc_assert (partial % UNITS_PER_WORD == 0);
-	  move_block_to_reg (REGNO (reg), x, partial / UNITS_PER_WORD, mode);
+	  move_block_to_reg (REGNO (reg), x, nregs - overlapping, mode);
+
+	  for (int i = 0; i < overlapping; i++)
+	    emit_move_insn (gen_rtx_REG (word_mode, REGNO (reg)
+						    + nregs - overlapping + i),
+			    tmp_regs[i]);
+
 	}
     }
 
@@ -4410,6 +4480,8 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 
   if (alignment_pad && args_addr == 0)
     anti_adjust_stack (alignment_pad);
+
+  return true;
 }
 
 /* Return X if X can be used as a subtarget in a sequence of arithmetic

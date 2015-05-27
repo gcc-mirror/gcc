@@ -1,3 +1,19 @@
+2015-05-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/65358
+	* expr.c (memory_load_overlap): New function.
+	(emit_push_insn): When pushing partial args to the stack would
+	clobber the register part load the overlapping part into a pseudo
+	and put it into the hard reg after pushing.  Change return type
+	to bool.  Add bool argument.
+	* expr.h (emit_push_insn): Change return type to bool.
+	Add bool argument.
+	* calls.c (expand_call): Cancel sibcall optimization when encountering
+	partial argument on targets with ARGS_GROW_DOWNWARD and
+	!STACK_GROWS_DOWNWARD.
+	(emit_library_call_value_1): Update callsite of emit_push_insn.
+	(store_one_arg): Likewise. 
+
 2015-05-27  Gregor Richards  <gregor.richards@uwaterloo.ca>
 
 	* config/arm/linux-eabi.h (MUSL_DYNAMIC_LINKER): Define.
