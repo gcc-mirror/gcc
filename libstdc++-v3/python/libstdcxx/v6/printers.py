@@ -456,11 +456,12 @@ class StdRbtreeIteratorPrinter:
 
     def __init__ (self, typename, val):
         self.val = val
+        valtype = self.val.type.template_argument(0).strip_typedefs()
+        nodetype = gdb.lookup_type('std::_Rb_tree_node<' + str(valtype) + '>')
+        self.link_type = nodetype.strip_typedefs().pointer()
 
     def to_string (self):
-        typename = str(self.val.type.strip_typedefs()) + '::_Link_type'
-        nodetype = gdb.lookup_type(typename).strip_typedefs()
-        node = self.val.cast(nodetype).dereference()
+        node = self.val['_M_node'].cast(self.link_type).dereference()
         return get_value_from_Rb_tree_node(node)
 
 class StdDebugIteratorPrinter:
