@@ -1,3 +1,8 @@
+2015-05-26  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c: Replace 8 space sequences with tabs.
+	No functional changes.
+
 2015-05-26  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-polymorphic-call.c
