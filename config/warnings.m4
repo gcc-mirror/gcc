@@ -18,7 +18,7 @@
 #along with GCC; see the file COPYING3.  If not see
 #<http://www.gnu.org/licenses/>.
 
-# ACX_PROG_CC_WARNING_OPTS(WARNINGS, [VARIABLE = WARN_CFLAGS)
+# ACX_PROG_CC_WARNING_OPTS(WARNINGS, [VARIABLE = WARN_CFLAGS])
 #   Sets @VARIABLE@ to the subset of the given options which the
 #   compiler accepts.
 AC_DEFUN([ACX_PROG_CC_WARNING_OPTS],
@@ -122,7 +122,7 @@ m4_popdef([acx_Var])dnl
 AC_LANG_POP(C)
 ])# ACX_PROG_CC_WARNINGS_ARE_ERRORS
 
-# ACX_PROG_CXX_WARNING_OPTS(WARNINGS, [VARIABLE = WARN_CFLAGS)
+# ACX_PROG_CXX_WARNING_OPTS(WARNINGS, [VARIABLE = WARN_CXXFLAGS])
 #   Sets @VARIABLE@ to the subset of the given options which the
 #   compiler accepts.
 AC_DEFUN([ACX_PROG_CXX_WARNING_OPTS],
