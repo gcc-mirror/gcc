@@ -1,5 +1,11 @@
 2015-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (elaborate_all_entities): Do not elaborate an
+	incomplete type coming from a limited_with and whose non-limited view
+	comes from the main unit.
+
+2015-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Move down
 	code applying atomic checks to the object.
 
