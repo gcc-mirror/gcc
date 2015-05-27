@@ -1,3 +1,7 @@
+2015-05-27  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-reduc-7.c: New testcase.
+
 2015-05-27  Honggyu Kim  <hong.gyu.kim@lge.com>
 
 	PR target/65358
