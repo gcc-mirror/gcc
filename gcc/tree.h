@@ -4564,8 +4564,34 @@ extern tree walk_tree_without_duplicates_1 (tree*, walk_tree_fn, void*,
 #define walk_tree_without_duplicates(a,b,c) \
 	walk_tree_without_duplicates_1 (a, b, c, NULL)
 
-extern tree get_base_address (tree t);
 extern tree drop_tree_overflow (tree);
+
+/* Given a memory reference expression T, return its base address.
+   The base address of a memory reference expression is the main
+   object being referenced.  */
+extern tree get_base_address (tree t);
+
+/* Return a tree of sizetype representing the size, in bytes, of the element
+   of EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
+extern tree array_ref_element_size (tree);
+
+/* Return a tree representing the upper bound of the array mentioned in
+   EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
+extern tree array_ref_up_bound (tree);
+
+/* Return a tree representing the lower bound of the array mentioned in
+   EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
+extern tree array_ref_low_bound (tree);
+
+/* Returns true if REF is an array reference to an array at the end of
+   a structure.  If this is the case, the array may be allocated larger
+   than its upper bound implies.  */
+extern bool array_at_struct_end_p (tree);
+
+/* Return a tree representing the offset, in bytes, of the field referenced
+   by EXP.  This does not include any offset in DECL_FIELD_BIT_OFFSET.  */
+extern tree component_ref_field_offset (tree);
+
 extern int tree_map_base_eq (const void *, const void *);
 extern unsigned int tree_map_base_hash (const void *);
 extern int tree_map_base_marked_p (const void *);
@@ -5052,12 +5078,6 @@ tree_int_cst_compare (const_tree t1, const_tree t2)
 extern void set_decl_rtl (tree, rtx);
 extern bool complete_ctor_at_level_p (const_tree, HOST_WIDE_INT, const_tree);
 
-/* Return a tree representing the upper bound of the array mentioned in
-   EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
-extern tree array_ref_up_bound (tree);
-
-extern tree build_personality_function (const char *);
-
 /* Given an expression EXP that is a handled_component_p,
    look for the ultimate containing object, which is returned and specify
    the access position and size.  */
@@ -5065,10 +5085,7 @@ extern tree get_inner_reference (tree, HOST_WIDE_INT *, HOST_WIDE_INT *,
 				 tree *, machine_mode *, int *, int *,
 				 bool);
 
-/* Return a tree representing the lower bound of the array mentioned in
-   EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
-extern tree array_ref_low_bound (tree);
-
+extern tree build_personality_function (const char *);
 
 struct GTY(()) int_n_trees_t {
   /* These parts are initialized at runtime */
