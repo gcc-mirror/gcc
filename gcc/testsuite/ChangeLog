@@ -1,3 +1,11 @@
+2015-05-27  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66101
+	* gcc.dg/torture/pr66101.c: New testcase.
+
 2015-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

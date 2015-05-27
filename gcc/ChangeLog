@@ -1,3 +1,12 @@
+2015-05-27  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66101
+	* tree-ssa-dce.c (remove_dead_stmt): Properly mark loops for
+	fixup if we turn a loop exit edge to a fallthru edge.
+
 2015-05-26  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/65979
