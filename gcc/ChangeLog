@@ -1,3 +1,13 @@
+2015-05-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* dwarf2out.c: Remove block_map.
+	(gen_call_site_die): Replace block_map use with BLOCK_DIE.
+	(gen_lexical_block_die): Same.
+	(dwarf2out_function_decl): Remove block_map use.
+	(dwarf2out_c_finalize): Same.
+	* tree-core.h (struct tree_block): Add die field.
+	* tree.h (BLOCK_DIE): New.
+
 2015-05-27  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/65358

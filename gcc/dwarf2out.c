@@ -2908,10 +2908,6 @@ static int call_site_count = -1;
 /* Number of tail call sites in the current function.  */
 static int tail_call_site_count = -1;
 
-/* Vector mapping block numbers to DW_TAG_{lexical_block,inlined_subroutine}
-   DIEs.  */
-static vec<dw_die_ref> block_map;
-
 /* A cached location list.  */
 struct GTY ((for_user)) cached_dw_loc_list_def {
   /* The DECL_UID of the decl that this entry describes.  */
@@ -18368,8 +18364,7 @@ gen_call_site_die (tree decl, dw_die_ref subr_die,
 	 && block != DECL_INITIAL (decl)
 	 && TREE_CODE (block) == BLOCK)
     {
-      if (block_map.length () > BLOCK_NUMBER (block))
-	stmt_die = block_map[BLOCK_NUMBER (block)];
+      stmt_die = BLOCK_DIE (block);
       if (stmt_die)
 	break;
       block = BLOCK_SUPERCONTEXT (block);
@@ -19469,11 +19464,7 @@ gen_lexical_block_die (tree stmt, dw_die_ref context_die)
   dw_die_ref stmt_die = new_die (DW_TAG_lexical_block, context_die, stmt);
 
   if (call_arg_locations)
-    {
-      if (block_map.length () <= BLOCK_NUMBER (stmt))
-	block_map.safe_grow_cleared (BLOCK_NUMBER (stmt) + 1);
-      block_map[BLOCK_NUMBER (stmt)] = stmt_die;
-    }
+    BLOCK_DIE (stmt) = stmt_die;
 
   if (! BLOCK_ABSTRACT (stmt) && TREE_ASM_WRITTEN (stmt))
     add_high_low_attributes (stmt, stmt_die);
@@ -19506,11 +19497,7 @@ gen_inlined_subroutine_die (tree stmt, dw_die_ref context_die)
 	= new_die (DW_TAG_inlined_subroutine, context_die, stmt);
 
       if (call_arg_locations)
-	{
-	  if (block_map.length () <= BLOCK_NUMBER (stmt))
-	    block_map.safe_grow_cleared (BLOCK_NUMBER (stmt) + 1);
-	  block_map[BLOCK_NUMBER (stmt)] = subr_die;
-	}
+	BLOCK_DIE (stmt) = subr_die;
       add_abstract_origin_attribute (subr_die, decl);
       if (TREE_ASM_WRITTEN (stmt))
         add_high_low_attributes (stmt, subr_die);
@@ -21407,7 +21394,6 @@ dwarf2out_function_decl (tree decl)
   call_arg_loc_last = NULL;
   call_site_count = -1;
   tail_call_site_count = -1;
-  block_map.release ();
   decl_loc_table->empty ();
   cached_dw_loc_list_table->empty ();
 }
@@ -25008,7 +24994,6 @@ dwarf2out_c_finalize (void)
   call_arg_loc_last = NULL;
   call_site_count = -1;
   tail_call_site_count = -1;
-  //block_map = NULL;
   cached_dw_loc_list_table = NULL;
   abbrev_die_table = NULL;
   abbrev_die_table_allocated = 0;
