@@ -1,5 +1,14 @@
 2015-05-27  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/66272
+	Revert parts of
+	2014-08-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62031
+	* gcc.dg/torture/pr66272.c: New testcase.
+
+2015-05-27  Richard Biener  <rguenther@suse.de>
+
 	* gcc.dg/vect/slp-reduc-7.c: New testcase.
 
 2015-05-27  Honggyu Kim  <hong.gyu.kim@lge.com>
