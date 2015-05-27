@@ -5362,6 +5362,7 @@ gfc_trans_allocate (gfc_code * code)
 		 bug.  */
 	      newsym->n.sym->attr.referenced = 1;
 	      e3rhs->expr_type = EXPR_VARIABLE;
+	      e3rhs->where = code->expr3->where;
 	      /* Set the symbols type, upto it was BT_UNKNOWN.  */
 	      newsym->n.sym->ts = e3rhs->ts;
 	      /* Check whether the expr3 is array valued.  */

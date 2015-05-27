@@ -1,7 +1,9 @@
-! { dg-do run }
+! { dg-do  run }
+! { dg-options "-fbounds-check" }
 !
 ! Contributed by Juergen Reuter
-! Check that pr65548 is fixed.
+! Check that pr65548 is fixed and that the ICE is gone, when bounds-check
+! is requested.
 !
 
 module selectors

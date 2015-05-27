@@ -1,3 +1,9 @@
+2015-05-27  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/65548
+	* trans-stmt.c (gfc_trans_allocate): Add missing location
+	information for e3rhs.
+
 2015-05-26  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/66082
