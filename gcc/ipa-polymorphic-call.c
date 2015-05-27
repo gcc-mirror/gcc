@@ -1561,6 +1561,11 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
 	  ref = OBJ_TYPE_REF_EXPR (ref);
 	  ref = walk_ssa_copies (ref);
 
+	  /* If call target is already known, no need to do the expensive
+ 	     memory walk.  */
+	  if (is_gimple_min_invariant (ref))
+	    return false;
+
 	  /* Check if definition looks like vtable lookup.  */
 	  if (TREE_CODE (ref) == SSA_NAME
 	      && !SSA_NAME_IS_DEFAULT_DEF (ref)
