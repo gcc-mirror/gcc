@@ -10117,9 +10117,13 @@ package body Sem_Ch6 is
                        (Parent (T), N_Access_Function_Definition,
                                     N_Access_Procedure_Definition)
                      then
-                        if not Is_Class_Wide_Type (Formal_Type) then
+                        --  A limited view has no private dependents
+
+                        if not Is_Class_Wide_Type (Formal_Type)
+                          and then not From_Limited_With (Formal_Type)
+                        then
                            Append_Elmt (Current_Scope,
-                               Private_Dependents (Base_Type (Formal_Type)));
+                             Private_Dependents (Base_Type (Formal_Type)));
                         end if;
 
                         --  Freezing is delayed to ensure that Register_Prim

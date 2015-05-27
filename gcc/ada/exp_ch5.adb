@@ -2586,9 +2586,16 @@ package body Exp_Ch5 is
 
    begin
       --  Check for the situation where we know at compile time which branch
-      --  will be taken
+      --  will be taken.
 
-      if Compile_Time_Known_Value (Expr) then
+      --  If the value is static but its subtype is predicated and the value
+      --  does not obey the predicate, the value is marked non-static, and
+      --  there can be no corresponding static alternative.
+
+      if Compile_Time_Known_Value (Expr)
+        and then (not Has_Predicates (Etype (Expr))
+                   or else Is_Static_Expression (Expr))
+      then
          Alt := Find_Static_Alternative (N);
 
          --  Do not consider controlled objects found in a case statement which
