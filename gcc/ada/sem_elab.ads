@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1997-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,7 +51,7 @@ package Sem_Elab is
    --  In addition, in SPARK mode, we are checking for a variable reference in
    --  another package, which requires an explicit Elaborate_All pragma.
 
-   --  The only references that we need to look at at the outer level are
+   --  The only references that we need to look at the outer level are
    --  references that occur in elaboration code. There are two cases. The
    --  reference can be at the outer level of elaboration code, or it can
    --  be within another unit, e.g. the elaboration code of a subprogram.

@@ -251,41 +251,51 @@ package body Exp_Prag is
    --    end;
 
    procedure Expand_Pragma_Abort_Defer (N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (N);
-      Stm  : Node_Id;
-      Stms : List_Id;
-      HSS  : Node_Id;
-      Blk  : constant Entity_Id :=
-               New_Internal_Entity (E_Block, Current_Scope, Sloc (N), 'B');
-      AUD : constant Entity_Id := RTE (RE_Abort_Undefer_Direct);
-
    begin
-      Stms := New_List (Build_Runtime_Call (Loc, RE_Abort_Defer));
-      loop
-         Stm := Remove_Next (N);
-         exit when No (Stm);
-         Append (Stm, Stms);
-      end loop;
+      --  Abort_Defer has no useful effect if Abort's are not allowed
 
-      HSS :=
-        Make_Handled_Sequence_Of_Statements (Loc,
-          Statements  => Stms,
-          At_End_Proc => New_Occurrence_Of (AUD, Loc));
+      if not Abort_Allowed then
+         return;
+      end if;
 
-      --  Present the Abort_Undefer_Direct function to the backend so that it
-      --  can inline the call to the function.
+      --  Normal case where abort is possible
 
-      Add_Inlined_Body (AUD, N);
+      declare
+         Loc  : constant Source_Ptr := Sloc (N);
+         Stm  : Node_Id;
+         Stms : List_Id;
+         HSS  : Node_Id;
+         Blk  : constant Entity_Id :=
+                  New_Internal_Entity (E_Block, Current_Scope, Sloc (N), 'B');
+         AUD  : constant Entity_Id := RTE (RE_Abort_Undefer_Direct);
 
-      Rewrite (N,
-        Make_Block_Statement (Loc,
-          Handled_Statement_Sequence => HSS));
+      begin
+         Stms := New_List (Build_Runtime_Call (Loc, RE_Abort_Defer));
+         loop
+            Stm := Remove_Next (N);
+            exit when No (Stm);
+            Append (Stm, Stms);
+         end loop;
 
-      Set_Scope (Blk, Current_Scope);
-      Set_Etype (Blk, Standard_Void_Type);
-      Set_Identifier (N, New_Occurrence_Of (Blk, Sloc (N)));
-      Expand_At_End_Handler (HSS, Blk);
-      Analyze (N);
+         HSS :=
+           Make_Handled_Sequence_Of_Statements (Loc,
+             Statements  => Stms,
+             At_End_Proc => New_Occurrence_Of (AUD, Loc));
+
+         --  Present the Abort_Undefer_Direct function to the backend so that
+         --  it can inline the call to the function.
+
+         Add_Inlined_Body (AUD, N);
+
+         Rewrite (N,
+           Make_Block_Statement (Loc, Handled_Statement_Sequence => HSS));
+
+         Set_Scope (Blk, Current_Scope);
+         Set_Etype (Blk, Standard_Void_Type);
+         Set_Identifier (N, New_Occurrence_Of (Blk, Sloc (N)));
+         Expand_At_End_Handler (HSS, Blk);
+         Analyze (N);
+      end;
    end Expand_Pragma_Abort_Defer;
 
    --------------------------

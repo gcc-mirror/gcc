@@ -8992,7 +8992,7 @@ package body Exp_Ch6 is
          Freeze_Expression (Ptr_Typ_Freeze_Ref);
       end;
 
-      --  If the the object is a return object of an enclosing build-in-place
+      --  If the object is a return object of an enclosing build-in-place
       --  function, then the implicit build-in-place parameters of the
       --  enclosing function are simply passed along to the called function.
       --  (Unfortunately, this won't cover the case of extension aggregates

@@ -3880,7 +3880,7 @@ package body Sem_Ch4 is
       --    for some X => (if P then Q [else True])
 
       --  any value for X that makes P False results in the if expression being
-      --  trivially True, and so also results in the the quantified expression
+      --  trivially True, and so also results in the quantified expression
       --  being trivially True.
 
       if Warn_On_Suspicious_Contract

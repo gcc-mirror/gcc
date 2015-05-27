@@ -1,3 +1,32 @@
+2015-05-27  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aux.adb: Minor rewording.
+
+2015-05-27  Bob Duff  <duff@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Abort_Defer): Make
+	pragma Abort_Defer do nothing if Abort_Allowed is False.
+
+2015-05-27  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch9.adb, sem_util.adb, sem_util.ads, s-stposu.adb, s-spsufi.ads,
+	sem_elab.ads, g-comlin.ads, errout.ads, exp_ch6.adb, sem_ch4.adb,
+	opt.ads, s-bignum.adb, output.ads, sem_ch13.adb, erroutc.ads,
+	sem_disp.ads, exp_ch3.adb: Minor fixes of duplicate words in comments.
+
+2015-05-27  Doug Rupp  <rupp@adacore.com>
+
+	* adaint.c (__gnat_tmp_name) [vxworks]: Robustify and use for rtp as
+	well as kernel.
+
+2015-05-27  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* par_sco.adb (Process_Decision): Store sloc to
+	condition/pragmas SCOs associations into a temporary table before
+	moving them to the SCO_Raw_Hash_Table so that we can back them
+	out just like we do for SCO entries that are simple decisions
+	in an expression context.
+
 2015-05-27  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Process_Formals): A non-private formal type that

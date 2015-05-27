@@ -4284,7 +4284,7 @@ package body Exp_Ch9 is
             Append (Unprot_Call, Stmts);
          end if;
 
-         --  Historical note: Previously, call the the cleanup was inserted
+         --  Historical note: Previously, call to the cleanup was inserted
          --  here. This is now done by Build_Protected_Subprogram_Call_Cleanup,
          --  which is also shared by the 'not Exc_Safe' path.
 
@@ -12153,7 +12153,7 @@ package body Exp_Ch9 is
 
    --  3) Ada 2005 (AI-345): When T.E is a dispatching procedure call, there
    --     is no delay and the triggering statements are executed. We first
-   --     determine the kind of of the triggering call and then execute a
+   --     determine the kind of the triggering call and then execute a
    --     synchronized operation or a direct call.
 
    --    declare

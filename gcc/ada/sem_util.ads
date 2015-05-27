@@ -455,7 +455,7 @@ package Sem_Util is
    --  2012 stand-alone object of an anonymous access type, then return the
    --  static accesssibility level of the object. In that case, the dynamic
    --  accessibility level of the object may take on values in a range. The low
-   --  bound of of that range is returned by Type_Access_Level; this function
+   --  bound of that range is returned by Type_Access_Level; this function
    --  yields the high bound of that range. Also differs from Type_Access_Level
    --  in the case of a descendant of a generic formal type (returns Int'Last
    --  instead of 0).

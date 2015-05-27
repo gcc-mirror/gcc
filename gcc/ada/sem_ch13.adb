@@ -6496,7 +6496,7 @@ package body Sem_Ch13 is
          return;
       end if;
 
-      --  We know we have a first subtype, now possibly go the the anonymous
+      --  We know we have a first subtype, now possibly go the anonymous
       --  base type to determine whether Rectype is a record extension.
 
       Recdef := Type_Definition (Declaration_Node (Base_Type (Rectype)));
@@ -8661,7 +8661,7 @@ package body Sem_Ch13 is
             SId : constant Entity_Id :=
                     Make_Defining_Identifier (Loc,
                       Chars => New_External_Name (Chars (Typ), "Predicate"));
-            --  The entity for the the function spec
+            --  The entity for the function spec
 
             SIdB : constant Entity_Id :=
               Make_Defining_Identifier (Loc,
@@ -8744,7 +8744,7 @@ package body Sem_Ch13 is
                SId : constant Entity_Id :=
                  Make_Defining_Identifier (Loc,
                    Chars => New_External_Name (Chars (Typ), "PredicateM"));
-               --  The entity for the the function spec
+               --  The entity for the function spec
 
                SIdB : constant Entity_Id :=
                  Make_Defining_Identifier (Loc,

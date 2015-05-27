@@ -2144,7 +2144,7 @@ package Opt is
    ---------------------------
 
    --  The following array would more reasonably be located in Err_Vars or
-   --  Errour, but but we put them here to deal with licensing issues (we need
+   --  Errour, but we put them here to deal with licensing issues (we need
    --  this to have the GPL exception licensing, since these variables and
    --  subprograms are accessed from units with this licensing).
 
