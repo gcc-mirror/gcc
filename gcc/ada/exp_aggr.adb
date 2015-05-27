@@ -5950,10 +5950,7 @@ package body Exp_Aggr is
       --  temporary instead, so that the back end can generate an atomic move
       --  for it.
 
-      if Is_Atomic_Or_VFA (Typ)
-        and then Comes_From_Source (Parent (N))
-        and then Is_Atomic_VFA_Aggregate (N, Typ)
-      then
+      if Is_Atomic_VFA_Aggregate (N) then
          return;
 
       --  No special management required for aggregates used to initialize

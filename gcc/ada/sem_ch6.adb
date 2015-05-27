@@ -8297,7 +8297,7 @@ package body Sem_Ch6 is
             then
                Defn :=
                  Type_Definition
-                    (Original_Node (Parent (First_Subtype (F_Typ))));
+                   (Original_Node (Parent (First_Subtype (F_Typ))));
             else
                Defn := Type_Definition (Original_Node (Parent (F_Typ)));
             end if;
@@ -8347,6 +8347,7 @@ package body Sem_Ch6 is
          elsif not Is_Class_Wide_Type (New_Type) then
             while Etype (New_Type) /= New_Type loop
                New_Type := Etype (New_Type);
+
                if New_Type = Prev_Type then
                   return True;
                end if;

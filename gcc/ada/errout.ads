@@ -24,7 +24,7 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the routines to output error messages. They are
---  basically system independent, however, in some environments, e.g. when the
+--  basically system independent, however in some environments, e.g. when the
 --  parser is embedded into an editor, it may be appropriate to replace the
 --  implementation of this package.
 

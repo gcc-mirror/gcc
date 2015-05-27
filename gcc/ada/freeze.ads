@@ -174,9 +174,7 @@ package Freeze is
    --  do not allow a size clause if the size would not otherwise be known at
    --  compile time in any case.
 
-   function Is_Atomic_VFA_Aggregate
-     (E   : Entity_Id;
-      Typ : Entity_Id) return Boolean;
+   function Is_Atomic_VFA_Aggregate (N : Node_Id) return Boolean;
    --  If an atomic/VFA object is initialized with an aggregate or is assigned
    --  an aggregate, we have to prevent a piecemeal access or assignment to the
    --  object, even if the aggregate is to be expanded. We create a temporary

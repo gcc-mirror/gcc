@@ -129,7 +129,7 @@ package body Exp_Ch7 is
 
    function Find_Node_To_Be_Wrapped (N : Node_Id) return Node_Id;
    --  N is a node which may generate a transient scope. Loop over the parent
-   --  pointers of N until it find the appropriate node to wrap. If it returns
+   --  pointers of N until we find the appropriate node to wrap. If it returns
    --  Empty, it means that no transient scope is needed in this context.
 
    procedure Insert_Actions_In_Scope_Around

@@ -5875,7 +5875,6 @@ package body Sem_Prag is
          E    : Entity_Id;
          E_Id : Node_Id;
          K    : Node_Kind;
-         Utyp : Entity_Id;
 
          procedure Set_Atomic_VFA (E : Entity_Id);
          --  Set given type as Is_Atomic or Is_Volatile_Full_Access. Also, if
@@ -6052,46 +6051,6 @@ package body Sem_Prag is
                  and then Present (Expression (Parent (E)))
                then
                   Set_Has_Delayed_Freeze (E);
-               end if;
-
-               --  An interesting improvement here. If an object of composite
-               --  type X is declared atomic, and the type X isn't, that's a
-               --  pity, since it may not have appropriate alignment etc. We
-               --  can rescue this in the special case where the object and
-               --  type are in the same unit by just setting the type as
-               --  atomic, so that the back end will process it as atomic.
-
-               --  Note: we used to do this for elementary types as well,
-               --  but that turns out to be a bad idea and can have unwanted
-               --  effects, most notably if the type is elementary, the object
-               --  a simple component within a record, and both are in a spec:
-               --  every object of this type in the entire program will be
-               --  treated as atomic, thus incurring a potentially costly
-               --  synchronization operation for every access.
-
-               --  For Volatile_Full_Access we can do this for elementary types
-               --  too, since there is no issue of atomic synchronization.
-
-               --  Of course it would be best if the back end could just adjust
-               --  the alignment etc for the specific object, but that's not
-               --  something we are capable of doing at this point.
-
-               Utyp := Underlying_Type (Etype (E));
-
-               if Present (Utyp)
-                 and then (Is_Composite_Type (Utyp)
-                            or else Prag_Id = Pragma_Volatile_Full_Access)
-                 and then Sloc (E) > No_Location
-                 and then Sloc (Utyp) > No_Location
-                 and then
-                   Get_Source_File_Index (Sloc (E)) =
-                                            Get_Source_File_Index (Sloc (Utyp))
-               then
-                  if Prag_Id = Pragma_Volatile_Full_Access then
-                     Set_Is_Volatile_Full_Access (Utyp);
-                  else
-                     Set_Is_Atomic (Utyp);
-                  end if;
                end if;
             end if;
 
