@@ -1,3 +1,7 @@
+2015-05-22 Aditya Kumar <hiraditya@msn.com>
+
+	* statistics.c (statistics_fini_pass): Print pass name.
+
 2015-05-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66272
