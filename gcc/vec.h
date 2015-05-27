@@ -51,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 
   extern void ggc_free (void *);
   extern size_t ggc_round_alloc_size (size_t requested_size);
-  extern void *ggc_realloc (void *, size_t CXX_MEM_STAT_INFO);
+  extern void *ggc_realloc (void *, size_t MEM_STAT_DECL);
 #  endif  // GCC_GGC_H
 #endif	// VEC_GC_ENABLED
 
@@ -206,6 +206,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Support function for statistics.  */
 extern void dump_vec_loc_statistics (void);
 
+/* Hashtable mapping vec addresses to descriptors.  */
+extern htab_t vec_mem_usage_hash;
 
 /* Control data for vectors.  This contains the number of allocated
    and used slots inside a vector.  */
@@ -216,8 +218,8 @@ struct vec_prefix
 	     compilers that have stricter notions of PODness for types.  */
 
   /* Memory allocation support routines in vec.c.  */
-  void register_overhead (size_t, const char *, int, const char *);
-  void release_overhead (void);
+  void register_overhead (void *, size_t, size_t CXX_MEM_STAT_INFO);
+  void release_overhead (void *, size_t, bool CXX_MEM_STAT_INFO);
   static unsigned calculate_allocation (vec_prefix *, unsigned, bool);
   static unsigned calculate_allocation_1 (unsigned, unsigned);
 
@@ -303,7 +305,7 @@ va_heap::reserve (vec<T, va_heap, vl_embed> *&v, unsigned reserve, bool exact
   gcc_checking_assert (alloc);
 
   if (GATHER_STATISTICS && v)
-    v->m_vecpfx.release_overhead ();
+    v->m_vecpfx.release_overhead (v, v->allocated (), false);
 
   size_t size = vec<T, va_heap, vl_embed>::embedded_size (alloc);
   unsigned nelem = v ? v->length () : 0;
@@ -311,7 +313,7 @@ va_heap::reserve (vec<T, va_heap, vl_embed> *&v, unsigned reserve, bool exact
   v->embedded_init (alloc, nelem);
 
   if (GATHER_STATISTICS)
-    v->m_vecpfx.register_overhead (size FINAL_PASS_MEM_STAT);
+    v->m_vecpfx.register_overhead (v, alloc, nelem PASS_MEM_STAT);
 }
 
 
@@ -325,7 +327,7 @@ va_heap::release (vec<T, va_heap, vl_embed> *&v)
     return;
 
   if (GATHER_STATISTICS)
-    v->m_vecpfx.release_overhead ();
+    v->m_vecpfx.release_overhead (v, v->allocated (), true);
   ::free (v);
   v = NULL;
 }

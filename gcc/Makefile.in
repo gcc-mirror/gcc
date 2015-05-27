@@ -1028,7 +1028,7 @@ BUILD_LIBS = $(BUILD_LIBIBERTY)
 
 BUILD_RTL = build/rtl.o build/read-rtl.o build/ggc-none.o \
 	    build/vec.o build/min-insn-modes.o build/gensupport.o \
-	    build/print-rtl.o
+	    build/print-rtl.o build/hash-table.o
 BUILD_MD = build/read-md.o
 BUILD_ERRORS = build/errors.o
 
@@ -1501,7 +1501,7 @@ OBJS = \
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
 OBJS-libcommon = diagnostic.o diagnostic-color.o pretty-print.o intl.o \
-	vec.o  input.o version.o
+	vec.o input.o version.o hash-table.o ggc-none.o
 
 # Objects in libcommon-target.a, used by drivers and by the core
 # compiler and containing target-dependent code.
@@ -1937,7 +1937,7 @@ gcc-nm.c: gcc-ar.c
 	cp $^ $@
 
 COLLECT2_OBJS = collect2.o collect2-aix.o tlink.o vec.o ggc-none.o \
-  collect-utils.o file-find.o
+  collect-utils.o file-find.o hash-table.o
 COLLECT2_LIBS = @COLLECT2_LIBS@
 collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
@@ -2651,10 +2651,12 @@ s-iov: build/gcov-iov$(build_exeext) $(BASEVER) $(DEVPHASE)
 
 GCOV_OBJS = gcov.o
 gcov$(exeext): $(GCOV_OBJS) $(LIBDEPS)
-	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) $(GCOV_OBJS) $(LIBS) -o $@
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) $(GCOV_OBJS) \
+		build/hash-table.o ggc-none.o $(LIBS) -o $@
 GCOV_DUMP_OBJS = gcov-dump.o
 gcov-dump$(exeext): $(GCOV_DUMP_OBJS) $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) $(GCOV_DUMP_OBJS) \
+		build/hash-table.o build/ggc-none.o\
 		$(LIBS) -o $@
 
 GCOV_TOOL_DEP_FILES = $(srcdir)/../libgcc/libgcov-util.c gcov-io.c $(GCOV_IO_H) \

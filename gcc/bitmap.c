@@ -25,112 +25,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "hash-table.h"
 #include "vec.h"
+#include "inchash.h"
+#include "mem-stats.h"
+#include "hash-map.h"
 
-/* Store information about each particular bitmap, per allocation site.  */
-struct bitmap_descriptor_d
-{
-  int id;
-  const char *function;
-  const char *file;
-  int line;
-  int created;
-  uint64_t allocated;
-  uint64_t peak;
-  uint64_t current;
-  uint64_t nsearches;
-  uint64_t search_iter;
-};
-
-typedef struct bitmap_descriptor_d *bitmap_descriptor;
-typedef const struct bitmap_descriptor_d *const_bitmap_descriptor;
-
-/* Next available unique id number for bitmap desciptors.  */
-static int next_bitmap_desc_id = 0;
-
-/* Vector mapping descriptor ids to descriptors.  */
-static vec<bitmap_descriptor> bitmap_descriptors;
-
-/* Hashtable helpers.  */
-
-struct loc
-{
-  const char *file;
-  const char *function;
-  int line;
-};
-
-struct bitmap_desc_hasher : typed_noop_remove <bitmap_descriptor_d>
-{
-  typedef bitmap_descriptor_d *value_type;
-  typedef loc *compare_type;
-  static inline hashval_t hash (const bitmap_descriptor_d *);
-  static inline bool equal (const bitmap_descriptor_d *, const loc *);
-};
-
-inline hashval_t
-bitmap_desc_hasher::hash (const bitmap_descriptor_d *d)
-{
-  return htab_hash_pointer (d->file) + d->line;
-}
-
-inline bool
-bitmap_desc_hasher::equal (const bitmap_descriptor_d *d, const loc *l)
-{
-  return d->file == l->file && d->function == l->function && d->line == l->line;
-}
-
-/* Hashtable mapping bitmap names to descriptors.  */
-static hash_table<bitmap_desc_hasher> *bitmap_desc_hash;
-
-/* For given file and line, return descriptor, create new if needed.  */
-static bitmap_descriptor
-get_bitmap_descriptor (const char *file, int line, const char *function)
-{
-  bitmap_descriptor_d **slot;
-  struct loc loc;
-
-  loc.file = file;
-  loc.function = function;
-  loc.line = line;
-
-  if (!bitmap_desc_hash)
-    bitmap_desc_hash = new hash_table<bitmap_desc_hasher> (10);
-
-  slot
-    = bitmap_desc_hash->find_slot_with_hash (&loc,
-					     htab_hash_pointer (file) + line,
-					     INSERT);
-  if (*slot)
-    return *slot;
-
-  *slot = XCNEW (struct bitmap_descriptor_d);
-  bitmap_descriptors.safe_push (*slot);
-  (*slot)->id = next_bitmap_desc_id++;
-  (*slot)->file = file;
-  (*slot)->function = function;
-  (*slot)->line = line;
-  return *slot;
-}
+/* Memory allocation statistics purpose instance.  */
+mem_alloc_description<bitmap_usage> bitmap_mem_desc;
 
 /* Register new bitmap.  */
 void
 bitmap_register (bitmap b MEM_STAT_DECL)
 {
-  bitmap_descriptor desc = get_bitmap_descriptor (ALONE_FINAL_PASS_MEM_STAT);
-  desc->created++;
-  b->descriptor_id = desc->id;
+  bitmap_mem_desc.register_descriptor (b, BITMAP, false FINAL_PASS_MEM_STAT);
 }
 
 /* Account the overhead.  */
 static void
 register_overhead (bitmap b, int amount)
 {
-  bitmap_descriptor desc = bitmap_descriptors[b->descriptor_id];
-  desc->current += amount;
-  if (amount > 0)
-    desc->allocated += amount;
-  if (desc->peak < desc->current)
-    desc->peak = desc->current;
+  if (bitmap_mem_desc.contains_descriptor_for_instance (b))
+    bitmap_mem_desc.register_instance_overhead (amount, b);
 }
 
 /* Global data */
@@ -579,10 +493,14 @@ bitmap_find_bit (bitmap head, unsigned int bit)
       && head->first->next == NULL)
     return NULL;
 
+   /* Usage can be NULL due to allocated bitmaps for which we do not
+      call initialize function.  */
+   bitmap_usage *usage = bitmap_mem_desc.get_descriptor_for_instance (head);
+
   /* This bitmap has more than one element, and we're going to look
      through the elements list.  Count that as a search.  */
-  if (GATHER_STATISTICS)
-    bitmap_descriptors[head->descriptor_id]->nsearches++;
+  if (GATHER_STATISTICS && usage)
+    usage->m_nsearches++;
 
   if (head->indx < indx)
     /* INDX is beyond head->indx.  Search from head->current
@@ -591,8 +509,8 @@ bitmap_find_bit (bitmap head, unsigned int bit)
 	 element->next != 0 && element->indx < indx;
 	 element = element->next)
       {
-	if (GATHER_STATISTICS)
-	  bitmap_descriptors[head->descriptor_id]->search_iter++;
+	if (GATHER_STATISTICS && usage)
+	  usage->m_search_iter++;
       }
 
   else if (head->indx / 2 < indx)
@@ -602,8 +520,8 @@ bitmap_find_bit (bitmap head, unsigned int bit)
 	 element->prev != 0 && element->indx > indx;
 	 element = element->prev)
       {
-	if (GATHER_STATISTICS)
-	  bitmap_descriptors[head->descriptor_id]->search_iter++;
+	if (GATHER_STATISTICS && usage)
+	  usage->m_search_iter++;
       }
 
   else
@@ -612,9 +530,9 @@ bitmap_find_bit (bitmap head, unsigned int bit)
     for (element = head->first;
 	 element->next != 0 && element->indx < indx;
 	 element = element->next)
-      if (GATHER_STATISTICS)
+      if (GATHER_STATISTICS && usage)
 	{
-	  bitmap_descriptors[head->descriptor_id]->search_iter++;
+	  usage->m_search_iter++;
 	}
 
   /* `element' is the nearest to the one we want.  If it's not the one we
@@ -2157,68 +2075,14 @@ bitmap_print (FILE *file, const_bitmap head, const char *prefix,
   fputs (suffix, file);
 }
 
-
-/* Used to accumulate statistics about bitmap sizes.  */
-struct bitmap_output_info
-{
-  uint64_t size;
-  uint64_t count;
-};
-
-/* Called via hash_table::traverse.  Output bitmap descriptor pointed out by
-   SLOT and update statistics.  */
-int
-print_statistics (bitmap_descriptor_d **slot, bitmap_output_info *i)
-{
-  bitmap_descriptor d = *slot;
-  char s[4096];
-
-  if (d->allocated)
-    {
-      const char *s1 = d->file;
-      const char *s2;
-      while ((s2 = strstr (s1, "gcc/")))
-	s1 = s2 + 4;
-      sprintf (s, "%s:%i (%s)", s1, d->line, d->function);
-      s[41] = 0;
-      fprintf (stderr,
-	       "%-41s %9u %15" PRId64" %15" PRId64" %15" PRId64
-	       " %10" PRId64" %10" PRId64"\n",
-	       s, d->created,
-	       d->allocated, d->peak, d->current,
-	       d->nsearches, d->search_iter);
-      i->size += d->allocated;
-      i->count += d->created;
-    }
-  return 1;
-}
-
 /* Output per-bitmap memory usage statistics.  */
 void
 dump_bitmap_statistics (void)
 {
-  struct bitmap_output_info info;
-
   if (! GATHER_STATISTICS)
     return;
 
-  if (!bitmap_desc_hash)
-    return;
-
-  fprintf (stderr,
-	   "\n%-41s %9s %15s %15s %15s %10s %10s\n",
-	   "Bitmap", "Overall",
-	   "Allocated", "Peak", "Leak",
-	   "searched", "search_itr");
-  fprintf (stderr, "---------------------------------------------------------------------------------\n");
-  info.count = 0;
-  info.size = 0;
-  bitmap_desc_hash->traverse <bitmap_output_info *, print_statistics> (&info);
-  fprintf (stderr, "---------------------------------------------------------------------------------\n");
-  fprintf (stderr,
-	   "%-41s %9" PRId64" %15" PRId64"\n",
-	   "Total", info.count, info.size);
-  fprintf (stderr, "---------------------------------------------------------------------------------\n");
+  bitmap_mem_desc.dump (BITMAP);
 }
 
 DEBUG_FUNCTION void

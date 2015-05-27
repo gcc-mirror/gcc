@@ -1,3 +1,77 @@
+2015-05-27  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Add additional dependencies related to memory report
+	enhancement.
+	* alloc-pool.c (allocate_pool_descriptor): Use new ctor.
+	* bitmap.c (struct bitmap_descriptor_d): Remove.
+	(struct loc): Likewise.
+	(struct bitmap_desc_hasher): Likewise.
+	(bitmap_desc_hasher::hash): Likewise.
+	(bitmap_desc_hasher::equal): Likewise.
+	(get_bitmap_descriptor): Likewise.
+	(bitmap_register): User new memory descriptor API.
+	(register_overhead): Likewise.
+	(bitmap_find_bit): Register nsearches and search_iter statistics.
+	(struct bitmap_output_info): Remove.
+	(print_statistics): Likewise.
+	(dump_bitmap_statistics): Use new memory descriptor.
+	* bitmap.h (struct bitmap_usage): New class.
+	* genmatch.c: Extend header file inclusion.
+	* genpreds.c: Likewise.
+	* ggc-common.c (struct ggc_usage): New class.
+	(struct ggc_loc_desc_hasher): Remove.
+	(ggc_loc_desc_hasher::hash): Likewise.
+	(ggc_loc_desc_hasher::equal): Likewise.
+	(struct ggc_ptr_hash_entry): Likewise.
+	(struct ptr_hash_hasher): Likewise.
+	(ptr_hash_hasher::hash): Likewise.
+	(ptr_hash_hasher::equal): Likewise.
+	(make_loc_descriptor): Likewise.
+	(ggc_prune_ptr): Likewise.
+	(dump_ggc_loc_statistics): Use new memory descriptor.
+	(ggc_record_overhead): Likewise.
+	(ggc_free_overhead): Likewise.
+	(final_cmp_statistic): Remove.
+	(cmp_statistic): Likewise.
+	(ggc_add_statistics): Liekwise.
+	(ggc_prune_overhead_list): Likewise.
+	* hash-map-traits.h: New file.
+	* hash-map.h (struct default_hashmap_traits): Move the traits to a
+	separate header file.
+	* hash-set.h: Pass memory statistics info to ctor.
+	* hash-table.c (void dump_hash_table_loc_statistics): New function.
+	* hash-table.h (hash_table::hash_table): Add new ctor arguments.
+	(hash_table::~hash_table): Register memory release operation.
+	(hash_table::alloc_entries): Handle memory allocation operation.
+	(hash_table::expand): Likewise.
+	* inchash.c (iterative_hash_hashval_t): Move implementation to header
+	file.
+	(iterative_hash_host_wide_int): Likewise.
+	* inchash.h (class hash): Likewise.
+	* mem-stats-traits.h: New file.
+	* mem-stats.h: New file.
+	(mem_location): Add new class.
+	(mem_usage): Likewise.
+	(mem_alloc_description): Likewise.
+	* sese.c: Add new header file inclusision.
+	* toplev.c (dump_memory_report): Add report for hash_table, hash_map
+	and hash_set.
+	* tree-sra.c: Add new header file inclusision.
+	* vec.c (struct vec_descriptor): Remove.
+	(hash_descriptor): Likewise.
+	(struct vec_usage): Likewise.
+	(struct ptr_hash_entry): Likewise.
+	(hash_ptr): Likewise.
+	(eq_ptr): Likewise.
+	(vec_prefix::register_overhead): Use new memory descriptor API.
+	(vec_prefix::release_overhead): Likewise.
+	(add_statistics): Remove.
+	(dump_vec_loc_statistics): Use new memory descriptor API.
+	* vec.h (struct vec_prefix): Likewise.
+	(va_heap::reserve): Likewise.
+	(va_heap::release): Likewise.
+	* emit-rtl.c (gen_raw_REG): Fix passing MEM_STAT.
+
 2015-05-27  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-stmts.c (vectorizable_load): Initialize slp_perm

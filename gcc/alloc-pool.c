@@ -91,7 +91,9 @@ static struct alloc_pool_descriptor *
 allocate_pool_descriptor (const char *name)
 {
   if (!alloc_pool_hash)
-    alloc_pool_hash = new hash_map<const char *, alloc_pool_descriptor> (10);
+    alloc_pool_hash = new hash_map<const char *, alloc_pool_descriptor> (10,
+									 false,
+									 false);
 
   return &alloc_pool_hash->get_or_insert (name);
 }

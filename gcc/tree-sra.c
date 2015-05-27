@@ -74,6 +74,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "mem-stats.h"
 #include "hash-map.h"
 #include "hash-table.h"
 #include "alloc-pool.h"
