@@ -8158,6 +8158,10 @@ elaborate_all_entities (Node_Id gnat_node)
 		  && Ekind (gnat_entity) != E_Operator
 		  && !(IN (Ekind (gnat_entity), Type_Kind)
 		       && !Is_Frozen (gnat_entity))
+		  && !(IN (Ekind (gnat_entity), Incomplete_Kind)
+		       && From_Limited_With (gnat_entity)
+		       && In_Extended_Main_Code_Unit
+			  (Non_Limited_View (gnat_entity)))
 		  && !((Ekind (gnat_entity) == E_Procedure
 			|| Ekind (gnat_entity) == E_Function)
 		       && Is_Intrinsic_Subprogram (gnat_entity))
