@@ -1968,10 +1968,10 @@ package body Sem_Ch4 is
                end if;
 
                --  An explicit dereference is a legal occurrence of an
-               --  incomplete type imported through a limited_with clause,
-               --  if the full view is visible, or if we are within an
-               --  instance body, where the enclosing body has a regular
-               --  with_clause on the unit.
+               --  incomplete type imported through a limited_with clause, if
+               --  the full view is visible, or if we are within an instance
+               --  body, where the enclosing body has a regular with_clause
+               --  on the unit.
 
                if From_Limited_With (DT)
                  and then not From_Limited_With (Scope (DT))
@@ -2196,8 +2196,8 @@ package body Sem_Ch4 is
             Get_First_Interp (Then_Expr, I, It);
             while Present (It.Nam) loop
 
-               --  Add possible intepretation of Then_Expr if no Else_Expr,
-               --  or Else_Expr is present and has a compatible type.
+               --  Add possible intepretation of Then_Expr if no Else_Expr, or
+               --  Else_Expr is present and has a compatible type.
 
                if No (Else_Expr)
                  or else Has_Compatible_Type (Else_Expr, It.Typ)
@@ -2224,8 +2224,8 @@ package body Sem_Ch4 is
       U_N   : Entity_Id;
 
       procedure Process_Function_Call;
-      --  Prefix in indexed component form is an overloadable entity,
-      --  so the node is a function call. Reformat it as such.
+      --  Prefix in indexed component form is an overloadable entity, so the
+      --  node is a function call. Reformat it as such.
 
       procedure Process_Indexed_Component;
       --  Prefix in indexed component form is actually an indexed component.
@@ -2263,8 +2263,8 @@ package body Sem_Ch4 is
 
             --  Move to next actual. Note that we use Next, not Next_Actual
             --  here. The reason for this is a bit subtle. If a function call
-            --  includes named associations, the parser recognizes the node as
-            --  a call, and it is analyzed as such. If all associations are
+            --  includes named associations, the parser recognizes the node
+            --  as a call, and it is analyzed as such. If all associations are
             --  positional, the parser builds an indexed_component node, and
             --  it is only after analysis of the prefix that the construct
             --  is recognized as a call, in which case Process_Function_Call
@@ -2398,7 +2398,7 @@ package body Sem_Ch4 is
                elsif Is_Entity_Name (P)
                  and then Etype (P) = Standard_Void_Type
                then
-                  Error_Msg_NE ("incorrect use of&", P, Entity (P));
+                  Error_Msg_NE ("incorrect use of &", P, Entity (P));
 
                else
                   Error_Msg_N ("array type required in indexed component", P);
@@ -2447,10 +2447,10 @@ package body Sem_Ch4 is
 
          Exp := First (Exprs);
 
-         --  If one index is present, and it is a subtype name, then the
-         --  node denotes a slice (note that the case of an explicit range
-         --  for a slice was already built as an N_Slice node in the first
-         --  place, so that case is not handled here).
+         --  If one index is present, and it is a subtype name, then the node
+         --  denotes a slice (note that the case of an explicit range for a
+         --  slice was already built as an N_Slice node in the first place,
+         --  so that case is not handled here).
 
          --  We use a replace rather than a rewrite here because this is one
          --  of the cases in which the tree built by the parser is plain wrong.

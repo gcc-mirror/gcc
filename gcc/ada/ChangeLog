@@ -1,3 +1,32 @@
+2015-05-26  Robert Dewar  <dewar@adacore.com>
+
+	* errout.ads, sem_ch4.adb, sem_ch6.adb: Minor reformatting.
+
+2015-05-26  Bob Duff  <duff@adacore.com>
+
+	* sem_elab.adb (Check_A_Call): In the case where we're
+	calling something in an instance of a generic package that is
+	within this same unit (as the call), make sure we treat it
+	as a call to an entity within the same unit. That is, call
+	Check_Internal_Call, rather than putting "Elaborate_All(X)"
+	on X, which would necessarily result in an elaboration cycle in
+	static-elaboration mode.
+
+2015-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.ads (Is_Atomic_VFA_Aggregate): Adjust profile.
+	* freeze.adb (Is_Atomic_VFA_Aggregate): Change Entity
+	parameter into Node parameter and remove Type parameter.
+	Look at Is_Atomic_Or_VFA both on the type and on the object.
+	(Freeze_Entity): Adjust call to Is_Atomic_VFA_Aggregate.
+	* exp_aggr.adb (Expand_Record_Aggregate): Likewise.
+	(Process_Atomic_Independent_Shared_Volatile): Remove code
+	propagating Atomic or VFA from object to locally-defined type.
+
+2015-05-26  Bob Duff  <duff@adacore.com>
+
+	* exp_ch7.adb: Minor comment fix.
+
 2015-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Min/Attr_Max>: Do not

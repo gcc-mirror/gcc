@@ -1459,17 +1459,15 @@ package body Freeze is
    -- Is_Atomic_VFA_Aggregate --
    -----------------------------
 
-   function Is_Atomic_VFA_Aggregate
-     (E   : Entity_Id;
-      Typ : Entity_Id) return Boolean
-   is
-      Loc   : constant Source_Ptr := Sloc (E);
+   function Is_Atomic_VFA_Aggregate (N : Node_Id) return Boolean is
+      Loc   : constant Source_Ptr := Sloc (N);
       New_N : Node_Id;
       Par   : Node_Id;
       Temp  : Entity_Id;
+      Typ   : Entity_Id;
 
    begin
-      Par := Parent (E);
+      Par := Parent (N);
 
       --  Array may be qualified, so find outer context
 
@@ -1477,24 +1475,45 @@ package body Freeze is
          Par := Parent (Par);
       end if;
 
-      if Nkind_In (Par, N_Object_Declaration, N_Assignment_Statement)
-        and then Comes_From_Source (Par)
-      then
-         Temp := Make_Temporary (Loc, 'T', E);
-         New_N :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Temp,
-             Object_Definition   => New_Occurrence_Of (Typ, Loc),
-             Expression          => Relocate_Node (E));
-         Insert_Before (Par, New_N);
-         Analyze (New_N);
-
-         Set_Expression (Par, New_Occurrence_Of (Temp, Loc));
-         return True;
-
-      else
+      if not Comes_From_Source (Par) then
          return False;
       end if;
+
+      case Nkind (Par) is
+         when N_Assignment_Statement =>
+            Typ := Etype (Name (Par));
+
+            if not Is_Atomic_Or_VFA (Typ)
+              and then not (Is_Entity_Name (Name (Par))
+                             and then Is_Atomic_Or_VFA (Entity (Name (Par))))
+            then
+               return False;
+            end if;
+
+         when N_Object_Declaration =>
+            Typ := Etype (Defining_Identifier (Par));
+
+            if not Is_Atomic_Or_VFA (Typ)
+              and then not Is_Atomic_Or_VFA (Defining_Identifier (Par))
+            then
+               return False;
+            end if;
+
+         when others =>
+            return False;
+      end case;
+
+      Temp := Make_Temporary (Loc, 'T', N);
+      New_N :=
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Temp,
+          Object_Definition   => New_Occurrence_Of (Typ, Loc),
+          Expression          => Relocate_Node (N));
+      Insert_Before (Par, New_N);
+      Analyze (New_N);
+
+      Set_Expression (Par, New_Occurrence_Of (Temp, Loc));
+      return True;
    end Is_Atomic_VFA_Aggregate;
 
    -----------------------------------------------
@@ -4821,8 +4840,7 @@ package body Freeze is
            and then Nkind (Parent (E)) = N_Object_Declaration
            and then Present (Expression (Parent (E)))
            and then Nkind (Expression (Parent (E))) = N_Aggregate
-           and then
-             Is_Atomic_VFA_Aggregate (Expression (Parent (E)), Etype (E))
+           and then Is_Atomic_VFA_Aggregate (Expression (Parent (E)))
          then
             null;
          end if;
