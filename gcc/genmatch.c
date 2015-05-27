@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "errors.h"
 #include "hashtab.h"
 #include "hash-table.h"
+#include "inchash.h"
 #include "hash-map.h"
 #include "hash-set.h"
 #include "vec.h"

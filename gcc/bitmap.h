@@ -130,6 +130,62 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "statistics.h"
 #include "obstack.h"
+#include "mem-stats.h"
+
+/* Bitmap memory usage.  */
+struct bitmap_usage: public mem_usage
+{
+  /* Default contructor.  */
+  bitmap_usage (): m_nsearches (0), m_search_iter (0) {}
+  /* Constructor.  */
+  bitmap_usage (size_t allocated, size_t times, size_t peak,
+	     uint64_t nsearches, uint64_t search_iter)
+    : mem_usage (allocated, times, peak),
+    m_nsearches (nsearches), m_search_iter (search_iter) {}
+
+  /* Sum the usage with SECOND usage.  */
+  bitmap_usage operator+ (const bitmap_usage &second)
+  {
+    return bitmap_usage (m_allocated + second.m_allocated,
+			     m_times + second.m_times,
+			     m_peak + second.m_peak,
+			     m_nsearches + second.m_nsearches,
+			     m_search_iter + second.m_search_iter);
+  }
+
+  /* Dump usage coupled to LOC location, where TOTAL is sum of all rows.  */
+  inline void dump (mem_location *loc, mem_usage &total) const
+  {
+    char s[4096];
+    sprintf (s, "%s:%i (%s)", loc->get_trimmed_filename (),
+	     loc->m_line, loc->m_function);
+
+    s[48] = '\0';
+
+    fprintf (stderr, "%-48s %10li:%5.1f%%%10li%10li:%5.1f%%%12li%12li%10s\n", s,
+	     (long)m_allocated, get_percent (m_allocated, total.m_allocated),
+	     (long)m_peak, (long)m_times,
+	     get_percent (m_times, total.m_times),
+	     (long)m_nsearches, (long)m_search_iter,
+	     loc->m_ggc ? "ggc" : "heap");
+  }
+
+  /* Dump header with NAME.  */
+  static inline void dump_header (const char *name)
+  {
+    fprintf (stderr, "%-48s %11s%16s%17s%12s%12s%10s\n", name, "Leak", "Peak",
+	     "Times", "N searches", "Search iter", "Type");
+    print_dash_line ();
+  }
+
+  /* Number search operations.  */
+  uint64_t m_nsearches;
+  /* Number of search iterations.  */
+  uint64_t m_search_iter;
+};
+
+/* Bitmap memory description.  */
+extern mem_alloc_description<bitmap_usage> bitmap_mem_desc;
 
 /* Fundamental storage type for bitmap.  */
 
