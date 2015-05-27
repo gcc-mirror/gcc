@@ -7719,6 +7719,7 @@ build_pointer_type_for_mode (tree to_type, machine_mode mode,
 			     bool can_alias_all)
 {
   tree t;
+  bool could_alias = can_alias_all;
 
   if (to_type == error_mark_node)
     return error_mark_node;
@@ -7756,7 +7757,7 @@ build_pointer_type_for_mode (tree to_type, machine_mode mode,
 
   if (TYPE_STRUCTURAL_EQUALITY_P (to_type))
     SET_TYPE_STRUCTURAL_EQUALITY (t);
-  else if (TYPE_CANONICAL (to_type) != to_type)
+  else if (TYPE_CANONICAL (to_type) != to_type || could_alias)
     TYPE_CANONICAL (t)
       = build_pointer_type_for_mode (TYPE_CANONICAL (to_type),
 				     mode, false);
@@ -7786,6 +7787,7 @@ build_reference_type_for_mode (tree to_type, machine_mode mode,
 			       bool can_alias_all)
 {
   tree t;
+  bool could_alias = can_alias_all;
 
   if (to_type == error_mark_node)
     return error_mark_node;
@@ -7823,7 +7825,7 @@ build_reference_type_for_mode (tree to_type, machine_mode mode,
 
   if (TYPE_STRUCTURAL_EQUALITY_P (to_type))
     SET_TYPE_STRUCTURAL_EQUALITY (t);
-  else if (TYPE_CANONICAL (to_type) != to_type)
+  else if (TYPE_CANONICAL (to_type) != to_type || could_alias)
     TYPE_CANONICAL (t)
       = build_reference_type_for_mode (TYPE_CANONICAL (to_type),
 				       mode, false);

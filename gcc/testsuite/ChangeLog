@@ -1,3 +1,8 @@
+2015-05-27  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/66270
+	* g++.dg/ext/alias-canon3.C: New.
+
 2015-05-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66272
