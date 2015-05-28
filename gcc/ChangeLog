@@ -1,3 +1,10 @@
+2015-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66142
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Handle non-GIMPLE
+	values better in memcpy destination handling.  Handle non-aliasing
+	we discover here.
+
 2015-05-28  Lawrence Velázquez  <vq@larryv.me>
 
 	PR target/63810

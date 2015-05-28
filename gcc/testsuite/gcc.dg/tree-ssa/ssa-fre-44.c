@@ -39,7 +39,6 @@ f3 (struct B *x, int y)
   struct A *q = &x[y].u;
   __builtin_memcpy (&q->x, &p.x, sizeof (float));
   __builtin_memcpy (&q->y, &p.y, sizeof (float));
-  *q = p;
   float f = x[y].u.x + x[y].u.y;
   bar (&p);
   return f;
