@@ -19027,6 +19027,15 @@ package body Sem_Util is
            and then Covers (Full_View (Expected_Type), Etype (Expr))
          then
             return;
+
+         --  Conversely, type of expression may be the private one.
+
+         elsif Is_Private_Type (Base_Type (Etype (Expr)))
+           and then Full_View (Base_Type (Etype (Expr))) =
+             Expected_Type
+         then
+            return;
+
          end if;
       end if;
 
