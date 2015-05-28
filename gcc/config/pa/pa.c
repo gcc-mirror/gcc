@@ -5285,7 +5285,7 @@ pa_print_operand (FILE *file, rtx x, int code)
     case 'o':
       gcc_assert (GET_CODE (x) == CONST_INT
 		  && (INTVAL (x) == 1 || INTVAL (x) == 2 || INTVAL (x) == 3));
-      fprintf (file, "%d", INTVAL (x));
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
       return;
     case 'O':
       gcc_assert (GET_CODE (x) == CONST_INT && exact_log2 (INTVAL (x)) >= 0);
