@@ -1,3 +1,10 @@
+2015-05-28  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* configure.host: Add bits for FreeBSD amd64 and i386.
+	* configure.ac: Add signal handler for FreeBSD (amd64/i386)
+	* configure: Regenerate.
+	* include/freebsd-signal.h: New file.
+
 2015-05-26  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* testsuite/libjava.jni/jni.exp (gcj_jni_get_cxxflags_invocation): Add
