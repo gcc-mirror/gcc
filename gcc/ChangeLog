@@ -1,3 +1,12 @@
+2015-05-28  Lawrence Velázquez  <vq@larryv.me>
+
+	PR target/63810
+	* config/darwin-c.c (version_components): New global enum.
+	(parse_version, version_as_legacy_macro)
+	(version_as_modern_macro, macosx_version_as_macro): New functions.
+	(version_as_macro): Remove.
+	(darwin_cpp_builtins): Use new function.
+
 2015-05-28  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* builtins.c (expand_builtin_acc_on_device): Mark parameters

@@ -1,11 +1,11 @@
-/* Test that major versions greater than 9 work and have the additional 0.  */
-/* { dg-options "-mmacosx-version-min=10.10.0" } */
+/* Test that minor versions greater than 9 produce a six-character macro.  */
+/* { dg-options "-mmacosx-version-min=10.10.1" } */
 /* { dg-do compile { target *-*-darwin* } } */
 
 int
 main ()
 {
-#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ != 101000
+#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ != 101001
   fail me;
 #endif
   return 0;

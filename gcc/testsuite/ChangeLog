@@ -1,3 +1,17 @@
+2015-05-28  Lawrence Velázquez  <vq@larryv.me>
+
+	PR target/63810
+	* gcc.dg/darwin-minversion-3.c: Update testcase.
+	* gcc.dg/darwin-minversion-4.c: Ditto.
+	* gcc.dg/darwin-minversion-5.c: New testcase.
+	* gcc.dg/darwin-minversion-6.c: Ditto.
+	* gcc.dg/darwin-minversion-7.c: Ditto.
+	* gcc.dg/darwin-minversion-8.c: Ditto.
+	* gcc.dg/darwin-minversion-9.c: Ditto.
+	* gcc.dg/darwin-minversion-10.c: Ditto.
+	* gcc.dg/darwin-minversion-11.c: Ditto.
+	* gcc.dg/darwin-minversion-12.c: Ditto.
+
 2015-05-28  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR rtl-optimization/66168
