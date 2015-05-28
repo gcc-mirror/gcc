@@ -815,11 +815,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _ITp>
     inline void
-    atomic_init(atomic<_ITp>* __a, _ITp __i) noexcept;
+    atomic_init(atomic<_ITp>* __a, _ITp __i) noexcept
+    { __a->store(__i, memory_order_relaxed); }
 
   template<typename _ITp>
     inline void
-    atomic_init(volatile atomic<_ITp>* __a, _ITp __i) noexcept;
+    atomic_init(volatile atomic<_ITp>* __a, _ITp __i) noexcept
+    { __a->store(__i, memory_order_relaxed); }
 
   template<typename _ITp>
     inline void

@@ -1,6 +1,13 @@
 2015-05-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2015-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64658
+	* include/std/atomic (atomic_init): Define.
+	* testsuite/29_atomics/atomic/64658.cc: New.
+
+	Backport from mainline
 	2014-12-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/37522
