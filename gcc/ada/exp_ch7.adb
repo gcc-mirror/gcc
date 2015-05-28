@@ -1440,6 +1440,13 @@ package body Exp_Ch7 is
             --  resides, there is no need for elaboration checks.
 
             Set_Kill_Elaboration_Checks (Fin_Id);
+
+            --  Inlining the finalizer produces a substantial speedup at -O2.
+            --  It is inlined by default at -O3. Either way, it is called
+            --  exactly twice (once on the normal path, and once for
+            --  exceptions/abort), so this won't bloat the code too much.
+
+            Set_Is_Inlined  (Fin_Id);
          end if;
 
          --  Step 2: Creation of the finalizer specification

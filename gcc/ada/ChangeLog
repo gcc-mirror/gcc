@@ -1,3 +1,35 @@
+2015-05-28  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb, sem_disp.ads: Minor reformatting.
+
+2015-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Set_Debug_Info_Needed): For a private type
+	whose full view is itself a derived private type, set flag on
+	underlying full view as well, for proper gdb display.
+
+2015-05-28  Bob Duff  <duff@adacore.com>
+
+	* exp_tss.ads: Minor comment fix.
+	* exp_ch3.adb (Build_Array_Init_Proc, Build_Record_Init_Proc):
+	Inline init_procs when the type has controlled parts. Remove
+	obsolete comments about those init_procs -- init_procs for
+	such types are no longer complex. A typical init_proc just
+	initializes the 'Tag field, and calls the parent init_proc
+	(e.g. for Limited_Controlled), which calls the grandparent
+	(for Root_Controlled), which does nothing. This all boils down
+	to one instruction when inlined.
+	* exp_ch7.adb (Create_Finalizer): Inline the finalizer.
+
+2015-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): If the type to use
+	is a derived type and is a generic actual, the selected component
+	appears within an instance body, and the check over the type
+	has failed, examine ancestor types for the desired component.
+	(Find_Component_In_Instance): If record type is a derived type,
+	examine all ancestors in order to locate desired component.
+
 2015-05-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc-interface/Makefile.in (TOOLS_LIBS): Add @NO_PIE_FLAG@.
