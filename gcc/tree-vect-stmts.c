@@ -7310,9 +7310,11 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
 
       case vect_reduction_def:
       case vect_nested_cycle:
-         gcc_assert (!bb_vinfo && (relevance == vect_used_in_outer
-                     || relevance == vect_used_in_outer_by_reduction
-                     || relevance == vect_unused_in_scope));
+         gcc_assert (!bb_vinfo
+		     && (relevance == vect_used_in_outer
+			 || relevance == vect_used_in_outer_by_reduction
+			 || relevance == vect_used_by_reduction
+			 || relevance == vect_unused_in_scope));
          break;
 
       case vect_induction_def:
