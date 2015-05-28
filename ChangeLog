@@ -1,3 +1,8 @@
+2015-05-28  Mike Frysinger  <vapier@gentoo.org>
+
+	* configure.ac (--vtable-verify): Use AS_HELP_STRING for help.
+	* configure: Regenerate.
+
 2015-05-26  Jason Merrill  <jason@redhat.com>
 
 	* configure.ac: When bootstrapping with GCC, add -std=c++98 to CXX.
