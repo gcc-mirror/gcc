@@ -1,5 +1,11 @@
 2015-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Subprogram_Type>: Do
+	not error out on a return type which has a size that overflows if the
+	return is done by invisible reference.
+
+2015-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (gnat_pushdecl): Reunify the handling of array
 	and pointer types wrt DECL_ORIGINAL_TYPE and adjust left and right.
 
