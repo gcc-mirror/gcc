@@ -1,6 +1,12 @@
 2015-05-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from mainline
+	2015-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (basic_string::basic_string()): Make
+	noexcept conditional on allocator (LWG 2455).
+
+	Backported from mainline
 	2015-05-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/alloc_traits.h (__alloc_rebind): Change parameter name.
