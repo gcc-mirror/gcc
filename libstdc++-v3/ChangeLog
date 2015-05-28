@@ -1,3 +1,13 @@
+2015-05-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2014-12-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/37522
+	* include/bits/basic_string.h (stod, stof, stoi, stol, stold, stoll,
+	stoul, stoull, to_string): Only use _GLIBCXX_HAVE_BROKEN_VSWPRINTF
+	to guard definition of to_wstring.
+
 2015-05-22  David Edelsohn  <dje.gcc@gmail.com>
 
 	Backport from mainline
