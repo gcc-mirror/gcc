@@ -34,7 +34,7 @@
 #include <errno.h>
 
 static inline long
-sys_futex0 (std::atomic<int> *addr, long op, long val)
+sys_futex0 (std::atomic<int> *addr, int op, int val)
 {
   long res = syscall (SYS_futex, (int*) addr, op, val, 0);
   if (__builtin_expect (res == -1, 0))
