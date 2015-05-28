@@ -1,5 +1,9 @@
 2015-05-28  Mike Frysinger  <vapier@gentoo.org>
 
+	* config/nios2/linux.h (CPP_SPEC): Define.
+
+2015-05-28  Mike Frysinger  <vapier@gentoo.org>
+
 	* config/microblaze/linux.h (CPP_SPEC): Define.
 
 2015-05-28  Mike Frysinger  <vapier@gentoo.org>

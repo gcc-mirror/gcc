@@ -26,6 +26,9 @@
     }                                           \
   while (0)
 
+#undef CPP_SPEC
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
+
 #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux-nios2.so.1"
 
 #undef LINK_SPEC
