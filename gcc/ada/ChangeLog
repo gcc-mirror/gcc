@@ -1,3 +1,8 @@
+2015-05-28  Bob Duff  <duff@adacore.com>
+
+	* sem_util.adb (Requires_Transient_Scope): Avoid returning
+	function results on the secondary stack in so many cases.
+
 2015-05-28  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Wrong_Type): In any instance, do not emit error

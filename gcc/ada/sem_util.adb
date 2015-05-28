@@ -16951,13 +16951,49 @@ package body Sem_Util is
    ------------------------------
 
    --  A transient scope is required when variable-sized temporaries are
-   --  allocated in the primary or secondary stack, or when finalization
-   --  actions must be generated before the next instruction.
+   --  allocated on the secondary stack, or when finalization actions must be
+   --  generated before the next instruction.
+
+   function Old_Requires_Transient_Scope (Id : Entity_Id) return Boolean;
+   function New_Requires_Transient_Scope (Id : Entity_Id) return Boolean;
+   --  ???We retain the old and new algorithms for Requires_Transient_Scope for
+   --  the time being. New_Requires_Transient_Scope is used by default; the
+   --  debug switch -gnatdQ can be used to do Old_Requires_Transient_Scope
+   --  instead. The intent is to use this temporarily to measure before/after
+   --  efficiency. Note: when this temporary code is removed, the documentation
+   --  of dQ in debug.adb should be removed.
 
    function Requires_Transient_Scope (Id : Entity_Id) return Boolean is
-      Typ : constant Entity_Id := Underlying_Type (Id);
+      Old_Result : constant Boolean := Old_Requires_Transient_Scope (Id);
 
-   --  Start of processing for Requires_Transient_Scope
+   begin
+      if Debug_Flag_QQ then
+         return Old_Result;
+      end if;
+
+      declare
+         New_Result : constant Boolean := New_Requires_Transient_Scope (Id);
+
+      begin
+         --  Assert that we're not putting things on the secondary stack if we
+         --  didn't before; we are trying to AVOID secondary stack when
+         --  possible.
+
+         if not Old_Result then
+            pragma Assert (not New_Result);
+            null;
+         end if;
+
+         return New_Result;
+      end;
+   end Requires_Transient_Scope;
+
+   ----------------------------------
+   -- Old_Requires_Transient_Scope --
+   ----------------------------------
+
+   function Old_Requires_Transient_Scope (Id : Entity_Id) return Boolean is
+      Typ : constant Entity_Id := Underlying_Type (Id);
 
    begin
       --  This is a private type which is not completed yet. This can only
@@ -16989,9 +17025,7 @@ package body Sem_Util is
       --  returned value is allocated on the secondary stack. Controlled
       --  type temporaries need finalization.
 
-      elsif Is_Tagged_Type (Typ)
-        or else Has_Controlled_Component (Typ)
-      then
+      elsif Is_Tagged_Type (Typ) or else Has_Controlled_Component (Typ) then
          return not Is_Value_Type (Typ);
 
       --  Record type
@@ -16999,18 +17033,20 @@ package body Sem_Util is
       elsif Is_Record_Type (Typ) then
          declare
             Comp : Entity_Id;
+
          begin
             Comp := First_Entity (Typ);
             while Present (Comp) loop
                if Ekind (Comp) = E_Component then
+
                   --  ???It's not clear we need a full recursive call to
-                  --  Requires_Transient_Scope here. Note that the following
-                  --  can't happen.
+                  --  Old_Requires_Transient_Scope here. Note that the
+                  --  following can't happen.
 
                   pragma Assert (Is_Definite_Subtype (Etype (Comp)));
                   pragma Assert (not Has_Controlled_Component (Etype (Comp)));
 
-                  if Requires_Transient_Scope (Etype (Comp)) then
+                  if Old_Requires_Transient_Scope (Etype (Comp)) then
                      return True;
                   end if;
                end if;
@@ -17033,7 +17069,7 @@ package body Sem_Util is
 
          --  If component type requires a transient scope, the array does too
 
-         if Requires_Transient_Scope (Component_Type (Typ)) then
+         if Old_Requires_Transient_Scope (Component_Type (Typ)) then
             return True;
 
          --  Otherwise, we only need a transient scope if the size depends on
@@ -17049,7 +17085,132 @@ package body Sem_Util is
          pragma Assert (Is_Protected_Type (Typ) or else Is_Task_Type (Typ));
          return False;
       end if;
-   end Requires_Transient_Scope;
+   end Old_Requires_Transient_Scope;
+
+   ----------------------------------
+   -- New_Requires_Transient_Scope --
+   ----------------------------------
+
+   function New_Requires_Transient_Scope (Id : Entity_Id) return Boolean is
+
+      function Caller_Known_Size_Record (Typ : Entity_Id) return Boolean;
+      --  This is called for untagged records and protected types, with
+      --  nondefaulted discriminants. Returns True if the size of function
+      --  results is known at the call site, False otherwise. Returns False
+      --  if there is a variant part that depends on the discriminants of
+      --  this type, or if there is an array constrained by the discriminants
+      --  of this type. ???Currently, this is overly conservative (the array
+      --  could be nested inside some other record that is constrained by
+      --  nondiscriminants). That is, the recursive calls are too conservative.
+
+      function Caller_Known_Size_Record (Typ : Entity_Id) return Boolean is
+         pragma Assert (Typ = Underlying_Type (Typ));
+
+      begin
+         if Has_Variant_Part (Typ) and then not Is_Definite_Subtype (Typ) then
+            return False;
+         end if;
+
+         declare
+            Comp : Entity_Id := First_Entity (Typ);
+
+         begin
+            while Present (Comp) loop
+
+               --  Only look at E_Component entities. No need to look at
+               --  E_Discriminant entities, and we must ignore internal
+               --  subtypes generated for constrained components.
+
+               if Ekind (Comp) = E_Component then
+                  declare
+                     Comp_Type : constant Entity_Id :=
+                                   Underlying_Type (Etype (Comp));
+
+                  begin
+                     if Is_Record_Type (Comp_Type)
+                           or else
+                        Is_Protected_Type (Comp_Type)
+                     then
+                        if not Caller_Known_Size_Record (Comp_Type) then
+                           return False;
+                        end if;
+
+                     elsif Is_Array_Type (Comp_Type) then
+                        if Size_Depends_On_Discriminant (Comp_Type) then
+                           return False;
+                        end if;
+                     end if;
+                  end;
+               end if;
+
+               Next_Entity (Comp);
+            end loop;
+         end;
+
+         return True;
+      end Caller_Known_Size_Record;
+
+      --  Local deeclarations
+
+      Typ : constant Entity_Id := Underlying_Type (Id);
+
+   --  Start of processing for New_Requires_Transient_Scope
+
+   begin
+      --  This is a private type which is not completed yet. This can only
+      --  happen in a default expression (of a formal parameter or of a
+      --  record component). Do not expand transient scope in this case
+
+      if No (Typ) then
+         return False;
+
+      --  Do not expand transient scope for non-existent procedure return or
+      --  string literal types.
+
+      elsif Typ = Standard_Void_Type
+        or else Ekind (Typ) = E_String_Literal_Subtype
+      then
+         return False;
+
+      --  Functions returning tagged types may dispatch on result so their
+      --  returned value is allocated on the secondary stack, even in the
+      --  definite case. Is_Tagged_Type includes controlled types and
+      --  class-wide types. Controlled type temporaries need finalization.
+      --  ???It's not clear why we need to return noncontrolled types with
+      --  controlled components on the secondary stack. Also, it's not clear
+      --  why nonprimitive tagged type functions need the secondary stack,
+      --  since they can't be called via dispatching.
+
+      elsif Is_Tagged_Type (Typ) or else Has_Controlled_Component (Typ) then
+         return not Is_Value_Type (Typ);
+
+      --  Indefinite (discriminated) untagged record or protected type
+
+      elsif Is_Record_Type (Typ) or else Is_Protected_Type (Typ) then
+         return not Caller_Known_Size_Record (Typ);
+         --  ???Should come after Is_Definite_Subtype below
+
+      --  Untagged definite subtypes are known size. This includes all
+      --  elementary [sub]types. Tasks are known size even if they have
+      --  discriminants.
+
+      elsif Is_Definite_Subtype (Typ) or else Is_Task_Type (Typ) then
+         if Is_Array_Type (Typ) -- ???Shouldn't be necessary
+           and then New_Requires_Transient_Scope
+                      (Underlying_Type (Component_Type (Typ)))
+         then
+            return True;
+         end if;
+
+         return False;
+
+      --  Unconstrained array
+
+      else
+         pragma Assert (Is_Array_Type (Typ) and not Is_Definite_Subtype (Typ));
+         return True;
+      end if;
+   end New_Requires_Transient_Scope;
 
    --------------------------
    -- Reset_Analyzed_Flags --
@@ -19028,14 +19189,12 @@ package body Sem_Util is
          then
             return;
 
-         --  Conversely, type of expression may be the private one.
+         --  Conversely, type of expression may be the private one
 
          elsif Is_Private_Type (Base_Type (Etype (Expr)))
-           and then Full_View (Base_Type (Etype (Expr))) =
-             Expected_Type
+           and then Full_View (Base_Type (Etype (Expr))) = Expected_Type
          then
             return;
-
          end if;
       end if;
 
@@ -19049,11 +19208,11 @@ package body Sem_Util is
         and then Has_One_Matching_Field
       then
          Error_Msg_N ("positional aggregate cannot have one component", Expr);
+
          if Present (Matching_Field) then
             if Is_Array_Type (Expec_Type) then
                Error_Msg_NE
                  ("\write instead `&''First ='> ...`", Expr, Matching_Field);
-
             else
                Error_Msg_NE
                  ("\write instead `& ='> ...`", Expr, Matching_Field);
