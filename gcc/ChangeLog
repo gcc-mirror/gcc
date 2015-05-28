@@ -1,3 +1,8 @@
+2015-05-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_print_operand): Use HOST_WIDE_INT_PRINT_DEC
+	instead of "%d" for 'o' operand.
+
 2015-05-27  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/66270
