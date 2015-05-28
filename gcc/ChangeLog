@@ -1,3 +1,8 @@
+2015-05-28  Mike Frysinger  <vapier@gentoo.org>
+
+	* config/pa/pa-linux.h (CPP_SPEC): Change so -D_REENTRANT is used when
+	-pthread is specified.
+
 2015-05-27  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/66148
