@@ -338,6 +338,8 @@ EOF
 	;;
   *-*-freebsd*)
 	slow_pthread_self=
+	can_unwind_signal=yes
+	DIVIDESPEC=-fuse-divide-subroutine
 	;;
   *-mingw*)
         libgcj_flags="${libgcj_flags} -fno-omit-frame-pointer"
