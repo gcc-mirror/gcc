@@ -17704,7 +17704,22 @@ package body Sem_Util is
             Set_Debug_Info_Needed_If_Not_Set (Directly_Designated_Type (T));
 
          elsif Is_Private_Type (T) then
-            Set_Debug_Info_Needed_If_Not_Set (Full_View (T));
+            declare
+               FV : constant Entity_Id := Full_View (T);
+
+            begin
+               Set_Debug_Info_Needed_If_Not_Set (FV);
+
+               --  If the full view is itself a derived private type, we need
+               --  debug information on its underlying type.
+
+               if Present (FV)
+                 and then Is_Private_Type (FV)
+                 and then Present (Underlying_Full_View (FV))
+               then
+                  Set_Needs_Debug_Info (Underlying_Full_View (FV));
+               end if;
+            end;
 
          elsif Is_Protected_Type (T) then
             Set_Debug_Info_Needed_If_Not_Set (Corresponding_Record_Type (T));

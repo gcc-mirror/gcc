@@ -48,11 +48,11 @@ package Sem_Disp is
    --  primitive operations (new primitives are only defined in package spec,
    --  overridden operation can be defined in any scope). If Old_Subp is not
    --  Empty we are in the overriding case. If the tagged type associated with
-   --  Subp is a concurrent type (case that occurs when the type is declared in
-   --  a generic because the analysis of generics disables generation of the
-   --  corresponding record) then this routine does not add Subp to the
-   --  list of primitive operations but leaves Subp decorated as dispatching
-   --  operation to enable checks associated with the Object.Operation notation
+   --  Subp is a concurrent type (case that occurs when the type is declared
+   --  in a generic because the analysis of generics disables generation of the
+   --  corresponding record) then this routine does not add Subp to the list of
+   --  primitive operations but leaves Subp decorated as dispatching operation
+   --  to enable checks associated with the Object.Operation notation.
 
    procedure Check_Operation_From_Incomplete_Type
      (Subp : Entity_Id;

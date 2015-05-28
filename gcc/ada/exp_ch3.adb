@@ -311,7 +311,7 @@ package body Exp_Ch3 is
    --  Predefined_Primitive_Bodies.
 
    function Has_New_Non_Standard_Rep (T : Entity_Id) return Boolean;
-   --  returns True if there are representation clauses for type T that are not
+   --  Returns True if there are representation clauses for type T that are not
    --  inherited. If the result is false, the init_proc and the discriminant
    --  checking functions of the parent can be reused by a derived type.
 
@@ -761,14 +761,12 @@ package body Exp_Ch3 is
             Set_Debug_Info_Off (Proc_Id);
          end if;
 
-         --  Set inlined unless controlled stuff or tasks around, in which
-         --  case we do not want to inline, because nested stuff may cause
-         --  difficulties in inter-unit inlining, and furthermore there is
-         --  in any case no point in inlining such complex init procs.
+         --  Set inlined unless tasks are around, in which case we do not
+         --  want to inline, because nested stuff may cause difficulties in
+         --  inter-unit inlining, and furthermore there is in any case no
+         --  point in inlining such complex init procs.
 
-         if not Has_Task (Proc_Id)
-           and then not Needs_Finalization (Proc_Id)
-         then
+         if not Has_Task (Proc_Id) then
             Set_Is_Inlined (Proc_Id);
          end if;
 
@@ -3619,14 +3617,10 @@ package body Exp_Ch3 is
          --  The initialization of protected records is not worth inlining.
          --  In addition, when compiled for another unit for inlining purposes,
          --  it may make reference to entities that have not been elaborated
-         --  yet. The initialization of controlled records contains a nested
-         --  clean-up procedure that makes it impractical to inline as well,
-         --  and leads to undefined symbols if inlined in a different unit.
-         --  Similar considerations apply to task types.
+         --  yet. Similar considerations apply to task types.
 
          if not Is_Concurrent_Type (Rec_Type)
            and then not Has_Task (Rec_Type)
-           and then not Needs_Finalization (Rec_Type)
          then
             Set_Is_Inlined  (Proc_Id);
          end if;

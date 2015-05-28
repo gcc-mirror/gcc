@@ -6496,7 +6496,7 @@ package body Sem_Ch13 is
          return;
       end if;
 
-      --  We know we have a first subtype, now possibly go the anonymous
+      --  We know we have a first subtype, now possibly go to the anonymous
       --  base type to determine whether Rectype is a record extension.
 
       Recdef := Type_Definition (Declaration_Node (Base_Type (Rectype)));
