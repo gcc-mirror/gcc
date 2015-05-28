@@ -1,3 +1,8 @@
+2015-05-28  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	PR rtl-optimization/66168
+	* gcc.c-torture/compile/pr66168.c: New test.
+
 2015-05-27  Jeff Law  <law@redhat.com>
 
 	PR target/39726
