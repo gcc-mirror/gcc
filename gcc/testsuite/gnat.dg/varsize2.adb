@@ -1,7 +1,7 @@
 -- { dg-do compile }
 -- { dg-options "-O -gnatws" }
 
-package body Varsize_Copy is
+package body Varsize2 is
 
    type Key_Mapping_Type is record
       Page : Page_Type;
@@ -21,4 +21,4 @@ package body Varsize_Copy is
       return S.Key_Mappings (Key).Page;
    end;
 
-end Varsize_Copy;
+end Varsize2;

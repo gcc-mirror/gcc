@@ -959,16 +959,16 @@ extern tree gnat_protect_expr (tree exp);
 
 /* This is equivalent to stabilize_reference in tree.c but we know how to
    handle our own nodes and we take extra arguments.  FORCE says whether to
-   force evaluation of everything.  */
-extern tree gnat_stabilize_reference (tree ref, bool force);
+   force evaluation of everything in REF.  INIT is set to the first arm of
+   a COMPOUND_EXPR present in REF, if any.  */
+extern tree gnat_stabilize_reference (tree ref, bool force, tree *init);
 
 /* Rewrite reference REF and call FUNC on each expression within REF in the
-   process.  DATA is passed unmodified to FUNC and N is bumped each time it
-   is passed to FUNC, so FUNC is guaranteed to see a given N only once per
-   reference to be rewritten.  */
-typedef tree (*rewrite_fn) (tree, void *, int);
+   process.  DATA is passed unmodified to FUNC.  INIT is set to the first
+   arm of a COMPOUND_EXPR present in REF, if any.  */
+typedef tree (*rewrite_fn) (tree, void *);
 extern tree gnat_rewrite_reference (tree ref, rewrite_fn func, void *data,
-				    int n = 1);
+				    tree *init);
 
 /* This is equivalent to get_inner_reference in expr.c but it returns the
    ultimate containing object only if the reference (lvalue) is constant,
@@ -1084,4 +1084,31 @@ call_is_atomic_load (tree exp)
 
   enum built_in_function code = DECL_FUNCTION_CODE (fndecl);
   return BUILT_IN_ATOMIC_LOAD_N <= code && code <= BUILT_IN_ATOMIC_LOAD_16;
+}
+
+/* Return true if TYPE is padding a self-referential type.  */
+
+static inline bool
+type_is_padding_self_referential (tree type)
+{
+  if (!TYPE_IS_PADDING_P (type))
+    return false;
+
+  return CONTAINS_PLACEHOLDER_P (DECL_SIZE (TYPE_FIELDS (type)));
+}
+
+/* Return true if a function returning TYPE doesn't return a fixed size.  */
+
+static inline bool
+return_type_with_variable_size_p (tree type)
+{
+  if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+    return true;
+
+  /* Return true for an unconstrained type with default discriminant, see
+     the E_Subprogram_Type case of gnat_to_gnu_entity.  */
+  if (type_is_padding_self_referential (type))
+    return true;
+
+  return false;
 }

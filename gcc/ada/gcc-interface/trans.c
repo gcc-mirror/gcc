@@ -4189,9 +4189,9 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  because we need to preserve the return value before copying back the
 	  parameters.
 
-       2. There is no target and this is not an object declaration, and the
-	  return type has variable size, because in these cases the gimplifier
-	  cannot create the temporary.
+       2. There is no target and this is neither an object nor a renaming
+	  declaration, and the return type has variable size, because in
+	  these cases the gimplifier cannot create the temporary.
 
        3. There is a target and it is a slice or an array with fixed size,
 	  and the return type has variable size, because the gimplifier
@@ -4203,6 +4203,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       && ((!gnu_target && TYPE_CI_CO_LIST (gnu_subprog_type))
 	  || (!gnu_target
 	      && Nkind (Parent (gnat_node)) != N_Object_Declaration
+	      && Nkind (Parent (gnat_node)) != N_Object_Renaming_Declaration
 	      && TREE_CODE (TYPE_SIZE (gnu_result_type)) != INTEGER_CST)
 	  || (gnu_target
 	      && (TREE_CODE (gnu_target) == ARRAY_RANGE_REF
@@ -4258,7 +4259,13 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       if (Ekind (gnat_formal) != E_In_Parameter
 	  && !is_by_ref_formal_parm
 	  && TREE_CODE (gnu_name) != NULL_EXPR)
-	gnu_name = gnat_stabilize_reference (gnu_name, true);
+	{
+	  tree init = NULL_TREE;
+	  gnu_name = gnat_stabilize_reference (gnu_name, true, &init);
+	  if (init)
+	    gnu_name
+	      = build_compound_expr (TREE_TYPE (gnu_name), init, gnu_name);
+	}
 
       /* If we are passing a non-addressable parameter by reference, pass the
 	 address of a copy.  In the Out or In Out case, set up to copy back
@@ -4724,12 +4731,8 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 
 	  /* ??? If the return type has variable size, then force the return
 	     slot optimization as we would not be able to create a temporary.
-	     Likewise if it was unconstrained as we would copy too much data.
 	     That's what has been done historically.  */
-	  if (TREE_CODE (TYPE_SIZE (gnu_result_type)) != INTEGER_CST
-	      || (TYPE_IS_PADDING_P (gnu_result_type)
-		  && CONTAINS_PLACEHOLDER_P
-		     (TYPE_SIZE (TREE_TYPE (TYPE_FIELDS (gnu_result_type))))))
+	  if (return_type_with_variable_size_p (gnu_result_type))
 	    op_code = INIT_EXPR;
 	  else
 	    op_code = MODIFY_EXPR;
@@ -6802,10 +6805,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	    /* Do not remove the padding from GNU_RET_VAL if the inner type is
 	       self-referential since we want to allocate the fixed size.  */
 	    if (TREE_CODE (gnu_ret_val) == COMPONENT_REF
-		&& TYPE_IS_PADDING_P
-		   (TREE_TYPE (TREE_OPERAND (gnu_ret_val, 0)))
-		&& CONTAINS_PLACEHOLDER_P
-		   (TYPE_SIZE (TREE_TYPE (gnu_ret_val))))
+		&& type_is_padding_self_referential
+		   (TREE_OPERAND (gnu_ret_val, 0)))
 	      gnu_ret_val = TREE_OPERAND (gnu_ret_val, 0);
 
 	    /* If the function returns by direct reference, return a pointer
@@ -7486,7 +7487,7 @@ gnat_to_gnu (Node_Id gnat_node)
      actual returned object.  We must do this before any conversions.  */
   if (TREE_SIDE_EFFECTS (gnu_result)
       && !(TREE_CODE (gnu_result) == CALL_EXPR
-	   && TYPE_IS_PADDING_P (TREE_TYPE (gnu_result)))
+	   && type_is_padding_self_referential (TREE_TYPE (gnu_result)))
       && (TREE_CODE (gnu_result_type) == UNCONSTRAINED_ARRAY_TYPE
 	  || CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_result_type))))
     gnu_result = gnat_protect_expr (gnu_result);
@@ -7512,9 +7513,10 @@ gnat_to_gnu (Node_Id gnat_node)
        3. If the type is void or if we have no result, return error_mark_node
 	  to show we have no result.
 
-       4. If this a call to a function that returns an unconstrained type with
-	  default discriminant, return the call expression unmodified since we
-	  cannot compute the size of the actual returned object.
+       4. If this is a call to a function that returns with variable size and
+	  the call is used as the expression in either an object or a renaming
+	  declaration, return the result unmodified because we want to use the
+	  return slot optimization in this case.
 
        5. Finally, if the type of the result is already correct.  */
 
@@ -7543,9 +7545,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	 size: in that case it must be an object of unconstrained type
 	 with a default discriminant and we want to avoid copying too
 	 much data.  */
-      if (TYPE_IS_PADDING_P (TREE_TYPE (gnu_result))
-	  && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (TREE_TYPE (TYPE_FIELDS
-				     (TREE_TYPE (gnu_result))))))
+      if (type_is_padding_self_referential (TREE_TYPE (gnu_result)))
 	gnu_result = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_result))),
 			      gnu_result);
     }
@@ -7567,11 +7567,11 @@ gnat_to_gnu (Node_Id gnat_node)
   else if (gnu_result == error_mark_node || gnu_result_type == void_type_node)
     gnu_result = error_mark_node;
 
-  else if (TREE_CODE (gnu_result) == CALL_EXPR
-	   && TYPE_IS_PADDING_P (TREE_TYPE (gnu_result))
-	   && TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_result)))
-	      == gnu_result_type
-	   && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_result_type)))
+  else if (Present (Parent (gnat_node))
+	   && (Nkind (Parent (gnat_node)) == N_Object_Declaration
+	       || Nkind (Parent (gnat_node)) == N_Object_Renaming_Declaration)
+	   && TREE_CODE (gnu_result) == CALL_EXPR
+	   && return_type_with_variable_size_p (TREE_TYPE (gnu_result)))
     ;
 
   else if (TREE_TYPE (gnu_result) != gnu_result_type)
