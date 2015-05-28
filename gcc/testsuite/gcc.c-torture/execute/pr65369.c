@@ -1,4 +1,5 @@
 /* PR tree-optimization/65369 */
+#include <stdint.h>
 
 static const char data[] =
   "12345678901234567890123456789012345678901234567890"
@@ -14,7 +15,7 @@ static void foo (const unsigned int *buf)
 __attribute__ ((noinline))
 static void bar (const unsigned char *block)
 {
-  unsigned int buf[16];
+  uint32_t buf[16];
   __builtin_memcpy (buf +  0, block +  0, 4);
   __builtin_memcpy (buf +  1, block +  4, 4);
   __builtin_memcpy (buf +  2, block +  8, 4);
