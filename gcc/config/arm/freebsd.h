@@ -34,7 +34,7 @@
 #undef SUBTARGET_EXTRA_ASM_SPEC
 #define SUBTARGET_EXTRA_ASM_SPEC \
   "%{mabi=apcs-gnu|mabi=atpcs:-meabi=gnu;:-meabi=5} " TARGET_FIX_V4BX_SPEC " \
-  %{fpic|fpie:-k} %{fPIC|fPIE:-k}"
+  %{" FPIE_OR_FPIC_SPEC ":-k}"
 
 #undef SUBTARGET_ASM_FLOAT_SPEC
 #ifdef TARGET_FREEBSD_ARM_HARD_FLOAT

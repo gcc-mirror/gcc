@@ -208,7 +208,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #undef ASM_SPEC
 #define ASM_SPEC "\
 -s \
-%{fpic|fPIC|fpie|fPIE:-K PIC} \
+%{" FPIE_OR_FPIC_SPEC ":-K PIC} \
 %{!.c:%{findirect-dispatch:-K PIC}} \
 %(asm_cpu) %(asm_arch) %(asm_relax)"
 

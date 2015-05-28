@@ -1,3 +1,7 @@
+2015-05-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (CRTSTUFF_CFLAGS): Add $(NO_PIE_CFLAGS).
+
 2015-05-27  John Marino <gnugcc@marino.st>
 
 	* config.host (i[34567]86-*-freebsd*, x86_64-*-freebsd*): Set

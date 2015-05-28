@@ -1,3 +1,7 @@
+2015-05-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc-interface/Makefile.in (TOOLS_LIBS): Add @NO_PIE_FLAG@.
+
 2015-05-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (elaborate_all_entities): Do not elaborate an

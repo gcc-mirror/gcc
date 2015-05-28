@@ -267,6 +267,9 @@ TOOLS_LIBS = ../link.o ../targext.o ../../ggc-none.o ../../libcommon-target.a \
   ../../libcommon.a ../../../libcpp/libcpp.a $(LIBGNAT) $(LIBINTL) $(LIBICONV) \
   ../$(LIBBACKTRACE) ../$(LIBIBERTY) $(SYSLIBS) $(TGT_LIB)
 
+# Add -no-pie to TOOLS_LIBS since some of them are compiled with -fno-PIE.
+TOOLS_LIBS += @NO_PIE_FLAG@
+
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
 # so that tm.h and config.h will be found in the compilation

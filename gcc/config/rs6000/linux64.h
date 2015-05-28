@@ -192,7 +192,7 @@ extern int dot_symbols;
 #endif
 
 #define ASM_SPEC32 "-a32 \
-%{mrelocatable} %{mrelocatable-lib} %{fpic|fpie|fPIC|fPIE:-K PIC} \
+%{mrelocatable} %{mrelocatable-lib} %{" FPIE_OR_FPIC_SPEC ":-K PIC} \
 %{memb|msdata=eabi: -memb}"
 
 #define ASM_SPEC64 "-a64"

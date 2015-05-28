@@ -1241,6 +1241,18 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 #endif
 
+/* Default value for flag_pie when flag_pie is initialized to -1:
+   --enable-default-pie: Default flag_pie to -fPIE.
+   --disable-default-pie: Default flag_pie to 0.
+ */
+#ifdef ENABLE_DEFAULT_PIE
+# ifndef DEFAULT_FLAG_PIE
+#  define DEFAULT_FLAG_PIE 2
+# endif
+#else
+# define DEFAULT_FLAG_PIE 0
+#endif
+
 #ifdef GCC_INSN_FLAGS_H
 /* Dependent default target macro definitions
 

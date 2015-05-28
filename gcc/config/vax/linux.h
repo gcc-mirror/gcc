@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 
 #undef ASM_SPEC
-#define ASM_SPEC "%{fpic|fPIC:-k}"
+#define ASM_SPEC "%{" FPIC_SPEC ":-k}"
 
 #undef LINK_SPEC
 #define LINK_SPEC \

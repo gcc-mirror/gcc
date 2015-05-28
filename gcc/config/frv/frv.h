@@ -42,12 +42,12 @@
 "%{mno-pack:\
    %{!mhard-float:-msoft-float}\
    %{!mmedia:-mno-media}}\
- %{!mfdpic:%{fpic|fPIC: -multilib-library-pic}}\
+ %{!mfdpic:%{" FPIC_SPEC ": -multilib-library-pic}}\
  %{mfdpic:%{!fpic:%{!fpie:%{!fPIC:%{!fPIE:\
    	    %{!fno-pic:%{!fno-pie:%{!fno-PIC:%{!fno-PIE:-fPIE}}}}}}}} \
-	  %{!mno-inline-plt:%{O*:%{!O0:%{!Os:%{fpic|fPIC:-minline-plt} \
-                    %{!fpic:%{!fPIC:%{!O:%{!O1:%{!O2:-minline-plt}}}}}}}}} \
-	  %{!mno-gprel-ro:%{!fpic:%{!fpie:-mgprel-ro}}}} \
+	  %{!mno-inline-plt:%{O*:%{!O0:%{!Os:%{" FPIC_SPEC ":-minline-plt} \
+                    %{" NO_FPIC_SPEC ":%{!O:%{!O1:%{!O2:-minline-plt}}}}}}}} \
+	  %{!mno-gprel-ro:%{" NO_FPIE1_AND_FPIC1_SPEC ":-mgprel-ro}}} \
 "
 #ifndef SUBTARGET_DRIVER_SELF_SPECS
 # define SUBTARGET_DRIVER_SELF_SPECS
@@ -67,7 +67,7 @@
     %{mmuladd} %{mno-muladd} \
     %{mpack} %{mno-pack} \
     %{mno-fdpic:-mnopic} %{mfdpic} \
-    %{fpic|fpie: -mpic} %{fPIC|fPIE: -mPIC} %{mlibrary-pic}}"
+    %{" FPIE1_OR_FPIC1_SPEC ":-mpic} %{" FPIE2_OR_FPIC2_SPEC ":-mPIC} %{mlibrary-pic}}"
 
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC "crt0%O%s frvbegin%O%s"

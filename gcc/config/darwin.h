@@ -214,7 +214,7 @@ extern GTY(()) int darwin_ms_struct;
 #define LINK_SYSROOT_SPEC "%{isysroot*:-syslibroot %*}"
 #endif
 
-#define PIE_SPEC "%{fpie|pie|fPIE:}"
+#define DARWIN_PIE_SPEC "%{fpie|pie|fPIE:}"
 
 /* Please keep the random linker options in alphabetical order (modulo
    'Z' and 'no' prefixes). Note that options taking arguments may appear
@@ -280,7 +280,7 @@ extern GTY(()) int darwin_ms_struct;
      %:version-compare(< 10.5 mmacosx-version-min= -multiply_defined) \
      %:version-compare(< 10.5 mmacosx-version-min= suppress)}} \
    %{Zmultiplydefinedunused*:-multiply_defined_unused %*} \
-   " PIE_SPEC " \
+   " DARWIN_PIE_SPEC " \
    %{prebind} %{noprebind} %{nofixprebinding} %{prebind_all_twolevel_modules} \
    %{read_only_relocs} \
    %{sectcreate*} %{sectorder*} %{seg1addr*} %{segprot*} \
