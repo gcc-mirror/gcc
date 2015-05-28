@@ -1,5 +1,16 @@
 2015-05-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/66017
+	* include/bits/stl_tree.h (_Rb_tree_node): Use __aligned_membuf.
+	(_Rb_tree_iterator, _Rb_tree_const_iterator): Support construction
+	from _Base_ptr.
+	(_Rb_tree_const_iterator::_M_const_cast): Remove static_cast.
+	(_Rb_tree::begin, _Rb_tree::end): Remove static_cast.
+	* include/ext/aligned_buffer.h (__aligned_membuf): New type using
+	alignment of _Tp as a member subobject, not as a complete object.
+	* python/libstdcxx/v6/printers.py (StdRbtreeIteratorPrinter): Lookup
+	_Link_type manually as it might not be in the debug info.
+
 	Backported from mainline
 	2015-05-13  Jonathan Wakely  <jwakely@redhat.com>
 
