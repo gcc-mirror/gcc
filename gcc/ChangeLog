@@ -1,3 +1,24 @@
+2015-05-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (struct _slp_instance): Remove body_cost_vec
+	member.
+	(SLP_INSTANCE_BODY_COST_VEC): Remove.
+	(vect_update_slp_costs_according_to_vf): Likewise.
+	(vect_slp_analyze_operations): Update prototype.
+	* tree-vect-loop.c (vect_analyze_loop_2): Remove call to
+	vect_update_slp_costs_according_to_vf, adjust.
+	* tree-vect-slp.c (vect_free_slp_instance): Adjust.
+	(vect_analyze_slp_cost_1): Likewise.
+	(vect_analyze_slp_cost): Likewise.  Properly deal with
+	widening reduction ops.  Commit body costs.
+	(vect_analyze_slp_instance): Adjust.  Do not analyze SLP
+	cost for loops from here.
+	(vect_slp_analyze_operations): But do it from here when
+	the vectorization factor is known and stmts are analyzed.
+	(vect_bb_vectorization_profitable_p): Simplify.
+	(vect_slp_analyze_bb_1): Do not compute SLP cost here.
+	(vect_update_slp_costs_according_to_vf): Remove.
+
 2015-05-27  Magnus Granberg  <zorry@gentoo.org>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
