@@ -1,3 +1,10 @@
+2015-05-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from mainline
+	2015-05-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h (__alloc_rebind): Change parameter name.
+
 2015-05-26  Doug Evans  <dje@google.com>
 
 	Backported from mainline
