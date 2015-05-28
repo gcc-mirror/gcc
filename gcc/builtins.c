@@ -5911,7 +5911,8 @@ expand_stack_save (void)
    acceleration device (ACCEL_COMPILER conditional).  */
 
 static rtx
-expand_builtin_acc_on_device (tree exp, rtx target)
+expand_builtin_acc_on_device (tree exp ATTRIBUTE_UNUSED,
+			      rtx target ATTRIBUTE_UNUSED)
 {
 #ifdef ACCEL_COMPILER
   if (!validate_arglist (exp, INTEGER_TYPE, VOID_TYPE))
