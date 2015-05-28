@@ -1,5 +1,10 @@
 2015-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (gnat_pushdecl): Reunify the handling of array
+	and pointer types wrt DECL_ORIGINAL_TYPE and adjust left and right.
+
+2015-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (gnat_stabilize_reference): Adjust.
 	(rewrite_fn): Remove third parameter.
 	(type_is_padding_self_referential): New inline predicate.
