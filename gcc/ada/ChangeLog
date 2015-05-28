@@ -1,3 +1,38 @@
+2015-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (gnat_stabilize_reference): Adjust.
+	(rewrite_fn): Remove third parameter.
+	(type_is_padding_self_referential): New inline predicate.
+	(return_type_with_variable_size_p): Likewise.
+	* gcc-interface/decl.c (allocatable_size_p): More around.
+	(cannot_be_superflat_p): Rename into...
+	(cannot_be_superflat ): ...this.
+	(initial_value_needs_conversion): New predicate.
+	(gnat_to_gnu_entity): Invoke type_is_padding_self_referential,
+	initial_value_needs_conversion and adjust to above renaming.
+	For a renaming, force the materialization if the inner expression
+	is compound.  Adjust calls to elaborate_reference and build a
+	compound expression if needed.
+	(struct er_dat): Add N field.
+	(elaborate_reference_1): Remove N parameter and adjust.
+	(elaborate_reference): Add INIT parameter and pass it in the call to
+	gnat_rewrite_reference.  Adjust initial expression.
+	* gcc-interface/trans.c (Call_to_gnu): Treat renamings the same way as
+	regular object declarations when it comes to creating a temporary.
+	Adjust call to gnat_stabilize_reference and build a compound expression
+ 	if needed.  Invoke return_type_with_variable_size_p.
+	(gnat_to_gnu): Invoke type_is_padding_self_referential.  In case #4,
+	return a call to a function unmodified if it returns with variable size
+ 	and is also the initial expression in an object declaration.
+	* gcc-interface/utils2.c (build_binary_op) <INIT_EXPR>: Use the RHS'
+	type if it is a call to a function that returns with variable size.
+	(build_unary_op): Invoke type_is_padding_self_referential.
+	(gnat_stabilize_reference_1): Remove N parameter and adjust.
+	(gnat_stabilize_reference): Add INIT parameter and pass it in the call
+	to gnat_rewrite_reference.
+	(gnat_rewrite_reference):  Remove N, add INIT parameter and adjust.
+	<COMPOUND_EXPR>: New case.
+
 2015-05-28  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Is_Visible_Component): Component is visible

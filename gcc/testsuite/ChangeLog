@@ -1,3 +1,19 @@
+2015-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/varsize_temp.adb: Rename into...
+	* gnat.dg/varsize1.adb: ...this.
+	* gnat.dg/varsize_copy.ad[sb]: Rename into...
+	* gnat.dg/varsize2.ad[sb]: ...this.
+	* gnat.dg/varsize3_1.adb: New test.
+	* gnat.dg/varsize3_2.adb: Likewise.
+	* gnat.dg/varsize3_3.adb: Likewise.
+	* gnat.dg/varsize3_4.adb: Likewise.
+	* gnat.dg/varsize3_5.adb: Likewise.
+	* gnat.dg/varsize3_6.adb: Likewise.
+	* gnat.dg/varsize3_pkg1.ads: New helper.
+	* gnat.dg/varsize3_pkg2.ads: Likewise.
+	* gnat.dg/varsize3_pkg3.ads: Likewise.
+
 2015-05-28  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/slp-reduc-sad.c: New testcase.

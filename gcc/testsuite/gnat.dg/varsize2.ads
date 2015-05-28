@@ -1,4 +1,4 @@
-package Varsize_Copy is
+package Varsize2 is
 
    type Key_Type is
       (Nul, Cntrl, Stx, Etx, Eot, Enq, Ack, Spad, Clr, Dc_1, Dc_2, Dc_3, Dc_4);
@@ -27,4 +27,4 @@ package Varsize_Copy is
 
    function F (Key : Key_Type) return Page_Type;
 
-end Varsize_Copy;
+end Varsize2;

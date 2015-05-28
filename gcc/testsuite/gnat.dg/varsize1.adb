@@ -1,6 +1,6 @@
 -- { dg-do compile }
 
-procedure Varsize_Temp (Nbytes : Natural) is
+procedure Varsize1 (Nbytes : Natural) is
 
    type Message_T (Length : Natural) is record
       case Length is
@@ -25,5 +25,3 @@ procedure Varsize_Temp (Nbytes : Natural) is
 begin
    Process (One_Message);
 end;
-
-
