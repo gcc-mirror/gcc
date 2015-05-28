@@ -1793,6 +1793,11 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
             scalar_stmts.safe_push (next);
           next = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next));
         }
+      /* Mark the first element of the reduction chain as reduction to properly
+	 transform the node.  In the reduction analysis phase only the last
+	 element of the chain is marked as reduction.  */
+      if (!STMT_VINFO_GROUPED_ACCESS (vinfo_for_stmt (stmt)))
+	STMT_VINFO_DEF_TYPE (vinfo_for_stmt (stmt)) = vect_reduction_def;
     }
   else
     {
@@ -2738,7 +2743,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
      (s1, s2, ..., s8).  We will create two vectors {s1, s2, s3, s4} and
      {s5, s6, s7, s8}.  */
 
-  number_of_copies = least_common_multiple (nunits, group_size) / group_size;
+  number_of_copies = nunits * number_of_vectors / group_size;
 
   number_of_places_left_in_vector = nunits;
   elts = XALLOCAVEC (tree, nunits);
@@ -3383,8 +3388,14 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
      for the scalar stmts in each node of the SLP tree.  Number of vector
      elements in one vector iteration is the number of scalar elements in
      one scalar iteration (GROUP_SIZE) multiplied by VF divided by vector
-     size.  */
-  vec_stmts_size = (vectorization_factor * group_size) / nunits;
+     size.
+     Unless this is a SLP reduction in which case the number of vector
+     stmts is equal to the number of vector stmts of the children.  */
+  if (GROUP_FIRST_ELEMENT (stmt_info)
+      && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
+    vec_stmts_size = SLP_TREE_NUMBER_OF_VEC_STMTS (SLP_TREE_CHILDREN (node)[0]);
+  else
+    vec_stmts_size = (vectorization_factor * group_size) / nunits;
 
   if (!SLP_TREE_VEC_STMTS (node).exists ())
     {

@@ -1,5 +1,22 @@
 2015-05-28  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-loop.c (vect_fixup_reduc_chain): New function.
+	(vect_fixup_scalar_cycles_with_patterns): Likewise.
+	(vect_analyze_loop_2): Call vect_fixup_scalar_cycles_with_patterns
+	after pattern recog.
+	(vect_create_epilog_for_reduction): Properly handle reductions
+	with patterns.
+	(vectorizable_reduction): Likewise.
+	* tree-vect-slp.c (vect_analyze_slp_instance): Properly mark
+	reduction chains.
+	(vect_get_constant_vectors): Create the correct number of
+	initial values for reductions.
+	(vect_schedule_slp_instance): Handle reduction chains that are
+	type changing properly.
+	* tree-vect-stmts.c (vect_analyze_stmt): Adjust.
+
+2015-05-28  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/66142
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): Handle non-GIMPLE
 	values better in memcpy destination handling.  Handle non-aliasing

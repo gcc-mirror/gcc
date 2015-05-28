@@ -828,6 +828,45 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
     vect_analyze_scalar_cycles_1 (loop_vinfo, loop->inner);
 }
 
+/* Transfer group and reduction information from STMT to its pattern stmt.  */
+
+static void
+vect_fixup_reduc_chain (gimple stmt)
+{
+  gimple firstp = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt));
+  gimple stmtp;
+  gcc_assert (!GROUP_FIRST_ELEMENT (vinfo_for_stmt (firstp))
+	      && GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)));
+  GROUP_SIZE (vinfo_for_stmt (firstp)) = GROUP_SIZE (vinfo_for_stmt (stmt));
+  do
+    {
+      stmtp = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt));
+      GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmtp)) = firstp;
+      stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (stmt));
+      if (stmt)
+	GROUP_NEXT_ELEMENT (vinfo_for_stmt (stmtp))
+	  = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt));
+    }
+  while (stmt);
+  STMT_VINFO_DEF_TYPE (vinfo_for_stmt (stmtp)) = vect_reduction_def;
+}
+
+/* Fixup scalar cycles that now have their stmts detected as patterns.  */
+
+static void
+vect_fixup_scalar_cycles_with_patterns (loop_vec_info loop_vinfo)
+{
+  gimple first;
+  unsigned i;
+
+  FOR_EACH_VEC_ELT (LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo), i, first)
+    if (STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (first)))
+      {
+	vect_fixup_reduc_chain (first);
+	LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo)[i]
+	  = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (first));
+      }
+}
 
 /* Function vect_get_loop_niters.
 
@@ -1707,6 +1746,8 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo)
   vect_analyze_scalar_cycles (loop_vinfo);
 
   vect_pattern_recog (loop_vinfo, NULL);
+
+  vect_fixup_scalar_cycles_with_patterns (loop_vinfo);
 
   /* Analyze the access patterns of the data-refs in the loop (consecutive,
      complex, etc.). FORNOW: Only handle consecutive access pattern.  */
@@ -4573,8 +4614,12 @@ vect_finalize_reduction:
      exit phi node.  */
   if (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)))
     {
-      scalar_dest = gimple_assign_lhs (
-			SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1]);
+      gimple dest_stmt = SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1];
+      /* Handle reduction patterns.  */
+      if (STMT_VINFO_RELATED_STMT (vinfo_for_stmt (dest_stmt)))
+	dest_stmt = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (dest_stmt));
+
+      scalar_dest = gimple_assign_lhs (dest_stmt);
       group_size = 1;
     }
 
@@ -4875,12 +4920,17 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   auto_vec<gimple> phis;
   int vec_num;
   tree def0, def1, tem, op0, op1 = NULL_TREE;
+  bool first_p = true;
 
   /* In case of reduction chain we switch to the first stmt in the chain, but
      we don't update STMT_INFO, since only the last stmt is marked as reduction
      and has reduction properties.  */
-  if (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)))
-    stmt = GROUP_FIRST_ELEMENT (stmt_info);
+  if (GROUP_FIRST_ELEMENT (stmt_info)
+      && GROUP_FIRST_ELEMENT (stmt_info) != stmt)
+    {
+      stmt = GROUP_FIRST_ELEMENT (stmt_info);
+      first_p = false;
+    }
 
   if (nested_in_vect_loop_p (loop, stmt))
     {
@@ -4903,8 +4953,8 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
     return false;
 
   /* Make sure it was already recognized as a reduction computation.  */
-  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def
-      && STMT_VINFO_DEF_TYPE (stmt_info) != vect_nested_cycle)
+  if (STMT_VINFO_DEF_TYPE (vinfo_for_stmt (stmt)) != vect_reduction_def
+      && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (stmt)) != vect_nested_cycle)
     return false;
 
   /* 2. Has this been recognized as a reduction pattern?
@@ -4914,7 +4964,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
      the STMT_VINFO_RELATED_STMT field records the last stmt in
      the original sequence that constitutes the pattern.  */
 
-  orig_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
+  orig_stmt = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (stmt));
   if (orig_stmt)
     {
       orig_stmt_info = vinfo_for_stmt (orig_stmt);
@@ -5040,20 +5090,16 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       return false;
     }
 
+  gimple tmp = vect_is_simple_reduction (loop_vinfo, reduc_def_stmt,
+					 !nested_cycle, &dummy);
   if (orig_stmt)
-    gcc_assert (orig_stmt == vect_is_simple_reduction (loop_vinfo,
-                                                       reduc_def_stmt,
-                                                       !nested_cycle,
-                                                       &dummy));
+    gcc_assert (tmp == orig_stmt
+		|| GROUP_FIRST_ELEMENT (vinfo_for_stmt (tmp)) == orig_stmt);
   else
-    {
-      gimple tmp = vect_is_simple_reduction (loop_vinfo, reduc_def_stmt,
-                                             !nested_cycle, &dummy);
-      /* We changed STMT to be the first stmt in reduction chain, hence we
-         check that in this case the first element in the chain is STMT.  */
-      gcc_assert (stmt == tmp
-                  || GROUP_FIRST_ELEMENT (vinfo_for_stmt (tmp)) == stmt);
-    }
+    /* We changed STMT to be the first stmt in reduction chain, hence we
+       check that in this case the first element in the chain is STMT.  */
+    gcc_assert (stmt == tmp
+		|| GROUP_FIRST_ELEMENT (vinfo_for_stmt (tmp)) == stmt);
 
   if (STMT_VINFO_LIVE_P (vinfo_for_stmt (reduc_def_stmt)))
     return false;
@@ -5267,8 +5313,9 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
 
   if (!vec_stmt) /* transformation not required.  */
     {
-      if (!vect_model_reduction_cost (stmt_info, epilog_reduc_code, ncopies,
-				      reduc_index))
+      if (first_p
+	  && !vect_model_reduction_cost (stmt_info, epilog_reduc_code, ncopies,
+					 reduc_index))
         return false;
       STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
       return true;
@@ -5324,11 +5371,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   prev_stmt_info = NULL;
   prev_phi_info = NULL;
   if (slp_node)
-    {
-      vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-      gcc_assert (TYPE_VECTOR_SUBPARTS (vectype_out) 
-                  == TYPE_VECTOR_SUBPARTS (vectype_in));
-    }
+    vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
   else
     {
       vec_num = 1;
