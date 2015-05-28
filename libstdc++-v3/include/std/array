@@ -51,6 +51,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       static constexpr _Tp&
       _S_ref(const _Type& __t, std::size_t __n) noexcept
       { return const_cast<_Tp&>(__t[__n]); }
+
+      static constexpr _Tp*
+      _S_ptr(const _Type& __t) noexcept
+      { return const_cast<_Tp*>(__t); }
     };
 
  template<typename _Tp>
@@ -61,6 +65,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
      static constexpr _Tp&
      _S_ref(const _Type&, std::size_t) noexcept
      { return *static_cast<_Tp*>(nullptr); }
+
+     static constexpr _Tp*
+     _S_ptr(const _Type&) noexcept
+     { return nullptr; }
    };
 
   /**
@@ -219,11 +227,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       pointer
       data() noexcept
-      { return std::__addressof(_AT_Type::_S_ref(_M_elems, 0)); }
+      { return _AT_Type::_S_ptr(_M_elems); }
 
       const_pointer
       data() const noexcept
-      { return std::__addressof(_AT_Type::_S_ref(_M_elems, 0)); }
+      { return _AT_Type::_S_ptr(_M_elems); }
     };
 
   // Array comparisons.
