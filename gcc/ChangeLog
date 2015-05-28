@@ -1,3 +1,9 @@
+2015-05-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/66148
+	* config/pa/pa.c (pa_emit_move_sequence): Correct placement of
+	REG_EQUAL note when doing insert.
+
 2015-05-27  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
