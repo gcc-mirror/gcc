@@ -1,3 +1,12 @@
+2015-05-28  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.c (push_regs): New function.  Extracts code from...
+	(rx_expand_prologue): ... here.  Use push_regs to push even small
+	spans of registers.
+	(pop_regs): New function.
+	(rx_expand_epilogue):  Use pop_regs to pop even small spans of
+	registers.
+
 2015-05-28  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (struct _slp_instance): Remove body_cost_vec

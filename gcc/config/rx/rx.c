@@ -1567,6 +1567,10 @@ rx_get_stack_layout (unsigned int * lowest,
      has specified --fixed-<reg-name> on the command line and in such
      circumstances we do not want to touch the fixed registers at all.
 
+     Note also that the code in the prologue/epilogue handlers will
+     automatically merge multiple PUSHes of adjacent registers into a single
+     PUSHM.
+
      FIXME: Is it worth improving this heuristic ?  */
   pushed_mask = (-1 << low) & ~(-1 << (high + 1));
   unneeded_pushes = (pushed_mask & (~ save_mask)) & pushed_mask;
@@ -1716,6 +1720,19 @@ gen_safe_add (rtx dest, rtx src, rtx val, bool is_frame_related)
   return;
 }
 
+static void
+push_regs (unsigned int high, unsigned int low)
+{
+  rtx insn;
+
+  if (low == high)
+    insn = emit_insn (gen_stack_push (gen_rtx_REG (SImode, low)));
+  else
+    insn = emit_insn (gen_stack_pushm (GEN_INT (((high - low) + 1) * UNITS_PER_WORD),
+				       gen_rx_store_vector (low, high)));
+  mark_frame_related (insn);
+}
+
 void
 rx_expand_prologue (void)
 {
@@ -1725,7 +1742,6 @@ rx_expand_prologue (void)
   unsigned int low;
   unsigned int high;
   unsigned int reg;
-  rtx insn;
 
   /* Naked functions use their own, programmer provided prologues.  */
   if (is_naked_func (NULL_TREE))
@@ -1735,7 +1751,7 @@ rx_expand_prologue (void)
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = frame_size + stack_size;
-
+  
   /* If we use any of the callee-saved registers, save them now.  */
   if (mask)
     {
@@ -1743,20 +1759,25 @@ rx_expand_prologue (void)
       for (reg = CC_REGNUM; reg --;)
 	if (mask & (1 << reg))
 	  {
-	    insn = emit_insn (gen_stack_push (gen_rtx_REG (SImode, reg)));
-	    mark_frame_related (insn);
+	    low = high = reg;
+
+	    /* Look for a span of registers.
+	       Note - we do not have to worry about -Os and whether
+	       it is better to use a single, longer PUSHM as
+	       rx_get_stack_layout has already done that for us.  */
+	    while (reg-- > 0)
+	      if ((mask & (1 << reg)) == 0)
+		break;
+	      else
+		--low;
+
+	    push_regs (high, low);
+	    if (reg == (unsigned) -1)
+	      break;
 	  }
     }
   else if (low)
-    {
-      if (high == low)
-	insn = emit_insn (gen_stack_push (gen_rtx_REG (SImode, low)));
-      else
-	insn = emit_insn (gen_stack_pushm (GEN_INT (((high - low) + 1)
-						    * UNITS_PER_WORD),
-					   gen_rx_store_vector (low, high)));
-      mark_frame_related (insn);
-    }
+    push_regs (high, low);
 
   if (MUST_SAVE_ACC_REGISTER)
     {
@@ -2031,6 +2052,16 @@ rx_can_use_simple_return (void)
 	  && low == 0);
 }
 
+static void
+pop_regs (unsigned int high, unsigned int low)
+{
+  if (high == low)
+    emit_insn (gen_stack_pop (gen_rtx_REG (SImode, low)));
+  else
+    emit_insn (gen_stack_popm (GEN_INT (((high - low) + 1) * UNITS_PER_WORD),
+			       gen_rx_popm_vector (low, high)));
+}
+
 void
 rx_expand_epilogue (bool is_sibcall)
 {
@@ -2143,16 +2174,16 @@ rx_expand_epilogue (bool is_sibcall)
 	{
 	  for (reg = 0; reg < CC_REGNUM; reg ++)
 	    if (register_mask & (1 << reg))
-	      emit_insn (gen_stack_pop (gen_rtx_REG (SImode, reg)));
+	      {
+		low = high = reg;
+		while (register_mask & (1 << high))
+		  high ++;
+		pop_regs (high - 1, low);
+		reg = high;
+	      }
 	}
       else if (low)
-	{
-	  if (high == low)
-	    emit_insn (gen_stack_pop (gen_rtx_REG (SImode, low)));
-	  else
-	    emit_insn (gen_stack_popm (GEN_INT (regs_size),
-				       gen_rx_popm_vector (low, high)));
-	}
+	pop_regs (high, low);
 
       if (is_fast_interrupt_func (NULL_TREE))
 	{
