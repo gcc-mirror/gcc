@@ -1,3 +1,18 @@
+2015-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Wrong_Type): In any instance, do not emit error
+	if type of expression is the partial view of the expected type.
+
+2015-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): a)  The replacement of formal
+	names in named associations only needs to be done within an
+	instance, on a call to a primitive of a formal derived type,
+	where the actual subprogram may have different formal names than
+	those of the primitive operation of the formal type.
+	b) Defaulted parameters must be taken into account when obtaining
+	the names of the formals of the actual subprogram being called.
+
 2015-05-28  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch13.adb, sem_disp.ads: Minor reformatting.

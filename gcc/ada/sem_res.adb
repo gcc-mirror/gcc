@@ -3053,11 +3053,12 @@ package body Sem_Res is
       Real_F : Entity_Id;
 
       Real_Subp : Entity_Id;
-      --  If the subprogram being called is an overridden operation,
-      --  Real_Subp is the subprogram that will be called. It may have
-      --  different formal names than the overridden operation, so after
-      --  actual is resolved, the name of the actual in a named association
-      --  must carry the name of the actual of the subprogram being called.
+      --  If the subprogram being called is an inherited operation for
+      --  a formal derived type in an instance, Real_Subp is the subprogram
+      --  that will be called. It may have different formal names than the
+      --  operation of the formal in the generic, so after actual is resolved
+      --  the name of the actual in a named association must carry the name
+      --  of the actual of the subprogram being called.
 
       procedure Check_Aliased_Parameter;
       --  Check rules on aliased parameters and related accessibility rules
@@ -3569,6 +3570,7 @@ package body Sem_Res is
 
       if Is_Overloadable (Nam)
         and then Is_Inherited_Operation (Nam)
+        and then In_Instance
         and then Present (Alias (Nam))
         and then Present (Overridden_Operation (Alias (Nam)))
       then
@@ -4534,10 +4536,6 @@ package body Sem_Res is
 
             Next_Actual (A);
 
-            if Present (Real_Subp) then
-               Next_Formal (Real_F);
-            end if;
-
          --  Case where actual is not present
 
          else
@@ -4545,6 +4543,10 @@ package body Sem_Res is
          end if;
 
          Next_Formal (F);
+
+         if Present (Real_Subp) then
+            Next_Formal (Real_F);
+         end if;
       end loop;
    end Resolve_Actuals;
 
