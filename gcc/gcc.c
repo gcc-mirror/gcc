@@ -737,12 +737,57 @@ proper position among the other output files.  */
 #endif
 #endif
 
+#ifdef ENABLE_DEFAULT_PIE
+#define NO_PIE_SPEC		"no-pie|static"
+#define PIE_SPEC		NO_PIE_SPEC "|r|shared:;"
+#define NO_FPIE1_SPEC		"fno-pie"
+#define FPIE1_SPEC		NO_FPIE1_SPEC ":;"
+#define NO_FPIE2_SPEC		"fno-PIE"
+#define FPIE2_SPEC		NO_FPIE2_SPEC ":;"
+#define NO_FPIE_SPEC		NO_FPIE1_SPEC "|" NO_FPIE2_SPEC
+#define FPIE_SPEC		NO_FPIE_SPEC ":;"
+#define NO_FPIC1_SPEC		"fno-pic"
+#define FPIC1_SPEC		NO_FPIC1_SPEC ":;"
+#define NO_FPIC2_SPEC		"fno-PIC"
+#define FPIC2_SPEC		NO_FPIC2_SPEC ":;"
+#define NO_FPIC_SPEC		NO_FPIC1_SPEC "|" NO_FPIC2_SPEC
+#define FPIC_SPEC		NO_FPIC_SPEC ":;"
+#define NO_FPIE1_AND_FPIC1_SPEC	NO_FPIE1_SPEC "|" NO_FPIC1_SPEC
+#define FPIE1_OR_FPIC1_SPEC	NO_FPIE1_AND_FPIC1_SPEC ":;"
+#define NO_FPIE2_AND_FPIC2_SPEC	NO_FPIE2_SPEC "|" NO_FPIC2_SPEC
+#define FPIE2_OR_FPIC2_SPEC	NO_FPIE2_AND_FPIC2_SPEC ":;"
+#define NO_FPIE_AND_FPIC_SPEC	NO_FPIE_SPEC "|" NO_FPIC_SPEC
+#define FPIE_OR_FPIC_SPEC	NO_FPIE_AND_FPIC_SPEC ":;"
+#else
+#define PIE_SPEC		"pie"
+#define NO_PIE_SPEC		PIE_SPEC "|r|shared:;"
+#define FPIE1_SPEC		"fpie"
+#define NO_FPIE1_SPEC		FPIE1_SPEC ":;"
+#define FPIE2_SPEC		"fPIE"
+#define NO_FPIE2_SPEC		FPIE2_SPEC ":;"
+#define FPIE_SPEC		FPIE1_SPEC "|" FPIE2_SPEC
+#define NO_FPIE_SPEC		FPIE_SPEC ":;"
+#define FPIC1_SPEC		"fpic"
+#define NO_FPIC1_SPEC		FPIC1_SPEC ":;"
+#define FPIC2_SPEC		"fPIC"
+#define NO_FPIC2_SPEC		FPIC2_SPEC ":;"
+#define FPIC_SPEC		FPIC1_SPEC "|" FPIC2_SPEC
+#define NO_FPIC_SPEC		FPIC_SPEC ":;"
+#define FPIE1_OR_FPIC1_SPEC	FPIE1_SPEC "|" FPIC1_SPEC
+#define NO_FPIE1_AND_FPIC1_SPEC	FPIE1_OR_FPIC1_SPEC ":;"
+#define FPIE2_OR_FPIC2_SPEC	FPIE2_SPEC "|" FPIC2_SPEC
+#define NO_FPIE2_AND_FPIC2_SPEC	FPIE1_OR_FPIC2_SPEC ":;"
+#define FPIE_OR_FPIC_SPEC	FPIE_SPEC "|" FPIC_SPEC
+#define NO_FPIE_AND_FPIC_SPEC	FPIE_OR_FPIC_SPEC ":;"
+#endif
+
 #ifndef LINK_PIE_SPEC
 #ifdef HAVE_LD_PIE
-#define LINK_PIE_SPEC "%{pie:-pie} "
+#define LD_PIE_SPEC "-pie"
 #else
-#define LINK_PIE_SPEC "%{pie:} "
+#define LD_PIE_SPEC ""
 #endif
+#define LINK_PIE_SPEC "%{no-pie:} " "%{" PIE_SPEC ":" LD_PIE_SPEC "} "
 #endif
 
 #ifndef LINK_BUILDID_SPEC

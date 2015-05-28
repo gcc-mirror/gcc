@@ -126,7 +126,7 @@ while (0)
    still uses a special flavor of gas that needs to be told when generating 
    pic code.  */
 #undef ASM_SPEC
-#define ASM_SPEC "%{fpic|fpie:-k} %{fPIC|fPIE:-k -K}"
+#define ASM_SPEC "%{" FPIE1_OR_FPIC1_SPEC ":-k} %{" FPIE2_OR_FPIC2_SPEC ":-k -K}"
 #endif
 
 /* Since we use gas, stdin -> - is a good idea.  */

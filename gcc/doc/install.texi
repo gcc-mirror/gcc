@@ -1621,6 +1621,9 @@ defaulted to o32.
 Currently, this option only affects sparc-linux, powerpc-linux, x86-linux,
 mips-linux and s390-linux.
 
+@item --enable-default-pie
+Turn on @option{-fPIE} and @option{-pie} by default.
+
 @item --enable-secureplt
 This option enables @option{-msecure-plt} by default for powerpc-linux.
 @ifnothtml

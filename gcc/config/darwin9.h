@@ -35,8 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Tell collect2 to run dsymutil for us as necessary.  */
 #define COLLECT_RUN_DSYMUTIL 1
 
-#undef PIE_SPEC
-#define PIE_SPEC \
+#undef DARWIN_PIE_SPEC
+#define DARWIN_PIE_SPEC \
   "%{fpie|pie|fPIE: \
      %{mdynamic-no-pic: %n'-mdynamic-no-pic' overrides '-pie', '-fpie' or '-fPIE'; \
       :-pie}}"

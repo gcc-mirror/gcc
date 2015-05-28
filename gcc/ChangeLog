@@ -1,3 +1,95 @@
+2015-05-27  Magnus Granberg  <zorry@gentoo.org>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (COMPILER): Add @NO_PIE_CFLAGS@.
+	(BUILD_CFLAGS): Likewise.
+	(BUILD_CXXFLAGS): Likewise.
+	(LINKER): Add @NO_PIE_FLAG@.
+	(BUILD_LDFLAGS): Likewise.
+	(libgcc.mvars): Set NO_PIE_CFLAGS to -fno-PIE for
+	--enable-default-pie.
+	* common.opt (fPIE): Initialize to -1.
+	(fpie): Likewise.
+	(no-pie): New option.
+	(pie): Replace "Negative(shared)" with "Negative(no-pie)".
+	* configure.ac: Add --enable-default-pie.
+	(NO_PIE_CFLAGS): New.  Check if -fno-PIE works.  AC_SUBST.
+	(NO_PIE_FLAG): New.  Check if -no-pie works.  AC_SUBST.
+	* defaults.h (DEFAULT_FLAG_PIE): New.  Default PIE to -fPIE.
+	* gcc.c (NO_PIE_SPEC): New.
+	(PIE_SPEC): Likewise.
+	(NO_FPIE1_SPEC): Likewise.
+	(FPIE1_SPEC): Likewise.
+	(NO_FPIE2_SPEC): Likewise.
+	(FPIE2_SPEC): Likewise.
+	(NO_FPIE2_SPEC): Likewise.
+	(FPIE_SPEC): Likewise.
+	(NO_FPIE_SPEC): Likewise.
+	(NO_FPIC1_SPEC): Likewise.
+	(FPIC1_SPEC): Likewise.
+	(NO_FPIC2_SPEC): Likewise.
+	(FPIC2_SPEC): Likewise.
+	(NO_FPIC2_SPEC): Likewise.
+	(FPIC_SPEC): Likewise.
+	(NO_FPIC_SPEC): Likewise.
+	(NO_FPIE1_AND_FPIC1_SPEC): Likewise.
+	(FPIE1_OR_FPIC1_SPEC): Likewise.
+	(NO_FPIE2_AND_FPIC2_SPEC): Likewise.
+	(FPIE2_OR_FPIC2_SPEC): Likewise.
+	(NO_FPIE_AND_FPIC_SPEC): Likewise.
+	(FPIE_OR_FPIC_SPEC): Likewise.
+	(LD_PIE_SPEC): Likewise.
+	(LINK_PIE_SPEC): Handle -no-pie.  Use PIE_SPEC and LD_PIE_SPEC.
+	* opts.c (finish_options): Update opts->x_flag_pie if it is -1.
+	* config/darwin.h (PIE_SPEC): Renamed to ...
+	(DARWIN_PIE_SPEC): This.
+	(LINK_SPEC): Replace PIE_SPEC with DARWIN_PIE_SPEC.
+	* config/darwin9.h (PIE_SPEC): Renamed to ...
+	(DARWIN_PIE_SPEC): This.
+	* config/gnu-user.h (GNU_USER_TARGET_STARTFILE_SPEC): Use
+	PIE_SPEC and NO_PIE_SPEC if HAVE_LD_PIE is defined.
+	* config/openbsd.h (ASM_SPEC): Use FPIE1_OR_FPIC1_SPEC and
+	FPIE2_OR_FPIC2_SPEC.
+	* config/m68k/netbsd-elf.h (ASM_SPEC): Likewise.
+	* config/m68k/openbsd.h (ASM_SPEC): Likewise.
+	* gcc/config/sol2.h (ASM_PIC_SPEC): Likewise.
+	* config/arm/freebsd.h (SUBTARGET_EXTRA_ASM_SPEC): Likewise.
+	* config/arm/netbsd-elf.h (SUBTARGET_EXTRA_ASM_SPEC): Likewise.
+	* config/arm/semi.h (SUBTARGET_EXTRA_ASM_SPEC): Likewise.
+	* config/cris/linux.h (CRIS_ASM_SUBTARGET_SPEC): Likewise.
+	* config/m32r/m32r.h (ASM_SPEC): Likewise.
+	* config/m68k/uclinux.h (DRIVER_SELF_SPECS): Likewise.
+	* config/rs6000/linux64.h (ASM_SPEC32): Likewise.
+	* config/rs6000/sysv4.h (ASM_SPEC): Likewise.
+	* config/sparc/freebsd.h (ASM_SPEC): Likewise.
+	* config/sparc/linux.h (ASM_SPEC): Likewise.
+	* config/sparc/linux64.h (ASM_SPEC): Likewise.
+	* config/sparc/netbsd-elf.h (ASM_SPEC): Likewise.
+	* config/sparc/openbsd64.h (ASM_SPEC): Likewise.
+	* config/sparc/sp-elf.h (ASM_SPEC): Likewise.
+	* config/sparc/sp64-elf.h (ASM_SPEC): Likewise.
+	* config/sparc/sparc.h (ASM_SPEC): Likewise.
+	* config/sparc/sysv4.h (ASM_SPEC): Likewise.
+	* config/sparc/vxworks.h (ASM_SPEC): Likewise.
+	* config/c6x/elf-common.h (ASM_SPEC): Use NO_FPIC2_SPEC,
+	FPIC2_SPEC, FPIC1_SPEC and FPIC2_SPEC.
+	* config/c6x/uclinux-elf.h (LINK_SPEC): Use FPIE_SPEC.
+	* config/frv/frv.h (DRIVER_SELF_SPECS): Use FPIC_SPEC,
+	NO_FPIC_SPEC and NO_FPIE1_AND_FPIC1_SPEC.
+	(ASM_SPEC): Use FPIE1_OR_FPIC1_SPEC and FPIE2_OR_FPIC2_SPEC.
+	* config/m68k/m68k.h (ASM_PCREL_SPEC): Use FPIC_SPEC and
+	NO_FPIC_SPEC.
+	* config/mips/gnu-user.h (NO_SHARED_SPECS): Use
+	NO_FPIE_AND_FPIC_SPEC.
+	* config/mips/vxworks.h (SUBTARGET_ASM_SPEC): Use FPIC_SPEC.
+	* config/rs6000/freebsd64.h (ASM_SPEC32): Likewise.
+	* config/rs6000/vxworks.h (ASM_SPEC): Likewise.
+	* config/vax/linux.h (ASM_SPEC): Likewise.
+	* doc/install.texi: Document --enable-default-pie.
+	* doc/invoke.texi: Document -no-pie.
+	* config.in: Regenerated.
+	* configure: Likewise.
+
 2015-05-28  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	PR rtl-optimization/66168

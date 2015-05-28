@@ -79,13 +79,13 @@ along with GCC; see the file COPYING3.  If not see
  "--em=criself \
   %{!march=*:%{!mcpu=*:--march=v32}} \
   %{!fleading-underscore:--no-underscore}\
-  %{fPIC|fpic|fPIE|fpie: --pic}"
+  %{" FPIE_OR_FPIC_SPEC ": --pic}"
 #else
 # define CRIS_ASM_SUBTARGET_SPEC \
  "--em=criself \
   %{!march=*:%{!mcpu=*:--march=v10}} \
   %{!fleading-underscore:--no-underscore}\
-  %{fPIC|fpic|fPIE|fpie: --pic}"
+  %{" FPIE_OR_FPIC_SPEC ": --pic}"
 #endif
 
 /* Previously controlled by target_flags.  */

@@ -58,7 +58,7 @@
    binutils can't.  */
 #ifndef ASM_SPEC
 #define ASM_SPEC "\
-%{fpic|fpie: -k} %{fPIC|fPIE: -k} \
+%{" FPIE_OR_FPIC_SPEC ": -k} \
 %{mbig-endian:-EB} \
 %(arm_cpu_spec) \
 %{mapcs-float:-mfloat} \

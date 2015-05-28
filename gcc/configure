@@ -600,6 +600,9 @@ ac_includes_default="\
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+NO_PIE_FLAG
+NO_PIE_CFLAGS
+enable_default_pie
 PICFLAG
 enable_host_shared
 enable_plugin
@@ -938,6 +941,7 @@ enable_host_shared
 enable_libquadmath_support
 with_linker_hash_style
 with_diagnostics_color
+enable_default_pie
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1674,6 +1678,7 @@ Optional Features:
   --enable-host-shared    build host code as shared libraries
   --disable-libquadmath-support
                           disable libquadmath support for Fortran
+  --enable-default-pie    enable Position Independent Executable as default
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -18293,7 +18298,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18296 "configure"
+#line 18301 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18399,7 +18404,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18402 "configure"
+#line 18407 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -28701,6 +28706,76 @@ _ACEOF
 cat > gcc-driver-name.h <<EOF
 #define GCC_DRIVER_NAME "${target_noncanonical}-gcc-${gcc_BASEVER}${exeext}"
 EOF
+
+# Check whether --enable-default-pie was given.
+# Check whether --enable-default-pie was given.
+if test "${enable_default_pie+set}" = set; then :
+  enableval=$enable_default_pie; enable_default_pie=$enableval
+else
+  enable_default_pie=no
+fi
+
+if test x$enable_default_pie == xyes ; then
+
+$as_echo "#define ENABLE_DEFAULT_PIE 1" >>confdefs.h
+
+fi
+
+
+# Check if -fno-PIE works.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for -fno-PIE option" >&5
+$as_echo_n "checking for -fno-PIE option... " >&6; }
+if test "${gcc_cv_c_no_fpie+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  saved_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -fno-PIE"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int main(void) {return 0;}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  gcc_cv_c_no_fpie=yes
+else
+  gcc_cv_c_no_fpie=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+   CFLAGS="$saved_CFLAGS"
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_c_no_fpie" >&5
+$as_echo "$gcc_cv_c_no_fpie" >&6; }
+if test "$gcc_cv_c_no_fpie" = "yes"; then
+  NO_PIE_CFLAGS="-fno-PIE"
+fi
+
+
+# Check if -no-pie works.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for -no-pie option" >&5
+$as_echo_n "checking for -no-pie option... " >&6; }
+if test "${gcc_cv_no_pie+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  saved_LDFLAGS="$LDFLAGS"
+   LDFLAGS="$LDFLAGS -no-pie"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int main(void) {return 0;}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  gcc_cv_no_pie=yes
+else
+  gcc_cv_no_pie=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+   LDFLAGS="$saved_LDFLAGS"
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_no_pie" >&5
+$as_echo "$gcc_cv_no_pie" >&6; }
+if test "$gcc_cv_no_pie" = "yes"; then
+  NO_PIE_FLAG="-no-pie"
+fi
+
 
 # Configure the subdirectories
 # AC_CONFIG_SUBDIRS($subdirs)

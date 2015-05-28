@@ -40,7 +40,7 @@
 
 #undef LINK_SPEC
 #define LINK_SPEC ENDIAN_LINK_SPEC \
-  "%{shared} %{fpie|fPIE:-pie} \
+  "%{shared} %{" FPIE_SPEC ":-pie} \
   %{!shared: %{!static: \
    %{rdynamic:-export-dynamic} \
    %{!dynamic-linker:-dynamic-linker " UCLIBC_DYNAMIC_LINKER "}} \
