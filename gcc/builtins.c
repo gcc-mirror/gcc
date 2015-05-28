@@ -5913,6 +5913,7 @@ expand_stack_save (void)
 static rtx
 expand_builtin_acc_on_device (tree exp, rtx target)
 {
+#ifdef ACCEL_COMPILER
   if (!validate_arglist (exp, INTEGER_TYPE, VOID_TYPE))
     return NULL_RTX;
 
@@ -5921,13 +5922,8 @@ expand_builtin_acc_on_device (tree exp, rtx target)
   /* Return (arg == v1 || arg == v2) ? 1 : 0.  */
   machine_mode v_mode = TYPE_MODE (TREE_TYPE (arg));
   rtx v = expand_normal (arg), v1, v2;
-#ifdef ACCEL_COMPILER
   v1 = GEN_INT (GOMP_DEVICE_NOT_HOST);
   v2 = GEN_INT (ACCEL_COMPILER_acc_device);
-#else
-  v1 = GEN_INT (GOMP_DEVICE_NONE);
-  v2 = GEN_INT (GOMP_DEVICE_HOST);
-#endif
   machine_mode target_mode = TYPE_MODE (integer_type_node);
   if (!target || !register_operand (target, target_mode))
     target = gen_reg_rtx (target_mode);
@@ -5941,6 +5937,9 @@ expand_builtin_acc_on_device (tree exp, rtx target)
   emit_label (done_label);
 
   return target;
+#else
+  return NULL;
+#endif
 }
 
 

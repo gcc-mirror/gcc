@@ -44,6 +44,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #ifdef HOST_NONSHM_PLUGIN
 #define STATIC
@@ -53,6 +54,10 @@
 #define STATIC static
 #define GOMP(X) gomp_##X
 #define SELF "host: "
+#endif
+
+#ifdef HOST_NONSHM_PLUGIN
+#include "plugin-host.h"
 #endif
 
 STATIC const char *
@@ -174,7 +179,10 @@ GOMP_OFFLOAD_openacc_parallel (void (*fn) (void *),
 			       void *targ_mem_desc __attribute__ ((unused)))
 {
 #ifdef HOST_NONSHM_PLUGIN
+  struct nonshm_thread *thd = GOMP_PLUGIN_acc_thread ();
+  thd->nonshm_exec = true;
   fn (devaddrs);
+  thd->nonshm_exec = false;
 #else
   fn (hostaddrs);
 #endif
@@ -232,11 +240,20 @@ STATIC void *
 GOMP_OFFLOAD_openacc_create_thread_data (int ord
 					 __attribute__ ((unused)))
 {
+#ifdef HOST_NONSHM_PLUGIN
+  struct nonshm_thread *thd
+    = GOMP_PLUGIN_malloc (sizeof (struct nonshm_thread));
+  thd->nonshm_exec = false;
+  return thd;
+#else
   return NULL;
+#endif
 }
 
 STATIC void
-GOMP_OFFLOAD_openacc_destroy_thread_data (void *tls_data
-					  __attribute__ ((unused)))
+GOMP_OFFLOAD_openacc_destroy_thread_data (void *tls_data)
 {
+#ifdef HOST_NONSHM_PLUGIN
+  free (tls_data);
+#endif
 }
