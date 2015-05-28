@@ -17946,7 +17946,7 @@ package body Sem_Ch3 is
       N : Node_Id := Empty) return Boolean
    is
       Original_Comp  : Entity_Id := Empty;
-      Original_Scope : Entity_Id;
+      Original_Type : Entity_Id;
       Type_Scope     : Entity_Id;
 
       function Is_Local_Type (Typ : Entity_Id) return Boolean;
@@ -17990,13 +17990,13 @@ package body Sem_Ch3 is
          return False;
 
       else
-         Original_Scope := Scope (Original_Comp);
+         Original_Type := Scope (Original_Comp);
          Type_Scope     := Scope (Base_Type (Scope (C)));
       end if;
 
       --  This test only concerns tagged types
 
-      if not Is_Tagged_Type (Original_Scope) then
+      if not Is_Tagged_Type (Original_Type) then
          return True;
 
       --  If it is _Parent or _Tag, there is no visibility issue
@@ -18010,7 +18010,7 @@ package body Sem_Ch3 is
 
       elsif Ekind (Original_Comp) = E_Discriminant
         and then
-          (not Has_Unknown_Discriminants (Original_Scope)
+          (not Has_Unknown_Discriminants (Original_Type)
             or else (Present (N)
                       and then Nkind (N) = N_Selected_Component
                       and then Nkind (Prefix (N)) = N_Type_Conversion
@@ -18038,11 +18038,11 @@ package body Sem_Ch3 is
       --  visible. The latter suppression of visibility is needed for cases
       --  that are tested in B730006.
 
-      elsif Is_Private_Type (Original_Scope)
+      elsif Is_Private_Type (Original_Type)
         or else
           (not Is_Private_Descendant (Type_Scope)
             and then not In_Open_Scopes (Type_Scope)
-            and then Has_Private_Declaration (Original_Scope))
+            and then Has_Private_Declaration (Original_Type))
       then
          --  If the type derives from an entity in a formal package, there
          --  are no additional visible components.
@@ -18062,7 +18062,7 @@ package body Sem_Ch3 is
          else
             return
               Is_Child_Unit (Cunit_Entity (Current_Sem_Unit))
-                and then In_Open_Scopes (Scope (Original_Scope))
+                and then In_Open_Scopes (Scope (Original_Type))
                 and then Is_Local_Type (Type_Scope);
          end if;
 
@@ -18085,9 +18085,22 @@ package body Sem_Ch3 is
 
          begin
             loop
-               if Ancestor = Original_Scope then
+               if Ancestor = Original_Type then
                   return True;
+
+               --  The ancestor may have a partial view of the original
+               --  type, but if the full view is in scope, as in a child
+               --  body, the component is visible.
+
+               elsif In_Private_Part (Scope (Original_Type))
+                 and then Full_View (Ancestor) = Original_Type
+               then
+                  return True;
+
                elsif Ancestor = Etype (Ancestor) then
+
+                  --  No further ancestors to examine.
+
                   return False;
                end if;
 

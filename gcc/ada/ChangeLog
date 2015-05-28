@@ -1,3 +1,19 @@
+2015-05-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Is_Visible_Component): Component is visible
+	in a derived type if inherited through an ancestor that has a
+	partial view of the original type holding the component, if the
+	full view of that original type is in scope.
+	* sem_util.ads (Get_Body_From_Stub): Works for all kinds of stubs.
+
+2015-05-28  Bob Duff  <duff@adacore.com>
+
+	* sem_util.adb (Requires_Transient_Scope): For definite untagged
+	subtypes, we should never have to use the secondary stack. This moves
+	toward that goal. But there are still cases that don't work.
+	Here, we move the check for Is_Definite first, but add a
+	special-purpose check for Has_Discrim_Dep_Array.
+
 2015-05-28  Bob Duff  <duff@adacore.com>
 
 	* sem_util.adb (Requires_Transient_Scope): Avoid returning
