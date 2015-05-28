@@ -1,3 +1,13 @@
+2015-05-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65352
+	* include/std/array (__array_traits::_S_ptr): New function.
+	(array::data): Use _S_ptr to avoid creating invalid reference.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Adjust
+	dg-error line numbers.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	likewise.
+
 2015-05-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_tree.h (_Rb_tree::_M_end()): Return _Base_ptr
