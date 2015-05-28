@@ -4224,7 +4224,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    /* If the return type has a size that overflows, we cannot have
 	       a function that returns that type.  This usage doesn't make
 	       sense anyway, so give an error here.  */
-	    if (TYPE_SIZE_UNIT (gnu_return_type)
+	    if (!return_by_invisi_ref_p
+		&& TYPE_SIZE_UNIT (gnu_return_type)
 		&& TREE_CODE (TYPE_SIZE_UNIT (gnu_return_type)) == INTEGER_CST
 		&& !valid_constant_size_p (TYPE_SIZE_UNIT (gnu_return_type)))
 	      {
