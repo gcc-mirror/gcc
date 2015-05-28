@@ -1630,7 +1630,7 @@ move_invariant_reg (struct loop *loop, unsigned invno)
       if (REG_P (reg))
 	regno = REGNO (reg);
 
-      if (!can_move_invariant_reg (loop, inv, reg))
+      if (!can_move_invariant_reg (loop, inv, dest))
 	{
 	  reg = gen_reg_rtx_and_attrs (dest);
 
