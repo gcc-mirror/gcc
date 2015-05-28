@@ -1,5 +1,9 @@
 2015-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/discr43.adb: New test.
+
+2015-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/varsize_temp.adb: Rename into...
 	* gnat.dg/varsize1.adb: ...this.
 	* gnat.dg/varsize_copy.ad[sb]: Rename into...

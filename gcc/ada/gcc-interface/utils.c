@@ -3443,9 +3443,23 @@ max_size (tree exp, bool max_p)
 	if ((code == MINUS_EXPR || code == PLUS_EXPR)
 	    && TREE_CODE (lhs) == INTEGER_CST
 	    && TREE_OVERFLOW (lhs)
-	    && !TREE_CONSTANT (rhs))
+	    && TREE_CODE (rhs) != INTEGER_CST)
 	  return lhs;
 
+	/* If we are going to subtract a "negative" value in an unsigned type,
+	   do the operation as an addition of the negated value, in order to
+	   avoid creating a spurious overflow below.  */
+	if (code == MINUS_EXPR
+	    && TYPE_UNSIGNED (type)
+	    && TREE_CODE (rhs) == INTEGER_CST
+	    && !TREE_OVERFLOW (rhs)
+	    && tree_int_cst_sign_bit (rhs) != 0)
+	  {
+	    rhs = fold_build1 (NEGATE_EXPR, type, rhs);
+	    code = PLUS_EXPR;
+	  }
+
+	/* We need to detect overflows so we call size_binop here.  */
 	return size_binop (code, lhs, rhs);
       }
 

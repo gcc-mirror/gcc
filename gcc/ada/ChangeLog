@@ -1,5 +1,10 @@
 2015-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (max_size) <tcc_binary>: Add special code to
+	deal with the subtraction of a "negative" value in an unsigned type.
+
+2015-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Subprogram_Type>: Do
 	not error out on a return type which has a size that overflows if the
 	return is done by invisible reference.
