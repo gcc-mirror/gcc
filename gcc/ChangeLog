@@ -1,5 +1,9 @@
 2015-05-27  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR target/66148
+	* config/pa/pa.c (pa_emit_move_sequence): Correct placement of
+	REG_EQUAL note when doing insert.
+
 	* config/pa/pa.c (pa_print_operand): Use HOST_WIDE_INT_PRINT_DEC
 	instead of "%d" for 'o' operand.
 
