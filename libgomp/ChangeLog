@@ -1,3 +1,9 @@
+2015-05-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/linux/x86/futex.h (sys_futex0) [!__x86_64__]: Remove function.
+	(futex_wait) [!__x86_64__]: Use __asm operand instead of sys_futex0.
+	(futex_wake) [!__x86_64__]: Ditto.
+
 2015-05-28  Julian Brown  <julian@codesourcery.com>
 
 	* oacc-init.c (resolve_device): Add FAIL_IS_ERROR argument. Update
@@ -6,14 +12,14 @@
 	(acc_init_1, acc_shutdown_1): Update call to resolve_device. Call
 	acc_dev_num_out_of_range as appropriate.
 	(acc_get_num_devices, acc_set_device_type, acc_get_device_type)
-	(acc_get_device_num, acc_set_device_num): Update calls to resolve_device.
+	(acc_get_device_num, acc_set_device_num): Update calls to
+	resolve_device.
 	* testsuite/libgomp.oacc-c-c++-common/lib-4.c: Update expected test
 	output.
 
 2015-05-28  Julian Brown  <julian@codesourcery.com>
 
 	PR libgomp/65742
-
 	* oacc-init.c (plugin/plugin-host.h): Include.
 	(acc_on_device): Check whether we're in an offloaded region for
 	host_nonshm
@@ -40,8 +46,7 @@
 
 2015-05-27  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/linux/x86/futex.h (sys_futex0) [__PIC__]: Remove
-	sys_futex0 function.
+	* config/linux/x86/futex.h (sys_futex0) [__PIC__]: Remove function.
 
 2015-05-27  Chung-Lin Tang  <cltang@codesourcery.com>
 
