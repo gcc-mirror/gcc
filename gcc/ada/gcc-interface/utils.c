@@ -776,31 +776,21 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
     {
       tree t = TREE_TYPE (decl);
 
+      /* Array and pointer types aren't tagged types in the C sense so we need
+	 to generate a typedef in DWARF for them and make sure it is preserved,
+	 unless the type is artificial.  */
       if (!(TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL)
-	  && (TREE_CODE (t) != POINTER_TYPE || DECL_ARTIFICIAL (decl)))
-	{
-	  /* Array types aren't "tagged" types so we force the type to be
-	     associated with its typedef in the DWARF back-end, in order to
-	     make sure that the latter is always preserved, by creating an
-	     on-side copy for DECL_ORIGINAL_TYPE.  We used to do the same
-	     for pointer types, but to have consistent DWARF output we now
-	     create a copy for the type itself and use the original type
-	     for DECL_ORIGINAL_TYPE like the C front-end.  */
-	  if (!DECL_ARTIFICIAL (decl) && TREE_CODE (t) == ARRAY_TYPE)
-	    {
-	      tree tt = build_distinct_type_copy (t);
-	      /* Array types need to have a name so that they can be related
-		 to their GNAT encodings.  */
-	      TYPE_NAME (tt) = DECL_NAME (decl);
-	      defer_or_set_type_context (tt,
-					 DECL_CONTEXT (decl),
-					 deferred_decl_context);
-	      TYPE_STUB_DECL (tt) = TYPE_STUB_DECL (t);
-	      DECL_ORIGINAL_TYPE (decl) = tt;
-	    }
-	}
+	  && ((TREE_CODE (t) != ARRAY_TYPE && TREE_CODE (t) != POINTER_TYPE)
+	      || DECL_ARTIFICIAL (decl)))
+	;
+      /* For array and pointer types, create the DECL_ORIGINAL_TYPE that will
+	 generate the typedef in DWARF.  Also do that for fat pointer types
+	 because, even though they are tagged types in the C sense, they are
+	 still XUP types attached to the base array type at this point.  */
       else if (!DECL_ARTIFICIAL (decl)
-	       && (TREE_CODE (t) == POINTER_TYPE || TYPE_IS_FAT_POINTER_P (t)))
+	       && (TREE_CODE (t) == ARRAY_TYPE
+		   || TREE_CODE (t) == POINTER_TYPE
+		   || TYPE_IS_FAT_POINTER_P (t)))
 	{
 	  tree tt;
 	  /* ??? Copy and original type are not supposed to be variant but we
@@ -811,7 +801,8 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	    {
 	      /* TYPE_NEXT_PTR_TO is a chain of main variants.  */
 	      tt = build_distinct_type_copy (TYPE_MAIN_VARIANT (t));
-	      TYPE_NEXT_PTR_TO (TYPE_MAIN_VARIANT (t)) = tt;
+	      if (TREE_CODE (t) == POINTER_TYPE)
+		TYPE_NEXT_PTR_TO (TYPE_MAIN_VARIANT (t)) = tt;
 	      tt = build_qualified_type (tt, TYPE_QUALS (t));
 	    }
 	  TYPE_NAME (tt) = decl;
@@ -820,29 +811,36 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 				     deferred_decl_context);
 	  TREE_USED (tt) = TREE_USED (t);
 	  TREE_TYPE (decl) = tt;
-	  if (TYPE_NAME (t) != NULL_TREE
+	  if (TYPE_NAME (t)
 	      && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
 	      && DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
 	    DECL_ORIGINAL_TYPE (decl) = DECL_ORIGINAL_TYPE (TYPE_NAME (t));
 	  else
 	    DECL_ORIGINAL_TYPE (decl) = t;
+	  /* Array types need to have a name so that they can be related to
+	     their GNAT encodings.  */
+	  if (TREE_CODE (t) == ARRAY_TYPE && !TYPE_NAME (t))
+	    TYPE_NAME (t) = DECL_NAME (decl);
 	  t = NULL_TREE;
 	}
-      else if (TYPE_NAME (t) != NULL_TREE
+      else if (TYPE_NAME (t)
 	       && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
 	       && DECL_ARTIFICIAL (TYPE_NAME (t)) && !DECL_ARTIFICIAL (decl))
 	;
       else
 	t = NULL_TREE;
 
-      /* Propagate the name to all the anonymous variants.  This is needed
-	 for the type qualifiers machinery to work properly (see
-	 check_qualified_type).  Also propagate the context to them.  Note that
-	 the context will be propagated to all parallel types too thanks to
-	 gnat_set_type_context.  */
+      /* Propagate the name to all the variants, this is needed for the type
+	 qualifiers machinery to work properly (see check_qualified_type).
+	 Also propagate the context to them.  Note that it will be propagated
+	 to all parallel types too thanks to gnat_set_type_context.  */
       if (t)
 	for (t = TYPE_MAIN_VARIANT (t); t; t = TYPE_NEXT_VARIANT (t))
-	  if (!(TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL))
+	  /* ??? Because of the previous kludge, we can have variants of fat
+	     pointer types with different names.  */
+	  if (!(TYPE_IS_FAT_POINTER_P (t)
+		&& TYPE_NAME (t)
+		&& TREE_CODE (TYPE_NAME (t)) == TYPE_DECL))
 	    {
 	      TYPE_NAME (t) = decl;
 	      defer_or_set_type_context (t,
