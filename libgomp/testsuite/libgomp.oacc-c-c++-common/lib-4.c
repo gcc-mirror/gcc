@@ -10,5 +10,5 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-output "device \[0-9\]+ out of range" } */
+/* { dg-output "unknown device type \[0-9\]+" } */
 /* { dg-shouldfail "" } */
