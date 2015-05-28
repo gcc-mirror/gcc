@@ -1,5 +1,9 @@
 2015-05-28  Mike Frysinger  <vapier@gentoo.org>
 
+	* config/microblaze/linux.h (CPP_SPEC): Define.
+
+2015-05-28  Mike Frysinger  <vapier@gentoo.org>
+
 	* config/pa/pa-linux.h (CPP_SPEC): Change so -D_REENTRANT is used when
 	-pthread is specified.
 
