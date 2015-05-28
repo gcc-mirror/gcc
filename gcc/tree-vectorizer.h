@@ -128,9 +128,6 @@ typedef struct _slp_instance {
   /* The unrolling factor required to vectorized this SLP instance.  */
   unsigned int unrolling_factor;
 
-  /* Vectorization costs associated with SLP instance.  */
-  stmt_vector_for_cost body_cost_vec;
-
   /* The group of nodes that contain loads of this SLP instance.  */
   vec<slp_tree> loads;
 } *slp_instance;
@@ -140,7 +137,6 @@ typedef struct _slp_instance {
 #define SLP_INSTANCE_TREE(S)                     (S)->root
 #define SLP_INSTANCE_GROUP_SIZE(S)               (S)->group_size
 #define SLP_INSTANCE_UNROLLING_FACTOR(S)         (S)->unrolling_factor
-#define SLP_INSTANCE_BODY_COST_VEC(S)            (S)->body_cost_vec
 #define SLP_INSTANCE_LOADS(S)                    (S)->loads
 
 #define SLP_TREE_CHILDREN(S)                     (S)->children
@@ -1114,9 +1110,9 @@ extern void vect_free_slp_instance (slp_instance);
 extern bool vect_transform_slp_perm_load (slp_tree, vec<tree> ,
                                           gimple_stmt_iterator *, int,
                                           slp_instance, bool);
-extern bool vect_slp_analyze_operations (vec<slp_instance> slp_instances);
+extern bool vect_slp_analyze_operations (vec<slp_instance> slp_instances,
+					 void *);
 extern bool vect_schedule_slp (loop_vec_info, bb_vec_info);
-extern void vect_update_slp_costs_according_to_vf (loop_vec_info);
 extern bool vect_analyze_slp (loop_vec_info, bb_vec_info, unsigned);
 extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
