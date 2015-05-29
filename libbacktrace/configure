@@ -607,6 +607,7 @@ NATIVE_TRUE
 BACKTRACE_USES_MALLOC
 ALLOC_FILE
 VIEW_FILE
+BACKTRACE_SUPPORTS_DATA
 BACKTRACE_SUPPORTED
 FORMAT_FILE
 BACKTRACE_SUPPORTS_THREADS
@@ -11129,7 +11130,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11132 "configure"
+#line 11133 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11235,7 +11236,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11238 "configure"
+#line 11239 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11826,8 +11827,12 @@ $as_echo "$libbacktrace_cv_sys_filetype" >&6; }
 
 # Match the file type to decide what files to compile.
 FORMAT_FILE=
+backtrace_supports_data=yes
 case "$libbacktrace_cv_sys_filetype" in
 elf*) FORMAT_FILE="elf.lo" ;;
+pecoff) FORMAT_FILE="pecoff.lo"
+        backtrace_supports_data=no
+	;;
 *) { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: could not determine output file type" >&5
 $as_echo "$as_me: WARNING: could not determine output file type" >&2;}
    FORMAT_FILE="unknown.lo"
@@ -11841,6 +11846,7 @@ elfsize=
 case "$libbacktrace_cv_sys_filetype" in
 elf32) elfsize=32 ;;
 elf64) elfsize=64 ;;
+*)     elfsize=unused
 esac
 
 cat >>confdefs.h <<_ACEOF
@@ -11851,6 +11857,12 @@ _ACEOF
 BACKTRACE_SUPPORTED=0
 if test "$backtrace_supported" = "yes"; then
   BACKTRACE_SUPPORTED=1
+fi
+
+
+BACKTRACE_SUPPORTS_DATA=0
+if test "$backtrace_supports_data" = "yes"; then
+  BACKTRACE_SUPPORTS_DATA=1
 fi
 
 
