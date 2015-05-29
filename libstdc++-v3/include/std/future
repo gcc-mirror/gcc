@@ -168,12 +168,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     deferred
   };
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2021. Further incorrect usages of result_of
   template<typename _Fn, typename... _Args>
-    future<typename result_of<_Fn(_Args...)>::type>
+    using __async_result_of = typename result_of<
+      typename decay<_Fn>::type(typename decay<_Args>::type...)>::type;
+
+  template<typename _Fn, typename... _Args>
+    future<__async_result_of<_Fn, _Args...>>
     async(launch __policy, _Fn&& __fn, _Args&&... __args);
 
   template<typename _Fn, typename... _Args>
-    future<typename result_of<_Fn(_Args...)>::type>
+    future<__async_result_of<_Fn, _Args...>>
     async(_Fn&& __fn, _Args&&... __args);
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1) \
@@ -727,7 +733,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend class promise<_Res>;
       template<typename> friend class packaged_task;
       template<typename _Fn, typename... _Args>
-        friend future<typename result_of<_Fn(_Args...)>::type>
+        friend future<__async_result_of<_Fn, _Args...>>
         async(launch, _Fn&&, _Args&&...);
 
       typedef __basic_future<_Res> _Base_type;
@@ -770,7 +776,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend class promise<_Res&>;
       template<typename> friend class packaged_task;
       template<typename _Fn, typename... _Args>
-        friend future<typename result_of<_Fn(_Args...)>::type>
+        friend future<__async_result_of<_Fn, _Args...>>
         async(launch, _Fn&&, _Args&&...);
 
       typedef __basic_future<_Res&> _Base_type;
@@ -813,7 +819,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend class promise<void>;
       template<typename> friend class packaged_task;
       template<typename _Fn, typename... _Args>
-        friend future<typename result_of<_Fn(_Args...)>::type>
+        friend future<__async_result_of<_Fn, _Args...>>
         async(launch, _Fn&&, _Args&&...);
 
       typedef __basic_future<void> _Base_type;
@@ -1699,10 +1705,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// async
   template<typename _Fn, typename... _Args>
-    future<typename result_of<_Fn(_Args...)>::type>
+    future<__async_result_of<_Fn, _Args...>>
     async(launch __policy, _Fn&& __fn, _Args&&... __args)
     {
-      typedef typename result_of<_Fn(_Args...)>::type result_type;
       std::shared_ptr<__future_base::_State_base> __state;
       if ((__policy & launch::async) == launch::async)
 	{
@@ -1714,16 +1719,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __state = __future_base::_S_make_deferred_state(std::__bind_simple(
               std::forward<_Fn>(__fn), std::forward<_Args>(__args)...));
 	}
-      return future<result_type>(__state);
+      return future<__async_result_of<_Fn, _Args...>>(__state);
     }
 
   /// async, potential overload
   template<typename _Fn, typename... _Args>
-    inline future<typename result_of<_Fn(_Args...)>::type>
+    inline future<__async_result_of<_Fn, _Args...>>
     async(_Fn&& __fn, _Args&&... __args)
     {
-      return async(launch::async|launch::deferred, std::forward<_Fn>(__fn),
-		   std::forward<_Args>(__args)...);
+      return std::async(launch::async|launch::deferred,
+			std::forward<_Fn>(__fn),
+			std::forward<_Args>(__args)...);
     }
 
 #endif // _GLIBCXX_ASYNC_ABI_COMPAT

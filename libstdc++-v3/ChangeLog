@@ -1,5 +1,10 @@
 2015-05-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/future (__async_result_of): New alias template.
+	(async): Use __async_result_of to pass decayed types to result_of.
+	* testsuite/30_threads/async/lwg2021.cc: New.
+	* doc/xml/manual/intro.xml: Document LWG 2021 status.
+
 	PR libstdc++/66327
 	* include/bits/stl_algobase.h (__equal<true>::equal): Do not call
 	memcmp with null pointers.
