@@ -12,4 +12,3 @@ END
 ! { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail { { vect_no_align && { ! vect_hw_misalign } } || {! vector_alignment_reachable}} } } }
 ! { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 1 "vect" { xfail { { vect_no_align && { ! vect_hw_misalign } } || { ! vector_alignment_reachable} } } } }
 
-! { dg-final { cleanup-tree-dump "vect" } }

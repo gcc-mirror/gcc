@@ -30,4 +30,3 @@ int loop1 (int k)
    problem: the dependence test fails with a "don't know" relation.  */
 
 /* { dg-final { scan-tree-dump-times "distributed: split to 2 loops" 1 "ldist" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "ldist" } } */

@@ -13,4 +13,3 @@ int foo(unsigned int cc )
 }
 
 /* { dg-final { scan-rtl-dump-not "_\[0-9\]* = 1;" "expand" } } */
-/* { dg-final { cleanup-rtl-dump "expand" } } */

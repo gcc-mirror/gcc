@@ -11,4 +11,3 @@ int main (int argc, char *argv[]) {
 	return 0;
 }
 /* { dg-final { scan-tree-dump-times "link_error" 0 "cfg" } } */
-/* { dg-final { cleanup-tree-dump "cfg" } } */

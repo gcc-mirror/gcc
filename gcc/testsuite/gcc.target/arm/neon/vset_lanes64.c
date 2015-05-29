@@ -17,4 +17,3 @@ void test_vset_lanes64 (void)
   out_int64x1_t = vset_lane_s64 (arg0_int64_t, arg1_int64x1_t, 0);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

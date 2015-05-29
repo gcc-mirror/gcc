@@ -13,4 +13,3 @@ int f (int x, int y)
 }
 
 /* { dg-final { scan-tree-dump-not "1234" "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

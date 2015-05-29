@@ -10,4 +10,3 @@ f(void)
 }
 
 /* { dg-final { scan-tree-dump-not "PHI" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

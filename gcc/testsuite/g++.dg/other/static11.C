@@ -31,4 +31,3 @@ int main()
   return r;
 }
 
-// { dg-final { cleanup-rtl-dump "*" } }

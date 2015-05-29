@@ -10,4 +10,3 @@ void test1(short * __restrict__ x, short * __restrict__ y, short * __restrict__ 
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

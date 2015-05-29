@@ -10,4 +10,3 @@ unsigned int test( void )
 }
 
 /* { dg-final { scan-tree-dump-not "return 1" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

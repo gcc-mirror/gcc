@@ -47,4 +47,3 @@ int main()
 /* { dg-final { scan-ipa-dump "bar.arg1 = { a }" "pta" } } */
 /* { dg-final { scan-ipa-dump "foo.arg0 = { a }" "pta" } } */
 /* { dg-final { scan-ipa-dump "foo.arg1 = { a }" "pta" } } */
-/* { dg-final { cleanup-ipa-dump "pta" } } */

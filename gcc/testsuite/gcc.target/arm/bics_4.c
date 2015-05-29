@@ -46,4 +46,3 @@ main ()
 }
 
 /* { dg-final { scan-assembler-times "bics\tr\[0-9\]+, r\[0-9\]+, r\[0-9\]+" 2 } } */
-/* { dg-final { cleanup-saved-temps } } */

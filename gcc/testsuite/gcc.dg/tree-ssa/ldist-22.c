@@ -29,4 +29,3 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump "generated memset zero" "ldist" } } */
-/* { dg-final { cleanup-tree-dump "ldist" } } */

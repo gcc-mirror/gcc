@@ -6,4 +6,3 @@ int f (int a) {
 }
 
 /* { dg-final { scan-tree-dump-times "ABS" 1 "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

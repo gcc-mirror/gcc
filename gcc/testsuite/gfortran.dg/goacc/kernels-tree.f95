@@ -29,4 +29,3 @@ end program test
 ! { dg-final { scan-tree-dump-times "map\\(alloc:t\\)" 1 "original" } } 
 
 ! { dg-final { scan-tree-dump-times "map\\(force_deviceptr:u\\)" 1 "original" } } 
-! { dg-final { cleanup-tree-dump "original" } } 

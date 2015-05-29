@@ -16,5 +16,3 @@ main()
 }
 /* { dg-final-use { scan-tree-dump-not "Invalid sum" "tailc"} } */
 /* { dg-final-use { scan-tree-dump-not "Invalid sum" "optimized"} } */
-/* { dg-final-use { cleanup-tree-dump "tailc" } } */
-/* { dg-final-use { cleanup-tree-dump "optimized" } } */

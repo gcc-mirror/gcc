@@ -31,4 +31,3 @@ int loop1 (int k)
 }
 
 /* { dg-final { scan-tree-dump-times "distributed: split to 3 loops" 0 "ldist" } } */
-/* { dg-final { cleanup-tree-dump "ldist" } } */

@@ -19,4 +19,3 @@ foo (int a, int b)
 }
 
 /* { dg-final { scan-tree-dump "Replaced \\\(int\\\) aa_.*with a_" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

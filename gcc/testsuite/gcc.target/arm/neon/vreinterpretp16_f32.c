@@ -16,4 +16,3 @@ void test_vreinterpretp16_f32 (void)
   out_poly16x4_t = vreinterpret_p16_f32 (arg0_float32x2_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

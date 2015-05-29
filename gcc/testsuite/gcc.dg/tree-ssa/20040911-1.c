@@ -19,4 +19,3 @@ int foo (int i)
 }
 
 /* { dg-final { scan-tree-dump-not "VUSE <c" "alias" } } */
-/* { dg-final { cleanup-tree-dump "alias" } } */

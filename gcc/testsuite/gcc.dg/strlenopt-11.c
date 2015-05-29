@@ -73,4 +73,3 @@ main ()
 /* { dg-final { scan-tree-dump-times "  _\[0-9\]* = strlen \\(\[^\n\r\]*;\[\n\r\]*  l.6. = " 1 "strlen" { target { ! avr-*-* } } } } */
 /* { dg-final { scan-tree-dump-times "  _\[0-9\]* = strlen \\(\[^\n\r\]*;\[\n\r\]*  l.9. = " 1 "strlen" { target { ! avr-*-* } } } } */
 /* { dg-final { scan-tree-dump-times "  _\[0-9\]* = strlen \\(\[^\n\r\]*;" 3 "strlen" { target { avr-*-* } } } } */
-/* { dg-final { cleanup-tree-dump "strlen" } } */

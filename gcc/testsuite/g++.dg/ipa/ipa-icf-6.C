@@ -34,4 +34,3 @@ main()
   return 0;
 }
 /* { dg-final { scan-ipa-dump-times "Unified; Wrapper has been created" 1 "icf"  } } */
-/* { dg-final { cleanup-ipa-dump "icf" } } */

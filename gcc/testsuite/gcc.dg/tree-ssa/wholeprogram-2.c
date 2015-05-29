@@ -5,4 +5,3 @@ externally_visible_function ()
 {
 }
 /* { dg-final { scan-tree-dump "externally_visible_function" "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

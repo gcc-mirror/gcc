@@ -23,4 +23,3 @@ foo (struct S x)
 
 /* { dg-final { scan-tree-dump "& (3766484487|0x0e07ffe07);" "optimized" } } */
 /* { dg-final { scan-tree-dump "== (3758163463|0x0e0010607);" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

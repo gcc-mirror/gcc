@@ -17,4 +17,3 @@ int main()
 
 /* We should eliminate the check if p points to a virtual function. */
 /* { dg-final { scan-tree-dump-times "& 1" 0 "forwprop2" } } */
-/* { dg-final { cleanup-tree-dump "forwprop2" } } */

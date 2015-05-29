@@ -47,4 +47,3 @@ int test5 (int a, int b)
 /* { dg-final { scan-tree-dump-times "return 0" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-not " < " "optimized" } } */
 /* { dg-final { scan-tree-dump-not " == " "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

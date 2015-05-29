@@ -11,4 +11,3 @@ C$omp 	 	p
       end
 
 ! { dg-final { scan-tree-dump-times "pragma omp parallel" 2 "omplower" } }
-! { dg-final { cleanup-tree-dump "omplower" } }

@@ -57,4 +57,3 @@ end;
 -- { dg-final { scan-tree-dump-times "atomic_store\[^\n\r\]*&vfa1_pkg__counter2" 4 "gimple"} }
 -- { dg-final { scan-tree-dump-times "atomic_store\[^\n\r\]*&temp" 0 "gimple"} }
 
--- { dg-final { cleanup-tree-dump "gimple" } }

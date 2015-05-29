@@ -39,4 +39,3 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump-not "= .* \\+ -" "forwprop1" } } */
-/* { dg-final { cleanup-tree-dump "forwprop1" } } */

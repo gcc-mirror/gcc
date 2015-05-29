@@ -12,4 +12,3 @@ int foo(void)
 /* We should eliminate the x+1 computation from this routine, replacing
    it with a phi of 3, 4 */
 /* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre"} } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

@@ -20,4 +20,3 @@ foo (int a)
 }
 
 /* { dg-final { scan-tree-dump-times "Folding predicate.*to 1" 1 "vrp1" { target { ! keeps_null_pointer_checks } } } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

@@ -56,4 +56,3 @@ subroutine bar(x)
   if (any (x(1:3) /= [1,3,5])) call abort ()
 end subroutine bar
 ! { dg-final { scan-tree-dump-times "unpack" 4 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

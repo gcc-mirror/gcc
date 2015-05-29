@@ -30,4 +30,3 @@ intflt foo(int i, int b)
 
 /* { dg-final { scan-tree-dump-times "Replaced u.f with pretmp" 2 "fre1" } } */
 /* { dg-final { scan-tree-dump-times "Inserted pretmp" 2 "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

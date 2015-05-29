@@ -50,4 +50,3 @@ int y(struct ehca_shca *shca)
 }
 
 /* { dg-final { scan-tree-dump-times "____ilog2_NaN" 0 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

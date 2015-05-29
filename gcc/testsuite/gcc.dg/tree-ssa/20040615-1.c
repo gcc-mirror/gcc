@@ -14,4 +14,3 @@ foo (unsigned int a, unsigned int b)
 }
 
 /* { dg-final { scan-tree-dump-times "bar2" 0 "dom1" } } */
-/* { dg-final { cleanup-tree-dump "dom1" } } */

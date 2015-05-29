@@ -39,4 +39,3 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "grouped access in outer loop" 1 "vect" { target { ! vect_multiple_sizes } } } } */
 /* { dg-final { scan-tree-dump-times "grouped access in outer loop" 2 "vect" { target vect_multiple_sizes } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

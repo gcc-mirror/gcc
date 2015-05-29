@@ -57,6 +57,4 @@ entry2 (int c)
 
 /* { dg-final { scan-ipa-dump-times "Creating a specialized node of foo/\[0-9\]*\\." 2 "cp" } } */
 /* { dg-final { scan-ipa-dump-times "Aggregate replacements:" 4 "cp" } } */
-/* { dg-final { cleanup-ipa-dump "cp" } } */
 /* { dg-final { scan-tree-dump-not "->c;" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

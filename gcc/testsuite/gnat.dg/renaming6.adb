@@ -28,4 +28,3 @@ end Renaming6;
 -- { dg-final { scan-tree-dump-times "atomic_load" 2 "original" } }
 -- { dg-final { scan-tree-dump-times "atomic_store" 2 "original" } }
 -- { dg-final { scan-tree-dump-not "j" "original" } }
--- { dg-final { cleanup-tree-dump "original" } }

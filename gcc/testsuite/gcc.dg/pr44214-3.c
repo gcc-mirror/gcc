@@ -16,4 +16,3 @@ void do_div (v2df *a, v2df *b)
 
 /* { dg-final { scan-tree-dump-times " \\\* " 3 "ccp1" } } */
 /* { dg-final { scan-tree-dump-times " / " 0 "ccp1" } } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

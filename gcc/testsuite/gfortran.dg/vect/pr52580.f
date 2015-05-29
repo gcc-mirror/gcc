@@ -30,4 +30,3 @@
       RETURN
       END
 ! { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 1 "vect" } }
-! { dg-final { cleanup-tree-dump "vect" } }

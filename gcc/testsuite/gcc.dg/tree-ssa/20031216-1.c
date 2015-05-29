@@ -17,4 +17,3 @@ foo (int b)
 /* The comparison should be eliminated, there should be no reference
    to link_error.  */
 /* { dg-final { scan-tree-dump-times "link_error" 0 "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

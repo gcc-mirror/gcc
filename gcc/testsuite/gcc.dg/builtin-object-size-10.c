@@ -24,4 +24,3 @@ foo(char *x)
 
 /* { dg-final { scan-tree-dump "maximum object size 21" "objsz1" } } */
 /* { dg-final { scan-tree-dump "maximum subobject size 16" "objsz1" } } */
-/* { dg-final { cleanup-tree-dump "objsz1" } } */

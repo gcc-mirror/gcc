@@ -34,4 +34,3 @@ void test55 (int x, int y)
    by teaching dom to look through && and register all components
    as true.  */
 /* { dg-final { scan-tree-dump-times "link_error" 0 "optimized" { xfail { ! "alpha*-*-* arm*-*-* aarch64*-*-* powerpc*-*-* cris-*-* crisv32-*-* hppa*-*-* i?86-*-* mmix-*-* mips*-*-* m68k*-*-* moxie-*-* nds32*-*-* sh*-*-* sparc*-*-* spu-*-* visium-*-* x86_64-*-*" } } } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

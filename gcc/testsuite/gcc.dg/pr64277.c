@@ -3,7 +3,6 @@
 /* { dg-options "-O3 -Wall -Werror -fdump-tree-cunroll-details" } */
 /* { dg-final { scan-tree-dump "loop with 5 iterations completely unrolled" "cunroll" } } */
 /* { dg-final { scan-tree-dump "loop with 6 iterations completely unrolled" "cunroll" } } */
-/* { dg-final { cleanup-tree-dump "cunroll" } } */
 
 int f1[10];
 void test1 (short a[], short m, unsigned short l)

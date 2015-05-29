@@ -14,4 +14,3 @@ _Bool f1(_Bool x)
    away the comparison.  */
 /* { dg-final { scan-assembler-times "subfe" 0 { target powerpc*-*-* } } } */
 
-/* { dg-final { cleanup-tree-dump "optimized" } } */

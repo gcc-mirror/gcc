@@ -50,4 +50,3 @@ program foo
 
 end program foo
 ! { dg-final { scan-tree-dump-times "__var" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

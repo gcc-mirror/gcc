@@ -16,4 +16,3 @@ foo (int x)
 }
 
 /* { dg-final { scan-tree-dump "__builtin_memcpy \\\(\[^;\n\r\]*, \"abcdefghijkl\", 13\\\);" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

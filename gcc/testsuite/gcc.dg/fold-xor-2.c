@@ -13,4 +13,3 @@ unsigned int h (unsigned int a, unsigned int b) {
 }
 
 /* { dg-final { scan-tree-dump-times "b \\^ a" 3 "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

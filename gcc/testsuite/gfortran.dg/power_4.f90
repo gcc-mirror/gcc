@@ -26,4 +26,3 @@ program main
   if (any(d /= e)) call abort
 end program main
 ! { dg-final { scan-tree-dump-times "_gfortran_pow_i4_i4" 3 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

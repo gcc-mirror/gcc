@@ -16,5 +16,4 @@ main(void)
 }
 
 /* { dg-final { scan-tree-dump-times "Removing basic block" 2 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */
 

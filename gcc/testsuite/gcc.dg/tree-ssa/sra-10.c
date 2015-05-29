@@ -16,4 +16,3 @@ void foo (struct S *s, int i)
 }
 
 /* { dg-final { scan-tree-dump-times "disappear" 0 "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

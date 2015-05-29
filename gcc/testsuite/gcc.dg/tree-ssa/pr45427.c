@@ -26,4 +26,3 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump-times "bounded by 0x0\[^0-9a-f\]" 0 "cunrolli"} } */
-/* { dg-final { cleanup-tree-dump "cunrolli" } } */

@@ -12,5 +12,3 @@
 /* { dg-final { scan-assembler "fcmgt\\tv\[0-9\]+\.\[24\]s, v\[0-9\]+\.\[24\]s, v\[0-9\]+\.\[24\]s" } } */
 /* { dg-final { scan-assembler "fcmgt\\tv\[0-9\]+\.\[24\]s, v\[0-9\]+\.\[24\]s, 0" } } */
 /* { dg-final { scan-assembler "fcmle\\tv\[0-9\]+\.\[24\]s, v\[0-9\]+\.\[24\]s, 0" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */
-/* { dg-final { cleanup-saved-temps } } */

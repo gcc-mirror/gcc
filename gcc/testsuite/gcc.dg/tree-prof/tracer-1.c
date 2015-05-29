@@ -15,4 +15,3 @@ int main ()
 }
 /* Superblock formation should produce two copies of the increment of c */
 /* { dg-final-generate { scan-tree-dump-times "c =" 2 "tracer" } } */
-/* { dg-final-use { cleanup-tree-dump "tracer" } } */

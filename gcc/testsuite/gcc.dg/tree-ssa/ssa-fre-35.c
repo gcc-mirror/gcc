@@ -14,4 +14,3 @@ float a1 (float dd)
 }
 
 /* { dg-final { scan-tree-dump "Replaced REALPART_EXPR.*with dd" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

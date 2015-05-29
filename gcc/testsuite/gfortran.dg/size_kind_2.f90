@@ -14,4 +14,3 @@ end
 ! { dg-final { scan-tree-dump "static integer.kind=8. A..\\\[2\\\] = \\\{2147483650, 2\\\};" "original" } }
 ! { dg-final { scan-tree-dump "var2 = 4294967300;" "original" } }
 ! { dg-final { scan-tree-dump "var3 = 2147483650;" "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

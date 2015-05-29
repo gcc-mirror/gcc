@@ -12,4 +12,3 @@ int test2 (int a)
 }
 
 /* { dg-final { scan-tree-dump-times "<a> \\\* 4" 2 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

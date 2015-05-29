@@ -198,4 +198,3 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump-times "note: vectorized 1 loops" 10 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

@@ -53,4 +53,3 @@ end block
 end
 
 ! { dg-final { scan-tree-dump-times "__builtin_free" 32 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

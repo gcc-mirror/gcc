@@ -23,4 +23,3 @@ void g(void)
 }
 
 /* { dg-final { scan-tree-dump-not "a\\\.? = " "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

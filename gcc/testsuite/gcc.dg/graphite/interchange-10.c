@@ -47,4 +47,3 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "will be interchanged" 2 "graphite" } } */
-/* { dg-final { cleanup-tree-dump "graphite" } } */

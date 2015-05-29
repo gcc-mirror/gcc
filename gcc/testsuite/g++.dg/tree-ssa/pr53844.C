@@ -75,4 +75,3 @@ void test(const Vector<>& in, Vector<>& out, int i)
 // dead stores to unused temporaries should have been removed.
 
 // { dg-final { scan-tree-dump-times "VDEF" 1 "optimized" } }
-// { dg-final { cleanup-tree-dump "optimized" } }

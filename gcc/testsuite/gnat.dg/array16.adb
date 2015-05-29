@@ -25,4 +25,3 @@ package body Array16 is
 end Array16;
 
 -- { dg-final { scan-tree-dump-not "secondary_stack" "optimized" } }
--- { dg-final { cleanup-tree-dump "optimized" } }

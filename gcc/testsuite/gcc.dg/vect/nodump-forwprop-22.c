@@ -17,4 +17,3 @@ void f (vec *px, vec *y, vec *z)
 
 /* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 1 "cddce1" } } */
 /* { dg-final { scan-tree-dump-not "BIT_FIELD_REF" "cddce1" } } */
-/* { dg-final { cleanup-tree-dump "cddce1" } } */

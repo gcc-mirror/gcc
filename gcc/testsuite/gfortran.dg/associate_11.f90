@@ -22,4 +22,3 @@ contains
 end program bug
 
 ! { dg-final { scan-tree-dump-times "foo ..integer.kind=4..0:. . restrict. a.data.;" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

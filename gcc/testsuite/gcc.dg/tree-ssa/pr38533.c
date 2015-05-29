@@ -27,4 +27,3 @@ main (void)
    be exactly 2 (first) __asm__ stmts with no intervening stmts,
    all others should have some bitwise or in between.  */
 /* { dg-final { scan-tree-dump-times "__asm__\[^;\n]*;\n *__asm__" 1 "reassoc1"} } */
-/* { dg-final { cleanup-tree-dump "reassoc1" } } */

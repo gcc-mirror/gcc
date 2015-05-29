@@ -17,4 +17,3 @@ void fun (veci *f, veci *g, veci *h, veci *i)
 /* { dg-final { scan-tree-dump "VEC_PERM_EXPR.*{ 3, 3, 0, 2 }" "ccp1" } } */
 /* { dg-final { scan-tree-dump "VEC_PERM_EXPR.*{ 1, 1, 3, 2 }" "ccp1" } } */
 /* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 2 "ccp1" } } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

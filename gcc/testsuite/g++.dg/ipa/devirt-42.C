@@ -34,5 +34,3 @@ main()
 /* { dg-final { scan-tree-dump-times "return 2" 3 "optimized"  } } */
 /* { dg-final { scan-tree-dump-not "OBJ_TYPE_REF" "optimized"  } } */
 
-/* { dg-final { cleanup-ipa-dump "inline" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

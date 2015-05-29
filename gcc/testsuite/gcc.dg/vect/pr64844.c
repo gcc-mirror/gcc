@@ -48,4 +48,3 @@ main()
    dealing with the known misalignment in loop 2.  */
 
 /* { dg-final { scan-tree-dump-times "loop vectorized" 2 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

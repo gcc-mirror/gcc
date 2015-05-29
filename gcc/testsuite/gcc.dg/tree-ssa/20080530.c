@@ -19,4 +19,3 @@ baz (void)
 }
 
 /* { dg-final { scan-tree-dump-times "Inlining foo into baz" 0 "einline"} } */
-/* { dg-final { cleanup-tree-dump "einline" } } */

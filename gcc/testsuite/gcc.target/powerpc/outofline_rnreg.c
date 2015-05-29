@@ -6,7 +6,6 @@
 /* { dg-options "-Os -frename-registers -fdump-rtl-rnreg" } */
 /* "* renamed" or "* no available better choice" results are not acceptable */
 /* { dg-final { scan-rtl-dump-not "Register 11 in insn *" "rnreg" { target powerpc*-*-linux* } } } */
-/* { dg-final { cleanup-rtl-dump "rnreg" } } */
 int
 calc (int j)
 {

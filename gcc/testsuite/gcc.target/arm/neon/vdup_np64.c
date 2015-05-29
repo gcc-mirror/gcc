@@ -16,4 +16,3 @@ void test_vdup_np64 (void)
   out_poly64x1_t = vdup_n_p64 (arg0_poly64_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

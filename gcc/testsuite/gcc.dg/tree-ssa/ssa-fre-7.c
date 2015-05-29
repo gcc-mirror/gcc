@@ -34,5 +34,3 @@ intflt foo(intflt j)
 /* { dg-final { scan-tree-dump-times "Replaced a.u.k with j" 1 "fre1" } } */
 /* { dg-final { scan-tree-dump "= VIEW_CONVERT_EXPR<float>\\\(j_" "fre1" } } */
 /* { dg-final { scan-tree-dump "return j" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

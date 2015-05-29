@@ -10,4 +10,3 @@ void foo (int * __restrict__ p, short * __restrict__ q)
 }
 
 /* { dg-final { scan-tree-dump "basic block vectorized" "slp2" { target vect_hw_misalign } } } */
-/* { dg-final { cleanup-tree-dump "slp2" } } */

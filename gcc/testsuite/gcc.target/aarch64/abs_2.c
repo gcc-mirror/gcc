@@ -28,4 +28,3 @@ main (int argc, char **argv)
 
 
 /* { dg-final { scan-assembler-not "sabd" } } */
-/* { dg-final { cleanup-saved-temps } } */

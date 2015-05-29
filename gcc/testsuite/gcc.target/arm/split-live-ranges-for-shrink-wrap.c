@@ -11,4 +11,3 @@ int test (int d, char * out, char *in, int len)
 }
 /* { dg-final { object-size text <= 20 } } */
 /* { dg-final { scan-rtl-dump-not "Split live-range of register" "ira" } } */
-/* { dg-final { cleanup-rtl-dump "ira" } } */

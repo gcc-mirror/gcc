@@ -36,4 +36,3 @@ int toto()
 }
 
 /* { dg-final { scan-tree-dump-times "number of SCoPs: 4" 1 "graphite"} } */ 
-/* { dg-final { cleanup-tree-dump "graphite" } } */

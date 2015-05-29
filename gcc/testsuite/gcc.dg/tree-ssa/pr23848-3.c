@@ -25,4 +25,3 @@ void foo (int size)
 
 /* { dg-final { scan-tree-dump-times "__builtin_stack_save" 1 "optimized"} } */
 /* { dg-final { scan-tree-dump-times "__builtin_stack_restore" 1 "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

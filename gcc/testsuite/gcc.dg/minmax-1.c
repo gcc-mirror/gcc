@@ -80,4 +80,3 @@ int main(void)
 
 /* { dg-final { scan-tree-dump-times "MIN_EXPR" 0 "original"} } */
 /* { dg-final { scan-tree-dump-times "MAX_EXPR" 0 "original"} } */
-/* { dg-final { cleanup-tree-dump "original" } } */

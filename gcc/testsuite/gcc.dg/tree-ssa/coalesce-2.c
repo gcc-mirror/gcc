@@ -13,4 +13,3 @@ void foo(int n)
    any partition copies inserted.  */
 
 /* { dg-final { scan-rtl-dump-not "partition copy" "expand"} } */
-/* { dg-final { cleanup-rtl-dump "expand" } } */

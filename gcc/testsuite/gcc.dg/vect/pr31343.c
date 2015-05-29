@@ -32,4 +32,3 @@ main1 ()
     }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

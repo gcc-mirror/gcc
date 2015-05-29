@@ -35,4 +35,3 @@ find_unreachable_blocks (void)
    modify e or e->dest if we can assert strict-aliasing rules.
    The net result is that we only need one load of e->dest.  */
 /* { dg-final { scan-tree-dump-times "->dest" 1 "cddce1" } } */
-/* { dg-final { cleanup-tree-dump "cddce1" } } */

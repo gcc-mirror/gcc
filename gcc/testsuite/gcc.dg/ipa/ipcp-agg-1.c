@@ -32,6 +32,4 @@ entry (void)
 
 /* { dg-final { scan-ipa-dump "Creating a specialized node of foo.*for all known contexts" "cp" } } */
 /* { dg-final { scan-ipa-dump-times "Aggregate replacements:" 2 "cp" } } */
-/* { dg-final { cleanup-ipa-dump "cp" } } */
 /* { dg-final { scan-tree-dump-not "->c;" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

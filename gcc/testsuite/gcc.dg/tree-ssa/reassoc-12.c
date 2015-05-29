@@ -8,4 +8,3 @@ int f(int a, int b)
   return d;
 }
 /* { dg-final { scan-tree-dump-times "Equivalence:" 1 "reassoc1"} } */
-/* { dg-final { cleanup-tree-dump "reassoc1" } } */

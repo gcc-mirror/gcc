@@ -24,4 +24,3 @@ t(struct B *b)
    FIXME: We could most probably can devirtualize unconditonally because dereference of b in
    &b->a makes the type known.  GIMPLE does not represent this.  */
 /* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a speculative target" 1 "inline" { xfail *-*-* } } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */

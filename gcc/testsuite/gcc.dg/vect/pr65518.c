@@ -38,4 +38,3 @@ int main ()
    should reject that in the end).  */
 
 /* { dg-final { scan-tree-dump-times "vectorized 0 loops in function" 2 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

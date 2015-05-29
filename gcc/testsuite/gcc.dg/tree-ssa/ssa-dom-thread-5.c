@@ -20,4 +20,3 @@ void f2(int dst[3], int R)
 }
 
 /* { dg-final { scan-tree-dump "Threaded jump" "dom1" } } */
-/* { dg-final { cleanup-tree-dump "dom1" } } */

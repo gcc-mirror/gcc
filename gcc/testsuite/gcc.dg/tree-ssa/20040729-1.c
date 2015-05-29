@@ -17,4 +17,3 @@ foo ()
    operands.  But 'p' itself is not volatile and taking the address of
    a volatile does not constitute a volatile operand.  */
 /* { dg-final { scan-tree-dump-times "&x" 0 "dce2"} } */
-/* { dg-final { cleanup-tree-dump "dce2" } } */

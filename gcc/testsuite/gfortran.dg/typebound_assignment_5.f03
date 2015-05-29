@@ -41,4 +41,3 @@
 
 ! { dg-final { scan-tree-dump-not "_gfortran_internal_pack" "original" } }
 ! { dg-final { scan-tree-dump-not "_gfortran_internal_unpack" "original" } }
-! { dg-final { cleanup-tree-dump "original"} }

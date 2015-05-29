@@ -51,5 +51,3 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "slp2" { target { vect_widen_mult_hi_to_si || vect_unpack } } } } */
 /* { dg-final { scan-tree-dump-times "vect_recog_widen_mult_pattern: detected" 8 "slp2" { target vect_widen_mult_hi_to_si_pattern } } } */
 /* { dg-final { scan-tree-dump-times "pattern recognized" 8 "slp2" { target vect_widen_mult_hi_to_si_pattern } } } */
-/* { dg-final { cleanup-tree-dump "slp1" } } */
-/* { dg-final { cleanup-tree-dump "slp2" } } */

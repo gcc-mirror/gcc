@@ -81,4 +81,3 @@ GEN_COND_TESTS(vceq)
 /* { dg-final { scan-assembler-not "vc\[gl\]\[te\]\.u\[0-9\]+\[ 	\]+\[qQdD\]\[0-9\]+, \[qQdD\]\[0-9\]+, #0" } } */
 
 /* Tidy up.  */
-/* { dg-final { cleanup-saved-temps } } */

@@ -19,4 +19,3 @@ void spread_i1 (int *rptr, int *sptr, int ncopies, int *extent, int rdelta, int 
 
 int main() { return 0; }
 
-/* { dg-final { cleanup-tree-dump "graphite" } } */

@@ -37,4 +37,3 @@ Cyc_string_ungetc (int ignore, struct _fat_ptr *sptr)
    not take place when using small values for MOVE_RATIO.  */
 /* { dg-final { scan-tree-dump-times "struct _fat_ptr _ans" 0 "optimized" { target { ! "aarch64*-*-* alpha*-*-* arm*-*-* avr-*-* nds32*-*-* powerpc*-*-* s390*-*-* sh*-*-*" } } } } */
 /* { dg-final { scan-tree-dump-times "struct _fat_ptr _T2" 0 "optimized" { target { ! "aarch64*-*-* alpha*-*-* arm*-*-* avr-*-* nds32*-*-* powerpc*-*-* s390*-*-* sh*-*-*" } } } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

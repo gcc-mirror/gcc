@@ -400,5 +400,4 @@ test_vsri_n_u64 (uint64x1_t a, uint64x1_t b)
   return vsri_n_u64 (a, b, 9);
 }
 
-/* { dg-final { cleanup-saved-temps } } */
 

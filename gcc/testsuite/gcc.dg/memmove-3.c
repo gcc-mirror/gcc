@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 /* { dg-final { scan-tree-dump-times "memmove" 3 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */
 
 char a[40];
 struct A { char a[30]; };

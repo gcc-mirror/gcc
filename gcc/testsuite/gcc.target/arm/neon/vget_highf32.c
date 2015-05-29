@@ -16,4 +16,3 @@ void test_vget_highf32 (void)
   out_float32x2_t = vget_high_f32 (arg0_float32x4_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

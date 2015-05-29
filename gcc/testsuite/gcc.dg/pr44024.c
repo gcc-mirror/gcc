@@ -12,4 +12,3 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump-not "if \\(foo" "ccp1" { target { ! avr*-*-* } } } } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

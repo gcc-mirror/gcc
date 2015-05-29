@@ -53,4 +53,3 @@ main ()
 
 /* { dg-final { scan-rtl-dump "\\(const_int 36 " "combine" { target aarch64*-*-* } } } */
 
-/* { dg-final { cleanup-rtl-dump "combine" } } */

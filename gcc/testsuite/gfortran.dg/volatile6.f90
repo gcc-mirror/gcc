@@ -23,4 +23,3 @@ end
 ! { dg-final { scan-tree-dump "VolatileNotOptimizedAway2" "optimized" } }
 ! { dg-final { scan-tree-dump-not "NonVolatileNotOptimizedAway1" "optimized" } }
 ! { dg-final { scan-tree-dump-not "NonVolatileNotOptimizedAway2" "optimized" } }
-! { dg-final { cleanup-tree-dump "optimized" } }

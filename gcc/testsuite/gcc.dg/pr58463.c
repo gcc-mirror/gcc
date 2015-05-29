@@ -12,4 +12,3 @@ fn1 (list_data * p1)
     p1->data16 = p1->data16 & 1 & p1->data16 >> 1;
 }
 
-/* { dg-final { cleanup-tree-dump "ealias" } } */

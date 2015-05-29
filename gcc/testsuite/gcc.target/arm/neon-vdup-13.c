@@ -14,4 +14,3 @@ void test_vdupq_nu16 (void)
 }
 
 /* { dg-final { scan-assembler "vmov\.i16\[ 	\]+\[qQ\]\[0-9\]+, #65517\(\[ \]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

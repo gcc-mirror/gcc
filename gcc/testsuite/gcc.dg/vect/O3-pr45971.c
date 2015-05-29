@@ -9,5 +9,4 @@ foo (int *x, int *y)
     y[i] = (x[i] == 1) ? i + 1 : -(i + 1);
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

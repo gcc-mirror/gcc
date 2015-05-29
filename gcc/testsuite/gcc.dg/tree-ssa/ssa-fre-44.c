@@ -58,4 +58,3 @@ f4 (struct B *x, int y)
 }
 
 /* { dg-final { scan-tree-dump-times "return 3.0" 4 "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

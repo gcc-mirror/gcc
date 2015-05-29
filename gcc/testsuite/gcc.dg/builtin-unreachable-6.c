@@ -18,4 +18,3 @@ lab2:
 
 /* { dg-final { scan-tree-dump-times "lab:" 1 "fab1" } } */
 /* { dg-final { scan-tree-dump-times "__builtin_unreachable" 1 "fab1" } } */
-/* { dg-final { cleanup-tree-dump "fab1" } } */

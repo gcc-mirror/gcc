@@ -33,5 +33,3 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump "basic block vectorized" "slp2" { target vect_perm } } } */
-/* { dg-final { cleanup-tree-dump "slp1" } } */
-/* { dg-final { cleanup-tree-dump "slp2" } } */

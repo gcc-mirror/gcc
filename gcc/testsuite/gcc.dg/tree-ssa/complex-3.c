@@ -23,5 +23,4 @@ float imag_part(COMPLEX_FLOAT a)
 
 /* { dg-final { scan-tree-dump-times "REALPART_EXPR" 2 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "IMAGPART_EXPR" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */
 

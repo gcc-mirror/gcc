@@ -25,4 +25,3 @@ void f(void)
    value-numbering, removing the load altogether.
    ???  We now do this after CPP re-writes a into SSA form.  */
 /* { dg-final { scan-tree-dump-times "VIEW_CONVERT_EXPR" 1 "ccp1" } } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

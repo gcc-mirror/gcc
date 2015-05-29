@@ -11,4 +11,3 @@ void foo(char *in, char *out, int num)
   out[num] = ovec[num/2];
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

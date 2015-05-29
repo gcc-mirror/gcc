@@ -37,4 +37,3 @@ void f(void)
 /* { dg-final { scan-tree-dump-times "someptr = .*same as mystruct" 1 "ealias" } } */
 /* { dg-final { scan-tree-dump-times "ui\..* = .*same as mystruct" 1 "ealias" } } */
 /* { dg-final { scan-tree-dump-times "pp\..* = .*same as mystruct" 1 "ealias" } } */
-/* { dg-final { cleanup-tree-dump "ealias" } } */

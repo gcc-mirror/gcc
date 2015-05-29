@@ -7,4 +7,3 @@ double baz (double x, double y)
 }
 
 /* { dg-final { scan-tree-dump-times " \\* " 3 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

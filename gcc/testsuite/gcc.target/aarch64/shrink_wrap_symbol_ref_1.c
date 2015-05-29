@@ -25,4 +25,3 @@ assemble_string (const char *p, int size)
 }
 
 /* { dg-final { scan-rtl-dump "Performing shrink-wrapping" "pro_and_epilogue"  } } */
-/* { dg-final { cleanup-rtl-dump "pro_and_epilogue" } } */

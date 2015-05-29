@@ -44,4 +44,3 @@ end
 ! { dg-final { scan-tree-dump "y.cc._vptr->_final \\(&desc.\[0-9\]+, (\\(integer\\(kind=8\\)\\) )?y.cc._vptr->_size, 1\\);" "original" } }
 ! { dg-final { scan-tree-dump "y.dd._vptr->_final \\(&y.dd._data, (\\(integer\\(kind=8\\)\\) )?y.dd._vptr->_size, 1\\);" "original" } }
 
-! { dg-final { cleanup-tree-dump "original" } }

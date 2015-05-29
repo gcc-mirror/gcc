@@ -19,4 +19,3 @@ void test_vbslQs16 (void)
 }
 
 /* { dg-final { scan-assembler "((vbsl)|(vbit)|(vbif))\[ 	\]+\[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

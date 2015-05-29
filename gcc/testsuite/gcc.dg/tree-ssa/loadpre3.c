@@ -21,4 +21,3 @@ int foo(int **a,int argc)
 }
 
 /* { dg-final { scan-tree-dump-times "Eliminated: 2" 1 "pre"} } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

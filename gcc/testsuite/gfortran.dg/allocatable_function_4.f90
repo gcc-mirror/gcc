@@ -52,5 +52,4 @@ function unique_A (x, sorted) result (x_unique)
 end function unique_A
 
 ! { dg-final { scan-tree-dump-times "__builtin_free" 5 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }
 

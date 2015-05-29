@@ -15,4 +15,3 @@ int foo (int v1[], int v2[])
 }
 
 /* { dg-final { scan-tree-dump "MEM\\\[.* \\+ 252B\\\]" "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

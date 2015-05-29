@@ -23,4 +23,3 @@ float setArray(float *a, float x, int k)
 /* { dg-final { scan-tree-dump "_ZGVdN8ua32vl_setArray" "optimized" { target i?86-*-* x86_64-*-* } } } */
 /* { dg-final { scan-tree-dump "_ZGVdN8vvva32_addit" "optimized" { target i?86-*-* x86_64-*-* } } } */
 /* { dg-final { scan-tree-dump "_ZGVdM8vl66u_addit" "optimized" { target i?86-*-* x86_64-*-* } } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

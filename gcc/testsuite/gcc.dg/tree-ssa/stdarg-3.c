@@ -190,4 +190,3 @@ f12 (int i, ...)
 /* { dg-final { scan-tree-dump "f12: va_list escapes 1, needs to save all GPR units" "stdarg" { target { { i?86-*-* x86_64-*-* } && ia32 } } } } */
 /* { dg-final { scan-tree-dump "f12: va_list escapes 1, needs to save all GPR units" "stdarg" { target ia64-*-* } } } */
 /* { dg-final { scan-tree-dump "f12: va_list escapes 1, needs to save all GPR units" "stdarg" { target { powerpc*-*-* && lp64 } } } } */
-/* { dg-final { cleanup-tree-dump "stdarg" } } */

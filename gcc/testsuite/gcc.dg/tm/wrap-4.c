@@ -17,4 +17,3 @@ void foo()
    everything is as usual.  */
 /* { dg-final { scan-tree-dump-times "candy \\(\\);" 1 "optimized" } } */
 
-/* { dg-final { cleanup-tree-dump "optimized" } } */

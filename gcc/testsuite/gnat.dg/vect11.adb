@@ -30,4 +30,3 @@ package body Vect11 is
 end Vect11;
 
 -- { dg-final { scan-tree-dump-not "goto" "optimized" } }
--- { dg-final { cleanup-tree-dump "optimized" } }

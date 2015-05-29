@@ -12,4 +12,3 @@ char bar(char f)
 }
 
 /* { dg-final { scan-tree-dump "Replaced \\\(char\\\) .*with " "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

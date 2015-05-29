@@ -11,4 +11,3 @@ foo (int a, int b, int c)
    it in the real test.  */
 /* { dg-final { scan-tree-dump-times "<bb\[^>\]*>" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "\\\^" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

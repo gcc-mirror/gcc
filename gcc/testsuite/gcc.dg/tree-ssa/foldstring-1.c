@@ -10,4 +10,3 @@ arf ()
     blah ();
 }
 /* { dg-final { scan-tree-dump-times "= 0;" 1 "gimple"} } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

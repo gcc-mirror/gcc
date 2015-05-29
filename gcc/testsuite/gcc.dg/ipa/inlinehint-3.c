@@ -38,4 +38,3 @@ main()
 /* { dg-final { scan-ipa-dump "same_scc"  "inline"  } } */
 /* Main is not in scc, the two functions are.  */
 /* { dg-final { scan-ipa-dump-times "In SCC" 2 "inline"  } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */

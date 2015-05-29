@@ -18,4 +18,3 @@ short foo (int len, int v)
 /* { dg-final { scan-tree-dump-times " \\+ 2;" 1 "optimized" { target arm*-*-* } } } */
 /* { dg-final { scan-tree-dump-times " \\+ 2;" 1 "optimized" { target { ia64-*-* && ilp32 } } } } */
 /* { dg-final { scan-tree-dump-times " \\+ 2;" 2 "optimized" { target { ia64-*-* && lp64 } } } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -21,4 +21,3 @@ int ffff(int i)
 
 /* { dg-final { scan-tree-dump-times "int" 5 "gimple" } } */
 /* { dg-final { scan-tree-dump-times "int D\\\." 1 "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

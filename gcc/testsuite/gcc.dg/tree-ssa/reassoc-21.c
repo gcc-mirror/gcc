@@ -16,4 +16,3 @@ unsigned int f (unsigned int a0, unsigned int a1, unsigned int a2,
 }
 
 /* { dg-final { scan-tree-dump-times "return 0" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

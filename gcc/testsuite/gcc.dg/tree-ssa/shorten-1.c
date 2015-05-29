@@ -76,4 +76,3 @@ pssfubar (int indx)
 /* And two return values should have been casted from unsigned char to
    a normal char.  */
 /* { dg-final {scan-tree-dump-times "\\(signed char\\)" 4 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

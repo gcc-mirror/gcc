@@ -22,4 +22,3 @@ int h(int a, int b, int c, int d)
  return a;
 }
 /* { dg-final { scan-tree-dump-times "if" 0 "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

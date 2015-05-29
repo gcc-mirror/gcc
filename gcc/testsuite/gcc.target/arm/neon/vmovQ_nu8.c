@@ -17,4 +17,3 @@ void test_vmovQ_nu8 (void)
 }
 
 /* { dg-final { scan-assembler "vdup\.8\[ 	\]+\[qQ\]\[0-9\]+, (\[rR\]\[0-9\]+|\[dD\]\[0-9\]+\\\[\[0-9\]+\\\])!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

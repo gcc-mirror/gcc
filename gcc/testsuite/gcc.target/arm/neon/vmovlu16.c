@@ -17,4 +17,3 @@ void test_vmovlu16 (void)
 }
 
 /* { dg-final { scan-assembler "vmovl\.u16\[ 	\]+\[qQ\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

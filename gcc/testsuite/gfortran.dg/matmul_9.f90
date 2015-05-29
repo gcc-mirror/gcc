@@ -43,5 +43,4 @@ program name
 end program name
 
 ! { dg-final { scan-tree-dump-times "matmul" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }
 

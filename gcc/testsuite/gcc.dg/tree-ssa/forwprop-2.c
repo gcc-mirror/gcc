@@ -17,4 +17,3 @@ void f(__SIZE_TYPE__ i)
 }
 
 /* { dg-final { scan-tree-dump-times "\\\[\[^\n\r\]*\\\] = 1;" 0 "forwprop1" } } */
-/* { dg-final { cleanup-tree-dump "forwprop?" } } */

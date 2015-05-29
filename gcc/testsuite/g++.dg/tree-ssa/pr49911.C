@@ -38,4 +38,3 @@ void jsop_setelem(bool y, int z) {
 }
 
 /* { dg-final { scan-tree-dump-times "Folding predicate.*45" 0 "vrp2"} } */
-/* { dg-final { cleanup-tree-dump "vrp2" } } */

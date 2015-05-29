@@ -191,4 +191,3 @@ end
 ! { dg-final { scan-tree-dump-times "struct array._integer\\(kind=4\\) atmp" 13 "original" } }
 ! { dg-final { scan-tree-dump-times "struct array\[^\\n\]*atmp" 13 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_sum_" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

@@ -19,4 +19,3 @@ float foobar () {
 /* The temporary structure should have been promoted to registers
    by FRE after the loops have been unrolled by the early unrolling pass.  */
 /* { dg-final { scan-tree-dump-not "c\.array" "dce2" } } */
-/* { dg-final { cleanup-tree-dump "dce2" } } */

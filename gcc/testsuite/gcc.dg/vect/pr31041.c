@@ -24,4 +24,3 @@ utrie_open_3_4 ()
       while (i < 5);
     }
 }
-/* { dg-final { cleanup-tree-dump "vect" } } */

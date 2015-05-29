@@ -27,4 +27,3 @@ void f3 ()
 
 // { dg-final { scan-tree-dump-times "#pragma omp ordered" 1 "gimple" } }
 // { dg-final { scan-tree-dump-times "#pragma omp master" 1 "gimple" } }
-// { dg-final { cleanup-tree-dump "gimple" } }

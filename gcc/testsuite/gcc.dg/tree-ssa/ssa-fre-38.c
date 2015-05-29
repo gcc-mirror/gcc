@@ -18,4 +18,3 @@ int foo (int n, int i, int j)
 /* We should remove the redundant load.  */
 
 /* { dg-final { scan-tree-dump-not "= u.a\\\[n_2\\(D\\)\\\].i" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

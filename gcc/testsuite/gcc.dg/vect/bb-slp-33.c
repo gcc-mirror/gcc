@@ -46,4 +46,3 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "slp2" { target { vect_element_align || vect_hw_misalign } } } } */
-/* { dg-final { cleanup-tree-dump "slp2" } } */

@@ -11,4 +11,3 @@ void bar(int j)
   if (k) foo();
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

@@ -33,4 +33,3 @@ end Subroutine PADEC
 ! locality heuristic, this loop should not be split.
 
 ! { dg-final { scan-tree-dump-not "distributed: split to" "ldist" } }
-! { dg-final { cleanup-tree-dump "ldist" } }

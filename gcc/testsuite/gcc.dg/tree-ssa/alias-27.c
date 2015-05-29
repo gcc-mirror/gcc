@@ -8,4 +8,3 @@ void f (long *p) {
 }
 
 /* { dg-final { scan-tree-dump-not "= 42" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

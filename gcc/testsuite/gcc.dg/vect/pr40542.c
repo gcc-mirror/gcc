@@ -10,5 +10,4 @@ volarr_cpy(char *d, volatile char *s)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

@@ -62,4 +62,3 @@ end subroutine test3
 ! { dg-final { scan-tree-dump-times "_gfortran_internal_unpack .&parm" 2 "original" } }
 
 
-! { dg-final { cleanup-tree-dump "original" } }

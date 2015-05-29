@@ -49,4 +49,3 @@ END MODULE M1
 end
 ! { dg-final { scan-tree-dump-times "&a" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "pack" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

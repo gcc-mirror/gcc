@@ -30,4 +30,3 @@ void E::f() { }
 // { dg-final { scan-tree-dump-times "_ZGTtN1B1fEv" 1 "optimized" } }
 // { dg-final { scan-tree-dump-times "_ZN1E1fEv" 1 "optimized" } }
 // { dg-final { scan-tree-dump-times "_ZGTtN1E1fEv" 1 "optimized" } }
-// { dg-final { cleanup-tree-dump "optimized" } }

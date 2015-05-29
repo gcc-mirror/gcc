@@ -11,4 +11,3 @@ void f1(void)
 }
 
 /* { dg-final { scan-tree-dump-times "xyzzy, 4" 1 "ompexp" } } */
-/* { dg-final { cleanup-tree-dump "ompexp" } } */

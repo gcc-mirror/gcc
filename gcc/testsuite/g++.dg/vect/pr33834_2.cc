@@ -29,4 +29,3 @@ LoadPAT (char *filename)
   }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

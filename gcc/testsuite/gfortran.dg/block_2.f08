@@ -36,4 +36,3 @@ PROGRAM main
   END BLOCK
 END PROGRAM main
 ! { dg-final { scan-tree-dump-times "free \\(\\(void \\*\\) alloc_arr\\.data" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

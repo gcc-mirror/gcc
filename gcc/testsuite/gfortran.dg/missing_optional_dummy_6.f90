@@ -57,4 +57,3 @@ end program test
 ! { dg-final { scan-tree-dump-times "assumed_shape2 \\(as1" 0 "original" } }
 ! { dg-final { scan-tree-dump-times "explicit_shape2 \\(as1" 0 "original" } }
 
-! { dg-final { cleanup-tree-dump "original" } }

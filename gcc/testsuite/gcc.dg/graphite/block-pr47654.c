@@ -22,4 +22,3 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump-not "will be loop blocked" "graphite" } } */
-/* { dg-final { cleanup-tree-dump "graphite" } } */

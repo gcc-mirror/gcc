@@ -37,4 +37,3 @@ int main ()
 }
 /* { dg-final-use { scan-rtl-dump-times ";; basic block\[^\\n\]*count 4000" 2 "expand"} } */
 /* { dg-final-use { scan-rtl-dump-times ";; basic block\[^\\n\]*count 2000" 1 "expand"} } */
-/* { dg-final-use { cleanup-rtl-dump "expand" } } */

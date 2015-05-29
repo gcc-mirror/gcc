@@ -17,4 +17,3 @@ bar (int arg)
 
 /* { dg-final { scan-assembler "test_section" } } */
 /* { dg-final { scan-ipa-dump "Creating a specialized node of foo" "cp" } } */
-/* { dg-final { cleanup-ipa-dump "cp" } } */

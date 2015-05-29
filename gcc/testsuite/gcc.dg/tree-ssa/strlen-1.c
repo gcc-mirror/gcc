@@ -14,4 +14,3 @@ void wreg_twice(void)
 
 /* We should not remove the second null character store to (base+42) address. */
 /* { dg-final { scan-tree-dump-times " ={v} 0;" 2 "optimized" } }  */
-/* { dg-final { cleanup-tree-dump "optimized" } }  */

@@ -38,7 +38,6 @@ convert_move (rtx to, rtx from, int unsignedp)
 }
 
 /* { dg-final { scan-tree-dump "Replaced.*!=.*with.*!=.* " "forwprop1"} } */
-/* { dg-final { cleanup-tree-dump "forwprop1" } } */
 
 
 

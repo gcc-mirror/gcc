@@ -79,6 +79,4 @@ bitmap_ior_into (bitmap a, const_bitmap b)
 /* Verify that DCE after VRP2 eliminates a dead conversion
    to a (Bool).  */
 /* { dg-final { scan-tree-dump "Deleting.*_Bool.*;" "cddce2"} } */
-/* { dg-final { cleanup-tree-dump "vrp2" } } */
-/* { dg-final { cleanup-tree-dump "cddce2" } } */
 

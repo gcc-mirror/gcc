@@ -9,4 +9,3 @@ int foo (int xx, int xy)
 }
 
 /* { dg-final { scan-tree-dump-times " & 1" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

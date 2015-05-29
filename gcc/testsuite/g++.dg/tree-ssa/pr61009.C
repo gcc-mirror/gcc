@@ -50,4 +50,3 @@ bool  Test(void) {
 // there should be a single == 0 comparison in the dump file.
 
 // { dg-final { scan-tree-dump-times "== 0" 1 "dom1" } }
-// { dg-final { cleanup-tree-dump "dom1" } }

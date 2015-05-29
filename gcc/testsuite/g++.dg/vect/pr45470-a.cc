@@ -21,4 +21,3 @@ B::B ()
 {
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

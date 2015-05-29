@@ -20,4 +20,3 @@ int foo (int *p)
 }
 
 /* { dg-final { scan-tree-dump "vectorization is not profitable" "slp2" } } */
-/* { dg-final { cleanup-tree-dump "slp2" } } */

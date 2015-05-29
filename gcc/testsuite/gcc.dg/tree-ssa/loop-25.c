@@ -126,4 +126,3 @@ void test5 (void)
 /* { dg-final { scan-tree-dump-times "3 loops found" 2 "profile_estimate" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-times "2 loops found" 1 "profile_estimate" { xfail *-*-* } } } */
 
-/* { dg-final { cleanup-tree-dump "profile_estimate" } } */

@@ -36,5 +36,4 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" { target { ! { vect_perm  } } } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_perm } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

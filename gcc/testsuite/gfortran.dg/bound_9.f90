@@ -68,4 +68,3 @@ program main
   if (n .ne. 1) call abort
 end program main
 ! { dg-final { scan-tree-dump-times "\\*one = 1" 2 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

@@ -38,4 +38,3 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 0 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

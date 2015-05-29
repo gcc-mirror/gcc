@@ -23,4 +23,3 @@ foo (void)
 /* The switch should be switch converted and later constant propagated.  */
 /* { dg-final { scan-tree-dump-not "CSWTCH" "optimized"} } */
 /* { dg-final { scan-tree-dump-not "switch" "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

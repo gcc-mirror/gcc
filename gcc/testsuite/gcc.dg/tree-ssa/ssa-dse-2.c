@@ -21,4 +21,3 @@ foo ()
 /* { dg-final { scan-tree-dump-times " = 3" 0 "dse1"} } */
 /* { dg-final { scan-tree-dump-times " = 4" 1 "dse1"} } */
 
-/* { dg-final { cleanup-tree-dump "dse1" } } */

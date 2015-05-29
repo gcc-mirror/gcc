@@ -60,5 +60,4 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vect_recog_over_widening_pattern: detected" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

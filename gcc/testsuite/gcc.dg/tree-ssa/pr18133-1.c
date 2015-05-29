@@ -25,4 +25,3 @@ return;
    scan for 3 instances of "FALLTHRU".  */
 
 /* { dg-final { scan-tree-dump-times "FALLTHRU" 3 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -24,4 +24,3 @@ sptr_result (void)
 }
 /* { dg-final { scan-rtl-dump "\\\(set \\\(reg:TI \[0-9\]* \\\[ <retval> \\\]\\\)" "expand" } } */
 /* { dg-final { scan-rtl-dump "\\\(set \\\(reg/i:TI 0 ax\\\)" "expand" } } */
-/* { dg-final { cleanup-rtl-dump "expand" } } */

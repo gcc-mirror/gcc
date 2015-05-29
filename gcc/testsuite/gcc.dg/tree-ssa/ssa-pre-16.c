@@ -12,4 +12,3 @@ int foo(int k, int *x)
   return res;
 }
 /* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre"} } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

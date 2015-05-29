@@ -20,4 +20,3 @@ int main()
 
 // This function is small enough to be inlined even at -Os.
 // { dg-final { scan-tree-dump-not "_ZNSt8_Rb_treeIiiSt9_IdentityIiESt4lessIiESaIiEED2Ev" "optimized" } }
-// { dg-final { cleanup-tree-dump "optimized" } }

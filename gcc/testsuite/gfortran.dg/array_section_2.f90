@@ -13,4 +13,3 @@ program test
    temp(1:size(a)) = a
 end program
 ! { dg-final { scan-tree-dump-times "MAX_EXPR\[^\n\t\]+ubound\[^\n\t\]+lbound" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

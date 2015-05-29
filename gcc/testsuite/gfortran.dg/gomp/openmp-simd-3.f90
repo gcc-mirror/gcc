@@ -25,4 +25,3 @@ include 'openmp-simd-1.f90'
 ! { dg-final { scan-tree-dump-times "__builtin_GOMP_cancel" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "__builtin_GOMP_taskyield" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "__builtin_GOMP_taskwait" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

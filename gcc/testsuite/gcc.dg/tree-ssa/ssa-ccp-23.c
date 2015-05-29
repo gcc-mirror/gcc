@@ -17,4 +17,3 @@ int foo (void)
 
 /* { dg-final { scan-tree-dump "MEM\\\[\\\(int \\\*\\\)&a \\\+ 2B\\\]" "ccp1" { target { int16 } } } } */
 /* { dg-final { scan-tree-dump "MEM\\\[\\\(int \\\*\\\)&a \\\+ 4B\\\]" "ccp1" { target { int32 } } } } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

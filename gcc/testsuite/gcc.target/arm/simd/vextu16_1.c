@@ -7,4 +7,3 @@
 #include "../../aarch64/simd/ext_u16.x"
 
 /* { dg-final { scan-assembler-times "vext\.16\[ \t\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+, \[dD\]\[0-9\]+, #\[0-9\]+!?\(?:\[ \t\]+@\[a-zA-Z0-9 \]+\)?\n" 3 } } */
-/* { dg-final { cleanup-saved-temps } } */

@@ -95,4 +95,3 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 4 "vect" { target vect_condition } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

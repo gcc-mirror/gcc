@@ -9,4 +9,3 @@ int foo(float a, float b) {
 }
 
 /* { dg-final { scan-rtl-dump-times "REG_BR_PROB 100" 1 "expand"} } */
-/* { dg-final { cleanup-rtl-dump "expand" } } */

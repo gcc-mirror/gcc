@@ -15,4 +15,3 @@ double bar (double sum)
 }
 
 /* { dg-final { scan-rtl-dump-not "compare.*insn.*jump_insn.*jump_insn" "sched2" } } */
-/* { dg-final { cleanup-rtl-dump "sched2" } } */

@@ -36,4 +36,3 @@ foo ()
    The other one for '(EXPR)->unchanging'.  */
 /* { dg-final { scan-tree-dump-times "if " 2 "dom2"} } */
 
-/* { dg-final { cleanup-tree-dump "dom2" } } */

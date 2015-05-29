@@ -11,6 +11,5 @@ program main
   ENDDO
 END program main
 ! { dg-final { scan-tree-dump-times "mypure" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }
 
 

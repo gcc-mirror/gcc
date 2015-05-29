@@ -73,4 +73,3 @@ int main ( int , char** ) {
 // Verify that on x86_64 and i?86 we use a single IV for the innermost loop
 
 // { dg-final { scan-tree-dump "Selected IV set for loop \[0-9\]* at \[^ \]*:64, 1 IVs" "ivopts" { target x86_64-*-* i?86-*-* } } }
-// { dg-final { cleanup-tree-dump "ivopts" } }

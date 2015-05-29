@@ -22,4 +22,3 @@ main (int argc, char **argv)
 }
 
 /* Don't scan assembler for vext - it can be optimized into a move from r0.  */
-/* { dg-final { cleanup-saved-temps } } */

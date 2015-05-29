@@ -19,4 +19,3 @@ end
 ! { dg-final { scan-assembler-times "\[ \t\]\[$,_0-9\]*myBindC" 1 { target { ! { hppa*-*-* } } } } }
 ! { dg-final { scan-assembler-times "myBindC,%r2" 1 { target { hppa*-*-* } } } }
 ! { dg-final { scan-tree-dump-times "test \\\(&parm\\." 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

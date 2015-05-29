@@ -13,4 +13,3 @@ foo (void)
 
 /* Verify we narrow the addition from unsigned long long to unsigned int type.  */
 /* { dg-final { scan-tree-dump "  (\[a-zA-Z._0-9]*) = \\(unsigned int\\) \[^;\n\r]*;.*  (\[a-zA-Z._0-9]*) = \\(unsigned int\\) \[^;\n\r]*;.* = \\1 \\+ \\2;" "gimple" { target { ilp32 || lp64 } } } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

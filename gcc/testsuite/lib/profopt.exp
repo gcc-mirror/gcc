@@ -304,6 +304,9 @@ proc profopt-execute { src } {
 	    return
 	}
 
+	# schedule removal of dump files et al
+	# Do this before the call below destroys additional_sources..
+	append use_final_code [schedule-cleanups "$option $extra_flags"]
         set extra_options [dg-additional-files-options "" "$src"]
 
 	# Remove old profiling data files.  Make sure additional_sources_used is

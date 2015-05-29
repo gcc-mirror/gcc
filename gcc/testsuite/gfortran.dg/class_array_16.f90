@@ -68,4 +68,3 @@ end
 
 ! { dg-final { scan-tree-dump-times "__builtin_free" 5 "original" } }
 ! { dg-final { scan-tree-dump-times "finally" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

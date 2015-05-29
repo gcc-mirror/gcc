@@ -6,4 +6,3 @@ int f(void)
   return 0;
 }
 
-/* { dg-final { cleanup-tree-dump "profile_estimate" } } */

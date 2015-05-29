@@ -137,5 +137,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { target { vect_interleave && vect_extract_even_odd } } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 3 "vect" { xfail *-*-* }  } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

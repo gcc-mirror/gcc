@@ -10,4 +10,3 @@ foo (int *p)
 
 /* The store to *p should be propagated to the load statement.  */
 /* { dg-final { scan-tree-dump "Replaced \\\*p_.\\\(D\\\) with 0" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

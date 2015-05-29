@@ -19,4 +19,3 @@ package body Noinline2 is
 end Noinline2;
 
 -- { dg-final { scan-tree-dump-times "noinline2.inner" 2 "optimized"  } }
--- { dg-final { cleanup-tree-dump "optimized" } }

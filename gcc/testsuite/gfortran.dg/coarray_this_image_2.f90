@@ -17,4 +17,3 @@ end
 ! { dg-final { scan-tree-dump-times "k3 = _gfortran_caf_num_images \\(7, -1\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "k4 = _gfortran_caf_num_images \\(8, 1\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "k5 = _gfortran_caf_num_images \\(0, 0\\);" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

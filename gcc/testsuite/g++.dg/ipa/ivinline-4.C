@@ -67,4 +67,3 @@ int main (int argc, char *argv[])
 }
 
 /* { dg-final { scan-ipa-dump "B::foo\[^\\n\]*inline copy in int main"  "inline"  } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */

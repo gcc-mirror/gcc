@@ -9,4 +9,3 @@ void foo (volatile int *p, int n)
 }
 
 /* { dg-final { scan-assembler-not "memset" } } */
-/* { dg-final { cleanup-tree-dump "ldist" } } */

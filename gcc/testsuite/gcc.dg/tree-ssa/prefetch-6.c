@@ -51,4 +51,3 @@ double test(void)
 /* { dg-final { scan-assembler-times "prefetcht" 5 } } */
 /* { dg-final { scan-assembler-times "prefetchnta" 3 } } */
 
-/* { dg-final { cleanup-tree-dump "aprefetch" } } */

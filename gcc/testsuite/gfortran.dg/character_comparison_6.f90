@@ -16,5 +16,4 @@ end program main
 
 ! { dg-final { scan-tree-dump-times "gfortran_concat_string" 4 "original" } }
 ! { dg-final { scan-tree-dump-times "gfortran_compare_string" 2 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }
 

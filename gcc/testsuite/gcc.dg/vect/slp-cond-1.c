@@ -123,4 +123,3 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 3 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

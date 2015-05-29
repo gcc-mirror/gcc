@@ -16,4 +16,3 @@ void test_vcreatep16 (void)
   out_poly16x4_t = vcreate_p16 (arg0_uint64_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

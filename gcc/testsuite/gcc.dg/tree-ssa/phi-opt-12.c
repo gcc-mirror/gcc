@@ -20,4 +20,3 @@ unsigned m(unsigned a, unsigned b) {
 }
 
 /* { dg-final { scan-tree-dump-times "goto" 2 "phiopt1" } } */
-/* { dg-final { cleanup-tree-dump "phiopt1" } } */

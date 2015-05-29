@@ -21,4 +21,3 @@ int main()
 }
 /* { dg-final { scan-ipa-dump "Equal symbols: 0" "icf"  } } */
 /* { dg-final { scan-ipa-dump "different decl attributes" "icf"  } } */
-/* { dg-final { cleanup-ipa-dump "icf" } } */

@@ -24,4 +24,3 @@ end
 ! { dg-final { scan-tree-dump-times "mythis_image = _gfortran_caf_this_image \\(0\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "bar \\(&parm.\[0-9\]+, caf_token.\[0-9\]+, \\(integer\\(kind=\[48\]\\)\\) parm.\[0-9\]+.data - \\(integer\\(kind=\[48\]\\)\\) x\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_init \\(&argc, &argv\\);" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

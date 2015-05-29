@@ -19,4 +19,3 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump-not "i = 1;" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

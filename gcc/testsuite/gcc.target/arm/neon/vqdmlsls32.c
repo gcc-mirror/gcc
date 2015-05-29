@@ -19,4 +19,3 @@ void test_vqdmlsls32 (void)
 }
 
 /* { dg-final { scan-assembler "vqdmlsl\.s32\[ 	\]+\[qQ\]\[0-9\]+, \[dD\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

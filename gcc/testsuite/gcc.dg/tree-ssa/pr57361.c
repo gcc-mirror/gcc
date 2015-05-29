@@ -7,4 +7,3 @@ void f (struct A *a) {
 }
 
 /* { dg-final { scan-tree-dump "Deleted dead store" "dse1"} } */
-/* { dg-final { cleanup-tree-dump "dse1" } } */

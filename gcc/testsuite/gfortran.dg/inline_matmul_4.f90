@@ -64,5 +64,3 @@ program main
 end program main
 ! { dg-final { scan-tree-dump-times "_gfortran_matmul" 4 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_matmul" 0 "optimized" } }
-! { dg-final { cleanup-tree-dump "original" } }
-! { dg-final { cleanup-tree-dump "optimized" } }

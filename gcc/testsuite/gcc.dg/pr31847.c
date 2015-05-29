@@ -12,4 +12,3 @@ int foo()
 }
 
 /* { dg-final { scan-tree-dump-not "Created value  for " "pre"} } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

@@ -28,5 +28,3 @@ void  OnPaint(wxPaintEvent & event) {
   wxBufferedPaintDC dc;
 }
 /* { dg-final { scan-ipa-dump-times "Discovered a virtual call to a known target" 2 "cp"  } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */
-/* { dg-final { cleanup-ipa-dump "cp" } } */

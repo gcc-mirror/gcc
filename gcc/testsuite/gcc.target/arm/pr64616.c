@@ -12,4 +12,3 @@ g ()
 }
 
 /* { dg-final { scan-rtl-dump "GLOBAL COPY-PROP" "cprop2" } } */
-/* { dg-final { cleanup-rtl-dump "cprop2" } } */

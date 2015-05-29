@@ -17,4 +17,3 @@ void test_vqnegs8 (void)
 }
 
 /* { dg-final { scan-assembler "vqneg\.s8\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

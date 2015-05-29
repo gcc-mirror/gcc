@@ -14,4 +14,3 @@ m(void **p)
   t (10, p);
 }
 /* { dg-final { scan-ipa-dump "loop_stride"  "inline"  } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */

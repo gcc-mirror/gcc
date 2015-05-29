@@ -27,4 +27,3 @@ bar (_Complex float x)
 
 /* We should CSE all the way to replace the stored value with x.  */
 /* { dg-final { scan-tree-dump-times "m = x_\\d\+\\(D\\);" 2 "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

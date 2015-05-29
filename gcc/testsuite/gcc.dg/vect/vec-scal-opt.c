@@ -20,4 +20,3 @@ int main (int argc, char *argv[]) {
 }
 
 /* { dg-final { scan-tree-dump-times ">> k.\[0-9_\]*" 1 "veclower21" } } */
-/* { dg-final { cleanup-tree-dump "veclower21" } } */

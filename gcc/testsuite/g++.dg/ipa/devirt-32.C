@@ -20,4 +20,3 @@ int main()
   __builtin_printf("%d\n", o.obj()->val());
 }
 /* { dg-final { scan-ipa-dump-not "__builtin_unreachable"  "inline"  } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */

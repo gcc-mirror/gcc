@@ -66,5 +66,3 @@ int main (int argc, char *argv[])
 
 /* { dg-final { scan-ipa-dump "Discovered a virtual call to a known target.*B::foo"  "cp"  } } */
 /* { dg-final { scan-tree-dump-times "OBJ_TYPE_REF" 0 "optimized"} } */
-/* { dg-final { cleanup-ipa-dump "cp" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

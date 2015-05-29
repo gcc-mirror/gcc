@@ -73,4 +73,3 @@ test_3 (void)
 
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

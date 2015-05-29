@@ -1,3 +1,20 @@
+2015-05-29  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* lib/gcc-dg.exp (cleanup-ipa-dump, cleanup-rtl-dump,
+	cleanup-tree-dump, cleanup-dump, cleanup-saved-temps): Remove.
+	Adjust all callers.
+	(schedule-cleanups, dg-keep-saved-temps): New proc.
+	(gcc-dg-test-1): Schedule cleanups.
+	* lib/profopt.exp (profopt-execute): Likewise.
+	* g++.dg/cdce3.C: Adjust expected line numbers.
+	* gcc.dg/cdce1.c: Likewise.
+	* gcc.dg/cdce2.c: Likewise.
+	* gcc.dg/strlenopt-22.c: Fix comment delimiter.
+	* gcc.dg/strlenopt-24.c: Likewise.
+	* gcc.dg/tree-ssa/vrp26.c: Likewise.
+	* gcc.dg/tree-ssa/vrp28.c: Likewise.
+	* obj-c++.dg/encode-2.mm: Likewise.
+
 2015-05-28  DJ Delorie  <dj@redhat.com>
 
 	* gcc.c-torture/execute/pr65369.c: Don't assume int is 32 bits.

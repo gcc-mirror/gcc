@@ -19,5 +19,4 @@ nonlocal_mentioned_p (rtx x)
 }
 
 /* { dg-final { scan-tree-dump-times "Folding predicate .*to 0" 1 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */
 

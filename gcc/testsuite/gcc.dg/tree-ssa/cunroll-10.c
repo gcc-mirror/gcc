@@ -11,4 +11,3 @@ foo (int n)
      a[i]++;
 }
 /* { dg-final { scan-tree-dump-times "Forced statement unreachable" 2 "cunroll" } } */
-/* { dg-final { cleanup-tree-dump "cunroll" } } */

@@ -9,4 +9,3 @@ foo (int *array)
 }
 /* We should eliminate one load.  */
 /* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "fre1"} } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

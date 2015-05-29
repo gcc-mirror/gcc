@@ -16,4 +16,3 @@ foo (int a, int b, int c, int d)
 
 /* Verify reassociation width was chosen to be 2.  */
 /* { dg-final { scan-tree-dump-times "Width = 2" 1 "reassoc1"} } */
-/* { dg-final { cleanup-tree-dump "reassoc1" } } */

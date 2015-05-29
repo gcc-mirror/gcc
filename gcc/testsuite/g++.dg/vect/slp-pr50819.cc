@@ -50,4 +50,3 @@ const & v2) {
 }
 
 /* { dg-final { scan-tree-dump-times "basic block vectorized" 2 "slp2" } } */
-/* { dg-final { cleanup-tree-dump "slp2" } } */

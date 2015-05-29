@@ -14,4 +14,3 @@ void baz()
 }
 
 /* { dg-final { scan-tree-dump "Everything OK" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

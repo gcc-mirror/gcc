@@ -53,4 +53,3 @@ main (int argc, char **argv)
 /* { dg-final { scan-assembler-times "rbit\[ \t\]+\[vV\]\[0-9\]+\.8\[bB\], ?\[vV\]\[0-9\]+\.8\[bB\]" 3 } } */
 /* { dg-final { scan-assembler-times "rbit\[ \t\]+\[vV\]\[0-9\]+\.16\[bB\], ?\[vV\]\[0-9\]+\.16\[bB\]" 3 } } */
 
-/* { dg-final { cleanup-saved-temps } } */

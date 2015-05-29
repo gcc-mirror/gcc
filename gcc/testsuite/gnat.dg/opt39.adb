@@ -28,4 +28,3 @@ begin
 end;
 
 -- { dg-final { scan-tree-dump-times "MEM" 1 "optimized" } }
--- { dg-final { cleanup-tree-dump "optimized" } }

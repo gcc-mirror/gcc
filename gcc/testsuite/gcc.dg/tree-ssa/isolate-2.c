@@ -38,7 +38,5 @@ bar (void)
    return statement so that it returns &z directly.
 /* { dg-final { scan-tree-dump-times "__builtin_trap" 2 "isolate-paths"} } */
 /* { dg-final { scan-tree-dump-times "return &z;" 1 "phicprop1"} } */
-/* { dg-final { cleanup-tree-dump "isolate-paths" } } */
-/* { dg-final { cleanup-tree-dump "phicprop1" } } */
 
 

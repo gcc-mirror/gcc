@@ -117,4 +117,3 @@ int main (void)
   is extended to handle structs.  */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { target {vect_int && vector_alignment_reachable } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 4 "vect" { target {vect_int && {! vector_alignment_reachable} } } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

@@ -16,4 +16,3 @@ void test_vcreates64 (void)
   out_int64x1_t = vcreate_s64 (arg0_uint64_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

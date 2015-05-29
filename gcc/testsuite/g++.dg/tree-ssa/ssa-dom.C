@@ -100,5 +100,4 @@ gimple_return_set_retval (gimple gs, tree retval)
   gimple_set_op (gs, 0, retval);
 }
 /* { dg-final { scan-tree-dump-times "gss_for_code_.10." 1 "dom1"} } */
-/* { dg-final { cleanup-tree-dump "dom1" } } */
 

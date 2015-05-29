@@ -9,4 +9,3 @@ main()
    return b+a;
 }
 /* { dg-final { scan-tree-dump "return 8" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

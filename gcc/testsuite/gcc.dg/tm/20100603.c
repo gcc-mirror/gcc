@@ -18,4 +18,3 @@ void TMlist_free ()
 }
 
 /* { dg-final { scan-tree-dump-times "Function poof ._ZGTt4poof" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -25,4 +25,3 @@ int main (void)
 /* Check that the first loop in parloop got parallelized.  */
 
 /* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 1 "parloops" } } */
-/* { dg-final { cleanup-tree-dump "parloops" } } */

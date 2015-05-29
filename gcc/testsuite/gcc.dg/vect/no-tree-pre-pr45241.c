@@ -17,4 +17,3 @@ foo (short x)
   return sum;
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

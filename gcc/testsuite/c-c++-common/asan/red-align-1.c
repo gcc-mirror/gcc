@@ -17,4 +17,3 @@ int foo (struct st * s_p)
 }
 
 /* { dg-final { scan-tree-dump-times "& 7" 0 "sanopt" } } */
-/* { dg-final { cleanup-tree-dump "sanopt" } } */

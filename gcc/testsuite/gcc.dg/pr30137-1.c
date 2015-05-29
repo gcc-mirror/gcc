@@ -20,4 +20,3 @@ int foo13 (void) { return *p != &p; }
 
 /* { dg-final { scan-tree-dump-not "= 0;" "gimple" } } */
 /* { dg-final { scan-tree-dump-not "= 1;" "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

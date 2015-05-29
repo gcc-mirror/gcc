@@ -37,4 +37,3 @@ test (int i)
 /* { dg-final { scan-ipa-dump "Wrapper penalty"  "inline"  } } */
 /* { dg-final { scan-ipa-dump-not "Inlining lookup_slow to lookup"  "inline"  } } */
 /* { dg-final { scan-ipa-dump "Inlining lookup to test"  "inline"  } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */

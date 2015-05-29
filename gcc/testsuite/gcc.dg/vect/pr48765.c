@@ -82,4 +82,3 @@ stupid_find_reg (call_preserved, class, mode, born_insn, dead_insn,
     }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

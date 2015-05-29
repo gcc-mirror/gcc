@@ -1,7 +1,6 @@
 /* { dg-do link } */
 /* { dg-options "-O2 -fdump-tree-vrp1" } */
 /* { dg-final { scan-tree-dump-not "link_error" "vrp1"} } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */
 
 extern void link_error (void);
 

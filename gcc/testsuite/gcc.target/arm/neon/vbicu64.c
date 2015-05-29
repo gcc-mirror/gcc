@@ -17,4 +17,3 @@ void test_vbicu64 (void)
   out_uint64x1_t = vbic_u64 (arg0_uint64x1_t, arg1_uint64x1_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

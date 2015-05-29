@@ -16,4 +16,3 @@ void test_vreinterpretu64_p64 (void)
   out_uint64x1_t = vreinterpret_u64_p64 (arg0_poly64x1_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

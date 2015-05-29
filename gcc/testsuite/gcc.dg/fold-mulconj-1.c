@@ -13,4 +13,3 @@ _Complex int bar(_Complex int z)
 }
 
 /* { dg-final { scan-tree-dump-times "CONJ_EXPR" 0 "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

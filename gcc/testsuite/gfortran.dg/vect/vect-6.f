@@ -21,5 +21,4 @@
   150    CONTINUE
       END
 
-! { dg-final { cleanup-tree-dump "vect" } }
 

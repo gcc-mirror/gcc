@@ -41,5 +41,4 @@ void foo (void)
    entering while loop and thread over it.  */
 /* { dg-final { scan-tree-dump-times "Threaded jump" 3 "vrp1" } } */
 
-/* { dg-final { cleanup-tree-dump "vrp1" } } */
 

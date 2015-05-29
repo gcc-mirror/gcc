@@ -49,4 +49,3 @@ program main
   if (abs(res - 8.1) > 1e-5) call abort
 end program main
 ! { dg-final { scan-tree-dump-times "while" 5 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

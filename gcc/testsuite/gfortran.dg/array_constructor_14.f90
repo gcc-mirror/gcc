@@ -12,4 +12,3 @@ subroutine bar(x)
 end subroutine
 
 ! { dg-final { scan-tree-dump-times "data" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

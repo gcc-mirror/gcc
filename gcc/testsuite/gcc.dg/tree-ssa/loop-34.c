@@ -18,4 +18,3 @@ void f (int n)
 
 
 /* { dg-final { scan-tree-dump-times "Executing store motion of r" 6 "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim1" } } */

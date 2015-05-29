@@ -11,4 +11,3 @@ bar (void)
 }
 
 /* { dg-final { scan-tree-dump-not "~\{" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

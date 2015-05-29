@@ -16,4 +16,3 @@ t(int n)
   return sum;
 }
 /* { dg-final { scan-tree-dump "Loop 1 iterates at most 11 times" "cunrolli" } } */
-/* { dg-final { cleanup-tree-dump "cunrolli" } } */

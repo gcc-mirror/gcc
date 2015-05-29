@@ -64,4 +64,3 @@ main(void)
 /* { dg-final { scan-assembler-not "bl?\[ \t\]+memset" { target { ! arm_thumb1_ok } } } } */
 /* { dg-final { scan-assembler-times "vst1\.8" 1 { target { arm_little_endian && arm_neon } } } } */
 /* { dg-final { scan-assembler "vstr" { target { arm_little_endian && arm_neon } } } } */
-/* { dg-final { cleanup-saved-temps } } */

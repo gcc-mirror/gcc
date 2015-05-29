@@ -45,4 +45,3 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" } } */
-/* { dg-final { cleanup-tree-dump "graphite" } } */

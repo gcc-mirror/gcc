@@ -49,4 +49,3 @@ end program test
 
 ! { dg-final { scan-tree-dump-times "bbb =" 0 "original" } }
 
-! { dg-final { cleanup-tree-dump "original" } }

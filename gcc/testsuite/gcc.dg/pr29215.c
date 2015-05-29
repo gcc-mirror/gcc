@@ -30,4 +30,3 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump-not "memcpy" "ccp1" } } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

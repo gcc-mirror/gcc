@@ -11,4 +11,3 @@ int mymax2(int *it, int *end)
 }
 
 /* { dg-final { scan-tree-dump "Duplicating header" "ch" } } */
-/* { dg-final { cleanup-tree-dump "ch" } } */

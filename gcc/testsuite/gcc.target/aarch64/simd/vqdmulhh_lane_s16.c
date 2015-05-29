@@ -33,4 +33,3 @@ main (void)
 
 
 /* { dg-final { scan-assembler-times "sqdmulh\[ \t\]+\[hH\]\[0-9\]+, ?\[hH\]\[0-9\]+, ?\[vV\]\[0-9\]+\.\[hH\]\\\[2\\\]\n" 1 } } */
-/* { dg-final { cleanup-saved-temps } } */

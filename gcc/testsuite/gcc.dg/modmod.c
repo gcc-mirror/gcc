@@ -10,4 +10,3 @@ int g(unsigned a, unsigned b){
 }
 
 /* { dg-final { scan-tree-dump-times "trunc_mod_expr" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

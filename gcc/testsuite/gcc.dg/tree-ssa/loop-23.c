@@ -26,4 +26,3 @@ int foo(void)
 
 /* { dg-final { scan-tree-dump-times "loop with 4 iterations completely unrolled" 1 "cunroll" } } */
 
-/* { dg-final { cleanup-tree-dump "cunroll" } } */

@@ -18,4 +18,3 @@ matrix_mul (byte *in, byte *out, int size)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { i?86-*-* x86_64-*-* } } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

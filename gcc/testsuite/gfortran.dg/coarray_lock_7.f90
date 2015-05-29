@@ -44,4 +44,3 @@ end
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_lock \\(four.token, 1 - \\(integer\\(kind=4\\)\\) four.dim\\\[0\\\].lbound, 7 - \\(integer\\(kind=4\\)\\) four.dim\\\[1\\\].lbound, &acquired.., &ii, 0B, 0\\);|_gfortran_caf_lock \\(four.token, 1 - four.dim\\\[0\\\].lbound, 7 - four.dim\\\[1\\\].lbound, &acquired.., &ii, 0B, 0\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_unlock \\(four.token, 2 - \\(integer\\(kind=4\\)\\) four.dim\\\[0\\\].lbound, 8 - \\(integer\\(kind=4\\)\\) four.dim\\\[1\\\].lbound, 0B, 0B, 0\\);|_gfortran_caf_unlock \\(four.token, 2 - four.dim\\\[0\\\].lbound, 8 - four.dim\\\[1\\\].lbound, 0B, 0B, 0\\);" 1 "original" } }
 
-! { dg-final { cleanup-tree-dump "original" } }

@@ -9,4 +9,3 @@ void f(short * __restrict__ a, short * __restrict__ b, short * __restrict__ x)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

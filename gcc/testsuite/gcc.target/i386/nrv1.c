@@ -9,4 +9,3 @@ _Complex double foo (_Complex double x)
 }
 
 /* { dg-final { scan-tree-dump-times "return slot optimization" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

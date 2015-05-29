@@ -17,4 +17,3 @@ void test_vrndmf32 (void)
 }
 
 /* { dg-final { scan-assembler "vrintm\.f32\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

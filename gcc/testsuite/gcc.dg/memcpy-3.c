@@ -11,4 +11,3 @@ int get_int(const void *p)
 
 /* { dg-final { scan-tree-dump-not "memcpy" "optimized" } } */
 /* { dg-final { scan-tree-dump-times "MEM" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

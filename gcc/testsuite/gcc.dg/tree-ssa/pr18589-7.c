@@ -7,4 +7,3 @@ float baz (float x, float y)
 }
 
 /* { dg-final { scan-tree-dump-times " \\* " 3 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

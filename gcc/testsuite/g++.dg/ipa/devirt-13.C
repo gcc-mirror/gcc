@@ -17,4 +17,3 @@ main()
 }
 
 /* { dg-final { scan-tree-dump-times "OBJ_TYPE_REF" 0 "ssa"} } */
-/* { dg-final { cleanup-tree-dump "ssa" } } */

@@ -14,4 +14,3 @@ int foo (int a, int b) {
   return d.add(a, b);
 }
 // { dg-final { scan-tree-dump-not "OBJ_TYPE_REF" "gimple" } }
-// { dg-final { cleanup-tree-dump "gimple" } }

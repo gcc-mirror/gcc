@@ -7,4 +7,3 @@ int foo(int i)
 }
 
 /* { dg-final { scan-tree-dump "i \\+ 1" "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

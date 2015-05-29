@@ -58,5 +58,3 @@ int main()
   return x;
 }
 
-/* { dg-final { cleanup-ipa-dump "pta" } } */
-/* { dg-final { cleanup-tree-dump "fre2" } } */

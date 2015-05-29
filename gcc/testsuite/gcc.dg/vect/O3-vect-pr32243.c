@@ -24,4 +24,3 @@ put_mono_values_s8 (GLcontext * ctx, struct gl_renderbuffer *s8rb,
   dsrb->PutValues (ctx, dsrb, count, x, y, temp, mask);
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

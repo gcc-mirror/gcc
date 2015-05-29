@@ -28,4 +28,3 @@ int test_func(void)
 }
 
 /* { dg-final { scan-tree-dump "Executing store motion of pos" "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim1" } } */

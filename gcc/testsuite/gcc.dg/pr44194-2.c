@@ -9,4 +9,3 @@ void func() {
   bar(s.a, s.b);
 }
 /* { dg-final { scan-rtl-dump "global deletions = 0"  "dse1" } } */
-/* { dg-final { cleanup-rtl-dump "dse1" } } */

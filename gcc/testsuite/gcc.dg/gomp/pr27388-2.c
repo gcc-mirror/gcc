@@ -32,4 +32,3 @@ bar (void)
 /* { dg-final { scan-tree-dump-times "shared\\\(j\\\)\[^\\n\]*private\\\(j\\\)" 0 "omplower" } } */
 /* { dg-final { scan-tree-dump-times "private\\\(j\\\)\[^\\n\]*shared\\\(j\\\)" 0 "omplower" } } */
 /* { dg-final { scan-tree-dump-times "omp for\[^\\n\]*private\\\(j\\\)" 1 "omplower" } } */
-/* { dg-final { cleanup-tree-dump "omplower" } } */

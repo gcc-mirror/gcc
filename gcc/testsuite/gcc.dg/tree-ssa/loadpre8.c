@@ -94,4 +94,3 @@ rewrite_add_phi_arguments (basic_block bb)
     }
 }
 /* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre" } } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

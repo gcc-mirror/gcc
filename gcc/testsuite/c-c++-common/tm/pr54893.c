@@ -13,4 +13,3 @@ int main()
 }
 
 /* { dg-final { scan-ipa-dump "GTMA_DOES_GO_IRREVOCABLE" "tmipa" } } */
-/* { dg-final { cleanup-ipa-dump "tmipa" } } */

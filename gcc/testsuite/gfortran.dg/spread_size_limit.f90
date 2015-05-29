@@ -11,5 +11,4 @@ ZLON_MASK(:,:)= SPREAD( (/ (JLON , JLON=1,720) /) , DIM=2, NCOPIES=360 )
 print *, zlon_mask(100,100)
 END
 ! { dg-final { scan-tree-dump-times "_gfortran_spread" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }
 

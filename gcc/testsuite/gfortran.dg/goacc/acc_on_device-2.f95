@@ -37,4 +37,3 @@ end function f
 ! TODO: not working.
 ! { dg-final { scan-rtl-dump-times "\\\(call \[^\\n\]* acc_on_device" 0 "expand" { xfail *-*-* } } }
 
-! { dg-final { cleanup-rtl-dump "expand" } }

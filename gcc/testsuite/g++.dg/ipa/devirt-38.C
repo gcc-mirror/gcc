@@ -28,4 +28,3 @@ void fn1 ()
       }
 }
 /* { dg-final { scan-tree-dump-not "OBJ_TYPE_REF" "ccp1"  } } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

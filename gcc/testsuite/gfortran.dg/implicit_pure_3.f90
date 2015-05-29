@@ -106,4 +106,3 @@ END MODULE
 
 ! { dg-final { scan-module-absence "parallel_rng_types" "IMPLICIT_PURE" } }
 ! { dg-final { scan-tree-dump-times "rn32 \\(rng_stream" 3 "optimized" } }
-! { dg-final { cleanup-tree-dump "optimized" } }

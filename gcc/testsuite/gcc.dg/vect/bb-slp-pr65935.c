@@ -58,5 +58,3 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp1" } } */
-/* { dg-final { cleanup-tree-dump "slp1" } } */
-/* { dg-final { cleanup-tree-dump "slp2" } } */

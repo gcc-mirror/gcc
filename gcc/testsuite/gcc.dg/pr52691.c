@@ -21,4 +21,3 @@ foo (int a, ...)
 /* { dg-final { scan-tree-dump "__builtin_next_arg" "optimized" { target { { i?86-*-* x86_64-*-* } && ia32 } } } } */
 /* { dg-final { scan-tree-dump "__builtin_next_arg" "optimized" { target { powerpc*-*-darwin* powerpc*-*-aix* } } } } */
 /* { dg-final { scan-tree-dump "__builtin_next_arg" "optimized" { target { powerpc*-*-linux* && lp64 } } } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -11,4 +11,3 @@ float e(float *x, float *y, float *z)
 
 /* Look for only one division.  */
 /* { dg-final { scan-tree-dump-times "= .* /" 1 "recip" } } */
-/* { dg-final { cleanup-tree-dump "recip" } } */

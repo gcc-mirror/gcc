@@ -19,4 +19,3 @@ int f(int t, int c)
 /* The value e should have been replaced with t and there should be only one PHI. */
 /* { dg-final { scan-tree-dump "g .t_\[0-9\]*.D.," "optimized" } } */
 /* { dg-final { scan-tree-dump-times "PHI" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

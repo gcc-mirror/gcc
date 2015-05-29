@@ -12,4 +12,3 @@ subroutine s243(ntimes,ld,n,ctime,dtime,a,b,c,d,e,aa,bb,cc)
 end subroutine s243
 
 ! { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" } }
-! { dg-final { cleanup-tree-dump "vect" } }

@@ -29,4 +29,3 @@ int bar (int c) {
 
 /* { dg-final { scan-tree-dump-times "foo \\(" 1 "pre"} } */
 /* { dg-final { scan-tree-dump-times "foo2 \\(" 1 "pre"} } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

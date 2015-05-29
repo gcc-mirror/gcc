@@ -17,4 +17,3 @@ void func2(int* val)
 
 /* { dg-final { scan-tree-dump-not "a \\\(" "ccp1" } } */
 /* { dg-final { scan-tree-dump-not "b \\\(" "ccp1" } } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

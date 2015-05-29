@@ -46,5 +46,3 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp2" { target { vect_call_copysignf && vect_call_sqrtf } } } } */
-/* { dg-final { cleanup-tree-dump "slp1" } } */
-/* { dg-final { cleanup-tree-dump "slp2" } } */

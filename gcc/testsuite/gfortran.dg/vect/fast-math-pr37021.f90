@@ -15,4 +15,3 @@ subroutine to_product_of(self,a,b,a1,a2)
 end subroutine
 
 ! { dg-final { scan-tree-dump "vectorized 2 loops" "vect" } }
-! { dg-final { cleanup-tree-dump "vect" } }

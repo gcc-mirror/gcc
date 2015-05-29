@@ -21,4 +21,3 @@ int foo()
 }
 /* { dg-final { scan-rtl-dump "size 8192" "expand" } } */
 /* { dg-final { scan-rtl-dump "size 32" "expand" } } */
-/* { dg-final { cleanup-rtl-dump "expand" } } */

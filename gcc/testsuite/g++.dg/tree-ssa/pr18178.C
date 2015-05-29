@@ -44,4 +44,3 @@ void doit (array *a)
 /* VRP should remove all but 1 if() in the loop.  */
 
 /* { dg-final { scan-tree-dump-times "if " 1 "vrp1"} } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

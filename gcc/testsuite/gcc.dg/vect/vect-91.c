@@ -62,4 +62,3 @@ main3 ()
 /* { dg-final { scan-tree-dump-times "accesses have the same alignment." 2 "vect" { target { {! vect_aligned_arrays } && {vect_sizes_32B_16B} } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 3 "vect" {target { vector_alignment_reachable } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 3 "vect" {target { {! vector_alignment_reachable} && {! vect_hw_misalign} } } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

@@ -21,4 +21,3 @@ dct_unquantize_h263_inter_c (short *block, int n, int qscale, int nCoeffs)
 }
 
 /* { dg-final { scan-tree-dump-times "Applying if-conversion" 1 "ifcvt" } } */
-/* { dg-final { cleanup-tree-dump "ifcvt" } } */

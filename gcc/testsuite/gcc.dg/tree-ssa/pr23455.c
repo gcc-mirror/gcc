@@ -27,4 +27,3 @@ bi_windup(unsigned int *outbuf, unsigned int bi_buf)
    one add involving outcnt and outbuf.  */
 /* { dg-final { scan-tree-dump-times "Eliminated: 3" 1 "pre" {target { ! avr-*-* } } } } */
 /* { dg-final { scan-tree-dump-times "Eliminated: 4" 1 "pre" {target {   avr-*-* } } } } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

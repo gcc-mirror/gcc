@@ -126,4 +126,3 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "vector alignment may not be reachable" 1 "vect" { target { ! vector_alignment_reachable  } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" { target { ! vector_alignment_reachable } } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

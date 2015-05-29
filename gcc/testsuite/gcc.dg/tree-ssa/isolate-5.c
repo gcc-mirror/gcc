@@ -52,5 +52,3 @@ d_type (struct d_info *di)
 /* { dg-final { scan-tree-dump-times "->type" 1 "optimized"} } */
 /* { dg-final { scan-tree-dump-times "\\.type" 1 "optimized"} } */
 /* { dg-final { scan-tree-dump-times "->zzz" 1 "isolate-paths"} } */
-/* { dg-final { cleanup-tree-dump "isolate-paths" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -19,4 +19,3 @@ double test(void)
 }
 
 /* { dg-final { scan-tree-dump-times "unroll factor 4" 1 "aprefetch" } } */
-/* { dg-final { cleanup-tree-dump "aprefetch" } } */

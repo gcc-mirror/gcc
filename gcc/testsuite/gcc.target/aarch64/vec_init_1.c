@@ -31,4 +31,3 @@ main (int argc, char **argv)
    be a bit fragile - the test is currently passing only because of the option
    -fomit-frame-pointer which avoids use of stp in the prologue to main().  */
 /* { dg-final { scan-assembler-not "stp\\t" } } */
-/* { dg-final { cleanup-saved-temps } } */

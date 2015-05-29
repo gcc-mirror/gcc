@@ -23,4 +23,3 @@ void f1(volatile struct hardware *ptr)
 }
 
 /* { dg-final { scan-tree-dump-times "\\*ptr" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

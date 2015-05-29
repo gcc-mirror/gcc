@@ -143,5 +143,3 @@ f10 (int a)
 /* { dg-final { scan-tree-dump-times "Optimizing range tests a_\[0-9\]*.D. -.128, 159. and -.192, 223.\[\n\r\]* into" 1 "reassoc1" } } */
 /* { dg-final { scan-tree-dump-times "Optimizing range tests a_\[0-9\]*.D. -.1, 1. and -.2, 2. and -.3, 3. and -.4, 4. and -.5, 5. and -.6, 6. and -.7, 7. and -.8, 8.\[\n\r\]* into" 7 "reassoc1" } } */
 /* { dg-final { scan-tree-dump-times "Optimizing range tests \[^\r\n\]*_\[0-9\]* -.0, 31. and -.128, 159.\[\n\r\]* into" 1 "reassoc2" } } */
-/* { dg-final { cleanup-tree-dump "reassoc1" } } */
-/* { dg-final { cleanup-tree-dump "reassoc2" } } */

@@ -18,4 +18,3 @@ foo (int a)
 }
 
 /* { dg-final { scan-tree-dump-times "Folding predicate" 1 "vrp1"} } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

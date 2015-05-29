@@ -52,4 +52,3 @@ get_alias_set (t)
    collapse down to a simple return 0 without any conditionals).  */
 /* { dg-final { scan-tree-dump-times "if " 1 "cddce2"} } */
 
-/* { dg-final { cleanup-tree-dump "cddce2" } } */

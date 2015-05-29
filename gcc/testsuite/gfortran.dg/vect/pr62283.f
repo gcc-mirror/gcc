@@ -14,4 +14,3 @@ C { dg-additional-options "-fvect-cost-model=dynamic" }
       y=y+beta*x
       end
 C { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { target { vect_hw_misalign } } } }
-C { dg-final { cleanup-tree-dump "vect" } }

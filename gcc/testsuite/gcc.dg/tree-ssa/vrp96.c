@@ -50,4 +50,3 @@ baz (T b, T c)
 
 /* { dg-final { scan-tree-dump-not "link_error" "vrp1" } } */
 /* { dg-final { scan-tree-dump-times "required_check" 2 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

@@ -16,4 +16,3 @@ void test_vget_highs16 (void)
   out_int16x4_t = vget_high_s16 (arg0_int16x8_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

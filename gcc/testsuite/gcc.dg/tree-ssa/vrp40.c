@@ -15,4 +15,3 @@ int f(int a) {
 }
 
 /* { dg-final { scan-tree-dump "return 3;" "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

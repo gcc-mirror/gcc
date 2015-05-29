@@ -13,4 +13,3 @@ int foo(struct st *st)
 }
 
 /* { dg-final { scan-tree-dump-times "={v}" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

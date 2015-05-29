@@ -18,4 +18,3 @@ void test_vshls64 (void)
 }
 
 /* { dg-final { scan-assembler "vshl\.s64\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

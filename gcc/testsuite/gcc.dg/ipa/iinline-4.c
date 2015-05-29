@@ -218,4 +218,3 @@ int test7 (void)
 /* { dg-final { scan-ipa-dump "hooray5\[^\\n\]*inline copy in test5"  "inline"  } } */
 /* { dg-final { scan-ipa-dump "hooray6\[^\\n\]*inline copy in test6"  "inline"  } } */
 /* { dg-final { scan-ipa-dump "hooray7\[^\\n\]*inline copy in test7"  "inline"  } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */

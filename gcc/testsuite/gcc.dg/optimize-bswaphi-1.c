@@ -57,4 +57,3 @@ swap16 (HItype in)
 /* { dg-final { scan-tree-dump-times "16 bit load in target endianness found at" 3 "bswap" } } */
 /* { dg-final { scan-tree-dump-times "16 bit bswap implementation found at" 1 "bswap" { target alpha*-*-* arm*-*-* } } } */
 /* { dg-final { scan-tree-dump-times "16 bit bswap implementation found at" 4 "bswap" { xfail alpha*-*-* arm*-*-* } } } */
-/* { dg-final { cleanup-tree-dump "bswap" } } */

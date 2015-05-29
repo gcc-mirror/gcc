@@ -18,4 +18,3 @@ void test_vsliQ_ns16 (void)
 }
 
 /* { dg-final { scan-assembler "vsli\.16\[ 	\]+\[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+, #\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

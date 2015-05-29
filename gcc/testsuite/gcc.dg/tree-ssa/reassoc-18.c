@@ -9,4 +9,3 @@ ETree_nFactorEntriesInFront (unsigned int b, unsigned int m)
 }
 
 /* { dg-final { scan-tree-dump-times "\\\*" 2 "reassoc1" } } */
-/* { dg-final { cleanup-tree-dump "reassoc1" } } */

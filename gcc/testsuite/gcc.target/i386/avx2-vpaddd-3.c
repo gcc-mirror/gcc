@@ -9,4 +9,3 @@
 #include "avx2-vpop-check.h"
 
 /* { dg-final { scan-assembler-times "vpaddd\[ \\t\]+\[^\n\]*%ymm\[0-9\]" 1 } } */
-/* { dg-final { cleanup-saved-temps } } */

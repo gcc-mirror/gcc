@@ -16,4 +16,3 @@ int make_scheduler_request(double a, double b)
 }
 
 /* { dg-final { scan-tree-dump-times " / " 1 "recip" } } */
-/* { dg-final { cleanup-tree-dump "recip" } } */

@@ -20,4 +20,3 @@ int foo(int a, int b)
 /* We will eliminate the g1.a from the return statement as fully redundant,
    and remove one calculation of a + b. */
 /* { dg-final { scan-tree-dump-times "Eliminated: 2" 1 "pre"} } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

@@ -30,4 +30,3 @@ subroutine test3(esss,Ix,Iyz, e_x, ii_ivec)
 end subroutine
 
 ! { dg-final { scan-tree-dump-not "malloc" "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

@@ -30,4 +30,3 @@ double test4(double x, double y)
 /* { dg-final { scan-tree-dump "sin" "optimized" } } */
 /* { dg-final { scan-tree-dump "cos" "optimized" } } */
 /* { dg-final { scan-tree-dump "return 0.0" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

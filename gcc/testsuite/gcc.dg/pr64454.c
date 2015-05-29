@@ -40,4 +40,3 @@ f6 (int x)
 
 /* { dg-final { scan-tree-dump-times "% 5" 6 "vrp1" } } */
 /* { dg-final { scan-tree-dump-times "% 6" 0 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

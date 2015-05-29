@@ -17,4 +17,3 @@ main()
 }
 /* { dg-final-use { scan-tree-dump "Average value sum:499500" "optimized"} } */
 /* { dg-final-use { scan-tree-dump "IOR value" "optimized"} } */
-/* { dg-final-use { cleanup-tree-dump "optimized" } } */

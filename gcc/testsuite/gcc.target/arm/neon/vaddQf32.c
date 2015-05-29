@@ -18,4 +18,3 @@ void test_vaddQf32 (void)
 }
 
 /* { dg-final { scan-assembler "vadd\.f32\[ 	\]+\[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

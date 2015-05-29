@@ -15,4 +15,3 @@ int main() {
 }
 
 // { dg-final { scan-tree-dump-times "pr58123.C:13\.6\] try" 1 "gimple" } }
-// { dg-final { cleanup-tree-dump "gimple" } }

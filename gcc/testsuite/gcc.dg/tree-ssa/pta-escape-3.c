@@ -40,4 +40,3 @@ int main()
 
 /* { dg-final { scan-tree-dump "ESCAPED = { NULL ESCAPED NONLOCAL x }" "alias" { target { ! keeps_null_pointer_checks } } } } */
 /* { dg-final { scan-tree-dump "ESCAPED = { ESCAPED NONLOCAL x }" "alias" { target { keeps_null_pointer_checks } } } } */
-/* { dg-final { cleanup-tree-dump "alias" } } */

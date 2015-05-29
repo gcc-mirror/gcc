@@ -15,4 +15,3 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump-times "strlen \\(" 0 "strlen" } } */
-/* { dg-final { cleanup-tree-dump "strlen" } } */

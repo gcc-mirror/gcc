@@ -17,4 +17,3 @@ t_frame_run (test6)
 /* { dg-final { scan-assembler-times "str\tx30, \\\[sp, -\[0-9\]+\\\]!" 2 } } */
 /* { dg-final { scan-assembler-times "ldr\tx30, \\\[sp\\\], \[0-9\]+" 2 } } */
 
-/* { dg-final { cleanup-saved-temps } } */

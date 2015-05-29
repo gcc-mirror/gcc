@@ -27,4 +27,3 @@ contains
 end
 ! { dg-final { scan-tree-dump-times "builtin_malloc" 3 "original" } }
 ! { dg-final { scan-tree-dump-times "builtin_free" 4 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

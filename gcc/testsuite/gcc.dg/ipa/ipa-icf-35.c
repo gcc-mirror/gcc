@@ -28,4 +28,3 @@ int main()
 /* { dg-final { scan-ipa-dump "Semantic equality hit:f2->f1" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Semantic equality hit:d->c" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Semantic equality hit:b->a" "icf"  } } */
-/* { dg-final { cleanup-ipa-dump "icf" } } */

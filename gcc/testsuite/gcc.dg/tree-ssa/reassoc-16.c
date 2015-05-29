@@ -13,4 +13,3 @@ double test1 (double x, double y, double z, double weight)
    be gone.  */
 
 /* { dg-final { scan-tree-dump-times "/" 1 "reassoc1" } } */
-/* { dg-final { cleanup-tree-dump "reassoc1" } } */

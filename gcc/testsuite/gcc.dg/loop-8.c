@@ -20,5 +20,4 @@ f (int *a, int *b)
 /* Load of 42 is moved out of the loop, introducing a new pseudo register.  */
 /* { dg-final { scan-rtl-dump-times "Decided" 1 "loop2_invariant" } } */
 /* { dg-final { scan-rtl-dump-not "without introducing a new temporary register" "loop2_invariant" } } */
-/* { dg-final { cleanup-rtl-dump "loop2_invariant" } } */
 

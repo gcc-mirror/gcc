@@ -45,4 +45,3 @@ int test4 (struct foo2 *x)
 }
 
 /* { dg-final { scan-tree-dump-times "Folding" 2 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

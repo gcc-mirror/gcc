@@ -23,5 +23,4 @@ int bar (int b)
 }
 
 /* { dg-final { scan-tree-dump "CALLUSED = { ESCAPED NONLOCAL f.* i q }" "alias" } } */
-/* { dg-final { cleanup-tree-dump "alias" } } */
 

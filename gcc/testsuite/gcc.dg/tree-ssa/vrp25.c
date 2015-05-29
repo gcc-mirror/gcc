@@ -50,5 +50,4 @@ L9:
    both totally subsumed by earlier tests and thus should be folded
    away using VRP.  */
 /* { dg-final { scan-tree-dump-times "Folding predicate" 2 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */
 

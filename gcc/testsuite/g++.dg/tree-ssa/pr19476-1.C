@@ -14,4 +14,3 @@ int g(){
 
 /* { dg-final { scan-tree-dump     "return 42" "ccp1" } } */
 /* { dg-final { scan-tree-dump-not "return 33" "ccp1" } } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

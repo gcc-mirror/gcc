@@ -17,4 +17,3 @@ int bar (int x)
     return foo ();
 }
 
-/* { dg-final { cleanup-rtl-dump "postreload*" } } */

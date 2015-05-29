@@ -19,4 +19,3 @@ int test3(int e, int f)
 /* { dg-final { scan-tree-dump-times "a == 4" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "b == c" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "e \\^ 2" 1 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

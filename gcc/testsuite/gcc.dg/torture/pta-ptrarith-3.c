@@ -34,4 +34,3 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump "q_. = { i j k }" "alias" } } */
-/* { dg-final { cleanup-tree-dump "alias" } } */

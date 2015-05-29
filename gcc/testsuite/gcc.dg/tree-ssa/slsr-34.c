@@ -40,4 +40,3 @@ f (int c, int i)
 
 /* { dg-final { scan-tree-dump-times " \\* " 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "PHI" 2 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

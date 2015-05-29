@@ -21,4 +21,3 @@ begin
 end;
 
 -- { dg-final { scan-tree-dump "goto" "optimized" } }
--- { dg-final { cleanup-tree-dump "optimized" } }

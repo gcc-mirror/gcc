@@ -21,4 +21,3 @@ int foo(int argc)
 /* We will move the load of a out of the loop.  */
 
 /* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre" } } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

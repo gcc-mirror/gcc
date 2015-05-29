@@ -32,4 +32,3 @@ int xxx (void)
    with k = 0 may be invalid.  */
 
 /* { dg-final { scan-tree-dump-times "Moving statement" 2 "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim1" } } */

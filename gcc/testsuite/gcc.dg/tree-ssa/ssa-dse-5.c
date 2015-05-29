@@ -29,5 +29,4 @@ f1 (int i, int j, int k)
 /* { dg-final { scan-tree-dump-times "i = 5" 1 "optimized" { xfail *-*-* }} } */
 /* { dg-final { scan-tree-dump-times "<L.*>:;\[\n\t \]*\\*p = 5" 1 "optimized" { xfail *-*-*}} } */
 
-/* { dg-final { cleanup-tree-dump "optimized" } } */
 

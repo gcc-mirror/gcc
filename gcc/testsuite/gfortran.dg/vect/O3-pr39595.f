@@ -13,5 +13,4 @@
       end do
       end
 
-! { dg-final { cleanup-tree-dump "vect" } }
 

@@ -40,4 +40,3 @@ loop_invar (struct test_node *node)
 }
 
 /* { dg-final { scan-rtl-dump "Decided to move invariant" "loop2_invariant" } } */
-/* { dg-final { cleanup-rtl-dump "loop2_invariant" } } */

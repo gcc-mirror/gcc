@@ -36,4 +36,3 @@ end program test
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_co_reduce \\(&desc.., &fr, 4, _gfortran_caf_num_images \\(0, -1\\), &stat1, errmesg1, 0, 6\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_co_reduce \\(&val2, &gz, 0, 4, &stat2, errmesg2, 0, 7\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_co_reduce \\(&desc.., &hc, 1, res, &stat3, errmesg3, 99, 8\\);" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

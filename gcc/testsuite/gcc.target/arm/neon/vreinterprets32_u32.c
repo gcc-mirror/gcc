@@ -16,4 +16,3 @@ void test_vreinterprets32_u32 (void)
   out_int32x2_t = vreinterpret_s32_u32 (arg0_uint32x2_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */
