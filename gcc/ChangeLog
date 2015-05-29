@@ -1,3 +1,9 @@
+2015-05-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR target/66215
+	* config/s390/s390.c (s390_reorg): Fix placement of post-label NOPs
+	with -mhotpatch=.
+
 2015-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/66142
