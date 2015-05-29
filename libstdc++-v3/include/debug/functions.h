@@ -30,23 +30,23 @@
 #define _GLIBCXX_DEBUG_FUNCTIONS_H 1
 
 #include <bits/c++config.h>
-#include <bits/stl_iterator_base_types.h> // for iterator_traits, categories and
-					  // _Iter_base
-#include <bits/cpp_type_traits.h>	  // for __is_integer
-#include <bits/move.h>                    // for __addressof and addressof
-#include <bits/stl_function.h>		  // for less
+#include <bits/stl_iterator_base_types.h>	// for iterator_traits,
+						// categories and _Iter_base
+#include <bits/cpp_type_traits.h>		// for __is_integer
+
+#include <bits/move.h>				// for __addressof
+#include <bits/stl_function.h>			// for less
 #if __cplusplus >= 201103L
-# include <type_traits>			  // for is_lvalue_reference and __and_
+# include <type_traits>				// for is_lvalue_reference and
+						// conditional.
 #endif
+
 #include <debug/formatter.h>
 
 namespace __gnu_debug
 {
   template<typename _Iterator, typename _Sequence>
     class _Safe_iterator;
-
-  template<typename _Iterator, typename _Sequence>
-    class _Safe_local_iterator;
 
   template<typename _Sequence>
     struct _Insert_range_from_self_is_safe
@@ -84,19 +84,6 @@ namespace __gnu_debug
     inline bool
     __check_dereferenceable(const _Tp* __ptr)
     { return __ptr; }
-
-  /** Safe iterators know if they are dereferenceable. */
-  template<typename _Iterator, typename _Sequence>
-    inline bool
-    __check_dereferenceable(const _Safe_iterator<_Iterator, _Sequence>& __x)
-    { return __x._M_dereferenceable(); }
-
-  /** Safe local iterators know if they are dereferenceable. */
-  template<typename _Iterator, typename _Sequence>
-    inline bool
-    __check_dereferenceable(const _Safe_local_iterator<_Iterator,
-						       _Sequence>& __x)
-    { return __x._M_dereferenceable(); }
 
   /** If the distance between two random access iterators is
    *  nonnegative, assume the range is valid.
@@ -149,20 +136,6 @@ namespace __gnu_debug
       typedef typename std::__is_integer<_InputIterator>::__type _Integral;
       return __valid_range_aux(__first, __last, _Integral());
     }
-
-  /** Safe iterators know how to check if they form a valid range. */
-  template<typename _Iterator, typename _Sequence>
-    inline bool
-    __valid_range(const _Safe_iterator<_Iterator, _Sequence>& __first,
-		  const _Safe_iterator<_Iterator, _Sequence>& __last)
-    { return __first._M_valid_range(__last); }
-
-  /** Safe local iterators know how to check if they form a valid range. */
-  template<typename _Iterator, typename _Sequence>
-    inline bool
-    __valid_range(const _Safe_local_iterator<_Iterator, _Sequence>& __first,
-		  const _Safe_local_iterator<_Iterator, _Sequence>& __last)
-    { return __first._M_valid_range(__last); }
 
   /* Checks that [first, last) is a valid range, and then returns
    * __first. This routine is useful when we can't use a separate
@@ -534,13 +507,6 @@ namespace __gnu_debug
       enum { __value = 0 };
       typedef std::__false_type __type;
     };
-
-  template<typename _Iterator, typename _Sequence>
-    struct __is_safe_random_iterator<_Safe_iterator<_Iterator, _Sequence> >
-    : std::__are_same<std::random_access_iterator_tag,
-                      typename std::iterator_traits<_Iterator>::
-		      iterator_category>
-    { };
 
   template<typename _Iterator>
     struct _Siter_base

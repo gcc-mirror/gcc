@@ -29,7 +29,7 @@
 #ifndef _GLIBCXX_DEBUG_SAFE_ITERATOR_H
 #define _GLIBCXX_DEBUG_SAFE_ITERATOR_H 1
 
-#include <debug/debug.h>
+#include <debug/assertions.h>
 #include <debug/macros.h>
 #include <debug/functions.h>
 #include <debug/safe_base.h>
@@ -54,13 +54,6 @@ namespace __gnu_debug
 	_S_Is_Beginnest(const _Safe_iterator<_Iterator, _Sequence>& __it)
 	{ return __it.base() == __it._M_get_sequence()->_M_base().begin(); }
     };
-
-  /** Iterators that derive from _Safe_iterator_base can be determined singular
-   *  or non-singular.
-   **/
-  inline bool
-  __check_singular_aux(const _Safe_iterator_base* __x)
-  { return __x->_M_singular(); }
 
   /** The precision to which we can calculate the distance between
    *  two iterators.
@@ -93,11 +86,7 @@ namespace __gnu_debug
     inline std::pair<typename std::iterator_traits<_Iterator>::difference_type,
 		     _Distance_precision>
     __get_distance(const _Iterator& __lhs, const _Iterator& __rhs)
-    {
-      typedef typename std::iterator_traits<_Iterator>::iterator_category
-	  _Category;
-      return __get_distance(__lhs, __rhs, _Category());
-    }
+    { return __get_distance(__lhs, __rhs, std::__iterator_category(__lhs)); }
 
   /** \brief Safe iterator wrapper.
    *
@@ -768,6 +757,27 @@ namespace __gnu_debug
     operator+(typename _Safe_iterator<_Iterator,_Sequence>::difference_type __n,
 	      const _Safe_iterator<_Iterator, _Sequence>& __i) _GLIBCXX_NOEXCEPT
     { return __i + __n; }
+
+  /** Safe iterators know if they are dereferenceable. */
+  template<typename _Iterator, typename _Sequence>
+    inline bool
+    __check_dereferenceable(const _Safe_iterator<_Iterator, _Sequence>& __x)
+    { return __x._M_dereferenceable(); }
+
+  /** Safe iterators know how to check if they form a valid range. */
+  template<typename _Iterator, typename _Sequence>
+    inline bool
+    __valid_range(const _Safe_iterator<_Iterator, _Sequence>& __first,
+		  const _Safe_iterator<_Iterator, _Sequence>& __last)
+    { return __first._M_valid_range(__last); }
+
+  template<typename _Iterator, typename _Sequence>
+    struct __is_safe_random_iterator<_Safe_iterator<_Iterator, _Sequence> >
+    : std::__are_same<std::random_access_iterator_tag,
+                      typename std::iterator_traits<_Iterator>::
+		      iterator_category>
+    { };
+
 } // namespace __gnu_debug
 
 #include <debug/safe_iterator.tcc>

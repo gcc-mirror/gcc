@@ -62,7 +62,7 @@
 #pragma GCC system_header
 
 #include <bits/concept_check.h>
-#include <debug/debug.h>
+#include <debug/assertions.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
