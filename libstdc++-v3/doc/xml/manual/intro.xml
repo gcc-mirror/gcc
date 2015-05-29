@@ -814,6 +814,12 @@ requirements of the license of GCC.
     <listitem><para>Return the end of the filled range.
     </para></listitem></varlistentry>
 
+    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#2021">2021</link>:
+       <emphasis>Further incorrect uses of <code>result_of</code></emphasis>
+    </term>
+    <listitem><para>Correctly decay types in signature of <code>std::async</code>.
+    </para></listitem></varlistentry>
+
   </variablelist>
 
  </section>
