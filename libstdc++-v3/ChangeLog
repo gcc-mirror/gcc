@@ -1,3 +1,11 @@
+2015-05-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66327
+	* include/bits/stl_algobase.h (__equal<true>::equal): Do not call
+	memcmp with null pointers.
+	(__lexicographical_compare<true>::__lc): Do not call memcmp for empty
+	ranges.
+
 2015-05-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/65352
