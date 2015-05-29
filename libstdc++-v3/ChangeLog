@@ -1,5 +1,8 @@
 2015-05-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2017.xml: Fix duplicate ID attribute.
+	* doc/html/manual/*: Regenerate.
+
 	* include/std/future (__async_result_of): New alias template.
 	(async): Use __async_result_of to pass decayed types to result_of.
 	* testsuite/30_threads/async/lwg2021.cc: New.
