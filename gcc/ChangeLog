@@ -1,3 +1,9 @@
+2015-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/66142
+	* tree-if-conv.c (if_convertible_phi_p): Don't give up on
+	virtual phis that feed themselves.
+
 2015-05-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66314

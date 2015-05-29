@@ -1,3 +1,8 @@
+2015-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/66142
+	* gcc.dg/vect/pr66142.c: New test.
+
 2015-05-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66314
