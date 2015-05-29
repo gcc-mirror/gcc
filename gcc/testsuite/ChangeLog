@@ -1,3 +1,12 @@
+2015-05-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backported from mainline
+	2015-03-23  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/63175
+	* gcc.dg/vect/costmodel/ppc/costmodel-bb-slp-9a-pr63175.c: Scan
+	assembly for lvx in addition to lxv.
+
 2015-05-26  Rohit Arul Raj  <rohitarulraj@freescale.com>
 
 	Backported from mainline
