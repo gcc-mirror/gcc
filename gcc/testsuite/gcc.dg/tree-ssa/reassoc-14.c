@@ -22,4 +22,3 @@ unsigned int test2 (unsigned int x, unsigned int y, unsigned int z,
 /* There should be one multiplication left in test1 and three in test2.  */
 
 /* { dg-final { scan-tree-dump-times "\\\*" 4 "reassoc1" } } */
-/* { dg-final { cleanup-tree-dump "reassoc1" } } */

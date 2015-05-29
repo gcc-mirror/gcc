@@ -33,5 +33,3 @@ f (int i)
 /* { dg-final { scan-tree-dump-times "\\* 10" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "\\+ 200" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "\\+ 40" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "slsr" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

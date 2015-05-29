@@ -50,5 +50,4 @@ L23:
    execute the if (expr->common.code != 142) test once per loop
    iteration.  */
 /* { dg-final { scan-tree-dump-times "Threaded jump" 1 "dom2" } } */
-/* { dg-final { cleanup-tree-dump "dom2" } } */
 

@@ -17,4 +17,3 @@ foo (struct S x)
 
 /* { dg-final { scan-tree-dump "& 7;" "optimized" } } */
 /* { dg-final { scan-tree-dump "== 7;" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -41,4 +41,3 @@
 ! unrolled loops.
 
 ! { dg-final { scan-tree-dump-times "\[0-9\] \\\* " 22 "reassoc1" } }
-! { dg-final { cleanup-tree-dump "reassoc1" } }

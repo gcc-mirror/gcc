@@ -19,6 +19,5 @@ const_f (filter_buffer_t *buf)
     ((float*) (&((sbuf_header_t *) (__PTRDIFF_TYPE__)((buf) == (filter_buffer_t *)&(buf)->buf[0]))->buf[0]))[i] = val;
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */
 
 

@@ -17,4 +17,3 @@ void test_vrev16p8 (void)
 }
 
 /* { dg-final { scan-assembler "vrev16\.8\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

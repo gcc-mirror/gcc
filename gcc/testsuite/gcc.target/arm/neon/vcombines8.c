@@ -17,4 +17,3 @@ void test_vcombines8 (void)
   out_int8x16_t = vcombine_s8 (arg0_int8x8_t, arg1_int8x8_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

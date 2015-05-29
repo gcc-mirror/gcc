@@ -18,4 +18,3 @@ foo (int64_t a)
    the *attempt* to match this RTL pattern, regardless of whether an
    actual insn may be found on the platform.  */
 /* { dg-final { scan-rtl-dump "\\(neg:DI \\(ge:DI" "combine" } } */
-/* { dg-final { cleanup-rtl-dump "combine" } } */

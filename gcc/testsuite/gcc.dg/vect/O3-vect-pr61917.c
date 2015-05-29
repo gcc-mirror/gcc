@@ -11,4 +11,3 @@ fn1 ()
   return d; 
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

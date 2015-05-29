@@ -11,4 +11,3 @@ int f1(int t)
 }
 
 /* { dg-final { scan-tree-dump-not "\\\&" "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

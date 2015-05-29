@@ -15,4 +15,3 @@ void foo(void)
 }
 
 // { dg-final { scan-tree-dump-times "omp_data_o" 0 "ompexp" } }
-// { dg-final { cleanup-tree-dump "ompexp" } }

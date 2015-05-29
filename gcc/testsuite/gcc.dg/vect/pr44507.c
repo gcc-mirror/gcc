@@ -51,5 +51,4 @@ int main(int argc, char** argv)
   return seeIf256ByteArrayIsConstant(&array1[0]);
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

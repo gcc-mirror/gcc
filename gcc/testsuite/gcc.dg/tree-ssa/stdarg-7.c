@@ -19,4 +19,3 @@ foo (int x, ...)
 }
 
 /* { dg-final { scan-tree-dump "foo: va_list escapes 1, needs to save all GPR units and all FPR units" "stdarg" } } */
-/* { dg-final { cleanup-tree-dump "stdarg" } } */

@@ -17,4 +17,3 @@ int main()
    and we want that load to be into a PRE temporary.  */
 /* { dg-final { scan-tree-dump-times "= a_global_var;" 1 "pre" } } */
 /* { dg-final { scan-tree-dump "pretmp\[^\\n\]* = a_global_var;" "pre" } } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

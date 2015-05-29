@@ -10,4 +10,3 @@ int foo(int i, int j)
 }
 
 /* { dg-final { scan-tree-dump-times "i == j" 1 "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

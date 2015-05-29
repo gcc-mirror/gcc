@@ -24,4 +24,3 @@ MODULE qs_integrate_potential_low
 END MODULE qs_integrate_potential_low
 ! { dg-final { scan-tree-dump-not "bound" "original" } }
 ! { dg-final { scan-tree-dump-not "abort" "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

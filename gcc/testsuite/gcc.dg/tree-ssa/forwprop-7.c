@@ -13,4 +13,3 @@ int foo(void)
 
 /* { dg-final { scan-tree-dump-times "VIEW_CONVERT_EXPR" 0 "forwprop1"} } */
 /* { dg-final { scan-tree-dump-times "={v}" 2 "forwprop1"} } */
-/* { dg-final { cleanup-tree-dump "forwprop1" } } */

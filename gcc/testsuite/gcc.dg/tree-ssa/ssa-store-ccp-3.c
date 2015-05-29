@@ -15,4 +15,3 @@ int f(void)
    conststaticvariable as we should have inlined the 0. */
 /* { dg-final { scan-tree-dump-times "conststaticvariable" 0 "optimized" { target { pie_enabled || nonpic } } } } */
 /* { dg-final { scan-tree-dump-times "conststaticvariable" 1 "optimized" { target { { ! pie_enabled } && { ! nonpic } } } } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -13,5 +13,4 @@ main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "strlen \\(" 0 "strlen" } } *
-/* { dg-final { cleanup-tree-dump "strlen" } } */
+/* { dg-final { scan-tree-dump-times "strlen \\(" 0 "strlen" } } */

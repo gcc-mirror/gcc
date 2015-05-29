@@ -17,4 +17,3 @@ int main (void)
 /* This loop cannot be parallelized due to a dependence.  */
 
 /* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 0 "parloops" } } */
-/* { dg-final { cleanup-tree-dump "parloops" } } */

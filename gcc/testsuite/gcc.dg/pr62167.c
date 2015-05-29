@@ -47,4 +47,3 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump-not "Removing basic block" "pre"} } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

@@ -8,4 +8,3 @@ foo (int x)
 }
 
 /* { dg-final { scan-assembler-times "mul\tw\[0-9\]+, w\[0-9\]+, w\[0-9\]+" 1 } } */
-/* { dg-final { cleanup-saved-temps } } */

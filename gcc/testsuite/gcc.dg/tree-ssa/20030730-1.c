@@ -22,4 +22,3 @@ foo (int attr_kind, unsigned long offset)
 /* { dg-final { scan-tree-dump-times "if " 0 "dom2" { target { ! keeps_null_pointer_checks } } } } */
 /* { dg-final { scan-tree-dump "if " "dom2" { target { keeps_null_pointer_checks } } } } */
      
-/* { dg-final { cleanup-tree-dump "dom2" } } */

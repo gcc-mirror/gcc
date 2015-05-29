@@ -15,4 +15,3 @@ int g(){
 
 /* { dg-final { scan-tree-dump     "return 42" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "return 33" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

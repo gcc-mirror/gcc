@@ -62,4 +62,3 @@ int main()
       abort ();
   return 0;
 }
-/* { dg-final { cleanup-tree-dump "vect" } } */

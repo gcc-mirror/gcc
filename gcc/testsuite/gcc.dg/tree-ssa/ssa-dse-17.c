@@ -17,4 +17,3 @@ void f1(struct s2 *p)
 }
 
 /* { dg-final { scan-tree-dump-times "f2 =" 1 "dse1" } } */
-/* { dg-final { cleanup-tree-dump "dse1" } } */

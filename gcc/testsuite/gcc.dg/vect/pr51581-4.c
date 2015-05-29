@@ -163,4 +163,3 @@ main ()
   return 0;
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

@@ -32,4 +32,3 @@ int h(int x)
 }
 
 /* { dg-final { scan-tree-dump-not " & 3;" "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

@@ -340,4 +340,3 @@ main ()
 /* Attempts to make the compiler generate vdupd are not practical.  */
 /* { dg-final { scan-assembler-not "dup\\td\[0-9\]+, v\[0-9\]+\.d\\\[0\\\]" } }
 
-/* { dg-final { cleanup-saved-temps } } */

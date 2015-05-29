@@ -16,4 +16,3 @@ void test_vmov_ns64 (void)
   out_int64x1_t = vmov_n_s64 (arg0_int64_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

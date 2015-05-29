@@ -10,4 +10,3 @@ void foo (void)
 }
 
 /* { dg-final { scan-tree-dump-times "omp_get_thread_num" 1 "ompexp" } } */
-/* { dg-final { cleanup-tree-dump "ompexp" } } */

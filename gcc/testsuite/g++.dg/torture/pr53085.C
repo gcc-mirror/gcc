@@ -14,4 +14,3 @@ void aa::f(){
 }
 
 // { dg-final { scan-tree-dump-times "a ={v} 1;" 2 "optimized" } }
-// { dg-final { cleanup-tree-dump "optimized" } }

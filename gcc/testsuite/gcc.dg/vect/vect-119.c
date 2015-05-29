@@ -26,4 +26,3 @@ unsigned int foo (const unsigned int x[OUTER][INNER][2])
 }
 
 /* { dg-final { scan-tree-dump-times "Detected interleaving of size 2" 1 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

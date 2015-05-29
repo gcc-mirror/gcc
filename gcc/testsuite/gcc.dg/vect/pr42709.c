@@ -24,5 +24,4 @@ main1 (int *a, int *b, int *c, int *d, int dummy)
     } 
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */
   

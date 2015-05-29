@@ -45,4 +45,3 @@ end program test
 
 ! { dg-final { scan-tree-dump-times "private\\(m\\)" 1 "original" } } 
 ! { dg-final { scan-tree-dump-times "reduction\\(\\+:sum\\)" 1 "original" } } 
-! { dg-final { cleanup-tree-dump "original" } } 

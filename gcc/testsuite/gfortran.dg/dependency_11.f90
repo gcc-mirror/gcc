@@ -10,4 +10,3 @@ subroutine foo(a)
   endwhere
 end subroutine
 ! { dg-final { scan-tree-dump-times "malloc" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

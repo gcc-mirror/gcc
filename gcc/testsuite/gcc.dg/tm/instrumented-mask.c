@@ -13,4 +13,3 @@ main()
 }
 
 /* { dg-final { scan-tree-dump-times " instrumentedCode" 0 "tmmark" } } */
-/* { dg-final { cleanup-tree-dump "tmmark" } } */

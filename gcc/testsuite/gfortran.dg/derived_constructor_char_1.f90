@@ -47,4 +47,3 @@ end subroutine
 ! { dg-final { scan-tree-dump-times "four = ..txt=..ABC  ., .ZYX  ...;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "five = ..txt=..AbCdE., .ZyXwV...;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "six = ..txt=..aBcDe., .zYxWv...;" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

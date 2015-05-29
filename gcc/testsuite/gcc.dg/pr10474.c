@@ -13,4 +13,3 @@ void f(int *i)
 }
 
 /* { dg-final { scan-rtl-dump "Performing shrink-wrapping" "pro_and_epilogue"  } } */
-/* { dg-final { cleanup-rtl-dump "pro_and_epilogue" } } */

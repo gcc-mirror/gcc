@@ -44,4 +44,3 @@ double r19 (void *x) { return *(double *) (x + 32749); }
 double r20 (void *x) { return *(double *) (x + 32748); }
 
 /* { dg-final { object-size text == 320 } } */
-/* { dg-final { cleanup-saved-temps "dfmode_off" } } */

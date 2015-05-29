@@ -16,4 +16,3 @@ void test_vdup_lanep64 (void)
   out_poly64x1_t = vdup_lane_p64 (arg0_poly64x1_t, 0);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

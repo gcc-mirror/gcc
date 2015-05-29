@@ -21,4 +21,3 @@ swap32 (SItype in)
 }
 
 /* { dg-final { scan-tree-dump-not "32 bit bswap implementation found at" "bswap" } } */
-/* { dg-final { cleanup-tree-dump "bswap" } } */

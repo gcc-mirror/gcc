@@ -9,4 +9,3 @@ float foo(float x, float y, float z)
 }
 
 /* { dg-final { scan-tree-dump "return 0" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

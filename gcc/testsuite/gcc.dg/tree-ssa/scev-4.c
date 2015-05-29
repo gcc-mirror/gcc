@@ -21,4 +21,3 @@ f(int k)
 }
 
 /* { dg-final { scan-tree-dump-times "&a" 1 "optimized" { xfail { lp64 || llp64 } } } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

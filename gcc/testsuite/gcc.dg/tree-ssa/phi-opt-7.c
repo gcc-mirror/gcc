@@ -19,5 +19,4 @@ int f(int t, int c)
    a conditional and the other should be there still.  */
 /* { dg-final { scan-tree-dump-times "if" 1 "optimized" }  }*/
 /* { dg-final { scan-tree-dump-times "\[^\r\n\]*_. = c_\[0-9\]*.D. != 0" 1 "optimized"  } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */
 

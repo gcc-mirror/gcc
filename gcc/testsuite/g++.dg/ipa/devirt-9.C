@@ -30,4 +30,3 @@ bar ()
 /* We optimize out this call just after early passes.  Unfortunately
    this unreachable removal is not logged in dump file.  */
 /* { dg-final { scan-ipa-dump-not "OBJ_TYPE_REF" "whole-program" } } */
-/* { dg-final { cleanup-ipa-dump "whole-program" } } */

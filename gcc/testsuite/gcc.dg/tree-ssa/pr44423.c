@@ -44,4 +44,3 @@ int main()
   }
 
 /* { dg-final { scan-tree-dump-times "Created a replacement" 0 "esra"} } */
-/* { dg-final { cleanup-tree-dump "esra" } } */

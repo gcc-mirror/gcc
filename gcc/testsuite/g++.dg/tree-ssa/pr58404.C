@@ -17,4 +17,3 @@ foo ()
 // We should propagate the reference into both memory accesses
 // during the first forwprop pass
 // { dg-final { scan-tree-dump-times "= &a" 0 "cddce1" } }
-// { dg-final { cleanup-tree-dump "cddce1" } }

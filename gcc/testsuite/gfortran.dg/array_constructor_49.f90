@@ -10,4 +10,3 @@ program t
   if (line /= ' 3 4 5 6') call abort
 end program t
 ! { dg-final { scan-tree-dump-times "__var" 3 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

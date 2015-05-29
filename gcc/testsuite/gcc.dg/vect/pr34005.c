@@ -13,4 +13,3 @@ void XdmcpUnwrap (unsigned char *output, int k)
     output[i] = blocks[k][i];
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

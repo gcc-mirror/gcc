@@ -53,4 +53,3 @@
 
 ! { dg-final { scan-tree-dump-times "if ..integer.kind=1.. _gfortran_string_index" 6 "original" } }
 ! { dg-final { scan-tree-dump-times "if ..integer.kind=1.. _gfortran_string_scan" 6 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

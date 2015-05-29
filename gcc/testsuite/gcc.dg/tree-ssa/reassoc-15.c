@@ -18,4 +18,3 @@ unsigned int test3 (unsigned int x, unsigned int y, unsigned int z,
    ???  This pattern is not recognized currently.  */
 
 /* { dg-final { scan-tree-dump-times "\\\*" 4 "reassoc1" } } */
-/* { dg-final { cleanup-tree-dump "reassoc1" } } */

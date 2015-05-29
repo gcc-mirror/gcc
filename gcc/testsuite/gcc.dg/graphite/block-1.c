@@ -46,4 +46,3 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "will be loop blocked" 3 "graphite" } } */
-/* { dg-final { cleanup-tree-dump "graphite" } } */

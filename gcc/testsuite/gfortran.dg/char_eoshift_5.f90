@@ -22,4 +22,3 @@ END
 
 ! Check that _gfortran_eoshift* is called with 8 arguments:
 ! { dg-final { scan-tree-dump "_gfortran_eoshift\[0-9_\]+char \\(\[&a-zA-Z0-9._\]*, \[&a-zA-Z0-9._\]*, \[&a-zA-Z0-9._\]*, \[&a-zA-Z0-9._\]*, \[&a-zA-Z0-9._\]*, \[&a-zA-Z0-9._\]*, \[&a-zA-Z0-9._\]*, \[&a-zA-Z0-9._\]*\\)" "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

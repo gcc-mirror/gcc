@@ -29,4 +29,3 @@ f (int c, int i)
 }
 
 /* { dg-final { scan-tree-dump-times " \\* " 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

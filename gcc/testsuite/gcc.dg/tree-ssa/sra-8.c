@@ -32,4 +32,3 @@ void bar2(int i, int j)
 }
 
 /* { dg-final { scan-tree-dump-times "Created a replacement" 0 "esra"} } */
-/* { dg-final { cleanup-tree-dump "esra" } } */

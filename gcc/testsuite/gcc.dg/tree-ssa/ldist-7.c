@@ -29,4 +29,3 @@ int loop1 (int k)
 }
 
 /* { dg-final { scan-tree-dump-times "distributed" 0 "ldist" } } */
-/* { dg-final { cleanup-tree-dump "ldist" } } */

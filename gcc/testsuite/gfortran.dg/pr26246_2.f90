@@ -10,4 +10,3 @@ subroutine foo(string, n)
 end subroutine foo
 
 ! { dg-final { scan-tree-dump-times "static int" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

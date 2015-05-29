@@ -17,6 +17,5 @@ toto_t add (toto_t a, toto_t b) {
 /* { dg-final { scan-tree-dump-times "= \\(int\\)" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "= \\(unsigned int\\)" 2 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "= \\(struct toto_s \\*\\)" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */
 
 

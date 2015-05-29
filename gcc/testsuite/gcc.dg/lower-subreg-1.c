@@ -6,4 +6,3 @@
 long long test (long long a, long long b) { return a | b; }
 
 /* { dg-final { scan-rtl-dump "Splitting reg" "subreg1" } } */
-/* { dg-final { cleanup-rtl-dump "subreg1" } } */

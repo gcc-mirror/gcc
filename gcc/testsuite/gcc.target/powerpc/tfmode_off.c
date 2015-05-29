@@ -49,4 +49,3 @@ TFmode r19 (void *x) { return *(TFmode *) (x + 32749); }
 TFmode r20 (void *x) { return *(TFmode *) (x + 32748); }
 
 /* { dg-final { object-size text == 544 } } */
-/* { dg-final { cleanup-saved-temps "tfmode_off" } } */

@@ -11,4 +11,3 @@ f (void)
     a |= !(i |= b %= 1);
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

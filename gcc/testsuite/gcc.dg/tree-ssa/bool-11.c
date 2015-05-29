@@ -11,4 +11,3 @@ int f(_Bool x)
 /* { dg-final { scan-tree-dump-times "== 0" 0 "optimized"} } */
 /* { dg-final { scan-tree-dump-times "~x" 1 "optimized"} } */
 
-/* { dg-final { cleanup-tree-dump "optimized" } } */

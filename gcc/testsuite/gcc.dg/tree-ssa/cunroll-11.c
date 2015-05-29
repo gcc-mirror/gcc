@@ -15,4 +15,3 @@ extern void foo (s1 *x1, s1 *x2, int a, int b)
 }
 
 /* { dg-final { scan-tree-dump "Loop 1 iterates at most 3 times" "cunroll" } } */
-/* { dg-final { cleanup-tree-dump "cunroll" } } */

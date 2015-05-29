@@ -12,4 +12,3 @@ t_vqdmlal_lane_s16 (int32x4_t a, int16x4_t b, int16x4_t c)
 }
 
 /* { dg-final { scan-assembler-times "sqdmlal\[ \t\]+\[vV\]\[0-9\]+\.4\[sS\], ?\[vV\]\[0-9\]+\.4\[hH\], ?\[vV\]\[0-9\]+\.\[hH\]\\\[0\\\]\n" 1 } } */
-/* { dg-final { cleanup-saved-temps } } */

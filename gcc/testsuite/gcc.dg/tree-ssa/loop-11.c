@@ -24,5 +24,4 @@ void foo (void)
 
 /* { dg-final { scan-tree-dump-times "if " 0 "optimized" } } */
 
-/* { dg-final { cleanup-tree-dump "optimized" } } */
 

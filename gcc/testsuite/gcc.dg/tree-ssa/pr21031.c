@@ -17,4 +17,3 @@ foo (int a)
 }
 
 /* { dg-final { scan-tree-dump-times "Replaced" 2 "forwprop1" } } */
-/* { dg-final { cleanup-tree-dump "forwprop1" } } */

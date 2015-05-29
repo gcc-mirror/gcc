@@ -29,5 +29,3 @@ main ()
    didn't get optimized out.  */
 /* { dg-final-use { scan-tree-dump "n_\[0-9\]* \\+ (4294967295|0x0*ffffffff)" "optimized"} } */
 /* { dg-final-use { scan-tree-dump-not "Invalid sum" "optimized"} } */
-/* { dg-final-use { cleanup-tree-dump "optimized" } } */
-/* { dg-final-use { cleanup-ipa-dump "profile" } } */

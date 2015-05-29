@@ -29,4 +29,3 @@ int main()
 
 /* { dg-final { scan-ipa-dump "Semantic equality hit:real_part_2->real_part" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 1" "icf"  } } */
-/* { dg-final { cleanup-ipa-dump "icf" } } */

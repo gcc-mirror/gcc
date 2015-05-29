@@ -18,4 +18,3 @@ void test_vsra_nu64 (void)
 }
 
 /* { dg-final { scan-assembler "vsra\.u64\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+, #\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

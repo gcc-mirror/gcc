@@ -62,4 +62,3 @@ end
 !
 ! { dg-final { scan-tree-dump-times "parm" 66 "original" } }
 ! { dg-final { scan-tree-dump-times "atmp" 12 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

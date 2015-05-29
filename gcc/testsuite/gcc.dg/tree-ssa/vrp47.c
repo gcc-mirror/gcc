@@ -44,6 +44,3 @@ int f(int x)
    either 0 or 1.  */
 /* { dg-final { scan-tree-dump-times " & 1;" 0 "vrp2" } } */
 
-/* { dg-final { cleanup-tree-dump "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "dom1" } } */
-/* { dg-final { cleanup-tree-dump "vrp2" } } */

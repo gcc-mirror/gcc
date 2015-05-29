@@ -30,4 +30,3 @@ int main()
 }
 
 /* { dg-final { scan-ipa-dump "y.\[0-9\]*\\\+\[0-9\]* = { i }" "pta" } } */
-/* { dg-final { cleanup-ipa-dump "pta" } } */

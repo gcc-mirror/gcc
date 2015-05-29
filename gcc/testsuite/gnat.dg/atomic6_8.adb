@@ -34,4 +34,3 @@ end;
 -- { dg-final { scan-tree-dump-times "atomic_store\[^\n\r\]*&temp" 0 "gimple"} }
 -- { dg-final { scan-tree-dump-times "atomic_store\[^\n\r\]*ptr" 3 "gimple"} }
 
--- { dg-final { cleanup-tree-dump "gimple" } }

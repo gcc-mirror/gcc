@@ -14,4 +14,3 @@ int foo (int x, int a, int b)
 }
 
 /* { dg-final { scan-tree-dump "\\|" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

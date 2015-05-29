@@ -45,5 +45,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { xfail { vect_no_int_add || { ! { vect_unpack || vect_strided2 } } } } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" } } */
 /* { dg-final { scan-tree-dump-times "different interleaving chains in one node" 1 "vect" { target { ! vect_no_int_add } } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

@@ -18,4 +18,3 @@ void foo (int n)
 
 /* { dg-final { scan-tree-dump "Loop 1 is the same" "ldist" } } */
 /* { dg-final { scan-tree-dump-times "generated memset zero" 0 "ldist" } } */
-/* { dg-final { cleanup-tree-dump "ldist" } } */

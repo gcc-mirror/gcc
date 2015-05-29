@@ -148,4 +148,3 @@ end program test
 ! { dg-final { scan-tree-dump "subiso_val .121.;" "original" } }
 ! { dg-final { scan-tree-dump "subiso2_val ..z..;" "original" } }
 !
-! { dg-final { cleanup-tree-dump "original" } }

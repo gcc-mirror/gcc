@@ -28,4 +28,3 @@ void foo(double (*q)[4])
 }
 
 /* { dg-final { scan-tree-dump "Replaced tmp1.data with &a" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

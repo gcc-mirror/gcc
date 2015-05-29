@@ -25,4 +25,3 @@ void foo (union X *x)
    baz makes sure that ystruct has its address taken.  */
 
 /* { dg-final { scan-tree-dump-not "ystruct" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

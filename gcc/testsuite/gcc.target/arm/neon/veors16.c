@@ -18,4 +18,3 @@ void test_veors16 (void)
 }
 
 /* { dg-final { scan-assembler "veor\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

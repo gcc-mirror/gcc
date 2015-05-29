@@ -23,4 +23,3 @@ end
 ! Platform dependent variations are [S$5][1], [__S_5][1], [S___5][1]
 ! so we count the occurrences of 5][1].
 ! { dg-final { scan-tree-dump-times "5\\\]\\\[1\\\]" 2 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

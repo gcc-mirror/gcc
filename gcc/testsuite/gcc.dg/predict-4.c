@@ -16,4 +16,3 @@ void foo (int bound)
 }
 
 /* { dg-final { scan-tree-dump "loop iv compare heuristics: 50.0%" "profile_estimate"} } */
-/* { dg-final { cleanup-tree-dump "profile_estimate" } } */

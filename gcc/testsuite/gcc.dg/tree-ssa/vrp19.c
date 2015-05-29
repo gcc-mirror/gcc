@@ -24,4 +24,3 @@ int g (int b) {
 }
 /* { dg-final { scan-tree-dump "Folding predicate a_. < 0 to 0" "vrp1" } } */
 /* { dg-final { scan-tree-dump "Folding predicate b_. >= 0 to 1" "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

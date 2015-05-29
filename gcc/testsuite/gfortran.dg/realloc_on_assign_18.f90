@@ -17,4 +17,3 @@ end
 
 ! { dg-final { scan-tree-dump "x = \\(struct t .\\) __builtin_malloc \\(1\\);" "original" } }
 ! { dg-final { scan-tree-dump "y.data = \\(void . restrict\\) __builtin_malloc \\(1\\);" "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

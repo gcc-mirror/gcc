@@ -34,4 +34,3 @@ void foo(Vector<float, 3> *m)
 }
 
 // { dg-final { scan-tree-dump-times "= 0\.0" 1 "optimized" } }
-// { dg-final { cleanup-tree-dump "optimized" } }

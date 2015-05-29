@@ -19,4 +19,3 @@ foo (void)
    about bark () possibly clobbering hoist.  */
 
 /* { dg-final { scan-tree-dump "Replaced hoist" "pre" } } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

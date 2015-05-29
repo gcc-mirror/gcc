@@ -17,4 +17,3 @@ void test_vcombinep64 (void)
   out_poly64x2_t = vcombine_p64 (arg0_poly64x1_t, arg1_poly64x1_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

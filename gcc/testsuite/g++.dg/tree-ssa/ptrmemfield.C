@@ -23,5 +23,4 @@ int h(void)
 /* { dg-final { scan-tree-dump-times "offset_type" 0 "optimized"} } */
 // And we should optimized this code to just return 0
 /* { dg-final { scan-tree-dump-times "return 0" 1 "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */
 

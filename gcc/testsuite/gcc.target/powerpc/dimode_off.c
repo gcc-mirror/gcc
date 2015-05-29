@@ -47,4 +47,3 @@ long long r20 (void *x) { return *(long long *) (x + 32748); }
 /* 32-bit test should really be == 512 bytes, see pr54110 */
 /* { dg-final { object-size text <= 640 { target { ilp32 } } } } */
 /* { dg-final { scan-assembler-not "(st|l)fd" } } */
-/* { dg-final { cleanup-saved-temps "dimode_off" } } */

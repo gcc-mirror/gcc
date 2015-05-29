@@ -34,4 +34,3 @@ IF (ITOP < KLEV+1) THEN
 ENDIF
 END SUBROUTINE ACCONV
 
-! { dg-final { cleanup-tree-dump "vect" } }

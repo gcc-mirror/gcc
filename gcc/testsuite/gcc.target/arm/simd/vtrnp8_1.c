@@ -7,4 +7,3 @@
 #include "../../aarch64/simd/vtrnp8.x"
 
 /* { dg-final { scan-assembler-times "vtrn\.8\[ \t\]+\[dD\]\[0-9\]+, ?\[dD\]\[0-9\]+!?\(?:\[ \t\]+@\[a-zA-Z0-9 \]+\)?\n" 1 } } */
-/* { dg-final { cleanup-saved-temps } } */

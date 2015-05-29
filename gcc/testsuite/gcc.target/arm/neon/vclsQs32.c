@@ -17,4 +17,3 @@ void test_vclsQs32 (void)
 }
 
 /* { dg-final { scan-assembler "vcls\.s32\[ 	\]+\[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

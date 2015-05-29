@@ -24,4 +24,3 @@ int main1 (int res0, int res1)
   return 0;
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

@@ -27,5 +27,3 @@ m()
 /* { dg-final { scan-tree-dump-not "OBJ_TYPE_REF" "optimized"  } } */
 /* FIXME: We ought to inline thunk.  */
 /* { dg-final { scan-tree-dump "C::_ZThn" "optimized"  } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

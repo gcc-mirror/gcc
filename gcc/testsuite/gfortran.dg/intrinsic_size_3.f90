@@ -23,4 +23,3 @@ program bug
 end program bug
 
 ! { dg-final { scan-tree-dump-times "iszs = \\(integer\\(kind=2\\)\\) MAX_EXPR <\\(D.\[0-9\]+->dim.0..ubound - D.\[0-9\]+->dim.0..lbound\\) \\+ 1, 0>;" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

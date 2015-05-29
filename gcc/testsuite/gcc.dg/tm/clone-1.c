@@ -10,4 +10,3 @@ void cloneme()
 }
 
 /* { dg-final { scan-tree-dump-times "ITM_WU.*foo" 1 "tmmark" } } */
-/* { dg-final { cleanup-tree-dump "tmmark" } } */

@@ -18,4 +18,3 @@ void foo (int *data, unsigned len, const int qlp_coeff[],
       residual[i] = data[i] - ((qlp_coeff[0] * data[i-1]) >> lp);
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

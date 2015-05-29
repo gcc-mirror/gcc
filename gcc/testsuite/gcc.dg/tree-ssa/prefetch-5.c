@@ -56,4 +56,3 @@ int loop5 (int n, struct tail5 *x)
 
 /* { dg-final { scan-tree-dump-times "Issued prefetch" 2 "aprefetch" } } */
 /* { dg-final { scan-tree-dump-times "Not prefetching" 1 "aprefetch" } } */
-/* { dg-final { cleanup-tree-dump "aprefetch" } } */

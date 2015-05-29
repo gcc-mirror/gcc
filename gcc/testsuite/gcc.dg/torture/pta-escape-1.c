@@ -31,4 +31,3 @@ main()
 }
 
 /* { dg-final { scan-tree-dump "ESCAPED = {\[^\n\}\]* i \[^\n\}\]*}" "alias" } } */
-/* { dg-final { cleanup-tree-dump "alias" } } */

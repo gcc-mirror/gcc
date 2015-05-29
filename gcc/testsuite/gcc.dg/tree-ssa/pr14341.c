@@ -14,4 +14,3 @@ void t()
 }
 
 /* { dg-final { scan-tree-dump-times "fn_call \\(1\\)" 1 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

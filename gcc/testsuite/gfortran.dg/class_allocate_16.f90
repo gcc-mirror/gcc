@@ -25,4 +25,3 @@
 end
 
 ! { dg-final { scan-tree-dump-times "__builtin_free" 4 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

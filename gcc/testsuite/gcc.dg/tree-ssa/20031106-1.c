@@ -18,4 +18,3 @@ void foo (int testarray[])
 
 /* There should be no link_error calls.  */
 /* { dg-final { scan-tree-dump-times "link_error" 0 "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -12,4 +12,3 @@ t_vqdmlslh_lane_s16 (int32_t a, int16_t b, int16x4_t c)
 }
 
 /* { dg-final { scan-assembler-times "sqdmlsl\[ \t\]+\[sS\]\[0-9\]+, ?\[hH\]\[0-9\]+, ?\[vV\]\[0-9\]+\.\[hH\]\\\[0\\\]\n" 1 } } */
-/* { dg-final { cleanup-saved-temps } } */

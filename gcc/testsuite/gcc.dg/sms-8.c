@@ -37,6 +37,5 @@ main ()
 }
 
 /* { dg-final { scan-rtl-dump-times "SMS succeeded" 0 "sms" { target powerpc*-*-* } } } */
-/* { dg-final { cleanup-rtl-dump "sms" } } */
 
 

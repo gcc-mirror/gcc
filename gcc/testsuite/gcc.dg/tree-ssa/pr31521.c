@@ -17,4 +17,3 @@ int foo(int x) {
 }
 
 /* { dg-final { scan-tree-dump-times " = i_.* >> 2" 1 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

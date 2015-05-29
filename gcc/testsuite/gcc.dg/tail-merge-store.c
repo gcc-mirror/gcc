@@ -19,4 +19,3 @@ f (int c, int d)
 
 /* { dg-final { scan-tree-dump-times "duplicate of" 1 "pre"} } */
 /* { dg-final { scan-tree-dump-times "z = 5" 1 "pre"} } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

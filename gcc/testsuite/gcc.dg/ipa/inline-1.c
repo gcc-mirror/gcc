@@ -34,4 +34,3 @@ void foo (int invariant, struct bah invariant2)
 /* op7 change.  */
 /* { dg-final { scan-ipa-dump-not "op7 is compile time invariant"  "inline"  } } */
 /* { dg-final { scan-ipa-dump-not "op7 change"  "inline"  } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */

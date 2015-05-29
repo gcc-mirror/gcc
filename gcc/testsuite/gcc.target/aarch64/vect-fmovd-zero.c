@@ -14,4 +14,3 @@ foo (double *output)
 
 /* { dg-final { scan-assembler "movi\\tv\[0-9\]+\\.2d, 0" } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

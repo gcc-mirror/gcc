@@ -3,7 +3,6 @@
 // { dg-options "-O2 -fdump-ipa-pure-const" }
 // { dg-final { scan-ipa-dump-not "Function found to be nothrow: void foo" "pure-const" } }
 // { dg-final { scan-ipa-dump-not "Function found to be nothrow: void bar" "pure-const" } }
-// { dg-final { cleanup-ipa-dump "pure-const" } }
 
 __attribute__((noinline, noclone)) static void bar (int);
 volatile int v;

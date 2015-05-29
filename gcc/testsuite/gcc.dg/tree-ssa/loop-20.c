@@ -24,4 +24,3 @@ gfc_conv_array_transpose (gfc_se * se) {
 /* Ivopts should not produce multiplication by a pointer constant.  */
 
 /* { dg-final { scan-tree-dump-times "\\* \[0-9\]*B;" 0 "ivopts" } } */
-/* { dg-final { cleanup-tree-dump "ivopts" } } */

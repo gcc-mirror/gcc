@@ -7,4 +7,3 @@
 #include "extq_u16.x"
 
 /* { dg-final { scan-assembler-times "ext\[ \t\]+\[vV\]\[0-9\]+\.16\[bB\], ?\[vV\]\[0-9\]+\.16\[bB\], ?\[vV\]\[0-9\]+\.16\[bB\], ?#\[0-9\]+\(?:.2\)?\(?:\[ \t\]+@\[a-zA-Z0-9 \]+\)?\n" 7 } } */
-/* { dg-final { cleanup-saved-temps } } */

@@ -17,4 +17,3 @@ end
 ! { dg-final { scan-tree-dump-times "k3 = 1;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "k4 = 0;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "k5 = 1;" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

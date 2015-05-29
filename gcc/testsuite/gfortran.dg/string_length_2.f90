@@ -29,4 +29,3 @@ program main
   if (len(c(  (i-2)*(i-3)     :   (i-3)*(i-2)    )) /= 1)       call abort ! Case 18
 end program main
 ! { dg-final { scan-tree-dump-times "_abort" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

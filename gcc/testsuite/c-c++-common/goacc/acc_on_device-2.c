@@ -26,4 +26,3 @@ f (void)
    <openacc.h>.
    { dg-final { scan-rtl-dump-times "\\\(call \[^\\n\]* acc_on_device" 0 "expand" { xfail c++ } } } */
 
-/* { dg-final { cleanup-rtl-dump "expand" } } */

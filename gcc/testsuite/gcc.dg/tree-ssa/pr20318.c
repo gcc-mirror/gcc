@@ -15,5 +15,3 @@ void h () {
 
 /* { dg-final { scan-tree-dump-times "== 0" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "Folding predicate\[^\\n\]*to 0" 1 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

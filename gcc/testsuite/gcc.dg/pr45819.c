@@ -17,4 +17,3 @@ int ehci_hub_control (struct ehci_hcd *ehci, int wIndex)
 }
 
 /* { dg-final { scan-tree-dump "={v}" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

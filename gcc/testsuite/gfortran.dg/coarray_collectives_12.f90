@@ -23,4 +23,3 @@ end program test
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_co_broadcast \\(&desc.., _gfortran_caf_num_images \\(0, -1\\), &stat1, errmesg1, 6\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_co_broadcast \\(&val2, 4, &stat2, errmesg2, 7\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_co_broadcast \\(&desc.., res, &stat3, errmesg3, 8\\);" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

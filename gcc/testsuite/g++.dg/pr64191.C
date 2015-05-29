@@ -22,4 +22,3 @@ void bar_dtor_loop(Bar* p, unsigned int n)
 
 // { dg-final { scan-tree-dump-times "CLOBBER" 1 "cddce1" } }
 // { dg-final { scan-tree-dump-times "if" 0 "cddce1" } }
-// { dg-final { cleanup-tree-dump "cddce1" } }

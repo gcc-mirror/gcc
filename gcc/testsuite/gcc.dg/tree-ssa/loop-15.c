@@ -24,4 +24,3 @@ int bla(void)
 
 /* The if from the loop header copying remains in the code.  */
 /* { dg-final { scan-tree-dump-times "if " 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

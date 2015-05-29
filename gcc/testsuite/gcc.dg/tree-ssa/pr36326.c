@@ -10,4 +10,3 @@ int foo (union X *p)
 }
 
 /* { dg-final { scan-tree-dump-not "x.0" "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

@@ -22,4 +22,3 @@ float method2_int16 (struct mem *mem)
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_extract_even_odd || vect_strided2 } } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" { target { ! { vect_extract_even_odd || vect_strided2 } } } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

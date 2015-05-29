@@ -21,4 +21,3 @@ int motion_test1(int data, int data_0, int data_3, int v)
    the main path. */
 /* { dg-final { scan-tree-dump-times "Eliminated: 2" 1 "pre" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre" } } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

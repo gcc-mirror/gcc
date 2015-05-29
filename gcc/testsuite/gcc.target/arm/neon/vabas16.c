@@ -19,4 +19,3 @@ void test_vabas16 (void)
 }
 
 /* { dg-final { scan-assembler "vaba\.s16\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

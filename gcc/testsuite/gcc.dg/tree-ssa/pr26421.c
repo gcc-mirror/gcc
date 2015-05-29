@@ -19,4 +19,3 @@ int foo(void)
 /* Verify the call clobbers all of a.  */
 
 /* { dg-final { scan-tree-dump-not "return 1;" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

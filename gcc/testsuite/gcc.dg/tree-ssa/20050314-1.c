@@ -18,4 +18,3 @@ void xxx (void)
    cannot read nor write the memory.  */
 
 /* { dg-final { scan-tree-dump-times "Moving statement" 1 "lim1" } } */
-/* { dg-final { cleanup-tree-dump "lim1" } } */

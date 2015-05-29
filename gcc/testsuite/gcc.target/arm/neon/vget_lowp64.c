@@ -16,4 +16,3 @@ void test_vget_lowp64 (void)
   out_poly64x1_t = vget_low_p64 (arg0_poly64x2_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

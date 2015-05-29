@@ -12,5 +12,4 @@ real t1,t2,chksum,ctime,dtime,cs1d
 end
 
 ! { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect"   } }
-! { dg-final { cleanup-tree-dump "vect" } }
 

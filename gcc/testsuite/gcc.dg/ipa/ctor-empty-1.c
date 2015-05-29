@@ -5,4 +5,3 @@ void empty_constructor()
 {
 }
 /* { dg-final { scan-ipa-dump "Reclaiming functions: empty_constructor"  "free-inline-summary"  } } */
-/* { dg-final { cleanup-ipa-dump "free-inline-summary" } } */

@@ -1,3 +1,14 @@
+2015-05-29  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* config/arm/neon-testgen.ml (emit_epilogue): Remove manual call
+	to cleanup-saved-temps.
+	* doc/sourcebuild.texi (Clean up generated test files): Expand
+	introduction.
+	(dg-keep-saved-temps): Document new proc.
+	(cleanup-ipa-dump, cleanup-rtl-dump, cleanup-tree-dump,
+	cleanup-saved-temps): Remove.
+
+
 2015-05-28  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* configure.ac: Move the atoll check from AC_CHECK_FUNCS to

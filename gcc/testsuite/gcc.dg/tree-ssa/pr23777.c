@@ -16,4 +16,3 @@ void g (char **o)
     multilib_exclusions_raw.  */
 
 /* { dg-final { scan-tree-dump-not "multilib_exclusions_raw" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

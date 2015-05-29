@@ -45,4 +45,3 @@ fmsdbl (v2df a, v2df b, v2df c)
 }
 /* { dg-final { scan-assembler-times "vfms" 1 } } */
 
-/* { dg-final { cleanup-saved-temps } } */

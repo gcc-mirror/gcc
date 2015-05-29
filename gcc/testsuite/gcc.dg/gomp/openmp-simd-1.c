@@ -44,4 +44,3 @@ void foo(int n, float *a, float *b)
 /* { dg-final { scan-tree-dump-not "omp teams" "original" } } */
 /* { dg-final { scan-tree-dump-not "omp target" "original" } } */
 /* { dg-final { scan-tree-dump-not "omp parallel" "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

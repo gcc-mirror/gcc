@@ -21,4 +21,3 @@ bar (void)
 }
 
 /* { dg-final { scan-tree-dump "foo \\\(long unsigned int base\\\)" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -17,4 +17,3 @@ int b0, b1, b2, b3, b4,e;
 /* We can't reassociate the expressions due to undefined signed overflow.  */
 
 /* { dg-final { scan-tree-dump-times "return 0" 1 "optimized" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

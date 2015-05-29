@@ -151,5 +151,4 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 4 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 4 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

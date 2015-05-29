@@ -17,4 +17,3 @@ void test_vqRshrn_nu32 (void)
 }
 
 /* { dg-final { scan-assembler "vqrshrn\.u32\[ 	\]+\[dD\]\[0-9\]+, \[qQ\]\[0-9\]+, #\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

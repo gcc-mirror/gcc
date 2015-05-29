@@ -15,4 +15,3 @@ int f(_Bool x)
    fold its tree forwprop is able to clean up the mess.  */
 /* { dg-final { scan-tree-dump-times "== 0" 0 "optimized" } } */
 
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -28,4 +28,3 @@ int foo(Object&o)
 /* Remaining should be two loads.  */
 
 /* { dg-final { scan-tree-dump-times " = \[^\n\]*;" 2 "dce2" } } */
-/* { dg-final { cleanup-tree-dump "dce2" } } */

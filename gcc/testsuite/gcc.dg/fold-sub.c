@@ -9,4 +9,3 @@ float f(float x)
 /* Substraction should be turned into 0.  */
 
 /* { dg-final { scan-tree-dump-not " - " "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

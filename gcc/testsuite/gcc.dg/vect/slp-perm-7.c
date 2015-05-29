@@ -72,6 +72,5 @@ int main (int argc, const char* argv[])
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect"  { target vect_perm } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target vect_perm } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */
 
 

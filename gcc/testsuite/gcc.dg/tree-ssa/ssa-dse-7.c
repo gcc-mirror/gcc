@@ -20,4 +20,3 @@ int foo1 (void)
 /* { dg-final { scan-tree-dump-times "glob2 = " 1 "dse1"} } */
 /* { dg-final { scan-tree-dump-times "return 5" 1 "dse1"} } */
 
-/* { dg-final { cleanup-tree-dump "dse1" } } */

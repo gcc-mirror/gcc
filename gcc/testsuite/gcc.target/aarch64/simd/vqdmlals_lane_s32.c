@@ -12,4 +12,3 @@ t_vqdmlals_lane_s32 (int64_t a, int32_t b, int32x2_t c)
 }
 
 /* { dg-final { scan-assembler-times "sqdmlal\[ \t\]+\[dD\]\[0-9\]+, ?\[sS\]\[0-9\]+, ?\[vV\]\[0-9\]+\.\[sS\]\\\[0\\\]\n" 1 } } */
-/* { dg-final { cleanup-saved-temps } } */

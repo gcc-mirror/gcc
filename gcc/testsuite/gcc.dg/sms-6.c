@@ -44,4 +44,3 @@ int main()
 
 /* { dg-final { scan-rtl-dump-times "SMS succeeded" 1 "sms" { target spu-*-* } } } */
 /* { dg-final { scan-rtl-dump-times "SMS succeeded" 3 "sms" { target powerpc*-*-* } } } */
-/* { dg-final { cleanup-rtl-dump "sms" } } */

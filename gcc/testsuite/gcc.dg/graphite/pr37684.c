@@ -64,4 +64,3 @@ int BZ2_bzCompressInit
    prepare_new_block ( s );
 }
 
-/* { dg-final { cleanup-tree-dump "graphite" } } */

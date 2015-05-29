@@ -16,5 +16,4 @@ float f(float b)
 /* { dg-final { scan-tree-dump-times "BIT_FIELD_REF" 0 "optimized"} } */
 /* { dg-final { scan-tree-dump-times "0\\\.0" 1 "optimized"} } */
 
-/* { dg-final { cleanup-tree-dump "optimized" } } */
 

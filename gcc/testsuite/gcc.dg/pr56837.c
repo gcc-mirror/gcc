@@ -64,4 +64,3 @@ fv (void)
 /* { dg-final { scan-tree-dump-times "memset ..b, 1, 1024.;" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "memset ..c, 68, 16384.;" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "memset ..v, 18, 16384.;" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

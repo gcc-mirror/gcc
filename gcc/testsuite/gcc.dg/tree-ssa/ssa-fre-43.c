@@ -26,4 +26,3 @@ L10:
 
 /* { dg-final { scan-tree-dump-times "Removing dead stmt" 15 "fre1" } } */
 /* { dg-final { scan-tree-dump-not "Not changing value number" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

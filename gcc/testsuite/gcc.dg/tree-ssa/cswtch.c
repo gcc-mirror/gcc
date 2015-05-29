@@ -78,4 +78,3 @@ int main ()
 }
 
 /* { dg-final { scan-tree-dump "Switch converted" "switchconv" } } */
-/* { dg-final { cleanup-tree-dump "switchconv" } } */

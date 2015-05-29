@@ -30,4 +30,3 @@ int fn6 (int z)
 
 /* { dg-final { scan-tree-dump-times "~y & x" 4 "original" } } */
 /* { dg-final { scan-tree-dump-times "z & -4" 2 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

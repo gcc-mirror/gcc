@@ -34,4 +34,3 @@ t()
 /* { dg-final { scan-tree-dump "Checking vtbl store:"  "fre2"  } } */
 /* { dg-final { scan-tree-dump "Function call may change dynamic type:extcall"  "fre2"  } } */
 /* { dg-final { scan-tree-dump "converting indirect call to function virtual void"  "fre2"  } } */
-/* { dg-final { cleanup-tree-dump "fre2" } } */

@@ -20,4 +20,3 @@ f1 (char *p, uintptr_t i, uintptr_t n)
 /* { dg-final { scan-tree-dump-times "PHI" 1 "ivopts" } } */
 /* { dg-final { scan-tree-dump-times "PHI <p_" 1 "ivopts"} } */
 /* { dg-final { scan-tree-dump-times "p_\[0-9\]* <" 1 "ivopts" } } */
-/* { dg-final { cleanup-tree-dump "ivopts" } } */

@@ -58,4 +58,3 @@ void temp()
 /* We should have removed the casts from pointers to references and caused SRA to happen.  */
 
 /* { dg-final { scan-tree-dump-times "link_error" 0 "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

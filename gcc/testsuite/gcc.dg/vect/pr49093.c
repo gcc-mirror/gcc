@@ -19,4 +19,3 @@ lbl_473:
     }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

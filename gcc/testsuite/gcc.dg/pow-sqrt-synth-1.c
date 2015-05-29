@@ -35,4 +35,3 @@ vecfoo (double *a)
 }
 
 /* { dg-final { scan-tree-dump-times "synthesizing" 7 "sincos" } } */
-/* { dg-final { cleanup-tree-dump "sincos" } } */

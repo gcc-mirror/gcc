@@ -25,4 +25,3 @@ int t(class A *a)
 }
 /* { dg-final { scan-ipa-dump "A::foo"  "visibility"  } } */
 /* { dg-final { scan-ipa-dump-not "A::bar"  "visibility"  } } */
-/* { dg-final { cleanup-ipa-dump "visibility" } } */

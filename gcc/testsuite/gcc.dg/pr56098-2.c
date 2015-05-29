@@ -16,4 +16,3 @@ bar (struct S *x, int y)
 }
 
 /* { dg-final { scan-tree-dump-not "r_\[0-9]* =.v. \[^\n\r]*;\[\n\r]*  r_\[0-9]* =.v. " "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

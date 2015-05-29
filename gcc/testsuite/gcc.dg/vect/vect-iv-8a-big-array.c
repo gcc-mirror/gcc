@@ -40,4 +40,3 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_pack_trunc && vect_unpack } } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

@@ -2213,12 +2213,16 @@ Check branch and/or call counts, in addition to line counts, in
 
 @subsubsection Clean up generated test files
 
+Usually the test-framework removes files that were generated during
+testing. If a testcase, for example, uses any dumping mechanism to
+inspect a passes dump file, the testsuite recognized the dump option
+passed to the tool and schedules a final cleanup to remove these files.
+
+There are, however, following additional cleanup directives that can be
+used to annotate a testcase "manually".
 @table @code
 @item cleanup-coverage-files
 Removes coverage data files generated for this test.
-
-@item cleanup-ipa-dump @var{suffix}
-Removes IPA dump files generated for this test.
 
 @item cleanup-modules "@var{list-of-extra-modules}"
 Removes Fortran module files generated for this test, excluding the
@@ -2254,21 +2258,23 @@ end module keep2
 ! @{ dg-final @{ keep-modules "" @} @} ! keep all
 @end smallexample
 
+@item dg-keep-saved-temps "@var{list-of-suffixes-not-to-delete}"
+Whitespace separated list of suffixes that should not be deleted
+automatically in a testcase that uses @option{-save-temps}.
+@smallexample
+// @{ dg-options "-save-temps -fpch-preprocess -I." @}
+int main() @{ return 0; @}
+// @{ dg-keep-saved-temps ".s" @} ! just keep assembler file
+// @{ dg-keep-saved-temps ".s" ".i" @} ! ... and .i
+// @{ dg-keep-saved-temps ".ii" ".o" @} ! or just .ii and .o
+@end smallexample
+
 @item cleanup-profile-file
 Removes profiling files generated for this test.
 
 @item cleanup-repo-files
 Removes files generated for this test for @option{-frepo}.
 
-@item cleanup-rtl-dump @var{suffix}
-Removes RTL dump files generated for this test.
-
-@item cleanup-saved-temps
-Removes files for the current test which were kept for @option{-save-temps}.
-
-@item cleanup-tree-dump @var{suffix}
-Removes tree dump files matching @var{suffix} which were generated for
-this test.
 @end table
 
 @node Ada Tests

@@ -11,4 +11,3 @@ void g(long x)
 /* Make sure we do not lose the conversion.  */
 
 /* { dg-final { scan-tree-dump "-\\\(long unsigned int\\\) x" "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

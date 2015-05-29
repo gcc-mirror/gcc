@@ -17,4 +17,3 @@ if (K /= i) call abort
 end
 
 ! { dg-final { scan-tree-dump-times "\\\{1, 2, 2, 2, 1, 2, 2, 2, 1\\\}" 2 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

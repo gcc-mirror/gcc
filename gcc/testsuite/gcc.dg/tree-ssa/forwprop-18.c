@@ -21,4 +21,3 @@ signed char g2(unsigned long long n)
 
 /* { dg-final { scan-tree-dump-times "\\\(float\\\)" 2 "cddce1" } } */
 /* { dg-final { scan-tree-dump-not "\\\(long double\\\)" "cddce1" } } */
-/* { dg-final { cleanup-tree-dump "cddce1" } } */

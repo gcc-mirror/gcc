@@ -21,4 +21,3 @@ foo ()
    DOM is not able to perform this optimization.  */
 
 /* { dg-final { scan-tree-dump "return 28;" "optimized" { xfail aarch64*-*-* alpha*-*-* hppa*-*-* powerpc*-*-* sparc*-*-* s390*-*-* } } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

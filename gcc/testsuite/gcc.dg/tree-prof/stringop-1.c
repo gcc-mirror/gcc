@@ -19,5 +19,3 @@ main()
 /* a[0] = b[0] is what we fold the resulting memcpy into.  */
 /* { dg-final-use { scan-tree-dump " = MEM.*&b" "optimized"} } */
 /* { dg-final-use { scan-tree-dump "MEM.*&a\\\] = " "optimized"} } */
-/* { dg-final-use { cleanup-tree-dump "optimized" } } */
-/* { dg-final-use { cleanup-ipa-dump "profile" } } */

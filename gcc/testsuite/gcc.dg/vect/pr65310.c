@@ -20,4 +20,3 @@ int t(b *a)
 
 /* { dg-final { scan-tree-dump "can't force alignment" "vect" } } */
 /* { dg-final { scan-tree-dump-not "misalign = 0" "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

@@ -8,4 +8,3 @@ int test (int a, int b, int sum)
 }
 
 /* { dg-final { scan-tree-dump "ABS" "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

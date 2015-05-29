@@ -14,4 +14,3 @@ END
 ! { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 1 "vect" { xfail { { vect_no_align && { ! vect_hw_misalign } } || {! vector_alignment_reachable} } } } }
 ! { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 2 "vect" { target { {! vector_alignment_reachable} && {! vect_hw_misalign} } } } }
 ! { dg-final { scan-tree-dump-times "accesses have the same alignment." 1 "vect" } }
-! { dg-final { cleanup-tree-dump "vect" } }

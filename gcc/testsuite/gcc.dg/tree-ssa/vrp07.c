@@ -37,4 +37,3 @@ foo (int i, int *p)
 
 /* { dg-final { scan-tree-dump-times "PREDICATE: p_\[0-9\]" 2 "vrp1" { target { ! keeps_null_pointer_checks } } } } */
 /* { dg-final { scan-tree-dump-times "PREDICATE: p_\[0-9\]" 1 "vrp1" { target {   keeps_null_pointer_checks } } } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

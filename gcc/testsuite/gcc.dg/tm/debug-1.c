@@ -23,4 +23,3 @@ int main() {
 /* { dg-final { scan-tree-dump-times ":14:.*_ITM_beginTransaction" 1 "tmmark" } } */
 /* { dg-final { scan-tree-dump-times ":15:.*ITM_WU. \\(&z" 1 "tmmark" } } */
 /* { dg-final { scan-tree-dump-times ":16:.*ITM_WU. \\(&a" 1 "tmmark" } } */
-/* { dg-final { cleanup-tree-dump "tmmark" } } */

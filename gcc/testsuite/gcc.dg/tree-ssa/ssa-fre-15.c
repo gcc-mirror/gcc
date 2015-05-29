@@ -27,4 +27,3 @@ void foo(double (*q)[4])
 }
 
 /* { dg-final { scan-tree-dump "Replaced" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

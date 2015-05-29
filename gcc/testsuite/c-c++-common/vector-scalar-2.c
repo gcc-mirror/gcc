@@ -11,4 +11,3 @@ void f (veci *a)
 }
 
 /* { dg-final { scan-tree-dump-times " \\\+ 1" 1 "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

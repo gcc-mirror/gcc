@@ -69,4 +69,3 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 4 "vect" { xfail { vect_no_align || { { !  vector_alignment_reachable } || vect_element_align  } } } } }  */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 3 "vect" { target vect_element_align } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail { vect_no_align || { { ! vector_alignment_reachable } || vect_element_align } } } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

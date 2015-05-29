@@ -48,4 +48,3 @@ struct c6 : c0, c3, c4
 // { dg-final { scan-tree-dump "84    .*c6::_ZTv0_n16_NV2c62f2Ev" "class" { target ilp32 } } }
 // { dg-final { scan-tree-dump "168   .*c6::_ZTv0_n32_NV2c62f2Ev" "class" { target lp64 } } }
 
-// { dg-final { cleanup-tree-dump "class" } }

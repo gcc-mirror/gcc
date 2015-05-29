@@ -17,5 +17,4 @@ end program main
 
 ! { dg-final { scan-tree-dump-times "gfortran_concat_string" 0 "original" } }
 ! { dg-final { scan-tree-dump-times "__builtin_memcmp" 2 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }
 

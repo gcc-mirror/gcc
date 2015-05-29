@@ -7,4 +7,3 @@ int bar(char p1, char p2)
 }
 
 /* { dg-final { scan-tree-dump "return 0;" "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

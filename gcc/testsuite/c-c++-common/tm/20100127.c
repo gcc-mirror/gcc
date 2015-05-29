@@ -33,4 +33,3 @@ void test(void *data)
 }
 
 /* { dg-final { scan-tree-dump-times "_ITM_W.*nontrxn" 0 "tmmark" } } */
-/* { dg-final { cleanup-tree-dump "tmmark" } } */

@@ -7,5 +7,4 @@ int y __attribute__((section(".yyy"))) = 1;
 int z __attribute__((section(".zzz"))) = 1;
 
 /* { dg-final { scan-tree-dump "__builtin___asan_unregister_globals \\(.*, 2\\);" "sanopt" } } */
-/* { dg-final { cleanup-tree-dump "sanopt" } } */
 

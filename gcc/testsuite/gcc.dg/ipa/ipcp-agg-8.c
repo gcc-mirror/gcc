@@ -49,4 +49,3 @@ entry (int c)
     }
 }
 /* { dg-final { scan-tree-dump "->b;" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

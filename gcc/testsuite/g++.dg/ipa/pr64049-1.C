@@ -34,4 +34,3 @@ LocalizedTextSet (LocalizedTextStruct* pTarget, LocalizedTextStruct* pSource)
 }
 
 /* { dg-final { scan-ipa-dump-not "__builtin_unreachable" "inline" } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */

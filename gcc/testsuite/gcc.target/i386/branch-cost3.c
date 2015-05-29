@@ -13,4 +13,3 @@ foo (_Bool a, _Bool b)
 
 /* { dg-final { scan-tree-dump-times "if " 1 "gimple" } } */
 /* { dg-final { scan-tree-dump-times " & " 1 "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

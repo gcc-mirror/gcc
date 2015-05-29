@@ -19,6 +19,4 @@ foo (void)
 
 /* { dg-final { scan-rtl-dump-times "0 uses" 0 "bbro"} } */
 /* { dg-final { scan-rtl-dump-times "ADVANCING TO" 2 "sched2"} } */
-/* { dg-final { cleanup-rtl-dump "bbro" } } */
-/* { dg-final { cleanup-rtl-dump "sched2" } } */
 

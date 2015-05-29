@@ -11,4 +11,3 @@ bar (unsigned int t)
 }
 
 /* { dg-final { scan-tree-dump "Replaced \\\(unsigned int\\\) a_.*with t_" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

@@ -40,4 +40,3 @@ int main (void)
 /* { dg-final { scan-tree-dump "Vectorizing an unaligned access" "vect" { target { { { ! powerpc*-*-* } && vect_hw_misalign } && { { ! vect64 } || vect_multiple_sizes } } } } }  */
 /* { dg-final { scan-tree-dump "Alignment of access forced using peeling" "vect" { target { vector_alignment_reachable && { vect64 && {! vect_multiple_sizes} } } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" { target { { {! vector_alignment_reachable} || {! vect64} } && {! vect_hw_misalign} } } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

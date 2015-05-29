@@ -18,4 +18,3 @@ int foo (int i, int b, int result)
    i + 1 & -2 expression.  And do replacement with two PHI temps.  */
 
 /* { dg-final { scan-tree-dump-times "with prephitmp" 2 "pre" } } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

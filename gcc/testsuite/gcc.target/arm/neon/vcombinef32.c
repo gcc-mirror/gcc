@@ -17,4 +17,3 @@ void test_vcombinef32 (void)
   out_float32x4_t = vcombine_f32 (arg0_float32x2_t, arg1_float32x2_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

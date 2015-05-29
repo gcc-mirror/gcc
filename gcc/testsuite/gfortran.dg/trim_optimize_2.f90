@@ -34,4 +34,3 @@ end program main
 
 ! { dg-final { scan-tree-dump-times "memmove" 6 "original" } }
 ! { dg-final { scan-tree-dump-times "string_trim" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

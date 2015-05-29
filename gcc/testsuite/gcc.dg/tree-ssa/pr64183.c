@@ -18,4 +18,3 @@ test ()
 }
 
 /* { dg-final { scan-tree-dump "Loop 2 iterates at most 4 times" "cunroll"} } */
-/* { dg-final { cleanup-tree-dump "cunroll" } } */

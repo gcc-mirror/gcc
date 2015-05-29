@@ -125,4 +125,3 @@ package body Vect5 is
 end Vect5;
 
 -- { dg-final { scan-tree-dump-times "vectorized 1 loops" 15 "vect"  } }
--- { dg-final { cleanup-tree-dump "vect" } }

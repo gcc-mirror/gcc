@@ -25,4 +25,3 @@ foo()
     }
 }
 /* { dg-final { scan-rtl-dump-times "mem/v(/.)*:HI" 4 "final" } } */
-/* { dg-final { cleanup-rtl-dump "final" } } */

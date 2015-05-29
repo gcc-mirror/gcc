@@ -26,4 +26,3 @@ int main (void)
 }
 
 /* { dg-final { scan-rtl-dump "Expanding Accumulator" "loop2_unroll" } } */
-/* { dg-final { cleanup-rtl-dump "loop2_unroll" } } */

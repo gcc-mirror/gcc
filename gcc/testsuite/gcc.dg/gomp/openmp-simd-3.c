@@ -12,4 +12,3 @@ int main() {
 }
 
 /* { dg-final { scan-tree-dump-not "omp" "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

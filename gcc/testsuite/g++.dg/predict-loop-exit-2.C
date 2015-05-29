@@ -10,4 +10,3 @@ void test() {
 }
 
 /* { dg-final { scan-tree-dump-times "loop exit heuristics:" 2 "profile_estimate"} } */
-/* { dg-final { cleanup-tree-dump "profile_estimate" } } */

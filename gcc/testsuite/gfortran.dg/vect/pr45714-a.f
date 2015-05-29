@@ -24,4 +24,3 @@
       enddo
       end
 
-! { dg-final { cleanup-tree-dump "vect" } }

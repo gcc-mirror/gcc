@@ -8,4 +8,3 @@ foo (int x)
 }
 
 /* { dg-final { scan-assembler-not "\tw1" } } */
-/* { dg-final { cleanup-saved-temps } } */

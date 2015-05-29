@@ -45,4 +45,3 @@ void readb(void)
    the parenthesized subexpression in the regexp introduces an extra match
    variable, we need to give a count of 12 instead of 6 here.  */
 /* { dg-final { scan-rtl-dump-times "mem/v(/.)*:SI" 12 "final" } } */
-/* { dg-final { cleanup-rtl-dump "final" } } */

@@ -16,7 +16,6 @@
 /* { dg-final { scan-assembler "vl\t%v\[0-9\]*,232\\(%r15\\)" { target ilp32 } } } */
 /* { dg-final { scan-assembler "ld\t%v\[0-9\]*,248\\(%r15\\)" { target ilp32 } } } */
 
-/* { dg-final { cleanup-saved-temps } } */
 
 #include <stdarg.h>
 

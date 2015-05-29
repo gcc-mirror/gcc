@@ -31,4 +31,3 @@ main (void)
 }
 /* { dg-final { scan-assembler-not "cmn\t" } } */
 
-/* { dg-final { cleanup-saved-temps } } */

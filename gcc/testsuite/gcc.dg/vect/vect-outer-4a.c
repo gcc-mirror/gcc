@@ -23,4 +23,3 @@ foo (){
 }
 
 /* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" { target { vect_widen_mult_hi_to_si && vect_pack_trunc } } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

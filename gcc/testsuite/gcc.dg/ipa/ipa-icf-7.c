@@ -70,4 +70,3 @@ int main()
 
 /* { dg-final { scan-ipa-dump "Semantic equality hit:foo2->foo" "icf"  } } */
 /* { dg-final { scan-ipa-dump "Equal symbols: 1" "icf"  } } */
-/* { dg-final { cleanup-ipa-dump "icf" } } */

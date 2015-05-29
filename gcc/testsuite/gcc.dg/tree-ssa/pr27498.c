@@ -14,4 +14,3 @@ void zconfdump(void)
 }
 
 /* { dg-final { scan-tree-dump-not "goto" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

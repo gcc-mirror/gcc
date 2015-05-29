@@ -10,4 +10,3 @@ foo (unsigned long a)
   return 0;
 }
 /* { dg-final { scan-tree-dump-times "return 0;" 0 "fre1"} } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

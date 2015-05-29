@@ -42,4 +42,3 @@ objects_must_conflict_p (t1, t2)
    second to be propagated into all its uses and eliminated.   */
 /* { dg-final { scan-rtl-dump-times "PART.. = 0" 1 "expand"} } */
  
-/* { dg-final { cleanup-rtl-dump "expand" } } */

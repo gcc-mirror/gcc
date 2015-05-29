@@ -22,4 +22,3 @@ int main()
    still properly account for the store via *p in foo.  */
 
 /* { dg-final { scan-ipa-dump "ESCAPED = { }" "pta" } } */
-/* { dg-final { cleanup-ipa-dump "pta" } } */

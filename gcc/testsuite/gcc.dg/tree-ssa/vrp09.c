@@ -28,4 +28,3 @@ L78:
 }
 
 /* { dg-final { scan-tree-dump-times "Folding predicate p_.. != 0B to 1" 2 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

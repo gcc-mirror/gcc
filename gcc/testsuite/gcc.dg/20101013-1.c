@@ -8,4 +8,3 @@ int foo(int a)
 }
 
 /* { dg-final { scan-tree-dump ">>" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

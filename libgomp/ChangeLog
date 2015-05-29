@@ -1,3 +1,18 @@
+2015-05-29  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* testsuite/libgomp.graphite/bounds.c: Adjust for
+	cleanup-tree-dump removal.
+	* testsuite/libgomp.graphite/force-parallel-1.c: Likewise.
+	* testsuite/libgomp.graphite/force-parallel-2.c: Likewise.
+	* testsuite/libgomp.graphite/force-parallel-3.c: Likewise.
+	* testsuite/libgomp.graphite/force-parallel-4.c: Likewise.
+	* testsuite/libgomp.graphite/force-parallel-5.c: Likewise.
+	* testsuite/libgomp.graphite/force-parallel-6.c: Likewise.
+	* testsuite/libgomp.graphite/force-parallel-7.c: Likewise.
+	* testsuite/libgomp.graphite/force-parallel-8.c: Likewise.
+	* testsuite/libgomp.graphite/force-parallel-9.c: Likewise.
+	* testsuite/libgomp.graphite/pr41118.c: Likewise.
+
 2015-05-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/linux/x86/futex.h (sys_futex0) [!__x86_64__]: Remove function.

@@ -16,4 +16,3 @@ void test_vreinterpretu32_s8 (void)
   out_uint32x2_t = vreinterpret_u32_s8 (arg0_int8x8_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

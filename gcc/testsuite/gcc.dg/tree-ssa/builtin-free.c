@@ -17,4 +17,3 @@ void foo(unsigned n)
 /* We should remove the redundant call to free.  */
 
 /* { dg-final { scan-tree-dump-times "free" 1 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

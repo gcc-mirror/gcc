@@ -30,4 +30,3 @@ unsigned f4(void)
 /* { dg-final { scan-tree-dump-times "\&c4 \& 3" 0 "original" } } */
 /* { dg-final { scan-tree-dump-times "\&c8 \& 3" 0 "original" } } */
 /* { dg-final { scan-tree-dump-times "return 0" 2 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

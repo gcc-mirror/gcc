@@ -11,4 +11,3 @@ int foo (bart bar, int m)
   return j;
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

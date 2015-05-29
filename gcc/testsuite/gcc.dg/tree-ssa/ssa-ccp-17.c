@@ -29,4 +29,3 @@ int foobar(void)
 /* { dg-final { scan-tree-dump "= i_.;" "ccp1" } } */
 /* { dg-final { scan-tree-dump "= f.i;" "ccp1" } } */
 /* { dg-final { scan-tree-dump "= g.i;" "ccp1" } } */
-/* { dg-final { cleanup-tree-dump "ccp1" } } */

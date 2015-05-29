@@ -7,4 +7,3 @@ void intf_pcmPlayEffect(int *src, int *dst, int size) {
   *dst++ = *src & 0x80 ? (*src++ & 0x7f) : -*src++;
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

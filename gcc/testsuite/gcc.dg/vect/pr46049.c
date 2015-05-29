@@ -18,4 +18,3 @@ void foo (int16_t i, int16_t *p, int16_t x)
       p++;
     }
 }
-/* { dg-final { cleanup-tree-dump "vect" } } */

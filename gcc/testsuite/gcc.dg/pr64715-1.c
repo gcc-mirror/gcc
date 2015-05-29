@@ -20,4 +20,3 @@ foo ()
 }
 
 /* { dg-final { scan-tree-dump "__builtin___strcpy_chk\[^;\n\r\]*, 5\\\);" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -38,4 +38,3 @@ subroutine foobar
   call foo(A(:,3:7:-1)) ! temporary(3) OK because of stride
 end
 ! { dg-final { scan-tree-dump-times "unpack" 3 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

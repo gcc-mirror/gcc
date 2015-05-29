@@ -44,4 +44,3 @@ void g(unsigned T x)
 }
 
 /* { dg-final { scan-tree-dump-not "impossible" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

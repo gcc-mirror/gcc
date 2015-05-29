@@ -22,4 +22,3 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "strlen \\(" 1 "strlen" } } */
-/* { dg-final { cleanup-tree-dump "strlen" } } */

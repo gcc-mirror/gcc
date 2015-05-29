@@ -57,4 +57,3 @@ f4 (unsigned int s, unsigned int b)
 }
 
 /* { dg-final { scan-tree-dump-times "vrp_keep \\(" 6 "vrp1"} } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

@@ -26,4 +26,3 @@ int f(int c, int b, int d)
 /* { dg-final { scan-tree-dump-times "(?n)_.*\\+.*_" 1 "pre"} } */
 /* { dg-final { scan-tree-dump-times "(?n)_.*-.*_" 2 "pre"} } */
 /* { dg-final { scan-tree-dump-not "Invalid sum" "pre"} } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

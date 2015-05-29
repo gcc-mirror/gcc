@@ -97,5 +97,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { xfail { vect_no_align || vect_element_align } } } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 8 "vect" { xfail { vect_no_align || vect_element_align } } } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 4 "vect" { target { vect_element_align  } } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

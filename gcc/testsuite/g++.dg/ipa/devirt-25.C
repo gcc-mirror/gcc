@@ -24,4 +24,3 @@ void dpr_run(ebs_Object& objectA) {
   dpr_run(jobL);
 }
 /* { dg-final { scan-ipa-dump "Type inconsistent devirtualization" "cp"  } } */
-/* { dg-final { cleanup-ipa-dump "cp" } } */

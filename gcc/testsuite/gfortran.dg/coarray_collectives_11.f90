@@ -12,4 +12,3 @@ program test
 end program test
 
 ! { dg-final { scan-tree-dump-times "stat1 = 0;" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

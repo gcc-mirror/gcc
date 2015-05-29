@@ -18,4 +18,3 @@ void test_vhsubu8 (void)
 }
 
 /* { dg-final { scan-assembler "vhsub\.u8\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

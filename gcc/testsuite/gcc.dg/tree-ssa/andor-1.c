@@ -61,5 +61,4 @@ int test10(int j)
 /* { dg-final { scan-tree-dump-times "h \\| 1" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "i \& 2 \\| 1" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "j \& 2 \\| 1" 1 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */
 

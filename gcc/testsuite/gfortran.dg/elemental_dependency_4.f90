@@ -164,4 +164,3 @@ CONTAINS
     END FUNCTION Romeo
 END PROGRAM Main
 
-! { dg-final { cleanup-tree-dump "original" } }

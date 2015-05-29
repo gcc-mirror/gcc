@@ -18,4 +18,3 @@ void foo (int ncons, t_sortblock *sb, int *iatom)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

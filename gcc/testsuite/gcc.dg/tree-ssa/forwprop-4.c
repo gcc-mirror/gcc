@@ -15,4 +15,3 @@ void foo()
 }
 
 /* { dg-final { scan-tree-dump-not "link_error" "forwprop1" } } */
-/* { dg-final { cleanup-tree-dump "forwprop1" } } */

@@ -63,4 +63,3 @@ int main ()
 /* { dg-final { scan-assembler-times "bics\t" 6 { target arm_thumb1 } } } */
 /* { dg-final { scan-assembler-times "bic\t" 6 { target { ! arm_thumb1 } } } } */
 
-/* { dg-final { cleanup-saved-temps } } */

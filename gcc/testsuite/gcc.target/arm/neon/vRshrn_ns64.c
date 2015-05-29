@@ -17,4 +17,3 @@ void test_vRshrn_ns64 (void)
 }
 
 /* { dg-final { scan-assembler "vrshrn\.i64\[ 	\]+\[dD\]\[0-9\]+, \[qQ\]\[0-9\]+, #\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

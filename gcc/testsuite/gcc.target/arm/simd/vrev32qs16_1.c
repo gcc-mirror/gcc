@@ -7,4 +7,3 @@
 #include "../../aarch64/simd/vrev32qs16.x"
 
 /* { dg-final { scan-assembler "vrev32\.16\[ \t\]+\[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+!?\(\[ \t\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

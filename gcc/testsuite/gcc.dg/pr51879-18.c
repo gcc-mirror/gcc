@@ -14,4 +14,3 @@ void bar (int c, int *p)
 }
 
 /* { dg-final { scan-tree-dump-times "foo \\(" 1 "pre"} } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

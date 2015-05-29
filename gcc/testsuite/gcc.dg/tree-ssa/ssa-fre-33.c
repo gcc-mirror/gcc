@@ -19,4 +19,3 @@ int main(int argc)
 }
 
 /* { dg-final { scan-tree-dump "Replaced BIT_FIELD_REF.*with 2" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

@@ -14,4 +14,3 @@ void foo (int j)
     }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

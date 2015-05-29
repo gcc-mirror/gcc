@@ -43,4 +43,3 @@ int main(void)
   return 0;
 }
 /* { dg-final { scan-rtl-dump "Elimination opportunities = 3 realized = 3" "ree" } }  */
-/* { dg-final { cleanup-rtl-dump "ree" } }  */

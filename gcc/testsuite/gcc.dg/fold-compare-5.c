@@ -17,4 +17,3 @@ int test3 (int a)
 /* { dg-final { scan-tree-dump-times "return 2 - a == a" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "return 0" 1 "original" } } */
 /* { dg-final { scan-tree-dump-times "return 1" 1 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

@@ -16,4 +16,3 @@ void test_vget_highp16 (void)
   out_poly16x4_t = vget_high_p16 (arg0_poly16x8_t);
 }
 
-/* { dg-final { cleanup-saved-temps } } */

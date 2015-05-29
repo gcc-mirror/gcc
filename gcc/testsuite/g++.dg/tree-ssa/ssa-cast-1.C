@@ -9,4 +9,3 @@ int &f(int *a)
 /* There should be no cast as pointer and references are
    considered the same type. */
 /* { dg-final { scan-tree-dump-times "\\(int &\\)" 0 "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

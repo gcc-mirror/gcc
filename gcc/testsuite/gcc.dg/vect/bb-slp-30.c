@@ -44,4 +44,3 @@ test1(void)
 int main() { test1(); return a[21]; }
 
 /* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp2" } } */
-/* { dg-final { cleanup-tree-dump "slp2" } } */

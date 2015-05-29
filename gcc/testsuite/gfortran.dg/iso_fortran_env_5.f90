@@ -23,5 +23,4 @@ if (STAT_LOCKED == STAT_UNLOCKED) call abort()
 end
 
 ! { dg-final { scan-tree-dump-times "abort" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }
 

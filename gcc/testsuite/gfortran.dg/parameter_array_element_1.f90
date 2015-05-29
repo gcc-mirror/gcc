@@ -15,5 +15,4 @@
 END
 ! Scan for the 105 in the declaration real8 out_val[105];
 ! { dg-final { scan-tree-dump-times "105" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }
 

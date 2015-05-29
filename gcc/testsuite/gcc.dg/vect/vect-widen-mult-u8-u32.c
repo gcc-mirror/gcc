@@ -44,5 +44,4 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_widen_mult_qi_to_hi || vect_unpack } } } } */
 /* { dg-final { scan-tree-dump-times "vect_recog_widen_mult_pattern: detected" 1 "vect" { target vect_widen_mult_qi_to_hi_pattern } } } */
 /* { dg-final { scan-tree-dump-times "pattern recognized" 1 "vect" { target vect_widen_mult_qi_to_hi_pattern } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

@@ -72,4 +72,3 @@ int main()
 }
 
 /* { dg-final { scan-ipa-dump "Equal symbols: 0" "icf"  } } */
-/* { dg-final { cleanup-ipa-dump "icf" } } */

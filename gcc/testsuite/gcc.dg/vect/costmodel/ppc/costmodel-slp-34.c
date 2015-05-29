@@ -72,4 +72,3 @@ main (void)
 /* { dg-final { scan-tree-dump-times "vectorization not profitable" 0 "vect" } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect"  } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

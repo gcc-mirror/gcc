@@ -31,4 +31,3 @@ int *foo(void)
 }
 
 /* { dg-final { scan-ipa-dump-times "Increasing alignment of decl" 3 "increase_alignment" } } */
-/* { dg-final { cleanup-ipa-dump "increase_alignment" } } */

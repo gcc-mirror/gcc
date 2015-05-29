@@ -14,4 +14,3 @@ foo(struct A *locp, int str)
 /* We should have propagated &locp->i into its dereference.  */
 
 /* { dg-final { scan-tree-dump "locp_\[^\\n\]* =" "forwprop1" } } */
-/* { dg-final { cleanup-tree-dump "forwprop1" } } */

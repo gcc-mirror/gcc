@@ -26,4 +26,3 @@ int foo0(int i0, int i1)
 }
 
 /* { dg-final { scan-tree-dump-times "if" 2 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

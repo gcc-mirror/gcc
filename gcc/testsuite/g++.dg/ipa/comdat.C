@@ -12,4 +12,3 @@ inline int t(void)
 }
 int (*f)()=t;
 /* { dg-final { scan-ipa-dump-times "Localizing symbol" 1 "comdats"  } } */
-/* { dg-final { cleanup-ipa-dump "comdats" } } */

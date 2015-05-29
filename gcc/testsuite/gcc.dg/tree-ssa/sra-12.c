@@ -22,4 +22,3 @@ int foo (struct S *p)
 }
 
 /* { dg-final { scan-tree-dump-times "l;" 0 "release_ssa" { target { ! "aarch64*-*-* avr*-*-* nds32*-*-* sh*-*-*" } } } } */
-/* { dg-final { cleanup-tree-dump "release_ssa" } } */

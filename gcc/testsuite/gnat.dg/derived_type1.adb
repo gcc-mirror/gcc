@@ -25,4 +25,3 @@ end;
 
 -- { dg-final { scan-tree-dump-not "VIEW_CONVERT_EXPR<struct derived_type1__root>" "original" } }
 -- { dg-final { scan-tree-dump-not "VIEW_CONVERT_EXPR<struct derived_type1__derived1>" "original" } }
--- { dg-final { cleanup-tree-dump "original" } }

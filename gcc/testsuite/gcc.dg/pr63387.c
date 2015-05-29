@@ -23,4 +23,3 @@ int h(double ccc, float ddd){
 /* { dg-final { scan-tree-dump-not "bbb\[^\n\r\]* unord bbb" "optimized" } } */
 /* { dg-final { scan-tree-dump-times "aaa\[^\n\r\]* unord bbb" 2 "optimized" } } */
 /* { dg-final { scan-tree-dump-not "ccc\[^\n\r\]* unord ddd" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

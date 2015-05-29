@@ -43,4 +43,3 @@ uint64_t foo7 (uint64_t a, uint64_t b)
 }
 
 /* { dg-final { scan-rtl-dump-not "bswapdi" "combine" } } */
-/* { dg-final { cleanup-rtl-dump "combine" } } */

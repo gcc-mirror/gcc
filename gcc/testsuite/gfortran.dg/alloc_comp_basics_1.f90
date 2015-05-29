@@ -142,4 +142,3 @@ contains
 
 end program alloc
 ! { dg-final { scan-tree-dump-times "builtin_free" 18 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

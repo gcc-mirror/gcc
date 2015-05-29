@@ -20,5 +20,4 @@ foo (int len) {
   return result;
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */
 

@@ -57,5 +57,4 @@ int main ()
    of computation is the same, but vector results should be reduced to scalar
    result, which can'be done for cond_expr.  */
 /* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */
       

@@ -19,4 +19,3 @@ void bar (struct C &c)
   foo(d);
 }
 /* { dg-final { scan-tree-dump-not "if \\(" "vrp1"} } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

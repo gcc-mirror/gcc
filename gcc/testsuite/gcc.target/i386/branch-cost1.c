@@ -13,4 +13,3 @@ foo (int a, int b)
 
 /* { dg-final { scan-tree-dump-times "if " 2 "gimple" } } */
 /* { dg-final { scan-tree-dump-not " & " "gimple" } } */
-/* { dg-final { cleanup-tree-dump "gimple" } } */

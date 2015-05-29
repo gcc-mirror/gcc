@@ -13,4 +13,3 @@ foo (int c, int d)
 }
 
 /* { dg-final { scan-tree-dump-times "== 33" 2 "pre"} } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

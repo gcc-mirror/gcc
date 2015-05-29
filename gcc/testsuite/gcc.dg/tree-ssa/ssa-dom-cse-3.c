@@ -28,4 +28,3 @@ main()
 }
 
 /* { dg-final { scan-tree-dump "= PHI <\[01\]\\\(.\\\), \[01\]\\\(.\\\)>" "dom1" } } */
-/* { dg-final { cleanup-tree-dump "dom1" } } */

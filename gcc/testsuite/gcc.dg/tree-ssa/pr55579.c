@@ -12,4 +12,3 @@ foo (int x)
 }
 
 /* { dg-final { scan-tree-dump "Created a debug-only replacement for s" "esra" } } */
-/* { dg-final { cleanup-tree-dump "esra" } } */

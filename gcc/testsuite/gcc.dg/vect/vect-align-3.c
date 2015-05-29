@@ -52,4 +52,3 @@ f4 (int x, int y)
 
 /* { dg-final { scan-tree-dump-not "vect_do_peeling_for_loop_bound" "vect" } } */
 /* { dg-final { scan-tree-dump-not "loop peeled for vectorization" "vect" } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

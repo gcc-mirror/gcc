@@ -12,5 +12,4 @@ f (double *a)
 /* Load of x is moved out of the loop.  */
 /* { dg-final { scan-rtl-dump "Decided" "loop2_invariant" } } */
 /* { dg-final { scan-rtl-dump "without introducing a new temporary register" "loop2_invariant" } } */
-/* { dg-final { cleanup-rtl-dump "loop2_invariant" } } */
 

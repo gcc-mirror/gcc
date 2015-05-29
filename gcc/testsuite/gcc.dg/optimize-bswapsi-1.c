@@ -90,4 +90,3 @@ swap32_f (unsigned in)
 }
 
 /* { dg-final { scan-tree-dump-times "32 bit bswap implementation found at" 6 "bswap" } } */
-/* { dg-final { cleanup-tree-dump "bswap" } } */

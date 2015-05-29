@@ -19,4 +19,3 @@
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_deregister .&yy.token, &stat.., &errmsg, 200.;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_deregister .&yy.token, 0B, 0B, 0.;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_deregister .&xx.token, 0B, 0B, 0.;" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

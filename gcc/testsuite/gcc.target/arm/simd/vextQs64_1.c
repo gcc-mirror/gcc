@@ -7,4 +7,3 @@
 #include "../../aarch64/simd/extq_s64.x"
 
 /* { dg-final { scan-assembler-times "vext\.64\[ \t\]+\[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+, #\[0-9\]+!?\(?:\[ \t\]+@\[a-zA-Z0-9 \]+\)?\n" 1 } } */
-/* { dg-final { cleanup-saved-temps } } */

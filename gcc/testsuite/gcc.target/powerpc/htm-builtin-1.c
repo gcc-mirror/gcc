@@ -51,4 +51,3 @@ void use_builtins (long *p, char code, long *a, long *b)
   __builtin_set_tfhar (a[22]);
   __builtin_set_tfiar (a[23]);
 }
-/* { dg-final { cleanup-saved-temps } } */

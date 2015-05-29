@@ -17,5 +17,3 @@ void f(void)
 
 /* { dg-final { scan-tree-dump-times " = 1" 2 "optimized"} } */
 /* { dg-final { scan-tree-dump-not " = a;" "fre1"} } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

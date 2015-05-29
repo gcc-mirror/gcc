@@ -17,4 +17,3 @@ package body Aggr12 is
 end Aggr12;
 
 -- { dg-final { scan-tree-dump-not "{.i1=0, .i2=2}" "original" } }
--- { dg-final { cleanup-tree-dump "original" } }

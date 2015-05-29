@@ -26,4 +26,3 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump-times "SVR" 1 "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

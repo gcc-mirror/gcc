@@ -25,4 +25,3 @@ rgn_rank (rtx insn1, rtx insn2)
    from temporary equivalences.  The heuristics there no longer do
    the correct thing.  VRP still optimizes this testcase.  */
 /* { dg-final { scan-tree-dump-times "if " 2 "dom1" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "dom1" } } */

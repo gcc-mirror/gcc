@@ -23,4 +23,3 @@ foo (int a, int b, int c)
 /* The return *p should be turned into return 4.  */
 /* { dg-final { scan-tree-dump-times " return 4" 1 "dse1"} } */
 
-/* { dg-final { cleanup-tree-dump "dse1" } } */

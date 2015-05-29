@@ -24,4 +24,3 @@ void bar(int i)
 /* We can't get &a[i +- 1] in the final code and it is not clear we
    want this.  Instead we get to see &a[i] and pointer offsetting
    by 4 and -4U.  */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

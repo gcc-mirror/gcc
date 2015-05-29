@@ -44,4 +44,3 @@ end subroutine xx
 ! { dg-final { scan-tree-dump-times "mypure" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "elem_impure" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "sum_r4" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

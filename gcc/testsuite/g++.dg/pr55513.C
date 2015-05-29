@@ -9,4 +9,3 @@ main ()
 }
 
 // { dg-final { scan-tree-dump-times "memcpy" 1 "gimple" } }
-// { dg-final { cleanup-tree-dump "gimple" } }

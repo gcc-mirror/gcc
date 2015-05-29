@@ -46,4 +46,3 @@ builtin_memset_gen_str (void *data, long offset __attribute__ ((__unused__)),
 }
 
 /* { dg-final { scan-rtl-dump "Performing shrink-wrapping" "pro_and_epilogue"  } } */
-/* { dg-final { cleanup-rtl-dump "pro_and_epilogue" } } */

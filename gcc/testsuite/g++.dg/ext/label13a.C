@@ -2,7 +2,6 @@
 // { dg-do run }
 // { dg-options "-save-temps" }
 // { dg-final { scan-assembler "_ZN1CC4Ev" } }
-// { dg-final cleanup-saved-temps }
 
 int i;
 struct A { A() {} };

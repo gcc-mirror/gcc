@@ -20,4 +20,3 @@ test(int c)
    from the last iteration.  */
 /* { dg-final { scan-tree-dump "loop turned into non-loop; it never loops." "ivcanon"} } */
 /* { dg-final { scan-tree-dump "Last iteration exit edge was proved true." "ivcanon"} } */
-/* { dg-final { cleanup-tree-dump "ivcanon" } } */

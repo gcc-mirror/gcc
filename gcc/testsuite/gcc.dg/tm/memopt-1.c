@@ -27,4 +27,3 @@ f()
 /* { dg-final { scan-tree-dump-times "transforming: .*_ITM_WaRU4 \\(&i," 1 "tmmemopt" } } */
 /* { dg-final { scan-tree-dump-times "transforming: .*_ITM_RaWU4 \\(&i\\);" 1 "tmmemopt" } } */
 /* { dg-final { scan-tree-dump-times "transforming: .*_ITM_WaWU4 \\(&i," 1 "tmmemopt" } } */
-/* { dg-final { cleanup-tree-dump "tmmemopt" } } */

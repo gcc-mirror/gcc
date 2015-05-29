@@ -18,4 +18,3 @@ psmouse_extensions (void)
   a = b ();
 }
 /* { dg-final { scan-tree-dump-not "fsp_detect" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

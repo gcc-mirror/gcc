@@ -52,5 +52,3 @@ void main ()
 
 /* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 0 "parloops" } } */
 /* { dg-final { scan-tree-dump-times "loopfn" 0 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "parloops" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

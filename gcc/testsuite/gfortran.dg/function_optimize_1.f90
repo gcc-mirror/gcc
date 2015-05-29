@@ -44,4 +44,3 @@ end program main
 ! { dg-final { scan-tree-dump-times "element" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "mypure" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "elem_impure" 2 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

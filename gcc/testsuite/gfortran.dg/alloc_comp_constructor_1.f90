@@ -108,4 +108,3 @@ contains
 
 end program test_constructor
 ! { dg-final { scan-tree-dump-times "builtin_free" 19 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

@@ -22,4 +22,3 @@ EvTab[(((uintptr_t)(((TypHandle*)((hdCall)->ptr))[1]) & 1) ? 1 :
      ptApp[2] = ((TypHandle) (uintptr_t) (((long)(lc) << 2) + 1));
  }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

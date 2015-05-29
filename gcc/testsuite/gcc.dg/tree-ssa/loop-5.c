@@ -27,4 +27,3 @@ void xxx(void)
 
 /* { dg-final { scan-tree-dump-times " \\+ 2" 1 "optimized" } } */
 
-/* { dg-final { cleanup-tree-dump "optimized" } } */

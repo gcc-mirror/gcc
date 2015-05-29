@@ -31,4 +31,3 @@ void foo (int invariant)
 /* { dg-final { scan-ipa-dump "op2 change 10.000000. of time"  "inline"  } } */
 /* After inlining bar into foo, op3 is invariant within both loops.  */
 /* { dg-final { scan-ipa-dump "op3 change 1.000000. of time"  "inline"  } } */
-/* { dg-final { cleanup-ipa-dump "inline" } } */

@@ -34,6 +34,5 @@ bitmap_single_bit_set_p (const_bitmap a)
 
 /* Verify that VRP simplified an "if" statement.  */
 /* { dg-final { scan-tree-dump "Folded into: if.*" "vrp1"} } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */
 
 

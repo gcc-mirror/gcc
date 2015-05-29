@@ -16,4 +16,3 @@ void foo(int n, int mid)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "vect" } } */

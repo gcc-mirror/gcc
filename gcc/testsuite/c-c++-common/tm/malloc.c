@@ -23,4 +23,3 @@ void foobar(void)
 /* { dg-final { scan-tree-dump-times "__builtin__ITM_malloc" 1 "tmmark" } } */
 /* { dg-final { scan-tree-dump-times "__builtin__ITM_calloc" 1 "tmmark" } } */
 /* { dg-final { scan-tree-dump-times "__builtin__ITM_free" 2 "tmmark" } } */
-/* { dg-final { cleanup-tree-dump "tmmark" } } */

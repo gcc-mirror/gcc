@@ -23,4 +23,3 @@ void __frame_state_for (volatile char *state_in, int x)
    first store.  Thus, this is XFAILed.  */
 
 /* { dg-final { scan-tree-dump "Insertions: 2" "pre" { xfail *-*-* } } } */
-/* { dg-final { cleanup-tree-dump "pre" } } */

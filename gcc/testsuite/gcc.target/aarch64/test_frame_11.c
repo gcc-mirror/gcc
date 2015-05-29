@@ -13,4 +13,3 @@ t_frame_pattern (test11, 400, )
 t_frame_run (test11)
 
 /* { dg-final { scan-assembler-times "stp\tx29, x30, \\\[sp, -\[0-9\]+\\\]!" 2 } } */
-/* { dg-final { cleanup-saved-temps } } */

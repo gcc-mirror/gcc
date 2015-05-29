@@ -22,4 +22,3 @@
   End Program
 
 ! { dg-final { scan-tree-dump-times "sub \\(&class" 1 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

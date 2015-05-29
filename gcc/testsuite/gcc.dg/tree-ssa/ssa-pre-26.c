@@ -24,4 +24,3 @@ void foo(SA* pResult, SB* method, SC* self)
 }
 
 /* { dg-final { scan-tree-dump "Deleted redundant store" "fre1" } } */
-/* { dg-final { cleanup-tree-dump "fre1" } } */

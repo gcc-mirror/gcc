@@ -17,4 +17,3 @@ L2:
   return 6;
 }
 /* { dg-final { scan-tree-dump "\|" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -18,4 +18,3 @@ foo (float *p, float *q, float x)
     }
 }
 
-/* { dg-final { cleanup-tree-dump "vect" } } */

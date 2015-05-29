@@ -20,4 +20,3 @@ int set_remove(void)
 
 
 /* { dg-final { scan-ipa-dump-not "getTMCloneOrIrrevocable" "tmipa" } } */
-/* { dg-final { cleanup-ipa-dump "tmipa" } } */

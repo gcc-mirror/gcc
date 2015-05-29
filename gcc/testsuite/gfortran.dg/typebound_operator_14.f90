@@ -39,4 +39,3 @@ contains
   end function gt_cmp_int
 end module
 
-! { dg-final { cleanup-tree-dump "m_sort test" } }

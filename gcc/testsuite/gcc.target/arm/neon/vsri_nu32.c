@@ -18,4 +18,3 @@ void test_vsri_nu32 (void)
 }
 
 /* { dg-final { scan-assembler "vsri\.32\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+, #\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

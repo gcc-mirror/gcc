@@ -49,4 +49,3 @@ fn9 (unsigned int x)
 }
 
 /* { dg-final { scan-tree-dump-times "x \\+ 1" 9 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

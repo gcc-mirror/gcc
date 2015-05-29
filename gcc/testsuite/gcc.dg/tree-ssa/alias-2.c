@@ -25,4 +25,3 @@ int foo()
 /* We should have removed the link_error on the tree level as GCC can tell that
    a is not touched by the calling bar at all. */
 /* { dg-final { scan-tree-dump-times "link_error" 0 "optimized"} } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

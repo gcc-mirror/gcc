@@ -9,4 +9,3 @@ unsigned g(unsigned x, unsigned y){
 }
 
 /* { dg-final { scan-tree-dump-times "return ~x & y;" 2 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

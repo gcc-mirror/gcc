@@ -79,5 +79,4 @@ main (int argc, char **argv)
 
 /* { dg-final { scan-assembler-times "mul\\tv\[0-9\]+\.4s, v\[0-9\]+\.4s, v\[0-9\]+\.s\\\[\[0-9\]+\\\]" 4 } } */
 /* { dg-final { scan-assembler-times "mul\\tv\[0-9\]+\.8h, v\[0-9\]+\.8h, v\[0-9\]+\.h\\\[\[0-9\]+\\\]" 4 } } */
-/* { dg-final { cleanup-saved-temps } } */
 

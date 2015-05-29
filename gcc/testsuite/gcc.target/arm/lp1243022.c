@@ -2,7 +2,6 @@
 /* { dg-options "-O2 -fdump-rtl-subreg2" } */
 
 /* { dg-final { scan-rtl-dump "REG_INC" "subreg2" { target { ! arm_neon } } } } */
-/* { dg-final { cleanup-rtl-dump "subreg2" } } */
 struct device;
 typedef unsigned int __u32;
 typedef unsigned long long u64;

@@ -112,5 +112,4 @@ main (int argc, char **argv)
    vfmaq_laneq_f64.  */
 /* { dg-final { scan-assembler-times "fmla\\tv\[0-9\]+\.2d, v\[0-9\]+\.2d, v\[0-9\]+\.2d\\\[\[0-9\]+\\\]" 3 } } */
 
-/* { dg-final { cleanup-saved-temps } } */
 

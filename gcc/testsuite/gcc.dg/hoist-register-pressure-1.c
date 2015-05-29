@@ -4,7 +4,6 @@
    requires a load address instruction which is fine on 64 bit but
    cannot be used on 31 bit since it does a 31 bit add only.  */
 /* { dg-final { scan-rtl-dump "PRE/HOIST: end of bb .* copying expression" "hoist" { target { { !s390*-*-* || lp64 } && nonpic } } } } */
-/* { dg-final { cleanup-rtl-dump "hoist" } } */
 
 #define BUF 100
 long a[BUF];

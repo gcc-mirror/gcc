@@ -105,6 +105,108 @@ if [check_effective_target_lto] {
     }
 }
 
+# Deduce generated files from tool flags, return finalcode string
+proc schedule-cleanups { opts } {
+    global additional_sources
+    set finalcode ""
+    set testcases {}
+    lappend testcases [lindex [testname-for-summary] 0]
+    verbose "Cleanup testcases: $testcases" 4
+    if { [info exists additional_sources] && $additional_sources != "" } {
+	lappend testcases $additional_sources
+	verbose "Cleanup testcases, additional: $additional_sources" 4
+    }
+    verbose "Cleanup all options: $opts" 4
+
+    # First some fixups to transform stuff to something manageable ..
+    # --dump= should translate to -d with joined operand.
+    if [regexp -- {(^|\s+)--dump=[^\s]+(\s+|$)} $opts] {
+	regsub -all -- {--dump=} $opts {-d} opts
+    }
+    # -da and -dx are treated as shorthand for -fdump-rtl-all here
+    if [regexp -- {(^|\s+)-d[ax](\s+|$)} $opts] {
+	verbose "Cleanup -d seen" 4
+	lappend opts "-fdump-rtl-all"
+    }
+    # .. and don't question why there is --dump=? and -d?
+
+    # Then handle options that generate non-dump files
+    # TODO
+    # -fprofile-generate -> cleanup-coverage-files()
+    # -fstack-usage -> cleanup-stack-usage()
+    if [regexp -- {(^|\s+)-fstack-usage(\s+|$)} $opts] {
+	verbose "Cleanup -fstack-usage seen" 4
+#	append finalcode "cleanup-stack-usage\n"
+    }
+    global keep_saved_temps_suffixes
+    if [info exists keep_saved_temps_suffixes ] {
+	verbose "dg-keep-saved-temps ${keep_saved_temps_suffixes}" 2
+    }
+    # -save-temps -> cleanup-saved-temps()
+    if [regexp -- {(^|\s+)-save-temps(\s+|$)} $opts] {
+	verbose "Cleanup -save-temps seen" 4
+	if [info exists keep_saved_temps_suffixes] {
+	    append finalcode "cleanup-saved-temps ${keep_saved_temps_suffixes}\n"
+	} else {
+	    append finalcode "cleanup-saved-temps\n"
+	}
+    } else {
+	if [info exists keep_saved_temps_suffixes ] {
+	    error "dg-keep-saved-temps specified but testcase does not -save-temps"
+	    return
+	}
+    }
+    # Finally see if there are any dumps in opts, otherwise we are done
+    if [regexp -- {(?=(?:^|[ \t]+)?)-fdump-[^ \t]+(?=(?:$|[ \t]+)?)} $opts] {
+        # Ipa, Rtl, Tree for simplicity
+        set ptn "{i,r,t}"
+    } else {
+        return $finalcode
+    }
+    # stem.ext.<passnum><fam>.<passname><pass-instances>
+    # (tree)passes can have multiple instances, thus optional trailing *
+    set ptn "\[0-9\]\[0-9\]\[0-9\]$ptn.*"
+    # Handle ltrans files around -flto
+    if [regexp -- {(^|\s+)-flto(\s+|$)} $opts] {
+	verbose "Cleanup -flto seen" 4
+	set ltrans "{ltrans\[0-9\]*.,}"
+    } else {
+	set ltrans ""
+    }
+    set ptn "$ltrans$ptn"
+    verbose "Cleanup final ptn: $ptn" 4
+    set tfiles {}
+    foreach src $testcases {
+	set basename [file tail $src]
+	if { $ltrans != "" } {
+	    # ??? should we use upvar 1 output_file instead of this (dup ?)
+	    set stem [file rootname $basename]
+	    set basename_ext [file extension $basename]
+	    if {$basename_ext != ""} {
+		regsub -- {^.*\.} $basename_ext {} basename_ext
+	    }
+	    lappend tfiles "$stem.{$basename_ext,exe}"
+	    unset basename_ext
+	} else {
+	    lappend tfiles $basename
+	}
+    }
+    if { [llength $tfiles] > 1 } {
+	set tfiles [join $tfiles ","]
+	set tfiles "{$tfiles}"
+    }
+    verbose "Cleanup final testcases: $tfiles" 4
+    # We have to quote the regex
+    regsub -all {([][$^?+*()|\\{}])} "$tfiles.$ptn" {\\\1} ptn
+    set final ""
+    append final {remove-build-file }
+    append final "\"$ptn\""
+    verbose "Cleanup final: $final" 4
+    append finalcode "$final\n"
+
+    return $finalcode
+}
+
 # Define gcc callbacks for dg.exp.
 
 proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
@@ -176,6 +278,7 @@ proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
 	}
     }
 
+    append finalcode [schedule-cleanups "$options $extra_tool_flags"]
     if { $extra_tool_flags != "" } {
 	lappend options "additional_flags=$extra_tool_flags"
     }
@@ -527,27 +630,6 @@ proc cleanup-repo-files { } {
     }
 }
 
-# Remove compiler-generated RTL dump files for the current test.
-#
-# SUFFIX is the filename suffix pattern.
-proc cleanup-rtl-dump { suffix } {
-  cleanup-dump "\[0-9\]\[0-9\]\[0-9\]r.$suffix"
-}
-
-# Remove a specific tree dump file for the current test.
-#
-# SUFFIX is the tree dump file suffix pattern.
-proc cleanup-tree-dump { suffix } {
-  cleanup-dump "\[0-9\]\[0-9\]\[0-9\]t.$suffix"
-}
-
-# Remove a specific ipa dump file for the current test.
-#
-# SUFFIX is the ipa dump file suffix pattern.
-proc cleanup-ipa-dump { suffix } {
-  cleanup-dump "\[0-9\]\[0-9\]\[0-9\]i.$suffix"
-}
-
 # Remove a final insns dump file for the current test.
 proc cleanup-final-insns-dump { } {
     set testcase [testname-for-summary]
@@ -592,30 +674,6 @@ proc cleanup-ada-spec { } {
     }
 }
 
-# Remove all dump files with the provided suffix.
-proc cleanup-dump { suffix } {
-    global additional_sources_used
-    set testcase [testname-for-summary]
-    # The name might include a list of options; extract the file name.
-    set src [file tail [lindex $testcase 0]]
-    remove-build-file "[file tail $src].$suffix"
-    remove-build-file "[file rootname [file tail $src]].exe.$suffix"
-    remove-build-file "[file rootname [file tail $src]].exe.ltrans\[0-9\]*.$suffix"
-    # -fcompare-debug dumps
-    remove-build-file "[file tail $src].gk.$suffix"
-
-    # Clean up dump files for additional source files.
-    if [info exists additional_sources_used] {
-	foreach srcfile $additional_sources_used {
-	    remove-build-file "[file tail $srcfile].$suffix"
-	    remove-build-file "[file rootname [file tail $srcfile]].exe.$suffix"
-	    remove-build-file "[file rootname [file tail $srcfile]].exe.ltrans\[0-9\]*.$suffix"
-	    # -fcompare-debug dumps
-	    remove-build-file "[file tail $srcfile].gk.$suffix"
-	}
-    }
-}
-
 # Remove files kept by --save-temps for the current test.
 #
 # Currently this is only .i, .ii, .s and .o files, but more can be added
@@ -655,6 +713,24 @@ proc cleanup-saved-temps { args } {
 		remove-build-file "[file rootname [file tail $srcfile]].gk$suffix"
 	    }
 	}
+    }
+}
+
+
+# Files to be kept after cleanup of --save-temps for the current test.
+# ARGS is a list of suffixes to NOT delete.
+proc dg-keep-saved-temps { args } {
+    global keep_saved_temps_suffixes
+    set keep_saved_temps_suffixes {}
+
+    # add the to-be-kept suffixes
+    foreach suffix {".mii" ".ii" ".i" ".s" ".o" ".gkd" ".res" ".ltrans.out"} {
+	if {[lsearch $args $suffix] >= 0} {
+	    lappend keep_saved_temps_suffixes $suffix
+	}
+    }
+    if { [llength keep_saved_temps_suffixes] < 1 } {
+	error "dg-keep-saved-temps ${args} did not match any known suffix"
     }
 }
 
@@ -760,6 +836,7 @@ if { [info procs saved-dg-test] == [list] } {
 	global shouldfail
 	global testname_with_flags
 	global set_target_env_var
+	global keep_saved_temps_suffixes
 
 	if { [ catch { eval saved-dg-test $args } errmsg ] } {
 	    set saved_info $errorInfo
@@ -784,6 +861,9 @@ if { [info procs saved-dg-test] == [list] } {
 	set shouldfail 0
 	if [info exists set_target_env_var] {
 	    unset set_target_env_var
+	}
+	if [info exists keep_saved_temps_suffixes] {
+	    unset keep_saved_temps_suffixes
 	}
 	unset_timeout_vars
 	if [info exists compiler_conditional_xfail_data] {

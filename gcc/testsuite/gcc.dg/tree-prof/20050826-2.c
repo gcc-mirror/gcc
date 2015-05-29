@@ -73,4 +73,3 @@ main (void)
 }
 
 /* { dg-final-use { scan-tree-dump-not "Invalid sum" "dom1"} } */
-/* { dg-final-use { cleanup-tree-dump "dom1" } } */

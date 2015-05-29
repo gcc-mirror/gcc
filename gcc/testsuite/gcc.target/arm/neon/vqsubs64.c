@@ -18,4 +18,3 @@ void test_vqsubs64 (void)
 }
 
 /* { dg-final { scan-assembler "vqsub\.s64\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
-/* { dg-final { cleanup-saved-temps } } */

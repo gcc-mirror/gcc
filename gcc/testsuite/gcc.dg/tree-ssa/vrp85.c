@@ -37,4 +37,3 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump-not "link_error" "vrp1"} } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */

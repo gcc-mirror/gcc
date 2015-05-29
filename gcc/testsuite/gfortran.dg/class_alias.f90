@@ -92,4 +92,3 @@ use test_module
   deallocate (var_a)
   deallocate (var_p)
 end
-! { dg-final { cleanup-tree-dump "original" } }

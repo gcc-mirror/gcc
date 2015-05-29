@@ -8,4 +8,3 @@ foo (int x, int y)
 }
 
 /* { dg-final { scan-assembler-times "smull\tx\[0-9\]+, w\[0-9\]+, w\[0-9\]+" 1 } } */
-/* { dg-final { cleanup-saved-temps } } */

@@ -13,4 +13,3 @@ program main
 end program main
 ! { dg-final { scan-tree-dump-times "_gfortran_compare_string_char4" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "__builtin_memcmp" 2 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

@@ -35,4 +35,3 @@ main (void)
 
 /* { dg-final { scan-tree-dump-times "snprintf" 2 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "sprintf" 0 "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

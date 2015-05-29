@@ -18,4 +18,3 @@ contains
   end subroutine bar
 end module foo
 ! { dg-final { scan-tree-dump-times "alloc" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

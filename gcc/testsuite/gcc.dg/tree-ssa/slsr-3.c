@@ -22,4 +22,3 @@ foo (int a[], int b[], int i)
 /* { dg-final { scan-tree-dump-times "\\+ 8|\\, 8>" 1 "optimized" { target { int32plus } } } } */
 /* { dg-final { scan-tree-dump-times "\\+ 6|\\, 6>" 1 "optimized" { target { int16 } } } } */
 /* { dg-final { scan-tree-dump-times "\\+ 12|\\, 12>" 1 "optimized" { target { int32 } } } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */

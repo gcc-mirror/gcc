@@ -17,4 +17,3 @@
         end
 ! Verify that offset of the first element is simplified
 ! { dg-final { scan-tree-dump-not "~" "optimized" } }
-! { dg-final { cleanup-tree-dump "optimized" } }

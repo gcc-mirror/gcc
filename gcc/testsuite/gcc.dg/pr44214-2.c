@@ -11,4 +11,3 @@ void do_div (_Complex double *a, _Complex double *b)
 
 /* { dg-final { scan-tree-dump-times " \\\* " 1 "original" } } */
 /* { dg-final { scan-tree-dump-times " / " 0 "original" } } */
-/* { dg-final { cleanup-tree-dump "original" } } */

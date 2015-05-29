@@ -30,4 +30,3 @@ PROGRAM TEST
 END
 
 ! { dg-final { scan-tree-dump-times "realloc" 0 "original" } }
-! { dg-final { cleanup-tree-dump "original" } }

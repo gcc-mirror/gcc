@@ -48,5 +48,3 @@ int norecurse1b (int i)
 /* { dg-final { scan-ipa-dump-not "found to be const: recurse1" "pure-const" } } */
 /* { dg-final { scan-ipa-dump-not "found to be const: recurse2a" "pure-const" } } */
 /* { dg-final { scan-ipa-dump-not "found to be const: recurse2b" "pure-const" } } */
-/* { dg-final { cleanup-ipa-dump "pure-const" } } */
-/* { dg-final { cleanup-tree-dump "local-pure-const1" } } */
