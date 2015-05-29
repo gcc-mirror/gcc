@@ -312,13 +312,15 @@ remove_ctrl_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
 }
 
 /* Create a duplicate of BB.  Record the duplicate block in an array
-   indexed by COUNT stored in RD.  */
+   indexed by COUNT stored in RD.  LOOP is the loop the block should
+   belong to, if not NULL, in which case it will belong to the same
+   loop as BB.  */
 
 static void
 create_block_for_threading (basic_block bb,
 			    struct redirection_data *rd,
 			    unsigned int count,
-			    bitmap *duplicate_blocks)
+			    bitmap *duplicate_blocks, loop_p loop)
 {
   edge_iterator ei;
   edge e;
@@ -326,6 +328,11 @@ create_block_for_threading (basic_block bb,
   /* We can use the generic block duplication code and simply remove
      the stuff we do not need.  */
   rd->dup_blocks[count] = duplicate_block (bb, NULL, NULL);
+  if (loop && rd->dup_blocks[count]->loop_father != loop)
+    {
+      remove_bb_from_loops (rd->dup_blocks[count]);
+      add_bb_to_loop (rd->dup_blocks[count], loop);
+    }
 
   FOR_EACH_EDGE (e, ei, rd->dup_blocks[count]->succs)
     e->aux = NULL;
@@ -1303,6 +1310,10 @@ ssa_create_duplicates (struct redirection_data **slot,
 		       ssa_local_info_t *local_info)
 {
   struct redirection_data *rd = *slot;
+  vec<jump_thread_edge *> *path = rd->path;
+
+  /* Check to which loop the threading destination belongs to.  */
+  loop_p dest_loop = (*path).last ()->e->dest->loop_father;
 
   /* The second duplicated block in a jump threading path is specific
      to the path.  So it gets stored in RD rather than in LOCAL_DATA.
@@ -1313,14 +1324,13 @@ ssa_create_duplicates (struct redirection_data **slot,
      Note the search starts with the third edge on the path.  The first
      edge is the incoming edge, the second edge always has its source
      duplicated.  Thus we start our search with the third edge.  */
-  vec<jump_thread_edge *> *path = rd->path;
   for (unsigned int i = 2; i < path->length (); i++)
     {
       if ((*path)[i]->type == EDGE_COPY_SRC_BLOCK
 	  || (*path)[i]->type == EDGE_COPY_SRC_JOINER_BLOCK)
 	{
 	  create_block_for_threading ((*path)[i]->e->src, rd, 1,
-				      &local_info->duplicate_blocks);
+				      &local_info->duplicate_blocks, dest_loop);
 	  break;
 	}
     }
@@ -1330,7 +1340,7 @@ ssa_create_duplicates (struct redirection_data **slot,
   if (local_info->template_block == NULL)
     {
       create_block_for_threading ((*path)[1]->e->src, rd, 0,
-				  &local_info->duplicate_blocks);
+				  &local_info->duplicate_blocks, dest_loop);
       local_info->template_block = rd->dup_blocks[0];
 
       /* We do not create any outgoing edges for the template.  We will
@@ -1340,7 +1350,7 @@ ssa_create_duplicates (struct redirection_data **slot,
   else
     {
       create_block_for_threading (local_info->template_block, rd, 0,
-				  &local_info->duplicate_blocks);
+				  &local_info->duplicate_blocks, dest_loop);
 
       /* Go ahead and wire up outgoing edges and update PHIs for the duplicate
 	 block.   */
@@ -1677,7 +1687,7 @@ thread_single_edge (edge e)
   npath->safe_push (x);
   rd.path = npath;
 
-  create_block_for_threading (bb, &rd, 0, NULL);
+  create_block_for_threading (bb, &rd, 0, NULL, NULL);
   remove_ctrl_stmt_and_useless_edges (rd.dup_blocks[0], NULL);
   create_edge_and_update_destination_phis (&rd, rd.dup_blocks[0], 0);
 

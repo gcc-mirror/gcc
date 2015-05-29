@@ -1,3 +1,11 @@
+2015-05-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66314
+	* tree-ssa-threadupdate.c (create_block_for_threading): Add
+	parameter that says which loop the new block belongs to.
+	(ssa_create_duplicates): Blocks duplicated for the threaded
+	path belong to the loop of the thread destination.
+
 2015-05-29  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* config/arm/neon-testgen.ml (emit_epilogue): Remove manual call
@@ -7,7 +15,6 @@
 	(dg-keep-saved-temps): Document new proc.
 	(cleanup-ipa-dump, cleanup-rtl-dump, cleanup-tree-dump,
 	cleanup-saved-temps): Remove.
-
 
 2015-05-28  Andreas Tobler  <andreast@gcc.gnu.org>
 
