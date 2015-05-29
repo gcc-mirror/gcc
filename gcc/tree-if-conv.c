@@ -594,7 +594,8 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, gphi *phi,
 
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, gimple_phi_result (phi))
 	{
-	  if (gimple_code (USE_STMT (use_p)) == GIMPLE_PHI)
+	  if (gimple_code (USE_STMT (use_p)) == GIMPLE_PHI
+	      && USE_STMT (use_p) != (gimple) phi)
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "Difficult to handle this virtual phi.\n");
