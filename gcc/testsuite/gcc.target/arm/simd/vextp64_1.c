@@ -21,4 +21,4 @@ main (int argc, char **argv)
   return 0;
 }
 
-/* Don't scan assembler for vext - it can be optimized into a move from r0.
+/* Don't scan assembler for vext - it can be optimized into a move from r0. */
