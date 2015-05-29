@@ -37,6 +37,8 @@
  *  the standard library algorithms.
 */
 
+#include <debug/assertions.h>
+
 // Debug mode namespaces.
 
 /**
@@ -58,9 +60,6 @@ namespace __gnu_debug
 
 #ifndef _GLIBCXX_DEBUG
 
-# define _GLIBCXX_DEBUG_ASSERT(_Condition)
-# define _GLIBCXX_DEBUG_PEDASSERT(_Condition)
-# define _GLIBCXX_DEBUG_ONLY(_Statement) ;
 # define __glibcxx_requires_cond(_Cond,_Msg)
 # define __glibcxx_requires_valid_range(_First,_Last)
 # define __glibcxx_requires_non_empty_range(_First,_Last)
@@ -82,16 +81,6 @@ namespace __gnu_debug
 #else
 
 # include <debug/macros.h>
-
-#define _GLIBCXX_DEBUG_ASSERT(_Condition) __glibcxx_assert(_Condition)
-
-#ifdef _GLIBCXX_DEBUG_PEDANTIC
-# define _GLIBCXX_DEBUG_PEDASSERT(_Condition) _GLIBCXX_DEBUG_ASSERT(_Condition)
-#else
-# define _GLIBCXX_DEBUG_PEDASSERT(_Condition)
-#endif
-
-# define _GLIBCXX_DEBUG_ONLY(_Statement) _Statement
 
 # define __glibcxx_requires_cond(_Cond,_Msg) _GLIBCXX_DEBUG_VERIFY(_Cond,_Msg)
 # define __glibcxx_requires_valid_range(_First,_Last) \

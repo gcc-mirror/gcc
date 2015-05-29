@@ -29,11 +29,7 @@
 #ifndef _GLIBCXX_DEBUG_SAFE_LOCAL_ITERATOR_H
 #define _GLIBCXX_DEBUG_SAFE_LOCAL_ITERATOR_H 1
 
-#include <debug/debug.h>
-#include <debug/macros.h>
-#include <debug/functions.h>
 #include <debug/safe_unordered_base.h>
-#include <ext/type_traits.h>
 
 namespace __gnu_debug
 {
@@ -432,6 +428,20 @@ namespace __gnu_debug
 			    ._M_iterator(__rhs, "rhs"));
       return __lhs.base() != __rhs.base();
     }
+
+  /** Safe local iterators know if they are dereferenceable. */
+  template<typename _Iterator, typename _Sequence>
+    inline bool
+    __check_dereferenceable(const _Safe_local_iterator<_Iterator,
+						       _Sequence>& __x)
+    { return __x._M_dereferenceable(); }
+
+  /** Safe local iterators know how to check if they form a valid range. */
+  template<typename _Iterator, typename _Sequence>
+    inline bool
+    __valid_range(const _Safe_local_iterator<_Iterator, _Sequence>& __first,
+		  const _Safe_local_iterator<_Iterator, _Sequence>& __last)
+    { return __first._M_valid_range(__last); }
 } // namespace __gnu_debug
 
 #include <debug/safe_local_iterator.tcc>

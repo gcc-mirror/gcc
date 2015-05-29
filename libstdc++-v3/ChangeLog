@@ -1,3 +1,61 @@
+2015-05-29  François Dumont  fdumont@gcc.gnu.org>
+
+	* include/debug/debug.h (_GLIBCXX_DEBUG_ASSERT,
+	_GLIBCXX_DEBUG_PEDASSERT, _GLIBCXX_DEBUG_ONLY): Move definition...
+	* include/debug/assertions.h: ...here, new.
+	* include/debug/formatter.h
+	(_Error_formatter::_Is_iterator_value_type): New.
+	(_Error_formatter::_Is_instance): New.
+	(_Error_formatter::_Parameter): Make public and not friend anymore.
+	(_Error_formatter::_Parameter::__instance): New _M_kind enum entry.
+	(_Error_formatter::_Parameter::__iterator_value_type): New _M_kind enum
+	entry.
+	(_Error_formatter::_Parameter::_Type): New.
+	(_Error_formatter::_Parameter::_Instance): New, inherit from
+	latter.
+	(union _Error_formatter::_Parameter::_M_variant): Reorganize.
+	(_Parameter(_Iterator const&, const char*, _Is_iterator)): Make all
+	overloads take iterator through a const reference.
+	(_Parameter(const _Iterator&, const char*, _Is_iterator_value_type)):
+	New.
+	(_Parameter(const _Type&, const char*, _Is_instance)): New.
+	(_Error_formatter::_M_print_type): Delete.
+	(_Error_formatter::_M_iterator_value_type): New.
+	(_Error_formatter::_M_instance): New.
+	* include/Makefile.am: Add new above debug file.
+	* include/Makefile.in: Regenerate.
+	* include/debug/functions.h
+	(__check_dereferenceable(const _Safe_iterator<>&),
+	__valid_range(const _Safe_iterator<>&),
+	__is_safe_random_iterator<_Safe_iterator<>>): Move...
+	* include/debug/safe_iterator.h: ... here.
+	Replace debug.h include with assertions.h.
+	(__check_singular_aux): Move...
+	* include/debug/safe_base.h: ... here.
+	* include/debug/functions.h
+	(__check_dereferenceable(const _Safe_local_iterator<>&),
+	__valid_range(const _Safe_local_iterator<>&): Move...
+	* include/debug/safe_local_iterator.h: ...here.
+	* include/debug/safe_sequence.h: Replace debug.h with assertions.h.
+	Remove _Safe_iterator declaration.
+	* include/debug/safe_unordered_container.h: Replace debug.h with
+	assertions.h.
+	* include/debug/array: Replace safe_sequence.h include with
+	formatter.h and macros.h.
+	* include/debug/deque: Include functions.tcc.
+	* include/debug/forward_list: Likewise.
+	* include/debug/list: Likewise.
+	* include/debug/string: Likewise.
+	* include/debug/vector: Likewise.
+	* include/bits/unique_ptr.h: Replace debug.h include with new
+	assertions.h.
+	* include/bits/stl_iterator_base_funcs.h: Likewise.
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_debug_neg.cc: Likewise.
+	* src/c++11/debug.cc: Adapt.
+
 2015-05-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Fix duplicate ID attribute.

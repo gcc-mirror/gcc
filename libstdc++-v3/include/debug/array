@@ -31,7 +31,8 @@
 
 #pragma GCC system_header
 
-#include <debug/safe_sequence.h>
+#include <debug/formatter.h>
+#include <debug/macros.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

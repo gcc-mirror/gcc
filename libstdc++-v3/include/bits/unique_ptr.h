@@ -31,7 +31,7 @@
 #define _UNIQUE_PTR_H 1
 
 #include <bits/c++config.h>
-#include <debug/debug.h>
+#include <debug/assertions.h>
 #include <type_traits>
 #include <utility>
 #include <tuple>

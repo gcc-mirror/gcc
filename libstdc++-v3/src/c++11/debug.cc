@@ -519,7 +519,122 @@ namespace __gnu_debug
     if (_M_local_iterators == __it)
       _M_local_iterators = __it->_M_next;
   }
+}
 
+namespace
+{
+  void
+  print_type(const __gnu_debug::_Error_formatter* __formatter,
+	     const type_info* __info,
+	     const char* __unknown_name)
+  {
+    if (!__info)
+      __formatter->_M_print_word(__unknown_name);
+    else
+      {
+	int __status;
+	char* __demangled_name =
+	  __cxxabiv1::__cxa_demangle(__info->name(), NULL, NULL, &__status);
+	__formatter->_M_print_word(__status == 0
+				   ? __demangled_name : __info->name());
+	free(__demangled_name);
+      }
+  }
+
+  bool
+  print_field(
+    const __gnu_debug::_Error_formatter* __formatter,
+    const char* __name,
+    const __gnu_debug::_Error_formatter::_Parameter::_Type& __variant)
+  {
+    if (strcmp(__name, "name") == 0)
+      {
+	assert(__variant._M_name);
+	__formatter->_M_print_word(__variant._M_name);
+      }
+    else if (strcmp(__name, "type") == 0)
+      print_type(__formatter, __variant._M_type, "<unknown type>");
+    else
+      return false;
+
+    return true;
+  }
+
+  bool
+  print_field(
+    const __gnu_debug::_Error_formatter* __formatter,
+    const char* __name,
+    const __gnu_debug::_Error_formatter::_Parameter::_Instance& __variant)
+  {
+    const __gnu_debug::_Error_formatter::_Parameter::_Type& __type = __variant;
+    if (print_field(__formatter, __name, __type))
+      { }
+    else if (strcmp(__name, "address") == 0)
+      {
+	const int __bufsize = 64;
+	char __buf[__bufsize];
+	__formatter->_M_format_word(__buf, __bufsize, "%p",
+				    __variant._M_address);
+	__formatter->_M_print_word(__buf);
+      }
+    else
+      return false;
+
+    return true;
+  }
+
+  void
+  print_description(
+	const __gnu_debug::_Error_formatter* __formatter,
+	const __gnu_debug::_Error_formatter::_Parameter::_Type& __variant)
+  {
+    if (__variant._M_name)
+      {
+	const int __bufsize = 64;
+	char __buf[__bufsize];
+	__formatter->_M_format_word(__buf, __bufsize, "\"%s\" ",
+				    __variant._M_name);
+	__formatter->_M_print_word(__buf);
+      }
+
+    if (__variant._M_type)
+      {
+	__formatter->_M_print_word("  type = ");
+	print_type(__formatter, __variant._M_type, "<unknown type>");
+	__formatter->_M_print_word(";\n");
+      }
+  }
+
+
+  void
+  print_description(
+	const __gnu_debug::_Error_formatter* __formatter,
+	const __gnu_debug::_Error_formatter::_Parameter::_Instance& __variant)
+  {
+    const int __bufsize = 64;
+    char __buf[__bufsize];
+
+    if (__variant._M_name)
+      {
+	__formatter->_M_format_word(__buf, __bufsize, "\"%s\" ",
+				    __variant._M_name);
+	__formatter->_M_print_word(__buf);
+      }
+
+    __formatter->_M_format_word(__buf, __bufsize, "@ 0x%p {\n",
+				__variant._M_address);
+    __formatter->_M_print_word(__buf);
+
+    if (__variant._M_type)
+      {
+	__formatter->_M_print_word("  type = ");
+	print_type(__formatter, __variant._M_type, "<unknown type>");
+      }
+  }
+}
+
+namespace __gnu_debug
+{
   void
   _Error_formatter::_Parameter::
   _M_print_field(const _Error_formatter* __formatter, const char* __name) const
@@ -531,20 +646,8 @@ namespace __gnu_debug
     switch (_M_kind)
     {
     case __iterator:
-      if (strcmp(__name, "name") == 0)
-	{
-	  assert(_M_variant._M_iterator._M_name);
-	  __formatter->_M_print_word(_M_variant._M_iterator._M_name);
-	}
-      else if (strcmp(__name, "address") == 0)
-	{
-	  __formatter->_M_format_word(__buf, __bufsize, "%p",
-				      _M_variant._M_iterator._M_address);
-	  __formatter->_M_print_word(__buf);
-	}
-      else if (strcmp(__name, "type") == 0)
-	__formatter->_M_print_type(_M_variant._M_iterator._M_type,
-				   "<unknown type>");
+      if (print_field(__formatter, __name, _M_variant._M_iterator))
+	{ }
       else if (strcmp(__name, "constness") == 0)
 	{
 	  static const char* __constness_names[__last_constness] =
@@ -579,28 +682,13 @@ namespace __gnu_debug
 	  __formatter->_M_print_word(__buf);
 	}
       else if (strcmp(__name, "seq_type") == 0)
-	__formatter->_M_print_type(_M_variant._M_iterator._M_seq_type,
-				   "<unknown seq_type>");
+	print_type(__formatter, _M_variant._M_iterator._M_seq_type,
+		   "<unknown seq_type>");
       else
 	assert(false);
       break;
     case __sequence:
-      if (strcmp(__name, "name") == 0)
-	{
-	  assert(_M_variant._M_sequence._M_name);
-	  __formatter->_M_print_word(_M_variant._M_sequence._M_name);
-	}
-      else if (strcmp(__name, "address") == 0)
-	{
-	  assert(_M_variant._M_sequence._M_address);
-	  __formatter->_M_format_word(__buf, __bufsize, "%p",
-				      _M_variant._M_sequence._M_address);
-	  __formatter->_M_print_word(__buf);
-	}
-      else if (strcmp(__name, "type") == 0)
-	__formatter->_M_print_type(_M_variant._M_sequence._M_type,
-				   "<unknown type>");
-      else
+      if (!print_field(__formatter, __name, _M_variant._M_sequence))
 	assert(false);
       break;
     case __integer:
@@ -621,6 +709,14 @@ namespace __gnu_debug
       else
 	assert(false);
       break;
+    case __instance:
+      if (!print_field(__formatter, __name, _M_variant._M_instance))
+	assert(false);
+      break;
+    case __iterator_value_type:
+      if (!print_field(__formatter, __name, _M_variant._M_iterator_value_type))
+	assert(false);
+      break;
     default:
       assert(false);
       break;
@@ -638,21 +734,10 @@ namespace __gnu_debug
       {
       case __iterator:
 	__formatter->_M_print_word("iterator ");
-	if (_M_variant._M_iterator._M_name)
-	  {
-	    __formatter->_M_format_word(__buf, __bufsize, "\"%s\" ",
-					_M_variant._M_iterator._M_name);
-	    __formatter->_M_print_word(__buf);
-	  }
+	print_description(__formatter, _M_variant._M_iterator);
 
-	__formatter->_M_format_word(__buf, __bufsize, "@ 0x%p {\n",
-				    _M_variant._M_iterator._M_address);
-	__formatter->_M_print_word(__buf);
 	if (_M_variant._M_iterator._M_type)
 	  {
-	    __formatter->_M_print_word("type = ");
-	    _M_print_field(__formatter, "type");
-
 	    if (_M_variant._M_iterator._M_constness != __unknown_constness)
 	      {
 		__formatter->_M_print_word(" (");
@@ -687,24 +772,24 @@ namespace __gnu_debug
 	break;
       case __sequence:
 	__formatter->_M_print_word("sequence ");
-	if (_M_variant._M_sequence._M_name)
-	  {
-	    __formatter->_M_format_word(__buf, __bufsize, "\"%s\" ",
-					_M_variant._M_sequence._M_name);
-	    __formatter->_M_print_word(__buf);
-	  }
-
-	__formatter->_M_format_word(__buf, __bufsize, "@ 0x%p {\n",
-				    _M_variant._M_sequence._M_address);
-	__formatter->_M_print_word(__buf);
+	print_description(__formatter, _M_variant._M_sequence);
 
 	if (_M_variant._M_sequence._M_type)
-	  {
-	    __formatter->_M_print_word("  type = ");
-	    _M_print_field(__formatter, "type");
-	    __formatter->_M_print_word(";\n");
-	  }
+	  __formatter->_M_print_word(";\n");
+
 	__formatter->_M_print_word("}\n");
+	break;
+      case __instance:
+	__formatter->_M_print_word("instance ");
+	print_description(__formatter, _M_variant._M_instance);
+
+	if (_M_variant._M_instance._M_type)
+	  __formatter->_M_print_word(";\n");
+
+	break;
+      case __iterator_value_type:
+	__formatter->_M_print_word("iterator::value_type ");
+	print_description(__formatter, _M_variant._M_iterator_value_type);
 	break;
       default:
 	break;
@@ -756,6 +841,8 @@ namespace __gnu_debug
 	  {
 	  case _Parameter::__iterator:
 	  case _Parameter::__sequence:
+	  case _Parameter::__instance:
+	  case _Parameter::__iterator_value_type:
 	    if (!__has_noninteger_parameters)
 	      {
 		_M_first_line = true;
@@ -879,9 +966,9 @@ namespace __gnu_debug
 
 	// Get the parameter number
 	assert(*__start >= '1' && *__start <= '9');
-	size_t __param = *__start - '0';
-	--__param;
-	assert(__param < _M_num_parameters);
+	size_t __param_index = *__start - '0' - 1;
+	assert(__param_index < _M_num_parameters);
+	const auto& __param = _M_parameters[__param_index];
 
 	// '.' separates the parameter number from the field
 	// name, if there is one.
@@ -891,14 +978,14 @@ namespace __gnu_debug
 	    assert(*__start == ';');
 	    ++__start;
 	    __buf[0] = '\0';
-	    if (_M_parameters[__param]._M_kind == _Parameter::__integer)
+	    if (__param._M_kind == _Parameter::__integer)
 	      {
 		_M_format_word(__buf, __bufsize, "%ld",
-			       _M_parameters[__param]._M_variant._M_integer._M_value);
+			       __param._M_variant._M_integer._M_value);
 		_M_print_word(__buf);
 	      }
-	    else if (_M_parameters[__param]._M_kind == _Parameter::__string)
-	      _M_print_string(_M_parameters[__param]._M_variant._M_string._M_value);
+	    else if (__param._M_kind == _Parameter::__string)
+	      _M_print_string(__param._M_variant._M_string._M_value);
 	    continue;
 	  }
 
@@ -916,23 +1003,7 @@ namespace __gnu_debug
 	++__start;
 	__field[__field_idx] = 0;
 
-	_M_parameters[__param]._M_print_field(this, __field);
-      }
-  }
-
-  void
-  _Error_formatter::_M_print_type(const type_info* __info,
-				  const char* __unknown_name) const
-  {
-    if (!__info)
-      _M_print_word(__unknown_name);
-    else
-      {
-	int __status;
-	char* __demangled_name =
-	  __cxxabiv1::__cxa_demangle(__info->name(), NULL, NULL, &__status);
-	_M_print_word(__status == 0 ? __demangled_name : __info->name());
-	free(__demangled_name);
+	__param._M_print_field(this, __field);
       }
   }
 

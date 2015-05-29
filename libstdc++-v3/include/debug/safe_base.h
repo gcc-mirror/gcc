@@ -159,6 +159,13 @@ namespace __gnu_debug
     }
   };
 
+  /** Iterators that derive from _Safe_iterator_base can be determined singular
+   *  or non-singular.
+   **/
+  inline bool
+  __check_singular_aux(const _Safe_iterator_base* __x)
+  { return __x->_M_singular(); }
+
   /**
    * @brief Base class that supports tracking of iterators that
    * reference a sequence.
