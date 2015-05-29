@@ -1,3 +1,9 @@
+2015-05-29  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/66257
+	* resolve.c (resolve_actual_arglist): Don't throw an error
+	if the argument with procedure pointer component is not a variable.
+
 2015-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
