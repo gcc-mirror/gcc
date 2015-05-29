@@ -167,7 +167,7 @@ not in any particular release.
 </table>
 
 
-<table frame="all" xml:id="table.ts_status">
+<table frame="all" xml:id="table.cxx1z_ts_status">
 <title>C++ Technical Specifications Implementation Status</title>
 
 <tgroup cols="4" align="left" colsep="0" rowsep="1">
