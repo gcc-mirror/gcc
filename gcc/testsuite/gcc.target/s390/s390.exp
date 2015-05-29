@@ -61,12 +61,21 @@ if ![info exists DEFAULT_CFLAGS] then {
 # Initialize `dg'.
 dg-init
 
+set hotpatch_tests $srcdir/$subdir/hotpatch-\[0-9\]*.c
+
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
-	"" $DEFAULT_CFLAGS
+dg-runtest [lsort [prune [glob -nocomplain $srcdir/$subdir/*.\[cS\]] \
+			 $hotpatch_tests]] "" $DEFAULT_CFLAGS
 
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.\[cS\]]] \
 	"" $DEFAULT_CFLAGS
+
+# Additional hotpatch torture tests.
+torture-init
+set HOTPATCH_TEST_OPTS [list -Os -O0 -O1 -O2 -O3]
+set-torture-options $HOTPATCH_TEST_OPTS
+gcc-dg-runtest [lsort [glob -nocomplain $hotpatch_tests]] "" $DEFAULT_CFLAGS
+torture-finish
 
 # All done.
 dg-finish

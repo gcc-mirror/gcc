@@ -1,7 +1,7 @@
 /* Functional tests for the function hotpatching feature.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O3 -mzarch -mhotpatch=1,2" } */
+/* { dg-options "-mzarch -mhotpatch=1,2" } */
 
 #include <stdio.h>
 
