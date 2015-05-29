@@ -1,3 +1,17 @@
+2015-05-29  Tristan Gingold  <gingold@adacore.com>
+
+	* pecoff.c: New file.
+	* Makefile.am (FORMAT_FILES): Add pecoff.c and dependencies.
+	* Makefile.in: Regenerate.
+	* filetype.awk: Detect pecoff.
+	* configure.ac: Define BACKTRACE_SUPPORTS_DATA on elf platforms.
+	Add pecoff.
+	* btest.c (test5): Test enabled only if BACKTRACE_SUPPORTS_DATA is
+	true.
+	* backtrace-supported.h.in (BACKTRACE_SUPPORTS_DATA): Define.
+	* configure: Regenerate.
+	* pecoff.c: New file.
+
 2015-05-13  Michael Haubenwallner  <michael.haubenwallner@ssi-schaefer.com>
 
 	* Makefile.in: Regenerated with automake-1.11.6.
