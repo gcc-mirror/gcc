@@ -1,3 +1,8 @@
+2015-05-28  DJ Delorie  <dj@redhat.com>
+
+	* expmed.c (extract_bit_field_1): Avoid clobbering a
+	yet-to-be-used base/index register.
+
 2015-05-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* alias.c (alias_set_entry_d): Add is_pointer and has_pointer.
