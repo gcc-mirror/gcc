@@ -1014,7 +1014,7 @@ CNU(RTS_CONTROL_ENABLE, "Enable RTS flow ctrl")
 
 */
 
-#if defined (__FreeBSD__) || defined (linux)
+#if defined (__FreeBSD__) || defined (__linux__)
 # define PTY_Library "-lutil"
 #else
 # define PTY_Library ""
@@ -1321,7 +1321,7 @@ CND(SIZEOF_tv_usec, "tv_usec")
  ** hard-wired limit of 100 million.
  ** On IA64 HP-UX the limit is 2**31 - 1.
  **/
-#if defined (sun)
+#if defined (__sun__)
 # define MAX_tv_sec "100_000_000"
 
 #elif defined (__hpux__)

@@ -69,7 +69,7 @@ extern "C" {
 #include <unixlib.h>
 #endif
 
-#ifdef linux
+#ifdef __linux__
 /* Don't use macros on GNU/Linux since they cause incompatible changes between
    glibc 2.0 and 2.1 */
 
@@ -277,8 +277,8 @@ __gnat_fseek64 (FILE *stream, __int64 offset, int origin)
   return _fseeki64 (stream, offset, origin);
 }
 
-#elif defined(linux) || defined(sun) \
-  || defined (__FreeBSD__) || defined(__APPLE__)
+#elif defined (__linux__) || defined (__sun__) || defined (__FreeBSD__) \
+  || defined (__APPLE__)
 /* section for platforms having ftello/fseeko */
 
 __int64

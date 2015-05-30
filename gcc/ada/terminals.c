@@ -1059,7 +1059,7 @@ __gnat_setup_winsize (void *desc, int rows, int columns)
  || defined (__OpenBSD__) \
  || defined (__NetBSD__)  \
  || defined (__DragonFly__)
-#   define FREEBSD
+#   define BSD
 #endif
 
 /* Include every system header we need */
@@ -1070,8 +1070,8 @@ __gnat_setup_winsize (void *desc, int rows, int columns)
 
 /* On some system termio is either absent or including it will disable termios
    (HP-UX) */
-#if ! defined (__hpux__) && ! defined (FREEBSD) && \
-    ! defined (__APPLE__) && ! defined(__rtems__)
+#if !defined (__hpux__) && !defined (BSD) && !defined (__APPLE__) \
+  && !defined (__rtems__)
 #   include <termio.h>
 #endif
 
@@ -1083,10 +1083,10 @@ __gnat_setup_winsize (void *desc, int rows, int columns)
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#if defined (sun)
+#if defined (__sun__)
 #   include <sys/stropts.h>
 #endif
-#if defined (FREEBSD) || defined (sun)
+#if defined (BSD) || defined (__sun__)
 #   include <sys/signal.h>
 #endif
 #if defined (__hpux__)
@@ -1098,7 +1098,7 @@ __gnat_setup_winsize (void *desc, int rows, int columns)
 
 /* On HP-UX and Sun system, there is a bzero function but with a different
    signature. Use memset instead */
-#if defined (__hpux__) || defined (sun) || defined (_AIX)
+#if defined (__hpux__) || defined (__sun__) || defined (_AIX)
 #   define bzero(s,n) memset (s,0,n)
 #endif
 
@@ -1116,11 +1116,11 @@ __gnat_setup_winsize (void *desc, int rows, int columns)
 */
 
 /* Configurable part */
-#if defined (__APPLE__) || defined (FREEBSD)
+#if defined (__APPLE__) || defined (BSD)
 #define USE_OPENPTY
-#elif defined (linux)
+#elif defined (__linux__)
 #define USE_GETPT
-#elif defined (sun)
+#elif defined (__sun__)
 #define USE_CLONE_DEVICE "/dev/ptmx"
 #elif defined (_AIX)
 #define USE_CLONE_DEVICE "/dev/ptc"
@@ -1406,7 +1406,7 @@ __gnat_setup_child_communication
     desc->slave_fd = open (desc->slave_name, O_RDWR, 0);
 #endif
 
-#if defined (sun) || defined (__hpux__)
+#if defined (__sun__) || defined (__hpux__)
   /* On systems such as Solaris we are using stream. We need to push the right
      "modules" in order to get the expected terminal behaviors. Otherwise
      functionalities such as termios are not available.  */

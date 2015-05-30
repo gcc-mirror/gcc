@@ -1,3 +1,19 @@
+2015-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* adaint.c: Test for __linux__ instead of linux and __sun__ instead
+	of sun.  Add missing leading underscore to AIX.  Remove #elif 0.
+	* adaint.h: Likewise.
+	* cio.c: Likewise.
+	* cstreams.c: Likewise.
+	* env.c: Likewise.
+	* gsocket.h: Likewise.
+	* init.c: Likewise.  Test for __i386__ instead of i386.
+	* link.c: Likewise.
+	* s-oscons-tmplt.c: Likewise.
+	* sysdep.c: Likewise.
+	* terminals.c: Likewise.  Use BSD symbol instead of FREEBSD.
+	* tracebak.c: Likewise.  Test for __sparc__ instead of sparc.
+
 2015-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (max_size) <tcc_binary>: Add special code to
