@@ -49,7 +49,7 @@
 #endif
 
 #ifdef __ANDROID__
-#undef linux
+#undef __linux__
 #endif
 
 #ifdef IN_RTS
@@ -403,7 +403,7 @@ __gnat_install_handler (void)
 /* GNU/Linux Section */
 /*********************/
 
-#elif defined (linux)
+#elif defined (__linux__)
 
 #include <signal.h>
 
@@ -452,7 +452,7 @@ void fake_linux_sigemptyset (sigset_t *set)
 
 #endif
 
-#if defined (i386) || defined (__x86_64__) || defined (__ia64__) \
+#if defined (__i386__) || defined (__x86_64__) || defined (__ia64__) \
     || defined (__ARMEL__)
 
 #define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
@@ -480,7 +480,7 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
      The stack checking code guarantees that this address is unused by the
      time this happens.  */
 
-#if defined (i386)
+#if defined (__i386__)
   unsigned long *pc = (unsigned long *)mcontext->gregs[REG_EIP];
   /* The pattern is "orl $0x0,(%esp)" for a probe in 32-bit mode.  */
   if (signo == SIGSEGV && pc && *pc == 0x00240c83)
@@ -703,7 +703,7 @@ __gnat_install_handler(void)
 /* Solaris Section */
 /*******************/
 
-#elif defined (sun) && defined (__SVR4) && !defined (__vxworks)
+#elif defined (__sun__) && !defined (__vxworks)
 
 #include <signal.h>
 #include <siginfo.h>
@@ -1702,7 +1702,7 @@ __gnat_install_handler ()
 
 #include <signal.h>
 #include <taskLib.h>
-#if (defined (i386) || defined (__i386__)) && !defined (VTHREADS)
+#if defined (__i386__) && !defined (VTHREADS)
 #include <sysLib.h>
 #endif
 
@@ -1898,7 +1898,7 @@ __gnat_map_signal (int sig, siginfo_t *si ATTRIBUTE_UNUSED,
   Raise_From_Signal_Handler (exception, msg);
 }
 
-#if (defined (i386) || defined (__i386__)) && !defined (VTHREADS)
+#if defined (__i386__) && !defined (VTHREADS)
 extern void
 __gnat_vxsim_error_handler (int sig, siginfo_t *si, void *sc);
 
@@ -1921,7 +1921,7 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
   sigdelset (&mask, sig);
   sigprocmask (SIG_SETMASK, &mask, NULL);
 
-#if defined (__ARMEL__) || defined (__PPC__) || defined (i386) || defined (__i386__)
+#if defined (__ARMEL__) || defined (__PPC__) || defined (__i386__)
   /* On certain targets, kernel mode, we process signals through a Call Frame
      Info trampoline, voiding the need for myriads of fallback_frame_state
      variants in the ZCX runtime.  We have no simple way to distinguish ZCX
@@ -1929,7 +1929,7 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
      necessary.  This only incurs a few extra instructions and a tiny
      amount of extra stack usage.  */
 
-#if (defined (i386) || defined (__i386__)) && !defined (VTHREADS)
+#if defined (__i386__) && !defined (VTHREADS)
    /* On x86, the vxsim signal context is subtly different and is processeed
       by a handler compiled especially for vxsim.  */
 
@@ -2021,7 +2021,7 @@ __gnat_install_handler (void)
   trap_0_entry->inst_fourth = 0xa1480000;
 #endif
 
-#if (defined (i386) || defined (__i386__)) && !defined (VTHREADS)
+#if defined (__i386__) && !defined (VTHREADS)
   /*  By experiment, found that sysModel () returns the following string
       prefix for vxsim when running on Linux and Windows.  */
   model = sysModel ();
@@ -2054,7 +2054,7 @@ __gnat_init_float (void)
 #endif
 #endif
 
-#if (defined (__i386__) || defined (i386)) && !defined (VTHREADS)
+#if defined (__i386__) && !defined (VTHREADS)
   /* This is used to properly initialize the FPU on an x86 for each
      process thread.  */
   asm ("finit");
@@ -2530,7 +2530,7 @@ __gnat_install_handler (void)
 void
 __gnat_init_float (void)
 {
-#if defined (__i386__) || defined (i386) || defined (__x86_64)
+#if defined (__i386__) || defined (__x86_64__)
 
   /* This is used to properly initialize the FPU on an x86 for each
      process thread.  */

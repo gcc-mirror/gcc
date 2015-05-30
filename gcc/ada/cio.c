@@ -49,7 +49,7 @@ extern "C" {
 
 /* Don't use macros on GNU/Linux since they cause incompatible changes between
    glibc 2.0 and 2.1 */
-#ifdef linux
+#ifdef __linux__
 #undef putchar
 #undef getchar
 #undef fputc

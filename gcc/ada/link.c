@@ -125,7 +125,7 @@ const char *__gnat_object_library_extension = ".a";
 unsigned char __gnat_separate_run_path_options = 1;
 const char *__gnat_default_libgcc_subdir = "lib";
 
-#elif defined (linux) || defined(__GLIBC__)
+#elif defined (__linux__) || defined (__GLIBC__)
 const char *__gnat_object_file_option = "-Wl,@";
 const char *__gnat_run_path_option = "-Wl,-rpath,";
 char __gnat_shared_libgnat_default = STATIC;
@@ -183,7 +183,7 @@ const char *__gnat_object_library_extension = ".olb";
 unsigned char __gnat_separate_run_path_options = 0;
 const char *__gnat_default_libgcc_subdir = "lib";
 
-#elif defined (sun)
+#elif defined (__sun__)
 const char *__gnat_object_file_option = "";
 const char *__gnat_run_path_option = "-Wl,-R";
 char __gnat_shared_libgnat_default = STATIC;
@@ -200,7 +200,7 @@ const char *__gnat_default_libgcc_subdir = "lib/amd64";
 const char *__gnat_default_libgcc_subdir = "lib";
 #endif
 
-#elif defined (__svr4__) && defined (i386)
+#elif defined (__svr4__) && defined (__i386__)
 const char *__gnat_object_file_option = "";
 const char *__gnat_run_path_option = "";
 char __gnat_shared_libgnat_default = STATIC;
