@@ -1616,6 +1616,11 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       if (target == 0 || !REG_P (target) || !valid_multiword_target_p (target))
 	target = gen_reg_rtx (mode);
 
+      /* In case we're about to clobber a base register or something 
+	 (see gcc.c-torture/execute/20040625-1.c).   */
+      if (reg_mentioned_p (target, str_rtx))
+	target = gen_reg_rtx (mode);
+
       /* Indicate for flow that the entire target reg is being set.  */
       emit_clobber (target);
 
