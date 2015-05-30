@@ -40,8 +40,8 @@ along with GCC; see the file COPYING3.  If not see
 %{m68020-40:-m68040}%{m68020-60:-m68040}\
 %{mcpu=*:-mcpu=%*}%{march=*:-march=%*}\
 "
-#define ASM_PCREL_SPEC "%{" FPIC_SPEC ":--pcrel} \
- %{mpcrel:%{" NO_FPIC_SPEC ":--pcrel}} \
+#define ASM_PCREL_SPEC "%{" FPIE_OR_FPIC_SPEC ":--pcrel} \
+ %{mpcrel:%{" NO_FPIE_AND_FPIC_SPEC ":--pcrel}} \
  %{msep-data|mid-shared-library:--pcrel} \
 "
 
