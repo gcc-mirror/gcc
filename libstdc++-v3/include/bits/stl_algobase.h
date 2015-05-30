@@ -812,11 +812,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         static bool
         equal(const _Tp* __first1, const _Tp* __last1, const _Tp* __first2)
         {
-	  if (__first1 == 0 || __first2 == 0)
-	    return __first1 == __last1;
-
-	  return !__builtin_memcmp(__first1, __first2, sizeof(_Tp)
-				   * (__last1 - __first1));
+	  if (const size_t __len = (__last1 - __first1))
+	    return !__builtin_memcmp(__first1, __first2, sizeof(_Tp) * __len);
+	  return true;
 	}
     };
 
@@ -920,14 +918,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  const size_t __len1 = __last1 - __first1;
 	  const size_t __len2 = __last2 - __first2;
-	  if (__len1 && __len2)
-	    {
-	      if (int __result = __builtin_memcmp(__first1, __first2,
-						  std::min(__len1, __len2)))
-		{
-		  return __result < 0;
-		}
-	    }
+	  if (const size_t __len = std::min(__len1, __len2))
+	    if (int __result = __builtin_memcmp(__first1, __first2, __len))
+	      return __result < 0;
 	  return __len1 < __len2;
 	}
     };
