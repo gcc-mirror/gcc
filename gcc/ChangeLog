@@ -1,3 +1,17 @@
+2015-05-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* alias.c (alias_set_entry_d): Add is_pointer and has_pointer.
+	(alias_stats): Add num_universal.
+	(alias_set_subset_of): Special case pointers; be ready for NULL
+	children.
+	(alias_sets_conflict_p): Special case pointers; be ready for NULL
+	children.
+	(init_alias_set_entry): Break out from ...
+	(record_alias_subset): ... here; propagate new fields;
+	allocate children only when really needed.
+	(get_alias_set): Do less generous pointer globbing.
+	(dump_alias_stats_in_alias_c): Update statistics.
+
 2015-05-30  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (split_stack_arg_pointer_used_p): Scan

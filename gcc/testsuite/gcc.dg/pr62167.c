@@ -29,6 +29,8 @@ main ()
 
   node.prev = (void *)head;
 
+  asm("":"=m"(node.prev));
+
   head->first = &node;
 
   struct node *n = head->first;
