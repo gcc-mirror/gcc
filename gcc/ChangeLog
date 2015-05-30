@@ -1,3 +1,9 @@
+2015-05-30  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (split_stack_arg_pointer_used_p): Scan
+	correct block for use of r12.
+	(rs6000_expand_split_stack_prologue): Error on r29 asm global reg.
+
 2015-05-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	PR target/66215
