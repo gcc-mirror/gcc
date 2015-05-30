@@ -23450,7 +23450,7 @@ split_stack_arg_pointer_used_p (void)
   /* Unfortunately we also need to do some code scanning, since
      r12 may have been substituted for the pseudo.  */
   rtx_insn *insn;
-  basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+  basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
   FOR_BB_INSNS (bb, insn)
     if (NONDEBUG_INSN_P (insn))
       {
@@ -25941,6 +25941,13 @@ rs6000_expand_split_stack_prologue (void)
 
   if (!info->push_p)
     return;
+
+  if (global_regs[29])
+    {
+      error ("-fsplit-stack uses register r29");
+      inform (DECL_SOURCE_LOCATION (global_regs_decl[29]),
+	      "conflicts with %qD", global_regs_decl[29]);
+    }
 
   allocate = info->total_size;
   if (allocate > (unsigned HOST_WIDE_INT) 1 << 31)
