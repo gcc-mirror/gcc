@@ -1,5 +1,7 @@
 2015-05-31  Jason Merrill  <jason@redhat.com>
 
+	* constexpr.c (cxx_eval_indirect_ref): Try folding first.
+
 	PR c++/66320
 	* constexpr.c (cxx_eval_constant_expression): Treat a placeholder
 	with the wrong type as non-constant.
