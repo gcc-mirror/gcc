@@ -705,8 +705,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __fill_a(_Tp* __first, _Tp* __last, const _Tp& __c)
     {
       const _Tp __tmp = __c;
-      __builtin_memset(__first, static_cast<unsigned char>(__tmp),
-		       __last - __first);
+      if (const size_t __len = __last - __first)
+	__builtin_memset(__first, static_cast<unsigned char>(__tmp), __len);
     }
 
   /**
