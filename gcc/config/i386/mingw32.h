@@ -139,7 +139,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef REAL_LIBGCC_SPEC
 #define REAL_LIBGCC_SPEC \
   "%{mthreads:-lmingwthrd} -lmingw32 \
-   "SHARED_LIBGCC_SPEC" \
+   " SHARED_LIBGCC_SPEC " \
    -lmoldname -lmingwex -lmsvcrt"
 
 #undef STARTFILE_SPEC

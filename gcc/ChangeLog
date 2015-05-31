@@ -1,3 +1,9 @@
+2015-05-31  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* config/cris/cris.h (CRIS_ARCH_CPP_DEFAULT): Fix C++11 compatibility
+	issue (add space between string literal and macro).
+	* config/i386/mingw32.h (REAL_LIBGCC_SPEC): Likewise.
+
 2015-05-30  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/m68k/m68k.h (ASM_PCREL_SPEC): Pass --pcrel also for
