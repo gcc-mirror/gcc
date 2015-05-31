@@ -1,5 +1,9 @@
 2015-05-31  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66320
+	* constexpr.c (cxx_eval_constant_expression): Treat a placeholder
+	with the wrong type as non-constant.
+
 	* pt.c (tsubst_decl) [VAR_DECL]: SET_DECL_IMPLICIT_INSTANTIATION
 	before register_specialization.
 
