@@ -134,7 +134,7 @@ extern int cris_cpu_version;
    %{!metrax*:\
     %{!mcpu=*:\
      %{!mtune=*:-D__tune_v" CRIS_DEFAULT_TUNE "}\
-     -D__arch_v"CRIS_DEFAULT_TUNE\
+     -D__arch_v" CRIS_DEFAULT_TUNE \
    " -D__CRIS_arch_version=" CRIS_DEFAULT_TUNE "}}}"
 #endif
 
