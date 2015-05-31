@@ -1,3 +1,7 @@
+2015-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-oscons-tmplt.c: Add explicit tests for Android alongside Linux.
+
 2015-05-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* adaint.c: Test for __linux__ instead of linux and __sun__ instead
