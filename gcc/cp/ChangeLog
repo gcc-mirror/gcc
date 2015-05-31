@@ -1,3 +1,8 @@
+2015-05-31  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst_decl) [VAR_DECL]: SET_DECL_IMPLICIT_INSTANTIATION
+	before register_specialization.
+
 2015-05-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
