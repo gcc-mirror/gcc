@@ -86,7 +86,7 @@ pragma Style_Checks ("M32766");
  ** a number of non-POSIX but useful/required features.
  **/
 
-#if defined (__linux__)
+#if defined (__linux__) || defined (__ANDROID__)
 
 /* Define _XOPEN_SOURCE to get IOV_MAX */
 # if !defined (_XOPEN_SOURCE)
@@ -157,7 +157,7 @@ pragma Style_Checks ("M32766");
 # include <_types.h>
 #endif
 
-#ifdef __linux__
+#if defined (__linux__) || defined (__ANDROID__)
 # include <pthread.h>
 # include <signal.h>
 #endif
@@ -1191,7 +1191,7 @@ CND(MSG_WAITALL, "Wait for full reception")
 #endif
 CND(MSG_NOSIGNAL, "No SIGPIPE on send")
 
-#ifdef __linux__
+#if defined (__linux__) || defined (__ANDROID__)
 # define MSG_Forced_Flags "MSG_NOSIGNAL"
 #else
 # define MSG_Forced_Flags "0"
@@ -1356,7 +1356,7 @@ CND(SIZEOF_struct_hostent, "struct hostent")
 #define SIZEOF_struct_servent (sizeof (struct servent))
 CND(SIZEOF_struct_servent, "struct servent")
 
-#if defined (__linux__)
+#if defined (__linux__) || defined (__ANDROID__)
 #define SIZEOF_sigset (sizeof (sigset_t))
 CND(SIZEOF_sigset, "sigset")
 #endif
@@ -1456,7 +1456,8 @@ CND(CLOCK_THREAD_CPUTIME_ID, "Thread CPU clock")
 CNS(CLOCK_RT_Ada, "")
 #endif
 
-#if defined (__APPLE__) || defined (__linux__) || defined (DUMMY)
+#if defined (__APPLE__) || defined (__linux__) || defined (__ANDROID__) \
+  || defined (DUMMY)
 /*
 
    --  Sizes of pthread data types
@@ -1499,7 +1500,7 @@ CND(PTHREAD_RWLOCKATTR_SIZE, "pthread_rwlockattr_t")
 CND(PTHREAD_RWLOCK_SIZE,     "pthread_rwlock_t")
 CND(PTHREAD_ONCE_SIZE,       "pthread_once_t")
 
-#endif /* __APPLE__ || __linux__ */
+#endif /* __APPLE__ || __linux__ || __ANDROID__ */
 
 /*
 
