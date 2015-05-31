@@ -5834,12 +5834,12 @@ AC_SUBST([enable_default_pie])
 # Check if -fno-PIE works.
 AC_CACHE_CHECK([for -fno-PIE option],
   [gcc_cv_c_no_fpie],
-  [saved_CFLAGS="$CFLAGS"
-   CFLAGS="$CFLAGS -fno-PIE"
+  [saved_CXXFLAGS="$CXXFLAGS"
+   CXXFLAGS="$CXXFLAGS -fno-PIE"
    AC_COMPILE_IFELSE([int main(void) {return 0;}],
      [gcc_cv_c_no_fpie=yes],
      [gcc_cv_c_no_fpie=no])
-   CFLAGS="$saved_CFLAGS"])
+   CXXFLAGS="$saved_CXXFLAGS"])
 if test "$gcc_cv_c_no_fpie" = "yes"; then
   NO_PIE_CFLAGS="-fno-PIE"
 fi

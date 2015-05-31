@@ -1,3 +1,8 @@
+2015-05-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac (NO_PIE_CFLAGS): Check CXXFLAGS instead of CFLAGS.
+	* configure: Regenerated.
+
 2015-05-31  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* config/cris/cris.h (CRIS_ARCH_CPP_DEFAULT): Fix C++11 compatibility
