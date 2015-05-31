@@ -1,3 +1,9 @@
+2015-05-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66354
+	* include/bits/stl_algobase.h (__fill_a): Check length before calling
+	memset.
+
 2015-05-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_algobase.h (__equal<true>::equal): Check length
