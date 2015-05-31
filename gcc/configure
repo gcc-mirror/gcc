@@ -28728,8 +28728,8 @@ $as_echo_n "checking for -fno-PIE option... " >&6; }
 if test "${gcc_cv_c_no_fpie+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-  saved_CFLAGS="$CFLAGS"
-   CFLAGS="$CFLAGS -fno-PIE"
+  saved_CXXFLAGS="$CXXFLAGS"
+   CXXFLAGS="$CXXFLAGS -fno-PIE"
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 int main(void) {return 0;}
@@ -28740,7 +28740,7 @@ else
   gcc_cv_c_no_fpie=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-   CFLAGS="$saved_CFLAGS"
+   CXXFLAGS="$saved_CXXFLAGS"
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_c_no_fpie" >&5
 $as_echo "$gcc_cv_c_no_fpie" >&6; }
