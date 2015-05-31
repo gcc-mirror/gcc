@@ -1,3 +1,9 @@
+2015-05-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66320
+	* constexpr.c (cxx_eval_constant_expression): Treat a placeholder
+	with the wrong type as non-constant.
+
 2015-05-27  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (check_redeclaration_exception_specification): Depend on
