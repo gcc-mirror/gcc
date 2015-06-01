@@ -1,3 +1,16 @@
+2015-06-01  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-05-26  Michael Matz  <matz@suse.de>
+
+	PR middle-end/66251
+	* gcc.dg/vect/pr66251.c: New test.
+
+	2015-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66251
+	* gfortran.fortran-torture/compile/pr66251.f90: New testcase.
+
 2015-05-29  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/66257

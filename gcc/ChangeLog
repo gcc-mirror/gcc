@@ -1,3 +1,18 @@
+2015-06-01  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-05-26  Michael Matz  <matz@suse.de>
+
+	PR middle-end/66251
+	* tree-vect-stmts.c (vect_create_vectorized_demotion_stmts): Always set
+	STMT_VINFO_VEC_STMT, also with SLP.
+
+	2015-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66251
+	* tree-vect-stmts.c (vectorizable_conversion): Properly
+	set STMT_VINFO_VEC_STMT even for the SLP case.
+
 2015-05-28  Mike Frysinger  <vapier@gentoo.org>
 
 	* config/nios2/linux.h (CPP_SPEC): Define.

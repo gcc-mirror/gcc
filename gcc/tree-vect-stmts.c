@@ -3369,15 +3369,13 @@ vect_create_vectorized_demotion_stmts (vec<tree> *vec_oprnds,
 	     (or in STMT_VINFO_RELATED_STMT chain).  */
 	  if (slp_node)
 	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
-	  else
-	    {
-	      if (!*prev_stmt_info)
-		STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
-	      else
-		STMT_VINFO_RELATED_STMT (*prev_stmt_info) = new_stmt;
 
-	      *prev_stmt_info = vinfo_for_stmt (new_stmt);
-	    }
+	  if (!*prev_stmt_info)
+	    STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
+	  else
+	    STMT_VINFO_RELATED_STMT (*prev_stmt_info) = new_stmt;
+
+	  *prev_stmt_info = vinfo_for_stmt (new_stmt);
 	}
     }
 
@@ -3956,14 +3954,12 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 
 	      if (slp_node)
 		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+
+	      if (!prev_stmt_info)
+		STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
 	      else
-		{
-		  if (!prev_stmt_info)
-		    STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
-		  else
-		    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-		  prev_stmt_info = vinfo_for_stmt (new_stmt);
-		}
+		STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+	      prev_stmt_info = vinfo_for_stmt (new_stmt);
 	    }
 	}
 
