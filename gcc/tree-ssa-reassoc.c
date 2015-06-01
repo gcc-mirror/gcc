@@ -235,7 +235,8 @@ typedef struct operand_entry
   unsigned int count;
 } *operand_entry_t;
 
-static alloc_pool operand_entry_pool;
+static pool_allocator<operand_entry> operand_entry_pool ("operand entry pool",
+							 30);
 
 /* This is used to assign a unique ID to each struct operand_entry
    so that qsort results are identical on different hosts.  */
@@ -592,7 +593,7 @@ sort_by_operand_rank (const void *pa, const void *pb)
 static void
 add_to_ops_vec (vec<operand_entry_t> *ops, tree op)
 {
-  operand_entry_t oe = (operand_entry_t) pool_alloc (operand_entry_pool);
+  operand_entry_t oe = operand_entry_pool.allocate ();
 
   oe->op = op;
   oe->rank = get_rank (op);
@@ -608,7 +609,7 @@ static void
 add_repeat_to_ops_vec (vec<operand_entry_t> *ops, tree op,
 		       HOST_WIDE_INT repeat)
 {
-  operand_entry_t oe = (operand_entry_t) pool_alloc (operand_entry_pool);
+  operand_entry_t oe = operand_entry_pool.allocate ();
 
   oe->op = op;
   oe->rank = get_rank (op);
@@ -2963,7 +2964,7 @@ get_ops (tree var, enum tree_code code, vec<operand_entry_t> *ops,
 	&& !get_ops (rhs[i], code, ops, loop)
 	&& has_single_use (rhs[i]))
       {
-	operand_entry_t oe = (operand_entry_t) pool_alloc (operand_entry_pool);
+	operand_entry_t oe = operand_entry_pool.allocate ();
 
 	oe->op = rhs[i];
 	oe->rank = code;
@@ -3196,8 +3197,7 @@ maybe_optimize_range_tests (gimple stmt)
 	      && has_single_use (rhs))
 	    {
 	      /* Otherwise, push the _234 range test itself.  */
-	      operand_entry_t oe
-		= (operand_entry_t) pool_alloc (operand_entry_pool);
+	      operand_entry_t oe = operand_entry_pool.allocate ();
 
 	      oe->op = rhs;
 	      oe->rank = code;
@@ -3229,8 +3229,7 @@ maybe_optimize_range_tests (gimple stmt)
 			   loop_containing_stmt (stmt))))
 	{
 	  /* Or push the GIMPLE_COND stmt itself.  */
-	  operand_entry_t oe
-	    = (operand_entry_t) pool_alloc (operand_entry_pool);
+	  operand_entry_t oe = operand_entry_pool.allocate ();
 
 	  oe->op = NULL;
 	  oe->rank = (e->flags & EDGE_TRUE_VALUE)
@@ -5008,8 +5007,6 @@ init_reassoc (void)
 
   memset (&reassociate_stats, 0, sizeof (reassociate_stats));
 
-  operand_entry_pool = create_alloc_pool ("operand entry pool",
-					  sizeof (struct operand_entry), 30);
   next_operand_entry_id = 0;
 
   /* Reverse RPO (Reverse Post Order) will give us something where
@@ -5058,7 +5055,7 @@ fini_reassoc (void)
 			    reassociate_stats.pows_created);
 
   delete operand_rank;
-  free_alloc_pool (operand_entry_pool);
+  operand_entry_pool.release ();
   free (bb_rank);
   plus_negates.release ();
   free_dominance_info (CDI_POST_DOMINATORS);
