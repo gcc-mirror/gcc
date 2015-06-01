@@ -13345,6 +13345,8 @@ s390_option_override (void)
     }
 
   /* Sanity checks.  */
+  if (s390_arch == PROCESSOR_NATIVE || s390_tune == PROCESSOR_NATIVE)
+    gcc_unreachable ();
   if (TARGET_ZARCH && !TARGET_CPU_ZARCH)
     error ("z/Architecture mode not supported on %s", s390_arch_string);
   if (TARGET_64BIT && !TARGET_ZARCH)

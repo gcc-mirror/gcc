@@ -79,6 +79,9 @@ Enum(processor_type) String(zEC12) Value(PROCESSOR_2827_ZEC12)
 EnumValue
 Enum(processor_type) String(z13) Value(PROCESSOR_2964_Z13)
 
+EnumValue
+Enum(processor_type) String(native) Value(PROCESSOR_NATIVE) DriverOnly
+
 mbackchain
 Target Report Mask(BACKCHAIN)
 Maintain backchain pointer
