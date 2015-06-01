@@ -1,3 +1,14 @@
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
+	* alloc-pool.c (struct alloc_pool_descriptor): Move definition
+	to header file.
+	* alloc-pool.h (pool_allocator::pool_allocator): New function.
+	(pool_allocator::release): Likewise.
+	(inline pool_allocator::release_if_empty): Likewise.
+	(inline pool_allocator::~pool_allocator): Likewise.
+	(pool_allocator::allocate): Likewise.
+	(pool_allocator::remove): Likewise.
+
 2015-06-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* sched-deps.c (sched_analyze_2): Replace fuseable with fusible
