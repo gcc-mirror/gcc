@@ -1,5 +1,12 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* ipa-prop.c (ipa_set_jf_constant): Use new type-based pool allocator.
+	(ipa_edge_duplication_hook): Likewise.
+	(ipa_free_all_structures_after_ipa_cp): Likewise.
+	(ipa_free_all_structures_after_iinln): Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* ipa-profile.c (account_time_size): Use new type-based pool allocator.
 	(ipa_profile_generate_summary): Likewise.
 	(ipa_profile_read_summary): Likewise.
