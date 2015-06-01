@@ -1,3 +1,7 @@
+2015-06-01  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* gcc.dg/vect/vect-outer-simd-1.c: New test.
+
 2015-06-01  Matthew Wahab  <matthew.wahab@arm.com>
 
 	PR target/65697

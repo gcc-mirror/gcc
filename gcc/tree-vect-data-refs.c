@@ -2287,18 +2287,22 @@ vect_analyze_data_ref_access (struct data_reference *dr)
       return false;
     }
 
-  /* Allow invariant loads in not nested loops.  */
+  /* Allow loads with zero step in inner-loop vectorization.  */
   if (loop_vinfo && integer_zerop (step))
     {
       GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) = NULL;
-      if (nested_in_vect_loop_p (loop, stmt))
+      if (!nested_in_vect_loop_p (loop, stmt))
+	return DR_IS_READ (dr);
+      /* Allow references with zero step for outer loops marked
+	 with pragma omp simd only - it guarantees absence of
+	 loop-carried dependencies between inner loop iterations.  */
+      if (!loop->force_vectorize)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "zero step in inner loop of nest\n");
 	  return false;
 	}
-      return DR_IS_READ (dr);
     }
 
   if (loop && nested_in_vect_loop_p (loop, stmt))
