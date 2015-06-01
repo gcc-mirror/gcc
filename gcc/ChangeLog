@@ -1,5 +1,11 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* stmt.c (add_case_node): Use new type-based pool allocator.
+	(expand_case): Likewise.
+	(expand_sjlj_dispatch_table): Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* tree-ssa-math-opts.c (occ_new): Use new type-based pool allocator.
 	(free_bb): Likewise.
 	(pass_cse_reciprocals::execute): Likewise.
