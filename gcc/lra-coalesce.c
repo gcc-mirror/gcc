@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "except.h"
 #include "timevar.h"
 #include "ira.h"
+#include "alloc-pool.h"
 #include "lra-int.h"
 #include "df.h"
 
