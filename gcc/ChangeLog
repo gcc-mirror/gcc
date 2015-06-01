@@ -1,3 +1,8 @@
+2015-06-01  Vidya Praveen  <vidya.praveen@atmel.com>
+
+	* Makefile.in: Fix gcov dependencies that should
+	not point to a build folder.
+
 2015-06-01  Richard Biener  <rguenther@suse.de>
 
 	Revert

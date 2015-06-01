@@ -2667,7 +2667,7 @@ s-iov: build/gcov-iov$(build_exeext) $(BASEVER) $(DEVPHASE)
 GCOV_OBJS = gcov.o
 gcov$(exeext): $(GCOV_OBJS) $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) $(GCOV_OBJS) \
-		build/hash-table.o ggc-none.o $(LIBS) -o $@
+		hash-table.o ggc-none.o $(LIBS) -o $@
 GCOV_DUMP_OBJS = gcov-dump.o
 gcov-dump$(exeext): $(GCOV_DUMP_OBJS) $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) $(GCOV_DUMP_OBJS) \
