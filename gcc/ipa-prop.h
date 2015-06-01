@@ -595,10 +595,21 @@ void ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node);
 void ipa_print_all_jump_functions (FILE * f);
 void ipcp_verify_propagated_values (void);
 
-extern alloc_pool ipcp_cst_values_pool;
-extern alloc_pool ipcp_poly_ctx_values_pool;
-extern alloc_pool ipcp_sources_pool;
-extern alloc_pool ipcp_agg_lattice_pool;
+template <typename value>
+class ipcp_value;
+
+extern pool_allocator<ipcp_value<tree> > ipcp_cst_values_pool;
+extern pool_allocator<ipcp_value<ipa_polymorphic_call_context> >
+  ipcp_poly_ctx_values_pool;
+
+template <typename valtype>
+class ipcp_value_source;
+
+extern pool_allocator<ipcp_value_source<tree> > ipcp_sources_pool;
+
+class ipcp_agg_lattice;
+
+extern pool_allocator<ipcp_agg_lattice> ipcp_agg_lattice_pool;
 
 /* Operation to be performed for the parameter in ipa_parm_adjustment
    below.  */

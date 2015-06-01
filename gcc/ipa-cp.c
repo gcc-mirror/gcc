@@ -291,10 +291,17 @@ public:
 
 /* Allocation pools for values and their sources in ipa-cp.  */
 
-alloc_pool ipcp_cst_values_pool;
-alloc_pool ipcp_poly_ctx_values_pool;
-alloc_pool ipcp_sources_pool;
-alloc_pool ipcp_agg_lattice_pool;
+pool_allocator<ipcp_value<tree> > ipcp_cst_values_pool
+  ("IPA-CP constant values", 32);
+
+pool_allocator<ipcp_value<ipa_polymorphic_call_context> >
+  ipcp_poly_ctx_values_pool ("IPA-CP polymorphic contexts", 32);
+
+pool_allocator<ipcp_value_source<tree> > ipcp_sources_pool
+  ("IPA-CP value sources", 64);
+
+pool_allocator<ipcp_agg_lattice> ipcp_agg_lattice_pool
+  ("IPA_CP aggregate lattices", 32);
 
 /* Maximal count found in program.  */
 
@@ -1147,7 +1154,7 @@ ipcp_value<valtype>::add_source (cgraph_edge *cs, ipcp_value *src_val,
 {
   ipcp_value_source<valtype> *src;
 
-  src = new (pool_alloc (ipcp_sources_pool)) ipcp_value_source<valtype>;
+  src = new (ipcp_sources_pool.allocate ()) ipcp_value_source<valtype>;
   src->offset = offset;
   src->cs = cs;
   src->val = src_val;
@@ -1165,7 +1172,7 @@ allocate_and_init_ipcp_value (tree source)
 {
   ipcp_value<tree> *val;
 
-  val = new (pool_alloc (ipcp_cst_values_pool)) ipcp_value<tree>;
+  val = ipcp_cst_values_pool.allocate ();
   memset (val, 0, sizeof (*val));
   val->value = source;
   return val;
@@ -1179,8 +1186,8 @@ allocate_and_init_ipcp_value (ipa_polymorphic_call_context source)
 {
   ipcp_value<ipa_polymorphic_call_context> *val;
 
-  val = new (pool_alloc (ipcp_poly_ctx_values_pool))
-    ipcp_value<ipa_polymorphic_call_context>;
+  // TODO
+  val = ipcp_poly_ctx_values_pool.allocate ();
   memset (val, 0, sizeof (*val));
   val->value = source;
   return val;
@@ -1229,7 +1236,7 @@ ipcp_lattice<valtype>::add_value (valtype newval, cgraph_edge *cs,
 	    {
 	      ipcp_value_source<valtype> *src = val->sources;
 	      val->sources = src->next;
-	      pool_free (ipcp_sources_pool, src);
+	      ipcp_sources_pool.remove ((ipcp_value_source<tree>*)src);
 	    }
 	}
 
@@ -1599,7 +1606,7 @@ merge_agg_lats_step (struct ipcp_param_lattices *dest_plats,
       if (dest_plats->aggs_count == PARAM_VALUE (PARAM_IPA_MAX_AGG_ITEMS))
 	return false;
       dest_plats->aggs_count++;
-      new_al = (struct ipcp_agg_lattice *) pool_alloc (ipcp_agg_lattice_pool);
+      new_al = ipcp_agg_lattice_pool.allocate ();
       memset (new_al, 0, sizeof (*new_al));
 
       new_al->offset = offset;
@@ -4463,16 +4470,6 @@ ipcp_driver (void)
   edge_removal_hook_holder =
     symtab->add_edge_removal_hook (&ipcp_edge_removal_hook, NULL);
 
-  ipcp_cst_values_pool = create_alloc_pool ("IPA-CP constant values",
-					    sizeof (ipcp_value<tree>), 32);
-  ipcp_poly_ctx_values_pool = create_alloc_pool
-    ("IPA-CP polymorphic contexts",
-     sizeof (ipcp_value<ipa_polymorphic_call_context>), 32);
-  ipcp_sources_pool = create_alloc_pool ("IPA-CP value sources",
-					 sizeof (ipcp_value_source<tree>), 64);
-  ipcp_agg_lattice_pool = create_alloc_pool ("IPA_CP aggregate lattices",
-					     sizeof (struct ipcp_agg_lattice),
-					     32);
   if (dump_file)
     {
       fprintf (dump_file, "\nIPA structures before propagation:\n");

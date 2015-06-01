@@ -3669,10 +3669,10 @@ ipa_free_all_structures_after_ipa_cp (void)
     {
       ipa_free_all_edge_args ();
       ipa_free_all_node_params ();
-      free_alloc_pool (ipcp_sources_pool);
-      free_alloc_pool (ipcp_cst_values_pool);
-      free_alloc_pool (ipcp_poly_ctx_values_pool);
-      free_alloc_pool (ipcp_agg_lattice_pool);
+      ipcp_sources_pool.release ();
+      ipcp_cst_values_pool.release ();
+      ipcp_poly_ctx_values_pool.release ();
+      ipcp_agg_lattice_pool.release ();
       ipa_unregister_cgraph_hooks ();
       ipa_refdesc_pool.release ();
     }
@@ -3687,14 +3687,10 @@ ipa_free_all_structures_after_iinln (void)
   ipa_free_all_edge_args ();
   ipa_free_all_node_params ();
   ipa_unregister_cgraph_hooks ();
-  if (ipcp_sources_pool)
-    free_alloc_pool (ipcp_sources_pool);
-  if (ipcp_cst_values_pool)
-    free_alloc_pool (ipcp_cst_values_pool);
-  if (ipcp_poly_ctx_values_pool)
-    free_alloc_pool (ipcp_poly_ctx_values_pool);
-  if (ipcp_agg_lattice_pool)
-    free_alloc_pool (ipcp_agg_lattice_pool);
+  ipcp_sources_pool.release ();
+  ipcp_cst_values_pool.release ();
+  ipcp_poly_ctx_values_pool.release ();
+  ipcp_agg_lattice_pool.release ();
   ipa_refdesc_pool.release ();
 }
 

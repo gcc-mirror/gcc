@@ -1,5 +1,16 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* ipa-cp.c (ipcp_value::add_source): Use new type-based pool allocator.
+	(allocate_and_init_ipcp_value): Likewise.
+	(ipcp_lattice::add_value): Likewise.
+	(merge_agg_lats_step): Likewise.
+	(ipcp_driver): Likewise.
+	* ipa-prop.c (ipa_free_all_structures_after_ipa_cp): Likewise.
+	(ipa_free_all_structures_after_iinln): Likewise.
+	* ipa-prop.h: Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* ipa-inline-analysis.c (edge_set_predicate): Use new type-based pool allocator.
 	(set_hint_predicate): Likewise.
 	(inline_summary_alloc): Likewise.
