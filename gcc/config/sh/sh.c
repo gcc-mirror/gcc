@@ -4648,13 +4648,30 @@ gen_datalabel_ref (rtx sym)
 }
 
 
-static alloc_pool label_ref_list_pool;
-
 typedef struct label_ref_list_d
 {
   rtx_code_label *label;
   struct label_ref_list_d *next;
+
+  /* Pool allocation new operator.  */
+  inline void *operator new (size_t)
+  {
+    return pool.allocate ();
+  }
+
+  /* Delete operator utilizing pool allocation.  */
+  inline void operator delete (void *ptr)
+  {
+    pool.remove ((label_ref_list_d *) ptr);
+  }
+
+  /* Memory allocation pool.  */
+  static pool_allocator<label_ref_list_d> pool;
+
 } *label_ref_list_t;
+
+pool_allocator<label_ref_list_d> label_ref_list_d::pool
+  ("label references list", 30);
 
 /* The SH cannot load a large constant into a register, constants have to
    come from a pc relative load.  The reference of a pc relative load
@@ -4775,7 +4792,7 @@ add_constant (rtx x, machine_mode mode, rtx last_value)
 		}
 	      if (lab && pool_window_label)
 		{
-		  newref = (label_ref_list_t) pool_alloc (label_ref_list_pool);
+		  newref = new label_ref_list_d;
 		  newref->label = pool_window_label;
 		  ref = pool_vector[pool_window_last].wend;
 		  newref->next = ref;
@@ -4804,7 +4821,7 @@ add_constant (rtx x, machine_mode mode, rtx last_value)
   pool_vector[pool_size].part_of_sequence_p = (lab == 0);
   if (lab && pool_window_label)
     {
-      newref = (label_ref_list_t) pool_alloc (label_ref_list_pool);
+      newref = new label_ref_list_d;
       newref->label = pool_window_label;
       ref = pool_vector[pool_window_last].wend;
       newref->next = ref;
@@ -6359,9 +6376,6 @@ sh_reorg (void)
 
   /* Scan the function looking for move instructions which have to be
      changed to pc-relative loads and insert the literal tables.  */
-  label_ref_list_pool = create_alloc_pool ("label references list",
-					   sizeof (struct label_ref_list_d),
-					   30);
   mdep_reorg_phase = SH_FIXUP_PCLOAD;
   for (insn = first, num_mova = 0; insn; insn = NEXT_INSN (insn))
     {
@@ -6553,7 +6567,7 @@ sh_reorg (void)
 	  insn = barrier;
 	}
     }
-  free_alloc_pool (label_ref_list_pool);
+  label_ref_list_d::pool.release ();
   for (insn = first; insn; insn = NEXT_INSN (insn))
     PUT_MODE (insn, VOIDmode);
 
