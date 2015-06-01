@@ -1,3 +1,8 @@
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
+	* sched-deps.c: Include pool-alloc.h before
+	cselib.h header file is included.
+
 2015-06-01  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (ipa_pta_execute): Handle address-taken

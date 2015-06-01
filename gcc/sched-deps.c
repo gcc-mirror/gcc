@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "sched-int.h"
 #include "params.h"
+#include "alloc-pool.h"
 #include "cselib.h"
 #include "ira.h"
 #include "target.h"
