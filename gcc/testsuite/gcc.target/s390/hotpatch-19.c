@@ -5,9 +5,8 @@
 
 #include <stdio.h>
 
-/* { dg-prune-output "always_inline function might not be inlinable" } */
 __attribute__ ((always_inline))
-static void hp2(void)
+static inline void hp2(void)
 {
   printf("hello, world!\n");
 }
