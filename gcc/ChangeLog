@@ -1,5 +1,12 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* tree-ssa-structalias.c (new_var_info): Use new type-based pool allocator.
+	(new_constraint): Likewise.
+	(init_alias_vars): Likewise.
+	(delete_points_to_sets): Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* tree-ssa-strlen.c (new_strinfo): Use new type-based pool allocator.
 	(free_strinfo): Likewise.
 	(pass_strlen::execute): Likewise.
