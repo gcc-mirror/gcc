@@ -1,5 +1,11 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* regcprop.c (free_debug_insn_changes): Use new type-based pool allocator.
+	(replace_oldest_value_reg): Likewise.
+	(pass_cprop_hardreg::execute): Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* ira-build.c (initiate_cost_vectors): Use new type-based pool allocator.
 	(ira_allocate_cost_vector): Likewise.
 	(ira_free_cost_vector): Likewise.
