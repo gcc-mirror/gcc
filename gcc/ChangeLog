@@ -1,5 +1,12 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* sel-sched-ir.c (alloc_sched_pools): Use new type-based pool allocator.
+	(free_sched_pools): Likewise.
+	* sel-sched-ir.h (_list_alloc): Likewise.
+	(_list_remove): Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* stmt.c (add_case_node): Use new type-based pool allocator.
 	(expand_case): Likewise.
 	(expand_sjlj_dispatch_table): Likewise.

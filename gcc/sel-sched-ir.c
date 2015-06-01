@@ -70,7 +70,7 @@ vec<sel_region_bb_info_def>
     sel_region_bb_info = vNULL;
 
 /* A pool for allocating all lists.  */
-alloc_pool sched_lists_pool;
+pool_allocator<_list_node> sched_lists_pool ("sel-sched-lists", 500);
 
 /* This contains information about successors for compute_av_set.  */
 struct succs_info current_succs;
@@ -5030,9 +5030,6 @@ alloc_sched_pools (void)
   succs_info_pool.size = succs_size;
   succs_info_pool.top = -1;
   succs_info_pool.max_top = -1;
-
-  sched_lists_pool = create_alloc_pool ("sel-sched-lists",
-                                        sizeof (struct _list_node), 500);
 }
 
 /* Free the pools.  */
@@ -5041,7 +5038,7 @@ free_sched_pools (void)
 {
   int i;
 
-  free_alloc_pool (sched_lists_pool);
+  sched_lists_pool.release ();
   gcc_assert (succs_info_pool.top == -1);
   for (i = 0; i <= succs_info_pool.max_top; i++)
     {
