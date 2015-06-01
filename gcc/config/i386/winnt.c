@@ -339,20 +339,6 @@ i386_pe_encode_section_info (tree decl, rtx rtl, int first)
   switch (TREE_CODE (decl))
     {
     case FUNCTION_DECL:
-      /* FIXME:  Imported stdcall names are not modified by the Ada frontend.
-	 Check and decorate the RTL name now.  */
-      if  (strcmp (lang_hooks.name, "GNU Ada") == 0)
-	{
-	  tree new_id;
-	  tree old_id = DECL_ASSEMBLER_NAME (decl);
-	  const char* asm_str = IDENTIFIER_POINTER (old_id);
-	  /* Do not change the identifier if a verbatim asmspec
-	     or if stdcall suffix already added. */
-	  if (!(*asm_str == '*' || strchr (asm_str, '@'))
-	      && (new_id = i386_pe_maybe_mangle_decl_assembler_name (decl,
-								     old_id)))
-	    XSTR (symbol, 0) = IDENTIFIER_POINTER (new_id);
-	}
       break;
 
     case VAR_DECL:

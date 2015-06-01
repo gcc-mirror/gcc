@@ -2428,7 +2428,13 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
   if (TREE_CODE (var_decl) == VAR_DECL)
     {
       if (asm_name)
-	SET_DECL_ASSEMBLER_NAME (var_decl, asm_name);
+	{
+	  /* Let the target mangle the name if this isn't a verbatim asm.  */
+	  if (*IDENTIFIER_POINTER (asm_name) != '*')
+	    asm_name = targetm.mangle_decl_assembler_name (var_decl, asm_name);
+
+	  SET_DECL_ASSEMBLER_NAME (var_decl, asm_name);
+	}
 
       if (global_bindings_p ())
 	rest_of_decl_compilation (var_decl, true, 0);
@@ -3047,8 +3053,17 @@ create_subprog_decl (tree subprog_name, tree asm_name, tree subprog_type,
   DECL_BY_REFERENCE (result_decl) = TREE_ADDRESSABLE (subprog_type);
   DECL_RESULT (subprog_decl) = result_decl;
 
+  process_attributes (&subprog_decl, &attr_list, true, gnat_node);
+
+  /* Add this decl to the current binding level.  */
+  gnat_pushdecl (subprog_decl, gnat_node);
+
   if (asm_name)
     {
+      /* Let the target mangle the name if this isn't a verbatim asm.  */
+      if (*IDENTIFIER_POINTER (asm_name) != '*')
+	asm_name = targetm.mangle_decl_assembler_name (subprog_decl, asm_name);
+
       SET_DECL_ASSEMBLER_NAME (subprog_decl, asm_name);
 
       /* The expand_main_function circuitry expects "main_identifier_node" to
@@ -3060,11 +3075,6 @@ create_subprog_decl (tree subprog_name, tree asm_name, tree subprog_type,
       if (asm_name == main_identifier_node)
 	DECL_NAME (subprog_decl) = main_identifier_node;
     }
-
-  process_attributes (&subprog_decl, &attr_list, true, gnat_node);
-
-  /* Add this decl to the current binding level.  */
-  gnat_pushdecl (subprog_decl, gnat_node);
 
   /* Output the assembler code and/or RTL for the declaration.  */
   rest_of_decl_compilation (subprog_decl, global_bindings_p (), 0);

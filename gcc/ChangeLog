@@ -1,3 +1,8 @@
+2015-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/winnt.c (i386_pe_encode_section_info) <FUNCTION_DECL>:
+	Remove obsolete kludge.
+
 2015-06-01  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-reassoc.c (get_rank): Simplify.
