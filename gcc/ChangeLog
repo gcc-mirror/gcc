@@ -1,5 +1,14 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* tree-ssa-reassoc.c (add_to_ops_vec): Use new type-based pool allocator.
+	(add_repeat_to_ops_vec): Likewise.
+	(get_ops): Likewise.
+	(maybe_optimize_range_tests): Likewise.
+	(init_reassoc): Likewise.
+	(fini_reassoc): Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* tree-ssa-pre.c (get_or_alloc_expr_for_name): Use new type-based pool allocator.
 	(bitmap_set_new): Likewise.
 	(get_or_alloc_expr_for_constant): Likewise.
