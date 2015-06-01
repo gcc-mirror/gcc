@@ -1,3 +1,8 @@
+2015-06-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (ipa_pta_execute): Handle address-taken
+	functions.
+
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
 	* alloc-pool.h: Add ATTRIBUTE_UNUSED for
