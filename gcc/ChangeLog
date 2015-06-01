@@ -1,5 +1,19 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* dse.c (get_group_info):Use new type-based pool allocator.
+	(dse_step0) Likewise.
+	(free_store_info) Likewise.
+	(delete_dead_store_insn) Likewise.
+	(free_read_records) Likewise.
+	(record_store) Likewise.
+	(replace_read) Likewise.
+	(check_mem_read_rtx) Likewise.
+	(scan_insn) Likewise.
+	(dse_step1) Likewise.
+	(dse_step7) Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* df-scan.c (struct df_scan_problem_data):Use new type-based pool allocator.
 	(df_scan_free_internal) Likewise.
 	(df_scan_alloc) Likewise.
