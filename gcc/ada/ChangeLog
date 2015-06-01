@@ -1,5 +1,11 @@
 2015-06-01  Pierre-Marie de Rodat  <derodat@adacore.com>
 
+	* gcc-interface/utils.c (scale_by_factor_of): When handling a function
+	call expression, process the corresponding function body.  Also handle
+	potential addends.
+
+2015-06-01  Pierre-Marie de Rodat  <derodat@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Replace pointer types with
 	references ones for functions that return references.
 
