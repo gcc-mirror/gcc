@@ -1,5 +1,15 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* df-problems.c (df_chain_create):Use new type-based pool allocator.
+	(df_chain_unlink_1) Likewise.
+	(df_chain_unlink) Likewise.
+	(df_chain_remove_problem) Likewise.
+	(df_chain_alloc) Likewise.
+	(df_chain_free) Likewise.
+	* df.h (struct dataflow) Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* cselib.c (new_elt_list):Use new type-based pool allocator.
 	(new_elt_loc_list) Likewise.
 	(unchain_one_elt_list) Likewise.
