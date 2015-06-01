@@ -78,9 +78,9 @@ get_base_type (tree type)
   return type;
 }
 
-/* EXP is a GCC tree representing an address.  See if we can find how
-   strictly the object at that address is aligned.   Return that alignment
-   in bits.  If we don't know anything about the alignment, return 0.  */
+/* EXP is a GCC tree representing an address.  See if we can find how strictly
+   the object at this address is aligned and, if so, return the alignment of
+   the object in bits.  Otherwise return 0.  */
 
 unsigned int
 known_alignment (tree exp)
@@ -99,13 +99,13 @@ known_alignment (tree exp)
       break;
 
     case COMPOUND_EXPR:
-      /* The value of a COMPOUND_EXPR is that of it's second operand.  */
+      /* The value of a COMPOUND_EXPR is that of its second operand.  */
       this_alignment = known_alignment (TREE_OPERAND (exp, 1));
       break;
 
     case PLUS_EXPR:
     case MINUS_EXPR:
-      /* If two address are added, the alignment of the result is the
+      /* If two addresses are added, the alignment of the result is the
 	 minimum of the two alignments.  */
       lhs = known_alignment (TREE_OPERAND (exp, 0));
       rhs = known_alignment (TREE_OPERAND (exp, 1));
@@ -113,10 +113,20 @@ known_alignment (tree exp)
       break;
 
     case POINTER_PLUS_EXPR:
-      lhs = known_alignment (TREE_OPERAND (exp, 0));
-      rhs = known_alignment (TREE_OPERAND (exp, 1));
+      /* If this is the pattern built for aligning types, decode it.  */
+      if (TREE_CODE (TREE_OPERAND (exp, 1)) == BIT_AND_EXPR
+	  && TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 1), 0)) == NEGATE_EXPR)
+	{
+	  tree op = TREE_OPERAND (TREE_OPERAND (exp, 1), 1);
+	  return
+	    known_alignment (fold_build1 (BIT_NOT_EXPR, TREE_TYPE (op), op));
+	}
+
       /* If we don't know the alignment of the offset, we assume that
 	 of the base.  */
+      lhs = known_alignment (TREE_OPERAND (exp, 0));
+      rhs = known_alignment (TREE_OPERAND (exp, 1));
+
       if (rhs == 0)
 	this_alignment = lhs;
       else
@@ -124,7 +134,7 @@ known_alignment (tree exp)
       break;
 
     case COND_EXPR:
-      /* If there is a choice between two values, use the smallest one.  */
+      /* If there is a choice between two values, use the smaller one.  */
       lhs = known_alignment (TREE_OPERAND (exp, 1));
       rhs = known_alignment (TREE_OPERAND (exp, 2));
       this_alignment = MIN (lhs, rhs);
@@ -135,7 +145,7 @@ known_alignment (tree exp)
 	unsigned HOST_WIDE_INT c = TREE_INT_CST_LOW (exp);
 	/* The first part of this represents the lowest bit in the constant,
 	   but it is originally in bytes, not bits.  */
-	this_alignment = MIN (BITS_PER_UNIT * (c & -c), BIGGEST_ALIGNMENT);
+	this_alignment = (c & -c) * BITS_PER_UNIT;
       }
       break;
 
@@ -172,7 +182,7 @@ known_alignment (tree exp)
 	  return known_alignment (t);
       }
 
-      /* Fall through... */
+      /* ... fall through ... */
 
     default:
       /* For other pointer expressions, we assume that the pointed-to object
@@ -1990,7 +2000,7 @@ gnat_build_constructor (tree type, vec<constructor_elt, va_gc> *v)
    We also handle the fact that we might have been passed a pointer to the
    actual record and know how to look for fields in variant parts.  */
 
-static tree
+tree
 build_simple_component_ref (tree record_variable, tree component, tree field,
 			    bool no_fold_p)
 {
@@ -2128,18 +2138,26 @@ build_simple_component_ref (tree record_variable, tree component, tree field,
   if (TREE_CODE (base) == CONSTRUCTOR
       && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (base)))
     {
-      vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (base);
-      unsigned HOST_WIDE_INT idx;
-      tree index, value;
-      FOR_EACH_CONSTRUCTOR_ELT (elts, idx, index, value)
-	if (index == field)
-	  return value;
+      unsigned int len = CONSTRUCTOR_NELTS (base);
+      gcc_assert (len > 0);
+
+      if (field == CONSTRUCTOR_ELT (base, 0)->index)
+	return CONSTRUCTOR_ELT (base, 0)->value;
+
+      if (len > 1)
+	{
+	  if (field == CONSTRUCTOR_ELT (base, 1)->index)
+	    return CONSTRUCTOR_ELT (base, 1)->value;
+	}
+      else
+	return NULL_TREE;
+
       return ref;
     }
 
   return fold (ref);
 }
-
+
 /* Likewise, but generate a Constraint_Error if the reference could not be
    found.  */
 

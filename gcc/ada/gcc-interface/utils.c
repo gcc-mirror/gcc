@@ -4092,8 +4092,9 @@ convert (tree type, tree expr)
       CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (type),
 			      build_template (TREE_TYPE (TYPE_FIELDS (type)),
 					      obj_type, NULL_TREE));
-      CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (TYPE_FIELDS (type)),
-			      convert (obj_type, expr));
+      if (expr)
+	CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (TYPE_FIELDS (type)),
+				convert (obj_type, expr));
       return gnat_build_constructor (type, v);
     }
 
@@ -4699,14 +4700,13 @@ maybe_unconstrained_array (tree exp)
 
       if (TYPE_CONTAINS_TEMPLATE_P (type))
 	{
-	  exp = build_component_ref (exp, NULL_TREE,
-				     DECL_CHAIN (TYPE_FIELDS (type)),
-				     false);
-	  type = TREE_TYPE (exp);
+	  exp = build_simple_component_ref (exp, NULL_TREE,
+					    DECL_CHAIN (TYPE_FIELDS (type)),
+					    false);
 
 	  /* If the array type is padded, convert to the unpadded type.  */
-	  if (TYPE_IS_PADDING_P (type))
-	    exp = convert (TREE_TYPE (TYPE_FIELDS (type)), exp);
+	  if (exp && TYPE_IS_PADDING_P (TREE_TYPE (exp)))
+	    exp = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (exp))), exp);
 	}
       break;
 
