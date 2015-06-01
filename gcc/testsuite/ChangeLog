@@ -1,3 +1,11 @@
+2015-06-01  Ilya Enkovich  <ilya.enkovich@intel.com>
+
+	PR target/65527
+	* gcc.target/i386/mpx/chkp-fix-calls-1.c: New.
+	* gcc.target/i386/mpx/chkp-fix-calls-2.c: New.
+	* gcc.target/i386/mpx/chkp-fix-calls-3.c: New.
+	* gcc.target/i386/mpx/chkp-fix-calls-4.c: New.
+
 2015-06-01  Alan Lawrence  <alan.lawrence@arm.com>
 
 	* gcc.target/aarch64/advsimd-intrinsics/advsimd-intrinsics.exp: Pass
