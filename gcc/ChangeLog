@@ -1,5 +1,11 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* tree-ssa-math-opts.c (occ_new): Use new type-based pool allocator.
+	(free_bb): Likewise.
+	(pass_cse_reciprocals::execute): Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* tree-sra.c (sra_initialize): Use new type-based pool allocator.
 	(sra_deinitialize) Likewise.
 	(create_access_1) Likewise.
