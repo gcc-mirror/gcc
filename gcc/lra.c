@@ -149,6 +149,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "timevar.h"
 #include "target.h"
 #include "ira.h"
+#include "alloc-pool.h"
 #include "lra-int.h"
 #include "df.h"
 

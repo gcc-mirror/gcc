@@ -1,5 +1,16 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* lra-lives.c (free_live_range): Use new type-based pool allocator.
+	(free_live_range_list) Likewise.
+	(create_live_range) Likewise.
+	(copy_live_range) Likewise.
+	(lra_merge_live_ranges) Likewise.
+	(remove_some_program_points_and_update_live_ranges) Likewise.
+	(lra_live_ranges_init) Likewise.
+	(lra_live_ranges_finish) Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* et-forest.c (et_new_occ): Use new type-based pool allocator.
 	(et_new_tree): Likewise.
 	(et_free_tree): Likewise.
