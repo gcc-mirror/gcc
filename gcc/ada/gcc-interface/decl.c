@@ -4638,13 +4638,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
     case E_Record_Type_With_Private:
     case E_Record_Subtype_With_Private:
       {
+	bool is_from_limited_with
+	  = (IN (kind, Incomplete_Kind) && From_Limited_With (gnat_entity));
 	/* Get the "full view" of this entity.  If this is an incomplete
 	   entity from a limited with, treat its non-limited view as the
 	   full view.  Otherwise, use either the full view or the underlying
 	   full view, whichever is present.  This is used in all the tests
 	   below.  */
 	Entity_Id full_view
-	  = (IN (kind, Incomplete_Kind) && From_Limited_With (gnat_entity))
+	  = is_from_limited_with
 	    ? Non_Limited_View (gnat_entity)
 	    : Present (Full_View (gnat_entity))
 	      ? Full_View (gnat_entity)
@@ -4680,10 +4682,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	/* Otherwise, if we are not defining the type now, get the type
 	   from the full view.  But always get the type from the full view
-	   for define on use types, since otherwise we won't see them!  */
+	   for define on use types, since otherwise we won't see them.
+	   Likewise if this is a non-limited view not declared in the main
+	   unit, which can happen for incomplete formal types instantiated
+	   on a type coming from a limited_with clause.  */
 	else if (!definition
 		 || (Is_Itype (full_view) && No (Freeze_Node (gnat_entity)))
-		 || (Is_Itype (gnat_entity) && No (Freeze_Node (full_view))))
+		 || (Is_Itype (gnat_entity) && No (Freeze_Node (full_view)))
+		 || (is_from_limited_with
+		     && !In_Extended_Main_Code_Unit (full_view)))
 	  {
 	    gnu_decl = gnat_to_gnu_entity (full_view, NULL_TREE, 0);
 	    maybe_present = true;

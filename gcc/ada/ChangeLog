@@ -1,5 +1,11 @@
 2015-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Incomplete_Type>: For a
+	definition of a type coming from a limited_with, get to the full view
+	if it is not in the main code unit.
+
+2015-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (create_var_decl_1): If an assembler name is
 	specified, let the target mangle it before settting.
 	(create_subprog_decl): Likewise and move this treatment last.
