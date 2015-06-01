@@ -142,7 +142,7 @@ typedef struct strinfo_struct
 } *strinfo;
 
 /* Pool for allocating strinfo_struct entries.  */
-static alloc_pool strinfo_pool;
+static pool_allocator<strinfo_struct> strinfo_pool ("strinfo_struct pool", 64);
 
 /* Vector mapping positive string indexes to strinfo, for the
    current basic block.  The first pointer in the vector is special,
@@ -431,7 +431,7 @@ new_addr_stridx (tree exp)
 static strinfo
 new_strinfo (tree ptr, int idx, tree length)
 {
-  strinfo si = (strinfo) pool_alloc (strinfo_pool);
+  strinfo si = strinfo_pool.allocate ();
   si->length = length;
   si->ptr = ptr;
   si->stmt = NULL;
@@ -452,7 +452,7 @@ static inline void
 free_strinfo (strinfo si)
 {
   if (si && --si->refcount == 0)
-    pool_free (strinfo_pool, si);
+    strinfo_pool.remove (si);
 }
 
 /* Set strinfo in the vector entry IDX to SI.  */
@@ -2400,8 +2400,6 @@ pass_strlen::execute (function *fun)
 {
   ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names);
   max_stridx = 1;
-  strinfo_pool = create_alloc_pool ("strinfo_struct pool",
-				    sizeof (struct strinfo_struct), 64);
 
   calculate_dominance_info (CDI_DOMINATORS);
 
@@ -2410,7 +2408,7 @@ pass_strlen::execute (function *fun)
   strlen_dom_walker (CDI_DOMINATORS).walk (fun->cfg->x_entry_block_ptr);
 
   ssa_ver_to_stridx.release ();
-  free_alloc_pool (strinfo_pool);
+  strinfo_pool.release ();
   if (decl_to_stridxlist_htab)
     {
       obstack_free (&stridx_obstack, NULL);
