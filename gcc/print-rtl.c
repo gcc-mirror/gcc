@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "diagnostic.h"
 #include "tree-pretty-print.h"
+#include "alloc-pool.h"
 #include "cselib.h"
 #include "dumpfile.h"	/* for dump_flags */
 #include "dwarf2out.h"

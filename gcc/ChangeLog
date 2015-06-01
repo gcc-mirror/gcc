@@ -1,5 +1,16 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* cselib.c (new_elt_list):Use new type-based pool allocator.
+	(new_elt_loc_list) Likewise.
+	(unchain_one_elt_list) Likewise.
+	(unchain_one_elt_loc_list) Likewise.
+	(unchain_one_value) Likewise.
+	(new_cselib_val) Likewise.
+	(cselib_init) Likewise.
+	(cselib_finish) Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* config/sh/sh.c (add_constant):Use new type-based pool allocator.
 	(sh_reorg) Likewise.
 

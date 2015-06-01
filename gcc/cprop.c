@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "except.h"
 #include "params.h"
+#include "alloc-pool.h"
 #include "cselib.h"
 #include "intl.h"
 #include "obstack.h"
