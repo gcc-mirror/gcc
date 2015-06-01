@@ -1,3 +1,8 @@
+2015-06-01  Alan Lawrence  <alan.lawrence@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/advsimd-intrinsics.exp: Pass
+	wildcard to gcc-dg-runtest; remove loop and unnecessary initialization.
+
 2015-06-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66280

@@ -27,8 +27,6 @@ load_lib gcc-dg.exp
 
 # Initialize `dg'.
 load_lib c-torture.exp
-load_lib target-supports.exp
-load_lib torture-options.exp
 
 dg-init
 
@@ -48,29 +46,15 @@ if {[istarget arm*-*-*]} then {
     }
 }
 
-torture-init
 set-torture-options $C_TORTURE_OPTIONS {{}} $LTO_TORTURE_OPTIONS
 
 # Make sure Neon flags are provided, if necessary.
 set additional_flags [add_options_for_arm_neon ""]
 
 # Main loop.
-foreach src [lsort [glob -nocomplain $srcdir/$subdir/*.c]] {
-    # If we're only testing specific files and this isn't one of them, skip it.
-    if ![runtest_file_p $runtests $src] then {
-	continue
-    }
-
-    # runtest_file_p is already run above, and the code below can run
-    # runtest_file_p again, make sure everything for this test is
-    # performed if the above runtest_file_p decided this runtest
-    # instance should execute the test
-    gcc_parallel_test_enable 0
-    gcc-dg-runtest $src "" $additional_flags
-    gcc_parallel_test_enable 1
-}
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] \
+	       "" ${additional_flags}
 
 # All done.
 set dg-do-what-default ${save-dg-do-what-default}
-torture-finish
 dg-finish
