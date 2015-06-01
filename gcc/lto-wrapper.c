@@ -273,6 +273,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	case OPT_fwrapv:
 	case OPT_fopenmp:
 	case OPT_fopenacc:
+	case OPT_fcheck_pointer_bounds:
 	  /* For selected options we can merge conservatively.  */
 	  for (j = 0; j < *decoded_options_count; ++j)
 	    if ((*decoded_options)[j].opt_index == foption->opt_index)
@@ -503,6 +504,7 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 	case OPT_Ofast:
 	case OPT_Og:
 	case OPT_Os:
+	case OPT_fcheck_pointer_bounds:
 	  break;
 
 	default:
