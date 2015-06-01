@@ -1,3 +1,7 @@
+2015-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in: Fix ARM/Darwin configuration.
+
 2015-04-22  Release Manager
 
 	* GCC 5.1.0 released.

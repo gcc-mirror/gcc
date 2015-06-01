@@ -1,5 +1,5 @@
 # Makefile for GNU Ada Compiler (GNAT).
-#   Copyright (C) 1994-2014 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2015 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -2335,11 +2335,12 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
     endif
   endif
 
-  ifeq ($(strip $(filter-out arm,$(arch))),)
+  ifeq ($(strip $(filter-out arm,$(target_cpu))),)
     LIBGNAT_TARGET_PAIRS += \
       s-intman.adb<s-intman-susv3.adb \
       s-osprim.adb<s-osprim-darwin.adb \
-      $(ATOMICS_TARGET_PAIRS)
+      $(ATOMICS_TARGET_PAIRS) \
+      $(ATOMICS_BUILTINS_TARGET_PAIRS)
 
     LIBGNAT_TARGET_PAIRS += \
       system.ads<system-darwin-arm.ads
