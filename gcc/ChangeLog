@@ -1,5 +1,39 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* var-tracking.c (variable_htab_free):Use new type-based pool allocator.
+	(attrs_list_clear) Likewise.
+	(attrs_list_insert) Likewise.
+	(attrs_list_copy) Likewise.
+	(shared_hash_unshare) Likewise.
+	(shared_hash_destroy) Likewise.
+	(unshare_variable) Likewise.
+	(var_reg_delete_and_set) Likewise.
+	(var_reg_delete) Likewise.
+	(var_regno_delete) Likewise.
+	(drop_overlapping_mem_locs) Likewise.
+	(variable_union) Likewise.
+	(insert_into_intersection) Likewise.
+	(canonicalize_values_star) Likewise.
+	(variable_merge_over_cur) Likewise.
+	(dataflow_set_merge) Likewise.
+	(remove_duplicate_values) Likewise.
+	(variable_post_merge_new_vals) Likewise.
+	(dataflow_set_preserve_mem_locs) Likewise.
+	(dataflow_set_remove_mem_locs) Likewise.
+	(variable_from_dropped) Likewise.
+	(variable_was_changed) Likewise.
+	(set_slot_part) Likewise.
+	(clobber_slot_part) Likewise.
+	(delete_slot_part) Likewise.
+	(loc_exp_insert_dep) Likewise.
+	(notify_dependents_of_changed_value) Likewise.
+	(emit_notes_for_differences_1) Likewise.
+	(vt_emit_notes) Likewise.
+	(vt_initialize) Likewise.
+	(vt_finalize) Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* ira-color.c (init_update_cost_records):Use new type-based pool allocator.
 	(get_update_cost_record) Likewise.
 	(free_update_cost_record_list) Likewise.
