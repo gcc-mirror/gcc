@@ -1,3 +1,8 @@
+2015-06-01  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* read-rtl.c: Adapt to use HAVE_DECL_ATOLL instead of HAVE_ATOLL.
+	* config.in: Regenerate.
+
 2015-06-01  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* tree-vect-data-refs.c (vect_analyze_data_ref_access): Allow
