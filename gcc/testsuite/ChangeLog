@@ -1,3 +1,15 @@
+2015-06-01  Matthew Wahab  <matthew.wahab@arm.com>
+
+	PR target/65697
+	* gcc.target/aarch64/sync-comp-swap.c: New.
+	* gcc.target/aarch64/sync-comp-swap.x: New.
+	* gcc.target/aarch64/sync-op-acquire.c: New.
+	* gcc.target/aarch64/sync-op-acquire.x: New.
+	* gcc.target/aarch64/sync-op-full.c: New.
+	* gcc.target/aarch64/sync-op-full.x: New.
+	* gcc.target/aarch64/sync-op-release.c: New.
+	* gcc.target/aarch64/sync-op-release.x: New.
+
 2015-06-01  Alex Velenko  <Alex.Velenko@arm.com>
 
         * gcc.target/arm/thumb-ltu.c (foo): Predefined.
