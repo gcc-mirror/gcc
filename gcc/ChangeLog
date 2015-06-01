@@ -12,7 +12,7 @@
 	(aarch64_split_atomic_op): Check for __sync memory models, emit
 	appropriate initial loads and final barriers.
 
-2015-06-01  Vidya Praveen  <vidya.praveen@atmel.com>
+2015-06-01  Vidya Praveen  <vidyapraveen@arm.com>
 
 	* Makefile.in: Fix gcov dependencies that should
 	not point to a build folder.
