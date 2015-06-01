@@ -1,5 +1,12 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* cfg.c (initialize_original_copy_tables):Use new type-based pool allocator.
+	(free_original_copy_tables) Likewise.
+	(copy_original_table_clear) Likewise.
+	(copy_original_table_set) Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* asan.c (asan_mem_ref_get_alloc_pool):Use new type-based pool allocator.
 	(asan_mem_ref_new) Likewise.
 	(free_mem_ref_resources) Likewise.
