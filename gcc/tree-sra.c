@@ -301,13 +301,28 @@ struct access
   /* Set when we discover that this pointer is not safe to dereference in the
      caller.  */
   unsigned grp_not_necessarilly_dereferenced : 1;
+
+  /* Pool allocation new operator.  */
+  inline void *operator new (size_t)
+  {
+    return pool.allocate ();
+  }
+
+  /* Delete operator utilizing pool allocation.  */
+  inline void operator delete (void *ptr)
+  {
+    pool.remove ((access *) ptr);
+  }
+
+  /* Memory allocation pool.  */
+  static pool_allocator<access> pool;
 };
 
 typedef struct access *access_p;
 
 
 /* Alloc pool for allocating access structures.  */
-static alloc_pool access_pool;
+pool_allocator<struct access> access::pool ("SRA accesses", 16);
 
 /* A structure linking lhs and rhs accesses from an aggregate assignment.  They
    are used to propagate subaccesses from rhs to lhs as long as they don't
@@ -316,10 +331,25 @@ struct assign_link
 {
   struct access *lacc, *racc;
   struct assign_link *next;
+
+  /* Pool allocation new operator.  */
+  inline void *operator new (size_t)
+  {
+    return pool.allocate ();
+  }
+
+  /* Delete operator utilizing pool allocation.  */
+  inline void operator delete (void *ptr)
+  {
+    pool.remove ((assign_link *) ptr);
+  }
+
+  /* Memory allocation pool.  */
+  static pool_allocator<assign_link> pool;
 };
 
 /* Alloc pool for allocating assign link structures.  */
-static alloc_pool link_pool;
+pool_allocator<assign_link> assign_link::pool ("SRA links", 16);
 
 /* Base (tree) -> Vector (vec<access_p> *) map.  */
 static hash_map<tree, auto_vec<access_p> > *base_access_vec;
@@ -691,8 +721,6 @@ sra_initialize (void)
   should_scalarize_away_bitmap = BITMAP_ALLOC (NULL);
   cannot_scalarize_away_bitmap = BITMAP_ALLOC (NULL);
   gcc_obstack_init (&name_obstack);
-  access_pool = create_alloc_pool ("SRA accesses", sizeof (struct access), 16);
-  link_pool = create_alloc_pool ("SRA links", sizeof (struct assign_link), 16);
   base_access_vec = new hash_map<tree, auto_vec<access_p> >;
   memset (&sra_stats, 0, sizeof (sra_stats));
   encountered_apply_args = false;
@@ -710,8 +738,8 @@ sra_deinitialize (void)
   candidates = NULL;
   BITMAP_FREE (should_scalarize_away_bitmap);
   BITMAP_FREE (cannot_scalarize_away_bitmap);
-  free_alloc_pool (access_pool);
-  free_alloc_pool (link_pool);
+  access::pool.release ();
+  assign_link::pool.release ();
   obstack_free (&name_obstack, NULL);
 
   delete base_access_vec;
@@ -863,9 +891,8 @@ mark_parm_dereference (tree base, HOST_WIDE_INT dist, gimple stmt)
 static struct access *
 create_access_1 (tree base, HOST_WIDE_INT offset, HOST_WIDE_INT size)
 {
-  struct access *access;
+  struct access *access = new struct access ();
 
-  access = (struct access *) pool_alloc (access_pool);
   memset (access, 0, sizeof (struct access));
   access->base = base;
   access->offset = offset;
@@ -1240,7 +1267,7 @@ build_accesses_from_assign (gimple stmt)
     {
       struct assign_link *link;
 
-      link = (struct assign_link *) pool_alloc (link_pool);
+      link = new assign_link;
       memset (link, 0, sizeof (struct assign_link));
 
       link->lacc = lacc;
@@ -2394,13 +2421,12 @@ static struct access *
 create_artificial_child_access (struct access *parent, struct access *model,
 				HOST_WIDE_INT new_offset)
 {
-  struct access *access;
   struct access **child;
   tree expr = parent->base;
 
   gcc_assert (!model->grp_unscalarizable_region);
 
-  access = (struct access *) pool_alloc (access_pool);
+  struct access *access = new struct access ();
   memset (access, 0, sizeof (struct access));
   if (!build_user_friendly_ref_for_offset (&expr, TREE_TYPE (expr), new_offset,
 					   model->type))

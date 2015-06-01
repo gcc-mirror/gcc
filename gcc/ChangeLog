@@ -1,5 +1,13 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* tree-sra.c (sra_initialize): Use new type-based pool allocator.
+	(sra_deinitialize) Likewise.
+	(create_access_1) Likewise.
+	(build_accesses_from_assign) Likewise.
+	(create_artificial_child_access) Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* dse.c (get_group_info):Use new type-based pool allocator.
 	(dse_step0) Likewise.
 	(free_store_info) Likewise.
