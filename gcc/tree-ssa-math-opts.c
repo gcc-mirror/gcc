@@ -229,7 +229,7 @@ static struct
 static struct occurrence *occ_head;
 
 /* Allocation pool for getting instances of "struct occurrence".  */
-static alloc_pool occ_pool;
+static pool_allocator<occurrence> *occ_pool;
 
 
 
@@ -240,7 +240,7 @@ occ_new (basic_block bb, struct occurrence *children)
 {
   struct occurrence *occ;
 
-  bb->aux = occ = (struct occurrence *) pool_alloc (occ_pool);
+  bb->aux = occ = occ_pool->allocate ();
   memset (occ, 0, sizeof (struct occurrence));
 
   occ->bb = bb;
@@ -468,7 +468,7 @@ free_bb (struct occurrence *occ)
   next = occ->next;
   child = occ->children;
   occ->bb->aux = NULL;
-  pool_free (occ_pool, occ);
+  occ_pool->remove (occ);
 
   /* Now ensure that we don't recurse unless it is necessary.  */
   if (!child)
@@ -572,9 +572,8 @@ pass_cse_reciprocals::execute (function *fun)
   basic_block bb;
   tree arg;
 
-  occ_pool = create_alloc_pool ("dominators for recip",
-				sizeof (struct occurrence),
-				n_basic_blocks_for_fn (fun) / 3 + 1);
+  occ_pool = new pool_allocator<occurrence>
+    ("dominators for recip", n_basic_blocks_for_fn (fun) / 3 + 1);
 
   memset (&reciprocal_stats, 0, sizeof (reciprocal_stats));
   calculate_dominance_info (CDI_DOMINATORS);
@@ -704,7 +703,7 @@ pass_cse_reciprocals::execute (function *fun)
 
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
-  free_alloc_pool (occ_pool);
+  delete occ_pool;
   return 0;
 }
 
