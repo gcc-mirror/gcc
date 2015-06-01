@@ -1,3 +1,9 @@
+2015-06-01  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* tree-vect-data-refs.c (vect_analyze_data_ref_access): Allow
+	consecutive accesses within outer-loop with force_vectorize
+	for references with zero step in inner-loop.
+
 2015-06-01  Vidya Praveen  <vidyapraveen@arm.com>
 
 	* Makefile.in: Pick up gcov-dump dependencies from gcc/ directory
