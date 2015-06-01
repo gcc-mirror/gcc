@@ -1,3 +1,8 @@
+2015-06-01  Alex Velenko  <Alex.Velenko@arm.com>
+
+        * gcc.target/arm/thumb-ltu.c (foo): Predefined.
+        (bar): Predefined.
+
 2015-06-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66349
