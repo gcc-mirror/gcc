@@ -1,5 +1,21 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* df-scan.c (struct df_scan_problem_data):Use new type-based pool allocator.
+	(df_scan_free_internal) Likewise.
+	(df_scan_alloc) Likewise.
+	(df_grow_reg_info) Likewise.
+	(df_free_ref) Likewise.
+	(df_insn_create_insn_record) Likewise.
+	(df_mw_hardreg_chain_delete) Likewise.
+	(df_insn_info_delete) Likewise.
+	(df_free_collection_rec) Likewise.
+	(df_mw_hardreg_chain_delete_eq_uses) Likewise.
+	(df_sort_and_compress_mws) Likewise.
+	(df_ref_create_structure) Likewise.
+	(df_ref_record) Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* df-problems.c (df_chain_create):Use new type-based pool allocator.
 	(df_chain_unlink_1) Likewise.
 	(df_chain_unlink) Likewise.
