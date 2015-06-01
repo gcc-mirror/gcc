@@ -1,3 +1,8 @@
+2015-06-01  Vidya Praveen  <vidyapraveen@arm.com>
+
+	* Makefile.in: Pick up gcov-dump dependencies from gcc/ directory
+	rather than from gcc/build directory.
+
 2015-06-01  Matthew Wahab  <matthew.wahab@arm.com>
 
 	PR target/65697
