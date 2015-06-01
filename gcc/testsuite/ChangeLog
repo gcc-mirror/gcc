@@ -1,3 +1,13 @@
+2015-06-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/s390/hotpatch-compile-15.c: Remove dg-prune-output
+	directives.
+	(hp3, hp4): Add inline keyword.
+	* gcc.target/s390/hotpatch-19.c: Remove dg-prune-output directive.
+	(hp2): Add inline keyword.
+	* gcc.target/s390/hotpatch-19.c: Remove dg-prune-output directives.
+	(hp2): Add inline keyword.
+
 2015-06-01  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	Backport from mainline
