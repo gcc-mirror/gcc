@@ -1633,7 +1633,7 @@ finish_copies (void)
 
 
 /* Pools for cost vectors.  It is defined only for allocno classes.  */
-static alloc_pool cost_vector_pool[N_REG_CLASSES];
+static pool_allocator<int> * cost_vector_pool[N_REG_CLASSES];
 
 /* The function initiates work with hard register cost vectors.  It
    creates allocation pool for each allocno class.  */
@@ -1646,10 +1646,9 @@ initiate_cost_vectors (void)
   for (i = 0; i < ira_allocno_classes_num; i++)
     {
       aclass = ira_allocno_classes[i];
-      cost_vector_pool[aclass]
-	= create_alloc_pool ("cost vectors",
-			     sizeof (int) * ira_class_hard_regs_num[aclass],
-			     100);
+      cost_vector_pool[aclass] = new pool_allocator<int>
+	("cost vectors", 100,
+	 sizeof (int) * (ira_class_hard_regs_num[aclass] - 1));
     }
 }
 
@@ -1657,7 +1656,7 @@ initiate_cost_vectors (void)
 int *
 ira_allocate_cost_vector (reg_class_t aclass)
 {
-  return (int *) pool_alloc (cost_vector_pool[(int) aclass]);
+  return cost_vector_pool[(int) aclass]->allocate ();
 }
 
 /* Free a cost vector VEC for ACLASS.  */
@@ -1665,7 +1664,7 @@ void
 ira_free_cost_vector (int *vec, reg_class_t aclass)
 {
   ira_assert (vec != NULL);
-  pool_free (cost_vector_pool[(int) aclass], vec);
+  cost_vector_pool[(int) aclass]->remove (vec);
 }
 
 /* Finish work with hard register cost vectors.  Release allocation
@@ -1679,7 +1678,7 @@ finish_cost_vectors (void)
   for (i = 0; i < ira_allocno_classes_num; i++)
     {
       aclass = ira_allocno_classes[i];
-      free_alloc_pool (cost_vector_pool[aclass]);
+      delete cost_vector_pool[aclass];
     }
 }
 
