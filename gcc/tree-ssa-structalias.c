@@ -7369,7 +7369,8 @@ ipa_pta_execute (void)
 	 constraints for parameters.  */
       if (node->used_from_other_partition
 	  || node->externally_visible
-	  || node->force_output)
+	  || node->force_output
+	  || node->address_taken)
 	{
 	  intra_create_variable_infos (func);
 
