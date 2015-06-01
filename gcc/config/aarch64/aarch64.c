@@ -356,7 +356,7 @@ static const struct tune_params generic_tunings =
   &generic_branch_cost,
   4, /* memmov_cost  */
   2, /* issue_rate  */
-  AARCH64_FUSE_NOTHING, /* fuseable_ops  */
+  AARCH64_FUSE_NOTHING, /* fusible_ops  */
   8,	/* function_align.  */
   8,	/* jump_align.  */
   4,	/* loop_align.  */
@@ -377,7 +377,7 @@ static const struct tune_params cortexa53_tunings =
   4, /* memmov_cost  */
   2, /* issue_rate  */
   (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
-   | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR), /* fuseable_ops  */
+   | AARCH64_FUSE_MOVK_MOVK | AARCH64_FUSE_ADRP_LDR), /* fusible_ops  */
   8,	/* function_align.  */
   8,	/* jump_align.  */
   4,	/* loop_align.  */
@@ -398,7 +398,7 @@ static const struct tune_params cortexa57_tunings =
   4, /* memmov_cost  */
   3, /* issue_rate  */
   (AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_ADRP_ADD
-   | AARCH64_FUSE_MOVK_MOVK), /* fuseable_ops  */
+   | AARCH64_FUSE_MOVK_MOVK), /* fusible_ops  */
   16,	/* function_align.  */
   8,	/* jump_align.  */
   4,	/* loop_align.  */
@@ -418,7 +418,7 @@ static const struct tune_params thunderx_tunings =
   &generic_branch_cost,
   6, /* memmov_cost  */
   2, /* issue_rate  */
-  AARCH64_FUSE_CMP_BRANCH, /* fuseable_ops  */
+  AARCH64_FUSE_CMP_BRANCH, /* fusible_ops  */
   8,	/* function_align.  */
   8,	/* jump_align.  */
   8,	/* loop_align.  */
@@ -438,7 +438,7 @@ static const struct tune_params xgene1_tunings =
   &generic_branch_cost,
   6, /* memmov_cost  */
   4, /* issue_rate  */
-  AARCH64_FUSE_NOTHING, /* fuseable_ops  */
+  AARCH64_FUSE_NOTHING, /* fusible_ops  */
   16,	/* function_align.  */
   8,	/* jump_align.  */
   16,	/* loop_align.  */
@@ -10892,7 +10892,7 @@ aarch64_gen_ccmp_next (rtx *prep_seq, rtx *gen_seq, rtx prev, int cmp_code,
 static bool
 aarch64_macro_fusion_p (void)
 {
-  return aarch64_tune_params->fuseable_ops != AARCH64_FUSE_NOTHING;
+  return aarch64_tune_params->fusible_ops != AARCH64_FUSE_NOTHING;
 }
 
 
@@ -10912,7 +10912,7 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
     return false;
 
   if (simple_sets_p
-      && (aarch64_tune_params->fuseable_ops & AARCH64_FUSE_MOV_MOVK))
+      && (aarch64_tune_params->fusible_ops & AARCH64_FUSE_MOV_MOVK))
     {
       /* We are trying to match:
          prev (mov)  == (set (reg r0) (const_int imm16))
@@ -10937,7 +10937,7 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
     }
 
   if (simple_sets_p
-      && (aarch64_tune_params->fuseable_ops & AARCH64_FUSE_ADRP_ADD))
+      && (aarch64_tune_params->fusible_ops & AARCH64_FUSE_ADRP_ADD))
     {
 
       /*  We're trying to match:
@@ -10963,7 +10963,7 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
     }
 
   if (simple_sets_p
-      && (aarch64_tune_params->fuseable_ops & AARCH64_FUSE_MOVK_MOVK))
+      && (aarch64_tune_params->fusible_ops & AARCH64_FUSE_MOVK_MOVK))
     {
 
       /* We're trying to match:
@@ -10992,7 +10992,7 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 
     }
   if (simple_sets_p
-      && (aarch64_tune_params->fuseable_ops & AARCH64_FUSE_ADRP_LDR))
+      && (aarch64_tune_params->fusible_ops & AARCH64_FUSE_ADRP_LDR))
     {
       /* We're trying to match:
           prev (adrp) == (set (reg r0)
@@ -11023,7 +11023,7 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
         }
     }
 
-  if ((aarch64_tune_params->fuseable_ops & AARCH64_FUSE_CMP_BRANCH)
+  if ((aarch64_tune_params->fusible_ops & AARCH64_FUSE_CMP_BRANCH)
       && any_condjump_p (curr))
     {
       enum attr_type prev_type = get_attr_type (prev);
