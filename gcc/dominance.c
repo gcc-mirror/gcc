@@ -51,6 +51,7 @@
 #include "cfganal.h"
 #include "basic-block.h"
 #include "diagnostic-core.h"
+#include "alloc-pool.h"
 #include "et-forest.h"
 #include "timevar.h"
 #include "hash-map.h"

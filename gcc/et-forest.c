@@ -25,8 +25,8 @@ License along with libiberty; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "et-forest.h"
 #include "alloc-pool.h"
+#include "et-forest.h"
 
 /* We do not enable this with ENABLE_CHECKING, since it is awfully slow.  */
 #undef DEBUG_ET
@@ -59,10 +59,26 @@ struct et_occ
 				   on the path to the root.  */
   struct et_occ *min_occ;	/* The occurrence in the subtree with the minimal
 				   depth.  */
+
+  /* Pool allocation new operator.  */
+  inline void *operator new (size_t)
+  {
+    return pool.allocate ();
+  }
+
+  /* Delete operator utilizing pool allocation.  */
+  inline void operator delete (void *ptr)
+  {
+    pool.remove ((et_occ *) ptr);
+  }
+
+  /* Memory allocation pool.  */
+  static pool_allocator<et_occ> pool;
+
 };
 
-static alloc_pool et_nodes;
-static alloc_pool et_occurrences;
+pool_allocator<et_node> et_node::pool ("et_nodes pool", 300);
+pool_allocator<et_occ> et_occ::pool ("et_occ pool", 300);
 
 /* Changes depth of OCC to D.  */
 
@@ -449,11 +465,7 @@ et_splay (struct et_occ *occ)
 static struct et_occ *
 et_new_occ (struct et_node *node)
 {
-  struct et_occ *nw;
-
-  if (!et_occurrences)
-    et_occurrences = create_alloc_pool ("et_occ pool", sizeof (struct et_occ), 300);
-  nw = (struct et_occ *) pool_alloc (et_occurrences);
+  et_occ *nw = new et_occ;
 
   nw->of = node;
   nw->parent = NULL;
@@ -474,9 +486,7 @@ et_new_tree (void *data)
 {
   struct et_node *nw;
 
-  if (!et_nodes)
-    et_nodes = create_alloc_pool ("et_node pool", sizeof (struct et_node), 300);
-  nw = (struct et_node *) pool_alloc (et_nodes);
+  nw = new et_node;
 
   nw->data = data;
   nw->father = NULL;
@@ -501,8 +511,8 @@ et_free_tree (struct et_node *t)
   if (t->father)
     et_split (t);
 
-  pool_free (et_occurrences, t->rightmost_occ);
-  pool_free (et_nodes, t);
+  delete t->rightmost_occ;
+  delete t;
 }
 
 /* Releases et tree T without maintaining other nodes.  */
@@ -510,10 +520,10 @@ et_free_tree (struct et_node *t)
 void
 et_free_tree_force (struct et_node *t)
 {
-  pool_free (et_occurrences, t->rightmost_occ);
+  delete t->rightmost_occ;
   if (t->parent_occ)
-    pool_free (et_occurrences, t->parent_occ);
-  pool_free (et_nodes, t);
+    delete t->parent_occ;
+  delete t;
 }
 
 /* Release the alloc pools, if they are empty.  */
@@ -521,8 +531,8 @@ et_free_tree_force (struct et_node *t)
 void
 et_free_pools (void)
 {
-  free_alloc_pool_if_empty (&et_occurrences);
-  free_alloc_pool_if_empty (&et_nodes);
+  et_occ::pool.release_if_empty ();
+  et_node::pool.release_if_empty ();
 }
 
 /* Sets father of et tree T to FATHER.  */
@@ -614,7 +624,7 @@ et_split (struct et_node *t)
   rmost->depth = 0;
   rmost->min = 0;
 
-  pool_free (et_occurrences, p_occ);
+  delete p_occ;
 
   /* Update the tree.  */
   if (father->son == t)
