@@ -289,8 +289,8 @@ typedef struct vn_tables_s
   vn_phi_table_type *phis;
   vn_reference_table_type *references;
   struct obstack nary_obstack;
-  alloc_pool phis_pool;
-  alloc_pool references_pool;
+  pool_allocator<vn_phi_s> *phis_pool;
+  pool_allocator<vn_reference_s> *references_pool;
 } *vn_tables_t;
 
 
@@ -2301,7 +2301,7 @@ vn_reference_insert (tree op, tree result, tree vuse, tree vdef)
   vn_reference_t vr1;
   bool tem;
 
-  vr1 = (vn_reference_t) pool_alloc (current_info->references_pool);
+  vr1 = current_info->references_pool->allocate ();
   if (TREE_CODE (result) == SSA_NAME)
     vr1->value_id = VN_INFO (result)->value_id;
   else
@@ -2346,7 +2346,7 @@ vn_reference_insert_pieces (tree vuse, alias_set_type set, tree type,
   vn_reference_s **slot;
   vn_reference_t vr1;
 
-  vr1 = (vn_reference_t) pool_alloc (current_info->references_pool);
+  vr1 = current_info->references_pool->allocate ();
   vr1->value_id = value_id;
   vr1->vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
   vr1->operands = valueize_refs (operands);
@@ -2772,7 +2772,7 @@ static vn_phi_t
 vn_phi_insert (gimple phi, tree result)
 {
   vn_phi_s **slot;
-  vn_phi_t vp1 = (vn_phi_t) pool_alloc (current_info->phis_pool);
+  vn_phi_t vp1 = current_info->phis_pool->allocate ();
   unsigned i;
   vec<tree> args = vNULL;
 
@@ -3015,7 +3015,7 @@ visit_reference_op_call (tree lhs, gcall *stmt)
 	changed |= set_ssa_val_to (vdef, vdef);
       if (lhs)
 	changed |= set_ssa_val_to (lhs, lhs);
-      vr2 = (vn_reference_t) pool_alloc (current_info->references_pool);
+      vr2 = current_info->references_pool->allocate ();
       vr2->vuse = vr1.vuse;
       /* As we are not walking the virtual operand chain we know the
 	 shared_lookup_references are still original so we can re-use
@@ -3889,7 +3889,7 @@ copy_nary (vn_nary_op_t onary, vn_tables_t info)
 static void
 copy_phi (vn_phi_t ophi, vn_tables_t info)
 {
-  vn_phi_t phi = (vn_phi_t) pool_alloc (info->phis_pool);
+  vn_phi_t phi = info->phis_pool->allocate ();
   vn_phi_s **slot;
   memcpy (phi, ophi, sizeof (*phi));
   ophi->phiargs.create (0);
@@ -3905,7 +3905,7 @@ copy_reference (vn_reference_t oref, vn_tables_t info)
 {
   vn_reference_t ref;
   vn_reference_s **slot;
-  ref = (vn_reference_t) pool_alloc (info->references_pool);
+  ref = info->references_pool->allocate ();
   memcpy (ref, oref, sizeof (*ref));
   oref->operands.create (0);
   slot = info->references->find_slot_with_hash (ref, ref->hashcode, INSERT);
@@ -3970,8 +3970,8 @@ process_scc (vec<tree> scc)
       optimistic_info->references->empty ();
       obstack_free (&optimistic_info->nary_obstack, NULL);
       gcc_obstack_init (&optimistic_info->nary_obstack);
-      empty_alloc_pool (optimistic_info->phis_pool);
-      empty_alloc_pool (optimistic_info->references_pool);
+      optimistic_info->phis_pool->release ();
+      optimistic_info->references_pool->release ();
       FOR_EACH_VEC_ELT (scc, i, var)
 	VN_INFO (var)->expr = NULL_TREE;
       FOR_EACH_VEC_ELT (scc, i, var)
@@ -4148,12 +4148,9 @@ allocate_vn_table (vn_tables_t table)
   table->references = new vn_reference_table_type (23);
 
   gcc_obstack_init (&table->nary_obstack);
-  table->phis_pool = create_alloc_pool ("VN phis",
-					sizeof (struct vn_phi_s),
-					30);
-  table->references_pool = create_alloc_pool ("VN references",
-					      sizeof (struct vn_reference_s),
-					      30);
+  table->phis_pool = new pool_allocator<vn_phi_s> ("VN phis", 30);
+  table->references_pool = new pool_allocator<vn_reference_s> ("VN references",
+							       30);
 }
 
 /* Free a value number table.  */
@@ -4168,8 +4165,8 @@ free_vn_table (vn_tables_t table)
   delete table->references;
   table->references = NULL;
   obstack_free (&table->nary_obstack, NULL);
-  free_alloc_pool (table->phis_pool);
-  free_alloc_pool (table->references_pool);
+  delete table->phis_pool;
+  delete table->references_pool;
 }
 
 static void
