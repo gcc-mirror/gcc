@@ -2908,7 +2908,24 @@ process_deferred_decl_context (bool force)
 static unsigned int
 scale_by_factor_of (tree expr, unsigned int value)
 {
+  unsigned HOST_WIDE_INT addend = 0;
+  unsigned HOST_WIDE_INT factor = 1;
+
+  /* Peel conversions around EXPR and try to extract bodies from function
+     calls: it is possible to get the scale factor from size functions.  */
   expr = remove_conversions (expr, true);
+  if (TREE_CODE (expr) == CALL_EXPR)
+    expr = maybe_inline_call_in_expr (expr);
+
+  /* Sometimes we get PLUS_EXPR (BIT_AND_EXPR (..., X), Y), where Y is a
+     multiple of the scale factor we are looking for.  */
+  if (TREE_CODE (expr) == PLUS_EXPR
+      && TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST
+      && tree_fits_uhwi_p (TREE_OPERAND (expr, 1)))
+    {
+      addend = TREE_INT_CST_LOW (TREE_OPERAND (expr, 1));
+      expr = TREE_OPERAND (expr, 0);
+    }
 
   /* An expression which is a bitwise AND with a mask has a power-of-2 factor
      corresponding to the number of trailing zeros of the mask.  */
@@ -2921,12 +2938,21 @@ scale_by_factor_of (tree expr, unsigned int value)
       while ((mask & 1) == 0 && i < HOST_BITS_PER_WIDE_INT)
 	{
 	  mask >>= 1;
-	  value *= 2;
+	  factor *= 2;
 	  i++;
 	}
     }
 
-  return value;
+  /* If the addend is not a multiple of the factor we found, give up.  In
+     theory we could find a smaller common factor but it's useless for our
+     needs.  This situation arises when dealing with a field F1 with no
+     alignment requirement but that is following a field F2 with such
+     requirements.  As long as we have F2's offset, we don't need alignment
+     information to compute F1's.  */
+  if (addend % factor != 0)
+    factor = 1;
+
+  return factor * value;
 }
 
 /* Given two consecutive field decls PREV_FIELD and CURR_FIELD, return true
