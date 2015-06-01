@@ -1,5 +1,13 @@
 2015-06-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* gcc/config/arm/arm-protos.h (tune_params): Rename fuseable_ops
+	to fusible_ops.
+	* gcc/config/arm/arm.c (arm_print_tune_info): Likewise.
+	(arm_macro_fusion_p): Likewise.
+	(arm_macro_fusion_pair_p): Likewise.
+
+2015-06-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-protos.h (tune_params): Rename
 	fuseable_ops to fusible_ops.
 	* config/aarch64/aarch64.c (generic_tunings): Rename

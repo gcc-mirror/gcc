@@ -291,14 +291,14 @@ struct tune_params
   /* Prefer to inline string operations like memset by using Neon.  */
   enum {PREF_NEON_STRINGOPS_FALSE, PREF_NEON_STRINGOPS_TRUE}
     string_ops_prefer_neon: 1;
-  /* Bitfield encoding the fuseable pairs of instructions.  Use FUSE_OPS
+  /* Bitfield encoding the fusible pairs of instructions.  Use FUSE_OPS
      in an initializer if multiple fusion operations are supported on a
      target.  */
   enum fuse_ops
   {
     FUSE_NOTHING   = 0,
     FUSE_MOVW_MOVT = 1 << 0
-  } fuseable_ops: 1;
+  } fusible_ops: 1;
   /* Depth of scheduling queue to check for L2 autoprefetcher.  */
   enum {SCHED_AUTOPREF_OFF, SCHED_AUTOPREF_RANK, SCHED_AUTOPREF_FULL}
     sched_autopref: 2;
