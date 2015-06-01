@@ -417,10 +417,6 @@ insert_operand_rank (tree e, long rank)
 static long
 get_rank (tree e)
 {
-  /* Constants have rank 0.  */
-  if (is_gimple_min_invariant (e))
-    return 0;
-
   /* SSA_NAME's have the rank of the expression they are the result
      of.
      For globals and uninitialized values, the rank is 0.
@@ -460,9 +456,9 @@ get_rank (tree e)
 
   if (TREE_CODE (e) == SSA_NAME)
     {
+      ssa_op_iter iter;
       gimple stmt;
       long rank;
-      int i, n;
       tree op;
 
       if (SSA_NAME_IS_DEFAULT_DEF (e))
@@ -472,8 +468,7 @@ get_rank (tree e)
       if (gimple_code (stmt) == GIMPLE_PHI)
 	return phi_rank (stmt);
 
-      if (!is_gimple_assign (stmt)
-	  || gimple_vdef (stmt))
+      if (!is_gimple_assign (stmt))
 	return bb_rank[gimple_bb (stmt)->index];
 
       /* If we already have a rank for this expression, use that.  */
@@ -484,34 +479,12 @@ get_rank (tree e)
       /* Otherwise, find the maximum rank for the operands.  As an
 	 exception, remove the bias from loop-carried phis when propagating
 	 the rank so that dependent operations are not also biased.  */
+      /* Simply walk over all SSA uses - this takes advatage of the
+         fact that non-SSA operands are is_gimple_min_invariant and
+	 thus have rank 0.  */
       rank = 0;
-      if (gimple_assign_single_p (stmt))
-	{
-	  tree rhs = gimple_assign_rhs1 (stmt);
-	  n = TREE_OPERAND_LENGTH (rhs);
-	  if (n == 0)
-	    rank = propagate_rank (rank, rhs);
-	  else
-	    {
-	      for (i = 0; i < n; i++)
-		{
-		  op = TREE_OPERAND (rhs, i);
-
-		  if (op != NULL_TREE)
-		    rank = propagate_rank (rank, op);
-		}
-	    }
-	}
-      else
-	{
-	  n = gimple_num_ops (stmt);
-	  for (i = 1; i < n; i++)
-	    {
-	      op = gimple_op (stmt, i);
-	      gcc_assert (op);
-	      rank = propagate_rank (rank, op);
-	    }
-	}
+      FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
+	rank = propagate_rank (rank, op);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -525,7 +498,7 @@ get_rank (tree e)
       return (rank + 1);
     }
 
-  /* Globals, etc,  are rank 0 */
+  /* Constants, globals, etc., are rank 0 */
   return 0;
 }
 
