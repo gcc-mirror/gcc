@@ -1,5 +1,14 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* sched-deps.c (create_dep_node): Use new type-based pool allocator.
+	(delete_dep_node): Likewise.
+	(create_deps_list): Likewise.
+	(free_deps_list): Likewise.
+	(sched_deps_init): Likewise.
+	(sched_deps_finish): Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* regcprop.c (free_debug_insn_changes): Use new type-based pool allocator.
 	(replace_oldest_value_reg): Likewise.
 	(pass_cprop_hardreg::execute): Likewise.
