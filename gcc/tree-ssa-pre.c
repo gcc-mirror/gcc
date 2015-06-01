@@ -380,7 +380,7 @@ clear_expression_ids (void)
   expressions.release ();
 }
 
-static alloc_pool pre_expr_pool;
+static pool_allocator<pre_expr_d> pre_expr_pool ("pre_expr nodes", 30);
 
 /* Given an SSA_NAME NAME, get or create a pre_expr to represent it.  */
 
@@ -398,7 +398,7 @@ get_or_alloc_expr_for_name (tree name)
   if (result_id != 0)
     return expression_for_id (result_id);
 
-  result = (pre_expr) pool_alloc (pre_expr_pool);
+  result = pre_expr_pool.allocate ();
   result->kind = NAME;
   PRE_EXPR_NAME (result) = name;
   alloc_expression_id (result);
@@ -519,7 +519,7 @@ static unsigned int get_expr_value_id (pre_expr);
 /* We can add and remove elements and entries to and from sets
    and hash tables, so we use alloc pools for them.  */
 
-static alloc_pool bitmap_set_pool;
+static pool_allocator<bitmap_set> bitmap_set_pool ("Bitmap sets", 30);
 static bitmap_obstack grand_bitmap_obstack;
 
 /* Set of blocks with statements that have had their EH properties changed.  */
@@ -635,7 +635,7 @@ add_to_value (unsigned int v, pre_expr e)
 static bitmap_set_t
 bitmap_set_new (void)
 {
-  bitmap_set_t ret = (bitmap_set_t) pool_alloc (bitmap_set_pool);
+  bitmap_set_t ret = bitmap_set_pool.allocate ();
   bitmap_initialize (&ret->expressions, &grand_bitmap_obstack);
   bitmap_initialize (&ret->values, &grand_bitmap_obstack);
   return ret;
@@ -1125,7 +1125,7 @@ get_or_alloc_expr_for_constant (tree constant)
   if (result_id != 0)
     return expression_for_id (result_id);
 
-  newexpr = (pre_expr) pool_alloc (pre_expr_pool);
+  newexpr = pre_expr_pool.allocate ();
   newexpr->kind = CONSTANT;
   PRE_EXPR_CONSTANT (newexpr) = constant;
   alloc_expression_id (newexpr);
@@ -1176,13 +1176,13 @@ get_or_alloc_expr_for (tree t)
       vn_nary_op_lookup (t, &result);
       if (result != NULL)
 	{
-	  pre_expr e = (pre_expr) pool_alloc (pre_expr_pool);
+	  pre_expr e = pre_expr_pool.allocate ();
 	  e->kind = NARY;
 	  PRE_EXPR_NARY (e) = result;
 	  result_id = lookup_expression_id (e);
 	  if (result_id != 0)
 	    {
-	      pool_free (pre_expr_pool, e);
+	      pre_expr_pool.remove (e);
 	      e = expression_for_id (result_id);
 	      return e;
 	    }
@@ -1526,7 +1526,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    if (result && is_gimple_min_invariant (result))
 	      return get_or_alloc_expr_for_constant (result);
 
-	    expr = (pre_expr) pool_alloc (pre_expr_pool);
+	    expr = pre_expr_pool.allocate ();
 	    expr->kind = NARY;
 	    expr->id = 0;
 	    if (nary)
@@ -1688,7 +1688,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		return NULL;
 	      }
 
-	    expr = (pre_expr) pool_alloc (pre_expr_pool);
+	    expr = pre_expr_pool.allocate ();
 	    expr->kind = REFERENCE;
 	    expr->id = 0;
 
@@ -3795,7 +3795,7 @@ compute_avail (void)
 		    || gimple_bb (SSA_NAME_DEF_STMT
 				    (gimple_vuse (stmt))) != block)
 		  {
-		    result = (pre_expr) pool_alloc (pre_expr_pool);
+		    result = pre_expr_pool.allocate ();
 		    result->kind = REFERENCE;
 		    result->id = 0;
 		    PRE_EXPR_REFERENCE (result) = ref;
@@ -3835,7 +3835,7 @@ compute_avail (void)
 			  && vn_nary_may_trap (nary))
 			continue;
 
-		      result = (pre_expr) pool_alloc (pre_expr_pool);
+		      result = pre_expr_pool.allocate ();
 		      result->kind = NARY;
 		      result->id = 0;
 		      PRE_EXPR_NARY (result) = nary;
@@ -3876,7 +3876,7 @@ compute_avail (void)
 			    continue;
 			}
 
-		      result = (pre_expr) pool_alloc (pre_expr_pool);
+		      result = pre_expr_pool.allocate ();
 		      result->kind = REFERENCE;
 		      result->id = 0;
 		      PRE_EXPR_REFERENCE (result) = ref;
@@ -4779,10 +4779,6 @@ init_pre (void)
   bitmap_obstack_initialize (&grand_bitmap_obstack);
   phi_translate_table = new hash_table<expr_pred_trans_d> (5110);
   expression_to_id = new hash_table<pre_expr_d> (num_ssa_names * 3);
-  bitmap_set_pool = create_alloc_pool ("Bitmap sets",
-				       sizeof (struct bitmap_set), 30);
-  pre_expr_pool = create_alloc_pool ("pre_expr nodes",
-				     sizeof (struct pre_expr_d), 30);
   FOR_ALL_BB_FN (bb, cfun)
     {
       EXP_GEN (bb) = bitmap_set_new ();
@@ -4802,8 +4798,8 @@ fini_pre ()
   value_expressions.release ();
   BITMAP_FREE (inserted_exprs);
   bitmap_obstack_release (&grand_bitmap_obstack);
-  free_alloc_pool (bitmap_set_pool);
-  free_alloc_pool (pre_expr_pool);
+  bitmap_set_pool.release ();
+  pre_expr_pool.release ();
   delete phi_translate_table;
   phi_translate_table = NULL;
   delete expression_to_id;
