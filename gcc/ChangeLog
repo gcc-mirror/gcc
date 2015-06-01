@@ -1,5 +1,13 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* ira-color.c (init_update_cost_records):Use new type-based pool allocator.
+	(get_update_cost_record) Likewise.
+	(free_update_cost_record_list) Likewise.
+	(finish_update_cost_records) Likewise.
+	(initiate_cost_update) Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* lra.c (init_insn_regs): Use new type-based pool allocator.
 	(new_insn_reg) Likewise.
 	(free_insn_reg) Likewise.
