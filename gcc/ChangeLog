@@ -1,5 +1,11 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* asan.c (asan_mem_ref_get_alloc_pool):Use new type-based pool allocator.
+	(asan_mem_ref_new) Likewise.
+	(free_mem_ref_resources) Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* var-tracking.c (variable_htab_free):Use new type-based pool allocator.
 	(attrs_list_clear) Likewise.
 	(attrs_list_insert) Likewise.
