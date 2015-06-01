@@ -1464,8 +1464,10 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
       update_stmt_fn (DECL_STRUCT_FUNCTION (e->caller->decl), new_stmt);
     }
 
-  /* If the call becomes noreturn, remove the lhs.  */
-  if (lhs && (gimple_call_flags (new_stmt) & ECF_NORETURN))
+  /* If the call becomes noreturn, remove the LHS if possible.  */
+  if (lhs
+      && (gimple_call_flags (new_stmt) & ECF_NORETURN)
+      && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (lhs))) == INTEGER_CST)
     {
       if (TREE_CODE (lhs) == SSA_NAME)
 	{

@@ -1,3 +1,11 @@
+2015-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_modify_expr_rhs): Use simple test on the size.
+	* cgraph.c (cgraph_redirect_edge_call_stmt_to_callee): Do not remove
+	the LHS of a no-return call if its type has variable size.
+	* tree-cfgcleanup.c (fixup_noreturn_call): Likewise.
+	* tree-cfg.c (verify_gimple_call): Accept these no-return calls.
+
 2015-06-01  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* read-rtl.c: Adapt to use HAVE_DECL_ATOLL instead of HAVE_ATOLL.

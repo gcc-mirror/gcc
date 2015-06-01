@@ -612,9 +612,11 @@ fixup_noreturn_call (gimple stmt)
 	}
     }
 
-  /* If there is an LHS, remove it.  */
+  /* If there is an LHS, remove it, but only if its type has fixed size.
+     The LHS will need to be recreated during RTL expansion and creating
+     temporaries of variable-sized types is not supported.  */
   tree lhs = gimple_call_lhs (stmt);
-  if (lhs)
+  if (lhs && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (lhs))) == INTEGER_CST)
     {
       gimple_call_set_lhs (stmt, NULL_TREE);
 
