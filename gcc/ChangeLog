@@ -1,5 +1,26 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* ira-build.c (initiate_allocnos): Use new type-based pool allocator.
+	(ira_create_object): Likewise.
+	(ira_create_allocno): Likewise.
+	(ira_create_live_range): Likewise.
+	(copy_live_range): Likewise.
+	(ira_finish_live_range): Likewise.
+	(ira_free_allocno_costs): Likewise.
+	(finish_allocno): Likewise.
+	(finish_allocnos): Likewise.
+	(initiate_prefs): Likewise.
+	(ira_create_pref): Likewise.
+	(finish_pref): Likewise.
+	(finish_prefs): Likewise.
+	(initiate_copies): Likewise.
+	(ira_create_copy): Likewise.
+	(finish_copy): Likewise.
+	(finish_copies): Likewise.
+	(finish_prefs): Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* ipa-cp.c (ipcp_value::add_source): Use new type-based pool allocator.
 	(allocate_and_init_ipcp_value): Likewise.
 	(ipcp_lattice::add_value): Likewise.
