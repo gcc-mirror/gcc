@@ -178,7 +178,7 @@ struct tune_params
   const struct cpu_branch_cost *const branch_costs;
   const int memmov_cost;
   const int issue_rate;
-  const unsigned int fuseable_ops;
+  const unsigned int fusible_ops;
   const int function_align;
   const int jump_align;
   const int loop_align;
