@@ -2671,7 +2671,7 @@ gcov$(exeext): $(GCOV_OBJS) $(LIBDEPS)
 GCOV_DUMP_OBJS = gcov-dump.o
 gcov-dump$(exeext): $(GCOV_DUMP_OBJS) $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) $(GCOV_DUMP_OBJS) \
-		build/hash-table.o build/ggc-none.o\
+		hash-table.o ggc-none.o\
 		$(LIBS) -o $@
 
 GCOV_TOOL_DEP_FILES = $(srcdir)/../libgcc/libgcov-util.c gcov-io.c $(GCOV_IO_H) \
