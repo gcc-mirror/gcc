@@ -1,5 +1,11 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* tree-ssa-strlen.c (new_strinfo): Use new type-based pool allocator.
+	(free_strinfo): Likewise.
+	(pass_strlen::execute): Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* tree-ssa-sccvn.c (vn_reference_insert): Use new type-based pool allocator.
 	(vn_reference_insert_pieces): Likewise.
 	(vn_phi_insert): Likewise.
