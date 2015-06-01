@@ -1,3 +1,7 @@
+2015-06-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-reassoc.c (get_rank): Simplify.
+
 2015-05-31  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure.ac (NO_PIE_CFLAGS): Check CXXFLAGS instead of CFLAGS.
