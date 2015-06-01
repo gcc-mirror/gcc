@@ -1,5 +1,16 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* tree-ssa-pre.c (get_or_alloc_expr_for_name): Use new type-based pool allocator.
+	(bitmap_set_new): Likewise.
+	(get_or_alloc_expr_for_constant): Likewise.
+	(get_or_alloc_expr_for): Likewise.
+	(phi_translate_1): Likewise.
+	(compute_avail): Likewise.
+	(init_pre): Likewise.
+	(fini_pre): Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* sched-deps.c (create_dep_node): Use new type-based pool allocator.
 	(delete_dep_node): Likewise.
 	(create_deps_list): Likewise.
