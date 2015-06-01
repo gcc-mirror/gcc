@@ -1,7 +1,7 @@
 2015-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/lang-specs.h (TARGET_VXWORKS_RTP): Move substitution to
-	before first -gnatez switch.
+	before first -gnatez switch.  Simplify and add trailing space.
 
 2015-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
