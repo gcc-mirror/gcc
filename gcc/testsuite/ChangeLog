@@ -1,3 +1,9 @@
+2015-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66280
+	* g++.dg/torture/pr66280.C: New testcase.
+	* g++.dg/torture/pr66280-2.C: Likewise.
+
 2015-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/addr9_1.adb: New test.
