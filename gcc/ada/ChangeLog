@@ -1,3 +1,20 @@
+2015-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (build_simple_component_ref): Declare.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Deal with
+	address clause on aliased object with unconstrained nominal subtype.
+	Mark the aligning variable as artificial, do not convert the address
+	expression immediately but mark it as constant instead.
+	* gcc-interface/utils.c (convert): If the target type contains a
+	template, be prepared for an empty array.
+	(maybe_unconstrained_array): Likewise.
+	* gcc-interface/utils2.c (known_alignment) <POINTER_PLUS_EXPR>: Deal
+	with the pattern built for aligning types.
+	<INTEGER_CST>: Do not cap the value at BIGGEST_ALIGNMENT.
+	(build_simple_component_ref): Make public.
+	If the base object is a constructor that contains a template, fold the
+	result field by field.
+
 2015-05-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* s-oscons-tmplt.c: Add explicit tests for Android alongside Linux.
