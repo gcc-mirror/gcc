@@ -1,5 +1,10 @@
 2015-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/lang-specs.h (TARGET_VXWORKS_RTP): Move substitution to
+	before first -gnatez switch.
+
+2015-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: If the
 	record has a parent field and a representation clause, make sure that
 	it is properly aligned.
