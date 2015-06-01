@@ -1,5 +1,14 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* et-forest.c (et_new_occ): Use new type-based pool allocator.
+	(et_new_tree): Likewise.
+	(et_free_tree): Likewise.
+	(et_free_tree_force): Likewise.
+	(et_free_pools): Likewise.
+	(et_split): Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* alloc-pool.c (struct alloc_pool_descriptor): Move definition
 	to header file.
 	* alloc-pool.h (pool_allocator::pool_allocator): New function.
