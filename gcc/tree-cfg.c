@@ -3391,17 +3391,19 @@ verify_gimple_call (gcall *stmt)
        return true;
      }
 
-  if (gimple_call_lhs (stmt)
-      && (!is_gimple_lvalue (gimple_call_lhs (stmt))
-	  || verify_types_in_gimple_reference (gimple_call_lhs (stmt), true)))
+  tree lhs = gimple_call_lhs (stmt);
+  if (lhs
+      && (!is_gimple_lvalue (lhs)
+	  || verify_types_in_gimple_reference (lhs, true)))
     {
       error ("invalid LHS in gimple call");
       return true;
     }
 
-  if (gimple_call_ctrl_altering_p (stmt)
-      && gimple_call_lhs (stmt)
-      && gimple_call_noreturn_p (stmt))
+  if (lhs
+      && gimple_call_ctrl_altering_p (stmt)
+      && gimple_call_noreturn_p (stmt)
+      && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (lhs))) == INTEGER_CST)
     {
       error ("LHS in noreturn call");
       return true;
@@ -3409,19 +3411,18 @@ verify_gimple_call (gcall *stmt)
 
   fntype = gimple_call_fntype (stmt);
   if (fntype
-      && gimple_call_lhs (stmt)
-      && !useless_type_conversion_p (TREE_TYPE (gimple_call_lhs (stmt)),
-				     TREE_TYPE (fntype))
+      && lhs
+      && !useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (fntype))
       /* ???  At least C++ misses conversions at assignments from
 	 void * call results.
 	 ???  Java is completely off.  Especially with functions
 	 returning java.lang.Object.
 	 For now simply allow arbitrary pointer type conversions.  */
-      && !(POINTER_TYPE_P (TREE_TYPE (gimple_call_lhs (stmt)))
+      && !(POINTER_TYPE_P (TREE_TYPE (lhs))
 	   && POINTER_TYPE_P (TREE_TYPE (fntype))))
     {
       error ("invalid conversion in gimple call");
-      debug_generic_stmt (TREE_TYPE (gimple_call_lhs (stmt)));
+      debug_generic_stmt (TREE_TYPE (lhs));
       debug_generic_stmt (TREE_TYPE (fntype));
       return true;
     }

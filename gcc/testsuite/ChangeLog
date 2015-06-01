@@ -1,3 +1,8 @@
+2015-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/varsize_return2.ads: New test.
+	* gnat.dg/specs/varsize_return2_pkg.ad[sb]: New helper.
+
 2015-06-01  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* gcc.dg/vect/vect-outer-simd-1.c: New test.
