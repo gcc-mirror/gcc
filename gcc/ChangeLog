@@ -1,5 +1,19 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* lra.c (init_insn_regs): Use new type-based pool allocator.
+	(new_insn_reg) Likewise.
+	(free_insn_reg) Likewise.
+	(free_insn_regs) Likewise.
+	(finish_insn_regs) Likewise.
+	(init_insn_recog_data) Likewise.
+	(init_reg_info) Likewise.
+	(finish_reg_info) Likewise.
+	(lra_free_copies) Likewise.
+	(lra_create_copy) Likewise.
+	(invalidate_insn_data_regno_info) Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* lra-lives.c (free_live_range): Use new type-based pool allocator.
 	(free_live_range_list) Likewise.
 	(create_live_range) Likewise.
