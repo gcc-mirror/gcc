@@ -170,7 +170,7 @@ vec<inline_edge_summary_t> inline_edge_summary_vec;
 vec<edge_growth_cache_entry> edge_growth_cache;
 
 /* Edge predicates goes here.  */
-static alloc_pool edge_predicate_pool;
+static pool_allocator<predicate> edge_predicate_pool ("edge predicates", 10);
 
 /* Return true predicate (tautology).
    We represent it by empty list of clauses.  */
@@ -804,13 +804,13 @@ edge_set_predicate (struct cgraph_edge *e, struct predicate *predicate)
   if (predicate && !true_predicate_p (predicate))
     {
       if (!es->predicate)
-	es->predicate = (struct predicate *) pool_alloc (edge_predicate_pool);
+	es->predicate = edge_predicate_pool.allocate ();
       *es->predicate = *predicate;
     }
   else
     {
       if (es->predicate)
-	pool_free (edge_predicate_pool, es->predicate);
+	edge_predicate_pool.remove (es->predicate);
       es->predicate = NULL;
     }
 }
@@ -823,13 +823,13 @@ set_hint_predicate (struct predicate **p, struct predicate new_predicate)
   if (false_predicate_p (&new_predicate) || true_predicate_p (&new_predicate))
     {
       if (*p)
-	pool_free (edge_predicate_pool, *p);
+	edge_predicate_pool.remove (*p);
       *p = NULL;
     }
   else
     {
       if (!*p)
-	*p = (struct predicate *) pool_alloc (edge_predicate_pool);
+	*p = edge_predicate_pool.allocate ();
       **p = new_predicate;
     }
 }
@@ -1044,9 +1044,6 @@ inline_summary_alloc (void)
 
   if (inline_edge_summary_vec.length () <= (unsigned) symtab->edges_max_uid)
     inline_edge_summary_vec.safe_grow_cleared (symtab->edges_max_uid + 1);
-  if (!edge_predicate_pool)
-    edge_predicate_pool = create_alloc_pool ("edge predicates",
-					     sizeof (struct predicate), 10);
 }
 
 /* We are called multiple time for given function; clear
@@ -1061,7 +1058,7 @@ reset_inline_edge_summary (struct cgraph_edge *e)
 
       es->call_stmt_size = es->call_stmt_time = 0;
       if (es->predicate)
-	pool_free (edge_predicate_pool, es->predicate);
+	edge_predicate_pool.remove (es->predicate);
       es->predicate = NULL;
       es->param.release ();
     }
@@ -1086,17 +1083,17 @@ reset_inline_summary (struct cgraph_node *node,
   info->scc_no = 0;
   if (info->loop_iterations)
     {
-      pool_free (edge_predicate_pool, info->loop_iterations);
+      edge_predicate_pool.remove (info->loop_iterations);
       info->loop_iterations = NULL;
     }
   if (info->loop_stride)
     {
-      pool_free (edge_predicate_pool, info->loop_stride);
+      edge_predicate_pool.remove (info->loop_stride);
       info->loop_stride = NULL;
     }
   if (info->array_index)
     {
-      pool_free (edge_predicate_pool, info->array_index);
+      edge_predicate_pool.remove (info->array_index);
       info->array_index = NULL;
     }
   vec_free (info->conds);
@@ -1812,7 +1809,7 @@ set_cond_stmt_execution_predicate (struct ipa_node_params *info,
 	      struct predicate p = add_condition (summary, index, &aggpos,
 						  this_code,
 						  gimple_cond_rhs (last));
-	      e->aux = pool_alloc (edge_predicate_pool);
+	      e->aux = edge_predicate_pool.allocate ();
 	      *(struct predicate *) e->aux = p;
 	    }
 	}
@@ -1845,7 +1842,7 @@ set_cond_stmt_execution_predicate (struct ipa_node_params *info,
     {
       struct predicate p = add_condition (summary, index, &aggpos,
 					  IS_NOT_CONSTANT, NULL_TREE);
-      e->aux = pool_alloc (edge_predicate_pool);
+      e->aux = edge_predicate_pool.allocate ();
       *(struct predicate *) e->aux = p;
     }
 }
@@ -1878,7 +1875,7 @@ set_switch_stmt_execution_predicate (struct ipa_node_params *info,
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
-      e->aux = pool_alloc (edge_predicate_pool);
+      e->aux = edge_predicate_pool.allocate ();
       *(struct predicate *) e->aux = false_predicate ();
     }
   n = gimple_switch_num_labels (last);
@@ -1932,7 +1929,7 @@ compute_bb_predicates (struct cgraph_node *node,
 
   /* Entry block is always executable.  */
   ENTRY_BLOCK_PTR_FOR_FN (my_function)->aux
-    = pool_alloc (edge_predicate_pool);
+    = edge_predicate_pool.allocate ();
   *(struct predicate *) ENTRY_BLOCK_PTR_FOR_FN (my_function)->aux
     = true_predicate ();
 
@@ -1968,7 +1965,7 @@ compute_bb_predicates (struct cgraph_node *node,
 	      if (!bb->aux)
 		{
 		  done = false;
-		  bb->aux = pool_alloc (edge_predicate_pool);
+		  bb->aux = edge_predicate_pool.allocate ();
 		  *((struct predicate *) bb->aux) = p;
 		}
 	      else if (!predicates_equal_p (&p, (struct predicate *) bb->aux))
@@ -2864,12 +2861,12 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
       edge_iterator ei;
 
       if (bb->aux)
-	pool_free (edge_predicate_pool, bb->aux);
+	edge_predicate_pool.remove ((predicate *)bb->aux);
       bb->aux = NULL;
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  if (e->aux)
-	    pool_free (edge_predicate_pool, e->aux);
+	    edge_predicate_pool.remove ((predicate *) e->aux);
 	  e->aux = NULL;
 	}
     }
@@ -4460,7 +4457,5 @@ inline_free_summary (void)
   inline_summaries->release ();
   inline_summaries = NULL;
   inline_edge_summary_vec.release ();
-  if (edge_predicate_pool)
-    free_alloc_pool (edge_predicate_pool);
-  edge_predicate_pool = 0;
+  edge_predicate_pool.release ();
 }

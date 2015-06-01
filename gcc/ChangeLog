@@ -1,5 +1,18 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* ipa-inline-analysis.c (edge_set_predicate): Use new type-based pool allocator.
+	(set_hint_predicate): Likewise.
+	(inline_summary_alloc): Likewise.
+	(reset_inline_edge_summary): Likewise.
+	(reset_inline_summary): Likewise.
+	(set_cond_stmt_execution_predicate): Likewise.
+	(set_switch_stmt_execution_predicate): Likewise.
+	(compute_bb_predicates): Likewise.
+	(estimate_function_body_sizes): Likewise.
+	(inline_free_summary): Likewise.
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* ipa-prop.c (ipa_set_jf_constant): Use new type-based pool allocator.
 	(ipa_edge_duplication_hook): Likewise.
 	(ipa_free_all_structures_after_ipa_cp): Likewise.
