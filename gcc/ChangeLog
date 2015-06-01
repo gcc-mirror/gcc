@@ -1,3 +1,10 @@
+2015-06-01  Matthew Wahab  <matthew.wahab@arm.com>
+
+        PR target/65697
+	* config/aarch64/aarch64.c (aarch64_emit_post_barrier):New.
+	(aarch64_split_atomic_op): Check for __sync memory models, emit
+	appropriate initial loads and final barriers.
+
 2015-06-01  Vidya Praveen  <vidya.praveen@atmel.com>
 
 	* Makefile.in: Fix gcov dependencies that should
