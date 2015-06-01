@@ -3019,6 +3019,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    else
 	      gnu_parent = gnat_to_gnu_type (gnat_parent);
 
+	    /* The parent field needs strict alignment so, if it is to
+	       be created with a component clause below, then we need
+	       to apply the same adjustment as in gnat_to_gnu_field.  */
+	    if (has_rep && TYPE_ALIGN (gnu_type) < TYPE_ALIGN (gnu_parent))
+	      TYPE_ALIGN (gnu_type) = TYPE_ALIGN (gnu_parent);
+
 	    /* Finally we fix up both kinds of twisted COMPONENT_REF we have
 	       initially built.  The discriminants must reference the fields
 	       of the parent subtype and not those of its base type for the

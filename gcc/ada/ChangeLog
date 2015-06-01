@@ -1,5 +1,11 @@
 2015-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: If the
+	record has a parent field and a representation clause, make sure that
+	it is properly aligned.
+
+2015-06-01  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (lvalue_required_p) <N_Indexed_Component>: Deal
 	with character and enumeration literals as index values.
 
