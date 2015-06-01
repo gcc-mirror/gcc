@@ -1,3 +1,9 @@
+2015-06-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md
+	(*<LOGICAL:optab>_one_cmpl_<SHIFT:optab><mode>3): Change type to
+	logic_shift_imm.
+
 2015-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/winnt.c (i386_pe_encode_section_info) <FUNCTION_DECL>:

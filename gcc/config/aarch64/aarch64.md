@@ -3271,7 +3271,7 @@
 		     (match_operand:GPI 3 "register_operand" "r")))]
   ""
   "<LOGICAL:nlogical>\\t%<w>0, %<w>3, %<w>1, <SHIFT:shift> %2"
-  [(set_attr "type" "logics_shift_imm")]
+  [(set_attr "type" "logic_shift_imm")]
 )
 
 (define_insn "*eor_one_cmpl_<SHIFT:optab><mode>3_alt"
