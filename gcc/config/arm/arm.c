@@ -25522,8 +25522,8 @@ arm_print_tune_info (void)
 	       (int) current_tune->string_ops_prefer_neon);
   asm_fprintf (asm_out_file, "\t\t@max_insns_inline_memset:\t%d\n",
 	       current_tune->max_insns_inline_memset);
-  asm_fprintf (asm_out_file, "\t\t@fuseable_ops:\t%u\n",
-	       current_tune->fuseable_ops);
+  asm_fprintf (asm_out_file, "\t\t@fusible_ops:\t%u\n",
+	       current_tune->fusible_ops);
   asm_fprintf (asm_out_file, "\t\t@sched_autopref:\t%d\n",
 	       (int) current_tune->sched_autopref);
 }
@@ -29160,7 +29160,7 @@ arm_gen_setmem (rtx *operands)
 static bool
 arm_macro_fusion_p (void)
 {
-  return current_tune->fuseable_ops != tune_params::FUSE_NOTHING;
+  return current_tune->fusible_ops != tune_params::FUSE_NOTHING;
 }
 
 
@@ -29181,7 +29181,7 @@ aarch_macro_fusion_pair_p (rtx_insn* prev, rtx_insn* curr)
   if (!arm_macro_fusion_p ())
     return false;
 
-  if (current_tune->fuseable_ops & tune_params::FUSE_MOVW_MOVT)
+  if (current_tune->fusible_ops & tune_params::FUSE_MOVW_MOVT)
     {
       /* We are trying to fuse
 	 movw imm / movt imm
