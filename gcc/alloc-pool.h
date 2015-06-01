@@ -22,46 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "hash-map.h"
 
-typedef unsigned long ALLOC_POOL_ID_TYPE;
-
-typedef struct alloc_pool_list_def
-{
-  struct alloc_pool_list_def *next;
-}
- *alloc_pool_list;
-
-typedef struct alloc_pool_def
-{
-  const char *name;
-  ALLOC_POOL_ID_TYPE id;
-  size_t elts_per_block;
-
-  /* These are the elements that have been allocated at least once and freed.  */
-  alloc_pool_list returned_free_list;
-
-  /* These are the elements that have not yet been allocated out of
-     the last block obtained from XNEWVEC.  */
-  char* virgin_free_list;
-
-  /* The number of elements in the virgin_free_list that can be
-     allocated before needing another block.  */
-  size_t virgin_elts_remaining;
-
-  size_t elts_allocated;
-  size_t elts_free;
-  size_t blocks_allocated;
-  alloc_pool_list block_list;
-  size_t block_size;
-  size_t elt_size;
-}
- *alloc_pool;
-
-extern alloc_pool create_alloc_pool (const char *, size_t, size_t);
-extern void free_alloc_pool (alloc_pool);
-extern void empty_alloc_pool (alloc_pool);
-extern void free_alloc_pool_if_empty (alloc_pool *);
-extern void *pool_alloc (alloc_pool) ATTRIBUTE_MALLOC;
-extern void pool_free (alloc_pool, void *);
 extern void dump_alloc_pool_statistics (void);
 
 typedef unsigned long ALLOC_POOL_ID_TYPE;
@@ -76,21 +36,10 @@ public:
      potentially IGNORE_TYPE_SIZE.  */
   pool_allocator (const char *name, size_t num, size_t extra_size = 0,
 		  bool ignore_type_size = false);
-
-  /* Default destuctor.  */
   ~pool_allocator ();
-
-  /* Release internal data structures.  */
   void release ();
-
-  /* Release internal data structures if the pool has not allocated
-     an object.  */
   void release_if_empty ();
-
-  /* Allocate a new object.  */
   T *allocate () ATTRIBUTE_MALLOC;
-
-  /* Release OBJECT that must come from the pool.  */
   void remove (T *object);
 
 private:
