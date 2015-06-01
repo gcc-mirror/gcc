@@ -858,14 +858,17 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, bool constant,
       if (Prefix (gnat_parent) != gnat_node)
 	return 0;
 
-      /* ??? Consider that referencing an indexed component with a
-	 non-constant index forces the whole aggregate to memory.
-	 Note that N_Integer_Literal is conservative, any static
-	 expression in the RM sense could probably be accepted.  */
+      /* ??? Consider that referencing an indexed component with a variable
+	 index forces the whole aggregate to memory.  Note that testing only
+	 for literals is conservative, any static expression in the RM sense
+	 could probably be accepted with some additional work.  */
       for (gnat_temp = First (Expressions (gnat_parent));
 	   Present (gnat_temp);
 	   gnat_temp = Next (gnat_temp))
-	if (Nkind (gnat_temp) != N_Integer_Literal)
+	if (Nkind (gnat_temp) != N_Character_Literal
+	    && Nkind (gnat_temp) != N_Integer_Literal
+	    && !(Is_Entity_Name (gnat_temp)
+		 && Ekind (Entity (gnat_temp)) == E_Enumeration_Literal))
 	  return 1;
 
       /* ... fall through ... */
