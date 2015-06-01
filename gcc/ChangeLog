@@ -1,5 +1,10 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
+	* alloc-pool.h: Add ATTRIBUTE_UNUSED for
+	a function local variable. 
+
+2015-06-01  Martin Liska  <mliska@suse.cz>
+
 	* alloc-pool.c (create_alloc_pool): Remove.
 	(empty_alloc_pool): Likewise.
 	(free_alloc_pool): Likewise.
