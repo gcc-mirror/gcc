@@ -4198,7 +4198,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       type the pointer type and make a note of that.  */
 	    if (Returns_By_Ref (gnat_entity))
 	      {
-		gnu_return_type = build_pointer_type (gnu_return_type);
+		gnu_return_type = build_reference_type (gnu_return_type);
 		return_by_direct_ref_p = true;
 	      }
 
@@ -4216,7 +4216,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       the actual return type is the pointer type.  */
 	    else if (Requires_Transient_Scope (gnat_return_type))
 	      {
-		gnu_return_type = build_pointer_type (gnu_return_type);
+		gnu_return_type = build_reference_type (gnu_return_type);
 		return_unconstrained_p = true;
 	      }
 
