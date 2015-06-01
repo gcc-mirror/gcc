@@ -2853,7 +2853,7 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx_insn *insn)
     sched_deps_info->finish_rhs ();
 }
 
-/* Try to group two fuseable insns together to prevent scheduler
+/* Try to group two fusible insns together to prevent scheduler
    from scheduling them apart.  */
 
 static void

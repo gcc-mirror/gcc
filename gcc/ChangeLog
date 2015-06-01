@@ -1,5 +1,10 @@
 2015-06-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* sched-deps.c (sched_analyze_2): Replace fuseable with fusible
+	in comment.
+
+2015-06-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* gcc/config/arm/arm-protos.h (tune_params): Rename fuseable_ops
 	to fusible_ops.
 	* gcc/config/arm/arm.c (arm_print_tune_info): Likewise.
