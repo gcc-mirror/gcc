@@ -359,7 +359,7 @@ pool_allocator<T>::remove (T *object)
   gcc_checking_assert (m_initialized);
 
   allocation_pool_list *header;
-  int size;
+  int size ATTRIBUTE_UNUSED;
   size = m_elt_size - offsetof (allocation_object<T>, u.data);
 
 #ifdef ENABLE_CHECKING
