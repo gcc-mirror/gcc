@@ -172,6 +172,10 @@ case ${host} in
 	;;
     esac
     ;;
+  s390-*-* | s390x-*-*)
+    host_extra_gcc_objs="driver-native.o"
+    host_xmake_file="${host_xmake_file} s390/x-native"
+    ;;
   sparc*-*-solaris2*)
     case ${target} in
       sparc*-*-solaris2*)

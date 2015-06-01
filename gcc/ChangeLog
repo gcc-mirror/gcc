@@ -1,3 +1,16 @@
+2015-06-01  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/driver-native.c: New file.
+	* config/s390/x-native: New file.
+	* config.host: Add new files for s390.
+	* config/s390/s390.h (DRIVER_SELF_SPECS): Add support for -mtune=native
+	and -march=native
+	* config.gcc: Likewise.
+	* config/s390/s390.opt (march): Likewise; add PROCESSOR_NATIVE
+	* config/s390/s390-opts.h (enum processor_type): Ditto.
+	* config/s390/s390.c (s390_option_override): Catch unhandled
+	PROCESSOR_NATIVE
+
 2015-06-01  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	PR target/65527
