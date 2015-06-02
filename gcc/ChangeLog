@@ -1,3 +1,9 @@
+2015-06-02  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	PR other/65366
+	* gdbhooks.py: Use int(...) instead of long(...).  Use print(...)
+	instead of print ... .
+
 2015-06-02  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/vsx.md (vsx_extract_v4sf): Revert accidental
