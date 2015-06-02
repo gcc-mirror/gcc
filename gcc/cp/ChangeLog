@@ -1,5 +1,9 @@
 2015-06-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/65942
+	* decl2.c (mark_used): Don't always instantiate constexpr fns.
+	* constexpr.c (cxx_eval_call_expression): Instantiate them here.
+
 	PR c++/44282
 	* mangle.c (attr_strcmp): New.
 	(write_CV_qualifiers_for_type): Also write out attributes that
