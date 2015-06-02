@@ -766,12 +766,37 @@ try_replace_reg (rtx from, rtx to, rtx_insn *insn)
   int success = 0;
   rtx set = single_set (insn);
 
+  bool check_rtx_costs = true;
+  bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn));
+  int old_cost = set ? set_rtx_cost (set, speed) : 0;
+
+  if ((note != 0
+      && REG_NOTE_KIND (note) == REG_EQUAL
+      && (GET_CODE (XEXP (note, 0)) == CONST
+	  || CONSTANT_P (XEXP (note, 0))))
+      || (set && CONSTANT_P (SET_SRC (set))))
+    check_rtx_costs = false;
+
   /* Usually we substitute easy stuff, so we won't copy everything.
      We however need to take care to not duplicate non-trivial CONST
      expressions.  */
   to = copy_rtx (to);
 
   validate_replace_src_group (from, to, insn);
+
+  /* If TO is a constant, check the cost of the set after propagation
+     to the cost of the set before the propagation.  If the cost is
+     higher, then do not replace FROM with TO.  */
+
+  if (check_rtx_costs
+      && CONSTANT_P (to)
+      && (set_rtx_cost (set, speed) > old_cost))
+    {
+      cancel_changes (0);
+      return false;
+    }
+
+
   if (num_changes_pending () && apply_change_group ())
     success = 1;
 
