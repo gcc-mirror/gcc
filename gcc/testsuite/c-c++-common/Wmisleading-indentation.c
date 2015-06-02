@@ -653,3 +653,41 @@ void fn_34_indent_linux_style(void)
 		}
 	foo(5);
 }
+
+/* PR 66220.  */
+int fn_35 (int v)
+{
+    int res = 28;
+
+    if (v == 2)
+    {
+        res = 27;
+    } else
+    {
+        res = 18;
+    }
+    return res;
+}
+
+/* This variant of K&R-style formatting (in the presence of conditional
+   compilation) shouldn't lead to a warning.
+
+   Based on false positive seen with r223098 when compiling
+   linux-4.0.3:arch/x86/crypto/aesni-intel_glue.c:aesni_init.  */
+void
+fn_36 (void)
+{
+#if 1 /* e.g. some configuration variable.  */
+	if (flagA) {
+		foo(0);
+		foo(1);
+		foo(2);
+	} else
+#endif
+	{
+		foo(3);
+		foo(4);
+		foo(5);
+	}
+	foo(6); /* We shouldn't warn here.  */
+}

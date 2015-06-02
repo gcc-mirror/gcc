@@ -1,3 +1,9 @@
+2015-06-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/66220:
+	* c-c++-common/Wmisleading-indentation.c (fn_35): New.
+	(fn_36): New.
+
 2015-06-02  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR c/49551
