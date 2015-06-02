@@ -1,3 +1,8 @@
+2015-06-02  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/vsx.md (vsx_extract_v4sf): Revert accidental
+	2014-08-11 change.
+
 2015-06-02  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/52563
@@ -62,7 +67,7 @@
 
 2015-06-01  Matthew Wahab  <matthew.wahab@arm.com>
 
-        PR target/65697
+	PR target/65697
 	* config/aarch64/aarch64.c (aarch64_emit_post_barrier):New.
 	(aarch64_split_atomic_op): Check for __sync memory models, emit
 	appropriate initial loads and final barriers.
@@ -96,7 +101,7 @@
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
 	* alloc-pool.h: Add ATTRIBUTE_UNUSED for
-	a function local variable. 
+	a function local variable.
 
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
@@ -849,7 +854,7 @@
 	partial argument on targets with ARGS_GROW_DOWNWARD and
 	!STACK_GROWS_DOWNWARD.
 	(emit_library_call_value_1): Update callsite of emit_push_insn.
-	(store_one_arg): Likewise. 
+	(store_one_arg): Likewise.
 
 2015-05-27  Gregor Richards  <gregor.richards@uwaterloo.ca>
 
