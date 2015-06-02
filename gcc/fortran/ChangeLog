@@ -1,5 +1,6 @@
 2015-06-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/66380
 	* simplify.c (gfc_simplify_reshape): Convert assert into returning
 	NULL, which triggers an error condition.
 
