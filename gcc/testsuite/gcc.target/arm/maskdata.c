@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options " -O2 -fno-gcse " }  */
+/* { dg-options " -O2" }  */
 /* { dg-require-effective-target arm_thumb2_ok } */
 
 #define MASK 0xff00ff
