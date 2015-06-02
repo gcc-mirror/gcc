@@ -1,3 +1,20 @@
+2015-06-02  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/48052
+	* cfgloop.h (struct control_iv): New.
+	(struct loop): New field control_ivs.
+	* tree-ssa-loop-niter.c : Include "stor-layout.h".
+	(number_of_iterations_lt): Set no_overflow information.
+	(number_of_iterations_exit): Init control iv in niter struct.
+	(record_control_iv): New.
+	(estimate_numbers_of_iterations_loop): Call record_control_iv.
+	(loop_exits_before_overflow): New.  Interface factored out of
+	scev_probably_wraps_p.
+	(scev_probably_wraps_p): Factor loop niter related code into
+	loop_exits_before_overflow.
+	(free_numbers_of_iterations_estimates_loop): Free control ivs.
+	* tree-ssa-loop-niter.h (free_loop_control_ivs): New.
+
 2015-06-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_modify_expr): Do not create a DECL_DEBUG_EXPR if
