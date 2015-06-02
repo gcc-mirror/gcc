@@ -1,3 +1,34 @@
+2015-06-02  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/52563
+	PR tree-optimization/62173
+	* tree-ssa-loop-ivopts.c (struct iv): New field.  Reorder fields.
+	(alloc_iv, set_iv): New parameter.
+	(determine_biv_step): Delete.
+	(find_bivs): Inline original determine_biv_step.  Pass new
+	argument to set_iv.
+	(idx_find_step): Use no_overflow information for conversion.
+	* tree-scalar-evolution.c (analyze_scalar_evolution_in_loop): Let
+	resolve_mixers handle folded_casts.
+	(instantiate_scev_name): Change bool parameter to bool pointer.
+	(instantiate_scev_poly, instantiate_scev_binary): Ditto.
+	(instantiate_array_ref, instantiate_scev_not): Ditto.
+	(instantiate_scev_3, instantiate_scev_2): Ditto.
+	(instantiate_scev_1, instantiate_scev_r): Ditto.
+	(instantiate_scev_convert, ): Change parameter.  Pass argument
+	to chrec_convert_aggressive.
+	(instantiate_scev): Change argument.
+	(resolve_mixers): New parameter and set it.
+	(scev_const_prop): New argument.
+	* tree-scalar-evolution.h (resolve_mixers): New parameter.
+	* tree-chrec.c (convert_affine_scev): Call chrec_convert instead
+	of chrec_conert_1.
+	(chrec_convert): New parameter.  Move definition below.
+	(chrec_convert_aggressive): New parameter and set it.  Call
+	convert_affine_scev.
+	* tree-chrec.h (chrec_convert): New parameter.
+	(chrec_convert_aggressive): Ditto.
+
 2015-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_modify_expr_rhs): Use simple test on the size.
