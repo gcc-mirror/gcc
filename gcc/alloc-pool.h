@@ -159,11 +159,11 @@ template <typename T>
 inline
 pool_allocator<T>::pool_allocator (const char *name, size_t num,
 				   size_t extra_size, bool ignore_type_size):
-  m_name (name), m_elts_per_block (num), m_returned_free_list (NULL),
+  m_name (name), m_id (0), m_elts_per_block (num), m_returned_free_list (NULL),
   m_virgin_free_list (NULL), m_virgin_elts_remaining (0), m_elts_allocated (0),
   m_elts_free (0), m_blocks_allocated (0), m_block_list (NULL),
-  m_ignore_type_size (ignore_type_size), m_extra_size (extra_size),
-  m_initialized (false) {}
+  m_block_size (0), m_ignore_type_size (ignore_type_size),
+  m_extra_size (extra_size), m_initialized (false) {}
 
 /* Initialize a pool allocator.  */
 
@@ -215,7 +215,6 @@ pool_allocator<T>::initialize ()
 
   m_id = last_id;
 #endif
-
 }
 
 /* Free all memory allocated for the given memory pool.  */
