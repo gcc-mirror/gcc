@@ -301,13 +301,12 @@ again:
       oprnd_info = (*oprnds_info)[i];
 
       if (!vect_is_simple_use (oprnd, NULL, loop_vinfo, bb_vinfo, &def_stmt,
-			       &def, &dt)
-	  || (!def_stmt && dt != vect_constant_def))
+			       &def, &dt))
 	{
 	  if (dump_enabled_p ())
 	    {
 	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			       "Build SLP failed: can't find def for ");
+			       "Build SLP failed: can't analyze def for ");
 	      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, oprnd);
               dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 	    }
@@ -1092,6 +1091,35 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 			       vectorization_factor, matches,
 			       npermutes, &this_tree_size, max_tree_size))
 	{
+	  /* If we have all children of child built up from scalars then just
+	     throw that away and build it up this node from scalars.  */
+	  if (!SLP_TREE_CHILDREN (child).is_empty ())
+	    {
+	      unsigned int j;
+	      slp_tree grandchild;
+
+	      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (child), j, grandchild)
+		if (grandchild != NULL)
+		  break;
+	      if (!grandchild)
+		{
+		  /* Roll back.  */
+		  *max_nunits = old_max_nunits;
+		  loads->truncate (old_nloads);
+		  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (child), j, grandchild)
+		      vect_free_slp_tree (grandchild);
+		  SLP_TREE_CHILDREN (child).truncate (0);
+
+		  dump_printf_loc (MSG_NOTE, vect_location,
+				   "Building parent vector operands from "
+				   "scalars instead\n");
+		  oprnd_info->def_stmts = vNULL;
+		  vect_free_slp_tree (child);
+		  SLP_TREE_CHILDREN (*node).quick_push (NULL);
+		  continue;
+		}
+	    }
+
 	  oprnd_info->def_stmts = vNULL;
 	  SLP_TREE_CHILDREN (*node).quick_push (child);
 	  continue;

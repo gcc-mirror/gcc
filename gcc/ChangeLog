@@ -1,3 +1,12 @@
+2015-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/65961
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Remove bogus
+	check and clarify dump message.
+	(vect_build_slp_tree): If all children are built up from scalars
+	build up the parent from scalars instead.
+	* tree-vect-stmts.c (vect_is_simple_use): Cleanup.
+
 2015-06-02  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	PR other/65366

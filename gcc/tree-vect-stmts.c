@@ -7878,15 +7878,9 @@ vect_is_simple_use (tree operand, gimple stmt, loop_vec_info loop_vinfo,
                     bb_vec_info bb_vinfo, gimple *def_stmt,
 		    tree *def, enum vect_def_type *dt)
 {
-  basic_block bb;
-  stmt_vec_info stmt_vinfo;
-  struct loop *loop = NULL;
-
-  if (loop_vinfo)
-    loop = LOOP_VINFO_LOOP (loop_vinfo);
-
   *def_stmt = NULL;
   *def = NULL_TREE;
+  *dt = vect_unknown_def_type;
 
   if (dump_enabled_p ())
     {
@@ -7909,13 +7903,6 @@ vect_is_simple_use (tree operand, gimple stmt, loop_vec_info loop_vinfo,
       return true;
     }
 
-  if (TREE_CODE (operand) == PAREN_EXPR)
-    {
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location, "non-associatable copy.\n");
-      operand = TREE_OPERAND (operand, 0);
-    }
-
   if (TREE_CODE (operand) != SSA_NAME)
     {
       if (dump_enabled_p ())
@@ -7924,40 +7911,30 @@ vect_is_simple_use (tree operand, gimple stmt, loop_vec_info loop_vinfo,
       return false;
     }
 
-  *def_stmt = SSA_NAME_DEF_STMT (operand);
-  if (*def_stmt == NULL)
-    {
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "no def_stmt.\n");
-      return false;
-    }
-
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location, "def_stmt: ");
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, *def_stmt, 0);
-    }
-
-  /* Empty stmt is expected only in case of a function argument.
-     (Otherwise - we expect a phi_node or a GIMPLE_ASSIGN).  */
-  if (gimple_nop_p (*def_stmt))
+  if (SSA_NAME_IS_DEFAULT_DEF (operand))
     {
       *def = operand;
       *dt = vect_external_def;
       return true;
     }
 
-  bb = gimple_bb (*def_stmt);
+  *def_stmt = SSA_NAME_DEF_STMT (operand);
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location, "def_stmt: ");
+      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, *def_stmt, 0);
+    }
 
-  if ((loop && !flow_bb_inside_loop_p (loop, bb))
-      || (!loop && bb != BB_VINFO_BB (bb_vinfo))
-      || (!loop && gimple_code (*def_stmt) == GIMPLE_PHI))
+  basic_block bb = gimple_bb (*def_stmt);
+  if ((loop_vinfo && !flow_bb_inside_loop_p (LOOP_VINFO_LOOP (loop_vinfo), bb))
+      || (bb_vinfo
+	  && (bb != BB_VINFO_BB (bb_vinfo)
+	      || gimple_code (*def_stmt) == GIMPLE_PHI)))
     *dt = vect_external_def;
   else
     {
-      stmt_vinfo = vinfo_for_stmt (*def_stmt);
-      if (!loop && !STMT_VINFO_VECTORIZABLE (stmt_vinfo))
+      stmt_vec_info stmt_vinfo = vinfo_for_stmt (*def_stmt);
+      if (bb_vinfo && !STMT_VINFO_VECTORIZABLE (stmt_vinfo))
 	*dt = vect_external_def;
       else
 	*dt = STMT_VINFO_DEF_TYPE (stmt_vinfo);
