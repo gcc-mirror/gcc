@@ -365,7 +365,7 @@ df_scan_start_dump (FILE *file ATTRIBUTE_UNUSED)
   fprintf (file, ";;  regs ever live \t");
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (df_regs_ever_live_p (i))
-      fprintf (file, " %d[%s]", i, reg_names[i]);
+      fprintf (file, " %d [%s]", i, reg_names[i]);
   fprintf (file, "\n;;  ref usage \t");
 
   for (i = 0; i < (int)df->regs_inited; i++)
