@@ -259,7 +259,6 @@ cxx_init (void)
   init_cp_semantics ();
   init_operators ();
   init_method ();
-  init_error ();
 
   current_function_decl = NULL;
 
