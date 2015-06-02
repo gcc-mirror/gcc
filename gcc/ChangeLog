@@ -1,3 +1,7 @@
+2015-06-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* df-scan.c (df_scan_start_dump): Add space between regno and regname.
+
 2015-06-02  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/48052
@@ -195,7 +199,8 @@
 
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
-	* ipa-inline-analysis.c (edge_set_predicate): Use new type-based pool allocator.
+	* ipa-inline-analysis.c (edge_set_predicate): Use new type-based
+	pool allocator.
 	(set_hint_predicate): Likewise.
 	(inline_summary_alloc): Likewise.
 	(reset_inline_edge_summary): Likewise.
@@ -222,7 +227,8 @@
 
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
-	* tree-ssa-structalias.c (new_var_info): Use new type-based pool allocator.
+	* tree-ssa-structalias.c (new_var_info): Use new type-based
+	pool allocator.
 	(new_constraint): Likewise.
 	(init_alias_vars): Likewise.
 	(delete_points_to_sets): Likewise.
@@ -235,7 +241,8 @@
 
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
-	* tree-ssa-sccvn.c (vn_reference_insert): Use new type-based pool allocator.
+	* tree-ssa-sccvn.c (vn_reference_insert): Use new type-based
+	pool allocator.
 	(vn_reference_insert_pieces): Likewise.
 	(vn_phi_insert): Likewise.
 	(visit_reference_op_call): Likewise.
@@ -247,7 +254,8 @@
 
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
-	* tree-ssa-reassoc.c (add_to_ops_vec): Use new type-based pool allocator.
+	* tree-ssa-reassoc.c (add_to_ops_vec): Use new type-based
+	pool allocator.
 	(add_repeat_to_ops_vec): Likewise.
 	(get_ops): Likewise.
 	(maybe_optimize_range_tests): Likewise.
@@ -256,7 +264,8 @@
 
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
-	* tree-ssa-pre.c (get_or_alloc_expr_for_name): Use new type-based pool allocator.
+	* tree-ssa-pre.c (get_or_alloc_expr_for_name): Use new type-based
+	pool allocator.
 	(bitmap_set_new): Likewise.
 	(get_or_alloc_expr_for_constant): Likewise.
 	(get_or_alloc_expr_for): Likewise.
@@ -276,20 +285,23 @@
 
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
-	* regcprop.c (free_debug_insn_changes): Use new type-based pool allocator.
+	* regcprop.c (free_debug_insn_changes): Use new type-based
+	pool allocator.
 	(replace_oldest_value_reg): Likewise.
 	(pass_cprop_hardreg::execute): Likewise.
 
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
-	* ira-build.c (initiate_cost_vectors): Use new type-based pool allocator.
+	* ira-build.c (initiate_cost_vectors): Use new type-based
+	pool allocator.
 	(ira_allocate_cost_vector): Likewise.
 	(ira_free_cost_vector): Likewise.
 	(finish_cost_vectors): Likewise.
 
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
-	* sel-sched-ir.c (alloc_sched_pools): Use new type-based pool allocator.
+	* sel-sched-ir.c (alloc_sched_pools): Use new type-based
+	pool allocator.
 	(free_sched_pools): Likewise.
 	* sel-sched-ir.h (_list_alloc): Likewise.
 	(_list_remove): Likewise.
@@ -330,7 +342,8 @@
 
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
-	* df-scan.c (struct df_scan_problem_data):Use new type-based pool allocator.
+	* df-scan.c (struct df_scan_problem_data):Use new type-based
+	pool allocator.
 	(df_scan_free_internal) Likewise.
 	(df_scan_alloc) Likewise.
 	(df_grow_reg_info) Likewise.
@@ -372,20 +385,23 @@
 
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
-	* cfg.c (initialize_original_copy_tables):Use new type-based pool allocator.
+	* cfg.c (initialize_original_copy_tables):Use new type-based
+	pool allocator.
 	(free_original_copy_tables) Likewise.
 	(copy_original_table_clear) Likewise.
 	(copy_original_table_set) Likewise.
 
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
-	* asan.c (asan_mem_ref_get_alloc_pool):Use new type-based pool allocator.
+	* asan.c (asan_mem_ref_get_alloc_pool):Use new type-based
+	pool allocator.
 	(asan_mem_ref_new) Likewise.
 	(free_mem_ref_resources) Likewise.
 
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
-	* var-tracking.c (variable_htab_free):Use new type-based pool allocator.
+	* var-tracking.c (variable_htab_free):Use new type-based
+	pool allocator.
 	(attrs_list_clear) Likewise.
 	(attrs_list_insert) Likewise.
 	(attrs_list_copy) Likewise.
@@ -419,7 +435,8 @@
 
 2015-06-01  Martin Liska  <mliska@suse.cz>
 
-	* ira-color.c (init_update_cost_records):Use new type-based pool allocator.
+	* ira-color.c (init_update_cost_records):Use new type-based
+	pool allocator.
 	(get_update_cost_record) Likewise.
 	(free_update_cost_record_list) Likewise.
 	(finish_update_cost_records) Likewise.
@@ -790,10 +807,8 @@
 	* config/frv/frv.h (DRIVER_SELF_SPECS): Use FPIC_SPEC,
 	NO_FPIC_SPEC and NO_FPIE1_AND_FPIC1_SPEC.
 	(ASM_SPEC): Use FPIE1_OR_FPIC1_SPEC and FPIE2_OR_FPIC2_SPEC.
-	* config/m68k/m68k.h (ASM_PCREL_SPEC): Use FPIC_SPEC and
-	NO_FPIC_SPEC.
-	* config/mips/gnu-user.h (NO_SHARED_SPECS): Use
-	NO_FPIE_AND_FPIC_SPEC.
+	* config/m68k/m68k.h (ASM_PCREL_SPEC): Use FPIC_SPEC and NO_FPIC_SPEC.
+	* config/mips/gnu-user.h (NO_SHARED_SPECS): Use NO_FPIE_AND_FPIC_SPEC.
 	* config/mips/vxworks.h (SUBTARGET_ASM_SPEC): Use FPIC_SPEC.
 	* config/rs6000/freebsd64.h (ASM_SPEC32): Likewise.
 	* config/rs6000/vxworks.h (ASM_SPEC): Likewise.
