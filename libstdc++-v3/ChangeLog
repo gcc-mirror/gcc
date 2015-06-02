@@ -1,5 +1,8 @@
 2015-06-02  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/abi.xml: Document versioning for 5.1.0 release.
+	* doc/html/manual/*: Regenerate.
+
 	* doc/html/ext/lwg-active.html: Update to R93.
 	* doc/html/ext/lwg-closed.html: Likewise.
 	* doc/html/ext/lwg-defects.html: Likewise.
