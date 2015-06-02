@@ -1,3 +1,7 @@
+2015-06-02  Renlin Li  <renlin.li@arm.com>
+
+	* testsuite/27_io/fpos/14775.cc: Add _GLIBCXX_HAVE_LIMIT_FSIZE check.
+
 2015-06-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Unset LANGUAGE
