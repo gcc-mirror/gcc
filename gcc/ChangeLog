@@ -1,3 +1,8 @@
+2015-06-02  Martin Liska  <mliska@suse.cz>
+
+	* alloc-pool.h (pool_allocator::pool_allocator): Set implicit
+	values to avoid -Wmaybe-uninitialized errors.
+
 2015-06-02  Richard Biener  <rguenther@suse.de>
 
 	PR debug/65549
