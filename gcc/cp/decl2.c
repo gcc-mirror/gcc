@@ -5046,8 +5046,7 @@ mark_used (tree decl, tsubst_flags_t complain)
       && DECL_TEMPLATE_INFO (decl)
       && (decl_maybe_constant_var_p (decl)
 	  || (TREE_CODE (decl) == FUNCTION_DECL
-	      && (DECL_DECLARED_CONSTEXPR_P (decl)
-		  || DECL_OMP_DECLARE_REDUCTION_P (decl)))
+	      && DECL_OMP_DECLARE_REDUCTION_P (decl))
 	  || undeduced_auto_decl (decl))
       && !uses_template_parms (DECL_TI_ARGS (decl)))
     {
