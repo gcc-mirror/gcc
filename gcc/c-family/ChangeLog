@@ -1,5 +1,13 @@
 2015-06-02  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c/66220:
+	* c-indentation.c (should_warn_for_misleading_indentation): Use
+	expand_location rather than expand_location_to_spelling_point.
+	Don't warn if the guarding statement is more indented than the
+	next/body stmts.
+
+2015-06-02  David Malcolm  <dmalcolm@redhat.com>
+
 	* c-indentation.c (warn_for_misleading_indentation): Bail out
 	immediately if -Wmisleading-indentation isn't enabled.
 
