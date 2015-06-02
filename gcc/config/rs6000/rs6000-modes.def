@@ -18,6 +18,13 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+/* IBM 128-bit floating point.  IFmode and KFmode use the fractional float
+   support in order to declare 3 128-bit floating point types.  */
+FRACTIONAL_FLOAT_MODE (IF, 106, 16, ibm_extended_format);
+
+/* Explicit IEEE 128-bit floating point.  */
+FRACTIONAL_FLOAT_MODE (KF, 113, 16, ieee_quad_format);
+
 /* 128-bit floating point.  ABI_V4 uses IEEE quad, AIX/Darwin
    adjust this in rs6000_option_override_internal.  */
 FLOAT_MODE (TF, 16, ieee_quad_format);

@@ -600,3 +600,19 @@ Allow float/double variables in upper registers if cpu allows it
 moptimize-swaps
 Target Undocumented Var(rs6000_optimize_swaps) Init(1) Save
 Analyze and remove doubleword swaps from VSX computations.
+
+mfloat128-
+Target RejectNegative Joined Enum(float128_type_t) Var(TARGET_FLOAT128) Init(FLOAT128_UNSET) Save
+-mfloat128-{software,none} - Specify how IEEE 128-bit floating point is used.
+
+Enum
+Name(float128_type_t) Type(enum float128_type_t)
+
+EnumValue
+Enum(float128_type_t) String(none) Value(FLOAT128_NONE)
+
+EnumValue
+Enum(float128_type_t) String(software) Value(FLOAT128_SW)
+
+EnumValue
+Enum(float128_type_t) String(sw) Value(FLOAT128_SW)
