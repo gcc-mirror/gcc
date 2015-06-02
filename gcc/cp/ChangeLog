@@ -1,3 +1,8 @@
+2015-06-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61683
+	* parser.c (cp_parser_mem_initializer): Allow for decltype-specifier.
+
 2015-06-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/65942
