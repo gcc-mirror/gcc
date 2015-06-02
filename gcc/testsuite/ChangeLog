@@ -1,3 +1,10 @@
+2015-06-02  Renlin Li  <renlin.li@arm.com>
+
+	Backport from mainline
+	2015-04-30  Renlin Li  <renlin.li@arm.com>
+
+	* gcc.target/aarch64/vect-reduc-or_1.c: New.
+
 2015-06-02  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline
