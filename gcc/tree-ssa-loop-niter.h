@@ -41,6 +41,7 @@ extern void estimate_numbers_of_iterations (void);
 extern bool stmt_dominates_stmt_p (gimple, gimple);
 extern bool nowrap_type_p (tree);
 extern bool scev_probably_wraps_p (tree, tree, gimple, struct loop *, bool);
+extern void free_loop_control_ivs (struct loop *);
 extern void free_numbers_of_iterations_estimates_loop (struct loop *);
 extern void free_numbers_of_iterations_estimates (void);
 extern void substitute_in_loop_info (struct loop *, tree, tree);

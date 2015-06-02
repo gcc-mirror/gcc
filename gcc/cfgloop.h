@@ -116,6 +116,14 @@ enum loop_estimation
   EST_LAST
 };
 
+/* The structure describing non-overflow control induction variable for
+   loop's exit edge.  */
+struct GTY ((chain_next ("%h.next"))) control_iv {
+  tree base;
+  tree step;
+  struct control_iv *next;
+};
+
 /* Structure to hold information for each natural loop.  */
 struct GTY ((chain_next ("%h.next"))) loop {
   /* Index into loops array.  */
@@ -202,6 +210,9 @@ struct GTY ((chain_next ("%h.next"))) loop {
 
   /* Upper bound on number of iterations of a loop.  */
   struct nb_iter_bound *bounds;
+
+  /* Non-overflow control ivs of a loop.  */
+  struct control_iv *control_ivs;
 
   /* Head of the cyclic list of the exits of the loop.  */
   struct loop_exit *exits;
