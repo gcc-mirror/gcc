@@ -1,3 +1,10 @@
+2015-06-02  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/52563
+	PR tree-optimization/62173
+	* gcc.dg/tree-ssa/scev-3.c: Remove xfail.
+	* gcc.dg/tree-ssa/scev-4.c: Ditto.
+
 2015-06-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/varsize_return2.ads: New test.
