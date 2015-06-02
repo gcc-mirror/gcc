@@ -54,8 +54,8 @@ along with GCC; see the file COPYING3.  If not see
    tree -> string functions that are occasionally called from the
    debugger or by the front-end for things like
    __PRETTY_FUNCTION__.  */
-static cxx_pretty_printer scratch_pretty_printer;
-static cxx_pretty_printer * cxx_pp = &scratch_pretty_printer;
+static cxx_pretty_printer actual_pretty_printer;
+static cxx_pretty_printer * const cxx_pp = &actual_pretty_printer;
 
 /* Translate if being used for diagnostics, but not for dump files or
    __PRETTY_FUNCTION.  */
@@ -138,16 +138,6 @@ cxx_initialize_diagnostics (diagnostic_context *context)
   diagnostic_starter (context) = cp_diagnostic_starter;
   /* diagnostic_finalizer is already c_diagnostic_finalizer.  */
   diagnostic_format_decoder (context) = cp_printer;
-}
-
-/* Initialize the global cxx_pp that is used as the memory store for
-   the string representation of C++ AST.  See the description of
-   cxx_pp above.  */
-
-void
-init_error (void)
-{
-  new (cxx_pp) cxx_pretty_printer ();
 }
 
 /* Dump a scope, if deemed necessary.  */

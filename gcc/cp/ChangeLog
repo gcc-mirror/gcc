@@ -1,3 +1,12 @@
+2015-06-02  Patrick Palka <patrick@parcs.ath.cx>
+
+	* cp-tree.h (init_error): Remove declaration.
+	* error.c (scratch_pretty_printer): Rename to ...
+	(actual_pretty_printer): ... this.
+	(cxx_pp): Constify and update accordingly.
+	(init_error): Remove definition.
+	* lex.c (cxx_init): Do not call init_error.
+
 2015-06-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61683
