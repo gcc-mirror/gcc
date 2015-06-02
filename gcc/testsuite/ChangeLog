@@ -1,3 +1,8 @@
+2015-06-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61683
+	* g++.dg/cpp0x/decltype-mem-initializer1.C: New.
+
 2015-06-02  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/48052
