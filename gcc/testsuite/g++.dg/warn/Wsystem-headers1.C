@@ -1,3 +1,3 @@
 #include <stdlib.h>
 
-extern double atof (const char *);
+extern "C" double atof (const char *);
