@@ -1,3 +1,30 @@
+2015-06-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-modes.def (IFmode): Define IFmode to
+	provide access to the IBM extended double floating point mode if
+	long double is IEEE 128-bit floating point.
+	(KFmode): Define KFmode to provide access to IEEE 128-bit floating
+	point if long double is the IBM extended double type.
+
+	* config/rs6000/rs6000.opt (-mfloat128-none): New switches to
+	enable adding IEEE 128-bit floating point support.
+	(-mfloat128-software): Likewise.
+	(-mfloat128-sw): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): Do not allow
+	128-bit floating point types to occupy any register if
+	-mlong-double-64.  Do not allow use of IFmode/KFmode unless
+	-mfloat128-software is enabled.
+	(rs6000_debug_reg_global): Add IEEE 128-bit floating point debug
+	support.
+	(rs6000_option_override_internal): Add -mfloat128-* support.
+	(rs6000_init_builtins): Setup __ibm128 and __float128 type modes.
+
+	* config/rs6000/rs6000.h (rs6000_builtin_type_index): Add ibm128
+	and float128 type nodes.
+	(ieee128_float_type_node): Likewise.
+	(ibm128_float_type_node): Likewise.
+
 2015-06-02  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	PR target/66136
