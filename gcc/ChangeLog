@@ -1,3 +1,8 @@
+2015-06-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arc/constraints.md: Use lower-case names in match_code.
+	* config/mmix/constraints.md: Likewise.
+
 2015-06-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/65961

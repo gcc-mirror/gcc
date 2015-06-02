@@ -335,7 +335,7 @@
    Cryptic q - for short insn generation while not affecting register allocation
    Registers usable in ARCompact 16-bit instructions: @code{r0}-@code{r3},
    @code{r12}-@code{r15}"
-  (and (match_code "REG")
+  (and (match_code "reg")
        (match_test "TARGET_Rcq
 		    && !arc_ccfsm_cond_exec_p ()
 		    && IN_RANGE (REGNO (op) ^ 4, 4, 11)")))
@@ -347,7 +347,7 @@
 (define_constraint "Rcw"
   "@internal
    Cryptic w - for use in early alternatives with matching constraint"
-  (and (match_code "REG")
+  (and (match_code "reg")
        (match_test
 	"TARGET_Rcw
 	 && REGNO (op) < FIRST_PSEUDO_REGISTER
@@ -357,7 +357,7 @@
 (define_constraint "Rcr"
   "@internal
    Cryptic r - for use in early alternatives with matching constraint"
-  (and (match_code "REG")
+  (and (match_code "reg")
        (match_test
 	"TARGET_Rcw
 	 && REGNO (op) < FIRST_PSEUDO_REGISTER
@@ -367,13 +367,13 @@
 (define_constraint "Rcb"
   "@internal
    Stack Pointer register @code{r28} - do not reload into its class"
-  (and (match_code "REG")
+  (and (match_code "reg")
        (match_test "REGNO (op) == 28")))
 
 (define_constraint "Rck"
   "@internal
    blink (usful for push_s / pop_s)"
-  (and (match_code "REG")
+  (and (match_code "reg")
        (match_test "REGNO (op) == 31")))
 
 (define_constraint "Rs5"
@@ -381,7 +381,7 @@
    sibcall register - only allow one of the five available 16 bit isnsn.
    Registers usable in ARCompact 16-bit instructions: @code{r0}-@code{r3},
    @code{r12}"
-  (and (match_code "REG")
+  (and (match_code "reg")
        (match_test "!arc_ccfsm_cond_exec_p ()")
        (ior (match_test "(unsigned) REGNO (op) <= 3")
 	    (match_test "REGNO (op) == 12"))))
@@ -389,7 +389,7 @@
 (define_constraint "Rcc"
   "@internal
   Condition Codes"
-  (and (match_code "REG") (match_test "cc_register (op, VOIDmode)")))
+  (and (match_code "reg") (match_test "cc_register (op, VOIDmode)")))
 
 
 (define_constraint "Q"
