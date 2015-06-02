@@ -2631,6 +2631,12 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
   else if (DECL_PRESERVE_P (newdecl))
     DECL_PRESERVE_P (olddecl) = 1;
 
+  /* Merge DECL_COMMON */
+  if (VAR_P (olddecl) && VAR_P (newdecl)
+      && !lookup_attribute ("common", DECL_ATTRIBUTES (newdecl))
+      && !lookup_attribute ("nocommon", DECL_ATTRIBUTES (newdecl)))
+    DECL_COMMON (newdecl) = DECL_COMMON (newdecl) && DECL_COMMON (olddecl);
+
   /* Copy most of the decl-specific fields of NEWDECL into OLDDECL.
      But preserve OLDDECL's DECL_UID, DECL_CONTEXT and
      DECL_ARGUMENTS (if appropriate).  */
