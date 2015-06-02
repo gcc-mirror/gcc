@@ -1,3 +1,8 @@
+2015-06-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/66380
+	* gfortran.dg/reshape_7.f90: New test.
+
 2015-06-02  Renlin Li  <renlin.li@arm.com>
 
 	Backport from mainline
