@@ -373,6 +373,12 @@ warn_for_misleading_indentation (location_t guard_loc,
 				 enum cpp_ttype next_tok_type,
 				 const char *guard_kind)
 {
+  /* Early reject for the case where -Wmisleading-indentation is disabled,
+     to avoid doing work only to have the warning suppressed inside the
+     diagnostic machinery.  */
+  if (!warn_misleading_indentation)
+    return;
+
   if (should_warn_for_misleading_indentation (guard_loc,
 					      body_loc,
 					      next_stmt_loc,
