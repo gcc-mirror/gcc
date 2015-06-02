@@ -1,3 +1,7 @@
+2015-06-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/abi/mangle-regparm.C (dg-do): Fix x86_32 target selector.
+
 2015-06-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61683
