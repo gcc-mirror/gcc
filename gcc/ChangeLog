@@ -1,3 +1,12 @@
+2015-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR debug/65549
+	* dwarf2out.c (lookup_context_die): New function.
+	(resolve_addr): Avoid forcing a full DIE for the
+	target of a DW_TAG_GNU_call_site during late compilation.
+	Instead create a stub DIE without a type if we have a
+	context DIE present.
+
 2015-06-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* df-scan.c (df_scan_start_dump): Add space between regno and regname.

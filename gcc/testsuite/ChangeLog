@@ -1,3 +1,8 @@
+2015-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR debug/65549
+	* g++.dg/lto/pr65549_0.C: New testcase.
+
 2015-06-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR libgomp/65742

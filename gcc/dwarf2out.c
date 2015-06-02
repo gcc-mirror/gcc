@@ -20621,6 +20621,28 @@ is_naming_typedef_decl (const_tree decl)
 	      != TYPE_NAME (TREE_TYPE (decl))));
 }
 
+/* Looks up the DIE for a context.  */
+
+static inline dw_die_ref
+lookup_context_die (tree context)
+{
+  if (context)
+    {
+      /* Find die that represents this context.  */
+      if (TYPE_P (context))
+	{
+	  context = TYPE_MAIN_VARIANT (context);
+	  dw_die_ref ctx = lookup_type_die (context);
+	  if (!ctx)
+	    return NULL;
+	  return strip_naming_typedef (context, ctx);
+	}
+      else
+	return lookup_decl_die (context);
+    }
+  return comp_unit_die ();
+}
+
 /* Returns the DIE for a context.  */
 
 static inline dw_die_ref
@@ -23949,12 +23971,22 @@ resolve_addr (dw_die_ref die)
 	  {
 	    tree tdecl = SYMBOL_REF_DECL (a->dw_attr_val.v.val_addr);
 	    dw_die_ref tdie = lookup_decl_die (tdecl);
+	    dw_die_ref cdie;
 	    if (tdie == NULL
 		&& DECL_EXTERNAL (tdecl)
-		&& DECL_ABSTRACT_ORIGIN (tdecl) == NULL_TREE)
+		&& DECL_ABSTRACT_ORIGIN (tdecl) == NULL_TREE
+		&& (cdie = lookup_context_die (DECL_CONTEXT (tdecl))))
 	      {
-		force_decl_die (tdecl);
-		tdie = lookup_decl_die (tdecl);
+		/* Creating a full DIE for tdecl is overly expensive and
+		   at this point even wrong when in the LTO phase
+		   as it can end up generating new type DIEs we didn't
+		   output and thus optimize_external_refs will crash.  */
+		tdie = new_die (DW_TAG_subprogram, cdie, NULL_TREE);
+		add_AT_flag (tdie, DW_AT_external, 1);
+		add_AT_flag (tdie, DW_AT_declaration, 1);
+		add_linkage_attr (tdie, tdecl);
+		add_name_and_src_coords_attributes (tdie, tdecl);
+		equate_decl_number_to_die (tdecl, tdie);
 	      }
 	    if (tdie)
 	      {
