@@ -75,6 +75,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "cgraph.h"
 #include "wide-int.h"
+#include "attribs.h"
 
 /* Debugging support.  */
 
@@ -1916,11 +1917,15 @@ write_type (tree type)
        candidates.  */
     {
       tree t = TYPE_MAIN_VARIANT (type);
+      if (TYPE_ATTRIBUTES (t) && !OVERLOAD_TYPE_P (t))
+	t = cp_build_type_attribute_variant (t, NULL_TREE);
+      gcc_assert (t != type);
       if (TREE_CODE (t) == FUNCTION_TYPE
 	  || TREE_CODE (t) == METHOD_TYPE)
 	{
 	  t = build_ref_qualified_type (t, type_memfn_rqual (type));
-	  if (abi_version_at_least (8))
+	  if (abi_version_at_least (8)
+	      || type == TYPE_MAIN_VARIANT (type))
 	    /* Avoid adding the unqualified function type as a substitution.  */
 	    write_function_type (t);
 	  else
@@ -2168,6 +2173,20 @@ write_type (tree type)
     add_substitution (type);
 }
 
+/* qsort callback for sorting a vector of attribute entries.  */
+
+static int
+attr_strcmp (const void *p1, const void *p2)
+{
+  tree a1 = *(const tree*)p1;
+  tree a2 = *(const tree*)p2;
+
+  const attribute_spec *as1 = lookup_attribute_spec (get_attribute_name (a1));
+  const attribute_spec *as2 = lookup_attribute_spec (get_attribute_name (a2));
+
+  return strcmp (as1->name, as2->name);
+}
+
 /* Non-terminal <CV-qualifiers> for type nodes.  Returns the number of
    CV-qualifiers written for TYPE.
 
@@ -2182,9 +2201,55 @@ write_CV_qualifiers_for_type (const tree type)
 
        "In cases where multiple order-insensitive qualifiers are
        present, they should be ordered 'K' (closest to the base type),
-       'V', 'r', and 'U' (farthest from the base type) ..."
+       'V', 'r', and 'U' (farthest from the base type) ..."  */
 
-     Note that we do not use cp_type_quals below; given "const
+  /* Mangle attributes that affect type identity as extended qualifiers.
+
+     We mangle them onto the obstack, then copy the result into a string
+     vector and back up the obstack.  Once we've handled all of them we
+     sort them and write them out in order.
+
+     We don't do this with classes and enums because their attributes
+     are part of their definitions, not something added on.  */
+
+  if (abi_version_at_least (9) && !OVERLOAD_TYPE_P (type))
+    {
+      auto_vec<tree> vec;
+      for (tree a = TYPE_ATTRIBUTES (type); a; a = TREE_CHAIN (a))
+	{
+	  tree name = get_attribute_name (a);
+	  const attribute_spec *as = lookup_attribute_spec (name);
+	  if (as && as->affects_type_identity
+	      && !is_attribute_p ("abi_tag", name))
+	    vec.safe_push (a);
+	}
+      vec.qsort (attr_strcmp);
+      while (!vec.is_empty())
+	{
+	  tree a = vec.pop();
+	  const attribute_spec *as
+	    = lookup_attribute_spec (get_attribute_name (a));
+
+	  write_char ('U');
+	  write_unsigned_number (strlen (as->name));
+	  write_string (as->name);
+	  if (TREE_VALUE (a))
+	    {
+	      write_char ('I');
+	      for (tree args = TREE_VALUE (a); args;
+		   args = TREE_CHAIN (args))
+		{
+		  tree arg = TREE_VALUE (args);
+		  write_template_arg (arg);
+		}
+	      write_char ('E');
+	    }
+
+	  ++num_qualifiers;
+	}
+    }
+
+  /* Note that we do not use cp_type_quals below; given "const
      int[3]", the "const" is emitted with the "int", not with the
      array.  */
   cp_cv_quals quals = TYPE_QUALS (type);

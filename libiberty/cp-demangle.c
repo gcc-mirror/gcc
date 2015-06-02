@@ -2470,6 +2470,9 @@ cplus_demangle_type (struct d_info *di)
     case 'U':
       d_advance (di, 1);
       ret = d_source_name (di);
+      if (d_peek_char (di) == 'I')
+	ret = d_make_comp (di, DEMANGLE_COMPONENT_TEMPLATE, ret,
+			   d_template_args (di));
       ret = d_make_comp (di, DEMANGLE_COMPONENT_VENDOR_TYPE_QUAL,
 			 cplus_demangle_type (di), ret);
       break;
