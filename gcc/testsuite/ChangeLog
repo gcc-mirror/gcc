@@ -1,3 +1,9 @@
+2015-06-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/65742
+	PR middle-end/66332
+	* c-c++-common/goacc/acc_on_device-2.c: XFAIL for C, too.
+
 2015-06-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/abi/mangle-regparm.C (dg-do): Fix x86_32 target selector.
