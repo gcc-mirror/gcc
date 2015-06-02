@@ -4356,3 +4356,6 @@ _QueueNotification_QueueController__$4PPPPPPPM_A_INotice___Z
 --format=gnu-v3
 _Z1fSsB3fooS_
 f(std::string[abi:foo], std::string[abi:foo])
+--format=gnu-v3
+_Z18IndirectExternCallIPU7stdcallU7regparmILi3EEFviiEiEvT_T0_S3_
+void IndirectExternCall<void ( regparm<3> stdcall*)(int, int), int>(void ( regparm<3> stdcall*)(int, int), int, void ( regparm<3> stdcall*)(int, int))
