@@ -1,3 +1,8 @@
+2015-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_modify_expr): Do not create a DECL_DEBUG_EXPR if
+	the target doesn't belong to the current function.
+
 2015-06-02  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/66345
