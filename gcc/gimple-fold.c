@@ -2530,7 +2530,7 @@ gimple_fold_builtin_snprintf (gimple_stmt_iterator *gsi)
 	return false;
 
       tree orig_len = get_maxval_strlen (orig, 0);
-      if (!orig_len)
+      if (!orig_len || TREE_CODE (orig_len) != INTEGER_CST)
 	return false;
 
       /* We could expand this as

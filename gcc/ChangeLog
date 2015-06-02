@@ -1,3 +1,12 @@
+2015-06-02  Marek Polacek  <polacek@redhat.com>
+
+	Backport from mainline
+	2015-06-02  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/66345
+	* gimple-fold.c (gimple_fold_builtin_snprintf): Return false if
+	get_maxval_strlen does not produce an INTEGER_CST.
+
 2015-06-02  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/vsx.md (vsx_extract_v4sf): Revert accidental
