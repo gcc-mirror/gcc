@@ -4488,30 +4488,46 @@ check_tag_decl (cp_decl_specifier_seq *declspecs,
 
   else
     {
-      if (decl_spec_seq_has_spec_p (declspecs, ds_inline)
-	  || decl_spec_seq_has_spec_p (declspecs, ds_virtual))
-	error ("%qs can only be specified for functions",
-	       decl_spec_seq_has_spec_p (declspecs, ds_inline)
-	       ? "inline" : "virtual");
+      if (decl_spec_seq_has_spec_p (declspecs, ds_inline))
+	error_at (declspecs->locations[ds_inline],
+		  "%<inline%> can only be specified for functions");
+      else if (decl_spec_seq_has_spec_p (declspecs, ds_virtual))
+	error_at (declspecs->locations[ds_virtual],
+		  "%<virtual%> can only be specified for functions");
       else if (saw_friend
 	       && (!current_class_type
 		   || current_scope () != current_class_type))
-	error ("%<friend%> can only be specified inside a class");
+	error_at (declspecs->locations[ds_friend],
+		  "%<friend%> can only be specified inside a class");
       else if (decl_spec_seq_has_spec_p (declspecs, ds_explicit))
-	error ("%<explicit%> can only be specified for constructors");
+	error_at (declspecs->locations[ds_explicit],
+		  "%<explicit%> can only be specified for constructors");
       else if (declspecs->storage_class)
-	error ("a storage class can only be specified for objects "
-	       "and functions");
-      else if (decl_spec_seq_has_spec_p (declspecs, ds_const)
-	       || decl_spec_seq_has_spec_p (declspecs, ds_volatile)
-	       || decl_spec_seq_has_spec_p (declspecs, ds_restrict)
-	       || decl_spec_seq_has_spec_p (declspecs, ds_thread))
-	error ("qualifiers can only be specified for objects "
-	       "and functions");
+	error_at (declspecs->locations[ds_storage_class],
+		  "a storage class can only be specified for objects "
+		  "and functions");
+      else if (decl_spec_seq_has_spec_p (declspecs, ds_const))
+	error_at (declspecs->locations[ds_const],
+		  "%<const%> can only be specified for objects and "
+		  "functions");
+      else if (decl_spec_seq_has_spec_p (declspecs, ds_volatile))
+	error_at (declspecs->locations[ds_volatile],
+		  "%<volatile%> can only be specified for objects and "
+		  "functions");
+      else if (decl_spec_seq_has_spec_p (declspecs, ds_restrict))
+	error_at (declspecs->locations[ds_restrict],
+		  "%<__restrict%> can only be specified for objects and "
+		  "functions");
+      else if (decl_spec_seq_has_spec_p (declspecs, ds_thread))
+	error_at (declspecs->locations[ds_thread],
+		  "%<__thread%> can only be specified for objects "
+		  "and functions");
       else if (saw_typedef)
-	warning (0, "%<typedef%> was ignored in this declaration");
+	warning_at (declspecs->locations[ds_typedef], 0,
+		    "%<typedef%> was ignored in this declaration");
       else if (decl_spec_seq_has_spec_p (declspecs,  ds_constexpr))
-        error ("%<constexpr%> cannot be used for type declarations");
+        error_at (declspecs->locations[ds_constexpr],
+		  "%<constexpr%> cannot be used for type declarations");
     }
 
   if (declspecs->attributes && warn_attributes && declared_type)
