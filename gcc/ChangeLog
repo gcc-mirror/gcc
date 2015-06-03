@@ -1,3 +1,26 @@
+2015-06-03  Martin Liska  <mliska@suse.cz>
+
+	* alloc-pool.c (allocate_pool_descriptor): Remove.
+	(struct pool_output_info): Likewise.
+	(print_alloc_pool_statistics): Likewise.
+	(dump_alloc_pool_statistics): Likewise.
+	* alloc-pool.h (struct pool_usage): New struct.
+	(pool_allocator::initialize): Change usage of memory statistics
+	to a new interface.
+	(pool_allocator::release): Likewise.
+	(pool_allocator::allocate): Likewise.
+	(pool_allocator::remove): Likewise.
+	* mem-stats-traits.h (enum mem_alloc_origin): Add new enum value
+	for a pool allocator.
+	* mem-stats.h (struct mem_location): Add new ctor.
+	(struct mem_usage): Add counter for number of
+	instances.
+	(mem_alloc_description::register_descriptor): New overload of
+	* mem-stats.h (mem_location::to_string): New function.
+	* bitmap.h (struct bitmap_usage): Use this new function.
+	* ggc-common.c (struct ggc_usage): Likewise.
+	the function.
+
 2015-06-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* defaults.h (SWITCHABLE_TARGET, TARGET_SUPPORTS_WIDE_INT): Move out

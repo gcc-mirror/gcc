@@ -11,6 +11,9 @@ template<typename Key, typename Value,
 	 typename Traits = default_hashmap_traits>
 class hash_map;
 
+#define LOCATION_LINE_EXTRA_SPACE 30
+#define LOCATION_LINE_WIDTH	  48
+
 /* Memory allocation location.  */
 struct mem_location
 {
@@ -18,10 +21,16 @@ struct mem_location
   inline mem_location () {}
 
   /* Constructor.  */
-  inline mem_location (const char *filename, const char *function, int line,
-		mem_alloc_origin origin, bool ggc):
+  inline mem_location (mem_alloc_origin origin, bool ggc,
+		const char *filename = NULL, int line = 0,
+		const char *function = NULL):
     m_filename (filename), m_function (function), m_line (line), m_origin
     (origin), m_ggc (ggc) {}
+
+  /* Copy constructor.  */
+  inline mem_location (mem_location &other): m_filename (other.m_filename),
+    m_function (other.m_function), m_line (other.m_line),
+    m_origin (other.m_origin), m_ggc (other.m_ggc) {}
 
   /* Compute hash value based on file name, function name and line in
      source code. As there is just a single pointer registered for every
@@ -57,6 +66,20 @@ struct mem_location
     return s1;
   }
 
+  inline char *to_string ()
+  {
+    unsigned l = strlen (get_trimmed_filename ()) + strlen (m_function)
+      + LOCATION_LINE_EXTRA_SPACE;
+
+    char *s = XNEWVEC (char, l);
+    sprintf (s, "%s:%i (%s)", get_trimmed_filename (),
+	     m_line, m_function);
+
+    s[MIN (LOCATION_LINE_WIDTH, l - 1)] = '\0';
+
+    return s;
+  }
+
   /* Return display name associated to ORIGIN type.  */
   static const char *get_origin_name (mem_alloc_origin origin)
   {
@@ -79,11 +102,12 @@ struct mem_location
 struct mem_usage
 {
   /* Default constructor.  */
-  mem_usage (): m_allocated (0), m_times (0), m_peak (0) {}
+  mem_usage (): m_allocated (0), m_times (0), m_peak (0), m_instances (1) {}
 
   /* Constructor.  */
-  mem_usage (size_t allocated, size_t times, size_t peak):
-    m_allocated (allocated), m_times (times), m_peak (peak) {}
+  mem_usage (size_t allocated, size_t times, size_t peak, size_t instances = 0):
+    m_allocated (allocated), m_times (times), m_peak (peak),
+    m_instances (instances) {}
 
   /* Register overhead of SIZE bytes.  */
   inline void register_overhead (size_t size)
@@ -108,7 +132,8 @@ struct mem_usage
   {
     return mem_usage (m_allocated + second.m_allocated,
 		      m_times + second.m_times,
-		      m_peak + second.m_peak);
+		      m_peak + second.m_peak,
+		      m_instances + second.m_instances);
   }
 
   /* Comparison operator.  */
@@ -133,20 +158,19 @@ struct mem_usage
   /* Dump usage coupled to LOC location, where TOTAL is sum of all rows.  */
   inline void dump (mem_location *loc, mem_usage &total) const
   {
-    char s[4096];
-    sprintf (s, "%s:%i (%s)", loc->get_trimmed_filename (),
-	     loc->m_line, loc->m_function);
+    char *location_string = loc->to_string ();
 
-    s[48] = '\0';
-
-    fprintf (stderr, "%-48s %10li:%5.1f%%%10li%10li:%5.1f%%%10s\n", s,
+    fprintf (stderr, "%-48s %10li:%5.1f%%%10li%10li:%5.1f%%%10s\n",
+	     location_string,
 	     (long)m_allocated, get_percent (m_allocated, total.m_allocated),
 	     (long)m_peak, (long)m_times,
 	     get_percent (m_times, total.m_times), loc->m_ggc ? "ggc" : "heap");
+
+    free (location_string);
   }
 
   /* Dump footer.  */
-  inline void dump_footer ()
+  inline void dump_footer () const
   {
     print_dash_line ();
     fprintf (stderr, "%s%54li%27li\n", "Total", (long)m_allocated,
@@ -163,7 +187,7 @@ struct mem_usage
   /* Print line made of dashes.  */
   static inline void print_dash_line ()
   {
-    fprintf (stderr, "%s\n", std::string (128, '-').c_str ());
+    fprintf (stderr, "%s\n", std::string (140, '-').c_str ());
   }
 
   /* Dump header with NAME.  */
@@ -180,6 +204,8 @@ struct mem_usage
   size_t m_times;
   /* Peak allocation in bytes.  */
   size_t m_peak;
+  /* Number of container instances.  */
+  size_t m_instances;
 };
 
 /* Memory usage pair that connectes memory usage and number
@@ -241,9 +267,13 @@ public:
   /* Return descriptor for instance PTR.  */
   T *get_descriptor_for_instance (const void *ptr);
 
-  /* Register memory allocation descriptor for container PTR. ORIGIN identifies
+  /* Register memory allocation descriptor for container PTR which is
+     described by a memory LOCATION.  */
+  T *register_descriptor (const void *ptr, mem_location *location);
+
+  /* Register memory allocation descriptor for container PTR.  ORIGIN identifies
      type of container and GGC identifes if the allocation is handled in GGC
-     memory. Each location is identified by file NAME, LINE in source code and
+     memory.  Each location is identified by file NAME, LINE in source code and
      FUNCTION name.  */
   T *register_descriptor (const void *ptr, mem_alloc_origin origin,
 			  bool ggc, const char *name, int line,
@@ -321,9 +351,38 @@ mem_alloc_description<T>::get_descriptor_for_instance (const void *ptr)
   return m_reverse_map->get (ptr) ? (*m_reverse_map->get (ptr)).usage : NULL;
 }
 
-/* Register memory allocation descriptor for container PTR. ORIGIN identifies
+
+  /* Register memory allocation descriptor for container PTR which is
+     described by a memory LOCATION.  */
+template <class T>
+inline T*
+mem_alloc_description<T>::register_descriptor (const void *ptr,
+					       mem_location *location)
+{
+  T *usage = NULL;
+
+  T **slot = m_map->get (location);
+  if (slot)
+    {
+      delete location;
+      usage = *slot;
+      usage->m_instances++;
+    }
+  else
+    {
+      usage = new T ();
+      m_map->put (location, usage);
+    }
+
+  if (!m_reverse_map->get (ptr))
+    m_reverse_map->put (ptr, mem_usage_pair<T> (usage, 0));
+
+  return usage;
+}
+
+/* Register memory allocation descriptor for container PTR.  ORIGIN identifies
    type of container and GGC identifes if the allocation is handled in GGC
-   memory. Each location is identified by file NAME, LINE in source code and
+   memory.  Each location is identified by file NAME, LINE in source code and
    FUNCTION name.  */
 
 template <class T>
@@ -335,25 +394,8 @@ mem_alloc_description<T>::register_descriptor (const void *ptr,
 					       int line,
 					       const char *function)
 {
-  mem_location *l = new mem_location (filename, function, line, origin, ggc);
-  T *usage = NULL;
-
-  T **slot = m_map->get (l);
-  if (slot)
-    {
-      delete l;
-      usage = *slot;
-    }
-  else
-    {
-      usage = new T ();
-      m_map->put (l, usage);
-    }
-
-  if (!m_reverse_map->get (ptr))
-    m_reverse_map->put (ptr, mem_usage_pair<T> (usage, 0));
-
-  return usage;
+  mem_location *l = new mem_location (origin, ggc, filename, line, function);
+  return register_descriptor (ptr, l);
 }
 
 /* Register instance overhead identified by PTR pointer. Allocation takes
