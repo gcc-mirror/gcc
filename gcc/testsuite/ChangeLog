@@ -1,3 +1,11 @@
+2015-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/64634
+	* g++.dg/gcov/gcov-15.C: New test.
+
 2015-06-03  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

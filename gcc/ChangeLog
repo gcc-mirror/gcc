@@ -1,3 +1,15 @@
+2015-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/64634
+	* tree-eh.c (frob_into_branch_around): Fix up typos
+	in function comment.
+	(lower_catch): Put eh_seq resulting from EH lowering of
+	the cleanup sequence after the cleanup rather than before
+	it.
+
 2015-06-03  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
