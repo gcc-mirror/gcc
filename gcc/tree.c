@@ -9156,6 +9156,8 @@ get_callee_fndecl (const_tree call)
   return NULL_TREE;
 }
 
+#define TREE_MEM_USAGE_SPACES 40
+
 /* Print debugging information about tree nodes generated during the compile,
    and any language-specific information.  */
 
@@ -9166,8 +9168,8 @@ dump_tree_statistics (void)
     {
       int i;
       int total_nodes, total_bytes;
-      fprintf (stderr, "Kind                   Nodes      Bytes\n");
-      fprintf (stderr, "---------------------------------------\n");
+      fprintf (stderr, "\nKind                   Nodes      Bytes\n");
+      mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
       total_nodes = total_bytes = 0;
       for (i = 0; i < (int) all_kinds; i++)
 	{
@@ -9176,17 +9178,20 @@ dump_tree_statistics (void)
 	  total_nodes += tree_node_counts[i];
 	  total_bytes += tree_node_sizes[i];
 	}
-      fprintf (stderr, "---------------------------------------\n");
+      mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
       fprintf (stderr, "%-20s %7d %10d\n", "Total", total_nodes, total_bytes);
-      fprintf (stderr, "---------------------------------------\n");
+      mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
       fprintf (stderr, "Code                   Nodes\n");
-      fprintf (stderr, "----------------------------\n");
+      mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
       for (i = 0; i < (int) MAX_TREE_CODES; i++)
-	fprintf (stderr, "%-20s %7d\n", get_tree_code_name ((enum tree_code) i),
+	fprintf (stderr, "%-32s %7d\n", get_tree_code_name ((enum tree_code) i),
                  tree_code_counts[i]);
-      fprintf (stderr, "----------------------------\n");
+      mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
+      fprintf (stderr, "\n");
       ssanames_print_statistics ();
+      fprintf (stderr, "\n");
       phinodes_print_statistics ();
+      fprintf (stderr, "\n");
     }
   else
     fprintf (stderr, "(No per-node statistics)\n");
