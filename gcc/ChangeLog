@@ -1,3 +1,8 @@
+2015-06-03  Andrew Bennett  <andrew.bennett@imgtec.com>
+
+	* explow.c (plus_constant): Update check after force_const_mem call 
+	to see if the value returned is not a NULL_RTX.
+
 2015-06-03  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* ipa.c (symbol_table::remove_unreachable_nodes): Don't

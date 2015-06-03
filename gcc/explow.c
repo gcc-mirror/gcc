@@ -132,7 +132,9 @@ plus_constant (machine_mode mode, rtx x, HOST_WIDE_INT c,
 	{
 	  tem = plus_constant (mode, get_pool_constant (XEXP (x, 0)), c);
 	  tem = force_const_mem (GET_MODE (x), tem);
-	  if (memory_address_p (GET_MODE (tem), XEXP (tem, 0)))
+	  /* Targets may disallow some constants in the constant pool, thus
+	     force_const_mem may return NULL_RTX.  */
+	  if (tem && memory_address_p (GET_MODE (tem), XEXP (tem, 0)))
 	    return tem;
 	}
       break;
