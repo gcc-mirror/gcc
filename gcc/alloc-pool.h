@@ -76,7 +76,7 @@ struct pool_usage: public mem_usage
   inline void dump_footer ()
   {
     print_dash_line ();
-    fprintf (stderr, "%s%75li%10li\n", "Total", (long)m_instances,
+    fprintf (stderr, "%s%82li%10li\n", "Total", (long)m_instances,
 	     (long)m_allocated);
     print_dash_line ();
   }

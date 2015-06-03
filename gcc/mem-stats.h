@@ -185,9 +185,9 @@ struct mem_usage
   }
 
   /* Print line made of dashes.  */
-  static inline void print_dash_line ()
+  static inline void print_dash_line (size_t count = 140)
   {
-    fprintf (stderr, "%s\n", std::string (140, '-').c_str ());
+    fprintf (stderr, "%s\n", std::string (count, '-').c_str ());
   }
 
   /* Dump header with NAME.  */

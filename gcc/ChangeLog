@@ -1,5 +1,12 @@
 2015-06-03  Martin Liska  <mliska@suse.cz>
 
+	* alloc-pool.h (struct pool_usage): Correct space padding.
+	* ggc-page.c (ggc_print_statistics): Align columns in a report.
+	* mem-stats.h (struct mem_usage): Add argument to print_dash_line.
+	* tree.c (dump_tree_statistics): Align columns in a report.
+
+2015-06-03  Martin Liska  <mliska@suse.cz>
+
 	* alloc-pool.c (allocate_pool_descriptor): Remove.
 	(struct pool_output_info): Likewise.
 	(print_alloc_pool_statistics): Likewise.
