@@ -1,3 +1,11 @@
+2015-06-03  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.dg/Wcxx-compat-22.c: New testcase.
+	* c-c++-common/Wsizeof-pointer-memaccess1.c: Pass -Wno-c++-compat.
+	* c-c++-common/Wsizeof-pointer-memaccess2.c: Likewise.
+	* c-c++-common/pr58346-1.c: Likewise.
+	* c-c++-common/transparent-union-1.c: Likewise.
+
 2015-06-02  Andres Tiraboschi  <andres.tiraboschi@tallertechnologies.com>
 
 	* g++.dg/plugin/plugin.exp: Add def-plugin-test.C.

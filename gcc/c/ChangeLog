@@ -1,3 +1,9 @@
+2015-06-03  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* c-decl.c (warn_cxx_compat_finish_struct): New parameters code, record_loc.
+	Warn for empty struct.
+	(finish_struct): Pass TREE_CODE(t) and loc to warn_cxx_compat_finish_struct.
+
 2015-06-02  Andres Tiraboschi  <andres.tiraboschi@tallertechnologies.com>
 
 	* c-decl.c (start_function): Call plugin before parsing.

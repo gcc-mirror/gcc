@@ -7525,11 +7525,22 @@ detect_field_duplicates (tree fieldlist)
 /* Finish up struct info used by -Wc++-compat.  */
 
 static void
-warn_cxx_compat_finish_struct (tree fieldlist)
+warn_cxx_compat_finish_struct (tree fieldlist, enum tree_code code,
+			       location_t record_loc)
 {
   unsigned int ix;
   tree x;
   struct c_binding *b;
+
+  if (fieldlist == NULL_TREE)
+    {
+      if (code == RECORD_TYPE)
+	warning_at (record_loc, OPT_Wc___compat,
+		    "empty struct has size 0 in C, size 1 in C++");
+      else
+	warning_at (record_loc, OPT_Wc___compat,
+		    "empty union has size 0 in C, size 1 in C++");
+    }
 
   /* Set the C_TYPE_DEFINED_IN_STRUCT flag for each type defined in
      the current struct.  We do this now at the end of the struct
@@ -7863,7 +7874,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 			  DECL_EXPR, build_decl (loc, TYPE_DECL, NULL, t)));
 
   if (warn_cxx_compat)
-    warn_cxx_compat_finish_struct (fieldlist);
+    warn_cxx_compat_finish_struct (fieldlist, TREE_CODE (t), loc);
 
   struct_parse_info->struct_types.release ();
   struct_parse_info->fields.release ();
