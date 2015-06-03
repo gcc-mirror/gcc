@@ -1,3 +1,11 @@
+2015-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2015-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/target-10.c: New test.
+	* testsuite/libgomp.c++/target-4.C: New test.
+
 2015-04-02  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backported from mainline
