@@ -1,3 +1,8 @@
+2015-06-03  Benigno B. Junior  <bbj@gentoo.org>
+
+	* config/netbsd-elf.h (NETBSD_LINK_SPEC_ELF): Turn -symbolic into
+	-Bsymbolic.
+
 2015-06-02  Andres Tiraboschi  <andres.tiraboschi@tallertechnologies.com>
 	
 	* doc/plugins.texi (enum plugin_event): New event.

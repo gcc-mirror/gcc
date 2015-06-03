@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #define NETBSD_LINK_SPEC_ELF \
   "%{assert*} %{R*} %{rpath*} \
    %{shared:-shared} \
+   %{symbolic:-Bsymbolic} \
    %{!shared: \
      -dc -dp \
      %{!nostdlib: \
