@@ -1,6 +1,14 @@
 2015-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2015-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/65450
+	* tree-vect-data-refs.c (vect_duplicate_ssa_name_ptr_info): New
+	function.
+	(vect_create_addr_base_for_vector_ref, vect_create_data_ref_ptr): Use
+	it instead of duplicate_ssa_name_ptr_info.
+
 	2015-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/65427
