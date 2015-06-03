@@ -517,9 +517,9 @@ single_dom_exit (struct loop *loop)
 /* Dumps information about the induction variable IV to FILE.  */
 
 void
-dump_iv (FILE *file, struct iv *iv)
+dump_iv (FILE *file, struct iv *iv, bool dump_name)
 {
-  if (iv->ssa_name)
+  if (iv->ssa_name && dump_name)
     {
       fprintf (file, "ssa name ");
       print_generic_expr (file, iv->ssa_name, TDF_SLIM);
@@ -596,7 +596,7 @@ dump_use (FILE *file, struct iv_use *use)
     print_generic_expr (file, *use->op_p, TDF_SLIM);
   fprintf (file, "\n");
 
-  dump_iv (file, use->iv);
+  dump_iv (file, use->iv, false);
 
   if (use->related_cands)
     {
@@ -684,7 +684,7 @@ dump_cand (FILE *file, struct iv_cand *cand)
       break;
     }
 
-  dump_iv (file, iv);
+  dump_iv (file, iv, false);
 }
 
 /* Returns the info for ssa version VER.  */
@@ -1326,7 +1326,7 @@ find_induction_variables (struct ivopts_data *data)
       EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, i, bi)
 	{
 	  if (ver_info (data, i)->iv)
-	    dump_iv (dump_file, ver_info (data, i)->iv);
+	    dump_iv (dump_file, ver_info (data, i)->iv, true);
 	}
     }
 
@@ -1355,10 +1355,6 @@ record_use (struct ivopts_data *data, tree *use_p, struct iv *iv,
   use->next = NULL;
   use->addr_base = addr_base;
   use->addr_offset = addr_offset;
-
-  /* To avoid showing ssa name in the dumps, if it was not reset by the
-     caller.  */
-  iv->ssa_name = NULL_TREE;
 
   data->iv_uses.safe_push (use);
 
