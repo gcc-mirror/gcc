@@ -1,3 +1,10 @@
+2015-06-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_analyze_group_access): Properly
+	compute GROUP_GAP for the first element.
+	* tree-vect-slp.c (vect_build_slp_tree_1): Remove restriction
+	on in-group gaps.
+
 2015-06-03  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78-real.md: Add peepholes to avoid a register

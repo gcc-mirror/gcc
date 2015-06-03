@@ -2205,29 +2205,33 @@ vect_analyze_group_access (struct data_reference *dr)
 
       /* Check that the size of the interleaving is equal to count for stores,
          i.e., that there are no gaps.  */
-      if (groupsize != count)
+      if (groupsize != count
+	  && !DR_IS_READ (dr))
         {
-          if (DR_IS_READ (dr))
-            {
-              slp_impossible = true;
-              /* There is a gap after the last load in the group. This gap is a
-                 difference between the groupsize and the number of elements.
-		 When there is no gap, this difference should be 0.  */
-              GROUP_GAP (vinfo_for_stmt (stmt)) = groupsize - count;
-            }
-          else
-            {
-              if (dump_enabled_p ())
-                dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                 "interleaved store with gaps\n");
-              return false;
-            }
-        }
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "interleaved store with gaps\n");
+	  return false;
+	}
+
+      /* If there is a gap after the last load in the group it is the
+	 difference between the groupsize and the last accessed
+	 element.
+	 When there is no gap, this difference should be 0.  */
+      GROUP_GAP (vinfo_for_stmt (stmt)) = groupsize - last_accessed_element;
 
       GROUP_SIZE (vinfo_for_stmt (stmt)) = groupsize;
       if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location,
-                         "Detected interleaving of size %d\n", (int)groupsize);
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Detected interleaving of size %d starting with ",
+			   (int)groupsize);
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+	  if (GROUP_GAP (vinfo_for_stmt (stmt)) != 0)
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "There is a gap of %d elements after the group\n",
+			     (int)GROUP_GAP (vinfo_for_stmt (stmt)));
+	}
 
       /* SLP: create an SLP data structure for every interleaving group of
 	 stores for further analysis in vect_analyse_slp.  */
