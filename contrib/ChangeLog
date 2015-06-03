@@ -25,6 +25,10 @@
 
 	* check_GNU_style.sh: Improve readability function calls.
 
+2015-05-16  James Bowman  <james.bowman@ftdichip.com>
+
+	* config-list.mk: Add FT32.
+
 2015-05-12  Tom de Vries  <tom@codesourcery.com>
 
 	* check_GNU_style.sh (col): Fix tab size.
