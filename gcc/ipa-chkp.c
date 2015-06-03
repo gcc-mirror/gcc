@@ -616,12 +616,7 @@ chkp_maybe_create_clone (tree fndecl)
 
       /* Clone all aliases.  */
       for (i = 0; node->iterate_direct_aliases (i, ref); i++)
-	{
-	  struct cgraph_node *alias = dyn_cast <cgraph_node *> (ref->referring);
-	  struct cgraph_node *chkp_alias
-	    = chkp_maybe_create_clone (alias->decl);
-	  chkp_alias->create_reference (clone, IPA_REF_ALIAS, NULL);
-	}
+	chkp_maybe_create_clone (ref->referring->decl);
 
       /* Clone all thunks.  */
       for (e = node->callers; e; e = e->next_caller)
@@ -645,7 +640,10 @@ chkp_maybe_create_clone (tree fndecl)
 
 	  ref = node->ref_list.first_reference ();
 	  if (ref)
-	    chkp_maybe_create_clone (ref->referred->decl);
+	    {
+	      target = chkp_maybe_create_clone (ref->referred->decl);
+	      clone->create_reference (target, IPA_REF_ALIAS);
+	    }
 
 	  if (node->alias_target)
 	    {
