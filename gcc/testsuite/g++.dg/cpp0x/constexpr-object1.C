@@ -22,8 +22,8 @@ const constexpr A1 a3 = A1();
 volatile constexpr A1 a4 = A1(); // { dg-bogus "both .volatile. and .constexpr. cannot" }
 
 // error: on type declaration
-constexpr struct pixel
+constexpr struct pixel // { dg-error "cannot be used for type declarations" }
 {
   int x;
   int y;
-};		     // { dg-error "cannot be used for type declarations" }
+};

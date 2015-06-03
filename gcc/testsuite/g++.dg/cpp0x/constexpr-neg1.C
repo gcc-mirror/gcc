@@ -5,12 +5,12 @@
 constexpr int square(int x);	// { dg-message "never defined" }
 
 // error: pixel is a type
-constexpr struct pixel {
+constexpr struct pixel {        // { dg-error "constexpr" }
   int x;
   int y;
   // OK: declaration
   constexpr pixel(int);
-};				// { dg-error "constexpr" }
+};
 constexpr pixel::pixel(int a)
 // OK: definition
   : x(square(a)), y(square(a))	// { dg-error "square" }
