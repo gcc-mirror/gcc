@@ -1,5 +1,6 @@
 /* PR c/58346 */
 /* { dg-do compile } */
+/* { dg-options "-Wno-c++-compat" { target c } } */
 
 struct U {
 #ifdef __cplusplus

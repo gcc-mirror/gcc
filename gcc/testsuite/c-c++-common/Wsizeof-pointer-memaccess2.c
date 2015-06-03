@@ -1,6 +1,7 @@
 /* Test -Wsizeof-pointer-memaccess warnings.  */
 /* { dg-do compile } */
 /* { dg-options "-Wall -O2 -Wno-sizeof-array-argument" } */
+/* { dg-options "-Wall -O2 -Wno-sizeof-array-argument -Wno-c++-compat" {target c} } */
 
 #define bos(ptr) __builtin_object_size (ptr, 1)
 #define bos0(ptr) __builtin_object_size (ptr, 0)
