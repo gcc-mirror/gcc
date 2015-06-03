@@ -144,6 +144,10 @@ along with GCC; see the file COPYING3.  If not see
 */
 
 
+static tree *last_vuse_ptr;
+static vn_lookup_kind vn_walk_kind;
+static vn_lookup_kind default_vn_walk_kind;
+
 /* vn_nary_op hashtable helpers.  */
 
 struct vn_nary_op_hasher : typed_noop_remove <vn_nary_op_s>
@@ -1259,6 +1263,25 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
       addr = gimple_assign_rhs1 (def_stmt);
       addr_base = get_addr_base_and_unit_offset (TREE_OPERAND (addr, 0),
 						 &addr_offset);
+      /* If that didn't work because the address isn't invariant propagate
+         the reference tree from the address operation in case the current
+	 dereference isn't offsetted.  */
+      if (!addr_base
+	  && *i_p == ops->length () - 1
+	  && off == 0
+	  /* This makes us disable this transform for PRE where the
+	     reference ops might be also used for code insertion which
+	     is invalid.  */
+	  && default_vn_walk_kind == VN_WALKREWRITE)
+	{
+	  auto_vec<vn_reference_op_s, 32> tem;
+	  copy_reference_ops_from_ref (TREE_OPERAND (addr, 0), &tem);
+	  ops->pop ();
+	  ops->pop ();
+	  ops->safe_splice (tem);
+	  --*i_p;
+	  return;
+	}
       if (!addr_base
 	  || TREE_CODE (addr_base) != MEM_REF)
 	return;
@@ -1557,10 +1580,6 @@ vn_reference_lookup_1 (vn_reference_t vr, vn_reference_t *vnresult)
   return NULL_TREE;
 }
 
-static tree *last_vuse_ptr;
-static vn_lookup_kind vn_walk_kind;
-static vn_lookup_kind default_vn_walk_kind;
-
 /* Callback for walk_non_aliased_vuses.  Adjusts the vn_reference_t VR_
    with the current VUSE and performs the expression lookup.  */
 
@@ -1649,15 +1668,12 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
   /* First try to disambiguate after value-replacing in the definitions LHS.  */
   if (is_gimple_assign (def_stmt))
     {
-      vec<vn_reference_op_s> tem;
       tree lhs = gimple_assign_lhs (def_stmt);
       bool valueized_anything = false;
       /* Avoid re-allocation overhead.  */
       lhs_ops.truncate (0);
       copy_reference_ops_from_ref (lhs, &lhs_ops);
-      tem = lhs_ops;
       lhs_ops = valueize_refs_1 (lhs_ops, &valueized_anything);
-      gcc_assert (lhs_ops == tem);
       if (valueized_anything)
 	{
 	  lhs_ref_ok = ao_ref_init_from_vn_reference (&lhs_ref,

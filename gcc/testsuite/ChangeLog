@@ -1,5 +1,10 @@
 2015-06-03  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/63916
+	* gcc.dg/tree-ssa/ssa-fre-45.c: New testcase.
+
+2015-06-03  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/66375
 	* gcc.dg/torture/pr66375.c: New testcase.
 
