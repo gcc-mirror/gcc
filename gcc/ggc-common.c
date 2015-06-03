@@ -894,12 +894,11 @@ struct ggc_usage: public mem_usage
   /* Dump usage coupled to LOC location, where TOTAL is sum of all rows.  */
   inline void dump (mem_location *loc, ggc_usage &total) const
   {
-    char s[4096];
-    sprintf (s, "%s:%i (%s)", loc->get_trimmed_filename (),
-	     loc->m_line, loc->m_function);
-    s[48] = '\0';
+    char *location_string = loc->to_string ();
 
-    dump (s, total);
+    dump (location_string, total);
+
+    free (location_string);
   }
 
   /* Dump footer.  */

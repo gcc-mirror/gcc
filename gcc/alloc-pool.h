@@ -26,6 +26,69 @@ extern void dump_alloc_pool_statistics (void);
 
 typedef unsigned long ALLOC_POOL_ID_TYPE;
 
+/* Pool allocator memory usage.  */
+struct pool_usage: public mem_usage
+{
+  /* Default contructor.  */
+  pool_usage (): m_element_size (0), m_pool_name ("") {}
+  /* Constructor.  */
+  pool_usage (size_t allocated, size_t times, size_t peak,
+	      size_t instances, size_t element_size,
+	      const char *pool_name)
+    : mem_usage (allocated, times, peak, instances),
+      m_element_size (element_size),
+      m_pool_name (pool_name) {}
+
+  /* Sum the usage with SECOND usage.  */
+  pool_usage operator+ (const pool_usage &second)
+  {
+    return pool_usage (m_allocated + second.m_allocated,
+			     m_times + second.m_times,
+			     m_peak + second.m_peak,
+			     m_instances + second.m_instances,
+			     m_element_size, m_pool_name);
+  }
+
+  /* Dump usage coupled to LOC location, where TOTAL is sum of all rows.  */
+  inline void dump (mem_location *loc, mem_usage &total) const
+  {
+    char *location_string = loc->to_string ();
+
+    fprintf (stderr, "%-32s%-48s %6li%10li:%5.1f%%%10li%10li:%5.1f%%%12li\n",
+	     m_pool_name, location_string, (long)m_instances,
+	     (long)m_allocated, get_percent (m_allocated, total.m_allocated),
+	     (long)m_peak, (long)m_times,
+	     get_percent (m_times, total.m_times),
+	     (long)m_element_size);
+
+    free (location_string);
+  }
+
+  /* Dump header with NAME.  */
+  static inline void dump_header (const char *name)
+  {
+    fprintf (stderr, "%-32s%-48s %6s%11s%16s%17s%12s\n", "Pool name", name,
+	     "Pools", "Leak", "Peak", "Times", "Elt size");
+    print_dash_line ();
+  }
+
+  /* Dump footer.  */
+  inline void dump_footer ()
+  {
+    print_dash_line ();
+    fprintf (stderr, "%s%75li%10li\n", "Total", (long)m_instances,
+	     (long)m_allocated);
+    print_dash_line ();
+  }
+
+  /* Element size.  */
+  size_t m_element_size;
+  /* Pool name.  */
+  const char *m_pool_name;
+};
+
+extern mem_alloc_description<pool_usage> pool_allocator_usage;
+
 /* Type based memory pool allocator.  */
 template <typename T>
 class pool_allocator
@@ -35,7 +98,7 @@ public:
      has NUM elements.  The allocator support EXTRA_SIZE and can
      potentially IGNORE_TYPE_SIZE.  */
   pool_allocator (const char *name, size_t num, size_t extra_size = 0,
-		  bool ignore_type_size = false);
+		  bool ignore_type_size = false CXX_MEM_STAT_INFO);
   ~pool_allocator ();
   void release ();
   void release_if_empty ();
@@ -122,6 +185,8 @@ private:
   size_t m_extra_size;
   /* Flag if a pool allocator is initialized.  */
   bool m_initialized;
+  /* Memory allocation location.  */
+  mem_location m_location;
 };
 
 /* Last used ID.  */
@@ -151,19 +216,17 @@ struct alloc_pool_descriptor
 /* Hashtable mapping alloc_pool names to descriptors.  */
 extern hash_map<const char *, alloc_pool_descriptor> *alloc_pool_hash;
 
-/* For given name, return descriptor, create new if needed.  */
-alloc_pool_descriptor *
-allocate_pool_descriptor (const char *name);
-
 template <typename T>
 inline
 pool_allocator<T>::pool_allocator (const char *name, size_t num,
-				   size_t extra_size, bool ignore_type_size):
+				   size_t extra_size, bool ignore_type_size
+				   MEM_STAT_DECL):
   m_name (name), m_id (0), m_elts_per_block (num), m_returned_free_list (NULL),
   m_virgin_free_list (NULL), m_virgin_elts_remaining (0), m_elts_allocated (0),
   m_elts_free (0), m_blocks_allocated (0), m_block_list (NULL),
   m_block_size (0), m_ignore_type_size (ignore_type_size),
-  m_extra_size (extra_size), m_initialized (false) {}
+  m_extra_size (extra_size), m_initialized (false),
+  m_location (ALLOC_POOL, false PASS_MEM_STAT) {}
 
 /* Initialize a pool allocator.  */
 
@@ -196,9 +259,11 @@ pool_allocator<T>::initialize ()
 
   if (GATHER_STATISTICS)
     {
-      alloc_pool_descriptor *desc = allocate_pool_descriptor (m_name);
-      desc->elt_size = size;
-      desc->created++;
+      pool_usage *u = pool_allocator_usage.register_descriptor
+	(this, new mem_location (m_location));
+
+      u->m_element_size = m_elt_size;
+      u->m_pool_name = m_name;
     }
 
   /* List header size should be a multiple of 8.  */
@@ -234,10 +299,10 @@ pool_allocator<T>::release ()
       free (block);
     }
 
-  if (GATHER_STATISTICS && false)
+  if (GATHER_STATISTICS)
     {
-      alloc_pool_descriptor *desc = allocate_pool_descriptor (m_name);
-      desc->current -= (m_elts_allocated - m_elts_free) * m_elt_size;
+      pool_allocator_usage.release_instance_overhead
+	(this, (m_elts_allocated - m_elts_free) * m_elt_size);
     }
 
   m_returned_free_list = NULL;
@@ -278,12 +343,7 @@ pool_allocator<T>::allocate ()
 
   if (GATHER_STATISTICS)
     {
-      alloc_pool_descriptor *desc = allocate_pool_descriptor (m_name);
-
-      desc->allocated += m_elt_size;
-      desc->current += m_elt_size;
-      if (desc->peak < desc->current)
-	desc->peak = desc->current;
+      pool_allocator_usage.register_instance_overhead (m_elt_size, this);
     }
 
 #ifdef ENABLE_VALGRIND_ANNOTATIONS
@@ -382,8 +442,7 @@ pool_allocator<T>::remove (T *object)
 
   if (GATHER_STATISTICS)
     {
-      alloc_pool_descriptor *desc = allocate_pool_descriptor (m_name);
-      desc->current -= m_elt_size;
+      pool_allocator_usage.release_instance_overhead (this, m_elt_size);
     }
 }
 

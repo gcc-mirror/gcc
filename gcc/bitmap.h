@@ -156,18 +156,17 @@ struct bitmap_usage: public mem_usage
   /* Dump usage coupled to LOC location, where TOTAL is sum of all rows.  */
   inline void dump (mem_location *loc, mem_usage &total) const
   {
-    char s[4096];
-    sprintf (s, "%s:%i (%s)", loc->get_trimmed_filename (),
-	     loc->m_line, loc->m_function);
+    char *location_string = loc->to_string ();
 
-    s[48] = '\0';
-
-    fprintf (stderr, "%-48s %10li:%5.1f%%%10li%10li:%5.1f%%%12li%12li%10s\n", s,
+    fprintf (stderr, "%-48s %10li:%5.1f%%%10li%10li:%5.1f%%%12li%12li%10s\n",
+	     location_string,
 	     (long)m_allocated, get_percent (m_allocated, total.m_allocated),
 	     (long)m_peak, (long)m_times,
 	     get_percent (m_times, total.m_times),
 	     (long)m_nsearches, (long)m_search_iter,
 	     loc->m_ggc ? "ggc" : "heap");
+
+    free (location_string);
   }
 
   /* Dump header with NAME.  */
