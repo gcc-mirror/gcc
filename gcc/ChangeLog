@@ -1,3 +1,10 @@
+2015-06-03  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (dump_iv): New parameter.
+	(dump_use, dump_cand, find_induction_variables): Pass new argument
+	to dump_iv.
+	(record_use): Preserve the ssa name information in IV.
+
 2015-06-03  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* genpreds.c (mark_mode_tests): Mark all MATCH_CODEs as
