@@ -342,6 +342,25 @@
   [(set (attr "update_Z") (const_string "clobber"))]
   )
 
+;; Peephole to match:
+;;
+;;	(set (reg1) (reg2))
+;;	(call (mem (reg1)))
+;;
+;;  and replace it with:
+;;
+;;	(call (mem (reg2)))
+
+(define_peephole2
+  [(set (match_operand:HI 0 "register_operand") (match_operand:HI 1 "register_operand"))
+   (call (mem:HI (match_dup 0))(const_int 0))
+  ]
+  "peep2_regno_dead_p (2, REGNO (operands[0]))
+   && REGNO (operands[1]) < 8"
+  [(call (mem:HI (match_dup 1))(const_int 0))
+  ]
+)
+
 (define_insn "*call_value_real"
   [(set (match_operand 0 "register_operand" "=v,v")
 	(call (match_operand:HI 1 "memory_operand" "Wab,Wca")
@@ -352,6 +371,25 @@
    call\t%A1"
   [(set (attr "update_Z") (const_string "clobber"))]
   )
+
+;; Peephole to match:
+;;
+;;	(set (reg1) (reg2))
+;;	(set (reg3) (call (mem (reg1))))
+;;
+;;  and replace it with:
+;;
+;;	(set (reg3) (call (mem (reg2))))
+
+(define_peephole2
+  [(set (match_operand:HI 0 "register_operand") (match_operand:HI 1 "register_operand"))
+   (set (match_operand:HI 2 "register_operand") (call (mem:HI (match_dup 0))(const_int 0)))
+  ]
+  "peep2_regno_dead_p (2, REGNO (operands[0]))
+   && REGNO (operands[1]) < 8"
+  [(set (match_dup 2) (call (mem:HI (match_dup 1))(const_int 0)))
+  ]
+)
 
 (define_insn "*cbranchqi4_real_signed"
   [(set (pc) (if_then_else

@@ -678,8 +678,10 @@ need_to_save (unsigned int regno)
 
       /* If the handler is a non-leaf function then it may call
 	 non-interrupt aware routines which will happily clobber
-	 any call_used registers, so we have to preserve them.  */
-      if (!crtl->is_leaf && call_used_regs[regno])
+	 any call_used registers, so we have to preserve them.
+         We do not have to worry about the frame pointer register
+	 though, as that is handled below.  */
+      if (!crtl->is_leaf && call_used_regs[regno] && regno < 22)
 	return true;
 
       /* Otherwise we only have to save a register, call_used
