@@ -3941,7 +3941,7 @@ resolve_args (vec<tree, va_gc> *args, tsubst_flags_t complain)
 	    error ("invalid use of void expression");
 	  return NULL;
 	}
-      else if (invalid_nonstatic_memfn_p (arg, complain))
+      else if (invalid_nonstatic_memfn_p (input_location, arg, complain))
 	return NULL;
     }
   return args;
@@ -5542,9 +5542,9 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
 		/* If one of the arguments of the operator represents
 		   an invalid use of member function pointer, try to report
 		   a meaningful error ...  */
-		if (invalid_nonstatic_memfn_p (arg1, tf_error)
-		    || invalid_nonstatic_memfn_p (arg2, tf_error)
-		    || invalid_nonstatic_memfn_p (arg3, tf_error))
+	      if (invalid_nonstatic_memfn_p (loc, arg1, tf_error)
+		    || invalid_nonstatic_memfn_p (loc, arg2, tf_error)
+		    || invalid_nonstatic_memfn_p (loc, arg3, tf_error))
 		  /* We displayed the error message.  */;
 		else
 		  {
@@ -9445,7 +9445,7 @@ perform_implicit_conversion_flags (tree type, tree expr,
 	     Call instantiate_type to get good error messages.  */
 	  if (TREE_TYPE (expr) == unknown_type_node)
 	    instantiate_type (type, expr, complain);
-	  else if (invalid_nonstatic_memfn_p (expr, complain))
+	  else if (invalid_nonstatic_memfn_p (loc, expr, complain))
 	    /* We gave an error.  */;
 	  else
 	    error_at (loc, "could not convert %qE from %qT to %qT", expr,

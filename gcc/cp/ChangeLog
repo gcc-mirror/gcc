@@ -1,3 +1,16 @@
+2015-06-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/66130
+	* typeck.c (invalid_nonstatic_memfn_p): Add location_t parameter and
+	use it in the diagnostic.
+	(decay_conversion): Adjust call.
+	* semantics.c (finish_decltype_type): Likewise.
+	* call.c (resolve_args, build_new_op_1,
+	perform_implicit_conversion_flags): Adjust calls.
+	* cvt.c (ocp_convert, convert_to_void): Likewise.
+	* cp-tree.h (invalid_nonstatic_memfn_p): Update declaration.
+
 2015-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (check_tag_decl): Use declspecs->locations as locations in
