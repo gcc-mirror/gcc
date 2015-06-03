@@ -1,3 +1,11 @@
+2015-06-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44282
+	* mangle.c (mangle_decl): Always SET_IDENTIFIER_GLOBAL_VALUE.
+	(write_CV_qualifiers_for_type): Set G.need_abi_warning.
+	(decl_implicit_alias_p): Split out from maybe_remove_implicit_alias.
+	* cp-tree.h (DECL_REALLY_EXTERN): Handle null DECL_LANG_SPECIFIC.
+
 2015-06-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
