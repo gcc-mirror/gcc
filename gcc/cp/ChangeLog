@@ -1,3 +1,8 @@
+2015-06-02  Andres Tiraboschi  <andres.tiraboschi@tallertechnologies.com>
+
+	* decl.c (start_function): Call plugin before parsing.
+	(finish_function): Call plugin after parsing.
+
 2015-06-02  Patrick Palka <patrick@parcs.ath.cx>
 
 	* cp-tree.h (init_error): Remove declaration.
