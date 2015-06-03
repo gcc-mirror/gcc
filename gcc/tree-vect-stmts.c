@@ -3314,15 +3314,13 @@ vect_create_vectorized_demotion_stmts (vec<tree> *vec_oprnds,
 	     (or in STMT_VINFO_RELATED_STMT chain).  */
 	  if (slp_node)
 	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
-	  else
-	    {
-	      if (!*prev_stmt_info)
-		STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
-	      else
-		STMT_VINFO_RELATED_STMT (*prev_stmt_info) = new_stmt;
 
-	      *prev_stmt_info = vinfo_for_stmt (new_stmt);
-	    }
+	  if (!*prev_stmt_info)
+	    STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
+	  else
+	    STMT_VINFO_RELATED_STMT (*prev_stmt_info) = new_stmt;
+
+	  *prev_stmt_info = vinfo_for_stmt (new_stmt);
 	}
     }
 
@@ -3903,14 +3901,12 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 
 	      if (slp_node)
 		SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+
+	      if (!prev_stmt_info)
+		STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
 	      else
-		{
-		  if (!prev_stmt_info)
-		    STMT_VINFO_VEC_STMT (stmt_info) = new_stmt;
-		  else
-		    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-		  prev_stmt_info = vinfo_for_stmt (new_stmt);
-		}
+		STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+	      prev_stmt_info = vinfo_for_stmt (new_stmt);
 	    }
 	}
 
@@ -5715,6 +5711,22 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       gcc_assert (! nested_in_vect_loop && !STMT_VINFO_GATHER_P (stmt_info));
 
       first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
+
+      /* If this is single-element interleaving with an element distance
+         that leaves unused vector loads around punt - we at least create
+	 very sub-optimal code in that case (and blow up memory,
+	 see PR65518).  */
+      if (first_stmt == stmt
+	  && !GROUP_NEXT_ELEMENT (stmt_info)
+	  && GROUP_SIZE (stmt_info) > TYPE_VECTOR_SUBPARTS (vectype))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "single-element interleaving not supported "
+			     "for not adjacent vector loads\n");
+	  return false;
+	}
+
       if (!slp && !PURE_SLP_STMT (stmt_info))
 	{
 	  group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
