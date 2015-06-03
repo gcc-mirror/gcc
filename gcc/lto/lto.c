@@ -413,6 +413,9 @@ static void
 iterative_hash_canonical_type (tree type, inchash::hash &hstate)
 {
   hashval_t v;
+
+  /* All type variants have same TYPE_CANONICAL.  */
+  type = TYPE_MAIN_VARIANT (type);
   /* An already processed type.  */
   if (TYPE_CANONICAL (type))
     {
@@ -498,7 +501,15 @@ gimple_register_canonical_type (tree t)
   if (TYPE_CANONICAL (t) || !type_with_alias_set_p (t))
     return;
 
-  gimple_register_canonical_type_1 (t, hash_canonical_type (t));
+  /* Canonical types are same among all complete variants.  */
+  if (TYPE_CANONICAL (TYPE_MAIN_VARIANT (t)))
+    TYPE_CANONICAL (t) = TYPE_CANONICAL (TYPE_MAIN_VARIANT (t));
+  else
+    {
+      gimple_register_canonical_type_1 (TYPE_MAIN_VARIANT (t),
+					hash_canonical_type (TYPE_MAIN_VARIANT (t)));
+      TYPE_CANONICAL (t) = TYPE_CANONICAL (TYPE_MAIN_VARIANT (t));
+    }
 }
 
 /* Re-compute TYPE_CANONICAL for NODE and related types.  */

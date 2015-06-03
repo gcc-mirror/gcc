@@ -1,3 +1,9 @@
+2015-06-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree.c (verify_type_variant): Verify that type and variant is
+	compatible.
+	(gimple_canonical_types_compatible_p): Look for main variants.
+
 2015-06-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config.gcc (powerpc*-*-*): Add support for a new configure

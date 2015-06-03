@@ -12855,6 +12855,17 @@ verify_type_variant (const_tree t, tree tv)
       debug_tree (TREE_TYPE (t));
       return false;
     }
+  if (type_with_alias_set_p (t)
+      && !gimple_canonical_types_compatible_p (t, tv, false))
+    {
+      error ("type is not compatible with its vairant");
+      debug_tree (tv);
+      error ("type variant's TREE_TYPE");
+      debug_tree (TREE_TYPE (tv));
+      error ("type's TREE_TYPE");
+      debug_tree (TREE_TYPE (t));
+      return false;
+    }
   return true;
 #undef verify_variant_match
 }
@@ -12879,7 +12890,13 @@ bool
 gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
 				     bool trust_type_canonical)
 {
-  /* Before starting to set up the SCC machinery handle simple cases.  */
+  /* Type variants should be same as the main variant.  When not doing sanity
+     checking to verify this fact, go to main variants and save some work.  */
+  if (trust_type_canonical)
+    {
+      t1 = TYPE_MAIN_VARIANT (t1);
+      t2 = TYPE_MAIN_VARIANT (t2);
+    }
 
   /* Check first for the obvious case of pointer identity.  */
   if (t1 == t2)
