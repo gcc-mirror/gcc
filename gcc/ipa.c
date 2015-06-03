@@ -476,6 +476,20 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	      if (cnode->global.inlined_to)
 	        body_needed_for_clonning.add (cnode->decl);
 
+	      /* For instrumentation clones we always need original
+		 function node for proper LTO privatization.  */
+	      if (cnode->instrumentation_clone
+		  && cnode->definition)
+		{
+		  gcc_assert (cnode->instrumented_version || in_lto_p);
+		  if (cnode->instrumented_version)
+		    {
+		      enqueue_node (cnode->instrumented_version, &first,
+				    &reachable);
+		      reachable.add (cnode->instrumented_version);
+		    }
+		}
+
 	      /* For non-inline clones, force their origins to the boundary and ensure
 		 that body is not removed.  */
 	      while (cnode->clone_of)
@@ -492,7 +506,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	    }
 	  else if (cnode->thunk.thunk_p)
 	    enqueue_node (cnode->callees->callee, &first, &reachable);
-	      
+
 	  /* If any reachable function has simd clones, mark them as
 	     reachable as well.  */
 	  if (cnode->simd_clones)
