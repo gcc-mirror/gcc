@@ -3036,6 +3036,20 @@ cgraph_node::verify_node (void)
 	}
     }
 
+  if (instrumentation_clone
+      && DECL_BUILT_IN_CLASS (decl) == NOT_BUILT_IN)
+    {
+      tree name = DECL_ASSEMBLER_NAME (decl);
+      tree orig_name = DECL_ASSEMBLER_NAME (orig_decl);
+
+      if (!IDENTIFIER_TRANSPARENT_ALIAS (name)
+	  || TREE_CHAIN (name) != orig_name)
+	{
+	  error ("Alias chain for instrumented node is broken");
+	  error_found = true;
+	}
+    }
+
   if (analyzed && thunk.thunk_p)
     {
       if (!callees)
