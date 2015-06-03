@@ -1,4 +1,5 @@
 // { dg-options "-std=gnu++11 -O2 -D_GLIBCXX_USE_CXX11_ABI" }
+// { dg-require-normal-mode "" }
 
 // Copyright (C) 2015 Free Software Foundation, Inc.
 //

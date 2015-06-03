@@ -1,3 +1,7 @@
+2015-06-03  François Dumont  fdumont@gcc.gnu.org>
+
+	* testsuite/23_containers/list/61347.cc: Add dg-require-normal-mode.
+
 2015-06-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/abi.xml: Document versioning for 5.1.0 release.
