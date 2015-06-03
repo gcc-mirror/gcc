@@ -2191,6 +2191,7 @@ copy_type (tree type)
   TYPE_REFERENCE_TO (new_type) = 0;
   TYPE_MAIN_VARIANT (new_type) = new_type;
   TYPE_NEXT_VARIANT (new_type) = 0;
+  TYPE_CANONICAL (new_type) = new_type;
 
   return new_type;
 }

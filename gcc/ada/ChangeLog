@@ -1,5 +1,9 @@
 2015-06-03  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (copy_type): Also set TYPE_CANONICAL.
+
+2015-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gnat_to_gnu) <N_Simple_Return_Statement>: Fix
 	typo in latest change.
 
