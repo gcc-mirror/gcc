@@ -1,3 +1,10 @@
+2015-06-03  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78-real.md: Add peepholes to avoid a register
+	copy when calling a function.
+	* config/rl78/rl78.c (need_to_save): Do not push the frame
+	pointer in an interrupt handler prologue if it is never used.
+
 2015-06-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* ifcvt (end_ifcvt_sequence): Fix typo in comment above.
@@ -44,7 +51,7 @@
 
 2015-06-03  Andrew Bennett  <andrew.bennett@imgtec.com>
 
-	* explow.c (plus_constant): Update check after force_const_mem call 
+	* explow.c (plus_constant): Update check after force_const_mem call
 	to see if the value returned is not a NULL_RTX.
 
 2015-06-03  Ilya Enkovich  <ilya.enkovich@intel.com>
