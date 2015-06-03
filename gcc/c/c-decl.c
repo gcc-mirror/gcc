@@ -8239,6 +8239,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 
   decl1 = grokdeclarator (declarator, declspecs, FUNCDEF, true, NULL,
 			  &attributes, NULL, NULL, DEPRECATED_NORMAL);
+  invoke_plugin_callbacks (PLUGIN_START_PARSE_FUNCTION, decl1);
 
   /* If the declarator is not suitable for a function definition,
      cause a syntax error.  */
@@ -9083,6 +9084,7 @@ finish_function (void)
      It's still in DECL_STRUCT_FUNCTION, and we'll restore it in
      tree_rest_of_compilation.  */
   set_cfun (NULL);
+  invoke_plugin_callbacks (PLUGIN_FINISH_PARSE_FUNCTION, current_function_decl);
   current_function_decl = NULL;
 }
 
