@@ -40,7 +40,8 @@ struct pool_usage: public mem_usage
       m_pool_name (pool_name) {}
 
   /* Sum the usage with SECOND usage.  */
-  pool_usage operator+ (const pool_usage &second)
+  pool_usage
+  operator+ (const pool_usage &second)
   {
     return pool_usage (m_allocated + second.m_allocated,
 			     m_times + second.m_times,
@@ -50,7 +51,8 @@ struct pool_usage: public mem_usage
   }
 
   /* Dump usage coupled to LOC location, where TOTAL is sum of all rows.  */
-  inline void dump (mem_location *loc, mem_usage &total) const
+  inline void
+  dump (mem_location *loc, mem_usage &total) const
   {
     char *location_string = loc->to_string ();
 
@@ -65,7 +67,8 @@ struct pool_usage: public mem_usage
   }
 
   /* Dump header with NAME.  */
-  static inline void dump_header (const char *name)
+  static inline void
+  dump_header (const char *name)
   {
     fprintf (stderr, "%-32s%-48s %6s%11s%16s%17s%12s\n", "Pool name", name,
 	     "Pools", "Leak", "Peak", "Times", "Elt size");
@@ -73,7 +76,8 @@ struct pool_usage: public mem_usage
   }
 
   /* Dump footer.  */
-  inline void dump_footer ()
+  inline void
+  dump_footer ()
   {
     print_dash_line ();
     fprintf (stderr, "%s%82li%10li\n", "Total", (long)m_instances,
@@ -133,21 +137,24 @@ private:
 	int64_t align_i;
       } u;
 
-    static inline allocation_object<U> *get_instance (void *data_ptr)
+    static inline allocation_object<U> *
+    get_instance (void *data_ptr)
     {
       return (allocation_object<U> *)(((char *)(data_ptr))
 				      - offsetof (allocation_object<U>,
 						  u.data));
     }
 
-    static inline U *get_data (void *instance_ptr)
+    static inline U *
+    get_data (void *instance_ptr)
     {
       return (U*)(((allocation_object<U> *) instance_ptr)->u.data);
     }
   };
 
   /* Align X to 8.  */
-  size_t align_eight (size_t x)
+  size_t
+  align_eight (size_t x)
   {
     return (((x+7) >> 3) << 3);
   }

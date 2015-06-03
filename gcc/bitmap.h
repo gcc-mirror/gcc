@@ -144,7 +144,8 @@ struct bitmap_usage: public mem_usage
     m_nsearches (nsearches), m_search_iter (search_iter) {}
 
   /* Sum the usage with SECOND usage.  */
-  bitmap_usage operator+ (const bitmap_usage &second)
+  bitmap_usage
+  operator+ (const bitmap_usage &second)
   {
     return bitmap_usage (m_allocated + second.m_allocated,
 			     m_times + second.m_times,
@@ -154,7 +155,8 @@ struct bitmap_usage: public mem_usage
   }
 
   /* Dump usage coupled to LOC location, where TOTAL is sum of all rows.  */
-  inline void dump (mem_location *loc, mem_usage &total) const
+  inline void
+  dump (mem_location *loc, mem_usage &total) const
   {
     char *location_string = loc->to_string ();
 
@@ -170,7 +172,8 @@ struct bitmap_usage: public mem_usage
   }
 
   /* Dump header with NAME.  */
-  static inline void dump_header (const char *name)
+  static inline void
+  dump_header (const char *name)
   {
     fprintf (stderr, "%-48s %11s%16s%17s%12s%12s%10s\n", name, "Leak", "Peak",
 	     "Times", "N searches", "Search iter", "Type");
