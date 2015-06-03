@@ -1,3 +1,33 @@
+2015-06-03  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR debug/65549
+	* g++.dg/lto/pr65549_0.C: New testcase.
+
+	2015-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66280
+	* g++.dg/torture/pr66280.C: New testcase.
+	* g++.dg/torture/pr66280-2.C: Likewise.
+
+	2015-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66272
+	* gcc.dg/torture/pr66272.c: New testcase.
+
+	2015-05-21  Richard Biener  <rguenther@suse.de>
+
+	PR c++/66211
+	* g++.dg/conversion/pr66211.C: New testcase.
+	* gcc.dg/tree-ssa/forwprop-18.c: Adjust.
+
+	2015-05-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66123
+	* gcc.dg/torture/pr66123.c: New testcase.
+
 2015-06-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/66380

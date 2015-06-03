@@ -1,3 +1,48 @@
+2015-06-03  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2015-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR debug/65549
+	* dwarf2out.c (lookup_context_die): New function.
+	(resolve_addr): Avoid forcing a full DIE for the
+	target of a DW_TAG_GNU_call_site during late compilation.
+	Instead create a stub DIE without a type if we have a
+	context DIE present.
+
+	2015-06-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66280
+	* tree-vect-slp.c (vect_detect_hybrid_slp_stmts): Fix pattern
+	def-use walking.
+
+	2015-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66272
+	Revert parts of
+	2014-08-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/62031
+	* tree-data-ref.c (dr_analyze_indices): Do not set
+	DR_UNCONSTRAINED_BASE.
+	(dr_may_alias_p): All indirect accesses have to go the
+	formerly DR_UNCONSTRAINED_BASE path.
+	* tree-data-ref.h (struct indices): Remove
+	unconstrained_base member.
+	(DR_UNCONSTRAINED_BASE): Remove.
+
+	2015-05-21  Richard Biener  <rguenther@suse.de>
+
+	PR c++/66211
+	* match.pd: Guard pattern optimzing (int)(float)int
+	conversions to apply only on GIMPLE.
+
+	2015-05-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66123
+	* tree-ssa-dom.c (propagate_rhs_into_lhs): Check if we found
+	a taken edge.
+
 2015-06-02  Renlin Li  <renlin.li@arm.com>
 
 	Backport from mainline

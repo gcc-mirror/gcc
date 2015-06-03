@@ -759,7 +759,8 @@ along with GCC; see the file COPYING3.  If not see
    /* If we are converting an integer to a floating-point that can
       represent it exactly and back to an integer, we can skip the
       floating-point conversion.  */
-   (if (inside_int && inter_float && final_int &&
+   (if (GIMPLE /* PR66211 */
+	&& inside_int && inter_float && final_int &&
 	(unsigned) significand_size (TYPE_MODE (inter_type))
 	>= inside_prec - !inside_unsignedp)
     (convert @0))))))

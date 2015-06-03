@@ -1875,21 +1875,27 @@ vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype)
     {
       /* Check if a pure SLP stmt has uses in non-SLP stmts.  */
       gcc_checking_assert (PURE_SLP_STMT (stmt_vinfo));
+      /* We always get the pattern stmt here, but for immediate
+	 uses we have to use the LHS of the original stmt.  */
+      gcc_checking_assert (!STMT_VINFO_IN_PATTERN_P (stmt_vinfo));
+      if (STMT_VINFO_RELATED_STMT (stmt_vinfo))
+	stmt = STMT_VINFO_RELATED_STMT (stmt_vinfo);
       if (TREE_CODE (gimple_op (stmt, 0)) == SSA_NAME)
 	FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, gimple_op (stmt, 0))
-	  if (gimple_bb (use_stmt)
-	      && flow_bb_inside_loop_p (loop, gimple_bb (use_stmt))
-	      && (use_vinfo = vinfo_for_stmt (use_stmt))
-	      && !STMT_SLP_TYPE (use_vinfo)
-	      && (STMT_VINFO_RELEVANT (use_vinfo)
-		  || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (use_vinfo))
-		  || (STMT_VINFO_IN_PATTERN_P (use_vinfo)
-		      && STMT_VINFO_RELATED_STMT (use_vinfo)
-		      && !STMT_SLP_TYPE (vinfo_for_stmt
-			    (STMT_VINFO_RELATED_STMT (use_vinfo)))))
-	      && !(gimple_code (use_stmt) == GIMPLE_PHI
-		   && STMT_VINFO_DEF_TYPE (use_vinfo) == vect_reduction_def))
-	    stype = hybrid;
+	  {
+	    if (!flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
+	      continue;
+	    use_vinfo = vinfo_for_stmt (use_stmt);
+	    if (STMT_VINFO_IN_PATTERN_P (use_vinfo)
+		&& STMT_VINFO_RELATED_STMT (use_vinfo))
+	      use_vinfo = vinfo_for_stmt (STMT_VINFO_RELATED_STMT (use_vinfo));
+	    if (!STMT_SLP_TYPE (use_vinfo)
+		&& (STMT_VINFO_RELEVANT (use_vinfo)
+		    || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (use_vinfo)))
+		&& !(gimple_code (use_stmt) == GIMPLE_PHI
+		     && STMT_VINFO_DEF_TYPE (use_vinfo) == vect_reduction_def))
+	      stype = hybrid;
+	  }
     }
 
   if (stype == hybrid)
