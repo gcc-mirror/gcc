@@ -6727,7 +6727,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
   if (offset)
     {
       /* Avoid returning a negative bitpos as this may wreak havoc later.  */
-      if (bit_offset.is_negative ())
+      if (bit_offset.is_negative () || !bit_offset.fits_shwi ())
         {
 	  double_int mask
 	    = double_int::mask (BITS_PER_UNIT == 8
