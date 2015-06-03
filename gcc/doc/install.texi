@@ -1607,6 +1607,14 @@ should not be built.
 Specify that the compiler should
 use DWARF 2 debugging information as the default.
 
+@item --with-advance-toolchain=@var{at}
+On 64-bit PowerPC Linux systems, configure the compiler to use the
+header files, library files, and the dynamic linker from the Advance
+Toolchain release @var{at} instead of the default versions that are
+provided by the Linux distribution.  In general, this option is
+intended for the developers of GCC, and it is not intended for general
+use.
+
 @item --enable-targets=all
 @itemx --enable-targets=@var{target_list}
 Some GCC targets, e.g.@: powerpc64-linux, build bi-arch compilers.

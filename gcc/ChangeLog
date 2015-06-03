@@ -1,3 +1,27 @@
+2015-06-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config.gcc (powerpc*-*-*): Add support for a new configure
+	option --with-advance-toolchain=<xxx> which overrides using the
+	default header files, libraries and dynamic linker.
+
+	* config/rs6000/linux64.h (SUBSUBTARGET_EXTRA_SPECS): Add new
+	specs to support the configure --with-advance-toolchain=<xxx>
+	option.
+	(INCLUDE_EXTRA_SPEC): Likewise.
+	(LINK_OS_EXTRA_SPEC32): Likewise.
+	(LINK_OK_EXTRA_SPEC64): Likewise.
+	(LINK_OS_NEW_DTAGS_SPEC): Likewise.
+	(DYNAMIC_LINKER_PREFIX): Likewise.
+	(CPP_OS_DEFAULT_SPEC): Use the new specs for providing advance
+	toolchain support.
+	(GLIBC_DYNAMIC_LINKER32): Likewise.
+	(GLIBC_DYNAMIC_LINKER64): Likewise.
+	(LINK_OS_LINUX_SPEC32): Likewise.
+	(LINK_OS_LINUX_SPEC64): Likewise.
+
+	* doc/install.texi (--enable-advance-toolchain=<xx>): Document new
+	configuration option.
+
 2015-06-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66275

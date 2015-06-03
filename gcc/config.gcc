@@ -4044,7 +4044,7 @@ case "${target}" in
 		;;
 
 	powerpc*-*-* | rs6000-*-*)
-		supported_defaults="abi cpu cpu_32 cpu_64 float tune tune_32 tune_64"
+		supported_defaults="abi cpu cpu_32 cpu_64 float tune tune_32 tune_64 advance_toolchain"
 
 		for which in cpu cpu_32 cpu_64 tune tune_32 tune_64; do
 			eval "val=\$with_$which"
@@ -4091,6 +4091,56 @@ case "${target}" in
 			exit 1
 			;;
 		esac
+
+		if test "x$with_advance_toolchain" != x; then
+		    if test -d "/opt/$with_advance_toolchain/." -a \
+			-d "/opt/$with_advance_toolchain/bin/." -a \
+			-d "/opt/$with_advance_toolchain/include/."; then
+
+			tm_file="$tm_file ./advance-toolchain.h"
+			(at="/opt/$with_advance_toolchain"
+			 echo "/* Use Advance Toolchain $at */"
+			 echo
+			 echo "#ifndef USE_AT_INCLUDE_FILES"
+			 echo "#define USE_AT_INCLUDE_FILES 1"
+			 echo "#endif"
+			 echo
+			 echo "#if USE_AT_INCLUDE_FILES"
+			 echo "#undef  INCLUDE_EXTRA_SPEC"
+			 echo "#define INCLUDE_EXTRA_SPEC" \
+			      "\"-isystem $at/include\""
+			 echo "#endif"
+			 echo
+			 echo "#undef  LINK_OS_EXTRA_SPEC32"
+			 echo "#define LINK_OS_EXTRA_SPEC32" \
+			      "\"%(link_os_new_dtags)" \
+			      "-rpath $prefix/lib -rpath $at/lib" \
+			      "-L $prefix/lib -L $at/lib\""
+			 echo
+			 echo "#undef  LINK_OS_EXTRA_SPEC64"
+			 echo "#define LINK_OS_EXTRA_SPEC64" \
+			      "\"%(link_os_new_dtags)" \
+			      "-rpath $prefix/lib64 -rpath $at/lib64" \
+			      "-L $prefix/lib64 -L $at/lib64\""
+			 echo
+			 echo "#undef  LINK_OS_NEW_DTAGS_SPEC"
+			 echo "#define LINK_OS_NEW_DTAGS_SPEC" \
+			      "\"--enable-new-dtags\""
+			 echo
+			 echo "#undef  DYNAMIC_LINKER_PREFIX"
+			 echo "#define DYNAMIC_LINKER_PREFIX \"$at\""
+			 echo
+			 echo "#undef  MD_EXEC_PREFIX"
+			 echo "#define MD_EXEC_PREFIX \"$at/bin/\""
+			 echo
+			 echo "#undef  MD_STARTFILE_PREFIX"
+			 echo "#define MD_STARTFILE_PREFIX \"$at/lib/\"") \
+			    > advance-toolchain.h
+		    else
+			echo "Unknown advance-toolchain $with_advance_toolchain"
+			exit 1
+		    fi
+		fi
 		;;
 
 	s390*-*-*)
