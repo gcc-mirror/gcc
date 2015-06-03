@@ -4871,9 +4871,53 @@ simple_cst_list_equal (const_tree l1, const_tree l2)
   return l1 == l2;
 }
 
+/* Compare two identifier nodes representing attributes.  Either one may
+   be in wrapped __ATTR__ form.  Return true if they are the same, false
+   otherwise.  */
+
+static bool
+cmp_attrib_identifiers (const_tree attr1, const_tree attr2)
+{
+  /* Make sure we're dealing with IDENTIFIER_NODEs.  */
+  gcc_checking_assert (TREE_CODE (attr1) == IDENTIFIER_NODE
+		       && TREE_CODE (attr2) == IDENTIFIER_NODE);
+
+  /* Identifiers can be compared directly for equality.  */
+  if (attr1 == attr2)
+    return true;
+
+  /* If they are not equal, they may still be one in the form
+     'text' while the other one is in the form '__text__'.  TODO:
+     If we were storing attributes in normalized 'text' form, then
+     this could all go away and we could take full advantage of
+     the fact that we're comparing identifiers. :-)  */
+  const size_t attr1_len = IDENTIFIER_LENGTH (attr1);
+  const size_t attr2_len = IDENTIFIER_LENGTH (attr2);
+
+  if (attr2_len == attr1_len + 4)
+    {
+      const char *p = IDENTIFIER_POINTER (attr2);
+      const char *q = IDENTIFIER_POINTER (attr1);
+      if (p[0] == '_' && p[1] == '_'
+	  && p[attr2_len - 2] == '_' && p[attr2_len - 1] == '_'
+	  && strncmp (q, p + 2, attr1_len) == 0)
+	return true;;
+    }
+  else if (attr2_len + 4 == attr1_len)
+    {
+      const char *p = IDENTIFIER_POINTER (attr2);
+      const char *q = IDENTIFIER_POINTER (attr1);
+      if (q[0] == '_' && q[1] == '_'
+	  && q[attr1_len - 2] == '_' && q[attr1_len - 1] == '_'
+	  && strncmp (q + 2, p, attr2_len) == 0)
+	return true;
+    }
+
+  return false;
+}
+
 /* Compare two attributes for their value identity.  Return true if the
-   attribute values are known to be equal; otherwise return false.
-*/
+   attribute values are known to be equal; otherwise return false.  */
 
 bool
 attribute_value_equal (const_tree attr1, const_tree attr2)
@@ -4883,10 +4927,25 @@ attribute_value_equal (const_tree attr1, const_tree attr2)
 
   if (TREE_VALUE (attr1) != NULL_TREE
       && TREE_CODE (TREE_VALUE (attr1)) == TREE_LIST
-      && TREE_VALUE (attr2) != NULL
+      && TREE_VALUE (attr2) != NULL_TREE
       && TREE_CODE (TREE_VALUE (attr2)) == TREE_LIST)
-    return (simple_cst_list_equal (TREE_VALUE (attr1),
-				   TREE_VALUE (attr2)) == 1);
+    {
+      /* Handle attribute format.  */
+      if (is_attribute_p ("format", TREE_PURPOSE (attr1)))
+	{
+	  attr1 = TREE_VALUE (attr1);
+	  attr2 = TREE_VALUE (attr2);
+	  /* Compare the archetypes (printf/scanf/strftime/...).  */
+	  if (!cmp_attrib_identifiers (TREE_VALUE (attr1),
+				       TREE_VALUE (attr2)))
+	    return false;
+	  /* Archetypes are the same.  Compare the rest.  */
+	  return (simple_cst_list_equal (TREE_CHAIN (attr1),
+					 TREE_CHAIN (attr2)) == 1);
+	}
+      return (simple_cst_list_equal (TREE_VALUE (attr1),
+				     TREE_VALUE (attr2)) == 1);
+    }
 
   if ((flag_openmp || flag_openmp_simd)
       && TREE_VALUE (attr1) && TREE_VALUE (attr2)
@@ -6037,38 +6096,10 @@ lookup_ident_attribute (tree attr_identifier, tree list)
       gcc_checking_assert (TREE_CODE (get_attribute_name (list))
 			   == IDENTIFIER_NODE);
 
-      /* Identifiers can be compared directly for equality.  */
-      if (attr_identifier == get_attribute_name (list))
+      if (cmp_attrib_identifiers (attr_identifier,
+				  get_attribute_name (list)))
+	/* Found it.  */
 	break;
-
-      /* If they are not equal, they may still be one in the form
-	 'text' while the other one is in the form '__text__'.  TODO:
-	 If we were storing attributes in normalized 'text' form, then
-	 this could all go away and we could take full advantage of
-	 the fact that we're comparing identifiers. :-)  */
-      {
-	size_t attr_len = IDENTIFIER_LENGTH (attr_identifier);
-	size_t ident_len = IDENTIFIER_LENGTH (get_attribute_name (list));
-
-	if (ident_len == attr_len + 4)
-	  {
-	    const char *p = IDENTIFIER_POINTER (get_attribute_name (list));
-	    const char *q = IDENTIFIER_POINTER (attr_identifier);
-	    if (p[0] == '_' && p[1] == '_'
-		&& p[ident_len - 2] == '_' && p[ident_len - 1] == '_'
-		&& strncmp (q, p + 2, attr_len) == 0)
-	      break;
-	  }
-	else if (ident_len + 4 == attr_len)
-	  {
-	    const char *p = IDENTIFIER_POINTER (get_attribute_name (list));
-	    const char *q = IDENTIFIER_POINTER (attr_identifier);
-	    if (q[0] == '_' && q[1] == '_'
-		&& q[attr_len - 2] == '_' && q[attr_len - 1] == '_'
-		&& strncmp (q + 2, p, ident_len) == 0)
-	      break;
-	  }
-      }
       list = TREE_CHAIN (list);
     }
 

@@ -1,3 +1,10 @@
+2015-06-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c/64223
+	PR c/29358
+	* gcc.dg/pr64223-1.c: New test.
+	* gcc.dg/pr64223-2.c: New test.
+
 2015-06-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63916
