@@ -1,3 +1,7 @@
+2015-06-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* ifcvt (end_ifcvt_sequence): Fix typo in comment above.
+
 2015-06-03  Ilya Enkovich  <ilya.enkovich@intel.com>
 
 	* ipa-chkp.c (chkp_maybe_create_clone): Create alias
