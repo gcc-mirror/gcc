@@ -20,12 +20,6 @@
 2015-05-16  James Bowman  <james.bowman@ftdichip.com>
 
 	* configure.ac: FT32 target added.
-	* libgcc/config.host: FT32 target added.
-	* gcc/config/ft32/: FT32 target added.
-	* libgcc/config/ft32/: FT32 target added.
-	* gcc/doc/install.texi, invoke.texi, md.texi: FT32 details added.
-	* gcc/doc/contrib.texi: self added.
-	* contrib/config-list.mk: FT32 target added.
 	* configure: Regenerated.
 
 2015-05-16  Iain Buclaw  <ibuclaw@gdcproject.org>
