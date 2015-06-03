@@ -1,6 +1,13 @@
 2015-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2015-05-04  Jakub Jelinek  <jakub@redhat.com>
+ 
+	PR tree-optimization/65984
+	* ubsan.c: Include tree-cfg.h.
+	(instrument_bool_enum_load): Use stmt_ends_bb_p instead of
+	stmt_could_throw_p test, rename can_throw variable to ends_bb.
+
 	2015-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/65680
