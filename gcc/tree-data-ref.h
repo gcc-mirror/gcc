@@ -81,6 +81,10 @@ struct indices
 
   /* A list of chrecs.  Access functions of the indices.  */
   vec<tree> access_fns;
+
+  /* Whether BASE_OBJECT is an access representing the whole object
+     or whether the access could not be constrained.  */
+  bool unconstrained_base;
 };
 
 struct dr_alias
@@ -191,6 +195,7 @@ struct data_reference
 #define DR_STMT(DR)                (DR)->stmt
 #define DR_REF(DR)                 (DR)->ref
 #define DR_BASE_OBJECT(DR)         (DR)->indices.base_object
+#define DR_UNCONSTRAINED_BASE(DR)  (DR)->indices.unconstrained_base
 #define DR_ACCESS_FNS(DR)	   (DR)->indices.access_fns
 #define DR_ACCESS_FN(DR, I)        DR_ACCESS_FNS (DR)[I]
 #define DR_NUM_DIMENSIONS(DR)      DR_ACCESS_FNS (DR).length ()
