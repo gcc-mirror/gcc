@@ -1,3 +1,10 @@
+2015-06-03  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/66190
+	* g++.dg/ubsan/static-init-1.C: New test.
+	* g++.dg/ubsan/static-init-2.C: New test.
+	* g++.dg/ubsan/static-init-3.C: New test.
+
 2015-06-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66275
