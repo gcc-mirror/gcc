@@ -1,4 +1,8 @@
-2015-06-01  Kugan Vivekanandarajah  <kuganv@linaro.org>
+2015-06-03  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.dg/tree-ssa/pr65447.c: Increase searching number.
+
+2015-06-02  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR target/65768
 	* gcc.target/arm/maskdata.c: Remove -fno-gcse.
