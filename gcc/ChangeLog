@@ -1,3 +1,11 @@
+2015-06-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* genpreds.c (mark_mode_tests): Mark all MATCH_CODEs as
+	NO_MODE_TEST.
+	(add_mode_tests): Don't add mode tests if the predicate only
+	accepts scalar constant integers.  Otherwise, allow the mode
+	of "op" to be VOIDmode if the predicate does accept such integers.
+
 2015-06-02  Jim Wilson  <jim.wilson@linaro.org>
 
 	PR target/66258

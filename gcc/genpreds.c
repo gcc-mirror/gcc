@@ -218,11 +218,11 @@ needs_variable (rtx exp, const char *var)
 
 /* Given an RTL expression EXP, find all subexpressions which we may
    assume to perform mode tests.  Normal MATCH_OPERAND does;
-   MATCH_CODE does if it applies to the whole expression and accepts
-   CONST_INT or CONST_DOUBLE; and we have to assume that MATCH_TEST
-   does not.  These combine in almost-boolean fashion - the only
-   exception is that (not X) must be assumed not to perform a mode
-   test, whether or not X does.
+   MATCH_CODE doesn't as such (although certain codes always have
+   VOIDmode); and we have to assume that MATCH_TEST does not.
+   These combine in almost-boolean fashion - the only exception is
+   that (not X) must be assumed not to perform a mode test, whether
+   or not X does.
 
    The mark is the RTL /v flag, which is true for subexpressions which
    do *not* perform mode tests.
@@ -244,10 +244,7 @@ mark_mode_tests (rtx exp)
       break;
 
     case MATCH_CODE:
-      if (XSTR (exp, 1)[0] != '\0'
-	  || (!strstr (XSTR (exp, 0), "const_int")
-	      && !strstr (XSTR (exp, 0), "const_double")))
-	NO_MODE_TEST (exp) = 1;
+      NO_MODE_TEST (exp) = 1;
       break;
 
     case MATCH_TEST:
@@ -313,6 +310,40 @@ add_mode_tests (struct pred_data *p)
   if (p->special)
     return;
 
+  /* Check whether the predicate accepts const scalar ints (which always
+     have a stored mode of VOIDmode, but logically have a real mode)
+     and whether it matches anything besides const scalar ints.  */
+  bool matches_const_scalar_int_p = false;
+  bool matches_other_p = false;
+  for (int i = 0; i < NUM_RTX_CODE; ++i)
+    if (p->codes[i])
+      switch (i)
+	{
+	case CONST_INT:
+	case CONST_WIDE_INT:
+	  matches_const_scalar_int_p = true;
+	  break;
+
+	case CONST_DOUBLE:
+	  if (!TARGET_SUPPORTS_WIDE_INT)
+	    matches_const_scalar_int_p = true;
+	  matches_other_p = true;
+	  break;
+
+	default:
+	  matches_other_p = true;
+	  break;
+	}
+
+  /* There's no need for a mode check if the predicate only accepts
+     constant integers.  The code checks in the predicate are enough
+     to establish that the mode is VOIDmode.
+
+     Note that the predicate itself should check whether a scalar
+     integer is in range of the given mode.  */
+  if (!matches_other_p)
+    return;
+
   mark_mode_tests (p->exp);
 
   /* If the whole expression already tests the mode, we're done.  */
@@ -320,7 +351,11 @@ add_mode_tests (struct pred_data *p)
     return;
 
   match_test_exp = rtx_alloc (MATCH_TEST);
-  XSTR (match_test_exp, 0) = "mode == VOIDmode || GET_MODE (op) == mode";
+  if (matches_const_scalar_int_p)
+    XSTR (match_test_exp, 0) = ("mode == VOIDmode || GET_MODE (op) == mode"
+				" || GET_MODE (op) == VOIDmode");
+  else
+    XSTR (match_test_exp, 0) = "mode == VOIDmode || GET_MODE (op) == mode";
   and_exp = rtx_alloc (AND);
   XEXP (and_exp, 1) = match_test_exp;
 
