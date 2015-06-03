@@ -1,3 +1,12 @@
+2015-06-03  Martin Liska  <mliska@suse.cz>
+
+	* alloc-pool.h (struct pool_usage): Correct GNU coding style.
+	* bitmap.h (struct bitmap_usage): Likewise.
+	* ggc-common.c (struct ggc_usage): Likewise.
+	* mem-stats.h (struct mem_location): Likewise.
+	(struct mem_usage): Likewise.
+	* vec.c (struct vec_usage): Likewise.
+
 2015-06-03  Benigno B. Junior  <bbj@gentoo.org>
 
 	* config/netbsd-elf.h (NETBSD_LINK_SPEC_ELF): Turn -symbolic into

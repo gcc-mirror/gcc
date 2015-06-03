@@ -60,7 +60,8 @@ struct vec_usage: public mem_usage
     m_items (items), m_items_peak (items_peak) {}
 
   /* Comparison operator.  */
-  inline bool operator< (const vec_usage &second) const
+  inline bool
+  operator< (const vec_usage &second) const
   {
     return (m_allocated == second.m_allocated ?
 	    (m_peak == second.m_peak ? m_times < second.m_times
@@ -68,7 +69,8 @@ struct vec_usage: public mem_usage
   }
 
   /* Sum the usage with SECOND usage.  */
-  vec_usage operator+ (const vec_usage &second)
+  vec_usage
+  operator+ (const vec_usage &second)
   {
     return vec_usage (m_allocated + second.m_allocated,
 		      m_times + second.m_times,
@@ -78,7 +80,8 @@ struct vec_usage: public mem_usage
   }
 
   /* Dump usage coupled to LOC location, where TOTAL is sum of all rows.  */
-  inline void dump (mem_location *loc, mem_usage &total) const
+  inline void
+  dump (mem_location *loc, mem_usage &total) const
   {
     char s[4096];
     sprintf (s, "%s:%i (%s)", loc->get_trimmed_filename (),
@@ -93,7 +96,8 @@ struct vec_usage: public mem_usage
   }
 
   /* Dump footer.  */
-  inline void dump_footer ()
+  inline void
+  dump_footer ()
   {
     print_dash_line ();
     fprintf (stderr, "%s%55li%25li%17li\n", "Total", (long)m_allocated,
@@ -102,7 +106,8 @@ struct vec_usage: public mem_usage
   }
 
   /* Dump header with NAME.  */
-  static inline void dump_header (const char *name)
+  static inline void
+  dump_header (const char *name)
   {
     fprintf (stderr, "%-48s %11s%15s%10s%17s%11s\n", name, "Leak", "Peak",
 	     "Times", "Leak items", "Peak items");
@@ -110,7 +115,8 @@ struct vec_usage: public mem_usage
   }
 
   /* Compare wrapper used by qsort method.  */
-  static int compare (const void *first, const void *second)
+  static int
+  compare (const void *first, const void *second)
   {
     typedef std::pair<mem_location *, vec_usage *> mem_pair_t;
 

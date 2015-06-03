@@ -843,7 +843,8 @@ struct ggc_usage: public mem_usage
     m_freed (freed), m_collected (collected), m_overhead (overhead) {}
 
   /* Comparison operator.  */
-  inline bool operator< (const ggc_usage &second) const
+  inline bool
+  operator< (const ggc_usage &second) const
   {
     return (get_balance () == second.get_balance () ?
 	    (m_peak == second.m_peak ? m_times < second.m_times
@@ -852,7 +853,8 @@ struct ggc_usage: public mem_usage
   }
 
   /* Register overhead of ALLOCATED and OVERHEAD bytes.  */
-  inline void register_overhead (size_t allocated, size_t overhead)
+  inline void
+  register_overhead (size_t allocated, size_t overhead)
   {
     m_allocated += allocated;
     m_overhead += overhead;
@@ -860,13 +862,15 @@ struct ggc_usage: public mem_usage
   }
 
   /* Release overhead of SIZE bytes.  */
-  inline void release_overhead (size_t size)
+  inline void
+  release_overhead (size_t size)
   {
     m_freed += size;
   }
 
   /* Sum the usage with SECOND usage.  */
-  ggc_usage operator+ (const ggc_usage &second)
+  ggc_usage
+  operator+ (const ggc_usage &second)
   {
     return ggc_usage (m_allocated + second.m_allocated,
 		      m_times + second.m_times,
@@ -877,7 +881,8 @@ struct ggc_usage: public mem_usage
   }
 
   /* Dump usage with PREFIX, where TOTAL is sum of all rows.  */
-  inline void dump (const char *prefix, ggc_usage &total) const
+  inline void
+  dump (const char *prefix, ggc_usage &total) const
   {
     long balance = get_balance ();
     fprintf (stderr,
@@ -892,7 +897,8 @@ struct ggc_usage: public mem_usage
   }
 
   /* Dump usage coupled to LOC location, where TOTAL is sum of all rows.  */
-  inline void dump (mem_location *loc, ggc_usage &total) const
+  inline void
+  dump (mem_location *loc, ggc_usage &total) const
   {
     char *location_string = loc->to_string ();
 
@@ -902,7 +908,8 @@ struct ggc_usage: public mem_usage
   }
 
   /* Dump footer.  */
-  inline void dump_footer ()
+  inline void
+  dump_footer ()
   {
     print_dash_line ();
     dump ("Total", *this);
@@ -910,7 +917,8 @@ struct ggc_usage: public mem_usage
   }
 
   /* Get balance which is GGC allocation leak.  */
-  inline long get_balance () const
+  inline long
+  get_balance () const
   {
     return m_allocated + m_overhead - m_collected - m_freed;
   }
@@ -918,7 +926,8 @@ struct ggc_usage: public mem_usage
   typedef std::pair<mem_location *, ggc_usage *> mem_pair_t;
 
   /* Compare wrapper used by qsort method.  */
-  static int compare (const void *first, const void *second)
+  static int
+  compare (const void *first, const void *second)
   {
     const mem_pair_t f = *(const mem_pair_t *)first;
     const mem_pair_t s = *(const mem_pair_t *)second;
@@ -927,8 +936,10 @@ struct ggc_usage: public mem_usage
   }
 
   /* Compare rows in final GGC summary dump.  */
-  static int compare_final (const void *first, const void *second)
-  {  typedef std::pair<mem_location *, ggc_usage *> mem_pair_t;
+  static int
+  compare_final (const void *first, const void *second)
+  {
+    typedef std::pair<mem_location *, ggc_usage *> mem_pair_t;
 
     const ggc_usage *f = ((const mem_pair_t *)first)->second;
     const ggc_usage *s = ((const mem_pair_t *)second)->second;
@@ -940,7 +951,8 @@ struct ggc_usage: public mem_usage
   }
 
   /* Dump header with NAME.  */
-  static inline void dump_header (const char *name)
+  static inline void
+  dump_header (const char *name)
   {
     fprintf (stderr, "%-48s %11s%17s%17s%16s%17s\n", name, "Garbage", "Freed",
 	     "Leak", "Overhead", "Times");
