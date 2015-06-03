@@ -589,6 +589,10 @@ make_edges (void)
 		 somewhere other than the next block.  This will be
 		 created later.  */
 	      cur_region->exit = bb;
+	      if (cur_region->type == GIMPLE_OMP_TASK)
+		/* Add an edge corresponding to not scheduling the task
+		   immediately.  */
+		make_edge (cur_region->entry, bb, EDGE_ABNORMAL);
 	      fallthru = cur_region->type != GIMPLE_OMP_SECTION;
 	      cur_region = cur_region->outer;
 	      break;
@@ -635,6 +639,10 @@ make_edges (void)
 		    make_edge (switch_bb, bb->next_bb, 0);
 		    fallthru = false;
 		  }
+		  break;
+
+		case GIMPLE_OMP_TASK:
+		  fallthru = true;
 		  break;
 
 		default:
