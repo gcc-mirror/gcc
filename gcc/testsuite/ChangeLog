@@ -1,3 +1,8 @@
+2015-06-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/66341
+	* gcc.dg/lvalue-8.c: New test.
+
 2015-06-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
