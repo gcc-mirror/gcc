@@ -33,7 +33,6 @@ dg-init
 # The default action for a test is 'run'.  Save current default.
 global dg-do-what-default
 set save-dg-do-what-default ${dg-do-what-default}
-set dg-do-what-default run
 
 # For ARM, make sure that we have a target compatible with NEON, and do
 # not attempt to run execution tests if the hardware doesn't support it.
@@ -43,7 +42,11 @@ if {[istarget arm*-*-*]} then {
     }
     if {![is-effective-target arm_neon_hw]} then {
         set dg-do-what-default compile
+    } else {
+        set dg-do-what-default run
     }
+} else {
+    set dg-do-what-default run
 }
 
 set-torture-options $C_TORTURE_OPTIONS {{}} $LTO_TORTURE_OPTIONS
