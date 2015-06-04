@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "hashtab.h"
 #include "hash-set.h"
-#include "machmode.h"
 #include "input.h"
 #include "function.h"
 #include "dominance.h"

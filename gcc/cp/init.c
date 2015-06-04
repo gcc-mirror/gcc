@@ -25,13 +25,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "hash-set.h"
-#include "machmode.h"
 #include "vec.h"
-#include "double-int.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
-#include "wide-int.h"
 #include "inchash.h"
 #include "tree.h"
 #include "stringpool.h"
@@ -40,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "target.h"
 #include "gimplify.h"
-#include "wide-int.h"
 #include "c-family/c-ubsan.h"
 
 static bool begin_init_stmts (tree *, tree *);

@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "hwint.h"
-#include "wide-int.h"
 #include "wide-int-print.h"
 
 /*

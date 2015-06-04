@@ -20,8 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_INTERNAL_FN_H
 #define GCC_INTERNAL_FN_H
 
-#include "coretypes.h"
-
 /* Initialize internal function tables.  */
 
 extern void init_internal_fns ();

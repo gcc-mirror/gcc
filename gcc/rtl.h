@@ -20,15 +20,23 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RTL_H
 #define GCC_RTL_H
 
-#include "statistics.h"
-#include "machmode.h"
-#include "input.h"
+/* This file is occasionally included by generator files which expect
+   machmode.h and other files to exist and would not normally have been
+   included by coretypes.h.  */
+#ifdef GENERATOR_FILE
+#include "machmode.h"     
+#include "signop.h"
+#include "wide-int.h"
+#include "double-int.h"
 #include "real.h"
-#include "vec.h"
 #include "fixed-value.h"
+#endif  /* GENERATOR_FILE */
+
+#include "statistics.h"
+#include "input.h"
+#include "vec.h"
 #include "alias.h"
 #include "hashtab.h"
-#include "wide-int.h"
 #include "flags.h"
 #include "is-a.h"
 

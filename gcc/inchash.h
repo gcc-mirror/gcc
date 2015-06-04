@@ -20,13 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef INCHASH_H
 #define INCHASH_H 1
 
-#ifdef GENERATOR_FILE
-#include "bconfig.h"
-#else
-#include "config.h"
-#endif
-#include "system.h"
-#include "coretypes.h"
 #include "hashtab.h"
 
 /* This file implements an incremential hash function ADT, to be used

@@ -20,11 +20,6 @@
 #ifndef GCC_REAL_H
 #define GCC_REAL_H
 
-#include "machmode.h"
-#include "signop.h"
-#include "wide-int.h"
-#include "insn-modes.h"
-
 /* An expanded form of the represented number.  */
 
 /* Enumerate the special cases of numbers that we encounter.  */

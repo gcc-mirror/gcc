@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_PRETTY_PRINT_H
 
 #include "pretty-print.h"
-#include "double-int.h"
 
 #define pp_unsupported_tree(PP, T)                         \
   pp_verbatim (PP, "#%qs not supported by %s#", \

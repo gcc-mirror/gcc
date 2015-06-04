@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-set.h"
 #include "symtab.h"
 #include "inchash.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"

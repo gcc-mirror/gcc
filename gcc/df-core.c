@@ -385,7 +385,6 @@ are write-only operations.
 #include "hashtab.h"
 #include "hash-set.h"
 #include "vec.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"

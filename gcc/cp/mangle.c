@@ -49,13 +49,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "hash-set.h"
-#include "machmode.h"
 #include "vec.h"
-#include "double-int.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
-#include "wide-int.h"
 #include "inchash.h"
 #include "tree.h"
 #include "tree-hasher.h"
@@ -74,7 +71,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "ipa-ref.h"
 #include "cgraph.h"
-#include "wide-int.h"
 #include "attribs.h"
 
 /* Debugging support.  */

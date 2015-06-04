@@ -22,19 +22,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "hash-set.h"
-#include "machmode.h"
 #include "vec.h"
-#include "double-int.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
-#include "wide-int.h"
 #include "inchash.h"
-#include "real.h"
 #include "tree.h"
 #include "tm_p.h"
 #include "dfp.h"
-#include "wide-int.h"
 
 /* The order of the following headers is important for making sure
    decNumber structure is large enough to hold decimal128 digits.  */

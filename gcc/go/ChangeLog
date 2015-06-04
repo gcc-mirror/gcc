@@ -1,3 +1,10 @@
+2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* go-backend.c: Adjust includes for restructured coretypes.h.
+	* go-c.h: Likewise.
+	* go-gcc.cc: Likewise.
+	* go-lang.c: Likewise.
+
 2015-04-30  Chris Manghane  <cmang@google.com>
 
 	* go-gcc.cc (Gcc_backend::stack_allocation_expression): New

@@ -27,15 +27,11 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "system.h"
 #include "coretypes.h"
 #include "hash-set.h"
-#include "machmode.h"
 #include "vec.h"
-#include "double-int.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "options.h"
-#include "real.h"
-#include "wide-int.h"
 #include "inchash.h"
 #include "tree.h"
 #include "stringpool.h"
@@ -59,7 +55,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "cgraph.h"
 #include "bitmap.h"
 #include "target.h"
-#include "wide-int.h"
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>

@@ -1,3 +1,25 @@
+2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* boehm.c: Adjust includes for restructured coretypes.h.
+	* builtins.c: Likewise.
+	* class.c: Likewise.
+	* constants.c: Likewise.
+	* decl.c: Likewise.
+	* except.c: Likewise.
+	* expr.c: Likewise.
+	* java-gimplify.c: Likewise.
+	* jcf-dump.c: Likewise.
+	* jcf-io.c: Likewise.
+	* jcf-parse.c: Likewise.
+	* jvgenmain.c: Likewise.
+	* lang.c: Likewise.
+	* mangle.c: Likewise.
+	* mangle_name.c: Likewise.
+	* resource.c: Likewise.
+	* typeck.c: Likewise.
+	* verify-glue.c: Likewise.
+	* verify-impl.c: Likewise.
+
 2015-05-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* jcf-parse.c (set_source_filename): Replace write through

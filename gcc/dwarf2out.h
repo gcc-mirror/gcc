@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_DWARF2OUT_H 1
 
 #include "dwarf2.h"	/* ??? Remove this once only used by dwarf2foo.c.  */
-#include "wide-int.h"
 
 typedef struct die_struct *dw_die_ref;
 typedef const struct die_struct *const_dw_die_ref;
