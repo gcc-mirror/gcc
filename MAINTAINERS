@@ -263,6 +263,7 @@ SLSR			Bill Schmidt		<wschmidt@linux.vnet.ibm.com>
 jit			David Malcolm		<dmalcolm@redhat.com>
 pointer bounds checker	Ilya Enkovich		<enkovich.gnu@gmail.com>
 i386 MPX		Ilya Enkovich		<enkovich.gnu@gmail.com>
+gen* on machine desc	Richard Sandiford	<rdsandiford@googlemail.com>
 
 Note that individuals who maintain parts of the compiler need approval to
 check in changes outside of the parts of the compiler they maintain.
