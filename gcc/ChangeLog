@@ -1125,7 +1125,7 @@
 	ACX_PROG_CXX_WARNING_ALMOST_PEDANTIC, and
 	ACX_PROG_CXX_WARNINGS_ARE_ERRORS.
 
-2015-05-22 Aditya Kumar <hiraditya@msn.com>
+2015-05-22  Aditya Kumar  <hiraditya@msn.com>
 
 	* auto-profile.c (afdo_calculate_branch_prob): Break once has_sample
 	is true.
@@ -3398,7 +3398,7 @@
 	(aarch_macro_fusion_pair_p): Update uses of current_tune.
 	* arm.h (LOGICAL_OP_NON_SHORT_CIRCUIT): Likewise.
 
-2015-05-12 Sandra Loosemore <sandra@codesourcery.com>
+2015-05-12  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/nios2.md (trap, ctrapsi4): Use "trap" instead of
 	"break".
