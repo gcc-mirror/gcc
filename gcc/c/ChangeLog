@@ -1,3 +1,9 @@
+2015-06-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/66341
+	* c-typeck.c (build_c_cast): Wrap VALUE into NON_LVALUE_EXPR if
+	it is a lvalue.
+
 2015-06-03  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* c-decl.c (warn_cxx_compat_finish_struct): New parameters code, record_loc.
