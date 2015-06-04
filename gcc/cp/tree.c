@@ -23,13 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "hash-set.h"
-#include "machmode.h"
 #include "vec.h"
-#include "double-int.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
-#include "wide-int.h"
 #include "inchash.h"
 #include "tree.h"
 #include "fold-const.h"
@@ -54,7 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-table.h"
 #include "gimple-expr.h"
 #include "gimplify.h"
-#include "wide-int.h"
 #include "attribs.h"
 
 static tree bot_manip (tree *, int *, void *);

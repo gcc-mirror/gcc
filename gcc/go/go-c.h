@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define GO_EXTERN_C
 
-#include "machmode.h"
 
 /* Functions defined in the Go frontend proper called by the GCC
    interface.  */

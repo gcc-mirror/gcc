@@ -1,3 +1,9 @@
+2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* dummy-frontend.c: Adjust includes for restructured coretypes.h.
+	* jit-common.h: Likewise.
+	* jit-playback.c: Likewise.
+
 2015-05-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit-builtins.c: Include vec.h before target.h.

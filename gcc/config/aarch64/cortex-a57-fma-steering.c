@@ -31,7 +31,6 @@
 #include "predict.h"
 #include "basic-block.h"
 #include "insn-attr.h"
-#include "machmode.h"
 #include "recog.h"
 #include "output.h"
 #include "vec.h"

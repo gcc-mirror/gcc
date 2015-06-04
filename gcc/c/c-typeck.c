@@ -32,11 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symtab.h"
 #include "input.h"
 #include "alias.h"
-#include "double-int.h"
-#include "machmode.h"
 #include "inchash.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "stor-layout.h"
@@ -55,7 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "hashtab.h"
 #include "hash-set.h"
-#include "machmode.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
@@ -67,7 +62,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-common.h"
 #include "c-family/c-ubsan.h"
 #include "cilk.h"
-#include "wide-int.h"
 #include "gomp-constants.h"
 
 /* Possible cases of implicit bad conversions.  Used to select

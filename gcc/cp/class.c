@@ -25,14 +25,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "hash-set.h"
-#include "machmode.h"
 #include "vec.h"
-#include "double-int.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "options.h"
-#include "wide-int.h"
 #include "inchash.h"
 #include "tm.h"
 #include "tree.h"
@@ -56,7 +53,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "splay-tree.h"
 #include "gimplify.h"
-#include "wide-int.h"
 
 /* The number of nested classes being processed.  If we are not in the
    scope of any class, this is zero.  */

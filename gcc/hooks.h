@@ -22,8 +22,6 @@
 #ifndef GCC_HOOKS_H
 #define GCC_HOOKS_H
 
-#include "machmode.h"
-#include "wide-int.h"
 
 extern bool hook_bool_void_false (void);
 extern bool hook_bool_void_true (void);

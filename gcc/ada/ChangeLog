@@ -1,3 +1,13 @@
+2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc-interface/cuintp.c: Adjust includes for restructured coretypes.h.
+	* gcc-interface/decl.c: Likewise.
+	* gcc-interface/misc.c: Likewise.
+	* gcc-interface/targtyps.c: Likewise.
+	* gcc-interface/trans.c: Likewise.
+	* gcc-interface/utils.c: Likewise.
+	* gcc-interface/utils2.c: Likewise.
+
 2015-06-04  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Function>: If

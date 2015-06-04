@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "hashtab.h"
 #include "vec.h"
-#include "machmode.h"
 #include "function.h"
 
 /* In shrink-wrap.c.  */
