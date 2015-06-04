@@ -1,3 +1,8 @@
+2015-06-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66251
+	* gcc.dg/vect/pr66251.c: Fix expected vectorization.
+
 2015-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
