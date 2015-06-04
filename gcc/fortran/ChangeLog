@@ -1,3 +1,10 @@
+2015-06-04  Thomas Koenig  <tkoenig@netcologne.de>
+
+	PR fortran/58749
+	* iresolve.c (gfc_resolve_adjustl):  If string has a charlen,
+	copy it to the function.
+	(gfc_resolve_adjustr):  Likewise.
+
 2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
 
 	* convert.c: Adjust includes for restructured coretypes.h.
