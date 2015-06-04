@@ -1,3 +1,13 @@
+2015-06-04  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2015-06-03  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/66190
+	* cp-gimplify.c (struct cp_genericize_data): Add no_sanitize_p.
+	(cp_genericize_r): Don't instrument static initializers.
+	(cp_genericize_tree): Initialize wtd.no_sanitize_p.
+
 2015-05-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66320
