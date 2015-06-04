@@ -1,3 +1,8 @@
+2015-06-04  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/advsimd-intrinsics.exp:
+	Move set of dg-do-what-default after early return.
+
 2015-06-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c/66341
