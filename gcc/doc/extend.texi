@@ -2916,6 +2916,35 @@ the standard C library can be guaranteed not to throw an exception
 with the notable exceptions of @code{qsort} and @code{bsearch} that
 take function pointer arguments.
 
+@item noplt
+@cindex @code{noplt} function attribute
+The @code{noplt} attribute is the counterpart to option @option{-fno-plt} and
+does not use PLT for calls to functions marked with this attribute in position
+independent code. 
+
+@smallexample
+@group
+/* Externally defined function foo.  */
+int foo () __attribute__ ((noplt));
+
+int
+main (/* @r{@dots{}} */)
+@{
+  /* @r{@dots{}} */
+  foo ();
+  /* @r{@dots{}} */
+@}
+@end group
+@end smallexample
+
+The @code{noplt} attribute on function foo tells the compiler to assume that
+the function foo is externally defined and the call to foo must avoid the PLT
+in position independent code.
+
+Additionally, a few targets also convert calls to those functions that are
+marked to not use the PLT to use the GOT instead for non-position independent
+code.
+
 @item optimize
 @cindex @code{optimize} function attribute
 The @code{optimize} attribute is used to specify that a function is to
