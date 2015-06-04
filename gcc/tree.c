@@ -12930,7 +12930,8 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
     return TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2);
 
   /* Can't be the same type if the types don't have the same code.  */
-  if (TREE_CODE (t1) != TREE_CODE (t2))
+  if (tree_code_for_canonical_type_merging (TREE_CODE (t1))
+      != tree_code_for_canonical_type_merging (TREE_CODE (t2)))
     return false;
 
   /* Qualifiers do not matter for canonical type comparison purposes.  */
