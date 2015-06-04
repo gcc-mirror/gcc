@@ -23872,6 +23872,14 @@ PLT stubs expect GOT pointer in a specific register, this gives more
 register allocation freedom to the compiler.  Lazy binding requires PLT:
 with @option{-fno-plt} all external symbols are resolved at load time.
 
+Alternatively, function attribute @code{noplt} can be used to avoid PLT
+for calls to specific external functions by marking those functions with
+this attribute.
+
+Additionally, a few targets also convert calls to those functions that are
+marked to not use the PLT to use the GOT instead for non-position independent
+code.
+
 @item -fno-jump-tables
 @opindex fno-jump-tables
 Do not use jump tables for switch statements even where it would be

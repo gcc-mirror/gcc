@@ -1,3 +1,17 @@
+2015-06-04  Sriraman Tallam  <tmsriram@google.com>
+
+	* c-family/c-common.c (noplt): New attribute.
+	(handle_noplt_attribute): New handler.
+	* calls.c (prepare_call_address): Check for noplt
+	attribute.
+	* config/i386/i386.c (ix86_expand_call): Check
+	for noplt attribute.
+	(ix86_nopic_noplt_attribute_p): New function.
+	(ix86_output_call_insn): Output indirect call for non-pic
+	no plt calls.
+	* doc/extend.texi (noplt): Document new attribute.
+	* doc/invoke.texi: Document new attribute.
+
 2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
 
 	* coretypes.h: Include machmode.h, signop.h, wide-int.h, double-int.h,

@@ -356,6 +356,7 @@ static tree handle_mode_attribute (tree *, tree, tree, int, bool *);
 static tree handle_section_attribute (tree *, tree, tree, int, bool *);
 static tree handle_aligned_attribute (tree *, tree, tree, int, bool *);
 static tree handle_weak_attribute (tree *, tree, tree, int, bool *) ;
+static tree handle_noplt_attribute (tree *, tree, tree, int, bool *) ;
 static tree handle_alias_ifunc_attribute (bool, tree *, tree, tree, bool *);
 static tree handle_ifunc_attribute (tree *, tree, tree, int, bool *);
 static tree handle_alias_attribute (tree *, tree, tree, int, bool *);
@@ -705,6 +706,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_aligned_attribute, false },
   { "weak",                   0, 0, true,  false, false,
 			      handle_weak_attribute, false },
+  { "noplt",                   0, 0, true,  false, false,
+			      handle_noplt_attribute, false },
   { "ifunc",                  1, 1, true,  false, false,
 			      handle_ifunc_attribute, false },
   { "alias",                  1, 1, true,  false, false,
@@ -8181,6 +8184,25 @@ handle_weak_attribute (tree *node, tree name,
   else
     warning (OPT_Wattributes, "%qE attribute ignored", name);
 
+  return NULL_TREE;
+}
+
+/* Handle a "noplt" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_noplt_attribute (tree *node, tree name,
+		       tree ARG_UNUSED (args),
+		       int ARG_UNUSED (flags),
+		       bool * ARG_UNUSED (no_add_attrs))
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes,
+	       "%qE attribute is only applicable on functions", name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
   return NULL_TREE;
 }
 
