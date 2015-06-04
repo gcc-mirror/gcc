@@ -1053,7 +1053,7 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return optimize >= 2;
+      return AARCH64_TUNE_FMA_STEERING && optimize >= 2;
     }
 
   virtual unsigned int execute (function *)

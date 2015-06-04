@@ -1,3 +1,10 @@
+2015-06-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_override_options): Unconditionally
+	register fma steering pass.
+	* config/aarch64/cortex-a57-fma-steering.c (gate): Add gating on
+	AARCH64_TUNE_FMA_STEERING.
+
 2015-06-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree.c (verify_type_variant): Verify that type and variant is
