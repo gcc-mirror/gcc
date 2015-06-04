@@ -808,9 +808,6 @@ char sparc_hard_reg_printed[8];
 #define TARGET_ATTRIBUTE_TABLE sparc_attribute_table
 #endif
 
-#undef TARGET_RELAXED_ORDERING
-#define TARGET_RELAXED_ORDERING SPARC_RELAXED_ORDERING
-
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE sparc_option_override
 

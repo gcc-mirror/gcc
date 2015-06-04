@@ -8143,8 +8143,6 @@ routine for target specific customizations of the system printf
 and scanf formatter settings.
 @end defmac
 
-@hook TARGET_RELAXED_ORDERING
-
 @hook TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN
 
 @hook TARGET_INVALID_CONVERSION

@@ -139,12 +139,6 @@ do {									\
 /* Static stack checking is supported by means of probes.  */
 #define STACK_CHECK_STATIC_BUILTIN 1
 
-/* Linux currently uses RMO in uniprocessor mode, which is equivalent to
-   TMO, and TMO in multiprocessor mode.  But they reserve the right to
-   change their minds.  */
-#undef SPARC_RELAXED_ORDERING
-#define SPARC_RELAXED_ORDERING true
-
 #undef NEED_INDICATE_EXEC_STACK
 #define NEED_INDICATE_EXEC_STACK 1
 

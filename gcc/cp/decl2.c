@@ -3034,6 +3034,27 @@ get_guard (tree decl)
   return guard;
 }
 
+/* Return an atomic load of src with the appropriate memory model.  */
+
+static tree
+build_atomic_load_byte (tree src, HOST_WIDE_INT model)
+{
+  tree ptr_type = build_pointer_type (char_type_node);
+  tree mem_model = build_int_cst (integer_type_node, model);
+  tree t, addr, val;
+  unsigned int size;
+  int fncode;
+
+  size = tree_to_uhwi (TYPE_SIZE_UNIT (char_type_node));
+
+  fncode = BUILT_IN_ATOMIC_LOAD_N + exact_log2 (size) + 1;
+  t = builtin_decl_implicit ((enum built_in_function) fncode);
+
+  addr = build1 (ADDR_EXPR, ptr_type, src);
+  val = build_call_expr (t, 2, addr, mem_model);
+  return val;
+}
+
 /* Return those bits of the GUARD variable that should be set when the
    guarded entity is actually initialized.  */
 
@@ -3060,12 +3081,14 @@ get_guard_bits (tree guard)
    variable has already been initialized.  */
 
 tree
-get_guard_cond (tree guard)
+get_guard_cond (tree guard, bool thread_safe)
 {
   tree guard_value;
 
-  /* Check to see if the GUARD is zero.  */
-  guard = get_guard_bits (guard);
+  if (!thread_safe)
+    guard = get_guard_bits (guard);
+  else
+    guard = build_atomic_load_byte (guard, MEMMODEL_ACQUIRE);
 
   /* Mask off all but the low bit.  */
   if (targetm.cxx.guard_mask_bit ())
@@ -3681,7 +3704,7 @@ one_static_initialization_or_destruction (tree decl, tree init, bool initp)
 	  /* When using __cxa_atexit, we never try to destroy
 	     anything from a static destructor.  */
 	  gcc_assert (initp);
-	  guard_cond = get_guard_cond (guard);
+	  guard_cond = get_guard_cond (guard, false);
 	}
       /* If we don't have __cxa_atexit, then we will be running
 	 destructors from .fini sections, or their equivalents.  So,
