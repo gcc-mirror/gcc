@@ -4598,6 +4598,27 @@ extern int tree_map_base_marked_p (const void *);
 extern void DEBUG_FUNCTION verify_type (const_tree t);
 extern bool gimple_canonical_types_compatible_p (const_tree, const_tree,
 						 bool trust_type_canonical = true);
+/* Return simplified tree code of type that is used for canonical type merging.  */
+inline enum tree_code
+tree_code_for_canonical_type_merging (enum tree_code code)
+{
+  /* By C standard, each enumerated type shall be compatible with char,
+     a signed integer, or an unsigned integer.  The choice of type is
+     implementation defined (in our case it depends on -fshort-enum).
+
+     For this reason we make no distinction between ENUMERAL_TYPE and INTEGER
+     type and compare only by their signedness and precision.  */
+  if (code == ENUMERAL_TYPE)
+    return INTEGER_TYPE;
+  /* To allow inter-operability between languages having references and
+     C, we consider reference types and pointers alike.  Note that this is
+     not strictly necessary for C-Fortran 2008 interoperability because
+     Fortran define C_PTR type that needs to be compatible with C pointers
+     and we handle this one as ptr_type_node.  */
+  if (code == REFERENCE_TYPE)
+    return POINTER_TYPE;
+  return code;
+}
 
 #define tree_map_eq tree_map_base_eq
 extern unsigned int tree_map_hash (const void *);

@@ -319,7 +319,7 @@ hash_canonical_type (tree type)
      smaller sets; when searching for existing matching types to merge,
      only existing types having the same features as the new type will be
      checked.  */
-  hstate.add_int (TREE_CODE (type));
+  hstate.add_int (tree_code_for_canonical_type_merging (TREE_CODE (type)));
   hstate.add_int (TYPE_MODE (type));
 
   /* Incorporate common features of numerical types.  */
