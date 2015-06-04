@@ -11395,16 +11395,6 @@ routine for target specific customizations of the system printf
 and scanf formatter settings.
 @end defmac
 
-@deftypevr {Target Hook} bool TARGET_RELAXED_ORDERING
-If set to @code{true}, means that the target's memory model does not
-guarantee that loads which do not depend on one another will access
-main memory in the order of the instruction stream; if ordering is
-important, an explicit memory barrier must be used.  This is true of
-many recent processors which implement a policy of ``relaxed,''
-``weak,'' or ``release'' memory consistency, such as Alpha, PowerPC,
-and ia64.  The default is @code{false}.
-@end deftypevr
-
 @deftypefn {Target Hook} {const char *} TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN (const_tree @var{typelist}, const_tree @var{funcdecl}, const_tree @var{val})
 If defined, this macro returns the diagnostic message when it is
 illegal to pass argument @var{val} to function @var{funcdecl}

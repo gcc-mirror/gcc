@@ -1,3 +1,15 @@
+2015-06-04  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR c++/66192
+	PR target/66200
+	* cp-tree.h (get_guard_cond): Adjust declaration
+	* decl.c (expand_static_init): Use atomic load acquire
+	and adjust call to get_guard_cond.
+	* decl2.c (build_atomic_load_byte): New function.
+	(get_guard_cond): Handle thread_safety.
+	(one_static_initialization_or_destruction): Adjust call to
+	get_guard_cond.
+
 2015-06-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44282

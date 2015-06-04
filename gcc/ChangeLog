@@ -1,3 +1,18 @@
+2015-06-04  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR c++/66192
+	PR target/66200
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (TARGET_RELAXED_ORDERING): Delete.
+	* target.def (TARGET_RELAXED_ORDERING): Likewise.
+	* config/alpha/alpha.c (TARGET_RELAXED_ORDERING): Likewise.
+	* config/ia64/ia64.c (TARGET_RELAXED_ORDERING): Likewise.
+	* config/rs6000/rs6000.c (TARGET_RELAXED_ORDERING): Likewise.
+	* config/sparc/linux.h (SPARC_RELAXED_ORDERING): Likewise.
+	* config/sparc/linux64.h (SPARC_RELAXED_ORDERING): Likewise.
+	* config/sparc/sparc.c (TARGET_RELAXED_ORDERING): Likewise.
+	* config/sparc/sparc.h (SPARC_RELAXED_ORDERING): Likewise.
+
 2015-06-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_override_options): Unconditionally

@@ -630,11 +630,6 @@ static const struct attribute_spec ia64_attribute_table[] =
 #define TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P \
   ia64_libgcc_floating_mode_supported_p
 
-/* ia64 architecture manual 4.4.7: ... reads, writes, and flushes may occur
-   in an order different from the specified program order.  */
-#undef TARGET_RELAXED_ORDERING
-#define TARGET_RELAXED_ORDERING true
-
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P ia64_legitimate_constant_p
 #undef TARGET_LEGITIMATE_ADDRESS_P
