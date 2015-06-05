@@ -221,7 +221,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
       void
       swap(stack& __s)
-      noexcept(noexcept(swap(c, __s.c)))
+      noexcept(__is_nothrow_swappable<_Tp>::value)
       {
 	using std::swap;
 	swap(c, __s.c);
