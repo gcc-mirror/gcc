@@ -1,3 +1,18 @@
+2015-06-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/shared_mutex (__shared_mutex_pthread,
+	__shared_mutex_cv): New helper types implementing the shared mutex
+	requirements.
+	(shared_mutex): New type for C++17.
+	(shared_timed_mutex): Derive from one of the new helper types.
+	* testsuite/30_threads/shared_mutex/cons/1.cc: New.
+	* testsuite/30_threads/shared_mutex/cons/assign_neg.cc: New.
+	* testsuite/30_threads/shared_mutex/cons/copy_neg.cc: New.
+	* testsuite/30_threads/shared_mutex/requirements/standard_layout.cc:
+	New.
+	* testsuite/30_threads/shared_mutex/try_lock/1.cc: New.
+	* testsuite/30_threads/shared_mutex/try_lock/2.cc: New.
+
 2015-06-05  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Add __is_nothrow_swappable and take it into use.
