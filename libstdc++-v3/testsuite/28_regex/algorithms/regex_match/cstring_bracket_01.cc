@@ -3,7 +3,7 @@
 //
 // 2013-08-01  Tim Shen <timshen91@gmail.com>
 //
-// Copyright (C) 2013-2014 Free Software Foundation, Inc.
+// Copyright (C) 2013-2015 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -67,9 +67,60 @@ test01()
   }
 }
 
+void
+test02()
+{
+  bool test __attribute__((unused)) = true;
+
+  try
+  {
+    std::regex re("[-----]", std::regex::extended);
+    VERIFY(false);
+  }
+  catch (const std::regex_error& e)
+  {
+    VERIFY(e.code() == std::regex_constants::error_range);
+  }
+  std::regex re("[-----]", std::regex::ECMAScript);
+}
+
+void
+test03()
+{
+  bool test __attribute__((unused)) = true;
+
+  try
+  {
+    std::regex re("[z-a]", std::regex::extended);
+    VERIFY(false);
+  }
+  catch (const std::regex_error& e)
+  {
+    VERIFY(e.code() == std::regex_constants::error_range);
+  }
+}
+
+void
+test04()
+{
+  bool test __attribute__((unused)) = true;
+
+  std::regex re("[-0-9a-z]");
+  VERIFY(regex_match_debug("-", re));
+  VERIFY(regex_match_debug("1", re));
+  VERIFY(regex_match_debug("w", re));
+  re.assign("[-0-9a-z]", regex_constants::basic);
+  VERIFY(regex_match_debug("-", re));
+  VERIFY(regex_match_debug("1", re));
+  VERIFY(regex_match_debug("w", re));
+}
+
 int
 main()
 {
   test01();
+  test02();
+  test03();
+  test04();
   return 0;
 }
