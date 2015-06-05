@@ -162,6 +162,67 @@ not in any particular release.
       <entry/>
     </row>
 
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4366.html">
+	  N4387
+	</link>
+      </entry>
+      <entry>
+        LWG 2228: Missing SFINAE rule in unique_ptr templated assignment
+      </entry>
+      <entry>N</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4387.html">
+	  N4387
+	</link>
+      </entry>
+      <entry> Improving pair and tuple, revision 3 </entry>
+      <entry>N</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4389.html">
+	  N4389
+	</link>
+      </entry>
+      <entry> Wording for bool_constant, revision 1 </entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4508.html">
+	  N4508
+	</link>
+      </entry>
+      <entry>A proposal to add shared_mutex (untimed) (Revision 4)</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4510.html">
+	  N4510
+	</link>
+      </entry>
+      <entry>
+        Minimal incomplete type support for standard containers, revision 4
+      </entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
   </tbody>
 </tgroup>
 </table>
@@ -240,6 +301,69 @@ not in any particular release.
       <entry>Y</entry>
       <entry>Library Fundamentals 2 TS</entry>
     </row>
+
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4388.html">
+	  N4388
+	</link>
+      </entry>
+      <entry>Const-Propagating Wrapper</entry>
+      <entry>N</entry>
+      <entry>Library Fundamentals 2 TS</entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4391.html">
+	  N4391
+	</link>
+      </entry>
+      <entry> <code>make_array</code>, revision 4 </entry>
+      <entry>N</entry>
+      <entry>Library Fundamentals 2 TS</entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4502.pdf">
+	  N4502
+	</link>
+      </entry>
+      <entry> Support for the C++ Detection Idiom, V2 </entry>
+      <entry>N</entry>
+      <entry>Library Fundamentals 2 TS</entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4519.pdf">
+	  N4519
+	</link>
+      </entry>
+      <entry> Source-Code Information Capture </entry>
+      <entry>N</entry>
+      <entry>Library Fundamentals 2 TS</entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4521.html">
+	  N4521
+	</link>
+      </entry>
+      <entry> Merge Fundamentals V1 into V2 </entry>
+      <entry>N</entry>
+      <entry>Library Fundamentals 2 TS</entry>
+    </row>
+
+
 
   </tbody>
 </tgroup>
