@@ -1,3 +1,9 @@
+2015-06-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66405
+	* pt.c (type_dependent_expression_p): EXPR_PACK_EXPANSION is
+	dependent even if it has a type.
+
 2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* cp-objcp-common.c: Adjust comment for
