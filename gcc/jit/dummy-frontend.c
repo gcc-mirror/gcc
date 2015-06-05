@@ -219,18 +219,13 @@ jit_langhook_getdecls (void)
 }
 
 static void
-jit_langhook_write_globals (void)
+jit_langhook_post_compilation_parsing_cleanups (void)
 {
   gcc::jit::playback::context *ctxt = gcc::jit::active_playback_ctxt;
   gcc_assert (ctxt);
   JIT_LOG_SCOPE (ctxt->get_logger ());
 
-  ctxt->write_global_decls_1 ();
-
-  /* This is the hook that runs the middle and backends: */
-  symtab->finalize_compilation_unit ();
-
-  ctxt->write_global_decls_2 ();
+  ctxt->finalize_global_decls ();
 }
 
 #undef LANG_HOOKS_NAME
@@ -260,8 +255,9 @@ jit_langhook_write_globals (void)
 #undef LANG_HOOKS_GETDECLS
 #define LANG_HOOKS_GETDECLS		jit_langhook_getdecls
 
-#undef LANG_HOOKS_WRITE_GLOBALS
-#define LANG_HOOKS_WRITE_GLOBALS	jit_langhook_write_globals
+#undef LANG_HOOKS_POST_COMPILATION_PARSING_CLEANUPS
+#define LANG_HOOKS_POST_COMPILATION_PARSING_CLEANUPS \
+  jit_langhook_post_compilation_parsing_cleanups
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

@@ -668,14 +668,13 @@ as_truth_value (tree expr, location *loc)
   return expr;
 }
 
-/* For use by jit_langhook_write_globals.
+/* For use by jit_langhook_post_compilation_parsing_cleanups
    Calls varpool_node::finalize_decl on each global.  */
 
 void
 playback::context::
-write_global_decls_1 ()
+finalize_global_decls ()
 {
-  /* Compare with e.g. the C frontend's c_write_global_declarations.  */
   JIT_LOG_SCOPE (get_logger ());
 
   int i;
@@ -686,26 +685,6 @@ write_global_decls_1 ()
       varpool_node::finalize_decl (decl);
     }
 }
-
-/* For use by jit_langhook_write_globals.
-   Calls debug_hooks->global_decl on each global.  */
-
-void
-playback::context::
-write_global_decls_2 ()
-{
-  /* Compare with e.g. the C frontend's c_write_global_declarations_2. */
-  JIT_LOG_SCOPE (get_logger ());
-
-  int i;
-  tree decl;
-  FOR_EACH_VEC_ELT (m_globals, i, decl)
-    {
-      gcc_assert (TREE_CODE (decl) == VAR_DECL);
-      debug_hooks->global_decl (decl);
-    }
-}
-
 
 /* Construct a playback::rvalue instance (wrapping a tree) for a
    unary op.  */
