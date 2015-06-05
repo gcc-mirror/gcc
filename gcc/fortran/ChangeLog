@@ -1,3 +1,9 @@
+2015-06-05  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/66385
+	* frontend-passes.c (combine_array_constructor): Return early if
+	inside a FORALL loop.
+
 2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* f95-lang.c (gfc_write_global_declarations): Remove.
