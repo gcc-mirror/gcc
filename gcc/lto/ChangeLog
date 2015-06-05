@@ -1,3 +1,8 @@
+2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* lto-lang.c (lto_write_globals): Remove.
+	(LANG_HOOKS_WRITE_GLOBALS): Same.
+
 2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
 
 	* lto-lang.c: Adjust includes for restructured coretypes.h.

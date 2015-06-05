@@ -1093,6 +1093,7 @@ build_one_array (gswitch *swtch, int num, tree arr_index_type,
       DECL_IGNORED_P (decl) = 1;
       TREE_CONSTANT (decl) = 1;
       TREE_READONLY (decl) = 1;
+      DECL_IGNORED_P (decl) = 1;
       varpool_node::finalize_decl (decl);
 
       fetch = build4 (ARRAY_REF, value_type, decl, tidx, NULL_TREE,

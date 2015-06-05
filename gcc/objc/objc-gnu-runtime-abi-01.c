@@ -497,6 +497,8 @@ build_selector_table_decl (void)
   temp = build_array_type (objc_selector_template, NULL_TREE);
 
   UOBJC_SELECTOR_TABLE_decl = start_var_decl (temp, "_OBJC_SELECTOR_TABLE");
+  /* Squash `defined but not used' warning check_global_declaration.  */
+  TREE_USED (UOBJC_SELECTOR_TABLE_decl) = 1;
   OBJCMETA (UOBJC_SELECTOR_TABLE_decl, objc_meta, meta_base);
 }
 

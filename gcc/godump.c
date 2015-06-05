@@ -511,13 +511,19 @@ go_function_decl (tree decl)
   go_decl (decl);
 }
 
+static void
+go_early_global_decl (tree decl)
+{
+  go_decl (decl);
+  real_debug_hooks->early_global_decl (decl);
+}
+
 /* A global variable decl.  */
 
 static void
-go_global_decl (tree decl)
+go_late_global_decl (tree decl)
 {
-  real_debug_hooks->global_decl (decl);
-  go_decl (decl);
+  real_debug_hooks->late_global_decl (decl);
 }
 
 /* A type declaration.  */
@@ -1457,7 +1463,8 @@ dump_go_spec_init (const char *filename, const struct gcc_debug_hooks *hooks)
   go_debug_hooks.define = go_define;
   go_debug_hooks.undef = go_undef;
   go_debug_hooks.function_decl = go_function_decl;
-  go_debug_hooks.global_decl = go_global_decl;
+  go_debug_hooks.early_global_decl = go_early_global_decl;
+  go_debug_hooks.late_global_decl = go_late_global_decl;
   go_debug_hooks.type_decl = go_type_decl;
 
   macro_hash = htab_create (100, macro_hash_hashval, macro_hash_eq,

@@ -4389,6 +4389,8 @@ dump_tu (void)
     }
 }
 
+static location_t locus_at_end_of_parsing;
+
 /* Check the deallocation functions for CODE to see if we want to warn that
    only one was defined.  */
 
@@ -4436,17 +4438,16 @@ maybe_warn_sized_delete ()
    first, since that way we only need to reverse the decls once.  */
 
 void
-cp_write_global_declarations (void)
+c_parse_final_cleanups (void)
 {
   tree vars;
   bool reconsider;
   size_t i;
-  location_t locus;
   unsigned ssdf_count = 0;
   int retries = 0;
   tree decl;
 
-  locus = input_location;
+  locus_at_end_of_parsing = input_location;
   at_eof = 1;
 
   /* Bad parse errors.  Just forget about it.  */
@@ -4463,6 +4464,9 @@ cp_write_global_declarations (void)
       return;
     }
 
+  timevar_stop (TV_PHASE_PARSING);
+  timevar_start (TV_PHASE_DEFERRED);
+
   symtab->process_same_body_aliases ();
 
   /* Handle -fdump-ada-spec[-slim] */
@@ -4477,8 +4481,6 @@ cp_write_global_declarations (void)
     }
 
   /* FIXME - huh?  was  input_line -= 1;*/
-
-  timevar_start (TV_PHASE_DEFERRED);
 
   /* We now have to write out all the stuff we put off writing out.
      These include:
@@ -4575,7 +4577,7 @@ cp_write_global_declarations (void)
 
 	  /* Set the line and file, so that it is obviously not from
 	     the source file.  */
-	  input_location = locus;
+	  input_location = locus_at_end_of_parsing;
 	  ssdf_body = start_static_storage_duration_function (ssdf_count);
 
 	  /* Make sure the back end knows about all the variables.  */
@@ -4601,7 +4603,7 @@ cp_write_global_declarations (void)
 
 	  /* Finish up the static storage duration function for this
 	     round.  */
-	  input_location = locus;
+	  input_location = locus_at_end_of_parsing;
 	  finish_static_storage_duration_function (ssdf_body);
 
 	  /* All those initializations and finalizations might cause
@@ -4609,7 +4611,7 @@ cp_write_global_declarations (void)
 	     instantiations, etc.  */
 	  reconsider = true;
 	  ssdf_count++;
-	  /* ??? was:  locus.line++; */
+	  /* ??? was:  locus_at_end_of_parsing.line++; */
 	}
 
       /* Now do the same for thread_local variables.  */
@@ -4752,7 +4754,7 @@ cp_write_global_declarations (void)
 				(template_for_substitution (decl)))))
 	{
 	  warning (0, "inline function %q+D used but never defined", decl);
-	  /* Avoid a duplicate warning from check_global_declaration_1.  */
+	  /* Avoid a duplicate warning from check_global_declaration.  */
 	  TREE_NO_WARNING (decl) = 1;
 	}
     }
@@ -4779,12 +4781,13 @@ cp_write_global_declarations (void)
   if (priority_info_map)
     splay_tree_foreach (priority_info_map,
 			generate_ctor_and_dtor_functions_for_priority,
-			/*data=*/&locus);
+			/*data=*/&locus_at_end_of_parsing);
   else if (c_dialect_objc () && objc_static_init_needed_p ())
     /* If this is obj-c++ and we need a static init, call
        generate_ctor_or_dtor_function.  */
     generate_ctor_or_dtor_function (/*constructor_p=*/true,
-				    DEFAULT_INIT_PRIORITY, &locus);
+				    DEFAULT_INIT_PRIORITY,
+				    &locus_at_end_of_parsing);
 
   /* We're done with the splay-tree now.  */
   if (priority_info_map)
@@ -4800,40 +4803,11 @@ cp_write_global_declarations (void)
   /* Generate Java hidden aliases.  */
   build_java_method_aliases ();
 
-  timevar_stop (TV_PHASE_DEFERRED);
-  timevar_start (TV_PHASE_OPT_GEN);
-
   if (flag_vtable_verify)
     {
       vtv_recover_class_info ();
       vtv_compute_class_hierarchy_transitive_closure ();
       vtv_build_vtable_verify_fndecl ();
-    }
-
-  symtab->finalize_compilation_unit ();
-
-  if (flag_vtable_verify)
-    {
-      /* Generate the special constructor initialization function that
-         calls __VLTRegisterPairs, and give it a very high
-         initialization priority.  This must be done after
-         finalize_compilation_unit so that we have accurate
-         information about which vtable will actually be emitted.  */
-      vtv_generate_init_routine ();
-    }
-
-  timevar_stop (TV_PHASE_OPT_GEN);
-  timevar_start (TV_PHASE_CHECK_DBGINFO);
-
-  /* Now, issue warnings about static, but not defined, functions,
-     etc., and emit debugging information.  */
-  walk_namespaces (wrapup_globals_for_namespace, /*data=*/&reconsider);
-  if (vec_safe_length (pending_statics) != 0)
-    {
-      check_global_declarations (pending_statics->address (),
-				 pending_statics->length ());
-      emit_debug_global_declarations (pending_statics->address (),
-				      pending_statics->length ());
     }
 
   perform_deferred_noexcept_checks ();
@@ -4849,13 +4823,37 @@ cp_write_global_declarations (void)
       dump_tree_statistics ();
       dump_time_statistics ();
     }
-  input_location = locus;
+
+  timevar_stop (TV_PHASE_DEFERRED);
+  timevar_start (TV_PHASE_PARSING);
+}
+
+/* Perform any post compilation-proper cleanups for the C++ front-end.
+   This should really go away.  No front-end should need to do
+   anything past the compilation process.  */
+
+void
+cxx_post_compilation_parsing_cleanups (void)
+{
+  timevar_start (TV_PHASE_LATE_PARSING_CLEANUPS);
+
+  if (flag_vtable_verify)
+    {
+      /* Generate the special constructor initialization function that
+         calls __VLTRegisterPairs, and give it a very high
+         initialization priority.  This must be done after
+         finalize_compilation_unit so that we have accurate
+         information about which vtable will actually be emitted.  */
+      vtv_generate_init_routine ();
+    }
+
+  input_location = locus_at_end_of_parsing;
 
 #ifdef ENABLE_CHECKING
   validate_conversion_obstack ();
 #endif /* ENABLE_CHECKING */
 
-  timevar_stop (TV_PHASE_CHECK_DBGINFO);
+  timevar_stop (TV_PHASE_LATE_PARSING_CLEANUPS);
 }
 
 /* FN is an OFFSET_REF, DOTSTAR_EXPR or MEMBER_REF indicating the

@@ -1,3 +1,12 @@
+2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* go-gcc.cc (write_global_definitions): Remove call to
+	finalize_compilation_unit.
+	Remove Go specific debug generation.
+	* go-lang.c (go_langhook_parse_file): Call go_write_globals.
+	(go_langhook_write_globals): Remove.
+	Remove LANG_HOOKS_WRITE_GLOBALS everywhere.
+
 2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
 
 	* go-backend.c: Adjust includes for restructured coretypes.h.

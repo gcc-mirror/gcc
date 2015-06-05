@@ -345,7 +345,8 @@ static int dbxout_symbol_location (tree, tree, const char *, rtx);
 static void dbxout_symbol_name (tree, const char *, int);
 static void dbxout_common_name (tree, const char *, stab_code_type);
 static const char *dbxout_common_check (tree, int *);
-static void dbxout_global_decl (tree);
+static void dbxout_early_global_decl (tree);
+static void dbxout_late_global_decl (tree);
 static void dbxout_type_decl (tree, int);
 static void dbxout_handle_pch (unsigned);
 static void debug_free_queue (void);
@@ -367,6 +368,7 @@ const struct gcc_debug_hooks dbx_debug_hooks =
   dbxout_init,
   dbxout_finish,
   debug_nothing_void,
+  debug_nothing_void,
   debug_nothing_int_charstar,
   debug_nothing_int_charstar,
   dbxout_start_source_file,
@@ -386,7 +388,8 @@ const struct gcc_debug_hooks dbx_debug_hooks =
 #endif
   debug_nothing_int,		         /* end_function */
   dbxout_function_decl,
-  dbxout_global_decl,		         /* global_decl */
+  dbxout_early_global_decl,		 /* early_global_decl */
+  dbxout_late_global_decl,		 /* late_global_decl */
   dbxout_type_decl,			 /* type_decl */
   debug_nothing_tree_tree_tree_bool,	 /* imported_module_or_decl */
   debug_nothing_tree,		         /* deferred_inline_function */
@@ -407,6 +410,7 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
   dbxout_init,
   dbxout_finish,
   debug_nothing_void,
+  debug_nothing_void,
   debug_nothing_int_charstar,
   debug_nothing_int_charstar,
   dbxout_start_source_file,
@@ -422,7 +426,8 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
   debug_nothing_tree,		         /* begin_function */
   xcoffout_end_function,
   debug_nothing_tree,		         /* function_decl */
-  dbxout_global_decl,		         /* global_decl */
+  dbxout_early_global_decl,		 /* early_global_decl */
+  dbxout_late_global_decl,		 /* late_global_decl */
   dbxout_type_decl,			 /* type_decl */
   debug_nothing_tree_tree_tree_bool,	 /* imported_module_or_decl */
   debug_nothing_tree,		         /* deferred_inline_function */
@@ -1336,10 +1341,16 @@ dbxout_function_decl (tree decl)
 
 #endif /* DBX_DEBUGGING_INFO  */
 
+static void
+dbxout_early_global_decl (tree decl ATTRIBUTE_UNUSED)
+{
+  /* NYI for non-dwarf.  */
+}
+
 /* Debug information for a global DECL.  Called from toplev.c after
    compilation proper has finished.  */
 static void
-dbxout_global_decl (tree decl)
+dbxout_late_global_decl (tree decl)
 {
   if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
     {

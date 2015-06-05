@@ -435,8 +435,7 @@ objc_init (void)
   return true;
 }
 
-/* This is called automatically (at the very end of compilation) by
-   c_write_global_declarations and cp_write_global_declarations.  */
+/* This is called at the end of parsing by the C/C++ parsers.  */
 void
 objc_write_global_declarations (void)
 {

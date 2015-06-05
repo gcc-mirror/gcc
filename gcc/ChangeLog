@@ -1,3 +1,126 @@
+2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* dwarf2out.c: Remove deferred_locations*.
+	(dwarf2_debug_hooks): Add early_finish hook.
+	Remove global_decl hook.
+	Add early_global_decl and late_global_decl hook.
+	New global early_dwarf.
+	New structure set_early_dwarf.
+	(output_die): Indicate whether a DIE was generated early
+	when generating assembly with -dA.
+	(struct limbo_die_struct): Document created_for field.
+	Remove file_table_last_lookup.
+	(remove_AT): Return TRUE if successful.
+	(remove_child_TAG): Clear die_parent.
+	(reparent_child): New function abstracted from...
+	(splice_child_die): ...here.
+	(new_die): ICE if a DIE ends up in limbo too late.
+	(check_die): New.
+	(defer_location): Remove.
+	(add_subscript_info): Reuse DW_TAG_subrange_type if available.
+	(fill_variable_array_bounds): New.
+	(decl_start_label): Call fill_variable_array_bounds.
+	(gen_formal_parameter_die): Rewrite to reuse previously generated
+	DIEs.
+	(gen_subprogram_die): Same.
+	(gen_variable_die): Same.
+	(gen_const_die): Same.
+	(gen_label_die): Same.
+	(gen_lexical_block_die): Same.
+	(decl_will_get_specification_p): New.
+	(local_function_static): New.
+	(gen_struct_or_union_type_die): Fill in variable-length fields.
+	(gen_typedef_die): Fill in variable-length typedefs.
+	(gen_tagged_type_die): Gracefully return on error_mark_node.
+	Handle re-entrancy.
+	(gen_type_die_with_usage): Handle variable-length types.
+	Remove duplicate code for ARRAY_TYPE case.
+	(process_scope_var): Only process imported modules during early
+	dwarf.
+	(dwarf2out_early_global_decl): New.
+	(dwarf2out_late_global_decl): Rename from dwarf2out_global_decl.
+	(dwarf2out_type_decl): Set early_dwarf while calling
+	dwarf2out_decl.
+	(dwarf2out_decl): Verify that we did not recreate a previously
+	generated DIE.
+	Do not return on DECL_EXTERNALs in VAR_DECLs.
+	Abstract some code to local_function_static.
+	(lookup_filename): Remove use of file_table_last_lookup.
+	Gracefully exit on missing file_name.
+	(dwarf2out_finish): Verify limbo list.
+	Remove deferred_locations_list use.
+	Move deferred_asm_name and limbo flushing to...
+	(dwarf2out_early_finish): ...here.  New.
+	(dwarf2out_c_finalize): Remove set of deferred_location_list,
+	deferred_asm_name, and file_table_last_lookup.
+	* cgraph.h (referred_to_p): Add default argument.
+	* cgraphunit.c (referred_to_p): Add and handle include_self
+	argument.
+	(analyze_functions): Add first_time argument.
+	Call check_global_declaration for all symbols.
+	Call late_global_decl for nodes for moribund nodes.
+	(finalize_compilation_unit): Add new argument to
+	analyze_functions.
+	Call early_global_decl for functions.
+	Call early_finish debug hook.
+	* dbxout.c (dbxout_early_global_decl): New.
+	(dbxout_late_global_decl): New.  Adapted from dbxout_global_decl.
+	(dbx_debug_hooks): Add new hooks.
+	(xcoff_debug_hooks): Same.
+	* debug.c (do_nothing_debug_hooks): Add early_finish field.
+	Add early and late debug hooks.
+	Remove global_decl hook.
+	* debug.h (struct gcc_debug_hooks): Add early_finish,
+	early_global_decl, and late_global_decl fields.
+	Remove global_decl field.
+	Document gcc_debug_hooks.
+	* gengtype.c (output_typename): Remove.
+	* godump.c (go_early_global_decl): New.
+	(go_late_global_decl): New.
+	(go_global_decl): Remove.
+	(dump_go_spec_init): Remove global_decl.  Add
+	{early,late}_global_decl.
+	* langhooks-def.h (LANG_HOOKS_WRITE_GLOBALS): Remove.
+	(LANG_HOOKS_POST_COMPILATION_PARSING_CLEANUPS): New.
+	* langhooks.c (lhd_warn_unused_global_decl): Adjust comment.
+	(write_global_declarations): Remove.
+	(global_decl_processing): New.
+	* langhooks.h (struct lang_hooks_for_decls): Remove
+	final_write_globals field.
+	Add post_compilation_parsing_cleanups field.
+	* passes.c (rest_of_decl_compilation): Call early_global_decl.
+	* sdbout.c: Add early and late_global_decl hooks.  Remove
+	sdbout_global_decl hook.
+	Add early_finish field for sdb_debug_hooks.
+	(sdbout_global_decl): Remove.
+	(sdbout_early_global_decl): New.
+	(sdbout_late_global_decl): New.
+	* timevar.def (TV_PHASE_LATE_PARSING_CLEANUPS): New.
+	* toplev.c (check_global_declaration): Rename from
+	check_global_declaration_1.
+	Adapt to use symtab infrastructure.
+	(check_global_declarations): Remove.
+	(emit_debug_global_declarations): Remove.
+	(compile_file): Remove call to final_write_globals langhook.
+	Run the actual compilation process.
+	Perform any post compilation parser cleanups.
+	Generate late debug info.
+	* toplev.h (check_global_declaration): New.
+	(check_global_declaration_1): Remove.
+	(check_global_declarations): Remove.
+	(write_global_declarations): Remove.
+	(emit_debug_global_declarations): Remove.
+	(global_decl_processing): New.
+	* tree-core.h (struct tree_block): Add DIE field.
+	* tree.h (BLOCK_DIE): New.
+	* vmsdbgout.c (vmsdbgout_global_decl): Remove function and its use
+	throughout.
+	(vmsdbgout_early_global_decl): New.
+	(vmsdbgout_late_global_decl): New.
+	Add early_finish debug hook field to vmsdbg_debug_hooks.
+	Remove vmsdbgout_decl to vmsdbgout_function_decl.
+	Add early and late_global_decl debug hooks.
+
 2015-06-05  Julian Brown  <julian@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 

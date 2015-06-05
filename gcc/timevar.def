@@ -31,11 +31,17 @@
 
 /* The total execution time.  */
 DEFTIMEVAR (TV_TOTAL                 , "total time")
-/* The compiler phases.  These must be mutually exclusive.
-   Ideally, they would sum to near the total time.  */
+/* The compiler phases.
+
+   These must be mutually exclusive, and the NAME field must begin
+   with "phase".
+
+   Also, their sum must be within a millionth of the total time (see
+   validate_phases).  */
 DEFTIMEVAR (TV_PHASE_SETUP           , "phase setup")
 DEFTIMEVAR (TV_PHASE_PARSING         , "phase parsing")
 DEFTIMEVAR (TV_PHASE_DEFERRED        , "phase lang. deferred")
+DEFTIMEVAR (TV_PHASE_LATE_PARSING_CLEANUPS, "phase late parsing cleanups")
 DEFTIMEVAR (TV_PHASE_OPT_GEN         , "phase opt and generate")
 DEFTIMEVAR (TV_PHASE_DBGINFO         , "phase debug info")
 DEFTIMEVAR (TV_PHASE_CHECK_DBGINFO   , "phase check & debug info")

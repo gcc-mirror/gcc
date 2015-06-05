@@ -307,6 +307,9 @@ go_langhook_parse_file (void)
 {
   go_parse_input_files (in_fnames, num_in_fnames, flag_syntax_only,
 			go_require_return_statement);
+
+  /* Final processing of globals and early debug info generation.  */
+  go_write_globals ();
 }
 
 static tree
@@ -452,14 +455,6 @@ go_langhook_getdecls (void)
   return NULL;
 }
 
-/* Write out globals.  */
-
-static void
-go_langhook_write_globals (void)
-{
-  go_write_globals ();
-}
-
 /* Go specific gimplification.  We need to gimplify
    CALL_EXPR_STATIC_CHAIN, because the gimplifier doesn't handle
    it.  */
@@ -557,7 +552,6 @@ go_localize_identifier (const char *ident)
 #undef LANG_HOOKS_GLOBAL_BINDINGS_P
 #undef LANG_HOOKS_PUSHDECL
 #undef LANG_HOOKS_GETDECLS
-#undef LANG_HOOKS_WRITE_GLOBALS
 #undef LANG_HOOKS_GIMPLIFY_EXPR
 #undef LANG_HOOKS_EH_PERSONALITY
 
@@ -574,7 +568,6 @@ go_localize_identifier (const char *ident)
 #define LANG_HOOKS_GLOBAL_BINDINGS_P	go_langhook_global_bindings_p
 #define LANG_HOOKS_PUSHDECL		go_langhook_pushdecl
 #define LANG_HOOKS_GETDECLS		go_langhook_getdecls
-#define LANG_HOOKS_WRITE_GLOBALS	go_langhook_write_globals
 #define LANG_HOOKS_GIMPLIFY_EXPR	go_langhook_gimplify_expr
 #define LANG_HOOKS_EH_PERSONALITY	go_langhook_eh_personality
 

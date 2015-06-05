@@ -887,6 +887,8 @@ extern HOST_WIDE_INT c_common_to_target_charset (HOST_WIDE_INT);
 /* This is the basic parsing function.  */
 extern void c_parse_file (void);
 
+extern void c_parse_final_cleanups (void);
+
 extern void warn_for_omitted_condop (location_t, tree);
 
 /* These macros provide convenient access to the various _STMT nodes.  */

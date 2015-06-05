@@ -84,8 +84,8 @@ extern void cp_common_init_ts (void);
 #define LANG_HOOKS_PRINT_ERROR_FUNCTION	cxx_print_error_function
 #undef LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL
 #define LANG_HOOKS_WARN_UNUSED_GLOBAL_DECL cxx_warn_unused_global_decl
-#undef LANG_HOOKS_WRITE_GLOBALS
-#define LANG_HOOKS_WRITE_GLOBALS cp_write_global_declarations
+#undef LANG_HOOKS_POST_COMPILATION_PARSING_CLEANUPS
+#define LANG_HOOKS_POST_COMPILATION_PARSING_CLEANUPS cxx_post_compilation_parsing_cleanups
 #undef  LANG_HOOKS_BUILTIN_FUNCTION
 #define LANG_HOOKS_BUILTIN_FUNCTION cxx_builtin_function
 #undef  LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE

@@ -25,7 +25,7 @@ struct C<_Functor(_ArgTypes...)>
                            typename remove_reference<_Functor>::type>::value,
                        _Functor> {};
 template <typename _Tp> using result_of_t = typename C<_Tp>::type;
-template <typename> void forward();
+template <typename> void forward() { }
 template <typename _Tp> _Tp move(_Tp) {}
 namespace __cxx11 {
 class basic_string typedef string;
@@ -119,7 +119,7 @@ class H {
   template <typename Func> void schedule(Func func) {
     G __trans_tmp_1;
     struct task_with_ready_state {
-      task_with_ready_state(Func, G);
+      task_with_ready_state(Func, G) { };
     };
     std::make_unique<task_with_ready_state>(std::move(func), __trans_tmp_1);
     _promise->schedule(std::move(func));
