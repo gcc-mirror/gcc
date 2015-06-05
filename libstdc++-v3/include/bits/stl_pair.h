@@ -192,8 +192,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       void
       swap(pair& __p)
-      noexcept(noexcept(swap(first, __p.first))
-	       && noexcept(swap(second, __p.second)))
+      noexcept(__is_nothrow_swappable<_T1>::value
+               && __is_nothrow_swappable<_T2>::value)
       {
 	using std::swap;
 	swap(first, __p.first);

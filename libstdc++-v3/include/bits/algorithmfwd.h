@@ -566,22 +566,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _BIter 
     stable_partition(_BIter, _BIter, _Predicate);
 
-  template<typename _Tp> 
-    void 
-    swap(_Tp&, _Tp&)
-#if __cplusplus >= 201103L
-    noexcept(__and_<is_nothrow_move_constructible<_Tp>,
-	            is_nothrow_move_assignable<_Tp>>::value)
-#endif
-    ;
+#if __cplusplus < 201103L
+  // For C++11 swap() is declared in <type_traits>.
 
   template<typename _Tp, size_t _Nm>
-    void
-    swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
-#if __cplusplus >= 201103L
-    noexcept(noexcept(swap(*__a, *__b)))
+    inline void
+    swap(_Tp& __a, _Tp& __b);
+
+  template<typename _Tp, size_t _Nm>
+    inline void
+    swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm]);
 #endif
-    ;
 
   template<typename _FIter1, typename _FIter2>
     _FIter2 

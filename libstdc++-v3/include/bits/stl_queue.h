@@ -247,7 +247,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
       void
       swap(queue& __q)
-      noexcept(noexcept(swap(c, __q.c)))
+      noexcept(__is_nothrow_swappable<_Tp>::value)
       {
 	using std::swap;
 	swap(c, __q.c);
@@ -541,7 +541,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
       void
       swap(priority_queue& __pq)
-      noexcept(noexcept(swap(c, __pq.c)) && noexcept(swap(comp, __pq.comp)))
+      noexcept(__is_nothrow_swappable<_Tp>::value
+               && __is_nothrow_swappable<_Compare>::value)
       {
 	using std::swap;
 	swap(c, __pq.c);

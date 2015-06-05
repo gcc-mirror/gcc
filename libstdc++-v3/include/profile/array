@@ -63,7 +63,7 @@ namespace __profile
 
       void
       swap(array& __other)
-      noexcept(noexcept(swap(std::declval<_Tp&>(), std::declval<_Tp&>())))
+      noexcept(__is_nothrow_swappable<_Tp>::value)
       { std::swap_ranges(begin(), end(), __other.begin()); }
 
       // Iterators.
