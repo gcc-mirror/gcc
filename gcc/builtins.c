@@ -5471,7 +5471,8 @@ expand_builtin_atomic_compare_exchange (machine_mode mode, tree exp,
      the normal case where EXPECT is totally private, i.e. a register.  At
      which point the store can be unconditional.  */
   label = gen_label_rtx ();
-  emit_cmp_and_jump_insns (target, const0_rtx, NE, NULL, VOIDmode, 1, label);
+  emit_cmp_and_jump_insns (target, const0_rtx, NE, NULL,
+			   GET_MODE (target), 1, label);
   emit_move_insn (expect, oldval);
   emit_label (label);
 

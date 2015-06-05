@@ -1,3 +1,8 @@
+2015-06-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* builtins.c (expand_builtin_atomic_compare_exchange): Call
+	emit_cmp_and_jump_insns with the mode of target.
+
 2015-06-05  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	* config/i386/sse.md (sse3_mwait): Swap the operand constriants.
