@@ -1,4 +1,4 @@
-2015-06-04  Ville Voutilainen  <ville.voutilainen@gmail.com>
+2015-06-05  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Add __is_nothrow_swappable and take it into use.
 	* include/bits/algorithmfwd.h (swap): Only declare for C++98 mode.
