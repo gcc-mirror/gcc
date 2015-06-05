@@ -10,7 +10,7 @@ subroutine test
   integer, target :: t
   p => t
 contains
-  subroutine sub()
+  subroutine sub()               ! { dg-warning "defined but not used" }
     if (p /= 0) return
   end subroutine
 end subroutine
@@ -22,7 +22,7 @@ contains
     integer, target :: t2
     p2 => t2 ! { dg-warning "Pointer at .1. in pointer assignment might outlive the pointer target" }
   contains
-    subroutine sub()
+    subroutine sub()             ! { dg-warning "defined but not used" }
       if (p2 /= 0) return
     end subroutine
   end subroutine

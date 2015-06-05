@@ -1,3 +1,17 @@
+2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* c-decl.c (finish_struct): Save C_TYPE_INCOMPLETE_VARS and
+	immediately clobber it.
+	(c_write_global_declarations_1): Remove call to
+	check_global_declaration_1.
+	(c_write_global_declarations_2): Remove.
+	(c_write_final_cleanups): Rename from c_write_global_declarations.
+	Remove call to finalize_compilation_unit.
+	Remove calls to debugging hooks.
+	* c-objc-common.c: Adjust comment for c_warn_unused_global_decl.
+	* c-objc-common.h: Remove LANG_HOOKS_WRITE_GLOBALS.
+	* c-tree.h: Remove c_write_global_declarations.
+
 2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-array-notation.c: Adjust includes for restructured coretypes.h.

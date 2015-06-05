@@ -314,7 +314,7 @@ public:
   bool needed_p (void);
 
   /* Return true when there are references to the node.  */
-  bool referred_to_p (void);
+  bool referred_to_p (bool include_self = true);
 
   /* Return true if NODE can be discarded by linker from the binary.  */
   inline bool

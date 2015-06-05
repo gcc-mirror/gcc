@@ -1996,6 +1996,9 @@ java_parse_file (void)
   /* Arrange for any necessary initialization to happen.  */
   java_emit_static_constructor ();
   gcc_assert (global_bindings_p ());
+
+  /* Do final processing on globals.  */
+  global_decl_processing ();
 }
 
 

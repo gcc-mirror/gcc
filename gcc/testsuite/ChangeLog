@@ -1,3 +1,20 @@
+2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* g++.dg/cpp0x/pr57101.C: Add warning.
+	* g++.dg/debug/dwarf2/dwarf4-typedef.C: Same.
+	* g++.dg/ext/visibility/anon7.C: Same.
+	* g++.dg/ipa/pr63587-2.C: Same.
+	* g++.dg/opt/dump1.C: Same.
+	* g++.dg/opt/pr59622-3.C: Same.
+	* g++.dg/opt/pr59622.C: Same.
+	* g++.dg/torture/pr46383.C: Same.
+	* gcc.dg/dfp/pragma-float-const-decimal64-8.c: Same.
+	* g++.dg/debug/dwarf2/auto1.C: Adjust for early dwarf.
+	* g++.dg/lto/pr65549_0.C: Add { } to used but never defined
+	functions.
+	* gfortran.dg/intent_out_8.f90: Same.
+	* gfortran.dg/warn_target_lifetime_3.f90: Same.
+
 2015-06-05  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/66377

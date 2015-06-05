@@ -184,9 +184,11 @@ struct lang_hooks_for_decls
      We will already have checked that it has static binding.  */
   bool (*warn_unused_global) (const_tree);
 
-  /* Obtain a list of globals and do final output on them at end
-     of compilation */
-  void (*final_write_globals) (void);
+  /* Perform any post compilation-proper parser cleanups and
+     processing.  This is currently only needed for the C++ parser,
+     which hopefully can be cleaned up so this hook is no longer
+     necessary.  */
+  void (*post_compilation_parsing_cleanups) (void);
 
   /* True if this decl may be called via a sibcall.  */
   bool (*ok_for_sibcall) (const_tree);

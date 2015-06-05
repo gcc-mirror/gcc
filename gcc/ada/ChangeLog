@@ -1,3 +1,17 @@
+2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc-interface/gigi.h (note_types_used_by_globals): Rename from
+	gnat_write_global_declarations.
+	* gcc-interface/misc.c (gnat_parse_file): Call
+	note_types_used_by_globals.
+	Remove LANG_HOOKS_WRITE_GLOBALS.
+	* gcc-interface/utils.c: Rename global_decls to type_decls.
+	(gnat_write_global_declarations): Rename
+	to note_types_used_by_globals.
+	Remove call to finalize_compilation_unit.
+	Remove debug_hooks->global_decl() call for globals.
+	(gnat_pushdecls): Only insert into type_decls if TYPE_DECL.
+
 2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc-interface/cuintp.c: Adjust includes for restructured coretypes.h.

@@ -1,3 +1,13 @@
+2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* f95-lang.c (gfc_write_global_declarations): Remove.
+	(LANG_HOOKS_WRITE_GLOBALS): Remove.
+	(gfc_write_global_declarations): Move code from here to...
+	(gfc_be_parse_file): ...here.
+	Call global_decl_processing.
+	* trans-decl.c (gfc_emit_parameter_debug_info): Rename global_decl
+	to early_global_decl.
+
 2015-06-05  Russell Whitesides  <russelldub@gmail.com>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

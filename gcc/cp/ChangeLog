@@ -1,3 +1,36 @@
+2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* cp-objcp-common.c: Adjust comment for
+	cxx_warn_unused_global_decl.
+	* cp-objcp-common.h (LANG_HOOKS_WRITE_GLOBALS): Remove
+	(LANG_HOOKS_POST_COMPILATION_PARSING_CLEANUPS): New.
+	* cp-tree.h (note_mangling_alias): Protoize.
+	(cp_write_global_declarations): Remove.
+	(cxx_post_compilation_parsing_cleanups): Protoize.
+	* decl.c (wrapup_globals_for_namespace): Remove use of DATA
+	argument.
+	* decl2.c (mangling_aliases): New global.
+	(build_java_method_aliases): New.  Adapted from
+	collect_candidates_for_java_method_aliases.
+	(collect_candidates_for_java_method_aliases): Remove.
+	(build_java_method_aliases): Remove.
+	(generate_mangling_aliases): New.
+	(note_mangling_alias): New.  Moved from mangle_decl.
+	(locus_at_end_of_parsing): New global.
+	(c_parse_final_cleanups): Rename from
+	cp_write_global_declarations.
+	Use locus_at_end_of_parsing.
+	Call generate_mangling_aliases.
+	Rename call to collect_candidates_for_java_method_aliases into
+	build_java_method_aliases.
+	Remove call to finalize_compilation_unit.
+	Move vtable handling into cxx_post_compilation_parsing_cleanups.
+	Do not call check_global_declarations or
+	emit_debug_global_declarations.
+	(cxx_post_compilation_parsing_cleanups): New.
+	* mangle.c (mangle_decl): Move code to note_mangling_alias.
+	* name-lookup.c (do_namespace_alias): Call early_global_decl.
+
 2015-06-05  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/52595

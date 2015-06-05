@@ -4720,33 +4720,6 @@ write_roots (pair_p variables, bool emit_pch)
    this funcion will have to be adjusted to be more like
    output_mangled_typename.  */
 
-static void
-output_typename (outf_p of, const_type_p t)
-{
-  switch (t->kind)
-    {
-    case TYPE_STRING:
-      oprintf (of, "str");
-      break;
-    case TYPE_SCALAR:
-      oprintf (of, "scalar");
-      break;
-    case TYPE_POINTER:
-      output_typename (of, t->u.p);
-      break;
-    case TYPE_STRUCT:
-    case TYPE_USER_STRUCT:
-    case TYPE_UNION:
-    case TYPE_LANG_STRUCT:
-      oprintf (of, "%s", t->u.s.tag);
-      break;
-    case TYPE_NONE:
-    case TYPE_UNDEFINED:
-    case TYPE_ARRAY:
-      gcc_unreachable ();
-    }
-}
-
 #define INDENT 2
 
 /* Dumps the value of typekind KIND.  */

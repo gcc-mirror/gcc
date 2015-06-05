@@ -49,7 +49,7 @@ c_missing_noreturn_ok_p (tree decl)
   return flag_hosted && MAIN_NAME_P (DECL_ASSEMBLER_NAME (decl));
 }
 
-/* Called from check_global_declarations.  */
+/* Called from check_global_declaration.  */
 
 bool
 c_warn_unused_global_decl (const_tree decl)

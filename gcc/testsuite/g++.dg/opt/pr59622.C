@@ -6,7 +6,7 @@ namespace
 {
   struct A
   {
-    virtual int foo ();
+    virtual int foo (); // { dg-warning "used but never defined" }
     int bar () { return foo (); }
   };
 }

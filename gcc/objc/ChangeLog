@@ -1,3 +1,9 @@
+2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* objc-act.c (objc_write_global_declarations): Adjust comment.
+	* objc-gnu-runtime-abi-01.c (build_selector_table_decl): Set
+	TREE_USED bit.
+
 2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
 
 	* objc-act.c: Adjust includes for restructured coretypes.h.

@@ -1,3 +1,15 @@
+2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* class.c: Remove pending_static_fields.
+	(add_field): Remove use of pending_static_fields.
+	(java_write_globals): Remove.
+	* decl.c (java_mark_class_local): Remove use of
+	pending_static_fields.
+	* java-tree.h: Remove pending_static_fields and
+	java_write_globals.
+	* jcf-parse.c (java_parse_file): Call global_decl_processing.
+	* lang.c (LANG_HOOKS_WRITE_GLOBALS): Remove.
+
 2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
 
 	* boehm.c: Adjust includes for restructured coretypes.h.

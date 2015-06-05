@@ -178,7 +178,7 @@ public:
   }
 };
 template <typename AttributeValueT>
-attribute_actor<AttributeValueT> attr (attribute_name);
+attribute_actor<AttributeValueT> attr (attribute_name); // { dg-warning "used but never defined" }
 terminal<>::type stream;
 template <typename LeftT, typename ImplT> class attribute_output_terminal
 {

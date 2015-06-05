@@ -531,8 +531,9 @@ extern tree gnat_type_for_size (unsigned precision, int unsignedp);
    an unsigned type; otherwise a signed type is returned.  */
 extern tree gnat_type_for_mode (machine_mode mode, int unsignedp);
 
-/* Emit debug info for all global variable declarations.  */
-extern void gnat_write_global_declarations (void);
+/* Keep track of types used at the global level and emit debug info
+   for all global types.  */
+extern void note_types_used_by_globals (void);
 
 /* Return the unsigned version of a TYPE_NODE, a scalar type.  */
 extern tree gnat_unsigned_type (tree type_node);

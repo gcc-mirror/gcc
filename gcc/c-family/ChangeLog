@@ -1,3 +1,8 @@
+2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* c-common.h (c_parse_final_cleanups): New prototype.
+	* c-opts.c (c_common_parse_file): Call c_parse_final_cleanups.
+
 2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
 
 	* array-notation-common.c: Adjust includes for restructured coretypes.h.
