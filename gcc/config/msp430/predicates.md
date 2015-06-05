@@ -82,3 +82,7 @@
   (and (match_code "const_int")
        (match_test ("   INTVAL (op) >= 0
 		     && INTVAL (op) <= 15 "))))
+
+(define_predicate "msp430_symbol_operand"
+  (match_code "symbol_ref")
+)

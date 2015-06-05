@@ -1,3 +1,10 @@
+2015-06-04  DJ Delorie  <dj@redhat.com>
+
+	* config/msp430/msp430.md (movsi_s): New.  Special case for
+	storing a 20-bit symbol into a 32-bit register.
+	* config/msp430/msp430.c (msp430_subreg): Add support for it.
+	* config/msp430/predicates.md (msp430_symbol_operand): New.
+
 2015-06-04  Sriraman Tallam  <tmsriram@google.com>
 
 	* c-family/c-common.c (noplt): New attribute.

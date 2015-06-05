@@ -2374,6 +2374,13 @@ msp430_subreg (machine_mode mode, rtx r, machine_mode omode, int byte)
     }
   else if (GET_CODE (r) == MEM)
     rv = adjust_address (r, mode, byte);
+  else if (GET_CODE (r) == SYMBOL_REF
+	   && (byte == 0 || byte == 2)
+	   && mode == HImode)
+    {
+      rv = gen_rtx_ZERO_EXTRACT (HImode, r, GEN_INT (16), GEN_INT (8*byte));
+      rv = gen_rtx_CONST (HImode, r);
+    }
   else
     rv = simplify_gen_subreg (mode, r, omode, byte);
 
