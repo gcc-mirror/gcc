@@ -309,6 +309,19 @@
   (and (match_code "mem")
        (match_test "! satisfies_constraint_Sdd (op)")))
 
+(define_memory_constraint "Sid"
+  "A memory reference that uses index addressing."
+  (and (match_code "mem")
+       (match_code "plus" "0")
+       (match_code "reg" "00")
+       (match_code "reg" "01")))
+
+(define_memory_constraint "Ssd"
+  "A memory reference that excludes index and displacement addressing."
+  (and (match_code "mem")
+       (match_test "! satisfies_constraint_Sid (op)")
+       (match_test "! satisfies_constraint_Sdd (op)")))
+
 (define_memory_constraint "Sbv"
   "A memory reference, as used in SH2A bclr.b, bset.b, etc."
   (and (match_test "MEM_P (op) && GET_MODE (op) == QImode")
