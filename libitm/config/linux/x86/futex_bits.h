@@ -30,12 +30,13 @@
 static inline long
 sys_futex0 (std::atomic<int> *addr, int op, int val)
 {
-  register long r10 __asm__("%r10") = 0;
   long res;
 
+  register long r10 __asm__("%r10") = 0;
   __asm volatile ("syscall"
 		  : "=a" (res)
-		  : "0" (SYS_futex), "D" (addr), "S" (op), "d" (val), "r" (r10)
+		  : "0" (SYS_futex), "D" (addr), "S" (op),
+		    "d" (val), "r" (r10)
 		  : "r11", "rcx", "memory");
 
   return res;
