@@ -1,5 +1,16 @@
 2015-06-05  David Malcolm  <dmalcolm@redhat.com>
 
+	* dummy-frontend.c
+	(jit_langhook_post_compilation_parsing_cleanups): Remove.
+	(LANG_HOOKS_POST_COMPILATION_PARSING_CLEANUPS): Remove
+	* jit-playback.c (gcc::jit::playback::context::new_global): Add
+	call to varpool_node::finalize_decl.
+	(gcc::jit::playback::context::finalize_global_decls): Remove.
+	* jit-playback.h
+	(gcc::jit::playback::context::finalize_global_decls): Remove.
+
+2015-06-05  David Malcolm  <dmalcolm@redhat.com>
+
 	* dummy-frontend.c (jit_langhook_write_globals): Rename to...
 	(jit_langhook_post_compilation_parsing_cleanups): ...this, and
 	eliminate calls to finalize_compilation_unit and

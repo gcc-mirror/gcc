@@ -514,6 +514,8 @@ new_global (location *loc,
 
   varpool_node::get_create (inner);
 
+  varpool_node::finalize_decl (inner);
+
   m_globals.safe_push (inner);
 
   return new lvalue (this, inner);
@@ -666,24 +668,6 @@ as_truth_value (tree expr, location *loc)
     set_tree_location (expr, loc);
 
   return expr;
-}
-
-/* For use by jit_langhook_post_compilation_parsing_cleanups
-   Calls varpool_node::finalize_decl on each global.  */
-
-void
-playback::context::
-finalize_global_decls ()
-{
-  JIT_LOG_SCOPE (get_logger ());
-
-  int i;
-  tree decl;
-  FOR_EACH_VEC_ELT (m_globals, i, decl)
-    {
-      gcc_assert (TREE_CODE (decl) == VAR_DECL);
-      varpool_node::finalize_decl (decl);
-    }
 }
 
 /* Construct a playback::rvalue instance (wrapping a tree) for a

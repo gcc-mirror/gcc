@@ -218,16 +218,6 @@ jit_langhook_getdecls (void)
   return NULL;
 }
 
-static void
-jit_langhook_post_compilation_parsing_cleanups (void)
-{
-  gcc::jit::playback::context *ctxt = gcc::jit::active_playback_ctxt;
-  gcc_assert (ctxt);
-  JIT_LOG_SCOPE (ctxt->get_logger ());
-
-  ctxt->finalize_global_decls ();
-}
-
 #undef LANG_HOOKS_NAME
 #define LANG_HOOKS_NAME		"libgccjit"
 
@@ -254,10 +244,6 @@ jit_langhook_post_compilation_parsing_cleanups (void)
 
 #undef LANG_HOOKS_GETDECLS
 #define LANG_HOOKS_GETDECLS		jit_langhook_getdecls
-
-#undef LANG_HOOKS_POST_COMPILATION_PARSING_CLEANUPS
-#define LANG_HOOKS_POST_COMPILATION_PARSING_CLEANUPS \
-  jit_langhook_post_compilation_parsing_cleanups
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

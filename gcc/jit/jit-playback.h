@@ -215,8 +215,6 @@ public:
     return m_recording_ctxt->errors_occurred ();
   }
 
-  void finalize_global_decls ();
-
 private:
   void dump_generated_code ();
 
