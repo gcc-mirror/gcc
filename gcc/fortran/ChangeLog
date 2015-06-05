@@ -1,3 +1,9 @@
+2015-06-05  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/66347
+	* resolve.c (apply_default_init_local): Do not dereference a NULL
+	pointer.
+
 2015-06-05  Russell Whitesides  <russelldub@gmail.com>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
