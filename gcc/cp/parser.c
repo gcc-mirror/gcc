@@ -25388,6 +25388,7 @@ cp_parser_cache_defarg (cp_parser *parser, bool nsdmi)
 		 the default argument; otherwise the default
 		 argument continues.  */
 	      bool error = false;
+	      cp_token *peek;
 
 	      /* Set ITALP so cp_parser_parameter_declaration_list
 		 doesn't decide to commit to this parse.  */
@@ -25395,19 +25396,39 @@ cp_parser_cache_defarg (cp_parser *parser, bool nsdmi)
 	      parser->in_template_argument_list_p = true;
 
 	      cp_parser_parse_tentatively (parser);
-	      cp_lexer_consume_token (parser->lexer);
 
 	      if (nsdmi)
 		{
-		  int ctor_dtor_or_conv_p;
-		  cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
-					&ctor_dtor_or_conv_p,
-					/*parenthesized_p=*/NULL,
-					/*member_p=*/true,
-					/*friend_p=*/false);
+		  /* Parse declarators until we reach a non-comma or
+		     somthing that cannot be an initializer.
+		     Just checking whether we're looking at a single
+		     declarator is insufficient.  Consider:
+		       int var = tuple<T,U>::x;
+		     The template parameter 'U' looks exactly like a
+		     declarator.  */
+		  do
+		    {
+		      int ctor_dtor_or_conv_p;
+		      cp_lexer_consume_token (parser->lexer);
+		      cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
+					    &ctor_dtor_or_conv_p,
+					    /*parenthesized_p=*/NULL,
+					    /*member_p=*/true,
+					    /*friend_p=*/false);
+		      peek = cp_lexer_peek_token (parser->lexer);
+		      if (cp_parser_error_occurred (parser))
+			break;
+		    }
+		  while (peek->type == CPP_COMMA);
+		  /* If we met an '=' or ';' then the original comma
+		     was the end of the NSDMI.  Otherwise assume
+		     we're still in the NSDMI.  */
+		  error = (peek->type != CPP_EQ
+			   && peek->type != CPP_SEMICOLON);
 		}
 	      else
 		{
+		  cp_lexer_consume_token (parser->lexer);
 		  begin_scope (sk_function_parms, NULL_TREE);
 		  cp_parser_parameter_declaration_list (parser, &error);
 		  pop_bindings_and_leave_scope ();
