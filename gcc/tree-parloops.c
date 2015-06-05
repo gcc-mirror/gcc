@@ -75,6 +75,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin-api.h"
 #include "ipa-ref.h"
 #include "cgraph.h"
+#include "tree-ssa.h"
 
 /* This pass tries to distribute iterations of loops into several threads.
    The implementation is straightforward -- for each loop we test whether its
@@ -1484,17 +1485,386 @@ create_loop_fn (location_t loc)
   return decl;
 }
 
-/* Moves the exit condition of LOOP to the beginning of its header, and
-   duplicates the part of the last iteration that gets disabled to the
-   exit of the loop.  NIT is the number of iterations of the loop
-   (used to initialize the variables in the duplicated part).
+/* Replace uses of NAME by VAL in block BB.  */
 
-   TODO: the common case is that latch of the loop is empty and immediately
-   follows the loop exit.  In this case, it would be better not to copy the
-   body of the loop, but only move the entry of the loop directly before the
-   exit check and increase the number of iterations of the loop by one.
-   This may need some additional preconditioning in case NIT = ~0.
-   REDUCTION_LIST describes the reductions in LOOP.  */
+static void
+replace_uses_in_bb_by (tree name, tree val, basic_block bb)
+{
+  gimple use_stmt;
+  imm_use_iterator imm_iter;
+
+  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, name)
+    {
+      if (gimple_bb (use_stmt) != bb)
+	continue;
+
+      use_operand_p use_p;
+      FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+	SET_USE (use_p, val);
+    }
+}
+
+/* Replace uses of NAME by VAL in blocks BBS.  */
+
+static void
+replace_uses_in_bbs_by (tree name, tree val, bitmap bbs)
+{
+  gimple use_stmt;
+  imm_use_iterator imm_iter;
+
+  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, name)
+    {
+      if (!bitmap_bit_p (bbs, gimple_bb (use_stmt)->index))
+	continue;
+
+      use_operand_p use_p;
+      FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+	SET_USE (use_p, val);
+    }
+}
+
+/* Do transformation from:
+
+     <bb preheader>:
+     ...
+     goto <bb header>
+
+     <bb header>:
+     ivtmp_a = PHI <ivtmp_init (preheader), ivtmp_b (latch)>
+     sum_a = PHI <sum_init (preheader), sum_b (latch)>
+     ...
+     use (ivtmp_a)
+     ...
+     sum_b = sum_a + sum_update
+     ...
+     if (ivtmp_a < n)
+       goto <bb latch>;
+     else
+       goto <bb exit>;
+
+     <bb latch>:
+     ivtmp_b = ivtmp_a + 1;
+     goto <bb header>
+
+     <bb exit>:
+     sum_z = PHI <sum_b (cond[1])>
+
+     [1] Where <bb cond> is single_pred (bb latch); In the simplest case,
+	 that's <bb header>.
+
+   to:
+
+     <bb preheader>:
+     ...
+     goto <bb newheader>
+
+     <bb header>:
+     ivtmp_a = PHI <ivtmp_c (latch)>
+     sum_a = PHI <sum_c (latch)>
+     ...
+     use (ivtmp_a)
+     ...
+     sum_b = sum_a + sum_update
+     ...
+     goto <bb latch>;
+
+     <bb newheader>:
+     ivtmp_c = PHI <ivtmp_init (preheader), ivtmp_b (latch)>
+     sum_c = PHI <sum_init (preheader), sum_b (latch)>
+     if (ivtmp_c < n + 1)
+       goto <bb header>;
+     else
+       goto <bb exit>;
+
+     <bb latch>:
+     ivtmp_b = ivtmp_a + 1;
+     goto <bb newheader>
+
+     <bb exit>:
+     sum_z = PHI <sum_c (newheader)>
+
+
+   In unified diff format:
+
+      <bb preheader>:
+      ...
+-     goto <bb header>
++     goto <bb newheader>
+
+      <bb header>:
+-     ivtmp_a = PHI <ivtmp_init (preheader), ivtmp_b (latch)>
+-     sum_a = PHI <sum_init (preheader), sum_b (latch)>
++     ivtmp_a = PHI <ivtmp_c (latch)>
++     sum_a = PHI <sum_c (latch)>
+      ...
+      use (ivtmp_a)
+      ...
+      sum_b = sum_a + sum_update
+      ...
+-     if (ivtmp_a < n)
+-       goto <bb latch>;
++     goto <bb latch>;
++
++     <bb newheader>:
++     ivtmp_c = PHI <ivtmp_init (preheader), ivtmp_b (latch)>
++     sum_c = PHI <sum_init (preheader), sum_b (latch)>
++     if (ivtmp_c < n + 1)
++       goto <bb header>;
+      else
+	goto <bb exit>;
+
+      <bb latch>:
+      ivtmp_b = ivtmp_a + 1;
+-     goto <bb header>
++     goto <bb newheader>
+
+      <bb exit>:
+-     sum_z = PHI <sum_b (cond[1])>
++     sum_z = PHI <sum_c (newheader)>
+
+   Note: the example does not show any virtual phis, but these are handled more
+   or less as reductions.
+
+
+   Moves the exit condition of LOOP to the beginning of its header.
+   REDUCTION_LIST describes the reductions in LOOP.  BOUND is the new loop
+   bound.  */
+
+static void
+transform_to_exit_first_loop_alt (struct loop *loop,
+				  reduction_info_table_type *reduction_list,
+				  tree bound)
+{
+  basic_block header = loop->header;
+  basic_block latch = loop->latch;
+  edge exit = single_dom_exit (loop);
+  basic_block exit_block = exit->dest;
+  gcond *cond_stmt = as_a <gcond *> (last_stmt (exit->src));
+  tree control = gimple_cond_lhs (cond_stmt);
+  edge e;
+
+  /* Gather the bbs dominated by the exit block.  */
+  bitmap exit_dominated = BITMAP_ALLOC (NULL);
+  bitmap_set_bit (exit_dominated, exit_block->index);
+  vec<basic_block> exit_dominated_vec
+    = get_dominated_by (CDI_DOMINATORS, exit_block);
+
+  int i;
+  basic_block dom_bb;
+  FOR_EACH_VEC_ELT (exit_dominated_vec, i, dom_bb)
+    bitmap_set_bit (exit_dominated, dom_bb->index);
+
+  exit_dominated_vec.release ();
+
+  /* Create the new_header block.  */
+  basic_block new_header = split_block_before_cond_jump (exit->src);
+  edge split_edge = single_pred_edge (new_header);
+
+  /* Redirect entry edge to new_header.  */
+  edge entry = loop_preheader_edge (loop);
+  e = redirect_edge_and_branch (entry, new_header);
+  gcc_assert (e == entry);
+
+  /* Redirect post_inc_edge to new_header.  */
+  edge post_inc_edge = single_succ_edge (latch);
+  e = redirect_edge_and_branch (post_inc_edge, new_header);
+  gcc_assert (e == post_inc_edge);
+
+  /* Redirect post_cond_edge to header.  */
+  edge post_cond_edge = single_pred_edge (latch);
+  e = redirect_edge_and_branch (post_cond_edge, header);
+  gcc_assert (e == post_cond_edge);
+
+  /* Redirect split_edge to latch.  */
+  e = redirect_edge_and_branch (split_edge, latch);
+  gcc_assert (e == split_edge);
+
+  /* Set the new loop bound.  */
+  gimple_cond_set_rhs (cond_stmt, bound);
+
+  /* Repair the ssa.  */
+  vec<edge_var_map> *v = redirect_edge_var_map_vector (post_inc_edge);
+  edge_var_map *vm;
+  gphi_iterator gsi;
+  for (gsi = gsi_start_phis (header), i = 0;
+       !gsi_end_p (gsi) && v->iterate (i, &vm);
+       gsi_next (&gsi), i++)
+    {
+      gphi *phi = gsi.phi ();
+      tree res_a = PHI_RESULT (phi);
+
+      /* Create new phi.  */
+      tree res_c = copy_ssa_name (res_a, phi);
+      gphi *nphi = create_phi_node (res_c, new_header);
+
+      /* Replace ivtmp_a with ivtmp_c in condition 'if (ivtmp_a < n)'.  */
+      replace_uses_in_bb_by (res_a, res_c, new_header);
+
+      /* Replace ivtmp/sum_b with ivtmp/sum_c in header phi.  */
+      add_phi_arg (phi, res_c, post_cond_edge, UNKNOWN_LOCATION);
+
+      /* Replace sum_b with sum_c in exit phi.  Loop-closed ssa does not hold
+	 for virtuals, so we cannot get away with exit_block only.  */
+      tree res_b = redirect_edge_var_map_def (vm);
+      replace_uses_in_bbs_by (res_b, res_c, exit_dominated);
+
+      struct reduction_info *red = reduction_phi (reduction_list, phi);
+      gcc_assert (virtual_operand_p (res_a)
+		  || res_a == control
+		  || red != NULL);
+
+      if (red)
+	{
+	  /* Register the new reduction phi.  */
+	  red->reduc_phi = nphi;
+	  gimple_set_uid (red->reduc_phi, red->reduc_version);
+	}
+    }
+  gcc_assert (gsi_end_p (gsi) && !v->iterate (i, &vm));
+  BITMAP_FREE (exit_dominated);
+
+  /* Set the preheader argument of the new phis to ivtmp/sum_init.  */
+  flush_pending_stmts (entry);
+
+  /* Set the latch arguments of the new phis to ivtmp/sum_b.  */
+  flush_pending_stmts (post_inc_edge);
+
+  /* Register the reduction exit phis.  */
+  for (gphi_iterator gsi = gsi_start_phis (exit_block);
+       !gsi_end_p (gsi);
+       gsi_next (&gsi))
+    {
+      gphi *phi = gsi.phi ();
+      tree res_z = PHI_RESULT (phi);
+      if (virtual_operand_p (res_z))
+	continue;
+
+      tree res_c = PHI_ARG_DEF_FROM_EDGE (phi, exit);
+      gimple reduc_phi = SSA_NAME_DEF_STMT (res_c);
+      struct reduction_info *red = reduction_phi (reduction_list, reduc_phi);
+      if (red != NULL)
+	red->keep_res = phi;
+    }
+
+  /* We're going to cancel the loop at the end of gen_parallel_loop, but until
+     then we're still using some fields, so only bother about fields that are
+     still used: header and latch.
+     The loop has a new header bb, so we update it.  The latch bb stays the
+     same.  */
+  loop->header = new_header;
+
+  /* Recalculate dominance info.  */
+  free_dominance_info (CDI_DOMINATORS);
+  calculate_dominance_info (CDI_DOMINATORS);
+}
+
+/* Tries to moves the exit condition of LOOP to the beginning of its header
+   without duplication of the loop body.  NIT is the number of iterations of the
+   loop.  REDUCTION_LIST describes the reductions in LOOP.  Return true if
+   transformation is successful.  */
+
+static bool
+try_transform_to_exit_first_loop_alt (struct loop *loop,
+				      reduction_info_table_type *reduction_list,
+				      tree nit)
+{
+  /* Check whether the latch contains a single statement.  */
+  if (!gimple_seq_singleton_p (bb_seq (loop->latch)))
+    return true;
+
+  /* Check whether the latch contains the loop iv increment.  */
+  edge back = single_succ_edge (loop->latch);
+  edge exit = single_dom_exit (loop);
+  gcond *cond_stmt = as_a <gcond *> (last_stmt (exit->src));
+  tree control = gimple_cond_lhs (cond_stmt);
+  gphi *phi = as_a <gphi *> (SSA_NAME_DEF_STMT (control));
+  tree inc_res = gimple_phi_arg_def (phi, back->dest_idx);
+  if (gimple_bb (SSA_NAME_DEF_STMT (inc_res)) != loop->latch)
+    return false;
+
+  /* Check whether there's no code between the loop condition and the latch.  */
+  if (!single_pred_p (loop->latch)
+      || single_pred (loop->latch) != exit->src)
+    return false;
+
+  tree alt_bound = NULL_TREE;
+  tree nit_type = TREE_TYPE (nit);
+
+  /* Figure out whether nit + 1 overflows.  */
+  if (TREE_CODE (nit) == INTEGER_CST)
+    {
+      if (!tree_int_cst_equal (nit, TYPE_MAXVAL (nit_type)))
+	{
+	  alt_bound = fold_build2_loc (UNKNOWN_LOCATION, PLUS_EXPR, nit_type,
+				       nit, build_one_cst (nit_type));
+
+	  gcc_assert (TREE_CODE (alt_bound) == INTEGER_CST);
+	}
+      else
+	{
+	  /* Todo: Figure out if we can trigger this, if it's worth to handle
+	     optimally, and if we can handle it optimally.  */
+	}
+    }
+  else
+    {
+      gcc_assert (TREE_CODE (nit) == SSA_NAME);
+
+      gimple def = SSA_NAME_DEF_STMT (nit);
+
+      if (def
+	  && is_gimple_assign (def)
+	  && gimple_assign_rhs_code (def) == PLUS_EXPR)
+	{
+	  tree op1 = gimple_assign_rhs1 (def);
+	  tree op2 = gimple_assign_rhs2 (def);
+	  if (integer_minus_onep (op1))
+	    alt_bound = op2;
+	  else if (integer_minus_onep (op2))
+	    alt_bound = op1;
+	}
+
+      /* There is a number of test-cases for which we don't get an alt_bound
+	 here: they're listed here, with the lhs of the last stmt as the nit:
+
+	 libgomp.graphite/force-parallel-1.c:
+	 _21 = (signed long) N_6(D);
+	 _19 = _21 + -1;
+	 _7 = (unsigned long) _19;
+
+	 libgomp.graphite/force-parallel-2.c:
+	 _33 = (signed long) N_9(D);
+	 _16 = _33 + -1;
+	 _37 = (unsigned long) _16;
+
+	 libgomp.graphite/force-parallel-5.c:
+	 <bb 6>:
+	 # graphite_IV.5_46 = PHI <0(5), graphite_IV.5_47(11)>
+	 <bb 7>:
+	 _33 = (unsigned long) graphite_IV.5_46;
+
+	 g++.dg/tree-ssa/pr34355.C:
+	 _2 = (unsigned int) i_9;
+	 _3 = 4 - _2;
+
+	 gcc.dg/pr53849.c:
+	 _5 = d.0_11 + -2;
+	 _18 = (unsigned int) _5;
+
+	 We will be able to handle some of these cases, if we can determine when
+	 it's safe to look past casts.  */
+    }
+
+  if (alt_bound == NULL_TREE)
+    return false;
+
+  transform_to_exit_first_loop_alt (loop, reduction_list, alt_bound);
+  return true;
+}
+
+/* Moves the exit condition of LOOP to the beginning of its header.  NIT is the
+   number of iterations of the loop.  REDUCTION_LIST describes the reductions in
+   LOOP.  */
 
 static void
 transform_to_exit_first_loop (struct loop *loop,
@@ -1879,8 +2249,19 @@ gen_parallel_loop (struct loop *loop,
   /* Base all the induction variables in LOOP on a single control one.  */
   canonicalize_loop_ivs (loop, &nit, true);
 
-  /* Ensure that the exit condition is the first statement in the loop.  */
-  transform_to_exit_first_loop (loop, reduction_list, nit);
+  /* Ensure that the exit condition is the first statement in the loop.
+     The common case is that latch of the loop is empty (apart from the
+     increment) and immediately follows the loop exit test.  Attempt to move the
+     entry of the loop directly before the exit check and increase the number of
+     iterations of the loop by one.  */
+  if (!try_transform_to_exit_first_loop_alt (loop, reduction_list, nit))
+    {
+      /* Fall back on the method that handles more cases, but duplicates the
+	 loop body: move the exit condition of LOOP to the beginning of its
+	 header, and duplicate the part of the last iteration that gets disabled
+	 to the exit of the loop.  */
+      transform_to_exit_first_loop (loop, reduction_list, nit);
+    }
 
   /* Generate initializations for reductions.  */
   if (reduction_list->elements () > 0)

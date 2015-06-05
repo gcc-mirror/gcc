@@ -1,3 +1,15 @@
+2015-06-05  Tom de Vries  <tom@codesourcery.com>
+
+	merge from gomp4 branch:
+	2015-05-28  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/65443
+	* tree-parloops.c (replace_imm_uses, replace_uses_in_bb_by)
+	(replace_uses_in_bbs_by, transform_to_exit_first_loop_alt)
+	(try_transform_to_exit_first_loop_alt): New function.
+	(transform_to_exit_first_loop): Use
+	try_transform_to_exit_first_loop_alt.
+
 2015-06-05  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* builtins.c (expand_builtin_atomic_compare_exchange): Call
