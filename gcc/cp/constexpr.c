@@ -1245,6 +1245,15 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	return build_zero_init (DECL_CONTEXT (fun), NULL_TREE, false);
     }
 
+  /* We can't defer instantiating the function any longer.  */
+  if (!DECL_INITIAL (fun)
+      && DECL_TEMPLOID_INSTANTIATION (fun))
+    {
+      ++function_depth;
+      instantiate_decl (fun, /*defer_ok*/false, /*expl_inst*/false);
+      --function_depth;
+    }
+
   /* If in direct recursive call, optimize definition search.  */
   if (ctx && ctx->call && ctx->call->fundef->decl == fun)
     new_call.fundef = ctx->call->fundef;
