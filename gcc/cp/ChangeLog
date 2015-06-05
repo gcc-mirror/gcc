@@ -1,5 +1,11 @@
 2015-06-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66405
+	* pt.c (type_dependent_expression_p): EXPR_PACK_EXPANSION is
+	dependent even if it has a type.
+
+2015-06-05  Jason Merrill  <jason@redhat.com>
+
 	PR c++/65942
 	* decl2.c (mark_used): Don't always instantiate constexpr fns.
 	* constexpr.c (cxx_eval_call_expression): Instantiate them here.
