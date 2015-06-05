@@ -7430,18 +7430,18 @@ label:
 ;; Q/r has to come first, otherwise PC relative loads might wrongly get
 ;; placed into delay slots.  Since there is no QImode PC relative load, the
 ;; Q constraint and general_movsrc_operand will reject it for QImode.
-;; The Snd alternatives should come before Sdd in order to avoid a preference
-;; of using r0 als the register operand for addressing modes other than
-;; displacement addressing.
+;; The Sid/Ssd alternatives should come before Sdd in order to avoid
+;; a preference of using r0 als the register operand for addressing modes
+;; other than displacement addressing.
 ;; The Sdd alternatives allow only r0 as register operand, even though on
 ;; SH2A any register could be allowed by switching to a 32 bit insn.
 ;; Generally sticking to the r0 is preferrable, since it generates smaller
 ;; code.  Obvious r0 reloads can then be eliminated with a peephole on SH2A.
 (define_insn "*mov<mode>"
   [(set (match_operand:QIHI 0 "general_movdst_operand"
-			      "=r,r,r,Snd,r,  Sdd,z,  r,l")
+			      "=r,r,r,Sid,^zr,Ssd,r,  Sdd,z,  r,l")
 	(match_operand:QIHI 1 "general_movsrc_operand"
-			       "Q,r,i,r,  Snd,z,  Sdd,l,r"))]
+			       "Q,r,i,^zr,Sid,r,  Ssd,z,  Sdd,l,r"))]
   "TARGET_SH1
    && (arith_reg_operand (operands[0], <MODE>mode)
        || arith_reg_operand (operands[1], <MODE>mode))"
@@ -7453,9 +7453,11 @@ label:
 	mov.<bw>	%1,%0
 	mov.<bw>	%1,%0
 	mov.<bw>	%1,%0
+	mov.<bw>	%1,%0
+	mov.<bw>	%1,%0
 	sts	%1,%0
 	lds	%1,%0"
-  [(set_attr "type" "pcload,move,movi8,store,load,store,load,prget,prset")
+  [(set_attr "type" "pcload,move,movi8,store,load,store,load,store,load,prget,prset")
    (set (attr "length")
 	(cond [(and (match_operand 0 "displacement_mem_operand")
 		    (not (match_operand 0 "short_displacement_mem_operand")))

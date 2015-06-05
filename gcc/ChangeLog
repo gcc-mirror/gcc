@@ -1,3 +1,10 @@
+2015-06-05  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/66410
+	* config/sh/constraints.md (Sid, Ssd): New memory constraints.
+	* config/sh/sh.md (*mov<mode>): Use Sid and Ssd alternatives
+	instead of Snd.  Disparage Sid/z alternative with '^'.
+
 2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* dwarf2out.c: Remove deferred_locations*.
