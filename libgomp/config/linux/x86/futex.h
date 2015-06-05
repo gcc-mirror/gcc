@@ -33,10 +33,9 @@
 static inline void
 futex_wait (int *addr, int val)
 {
-  register long r10 __asm__("%r10");
   long res;
 
-  r10 = 0;
+  register long r10 __asm__("%r10") = 0;
   __asm volatile ("syscall"
 		  : "=a" (res)
 		  : "0" (SYS_futex), "D" (addr), "S" (gomp_futex_wait),
@@ -46,7 +45,6 @@ futex_wait (int *addr, int val)
     {
       gomp_futex_wait &= ~FUTEX_PRIVATE_FLAG;
       gomp_futex_wake &= ~FUTEX_PRIVATE_FLAG;
-      r10 = 0;
       __asm volatile ("syscall"
 		      : "=a" (res)
 		      : "0" (SYS_futex), "D" (addr), "S" (gomp_futex_wait),
