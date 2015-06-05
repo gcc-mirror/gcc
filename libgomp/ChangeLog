@@ -1,3 +1,13 @@
+2015-06-05  Tom de Vries  <tom@codesourcery.com>
+
+	merge from gomp4 branch:
+	2015-05-28  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/65443
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt-2.c: New test.
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt-3.c: New test.
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt.c: New test.
+
 2015-05-29  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* testsuite/libgomp.graphite/bounds.c: Adjust for
