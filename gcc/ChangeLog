@@ -1,3 +1,7 @@
+2015-06-05  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	* config/i386/sse.md (sse3_mwait): Swap the operand constriants.
+
 2015-06-04  DJ Delorie  <dj@redhat.com>
 
 	* config/msp430/msp430.md (movsi_s): New.  Special case for
