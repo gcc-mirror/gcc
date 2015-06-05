@@ -1,5 +1,9 @@
 2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
 
+	* jcf-parse.c: Include toplev.h.
+
+2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
+
 	* class.c: Remove pending_static_fields.
 	(add_field): Remove use of pending_static_fields.
 	(java_write_globals): Remove.
