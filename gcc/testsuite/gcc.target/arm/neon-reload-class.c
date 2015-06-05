@@ -15,4 +15,4 @@ _op_blend_p_caa_dp(unsigned *s, unsigned* e, unsigned *d, unsigned c) {
 
 /* These constants should be emitted as immediates rather than loaded from memory.  */
 
-/* { dg-final { scan-assembler-not "(\\.d?word|mov(w|t))" } } */
+/* { dg-final { scan-assembler-not "(\\.d?word)" } } */
