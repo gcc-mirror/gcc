@@ -657,13 +657,13 @@ align_fuzz (rtx start, rtx end, int known_align_log, unsigned int growth)
 int
 insn_current_reference_address (rtx_insn *branch)
 {
-  rtx dest, seq;
+  rtx dest;
   int seq_uid;
 
   if (! INSN_ADDRESSES_SET_P ())
     return 0;
 
-  seq = NEXT_INSN (PREV_INSN (branch));
+  rtx_insn *seq = NEXT_INSN (PREV_INSN (branch));
   seq_uid = INSN_UID (seq);
   if (!JUMP_P (branch))
     /* This can happen for example on the PA; the objective is to know the

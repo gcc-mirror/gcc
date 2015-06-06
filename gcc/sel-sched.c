@@ -4726,11 +4726,10 @@ static int
 find_seqno_for_bookkeeping (insn_t place_to_insert, insn_t join_point)
 {
   int seqno;
-  rtx next;
 
   /* Check if we are about to insert bookkeeping copy before a jump, and use
      jump's seqno for the copy; otherwise, use JOIN_POINT's seqno.  */
-  next = NEXT_INSN (place_to_insert);
+  rtx_insn *next = NEXT_INSN (place_to_insert);
   if (INSN_P (next)
       && JUMP_P (next)
       && BLOCK_FOR_INSN (next) == BLOCK_FOR_INSN (place_to_insert))
@@ -5151,11 +5150,11 @@ find_sequential_best_exprs (bnd_t bnd, expr_t expr_vliw, bool for_moveop)
 static void ATTRIBUTE_UNUSED
 move_nop_to_previous_block (insn_t nop, basic_block prev_bb)
 {
-  insn_t prev_insn, next_insn, note;
+  insn_t prev_insn, next_insn;
 
   gcc_assert (sel_bb_head_p (nop)
               && prev_bb == BLOCK_FOR_INSN (nop)->prev_bb);
-  note = bb_note (BLOCK_FOR_INSN (nop));
+  rtx_note *note = bb_note (BLOCK_FOR_INSN (nop));
   prev_insn = sel_bb_end (prev_bb);
   next_insn = NEXT_INSN (nop);
   gcc_assert (prev_insn != NULL_RTX
@@ -6741,10 +6740,11 @@ static void
 init_seqno_1 (basic_block bb, sbitmap visited_bbs, bitmap blocks_to_reschedule)
 {
   int bbi = BLOCK_TO_BB (bb->index);
-  insn_t insn, note = bb_note (bb);
+  insn_t insn;
   insn_t succ_insn;
   succ_iterator si;
 
+  rtx_note *note = bb_note (bb);
   bitmap_set_bit (visited_bbs, bbi);
   if (blocks_to_reschedule)
     bitmap_clear_bit (blocks_to_reschedule, bb->index);

@@ -450,7 +450,7 @@ gen_expand (rtx expand)
     printf ("  rtx operand%d;\n", i);
   for (; i <= stats.max_scratch_opno; i++)
     printf ("  rtx operand%d ATTRIBUTE_UNUSED;\n", i);
-  printf ("  rtx _val = 0;\n");
+  printf ("  rtx_insn *_val = 0;\n");
   printf ("  start_sequence ();\n");
 
   /* The fourth operand of DEFINE_EXPAND is some code to be executed

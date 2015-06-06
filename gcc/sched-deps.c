@@ -3003,8 +3003,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 
   if (JUMP_P (insn))
     {
-      rtx next;
-      next = next_nonnote_nondebug_insn (insn);
+      rtx_insn *next = next_nonnote_nondebug_insn (insn);
       if (next && BARRIER_P (next))
 	reg_pending_barrier = MOVE_BARRIER;
       else
@@ -3591,8 +3590,6 @@ call_may_noreturn_p (rtx_insn *insn)
 static bool
 chain_to_prev_insn_p (rtx_insn *insn)
 {
-  rtx prev, x;
-
   /* INSN forms a group with the previous instruction.  */
   if (SCHED_GROUP_P (insn))
     return true;
@@ -3601,13 +3598,13 @@ chain_to_prev_insn_p (rtx_insn *insn)
      part of R, the clobber was added specifically to help us track the
      liveness of R.  There's no point scheduling the clobber and leaving
      INSN behind, especially if we move the clobber to another block.  */
-  prev = prev_nonnote_nondebug_insn (insn);
+  rtx_insn *prev = prev_nonnote_nondebug_insn (insn);
   if (prev
       && INSN_P (prev)
       && BLOCK_FOR_INSN (prev) == BLOCK_FOR_INSN (insn)
       && GET_CODE (PATTERN (prev)) == CLOBBER)
     {
-      x = XEXP (PATTERN (prev), 0);
+      rtx x = XEXP (PATTERN (prev), 0);
       if (set_of (x, insn))
 	return true;
     }

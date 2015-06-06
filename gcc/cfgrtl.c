@@ -92,7 +92,6 @@ static GTY(()) rtx_insn *cfg_layout_function_header;
 
 static rtx_insn *skip_insns_after_block (basic_block);
 static void record_effective_endpoints (void);
-static rtx label_for_bb (basic_block);
 static void fixup_reorder_chain (void);
 
 void verify_insn_chain (void);
@@ -1120,7 +1119,7 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
   /* Or replace possibly complicated jump insn by simple jump insn.  */
   else
     {
-      rtx target_label = block_label (target);
+      rtx_code_label *target_label = block_label (target);
       rtx_insn *barrier;
       rtx label;
       rtx_jump_table_data *table;
@@ -1203,7 +1202,7 @@ patch_jump_insn (rtx_insn *insn, rtx_insn *old_label, basic_block new_bb)
     {
       rtvec vec;
       int j;
-      rtx new_label = block_label (new_bb);
+      rtx_code_label *new_label = block_label (new_bb);
 
       if (new_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	return false;
@@ -1233,11 +1232,11 @@ patch_jump_insn (rtx_insn *insn, rtx_insn *old_label, basic_block new_bb)
   else if ((tmp = extract_asm_operands (PATTERN (insn))) != NULL)
     {
       int i, n = ASM_OPERANDS_LABEL_LENGTH (tmp);
-      rtx new_label, note;
+      rtx note;
 
       if (new_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	return false;
-      new_label = block_label (new_bb);
+      rtx_code_label *new_label = block_label (new_bb);
 
       for (i = 0; i < n; ++i)
 	{
@@ -1722,7 +1721,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
     }
   else
     {
-      rtx label = block_label (target);
+      rtx_code_label *label = block_label (target);
       emit_jump_insn_after_setloc (gen_jump (label), BB_END (jump_block), loc);
       JUMP_LABEL (BB_END (jump_block)) = label;
       LABEL_NUSES (label)++;
@@ -3464,10 +3463,10 @@ skip_insns_after_block (basic_block bb)
 
 /* Locate or create a label for a given basic block.  */
 
-static rtx
+static rtx_insn *
 label_for_bb (basic_block bb)
 {
-  rtx label = BB_HEAD (bb);
+  rtx_insn *label = BB_HEAD (bb);
 
   if (!LABEL_P (label))
     {

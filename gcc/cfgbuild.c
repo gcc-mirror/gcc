@@ -174,7 +174,7 @@ rtl_make_eh_edge (sbitmap edge_cache, basic_block src, rtx insn)
 
   if (lp)
     {
-      rtx label = lp->landing_pad;
+      rtx_insn *label = lp->landing_pad;
 
       /* During initial rtl generation, use the post_landing_pad.  */
       if (label == NULL)

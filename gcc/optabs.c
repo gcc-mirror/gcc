@@ -2048,7 +2048,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	  if (optab_handler (mov_optab, mode) != CODE_FOR_nothing
 	      || ! rtx_equal_p (target, xtarget))
 	    {
-	      rtx temp = emit_move_insn (target, xtarget);
+	      rtx_insn *temp = emit_move_insn (target, xtarget);
 
 	      set_dst_reg_note (temp, REG_EQUAL,
 				gen_rtx_fmt_ee (optab_to_code (binoptab),
@@ -4720,7 +4720,7 @@ emit_conditional_add (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
 /* Generate and return an insn body to add Y to X.  */
 
-rtx
+rtx_insn *
 gen_add2_insn (rtx x, rtx y)
 {
   enum insn_code icode = optab_handler (add_optab, GET_MODE (x));
@@ -4735,7 +4735,7 @@ gen_add2_insn (rtx x, rtx y)
 /* Generate and return an insn body to add r1 and c,
    storing the result in r0.  */
 
-rtx
+rtx_insn *
 gen_add3_insn (rtx r0, rtx r1, rtx c)
 {
   enum insn_code icode = optab_handler (add_optab, GET_MODE (r0));
@@ -4744,7 +4744,7 @@ gen_add3_insn (rtx r0, rtx r1, rtx c)
       || !insn_operand_matches (icode, 0, r0)
       || !insn_operand_matches (icode, 1, r1)
       || !insn_operand_matches (icode, 2, c))
-    return NULL_RTX;
+    return NULL;
 
   return GEN_FCN (icode) (r0, r1, c);
 }
@@ -4771,7 +4771,7 @@ have_add2_insn (rtx x, rtx y)
 
 /* Generate and return an insn body to add Y to X.  */
 
-rtx
+rtx_insn *
 gen_addptr3_insn (rtx x, rtx y, rtx z)
 {
   enum insn_code icode = optab_handler (addptr3_optab, GET_MODE (x));
@@ -4808,7 +4808,7 @@ have_addptr3_insn (rtx x, rtx y, rtx z)
 
 /* Generate and return an insn body to subtract Y from X.  */
 
-rtx
+rtx_insn *
 gen_sub2_insn (rtx x, rtx y)
 {
   enum insn_code icode = optab_handler (sub_optab, GET_MODE (x));
@@ -4823,7 +4823,7 @@ gen_sub2_insn (rtx x, rtx y)
 /* Generate and return an insn body to subtract r1 and c,
    storing the result in r0.  */
 
-rtx
+rtx_insn *
 gen_sub3_insn (rtx r0, rtx r1, rtx c)
 {
   enum insn_code icode = optab_handler (sub_optab, GET_MODE (r0));
@@ -4832,7 +4832,7 @@ gen_sub3_insn (rtx r0, rtx r1, rtx c)
       || !insn_operand_matches (icode, 0, r0)
       || !insn_operand_matches (icode, 1, r1)
       || !insn_operand_matches (icode, 2, c))
-    return NULL_RTX;
+    return NULL;
 
   return GEN_FCN (icode) (r0, r1, c);
 }
@@ -4878,7 +4878,7 @@ can_extend_p (machine_mode to_mode, machine_mode from_mode,
 /* Generate the body of an insn to extend Y (with mode MFROM)
    into X (with mode MTO).  Do zero-extension if UNSIGNEDP is nonzero.  */
 
-rtx
+rtx_insn *
 gen_extend_insn (rtx x, rtx y, machine_mode mto,
 		 machine_mode mfrom, int unsignedp)
 {
@@ -6395,12 +6395,12 @@ debug_optab_libfuncs (void)
 /* Generate insns to trap with code TCODE if OP1 and OP2 satisfy condition
    CODE.  Return 0 on failure.  */
 
-rtx
+rtx_insn *
 gen_cond_trap (enum rtx_code code, rtx op1, rtx op2, rtx tcode)
 {
   machine_mode mode = GET_MODE (op1);
   enum insn_code icode;
-  rtx insn;
+  rtx_insn *insn;
   rtx trap_rtx;
 
   if (mode == VOIDmode)
@@ -6419,7 +6419,7 @@ gen_cond_trap (enum rtx_code code, rtx op1, rtx op2, rtx tcode)
   prepare_cmp_insn (op1, op2, code, NULL_RTX, false, OPTAB_DIRECT,
 		    &trap_rtx, &mode);
   if (!trap_rtx)
-    insn = NULL_RTX;
+    insn = NULL;
   else
     insn = GEN_FCN (icode) (trap_rtx, XEXP (trap_rtx, 0), XEXP (trap_rtx, 1),
 			    tcode);
@@ -8382,7 +8382,7 @@ bool
 maybe_expand_insn (enum insn_code icode, unsigned int nops,
 		   struct expand_operand *ops)
 {
-  rtx pat = maybe_gen_insn (icode, nops, ops);
+  rtx_insn *pat = maybe_gen_insn (icode, nops, ops);
   if (pat)
     {
       emit_insn (pat);
@@ -8397,7 +8397,7 @@ bool
 maybe_expand_jump_insn (enum insn_code icode, unsigned int nops,
 			struct expand_operand *ops)
 {
-  rtx pat = maybe_gen_insn (icode, nops, ops);
+  rtx_insn *pat = maybe_gen_insn (icode, nops, ops);
   if (pat)
     {
       emit_jump_insn (pat);

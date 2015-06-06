@@ -441,7 +441,6 @@ reversed_comparison_code_parts (enum rtx_code code, const_rtx arg0,
 
   if (GET_MODE_CLASS (mode) == MODE_CC || CC0_P (arg0))
     {
-      const_rtx prev;
       /* Try to search for the comparison to determine the real mode.
          This code is expensive, but with sane machine description it
          will be never used, since REVERSIBLE_CC_MODE will return true
@@ -452,9 +451,9 @@ reversed_comparison_code_parts (enum rtx_code code, const_rtx arg0,
       /* These CONST_CAST's are okay because prev_nonnote_insn just
 	 returns its argument and we assign it to a const_rtx
 	 variable.  */
-      for (prev = prev_nonnote_insn (CONST_CAST_RTX (insn));
+      for (rtx_insn *prev = prev_nonnote_insn (CONST_CAST_RTX (insn));
 	   prev != 0 && !LABEL_P (prev);
-	   prev = prev_nonnote_insn (CONST_CAST_RTX (prev)))
+	   prev = prev_nonnote_insn (prev))
 	{
 	  const_rtx set = set_of (arg0, prev);
 	  if (set && GET_CODE (set) == SET

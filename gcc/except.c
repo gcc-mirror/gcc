@@ -1299,9 +1299,8 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
   machine_mode unwind_word_mode = targetm.unwind_word_mode ();
   machine_mode filter_mode = targetm.eh_return_filter_mode ();
   eh_landing_pad lp;
-  rtx mem, fc, before, exc_ptr_reg, filter_reg;
+  rtx mem, fc, exc_ptr_reg, filter_reg;
   rtx_insn *seq;
-  rtx first_reachable_label;
   basic_block bb;
   eh_region r;
   edge e;
@@ -1348,7 +1347,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
   /* Jump to one of the directly reachable regions.  */
 
   disp_index = 0;
-  first_reachable_label = NULL;
+  rtx_code_label *first_reachable_label = NULL;
 
   /* If there's exactly one call site in the function, don't bother
      generating a switch statement.  */
@@ -1391,7 +1390,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
 	seq2 = get_insns ();
 	end_sequence ();
 
-	before = label_rtx (lp->post_landing_pad);
+	rtx_insn *before = label_rtx (lp->post_landing_pad);
 	bb = emit_to_new_bb_before (seq2, before);
 	e = make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
 	e->count = bb->count;
@@ -1684,7 +1683,7 @@ for_each_eh_label (void (*callback) (rtx))
     {
       if (lp)
 	{
-	  rtx lab = lp->landing_pad;
+	  rtx_code_label *lab = lp->landing_pad;
 	  if (lab && LABEL_P (lab))
 	    (*callback) (lab);
 	}
@@ -2518,7 +2517,7 @@ convert_to_eh_region_ranges (void)
   rtx_insn *first_no_action_insn = NULL;
   int call_site = 0;
   int cur_sec = 0;
-  rtx section_switch_note = NULL_RTX;
+  rtx_insn *section_switch_note = NULL;
   rtx_insn *first_no_action_insn_before_switch = NULL;
   rtx_insn *last_no_action_insn_before_switch = NULL;
   int saved_call_site_base = call_site_base;
@@ -2532,7 +2531,7 @@ convert_to_eh_region_ranges (void)
 	eh_region region;
 	bool nothrow;
 	int this_action;
-	rtx this_landing_pad;
+	rtx_code_label *this_landing_pad;
 
 	insn = iter;
 	if (NONJUMP_INSN_P (insn)
@@ -2563,7 +2562,7 @@ convert_to_eh_region_ranges (void)
 	if (this_action >= 0)
 	  this_landing_pad = lp->landing_pad;
 	else
-	  this_landing_pad = NULL_RTX;
+	  this_landing_pad = NULL;
 
 	/* Differing actions or landing pads implies a change in call-site
 	   info, which implies some EH_REGION note should be emitted.  */
@@ -3266,7 +3265,7 @@ dump_eh_tree (FILE * out, struct function *fun)
 		    fprintf (out, "(nil),");
 		  if (lp->post_landing_pad)
 		    {
-		      rtx lab = label_rtx (lp->post_landing_pad);
+		      rtx_insn *lab = label_rtx (lp->post_landing_pad);
 		      fprintf (out, "%i%s}", INSN_UID (lab),
 			       NOTE_P (lab) ? "(del)" : "");
 		    }

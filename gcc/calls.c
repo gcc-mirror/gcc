@@ -309,7 +309,6 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 	     cumulative_args_t args_so_far ATTRIBUTE_UNUSED)
 {
   rtx rounded_stack_size_rtx = GEN_INT (rounded_stack_size);
-  rtx_insn *call_insn;
   rtx call, funmem;
   int already_popped = 0;
   HOST_WIDE_INT n_popped
@@ -435,7 +434,7 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
     gcc_unreachable ();
 
   /* Find the call we just emitted.  */
-  call_insn = last_call_insn ();
+  rtx_call_insn *call_insn = last_call_insn ();
 
   /* Some target create a fresh MEM instead of reusing the one provided
      above.  Set its MEM_EXPR.  */
@@ -4437,9 +4436,9 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
   if (flag_ipa_ra)
     {
-      rtx last, datum = orgfun;
+      rtx datum = orgfun;
       gcc_assert (GET_CODE (datum) == SYMBOL_REF);
-      last = last_call_insn ();
+      rtx_call_insn *last = last_call_insn ();
       add_reg_note (last, REG_CALL_DECL, datum);
     }
 

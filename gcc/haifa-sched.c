@@ -8096,8 +8096,6 @@ init_before_recovery (basic_block *before_recovery_ptr)
          Between these two blocks recovery blocks will be emitted.  */
 
       basic_block single, empty;
-      rtx_insn *x;
-      rtx label;
 
       /* If the fallthrough edge to exit we've found is from the block we've
 	 created before, don't do anything more.  */
@@ -8128,8 +8126,9 @@ init_before_recovery (basic_block *before_recovery_ptr)
       make_single_succ_edge (empty, EXIT_BLOCK_PTR_FOR_FN (cfun),
 			     EDGE_FALLTHRU);
 
-      label = block_label (empty);
-      x = emit_jump_insn_after (gen_jump (label), BB_END (single));
+      rtx_code_label *label = block_label (empty);
+      rtx_jump_insn *x = emit_jump_insn_after (gen_jump (label),
+					       BB_END (single));
       JUMP_LABEL (x) = label;
       LABEL_NUSES (label)++;
       haifa_init_insn (x);
@@ -8160,7 +8159,6 @@ init_before_recovery (basic_block *before_recovery_ptr)
 basic_block
 sched_create_recovery_block (basic_block *before_recovery_ptr)
 {
-  rtx label;
   rtx_insn *barrier;
   basic_block rec;
 
@@ -8172,7 +8170,7 @@ sched_create_recovery_block (basic_block *before_recovery_ptr)
   barrier = get_last_bb_insn (before_recovery);
   gcc_assert (BARRIER_P (barrier));
 
-  label = emit_label_after (gen_label_rtx (), barrier);
+  rtx_insn *label = emit_label_after (gen_label_rtx (), barrier);
 
   rec = create_basic_block (label, label, before_recovery);
 
@@ -8195,8 +8193,6 @@ void
 sched_create_recovery_edges (basic_block first_bb, basic_block rec,
 			     basic_block second_bb)
 {
-  rtx label;
-  rtx jump;
   int edge_flags;
 
   /* This is fixing of incoming edge.  */
@@ -8208,8 +8204,8 @@ sched_create_recovery_edges (basic_block first_bb, basic_block rec,
     edge_flags = 0;
 
   make_edge (first_bb, rec, edge_flags);
-  label = block_label (second_bb);
-  jump = emit_jump_insn_after (gen_jump (label), BB_END (rec));
+  rtx_code_label *label = block_label (second_bb);
+  rtx_jump_insn *jump = emit_jump_insn_after (gen_jump (label), BB_END (rec));
   JUMP_LABEL (jump) = label;
   LABEL_NUSES (label)++;
 

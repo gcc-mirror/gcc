@@ -370,7 +370,7 @@ expand_builtin_cilk_pop_frame (tree exp)
 void
 expand_builtin_cilk_detach (tree exp)
 {
-  rtx insn;
+  rtx_insn *insn;
   tree fptr = get_frame_arg (exp);
 
   if (fptr == NULL_TREE)

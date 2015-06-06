@@ -4560,9 +4560,7 @@ sel_bb_head (basic_block bb)
     }
   else
     {
-      insn_t note;
-
-      note = bb_note (bb);
+      rtx_note *note = bb_note (bb);
       head = next_nonnote_insn (note);
 
       if (head && (BARRIER_P (head) || BLOCK_FOR_INSN (head) != bb))
@@ -4983,7 +4981,7 @@ clear_outdated_rtx_info (basic_block bb)
 static void
 return_bb_to_pool (basic_block bb)
 {
-  rtx note = bb_note (bb);
+  rtx_note *note = bb_note (bb);
 
   gcc_assert (NOTE_BASIC_BLOCK (note) == bb
 	      && bb->aux == NULL);

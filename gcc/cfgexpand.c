@@ -2900,7 +2900,7 @@ expand_asm_stmt (gasm *stmt)
       for (i = 0; i < nlabels; ++i)
 	{
 	  tree label = TREE_VALUE (gimple_asm_label_op (stmt, i));
-	  rtx r;
+	  rtx_insn *r;
 	  /* If asm goto has any labels in the fallthru basic block, use
 	     a label that we emit immediately after the asm goto.  Expansion
 	     may insert further instructions into the same basic block after
