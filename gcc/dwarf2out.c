@@ -19818,7 +19818,7 @@ static void
 gen_lexical_block_die (tree stmt, dw_die_ref context_die)
 {
   dw_die_ref old_die = BLOCK_DIE (stmt);
-  dw_die_ref stmt_die;
+  dw_die_ref stmt_die = NULL;
   if (!old_die)
     {
       stmt_die = new_die (DW_TAG_lexical_block, context_die, stmt);
@@ -19859,13 +19859,13 @@ gen_lexical_block_die (tree stmt, dw_die_ref context_die)
   if (old_die)
     stmt_die = old_die;
 
-  if (!early_dwarf)
+  /* A non abstract block whose blocks have already been reordered
+     should have the instruction range for this block.  If so, set the
+     high/low attributes.  */
+  if (!early_dwarf && !BLOCK_ABSTRACT (stmt) && TREE_ASM_WRITTEN (stmt))
     {
-      /* A non abstract block whose blocks have already been reordered
-	 should have the instruction range for this block.  If so, set the
-	 high/low attributes.  */
-      if (! BLOCK_ABSTRACT (stmt) && TREE_ASM_WRITTEN (stmt))
-	add_high_low_attributes (stmt, stmt_die);
+      gcc_assert (stmt_die);
+      add_high_low_attributes (stmt, stmt_die);
     }
 
   decls_for_scope (stmt, stmt_die);
