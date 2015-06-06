@@ -1,3 +1,16 @@
+2015-06-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR bootstrap/66319
+	* config/pa/pa-hpux10.h (TARGET_OS_CPP_BUILTINS): Rearrange builtin
+	defines.  Define _LARGEFILE_SOURCE and _LARGEFILE64_SOURCE for c++.
+	Define _XOPEN_UNIX and _XOPEN_SOURCE_EXTENDED for c++ if unix95 or
+	later.
+	* config/pa/pa-hpux11.h (TARGET_OS_CPP_BUILTINS): Likewise.
+	Define _INCLUDE_STDC_SOURCE_PRE_199901, _INCLUDE_STDC_SOURCE_199901,
+	_INCLUDE_XOPEN_SOURCE_PRE_500, _INCLUDE_XOPEN_SOURCE_520,
+	_INCLUDE_XOPEN_SOURCE_PRE_600 and _INCLUDE_XOPEN_SOURCE_600 for c++
+	and non iso if unix2003.
+
 2015-06-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	* dwarf2out.c (gen_lexical_block_die): Initialize stmt_die.
