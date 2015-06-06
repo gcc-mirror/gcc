@@ -1,6 +1,6 @@
 2015-06-06  Thomas Koenig  <tkoenig@netcologne.de>
 
-	PR fortran/47359
+	PR fortran/47659
 	* arith.c (eval_intrinsic_op): Set warn flag for
 	gfc_type_convert_binary if -Wconversion or -Wconversion-extra
 	are set.
