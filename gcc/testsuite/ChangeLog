@@ -1,6 +1,6 @@
 2015-06-06  Thomas Koenig  <tkoenig@netcologne.de>
 
-	PR fortran/47359
+	PR fortran/47659
 	* gfortran.dg/array_constructor_type_17.f03: Adjust error message.
 	* gfortran.dg/warn_conversion.f90: Add warning for change in value
 	for assignment.
