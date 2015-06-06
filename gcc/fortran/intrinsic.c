@@ -4695,15 +4695,18 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 	  /* Larger kinds can hold values of smaller kinds without problems.
 	     Hence, only warn if target kind is smaller than the source
 	     kind - or if -Wconversion-extra is specified.  */
-	  if (warn_conversion && from_ts.kind > ts->kind)
-	    gfc_warning_now (OPT_Wconversion, "Possible change of value in "
-			     "conversion from %s to %s at %L",
-			     gfc_typename (&from_ts), gfc_typename (ts),
-			     &expr->where);
-	  else if (warn_conversion_extra)
-	    gfc_warning_now (OPT_Wconversion_extra, "Conversion from %s to %s "
-			     "at %L", gfc_typename (&from_ts),
-			     gfc_typename (ts), &expr->where);
+	  if (expr->expr_type != EXPR_CONSTANT)
+	    {
+	      if (warn_conversion && from_ts.kind > ts->kind)
+		gfc_warning_now (OPT_Wconversion, "Possible change of value in "
+				 "conversion from %s to %s at %L",
+				 gfc_typename (&from_ts), gfc_typename (ts),
+				 &expr->where);
+	      else if (warn_conversion_extra)
+		gfc_warning_now (OPT_Wconversion_extra, "Conversion from %s to %s "
+				 "at %L", gfc_typename (&from_ts),
+				 gfc_typename (ts), &expr->where);
+	    }
 	}
       else if ((from_ts.type == BT_REAL && ts->type == BT_INTEGER)
 	       || (from_ts.type == BT_COMPLEX && ts->type == BT_INTEGER)
@@ -4711,7 +4714,7 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
 	{
 	  /* Conversion from REAL/COMPLEX to INTEGER or COMPLEX to REAL
 	     usually comes with a loss of information, regardless of kinds.  */
-	  if (warn_conversion)
+	  if (warn_conversion && expr->expr_type != EXPR_CONSTANT)
 	    gfc_warning_now (OPT_Wconversion, "Possible change of value in "
 			     "conversion from %s to %s at %L",
 			     gfc_typename (&from_ts), gfc_typename (ts),
