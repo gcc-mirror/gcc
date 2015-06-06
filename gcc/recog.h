@@ -139,14 +139,14 @@ extern void preprocess_constraints (int, int, const char **,
 				    operand_alternative *);
 extern const operand_alternative *preprocess_insn_constraints (int);
 extern void preprocess_constraints (rtx_insn *);
-extern rtx peep2_next_insn (int);
+extern rtx_insn *peep2_next_insn (int);
 extern int peep2_regno_dead_p (int, int);
 extern int peep2_reg_dead_p (int, rtx);
 #ifdef CLEAR_HARD_REG_SET
 extern rtx peep2_find_free_register (int, int, const char *,
 				     machine_mode, HARD_REG_SET *);
 #endif
-extern rtx peephole2_insns (rtx, rtx, int *);
+extern rtx_insn *peephole2_insns (rtx, rtx_insn *, int *);
 
 extern int store_data_bypass_p (rtx_insn *, rtx_insn *);
 extern int if_test_bypass_p (rtx_insn *, rtx_insn *);

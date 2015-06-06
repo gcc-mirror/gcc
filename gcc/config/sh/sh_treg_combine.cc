@@ -1612,7 +1612,7 @@ sh_treg_combine::execute (function *fun)
 	log_msg ("trying to split insn:\n");
 	log_insn (*i);
 	log_msg ("\n");
-	try_split (PATTERN (*i), *i, 0);
+	try_split (PATTERN (*i), safe_as_a <rtx_insn *> (*i), 0);
       }
 
   m_touched_insns.clear ();

@@ -3877,7 +3877,7 @@ hwloop_fail (hwloop_info loop)
   else
     {
       splitting_loops = 1;  
-      try_split (PATTERN (insn), insn, 1);
+      try_split (PATTERN (insn), safe_as_a <rtx_insn *> (insn), 1);
       splitting_loops = 0;
     }
 }

@@ -3653,9 +3653,8 @@ mark_label_nuses (rtx x)
    returns TRIAL.  If the insn to be returned can be split, it will be.  */
 
 rtx_insn *
-try_split (rtx pat, rtx uncast_trial, int last)
+try_split (rtx pat, rtx_insn *trial, int last)
 {
-  rtx_insn *trial = as_a <rtx_insn *> (uncast_trial);
   rtx_insn *before = PREV_INSN (trial);
   rtx_insn *after = NEXT_INSN (trial);
   rtx note;
@@ -3674,7 +3673,7 @@ try_split (rtx pat, rtx uncast_trial, int last)
     split_branch_probability = XINT (note, 0);
   probability = split_branch_probability;
 
-  seq = safe_as_a <rtx_insn *> (split_insns (pat, trial));
+  seq = split_insns (pat, trial);
 
   split_branch_probability = -1;
 
