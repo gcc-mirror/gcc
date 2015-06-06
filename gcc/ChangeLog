@@ -1,3 +1,8 @@
+2015-06-06  DJ Delorie  <dj@redhat.com>
+
+	* config/msp430/msp430.c (msp430_asm_integer): Support addition
+	and subtraction too.
+
 2015-06-05  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/66410
