@@ -1,3 +1,8 @@
+2015-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (note_types_used_by_globals): Tweak comment.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Likewise.
+
 2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc-interface/gigi.h (note_types_used_by_globals): Rename from
@@ -9,7 +14,7 @@
 	(gnat_write_global_declarations): Rename
 	to note_types_used_by_globals.
 	Remove call to finalize_compilation_unit.
-	Remove debug_hooks->global_decl() call for globals.
+	Remove call to debug_hooks->global_decl for globals.
 	(gnat_pushdecls): Only insert into type_decls if TYPE_DECL.
 
 2015-06-04  Andrew MacLeod  <amacleod@redhat.com>
