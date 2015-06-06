@@ -1,3 +1,40 @@
+2015-06-06  Thomas Koenig  <tkoenig@netcologne.de>
+
+	PR fortran/47359
+	* arith.c (eval_intrinsic_op): Set warn flag for
+	gfc_type_convert_binary if -Wconversion or -Wconversion-extra
+	are set.
+	(wprecision_real_real): New function.
+	(wprecision_int_real): New function.
+	(gfc_int2int): If -fno-range-check and -Wconversion are specified
+	and it is a narrowing conversion, warn.
+	(gfc_int2real): If there is a change in value for the conversion,
+	warn.
+	(gfc_int2complex):  Likewise.
+	(gfc_real2int): If there is a fractional part to the real number,
+	warn with -Wconversion, otherwise warn with -Wconversion-extra.
+	(gfc_real2real): Emit warning if the constant was changed by
+	conversion with either -Wconversion or -Wconversion-extra.  With
+	-Wconversion-extra, warn if no warning was issued earlier.
+	(gfc_real2complex):  Likewise.
+	(gfc_complex2int): For -Wconversion or -Wconversion-extra, if
+	there was an imaginary part, warn; otherwise, warn for change in
+	value.  Warn with -Wconversion-extra if no other warning was
+	issued.
+	(gfc_complex2real): For -Wconversion or -Wconversion-extra, if
+	there was an imaginary part, warn; otherwise, warn for change in
+	value. Warn with -Wconversion-extra if no other warning was
+	issued.
+	(gfc_complex2complex):  For -Wconversion, warn if the value of
+	either the real or the imaginary part was changed.  Warn for
+	-Wconversion-extra if no prior warning was issued.
+	* expr.c (gfc_check_assign):  Remove check for change in value.
+	* primary.c (match_real_constant): For -Wconversion-extra, check
+	against a number in which the last non-zero digit has been
+	replaced with a zero.  If the number compares equal, warn.
+	* intrinsic.c (gfc_convert_type_warn):  Do not warn about constant
+	conversions.
+
 2015-06-05  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/66347
