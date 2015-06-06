@@ -3767,7 +3767,7 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
   basic_block else_bb = else_edge->dest;
   basic_block other_bb, trap_bb;
   rtx_insn *trap, *jump;
-  rtx cond, seq;
+  rtx cond;
   rtx_insn *cond_earliest;
   enum rtx_code code;
 
@@ -3812,9 +3812,9 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
     }
 
   /* Attempt to generate the conditional trap.  */
-  seq = gen_cond_trap (code, copy_rtx (XEXP (cond, 0)),
-		       copy_rtx (XEXP (cond, 1)),
-		       TRAP_CODE (PATTERN (trap)));
+  rtx_insn *seq = gen_cond_trap (code, copy_rtx (XEXP (cond, 0)),
+				 copy_rtx (XEXP (cond, 1)),
+				 TRAP_CODE (PATTERN (trap)));
   if (seq == NULL)
     return FALSE;
 
@@ -3839,10 +3839,9 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
   else if (trap_bb == then_bb)
     {
       rtx lab;
-      rtx_insn *newjump;
 
       lab = JUMP_LABEL (jump);
-      newjump = emit_jump_insn_after (gen_jump (lab), jump);
+      rtx_jump_insn *newjump = emit_jump_insn_after (gen_jump (lab), jump);
       LABEL_NUSES (lab) += 1;
       JUMP_LABEL (newjump) = lab;
       emit_barrier_after (newjump);

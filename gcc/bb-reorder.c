@@ -1391,12 +1391,11 @@ copy_bb_p (const_basic_block bb, int code_may_grow)
 int
 get_uncond_jump_length (void)
 {
-  rtx_insn *label, *jump;
   int length;
 
   start_sequence ();
-  label = emit_label (gen_label_rtx ());
-  jump = emit_jump_insn (gen_jump (label));
+  rtx_code_label *label = emit_label (gen_label_rtx ());
+  rtx_insn *jump = emit_jump_insn (gen_jump (label));
   length = get_attr_min_length (jump);
   end_sequence ();
 
@@ -1412,8 +1411,7 @@ fix_up_crossing_landing_pad (eh_landing_pad old_lp, basic_block old_bb)
 {
   eh_landing_pad new_lp;
   basic_block new_bb, last_bb, post_bb;
-  rtx_insn *new_label, *jump;
-  rtx post_label;
+  rtx_insn *jump;
   unsigned new_partition;
   edge_iterator ei;
   edge e;
@@ -1425,13 +1423,13 @@ fix_up_crossing_landing_pad (eh_landing_pad old_lp, basic_block old_bb)
   LABEL_PRESERVE_P (new_lp->landing_pad) = 1;
 
   /* Put appropriate instructions in new bb.  */
-  new_label = emit_label (new_lp->landing_pad);
+  rtx_code_label *new_label = emit_label (new_lp->landing_pad);
 
   expand_dw2_landing_pad_for_region (old_lp->region);
 
   post_bb = BLOCK_FOR_INSN (old_lp->landing_pad);
   post_bb = single_succ (post_bb);
-  post_label = block_label (post_bb);
+  rtx_code_label *post_label = block_label (post_bb);
   jump = emit_jump_insn (gen_jump (post_label));
   JUMP_LABEL (jump) = post_label;
 
@@ -1754,14 +1752,13 @@ add_labels_and_missing_jumps (vec<edge> crossing_edges)
     {
       basic_block src = e->src;
       basic_block dest = e->dest;
-      rtx label;
-      rtx_insn *new_jump;
+      rtx_jump_insn *new_jump;
 
       if (dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	continue;
 
       /* Make sure dest has a label.  */
-      label = block_label (dest);
+      rtx_code_label *label = block_label (dest);
 
       /* Nothing to do for non-fallthru edges.  */
       if (src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
@@ -1812,7 +1809,7 @@ fix_up_fall_thru_edges (void)
   bool cond_jump_crosses;
   int invert_worked;
   rtx_insn *old_jump;
-  rtx fall_thru_label;
+  rtx_code_label *fall_thru_label;
 
   FOR_EACH_BB_FN (cur_bb, cfun)
     {

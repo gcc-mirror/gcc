@@ -882,14 +882,13 @@ pre_check_invariant_p (bool simple, rtx dest)
   if (simple && REG_P (dest) && DF_REG_DEF_COUNT (REGNO (dest)) > 1)
     {
       df_ref use;
-      rtx ref;
       unsigned int i = REGNO (dest);
       struct df_insn_info *insn_info;
       df_ref def_rec;
 
       for (use = DF_REG_USE_CHAIN (i); use; use = DF_REF_NEXT_REG (use))
 	{
-	  ref = DF_REF_INSN (use);
+	  rtx_insn *ref = DF_REF_INSN (use);
 	  insn_info = DF_INSN_INFO_GET (ref);
 
 	  FOR_EACH_INSN_INFO_DEF (def_rec, insn_info)

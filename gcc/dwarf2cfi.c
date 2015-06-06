@@ -2242,7 +2242,6 @@ add_cfis_to_fde (void)
 	      int num = dwarf2out_cfi_label_num;
 	      const char *label = dwarf2out_cfi_label ();
 	      dw_cfi_ref xcfi;
-	      rtx tmp;
 
 	      /* Set the location counter to the new label.  */
 	      xcfi = new_cfi ();
@@ -2251,7 +2250,7 @@ add_cfis_to_fde (void)
 	      xcfi->dw_cfi_oprnd1.dw_cfi_addr = label;
 	      vec_safe_push (fde->dw_fde_cfi, xcfi);
 
-	      tmp = emit_note_before (NOTE_INSN_CFI_LABEL, insn);
+	      rtx_note *tmp = emit_note_before (NOTE_INSN_CFI_LABEL, insn);
 	      NOTE_LABEL_NUMBER (tmp) = num;
 	    }
 

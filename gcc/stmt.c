@@ -980,7 +980,7 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
   int i, ncases;
   struct case_node *n;
   rtx *labelvec;
-  rtx fallback_label = label_rtx (case_list->code_label);
+  rtx_insn *fallback_label = label_rtx (case_list->code_label);
   rtx_code_label *table_label = gen_label_rtx ();
   bool has_gaps = false;
   edge default_edge = stmt_bb ? EDGE_SUCC (stmt_bb, 0) : NULL;

@@ -3525,7 +3525,7 @@ extern void debug (const rtx_def *ptr);
 extern void debug_rtx (const_rtx);
 extern void debug_rtx_list (const rtx_insn *, int);
 extern void debug_rtx_range (const rtx_insn *, const rtx_insn *);
-extern const_rtx debug_rtx_find (const rtx_insn *, int);
+extern const rtx_insn *debug_rtx_find (const rtx_insn *, int);
 extern void print_mem_expr (FILE *, const_tree);
 extern void print_rtl (FILE *, const_rtx);
 extern void print_simple_rtl (FILE *, const_rtx);

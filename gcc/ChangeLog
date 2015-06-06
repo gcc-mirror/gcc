@@ -1,3 +1,15 @@
+2015-06-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* emit-rtl.c, expr.c, gcse.c, optabs.c, optabs.h, print-rtl.c,
+	rtl.h, bb-reorder.c, builtins.c, calls.c, cfgbuild.c, cfgexpand.c,
+	cfgrtl.c, cilk-common.c, config/i386/i386.md, cse.c, dwarf2cfi.c,
+	except.c, final.c, function.c, gcse-common.c, genemit.c,
+	haifa-sched.c, ifcvt.c, jump.c, loop-invariant.c, loop-iv.c,
+	lra-constraints.c, lra.c, reload1.c, resource.c, rtlanal.c,
+	sched-deps.c, sched-ebb.c, sel-sched-ir.c, sel-sched.c,
+	shrink-wrap.c, stmt.c, store-motion.c: Replace rtx base types with
+	more derived ones.
+
 2015-06-06  Mikhail Maltsev  <maltsevm@gmail.com>
 
 	* combine.c (combine_split_insns): Remove cast.

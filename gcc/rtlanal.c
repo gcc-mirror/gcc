@@ -2226,7 +2226,7 @@ void
 remove_node_from_expr_list (const_rtx node, rtx_expr_list **listp)
 {
   rtx_expr_list *temp = *listp;
-  rtx prev = NULL_RTX;
+  rtx_expr_list *prev = NULL;
 
   while (temp)
     {
@@ -2255,7 +2255,7 @@ void
 remove_node_from_insn_list (const rtx_insn *node, rtx_insn_list **listp)
 {
   rtx_insn_list *temp = *listp;
-  rtx prev = NULL;
+  rtx_insn_list *prev = NULL;
 
   while (temp)
     {

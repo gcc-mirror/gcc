@@ -304,10 +304,10 @@ store_ops_ok (const_rtx x, int *regs_set)
 /* Returns a list of registers mentioned in X.
    FIXME: A regset would be prettier and less expensive.  */
 
-static rtx
+static rtx_expr_list *
 extract_mentioned_regs (rtx x)
 {
-  rtx mentioned_regs = NULL;
+  rtx_expr_list *mentioned_regs = NULL;
   subrtx_var_iterator::array_type array;
   FOR_EACH_SUBRTX_VAR (iter, array, x, NONCONST)
     {

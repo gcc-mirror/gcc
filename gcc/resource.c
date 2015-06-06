@@ -894,7 +894,6 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
   unsigned int i;
   struct target_info *tinfo = NULL;
   rtx_insn *insn;
-  rtx jump_insn = 0;
   rtx jump_target;
   HARD_REG_SET scratch;
   struct resources set, needed;
@@ -1122,8 +1121,8 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
   CLEAR_RESOURCE (&set);
   CLEAR_RESOURCE (&needed);
 
-  jump_insn = find_dead_or_set_registers (target, res, &jump_target, 0,
-					  set, needed);
+  rtx_insn *jump_insn = find_dead_or_set_registers (target, res, &jump_target,
+						    0, set, needed);
 
   /* If we hit an unconditional branch, we have another way of finding out
      what is live: we can see what is live at the branch target and include

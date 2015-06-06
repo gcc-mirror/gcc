@@ -10559,7 +10559,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	      if ((icode = optab_handler (movmisalign_optab, mode))
 		  != CODE_FOR_nothing)
 		{
-		  rtx reg, insn;
+		  rtx reg;
 
 		  op0 = adjust_address (op0, mode, 0);
 		  /* We've already validated the memory, and we're creating a
@@ -10568,7 +10568,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		  reg = gen_reg_rtx (mode);
 
 		  /* Nor can the insn generator.  */
-		  insn = GEN_FCN (icode) (reg, op0);
+		  rtx_insn *insn = GEN_FCN (icode) (reg, op0);
 		  emit_insn (insn);
 		  return reg;
 		}

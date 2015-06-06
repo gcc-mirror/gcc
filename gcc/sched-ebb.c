@@ -183,9 +183,7 @@ begin_move_insn (rtx_insn *insn, rtx_insn *last)
 			   && BB_END (last_bb) == insn);
 
       {
-	rtx x;
-
-	x = NEXT_INSN (insn);
+	rtx_insn *x = NEXT_INSN (insn);
 	if (e)
 	  gcc_checking_assert (NOTE_P (x) || LABEL_P (x));
 	else

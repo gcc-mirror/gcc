@@ -3662,7 +3662,7 @@ try_split (rtx pat, rtx_insn *trial, int last)
   int probability;
   rtx_insn *insn_last, *insn;
   int njumps = 0;
-  rtx call_insn = NULL_RTX;
+  rtx_insn *call_insn = NULL;
 
   /* We're not good at redistributing frame information.  */
   if (RTX_FRAME_RELATED_P (trial))
@@ -4684,10 +4684,10 @@ emit_pattern_after_setloc (rtx pattern, rtx uncast_after, int loc,
 			   rtx_insn *(*make_raw) (rtx))
 {
   rtx_insn *after = safe_as_a <rtx_insn *> (uncast_after);
-  rtx last = emit_pattern_after_noloc (pattern, after, NULL, make_raw);
+  rtx_insn *last = emit_pattern_after_noloc (pattern, after, NULL, make_raw);
 
   if (pattern == NULL_RTX || !loc)
-    return safe_as_a <rtx_insn *> (last);
+    return last;
 
   after = NEXT_INSN (after);
   while (1)
@@ -4700,7 +4700,7 @@ emit_pattern_after_setloc (rtx pattern, rtx uncast_after, int loc,
 	break;
       after = NEXT_INSN (after);
     }
-  return safe_as_a <rtx_insn *> (last);
+  return last;
 }
 
 /* Insert PATTERN after AFTER.  MAKE_RAW indicates how to turn PATTERN

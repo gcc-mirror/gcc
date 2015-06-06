@@ -1560,11 +1560,10 @@ expand_builtin_apply_args (void)
        saved on entry to this function.  So we migrate the
        call to the first insn of this function.  */
     rtx temp;
-    rtx seq;
 
     start_sequence ();
     temp = expand_builtin_apply_args_1 ();
-    seq = get_insns ();
+    rtx_insn *seq = get_insns ();
     end_sequence ();
 
     apply_args_value = temp;
@@ -6397,7 +6396,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
 	  rtx buf_addr = expand_expr (CALL_EXPR_ARG (exp, 0), subtarget,
 				      VOIDmode, EXPAND_NORMAL);
 	  tree label = TREE_OPERAND (CALL_EXPR_ARG (exp, 1), 0);
-	  rtx label_r = label_rtx (label);
+	  rtx_insn *label_r = label_rtx (label);
 
 	  /* This is copied from the handling of non-local gotos.  */
 	  expand_builtin_setjmp_setup (buf_addr, label_r);
@@ -6417,7 +6416,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       if (validate_arglist (exp, POINTER_TYPE, VOID_TYPE))
 	{
 	  tree label = TREE_OPERAND (CALL_EXPR_ARG (exp, 0), 0);
-	  rtx label_r = label_rtx (label);
+	  rtx_insn *label_r = label_rtx (label);
 
 	  expand_builtin_setjmp_receiver (label_r);
 	  return const0_rtx;

@@ -2036,7 +2036,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 
 	      for (pnote = &cond_list; *pnote; pnote = pnote_next)
 		{
-		  rtx note = *pnote;
+		  rtx_expr_list *note = *pnote;
 		  rtx old_cond = XEXP (note, 0);
 
 		  pnote_next = (rtx_expr_list **)&XEXP (note, 1);
@@ -2070,7 +2070,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 	      /* Likewise for the conditions.  */
 	      for (pnote = &cond_list; *pnote; pnote = pnote_next)
 		{
-		  rtx note = *pnote;
+		  rtx_expr_list *note = *pnote;
 		  rtx old_cond = XEXP (note, 0);
 
 		  pnote_next = (rtx_expr_list **)&XEXP (note, 1);
