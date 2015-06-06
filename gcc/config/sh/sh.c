@@ -14236,7 +14236,7 @@ sh_try_split_insn_simple (rtx_insn* i, rtx_insn* curr_insn, int n = 0)
       fprintf (dump_file, "\n");
     }
 
-  rtx_insn* seq = safe_as_a<rtx_insn*> (split_insns (PATTERN (i), curr_insn));
+  rtx_insn* seq = split_insns (PATTERN (i), curr_insn);
 
   if (seq == NULL)
     return std::make_pair (i, i);

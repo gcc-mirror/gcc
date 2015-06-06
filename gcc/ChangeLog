@@ -1,3 +1,21 @@
+2015-06-06  Mikhail Maltsev  <maltsevm@gmail.com>
+
+	* combine.c (combine_split_insns): Remove cast.
+	* config/bfin/bfin.c (hwloop_fail): Add cast in try_split call.
+	* config/sh/sh.c (sh_try_split_insn_simple): Remove cast.
+	* config/sh/sh_treg_combine.cc (sh_treg_combine::execute): Add cast.
+	* emit-rtl.c (try_split): Promote type of trial argument to rtx_insn.
+	* genemit.c (gen_split): Change return type of generated functions to
+	rtx_insn.
+	* genrecog.c (get_failure_return): Use NULL instead of NULL_RTX.
+	(print_subroutine_start): Promote rtx to rtx_insn in gen_split_* and
+	gen_peephole2_* functions.
+	(print_subroutine, main): Likewise.
+	* recog.c (peephole2_optimize): Remove cast.
+	(peep2_next_insn): Promote return type to rtx_insn.
+	* recog.h (peep2_next_insn): Fix prototype.
+	* rtl.h (try_split, split_insns): Likewise.
+
 2015-06-06  DJ Delorie  <dj@redhat.com>
 
 	* config/msp430/msp430.c (msp430_asm_integer): Support addition

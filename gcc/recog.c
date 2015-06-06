@@ -3080,7 +3080,7 @@ peep2_buf_position (int n)
    does not exist.  Used by the recognizer to find the next insn to match
    in a multi-insn pattern.  */
 
-rtx
+rtx_insn *
 peep2_next_insn (int n)
 {
   gcc_assert (n <= peep2_current_count);
@@ -3653,8 +3653,7 @@ peephole2_optimize (void)
 
 	  /* Match the peephole.  */
 	  head = peep2_insn_data[peep2_current].insn;
-	  attempt = safe_as_a <rtx_insn *> (
-		      peephole2_insns (PATTERN (head), head, &match_len));
+	  attempt = peephole2_insns (PATTERN (head), head, &match_len);
 	  if (attempt != NULL)
 	    {
 	      rtx_insn *last = peep2_attempt (bb, head, match_len, attempt);

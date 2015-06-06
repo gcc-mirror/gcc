@@ -568,15 +568,17 @@ gen_split (rtx split)
   /* Output the prototype, function name and argument declarations.  */
   if (GET_CODE (split) == DEFINE_PEEPHOLE2)
     {
-      printf ("extern rtx gen_%s_%d (rtx_insn *, rtx *);\n",
+      printf ("extern rtx_insn *gen_%s_%d (rtx_insn *, rtx *);\n",
 	      name, insn_code_number);
-      printf ("rtx\ngen_%s_%d (rtx_insn *curr_insn ATTRIBUTE_UNUSED, rtx *operands%s)\n",
+      printf ("rtx_insn *\ngen_%s_%d (rtx_insn *curr_insn ATTRIBUTE_UNUSED, rtx *operands%s)\n",
 	      name, insn_code_number, unused);
     }
   else
     {
-      printf ("extern rtx gen_split_%d (rtx_insn *, rtx *);\n", insn_code_number);
-      printf ("rtx\ngen_split_%d (rtx_insn *curr_insn ATTRIBUTE_UNUSED, rtx *operands%s)\n",
+      printf ("extern rtx_insn *gen_split_%d (rtx_insn *, rtx *);\n",
+	      insn_code_number);
+      printf ("rtx_insn *\ngen_split_%d "
+	      "(rtx_insn *curr_insn ATTRIBUTE_UNUSED, rtx *operands%s)\n",
 	      insn_code_number, unused);
     }
   printf ("{\n");
@@ -584,7 +586,7 @@ gen_split (rtx split)
   /* Declare all local variables.  */
   for (i = 0; i < stats.num_operand_vars; i++)
     printf ("  rtx operand%d;\n", i);
-  printf ("  rtx _val = 0;\n");
+  printf ("  rtx_insn *_val = NULL;\n");
 
   if (GET_CODE (split) == DEFINE_PEEPHOLE2)
     output_peephole2_scratches (split);

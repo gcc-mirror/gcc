@@ -4307,7 +4307,7 @@ get_failure_return (routine_type type)
 
     case SPLIT:
     case PEEPHOLE2:
-      return "NULL_RTX";
+      return "NULL";
     }
   gcc_unreachable ();
 }
@@ -5061,7 +5061,7 @@ print_subroutine_start (output_state *os, state *s, position *root)
   if (os->type == SUBPATTERN || os->type == RECOG)
     printf ("  int res ATTRIBUTE_UNUSED;\n");
   else
-    printf ("  rtx res ATTRIBUTE_UNUSED;\n");
+    printf ("  rtx_insn *res ATTRIBUTE_UNUSED;\n");
 }
 
 /* Output the definition of pattern routine ROUTINE.  */
@@ -5111,7 +5111,7 @@ print_pattern (output_state *os, pattern_routine *routine)
 static void
 print_subroutine (output_state *os, state *s, int proc_id)
 {
-  /* For now, the top-level functions take a plain "rtx", and perform a
+  /* For now, the top-level "recog" takes a plain "rtx", and performs a
      checked cast to "rtx_insn *" for use throughout the rest of the
      function and the code it calls.  */
   const char *insn_param
@@ -5134,29 +5134,31 @@ print_subroutine (output_state *os, state *s, int proc_id)
 
     case SPLIT:
       if (proc_id)
-	printf ("static rtx\nsplit_%d", proc_id);
+	printf ("static rtx_insn *\nsplit_%d", proc_id);
       else
-	printf ("rtx\nsplit_insns");
-      printf (" (rtx x1 ATTRIBUTE_UNUSED, %s ATTRIBUTE_UNUSED)\n",
-	      insn_param);
+	printf ("rtx_insn *\nsplit_insns");
+      printf (" (rtx x1 ATTRIBUTE_UNUSED, rtx_insn *insn ATTRIBUTE_UNUSED)\n");
       break;
 
     case PEEPHOLE2:
       if (proc_id)
-	printf ("static rtx\npeephole2_%d", proc_id);
+	printf ("static rtx_insn *\npeephole2_%d", proc_id);
       else
-	printf ("rtx\npeephole2_insns");
+	printf ("rtx_insn *\npeephole2_insns");
       printf (" (rtx x1 ATTRIBUTE_UNUSED,\n"
-	      "\t%s ATTRIBUTE_UNUSED,\n"
-	      "\tint *pmatch_len_ ATTRIBUTE_UNUSED)\n", insn_param);
+	      "\trtx_insn *insn ATTRIBUTE_UNUSED,\n"
+	      "\tint *pmatch_len_ ATTRIBUTE_UNUSED)\n");
       break;
     }
   print_subroutine_start (os, s, &root_pos);
   if (proc_id == 0)
     {
       printf ("  recog_data.insn = NULL;\n");
-      printf ("  rtx_insn *insn ATTRIBUTE_UNUSED;\n");
-      printf ("  insn = safe_as_a <rtx_insn *> (uncast_insn);\n");
+      if (os->type == RECOG)
+	{
+	  printf ("  rtx_insn *insn ATTRIBUTE_UNUSED;\n");
+	  printf ("  insn = safe_as_a <rtx_insn *> (uncast_insn);\n");
+	}
     }
   print_state (os, s, 2, true);
   printf ("}\n");
@@ -5323,7 +5325,7 @@ main (int argc, char **argv)
 
 	  /* Declare the gen_split routine that we'll call if the
 	     pattern matches.  The definition comes from insn-emit.c.  */
-	  printf ("extern rtx gen_split_%d (rtx_insn *, rtx *);\n",
+	  printf ("extern rtx_insn *gen_split_%d (rtx_insn *, rtx *);\n",
 		  next_insn_code);
 	  break;
 
@@ -5335,7 +5337,7 @@ main (int argc, char **argv)
 
 	  /* Declare the gen_peephole2 routine that we'll call if the
 	     pattern matches.  The definition comes from insn-emit.c.  */
-	  printf ("extern rtx gen_peephole2_%d (rtx_insn *, rtx *);\n",
+	  printf ("extern rtx_insn *gen_peephole2_%d (rtx_insn *, rtx *);\n",
 		  next_insn_code);
 	  break;
 

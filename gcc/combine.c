@@ -554,7 +554,7 @@ combine_split_insns (rtx pattern, rtx_insn *insn)
   rtx_insn *ret;
   unsigned int nregs;
 
-  ret = safe_as_a <rtx_insn *> (split_insns (pattern, insn));
+  ret = split_insns (pattern, insn);
   nregs = max_reg_num ();
   if (nregs > reg_stat.length ())
     reg_stat.safe_grow_cleared (nregs);
