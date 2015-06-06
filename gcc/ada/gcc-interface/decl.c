@@ -5185,7 +5185,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       && !Present (Alias (gnat_entity))
       && !(Present (Renamed_Object (gnat_entity)) && saved))
     {
-      /* ?? DECL_ARTIFICIAL, and possibly DECL_IGNORED_P below, should
+      /* ??? DECL_ARTIFICIAL, and possibly DECL_IGNORED_P below, should
 	 be set before calling rest_of_decl_compilation above (through
 	 create_var_decl_1).  This is because rest_of_decl_compilation
 	 calls the debugging backend and will create a DIE without
