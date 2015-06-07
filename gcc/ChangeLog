@@ -1,3 +1,12 @@
+2015-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* alias.c (get_alias_set): Be ready for TYPE_CANONICAL
+	of ptr_type_node to not be ptr_to_node.
+	* tree.c (gimple_types_compatible_p): Do not match TREE_CODE of
+	TREE_TYPE of pointers.
+	* gimple-expr.c (useless_type_conversion): Reorder the check for
+	function pointers and TYPE_CANONICAL.
+
 2015-06-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR bootstrap/66319

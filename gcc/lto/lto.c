@@ -337,12 +337,12 @@ hash_canonical_type (tree type)
   if (TREE_CODE (type) == COMPLEX_TYPE)
     hstate.add_int (TYPE_UNSIGNED (type));
 
-  /* For pointer and reference types, fold in information about the type
-     pointed to but do not recurse to the pointed-to type.  */
+  /* Fortran standard define C_PTR type that is compatible with every
+     C pointer.  For this reason we need to glob all pointers into one.
+     Still pointers in different address spaces are not compatible.  */
   if (POINTER_TYPE_P (type))
     {
       hstate.add_int (TYPE_ADDR_SPACE (TREE_TYPE (type)));
-      hstate.add_int (TREE_CODE (TREE_TYPE (type)));
     }
 
   /* For integer types hash only the string flag.  */

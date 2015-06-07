@@ -1,4 +1,5 @@
-enum a {test1, test2};
+#include <limits.h>
+enum a {test1, test2, test3=INT_MAX};
 enum a a;
 enum a *b;
 

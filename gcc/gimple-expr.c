@@ -84,6 +84,12 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
       if (TYPE_ADDR_SPACE (TREE_TYPE (outer_type))
 	  != TYPE_ADDR_SPACE (TREE_TYPE (inner_type)))
 	return false;
+      /* Do not lose casts to function pointer types.  */
+      if ((TREE_CODE (TREE_TYPE (outer_type)) == FUNCTION_TYPE
+	   || TREE_CODE (TREE_TYPE (outer_type)) == METHOD_TYPE)
+	  && !(TREE_CODE (TREE_TYPE (inner_type)) == FUNCTION_TYPE
+	       || TREE_CODE (TREE_TYPE (inner_type)) == METHOD_TYPE))
+	return false;
     }
 
   /* From now on qualifiers on value types do not matter.  */
@@ -142,13 +148,6 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
   else if (POINTER_TYPE_P (inner_type)
 	   && POINTER_TYPE_P (outer_type))
     {
-      /* Do not lose casts to function pointer types.  */
-      if ((TREE_CODE (TREE_TYPE (outer_type)) == FUNCTION_TYPE
-	   || TREE_CODE (TREE_TYPE (outer_type)) == METHOD_TYPE)
-	  && !(TREE_CODE (TREE_TYPE (inner_type)) == FUNCTION_TYPE
-	       || TREE_CODE (TREE_TYPE (inner_type)) == METHOD_TYPE))
-	return false;
-
       /* We do not care for const qualification of the pointed-to types
 	 as const qualification has no semantic value to the middle-end.  */
 
