@@ -12958,17 +12958,13 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
 	  && TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2))
 	return false;
 
-      /* For canonical type comparisons we do not want to build SCCs
-	 so we cannot compare pointed-to types.  But we can, for now,
-	 require the same pointed-to type kind and match what
-	 useless_type_conversion_p would do.  */
+      /* Fortran standard define C_PTR type that is compatible with every
+ 	 C pointer.  For this reason we need to glob all pointers into one.
+	 Still pointers in different address spaces are not compatible.  */
       if (POINTER_TYPE_P (t1))
 	{
 	  if (TYPE_ADDR_SPACE (TREE_TYPE (t1))
 	      != TYPE_ADDR_SPACE (TREE_TYPE (t2)))
-	    return false;
-
-	  if (TREE_CODE (TREE_TYPE (t1)) != TREE_CODE (TREE_TYPE (t2)))
 	    return false;
 	}
 

@@ -1072,8 +1072,9 @@ get_alias_set (tree t)
     }
   /* In LTO the rules above needs to be part of canonical type machinery.
      For now just punt.  */
-  else if (POINTER_TYPE_P (t) && t != ptr_type_node && in_lto_p)
-    set = get_alias_set (ptr_type_node);
+  else if (POINTER_TYPE_P (t)
+	   && t != TYPE_CANONICAL (ptr_type_node) && in_lto_p)
+    set = get_alias_set (TYPE_CANONICAL (ptr_type_node));
 
   /* Otherwise make a new alias set for this type.  */
   else

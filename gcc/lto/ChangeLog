@@ -1,3 +1,8 @@
+2015-06-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (hash_canonical_type): Do not hash TREE_CODE of TREE_TYPE of
+	pointers.
+
 2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* lto-lang.c (lto_write_globals): Remove.
