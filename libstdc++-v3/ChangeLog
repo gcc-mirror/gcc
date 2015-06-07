@@ -1,3 +1,34 @@
+2015-06-07  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_tree.h (_Rb_tree<>::__is_transparent<>): Move to
+	outer scope and rename to ...
+	(std::__hash_is_transparent<>): ... this.
+	* include/debug/stl_map.h (map::find<>,
+	map::lower_bound<>, map::upper_bound<>, map::equal_range<>): New
+	member function templates to perform heterogeneous lookup.
+	* include/debug/stl_multimap.h (multimap::find<>,
+	multimap::lower_bound<>, multimap::upper_bound<>,
+	multimap::equal_range<>): Likewise.
+	* include/debug/stl_multiset.h (multiset::find<>,
+	multiset::lower_bound<>, multiset::upper_bound<>,
+	multiset::equal_range<>): Likewise.
+	* include/debug/stl_set.h (set::find<>,
+	set::lower_bound<>, set::upper_bound<>, set::equal_range<>): Likewise.
+	* include/profile/stl_map.h (map::find<>, map::count<>,
+	map::lower_bound<>, map::upper_bound<>, map::equal_range<>): Likewise.
+	* include/profile/stl_multimap.h (multimap::find<>, multimap::count<>,
+	multimap::lower_bound<>, multimap::upper_bound<>,
+	multimap::equal_range<>): Likewise.
+	* include/profile/stl_multiset.h (multiset::find<>, multiset::count<>,
+	multiset::lower_bound<>, multiset::upper_bound<>,
+	multiset::equal_range<>): Likewise.
+	* include/profile/stl_set.h (set::find<>, set::count<>,
+	set::lower_bound<>, set::upper_bound<>, set::equal_range<>): Likewise.
+	* testsuite/23_containers/map/operations/1.cc: Check const variants.
+	* testsuite/23_containers/multimap/operations/1.cc: Likewise.
+	* testsuite/23_containers/multiset/operations/1.cc: Likewise.
+	* testsuite/23_containers/set/operations/1.cc: Likewise.
+
 2015-06-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Update status tables.

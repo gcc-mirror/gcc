@@ -29,6 +29,7 @@ void test01()
 
   multiset<int> ms0;
   typedef multiset<int>::iterator iterator;
+  typedef multiset<int>::const_iterator const_iterator;
   pair<iterator, iterator> pp0;
 
   pp0 = ms0.equal_range(1);
@@ -45,19 +46,19 @@ void test01()
   VERIFY( *pp0.first == 2 );
   VERIFY( *pp0.second == 3 );
   VERIFY( pp0.first == iter1 );
-  VERIFY( --pp0.first == iter0 );  
+  VERIFY( --pp0.first == iter0 );
   VERIFY( pp0.second == iter2 );
 
   ms0.insert(3);
   iterator iter3 = ms0.insert(3);
   iterator iter4 = ms0.insert(4);
-  
+
   pp0 = ms0.equal_range(3);
   VERIFY( ms0.count(3) == 3 );
   VERIFY( *pp0.first == 3 );
   VERIFY( *pp0.second == 4 );
   VERIFY( pp0.first == iter2 );
-  VERIFY( --pp0.first == iter1 );  
+  VERIFY( --pp0.first == iter1 );
   VERIFY( pp0.second == iter4 );
 
   iterator iter5 = ms0.insert(0);
@@ -70,7 +71,7 @@ void test01()
   VERIFY( *pp0.first == 1 );
   VERIFY( *pp0.second == 2 );
   VERIFY( pp0.first == iter0 );
-  VERIFY( --pp0.first == iter5 );  
+  VERIFY( --pp0.first == iter5 );
   VERIFY( pp0.second == iter1 );
 
   iterator iter6 = ms0.insert(5);
@@ -81,7 +82,7 @@ void test01()
   VERIFY( ms0.count(5) == 3 );
   VERIFY( *pp0.first == 5 );
   VERIFY( pp0.first == iter6 );
-  VERIFY( --pp0.first == iter4 );  
+  VERIFY( --pp0.first == iter4 );
   VERIFY( pp0.second == ms0.end() );
 
   ms0.insert(4);
@@ -89,32 +90,33 @@ void test01()
   ms0.insert(4);
 
   pp0 = ms0.equal_range(4);
-  VERIFY( ms0.count(4) == 4 );  
+  VERIFY( ms0.count(4) == 4 );
   VERIFY( *pp0.first == 4 );
-  VERIFY( *pp0.second == 5 );  
+  VERIFY( *pp0.second == 5 );
   VERIFY( pp0.first == iter4 );
-  VERIFY( --pp0.first == iter3 );  
+  VERIFY( --pp0.first == iter3 );
   VERIFY( pp0.second == iter6 );
-  
+
   ms0.insert(0);
   iterator iter7 = ms0.insert(0);
   ms0.insert(1);
 
   pp0 = ms0.equal_range(0);
-  VERIFY( ms0.count(0) == 3 );  
+  VERIFY( ms0.count(0) == 3 );
   VERIFY( *pp0.first == 0 );
-  VERIFY( *pp0.second == 1 );  
+  VERIFY( *pp0.second == 1 );
   VERIFY( pp0.first == iter5 );
   VERIFY( pp0.first == ms0.begin() );
   VERIFY( pp0.second == iter0 );
 
-  pp0 = ms0.equal_range(1);
-  VERIFY( ms0.count(1) == 5 );  
-  VERIFY( *pp0.first == 1 );
-  VERIFY( *pp0.second == 2 );  
-  VERIFY( pp0.first == iter0 );
-  VERIFY( --pp0.first == iter7 );
-  VERIFY( pp0.second == iter1 );
+  const multiset<int>& ms1 = ms0;
+  pair<const_iterator, const_iterator> pp1 = ms1.equal_range(1);
+  VERIFY( ms1.count(1) == 5 );
+  VERIFY( *pp1.first == 1 );
+  VERIFY( *pp1.second == 2 );
+  VERIFY( pp1.first == iter0 );
+  VERIFY( --pp1.first == iter7 );
+  VERIFY( pp1.second == iter1 );
 }
 
 int
