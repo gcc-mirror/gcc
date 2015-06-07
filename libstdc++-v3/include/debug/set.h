@@ -393,6 +393,22 @@ namespace __debug
       find(const key_type& __x) const
       { return const_iterator(_Base::find(__x), this); }
 
+#if __cplusplus > 201103L
+      template<typename _Kt,
+	       typename _Req =
+		 typename __has_is_transparent<_Compare, _Kt>::type>
+	iterator
+	find(const _Kt& __x)
+	{ return { _Base::find(__x), this }; }
+
+      template<typename _Kt,
+	       typename _Req =
+		 typename __has_is_transparent<_Compare, _Kt>::type>
+	const_iterator
+	find(const _Kt& __x) const
+	{ return { _Base::find(__x), this }; }
+#endif
+
       using _Base::count;
 
       iterator
@@ -405,6 +421,22 @@ namespace __debug
       lower_bound(const key_type& __x) const
       { return const_iterator(_Base::lower_bound(__x), this); }
 
+#if __cplusplus > 201103L
+      template<typename _Kt,
+	       typename _Req =
+		 typename __has_is_transparent<_Compare, _Kt>::type>
+	iterator
+	lower_bound(const _Kt& __x)
+	{ return { _Base::lower_bound(__x), this }; }
+
+      template<typename _Kt,
+	       typename _Req =
+		 typename __has_is_transparent<_Compare, _Kt>::type>
+	const_iterator
+	lower_bound(const _Kt& __x) const
+	{ return { _Base::lower_bound(__x), this }; }
+#endif
+
       iterator
       upper_bound(const key_type& __x)
       { return iterator(_Base::upper_bound(__x), this); }
@@ -415,7 +447,23 @@ namespace __debug
       upper_bound(const key_type& __x) const
       { return const_iterator(_Base::upper_bound(__x), this); }
 
-      std::pair<iterator,iterator>
+#if __cplusplus > 201103L
+      template<typename _Kt,
+	       typename _Req =
+		 typename __has_is_transparent<_Compare, _Kt>::type>
+	iterator
+	upper_bound(const _Kt& __x)
+	{ return { _Base::upper_bound(__x), this }; }
+
+      template<typename _Kt,
+	       typename _Req =
+		 typename __has_is_transparent<_Compare, _Kt>::type>
+	const_iterator
+	upper_bound(const _Kt& __x) const
+	{ return { _Base::upper_bound(__x), this }; }
+#endif
+
+      std::pair<iterator, iterator>
       equal_range(const key_type& __x)
       {
 	std::pair<_Base_iterator, _Base_iterator> __res =
@@ -426,14 +474,36 @@ namespace __debug
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 214. set::find() missing const overload
-      std::pair<const_iterator,const_iterator>
+      std::pair<const_iterator, const_iterator>
       equal_range(const key_type& __x) const
       {
-	std::pair<_Base_iterator, _Base_iterator> __res =
+	std::pair<_Base_const_iterator, _Base_const_iterator> __res =
 	_Base::equal_range(__x);
 	return std::make_pair(const_iterator(__res.first, this),
 			      const_iterator(__res.second, this));
       }
+
+#if __cplusplus > 201103L
+      template<typename _Kt,
+	       typename _Req =
+		 typename __has_is_transparent<_Compare, _Kt>::type>
+	std::pair<iterator, iterator>
+	equal_range(const _Kt& __x)
+	{
+	  auto __res = _Base::equal_range(__x);
+	  return { { __res.first, this }, { __res.second, this } };
+	}
+
+      template<typename _Kt,
+	       typename _Req =
+		 typename __has_is_transparent<_Compare, _Kt>::type>
+	std::pair<const_iterator, const_iterator>
+	equal_range(const _Kt& __x) const
+	{
+	  auto __res = _Base::equal_range(__x);
+	  return { { __res.first, this }, { __res.second, this } };
+	}
+#endif
 
       _Base&
       _M_base() _GLIBCXX_NOEXCEPT	{ return *this; }

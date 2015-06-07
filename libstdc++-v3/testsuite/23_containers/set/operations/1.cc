@@ -29,6 +29,7 @@ void test01()
 
   set<int> s0;
   typedef set<int>::iterator iterator;
+  typedef set<int>::const_iterator const_iterator;
   typedef pair<iterator, bool> insert_return_type;
   pair<iterator, iterator> pp0;
 
@@ -52,13 +53,13 @@ void test01()
   s0.insert(3);
   insert_return_type irt3 = s0.insert(3);
   insert_return_type irt4 = s0.insert(4);
-  
+
   pp0 = s0.equal_range(3);
   VERIFY( s0.count(3) == 1 );
   VERIFY( *pp0.first == 3 );
   VERIFY( *pp0.second == 4 );
   VERIFY( pp0.first == irt2.first );
-  VERIFY( --pp0.first == irt1.first );  
+  VERIFY( --pp0.first == irt1.first );
   VERIFY( pp0.second == irt4.first );
 
   insert_return_type irt5 = s0.insert(0);
@@ -71,7 +72,7 @@ void test01()
   VERIFY( *pp0.first == 1 );
   VERIFY( *pp0.second == 2 );
   VERIFY( pp0.first == irt0.first );
-  VERIFY( --pp0.first == irt5.first );  
+  VERIFY( --pp0.first == irt5.first );
   VERIFY( pp0.second == irt1.first );
 
   insert_return_type irt6 = s0.insert(5);
@@ -82,7 +83,7 @@ void test01()
   VERIFY( s0.count(5) == 1 );
   VERIFY( *pp0.first == 5 );
   VERIFY( pp0.first == irt6.first );
-  VERIFY( --pp0.first == irt4.first );  
+  VERIFY( --pp0.first == irt4.first );
   VERIFY( pp0.second == s0.end() );
 
   s0.insert(4);
@@ -90,32 +91,33 @@ void test01()
   s0.insert(4);
 
   pp0 = s0.equal_range(4);
-  VERIFY( s0.count(4) == 1 );  
+  VERIFY( s0.count(4) == 1 );
   VERIFY( *pp0.first == 4 );
-  VERIFY( *pp0.second == 5 );  
+  VERIFY( *pp0.second == 5 );
   VERIFY( pp0.first == irt4.first );
-  VERIFY( --pp0.first == irt3.first );  
+  VERIFY( --pp0.first == irt3.first );
   VERIFY( pp0.second == irt6.first );
-  
+
   s0.insert(0);
   insert_return_type irt7 = s0.insert(0);
   s0.insert(1);
 
   pp0 = s0.equal_range(0);
-  VERIFY( s0.count(0) == 1 );  
+  VERIFY( s0.count(0) == 1 );
   VERIFY( *pp0.first == 0 );
-  VERIFY( *pp0.second == 1 );  
+  VERIFY( *pp0.second == 1 );
   VERIFY( pp0.first == irt5.first );
   VERIFY( pp0.first == s0.begin() );
   VERIFY( pp0.second == irt0.first );
 
-  pp0 = s0.equal_range(1);
-  VERIFY( s0.count(1) == 1 );  
-  VERIFY( *pp0.first == 1 );
-  VERIFY( *pp0.second == 2 );  
-  VERIFY( pp0.first == irt0.first );
-  VERIFY( --pp0.first == irt7.first );
-  VERIFY( pp0.second == irt1.first );
+  const set<int>& s1 = s0;
+  pair<const_iterator, const_iterator> pp1 = s1.equal_range(1);
+  VERIFY( s1.count(1) == 1 );
+  VERIFY( *pp1.first == 1 );
+  VERIFY( *pp1.second == 2 );
+  VERIFY( pp1.first == irt0.first );
+  VERIFY( --pp1.first == irt7.first );
+  VERIFY( pp1.second == irt1.first );
 }
 
 int
