@@ -272,12 +272,13 @@ lto_location_cache::input_location (location_t *loc, struct bitpack_d *bp,
 
   gcc_assert (current_cache == this);
 
-  if (bp_unpack_value (bp, 1))
-    {
-      *loc = UNKNOWN_LOCATION;
-      return;
-    }
-  *loc = BUILTINS_LOCATION + 1;
+  *loc = bp_unpack_int_in_range (bp, "location", 0, RESERVED_LOCATION_COUNT);
+
+  if (*loc < RESERVED_LOCATION_COUNT)
+    return;
+
+  /* Keep value RESERVED_LOCATION_COUNT in *loc as linemap lookups will
+     ICE on it.  */
 
   file_change = bp_unpack_value (bp, 1);
   line_change = bp_unpack_value (bp, 1);
