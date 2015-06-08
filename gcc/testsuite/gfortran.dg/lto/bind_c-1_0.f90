@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-lto-do run }
 ! { dg-lto-options {{ -O3 -flto }} }
 ! This testcase will abort if C_PTR is not interoperable with both int *
 ! and float *
