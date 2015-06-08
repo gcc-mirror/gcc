@@ -1,3 +1,10 @@
+2015-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66417
+	* src/c++11/codecvt.cc (write_utf16_code_point): Use adjust_byte_order
+	for single UTF-16 units.
+	* testsuite/22_locale/codecvt/codecvt_utf16/66417.cc: New.
+
 2015-06-04  Renlin Li  <renlin.li@arm.com>
 
 	Backported from mainline
