@@ -1,3 +1,11 @@
+2015-06-08  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/66442
+	* gimple-iterator.h (gimple_seq_nondebug_singleton_p): Add function.
+	* tree-parloops.c (try_transform_to_exit_first_loop_alt): Return false
+	if the loop latch is not a singleton.  Use
+	gimple_seq_nondebug_singleton_p instead of gimple_seq_singleton_p.
+
 2015-06-08  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/66452
