@@ -1,3 +1,13 @@
+2015-06-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2015-06-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66275
+	* config/i386/i386.c (ix86_function_arg_regno): Use ix86_cfun_abi
+	to determine current function ABI.
+	(ix86_function_value_regno_p): Ditto.
+
 2015-06-08  Tom de Vries  <tom@codesourcery.com>
 
 	backport from mainline:
