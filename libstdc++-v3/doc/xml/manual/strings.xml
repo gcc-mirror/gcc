@@ -353,7 +353,7 @@ stringtok(Container &amp;container, string const &amp;in,
       a <code>vector</code>'s memory usage
       (see <link linkend="faq.size_equals_capacity">this FAQ
       entry</link>) but the regular copy constructor cannot be used
-      because libstdc++'s <code>string</code> is Copy-On-Write.
+      because libstdc++'s <code>string</code> is Copy-On-Write in GCC 3.
    </para>
    <para>In <link linkend="status.iso.2011">C++11</link> mode you can call
       <code>s.shrink_to_fit()</code> to achieve the same effect as

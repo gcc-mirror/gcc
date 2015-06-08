@@ -638,7 +638,7 @@ now defaults to zero.
 </para>
 
 <para>
-  The library was updated to to avoid including
+  The library was updated to avoid including
   <filename class="headerfile">stddef.h</filename> in order
   to reduce namespace pollution.
 </para>
@@ -668,7 +668,7 @@ now defaults to zero.
 <para>A new clocale model for newlib is available.</para>
 
 <para>
-  The library was updated to to avoid including
+  The library was updated to avoid including
   <filename class="headerfile">unistd.h</filename> in order
   to reduce namespace pollution.
 </para>

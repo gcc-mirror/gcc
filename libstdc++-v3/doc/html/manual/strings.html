@@ -267,7 +267,7 @@ stringtok(Container &amp;container, string const &amp;in,
       a <code class="code">vector</code>'s memory usage
       (see <a class="link" href="../faq.html#faq.size_equals_capacity" title="7.8.">this FAQ
       entry</a>) but the regular copy constructor cannot be used
-      because libstdc++'s <code class="code">string</code> is Copy-On-Write.
+      because libstdc++'s <code class="code">string</code> is Copy-On-Write in GCC 3.
    </p><p>In <a class="link" href="status.html#status.iso.2011" title="C++ 2011">C++11</a> mode you can call
       <code class="code">s.shrink_to_fit()</code> to achieve the same effect as
       <code class="code">s.reserve(s.size())</code>.

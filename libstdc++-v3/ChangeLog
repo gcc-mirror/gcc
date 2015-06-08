@@ -1,5 +1,31 @@
 2015-06-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	Backported from mainline
+	2015-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml: Document versioning for 5.1.0 release.
+	* doc/xml/manual/evolution.xml: Fix typos.
+	* doc/html/manual/*: Regenerate.
+
+	Backported from mainline
+	2015-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/configure.xml: Update descriptions of options
+	affecting dual ABI and add cross-references.
+	* doc/xml/manual/strings.xml: Clarify that string isn't COW now.
+	* doc/xml/manual/using.xml: Document ABI transition.
+	* doc/html/*: Regenerate.
+
+	Backported from mainline
+	2015-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/concurrency_extensions.xml: Update documentation
+	on atomics.
+	* doc/xml/manual/using.xml: Likewise. Improve markup.
+	* doc/html/*: Regenerate.
+
+2015-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/66441
 	* testsuite/22_locale/conversions/string/66441.cc: New.
 	* include/bits/locale_conv.h (__do_str_codecvt): Reserve enough space

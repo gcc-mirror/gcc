@@ -1,12 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Implementation</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="ext_concurrency.html" title="Chapter 30. Concurrency" /><link rel="prev" href="ext_concurrency.html" title="Chapter 30. Concurrency" /><link rel="next" href="ext_concurrency_use.html" title="Use" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Implementation</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ext_concurrency.html">Prev</a> </td><th width="60%" align="center">Chapter 30. Concurrency</th><td width="20%" align="right"> <a accesskey="n" href="ext_concurrency_use.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.concurrency.impl"></a>Implementation</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.concurrency.impl.atomic_fallbacks"></a>Using Builtin Atomic Functions</h3></div></div></div><p>The functions for atomic operations described above are either
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Implementation</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.78.1" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="ext_concurrency.html" title="Chapter 30. Concurrency" /><link rel="prev" href="ext_concurrency.html" title="Chapter 30. Concurrency" /><link rel="next" href="ext_concurrency_use.html" title="Use" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Implementation</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ext_concurrency.html">Prev</a> </td><th width="60%" align="center">Chapter 30. Concurrency</th><td width="20%" align="right"> <a accesskey="n" href="ext_concurrency_use.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.concurrency.impl"></a>Implementation</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.ext.concurrency.impl.atomic_fallbacks"></a>Using Built-in Atomic Functions</h3></div></div></div><p>The functions for atomic operations described above are either
 implemented via compiler intrinsics (if the underlying host is
 capable) or by library fallbacks.</p><p>Compiler intrinsics (builtins) are always preferred.  However, as
 the compiler builtins for atomics are not universally implemented,
 using them directly is problematic, and can result in undefined
-function calls. (An example of an undefined symbol from the use
+function calls.
+</p><p>Prior to GCC 4.7 the older <code class="code">__sync</code> intrinsics were used.
+An example of an undefined symbol from the use
 of <code class="code">__sync_fetch_and_add</code> on an unsupported host is a
-missing reference to <code class="code">__sync_fetch_and_add_4</code>.)
+missing reference to <code class="code">__sync_fetch_and_add_4</code>.
+</p><p>Current releases use the newer <code class="code">__atomic</code> intrinsics,
+which are implemented by library calls if the hardware doesn't support them.
+Undefined references to functions like
+<code class="code">__atomic_is_lock_free</code> should be resolved by linking to
+<code class="filename">libatomic</code>, which is usually
+installed alongside libstdc++.
 </p><p>In addition, on some hosts the compiler intrinsics are enabled
 conditionally, via the <code class="code">-march</code> command line flag. This makes
 usage vary depending on the target hardware and the flags used during
