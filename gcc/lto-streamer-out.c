@@ -196,8 +196,10 @@ lto_output_location (struct output_block *ob, struct bitpack_d *bp,
   expanded_location xloc;
 
   loc = LOCATION_LOCUS (loc);
-  bp_pack_value (bp, loc == UNKNOWN_LOCATION, 1);
-  if (loc == UNKNOWN_LOCATION)
+  bp_pack_int_in_range (bp, 0, RESERVED_LOCATION_COUNT,
+		        loc < RESERVED_LOCATION_COUNT
+			? loc : RESERVED_LOCATION_COUNT);
+  if (loc < RESERVED_LOCATION_COUNT)
     return;
 
   xloc = expand_location (loc);
