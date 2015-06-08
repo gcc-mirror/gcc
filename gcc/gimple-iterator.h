@@ -345,4 +345,39 @@ gsi_seq (gimple_stmt_iterator i)
   return *i.seq;
 }
 
+/* Determine whether SEQ is a nondebug singleton.  */
+
+static inline bool
+gimple_seq_nondebug_singleton_p (gimple_seq seq)
+{
+  gimple_stmt_iterator gsi;
+  gsi.ptr = gimple_seq_first (seq);
+  gsi.seq = &seq;
+  gsi.bb = NULL;
+
+  /* Not a singleton if the sequence is empty.  */
+  if (gsi_end_p (gsi))
+    return false;
+
+  /* Find a nondebug gimple.  */
+  while (!gsi_end_p (gsi)
+	 && is_gimple_debug (gsi_stmt (gsi)))
+    gsi_next (&gsi);
+
+  /* Not a nondebug singleton if there's no nondebug gimple.  */
+  if (is_gimple_debug (gsi_stmt (gsi)))
+    return false;
+
+  /* Find the next nondebug gimple.  */
+  while (!gsi_end_p (gsi)
+	 && is_gimple_debug (gsi_stmt (gsi)))
+    gsi_next (&gsi);
+
+  /* If there's a next nondebug gimple, it's not a nondebug singleton.  */
+  if (!gsi_end_p (gsi))
+    return false;
+
+  return true;
+}
+
 #endif /* GCC_GIMPLE_ITERATOR_H */

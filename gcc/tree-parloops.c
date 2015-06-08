@@ -1769,8 +1769,8 @@ try_transform_to_exit_first_loop_alt (struct loop *loop,
 				      tree nit)
 {
   /* Check whether the latch contains a single statement.  */
-  if (!gimple_seq_singleton_p (bb_seq (loop->latch)))
-    return true;
+  if (!gimple_seq_nondebug_singleton_p (bb_seq (loop->latch)))
+    return false;
 
   /* Check whether the latch contains the loop iv increment.  */
   edge back = single_succ_edge (loop->latch);
