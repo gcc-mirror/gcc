@@ -12948,9 +12948,9 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
 	  || TYPE_UNSIGNED (t1) != TYPE_UNSIGNED (t2))
 	return false;
 
-      if (TREE_CODE (t1) == INTEGER_TYPE
-	  && TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2))
-	return false;
+      /* Fortran's C_SIGNED_CHAR is !TYPE_STRING_FLAG but needs to be
+	 interoperable with "signed char".  Unless all frontends are revisited
+	 to agree on these types, we must ignore the flag completely.  */
 
       /* Fortran standard define C_PTR type that is compatible with every
  	 C pointer.  For this reason we need to glob all pointers into one.

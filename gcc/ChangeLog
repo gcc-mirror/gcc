@@ -1,5 +1,10 @@
 2015-06-08  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree.c (gimple_canonical_types_compatible_p): Drop comparsion of
+	TYPE_STRING_FLAG.
+
+2015-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
 	* lto-streamer-out.c (lto_output_location): Stream
 	reserved locations correctly.
 	* lto-streamer-in.c (lto_output_location): Likewise.
