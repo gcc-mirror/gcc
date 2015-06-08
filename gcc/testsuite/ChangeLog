@@ -1,3 +1,11 @@
+2015-06-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2015-06-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66275
+	* gcc.target/i386/pr66275.c: New test.
+
 2015-06-04  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/66251
@@ -7,7 +15,7 @@
 
 	Backported from mainline
 	2015-05-04  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR tree-optimization/65984
 	* c-c++-common/ubsan/pr65984.c: New test.
 
