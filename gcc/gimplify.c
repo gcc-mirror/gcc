@@ -82,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-low.h"
 #include "cilk.h"
 #include "gomp-constants.h"
+#include "tree-dump.h"
 
 #include "langhooks-def.h"	/* FIXME: for lhd_set_decl_assembler_name */
 #include "tree-pass.h"		/* FIXME: only for PROP_gimple_any */
@@ -9444,6 +9445,8 @@ gimplify_function_tree (tree fndecl)
   cfun->curr_properties |= PROP_gimple_any;
 
   pop_cfun ();
+
+  dump_function (TDI_generic, fndecl);
 }
 
 /* Return a dummy expression of type TYPE in order to keep going after an

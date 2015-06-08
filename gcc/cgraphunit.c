@@ -652,7 +652,6 @@ cgraph_node::analyze (void)
 	 body.  */
       if (!gimple_has_body_p (decl))
 	gimplify_function_tree (decl);
-      dump_function (TDI_generic, decl);
 
       /* Lower the function.  */
       if (!lowered)

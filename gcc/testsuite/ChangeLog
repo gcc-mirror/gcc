@@ -1,5 +1,12 @@
 2015-06-08  Tom de Vries  <tom@codesourcery.com>
 
+	PR tree-optimization/66436
+	* gcc.dg/gomp/dump-new-function-2.c: New test.
+	* gcc.dg/gomp/dump-new-function-3.c: Same.
+	* gcc.dg/gomp/dump-new-function.c: Same.
+
+2015-06-08  Tom de Vries  <tom@codesourcery.com>
+
 	PR tree-optimization/66435
 	* gcc.dg/gomp/notify-new-function-2.c: New test.
 	* gcc.dg/gomp/notify-new-function-3.c: Same.

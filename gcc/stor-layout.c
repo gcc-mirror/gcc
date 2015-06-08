@@ -316,7 +316,6 @@ finalize_size_functions (void)
       set_cfun (NULL);
       dump_function (TDI_original, fndecl);
       gimplify_function_tree (fndecl);
-      dump_function (TDI_generic, fndecl);
       cgraph_node::finalize_function (fndecl, false);
     }
 
