@@ -1,5 +1,13 @@
 2015-06-06  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR lto/65378
+	* lto-symtab.c (warn_type_compatibility_p): Fix call of
+	odr_or_derived_type_p.
+	(lto_symtab_merge_decls_2): Update call of warn_types_mismatch.
+
+2015-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
+
 	* lto.c (hash_canonical_type): Do not hash TREE_CODE of TREE_TYPE of
 	pointers.
 

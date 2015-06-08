@@ -212,7 +212,7 @@ warn_type_compatibility_p (tree prevailing_type, tree type)
   int lev = 0;
   /* C++ provide a robust way to check for type compatibility via the ODR
      rule.  */
-  if (odr_or_derived_type_p (prevailing_type) && odr_type_p (type)
+  if (odr_or_derived_type_p (prevailing_type) && odr_or_derived_type_p (type)
       && !odr_types_equivalent_p (prevailing_type, type))
     lev = 2;
 
@@ -542,7 +542,9 @@ lto_symtab_merge_decls_2 (symtab_node *first, bool diagnosed_p)
 			       "declaration", decl);
 	  if (diag)
 	    warn_types_mismatch (TREE_TYPE (prevailing->decl),
-				 TREE_TYPE (decl));
+				 TREE_TYPE (decl),
+				 DECL_SOURCE_LOCATION (prevailing->decl),
+				 DECL_SOURCE_LOCATION (decl));
 	  diagnosed_p |= diag;
 	}
       else if ((DECL_USER_ALIGN (prevailing->decl)
