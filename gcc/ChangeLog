@@ -1,3 +1,9 @@
+2015-06-08  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/66452
+	* toplev.c (check_global_declaration): Don't warn about artificial
+	decls.
+
 2015-06-08  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/66436
