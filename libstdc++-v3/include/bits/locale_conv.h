@@ -60,12 +60,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       size_t __outchars = 0;
       auto __next = __first;
-      const auto __maxlen = __cvt.max_length();
+      const auto __maxlen = __cvt.max_length() + 1;
 
       codecvt_base::result __result;
       do
 	{
-	  __outstr.resize(__outstr.size() + (__last - __next) + __maxlen);
+	  __outstr.resize(__outstr.size() + (__last - __next) * __maxlen);
 	  auto __outnext = &__outstr.front() + __outchars;
 	  auto const __outlast = &__outstr.back() + 1;
 	  __result = (__cvt.*__fn)(__state, __next, __last, __next,
