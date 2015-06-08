@@ -1,3 +1,11 @@
+2015-06-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vectorizable_load): Compute the pointer
+	adjustment for gaps at the end of a SLP load group properly.
+	* tree-vect-slp.c (vect_supported_load_permutation_p): Allow
+	all permutations we can generate.
+	(vect_transform_slp_perm_load): Use the correct group-size.
+
 2015-06-08  Marc Glisse  <marc.glisse@inria.fr>
 
 	* genmatch.c (expr::gen_transform): For conditions, guess the type

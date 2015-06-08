@@ -1,3 +1,10 @@
+2015-06-08  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-perm-10.c: New testcase.
+	* gcc.dg/vect/slp-23.c: Adjust.
+	* gcc.dg/torture/pr53366-2.c: Also verify cross-iteration
+	vector pointer update.
+
 2015-06-08  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/66452
