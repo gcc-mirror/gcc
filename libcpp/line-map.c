@@ -688,15 +688,17 @@ linemap_position_for_loc_and_offset (struct line_maps *set,
   /* We find the real location and shift it.  */
   loc = linemap_resolve_location (set, loc, LRK_SPELLING_LOCATION, &map);
   /* The new location (loc + offset) should be higher than the first
-     location encoded by MAP.  */
-  if (linemap_assert_fails (MAP_START_LOCATION (map) < loc + offset))
+     location encoded by MAP.
+     FIXME: We used to linemap_assert_fails here and in the if below,
+     but that led to PR66415.  So give up for now.  */
+  if ((MAP_START_LOCATION (map) >= loc + offset))
     return loc;
 
   /* If MAP is not the last line map of its set, then the new location
      (loc + offset) should be less than the first location encoded by
      the next line map of the set.  */
   if (map != LINEMAPS_LAST_ORDINARY_MAP (set))
-    if (linemap_assert_fails (loc + offset < MAP_START_LOCATION (&map[1])))
+    if ((loc + offset >= MAP_START_LOCATION (&map[1])))
       return loc;
 
   offset += SOURCE_COLUMN (map, loc);
