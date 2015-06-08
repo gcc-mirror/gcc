@@ -1,3 +1,9 @@
+2015-06-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/66245
+	* match.c (gfc_match_type_is, gfc_match_class_is):  Check if the
+	return type spec or derived type spec is validate.
+
 2015-06-06  Thomas Koenig  <tkoenig@netcologne.de>
 
 	PR fortran/47659
