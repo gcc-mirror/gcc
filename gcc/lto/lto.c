@@ -332,17 +332,15 @@ hash_canonical_type (tree type)
   if (TREE_CODE (type) == COMPLEX_TYPE)
     hstate.add_int (TYPE_UNSIGNED (type));
 
+  /* Fortran's C_SIGNED_CHAR is !TYPE_STRING_FLAG but needs to be
+     interoperable with "signed char".  Unless all frontends are revisited to
+     agree on these types, we must ignore the flag completely.  */
+
   /* Fortran standard define C_PTR type that is compatible with every
      C pointer.  For this reason we need to glob all pointers into one.
      Still pointers in different address spaces are not compatible.  */
   if (POINTER_TYPE_P (type))
-    {
-      hstate.add_int (TYPE_ADDR_SPACE (TREE_TYPE (type)));
-    }
-
-  /* For integer types hash only the string flag.  */
-  if (TREE_CODE (type) == INTEGER_TYPE)
-    hstate.add_int (TYPE_STRING_FLAG (type));
+    hstate.add_int (TYPE_ADDR_SPACE (TREE_TYPE (type)));
 
   /* For array types hash the domain bounds and the string flag.  */
   if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type))

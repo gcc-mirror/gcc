@@ -1,3 +1,7 @@
+2015-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto.c (hash_canonical_type): Drop hashing of TYPE_STRING_FLAG.
+
 2015-06-08  Andrew MacLeod  <amacleod@redhat.com>
 
 	* lto-lang.c : Adjust include files.
