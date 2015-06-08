@@ -1,5 +1,10 @@
 2015-06-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/66441
+	* testsuite/22_locale/conversions/string/66441.cc: New.
+	* include/bits/locale_conv.h (__do_str_codecvt): Reserve enough space
+	in the output string for BOM and complete result.
+
 	PR libstdc++/66417
 	* src/c++11/codecvt.cc (write_utf16_code_point): Use adjust_byte_order
 	for single UTF-16 units.
