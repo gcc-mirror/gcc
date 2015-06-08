@@ -1,3 +1,9 @@
+2015-06-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66422
+	* tree-ssa-loop-ivcanon.c (remove_exits_and_undefined_stmts): Split
+	block after inserted gcc_unreachable.
+
 2015-06-08  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.c (rx_function_value): Do not promote vector types.
