@@ -534,6 +534,7 @@ check_global_declaration (tree decl)
 	 to handle multiple external decls in different scopes.  */
       && ! (DECL_NAME (decl) && TREE_USED (DECL_NAME (decl)))
       && ! DECL_EXTERNAL (decl)
+      && ! DECL_ARTIFICIAL (decl)
       && ! TREE_PUBLIC (decl)
       /* A volatile variable might be used in some non-obvious way.  */
       && ! TREE_THIS_VOLATILE (decl)
