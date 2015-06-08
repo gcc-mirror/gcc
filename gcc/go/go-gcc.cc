@@ -24,7 +24,6 @@
 // include it here before tree.h includes it later.
 #include <gmp.h>
 
-#include "hash-set.h"
 #include "vec.h"
 #include "input.h"
 #include "alias.h"

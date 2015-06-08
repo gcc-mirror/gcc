@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_READ_MD_H
 
 #include "obstack.h"
-#include "hashtab.h"
 
 /* Holds one symbol or number in the .md file.  */
 struct md_name {

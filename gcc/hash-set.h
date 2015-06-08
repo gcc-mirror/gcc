@@ -21,8 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef hash_set_h
 #define hash_set_h
 
-#include "hash-table.h"
-
 /* implement default behavior for traits when types allow it.  */
 
 struct default_hashset_traits

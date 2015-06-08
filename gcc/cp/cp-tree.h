@@ -21,15 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CP_TREE_H
 #define GCC_CP_TREE_H
 
-#include "ggc.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
 #include "tm.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
-#include "hash-map.h"
 
 /* In order for the format checking to accept the C++ front end
    diagnostic framework extensions, you must include this file before

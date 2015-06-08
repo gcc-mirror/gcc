@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "opts.h"
-#include "hash-set.h"
 #include "alias.h"
 #include "flags.h"
 #include "symtab.h"

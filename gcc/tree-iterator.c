@@ -21,16 +21,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "vec.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "options.h"
-#include "inchash.h"
 #include "tree.h"
 #include "tree-iterator.h"
-#include "ggc.h"
 
 
 /* This is a cache of STATEMENT_LIST nodes.  We create and destroy them

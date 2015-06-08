@@ -28,16 +28,12 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "coretypes.h"
 
 #include "jcf.h"
-#include "hash-set.h"
-#include "vec.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "options.h"
-#include "inchash.h"
 #include "tree.h"
 #include "java-tree.h"
-#include "hash-table.h"
 #include <dirent.h>
 
 #include "zlib.h"

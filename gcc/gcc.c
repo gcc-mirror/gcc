@@ -41,7 +41,6 @@ compilation is specified by a string called a "spec".  */
 #include "flags.h"
 #include "opts.h"
 #include "params.h"
-#include "vec.h"
 #include "filenames.h"
 
 /* By default there is no special suffix for target executables.  */

@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "streamer-hooks.h"
 #include "lto-streamer.h"
 #include "data-streamer.h"
-#include "hash-map.h"
 
 /* Cache of pickled nodes.  Used to avoid writing the same node more
    than once.  The first time a tree node is streamed out, it is

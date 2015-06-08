@@ -24,8 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_EXCEPT_H
 #define GCC_EXCEPT_H
 
-#include "hash-map.h"
-#include "hashtab.h"
 
 struct function;
 struct eh_region_d;

@@ -33,8 +33,6 @@
 #include "insn-attr.h"
 #include "recog.h"
 #include "output.h"
-#include "vec.h"
-#include "hash-map.h"
 #include "bitmap.h"
 #include "obstack.h"
 #include "df.h"

@@ -30,13 +30,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "double-int.h"
 #include "real.h"
 #include "fixed-value.h"
+#include "statistics.h"
+#include "vec.h"
+#include "hash-table.h"
+#include "hash-set.h"
 #endif  /* GENERATOR_FILE */
 
-#include "statistics.h"
 #include "input.h"
-#include "vec.h"
 #include "alias.h"
-#include "hashtab.h"
 #include "flags.h"
 #include "is-a.h"
 

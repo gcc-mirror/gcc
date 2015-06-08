@@ -27,13 +27,10 @@ along with GCC; see the file COPYING3.  If not see
    system.h.  */
 #include <zlib.h>
 #include "coretypes.h"
-#include "hash-set.h"
-#include "vec.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "options.h"
-#include "inchash.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "predict.h"
@@ -49,7 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "diagnostic-core.h"
 #include "langhooks.h"
-#include "hash-map.h"
 #include "plugin-api.h"
 #include "ipa-ref.h"
 #include "cgraph.h"

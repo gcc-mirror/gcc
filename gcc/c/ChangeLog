@@ -1,3 +1,16 @@
+2015-06-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-array-notation.c : Adjust include files.
+	* c-aux-info.c : Likewise.
+	* c-convert.c : Likewise.
+	* c-decl.c : Likewise.
+	* c-errors.c : Likewise.
+	* c-lang.c : Likewise.
+	* c-lang.h : Likewise.
+	* c-objc-common.c : Likewise.
+	* c-parser.c : Likewise.
+	* c-typeck.c : Likewise.
+
 2015-06-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* c-decl.c (finish_struct): Save C_TYPE_INCOMPLETE_VARS and

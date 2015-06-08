@@ -23,18 +23,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "cpplib.h"
-#include "hash-set.h"
-#include "vec.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
-#include "inchash.h"
 #include "tree.h"
 #include "stringpool.h"
 #include "attribs.h"
 #include "c-family/c-pragma.h"
 #include "diagnostic-core.h"
-#include "ggc.h"
 #include "tm_p.h"
 
 #ifndef streq

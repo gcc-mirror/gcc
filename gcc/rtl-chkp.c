@@ -22,18 +22,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "symtab.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
 #include "tm.h"
 #include "hard-reg-set.h"
 #include "input.h"
 #include "function.h"
 #include "rtl.h"
 #include "flags.h"
-#include "statistics.h"
 #include "alias.h"
-#include "inchash.h"
 #include "tree.h"
 #include "insn-config.h"
 #include "expmed.h"
@@ -56,7 +51,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "rtl-chkp.h"
 #include "tree-chkp.h"
-#include "hash-map.h"
 
 static hash_map<tree, rtx> *chkp_rtx_bounds_map;
 

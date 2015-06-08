@@ -53,19 +53,15 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
-#include "vec.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "options.h"
-#include "inchash.h"
 #include "tree.h"
 #include "cp-tree.h"
 #include "c-family/c-common.h"
 #include "diagnostic.h"
 #include "tree-iterator.h"
-#include "vec.h"
 
 /* Creates a FOR_STMT with INIT, COND, INCR and BODY as the initializer,
    condition, increment expression and the loop-body, respectively.  */

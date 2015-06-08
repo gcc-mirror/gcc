@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "obstack.h"
-#include "hashtab.h"
 #include "read-md.h"
 #include "gensupport.h"
 

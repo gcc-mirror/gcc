@@ -25,7 +25,6 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
-#include "vec.h"
 #include "predict.h"
 #include "bitmap.h"
 #include "basic-block.h"

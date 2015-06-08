@@ -21,13 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "c-family/c-target.h"
-#include "hash-set.h"
-#include "vec.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "options.h"
-#include "inchash.h"
 #include "c-family/c-target-def.h"
 
 /* Implement TARGET_C_PREINCLUDE for glibc targets.  */

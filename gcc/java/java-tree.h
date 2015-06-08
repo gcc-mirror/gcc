@@ -27,7 +27,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #ifndef GCC_JAVA_TREE_H
 #define GCC_JAVA_TREE_H
 
-#include "hashtab.h"
 
 struct JCF;
 

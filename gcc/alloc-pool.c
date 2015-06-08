@@ -22,8 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "alloc-pool.h"
-#include "hash-table.h"
-#include "hash-map.h"
 
 ALLOC_POOL_ID_TYPE last_id;
 mem_alloc_description<pool_usage> pool_allocator_usage;

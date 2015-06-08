@@ -25,12 +25,9 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "coretypes.h"
 #include "tm.h"
 #include "jcf.h"
-#include "hash-set.h"
-#include "vec.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
-#include "inchash.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "stringpool.h"
@@ -38,7 +35,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-tree.h"
 #include "diagnostic-core.h"
 #include "toplev.h"
-#include "ggc.h"
 
 static void set_constant_entry (CPool *, int, int, jword);
 static int find_tree_constant (CPool *, int, tree);

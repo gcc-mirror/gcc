@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "regset.h"
 /* For reg_note.  */
 #include "rtl.h"
-#include "ggc.h"
 #include "bitmap.h"
 #include "sched-int.h"
 #include "cfgloop.h"

@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "diagnostic-core.h"
 #include "rtl.h"
-#include "ggc.h"
 
 static void free_list (rtx *, rtx *);
 

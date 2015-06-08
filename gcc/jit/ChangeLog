@@ -1,3 +1,9 @@
+2015-06-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* dummy-frontend.c : Adjust include files.
+	* jit-common.h : Likewise.
+	* jit-playback.c : Likewise.
+
 2015-06-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* dummy-frontend.c

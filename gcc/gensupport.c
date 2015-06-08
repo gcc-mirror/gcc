@@ -24,7 +24,6 @@
 #include "rtl.h"
 #include "obstack.h"
 #include "errors.h"
-#include "hashtab.h"
 #include "read-md.h"
 #include "gensupport.h"
 

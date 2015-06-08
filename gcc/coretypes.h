@@ -307,6 +307,8 @@ typedef unsigned char uchar;
 #include "double-int.h"
 #include "real.h"
 #include "fixed-value.h"
-#endif
+#include "hash-table.h"
+#include "hash-set.h"
+#endif /* GENERATOR_FILE && !USED_FOR_TARGET */
 
 #endif /* coretypes.h */

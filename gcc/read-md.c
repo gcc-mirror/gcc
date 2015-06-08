@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "bconfig.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hashtab.h"
 #include "errors.h"
 #include "read-md.h"
 

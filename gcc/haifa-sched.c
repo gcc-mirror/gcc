@@ -131,9 +131,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tm_p.h"
 #include "regs.h"
-#include "hashtab.h"
-#include "hash-set.h"
-#include "vec.h"
 #include "input.h"
 #include "function.h"
 #include "flags.h"
@@ -155,7 +152,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "ira.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
-#include "hash-table.h"
 #include "dumpfile.h"
 
 #ifdef INSN_SCHEDULING

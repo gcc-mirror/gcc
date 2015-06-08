@@ -21,13 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef hash_map_h
 #define hash_map_h
 
-#include <new>
-#include <utility>
-#include "hash-table.h"
-#include "hash-map-traits.h"
-#include "mem-stats.h"
-#include "vec.h"
-
 template<typename Key, typename Value,
 	 typename Traits>
 class GTY((user)) hash_map

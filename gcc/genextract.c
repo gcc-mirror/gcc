@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "errors.h"
 #include "read-md.h"
 #include "gensupport.h"
-#include "vec.h"
 
 /* This structure contains all the information needed to describe one
    set of extractions methods.  Each method may be used by more than

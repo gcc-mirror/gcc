@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "bconfig.h"
 #include "system.h"
 #include "errors.h"
-#include "hashtab.h"
 
 /* enum mode_class is normally defined by machmode.h but we can't
    include that header here.  */

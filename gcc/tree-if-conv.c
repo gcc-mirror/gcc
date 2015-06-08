@@ -84,12 +84,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "vec.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
-#include "inchash.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "stor-layout.h"
@@ -126,9 +123,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-address.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
-#include "hashtab.h"
 #include "rtl.h"
-#include "statistics.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -140,7 +135,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "insn-codes.h"
 #include "optabs.h"
-#include "hash-map.h"
 
 /* List of basic blocks in if-conversion-suitable order.  */
 static basic_block *ifc_bbs;

@@ -112,8 +112,6 @@
 #include "errors.h"
 #include "read-md.h"
 #include "gensupport.h"
-#include "hash-table.h"
-#include "inchash.h"
 #include <algorithm>
 
 #undef GENERATOR_FILE
