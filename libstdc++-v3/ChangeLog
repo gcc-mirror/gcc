@@ -1,5 +1,14 @@
 2015-06-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/66354
+	* include/bits/stl_algobase.h (__fill_a): Check length before calling
+	memset.
+
+	PR libstdc++/66327
+	* include/bits/stl_algobase.h (__equal<true>::equal): Do not call
+	memcmp for empty ranges.
+	(__lexicographical_compare<true>::__lc): Likewise.
+
 	Backported from mainline
 	2015-06-02  Jonathan Wakely  <jwakely@redhat.com>
 
