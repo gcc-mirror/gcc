@@ -230,7 +230,7 @@ static int *insn_n_alternatives;
 /* Stores, for each insn code, a bitmap that has bits on for each possible
    alternative.  */
 
-static int *insn_alternatives;
+static uint64_t *insn_alternatives;
 
 /* Used to simplify expressions.  */
 
@@ -258,7 +258,7 @@ static char *attr_printf           (unsigned int, const char *, ...)
   ATTRIBUTE_PRINTF_2;
 static rtx make_numeric_value      (int);
 static struct attr_desc *find_attr (const char **, int);
-static rtx mk_attr_alt             (int);
+static rtx mk_attr_alt             (uint64_t);
 static char *next_comma_elt	   (const char **);
 static rtx insert_right_side	   (enum rtx_code, rtx, rtx, int, int);
 static rtx copy_boolean		   (rtx);
@@ -769,7 +769,7 @@ check_attr_test (rtx exp, int is_const, int lineno)
 	  if (attr == NULL)
 	    {
 	      if (! strcmp (XSTR (exp, 0), "alternative"))
-		return mk_attr_alt (1 << atoi (XSTR (exp, 1)));
+		return mk_attr_alt (((uint64_t) 1) << atoi (XSTR (exp, 1)));
 	      else
 		fatal ("unknown attribute `%s' in EQ_ATTR", XSTR (exp, 0));
 	    }
@@ -815,7 +815,7 @@ check_attr_test (rtx exp, int is_const, int lineno)
 
 	      name_ptr = XSTR (exp, 1);
 	      while ((p = next_comma_elt (&name_ptr)) != NULL)
-		set |= 1 << atoi (p);
+		set |= ((uint64_t) 1) << atoi (p);
 
 	      return mk_attr_alt (set);
 	    }
@@ -1292,7 +1292,7 @@ static struct attr_value *
 get_attr_value (rtx value, struct attr_desc *attr, int insn_code)
 {
   struct attr_value *av;
-  int num_alt = 0;
+  uint64_t num_alt = 0;
 
   value = make_canonical (attr, value);
   if (compares_alternatives_p (value))
@@ -1934,7 +1934,7 @@ insert_right_side (enum rtx_code code, rtx exp, rtx term, int insn_code, int ins
    This routine is passed an expression and either AND or IOR.  It returns a
    bitmask indicating which alternatives are mentioned within EXP.  */
 
-static int
+static uint64_t
 compute_alternative_mask (rtx exp, enum rtx_code code)
 {
   const char *string;
@@ -1965,15 +1965,15 @@ compute_alternative_mask (rtx exp, enum rtx_code code)
     return 0;
 
   if (string[1] == 0)
-    return 1 << (string[0] - '0');
-  return 1 << atoi (string);
+    return ((uint64_t) 1) << (string[0] - '0');
+  return ((uint64_t) 1) << atoi (string);
 }
 
 /* Given I, a single-bit mask, return RTX to compare the `alternative'
    attribute with the value represented by that bit.  */
 
 static rtx
-make_alternative_compare (int mask)
+make_alternative_compare (uint64_t mask)
 {
   return mk_attr_alt (mask);
 }
@@ -2472,7 +2472,7 @@ attr_alt_complement (rtx s)
    in E.  */
 
 static rtx
-mk_attr_alt (int e)
+mk_attr_alt (uint64_t e)
 {
   rtx result = rtx_alloc (EQ_ATTR_ALT);
 
@@ -2499,7 +2499,7 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
   struct attr_value *av;
   struct insn_ent *ie;
   struct attr_value_list *iv;
-  int i;
+  uint64_t i;
   rtx newexp = exp;
   bool left_alt, right_alt;
 
@@ -2779,7 +2779,7 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
     case EQ_ATTR:
       if (XSTR (exp, 0) == alternative_name)
 	{
-	  newexp = mk_attr_alt (1 << atoi (XSTR (exp, 1)));
+	  newexp = mk_attr_alt (((uint64_t) 1) << atoi (XSTR (exp, 1)));
 	  break;
 	}
 
@@ -5263,10 +5263,11 @@ main (int argc, char **argv)
     expand_delays ();
 
   /* Make `insn_alternatives'.  */
-  insn_alternatives = oballocvec (int, insn_code_number);
+  insn_alternatives = oballocvec (uint64_t, insn_code_number);
   for (id = defs; id; id = id->next)
     if (id->insn_code >= 0)
-      insn_alternatives[id->insn_code] = (1 << id->num_alternatives) - 1;
+      insn_alternatives[id->insn_code]
+	= (((uint64_t) 1) << id->num_alternatives) - 1;
 
   /* Make `insn_n_alternatives'.  */
   insn_n_alternatives = oballocvec (int, insn_code_number);

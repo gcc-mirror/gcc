@@ -1,3 +1,18 @@
+2015-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* genattrtab.c (insn_alternatives): Change type from int *
+	to uint64_t *.
+	(check_attr_test): Shift ((uint64_t) 1) instead of 1 up.
+	(get_attr_value): Change type of num_alt to uint64_t.
+	(compute_alternative_mask): Change return type from
+	int to uint64_t, shift ((uint64_t) 1) instead of 1 up.
+	(make_alternative_compare, mk_attr_alt): Change argument type
+	from int to uint64_t.
+	(simplify_test_exp): Change type of i from int to uint64_t.
+	Shift ((uint64_t) 1) instead of 1 up.
+	(main): Adjust oballocvec first argument from int to uint64_t.
+	Shift ((uint64_t) 1) instead of 1 up.
+
 2015-06-08  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	PR other/65366
