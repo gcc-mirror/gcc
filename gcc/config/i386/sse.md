@@ -10837,10 +10837,12 @@
    (set_attr "atom_sse_attr" "fence")
    (set_attr "memory" "unknown")])
 
-
+;; As per AMD and Intel ISA manuals, the first operand is extensions
+;; and it goes to %ecx. The second operand received is hints and it goes
+;; to %eax.
 (define_insn "sse3_mwait"
-  [(unspec_volatile [(match_operand:SI 0 "register_operand" "a")
-		     (match_operand:SI 1 "register_operand" "c")]
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "c")
+		     (match_operand:SI 1 "register_operand" "a")]
 		    UNSPECV_MWAIT)]
   "TARGET_SSE3"
 ;; 64bit version is "mwait %rax,%rcx". But only lower 32bits are used.
