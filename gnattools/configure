@@ -2039,6 +2039,11 @@ case "${target}" in
     mlib-tgt-specific.adb<mlib-tgt-specific-darwin.adb \
     indepsw.adb<indepsw-darwin.adb"
     ;;
+  *-*-dragonfly*)
+    TOOLS_TARGET_PAIRS="\
+    mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
+    indepsw.adb<indepsw-gnu.adb"
+    ;;
   *-*-freebsd*)
     TOOLS_TARGET_PAIRS="\
     mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \

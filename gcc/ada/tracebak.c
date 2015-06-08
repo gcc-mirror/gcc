@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 2000-2014, Free Software Foundation, Inc.       *
+ *            Copyright (C) 2000-2015, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -277,6 +277,20 @@ __gnat_backtrace (void **array,
 #else
 #error Unhandled darwin architecture.
 #endif
+
+/*---------------------------- x86 *BSD --------------------------------*/
+
+#elif defined (__i386__) &&   \
+    ( defined (__NetBSD__) || defined (__FreeBSD__) || defined (__OpenBSD__) )
+
+#define USE_GCC_UNWINDER
+/* The generic unwinder is not used for this target because the default
+   implementation doesn't unwind on the BSD platforms.  AMD64 targets use the
+   gcc unwinder for all platforms, so let's keep i386 consistent with that.
+*/
+
+#define PC_ADJUST -2
+/* The minimum size of call instructions on this architecture is 2 bytes */
 
 /*---------------------- PPC AIX/PPC Lynx 178/Older Darwin ------------------*/
 #elif ((defined (_POWER) && defined (_AIX)) || \

@@ -192,7 +192,7 @@ __gnat_full_name (char *nam, char *buffer)
 	  *p = '\\';
     }
 
-#elif defined (__FreeBSD__)
+#elif defined (__FreeBSD__) || defined (__DragonFly__) || defined (__OpenBSD__)
 
   /* Use realpath function which resolves links and references to . and ..
      on those Unix systems that support it. Note that GNU/Linux provides it but

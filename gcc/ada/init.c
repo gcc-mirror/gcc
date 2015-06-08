@@ -1628,7 +1628,7 @@ __gnat_is_vms_v7 (void)
 /* FreeBSD Section */
 /*******************/
 
-#elif defined (__FreeBSD__)
+#elif defined (__FreeBSD__) || defined (__DragonFly__)
 
 #include <signal.h>
 #include <sys/ucontext.h>
@@ -1673,7 +1673,7 @@ __gnat_error_handler (int sig,
 }
 
 void
-__gnat_install_handler ()
+__gnat_install_handler (void)
 {
   struct sigaction act;
 
@@ -2523,7 +2523,7 @@ __gnat_install_handler (void)
 
 #if defined (_WIN32) || defined (__INTERIX) \
   || defined (__Lynx__) || defined(__NetBSD__) || defined(__FreeBSD__) \
-  || defined (__OpenBSD__)
+  || defined (__OpenBSD__) || defined (__DragonFly__)
 
 #define HAVE_GNAT_INIT_FLOAT
 
