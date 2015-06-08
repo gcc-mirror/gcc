@@ -319,7 +319,7 @@ namespace
       {
 	if (to.size() > 0)
 	  {
-	    *to.next = codepoint;
+	    *to.next = adjust_byte_order(codepoint, mode);
 	    ++to.next;
 	    return true;
 	  }
