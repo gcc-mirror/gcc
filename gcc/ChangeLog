@@ -1,3 +1,9 @@
+2015-06-08  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.c (rx_function_value): Do not promote vector types.
+	(rx_promote_function_mode): Likewise.
+	* config/rx/rx.h (LIBCALL_VALUE): Likewise.
+
 2015-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* genattrtab.c (insn_alternatives): Change type from int *
