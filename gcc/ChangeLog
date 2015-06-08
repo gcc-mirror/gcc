@@ -1,5 +1,15 @@
 2015-06-08  Tom de Vries  <tom@codesourcery.com>
 
+	PR tree-optimization/66436
+	* cgraphunit.c (cgraph_node::analyze): Don't dump function to gimple
+	dump file.
+	* gimplify.c: Add tree-dump.h include.
+	(gimplify_function_tree): Dump function to gimple dump file.
+	* stor-layout.c (finalize_size_functions): Don't dump function to gimple
+	dump file.
+
+2015-06-08  Tom de Vries  <tom@codesourcery.com>
+
 	PR tree-optimization/66435
 	* cgraphunit.c (cgraph_node::add_new_function): Dump message on new
 	function.
