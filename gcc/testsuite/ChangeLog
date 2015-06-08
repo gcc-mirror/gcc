@@ -1,3 +1,11 @@
+2015-06-08  Tom de Vries  <tom@codesourcery.com>
+
+	backport from mainline:
+	2015-06-08  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/66444
+	* gcc.dg/pr66444.c: New test.
+
 2015-06-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/66245

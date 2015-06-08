@@ -1,3 +1,12 @@
+2015-06-08  Tom de Vries  <tom@codesourcery.com>
+
+	backport from mainline:
+	2015-06-08  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/66444
+	* postreload.c (reload_combine): Use get_call_reg_set_usage instead of
+	call_used_regs.
+
 2015-06-08  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	* config/i386/sse.md (sse3_mwait): Swap the operand constriants.
