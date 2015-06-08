@@ -1,3 +1,9 @@
+2015-06-08  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	PR other/65366
+	* gdbhooks.py: Import sys.
+	(intptr): New function.  Replace int(...) by intptr(...).
+
 2015-06-08  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-stmts.c (vectorizable_load): Compute the pointer

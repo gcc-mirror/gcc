@@ -132,6 +132,7 @@ Instead (for now) you must access m_vecdata:
 """
 import os.path
 import re
+import sys
 
 import gdb
 import gdb.printing
@@ -149,6 +150,12 @@ tree_code_class_dict = gdb.types.make_enum_dict(gdb.lookup_type('enum tree_code_
 tcc_type = tree_code_class_dict['tcc_type']
 tcc_declaration = tree_code_class_dict['tcc_declaration']
 
+# Python3 has int() with arbitrary precision (bignum).  Python2 int() is 32-bit
+# on 32-bit hosts but remote targets may have 64-bit pointers there; Python2
+# long() is always 64-bit but Python3 no longer has anything named long.
+def intptr(gdbval):
+    return long(gdbval) if sys.version_info.major == 2 else int(gdbval)
+
 class Tree:
     """
     Wrapper around a gdb.Value for a tree, with various methods
@@ -158,7 +165,7 @@ class Tree:
         self.gdbval = gdbval
 
     def is_nonnull(self):
-        return int(self.gdbval)
+        return intptr(self.gdbval)
 
     def TREE_CODE(self):
         """
@@ -197,7 +204,7 @@ class TreePrinter:
         # like gcc/print-tree.c:print_node_brief
         # #define TREE_CODE(NODE) ((enum tree_code) (NODE)->base.code)
         # tree_code_name[(int) TREE_CODE (node)])
-        if int(self.gdbval) == 0:
+        if intptr(self.gdbval) == 0:
             return '<tree 0x0>'
 
         val_TREE_CODE = self.node.TREE_CODE()
@@ -209,17 +216,17 @@ class TreePrinter:
         val_tclass = val_tree_code_type[val_TREE_CODE]
 
         val_tree_code_name = gdb.parse_and_eval('tree_code_name')
-        val_code_name = val_tree_code_name[int(val_TREE_CODE)]
+        val_code_name = val_tree_code_name[intptr(val_TREE_CODE)]
         #print(val_code_name.string())
 
-        result = '<%s 0x%x' % (val_code_name.string(), int(self.gdbval))
-        if int(val_tclass) == tcc_declaration:
+        result = '<%s 0x%x' % (val_code_name.string(), intptr(self.gdbval))
+        if intptr(val_tclass) == tcc_declaration:
             tree_DECL_NAME = self.node.DECL_NAME()
             if tree_DECL_NAME.is_nonnull():
                  result += ' %s' % tree_DECL_NAME.IDENTIFIER_POINTER()
             else:
                 pass # TODO: labels etc
-        elif int(val_tclass) == tcc_type:
+        elif intptr(val_tclass) == tcc_type:
             tree_TYPE_NAME = Tree(self.gdbval['type_common']['name'])
             if tree_TYPE_NAME.is_nonnull():
                 if tree_TYPE_NAME.TREE_CODE() == IDENTIFIER_NODE:
@@ -242,8 +249,8 @@ class CGraphNodePrinter:
         self.gdbval = gdbval
 
     def to_string (self):
-        result = '<cgraph_node* 0x%x' % int(self.gdbval)
-        if int(self.gdbval):
+        result = '<cgraph_node* 0x%x' % intptr(self.gdbval)
+        if intptr(self.gdbval):
             # symtab_node::name calls lang_hooks.decl_printable_name
             # default implementation (lhd_decl_printable_name) is:
             #    return IDENTIFIER_POINTER (DECL_NAME (decl));
@@ -261,12 +268,12 @@ class DWDieRefPrinter:
         self.gdbval = gdbval
 
     def to_string (self):
-        if int(self.gdbval) == 0:
+        if intptr(self.gdbval) == 0:
             return '<dw_die_ref 0x0>'
-        result = '<dw_die_ref 0x%x' % int(self.gdbval)
+        result = '<dw_die_ref 0x%x' % intptr(self.gdbval)
         result += ' %s' % self.gdbval['die_tag']
-        if int(self.gdbval['die_parent']) != 0:
-            result += ' <parent=0x%x %s>' % (int(self.gdbval['die_parent']),
+        if intptr(self.gdbval['die_parent']) != 0:
+            result += ' <parent=0x%x %s>' % (intptr(self.gdbval['die_parent']),
                                              self.gdbval['die_parent']['die_tag'])
                                              
         result += '>'
@@ -279,13 +286,13 @@ class GimplePrinter:
         self.gdbval = gdbval
 
     def to_string (self):
-        if int(self.gdbval) == 0:
+        if intptr(self.gdbval) == 0:
             return '<gimple 0x0>'
         val_gimple_code = self.gdbval['code']
         val_gimple_code_name = gdb.parse_and_eval('gimple_code_name')
-        val_code_name = val_gimple_code_name[int(val_gimple_code)]
+        val_code_name = val_gimple_code_name[intptr(val_gimple_code)]
         result = '<%s 0x%x' % (val_code_name.string(),
-                               int(self.gdbval))
+                               intptr(self.gdbval))
         result += '>'
         return result
 
@@ -306,9 +313,9 @@ class BasicBlockPrinter:
         self.gdbval = gdbval
 
     def to_string (self):
-        result = '<basic_block 0x%x' % int(self.gdbval)
-        if int(self.gdbval):
-            result += ' (%s)' % bb_index_to_str(int(self.gdbval['index']))
+        result = '<basic_block 0x%x' % intptr(self.gdbval)
+        if intptr(self.gdbval):
+            result += ' (%s)' % bb_index_to_str(intptr(self.gdbval['index']))
         result += '>'
         return result
 
@@ -317,10 +324,10 @@ class CfgEdgePrinter:
         self.gdbval = gdbval
 
     def to_string (self):
-        result = '<edge 0x%x' % int(self.gdbval)
-        if int(self.gdbval):
-            src = bb_index_to_str(int(self.gdbval['src']['index']))
-            dest = bb_index_to_str(int(self.gdbval['dest']['index']))
+        result = '<edge 0x%x' % intptr(self.gdbval)
+        if intptr(self.gdbval):
+            src = bb_index_to_str(intptr(self.gdbval['src']['index']))
+            dest = bb_index_to_str(intptr(self.gdbval['dest']['index']))
             result += ' (%s -> %s)' % (src, dest)
         result += '>'
         return result
@@ -336,7 +343,7 @@ class Rtx:
 
 def GET_RTX_LENGTH(code):
     val_rtx_length = gdb.parse_and_eval('rtx_length')
-    return int(val_rtx_length[code])
+    return intptr(val_rtx_length[code])
 
 def GET_RTX_NAME(code):
     val_rtx_name = gdb.parse_and_eval('rtx_name')
@@ -359,12 +366,12 @@ class RtxPrinter:
         """
         # We use print_inline_rtx to avoid a trailing newline
         gdb.execute('call print_inline_rtx (stderr, (const_rtx) %s, 0)'
-                    % int(self.gdbval))
+                    % intptr(self.gdbval))
         return ''
 
         # or by hand; based on gcc/print-rtl.c:print_rtx
         result = ('<rtx_def 0x%x'
-                  % (int(self.gdbval)))
+                  % (intptr(self.gdbval)))
         code = self.rtx.GET_CODE()
         result += ' (%s' % GET_RTX_NAME(code)
         format_ = GET_RTX_FORMAT(code)
@@ -380,11 +387,11 @@ class PassPrinter:
         self.gdbval = gdbval
 
     def to_string (self):
-        result = '<opt_pass* 0x%x' % int(self.gdbval)
-        if int(self.gdbval):
+        result = '<opt_pass* 0x%x' % intptr(self.gdbval)
+        if intptr(self.gdbval):
             result += (' "%s"(%i)'
                        % (self.gdbval['name'].string(),
-                          int(self.gdbval['static_pass_number'])))
+                          intptr(self.gdbval['static_pass_number'])))
         result += '>'
         return result
 
@@ -401,10 +408,10 @@ class VecPrinter:
     def to_string (self):
         # A trivial implementation; prettyprinting the contents is done
         # by gdb calling the "children" method below.
-        return '0x%x' % int(self.gdbval)
+        return '0x%x' % intptr(self.gdbval)
 
     def children (self):
-        if int(self.gdbval) == 0:
+        if intptr(self.gdbval) == 0:
             return
         m_vecpfx = self.gdbval['m_vecpfx']
         m_num = m_vecpfx['m_num']
