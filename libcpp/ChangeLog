@@ -1,3 +1,9 @@
+2015-06-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c/66415
+	* line-map.c (linemap_position_for_loc_and_offset): Remove
+	linemap_assert_fails; reverse conditions.
+
 2015-05-26  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* line-map.c (LINE_MAP_MAX_COLUMN_NUMBER
