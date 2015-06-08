@@ -1,3 +1,14 @@
+2015-06-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/65378
+	* ipa-utils.h (warn_types_mismatch): Update prototype.
+	* ipa-devirt.c (odr_types_equivalent_p): Add loc1/loc2
+	parameters.
+	(type_mismatch_p): New function.
+	(warn_types_mismatch): Reorg to work better on non-C++ types.
+	(odr_types_equivalent_p): Add loc1/loc2 parameters.
+	(add_type_duplicate): Update.
+
 2015-06-08  Tom de Vries  <tom@codesourcery.com>
 
 	PR rtl-optimization/66444

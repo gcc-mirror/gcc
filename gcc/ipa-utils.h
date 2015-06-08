@@ -86,7 +86,8 @@ bool types_must_be_same_for_odr (tree, tree);
 bool types_odr_comparable (tree, tree, bool strict = false);
 cgraph_node *try_speculative_devirtualization (tree, HOST_WIDE_INT,
 					       ipa_polymorphic_call_context);
-void warn_types_mismatch (tree t1, tree t2);
+void warn_types_mismatch (tree t1, tree t2, location_t loc1 = UNKNOWN_LOCATION,
+			  location_t loc2 = UNKNOWN_LOCATION);
 bool odr_or_derived_type_p (const_tree t);
 bool odr_types_equivalent_p (tree type1, tree type2);
 
