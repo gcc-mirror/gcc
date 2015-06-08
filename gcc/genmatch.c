@@ -1709,6 +1709,13 @@ expr::gen_transform (FILE *f, const char *dest, bool gimple, int depth,
       sprintf (optype, "boolean_type_node");
       type = optype;
     }
+  else if (*operation == COND_EXPR
+	   || *operation == VEC_COND_EXPR)
+    {
+      /* Conditions are of the same type as their first alternative.  */
+      sprintf (optype, "TREE_TYPE (ops%d[1])", depth);
+      type = optype;
+    }
   else
     {
       /* Other operations are of the same type as their first operand.  */
