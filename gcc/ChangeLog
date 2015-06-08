@@ -1,3 +1,9 @@
+2015-06-08  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/66435
+	* cgraphunit.c (cgraph_node::add_new_function): Dump message on new
+	function.
+
 2015-06-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	* alias.c (get_alias_set): Be ready for TYPE_CANONICAL
