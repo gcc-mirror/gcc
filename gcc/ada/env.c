@@ -192,12 +192,9 @@ __gnat_setenv (char *name, char *value)
 
   sprintf (expression, "%s=%s", name, value);
   putenv (expression);
-#if (defined (__FreeBSD__) && (__FreeBSD__ < 7)) \
-   || defined (__MINGW32__) \
-   ||(defined (__vxworks) && ! defined (__RTP__))
-  /* On some systems like FreeBSD 6.x and earlier, MacOS X and Windows,
-     putenv is making a copy of the expression string so we can free
-     it after the call to putenv */
+#if defined (__MINGW32__) || (defined (__vxworks) && ! defined (__RTP__))
+  /* On some systems like MacOS X and Windows, putenv is making a copy of the
+     expression string so we can free it after the call to putenv */
   free (expression);
 #endif
 #endif
@@ -304,7 +301,8 @@ void __gnat_clearenv (void)
   }
 #elif defined (__MINGW32__) || defined (__FreeBSD__) || defined (__APPLE__) \
    || (defined (__vxworks) && defined (__RTP__)) || defined (__CYGWIN__) \
-   || defined (__NetBSD__) || defined (__OpenBSD__) || defined (__rtems__)
+   || defined (__NetBSD__) || defined (__OpenBSD__) || defined (__rtems__) \
+   || defined (__DragonFly__)
   /* On Windows, FreeBSD and MacOS there is no function to clean all the
      environment but there is a "clean" way to unset a variable. So go
      through the environ table and call __gnat_unsetenv on all entries */
