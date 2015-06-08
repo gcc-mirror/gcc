@@ -1,5 +1,11 @@
 2015-06-08  Jonathan Wakely  <jwakely@redhat.com>
 
+	Backported from mainline
+	2015-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Unset LANGUAGE
+	environment variable.
+
 	PR libstdc++/66354
 	* include/bits/stl_algobase.h (__fill_a): Check length before calling
 	memset.
