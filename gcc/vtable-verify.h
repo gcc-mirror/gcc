@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #define VTABLE_VERIFY_H
 
 #include "sbitmap.h"
-#include "hash-table.h"
 
 /* The function decl used to create calls to __VLTVtableVerify.  It must
    be global because it needs to be initialized in the C++ front end, but

@@ -52,7 +52,6 @@ not after.
 #include "intl.h"
 #include "input.h"
 #include "splay-tree.h"
-#include "vec.h"
 
 /* Major control parameters.  */
 

@@ -25,12 +25,9 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hash-set.h"
-#include "vec.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
-#include "inchash.h"
 #include "tree.h"
 #include "stor-layout.h"
 #include "varasm.h"
@@ -46,8 +43,6 @@
 #include "reload.h"		/* For push_reload().  */
 #include "flags.h"
 #include "function.h"
-#include "hashtab.h"
-#include "statistics.h"
 #include "insn-config.h"
 #include "expmed.h"
 #include "dojump.h"
@@ -73,7 +68,6 @@
 #include "target.h"
 #include "target-def.h"
 #include "langhooks.h"		/* For add_builtin_function().  */
-#include "ggc.h"
 #include "builtins.h"
 
 /* ------------------------------------------------------------------------ */

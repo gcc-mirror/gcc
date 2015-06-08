@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DATA_STREAMER_H
 #define GCC_DATA_STREAMER_H
 
-#include "vec.h"
 #include "lto-streamer.h"
 
 /* Data structures used to pack values and bitflags into a vector of

@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_SSA_H
 #define GCC_GIMPLE_SSA_H
 
-#include "hash-map.h"
 #include "tree-hasher.h"
 #include "tree-ssa-operands.h"
 

@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "tree-data-ref.h"
 #include "target.h"
-#include "hash-table.h"
 
 /* Used for naming of new temporaries.  */
 enum vect_var_kind {

@@ -1,11 +1,6 @@
 #ifndef GCC_MEM_STATS_H
 #define GCC_MEM_STATS_H
 
-#include "hash-map-traits.h"
-#include "inchash.h"
-#include "mem-stats-traits.h"
-#include "vec.h"
-
 /* Forward declaration.  */
 template<typename Key, typename Value,
 	 typename Traits = default_hashmap_traits>
@@ -358,7 +353,6 @@ private:
   reverse_mem_map_t *m_reverse_map;
 };
 
-#include "hash-map.h"
 
 /* Returns true if instance PTR is registered by the memory description.  */
 

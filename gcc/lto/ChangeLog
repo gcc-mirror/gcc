@@ -1,3 +1,13 @@
+2015-06-08  Andrew MacLeod  <amacleod@redhat.com>
+
+	* lto-lang.c : Adjust include files.
+	* lto-object.c : Likewise.
+	* lto-partition.c : Likewise.
+	* lto-partition.h : Likewise.
+	* lto-symtab.c : Likewise.
+	* lto.c : Likewise.
+	* lto.h : Likewise.
+
 2015-06-06  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/65378

@@ -29,13 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "system.h"
 #include "coretypes.h"
-#include "ggc.h"
-#include "vec.h"
 #include "diagnostic-core.h"
-#include "hashtab.h"
-#include "mem-stats.h"
-#include "hash-map.h"
-#include "mem-stats.h"
+#include "hash-table.h"
 
 /* vNULL is an empty type with a template cast operation that returns
    a zero-initialized vec<T, A, L> instance.  Use this when you want

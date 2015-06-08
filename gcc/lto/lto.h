@@ -21,8 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef LTO_H
 #define LTO_H
 
-#include "hashtab.h"
-#include "vec.h"
 
 /* A file.  */
 typedef struct lto_file_struct

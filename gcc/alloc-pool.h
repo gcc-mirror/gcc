@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef ALLOC_POOL_H
 #define ALLOC_POOL_H
 
-#include "hash-map.h"
 
 extern void dump_alloc_pool_statistics (void);
 

@@ -24,10 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_LTO_STREAMER_H
 
 #include "plugin-api.h"
-#include "hash-table.h"
-#include "hash-map.h"
 #include "target.h"
-#include "vec.h"
 #include "alloc-pool.h"
 #include "gcov-io.h"
 #include "diagnostic.h"

@@ -33,12 +33,9 @@ along with GCC; see the file COPYING3.  If not see
 /* These headers all define things which are not available in
    generator programs.  */
 #ifndef GENERATOR_FILE
-#include "hash-set.h"
-#include "vec.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
-#include "inchash.h"
 #include "tree.h"
 #include "print-tree.h"
 #include "flags.h"

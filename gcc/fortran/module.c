@@ -73,13 +73,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "parse.h" /* FIXME */
 #include "constructor.h"
 #include "cpp.h"
-#include "hash-set.h"
-#include "vec.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
 #include "options.h"
-#include "inchash.h"
 #include "tree.h"
 #include "stringpool.h"
 #include "scanner.h"

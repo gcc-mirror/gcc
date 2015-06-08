@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "arith.h"
 #include "match.h"
 #include "parse.h"
-#include "hash-set.h"
 #include "diagnostic.h"
 #include "gomp-constants.h"
 

@@ -32,9 +32,6 @@ License along with libiberty; see the file COPYING3.  If not see
 #undef DEBUG_ET
 
 #ifdef DEBUG_ET
-#include "vec.h"
-#include "hashtab.h"
-#include "hash-set.h"
 #include "tm.h"
 #include "hard-reg-set.h"
 #include "input.h"

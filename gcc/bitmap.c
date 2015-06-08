@@ -21,13 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "obstack.h"
-#include "ggc.h"
 #include "bitmap.h"
-#include "hash-table.h"
-#include "vec.h"
-#include "inchash.h"
-#include "mem-stats.h"
-#include "hash-map.h"
 
 /* Memory allocation statistics purpose instance.  */
 mem_alloc_description<bitmap_usage> bitmap_mem_desc;

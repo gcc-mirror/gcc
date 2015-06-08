@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef INCHASH_H
 #define INCHASH_H 1
 
-#include "hashtab.h"
 
 /* This file implements an incremential hash function ADT, to be used
    by code that incrementially hashes a lot of unrelated data

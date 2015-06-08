@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef RTL_HASH_H
 #define RTL_HASH_H 1
 
-#include "inchash.h"
 
 namespace inchash
 {

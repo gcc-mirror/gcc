@@ -196,10 +196,13 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef TYPED_HASHTAB_H
 #define TYPED_HASHTAB_H
 
+#include "statistics.h"
 #include "ggc.h"
+#include "vec.h"
 #include "hashtab.h"
-#include <new>
+#include "inchash.h"
 #include "mem-stats-traits.h"
+#include "hash-map-traits.h"
 
 template<typename, typename, typename> class hash_map;
 template<typename, typename> class hash_set;
@@ -774,7 +777,6 @@ private:
 
 #include "mem-stats.h"
 #include "hash-map.h"
-#include "vec.h"
 
 extern mem_alloc_description<mem_usage> hash_table_usage;
 

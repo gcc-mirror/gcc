@@ -26,12 +26,9 @@ along with GCC; see the file COPYING3.  If not see
    BRANCH_COST.  */
 #include "rtl.h"
 #include "tm_p.h"
-#include "hash-set.h"
-#include "vec.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
-#include "inchash.h"
 #include "tree.h"
 #include "fold-const.h"
 #include "stor-layout.h"

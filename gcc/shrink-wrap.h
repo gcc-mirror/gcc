@@ -20,8 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SHRINK_WRAP_H
 #define GCC_SHRINK_WRAP_H
 
-#include "hashtab.h"
-#include "vec.h"
 #include "function.h"
 
 /* In shrink-wrap.c.  */

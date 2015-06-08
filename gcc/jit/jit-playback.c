@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "opts.h"
 #include "hashtab.h"
-#include "hash-set.h"
 #include "input.h"
 #include "statistics.h"
 #include "vec.h"

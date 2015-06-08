@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "intl.h"
 #include "input.h"
-#include "vec.h"
 #include "diagnostic-core.h"
 
 /* This is a cache used by get_next_line to store the content of a

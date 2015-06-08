@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_C_LANG_H
 
 #include "c-family/c-common.h"
-#include "ggc.h"
 
 struct GTY(()) lang_type {
   /* In a RECORD_TYPE, a sorted array of the fields of the type.  */

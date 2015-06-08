@@ -28,7 +28,6 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "hash-set.h"
 #include "vec.h"
 #include "input.h"
 #include "alias.h"

@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "ggc.h"
 #include "context.h"
 #include "pass_manager.h"
 #include "dumpfile.h"

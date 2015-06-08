@@ -127,10 +127,7 @@ along with GCC; see the file COPYING3.  If not see
    bad for persistent sets, so persistent sets should be allocated on an
    obstack whenever possible.  */
 
-#include "hashtab.h"
-#include "statistics.h"
 #include "obstack.h"
-#include "mem-stats.h"
 
 /* Bitmap memory usage.  */
 struct bitmap_usage: public mem_usage

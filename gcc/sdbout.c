@@ -44,17 +44,12 @@ AT&T C compiler.  From the example below I would conclude the following:
 #include "coretypes.h"
 #include "tm.h"
 #include "debug.h"
-#include "hash-set.h"
-#include "vec.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
-#include "inchash.h"
 #include "tree.h"
 #include "varasm.h"
 #include "stor-layout.h"
-#include "ggc.h"
-#include "vec.h"
 
 static GTY(()) tree anonymous_types;
 

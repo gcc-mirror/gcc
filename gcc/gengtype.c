@@ -27,7 +27,6 @@
 #include "errors.h"		/* for fatal */
 #include "getopt.h"
 #include "version.h"		/* for version_string & pkgversion_string.  */
-#include "hashtab.h"
 #include "xregex.h"
 #include "obstack.h"
 #include "gengtype.h"
@@ -1712,19 +1711,17 @@ open_base_files (void)
     /* The order of files here matters very much.  */
     static const char *const ifiles[] = {
       "config.h", "system.h", "coretypes.h", "tm.h", "insn-codes.h",
-      "hashtab.h", "splay-tree.h", "obstack.h", "bitmap.h", "input.h",
-      "hash-set.h", "machmode.h", "vec.h", "double-int.h", "input.h",
+      "splay-tree.h", "obstack.h", "bitmap.h", "input.h",
       "alias.h", "symtab.h", "options.h", 
-      "wide-int.h", "inchash.h",
       "tree.h", "fold-const.h", "rtl.h",
-      "machmode.h", "tm.h", "hard-reg-set.h", "input.h", "predict.h",
-      "function.h", "insn-config.h", "flags.h", "statistics.h",
-      "real.h", "fixed-value.h", "tree.h", "expmed.h", "dojump.h",
+      "hard-reg-set.h", "predict.h",
+      "function.h", "insn-config.h", "flags.h", 
+      "tree.h", "expmed.h", "dojump.h",
       "explow.h", "calls.h", "emit-rtl.h", "varasm.h", "stmt.h",
       "expr.h", "alloc-pool.h",
       "basic-block.h", "cselib.h", "insn-addr.h",
-      "optabs.h", "libfuncs.h", "debug.h", "ggc.h", 
-      "ggc.h", "dominance.h", "cfg.h", "basic-block.h",
+      "optabs.h", "libfuncs.h", "debug.h", 
+      "dominance.h", "cfg.h", "basic-block.h",
       "tree-ssa-alias.h", "internal-fn.h", "gimple-fold.h", "tree-eh.h",
       "gimple-expr.h", "is-a.h",
       "gimple.h", "gimple-iterator.h", "gimple-ssa.h", "tree-cfg.h",

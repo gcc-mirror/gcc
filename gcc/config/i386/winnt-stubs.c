@@ -26,17 +26,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "output.h"
-#include "hash-set.h"
-#include "vec.h"
 #include "input.h"
 #include "alias.h"
 #include "symtab.h"
-#include "inchash.h"
 #include "tree.h"
 #include "flags.h"
 #include "tm_p.h"
 #include "diagnostic-core.h"
-#include "hashtab.h"
 
 bool
 i386_pe_type_dllimport_p (tree)

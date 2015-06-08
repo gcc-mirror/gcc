@@ -21,8 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_HASHER_H
 #define GCC_TREE_HASHER_H 1
 
-#include "hash-table.h"
-
 struct int_tree_map {
   unsigned int uid;
   tree to;
