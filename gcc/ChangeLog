@@ -1,3 +1,8 @@
+2015-06-08  Marc Glisse  <marc.glisse@inria.fr>
+
+	* genmatch.c (expr::gen_transform): For conditions, guess the type
+	from the second operand.
+
 2015-06-08  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/66442
