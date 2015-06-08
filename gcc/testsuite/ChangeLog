@@ -1,5 +1,10 @@
 2015-06-08  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/66422
+	* gcc.dg/Warray-bounds-16.c: New testcase.
+
+2015-06-08  Richard Biener  <rguenther@suse.de>
+
 	* gcc.dg/vect/slp-perm-10.c: New testcase.
 	* gcc.dg/vect/slp-23.c: Adjust.
 	* gcc.dg/torture/pr53366-2.c: Also verify cross-iteration
