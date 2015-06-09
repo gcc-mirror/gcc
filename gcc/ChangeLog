@@ -1,3 +1,8 @@
+2015-06-09  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c (rl78_select_section): When -mes0 is active
+	place read only data in the .frodata section.
+
 2015-06-09  Shiva Chen  <shiva0217@gmail.com>
 
 	* sync.md (atomic_load<mode>): Add conditional code for lda/ldr
