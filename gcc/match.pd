@@ -677,6 +677,21 @@ along with GCC; see the file COPYING3.  If not see
   (cmp (bit_and (lshift integer_onep @0) integer_onep) integer_zerop)
   (icmp @0 { build_zero_cst (TREE_TYPE (@0)); })))
 
+/* (CST1 << A) == CST2 -> A == ctz (CST2) - ctz (CST1)
+   (CST1 << A) != CST2 -> A != ctz (CST2) - ctz (CST1)
+   if CST2 != 0.  */
+(for cmp (ne eq)
+ (simplify
+  (cmp (lshift INTEGER_CST@0 @1) INTEGER_CST@2)
+  (with { int cand = wi::ctz (@2) - wi::ctz (@0); }
+   (if (cand < 0
+	|| (!integer_zerop (@2)
+	    && wi::ne_p (wi::lshift (@0, cand), @2)))
+    { constant_boolean_node (cmp == NE_EXPR, type); })
+   (if (!integer_zerop (@2)
+	&& wi::eq_p (wi::lshift (@0, cand), @2))
+    (cmp @1 { build_int_cst (TREE_TYPE (@1), cand); })))))
+
 /* Simplifications of conversions.  */
 
 /* Basic strip-useless-type-conversions / strip_nops.  */

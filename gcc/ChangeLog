@@ -1,3 +1,10 @@
+2015-06-09  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/66299
+	* match.pd ((CST1 << A) == CST2 -> A == ctz (CST2) - ctz (CST1)
+	((CST1 << A) != CST2 -> A != ctz (CST2) - ctz (CST1)): New
+	patterns.
+
 2015-06-09  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_build_slp_tree_1): Remove bailout on gaps.
