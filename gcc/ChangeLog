@@ -1,5 +1,9 @@
 2015-06-09  Richard Biener  <rguenther@suse.de>
 
+	* cfgloop.c (get_loop_body_in_bfs_order): Fix assert.
+
+2015-06-09  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/66413
 	* tree-inline.c (insert_init_debug_bind): Unshare value.
 
