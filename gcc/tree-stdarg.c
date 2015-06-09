@@ -1031,6 +1031,7 @@ expand_ifn_va_arg_1 (function *fun)
   bool modified = false;
   basic_block bb;
   gimple_stmt_iterator i;
+  location_t saved_location;
 
   FOR_EACH_BB_FN (bb, fun)
     for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
@@ -1051,6 +1052,8 @@ expand_ifn_va_arg_1 (function *fun)
 	ap = build_fold_indirect_ref (ap);
 
 	push_gimplify_context (false);
+	saved_location = input_location;
+	input_location = gimple_location (stmt);
 
 	/* Make it easier for the backends by protecting the valist argument
 	   from multiple evaluations.  */
@@ -1081,6 +1084,7 @@ expand_ifn_va_arg_1 (function *fun)
 	else
 	  gimplify_expr (&expr, &pre, &post, is_gimple_lvalue, fb_lvalue);
 
+	input_location = saved_location;
 	pop_gimplify_context (NULL);
 
 	gimple_seq_add_seq (&pre, post);
