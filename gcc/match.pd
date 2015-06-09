@@ -248,11 +248,12 @@ along with GCC; see the file COPYING3.  If not see
  (lshift INTEGER_CST@1 @2))
 (for mod (trunc_mod floor_mod)
  (simplify
-  (mod @0 (power_of_two_cand@1 @2))
+  (mod @0 (convert?@3 (power_of_two_cand@1 @2)))
   (if ((TYPE_UNSIGNED (type)
 	|| tree_expr_nonnegative_p (@0))
+	&& tree_nop_conversion_p (type, TREE_TYPE (@3))
 	&& integer_pow2p (@2) && tree_int_cst_sgn (@2) > 0)
-   (bit_and @0 (minus @1 { build_int_cst (TREE_TYPE (@1), 1); })))))
+   (bit_and @0 (convert (minus @1 { build_int_cst (TREE_TYPE (@1), 1); }))))))
 
 /* X % Y is smaller than Y.  */
 (for cmp (lt ge)

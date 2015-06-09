@@ -1,5 +1,10 @@
 2015-06-09  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/66423
+	* gcc.dg/fold-modpow2.c: New testcase.
+
+2015-06-09  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/66419
 	* gcc.dg/vect/bb-slp-37.c: New testcase.
 
