@@ -1,3 +1,8 @@
+2015-06-09  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* g++.dg/ext/pr57735.C: Do not override -mfloat-abi directives
+	passed by the testsuite driver.
+
 2015-06-09  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/66423
