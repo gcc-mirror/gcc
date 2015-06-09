@@ -48,9 +48,7 @@
 #include "langhooks-def.h"
 #include "plugin.h"
 #include "hashtab.h"
-#include "vec.h"
 #include "hard-reg-set.h"
-#include "input.h"
 #include "function.h"	/* For pass_by_reference.  */
 #include "dwarf2out.h"
 

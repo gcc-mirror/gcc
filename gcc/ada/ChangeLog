@@ -1,3 +1,9 @@
+2015-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.c: Remove duplicate include directives.
+	* gcc-interface/trans.c: Likewise.
+	* gcc-interface/utils.c: Likewise.
+
 2015-06-08  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc-interface/cuintp.c : Adjust include files.
