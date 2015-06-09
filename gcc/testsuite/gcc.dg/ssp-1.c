@@ -12,7 +12,7 @@ __stack_chk_fail (void)
 
 int main ()
 {
-  int i;
+  register int i;
   char foo[255];
 
   // smash stack
