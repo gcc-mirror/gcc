@@ -1066,6 +1066,10 @@ graphite_regenerate_ast_isl (scop_p scop)
 
   translate_isl_ast (context_loop, root_node, if_region->true_region->entry,
 		     ip);
+
+  mark_virtual_operands_for_renaming (cfun);
+  update_ssa (TODO_update_ssa);
+
   graphite_verify ();
   scev_reset ();
   recompute_all_dominators ();
