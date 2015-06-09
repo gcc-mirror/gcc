@@ -3128,7 +3128,11 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
 	   form, so wait until instantiation time.  */
 	return decl;
       else if (decl_constant_var_p (decl))
-	return scalar_constant_value (decl);
+	{
+	  tree t = maybe_constant_value (convert_from_reference (decl));
+	  if (TREE_CONSTANT (t))
+	    return t;
+	}
     }
 
   if (parsing_nsdmi ())
