@@ -1,3 +1,10 @@
+2015-06-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* varasm.c (output_object_block_htab): Remove.
+	(output_object_block_compare): New.
+	(output_object_blocks): Sort named object_blocks before outputting
+	them.
+
 2015-06-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/66419
