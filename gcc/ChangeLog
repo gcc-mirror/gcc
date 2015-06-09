@@ -1,3 +1,11 @@
+2015-06-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc-plugin.h: Move decls to plugin.h and include it.
+	* plugin.h: Relocate decls from gcc-plugin.h
+	* ggc-page.c: Include required header files.
+	* passes.c: Likewise.
+	* cgraphunit.c: Likewise.
+
 2015-06-09  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-stdarg.c (expand_ifn_va_arg_1): Handle location.
