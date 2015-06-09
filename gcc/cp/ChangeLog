@@ -1,5 +1,10 @@
 2015-06-09  Jason Merrill  <jason@redhat.com>
 
+	DR 1467
+	PR c++/51747
+	* typeck2.c (digest_init_r): Replace previous change with
+	gcc_unreachable.
+
 	PR c++/66387
 	* semantics.c (process_outer_var_ref): Make sure the value is
 	actually constant before returning it.
