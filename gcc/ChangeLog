@@ -1,5 +1,10 @@
 2015-06-09  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/66413
+	* tree-inline.c (insert_init_debug_bind): Unshare value.
+
+2015-06-09  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/66396
 	* graphite-isl-ast-to-gimple.c (graphite_regenerate_ast_isl):
 	Rename virtual operands.
