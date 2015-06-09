@@ -1439,7 +1439,9 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
           next_load = NULL;
           FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), j, load)
             {
-              if (j != 0 && next_load != load)
+              if (j != 0
+		  && (next_load != load
+		      || GROUP_GAP (vinfo_for_stmt (load)) != 1))
 		{
 		  subchain_p = false;
 		  break;
