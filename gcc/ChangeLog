@@ -1,3 +1,8 @@
+2015-06-09  Tom de Vries  <tom@codesourcery.com>
+
+	* omp-low.c (finalize_task_copyfn, expand_omp_taskreg): Mark function
+	parallelized_function before add_new_function.
+
 2015-06-09  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc-plugin.h: Move decls to plugin.h and include it.
