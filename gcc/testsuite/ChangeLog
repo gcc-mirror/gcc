@@ -1,3 +1,7 @@
+2015-06-09  Shiva Chen  <shiva0217@gmail.com>
+
+	* gcc.target/arm/stl-cond.c: New test.
+
 2015-06-09  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/66413
