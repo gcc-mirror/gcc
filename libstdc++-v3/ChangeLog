@@ -1,3 +1,9 @@
+2015-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/66030
+	* config/abi/pre/gnu.ver: Export codecvt_byname and codecvt symbols
+	for mingw32.
+
 2015-06-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/66441
