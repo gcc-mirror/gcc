@@ -1,3 +1,8 @@
+2015-06-09  Tom de Vries  <tom@codesourcery.com>
+
+	* gimple-iterator.h (gimple_seq_nondebug_singleton_p): Don't
+	always return false.
+
 2015-06-09  Alexandre Oliva <aoliva@redhat.com>
 
 	PR rtl-optimization/64164
