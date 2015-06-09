@@ -954,7 +954,7 @@ get_loop_body_in_bfs_order (const struct loop *loop)
 	    }
 	}
 
-      gcc_assert (i >= vc);
+      gcc_assert (i > vc);
 
       bb = blocks[vc++];
     }
