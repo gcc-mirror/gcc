@@ -762,33 +762,6 @@ vect_build_slp_tree_1 (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	  else
 	    {
 	      /* Load.  */
-	      unsigned unrolling_factor
-		= least_common_multiple
-		    (*max_nunits, group_size) / group_size;
-              /* FORNOW: Check that there is no gap between the loads
-		 and no gap between the groups when we need to load
-		 multiple groups at once.  */
-              if (unrolling_factor > 1
-		  && ((GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) == stmt
-		       && GROUP_GAP (vinfo_for_stmt (stmt)) != 0)
-		      /* If the group is split up then GROUP_GAP
-			 isn't correct here, nor is GROUP_FIRST_ELEMENT.  */
-		      || GROUP_SIZE (vinfo_for_stmt (stmt)) > group_size))
-                {
-                  if (dump_enabled_p ())
-                    {
-                      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				       "Build SLP failed: grouped "
-				       "loads have gaps ");
-                      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-					stmt, 0);
-                      dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-                    }
-		  /* Fatal mismatch.  */
-		  matches[0] = false;
-                  return false;
-                }
-
               /* Check that the size of interleaved loads group is not
                  greater than the SLP group size.  */
 	      unsigned ncopies
@@ -1846,7 +1819,13 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 		this_load_permuted = true;
 	      load_permutation.safe_push (load_place);
 	    }
-	  if (!this_load_permuted)
+	  if (!this_load_permuted
+	      /* The load requires permutation when unrolling exposes
+	         a gap either because the group is larger than the SLP
+		 group-size or because there is a gap between the groups.  */
+	      && (unrolling_factor == 1
+		  || (group_size == GROUP_SIZE (vinfo_for_stmt (first_stmt))
+		      && GROUP_GAP (vinfo_for_stmt (first_stmt)) == 0)))
 	    {
 	      load_permutation.release ();
 	      continue;

@@ -1,5 +1,11 @@
 2015-06-09  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-slp.c (vect_build_slp_tree_1): Remove bailout on gaps.
+	(vect_analyze_slp_instance): Instead do not falsely drop
+	load permutations.
+
+2015-06-09  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/66423
 	* match.pd: Handle A % (unsigned)(1 << B).
 
