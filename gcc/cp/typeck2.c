@@ -1089,6 +1089,7 @@ digest_init_r (tree type, tree init, bool nested, int flags,
 	      || TREE_CODE (type) == UNION_TYPE
 	      || TREE_CODE (type) == COMPLEX_TYPE);
 
+#ifdef ENABLE_CHECKING
   /* "If T is a class type and the initializer list has a single
      element of type cv U, where U is T or a class derived from T,
      the object is initialized from that element."  */
@@ -1099,8 +1100,10 @@ digest_init_r (tree type, tree init, bool nested, int flags,
     {
       tree elt = CONSTRUCTOR_ELT (init, 0)->value;
       if (reference_related_p (type, TREE_TYPE (elt)))
-	init = elt;
+	/* We should have fixed this in reshape_init.  */
+	gcc_unreachable ();
     }
+#endif
 
   if (BRACE_ENCLOSED_INITIALIZER_P (init)
       && !TYPE_NON_AGGREGATE_CLASS (type))
