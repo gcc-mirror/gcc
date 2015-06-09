@@ -1,3 +1,11 @@
+2015-06-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66383
+	* tree.c (replace_placeholders_r): Handle placeholders for an
+	outer object.
+	* typeck2.c (store_init_value): Only replace_placeholders for
+	objects of class type.
+
 2015-06-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66405

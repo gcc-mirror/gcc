@@ -843,7 +843,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
       TREE_CONSTANT (decl) = const_init && decl_maybe_constant_var_p (decl);
     }
 
-  if (cxx_dialect >= cxx14)
+  if (cxx_dialect >= cxx14 && CLASS_TYPE_P (strip_array_types (type)))
     /* Handle aggregate NSDMI in non-constant initializers, too.  */
     value = replace_placeholders (value, decl);
 
