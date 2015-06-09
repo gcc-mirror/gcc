@@ -1,3 +1,10 @@
+2015-06-09  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/66299
+	* gcc.dg/pr66299-1.c: New test.
+	* gcc.dg/pr66299-2.c: New test.
+	* gcc.dg/pr66299-3.c: New test.
+
 2015-06-09  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* g++.dg/ext/pr57735.C: Do not override -mfloat-abi directives
