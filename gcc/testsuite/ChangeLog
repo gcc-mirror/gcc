@@ -1,3 +1,8 @@
+2015-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66413
+	* gcc.dg/torture/pr66413.c: New testcase.
+
 2015-06-09  Alexandre Oliva <aoliva@redhat.com>
 
 	* gcc.dg/guality/pr54200.c: Add -fno-tree-coalesce-vars.
