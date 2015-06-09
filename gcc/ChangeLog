@@ -1,3 +1,9 @@
+2015-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66419
+	* tree-vect-slp.c (vect_supported_load_permutation_p): Properly
+	consider GROUP_GAP when detecting a perfect subchain.
+
 2015-06-09  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78.c (rl78_select_section): When -mes0 is active
