@@ -1614,7 +1614,10 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
       && CP_AGGREGATE_TYPE_P (type))
     /* A brace-enclosed initializer for an aggregate.  In C++0x this can
        happen for direct-initialization, too.  */
-    init = digest_init (type, init, complain);
+    {
+      init = reshape_init (type, init, complain);
+      init = digest_init (type, init, complain);
+    }
 
   /* A CONSTRUCTOR of the target's type is a previously digested
      initializer, whether that happened just above or in
