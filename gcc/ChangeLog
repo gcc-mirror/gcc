@@ -1,3 +1,8 @@
+2015-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66423
+	* match.pd: Handle A % (unsigned)(1 << B).
+
 2015-06-09  Aldy Hernandez  <aldyh@redhat.com>
 
 	* varasm.c (output_object_block_htab): Remove.
