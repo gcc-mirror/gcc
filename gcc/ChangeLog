@@ -1,3 +1,9 @@
+2015-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/66396
+	* graphite-isl-ast-to-gimple.c (graphite_regenerate_ast_isl):
+	Rename virtual operands.
+
 2015-06-09  Tom de Vries  <tom@codesourcery.com>
 
 	* gimple-iterator.h (gimple_seq_nondebug_singleton_p): Don't
