@@ -1,3 +1,8 @@
+2015-06-09  Jason Merrill  <jason@redhat.com>
+
+	PR bootstrap/66448
+	* toplev.c (check_global_declaration): Don't warn about a clone.
+
 2015-06-09  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/66299
