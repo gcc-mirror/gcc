@@ -1,5 +1,11 @@
 2015-06-09  Tom de Vries  <tom@codesourcery.com>
 
+	PR tree-optimization/65460
+	* omp-low.c (expand_omp_target): Set parallelized_function on
+	cgraph_node for child_fn.
+
+2015-06-09  Tom de Vries  <tom@codesourcery.com>
+
 	* omp-low.c (finalize_task_copyfn, expand_omp_taskreg): Mark function
 	parallelized_function before add_new_function.
 
