@@ -4417,14 +4417,14 @@ rl78_select_section (tree decl,
     }
 
   if (readonly)
-    return readonly_data_section;
+    return TARGET_ES0 ? frodata_section : readonly_data_section;
 
   switch (categorize_decl_for_section (decl, reloc))
     {
     case SECCAT_TEXT:   return text_section;
     case SECCAT_DATA:   return data_section;
     case SECCAT_BSS:    return bss_section;
-    case SECCAT_RODATA: return readonly_data_section;
+    case SECCAT_RODATA: return TARGET_ES0 ? frodata_section : readonly_data_section;
     default:
       return default_select_section (decl, reloc, align);
     }
