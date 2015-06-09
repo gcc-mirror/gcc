@@ -1,5 +1,11 @@
 2015-06-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/66387
+	* semantics.c (process_outer_var_ref): Make sure the value is
+	actually constant before returning it.
+	* typeck.c (cp_build_array_ref): Allow subscripting non-lvalue
+	array.
+
 	PR c++/66383
 	* tree.c (replace_placeholders_r): Handle placeholders for an
 	outer object.
