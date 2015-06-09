@@ -1,3 +1,7 @@
+2015-06-09  Matthias Klose  <doko@ubuntu.com>
+
+	* Make-lang.in (jit.install-common): Install headers using INSTALL_DATA.
+
 2015-06-08  Andrew MacLeod  <amacleod@redhat.com>
 
 	* dummy-frontend.c : Adjust include files.
