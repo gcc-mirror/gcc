@@ -3141,15 +3141,6 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 	    return error_mark_node;
 	}
 
-      if (!lvalue_p (array))
-	{
-	  if (complain & tf_error)
-	    pedwarn (loc, OPT_Wpedantic, 
-		     "ISO C++ forbids subscripting non-lvalue array");
-	  else
-	    return error_mark_node;
-	}
-
       /* Note in C++ it is valid to subscript a `register' array, since
 	 it is valid to take the address of something with that
 	 storage specification.  */
