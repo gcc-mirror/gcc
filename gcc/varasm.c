@@ -7413,14 +7413,31 @@ output_object_block (struct object_block *block)
     }
 }
 
-/* A htab_traverse callback used to call output_object_block for
-   each member of object_block_htab.  */
+/* A callback for qsort to compare object_blocks.  */
 
-int
-output_object_block_htab (object_block **slot, void *)
+static int
+output_object_block_compare (const void *x, const void *y)
 {
-  output_object_block (*slot);
-  return 1;
+  object_block *p1 = *(object_block * const*)x;
+  object_block *p2 = *(object_block * const*)y;
+
+  if (p1->sect->common.flags & SECTION_NAMED
+      && !(p2->sect->common.flags & SECTION_NAMED))
+    return 1;
+
+  if (!(p1->sect->common.flags & SECTION_NAMED)
+      && p2->sect->common.flags & SECTION_NAMED)
+    return -1;
+
+  if (p1->sect->common.flags & SECTION_NAMED
+      && p2->sect->common.flags & SECTION_NAMED)
+    return strcmp (p1->sect->named.name, p2->sect->named.name);
+
+  unsigned f1 = p1->sect->common.flags;
+  unsigned f2 = p2->sect->common.flags;
+  if (f1 == f2)
+    return 0;
+  return f1 < f2 ? -1 : 1;
 }
 
 /* Output the definitions of all object_blocks.  */
@@ -7428,7 +7445,23 @@ output_object_block_htab (object_block **slot, void *)
 void
 output_object_blocks (void)
 {
-  object_block_htab->traverse<void *, output_object_block_htab> (NULL);
+  vec<object_block *, va_heap> v;
+  v.create (object_block_htab->elements ());
+  object_block *obj;
+  hash_table<object_block_hasher>::iterator hi;
+
+  FOR_EACH_HASH_TABLE_ELEMENT (*object_block_htab, obj, object_block *, hi)
+    v.quick_push (obj);
+
+  /* Sort them in order to output them in a deterministic manner,
+     otherwise we may get .rodata sections in different orders with
+     and without -g.  */
+  v.qsort (output_object_block_compare);
+  unsigned i;
+  FOR_EACH_VEC_ELT (v, i, obj)
+    output_object_block (obj);
+
+  v.release ();
 }
 
 /* This function provides a possible implementation of the
