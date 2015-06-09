@@ -1,5 +1,96 @@
 2015-06-09  Alexandre Oliva <aoliva@redhat.com>
 
+	PR rtl-optimization/64164
+	* Makefile.in (OBJS): Drop tree-ssa-copyrename.o.
+	* tree-ssa-copyrename.c: Removed.
+	* opts.c (default_options_table): Drop -ftree-copyrename.  Add
+	-ftree-coalesce-vars.
+	* passes.def: Drop all occurrences of pass_rename_ssa_copies.
+	* common.opt (ftree-copyrename): Ignore.
+	(ftree-coalesce-inlined-vars): Likewise.
+	* doc/invoke.texi: Remove the ignored options above.
+	* gimple-expr.h (gimple_can_coalesce_p): Move declaration
+	* tree-ssa-coalesce.h: ... here.
+	* tree-ssa-uncprop.c: Include tree-ssa-coalesce.h and other
+	headers required by it.
+	* gimple-expr.c (gimple_can_coalesce_p): Allow coalescing
+	across variables when flag_tree_coalesce_vars.  Check register
+	use and promoted modes to allow coalescing.  Moved to
+	tree-ssa-coalesce.c.
+	* tree-ssa-live.c (struct tree_int_map_hasher): Move along
+	with its member functions to tree-ssa-coalesce.c.
+	(var_map_base_init): Likewise.  Renamed to
+	compute_samebase_partition_bases.
+	(partition_view_normal): Drop want_bases parameter.
+	(partition_view_bitmap): Likewise.
+	* tree-ssa-live.h: Adjust declarations.
+	* tree-ssa-coalesce.c: Include explow.h.
+	(build_ssa_conflict_graph): Process PARM_ and RESULT_DECLs's
+	default defs at the entry point.
+	(dump_part_var_map): New.
+	(compute_optimized_partition_bases): New, called by...
+	(coalesce_ssa_name): ... when flag_tree_coalesce_vars, instead
+	of compute_samebase_partition_bases.  Adjust.
+	* alias.c (nonoverlapping_memrefs_p): Disregard gimple-regs.
+	* cfgexpand.c (leader_merge): New.
+	(get_rtl_for_parm_ssa_default_def): New.
+	(set_rtl): Merge exprs and attrs, even for MEMs and non-SSA
+	vars.  Update DECL_RTL for PARM_DECLs and RESULT_DECLs too.
+	(expand_one_stack_var_at): Handle anonymous SSA_NAMEs.  Drop
+	redundant MEM attr setting.
+	(expand_one_stack_var_1): Handle anonymous SSA_NAMEs.  Renamed
+	from...
+	(expand_one_stack_var): ... this.  New wrapper to check and
+	skip already expanded SSA partitions.
+	(record_alignment_for_reg_var): New, factored out of...
+	(expand_one_var): ... this.
+	(expand_one_ssa_partition): New.
+	(adjust_one_expanded_partition_var): New.
+	(expand_one_register_var): Check and skip already expanded SSA
+	partitions.
+	(expand_used_vars): Don't create DECLs for anonymous SSA
+	names.  Expand all SSA partitions, then adjust all SSA names.
+	(pass::execute): Replace the loops that set
+	SA.partition_to_pseudo from partition leaders and cleared
+	DECL_RTL for multi-location variables, and that which used to
+	rename vars and set attrs, with one that clears DECL_RTL and
+	checks that PARMs and RESULTs default_defs match DECL_RTL.
+	* cfgexpand.h (get_rtl_for_parm_ssa_default_def): Declare.
+	* emit-rtl.c (set_reg_attrs_for_parm): Handle NULL decl.
+	* explow.c (promote_ssa_mode): New.
+	* explow.h (promote_ssa_mode): Declare.
+	* expr.c (expand_expr_real_1): Handle anonymous SSA_NAMEs.
+	* function.c: Include cfgexpand.h.
+	(use_register_for_decl): Handle SSA_NAMEs, anonymous or not.
+	(use_register_for_parm_decl): Wrapper for the above to
+	special-case the result_ptr.
+	(rtl_for_parm): Ditto for get_rtl_for_parm_ssa_default_def.
+	(maybe_reset_rtl_for_parm): Reset DECL_RTL of parms with
+	multiple locations.
+	(assign_parm_adjust_stack_rtl): Add all and parm arguments,
+	for rtl_for_parm.  For SSA-assigned parms, zero stack_parm.
+	(assign_parm_setup_block): Prefer SSA-assigned location.
+	(assign_parm_setup_reg): Likewise.  Use entry_parm for equiv
+	if stack_parm is NULL.
+	(assign_parm_setup_stack): Prefer SSA-assigned location.
+	(assign_parms): Maybe reset DECL_RTL of params.  Adjust stack
+	rtl before testing for pointer bounds.  Special-case result_ptr.
+	(expand_function_start): Maybe reset DECL_RTL of result.
+	Prefer SSA-assigned location for result and static chain.
+	Factor out DECL_RESULT and SET_DECL_RTL.
+	* tree-outof-ssa.c (insert_value_copy_on_edge): Handle
+	anonymous SSA names.  Use promote_ssa_mode.
+	(get_temp_reg): Likewise.
+	(remove_ssa_form): Adjust.
+	* var-tracking.c (dataflow_set_clear_at_call): Take call_insn
+	and get its reg_usage for reg invalidation.
+	(compute_bb_dataflow): Pass it insn.
+	(emit_notes_in_bb): Likewise.
+	* tree-ssa-loop-niter.c (loop_exits_before_overflow): Don't
+	fail assert on conversion between unsigned types.
+
+2015-06-09  Alexandre Oliva <aoliva@redhat.com>
+
 	PR debug/58315
 	* tree-inline.c (reset_debug_binding): New.
 	(reset_debug_bindings): Likewise.
