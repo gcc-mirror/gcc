@@ -5995,9 +5995,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       if ((grouped_load
 	   && (slp || PURE_SLP_STMT (stmt_info)))
 	  && (group_size > nunits
-	      || nunits % group_size != 0
-	      /* We don't support load permutations.  */
-	      || slp_perm))
+	      || nunits % group_size != 0))
 	{
 	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			   "unhandled strided group load\n");
@@ -6294,6 +6292,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       alias_off = build_int_cst (reference_alias_ptr_type (DR_REF (dr)), 0);
       int nloads = nunits;
       tree ltype = TREE_TYPE (vectype);
+      auto_vec<tree> dr_chain;
       if (slp)
 	{
 	  nloads = nunits / group_size;
@@ -6303,7 +6302,8 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	    ltype = vectype;
 	  ltype = build_aligned_type (ltype, TYPE_ALIGN (TREE_TYPE (vectype)));
 	  ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-	  gcc_assert (!slp_perm);
+	  if (slp_perm)
+	    dr_chain.create (ncopies);
 	}
       for (j = 0; j < ncopies; j++)
 	{
@@ -6350,13 +6350,20 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	    }
 
 	  if (slp)
-	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	    {
+	      SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
+	      if (slp_perm)
+		dr_chain.quick_push (gimple_assign_lhs (new_stmt));
+	    }
 	  if (j == 0)
 	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
 	  else
 	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
 	  prev_stmt_info = vinfo_for_stmt (new_stmt);
 	}
+      if (slp_perm)
+	vect_transform_slp_perm_load (slp_node, dr_chain, gsi, vf,
+				      slp_node_instance, false);
       return true;
     }
 
