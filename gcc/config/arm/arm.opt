@@ -182,7 +182,7 @@ Target RejectNegative Joined UInteger Var(arm_structure_size_boundary) Init(DEFA
 Specify the minimum bit alignment of structures
 
 mthumb
-Target Report RejectNegative Mask(THUMB)
+Target Report RejectNegative Mask(THUMB) Save
 Generate code for Thumb state
 
 mthumb-interwork
@@ -246,7 +246,7 @@ Target Report Var(target_word_relocations) Init(TARGET_DEFAULT_WORD_RELOCATIONS)
 Only generate absolute relocations on word sized values.
 
 mrestrict-it
-Target Report Var(arm_restrict_it) Init(2)
+Target Report Var(arm_restrict_it) Init(2) Save
 Generate IT blocks appropriate for ARMv8.
 
 mold-rtx-costs
@@ -275,5 +275,5 @@ Target Report Var(target_slow_flash_data) Init(0)
 Assume loading data from flash is slower than fetching instructions.
 
 masm-syntax-unified
-Target Report Var(inline_asm_unified) Init(0)
+Target Report Var(inline_asm_unified) Init(0) Save
 Assume unified syntax for Thumb inline assembly code.

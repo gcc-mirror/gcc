@@ -13512,6 +13512,10 @@ that executes in ARM state, but the default can be changed by
 configuring GCC with the @option{--with-mode=}@var{state}
 configure option.
 
+You can also override the ARM and Thumb mode for each function
+by using the @code{target("thumb")} and @code{target("arm")} function attributes
+(@pxref{ARM Function Attributes}) or pragmas (@pxref{Function Specific Option Pragmas}).
+
 @item -mtpcs-frame
 @opindex mtpcs-frame
 Generate a stack frame that is compliant with the Thumb Procedure Call

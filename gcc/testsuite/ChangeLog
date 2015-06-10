@@ -1,3 +1,11 @@
+2015-06-09  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/52144
+	* gcc.target/arm/attr_arm.c: New test
+	* gcc.target/arm/attr_arm-err.c: New test
+	* gcc.target/arm/attr_thumb.c: New test
+	* gcc.target/arm/attr_thumb-static.c: New test
+
 2015-06-10  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/66200

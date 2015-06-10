@@ -3098,8 +3098,9 @@ strings separated by commas to specify multiple options,
 or separate the options with a comma (@samp{,}) within a single string.
 
 The options supported are specific to each target; refer to @ref{x86
-Function Attributes}, @ref{PowerPC Function Attributes}, and
-@ref{Nios II Function Attributes}, for details.
+Function Attributes}, @ref{PowerPC Function Attributes},
+@ref{ARM Function Attributes},and @ref{Nios II Function Attributes},
+for details.
 
 @item unused
 @cindex @code{unused} function attribute
@@ -3448,6 +3449,27 @@ double f2d (float) __attribute__((pcs("aapcs")));
 
 Variadic functions always use the @code{"aapcs"} calling convention and
 the compiler rejects attempts to specify an alternative.
+
+@item target (@var{options})
+@cindex @code{target} function attribute
+As discussed in @ref{Common Function Attributes}, this attribute 
+allows specification of target-specific compilation options.
+
+On ARM, the following options are allowed:
+
+@table @samp
+@item thumb
+@cindex @code{target("thumb")} function attribute, ARM
+Force code generation in the Thumb (T16/T32) ISA, depending on the
+architecture level.
+
+@item arm
+@cindex @code{target("arm")} function attribute, ARM
+Force code generation in the ARM (A32) ISA.
+@end table
+
+Functions from different modes can be inlined in the caller's mode.
+
 @end table
 
 @node AVR Function Attributes
