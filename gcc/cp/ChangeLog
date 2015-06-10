@@ -1,3 +1,14 @@
+2015-06-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66289
+	* cp-tree.h (TEMPLATE_DECL_COMPLEX_ALIAS_P): New.
+	* pt.c (push_template_decl_real): Set it.
+	(dependent_alias_template_spec_p): Use it.
+	(dependent_type_p_r): Use dependent_alias_template_spec_p.
+	(uses_all_template_parms_data, uses_all_template_parms_r)
+	(complex_alias_template_p): New.
+	(get_template_parm_index): Handle BOUND_TEMPLATE_TEMPLATE_PARM.
+
 2015-06-09  Jason Merrill  <jason@redhat.com>
 
 	DR 1467
