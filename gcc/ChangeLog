@@ -1,3 +1,9 @@
+2015-06-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/66473
+	* config/i386/i386.c (ix86_expand_vector_set): Use gen_int_mode
+	to prepare mask operand for AVX512 modes.
+
 2015-06-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline:
