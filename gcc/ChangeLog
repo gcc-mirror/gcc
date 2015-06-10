@@ -1,3 +1,8 @@
+2015-06-10  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md (tstsi_t): Add '?' modifier to 'r' alternative
+	of the second operand.
+
 2015-06-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/66473

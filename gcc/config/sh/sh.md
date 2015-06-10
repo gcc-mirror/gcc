@@ -616,7 +616,7 @@
 (define_insn_and_split "tstsi_t"
   [(set (reg:SI T_REG)
 	(eq:SI (and:SI (match_operand:SI 0 "arith_reg_operand" "%z,r")
-		       (match_operand:SI 1 "arith_or_int_operand" "K08,r"))
+		       (match_operand:SI 1 "arith_or_int_operand" "K08,?r"))
 	       (const_int 0)))]
   "TARGET_SH1
    && (can_create_pseudo_p () || arith_reg_operand (operands[1], SImode)
