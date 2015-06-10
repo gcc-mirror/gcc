@@ -1,3 +1,21 @@
+2015-06-10  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-04-04  Cong Hou  <congh@google.com>
+
+	PR tree-optimization/60656
+	* tree-vect-stmts.c (supportable_widening_operation):
+	Fix a bug that elements in a vector with vect_used_by_reduction
+	property are incorrectly reordered when the operation on it is not
+	consistant with the one in reduction operation.
+
+	2014-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/59990
+	* builtins.c (fold_builtin_memory_op): Make sure to not
+	use a floating-point mode or a boolean or enumeral type for
+	the copy operation.
+
 2015-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/66470
