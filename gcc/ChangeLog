@@ -1,3 +1,28 @@
+2015-06-09  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/52144
+	* config/arm/arm.opt (THUMB, arm_restrict_it, inline_asm_unified): Save.
+	* config/arm/arm-protos.h (arm_valid_target_attribute_tree): Declare.
+	(arm_reset_previous_fndecl, arm_change_mode_p): Likewise.
+	* config/arm/arm.h (SWITCHABLE_TARGET): Define.
+	* config/arm/arm.c (arm_reset_previous_fndecl): New functions.
+	(arm_valid_target_attribute_tree, arm_change_mode_p): Likewise.
+	(arm_valid_target_attribute_p): Likewise.
+	(arm_set_current_function, arm_can_inline_p): Likewise.
+	(arm_valid_target_attribute_rec): Likewise.
+	(arm_previous_fndecl): New variable.
+	(TARGET_SET_CURRENT_FUNCTION, TARGET_OPTION_VALID_ATTRIBUTE_P): Define.
+	(TARGET_CAN_INLINE_P): Define.
+	(arm_asm_trampoline_template): Emit mode.
+	(arm_file_start): Don't set unified syntax.
+	(arm_declare_function_name): Set unified syntax and mode.
+	(arm_option_override): Init target_option_default_node.
+	and target_option_current_node.
+	* config/arm/arm.md (*call_value_symbol): Set mode when possible.
+	(*call_symbol): Likewise.
+	* doc/extend.texi: Document ARM/Thumb target attribute.
+	* doc/invoke.texi: Likewise.
+
 2015-06-09  Alexandre Oliva <aoliva@redhat.com>
 
 	Revert:
