@@ -179,7 +179,7 @@ class hash_set
 
 public:
   explicit hash_set (size_t n = 13, bool ggc = false CXX_MEM_STAT_INFO)
-    : m_table (n, ggc, true, HASH_SET PASS_MEM_STAT) {}
+    : m_table (n, ggc, true, HASH_SET_ORIGIN PASS_MEM_STAT) {}
 
   /* Create a hash_set in gc memory with space for at least n elements.  */
 

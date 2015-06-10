@@ -30,7 +30,8 @@ mem_alloc_description<bitmap_usage> bitmap_mem_desc;
 void
 bitmap_register (bitmap b MEM_STAT_DECL)
 {
-  bitmap_mem_desc.register_descriptor (b, BITMAP, false FINAL_PASS_MEM_STAT);
+  bitmap_mem_desc.register_descriptor (b, BITMAP_ORIGIN, false
+				       FINAL_PASS_MEM_STAT);
 }
 
 /* Account the overhead.  */
@@ -2076,7 +2077,7 @@ dump_bitmap_statistics (void)
   if (! GATHER_STATISTICS)
     return;
 
-  bitmap_mem_desc.dump (BITMAP);
+  bitmap_mem_desc.dump (BITMAP_ORIGIN);
 }
 
 DEBUG_FUNCTION void

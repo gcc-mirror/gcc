@@ -103,7 +103,7 @@ mem_alloc_description<mem_usage> hash_table_usage;
 /* Support function for statistics.  */
 void dump_hash_table_loc_statistics (void)
 {
-  for (unsigned i = HASH_TABLE; i <= HASH_SET; i++)
+  for (unsigned i = HASH_TABLE_ORIGIN; i <= HASH_SET_ORIGIN; i++)
     {
       mem_alloc_origin origin = (mem_alloc_origin) i;
       hash_table_usage.dump (origin);

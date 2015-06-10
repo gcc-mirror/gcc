@@ -977,7 +977,7 @@ dump_ggc_loc_statistics (bool final)
   ggc_force_collect = true;
   ggc_collect ();
 
-  ggc_mem_desc.dump (GGC, final ? ggc_usage::compare_final : NULL);
+  ggc_mem_desc.dump (GGC_ORIGIN, final ? ggc_usage::compare_final : NULL);
 
   ggc_force_collect = false;
 }
@@ -986,7 +986,7 @@ dump_ggc_loc_statistics (bool final)
 void
 ggc_record_overhead (size_t allocated, size_t overhead, void *ptr MEM_STAT_DECL)
 {
-  ggc_usage *usage = ggc_mem_desc.register_descriptor (ptr, GGC, false
+  ggc_usage *usage = ggc_mem_desc.register_descriptor (ptr, GGC_ORIGIN, false
 						       FINAL_PASS_MEM_STAT);
 
   ggc_mem_desc.register_object_overhead (usage, allocated + overhead, ptr);
