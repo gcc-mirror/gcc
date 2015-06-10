@@ -211,6 +211,7 @@ static tree template_parm_to_arg (tree t);
 static tree current_template_args (void);
 static tree tsubst_template_parm (tree, tree, tsubst_flags_t);
 static tree instantiate_alias_template (tree, tree, tsubst_flags_t);
+static bool complex_alias_template_p (const_tree tmpl);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
@@ -4420,6 +4421,7 @@ get_template_parm_index (tree parm)
 	   || TREE_CODE (parm) == TEMPLATE_DECL)
     parm = TREE_TYPE (parm);
   if (TREE_CODE (parm) == TEMPLATE_TYPE_PARM
+      || TREE_CODE (parm) == BOUND_TEMPLATE_TEMPLATE_PARM
       || TREE_CODE (parm) == TEMPLATE_TEMPLATE_PARM)
     parm = TEMPLATE_TYPE_PARM_INDEX (parm);
   gcc_assert (TREE_CODE (parm) == TEMPLATE_PARM_INDEX);
@@ -5096,6 +5098,11 @@ template arguments to %qD do not match original template %qD",
 	  if (TREE_CODE (parm) == TEMPLATE_DECL)
 	    DECL_CONTEXT (parm) = tmpl;
 	}
+
+      if (TREE_CODE (decl) == TYPE_DECL
+	  && TYPE_DECL_ALIAS_P (decl)
+	  && complex_alias_template_p (tmpl))
+	TEMPLATE_DECL_COMPLEX_ALIAS_P (tmpl) = true;
     }
 
   /* The DECL_TI_ARGS of DECL contains full set of arguments referring
@@ -5353,13 +5360,56 @@ alias_template_specialization_p (const_tree t)
   return false;
 }
 
-/* Return TRUE iff T is a specialization of an alias template with
+/* An alias template is complex from a SFINAE perspective if a template-id
+   using that alias can be ill-formed when the expansion is not, as with
+   the void_t template.  We determine this by checking whether the
+   expansion for the alias template uses all its template parameters.  */
+
+struct uses_all_template_parms_data
+{
+  int level;
+  bool *seen;
+};
+
+static int
+uses_all_template_parms_r (tree t, void *data_)
+{
+  struct uses_all_template_parms_data &data
+    = *(struct uses_all_template_parms_data*)data_;
+  tree idx = get_template_parm_index (t);
+
+  if (TEMPLATE_PARM_LEVEL (idx) == data.level)
+    data.seen[TEMPLATE_PARM_IDX (idx)] = true;
+  return 0;
+}
+
+static bool
+complex_alias_template_p (const_tree tmpl)
+{
+  struct uses_all_template_parms_data data;
+  tree pat = DECL_ORIGINAL_TYPE (DECL_TEMPLATE_RESULT (tmpl));
+  tree parms = DECL_TEMPLATE_PARMS (tmpl);
+  data.level = TMPL_PARMS_DEPTH (parms);
+  int len = TREE_VEC_LENGTH (INNERMOST_TEMPLATE_PARMS (parms));
+  data.seen = XALLOCAVEC (bool, len);
+  for (int i = 0; i < len; ++i)
+    data.seen[i] = false;
+
+  for_each_template_parm (pat, uses_all_template_parms_r, &data, NULL, true);
+  for (int i = 0; i < len; ++i)
+    if (!data.seen[i])
+      return true;
+  return false;
+}
+
+/* Return TRUE iff T is a specialization of a complex alias template with
    dependent template-arguments.  */
 
 bool
 dependent_alias_template_spec_p (const_tree t)
 {
   return (alias_template_specialization_p (t)
+	  && TEMPLATE_DECL_COMPLEX_ALIAS_P (DECL_TI_TEMPLATE (TYPE_NAME (t)))
 	  && (any_dependent_template_arguments_p
 	      (INNERMOST_TEMPLATE_ARGS (TYPE_TI_ARGS (t)))));
 }
@@ -20951,9 +21001,7 @@ dependent_type_p_r (tree type)
     return true;
   /* For an alias template specialization, check the arguments both to the
      class template and the alias template.  */
-  else if (alias_template_specialization_p (type)
-	   && (any_dependent_template_arguments_p
-	       (INNERMOST_TEMPLATE_ARGS (TYPE_TI_ARGS (type)))))
+  else if (dependent_alias_template_spec_p (type))
     return true;
 
   /* All TYPEOF_TYPEs, DECLTYPE_TYPEs, and UNDERLYING_TYPEs are

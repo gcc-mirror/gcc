@@ -155,6 +155,7 @@ c-common.h, not after.
       LABEL_DECL_CONTINUE (in LABEL_DECL)
    2: DECL_THIS_EXTERN (in VAR_DECL or FUNCTION_DECL).
       DECL_IMPLICIT_TYPEDEF_P (in a TYPE_DECL)
+      TEMPLATE_DECL_COMPLEX_ALIAS_P (in TEMPLATE_DECL)
    3: DECL_IN_AGGR_P.
    4: DECL_C_BIT_FIELD (in a FIELD_DECL)
       DECL_ANON_UNION_VAR_P (in a VAR_DECL)
@@ -2731,6 +2732,10 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 /* Nonzero for TYPE_DECL means that it was written 'using name = type'.  */
 #define TYPE_DECL_ALIAS_P(NODE) \
   DECL_LANG_FLAG_6 (TYPE_DECL_CHECK (NODE))
+
+/* Nonzero for TEMPLATE_DECL means that it is a 'complex' alias template.  */
+#define TEMPLATE_DECL_COMPLEX_ALIAS_P(NODE) \
+  DECL_LANG_FLAG_2 (TEMPLATE_DECL_CHECK (NODE))
 
 /* Nonzero for a type which is an alias for another type; i.e, a type
    which declaration was written 'using name-of-type =
