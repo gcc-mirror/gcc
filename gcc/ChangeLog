@@ -1,3 +1,7 @@
+2015-06-10  Tom de Vries  <tom@codesourcery.com>
+
+	* omp-low.c (expand_omp_target): Remove duplicate declaration of node.
+
 2015-06-10  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/66471
