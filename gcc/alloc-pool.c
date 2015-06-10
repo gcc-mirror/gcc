@@ -33,5 +33,5 @@ dump_alloc_pool_statistics (void)
   if (! GATHER_STATISTICS)
     return;
 
-  pool_allocator_usage.dump (ALLOC_POOL);
+  pool_allocator_usage.dump (ALLOC_POOL_ORIGIN);
 }

@@ -4,13 +4,13 @@
 /* Memory allocation origin.  */
 enum mem_alloc_origin
 {
-  HASH_TABLE,
-  HASH_MAP,
-  HASH_SET,
-  VEC,
-  BITMAP,
-  GGC,
-  ALLOC_POOL,
+  HASH_TABLE_ORIGIN,
+  HASH_MAP_ORIGIN,
+  HASH_SET_ORIGIN,
+  VEC_ORIGIN,
+  BITMAP_ORIGIN,
+  GGC_ORIGIN,
+  ALLOC_POOL_ORIGIN,
   MEM_ALLOC_ORIGIN_LENGTH
 };
 

@@ -232,7 +232,7 @@ pool_allocator<T>::pool_allocator (const char *name, size_t num,
   m_elts_free (0), m_blocks_allocated (0), m_block_list (NULL),
   m_block_size (0), m_ignore_type_size (ignore_type_size),
   m_extra_size (extra_size), m_initialized (false),
-  m_location (ALLOC_POOL, false PASS_MEM_STAT) {}
+  m_location (ALLOC_POOL_ORIGIN, false PASS_MEM_STAT) {}
 
 /* Initialize a pool allocator.  */
 

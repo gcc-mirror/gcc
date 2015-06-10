@@ -1,3 +1,23 @@
+2015-06-10  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/66471
+	* mem-stats-traits.h (enum mem_alloc_origin): Add _ORIGIN suffix for
+	all enum values in mem_alloc_origin.
+	* alloc-pool.c (dump_alloc_pool_statistics): Use newly changed enum
+	name.
+	* alloc-pool.h (pool_allocator::pool_allocator): Likewise.
+	* bitmap.c (bitmap_register): Likewise.
+	(dump_bitmap_statistics): Likewise.
+	* ggc-common.c (dump_ggc_loc_statistics): Likewise.
+	(ggc_record_overhead): Likewise.
+	* hash-map.h: Likewise.
+	* hash-set.h: Likewise.
+	* hash-table.c (void dump_hash_table_loc_statistics): Likewise.
+	* hash-table.h: Likewise.
+	* vec.c (vec_prefix::register_overhead): Likewise.
+	(vec_prefix::release_overhead): Likewise.
+	(dump_vec_loc_statistics): Likewise.
+
 2015-06-09  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/52144
