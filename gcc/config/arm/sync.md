@@ -50,14 +50,11 @@
   {
     if (TARGET_HAVE_DMB)
       {
-	/* Note we issue a system level barrier. We should consider issuing
-	   a inner shareabilty zone barrier here instead, ie. "DMB ISH".  */
-	/* ??? Differentiate based on SEQ_CST vs less strict?  */
-	return "dmb\tsy";
+	return "dmb\\tish";
       }
 
     if (TARGET_HAVE_DMB_MCR)
-      return "mcr\tp15, 0, r0, c7, c10, 5";
+      return "mcr\\tp15, 0, r0, c7, c10, 5";
 
     gcc_unreachable ();
   }
