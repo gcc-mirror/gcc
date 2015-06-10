@@ -8976,8 +8976,7 @@ expand_omp_target (struct omp_region *region)
 #ifdef ENABLE_OFFLOADING
       /* Prevent IPA from removing child_fn as unreachable, since there are no
 	 refs from the parent function to child_fn in offload LTO mode.  */
-      struct cgraph_node *node = cgraph_node::get (child_fn);
-      node->mark_force_output ();
+      cgraph_node::get (child_fn)->mark_force_output ();
 #endif
 
       /* Some EH regions might become dead, see PR34608.  If
