@@ -1,3 +1,8 @@
+2015-06-10  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/arm/pr65710.c: Do not override -mfloat-abi directives
+	passed by the testsuite driver.
+
 2015-06-09  Alexandre Oliva <aoliva@redhat.com>
 
 	Revert:
