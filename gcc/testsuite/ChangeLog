@@ -1,3 +1,9 @@
+2015-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/66470
+	* gcc.dg/tls/pr66470.c: New test.
+	* gcc.target/i386/pr66470.c: New test.
+
 2015-06-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
