@@ -2072,6 +2072,27 @@ Altivec vector register
 @item wa
 Any VSX register if the -mvsx option was used or NO_REGS.
 
+When using any of the register constraints (@code{wa}, @code{wd},
+@code{wf}, @code{wg}, @code{wh}, @code{wi}, @code{wj}, @code{wk},
+@code{wl}, @code{wm}, @code{ws}, @code{wt}, @code{wu}, @code{wv},
+@code{ww}, or @code{wy}) that take VSX registers, you must use
+@code{%x<n>} in the template so that the correct register is used.
+Otherwise the register number output in the assembly file will be
+incorrect if an Altivec register is an operand of a VSX instruction
+that expects VSX register numbering.
+
+@smallexample
+asm ("xvadddp %x0,%x1,%x2" : "=wa" (v1) : "wa" (v2), "wa" (v3));
+@end smallexample
+
+is correct, but:
+
+@smallexample
+asm ("xvadddp %0,%1,%2" : "=wa" (v1) : "wa" (v2), "wa" (v3));
+@end smallexample
+
+is not correct.
+
 @item wd
 VSX vector register to hold vector double data or NO_REGS.
 
