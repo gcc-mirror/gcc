@@ -1,3 +1,11 @@
+2015-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/66470
+	* config/i386/i386.c (ix86_split_long_move): For collisions
+	involving direct tls segment refs, move the UNSPEC_TP possibly
+	wrapped in ZERO_EXTEND out of the address for lea, to each of
+	the memory loads.
+
 2015-06-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
