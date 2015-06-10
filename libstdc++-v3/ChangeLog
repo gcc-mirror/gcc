@@ -1,3 +1,14 @@
+2015-06-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2015-01-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/64650
+	* include/experimental/optional (bad_optional_access): Add default
+	constructor.
+	* testsuite/experimental/optional/requirements.cc: Test for default
+	constructor.
+
 2015-06-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from mainline

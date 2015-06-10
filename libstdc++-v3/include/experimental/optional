@@ -106,9 +106,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class bad_optional_access : public logic_error
   {
   public:
-    // XXX Should not be inline
-    explicit bad_optional_access(const string& __arg) : logic_error(__arg) { }
+    bad_optional_access() : logic_error("bad optional access") { }
 
+    // XXX This constructor is non-standard. Should not be inline
     explicit bad_optional_access(const char* __arg) : logic_error(__arg) { }
 
     virtual ~bad_optional_access() noexcept = default;
