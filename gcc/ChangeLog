@@ -1,3 +1,9 @@
+2015-06-10  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.h (TARGET_DEBUG): New definition.
+	* config/xtensa/xtensa.md (define_attr "type"): New type "trap".
+	(define_insn "trap"): New definition.
+
 2015-06-10  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_attempt_slp_rearrange_stmts): Split
