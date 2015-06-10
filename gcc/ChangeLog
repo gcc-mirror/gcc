@@ -1,3 +1,10 @@
+2015-06-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/66474
+	* doc/md.texi (Machine Constraints): Document that on the PowerPC
+	if you use a constraint that targets a VSX register, you must use
+	%x<n> in the template.
+
 2015-06-10  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa.h (TARGET_DEBUG): New definition.
