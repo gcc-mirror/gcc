@@ -1299,6 +1299,67 @@ vect_slp_rearrange_stmts (slp_tree node, unsigned int group_size,
 }
 
 
+/* Attempt to reorder stmts in a reduction chain so that we don't
+   require any load permutation.  Return true if that was possible,
+   otherwise return false.  */
+
+static bool
+vect_attempt_slp_rearrange_stmts (slp_instance slp_instn)
+{
+  unsigned int group_size = SLP_INSTANCE_GROUP_SIZE (slp_instn);
+  unsigned int i, j;
+  sbitmap load_index;
+  unsigned int lidx;
+  slp_tree node, load;
+
+  /* Compare all the permutation sequences to the first one.  We know
+     that at least one load is permuted.  */
+  node = SLP_INSTANCE_LOADS (slp_instn)[0];
+  if (!node->load_permutation.exists ())
+    return false;
+  for (i = 1; SLP_INSTANCE_LOADS (slp_instn).iterate (i, &load); ++i)
+    {
+      if (!load->load_permutation.exists ())
+	return false;
+      FOR_EACH_VEC_ELT (load->load_permutation, j, lidx)
+	if (lidx != node->load_permutation[j])
+	  return false;
+    }
+
+  /* Check that the loads in the first sequence are different and there
+     are no gaps between them.  */
+  load_index = sbitmap_alloc (group_size);
+  bitmap_clear (load_index);
+  FOR_EACH_VEC_ELT (node->load_permutation, i, lidx)
+    {
+      if (bitmap_bit_p (load_index, lidx))
+	{
+	  sbitmap_free (load_index);
+	  return false;
+	}
+      bitmap_set_bit (load_index, lidx);
+    }
+  for (i = 0; i < group_size; i++)
+    if (!bitmap_bit_p (load_index, i))
+      {
+	sbitmap_free (load_index);
+	return false;
+      }
+  sbitmap_free (load_index);
+
+  /* This permutation is valid for reduction.  Since the order of the
+     statements in the nodes is not important unless they are memory
+     accesses, we can rearrange the statements in all the nodes
+     according to the order of the loads.  */
+  vect_slp_rearrange_stmts (SLP_INSTANCE_TREE (slp_instn), group_size,
+			    node->load_permutation);
+
+  /* We are done, no actual permutations need to be generated.  */
+  FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (slp_instn), i, node)
+    SLP_TREE_LOAD_PERMUTATION (node).release ();
+  return true;
+}
+
 /* Check if the required load permutations in the SLP instance
    SLP_INSTN are supported.  */
 
@@ -1307,7 +1368,6 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
 {
   unsigned int group_size = SLP_INSTANCE_GROUP_SIZE (slp_instn);
   unsigned int i, j, k, next;
-  sbitmap load_index;
   slp_tree node;
   gimple stmt, load, next_load, first_load;
   struct data_reference *dr;
@@ -1342,59 +1402,14 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
   stmt = SLP_TREE_SCALAR_STMTS (node)[0];
 
   /* Reduction (there are no data-refs in the root).
-     In reduction chain the order of the loads is important.  */
+     In reduction chain the order of the loads is not important.  */
   if (!STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt))
       && !GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)))
     {
-      slp_tree load;
-      unsigned int lidx;
+      if (vect_attempt_slp_rearrange_stmts (slp_instn))
+	return true;
 
-      /* Compare all the permutation sequences to the first one.  We know
-         that at least one load is permuted.  */
-      node = SLP_INSTANCE_LOADS (slp_instn)[0];
-      if (!node->load_permutation.exists ())
-	return false;
-      for (i = 1; SLP_INSTANCE_LOADS (slp_instn).iterate (i, &load); ++i)
-	{
-	  if (!load->load_permutation.exists ())
-	    return false;
-	  FOR_EACH_VEC_ELT (load->load_permutation, j, lidx)
-	    if (lidx != node->load_permutation[j])
-	      return false;
-	}
-
-      /* Check that the loads in the first sequence are different and there
-	 are no gaps between them.  */
-      load_index = sbitmap_alloc (group_size);
-      bitmap_clear (load_index);
-      FOR_EACH_VEC_ELT (node->load_permutation, i, lidx)
-	{
-	  if (bitmap_bit_p (load_index, lidx))
-	    {
-	      sbitmap_free (load_index);
-	      return false;
-	    }
-	  bitmap_set_bit (load_index, lidx);
-	}
-      for (i = 0; i < group_size; i++)
-	if (!bitmap_bit_p (load_index, i))
-	  {
-	    sbitmap_free (load_index);
-	    return false;
-	  }
-      sbitmap_free (load_index);
-
-      /* This permutation is valid for reduction.  Since the order of the
-	 statements in the nodes is not important unless they are memory
-	 accesses, we can rearrange the statements in all the nodes
-	 according to the order of the loads.  */
-      vect_slp_rearrange_stmts (SLP_INSTANCE_TREE (slp_instn), group_size,
-				node->load_permutation);
-
-      /* We are done, no actual permutations need to be generated.  */
-      FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (slp_instn), i, node)
-	SLP_TREE_LOAD_PERMUTATION (node).release ();
-      return true;
+      /* Fallthru to general load permutation handling.  */
     }
 
   /* In basic block vectorization we allow any subchain of an interleaving

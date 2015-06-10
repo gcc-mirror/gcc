@@ -1,3 +1,12 @@
+2015-06-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_attempt_slp_rearrange_stmts): Split
+	out from ...
+	(vect_supported_load_permutation_p): ... here.  Handle
+	supportable permutations in reductions.
+	* tree-vect-stmts.c (vectorizable_load): Handle SLP permutations
+	for vectorizing strided group loads.
+
 2015-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/66470
