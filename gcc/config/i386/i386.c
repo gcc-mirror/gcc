@@ -44720,6 +44720,8 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
 	{ gen_vec_set_lo_v4df, gen_vec_set_hi_v4df }
       };
   int i, j, n;
+  machine_mode mmode = VOIDmode;
+  rtx (*gen_blendm) (rtx, rtx, rtx, rtx);
 
   switch (mode)
     {
@@ -44936,75 +44938,64 @@ half:
     case V8DFmode:
       if (TARGET_AVX512F)
 	{
-	  tmp = gen_reg_rtx (mode);
-	  emit_insn (gen_rtx_SET (tmp, gen_rtx_VEC_DUPLICATE (mode, val)));
-	  emit_insn (gen_avx512f_blendmv8df (target, tmp, target,
-					     force_reg (QImode, GEN_INT (1 << elt))));
-	  return;
+	  mmode = QImode;
+	  gen_blendm = gen_avx512f_blendmv8df;
 	}
-      else
-	break;
+      break;
+
     case V8DImode:
       if (TARGET_AVX512F)
 	{
-	  tmp = gen_reg_rtx (mode);
-	  emit_insn (gen_rtx_SET (tmp, gen_rtx_VEC_DUPLICATE (mode, val)));
-	  emit_insn (gen_avx512f_blendmv8di (target, tmp, target,
-					     force_reg (QImode, GEN_INT (1 << elt))));
-	  return;
+	  mmode = QImode;
+	  gen_blendm = gen_avx512f_blendmv8di;
 	}
-      else
-	break;
+      break;
+
     case V16SFmode:
       if (TARGET_AVX512F)
 	{
-	  tmp = gen_reg_rtx (mode);
-	  emit_insn (gen_rtx_SET (tmp, gen_rtx_VEC_DUPLICATE (mode, val)));
-	  emit_insn (gen_avx512f_blendmv16sf (target, tmp, target,
-					      force_reg (HImode, GEN_INT (1 << elt))));
-	  return;
+	  mmode = HImode;
+	  gen_blendm = gen_avx512f_blendmv16sf;
 	}
-      else
-	break;
+      break;
+
     case V16SImode:
       if (TARGET_AVX512F)
 	{
-	  tmp = gen_reg_rtx (mode);
-	  emit_insn (gen_rtx_SET (tmp, gen_rtx_VEC_DUPLICATE (mode, val)));
-	  emit_insn (gen_avx512f_blendmv16si (target, tmp, target,
-					      force_reg (HImode, GEN_INT (1 << elt))));
-	  return;
+	  mmode = HImode;
+	  gen_blendm = gen_avx512f_blendmv16si;
 	}
-      else
-	break;
+      break;
+
     case V32HImode:
       if (TARGET_AVX512F && TARGET_AVX512BW)
 	{
-	  tmp = gen_reg_rtx (mode);
-	  emit_insn (gen_rtx_SET (tmp, gen_rtx_VEC_DUPLICATE (mode, val)));
-	  emit_insn (gen_avx512bw_blendmv32hi (target, tmp, target,
-					       force_reg (SImode, GEN_INT (1 << elt))));
-	  return;
+	  mmode = SImode;
+	  gen_blendm = gen_avx512bw_blendmv32hi;
 	}
-      else
-	break;
+      break;
+
     case V64QImode:
       if (TARGET_AVX512F && TARGET_AVX512BW)
 	{
-	  tmp = gen_reg_rtx (mode);
-	  emit_insn (gen_rtx_SET (tmp, gen_rtx_VEC_DUPLICATE (mode, val)));
-	  emit_insn (gen_avx512bw_blendmv64qi (target, tmp, target,
-					       force_reg (DImode, GEN_INT (1 << elt))));
-	  return;
+	  mmode = DImode;
+	  gen_blendm = gen_avx512bw_blendmv64qi;
 	}
-      else
-	break;
+      break;
 
     default:
       break;
     }
 
-  if (use_vec_merge)
+  if (mmode != VOIDmode)
+    {
+      tmp = gen_reg_rtx (mode);
+      emit_insn (gen_rtx_SET (tmp, gen_rtx_VEC_DUPLICATE (mode, val)));
+      emit_insn (gen_blendm (target, tmp, target,
+			     force_reg (mmode,
+					gen_int_mode (1 << elt, mmode))));
+    }
+  else if (use_vec_merge)
     {
       tmp = gen_rtx_VEC_DUPLICATE (mode, val);
       tmp = gen_rtx_VEC_MERGE (mode, tmp, target, GEN_INT (1 << elt));
