@@ -845,28 +845,6 @@ promote_decl_mode (const_tree decl, int *punsignedp)
   return pmode;
 }
 
-/* Return the promoted mode for name.  If it is a named SSA_NAME, it
-   is the same as promote_decl_mode.  Otherwise, it is the promoted
-   mode of a temp decl of same type as the SSA_NAME, if we had created
-   one.  */
-
-machine_mode
-promote_ssa_mode (const_tree name, int *punsignedp)
-{
-  gcc_assert (TREE_CODE (name) == SSA_NAME);
-
-  tree type = TREE_TYPE (name);
-  int unsignedp = TYPE_UNSIGNED (type);
-  machine_mode mode = TYPE_MODE (type);
-
-  machine_mode pmode = promote_mode (type, mode, &unsignedp);
-  if (punsignedp)
-    *punsignedp = unsignedp;
-
-  return pmode;
-}
-
-
 
 /* Controls the behaviour of {anti_,}adjust_stack.  */
 static bool suppress_reg_args_size;
