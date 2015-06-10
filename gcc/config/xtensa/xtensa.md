@@ -86,7 +86,7 @@
 ;; Attributes.
 
 (define_attr "type"
-  "unknown,jump,call,load,store,move,arith,multi,nop,farith,fmadd,fconv,fload,fstore,mul16,mul32,div32,mac16,rsr,wsr,entry"
+  "unknown,jump,call,load,store,move,arith,multi,nop,farith,fmadd,fconv,fload,fstore,mul16,mul32,div32,mac16,rsr,wsr,entry,trap"
   (const_string "unknown"))
 
 (define_attr "mode"
@@ -1763,6 +1763,19 @@
   ""
   [(set_attr "length" "0")
    (set_attr "type" "nop")])
+
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 0))]
+  ""
+{
+  if (TARGET_DEBUG)
+    return "break\t1, 15";
+  else
+    return (TARGET_DENSITY ? "ill.n" : "ill");
+}
+  [(set_attr "type"	"trap")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"3")])
 
 ;; Setting up a frame pointer is tricky for Xtensa because GCC doesn't
 ;; know if a frame pointer is required until the reload pass, and
