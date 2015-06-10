@@ -1,3 +1,10 @@
+2015-06-10  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/66200
+	PR target/66428
+	PR c++/66192
+	* g++.dg/abi/aarch64_guard1.C: Adjust test.
+
 2015-06-10  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/arm/pr65710.c: Do not override -mfloat-abi directives
