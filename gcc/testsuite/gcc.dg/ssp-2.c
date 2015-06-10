@@ -14,7 +14,7 @@ __stack_chk_fail (void)
 void
 overflow()
 {
-  register int i = 0;
+  int i = 0;
   char foo[30];
 
   /* Overflow buffer.  */

@@ -3954,11 +3954,7 @@ loop_exits_before_overflow (tree base, tree step,
 	if (!CONVERT_EXPR_P (e) || !operand_equal_p (e, unsigned_base, 0))
 	  continue;
 	e = TREE_OPERAND (e, 0);
-	/* If E has an unsigned type, the operand equality test below
-	   would fail, but the equality test above would have already
-	   verified the equality, so we can proceed with it.  */
-	gcc_assert (TYPE_UNSIGNED (TREE_TYPE (e))
-		    || operand_equal_p (e, base, 0));
+	gcc_assert (operand_equal_p (e, base, 0));
 	if (tree_int_cst_sign_bit (step))
 	  {
 	    code = LT_EXPR;

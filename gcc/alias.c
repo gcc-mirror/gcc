@@ -2542,19 +2542,6 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
   if (! DECL_P (exprx) || ! DECL_P (expry))
     return 0;
 
-  /* If we refer to different gimple registers, or one gimple register
-     and one non-gimple-register, we know they can't overlap.  First,
-     gimple registers don't have their addresses taken.  Now, there
-     could be more than one stack slot for (different versions of) the
-     same gimple register, but we can presumably tell they don't
-     overlap based on offsets from stack base addresses elsewhere.
-     It's important that we don't proceed to DECL_RTL, because gimple
-     registers may not pass DECL_RTL_SET_P, and make_decl_rtl won't be
-     able to do anything about them since no SSA information will have
-     remained to guide it.  */
-  if (is_gimple_reg (exprx) || is_gimple_reg (expry))
-    return exprx != expry;
-
   /* With invalid code we can end up storing into the constant pool.
      Bail out to avoid ICEing when creating RTL for this.
      See gfortran.dg/lto/20091028-2_0.f90.  */
