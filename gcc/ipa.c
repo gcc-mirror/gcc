@@ -90,7 +90,11 @@ process_references (struct ipa_ref_list *list,
 	  if (node->analyzed
 	      && (!DECL_EXTERNAL (node->symbol.decl)
 		  || node->alias
-	          || before_inlining_p))
+	          || (before_inlining_p
+		      && (cgraph_state < CGRAPH_STATE_IPA_SSA
+			  || !lookup_attribute
+			        ("always_inline",
+				 DECL_ATTRIBUTES (node->symbol.decl))))))
 	    pointer_set_insert (reachable, node);
 	  enqueue_node ((symtab_node) node, first, reachable);
 	}
@@ -361,6 +365,12 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		fprintf (file, " %s", cgraph_node_name (node));
 	      node->alias = false;
 	      node->thunk.thunk_p = false;
+	      /* After early inlining we drop always_inline attributes on
+		 bodies of functions that are still referenced (have their
+		 address taken).  */
+	      DECL_ATTRIBUTES (node->symbol.decl)
+		= remove_attribute ("always_inline",
+				    DECL_ATTRIBUTES (node->symbol.decl));
 	      cgraph_node_remove_callees (node);
 	      ipa_remove_all_references (&node->symbol.ref_list);
 	      changed = true;

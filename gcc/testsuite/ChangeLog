@@ -1,3 +1,12 @@
+2015-06-11  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2014-04-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/59626
+	* gcc.dg/lto/pr59626_0.c: New testcase.
+	* gcc.dg/lto/pr59626_1.c: New testcase.
+
 2015-06-10  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

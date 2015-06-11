@@ -1,3 +1,23 @@
+2015-06-11  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline, guarded with in_lto_p
+	2015-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR debug/65549
+	* dwarf2out.c (lookup_context_die): New function.
+	(resolve_addr): Avoid forcing a full DIE for the
+	target of a DW_TAG_GNU_call_site during late compilation.
+	Instead create a stub DIE without a type if we have a
+	context DIE present.
+
+	Backport from mainline
+	2014-04-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/59626
+	* ipa.c (process_references, symtab_remove_unreachable_nodes):
+	Drop bodies of always inline after early inlining.
+	(symtab_remove_unreachable_nodes): Remove always_inline attribute.
+
 2015-06-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline:
