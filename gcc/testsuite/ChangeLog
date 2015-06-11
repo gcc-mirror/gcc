@@ -1,3 +1,8 @@
+2015-06-11  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/52144
+	* gcc.target/arm/pragma_attribute.c: New test.
+
 2015-06-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/abi/mangle-regparm.C (dg-optiond): Add -save-temps.
@@ -13,7 +18,7 @@
 	* gcc.dg/tls/pr66470.c: New test.
 	* gcc.target/i386/pr66470.c: New test.
 
-2015-06-09  Christian Bruel  <christian.bruel@st.com>
+2015-06-10  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/52144
 	* gcc.target/arm/attr_arm.c: New test
