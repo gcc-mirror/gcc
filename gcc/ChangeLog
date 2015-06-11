@@ -1,3 +1,8 @@
+2015-06-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (arm_option_params_internal): When optimising
+	for speed set max_insns_skipped when arm_restrict_it.
+
 2015-06-11  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/52144

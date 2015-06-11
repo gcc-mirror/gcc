@@ -2788,7 +2788,10 @@ arm_option_params_internal (struct gcc_options *opts)
         max_insns_skipped = opts->x_arm_restrict_it ? 1 : 4;
     }
   else
-    max_insns_skipped = current_tune->max_insns_skipped;
+    /* When -mrestrict-it is in use tone down the if-conversion.  */
+    max_insns_skipped
+      = (TARGET_THUMB2_P (opts->x_target_flags) && opts->x_arm_restrict_it)
+         ? 1 : current_tune->max_insns_skipped;
 }
 
 /* Options after initial target override.  */
