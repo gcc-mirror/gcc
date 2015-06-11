@@ -678,7 +678,10 @@ static tree
 get_global_context (void)
 {
   if (!global_context)
-    global_context = build_translation_unit_decl (NULL_TREE);
+    {
+      global_context = build_translation_unit_decl (NULL_TREE);
+      debug_hooks->register_main_translation_unit (global_context);
+    }
   return global_context;
 }
 

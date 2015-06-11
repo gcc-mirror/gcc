@@ -2466,6 +2466,7 @@ static void dwarf2out_abstract_function (tree);
 static void dwarf2out_var_location (rtx_insn *);
 static void dwarf2out_begin_function (tree);
 static void dwarf2out_end_function (unsigned int);
+static void dwarf2out_register_main_translation_unit (tree unit);
 static void dwarf2out_set_name (tree, tree);
 
 /* The debug hooks structure.  */
@@ -2494,6 +2495,7 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
   dwarf2out_end_epilogue,
   dwarf2out_begin_function,
   dwarf2out_end_function,	/* end_function */
+  dwarf2out_register_main_translation_unit,
   dwarf2out_function_decl,	/* function_decl */
   dwarf2out_global_decl,
   dwarf2out_type_decl,		/* type_decl */
@@ -22038,6 +22040,26 @@ dwarf2out_end_function (unsigned int)
   maybe_at_text_label_p = false;
 }
 
+/* Temporary holder for dwarf2out_register_main_translation_unit.  Used to let
+   front-ends register a translation unit even before dwarf2out_init is
+   called.  */
+static tree main_translation_unit = NULL_TREE;
+
+/* Hook called by front-ends after they built their main translation unit.
+   Associate comp_unit_die to UNIT.  */
+
+static void
+dwarf2out_register_main_translation_unit (tree unit)
+{
+  gcc_assert (TREE_CODE (unit) == TRANSLATION_UNIT_DECL
+	      && main_translation_unit == NULL_TREE);
+  main_translation_unit = unit;
+  /* If dwarf2out_init has not been called yet, it will perform the association
+     itself looking at main_translation_unit.  */
+  if (decl_die_table != NULL)
+    equate_decl_number_to_die (unit, comp_unit_die ());
+}
+
 /* Add OPCODE+VAL as an entry at the end of the opcode array in TABLE.  */
 
 static void
@@ -22775,6 +22797,11 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   /* Make sure the line number table for .text always exists.  */
   text_section_line_info = new_line_info_table ();
   text_section_line_info->end_label = text_end_label;
+
+  /* If front-ends already registered a main translation unit but we were not
+     ready to perform the association, do this now.  */
+  if (main_translation_unit != NULL_TREE)
+    equate_decl_number_to_die (main_translation_unit, comp_unit_die ());
 }
 
 /* Called before compile () starts outputtting functions, variables

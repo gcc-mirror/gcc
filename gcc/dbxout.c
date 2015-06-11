@@ -390,6 +390,7 @@ const struct gcc_debug_hooks dbx_debug_hooks =
   debug_nothing_tree,		         /* begin_function */
 #endif
   debug_nothing_int,		         /* end_function */
+  debug_nothing_tree,			 /* register_main_translation_unit */
   dbxout_function_decl,
   dbxout_global_decl,		         /* global_decl */
   dbxout_type_decl,			 /* type_decl */

@@ -1207,6 +1207,7 @@ pop_scope (void)
     {
       tree file_decl = build_translation_unit_decl (NULL_TREE);
       context = file_decl;
+      debug_hooks->register_main_translation_unit (file_decl);
     }
   else
     context = block;

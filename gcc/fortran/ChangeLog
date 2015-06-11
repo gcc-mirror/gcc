@@ -1,3 +1,8 @@
+2015-06-11  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* f95-lang.c (gfc_create_decls): Register the main translation unit
+	through the new debug hook.
+
 2015-06-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/66245
