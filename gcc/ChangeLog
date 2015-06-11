@@ -1,3 +1,20 @@
+2015-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/66252
+	* config/sparc/sparc.c (hard_regno_mode_classes): Add ??? comment.
+	* config/sparc/sparc.md (zero_extendsidi2_insn_sp32): Use single order.
+	(*addx_extend_sp32): Fix pasto.
+	(*subx_extend): Rename into...
+	(*subx_extend_sp32): ...this.
+	(*adddi3_extend_sp32): Add earlyclobber.
+	(*subdi3_insn_sp32): Likewise.
+	(*subdi3_extend_sp32): Likewise.
+	(*and_not_di_sp32): Likewise.
+	(*or_not_di_sp32): Likewise.
+	(*xor_not_di_sp32): Likewise.
+	(*negdi2_sp32): Likewise.
+	(*one_cmpldi2_sp32): Likewise.
+
 2015-06-11  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* debug.h (struct gcc_debug_hooks): Add a
