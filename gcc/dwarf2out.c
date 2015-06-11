@@ -5692,20 +5692,55 @@ debug_dwarf (void)
 static void
 check_die (dw_die_ref die)
 {
-  /* A debugging information entry that is a member of an abstract
-     instance tree [that has DW_AT_inline] should not contain any
-     attributes which describe aspects of the subroutine which vary
-     between distinct inlined expansions or distinct out-of-line
-     expansions.  */
   unsigned ix;
   dw_attr_ref a;
   bool inline_found = false;
+  int n_location = 0, n_low_pc = 0, n_high_pc = 0, n_artificial = 0;
+  int n_decl_line = 0, n_decl_file = 0;
   FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
-    if (a->dw_attr == DW_AT_inline && a->dw_attr_val.v.val_unsigned)
-      inline_found = true;
+    {
+      switch (a->dw_attr)
+	{
+	case DW_AT_inline:
+	  if (a->dw_attr_val.v.val_unsigned)
+	    inline_found = true;
+	  break;
+	case DW_AT_location:
+	  ++n_location;
+	  break;
+	case DW_AT_low_pc:
+	  ++n_low_pc;
+	  break;
+	case DW_AT_high_pc:
+	  ++n_high_pc;
+	  break;
+	case DW_AT_artificial:
+	  ++n_artificial;
+	  break;
+	case DW_AT_decl_line:
+	  ++n_decl_line;
+	  break;
+	case DW_AT_decl_file:
+	  ++n_decl_file;
+	  break;
+	default:
+	  break;
+	}
+    }
+  if (n_location > 1 || n_low_pc > 1 || n_high_pc > 1 || n_artificial > 1
+      || n_decl_line > 1 || n_decl_file > 1)
+    {
+      fprintf (stderr, "Duplicate attributes in DIE:\n");
+      debug_dwarf_die (die);
+      gcc_unreachable ();
+    }
   if (inline_found)
     {
-      /* Catch the most common mistakes.  */
+      /* A debugging information entry that is a member of an abstract
+	 instance tree [that has DW_AT_inline] should not contain any
+	 attributes which describe aspects of the subroutine which vary
+	 between distinct inlined expansions or distinct out-of-line
+	 expansions.  */
       FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
 	gcc_assert (a->dw_attr != DW_AT_low_pc
 		    && a->dw_attr != DW_AT_high_pc
@@ -16097,6 +16132,9 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p,
   if (TREE_CODE (decl) == ERROR_MARK)
     return false;
 
+  if (get_AT (die, attr))
+    return true;
+
   gcc_assert (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL
 	      || TREE_CODE (decl) == RESULT_DECL);
 
@@ -18057,10 +18095,9 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
 				decl_quals (node_or_origin),
 				context_die);
 	}
-    add_location:
       if (origin == NULL && DECL_ARTIFICIAL (node))
 	add_AT_flag (parm_die, DW_AT_artificial, 1);
-
+    add_location:
       if (node && node != origin)
         equate_decl_number_to_die (node, parm_die);
       if (! DECL_ABSTRACT_P (node_or_origin))
@@ -20356,15 +20393,15 @@ static void
 gen_struct_or_union_type_die (tree type, dw_die_ref context_die,
 				enum debug_info_usage usage)
 {
-  /* Fill in the bound of variable-length fields in late dwarf if
-     still incomplete.  */
-  if (TREE_ASM_WRITTEN (type)
-      && variably_modified_type_p (type, NULL)
-      && !early_dwarf)
+  if (TREE_ASM_WRITTEN (type))
     {
-      tree member;
-      for (member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
-	fill_variable_array_bounds (TREE_TYPE (member));
+      /* Fill in the bound of variable-length fields in late dwarf if
+	 still incomplete.  */
+      if (!early_dwarf && variably_modified_type_p (type, NULL))
+	for (tree member = TYPE_FIELDS (type);
+	     member;
+	     member = DECL_CHAIN (member))
+	  fill_variable_array_bounds (TREE_TYPE (member));
       return;
     }
 
@@ -20844,7 +20881,15 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
 static void
 gen_type_die (tree type, dw_die_ref context_die)
 {
-  gen_type_die_with_usage (type, context_die, DINFO_USAGE_DIR_USE);
+  if (type != error_mark_node)
+    {
+      gen_type_die_with_usage (type, context_die, DINFO_USAGE_DIR_USE);
+#ifdef ENABLE_CHECKING
+      dw_die_ref die = lookup_type_die (type);
+      if (die)
+	check_die (die);
+#endif
+    }
 }
 
 /* Generate a DW_TAG_lexical_block DIE followed by DIEs to represent all of the
@@ -21876,9 +21921,11 @@ dwarf2out_decl (tree decl)
 
   gen_decl_die (decl, NULL, context_die);
 
+#ifdef ENABLE_CHECKING
   dw_die_ref die = lookup_decl_die (decl);
   if (die)
     check_die (die);
+#endif
 }
 
 /* Write the debugging output for DECL.  */
