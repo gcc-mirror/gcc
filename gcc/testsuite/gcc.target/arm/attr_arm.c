@@ -1,4 +1,4 @@
-/* Check that attribute target arm is recogniwed.  */
+/* Check that attribute target arm is recognized.  */
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_arm_ok } */
 /* { dg-options "-O2" } */

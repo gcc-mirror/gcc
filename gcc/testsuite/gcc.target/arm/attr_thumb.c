@@ -1,4 +1,4 @@
-/* Check that attribute target thumb is recogniwed. */
+/* Check that attribute target thumb is recognized. */
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_thumb2_ok } */
 /* { dg-options "-O2" } */
