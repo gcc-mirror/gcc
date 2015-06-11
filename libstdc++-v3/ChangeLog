@@ -1,3 +1,10 @@
+2015-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple (__is_tuple_like_impl): Disambiguate array in
+	debug and profile modes.
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc: Adjust tests
+	for swap in C++11 and later.
+
 2015-06-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/66030
