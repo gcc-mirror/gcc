@@ -5427,6 +5427,7 @@ pa_output_global_address (FILE *file, rtx x, int round_constant)
 
       switch (GET_CODE (XEXP (XEXP (x, 0), 0)))
 	{
+	case LABEL_REF:
 	case SYMBOL_REF:
 	  base = XEXP (XEXP (x, 0), 0);
 	  output_addr_const (file, base);
@@ -5440,6 +5441,7 @@ pa_output_global_address (FILE *file, rtx x, int round_constant)
 
       switch (GET_CODE (XEXP (XEXP (x, 0), 1)))
 	{
+	case LABEL_REF:
 	case SYMBOL_REF:
 	  base = XEXP (XEXP (x, 0), 1);
 	  output_addr_const (file, base);
