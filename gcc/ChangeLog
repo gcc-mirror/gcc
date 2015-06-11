@@ -1,3 +1,8 @@
+2015-06-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_output_global_address): Handle LABEL_REF plus
+	CONST_INT for goto.
+
 2015-06-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/66252
