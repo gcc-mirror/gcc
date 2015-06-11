@@ -136,14 +136,18 @@ namespace std
     copy_backward (_BIter1, _BIter1, _BIter2);
 
   // 25.2.2, swap:
+#if __cplusplus < 201103L
   template<typename _Tp> 
     void 
     swap(_Tp&, _Tp& b);
 
-#if __cplusplus >= 201103L
   template<typename _Tp, size_t _Nm>
     void
     swap(_Tp (&)[_Nm], _Tp (&)[_Nm]);
+#else
+  // C++11 swap() has complicated SFINAE constraints, test signatures like so:
+  void (*swap_scalars)(int&, int&) = &swap;
+  void (*swap_arrays)(int(&)[5], int(&)[5]) = &swap;
 #endif
 
   template<typename _FIter1, typename _FIter2>
