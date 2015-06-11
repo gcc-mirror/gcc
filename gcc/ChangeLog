@@ -31,9 +31,6 @@
 	dwarf2out_register_main_translation_unit to this new hook.
 	(dwarf2out_init): Associate any main translation unit to
 	comp_unit_die ().
-	* c/c-decl.c (pop_scope): Register the main translation unit
-	through the new debug hook.
-        * cp/decl.c (cxx_init_decl_processing): Likewise.
 
 2015-06-10  Uros Bizjak  <ubizjak@gmail.com>
 
