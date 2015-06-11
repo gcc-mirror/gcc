@@ -1,3 +1,8 @@
+2015-06-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/66079
+	* gfortran.dg/allocatable_scalar_13.f90: New test
+
 2015-06-11  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/fold-xor-3.c: New test.
@@ -666,7 +671,7 @@
 2015-05-27  Honggyu Kim  <hong.gyu.kim@lge.com>
 
 	PR target/65358
-	* gcc.dg/pr65358.c: New test. 
+	* gcc.dg/pr65358.c: New test.
 
 2015-05-27  Andre Vehreschild  <vehre@gmx.de>
 
