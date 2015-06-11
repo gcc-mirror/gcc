@@ -1,3 +1,9 @@
+2015-06-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66450
+	* constexpr.c (cxx_eval_store_expression): Avoid messing up outer
+	ctx->ctor.
+
 2015-06-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66289
