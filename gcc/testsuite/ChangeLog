@@ -1,3 +1,7 @@
+2015-06-11  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/fold-xor-3.c: New test.
+
 2015-06-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/short-it-ifcvt-1.c: New test.
