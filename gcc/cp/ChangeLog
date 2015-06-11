@@ -1,3 +1,9 @@
+2015-06-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/66445
+	* constexpr.c (potential_constant_expression_1): Handle a
+	DECL_EXPR of TYPE_DECL.
+
 2015-06-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66387

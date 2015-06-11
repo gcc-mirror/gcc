@@ -4518,6 +4518,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	}
       return false;
 
+    case TYPE_DECL:
+    case TAG_DEFN:
+      /* We can see these in statement-expressions.  */
+      return true;
+
     default:
       if (objc_is_property_ref (t))
 	return false;
