@@ -25,7 +25,11 @@
 #include "alias.h"
 #include "symtab.h"
 #include "tree.h"
+#include "tm_p.h"
 #include "c-family/c-common.h"
+#include "target.h"
+#include "target-def.h"
+#include "c-family/c-pragma.h"
 
 /* Output C specific EABI object attributes.  These can not be done in
    arm.c because they require information from the C frontend.  */
@@ -62,10 +66,8 @@ def_or_undef_macro(struct cpp_reader* pfile, const char *name, bool def_p)
 } 
 
 void
-arm_cpu_cpp_builtins (struct cpp_reader * pfile)
+arm_cpu_builtins (struct cpp_reader* pfile, int flags)
 {
-  int flags = target_flags;
-
   def_or_undef_macro (pfile, "__ARM_FEATURE_DSP",
 		      TARGET_DSP_MULTIPLY_P (flags));
   def_or_undef_macro (pfile, "__ARM_FEATURE_QBIT",
@@ -157,8 +159,6 @@ arm_cpu_cpp_builtins (struct cpp_reader * pfile)
   if (arm_cpp_interwork)
     builtin_define ("__THUMB_INTERWORK__");
 
-  builtin_assert ("cpu=arm");
-  builtin_assert ("machine=arm");
 
   builtin_define (arm_arch_name);
   if (arm_arch_xscale)
@@ -179,10 +179,90 @@ arm_cpu_cpp_builtins (struct cpp_reader * pfile)
       builtin_define ("__ARM_EABI__");
     }
 
-
-
   def_or_undef_macro (pfile, "__ARM_ARCH_EXT_IDIV__", TARGET_IDIV_P (flags));
   def_or_undef_macro (pfile, "__ARM_FEATURE_IDIV", TARGET_IDIV_P (flags));
 
   def_or_undef_macro (pfile, "__ARM_ASM_SYNTAX_UNIFIED__", inline_asm_unified);
+}
+
+void
+arm_cpu_cpp_builtins (struct cpp_reader * pfile)
+{
+  builtin_assert ("cpu=arm");
+  builtin_assert ("machine=arm");
+
+  arm_cpu_builtins (pfile, target_flags);
+}
+
+/* Hook to validate the current #pragma GCC target and set the arch custom
+   mode state.  If ARGS is NULL, then POP_TARGET is used to reset
+   the options.  */
+static bool
+arm_pragma_target_parse (tree args, tree pop_target)
+{
+  tree prev_tree = build_target_option_node (&global_options);
+  tree cur_tree;
+  struct cl_target_option *prev_opt;
+  struct cl_target_option *cur_opt;
+
+  if (! args)
+    {
+      cur_tree = ((pop_target) ? pop_target : target_option_default_node);
+      cl_target_option_restore (&global_options,
+				TREE_TARGET_OPTION (cur_tree));
+    }
+  else
+    {
+      cur_tree = arm_valid_target_attribute_tree (args, &global_options,
+						  &global_options_set);
+      if (cur_tree == NULL_TREE)
+	{
+	  cl_target_option_restore (&global_options,
+				    TREE_TARGET_OPTION (prev_tree));
+	  return false;
+	}
+    }
+
+  target_option_current_node = cur_tree;
+  arm_reset_previous_fndecl ();
+
+  /* Figure out the previous mode.  */
+  prev_opt  = TREE_TARGET_OPTION (prev_tree);
+  cur_opt   = TREE_TARGET_OPTION (cur_tree);
+
+  gcc_assert (prev_opt);
+  gcc_assert (cur_opt);
+
+  if (cur_opt->x_target_flags != prev_opt->x_target_flags)
+    {
+      /* For the definitions, ensure all newly defined macros are considered
+	 as used for -Wunused-macros.  There is no point warning about the
+	 compiler predefined macros.  */
+      cpp_options *cpp_opts = cpp_get_options (parse_in);
+      unsigned char saved_warn_unused_macros = cpp_opts->warn_unused_macros;
+      cpp_opts->warn_unused_macros = 0;
+
+      /* Update macros.  */
+      arm_cpu_builtins (parse_in, cur_opt->x_target_flags);
+
+      cpp_opts->warn_unused_macros = saved_warn_unused_macros;
+    }
+
+  return true;
+}
+
+/* Register target pragmas.  We need to add the hook for parsing #pragma GCC
+   option here rather than in arm.c since it will pull in various preprocessor
+   functions, and those are not present in languages like fortran without a
+   preprocessor.  */
+
+void
+arm_register_target_pragmas (void)
+{
+  /* Update pragma hook to allow parsing #pragma GCC target.  */
+  targetm.target_option.pragma_parse = arm_pragma_target_parse;
+
+#ifdef REGISTER_SUBTARGET_PRAGMAS
+  REGISTER_SUBTARGET_PRAGMAS ();
+#endif
 }

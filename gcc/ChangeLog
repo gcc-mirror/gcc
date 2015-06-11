@@ -1,3 +1,17 @@
+2015-06-11  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/52144
+	* config/arm/arm-c.c (arm_cpu_cpp_builtins): Conditionally define
+	 macros in ...
+	(arm_cpu_builtins): New function.
+	(arm_pragma_target_parse): Call arm_cpu_builtins.
+	* config/arm/arm-protos.h (arm_cpu_builtins): Declare.
+	(arm_register_target_pragmas): Likewise.
+	* config/arm/arm.h (REGISTER_TARGET_PRAGMAS):
+	 Call arm_register_target_pragmas.
+	* config/arm/arm-c.c (arm_register_target_pragmas): New function.
+	(arm_pragma_target_parse): Likewise.
+
 2015-06-10  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (tstsi_t): Add '?' modifier to 'r' alternative
