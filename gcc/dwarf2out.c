@@ -23789,8 +23789,17 @@ prune_unused_types (void)
   if (skeleton_debug_str_hash)
     skeleton_debug_str_hash->empty ();
   prune_unused_types_prune (comp_unit_die ());
-  for (node = limbo_die_list; node; node = node->next)
-    prune_unused_types_prune (node->die);
+  for (limbo_die_node **pnode = &limbo_die_list; *pnode; )
+    {
+      node = *pnode;
+      if (!node->die->die_mark)
+	*pnode = node->next;
+      else
+	{
+	  prune_unused_types_prune (node->die);
+	  pnode = &node->next;
+	}
+    }
   for (ctnode = comdat_type_list; ctnode; ctnode = ctnode->next)
     prune_unused_types_prune (ctnode->root_die);
 
