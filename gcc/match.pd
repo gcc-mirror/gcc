@@ -322,9 +322,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* (x & y) ^ (x | y) -> x ^ y */
 (simplify
- (bit_xor:c (bit_and@2 @0 @1) (bit_ior@3 @0 @1))
-  (if (single_use (@2) && single_use (@3))
-   (bit_xor @0 @1)))
+ (bit_xor:c (bit_and @0 @1) (bit_ior @0 @1))
+ (bit_xor @0 @1))
 
 (simplify
  (abs (negate @0))
