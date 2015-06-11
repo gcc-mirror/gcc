@@ -8,6 +8,11 @@
 	* constexpr.c (cxx_eval_store_expression): Avoid messing up outer
 	ctx->ctor.
 
+2015-06-11  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* decl.c (cxx_init_decl_processing): Register the main
+	translation unit through the new debug hook.
+
 2015-06-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66289
