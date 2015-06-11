@@ -1,3 +1,15 @@
+2015-06-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR bootstrap/66448
+	* dwarf2out.c (check_die): Check for common duplicate attributes.
+	(add_location_or_const_value_attribute): Do not add duplicate
+	attributes.
+	(gen_formal_parameter_die): Do not add DW_AT_artificial the second
+	time around.
+	(gen_struct_or_union_type_die): Bail early if TREE_ASM_WRITTEN.
+	(gen_type_die_with_usage): Call check_die.
+	(dwarf2out_decl): Only call check_die() when ENABLE_CHECKING.
+
 2015-06-11  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (prune_unused_types): Handle unused top-level limbo
