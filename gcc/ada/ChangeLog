@@ -1,3 +1,8 @@
+2015-06-11  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-interface/utils.c (get_global_context): Register the main
+	translation unit through the new debug hook.
+
 2015-06-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/misc.c: Remove duplicate include directives.
