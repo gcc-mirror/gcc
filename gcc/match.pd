@@ -301,7 +301,7 @@ along with GCC; see the file COPYING3.  If not see
 /* x + (x & 1) -> (x + 1) & ~1 */
 (simplify
  (plus:c @0 (bit_and@2 @0 integer_onep@1))
- (if (TREE_CODE (@2) != SSA_NAME || has_single_use (@2))
+ (if (single_use (@2))
   (bit_and (plus @0 @1) (bit_not @1))))
 
 /* x & ~(x & y) -> x & ~y */
@@ -309,7 +309,7 @@ along with GCC; see the file COPYING3.  If not see
 (for bitop (bit_and bit_ior)
  (simplify
   (bitop:c @0 (bit_not (bitop:c@2 @0 @1)))
-   (if (TREE_CODE (@2) != SSA_NAME || has_single_use (@2))
+   (if (single_use (@2))
     (bitop @0 (bit_not @1)))))
 
 /* (x | y) & ~x -> y & ~x */
@@ -449,15 +449,14 @@ along with GCC; see the file COPYING3.  If not see
 /* (x & ~m) | (y & m) -> ((x ^ y) & m) ^ x */
 (simplify
   (bit_ior:c (bit_and:c@3 @0 (bit_not @2)) (bit_and:c@4 @1 @2))
-  (if ((TREE_CODE (@3) != SSA_NAME || has_single_use (@3))
-	&& (TREE_CODE (@4) != SSA_NAME || has_single_use (@4)))
+  (if (single_use (@3) && single_use (@4))
    (bit_xor (bit_and (bit_xor @0 @1) @2) @0)))
 
 
 /* Associate (p +p off1) +p off2 as (p +p (off1 + off2)).  */
 (simplify
   (pointer_plus (pointer_plus@2 @0 @1) @3)
-  (if (TREE_CODE (@2) != SSA_NAME || has_single_use (@2))
+  (if (single_use (@2))
    (pointer_plus @0 (plus @1 @3))))
 
 /* Pattern match
