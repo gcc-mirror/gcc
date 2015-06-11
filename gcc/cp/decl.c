@@ -3831,6 +3831,8 @@ cxx_init_decl_processing (void)
   global_namespace = build_lang_decl (NAMESPACE_DECL, global_scope_name,
 				      void_type_node);
   DECL_CONTEXT (global_namespace) = build_translation_unit_decl (NULL_TREE);
+  debug_hooks->register_main_translation_unit
+    (DECL_CONTEXT (global_namespace));
   TREE_PUBLIC (global_namespace) = 1;
   begin_scope (sk_namespace, global_namespace);
 
