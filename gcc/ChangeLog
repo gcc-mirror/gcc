@@ -1,5 +1,13 @@
 2015-06-12  Jakub Jelinek  <jakub@redhat.com>
 
+	Backported from mainline
+	2014-12-15  Vladimir Makarov  <vmakarov@redhat.com>
+ 
+	PR target/62642
+	* ira.c (rtx_moveable_p): Prevent UNSPEC_VOLATILE moves.
+
+2015-06-12  Jakub Jelinek  <jakub@redhat.com>
+
 	PR middle-end/63608
 	Backported from mainline
 	2014-05-16  Eric Botcazou  <ebotcazou@adacore.com>
