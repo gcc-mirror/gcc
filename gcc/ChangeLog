@@ -1,3 +1,10 @@
+2015-06-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* ifcvt.c (noce_try_store_flag_constants): Use std::swap instead of
+	manually swapping.
+	(noce_try_cmove_arith): Likewise.
+	(noce_get_alt_condition): Likewise.
+
 2015-06-12  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	* common/config/i386/i386-common.c
