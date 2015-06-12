@@ -1,5 +1,16 @@
 2015-06-12  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
+	PR c++/66192
+	PR target/66200
+        * config/cpu/alpha/atomic_word.h: Remove.
+        * config/cpu/ia64/atomic_word.h: Remove.
+        * config/cpu/powerpc/atomic_word.h: Remove.
+        * config/os/aix/atomic_word.h: Remove.
+        * configure.host (atomic_word_dir) [ia64, aix*, powerpc, alpha]:
+        Use generic definition.
+
+2015-06-12  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
 	PR target/66200
 	PR c++/66192
 	* * config/cpu/generic/atomic_word.h (_GLIBCXX_READ_MEM_BARRIER): Define

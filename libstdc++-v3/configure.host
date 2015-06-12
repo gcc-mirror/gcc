@@ -156,20 +156,11 @@ esac
 # Most can just use generic.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${host_cpu}" in
-  alpha*)
-    atomic_word_dir=cpu/alpha
-    ;;
   cris*)
     atomic_word_dir=cpu/cris
     ;;
-  ia64)
-    atomic_word_dir=cpu/ia64
-    ;;
   i[4567]86 | x86_64)
     atomic_flags="-march=native"
-    ;;
-  powerpc* | rs6000)
-    atomic_word_dir=cpu/powerpc
     ;;
   sparc* | ultrasparc)
     atomic_word_dir=cpu/sparc
@@ -226,12 +217,10 @@ case "${host_os}" in
     # explicitly duplicate the directory for 4.[<3].
     os_include_dir="os/aix"
     atomicity_dir="os/aix"
-    atomic_word_dir="os/aix"
     ;;
   aix4.*)
     os_include_dir="os/generic"
     atomicity_dir="os/aix"
-    atomic_word_dir="os/aix"
     ;;
   aix*)
     os_include_dir="os/generic"
