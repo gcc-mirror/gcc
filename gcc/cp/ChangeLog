@@ -1,3 +1,9 @@
+2015-06-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/65719
+	* pt.c (tsubst_decl) [VAR_DECL]: Mark namespace-scope
+	variables as DECL_NOT_REALLY_EXTERN.
+
 2015-06-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/66445
