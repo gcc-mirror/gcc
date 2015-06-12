@@ -1124,7 +1124,7 @@ do_length(state_type&, const extern_type* __from,
 
 int
 __codecvt_utf16_base<char32_t>::do_max_length() const throw()
-{ return 3; }
+{ return 4; }
 
 #ifdef _GLIBCXX_USE_WCHAR_T
 // Define members of codecvt_utf16<wchar_t> base class implementation.
