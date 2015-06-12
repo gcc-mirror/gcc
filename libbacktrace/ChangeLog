@@ -1,3 +1,11 @@
+2015-06-11  Martin Sebor  <msebor@redhat.com>
+
+	PR sanitizer/65479
+	* dwarf.c (struct line): Add new field idx.
+	(line_compare): Use it.
+	(add_line): Set it.
+	(read_line_info): Reset it.
+
 2015-05-29  Tristan Gingold  <gingold@adacore.com>
 
 	* pecoff.c: New file.
