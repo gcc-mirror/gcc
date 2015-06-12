@@ -1,8 +1,18 @@
+2015-06-12  Michael Matz  <matz@suse.de>
+
+	Backported from mainline
+	2014-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/63623
+	* var-tracking.c (stack_adjust_offset_pre_post_cb): New function.
+	(stack_adjust_offset_pre_post): Use it through for_each_inc_dec,
+	instead of only handling autoinc in dest if it is a MEM.
+
 2015-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
 	2014-12-15  Vladimir Makarov  <vmakarov@redhat.com>
- 
+
 	PR target/62642
 	* ira.c (rtx_moveable_p): Prevent UNSPEC_VOLATILE moves.
 
