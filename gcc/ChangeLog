@@ -1,5 +1,10 @@
 2015-06-11  David Edelsohn  <dje.gcc@gmail.com>
 
+	* dbxout.c (xcoff_debug_hooks): Provide a function for
+	register_main_translation_unit hook.
+
+2015-06-11  David Edelsohn  <dje.gcc@gmail.com>
+
 	* config/rs6000/rs6000.c (rs6000_pre_atomic_barrier): Remove SYNC
 	variants cases from switch.
 	(rs6000_post_atomic_barrier): Same.
