@@ -1,3 +1,8 @@
+2015-06-12  DJ Delorie  <dj@redhat.com>
+
+	* lto-lang.c (lto_type_for_size): Include intN types.
+	(lto_type_for_mode): Likewise.
+
 2015-06-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (hash_canonical_type): Drop hashing of TYPE_STRING_FLAG.
