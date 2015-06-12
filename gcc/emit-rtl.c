@@ -6315,20 +6315,17 @@ insn_location (const rtx_insn *insn)
 bool
 need_atomic_barrier_p (enum memmodel model, bool pre)
 {
-  switch (model & MEMMODEL_MASK)
+  switch (model & MEMMODEL_BASE_MASK)
     {
     case MEMMODEL_RELAXED:
     case MEMMODEL_CONSUME:
       return false;
     case MEMMODEL_RELEASE:
-    case MEMMODEL_SYNC_RELEASE:
       return pre;
     case MEMMODEL_ACQUIRE:
-    case MEMMODEL_SYNC_ACQUIRE:
       return !pre;
     case MEMMODEL_ACQ_REL:
     case MEMMODEL_SEQ_CST:
-    case MEMMODEL_SYNC_SEQ_CST:
       return true;
     default:
       gcc_unreachable ();
