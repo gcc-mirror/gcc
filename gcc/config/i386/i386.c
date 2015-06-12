@@ -2361,6 +2361,7 @@ static rtx (*ix86_gen_sub3) (rtx, rtx, rtx);
 static rtx (*ix86_gen_sub3_carry) (rtx, rtx, rtx, rtx, rtx);
 static rtx (*ix86_gen_one_cmpl2) (rtx, rtx);
 static rtx (*ix86_gen_monitor) (rtx, rtx, rtx);
+static rtx (*ix86_gen_monitorx) (rtx, rtx, rtx);
 static rtx (*ix86_gen_andsp) (rtx, rtx, rtx);
 static rtx (*ix86_gen_allocate_stack_worker) (rtx, rtx);
 static rtx (*ix86_gen_adjust_stack_and_probe) (rtx, rtx, rtx);
@@ -2664,6 +2665,7 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mmpx",          OPTION_MASK_ISA_MPX },
     { "-mclwb",		OPTION_MASK_ISA_CLWB },
     { "-mpcommit",	OPTION_MASK_ISA_PCOMMIT },
+    { "-mmwaitx",	OPTION_MASK_ISA_MWAITX  },
   };
 
   /* Flag options.  */
@@ -3206,6 +3208,7 @@ ix86_option_override_internal (bool main_args_p,
 #define PTA_AVX512VBMI		(HOST_WIDE_INT_1 << 54)
 #define PTA_CLWB		(HOST_WIDE_INT_1 << 55)
 #define PTA_PCOMMIT		(HOST_WIDE_INT_1 << 56)
+#define PTA_MWAITX		(HOST_WIDE_INT_1 << 57)
 
 #define PTA_CORE2 \
   (PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_SSSE3 \
@@ -3359,7 +3362,7 @@ ix86_option_override_internal (bool main_args_p,
 	| PTA_FMA4 | PTA_XOP | PTA_LWP | PTA_BMI | PTA_BMI2 
 	| PTA_TBM | PTA_F16C | PTA_FMA | PTA_PRFCHW | PTA_FXSR 
 	| PTA_XSAVE | PTA_XSAVEOPT | PTA_FSGSBASE | PTA_RDRND
-	| PTA_MOVBE},
+	| PTA_MOVBE | PTA_MWAITX},
       {"btver1", PROCESSOR_BTVER1, CPU_GENERIC,
 	PTA_64BIT | PTA_MMX |  PTA_SSE  | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4A |PTA_ABM | PTA_CX16 | PTA_PRFCHW
@@ -3803,6 +3806,9 @@ ix86_option_override_internal (bool main_args_p,
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512IFMA;
 	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
 	  x86_prefetch_sse = true;
+	if (processor_alias_table[i].flags & PTA_MWAITX
+	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_MWAITX))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MWAITX;
 
 	break;
       }
@@ -4221,6 +4227,7 @@ ix86_option_override_internal (bool main_args_p,
       ix86_gen_adjust_stack_and_probe = gen_adjust_stack_and_probedi;
       ix86_gen_probe_stack_range = gen_probe_stack_rangedi;
       ix86_gen_monitor = gen_sse3_monitor_di;
+      ix86_gen_monitorx = gen_monitorx_di;
     }
   else
     {
@@ -4233,6 +4240,7 @@ ix86_option_override_internal (bool main_args_p,
       ix86_gen_adjust_stack_and_probe = gen_adjust_stack_and_probesi;
       ix86_gen_probe_stack_range = gen_probe_stack_rangesi;
       ix86_gen_monitor = gen_sse3_monitor_si;
+      ix86_gen_monitorx = gen_monitorx_si;
     }
 
 #ifdef USE_IX86_CLD
@@ -4757,6 +4765,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("avx512ifma",	OPT_mavx512ifma),
     IX86_ATTR_ISA ("clwb",	OPT_mclwb),
     IX86_ATTR_ISA ("pcommit",	OPT_mpcommit),
+    IX86_ATTR_ISA ("mwaitx",	OPT_mmwaitx),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -30570,6 +30579,10 @@ enum ix86_builtins
   IX86_BUILTIN_CVTPS2PH,
   IX86_BUILTIN_CVTPS2PH256,
 
+  /* MONITORX and MWAITX instrucions.   */
+  IX86_BUILTIN_MONITORX,
+  IX86_BUILTIN_MWAITX,
+
   /* CFString built-in for darwin */
   IX86_BUILTIN_CFSTRING,
 
@@ -34187,6 +34200,12 @@ ix86_init_mmx_sse_builtins (void)
   /* CLWB.  */
   def_builtin (OPTION_MASK_ISA_CLWB, "__builtin_ia32_clwb",
 	       VOID_FTYPE_PCVOID, IX86_BUILTIN_CLWB);
+
+  /* MONITORX and MWAITX.  */
+  def_builtin (OPTION_MASK_ISA_MWAITX, "__builtin_ia32_monitorx",
+	       VOID_FTYPE_PCVOID_UNSIGNED_UNSIGNED, IX86_BUILTIN_MONITORX);
+  def_builtin (OPTION_MASK_ISA_MWAITX, "__builtin_ia32_mwaitx",
+	       VOID_FTYPE_UNSIGNED_UNSIGNED_UNSIGNED, IX86_BUILTIN_MWAITX);
 
   /* Add FMA4 multi-arg argument instructions */
   for (i = 0, d = bdesc_multi_arg; i < ARRAY_SIZE (bdesc_multi_arg); i++, d++)
@@ -38956,6 +38975,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	return 0;
 
     case IX86_BUILTIN_MONITOR:
+    case IX86_BUILTIN_MONITORX:
       arg0 = CALL_EXPR_ARG (exp, 0);
       arg1 = CALL_EXPR_ARG (exp, 1);
       arg2 = CALL_EXPR_ARG (exp, 2);
@@ -38968,7 +38988,10 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	op1 = copy_to_mode_reg (SImode, op1);
       if (!REG_P (op2))
 	op2 = copy_to_mode_reg (SImode, op2);
-      emit_insn (ix86_gen_monitor (op0, op1, op2));
+
+      emit_insn (fcode == IX86_BUILTIN_MONITOR 
+		 ? ix86_gen_monitor (op0, op1, op2)
+		 : ix86_gen_monitorx (op0, op1, op2));
       return 0;
 
     case IX86_BUILTIN_MWAIT:
@@ -38981,6 +39004,22 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       if (!REG_P (op1))
 	op1 = copy_to_mode_reg (SImode, op1);
       emit_insn (gen_sse3_mwait (op0, op1));
+      return 0;
+
+    case IX86_BUILTIN_MWAITX:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      arg2 = CALL_EXPR_ARG (exp, 2);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      op2 = expand_normal (arg2);
+      if (!REG_P (op0))
+	op0 = copy_to_mode_reg (SImode, op0);
+      if (!REG_P (op1))
+	op1 = copy_to_mode_reg (SImode, op1);
+      if (!REG_P (op2))
+	op2 = copy_to_mode_reg (SImode, op2);
+      emit_insn (gen_mwaitx (op0, op1, op2));
       return 0;
 
     case IX86_BUILTIN_VEC_INIT_V2SI:
