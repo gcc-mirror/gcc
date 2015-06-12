@@ -592,6 +592,39 @@ static void vt_add_function_parameters (void);
 static bool vt_initialize (void);
 static void vt_finalize (void);
 
+/* Callback for stack_adjust_offset_pre_post, called via for_each_inc_dec.  */
+
+static int
+stack_adjust_offset_pre_post_cb (rtx, rtx op, rtx dest, rtx src, rtx srcoff,
+				 void *arg)
+{
+  if (dest != stack_pointer_rtx)
+    return 0;
+
+  switch (GET_CODE (op))
+    {
+    case PRE_INC:
+    case PRE_DEC:
+      ((HOST_WIDE_INT *)arg)[0] -= INTVAL (srcoff);
+      return 0;
+    case POST_INC:
+    case POST_DEC:
+      ((HOST_WIDE_INT *)arg)[1] -= INTVAL (srcoff);
+      return 0;
+    case PRE_MODIFY:
+    case POST_MODIFY:
+      /* We handle only adjustments by constant amount.  */
+      gcc_assert (GET_CODE (src) == PLUS
+		  && CONST_INT_P (XEXP (src, 1))
+		  && XEXP (src, 0) == stack_pointer_rtx);
+      ((HOST_WIDE_INT *)arg)[GET_CODE (op) == POST_MODIFY]
+	-= INTVAL (XEXP (src, 1));
+      return 0;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Given a SET, calculate the amount of stack adjustment it contains
    PRE- and POST-modifying stack pointer.
    This function is similar to stack_adjust_offset.  */
@@ -617,68 +650,12 @@ stack_adjust_offset_pre_post (rtx pattern, HOST_WIDE_INT *pre,
 	*post += INTVAL (XEXP (src, 1));
       else
 	*post -= INTVAL (XEXP (src, 1));
+      return;	
     }
-  else if (MEM_P (dest))
-    {
-      /* (set (mem (pre_dec (reg sp))) (foo)) */
-      src = XEXP (dest, 0);
-      code = GET_CODE (src);
-
-      switch (code)
-	{
-	case PRE_MODIFY:
-	case POST_MODIFY:
-	  if (XEXP (src, 0) == stack_pointer_rtx)
-	    {
-	      rtx val = XEXP (XEXP (src, 1), 1);
-	      /* We handle only adjustments by constant amount.  */
-	      gcc_assert (GET_CODE (XEXP (src, 1)) == PLUS &&
-			  CONST_INT_P (val));
-
-	      if (code == PRE_MODIFY)
-		*pre -= INTVAL (val);
-	      else
-		*post -= INTVAL (val);
-	      break;
-	    }
-	  return;
-
-	case PRE_DEC:
-	  if (XEXP (src, 0) == stack_pointer_rtx)
-	    {
-	      *pre += GET_MODE_SIZE (GET_MODE (dest));
-	      break;
-	    }
-	  return;
-
-	case POST_DEC:
-	  if (XEXP (src, 0) == stack_pointer_rtx)
-	    {
-	      *post += GET_MODE_SIZE (GET_MODE (dest));
-	      break;
-	    }
-	  return;
-
-	case PRE_INC:
-	  if (XEXP (src, 0) == stack_pointer_rtx)
-	    {
-	      *pre -= GET_MODE_SIZE (GET_MODE (dest));
-	      break;
-	    }
-	  return;
-
-	case POST_INC:
-	  if (XEXP (src, 0) == stack_pointer_rtx)
-	    {
-	      *post -= GET_MODE_SIZE (GET_MODE (dest));
-	      break;
-	    }
-	  return;
-
-	default:
-	  return;
-	}
-    }
+  HOST_WIDE_INT res[2] = { 0, 0 };
+  for_each_inc_dec (&pattern, stack_adjust_offset_pre_post_cb, res);
+  *pre += res[0];
+  *post += res[1];
 }
 
 /* Given an INSN, calculate the amount of stack adjustment it contains
