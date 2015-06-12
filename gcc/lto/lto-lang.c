@@ -830,6 +830,8 @@ lto_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 static tree
 lto_type_for_size (unsigned precision, int unsignedp)
 {
+  int i;
+
   if (precision == TYPE_PRECISION (integer_type_node))
     return unsignedp ? unsigned_type_node : integer_type_node;
 
@@ -846,6 +848,12 @@ lto_type_for_size (unsigned precision, int unsignedp)
     return unsignedp
 	   ? long_long_unsigned_type_node
 	   : long_long_integer_type_node;
+
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (int_n_enabled_p[i]
+	&& precision == int_n_data[i].bitsize)
+      return (unsignedp ? int_n_trees[i].unsigned_type
+	      : int_n_trees[i].signed_type);
 
   if (precision <= TYPE_PRECISION (intQI_type_node))
     return unsignedp ? unsigned_intQI_type_node : intQI_type_node;
@@ -876,6 +884,7 @@ static tree
 lto_type_for_mode (machine_mode mode, int unsigned_p)
 {
   tree t;
+  int i;
 
   if (mode == TYPE_MODE (integer_type_node))
     return unsigned_p ? unsigned_type_node : integer_type_node;
@@ -891,6 +900,12 @@ lto_type_for_mode (machine_mode mode, int unsigned_p)
 
   if (mode == TYPE_MODE (long_long_integer_type_node))
     return unsigned_p ? long_long_unsigned_type_node : long_long_integer_type_node;
+
+  for (i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (int_n_enabled_p[i]
+	&& mode == int_n_data[i].m)
+      return (unsigned_p ? int_n_trees[i].unsigned_type
+	      : int_n_trees[i].signed_type);
 
   if (mode == QImode)
     return unsigned_p ? unsigned_intQI_type_node : intQI_type_node;
