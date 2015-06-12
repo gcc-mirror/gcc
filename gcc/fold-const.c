@@ -7941,6 +7941,11 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	return fold_convert_loc (loc, type, op0);
       return NULL_TREE;
 
+    case NON_LVALUE_EXPR:
+      if (!maybe_lvalue_p (op0))
+	return fold_convert_loc (loc, type, op0);
+      return NULL_TREE;
+
     CASE_CONVERT:
     case FLOAT_EXPR:
     case FIX_TRUNC_EXPR:
@@ -8204,7 +8209,7 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	    }
 	}
 
-      tem = fold_convert_const (code, type, op0);
+      tem = fold_convert_const (code, type, arg0);
       return tem ? tem : NULL_TREE;
 
     case ADDR_SPACE_CONVERT_EXPR:

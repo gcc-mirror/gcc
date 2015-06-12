@@ -1,3 +1,8 @@
+2015-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/63608
+	* gcc.c-torture/compile/pr63608.c: New test.
+
 2015-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/66470
