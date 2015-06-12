@@ -11306,8 +11306,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  {
 	    /* T is a static data member or namespace-scope entity.
 	       We have to substitute into namespace-scope variables
-	       (even though such entities are never templates) because
-	       of cases like:
+	       (not just variable templates) because of cases like:
 	       
 	         template <class T> void f() { extern T t; }
 
@@ -11468,6 +11467,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	       initializer is present.  We mimic the non-template
 	       processing here.  */
 	    DECL_EXTERNAL (r) = 1;
+	    if (DECL_NAMESPACE_SCOPE_P (t))
+	      DECL_NOT_REALLY_EXTERN (r) = 1;
 
 	    DECL_TEMPLATE_INFO (r) = build_template_info (tmpl, argvec);
 	    SET_DECL_IMPLICIT_INSTANTIATION (r);
