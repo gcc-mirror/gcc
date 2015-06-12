@@ -1,3 +1,12 @@
+2015-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/63608
+	Backported from mainline
+	2014-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const (fold_unary_loc) <NON_LVALUE_EXPR>: New case.
+	<CASE_CONVERT>: Pass arg0 instead of op0 to fold_convert_const.
+
 2015-06-11  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_output_global_address): Handle LABEL_REF plus
