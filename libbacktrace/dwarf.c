@@ -211,6 +211,10 @@ struct line
   const char *filename;
   /* Line number.  */
   int lineno;
+  /* Index of the object in the original array read from the DWARF
+     section, before it has been sorted.  The index makes it possible
+     to use Quicksort and maintain stability.  */
+  int idx;
 };
 
 /* A growable vector of line number information.  This is used while
@@ -940,9 +944,10 @@ unit_addrs_search (const void *vkey, const void *ventry)
     return 0;
 }
 
-/* Sort the line vector by PC.  We want a stable sort here.  We know
-   that the pointers are into the same array, so it is safe to compare
-   them directly.  */
+/* Sort the line vector by PC.  We want a stable sort here to maintain
+   the order of lines for the same PC values.  Since the sequence is
+   being sorted in place, their addresses cannot be relied on to
+   maintain stability.  That is the purpose of the index member.  */
 
 static int
 line_compare (const void *v1, const void *v2)
@@ -954,9 +959,9 @@ line_compare (const void *v1, const void *v2)
     return -1;
   else if (ln1->pc > ln2->pc)
     return 1;
-  else if (ln1 < ln2)
+  else if (ln1->idx < ln2->idx)
     return -1;
-  else if (ln1 > ln2)
+  else if (ln1->idx > ln2->idx)
     return 1;
   else
     return 0;
@@ -1551,6 +1556,7 @@ add_line (struct backtrace_state *state, struct dwarf_data *ddata,
 
   ln->filename = filename;
   ln->lineno = lineno;
+  ln->idx = vec->count;
 
   ++vec->count;
 
@@ -2011,6 +2017,7 @@ read_line_info (struct backtrace_state *state, struct dwarf_data *ddata,
   ln->pc = (uintptr_t) -1;
   ln->filename = NULL;
   ln->lineno = 0;
+  ln->idx = 0;
 
   if (!backtrace_vector_release (state, &vec.vec, error_callback, data))
     goto fail;
