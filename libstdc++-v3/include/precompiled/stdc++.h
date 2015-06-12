@@ -98,6 +98,7 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <codecvt>
 #include <condition_variable>
 #include <forward_list>
 #include <future>
@@ -114,4 +115,8 @@
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
+#endif
+
+#if __cplusplus >= 201402L
+#include <shared_mutex>
 #endif

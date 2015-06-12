@@ -1,5 +1,7 @@
 2015-06-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/precompiled/stdc++.h: Include <codecvt> and <shared_mutex>.
+
 	PR libstdc++/66464
 	* src/c++11/codecvt.cc (codecvt_utf16_base<char32_t>::do_max_length):
 	Return 4 not 3.
