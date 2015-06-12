@@ -1,3 +1,16 @@
+2015-06-11  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_pre_atomic_barrier): Remove SYNC
+	variants cases from switch.
+	(rs6000_post_atomic_barrier): Same.
+	(rs6000_expand_atomic_compare_and_swap): Use memmodel_base.
+	(rs6000_expand_atomic_exchange): Same.
+	(rs6000_expand_atomic_op): Same.
+	* config/rs6000/sync.md (mem_thread_fence): Use memodel_base. Remove
+	SYNC variants cases from switch.
+	(atomic_load): Same.
+	(atomic_store): Same.
+
 2015-06-11  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_output_global_address): Handle LABEL_REF plus
