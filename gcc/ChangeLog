@@ -1,3 +1,11 @@
+2015-06-11  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	Backport from mainline:
+	2015-06-11  David Edelsohn  <dje.gcc@gmail.com>
+
+		* dbxout.c (xcoff_debug_hooks): Provide a function for
+		register_main_translation_unit hook.
+
 2015-06-11  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_output_global_address): Handle LABEL_REF plus
