@@ -5687,6 +5687,7 @@ debug_dwarf (void)
   print_die (comp_unit_die (), stderr);
 }
 
+#ifdef ENABLE_CHECKING
 /* Sanity checks on DIEs.  */
 
 static void
@@ -5749,6 +5750,7 @@ check_die (dw_die_ref die)
 		    && a->dw_attr != DW_AT_GNU_all_call_sites);
     }
 }
+#endif
 
 /* Start a new compilation unit DIE for an include file.  OLD_UNIT is the CU
    for the enclosing include file, if any.  BINCL_DIE is the DW_TAG_GNU_BINCL

@@ -1,3 +1,7 @@
+2015-06-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* dwarf2out.c (check_die): Protect with ENABLE_CHECKING.
+
 2015-06-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* ifcvt.c (noce_try_store_flag_constants): Use std::swap instead of
