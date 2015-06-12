@@ -8,29 +8,29 @@
 
 	PR c++/66192
 	PR target/66200
-        * config/cpu/alpha/atomic_word.h: Remove.
-        * config/cpu/ia64/atomic_word.h: Remove.
-        * config/cpu/powerpc/atomic_word.h: Remove.
-        * config/os/aix/atomic_word.h: Remove.
-        * configure.host (atomic_word_dir) [ia64, aix*, powerpc, alpha]:
-        Use generic definition.
+	* config/cpu/alpha/atomic_word.h: Remove.
+	* config/cpu/ia64/atomic_word.h: Remove.
+	* config/cpu/powerpc/atomic_word.h: Remove.
+	* config/os/aix/atomic_word.h: Remove.
+	* configure.host (atomic_word_dir) [ia64, aix*, powerpc, alpha]:
+	Use generic definition.
 
 2015-06-12  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/66200
 	PR c++/66192
 	* * config/cpu/generic/atomic_word.h (_GLIBCXX_READ_MEM_BARRIER): Define
-        (_GLIBCXX_WRITE_MEM_BARRIER): Likewise
-        * include/bits/shared_ptr_base.h: Use ACQ_REL barrier.
-        * include/ext/atomicity.h: Likewise.
-        * include/tr1/shared_ptr.h: Likewise.
-        * libsupc++/guard.cc (__test_and_acquire): Rewrite with atomics.
-        Update comment.
-        (__set_and_release): Likewise.
-        * testsuite/20_util/shared_ptr/cons/43820_neg.cc (test01): Adjust for
+	(_GLIBCXX_WRITE_MEM_BARRIER): Likewise
+	* include/bits/shared_ptr_base.h: Use ACQ_REL barrier.
+	* include/ext/atomicity.h: Likewise.
+	* include/tr1/shared_ptr.h: Likewise.
+	* libsupc++/guard.cc (__test_and_acquire): Rewrite with atomics.
+	Update comment.
+	(__set_and_release): Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc (test01): Adjust for
 	line numbers.
-        * testsuite/20_util/shared_ptr/cons/void_neg.cc: Likewise.
-        * testsuite/tr1/2_general_utilities/shared_ptr/cons/43820_neg.cc:
+	* testsuite/20_util/shared_ptr/cons/void_neg.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820_neg.cc:
 	Likewise.
 
 2015-06-12  Jonathan Wakely  <jwakely@redhat.com>
