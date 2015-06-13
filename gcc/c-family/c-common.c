@@ -4973,6 +4973,20 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 	tree totype = TREE_TYPE (expr);
 	tree fromtype = TREE_TYPE (TREE_OPERAND (expr, 0));
 
+	if (POINTER_TYPE_P (totype)
+	    && TREE_CODE (fromtype) == REFERENCE_TYPE)
+	  {
+	    tree inner = expr;
+	    STRIP_NOPS (inner);
+
+	    if (DECL_P (inner))
+	      warning_at (location,
+			  OPT_Waddress,
+			  "the compiler can assume that the address of "
+			  "%qD will always evaluate to %<true%>",
+			  inner);
+	  }
+
 	/* Don't cancel the effect of a CONVERT_EXPR from a REFERENCE_TYPE,
 	   since that affects how `default_conversion' will behave.  */
 	if (TREE_CODE (totype) == REFERENCE_TYPE
