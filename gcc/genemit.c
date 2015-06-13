@@ -378,27 +378,15 @@ gen_insn (rtx insn, int lineno)
 
   /* Output code to construct and return the rtl for the instruction body.  */
 
-  if (XVECLEN (insn, 1) == 1)
-    {
-      printf ("  return ");
-      gen_exp (XVECEXP (insn, 1, 0), DEFINE_INSN, NULL);
-      printf (";\n}\n\n");
-    }
-  else
-    {
-      char *used = XCNEWVEC (char, stats.num_generator_args);
-
-      printf ("  return gen_rtx_PARALLEL (VOIDmode, gen_rtvec (%d",
-	      XVECLEN (insn, 1));
-
-      for (i = 0; i < XVECLEN (insn, 1); i++)
-	{
-	  printf (",\n\t\t");
-	  gen_exp (XVECEXP (insn, 1, i), DEFINE_INSN, used);
-	}
-      printf ("));\n}\n\n");
-      XDELETEVEC (used);
-    }
+  rtx pattern = add_implicit_parallel (XVEC (insn, 1));
+  /* ??? This is the traditional behavior, but seems suspect.  */
+  char *used = (XVECLEN (insn, 1) == 1
+		? NULL
+		: XCNEWVEC (char, stats.num_generator_args));
+  printf ("  return ");
+  gen_exp (pattern, DEFINE_INSN, used);
+  printf (";\n}\n\n");
+  XDELETEVEC (used);
 }
 
 /* Generate the `gen_...' function for a DEFINE_EXPAND.  */

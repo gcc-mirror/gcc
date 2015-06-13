@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 struct obstack;
 extern struct obstack *rtl_obstack;
 
+extern rtx add_implicit_parallel (rtvec);
 extern bool init_rtx_reader_args_cb (int, char **, bool (*)(const char *));
 extern bool init_rtx_reader_args (int, char **);
 extern rtx read_md_rtx (int *, int *);
