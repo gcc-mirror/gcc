@@ -1,5 +1,10 @@
 2015-06-13  Patrick Palka  <ppalka@gcc.gnu.org>
 
+	* call.c: Remove comment documenting the long-deleted
+	function build_method_call.
+
+2015-06-13  Patrick Palka  <ppalka@gcc.gnu.org>
+
 	PR c++/65168
 	* typeck.c (cp_build_binary_op): Warn when comparing an address
 	of a reference against NULL.
