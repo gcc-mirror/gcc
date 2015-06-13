@@ -1652,7 +1652,7 @@ cst_and_fits_in_hwi (const_tree x)
   return TREE_INT_CST_NUNITS (x) == 1;
 }
 
-/* Build a newly constructed TREE_VEC node of length LEN.  */
+/* Build a newly constructed VECTOR_CST node of length LEN.  */
 
 tree
 make_vector_stat (unsigned len MEM_STAT_DECL)
