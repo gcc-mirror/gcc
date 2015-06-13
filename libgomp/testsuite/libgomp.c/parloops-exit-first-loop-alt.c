@@ -1,6 +1,8 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -ftree-parallelize-loops=2" } */
 
+/* Variable bound, vector addition.  */
+
 #include <stdio.h>
 #include <stdlib.h>
 

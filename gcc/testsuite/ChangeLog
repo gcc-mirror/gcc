@@ -1,3 +1,10 @@
+2015-06-13  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/parloops-exit-first-loop-alt-2.c: Add comment.
+	(main): Remove superfluous attributes.
+	* gcc.dg/parloops-exit-first-loop-alt-3.c: Same.
+	* gcc.dg/parloops-exit-first-loop-alt.c: Same.
+
 2015-06-12  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	* gcc.target/i386/monitorx.c: New.

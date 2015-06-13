@@ -2,9 +2,11 @@
 /* { dg-require-effective-target pthread } */
 /* { dg-options "-O2 -ftree-parallelize-loops=2 -fdump-tree-parloops" } */
 
+/* Variable bound, reduction.  */
+
 unsigned int *a;
 
-unsigned int __attribute__((noclone,noinline))
+unsigned int
 f (unsigned int n)
 {
   int i;
