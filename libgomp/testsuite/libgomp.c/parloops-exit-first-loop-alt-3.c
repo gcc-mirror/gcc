@@ -1,6 +1,10 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -ftree-parallelize-loops=2" } */
 
+/* Variable bound, reduction.  */
+
+#define N 4000
+
 unsigned int *a;
 
 unsigned int __attribute__((noclone,noinline))
@@ -19,11 +23,11 @@ int
 main (void)
 {
   unsigned int res;
-  unsigned int array[4000];
+  unsigned int array[N];
   int i;
-  for (i = 0; i < 4000; ++i)
+  for (i = 0; i < N; ++i)
     array[i] = i % 7;
   a = &array[0];
-  res = f (4000);
+  res = f (N);
   return !(res == 11995);
 }

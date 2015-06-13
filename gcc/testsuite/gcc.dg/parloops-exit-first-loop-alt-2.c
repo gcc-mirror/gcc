@@ -2,14 +2,16 @@
 /* { dg-require-effective-target pthread } */
 /* { dg-options "-O2 -ftree-parallelize-loops=2 -fdump-tree-parloops" } */
 
+/* Constant bound, vector addition.  */
+
 #define N 1000
 
 unsigned int a[N];
 unsigned int b[N];
 unsigned int c[N];
 
-void __attribute__((noclone,noinline))
-f (unsigned int n)
+void
+f (void)
 {
   int i;
 

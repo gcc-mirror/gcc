@@ -1,3 +1,11 @@
+2015-06-13  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt-2.c: Add comment.
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt.c: Same.
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt-3.c: Add comment.
+	(N): Define.
+	(main): Use N instead of hardcoded constants.
+
 2015-06-05  Tom de Vries  <tom@codesourcery.com>
 
 	merge from gomp4 branch:
