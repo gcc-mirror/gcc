@@ -17,7 +17,7 @@ msgstr ""
 "Project-Id-Version: gcc 5.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2015-04-13 20:12+0000\n"
-"PO-Revision-Date: 2015-06-07 16:31+0200\n"
+"PO-Revision-Date: 2015-06-14 12:08+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -44673,22 +44673,19 @@ msgid "Expected :: in TYPE definition at %C"
 msgstr ":: förväntades i TYPE-definition vid %C"
 
 #: fortran/decl.c:7714
-#, fuzzy, gcc-internal-format
-#| msgid "Type name '%s' at %C cannot be the same as an intrinsic type"
+#, gcc-internal-format
 msgid "Type name %qs at %C cannot be the same as an intrinsic type"
-msgstr "Typnamnet ”%s” vid %C kan inte vara samma som en inbyggd typ"
+msgstr "Typnamnet %qs vid %C kan inte vara samma som en inbyggd typ"
 
 #: fortran/decl.c:7724
-#, fuzzy, gcc-internal-format
-#| msgid "Derived type name '%s' at %C already has a basic type of %s"
+#, gcc-internal-format
 msgid "Derived type name %qs at %C already has a basic type of %s"
-msgstr "Härlett typnamn ”%s” vid %C har redan en grundtyp %s"
+msgstr "Härlett typnamn %qs vid %C har redan en grundtyp %s"
 
 #: fortran/decl.c:7741
-#, fuzzy, gcc-internal-format
-#| msgid "Derived type definition of '%s' at %C has already been defined"
+#, gcc-internal-format
 msgid "Derived type definition of %qs at %C has already been defined"
-msgstr "Härledd typdefinition ”%s” vid %C har redan definierats"
+msgstr "Härledd typdefinition %qs vid %C har redan definierats"
 
 #: fortran/decl.c:7846
 #, gcc-internal-format, gfc-internal-format
@@ -44771,16 +44768,14 @@ msgid "POINTER attribute is required for procedure pointer component at %C"
 msgstr "POINTER-attribut krävs för procedurpekarkomponenten vid %C"
 
 #: fortran/decl.c:8301
-#, fuzzy, gcc-internal-format
-#| msgid "Interface-name expected after '(' at %C"
+#, gcc-internal-format
 msgid "Interface-name expected after %<(%> at %C"
-msgstr "Gränssnittsnamn förväntades efter ”(” vid %C"
+msgstr "Gränssnittsnamn förväntades efter %<(%> vid %C"
 
 #: fortran/decl.c:8307
-#, fuzzy, gcc-internal-format
-#| msgid "')' expected at %C"
+#, gcc-internal-format
 msgid "%<)%> expected at %C"
-msgstr "”)” förväntades vid %C"
+msgstr "%<)%> förväntades vid %C"
 
 #: fortran/decl.c:8327
 #, gcc-internal-format, gfc-internal-format
@@ -44803,34 +44798,29 @@ msgid "PROCEDURE list at %C"
 msgstr "PROCEDURE-lista vid %C"
 
 #: fortran/decl.c:8371
-#, fuzzy, gcc-internal-format
-#| msgid "'=> target' is invalid for DEFERRED binding at %C"
+#, gcc-internal-format
 msgid "%<=> target%> is invalid for DEFERRED binding at %C"
-msgstr "”=> mål” är ogiltigt för DEFERRED-bindning vid %C"
+msgstr "%<=> mål%> är ogiltigt för DEFERRED-bindning vid %C"
 
 #: fortran/decl.c:8377
-#, fuzzy, gcc-internal-format
-#| msgid "'::' needed in PROCEDURE binding with explicit target at %C"
+#, gcc-internal-format
 msgid "%<::%> needed in PROCEDURE binding with explicit target at %C"
-msgstr "”::” behövs i PROCEDURE-bindning med explicit mål vid %C"
+msgstr "%<::%> behövs i PROCEDURE-bindning med explicit mål vid %C"
 
 #: fortran/decl.c:8387
-#, fuzzy, gcc-internal-format
-#| msgid "Expected binding target after '=>' at %C"
+#, gcc-internal-format
 msgid "Expected binding target after %<=>%> at %C"
-msgstr "Bindningsmål förväntades efter ”=>” vid %C"
+msgstr "Bindningsmål förväntades efter %<=>%> vid %C"
 
 #: fortran/decl.c:8404
-#, fuzzy, gcc-internal-format
-#| msgid "Type '%s' containing DEFERRED binding at %C is not ABSTRACT"
+#, gcc-internal-format
 msgid "Type %qs containing DEFERRED binding at %C is not ABSTRACT"
-msgstr "Typen ”%s” som innehåller en DEFERRED-bindning vid %C är inte ABSTRACT"
+msgstr "Typen %qs som innehåller en DEFERRED-bindning vid %C är inte ABSTRACT"
 
 #: fortran/decl.c:8415
-#, fuzzy, gcc-internal-format
-#| msgid "There is already a procedure with binding name '%s' for the derived type '%s' at %C"
+#, gcc-internal-format
 msgid "There is already a procedure with binding name %qs for the derived type %qs at %C"
-msgstr "Det finns redan en procedur med bindningsnamnet ”%s” för den härledda typen ”%s” vid %C"
+msgstr "Det finns redan en procedur med bindningsnamnet %qs för den härledda typen %qs vid %C"
 
 #: fortran/decl.c:8464
 #, gcc-internal-format, gfc-internal-format
@@ -44838,10 +44828,9 @@ msgid "GENERIC at %C must be inside a derived-type CONTAINS"
 msgstr "GENERIC vid %C måste vara inuti en härledd typs CONTAINS"
 
 #: fortran/decl.c:8484
-#, fuzzy, gcc-internal-format
-#| msgid "Expected '::' at %C"
+#, gcc-internal-format
 msgid "Expected %<::%> at %C"
-msgstr "”::” förväntades vid %C"
+msgstr "%<::%> förväntades vid %C"
 
 #: fortran/decl.c:8496
 #, gcc-internal-format, gfc-internal-format
@@ -44849,22 +44838,19 @@ msgid "Expected generic name or operator descriptor at %C"
 msgstr "Generiskt namn eller operatorbeskrivare förväntades vid %C"
 
 #: fortran/decl.c:8522
-#, fuzzy, gcc-internal-format
-#| msgid "Expected '=>' at %C"
+#, gcc-internal-format
 msgid "Expected %<=>%> at %C"
-msgstr "”=>” förväntades vid %C"
+msgstr "%<=>%> förväntades vid %C"
 
 #: fortran/decl.c:8564
-#, fuzzy, gcc-internal-format
-#| msgid "There's already a non-generic procedure with binding name '%s' for the derived type '%s' at %C"
+#, gcc-internal-format
 msgid "There's already a non-generic procedure with binding name %qs for the derived type %qs at %C"
-msgstr "Det finns redan en icke-generisk procedur med bindningsnamnet ”%s” för den härledda typen ”%s” vid %C"
+msgstr "Det finns redan en icke-generisk procedur med bindningsnamnet %qs för den härledda typen %qs vid %C"
 
 #: fortran/decl.c:8572
-#, fuzzy, gcc-internal-format
-#| msgid "Binding at %C must have the same access as already defined binding '%s'"
+#, gcc-internal-format
 msgid "Binding at %C must have the same access as already defined binding %qs"
-msgstr "Bindning vid %C måste ha samma åtkomst som den redan definierade bindningen ”%s”"
+msgstr "Bindning vid %C måste ha samma åtkomst som den redan definierade bindningen %qs"
 
 #: fortran/decl.c:8621
 #, gcc-internal-format, gfc-internal-format
@@ -44872,10 +44858,9 @@ msgid "Expected specific binding name at %C"
 msgstr "Specifikt bindningsnamn förväntades vid %C"
 
 #: fortran/decl.c:8631
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' already defined as specific binding for the generic '%s' at %C"
+#, gcc-internal-format
 msgid "%qs already defined as specific binding for the generic %qs at %C"
-msgstr "”%s” är redan definierat som en specifik bindning för den generiska ”%s” vid %C"
+msgstr "%qs är redan definierat som en specifik bindning för den generiska %qs vid %C"
 
 #: fortran/decl.c:8649
 #, gcc-internal-format, gfc-internal-format
@@ -44903,22 +44888,19 @@ msgid "Expected module procedure name at %C"
 msgstr "Modulprocedurnamn förväntades vid %C"
 
 #: fortran/decl.c:8734
-#, fuzzy, gcc-internal-format
-#| msgid "Expected \",\" at %C"
+#, gcc-internal-format
 msgid "Expected %<,%> at %C"
-msgstr "”,” förväntades vid %C"
+msgstr "%<,%> förväntades vid %C"
 
 #: fortran/decl.c:8740
-#, fuzzy, gcc-internal-format
-#| msgid "Unknown procedure name \"%s\" at %C"
+#, gcc-internal-format
 msgid "Unknown procedure name %qs at %C"
-msgstr "Okänt procedurnamn ”%s” vid %C"
+msgstr "Okänt procedurnamn %qs vid %C"
 
 #: fortran/decl.c:8753
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %C is already defined as FINAL procedure!"
+#, gcc-internal-format
 msgid "%qs at %C is already defined as FINAL procedure!"
-msgstr "”%s” vid %C är redan definierad som FINAL procedur"
+msgstr "%qs vid %C är redan definierad som FINAL procedur"
 
 #: fortran/decl.c:8823
 #, gcc-internal-format, gfc-internal-format
@@ -44956,10 +44938,9 @@ msgid "show_array_ref(): Unknown array reference"
 msgstr "show_array_ref(): Okänd vektorreferens"
 
 #: fortran/dump-parse-tree.c:290
-#, fuzzy, gcc-internal-format
-#| msgid "gfc_trans_code(): Bad statement code"
+#, gcc-internal-format
 msgid "show_ref(): Bad component code"
-msgstr "gfc_trans_code(): Felaktig satskod"
+msgstr "show_ref(): Felaktig komponentkod"
 
 #: fortran/dump-parse-tree.c:554
 #, gcc-internal-format
@@ -44972,10 +44953,9 @@ msgid "show_expr(): Don't know how to show expr"
 msgstr "show_expr(): Vet inte hur uttrycket skall visas"
 
 #: fortran/dump-parse-tree.c:2479
-#, fuzzy, gcc-internal-format
-#| msgid "gfc_trans_code(): Bad statement code"
+#, gcc-internal-format
 msgid "show_code_node(): Bad statement code"
-msgstr "gfc_trans_code(): Felaktig satskod"
+msgstr "show_code_node(): Felaktig satskod"
 
 #: fortran/error.c:372
 #, gcc-internal-format, gfc-internal-format
@@ -44998,10 +44978,9 @@ msgid "gfc_get_constant_expr(): locus %<where%> cannot be NULL"
 msgstr "gfc_get_constant_expr(): locus %<where%> kan inte vara NULL"
 
 #: fortran/expr.c:347
-#, fuzzy, gcc-internal-format
-#| msgid "gfc_trans_code(): Bad statement code"
+#, gcc-internal-format
 msgid "gfc_copy_expr(): Bad expr node"
-msgstr "gfc_trans_code(): Felaktig satskod"
+msgstr "gfc_copy_expr(): Felaktig uttrycksnod"
 
 #: fortran/expr.c:494
 #, gcc-internal-format
@@ -45074,22 +45053,19 @@ msgid "Numeric operands are required in expression at %L"
 msgstr "Numeriska operander krävs i uttryck vid %L"
 
 #: fortran/expr.c:2218
-#, fuzzy, gcc-internal-format
-#| msgid "Invalid initialization expression for ALLOCATABLE component '%s' in structure constructor at %L"
+#, gcc-internal-format
 msgid "Invalid initialization expression for ALLOCATABLE component %qs in structure constructor at %L"
-msgstr "Ogiltigt initieringsuttryck för ALLOCATABLE-komponent ”%s” i postkonstrueraren vid %L"
+msgstr "Ogiltigt initieringsuttryck för ALLOCATABLE-komponent %qs i postkonstrueraren vid %L"
 
 #: fortran/expr.c:2329
-#, fuzzy, gcc-internal-format
-#| msgid "Assumed or deferred character length variable '%s'  in constant expression at %L"
+#, gcc-internal-format
 msgid "Assumed or deferred character length variable %qs  in constant expression at %L"
-msgstr "Teckenlängdsvariabel ”%s” med antagen eller fördröjd längd i konstant uttryck vid %L"
+msgstr "Teckenlängdsvariabel %qs med antagen eller fördröjd längd i konstant uttryck vid %L"
 
 #: fortran/expr.c:2395
-#, fuzzy, gcc-internal-format
-#| msgid "transformational intrinsic '%s' at %L is not permitted in an initialization expression"
+#, gcc-internal-format
 msgid "transformational intrinsic %qs at %L is not permitted in an initialization expression"
-msgstr "transformerande inbyggd ”%s” vid %L är inte tillåten i ett initieringsuttryck"
+msgstr "transformerande inbyggd %qs vid %L är inte tillåten i ett initieringsuttryck"
 
 #: fortran/expr.c:2426
 #, gcc-internal-format, gfc-internal-format
@@ -45097,112 +45073,94 @@ msgid "Evaluation of nonstandard initialization expression at %L"
 msgstr "Beräkning av ett initieringuttryck utanför standarden vid %L"
 
 #: fortran/expr.c:2495
-#, fuzzy, gcc-internal-format
-#| msgid "Function '%s' in initialization expression at %L must be an intrinsic function"
+#, gcc-internal-format
 msgid "Function %qs in initialization expression at %L must be an intrinsic function"
-msgstr "Funktionen ”%s” i initieringsuttrycket vid %L måste vara en inbyggd funktion"
+msgstr "Funktionen %qs i initieringsuttrycket vid %L måste vara en inbyggd funktion"
 
 #: fortran/expr.c:2507
-#, fuzzy, gcc-internal-format
-#| msgid "Intrinsic function '%s' at %L is not permitted in an initialization expression"
+#, gcc-internal-format
 msgid "Intrinsic function %qs at %L is not permitted in an initialization expression"
-msgstr "Inbyggd funktion ”%s” vid %L är inte tillåten i ett initieringsuttryck"
+msgstr "Inbyggd funktion %qs vid %L är inte tillåten i ett initieringsuttryck"
 
 #: fortran/expr.c:2542
-#, fuzzy, gcc-internal-format
-#| msgid "PARAMETER '%s' is used at %L before its definition is complete"
+#, gcc-internal-format
 msgid "PARAMETER %qs is used at %L before its definition is complete"
-msgstr "PARAMETER ”%s” används vid %L före dess definition är komplett"
+msgstr "PARAMETER %qs används vid %L före dess definition är komplett"
 
 #: fortran/expr.c:2562
-#, fuzzy, gcc-internal-format
-#| msgid "Assumed size array '%s' at %L is not permitted in an initialization expression"
+#, gcc-internal-format
 msgid "Assumed size array %qs at %L is not permitted in an initialization expression"
-msgstr "Vektor ”%s” med antagen storlek vid %L är inte tillåten i ett initieringsuttryck"
+msgstr "Vektor %qs med antagen storlek vid %L är inte tillåten i ett initieringsuttryck"
 
 #: fortran/expr.c:2568
-#, fuzzy, gcc-internal-format
-#| msgid "Assumed shape array '%s' at %L is not permitted in an initialization expression"
+#, gcc-internal-format
 msgid "Assumed shape array %qs at %L is not permitted in an initialization expression"
-msgstr "Vektor ”%s” med antagen form vid %L är inte tillåten i ett initieringsuttryck"
+msgstr "Vektor %qs med antagen form vid %L är inte tillåten i ett initieringsuttryck"
 
 #: fortran/expr.c:2574
-#, fuzzy, gcc-internal-format
-#| msgid "Deferred array '%s' at %L is not permitted in an initialization expression"
+#, gcc-internal-format
 msgid "Deferred array %qs at %L is not permitted in an initialization expression"
-msgstr "Fördröjd vektor ”%s” vid %L är inte tillåten i ett initieringsuttryck"
+msgstr "Fördröjd vektor %qs vid %L är inte tillåten i ett initieringsuttryck"
 
 #: fortran/expr.c:2580
-#, fuzzy, gcc-internal-format
-#| msgid "Array '%s' at %L is a variable, which does not reduce to a constant expression"
+#, gcc-internal-format
 msgid "Array %qs at %L is a variable, which does not reduce to a constant expression"
-msgstr "Vektor ”%s” vid %L är en variabel, som inte reduceras till ett konstant uttryck"
+msgstr "Vektor %qs vid %L är en variabel, som inte reduceras till ett konstant uttryck"
 
 #: fortran/expr.c:2590
-#, fuzzy, gcc-internal-format
-#| msgid "Parameter '%s' at %L has not been declared or is a variable, which does not reduce to a constant expression"
+#, gcc-internal-format
 msgid "Parameter %qs at %L has not been declared or is a variable, which does not reduce to a constant expression"
-msgstr "Parameter ”%s” vid %L har inte deklarerats eller är en variabel, som inte reduceras till ett konstant uttryck"
+msgstr "Parameter %qs vid %L har inte deklarerats eller är en variabel, som inte reduceras till ett konstant uttryck"
 
 #: fortran/expr.c:2640
-#, fuzzy, gcc-internal-format
-#| msgid "Expected expression type"
+#, gcc-internal-format
 msgid "check_init_expr(): Unknown expression type"
-msgstr "Uttryckstyp förväntades"
+msgstr "check_init_expr(): Okänd uttryckstyp"
 
 #: fortran/expr.c:2743
-#, fuzzy, gcc-internal-format
-#| msgid "Specification function '%s' at %L cannot be a statement function"
+#, gcc-internal-format
 msgid "Specification function %qs at %L cannot be a statement function"
-msgstr "Specifikationsfunktionen ”%s” vid %L kan inte vara en satsfunktion"
+msgstr "Specifikationsfunktionen %qs vid %L kan inte vara en satsfunktion"
 
 #: fortran/expr.c:2750
-#, fuzzy, gcc-internal-format
-#| msgid "Specification function '%s' at %L cannot be an internal function"
+#, gcc-internal-format
 msgid "Specification function %qs at %L cannot be an internal function"
-msgstr "Specifikationsfunktionen ”%s” vid %L kan inte vara en intern funktion"
+msgstr "Specifikationsfunktionen %qs vid %L kan inte vara en intern funktion"
 
 #: fortran/expr.c:2757
-#, fuzzy, gcc-internal-format
-#| msgid "Specification function '%s' at %L must be PURE"
+#, gcc-internal-format
 msgid "Specification function %qs at %L must be PURE"
-msgstr "Specifikationsfunktionen ”%s” vid %L måste vara PURE"
+msgstr "Specifikationsfunktionen %qs vid %L måste vara PURE"
 
 #: fortran/expr.c:2764
-#, fuzzy, gcc-internal-format
-#| msgid "Specification function '%s' at %L cannot be RECURSIVE"
+#, gcc-internal-format
 msgid "Specification function %qs at %L cannot be RECURSIVE"
-msgstr "Specifikationsfunktionen ”%s” vid %L får inte vara RECURSIVE"
+msgstr "Specifikationsfunktionen %qs vid %L får inte vara RECURSIVE"
 
 #: fortran/expr.c:2898
-#, fuzzy, gcc-internal-format
-#| msgid "Dummy argument '%s' not allowed in expression at %L"
+#, gcc-internal-format
 msgid "Dummy argument %qs not allowed in expression at %L"
-msgstr "Attrappvariabeln ”%s” är inte tillåten i uttrycket vid %L"
+msgstr "Attrappvariabeln %qs är inte tillåten i uttrycket vid %L"
 
 #: fortran/expr.c:2905
-#, fuzzy, gcc-internal-format
-#| msgid "Dummy argument '%s' at %L cannot be OPTIONAL"
+#, gcc-internal-format
 msgid "Dummy argument %qs at %L cannot be OPTIONAL"
-msgstr "Attrappargumentet ”%s” vid %L får inte vara OPTIONAL"
+msgstr "Attrappargumentet %qs vid %L får inte vara OPTIONAL"
 
 #: fortran/expr.c:2912
-#, fuzzy, gcc-internal-format
-#| msgid "Dummy argument '%s' at %L cannot be INTENT(OUT)"
+#, gcc-internal-format
 msgid "Dummy argument %qs at %L cannot be INTENT(OUT)"
-msgstr "Attrappargumentet ”%s” vid %L får inte vara INTENT(OUT)"
+msgstr "Attrappargumentet %qs vid %L får inte vara INTENT(OUT)"
 
 #: fortran/expr.c:2943
-#, fuzzy, gcc-internal-format
-#| msgid "Variable '%s' cannot appear in the expression at %L"
+#, gcc-internal-format
 msgid "Variable %qs cannot appear in the expression at %L"
-msgstr "Variabeln ”%s” kan inte förekomma i uttrycket vid %L"
+msgstr "Variabeln %qs kan inte förekomma i uttrycket vid %L"
 
 #: fortran/expr.c:2974
-#, fuzzy, gcc-internal-format
-#| msgid "Expected expression type"
+#, gcc-internal-format
 msgid "check_restricted(): Unknown expression type"
-msgstr "Uttryckstyp förväntades"
+msgstr "check_restricted(): Okänd uttryckstyp"
 
 #: fortran/expr.c:2994
 #, gcc-internal-format, gfc-internal-format
@@ -45210,10 +45168,9 @@ msgid "Expression at %L must be of INTEGER type, found %s"
 msgstr "Uttryck vid %L måste vara av INTEGER-typ, hittade %s"
 
 #: fortran/expr.c:3006
-#, fuzzy, gcc-internal-format
-#| msgid "Function '%s' at %L must be PURE"
+#, gcc-internal-format
 msgid "Function %qs at %L must be PURE"
-msgstr "Funktionen ”%s” vid %L måste vara PURE"
+msgstr "Funktionen %qs vid %L måste vara PURE"
 
 #: fortran/expr.c:3015
 #, gcc-internal-format, gfc-internal-format
@@ -45231,10 +45188,9 @@ msgid "Different shape for %s at %L on dimension %d (%d and %d)"
 msgstr "Olika form för %s vid %L på dimension %d (%d och %d)"
 
 #: fortran/expr.c:3152
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %L is not a VALUE"
+#, gcc-internal-format
 msgid "%qs at %L is not a VALUE"
-msgstr "”%s” vid %L är inte ett VALUE"
+msgstr "%qs vid %L är inte ett VALUE"
 
 #: fortran/expr.c:3159
 #, gcc-internal-format, gfc-internal-format
@@ -45257,10 +45213,9 @@ msgid "POINTER-valued function appears on right-hand side of assignment at %L"
 msgstr "POINTER-värd funktion förekommer på högersidan av tilldelning vid %L"
 
 #: fortran/expr.c:3198
-#, fuzzy, gcc-internal-format
-#| msgid "BOZ literal at %L used to initialize non-integer variable '%s'"
+#, gcc-internal-format
 msgid "BOZ literal at %L used to initialize non-integer variable %qs"
-msgstr "BOZ-literal vid %L används för att initiera icke-heltalsvariabeln ”%s”"
+msgstr "BOZ-literal vid %L används för att initiera icke-heltalsvariabeln %qs"
 
 #: fortran/expr.c:3203 fortran/resolve.c:9312
 #, gcc-internal-format, gfc-internal-format
@@ -45268,46 +45223,39 @@ msgid "BOZ literal at %L outside a DATA statement and outside INT/REAL/DBLE/CMPL
 msgstr "BOZ-literal vid %L utanför en DATA-sats och utanför INT/REAL/DBLE/CMPLX"
 
 #: fortran/expr.c:3214 fortran/resolve.c:9323
-#, fuzzy, gcc-internal-format
-#| msgid "BOZ literal at %L is bitwise transferred non-integer symbol '%s'"
+#, gcc-internal-format
 msgid "BOZ literal at %L is bitwise transferred non-integer symbol %qs"
-msgstr "BOZ-literal vid %L är bitvis överförd icke-heltalssymbol ”%s”"
+msgstr "BOZ-literal vid %L är bitvis överförd icke-heltalssymbol %qs"
 
 #: fortran/expr.c:3222 fortran/resolve.c:9332
-#, fuzzy, gcc-internal-format
-#| msgid "Arithmetic underflow of bit-wise transferred BOZ at %L. This check can be disabled with the option -fno-range-check"
+#, gcc-internal-format
 msgid "Arithmetic underflow of bit-wise transferred BOZ at %L. This check can be disabled with the option %<-fno-range-check%>"
-msgstr "Aritmetiskt underspill av bitvis överförd BOZ vid %L.  Denna kontroll kan avaktiveras med flaggan -fno-range-check"
+msgstr "Aritmetiskt underspill av bitvis överförd BOZ vid %L.  Denna kontroll kan avaktiveras med flaggan %<-fno-range-check%>"
 
 #: fortran/expr.c:3226 fortran/resolve.c:9336
-#, fuzzy, gcc-internal-format
-#| msgid "Arithmetic overflow of bit-wise transferred BOZ at %L. This check can be disabled with the option -fno-range-check"
+#, gcc-internal-format
 msgid "Arithmetic overflow of bit-wise transferred BOZ at %L. This check can be disabled with the option %<-fno-range-check%>"
-msgstr "Aritmetiskt överspill vid bitvis överförd BOZ vid %L.  Denna kontroll kan avaktiveras med flaggan -fno-range-check"
+msgstr "Aritmetiskt överspill vid bitvis överförd BOZ vid %L.  Denna kontroll kan avaktiveras med flaggan %<-fno-range-check%>"
 
 #: fortran/expr.c:3230 fortran/resolve.c:9340
-#, fuzzy, gcc-internal-format
-#| msgid "Arithmetic NaN of bit-wise transferred BOZ at %L. This check can be disabled with the option -fno-range-check"
+#, gcc-internal-format
 msgid "Arithmetic NaN of bit-wise transferred BOZ at %L. This check can be disabled with the option %<-fno-range-check%>"
-msgstr "Aritmetisk NaN vid bitvis överförd BOZ vid %L.  Denna kontroll kan avaktiveras med flaggan -fno-range-check"
+msgstr "Aritmetisk NaN vid bitvis överförd BOZ vid %L.  Denna kontroll kan avaktiveras med flaggan %<-fno-range-check%>"
 
 #: fortran/expr.c:3263
-#, fuzzy, gcc-internal-format
-#| msgid "Change of value in conversion from  %s to %s at %L"
+#, gcc-internal-format
 msgid "Change of value in conversion from  %qs to %qs at %L"
-msgstr "Ändring av värde vid konvertering från %s till %s vid %L"
+msgstr "Ändring av värde vid konvertering från %qs till %qs vid %L"
 
 #: fortran/expr.c:3272
-#, fuzzy, gcc-internal-format
-#| msgid "Possible change of value in conversion from %s to %s at %L"
+#, gcc-internal-format
 msgid "Possible change of value in conversion from %qs to %qs at %L"
-msgstr "Möjlig ändring av värde vid konvertering från %s till %s vid %L"
+msgstr "Möjlig ändring av värde vid konvertering från %qs till %qs vid %L"
 
 #: fortran/expr.c:3280
-#, fuzzy, gcc-internal-format
-#| msgid "Conversion from %s to %s at %L"
+#, gcc-internal-format
 msgid "Conversion from %qs to %qs at %L"
-msgstr "Konvertering från %s till %s vid %L"
+msgstr "Konvertering från %qs till %qs vid %L"
 
 #: fortran/expr.c:3301
 #, gcc-internal-format, gfc-internal-format
@@ -45320,22 +45268,19 @@ msgid "Pointer assignment target is not a POINTER at %L"
 msgstr "Pekartilldelningsmålet är inte en POINTER vid %L"
 
 #: fortran/expr.c:3345
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' in the pointer assignment at %L cannot be an l-value since it is a procedure"
+#, gcc-internal-format
 msgid "%qs in the pointer assignment at %L cannot be an l-value since it is a procedure"
-msgstr "”%s” i pekartilldelningen vid %L kan inte vara ett l-värde eftersom det är en procedur"
+msgstr "%qs i pekartilldelningen vid %L kan inte vara ett l-värde eftersom det är en procedur"
 
 #: fortran/expr.c:3368
-#, fuzzy, gcc-internal-format
-#| msgid "Expected bounds specification for '%s' at %L"
+#, gcc-internal-format
 msgid "Expected bounds specification for %qs at %L"
-msgstr "Begränsningsspecifikation för ”%s” förväntades vid %L"
+msgstr "Begränsningsspecifikation för %qs förväntades vid %L"
 
 #: fortran/expr.c:3373
-#, fuzzy, gcc-internal-format
-#| msgid "Bounds specification for '%s' in pointer assignment at %L"
+#, gcc-internal-format
 msgid "Bounds specification for %qs in pointer assignment at %L"
-msgstr "Begränsningsspecifikation för ”%s” i pekartilldelning vid %L"
+msgstr "Begränsningsspecifikation för %qs i pekartilldelning vid %L"
 
 #: fortran/expr.c:3386
 #, gcc-internal-format, gfc-internal-format
@@ -45363,40 +45308,34 @@ msgid "Invalid procedure pointer assignment at %L"
 msgstr "Ogiltig procedurpekartilldelning vid %L"
 
 #: fortran/expr.c:3475
-#, fuzzy, gcc-internal-format
-#| msgid "Function result '%s' is invalid as proc-target in procedure pointer assignment at %L"
+#, gcc-internal-format
 msgid "Function result %qs is invalid as proc-target in procedure pointer assignment at %L"
-msgstr "Funktionsresultatet ”%s” är ogiltigt i proc-mål i procedurpekartilldelning vid %L"
+msgstr "Funktionsresultatet %qs är ogiltigt i proc-mål i procedurpekartilldelning vid %L"
 
 #: fortran/expr.c:3484
-#, fuzzy, gcc-internal-format
-#| msgid "Abstract interface '%s' is invalid in procedure pointer assignment at %L"
+#, gcc-internal-format
 msgid "Abstract interface %qs is invalid in procedure pointer assignment at %L"
-msgstr "Abstrakt gränssnitt ”%s” är ogiltigt i procedurpekartilldelning vid %L"
+msgstr "Abstrakt gränssnitt %qs är ogiltigt i procedurpekartilldelning vid %L"
 
 #: fortran/expr.c:3494
-#, fuzzy, gcc-internal-format
-#| msgid "Statement function '%s' is invalid in procedure pointer assignment at %L"
+#, gcc-internal-format
 msgid "Statement function %qs is invalid in procedure pointer assignment at %L"
-msgstr "Satsfunktion ”%s” är ogiltigt i procedurpekartilldelning vid %L"
+msgstr "Satsfunktion %qs är ogiltigt i procedurpekartilldelning vid %L"
 
 #: fortran/expr.c:3500
-#, fuzzy, gcc-internal-format
-#| msgid "Internal procedure '%s' is invalid in procedure pointer assignment at %L"
+#, gcc-internal-format
 msgid "Internal procedure %qs is invalid in procedure pointer assignment at %L"
-msgstr "Intern procedur ”%s” är ogiltigt i procedurpekartilldelning vid %L"
+msgstr "Intern procedur %qs är ogiltigt i procedurpekartilldelning vid %L"
 
 #: fortran/expr.c:3507
-#, fuzzy, gcc-internal-format
-#| msgid "Intrinsic '%s' at %L is invalid in procedure pointer assignment"
+#, gcc-internal-format
 msgid "Intrinsic %qs at %L is invalid in procedure pointer assignment"
-msgstr "Inbyggd ”%s” vid %L är ogiltigt i procedurpekartilldelning"
+msgstr "Inbyggd %qs vid %L är ogiltigt i procedurpekartilldelning"
 
 #: fortran/expr.c:3515
-#, fuzzy, gcc-internal-format
-#| msgid "Nonintrinsic elemental procedure '%s' is invalid in procedure pointer assignment at %L"
+#, gcc-internal-format
 msgid "Nonintrinsic elemental procedure %qs is invalid in procedure pointer assignment at %L"
-msgstr "Den ej inbyggda elementära proceduren ”%s” är ogiltig i procedurpekartilldelning vid %L"
+msgstr "Den ej inbyggda elementära proceduren %qs är ogiltig i procedurpekartilldelning vid %L"
 
 #: fortran/expr.c:3538
 #, gcc-internal-format, gfc-internal-format
@@ -45404,10 +45343,9 @@ msgid "Mismatch in the procedure pointer assignment at %L: mismatch in the calli
 msgstr "Det stämmer inte i procedurpekartilldelningen vid %L: anropskonventionen stämmer inte"
 
 #: fortran/expr.c:3594 fortran/expr.c:3601 fortran/resolve.c:2449
-#, fuzzy, gcc-internal-format
-#| msgid "Explicit interface required for '%s' at %L: %s"
+#, gcc-internal-format
 msgid "Explicit interface required for %qs at %L: %s"
-msgstr "Explicit gränssnitt krävs för ”%s” vid %L: %s"
+msgstr "Explicit gränssnitt krävs för %qs vid %L: %s"
 
 #: fortran/expr.c:3609
 #, gcc-internal-format, gfc-internal-format
@@ -45520,16 +45458,14 @@ msgid "Non-variable expression in variable definition context (%s) at %L"
 msgstr "Icke variabelt uttryck i variabeldefinitionssammanhang (%s) vid %L"
 
 #: fortran/expr.c:4806
-#, fuzzy, gcc-internal-format
-#| msgid "Named constant '%s' in variable definition context (%s) at %L"
+#, gcc-internal-format
 msgid "Named constant %qs in variable definition context (%s) at %L"
-msgstr "Namngiven konstant ”%s” i variabeldefinitionssammanhang (%s) vid %L"
+msgstr "Namngiven konstant %qs i variabeldefinitionssammanhang (%s) vid %L"
 
 #: fortran/expr.c:4815
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' in variable definition context (%s) at %L is not a variable"
+#, gcc-internal-format
 msgid "%qs in variable definition context (%s) at %L is not a variable"
-msgstr "”%s” i variabeldefinitionssammanhang (%s) vid %L är inte en variabel"
+msgstr "%qs i variabeldefinitionssammanhang (%s) vid %L är inte en variabel"
 
 #: fortran/expr.c:4826
 #, gcc-internal-format, gfc-internal-format
@@ -45542,46 +45478,39 @@ msgid "LOCK_TYPE in variable definition context (%s) at %L"
 msgstr "LOCK_TYPE i variabeldefinitionssammanhang (%s) vid %L"
 
 #: fortran/expr.c:4868
-#, fuzzy, gcc-internal-format
-#| msgid "Dummy argument '%s' with INTENT(IN) in pointer association context (%s) at %L"
+#, gcc-internal-format
 msgid "Dummy argument %qs with INTENT(IN) in pointer association context (%s) at %L"
-msgstr "Attrappargument ”%s” med INTENT(IN) i pekarassociationssammanhang (%s) vid %L"
+msgstr "Attrappargument %qs med INTENT(IN) i pekarassociationssammanhang (%s) vid %L"
 
 #: fortran/expr.c:4876
-#, fuzzy, gcc-internal-format
-#| msgid "Dummy argument '%s' with INTENT(IN) in variable definition context (%s) at %L"
+#, gcc-internal-format
 msgid "Dummy argument %qs with INTENT(IN) in variable definition context (%s) at %L"
-msgstr "Attrappargument ”%s” med INTENT(IN) i variabeldefinitionssammanhang (%s) vid %L"
+msgstr "Attrappargument %qs med INTENT(IN) i variabeldefinitionssammanhang (%s) vid %L"
 
 #: fortran/expr.c:4889
-#, fuzzy, gcc-internal-format
-#| msgid "Variable '%s' is PROTECTED and can not appear in a pointer association context (%s) at %L"
+#, gcc-internal-format
 msgid "Variable %qs is PROTECTED and can not appear in a pointer association context (%s) at %L"
-msgstr "Variabeln ”%s” är PROTECTED och kan inte förekomma i ett pekarassociationssammanhang (%s) vid %L"
+msgstr "Variabeln %qs är PROTECTED och kan inte förekomma i ett pekarassociationssammanhang (%s) vid %L"
 
 #: fortran/expr.c:4897
-#, fuzzy, gcc-internal-format
-#| msgid "Variable '%s' is PROTECTED and can not appear in a variable definition context (%s) at %L"
+#, gcc-internal-format
 msgid "Variable %qs is PROTECTED and can not appear in a variable definition context (%s) at %L"
-msgstr "Variabeln ”%s” är PROTECTED och kan inte förekomma i ett variabeldefinitionssammanhang (%s) vid %L"
+msgstr "Variabeln %qs är PROTECTED och kan inte förekomma i ett variabeldefinitionssammanhang (%s) vid %L"
 
 #: fortran/expr.c:4909
-#, fuzzy, gcc-internal-format
-#| msgid "Variable '%s' can not appear in a variable definition context (%s) at %L in PURE procedure"
+#, gcc-internal-format
 msgid "Variable %qs can not appear in a variable definition context (%s) at %L in PURE procedure"
-msgstr "Variabeln ”%s” kan inte förekomma i ett variabeldefinitionssammanhang (%s) vid %L"
+msgstr "Variabeln %qs kan inte förekomma i ett variabeldefinitionssammanhang (%s) vid %L"
 
 #: fortran/expr.c:4968
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %L associated to vector-indexed target can not be used in a variable definition context (%s)"
+#, gcc-internal-format
 msgid "%qs at %L associated to vector-indexed target can not be used in a variable definition context (%s)"
-msgstr "”%s” vid %L som är associerad med vektorindexeradt mål kan inte användas i ett variabeldefinitionssammanhang (%s)"
+msgstr "%qs vid %L som är associerad med vektorindexeradt mål kan inte användas i ett variabeldefinitionssammanhang (%s)"
 
 #: fortran/expr.c:4972
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %L associated to expression can not be used in a variable definition context (%s)"
+#, gcc-internal-format
 msgid "%qs at %L associated to expression can not be used in a variable definition context (%s)"
-msgstr "”%s” vid %L som är associerad med uttryck kan inte användas i ett variabeldefinitionssammanhang (%s)"
+msgstr "%qs vid %L som är associerad med uttryck kan inte användas i ett variabeldefinitionssammanhang (%s)"
 
 #: fortran/expr.c:4983
 #, gcc-internal-format, gfc-internal-format
@@ -45611,16 +45540,14 @@ msgid "Creating array temporary at %L"
 msgstr "Skapar vektortemporär vid %L"
 
 #: fortran/frontend-passes.c:681 fortran/frontend-passes.c:684
-#, fuzzy, gcc-internal-format
-#| msgid "Removing call to function '%s' at %L"
+#, gcc-internal-format
 msgid "Removing call to function %qs at %L"
-msgstr "Tar bort anrop av funktionen ”%s” vid %L"
+msgstr "Tar bort anrop av funktionen %qs vid %L"
 
 #: fortran/frontend-passes.c:1652
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operands in gimple comparison"
+#, gcc-internal-format
 msgid "illegal OP in optimize_comparison"
-msgstr "ogiltiga operander i gimple-jämförelse"
+msgstr "otillåten OP i optimize_comparison"
 
 #: fortran/frontend-passes.c:1844
 #, gcc-internal-format, gfc-internal-format
@@ -45663,10 +45590,9 @@ msgid "Syntax error: Trailing garbage in INTERFACE statement at %C"
 msgstr "Syntaxfel: Avslutande skräp i INTERFACE-sats vid %C"
 
 #: fortran/interface.c:222
-#, fuzzy, gcc-internal-format
-#| msgid "Dummy procedure '%s' at %C cannot have a generic interface"
+#, gcc-internal-format
 msgid "Dummy procedure %qs at %C cannot have a generic interface"
-msgstr "Attrapprocedur ”%s” vid %C kan inte ha generiskt gränssnitt"
+msgstr "Attrapprocedur %qs vid %C kan inte ha generiskt gränssnitt"
 
 #: fortran/interface.c:255
 #, gcc-internal-format, gfc-internal-format
@@ -45689,28 +45615,24 @@ msgid "Expected a nameless interface at %C"
 msgstr "Förväntade ett namnlöst gränssnitt vid %C"
 
 #: fortran/interface.c:319
-#, fuzzy, gcc-internal-format
-#| msgid "Expected 'END INTERFACE ASSIGNMENT (=)' at %C"
+#, gcc-internal-format
 msgid "Expected %<END INTERFACE ASSIGNMENT (=)%> at %C"
-msgstr "”END INTERFACE ASSIGNMENT (=)” förväntades vid %C"
+msgstr "%<END INTERFACE ASSIGNMENT (=)%> förväntades vid %C"
 
 #: fortran/interface.c:349
-#, fuzzy, gcc-internal-format
-#| msgid "Expecting 'END INTERFACE OPERATOR (%s)' at %C, but got %s"
+#, gcc-internal-format
 msgid "Expecting %<END INTERFACE OPERATOR (%s)%> at %C, but got %s"
-msgstr "”END INTERFACE OPERATOR (%s)” förväntades vid %C, men fick %s"
+msgstr "%<END INTERFACE OPERATOR (%s)%> förväntades vid %C, men fick %s"
 
 #: fortran/interface.c:363
-#, fuzzy, gcc-internal-format
-#| msgid "Expecting 'END INTERFACE OPERATOR (.%s.)' at %C"
+#, gcc-internal-format
 msgid "Expecting %<END INTERFACE OPERATOR (.%s.)%> at %C"
-msgstr "”END INTERFACE OPERATOR (.%s.)” förväntades vid %C"
+msgstr "%<END INTERFACE OPERATOR (.%s.)%> förväntades vid %C"
 
 #: fortran/interface.c:374
-#, fuzzy, gcc-internal-format
-#| msgid "Expecting 'END INTERFACE %s' at %C"
+#, gcc-internal-format
 msgid "Expecting %<END INTERFACE %s%> at %C"
-msgstr "”END INTERFACE %s” förväntades vid %C"
+msgstr "%<END INTERFACE %s%> förväntades vid %C"
 
 #: fortran/interface.c:647
 #, gcc-internal-format, gfc-internal-format
@@ -45783,16 +45705,14 @@ msgid "check_result_characteristics (2): Unexpected result %i of gfc_dep_compare
 msgstr "check_result_characteristics (2): Oväntat resultat %i från gfc_dep_compare_expr"
 
 #: fortran/interface.c:1575
-#, fuzzy, gcc-internal-format
-#| msgid "Procedure '%s' in %s at %L has no explicit interface"
+#, gcc-internal-format
 msgid "Procedure %qs in %s at %L has no explicit interface"
-msgstr "Proceduren ”%s” i %s vid %L har inget explicit gränssnitt"
+msgstr "Proceduren %qs i %s vid %L har inget explicit gränssnitt"
 
 #: fortran/interface.c:1578
-#, fuzzy, gcc-internal-format
-#| msgid "Procedure '%s' in %s at %L is neither function nor subroutine"
+#, gcc-internal-format
 msgid "Procedure %qs in %s at %L is neither function nor subroutine"
-msgstr "Proceduren ”%s” i %s vid %L är varken en funktion eller subrutin"
+msgstr "Proceduren %qs i %s vid %L är varken en funktion eller subrutin"
 
 #: fortran/interface.c:1590
 #, gcc-internal-format, gfc-internal-format
@@ -45805,52 +45725,44 @@ msgid "In %s at %L procedures must be all FUNCTIONs as the generic name is also 
 msgstr "I %s vid %L måste alla procedurerna vara FUNCTION eftersom det generiska namnet också är namnet på en härledd typ"
 
 #: fortran/interface.c:1602
-#, fuzzy, gcc-internal-format
-#| msgid "Internal procedure '%s' in %s at %L"
+#, gcc-internal-format
 msgid "Internal procedure %qs in %s at %L"
-msgstr "Intern procedur ”%s” i %s vid %L"
+msgstr "Intern procedur %qs i %s vid %L"
 
 #: fortran/interface.c:1659 fortran/interface.c:1663
-#, fuzzy, gcc-internal-format
-#| msgid "Ambiguous interfaces '%s' and '%s' in %s at %L"
+#, gcc-internal-format
 msgid "Ambiguous interfaces %qs and %qs in %s at %L"
-msgstr "Tvetydiga gränssnitt ”%s” och ”%s” i %s vid %L"
+msgstr "Tvetydiga gränssnitt %qs och %qs i %s vid %L"
 
 #: fortran/interface.c:1667
-#, fuzzy, gcc-internal-format
-#| msgid "Although not referenced, '%s' has ambiguous interfaces at %L"
+#, gcc-internal-format
 msgid "Although not referenced, %qs has ambiguous interfaces at %L"
-msgstr "Fast orefererad har ”%s” tvetydiga gränssnitt vid %L"
+msgstr "Fast orefererad har %qs tvetydiga gränssnitt vid %L"
 
 #: fortran/interface.c:1701
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %L is not a module procedure"
+#, gcc-internal-format
 msgid "%qs at %L is not a module procedure"
-msgstr "”%s” vid %L är inte en modulprocedur"
+msgstr "%qs vid %L är inte en modulprocedur"
 
 #: fortran/interface.c:1905
-#, fuzzy, gcc-internal-format
-#| msgid "The assumed-rank array at %L requires that the dummy argument '%s' has assumed-rank"
+#, gcc-internal-format
 msgid "The assumed-rank array at %L requires that the dummy argument %qs has assumed-rank"
-msgstr "Vektor med antagen ordning vid %L kräver att attrappargumentet ”%s” har antagen ordning"
+msgstr "Vektor med antagen ordning vid %L kräver att attrappargumentet %qs har antagen ordning"
 
 #: fortran/interface.c:1910
-#, fuzzy, gcc-internal-format
-#| msgid "Rank mismatch in argument '%s' at %L (scalar and rank-%d)"
+#, gcc-internal-format
 msgid "Rank mismatch in argument %qs at %L (scalar and rank-%d)"
-msgstr "Ordning stämmer inte i argument ”%s” vid %L (skalär och ordning %d)"
+msgstr "Ordning stämmer inte i argument %qs vid %L (skalär och ordning %d)"
 
 #: fortran/interface.c:1915
-#, fuzzy, gcc-internal-format
-#| msgid "Rank mismatch in argument '%s' at %L (rank-%d and scalar)"
+#, gcc-internal-format
 msgid "Rank mismatch in argument %qs at %L (rank-%d and scalar)"
-msgstr "Ordning stämmer inte i argument ”%s” vid %L (ordning %d och skalär)"
+msgstr "Ordning stämmer inte i argument %qs vid %L (ordning %d och skalär)"
 
 #: fortran/interface.c:1920
-#, fuzzy, gcc-internal-format
-#| msgid "Rank mismatch in argument '%s' at %L (rank-%d and rank-%d)"
+#, gcc-internal-format
 msgid "Rank mismatch in argument %qs at %L (rank-%d and rank-%d)"
-msgstr "Ordning stämmer inte i argument ”%s” vid %L (ordning %d och ordning %d)"
+msgstr "Ordning stämmer inte i argument %qs vid %L (ordning %d och ordning %d)"
 
 #: fortran/interface.c:1963
 #, gcc-internal-format, gfc-internal-format
@@ -45858,124 +45770,104 @@ msgid "Invalid procedure argument at %L"
 msgstr "Ogiltigt procedurargument vid %L"
 
 #: fortran/interface.c:1971 fortran/interface.c:1998
-#, fuzzy, gcc-internal-format
-#| msgid "Interface mismatch in dummy procedure '%s' at %L: %s"
+#, gcc-internal-format
 msgid "Interface mismatch in dummy procedure %qs at %L: %s"
-msgstr "Gränssnitt stämmer inte överens i attrapprocedur ”%s” vid %L: %s"
+msgstr "Gränssnitt stämmer inte överens i attrapprocedur %qs vid %L: %s"
 
 #: fortran/interface.c:2009
-#, fuzzy, gcc-internal-format
-#| msgid "Actual argument to contiguous pointer dummy '%s' at %L must be simply contiguous"
+#, gcc-internal-format
 msgid "Actual argument to contiguous pointer dummy %qs at %L must be simply contiguous"
-msgstr "Aktuellt argument till sammanhängade pekareattrapp ”%s” vid %L måste vara enkelt sammanhängande"
+msgstr "Aktuellt argument till sammanhängade pekareattrapp %qs vid %L måste vara enkelt sammanhängande"
 
 #: fortran/interface.c:2024
-#, fuzzy, gcc-internal-format
-#| msgid "Type mismatch in argument '%s' at %L; passed %s to %s"
+#, gcc-internal-format
 msgid "Type mismatch in argument %qs at %L; passed %s to %s"
-msgstr "Typ stämmer inte i argument ”%s” vid %L; skickade %s till %s"
+msgstr "Typ stämmer inte i argument %qs vid %L; skickade %s till %s"
 
 #: fortran/interface.c:2033
-#, fuzzy, gcc-internal-format
-#| msgid "Assumed-type actual argument at %L requires that dummy argument '%s' is of assumed type"
+#, gcc-internal-format
 msgid "Assumed-type actual argument at %L requires that dummy argument %qs is of assumed type"
-msgstr "Aktuellt argument med antagen typ vid %L kräver att attrappargumentet ”%s” har antagen typ"
+msgstr "Aktuellt argument med antagen typ vid %L kräver att attrappargumentet %qs har antagen typ"
 
 #: fortran/interface.c:2049
-#, fuzzy, gcc-internal-format
-#| msgid "Actual argument to '%s' at %L must be polymorphic"
+#, gcc-internal-format
 msgid "Actual argument to %qs at %L must be polymorphic"
-msgstr "Aktuellt argument till ”%s” vid %L måste vara polymorft"
+msgstr "Aktuellt argument till %qs vid %L måste vara polymorft"
 
 #: fortran/interface.c:2062
-#, fuzzy, gcc-internal-format
-#| msgid "Actual argument to '%s' at %L must have the same declared type"
+#, gcc-internal-format
 msgid "Actual argument to %qs at %L must have the same declared type"
-msgstr "Aktuellt arkument till ”%s” vid %L måste ha samma deklarerade typ"
+msgstr "Aktuellt arkument till %qs vid %L måste ha samma deklarerade typ"
 
 #: fortran/interface.c:2077
-#, fuzzy, gcc-internal-format
-#| msgid "Actual argument to '%s' at %L must be unlimited polymorphic since the formal argument is a pointer or allocatable unlimited polymorphic entity [F2008: 12.5.2.5]"
+#, gcc-internal-format
 msgid "Actual argument to %qs at %L must be unlimited polymorphic since the formal argument is a pointer or allocatable unlimited polymorphic entity [F2008: 12.5.2.5]"
-msgstr "Aktuella argument till ”%s” vid %L måste vara obegränsat polymorfa eftersom det formella argumentet är en pekare eller allokerbar obegränsat polymorf enhet [F2008: 12.5.2.5]"
+msgstr "Aktuella argument till %qs vid %L måste vara obegränsat polymorfa eftersom det formella argumentet är en pekare eller allokerbar obegränsat polymorf enhet [F2008: 12.5.2.5]"
 
 #: fortran/interface.c:2088
-#, fuzzy, gcc-internal-format
-#| msgid "Actual argument to '%s' at %L must be a coarray"
+#, gcc-internal-format
 msgid "Actual argument to %qs at %L must be a coarray"
-msgstr "Aktuellt argument till ”%s” vid %L måste vara en co-vektor"
+msgstr "Aktuellt argument till %qs vid %L måste vara en co-vektor"
 
 #: fortran/interface.c:2107
-#, fuzzy, gcc-internal-format
-#| msgid "Corank mismatch in argument '%s' at %L (%d and %d)"
+#, gcc-internal-format
 msgid "Corank mismatch in argument %qs at %L (%d and %d)"
-msgstr "Co-ordning stämmer inte i argument ”%s” vid %L (%d och %d)"
+msgstr "Co-ordning stämmer inte i argument %qs vid %L (%d och %d)"
 
 #: fortran/interface.c:2124
-#, fuzzy, gcc-internal-format
-#| msgid "Actual argument to '%s' at %L must be simply contiguous"
+#, gcc-internal-format
 msgid "Actual argument to %qs at %L must be simply contiguous"
-msgstr "Aktuellt argument till ”%s” vid %L måste vara enkelt sammanhängande"
+msgstr "Aktuellt argument till %qs vid %L måste vara enkelt sammanhängande"
 
 #: fortran/interface.c:2138
-#, fuzzy, gcc-internal-format
-#| msgid "Actual argument to non-INTENT(INOUT) dummy '%s' at %L, which is LOCK_TYPE or has a LOCK_TYPE component"
+#, gcc-internal-format
 msgid "Actual argument to non-INTENT(INOUT) dummy %qs at %L, which is LOCK_TYPE or has a LOCK_TYPE component"
-msgstr "Aktuellt argument till icke-INTENT(INOUT)-attrappen ”%s” vid %L, som är LOCK_TYPE eller har en LOCK_TYPE-komponent"
+msgstr "Aktuellt argument till icke-INTENT(INOUT)-attrappen %qs vid %L, som är LOCK_TYPE eller har en LOCK_TYPE-komponent"
 
 #: fortran/interface.c:2156
-#, fuzzy, gcc-internal-format
-#| msgid "Dummy argument '%s' has to be a pointer, assumed-shape or assumed-rank array without CONTIGUOUS attribute - as actual argument at %L is not simply contiguous and both are ASYNCHRONOUS or VOLATILE"
+#, gcc-internal-format
 msgid "Dummy argument %qs has to be a pointer, assumed-shape or assumed-rank array without CONTIGUOUS attribute - as actual argument at %L is not simply contiguous and both are ASYNCHRONOUS or VOLATILE"
-msgstr "Attrappargument ”%s” måste vara en pekare, vektor med antagen form eller ordning utan attributet CONTIGUOUS - eftersom det aktuella argumentet vid %L inte är enkelt sammanhängande och båda är ASYNCHRONOUS eller VOLATILE"
+msgstr "Attrappargument %qs måste vara en pekare, vektor med antagen form eller ordning utan attributet CONTIGUOUS - eftersom det aktuella argumentet vid %L inte är enkelt sammanhängande och båda är ASYNCHRONOUS eller VOLATILE"
 
 #: fortran/interface.c:2169
-#, fuzzy, gcc-internal-format
-#| msgid "Passing coarray at %L to allocatable, noncoarray, INTENT(OUT) dummy argument '%s'"
+#, gcc-internal-format
 msgid "Passing coarray at %L to allocatable, noncoarray, INTENT(OUT) dummy argument %qs"
-msgstr "Skickar co-vektor vid %L till allokerbart, icke co-vektor, INTENT(OUT) attrappargument ”%s”"
+msgstr "Skickar co-vektor vid %L till allokerbart, icke co-vektor, INTENT(OUT) attrappargument %qs"
 
 #: fortran/interface.c:2176
-#, fuzzy, gcc-internal-format
-#| msgid "Passing coarray at %L to allocatable, noncoarray dummy argument '%s', which is invalid if the allocation status is modified"
+#, gcc-internal-format
 msgid "Passing coarray at %L to allocatable, noncoarray dummy argument %qs, which is invalid if the allocation status is modified"
 msgstr "Skickar co-vektor vid %L till allkoerbart, icke co-vektor attrappargument ”%s”, som är ogiltigt om allokeringsstatusen ändras"
 
 #: fortran/interface.c:2239
-#, fuzzy, gcc-internal-format
-#| msgid "Polymorphic scalar passed to array dummy argument '%s' at %L"
+#, gcc-internal-format
 msgid "Polymorphic scalar passed to array dummy argument %qs at %L"
-msgstr "Polymorf skalär skickad till vektorattrappargument ”%s” vid %L"
+msgstr "Polymorf skalär skickad till vektorattrappargument %qs vid %L"
 
 #: fortran/interface.c:2248
-#, fuzzy, gcc-internal-format
-#| msgid "Element of assumed-shaped or pointer array passed to array dummy argument '%s' at %L"
+#, gcc-internal-format
 msgid "Element of assumed-shaped or pointer array passed to array dummy argument %qs at %L"
-msgstr "Element av vektor med antagen form eller pekare skickat till vektorattrappargument ”%s” vid %L"
+msgstr "Element av vektor med antagen form eller pekare skickat till vektorattrappargument %qs vid %L"
 
 #: fortran/interface.c:2260
-#, fuzzy, gcc-internal-format
-#| msgid "Extension: Scalar non-default-kind, non-C_CHAR-kind CHARACTER actual argument with array dummy argument '%s' at %L"
+#, gcc-internal-format
 msgid "Extension: Scalar non-default-kind, non-C_CHAR-kind CHARACTER actual argument with array dummy argument %qs at %L"
-msgstr "Utökning: Skalärt CHARACTER-argument som inte är av standardsort och inte C_CHAR-sort med vektoratrappargument ”%s” vid %L"
+msgstr "Utökning: Skalärt CHARACTER-argument som inte är av standardsort och inte C_CHAR-sort med vektoratrappargument %qs vid %L"
 
 #: fortran/interface.c:2268
-#, fuzzy, gcc-internal-format
-#| msgid "Fortran 2003: Scalar CHARACTER actual argument with array dummy argument '%s' at %L"
+#, gcc-internal-format
 msgid "Fortran 2003: Scalar CHARACTER actual argument with array dummy argument %qs at %L"
-msgstr "Fortran 2003: Aktuellt skalärt CHARACTER-argument med attrappargument som är vektor ”%s” vid %L"
+msgstr "Fortran 2003: Aktuellt skalärt CHARACTER-argument med attrappargument som är vektor %qs vid %L"
 
 #: fortran/interface.c:2595
-#, fuzzy, gcc-internal-format
-#| msgid "Keyword argument '%s' at %L is not in the procedure"
+#, gcc-internal-format
 msgid "Keyword argument %qs at %L is not in the procedure"
-msgstr "Nyckelordsargument ”%s” vid %L finns inte i proceduren"
+msgstr "Nyckelordsargument %qs vid %L finns inte i proceduren"
 
 #: fortran/interface.c:2603
-#, fuzzy, gcc-internal-format
-#| msgid "Keyword argument '%s' at %L is already associated with another actual argument"
+#, gcc-internal-format
 msgid "Keyword argument %qs at %L is already associated with another actual argument"
-msgstr "Nyckelordsargumentet ”%s” vid %L är redan associerat med ett annat aktuellt argument"
+msgstr "Nyckelordsargumentet %qs vid %L är redan associerat med ett annat aktuellt argument"
 
 #: fortran/interface.c:2613
 #, gcc-internal-format, gfc-internal-format
@@ -45993,16 +45885,14 @@ msgid "Unexpected alternate return spec in subroutine call at %L"
 msgstr "Oväntad alternativ returspecifikation i subrutinanrop vid %L"
 
 #: fortran/interface.c:2660
-#, fuzzy, gcc-internal-format
-#| msgid "Unexpected NULL() intrinsic at %L to dummy '%s'"
+#, gcc-internal-format
 msgid "Unexpected NULL() intrinsic at %L to dummy %qs"
-msgstr "Oväntad inbyggd NULL() vid %L till attrapp ”%s”"
+msgstr "Oväntad inbyggd NULL() vid %L till attrapp %qs"
 
 #: fortran/interface.c:2663
-#, fuzzy, gcc-internal-format
-#| msgid "Fortran 2008: Null pointer at %L to non-pointer dummy '%s'"
+#, gcc-internal-format
 msgid "Fortran 2008: Null pointer at %L to non-pointer dummy %qs"
-msgstr "Fortran 2008: Nollpekare vid %L till icke-pekareattrapp ”%s”;"
+msgstr "Fortran 2008: Nollpekare vid %L till icke-pekareattrapp %qs"
 
 #: fortran/interface.c:2687
 #, gcc-internal-format, gfc-internal-format
@@ -46010,130 +45900,109 @@ msgid "Actual argument at %L to assumed-type dummy is of derived type with type-
 msgstr "Aktuellt argument vid %L till attrapp med antagen typ är av en härledd typ med typgräns eller FINAL-procedurer"
 
 #: fortran/interface.c:2709
-#, fuzzy, gcc-internal-format
-#| msgid "Character length mismatch (%ld/%ld) between actual argument and pointer or allocatable dummy argument '%s' at %L"
+#, gcc-internal-format
 msgid "Character length mismatch (%ld/%ld) between actual argument and pointer or allocatable dummy argument %qs at %L"
-msgstr "Teckenlängd stämmer inte (%ld/%ld) mellan aktuellt argument och pekare eller allokerbart attrappargument ”%s” vid %L"
+msgstr "Teckenlängd stämmer inte (%ld/%ld) mellan aktuellt argument och pekare eller allokerbart attrappargument %qs vid %L"
 
 #: fortran/interface.c:2717
-#, fuzzy, gcc-internal-format
-#| msgid "Character length mismatch (%ld/%ld) between actual argument and assumed-shape dummy argument '%s' at %L"
+#, gcc-internal-format
 msgid "Character length mismatch (%ld/%ld) between actual argument and assumed-shape dummy argument %qs at %L"
-msgstr "Teckenlängd stämmer inte (%ld/%ld) mellan aktuellt argument och attrappargument med antagen form ”%s” vid %L"
+msgstr "Teckenlängd stämmer inte (%ld/%ld) mellan aktuellt argument och attrappargument med antagen form %qs vid %L"
 
 #: fortran/interface.c:2731
-#, fuzzy, gcc-internal-format
-#| msgid "Actual argument at %L to allocatable or pointer dummy argument '%s' must have a deferred length type parameter if and only if the dummy has one"
+#, gcc-internal-format
 msgid "Actual argument at %L to allocatable or pointer dummy argument %qs must have a deferred length type parameter if and only if the dummy has one"
-msgstr "Aktuellt argument vid %L till allokerbart eller pekaratrappargument ”%s” måste ha en fördröjd längdtypparameter om och endast om atrappen har en"
+msgstr "Aktuellt argument vid %L till allokerbart eller pekaratrappargument %qs måste ha en fördröjd längdtypparameter om och endast om atrappen har en"
 
 #: fortran/interface.c:2748
-#, fuzzy, gcc-internal-format
-#| msgid "Character length of actual argument shorter than of dummy argument '%s' (%lu/%lu) at %L"
+#, gcc-internal-format
 msgid "Character length of actual argument shorter than of dummy argument %qs (%lu/%lu) at %L"
-msgstr "Teckenlängden på aktuellt argument är kortare än attrappargumentet ”%s” (%lu/%lu) vid %L"
+msgstr "Teckenlängden på aktuellt argument är kortare än attrappargumentet %qs (%lu/%lu) vid %L"
 
 #: fortran/interface.c:2753
-#, fuzzy, gcc-internal-format
-#| msgid "Actual argument contains too few elements for dummy argument '%s' (%lu/%lu) at %L"
+#, gcc-internal-format
 msgid "Actual argument contains too few elements for dummy argument %qs (%lu/%lu) at %L"
-msgstr "Aktuellt argument innehåller för få element för attrappargument ”%s” (%lu/%lu) vid %L"
+msgstr "Aktuellt argument innehåller för få element för attrappargument %qs (%lu/%lu) vid %L"
 
 #: fortran/interface.c:2772
-#, fuzzy, gcc-internal-format
-#| msgid "Expected a procedure pointer for argument '%s' at %L"
+#, gcc-internal-format
 msgid "Expected a procedure pointer for argument %qs at %L"
-msgstr "En procedurpekare förväntade som argument ”%s” vid %L"
+msgstr "En procedurpekare förväntade som argument %qs vid %L"
 
 #: fortran/interface.c:2788
-#, fuzzy, gcc-internal-format
-#| msgid "Expected a procedure for argument '%s' at %L"
+#, gcc-internal-format
 msgid "Expected a procedure for argument %qs at %L"
-msgstr "Förväntade en procedur som argument ”%s” vid %L"
+msgstr "Förväntade en procedur som argument %qs vid %L"
 
 #: fortran/interface.c:2802
-#, fuzzy, gcc-internal-format
-#| msgid "Actual argument for '%s' cannot be an assumed-size array at %L"
+#, gcc-internal-format
 msgid "Actual argument for %qs cannot be an assumed-size array at %L"
-msgstr "Aktuellt argument till ”%s” kan inte vara en vektor med antagen storlek vid %L"
+msgstr "Aktuellt argument till %qs kan inte vara en vektor med antagen storlek vid %L"
 
 #: fortran/interface.c:2811
-#, fuzzy, gcc-internal-format
-#| msgid "Actual argument for '%s' must be a pointer at %L"
+#, gcc-internal-format
 msgid "Actual argument for %qs must be a pointer at %L"
-msgstr "Aktuellt argument till ”%s” skall vara en pekare vid %L"
+msgstr "Aktuellt argument till %qs skall vara en pekare vid %L"
 
 #: fortran/interface.c:2821
-#, fuzzy, gcc-internal-format
-#| msgid "Fortran 2008: Non-pointer actual argument at %L to pointer dummy '%s'"
+#, gcc-internal-format
 msgid "Fortran 2008: Non-pointer actual argument at %L to pointer dummy %qs"
-msgstr "Fortran 2008: Aktuellt argument som inte är en pekare vid %L till pekarattrapp ”%s”"
+msgstr "Fortran 2008: Aktuellt argument som inte är en pekare vid %L till pekarattrapp %qs"
 
 #: fortran/interface.c:2831
-#, fuzzy, gcc-internal-format
-#| msgid "Coindexed actual argument at %L to pointer dummy '%s'"
+#, gcc-internal-format
 msgid "Coindexed actual argument at %L to pointer dummy %qs"
-msgstr "Co-indexerat faktiskt argument vid %L till pekareattrapp ”%s”"
+msgstr "Co-indexerat faktiskt argument vid %L till pekareattrapp %qs"
 
 #: fortran/interface.c:2844
-#, fuzzy, gcc-internal-format
-#| msgid "Coindexed actual argument at %L to allocatable dummy '%s' requires INTENT(IN)"
+#, gcc-internal-format
 msgid "Coindexed actual argument at %L to allocatable dummy %qs requires INTENT(IN)"
-msgstr "Co-indexerat aktuellt argument vid %L till allokerbar attrapp ”%s” kräver INTENT(IN)"
+msgstr "Co-indexerat aktuellt argument vid %L till allokerbar attrapp %qs kräver INTENT(IN)"
 
 #: fortran/interface.c:2858
-#, fuzzy, gcc-internal-format
-#| msgid "Coindexed ASYNCHRONOUS or VOLATILE actual argument at %L requires that dummy '%s' has neither ASYNCHRONOUS nor VOLATILE"
+#, gcc-internal-format
 msgid "Coindexed ASYNCHRONOUS or VOLATILE actual argument at %L requires that dummy %qs has neither ASYNCHRONOUS nor VOLATILE"
-msgstr "Co-indexerat ASYNCHRONOUS eller VOLATILE aktuellt argument vid %L kräver att attrappen ”%s” varken har ASYNCHRONOUS eller VOLATILE"
+msgstr "Co-indexerat ASYNCHRONOUS eller VOLATILE aktuellt argument vid %L kräver att attrappen %qs varken har ASYNCHRONOUS eller VOLATILE"
 
 #: fortran/interface.c:2872
-#, fuzzy, gcc-internal-format
-#| msgid "Coindexed actual argument at %L with allocatable ultimate component to dummy '%s' requires either VALUE or INTENT(IN)"
+#, gcc-internal-format
 msgid "Coindexed actual argument at %L with allocatable ultimate component to dummy %qs requires either VALUE or INTENT(IN)"
-msgstr "Co-indexerat faktiskt argument vid %L med allokerbar slutlig komponent till attrappen ”%s” kräver antingen VALUE eller INTENT(IN)"
+msgstr "Co-indexerat faktiskt argument vid %L med allokerbar slutlig komponent till attrappen %qs kräver antingen VALUE eller INTENT(IN)"
 
 #: fortran/interface.c:2884
-#, fuzzy, gcc-internal-format
-#| msgid "Actual CLASS array argument for '%s' must be a full array at %L"
+#, gcc-internal-format
 msgid "Actual CLASS array argument for %qs must be a full array at %L"
-msgstr "Aktuellt CLASS-vektorargument till ”%s” måste vara en fullständig vektor vid %L"
+msgstr "Aktuellt CLASS-vektorargument till %qs måste vara en fullständig vektor vid %L"
 
 #: fortran/interface.c:2894
-#, fuzzy, gcc-internal-format
-#| msgid "Actual argument for '%s' must be ALLOCATABLE at %L"
+#, gcc-internal-format
 msgid "Actual argument for %qs must be ALLOCATABLE at %L"
-msgstr "Aktuellt argument till ”%s” skall vara en ALLOCATABLE vid %L"
+msgstr "Aktuellt argument till %qs skall vara en ALLOCATABLE vid %L"
 
 #: fortran/interface.c:2923
-#, fuzzy, gcc-internal-format
-#| msgid "Array-section actual argument with vector subscripts at %L is incompatible with INTENT(OUT), INTENT(INOUT), VOLATILE or ASYNCHRONOUS attribute of the dummy argument '%s'"
+#, gcc-internal-format
 msgid "Array-section actual argument with vector subscripts at %L is incompatible with INTENT(OUT), INTENT(INOUT), VOLATILE or ASYNCHRONOUS attribute of the dummy argument %qs"
-msgstr "Vektorsektion som aktuellt argument med vektorindex vid %L är inte kompatibelt med attributet INTENT(OUT), INTENT(INOUT), VOLATILE eller ASYNCHRONOUS på attrappargumentet ”%s”"
+msgstr "Vektorsektion som aktuellt argument med vektorindex vid %L är inte kompatibelt med attributet INTENT(OUT), INTENT(INOUT), VOLATILE eller ASYNCHRONOUS på attrappargumentet %qs"
 
 #: fortran/interface.c:2941
-#, fuzzy, gcc-internal-format
-#| msgid "Assumed-shape actual argument at %L is incompatible with the non-assumed-shape dummy argument '%s' due to VOLATILE attribute"
+#, gcc-internal-format
 msgid "Assumed-shape actual argument at %L is incompatible with the non-assumed-shape dummy argument %qs due to VOLATILE attribute"
-msgstr "Aktuellt argument med antagen form vid %L är inte kompatibel med attrappargumentet ”%s” utan antagen form på grund av attributet VOLATILE"
+msgstr "Aktuellt argument med antagen form vid %L är inte kompatibel med attrappargumentet %qs utan antagen form på grund av attributet VOLATILE"
 
 #: fortran/interface.c:2953
-#, fuzzy, gcc-internal-format
-#| msgid "Array-section actual argument at %L is incompatible with the non-assumed-shape dummy argument '%s' due to VOLATILE attribute"
+#, gcc-internal-format
 msgid "Array-section actual argument at %L is incompatible with the non-assumed-shape dummy argument %qs due to VOLATILE attribute"
-msgstr "Vektorsektion som aktuellt argument vid %L är inkompatibelt med attrappargumentet ”%s” utan antagen form på grund av attributet VOLATILE"
+msgstr "Vektorsektion som aktuellt argument vid %L är inkompatibelt med attrappargumentet %qs utan antagen form på grund av attributet VOLATILE"
 
 #: fortran/interface.c:2972
-#, fuzzy, gcc-internal-format
-#| msgid "Pointer-array actual argument at %L requires an assumed-shape or pointer-array dummy argument '%s' due to VOLATILE attribute"
+#, gcc-internal-format
 msgid "Pointer-array actual argument at %L requires an assumed-shape or pointer-array dummy argument %qs due to VOLATILE attribute"
-msgstr "Pekarvektor som aktuellt argument vid %L kräver ett attrappargument ”%s” med antagen form eller pekarvektor på grund av attributet VOLATILE"
+msgstr "Pekarvektor som aktuellt argument vid %L kräver ett attrappargument %qs med antagen form eller pekarvektor på grund av attributet VOLATILE"
 
 #: fortran/interface.c:3002
-#, fuzzy, gcc-internal-format
-#| msgid "Missing actual argument for argument '%s' at %L"
+#, gcc-internal-format
 msgid "Missing actual argument for argument %qs at %L"
-msgstr "Aktuellt argument saknas för argument ”%s” vid %L"
+msgstr "Aktuellt argument saknas för argument %qs vid %L"
 
 #: fortran/interface.c:3124
 #, gcc-internal-format
@@ -46151,10 +46020,9 @@ msgid "check_some_aliasing(): corrupted data"
 msgstr "check_some_aliasing(): trasig data"
 
 #: fortran/interface.c:3189
-#, fuzzy, gcc-internal-format
-#| msgid "Same actual argument associated with INTENT(%s) argument '%s' and INTENT(%s) argument '%s' at %L"
+#, gcc-internal-format
 msgid "Same actual argument associated with INTENT(%s) argument %qs and INTENT(%s) argument %qs at %L"
-msgstr "Samma aktuella argument associerat med INTENT(%s)-argument ”%s” och INTENT(%s)-argument ”%s” vid %L"
+msgstr "Samma aktuella argument associerat med INTENT(%s)-argument %qs och INTENT(%s)-argument %qs vid %L"
 
 #: fortran/interface.c:3219
 #, gcc-internal-format
@@ -46177,46 +46045,39 @@ msgid "Coindexed actual argument at %L in PURE procedure is passed to a POINTER 
 msgstr "Co-indexerat aktuell argument vid %L i en PURE-procedur skickas till ett POINTER-attrappargument"
 
 #: fortran/interface.c:3272
-#, fuzzy, gcc-internal-format
-#| msgid "Coindexed polymorphic actual argument at %L is passed polymorphic dummy argument '%s'"
+#, gcc-internal-format
 msgid "Coindexed polymorphic actual argument at %L is passed polymorphic dummy argument %qs"
-msgstr "Co-indexerat polymorft aktuellt argument vid %L skickas ett polymorft attrappargument ”%s”"
+msgstr "Co-indexerat polymorft aktuellt argument vid %L skickas ett polymorft attrappargument %qs"
 
 #: fortran/interface.c:3300 fortran/interface.c:3310
-#, fuzzy, gcc-internal-format
-#| msgid "Procedure '%s' called at %L is not explicitly declared"
+#, gcc-internal-format
 msgid "Procedure %qs called at %L is not explicitly declared"
-msgstr "Proceduren ”%s” anropad vid %L är inte explicit deklarerad"
+msgstr "Proceduren %qs anropad vid %L är inte explicit deklarerad"
 
 #: fortran/interface.c:3306
-#, fuzzy, gcc-internal-format
-#| msgid "Procedure '%s' called with an implicit interface at %L"
+#, gcc-internal-format
 msgid "Procedure %qs called with an implicit interface at %L"
-msgstr "Procedur ”%s” anropad med ett implicit gränssnitt vid %L"
+msgstr "Procedur %qs anropad med ett implicit gränssnitt vid %L"
 
 #: fortran/interface.c:3320
-#, fuzzy, gcc-internal-format
-#| msgid "The pointer object '%s' at %L must have an explicit function interface or be declared as array"
+#, gcc-internal-format
 msgid "The pointer object %qs at %L must have an explicit function interface or be declared as array"
-msgstr "Pekarobjektet ”%s” vid %L måste ha ett explicit funktionsgränssnitt eller deklareras som vektor"
+msgstr "Pekarobjektet %qs vid %L måste ha ett explicit funktionsgränssnitt eller deklareras som vektor"
 
 #: fortran/interface.c:3328
-#, fuzzy, gcc-internal-format
-#| msgid "The allocatable object '%s' at %L must have an explicit function interface or be declared as array"
+#, gcc-internal-format
 msgid "The allocatable object %qs at %L must have an explicit function interface or be declared as array"
-msgstr "Det allokerbara objektet ”%s” vid %L måste ha ett explicit funktionsgränssnitt eller deklareras som vektor"
+msgstr "Det allokerbara objektet %qs vid %L måste ha ett explicit funktionsgränssnitt eller deklareras som vektor"
 
 #: fortran/interface.c:3336
-#, fuzzy, gcc-internal-format
-#| msgid "Allocatable function '%s' at %L must have an explicit function interface"
+#, gcc-internal-format
 msgid "Allocatable function %qs at %L must have an explicit function interface"
-msgstr "Allokerbar funktion ”%s” vid %L måste ha ett explicit funktionsgränssnitt"
+msgstr "Allokerbar funktion %qs vid %L måste ha ett explicit funktionsgränssnitt"
 
 #: fortran/interface.c:3346
-#, fuzzy, gcc-internal-format
-#| msgid "Keyword argument requires explicit interface for procedure '%s' at %L"
+#, gcc-internal-format
 msgid "Keyword argument requires explicit interface for procedure %qs at %L"
-msgstr "Nyckelordsargument kräver explicit gränssnitt för proceduren ”%s” vid %L"
+msgstr "Nyckelordsargument kräver explicit gränssnitt för proceduren %qs vid %L"
 
 #: fortran/interface.c:3355
 #, gcc-internal-format, gfc-internal-format
@@ -46224,10 +46085,9 @@ msgid "Assumed-type argument %s at %L requires an explicit interface"
 msgstr "Argumentet ”%s” med antagen typ vid %L kräver ett explicit gränssnitt"
 
 #: fortran/interface.c:3368
-#, fuzzy, gcc-internal-format
-#| msgid "Actual argument of LOCK_TYPE or with LOCK_TYPE component at %L requires an explicit interface for procedure '%s'"
+#, gcc-internal-format
 msgid "Actual argument of LOCK_TYPE or with LOCK_TYPE component at %L requires an explicit interface for procedure %qs"
-msgstr "Aktuellt argument till LOCK_TYPE eller med LOCK_TYPE-komponent vid %L kräver ett explicit gränssnitt för proceduren ”%s”"
+msgstr "Aktuellt argument till LOCK_TYPE eller med LOCK_TYPE-komponent vid %L kräver ett explicit gränssnitt för proceduren %qs"
 
 #: fortran/interface.c:3377
 #, gcc-internal-format, gfc-internal-format
@@ -46240,16 +46100,14 @@ msgid "Assumed-rank argument requires an explicit interface at %L"
 msgstr "Argumentet med antagen ordning kräver ett explicit gränssnitt vid %L"
 
 #: fortran/interface.c:3423
-#, fuzzy, gcc-internal-format
-#| msgid "Procedure pointer component '%s' called with an implicit interface at %L"
+#, gcc-internal-format
 msgid "Procedure pointer component %qs called with an implicit interface at %L"
-msgstr "Procedurpekarkomponent ”%s” anropad med ett implicit gränssnitt vid %L"
+msgstr "Procedurpekarkomponent %qs anropad med ett implicit gränssnitt vid %L"
 
 #: fortran/interface.c:3434
-#, fuzzy, gcc-internal-format
-#| msgid "Keyword argument requires explicit interface for procedure pointer component '%s' at %L"
+#, gcc-internal-format
 msgid "Keyword argument requires explicit interface for procedure pointer component %qs at %L"
-msgstr "Nyckelordsargument kräver explicit gränssnitt för procedurpekarkomponent ”%s” vid %L"
+msgstr "Nyckelordsargument kräver explicit gränssnitt för procedurpekarkomponent %qs vid %L"
 
 #: fortran/interface.c:3518
 #, gcc-internal-format, gfc-internal-format
@@ -46263,10 +46121,9 @@ msgid "Unable to find symbol %qs"
 msgstr "%q+D är aliasat till en odefinierad symbol %qE"
 
 #: fortran/interface.c:3955
-#, fuzzy, gcc-internal-format
-#| msgid "Entity '%s' at %L is already present in the interface"
+#, gcc-internal-format
 msgid "Entity %qs at %L is already present in the interface"
-msgstr "Entiteten ”%s” vid %L finns redan i gränssnittet"
+msgstr "Entiteten %qs vid %L finns redan i gränssnittet"
 
 #: fortran/interface.c:4071
 #, gcc-internal-format
@@ -46274,100 +46131,84 @@ msgid "gfc_add_interface(): Bad interface type"
 msgstr "gfc_add_interface(): Felaktig gränssnittstyp"
 
 #: fortran/interface.c:4166
-#, fuzzy, gcc-internal-format
-#| msgid "Can't overwrite GENERIC '%s' at %L"
+#, gcc-internal-format
 msgid "Can't overwrite GENERIC %qs at %L"
-msgstr "Det går inte att skriva över GENERIC ”%s” vid %L"
+msgstr "Det går inte att skriva över GENERIC %qs vid %L"
 
 #: fortran/interface.c:4178
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %L overrides a procedure binding declared NON_OVERRIDABLE"
+#, gcc-internal-format
 msgid "%qs at %L overrides a procedure binding declared NON_OVERRIDABLE"
-msgstr "”%s” vid %L åsidosätter en procedurbindning deklarerad NON_OVERRIDABLE"
+msgstr "%qs vid %L åsidosätter en procedurbindning deklarerad NON_OVERRIDABLE"
 
 #: fortran/interface.c:4186
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %L must not be DEFERRED as it overrides a non-DEFERRED binding"
+#, gcc-internal-format
 msgid "%qs at %L must not be DEFERRED as it overrides a non-DEFERRED binding"
-msgstr "”%s” vid %L får inte vara DEFERRED eftersom det åsidosätter en ej DEFERRED bindning"
+msgstr "%qs vid %L får inte vara DEFERRED eftersom det åsidosätter en ej DEFERRED bindning"
 
 #: fortran/interface.c:4194
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %L overrides a PURE procedure and must also be PURE"
+#, gcc-internal-format
 msgid "%qs at %L overrides a PURE procedure and must also be PURE"
-msgstr "”%s” vid %L åsidosätter en PURE-procedur och måste också vara PURE"
+msgstr "%qs vid %L åsidosätter en PURE-procedur och måste också vara PURE"
 
 #: fortran/interface.c:4203
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %L overrides an ELEMENTAL procedure and must also be ELEMENTAL"
+#, gcc-internal-format
 msgid "%qs at %L overrides an ELEMENTAL procedure and must also be ELEMENTAL"
-msgstr "”%s” vid %L åsidosätter en ELEMENTAL-procedur och måste också vara ELEMENTAL"
+msgstr "%qs vid %L åsidosätter en ELEMENTAL-procedur och måste också vara ELEMENTAL"
 
 #: fortran/interface.c:4209
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %L overrides a non-ELEMENTAL procedure and must not be ELEMENTAL, either"
+#, gcc-internal-format
 msgid "%qs at %L overrides a non-ELEMENTAL procedure and must not be ELEMENTAL, either"
-msgstr "”%s” vid %L åsidosäter en icke-ELEMENTAL-procedur och får inte heller vara ELEMENTAL"
+msgstr "%qs vid %L åsidosäter en icke-ELEMENTAL-procedur och får inte heller vara ELEMENTAL"
 
 #: fortran/interface.c:4218
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %L overrides a SUBROUTINE and must also be a SUBROUTINE"
+#, gcc-internal-format
 msgid "%qs at %L overrides a SUBROUTINE and must also be a SUBROUTINE"
-msgstr "”%s” vid %L åsidosätter en SUBROUTINE och måste också vara en SUBROUTINE"
+msgstr "%qs vid %L åsidosätter en SUBROUTINE och måste också vara en SUBROUTINE"
 
 #: fortran/interface.c:4229
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %L overrides a FUNCTION and must also be a FUNCTION"
+#, gcc-internal-format
 msgid "%qs at %L overrides a FUNCTION and must also be a FUNCTION"
-msgstr "”%s” vid %L åsidosätter en FUNCTION och måste också vara en FUNCTION"
+msgstr "%qs vid %L åsidosätter en FUNCTION och måste också vara en FUNCTION"
 
 #: fortran/interface.c:4237
-#, fuzzy, gcc-internal-format
-#| msgid "Result mismatch for the overriding procedure '%s' at %L: %s"
+#, gcc-internal-format
 msgid "Result mismatch for the overriding procedure %qs at %L: %s"
-msgstr "Resultaten stämmer inte överens för den åsidosättande proceduren ”%s” vid %L: %s"
+msgstr "Resultaten stämmer inte överens för den åsidosättande proceduren %qs vid %L: %s"
 
 #: fortran/interface.c:4248
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %L overrides a PUBLIC procedure and must not be PRIVATE"
+#, gcc-internal-format
 msgid "%qs at %L overrides a PUBLIC procedure and must not be PRIVATE"
-msgstr "”%s” vid %L åsidosätter en PURE-procedur och får inte vara PRIVATE"
+msgstr "%qs vid %L åsidosätter en PURE-procedur och får inte vara PRIVATE"
 
 #: fortran/interface.c:4278
-#, fuzzy, gcc-internal-format
-#| msgid "Dummy argument '%s' of '%s' at %L should be named '%s' as to match the corresponding argument of the overridden procedure"
+#, gcc-internal-format
 msgid "Dummy argument %qs of %qs at %L should be named %qs as to match the corresponding argument of the overridden procedure"
-msgstr "Attrappargument ”%s” till ”%s” vid %L skulle ha namnet ”%s” för att stämma med motsvarande argument i den åsidosatta proceduren"
+msgstr "Attrappargument %qs till %qs vid %L skulle ha namnet %qs för att stämma med motsvarande argument i den åsidosatta proceduren"
 
 #: fortran/interface.c:4289
-#, fuzzy, gcc-internal-format
-#| msgid "Argument mismatch for the overriding procedure '%s' at %L: %s"
+#, gcc-internal-format
 msgid "Argument mismatch for the overriding procedure %qs at %L: %s"
-msgstr "Argument stämmer inte överens för den åsidosättande proceduren ”%s” vid %L: %s"
+msgstr "Argument stämmer inte överens för den åsidosättande proceduren %qs vid %L: %s"
 
 #: fortran/interface.c:4298
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %L must have the same number of formal arguments as the overridden procedure"
+#, gcc-internal-format
 msgid "%qs at %L must have the same number of formal arguments as the overridden procedure"
-msgstr "”%s” vid %L måste ha samma antal formella argument som den åsidosatta proceduren"
+msgstr "%qs vid %L måste ha samma antal formella argument som den åsidosatta proceduren"
 
 #: fortran/interface.c:4307
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %L overrides a NOPASS binding and must also be NOPASS"
+#, gcc-internal-format
 msgid "%qs at %L overrides a NOPASS binding and must also be NOPASS"
-msgstr "”%s” vid %L åsidosätter en NOPASS-bindning och måste också vara NOPASS"
+msgstr "%qs vid %L åsidosätter en NOPASS-bindning och måste också vara NOPASS"
 
 #: fortran/interface.c:4318
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %L overrides a binding with PASS and must also be PASS"
+#, gcc-internal-format
 msgid "%qs at %L overrides a binding with PASS and must also be PASS"
-msgstr "”%s” vid %L åsidosätter en bindning med PASS och måste också vara PASS"
+msgstr "%qs vid %L åsidosätter en bindning med PASS och måste också vara PASS"
 
 #: fortran/interface.c:4325
-#, fuzzy, gcc-internal-format
-#| msgid "Passed-object dummy argument of '%s' at %L must be at the same position as the passed-object dummy argument of the overridden procedure"
+#, gcc-internal-format
 msgid "Passed-object dummy argument of %qs at %L must be at the same position as the passed-object dummy argument of the overridden procedure"
-msgstr "Attrappargument för pass-objekt till ”%s” vid %L måste vara på samma position som attrappargumentet för pass-objektet i den åsidosatta proceduren"
+msgstr "Attrappargument för pass-objekt till %qs vid %L måste vara på samma position som attrappargumentet för pass-objektet i den åsidosatta proceduren"
 
 #: fortran/intrinsic.c:196
 #, gcc-internal-format, gfc-internal-format
@@ -46417,10 +46258,9 @@ msgid "make_generic(): Can't find generic symbol %qs"
 msgstr "make_generic(): Kan inte hitta den generiska symbolen %qs"
 
 #: fortran/intrinsic.c:3818
-#, fuzzy, gcc-internal-format
-#| msgid "Too many arguments in call to '%s' at %L"
+#, gcc-internal-format
 msgid "Too many arguments in call to %qs at %L"
-msgstr "För många argument i anrop till ”%s” vid %L"
+msgstr "För många argument i anrop till %qs vid %L"
 
 #: fortran/intrinsic.c:3833
 #, gcc-internal-format, gfc-internal-format
@@ -46428,22 +46268,19 @@ msgid "The argument list functions %%VAL, %%LOC or %%REF are not allowed in this
 msgstr "Argumentlistefunktionerna vid %%VAL, %%LOC eller %%REF är inte tillåten i denna kontext vid %L"
 
 #: fortran/intrinsic.c:3836
-#, fuzzy, gcc-internal-format
-#| msgid "Can't find keyword named '%s' in call to '%s' at %L"
+#, gcc-internal-format
 msgid "Can't find keyword named %qs in call to %qs at %L"
-msgstr "Nyckelord med namnet ”%s” saknas i anrop till ”%s” vid %L"
+msgstr "Nyckelord med namnet %qs saknas i anrop till %qs vid %L"
 
 #: fortran/intrinsic.c:3843
-#, fuzzy, gcc-internal-format
-#| msgid "Argument '%s' appears twice in call to '%s' at %L"
+#, gcc-internal-format
 msgid "Argument %qs appears twice in call to %qs at %L"
-msgstr "Argumentet ”%s” förekommer två gånger i anrop till ”%s” vid %L"
+msgstr "Argumentet %qs förekommer två gånger i anrop till %qs vid %L"
 
 #: fortran/intrinsic.c:3857
-#, fuzzy, gcc-internal-format
-#| msgid "Missing actual argument '%s' in call to '%s' at %L"
+#, gcc-internal-format
 msgid "Missing actual argument %qs in call to %qs at %L"
-msgstr "Aktuellt argument ”%s” saknas i anrop till ”%s” vid %L"
+msgstr "Aktuellt argument %qs saknas i anrop till %qs vid %L"
 
 #: fortran/intrinsic.c:3872
 #, gcc-internal-format, gfc-internal-format
@@ -46451,10 +46288,9 @@ msgid "ALTERNATE RETURN not permitted at %L"
 msgstr "ALTERNATE RETURN är inte tillåtet vid %L"
 
 #: fortran/intrinsic.c:3929
-#, fuzzy, gcc-internal-format
-#| msgid "Type of argument '%s' in call to '%s' at %L should be %s, not %s"
+#, gcc-internal-format
 msgid "Type of argument %qs in call to %qs at %L should be %s, not %s"
-msgstr "Typen på argument ”%s” i anrop till ”%s” vid %L skulle varit %s, inte %s"
+msgstr "Typen på argument %qs i anrop till %qs vid %L skulle varit %s, inte %s"
 
 #: fortran/intrinsic.c:4035
 #, gcc-internal-format
@@ -46479,16 +46315,14 @@ msgid "Invalid standard code on intrinsic %qs (%d)"
 msgstr "Ogiltigt sammanhang för inbyggd NULL () vid %L"
 
 #: fortran/intrinsic.c:4319
-#, fuzzy, gcc-internal-format
-#| msgid "Intrinsic '%s' (is %s) is used at %L"
+#, gcc-internal-format
 msgid "Intrinsic %qs (is %s) is used at %L"
-msgstr "Inbyggd ”%s” (är %s) används vid %L"
+msgstr "Inbyggd %qs (är %s) används vid %L"
 
 #: fortran/intrinsic.c:4390
-#, fuzzy, gcc-internal-format
-#| msgid "Function '%s' as initialization expression at %L"
+#, gcc-internal-format
 msgid "Function %qs as initialization expression at %L"
-msgstr "Funktionen ”%s” som initieringsuttryck vid %L"
+msgstr "Funktionen %qs som initieringsuttryck vid %L"
 
 #: fortran/intrinsic.c:4466
 #, gcc-internal-format, gfc-internal-format
@@ -46496,16 +46330,14 @@ msgid "Elemental function as initialization expression with non-integer/non-char
 msgstr "Elementär funktion som initieraruttryck med argument som inte är heltal/tecken vid %L"
 
 #: fortran/intrinsic.c:4537
-#, fuzzy, gcc-internal-format
-#| msgid "Subroutine call to intrinsic '%s' in DO CONCURRENT block at %L is not PURE"
+#, gcc-internal-format
 msgid "Subroutine call to intrinsic %qs in DO CONCURRENT block at %L is not PURE"
-msgstr "Subrutinanrop till inbyggda ”%s” i DO CONCURRENT-block vid %L är inte PURE"
+msgstr "Subrutinanrop till inbyggda %qs i DO CONCURRENT-block vid %L är inte PURE"
 
 #: fortran/intrinsic.c:4544
-#, fuzzy, gcc-internal-format
-#| msgid "Subroutine call to intrinsic '%s' at %L is not PURE"
+#, gcc-internal-format
 msgid "Subroutine call to intrinsic %qs at %L is not PURE"
-msgstr "Subrutinanrop till inbyggd ”%s” vid %L är inte PURE"
+msgstr "Subrutinanrop till inbyggd %qs vid %L är inte PURE"
 
 #: fortran/intrinsic.c:4620
 #, gcc-internal-format, gfc-internal-format
@@ -46534,16 +46366,14 @@ msgid "Can't convert %qs to %qs at %L"
 msgstr "Kan inte konvertera %s till %s vid %L"
 
 #: fortran/intrinsic.c:4827
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' declared at %L may shadow the intrinsic of the same name.  In order to call the intrinsic, explicit INTRINSIC declarations may be required."
+#, gcc-internal-format
 msgid "%qs declared at %L may shadow the intrinsic of the same name.  In order to call the intrinsic, explicit INTRINSIC declarations may be required."
-msgstr "”%s” deklarerad vid %L kan skugga den inbyggda med samma namn.  För att anropa den inbyggda kan en explicit INTRINSIC-deklaration krävas."
+msgstr "%qs deklarerad vid %L kan skugga den inbyggda med samma namn.  För att anropa den inbyggda kan en explicit INTRINSIC-deklaration krävas."
 
 #: fortran/intrinsic.c:4833
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' declared at %L is also the name of an intrinsic.  It can only be called via an explicit interface or if declared EXTERNAL."
+#, gcc-internal-format
 msgid "%qs declared at %L is also the name of an intrinsic.  It can only be called via an explicit interface or if declared EXTERNAL."
-msgstr "”%s” deklarerad vid %L är också namnet på en inbyggd.  Den kan bara anropas via ett explicit gränssnitt eller om den deklareras EXTERNAL."
+msgstr "%qs deklarerad vid %L är också namnet på en inbyggd.  Den kan bara anropas via ett explicit gränssnitt eller om den deklareras EXTERNAL."
 
 #: fortran/io.c:168 fortran/primary.c:868
 #, gcc-internal-format, gfc-internal-format
@@ -46677,16 +46507,14 @@ msgid "ASSIGNED variable in FORMAT tag at %L"
 msgstr "ASSIGNED-variabel i FORMAT-tagg vid %L"
 
 #: fortran/io.c:1412
-#, fuzzy, gcc-internal-format
-#| msgid "Variable '%s' at %L has not been assigned a format label"
+#, gcc-internal-format
 msgid "Variable %qs at %L has not been assigned a format label"
-msgstr "Variabeln ”%s” vid %L har inte tilldelats en formatetikett"
+msgstr "Variabeln %qs vid %L har inte tilldelats en formatetikett"
 
 #: fortran/io.c:1419
-#, fuzzy, gcc-internal-format
-#| msgid "Scalar '%s' in FORMAT tag at %L is not an ASSIGNED variable"
+#, gcc-internal-format
 msgid "Scalar %qs in FORMAT tag at %L is not an ASSIGNED variable"
-msgstr "Skalär ”%s” i FORMAT-tagg vid %L är inte en ASSIGNED-variabel"
+msgstr "Skalär %qs i FORMAT-tagg vid %L är inte en ASSIGNED-variabel"
 
 #: fortran/io.c:1431
 #, gcc-internal-format, gfc-internal-format
@@ -46750,28 +46578,24 @@ msgid "CONVERT tag at %L"
 msgstr "CONVERT-tagg vid %L"
 
 #: fortran/io.c:1724
-#, fuzzy, gcc-internal-format
-#| msgid "Fortran 2003: %s specifier in %s statement at %C has value '%s'"
+#, gcc-internal-format
 msgid "Fortran 2003: %s specifier in %s statement at %C has value %qs"
-msgstr "Fortran 2003: %s-specificerare i %s-sats vid %C har värdet ”%s”"
+msgstr "Fortran 2003: %s-specificerare i %s-sats vid %C har värdet %qs"
 
 #: fortran/io.c:1732 fortran/io.c:1759
-#, fuzzy, gcc-internal-format
-#| msgid "%s specifier in %s statement at %C has value '%s'"
+#, gcc-internal-format
 msgid "%s specifier in %s statement at %C has value %qs"
-msgstr "%s-specificerare i %s-sats vid %C har värdet ”%s”"
+msgstr "%s-specificerare i %s-sats vid %C har värdet %qs"
 
 #: fortran/io.c:1751
-#, fuzzy, gcc-internal-format
-#| msgid "Extension: %s specifier in %s statement at %C has value '%s'"
+#, gcc-internal-format
 msgid "Extension: %s specifier in %s statement at %C has value %qs"
-msgstr "Utökning: %s-specifierare i %s-sats vid %C har värdet ”%s”"
+msgstr "Utökning: %s-specifierare i %s-sats vid %C har värdet %qs"
 
 #: fortran/io.c:1773 fortran/io.c:1781
-#, fuzzy, gcc-internal-format
-#| msgid "%s specifier in %s statement at %C has invalid value '%s'"
+#, gcc-internal-format
 msgid "%s specifier in %s statement at %C has invalid value %qs"
-msgstr "%s-specificerare i %s-sats vid %C har ogiltigt värde ”%s”"
+msgstr "%s-specificerare i %s-sats vid %C har ogiltigt värde %qs"
 
 #: fortran/io.c:1834
 #, gcc-internal-format, gfc-internal-format
@@ -46864,10 +46688,9 @@ msgid "Duplicate format specification at %C"
 msgstr "Dubblerad formatspecifikation vid %C"
 
 #: fortran/io.c:2623
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' in namelist '%s' is INTENT(IN) at %C"
+#, gcc-internal-format
 msgid "Symbol %qs in namelist %qs is INTENT(IN) at %C"
-msgstr "Symbolen ”%s” i namnlistan ”%s” är INTENT(IN) vid %C"
+msgstr "Symbolen %qs i namnlistan %qs är INTENT(IN) vid %C"
 
 #: fortran/io.c:2659
 #, gcc-internal-format, gfc-internal-format
@@ -46875,10 +46698,9 @@ msgid "Duplicate NML specification at %C"
 msgstr "Dubblerad NML-specifikation vid %C"
 
 #: fortran/io.c:2668
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' at %C must be a NAMELIST group name"
+#, gcc-internal-format
 msgid "Symbol %qs at %C must be a NAMELIST group name"
-msgstr "Symbolen ”%s” vid %C måste vara ett NAMELIST-gruppnamn"
+msgstr "Symbolen %qs vid %C måste vara ett NAMELIST-gruppnamn"
 
 #: fortran/io.c:2733
 #, gcc-internal-format, gfc-internal-format
@@ -46911,10 +46733,9 @@ msgid "External IO UNIT cannot be an array at %L"
 msgstr "Extern IO UNIT får inte vara en vektor vid %L"
 
 #: fortran/io.c:2897
-#, fuzzy, gcc-internal-format
-#| msgid "NAMELIST '%s' in READ statement at %L contains the symbol '%s' which may not appear in a variable definition context"
+#, gcc-internal-format
 msgid "NAMELIST %qs in READ statement at %L contains the symbol %qs which may not appear in a variable definition context"
-msgstr "NAMELIST ”%s” i READ-sats vid %L innehåller symbolen ”%s” som inte får stå i ett variabeldefinitionssammanhang"
+msgstr "NAMELIST %qs i READ-sats vid %L innehåller symbolen %qs som inte får stå i ett variabeldefinitionssammanhang"
 
 #: fortran/io.c:2907
 #, gcc-internal-format, gfc-internal-format
@@ -47077,16 +46898,14 @@ msgid "Statement label at %C is zero"
 msgstr "Satsetikett vid %C är noll"
 
 #: fortran/match.c:508
-#, fuzzy, gcc-internal-format
-#| msgid "Label name '%s' at %C is ambiguous"
+#, gcc-internal-format
 msgid "Label name %qs at %C is ambiguous"
-msgstr "Etikettnamnet ”%s” vid %C är tvetydigt"
+msgstr "Etikettnamnet %qs vid %C är tvetydigt"
 
 #: fortran/match.c:514
-#, fuzzy, gcc-internal-format
-#| msgid "Duplicate construct label '%s' at %C"
+#, gcc-internal-format
 msgid "Duplicate construct label %qs at %C"
-msgstr "Dubblerad konstruktionsetikett ”%s” vid %C"
+msgstr "Dubblerad konstruktionsetikett %qs vid %C"
 
 #: fortran/match.c:545
 #, gcc-internal-format, gfc-internal-format
@@ -47176,10 +46995,9 @@ msgid "Unexpected junk after ELSE statement at %C"
 msgstr "Oväntat skräp efter ELSE-sats vid %C"
 
 #: fortran/match.c:1566 fortran/match.c:1601
-#, fuzzy, gcc-internal-format
-#| msgid "Label '%s' at %C doesn't match IF label '%s'"
+#, gcc-internal-format
 msgid "Label %qs at %C doesn't match IF label %qs"
-msgstr "Etiketten ”%s” vid %C stämmer inte med IF-etikett ”%s”"
+msgstr "Etiketten %qs vid %C stämmer inte med IF-etikett %qs"
 
 #: fortran/match.c:1595
 #, gcc-internal-format, gfc-internal-format
@@ -47217,10 +47035,9 @@ msgid "Expected association at %C"
 msgstr "Association förväntade vid %C"
 
 #: fortran/match.c:1758
-#, fuzzy, gcc-internal-format
-#| msgid "Duplicate name '%s' in association at %C"
+#, gcc-internal-format
 msgid "Duplicate name %qs in association at %C"
-msgstr "Dubblerat namn ”%s” i association vid %C"
+msgstr "Dubblerat namn %qs i association vid %C"
 
 #: fortran/match.c:1766
 #, gcc-internal-format, gfc-internal-format
@@ -47239,10 +47056,9 @@ msgid "Junk after ASSOCIATE statement at %C"
 msgstr "Skräp efter ASSOCIATE-sats vid %C"
 
 #: fortran/match.c:1871
-#, fuzzy, gcc-internal-format
-#| msgid "Derived type '%s' at %L may not be ABSTRACT"
+#, gcc-internal-format
 msgid "Derived type %qs at %L may not be ABSTRACT"
-msgstr "Härledd typ ”%s” vid %L får inte vara ABSTRACT"
+msgstr "Härledd typ %qs vid %L får inte vara ABSTRACT"
 
 #: fortran/match.c:1934
 #, gcc-internal-format, gfc-internal-format
@@ -47260,16 +47076,14 @@ msgid "DO CONCURRENT construct at %C"
 msgstr "DO CONCURRENT-konstruktion vid %C"
 
 #: fortran/match.c:2418
-#, fuzzy, gcc-internal-format
-#| msgid "Name '%s' in %s statement at %C is unknown"
+#, gcc-internal-format
 msgid "Name %qs in %s statement at %C is unknown"
-msgstr "Namnet ”%s” i %s-sats vid %C är okänt"
+msgstr "Namnet %qs i %s-sats vid %C är okänt"
 
 #: fortran/match.c:2426
-#, fuzzy, gcc-internal-format
-#| msgid "Name '%s' in %s statement at %C is not a construct name"
+#, gcc-internal-format
 msgid "Name %qs in %s statement at %C is not a construct name"
-msgstr "Namnet ”%s” i %s-sats vid %C är inte ett konstruktionsnamn"
+msgstr "Namnet %qs i %s-sats vid %C är inte ett konstruktionsnamn"
 
 #: fortran/match.c:2438
 #, gcc-internal-format, gfc-internal-format
@@ -47288,16 +47102,14 @@ msgid "%s statement at %C is not within a construct"
 msgstr "%s-sats vid %C är inte inne i en konstruktion"
 
 #: fortran/match.c:2461
-#, fuzzy, gcc-internal-format
-#| msgid "%s statement at %C is not within construct '%s'"
+#, gcc-internal-format
 msgid "%s statement at %C is not within construct %qs"
-msgstr "%s-sats vid %C är inte inne i konstruktionen ”%s”"
+msgstr "%s-sats vid %C är inte inne i konstruktionen %qs"
 
 #: fortran/match.c:2486
-#, fuzzy, gcc-internal-format
-#| msgid "CYCLE statement at %C is not applicable to non-loop construct '%s'"
+#, gcc-internal-format
 msgid "CYCLE statement at %C is not applicable to non-loop construct %qs"
-msgstr "CYCLE-sats vid %C är inte tillämpbar på icke-slingkonstruktionen ”%s”"
+msgstr "CYCLE-sats vid %C är inte tillämpbar på icke-slingkonstruktionen %qs"
 
 #: fortran/match.c:2491
 #, gcc-internal-format, gfc-internal-format
@@ -47305,10 +47117,9 @@ msgid "EXIT statement with no do-construct-name at %C"
 msgstr "EXIT-sats utan något do-konstruktionsnamn vid %C"
 
 #: fortran/match.c:2497
-#, fuzzy, gcc-internal-format
-#| msgid "%s statement at %C is not applicable to construct '%s'"
+#, gcc-internal-format
 msgid "%s statement at %C is not applicable to construct %qs"
-msgstr "%s-sats vid %C är inte i tillämpbar på konstruktionen ”%s”"
+msgstr "%s-sats vid %C är inte i tillämpbar på konstruktionen %qs"
 
 #: fortran/match.c:2505
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -47645,58 +47456,49 @@ msgid "Variable '%s' at %L in common block '%s' at %C must be declared with a C 
 msgstr "Variabel ”%s” vid %L i common-block ”%s” vid %C måste deklareras med en C-interoperativ sort eftersom common-block ”%s” är bind(c)"
 
 #: fortran/match.c:4359
-#, fuzzy, gcc-internal-format
-#| msgid "Variable '%s' in common block '%s' at %C can not be bind(c) since it is not global"
+#, gcc-internal-format
 msgid "Variable %qs in common block %qs at %C can not be bind(c) since it is not global"
-msgstr "Variabel ”%s” i common-block ”%s” vid %C får inte vara bind(c) eftersom det inte är globalt"
+msgstr "Variabel %qs i common-block %qs vid %C får inte vara bind(c) eftersom det inte är globalt"
 
 #: fortran/match.c:4366
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' at %C is already in a COMMON block"
+#, gcc-internal-format
 msgid "Symbol %qs at %C is already in a COMMON block"
-msgstr "Symbolen ”%s” vid %C är redan i ett COMMON-block"
+msgstr "Symbolen %qs vid %C är redan i ett COMMON-block"
 
 #: fortran/match.c:4374
-#, fuzzy, gcc-internal-format
-#| msgid "Initialized symbol '%s' at %C can only be COMMON in BLOCK DATA"
+#, gcc-internal-format
 msgid "Initialized symbol %qs at %C can only be COMMON in BLOCK DATA"
-msgstr "Initierad symbol ”%s” vid %C kan endast vara COMMON i BLOCK DATA"
+msgstr "Initierad symbol %qs vid %C kan endast vara COMMON i BLOCK DATA"
 
 #: fortran/match.c:4400
-#, fuzzy, gcc-internal-format
-#| msgid "Array specification for symbol '%s' in COMMON at %C must be explicit"
+#, gcc-internal-format
 msgid "Array specification for symbol %qs in COMMON at %C must be explicit"
-msgstr "Vektorspecifikation för symbolen ”%s” i COMMON vid %C måste vara explicit"
+msgstr "Vektorspecifikation för symbolen %qs i COMMON vid %C måste vara explicit"
 
 #: fortran/match.c:4410
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' in COMMON at %C cannot be a POINTER array"
+#, gcc-internal-format
 msgid "Symbol %qs in COMMON at %C cannot be a POINTER array"
-msgstr "Symbolen ”%s” i COMMON vid %C får inte vara en POINTER-vektor"
+msgstr "Symbolen %qs i COMMON vid %C får inte vara en POINTER-vektor"
 
 #: fortran/match.c:4442
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s', in COMMON block '%s' at %C is being indirectly equivalenced to another COMMON block '%s'"
+#, gcc-internal-format
 msgid "Symbol %qs, in COMMON block %qs at %C is being indirectly equivalenced to another COMMON block %qs"
-msgstr "Symbolen ”%s”, i COMMON-block ”%s” vid %C är indirekt gjort ekvivalent med ett annat COMMON-block ”%s”"
+msgstr "Symbolen %qs, i COMMON-block %qs vid %C är indirekt gjort ekvivalent med ett annat COMMON-block %qs"
 
 #: fortran/match.c:4570
-#, fuzzy, gcc-internal-format
-#| msgid "Namelist group name '%s' at %C already has a basic type of %s"
+#, gcc-internal-format
 msgid "Namelist group name %qs at %C already has a basic type of %s"
-msgstr "Namnlistegruppnamnet ”%s” vid %C har redan grundtypen %s"
+msgstr "Namnlistegruppnamnet %qs vid %C har redan grundtypen %s"
 
 #: fortran/match.c:4578
-#, fuzzy, gcc-internal-format
-#| msgid "Namelist group name '%s' at %C already is USE associated and cannot be respecified."
+#, gcc-internal-format
 msgid "Namelist group name %qs at %C already is USE associated and cannot be respecified."
-msgstr "Namnlistegruppnamn ”%s” vid %C är redan USE-associerat och får inte specificeras om."
+msgstr "Namnlistegruppnamn %qs vid %C är redan USE-associerat och får inte specificeras om."
 
 #: fortran/match.c:4604
-#, fuzzy, gcc-internal-format
-#| msgid "Assumed size array '%s' in namelist '%s' at %C is not allowed"
+#, gcc-internal-format
 msgid "Assumed size array %qs in namelist %qs at %C is not allowed"
-msgstr "Vektor ”%s” med antagen storlek i namnlistan ”%s” vid %C är inte tillåtet"
+msgstr "Vektor %qs med antagen storlek i namnlistan %qs vid %C är inte tillåtet"
 
 #: fortran/match.c:4738
 #, gcc-internal-format, gfc-internal-format
@@ -47739,10 +47541,9 @@ msgid "Expected initialization expression in CASE at %C"
 msgstr "Initieringsuttryck förväntades i CASE vid %C"
 
 #: fortran/match.c:5042
-#, fuzzy, gcc-internal-format
-#| msgid "Expected block name '%s' of SELECT construct at %C"
+#, gcc-internal-format
 msgid "Expected block name %qs of SELECT construct at %C"
-msgstr "Blocknamnet ”%s” förväntades av SELECT-konstruktionen vid %C"
+msgstr "Blocknamnet %qs förväntades av SELECT-konstruktionen vid %C"
 
 #: fortran/match.c:5322
 #, gcc-internal-format, gfc-internal-format
@@ -47790,10 +47591,9 @@ msgid "ELSEWHERE statement at %C not enclosed in WHERE block"
 msgstr "ELSEWHERE-sats vid %C inte innesluten i WHERE-block"
 
 #: fortran/match.c:5720
-#, fuzzy, gcc-internal-format
-#| msgid "Label '%s' at %C doesn't match WHERE label '%s'"
+#, gcc-internal-format
 msgid "Label %qs at %C doesn't match WHERE label %qs"
-msgstr "Etiketten ”%s” vid %C stämmer inte med WHERE-etikett ”%s”"
+msgstr "Etiketten %qs vid %C stämmer inte med WHERE-etikett %qs"
 
 #: fortran/matchexp.c:72
 #, fuzzy, gcc-internal-format
@@ -47802,10 +47602,9 @@ msgid "Bad character %<%c%> in OPERATOR name at %C"
 msgstr "Felaktigt tecken ”%c” i OPERATOR-namn vid %C"
 
 #: fortran/matchexp.c:80
-#, fuzzy, gcc-internal-format
-#| msgid "The name '%s' cannot be used as a defined operator at %C"
+#, gcc-internal-format
 msgid "The name %qs cannot be used as a defined operator at %C"
-msgstr "Namnet ”%s” får inte användas som en definierad operator vid %C"
+msgstr "Namnet %qs får inte användas som en definierad operator vid %C"
 
 #: fortran/matchexp.c:173
 #, gcc-internal-format, gfc-internal-format
@@ -47885,22 +47684,19 @@ msgid "Renaming operators in USE statements at %C"
 msgstr "Byter namn på operatorer i USE-sats vid %C"
 
 #: fortran/module.c:683
-#, fuzzy, gcc-internal-format
-#| msgid "The name '%s' at %C has already been used as an external module name."
+#, gcc-internal-format
 msgid "The name %qs at %C has already been used as an external module name."
-msgstr "Namnet ”%s” vid %C har redan använts som ett externt modulnamn."
+msgstr "Namnet %qs vid %C har redan använts som ett externt modulnamn."
 
 #: fortran/module.c:1067
-#, fuzzy, gcc-internal-format
-#| msgid "Reading module %s at line %d column %d: %s"
+#, gcc-internal-format
 msgid "Reading module %qs at line %d column %d: %s"
 msgstr "När modul %s på rad %d kolumn %d lästes: %s"
 
 #: fortran/module.c:1071
-#, fuzzy, gcc-internal-format
-#| msgid "Writing module %s at line %d column %d: %s"
+#, gcc-internal-format
 msgid "Writing module %qs at line %d column %d: %s"
-msgstr "När modul %s på rad %d kolumn %d lästes: %s"
+msgstr "När modul %qs på rad %d kolumn %d lästes: %s"
 
 #: fortran/module.c:1075
 #, fuzzy, gcc-internal-format
@@ -47954,28 +47750,24 @@ msgid "Previous !$OMP DECLARE REDUCTION from module %s at %L"
 msgstr "Tidigare !$OMP DECLARE REDUCTION från modulen %s vid %L"
 
 #: fortran/module.c:4814
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' of module '%s', imported at %C, is also the name of the current program unit"
+#, gcc-internal-format
 msgid "%qs of module %qs, imported at %C, is also the name of the current program unit"
-msgstr "”%s” i modulen ”%s”, importerad vid %C, är också namnet på den aktuella programenheten"
+msgstr "%qs i modulen %qs, importerad vid %C, är också namnet på den aktuella programenheten"
 
 #: fortran/module.c:5165
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' referenced at %L not found in module '%s'"
+#, gcc-internal-format
 msgid "Symbol %qs referenced at %L not found in module %qs"
-msgstr "Symbolen ”%s” refererad från %L finns inte i modulen ”%s”"
+msgstr "Symbolen %qs refererad från %L finns inte i modulen %qs"
 
 #: fortran/module.c:5172
-#, fuzzy, gcc-internal-format
-#| msgid "User operator '%s' referenced at %L not found in module '%s'"
+#, gcc-internal-format
 msgid "User operator %qs referenced at %L not found in module %qs"
-msgstr "Användaroperatorn ”%s” refererad från %L finns inte i modulen ”%s”"
+msgstr "Användaroperatorn %qs refererad från %L finns inte i modulen %qs"
 
 #: fortran/module.c:5177
-#, fuzzy, gcc-internal-format
-#| msgid "Intrinsic operator '%s' referenced at %L not found in module '%s'"
+#, gcc-internal-format
 msgid "Intrinsic operator %qs referenced at %L not found in module %qs"
-msgstr "Inbyggd operator ”%s” refererad från %L finns inte i modulen ”%s”"
+msgstr "Inbyggd operator %qs refererad från %L finns inte i modulen %qs"
 
 #: fortran/module.c:5407
 #, gcc-internal-format
@@ -47988,16 +47780,14 @@ msgid "write_symtree(): Symbol not written"
 msgstr "write_symtree(): Symbolen inte skriven"
 
 #: fortran/module.c:5914
-#, fuzzy, gcc-internal-format
-#| msgid "Can't open module file '%s' for writing at %C: %s"
+#, gcc-internal-format
 msgid "Can't open module file %qs for writing at %C: %s"
-msgstr "Kan inte öppna modulfilen ”%s” för skrivning vid %C: %s"
+msgstr "Kan inte öppna modulfilen %qs för skrivning vid %C: %s"
 
 #: fortran/module.c:5934
-#, fuzzy, gcc-internal-format
-#| msgid "Error writing module file '%s' for writing: %s"
+#, gcc-internal-format
 msgid "Error writing module file %qs for writing: %s"
-msgstr "Fel när modulfilen ”%s” skrevs: %s"
+msgstr "Fel när modulfilen %qs skrevs: %s"
 
 #: fortran/module.c:5945
 #, fuzzy, gcc-internal-format
@@ -48006,23 +47796,20 @@ msgid "Can't delete module file %qs: %s"
 msgstr "Kan inte radera temporär modulfil ”%s”: %s"
 
 #: fortran/module.c:5948
-#, fuzzy, gcc-internal-format
-#| msgid "Can't rename module file '%s' to '%s': %s"
+#, gcc-internal-format
 msgid "Can't rename module file %qs to %qs: %s"
-msgstr "Kan inte ändra namn på modulfilen ”%s” till ”%s”: %s"
+msgstr "Kan inte ändra namn på modulfilen %qs till %qs: %s"
 
 #: fortran/module.c:5954
-#, fuzzy, gcc-internal-format
-#| msgid "Can't delete temporary module file '%s': %s"
+#, gcc-internal-format
 msgid "Can't delete temporary module file %qs: %s"
-msgstr "Kan inte radera temporär modulfil ”%s”: %s"
+msgstr "Kan inte radera temporär modulfil %qs: %s"
 
 #: fortran/module.c:5974 fortran/module.c:6301 fortran/module.c:6334
 #: fortran/module.c:6376
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' already declared"
+#, gcc-internal-format
 msgid "Symbol %qs already declared"
-msgstr "Symbolen ”%s” är redan deklarerad"
+msgstr "Symbolen %qs är redan deklarerad"
 
 #: fortran/module.c:6044
 #, gcc-internal-format, gfc-internal-format
@@ -48030,22 +47817,19 @@ msgid "import_iso_c_binding_module(): Unable to create symbol for %s"
 msgstr "import_iso_c_binding_module(): Kan inte skapa en symbol för %s"
 
 #: fortran/module.c:6152 fortran/module.c:6496
-#, fuzzy, gcc-internal-format
-#| msgid "The symbol '%s', referenced at %L, is not in the selected standard"
+#, gcc-internal-format
 msgid "The symbol %qs, referenced at %L, is not in the selected standard"
-msgstr "Symbolen ”%s”, refererad vid %L, finns inte i den valda standarden"
+msgstr "Symbolen %qs, refererad vid %L, finns inte i den valda standarden"
 
 #: fortran/module.c:6280
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' referenced at %L not found in intrinsic module ISO_C_BINDING"
+#, gcc-internal-format
 msgid "Symbol %qs referenced at %L not found in intrinsic module ISO_C_BINDING"
-msgstr "Symbolen ”%s” refererad från %L hittas inte i den inbyggda modulen ISO_C_BINDING"
+msgstr "Symbolen %qs refererad från %L hittas inte i den inbyggda modulen ISO_C_BINDING"
 
 #: fortran/module.c:6481
-#, fuzzy, gcc-internal-format
-#| msgid "Use of intrinsic module '%s' at %C conflicts with non-intrinsic module name used previously"
+#, gcc-internal-format
 msgid "Use of intrinsic module %qs at %C conflicts with non-intrinsic module name used previously"
-msgstr "Användning av inbyggd modul ”%s” vid %C står i konflikt med namn på ej inbyggd modul använd tidigare"
+msgstr "Användning av inbyggd modul %qs vid %C står i konflikt med namn på ej inbyggd modul använd tidigare"
 
 #: fortran/module.c:6503
 #, fuzzy, gcc-internal-format
@@ -48059,10 +47843,9 @@ msgid "Use of the NUMERIC_STORAGE_SIZE named constant from intrinsic module ISO_
 msgstr "Användning av namngiven NUMERIC_STORAGE_SIZE-konstant från inbyggd modul ISO_FORTRAN_ENV vid %C är inte kompatibelt med flaggan %s"
 
 #: fortran/module.c:6625
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' referenced at %L not found in intrinsic module ISO_FORTRAN_ENV"
+#, gcc-internal-format
 msgid "Symbol %qs referenced at %L not found in intrinsic module ISO_FORTRAN_ENV"
-msgstr "Symbolen ”%s” refererad vid %L hittas inte i den inbyggda modulen ISO_FORTRAN_ENV"
+msgstr "Symbolen %qs refererad vid %L hittas inte i den inbyggda modulen ISO_FORTRAN_ENV"
 
 #: fortran/module.c:6651
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -48081,10 +47864,9 @@ msgid "ISO_C_BINDING module at %C"
 msgstr "ISO_C_BINDING-modul vid %C"
 
 #: fortran/module.c:6694
-#, fuzzy, gcc-internal-format
-#| msgid "Can't find an intrinsic module named '%s' at %C"
+#, gcc-internal-format
 msgid "Can't find an intrinsic module named %qs at %C"
-msgstr "Det finns ingen inbyggd modul med namnet ”%s” vid %C"
+msgstr "Det finns ingen inbyggd modul med namnet %qs vid %C"
 
 #: fortran/module.c:6700
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -48105,28 +47887,24 @@ msgid "IEEE_ARITHMETIC module at %C"
 msgstr "ISO_C_BINDING-modul vid %C"
 
 #: fortran/module.c:6719
-#, fuzzy, gcc-internal-format
-#| msgid "Can't open module file '%s' for reading at %C: %s"
+#, gcc-internal-format
 msgid "Can't open module file %qs for reading at %C: %s"
-msgstr "Kan inte öppna modulfilen ”%s” för läsning vid %C: %s"
+msgstr "Kan inte öppna modulfilen %qs för läsning vid %C: %s"
 
 #: fortran/module.c:6727
-#, fuzzy, gcc-internal-format
-#| msgid "Use of non-intrinsic module '%s' at %C conflicts with intrinsic module name used previously"
+#, gcc-internal-format
 msgid "Use of non-intrinsic module %qs at %C conflicts with intrinsic module name used previously"
-msgstr "Användning av ej inbyggd modul ”%s” vid %C står i konflikt med namn på inbyggd modul använd tidigare"
+msgstr "Användning av ej inbyggd modul %qs vid %C står i konflikt med namn på inbyggd modul använd tidigare"
 
 #: fortran/module.c:6750
-#, fuzzy, gcc-internal-format
-#| msgid "File '%s' opened at %C is not a GNU Fortran module file"
+#, gcc-internal-format
 msgid "File %qs opened at %C is not a GNU Fortran module file"
-msgstr "Filen ”%s” öppnad vid %C är inte en GNU Fortran-modulfil"
+msgstr "Filen %qs öppnad vid %C är inte en GNU Fortran-modulfil"
 
 #: fortran/module.c:6758
-#, fuzzy, gcc-internal-format
-#| msgid "Cannot read module file '%s' opened at %C, because it was created by a different version of GNU Fortran"
+#, gcc-internal-format
 msgid "Cannot read module file %qs opened at %C, because it was created by a different version of GNU Fortran"
-msgstr "Kan inte läsa modulfilen ”%s” öppnad vid %C, eftersom den skapades av en annan version av GNU Fortran"
+msgstr "Kan inte läsa modulfilen %qs öppnad vid %C, eftersom den skapades av en annan version av GNU Fortran"
 
 #: fortran/module.c:6772
 #, gcc-internal-format
@@ -48385,16 +48163,14 @@ msgid "Cray pointee object of polymorphic type %qs in %s clause at %L"
 msgstr "Cray-utpekad ”%s” i %s-klausul vid %L"
 
 #: fortran/openmp.c:2684 fortran/openmp.c:3212
-#, fuzzy, gcc-internal-format
-#| msgid "Assumed size array '%s' in %s clause at %L"
+#, gcc-internal-format
 msgid "Assumed size array %qs in %s clause at %L"
-msgstr "Vektor ”%s” med antagen storlek i %s-klausul vid %L"
+msgstr "Vektor %qs med antagen storlek i %s-klausul vid %L"
 
 #: fortran/openmp.c:2687
-#, fuzzy, gcc-internal-format
-#| msgid "Assumed size array '%s' in %s clause at %L"
+#, gcc-internal-format
 msgid "Assumed rank array %qs in %s clause at %L"
-msgstr "Vektor ”%s” med antagen storlek i %s-klausul vid %L"
+msgstr "Vektor %qs med antagen storlek i %s-klausul vid %L"
 
 #: fortran/openmp.c:2691
 #, fuzzy, gcc-internal-format
@@ -48415,10 +48191,9 @@ msgid "ALLOCATABLE object %qs of polymorphic type in %s clause at %L"
 msgstr "POINTER-objekt ”%s” i %s-fall vid %L"
 
 #: fortran/openmp.c:2716 fortran/openmp.c:3202 fortran/openmp.c:3375
-#, fuzzy, gcc-internal-format
-#| msgid "POINTER object '%s' in %s clause at %L"
+#, gcc-internal-format
 msgid "POINTER object %qs in %s clause at %L"
-msgstr "POINTER-objekt ”%s” i %s-fall vid %L"
+msgstr "POINTER-objekt %qs i %s-fall vid %L"
 
 #: fortran/openmp.c:2721 fortran/openmp.c:3378
 #, fuzzy, gcc-internal-format
@@ -48481,17 +48256,15 @@ msgid "Variable %qs is not a dummy argument at %L"
 msgstr "Variabeln ”%s” har inte tilldelats någon måletikett vid %L"
 
 #: fortran/openmp.c:2956
-#, fuzzy, gcc-internal-format
-#| msgid "Object '%s' is not a variable at %L"
+#, gcc-internal-format
 msgid "Object %qs is not a variable at %L"
-msgstr "Objekt ”%s” är inte en variabel vid %L"
+msgstr "Objekt %qs är inte en variabel vid %L"
 
 #: fortran/openmp.c:2972 fortran/openmp.c:2983 fortran/openmp.c:2991
 #: fortran/openmp.c:3002 fortran/openmp.c:3014 fortran/openmp.c:4635
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' present on multiple clauses at %L"
+#, gcc-internal-format
 msgid "Symbol %qs present on multiple clauses at %L"
-msgstr "Symbolen ”%s” finns i flera fall vid %L"
+msgstr "Symbolen %qs finns i flera fall vid %L"
 
 #: fortran/openmp.c:3028
 #, fuzzy, gcc-internal-format
@@ -48500,16 +48273,14 @@ msgid "Symbol %qs present on both FROM and TO clauses at %L"
 msgstr "Symbolen ”%s” finns i flera fall vid %L"
 
 #: fortran/openmp.c:3050
-#, fuzzy, gcc-internal-format
-#| msgid "Non-THREADPRIVATE object '%s' in COPYIN clause at %L"
+#, gcc-internal-format
 msgid "Non-THREADPRIVATE object %qs in COPYIN clause at %L"
-msgstr "Ej THREADPRIVATE objekt ”%s” i COPYIN-fall vid %L"
+msgstr "Ej THREADPRIVATE objekt %qs i COPYIN-fall vid %L"
 
 #: fortran/openmp.c:3058
-#, fuzzy, gcc-internal-format
-#| msgid "Assumed size array '%s' in COPYPRIVATE clause at %L"
+#, gcc-internal-format
 msgid "Assumed size array %qs in COPYPRIVATE clause at %L"
-msgstr "Vektor ”%s” med antagen storlek i COPYPRIVATE-klausul vid %L"
+msgstr "Vektor %qs med antagen storlek i COPYPRIVATE-klausul vid %L"
 
 #: fortran/openmp.c:3061
 #, fuzzy, gcc-internal-format
@@ -48518,16 +48289,14 @@ msgid "INTENT(IN) POINTER %qs in COPYPRIVATE clause at %L"
 msgstr "Vektor ”%s” med antagen storlek i COPYPRIVATE-klausul vid %L"
 
 #: fortran/openmp.c:3069
-#, fuzzy, gcc-internal-format
-#| msgid "THREADPRIVATE object '%s' in SHARED clause at %L"
+#, gcc-internal-format
 msgid "THREADPRIVATE object %qs in SHARED clause at %L"
-msgstr "THREADPRIVATE objekt ”%s” i SHARED fall vid %L"
+msgstr "THREADPRIVATE objekt %qs i SHARED fall vid %L"
 
 #: fortran/openmp.c:3072
-#, fuzzy, gcc-internal-format
-#| msgid "Cray pointee '%s' in SHARED clause at %L"
+#, gcc-internal-format
 msgid "Cray pointee %qs in SHARED clause at %L"
-msgstr "Cray-utpekad ”%s” i SHARED-klausul vid %L"
+msgstr "Cray-utpekad %qs i SHARED-klausul vid %L"
 
 #: fortran/openmp.c:3075
 #, fuzzy, gcc-internal-format
@@ -48569,16 +48338,14 @@ msgid "%qs in DEPEND clause at %L is a zero size array section"
 msgstr "%qs i DEPEND-klausul vid %L är en vektorsektion mes storlek noll"
 
 #: fortran/openmp.c:3176 fortran/openmp.c:3188
-#, fuzzy, gcc-internal-format
-#| msgid "THREADPRIVATE object '%s' in %s clause at %L"
+#, gcc-internal-format
 msgid "THREADPRIVATE object %qs in %s clause at %L"
-msgstr "THREADPRIVATE objekt ”%s” i %s-fall vid %L"
+msgstr "THREADPRIVATE objekt %qs i %s-fall vid %L"
 
 #: fortran/openmp.c:3179 fortran/openmp.c:3191
-#, fuzzy, gcc-internal-format
-#| msgid "Cray pointee '%s' in %s clause at %L"
+#, gcc-internal-format
 msgid "Cray pointee %qs in %s clause at %L"
-msgstr "Cray-utpekad ”%s” i %s-klausul vid %L"
+msgstr "Cray-utpekad %qs i %s-klausul vid %L"
 
 #: fortran/openmp.c:3194
 #, fuzzy, gcc-internal-format
@@ -48593,16 +48360,14 @@ msgid "Procedure pointer %qs in %s clause at %L"
 msgstr "Cray-pekare ”%s” i %s-klausul vid %L"
 
 #: fortran/openmp.c:3205
-#, fuzzy, gcc-internal-format
-#| msgid "Cray pointer '%s' in %s clause at %L"
+#, gcc-internal-format
 msgid "Cray pointer %qs in %s clause at %L"
-msgstr "Cray-pekare ”%s” i %s-klausul vid %L"
+msgstr "Cray-pekare %qs i %s-klausul vid %L"
 
 #: fortran/openmp.c:3215
-#, fuzzy, gcc-internal-format
-#| msgid "Variable '%s' in %s clause is used in NAMELIST statement at %L"
+#, gcc-internal-format
 msgid "Variable %qs in %s clause is used in NAMELIST statement at %L"
-msgstr "Variabeln ”%s” i %s-klausul används i NAMELIST-sats vid %L"
+msgstr "Variabeln %qs i %s-klausul används i NAMELIST-sats vid %L"
 
 #. case OMP_LIST_REDUCTION:
 #: fortran/openmp.c:3225
@@ -48742,10 +48507,9 @@ msgid "!$OMP ATOMIC assignment intrinsic must be MIN, MAX, IAND, IOR or IEOR at 
 msgstr "!$OMP ATOMIC-tilldelning av inbyggd måste vara MIN, MAX, IAND, IOR eller IEOR vid %L"
 
 #: fortran/openmp.c:3839
-#, fuzzy, gcc-internal-format
-#| msgid "!$OMP ATOMIC intrinsic arguments except one must not reference '%s' at %L"
+#, gcc-internal-format
 msgid "!$OMP ATOMIC intrinsic arguments except one must not reference %qs at %L"
-msgstr "!$OMP ATOMIC-inbyggds argument utom ett får inte referera ”%s” vid %L"
+msgstr "!$OMP ATOMIC-inbyggds argument utom ett får inte referera %qs vid %L"
 
 #: fortran/openmp.c:3846
 #, gcc-internal-format, gfc-internal-format
@@ -48753,10 +48517,9 @@ msgid "!$OMP ATOMIC intrinsic arguments must be scalar at %L"
 msgstr "!$OMP ATOMIC-inbyggds argument måste vara skalära vid %L"
 
 #: fortran/openmp.c:3854
-#, fuzzy, gcc-internal-format
-#| msgid "First or last !$OMP ATOMIC intrinsic argument must be '%s' at %L"
+#, gcc-internal-format
 msgid "First or last !$OMP ATOMIC intrinsic argument must be %qs at %L"
-msgstr "Första eller sista !$OMP ATOMIC-inbyggds argument måste vara ”%s” vid %L"
+msgstr "Första eller sista !$OMP ATOMIC-inbyggds argument måste vara %qs vid %L"
 
 #: fortran/openmp.c:3872
 #, gcc-internal-format, gfc-internal-format
@@ -49036,10 +48799,9 @@ msgid "-fexcess-precision=standard for Fortran"
 msgstr "-fexcess-precision=standard för Fortran"
 
 #: fortran/options.c:304
-#, fuzzy, gcc-internal-format
-#| msgid "Reading file '%s' as free form"
+#, gcc-internal-format
 msgid "Reading file %qs as free form"
-msgstr "Läser filen ”%s” som friform"
+msgstr "Läser filen %qs som friform"
 
 #: fortran/options.c:314
 #, fuzzy, gcc-internal-format
@@ -49237,22 +48999,19 @@ msgid "%s statement at %C cannot follow %s statement at %L"
 msgstr "%s-sats vid %C får inte följa efter %s-sats vid %L"
 
 #: fortran/parse.c:2456
-#, fuzzy, gcc-internal-format
-#| msgid "Unexpected end of file in '%s'"
+#, gcc-internal-format
 msgid "Unexpected end of file in %qs"
-msgstr "Oväntat filslut i ”%s”"
+msgstr "Oväntat filslut i %qs"
 
 #: fortran/parse.c:2488
-#, fuzzy, gcc-internal-format
-#| msgid "Derived-type '%s' with SEQUENCE must not have a CONTAINS section at %C"
+#, gcc-internal-format
 msgid "Derived-type %qs with SEQUENCE must not have a CONTAINS section at %C"
-msgstr "Härledd typ ”%s” med SEQUENCE får inte ha en CONTAINS-sektion vid %C"
+msgstr "Härledd typ %qs med SEQUENCE får inte ha en CONTAINS-sektion vid %C"
 
 #: fortran/parse.c:2491
-#, fuzzy, gcc-internal-format
-#| msgid "Derived-type '%s' with BIND(C) must not have a CONTAINS section at %C"
+#, gcc-internal-format
 msgid "Derived-type %qs with BIND(C) must not have a CONTAINS section at %C"
-msgstr "Härledd typ ”%s” med BIND(C) får nte ha en CONTAINS-sektion vid %C"
+msgstr "Härledd typ %qs med BIND(C) får nte ha en CONTAINS-sektion vid %C"
 
 #: fortran/parse.c:2511
 #, gcc-internal-format, gfc-internal-format
@@ -49380,10 +49139,9 @@ msgid "Unexpected %s statement in INTERFACE block at %C"
 msgstr "Oväntad %s-sats i INTERFACE-block vid %C"
 
 #: fortran/parse.c:2975
-#, fuzzy, gcc-internal-format
-#| msgid "Name '%s' of ABSTRACT INTERFACE at %C cannot be the same as an intrinsic type"
+#, gcc-internal-format
 msgid "Name %qs of ABSTRACT INTERFACE at %C cannot be the same as an intrinsic type"
-msgstr "Namnet ”%s” i ABSTRACT INTERFACE vid %C kan inte vara samma som en inbyggd typ"
+msgstr "Namnet %qs i ABSTRACT INTERFACE vid %C kan inte vara samma som en inbyggd typ"
 
 #: fortran/parse.c:3008
 #, gcc-internal-format, gfc-internal-format
@@ -49391,10 +49149,9 @@ msgid "Unexpected %s statement at %C in INTERFACE body"
 msgstr "Oväntad %s-sats vid %C i INTERFACE-kropp"
 
 #: fortran/parse.c:3026
-#, fuzzy, gcc-internal-format
-#| msgid "INTERFACE procedure '%s' at %L has the same name as the enclosing procedure"
+#, gcc-internal-format
 msgid "INTERFACE procedure %qs at %L has the same name as the enclosing procedure"
-msgstr "INTERFACE-procedur ”%s” vid %L har samma namn som den inneslutande proceduren"
+msgstr "INTERFACE-procedur %qs vid %L har samma namn som den inneslutande proceduren"
 
 #: fortran/parse.c:3151
 #, gcc-internal-format, gfc-internal-format
@@ -49417,16 +49174,14 @@ msgid "%s statement at %C follows another accessibility specification"
 msgstr "%s-sats vid %C följer på en annan åtkomstspecifikation"
 
 #: fortran/parse.c:3337
-#, fuzzy, gcc-internal-format
-#| msgid "Bad kind expression for function '%s' at %L"
+#, gcc-internal-format
 msgid "Bad kind expression for function %qs at %L"
-msgstr "Fel sorts uttryck för funktionen ”%s” vid %L"
+msgstr "Fel sorts uttryck för funktionen %qs vid %L"
 
 #: fortran/parse.c:3341
-#, fuzzy, gcc-internal-format
-#| msgid "The type for function '%s' at %L is not accessible"
+#, gcc-internal-format
 msgid "The type for function %qs at %L is not accessible"
-msgstr "Typen på funktionen ”%s” vid %L är inte tillgänglig"
+msgstr "Typen på funktionen %qs vid %L är inte tillgänglig"
 
 #: fortran/parse.c:3399
 #, gcc-internal-format, gfc-internal-format
@@ -49554,10 +49309,9 @@ msgid "DATA statement at %C after the first executable statement"
 msgstr "DATA-sats vid %C efter den första körbara satsen"
 
 #: fortran/parse.c:4859
-#, fuzzy, gcc-internal-format
-#| msgid "Contained procedure '%s' at %C is already ambiguous"
+#, gcc-internal-format
 msgid "Contained procedure %qs at %C is already ambiguous"
-msgstr "Innesluten procedur ”%s” vid %C är redan tvetydig"
+msgstr "Innesluten procedur %qs vid %C är redan tvetydig"
 
 #: fortran/parse.c:4915
 #, gcc-internal-format, gfc-internal-format
@@ -49752,10 +49506,9 @@ msgid "Unterminated character constant beginning at %C"
 msgstr "Oavslutad teckenkonstant börjar vid %C"
 
 #: fortran/primary.c:1086
-#, fuzzy, gcc-internal-format
-#| msgid "Character '%s' in string at %C is not representable in character kind %d"
+#, gcc-internal-format
 msgid "Character %qs in string at %C is not representable in character kind %d"
-msgstr "Tecknet ”%s” i sträng vid %C är inte representerbart i teckensort %d"
+msgstr "Tecknet %qs i sträng vid %C är inte representerbart i teckensort %d"
 
 #: fortran/primary.c:1099
 #, gcc-internal-format
@@ -49803,10 +49556,9 @@ msgid "Syntax error in COMPLEX constant at %C"
 msgstr "Syntaxfel i COMPLEX-konstant vid %C"
 
 #: fortran/primary.c:1583
-#, fuzzy, gcc-internal-format
-#| msgid "Keyword '%s' at %C has already appeared in the current argument list"
+#, gcc-internal-format
 msgid "Keyword %qs at %C has already appeared in the current argument list"
-msgstr "Nyckelordet ”%s” vid %C har redan förekommit i den aktuella argumentlistan"
+msgstr "Nyckelordet %qs vid %C har redan förekommit i den aktuella argumentlistan"
 
 #: fortran/primary.c:1647
 #, gcc-internal-format, gfc-internal-format
@@ -49839,16 +49591,14 @@ msgid "Array section designator, e.g. '(:)', is required besides the coarray des
 msgstr "Vektorsektionsbeteckning, t.ex. ”(:)”, krävs förutom co-vektorbeteckningen ”[...]” vid %C"
 
 #: fortran/primary.c:1850
-#, fuzzy, gcc-internal-format
-#| msgid "Coarray designator at %C but '%s' is not a coarray"
+#, gcc-internal-format
 msgid "Coarray designator at %C but %qs is not a coarray"
-msgstr "Co-vektorbeteckning vid %C men ”%s” är inte en co-vektor"
+msgstr "Co-vektorbeteckning vid %C men %qs är inte en co-vektor"
 
 #: fortran/primary.c:1920
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' at %C has no IMPLICIT type"
+#, gcc-internal-format
 msgid "Symbol %qs at %C has no IMPLICIT type"
-msgstr "Symbolen  ”%s” vid %C har ingen IMPLICIT-typ"
+msgstr "Symbolen  %qs vid %C har ingen IMPLICIT-typ"
 
 #: fortran/primary.c:1926
 #, fuzzy, gcc-internal-format
@@ -49867,10 +49617,9 @@ msgid "Expected argument list at %C"
 msgstr "Argumentlista förväntades vid %C"
 
 #: fortran/primary.c:2026
-#, fuzzy, gcc-internal-format
-#| msgid "Procedure pointer component '%s' requires an argument list at %C"
+#, gcc-internal-format
 msgid "Procedure pointer component %qs requires an argument list at %C"
-msgstr "Procedurpekarkomponent ”%s” kräver en argumentlista vid %C"
+msgstr "Procedurpekarkomponent %qs kräver en argumentlista vid %C"
 
 #: fortran/primary.c:2113
 #, gcc-internal-format, gfc-internal-format
@@ -49901,16 +49650,14 @@ msgid "No initializer for allocatable component '%qs' given in the structure con
 msgstr "Ingen initierare för komponent ”%s” angiven i postkonstrueraren vid %C!"
 
 #: fortran/primary.c:2402
-#, fuzzy, gcc-internal-format
-#| msgid "No initializer for component '%s' given in the structure constructor at %C!"
+#, gcc-internal-format
 msgid "No initializer for component %qs given in the structure constructor at %C!"
-msgstr "Ingen initierare för komponent ”%s” angiven i postkonstrueraren vid %C!"
+msgstr "Ingen initierare för komponent %qs angiven i postkonstrueraren vid %C!"
 
 #: fortran/primary.c:2450
-#, fuzzy, gcc-internal-format
-#| msgid "Can't construct ABSTRACT type '%s' at %L"
+#, gcc-internal-format
 msgid "Can't construct ABSTRACT type %qs at %L"
-msgstr "Det går inte att konstruera ABSTRACT typ ”%s” vid %L"
+msgstr "Det går inte att konstruera ABSTRACT typ %qs vid %L"
 
 #: fortran/primary.c:2470
 #, gcc-internal-format, gfc-internal-format
@@ -49928,58 +49675,49 @@ msgid "Too many components in structure constructor at %L!"
 msgstr "För många komponenter i postkonstruerare vid %L!"
 
 #: fortran/primary.c:2527
-#, fuzzy, gcc-internal-format
-#| msgid "Component '%s' is initialized twice in the structure constructor at %L!"
+#, gcc-internal-format
 msgid "Component %qs is initialized twice in the structure constructor at %L!"
-msgstr "Komponenten ”%s” initieras två gånger i postkonstrueraren vid %L!"
+msgstr "Komponenten %qs initieras två gånger i postkonstrueraren vid %L!"
 
 #: fortran/primary.c:2539
-#, fuzzy, gcc-internal-format
-#| msgid "Coindexed expression to pointer component '%s' in structure constructor at %L!"
+#, gcc-internal-format
 msgid "Coindexed expression to pointer component %qs in structure constructor at %L!"
-msgstr "Co-indexerat uttryck till pekar komponent ”%s” i postkonstruerare vid %L!"
+msgstr "Co-indexerat uttryck till pekar komponent %qs i postkonstruerare vid %L!"
 
 #: fortran/primary.c:2593
-#, fuzzy, gcc-internal-format
-#| msgid "component '%s' at %L has already been set by a parent derived type constructor"
+#, gcc-internal-format
 msgid "component %qs at %L has already been set by a parent derived type constructor"
-msgstr "komponent ”%s” vid %L har redan satts av en härledd föräldratyps konstruerare"
+msgstr "komponent %qs vid %L har redan satts av en härledd föräldratyps konstruerare"
 
 #: fortran/primary.c:2776
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %C is the name of a recursive function and so refers to the result variable. Use an explicit RESULT variable for direct recursion (12.5.2.1)"
+#, gcc-internal-format
 msgid "%qs at %C is the name of a recursive function and so refers to the result variable. Use an explicit RESULT variable for direct recursion (12.5.2.1)"
-msgstr "”%s” vid %C är namnet på en rekursiv funktion och refererar därmed till resultatvariabeln.  Använd en explicit RESULT-variabel för direkt rekursion (12.5.2.1)"
+msgstr "%qs vid %C är namnet på en rekursiv funktion och refererar därmed till resultatvariabeln.  Använd en explicit RESULT-variabel för direkt rekursion (12.5.2.1)"
 
 #: fortran/primary.c:2899
-#, fuzzy, gcc-internal-format
-#| msgid "Unexpected use of subroutine name '%s' at %C"
+#, gcc-internal-format
 msgid "Unexpected use of subroutine name %qs at %C"
-msgstr "Oväntad användning av subrutinnamnet ”%s” vid %C"
+msgstr "Oväntad användning av subrutinnamnet %qs vid %C"
 
 #: fortran/primary.c:2930
-#, fuzzy, gcc-internal-format
-#| msgid "Statement function '%s' requires argument list at %C"
+#, gcc-internal-format
 msgid "Statement function %qs requires argument list at %C"
-msgstr "Satsfunktion ”%s” kräver en argumentlista vid %C"
+msgstr "Satsfunktion %qs kräver en argumentlista vid %C"
 
 #: fortran/primary.c:2933
-#, fuzzy, gcc-internal-format
-#| msgid "Function '%s' requires an argument list at %C"
+#, gcc-internal-format
 msgid "Function %qs requires an argument list at %C"
-msgstr "Funktion ”%s” kräver en argumentlista vid %C"
+msgstr "Funktion %qs kräver en argumentlista vid %C"
 
 #: fortran/primary.c:2983
-#, fuzzy, gcc-internal-format
-#| msgid "Missing argument to '%s' at %C"
+#, gcc-internal-format
 msgid "Missing argument to %qs at %C"
-msgstr "Argument saknas till ”%s” vid %C"
+msgstr "Argument saknas till %qs vid %C"
 
 #: fortran/primary.c:3139
-#, fuzzy, gcc-internal-format
-#| msgid "Missing argument list in function '%s' at %C"
+#, gcc-internal-format
 msgid "Missing argument list in function %qs at %C"
-msgstr "Argumentlista saknas i funktionen ”%s” vid %C"
+msgstr "Argumentlista saknas i funktionen %qs vid %C"
 
 #: fortran/primary.c:3173
 #, gcc-internal-format, gfc-internal-format
@@ -49992,106 +49730,89 @@ msgid "Named constant at %C in an EQUIVALENCE"
 msgstr "Namngiven konstant vid %C är en EQUIVALENCE"
 
 #: fortran/primary.c:3306
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %C is not a variable"
+#, gcc-internal-format
 msgid "%qs at %C is not a variable"
-msgstr "”%s” vid %C är inte en variabel"
+msgstr "%qs vid %C är inte en variabel"
 
 #: fortran/resolve.c:125
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %L is of the ABSTRACT type '%s'"
+#, gcc-internal-format
 msgid "%qs at %L is of the ABSTRACT type %qs"
-msgstr "”%s” vid %L har den ABSTRACT:a typen ”%s”"
+msgstr "%qs vid %L har den ABSTRACT:a typen %qs"
 
 #: fortran/resolve.c:128
-#, fuzzy, gcc-internal-format
-#| msgid "ABSTRACT type '%s' used at %L"
+#, gcc-internal-format
 msgid "ABSTRACT type %qs used at %L"
-msgstr "ABSTRACT typ ”%s” används vid %L"
+msgstr "ABSTRACT typ %qs används vid %L"
 
 #: fortran/resolve.c:145
-#, fuzzy, gcc-internal-format
-#| msgid "Interface '%s' at %L is declared in a later PROCEDURE statement"
+#, gcc-internal-format
 msgid "Interface %qs at %L is declared in a later PROCEDURE statement"
-msgstr "Gränssnitt ”%s” vid %L, är deklarerat i en senare PROCEDURE-sats"
+msgstr "Gränssnitt %qs vid %L, är deklarerat i en senare PROCEDURE-sats"
 
 #: fortran/resolve.c:158
-#, fuzzy, gcc-internal-format
-#| msgid "Interface '%s' at %L may not be generic"
+#, gcc-internal-format
 msgid "Interface %qs at %L may not be generic"
-msgstr "Gränssnitt ”%s” vid %L kan inte vara generiskt"
+msgstr "Gränssnitt %qs vid %L kan inte vara generiskt"
 
 #: fortran/resolve.c:165
-#, fuzzy, gcc-internal-format
-#| msgid "Interface '%s' at %L may not be a statement function"
+#, gcc-internal-format
 msgid "Interface %qs at %L may not be a statement function"
-msgstr "Gränssnitt ”%s” vid %L kan inte vara en satsfunktion"
+msgstr "Gränssnitt %qs vid %L kan inte vara en satsfunktion"
 
 #: fortran/resolve.c:174
-#, fuzzy, gcc-internal-format
-#| msgid "Intrinsic procedure '%s' not allowed in PROCEDURE statement at %L"
+#, gcc-internal-format
 msgid "Intrinsic procedure %qs not allowed in PROCEDURE statement at %L"
-msgstr "Den inbyggda proceduren ”%s” är inte tillåten i PROCEDURE-sats vid %L"
+msgstr "Den inbyggda proceduren %qs är inte tillåten i PROCEDURE-sats vid %L"
 
 #: fortran/resolve.c:180
-#, fuzzy, gcc-internal-format
-#| msgid "Interface '%s' at %L must be explicit"
+#, gcc-internal-format
 msgid "Interface %qs at %L must be explicit"
-msgstr "Gränssnitt ”%s” vid %L måste vara explicit"
+msgstr "Gränssnitt %qs vid %L måste vara explicit"
 
 #: fortran/resolve.c:202
-#, fuzzy, gcc-internal-format
-#| msgid "PROCEDURE '%s' at %L may not be used as its own interface"
+#, gcc-internal-format
 msgid "PROCEDURE %qs at %L may not be used as its own interface"
-msgstr "PROCEDURE ”%s” vid %L får inte användas som sitt eget gränssnitt"
+msgstr "PROCEDURE %qs vid %L får inte användas som sitt eget gränssnitt"
 
 #: fortran/resolve.c:296
-#, fuzzy, gcc-internal-format
-#| msgid "Alternate return specifier in elemental subroutine '%s' at %L is not allowed"
+#, gcc-internal-format
 msgid "Alternate return specifier in elemental subroutine %qs at %L is not allowed"
-msgstr "Alternativ returspecificerare i elementär subrutin ”%s” vid %L är inte tillåten"
+msgstr "Alternativ returspecificerare i elementär subrutin %qs vid %L är inte tillåten"
 
 #: fortran/resolve.c:300
-#, fuzzy, gcc-internal-format
-#| msgid "Alternate return specifier in function '%s' at %L is not allowed"
+#, gcc-internal-format
 msgid "Alternate return specifier in function %qs at %L is not allowed"
-msgstr "Alternativ returspecifierare i funktionen ”%s” vid %L är inte tillåten"
+msgstr "Alternativ returspecifierare i funktionen %qs vid %L är inte tillåten"
 
 #: fortran/resolve.c:311
-#, fuzzy, gcc-internal-format
-#| msgid "Self-referential argument '%s' at %L is not allowed"
+#, gcc-internal-format
 msgid "Self-referential argument %qs at %L is not allowed"
-msgstr "Det självrefererande agumentet ”%s” vid %L är inte tillåtet"
+msgstr "Det självrefererande agumentet %qs vid %L är inte tillåtet"
 
 #: fortran/resolve.c:383
-#, fuzzy, gcc-internal-format
-#| msgid "Dummy procedure '%s' of PURE procedure at %L must also be PURE"
+#, gcc-internal-format
 msgid "Dummy procedure %qs of PURE procedure at %L must also be PURE"
-msgstr "Attrapprocedur ”%s” av PURE-procedur vid %L måste också vara PURE"
+msgstr "Attrapprocedur %qs av PURE-procedur vid %L måste också vara PURE"
 
 #: fortran/resolve.c:393
-#, fuzzy, gcc-internal-format
-#| msgid "Argument '%s' of pure function '%s' at %L with VALUE attribute but without INTENT(IN)"
+#, gcc-internal-format
 msgid "Argument %qs of pure function %qs at %L with VALUE attribute but without INTENT(IN)"
-msgstr "Argumentet ”%s” till pure-funktion ”%s” vid %L med attributet VALUE men utan INTENT(IN)"
+msgstr "Argumentet %qs till pure-funktion %qs vid %L med attributet VALUE men utan INTENT(IN)"
 
 #: fortran/resolve.c:398
-#, fuzzy, gcc-internal-format
-#| msgid "Argument '%s' of pure function '%s' at %L must be INTENT(IN) or VALUE"
+#, gcc-internal-format
 msgid "Argument %qs of pure function %qs at %L must be INTENT(IN) or VALUE"
-msgstr "Argumentet ”%s” till pure-funktion ”%s” vid %L måste vara INTENT(IN) eller VALUE"
+msgstr "Argumentet %qs till pure-funktion %qs vid %L måste vara INTENT(IN) eller VALUE"
 
 #: fortran/resolve.c:406
-#, fuzzy, gcc-internal-format
-#| msgid "Argument '%s' of pure subroutine '%s' at %L with VALUE attribute but without INTENT"
+#, gcc-internal-format
 msgid "Argument %qs of pure subroutine %qs at %L with VALUE attribute but without INTENT"
-msgstr "Argument ”%s” till pure-subrutin ”%s” vid %L med attributet VALUE men utan INTENT"
+msgstr "Argument %qs till pure-subrutin %qs vid %L med attributet VALUE men utan INTENT"
 
 #: fortran/resolve.c:411
-#, fuzzy, gcc-internal-format
-#| msgid "Argument '%s' of pure subroutine '%s' at %L must have its INTENT specified or have the VALUE attribute"
+#, gcc-internal-format
 msgid "Argument %qs of pure subroutine %qs at %L must have its INTENT specified or have the VALUE attribute"
-msgstr "Argumentet ”%s” till pure-subrutin ”%s” vid %L måste ha sitt INTENT angivet eller ha attributet VALUE"
+msgstr "Argumentet %qs till pure-subrutin %qs vid %L måste ha sitt INTENT angivet eller ha attributet VALUE"
 
 #: fortran/resolve.c:421
 #, fuzzy, gcc-internal-format
@@ -50100,70 +49821,59 @@ msgid "INTENT(OUT) argument '%s' of pure procedure %qs at %L may not be polymorp
 msgstr "”%s”-argumentet till elementär procedur vid %L måste vara skalärt"
 
 #: fortran/resolve.c:454
-#, fuzzy, gcc-internal-format
-#| msgid "Coarray dummy argument '%s' at %L to elemental procedure"
+#, gcc-internal-format
 msgid "Coarray dummy argument %qs at %L to elemental procedure"
-msgstr "Co-vektorattrappargument ”%s” vid %L till elementär i proceduren"
+msgstr "Co-vektorattrappargument %qs vid %L till elementär i proceduren"
 
 #: fortran/resolve.c:462
-#, fuzzy, gcc-internal-format
-#| msgid "Argument '%s' of elemental procedure at %L must be scalar"
+#, gcc-internal-format
 msgid "Argument %qs of elemental procedure at %L must be scalar"
-msgstr "”%s”-argumentet till elementär procedur vid %L måste vara skalärt"
+msgstr "%qs-argumentet till elementär procedur vid %L måste vara skalärt"
 
 #: fortran/resolve.c:471
-#, fuzzy, gcc-internal-format
-#| msgid "Argument '%s' of elemental procedure at %L cannot have the ALLOCATABLE attribute"
+#, gcc-internal-format
 msgid "Argument %qs of elemental procedure at %L cannot have the ALLOCATABLE attribute"
-msgstr "Argumentet ”%s” av elementär procedur vid %L får inte ha attributet ALLOCATABLE"
+msgstr "Argumentet %qs av elementär procedur vid %L får inte ha attributet ALLOCATABLE"
 
 #: fortran/resolve.c:481
-#, fuzzy, gcc-internal-format
-#| msgid "Argument '%s' of elemental procedure at %L cannot have the POINTER attribute"
+#, gcc-internal-format
 msgid "Argument %qs of elemental procedure at %L cannot have the POINTER attribute"
-msgstr "Argumentet ”%s” av elementär procedur vid %L får inte ha attributet POINTER"
+msgstr "Argumentet %qs av elementär procedur vid %L får inte ha attributet POINTER"
 
 #: fortran/resolve.c:489
-#, fuzzy, gcc-internal-format
-#| msgid "Dummy procedure '%s' not allowed in elemental procedure '%s' at %L"
+#, gcc-internal-format
 msgid "Dummy procedure %qs not allowed in elemental procedure %qs at %L"
-msgstr "Attrapprocedur ”%s” är inte tillåten i elementär procedur ”%s” vid %L"
+msgstr "Attrapprocedur %qs är inte tillåten i elementär procedur %qs vid %L"
 
 #: fortran/resolve.c:498
-#, fuzzy, gcc-internal-format
-#| msgid "Argument '%s' of elemental procedure '%s' at %L must have its INTENT specified or have the VALUE attribute"
+#, gcc-internal-format
 msgid "Argument %qs of elemental procedure %qs at %L must have its INTENT specified or have the VALUE attribute"
-msgstr "Argumentet ”%s” till elementär subrutin ”%s” vid %L måste ha sitt INTENT angivet eller ha attributet VALUE"
+msgstr "Argumentet %qs till elementär subrutin %qs vid %L måste ha sitt INTENT angivet eller ha attributet VALUE"
 
 #: fortran/resolve.c:511
-#, fuzzy, gcc-internal-format
-#| msgid "Argument '%s' of statement function at %L must be scalar"
+#, gcc-internal-format
 msgid "Argument %qs of statement function at %L must be scalar"
-msgstr "”%s”-argumentet till satsfunktionen vid %L måste vara skalärt"
+msgstr "%qs-argumentet till satsfunktionen vid %L måste vara skalärt"
 
 #: fortran/resolve.c:521
-#, fuzzy, gcc-internal-format
-#| msgid "Character-valued argument '%s' of statement function at %L must have constant length"
+#, gcc-internal-format
 msgid "Character-valued argument %qs of statement function at %L must have constant length"
-msgstr "Teckenvärt argument ”%s” till satsfunktion vid %L måste ha konstant längd"
+msgstr "Teckenvärt argument %qs till satsfunktion vid %L måste ha konstant längd"
 
 #: fortran/resolve.c:579
-#, fuzzy, gcc-internal-format
-#| msgid "Contained function '%s' at %L has no IMPLICIT type"
+#, gcc-internal-format
 msgid "Contained function %qs at %L has no IMPLICIT type"
-msgstr "Innesluten funktion ”%s” vid %L har ingen IMPLICIT-typ"
+msgstr "Innesluten funktion %qs vid %L har ingen IMPLICIT-typ"
 
 #: fortran/resolve.c:582
-#, fuzzy, gcc-internal-format
-#| msgid "Result '%s' of contained function '%s' at %L has no IMPLICIT type"
+#, gcc-internal-format
 msgid "Result %qs of contained function %qs at %L has no IMPLICIT type"
-msgstr "Resultatet ”%s” av innesluten funktion ”%s” vid %L har ingen IMPLICIT-typ"
+msgstr "Resultatet %qs av innesluten funktion %qs vid %L har ingen IMPLICIT-typ"
 
 #: fortran/resolve.c:606
-#, fuzzy, gcc-internal-format
-#| msgid "Character-valued %s '%s' at %L must not be assumed length"
+#, gcc-internal-format
 msgid "Character-valued %s %qs at %L must not be assumed length"
-msgstr "Teckenvärd %s ”%s” vid %L får inte ha antagen längd"
+msgstr "Teckenvärd %s %qs vid %L får inte ha antagen längd"
 
 #: fortran/resolve.c:780
 #, gcc-internal-format, gfc-internal-format
@@ -50206,40 +49916,34 @@ msgid "ENTRY result %s can't be of type %s in FUNCTION %s at %L"
 msgstr "ENTRY-resultat %s får inte vara av typen %s i FUNCTION %s vid %L"
 
 #: fortran/resolve.c:925
-#, fuzzy, gcc-internal-format
-#| msgid "Variable '%s' at %L is in COMMON but only in BLOCK DATA initialization is allowed"
+#, gcc-internal-format
 msgid "Variable %qs at %L is in COMMON but only in BLOCK DATA initialization is allowed"
-msgstr "Variabel ”%s” vid %L är i COMMON men endast i BLOCK DATA är initiering tillåten"
+msgstr "Variabel %qs vid %L är i COMMON men endast i BLOCK DATA är initiering tillåten"
 
 #: fortran/resolve.c:929
-#, fuzzy, gcc-internal-format
-#| msgid "Initialized variable '%s' at %L is in a blank COMMON but initialization is only allowed in named common blocks"
+#, gcc-internal-format
 msgid "Initialized variable %qs at %L is in a blank COMMON but initialization is only allowed in named common blocks"
-msgstr "Initierad variabel ”%s” vid %L är i en blank COMMON men initiering ir endast tillåten i namngivna common-block"
+msgstr "Initierad variabel %qs vid %L är i en blank COMMON men initiering ir endast tillåten i namngivna common-block"
 
 #: fortran/resolve.c:936
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' in cannot appear in COMMON at %L [F2008:C5100]"
+#, gcc-internal-format
 msgid "%qs in cannot appear in COMMON at %L [F2008:C5100]"
-msgstr "”%s” kan inte förekomma i COMMON vid %L [F2008:C5100]"
+msgstr "%qs kan inte förekomma i COMMON vid %L [F2008:C5100]"
 
 #: fortran/resolve.c:944
-#, fuzzy, gcc-internal-format
-#| msgid "Derived type variable '%s' in COMMON at %L has neither the SEQUENCE nor the BIND(C) attribute"
+#, gcc-internal-format
 msgid "Derived type variable %qs in COMMON at %L has neither the SEQUENCE nor the BIND(C) attribute"
-msgstr "Härledd typvariabel ”%s” i COMMON vid %L har varken attributet SEQUENCE eller BIND(C)"
+msgstr "Härledd typvariabel %qs i COMMON vid %L har varken attributet SEQUENCE eller BIND(C)"
 
 #: fortran/resolve.c:948
-#, fuzzy, gcc-internal-format
-#| msgid "Derived type variable '%s' in COMMON at %L has an ultimate component that is allocatable"
+#, gcc-internal-format
 msgid "Derived type variable %qs in COMMON at %L has an ultimate component that is allocatable"
-msgstr "Härledd typvariabel ”%s” i COMMON vid %L har en slutlig komponent som är allokerbar"
+msgstr "Härledd typvariabel %qs i COMMON vid %L har en slutlig komponent som är allokerbar"
 
 #: fortran/resolve.c:952
-#, fuzzy, gcc-internal-format
-#| msgid "Derived type variable '%s' in COMMON at %L may not have default initializer"
+#, gcc-internal-format
 msgid "Derived type variable %qs in COMMON at %L may not have default initializer"
-msgstr "Härledd typvariabel ”%s” i COMMON vid %L får inte ha standardinitierare"
+msgstr "Härledd typvariabel %qs i COMMON vid %L får inte ha standardinitierare"
 
 #: fortran/resolve.c:996
 #, gcc-internal-format, gfc-internal-format
@@ -50267,28 +49971,24 @@ msgid "COMMON block '%s' at %L is used as PARAMETER at %L"
 msgstr "COMMON-block ”%s” vid %L används som PARAMETER vid %L"
 
 #: fortran/resolve.c:1065
-#, fuzzy, gcc-internal-format
-#| msgid "COMMON block '%s' at %L can not have the EXTERNAL attribute"
+#, gcc-internal-format
 msgid "COMMON block %qs at %L can not have the EXTERNAL attribute"
-msgstr "COMMON-blocket ”%s” vid %L får inte ha attributet EXTERNAL"
+msgstr "COMMON-blocket %qs vid %L får inte ha attributet EXTERNAL"
 
 #: fortran/resolve.c:1069
-#, fuzzy, gcc-internal-format
-#| msgid "COMMON block '%s' at %L is also an intrinsic procedure"
+#, gcc-internal-format
 msgid "COMMON block %qs at %L is also an intrinsic procedure"
-msgstr "COMMON-block ”%s” vid %L är också en inbyggd procedur"
+msgstr "COMMON-block %qs vid %L är också en inbyggd procedur"
 
 #: fortran/resolve.c:1073
-#, fuzzy, gcc-internal-format
-#| msgid "COMMON block '%s' at %L that is also a function result"
+#, gcc-internal-format
 msgid "COMMON block %qs at %L that is also a function result"
-msgstr "COMMON-block ”%s” vid %L som också är ett funktionsresultat"
+msgstr "COMMON-block %qs vid %L som också är ett funktionsresultat"
 
 #: fortran/resolve.c:1078
-#, fuzzy, gcc-internal-format
-#| msgid "COMMON block '%s' at %L that is also a global procedure"
+#, gcc-internal-format
 msgid "COMMON block %qs at %L that is also a global procedure"
-msgstr "COMMON-block ”%s” vid %L som också är en global procedur"
+msgstr "COMMON-block %qs vid %L som också är en global procedur"
 
 #: fortran/resolve.c:1164
 #, gcc-internal-format, gfc-internal-format
@@ -50296,28 +49996,24 @@ msgid "The rank of the element in the structure constructor at %L does not match
 msgstr "Ordningen på elementet i postkonstrueraren vid %L stämmer inte överens med komponentens (%d/%d)"
 
 #: fortran/resolve.c:1185
-#, fuzzy, gcc-internal-format
-#| msgid "The element in the structure constructor at %L, for pointer component '%s', is %s but should be %s"
+#, gcc-internal-format
 msgid "The element in the structure constructor at %L, for pointer component %qs, is %s but should be %s"
-msgstr "Elementet i postkonstrueraren vid %L, för pekarkomponent ”%s”, är %s men borde vara %s"
+msgstr "Elementet i postkonstrueraren vid %L, för pekarkomponent %qs, är %s men borde vara %s"
 
 #: fortran/resolve.c:1270
-#, fuzzy, gcc-internal-format
-#| msgid "The NULL in the structure constructor at %L is being applied to component '%s', which is neither a POINTER nor ALLOCATABLE"
+#, gcc-internal-format
 msgid "The NULL in the structure constructor at %L is being applied to component %qs, which is neither a POINTER nor ALLOCATABLE"
-msgstr "NULL i postkonstrueraren vid %L används på komponenten ”%s”, som varken är en POINTER eller en ALLOCATABLE"
+msgstr "NULL i postkonstrueraren vid %L används på komponenten %qs, som varken är en POINTER eller en ALLOCATABLE"
 
 #: fortran/resolve.c:1304
-#, fuzzy, gcc-internal-format
-#| msgid "Interface mismatch for procedure-pointer component '%s' in structure constructor at %L: %s"
+#, gcc-internal-format
 msgid "Interface mismatch for procedure-pointer component %qs in structure constructor at %L: %s"
-msgstr "Gränssnittet stämmer inte för procedurpekarkomponenten ”%s” i postkonstruerare vid %L: %s"
+msgstr "Gränssnittet stämmer inte för procedurpekarkomponenten %qs i postkonstruerare vid %L: %s"
 
 #: fortran/resolve.c:1320
-#, fuzzy, gcc-internal-format
-#| msgid "The element in the structure constructor at %L, for pointer component '%s' should be a POINTER or a TARGET"
+#, gcc-internal-format
 msgid "The element in the structure constructor at %L, for pointer component %qs should be a POINTER or a TARGET"
-msgstr "Elementet i postkonstrueraren vid %L, för pekarkomponent ”%s”, borde vara en POINTER eller en TARGET"
+msgstr "Elementet i postkonstrueraren vid %L, för pekarkomponent %qs, borde vara en POINTER eller en TARGET"
 
 #: fortran/resolve.c:1331
 #, gcc-internal-format, gfc-internal-format
@@ -50325,46 +50021,39 @@ msgid "Pointer initialization target at %L must not be ALLOCATABLE "
 msgstr "Pekarinitieringsmål vid %L får inte vara ALLOCATABLE "
 
 #: fortran/resolve.c:1349
-#, fuzzy, gcc-internal-format
-#| msgid "Invalid expression in the structure constructor for pointer component '%s' at %L in PURE procedure"
+#, gcc-internal-format
 msgid "Invalid expression in the structure constructor for pointer component %qs at %L in PURE procedure"
-msgstr "Ogiltigt uttryck i postkonstrueraren för pekarkomponent ”%s” vidl %L i PURE-procedur"
+msgstr "Ogiltigt uttryck i postkonstrueraren för pekarkomponent %qs vidl %L i PURE-procedur"
 
 #: fortran/resolve.c:1474
-#, fuzzy, gcc-internal-format
-#| msgid "The upper bound in the last dimension must appear in the reference to the assumed size array '%s' at %L"
+#, gcc-internal-format
 msgid "The upper bound in the last dimension must appear in the reference to the assumed size array %qs at %L"
-msgstr "Den övre gränsen i sista dimensionen måste vara med i referensen till vektorn ”%s” med antagen storlek vid %L"
+msgstr "Den övre gränsen i sista dimensionen måste vara med i referensen till vektorn %qs med antagen storlek vid %L"
 
 #: fortran/resolve.c:1536
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %L is ambiguous"
+#, gcc-internal-format
 msgid "%qs at %L is ambiguous"
-msgstr "”%s” vid %L är tvetydig"
+msgstr "%qs vid %L är tvetydig"
 
 #: fortran/resolve.c:1540
-#, fuzzy, gcc-internal-format
-#| msgid "GENERIC procedure '%s' is not allowed as an actual argument at %L"
+#, gcc-internal-format
 msgid "GENERIC procedure %qs is not allowed as an actual argument at %L"
-msgstr "GENERIC procedur ”%s” är inte tillåten som aktuellt argument vid %L"
+msgstr "GENERIC procedur %qs är inte tillåten som aktuellt argument vid %L"
 
 #: fortran/resolve.c:1661
-#, fuzzy, gcc-internal-format
-#| msgid "Type specified for intrinsic function '%s' at %L is ignored"
+#, gcc-internal-format
 msgid "Type specified for intrinsic function %qs at %L is ignored"
-msgstr "Typ angiven för inbyggd funktion ”%s” vid %L ignoreras"
+msgstr "Typ angiven för inbyggd funktion %qs vid %L ignoreras"
 
 #: fortran/resolve.c:1674
-#, fuzzy, gcc-internal-format
-#| msgid "Intrinsic subroutine '%s' at %L shall not have a type specifier"
+#, gcc-internal-format
 msgid "Intrinsic subroutine %qs at %L shall not have a type specifier"
-msgstr "Inbyggd subrutin ”%s” vid %L får inte ha en typspecificerare"
+msgstr "Inbyggd subrutin %qs vid %L får inte ha en typspecificerare"
 
 #: fortran/resolve.c:1685
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' declared INTRINSIC at %L does not exist"
+#, gcc-internal-format
 msgid "%qs declared INTRINSIC at %L does not exist"
-msgstr "”%s” deklarerad INTRINSIC vid %L finns inte"
+msgstr "%qs deklarerad INTRINSIC vid %L finns inte"
 
 #: fortran/resolve.c:1698
 #, fuzzy, gcc-internal-format
@@ -50384,40 +50073,34 @@ msgid "Label %d referenced at %L is never defined"
 msgstr "Etikett %d som refereras vid %L är aldrig definierad"
 
 #: fortran/resolve.c:1816
-#, fuzzy, gcc-internal-format
-#| msgid "Statement function '%s' at %L is not allowed as an actual argument"
+#, gcc-internal-format
 msgid "Statement function %qs at %L is not allowed as an actual argument"
-msgstr "Satsfunktionen ”%s” vid %L får inte vara ett aktuellt argument"
+msgstr "Satsfunktionen %qs vid %L får inte vara ett aktuellt argument"
 
 #: fortran/resolve.c:1824
-#, fuzzy, gcc-internal-format
-#| msgid "Intrinsic '%s' at %L is not allowed as an actual argument"
+#, gcc-internal-format
 msgid "Intrinsic %qs at %L is not allowed as an actual argument"
-msgstr "Inbyggd ”%s” vid %L får inte vara ett aktuellt argument"
+msgstr "Inbyggd %qs vid %L får inte vara ett aktuellt argument"
 
 #: fortran/resolve.c:1831
-#, fuzzy, gcc-internal-format
-#| msgid "Internal procedure '%s' is used as actual argument at %L"
+#, gcc-internal-format
 msgid "Internal procedure %qs is used as actual argument at %L"
-msgstr "Den interna proceduren ”%s” används som aktuellt argument vid %L"
+msgstr "Den interna proceduren %qs används som aktuellt argument vid %L"
 
 #: fortran/resolve.c:1839
-#, fuzzy, gcc-internal-format
-#| msgid "ELEMENTAL non-INTRINSIC procedure '%s' is not allowed as an actual argument at %L"
+#, gcc-internal-format
 msgid "ELEMENTAL non-INTRINSIC procedure %qs is not allowed as an actual argument at %L"
-msgstr "ELEMENTAL icke INTRINSIC procedur ”%s” är inte tillåten som aktuellt argument vid %L"
+msgstr "ELEMENTAL icke INTRINSIC procedur %qs är inte tillåten som aktuellt argument vid %L"
 
 #: fortran/resolve.c:1866
-#, fuzzy, gcc-internal-format
-#| msgid "Unable to find a specific INTRINSIC procedure for the reference '%s' at %L"
+#, gcc-internal-format
 msgid "Unable to find a specific INTRINSIC procedure for the reference %qs at %L"
-msgstr "Det går inte att hitta en angiven INTRINSIC-procedur för referensen ”%s” vid %L"
+msgstr "Det går inte att hitta en angiven INTRINSIC-procedur för referensen %qs vid %L"
 
 #: fortran/resolve.c:1888
-#, fuzzy, gcc-internal-format
-#| msgid "Symbol '%s' at %L is ambiguous"
+#, gcc-internal-format
 msgid "Symbol %qs at %L is ambiguous"
-msgstr "Symbolen  ”%s” vid %L är tvetydig"
+msgstr "Symbolen  %qs vid %L är tvetydig"
 
 #: fortran/resolve.c:1943
 #, gcc-internal-format, gfc-internal-format
@@ -50440,10 +50123,9 @@ msgid "Passing internal procedure at %L by location not allowed"
 msgstr "Att skicka intern procedur som plats vid %L är inte tillåtet"
 
 #: fortran/resolve.c:1986
-#, fuzzy, gcc-internal-format
-#| msgid "ELEMENTAL non-INTRINSIC procedure '%s' is not allowed as an actual argument at %L"
+#, gcc-internal-format
 msgid "ELEMENTAL procedure pointer component %qs is not allowed as an actual argument at %L"
-msgstr "ELEMENTAL icke INTRINSIC procedur ”%s” är inte tillåten som aktuellt argument vid %L"
+msgstr "ELEMENTAL icke INTRINSIC procedur %qs är inte tillåten som aktuellt argument vid %L"
 
 #: fortran/resolve.c:1995
 #, gcc-internal-format, gfc-internal-format
@@ -50451,16 +50133,14 @@ msgid "Coindexed actual argument at %L with ultimate pointer component"
 msgstr "Co-indexerat aktuellt argument vid %L med slutlig pekarkomponent"
 
 #: fortran/resolve.c:2126
-#, fuzzy, gcc-internal-format
-#| msgid "'%s' at %L is an array and OPTIONAL; IF IT IS MISSING, it cannot be the actual argument of an ELEMENTAL procedure unless there is a non-optional argument with the same rank (12.4.1.5)"
+#, gcc-internal-format
 msgid "%qs at %L is an array and OPTIONAL; IF IT IS MISSING, it cannot be the actual argument of an ELEMENTAL procedure unless there is a non-optional argument with the same rank (12.4.1.5)"
-msgstr "”%s” vid %L är en vektor och OPTIONAL.  OM DEN SAKNAS kan den inte vara det aktuella argumentet i en ELEMENTAL-procedur om det inte finns ett ej valfritt argument med samma ordning (12.4.1.5)"
+msgstr "%qs vid %L är en vektor och OPTIONAL.  OM DEN SAKNAS kan den inte vara det aktuella argumentet i en ELEMENTAL-procedur om det inte finns ett ej valfritt argument med samma ordning (12.4.1.5)"
 
 #: fortran/resolve.c:2163
-#, fuzzy, gcc-internal-format
-#| msgid "Actual argument at %L for INTENT(%s) dummy '%s' of ELEMENTAL subroutine '%s' is a scalar, but another actual argument is an array"
+#, gcc-internal-format
 msgid "Actual argument at %L for INTENT(%s) dummy %qs of ELEMENTAL subroutine %qs is a scalar, but another actual argument is an array"
-msgstr "Aktuellt argument vid %L för INTENT(%s)-attrapp ”%s” av ELEMENTAL-subrutin ”%s” är en skalär, men ett annat aktuellt argument är en vektor"
+msgstr "Aktuellt argument vid %L för INTENT(%s)-attrapp %qs av ELEMENTAL-subrutin %qs är en skalär, men ett annat aktuellt argument är en vektor"
 
 #: fortran/resolve.c:2440
 #, fuzzy, gcc-internal-format
