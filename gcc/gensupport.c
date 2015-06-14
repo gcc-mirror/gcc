@@ -2982,3 +2982,37 @@ get_pattern_stats (struct pattern_stats *stats, rtvec pattern)
 				  MAX (stats->max_dup_opno,
 				       stats->max_scratch_opno)) + 1;
 }
+
+/* Return the emit_* function that should be used for pattern X.  */
+
+const char *
+get_emit_function (rtx x)
+{
+  switch (classify_insn (x))
+    {
+    case INSN:
+      return "emit_insn";
+
+    case CALL_INSN:
+      return "emit_call_insn";
+
+    case JUMP_INSN:
+      return "emit_jump_insn";
+
+    case UNKNOWN:
+      return "emit";
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Return true if we must emit a barrier after pattern X.  */
+
+bool
+needs_barrier_p (rtx x)
+{
+  return (GET_CODE (x) == SET
+	  && GET_CODE (SET_DEST (x)) == PC
+	  && GET_CODE (SET_SRC (x)) == LABEL_REF);
+}
