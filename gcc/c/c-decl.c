@@ -7947,7 +7947,8 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name)
   the_enum->enum_overflow = 0;
 
   if (flag_short_enums)
-    TYPE_PACKED (enumtype) = 1;
+    for (tree v = TYPE_MAIN_VARIANT (enumtype); v; v = TYPE_NEXT_VARIANT (v))
+      TYPE_PACKED (v) = 1;
 
   /* FIXME: This will issue a warning for a use of a type defined
      within sizeof in a statement expr.  This is not terribly serious

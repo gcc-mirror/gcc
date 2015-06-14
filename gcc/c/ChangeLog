@@ -1,3 +1,9 @@
+2015-06-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/66325
+	* c-decl.c (start_enum): Set TYPE_PACKED consistently among type
+	variants.
+
 2015-06-11  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* c-decl.c (pop_scope): Register the main translation unit
