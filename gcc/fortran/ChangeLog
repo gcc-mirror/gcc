@@ -1,5 +1,12 @@
 2015-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/66385
+	Backport from trunk
+	* frontend-passes.c (combine_array_constructor): Return early if
+	inside a FORALL loop.
+
+2015-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	* intrinsic.texi:  Change \leq to < in descrition of imaginary
 	part in argument to log.
 
