@@ -1,3 +1,7 @@
+2015-06-14  Richard Biener  <rguenther@suse.de>
+
+	* crontab: Disable snapshots from the 4.8 branch.
+
 2015-04-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* update_version_svn: Update DATESTAMP also on
