@@ -370,7 +370,8 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   mode = bp_unpack_machine_mode (bp);
   SET_TYPE_MODE (expr, mode);
   TYPE_STRING_FLAG (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_NO_FORCE_BLK (expr) = (unsigned) bp_unpack_value (bp, 1);
+  /* TYPE_NO_FORCE_BLK is private to stor-layout and need
+     no streaming.  */
   TYPE_NEEDS_CONSTRUCTING (expr) = (unsigned) bp_unpack_value (bp, 1);
   if (RECORD_OR_UNION_TYPE_P (expr))
     {

@@ -318,7 +318,8 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
 {
   bp_pack_machine_mode (bp, TYPE_MODE (expr));
   bp_pack_value (bp, TYPE_STRING_FLAG (expr), 1);
-  bp_pack_value (bp, TYPE_NO_FORCE_BLK (expr), 1);
+  /* TYPE_NO_FORCE_BLK is private to stor-layout and need
+     no streaming.  */
   bp_pack_value (bp, TYPE_NEEDS_CONSTRUCTING (expr), 1);
   if (RECORD_OR_UNION_TYPE_P (expr))
     {

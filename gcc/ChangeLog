@@ -1,3 +1,11 @@
+2015-06-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/66181
+	* lto-streamer-out.c (hash_tree): Do not hash TYPE_NO_FORCE_BLK.
+	* tree-streamer-out.c (pack_ts_type_common_value_fields): Do not stream
+	TYPE_NO_FORCE_BLK.
+	* tree-streamer-in.c (unpack_ts_type_common_value_fields): Likewise.
+
 2015-06-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* rtl.h (classify_insn): Declare.

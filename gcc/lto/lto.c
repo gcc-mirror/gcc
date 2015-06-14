@@ -1159,7 +1159,6 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
     {
       compare_values (TYPE_MODE);
       compare_values (TYPE_STRING_FLAG);
-      compare_values (TYPE_NO_FORCE_BLK);
       compare_values (TYPE_NEEDS_CONSTRUCTING);
       if (RECORD_OR_UNION_TYPE_P (t1))
 	{
