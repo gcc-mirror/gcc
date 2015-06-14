@@ -1,3 +1,13 @@
+2015-06-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl.h (classify_insn): Declare.
+	* emit-rtl.c (classify_insn): Move to...
+	* rtl.c: ...here and add generator support.
+	* gensupport.h (get_emit_function, needs_barrier_p): Declare.
+	* gensupport.c (get_emit_function, needs_barrier_p): New functions.
+	* genemit.c (gen_emit_seq): New function.
+	(gen_expand, gen_split): Use it.
+
 2015-06-13  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	* tree.c (make_vector_stat): Fix comment to state that the

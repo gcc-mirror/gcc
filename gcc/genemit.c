@@ -268,6 +268,23 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
     }
   printf (")");
 }
+
+/* Output code to emit the instruction patterns in VEC, with each element
+   becoming a separate instruction.  USED is as for gen_exp.  */
+
+static void
+gen_emit_seq (rtvec vec, char *used)
+{
+  for (int i = 0, len = GET_NUM_ELEM (vec); i < len; ++i)
+    {
+      rtx next = RTVEC_ELT (vec, i);
+      printf ("  %s (", get_emit_function (next));
+      gen_exp (next, DEFINE_EXPAND, used);
+      printf (");\n");
+      if (needs_barrier_p (next))
+	printf ("  emit_barrier ();");
+    }
+}
 
 /* Generate the `gen_...' function for a DEFINE_INSN.  */
 
@@ -475,49 +492,8 @@ gen_expand (rtx expand)
       printf ("  }\n");
     }
 
-  /* Output code to construct the rtl for the instruction bodies.
-     Use emit_insn to add them to the sequence being accumulated.
-     But don't do this if the user's code has set `no_more' nonzero.  */
-
   used = XCNEWVEC (char, stats.num_operand_vars);
-
-  for (i = 0; i < XVECLEN (expand, 1); i++)
-    {
-      rtx next = XVECEXP (expand, 1, i);
-      if ((GET_CODE (next) == SET && GET_CODE (SET_DEST (next)) == PC)
-	  || (GET_CODE (next) == PARALLEL
-	      && ((GET_CODE (XVECEXP (next, 0, 0)) == SET
-		   && GET_CODE (SET_DEST (XVECEXP (next, 0, 0))) == PC)
-		  || ANY_RETURN_P (XVECEXP (next, 0, 0))))
-	  || ANY_RETURN_P (next))
-	printf ("  emit_jump_insn (");
-      else if ((GET_CODE (next) == SET && GET_CODE (SET_SRC (next)) == CALL)
-	       || GET_CODE (next) == CALL
-	       || (GET_CODE (next) == PARALLEL
-		   && GET_CODE (XVECEXP (next, 0, 0)) == SET
-		   && GET_CODE (SET_SRC (XVECEXP (next, 0, 0))) == CALL)
-	       || (GET_CODE (next) == PARALLEL
-		   && GET_CODE (XVECEXP (next, 0, 0)) == CALL))
-	printf ("  emit_call_insn (");
-      else if (LABEL_P (next))
-	printf ("  emit_label (");
-      else if (GET_CODE (next) == MATCH_OPERAND
-	       || GET_CODE (next) == MATCH_DUP
-	       || GET_CODE (next) == MATCH_OPERATOR
-	       || GET_CODE (next) == MATCH_OP_DUP
-	       || GET_CODE (next) == MATCH_PARALLEL
-	       || GET_CODE (next) == MATCH_PAR_DUP
-	       || GET_CODE (next) == PARALLEL)
-	printf ("  emit (");
-      else
-	printf ("  emit_insn (");
-      gen_exp (next, DEFINE_EXPAND, used);
-      printf (");\n");
-      if (GET_CODE (next) == SET && GET_CODE (SET_DEST (next)) == PC
-	  && GET_CODE (SET_SRC (next)) == LABEL_REF)
-	printf ("  emit_barrier ();");
-    }
-
+  gen_emit_seq (XVEC (expand, 1), used);
   XDELETEVEC (used);
 
   /* Call `get_insns' to extract the list of all the
@@ -601,44 +577,7 @@ gen_split (rtx split)
       printf ("  (void) operand%d;\n", i);
     }
 
-  /* Output code to construct the rtl for the instruction bodies.
-     Use emit_insn to add them to the sequence being accumulated.
-     But don't do this if the user's code has set `no_more' nonzero.  */
-
-  for (i = 0; i < XVECLEN (split, 2); i++)
-    {
-      rtx next = XVECEXP (split, 2, i);
-      if ((GET_CODE (next) == SET && GET_CODE (SET_DEST (next)) == PC)
-	  || (GET_CODE (next) == PARALLEL
-	      && GET_CODE (XVECEXP (next, 0, 0)) == SET
-	      && GET_CODE (SET_DEST (XVECEXP (next, 0, 0))) == PC)
-	  || ANY_RETURN_P (next))
-	printf ("  emit_jump_insn (");
-      else if ((GET_CODE (next) == SET && GET_CODE (SET_SRC (next)) == CALL)
-	       || GET_CODE (next) == CALL
-	       || (GET_CODE (next) == PARALLEL
-		   && GET_CODE (XVECEXP (next, 0, 0)) == SET
-		   && GET_CODE (SET_SRC (XVECEXP (next, 0, 0))) == CALL)
-	       || (GET_CODE (next) == PARALLEL
-		   && GET_CODE (XVECEXP (next, 0, 0)) == CALL))
-	printf ("  emit_call_insn (");
-      else if (LABEL_P (next))
-	printf ("  emit_label (");
-      else if (GET_CODE (next) == MATCH_OPERAND
-	       || GET_CODE (next) == MATCH_OPERATOR
-	       || GET_CODE (next) == MATCH_PARALLEL
-	       || GET_CODE (next) == MATCH_OP_DUP
-	       || GET_CODE (next) == MATCH_DUP
-	       || GET_CODE (next) == PARALLEL)
-	printf ("  emit (");
-      else
-	printf ("  emit_insn (");
-      gen_exp (next, GET_CODE (split), used);
-      printf (");\n");
-      if (GET_CODE (next) == SET && GET_CODE (SET_DEST (next)) == PC
-	  && GET_CODE (SET_SRC (next)) == LABEL_REF)
-	printf ("  emit_barrier ();");
-    }
+  gen_emit_seq (XVEC (split, 2), used);
 
   /* Call `get_insns' to make a list of all the
      insns emitted within this gen_... function.  */
