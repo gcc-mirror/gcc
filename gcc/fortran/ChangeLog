@@ -1,3 +1,8 @@
+2015-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* intrinsic.texi:  Change \leq to < in descrition of imaginary
+	part in argument to log.
+
 2015-06-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/66079
