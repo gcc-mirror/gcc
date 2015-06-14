@@ -1,3 +1,8 @@
+2015-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* intrinsic.texi:  Change \leq to < in descrition of imaginary
+	part in argument to log.
+
 2015-06-11  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* f95-lang.c (gfc_create_decls): Register the main translation unit
