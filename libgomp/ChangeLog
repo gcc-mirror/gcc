@@ -1,5 +1,9 @@
 2015-06-15  Tom de Vries  <tom@codesourcery.com>
 
+	* testsuite/libgomp.c/pr35625.c: Fix typo.
+
+2015-06-15  Tom de Vries  <tom@codesourcery.com>
+
 	* testsuite/libgomp.c/atomic-18.c: Remove superfluous -fopenmp setting
 	in dg-options.
 	* testsuite/libgomp.c/atomic-3.c: Same.
