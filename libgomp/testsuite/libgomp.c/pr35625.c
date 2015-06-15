@@ -1,6 +1,6 @@
 /* PR libgomp/35625 */
 /* { dg-do run } */
-/* { dg-aditional-options "-std=c99" } */
+/* { dg-additional-options "-std=c99" } */
 
 int
 main (void)
