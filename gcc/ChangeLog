@@ -1,3 +1,11 @@
+2015-06-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	* altivec.md: Delete UNSPEC_VMLADDUHM.
+	(mulv4si3_p8): New pattern.
+	(mulv4si3): Use it for POWER8.
+	(mulv8hi3): Use vmladduhm with zero addend.
+	(altivec_vmladduhm): Descriptive RTL.
+
 2015-06-15  Jim Wilson  <jim.wilson@linaro.org>
 
 	* config/aarch64/aarch64.md (mov<mode>_aarch64): Change alternative 2
