@@ -1,3 +1,15 @@
+2015-06-15  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.c/collapse-3.c: Use dg-additional-options for
+	-std={gnu99,c99}.
+	* testsuite/libgomp.c/for-1.c: Same.
+	* testsuite/libgomp.c/for-2.c: Same.
+	* testsuite/libgomp.c/for-3.c: Same.
+	* testsuite/libgomp.c/pr35625.c: Same.
+	* testsuite/libgomp.c/pr39154.c: Same.
+	* testsuite/libgomp.c/simd-16.c: Same.
+	* testsuite/libgomp.c/simd-17.c: Same.
+
 2015-06-13  Tom de Vries  <tom@codesourcery.com>
 
 	* testsuite/libgomp.c/parloops-exit-first-loop-alt-4.c: New test.
