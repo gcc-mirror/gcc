@@ -1,5 +1,21 @@
 2015-06-15  Tom de Vries  <tom@codesourcery.com>
 
+	* testsuite/libgomp.c/atomic-18.c: Remove superfluous -fopenmp setting
+	in dg-options.
+	* testsuite/libgomp.c/atomic-3.c: Same.
+	* testsuite/libgomp.c/debug-1.c: Same.
+	* testsuite/libgomp.c/nqueens-1.c: Same.
+	* testsuite/libgomp.c/pr26171.c: Same.
+	* testsuite/libgomp.c/pr48591.c: Same.
+	* testsuite/libgomp.c/pr64824.c: Same.
+	* testsuite/libgomp.c/pr64868.c: Same.
+	* testsuite/libgomp.c/pr66133.c: Same.
+	* testsuite/libgomp.c/pr66199-1.c: Same.
+	* testsuite/libgomp.c/pr66199-2.c: Same.
+	* testsuite/libgomp.c/target-8.c: Same.
+
+2015-06-15  Tom de Vries  <tom@codesourcery.com>
+
 	* testsuite/libgomp.c/collapse-3.c: Use dg-additional-options for
 	-std={gnu99,c99}.
 	* testsuite/libgomp.c/for-1.c: Same.

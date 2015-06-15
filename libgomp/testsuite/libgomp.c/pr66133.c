@@ -1,6 +1,5 @@
 /* PR middle-end/66133 */
 /* { dg-do run } */
-/* { dg-options "-O2 -fopenmp" } */
 
 #include <stdlib.h>
 #include <unistd.h>
