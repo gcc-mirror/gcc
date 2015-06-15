@@ -1,3 +1,8 @@
+2015-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51048
+	* g++.dg/cpp0x/local-type1.C: New.
+
 2015-06-15  Andre Vehreschild  <vehre@gmx.de>
 
 	PR fortran/44672
@@ -11,7 +16,7 @@
 2015-06-13  Patrick Palka  <ppalka@gcc.gnu.org>
 
 	PR c++/65168
-	g++.dg/warn/Walways-true-3.C: New test.
+	* g++.dg/warn/Walways-true-3.C: New test.
 
 2015-06-13  Tom de Vries  <tom@codesourcery.com>
 
