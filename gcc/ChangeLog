@@ -1,3 +1,20 @@
+2015-06-15  Jim Wilson  <jim.wilson@linaro.org>
+
+	* config/aarch64/aarch64.md (mov<mode>_aarch64): Change alternative 2
+	to use neon_move instead of mov_imm.
+	(movdi_aarch64): Change alternative 14 to use neon_move not fmov.
+	(movtf_aarch64): Change alternative 4 to use neon_move_q not fconstd.
+
+	* config/aarch64/aarch64.c (aarch64_valid_floating_const): Move
+	aarch64_float_const_zero_rtx_p check before TFmode check.
+	* config/aarch64/aarch64.md (movtf): Don't call force_reg if op1 is
+	an fp zero.
+	(movtf_aarch64): Separate ?rY alternative into two.  Adjust assembly
+	code and attributes to match.  Change condition from register_operand
+	to aarch64_reg_or_fp_zero for op1.  Change type for ldp from
+	neon_load1_2reg to load2.  Change type for stp from neon_store1_2reg
+	to store2.
+
 2015-06-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR debug/66535

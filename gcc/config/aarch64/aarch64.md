@@ -827,7 +827,7 @@
        gcc_unreachable ();
      }
 }
-  [(set_attr "type" "mov_reg,mov_imm,mov_imm,load1,load1,store1,store1,\
+  [(set_attr "type" "mov_reg,mov_imm,neon_move,load1,load1,store1,store1,\
                      neon_to_gp<q>,neon_from_gp<q>,neon_dup")
    (set_attr "simd" "*,*,yes,*,*,*,*,yes,yes,yes")]
 )
@@ -912,7 +912,7 @@
        DONE;
     }"
   [(set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,mov_imm,load1,load1,store1,store1,\
-                     adr,adr,f_mcr,f_mrc,fmov,fmov")
+                     adr,adr,f_mcr,f_mrc,fmov,neon_move")
    (set_attr "fp" "*,*,*,*,*,*,yes,*,yes,*,*,yes,yes,yes,*")
    (set_attr "simd" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,yes")]
 )
@@ -1040,18 +1040,20 @@
 	FAIL;
      }
 
-    if (GET_CODE (operands[0]) == MEM)
+    if (GET_CODE (operands[0]) == MEM
+        && ! (GET_CODE (operands[1]) == CONST_DOUBLE
+	      && aarch64_float_const_zero_rtx_p (operands[1])))
       operands[1] = force_reg (TFmode, operands[1]);
   "
 )
 
 (define_insn "*movtf_aarch64"
   [(set (match_operand:TF 0
-	 "nonimmediate_operand" "=w,?&r,w ,?r,w,?w,w,m,?r ,Ump")
+	 "nonimmediate_operand" "=w,?&r,w ,?r,w,?w,w,m,?r ,Ump,Ump")
 	(match_operand:TF 1
-	 "general_operand"      " w,?r, ?r,w ,Y,Y ,m,w,Ump,?rY"))]
+	 "general_operand"      " w,?r, ?r,w ,Y,Y ,m,w,Ump,?r ,Y"))]
   "TARGET_FLOAT && (register_operand (operands[0], TFmode)
-    || register_operand (operands[1], TFmode))"
+    || aarch64_reg_or_fp_zero (operands[1], TFmode))"
   "@
    orr\\t%0.16b, %1.16b, %1.16b
    #
@@ -1062,12 +1064,13 @@
    ldr\\t%q0, %1
    str\\t%q1, %0
    ldp\\t%0, %H0, %1
-   stp\\t%1, %H1, %0"
-  [(set_attr "type" "logic_reg,multiple,f_mcr,f_mrc,fconstd,fconstd,\
-                     f_loadd,f_stored,neon_load1_2reg,neon_store1_2reg")
-   (set_attr "length" "4,8,8,8,4,4,4,4,4,4")
-   (set_attr "fp" "*,*,yes,yes,*,yes,yes,yes,*,*")
-   (set_attr "simd" "yes,*,*,*,yes,*,*,*,*,*")]
+   stp\\t%1, %H1, %0
+   stp\\txzr, xzr, %0"
+  [(set_attr "type" "logic_reg,multiple,f_mcr,f_mrc,neon_move_q,fconstd,\
+                     f_loadd,f_stored,load2,store2,store2")
+   (set_attr "length" "4,8,8,8,4,4,4,4,4,4,4")
+   (set_attr "fp" "*,*,yes,yes,*,yes,yes,yes,*,*,*")
+   (set_attr "simd" "yes,*,*,*,yes,*,*,*,*,*,*")]
 )
 
 (define_split
