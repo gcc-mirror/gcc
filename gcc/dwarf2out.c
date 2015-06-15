@@ -18790,7 +18790,8 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		   end function
 		 end module
 	   */
-	   || old_die->die_parent->die_tag == DW_TAG_module
+	   || (old_die->die_parent
+	       && old_die->die_parent->die_tag == DW_TAG_module)
 	   || context_die == NULL)
 	   && (DECL_ARTIFICIAL (decl)
 	       || (get_AT_file (old_die, DW_AT_decl_file) == file_index
