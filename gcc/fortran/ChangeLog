@@ -1,3 +1,35 @@
+2015-06-15  Andre Vehreschild  <vehre@gmx.de>
+
+	PR fortran/44672
+	PR fortran/45440
+	PR fortran/57307
+	* gfortran.h: Extend gfc_code.ext.alloc to carry a
+	flag indicating that the array specification has to be
+	taken from expr3.
+	* resolve.c (resolve_allocate_expr): Add F2008 notify
+	and flag indicating source driven array spec.
+	(resolve_allocate_deallocate): Check for source driven
+	array spec, when array to allocate has no explicit
+	array spec.
+	* trans-array.c (gfc_array_init_size): Get lower and
+	upper bound from a tree array descriptor, except when
+	the source expression is an array-constructor which is
+	fixed to be one-based.
+	(retrieve_last_ref): Extracted from gfc_array_allocate().
+	(gfc_array_allocate): Enable allocate(array, source= 
+	array_expression) as specified by F2008:C633.
+	(gfc_conv_expr_descriptor): Add class tree expression
+	into the saved descriptor for class arrays.
+	* trans-array.h: Add temporary array descriptor to
+	gfc_array_allocate ().
+	* trans-expr.c (gfc_conv_procedure_call): Special handling
+	for _copy() routine translation, that comes without an
+	interface. Third and fourth argument are now passed by value.
+	* trans-stmt.c (gfc_trans_allocate): Get expr3 array
+	descriptor for temporary arrays to allow allocate(array,
+	source = array_expression) for array without array
+	specification.
+
 2015-06-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* intrinsic.texi:  Change \leq to < in descrition of imaginary

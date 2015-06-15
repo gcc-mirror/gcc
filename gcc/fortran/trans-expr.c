@@ -4561,6 +4561,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   int has_alternate_specifier = 0;
   bool need_interface_mapping;
   bool callee_alloc;
+  bool ulim_copy;
   gfc_typespec ts;
   gfc_charlen cl;
   gfc_expr *e;
@@ -4569,6 +4570,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   enum {MISSING = 0, ELEMENTAL, SCALAR, SCALAR_POINTER, ARRAY};
   gfc_component *comp = NULL;
   int arglen;
+  unsigned int argc;
 
   arglist = NULL;
   retargs = NULL;
@@ -4624,10 +4626,16 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
     }
 
   base_object = NULL_TREE;
+  /* For _vprt->_copy () routines no formal symbol is present.  Nevertheless
+     is the third and fourth argument to such a function call a value
+     denoting the number of elements to copy (i.e., most of the time the
+     length of a deferred length string).  */
+  ulim_copy = formal == NULL && UNLIMITED_POLY (sym)
+      && strcmp ("_copy", comp->name) == 0;
 
   /* Evaluate the arguments.  */
-  for (arg = args; arg != NULL;
-       arg = arg->next, formal = formal ? formal->next : NULL)
+  for (arg = args, argc = 0; arg != NULL;
+       arg = arg->next, formal = formal ? formal->next : NULL, ++argc)
     {
       e = arg->expr;
       fsym = formal ? formal->sym : NULL;
@@ -4729,7 +4737,14 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  gfc_init_se (&parmse, se);
 	  parm_kind = ELEMENTAL;
 
-	  if (fsym && fsym->attr.value)
+	  /* When no fsym is present, ulim_copy is set and this is a third or
+	     fourth argument, use call-by-value instead of by reference to
+	     hand the length properties to the copy routine (i.e., most of the
+	     time this will be a call to a __copy_character_* routine where the
+	     third and fourth arguments are the lengths of a deferred length
+	     char array).  */
+	  if ((fsym && fsym->attr.value)
+	      || (ulim_copy && (argc == 2 || argc == 3)))
 	    gfc_conv_expr (&parmse, e);
 	  else
 	    gfc_conv_expr_reference (&parmse, e);
@@ -5322,7 +5337,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       if (e && (e->ts.type == BT_DERIVED || e->ts.type == BT_CLASS)
 	    && e->ts.u.derived->attr.alloc_comp
 	    && !(e->symtree && e->symtree->n.sym->attr.pointer)
-	    && (e->expr_type != EXPR_VARIABLE && !e->rank))
+	    && e->expr_type != EXPR_VARIABLE && !e->rank)
         {
 	  int parm_rank;
 	  tmp = build_fold_indirect_ref_loc (input_location,
