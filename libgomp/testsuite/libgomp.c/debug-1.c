@@ -1,6 +1,6 @@
 /* PR debug/36617 */
 /* { dg-do run } */
-/* { dg-options "-g -fopenmp -O0" } */
+/* { dg-options "-g -O0" } */
 
 int
 f1 (void)
