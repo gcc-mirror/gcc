@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -ftree-parallelize-loops=2" } */
+/* { dg-additional-options "-ftree-parallelize-loops=2" } */
 
 /* Variable bound, reduction.  */
 

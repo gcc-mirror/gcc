@@ -1,5 +1,47 @@
 2015-06-15  Tom de Vries  <tom@codesourcery.com>
 
+	* testsuite/libgomp.c/atomic-1.c: Remove dg-options "-O2".  Use
+	dg-additional-options for any remaining options.
+	* testsuite/libgomp.c/atomic-2.c: Same.
+	* testsuite/libgomp.c/atomic-4.c: Same.
+	* testsuite/libgomp.c/atomic-5.c: Same.
+	* testsuite/libgomp.c/atomic-6.c: Same.
+	* testsuite/libgomp.c/autopar-1.c: Same.
+	* testsuite/libgomp.c/copyin-1.c: Same.
+	* testsuite/libgomp.c/copyin-2.c: Same.
+	* testsuite/libgomp.c/copyin-3.c: Same.
+	* testsuite/libgomp.c/examples-4/e.53.5.c: Same.
+	* testsuite/libgomp.c/nestedfn-5.c: Same.
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt-2.c: Same.
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt-3.c: Same.
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt-4.c: Same.
+	* testsuite/libgomp.c/parloops-exit-first-loop-alt.c: Same.
+	* testsuite/libgomp.c/pr32362-1.c: Same.
+	* testsuite/libgomp.c/pr32362-2.c: Same.
+	* testsuite/libgomp.c/pr32362-3.c: Same.
+	* testsuite/libgomp.c/pr39591-1.c: Same.
+	* testsuite/libgomp.c/pr39591-2.c: Same.
+	* testsuite/libgomp.c/pr39591-3.c: Same.
+	* testsuite/libgomp.c/pr58392.c: Same.
+	* testsuite/libgomp.c/pr58756.c: Same.
+	* testsuite/libgomp.c/simd-1.c: Same.
+	* testsuite/libgomp.c/simd-10.c: Same.
+	* testsuite/libgomp.c/simd-11.c: Same.
+	* testsuite/libgomp.c/simd-12.c: Same.
+	* testsuite/libgomp.c/simd-13.c: Same.
+	* testsuite/libgomp.c/simd-14.c: Same.
+	* testsuite/libgomp.c/simd-15.c: Same.
+	* testsuite/libgomp.c/simd-2.c: Same.
+	* testsuite/libgomp.c/simd-3.c: Same.
+	* testsuite/libgomp.c/simd-4.c: Same.
+	* testsuite/libgomp.c/simd-5.c: Same.
+	* testsuite/libgomp.c/simd-6.c: Same.
+	* testsuite/libgomp.c/simd-7.c: Same.
+	* testsuite/libgomp.c/simd-8.c: Same.
+	* testsuite/libgomp.c/simd-9.c: Same.
+
+2015-06-15  Tom de Vries  <tom@codesourcery.com>
+
 	* testsuite/libgomp.c/pr35625.c: Fix typo.
 
 2015-06-15  Tom de Vries  <tom@codesourcery.com>
